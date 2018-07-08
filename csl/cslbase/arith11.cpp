@@ -1144,4 +1144,45 @@ bool numeq2(LispObject a, LispObject b)
     }
 }
 
+// numeq2 as above is willing to compare a float with a bignum and try to
+// say if they represent the same value. That is like the Common Lisp
+// function (= N1 N2). But Standard Lisp's EQN only accepts numbers as equal
+// if they have the same type, and that reduces the complication significantly.
+
+bool SL_numeq2(LispObject a, LispObject b)
+{   unsigned int ha;
+    switch ((int)a & XTAG_BITS)
+    {   case TAG_FIXNUM:
+            return (a == b);
+        case XTAG_SFLOAT:
+// OK so Standard Lisp does not have a concept of multiple widths of
+// floats, but I am going to make EQN demand that values are the same width
+// as well as having the same value for them to be EQN.
+            if (((int)b & XTAG_BITS) != XTAG_SFLOAT) return false;
+            return (value_of_immediate_float(a)==value_of_immediate_float(b));
+        case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
+                ha = type_of_header(numhdr(a));
+                if (((int)b & TAG_BITS) != TAG_NUMBERS ||
+                    ha != type_of_header(numhdr(b))) return false;
+                switch (ha)
+                {   case TYPE_BIGNUM:
+                        return numeqbb(a, b);
+                    case TYPE_RATNUM:
+                        return numeqrr(a, b);
+                    case TYPE_COMPLEX_NUM:
+                        return numeqcc(a, b);
+                }
+                differenta;
+        case TAG_BOXFLOAT:
+        case TAG_BOXFLOAT+TAG_XBIT:
+                ha = type_of_header(numhdr(a));
+                if (((int)b & TAG_BITS) != TAG_NUMBERS ||
+                    ha != type_of_header(numhdr(b))) return false;
+                return numeqff(a, b);
+        default:
+            differenta;
+    }
+}
+
 // end of arith11.cpp

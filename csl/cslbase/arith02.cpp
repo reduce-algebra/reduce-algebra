@@ -1372,7 +1372,7 @@ LispObject times2(LispObject a, LispObject b)
 #endif
 
 LispObject times2(LispObject a, LispObject b)
-#ifdef EXPERIMENT
+#ifdef TEST_BIGNUM
 {   validate_number("Arg1 for times", a, a, b);
     validate_number("Arg2 for times", b, a, b);
     extern LispObject times2a(LispObject a, LispObject b);    

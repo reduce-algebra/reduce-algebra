@@ -704,10 +704,64 @@ LispObject Lplusp(LispObject env, LispObject a)
 
 //
 // The next few functions take an arbitrary number of args in Common
-// Lisp mode but just 2 args in CSL.
+// Lisp mode but just 2 args in Standard Lisp. Because it does not
+// hurt much I will allpow for arbitrary numbers of args here.
 //
 
+// Note that in Standrad Lisp (eqn 0 0.0) must return false, while the
+// Common Lisp style case has (= 0 0.0) => true.
+
 LispObject Leqn_4up(LispObject env,
+        LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
+{   push3(a4up, a3, a2);
+    if (!SL_numeq2(a1, a2))
+    {   popv(3);
+        return onevalue(nil);
+    }
+    pop(a1);
+    a2 = stack[0];
+    if (!SL_numeq2(a1, a2))
+    {   popv(2);
+        return onevalue(nil);
+    }
+    pop(a1);
+    a4up = stack[0];
+    while (a4up != nil)
+    {   a2 = qcar(a4up);
+        if (!SL_numeq2(a1, a2))
+        {   popv(1);
+            return false;
+        }
+        a4up = stack[0];
+        a1 = qcar(a4up);
+        a4up = qcdr(a4up);
+        stack[0] = a4up;
+    }
+    popv(1);
+    return onevalue(lisp_true);
+}
+
+
+LispObject Leqn_0(LispObject)
+{   return onevalue(lisp_true);
+}
+
+LispObject Leqn_1(LispObject, LispObject)
+{   return onevalue(lisp_true);
+}
+
+LispObject Leqn_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   push2(a3, a2);
+    if (!SL_numeq2(a1, a2)) return onevalue(nil);
+    pop2(a2, a3);
+    return onevalue(SL_numeq2(a2, a3) ? lisp_true : nil);
+}
+
+LispObject Leqn_2(LispObject env, LispObject a, LispObject b)
+{   return onevalue(SL_numeq2(a, b) ? lisp_true : nil);
+}
+
+LispObject Lcl_equals_sign_4up(LispObject env,
         LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   push3(a4up, a3, a2);
     if (!numeq2(a1, a2))
@@ -738,22 +792,22 @@ LispObject Leqn_4up(LispObject env,
 }
 
 
-LispObject Leqn_0(LispObject)
+LispObject Lcl_equals_sign_0(LispObject)
 {   return onevalue(lisp_true);
 }
 
-LispObject Leqn_1(LispObject, LispObject)
+LispObject Lcl_equals_sign_1(LispObject, LispObject)
 {   return onevalue(lisp_true);
 }
 
-LispObject Leqn_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+LispObject Lcl_equals_sign_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   push2(a3, a2);
     if (!numeq2(a1, a2)) return onevalue(nil);
     pop2(a2, a3);
     return onevalue(numeq2(a2, a3) ? lisp_true : nil);
 }
 
-LispObject Leqn_2(LispObject env, LispObject a, LispObject b)
+LispObject Lcl_equals_sign_2(LispObject env, LispObject a, LispObject b)
 {   return onevalue(numeq2(a, b) ? lisp_true : nil);
 }
 
@@ -1696,7 +1750,7 @@ setup_type const arith06_setup[] =
     {"1-",                   G0W1, Lsub1, G2W1, G3W1, G4W1},
     {"<",                    Llessp_0, Llessp_1, Llessp_2, Llessp_3, Llessp_4up},
     {"<=",                   Lleq_0, Lleq_1, Lleq_2, Lleq_3, Lleq_4up},
-    {"=",                    Leqn_0, Leqn_1, Leqn_2, Leqn_3, Leqn_4up},
+    {"=",                    Lcl_equals_sign_0, Lcl_equals_sign_1, Lcl_equals_sign_2, Lcl_equals_sign_3, Lcl_equals_sign_4up},
     {">",                    Lgreaterp_0, Lgreaterp_1, Lgreaterp_2, Lgreaterp_3, Lgreaterp_4up},
     {">=",                   Lgeq_0, Lgeq_1, Lgeq_2, Lgeq_3, Lgeq_4up},
     {"logior",               Llogor_0, Lidentity, Llogor_2, Llogor_3, Lbool_4up},

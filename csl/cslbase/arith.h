@@ -380,6 +380,7 @@ extern LispObject rationalize(LispObject a);
 extern LispObject lcm(LispObject a, LispObject b);
 extern LispObject lengthen_by_one_bit(LispObject a, int32_t msd);
 extern bool numeq2(LispObject a, LispObject b);
+extern bool SL_numeq2(LispObject a, LispObject b);
 extern bool zerop(LispObject a);
 extern bool onep(LispObject a);
 extern bool minusp(LispObject a);

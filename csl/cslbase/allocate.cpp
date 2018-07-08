@@ -1031,7 +1031,7 @@ static void get_2_words_past_pin()
 // Logically I want this padder not to be accepted by the conservative
 // collector as the start of a real object, so I want its "object start" bit
 // to be clear. Ha ha that will already be the case. So I show what the code
-// would be but comment it out as unnecessary.
+// would be but comment it out as unnecessary. This is just a 1-word padder.
 //--        clear_header_bit(vfringe, active_page);
         }
         allocate_next_page();
@@ -1110,6 +1110,10 @@ static inline LispObject get_2_words()
     return fringe;
 }
 
+static uintptr_t small_padders = 0, large_padders = 0;
+static uintptr_t *small_padders_tail = &small_padders,
+                 *large_padders_tail = &large_padders;
+
 static void get_n_bytes_past_pin()
 {
 // The vector I want to allocate will not fit at the next consecutive
@@ -1117,6 +1121,21 @@ static void get_n_bytes_past_pin()
 // there.
     if (vfringe != vheaplimit)
     {   *(Header *)vfringe = make_padding_header(vheaplimit - vfringe);
+// I will collect a chain of all the padders that I create. This will be
+// built in historical order. I will do this even during ordinary allocation
+// because the overhead is not huge, but it is required when I am
+        if ((vheaplimit - vfringe) != CELL)
+        {    if ((vheaplimit - vfringe) < symhdr_length)
+             {   *small_padders_tail = vfringe;
+                 small_padders_tail = &((uintptr_t *)vfringe)[1];
+                 *small_padders_tail = 0;
+             }
+             else
+             {   *large_padders_tail = vfringe;
+                 large_padders_tail = &((uintptr_t *)vfringe)[1];
+                 *large_padders_tail = 0;
+             }
+        }
         clear_header_bits(vfringe, vheaplimit - vfringe, active_page);
     }
 // If 2-word and vector regions are one and the same that means that
@@ -1259,6 +1278,8 @@ static void allocate_next_page()
     }
     set_next_active_page();
 }
+
+
 
 // This code allocates a segment by asking the operating system. On
 // Windows it uses VirtualAlloc() and on other systems mmap(). It arranges
@@ -1779,7 +1800,38 @@ LispObject borrow_vector(int tag, int type, size_t n)
 // critically on it. But a fairly small value such as 4 is where I might
 // start.
 // Obviously when an allocation is taken from a block that block can need to
-// be moved between the chains.
+// be moved between the chains. There is a problem here in that when a
+// large block is partly used up leaving another large one it can remain in
+// its chain respecting age order. But when it is changed to become a
+// small block all information about age will tend to be lost. So I will
+// makebe keep a special list of unordered small chunks created as left-overs
+// from using parts of large ones and allocate from that first. I hope that
+// list will end up short all the time.
+
+// Here are the allocation functions implementing the above.
+
+
+static inline LispObject packed_get_2_words()
+{
+    fringe -= 2*CELL;
+    if (fringe < heaplimit) get_2_words_past_pin();
+    return fringe;
+}
+
+static inline LispObject packed_get_n_bytes(size_t n)
+{
+    n = doubleword_align_up(n);
+    if (vheaptop == heapstart) vheaplimit = fringe;
+    while (vfringe + n > vheaplimit) get_n_bytes_past_pin();
+    LispObject r = vfringe;
+    vfringe += n;
+    set_header_bit(r, active_page);
+    clear_header_bits(r+8, n-8, active_page);
+    if (vheaptop == heapstart) heaplimit = vfringe;
+    return r;
+}
+
+
 
 
 
