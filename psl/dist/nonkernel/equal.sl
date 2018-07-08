@@ -61,19 +61,35 @@
 
 (compiletime (load if-system))
 
+(compiletime
+
+ (if_system IEEE
+
+ (load ieee-decls)
+
+ % not IEEE
+ 
+ (ds floatequal (x y)
+     (and
+      (weq (floathighorder (fltinf u))
+	   (floathighorder (fltinf v)))
+      (weq (floatloworder (fltinf u))
+	   (floatloworder (fltinf v))))
+  )
+
+ )
+ )
+	   
+
 (de eqn (u v)
   % Eq or numeric equality.
   (or (weq u v)
       (case (tag u)
 	((floatnum-tag)
-	 (or (and (floatp v)
-		  (weq (floathighorder (fltinf u))
-		       (floathighorder (fltinf v)))
-			     (weq (floatloworder (fltinf u))
-				  (floatloworder (fltinf v)))
-	     )
-	     (and (zerop u)
-		  (zerop v))))
+	 (and (floatp v)
+	      (or (floatequal u v)
+		  (and (zerop u)
+		       (zerop v)))))
 	((fixnum-tag)
 	 (and (fixnp v) (weq (fixval (fixinf u)) (fixval (fixinf v)))))
 	((bignum-tag)
@@ -94,14 +110,10 @@
 	      (equal (car u) (car v))
 	      (equal (cdr u) (cdr v))))
 	((floatnum-tag)
-	 (or (and (floatp v)
-		  (weq (floathighorder (fltinf u))
-		       (floathighorder (fltinf v)))
-			     (weq (floatloworder (fltinf u))
-				  (floatloworder (fltinf v)))
-	     )
-	     (and (zerop u)
-		  (zerop v))))
+	 (and (floatp v)
+	      (or (floatequal u v)
+		  (and (zerop u)
+		       (zerop v)))))
 	((fixnum-tag)
 	 (and (fixnp v)
 	      (weq (fixval (fixinf u)) (fixval (fixinf v)))))
