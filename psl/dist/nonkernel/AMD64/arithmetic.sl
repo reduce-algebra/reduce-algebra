@@ -139,6 +139,53 @@
          (setq fp-except-mode* 1)
          nil))
 
+
+(if_system IEEE
+
+(progn	   
+
+(compiletime (load ieee-decls))
+
+(de float-is-finite (x)
+    (and (floatp x)
+	 (wlessp (ieeeexpt x) ieeemaxexp)))
+
+(de float-is-nan (x)
+    (and (floatp x)
+	 (weq (ieeeexpt x) ieeemaxexp)
+	 (wneq (ieeemant x) 0)))
+
+(de float-is-infinite (x)
+    (and (floatp x)
+	 (weq (ieeeexpt x) ieeemaxexp)
+	 (weq (ieeemant x) 0)))
+
+(de float-is-subnormal (x)
+    (and (floatp x)
+	 (weq (ieeeexpt x) 0)))
+
+(de float-is-negative (x)
+    (and (floatp x)
+	 (wneq (ieeesign x) 0)))
+	 
+)
+
+(progn
+
+(de float-is-finite (x) t)
+
+(de float-is-nan (x) nil)
+
+(de float-is-infinite (x) nil)
+
+(de float-is-subnormal (x) nil)
+
+(de float-is-negative (x) (floatlessp x '0.00000E+000))
+
+)
+) % if_system IEEE
+
+
 (de betap (x)
   % Test tagged number is in Beta Range when BIGNUM loaded                 
   % Will redefine if NBIG loaded                                           
@@ -467,7 +514,9 @@
                                                 x))
 
 (de floatfix (x)
-  (sys2int (!*wfix (floatbase (fltinf x)))))
+  (if (float-is-finite x)
+      (sys2int (!*wfix (floatbase (fltinf x))))
+    (stderror (list "Non-finite float in fix:" x))))
 
 (de float (x)
   (case (tag x) ((posint-tag negint-tag) (intfloat x)) 
@@ -509,35 +558,5 @@
    (*fsqrt (floatbase y) (floatbase (fltinf x)))
    (mkfltn y))
 )
-
-(if_system IEEE
-
-(progn	   
-
-(compiletime (load ieee-decls))
-
-(de float-is-finite (x)
-    (and (floatp x)
-	 (wlessp (ieeeexpt x) ieeemaxexp)))
-
-(de float-is-nan (x)
-    (and (floatp x)
-	 (weq (ieeeexpt x) ieeemaxexp)
-	 (wneq (ieeemant x) 0)))
-
-(de float-is-infinite (x)
-    (and (floatp x)
-	 (weq (ieeeexpt x) ieeemaxexp)
-	 (weq (ieeemant x) 0)))
-
-(de float-is-subnormal (x)
-    (and (floatp x)
-	 (weq (ieeeexpt x) 0)))
-
-(de float-is-negative (x)
-    (and (floatp x)
-	 (wneq (ieeesign x) 0)))
-	 
-)) % if_system IEEE
 
 % End of file.
