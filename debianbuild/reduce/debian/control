@@ -8,7 +8,7 @@ Homepage: http://reduce-algebra.sf.net/
 
 Package: reduce-complete
 Architecture: i386 amd64
-Depends: gnuplot-x11, ${shlibs:Depends}, ${misc:Depends}
+Depends: gnuplot-x11 | gnuplot-qt, ${shlibs:Depends}, ${misc:Depends}
 Description: REDUCE Computer Algebra System -- common files
  REDUCE is a system for doing scalar, vector and matrix algebra by computer,
  which also supports arbitrary precision numerical approximation and
@@ -21,7 +21,7 @@ Description: REDUCE Computer Algebra System -- common files
 
 Package: reduce-common
 Architecture: all
-Depends: gnuplot-x11, ${misc:Depends}
+Depends: gnuplot-x11 | gnuplot-qt, ${misc:Depends}
 Description: REDUCE Computer Algebra System -- common files
  REDUCE is a system for doing scalar, vector and matrix algebra by computer,
  which also supports arbitrary precision numerical approximation and
