@@ -56,6 +56,8 @@ flag('(cond),'eval);   % Enable conditional compilation.
 
 %-------------------------------------------------------------------
 
+!#if (member 'ieee lispsystem!*)
+
 % % The following routines support fast float operations by exploiting
 % % the IEEE number format explicitly.
 %
@@ -147,6 +149,20 @@ symbolic procedure float!-is!-subnormal x;
 
 symbolic procedure float!-is!-negative x;
   floatp x and not(0 eq ieeesign x);
+
+!#else
+
+symbolic procedure float!-is!-finite x; t;
+
+symbolic procedure float!-is!-nan x; nil;
+
+symbolic procedure float!-is!-infinite x; nil;
+
+symbolic procedure float!-is!-subnormal x; nil;
+
+symbolic procedure float!-is!-negative x; floatp x and minusp x;
+
+!#endif
 
 
 remflag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm fp!-signbit),'lose);

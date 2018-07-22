@@ -27,10 +27,10 @@
 % $Id: cslrend.red 3469 2016-02-17 14:50:53Z arthurcnorman $
 
 % This file will be automatically updated by the code in scripts/commit.sh
-% to show the latet subversion revision number.
+% to show the latest subversion revision number.
 
 fluid '(revision!*);
 
-revision!* := 4685;
+revision!* := 4695;
 
 end;
