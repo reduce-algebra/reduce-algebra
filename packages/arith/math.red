@@ -59,6 +59,7 @@ module math;  % Mathematical Package for REDUCE.
 
 % Revisions:
 
+%    22 Jul 18  Correctly handle non-finite IEEE floats.
 %     1 May 93  expt improved; fix2 eliminated (not needed).
 %    15 Sep 92  expt, hypot, log improved. factorial added.
 %    25 May 91  atan2d added.  Function list updated.
@@ -106,7 +107,8 @@ symbolic procedure sqrt x;
  % Computes sqrt x by Newton's method, avoiding magnitude problems.
    if x<0 then terrlst(x,'sqrt) else
    begin  scalar trv,nx,g,l,o,c1,c2,f1; f1 := nx := o := 1.0;
-          if (x := float x)=0.0 or x=o then return x;
+          x := float x;
+          if not fp!-finite x or x=0.0 or x=o then return x;
           if x<o then <<x := o/x; l := t>>;
           c1 := 8192.0; c2 := c1*c1;
           while x>c2 do <<x := x/c2; f1 := f1*c1>>;
@@ -117,7 +119,8 @@ symbolic procedure sqrt x;
 
 symbolic procedure cbrt x;
    begin scalar s,l,o,g,trv,nx,c1,c2,f1; f1 := nx := o := 1.0;
-         if (x := float x)=0.0 or abs x=o then return x
+         x := float x;
+         if not fp!-finite x or x=0.0 or abs x=o then return x
          else if x<0 then x := -x else s := t;
          if x<o then <<x := o/x; l := t>> else if x=o then go to ret;
          c1 := 1024.0; c2 := c1*c1*c1;
@@ -130,9 +133,13 @@ symbolic procedure cbrt x;
 
 symbolic procedure hypot(p,q);
    % Hypot(p,q)=sqrt(p*p+q*q) but avoids intermediate overflow.
-   begin scalar r;
-         if (p := float p)<0 then p := -p;
-         if (q := float q)<0 then q := -q;
+   if floatp p and not fp!-finite p then p
+   else if floatp q and not fp!-finite q then q
+   else begin scalar r;
+         p := float p; if not fp!-finite p then return abs p;
+         q := float q; if not fp!-finite q then return abs q;
+         if p<0 then p := -p;
+         if q<0 then q := -q;
          if zerop p then return q
          else if zerop q then return p
          else if p<q then <<r := p; p := q; q := r>>;
@@ -146,6 +153,7 @@ symbolic procedure floor x;
    % "FLOOR" function) FIX truncates towards zero.
    % A definition of fix(x+sgn(x)*0.5) has also been suggested.
    if fixp x then x
+   else if not fp!-finite x then terrlst(x,'floor)
     else (if x = float n then n else if x >= 0 then n else n - 1)
        where n = fix x;
 
@@ -154,6 +162,7 @@ symbolic procedure ceiling x;
    % Note the trickiness to compensate for fact that (unlike APL's
    % "FLOOR" function) FIX truncates towards zero.
    if fixp x then x
+    else if not fp!-finite x then terrlst(x,'ceiling)
     else (if x = float n then n else if x >= 0 then n+1 else n)
        where n = fix x;
 
@@ -161,7 +170,9 @@ symbolic procedure round x;
    % Rounds to the closest integer.
    % Kind of sloppy -- it's biased when the digit causing rounding is a
    % five.  (Changed to work properly for X<0.  SLK)
-   if fixp x then x else if x<0 then -round(-x) else floor(x+0.5);
+   if fixp x then x
+    else if not fp!-finite x then terrlst(x,'round)
+    else if x<0 then -round(-x) else floor(x+0.5);
 
 symbolic procedure rounddec (x,p);
    % Rounds x to p decimal places, unless x must already be an integer.
@@ -187,7 +198,9 @@ symbolic procedure log x;
       if fixp(x) and (lx := ilog2(x)) > !!floatbits
         then return !!log2*(lx - !!floatbits)
                       + log(x/2^(lx - !!floatbits))
+       else if fp!-nan x then return x
        else if (x := float x)<=0.0 then terrlst(x,'log)
+       else if fp!-infinite x then return x
        else if x - 1<0 then x := 1/x else s := t;
       lx := 0.0;
       while x>1.0e81 do <<x := x/1.0e81; lx := lx+!!log1e81>>;
@@ -224,7 +237,9 @@ remflag(!!pilist,'reserved);
 symbolic procedure atan x;
    begin scalar arg,term,termp,trv,s,g,y;
       integer p;
-      if (x := float x)< 0 then x := -x
+      x := float x;
+      if fp!-nan x then return x;
+      if x < 0 then x := -x
        else s := t;
       if x > 1 then x:=1/x else g:=t;
       if x < !!epsqrt then go to quad;
@@ -250,7 +265,9 @@ flag(!!pilist,'reserved);
 fluid '(!*ddf!* !*df!* !*sf!* !*qf!*);
 
 symbolic procedure sin x;
-  begin scalar !*sf!*,!*qf!*;integer p;
+  % return NaN for non-finite argument
+  if floatp x and not fp!-finite x then (x-x)
+   else begin scalar !*sf!*,!*qf!*;integer p;
    % test for 90 deg -> 1.0
       x := !!scalsintan(x,t);
       if !*qf!* then <<x := 1.0; go to ret>>;
@@ -260,7 +277,9 @@ symbolic procedure sin x;
    ret: return if !*sf!* then x else -x end;
 
 symbolic procedure sind x;
-  begin scalar !*sf!*,!*qf!*;integer p;
+  % return NaN for non-finite argument
+  if floatp x and not fp!-finite x then (x-x)
+   else begin scalar !*sf!*,!*qf!*;integer p;
    % test for 90 deg -> 1.0
       x := !!scalsintand(x,t);
       if !*qf!* then <<x := 1.0; go to ret>>;
@@ -270,7 +289,8 @@ symbolic procedure sind x;
    ret: return if !*sf!* then x else -x end;
 
 symbolic procedure tan x;
-   begin scalar y,inv,!*sf!*,!*qf!*;
+   if floatp x and not fp!-finite x then (x-x)
+    else begin scalar y,inv,!*sf!*,!*qf!*;
       y:=x; x:= !!scalsintan(x,nil);
       if !*qf!* then terrlst(y,'tan);
       if x>!!pii4 then x := !!pii2 - x else inv := t;
@@ -280,7 +300,9 @@ symbolic procedure tan x;
       return if !*sf!* then -x else x end;
 
 symbolic procedure tand x;
-   begin scalar y,inv,!*sf!*,!*qf!*;
+  % return NaN for non-finite argument
+   if floatp x and not fp!-finite x then (x-x)
+    else begin scalar y,inv,!*sf!*,!*qf!*;
       y:=x; x:= !!scalsintand(x,nil);
       if !*qf!* then terrlst(y,'tand);
       if x>45.0 then x := 90.0 - x else inv := t;
@@ -366,6 +388,8 @@ global '(!!ee);
 symbolic procedure exp v;
    begin scalar d,nr,mr,fr,st;integer p,ip;
          mr := fr := 1.0; v := float v;
+	 if fp!-nan v then return v
+          else if fp!-infinite v then return << if fp!-signbit v then 0.0 else v >>;
          if abs v>1 then <<ip := fix v; v := v - ip; fr := !!ee**ip>>;
          if abs v>0.5 then v := v/2 else d := t;
          if v=0.0 then go to ret;
@@ -513,6 +537,7 @@ symbolic procedure fsplit x;
    % think I am now moving to a stance that only IEEE floats will ever be
    % used.
    begin scalar xx, n;
+      if not fp!-finite x then return (x . 0.0);
       if x = 0.0 then return (0.0 . 0.0);
       xx := x; n := 1.0;
       if x < 0.0 then xx := -xx;
@@ -687,7 +712,8 @@ symbolic procedure asecd x;
    if abs x<1 then terrlst(x,'asecd) else 90.0 - asind(1.0/x);
 
 symbolic procedure sinh x;
-   begin scalar s;
+   if floatp x and not fp!-finite x then x
+    else begin scalar s;
       if x<0.0 then x:=-x else s:=t;
       if (x := float x)<0.91 then <<x := !!sinhts x; go to ret>>;
       x := exp(-x); x := (1.0/x - x)/2;

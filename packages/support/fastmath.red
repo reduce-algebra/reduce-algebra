@@ -157,8 +157,10 @@ symbolic procedure exp x;
 
 symbolic procedure log x;
    begin scalar result, ilog2x;
-      if x <= 0.0
+      if fp!-nan x then return x
+       else if x <= 0.0
         then error(99,list("non-positive argument to LOG:",x))
+       else if fp!-infinite x then return x
        else if fixp(x) and (ilog2x:=ilog2(x)) > !!floatbits
         then return !!log2*(ilog2x - !!floatbits)
                  + log(x/2^(ilog2x - !!floatbits));
