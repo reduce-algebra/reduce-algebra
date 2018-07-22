@@ -1,7 +1,8 @@
 
-#if (member 'psl lispsystem!*)
-linelength 5000$
+#if (and (not (member 'tmprint loaded!-packages!*)) (not (getd 'linelength!-orig)))
+%#if (not (member 'tmprint loaded!-packages!*))
 load_package tmprint$
+linelength 5000$
 #endif
 
 on fancy;
