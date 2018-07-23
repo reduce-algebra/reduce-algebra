@@ -91,15 +91,15 @@ symbolic procedure expand!-imrepartpow u;
    % At the moment, we expand to get the required result.
    begin scalar !*exp,cmpxsplitfn;
      !*exp := t;
-     cmpxsplitfn := null idp car u and
-                    get(car car u,'cmpxsplitfn);
+     cmpxsplitfn := null idp !_pvar!_ u and
+                    get(car !_pvar!_ u,'cmpxsplitfn);
      return
        exptsq(if null cmpxsplitfn
-                 then if car u eq 'i then !*k2q 'i
-                       else addsq(mkrepart car u,
+                 then if !_pvar!_ u eq 'i then !*k2q 'i
+                       else addsq(mkrepart !_pvar!_ u,
                                   multsq(simp 'i,
-                                         mkimpart car u))
-               else apply1(cmpxsplitfn,car u),cdr u)
+                                         mkimpart !_pvar!_ u))
+               else apply1(cmpxsplitfn,!_pvar!_ u),pdeg u)
     end;
 
 symbolic procedure mkrepart u;
@@ -226,7 +226,7 @@ symbolic procedure realvaluedlist u;
 
 % A very small number of functions are real-valued for ALL arguments:
 
-flag('(repart impart abs ceiling floor fix round max min),
+flag('(repart impart abs sign ceiling floor fix round max min),
      'alwaysrealvalued);
 
 % Symbolic constants:
@@ -253,10 +253,17 @@ symbolic procedure expt!-realvalued(base,expo);
    % however, this is difficult to check
    fixp expo and realvaluedp base;
 %      or realvaluedp expo and realvaluedp {'log,base};
-%      	 or ((denr r = 1 and evenp numr r)
-%	    where r := simp!* {'quotient,{'times,expo,{'log,base}},'pi});
+%      	 or ((denr r = 1 and fixp numr r)
+%	    where r := simp!* {'quotient,{'impart,{'times,expo,{'log,base}}},'pi});
 
 put('expt,'condrealvalued,'expt!-realvalued);
+
+symbolic procedure log!-realvalued arg;
+   % returns t it (log arg) is realvalued
+   % in general this is true iff arg is realvalued and positive
+   realvaluedp arg and sign!-of arg = 1;
+
+put('log,'condrealvalued,'log!-realvalued);
 
 % Additional such variables and functions can be declared by the user
 % with the REALVALUED command defined above.
