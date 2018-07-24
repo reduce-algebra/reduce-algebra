@@ -1413,13 +1413,20 @@ EXPR PROCEDURE DEFLIST(U, IND);
 	(put (caar u) ind (CADAR u))
 	(cons (caar u) (DEFLIST (cdr u) ind))))
 
-(defalias 'DELETE 'delete
+(defun DELETE (u v)
+  ;; Must be non-destructive, so cannot use Elisp delete function!
+  ;; Doing so causes obscure problems, e.g. in the Bareiss code for
+  ;; computing determinants and in for all ... let.
   "DELETE(U:any, V:list ):list eval, spread -- OK except for multiple deletion!
 Returns V with the first top level occurrence of U removed from it.
 EXPR PROCEDURE DELETE(U, V);
    IF NULL V THEN NIL
       ELSE IF CAR V = U THEN CDR V
-      ELSE CAR V . DELETE(U, CDR V);")
+      ELSE CAR V . DELETE(U, CDR V);"
+  (if v
+	  (if (equal (car v) u)
+		  (cdr v)
+		(cons (car v) (delete u (cdr v))))))
 
 (defun DIGIT (u)
   "DIGIT(U:any):boolean eval, spread

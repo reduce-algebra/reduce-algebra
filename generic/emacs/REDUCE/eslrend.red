@@ -164,6 +164,23 @@ a:      if errorp errorset('(begin1),nil,nil) then go to a;
 flag('(begin),'go);
 
 
+% From "cslred.red":
+% The following functions are NOT in Standard Lisp and should NOT be
+% used anywhere in the REDUCE sources, but the amount of trouble I have
+% had with places where they do creep in has encouraged me to define
+% them here anyway and put up with the (small) waste of space.
+
+symbolic procedure first x; car x;		% used in "factor/ezgcdf.red"
+
+% symbolic procedure second x; cadr x;
+
+% symbolic procedure third x; caddr x;
+
+% symbolic procedure fourth x; cadddr x;
+
+% symbolic procedure rest x; cdr x;
+
+
 Comment Initial setups for REDUCE;
 
 spare!* := 0;   % We need this for bootstrapping. (FJW: Maybe!)

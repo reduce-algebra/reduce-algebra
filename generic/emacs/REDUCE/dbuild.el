@@ -32,11 +32,13 @@ RDS(XXX := OPEN("eslbuild.red",'INPUT));
 RDS(XXX := OPEN("eslrend.red",'INPUT));
 (CLOSE XXX)
 
+;; The following two packages seem to be needed, and in this order:
+
 (LOAD-PACKAGE-SOURCES 'POLY 'POLY)
 
 (LOAD-PACKAGE-SOURCES 'ALG 'ALG)
 
-(LOAD-PACKAGE-SOURCES 'ARITH 'ARITH) ; Needed by roots, specfn*, (psl).
+;; (LOAD-PACKAGE-SOURCES 'ARITH 'ARITH) ; Needed by roots, specfn*, (psl).
 
 ;; (LOAD-PACKAGE-SOURCES 'ENTRY 'SUPPORT)
 
@@ -47,9 +49,3 @@ RDS(XXX := OPEN("eslrend.red",'INPUT));
 (CLOSE (WRS nil))
 
 (INITREDUCE)
-
-;; The following lines don't currently get read!
-
-(setq DATE* (DATE))
-
-(setq VERSION* "Bootstrapping REDUCE")

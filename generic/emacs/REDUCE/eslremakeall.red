@@ -3,19 +3,17 @@
 %%% Author: Francis J. Wright.
 %%% Based on code by Anthony C. Hearn.
 
-
 %% Assume REDUCE has been started or a bootstrapping version has been
 %% built in main memory, e.g. by evaluating (DSKIN "dbuild.el").
 
 %% Then run this file, e.g. by executing
 %% lisp infile "eslremakeall.red";
 
-
 %% (/util/remake) Now build compiled versions of any updated source files.
 
 symbolic;
 
-close wrs open("log/remake.log", 'output);
+wrs open("log/remake.log", 'output);
 
 %% (/util/remake2) Compile key packages:
 
@@ -43,7 +41,7 @@ package!-remake2('entry, 'support);
 % Add folder property to module identifiers for use by package!-remake:
 infile "package.red";
 
-foreach x in '( rlisp alg poly arith mathpr ) do <<
+foreach x in '( rlisp poly alg arith mathpr ) do <<
    close wrs open(concat("log/", string!-downcase x, ".blg"), 'output);
    package!-remake x; load!-package x;
    >>;

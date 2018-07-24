@@ -52,9 +52,12 @@ REDUCE.  Open a directory listing of REDUCE in Emacs (C-x d).
 
 2. Run M-x STANDARD-LISP
 
-3. Evaluate (DSKIN "dbuild.el") via the minibuffer to build a basic
-version of REDUCE in the current Emacs session.  This build step
-should take about 10 seconds.
+3. Evaluate
+
+(DSKIN "dbuild.el")
+
+via the minibuffer to build a basic version of REDUCE in the current
+Emacs session.  This build step should take about 10 seconds.
 
 4. Run
 
@@ -107,9 +110,10 @@ in Emacs Lisp.
 Current status of ESL REDUCE
 ============================
 
-ESL REDUCE currently runs some tests correctly and fails others.  For
-example, it runs all of "alg.tst" except the trig example, where the
-"forall" rules cause a subsequent simplification error, and the matrix
-example, which suffers a catastrophic division error.
+ESL REDUCE now runs all of "alg.tst" about 20 times slower than the
+time shown in "alg.rlg" and with upper-case output.  Apart from the
+output case, the output for the Fourier, Compton and second physics
+examples differs from that shown in "alg.rlg". This may be partly just
+a different term ordering.
 
 There is still a lot more work to do!

@@ -10,10 +10,10 @@ fluid '(!*break
 
 global '(!*argnochk nolist!*);
 
-off raise;
-SYMBOLIC PROCEDURE OLDERFASLP(U,V);
-   file!-newer!-than!-file!-p(V,U);
-ON RAISE;
+symbolic procedure olderfaslp(u,v);
+   % Return t if file u does not exist or is older than file v.
+   % (Return nil if file v does not exist, but this should not happen!)
+   !\file!-newer!-than!-file!-p(v,u);
 
 % Support for packages directory.
 
