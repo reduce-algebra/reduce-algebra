@@ -2222,6 +2222,27 @@ The date in the form \"day-month-year\"
   (format-time-string "%d-%b-%Y"))
 
 
+;;; Debugging support
+;;; =================
+
+;; In (esl)rend.red, the functions tr, trst, untr, untrst are flagged
+;; noform and given the stat property rlis.  cslrend.red defines them
+;; all as macros, much as I do below.
+
+;; These functions are modelled on those provided by PSL and use the
+;; Elisp trace package.  (But unfortunately there doesn't seem to be
+;; any Elisp facility for assignment tracing!)
+
+(defmacro TR (&rest idlist)
+  "Trace the functions in IDLIST."
+  ;; mapc returns its second argument, SEQUENCE.
+  `(mapc #'trace-function-foreground ',idlist))
+
+(defmacro UNTR (&rest idlist)
+  "Untrace the functions in IDLIST."
+  `(progn (mapc #'untrace-function ',idlist) nil))
+
+
 ;;; Fast loading (FASL) support
 ;;; ===========================
 
