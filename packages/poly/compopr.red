@@ -91,7 +91,7 @@ symbolic procedure expand!-imrepartpow u;
    % At the moment, we expand to get the required result.
    begin scalar !*exp,cmpxsplitfn;
      !*exp := t;
-     cmpxsplitfn := null idp !_pvar!_ u and
+     cmpxsplitfn := pairp !_pvar!_ u and idp car !_pvar!_ u and
                     get(car !_pvar!_ u,'cmpxsplitfn);
      return
        exptsq(if null cmpxsplitfn
@@ -103,13 +103,17 @@ symbolic procedure expand!-imrepartpow u;
     end;
 
 symbolic procedure mkrepart u;
-   if realvaluedp u then !*k2q u
-    else if sfp u then repartsq(u ./ 1)
+   if sfp u
+     then if realvaluedp!-sf u then !*k2q u
+            else repartsq(u ./ 1)
+    else if realvaluedp u then !*k2q u
     else mksq(list('repart, u),1);
 
 symbolic procedure mkimpart u;
-   if realvaluedp u then nil ./ 1
-    else if sfp u then impartsq(u ./ 1)
+   if sfp u
+     then if realvaluedp!-sf u then nil ./ 1
+            else impartsq(u ./ 1)
+    else if realvaluedp u then nil ./ 1
     else mksq(list('impart, u),1);
 
 symbolic procedure take!-realpart u;
@@ -218,6 +222,11 @@ symbolic procedure realvaluedlist u;
    % is real-valued.
    realvaluedp car u and (null cdr u or realvaluedlist cdr u);
 
+symbolic procedure realvaluedp!-sf u;
+   if atom u then t      % either nil or a number
+   else if domainp u then flagp(car u,'realvalued)
+   else (realvaluedp!-sf lc u and (if sfp mvar u then realvaluedp!-sf mvar u else realvaluedp mvar u)) and realvaluedp!-sf red u;
+
 % Define the real valued properties
 % ---------------------------------
 
@@ -232,6 +241,10 @@ flag('(repart impart abs sign ceiling floor fix round max min),
 % Symbolic constants:
 
 flag('(pi e infinity),'realvalued);
+
+% Domain elements
+
+flag('(!:rn!: !:rd!: !:mod!:),'realvalued);
 
 % Some functions are real-valued if all their arguments are
 % real-valued, without further constraints:
