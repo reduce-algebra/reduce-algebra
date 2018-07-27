@@ -259,7 +259,7 @@ symbolic procedure compile_regex source;
            and not regex_special_char_p car source
            and not(not null cdr source and regex_special_char_p cadr source)
         then fastfirst := 
-              {'cond, {{'not, {'memq, car source, 'string}}, '(return nil)}}; 
+              {'cond, {{'not, {'memq, mkquote car source, 'string}}, '(return nil)}}; 
       add_exp '(putv !*regex!-groups!* 0 (list indx nil)); 
       while not null source do 
          begin scalar current; 
@@ -344,23 +344,27 @@ symbolic procedure compile_regex source;
               {'lambda, 
                '(string), 
                {'prog, 
-                '(indx len), 
+                '(indx len retval), 
                 '(cond ((stringp string) (setq string (explode2 string)))), 
                 {'setq, '!*regex!-groupings!*, group}, 
                 '(setq indx 0), 
                 '(setq len (length string)), 
-                {'return, 'progn . result}}}
+                {'setq, 'retval, 'prog . nil . result},
+                '(cond ((null retval) (putv !*regex!-groups!* 0 nil))),
+                '(return retval)  
+                  }}
        else result := 
              {'lambda, 
               '(string), 
               {'prog, 
-               '(start len), 
+               '(start len retval), 
                '(cond ((stringp string) (setq string (explode2 string)))), 
                {'setq, '!*regex!-groupings!*, group}, 
                '(setq start 0), 
                '(setq len (length string)), 
                fastfirst, 
-               {'return, 
+               {'setq,
+                'retval,
                 {'prog, 
                  '(marker indx), 
                  '(setq marker start), 
@@ -369,7 +373,10 @@ symbolic procedure compile_regex source;
                  '(setq indx marker), 
                  {'cond, {'prog . ('nil . result), '(return t)}}, 
                  '(setq marker (add1 marker)), 
-                 '(go tag)}}}}; 
+                   '(go tag)}},
+                 '(cond ((null retval) (putv !*regex!-groups!* 0 nil))),
+                 '(return retval)
+                 }}; 
       return result
    end;
 
