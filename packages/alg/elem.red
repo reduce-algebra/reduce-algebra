@@ -84,6 +84,7 @@ symbolic procedure simp!-sign1 u;
        else if car u eq 'quotient then simp!-sign!-quot u
        else if car u eq 'plus then simp!-sign!-plus u
        else if car u eq 'expt then simp!-sign!-expt u
+       else if car u eq 'sqrt then simp!-sign!-sqrt u
        else simp!-sign2 u;
    n:=numr s;
    if not numberp n or n=1 or n=-1 or n=0 then return s;
@@ -144,6 +145,10 @@ symbolic procedure simp!-sign!-expt w;
       else simp!-sign2 w
          ) where sb := simp!-sign1 cadr w
   ) where ex := caddr w;
+
+symbolic procedure simp!-sign!-sqrt w;
+   (if u = (1 ./ 1) then u else simp!-sign2 w)
+      where u := simp!-sign!-expt {'expt,cadr w,'(quotient 1 2)};
 
 fluid '(rd!-sign!*);
 
