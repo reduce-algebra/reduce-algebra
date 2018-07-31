@@ -456,16 +456,18 @@ FEXPR PROCEDURE LIST(U);
 The CAR portion of the dotted-pair U is replaced by V. If dotted-
 pair U is (a . b) then (V . b) is returned. The type mismatch error
 occurs if U is not a dotted-pair."
-  (rplaca u v)
-  u)
+  (setcar u v)
+  ;; Return a new cons cell:
+  (cons v (cdr u)))
 
 (defun RPLACD (u v)
   "RPLACD(U:dotted-pair, V:any):dotted-pair eval, spread
 The CDR portion of the dotted-pair U is replaced by V. If dotted-
 pair U is (a . b) then (a . V) is returned. The type mismatch error
 occurs if U is not a dotted-pair."
-  (rplacd u v)
-  u)
+  (setcdr u v)
+  ;; Return a new cons cell:
+  (cons (car u) v))
 
 
 ;;; Identifiers
@@ -1417,16 +1419,15 @@ EXPR PROCEDURE DEFLIST(U, IND);
   ;; Must be non-destructive, so cannot use Elisp delete function!
   ;; Doing so causes obscure problems, e.g. in the Bareiss code for
   ;; computing determinants and in for all ... let.
-  "DELETE(U:any, V:list ):list eval, spread -- OK except for multiple deletion!
+  "DELETE(U:any, V:list ):list eval, spread
 Returns V with the first top level occurrence of U removed from it.
 EXPR PROCEDURE DELETE(U, V);
    IF NULL V THEN NIL
       ELSE IF CAR V = U THEN CDR V
       ELSE CAR V . DELETE(U, CDR V);"
-  (if v
-	  (if (equal (car v) u)
-		  (cdr v)
-		(cons (car v) (delete u (cdr v))))))
+  (cond ((null v) nil)
+		((equal (car v) u) (cdr v))
+		(t (cons (car v) (DELETE u (cdr v))))))
 
 (defun DIGIT (u)
   "DIGIT(U:any):boolean eval, spread
@@ -2242,6 +2243,12 @@ The date in the form \"day-month-year\"
   "Untrace the functions in IDLIST."
   `(progn (mapc #'untrace-function ',idlist) nil))
 
+
+(defalias 'PROP 'symbol-plist
+  "Return an identifier's property list as in PSL.")
+
+(defalias 'PLIST 'symbol-plist
+  "Return an identifier's property list as in CSL.")
 
 ;;; Fast loading (FASL) support
 ;;; ===========================
