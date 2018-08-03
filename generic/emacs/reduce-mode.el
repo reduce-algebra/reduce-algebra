@@ -558,10 +558,8 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
     ["Make Proc/Op Menu" (reduce-imenu-add-to-menubar t) :active (not reduce-imenu-done)
      :help "Show an imenu of procedures and operators"]
     "--"
-    ["Find Tag..." find-tag :active t
+    ["Find Tag..." xref-find-definitions :active t
      :help "Find a procedure definition using a tag file"]
-    ["Find Next Tag" (find-tag nil t) :active t
-     :help "Find the next procedure definition (using a tag file)"]
     ["New TAGS Table..." visit-tags-table :active t
      :help "Select a new tag file"]
     "--"
@@ -2489,6 +2487,14 @@ By default DIR is the parent of the current directory."
 ;  "etags --lang=none '--regex=/[^%]*procedure[ \t]+\([^ \t()]+\)/\1/' $dir.red"
 ;  )
 
+(defcustom reduce-etags-directory invocation-directory
+  "Directory containing the etags program, or nil if it is in path.
+If non-nil the string must end with /."
+  :package-version '(reduce-mode . "1.54")
+  :type '(choice (directory :tag "Etags program directory")
+				 (const :tag "Etags is in exec path" nil))
+  :group 'reduce-interface)
+
 (defun reduce-tagify (dir files)
   "Generate a REDUCE TAGS file in directory DIR as cwd for specified FILES.
 FILES can be a UNIX shell regexp."
@@ -2498,12 +2504,13 @@ FILES can be a UNIX shell regexp."
   (setq dir (file-name-as-directory (expand-file-name dir)))
   (message "Tagging files `%s%s' ..." dir files)
   (let ((shell-file-name "sh")	       ; necessary for MS Windows etc.
-	(default-directory dir))
+		(default-directory dir))
     (set-process-sentinel
      (start-process-shell-command ; creates an asynchronous shell process
       "*rtags*"			  ; NAME for process
       "*rtags-log*"		  ; BUFFER for stdout
-      (concat		    ; COMMAND: program in `exec-path' and args
+      (concat			  ; COMMAND: program and args
+	   reduce-etags-directory
        "etags --lang=none '--regex=/[^%\n]*procedure[ \t]+\\([^ \t()]+\\)/\\1/' "
        files))
      'reduce-tagify-sentinel)))
