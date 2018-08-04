@@ -347,6 +347,8 @@ unless preceded by ' or (, for correct syntax highlighing of strings.")
 ;;; Automatically pre-define reduce mode to autoload if available
 ;;; when building Emacs (unlikely ever to be done!):
 
+(declare-function reduce-show-delim-mode "reduce-delim" ())
+
 ;;;###autoload
 (defun reduce-mode ()
   "Major mode for editing REDUCE source code -- part of REDUCE IDE.
@@ -421,7 +423,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
   ;; Optionally turn on REDUCE minor modes:
   (when reduce-show-delim-mode-on
 	(require 'reduce-delim)
-	(funcall 'reduce-show-delim-mode))
+	(reduce-show-delim-mode))
   (if reduce-auto-indent-mode (reduce-auto-indent-mode t))
   ;; For reduce-show-proc-mode:
   (set (make-local-variable 'which-func-mode) nil)
@@ -564,9 +566,9 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
      :help "Select a new tag file"]
     "--"
     ["Tag Directory..." reduce-tagify-dir :active t
-     :help "Tag all REDUCE files in this directory"]
-    ["Tag Subdirs..." reduce-tagify-subdirs :active t
-     :help "Tag all REDUCE files in sub-directories of `..'"]
+     :help "Tag REDUCE files in this directory"]
+    ["Tag Dir & Subdirs..." reduce-tagify-dir-recursively :active t
+     :help "Tag all REDUCE files under this directory"]
     )
    ;;   "-- TEMPLATES --" ; not good in ntemacs
    "--"
@@ -2455,38 +2457,6 @@ in mode line after `reduce-show-proc-delay' seconds of Emacs idle time."
 ;;;; Support for tagging procedure definitions
 ;;;; *****************************************
 
-(defun reduce-tagify-dir (dir)
-  "Generate a REDUCE TAGS file for all `.red' files in directory DIR.
-By default DIR is the current directory."
-  (interactive
-   (list (read-directory-name
-	  "Tag files in dir: "		; PROMPT
-	  nil				; DIR (default cwd)
-	  nil				; DEFAULT-DIRNAME
-	  t				; MUSTMATCH
-	  )))
-  (reduce-tagify dir "*.red"))
-
-(defun reduce-tagify-subdirs (dir)
-  "Generate a REDUCE TAGS file in directory DIR for all its subdirectories.
-By default DIR is the parent of the current directory."
-  (interactive
-   (list (read-directory-name
-	  "Tag subdirs of dir: "	; PROMPT
-	  (expand-file-name "..")	; DIR
-	  nil				; DEFAULT-DIRNAME
-	  t				; MUSTMATCH
-	  )))
-  (reduce-tagify dir "*/*.red"))
-
-; (start-process			; creates an asynchronous process
-;  "*rtags*"				; NAME for process
-;  "*rtags-out*"			; BUFFER-OR-NAME for stdout
-;  "sh"					; PROGRAM in `exec-path' to run
-;  "-c"					; ARGS ...
-;  "etags --lang=none '--regex=/[^%]*procedure[ \t]+\([^ \t()]+\)/\1/' $dir.red"
-;  )
-
 (defcustom reduce-etags-directory invocation-directory
   "Directory containing the etags program, or nil if it is in path.
 If non-nil the string must end with /."
@@ -2495,30 +2465,83 @@ If non-nil the string must end with /."
 				 (const :tag "Etags is in exec path" nil))
   :group 'reduce-interface)
 
-(defun reduce-tagify (dir files)
-  "Generate a REDUCE TAGS file in directory DIR as cwd for specified FILES.
-FILES can be a UNIX shell regexp."
-  ;; Assumes a UNIX shell called `sh' in `exec-path'!
-  ;; (Could avoid use of `sh' by constructing file list in lisp.)
-  (unless (file-directory-p dir) (error "Not a directory: %s" dir))
-  (setq dir (file-name-as-directory (expand-file-name dir)))
-  (message "Tagging files `%s%s' ..." dir files)
-  (let ((shell-file-name "sh")	       ; necessary for MS Windows etc.
-		(default-directory dir))
-    (set-process-sentinel
-     (start-process-shell-command ; creates an asynchronous shell process
-      "*rtags*"			  ; NAME for process
-      "*rtags-log*"		  ; BUFFER for stdout
-      (concat			  ; COMMAND: program and args
-	   reduce-etags-directory
-       "etags --lang=none '--regex=/[^%\n]*procedure[ \t]+\\([^ \t()]+\\)/\\1/' "
-       files))
-     'reduce-tagify-sentinel)))
+(defun reduce-tagify-dir (dir)
+  "Generate a REDUCE TAGS file for `*.red' files in directory DIR.
+TAGS goes in DIR, which by default is the current directory."
+  (interactive
+   (list (read-directory-name
+		  "Tag files in dir: "			; PROMPT
+		  nil							; DIR (default cwd)
+		  nil							; DEFAULT-DIRNAME
+		  t)))							; MUSTMATCH
+  (setq dir (directory-file-name (expand-file-name dir)))
+  (reduce--tagify
+   dir (directory-files dir nil "\\.red\\'")
+   (message "Tagging files `%s/*.red'..." dir)))
 
-(defun reduce-tagify-sentinel (process event)
-  "Sentinel to show (primarily) when the tagification is finished."
-  (message "REDUCE tagify process %s has %s."
-	   process (substring event 0 -1))) ; remove trailing \n
+(defun reduce--tagify (dir files msg)
+  "Generate a REDUCE TAGS file in directory DIR for specified FILES.
+FILES must be a list of filenames, which can be relative to DIR.
+MSG is the message displayed when the tagging process started."
+  (let* ((default-directory dir)
+		 (value
+		  (apply
+		   #'call-process			   ; creates a synchronous process
+		   (concat reduce-etags-directory "etags") ; program
+		   nil									   ; infile
+		   "*rtags-log*"						   ; destination
+		   nil									   ; display
+		   "--lang=none"						   ; args ...
+		   "--regex=/[^%]*procedure[ \\t]+\\([^ \\t\(;$]+\\)/\\1/i"
+		   files)))						; LIST of filenames
+	(if (eq value 0)
+		(message "%sdone" msg)
+	  (message "etags failed with status: %s" value))))
+
+(defun reduce-tagify-dir-recursively (dir)
+  "Generate a REDUCE TAGS file for all `*.red' files under directory DIR.
+TAGS goes in DIR, which by default is the current directory."
+  (interactive
+   (list (read-directory-name
+		  "Tag all files under dir: "	; PROMPT
+		  nil							; DIR (default cwd)
+		  nil							; DEFAULT-DIRNAME
+		  t)))							; MUSTMATCH
+  (setq dir (directory-file-name (expand-file-name dir)))
+  (let ((reduce--tagify-root dir))
+	;; reduce--tagify-root required by `reduce--directory-files-recursively'.
+	(reduce--tagify
+	 dir (reduce--directory-files-recursively dir)
+	 (message "Tagging all files `%s/...*.red'..." dir))))
+
+(defvar reduce--tagify-root)
+
+(defun reduce--directory-files-recursively (dir)
+  "Return a list of all `*.red' files under DIR.
+This function works recursively.  Files are returned in \"depth first\"
+order, and files from each directory are sorted in alphabetical order.
+Each file name appears in the returned list relative to directory
+`reduce--tagify-root', assumed to be bound locally in the caller."
+  ;; Modelled on `directory-files-recursively'.
+  (let (result
+		files
+		;; When DIR is "/", remote file names like "/method:" could
+		;; also be offered.  We shall suppress them.
+		(tramp-mode (and tramp-mode (file-remote-p (expand-file-name dir)))))
+    (dolist (file (sort (file-name-all-completions "" dir) 'string<))
+      (unless (member file '("./" "../"))
+		(if (directory-name-p file)
+			(let* ((leaf (substring file 0 -1))
+				   (full-file (expand-file-name leaf dir)))
+			  (setq result
+					(nconc result (reduce--directory-files-recursively
+								   full-file))))
+		  (when (string-match "\\.red\\'" file)
+			(push (file-relative-name
+				   (expand-file-name file dir)
+				   reduce--tagify-root)
+				  files)))))
+    (nconc result (nreverse files))))
 
 
 ;;;; **********************************************************************
