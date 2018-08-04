@@ -216,7 +216,9 @@
 (de CodeBlockTrailer nil nil)
     
 
-(de DataAlignFullWord nil nil)
+(de DataAlignFullWord nil
+    (DataPrintf " .align 4%n")
+    )
   
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%`%%
@@ -233,10 +235,14 @@
 	     (PrintExpression (Indx S 0)) 
 	     (for (from i 1 n 1)
 		  (do (PrintByte!, (Indx S i))))
-	     (PrintByte!, 0) 
+	     (PrintByte!, 0)
+	     % at this point (n+2) bytes (including final 0 byte) have been printed
+	     % fill with 0 bytes to a multiple of 4 if necessary
 	     (cond
-	      ((equal (Remainder n 2) 1)
-	       (PrintByte!, 0)))
+	      ((greaterp (Remainder (plus n 2) 4) 0)
+	       (for (from i (Remainder (plus n 2) 4) 3)
+		    (do (PrintByte!, 0)))	% fill with 0 bytes to multiple of 4
+	       ))
 	     (Terpri)
 	     nil))
      (t 
