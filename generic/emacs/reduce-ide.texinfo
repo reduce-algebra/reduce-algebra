@@ -3,7 +3,7 @@
 @settitle GNU Emacs REDUCE Integrated Development Environment
 @c Version: $Id$
 @c Manual last updated:
-@set UPDATED Time-stamp: <2018-03-26 16:59:43 fjw>
+@set UPDATED Time-stamp: <2018-08-04 17:42:09 fjw>
 @c Software version:
 @set VERSION 1.54
 @afourpaper
@@ -94,7 +94,7 @@ Manual last updated @value{UPDATED}
 * Structures::                  Structure templates
 * Completion::                  Completion and expansion of REDUCE keywords
 * Font-Lock::                   Font selection for syntactic highlighting
-* Access::                      Access to procedures and operators
+* Access::                      Access to procedure and operator definitions
 * Miscellaneous::               Miscellaneous minor features and bugs
 * Customization::               User options that control REDUCE IDE
 * Run::                         Running REDUCE in a window
@@ -1116,11 +1116,11 @@ the core REDUCE system files).
 @c ===================================================================
 
 @node Access
-@chapter Access to procedures and operators
-@cindex Access to procedures and operators
+@chapter Access to procedure and operator definitions
+@cindex Access to procedure and operator definitions
 @cindex Information, procedures and operators
 @cindex Procedure access
-@cindex Operators access
+@cindex Operator access
 
 REDUCE mode can provide information about the procedure that point is
 currently in, and easy access via the @code{Imenu} facility to all the
@@ -1193,35 +1193,45 @@ expression used to build menu entries can be customized
 @cindex Tag files
 
 A REDUCE mode submenu provides rapid access to some of the main
-facilities for finding a definition via a tag file.  Two commands (and
-submenu options) are also provided to facilitate tagging all the files
-in one directory or all the files in all subdirectories (one level deep)
-of a directory.  The former is useful for tagging all the files
-associated with a single project or package; the latter for tagging all
-REDUCE packages in a single tag file.
+facilities for finding a procedure definition via a tag file.  Two
+commands (and submenu options) facilitate tagging the REDUCE files in
+one directory or in a directory and all its sub-directories.  The
+former is useful for tagging all the files associated with a single
+project or package; the latter for tagging all REDUCE packages in a
+single tag file.
 
-Beware: Both the tagging commands currently require a UNIX-compatible
-command shell called @code{sh} in a directory in Emacs'
-@code{exec-path}.  A standard Microsoft Windows (or MS-DOS) command
-shell @emph{will not suffice} for this application, but there are plenty
-of suitable free shells that will work under Windows.  I recommend the
-port of @code{ash} included in the
-@uref{http://sourceware.cygnus.com/cygwin/, Cygwin} package, which
-includes a port of a great deal of excellent GNU (and other) free
-software to Microsoft Windows.  (Note that, whilst @code{bash} will work
-perfectly well, it is overkill for this application.)
+Once a TAGS file has been generated, the standard Emacs @code{xref}
+interface is available to find identifier references, in particular
+the command @command{xref-find-definitions}, which is also available
+via the REDUCE mode submenu.  @xref{Xref,, Find Identifier References,
+emacs, GNU Emacs Manual}.
+
+The tagging commands use the standard Emacs @code{etags} program,
+which should be available in the Emacs @code{bin} directory.  REDUCE
+mode uses the value of the option @option{reduce-etags-directory},
+which should be appropriate by default, but if not can be customized.
+(It is not required that the Emacs @code{bin} directory be in your
+execution path, but if it is you can optionally set
+@option{reduce-etags-directory} to nil.)
 
 @table @kbd
+@item M-.
+@item M-x xref-find-definitions
+Show the definitions of the identifier at point.  With a prefix
+argument, or if there’s no identifier at point, prompt for the
+identifier.
+
 @item M-x reduce-tagify-dir
 @findex reduce-tagify-dir
-Generate a REDUCE TAGS file for (all @file{.red} files in) a directory,
-by default the current directory.
+Generate a REDUCE TAGS file for (all @file{.red} files in) the
+specified directory, by default the current directory.  The TAGS file
+goes in the specified directory.
 
-@item M-x reduce-tagify-subdirs
-@findex reduce-tagify-subdirs
-Generate a REDUCE TAGS file for (all @code{.red} files in) all
-subdirectories of a directory, by default the parent of the current
-directory.
+@item M-x reduce-tagify-dir-recursively
+@findex reduce-tagify-dir-recursively
+Generate a REDUCE TAGS file for (all @code{.red} files in) the
+specified directory, by default the current directory, and all its
+subdirectories.  The single TAGS file goes in the specified directory.
 @end table
 
 @c ===================================================================
