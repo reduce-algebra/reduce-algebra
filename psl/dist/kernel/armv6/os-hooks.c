@@ -45,11 +45,13 @@ char *abs_execfilepath;
  
 void clear_iob(), clear_dtabsize();
 
-void psl_main(int argc, char *argv[]);
+void psl_main(int argc, char *argv[], int *symvalptr);
 
 char ** copy_argv();
 
 int Debug = 0;
+
+extern int symval;
 
 main(argc,argv)
 int argc;
@@ -69,7 +71,7 @@ char *argv[];
   val=setjmp(mainenv);        /* set non-local return point for exit    */
  
   if (val == 0)
-     _psl_main(argc,copy_argv(argc,argv));
+    _psl_main(argc,copy_argv(argc,argv),&symval);
  
 exit(0);
  

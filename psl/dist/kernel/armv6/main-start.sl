@@ -262,24 +262,21 @@
 
 (lap '((*entry !_!p!s!l!_!m!a!i!n expr 0)
 
-       (*move (displacement (reg st) 4) (fluid argc))
-       (*move (displacement (reg st) 8) (fluid argv))
-
        (*alloc 3) % changes Stack pointer
 
-       (*move (fluid argc) (frame 1))
-       (*move (fluid argv) (frame 2))
-       (*move (reg 2) (frame 3)) % have to save %ebx
+       (*move (reg 1) (frame 1))	% argc
+       (*move (reg 2) (frame 2))	% argv
+       (*move (reg fp) (frame 3)) % have to save frame pointer
+       (*move (reg 3) (reg symval))	% pointer to symval array
 
-
-  %    (*move   (fluid stack) (reg st))
-  %    (*move   (reg st)      (fluid stackupperbound))
-  %    (*wplus2 (reg st)      (wconst (times (sub1 stacksize) 
-  % 				     addressingunitsperitem)))
+       (*MOVE ($global symfnc) (reg symfnc))
+ %      (*MOVE ($global symval) (reg symval))
+       (*move 256 (reg NIL))
+       (*mkitem (reg NIL) id-tag)                 % initialize NIL reg
 
        %  Do OS specific initializations (uses argc and argv)
-       (*move (fluid argc) (reg 1))
-       (*move (fluid argv) (reg 2))
+%       (*move (reg 1) (fluid argc))
+%       (*move (reg 2) (fluid argv))
        (*move infbitlength (fluid _infbitlength_))
        (*link os_startup_hook expr 2)
 
@@ -297,10 +294,6 @@
 
        (*MOVE ($fluid heaplast) (reg R8))
        (*MOVE ($fluid heaptrapbound) (reg R9))
-       (*MOVE ($global symfnc) (reg symfnc))
-       (*MOVE ($global symval) (reg symval))
-       (*move 256 (reg NIL))
-       (*mkitem (reg NIL) id-tag)                 % initialize NIL reg
 
        (*call pre-main)                                 % call PSL
 
