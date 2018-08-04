@@ -499,8 +499,8 @@ nil)
 
 % LDR(B)T / STR(B)T -- only priviledged mode
 
-(instr LDM (LDM *cond*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000000 1)
-(instr STM (STM *cond*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000000 0)
+(instr LDM (LDM *cond*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000100 1)
+(instr STM (STM *cond*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000100 0)
 (instr LDM (LDM *cond* IA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000100 1)
 (instr STM (STM *cond* IA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000100 0)
 (instr LDM (LDM *cond* IB)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001100 1)
