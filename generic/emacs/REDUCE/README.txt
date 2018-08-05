@@ -110,10 +110,14 @@ in Emacs Lisp.
 Current status of ESL REDUCE
 ============================
 
-ESL REDUCE now runs all of "alg.tst" about 20 times slower than the
-time shown in "alg.rlg" and with upper-case output.  Apart from the
-output case, the output for the Fourier, Compton and second physics
-examples differs from that shown in "alg.rlg". This may be partly just
-a different term ordering.
+ESL REDUCE now runs all of "alg.tst" correctly but about 20 times
+slower than the time shown in "alg.rlg" and with upper-case output.
 
-There is still a lot more work to do!
+Try other test files.
+
+The two test files in the poly directory fail on some examples.  My
+guess is that this is because Elisp integers have limited size.
+
+
+Another issue appears to be that errors are not automatically
+continued when input is from a file.

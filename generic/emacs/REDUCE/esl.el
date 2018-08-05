@@ -1069,11 +1069,15 @@ dependent format."
 	(condition-case err					; error description variable
 		(list (eval u))					; protected form
 	  ((user-error debug)				; Standard LISP error
-	   (if msgp (let ((msg (cddr err)))
-				  (message "***** %s"
-						   (if (listp msg)
-							   (mapconcat 'identity msg " ")
-							 msg))))
+	   (if msgp
+		   (let ((msg (cddr err)))
+			 (message "***** %s"
+					  (if (listp msg)
+						  ;; (mapconcat 'identity msg " ")
+						  ;; msg may contain objects other than
+						  ;; strings, but this formatting may not be optimal:
+						  (mapconcat #'(lambda (x) (prin1-to-string x t)) msg " ")
+						msg))))
 	   (cadr err))
 	  ((error debug)					; Emacs Lisp error
 	   (let ((msg (error-message-string err)))
