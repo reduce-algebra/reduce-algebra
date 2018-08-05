@@ -240,7 +240,8 @@
 (de operandtype (op)
     (cond ((eqcar op 'QUOTE) (list 'EQUAL op))
 	  ((eqcar op 'UNQUOTE) op)
-	  ((eq op 'reg)'(REGP)) 
+	  ((eq op 'reg)'(REGP))
+	  ((eq op 'evenreg)'(evenREGP)) 
 	  ((eq op 'streg)'(STREGP))
 	  ((eq op 'xmmreg)'(xmmregp))
 	  ((eq op 'EAX) '(EAXP))
@@ -404,6 +405,11 @@ nil)
 (instr MVN (MVN *cond* *set*)  (reg reg-shifter)         OP-regd-shifter *condbits* 2#0001111 *setbit*)
 (instr MVN (MVN *cond* *set*)  (reg imm8-rotated)        OP-regd-imm8    *condbits* 2#0011111 *setbit*)
 
+(commentoutcode
+(instr SDIV (SDIV *cond*)  (reg reg reg)             OP-mul3      *condbits* 2#0111000 1 2#0001 2#1111)
+(instr UDIV (UDIV *cond*)  (reg reg reg)         OP-mul3      *condbits* 2#0111001 1 2#1001 2#1111)
+)
+
 (instr MUL (MUL *cond* *set*)  (reg reg reg)             OP-mul3      *condbits* 2#0000000 *setbit* 2#1001 2#0000)
 (instr MLA (MLA *cond* *set*)  (reg reg reg reg)         OP-mul4      *condbits* 2#0000001 *setbit* 2#1001)
 (instr UMULL (UMULL *cond* *set*)(reg reg reg reg)         OP-mul4      *condbits* 2#0000100 *setbit* 2#1001)
@@ -482,22 +488,34 @@ nil)
 % LDR Rd,[Rn,+/-#imm12]
 (instr LDR (LDR *cond*) (reg reg-offset12)   OP-ld-st *condbits* 2#0100000 1)
 (instr STR (STR *cond*) (reg reg-offset12)   OP-ld-st *condbits* 2#0100000 0)
-
-(instr LDRB (LDR *cond* B) (reg reg-offset12)  OP-ld-st *condbits* 2#0100010 1)
-(instr STRB (STR *cond* B) (reg reg-offset12)  OP-ld-st *condbits* 2#0100010 0)
-(instr LDRH (LDR *cond* H) (reg reg-offset8)  OP-ld-st-misc *condbits* 2#0000000 1 2#1011)
-(instr STRH (STR *cond* H) (reg reg-offset8)  OP-ld-st-misc *condbits* 2#0000000 0 2#1011)
-
-(instr LDRSB (LDR *cond* SB) (reg reg-offset8)  OP-ld-st-misc *condbits* 2#0000010 1 2#1101)
-(instr LDRSH (LDR *cond* SH) (reg reg-offset8)  OP-ld-st-misc *condbits* 2#0000010 1 2#1111)
-
 % LDR Rd,[Rn,+/-Rm]
 % LDR Rd,[Rn,+/-Rm, LSL #nnn]
 (instr LDR (LDR *cond*) (reg pm-reg-shifter) OP-ld-st *condbits* 2#0110000 1)
 (instr STR (STR *cond*) (reg pm-reg-shifter) OP-ld-st *condbits* 2#0110000 0)
 
+(instr LDRB (LDR *cond* B) (reg reg-offset12)  OP-ld-st *condbits* 2#0100010 1)
+(instr STRB (STR *cond* B) (reg reg-offset12)  OP-ld-st *condbits* 2#0100010 0)
+(instr LDRB (LDR *cond* B) (reg pm-reg-shifter)  OP-ld-st *condbits* 2#0110010 1)
+(instr STRB (STR *cond* B) (reg pm-reg-shifter)  OP-ld-st *condbits* 2#0110010 0)
 
-% LDR(B)T / STR(B)T -- only priviledged mode
+(instr LDRH (LDR *cond* H) (reg reg-offset8)  OP-ld-st-misc *condbits* 2#0000010 1 2#1011)
+(instr STRH (STR *cond* H) (reg reg-offset8)  OP-ld-st-misc *condbits* 2#0000010 0 2#1011)
+(instr LDRH (LDR *cond* H) (reg pm-reg-shifter)  OP-ld-st-misc *condbits* 2#0000000 1 2#1011)
+(instr STRH (STR *cond* H) (reg pm-reg-shifter)  OP-ld-st-misc *condbits* 2#0000000 0 2#1011)
+
+(instr LDRSB (LDR *cond* SB) (reg reg-offset8)  OP-ld-st-misc *condbits* 2#0000010 1 2#1101)
+(instr LDRSB (LDR *cond* SB) (reg pm-reg-shifter)  OP-ld-st-misc *condbits* 2#0000000 1 2#1101)
+(instr LDRSH (LDR *cond* SH) (reg reg-offset8)  OP-ld-st-misc *condbits* 2#0000010 1 2#1111)
+(instr LDRSH (LDR *cond* SH) (reg pm-reg-shifter)  OP-ld-st-misc *condbits* 2#0000000 1 2#1111)
+
+
+% omit LDR(B)T / STR(B)T -- only priviledged mode
+
+(instr LDRD (LDR *cond* D)   (evenreg reg-offset8)  OP-ld-st-misc *condbits* 2#0000010 0 2#1101)
+(instr STRD (STR *cond* D)   (evenreg reg-offset8)  OP-ld-st-misc *condbits* 2#0000010 0 2#1111)
+(instr LDRD (LDR *cond* D)   (evenreg pm-reg-shifter)  OP-ld-st-misc *condbits* 2#0000000 0 2#1101)
+(instr STRD (STR *cond* D)   (evenreg pm-reg-shifter)  OP-ld-st-misc *condbits* 2#0000000 0 2#1111)
+
 
 (instr LDM (LDM *cond*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000100 1)
 (instr STM (STM *cond*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000100 0)
