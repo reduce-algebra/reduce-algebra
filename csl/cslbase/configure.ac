@@ -838,7 +838,10 @@ AC_COMPUTE_INT(maxalign, alignof(std::max_align_t), [#include <cstddef>],
                maxalign="0")
 if test "$maxalign" = "0"
 then
-  AC_COMPUTE_INT(maxalign, alignof(long double), [#include <cstddef>],
+# Wonderfully on (eg) Ubuntu 14.04.5 I find alignof(double)==8 but
+# but alignof(long double)==4 even though long double is a wider type, so
+# in this fall-back I will check double not long-double!
+  AC_COMPUTE_INT(maxalign, alignof(double), [#include <cstddef>],
     AC_MSG_ERROR([Unable to get alignment of std::max_align_t]))
 fi
 AC_MSG_NOTICE([maxalign = $maxalign])
