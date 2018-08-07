@@ -828,6 +828,9 @@ else
   AC_DEFINE([NORETURN], [[/* noreturn */]], [C++-11 attributes available?])
 fi
 
+AC_CHECK_TYPES([std::atomic_flag], [], [],
+   [#include <atomic>])
+
 # Using gcc 4.8.x even in C++11 mode std::max_align_t is not available, so
 # for the benefit of people using a compiler that old I will then look
 # for the aligment of "long double".

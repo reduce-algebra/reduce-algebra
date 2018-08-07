@@ -678,7 +678,19 @@ uint64_t heap_small_bitmaps_2[SMALL_BITMAP_SIZE+1];
 uint64_t *heap_small_bitmaps_1_ptr = &heap_small_bitmaps_1[SMALL_BITMAP_SIZE];
 uint64_t *heap_small_bitmaps_2_ptr = &heap_small_bitmaps_2[SMALL_BITMAP_SIZE];
 
+
+#ifndef HAVE_STD__ATOMIC_FLAG
+// If I do not have a C++ compiler that supports C++-11 including
+// std::atomic_flag I will have trouble with anything that could require
+// cross-thread synchronization here. In such cases I will just assume that
+// all will be well!
+
+#define NO_ATOMIC_SUPPORT 1
+#endif
+
+#ifndef NO_ATOMIC_SUPPORT
 std::atomic_flag spin_lock = ATOMIC_FLAG_INIT;
+#endif
 
 void get_page_size()
 {
@@ -734,9 +746,13 @@ bool clear_bitmap(size_t h)
 static inline void atomic_set_bit(uint64_t *base, size_t offset)
 {   uint64_t *addr = &base[offset/(8*sizeof(uint64_t))];
     uint64_t bit = ((uint64_t)1) << (offset%(8*sizeof(uint64_t)));
+#ifndef NO_ATOMIC_SUPPORT
     while (spin_lock.test_and_set(std::memory_order_acquire)) {}
+#endif
     *addr |= bit;
+#ifndef NO_ATOMIC_SUPPORT
     spin_lock.clear();
+#endif
 }
 
 static inline void non_atomic_set_bit(uint64_t *base, size_t offset)
@@ -845,9 +861,13 @@ static void low_level_signal_handler(int signo)
 // Well all there is in the critical region is access to the spinlock
 // itself and the mprotect call.
             addr = (void *)((uintptr_t)addr & -(uintptr_t)page_size);
+#ifndef NO_ATOMIC_SUPPORT
             while (spin_lock.test_and_set(std::memory_order_acquire)) {}
+#endif
             int rc = mprotect(addr, page_size, PROT_READ | PROT_WRITE);
+#ifndef NO_ATOMIC_SUPPORT
             spin_lock.clear();
+#endif
             if (rc == -1)
             {   errorset_msg = "Unable to restore R/W status of memory page";
                 global_longjmp();
@@ -1110,9 +1130,8 @@ static inline LispObject get_2_words()
     return fringe;
 }
 
-static uintptr_t small_padders = 0, large_padders = 0;
-static uintptr_t *small_padders_tail = &small_padders,
-                 *large_padders_tail = &large_padders;
+static uintptr_t padders = 0;
+static uintptr_t *padders_tail = &padders;
 
 static void get_n_bytes_past_pin()
 {
@@ -1125,16 +1144,9 @@ static void get_n_bytes_past_pin()
 // built in historical order. I will do this even during ordinary allocation
 // because the overhead is not huge, but it is required when I am
         if ((vheaplimit - vfringe) != CELL)
-        {    if ((vheaplimit - vfringe) < symhdr_length)
-             {   *small_padders_tail = vfringe;
-                 small_padders_tail = &((uintptr_t *)vfringe)[1];
-                 *small_padders_tail = 0;
-             }
-             else
-             {   *large_padders_tail = vfringe;
-                 large_padders_tail = &((uintptr_t *)vfringe)[1];
-                 *large_padders_tail = 0;
-             }
+        {    *padders_tail = vfringe;
+             padders_tail = &((uintptr_t *)vfringe)[1];
+             *padders_tail = 0;
         }
         clear_header_bits(vfringe, vheaplimit - vfringe, active_page);
     }
@@ -1768,45 +1780,15 @@ LispObject borrow_vector(int tag, int type, size_t n)
 // pinned items. As a result the allocator will sometimes insert a padder
 // vector so that memory can be scanned linearly in a neat way.
 // I will chain those padder vectors together keeping them in sequential
-// order. When I need to allocate I will use a variant on first-fit to
-// try allocating within one of them. If I find space within one I will
-// use the meory at its low address and adjust thiungs so that the padder
-// moved upwards. There will be two circumstanmces when I remove a padder
-// block from the chain of spare space: one is when allocation from within
-// it reduces its size to just 1 word or fills it up completely. The other
-// is when the linear scan part of the GC reaches it. First fit can have a
-// nasty cost associated with scanning over many initial small chunks until
-// a large enough one is found. I will also want to fill up early chunks
-// so that they are well occupied by the time linear scan reaches them.
-// So my current and possibly over-complicated scheme would be to have
-// separate chains for chunks of size 2-6 and 7+ cons cells. When allocating
-// I do first fit on each of the chains, but limiting myself to a fixed
-// maximum number of cases scanned. If I do not find space to re-use that
-// way I will allocate in the normal sequential manner at the end of the
-// growing new heap. The change-over point at 7+ is so that allocating a
-// new symbol header only scans padder blocks that will have enough space, and
-// is done on he hypothesis that this might be a fairly common case. The
-// amounts of search involved are then:
-//  1-quad:    No search, the first 2-6 free block will always have space!
-//  2-6 quads: Check up to K blocks in the 2-6 freechain. Those might in fact
-//             all be of size just 2.
-//             But if allocation there fails then the first block on the
-//             7+ chain is a guaranteed success.
-//  7 quads:   The first 7+ block will be OK.
-//  8+ quads:  Search the first K items in the 7+ chain.
-// There is an issue of judgment as to a reasonable value for K, but I am
-// going to start bt expecting that that will be of secondary importance and
-// the balance between performance and fitting blocks in will not depend
-// critically on it. But a fairly small value such as 4 is where I might
-// start.
-// Obviously when an allocation is taken from a block that block can need to
-// be moved between the chains. There is a problem here in that when a
-// large block is partly used up leaving another large one it can remain in
-// its chain respecting age order. But when it is changed to become a
-// small block all information about age will tend to be lost. So I will
-// makebe keep a special list of unordered small chunks created as left-overs
-// from using parts of large ones and allocate from that first. I hope that
-// list will end up short all the time.
+// order. When I need to allocate I will use first-fit to try allocating
+// within one of them. If I find space within one I will use the meory at
+// its low address and adjust things so that the padder shrinks upwards.
+// There will be two circumstanmces when I remove a padder block from the
+// chain of spare space: one is when allocation from within it reduces its
+// size to just 1 word or fills it up completely. The other is when the
+// linear scan part of the GC reaches it.
+// I am at present going to implement a simple first-fit scheme, and hope
+// that the searching that it involves is not over-costly.
 
 // Here are the allocation functions implementing the above.
 
@@ -1820,6 +1802,11 @@ static inline LispObject packed_get_2_words()
 
 static inline LispObject packed_get_n_bytes(size_t n)
 {
+// If there are ANY padders left then I can allocate within the first
+// such, because I only chain up padders that have size at least 2*CELL.
+    if (padders != 0)
+    {
+    }
     n = doubleword_align_up(n);
     if (vheaptop == heapstart) vheaplimit = fringe;
     while (vfringe + n > vheaplimit) get_n_bytes_past_pin();
@@ -2133,7 +2120,9 @@ void init_heap_segments(double store_size)
     heap_segment_count = 0;
     heap_small_bitmaps_1_ptr = &heap_small_bitmaps_1[SMALL_BITMAP_SIZE];
     heap_small_bitmaps_2_ptr = &heap_small_bitmaps_2[SMALL_BITMAP_SIZE];
+#ifndef NO_ATOMIC_SUPPORT
     spin_lock.clear(); //"spin_lock=ATOMIC_FLAG_INIT;" only for initialization.
+#endif
     free_pages = used_pages = active_page = previous_active_page = NULL;
     printf("Allocate %" PRIu64 " Kbytes\n", (uint64_t)free_space/1024);
     allocate_segment(free_space);
@@ -2319,9 +2308,9 @@ static void copy(LispObject *p)
 // This copies the object pointed at by p from the old to the new semi-space,
 // and returns a copy to the pointer.  If scans the copied material to copy
 // all relevent sub-structures to the new semi-space.
-{   char *fr = (char *)fringe, *vfr = (char *)vfringe;
-    char *tr_fr = fr, *tr_vfr = vfr;
-    void *p1;
+{   void *p1;
+// I will need to scan the material that has been evacuated so as to
+// update its contents. I have not got that side of things implemented yet!
 #define CONT           0
 #define DONE_CAR      -1
 #define DONE_VALUE    -2
@@ -2354,33 +2343,11 @@ static void copy(LispObject *p)
                     {   *p = w - TAG_FORWARD + TAG_CONS;
                         break;
                     }
-                    fr = fr - sizeof(Cons_Cell);
+                    fr = packed_get_2_words() + TAG_CONS;
                     cons_cells += 2*CELL;
-// When I am doing regular calculation I leave myself a bunch of spare
-// words (size SPARE bytes) so that I can afford to do several cons operations
-// between tests.  Here I do careful tests on every step, and so I can
-// sail much closer to the wind wrt filling up space.
-                    if (fr <= (char *)heaplimit - SPARE + 32)
-                    {   char *hl = (char *)heaplimit;
-                        void *p;
-                        qcar(fr) = SPID_GCMARK;
-                        if (pages_count == 0) allocate_more_memory();
-                        if (pages_count == 0)
-                        {   term_printf("\n+++ Run out of memory\n");
-                            ensure_screen();
-                            my_exit(EXIT_FAILURE);
-                        }
-                        p = pages[--pages_count];
-                        zero_out(p);
-                        new_heap_pages[new_heap_pages_count++] = p;
-                        heaplimit = (intptr_t)p;
-                        hl = (char *)heaplimit;
-                        fr = hl + CSL_PAGE_SIZE - sizeof(Cons_Cell);
-                        heaplimit = (LispObject)(hl + SPARE);
-                    }
                     qcar(fr) = w;
                     qcdr(fr) = qcdr(a);
-                    *p = w = (LispObject)(fr + TAG_CONS);
+                    *p = w = (LispObject)fr;
                     qcar(a) = w + TAG_FORWARD;
                     break;
                 }   // end of treatment of CONS
@@ -2443,37 +2410,14 @@ static void copy(LispObject *p)
                             other_mem += len; break;
                     }
                 }
-                for (;;)
-                {   char *vl = (char *)vheaplimit;
-                    size_t free = (size_t)(vl - vfr);
-// len indicates the length of the block of memory that must now be
-// allocated...
-                    if (len > free)
-                    {   qcar(vfr) = 0;          // sentinel value
-                        if (pages_count == 0) allocate_more_memory();
-                        if (pages_count == 0)
-                        {   term_printf("\n+++ Run out of memory\n");
-                            ensure_screen();
-                            my_exit(EXIT_FAILURE);
-                        }
-                        p1 = pages[--pages_count];
-                        zero_out(p1);
-                        new_vheap_pages[new_vheap_pages_count++] = p1;
-                        vfr = (char *)p1 + 8;
-                        vl = vfr + (CSL_PAGE_SIZE - 16);
-                        vheaplimit = (LispObject)vl;
-                        continue;
-                    }
-                    *p = (LispObject)(vfr + tag);
-                    *(LispObject *)a = (LispObject)(vfr + TAG_FORWARD);
-                    *(Header *)vfr = h;
+                uintptr_t vfr = packed_get_n_bytes(len);
+                *p = (LispObject)(vfr + tag);
+                *(LispObject *)a = (LispObject)(vfr + TAG_FORWARD);
+                *(Header *)vfr = h;
 // I copy EVERYTHING from the old vector to the new one. By using memcpy
 // I can do so with no worry about strict aliasing or the exact type of
 // data present. So this will copy across any padder words.
-                    memcpy((char *)vfr+CELL, (char *)a+CELL, len-CELL);
-                    vfr += len;
-                    break;
-                }
+                memcpy((char *)vfr+CELL, (char *)a+CELL, len-CELL);
                 break;
             }
         }
