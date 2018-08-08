@@ -679,18 +679,7 @@ uint64_t *heap_small_bitmaps_1_ptr = &heap_small_bitmaps_1[SMALL_BITMAP_SIZE];
 uint64_t *heap_small_bitmaps_2_ptr = &heap_small_bitmaps_2[SMALL_BITMAP_SIZE];
 
 
-#ifndef HAVE_STD__ATOMIC_FLAG
-// If I do not have a C++ compiler that supports C++-11 including
-// std::atomic_flag I will have trouble with anything that could require
-// cross-thread synchronization here. In such cases I will just assume that
-// all will be well!
-
-#define NO_ATOMIC_SUPPORT 1
-#endif
-
-#ifndef NO_ATOMIC_SUPPORT
 std::atomic_flag spin_lock = ATOMIC_FLAG_INIT;
-#endif
 
 void get_page_size()
 {
@@ -746,13 +735,9 @@ bool clear_bitmap(size_t h)
 static inline void atomic_set_bit(uint64_t *base, size_t offset)
 {   uint64_t *addr = &base[offset/(8*sizeof(uint64_t))];
     uint64_t bit = ((uint64_t)1) << (offset%(8*sizeof(uint64_t)));
-#ifndef NO_ATOMIC_SUPPORT
     while (spin_lock.test_and_set(std::memory_order_acquire)) {}
-#endif
     *addr |= bit;
-#ifndef NO_ATOMIC_SUPPORT
     spin_lock.clear();
-#endif
 }
 
 static inline void non_atomic_set_bit(uint64_t *base, size_t offset)
@@ -861,13 +846,9 @@ static void low_level_signal_handler(int signo)
 // Well all there is in the critical region is access to the spinlock
 // itself and the mprotect call.
             addr = (void *)((uintptr_t)addr & -(uintptr_t)page_size);
-#ifndef NO_ATOMIC_SUPPORT
             while (spin_lock.test_and_set(std::memory_order_acquire)) {}
-#endif
             int rc = mprotect(addr, page_size, PROT_READ | PROT_WRITE);
-#ifndef NO_ATOMIC_SUPPORT
             spin_lock.clear();
-#endif
             if (rc == -1)
             {   errorset_msg = "Unable to restore R/W status of memory page";
                 global_longjmp();
@@ -2120,9 +2101,7 @@ void init_heap_segments(double store_size)
     heap_segment_count = 0;
     heap_small_bitmaps_1_ptr = &heap_small_bitmaps_1[SMALL_BITMAP_SIZE];
     heap_small_bitmaps_2_ptr = &heap_small_bitmaps_2[SMALL_BITMAP_SIZE];
-#ifndef NO_ATOMIC_SUPPORT
     spin_lock.clear(); //"spin_lock=ATOMIC_FLAG_INIT;" only for initialization.
-#endif
     free_pages = used_pages = active_page = previous_active_page = NULL;
     printf("Allocate %" PRIu64 " Kbytes\n", (uint64_t)free_space/1024);
     allocate_segment(free_space);

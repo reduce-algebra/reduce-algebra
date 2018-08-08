@@ -828,23 +828,14 @@ else
   AC_DEFINE([NORETURN], [[/* noreturn */]], [C++-11 attributes available?])
 fi
 
-AC_CHECK_TYPES([std::atomic_flag], [], [],
-   [#include <atomic>])
-
-# Using gcc 4.8.x even in C++11 mode std::max_align_t is not available, so
-# for the benefit of people using a compiler that old I will then look
-# for the aligment of "long double".
 AC_COMPUTE_INT(maxalign, alignof(std::max_align_t), [#include <cstddef>],
                maxalign="0")
 if test "$maxalign" = "0"
 then
-# Wonderfully on (eg) Ubuntu 14.04.5 I find alignof(double)==8 but
-# but alignof(long double)==4 even though long double is a wider type, so
-# in this fall-back I will check double not long-double!
+# Any "good enough" c++ compiler will not trigger this fragment.
   AC_COMPUTE_INT(maxalign, alignof(double), [#include <cstddef>],
     AC_MSG_ERROR([Unable to get alignment of std::max_align_t]))
 fi
-AC_MSG_NOTICE([maxalign = $maxalign])
 
 # I will expect that malloc and new will return blocks of memory
 # aligned at least as per maxalign... and I require that it be at least

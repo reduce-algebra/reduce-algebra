@@ -36,5 +36,29 @@ sudo apt-get -y install libtool libtool-bin libltdl-dev linux-generic \
 # These last few will not be useful on non-Ubuntu platforms I suspect!
 sudo apt-get -y install ubuntu-desktop ubuntu-minimal \
  ubuntu-restricted-addons ubuntu-standard 
+
+# CSL now depends on C++-11, and versions of g++ prior to 4.9 (at least)
+# have enough support to seen plausible but enough missing deatures to cause
+# me pain. So I intend to take a view that gcc 5.X shhould be seen as the
+# earliest version to be used without worrying too much. For Ubuntu LTS
+# releases 12.04 and 14.04 the initially shipped gcc is earlier than that, but
+# the following script can be used to fetch a newer toolchain and make it the
+# default.
+
+case `gcc -v`
+in
+*gcc version 4*)
+  sudo apt-get -y install python-software-properties
+  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  sudo apt-get update
+  sudo apt-get -y install gcc-5 g++-5
+  sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 \
+       60 --slave /usr/bin/g++ g++ /usr/bin/g++-5
+  ;;
+*)
+  printf "gcc is already probably recent enough\n"
+  ;;
+esac
+
 exit 0
 # end of script
