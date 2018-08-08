@@ -1,4 +1,4 @@
-1;5q#! /usr/bin/env bash
+#! /usr/bin/env bash
 
 # This is a a script to arrange that all the packages needed for
 # Reduce are installed on an Debian-derived Linux.
