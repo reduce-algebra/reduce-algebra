@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+1;5q#! /usr/bin/env bash
 
 # This is a a script to arrange that all the packages needed for
 # Reduce are installed on an Debian-derived Linux.
@@ -45,9 +45,8 @@ sudo apt-get -y install ubuntu-desktop ubuntu-minimal \
 # the following script can be used to fetch a newer toolchain and make it the
 # default.
 
-case `gcc -v`
-in
-*gcc version 4*)
+case `gcc -v 2>&1` in
+*gcc\ version\ 4*)
   sudo apt-get -y install python-software-properties
   sudo add-apt-repository ppa:ubuntu-toolchain-r/test
   sudo apt-get update
