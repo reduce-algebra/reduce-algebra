@@ -81,7 +81,8 @@ set('!*quotenewnam,nil);
 
 define!-alias!-list
       '(arrayp do for on off let clear flatten imports
-        indx mkid mkvec vector editf spaces2 prettyprint);
+        indx mkid mkvec vector editf spaces2 prettyprint
+        size);
 
 set('!*quotenewnam,t);
 
