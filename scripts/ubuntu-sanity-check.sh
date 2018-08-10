@@ -22,6 +22,10 @@
 # while building a distributable snapshot (ie one packages as a .deb or
 # .rpm file).
 
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`dirname "$here"`
+here=`cd "$here"; pwd -P`
+here=`dirname "$here"`
 
 sudo apt-get -y install alien astyle autoconf ccache devscripts \
  git gnuplot imagemagick libedit-dev libffi-dev libgtk2.0-dev libncurses5-dev
@@ -29,7 +33,13 @@ sudo apt-get -y install alien astyle autoconf ccache devscripts \
 # where it has to be "libtool-bin". By making the install requests each
 # individual when one of the following two fails it should not wreck
 # the whole attempt to get stuff installed! Ditto libltdl-dev.
-sudo apt-get -y install libtool libtool-bin libltdl-dev linux-generic \
+sudo apt-get -y install libtool
+sudo apt-get -y install libtool-bin
+sudo apt-get -y install libltdl-dev
+# Sort of similarly ssh may be either ssh or openssh...
+sudo apt-get -y install openssh
+sudo apt-get -y install ssh
+sudo apt-get -y install linux-generic \
  polyml rpm ssh subversion tex4ht texinfo texlive-latex-base \
  texlive-fonts-extra texlive-fonts-recommended texlive-latex-recommended \
  texlive-latex-extra xorg-dev devscripts fakeroot alien rsync
@@ -56,6 +66,21 @@ case `gcc -v 2>&1` in
   ;;
 *)
   printf "gcc is already probably recent enough\n"
+  ;;
+esac
+
+# In some cases "make", "autoconf", "automake" "libtool" or "rsync" might be
+# too old a version. So if I have a command line option "necessary" I will
+# install better versions
+
+case $* in
+*necessary*)
+  tar xvfj $here/csl/support-packages/necessary-updates.tar.bz2
+  pushd necessary-updates
+  ./build-them.sh
+  popd
+  ;;
+*)
   ;;
 esac
 

@@ -35,6 +35,14 @@ The machine names shown are in general the ones reported by "uname -n".
 # recommended because the main script takes steps to choose a port that
 # it has just detected as not being in use.
 #
+# When remote systems are accessed using ssh it is required that public key
+# authentication without the need for further manual intervention is set up so
+# that commends such as
+#     ssh remote.host.machine some-command
+# are executed without any need to quote further passwords. This may be
+# achieved using the .ssh/authorized_keys scheme and possibly using the
+# ssh-agent. 
+#
 # More elaborate options are illustrated in what follows:
 
 case `uname -n` in
@@ -48,7 +56,11 @@ panamint)
   }
 
   hosts_windows() {
-# panamint is a windows computer
+# panamint is a Windows computer.
+# A windows host muct have both 32- and 64-bit versions of cygwin installed,
+# and run from each of those two environments the necessary set of cygwin
+# build tools can be sorted out using scripts/cygwin-sanity-check.sh. In
+# addition to that the inno setup tool must be installed.
     MODE=local
   }
 
@@ -66,6 +78,11 @@ panamint)
 #     and rsync from the nearest GNU mirror, and in each case go
 #     ./configure --prefix=/usr; make; sudo make install
 # to replace older system-provided versions.
+#
+# Note: scripts/ubuntu-sanity-check.sh now performs (1) as part of its
+# regular processing, while for (2) an easy scheme is to unpack the
+# archive csl/support-packages/necessary-updates.tar.bz2 into a fairly
+# arbitrary directy and then run the "build-them.sh" script included in it.
 #
 # If you build on a more modern Linux release you may not need all that!
     MODE=virtual

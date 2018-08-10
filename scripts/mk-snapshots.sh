@@ -56,7 +56,7 @@ printf ">>>>>>>>>>>>>>>>>>>> HERE=$HERE\n"
 # authentication. The ssh link must have been used already so that the
 # system from which the link is initiated is already in the known_hosts file
 # of the remote system. Both those constraints are there so that execution
-# of a remote command does not requite any intervention.
+# of a remote command does not require any intervention.
 # When the remote system is a Virtual machine then after it has been used
 # to build stuff I want to switch it off. About the most safest way I can
 # see to do that is to issue the command "sudo /sbin/shutdown -h now" on it.
@@ -73,7 +73,7 @@ printf ">>>>>>>>>>>>>>>>>>>> HERE=$HERE\n"
 cd $HERE
 
 # By directory names here can be absolute or relative. If they are specified
-# as relative then they are reltive to the trunk directory in the Reduce
+# as relative then they are relative to the trunk directory in the Reduce
 # tree that the snapshot builder is run from.
 
 # REDUCE-DISTRIBUTION will hold a clean checkout of Reduce, updated from
