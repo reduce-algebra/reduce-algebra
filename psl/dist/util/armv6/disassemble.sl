@@ -119,22 +119,22 @@
 	(2#1100 GT) (2#1101 LE) (2#1110 "")))
 
 (setq dataproc*
-      '((2#0000000 AND) (2#0010000 AND)
-	(2#0000001 EOR)	(2#0010001 EOR)
-	(2#0000010 SUB) (2#0010010 SUB)
-	(2#0000011 RSB) (2#0010011 RSB)
-	(2#0000100 ADD) (2#0010100 ADD)
-	(2#0000101 ADC) (2#0010101 ADC)
-	(2#0000110 SBC) (2#0010110 SBC)
-	(2#0000111 RSC) (2#0010111 RSC)
-	(2#0001000 TST) (2#0011000 TST)
-	(2#0001001 TEQ) (2#0011001 TEQ)
-	(2#0001010 CMP) (2#0011010 CMP)
-	(2#0001011 CMN) (2#0011011 CMN)
-	(2#0001100 ORR) (2#0011100 ORR)
-	(2#0001101 MOV) (2#0011101 MOV)
-	(2#0001110 BIC) (2#0011110 BIC)
-	(2#0001111 MVN) (2#0011111 MVN)
+      '((2#00000000 AND) (2#00100000 AND)
+	(2#00000010 EOR)	(2#00100010 EOR)
+	(2#00000100 SUB) (2#00100100 SUB)
+	(2#00000110 RSB) (2#00100110 RSB)
+	(2#00001000 ADD) (2#00101000 ADD)
+	(2#00001010 ADC) (2#00101010 ADC)
+	(2#00001100 SBC) (2#00101100 SBC)
+	(2#00001110 RSC) (2#00101110 RSC)
+	(2#00010000 TST) (2#00110000 TST)
+	(2#00010010 TEQ) (2#00110010 TEQ)
+	(2#00010100 CMP) (2#00110100 CMP)
+	(2#00010110 CMN) (2#00110110 CMN)
+	(2#00011000 ORR) (2#00111000 ORR)
+	(2#00011010 MOV) (2#00111010 MOV)
+	(2#00011100 BIC) (2#00111100 BIC)
+	(2#00011110 MVN) (2#00111110 MVN)
 	))
 
       
@@ -143,7 +143,11 @@
       (and cctext (cadr cctext))))
 
 (de regnum-to-regname (n)
-    (intern (bldmsg "r%d" n)))
+    (cond ((equal n 11) "fp")
+	  ((equal n 13) "sp")
+	  ((equal n 14) "lr")
+	  ((equal n 15) "pc")
+	  (t (intern (bldmsg "r%d" n)))))
 
 (de decode (p1 pp addr*)
   (prog(i lth cc opcode1 opcode2 name)
@@ -154,14 +158,19 @@
       (setq opcode1 (wand 16#ff (wshift pp -20)))
       (setq opcode2 (wand 16#0f (wshift pp -4)))
       %% big branch for various instruction types
-      (cond ((weq (wand 2#11000000 opcode1) 2#00000000)
+      (cond ((and (weq opcode1 2#00010010) (weq (wand opcode2 2#1101) 2#0001)
+		  (weq (wand 16#fff (wshift pp -8)) 16#fff))
+	     (return (decode-branchx p1 pp cc opcode1 opcode2)))
+	    ((and (weq (wand 2#11000000 opcode1) 2#00000000)
+		  %% check for instruction from extension space: bit[25] == 0 and bit[4] == 1 and bit[7] == 1
+		  (not (weq (wand 16#02000090 pp) 16#90)))
 	     (return (decode-dataproc p1 pp cc opcode1 opcode2)))
-	    ((weq (wand 2#11110000 opcode1) 0)
+	    ((and (weq (wand 2#11110000 opcode1) 0) (weq opcode2 2#1001))
 	     (return (decode-multiply p1 pp cc opcode1 opcode2)))
+	    ((and (weq (wand 2#11100000 opcode1) 0) (weq (wand opcode2 9) 2#1001))
+	     (return (decode-load-store-extension p1 pp cc opcode1 opcode2)))
 	    ((weq (wand 2#11111011 opcode1) 2#00010000)
 	     (return (decode-data-swap p1 pp cc opcode1 opcode2)))
-	    ((weq opcode1 2#00010010)
-	     (return (decode-branchx p1 pp cc opcode1 opcode2)))
 	    ((weq (wand opcode1 2#11100000) 0)
 	     (return (decode-halfwordtrans p1 pp cc opcode1 opcode2)))
 	    ((weq (wand opcode1 2#11000000) 2#01000000)
@@ -189,14 +198,16 @@
 	  (return (list 4 instr (list targetaddr)))))
 	  
 (de decode-branchx (p1 pp cc opcode1 opcode2)
-    (if (not (weq (wand pp 16#0ffffff) 16#012fff30))
+    (if (not (weq (wand pp 16#0fffffd0) 16#012fff10))
 	(stderror (bldmsg "Unknown armv6 instruction %x" pp)))
-    (list 4 'blx (regnum-to-regname (wand pp 16#0f))))
+    (list 4
+	  (if (weq opcode2 3) 'blx 'bx)
+	  (regnum-to-regname (wand pp 16#0f))))
 
 (de decode-dataproc (p1 pp cc opcode1 opcode2)
     (prog (instr regn regd operand2 set-bit immediate?)
 	  (setq immediate? (weq 2#00100000 (wand 2#00100000 opcode1)))
-	  (setq set-bit (wand opcode1 1))
+	  (setq set-bit (weq (wand opcode1 1) 1))
 	  (setq cc (decode-cc cc))
 	  (setq instr (cadr (assoc (wand opcode1 16#fe) dataproc*)))
 	  (if immediate?
@@ -205,12 +216,12 @@
 	  (setq regn (regnum-to-regname (wand (wshift pp -16) 16#0f)))
 	  (setq regd (regnum-to-regname (wand (wshift pp -12) 16#0f)))
 	  (cond ((memq instr '(MOV MVN))
-		 (setq operand2 (cons regd operand2)))
+		 (setq operand2 (bldmsg "%w, %w" regd operand2)))
 		((memq instr '(CMP CMN TST TEQ))
-		 (setq operand2 (cons regn operand2)))
+		 (setq operand2 (bldmsg "%w, %w" regn operand2)))
 		(t
-		 (setq operand2 (cons regd (cons regn operand2)))))
-	  (setq instr (intern (bldmsg "%w%w%s" instr cc (if set-bit "S" ""))))
+		 (setq operand2 (bldmsg "%w, %w,%w" regd regn operand2))))
+	  (setq instr (intern (bldmsg "%w%w%s" instr cc (if set-bit "s" ""))))
 	  (return (list 4 instr operand2))))
 
 (de rotate-right (n m)
@@ -223,8 +234,7 @@
 	  (setq rotate_imm (wshift (wand 16#0f (wshift bits -8)) 1))
 	  (setq immed_8 (wand bits 16#ff))
 	  %% rotate right immed_8 by rotate_imm bits
-	  (if (weq rotate_imm 0) (return immed_8))
-	  (return (bldmsg "#%d" (rotate-right immed_8 rotate_imm)))))
+	  (return (bldmsg "#%d" (if (weq rotate_imm 0) immed_8 (rotate-right immed_8 rotate_imm))))))
 
 (setq shiftoplist*
       '((2#000 . lsl) (2#010 . lsr) (2#100 . asr) (2#110 . ror)))
@@ -232,19 +242,19 @@
 (de decode-shifter-operand (bits)
     (prog (regm shift shift_imm regs instr)
 	  (setq regm (regnum-to-regname (wand bits 16#0f)))
-	  (setq shift (wand (wshift bits -5) 2#11))
+	  (setq shift (wand (wshift bits -4) 2#111))
 	  (cond ((weq 0 (wand bits 2#10000)) % immediate shift
 		 (setq shift_imm (wand (wshift bits -7) 2#11111))
 		 (cond ((weq shift_imm 0)
 			(if (weq shift 3)
-			    (return (list 4 regm 'rrx))
-			  (return (list 4 regm))))
+			    (return (bldmsg "%w, rrx" regm))
+			  (return regm)))
 		       (t
-			(return (list 4 regm (list (cdr (assoc shift shiftoplist*)) shift_imm)))))
+			(return (bldmsg "%w, %w #%d" regm (cdr (assoc shift shiftoplist*)) shift_imm))))
 		 )
 		(t
 		 (setq regs (regnum-to-regname (wand (wshift bits -8) 16#0f)))
-		 (return (list 4 regm (list (cdr (assoc shift shiftoplist*)) regs)))))
+		 (return (bldmsg "%w, %w %w" regm (cdr (assoc shift shiftoplist*)) regs))))
 	  )
     )
 
@@ -294,10 +304,9 @@
 	  (setq regn (regnum-to-regname (wand (wshift pp -16) 16#0f)))
 	  (setq regd (regnum-to-regname (wand (wshift pp -12) 16#0f)))
 	  (setq regm (regnum-to-regname (wand pp 16#0f)))
-	  (setq instr (intern (bldmsg "%w%w%w" (if (weq (wand opcode1 1) 1) 'ldr 'str) cc (if b-bit "B" ""))))
+	  (setq instr (intern (bldmsg "%w%w%w" (if (weq (wand opcode1 1) 1) 'ldr 'str) cc (if b-bit "b" ""))))
 	  (setq shift (wand (wshift pp -5) 3))
 	  (setq shift_imm (wand 16#1f (wshift pp -7)))
-	  (print (list 'bits p-bit w-bit (wor (wshift p-bit 1) w-bit)))
 
 	  (cond ((null i-bit)
 		 (setq offset12 (wand 16#fff pp))
@@ -359,7 +368,78 @@
     )
 
 (de decode-blockdatatrans (p1 pp cc opcode1 opcode2)
+    (prog (instr regn reglist l-bit p-bit u-bit s-bit w-bit reglist-bits op)
+	  (setq p-bit (wshift (wand 2#00010000 opcode1) -4))
+	  (setq u-bit (weq 2#00001000 (wand 2#00001000 opcode1)))
+	  (setq s-bit (weq 2#00000100 (wand 2#00000100 opcode1)))
+	  (setq w-bit (wshift (wand 2#00000010 opcode1) -1))
+	  (setq l-bit (wand 1 opcode1))
+	  (setq cc (decode-cc cc))
+	  (setq regn (regnum-to-regname (wand (wshift pp -16) 16#0f)))
+	  (if (weq w-bit 1) (setq regn (bldmsg "%w!" regn)))
+	  (setq op
+		(case (wand 3 (wshift pp -23))
+		      ((0) 'da)
+		      ((1) 'ia)
+		      ((2) 'db)
+		      ((3) 'ib)
+		      ))
+	  (setq instr (bldmsg "%w%w%w" (if (weq l-bit 1) 'ldm 'stm) cc op))
+	  (setq reglist-bits (wand pp 16#ffff))
+	  (setq reglist "")
+	  (for (from i 0 15 1)
+	       (do
+		(if (weq 1 (wand reglist-bits 1))
+		    (setq reglist (bldmsg "%w%s%w" reglist (if (weq i 0) "{" ",") (regnum-to-regname i))))
+		(setq reglist-bits (wshift reglist-bits -1))))
+	  (setq reglist (concat reglist "}"))
+	  (return (list 4 instr regn reglist))
+	  
+	  )
     )
+
+(de decode-load-store-extension (p1 pp cc opcode1 opcode2)
+        (prog (instr regn regd regm i-bit p-bit u-bit w-bit l-bit specialop op offset)
+	  (setq p-bit (wshift (wand 2#00010000 opcode1) -4))
+	  (setq u-bit (weq 2#00001000 (wand 2#00001000 opcode1)))
+	  (setq i-bit (weq 2#00000100 (wand 2#00000100 opcode1)))
+	  (setq w-bit (wshift (wand 2#00000010 opcode1) -1))
+	  (setq l-bit (wand opcode1 1))
+	  (setq cc (decode-cc cc))
+	  (setq regn (regnum-to-regname (wand (wshift pp -16) 16#0f)))
+	  (setq regd (regnum-to-regname (wand (wshift pp -12) 16#0f)))
+	  (setq regm (regnum-to-regname (wand pp 16#0f)))
+	  (setq offset (wor (wand 2#11110000 (wshift pp -4)) (wand 2#00001111 pp)))
+	  (setq offset (if i-bit (bldmsg "#%w%w" (if (null u-bit) "-" "") offset)
+			 (bldmsg "%w%w" (if (null u-bit) "-" "") regm)))
+	  (setq op (wand 2#11 (wshift pp -5)))
+	  (case (wor (wshift l-bit 2) op)
+		((0) (setq instr (bldmsg "%w%w" (if u-bit 'strex 'swp) cc))
+		     (setq specialop (bldsmg "%w, [%w]" regm regn)))
+		((1) (setq instr (bldmsg "%w%w%w" 'str cc 'h)))
+		((2) (setq instr (bldmsg "%w%w%w" 'ldr cc 'd)))
+		((3) (setq instr (bldmsg "%w%w%w" 'str cc 'd)))
+		((4) (setq instr (if u-bit (bldmsg "%w%w" 'ldrex cc) (bldmsg "%w%w%w" 'swp cc 'b)))
+		     (setq specialop (bldsmg "%w, [%w]" regm regn)))
+		((5) (setq instr (bldmsg "%w%w%w" 'ldr cc 'h)))
+		((6) (setq instr (bldmsg "%w%w%w" 'ldr cc 'sb)))
+		((7) (setq instr (bldmsg "%w%w%w" 'ldr cc 'sh)))
+		)
+	  (case (wor (wshift p-bit 1) w-bit)
+		((0)		% normal memory access, postindexed
+		 (return (list 4 instr regd (bldmsg "[%w], %w" regn offset)))
+		 )
+		((1)		% Unpredictable instruction
+		 (stderror "Unpredictable misc. load/store")
+		 )
+		((2)		% offset adressing immediate
+		 (return (list 4 instr regd (or specialop (bldmsg "[%w, %w]" regn offset))))
+		 )
+		((3)		% offset addressing, preindexed
+		 (return (list 4 instr regd (bldmsg "[%w, %w]!" regn offset)))
+		 )
+		)
+	  ))
 
 (de decode-other (p1 pp cc opcode1 opcode2)
     )
@@ -389,41 +469,37 @@
 
 
 (de disassemble (fkt)
-   (prog(base instr jk jk77 p1 pp lth pat x
-         mem jmem symvalhigh symfnchigh frame
-         argumentblockhigh labels label bstart bend breg com4 memp1
-         !*lower lc name)
+    (prog(base instr jk jk77 p1 pp lth x
+	       symvalhigh symfnchigh frame
+	       argumentblockhigh labels label bstart bend breg com4 memp1
+	       !*lower lc name)
          (setq !*lower t)
 
          (cond ((numberp fkt) (setq base fkt))
                ((pairp fkt) (setq base (car fkt))
-                            (setq bend (cadr fkt))
-                            (plus2 base bend)) %do an arithmetic test
+		(setq bend (cadr fkt))
+		(plus2 base bend)) %do an arithmetic test
                ((idp fkt)
-                      (when (not (getd fkt)) (error 99 "not compiled"))
-                      (when (not (codep (cdr (getd fkt))))(return nil))
-                      (setq base (sys2int (getfunctionaddress fkt)))
-         )     )
+		(when (not (getd fkt)) (error 99 "not compiled"))
+		(when (not (codep (cdr (getd fkt))))(return nil))
+		(setq base (sys2int (getfunctionaddress fkt)))
+		)     )
          (when (greaterp base (sys2int nextbps)) (return (error 99 "disassemble: start address out of range")))
          (setq argumentblockhigh (plus2 argumentblock (word2addr 15)))
          (setq symvalhigh (plus2 (sys2int symval) (word2addr maxsymbols)))
          (setq symfnchigh (plus2 (sys2int symfnc) (word2addr maxsymbols)))
          (terpri)
-   %     (putmem nextbps 0)            % safe endcondition
+					%     (putmem nextbps 0)            % safe endcondition
          (setq bstart base)
          (setq fktend nil)
-(go erstmal)  % erstmal nur ein lauf
+	 (go erstmal)  % erstmal nur ein lauf
   % first pass: find label references
-loop1
+	 loop1
          (setq p1 (getwrd (int2sys base)))
          (setq !*hardjump nil)
          (when (eq p1 0)(go continue1))
          (setq lth (atsoc 'LTH instr))
          (setq lth (if lth (cdr lth) 2))
-         (setq jmem (atsoc 'addr instr))
-         (when jmem (setq jmem (cdr jmem)))
-         (cond ((not (assoc jmem labels))
-                     (setq labels (cons (list jmem) labels)) ))
  next    (setq base (plus2 base lth))
          (when (and !*hardjump fktend (greaterp base fktend))
                (go continue1))
@@ -456,22 +532,25 @@ loop
                 (setq lc (add1 lc))
                 (prin2t ":")))
          (setq p1 (wand 255 (byte(int2sys base) 0)))
-         (cond((eq p1 0)(return nil)))
+%         (print p1)
+%         (cond((eq p1 0)(return nil)))
 
          (setq pp p1)
          (if *big-endian*
 	     (for (from i 1 3 1)
 		  (do (setq pp (wor (wshift pp 8) (wand 255 (byte (int2sys base) i))))))
-	   (for (from i 1 3 1)
-		(do (setq pp (wor pp (wshift (wand 255 (byte (int2sys base) i)) (times2 i 8))))
-		    ))
-	   
+	   (progn 
+	     (for (from i 1 3 1)
+		  (do (setq pp (wor pp (wshift (wand 255 (byte (int2sys base) i)) (times2 i 8))))
+		      ))
+	     (setq p1 (wand 16#ff (wshift pp -24))))
 	   )
-%         (setq pp (wand 16#ffffffff pp))
+         (cond((eq pp 0)(return nil)))
 
          (setq *curradr* base *currinst* pp)
          (setq !*comment nil)
          (setq instr (decode p1 pp base))      % instruction
+	 (if (null instr) (return nil))
          (setq lth (pop instr))
          (setq name (when instr (pop instr)))
 
@@ -483,7 +562,7 @@ loop
          (when name (prin2 name))
          (ttab 38)
          (while (cdr instr)
-	   (prin2 (car instr)) (prin2 "!, ")
+	   (prin2 (car instr)) (prin2 ", ")
 	   (pop instr))
          (if (pairp instr) (prin2 (car instr)))
          (prin2 "    ")
