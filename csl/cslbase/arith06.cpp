@@ -708,7 +708,7 @@ LispObject Lplusp(LispObject env, LispObject a)
 // hurt much I will allpow for arbitrary numbers of args here.
 //
 
-// Note that in Standrad Lisp (eqn 0 0.0) must return false, while the
+// Note that in Standard Lisp (eqn 0 0.0) must return false, while the
 // Common Lisp style case has (= 0 0.0) => true.
 
 LispObject Leqn_4up(LispObject env,

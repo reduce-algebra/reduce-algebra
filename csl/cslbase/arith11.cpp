@@ -972,6 +972,9 @@ static bool numeqff(LispObject a, LispObject b)
 #  define differentb return false
 #endif
 
+// This is for the Common Lisp (= u v) case and so it is expected to
+// accept equality across numeric types...
+
 bool numeq2(LispObject a, LispObject b)
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
@@ -985,9 +988,9 @@ bool numeq2(LispObject a, LispObject b)
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
-                            return 0; // fixnum can not be equal to a bignum
+                            return false; // fixnum can not be equal to a bignum
                         case TYPE_RATNUM:
-                            return 0;
+                            return false;
                         case TYPE_COMPLEX_NUM:
                             return numeqic(a, b);   // (= 2 #C(2.0 0.0))?  Yuk
                         default:
@@ -1157,14 +1160,15 @@ bool SL_numeq2(LispObject a, LispObject b)
         case XTAG_SFLOAT:
 // OK so Standard Lisp does not have a concept of multiple widths of
 // floats, but I am going to make EQN demand that values are the same width
-// as well as having the same value for them to be EQN.
+// as well as having the same value for them to be EQN. This is consistent with
+// them "having the same type".
             if (((int)b & XTAG_BITS) != XTAG_SFLOAT) return false;
             return (value_of_immediate_float(a)==value_of_immediate_float(b));
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
+                if (((int)b & TAG_BITS) != TAG_NUMBERS) return false;
                 ha = type_of_header(numhdr(a));
-                if (((int)b & TAG_BITS) != TAG_NUMBERS ||
-                    ha != type_of_header(numhdr(b))) return false;
+                if (ha != type_of_header(numhdr(b))) return false;
                 switch (ha)
                 {   case TYPE_BIGNUM:
                         return numeqbb(a, b);
@@ -1176,9 +1180,9 @@ bool SL_numeq2(LispObject a, LispObject b)
                 differenta;
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-                ha = type_of_header(numhdr(a));
-                if (((int)b & TAG_BITS) != TAG_NUMBERS ||
-                    ha != type_of_header(numhdr(b))) return false;
+                if (((int)b & TAG_BITS) != TAG_BOXFLOAT) return false;
+                ha = type_of_header(flthdr(a));
+                if (ha != type_of_header(flthdr(b))) return false;
                 return numeqff(a, b);
         default:
             differenta;
