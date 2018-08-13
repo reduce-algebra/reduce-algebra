@@ -973,7 +973,9 @@ static bool numeqff(LispObject a, LispObject b)
 #endif
 
 // This is for the Common Lisp (= u v) case and so it is expected to
-// accept equality across numeric types...
+// accept equality across numeric types... but it entitled to raise an
+// error if an argument is non-numeric. I might be mor egenerous on the
+// non-numeric cases.
 
 bool numeq2(LispObject a, LispObject b)
 {   switch ((int)a & XTAG_BITS)
@@ -1166,6 +1168,7 @@ bool SL_numeq2(LispObject a, LispObject b)
             return (value_of_immediate_float(a)==value_of_immediate_float(b));
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
+                if (a == b) return true;
                 if (((int)b & TAG_BITS) != TAG_NUMBERS) return false;
                 ha = type_of_header(numhdr(a));
                 if (ha != type_of_header(numhdr(b))) return false;
@@ -1185,7 +1188,7 @@ bool SL_numeq2(LispObject a, LispObject b)
                 if (ha != type_of_header(flthdr(b))) return false;
                 return numeqff(a, b);
         default:
-            differenta;
+            return (a == b);
     }
 }
 
