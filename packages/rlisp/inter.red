@@ -155,16 +155,16 @@ trap!-time!* := nil; % nil here means no trapping active.
 % an argument.
 
 #if (memq 'psl lispsystem!*)
-symbolic procedure aftergcsystemhook();
+symbolic procedure aftergcuserhook();
 #else
-symbolic procedure aftergcsystemhook u;
+symbolic procedure aftergcuserhook u;
 #endif
   if trap!-time!* and
     time() > trap!-time!* then <<
       trap!-time!* := nil;
       throw('!@timeout!@, '!@timeout!@) >>;
 
-!*gc!-hook!* := 'aftergcsystemhook;
+!*gc!-hook!* := 'aftergcuserhook;
 
 symbolic procedure trap!-time!-value();
   trap!-time!*;

@@ -5943,21 +5943,10 @@ if filep "stop_now" then <<
  repeat_mode:=1$
 >>$
 
-%symbolic procedure beforegcuserhook$ 
-%my_gc_counter:=add1 my_gc_counter$
+% The following function should get called at the end of each garbage
+% collection.
 
-!#if (memq 'csl lispsystem!*)
-
-lisp(!*gc!-hook!* := 'csl_aftergcuserhook)$
-
-symbolic procedure csl_aftergcuserhook u$
-<< aftergcsystemhook u;       % The handler in rlisp/inter.red
-   if u then aftergcuserhook() else nil
->>$
-
-!#endif
-
-symbolic procedure aftergcuserhook$
+symbolic procedure aftergcuserhook1$
 begin scalar li$
 !#if (memq 'psl lispsystem!*)
  last_free_cells:=if boundp 'gcfree!* then gcfree!*               % for 32 bit PSL
@@ -6010,6 +5999,39 @@ begin scalar li$
  if print_ and (last_free_cells<100000) then
  write"Memory seems to run out. Less than 100000 free cells!"
 end$
+
+!#if (memq 'csl lispsystem!*)
+
+% For CSL the GC hook has its name saved in !*gc!-hook!*, so I can
+% just implement a new function that calls what I know is the prior
+% function and then the new stuff.
+
+symbolic procedure csl_aftergcuserhook u$
+<< aftergcuserhook u;       % The handler in rlisp/inter.red
+   if u then aftergcuserhook1() else nil
+>>$
+
+lisp(!*gc!-hook!* := 'csl_aftergcuserhook)$
+
+!#endif
+
+
+!#if (memq 'psl lispsystem!*)
+
+% For PSL the GC hook is specified by its function name. Here I
+% wish to chain on after an existing one, so I save the old version as
+% psl_aftergcuserhook and define a new version that calls that followed
+% by the new behaviour that is expected by crack.
+
+if not getd 'psl_aftergcuserhook then
+   copyd('psl_aftergcuserhook, 'aftergcuserhook);
+
+symbolic procedureaftergcuserhook;
+ << psl_aftergcuserhook();
+    aftergcuserhook1();
+    nil >>;
+
+!#endif
 
 symbolic operator err_catch_fac$  
 symbolic procedure err_catch_fac(a)$
