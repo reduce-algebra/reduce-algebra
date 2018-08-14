@@ -96,7 +96,6 @@ sudo port install          \
   fontforge                \
   gdb                      \
   git                      \
-  gnome-system-monitor     \
   gnuplot                  \
   gnutar                   \
   gzip                     \
@@ -114,9 +113,14 @@ sudo port install          \
   texlive-latex-extra      \
   texlive-plain-generic    \
   texlive-bin-extra        \
+  texlibe-fonts-recommended \
   timeout                  \
   vim                      \
   wget
+
+# I like to have this installed, however it is not necessary and at times
+# it has failed to build/install.
+sudo port install  gnome-system-monitor
 
 # MacPorts installs most stuff nicely, but at the time of writing
 # (January 2016) it does not generate a libfontconfig.a and I want one.

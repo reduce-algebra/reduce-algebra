@@ -27,6 +27,16 @@ AC_CONFIG_MACRO_DIRS([m4])
 
 abssrcdir=`"$srcdir/scripts/here.sh"`
 
+if which cygpath 2> /dev/null
+then
+  a=`cygpath -am "$abssrcdir"`
+  b="${a%%/*}/"
+  d="${a#${b}}"
+  c=`cygpath $b`
+  abssrcdir="$c$d"
+fi
+
+
 AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 
 #
