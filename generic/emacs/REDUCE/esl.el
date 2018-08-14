@@ -531,8 +531,12 @@ downcased to allow direct use of Emacs Lisp functions."
 		   (substring s 1 -1))
 		  ((or (eq s1 ?-)
 			   (and (>= s1 ?0) (<= s1 ?9)))	; NUMBER
-		   ;; Emacs does not accept .E as in 123.E-2 so delete ".":
-		   (string-to-number (replace-regexp-in-string "\.E" "E" s)))
+		   (if (string-match "\\." s)
+			   ;; Number is a float. (Emacs does not accept .E as in
+			   ;; 123.E-2 so delete such a ".".)
+			   (string-to-number (replace-regexp-in-string "\\.E" "E" s))
+			 ;; Number is a (possibly big) integer.
+			 (math-read-number s)))
 		  (t							; IDENTIFIER
 		   (let ((l (length s)) (i 0) (ss nil) e)
 			 ;; Retain leading !: if followed by uc letter or digit:
@@ -1893,40 +1897,51 @@ buffer is empty, 0 is returned."
   0)
 
 (defalias 'PRINC 'princ
-  ;; Should be OK temporarily, but probably needs re-implementing, at
-  ;; least to handle EOL.
+  ;; Should be OK temporarily, but may need re-implementing, at least
+  ;; to handle EOL.
   "PRINC(U:id):id eval, spread
 U must be a single character id such as produced by EXPLODE or
 read by READCH or the value of !$EOL!$. The effect is the character
 U displayed upon the currently selected output device. The value of
 !$EOL!$ causes termination of the current line like a call to TERPRI.")
 
-(defalias 'PRINT 'print
-  ;; Should be OK temporarily, but probably needs re-implementing, at
-  ;; least to use ! instead of \.
+(defun PRINT (u)
+  ;; Should be OK temporarily, but may need re-implementing, at least
+  ;; to use ! instead of \.
   "PRINT(U:any):any eval, spread
 Displays U in READ readable format and terminates the print line.
 The value of U is returned.
 EXPR PROCEDURE PRINT(U);
-<< PRIN1 U; TERPRI(); U >>;")
+<< PRIN1 U; TERPRI(); U >>;"
+  (PRIN1 u)
+  (terpri)
+  u)
 
-(defalias 'PRIN1 'prin1
-  ;; Should be OK temporarily, but probably needs re-implementing, at
-  ;; least to use ! instead of \.
- "PRIN1(U:any):any eval, spread
+(defun PRIN1 (u)
+  ;; Should be OK temporarily, but may need re-implementing, at least
+  ;; to use ! instead of \.
+  "PRIN1(U:any):any eval, spread
 U is displayed in a READ readable form. The format of display is
 the result of EXPLODE expansion; special characters are prefixed
 with the escape character !, and strings are enclosed in \"...\". Lists
-are displayed in list-notation and vectors in vector-notation.")
+are displayed in list-notation and vectors in vector-notation."
+  (if (math-integerp u)
+	  (princ (math-format-number u))
+	(prin1 u))
+  u)
 
-(defalias 'PRIN2 'princ
+(defun PRIN2 (u)
   "PRIN2(U:any):any eval, spread
 U is displayed upon the currently selected print device but output is
 not READ readable. The value of U is returned. Items are displayed
 as described in the EXPLODE function with the exceptions that
 the escape character does not prefix special characters and strings
 are not enclosed in \"...\". Lists are displayed in list-notation and
-vectors in vector-notation. The value of U is returned.")
+vectors in vector-notation. The value of U is returned."
+  (princ (if (math-integerp u)
+			 (math-format-number u)
+		   u))
+  u)
 
 (defun RDS (filehandle)
   "RDS(FILEHANDLE:any):any eval, spread
