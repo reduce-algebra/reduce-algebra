@@ -41,7 +41,10 @@
 ;;; Primitive Data Types
 ;;; ====================
 
-;; integer -- probably OK
+;; integer -- Elisp integers are of fixed size (61 bits) but Slisp
+;; integers are of arbitrary size, which I currently provide by
+;; calling functions in the GNU Emacs Calculator ("Calc") package by
+;; Dave Gillespie.
 
 ;; floating -- 1. is an integer in Elisp but a float in
 ;; Slisp.  Otherwise probably OK.
@@ -84,6 +87,11 @@
 ;; `CXXXXR' functions, which I have defined exactly as in Emacs 26.
 
 (eval-when-compile (require 'cl-lib))
+
+;; I also use the GNU Emacs Calc library for arbitrary length integers.
+
+(require 'calc)
+(require 'calc-ext)
 
 ;;; System GLOBAL Variables
 ;;; =======================
@@ -193,10 +201,16 @@ EXPR PROCEDURE CONSTANTP(U);
 Returns T if U points to the same object as V. EQ is not a reliable
 comparison between numeric arguments.")
 
-(defalias 'EQN 'eql
+;; (defalias 'EQN 'eql
+;;   "EQN(U:any, V:any):boolean eval, spread
+;; Returns T if U and V are EQ or if U and V are numbers and have
+;; the same value and type.")
+
+(defun EQN (u v)
   "EQN(U:any, V:any):boolean eval, spread
 Returns T if U and V are EQ or if U and V are numbers and have
-the same value and type.")
+the same value and type."
+  (or (eql u v) (math-equal u v)))
 
 (defalias 'EQUAL 'equal
   "EQUAL(U:any, V:any):boolean eval, spread
@@ -206,7 +220,7 @@ have identical dimensions and EQUAL values in all
 positions. Strings must have identical characters. Function
 pointers must have EQ values. Other atoms must be EQN equal.")
 
-(defalias 'FIXP 'integerp
+(defalias 'FIXP 'math-integerp
   "FIXP(U:any):boolean eval, spread
 Returns T if U is an integer (a fixed number).")
 
@@ -224,7 +238,8 @@ Returns T if U is a number and less than 0. If U is not a number
 or is a positive number, NIL is returned.
 EXPR PROCEDURE MINUSP(U);
    IF NUMBERP U THEN LESSP(U, 0) ELSE NIL;"
-  (if (numberp u) (< u 0)))
+  (cond ((numberp u) (< u 0))
+		((math-integerp u) (math-negp u))))
 
 (defalias 'NULL 'null
   "NULL(U:any):boolean eval, spread
@@ -232,11 +247,18 @@ Returns T if U is NIL.
 EXPR PROCEDURE NULL(U);
    U EQ NIL;")
 
-(defalias 'NUMBERP 'numberp
+;; (defalias 'NUMBERP 'numberp
+;;   "NUMBERP(U:any):boolean eval, spread
+;; Returns T if U is a number (integer or floating).
+;; EXPR PROCEDURE NUMBERP(U);
+;;    IF OR(FIXP U, FLOATP U) THEN T ELSE NIL;")
+
+(defun NUMBERP (u)
   "NUMBERP(U:any):boolean eval, spread
 Returns T if U is a number (integer or floating).
 EXPR PROCEDURE NUMBERP(U);
-   IF OR(FIXP U, FLOATP U) THEN T ELSE NIL;")
+   IF OR(FIXP U, FLOATP U) THEN T ELSE NIL;"
+  (or (numberp u) (math-integerp u)))
 
 (defun ONEP (u)
   "ONEP(U:any):boolean eval, spread.
@@ -244,7 +266,9 @@ Returns T if U is a number and has the value 1 or 1.0. Returns NIL
 otherwise.
 EXPR PROCEDURE ONEP(U);
    OR(EQN(U, 1), EQN(U, 1.0));"
-  (or (eql u 1) (eql u 1.0)))
+  (if (math-integerp u)
+	  (math-equal u 1)
+	(eql u 1.0)))
 
 (defalias 'PAIRP 'consp
   "PAIRP(U:any):boolean eval, spread
@@ -264,7 +288,8 @@ Returns T if U is a number and has the value 0 or 0.0. Returns
 NIL otherwise.
 EXPR PROCEDURE ZEROP(U);
    OR(EQN(U, 0), EQN(U, 0.0));"
-  (and (numberp u) (zerop u)))
+  (cond ((numberp u) (zerop u))
+		((math-integerp u) (math-zerop u))))
 
 
 ;;; Functions on Dotted-Pairs
@@ -1181,21 +1206,37 @@ END;"
 ;;; Arithmetic Functions
 ;;; ====================
 
-(defalias 'ABS 'abs
+(defun esl--arith-op2 (op math-op u v)
+  "OP(U:number, V:number); MATH-OP is math-integer version of OP."
+  (if (math-integerp u)
+	  (if (math-integerp v)
+		  (funcall math-op u v)
+		;; v is a float or invalid:
+		(funcall op (FLOAT u) v))
+	;; u is a float or invalid:
+	(funcall op u (FLOAT v))))
+
+(defun ABS (u)
   "ABS(U:number):number eval, spread
 Returns the absolute value of its argument.
 EXPR PROCEDURE ABS(U);
-   IF LESSP(U, 0) THEN MINUS(U) ELSE U;")
+   IF LESSP(U, 0) THEN MINUS(U) ELSE U;"
+  (if (numberp u)
+	  (abs u)
+	;; u is a math-integer or invalid:
+	(math-abs u)))
 
-(defalias 'ADD1 '1+
+(defun ADD1 (u)
   "ADD1(U:number):number eval, spread
 Returns the value of U plus 1 of the same type as U (fixed or floating).
 EXPR PROCEDURE ADD1(U);
-   PLUS2(U, 1);")
+   PLUS2(U, 1);"
+  (PLUS2 u 1))
 
-(defalias 'DIFFERENCE '-
+(defun DIFFERENCE (u v)
   "DIFFERENCE(U:number, V:number):number eval, spread
-The value U - V is returned.")
+The value U - V is returned."
+  (esl--arith-op2 #'- #'math-sub u v))
 
 (defun DIVIDE (u v)
   "DIVIDE(U:number, V:number):dotted-pair eval, spread
@@ -1206,21 +1247,46 @@ attempted:
 ***** Attempt to divide by 0 in DIVIDE
 EXPR PROCEDURE DIVIDE(U, V);
    (QUOTIENT(U, V) . REMAINDER(U, V));"
-  (cons (/ u v) (% u v)))
+  (cons (QUOTIENT u v) (REMAINDER u v)))
 
-(defalias 'EXPT 'expt
+(defun EXPT (u v)
  "EXPT(U:number, V:integer):number eval, spread
 Returns U raised to the V power. A floating point U to an integer
 power V does not have V changed to a floating number before
-exponentiation.")
+exponentiation."
+ (cond ((and (numberp u) (numberp v)) (expt u v))
+	   ((math-integerp u) (math-pow u v))
+	   ;; u is a float, v is a math-integer, u^v = e^(ln(u)*v):
+	   ;; THIS VIOLATES THE SPECIFICATION!
+	   (t (exp (* (log u) (FLOAT v))))))
 
-(defalias 'FIX 'truncate
+;; The IEEE binary64 format (https://en.wikipedia.org/wiki/IEEE_754)
+;; uses a 53-bit significand (s) and 11-bit exponent (e).  If the
+;; (binary) exponent is 53 or more then the float has zero fractional
+;; part, so truncating it cannot lose digits.  An Elisp integer uses
+;; 61 bits (range 2**61 − 1 to −2**61), so a float with exponent up to
+;; 60 should truncate reliably to an Elisp integer.  Choose a maximum
+;; exponent value (emax) between 53 and 60 and only truncate a float
+;; with exponent <= emax to reliably obtain an accurate Elisp integer.
+
+(defun FIX (u)
   "FIX(U:number):integer eval, spread
 Returns an integer which corresponds to the truncated value of U.
 The result of conversion must retain all significant portions of U. If
-U is an integer it is returned unchanged.")
+U is an integer it is returned unchanged."
+  (if (math-integerp u)
+	  u
+	;; u is a float:
+	(let* ((emax 58)
+		   (s.e (frexp u))				; s float: 0.5 <= s < 1.0
+		   (e (cdr s.e)))				; e integer: u = s*2^e
+	  (if (<= e emax)
+		  (truncate u)
+		(math-mul (truncate (ldexp (car s.e) emax)) ; (s*2^emax) *
+				  (math-pow 2 (- e emax)))			; (2^(e-emax))
+		))))
 
-(defalias 'FLOAT 'float
+(defun FLOAT (u)
   "FLOAT(U:number):floating eval, spread
 The floating point number corresponding to the value of the
 argument U is returned.  Some of the least significant digits of
@@ -1228,70 +1294,89 @@ an integer may be lost do to the implementation of floating point
 numbers.  FLOAT of a floating point number returns the number
 unchanged.  If U is too large to represent in floating point an
 error occurs:
-***** Argument to FLOAT is too large")
+***** Argument to FLOAT is too large"
+  ;; Convert ANY number U to a native ELisp float.
+  (if (numberp u)
+	  (float u)
+	;; math-float returns ‘MANT * 10^EXP’ as ‘(float MANT EXP)’
+	((lambda (me) (* (car me) (expt 10.0 (cadr me))))
+	 (cdr (math-float u)))))
 
-(defalias 'GREATERP '>
+(defun GREATERP (u v)
   "GREATERP(U:number, V:number):boolean eval, spread
-Returns T if U is strictly greater than V, otherwise returns NIL.")
+Returns T if U is strictly greater than V, otherwise returns NIL."
+  (esl--arith-op2 #'< #'math-lessp v u))
 
-(defalias 'LESSP '<
+(defun LESSP (u v)
   "LESSP(U:number, V:number):boolean eval, spread
-Returns T if U is strictly less than V, otherwise returns NIL.")
+Returns T if U is strictly less than V, otherwise returns NIL."
+  (esl--arith-op2 #'< #'math-lessp u v))
 
-(defalias 'MAX 'max
+(defmacro MAX (&rest u)
   "MAX([U:number]):number noeval, nospread, or macro
 Returns the largest of the values in U. If two or more values are the
 same the first is returned.
 MACRO PROCEDURE MAX(U);
-   EXPAND(CDR U, 'MAX2);")
+   EXPAND(CDR U, 'MAX2);"
+  (EXPAND u 'MAX2))
 
-(defalias 'MAX2 'max
+(defun MAX2 (u v)
   "MAX2(U:number, V:number):number eval, spread
 Returns the larger of U and V. If U and V are the same value U is
 returned (U and V might be of different types).
 EXPR PROCEDURE MAX2(U, V);
-   IF LESSP(U, V) THEN V ELSE U;")
+   IF LESSP(U, V) THEN V ELSE U;"
+  (if (LESSP u v) v u))
 
-(defalias 'MIN 'min
+(defmacro MIN (&rest u)
   "MIN([U:number]):number noeval, nospread, or macro
 Returns the smallest of the values in U. If two or more values are the
 same the first of these is returned.
 MACRO PROCEDURE MIN(U);
-   EXPAND(CDR U, 'MIN2);")
+   EXPAND(CDR U, 'MIN2);"
+  (EXPAND u 'MIN2))
 
-(defalias 'MIN2 'min
+(defun MIN2 (u v)
   "MIN2(U:number, V:number):number eval, spread
 Returns the smaller of its arguments. If U and V are the same value,
 U is returned (U and V might be of different types).
 EXPR PROCEDURE MIN2(U, V);
-   IF GREATERP(U, V) THEN V ELSE U;")
+   IF GREATERP(U, V) THEN V ELSE U;"
+  (if (GREATERP u v) v u))
 
-(defalias 'MINUS '-
+(defun MINUS (u)
   "MINUS(U:number):number eval, spread
 Returns -U.
 EXPR PROCEDURE MINUS(U);
-   DIFFERENCE(0, U);")
+   DIFFERENCE(0, U);"
+  (if (numberp u)
+	  (- u)
+	;; u is a math-integer or invalid:
+	(math-neg u)))
 
-(defalias 'PLUS '+
+(defmacro PLUS (&rest u)
   "PLUS([U:number]):number noeval, nospread, or macro
 Forms the sum of all its arguments.
 MACRO PROCEDURE PLUS(U);
-   EXPAND(CDR U, 'PLUS2);")
+   EXPAND(CDR U, 'PLUS2);"
+   (EXPAND u #'PLUS2))
 
-(defalias 'PLUS2 '+
+(defun PLUS2 (u v)
   "PLUS2(U:number, V:number):number eval, spread
-Returns the sum of U and V.")
+Returns the sum of U and V."
+  (esl--arith-op2 #'+ #'math-add u v))
 
-(defalias 'QUOTIENT '/
+(defun QUOTIENT (u v)
   "QUOTIENT(U:number, V:number):number eval, spread
 The quotient of U divided by V is returned. Division of two positive
 or two negative integers is conventional. When both U and V are
 integers and exactly one of them is negative the value returned is
 the negative truncation of the absolute value of U divided by the
 absolute value of V. An error occurs if division by zero is attempted:
-***** Attempt to divide by 0 in QUOTIENT")
+***** Attempt to divide by 0 in QUOTIENT"
+  (esl--arith-op2 #'/ #'calcFunc-idiv u v))
 
-(defalias 'REMAINDER '%
+(defun REMAINDER (u v)
   "REMAINDER(U:number, V:number):number eval, spread
 If both U and V are integers the result is the integer remainder of
 U divided by V. If either parameter is floating point, the result is
@@ -1301,24 +1386,28 @@ both are negative the remainder is positive. An error occurs if V is
 zero:
 ***** Attempt to divide by 0 in REMAINDER
 EXPR PROCEDURE REMAINDER(U, V);
-   DIFFERENCE(U, TIMES2(QUOTIENT(U, V), V));")
+   DIFFERENCE(U, TIMES2(QUOTIENT(U, V), V));"
+  (DIFFERENCE u (TIMES2 (QUOTIENT u v) v)))
 
-(defalias 'SUB1 '1-
+(defun SUB1 (u)
   "SUB1(U:number):number eval, spread
 Returns the value of U less 1. If U is a FLOAT type number, the
 value returned is U less 1.0.
 EXPR PROCEDURE SUB1(U);
-   DIFFERENCE(U, 1);")
+   DIFFERENCE(U, 1);"
+  (DIFFERENCE u 1))
 
-(defalias 'TIMES '*
+(defmacro TIMES (&rest u)
   "TIMES([U:number]):number noeval, nospread, or macro
 Returns the product of all its arguments.
 MACRO PROCEDURE TIMES(U);
-   EXPAND(CDR U, 'TIMES2);")
+   EXPAND(CDR U, 'TIMES2);"
+   (EXPAND u #'TIMES2))
 
-(defalias 'TIMES2 '*
+(defun TIMES2 (u v)
   "TIMES2(U:number, V:number):number eval, spread
-Returns the product of U and V.")
+Returns the product of U and V."
+  (esl--arith-op2 #'* #'math-mul u v))
 
 
 ;;; MAP Composite Functions
