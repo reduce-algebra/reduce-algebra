@@ -177,13 +177,22 @@ output device. Dskin does not change the value of *echo, so one may say
 ;;; Elementary Predicates
 ;;; =====================
 
-(defmacro ATOM (u)				   ; boot.el does not compile if alias
+;; (defmacro ATOM (u)				   ; boot.el does not compile if alias
+;;   "ATOM(U:any):boolean eval, spread
+;; Returns T if U is not a pair.
+;; EXPR PROCEDURE ATOM(U);
+;;    NULL PAIRP U;"
+;;   (declare (debug t))
+;;   `(or (atom ,u) (math-integerp ,u)))
+
+;; Above macro doesn't work, I think because `u' gets evaluated twice.
+
+(defun ATOM (u)
   "ATOM(U:any):boolean eval, spread
 Returns T if U is not a pair.
 EXPR PROCEDURE ATOM(U);
    NULL PAIRP U;"
-  (declare (debug t))
-  `(atom ,u))
+  (or (atom u) (math-integerp u)))
 
 (defalias 'CODEP 'functionp
   "CODEP(U:any):boolean eval, spread

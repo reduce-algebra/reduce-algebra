@@ -47,8 +47,9 @@ will then include a lot of files that are not required for this
 build), or link the directory "packages" and file "package.red" to
 REDUCE.  Open a directory listing of REDUCE in Emacs (C-x d).
 
-1. Compile "esl.el" and "boot.el" (B in Emacs dired mode), then load
-"boot.elc" (L in Emacs dired mode), which loads "esl.elc".
+1. Compile (or recompile if anything has changed) "esl.el", "boot.el"
+and "eslpretty.el" (B in Emacs dired mode), then load "boot.elc" (L in
+Emacs dired mode), which loads "esl.elc".
 
 2. Run M-x STANDARD-LISP
 
@@ -110,14 +111,23 @@ in Emacs Lisp.
 Current status of ESL REDUCE
 ============================
 
-ESL REDUCE now runs all of "alg.tst" correctly but about 20 times
-slower than the time shown in "alg.rlg" and with upper-case output.
+The build process gets as far as misc/compactf on which building the
+fasl file fails.  This is probably not a catastrophe at this stage of
+development!
+
+ESL REDUCE currently runs all of "alg/alg.tst" correctly but about 20
+times slower than the time shown in "alg.rlg" and with upper-case
+output.  (Slightly slower after the addition of bignum support --
+maybe 24 times slower.  This is not surprising and may be improvable.)
 
 Try other test files.
 
-The two test files in the poly directory fail on some examples.  My
-guess is that this is because Elisp integers have limited size.
+"poly/polydiv.tst" now runs correctly except that the intentional
+error is not automatically continued, which it should be when input is
+from a file.  Also, the ^M characters appearing because some files use
+MS-DOS line endings are messy and distracting.
 
-
-Another issue appears to be that errors are not automatically
-continued when input is from a file.
+"pol/poly.tst" runs better now.  It fails on the complex example.  The
+x^32-1 example is different and ugly, but this may be due to the
+previous failure.  Some switches seem to be left wrongly set.  The GCD
+test fails on "share n".
