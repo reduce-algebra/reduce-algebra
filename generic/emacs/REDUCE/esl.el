@@ -1883,7 +1883,7 @@ OUTPUT or the file can't be opened.
 		   (set-buffer (get-buffer-create (concat esl--read-prefix file)))
 		   ;; Allow re-opening a file and continuing to read it:
 		   (if (zerop (buffer-size))
-			   (insert-file-contents-literally file))
+			   (insert-file-contents file))
 		   (cons (current-buffer) 'INPUT)))
 		((eq how 'OUTPUT)
 		 ;; Create a new file buffer and return (buffer . 'OUTPUT).

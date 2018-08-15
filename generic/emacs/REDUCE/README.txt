@@ -122,10 +122,7 @@ maybe 24 times slower.  This is not surprising and may be improvable.)
 
 Try other test files.
 
-"poly/polydiv.tst" now runs correctly except that the intentional
-error is not automatically continued, which it should be when input is
-from a file.  Also, the ^M characters appearing because some files use
-MS-DOS line endings are messy and distracting.
+"poly/polydiv.tst" now runs correctly.
 
 "pol/poly.tst" runs better now.  It fails on the complex example.  The
 x^32-1 example is different and ugly, but this may be due to the
