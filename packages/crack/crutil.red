@@ -6026,7 +6026,7 @@ lisp(!*gc!-hook!* := 'csl_aftergcuserhook)$
 if not getd 'psl_aftergcuserhook then
    copyd('psl_aftergcuserhook, 'aftergcuserhook);
 
-symbolic procedureaftergcuserhook;
+symbolic procedure aftergcuserhook;
  << psl_aftergcuserhook();
     aftergcuserhook1();
     nil >>;
