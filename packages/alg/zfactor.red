@@ -664,8 +664,8 @@ symbolic procedure lucas_test c;
 % q starts off negative I have a version of it reduced to the range [0,c) to
 % work with. Similarly d. The variable qk will hold q^k where k is an index
 % into the Lucas sequence. 
-    qk := q := modular!-number q;
-    d := modular!-number d;
+    qk := q := general!-modular!-number q;
+    d := general!-modular!-number d;
 % I will iterate downwards over bits in a binary representation of (c+1).
 % well to implement a Strong Lucas Test I need to iterate down until I
 % have no more below bits set in k.
@@ -686,11 +686,11 @@ symbolic procedure lucas_test c;
 %    v_{2k} := v_{k}^2 - 2 qk_{k}
 %    qk_{2k}:= qk_{k} qk_{k}
 % and happily I can do those updates sequentially.
-      u := modular!-times(u, v);
-      v := modular!-difference(modular!-times(v, v),
-                               modular!-times(2, qk));
+      u := general!-modular!-times(u, v);
+      v := general!-modular!-difference(general!-modular!-times(v, v),
+                                        general!-modular!-times(2, qk));
       kk := 2*kk;
-      qk := modular!-times(qk, qk);
+      qk := general!-modular!-times(qk, qk);
       if !*trace_primep then printf("%f%w: %t[%w, %w] q^k=%w%n", kk, 7, u, v, qk);
 if !*trace_primep then printf("(A) l=%w ll=%w k=%w logbit=%w%n", l, ll, k, logbitp(l, k));
 % Now I need to do a step whenever there is a "1" bit in the binary
@@ -702,19 +702,19 @@ if !*trace_primep then printf("(A) l=%w ll=%w k=%w logbit=%w%n", l, ll, k, logbi
 %    qk_{k+1}= q qk_{k}
 % and again all the arithmetic is to be done modulo c. I need a temporary
 % veriable when updating u and v since each depends on the other.
-        tmp := modular!-plus(u, v);
-        v := modular!-plus(modular!-times(d, u), v);
+        tmp := general!-modular!-plus(u, v);
+        v := general!-modular!-plus(general!-modular!-times(d, u), v);
         u := tmp;
 % Dividing by 2 when I have an even modulus is something I can write out
 % in-line here rather easily, and I expect this to be nicer than using
-% modular!-quotient or even that having computed a modular reciprocal of 2
+% general!-modular!-quotient or even that having computed a modular reciprocal of 2
 % and doing a modular multiplication by it.
         if not evenp u then u := u + c;
         u := u/2;
         if not evenp v then v := v + c;
         v := v/2;
         kk := kk+1;
-        qk := modular!-times(q, qk);
+        qk := general!-modular!-times(q, qk);
         if !*trace_primep then printf("%f%w: %t[%w, %w] q^k=%w%n", kk, 7, u, v, qk)
       >>
     >>;
@@ -735,10 +735,10 @@ if !*trace_primep then printf("(A) l=%w ll=%w k=%w logbit=%w%n", l, ll, k, logbi
 % I can again double a subscript in the Lucas sequence using:
 %    v_{2k} := v_{k}^2 - 2 qk_{k}
 %    qk_{2k}:= qk_{k} qk_{k}
-      v := modular!-difference(modular!-times(v, v),
-                               modular!-times(2, qk));
+      v := general!-modular!-difference(general!-modular!-times(v, v),
+                                        general!-modular!-times(2, qk));
       kk := 2*kk;
-      qk := modular!-times(qk, qk);
+      qk := general!-modular!-times(qk, qk);
 % I do not compute u here because at each stage I just multiply u by v. If
 % I have a prime then this is a field multiplication and u can only end up zero
 % if some v is zero.
