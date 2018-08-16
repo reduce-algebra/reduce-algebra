@@ -124,7 +124,7 @@ Try other test files.
 
 "poly/polydiv.tst" now runs correctly.
 
-"pol/poly.tst" runs better now.  It fails on the complex example.  The
-x^32-1 example is different and ugly, but this may be due to the
-previous failure.  Some switches seem to be left wrongly set.  The GCD
-test fails on "share n".
+"pol/poly.tst" runs better now.  The gcd examples using a let rule
+fail, but if the let rule is replaced by a procedure, they succeed.
+The let rules are somehow producing incorrect results, although
+superficially they look correct.

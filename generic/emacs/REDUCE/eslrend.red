@@ -214,6 +214,18 @@ esc!* := '!;
 put('defn, 'simpfg, '((t (!\require '!\eslpretty))
                       (nil (!\esl!-reinstate!-plists))));
 
+
+% Avoid the definition of BOUNDP in "alg/simp.red".  It detects an
+% unbound variable by intentionally throwing an error, which makes
+% debugging awkward.  Use the Elisp built-in function instead.
+
+remflag('(boundp), 'lose);
+% because the build process currently runs eslrend twice!
+
+symbolic procedure boundp u; !\boundp u;
+
+flag('(boundp), 'lose);
+
 endmodule;
 
 end;

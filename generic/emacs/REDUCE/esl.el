@@ -1372,12 +1372,24 @@ EXPR PROCEDURE MINUS(U);
 Forms the sum of all its arguments.
 MACRO PROCEDURE PLUS(U);
    EXPAND(CDR U, 'PLUS2);"
-   (EXPAND u #'PLUS2))
+  (declare (debug t))
+  (EXPAND u #'PLUS2))
 
 (defun PLUS2 (u v)
   "PLUS2(U:number, V:number):number eval, spread
 Returns the sum of U and V."
   (esl--arith-op2 #'+ #'math-add u v))
+
+(defun esl-xor (u v)
+  "(exclusive-or U V)"
+  (cond (u (not v)) (v (not u))))
+
+(defun esl--math-integer-quotient (u v)
+  "Correct quotient of math-integers U and V."
+  (let ((w (math-quotient (math-abs u) (math-abs v))))
+	(if (esl-xor (math-negp u) (math-negp v))
+		(math-neg w)
+	  w)))
 
 (defun QUOTIENT (u v)
   "QUOTIENT(U:number, V:number):number eval, spread
@@ -1387,7 +1399,7 @@ integers and exactly one of them is negative the value returned is
 the negative truncation of the absolute value of U divided by the
 absolute value of V. An error occurs if division by zero is attempted:
 ***** Attempt to divide by 0 in QUOTIENT"
-  (esl--arith-op2 #'/ #'calcFunc-idiv u v))
+  (esl--arith-op2 #'/ #'esl--math-integer-quotient u v))
 
 (defun REMAINDER (u v)
   "REMAINDER(U:number, V:number):number eval, spread
@@ -1415,7 +1427,8 @@ EXPR PROCEDURE SUB1(U);
 Returns the product of all its arguments.
 MACRO PROCEDURE TIMES(U);
    EXPAND(CDR U, 'TIMES2);"
-   (EXPAND u #'TIMES2))
+  (declare (debug t))
+  (EXPAND u #'TIMES2))
 
 (defun TIMES2 (u v)
   "TIMES2(U:number, V:number):number eval, spread
