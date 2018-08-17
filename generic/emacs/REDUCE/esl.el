@@ -714,7 +714,7 @@ Removes the flag V from the property list of each member of the
 list U. Both V and all the elements of U must be ids or the type
 mismatch error will occur."
   (if *DEFN (mapc #'esl--save-plist u))
-  (mapc (lambda (x) (put x v nil)) u)
+  (mapc (lambda (x) (cl-remprop x v)) u)
   nil)
 
 (defun REMPROP (u ind)
@@ -724,7 +724,7 @@ Returns the removed property or NIL if there was no such indicator."
   (prog1
 	  (get u ind)
 	(if *DEFN (esl--save-plist u))
-	(put u ind nil)))
+	(cl-remprop u ind)))
 
 
 ;;; Function Definition

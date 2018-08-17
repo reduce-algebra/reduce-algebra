@@ -124,7 +124,6 @@ Try other test files.
 
 "poly/polydiv.tst" now runs correctly.
 
-"pol/poly.tst" runs better now.  The gcd examples using a let rule
-fail, but if the let rule is replaced by a procedure, they succeed.
-The let rules are somehow producing incorrect results, although
-superficially they look correct.
+"pol/poly.tst" now also runs correctly provided I replace the `d' in
+the products in the gcd tests with <<d>> to force an extra evaluation.
+I can't find the cause of this problem.
