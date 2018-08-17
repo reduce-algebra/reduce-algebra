@@ -630,36 +630,36 @@ symbolic procedure lucas_test c;
 % about Lucas sequences this is the special case where p=1.
     u := 1;
     v := 1;
-% For small examples I can compute the Lucas sequence in a naive manner
-% and display all the values. This is intended to be useful for comparison
-% with the values calculated below using the more sophisticated method.
-% The cut-off at 500 is entirely arbitrary, but tabulating more than 500
-% lines of sequence would start to get clumsy.
-    if !*trace_primep then begin
-      scalar nn, w, u0, u1, ut, v0, v1, vt;
-      w := c+1;
-% I will tabulate the values of k that the doubling method will go via..
-      while w neq 0 do <<
-        nn := w . nn;
-        if evenp w then w := w/2 else w := w-1 >>;
-      u0 := 0; u1 := 1;
-      v0 := 2; v1 := 1;
-      for i := 1:(c+1) do <<
-        ut := u1 - q*u0;
-        vt := v1 - q*v0;
-        u0 := u1; u1 := ut;
-        v0 := v1; v1 := vt;
-% I display k, u_k, v_k and then those two values modulo c, just in the
-% cases that should arise in the cleverer doubling code. I will display the
-% exact integer values if they are small enough to fit on the line, otherwise
-% the annotation "<huge>"
-        if abs u0 <= 99999999999999999999999999 then ut := u0
-        else ut := "<huge>";
-        if abs v0 <= 99999999999999999999999999 then vt := v0
-        else vt := "<huge>";
-        if i member nn then printf("%f%w:%t[%w, %w]%t%w %t%w%n",
-               i, 7, mod(u0, c), mod(v0, c), 24, ut, 51, vt)  >>
-    end;
+%-- % For small examples I can compute the Lucas sequence in a naive manner
+%-- % and display all the values. This is intended to be useful for comparison
+%-- % with the values calculated below using the more sophisticated method.
+%-- % The cut-off at 500 is entirely arbitrary, but tabulating more than 500
+%-- % lines of sequence would start to get clumsy.
+%--     if !*trace_primep then begin
+%--       scalar nn, w, u0, u1, ut, v0, v1, vt;
+%--       w := c+1;
+%-- % I will tabulate the values of k that the doubling method will go via..
+%--       while w neq 0 do <<
+%--         nn := w . nn;
+%--         if evenp w then w := w/2 else w := w-1 >>;
+%--       u0 := 0; u1 := 1;
+%--       v0 := 2; v1 := 1;
+%--       for i := 1:(c+1) do <<
+%--         ut := u1 - q*u0;
+%--         vt := v1 - q*v0;
+%--         u0 := u1; u1 := ut;
+%--         v0 := v1; v1 := vt;
+%-- % I display k, u_k, v_k and then those two values modulo c, just in the
+%-- % cases that should arise in the cleverer doubling code. I will display the
+%-- % exact integer values if they are small enough to fit on the line, otherwise
+%-- % the annotation "<huge>"
+%--         if abs u0 <= 99999999999999999999999999 then ut := u0
+%--         else ut := "<huge>";
+%--         if abs v0 <= 99999999999999999999999999 then vt := v0
+%--         else vt := "<huge>";
+%--         if i member nn then printf("%f%w:%t[%w, %w]%t%w %t%w%n",
+%--                i, 7, mod(u0, c), mod(v0, c), 24, ut, 51, vt)  >>
+%--     end;
 % For subsequent arithmetic to work properly I must ensure that even if
 % q starts off negative I have a version of it reduced to the range [0,c) to
 % work with. Similarly d. The variable qk will hold q^k where k is an index
