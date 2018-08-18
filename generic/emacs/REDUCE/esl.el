@@ -587,21 +587,21 @@ The type mismatch error occurs if U is not a number, identifier,
 string, or function-pointer."
   (seq-map
    (lambda (c) (intern (string c)))
-   (if (or (stringp u) (numberp u))
-	   (prin1-to-string u)
-	 ;; Assume identifier -- must insert ! before a leading digit and
-	 ;; before any special characters in string without \ escapes:
-	 (let* ((s (prin1-to-string u t)) (l (length s))
-			(i 0) (ss nil) e)
-	   (while (< i l)
-		 (setq e (aref s i))
-		 (if (not (or (and (not (eq i 0)) (>= e ?0) (<= e ?9))
-					  (and (>= e ?A) (<= e ?Z))
-					  (and (>= e ?a) (<= e ?z)))) ; unnecessary as ids UC?
-			 (push ?! ss))
-		 (push e ss)
-		 (setq i (1+ i)))
-	   (reverse ss)))))
+   (cond ((or (stringp u) (numberp u)) (prin1-to-string u))
+		 ((math-integerp u) (math-format-number u))
+		 ;; Assume identifier -- must insert ! before a leading digit and
+		 ;; before any special characters in string without \ escapes:
+		 (t (let* ((s (prin1-to-string u t)) (l (length s))
+				   (i 0) (ss nil) e)
+			  (while (< i l)
+				(setq e (aref s i))
+				(if (not (or (and (not (eq i 0)) (>= e ?0) (<= e ?9))
+							 (and (>= e ?A) (<= e ?Z))
+							 (and (>= e ?a) (<= e ?z)))) ; unnecessary as ids UC?
+					(push ?! ss))
+				(push e ss)
+				(setq i (1+ i)))
+			  (reverse ss))))))
 
 (defalias 'GENSYM (if (fboundp 'gensym) 'gensym 'cl-gensym)
   ;; gensym was not defined before Emacs 26
@@ -1928,8 +1928,6 @@ U displayed upon the currently selected output device. The value of
 !$EOL!$ causes termination of the current line like a call to TERPRI.")
 
 (defun PRINT (u)
-  ;; Should be OK temporarily, but may need re-implementing, at least
-  ;; to use ! instead of \.
   "PRINT(U:any):any eval, spread
 Displays U in READ readable format and terminates the print line.
 The value of U is returned.

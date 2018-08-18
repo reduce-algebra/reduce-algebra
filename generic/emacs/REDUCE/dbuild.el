@@ -4,6 +4,8 @@
 ;;; Author: Anthony C. Hearn.
 ;;; Revised for ESL REDUCE by Francis J. Wright.
 
+(or (file-exists-p "log") (make-directory "log"))
+
 (WRS (OPEN "log/dbuild.log" 'OUTPUT))
 
 ;; Assume esl.el and boot.el are already compiled, and ensure they are

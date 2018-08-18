@@ -120,10 +120,25 @@ times slower than the time shown in "alg.rlg" and with upper-case
 output.  (Slightly slower after the addition of bignum support --
 maybe 24 times slower.  This is not surprising and may be improvable.)
 
-Try other test files.
+Other test files
 
 "poly/polydiv.tst" now runs correctly.
 
-"pol/poly.tst" now also runs correctly provided I replace the `d' in
+"poly/poly.tst" now also runs correctly provided I replace the `d' in
 the products in the gcd tests with <<d>> to force an extra evaluation.
 I can't find the cause of this problem.
+
+Arith package
+
+The REDUCE 3.8 file smlbflot.red contains are error that must be
+corrected as in later REDUCE versions.  The file "rdelem.red" uses the
+smacro incprec!: defined in "smlbflot.red", but it is not being
+applied.  Attempting to load "smbflot" doesn't seem to work, so
+temporarily, I have added the smacro definition to the top of the
+file.
+
+With the above two changes, "arith/arith.tst" appears to run
+correctly.  However, !:rd: should be output as !:RD!: although this is
+purely internal information, and there are a lot of rounding
+differences, but nothing serious and sometimes Emacs REDUCE is more
+accurate!  Probably OK for now.
