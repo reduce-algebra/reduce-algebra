@@ -5949,7 +5949,7 @@ if filep "stop_now" then <<
 symbolic procedure aftergcuserhook1$
 begin scalar li$
 !#if (memq 'psl lispsystem!*)
- last_free_cells:=if boundp 'gcfree!* then gcfree!*               % for 32 bit PSL
+ last_free_cells:=if boundp 'gcfree!* and gcfree!* then gcfree!*  % for 32 bit PSL
                                       else known!-free!-space()$  % for 32 bit PSL and 64 bit PSL
 !#endif
  % for CSL last_free_cells is not updated as heap is extended dynamically
