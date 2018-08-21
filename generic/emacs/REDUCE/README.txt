@@ -120,7 +120,8 @@ times slower than the time shown in "alg.rlg" and with upper-case
 output.  (Slightly slower after the addition of bignum support --
 maybe 24 times slower.  This is not surprising and may be improvable.)
 
-Other test files
+Poly package
+------------
 
 "poly/polydiv.tst" now runs correctly.
 
@@ -129,16 +130,50 @@ the products in the gcd tests with <<d>> to force an extra evaluation.
 I can't find the cause of this problem.
 
 Arith package
+-------------
 
 The REDUCE 3.8 file smlbflot.red contains are error that must be
 corrected as in later REDUCE versions.  The file "rdelem.red" uses the
 smacro incprec!: defined in "smlbflot.red", but it is not being
-applied.  Attempting to load "smbflot" doesn't seem to work, so
-temporarily, I have added the smacro definition to the top of the
-file.
+applied.  I have added
+
+load!-package 'smlbflot;
+
+which seems to fix the problem.  I think either this change, or
+perhaps better moving the smacro definitions for incprec!: and
+decprec!: in "arith.red", should probably be applied to the generic
+source code.
 
 With the above two changes, "arith/arith.tst" appears to run
 correctly.  However, !:rd: should be output as !:RD!: although this is
 purely internal information, and there are a lot of rounding
 differences, but nothing serious and sometimes Emacs REDUCE is more
-accurate!  Probably OK for now.
+accurate!  Probably OK for now.  Eventually, I should probably use the
+Elisp transcendental functions, which are implemented in C, rather
+than those in "arith/math.red".
+
+Factor package
+--------------
+
+"factor/factor.tst" runs completely correctly, although it's a bit
+slow.  There is probably scope for optimizing the arithmetic used in
+the factorizer.
+
+Int package
+-----------
+
+"int/int.tst" runs to completion, but it's about 20 times slower than
+the time shown in "int.rlg" (which is consistent with running
+"alg.tst") and one integral behaves strangely.  At one point, Emacs
+appears to be about to enter the debugger but then it doesn't!  I've
+not seen that behaviour before.
+
+int(x**7/(x**12+1),x); evaluates only on the second attempt!  The
+problem appears to be that it involves extremely large numbers.  The
+Calc functions used to process them (in particular,
+`math-div-bignum-big') are written recursively and they run out of
+stack space.  The only solution might be to re-implement big integers
+taking care to avoid recursion!  I don't know why this integral
+succeeds on the second attempt.  The result is sorted differently
+(which might be significant) making it hard to check, but it looks to
+be correct.

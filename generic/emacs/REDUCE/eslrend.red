@@ -215,16 +215,26 @@ put('defn, 'simpfg, '((t (!\require '!\eslpretty))
                       (nil (!\esl!-reinstate!-plists))));
 
 
+% Replace the REDUCE versions of some key functions with better
+% ESL-specific versions.
+
+remflag('(boundp gcdn), 'lose);
+% because the build process currently runs eslrend twice!
+
 % Avoid the definition of BOUNDP in "alg/simp.red".  It detects an
 % unbound variable by intentionally throwing an error, which makes
 % debugging awkward.  Use the Elisp built-in function instead.
 
-remflag('(boundp), 'lose);
-% because the build process currently runs eslrend twice!
-
 symbolic procedure boundp u; !\boundp u;
 
-flag('(boundp), 'lose);
+% Provide a numerical greatest common divisor that should work better
+% with ESL big integers than the version in "alg/numsup.red" by using
+% the Calc package.
+
+symbolic procedure gcdn(u,v); !c!a!l!c!F!u!n!c!-!g!c!d(u,v);
+%  U and v are integers. Value is absolute value of gcd of u and v.
+
+flag('(boundp gcdn), 'lose);
 
 endmodule;
 

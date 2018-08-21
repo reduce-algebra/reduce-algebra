@@ -42,7 +42,8 @@
   (switch-to-buffer
    (setq esl--default-output-buffer
 		 (get-buffer-create esl--default-output-buffer-name)))
-  (esl-standard-lisp-interaction-mode)
+  (require 'reduce-mode "../reduce-mode.el") ; temporary filename
+  (reduce-mode)
   (goto-char (point-max))  ; in case buffer already exists
   (let (value			   ; value of last sexp
 		;; Output to the END of the current buffer:
@@ -52,6 +53,7 @@
 		;; Make (READCH) read from the minibuffer:
 		(esl--readch-use-minibuffer t))
 	(catch 'QUIT
+	  ;; Run the standard REDUCE read-eval-print loop:
 	  (if (zerop STATCOUNTER)
 		  (INITREDUCE)
 		(BEGIN)))))

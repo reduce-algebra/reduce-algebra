@@ -1556,12 +1556,17 @@ EXPR PROCEDURE DIGIT(U);
       THEN T ELSE NIL;"
   (if (memq u '(\0 \1 \2 \3 \4 \5 \6 \7 \8 \9)) t))
 
-(defalias 'LENGTH 'length
+(defun LENGTH (x)
   "LENGTH(X:any):integer eval, spread
 The top level length of the list X is returned.
 EXPR PROCEDURE LENGTH(X);
    IF ATOM X THEN 0
-      ELSE PLUS(1, LENGTH CDR X);")
+      ELSE PLUS(1, LENGTH CDR X);"
+  ;; The Elisp length function cannot be used because it does not
+  ;; accept atoms or dotted pairs!
+  (if (ATOM x)
+	  0
+	(1+ (LENGTH (cdr x)))))
 
 (defun LITER (u)
   "LITER(U:any):boolean eval, spread
@@ -1663,7 +1668,7 @@ EXPR PROCEDURE SUBLIS(X, Y);
 	  y
 	(let ((u (assoc y x)))
 	  (cond (u (cdr u))
-			((atom y) y)
+			((ATOM y) y)
 			(t (cons (SUBLIS x (car y)) (SUBLIS x (cdr y))))))))
 
 (defun SUBST (u v w)
@@ -1677,7 +1682,7 @@ EXPR PROCEDURE SUBST(U, V, W);
       ELSE SUBST(U, V, CAR W) . SUBST(U, V, CDR W);"
   (cond ((null w) nil)
 		((equal v w) u)
-		((atom w) w)
+		((ATOM w) w)
 		(t (cons (SUBST u v (car w)) (SUBST u v (cdr w))))))
 
 
@@ -2021,13 +2026,6 @@ support the REDUCE YESP function."
 (defvar esl--marker (make-marker)
   "Marker from which the next input should be read.")
 
-(defun esl--char-to-interned-id (c)
-  "Convert ELisp character C to an interned SLisp identifier.
-Up-case letters if !*RAISE is non-nil."
-  (intern
-   (string
-	(if (and *RAISE (>= c ?a) (<= c ?z)) (- c 32) c))))
-
 (defvar esl--readch-use-minibuffer nil
   "If non-nil then READCH reads from the minibuffer as terminal.
 Otherwise, it reads from an interaction buffer as terminal.")
@@ -2046,6 +2044,18 @@ READCH to return from `esl--readch-input-string'.")
 (defvar esl--readch-history nil
   "READCH minibuffer input history.")
 
+(defvar esl--readch-prev-char nil
+  "Previous character returned by READCH.")
+
+(defun esl--readch-char-to-interned-id (c)
+  "Convert ELisp character C to an interned SLisp identifier.
+Up-case letters if !*RAISE is non-nil unless previous char was `!'."
+  (intern
+   (string
+	(cond ((eq esl--readch-prev-char ?!) c)
+		  ((and *RAISE (>= c ?a) (<= c ?z)) (- c 32))
+		  (t c)))))
+
 (defun READCH ()
   "READCH():id
 Returns the next interned character from the file currently selected
@@ -2056,69 +2066,71 @@ Comments delimited by % and end-of-line are not transparent to READCH.
 
 In ESL, echo minibuffer input to `standard-output' and if *ECHO
 is non-nil then echo file input."
-  (if esl--read-stream
-	  ;; Read from a file:
-	  (let ((result
-			 (with-current-buffer esl--read-stream
-			   (cond ((eobp) $EOF$)
-					 ((eolp) (if *ECHO (terpri))
-					  (forward-line) $EOL$)
-					 (t (let ((c (char-after)))
-						  (if *ECHO (write-char c))
-						  (forward-char)
-						  (esl--char-to-interned-id c)))))))
-		;; When end of file is reached on a non-standard input device,
-		;; the standard input device is reselected. But can't kill the
-		;; buffer within `with-current-buffer'!
-		;; OR MAYBE YOU CAN!!! But leave this version for now.
-		(if (eq result $EOF$)
-			(CLOSE (RDS nil)))
-		result)
-	;; Read from terminal:
-	(if esl--readch-use-minibuffer
-		;; Read from the minibuffer:
-		(progn
-		  (when (null esl--readch-input-string)
-			;; If the input string is null then this is a call for new
-			;; input.  Read a new input string from the minibuffer,
-			;; save it and return the first character.
-			(setq esl--readch-input-string
-				  (let (standard-output)
-					;; to avoid minibuffer errors resetting this
-					(read-from-minibuffer "REDUCE: "
-										  nil nil nil 'esl--readch-history))
-				  esl--readch-input-string-length
-				  (length esl--readch-input-string)
-				  esl--readch-input-string-index 0)
-			;; (when *ECHO
-			(with-current-buffer standard-output
-			  (goto-char (point-max)) ; in case point moved interactively
-			  (princ esl--readch-input-string) (terpri)
-			  (terpri)));)
-		  ;; Then return the next character from the input string.
-		  ;; When the last character has been returned, clear the
-		  ;; string to trigger new input.
-		  (if (equal esl--readch-input-string "")
-			  (progn
-				(setq esl--readch-input-string nil)
-				$EOF$)			   ; for want of something better!
-			(let ((c (aref esl--readch-input-string esl--readch-input-string-index)))
-			  (setq esl--readch-input-string-index
-					(1+ esl--readch-input-string-index))
-			  (if (= esl--readch-input-string-index esl--readch-input-string-length)
-				  (setq esl--readch-input-string nil))
-			  (if (eq c ?\n) $EOL$ (esl--char-to-interned-id c)))))
-	  ;; Read from interaction buffer:
-	  (with-current-buffer "*Standard LISP*"
-		(goto-char esl--marker)
-		;; When end of file occurs on the standard input device the
-		;; Standard LISP reader terminates. [NOT YET IMPLEMENTED.]
-		(cond ((eobp) $EOF$)
-			  ((eolp) (forward-line)
-			   (set-marker esl--marker (point)) $EOL$)
-			  (t (let ((c (char-after esl--marker)))
-				   (set-marker esl--marker (1+ esl--marker))
-				   (esl--char-to-interned-id c))))))))
+  (setq
+   esl--readch-prev-char
+   (if esl--read-stream
+	   ;; Read from a file:
+	   (let ((result
+			  (with-current-buffer esl--read-stream
+				(cond ((eobp) $EOF$)
+					  ((eolp) (if *ECHO (terpri))
+					   (forward-line) $EOL$)
+					  (t (let ((c (char-after)))
+						   (if *ECHO (write-char c))
+						   (forward-char)
+						   (esl--readch-char-to-interned-id c)))))))
+		 ;; When end of file is reached on a non-standard input device,
+		 ;; the standard input device is reselected. But can't kill the
+		 ;; buffer within `with-current-buffer'!
+		 ;; OR MAYBE YOU CAN!!! But leave this version for now.
+		 (if (eq result $EOF$)
+			 (CLOSE (RDS nil)))
+		 result)
+	 ;; Read from terminal:
+	 (if esl--readch-use-minibuffer
+		 ;; Read from the minibuffer:
+		 (progn
+		   (when (null esl--readch-input-string)
+			 ;; If the input string is null then this is a call for new
+			 ;; input.  Read a new input string from the minibuffer,
+			 ;; save it and return the first character.
+			 (setq esl--readch-input-string
+				   (let (standard-output)
+					 ;; to avoid minibuffer errors resetting this
+					 (read-from-minibuffer "REDUCE: "
+										   nil nil nil 'esl--readch-history))
+				   esl--readch-input-string-length
+				   (length esl--readch-input-string)
+				   esl--readch-input-string-index 0)
+			 ;; (when *ECHO
+			 (with-current-buffer standard-output
+			   (goto-char (point-max)) ; in case point moved interactively
+			   (princ esl--readch-input-string) (terpri)
+			   (terpri)));)
+		   ;; Then return the next character from the input string.
+		   ;; When the last character has been returned, clear the
+		   ;; string to trigger new input.
+		   (if (equal esl--readch-input-string "")
+			   (progn
+				 (setq esl--readch-input-string nil)
+				 $EOF$)			   ; for want of something better!
+			 (let ((c (aref esl--readch-input-string esl--readch-input-string-index)))
+			   (setq esl--readch-input-string-index
+					 (1+ esl--readch-input-string-index))
+			   (if (= esl--readch-input-string-index esl--readch-input-string-length)
+				   (setq esl--readch-input-string nil))
+			   (if (eq c ?\n) $EOL$ (esl--readch-char-to-interned-id c)))))
+	   ;; Read from interaction buffer:
+	   (with-current-buffer "*Standard LISP*"
+		 (goto-char esl--marker)
+		 ;; When end of file occurs on the standard input device the
+		 ;; Standard LISP reader terminates. [NOT YET IMPLEMENTED.]
+		 (cond ((eobp) $EOF$)
+			   ((eolp) (forward-line)
+				(set-marker esl--marker (point)) $EOL$)
+			   (t (let ((c (char-after esl--marker)))
+					(set-marker esl--marker (1+ esl--marker))
+					(esl--readch-char-to-interned-id c)))))))))
 
 (defun TERPRI ()
   "TERPRI():NIL
@@ -2203,7 +2215,7 @@ selected output file.
 		(princ "Eval: ")
 		(setq value (esl--read-and-echo))
 		(setq value (ERRORSET '(eval value) t t))
-		(unless (atom value)
+		(unless (ATOM value)
 		  (terpri)
 		  (princ "====> ") (princ (car value)) (terpri))))))
 
@@ -2259,7 +2271,7 @@ Most commands are inherited from `lisp-interaction-mode-map'.")
 		(standard-output esl--marker)
 		value)
 	(setq value (ERRORSET '(eval (read)) t t))
-	(unless (atom value)
+	(unless (ATOM value)
 	  (terpri) (terpri) (princ "====> ") (princ (car value)))
 	(terpri) (terpri) (princ "Eval: ")
 	;; Output does not necessarily advance point, so...
