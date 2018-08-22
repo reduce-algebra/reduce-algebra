@@ -109,11 +109,11 @@ sudo port install          \
   subversion               \
   texinfo                  \
   texlive-fonts-extra      \
-  texlive-htmlxml          \
+  texlive-formats-extra    \
   texlive-latex-extra      \
   texlive-plain-generic    \
   texlive-bin-extra        \
-  texlibe-fonts-recommended \
+  texlive-fonts-recommended \
   timeout                  \
   vim                      \
   wget

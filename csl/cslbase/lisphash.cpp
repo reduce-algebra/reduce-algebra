@@ -874,13 +874,19 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab, LispObject 
 // I am not adding new data. I need to rehash it because garbage collection
 // may have shuffled memory and so hash values that are based on memory
 // addresses can be out of date.
+// If I go "prepare_for_borrowing" I can allocate new space using
+// borrow_vector but that space is then transient. The idea is that "borrowed"
+// space comes from the memory half-space that is reserved by the copying
+// garbage collector to copy material into when a GC is needed. The result
+// is that plenty of space should always be available, but it will be
+// imporant that GC is not triggered while a borrowed vector is still in use.
         prepare_for_borrowing();
         LispObject oldkeys =
             borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
         LispObject oldvals = v_table == nil ? nil :
             borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
         size_t load = 0;
-// Copy live data to the borrowed space and make the exiting table empty.
+// Copy live data to the borrowed space and make the existing table empty.
         for (size_t i=0; i<h_table_size; i++)
         {   LispObject k = ht(i);
             if (k != SPID_HASHEMPTY && k != SPID_HASHTOMB)

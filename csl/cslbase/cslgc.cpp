@@ -37,7 +37,13 @@
 
 #include "headers.h"
 
+
 #ifndef CONSERVATIVE
+// AT least for now I comment ALL of this file out if I am experimenting
+// with the conservative version of the GC, and I have copied all the code in
+// it into the file allocate.cpp. When I have that version stable I will
+// transfer garbage collection stuff back. That means that the version here
+// will never need to be conditional on CONSERVATIVE.
 
 #ifdef WIN32
 #include <conio.h>
@@ -385,15 +391,6 @@ static void copy(LispObject *p)
     }
 }
 
-#ifdef CONSERVATIVE
-
-static bool reset_limit_registers(size_t vheap_need, bool stack_flag)
-{
-    return true;
-}
-
-#else // !CONSERVATIVE
-
 static bool reset_limit_registers(size_t vheap_need, bool stack_flag)
 // returns true if after resetting the limit registers there was
 // enough space left for me to proceed. Return false on failure, ie
@@ -445,8 +442,6 @@ static bool reset_limit_registers(size_t vheap_need, bool stack_flag)
     if (stack_flag) return (stack < stacklimit);
     else return true;
 }
-
-#endif // !CONSERVATIVE
 
 // I need a way that a thread that is not synchronised with this one can
 // generate a Lisp-level interrupt. I achieve that by
@@ -537,48 +532,6 @@ static int prev_consolidated_set = 1;
 
 bool garbage_collection_permitted = false;
 
-#ifndef CONSERVATIVE
-
-static void real_garbage_collector()
-{
-// I lift the real garbage collector to a separate function mainly
-// so that I can set breakpoints on it!
-    for (int i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
-        free_vectors[i] = 0;
-
-    cons_cells = symbol_heads = strings = user_vectors =
-            big_numbers = box_floats = bytestreams = other_mem =
-                                           litvecs = getvecs = 0;
-
-// First I need to identify pinned items...
-
-// I should remind you, gentle reader, that the value cell
-// and env cells of nil will always contain nil, which does not move,
-// and so I do not need to copy them here provided that NIL itself
-// never moves.
-    copy(&(qplist(nil)));
-    copy(&(qpname(nil)));
-    copy(&(qfastgets(nil)));
-    copy(&(qpackage(nil)));
-// I dislike the special treatment of current_package that follows. Maybe
-// I should arrange something totally different for copying the package
-// structure...
-    for (LispObject **p = list_bases; *p!=NULL; p++) copy(*p);
-    for (LispObject *sp=stack; sp>(LispObject *)stackbase; sp--) copy(sp);
-// When running the deserialization code I keep references to multiply-
-// used items in repeat_heap, and if garbage collection occurs they must be
-// updated.
-    if (repeat_heap != NULL)
-    {   for (size_t i=1; i<=repeat_count; i++)
-            copy(&repeat_heap[i]);
-    }
-// Throw away the old semi-space - it is now junk.
-
-// Flip the descriptors for the old and new semi-spaces.
-}
-
-#else // !CONSERVATIVE
-
 static void real_garbage_collector()
 {
 // I lift the real garbage collector to a separate function mainly
@@ -660,8 +613,6 @@ static void real_garbage_collector()
     new_vheap_pages_count = 0;
 }
 
-#endif // !CONSERVATIVE
-
 LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
 {   clock_t t0, t1, t2;
     size_t vheap_need = 0;
@@ -671,11 +622,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
         garbage_collection_permitted)
         stg_class = GC_USER_HARD;
     stop_after_gc = 0;
-#ifndef CONSERVATIVE
-// The precise garbage collector was given a target such that it would
+// The precise garbage collector is given a target such that it would
 // take action of itself if it could not allocate enought space.
     if (stg_class == GC_VEC || stg_class == GC_BPS) vheap_need = size;
-#endif
     already_in_gc = true;
 #if defined WIN32 && !defined __CYGWIN__
     _kbhit(); // Fairly harmless anyway, but is here to let ^c get noticed
@@ -835,12 +784,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
             (long)gc_number, why, t/100, t%100, gct/100, gct%100);
     }
 #endif // WINDOW_SYSTEM
-#ifdef CONSERVATIVE
-// Here we are starting a garbage collection. We really want there to be
-// enough pages of free memory that copying live data will work. In the
-// previous GC I took special action to assure myself that there were at
-// least 2 free pages here. I will not do that in the new version!
-#else // !CONSERVATIVE
     switch (pages_count)
     {
     case 0: allocate_more_memory(); // ...and drop through...
@@ -854,7 +797,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
         ensure_screen();
         my_exit(EXIT_FAILURE);
     }
-#endif // !CONSERVATIVE
 // If things crash really badly maybe I would rather have my output up
 // to date.
     ensure_screen();
@@ -902,14 +844,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
     }
     pop(p);
 
-#ifdef CONSERVATIVE
-// here, just after a garbage collection, I may want to judge whether it
-// would be a good idea to try to grab some more memory from the operating
-// system. At present I will not do that, so the heap will remain at a fixed
-// size.
-#else // !CONSERVATIVE
     grab_more_memory(heap_pages_count + vheap_pages_count);
-#endif // !CONSERVATIVE
 
 // Put limit registers back again...
     if (!reset_limit_registers(vheap_need, false))
