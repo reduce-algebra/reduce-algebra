@@ -79,8 +79,8 @@ To run ESL REDUCE for the first time in an Emacs session, load the
 file "reduce.el" (or compile it first and load "reduce.elc").  This
 should give you a fairly standard running REDUCE process, but remember
 that input is currently via the minibuffer.  ESL REDUCE accepts input
-in either lower or upper case but currently outputs in upper case only
-(except that strings retain their input case).
+in either lower or upper case and currently outputs in lower case by
+default (except that strings retain their input case).
 
 If you terminate ESL REDUCE (or it is terminated by Emacs), it is
 really only suspended unless you terminate Emacs and you can re-enter
@@ -108,6 +108,13 @@ would be (assuming foo!-bar has no special processing rules)
 
 in Emacs Lisp.
 
+Print output
+============
+
+The ESL print functions now support the Standard Lisp escape
+convention and down-casing of identifiers (when !*LOWER is non-nil).
+This does not appear to have caused any significant loss of speed.
+
 Current status of ESL REDUCE
 ============================
 
@@ -116,9 +123,10 @@ fasl file fails.  This is probably not a catastrophe at this stage of
 development!
 
 ESL REDUCE currently runs all of "alg/alg.tst" correctly but about 20
-times slower than the time shown in "alg.rlg" and with upper-case
-output.  (Slightly slower after the addition of bignum support --
-maybe 24 times slower.  This is not surprising and may be improvable.)
+times slower than the time shown in "alg.rlg".  (Slightly slower after
+the addition of bignum support -- maybe 24 times slower.  And after
+the addition of better output maybe 26 times slower.  This is not
+surprising and may be improvable.)
 
 Poly package
 ------------
@@ -141,16 +149,21 @@ load!-package 'smlbflot;
 
 which seems to fix the problem.  I think either this change, or
 perhaps better moving the smacro definitions for incprec!: and
-decprec!: in "arith.red", should probably be applied to the generic
+decprec!: into "arith.red", should probably be applied to the generic
 source code.
 
 With the above two changes, "arith/arith.tst" appears to run
-correctly.  However, !:rd: should be output as !:RD!: although this is
-purely internal information, and there are a lot of rounding
-differences, but nothing serious and sometimes Emacs REDUCE is more
-accurate!  Probably OK for now.  Eventually, I should probably use the
-Elisp transcendental functions, which are implemented in C, rather
-than those in "arith/math.red".
+correctly. There are a lot of rounding differences, but nothing
+serious and sometimes Emacs REDUCE is more accurate!  Probably OK for
+now.  Eventually, I should probably use the Elisp transcendental
+functions, which are implemented in C, rather than those in
+"arith/math.red".
+
+E in numbers is not lowered!  This appears to be because bigfloats are
+output as strings using PRIN2, so I would need to modify the way the
+string is generated, which would mean modifying the standard REDUCE
+code, which I want to avoid as much as possible.  This will have to
+remain an anomaly for now.
 
 Factor package
 --------------
@@ -164,16 +177,22 @@ Int package
 
 "int/int.tst" runs to completion, but it's about 20 times slower than
 the time shown in "int.rlg" (which is consistent with running
-"alg.tst") and one integral behaves strangely.  At one point, Emacs
-appears to be about to enter the debugger but then it doesn't!  I've
-not seen that behaviour before.
+"alg.tst").  However, at one point Emacs appears to be about to enter
+the debugger but then it doesn't and int(x**7/(x**12+1),x) evaluates
+only on a later subsequent attempt.  The problem appears to be that it
+involves extremely large numbers.  The Calc functions used to process
+them (in particular, `math-div-bignum-big') are written recursively
+and they run out of stack space, but only by a small margin.  This
+triggers the debugger, which increases the stack space by enough that
+Emacs can continue and the integral can later be evaluated, although
+the error seems to change the sort order of the result.  Increasing
+`max-specpdl-size' from the default of 1300 to 2000 before running the
+test file allows it to complete fully correctly.  However, the best
+solution might be to re-implement big integers taking care to avoid
+recursion!
 
-int(x**7/(x**12+1),x); evaluates only on the second attempt!  The
-problem appears to be that it involves extremely large numbers.  The
-Calc functions used to process them (in particular,
-`math-div-bignum-big') are written recursively and they run out of
-stack space.  The only solution might be to re-implement big integers
-taking care to avoid recursion!  I don't know why this integral
-succeeds on the second attempt.  The result is sorted differently
-(which might be significant) making it hard to check, but it looks to
-be correct.
+To do
+=====
+
+Better support for big integers.
+Better build process.

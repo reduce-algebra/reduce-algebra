@@ -53,7 +53,8 @@
 ;; Elisp escape character is \.  This difference is handled by EXPLODE
 ;; and COMPRESS, and would need to be handled by READ if implemented.
 ;; In Slisp, lower case letters are automatically converted to upper
-;; case when the !*RAISE flag is T.
+;; case when the !*RAISE flag is T.  But upper case letters are
+;; automatically output as lower case when the !*LOWER flag is T.
 
 ;; string -- To include a double quote character in a string in Slisp
 ;; double it, but in Elisp escaped it with \.  This difference would
@@ -62,7 +63,8 @@
 ;; dotted-pair, vector, function-pointer -- probably OK.
 
 ;; T and NIL -- Elisp only recognises t and nil, so T and NIL are
-;; implemented as constants set to t and nil.
+;; implemented as constants set to t and nil.  They are also converted
+;; to lower case by COMPRESS.
 
 ;; ftype -- in Slisp, the set of ids {EXPR, FEXPR, MACRO} represents
 ;; the class of definable function types.  FEXPRs are not implemented.
@@ -146,7 +148,7 @@ modified by SET or SETQ."))
 
 (put 'NIL 'GLOBAL t)
 
-(defvar *RAISE t						; ESL uses upper case
+(defvar *RAISE t					  ; ESL uses upper case internally
   "*RAISE = NIL global
 If !*RAISE is non-NIL all characters input through Standard LISP
 input/output functions will be raised to upper case. If !*RAISE is
@@ -1923,14 +1925,22 @@ Returns the number of characters in the output buffer. When the
 buffer is empty, 0 is returned."
   0)
 
-(defalias 'PRINC 'princ
-  ;; Should be OK temporarily, but may need re-implementing, at least
-  ;; to handle EOL.
+(defvar *LOWER t
+  "If *LOWER is non-nil then all identifiers are output using
+lower case.")
+
+(defun esl--prin-downcase-string-maybe (u)
+  "Down-case string U if *LOWER is non-nil."
+  (if *LOWER (downcase u) u))
+
+(defun PRINC (u)
   "PRINC(U:id):id eval, spread
 U must be a single character id such as produced by EXPLODE or
 read by READCH or the value of !$EOL!$. The effect is the character
 U displayed upon the currently selected output device. The value of
-!$EOL!$ causes termination of the current line like a call to TERPRI.")
+!$EOL!$ causes termination of the current line like a call to TERPRI."
+  ;; NB: This version does not handle !$EOL!$ correctly.
+  (princ (esl--prin-downcase-string-maybe (symbol-name u))))
 
 (defun PRINT (u)
   "PRINT(U:any):any eval, spread
@@ -1942,18 +1952,60 @@ EXPR PROCEDURE PRINT(U);
   (terpri)
   u)
 
+(defun esl--prin1-id-to-string (u)
+  "Convert identifier U to a string including appropriate `!' characters.
+Down-case if *LOWER is non-nil."
+  (setq u (esl--prin-downcase-string-maybe (symbol-name u)))
+  (if (string-prefix-p "!:" u)
+	  (concat "!:" (esl--prin1-id-to-string--internal (substring u 2)))
+	(esl--prin1-id-to-string--internal u)))
+
+(defun esl--prin1-id-to-string--internal (u)
+  "Include appropriate `!' characters in string U.
+U does not begin with `!:'."
+  (let (not-first)
+	(mapconcat
+	 (lambda (c)
+	   (prog1
+		   (if (or (and not-first (>= c ?0) (<= c ?9))
+				   (and (>= c ?A) (<= c ?Z))
+				   (and (>= c ?a) (<= c ?z)))
+			   (string c)
+			 (string ?! c))
+		 (setq not-first t)))
+	 u "")))
+
 (defun PRIN1 (u)
-  ;; Should be OK temporarily, but may need re-implementing, at least
-  ;; to use ! instead of \.
   "PRIN1(U:any):any eval, spread
 U is displayed in a READ readable form. The format of display is
 the result of EXPLODE expansion; special characters are prefixed
 with the escape character !, and strings are enclosed in \"...\". Lists
 are displayed in list-notation and vectors in vector-notation."
-  (if (math-integerp u)
-	  (princ (math-format-number u))
-	(prin1 u))
+  ;; NB: This version will not print a vector containing big integers
+  ;; correctly, but the output should be readable!
+  (cond ((symbolp u) (princ (esl--prin1-id-to-string u)))
+		((not (consp u)) (prin1 u))
+		((math-integerp u) (princ (math-format-number u)))
+		(t (princ "(")
+		   (PRIN1 (car u))
+		   (esl--prin1-cdr (cdr u))
+		   (princ ")")))
   u)
+
+(defun esl--prin1-cdr (u)
+  "If U is non-nil then print it or its elements spaced appropriately.
+U is the cdr of a cons cell: nil, an atom or a cons cell."
+  (cond ((null u))						; do nothing
+		((atom u) (princ " . ") (PRIN1 u))
+		(t (princ " ")
+		   (PRIN1 (car u))
+		   (esl--prin1-cdr (cdr u)))))
+
+(defun esl--prin2-id-to-string (u)
+  "Convert identifier U to a string excluding inappropriate `!' characters.
+Down-case if *LOWER is non-nil."
+  (setq u (esl--prin-downcase-string-maybe (symbol-name u)))
+  (if (string-prefix-p "!:" u) (substring u 1) u))
 
 (defun PRIN2 (u)
   "PRIN2(U:any):any eval, spread
@@ -1963,10 +2015,25 @@ as described in the EXPLODE function with the exceptions that
 the escape character does not prefix special characters and strings
 are not enclosed in \"...\". Lists are displayed in list-notation and
 vectors in vector-notation. The value of U is returned."
-  (princ (if (math-integerp u)
-			 (math-format-number u)
-		   u))
+  ;; NB: This version will not print a vector containing big integers
+  ;; correctly, but the output should be readable!
+  (cond ((symbolp u) (princ (esl--prin2-id-to-string u)))
+		((not (consp u)) (princ u))
+		((math-integerp u) (princ (math-format-number u)))
+		(t (princ "(")
+		   (PRIN2 (car u))
+		   (esl--prin2-cdr (cdr u))
+		   (princ ")")))
   u)
+
+(defun esl--prin2-cdr (u)
+  "If U is non-nil then print it or its elements spaced appropriately.
+U is the cdr of a cons cell: nil, an atom or a cons cell."
+  (cond ((null u))						; do nothing
+		((atom u) (princ " . ") (PRIN2 u))
+		(t (princ " ")
+		   (PRIN2 (car u))
+		   (esl--prin2-cdr (cdr u)))))
 
 (defun RDS (filehandle)
   "RDS(FILEHANDLE:any):any eval, spread
@@ -2491,6 +2558,7 @@ NAME should be an identifier or string."
 (defvar esl--faslout-filehandle)
 (defvar esl--faslout-name.el)
 (defvar esl--faslout-stream)
+(defvar esl--faslout-old-lower)
 
 (declare-function SUPERPRINM "eslpretty" (X LMAR))
 
@@ -2516,7 +2584,10 @@ NAME should be an identifier or string."
   ;; Output subsequent code as Lisp to a temporary file until FASLEND
   ;; evaluated.
   (setq name (STRING-DOWNCASE name))
-  (setq *writingfaslfile t *DEFN t)
+  (setq esl--faslout-old-lower *LOWER)
+  (setq *writingfaslfile t
+		*DEFN t
+		*LOWER nil)
   (if *INT
 	  (princ (format "FASLOUT %s: IN files; or type in expressions.
 When all done, execute FASLEND;\n\n" name)))
@@ -2543,7 +2614,9 @@ When all done, execute FASLEND;\n\n" name)))
 	(advice-remove 'EXPLODE #'esl--faslout-explode-override)
 	(advice-remove 'PRETTYPRINT #'esl--faslout-prettyprint-override)
 	(CLOSE esl--faslout-filehandle)
-	(setq *writingfaslfile nil *DEFN nil)
+	(setq *writingfaslfile nil
+		  *DEFN nil
+		  *LOWER esl--faslout-old-lower)
 	(esl-reinstate-plists)
 	;; Check the Emacs Lisp file generated:
 	(let ((attribs (file-attributes esl--faslout-name.el)))
