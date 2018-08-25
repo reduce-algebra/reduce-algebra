@@ -867,26 +867,37 @@ symbolic procedure zeta!*general!*calc!*sub(z,zp,admissable,pre,stt);
       return mk!*sq !*f2q mkround result;
    end;
 
-algebraic array stieltjes!: (5);  % for use in raw zeta computations
-algebraic array stf!:       (5);
+COMMENT The following procedure computes the value of the zeta function according
+        to formula 25.2.4 of https://dlmf.nist.gov/ , which is the expansion of the
+        zeta function about z=1.
+        See also
+             http://mathworld.wolfram.com/StieltjesConstants.html .
+        It is used only for small values of precision. 
 
-stieltjes!: (0) := +0.577215664901532860606512$ % Euler's constant
-stieltjes!: (1) := -0.072815845483676724860586$
-stieltjes!: (2) := -0.009690363192872318484530$
-stieltjes!: (3) := +0.002053834420303345866160$
-stieltjes!: (4) := +0.002325370065467300057468$
-stieltjes!: (5) := +0.000793323817301062701753$
-stf!: (0) := 1$
-stf!: (1) := 1$
-stf!: (2) := 2$
-stf!: (3) := 6$
-stf!: (4) := 24$
-stf!: (5) := 120$
+        The constants Stieltjes!:(n) are defined via the classical Stieltjes constants
+        as
+
+              Stieltjes!:(n) := (-1)^n*gamma_n / n! 
+
+;
+
+algebraic;
+
+array Stieltjes!: (5);  % for use in raw zeta computations
+
+Stieltjes!: (0) := +0.577215664901532860606512$ % Euler's constant
+Stieltjes!: (1) := +0.072815845483676724860586$
+Stieltjes!: (2) := -0.00484518159643616136422750173551$
+Stieltjes!: (3) := -0.000342305736717224331350228894166$
+Stieltjes!: (4) := +0.0000968904193944708054646771285453$
+Stieltjes!: (5) := -0.00000661103181084218943121035468498$
 
 algebraic procedure raw!*zeta(z);
    << z := z-1;
-      1/z + (for m := 0:5 sum ((-1)**m * stieltjes!:(m) * z**m / stf!:(m)))
+     1/z + for m := 0:5 sum (Stieltjes!:(m) * z**m)
    >>;
+
+symbolic;
 
 endmodule;
 
