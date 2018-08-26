@@ -135,15 +135,66 @@ deflist ('((cont endstat) (pause endstat) (retry endstat)),'stat);
 
 flag ('(cont),'ignore);
 
+% This nasty fragment of code returns a floating point value that
+% is a CRUDE indication of the speed of the machine on which it is running.
+% It uses around a second of CPU time the first time it is run, with that
+% amount of time not depending on the nature of the host platform.
+
+% The value returned ranges from a bit over 1.0 for the regular version of
+% Reduce on a Raspberry Pi (ie about the slowest machine in common use
+% today) up to almost 20.0 for the fastest desktop systems of 2018. The idea
+% of this is that it can be used with with!-timeout() to end up with
+% a time limit that represents at least roughly the same amount of work
+% whether run on a fast or slow computer.
+% A copy of Reduce build with debugging options, or the CSL "bootstrapreduce"
+% can be seriously slower - perhaps by up to a factor of ten. The measurement
+% here should not be viewed as a benchmark that is valid in any respectable
+% way for comparing performance on different systems, and the exact results
+% returned will tend to vary somewhat from run to run. Despite all
+% uncertainties it may help make code that wants to set time limits be at
+% least roughtly able to set ones based on how much work has to be done.
+
+global '(machine_speed!*);
+machine_speed!* := nil;
+
+symbolic procedure machine_speed();
+  if machine_speed!* then machine_speed!*
+  else begin
+    scalar n, t0, t1;
+    n := 50;
+    t1 := 0;
+    while t1 < 400 do <<
+      n := 2*n;
+      t0 := time();
+% At this stage in the Reduce source I do not yet have the infix operators
+% "to", ".*" and ".+" available, so I construct a sample polynomial as a
+% raw Lisp data-structure just using CONS.
+      for i := 1:n do exptf((('x . 1) . 1) . 1, 40);
+      t1 := time() - t0 >>;
+    return (machine_speed!* := float n / float t1)
+  end;
+
 % I will have a scheme that lets me impose a limit on the time taken by
 % a calculation. This works by using a hook function that is called at the
 % end of any garbage collection, and so its granularity is not very fine.
+% Note in particular that if you have a very large amount of memory and/or
+% the calculation involved does not allocate memory as it goes then any
+% interruption may be dramatically delayed. However for many cases of
+% general algebraic calculations with default allocation memory it will be
+% broadly useful!
 % It exits using "throw" rather than by raising an error because by doing
-% that the guarded code can not use errorset to escape. The time-limit
-% it provides is passed in units of milliseconds. I am allowed to nest
+% that the guarded code can not use errorset to avoid the interruption.
+% The time-limit is passed in units of milliseconds. I am allowed to nest
 % uses of "with-timeout" however the inner ones have their time allocation
 % capped at the residual of the limit set by any outer one.
 %
+% Sometimes a user will really want the limit to be an absolute time period,
+% as in "give up if I have not got anywhere within an hour", while in
+% other cases (perhaps especially in demonstration scripts) the limit will
+% want to be normalised against machine seed. So I provide two versions here,
+% one for each scenario. The second is called with!-normalized!-timeout and it
+% takes its limit in abstract "time units" that are VERY ROUGHLY milliseconds
+% on a Raspberry pi, and are of course then much smaller on faster systems.
 
 trap!-time!* := nil; % nil here means no trapping active.
 
@@ -155,16 +206,16 @@ trap!-time!* := nil; % nil here means no trapping active.
 % an argument.
 
 #if (memq 'psl lispsystem!*)
-symbolic procedure aftergcuserhook();
+symbolic procedure aftergcsystemhook();
 #else
-symbolic procedure aftergcuserhook u;
+symbolic procedure aftergcsystemhook u;
 #endif
   if trap!-time!* and
     time() > trap!-time!* then <<
       trap!-time!* := nil;
       throw('!@timeout!@, '!@timeout!@) >>;
 
-!*gc!-hook!* := 'aftergcuserhook;
+!*gc!-hook!* := 'aftergcsystemhook;
 
 symbolic procedure trap!-time!-value();
   trap!-time!*;
@@ -178,10 +229,26 @@ symbolic procedure trap!-time!-value();
 % lead to some diagnostic, while using a "begin/end" here make things appear
 % to be OK but to behave unexpectedly.
 
+% Absolute time limit in milliseconds...
+
 smacro procedure with!-timeout(n, u);
   (lambda ott;
     (lambda trap!-time!*;
-      << trap!-time!* := time() + n;
+      << trap!-time!* := time() + fix n;
+         if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
+         catch('!@timeout!@, u . nil)>>)(nil))
+    (trap!-time!-value());
+
+
+% Time limit in arbitrary units such that (very roughly) slow and fast
+% machines get to do about the same amount of work before being interrupted.
+% I think of the argument as being very roughly "Raspberry Pi milliseconds",
+% so mid or high-range laptops or desktops will take less than that time.
+
+smacro procedure with!-normalized!-timeout(n, u);
+  (lambda ott;
+    (lambda trap!-time!*;
+      << trap!-time!* := time() + fix (n/machine_speed());
          if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
          catch('!@timeout!@, u . nil)>>)(nil))
     (trap!-time!-value());
@@ -189,11 +256,28 @@ smacro procedure with!-timeout(n, u);
 
 % A typical use of this would be:
 %
-%    with!-timeout(7000, % allow 7 seconds...
-%      perform!-some!-calculation());
+%    with!-timeout(7000,               % allow 7 seconds.
+%                  perform_some_calculation());
+% or
+%    with!-normalized_timeout(70000, % 70000 "abstract time units"
+%                                    % About as previous case on a mid-range
+%                                    % computer of 2018.
+%                             perform_some_calculation());
 %
-% which returns an atom if the time limit was exceeded, and otherwise a list
+% These return an atom if the time limit was exceeded, and otherwise a list
 % whose car is the value of the protected expression.
+
+% Note that it will be VITAL that the protected expression be such that
+% interrupting it can not leave global variables or data in a state that
+% will mess up further computation. If the code binds fluids that will be OK
+% because they will be restored in the process of handling the interrupt,
+% but Reduce global state, such as that associated with kernel ordering, would
+% NOT be restored, and if RPLACx operations are performed in ways that
+% could leave data in a temporarily insanitary state then that will be
+% dangerous. There could at least in principle be problems with global state
+% within the Lisp system too, but at present I can not provide a clear
+% statement of what is safe and what might not be. Well input or output
+% stream selection certainly represents global state...
 
 % Sometimes I want to have a critical section of code that must
 % not be interrupted by a timeout trap. I can arrange that using this

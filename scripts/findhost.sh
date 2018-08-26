@@ -143,7 +143,7 @@ do
   --enable-test=no | --disable-test | --enable-experiment=no | disable-experiment)
     test=
     ;;
-  --enable-test* | enable-experiment*)
+  --enable-test* | --enable-experiment* | --enable-conservative*)
     test=-test
     ;;
   --with-mingw64=no | --without-mingw64)

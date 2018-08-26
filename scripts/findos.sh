@@ -188,21 +188,21 @@ else
         os="mac"
       else
         case `cat /System/Library/CoreServices/SystemVersion.plist` in
-        *Mac*OS*X*ProductVersion*\<string\>10.2*)
-          os="mac_10.2_jaguar"
-          ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.3*)
-          os="mac_10.3_panther"
-          ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.4*)
-          os="mac_10.4_tiger"
-          ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.5*)
-          os="mac_10.5_leopard"
-          ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.6*)
-          os="mac_10.6_snowleopard"
-          ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.2*)
+#         os="mac_10.2_jaguar"
+#         ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.3*)
+#         os="mac_10.3_panther"
+#         ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.4*)
+#         os="mac_10.4_tiger"
+#         ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.5*)
+#         os="mac_10.5_leopard"
+#         ;;
+#       *Mac*OS*X*ProductVersion*\<string\>10.6*)
+#         os="mac_10.6_snowleopard"
+#         ;;
         *Mac*OS*X*ProductVersion*\<string\>10.7*)
           os="mac_10.7_lion"
           ;;
