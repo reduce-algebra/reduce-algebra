@@ -6022,9 +6022,15 @@ lisp(!*gc!-hook!* := 'csl_aftergcuserhook)$
 % wish to chain on after an existing one, so I save the old version as
 % psl_aftergcuserhook and define a new version that calls that followed
 % by the new behaviour that is expected by crack.
+% 
+% If neither the old (aftergcuserhook) nor the new (psl_aftergcuserhook) version
+% are present, define an empty function.
 
-if not getd 'psl_aftergcuserhook then
-   copyd('psl_aftergcuserhook, 'aftergcuserhook);
+if getd 'aftergcuserhook and not getd 'psl_aftergcuserhook then
+   copyd('psl_aftergcuserhook, 'aftergcuserhook)
+ else
+   putd('psl_aftergcuserhook, 'expr, '(lambda nil nil));
+
 
 symbolic procedure aftergcuserhook;
  << psl_aftergcuserhook();
