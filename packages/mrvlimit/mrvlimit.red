@@ -59,7 +59,7 @@ load_package sets;
 algebraic;
 off mcd;
 
-symbolic procedure maxi(f,g);
+symbolic procedure mrv_maxi(f,g);
 begin scalar c;
    if(freeof(f,'x)) then return g;
    if(freeof(g,'x)) then return f;
@@ -70,19 +70,19 @@ begin scalar c;
     else if (evalb('x member f)='true) then return  g
     else if (evalb('x member g)='true) then return  f
     else if eqcar(f,'list) and eqcar(cdr f,'list) then % double list
-                            << % only want caddr f to be given to compare
-                                      c:=compare(caddr f,cadr g);
+                            << % only want caddr f to be given to mrv_compare
+                                      c:=mrv_compare(caddr f,cadr g);
                                  %write "c is ", c; write length(c)
                                 return c;
                             >>
     else if eqcar(g,'list) and eqcar(cdr g,'list) then
                              <<
-                             c:=compare(cadr f,caddr g);
+                             c:=mrv_compare(cadr f,caddr g);
                              %write "c is ", c;
                              return c;
                              >>
-                          else <<
-                                 c:=compare(cadr f, cadr g);
+    else <<
+                                 c:=mrv_compare(cadr f, cadr g);
                                   %write "c is ", c;
                                   return c;
                                  >>;
@@ -92,27 +92,32 @@ begin scalar c;
               % else return union(cdr f,cdr g);
                                            %   >>;
             
-end; % of maxi
+end; % of mrv_maxi
 
  %max
 %-------------------------------------------------------------------------
 
 algebraic;
-procedure maxi1(f,g);  lisp cadr (lisp (list('list,maxi(f,g))));
+procedure mrv_maxi1(f,g);  lisp cadr (lisp (list('list,mrv_maxi(f,g))));
 
 algebraic;
-expr procedure compare(f,g);
-begin scalar logg, logf, !*expandlogs;
-   lisp (!*expandlogs := t);
-   logf:=log(f);
-   logg:=log(g);
+symbolic procedure mrv_compare(f,g);
+begin scalar logg, logf, !*expandlogs, result;
+   !*expandlogs := t;
+   logf := simp!* {'log,f};
+   logg := simp!* {'log,g};
 
-   if(mrv_limit(logf/logg,x,infinity)=0) then return {g} else <<
-        if(mrv_limit(logg/logf,x,infinity)=0) then return {f} else
-                return {f,g}; >>;
+   result :=
+      if mrv_limit(mk!*sq quotsq(logf,logg),'x,'infinity) = 0 then {'list,g}
+       else if mrv_limit(mk!*sq quotsq(logg,logf),'x,'infinity) = 0 then {'list,f}
+       else {'list,f,g};
+
+   return result;
 end;
 
-procedure comp(f,g); lisp('list.compare(f,g));
+symbolic operator mrv_compare;
+
+%procedure comp(f,g); lisp('list.mrv_compare(f,g));
 
 %----------------------------------------------------------------------------
 load_package assist;
@@ -134,10 +139,10 @@ begin
     else if(car li='times)
      then << if(atom cadr li and atom caddr li) then
                      << if(length(cddr li)=1) then
-                        return  lisp ('list.maxi1({cadr li}, {caddr li}))
-                        else return maxi1({cadr li},mrv(cddr li))
+                        return  lisp ('list.mrv_maxi1({cadr li}, {caddr li}))
+                        else return mrv_maxi1({cadr li},mrv(cddr li))
 		     >>
-              else return  maxi1(mrv(cadr li), mrv(cddr li))
+              else return  mrv_maxi1(mrv(cadr li), mrv(cddr li))
           >>
     else <<if(car li='minus)
      then << if(atom cadr li) then return 'list.{cadr li} else return mrv(cadr li) >>
@@ -148,20 +153,20 @@ begin
           if(length cdr li=1) then %only one argument to plus
                  return mrv(cadr li)
            else <<if(atom cadr li and atom caddr li)
-            then << if(length(cddr li)=1) then return lisp ('list.maxi1({cadr li},{caddr li}))
-                     else return lisp ('list.maxi1({cadr li},mrv(append({'plus},cddr li))))
+            then << if(length(cddr li)=1) then return lisp ('list.mrv_maxi1({cadr li},{caddr li}))
+                     else return lisp ('list.mrv_maxi1({cadr li},mrv(append({'plus},cddr li))))
                  >>
            else << if(atom cadr li and pairp caddr li)
-                     then return maxi1('list.{cadr li}, mrv(cddr li)) % here as well
+                     then return mrv_maxi1('list.{cadr li}, mrv(cddr li)) % here as well
            else  <<if(pairp cadr li and null caddr li)
                      then return mrv(cadr li)
            else << if(pairp cadr li and atom caddr li)
                      then << if(length(cdr li)>2) then % we have plus with > two args
-                                return lisp cdr ('list.maxi1(mrv(cadr li),mrv(append({'plus},cddr li)))) %her
-                              else return lisp cdr ('list.maxi1(mrv(cadr li), mrv(cddr li))) 
+                                return lisp cdr ('list.mrv_maxi1(mrv(cadr li),mrv(append({'plus},cddr li)))) %her
+                              else return lisp cdr ('list.mrv_maxi1(mrv(cadr li), mrv(cddr li))) 
                           >>
            else << if(null caddr li) then return mrv(cadr li)
-           else return maxi1(mrv(cadr li), mrv(append({'plus},cddr li))) >>
+           else return mrv_maxi1(mrv(cadr li), mrv(append({'plus},cddr li))) >>
                       >>
                       >>
                 >>
@@ -177,12 +182,12 @@ begin
                              eq 'infinity
                            then
                          return
-                        maxi1('list.{li},mrv(caddr li)) else
+                        mrv_maxi1('list.{li},mrv(caddr li)) else
                          <<
                            if sqchk mrv_limit(caddr li,'x,'infinity)
                               = '(minus infinity)
                                then
-                     return  maxi1('list.{li},'list.mrv(cddr li)) else return
+                     return  mrv_maxi1('list.{li},'list.mrv(cddr li)) else return
                             mrv(caddr li)
                           >>
                      >>
@@ -211,34 +216,34 @@ procedure mrv1(li);  lisp (mrv(li));
 % procedure to return a list of subexpressions of exp
 % this will then be used for the mrv function
 
-symbolic procedure flatten(li);
-  % This procedure turns a list with possibly nested sub_lists into a single
-  % List with no nested sub-lists. Easier to search this list.
-  makeflat(li,nil);
-
-symbolic procedure makeflat(li,answer);
-  if null li then nil
-   else if atom li then li.answer
-   else if null cdr li then makeflat(car li,answer)
-   else append(makeflat(car li,answer),makeflat(cdr li,answer));
-
-algebraic;
-procedure flat(li); lisp(flatten li);
-procedure mkflat(li); lisp(makeflat(li,nil));
+%symbolic procedure flatten(li);
+%  % This procedure turns a list with possibly nested sub_lists into a single
+%  % List with no nested sub-lists. Easier to search this list.
+%  makeflat(li,nil);
+%
+%symbolic procedure makeflat(li,answer);
+%  if null li then nil
+%   else if atom li then li.answer
+%   else if null cdr li then makeflat(car li,answer)
+%   else append(makeflat(car li,answer),makeflat(cdr li,answer));
+%
+%algebraic;
+%procedure flat(li); lisp(flatten li);
+%procedure mkflat(li); lisp(makeflat(li,nil));
 %in "max";
-%trst maxi;
+%trst mrv_maxi;
 
-symbolic procedure lim(exp,var,val);
-begin scalar mrv_list, rule;
-  mrv_list:=mrv1(exp);
-  if mrv_list = '(list) then rederr "unable to compute mrv set"
-   else
-     <<
-        rule:=list(list ('replaceby, cdr mrv_list,'w));
-        let rule;
-     >>;
-
-end;
+%symbolic procedure lim(exp,var,val);
+%begin scalar mrv_list, rule;
+%  mrv_list:=mrv1(exp);
+%  if mrv_list = '(list) then rederr "unable to compute mrv set"
+%   else
+%     <<
+%        rule:=list(list ('replaceby, cdr mrv_list,'w));
+%        let rule;
+%     >>;
+%
+%end;
 % need to consider if x belongs to mrv(exp), then follow rest of alg.
 algebraic;
 expr procedure move_up(exp,x);
@@ -249,7 +254,7 @@ sub({e^x=x,x=log(x)},exp);
 
 %off mcd;
 algebraic;
-expr procedure rewrite(m);
+expr procedure mrv_rewrite(m);
 begin scalar ans_list,summ,k,g,c,A;
 
   ans_list:={};
@@ -271,7 +276,7 @@ begin scalar ans_list,summ,k,g,c,A;
   return ans_list;
 end;
 
-%expr procedure smallest(li);
+%expr procedure mrv_smallest(li);
 %begin scalar current,k;
 %current:=part(li,1);
 %for k:=1:arglength(li) do <<
@@ -281,29 +286,29 @@ end;
 %return current;
 %end;
 
-expr procedure smallest(li);
+expr procedure mrv_smallest(li);
 begin scalar l1,l2;
  if(length li=1) then return part(li,1)
   else <<
-         l1:=lngth2(part(li,1));
-         l2:=lngth2(part(li,2));
+         l1:=mrv_length(part(li,1));
+         l2:=mrv_length(part(li,2));
          if (l1>l2) then return part(li,2)
           else if (l1<l2) then return part(li,1)
           else return part(li,1);
        >>;
 end;
 
-symbolic procedure lngth u;
+symbolic procedure mrv_lngth u;
  begin
     if (u='list) then return nil
      else if atom u then return 1
-     else if atom car u then return (1+lngth cdr u)
-     else return lngth car u + lngth cdr u;
+     else if atom car u then return (1+ mrv_lngth cdr u)
+     else return  mrv_lngth car u +  mrv_lngth cdr u;
  end;
 
-%put('lngth2,'psopfn,'lngth);
+%put('mrv_length,'psopfn,'mrv_lngth);
 algebraic;
-procedure lngth2 u; lisp lngth u;
+procedure mrv_length u; lisp mrv_lngth u;
 
 %-------------------------------------------------------------------------
 
@@ -364,7 +369,8 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
       off exp; off mcd;
       while(member(x,mrv_f)) do
         <<
-          f:=move_up(f,x); %write "f is ", f;
+          f:=move_up(f,x);
+	  if (lisp !*tracelimit) then write "After move_up, f is ",f;
           %mrv_f:=mrv1(f);
           mrv_f:=for k:=1:arglength(mrv_f) collect move_up(part(mrv_f,k),x);
           %write "mrv is ", mrv_f;
@@ -384,9 +390,9 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
       % f now rewritten
     >>
    else <<
-           %mrv_f2:=rewrite(mrv_f); % write "f2 is ", mrv_f2;
+           %mrv_f2:=mrv_rewrite(mrv_f); % write "f2 is ", mrv_f2;
                   % now need to rewrite f itself
-           small:=smallest(mrv_f);
+           small:=mrv_smallest(mrv_f);
 	   begin scalar !*expandlogs; lisp(!*expandlogs := t);
 	     h:=log(small); 
 	     if lisp !*tracelimit then write "h is ", h;
@@ -394,7 +400,7 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
            if(mrv_limit(h,x,infinity)=infinity) then
              <<
                 small:=small^-1;
-                % write "small has been changed", small;
+                if lisp(!*tracelimit) then write "small has been changed to ", small;
              >>;
 
          rule1 := { small => ww, 1/small => ww^-1 };
@@ -402,8 +408,10 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
          off mcd;
 
          f := (f where rule1);
-         on mcd;
-         off mcd; %f:=f;
+	 if lisp (!*tracelimit) then
+	    write "After substitution to ww, f is ",f;
+         %on mcd;
+         %off mcd; %f:=f;
          %clearrules rule1;
 
          % now rewritten in terms of w, and mrv(f)=w hopefully
@@ -452,7 +460,7 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
               %write "series exp is  ", series_exp;
               %  series_exp:=lisp reval series_exp;
               %off mcd;
-              e0:=find_least_expt(series_exp);
+              e0:=mrv_find_least_expt(series_exp);
               if(lisp !*tracelimit) then write "leading exponent e0 is ", e0;
               off mcd; on factor; off exp; off rational;
               %if(part(e0,1)=expt) then

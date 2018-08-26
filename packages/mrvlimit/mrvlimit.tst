@@ -27,7 +27,7 @@ a:=a/e^(-x);
 b:=e^x*(e^(1/x-e^-x)-e^(1/x));
 
 %c:=e^x*(e^(1/x+e^(-x)+e^(-x^2))-e^(1/x-e^(-e^x)))
-maxi1({e^(-x^2)},{e^x});
+mrv_maxi1({e^(-x^2)},{e^x});
 
 cc:= e^(log(log(x+e^(log(x)*log(log(x)))))/log(log(log(e^x+x+log(x)))));
  

@@ -67,7 +67,7 @@ end;
 
 %collect_power(mrv_split(1/2*(ww+x*ww^-1+2)));
 
-expr procedure conv(li); % converts our list of powers to exponents
+expr procedure mrv_conv(li); % converts our list of powers to exponents
 begin scalar ans,current;
    ans:={};
    for k:=1:length(li) do
@@ -85,15 +85,15 @@ end;
 
 %collect_power(mrv_split(1/2*(ww+x*ww^-1+2)));
 
-%conv(ws);
+%mrv_conv(ws);
 
 %load_package assist;
 
-expr procedure find_expt(exp);
+expr procedure mrv_find_expt(exp);
 begin scalar spli, coll, con, ans,ans2;
    %spli:=mrv_split(exp); %write "split is ", spli;
    coll:=collect_power(spli); write "collect is "; coll;
-   con:=conv(coll); write "con is ", con;
+   con:=mrv_conv(coll); write "con is ", con;
    ans:=sortnumlist(con); write "ans is ", ans;
    ans2:=part(ans,1);
    return ans2;
@@ -102,7 +102,7 @@ end;
 % we get something like
 % (expt(ww -1)
 %--------------------------------------------------------------------------
-symbolic procedure find(u);
+symbolic procedure mrv_find(u);
 begin
    off mcd; off factor; off exp;
    if atom u then
@@ -122,54 +122,54 @@ begin
                      if (length(cdr u)>2)
                        then <<
                               if ((cadr u='ww) and freeof(caddr u,'ww))
-                                then return append({'expt,cadr u,1},find('plus . cddr u))
-                               else return append(find(cadr u), 'plus . cddr u)
+                                then return append({'expt,cadr u,1},mrv_find('plus . cddr u))
+                               else return append(mrv_find(cadr u), 'plus . cddr u)
                             >>
                       else if (caddr u='ww) and freeof(cadr u,'ww)
                        then return {'x_exp,cadr u,'expt,'ww,1}
                       else if (cadr u='ww and freeof(caddr u,'ww))
-                       then return append({'expt,cadr u,1},find caddr u)
-                      else return append(find(cadr u),find(caddr u))
+                       then return append({'expt,cadr u,1},mrv_find caddr u)
+                      else return append(mrv_find(cadr u),mrv_find(caddr u))
                    >>
              else if (atom cadr u and pairp caddr u)
               then << if (length(cdr u)>2)
                         then << if (cadr u='ww)
-                                  then return append({'expt,'ww,1},find('plus . cddr u))
-                                 else return append(find(cadr u),find('plus . cddr u))
+                                  then return append({'expt,'ww,1},mrv_find('plus . cddr u))
+                                 else return append(mrv_find(cadr u),mrv_find('plus . cddr u))
                              >>
-                       else return append(find(cadr u),find(caddr u))
+                       else return append(mrv_find(cadr u),mrv_find(caddr u))
                    >>
              else if (pairp cadr u and pairp caddr u)
               then << if (length(cdr u)>2)
                         % plus has more than 2 args
-                        then return append(find(cadr u),find('plus . cddr u))
-                       else return append(find(cadr u),find(caddr u))
+                        then return append(mrv_find(cadr u),mrv_find('plus . cddr u))
+                       else return append(mrv_find(cadr u),mrv_find(caddr u))
                    >>
              else if (pairp cadr u and atom caddr u)
               then << if (length(cdr u)>2)
                         %plus has more than two args
                         then << if (caddr u='ww)
-                                  then return find(cadr u).{'expt,'ww,1}.find('plus . cddr u)
+                                  then return mrv_find(cadr u).{'expt,'ww,1}.mrv_find('plus . cddr u)
                                  else if (numberp(caddr u))
-                                  then return find(cadr u).({'number,caddr u}.find('plus . cdr u))
+                                  then return mrv_find(cadr u).({'number,caddr u}.mrv_find('plus . cdr u))
                                  else nil
                              >>
-                       else return append(find(cadr u),find(caddr u))
+                       else return append(mrv_find(cadr u),mrv_find(caddr u))
                    >>
-             else return append(find(cadr u),{caddr u})
+             else return append(mrv_find(cadr u),{caddr u})
           >>
     else if (car u='lminus)
-     then << if (numberp cadr u) then return {'number,u} else return find(cadr u) >>
+     then << if (numberp cadr u) then return {'number,u} else return mrv_find(cadr u) >>
     else if (car u='quotient)
      then << if (numberp(cadr u) and numberp(caddr u))
                then return {'number,cadr u, caddr u}
-              else return append(find(cadr u), find(caddr u))
+              else return append(mrv_find(cadr u), mrv_find(caddr u))
           >>
     else if (car u='minus)
-     then << if (atom cdr u) then return find(cadr u)
+     then << if (atom cdr u) then return mrv_find(cadr u)
               else if (cadr u='expt and caddr u='ww)
-               then return append('minus . find(cadr u),find(caddr u))
-              else return ('minus . find(cadr u))
+               then return append('minus . mrv_find(cadr u),mrv_find(caddr u))
+              else return ('minus . mrv_find(cadr u))
           >>
     else if (car u='times)
      then << if (atom cadr u and atom caddr u)
@@ -182,41 +182,41 @@ begin
               else if (atom cadr u and pairp caddr u)
                then <<if (not freeof(cadr u,'ww))
                         then return {'expt,cadr u,1}
-                       else return find(caddr u)
+                       else return mrv_find(caddr u)
                     >>
               else if (pairp cadr u and pairp caddr u)
                then <<if (length(cdr u))>2
                         % times has +2 args
-                        then return append(find(cadr u),find('times . cddr u))
-                       else return append(find(cadr u),find(caddr u))
+                        then return append(mrv_find(cadr u),mrv_find('times . cddr u))
+                       else return append(mrv_find(cadr u),mrv_find(caddr u))
                     >>
               else if (pairp cadr u and atom caddr u)
                then <<if (freeof(cadr u,'ww) and caddr u='ww)
                         then return {'expt,'ww,1}
-                       else return append(find(cadr u),find(caddr u))
+                       else return append(mrv_find(cadr u),mrv_find(caddr u))
                     >>
               %else nil
           >>
-    %else return find(cdr u)
+    %else return mrv_find(cdr u)
 end;
 
 algebraic;
 
-algebraic procedure fin(u); lisp ('list.find(u));
+algebraic procedure mrv_fin(u); lisp ('list.mrv_find(u));
 %----------------------------------------------------------------------------
 % input to this procedure is a list
 % output is a list, containing all the exponents, marked expt, and any
 % numbers, flagged number
 % e.g.  ww^-1+ww^-2 +2
 % apply fin yields  {expt,ww,-1,expt,ww,-2,number,2}
-% now apply find_numbers to this gives
+% now apply mrv_find_numbers to this gives
 % {expt,-1,expt,-2,number,2}
 % the presence of the number means that there is a power of ww^0 present,
 % ie a constant term. If any of the expoents in the list are less than zero,
 % then we require the lowest one; if they are all positive, then zero is the
 % answer to be returned
 
-expr procedure find_numbers(li);
+expr procedure mrv_find_numbers(li);
 begin scalar current,expt_list,ans,l,finished; % first, second, third;
    off mcd; on rational; on exp;
    li:=li;
@@ -242,7 +242,7 @@ begin scalar current,expt_list,ans,l,finished; % first, second, third;
 end;
 
 %----------------------------------------------------------------------------
-expr procedure find_least_expt(exp);
+expr procedure mrv_find_least_expt(exp);
 begin scalar ans,find, current,result,expt_list,expt_list2,num_list, x_list;
    off mcd; % this causes a lot of problems when on, and some problems when off,
             % so I don't think I can win!!!
@@ -251,8 +251,8 @@ begin scalar ans,find, current,result,expt_list,expt_list2,num_list, x_list;
    num_list:={};   % initialisations
    x_list:={};
 
-   find:=fin(exp);
-   ans:=find_numbers(find);
+   find:=mrv_fin(exp);
+   ans:=mrv_find_numbers(find);
    if(lisp !*tracelimit) then write "exponent list is ", ans;
    %ans:=delete_all(-x,ans);
 
