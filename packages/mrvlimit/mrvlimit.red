@@ -132,80 +132,64 @@ begin
 % number.
 
 %li:=li;
-   if(numberp li) then return nil
-    else <<if(li='(list)) then return nil
-    else <<if(atom li) then return lisp ('list.{li})
-    else <<  if car li eq 'quotient then return nil
-    else if(car li='times)
-     then << if(atom cadr li and atom caddr li) then
-                     << if(length(cddr li)=1) then
-                        return  lisp ('list.mrv_maxi1({cadr li}, {caddr li}))
+   if numberp li or atom li and flagp(li,'constant) then return nil
+    else if li='(list) then return nil
+    else if atom li then return {'list,li}
+    else if car li eq 'quotient then return nil
+    else if car li eq 'times
+     then << if atom cadr li and atom caddr li
+               then << if length(cddr li)=1
+                         then return 'list . mrv_maxi1({cadr li}, {caddr li})
                         else return mrv_maxi1({cadr li},mrv(cddr li))
-		     >>
-              else return  mrv_maxi1(mrv(cadr li), mrv(cddr li))
+		    >>
+              else return mrv_maxi1(mrv(cadr li), mrv(cddr li))
           >>
-    else <<if(car li='minus)
-     then << if(atom cadr li) then return 'list.{cadr li} else return mrv(cadr li) >>
+    else if car li eq 'minus
+     then << if atom cadr li then return {'list,cadr li}
+              else return mrv(cadr li)
+          >>
                             %return mrv(append({'plus},cdr li))
-    else << if(car li='plus)
+    else if car li eq 'plus
      then <<
       %if(null caddr li) then return mrv(cadr li)
-          if(length cdr li=1) then %only one argument to plus
+          if length cdr li=1 then %only one argument to plus
                  return mrv(cadr li)
-           else <<if(atom cadr li and atom caddr li)
-            then << if(length(cddr li)=1) then return lisp ('list.mrv_maxi1({cadr li},{caddr li}))
-                     else return lisp ('list.mrv_maxi1({cadr li},mrv(append({'plus},cddr li))))
+           else if atom cadr li and atom caddr li
+            then << if(length(cddr li)=1) then return ('list . mrv_maxi1({cadr li},{caddr li}))
+                     else return ('list . mrv_maxi1({cadr li},mrv('plus . cddr li)))
                  >>
-           else << if(atom cadr li and pairp caddr li)
-                     then return mrv_maxi1('list.{cadr li}, mrv(cddr li)) % here as well
-           else  <<if(pairp cadr li and null caddr li)
-                     then return mrv(cadr li)
-           else << if(pairp cadr li and atom caddr li)
-                     then << if(length(cdr li)>2) then % we have plus with > two args
-                                return lisp cdr ('list.mrv_maxi1(mrv(cadr li),mrv(append({'plus},cddr li)))) %her
-                              else return lisp cdr ('list.mrv_maxi1(mrv(cadr li), mrv(cddr li))) 
-                          >>
-           else << if(null caddr li) then return mrv(cadr li)
-           else return mrv_maxi1(mrv(cadr li), mrv(append({'plus},cddr li))) >>
-                      >>
-                      >>
-                >>
-                                 >>
-                                      >>
-    else <<if(car li='expt) then <<
-	      if cadr li neq 'e
-		 and not (atom cadr li and flagp(cadr li,'constant))
-                 and not numberp cadr li
-                then return  mrv(cadr li)
-               else <<  %we have e to the power of something
-                       if sqchk mrv_limit(caddr li,'x,'infinity)
-                             eq 'infinity
-                           then
-                         return
-                        mrv_maxi1('list.{li},mrv(caddr li)) else
-                         <<
-                           if sqchk mrv_limit(caddr li,'x,'infinity)
-                              = '(minus infinity)
-                               then
-                     return  mrv_maxi1('list.{li},'list.mrv(cddr li)) else return
-                            mrv(caddr li)
-                          >>
-                     >>
-                                  >>
-    else << if(car li='log) then
-                        << if(atom cadr li) then return mrv(cadr li) else
-                           return mrv(cdr li)
-			>>
-              else << if(car li='sqrt) then return mrv(cdr li) else
-                        return mrv(car li)
-                                  >>
-         >>
-                  >>
-            >>
-     >> % for minus
-  >> %for null
- >> % for numberp
-              >>;
+           else if atom cadr li and pairp caddr li
+            then return mrv_maxi1({'list,cadr li}, mrv(cddr li)) % here as well
+           else if pairp cadr li and null caddr li
+            then return mrv(cadr li)
+           else if pairp cadr li and atom caddr li
+            then << if length(cdr li)>2	% we have plus with > two args here
+                      then return cdr ('list . mrv_maxi1(mrv(cadr li),mrv('plus . cddr li))) %her
+                     else return cdr ('list . mrv_maxi1(mrv(cadr li), mrv(cddr li))) 
+                 >>
+           else if null caddr li then return mrv(cadr li)
+           else return mrv_maxi1(mrv(cadr li), mrv(append({'plus},cddr li))) 
+          >>
+    else if car li eq 'expt
+     then << if cadr li neq 'e
+                and not (atom cadr li and flagp(cadr li,'constant))
+                and not numberp cadr li
+               then return  mrv(cadr li)
+              else <<  %we have e to the power of something
+                      if sqchk mrv_limit(caddr li,'x,'infinity) eq 'infinity
+                        then return mrv_maxi1({'list,li},mrv(caddr li))
+                       else if sqchk mrv_limit(caddr li,'x,'infinity) = '(minus infinity)
+                        then return mrv_maxi1({'list,li},'list . mrv(cddr li))
+                       else return mrv(caddr li)
+                   >>
+          >>
+    else if car li eq 'log
+     then << if atom cadr li
+               then return mrv(cadr li)
+              else return mrv(cdr li)
+	  >>
+    else if car li eq 'sqrt then return mrv(cdr li)
+    else return mrv(car li);
    off mcd;
 end; % of mrv
 
@@ -288,7 +272,7 @@ end;
 
 expr procedure mrv_smallest(li);
 begin scalar l1,l2;
- if(length li=1) then return part(li,1)
+ if length li=1 then return part(li,1)
   else <<
          l1:=mrv_length(part(li,1));
          l2:=mrv_length(part(li,2));
