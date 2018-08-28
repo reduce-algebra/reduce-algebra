@@ -353,7 +353,7 @@ symbolic procedure limsimp(ex,x);
               then ex := apply(z,list(ex,x))>>
          else <<if ex eq x then ex := 0; go to ret>>;
       if y eq 'plus then go to ret;
-      if y eq 'expt then if ex then return ex else ex := ex0 . 1;
+      if y eq 'expt then if ex then goto ret else ex := ex0 . 1;
       if z then<<z := car ex; c := cdr ex>>
          else <<ex := simp!* ex;
                 z := prepf numr ex;
@@ -399,9 +399,11 @@ symbolic procedure specchk(top,bot,x);
            top := triml append(tzros,append(tinfs,
               append(tnrms,trimq append(binfs,bzros))))>>
       else
-         <<top := triml append(cadr tlist,trimq bzros);
-           bot := triml append(cadr blist,
-              append(bnrms,trimq append(tzros,tnrms)))>>;
+         <<% case only zeros in top: move them from tzros to tnrms
+           if null tnrms and not null tzros and null bzros and null binfs and null tinfs
+             then <<tnrms := for each x in tzros collect x; tzros := nil>>;
+           top := triml append(cadr tlist,append(tnrms,trimq bzros));
+           bot := triml append(cadr blist,append(bnrms,trimq tzros))>>;
       if m then top := list('minus,top);
       return top . bot end;
 
@@ -669,7 +671,8 @@ symbolic procedure fixsinh x;
    if infinp x then x;
 
 symbolic procedure fixexp x;
-   if x eq 'infinity then x else if x = '(minus infinity) then 0;
+   if zerop x then 1 
+    else if x eq 'infinity then x else if x = '(minus infinity) then 0;
 
 % Special case rules.
 

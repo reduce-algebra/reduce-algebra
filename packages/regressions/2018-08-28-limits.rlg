@@ -1,0 +1,34 @@
+load taylor;
+
+
+
+load limits;
+
+
+
+limit(e^(-e^(-x))-1,x,infinity);
+
+
+0
+
+
+limit(e^(-e^(-x)),x,infinity);
+
+
+1
+
+
+limit(e^(-e^(-x))+1,x,infinity);
+
+
+2
+
+
+limit(e^(-e^(-x))-1,x,infinity);
+
+
+0
+
+
+end;
+
