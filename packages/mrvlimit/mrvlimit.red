@@ -59,30 +59,35 @@ load_package sets;
 algebraic;
 off mcd;
 
-symbolic procedure mrv_maxi(f,g);
+symbolic procedure mrv_maxi(f,g,var);
 begin scalar c;
-   if(freeof(f,'x)) then return g;
-   if(freeof(g,'x)) then return f;
-   if(f=g) then return  f
-    else if null f then return g
-    else if null g then return f
-    else if (intersection(f,g) neq '(list)) then return union(f,g)
-    else if (evalb('x member f)='true) then return  g
-    else if (evalb('x member g)='true) then return  f
-    else if eqcar(f,'list) and eqcar(cdr f,'list) then % double list
+   if null f or freeof(f,var) then return g;
+   if null g or freeof(g,var) then return f;
+   if f=g then return f
+      %% if the following condition is true, there is at least one common element
+      %% in f and g, ie. they are in the same compatibility class
+    else if not null intersection(f,g) then return union(f,g)
+      %% At this point f and g are non-empty and have no common element
+      %% x is always a member of the lowest compatibility class; 
+      %% if x is a member of one of them, the other class cannot be lower.
+      %% Still, I think, the logic here is wrong; what about
+      %%  f = {x} and g = {(log(x)], in which case the result should be {x,log(x)}.
+    else if var member f then return g
+    else if var member g then return f
+    else if eqcar(f,'list) and eqcar(cdr f,'list) then % nested list
                             << % only want caddr f to be given to mrv_compare
-                                      c:=mrv_compare(caddr f,cadr g);
+                                      c:=mrv_compare(caddr f,cadr g,var);
                                  %write "c is ", c; write length(c)
                                 return c;
                             >>
     else if eqcar(g,'list) and eqcar(cdr g,'list) then
                              <<
-                             c:=mrv_compare(cadr f,caddr g);
+                             c:=mrv_compare(cadr f,caddr g,var);
                              %write "c is ", c;
                              return c;
                              >>
     else <<
-                                 c:=mrv_compare(cadr f, cadr g);
+                                 c:=mrv_compare(f,g,var);
                                   %write "c is ", c;
                                   return c;
                                  >>;
@@ -98,22 +103,23 @@ end; % of mrv_maxi
 %-------------------------------------------------------------------------
 
 algebraic;
-procedure mrv_maxi1(f,g);  lisp cadr (lisp (list('list,mrv_maxi(f,g))));
+procedure mrv_maxi1(f,g);  lisp('list . mrv_maxi(cdr f,cdr g,'x));
 
 algebraic;
-symbolic procedure mrv_compare(f,g);
-begin scalar logg, logf, !*expandlogs, result;
-   !*expandlogs := t;
-   logf := simp!* {'log,f};
-   logg := simp!* {'log,g};
 
-   result :=
-      if mrv_limit(mk!*sq quotsq(logf,logg),'x,'infinity) = 0 then {'list,g}
-       else if mrv_limit(mk!*sq quotsq(logg,logf),'x,'infinity) = 0 then {'list,f}
-       else {'list,f,g};
-
-   return result;
-end;
+symbolic procedure mrv!-compute!-loglim(f,g,var);
+   %% compute limit(log(f)/log(g),var,infinity);
+   begin scalar logg, logf, !*expandlogs, result;
+      !*expandlogs := t;
+      logf := simp!* {'log,f};
+      logg := simp!* {'log,g};
+      return mrv_limit(mk!*sq quotsq(logf,logg),var,'infinity);
+   end;
+      
+symbolic procedure mrv_compare(f,g,var);
+   if  mrv!-compute!-loglim(car f,car g,var) = 0 then g
+    else if mrv!-compute!-loglim(car g,car f,var) = 0 then f
+    else union(f,g);
 
 symbolic operator mrv_compare;
 
@@ -122,8 +128,12 @@ symbolic operator mrv_compare;
 %----------------------------------------------------------------------------
 load_package assist;
 
-symbolic procedure mrv(li);
-begin
+symbolic procedure mrv_constantp(f,x);
+   % This prcedure returns true if f does not depend on variable x
+   numberp f or atom f and flagp(f,'constant) or f freeof x;
+
+symbolic procedure mrv(li,var);
+   begin scalar l1,li2;
    off mcd;  on factor;
 
 % The next line doesn't do anything in symbolic mode. Presumably li
@@ -132,70 +142,53 @@ begin
 % number.
 
 %li:=li;
-   if numberp li or atom li and flagp(li,'constant) then return nil
+   if  mrv_constantp(li,var) then return nil
     else if li='(list) then return nil
-    else if atom li then return {'list,li}
-    else if car li eq 'quotient then return nil
-    else if car li eq 'times
-     then << if atom cadr li and atom caddr li
-               then << if length(cddr li)=1
-                         then return 'list . mrv_maxi1({cadr li}, {caddr li})
-                        else return mrv_maxi1({cadr li},mrv(cddr li))
-		    >>
-              else return mrv_maxi1(mrv(cadr li), mrv(cddr li))
-          >>
-    else if car li eq 'minus
-     then << if atom cadr li then return {'list,cadr li}
-              else return mrv(cadr li)
-          >>
-                            %return mrv(append({'plus},cdr li))
-    else if car li eq 'plus
-     then <<
-      %if(null caddr li) then return mrv(cadr li)
-          if length cdr li=1 then %only one argument to plus
-                 return mrv(cadr li)
-           else if atom cadr li and atom caddr li
-            then << if(length(cddr li)=1) then return ('list . mrv_maxi1({cadr li},{caddr li}))
-                     else return ('list . mrv_maxi1({cadr li},mrv('plus . cddr li)))
-                 >>
-           else if atom cadr li and pairp caddr li
-            then return mrv_maxi1({'list,cadr li}, mrv(cddr li)) % here as well
-           else if pairp cadr li and null caddr li
-            then return mrv(cadr li)
-           else if pairp cadr li and atom caddr li
-            then << if length(cdr li)>2	% we have plus with > two args here
-                      then return cdr ('list . mrv_maxi1(mrv(cadr li),mrv('plus . cddr li))) %her
-                     else return cdr ('list . mrv_maxi1(mrv(cadr li), mrv(cddr li))) 
-                 >>
-           else if null caddr li then return mrv(cadr li)
-           else return mrv_maxi1(mrv(cadr li), mrv(append({'plus},cddr li))) 
+    else if li=var then return {li};
+   %% operators of one argument that do not change the compatibility class:
+   %% drop the oprator
+   if car li memq '(minus log sqrt)
+     then return
+       %% Shortcut for common cases of log(x), -x, sqrt(x)
+       if cadr li = var then {var}
+        else if not mrv_constantp(cadr li,var) then mrv(cadr li,var);
+%   if car li eq 'quotient then return mrv_maxi(mrv(cadr li,var),mrv(caddr li,var),var);
+   if car li eq 'quotient then return nil;
+   %% Nary operators times and plus: iterate comparison
+   if car li memq '(plus times)
+     then << %% Drop subexpressions not depending on x
+      	     while li do << if not mrv_constantp(car li,var) then l1 := car li . l1; li := cdr li >>;
+	     %% Compute compatibility class of 1st subexpression
+	     li2 := mrv(car l1,var);
+	     l1 := cdr l1;
+	     %% Compute compatibility class of next subexpression and compare
+	     while l1 do << li2 :=  mrv_maxi(mrv(car l1,var),li2,var); l1 := cdr l1 >>;
+	     return li2;
           >>
     else if car li eq 'expt
-     then << if cadr li neq 'e
-                and not (atom cadr li and flagp(cadr li,'constant))
-                and not numberp cadr li
-               then return  mrv(cadr li)
+     then << if not mrv_constantp(cadr li,var)
+               then %li := {'expt,'e,{'times,caddr li,{'log,cadr li}}};
+                 return mrv(cadr li,var)
               else <<  %we have e to the power of something
-                      if sqchk mrv_limit(caddr li,'x,'infinity) eq 'infinity
-                        then return mrv_maxi1({'list,li},mrv(caddr li))
-                       else if sqchk mrv_limit(caddr li,'x,'infinity) = '(minus infinity)
-                        then return mrv_maxi1({'list,li},'list . mrv(cddr li))
-                       else return mrv(caddr li)
+                      % Shortcut for cases e^x and e^(-x). This is just an optimization
+		      % for these common cases, to avoid computing the obvious limit.
+		      if caddr li = var or caddr li = {'minus,var}
+			then return {li}
+                       else if sqchk mrv_limit(caddr li,var,'infinity) eq 'infinity
+                        then return mrv_maxi({li},mrv(caddr li,var),var)
+                       else if sqchk mrv_limit(caddr li,var,'infinity) = '(minus infinity)
+                        then return mrv_maxi({li},mrv(caddr li,var),var)
+                       else return mrv(caddr li,var)
                    >>
           >>
-    else if car li eq 'log
-     then << if atom cadr li
-               then return mrv(cadr li)
-              else return mrv(cdr li)
-	  >>
-    else if car li eq 'sqrt then return mrv(cdr li)
     else return mrv(car li);
    off mcd;
 end; % of mrv
 
 algebraic;
 
-procedure mrv1(li);  lisp (mrv(li));
+symbolic procedure mrv1(li,var);  'list . mrv(li,var);
+flag('(mrv1),'opfn);
 %----------------------------------------------------------------------------
 % procedure to return a list of subexpressions of exp
 % this will then be used for the mrv function
@@ -270,17 +263,16 @@ end;
 %return current;
 %end;
 
-expr procedure mrv_smallest(li);
-begin scalar l1,l2;
- if length li=1 then return part(li,1)
-  else <<
-         l1:=mrv_length(part(li,1));
-         l2:=mrv_length(part(li,2));
-         if (l1>l2) then return part(li,2)
-          else if (l1<l2) then return part(li,1)
-          else return part(li,1);
-       >>;
-end;
+procedure mrv_smallest(li);
+   %% li is a list of expression of the same compatibilitiy class
+   %% return the smallest of them
+   << while length li > 1 do begin scalar l1,l2,res;
+        l1:=mrv_length(part(li,1));
+      	l2:=mrv_length(part(li,2));
+      	if (l1>l2) then res := part(li,2) else res := part(li,1);
+      	li := res . rest rest li
+   end;
+   first li >>;
 
 symbolic procedure mrv_lngth u;
  begin
@@ -299,8 +291,8 @@ procedure mrv_length u; lisp mrv_lngth u;
 % main routine to compute limits of exp-log functions as the variable tends
 % to infinity.
 
-operator x;
-operator series;
+%operator x;
+%operator series;
 algebraic;
 
 expr procedure mrv_limit(f,var,val);
@@ -315,6 +307,9 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
   if(not(freeof(f,sin))) then rederr "input not an exp log function";
   if(not(freeof(f,cos))) then rederr "input not an exp log function";
   if(not(freeof(f,tan))) then rederr "input not an exp log function";
+
+  if lisp !*tracelimit then
+     write "Computing limit of ",f," w.r.t. ",var;
   if(freeof(f,var)) then % possible cases: f can be a number, an expression
                          % independent of var, or possibly not an exp log
                          % function. In all cases, return f as the answer
@@ -338,10 +333,10 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
   if(f=pi) then return pi;
   %if(f=x) then return plus_infinity;
   on factor; off mcd;
-  mrv_f:=mrv1(f);
+  mrv_f:=mrv1(f,var);
   %write "*********************************************************************";
   if(lisp !*tracelimit) then write "mrv_f is ", mrv_f;
-  lisp if null mrv_f then % emergency exit for now
+  lisp if null cdr mrv_f then % emergency exit for now
          return ('limit . list(f,var,val));
 
   %write "*********************************************************************";
@@ -381,7 +376,8 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
 	     h:=log(small); 
 	     if lisp !*tracelimit then write "h is ", h;
 	   end;
-           if(mrv_limit(h,x,infinity)=infinity) then
+ 	   % Shortcut for case small = e^(+/-x) -> no need to actually compute the limit
+           if h neq (-x) and (h=x or mrv_limit(h,x,infinity)=infinity) then
              <<
                 small:=small^-1;
                 if lisp(!*tracelimit) then write "small has been changed to ", small;
@@ -391,6 +387,8 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
          %let rule1; 
          off mcd;
 
+	 if lisp (!*tracelimit) then
+	    write "Substituting: ",rule1, " in expression ",f;
          f := (f where rule1);
 	 if lisp (!*tracelimit) then
 	    write "After substitution to ww, f is ",f;
@@ -407,7 +405,7 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
 
   off mcd; on factor; off exp; off rational;
   series_exp:=taylor(f,ww,0,1);
-  if(lisp !*tracelimit) then write "performing taylor on: ", f;
+  if(lisp !*tracelimit) then write "Performing taylor on: ", f;
 
   %off mcd; on exp; on factor; off rational;
   if(not taylorseriesp series_exp and part(series_exp,0)=taylor)
@@ -417,11 +415,11 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
 
   series_exp:=sub(log(ww)=tt,series_exp); %off mcd; off factor; off exp;
   series_exp:=taylortostandard series_exp;
-  if(lisp !*tracelimit) then write "series expansion is ", series_exp;
+  if(lisp !*tracelimit) then write "Series expansion is ", series_exp;
   % should now have the lead term of the series expansion in terms of w
   if numberp(series_exp) then return series_exp
    else <<
-          if(lisp !*tracelimit) then write "series is ", series_exp;
+          if(lisp !*tracelimit) then write "Series is ", series_exp;
           off rational;  off mcd;  off exp; off factor;
           series_exp:=series_exp; off factor;
           const:=coeffn(series_exp,ww,0); %write "const is ", const;
@@ -439,7 +437,7 @@ begin scalar mrv_f,mrv1_f,w, mrv_f2,tt, lead_term, series_exp,f1, small, rule1,
               % need to look at exponent of ww. If e0>0 then return 0, if
               % e0<0 return infinity, if e0=0 return mrv_limit(c)
               %write "series_exp is ", series_exp;
-              series exp:=series_exp; off mcd; % try it here!
+              series_exp:=series_exp; off mcd; % try it here!
               %if(lisp !*tracelimit) then
               %write "series exp is  ", series_exp;
               %  series_exp:=lisp reval series_exp;

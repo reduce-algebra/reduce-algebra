@@ -329,7 +329,7 @@ mrv_limit(ex1,x,infinity);
 mrv_limit(a,x,infinity);
 
 
- - infinity
+-1
  
 
 %% mrv_limit(ex3,x,infinity);
@@ -349,7 +349,7 @@ mrv_limit(misc1,x,infinity);
 mrv_limit(misc2,x,infinity);
 
 
- - infinity
+-1
 
 
 mrv_limit(misc3,x,infinity);
