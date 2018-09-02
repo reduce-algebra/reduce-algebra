@@ -297,7 +297,7 @@ LispObject fringe, heaplimit;
 //     the length of the pinned block here
 //     ... free
 //     ... <------------------------ fringe
-//     ... used for cons cslls (and 2-CELL vectors)
+//     ... used for cons cells (and 2-CELL vectors)
 //     ... <------------------------ heapstart
 //     <end of page>
 //
@@ -999,6 +999,18 @@ uintptr_t xor_chain;
 // the exclusive or of the addresses of the (len) fields that follow these
 // blocks.
 
+// Here is a diagram showing the vector part of the heap...
+//
+//     vheapstart               vheaplimit      vheaptop
+//         |                        |              |
+//        ...  usable space       | XXXXXXXXXXXX | len | xor | ...
+//                   |             (pinned stuff)
+//                vfringe
+//   len: length of the XXXX pinnedd region.
+//   xor: exclusive OR of vheapstart and the LEN field of the next
+//        region up beyond the ones shown.
+
+
 // When (heaplimit==vfringe) the situation has resolved to a state where
 // there are no further pinned regions to worry about, and then when either
 // fringe meets heaplimit or vfringe meets vheaplimit the entire page will
@@ -1012,7 +1024,7 @@ uintptr_t xor_chain;
 // that designing this arrangement was stressful and went through several
 // iterations and much uncertainty!
 
-static void allocate_next_page();
+static void allocate_next_page(), gc_allocate_next_page();
 
 static inline Header make_padding_header(size_t n)
 {   return TAG_HDR_IMMED+TYPE_PADDER+(n<<(Tw+7));
@@ -1107,12 +1119,10 @@ static inline LispObject get_2_words()
 // even address.
 // I should further note that object start bits must be correctly set for
 // any items in pinned regions, but that if one has padding items (sometimes
-// needed to help with alignment) their headers will not be tagged.
+// needed to help with alignment) their headers will not be tagged. That is
+// so that ambiguous pointers to them will not keep them alive.
     return fringe;
 }
-
-static uintptr_t padders = 0;
-static uintptr_t *padders_tail = &padders;
 
 static void get_n_bytes_past_pin()
 {
@@ -1121,14 +1131,6 @@ static void get_n_bytes_past_pin()
 // there.
     if (vfringe != vheaplimit)
     {   *(Header *)vfringe = make_padding_header(vheaplimit - vfringe);
-// I will collect a chain of all the padders that I create. This will be
-// built in historical order. I will do this even during ordinary allocation
-// because the overhead is not huge, but it is required when I am
-        if ((vheaplimit - vfringe) != CELL)
-        {    *padders_tail = vfringe;
-             padders_tail = &((uintptr_t *)vfringe)[1];
-             *padders_tail = 0;
-        }
         clear_header_bits(vfringe, vheaplimit - vfringe, active_page);
     }
 // If 2-word and vector regions are one and the same that means that
@@ -1183,6 +1185,136 @@ static inline LispObject get_n_bytes(size_t n)
     clear_header_bits(r+8, n-8, active_page);
 // Now if 2-word and vector allocations could possibly collide soon set
 // the limit register for 2-word allocation to prevent disaster.
+    if (vheaptop == heapstart) heaplimit = vfringe;
+    return r;
+}
+
+// For borrowing I only ever allocate vectors, never CONS cells, and there
+// can never be a garbage collection while borrowed space is active,
+// and so I do not need to mess with object header flag bits etc, or
+// with the issue of pages of memory being split between CONS and vector
+// regions. This all really simplifies matters.
+
+static uintptr_t borrowing_vfringe, borrowing_vheaptop, borrowing_vlen,
+                 borrowing_vxor_chain, borrowing_vheaplimit,
+                 borrowing_vheapstart, borrowing_heapstart;
+
+static void allocate_next_borrowed_page();
+
+static void borrow_n_bytes_past_pin()
+{   if (borrowing_vheaptop == borrowing_heapstart)
+    {   allocate_next_borrowed_page();
+        return;
+    }
+// Now I am in the situation where there was some pinned data that blocked
+// the allocation I wanted to do. I skip to be beyond it.
+    borrowing_vfringe = borrowing_vheaptop;
+    borrowing_vheaptop = borrowing_vheapstart ^ borrowing_vxor_chain;
+    borrowing_vlen = ((uintptr_t *)borrowing_vheaptop)[0];
+    borrowing_vxor_chain = ((uintptr_t *)borrowing_vheaptop)[1];
+    borrowing_vheaplimit = borrowing_vheaptop - vlen;
+    borrowing_vheapstart = borrowing_vfringe;
+// I will avoid overwriting the LEN and XOR data. This means that I do not
+// use all the potentially available space, but it also means that I do not
+// need to perform any reconstruction of free-space maps when I abandon
+// the borrowed space.
+    borrowing_vfringe += 2*sizeof(uintptr_t);
+}
+
+static inline LispObject borrow_n_bytes(size_t n)
+{   n = doubleword_align_up(n);
+    if (borrowing_vheaptop == borrowing_heapstart)
+        borrowing_vheaplimit = borrowing_vheapstart;
+    while (borrowing_vfringe + n > borrowing_vheaplimit)
+        borrow_n_bytes_past_pin();
+    LispObject r = borrowing_vfringe;
+    borrowing_vfringe += n;
+// I do not set (or clear) header bits for borrowed vectors. That is because
+// they should never participate in garbage collection, so the issues of
+// ambiguous references to them do not arise.
+    return r;
+}
+
+// Now I have versions of the allocation code that are used while I am in
+// the garbage collector evacuating data from the old into the new space.
+// I am making this a (modified) copy of the normal allocator for two reasons.
+// The first is that for speed reasons I do not want ANY stray tests adding
+// overhead to the normal allocator. The second is that this GC version may
+// try harder to avoid introducing fragmentation, and that makes it
+// deviate noticably from the simpler regular-use code.
+
+static void gc_get_2_words_past_pin()
+{   if (vheaptop == heapstart)
+    {
+        if (SIXTY_FOUR_BIT && fringe == vfringe-CELL)
+        {   *(Header *)vfringe = make_padding_header(CELL);
+        }
+        gc_allocate_next_page();
+        return;
+    }
+    uintptr_t w = heaplimit;
+    heaplimit = heapstart ^ xor_chain;
+    heapstart = w;
+    fringe = w - len;
+    if (vheaptop == heapstart)
+    {
+        heaplimit = vfringe;
+        if (SIXTY_FOUR_BIT && fringe == vfringe+CELL)
+        {   *(Header *)vfringe = make_padding_header(CELL);
+            vfringe += CELL;
+            gc_allocate_next_page();
+        }
+        else if (fringe == vfringe) gc_allocate_next_page();
+        return;
+    }
+    len = ((uintptr_t *)heaplimit)[0];
+    xor_chain = ((uintptr_t *)heaplimit)[1];
+}
+
+static inline LispObject gc_get_2_words()
+{
+    fringe -= 2*CELL;
+    if (fringe < heaplimit) gc_get_2_words_past_pin();
+    return fringe;
+}
+
+static uintptr_t padders = 0;
+static uintptr_t *padders_tail = &padders;
+
+static void gc_get_n_bytes_past_pin()
+{
+    if (vfringe != vheaplimit)
+    {   *(Header *)vfringe = make_padding_header(vheaplimit - vfringe);
+// I will collect a chain of all the padders that I create. This will be
+// built in historical order. 
+        if ((vheaplimit - vfringe) != CELL)
+        {    *padders_tail = vfringe;
+             padders_tail = &((uintptr_t *)vfringe)[1];
+             *padders_tail = 0;
+        }
+        clear_header_bits(vfringe, vheaplimit - vfringe, active_page);
+    }
+    if (vheaptop == heapstart)
+    {   gc_allocate_next_page();
+        return;
+    }
+    vfringe = vheaptop;
+    vheaptop = vheapstart ^ vxor_chain;
+    vlen = ((uintptr_t *)vheaptop)[0];
+    vxor_chain = ((uintptr_t *)vheaptop)[1];
+    vheaplimit = vheaptop - vlen;
+    vheapstart = vfringe;
+}
+
+static inline LispObject gc_get_n_bytes(size_t n)
+{
+    n = doubleword_align_up(n);
+    if (vheaptop == heapstart) vheaplimit = fringe;
+    while (vfringe + n > vheaplimit) gc_get_n_bytes_past_pin();
+    LispObject r = vfringe;
+    vfringe += n;
+    set_header_bit(r, active_page);
+    clear_header_bits(r+8, n-8, active_page);
     if (vheaptop == heapstart) heaplimit = vfringe;
     return r;
 }
@@ -1270,6 +1402,52 @@ static void allocate_next_page()
         my_abort();
     }
     set_next_active_page();
+}
+
+void gc_prepare_new_half_space()
+{    
+}
+
+static void gc_allocate_next_page()
+{   printf("GC allocate_next_page\n");
+    fflush(stdout);
+// This is called from within the garbage collector, so it will expect that
+// there is available space. Hypothetically if it happened that the active
+// space was all well packed and the free memory was subject to an undue
+// number of pinned items and fragmentation one might run out here - that
+// would be a fatal situation.
+    if (free_pages_count == 0)
+    {   printf("Fatal error: memory exhausted\n");
+        my_abort();
+    }
+    set_next_active_page();
+}
+
+page_header *free_pages_for_borrowing;
+
+void allocate_next_borrowed_page()
+{   
+// Borrow a page. If there are none available we are in trouble!
+    page_header *p = free_pages_for_borrowing;
+    if (p == NULL)
+    {   fprintf(stderr, "Run out of space during borrowing\n");
+        my_abort();
+    }
+    free_pages_for_borrowing = free_pages_for_borrowing->page_chain;
+// Set the variable that are used when allocating within the active page.
+    borrowing_vheapstart = p->vheapstart;
+    borrowing_vfringe    = p->vfringe;
+    borrowing_vheaplimit = p->vheaplimit;
+    borrowing_vlen       = p->vlen;
+    borrowing_vheaptop   = p->vheaptop;
+    borrowing_vxor_chain = p->vxor_chain;
+    borrowing_heapstart  = p->heapstart;
+// I only allocate vectors in borrowed space, so the variables listed
+// in the commented out lines here are not needed.
+//@ borrowing_fringe     = p->fringe;
+//@ borrowing_heaplimit  = p->heaplimit;
+//@ borrowing_len        = p->len;
+//@ borrowing_xor_chain  = p->xor_chain;
 }
 
 
@@ -1707,101 +1885,92 @@ LispObject reduce_basic_vector_size(LispObject v, size_t len)
 // borrowing I have to do it at the start.
 
 
-page_header *save_active_page;
-page_header *save_previous_active_page;
-uintptr_t save_vheapstart;
-uintptr_t save_vfringe;
-uintptr_t save_vheaplimit;
-uintptr_t save_vlen;
-uintptr_t save_vheaptop;
-uintptr_t save_vxor_chain;
-uintptr_t save_heapstart;
-uintptr_t save_fringe;
-uintptr_t save_heaplimit;
-uintptr_t save_len;
-uintptr_t save_xor_chain;
-
 void prepare_for_borrowing()
-{   save_previous_active_page = previous_active_page;
-    save_active_page = active_page;
-    save_vheapstart  = vheapstart;
-    save_vfringe     = vfringe;
-    save_vheaplimit  = vheaplimit;
-    save_vlen        = vlen;
-    save_vheaptop    = vheaptop;
-    save_vxor_chain  = vxor_chain;
-    save_heapstart   = heapstart;
-    save_fringe      = fringe;
-    save_heaplimit   = heaplimit;
-    save_len         = len;
-    save_xor_chain   = xor_chain; 
-    allocate_next_page();
+{   free_pages_for_borrowing = free_pages;
+    allocate_next_borrowed_page();
 }
 
 LispObject borrow_basic_vector(int tag, int type, size_t size)
-{   return get_basic_vector(tag, type, size);
+{   size_t alloc_size = (size_t)doubleword_align_up(size);
+    if (alloc_size > (CSL_PAGE_SIZE - 32))
+        aerror1("request for basic vector too big",
+                fixnum_of_int(alloc_size/CELL-1));
+    LispObject r = borrow_n_bytes(alloc_size);
+    *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+    if (!SIXTY_FOUR_BIT && alloc_size != size)
+        *(LispObject *)(r+alloc_size-CELL) = 0;
+    return (LispObject)(r + tag);
 }
 
+// This code is significantly simplified as compared with get_vector for
+// at least two reasons. Firstly while borrowing I will NEVER garbage collect,
+// and so I do not need to initialize the vector to safe values. Secondly
+// I will not use the vector-cache scheme that the full version uses.
+
 LispObject borrow_vector(int tag, int type, size_t n)
-{   return get_vector(tag, type, n);
+{   if (n-CELL > VECTOR_CHUNK_BYTES)
+    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+        size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
+        if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
+        LispObject v =
+            borrow_basic_vector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
+        for (size_t i=0; i<chunks; i++)
+        {   size_t k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
+            basic_elt(v, i) = borrow_basic_vector(tag, type, k+CELL);
+        }
+        return v;
+    }
+    else return borrow_basic_vector(tag, type, n);
 }
+
 
 
 // Now I want to think about the implementation of the copying garbage
 // collector. For that I will want to allocate copies of material in
 // what might be called the "new space". Well in fact it is nothing very
 // special in terms of half-spaces, it is just pages of memory not currently
-// occupied. So the allocation can be rather in the style of "borrowing", ie
-// it disables further garbage collection and just allocated in fresh pages.
-// However I will then want to perform a linear scan over these fresh pages,
-// so when I chain them up I want to make the list so that the page that is
-// allocated first comes on the front of the list and new ones get tagged
-// on the end.
+// occupied. So the allocation can be just the usual version, save that
+// it must arrange that it never triggers a further garbage collection even
+// though it is using up memory pages right up to te wire.
 // There is a potential for fragmentation, especially in the presence of
 // pinned items. As a result the allocator will sometimes insert a padder
 // vector so that memory can be scanned linearly in a neat way.
 // I will chain those padder vectors together keeping them in sequential
-// order. When I need to allocate I will use first-fit to try allocating
-// within one of them. If I find space within one I will use the meory at
+// order. When I need to allocate I will sometimes take space from this
+// padder chain.
+// If I find space within a padder chunk I will use the memory at
 // its low address and adjust things so that the padder shrinks upwards.
 // There will be two circumstanmces when I remove a padder block from the
 // chain of spare space: one is when allocation from within it reduces its
 // size to just 1 word or fills it up completely. The other is when the
-// linear scan part of the GC reaches it.
-// I am at present going to implement a simple first-fit scheme, and hope
-// that the searching that it involves is not over-costly.
+// linear scan part of the GC reaches it. The idea behind the second of those
+// conditions is that I will need to visit all evacuated data so that I
+// either deal with forwarding addresses associated with it or do further
+// evacuation. Doing that in a single linear pass over the new heap is the
+// sanest strategy.
+// My current thought (but note that my ideas in this respect have been
+// wavering rather a lot!) is that I will allocate vector blocks in a
+// really simple way, but for allocating new CONS cells I will fill in parts
+// of padder blocks in preference to allocating genuinly new memory. My
+// expectation is that in most Lisp use-cases the number of CONS cells will
+// greatly exceed the number of vectors and that this strategy will fill up
+// otherwise wasted padder space pretty effectively. If it does not then I
+// may need to use a first-fit strategy for vector allocation.
 
 // Here are the allocation functions implementing the above.
 
 
 static inline LispObject packed_get_2_words()
 {
-    fringe -= 2*CELL;
-    if (fringe < heaplimit) get_2_words_past_pin();
-    return fringe;
+// No use of padder space yet!
+    return gc_get_2_words();
 }
 
 static inline LispObject packed_get_n_bytes(size_t n)
 {
-// If there are ANY padders left then I can allocate within the first
-// such, because I only chain up padders that have size at least 2*CELL.
-    if (padders != 0)
-    {
-    }
-    n = doubleword_align_up(n);
-    if (vheaptop == heapstart) vheaplimit = fringe;
-    while (vfringe + n > vheaplimit) get_n_bytes_past_pin();
-    LispObject r = vfringe;
-    vfringe += n;
-    set_header_bit(r, active_page);
-    clear_header_bits(r+8, n-8, active_page);
-    if (vheaptop == heapstart) heaplimit = vfringe;
-    return r;
+// No use of padder space yet!
+    return gc_get_n_bytes(n);
 }
-
-
-
-
 
 void major_garbage_collect()
 {
@@ -2283,6 +2452,104 @@ static int stop_after_gc = 0;
 static size_t trailing_heap_pages_count,
               trailing_vheap_pages_count;
 
+// copy_one_object() takes the address of a location that contains a
+// LispObject. If that LispObject is immediate data it leaves it alone.
+// Otherwise it must be a reference to an object in memory. If that object
+// is being visited for the first time a copy is made of it
+
+static void copy_one_object(LispObject *p)
+{   LispObject a = *p;
+    LispObject fr;
+// "nil" is never relocated and it is referenced often enough that making it
+// a special case here seems reasonable.
+    if (a == nil) return;
+    else if (is_immed_or_cons(a))
+    {   if (is_cons(a))
+        {   LispObject w = qcar(a);
+            if (is_forward(w)) *p = w - TAG_FORWARD + TAG_CONS;
+            else
+            {   fr = packed_get_2_words() + TAG_CONS;
+                cons_cells += 2*CELL;
+                qcar(fr) = w;
+                qcdr(fr) = qcdr(a);
+                *p = w = (LispObject)fr;
+                qcar(a) = w + TAG_FORWARD;
+            }
+        }
+    }
+    else                    // Here I have a symbol or vector
+    {   int tag = ((int)a) & TAG_BITS;
+        a = (LispObject)((char *)a - tag);
+        Header h = *(Header *)a;
+        size_t len;
+// If the symbol/number/vector has already been copied then its header
+// word contains a forwarding address. Re-tag it.
+        if (is_forward(h)) *p = h - TAG_FORWARD + tag;
+        else
+        {   if (tag == TAG_SYMBOL)
+            {   len = symhdr_length;
+                symbol_heads += symhdr_length;
+            }
+            else
+            {
+// length_of_header gives me the length in bytes, including the length
+// of the header word and of any padding. Hmmm bit-vectors, byte-vectors
+// (eg strings) and halfword vectors have a bit of a fudge in the way that
+// their length is encoded, and so I will need to review that and confirm
+// that all is safe! Yes - if you go length_of_header() on a string (or one
+// of the other cases where tha actual data is short) then the result you
+// get is the length in bytes of the data padded out to be a multiple of 4
+// bytes long.
+                len = doubleword_align_up(length_of_header(h));
+                my_assert(len >= CELL,
+                    [&]{ trace_printf("\nlen = %" PRIx64 " < CELL\n", len);
+                         for (int i=-30; i<=30; i++)
+                         { LispObject q = ((LispObject *)a)[i];
+                           trace_printf("%3d: %" PRIx64, i, q);
+                           if (is_odds(q) && is_header(q))
+                              trace_printf(" len=%" PRId64, length_of_header(q));
+                           trace_printf("\n");
+                         }
+                       });
+// When the garbage collector copies a hash table it changes the type from
+// HASH to HASHX. That signals that the table may now be in need of re-hashing.
+// That re-hashing is not actually done until or unless somebody makes use
+// of the table, and when it is complete the table is reset to type HASH.
+                if (type_of_header(h) == TYPE_HASH)
+                    h = h ^ (TYPE_HASH ^ TYPE_HASHX);
+// Collect some statistics about the amounts of space consumed by various
+// sorts of data.
+                switch (type_of_header(h))
+                {
+                    case TYPE_STRING_1:
+                    case TYPE_STRING_2:
+                    case TYPE_STRING_3:
+                    case TYPE_STRING_4:
+                        strings += len; break;
+                    case TYPE_BIGNUM:
+                        big_numbers += len; break;
+                    case TYPE_SINGLE_FLOAT:
+                    case TYPE_LONG_FLOAT:
+                    case TYPE_DOUBLE_FLOAT:
+                        box_floats += len; break;
+                    case TYPE_SIMPLE_VEC:
+                        user_vectors += len; break;
+                    default:
+                        other_mem += len; break;
+                }
+            }
+            uintptr_t vfr = packed_get_n_bytes(len);
+            *p = (LispObject)(vfr + tag);
+            *(LispObject *)a = (LispObject)(vfr + TAG_FORWARD);
+            *(Header *)vfr = h;
+// I copy EVERYTHING from the old vector to the new one. By using memcpy
+// I can do so with no worry about strict aliasing or the exact type of
+// data present. So this will copy across any padder words.
+            memcpy((char *)vfr+CELL, (char *)a+CELL, len-CELL);
+        }
+    }
+}
+
 static void copy(LispObject *p)
 // This copies the object pointed at by p from the old to the new semi-space,
 // and returns a copy to the pointer.  If scans the copied material to copy
@@ -2311,95 +2578,7 @@ static void copy(LispObject *p)
     {
 // Copy one object, pointed at by p, from the old semi-space into the new
 // one.
-        LispObject a = *p;
-        for (;;)
-        {   if (a == nil) break;    // common and cheap enough to test here
-            else if (is_immed_or_cons(a))
-            {   if (is_cons(a))
-                {   LispObject w;
-                    w = qcar(a);
-                    if (is_forward(w))
-                    {   *p = w - TAG_FORWARD + TAG_CONS;
-                        break;
-                    }
-                    fr = packed_get_2_words() + TAG_CONS;
-                    cons_cells += 2*CELL;
-                    qcar(fr) = w;
-                    qcdr(fr) = qcdr(a);
-                    *p = w = (LispObject)fr;
-                    qcar(a) = w + TAG_FORWARD;
-                    break;
-                }   // end of treatment of CONS
-                else break;        // Immediate data drops out here
-            }
-            else                    // Here I have a symbol or vector
-            {   Header h;
-                int tag;
-                size_t len;
-                tag = ((int)a) & TAG_BITS;
-                a = (LispObject)((char *)a - tag);
-                h = *(Header *)a;
-// If the symbol/number/vector has already been copied then its header
-// word contains a forwarding address. Re-tag it.
-                if (is_forward(h))
-                {   *p = h - TAG_FORWARD + tag;
-                    break;
-                }
-                if (tag == TAG_SYMBOL)
-                    len = symhdr_length, symbol_heads += symhdr_length;
-                else
-                {
-// length_of_header gives me the length in bytes, including the length
-// of the header word and of any padding. Hmmm bit-vectors, byte-vectors
-// (eg strings) and halfword vectors have a bit of a fudge in the way that
-// their length is encoded, and so I will need to review that and confirm
-// that all is safe! Yes - if you go length_of_header() on a string (or one
-// of the other cases where tha actual data is short) then the result you
-// get is the length in bytes of the data padded out to be a multiple of 4
-// bytes long.
-                    len = doubleword_align_up(length_of_header(h));
-                    my_assert(len >= CELL,
-                        [&]{ trace_printf("\nlen = %" PRIx64 " < CELL\n", len);
-                             for (int i=-30; i<=30; i++)
-                             { LispObject q = ((LispObject *)a)[i];
-                               trace_printf("%3d: %" PRIx64, i, q);
-                               if (is_odds(q) && is_header(q))
-                                  trace_printf(" len=%" PRId64, length_of_header(q));
-                               trace_printf("\n");
-                             }
-                           });
-                    if (type_of_header(h) == TYPE_HASH)
-                        h = h ^ (TYPE_HASH ^ TYPE_HASHX);
-                    switch (type_of_header(h))
-                    {
-                        case TYPE_STRING_1:
-                        case TYPE_STRING_2:
-                        case TYPE_STRING_3:
-                        case TYPE_STRING_4:
-                            strings += len; break;
-                        case TYPE_BIGNUM:
-                            big_numbers += len; break;
-                        case TYPE_SINGLE_FLOAT:
-                        case TYPE_LONG_FLOAT:
-                        case TYPE_DOUBLE_FLOAT:
-                            box_floats += len; break;
-                        case TYPE_SIMPLE_VEC:
-                            user_vectors += len; break;
-                        default:
-                            other_mem += len; break;
-                    }
-                }
-                uintptr_t vfr = packed_get_n_bytes(len);
-                *p = (LispObject)(vfr + tag);
-                *(LispObject *)a = (LispObject)(vfr + TAG_FORWARD);
-                *(Header *)vfr = h;
-// I copy EVERYTHING from the old vector to the new one. By using memcpy
-// I can do so with no worry about strict aliasing or the exact type of
-// data present. So this will copy across any padder words.
-                memcpy((char *)vfr+CELL, (char *)a+CELL, len-CELL);
-                break;
-            }
-        }
+        copy_one_object(p);
 // Now I have copied one object - the next thing to do is to scan to see
 // if any further items are in the new space, and if so I will copy
 // their offspring.

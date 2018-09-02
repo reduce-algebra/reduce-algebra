@@ -83,6 +83,9 @@ symbolic procedure multoutdenr q;
           conj:=conjugateexpt(d,root,kord!*);
           n:=!*multf(n,conj);
           d:=!*multf(d,conj) >>;
+        if numberp d and minusp d then <<
+          n := negf n;
+          d := negf d >>;
         return (n . d);
         end;
 

@@ -23,6 +23,11 @@ here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
 
+svn revert $here/../revision_history.txt
+svn revert $here/../packages/support/revision.red
+svn update $here/../revision_history.txt
+svn update $here/../packages/support/revision.red
+
 rev=`$here/revision.sh`
 # I will predict that the revision after this checkin increments by 1!
 rev=$(( $rev + 1 ))

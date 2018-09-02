@@ -199,7 +199,7 @@ symbolic
               result:=mk!*sq result;
               result:=(mksp(result,1) .* 1) .+ nil;
               result:=result ./ 1 >>;
-          result:=addsq(result,dflogs)>>;
+          result:=subs2q addsq(result,dflogs)>>;
       if !*trint
         then  << %% prettyprint result;
           terpri();
