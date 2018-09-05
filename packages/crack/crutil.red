@@ -6007,7 +6007,7 @@ end$
 % function and then the new stuff.
 
 symbolic procedure csl_aftergcuserhook u$
-<< aftergcuserhook u;       % The handler in rlisp/inter.red
+<< aftergcsystemhook u;       % The handler in rlisp/inter.red
    if u then aftergcuserhook1() else nil
 >>$
 
