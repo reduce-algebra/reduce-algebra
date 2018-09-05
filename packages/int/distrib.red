@@ -28,7 +28,7 @@ module distrib;  % Routines for manipulating distributed forms.
 
 fluid '(indexlist sqrtlist zlist);
 
-exports dfprintform,multbyarbpowers,negdf,quotdfconst,sub1ind, % var2df,
+exports df2printform,multbyarbpowers,negdf,quotdfconst,sub1ind, % var2df,
    vp1,vp2,plusdf,multdf,multdfconst,orddf;
 
 imports interr,addsq,negsq,exptsq,simp,domainp,mk!*sq,addf,
