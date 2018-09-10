@@ -93,6 +93,7 @@ sudo port install          \
   ccache                   \
   dvipng                   \
   findutils                \
+  fontconfig               \
   fontforge                \
   gdb                      \
   git                      \
@@ -100,6 +101,7 @@ sudo port install          \
   gnutar                   \
   gzip                     \
   libffi                   \
+  libiconv                 \
   md5sha1sum               \
   netpbm                   \
   pkgconfig                \
@@ -127,7 +129,7 @@ sudo port install          \
 # install there fails all that happens is that the system monitor does not
 # get installed, and all important parts of Reduce are supported.
 # If it mattered to me more I would take more agressive action, as I used
-# to for fontconfig (see below).
+# to for fontconf g (see below).
 # For this particular case https://trac.macports.org/ticket/56809 explains
 # that basically "sudo port install gstreamer-gst-plugins-base +x11" will
 # sort things out, but obviously changing from the default options on any
