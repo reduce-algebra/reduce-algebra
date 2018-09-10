@@ -1689,6 +1689,7 @@ then
       $LL/libbz2.a \
       $LL/libfreetype.a \
       $LL/libiconv.a \
+      $LL/libintl.a \
       $LL/libXft.a \
       $LL/libfontconfig.a \
       $LL/libexpat.a \
