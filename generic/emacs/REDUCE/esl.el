@@ -635,9 +635,9 @@ having properties, flags, functions and the like. U is returned."
 ;;; =======================
 
 ;; In file "rlisp/superv.red" is the statement
-;; 
+;;
 ;; FLAG('(DEFLIST FLAG FLUID GLOBAL REMFLAG REMPROP UNFLUID),'EVAL);
-;; 
+;;
 ;; which (I think) means that the functions listed are evaluated even
 ;; after `ON DEFN', which is necessary to ensure that some source code
 ;; reads correctly.  However, `REMPROP' is usually followed by `PUT'
@@ -649,7 +649,7 @@ having properties, flags, functions and the like. U is returned."
 ;; `ON DEFN' removes the `STAT' property from `LOAD_PACKAGE', which
 ;; then no longer works correctly.  This is a major problem for the
 ;; way I generate fasl files!
-;; 
+;;
 ;; I therefore provide a workaround to make the functions DEFLIST,
 ;; FLAG, REMFLAG and REMPROP save the property list of any identifier
 ;; before modifying it if it has not already been saved, and provide a
@@ -891,6 +891,13 @@ the name may be used subsequently as a variable."
 ;;; Variables and Bindings
 ;;; ======================
 
+(defun esl--fluid (x)
+  "If id X is already GLOBAL then display a warning; otherwise flag X as FLUID."
+  (if (GLOBALP x)
+	  (lwarn '(esl fluid) :error
+			 "GLOBAL %s cannot be changed to FLUID" x)
+	(put x 'FLUID t)))
+
 (defmacro FLUID (idlist)
   "FLUID(IDLIST:id-list):NIL eval, spread
 The ids in IDLIST are declared as FLUID type variables (ids not
@@ -898,6 +905,7 @@ previously declared are initialized to NIL). Variables in IDLIST
 already declared FLUID are ignored. Changing a variable's type
 from GLOBAL to FLUID is not permissible and results in the error:
 ***** ID cannot be changed to FLUID"
+  ;; A warning, as for PSL, is more convenient than an error!
   (if (memq (car idlist) '(quote QUOTE))
 	  ;; Assume a top-level call that needs to output `defvar' forms
 	  ;; at compile time.
@@ -908,18 +916,14 @@ from GLOBAL to FLUID is not permissible and results in the error:
 					 `((with-no-warnings ; suppress warning about lack of prefix
 						 (defvar ,x nil "Standard LISP fluid variable."))
 					   (unless (FLUIDP ',x)
-						 (if (GLOBALP ',x)
-							 (error "%s cannot be changed to FLUID" ',x))
-						 (put ',x 'FLUID t))))
+						 (esl--fluid ',x))))
 				   (eval idlist))))
 	;; Assume a run-time call that need not output `defvar' forms.
 	`(prog1 nil
 	   (mapc
 		(lambda (x)
 		  (unless (FLUIDP x)
-			(if (GLOBALP x)
-				(error "%s cannot be changed to FLUID" x))
-			(put x 'FLUID t)
+			(esl--fluid x)
 			(set x nil)))
 		,idlist))))
 
@@ -937,6 +941,7 @@ NIL. Variables already declared GLOBAL are ignored. Changing a
 variables type from FLUID to GLOBAL is not permissible and
 results in the error:
 ***** ID cannot be changed to GLOBAL"
+  ;; A warning, as for PSL, is more convenient than an error!
   (cons 'prog1
 		(cons nil
 			  (mapcan
@@ -945,8 +950,9 @@ results in the error:
 					 (defvar ,x nil "Standard LISP global variable."))
 				   (unless (GLOBALP ',x)
 					 (if (FLUIDP ',x)
-						 (error "%s cannot be changed to GLOBAL" ',x))
-					 (put ',x 'GLOBAL t))))
+						 (lwarn '(esl global) :error
+								"FLUID %s cannot be changed to GLOBAL" ',x)
+					   (put ',x 'GLOBAL t)))))
 			   (eval idlist)))))
 
 (defun GLOBALP (u)
@@ -993,7 +999,7 @@ in interpreted functions are automatically considered fluid."
 		idlist)
   nil)
 
-  
+
 ;;; Program Feature Functions
 ;;; =========================
 
@@ -2567,7 +2573,8 @@ NAME should be an identifier or string."
 For readable output, this function prettyprints each form
 followed by a blank line.  But if the Lisp source code will be
 deleted then `print' would suffice!"
-  (let ((standard-output esl--faslout-stream))
+  (let ((standard-output esl--faslout-stream)
+		(esl--linelength 120))		   ; default of 80 seems too short
 	(SUPERPRINM x 0) (terpri) (terpri) nil))
 
 (defun esl--faslout-explode-override (u)
@@ -2599,7 +2606,7 @@ When all done, execute FASLEND;\n\n" name)))
   (require 'eslpretty)
   (advice-add 'PRETTYPRINT :override #'esl--faslout-prettyprint-override)
   (advice-add 'EXPLODE :override #'esl--faslout-explode-override))
-	
+
 (FLAG '(FASLOUT) 'OPFN)
 (FLAG '(FASLOUT) 'NOVAL)
 
