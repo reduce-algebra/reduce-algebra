@@ -48,8 +48,8 @@ remprop('statcounter,'vartype);
 remprop('inputbuflis!*,'vartype);
 remprop('resultbuflis!*,'vartype);
 
-fluid '(!*nat out!* statcounter inputbuflis!* resultbuflis!*);
-global '(trprinter!* msgchnl!* lispsystem!*);
+fluid '(!*nat out!* statcounter inputbuflis!* resultbuflis!* lispsystem!*);
+global '(trprinter!* msgchnl!*);
 
 
 if null getd 'assgnpri then
