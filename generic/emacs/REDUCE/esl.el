@@ -205,17 +205,12 @@ Returns T if U is a function-pointer.")
 Returns T if U is a constant (a number, string, function-pointer, or vector).
 EXPR PROCEDURE CONSTANTP(U);
    NULL OR(PAIRP U, IDP U);"
-  (null (or (consp u) (symbolp u))))
+  (null (or (symbolp u) (PAIRP u))))
 
 (defalias 'EQ 'eq
   "EQ(U:any, V:any):boolean eval, spread
 Returns T if U points to the same object as V. EQ is not a reliable
 comparison between numeric arguments.")
-
-;; (defalias 'EQN 'eql
-;;   "EQN(U:any, V:any):boolean eval, spread
-;; Returns T if U and V are EQ or if U and V are numbers and have
-;; the same value and type.")
 
 (defun EQN (u v)
   "EQN(U:any, V:any):boolean eval, spread
@@ -258,12 +253,6 @@ Returns T if U is NIL.
 EXPR PROCEDURE NULL(U);
    U EQ NIL;")
 
-;; (defalias 'NUMBERP 'numberp
-;;   "NUMBERP(U:any):boolean eval, spread
-;; Returns T if U is a number (integer or floating).
-;; EXPR PROCEDURE NUMBERP(U);
-;;    IF OR(FIXP U, FLOATP U) THEN T ELSE NIL;")
-
 (defun NUMBERP (u)
   "NUMBERP(U:any):boolean eval, spread
 Returns T if U is a number (integer or floating).
@@ -281,9 +270,10 @@ EXPR PROCEDURE ONEP(U);
 	  (math-equal u 1)
 	(eql u 1.0)))
 
-(defalias 'PAIRP 'consp
+(defun PAIRP (u)
   "PAIRP(U:any):boolean eval, spread
-Returns T if U is a dotted-pair.")
+Returns T if U is a dotted-pair."
+  (and (consp u) (not (math-integerp))))
 
 (defalias 'STRINGP 'stringp
   "STRINGP(U:any):boolean eval, spread
@@ -509,6 +499,10 @@ occurs if U is not a dotted-pair."
 ;;; Identifiers
 ;;; ===========
 
+(defun esl-string-to-bigint (s)
+  "Convert string S to a bigint."
+  (math-read-number s))
+
 (defun COMPRESS (u)
   "COMPRESS(U:id-list):{atom-vector} eval, spread
 U is a list of single character identifiers which is built into a Standard
@@ -547,7 +541,7 @@ downcased to allow direct use of Emacs Lisp functions."
 			   ;; 123.E-2 so delete such a ".".)
 			   (string-to-number (replace-regexp-in-string "\\.E" "E" s))
 			 ;; Number is a (possibly big) integer.
-			 (math-read-number s)))
+			 (esl-string-to-bigint s)))
 		  (t							; IDENTIFIER
 		   (let ((l (length s)) (i 0) (ss nil) e)
 			 ;; Retain leading !: if followed by uc letter or digit:
@@ -568,6 +562,14 @@ downcased to allow direct use of Emacs Lisp functions."
 			   (if (eq (aref ss 0) ?\\)
 				   (setq ss (downcase (substring ss 1)))))
 			 (make-symbol ss))))))		; uninterned symbol
+
+(defun esl-bigint-p (b)
+  "Return t if B is a bigint."
+  (math-integerp b))
+
+(defun esl-bigint-to-string (b)
+  "Convert bigint B to a string."
+  (math-format-number b))
 
 (defun EXPLODE (u)
   "EXPLODE(U:{atom}-{vector}):id-list eval, spread
@@ -590,7 +592,7 @@ string, or function-pointer."
   (seq-map
    (lambda (c) (intern (string c)))
    (cond ((or (stringp u) (numberp u)) (prin1-to-string u))
-		 ((math-integerp u) (math-format-number u))
+		 ((esl-bigint-p u) (esl-bigint-to-string u))
 		 ;; Assume identifier -- must insert ! before a leading digit and
 		 ;; before any special characters in string without \ escapes:
 		 (t (let* ((s (prin1-to-string u t)) (l (length s))
@@ -1991,7 +1993,7 @@ are displayed in list-notation and vectors in vector-notation."
   ;; correctly, but the output should be readable!
   (cond ((symbolp u) (princ (esl--prin1-id-to-string u)))
 		((not (consp u)) (prin1 u))
-		((math-integerp u) (princ (math-format-number u)))
+		((esl-bigint-p u) (princ (esl-bigint-to-string u)))
 		(t (princ "(")
 		   (PRIN1 (car u))
 		   (esl--prin1-cdr (cdr u))
@@ -2025,7 +2027,7 @@ vectors in vector-notation. The value of U is returned."
   ;; correctly, but the output should be readable!
   (cond ((symbolp u) (princ (esl--prin2-id-to-string u)))
 		((not (consp u)) (princ u))
-		((math-integerp u) (princ (math-format-number u)))
+		((esl-bigint-p u) (princ (esl-bigint-to-string u)))
 		(t (princ "(")
 		   (PRIN2 (car u))
 		   (esl--prin2-cdr (cdr u))
@@ -2534,7 +2536,7 @@ NAME should be an identifier or string."
 			  (delete-file name.el)
 			  (princ " succeeded\n")
 			  nil)
-		  (error "***** Error during mkfasl of %s" name)))))
+		  (error "Error during mkfasl of %s" name)))))
 
 (FLAG '(MKFASL) 'OPFN)					; make it a symbolic operator
 (FLAG '(MKFASL) 'NOVAL)					; just return Lisp value
@@ -2571,7 +2573,7 @@ NAME should be an identifier or string."
 ;; 			  (delete-file name.el)
 ;; 			  (princ " succeeded\n")
 ;; 			  nil)
-;; 		  (error "***** Error during compilation of %s" name)))))
+;; 		  (error "Error during compilation of %s" name)))))
 
 ;; (FLAG '(FASLOUT) 'OPFN)
 ;; (FLAG '(FASLOUT) 'NOVAL)
@@ -2656,7 +2658,7 @@ When all done, execute FASLEND;\n\n" name)))
 	;; Check the Emacs Lisp file generated:
 	(let ((attribs (file-attributes esl--faslout-name.el)))
 	  (unless (and attribs (> (file-attribute-size attribs) 0))
-		(error "***** Error generating %s" esl--faslout-name.el)))
+		(error "Error generating %s" esl--faslout-name.el)))
 	;; Compile and then delete the Emacs Lisp version of the file:
 	(princ (format "*** Compiling %s ..." esl--faslout-name.el))
 	(if (byte-compile-file esl--faslout-name.el)
@@ -2664,7 +2666,7 @@ When all done, execute FASLEND;\n\n" name)))
 		  ;; (delete-file esl--faslout-name.el) ; keep to aid debugging
 		  (princ " succeeded\n")
 		  nil)
-	  (error "***** Error during compilation of %s" esl--faslout-name.el))))
+	  (error "Error during compilation of %s" esl--faslout-name.el))))
 
 (PUT 'FASLEND 'STAT 'ENDSTAT)
 (FLAG '(FASLEND) 'EVAL)				 ; must be evaluated in this model
