@@ -2435,6 +2435,34 @@ The date in the form \"day-month-year\"
 \"21-Jan-1997\""
   (format-time-string "%d-%b-%Y"))
 
+(defalias 'GETENV 'getenv)
+;; GETENV is used by REDUCE module tmprint and probably others.  I'm
+;; guessing how it is defined since I can't find any documentation!
+
+;; The following 3 functions are defined in the PSL manual and will
+;; probably be required or at least useful:
+
+(defun SYSTEM (command)
+  "(system COMMAND:string):undefined expr
+starts a (system specific) command interpreter and passes the
+command to the interpreter.  E.g. under the UNIX operating system
+a Bourne shell is started and COMMAND is interpreted following
+the conventions of this shell.  Of course it is possible to use
+e.g. (system \"bash\")"
+  ;; Output to current buffer.
+  (call-process-shell-command command nil t))
+
+(defun PWD ()
+  "(pwd):STRING expr
+returns the current working directory in system specific format."
+  default-directory)
+
+(defalias 'CD 'cd)		  ; This may not be quite compatible with PSL.
+;; (cd DIR:string):BOOLEAN expr
+;; sets the current working directory to DIR after expanding the
+;; filename according to the rules of the operating system.  If this
+;; operation is not sucessful, the value Nil is returned.
+
 
 ;;; Debugging support
 ;;; =================
