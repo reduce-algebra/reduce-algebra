@@ -1649,7 +1649,7 @@ then
 # that can try to do that for you. But people will need to run that by hand
 # before they can build Reduce.
 #
-# I believe an alternative scheme would be to icnlude fontconfig in a
+# I believe an alternative scheme would be to include fontconfig in a
 # private custom framework to be included within the application bundle,
 # but at present the explanations and documenattion about how to achieve that
 # seem denser than I am willing to confront. Perhaps some Macintosh
@@ -1689,7 +1689,6 @@ then
       $LL/libbz2.a \
       $LL/libfreetype.a \
       $LL/libiconv.a \
-      $LL/libintl.a \
       $LL/libXft.a \
       $LL/libfontconfig.a \
       $LL/libexpat.a \
@@ -1754,23 +1753,44 @@ then
 
   if test "x$cyg32" = "xyes"
   then
-    CC="$absolute_cyg32 $CC"
-    CXX="$absolute_cyg32 $CXX"
-    STRIP="$absolute_cyg32 $STRIP"
-    RANLIB="$absolute_cyg32 $RANLIB"
-    LOCALCYG=$absolute_cyg32
+    CC="\$(USE_CORRECT_CYGWIN) $CC"
+    CPP="\$(USE_CORRECT_CYGWIN) $CPP"
+    CXX="\$(USE_CORRECT_CYGWIN) $CXX"
+    STRIP="\$(USE_CORRECT_CYGWIN) $STRIP"
+    RANLIB="\$(USE_CORRECT_CYGWIN) $RANLIB"
+    LOCALCYG="$absolute_cyg32"
   fi
 
   if test "x$cyg64" = "xyes"
   then
-    CC="$absolute_cyg64 $CC"
-    CXX="$absolute_cyg64 $CXX"
-    STRIP="$absolute_cyg64 $STRIP"
-    RANLIB="$absolute_cyg64 $RANLIB"
-    LOCALCYG=$absolute_cyg64
+    CC="\$(USE_CORRECT_CYGWIN) $CC"
+    CPP="\$(USE_CORRECT_CYGWIN) $CPP"
+    CXX="\$(USE_CORRECT_CYGWIN) $CXX"
+    STRIP="\$(USE_CORRECT_CYGWIN) $STRIP"
+    RANLIB="\$(USE_CORRECT_CYGWIN) $RANLIB"
+    LOCALCYG="$absolute_cyg64"
   fi
 fi
 
+AC_SUBST(CYGWIN_FLAVOUR)
+if test "x$cyg64" = "xyes"
+then
+  CYGWIN_FLAVOUR="x86_64"
+elif test "x$cyg32" = "xyes"
+then
+  CYGWIN_FLAVOUR="i686"
+else
+  CYGWIN_FLAVOUR=""
+fi
+
+# The nexy couple are to do with making it possible to use GNU make
+# conditionals within Makefile.am
+AC_SUBST(ELSEWORD)
+ELSEWORD="else"
+AC_SUBST(ENDIFWORD)
+ENDIFWORD="endif"
+AC_SUBST(EQUALS)
+EQUALS="="
 
 #
 # Make some things available for conditional segments of a Makefile

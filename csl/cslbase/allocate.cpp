@@ -599,7 +599,14 @@ void set_up_signal_handlers()
 #endif // !HAVE_SIGACTION
 }
 
-static volatile thread_local char signal_msg[32];
+// On old versions of Xcode on the Mac it seems that thread_local is not
+// supported. And older Mac hardware do not support versions of Xcode that
+// are new enough to cope (boo hiss!). So for now I will avoid it even though
+// it is going to be a forward-facing feature that I will wish to restore
+// use of some day.
+
+//static volatile thread_local char signal_msg[32];
+static volatile char signal_msg[32];
 
 static volatile char *int2str(volatile char *s, int n)
 {   unsigned int n1;
