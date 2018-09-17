@@ -68,7 +68,7 @@ symbolic procedure mkfil u;
     else string!-downcase u;
 
 % FJW: I define string!-downcase in esl.el.
- 
+
 % FJW: I define orderp in esl.el.
 % symbolic procedure orderp(u,v);
 %    % U, V are non-numeric atoms (but can be vectors).
@@ -211,8 +211,8 @@ esc!* := '!;
 
 % Make ON DEFN load the prettyprinter if necessary and
 % OFF DEFN reinstate property lists saved during ON DEFN:
-put('defn, 'simpfg, '((t (!\require '!\eslpretty))
-                      (nil (!\esl!-reinstate!-plists))));
+put('defn, 'simpfg, '((t (!¦require '!¦eslpretty))
+                      (nil (!¦esl!-reinstate!-plists))));
 
 
 % Replace the REDUCE versions of some key functions with better
@@ -225,7 +225,7 @@ remflag('(boundp gcdn), 'lose);
 % unbound variable by intentionally throwing an error, which makes
 % debugging awkward.  Use the Elisp built-in function instead.
 
-symbolic procedure boundp u; !\boundp u;
+symbolic procedure boundp u; !¦boundp u;
 
 % Provide a numerical greatest common divisor that should work better
 % with ESL big integers than the version in "alg/numsup.red" by using

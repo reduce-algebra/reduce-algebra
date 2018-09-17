@@ -88,7 +88,8 @@
 ;; but Emacs 25 only provides `cxxr', so I use the Standard LISP
 ;; `CXXXXR' functions, which I have defined exactly as in Emacs 26.
 
-(eval-when-compile (require 'cl-lib))
+(require 'cl-lib)
+(require 'seq)				 ; necessary in batch mode -- no idea why!
 
 ;; I also use the GNU Emacs Calc library for arbitrary length integers.
 
@@ -273,7 +274,7 @@ EXPR PROCEDURE ONEP(U);
 (defun PAIRP (u)
   "PAIRP(U:any):boolean eval, spread
 Returns T if U is a dotted-pair."
-  (and (consp u) (not (math-integerp))))
+  (and (consp u) (not (math-integerp u))))
 
 (defalias 'STRINGP 'stringp
   "STRINGP(U:any):boolean eval, spread
@@ -518,7 +519,7 @@ an error occurs:
 In ESL, ! preceding an identifier beginning with : followed by an
 upper-case letter or digit is retained to prevent the identifier
 becoming a keyword, and LAMBDA, NIL and T are downcased.
-Also, !\ preceding an identifier is removed and the identifier is
+Also, !¦ preceding an identifier is removed and the identifier is
 downcased to allow direct use of Emacs Lisp functions."
   ;; Concatenate the characters into a string and then handle any !
   ;; characters as follows:
@@ -559,7 +560,7 @@ downcased to allow direct use of Emacs Lisp functions."
 			 (setq ss (apply #'string (reverse ss)))
 			 (if (member ss '("LAMBDA" "NIL" "T"))
 				 (setq ss (downcase ss))
-			   (if (eq (aref ss 0) ?\\)
+			   (if (eq (aref ss 0) ?¦)
 				   (setq ss (downcase (substring ss 1)))))
 			 (make-symbol ss))))))		; uninterned symbol
 

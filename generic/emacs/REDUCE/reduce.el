@@ -6,6 +6,8 @@
 ;; Load and run REDUCE on Emacs Lisp with input via the minibuffer and
 ;; output to a normal buffer.
 
+(add-to-list 'load-path nil)
+
 (require 'esl)							; defines LOAD-MODULE.
 
 ;; LOAD-PACKAGE is defined in "rlisp/module.red", so...
@@ -36,14 +38,15 @@
 (declare-function INITREDUCE "fasl/eslrend" ())
 (declare-function BEGIN "fasl/eslrend" ())
 
-(defun reduce ()
+(defun REDUCE ()
+  ;; reduce (lower case) is an alias for ‘cl-reduce’!
   "Run REDUCE with input via the minibuffer and output via a buffer."
   (interactive)
   (switch-to-buffer
    (setq esl--default-output-buffer
 		 (get-buffer-create esl--default-output-buffer-name)))
-  (require 'reduce-mode "../reduce-mode.el") ; temporary filename
-  (reduce-mode)
+  ;; (require 'reduce-mode "../reduce-mode.el") ; temporary filename
+  ;; (reduce-mode)
   (goto-char (point-max))  ; in case buffer already exists
   (let (value			   ; value of last sexp
 		;; Output to the END of the current buffer:
@@ -60,6 +63,6 @@
 
 (provide 'reduce)
 
-(reduce)		; Probably bad form, but convenient, to run this here!
+(REDUCE)		; Probably bad form, but convenient, to run this here!
 
 ;;; reduce.el ends here

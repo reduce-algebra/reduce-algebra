@@ -13,11 +13,11 @@
 
 symbolic;
 
-or(!\file!-exists!-p "log", !\make!-directory "log"); % Elisp
+or(!¦file!-exists!-p "log", !¦make!-directory "log"); % Elisp
 
 wrs open("log/remake.log", 'output);
 
-or(!\file!-exists!-p "fasl", !\make!-directory "fasl"); % Elisp
+or(!¦file!-exists!-p "fasl", !¦make!-directory "fasl"); % Elisp
 
 %% (/util/remake2) Compile key packages:
 

@@ -30,7 +30,7 @@ To build ESL REDUCE
 ===================
 
 Download the current ESL file set to some directory, which I will call
-REDUCE, but its name is not significant.  Download the directory 
+REDUCE, but its name is not significant.  Download the directory
 
 https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/historical/r38/packages
 
@@ -196,3 +196,4 @@ To do
 
 Better support for big integers.
 Better build process.
+Better user interface.
