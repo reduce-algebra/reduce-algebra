@@ -220,7 +220,10 @@ AC_SUBST(DLL_CFLAGS)
 
 # The following are always to be defined when I go through this route
 
-AC_DEFINE(WINDOW_SYSTEM,[1],[True for a (potentially) Windowed system])
+if test "x$with_gui" != "xno"
+then
+  AC_DEFINE(WINDOW_SYSTEM,[1],[True for a (potentially) Windowed system])
+fi
 
 AC_DEFINE_UNQUOTED(HOST_CPU,"$host_cpu",[Name of CPU])
 AC_DEFINE_UNQUOTED(HOST_VENDOR,"$host_vendor",[Name of vendor])
@@ -1638,25 +1641,7 @@ then
   CXX="$ENVP $CXX"
 # The eccentric code here insists that I use the "macports" version
 # of many libraries and it links in the .a files not the .dyld ones so
-# that the resulting executable is easier to distribute. At present
-# fontconfig seems to be problems in that macports only generates a
-# .dylib version not a .a one.
-# To cope with that - on my development machine - I found the fontconfig
-# sources where macports had fetched them, went "./configure --enable-static"
-# and built a libfontconfig.a, which I then copied back into /opt/local/lib.
-# The nad news is that me doing that means that ANYBODY building on a
-# Macintosh will need to do the same, so I will put a script in csl/cslbase
-# that can try to do that for you. But people will need to run that by hand
-# before they can build Reduce.
-#
-# I believe an alternative scheme would be to include fontconfig in a
-# private custom framework to be included within the application bundle,
-# but at present the explanations and documenattion about how to achieve that
-# seem denser than I am willing to confront. Perhaps some Macintosh
-# enthusiast can improve on this. But building binaries that can not
-# be moved across to other computers that do not have macports installed
-# seems to me to be quite unsatisfactory!
-#
+# that the resulting executable is easier to distribute.
 # Note that all these libraries on my Macintosh have been compiled from
 # the source files that "macports" provides without me making any changes.
 # So relevant associated source code can be obtained from the macports
@@ -1691,6 +1676,7 @@ then
       $LL/libiconv.a \
       $LL/libXft.a \
       $LL/libfontconfig.a \
+      $LL/libintl.a \
       $LL/libexpat.a \
       -lpthread \
       -ldl"
@@ -1756,6 +1742,7 @@ then
     CC="\$(USE_CORRECT_CYGWIN) $CC"
     CPP="\$(USE_CORRECT_CYGWIN) $CPP"
     CXX="\$(USE_CORRECT_CYGWIN) $CXX"
+    CXXCPP="\$(USE_CORRECT_CYGWIN) $CXXCPP"
     STRIP="\$(USE_CORRECT_CYGWIN) $STRIP"
     RANLIB="\$(USE_CORRECT_CYGWIN) $RANLIB"
     LOCALCYG="$absolute_cyg32"
@@ -1766,6 +1753,7 @@ then
     CC="\$(USE_CORRECT_CYGWIN) $CC"
     CPP="\$(USE_CORRECT_CYGWIN) $CPP"
     CXX="\$(USE_CORRECT_CYGWIN) $CXX"
+    CXXCPP="\$(USE_CORRECT_CYGWIN) $CXXPP"
     STRIP="\$(USE_CORRECT_CYGWIN) $STRIP"
     RANLIB="\$(USE_CORRECT_CYGWIN) $RANLIB"
     LOCALCYG="$absolute_cyg64"
