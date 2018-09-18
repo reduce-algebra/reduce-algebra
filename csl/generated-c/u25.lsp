@@ -1,119 +1,145 @@
 
 % u25.lsp           Machine generated Lisp
 
-(c!:install "u25" 53600 6416180 3403800)
+(c!:install "u25" 29386 5706267 9387182)
 
-(c!:install 'plubf '(plubf !:rd!: !:bprec!: msd ashift inorm) 
-14385353088373813766)
+(c!:install 'physopsimp '(physopsimp !*sq tensdimen antisymmetric minus
+isanindex isavarindex physopsm!* prepsqxx opmtch!* scalopp tensopp nth
+pnth ordn repeats permp vecopp listp putanewindex!*) 
+17378261404484775512)
 
-(c!:install 'assert_declarestat1 '(assert_declarestat1 assert!:
-noassert!: a list de assert_check1 put (quote assert_assertfn) (quote
-assert_noassertfn) (quote assert_installed) cond not member
-assert_functionl!* setq cons progn mkid) 15465511264466468107)
+(c!:install 'ev!-denom2 '(ev!-denom2 ev!-edgeloop) 10469132586978593068)
 
-(c!:install 'quotfail!-in!-vector '(quotfail!-in!-vector
-"Attempt to divide by zero" "Bad degrees in quotfail-in-vector"
-"Quotient not exact in quotfail!-in!-vector" errorf) 2449513729194402360
-)
+(c!:install 'comblog '(comblog domainlist!* plus times log nreverse
+simp!* clogsq prepsq!*) 2258708424463560692)
 
-(c!:install 'mksf '(mksf !*sub2 mksq mksp) 16383421118374179651)
+(c!:install 'copy!-tree '(copy!-tree) 12578162027246836564)
 
-(c!:install 'cancel '(cancel !*mcd multsq mk!*sq simpexpt) 
-2615146117212680732)
+(c!:install 'safe!-modrecip '(safe!-modrecip !*msg !*protfg !:mod!:
+general!-modular!-reciprocal erfg!* errorset errorp) 
+14808290800131132436)
 
-(c!:install 'cl_nnfnot '(cl_nnfnot cl_nnf1) 11231145940357742317)
+(c!:install 'setk_super_vectorfield '(setk_super_vectorfield ext
+variables "SETK_SUPER_VECTORFIELD:" "not a valid variable for" let2
+msgpri) 16746388325699725758)
 
-(c!:install 'pasf_pdp '(pasf_pdp indef ndef pdef psdef nsdef) 
-10778362112038030753)
+(c!:install 'lalr_construct_fn '(lalr_construct_fn g lambda !*pwrds expr
+lalr_make_arglist putd) 12504191962287692232)
 
-(c!:install 'ev_insert '(ev_insert nreverse) 12499144344132413115)
+(c!:install 'ctx_new '(ctx_new ctx) 16190024625074221445)
 
-(c!:install 'ofsf_at2ir '(ofsf_at2ir negf addf sfto_dcontentf quotf
-quotsq) 7906019418542268564)
+(c!:install 'wupseudodivide '(wupseudodivide setkorder reorder
+wuconstantp gcdf!* quotf multf exptf qremf) 18397524205360628269)
 
-(c!:install 'sfto_b!:extmult '(sfto_b!:extmult sfto_b!:ordexn multf negf
-sfto_b!:extadd) 16650362805446348592)
+(c!:install 'evaluatecoeffts '(evaluatecoeffts indexlist valuecoefft
+!*multf addf) 5406277702025676168)
 
-(c!:install 'testpr '(testpr jsi codmat maxvar pnthxzz dm!-times
-dm!-difference zeropp) 5415271785955096851)
+(c!:install 'distribute!.multiplicity '(distribute!.multiplicity) 
+499274864297745022)
 
-(c!:install 'embed!-null!-fn '(embed!-null!-fn null!-fn lastpair) 
-17022345701138273670)
+(c!:install 'vdp_getprop '(vdp_getprop vdp_plist) 10290374778868375321)
 
-(c!:install 'vdpcondense '(vdpcondense dipcondense) 7472009799357661127)
+(c!:install 'dip_condense '(dip_condense) 7708418469248712677)
 
-(c!:install '!*pf2sq '(!*pf2sq to multsq addsq) 13586119113996823355)
+(c!:install 'mml2ir '(mml2ir mmlatts space count ch temp2 char (m a t h)
+"<math>" (!/ m a t h) "</math>" list2string lex mathml errorml) 
+4937673495003303041)
 
-(c!:install 'changearg '(changearg nreverse) 3622155650508054526)
+(c!:install 'quoteequation '(quoteequation equation) 
+13869360566276034417)
 
-(c!:install 'cons_ordp '(cons_ordp) 5587147247341243531)
+(c!:install 'gvarlis1 '(gvarlis1 gvar1 union) 15887984567229666111)
 
-(c!:install 'checku '(checku) 15822881287339415887)
+(c!:install 'freeoff '(freeoff sfp ndepends) 8924154528667918378)
 
-(c!:install 'opfneval1 '(opfneval1 tracealg "+++ Calling %p (%w:%w)%n"
-defined!-in!-file defined!-on!-line "Arg%w = %@p%n" quote !*backtrace
-"+++ Error in call to %p (%w:%w)%n" "%p => %p%n" "%p => %@p%n"
-printf_internal errorset!* errorp) 15613979931203860423)
+(c!:install 'pfordp '(pfordp termordp) 8068693215543952127)
 
-(c!:install 'dipsum '(dipsum evcomp iequal bcsum bczero!? setcdr) 
-17754619527837437931)
+(c!:install 'prinlatom '(prinlatom font accent name "}" prin2la
+testchar1) 6843894542313904978)
 
-(c!:install 'bcminus!? '(bcminus!? !*grmod!* minusf) 6378942423523588168
-)
+(c!:install 'ordop2 '(ordop2 kord!* ordp) 1870441096632376356)
 
-(c!:install 'dipprod '(dipprod diplength dipprodin) 14131312737934490340
-)
+(c!:install 'edges_parents '(edges_parents edge_new_parents) 
+7989857538043128579)
 
-(c!:install 'basisformp '(basisformp basisforml!*) 4086774854439652781)
+(c!:install 'merge '(merge) 11618120737974801924)
 
-(c!:install 'subla!-q '(subla!-q quote go lambda prog delasc) 
-9807319529802026966)
+(c!:install '!*di2q0 '(!*di2q0 varlist!* ordering lex ljet pair multsq
+addsq) 15148302668535177444)
 
-(c!:install 'generic!-sub '(generic!-sub dfp list dfp!-sub) 
-17996181599572078420)
+(c!:install 'dv_skel2factor1 '(dv_skel2factor1 !~dv !~dva minus listp) 
+12834239992638262862)
 
-(c!:install '!:expt '(!:expt poly "0/0 formed" expt rerror fieldp
-mkratnum !:recip) 1906246832538517278)
+(c!:install 'setdiff_according_to '(setdiff_according_to) 
+14663809450833689541)
 
-(c!:install 'sgn1 '(sgn1 sgn) 4395985868830635280)
+(c!:install 'let3 '(let3 rtype avalue typeletfn yetunknowntype errpri1
+getrtype lispapply typelet letscalar) 5648133096207602103)
 
-(c!:install 'dfconst '(dfconst zlist vp2) 15827301056878358237)
+(c!:install 'build!-null!-vector '(build!-null!-vector) 
+9747352268713284531)
 
-(c!:install 'qqe_arg!-check!-lb!-rb '(qqe_arg!-check!-lb!-rb
-"type conflict: arguments don't fit
-             binary op with basic type args" qqe_arg!-check!-b
-qqe_arg!-check!-marked!-ids!-rollback typerr) 7561473729744837887)
+(c!:install 'lalr_print_compressed_action_table '(
+lalr_print_compressed_action_table itemset_collection
+"=== ACTION TABLE ===" "STATE" "TERMINAL" "ACTION" "<any>"
+lalr_prin_symbol lalr_prin_action) 2209936760884675793)
 
-(c!:install 'repr_a '(repr_a addf) 13167846556635871198)
+(c!:install 'simpexpt11 '(simpexpt11 !*precise_complex simpexpt2 qremf
+simpexpt1 multsq) 18016535449379762626)
 
-(c!:install 'relnrd '(relnrd atts (type definitionurl) char relations!*
-lex retattributes compress!* apply) 7698492374233116587)
+(c!:install 'expnd '(expnd !*really_off_exp !*sub2 expnd1 subs2f) 
+11413463028146551512)
 
-(c!:install 'unify '(unify op r p "UNIFY:pattern over-run for function "
-symm comb identity mcontract acontract expand i upb resume ident mgenp
-pm!:free genp initarg nextarg suspend bind chk mval unbind meq) 
-5085765813978083439)
+(c!:install 'quotelog '(quotelog logical) 17183556804632955927)
 
-(c!:install 'locate_member '(locate_member) 4764278102994726603)
+(c!:install 'cl_susiupdknowl1 '(cl_susiupdknowl1 and cl_susiupdknowl2
+rl_negateat) 14302886500742299120)
 
-(c!:install 'repartsq '(repartsq splitcomplex multsq addsq invsq) 
-1876562266233041932)
+(c!:install 'encodeir '(encodeir name char !  atts !$ semantic delall) 
+1922988493163827553)
 
-(c!:install 'subsq '(subsq alg "0/0 formed" "Zero divisor" subf subs2!*
-rerror quotsq) 2328511050533666755)
+(c!:install 'ps!:putv '(ps!:putv !:ps!: tps "PS:PUTV: not a ps" eval
+rerror) 1552922531143688513)
 
-(c!:install 'harmonicp '(harmonicp fourier!-angle) 6327494936315734929)
+(c!:install 'assert_install1 '(assert_install1 assert_installed
+"assert already installed for" expr
+"is not an expr procedure - ignoring assert" assert_noassertfn
+assert_assertfn lprim getd copyd) 13732944119485760763)
 
-(c!:install 'qremf '(qremf !*exp qremd praddf multf to negf addf ordop) 
-8572729870254090815)
+(c!:install 'matop_pseudomod '(matop_pseudomod mod!*) 
+7244224576917796558)
 
-(c!:install 'simp!-prop2 '(simp!-prop2 propvars!* prop!* not_prop!*
-union simp!-prop!-condense) 18327063984962764399)
+(c!:install 'dmconv0 '(dmconv0 !:rn!: !:gi!: !:crn!: dmd!*) 
+1800770221870508758)
 
-(c!:install 'general!-ordered!-gcd!-mod!-p '(
-general!-ordered!-gcd!-mod!-p reduction!-count
-general!-reduce!-degree!-mod!-p general!-monic!-mod!-p) 
-12646109401517478620)
+(c!:install 'refprint '(refprint cloc!* "*TTYINPUT*" pfiles!* curfun!* g
+rccnam curlin!* locls!* globs!* calls!* anform outrefend) 
+13080195673109096165)
+
+(c!:install 'cl_f2ml '(cl_f2ml true false or and not impl repl equiv
+plus2 ex all bex ball lto_almerge apply) 11115652893289182625)
+
+(c!:install 'vdp_setsugar '(vdp_setsugar !*cgbsugar sugar vdp_putprop) 
+11726319010469162367)
+
+(c!:install 'quotof '(quotof minus lcx quotofd mksp carx raddf to ordop)
+ 7735635630518353880)
+
+(c!:install 'simpdf!* '(simpdf!* simpdf rootextractsq resimp) 
+8201007124404162639)
+
+(c!:install 'cos!* '(cos!* !:bprec!: cos!:) 10648388374146150234)
+
+(c!:install 'insertparens '(insertparens !( !)) 9173971090588331245)
+
+(c!:install 'can_be_proved '(can_be_proved can_be_p) 
+13352769274010193889)
+
+(c!:install 'log_assignment_list '(log_assignment_list log_assignment) 
+3080942992296707352)
+
+(c!:install 'groeb!=newpair '(groeb!=newpair bas_dpoly dp_lmon mo_lcm
+groeb!=weight) 10758289609240160604)
 
 
 % End of generated Lisp code

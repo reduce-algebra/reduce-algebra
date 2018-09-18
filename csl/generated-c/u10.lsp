@@ -1,133 +1,178 @@
 
 % u10.lsp           Machine generated Lisp
 
-(c!:install "u10" 164286 3428525 9766769)
+(c!:install "u10" 120181 2581563 9048161)
 
-(c!:install 'scan '(scan cursym!* !*semicol!* escaped!* nxtsym!* else
-outl!* comment !C!O!M!M!E!N!T !Comment !*comment !% ttype!*
-percent_comment !#if !#else !#elif !#endif !#eval !*backtrace
-curescaped!* !#define (rread) newnam "*** " " => " !$eof!$ !'
-"Invalid QUOTE" !*eoldelimp !$eol!$ !# crchar!* !*rpar!* !*comment!*
-comment!* if elif endif eval define semic!* string " " token toknump
-prin2x read!-comment1 rread errorset errorp filenderr rederr addcomment
-read!-comment list2string) 12633109008148600643)
+(c!:install 'take!-realpart '(take!-realpart repartf multsq) 
+9070378222395813219)
 
-(c!:install 'rl_smrmknowl '(rl_smrmknowl rl_smrmknowl!* apply) 
-2293746311521066408)
+(c!:install 'assert_analyze '(assert_analyze assertstatistics!*
+lambda_46uwl1lq71ua2 (function !#calls !#bad! calls
+!#assertion! violations) sum " " "-" sort prin2t) 4783383686943766855)
 
-(c!:install 'lastnondomain '(lastnondomain "non-domain" errach) 
-6067694052669692)
+(c!:install 'lambda_46uwl1lq71ua2 '(lambda_46uwl1lq71ua2 ordp) 
+1813469934075966741)
 
-(c!:install 'ibalp_vmember '(ibalp_vmember ibalp_vequal) 
-1354869335745791598)
+(c!:install 'exptf1 '(exptf1 multf) 10681007596565985967)
 
-(c!:install 'basicom '(basicom integerom floatom variableom) 
-1834273756308251849)
+(c!:install 'portable_print '(portable_print portable_prin) 
+231109164927082807)
 
-(c!:install 'dfn_prop '(dfn_prop dfn dfn2 dfn3 mkid) 3602831462996363265
+(c!:install 'aex_simpleratp '(aex_simpleratp aex_ex) 
+12227076808602370977)
+
+(c!:install 'polynommultiplybymonom '(polynommultiplybymonom
+polynomclone polynommultiplybyvariable) 7544476021699951062)
+
+(c!:install 'wulessp!* '(wulessp!* wulessp totallessp) 
+17553717216871474355)
+
+(c!:install 'matrix!+p '(matrix!+p) 14190898046507498077)
+
+(c!:install 'freevarinexptchk '(freevarinexptchk) 4178118939591073996)
+
+(c!:install 'cl_fvarl1 '(cl_fvarl1 cl_varl1) 8522948151680983405)
+
+(c!:install 'objectom '(objectom ir2mml!* apply fnom basicom) 
+12657950036901911207)
+
+(c!:install 'equal!: '(equal!: normbf) 11244774644015991854)
+
+(c!:install 'initbrsea '(initbrsea rowmin rowmax codmat maxvar codhisto
+headhisto initwght redcodmat inshisto) 11730998601544262957)
+
+(c!:install 'statep!* '(statep!* state getphystype) 5416643641890959130)
+
+(c!:install 'take!-impart '(take!-impart impartf multsq) 
+7102534019139876260)
+
+(c!:install 'lprim '(lprim !*msg "***" lpriw) 7798764165975688666)
+
+(c!:install 'errorset2 '(errorset2 !*protfg errorset) 
+1992682039791703289)
+
+(c!:install 'maprint '(maprint p!*!* physoppri minus "(" ")" failed
+orig!* posn!* obrkp!* !*comma!* physopp vec!-maprin prin2!* inprint) 
+15396926397083613611)
+
+(c!:install 'freeof '(freeof depl!* smember) 3637959333020234962)
+
+(c!:install 'lalr_list_of_actions '(lalr_list_of_actions !. shift !S!'
+reduce (accept) lalr_goto lalr_reduction_index lalr_remove_duplicates) 
+5040498890216049320)
+
+(c!:install 'polynomlistfinddivisor '(polynomlistfinddivisor
+monomisdivisibleby monomispommaretdivisibleby) 12254397565235369759)
+
+(c!:install 'removeg '(removeg "Free edge" "in vertex" qg g3
+"Invalid type of vertex" finde cerror removeg1 removeg2) 
+16725121117381506512)
+
+(c!:install 'poly!-abs '(poly!-abs poly!-minusp negf) 
+10232561214688345619)
+
+(c!:install 'talp_acfrp '(talp_acfrp talp_arg2l talp_tcfrp talp_arg2r) 
+6494946179951514378)
+
+(c!:install 'searchpl '(searchpl searchtm setunion) 12905123180357682487
 )
 
-(c!:install 'initwght '(initwght codmat maxvar dm!-abs !:onep) 
-1049804139918570648)
+(c!:install 'spmultm2 '(spmultm2 mkempspmat empty findrow simp multsq
+addsq mk!*sq letmtr3) 15010669306500582066)
 
-(c!:install 'vdplength '(vdplength diplength) 13611916425205023055)
+(c!:install 'contrsp '(contrsp contrsp2) 2156789623939615128)
 
-(c!:install 'id2bytelist '(id2bytelist id2string string2bytelist) 
-11750583731547930828)
+(c!:install 'cali_bc_fi '(cali_bc_fi) 9127641074191274606)
 
-(c!:install 'split!-road '(split!-road sroad) 3337914756389053626)
+(c!:install 'oprin '(oprin " " !*fort !*list obrkp!* (plus minus)
+testing!-width!* overflowed!* prin2!* terpri!*) 11168596242216730671)
 
-(c!:install 'red!-weight!-less!-p '(red!-weight!-less!-p) 
-15527512240772958019)
+(c!:install 'th_match0 '(th_match0) 2982220586190952863)
 
-(c!:install 'pv_neg '(pv_neg) 14910564455100054419)
+(c!:install 'mapcons '(mapcons) 18184870184519584626)
 
-(c!:install 'set!-general!-modulus '(set!-general!-modulus
-current!-modulus modulus!/2) 1874468985716972133)
+(c!:install 'split_ext '(split_ext ext split_form cancel) 
+13164207896762615599)
 
-(c!:install 'cl_simpl '(cl_simpl !*rlsism inctheo and false cl_simpl1
-cl_sitheo rl_exc rl_smupdknowl) 8977132422883725116)
+(c!:install 'janettreefind '(janettreefind fluidbibasisjanettreerootnode
+monomgetvariabledegree) 5486742964862227594)
 
-(c!:install 'qsort '(qsort ordop) 12064808041959192184)
+(c!:install 'talp_simplt1 '(talp_simplt1 talp_invp talp_invarg talp_getl
+stack_top talp_mkinv stack_pop talp_op stack_push talp_invf talp_fargl
+talp_invn nth talp_fop) 15600087823852371460)
 
-(c!:install 'ibalp_getvar!-zmom '(ibalp_getvar!-zmom ibalp_minclnr
-ibalp_isinminclause) 14841464116390590590)
+(c!:install 'mri_2pasfat '(mri_2pasfat mri_op mri_arg2l) 
+10558619212887814312)
 
-(c!:install 'sgn '(sgn) 1074806718032526601)
+(c!:install 'qqe_number!-of!-tails!-in!-qterm '(
+qqe_number!-of!-tails!-in!-qterm (ladd radd) qqe_op qqe_arg2r qqe_arg2l)
+ 10999794327935236573)
 
-(c!:install 'omiir '(omiir char lex) 5366513475899983678)
+(c!:install 'rl_gettype '(rl_gettype) 1792825115883707683)
 
-(c!:install 'writepri '(writepri eval assgnpri) 14111625423404019942)
+(c!:install 'dip_moncomp '(dip_moncomp) 1856663348448561505)
 
-(c!:install 'plus!: '(plus!: !:rd!: ashift) 12247297853357438346)
+(c!:install 'omair '(omair matrix (!/ o m a) lex omobj omobjs checktag) 
+17078550959365752745)
 
-(c!:install 'cut!:ep '(cut!:ep !:rd!: ashift bflerrmsg) 
-4612005151744339248)
+(c!:install 'off_mod_reval '(off_mod_reval !*modular modular off reval
+on) 12140980420647729975)
 
-(c!:install 'getphystypesf '(getphystypesf domain!*p getphystype) 
-15012319228892138193)
+(c!:install 'has_parents '(has_parents !?) 1621164923762247183)
 
-(c!:install 'formc '(formc !*rlisp88 modefn symbolic
-"algebraic expression" "Rlisp88 form" algebraic typerr intexprnp
-convertmode) 7997369177657568609)
+(c!:install 'form1 '(form1 ed idfn "operator" comment noform symbolic
+getel vector vecfn formfn rlis !*comma!* type rlisp
+"Syntax error: , invalid after" quote !*micro!-version !*defn
+!*composites current!-modulus algebraic list set!-global!-mode form2
+typerr lastpair arrayp intargfn getvect convertmode macrochk formrlis
+blocktyperr rerror argnochk formlis intexprnp algid) 6680787676292511794
+)
 
-(c!:install 'simp '(simp varstack!* dmode!* simpcount!* simplimit!* alg
-"Simplification recursion too deep" !*sq !*resimp !*uncached alglist!*
-!*sub2 "operator" name mat yetunknowntype "scalar" simpiden getelemfn
-boolean "algebraic operator" nochange recursiveerror rerror gethash
-simpatom !*ssave typerr revlis numlis nth errpri2 opfneval getrtype
-simp_without_resimp reval argnochk to simp!* !*q2f lispapply opmtchrevop
-lispeval redmsg mkop) 6417605007174974761)
+(c!:install 'ord '(ord ordering lex plus eval) 6669722106281443466)
 
-(c!:install 'compactfmatch2 '(compactfmatch2 !~) 224475548025507060)
+(c!:install 'sc_kern '(sc_kern g_sc_ve) 18384385763232841337)
 
-(c!:install 'make!-term '(make!-term sin cos (-1 . 1) multsq) 
-9078954940219746692)
+(c!:install 'list_assoc '(list_assoc) 14494301727655934033)
 
-(c!:install 'listtest '(listtest) 16706901539491943115)
+(c!:install 'get_action_without_lookahead '(get_action_without_lookahead
+parser_action_table) 12900232614062859550)
 
-(c!:install 'gcdf1 '(gcdf1 !*anygcd !*gcd dmode!* (!:rd!: !:cr!:)
-"gcdf failed" gcdfd num!-exponents quotf1 gcdf2 noncomfp prepf errach) 
-418753600749232228)
+(c!:install 'quotfx '(quotfx !*exp !*mcd quotf quotfx1) 
+13124979871990313218)
 
-(c!:install 'raiseind!: '(raiseind!:) 8505176479277464392)
+(c!:install 'ofsf_ordatp '(ofsf_ordatp ordp ofsf_ordrelp) 
+18168501514376577914)
 
-(c!:install 'freeofdepl '(freeofdepl smember) 4679369376547301521)
+(c!:install 'revv0 '(revv0) 9181593057275922086)
 
-(c!:install 'get_rep_matrix_in '(get_rep_matrix_in
-"error in get representation matrix" rederr) 15349649042341146497)
+(c!:install 'rl_external '(rl_external) 12707140363234579363)
 
-(c!:install 'cl_fvarl '(cl_fvarl ordp cl_fvarl1 sort) 
-15724032967646760359)
+(c!:install 'ibalp_simpat '(ibalp_simpat ibalp_simpterm ibalp_mk2) 
+12585734351966318121)
 
-(c!:install 'ibalp_getnewwl '(ibalp_getnewwl) 12925733746143081045)
+(c!:install 'vdp_zero!? '(vdp_zero!? vdp_poly) 3453044351461631223)
 
-(c!:install 'integerom '(integerom "<OMI> " " </OMI>" printout) 
-17516490804314905868)
+(c!:install 'expression '(expression ir2mml!* !*sq constsml apply prepsq
+operator_fn) 2391987690299582439)
 
-(c!:install 'c!:extadd '(c!:extadd addf c!:ordexp) 12741461048729794588)
+(c!:install 'ident '(ident op identity) 18106207035159510332)
 
-(c!:install 'safe!-fp!-times '(safe!-fp!-times !!minnorm !!minnegnorm
-0.0 !*nonegzerotimes) 4140478994608002550)
+(c!:install 'bcone!? '(bcone!? !*grmod!*) 11162750296414462727)
 
-(c!:install 'condterpri '(condterpri !*output !*echo !*extraecho !*int
-ifl!* !*defn !*demo) 3886476464251229633)
+(c!:install 'vdpgetprop '(vdpgetprop vdp dipoly
+"vdpgetprop given a non-vdp as 1st parameter" rerror) 
+4835172904987027563)
 
-(c!:install 'argnochk '(argnochk !*argnochk variadic !*strict_argcount
-"+++++ " rlisp "called with" "argument" "arguments" "instead of"
-number!-of!-args argsofopr rerror lprim) 4181807411543066481)
+(c!:install 'xord_lex '(xord_lex factorordp) 11579299816355622930)
 
-(c!:install 'ordn '(ordn ord2 ordad) 10332192838769180338)
+(c!:install 'sfpx '(sfpx sfpx1) 13178870049014996340)
 
-(c!:install 'rnminus!: '(rnminus!: !:minus) 10114202910328867344)
+(c!:install 'mv!-domainlist!-!- '(mv!-domainlist!-!- nreverse) 
+13370949475782114239)
 
-(c!:install 'freeofl '(freeofl freeof) 1695728625742780640)
+(c!:install 'red_better '(red_better bas_dplen) 8582264097889148431)
 
-(c!:install 'msappend '(msappend) 11032271548117645485)
-
-(c!:install 'get_group_in '(get_group_in) 7681727314505217329)
-
-(c!:install 'mkzl '(mkzl nreverse) 17272778361100409105)
+(c!:install '!*id2num '(!*id2num pair_id_num!*) 14219724972386172061)
 
 
 % End of generated Lisp code

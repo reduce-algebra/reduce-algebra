@@ -30,7 +30,9 @@ csl/cslbase/crlibm/autom4te.cache
 csl/cslbase/gc-7/autom4te.cache
 csl/cslbase/gc-7/libatomic_ops/autom4te.cache
 csl/fox/autom4te.cache
-csl/generated-c
+csl/generated-c/*.cpp
+csl/generated-c/*.lsp
+csl/generated-c/*.img
 csl/support-packages
 cslbuild
 debianbuild

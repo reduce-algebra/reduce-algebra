@@ -1,132 +1,97 @@
 
 % u32.lsp           Machine generated Lisp
 
-(c!:install "u32" 160049 7976177 1580681)
+(c!:install "u32" 20867 8175051 5412917)
 
-(c!:install 'factor!-prim!-f '(factor!-prim!-f ncmp!* dmode!*
-sqfrfactorfn !*factor factorfn lnc !:recip multd sqfrf
-factor!-prim!-sqfree!-f fac!-merge) 8991535671753454553)
+(c!:install 'overall_factor '(overall_factor xval) 13640985980635654836)
 
-(c!:install 'dip_sum '(dip_sum dip_evlmon ev_comp iequal dip_lbc
-dip_moncomp dip_mred bc_sum setcdr) 3983088786451406200)
+(c!:install 'nconc2 '(nconc2) 8019592056523493459)
 
-(c!:install 'ofsf_optsplitterm '(ofsf_optsplitterm "ofsf_optsplitterm:"
-"has degree" "in" sfto_reorder degr rederr reorder) 18140749730664133842
-)
+(c!:install 'gfplusn '(gfplusn gffplus plus!:) 17488025135662503742)
 
-(c!:install 'determinantrd '(determinantrd mathml lex) 
-13299823222255331775)
+(c!:install 'sign!-of '(sign!-of simp!-sign) 9585081512023966144)
 
-(c!:install 'greatertype '(greatertype optlang!* fortran conversion eval
-typerror) 14283713471881068885)
+(c!:install 'assert_stat!-parse '(assert_stat!-parse !*colon!*
+"expecting ':' in assert but found" cursym!* difference greaterp
+"expecting '->' in assert but found" "expecting end of assert but found"
+scan rederr assert_stat1) 12520463969237406079)
 
-(c!:install 'vdpcleanup '(vdpcleanup dipevlist!*) 9726310706373385971)
+(c!:install 'gcref_off1 '(gcref_off1 dfprint!* !*defn !*algebraics
+algebraic newnam seen!* calledby entpts!* tseen!* tseen funs rccnam
+gseen!* usedunby undefg!* undefdchk idsort) 16304191943616561554)
 
-(c!:install 'weak_xreduce1 '(weak_xreduce1 !*trxmod "   " first wedge
-" +" last xval xdiv mknwedge wedgepf quotsq negsq multpfsq addpf subs2pf
-writepri preppf) 10067255446068332118)
+(c!:install 'sfto_updecf '(sfto_updecf !*sfto_yun !*sfto_musser
+"sfto_updecf: select a decomposition method" sfto_yun!-updecf
+sfto_musser!-updecf rederr) 9570799290316021347)
 
-(c!:install 'fl2bf '(fl2bf "Floating point infinity or NaN" !!nbfpd
-!:rd!: fp!-finite rederr frexp normbf) 18367469440066822488)
+(c!:install 'get_char_group '(get_char_group) 8299995027405440554)
 
-(c!:install 'calc_coeffmap_ '(calc_coeffmap_ times calc_map_ calc_coeff)
- 3656005963211299502)
+(c!:install 'talp_atnum '(talp_atnum or and not impl repl equiv ex all
+true false) 11551283075179441224)
 
-(c!:install 'lpos '(lpos) 392504631650382707)
+(c!:install 'minusml '(minusml "<apply><minus/>" "</apply>" printout
+indent!* multiminus) 1217897309786682102)
 
-(c!:install 'cl_bvarl '(cl_bvarl ordp cl_bvarl1 sort) 208407522678842217
-)
+(c!:install 'add_minus '(add_minus !:rd!: minus) 16653397504775846537)
 
-(c!:install 'omattrir '(omattrir (!/ o m a t t r) csymbol cn ci lex
-omatpir omobj checktag) 15199935747480460102)
+(c!:install 'dipequal '(dipequal evequal) 2402755849245862783)
 
-(c!:install 'sptransmat '(sptransmat spm matlength aeval mkempspmat
-letmtr3) 11078188207137486602)
+(c!:install 'f2dip11 '(f2dip11 !*notestparameters vdpvars!*
+"occurs in a parameter and is member of the groebner variables." list
+"groebner: LIST not allowed." rederr) 7234983498125750140)
 
-(c!:install 'vdpmember '(vdpmember vdpequal) 8126623404930661228)
+(c!:install 'eqexpr '(eqexpr equalopr) 3505042047303045823)
 
-(c!:install 'mkupf '(mkupf mksq sfp partitsq!*) 350955710441535672)
+(c!:install 'formatfort '(formatfort !*lower !*posn!* maxint !*double e
+!D !E (d !0) fortlinelen!* lispeval i2rd!* fortcontline pprin2) 
+11603302336187822563)
 
-(c!:install 'rd!:difference '(rd!:difference !*!*roundbf !:rd!: yy!!
-safe!-fp!-minus safe!-fp!-plus convprc2 difbf fp!-infinite rndbfon fl2bf
-read!:num normbf minus!: rdzchk mkround) 11687049646556656826)
+(c!:install 'one!-entryp '(one!-entryp) 1880773745218423214)
 
-(c!:install 'toolongassignp '(toolongassignp toolongexpp) 
-4118697004373164395)
+(c!:install 'max!-degree '(max!-degree) 7631694807477571889)
 
-(c!:install 'simppartdf '(simppartdf partitpartdf !*pf2sq) 
-18226010435382712502)
+(c!:install 'not_included '(not_included) 13035740386792352516)
 
-(c!:install 's_world_names '(s_world_names) 15003719730143642310)
+(c!:install 'length_multiindex '(length_multiindex) 692022526224992757)
 
-(c!:install 'open '(open input output append "bad direction ~A in open"
-internal!-open error) 14317167635950447697)
+(c!:install 'lex_basic_token '(lex_basic_token lex_peeked
+lex_peeked_yylval yylval lex_peeked_escaped lex_escaped lex_char ! 
+!$eol!$ !	 !$eof!$ lex_eof_code !! lexer_style!* !*raise !*lower
+comment !; !$ lex_code !' lex_is_typename lex_typename_code
+lex_symbol_code !~ !0 x !X lex_number_code !. e !E !+ !- !" !\
+lex_string_code lex_char_code quote lex_list_code !` backquote !#
+lex_dipthong sml_opchar (if else elif endif define eval)
+lex_start_line_comment lex_skip_line_comment lex_start_block_comment
+lex_skip_block_comment yyreadch lexer_word_starter land
+lexer_word_continues list2widestring yypeek lex_hexval read_s_expression
+widestring2list all_sml_opchar list2string) 6007149577768455066)
 
-(c!:install 'dfp!-sub '(dfp!-sub generic_function list dfp listsub reval
-pair dfp!-sub1) 7670772426438171903)
+(c!:install 'in_list1a '(in_list1a !*echo !*reduce4 string !| !$ !/ !\
+ifl!* !. (!/ !.) input linelist!* curline!* ipl!* contl!*
+"FILE STACK CONFUSION" type typerr value mkfil!* list2string pipe!-open
+open begin1a rederr) 5447568939486315732)
 
-(c!:install '!*multf '(!*multf !*noncomp (expt sqrt) sqrt expt
-squashsqrt multd multf ordop addf makeupsf !*multfsqrt
-prefix!-rational!-numberp !*multfexpt mkspm) 3112641827313326709)
+(c!:install 'talp_specsubt '(talp_specsubt talp_eqtp) 
+3456373075680382027)
 
-(c!:install 'drop_rl_with '(drop_rl_with rl_with) 3316639232002376194)
+(c!:install 'pasf_susibinad '(pasf_susibinad false true (delete . t)
+equal cl_susiminlevel pasf_susibineq pasf_dec pasf_susibinord kernels
+negf pasf_subfof1 pasf_susibinad1) 13184230421889198236)
 
-(c!:install 'mri_ofsf2mriat '(mri_ofsf2mriat mri_0mk2) 
-16306935581848189185)
+(c!:install 'multiminus '(multiminus expression) 3843225591671845349)
 
-(c!:install 'intervalom '(intervalom name lowupperlimit integer_interval
-valid_om!* interval!* "<OMA>" "<OMS cd=""" """ name=""" """/>" "</OMA>"
-printout indent!* multiom) 17922406443138092447)
+(c!:install 'dm!-min '(dm!-min dm!-gt) 13325087570768997749)
 
-(c!:install 'remzzzz '(remzzzz nreverse) 12941972615663851898)
+(c!:install 'sc_getrow '(sc_getrow sc_igetv) 3551891752755930172)
 
-(c!:install 'simp_without_resimp '(simp_without_resimp !*resimp simp) 
-8992338469488600133)
+(c!:install 'xriterion_1 '(xriterion_1 spoly_pair !*trxideal
+"criterion 1 hit" last xval xdiv make_spoly_pair find_item writepri) 
+13595331840087151417)
 
-(c!:install 'f2dip1 '(f2dip1 f2dip11 bcfd bcprod f2dip2 dipsum) 
-14214282398288548756)
-
-(c!:install 'simpunion '(simpunion union empty_set applysetop ordn mksp)
- 10879639108873967154)
-
-(c!:install 'xnsiz '(xnsiz !!log2of10 xnsiz1 ceiling) 
-5834800755168866135)
-
-(c!:install 'indxsymp '(indxsymp) 15395267106291607297)
-
-(c!:install 'getphystypeexpt '(getphystypeexpt scalar getphystypecar) 
-2421237881282221574)
-
-(c!:install 'prepsq!*1 '(prepsq!*1 factors!* expt kord!* dnl!* !*allfac
-upl!* !*div minus quotient prepsq!*0 to quotfm mksp nconc!* kernlp mkkl
-ckrn ckrn!* quotof canonsq prepf addfactors rmplus exchk prepsq aconc!*
-retimes) 8623262739272361502)
-
-(c!:install 'fs!:minusp '(fs!:minusp minusf) 16879958195719117773)
-
-(c!:install 'bas_make '(bas_make dp_ecart) 11969008909803901740)
-
-(c!:install 'mk!+scal!+mult!+mat '(mk!+scal!+mult!+mat
-"no matrix in add" !*sub2 matrix!+p rederr multsq subs2) 
-8701325537221077134)
-
-(c!:install 'ofsf_smordtable '(ofsf_smordtable ((equal (equal . false) (
-neq equal . t) (geq equal . t) (leq . false) (greaterp equal . t) (lessp
-. false)) (neq (equal equal) (neq) (geq) (leq leq) (greaterp) (lessp
-lessp)) (geq (equal . false) (neq geq . t) (geq geq . t) (leq . false) (
-greaterp geq . t) (lessp . false)) (leq (equal equal) (neq) (geq) (leq
-leq) (greaterp) (lessp lessp)) (greaterp (equal . false) (neq greaterp .
-t) (geq greaterp . t) (leq . false) (greaterp greaterp . t) (lessp .
-false)) (lessp (equal equal) (neq) (geq) (leq leq) (greaterp) (lessp
-lessp)))) 14560317248216607311)
-
-(c!:install 'dvfsf_simplat1 '(dvfsf_simplat1 equal neq dvfsf_op
-dvfsf_arg2l dvfsf_safield dvfsf_arg2r dvfsf_saval) 3976312358638915735)
-
-(c!:install 'matrixelems '(matrixelems nreverse) 6488175335555744394)
-
-(c!:install 'diplmon2sq '(diplmon2sq dipvars!* dipev2f multsq) 
-15227123221674441372)
+(c!:install 'simp!-prop1 '(simp!-prop1 !'and !'or not implies or equiv
+and true false (or !*true (not !*true)) (and !*true (not !*true))
+boolean prop!* not_prop!* propvars!* multf addf reval simp) 
+12573422058316044628)
 
 
 % End of generated Lisp code
