@@ -19,7 +19,7 @@ mkdir -p $1.app/Contents/MacOS
 mkdir -p $1.app/Contents/MacOS/reduce.doc
 mkdir -p $1.app/Contents/Resources
 mkdir -p $1.app/Contents/Resources/Fonts
-D="$1.app/Conteents/MacOS/reduce.doc"
+D="$1.app/Contents/MacOS/reduce.doc"
 cp $srcdir/../reduce.doc/*.txt                   $D
 cp $srcdir/../reduce.doc/*.tex                   $D
 cp $srcdir/../reduce.doc/*.html                  $D
