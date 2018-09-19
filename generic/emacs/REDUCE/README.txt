@@ -1,7 +1,7 @@
-						  ESL REDUCE README
-						  =================
+Emacs REDUCE
+============
 
-							Francis Wright
+Francis Wright, September 2018
 
 For stability during development, I am currently using the REDUCE 3.8
 files at
@@ -22,12 +22,11 @@ nil and t as lower-case symbols.
 
 Files with names of the form "eslxxxx.red" are ESL versions of the
 REDUCE files "cslxxxx.red", "pslxxxx.red" or "xxxx.red".  The current
-ESL REDUCE build process does not use any shell scripts and assumes
-that all required Emacs Lisp (.el) and REDUCE (.red) files and
-directories are in the current directory.
+Emacs REDUCE build process assumes that all required Emacs Lisp (.el)
+and REDUCE (.red) files and directories are in the current directory.
 
-To build ESL REDUCE
-===================
+To build Emacs REDUCE
+---------------------
 
 Download the current ESL file set to some directory, which I will call
 REDUCE, but its name is not significant.  Download the directory
@@ -47,58 +46,71 @@ will then include a lot of files that are not required for this
 build), or link the directory "packages" and file "package.red" to
 REDUCE.  Open a directory listing of REDUCE in Emacs (C-x d).
 
+0. Some of the steps below require Emacs to load files in the current
+directory.  To permit that, I recommend that you add
+
+(push nil load-path)
+
+of something equivalent to your Emacs init file (.emacs).
+
 1. Compile (or recompile if anything has changed) "esl.el", "boot.el"
 and "eslpretty.el" (B in Emacs dired mode), then load "boot.elc" (L in
 Emacs dired mode), which loads "esl.elc".
 
 2. Run M-x STANDARD-LISP
 
-3. Evaluate
+2a. Evaluate
 
 (DSKIN "dbuild.el")
 
 via the minibuffer to build a basic version of REDUCE in the current
 Emacs session.  This build step should take about 10 seconds.
 
-4. Run
+2b. Run
 
-symbolic infile "eslremakeall.red";
+symbolic infile "eslremakecore.red";
 
-via the minibuffer to remake all ESL REDUCE fasl files.  This build
-step should take a few minutes.  (To really build all of REDUCE,
-remove the premature end statement, which currently stops the build
-after the most important third of the packages.)
+via the minibuffer to build the core Emacs REDUCE fasl files.  This
+build step should take a minutes or two.  I recommend now closing
+Emacs and then re-opening it, which is the only way to unload or
+cleanly restart Emacs REDUCE.
 
-I recommend now closing Emacs and then re-opening it.  This is the
-only way to cleanly restart ESL REDUCE.
+3. Open a (Unix-style) command shell and run the bash script
 
-To run ESL REDUCE
-=================
+remake-all-packages.sh
 
-To run ESL REDUCE for the first time in an Emacs session, load the
+(This currently assumes a particular location for the Emacs
+executable, namely its location on my computer, which you may need to
+edit first.)  This build step should take no more than 15 minutes.
+
+To run Emacs REDUCE
+-------------------
+
+To run Emacs REDUCE for the first time in an Emacs session, load the
 file "reduce.el" (or compile it first and load "reduce.elc").  This
-should give you a fairly standard running REDUCE process, but remember
-that input is currently via the minibuffer.  ESL REDUCE accepts input
-in either lower or upper case and currently outputs in lower case by
-default (except that strings retain their input case).
+should give you a fairly standard running REDUCE session, but remember
+that input is currently via the minibuffer.  Emacs REDUCE accepts
+input in either lower or upper case and currently outputs in lower
+case by default (except that strings retain their input case).
 
-If you terminate ESL REDUCE (or it is terminated by Emacs), it is
-really only suspended unless you terminate Emacs and you can re-enter
-ESL REDUCE where you left it by running the Emacs command `M-x reduce'
-(unless REDUCE was terminated by a catastrophic error).  Don't reload
-"reduce.el(c)".  You can terminate (suspend) ESL REDUCE in the
+If you terminate Emacs REDUCE (or it is terminated by Emacs), it is
+really only suspended unless you terminate Emacs, so you can re-enter
+where you left it by running the Emacs command `M-x REDUCE' (unless
+REDUCE was terminated by a catastrophic error).  Don't reload
+"reduce.el(c)".  You can exit (i.e. suspend) Emacs REDUCE in the
 conventional way (using the REDUCE command bye or quit) or you can use
 the Emacs keyboard-quit signal `C-g'.
 
-You can interact with REDUCE using all normal Emacs Lisp facilities,
-but it is normally best to terminate REDUCE first.  Otherwise, Emacs
-will probably terminate REDUCE, for example, if you do something that
-needs to use the minibuffer.
+You can interact with an Emacs REDUCE session using normal Emacs Lisp
+facilities (in ways that are not possible or convenient using
+conventional REDUCE facilities), but it is normally best to suspend
+REDUCE first.  Otherwise, Emacs will probably suspend REDUCE; for
+example, if you do something that needs to use the minibuffer.
 
-When interacting with ESL REDUCE via Emacs Lisp, remember that ESL is
-an upper-case Lisp and that you are using Emacs Lisp syntax, so omit
-any ! escapes that would be required in REDUCE or Standard LISP.  For
-example, the REDUCE symbolic-mode input
+When interacting with an Emacs REDUCE session via Emacs Lisp, remember
+that ESL is an upper-case Lisp and that you are using Emacs Lisp
+syntax, so omit any ! escapes that would be required in REDUCE or
+Standard LISP.  For example, the REDUCE symbolic-mode input
 
 foo!-bar X;  [or foo!-bar(X);]
 
@@ -109,27 +121,33 @@ would be (assuming foo!-bar has no special processing rules)
 in Emacs Lisp.
 
 Print output
-============
+------------
 
 The ESL print functions now support the Standard Lisp escape
 convention and down-casing of identifiers (when !*LOWER is non-nil).
 This does not appear to have caused any significant loss of speed.
 
-Current status of ESL REDUCE
-============================
+Current status of Emacs REDUCE
+------------------------------
 
-The build process gets as far as misc/compactf on which building the
-fasl file fails.  This is probably not a catastrophe at this stage of
-development!
+The batch-mode build process now attempts to build all packages and
+appears to succeed with most of them, but there is a handful of
+problem still to be resolved.  An important package (such as limits)
+failing to compile can have a knock-on effect and prevent a number of
+other packages from compiling.  Batch-mode output is untidy, in part
+because REDUCE probably doesn't pick up the fact that it is running in
+batch mode, which needs fixing.
 
-ESL REDUCE currently runs all of "alg/alg.tst" correctly but about 20
-times slower than the time shown in "alg.rlg".  (Slightly slower after
-the addition of bignum support -- maybe 24 times slower.  And after
-the addition of better output maybe 26 times slower.  This is not
-surprising and may be improvable.)
+Test files
+----------
+
+Emacs REDUCE currently runs all of "alg/alg.tst" correctly but about
+20 times slower than the time shown in "alg.rlg".  (Slightly slower
+after the addition of bignum support -- maybe 24 times slower.  And
+after the addition of better output maybe 26 times slower.  This is
+not surprising and may be improvable.)
 
 Poly package
-------------
 
 "poly/polydiv.tst" now runs correctly.
 
@@ -138,7 +156,6 @@ the products in the gcd tests with <<d>> to force an extra evaluation.
 I can't find the cause of this problem.
 
 Arith package
--------------
 
 The REDUCE 3.8 file smlbflot.red contains are error that must be
 corrected as in later REDUCE versions.  The file "rdelem.red" uses the
@@ -150,7 +167,7 @@ load!-package 'smlbflot;
 which seems to fix the problem.  I think either this change, or
 perhaps better moving the smacro definitions for incprec!: and
 decprec!: into "arith.red", should probably be applied to the generic
-source code.
+source code if this has not already been done post 3.8.
 
 With the above two changes, "arith/arith.tst" appears to run
 correctly. There are a lot of rounding differences, but nothing
@@ -166,14 +183,12 @@ code, which I want to avoid as much as possible.  This will have to
 remain an anomaly for now.
 
 Factor package
---------------
 
 "factor/factor.tst" runs completely correctly, although it's a bit
 slow.  There is probably scope for optimizing the arithmetic used in
 the factorizer.
 
 Int package
------------
 
 "int/int.tst" runs to completion, but it's about 20 times slower than
 the time shown in "int.rlg" (which is consistent with running
@@ -189,11 +204,11 @@ the error seems to change the sort order of the result.  Increasing
 `max-specpdl-size' from the default of 1300 to 2000 before running the
 test file allows it to complete fully correctly.  However, the best
 solution might be to re-implement big integers taking care to avoid
-recursion!
+recursion, which is in hand!
 
 To do
-=====
+-----
 
+Tidier batch-mode output and build process.
 Better support for big integers.
-Better build process.
 Better user interface.

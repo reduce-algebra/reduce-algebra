@@ -1,4 +1,4 @@
-%%% eslremakeall.red --- remake all ESL REDUCE fasl files.
+%%% eslremakeall.red --- remake all ESL REDUCE fasl files. -*- coding: utf-8; -*-
 
 %%% Author: Francis J. Wright.
 %%% Based on code by Anthony C. Hearn.

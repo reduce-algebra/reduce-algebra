@@ -1,10 +1,11 @@
 ;;; reduce.el --- Load and run ESL REDUCE.
 
-;;; Author: Francis J. Wright.
+;;; Author: Francis J. Wright
 ;;; Based on code by Anthony C. Hearn.
 
-;; Load and run REDUCE on Emacs Lisp with input via the minibuffer and
-;; output to a normal buffer.
+;; Load and run REDUCE on Emacs Lisp.
+;; Interactive input from minibuffer and output to normal buffer.
+;; Batch mode input from stdin and output to stdout.
 
 (add-to-list 'load-path nil)
 
@@ -18,9 +19,7 @@
 ;; "eslprolo.red", so...
 (LOAD-MODULE 'ESLPROLO)
 
-(defvar LOADED-PACKAGES*)
-
-(setq LOADED-PACKAGES* (list 'MODULE 'ESLPROLO))
+(defvar LOADED-PACKAGES* '(ESLPROLO MODULE))
 
 (LOAD-PACKAGE 'RLISP)
 (LOAD-PACKAGE 'ESLREND)
@@ -29,9 +28,6 @@
 (LOAD-PACKAGE 'ARITH)
 (LOAD-PACKAGE 'MATHPR)
 (LOAD-PACKAGE 'ENTRY)
-
-;; (INITREDUCE)
-;; Currently need to run STANDARD-LISP then run (INITREDUCE), or...
 
 (with-no-warnings			   ; suppress warning about lack of prefix
   (defvar STATCOUNTER))
@@ -52,7 +48,8 @@
 		;; Output to the END of the current buffer:
 		;; (standard-output (set-marker esl--marker (point-max)))
 		;; The above is proving unreliable, so try this:
-		(standard-output (current-buffer))
+		(standard-output (or noninteractive	; in batch mode, output to stdout
+							 (current-buffer)))
 		;; Make (READCH) read from the minibuffer:
 		(esl--readch-use-minibuffer t))
 	(catch 'QUIT

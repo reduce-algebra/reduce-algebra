@@ -1,4 +1,4 @@
-module eslrend; % ESL (Emacs Standard LISP) REDUCE "back-end".
+module eslrend; % ESL (Emacs Standard LISP) REDUCE "back-end". -*- coding: utf-8; -*-
 
 % Authors: Martin L. Griss and Anthony C. Hearn.
 % Revised for ESL REDUCE by Francis J. Wright.

@@ -1,4 +1,4 @@
-;;; esl.el --- ESL (Emacs Standard LISP)
+;;; esl.el --- ESL (Emacs Standard LISP) -*- coding: utf-8; -*-
 
 ;; Copyright (C) 2017-2018 Francis J. Wright
 
@@ -2074,10 +2074,11 @@ Return as Lisp object.  Echo the input if `*ECHO' is non-nil."
 			   (standard-input (or esl--read-stream t)))
 		   (read))))
 	(when (or (eq standard-input t) *ECHO) ; always echo minibuffer input
-	  (with-current-buffer standard-output
-		(goto-char (point-max))	   ; in case point moved interactively
-		(prin1 value) (terpri)
-		(terpri)))
+	  (if (not (eq standard-output t))
+		  (with-current-buffer standard-output
+			(goto-char (point-max))	   ; in case point moved interactively
+			(prin1 value) (terpri) (terpri))
+		(prin1 value) (terpri) (terpri)))
 	value))
 
 (defun READ ()
@@ -2171,25 +2172,29 @@ is non-nil then echo file input."
 			 ;; input.  Read a new input string from the minibuffer,
 			 ;; save it and return the first character.
 			 (setq esl--readch-input-string
-				   (let (standard-output)
-					 ;; to avoid minibuffer errors resetting this
-					 (read-from-minibuffer "REDUCE: "
-										   nil nil nil 'esl--readch-history))
+				   (if noninteractive
+					   (read-from-minibuffer "")
+					 (let (standard-output)
+					   ;; to avoid minibuffer errors resetting this
+					   (read-from-minibuffer "REDUCE: "
+											 nil nil nil 'esl--readch-history)))
 				   esl--readch-input-string-length
 				   (length esl--readch-input-string)
 				   esl--readch-input-string-index 0)
 			 ;; (when *ECHO
-			 (with-current-buffer standard-output
-			   (goto-char (point-max)) ; in case point moved interactively
-			   (princ esl--readch-input-string) (terpri)
-			   (terpri)));)
+			 (if (not (eq standard-output t))
+				 (with-current-buffer standard-output
+				   (goto-char (point-max)) ; in case point moved interactively
+				   (princ esl--readch-input-string) (terpri) (terpri))
+			   (princ esl--readch-input-string) (terpri) (terpri))
+			 );)
 		   ;; Then return the next character from the input string.
 		   ;; When the last character has been returned, clear the
 		   ;; string to trigger new input.
 		   (if (equal esl--readch-input-string "")
 			   (progn
 				 (setq esl--readch-input-string nil)
-				 $EOF$)			   ; for want of something better!
+				 $EOL$)
 			 (let ((c (aref esl--readch-input-string esl--readch-input-string-index)))
 			   (setq esl--readch-input-string-index
 					 (1+ esl--readch-input-string-index))
@@ -2207,6 +2212,12 @@ is non-nil then echo file input."
 			   (t (let ((c (char-after esl--marker)))
 					(set-marker esl--marker (1+ esl--marker))
 					(esl--readch-char-to-interned-id c)))))))))
+
+;; (advice-add 'READCH :filter-return
+;; 			(lambda (x) (princ x #'external-debugging-output)))
+
+;; (advice-add 'read-from-minibuffer :filter-return
+;; 			(lambda (x) (princ x #'external-debugging-output)))
 
 (defun TERPRI ()
   "TERPRI():NIL
@@ -2228,7 +2239,9 @@ selected output file.
 		(unless (and (consp filehandle)
 					 (eq (cdr filehandle) 'OUTPUT)
 					 (bufferp (setq stream (car filehandle))))
-		  (error "%s could not be selected for output" filehandle)))
+		  (error "%s could not be selected for output" filehandle))
+	  ;; In batch mode, output to stdout:
+	  (if noninteractive (setq stream t)))
 	(prog1
 		(if esl--write-stream (cons esl--write-stream 'OUTPUT))
 	  (setq esl--write-stream stream
@@ -2279,7 +2292,8 @@ selected output file.
 		;; Output to the END of the current buffer:
 		;; (standard-output (set-marker esl--marker (point-max)))
 		;; The above is proving unreliable, so try this:
-		(standard-output (current-buffer))
+		(standard-output (or noninteractive	; in batch mode, output to stdout
+							 (current-buffer)))
 		;; Make (READCH) read from the minibuffer:
 		(esl--readch-use-minibuffer t))
 	(if (= (buffer-size) 0)

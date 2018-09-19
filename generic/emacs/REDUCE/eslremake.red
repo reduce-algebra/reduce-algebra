@@ -1,4 +1,4 @@
-module eslremake;  % Update the fast loading version of a given file.
+module eslremake;  % Update the fast loading version of a given file. -*- coding: utf-8; -*-
 
 % Authors: Martin L. Griss and Anthony C. Hearn.
 % Revised for ESL REDUCE by Francis J. Wright.
