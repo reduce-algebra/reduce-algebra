@@ -131,19 +131,19 @@ trying all possible substitutions
  - floor(-------------)*sign(i)*infinity + floor(-------------)*infinity
              2*pi                                    2*pi
 
-                           2     1/4
-                         (u  + 1)
- + sub(u=tan(x),int(----------------------,u))
-                              2
-                     sqrt(u)*u  + sqrt(u)
+                               2     1/4
+                     sqrt(u)*(u  + 1)
+ + sub(u=tan(x),int(---------------------,u))
+                            3
+                           u  + u
  
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 156 ms  plus GC time: 16 ms
+Tested on x86_64-unknown-ubuntu16.04 CSL
+Time (counter 1): 540 ms  plus GC time: 30 ms
 
-End of Lisp run after 0.15+0.06 seconds
-real 0.38
-user 0.01
-sys 0.06
+End of Lisp run after 0.54+0.05 seconds
+real 0.75
+user 0.68
+sys 0.02
