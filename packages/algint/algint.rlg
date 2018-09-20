@@ -2325,22 +2325,22 @@ testint(1/(r*sqrt(2*h*r**2-alpha**2-2*k*r**4)),r);
 
 
                                                         2      2
-(i*(256*sqrt(k)*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)*atan(
+(i*(256*sqrt(k)*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
           15  7                                                        2      2
     *alpha  *k  + 9856*sqrt(k)*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
-    *sqrt(2)*atan(
+    *sqrt(2)
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
@@ -2348,11 +2348,11 @@ testint(1/(r*sqrt(2*h*r**2-alpha**2-2*k*r**4)),r);
     *alpha  *h *k  + 40768*sqrt(k)
 
                                              2      2
-    *sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)*atan(
+    *sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
@@ -2360,11 +2360,11 @@ testint(1/(r*sqrt(2*h*r**2-alpha**2-2*k*r**4)),r);
     *alpha  *h *k  + 32032*sqrt(k)
 
                                              2      2
-    *sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)*atan(
+    *sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
@@ -2372,11 +2372,11 @@ testint(1/(r*sqrt(2*h*r**2-alpha**2-2*k*r**4)),r);
     *alpha *h *k  - 6864*sqrt(k)
 
                                              2      2
-    *sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)*atan(
+    *sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
@@ -2384,11 +2384,11 @@ testint(1/(r*sqrt(2*h*r**2-alpha**2-2*k*r**4)),r);
     *alpha *h *k  - 8008*sqrt(k)
 
                                              2      2
-    *sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)*atan(
+    *sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
@@ -2396,94 +2396,94 @@ testint(1/(r*sqrt(2*h*r**2-alpha**2-2*k*r**4)),r);
     *alpha *h  *k  - 1092*sqrt(k)
 
                                              2      2
-    *sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)*atan(
+    *sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*sqrt(2)
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
           3  12                                                        2      2
     *alpha *h  *k - 26*sqrt(k)*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
-    *sqrt(2)*atan(
+    *sqrt(2)
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
             14                                                2      2
-    *alpha*h   - 3328*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*atan(
+    *alpha*h   - 3328*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
           14    7                                                 2      2
-    *alpha  *h*k  - 34944*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*atan
+    *alpha  *h*k  - 34944*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
-                           2        2        4                 2      2    2
-      sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-    (------------------------------------------------------------------------)
-                                                        2      2
-                sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
+                                                          2      2
+                  sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
           12  3  6                                                 2      2
-    *alpha  *h *k  - 64064*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*
+    *alpha  *h *k  - 64064*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
-                               2        2        4                 2      2    2
-    atan((sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
+                                                          2      2
+                  sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
-                                                    2      2        10  5  5
-          )/sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h ))*alpha  *h *k  - 
+          10  5  5                                                 2      2
+    *alpha  *h *k  - 13728*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
-                                                  2      2
-    13728*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*atan(
-
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
           8  7  4                                                 2      2
-    *alpha *h *k  + 16016*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*atan
+    *alpha *h *k  + 16016*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
-                           2        2        4                 2      2    2
-      sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-    (------------------------------------------------------------------------)
-                                                        2      2
-                sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
+                                                          2      2
+                  sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
           6  9  3                                                2      2
-    *alpha *h *k  + 5096*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*atan(
+    *alpha *h *k  + 5096*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
           4  11  2                                               2      2
-    *alpha *h  *k  + 308*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*atan(
+    *alpha *h  *k  + 308*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
           2  13                                               2      2
-    *alpha *h  *k + 2*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )*atan(
+    *alpha *h  *k + 2*sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
-                             2        2        4                 2      2    2
-        sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i  + 2*i *k*r
-       ------------------------------------------------------------------------)
+                                2        2        4                       2
+           sqrt(k)*sqrt( - alpha  + 2*h*r  - 2*k*r )*sqrt(2)*i + h - 2*k*r
+    *atan(------------------------------------------------------------------)
                                                           2      2
                   sqrt(2*sqrt(k)*sqrt(2)*alpha*h - 2*alpha *k - h )
 
@@ -3237,11 +3237,11 @@ testint(1/(r*sqrt(2*h*r**2-alpha**2-epsilon**2-2*k*r**4)),r);
                           2      2            2          2
                - 2*epsilon *k - h )*sqrt(alpha  + epsilon )*atan((
 
-                               2          2        2        4                 2
-          sqrt(k)*sqrt( - alpha  - epsilon  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i
+                               2          2        2        4
+          sqrt(k)*sqrt( - alpha  - epsilon  + 2*h*r  - 2*k*r )*sqrt(2)*i + h
 
-                2    2                           2          2
-           + 2*i *k*r )/sqrt(2*sqrt(k)*sqrt(alpha  + epsilon )*sqrt(2)*h
+                  2                           2          2
+           - 2*k*r )/sqrt(2*sqrt(k)*sqrt(alpha  + epsilon )*sqrt(2)*h
 
                     2              2      2
            - 2*alpha *k - 2*epsilon *k - h ))*h - 2*sqrt(k)*sqrt(
@@ -3252,11 +3252,11 @@ testint(1/(r*sqrt(2*h*r**2-alpha**2-epsilon**2-2*k*r**4)),r);
            2
         - h )*sqrt(2)*atan((
 
-                               2          2        2        4                 2
-          sqrt(k)*sqrt( - alpha  - epsilon  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i
+                               2          2        2        4
+          sqrt(k)*sqrt( - alpha  - epsilon  + 2*h*r  - 2*k*r )*sqrt(2)*i + h
 
-                2    2                           2          2
-           + 2*i *k*r )/sqrt(2*sqrt(k)*sqrt(alpha  + epsilon )*sqrt(2)*h
+                  2                           2          2
+           - 2*k*r )/sqrt(2*sqrt(k)*sqrt(alpha  + epsilon )*sqrt(2)*h
 
                     2              2      2        2
            - 2*alpha *k - 2*epsilon *k - h ))*alpha  - 2*sqrt(k)*sqrt(
@@ -3267,11 +3267,11 @@ testint(1/(r*sqrt(2*h*r**2-alpha**2-epsilon**2-2*k*r**4)),r);
            2
         - h )*sqrt(2)*atan((
 
-                               2          2        2        4                 2
-          sqrt(k)*sqrt( - alpha  - epsilon  + 2*h*r  - 2*k*r )*sqrt(2)*i - h*i
+                               2          2        2        4
+          sqrt(k)*sqrt( - alpha  - epsilon  + 2*h*r  - 2*k*r )*sqrt(2)*i + h
 
-                2    2                           2          2
-           + 2*i *k*r )/sqrt(2*sqrt(k)*sqrt(alpha  + epsilon )*sqrt(2)*h
+                  2                           2          2
+           - 2*k*r )/sqrt(2*sqrt(k)*sqrt(alpha  + epsilon )*sqrt(2)*h
 
                     2              2      2          2
            - 2*alpha *k - 2*epsilon *k - h ))*epsilon  - sqrt(
@@ -4312,6 +4312,7 @@ symbolic summarize!-integral!-test();
 Number of integrals tested: 281
 
 
+
 Number of incorrect integrals: 0
 
 Number of unevaluated integrals: 16
@@ -4399,10 +4400,10 @@ erf(a + x)
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 671 ms  plus GC time: 15 ms
+Tested on x86_64-unknown-ubuntu16.04 CSL
+Time (counter 1): 1790 ms  plus GC time: 199 ms
 
-End of Lisp run after 0.67+0.07 seconds
-real 1.00
-user 0.01
-sys 0.07
+End of Lisp run after 1.79+0.23 seconds
+real 2.26
+user 2.18
+sys 0.03

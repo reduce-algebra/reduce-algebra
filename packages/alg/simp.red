@@ -113,7 +113,9 @@ symbolic procedure rationalizei u;
       if domainp (v := denr u) or not smemq('i,v) then return u;
       v := reordsq u where kord!* = 'i . kord!*;
       return if lpow (w := denr v) = '(i . 1) and null red w
-               then negf multf(!*k2f 'i,reorder numr v) ./ reorder lc w
+               then (if not domainp numr v and mvar numr v eq 'i
+                       then addf(lc numr v,multf(negf !*k2f 'i,red numr v))
+                      else negf(multf(!*k2f 'i,numr v))) ./ lc w
               else u
    end;
 
@@ -860,7 +862,8 @@ symbolic procedure radf(u,n);
       while not domainp u do
      <<y := comfac u;
        if car y
-         then <<x := if !*precise_complex then 0 . pdeg car y
+         then <<x := if !*precise_complex %and not realvaluedp!-sf u
+                       then 0 . pdeg car y
                       else divide(pdeg car y,n);
             if car x neq 0
               then ipart := multf(
