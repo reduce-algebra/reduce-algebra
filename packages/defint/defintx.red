@@ -201,10 +201,10 @@ symbolic procedure defint11(exp,var,llim,ulim,dtst);
      if eqcar(prepsq r,'int) then go to c1;
      p := errorset2 list('subsq, mkquote r, mkquote {var . ulim});
      q := errorset2 list('subsq, mkquote r, mkquote {var . llim});
-     if errorp(p) or errorp (q) then <<
-        p:= simplimit list('limit!- ,mk!*sq(r),var,ulim);
-        q:= simplimit list('limit!+ ,mk!*sq(r),var,llim); >>
-     else <<p := car p; q := car q>>;
+     if errorp(p) then p:= simplimit list('limit!- ,mk!*sq(r),var,ulim)
+      else p := car p;
+     if errorp(q) then q:= simplimit list('limit!+ ,mk!*sq(r),var,llim)
+      else q := car q;
      return q1 := addsq(p,negsq q);
  c1: rederr "special forms for finite limits not implemented";
  c0: r := exp; p := numr r; q := denr r;

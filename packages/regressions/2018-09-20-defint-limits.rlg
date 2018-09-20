@@ -1,0 +1,25 @@
+
+Comment Test some definite integrals that produced very strange results;
+
+
+int(log(1/x)^2,x,0,1);
+
+
+2
+
+
+int(log(1/x)^3,x,0,1);
+
+
+6
+
+
+z := int(log(1/x)^2,x);
+
+
+              2
+z := x*(log(x)  - 2*log(x) + 2)
+
+
+end;
+
