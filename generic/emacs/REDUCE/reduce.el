@@ -11,23 +11,26 @@
 
 (require 'esl)							; defines LOAD-MODULE.
 
-;; LOAD-PACKAGE is defined in "rlisp/module.red", so...
-(declare-function LOAD-PACKAGE "fasl/module" (U))
-(LOAD-MODULE 'MODULE)
+;; Load core modules silently:
+(let ((esl-load-module-nomessage t) (*MSG nil))
+  ;; LOAD-PACKAGE is defined in "rlisp/module.red", so...
+  (declare-function LOAD-PACKAGE "fasl/module" (U))
+  (LOAD-MODULE 'MODULE)
 
-;; Each package fasl file calls CREATE!-PACKAGE, which is defined in
-;; "eslprolo.red", so...
-(LOAD-MODULE 'ESLPROLO)
+  ;; Each package fasl file calls CREATE!-PACKAGE, which is defined in
+  ;; "eslprolo.red", so...
+  (LOAD-MODULE 'ESLPROLO)
 
-(defvar LOADED-PACKAGES* '(ESLPROLO MODULE))
+  (defvar LOADED-PACKAGES* '(ESLPROLO MODULE))
 
-(LOAD-PACKAGE 'RLISP)
-(LOAD-PACKAGE 'ESLREND)
-(LOAD-PACKAGE 'POLY)
-(LOAD-PACKAGE 'ALG)	; must be before arith because defines evenp, used in arith!
-(LOAD-PACKAGE 'ARITH)
-(LOAD-PACKAGE 'MATHPR)
-(LOAD-PACKAGE 'ENTRY)
+  (LOAD-PACKAGE 'RLISP)
+  (LOAD-PACKAGE 'ESLREND)
+  (LOAD-PACKAGE 'POLY)
+  ;; alg must be before arith because alg defines evenp, used in arith!
+  (LOAD-PACKAGE 'ALG)
+  (LOAD-PACKAGE 'ARITH)
+  (LOAD-PACKAGE 'MATHPR)
+  (LOAD-PACKAGE 'ENTRY))
 
 (with-no-warnings			   ; suppress warning about lack of prefix
   (defvar STATCOUNTER))

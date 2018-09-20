@@ -502,7 +502,11 @@ occurs if U is not a dotted-pair."
 
 (defun esl-string-to-bigint (s)
   "Convert string S to a bigint."
-  (math-read-number s))
+  (setq s (math-read-number s))
+  (if (integerp s) s
+	;; Quote Calc big integer list representation.
+	;; Need a representation that evaluates to itself!
+	(list 'QUOTE s)))
 
 (defun COMPRESS (u)
   "COMPRESS(U:id-list):{atom-vector} eval, spread
@@ -936,27 +940,64 @@ If U has been declared FLUID (by declaration only) T is returned,
 otherwise NIL is returned."
   (get u 'FLUID))
 
+;; (defmacro GLOBAL (idlist)
+;;   "GLOBAL(IDLIST:id-list):NIL eval, spread
+;; The ids of IDLIST are declared global type variables. If an id
+;; has not been declared previously it is initialized to
+;; NIL. Variables already declared GLOBAL are ignored. Changing a
+;; variables type from FLUID to GLOBAL is not permissible and
+;; results in the error:
+;; ***** ID cannot be changed to GLOBAL"
+;;   ;; A warning, as for PSL, is more convenient than an error!
+;;   (cons 'prog1
+;; 		(cons nil
+;; 			  (mapcan
+;; 			   (lambda (x)
+;; 				 `((with-no-warnings ; suppress warning about lack of prefix
+;; 					 (defvar ,x nil "Standard LISP global variable."))
+;; 				   (unless (GLOBALP ',x)
+;; 					 (if (FLUIDP ',x)
+;; 						 (lwarn '(esl global) :error
+;; 								"FLUID %s cannot be changed to GLOBAL" ',x)
+;; 					   (put ',x 'GLOBAL t)))))
+;; 			   (eval idlist)))))
+
+(defun esl--global (x)
+  "If id X is already FLUID then display a warning; otherwise flag X as GLOBAL."
+  (if (FLUIDP x)
+	  (lwarn '(esl global) :error
+			 "FLUID %s cannot be changed to GLOBAL" x)
+	(put x 'GLOBAL t)))
+
 (defmacro GLOBAL (idlist)
   "GLOBAL(IDLIST:id-list):NIL eval, spread
-The ids of IDLIST are declared global type variables. If an id
+The ids of IDLIST are declared GLOBAL type variables. If an id
 has not been declared previously it is initialized to
 NIL. Variables already declared GLOBAL are ignored. Changing a
 variables type from FLUID to GLOBAL is not permissible and
 results in the error:
 ***** ID cannot be changed to GLOBAL"
   ;; A warning, as for PSL, is more convenient than an error!
-  (cons 'prog1
-		(cons nil
-			  (mapcan
-			   (lambda (x)
-				 `((with-no-warnings ; suppress warning about lack of prefix
-					 (defvar ,x nil "Standard LISP global variable."))
-				   (unless (GLOBALP ',x)
-					 (if (FLUIDP ',x)
-						 (lwarn '(esl global) :error
-								"FLUID %s cannot be changed to GLOBAL" ',x)
-					   (put ',x 'GLOBAL t)))))
-			   (eval idlist)))))
+  (if (memq (car idlist) '(quote QUOTE))
+	  ;; Assume a top-level call that needs to output `defvar' forms
+	  ;; at compile time.
+	  (cons 'prog1
+			(cons nil
+				  (mapcan
+				   (lambda (x)
+					 `((with-no-warnings ; suppress warning about lack of prefix
+						 (defvar ,x nil "Standard LISP global variable."))
+					   (unless (GLOBALP ',x)
+						 (esl--global ',x))))
+				   (eval idlist))))
+	;; Assume a run-time call that need not output `defvar' forms.
+	`(prog1 nil
+	   (mapc
+		(lambda (x)
+		  (unless (GLOBALP x)
+			(esl--global x)
+			(set x nil)))
+		,idlist))))
 
 (defun GLOBALP (u)
   "GLOBALP(U:any):boolean eval, spread
@@ -1857,7 +1898,10 @@ closed.
 						  ;; buffer name, so...
 						  (write-file
 						   (substring (buffer-name)
-									  esl--write-prefix-length) t))
+									  esl--write-prefix-length)
+						   ;; Require confirmation to overwrite an
+						   ;; existing file unless in batch mode:
+						   (not noninteractive)))
 						t)))
 			(kill-buffer buf)
 		  (error "%s could not be closed" filehandle))))
@@ -2074,11 +2118,11 @@ Return as Lisp object.  Echo the input if `*ECHO' is non-nil."
 			   (standard-input (or esl--read-stream t)))
 		   (read))))
 	(when (or (eq standard-input t) *ECHO) ; always echo minibuffer input
-	  (if (not (eq standard-output t))
-		  (with-current-buffer standard-output
-			(goto-char (point-max))	   ; in case point moved interactively
-			(prin1 value) (terpri) (terpri))
-		(prin1 value) (terpri) (terpri)))
+	  (if noninteractive
+		  (progn (prin1 value) (terpri) (terpri))
+		(with-current-buffer standard-output
+		  (goto-char (point-max))  ; in case point moved interactively
+		  (prin1 value) (terpri) (terpri))))
 	value))
 
 (defun READ ()
@@ -2182,12 +2226,11 @@ is non-nil then echo file input."
 				   (length esl--readch-input-string)
 				   esl--readch-input-string-index 0)
 			 ;; (when *ECHO
-			 (if (not (eq standard-output t))
-				 (with-current-buffer standard-output
-				   (goto-char (point-max)) ; in case point moved interactively
-				   (princ esl--readch-input-string) (terpri) (terpri))
-			   (princ esl--readch-input-string) (terpri) (terpri))
-			 );)
+			 (if noninteractive
+				 (progn (princ esl--readch-input-string) (terpri) (terpri))
+			   (with-current-buffer standard-output
+				 (goto-char (point-max)) ; in case point moved interactively
+				 (princ esl--readch-input-string) (terpri) (terpri))));)
 		   ;; Then return the next character from the input string.
 		   ;; When the last character has been returned, clear the
 		   ;; string to trigger new input.
@@ -2424,10 +2467,17 @@ id NIL is always found by (int2id 128)."
   "Convert identifier or string U to a lower-case string."
   (downcase (if (symbolp u) (symbol-name u) u)))
 
-(defun LOAD-MODULE (m)
-  "Load the compiled REDUCE module file \"fasl/M.elc\"."
+(defvar esl-load-module-nomessage nil
+  ;; This is the PSL *VERBOSELOAD switch with opposite meaning!
+  ;; Maybe I should use that instead.
+  "If non-nil then suppress LOAD-MODULE messages.")
+
+(defun LOAD-MODULE (module)
+  "Load the compiled REDUCE module file \"fasl/MODULE.elc\".
+If `esl-load-module-nomessage' is non-nil then suppress loading messages."
   ;; Not currently used in the REDUCE distribution.
-  (load-file (concat "fasl/" (STRING-DOWNCASE m) ".elc")))
+  (load (concat "fasl/" (STRING-DOWNCASE module) ".elc")
+		nil esl-load-module-nomessage t))
 
 (defun EVLOAD (l)
   "Load each compiled REDUCE module in the list of identifiers L."

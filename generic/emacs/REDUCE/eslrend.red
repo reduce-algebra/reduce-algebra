@@ -9,7 +9,14 @@ fluid '(!*break
    	    !*echo
         !*int
         !*mode
-        promptstring!*);
+        promptstring!*
+        !*redefmsg);
+
+% FJW: !*redefmsg is fluid in PSL.
+% redefmsg is a switch defined in PSL and used in qsum.red.
+% If *redefmsg is not nil, a message
+% is printed whenever a function is redefined.
+% However, Emacs Lisp never warns about function redefinition.
 
 global '(!*extraecho
          !*loadversion
@@ -190,7 +197,7 @@ symbolic procedure initreduce;
   << close rds nil;		% FJW: close build file and read from terminal
 	 statcounter := 0;
      spare!* := 0;
-     !*int := t;
+     !*int := not !¦noninteractive;		% FJW: nil in batch mode
      eval '(begin);
   >>;
 

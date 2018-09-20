@@ -1,4 +1,5 @@
 #!/usr/bin/bash
+# -*- coding: utf-8; -*-
 
 # Compile one Emacs REDUCE package (older than its source file).
 
@@ -16,7 +17,8 @@ if [ ! -d fasl ]; then mkdir fasl; fi
 # Need either full file name for --load (e.g. reduce.el) or --directory=.
 
 # NB: Currently end-of-line is ignored when the REDUCE code in the
-# here document below is read, so the leading spaces are essential!
+# here document below is read, so the leading spaces are essential
+# and % comments may not work correctly!
 /cygdrive/d/emacs/emacs/bin/emacs \
 	--eval='(setq debug-on-error t)' \
 	--batch \
@@ -27,7 +29,11 @@ symbolic;
 
 if '$1 eq 'fps
  then load_package limits,factor,specfn,sfgamma
- else if '$1 eq 'mrvlimit then load_package taylor;
+ else if '$1 eq 'mrvlimit then load_package taylor
+ else if '$1 eq 'conlaw then !¦max!-specpdl!-size := 2000;
+
+Comment: The default Emacs Lisp variable binding depth of 1300 is too
+small for conlaw, but 2000 seems to work.;
 
 load!-package 'eslremake;
 
