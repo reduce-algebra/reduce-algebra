@@ -192,8 +192,9 @@ gamma!*rules := {
    gamma(~x)  =>  do!*gamma(x)
       when numberp x and not (fixp x and x < 1) and symbolic !*rounded,
 
-   df(gamma(~x), x)  =>  gamma(x) * psi(x)
+   df(gamma(~x), x)  =>  gamma(x) * psi(x),
 
+   df(m_gamma(~a,~x),~x) => x^(a-1)*exp(-x)
 };
 
 let gamma!*rules;
