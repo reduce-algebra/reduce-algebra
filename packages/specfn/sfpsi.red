@@ -33,7 +33,7 @@ module sfpsi; % Procedures relevant to the digamma, polygamma & zeta
 %        Yiu K. Man's email is: myk@maths.qmw.ac.uk
 
 imports sq2bf!*, sf!*eval;
-exports rdpsi!*, do!*polygamma, do!*trigamma!*halves,
+exports rdpsi!*, crpsi!*, do!*polygamma, do!*trigamma!*halves,
    do!*zeta, do!*zeta!*pos!*intcalc;
 
 
@@ -46,9 +46,9 @@ global '(bfz!* bfhalf!* bftwo!*);
 
 fluid '(compute!-bernoulli !*!*roundbf !*roundbf);
 
-fluid '(psi!*ld!*0 psi!*ld!*1);
+%%fluid '(psi!*ld!*0 psi!*ld!*1);
 
-flag('(psi!*ld!*0 psi!*ld!*1),'share);
+%%flag('(psi!*ld!*0 psi!*ld!*1),'share);
 
 %
 % Here's an approximation sufficiently good for most purposes
@@ -451,15 +451,37 @@ symbolic procedure rdpsi!* u;
      then rd!:minus rd!:plus(rd_euler!*(),rd!:times(bftwo!*,rdlog!* rdtwo!*()))
     else (rdpsi!:(convprec u,!:bprec!:) where !*!*roundbf := t);
 
+Comment
+
+The following procedure computes from its argument eps a bound k such that
+
+   abs(bernoulli(300)/(300*k^300)) < eps
+	 
+i.e.
+	 
+   k = e^(1/300 * log(abs(bernoulli(300))/(300*eps)))
+
+We precompute 
+
+   bern300!: := abs(bernoulli(300)/300
+   i300!: := 1/300 
+
+as bigfloats with standard smallfloat precision (12).
+
+The results are 
+
+   bern300!: := '(!:rd!: 213317478489793 . 1191)
+   i300!: := '(!:rd!: 480383960252853 . -57)
+
+   ;
+
+global '(bern300!: i300!:);
+
+bern300!: := round!:mt (read!:lnum '(372 71738 33244 27),48);
+i300!:    := read!:lnum '(-3 33333 33333 33333);
+
 symbolic procedure rdpsi!:compute!-lowerbound eps;
-   begin scalar bern300,i300;
-      % Approximation to abs(bernoulli(300))/300
-      bern300 := '(!:rd!: 213317478489793 . 1191);
-      % the number 1/300
-      i300 := '(!:rd!: 480383960252853 . -57);
-      % compute k so that abs(bernoulli(300)/(300*z^300)) < rd!-tolerance!*
-      return exp!:(timbf(log!:(divide!:(bern300,eps,32),32),i300),32);
-   end;
+   exp!:(timbf(log!:(divide!:(bern300!:,eps,32),32),i300!:),32);
    
 
 symbolic procedure rdpsi!:(z,k);
