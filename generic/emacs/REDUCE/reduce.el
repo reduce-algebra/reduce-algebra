@@ -11,7 +11,7 @@
 
 (require 'esl)							; defines LOAD-MODULE.
 
-;; Load core modules silently:
+;; Load core modules quietly:
 (let ((esl-load-module-nomessage t) (*MSG nil))
   ;; LOAD-PACKAGE is defined in "rlisp/module.red", so...
   (declare-function LOAD-PACKAGE "fasl/module" (U))
@@ -26,11 +26,17 @@
   (LOAD-PACKAGE 'RLISP)
   (LOAD-PACKAGE 'ESLREND)
   (LOAD-PACKAGE 'POLY)
+  ;; This is in ENTRY, but needs to be here or earlier because ARBINT
+  ;; is used in alg/elem.  Should ENTRY be loaded here?
+  (put 'ARBINT 'SIMPFN 'SIMPIDEN)
   ;; alg must be before arith because alg defines evenp, used in arith!
   (LOAD-PACKAGE 'ALG)
+  (setq *MSG nil)				 ; initialized to t in "alg/intro.red"
   (LOAD-PACKAGE 'ARITH)
   (LOAD-PACKAGE 'MATHPR)
   (LOAD-PACKAGE 'ENTRY))
+
+(setq *MSG t)							; reset the correct default
 
 (with-no-warnings			   ; suppress warning about lack of prefix
   (defvar STATCOUNTER))

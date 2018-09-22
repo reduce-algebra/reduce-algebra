@@ -502,11 +502,7 @@ occurs if U is not a dotted-pair."
 
 (defun esl-string-to-bigint (s)
   "Convert string S to a bigint."
-  (setq s (math-read-number s))
-  (if (integerp s) s
-	;; Quote Calc big integer list representation.
-	;; Need a representation that evaluates to itself!
-	(list 'QUOTE s)))
+  (math-read-number s))
 
 (defun COMPRESS (u)
   "COMPRESS(U:id-list):{atom-vector} eval, spread
@@ -1271,6 +1267,23 @@ END;"
 ;;; Arithmetic Functions
 ;;; ====================
 
+;; Run the Calc library quietly:
+(setq calc-display-working-message nil)
+
+(defmacro bigpos (&rest digits)
+  "Return a big integer representation.
+A call of the form (bigpos d1 ... dn) is self-quoting; the result
+of evaluating it is the big integer representation itself."
+  ;; cf. the definition of `lambda' in "subr.el".
+  (list 'quote (cons 'bigpos digits)))
+
+(defmacro bigneg (&rest digits)
+  "Return a big integer representation.
+A call of the form (bigneg d1 ... dn) is self-quoting; the result
+of evaluating it is the big integer representation itself."
+  ;; cf. the definition of `lambda' in "subr.el".
+  (list 'quote (cons 'bigneg digits)))
+
 (defun esl--arith-op2 (op math-op u v)
   "OP(U:number, V:number); MATH-OP is math-integer version of OP."
   (if (math-integerp u)
@@ -1314,13 +1327,25 @@ EXPR PROCEDURE DIVIDE(U, V);
    (QUOTIENT(U, V) . REMAINDER(U, V));"
   (cons (QUOTIENT u v) (REMAINDER u v)))
 
+;; (EXPT 10 40) overflows!
+;; (defun EXPT (u v)
+;;  "EXPT(U:number, V:integer):number eval, spread
+;; Returns U raised to the V power. A floating point U to an integer
+;; power V does not have V changed to a floating number before
+;; exponentiation."
+;;  (cond ((and (numberp u) (numberp v)) (expt u v))
+;; 	   ((math-integerp u) (math-pow u v))
+;; 	   ;; u is a float, v is a math-integer, u^v = e^(ln(u)*v):
+;; 	   ;; THIS VIOLATES THE SPECIFICATION!
+;; 	   (t (exp (* (log u) (FLOAT v))))))
+
 (defun EXPT (u v)
  "EXPT(U:number, V:integer):number eval, spread
 Returns U raised to the V power. A floating point U to an integer
 power V does not have V changed to a floating number before
 exponentiation."
- (cond ((and (numberp u) (numberp v)) (expt u v))
-	   ((math-integerp u) (math-pow u v))
+ (cond ((math-integerp u) (math-pow u v))
+	   ((and (floatp u) (numberp v)) (expt u v))
 	   ;; u is a float, v is a math-integer, u^v = e^(ln(u)*v):
 	   ;; THIS VIOLATES THE SPECIFICATION!
 	   (t (exp (* (log u) (FLOAT v))))))
@@ -2449,10 +2474,14 @@ Then evaluate it and print value into *Standard LISP* buffer."
 
 (defun EXPLODE2 (u)
   "(explode2 U:atom-vector): id-list expr
-Prin2 version of explode."
+PRIN2-like version of EXPLODE without escapes or double quotes."
+  ;; NB: This function may need more work.  It will not explode a
+  ;; vector containing big integers correctly!
   (seq-map
    (lambda (c) (intern (string c)))
-   (prin1-to-string u t)))
+   (if (esl-bigint-p u)
+	   (esl-bigint-to-string u)
+	 (prin1-to-string u t))))
 
 (defun INT2ID (i)
   "(int2id I:integer): id expr
@@ -2653,7 +2682,7 @@ NAME should be an identifier or string."
 ;; (FLAG '(FASLEND) 'EVAL)				 ; must be evaluated in this model
 
 (defvar *INT)
-(defvar *writingfaslfile nil
+(defvar *WRITINGFASLFILE nil
   "REDUCE variable set to t by FASLOUT and reset to nil by FASLEND.")
 
 (defvar esl--faslout-filehandle)
@@ -2668,9 +2697,13 @@ NAME should be an identifier or string."
 For readable output, this function prettyprints each form
 followed by a blank line.  But if the Lisp source code will be
 deleted then `print' would suffice!"
-  (let ((standard-output esl--faslout-stream)
-		(esl--linelength 120))		   ; default of 80 seems too short
-	(SUPERPRINM x 0) (terpri) (terpri) nil))
+  (unless (equal x '(FASLEND))			; better way?
+	(let ((standard-output esl--faslout-stream)
+		  (esl--linelength 120))	   ; default of 80 seems too short
+	  (advice-add 'EXPLODE :override #'esl--faslout-explode-override)
+	  (SUPERPRINM x 0)
+	  (advice-remove 'EXPLODE #'esl--faslout-explode-override)
+	  (terpri) (terpri) nil)))
 
 (defun esl--faslout-explode-override (u)
   "As (EXPLODE U) but using Emacs Lisp syntax.
@@ -2687,7 +2720,7 @@ NAME should be an identifier or string."
   ;; evaluated.
   (setq name (STRING-DOWNCASE name))
   (setq esl--faslout-old-lower *LOWER)
-  (setq *writingfaslfile t
+  (setq *WRITINGFASLFILE t
 		*DEFN t
 		*LOWER nil)
   (if *INT
@@ -2699,8 +2732,7 @@ When all done, execute FASLEND;\n\n" name)))
   (setq esl--faslout-stream (car esl--faslout-filehandle))
   ;; Must have a definition of PRETTYPRINT to advise, so...
   (require 'eslpretty)
-  (advice-add 'PRETTYPRINT :override #'esl--faslout-prettyprint-override)
-  (advice-add 'EXPLODE :override #'esl--faslout-explode-override))
+  (advice-add 'PRETTYPRINT :override #'esl--faslout-prettyprint-override))
 
 (FLAG '(FASLOUT) 'OPFN)
 (FLAG '(FASLOUT) 'NOVAL)
@@ -2713,10 +2745,9 @@ When all done, execute FASLEND;\n\n" name)))
   ;; modules refer to undefined free variables, so...
   (let ((byte-compile-warnings '(not free-vars unresolved))
 		*COMP)			 ; OFF COMP -- don't re-compile compiled code!
-	(advice-remove 'EXPLODE #'esl--faslout-explode-override)
 	(advice-remove 'PRETTYPRINT #'esl--faslout-prettyprint-override)
 	(CLOSE esl--faslout-filehandle)
-	(setq *writingfaslfile nil
+	(setq *WRITINGFASLFILE nil
 		  *DEFN nil
 		  *LOWER esl--faslout-old-lower)
 	(esl-reinstate-plists)

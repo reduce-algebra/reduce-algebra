@@ -1,5 +1,4 @@
 #!/usr/bin/bash
-# -*- coding: utf-8; -*-
 
 # Compile one Emacs REDUCE package (older than its source file).
 
@@ -30,7 +29,7 @@ symbolic;
 if '$1 eq 'fps
  then load_package limits,factor,specfn,sfgamma
  else if '$1 eq 'mrvlimit then load_package taylor
- else if '$1 eq 'conlaw then !¦max!-specpdl!-size := 2000;
+ else if '$1 eq 'conlaw then !m!a!x!-!s!p!e!c!p!d!l!-!s!i!z!e := 2000;
 
 Comment: The default Emacs Lisp variable binding depth of 1300 is too
 small for conlaw, but 2000 seems to work.;

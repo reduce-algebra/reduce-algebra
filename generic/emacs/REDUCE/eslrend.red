@@ -28,7 +28,8 @@ global '(!*extraecho
          ofl!*
          spare!*
          statcounter
-		 version!*);
+		 version!*
+         !¦noninteractive);			% FJW: t if Emacs is in batch mode
 
 switch break;
 
