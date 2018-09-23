@@ -37,6 +37,13 @@
 
 #include "headers.h"
 
+#ifndef WINDOWS_SYSTEM
+// A short-term patch so that the code builds when "--without-gui" is
+// specified at configure time. This will get removed when I have the
+// transition in my code more complete!
+#define EMBEDDED 1
+#endif
+
 
 #ifndef CONSERVATIVE
 // AT least for now I comment ALL of this file out if I am experimenting
