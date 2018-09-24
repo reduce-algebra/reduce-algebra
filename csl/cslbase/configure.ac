@@ -27,11 +27,6 @@
 #   --host=<triplet>  cross compile for that host.
 # 
 
-# FOX gets built in a directory whose name is based on the platform
-# it supports. In simple cases this is just the GNU triple, as in
-# i686-pc-linux etc. However there are a range of cases when I will
-# change that. These are the things I note above as "special flags"
-
 # Specify the name of this "application" and a version number
 AC_INIT([REDUCE],[9.01])
 
@@ -236,8 +231,8 @@ AC_ARG_WITH(lto,
    [with_lto="no"])
 
 AC_ARG_WITH(fox,
-  AC_HELP_STRING([--with-fox=DIR],
-                 [FOX installation location]),
+  AC_HELP_STRING([--with-fox],
+                 [enable use of FOX]),
   [],
   [with_fox="no"])
 AC_MSG_NOTICE([--with-fox=$with_fox])
@@ -571,29 +566,6 @@ esac
 
 AC_SUBST(LOCALCXX)
 AC_SUBST(LOCALSTRIP)
-
-AC_ARG_WITH(fox-pending,
-  AC_HELP_STRING([--with-fox-pending],
-                 [do not check dir from --with-fox]),
-  [],
-  [with_fox_pending="no"])
-AC_MSG_NOTICE([--with-fox-pending=$with_fox_pending])
-
-# Here I will adjust foxdir to mention the Linux distribution involved
-# in case that I can discover that. The effect is that my (adjusted)
-# "triple" will be something like say
-#     i686-pc-fedora_6    OR   powerpc-macos_10.4_tiger-darwin8.8.0
-# rather than
-#     i686-pc=linux-gnu   OR   powerpc-apple-darwin8.8.0
-
-distrib=`"$srcdir/findos.sh"`
-AC_MSG_NOTICE([distrib = $distrib])
-
-if test "x$distrib" != "xunknown"
-then
-  foxdir=`echo $foxdir | sed -e s/linux-gnu/$distrib/`
-  foxdir=`echo $foxdir | sed -e s/apple/$distrib/`
-fi
 
 # Debugging turned on?
 AC_MSG_CHECKING(for debugging)
@@ -1505,88 +1477,9 @@ AC_SUBST(FOX_LIBS)
 
 if test "x$with_fox" != "xno"
 then
-  if test "x$with_fox_pending" != "xno"
-  then
-    fox_present="yes"
-    AC_MSG_NOTICE([Will expect FOX to be in $with_fox])
-    FOX_INCLUDES="-I \"$with_fox/include/fox-1.6\""
-    FOX_LIBS="-L\"$with_fox/lib\" -lFOX-1.6"
-    AC_SUBST(FOXLIB)
-    FOXLIB="$with_fox/lib/libFOX*"
-    AC_DEFINE(HAVE_LIBFOX, [1], [Fox library present])
-# Display FOX level (ie minor version number) if actually present
-    if test -f "$with_fox/include/fox-1.6/fxver.h"
-    then
-      grep LEVEL "$with_fox/include/fox-1.6/fxver.h"
-    fi
-  else
-    if test "x$with_fox" = "x"
-    then
-      with_fox="/usr/local"
-    else if test "x$with_fox" = "xyes"
-      then
-        with_fox="/usr/local"
-      fi
-    fi
-
-    if test -d "$with_fox/$foxdir"
-    then
-      with_fox="$with_fox/$foxdir"
-    fi
-
-    AC_MSG_NOTICE("Will look for FOX in $with_fox")
-
-    cppflags_save="$CPPFLAGS"
-    ldflags_save="$LDFLAGS"
-    libs_save="$LIBS"
-
-# NB that for FOX I am going to expect the library to be in 
-#       $with_fox/lib
-# and $with_fox has had a subdir tagged on its end to reflect a 
-# modified GNU-style triple, as in i686-pc-linux. So if the
-# user says --with-fox=/homes/myself/foxplace and the build is for
-# Windows-64 the location inspected will end up
-# /homes/myself/foxplace/x86_64-w64-windows64. Etc etc.
-
-# Only look for FOX 1.6. That is because at present the changes
-# introduced since then are not important to me but the additional licensing
-# constraints are ones I am unwilling to accept.
-
-    AC_SUBST(FOXLIB)
-    CPPFLAGS="$CPPFLAGS -I \"$with_fox/include/fox-1.6\""
-    LDFLAGS="$LDFLAGS -L \"$with_fox/lib\""
-    FOXLIB="$with_fox/lib/libFOX*"
-    LIBS="-lFOX-1.6 $LIBS"
-    AC_MSG_NOTICE([FOX libraries probably as $FOXLIB])
-
-    AC_LINK_IFELSE(
-      [AC_LANG_PROGRAM([#define exit(x) acnexit(x)
-                        #include "fx.h"
-                        extern "C" char fxfindfox();],
-                       [fxfindfox();])],
-      [AC_DEFINE(HAVE_LIBFOX, [1], [Fox library present])
-       AC_MSG_NOTICE([Found FOX version 1.6])],
-      [fox_not_found=1])
-
-    if test "x$fox_not_found" != "x"
-    then
-      AC_MSG_NOTICE([FOX libraries not found: will not build GUI code])
-      CPPFLAGS="$cppflags_save"
-      LDFLAGS="$ldflags_save"
-      LIBS="$libs_save"
-    else
-      fox_present="yes"
-      CPPFLAGS="$cppflags_save"
-      LDFLAGS="$ldflags_save"
-      LIBS="$libs_save"
-      FOX_INCLUDES="-I \"$with_fox/include/fox-1.6\""
-      FOX_LIBS="-L\"$with_fox/lib\" -lFOX-1.6"
-# Display FOX level (ie minor version number)
-      grep LEVEL "$with_fox/include/fox-1.6/fxver.h"
-    fi
-
-  fi
-
+  FOX_INCLUDES="-I ../include/fox-1.6"
+  FOX_LIBS="-lFOX-1.6"
+  AC_DEFINE(HAVE_LIBFOX, [1], [Fox library present])
 fi
 
 if test "x$with_wx" != "xno"
@@ -1626,22 +1519,23 @@ then
 # 10.11 El Capitan
 # 10.12 Sierra
 # 10.13 High Sierra    Now the version I build and test on.
-
-# Well now that 10.13 has been released I will always target
-# 10.10 and support for earlier versions is no longer guaranteed. I
-# take this rather agressive stance because my experience is that Apple
-# follow a line that old versions of anything can not be expected to work.
-  if test "x$with_wx" != "xno"
-  then
-    ENVP=MACOSX_DEPLOYMENT_TARGET=10.10
-  else
-    ENVP=MACOSX_DEPLOYMENT_TARGET=10.10
-  fi
+#
+# Every few years maybe I should review how old a MacOS can be supported, but
+# note very well that one needs to configure Macports to use a deployment
+# target matching the one here, and if that is changed then all the
+# macports stuff is liable to need rebuilding or re-installing so as to
+# avoid moans about version support conflicts when things are linked.
+#
+  ENVP="MACOSX_DEPLOYMENT_TARGET=10.10"
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
+  CPP="$ENVP $CPP"
+  CXXCPP="$ENVP $CXXCPP"
 # The eccentric code here insists that I use the "macports" version
 # of many libraries and it links in the .a files not the .dyld ones so
-# that the resulting executable is easier to distribute.
+# that the resulting executable is easier to distribute. If that is not done
+# then the binaries that I create will only run on machines where macports
+# has been installed and all the libraries are in place...
 # Note that all these libraries on my Macintosh have been compiled from
 # the source files that "macports" provides without me making any changes.
 # So relevant associated source code can be obtained from the macports
@@ -1753,7 +1647,7 @@ then
     CC="\$(USE_CORRECT_CYGWIN) $CC"
     CPP="\$(USE_CORRECT_CYGWIN) $CPP"
     CXX="\$(USE_CORRECT_CYGWIN) $CXX"
-    CXXCPP="\$(USE_CORRECT_CYGWIN) $CXXPP"
+    CXXCPP="\$(USE_CORRECT_CYGWIN) $CXXCPP"
     STRIP="\$(USE_CORRECT_CYGWIN) $STRIP"
     RANLIB="\$(USE_CORRECT_CYGWIN) $RANLIB"
     LOCALCYG="$absolute_cyg64"
@@ -1780,6 +1674,16 @@ ENDIFWORD="endif"
 AC_SUBST(EQUALS)
 EQUALS="="
 
+# The next two lines are prompted by the possibility that there might be
+# system versions of one of the libraries that I build a private version of.
+# If I put the "-I" and "-L" directive for my own versions right at the
+# start of the set of options then I hope to get my versions used. This was
+# noticed as an issue in the case of a FOX library under Macports but looks
+# to be much mor egeneral than just that!
+
+CPPFLAGS="$FOX_INCLUDES -I../include $CPPFLAGS"
+LDFLAGS="-L../lib $LDFLAGS"
+
 #
 # Make some things available for conditional segments of a Makefile
 #
@@ -1794,9 +1698,9 @@ AM_CONDITIONAL(darwin,test "x$darwin_build" = "xyes")
 AM_CONDITIONAL(mac_framework,test "x$framework_available" = "xyes")
 AM_CONDITIONAL(debug,test "x$enable_debug" = "xyes")
 AM_CONDITIONAL(exeext,test "x$exeext" = "xyes")
-AM_CONDITIONAL(fox,test "x$fox_present" = "xyes")
+AM_CONDITIONAL(fox,test "x$with_fox" != "xno")
 AM_CONDITIONAL(wx,test "x$with_wx" != "xno")
-AM_CONDITIONAL(gui,test "x$fox_present" = "xyes" || test "x$with_wx" != "xno")
+AM_CONDITIONAL(gui,test "x$with_fox" != "xno" || test "x$with_wx" != "xno")
 AM_CONDITIONAL(experiment,test "x$enable_test" = "xyes")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
