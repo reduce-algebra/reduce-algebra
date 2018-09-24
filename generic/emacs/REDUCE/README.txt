@@ -81,7 +81,7 @@ remake-all-packages.sh
 
 (This currently assumes a particular location for the Emacs
 executable, namely its location on my computer, which you may need to
-edit first.)  This build step should take no more than 15 minutes.
+edit first.)  This build step should take about 10 minutes.
 
 To run Emacs REDUCE
 -------------------
@@ -95,8 +95,8 @@ case by default (except that strings retain their input case).
 
 If you terminate Emacs REDUCE (or it is terminated by Emacs), it is
 really only suspended unless you terminate Emacs, so you can re-enter
-where you left it by running the Emacs command `M-x REDUCE' (unless
-REDUCE was terminated by a catastrophic error).  Don't reload
+where you left it by running the Emacs command `M-x esl-reduce'
+(unless REDUCE was terminated by a catastrophic error).  Don't reload
 "reduce.el(c)".  You can exit (i.e. suspend) Emacs REDUCE in the
 conventional way (using the REDUCE command bye or quit) or you can use
 the Emacs keyboard-quit signal `C-g'.
@@ -132,11 +132,9 @@ Current status of Emacs REDUCE
 
 The batch-mode build process now attempts to build all packages and
 appears to succeed with most of them, but there is a handful of
-problem still to be resolved.  An important package (such as limits)
-failing to compile can have a knock-on effect and prevent a number of
-other packages from compiling.  Batch-mode output is untidy, in part
-because REDUCE probably doesn't pick up the fact that it is running in
-batch mode, which needs fixing.
+problems still to be resolved.  An important package failing to
+compile can have a knock-on effect and prevent a number of other
+packages from compiling.
 
 Test files
 ----------
@@ -209,6 +207,6 @@ recursion, which is in hand!
 To do
 -----
 
-Tidier batch-mode output and build process.
+Batch-mode testing; run the full test suite.
 Better support for big integers.
 Better user interface.

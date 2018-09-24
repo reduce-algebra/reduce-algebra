@@ -43,9 +43,10 @@
 (declare-function INITREDUCE "fasl/eslrend" ())
 (declare-function BEGIN "fasl/eslrend" ())
 
-(defun REDUCE ()
+(defun esl-reduce ()
   ;; reduce (lower case) is an alias for ‘cl-reduce’!
-  "Run REDUCE with input via the minibuffer and output via a buffer."
+  ;; REDUCE (upper case) is a function in the REDUCE compact module!
+  "Run ESL REDUCE with input via the minibuffer and output via a buffer."
   (interactive)
   (switch-to-buffer
    (setq esl--default-output-buffer
@@ -69,6 +70,6 @@
 
 (provide 'reduce)
 
-(REDUCE)		; Probably bad form, but convenient, to run this here!
+(esl-reduce)	; Probably bad form, but convenient, to run this here!
 
 ;;; reduce.el ends here
