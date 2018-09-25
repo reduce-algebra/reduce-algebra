@@ -224,6 +224,9 @@ else
         *Mac*OS*X*ProductVersion*\<string\>10.13*)
           os="mac_10.13_highsierra"
           ;;
+        *Mac*OS*X*ProductVersion*\<string\>10.14*)
+          os="mac_10.14_mojave"
+          ;;
         *Mac*OS*X*ProductVersion*\<string\>*)
           os="mac_unknown_version"
           ;;
