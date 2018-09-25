@@ -1518,7 +1518,8 @@ then
 # 10.10 Yosemite       Now the oldest deployment target I support
 # 10.11 El Capitan
 # 10.12 Sierra
-# 10.13 High Sierra    Now the version I build and test on.
+# 10.13 High Sierra
+# 10.14 Mojave         Now the version I build and test on.
 #
 # Every few years maybe I should review how old a MacOS can be supported, but
 # note very well that one needs to configure Macports to use a deployment
