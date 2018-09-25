@@ -18,8 +18,7 @@ date > log/remake.log
 
 # Build packages in "packages" directory:
 
-# tmprint is very Lisp-specific, doesn't build and would not be useful anyway at present in Emacs Lisp.
-
+# tmprint is very Lisp-specific, doesn't build and would not be useful anyway at present in Emacs Lisp, so commented out:
 packages='support rlisp alg poly polydiv arith mathpr ezgcd factor hephys int matrix rlisp88 rprint fmprint pretty solve desir ineq modsr rsolve algint arnum assist dummy cantens atensor avector invbase misc boolean cedit rcref ftr reset cali camal changevr compact dfpart lie' # tmprint'
 
 for x in $packages; do echo $x >> log/remake.log; ./remake-one-package.sh $x; done
@@ -33,3 +32,5 @@ packages='specfn2 specfaux specbess sfgamma tps limits defint fps trigint ratint
 for x in $packages; do echo $x >> log/remake.log; ./remake-one-package.sh $x; done
 
 date >> log/remake.log
+
+echo 'Errors:'; cd log; grep '\*\*\*\*\*\|error' *.blg

@@ -516,9 +516,9 @@ cannot be parsed out of U or characters are left over after parsing
 an error occurs:
 ***** Poorly formed atom in COMPRESS
 
-In ESL, retain ! preceding an identifier beginning with :
-followed by at least one other character to prevent the
-identifier becoming a keyword, and downcase LAMBDA, NIL and T.
+In ESL: Down-case LAMBDA, NIL and T.
+Retain ! preceding an identifier beginning with : to prevent it
+becoming a keyword, but avoiding mangling `:' and the prompt.
 Also, remove !¦ preceding an identifier and downcase the
 identifier to facilitate direct use of Emacs Lisp functions."
   ;; Concatenate the characters into a string and then handle any !
@@ -532,11 +532,11 @@ identifier to facilitate direct use of Emacs Lisp functions."
   ;; However, retain a leading !: followed by a uc letter or digit to
   ;; prevent the Standard LISP identifier being an Elisp keyword.
   (let* ((s (mapconcat #'symbol-name u ""))
-		 (s1 (aref s 0)))
-	(cond ((eq s1 ?\")					; STRING
+		 (s0 (aref s 0)))
+	(cond ((eq s0 ?\")					; STRING
 		   (substring s 1 -1))
-		  ((or (eq s1 ?-)
-			   (and (>= s1 ?0) (<= s1 ?9)))	; NUMBER
+		  ((or (eq s0 ?-)
+			   (and (>= s0 ?0) (<= s0 ?9)))	; NUMBER
 		   (if (string-match "\\." s)
 			   ;; Number is a float. (Emacs does not accept .E as in
 			   ;; 123.E-2 so delete such a ".".)
@@ -545,9 +545,10 @@ identifier to facilitate direct use of Emacs Lisp functions."
 			 (esl-string-to-bigint s)))
 		  (t							; IDENTIFIER
 		   (let ((l (length s)) (i 0) (ss nil) e)
-			 ;; Retain leading !: if followed by at least one more
-			 ;; character:
-			 (if (and (eq s1 ?!) (eq (aref s 1) ?:) (> l 2))
+			 ;; Retain leading !: in "!:..." but not in "!:"
+			 ;; or "!:! ", which is used in the REDUCE prompt:
+			 (if (and (eq s0 ?!) (eq (aref s 1) ?:) (> l 2)
+					  (not (equal s "!:! ")))
 				 (setq i 2 ss '(?: ?!)))
 			 (while (< i l)				; delete ! but !! --> !
 			   (if (eq (setq e (aref s i)) ?!)
@@ -2259,23 +2260,27 @@ is non-nil then echo file input."
 				   (length esl--readch-input-string)
 				   esl--readch-input-string-index 0)
 			 ;; (when *ECHO
+			 ;; Echo the new input line:
 			 (if noninteractive
-				 (progn (princ esl--readch-input-string) (terpri) (terpri))
+				 (progn (princ esl--readch-input-string) (terpri))
 			   (with-current-buffer standard-output
 				 (goto-char (point-max)) ; in case point moved interactively
-				 (princ esl--readch-input-string) (terpri) (terpri))));)
+				 (princ esl--readch-input-string) (terpri))));)
 		   ;; Then return the next character from the input string.
 		   ;; When the last character has been returned, clear the
 		   ;; string to trigger new input.
-		   (if (equal esl--readch-input-string "")
+		   (if (or (equal esl--readch-input-string "")	; Empty input.
+				   (= esl--readch-input-string-index	; Off end of
+					  esl--readch-input-string-length))	; input line.
 			   (progn
 				 (setq esl--readch-input-string nil)
 				 $EOL$)
-			 (let ((c (aref esl--readch-input-string esl--readch-input-string-index)))
+			 ;; Return the next character and move the pointer along:
+			 (let ((c (aref esl--readch-input-string
+							esl--readch-input-string-index)))
 			   (setq esl--readch-input-string-index
 					 (1+ esl--readch-input-string-index))
-			   (if (= esl--readch-input-string-index esl--readch-input-string-length)
-				   (setq esl--readch-input-string nil))
+			   ;; Might get \n in pasted text:
 			   (if (eq c ?\n) $EOL$ (esl--readch-char-to-interned-id c)))))
 	   ;; Read from interaction buffer:
 	   (with-current-buffer "*Standard LISP*"

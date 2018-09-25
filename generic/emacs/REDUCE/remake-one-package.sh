@@ -14,10 +14,6 @@ if [ ! -d fasl ]; then mkdir fasl; fi
 
 # Run Emacs REDUCE in batch mode:
 # Need either full file name for --load (e.g. reduce.el) or --directory=.
-
-# NB: Currently end-of-line is ignored when the REDUCE code in the
-# here document below is read, so the leading spaces are essential
-# and % comments may not work correctly!
 /cygdrive/d/emacs/emacs/bin/emacs \
 	--eval='(setq debug-on-error t)' \
 	--batch \
@@ -26,14 +22,16 @@ if [ ! -d fasl ]; then mkdir fasl; fi
 	>& log/$1.blg << EOF
 symbolic;
 
-if '$1 eq 'fps
- then load_package limits,factor,specfn,sfgamma
- else if '$1 eq 'mrvlimit then load_package taylor
- else if '$1 eq 'conlaw then !m!a!x!-!s!p!e!c!p!d!l!-!s!i!z!e := 2000
- else if '$1 eq 'plot then !d!e!b!u!g!-!o!n!-!e!r!r!o!r := nil;
-
-Comment: The default Emacs Lisp variable binding depth of 1300 is too
-small for conlaw, but 2000 seems to work.;
+if '$1 eq 'fps then
+   load_package limits,factor,specfn,sfgamma
+else if '$1 eq 'mrvlimit then
+   load_package taylor
+else if '$1 eq 'conlaw then
+   % The default Emacs Lisp variable binding depth
+   % of 1300 is too small, but 2000 seems to work:
+   !m!a!x!-!s!p!e!c!p!d!l!-!s!i!z!e := 2000
+else if '$1 eq 'plot then
+   !d!e!b!u!g!-!o!n!-!e!r!r!o!r := nil;
 
 load!-package 'eslremake;
 
