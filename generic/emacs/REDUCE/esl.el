@@ -516,11 +516,11 @@ cannot be parsed out of U or characters are left over after parsing
 an error occurs:
 ***** Poorly formed atom in COMPRESS
 
-In ESL, ! preceding an identifier beginning with : followed by an
-upper-case letter or digit is retained to prevent the identifier
-becoming a keyword, and LAMBDA, NIL and T are downcased.
-Also, !¦ preceding an identifier is removed and the identifier is
-downcased to allow direct use of Emacs Lisp functions."
+In ESL, retain ! preceding an identifier beginning with :
+followed by at least one other character to prevent the
+identifier becoming a keyword, and downcase LAMBDA, NIL and T.
+Also, remove !¦ preceding an identifier and downcase the
+identifier to facilitate direct use of Emacs Lisp functions."
   ;; Concatenate the characters into a string and then handle any !
   ;; characters as follows:
   ;; A string begins with " and should retain any ! characters without
@@ -545,10 +545,9 @@ downcased to allow direct use of Emacs Lisp functions."
 			 (esl-string-to-bigint s)))
 		  (t							; IDENTIFIER
 		   (let ((l (length s)) (i 0) (ss nil) e)
-			 ;; Retain leading !: if followed by uc letter or digit:
-			 (if (and (eq s1 ?!) (eq (aref s 1) ?:) (> l 2)
-					  (or (and (>= (setq e (aref s 2)) ?A) (<= e ?Z))
-						  (and (>= e ?0) (<= e ?9))))
+			 ;; Retain leading !: if followed by at least one more
+			 ;; character:
+			 (if (and (eq s1 ?!) (eq (aref s 1) ?:) (> l 2))
 				 (setq i 2 ss '(?: ?!)))
 			 (while (< i l)				; delete ! but !! --> !
 			   (if (eq (setq e (aref s i)) ?!)
@@ -2523,6 +2522,20 @@ If `esl-load-module-nomessage' is non-nil then suppress loading messages."
   ;;    for each m in l do load!-module m;
   (mapc #'LOAD-MODULE l))
 
+(defmacro LOAD (&rest files)			; not sure about this!
+  ;; From the PSL manual:
+  "(load [FILE:fstring, idg]): nil macro
+For each argument FILE, an attempt is made to locate a corresponding file.
+If a file is found then it will be loaded by a call on an appropriate function.
+A full file name is constructed by using the directory specifications
+in loaddirectories* and the extensions in loadextensions*. The strings from
+each list are used in a left to right order, for a given string from loaddirectories*
+each extension from loadextensions* is used."
+  `(mapc
+	#'(lambda (x) (load (concat "fasl/" (STRING-DOWNCASE x) ".elc")
+						t esl-load-module-nomessage t))
+	',files))
+
 (defun TIME ()
   "(time): integer expr
 Elapsed time from some arbitrary initial point in milliseconds."
@@ -2758,7 +2771,7 @@ When all done, execute FASLEND;\n\n" name)))
   (let ((buf (car esl--faslout-filehandle))
 		;; Functions are often used before they are defined and
 		;; several modules refer to undefined free variables, so...
-		(byte-compile-warnings '(not free-vars unresolved))
+		(byte-compile-warnings '(not free-vars unresolved cl-functions))
 		*COMP)			 ; OFF COMP -- don't re-compile compiled code!
 	(if (zerop (buffer-size buf))
 		(progn

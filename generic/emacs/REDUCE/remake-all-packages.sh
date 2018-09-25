@@ -18,7 +18,9 @@ date > log/remake.log
 
 # Build packages in "packages" directory:
 
-packages='support rlisp alg poly polydiv arith mathpr ezgcd factor hephys int matrix rlisp88 rprint fmprint pretty solve desir ineq modsr rsolve algint arnum assist dummy cantens atensor avector invbase misc boolean cedit rcref ftr reset cali camal changevr compact dfpart lie tmprint'
+# tmprint is very Lisp-specific, doesn't build and would not be useful anyway at present in Emacs Lisp.
+
+packages='support rlisp alg poly polydiv arith mathpr ezgcd factor hephys int matrix rlisp88 rprint fmprint pretty solve desir ineq modsr rsolve algint arnum assist dummy cantens atensor avector invbase misc boolean cedit rcref ftr reset cali camal changevr compact dfpart lie' # tmprint'
 
 for x in $packages; do echo $x >> log/remake.log; ./remake-one-package.sh $x; done
 
