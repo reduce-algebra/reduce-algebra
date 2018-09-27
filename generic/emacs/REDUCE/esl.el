@@ -834,20 +834,13 @@ If FNAME is not the name of a defined function, NIL is returned. If
 FNAME is a defined function then the dotted-pair
 \(TYPE:ftype . DEF:{function-pointer, lambda})
 is returned."
-  (let ((def (symbol-function fname)))
-	(if def
-		(if (eq (get fname 'ESL--FTYPE) 'MACRO)
-			;; Return the (uncompiled) SL macro form:
-			(get fname 'ESL--MACRO)
-;; 			;; Macro, which may be compiled, so...
-;; 			;; def = (macro lambda (&rest u) (setq u (fname . u)) body-form)
-;; 			(if (consp (setq def (cdr def))) ; not compiled
-;; 				;; Now def = (lambda (&rest u) (setq u (fname . u)) body-form)
-;; 				;; Return (MACRO lambda (u) body-form)
-;; 				`(MACRO lambda ,(CDADR def) ,@(CDDDR def))
-;; 			  ;; Compiled macro -- trickier!
-;; 			  `(MACRO lambda (u) (cons ,def (cdr u))))
-		  (cons 'EXPR def)))))
+  (and (symbolp fname)
+	   (let ((def (symbol-function fname)))
+		 (if def
+			 (if (eq (get fname 'ESL--FTYPE) 'MACRO)
+				 ;; Return the (uncompiled) SL macro form:
+				 (get fname 'ESL--MACRO)
+			   (cons 'EXPR def))))))
 
 (defun PUTD (fname type body)
   "PUTD(FNAME:id, TYPE:ftype, BODY:function):id eval, spread
@@ -1092,13 +1085,12 @@ determined by a RETURN function or NIL if the PROG \"falls
 through\"."
   (declare (debug ((&rest symbolp) &rest &or symbolp form)))
   ;; This is essentially how `cl-prog' is defined in `cl-macs.el'.
-  ;; But cl-tagbody does not like nil as its final body form, which
-  ;; REDUCE may generate, e.g. for EXPORTS, so remove it.
+
+  ;; But cl-tagbody does not like nil sexps in its body, which REDUCE
+  ;; may generate, so delete them.
   `(cl-block nil
 	 (let ,vars
-	   (cl-tagbody . ,(if (car (last program)) ; assume program never empty!
-						  program
-						(butlast program))))))
+	   (cl-tagbody . ,(delq nil program)))))
 
 (defmacro PROGN (&rest u)				; does not work as alias
   "PROGN([U:any]):any noeval, nospread
