@@ -443,7 +443,7 @@ symbolic procedure look_for_exponential(integrand, var, zz);
         newvar := int!-gensym1('intvar);
         % Mark the new integration variable if necessary
         %  (no need to remove the mark later as the variable is a gensym)
-        if flg then put(newvar,'look_for_exponential,n);
+        put(newvar,'look_for_exponential,n);
         % b*x^n => y, i.e. x => (y/b)^(1/n) and dx => (y/b)^(1/n)/(n*y) dy
         res := subst!-and!-int(integrand,var,newvar,
                                s,
@@ -453,7 +453,7 @@ symbolic procedure look_for_exponential(integrand, var, zz);
                    where s := {'expt,
                                if b=1 then newvar else {'quotient,newvar,b},
                                if n=-1 then -1 else {'quotient,1,n}};
-        if flg then remprop(newvar,'look_for_exponential);
+        remprop(newvar,'look_for_exponential);
         return res;
     end;
 
@@ -670,8 +670,8 @@ begin
     if !*trint or !*trintsubst then <<
         prin2 "Integrand is transformed by substitution to ";
         printsq integrand;
-        prin2 "using substitution "; prin2 var; prin2 " -> ";
-        printsq simp sbst;
+        prin2 "using substitution "; terpri!* t;
+	mathprint {'replaceby,var,sbst};
     >>;
     res := integratesq!-substituted(integrand,newvar);
     powlis!* := cdr powlis!*;
@@ -697,10 +697,14 @@ begin
     % apply backsubstitution for sin(newvar) terms to bad part only 
     res := subsq(car res, cdr ss) . subsq(quotsq(cdr res, fctr), ss);
     if !*trint or !*trintsubst then <<
-        printc "Transforming back...";
+        printc "Transforming back:";
+        mathprint {'replaceby,newvar,cdr car ss};
+	prin2 "gives ...";
         printsq car res;
-        prin2 " plus a bad part of ";
-        printsq cdr res
+	if not null numr cdr res then <<
+           prin2 " plus a bad part of ";
+           printsq cdr res
+	>>
     >>;
     if null numr car res then return nil;
     return res;
@@ -737,8 +741,8 @@ begin
     if !*trint or !*trintsubst then <<
         prin2 "Integrand is transformed by substitution to ";
         printsq integrand;
-        prin2 "using substitution "; prin2 var; prin2 " -> ";
-        printsq simp sbst;
+        prin2 "using substitution "; terpri!* t;
+	mathprint {'replaceby,var,sbst};
     >>;
     realdom := not smember('(sqrt -1),integrand);
 %   print integrand; print realdom;
@@ -754,10 +758,7 @@ begin
     %% RmS: without the call to reval at least one test runs much slower
     ss := (reval if do_acosh then {'cosh,newvar} else {'sinh,newvar}) . bckshft;
     if !*hyperbolic then <<
-      ss := list(ss,
-                 newvar . {if do_acosh then 'acosh else 'asinh,bckshft});
-%      ss := list(if do_acosh then 'acosh else 'asinh,
-%                 list('times,list('plus,var,b), sqmn));
+      ss := list(ss, newvar . {if do_acosh then 'acosh else 'asinh,bckshft});
     >>
     else <<
       ss := list(ss,
@@ -772,10 +773,14 @@ begin
     res := sqrt2top subsq(car res, cdr ss) .
            sqrt2top subsq(quotsq(cdr res, fctr), ss);
     if !*trint or !*trintsubst then <<
-        printc "Transforming back...";
+        printc "Transforming back:";
+       	mathprint {'replaceby,newvar,cdr car ss};
+	prin2 "gives ...";
         printsq car res;
-        prin2 " plus a bad part of ";
-        printsq cdr res
+	if not null numr cdr res then <<
+           prin2 " plus a bad part of ";
+           printsq cdr res
+	>>
     >>;
     %% Return successfully only if there is no bad part
     if null numr car res or not null numr cdr res then return nil;
@@ -812,7 +817,7 @@ symbolic procedure integratesq!-substituted(integrand,newvar);
 symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,flags);
    % substitute in integrand, a sq,
    % old var is to be replaced by prefix form sbst, a function of newvar
-   % back substitution is prefix from bcksbst, a function of var
+   % back substitution is prefix form bcksbst, a function of var
    % fct is the jacobian in s.q. form
    % flags is a list of ids indicating variant processing:
    %  nobad:    the substitution is considered a failure if there remains an unintegrable badpart
@@ -826,8 +831,8 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,flags);
      if !*trint or !*trintsubst then <<
            prin2 "Integrand is transformed by substitution to ";           
            printsq integrand;                                              
-           prin2 "using substitution "; prin2 var; prin2 " -> ";           
-           printsq simp sbst;
+           prin2 "using substitution "; terpri!* t;
+ 	   mathprint {'replaceby,var,sbst};
      >>;
      realdom := ('realdom memq flags) and not smember('(sqrt -1),integrand);
      res := integratesq!-substituted(integrand,nvar);
@@ -853,10 +858,14 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,flags);
      bcksbst := {nvar . bcksbst};
      res := subsq(car res, bcksbst) . subsq(quotsq(cdr res,fct), bcksbst);
      if !*trint or !*trintsubst then <<
-         printc "Transforming back...";
+	 printc "Transforming back...";
+	 mathprint {'replaceby,nvar,cdr car bcksbst};
+	 prin2 "gives ...";
          printsq car res;
-         prin2 " plus a bad part of ";
-         printsq cdr res
+	 if not null numr cdr res then <<
+            prin2 " plus a bad part of ";
+            printsq cdr res
+	 >>
      >>;
      if realdom and smember('(sqrt -1),res) then <<
 	if !*trint or !*trintsubst then print "Wrong sheet";
@@ -960,8 +969,8 @@ begin
     if !*trint or !*trintsubst then <<
           prin2 "Integrand is transformed by substitution to ";           
           printsq integrand;                                              
-          prin2 "using substitution "; prin2 var; prin2 " -> ";           
-          mathprint list('sqrt,newvar);
+          prin2 "using substitution "; terpri!* t;
+          mathprint {'replaceby,var,list('sqrt,newvar)};
     >>;
     res := integratesq!-substituted(integrand, newvar);
     if null res
@@ -978,9 +987,13 @@ begin
                                        subsq(cdr res, ss));
     if !*trint or !*trintsubst then <<
         printc "Transforming back...";
+        mathprint {'replaceby,newvar,cdr car ss};
+	prin2 "gives ...";
         printsq car res;
-        prin2 " plus a bad part of ";
-        printsq cdr res
+	if not null numr cdr res then <<
+           prin2 " plus a bad part of ";
+           printsq cdr res
+	>>
     >>;
     return res
 end;
@@ -1070,7 +1083,8 @@ intrules :=
    int(~x/log(~x),x) => Ei(2*log(x)),
    int(~x^~n/log(x),x) => Ei((n+1)*log(x)) when fixp n,
    int(1/(~x^~n*log(x)),x) => Ei((-n+1)*log(x)) when fixp n,
-
+   int(Ei(log(~~a*x+~~b)),x) => Ei(log(a*x+b))*(x+b/a) - Ei(2*log(a*x+b))/a
+                                 when a freeof x and b freeof x,
    int(asin(~~a*~x+~~b),~x) => 1/a*((a*x+b)*asin(a*x+b)+sqrt(1-(a*x+b)^2))
                                  when a freeof x and b freeof x,
    int(~x^~~n*asin(~~a*~x+~~b),~x) =>
@@ -1104,6 +1118,9 @@ intrules :=
        x^(1-n)/(1-n)*acosh(a*x+b)-a/(1-n)*int(x^(1-n)*sqrt((a*x+b)^2-1)/(1-(a*x+b)^2),x)
                                  when fixp n and n>1 and a freeof x and b freeof x,
 
+   int(erf(~~a+~~b*~x),x) => (a+b*x)*erf(a+b*x)/b+1/(b*sqrt(pi)*e^((a+b*x)^2))
+      when a freeof x and b freeof x,
+   
    int(psi(~z),z)  =>  log gamma(z),
    int(polygamma(~n,~x),~x)  =>  polygamma(n-1,x)
 
