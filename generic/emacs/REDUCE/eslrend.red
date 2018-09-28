@@ -172,6 +172,12 @@ a:      if errorp errorset('(begin1),nil,nil) then go to a;
 flag('(begin),'go);
 
 
+% These two functions are not documented anywhere but are used in
+% various places:
+
+symbolic procedure igetv(u,v); getv(u,v);
+symbolic procedure iputv(u,v,w); putv(u,v,w);
+
 % From "cslred.red":
 % The following functions are NOT in Standard Lisp and should NOT be
 % used anywhere in the REDUCE sources, but the amount of trouble I have
@@ -179,15 +185,15 @@ flag('(begin),'go);
 % them here anyway and put up with the (small) waste of space.
 
 symbolic procedure first x; car x;		% used in "factor/ezgcdf.red"
-
-% symbolic procedure second x; cadr x;
-
-% symbolic procedure third x; caddr x;
-
+symbolic procedure second x; cadr x;	% used in cali
+symbolic procedure third x; caddr x;	% used in cali
 % symbolic procedure fourth x; cadddr x;
-
 % symbolic procedure rest x; cdr x;
 
+symbolic procedure lastcar l;
+   % lastpair is defined in forstat.red
+   % car nil -> nil in Emacs Lisp
+   if atom l then l else car lastpair l;
 
 Comment Initial setups for REDUCE;
 

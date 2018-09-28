@@ -518,7 +518,7 @@ an error occurs:
 
 In ESL: Down-case LAMBDA, NIL and T.
 Retain ! preceding an identifier beginning with : to prevent it
-becoming a keyword, but avoiding mangling `:' and the prompt.
+becoming a keyword, avoiding mangling `:', `:=' and the prompt.
 Also, remove !¦ preceding an identifier and downcase the
 identifier to facilitate direct use of Emacs Lisp functions."
   ;; Concatenate the characters into a string and then handle any !
@@ -529,8 +529,9 @@ identifier to facilitate direct use of Emacs Lisp functions."
   ;; characters.
   ;; Otherwise, assume an identifier. Any ! characters should be
   ;; deleted, except that !! should be replaced by !.
-  ;; However, retain a leading !: followed by a uc letter or digit to
-  ;; prevent the Standard LISP identifier being an Elisp keyword.
+  ;; However, retain a leading !: (except in special cases) to prevent
+  ;; a Standard LISP identifier being an Elisp keyword.  This should
+  ;; perhaps be handled in a more consistent way!
   (let* ((s (mapconcat #'symbol-name u ""))
 		 (s0 (aref s 0)))
 	(cond ((eq s0 ?\")					; STRING
@@ -545,10 +546,10 @@ identifier to facilitate direct use of Emacs Lisp functions."
 			 (esl-string-to-bigint s)))
 		  (t							; IDENTIFIER
 		   (let ((l (length s)) (i 0) (ss nil) e)
-			 ;; Retain leading !: in "!:..." but not in "!:"
+			 ;; Retain leading !: in "!:..." but not in "!:", "!:!="
 			 ;; or "!:! ", which is used in the REDUCE prompt:
 			 (if (and (eq s0 ?!) (eq (aref s 1) ?:) (> l 2)
-					  (not (equal s "!:! ")))
+					  (not (equal s "!:! ")) (not (equal s "!:!=")))
 				 (setq i 2 ss '(?: ?!)))
 			 (while (< i l)				; delete ! but !! --> !
 			   (if (eq (setq e (aref s i)) ?!)
@@ -2578,7 +2579,17 @@ returns the current working directory in system specific format."
 ;; filename according to the rules of the operating system.  If this
 ;; operation is not sucessful, the value Nil is returned.
 
+(defun COPY (u)							; From the PSL manual
+  "(copy U:any): any expr
+This function returns a copy of U.  While each pair is copied,
+atomic elements (for example ids, strings, and vectors) are not.
+See totalcopy in section 7.5.  Note that copy is recursive and
+will not terminate if its argument is a circular list."
+  (if (consp u)
+	  (cons (COPY (car u)) (COPY (cdr u)))
+	u))
 
+
 ;;; Debugging support
 ;;; =================
 
@@ -2606,6 +2617,7 @@ returns the current working directory in system specific format."
 (defalias 'PLIST 'symbol-plist
   "Return an identifier's property list as in CSL.")
 
+
 ;;; Fast loading (FASL) support
 ;;; ===========================
 
@@ -2795,7 +2807,7 @@ When all done, execute FASLEND;\n\n" name)))
 (PUT 'FASLEND 'STAT 'ENDSTAT)
 (FLAG '(FASLEND) 'EVAL)				 ; must be evaluated in this model
 
-
+
 ;;; Miscellaneous
 ;;; =============
 
