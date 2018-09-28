@@ -18,7 +18,9 @@
 *.out.ps
 *.toc
 cm*.png
-manual*.png
+manual/bild*.png
+manual/gnuplot*.png
+manual/turtle*.png
 manual*.html
 autom4te.cache
 confdefs.h
