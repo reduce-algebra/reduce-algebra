@@ -43,6 +43,7 @@ fluid '(!*algint
         !*nolnr
         !*partialintdf
         !*precise
+        !*precise_complex
         !*purerisch
         !*rationalize
         !*structure
@@ -104,7 +105,7 @@ symbolic procedure simpint u;
                  !*intflag!*,!*purerisch,cflag,intvar,listofnewsqrts,
                  listofallsqrts,sqrtfn,sqrt!-intvar,sqrt!-places!-alist,
                  basic!-listofallsqrts,basic!-listofnewsqrts,coefft,
-                 varchange,w,!*precise;
+                 varchange,w,!*precise,!*precise_complex;
     !*intflag!* := t;     % Shows we are in integrator.
     variable := !*a2k cadr u;
     if not(idp variable or pairp variable and numlistp cdr variable)
@@ -608,8 +609,8 @@ symbolic procedure look_for_quad(integrand, var, zz);
           return
            if minusf numr c then <<
            if minusf numr a then  begin
-                            scalar !*hyperbolic;
-                            !*hyperbolic := t;
+                            scalar !*hyperbolic,!*precise;
+                            !*hyperbolic := t; !*precise := t;
                             return
                                 look_for_invhyp(integrand,nil,var,a,b,c)
                         end
@@ -668,7 +669,7 @@ begin
     bckshft := {'times,{'plus,var,b}, sqmn};
     ss := {reval {'sin,newvar} . bckshft, newvar . {'asin,bckshft}};
     if !*trint or !*trintsubst then <<
-        prin2 "Integrand is transformed by substitution to ";
+        prin2 "Integrand is transformed by substitution to "; terpri!* t;
         printsq integrand;
         prin2 "using substitution "; terpri!* t;
 	mathprint {'replaceby,var,sbst};
@@ -678,6 +679,14 @@ begin
     if null res
       then <<if !*trint or !*trintsubst then printc "Substituted integral FAILED";
              return nil>>;
+    if !*trint or !*trintsubst then <<
+        printc "Result of substituted integral is:";
+        printsq car res;
+	if not null numr cdr res then <<
+           prin2 " plus a bad part of ";
+           printsq cdr res
+	>>;
+    >>;
     if not null numr cdr res then <<
        % cdr res is the badpart
        % check whether it can be integrated by, e.g. pattern matching
@@ -699,7 +708,7 @@ begin
     if !*trint or !*trintsubst then <<
         printc "Transforming back:";
         mathprint {'replaceby,newvar,cdr car ss};
-	prin2 "gives ...";
+	prin2 "giving ...";
         printsq car res;
 	if not null numr cdr res then <<
            prin2 " plus a bad part of ";
@@ -739,7 +748,7 @@ begin
                 powlis!*;
     integrand := subs2q multsq(subsq(integrand, list(var . sbst)), fctr);
     if !*trint or !*trintsubst then <<
-        prin2 "Integrand is transformed by substitution to ";
+        prin2 "Integrand is transformed by substitution to "; terpri!* t;
         printsq integrand;
         prin2 "using substitution "; terpri!* t;
 	mathprint {'replaceby,var,sbst};
@@ -751,6 +760,14 @@ begin
     if null res 
       then <<if !*trint or !*trintsubst then printc "Substituted integral FAILED";
              return nil>>;
+    if !*trint or !*trintsubst then <<
+        printc "Result of substituted integral is:";
+        printsq car res;
+	if not null numr cdr res then <<
+           prin2 " plus a bad part of ";
+           printsq cdr res
+	>>;
+    >>;
     % compute inverse substitution
     % this is faster if sinh(newvar) or cosh(newvar) are substituted first,
     % then the remaining occurences of newvar - especially for the bad part
@@ -774,8 +791,8 @@ begin
            sqrt2top subsq(quotsq(cdr res, fctr), ss);
     if !*trint or !*trintsubst then <<
         printc "Transforming back:";
-       	mathprint {'replaceby,newvar,cdr car ss};
-	prin2 "gives ...";
+       	mathprint {'replaceby,newvar,cdr cadr ss};
+	prin2 "giving ...";
         printsq car res;
 	if not null numr cdr res then <<
            prin2 " plus a bad part of ";
@@ -829,7 +846,7 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,flags);
      integrand := multsq(integrand,fct);
      if 'dosubs2q memq flags then integrand := subs2q integrand;
      if !*trint or !*trintsubst then <<
-           prin2 "Integrand is transformed by substitution to ";           
+           prin2 "Integrand is transformed by substitution to "; terpri!* t;
            printsq integrand;                                              
            prin2 "using substitution "; terpri!* t;
  	   mathprint {'replaceby,var,sbst};
@@ -839,6 +856,14 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,flags);
      if null res
        then <<if !*trint or !*trintsubst then printc "Substituted integral FAILED";
               return nil>>;
+    if !*trint or !*trintsubst then <<
+        printc "Result of substituted integral is:";
+        printsq car res;
+	if not null numr cdr res then <<
+           prin2 " plus a bad part of ";
+           printsq cdr res
+	>>;
+    >>;
      if not null numr cdr res then <<
         % cdr res is the badpart
         % check whether it can be integrated by, e.g. pattern matching
@@ -860,7 +885,7 @@ symbolic procedure subst!-and!-int(integrand,var,nvar,sbst,bcksbst,fct,flags);
      if !*trint or !*trintsubst then <<
 	 printc "Transforming back...";
 	 mathprint {'replaceby,nvar,cdr car bcksbst};
-	 prin2 "gives ...";
+	 prin2 "giving ...";
          printsq car res;
 	 if not null numr cdr res then <<
             prin2 " plus a bad part of ";
@@ -967,7 +992,7 @@ begin
     integrand := prepsq simp integrand;
     integrand := simp integrand;
     if !*trint or !*trintsubst then <<
-          prin2 "Integrand is transformed by substitution to ";           
+          prin2 "Integrand is transformed by substitution to "; terpri!* t;
           printsq integrand;                                              
           prin2 "using substitution "; terpri!* t;
           mathprint {'replaceby,var,list('sqrt,newvar)};
@@ -976,6 +1001,14 @@ begin
     if null res
        then <<if !*trint or !*trintsubst then printc "Substituted integral FAILED";
               return nil>>;
+    if !*trint or !*trintsubst then <<
+        printc "Result of substituted integral is:";
+        printsq car res;
+	if not null numr cdr res then <<
+           prin2 " plus a bad part of ";
+           printsq cdr res
+	>>;
+    >>;
 %    if not null numr cdr res then <<
 %       % cdr res is the badpart
 %       % check whether it can be integrated by, e.g. pattern matching
@@ -988,7 +1021,7 @@ begin
     if !*trint or !*trintsubst then <<
         printc "Transforming back...";
         mathprint {'replaceby,newvar,cdr car ss};
-	prin2 "gives ...";
+	prin2 "giving ...";
         printsq car res;
 	if not null numr cdr res then <<
            prin2 " plus a bad part of ";

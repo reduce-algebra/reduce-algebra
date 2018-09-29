@@ -235,9 +235,9 @@ put('vector,'stat,'rlis);
 
 % Integrator module entry points.
 
-fluid '(!*trint);
+fluid '(!*trint !*trintsubst !*trdint);
 
-switch trint;
+switch trint,trintsubst,trdint;
 
 defautoload(simpint,int);
 
