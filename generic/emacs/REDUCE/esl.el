@@ -1576,13 +1576,13 @@ EXPR PROCEDURE MAPLIST(X, FN);
 ;;; Composite Functions
 ;;; ===================
 
-(defalias 'APPEND 'append
-  "APPEND(U:list, V:list):list eval, spread
-Returns a constructed list in which the last element of U is followed
-by the first element of V. The list U is copied, V is not.
-EXPR PROCEDURE APPEND(U, V);
-   IF NULL U THEN V
-      ELSE CAR U . APPEND(CDR U, V);")
+(defun APPEND (u v)
+  "(append U:list V:list): list expr
+Returns a constructed list in which the last element of U is followed by the
+first element of V. The list U is copied, but V is not."
+  ;; Some REDUCE code assumes the PSL definition, which allows U to
+  ;; have any type:
+  (if (consp u) (append u v) v))
 
 (defalias 'ASSOC 'assoc
   "ASSOC(U:any, V:alist):{dotted-pair, NIL} eval, spread
@@ -2253,9 +2253,8 @@ is non-nil then echo file input."
 				   (length esl--readch-input-string)
 				   esl--readch-input-string-index 0)
 			 ;; (when *ECHO
-			 ;; Echo the new input line:
-			 (if noninteractive
-				 (progn (princ esl--readch-input-string) (terpri))
+			 ;; Echo the new input line unless in batch mode:
+			 (unless noninteractive
 			   (with-current-buffer standard-output
 				 (goto-char (point-max)) ; in case point moved interactively
 				 (princ esl--readch-input-string) (terpri))));)
@@ -2502,17 +2501,15 @@ id NIL is always found by (int2id 128)."
   "Convert identifier or string U to a lower-case string."
   (downcase (if (symbolp u) (symbol-name u) u)))
 
-(defvar esl-load-module-nomessage nil
-  ;; This is the PSL *VERBOSELOAD switch with opposite meaning!
-  ;; Maybe I should use that instead.
-  "If non-nil then suppress LOAD-MODULE messages.")
+(defvar esl-load-message nil			 ; cf. the PSL VERBOSELOAD switch
+  "If non-nil print message before and after loading a Lisp library.")
 
 (defun LOAD-MODULE (module)
   "Load the compiled REDUCE module file \"fasl/MODULE.elc\".
-If `esl-load-module-nomessage' is non-nil then suppress loading messages."
+If `esl-load-message' is non-nil then output loading messages."
   ;; Not currently used in the REDUCE distribution.
   (load (concat "fasl/" (STRING-DOWNCASE module) ".elc")
-		nil esl-load-module-nomessage t))
+		nil (not esl-load-message) t))
 
 (defun EVLOAD (l)
   "Load each compiled REDUCE module in the list of identifiers L."
@@ -2523,15 +2520,17 @@ If `esl-load-module-nomessage' is non-nil then suppress loading messages."
 (defmacro LOAD (&rest files)			; not sure about this!
   ;; From the PSL manual:
   "(load [FILE:fstring, idg]): nil macro
-For each argument FILE, an attempt is made to locate a corresponding file.
-If a file is found then it will be loaded by a call on an appropriate function.
-A full file name is constructed by using the directory specifications
-in loaddirectories* and the extensions in loadextensions*. The strings from
-each list are used in a left to right order, for a given string from loaddirectories*
-each extension from loadextensions* is used."
+For each argument FILE, an attempt is made to locate a
+corresponding file.  If a file is found then it will be loaded by
+a call on an appropriate function.  A full file name is
+constructed by using the directory specifications in
+loaddirectories* and the extensions in loadextensions*. The
+strings from each list are used in a left to right order, for a
+given string from loaddirectories* each extension from
+loadextensions* is used."
   `(mapc
 	#'(lambda (x) (load (concat "fasl/" (STRING-DOWNCASE x) ".elc")
-						t esl-load-module-nomessage t))
+						t (not esl-load-message) t))
 	',files))
 
 (defun TIME ()
@@ -2588,6 +2587,22 @@ will not terminate if its argument is a circular list."
   (if (consp u)
 	  (cons (COPY (car u)) (COPY (cdr u)))
 	u))
+
+(defalias 'COMPILETIME 'eval-when-compile ; From the PSL manual
+  "(compiletime U:form): nil expr
+Evaluate the expression U at compile time only.")
+
+(defun BLDMSG (fmt &rest args)			; From the PSL manual
+  "(bldmsg FORMAT:string, [ARGS:any]): string expr
+Printf to string."
+  ;; This is a quick and dirty hack!
+  ;; See "support/csl.red" for a better version.
+  ;; The format argument is not well documented, so I can only guess
+  ;; at what format specifiers might be accepted!  Those actually used
+  ;; in REDUCE appear to be %w (use prin2), %d (integer) and %s (???).
+  (apply #'format
+		 (replace-regexp-in-string "%[^s%]" "%s" fmt)
+		 args))
 
 
 ;;; Debugging support

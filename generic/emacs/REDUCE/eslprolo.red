@@ -7,10 +7,11 @@
 % make REDUCE and the underlying ESL system compatible, and which need
 % to be input before the system independent REDUCE source is loaded.
 
-symbolic procedure seprp u; 
-   % Return true if U is a blank or other separator (tab, CR or LF).
+symbolic procedure seprp u;
+   % Return true if U is a blank or other separator (tab, CR, etc.).
    % This definition replaces one in the BOOT file.
-   or(eq(u,'! ),eq(u,'!	),eq(u,'!),eq(u,!$eol!$));
+   or(eq(u,'! ),eq(u,'!	),eq(u,'!),eq(u,'!),eq(u,!$eol!$));
+
 
 % Support for package creation.
 

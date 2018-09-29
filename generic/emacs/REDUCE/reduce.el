@@ -9,10 +9,12 @@
 
 (add-to-list 'load-path nil)
 
-(require 'esl)							; defines LOAD-MODULE.
+(require 'esl)							; defines LOAD-MODULE
+
+(setq max-specpdl-size 2000)	; default of 1300 too small for REDUCE
 
 ;; Load core modules quietly:
-(let ((esl-load-module-nomessage t) (*MSG nil))
+(let ((*MSG nil))
   ;; LOAD-PACKAGE is defined in "rlisp/module.red", so...
   (declare-function LOAD-PACKAGE "fasl/module" (U))
   (LOAD-MODULE 'MODULE)
