@@ -2311,7 +2311,8 @@ selected output file.
 	(if filehandle
 		(unless (and (consp filehandle)
 					 (eq (cdr filehandle) 'OUTPUT)
-					 (bufferp (setq stream (car filehandle))))
+					 (or (eq (setq stream (car filehandle)) t)
+						 (bufferp stream)))
 		  (error "%s could not be selected for output" filehandle))
 	  ;; In batch mode, output to stdout:
 	  (if noninteractive (setq stream t)))
