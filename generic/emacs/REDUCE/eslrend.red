@@ -29,6 +29,7 @@ global '(!*extraecho
          spare!*
          statcounter
 		 version!*
+		 symchar!*
          !¦noninteractive);			% FJW: t if Emacs is in batch mode
 
 switch break;
@@ -197,7 +198,9 @@ symbolic procedure lastcar l;
 
 Comment Initial setups for REDUCE;
 
-spare!* := 0;   % We need this for bootstrapping. (FJW: Maybe!)
+spare!* := 0;		   % We need this for bootstrapping. (FJW: Maybe!)
+
+symchar!* := t;				   % Changed prompt when in symbolic mode.
 
 symbolic procedure initreduce;
   % Initial declarations for REDUCE

@@ -532,38 +532,41 @@ identifier to facilitate direct use of Emacs Lisp functions."
   ;; However, retain a leading !: (except in special cases) to prevent
   ;; a Standard LISP identifier being an Elisp keyword.  This should
   ;; perhaps be handled in a more consistent way!
-  (let* ((s (mapconcat #'symbol-name u ""))
-		 (s0 (aref s 0)))
-	(cond ((eq s0 ?\")					; STRING
-		   (substring s 1 -1))
-		  ((or (eq s0 ?-)
-			   (and (>= s0 ?0) (<= s0 ?9)))	; NUMBER
-		   (if (string-match "\\." s)
-			   ;; Number is a float. (Emacs does not accept .E as in
-			   ;; 123.E-2 so delete such a ".".)
-			   (string-to-number (replace-regexp-in-string "\\.E" "E" s))
-			 ;; Number is a (possibly big) integer.
-			 (esl-string-to-bigint s)))
-		  (t							; IDENTIFIER
-		   (let ((l (length s)) (i 0) (ss nil) e)
-			 ;; Retain leading !: in "!:..." but not in "!:", "!:!="
-			 ;; or "!:! ", which is used in the REDUCE prompt:
-			 (if (and (eq s0 ?!) (eq (aref s 1) ?:) (> l 2)
-					  (not (equal s "!:! ")) (not (equal s "!:!=")))
-				 (setq i 2 ss '(?: ?!)))
-			 (while (< i l)				; delete ! but !! --> !
-			   (if (eq (setq e (aref s i)) ?!)
-				   (when (eq (aref s (1+ i)) ?!)
-					 (push ?! ss)
-					 (setq i (1+ i)))
-				 (push e ss))
-			   (setq i (1+ i)))
-			 (setq ss (apply #'string (reverse ss)))
-			 (if (member ss '("LAMBDA" "NIL" "T"))
-				 (setq ss (downcase ss))
-			   (if (eq (aref ss 0) ?¦)
-				   (setq ss (downcase (substring ss 1)))))
-			 (make-symbol ss))))))		; uninterned symbol
+  (if (equal u '(! \)) 'T	   ; special case to avoid down-casing '!T
+	(let* ((s (mapconcat
+			   (lambda (x) (if (eq x '\) "T" (symbol-name x)))
+			   u ""))
+		   (s0 (aref s 0)))
+	  (cond ((eq s0 ?\")					; STRING
+			 (substring s 1 -1))
+			((or (eq s0 ?-)
+				 (and (>= s0 ?0) (<= s0 ?9)))	; NUMBER
+			 (if (string-match "\\." s)
+				 ;; Number is a float. (Emacs does not accept .E as in
+				 ;; 123.E-2 so delete such a ".".)
+				 (string-to-number (replace-regexp-in-string "\\.E" "E" s))
+			   ;; Number is a (possibly big) integer.
+			   (esl-string-to-bigint s)))
+			(t							; IDENTIFIER
+			 (let ((l (length s)) (i 0) (ss nil) e)
+			   ;; Retain leading !: in "!:..." but not in "!:", "!:!="
+			   ;; or "!:! ", which is used in the REDUCE prompt:
+			   (if (and (eq s0 ?!) (eq (aref s 1) ?:) (> l 2)
+						(not (equal s "!:! ")) (not (equal s "!:!=")))
+				   (setq i 2 ss '(?: ?!)))
+			   (while (< i l)				; delete ! but !! --> !
+				 (if (eq (setq e (aref s i)) ?!)
+					 (when (eq (aref s (1+ i)) ?!)
+					   (push ?! ss)
+					   (setq i (1+ i)))
+				   (push e ss))
+				 (setq i (1+ i)))
+			   (setq ss (apply #'string (reverse ss)))
+			   (if (member ss '("LAMBDA" "NIL" "T"))
+				   (setq ss (downcase ss))
+				 (if (eq (aref ss 0) ?¦)
+					 (setq ss (downcase (substring ss 1)))))
+			   (make-symbol ss)))))))		; uninterned symbol
 
 (defun esl-bigint-p (b)
   "Return t if B is a bigint."
@@ -1657,7 +1660,9 @@ EXPR PROCEDURE LITER(U);
                 !n !o !p !q !r !s !t !u !v !w !x !y !z))
       THEN T ELSE NIL;"
   (if (memq u '(A B C D E F G H I J K L M
-                N O P Q R S T U V W X Y Z
+                N O P Q R S T U V W X Y Z \
+				;;  = ?T - 64.  COMPRESS will convert this back to T
+				;; and not down-case it.
                 a b c d e f g h i j k l m
                 n o p q r s t u v w x y z))
 	  t))
@@ -2200,7 +2205,10 @@ READCH to return from `esl--readch-input-string'.")
 Up-case letters if !*RAISE is non-nil unless previous char was `!'."
   (intern
    (string
-	(cond ((eq esl--readch-prev-char ?!) c)
+	(cond ((eq esl--readch-prev-char '!)
+		   ;; !T ->  = ?T - 64 = 20.  COMPRESS will convert this
+		   ;; back to 'T and not down-case it.
+		   (if (eq c ?T) 20 c))
 		  ((and *RAISE (>= c ?a) (<= c ?z)) (- c 32))
 		  (t c)))))
 
@@ -2839,7 +2847,9 @@ When all done, execute FASLEND;\n\n" name)))
 (defun ORDERP (u v)
   "Returns true if id U has same or higher order than id V by
 some consistent convention (eg unique position in memory)."
-  (not (string< (symbol-name v) (symbol-name u))))
+  ;; Ignore case by down-casing the strings.
+  (not (string< (downcase (symbol-name v))
+				(downcase (symbol-name u)))))
 
 ;; To run Edebug on a FUNCTION defined in RLISP, use esl-pp-fn in
 ;; *scratch* to get an Emacs Lisp version of FUNCTION, change the
