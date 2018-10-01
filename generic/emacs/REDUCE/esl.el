@@ -516,7 +516,7 @@ cannot be parsed out of U or characters are left over after parsing
 an error occurs:
 ***** Poorly formed atom in COMPRESS
 
-In ESL: Down-case LAMBDA, NIL and T (but not !T).
+In ESL: Down-case LAMBDA, NIL, QUOTE and T (but not !T).
 Retain ! preceding an identifier beginning with : to prevent it
 becoming a keyword, avoiding mangling `:', `:=' and the prompt.
 Also, remove !¦ preceding an identifier and downcase the
@@ -560,7 +560,7 @@ identifier to facilitate direct use of Emacs Lisp functions."
 				   (push e ss))
 				 (setq i (1+ i)))
 			   (setq ss (apply #'string (reverse ss)))
-			   (if (member ss '("LAMBDA" "NIL"))
+			   (if (member ss '("LAMBDA" "NIL" "QUOTE"))
 				   (setq ss (downcase ss))
 				 (if (eq (aref ss 0) ?¦)
 					 (setq ss (downcase (substring ss 1)))))
@@ -913,7 +913,7 @@ already declared FLUID are ignored. Changing a variable's type
 from GLOBAL to FLUID is not permissible and results in the error:
 ***** ID cannot be changed to FLUID"
   ;; A warning, as for PSL, is more convenient than an error!
-  (if (memq (car idlist) '(quote QUOTE))
+  (if (memq (car idlist) '(quote QUOTE)) ; QUOTE (UC) should now be redundant
 	  ;; Assume a top-level call that needs to output `defvar' forms
 	  ;; at compile time.
 	  (cons 'prog1
@@ -978,7 +978,7 @@ variables type from FLUID to GLOBAL is not permissible and
 results in the error:
 ***** ID cannot be changed to GLOBAL"
   ;; A warning, as for PSL, is more convenient than an error!
-  (if (memq (car idlist) '(quote QUOTE))
+  (if (memq (car idlist) '(quote QUOTE)) ; QUOTE (UC) should now be redundant
 	  ;; Assume a top-level call that needs to output `defvar' forms
 	  ;; at compile time.
 	  (cons 'prog1

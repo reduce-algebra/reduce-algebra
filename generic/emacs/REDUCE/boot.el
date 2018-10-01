@@ -1,12 +1,11 @@
 ;;; boot.el --- ESL (Emacs Standard LISP) version of REDUCE 3.8 "boot.sl"
 
-;; Edited by FJW to use upper case (except for lambda, nil and t) and
-;; Emacs Lisp syntax, i.e. with ! as an escape replaced by \ (although
-;; most resulting escapes are not necessary in Emacs Lisp).  The
-;; lower-case symbols lambda, nil and t are retained because I can't
-;; find any good way to implement LAMBDA as a synonym for lambda, and
-;; NIL cannot be used to represent an empty argument list or in quoted
-;; expressions.  Note that the second ! in !! must be retained.
+;; Edited by FJW to use upper case (except for lambda, nil, quote and
+;; t) and Emacs Lisp syntax, i.e. with the escape ! replaced by \
+;; (although most such escapes are not necessary in Emacs Lisp).  The
+;; lower-case symbols are retained because it seems to be necessary in
+;; order to get REDUCE to run properly.  Note that the second ! in !!
+;; must be retained.
 
 (require 'esl)
 
@@ -153,7 +152,7 @@ A     (COND
          ((LITER X) (GO LETTER))
          ((EQ X '\%) (GO COMENT))
          ((EQ X '\!) (GO ESCAPE))
-         ((EQ X '\') (GO QUOTE))
+         ((EQ X '\') (GO quote))
          ((EQ X '\") (GO STRING)))
       (SETQ TTYPE\* 3)
       (COND ((DELCP X) (GO D)))
@@ -175,8 +174,8 @@ NUM1  (SETQ Y (CONS X Y))
       (COND ((DIGIT (SETQ X (READCH))) (GO NUM1)))
       (SETQ NXTSYM\* (COMPRESS (REVERSE Y)))
       (GO B)
-QUOTE (SETQ CRCHAR\* (READCH))
-      (SETQ NXTSYM\* (LIST 'QUOTE (RREAD)))
+quote (SETQ CRCHAR\* (READCH))
+      (SETQ NXTSYM\* (LIST 'quote (RREAD)))
       (SETQ TTYPE\* 4)
       (GO C)
 STRING(PROG (RAISE \*LOWER)
@@ -216,7 +215,7 @@ B     (COND
          ((EQ NXTSYM\* 'COMMENT) (GO COMM))
          ((AND
              (EQ NXTSYM\* '\')
-             (SETQ CURSYM\* (LIST 'QUOTE (RREAD))))
+             (SETQ CURSYM\* (LIST 'quote (RREAD))))
             (GO L1))
          ((NULL (SETQ X (GET NXTSYM\* 'SWITCH\*))) (GO L))
          ((EQ (CADR X) '\*SEMICOL\*)
@@ -234,7 +233,7 @@ COMM  (COND ((EQ (READCH) '\;) (SETQ CRCHAR\* '\ )) (t (GO COMM)))
 L     (SETQ CURSYM\*
          (COND
             ((NULL (EQCAR NXTSYM\* 'STRING)) NXTSYM\*)
-            (t (CONS 'QUOTE (CDR NXTSYM\*)))) )
+            (t (CONS 'quote (CDR NXTSYM\*)))) )
 L1    (SETQ NXTSYM\* (TOKEN))
       (RETURN CURSYM\*)))
 
@@ -261,7 +260,7 @@ B     (RETURN (CONS 'COND CONDIT))))
       (COND ((FLAGP (CAR X) 'LOSE) (RETURN nil)))
       (PUTD (CAR X) 'EXPR (LIST 'lambda (CDR X) Y))
       (SETQ FNAME\* nil)
-      (RETURN (LIST 'QUOTE (CAR X)))) )
+      (RETURN (LIST 'quote (CAR X)))) )
 
 (DE BLOCKSTAT nil
    (PROG (X HOLD VARLIS \*BLOCKP)
@@ -292,7 +291,7 @@ A     (SETQ HOLD (NCONC HOLD (LIST (XREAD1 nil))))
 (DE RLIS nil
    (PROG (X)
       (SETQ X CURSYM\*)
-      (RETURN (LIST X (LIST 'QUOTE (LIST (XREAD t)))))))
+      (RETURN (LIST X (LIST 'quote (LIST (XREAD t)))))))
 
 (DE ENDSTAT nil (PROG (X) (SETQ X CURSYM\*) (SCAN) (RETURN (LIST X))))
 

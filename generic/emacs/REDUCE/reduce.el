@@ -11,7 +11,7 @@
 
 (require 'esl)							; defines LOAD-MODULE
 
-(setq max-specpdl-size 2000)	; default of 1300 too small for REDUCE
+(setq max-specpdl-size 3000)			; default of 1300 too small
 
 ;; Load core modules quietly:
 (let ((*MSG nil))
