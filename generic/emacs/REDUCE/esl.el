@@ -516,7 +516,7 @@ cannot be parsed out of U or characters are left over after parsing
 an error occurs:
 ***** Poorly formed atom in COMPRESS
 
-In ESL: Down-case LAMBDA, NIL and T.
+In ESL: Down-case LAMBDA, NIL and T (but not !T).
 Retain ! preceding an identifier beginning with : to prevent it
 becoming a keyword, avoiding mangling `:', `:=' and the prompt.
 Also, remove !¦ preceding an identifier and downcase the
@@ -532,15 +532,13 @@ identifier to facilitate direct use of Emacs Lisp functions."
   ;; However, retain a leading !: (except in special cases) to prevent
   ;; a Standard LISP identifier being an Elisp keyword.  This should
   ;; perhaps be handled in a more consistent way!
-  (if (equal u '(! \)) 'T	   ; special case to avoid down-casing '!T
-	(let* ((s (mapconcat
-			   (lambda (x) (if (eq x '\) "T" (symbol-name x)))
-			   u ""))
+  (if (equal u '(T)) 't
+	(let* ((s (mapconcat #'symbol-name u ""))
 		   (s0 (aref s 0)))
-	  (cond ((eq s0 ?\")					; STRING
+	  (cond ((eq s0 ?\")				; STRING
 			 (substring s 1 -1))
 			((or (eq s0 ?-)
-				 (and (>= s0 ?0) (<= s0 ?9)))	; NUMBER
+				 (and (>= s0 ?0) (<= s0 ?9))) ; NUMBER
 			 (if (string-match "\\." s)
 				 ;; Number is a float. (Emacs does not accept .E as in
 				 ;; 123.E-2 so delete such a ".".)
@@ -554,7 +552,7 @@ identifier to facilitate direct use of Emacs Lisp functions."
 			   (if (and (eq s0 ?!) (eq (aref s 1) ?:) (> l 2)
 						(not (equal s "!:! ")) (not (equal s "!:!=")))
 				   (setq i 2 ss '(?: ?!)))
-			   (while (< i l)				; delete ! but !! --> !
+			   (while (< i l)			; delete ! but !! --> !
 				 (if (eq (setq e (aref s i)) ?!)
 					 (when (eq (aref s (1+ i)) ?!)
 					   (push ?! ss)
@@ -562,11 +560,11 @@ identifier to facilitate direct use of Emacs Lisp functions."
 				   (push e ss))
 				 (setq i (1+ i)))
 			   (setq ss (apply #'string (reverse ss)))
-			   (if (member ss '("LAMBDA" "NIL" "T"))
+			   (if (member ss '("LAMBDA" "NIL"))
 				   (setq ss (downcase ss))
 				 (if (eq (aref ss 0) ?¦)
 					 (setq ss (downcase (substring ss 1)))))
-			   (make-symbol ss)))))))		; uninterned symbol
+			   (make-symbol ss)))))))	; uninterned symbol
 
 (defun esl-bigint-p (b)
   "Return t if B is a bigint."
@@ -1660,9 +1658,7 @@ EXPR PROCEDURE LITER(U);
                 !n !o !p !q !r !s !t !u !v !w !x !y !z))
       THEN T ELSE NIL;"
   (if (memq u '(A B C D E F G H I J K L M
-                N O P Q R S T U V W X Y Z \
-				;;  = ?T - 64.  COMPRESS will convert this back to T
-				;; and not down-case it.
+                N O P Q R S T U V W X Y Z
                 a b c d e f g h i j k l m
                 n o p q r s t u v w x y z))
 	  t))
@@ -2205,10 +2201,7 @@ READCH to return from `esl--readch-input-string'.")
 Up-case letters if !*RAISE is non-nil unless previous char was `!'."
   (intern
    (string
-	(cond ((eq esl--readch-prev-char '!)
-		   ;; !T ->  = ?T - 64 = 20.  COMPRESS will convert this
-		   ;; back to 'T and not down-case it.
-		   (if (eq c ?T) 20 c))
+	(cond ((eq esl--readch-prev-char '!) c)
 		  ((and *RAISE (>= c ?a) (<= c ?z)) (- c 32))
 		  (t c)))))
 

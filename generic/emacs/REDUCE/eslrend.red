@@ -235,23 +235,29 @@ put('defn, 'simpfg, '((t (!¦require '!¦eslpretty))
 % Replace the REDUCE versions of some key functions with better
 % ESL-specific versions.
 
-remflag('(boundp gcdn), 'lose);
+remflag('(boundp gcdn smallcompress), 'lose);
 % because the build process currently runs eslrend twice!
 
 % Avoid the definition of BOUNDP in "alg/simp.red".  It detects an
 % unbound variable by intentionally throwing an error, which makes
-% debugging awkward.  Use the Elisp built-in function instead.
-
+% debugging awkward.  Use the Elisp built-in function instead:
 symbolic procedure boundp u; !¦boundp u;
 
 % Provide a numerical greatest common divisor that should work better
 % with ESL big integers than the version in "alg/numsup.red" by using
-% the Calc package.
-
+% the Calc package:
 symbolic procedure gcdn(u,v); !c!a!l!c!F!u!n!c!-!g!c!d(u,v);
 %  U and v are integers. Value is absolute value of gcd of u and v.
 
-flag('(boundp gcdn), 'lose);
+% Down-case the E in floats if appropriate:
+symbolic procedure smallcompress (li);
+   % Compress list li to a string.  Used in arith/smlbflot.red only.
+   begin scalar s;
+	  s := !¦mapconcat((lambda x; !¦prin1!-to!-string(x,t)), li, "");
+	  return if !*lower then !¦downcase s else s
+   end;
+
+flag('(boundp gcdn smallcompress), 'lose);
 
 endmodule;
 
