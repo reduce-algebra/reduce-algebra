@@ -1,7 +1,7 @@
 Emacs REDUCE
 ============
 
-Francis Wright, September 2018
+Francis Wright, October 2018
 
 For stability during development, I am currently using the REDUCE 3.8
 files at
@@ -18,7 +18,7 @@ this emulation as Emacs Standard LISP or ESL.
 The file "boot.el" is the ESL version of the REDUCE file "boot.sl"
 edited to use upper case, and replace % with ; and ! with \ where
 necessary so that Emacs Lisp can read it.  However, it retains lambda,
-nil and t as lower-case symbols.
+nil, quote and t as lower-case symbols.
 
 Files with names of the form "eslxxxx.red" are ESL versions of the
 REDUCE files "cslxxxx.red", "pslxxxx.red" or "xxxx.red".  The current
@@ -44,44 +44,17 @@ https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/historical/r38
 somewhere and regard this directory as the directory REDUCE (which
 will then include a lot of files that are not required for this
 build), or link the directory "packages" and file "package.red" to
-REDUCE.  Open a directory listing of REDUCE in Emacs (C-x d).
+REDUCE.
 
-0. Some of the steps below require Emacs to load files in the current
-directory.  To permit that, I recommend that you add
+Open a (Unix-style) command shell and execute
 
-(push nil load-path)
+. build-core-reduce.sh
 
-of something equivalent to your Emacs init file (.emacs).
+and then
 
-1. Compile (or recompile if anything has changed) "esl.el", "boot.el"
-and "eslpretty.el" (B in Emacs dired mode), then load "boot.elc" (L in
-Emacs dired mode), which loads "esl.elc".
+. remake-all-packages.sh
 
-2. Run M-x STANDARD-LISP
-
-2a. Evaluate
-
-(DSKIN "dbuild.el")
-
-via the minibuffer to build a basic version of REDUCE in the current
-Emacs session.  This build step should take about 10 seconds.
-
-2b. Run
-
-symbolic infile "eslremakecore.red";
-
-via the minibuffer to build the core Emacs REDUCE fasl files.  This
-build step should take a minutes or two.  I recommend now closing
-Emacs and then re-opening it, which is the only way to unload or
-cleanly restart Emacs REDUCE.
-
-3. Open a (Unix-style) command shell and run the bash script
-
-remake-all-packages.sh
-
-(This currently assumes a particular location for the Emacs
-executable, namely its location on my computer, which you may need to
-edit first.)  This build step should take about 10 minutes.
+This build should take about 10 minutes.
 
 To run Emacs REDUCE
 -------------------
@@ -100,6 +73,10 @@ where you left it by running the Emacs command `M-x esl-reduce'
 "reduce.el(c)".  You can exit (i.e. suspend) Emacs REDUCE in the
 conventional way (using the REDUCE command bye or quit) or you can use
 the Emacs keyboard-quit signal `C-g'.
+
+Closing Emacs is the only reliably way to completely stop and unload
+Emacs REDUCE, so the only way to restart it cleanly is to restart
+Emacs!
 
 You can interact with an Emacs REDUCE session using normal Emacs Lisp
 facilities (in ways that are not possible or convenient using
@@ -123,27 +100,20 @@ in Emacs Lisp.
 Print output
 ------------
 
-The ESL print functions now support the Standard Lisp escape
-convention and down-casing of identifiers (when !*LOWER is non-nil).
-This does not appear to have caused any significant loss of speed.
+The ESL print functions support the Standard Lisp escape convention
+and down-casing of identifiers (when !*LOWER is non-nil).
 
 Current status of Emacs REDUCE
 ------------------------------
 
-The batch-mode build process now attempts to build all packages and
-appears to succeed with most of them, but there is a handful of
-problems still to be resolved.  An important package failing to
-compile can have a knock-on effect and prevent a number of other
-packages from compiling.
+The build process builds (almost) all packages, apparently
+successfully.
 
 Test files
 ----------
 
 Emacs REDUCE currently runs all of "alg/alg.tst" correctly but about
-20 times slower than the time shown in "alg.rlg".  (Slightly slower
-after the addition of bignum support -- maybe 24 times slower.  And
-after the addition of better output maybe 26 times slower.  This is
-not surprising and may be improvable.)
+20 times slower than the time shown in "alg.rlg".
 
 Poly package
 
@@ -173,12 +143,6 @@ serious and sometimes Emacs REDUCE is more accurate!  Probably OK for
 now.  Eventually, I should probably use the Elisp transcendental
 functions, which are implemented in C, rather than those in
 "arith/math.red".
-
-E in numbers is not lowered!  This appears to be because bigfloats are
-output as strings using PRIN2, so I would need to modify the way the
-string is generated, which would mean modifying the standard REDUCE
-code, which I want to avoid as much as possible.  This will have to
-remain an anomaly for now.
 
 Factor package
 
@@ -210,3 +174,19 @@ To do
 Batch-mode testing; run the full test suite.
 Better support for big integers.
 Better user interface.
+
+Known problems
+--------------
+
+tmprint build: too Lisp-specific and irrelevant at present
+
+atensor test: variable binding depth
+
+cali test: ***** Wrong type argument: listp, PROG.  This is caused
+entirely by using u as a variable in symbolic mode.  The variable u
+and a few other behave oddly in ESL.  The sort order is wrong,
+probably because t is mishandled.
+
+crack suite test: various obscure problems
+
+fide test: sort order

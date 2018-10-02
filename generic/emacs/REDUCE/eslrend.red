@@ -32,7 +32,7 @@ global '(!*extraecho
 		 symchar!*
          !¦noninteractive);			% FJW: t if Emacs is in batch mode
 
-switch break;
+switch break, lower;
 
 % One inessential reference to REVERSIP in this module (left unchanged).
 
