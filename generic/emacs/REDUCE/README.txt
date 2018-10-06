@@ -182,11 +182,8 @@ tmprint build: too Lisp-specific and irrelevant at present
 
 atensor test: variable binding depth
 
-cali test: ***** Wrong type argument: listp, PROG.  This is caused
-entirely by using u as a variable in symbolic mode.  The variable u
-and a few other behave oddly in ESL.  The sort order is wrong,
-probably because t is mishandled.
-
 crack suite test: various obscure problems
 
-fide test: sort order
+The sort order in the cali and fide tests differs from the reference
+rlg files, but not from the results of running the tests in PSL
+REDUCE, so I think thses difference can be ignored.

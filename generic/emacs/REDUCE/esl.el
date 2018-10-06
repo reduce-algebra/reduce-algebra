@@ -1,4 +1,4 @@
-;;; esl.el --- ESL (Emacs Standard LISP) -*- coding: utf-8; -*-
+;;; esl.el --- ESL (Emacs Standard LISP) -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2017-2018 Francis J. Wright
 
@@ -479,22 +479,18 @@ FEXPR PROCEDURE LIST(U);
    EVLIS U;")
 
 (defun RPLACA (u v)
-  "RPLACA(U:dotted-pair, V:any):dotted-pair eval, spread
-The CAR portion of the dotted-pair U is replaced by V. If dotted-
-pair U is (a . b) then (V . b) is returned. The type mismatch error
-occurs if U is not a dotted-pair."
+  "RPLACA(U:pair, V:any):pair eval, spread
+The car of the pair U is replaced by V and the modified pair U is
+returned.  A type mismatch error occurs if U is not a pair."
   (setcar u v)
-  ;; Return a new cons cell:
-  (cons v (cdr u)))
+  u)
 
 (defun RPLACD (u v)
-  "RPLACD(U:dotted-pair, V:any):dotted-pair eval, spread
-The CDR portion of the dotted-pair U is replaced by V. If dotted-
-pair U is (a . b) then (a . V) is returned. The type mismatch error
-occurs if U is not a dotted-pair."
+  "RPLACD(U:pair, V:any):pair eval, spread
+The cdr of the pair U is replaced by V and the modified pair U is
+returned.  A type mismatch error occurs if U is not a pair."
   (setcdr u v)
-  ;; Return a new cons cell:
-  (cons (car u) v))
+  u)
 
 
 ;;; Identifiers
@@ -519,8 +515,8 @@ an error occurs:
 In ESL: Down-case LAMBDA, NIL, QUOTE and T (but not !T).
 Retain ! preceding an identifier beginning with : to prevent it
 becoming a keyword, avoiding mangling `:', `:=' and the prompt.
-Also, remove !¦ preceding an identifier and downcase the
-identifier to facilitate direct use of Emacs Lisp functions."
+Also, remove ! preceding an identifier and downcase the
+identifier to facilitate direct access to Emacs Lisp symbols."
   ;; Concatenate the characters into a string and then handle any !
   ;; characters as follows:
   ;; A string begins with " and should retain any ! characters without
@@ -562,7 +558,7 @@ identifier to facilitate direct use of Emacs Lisp functions."
 			   (setq ss (apply #'string (reverse ss)))
 			   (if (member ss '("LAMBDA" "NIL" "QUOTE"))
 				   (setq ss (downcase ss))
-				 (if (eq (aref ss 0) ?¦)
+				 (if (and (eq (aref ss 0) ?) (> (length ss) 1))
 					 (setq ss (downcase (substring ss 1)))))
 			   (make-symbol ss)))))))	; uninterned symbol
 
@@ -891,7 +887,7 @@ the name may be used subsequently as a variable."
   (let ((def (GETD fname)))
 	(when def
 	  (fmakunbound fname)
-	  (put fname 'ESL--FTYPE nil))
+	  (cl-remprop fname 'ESL--FTYPE))
 	def))
 
 
@@ -940,28 +936,6 @@ If U has been declared FLUID (by declaration only) T is returned,
 otherwise NIL is returned."
   (get u 'FLUID))
 
-;; (defmacro GLOBAL (idlist)
-;;   "GLOBAL(IDLIST:id-list):NIL eval, spread
-;; The ids of IDLIST are declared global type variables. If an id
-;; has not been declared previously it is initialized to
-;; NIL. Variables already declared GLOBAL are ignored. Changing a
-;; variables type from FLUID to GLOBAL is not permissible and
-;; results in the error:
-;; ***** ID cannot be changed to GLOBAL"
-;;   ;; A warning, as for PSL, is more convenient than an error!
-;;   (cons 'prog1
-;; 		(cons nil
-;; 			  (mapcan
-;; 			   (lambda (x)
-;; 				 `((with-no-warnings ; suppress warning about lack of prefix
-;; 					 (defvar ,x nil "Standard LISP global variable."))
-;; 				   (unless (GLOBALP ',x)
-;; 					 (if (FLUIDP ',x)
-;; 						 (lwarn '(esl global) :error
-;; 								"FLUID %s cannot be changed to GLOBAL" ',x)
-;; 					   (put ',x 'GLOBAL t)))))
-;; 			   (eval idlist)))))
-
 (defun esl--global (x)
   "If id X is already FLUID then display a warning; otherwise flag X as GLOBAL."
   (if (FLUIDP x)
@@ -1005,7 +979,19 @@ If U has been declared GLOBAL or is the name of a defined function,
 T is returned, else NIL is returned."
   (or (get u 'GLOBAL) (symbol-function u)))
 
-(defalias 'SET 'set
+;; (defalias 'SET 'set
+;;   ;; Auto fluid not implemented!
+;;   "SET(EXP:id, VALUE:any):any eval, spread
+;; EXP must be an identifier or a type mismatch error occurs. The
+;; effect of SET is replacement of the item bound to the identifier
+;; by VALUE. If the identifier is not a local variable or has not
+;; been declared GLOBAL it is automatically declared FLUID with the
+;; resulting warning message:
+;; *** EXP declared FLUID
+;; EXP must not evaluate to T or NIL or an error occurs:
+;; ***** Cannot change T or NIL")
+
+(defmacro SET (exp value)					; EXPERIMENTAL!
   ;; Auto fluid not implemented!
   "SET(EXP:id, VALUE:any):any eval, spread
 EXP must be an identifier or a type mismatch error occurs. The
@@ -1015,7 +1001,9 @@ been declared GLOBAL it is automatically declared FLUID with the
 resulting warning message:
 *** EXP declared FLUID
 EXP must not evaluate to T or NIL or an error occurs:
-***** Cannot change T or NIL")
+***** Cannot change T or NIL"
+  (declare (debug set))
+  `(set ,exp ,value))
 
 (defmacro SETQ (variable value)	   ; boot.el does not compile if alias
   ;; Auto fluid not implemented!
@@ -1039,7 +1027,7 @@ variables are no longer considered as fluid variables. Others are
 ignored. This affects only compiled functions as free variables
 in interpreted functions are automatically considered fluid."
   (mapc (lambda (x)
-		  (if (FLUIDP x) (put x 'FLUID nil)))
+		  (if (FLUIDP x) (cl-remprop x 'FLUID)))
 		idlist)
   nil)
 
@@ -1107,15 +1095,25 @@ Returns the value of B.
 EXPR PROCEDURE PROG2(A, B);
    B;")
 
-(defalias 'RETURN 'cl-return
+;; (defalias 'RETURN 'cl-return
+;;   "RETURN(U:any) eval, spread
+;; Within a PROG, RETURN terminates the evaluation of a PROG
+;; and returns U as the value of the PROG. The restrictions on the
+;; placement of RETURN are exactly those of GO. Improper placement
+;; of RETURN results in the error:
+;; ***** Illegal use of RETURN")
+
+;; (def-edebug-spec RETURN t)
+
+(defmacro RETURN (u)					; EXPERIMENTAL!
   "RETURN(U:any) eval, spread
 Within a PROG, RETURN terminates the evaluation of a PROG
 and returns U as the value of the PROG. The restrictions on the
 placement of RETURN are exactly those of GO. Improper placement
 of RETURN results in the error:
-***** Illegal use of RETURN")
-
-(def-edebug-spec RETURN t)
+***** Illegal use of RETURN"
+  (declare (debug t))
+  `(cl-return ,u))
 
 
 ;;; Error Handling
@@ -1165,7 +1163,7 @@ dependent format."
 						  ;; (mapconcat 'identity msg " ")
 						  ;; msg may contain objects other than
 						  ;; strings, but this formatting may not be optimal:
-						  (mapconcat #'(lambda (x) (prin1-to-string x t)) msg " ")
+						  (mapconcat (lambda (x) (prin1-to-string x t)) msg " ")
 						msg))))
 	   (cadr err))
 	  ((error debug)					; Emacs Lisp error
@@ -1357,7 +1355,7 @@ exponentiation."
 ;; uses a 53-bit significand (s) and 11-bit exponent (e).  If the
 ;; (binary) exponent is 53 or more then the float has zero fractional
 ;; part, so truncating it cannot lose digits.  An Elisp integer uses
-;; 61 bits (range 2**61 − 1 to −2**61), so a float with exponent up to
+;; 61 bits (range 2**61 - 1 to -2**61), so a float with exponent up to
 ;; 60 should truncate reliably to an Elisp integer.  Choose a maximum
 ;; exponent value (emax) between 53 and 60 and only truncate a float
 ;; with exponent <= emax to reliably obtain an accurate Elisp integer.
@@ -1391,9 +1389,9 @@ error occurs:
   ;; Convert ANY number U to a native ELisp float.
   (if (numberp u)
 	  (float u)
-	;; math-float returns ‘MANT * 10^EXP’ as ‘(float MANT EXP)’
-	((lambda (me) (* (car me) (expt 10.0 (cadr me))))
-	 (cdr (math-float u)))))
+	;; math-float returns `MANT * 10^EXP' as `(float MANT EXP)'
+	(let ((me (cdr (math-float u))))
+	  (* (car me) (expt 10.0 (cadr me))))))
 
 (defun GREATERP (u v)
   "GREATERP(U:number, V:number):boolean eval, spread
@@ -1657,6 +1655,7 @@ EXPR PROCEDURE LITER(U);
                 !a !b !c !d !e !f !g !h !i !j !k !l !m
                 !n !o !p !q !r !s !t !u !v !w !x !y !z))
       THEN T ELSE NIL;"
+  ;; This is Emacs Lisp, so no ! escapes:
   (if (memq u '(A B C D E F G H I J K L M
                 N O P Q R S T U V W X Y Z
                 a b c d e f g h i j k l m
@@ -1991,7 +1990,7 @@ OUTPUT or the file can't be opened.
 		 (cons (get-buffer-create (concat esl--write-prefix file)) 'OUTPUT))
 		(t (error "%s is not option for OPEN" how))))
 
-(defun PAGELENGTH (len)
+(defun PAGELENGTH (_len)				; unused argument
   "PAGELENGTH(LEN:{integer, NIL}):integer eval, spread
 Sets the vertical length (in lines) of an output page. Automatic page
 EJECTs are executed by the print functions when this length is
@@ -2090,7 +2089,9 @@ are displayed in list-notation and vectors in vector-notation."
 
 (defsubst esl--prin-space-maybe ()
   "Print a space unless at the end of a line."
-  (or (>= esl--posn esl--linelength) (esl--prin-string " ")))
+  (if (< esl--posn (1- esl--linelength))
+	  (esl--prin-string " ")
+	(TERPRI)))
 
 (defun esl--prin1-cdr (u)
   "If U is non-nil then print it or its elements spaced appropriately.
@@ -2354,7 +2355,7 @@ selected output file.
 
 ;; From the ELisp Manual:
 
-;; ‘t’ used as a stream means that the input is read from the
+;; `t' used as a stream means that the input is read from the
 ;; minibuffer.  In fact, the minibuffer is invoked once and the text
 ;; given by the user is made into a string that is then used as the
 ;; input stream.  If Emacs is running in batch mode, standard input is
@@ -2402,8 +2403,7 @@ selected output file.
 	  (while t
 		(terpri)
 		(princ "Eval: ")
-		(setq value (esl--read-and-echo))
-		(setq value (ERRORSET '(eval value) t t))
+		(setq value (ERRORSET '(eval (esl--read-and-echo)) t t))
 		(unless (ATOM value)
 		  (terpri)
 		  (princ "====> ") (princ (car value)) (terpri))))))
@@ -2516,7 +2516,7 @@ PRIN2-like version of EXPLODE without escapes or double quotes."
 
 (defun INT2ID (i)
   "(int2id I:integer): id expr
-Converts an integer to an id; this refers to the I’th id in the id space. Since
+Converts an integer to an id; this refers to the I'th id in the id space. Since
 0 ... 255 correspond to ASCII characters, int2id with an argument in this
 range converts an ASCII code to the corresponding single character id. The
 id NIL is always found by (int2id 128)."
@@ -2555,8 +2555,8 @@ strings from each list are used in a left to right order, for a
 given string from loaddirectories* each extension from
 loadextensions* is used."
   `(mapc
-	#'(lambda (x) (load (concat "fasl/" (STRING-DOWNCASE x) ".elc")
-						t (not esl-load-message) t))
+	(lambda (x) (load (concat "fasl/" (STRING-DOWNCASE x) ".elc")
+					  t (not esl-load-message) t))
 	',files))
 
 (defun TIME ()
@@ -2668,44 +2668,44 @@ Printf to string."
 
 ;; THERE IS SOME CODE DUPLICATION HERE THAT SHOULD PERHAPS BE REMOVED!
 
-(defun MKFASL (name)
-  "Produce an ESL FASL (.elc) file for the module NAME.
-NAME should be an identifier or string."
-  (if (fboundp 'BEGIN1)
-	  (let* (*INT *ECHO faslout-filehandle faslout-stream ichan oldichan
-			 name.el esl--saved-plist-alist
-			 (*DEFN t)
-			 ;; Don't need prettyprinted Lisp output; print
-			 ;; output should suffice:
-			 (defn-print #'(lambda (x) (print x faslout-stream)))
-			 ;; Functions are often used before they are defined and several
-			 ;; modules refer to undefined free variables, so...
-			 (byte-compile-warnings '(not free-vars unresolved)))
-		(setq name (STRING-DOWNCASE name))
-		(princ (format "*** Compiling %s ..." name))
-		;; Output the Emacs Lisp version of the file:
-		(setq faslout-filehandle
-			  (OPEN (setq name.el (concat name ".el")) 'OUTPUT))
-		(setq faslout-stream (car faslout-filehandle))
-		(setq ichan (OPEN (concat name ".red") 'INPUT))
-		(setq oldichan (RDS ichan))
-		(advice-add 'PRETTYPRINT :override defn-print)
-		(unwind-protect
-			(BEGIN1)
-		  (advice-remove 'PRETTYPRINT defn-print)
-		  (CLOSE ichan) (RDS oldichan)
-		  (CLOSE faslout-filehandle)
-		  (esl-reinstate-plists))
-		;; Compile and then delete the Emacs Lisp version of the file:
-		(if (byte-compile-file name.el)
-			(progn
-			  (delete-file name.el)
-			  (princ " succeeded\n")
-			  nil)
-		  (error "Error during mkfasl of %s" name)))))
+;; (defun MKFASL (name)
+;;   "Produce an ESL FASL (.elc) file for the module NAME.
+;; NAME should be an identifier or string."
+;;   (if (fboundp 'BEGIN1)
+;; 	  (let* (*INT *ECHO faslout-filehandle faslout-stream ichan oldichan
+;; 			 name.el esl--saved-plist-alist
+;; 			 (*DEFN t)
+;; 			 ;; Don't need prettyprinted Lisp output; print
+;; 			 ;; output should suffice:
+;; 			 (defn-print (lambda (x) (print x faslout-stream)))
+;; 			 ;; Functions are often used before they are defined and several
+;; 			 ;; modules refer to undefined free variables, so...
+;; 			 (byte-compile-warnings '(not free-vars unresolved)))
+;; 		(setq name (STRING-DOWNCASE name))
+;; 		(princ (format "*** Compiling %s ..." name))
+;; 		;; Output the Emacs Lisp version of the file:
+;; 		(setq faslout-filehandle
+;; 			  (OPEN (setq name.el (concat name ".el")) 'OUTPUT))
+;; 		(setq faslout-stream (car faslout-filehandle))
+;; 		(setq ichan (OPEN (concat name ".red") 'INPUT))
+;; 		(setq oldichan (RDS ichan))
+;; 		(advice-add 'PRETTYPRINT :override defn-print)
+;; 		(unwind-protect
+;; 			(BEGIN1)
+;; 		  (advice-remove 'PRETTYPRINT defn-print)
+;; 		  (CLOSE ichan) (RDS oldichan)
+;; 		  (CLOSE faslout-filehandle)
+;; 		  (esl-reinstate-plists))
+;; 		;; Compile and then delete the Emacs Lisp version of the file:
+;; 		(if (byte-compile-file name.el)
+;; 			(progn
+;; 			  (delete-file name.el)
+;; 			  (princ " succeeded\n")
+;; 			  nil)
+;; 		  (error "Error during mkfasl of %s" name)))))
 
-(FLAG '(MKFASL) 'OPFN)					; make it a symbolic operator
-(FLAG '(MKFASL) 'NOVAL)					; just return Lisp value
+;; (FLAG '(MKFASL) 'OPFN)					; make it a symbolic operator
+;; (FLAG '(MKFASL) 'NOVAL)					; just return Lisp value
 
 ;; (defun FASLOUT (name)
 ;;   "Compile subsequent input into ESL FASL file \"NAME.elc\".
@@ -2717,7 +2717,7 @@ NAME should be an identifier or string."
 ;; 			 (*DEFN t)
 ;; 			 ;; Don't need prettyprinted Lisp output; print
 ;; 			 ;; output should suffice:
-;; 			 (defn-print #'(lambda (x) (print x faslout-stream)))
+;; 			 (defn-print (lambda (x) (print x faslout-stream)))
 ;; 			 ;; Functions are often used before they are defined, so...
 ;; 			 (byte-compile-warnings '(unresolved)))
 ;; 		(setq name (STRING-DOWNCASE name))
@@ -2775,7 +2775,7 @@ deleted then `print' would suffice!"
 	  (advice-add 'EXPLODE :override #'esl--faslout-explode-override)
 	  (SUPERPRINM x 0)
 	  (advice-remove 'EXPLODE #'esl--faslout-explode-override)
-	  (terpri) (terpri) nil)))
+	  (terpri) nil)))
 
 (defun esl--faslout-explode-override (u)
   "As (EXPLODE U) but using Emacs Lisp syntax.

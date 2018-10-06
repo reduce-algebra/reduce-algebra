@@ -1,4 +1,4 @@
-;;; boot.el --- ESL (Emacs Standard LISP) version of REDUCE 3.8 "boot.sl"
+;;; boot.el --- ESL version of REDUCE 3.8 "boot.sl" -*- lexical-binding: t -*-
 
 ;; Edited by FJW to use upper case (except for lambda, nil, quote and
 ;; t) and Emacs Lisp syntax, i.e. with the escape ! replaced by \
@@ -67,7 +67,7 @@ A     (COND
 
 (DE XREAD (U) (PROGN (SCAN) (XREAD1 U)))
 
-(DE XREAD1 (U)
+(DE XREAD1 (_U)
    (PROG (V W X Y Z Z2)
 A     (SETQ Z CURSYM\*)
 A1    (COND
@@ -120,7 +120,7 @@ PR4   (COND ((NULL (EQUAL Y 0)) (GO PR1)) (t (RETURN (CAR V)))) ))
 
 (DE MKSETQ (U V) (LIST 'SETQ U V))
 
-(DE MKVAR (U V) U)
+(DE MKVAR (U _V) U)
 
 (DE RREAD nil
    (PROG (X)

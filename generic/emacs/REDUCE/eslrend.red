@@ -1,4 +1,4 @@
-module eslrend; % ESL (Emacs Standard LISP) REDUCE "back-end". -*- coding: utf-8; -*-
+module eslrend; % ESL (Emacs Standard LISP) REDUCE "back-end".
 
 % Authors: Martin L. Griss and Anthony C. Hearn.
 % Revised for ESL REDUCE by Francis J. Wright.
@@ -30,11 +30,9 @@ global '(!*extraecho
          statcounter
 		 version!*
 		 symchar!*
-         !¦noninteractive);			% FJW: t if Emacs is in batch mode
+         !noninteractive);			% FJW: t if Emacs is in batch mode
 
 switch break, lower;
-
-% One inessential reference to REVERSIP in this module (left unchanged).
 
 Comment The following functions, which are referenced in the basic
 REDUCE source (RLISP, ALG1, ALG2, MATR and PHYS) should be defined to
@@ -207,7 +205,7 @@ symbolic procedure initreduce;
   << close rds nil;		% FJW: close build file and read from terminal
 	 statcounter := 0;
      spare!* := 0;
-     !*int := not !¦noninteractive;		% FJW: nil in batch mode
+     !*int := not !noninteractive;		% FJW: nil in batch mode
      eval '(begin);
   >>;
 
@@ -228,8 +226,8 @@ esc!* := '!;
 
 % Make ON DEFN load the prettyprinter if necessary and
 % OFF DEFN reinstate property lists saved during ON DEFN:
-put('defn, 'simpfg, '((t (!¦require '!¦eslpretty))
-                      (nil (!¦esl!-reinstate!-plists))));
+put('defn, 'simpfg, '((t (!require '!eslpretty))
+                      (nil (!esl!-reinstate!-plists))));
 
 
 % Replace the REDUCE versions of some key functions with better
@@ -241,7 +239,7 @@ remflag('(boundp gcdn smallcompress), 'lose);
 % Avoid the definition of BOUNDP in "alg/simp.red".  It detects an
 % unbound variable by intentionally throwing an error, which makes
 % debugging awkward.  Use the Elisp built-in function instead:
-symbolic procedure boundp u; !¦boundp u;
+symbolic procedure boundp u; !boundp u;
 
 % Provide a numerical greatest common divisor that should work better
 % with ESL big integers than the version in "alg/numsup.red" by using
@@ -253,8 +251,8 @@ symbolic procedure gcdn(u,v); !c!a!l!c!F!u!n!c!-!g!c!d(u,v);
 symbolic procedure smallcompress (li);
    % Compress list li to a string.  Used in arith/smlbflot.red only.
    begin scalar s;
-	  s := !¦mapconcat((lambda x; !¦prin1!-to!-string(x,t)), li, "");
-	  return if !*lower then !¦downcase s else s
+	  s := !mapconcat((lambda x; !prin1!-to!-string(x,t)), li, "");
+	  return if !*lower then !downcase s else s
    end;
 
 flag('(boundp gcdn smallcompress), 'lose);
