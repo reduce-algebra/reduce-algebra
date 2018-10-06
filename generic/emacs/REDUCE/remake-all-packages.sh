@@ -12,12 +12,6 @@ if [ ! -d log ]; then mkdir log; fi
 
 date > log/remake.log
 
-# Build core system
-
-# $reduce/util/remake2
-
-# Build packages in "packages" directory:
-
 # tmprint is very Lisp-specific, doesn't build and would not be useful anyway at present in Emacs Lisp, so commented out:
 packages='support rlisp alg poly polydiv arith mathpr ezgcd factor hephys int matrix rlisp88 rprint fmprint pretty solve desir ineq modsr rsolve algint arnum assist dummy cantens atensor avector invbase misc boolean cedit rcref ftr reset cali camal changevr compact dfpart lie' # tmprint'
 
@@ -33,4 +27,8 @@ for x in $packages; do echo $x >> log/remake.log; ./remake-one-package.sh $x; do
 
 date >> log/remake.log
 
-echo 'Errors:'; cd log; grep '\*\*\*\*\*\|error' *.blg
+echo 'Errors:'
+cd log
+# support.elc is known to be empty, so exclude the consequential error message:
+grep --exclude=support.blg '\*\*\*\*\*\|error' *.blg
+cd ..

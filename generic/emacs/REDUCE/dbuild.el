@@ -1,22 +1,20 @@
-;;; dbuild.el --- build ESL REDUCE "in core" without use of fasl files.
+;;; dbuild.el --- build Emacs REDUCE dynamically without use of fasl files.
 ;;; Contains a mix of Emacs Standard LISP and REDUCE source code.
 
 ;;; Author: Anthony C. Hearn.
 ;;; Revised for ESL REDUCE by Francis J. Wright.
 
-(or (file-exists-p "log") (make-directory "log"))
-
 (WRS (OPEN "log/dbuild.log" 'OUTPUT))
 
 ;; Assume esl.el and boot.el are already compiled, and ensure they are
-;; loaded:
+;; loaded (boot requires esl):
 (require 'boot)
 
-(setq *ARGNOCHK t)
+(setq *ARGNOCHK t)			; Check number of args in functions calls.
 
 (setq *INT nil)					  ; Prevents input buffer being saved.
 
-(setq *MSG nil)
+(setq *MSG nil)							; Suppress warning messages.
 
 (setq *COMP t)			  ; It's much faster if we compile everything!
 
@@ -39,12 +37,6 @@ RDS(XXX := OPEN("eslrend.red",'INPUT));
 (LOAD-PACKAGE-SOURCES 'POLY 'POLY)
 
 (LOAD-PACKAGE-SOURCES 'ALG 'ALG)
-
-;; (LOAD-PACKAGE-SOURCES 'ARITH 'ARITH) ; Needed by roots, specfn*, (psl).
-
-;; (LOAD-PACKAGE-SOURCES 'ENTRY 'SUPPORT)
-
-;; (LOAD-PACKAGE-SOURCES 'REMAKE 'SUPPORT)
 
 (setq *COMP nil)
 

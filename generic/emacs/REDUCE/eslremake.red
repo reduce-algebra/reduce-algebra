@@ -1,4 +1,4 @@
-module eslremake;  % Update the fast loading version of a given file. -*- coding: utf-8; -*-
+module eslremake;  % Update the fast loading version of a given file.
 
 % Authors: Martin L. Griss and Anthony C. Hearn.
 % Revised for ESL REDUCE by Francis J. Wright.
@@ -13,7 +13,7 @@ global '(!*argnochk nolist!*);
 symbolic procedure olderfaslp(u,v);
    % Return t if file u does not exist or is older than file v.
    % (Return nil if file v does not exist, but this should not happen!)
-   !¦file!-newer!-than!-file!-p(v,u);
+   !file!-newer!-than!-file!-p(v,u);
 
 % Support for packages directory.
 
