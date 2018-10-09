@@ -26,6 +26,7 @@ symbolic <<linelength 80; share pkg; pkg := '$1;
 	   if get(pkg,'folder) then pkg := get(pkg,'folder);
 	   pkg := string!-downcase pkg;
 	   pkg := concat("packages/", pkg, "/", "$1", ".tst");
+	   !print(pkg, t); % ESL: print to the echo area
 	   !*_xxx_!* := time(); !*_yyy_!* := gctime(); nil>>$
 
 in pkg;

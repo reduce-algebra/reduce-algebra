@@ -1,11 +1,11 @@
 module eslrend; % ESL (Emacs Standard LISP) REDUCE "back-end".
 
-% Authors: Martin L. Griss and Anthony C. Hearn.
+% Authors: Martin L. Griss, Anthony C. Hearn and Arthur C. Norman.
 % Revised for ESL REDUCE by Francis J. Wright.
 
 create!-package('(eslrend),nil);
 
-fluid '(!*break
+fluid '(lispsystem!*
    	    !*echo
         !*int
         !*mode
@@ -31,6 +31,8 @@ global '(!*extraecho
 		 version!*
 		 symchar!*
          !noninteractive);			% FJW: t if Emacs is in batch mode
+
+lispsystem!* := '(esl);					% Not yet used
 
 switch break, lower;
 
@@ -171,29 +173,6 @@ a:      if errorp errorset('(begin1),nil,nil) then go to a;
 flag('(begin),'go);
 
 
-% These two functions are not documented anywhere but are used in
-% various places:
-
-symbolic procedure igetv(u,v); getv(u,v);
-symbolic procedure iputv(u,v,w); putv(u,v,w);
-
-% From "cslred.red":
-% The following functions are NOT in Standard Lisp and should NOT be
-% used anywhere in the REDUCE sources, but the amount of trouble I have
-% had with places where they do creep in has encouraged me to define
-% them here anyway and put up with the (small) waste of space.
-
-symbolic procedure first x; car x;		% used in "factor/ezgcdf.red"
-symbolic procedure second x; cadr x;	% used in cali
-symbolic procedure third x; caddr x;	% used in cali
-% symbolic procedure fourth x; cadddr x;
-% symbolic procedure rest x; cdr x;
-
-symbolic procedure lastcar l;
-   % lastpair is defined in forstat.red
-   % car nil -> nil in Emacs Lisp
-   if atom l then l else car lastpair l;
-
 Comment Initial setups for REDUCE;
 
 spare!* := 0;		   % We need this for bootstrapping. (FJW: Maybe!)
@@ -213,9 +192,52 @@ flag('(load reload),'noform);
 
 deflist('((load rlis) (reload rlis)),'stat);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Machine independent traceset code from REDUCE 3.8 "support/clrend.red".
+% Copyright (c) 1993 RAND.  All Rights Reserved.
+% Modified slightly by FJW for Emacs REDUCE.
+
+% TR and UNTR are defined in "esl.el".
+
+symbolic procedure traceset1 u;
+   if atom u then u
+    else if car u memq '(!s!e!t!q !S!E!T!Q)
+     then list('progn,
+               list('prin2,mkquote cadr u),
+               '(prin2 " := "),
+               u,
+               list('prin2t,cadr u))
+    else traceset1 car u . traceset1 cdr u;
+
+symbolic procedure traceset u;
+   if get(u,'original!-defn) then lprim list(u,"already traceset")
+    else (if not x or not eqcar(cdr x,'lambda)
+            then lprim list(u,"has wrong form for traceset")
+           else <<put(u,'original!-defn,x);
+                  remd u;   % To prevent spurious messages.
+                  putd(u,car x,traceset1 cdr x)>>)
+          where x=getd u;
+
+symbolic procedure untraceset u;
+   (if x
+      then <<remprop(u,'original!-defn);
+             remd u;   % To prevent spurious messages.
+             putd(u,car x,cdr x)>>
+     else lprim list(u,"not traceset"))
+    where x=get(u,'original!-defn);
+
+symbolic macro procedure trst u;
+   mkquote for each x in cdr u do traceset x;
+
+symbolic macro procedure untrst u;
+   mkquote for each x in cdr u do untraceset x;
+
 flag('(tr trst untr untrst),'noform);
 
 deflist('((tr rlis) (trst rlis) (untr rlis) (untrst rlis)),'stat);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Comment The global variable ESC* is used by the interactive string
 editor (defined in CEDIT) as a terminator for input strings.  The
@@ -256,6 +278,36 @@ symbolic procedure smallcompress (li);
    end;
 
 flag('(boundp gcdn smallcompress), 'lose);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Fast arithmetic support.
+% From REDUCE 3.8 "support/cslrend.red".
+
+Comment The current REDUCE model allows for the availability of fast
+arithmetical operations on small integers (called "inums").  All modern
+LISPs provide such support.  However, the program will still run without
+these constructs.  The relevant functions that should be defined for
+this purpose are as follows;
+
+% The following small-integer functions are defined in "esl.el":
+
+flag('(iplus itimes iplus2 itimes2 iadd1 isub1 iminus iminusp
+       idifference iquotient iremainder ilessp igreaterp ileq igeq
+       izerop ionep), 'lose);
+
+% The following floating-point functions are defined in "esl.el":
+
+% flag('(acos asin atan atan2 cos exp ln log logb log10 sin sqrt tan
+%        ceiling floor round), 'lose);
+
+% The above causes errors in the arith test file when trig results or
+% arguments are complex so all commented out for now.
+
+% Other REDUCE functions already provided by Emacs Lisp and defined in
+% "esl.el":
+
+flag('(reversip lastpair nth pnth), 'lose);
 
 endmodule;
 

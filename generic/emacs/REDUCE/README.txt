@@ -168,22 +168,46 @@ test file allows it to complete fully correctly.  However, the best
 solution might be to re-implement big integers taking care to avoid
 recursion, which is in hand!
 
-To do
------
-
-Batch-mode testing; run the full test suite.
-Better support for big integers.
-Better user interface.
-
 Known problems
 --------------
 
 tmprint build: too Lisp-specific and irrelevant at present
 
-atensor test: variable binding depth
+atensor, ncpoly & xcolor tests: variable binding depth
 
 crack suite test: various obscure problems
 
 The sort order in the cali and fide tests differs from the reference
 rlg files, but not from the results of running the tests in PSL
-REDUCE, so I think thses difference can be ignored.
+REDUCE, so I think these differences can be ignored as quirks in
+REDUCE 3.8.
+
+rlfi clears the raise switch, which mangles Emacs REDUCE, and in batch
+mode the test file reads EOF ad infinitum!
+
+cgb, eds, geoprover, mathml, mathmlom, qsum, redlog, specfn, susy2
+tests all display errors.
+
+To do
+-----
+
+Optimization.
+Batch-mode testing; run the full test suite.
+Better support for big integers.
+Better user interface.
+Switch to the current version of REDUCE.
+
+Use lexical binding for REDUCE where possible.  This APPEARS to work
+for the rlisp package without any modification to the REDUCE source
+code, but it needs to be automated and tested more generally.  Free
+(undeclared) variables APPEAR to be bound appropriately.  Need to save
+the compile logs when generating fasl files.
+
+The Lisp READ function is used in a few places in REDUCE and so needs
+to be implemented better than at present.
+
+Investigate rounding of floats, which seems to differ from the
+exemplary test logs.  This may just be because the REDUCE 3.8 logs are
+14 years old.  If current Lisps all use essentially the same C
+libraries then the rounding should be the same in all REDUCE
+implementations (maybe).

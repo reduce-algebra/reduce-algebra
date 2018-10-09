@@ -52,7 +52,7 @@
   (interactive)
   (switch-to-buffer
    (setq esl--default-output-buffer
-		 (get-buffer-create esl--default-output-buffer-name)))
+		 (get-buffer-create "*ESL REDUCE*")))
   ;; (require 'reduce-mode "../reduce-mode.el") ; temporary filename
   ;; (reduce-mode)
   (goto-char (point-max))  ; in case buffer already exists

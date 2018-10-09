@@ -1,4 +1,4 @@
-;;; esl.el --- ESL (Emacs Standard LISP) -*- lexical-binding: t -*-
+;;; esl.el --- ESL (Emacs Standard LISP) -*- lexical-binding:t -*-
 
 ;; Copyright (C) 2017-2018 Francis J. Wright
 
@@ -491,6 +491,62 @@ The cdr of the pair U is replaced by V and the modified pair U is
 returned.  A type mismatch error occurs if U is not a pair."
   (setcdr u v)
   u)
+
+;; PSL functions
+
+(defalias 'FIRST 'car
+  "A PSL alternative function name used occasionally in REDUCE.")
+(defalias 'SECOND 'CADR
+  "A PSL alternative function name used occasionally in REDUCE.")
+(defalias 'THIRD 'CADDR
+  "A PSL alternative function name used occasionally in REDUCE.")
+(defalias 'FOURTH 'CADDDR
+  "A PSL alternative function name used occasionally in REDUCE.")
+(defalias 'REST 'cdr
+  "A PSL alternative function name used occasionally in REDUCE.")
+
+(defalias 'LASTPAIR 'last
+  "(lastpair L:pair): any expr
+Returns the last pair of a L. It is often useful to think of this
+as a pointer to the last element for use with destructive
+functions such as rplaca. If L is not a pair then a type mismatch
+error occurs.
+(de lastpair (l)
+	(if (or (atom l) (atom (cdr l)))
+		l
+	  (lastpair (cdr l))))")
+
+(defun LASTCAR (l)
+  "(lastcar L:pair): any expr
+Returns the last element of the pair L. A type mismatch error
+results if L is not a pair."
+  (if (atom l) l (car (last l))))
+
+(defun NTH (l n)
+  "(nth L:pair N:integer): any expr
+Returns the Nth element of the list L. If L is atomic or contains
+fewer than N elements, an out of range error occurs.
+(de nth (l n)
+	(cond ((null l) (range-error))
+		  ((onep n) (first l))
+		  (t (nth (rest l) (sub1 n)))))
+Note that this definition is not compatible with Common LISP. The
+Common LISP definition reverses the arguments and defines the car
+of a list to be the \"zeroth\" element."
+  (nth (1- n) l))
+
+(defun PNTH (l n)
+  "(pnth L:list N:integer): any expr
+Returns a list starting with the nth element of the list L. Note
+that the result is a pointer to the nth element of L, a
+destructive function like rplaca can be used to modify the
+structure of L. If L is atomic or contains fewer than N elements,
+an out of range error occurs.
+(de pnth (l n)
+	(cond ((onep n) l)
+		  ((not (pairp l)) (range-error))
+		  (t (pnth (rest l) (sub1 n)))))"
+  (nthcdr (1- n) l))
 
 
 ;;; Identifiers
@@ -1158,13 +1214,15 @@ dependent format."
 	  ((user-error debug)				; Standard LISP error
 	   (if msgp
 		   (let ((msg (cddr err)))
-			 (message "***** %s"
+			 ;; Suppress empty messages from calls to error1:
+			 (if msg
+			  (message "***** %s"
 					  (if (listp msg)
 						  ;; (mapconcat 'identity msg " ")
 						  ;; msg may contain objects other than
 						  ;; strings, but this formatting may not be optimal:
 						  (mapconcat (lambda (x) (prin1-to-string x t)) msg " ")
-						msg))))
+						msg)))))
 	   (cadr err))
 	  ((error debug)					; Emacs Lisp error
 	   (let ((msg (error-message-string err)))
@@ -1186,6 +1244,8 @@ not lie within 0...UPBV(V) inclusive:
 ***** INDEX subscript is out of range"
   (aref v index))
 
+(defalias 'IGETV 'GETV)
+
 (defun MKVECT (uplim)
   "MKVECT(UPLIM:integer):vector eval, spread
 Defines and allocates space for a vector with UPLIM+1 elements
@@ -1202,6 +1262,8 @@ returned. The type mismatch error may occur. If INDEX does not
 lie in 0...UPBV(V) an error occurs:
 ***** INDEX subscript is out of range"
   (aset v index value))
+
+(defalias 'IPUTV 'PUTV)
 
 (defun UPBV (u)
   "UPBV(U:any):NIL,integer eval, spread
@@ -1513,6 +1575,58 @@ MACRO PROCEDURE TIMES(U);
 Returns the product of U and V."
   (esl--arith-op2 #'* #'math-mul u v))
 
+;; Fast built-in small integer (inum) arithmetic:
+
+(defalias 'IPLUS '+)
+(defalias 'ITIMES '*)
+(defalias 'IPLUS2 '+)
+(defalias 'ITIMES2 '*)
+(defalias 'IADD1 '1+)
+(defalias 'ISUB1 '1-)
+(defalias 'IMINUS '-)
+(defalias 'IMINUSP 'cl-minusp)
+(defalias 'IDIFFERENCE '-)
+(defalias 'IQUOTIENT '/)
+(defalias 'IREMAINDER '%)
+(defalias 'ILESSP '<)
+(defalias 'IGREATERP '>)
+(defalias 'ILEQ '<=)
+(defalias 'IGEQ '>=)
+
+(defmacro IZEROP (number)
+  "Return t if NUMBER is zero."
+  `(= ,number 0))
+
+(defmacro IONEP (number)
+  "Return t if NUMBER is one."
+  `(= ,number 1))
+
+;; Fast built-in floating point functions:
+
+;; (defalias 'ACOS 'acos)
+;; (defalias 'ASIN 'asin)
+;; (defalias 'ATAN 'atan)
+;; (defalias 'ATAN2 'atan)
+;; (defalias 'COS 'cos)
+;; (defalias 'EXP 'exp)
+;; (defalias 'LN 'log)
+;; (defalias 'LOG 'log)
+;; (defalias 'LOGB 'log)
+;; (defsubst LOG10 (x) (log x 10))
+;; (defalias 'SIN 'sin)
+;; (defalias 'SQRT 'sqrt)
+;; (defalias 'TAN 'tan)
+;; ;; The following will fail for floats with very large magnitudes since
+;; ;; they return fixnums rather than big integers.  If that is a problem
+;; ;; then remove these aliases and in particular remove the lose flags
+;; ;; in "eslrend.red".
+;; (defalias 'CEILING 'ceiling)
+;; (defalias 'FLOOR 'floor)
+;; (defalias 'ROUND 'round)
+
+;; The above cause errors in the arith test file when trig results or
+;; arguments are complex so all commented out for now.
+
 
 ;;; MAP Composite Functions
 ;;; =======================
@@ -1716,6 +1830,8 @@ BEGIN SCALAR W;
                  U := CDR U >>;
    RETURN W
 END;")
+
+(defalias 'REVERSIP 'nreverse)			; PSL function
 
 (defun SASSOC (u v fn)
   "SASSOC(U:any, V:alist, FN:function):any eval, spread
@@ -2064,7 +2180,8 @@ U does not begin with `!:'."
 	   (prog1
 		   (if (or (and not-first (>= c ?0) (<= c ?9))
 				   (and (>= c ?A) (<= c ?Z))
-				   (and (>= c ?a) (<= c ?z)))
+				   (and (>= c ?a) (<= c ?z))
+				   (eq c ?_))
 			   (string c)
 			 (string ?! c))
 		 (setq not-first t)))
@@ -2554,10 +2671,12 @@ loaddirectories* and the extensions in loadextensions*. The
 strings from each list are used in a left to right order, for a
 given string from loaddirectories* each extension from
 loadextensions* is used."
-  `(mapc
-	(lambda (x) (load (concat "fasl/" (STRING-DOWNCASE x) ".elc")
-					  t (not esl-load-message) t))
-	',files))
+  `(progn
+	 (mapc
+	  (lambda (x) (load (concat "fasl/" (STRING-DOWNCASE x) ".elc")
+						t (not esl-load-message) t))
+	  ',files)
+	 nil))
 
 (defun TIME ()
   "(time): integer expr
