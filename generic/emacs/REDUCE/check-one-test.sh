@@ -7,7 +7,7 @@
 
 # Assume this script is run in the top-level Emacs REDUCE directory.
 
-exelog=`find -L packages -name $1.rlg`
+exelog=$(find -L packages -name $1.rlg)
 
 echo $'\nChecking' $1 $'...\n'
 

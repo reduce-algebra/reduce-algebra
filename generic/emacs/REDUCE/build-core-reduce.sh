@@ -25,3 +25,5 @@ emacs \
 symbolic infile "eslremakecore.red";
 bye;
 EOF
+
+echo $'\a'

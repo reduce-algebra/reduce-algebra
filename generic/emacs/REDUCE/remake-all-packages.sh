@@ -32,3 +32,5 @@ cd log
 # support.elc is known to be empty, so exclude the consequential error message:
 grep --exclude=support.blg '\*\*\*\*\*\|error' *.blg
 cd ..
+
+echo $'\a'

@@ -9,14 +9,7 @@ fluid '(lispsystem!*
    	    !*echo
         !*int
         !*mode
-        promptstring!*
-        !*redefmsg);
-
-% FJW: !*redefmsg is fluid in PSL.
-% redefmsg is a switch defined in PSL and used in qsum.red.
-% If *redefmsg is not nil, a message
-% is printed whenever a function is redefined.
-% However, Emacs Lisp never warns about function redefinition.
+        promptstring!*);
 
 global '(!*extraecho
          !*loadversion
@@ -34,17 +27,17 @@ global '(!*extraecho
 
 lispsystem!* := '(esl);					% Not yet used
 
-switch break, lower;
+switch break, lower, redefmsg;
 
 Comment The following functions, which are referenced in the basic
 REDUCE source (RLISP, ALG1, ALG2, MATR and PHYS) should be defined to
 complete the definition of REDUCE:
 
 	BYE
-	EVLOAD -- defined in "eslprolo.red"
-	ERROR1
+	EVLOAD -- defined in "esl.el"
+	ERROR1 -- defined in "esl.el"
 	MKFIL
-	ORDERP
+	ORDERP -- defined in "esl.el"
 	QUIT
 	SEPRP -- defined in "eslprolo.red"
 	SETPCHAR.
@@ -63,12 +56,6 @@ symbolic procedure bye;
    eval('progn . bye!-actions!*);
 
 deflist('((bye endstat)),'stat);
-
-symbolic procedure error1;
-   %This is the simplest error return, without a message printed. It can
-   %be defined as ERROR(99,NIL) if necessary;
-   %FJW throw('!$error!$,99);
-   ERROR(99, nil);
 
 symbolic procedure mkfil u;
    % Converts file descriptor U into valid system filename.

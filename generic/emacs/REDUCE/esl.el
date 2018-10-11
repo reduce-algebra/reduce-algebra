@@ -173,6 +173,13 @@ is placed in an input file, the contents of the file are echoed on the standard
 output device. Dskin does not change the value of *echo, so one may say
 (on echo) before calling dskin, and the input will be echoed.")
 
+(defvar *REDEFMSG t
+  "*redefmsg = [Initially: t] switch
+If *redefmsg is not nil, the message
+*** Function `FOO' has been redefined
+is printed whenever a function is redefined by PUTD.")
+;; Should this also apply to DE & DM?
+
 ;;; FUNCTIONS
 ;;; =========
 
@@ -496,12 +503,15 @@ returned.  A type mismatch error occurs if U is not a pair."
 
 (defalias 'FIRST 'car
   "A PSL alternative function name used occasionally in REDUCE.")
-(defalias 'SECOND 'CADR
-  "A PSL alternative function name used occasionally in REDUCE.")
-(defalias 'THIRD 'CADDR
-  "A PSL alternative function name used occasionally in REDUCE.")
-(defalias 'FOURTH 'CADDDR
-  "A PSL alternative function name used occasionally in REDUCE.")
+(defsubst SECOND (x)
+  "A PSL alternative function name used occasionally in REDUCE."
+  (CADR x))
+(defsubst THIRD (x)
+  "A PSL alternative function name used occasionally in REDUCE."
+  (CADDR x))
+(defsubst FOURTH (x)
+  "A PSL alternative function name used occasionally in REDUCE."
+  (CADDDR x))
 (defalias 'REST 'cdr
   "A PSL alternative function name used occasionally in REDUCE.")
 
@@ -516,13 +526,13 @@ error occurs.
 		l
 	  (lastpair (cdr l))))")
 
-(defun LASTCAR (l)
+(defsubst LASTCAR (l)
   "(lastcar L:pair): any expr
 Returns the last element of the pair L. A type mismatch error
 results if L is not a pair."
   (if (atom l) l (car (last l))))
 
-(defun NTH (l n)
+(defsubst NTH (l n)
   "(nth L:pair N:integer): any expr
 Returns the Nth element of the list L. If L is atomic or contains
 fewer than N elements, an out of range error occurs.
@@ -535,7 +545,7 @@ Common LISP definition reverses the arguments and defines the car
 of a list to be the \"zeroth\" element."
   (nth (1- n) l))
 
-(defun PNTH (l n)
+(defsubst PNTH (l n)
   "(pnth L:list N:integer): any expr
 Returns a list starting with the nth element of the list L. Note
 that the result is a pointer to the nth element of L, a
@@ -914,7 +924,7 @@ the !*COMP global variable is non-NIL."
   (if (or (get fname 'GLOBAL)			; only if explicitly declared
 		  (FLUIDP fname))
 	  (error "%s is a non-local variable" fname))
-  (if (symbol-function fname)
+  (if (and *REDEFMSG (symbol-function fname))
 	  (message "*** %s redefined" fname))
   ;; body = (lambda (u) body-form) or function object
   (fset fname (if (eq type 'MACRO)
@@ -1186,6 +1196,14 @@ variables are not affected by the process."
   (setq EMSG* message)
   (signal 'user-error (list number message)))
 
+(define-error 'user-error-no-message "" 'user-error)
+
+(defun ERROR1 ()
+  "This is the simplest error return, without a message printed.
+It can be defined as ERROR(99,NIL) if necessary.
+In PSL it is throw('!$error!$,99)."
+  (signal 'user-error-no-message nil))
+
 (defun ERRORSET (u msgp tr)
   "ERRORSET(U:any, MSGP:boolean, TR:boolean):any eval, spread
 If an error occurs during the evaluation of U, the value of
@@ -1209,20 +1227,19 @@ device. The traceback will display information such as unbindings
 of FLUID variables, argument lists and so on in an implementation
 dependent format."
   (let ((debug-on-error (or debug-on-error tr)))
-	(condition-case err					; error description variable
-		(list (eval u))					; protected form
-	  ((user-error debug)				; Standard LISP error
+	(condition-case err			  ; error description variable
+		(list (eval u))			  ; protected form
+	  (user-error-no-message nil) ; error1 called -- no message or debugging
+	  ((user-error debug)		  ; Standard LISP error
 	   (if msgp
 		   (let ((msg (cddr err)))
-			 ;; Suppress empty messages from calls to error1:
-			 (if msg
-			  (message "***** %s"
+			 (message "***** %s"
 					  (if (listp msg)
 						  ;; (mapconcat 'identity msg " ")
 						  ;; msg may contain objects other than
 						  ;; strings, but this formatting may not be optimal:
 						  (mapconcat (lambda (x) (prin1-to-string x t)) msg " ")
-						msg)))))
+						msg))))
 	   (cadr err))
 	  ((error debug)					; Emacs Lisp error
 	   (let ((msg (error-message-string err)))
@@ -2670,11 +2687,23 @@ constructed by using the directory specifications in
 loaddirectories* and the extensions in loadextensions*. The
 strings from each list are used in a left to right order, for a
 given string from loaddirectories* each extension from
-loadextensions* is used."
+loadextensions* is used.
+
+In addition, the name FILE is added to the list referenced by
+options*.  If FILE is found to be in options* then the attempt to
+load FILE will be ignored.
+*** FILE already loaded
+Note that memq is used to determine if FILE is in
+options*. Therefore when you use string arguments for loading
+files, although identical names for ids refer to the same object,
+identical names for strings refer to different objects."
   `(progn
 	 (mapc
-	  (lambda (x) (load (concat "fasl/" (STRING-DOWNCASE x) ".elc")
-						t (not esl-load-message) t))
+	  (lambda (x)
+		(let ((filename (concat "fasl/" (STRING-DOWNCASE x) ".elc")))
+		  (unless (and (symbolp x)
+					   (assoc (expand-file-name filename) load-history))
+			(load filename t (not esl-load-message) t))))
 	  ',files)
 	 nil))
 
@@ -2949,6 +2978,13 @@ When all done, execute FASLEND;\n\n" name)))
 		  ;; Do not output an empty file, just kill the empty buffer:
 		  (kill-buffer buf))
 	  (esl-reinstate-plists)
+	  ;; Hack (until I think of a better solution) to remove the "%+"
+	  ;; continuation marker added by the prettyprinter to long atoms,
+	  ;; such as big integers, that prevents the content being read by
+	  ;; Emacs Lisp.  This matters for "specfn/spfdata".
+	  (with-current-buffer buf
+		(goto-char 0)
+		(while (search-forward "%+\n" nil t) (replace-match "")))
 	  ;; Close the temporary Lisp output file and then compile it.
 	  (CLOSE esl--faslout-filehandle)
 	  ;; Check that an Emacs Lisp file has been written:

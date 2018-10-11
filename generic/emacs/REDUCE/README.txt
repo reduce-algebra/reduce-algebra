@@ -185,14 +185,16 @@ REDUCE 3.8.
 rlfi clears the raise switch, which mangles Emacs REDUCE, and in batch
 mode the test file reads EOF ad infinitum!
 
-cgb, eds, geoprover, mathml, mathmlom, qsum, redlog, specfn, susy2
-tests all display errors.
+The specfn test uses too much resource at present, probably due to
+recursive functions and the recursive code in the Calc package.
+
+The cgb, eds, geoprover, mathml, mathmlom, redlog, susy2 tests all
+display errors.
 
 To do
 -----
 
 Optimization.
-Batch-mode testing; run the full test suite.
 Better support for big integers.
 Better user interface.
 Switch to the current version of REDUCE.
