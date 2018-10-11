@@ -598,7 +598,8 @@ identifier to facilitate direct access to Emacs Lisp symbols."
 	(let* ((s (mapconcat #'symbol-name u ""))
 		   (s0 (aref s 0)))
 	  (cond ((eq s0 ?\")				; STRING
-			 (substring s 1 -1))
+			 ;; In Standard Lisp, "" in a string represents ":
+			 (replace-regexp-in-string "\"\"" "\"" (substring s 1 -1)))
 			((or (eq s0 ?-)
 				 (and (>= s0 ?0) (<= s0 ?9))) ; NUMBER
 			 (if (string-match "\\." s)
