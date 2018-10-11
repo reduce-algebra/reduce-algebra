@@ -26,9 +26,7 @@ symbolic;
 if '$1 eq 'fps then
    load_package limits,factor,specfn,sfgamma
 else if '$1 eq 'mrvlimit then
-   load_package taylor
-else if '$1 eq 'plot then
-   !d!e!b!u!g!-!o!n!-!e!r!r!o!r := nil;
+   load_package taylor;
 
 load!-package 'eslremake;
 

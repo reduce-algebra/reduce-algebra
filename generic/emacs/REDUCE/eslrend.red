@@ -175,9 +175,13 @@ symbolic procedure initreduce;
      eval '(begin);
   >>;
 
-flag('(load reload),'noform);
+% FJW: See pslrend.red and formload in rlisp/module.
+% The following two statements are commented out to encourage algebraic
+% mode users to use load_package and thus pick up any patches installed.
 
-deflist('((load rlis) (reload rlis)),'stat);
+% flag('(load reload),'noform);
+
+% deflist('((load rlis) (reload rlis)),'stat);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

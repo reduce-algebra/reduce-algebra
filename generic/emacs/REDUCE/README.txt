@@ -188,8 +188,8 @@ mode the test file reads EOF ad infinitum!
 The specfn test uses too much resource at present, probably due to
 recursive functions and the recursive code in the Calc package.
 
-The cgb, eds, geoprover, mathml, mathmlom, redlog, susy2 tests all
-display errors.
+The cgb, eds, mathml, mathmlom, redlog, susy2 tests all display
+errors.
 
 To do
 -----
