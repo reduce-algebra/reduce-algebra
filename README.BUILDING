@@ -59,7 +59,10 @@ You will need:
        to need to use Macports to fetch and install a significant number
        of commands and libraries that Apple do not provide as standard.
        The csl/cslbase directory contains a file that lists the ports that
-       I have installed and that I fund sufficient. 
+       I have installed and that I fund sufficient.
+       Using Xquartz the following Macoport installs were sufficient for
+       Thomas Sturm in October 2018: autoconf, automake, libtool, Xft2,
+       xorg-libXrandr, xorg-libXcursor.
    GNU make (other versions of "make" are not liable to work), autoconf
        and automake. Well you can probably survive without having autoconf
        and automake, but if you have them you should use a reasonably up to
