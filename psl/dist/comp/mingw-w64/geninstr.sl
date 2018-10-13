@@ -331,6 +331,9 @@
 (instr MOVW (reg effa)  OP-reg-effa-2 16#66 rex 2#10001001)
 (instI MOVW (effa reg)  OP-reg-effa-2 16#66 rex 2#10001011)
 
+(instr MOVL (reg effa)  OP-reg-effa 2#10001001)
+(instI MOVL (effa reg)  OP-reg-effa 2#10001011)
+
 (instr MOVSX (reg reg) OP-reg-effa-2 2#00001111 rex 2#10111111)  % only reg-reg
 (instr MOVZX (reg reg) OP-reg-effa-2 2#00001111 rex 2#10110111)  % only reg-reg
  

@@ -308,7 +308,7 @@
 	) 'norexprefix)
 
 % Instructions that need a REX.B prefix only if using upper 8 registers
-(flag '(push pop) 'onlyupperregrexprefix)
+(flag '(push pop movl) 'onlyupperregrexprefix)
 
 (de DepositLabel (x) 
     (when *testlap (prin2 currentoffset*) (tab 10) (print x))

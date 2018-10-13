@@ -1024,6 +1024,14 @@ par2))      ((and (effap par1) (regp par2)) (op-reg-effa '(138) par2 par1)))
 par1                                                                         
 par2))        ((and (effap par1) (regp par2)) (lth-reg-effa '(138) par2 par1)))
 
+ (defopcode movl (par1 par2) ((and (regp par1) (effap par2)) (op-reg-effa '(137)
+                                                                          par1 
+par2))      ((and (effap par1) (regp par2)) (op-reg-effa '(139) par2 par1)))
+ (defoplength movl (par1 par2) ((and (regp par1) (effap par2)) (lth-reg-effa '(
+137)                                                                         
+par1                                                                         
+par2))        ((and (effap par1) (regp par2)) (lth-reg-effa '(139) par2 par1)))
+
  (defopcode movq (par1 par2) ((and (xmmregp par1) (xmmregp par2)) (
 op-xmmreg-effa                                                                    
 '                                                                                  
