@@ -448,7 +448,7 @@
            (stderror "disassemble")))))
 
 (de decode-modrm(p)
-   (prog(mod rm b w usexmm)
+   (prog(mod rm b w wabs usexmm)
      (setq b (pop bytes*)) (setq  lth* (add1 lth*))
      (setq mod (wshift b -6))
      (setq regnr* (wand 7 (wshift b -3)))
@@ -464,21 +464,21 @@
          (decode-sib p mod))
         ((and (eq mod 0)(eq rm 5))
                   % probably a sym*** reference
-              (setq  lth* (plus 4 lth*))
-              (setq w (bytes2word))
-              (cond ((and (xgreaterp w symfnc)
-                          (xgreaterp symfnchigh w))
-                     (setq *comment
+	 (setq  lth* (plus 4 lth*))
+	 (setq w (bytes2word))
+	 (setq wabs (plus addr* w lth*))
+	 (cond ((and (xgreaterp wabs symfnc)
+		     (xgreaterp symfnchigh wabs))
+		(setq *comment
+                      (bldmsg " -> %w" (safe-int2id (wshift (wdifference wabs symfnc) -3)))))
+	       ((and (xgreaterp wabs symval)
+		     (xgreaterp symvalhigh wabs))
+		(setq *comment
                       (bldmsg " -> %w" 
-                       (safe-int2id (wshift (wdifference w symfnc) -3)))))
-                    ((and (xgreaterp w symval)
-                          (xgreaterp symvalhigh w))
-                     (setq *comment
-                      (bldmsg " -> %w" 
-                       (safe-int2id (wshift (wdifference w symval) -3))))))
-              (if *gassyntax 
-                  (bldmsg "%w(%%rip)" w)
-                (bldmsg "[rip%w0x%x]" (if (wlessp w 0) "-" "+") (if (wlessp w 0) (wminus w) w))))
+                       (safe-int2id (wshift (wdifference wabs symval) -3))))))
+	 (if *gassyntax 
+	     (bldmsg "%w(%%rip)" w)
+	   (bldmsg "[rip%w0x%x]" (if (wlessp w 0) "-" "+") (if (wlessp w 0) (wminus w) w))))
         ((eq mod 0) (if *gassyntax
 			(bldmsg "(%%%w)" (reg-m rm))
 		      (bldmsg "[%w]" (reg-m rm) )))
@@ -544,9 +544,9 @@
      (if *gassyntax 
 	 (return (bldmsg "%w(%%%w%w)" offset (reg-m base)
 			 (if (equal index "") "" (bldmsg ",%%%w,%d" (reg-m index) scale))))
-       (return (bldmsg "[%%%w%w%w]" (reg-m base) 
+       (return (bldmsg "[%w%w%w]" (reg-m base) 
 		       (if (equal index "") ""
-			 (bldmsg "+%%%w*%w" (reg-m index) scale))
+			 (bldmsg "+%w*%w" (reg-m index) scale))
 		       offset))))
    )
 

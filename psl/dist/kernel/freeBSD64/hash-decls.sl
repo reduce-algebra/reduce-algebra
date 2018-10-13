@@ -69,11 +69,11 @@
 (deflist 
       '(
         (Hashtab-HalfWord ((shl 2 (reg 2))
-                (mov (indexed (reg 2) (displacement (reg 1) 0))(reg EAX))
+                (movl (indexed (reg 2) (displacement (reg 1) 0))(reg EAX))
                     (cdqe)))
         (PutHashtab-HalfWord ((shl 2 (reg 2))
                 (*move (reg 3) (reg 4))
-                (mov (reg EDX)
+                (movl (reg EDX)
                     (indexed (reg 1)(displacement (reg 2) 0)))))) 
  'OpenCode)
 
