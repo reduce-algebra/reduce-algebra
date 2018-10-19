@@ -1,14 +1,14 @@
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PB:FLOAT.C
+% File:         PXK:FLOAT.C
 % Description:  Miscellaneous floating point support routines.
 % Author:       Leigh Stoller
 % Created:      29-Oct-86 
 % Modified:     
 % Mode:         Text
 % Package:      
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -79,6 +79,18 @@ uxassign(f1,f2)
 }
 
 fexcept_t flagp;
+
+int
+uxminus(f1,f2)
+     double *f1, *f2;
+{
+  feclearexcept(FE_OVERFLOW | FE_DIVBYZERO);
+  *f1 = -*f2;
+  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
+  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  return (1);
+}
+
 
 /* Tag( uxplus2 )
  */

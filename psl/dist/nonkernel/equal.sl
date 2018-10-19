@@ -65,25 +65,25 @@
 
  (if_system IEEE
 
- (load ieee-decls)
+  (load ieee-decls)
 
- % not IEEE
+  % not IEEE
  
- (ds floatequal (x y)
-     (and
-      (weq (floathighorder (fltinf u))
-	   (floathighorder (fltinf v)))
-      (weq (floatloworder (fltinf u))
-	   (floatloworder (fltinf v))))
+  (ds floatequal (x y)
+      (and
+       (weq (floathighorder (fltinf u))
+	    (floathighorder (fltinf v)))
+       (weq (floatloworder (fltinf u))
+	    (floatloworder (fltinf v))))
   )
 
  )
- )
+)
 	   
 
 (de eqn (u v)
   % Eq or numeric equality.
-  (or (weq u v)
+  (or (and (weq u v) (not (floatp u))) 
       (case (tag u)
 	((floatnum-tag)
 	 (and (floatp v)
@@ -97,7 +97,7 @@
 
 (de equal (u v)
   % Structural equality
-  (or (weq u v)
+  (or (and (weq u v) (not (floatp u)))
       (case (tag u)
 	((evector-tag) (evectorequal u v))
 	((vector-tag)  (and (vectorp v) (vectorequal u v)))
