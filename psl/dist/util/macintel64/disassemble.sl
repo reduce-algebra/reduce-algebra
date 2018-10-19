@@ -5,7 +5,6 @@
 % Author: H. Melenk , ZIB Berlin
 %
 % Date :  4-May-1994
-% Status:         Open Source: BSD License
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -31,7 +30,7 @@
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions:
 %
@@ -374,9 +373,9 @@
     (setq x (decode-operands-special-pattern-cases bytes* lth* pat))
     (when (and x (pairp x)) (setq pat x))
     (when (eqcar pat nil) (go done))
-    (push (cons 'op1 (decode-operand1 (pop pat))) r)
+    (push (cons 'op1 (decode-operand1 (pop pat) t)) r)
     (when pat
-        (push (cons 'op2 (decode-operand1 (pop pat))) r))
+        (push (cons 'op2 (decode-operand1 (pop pat) nil)) r))
  done
     (when *gassyntax
       (setq reg* (bldmsg "%%%w" reg*) xreg* (bldmsg "%%%w" xreg*)))
@@ -386,7 +385,7 @@
 
 (deflist '((eax rax) (ebx rbx) (ecx rcx) (edx rdx) (ebp rbp) (esp rsp) (esi rsi) (edi rsi)) 'reg64)
 
-(de decode-operand1(p)
+(de decode-operand1(p firstop)
  (let(w)
   (cond ((and rex_w (setq w (get p 'reg64)))
 	 (if *gassyntax (bldmsg "%%%w" w) w))
@@ -448,7 +447,7 @@
            (stderror "disassemble")))))
 
 (de decode-modrm(p)
-   (prog(mod rm b w usexmm)
+   (prog(mod rm b w wabs usexmm)
      (setq b (pop bytes*)) (setq  lth* (add1 lth*))
      (setq mod (wshift b -6))
      (setq regnr* (wand 7 (wshift b -3)))
@@ -464,26 +463,22 @@
          (decode-sib p mod))
         ((and (eq mod 0)(eq rm 5))
                   % probably a sym*** reference
-              (setq  lth* (plus 4 lth*))
-              (setq w (bytes2word))
-              (cond ((and (xgreaterp (wplus2 (wplus2 addr* 7) w) symfnc)
-                          (xgreaterp symfnchigh (wplus2 (wplus2 addr* 7) w)))
-                     (setq *comment
+         (setq  lth* (plus 4 lth*))
+         (setq w (bytes2word))
+         (setq wabs (plus addr* w lth*))
+         (cond ((and (xgreaterp wabs symfnc)
+                     (xgreaterp symfnchigh wabs))
+                (setq *comment
                       (bldmsg " -> %w" 
-                       (safe-int2id (wshift
-			 (wdifference
-				 (wplus2 (wplus2 addr* 7) w) symfnc) -3)))))
-                    ((and (xgreaterp (wplus2 (wplus2 addr* 4) w) symval)
-                          (xgreaterp symvalhigh (wplus2 (wplus2 addr* 8) w)))
-                     (setq *comment
+                       (safe-int2id (wshift (wdifference wabs symfnc) -3)))))
+               ((and (xgreaterp wabs symval)
+                     (xgreaterp symvalhigh wabs))
+                (setq *comment
                       (bldmsg " -> %w" 
-                       (safe-int2id (wshift
-			  (wdifference
-				 (wplus2 (wplus2 addr* 8) w) symval) -3)))))
-                    (t (setq *comment (bldmsg " -> 0x%x" (wplus2 (wplus2 addr* lth*) w)))))
-              (if *gassyntax 
-                  (bldmsg "%w(%%rip)" w)
-                (bldmsg "[rip%w0x%x]" (if (wlessp w 0) "-" "+") (if (wlessp w 0) (wminus w) w))))
+                       (safe-int2id (wshift (wdifference wabs symval) -3))))))
+         (if *gassyntax 
+             (bldmsg "%w(%%rip)" w)
+           (bldmsg "[rip%w0x%x]" (if (wlessp w 0) "-" "+") (if (wlessp w 0) (wminus w) w))))
         ((eq mod 0) (if *gassyntax
 			(bldmsg "(%%%w)" (reg-m rm))
 		      (bldmsg "[%w]" (reg-m rm) )))
@@ -505,7 +500,7 @@
 (de decode-sib(p mod)
    (prog(scale index base offset seg b w)
      (setq b (pop bytes*))
-     (setq  lth* (add1 lth*))
+     (setq lth* (add1 lth*))
      (setq scale (lsh 1 (wshift b -6)))     
      (setq index (wand 7 (wshift b -3)))
      (when rex_x (setq index (wplus2 index 8)))
@@ -514,7 +509,8 @@
      (when rex_b (setq base (wplus2 base 8)))
      (setq offset "")
      (cond ((and (not rex_w) (eq size-override* 16#66)) (setq reg* (reg-m16 regnr*)))
-	   ((or byte-operand* (and (not rex_w) (eq scale 1))) (setq reg* (reg-m8 regnr*))))
+%	   ((or byte-operand* (and (not rex_w) (eq scale 1))) (setq reg* (reg-m8 regnr*))))
+	   (byte-operand* (setq reg* (reg-m8 regnr*))))
      (when (eq mod 1)
            (setq offset (pop bytes*))
 	   (setq offset
@@ -529,16 +525,16 @@
      (when (and (eq mod 0)(eq base 2#101))
            (setq  lth* (plus lth* 4))
            (setq w (bytes2word))
-           (cond ((and (xgreaterp (wplus2 (wplus2 addr* 7) w) symfnc)
-                       (xgreaterp symfnchigh (wplus2 (wplus2 addr* 7) w)))
-                  (setq *comment
-                    (bldmsg " -> %w"
-                      (safe-int2id (wshift (wdifference (wplus2 (wplus2 addr* 7) w) symfnc) -3)))))
-                 ((and (xgreaterp (wplus2 (wplus2 addr* 4) w) symval)
-                       (xgreaterp symvalhigh (wplus2 (wplus2 addr* 8) w)))
-                  (setq *comment
-                    (bldmsg " -> %w"
-                      (safe-int2id (wshift (wdifference (wplus2 (wplus2 addr* 8) w) symval) -3))))))
+           (cond ((and (xgreaterp w symfnc)
+                          (xgreaterp symfnchigh w))
+                     (setq *comment
+                      (bldmsg " -> %w"
+                       (safe-int2id (wshift (wdifference w symfnc) -3)))))
+                    ((and (xgreaterp w symval)
+                          (xgreaterp symvalhigh w))
+                     (setq *comment
+                      (bldmsg " -> %w"
+                       (safe-int2id (wshift (wdifference w symval) -3))))))
            (if *gassyntax 
 	       (return (bldmsg "*0x%x%w" w index))
 	     (return (bldmsg "[%x%w]" w index))))
@@ -547,11 +543,11 @@
              (t "")))
      (setq segment* nil)
      (if *gassyntax 
-	 (return (bldmsg "%w(%%%w%w)" offset (reg-m base)
-			 (if (equal index "") "" (bldmsg ",%%%w,%d" (reg-m index) scale))))
-       (return (bldmsg "[%%%w%w%w]" (reg-m base) 
+	 (return (bldmsg "%w(%%%w%w)" offset (reg-m64 base)
+			 (if (equal index "") "" (bldmsg ",%%%w,%d" (reg-m64 index) scale))))
+       (return (bldmsg "[%w%w%w]" (reg-m64 base) 
 		       (if (equal index "") ""
-			 (bldmsg "+%%%w*%w" (reg-m index) scale))
+			 (bldmsg "+%w*%w" (reg-m64 index) scale))
 		       offset))))
    )
 
@@ -836,6 +832,7 @@
            (wplus2 (wshift (pop bytes*) 8)
              (wplus2 (wshift (pop bytes*) 16)
                (wshift (pop bytes*) 24)))))
+    (setq w (ashift (wshift w 32) -32))
      (when (idp w) 
        (setq *comment (bldmsg "'%w" w))
        (return w))
@@ -843,8 +840,7 @@
        (setq *comment (bldmsg """%w""" w))
        (return 'string))
 %     (when (eq (wand w 16#ffffff) 0) (return 'CAR))
-%     (when (eq (wand w 16#ffffff) 4) (return 'CDR))
-     (setq w (ashift (wshift w 32) -32))
+%     (when (eq (wand w 16#ffffff) 8) (return 'CDR))
      (return (sys2int w))))
 
 (de xgreaterp(a b)(and (numberp a)(numberp b)(greaterp a b)))

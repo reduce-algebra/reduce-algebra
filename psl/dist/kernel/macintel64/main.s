@@ -346,7 +346,7 @@ l0023:
  mov _symval@GOTPCREL(%rip),%rax
  mov 2096(%rax),%rax
  shl $2,%rbx
- mov %ecx,0(%rbx,%rax,1)
+ movl %ecx,0(%rbx,%rax,1)
  addq $1,(%rsp)
  jmp l0023
 l0024:
@@ -361,7 +361,7 @@ l0024:
  mov _symval@GOTPCREL(%rip),%rax
  mov 2096(%rax),%rax
  shl $2,%rbx
- mov %ecx,0(%rbx,%rax,1)
+ movl %ecx,0(%rbx,%rax,1)
  mov $-1,%rbx
  mov _symval@GOTPCREL(%rip),%r8
  mov 2656(%r8),%r8
@@ -387,7 +387,7 @@ l0025:
  mov _symval@GOTPCREL(%rip),%rax
  mov 2096(%rax),%rax
  shl $2,%rbx
- mov %ecx,0(%rbx,%rax,1)
+ movl %ecx,0(%rbx,%rax,1)
  addq $1,(%rsp)
  jmp l0025
 l0026:
@@ -519,8 +519,7 @@ l0037:
  mov _symval@GOTPCREL(%rip),%rax
  mov 2096(%rax),%rax
  shl $2,%rbx
- mov 0(%rax,%rbx,1),%rax
- cdqe
+ movl 0(%rbx,%rax,1),%eax
  shl $32,%rax
  shr $32,%rax
  mov %rax,%rbx
@@ -548,8 +547,7 @@ l0041:
  mov _symval@GOTPCREL(%rip),%rax
  mov 2096(%rax),%rax
  shl $2,%rbx
- mov 0(%rax,%rbx,1),%rax
- cdqe
+ movl 0(%rbx,%rax,1),%eax
  shl $32,%rax
  shr $32,%rax
  shl $8,%rax
@@ -585,7 +583,7 @@ l0043:
  mov _symval@GOTPCREL(%rip),%rax
  mov 2096(%rax),%rax
  shl $2,%rbx
- mov %ecx,0(%rbx,%rax,1)
+ movl %ecx,0(%rbx,%rax,1)
  mov 16(%rsp),%rax
  mov _symfnc@GOTPCREL(%rip),%rsi
  mov $341,%rdi
@@ -640,8 +638,7 @@ l0048:
  mov _symval@GOTPCREL(%rip),%rax
  mov 2096(%rax),%rax
  shl $2,%rbx
- mov 0(%rax,%rbx,1),%rax
- cdqe
+ movl 0(%rbx,%rax,1),%eax
  shl $32,%rax
  shr $32,%rax
  cmpq $0,%rax
@@ -659,8 +656,7 @@ l0049:
  mov _symval@GOTPCREL(%rip),%rax
  mov 2096(%rax),%rax
  shl $2,%rbx
- mov 0(%rax,%rbx,1),%rax
- cdqe
+ movl 0(%rbx,%rax,1),%eax
  mov %rax,%rbx
  shl $32,%rbx
  shr $32,%rbx
@@ -678,8 +674,7 @@ l0053:
  mov _symval@GOTPCREL(%rip),%rax
  mov 2096(%rax),%rax
  shl $2,%rbx
- mov 0(%rax,%rbx,1),%rax
- cdqe
+ movl 0(%rbx,%rax,1),%eax
  mov (%rsp),%rbx
  shl $32,%rax
  shr $32,%rax
@@ -1134,10 +1129,10 @@ l0083:
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov %rcx,16(%rsp)
- mov 0(%rax),%rax
+ mov 0(%rax),%eax
  mov %rax,24(%rsp)
  mov (%rsp),%rax
- mov 0(%rax),%rax
+ mov 0(%rax),%eax
  mov %rax,%rbx
  shl $34,%rbx
  shr $34,%rbx

@@ -308,7 +308,7 @@
 	) 'norexprefix)
 
 % Instructions that need a REX.B prefix only if using upper 8 registers
-(flag '(push pop movl) 'onlyupperregrexprefix)
+(flag '(push pop movl movb) 'onlyupperregrexprefix)
 
 (de DepositLabel (x) 
     (when *testlap (prin2 currentoffset*) (tab 10) (print x))
@@ -716,7 +716,7 @@
       (depositbyte 16#3e) ))  % DS segment override prefix
 
 %------------------------------------------------------------------------
-%  special format for EAX-ibstructions
+%  special format for EAX-instructions
 
 (de OP-mem-eax (code op1 op2) 
     (when (eqcar op1 'reg)(setq op1 op2))

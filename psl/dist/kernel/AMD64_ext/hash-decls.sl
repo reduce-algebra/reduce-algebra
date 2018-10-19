@@ -75,12 +75,9 @@
 (deflist 
       '(
         (Hashtab-HalfWord ((shl 2 (reg 2))
-                (movl (indexed (reg 2) (displacement (reg 1) 0))(reg EAX))
-                    (cdqe)))
+                (movl (indexed (reg 1) (displacement (reg 2) 0)) (reg EAX))))
         (PutHashtab-HalfWord ((shl 2 (reg 2))
-                (*move (reg 3) (reg 4))
-                (movl (reg EDX)
-                    (indexed (reg 1)(displacement (reg 2) 0)))))) 
+                (movl (reg ECX) (indexed (reg 1)(displacement (reg 2) 0)))))) 
  'OpenCode)
 
 (put 'Hashtab-HalfWord 'assign-op 'PutHashtab-HalfWord)
@@ -101,13 +98,13 @@
 
 (ds hash-table-entry (i) 
   % Access to an element of the hash table.
-  (wshift (wshift (Hashtab-halfword hashtable i) 32) -32) )
+  (wshift (wshift (Hashtab-Halfword hashtable i) 32) -32) )
 
  % (signedfield (halfword hashtable i) 
 %	       bitsperword2
 %	       bitsperword2))
 				         
 (ds set-hash-table-entry (i x) 
-  (setf (Hashtab-halfword hashtable i) x))
+  (setf (Hashtab-Halfword hashtable i) x))
 
 (put 'hash-table-entry 'assign-op 'set-hash-table-entry)

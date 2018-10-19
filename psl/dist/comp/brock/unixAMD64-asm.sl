@@ -136,9 +136,10 @@
 
 (DefList '(     (t1 "%rdi") (t2 "%rsi") 
 		(t3  "%r8") (t4 "%r9")
-                (eax "%rax") (al "%al") (ax "%ax")
+                (rax "%rax") (al "%al") (ax "%ax")
+                (rbx "%rbx") (rcx "%rcx")
                 (rdx "%rdx") (rdi "%rdi") (rsi "%rsi")
-                (ecx "%ecx") (edx "%edx") (ebx "%ebx")
+                (ecx "%ecx") (edx "%edx") (ebx "%ebx") (eax "%eax")
                 (r8  "%r8") ( r9 "%r9") (r10 "%r10")
                 (r11 "%r11") ( r12 "%r12") (r13 "%r13")
                 (r14 "%r14") ( r15 "%r15") 
