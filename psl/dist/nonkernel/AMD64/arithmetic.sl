@@ -127,7 +127,7 @@
         (function(lambda(x)(remprop x 'opencode)))))
 
 
-(fluid '(arithargloc staticfloatloc fpstatusloc* fp-except-mode))
+(fluid '(arithargloc staticfloatloc fpstatusloc* fp-except-mode*))
 
 (loadtime
   (progn % Allocate Physical Space                                         
@@ -516,12 +516,13 @@
 (de floatfix (x)
   (if (float-is-finite x)
       (sys2int (!*wfix (floatbase (fltinf x))))
-    (stderror (list "Non-finite float in fix:" x))))
+    (continuableerror 99 "Non-finite float in fix" x)))
 
 (de float (x)
   (case (tag x) ((posint-tag negint-tag) (intfloat x)) 
         ((fixnum-tag) (intfloat (fixval (fixinf x)))) 
-        ((floatnum-tag) x) ((bignum-tag) (floatfrombignum x)) 
+        ((floatnum-tag) x)
+	((bignum-tag) (floatfrombignum x)) 
         (nil (nonnumber1error x 'float))))
 
 (de intfloat (x)
@@ -552,8 +553,8 @@
    ((bignum-tag) (setq x (floatfrombignum x)))
    ((floatnum-tag) nil)
    (nil (nonnumber1error x 'sqrt)))
- (when (and (not (eq fp-except-mode* 0)) (lessp x 0.0))
-       (stderror (list "Negative argument to SQRT:" x)))
+ (when (and (not (eq fp-except-mode* 0)) (floatlessp x '0.0))
+       (continuableerror 99 "Negative argument to sqrt" (list 'sqrt x)))
  (let ((y (gtfltn)))
    (*fsqrt (floatbase y) (floatbase (fltinf x)))
    (mkfltn y))
