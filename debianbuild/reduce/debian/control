@@ -9,7 +9,7 @@ Homepage: http://reduce-algebra.sf.net/
 Package: reduce-complete
 Architecture: i386 amd64
 Depends: gnuplot-x11 | gnuplot-qt, ${shlibs:Depends}, ${misc:Depends}
-Conflicts: reduce-common, reduce-csl, reduce-psl
+Conflicts: reduce-common, reduce-csl, reduce-psl, reduce-addons
 Description: REDUCE Computer Algebra System -- common files
  REDUCE is a system for doing scalar, vector and matrix algebra by computer,
  which also supports arbitrary precision numerical approximation and
@@ -64,7 +64,7 @@ Description: REDUCE Computer Algebra System -- PSL version
 
 Package: reduce-addons
 Architecture: any
-Depends: reduce-csl (= ${source:Version}) | reduce-psl (= ${source:Version}) | reduce-complete (= ${source:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: reduce-csl (= ${source:Version}) | reduce-psl (= ${source:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: Useful addons for the REDUCE Computer Algebra System
  These include:
    reduce-mode, an emacs mode

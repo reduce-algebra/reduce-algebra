@@ -1,7 +1,10 @@
 usr/bin/bootstrapreduce
+usr/bin/breduce
 usr/bin/csl
 usr/bin/redcsl
 usr/bin/redpsl
+usr/bin/rfcsl
+usr/bin/rfpsl
 usr/lib/reduce/cslbuild
 usr/lib/reduce/pslbuild
 usr/share/doc/reduce
@@ -11,3 +14,11 @@ usr/share/reduce/cslbuild
 usr/share/reduce/fonts
 usr/share/reduce/packages
 usr/share/reduce/pslbuild
+usr/share/reduce-addons
+usr/share/man/man1/breduce.1
+usr/share/man/man1/redfront.1
+usr/share/man/man1/rfcsl.1
+usr/share/man/man1/rfpsl.1
+usr/share/emacs/site-lisp/reduce/reduce-mode.el
+etc/emacs/site-start.d/50reduce-emacs.el
+usr/share/doc/reduce-addons
