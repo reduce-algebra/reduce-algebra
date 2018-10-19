@@ -316,7 +316,7 @@
        ((imm8-rotatedp regp)     (MOV Argtwo ArgOne))
        ((immediatep regp)        (MOV Argtwo ArgOne))
        ((fixp regp)              (*LoadConstant ArgTwo (quote ArgOne)))
-       ((idlocp regp)            (*LoadConstant ArgTwo ArgOne))
+       ((idlocp regp)            (*LoadIDLoc ArgTwo ArgOne))
        ((fluid-arg-p regp)       (*LoadIdNumber LDR ArgTwo ArgOne))
        ((indirectp regp)         (LDR ArgTwo ArgOne))
        ((regp fluid-arg-p)       (*LoadIdNumber STR ArgOne ArgTwo))
@@ -327,21 +327,31 @@
 				 (*Move (reg t3) ArgTwo)))
 
 (de *LoadConstant (dest cst)
-  (setq cst (WConstEvaluable cst))
-  (cond ((imm8-rotatedp cst)
-	 `( (MOV ,dest ,cst)))
-	((imm8-rotatedp (land 16#ffffffff (lnot cst)))
-	 `( (MVN ,dest  ,(land 16#ffffffff (lnot cst)))))
-	(t
-	 `( (ldr ,dest (quote ,cst))))))
-)
+    (cond ((imm8-rotatedp cst)
+	   `( (MOV ,dest ,cst)))
+	  ((imm8-rotatedp (land 16#ffffffff (lnot cst)))
+	   `( (MVN ,dest  ,(land 16#ffffffff (lnot cst)))))
+	  (t
+	   `( (ldr ,dest (quote ,cst))))
+	  )
+    )
 
 (DefCMacro *LoadConstant)
+
+(de *LoadIDLoc (dest src)
+    (cond ((and (idlocp src) (wlessp (id2int (cadr src)) 257))
+	   (*LoadConstant dest (id2int (cadr src))))
+	  (t
+	   `( (ldr ,dest (quote ,src))))
+    ))
+
+
+(DefCMacro *LoadIDLoc)
 
 (de *LoadIdNumber (load-or-store reg nonlocal)
   (let ((idnumber
 	 (WConstEvaluable `(idloc ,(cadr nonlocal)))))
-    (if (and (fixp idnumber) (lessp idnumber 1024) (greaterp idnumber -1024))
+    (if (and (fixp idnumber) (lessp idnumber 257) (greaterp idnumber -1))
 	`( (,load-or-store ,reg (displacement (reg symval) ,(times 4 idnumber))) )
       `( (LDR (reg t2) (quote ,idnumber))
 	 (,load-or-store ,reg (displacement (reg symval) (regshifted t2 LSL 2))) )

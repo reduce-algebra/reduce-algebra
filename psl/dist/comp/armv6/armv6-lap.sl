@@ -437,7 +437,7 @@
     (and (Regp RegName) (evenp (reg2int regname))))
 	 
 (de reglistp (x)
-    (and (pairp x) (eqcar (car x) 'reg) (pairp (cdr x)) (reglistp1 (cdr x))))
+    (and (pairp x) (regp (car x)) (reglistp1 (cdr x))))
 
 (de reglistp1 (x)
     (or (null x)
@@ -482,8 +482,9 @@
      (bytep x)) 
 
 (de imm8-rotatedp (x)
-    (setq x (wand 16#ffffffff x))
-    (and (fixp x) (decode-32bit-imm8-rotated x)))
+    (and (fixp x)
+	 (setq x (wand 16#ffffffff x))
+	 (decode-32bit-imm8-rotated x)))
 
 % possibly shifted register (data movement), one of:
 % (reg x)
@@ -531,7 +532,6 @@
     (and (eqcar x 'displacement)
 	 (regp (cadr x))
 	 (and (pairp (caddr x)) (memq (car (caddr x)) '(reg regshifted plus minus))))
-
     )
 
 (de streg-p (x)
@@ -564,10 +564,10 @@
 (de depositextension(op2)
    % generate a relocated fullword extension
     (prog (OfFn)
-      (when (atom op2) (return (depositwordexpression op2)))
+      (when (atom op2) (return (DepositWordExpression op2)))
     (when (setq OfFn (get (car op2) 'OperandDepositFunction))
 	  (return (apply OfFn (list op2))))
-    (depositwordexpression op2)))
+    (DepositWordExpression op2)))
     
 
 % Procedures to compute specific OperandRegisterNumber!*
@@ -940,7 +940,10 @@
 		 (if (eq shift-op 'RRX)
 		     (setq shift-amount 0)
 		   (setq shift-amount (cadddr reg-shifter)))
-		 (cond ((fixp shift-amount)
+		 (cond ((and (fixp shift-amount)
+			     (greaterp shift-amount -1)
+			     (lessp shift-amount 33))
+			(setq shift-amount (land 31 shift-amount))
 			(setq reg4 (lsh shift-amount -1)
 			      opcode2 (lor (lsh (land shift-amount 1) 3) (subla '((LSL . 2#000) (LSR . 2#010) (ASR . 2#100) (ROR . 2#110) (RRX . 2#110)) shift-op))))
 		       ((regp shift-amount)
@@ -1083,11 +1086,15 @@
 		     (and (memq (car displ) '(plus minus))
 			  (progn (if (eq (car displ) 'minus) (setq u-bit 0))
 				 (eq (car (setq displ (cadr displ))) 'regshifted))))
+		 (if (or (not (fixp (cadddr displ)))
+			 (lessp (cadddr displ) 0)
+			 (greaterp (cadddr displ) 32))
+		     (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset12)))
 		 (setq regm (reg2int (cadr displ)) shift-op (caddr displ))
 %                 (setq opcode1 (lor opcode1 16#10))
 		 (if (eq shift-op 'RRX)
 		     (setq shift-amount 0)
-		   (setq shift-amount (cadddr displ)))
+		   (setq shift-amount (land 31 (cadddr displ))))
 		 (setq temp (lsh shift-amount -1)
 		       lastbyte (lor (lsh (land shift-amount 1) 7)
 				     (lor (subla '((LSL . 2#0000000) (LSR . 2#0100000) (ASR . 2#1000000) (ROR . 2#1100000) (RRX . 2#1100000)) shift-op)
@@ -1101,6 +1108,12 @@
     )
 
 (de lth-ld-st (code regn reg-offset12) 4)
+
+(de OP-ldr-id (code regn idref)
+    (OP-ld-st code regn idref)
+    )
+
+(de lth-ldr-id (code regn idref) 4)
 
 %%  Instruction                                      Lisp expression for second operand
 %% LDRD Rd,[Rn,+/-offset8]                              (displacement (reg n) +/-8bit-number)
@@ -1164,11 +1177,11 @@
 	  (setq w-bit (if writeback? 1 0))
 	  (foreach reg in reglist do
 		   (setq regbits (lor regbits (lsh 1 (reg2int reg)))))
-	   (DepositInstructionBytes
-	    (lor (lsh cc 4) (lsh opcode1 -3))
-	    (lor (lor (lsh (land opcode1 2#111) 5) (lsh w-bit 5)) (lor (lsh ld-bit 4) (reg2int regn)))
-	    (lsh regbits -8)
-	    (land regbits 16#ff)))
+	  (DepositInstructionBytes
+	   (lor (lsh cc 4) (lsh opcode1 -3))
+	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh w-bit 5)) (lor (lsh ld-bit 4) (reg2int regn)))
+	   (lsh regbits -8)
+	   (land regbits 16#ff)))
     )
 
 (de lth-ldm-stm (code regn reg-offset12) 4)
@@ -1696,7 +1709,7 @@
 
 (de depositwordidnumber (x) 
   (cond
-    ((or (not *writingfaslfile) (leq (idinf x) 128)) 
+    ((or (not *writingfaslfile) (leq (idinf x) 256)) 
      (depositword (idinf X)))
     (t
       (putword (wplus2 codebase* CurrentOffset*) 0 
@@ -1810,17 +1823,17 @@
 		(setq op (car instr))
 		(setq nextinstr (car u))
 		    % pattern:
-		    %    (mov (reg n) (frame m))
-		    %    (mov (frame m) (reg k))
-		(when (and (eq op 'MOV) 
+		    %    (str (reg n) (frame m))
+		    %    (ldr (reg k) (frame m))
+		(when (and (eq op 'STR) 
 			   (regp (setq src (cadr instr)))
 			   (not (sregp src))  % not for segment registers
 			   (setq dest (caddr instr))
-			   (eqcar nextinstr 'MOV)
-			   (equal (cadr nextinstr)dest)
-			   (regp (setq x (caddr nextinstr))))
+			   (eqcar nextinstr 'LDR)
+			   (equal (caddr nextinstr) dest)
+			   (regp (setq x (cadr nextinstr))))
 		      (pop u)
-		      (push (list 'mov src x) u))
+		      (push (list 'mov x src) u))
 		    % pattern:
 		    %      (mov (quote nil) (frame 1))  
 		    %      (mov (quote nil) (frame 2)) ...
@@ -1873,7 +1886,7 @@
    (when *optimize-armv6 (setq code (LapoptPeepArmv6 code)))
    code)
 
-(de LapoptPeepArmv6(code)
+(de LapoptPeepArmv6 (code)
 % peephole optimizer for armv6 code
 % interchanging instructions for dependencies.
  (let (rcode i1 i2 i3 r rb)
