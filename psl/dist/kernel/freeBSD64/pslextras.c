@@ -83,7 +83,6 @@ unsigned long usec,repeat;
 }
  
 char *expand_file_name();    /* from unix-io.c */
-long time();        /* from kernel */
  
 /* Tag( external_time )
  */
