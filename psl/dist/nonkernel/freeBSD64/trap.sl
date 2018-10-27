@@ -190,8 +190,10 @@
      (*move (fluid errornumber*) (reg 1))
      (*move (reg nil) (fluid on-altstack*))
      (*wplus2 (reg 1)(wconst 10000))
-     % if the error number = 11 (segmentation violation, try to check for stack overflow
+     % if the error number = 11 (segmentation violation, 
+     %  set on-altstack* to t and try to check for stack overflow
      (*jumpnoteq (label nostackoverflow) (fluid errornumber*) 11)
+     (*move (quote t) (fluid on-altstack*))
      % if rsp + 1024 >= faultaddr* >= rsp - 1024, assume a stack overflow
      (*move (fluid faultaddr*) (reg 3))
      (subq 1024 (reg 3))
@@ -199,7 +201,6 @@
      (addq 2048 (reg 3))
      (*jumpwlessp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
      (*move (quote "Stack overflow") (reg 2))
-     (*move (quote t) (fluid on-altstack*))
     nostackoverflow
      % if the error number = 8 (arithmetic exception), pass the subtype in register 3
      (*move (wconst 0) (reg 3))
