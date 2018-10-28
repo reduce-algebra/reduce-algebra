@@ -45,33 +45,39 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(fluid '(**neg-zero** **neg-one**))
+(fluid '(**neg-zero** **neg-one** fp-except-mode*))
 
 (off echo)
+
+(de *fp-check-for-exceptions (fn flags)
+  (unless (or (eq 0 fp-except-mode*)
+	      (eq 0 (*float-get-except-flags flags)))
+    (*float-clear-all-except)
+    (stderror (bldmsg "Floating point error in %w" fn))))
 
 (de *wfloat (x y)
   (uxfloat (mkitem fixnum-tag x) y))
 
 (de *fplus2 (x y z)
-  (when (eq (uxplus2 (mkitem fixnum-tag x) (mkitem fixnum-tag y)
-		     (mkitem fixnum-tag z)) 0)
+  (when (and (eq (uxplus2 (mkitem fixnum-tag x) (mkitem fixnum-tag y) (mkitem fixnum-tag z)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in fplus2")))
 
 (de *fdifference (x y z)
-  (when (eq (uxdifference (mkitem fixnum-tag x) (mkitem fixnum-tag y)
-			  (mkitem fixnum-tag z)) 0)
+  (when (and (eq (uxdifference (mkitem fixnum-tag x) (mkitem fixnum-tag y) (mkitem fixnum-tag z)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in fdifference")))
 
 (de *ftimes2 (x y z)
-  (when (eq (uxtimes2 (mkitem fixnum-tag x) (mkitem fixnum-tag y)
-		      (mkitem fixnum-tag z)) 0)
-	(stderror "Floating point error in ftimes")))
+  (when (and (eq (uxtimes2 (mkitem fixnum-tag x) (mkitem fixnum-tag y) (mkitem fixnum-tag z)) 0) (not (eq fp-except-mode* 0)))
+	(stderror "Floating point error in ftimes2")))
 
 (de *fquotient (x y z)
-  (when (eq (uxquotient (mkitem fixnum-tag x) (mkitem fixnum-tag y)
-			(mkitem fixnum-tag z)) 0)
+  (when (and (eq (uxquotient (mkitem fixnum-tag x) (mkitem fixnum-tag y) (mkitem fixnum-tag z)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in fquotient")))
 
+(de *fminus (x y)
+  (when (and (eq (uxminus (mkitem fixnum-tag x) (mkitem fixnum-tag y)) 0) (not (eq fp-except-mode* 0)))
+     (stderror "Floating point error in fminus")))
+ 
 (de *fgreaterp (x y)
   (uxgreaterp (mkitem fixnum-tag x) (mkitem fixnum-tag y) 't 'nil))
 
@@ -98,43 +104,43 @@
   (uxfloattodouble (mkitem fixnum-tag x) (mkitem fixnum-tag y)))
 
 (de uxsin (r x)
-  (when (eq (uuxsin (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0)
+  (when (and (eq (uuxsin (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in sin")))
 
 (de uxcos (r x)
-  (when (eq (uuxcos (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0)
+  (when (and (eq (uuxcos (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in cos")))
 
 (de uxtan (r x)
-  (when (eq(uuxtan (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0)
+  (when (and (eq (uuxtan (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in tan")))
 
 (de uxasin (r x)
-  (when (eq(uuxasin (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0)
+  (when (and (eq (uuxasin (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in asin")))
 
 (de uxacos (r x)
-  (when (eq(uuxacos (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0)
+  (when (and (eq(uuxacos (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in acos")))
 
 (de uxatan (r x)
-  (when (eq(uuxatan (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0)
+  (when (and (eq (uuxatan (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in atan")))
 
 (de uxsqrt (r x)
-  (when (eq(uuxsqrt (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0)
+  (when (and (eq (uuxsqrt (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in sqrt")))
 
 (de uxexp (r x)
-  (when (eq(uuxexp (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0)
+  (when (and (eq (uuxexp (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in exp")))
 
 (de uxlog (r x)
-  (when (eq(uuxlog (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0)
+  (when (and (eq (uuxlog (mkitem fixnum-tag r) (mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in log")))
 
 (de uxatan2 (r y x)
-  (when (eq(uuxatan2 (mkitem fixnum-tag r) (mkitem fixnum-tag y)(mkitem fixnum-tag x)) 0)
+  (when (and (eq(uuxatan2 (mkitem fixnum-tag r) (mkitem fixnum-tag y)(mkitem fixnum-tag x)) 0) (not (eq fp-except-mode* 0)))
 	(stderror "Floating point error in atan2")))
 
 

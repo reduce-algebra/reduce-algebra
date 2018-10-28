@@ -46,6 +46,9 @@
   (uxquotient (mkitem fixnum-tag x) (mkitem fixnum-tag y)
         (mkitem fixnum-tag z)))
 
+(de *fminus (x y)
+  (uxminus (mkitem fixnum-tag x) (mkitem fixnum-tag y)))
+
 (de *fgreaterp (x y)
   (uxgreaterp (mkitem fixnum-tag x) (mkitem fixnum-tag y) 't 'nil))
 
