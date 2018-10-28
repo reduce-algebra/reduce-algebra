@@ -540,8 +540,8 @@
 (defarithpred1entry onep ionep (lambda (x)
                                        (equal x '1.0)) returnnil)
 
-(de floatzerop (x) (and  (eq 0 (wshift (wshift (wgetv (inf x) 1) 1) -1))
-			 (eq 0 (wgetv (inf x) 2))))
+(de floatzerop (x) (and  (eq 0 (wshift (wshift (wgetv (inf x) 2) 1) -1))
+			 (eq 0 (wgetv (inf x) 1))))
 
 (de returnnil (u)
   nil)
