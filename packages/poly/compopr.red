@@ -61,8 +61,75 @@ symbolic procedure impartsq u;
 
 put('conj,'simpfn,'simpconj);
 
+% symbolic procedure simpconj u;
+%    conjsq simp!* car u;
+
+% Changes by Eberhard Schruefer & Alan Barnes to support rules for
+% conj(<kernel>), October 2018.
+
 symbolic procedure simpconj u;
-   conjsq simp!* car u;
+   multsq(cmpx_conjsf numr x, invsq cmpx_conjsf denr x)
+   where x = simp car u;
+
+symbolic procedure cmpx_conjsf u;
+   if domainp u then
+      if atom u or not get(car u, 'cmpxfn)
+          then u ./ 1  else conjsq(u ./ 1)
+    else addsq(cmpx_conjt lt u, cmpx_conjsf red u);
+
+%symbolic procedure cmpx_conjt u;
+%   begin scalar x,y,z;
+%     y := tvar u;
+%     z := if atom y and flagp(y, 'realvalued) then !*k2q y
+%           else if null atom y and flagp(y,'alwaysrealvalued)
+%	     then !*k2q y
+%           else if null atom y and flagp(car y, 'selfconjugate)
+%             then simp {car y, 'conj . cdr y}
+%           else if x := rassoc({y}, get('conj, 'kvalue))
+%                   then !*k2q cadar x
+%                 else <<x := car getpower(fkern({'conj, y}),1);
+%                        if x := assoc(x, get('conj, 'kvalue))
+%                           then simp cadr x
+%                         else conjsq simp y>>;
+%     return multsq(exptsq(z,tdeg u), cmpx_conjsf tc u)
+%end;
+
+
+symbolic procedure cmpx_conjt u;
+   begin scalar x,y,z;
+     y := tvar u;
+     z := if atom y and flagp(y, 'realvalued) then !*k2q y
+           else if null atom y and flagp(y,'alwaysrealvalued)
+	     then !*k2q y
+           else if null atom y and flagp(car y, 'selfconjugate)
+             then simp((car y) . foreach arg in cdr y collect {'conj, arg})
+           else if x := get_conj(y) then x
+	   else if null atom y and (x := get_conj_opr(car y)) then
+	       simp(x  .  foreach arg in cdr y collect {'conj, arg}) 
+           else conjsq simp y;
+     return multsq(exptsq(z,tdeg u), cmpx_conjsf tc u)
+end;
+
+symbolic procedure get_conj y;
+begin scalar cnj;
+   cnj := rassoc({y}, get('conj, 'kvalue));
+   if cnj then return !*k2q cadar cnj;
+   cnj := car getpower(fkern({'conj, y}),1);
+   cnj := assoc(cnj, get('conj, 'kvalue));
+   if cnj then return simp cadr cnj
+   else return nil;
+end;
+
+symbolic procedure get_conj_opr y;
+begin scalar cnj;
+   cnj := rassoc({y}, get('conj, 'kvalue));
+   if cnj then return cadar cnj;
+   cnj := car getpower(fkern({'conj, y}),1);
+   cnj := assoc(cnj, get('conj, 'kvalue));
+   if cnj then return cadr cnj
+   else return nil;
+end;
+
 
 symbolic procedure conjsq u;
   (if null numr w then u else addsq(repartsq u,negsq multsq(simp 'i,w)))
@@ -180,7 +247,8 @@ symbolic procedure impartf u;
 % reasonable compromise, and will normally give the user what they
 % expect without undue overhead.
 
-rlistat '(realvalued notrealvalued);   % Make user operators.
+rlistat '(realvalued notrealvalued selfconjugate);
+% Make user operators.
 
 symbolic procedure realvalued u;
    % Command to allow the user to declare functions or variables to be
@@ -214,7 +282,7 @@ symbolic procedure realvaluedp u;
       or ((cnd := get(caru, 'condrealvalued)) and apply(cnd, cdr u))
          % real-valued function if arguments satisfy conditions
          % that depend on the function
-      or caru eq '!:rd!:;  % rounded number - least likely?
+%      or caru eq '!:rd!:;  % rounded number - not now needed
    end;
 
 symbolic procedure realvaluedlist u;
@@ -225,7 +293,9 @@ symbolic procedure realvaluedlist u;
 symbolic procedure realvaluedp!-sf u;
    if atom u then t      % either nil or a number
    else if domainp u then flagp(car u,'realvalued)
-   else (realvaluedp!-sf lc u and (if sfp mvar u then realvaluedp!-sf mvar u else realvaluedp mvar u)) and realvaluedp!-sf red u;
+   else (realvaluedp!-sf lc u and
+          (if sfp mvar u then realvaluedp!-sf mvar u
+	     else realvaluedp mvar u)) and realvaluedp!-sf red u;
 
 % Define the real valued properties
 % ---------------------------------
@@ -235,8 +305,8 @@ symbolic procedure realvaluedp!-sf u;
 
 % A very small number of functions are real-valued for ALL arguments:
 
-flag('(repart impart abs sign ceiling floor fix round max min),
-     'alwaysrealvalued);
+flag('(repart impart abs ceiling floor fix round max min sign),
+       'alwaysrealvalued);
 
 % Symbolic constants:
 
@@ -244,7 +314,10 @@ flag('(pi e infinity),'realvalued);
 
 % Domain elements
 
-flag('(!:rn!: !:rd!: !:mod!:),'realvalued);
+flag('(!:rn!: !:rd!: !:mod!:),'alwaysrealvalued);
+
+% caused a bug in realvaluedp when dmode!* was rounded
+% flag('(!:rn!: !:rd!: !:mod!:),'realvalued); 
 
 % Some functions are real-valued if all their arguments are
 % real-valued, without further constraints:
@@ -255,10 +328,16 @@ flag('(plus minus times quotient), 'realvalued);
 
 % Elementary transcendental functions, etc:
 
+% should hypot, cbrt and factorial be flagged "alwaysrealvalued" as they
+% are real everywhere they are properly defined; cf ceiling, floor etc.?
+
 flag('(exp cbrt hypot sin cos tan csc sec cot sind cosd tand cscd secd
        cotd sinh cosh tanh csch sech coth atan atand atan2 atan2d acot
        acotd asinh acsch factorial),
      'realvalued);
+
+% Additional such variables and functions can be declared by the user
+% with the REALVALUED command defined above.
 
 symbolic procedure expt!-realvalued(base,expo);
    % returns t if (expt base expo) is realvalued
@@ -271,16 +350,107 @@ symbolic procedure expt!-realvalued(base,expo);
 
 put('expt,'condrealvalued,'expt!-realvalued);
 
+% The principal value of the following inverse functions (and log and sqrt)
+% is real-valued on the real axis except on the branch cut.
+
+% do we need the test realvaluedp arg as if it succeeds sign!-of will
+% surely return -1, 0 or +1?
+
 symbolic procedure log!-realvalued arg;
    % returns t it (log arg) is realvalued
    % in general this is true iff arg is realvalued and positive
-   realvaluedp arg and sign!-of arg = 1;
+    sign!-of arg = 1;
+%   realvaluedp arg and sign!-of arg = 1;
+ 
+put('log, 'condrealvalued, 'log!-realvalued);
+put('log10, 'condrealvalued, 'log!-realvalued);
 
-put('log,'condrealvalued,'log!-realvalued);
+symbolic procedure sqrt!-realvalued(x);
+% branch-cut is the negative real axis
+  (s and s >= 0) where  s=sign!-of x;
 
-% Additional such variables and functions can be declared by the user
-% with the REALVALUED command defined above.
+put('sqrt, 'condrealvalued, 'sqrt!-realvalued);
 
+symbolic procedure asin!-realvalued(x);
+% branch-cut is the complement of the interval [-1, 1]
+  (s1 and s1>=0  and (s2 and s2 <=0) where s2=sign!-of(reval({'plus, x, -1})))
+         where s1=sign!-of(reval({'plus, x, 1}));
+		      
+put('asin, 'condrealvalued, 'asin!-realvalued);
+put('acos, 'condrealvalued, 'asin!-realvalued);
+
+symbolic procedure asec!-realvalued(x);
+% branch-cut is  the interval (-1, 1)
+  (s1 and s1<=0 or (s2 and s2>=0) where s2=sign!-of(reval({'plus, x, -1})))
+            where s1=sign!-of(reval({'plus, x, 1}));
+
+put('asec, 'condrealvalued, 'asec!-realvalued);
+put('acsc, 'condrealvalued, 'asec!-realvalued);
+
+symbolic procedure atanh!-realvalued(x);
+% branch-cut is the complement of the interval (-1, 1)
+  (s1 and s1=1 and (s2 and s2=-1) where s2=sign!-of(reval({'plus, x, -1})))
+       where s1=sign!-of(reval({'plus, x, 1}));
+
+put('atanh, 'condrealvalued, 'atanh!-realvalued);
+
+symbolic procedure acoth!-realvalued(x);
+% branch-cut is the interval [-1, 1]
+  (s1 and s1=1  or (s2 and s2=-1) where s2=sign!-of(reval({'plus, x, 1})))
+       where s1=sign!-of(reval({'plus, x, -1}));
+
+
+put('acoth, 'condrealvalued, 'acoth!-realvalued);
+
+symbolic procedure acosh!-realvalued(x);
+% branch cut is the interval (-infinity, 1)
+ (s1 and s1>=0) where s1=sign!-of(reval({'plus, x, -1}));
+
+put('acosh, 'condrealvalued, 'acosh!-realvalued);
+
+symbolic procedure asech!-realvalued(x);
+% branch cut is the complement of the interval (0, 1]
+ (s1 and s1=1 and (s2 and s2 <=0) where s2=sign!-of(reval({'plus, x, -1})))
+       where s1=sign!-of(x);
+
+put('asech, 'condrealvalued, 'asech!-realvalued);
+
+% Added by Alan Barnes, October 2018 to improve simplification of conj.
+
+symbolic procedure conjugate u;
+   % Command to allow the user to declare which functions are well-behaved
+   % under cojugation i.e. conj(f(z)) = f(conj(z))
+    <<rmsubs();  % So that an expression can be re-evaluated.
+     for each v in u do
+        if not idp v then typerr(v,"id")
+         else flag(list v,'conjugate)>>;
+
+% Elementary transcendental functions are holomorphic everywhere
+% and satisfy the self-conjugate property (i.e. conj(f(z)) = f(conj(z))
+% everywhere. So do the principal values of atan acot, asinh and acsch
+% even on their branch cuts (which are subsets of the imaginary axis).
+% For the remaining inverse functions, sqrt and log the conjugate property
+% fails only on the branch cuts (which are subsets of the real axis).
+
+flag('(exp sin cos tan csc sec cot sind cosd tand cscd secd
+       cotd sinh cosh tanh csch sech coth
+       atan atand acot acotd asinh acsch),
+     'selfconjugate);
+
+symbolic procedure selfconjugate u;
+   % Command to allow the user to declare operators to be
+   % declared self-conjugate i.e conj f => f so conj(f(z)) =>f(conj(z)).
+   % NB the elementary trancendental functions etc. are selfconjugate.
+   <<rmsubs();  % So that an expression can be re-evaluated.
+     for each v in u do
+        if not idp v then typerr(v,"id")
+	 else if not get(v, 'simpfn) then typerr(v, "operator")
+         else flag(list v,'selfconjugate)>>;
+
+% currently there is no property "condselfconjugate" for the remaining
+% inverse functions asin, atanh etc., log and sqrt.
+
+% Procedures to find the real and imaginary parts of elementary functions.
 
 put('sin,'cmpxsplitfn,'reimsin);
 
@@ -564,13 +734,13 @@ end;
 
 % The split functions below for asin, acos, asinh and acosh do not use the 
 % split function for log and the identities of these functions 
-% in terms of logarithm; this generally leads to expressions involving 
+% in terms of logarithm; this generally led to expressions involving 
 % nested square roots.
 % Instead they calculate the real and imaginary parts of the form 
 % acos(R1)/2 & acosh(R2)/2 where R1 & R2 are real with |R1| <=1 & |R2|>=1.
 % Then they choose the correct branch by examining the signs of the real &
-% imaginary parts of the the argument. This avoids nested sqare roots but
-% for a non-numeric  argument involes rather messy expressions involving the
+% imaginary parts of the the argument. This avoids nested sqare roots, but
+% for a non-numeric argument involes rather messy expressions involving the
 % sign operator applied to the real and imaginary parts of the argument. 
 
 put('asin, 'cmpxsplitfn, 'reimasin);
