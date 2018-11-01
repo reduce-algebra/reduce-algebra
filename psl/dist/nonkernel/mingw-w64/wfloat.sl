@@ -33,7 +33,6 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions
@@ -51,7 +50,7 @@
 
 (de *fp-check-for-exceptions (fn flags)
   (unless (or (eq 0 fp-except-mode*)
-            (eq 0 (*float-get-except-flags flags)))
+	      (eq 0 (*float-get-except-flags flags)))
     (*float-clear-all-except)
     (stderror (bldmsg "Floating point error in %w" fn))))
 
@@ -59,11 +58,11 @@
   (uxfloat x y))
 
 (de *fplus2 (x y z)
-  (when (and (eq (uxplus2 x y z) 0) (not (eq fp-except-mode* 0)))
+ (when (and (eq (uxplus2 x y z) 0) (not (eq fp-except-mode* 0)))
       (stderror "Floating point error in fplus2")))
 
 (de *fdifference (x y z)
-  (when (and (eq (uxdifference x y z) 0) (not (eq fp-except-mode* 0)))
+ (when (and (eq (uxdifference x y z) 0) (not (eq fp-except-mode* 0)))
       (stderror "Floating point error in fdifference")))
 
 (de *ftimes2 (x y z)
@@ -74,6 +73,10 @@
   (when (and (eq (uxquotient x y z) 0) (not (eq fp-except-mode* 0)))
      (stderror "Floating point error in fquotient")))
 
+(de *fminus (x y)
+  (when (and (eq (uxminus x y) 0) (not (eq fp-except-mode* 0)))
+     (stderror "Floating point error in fminus")))
+ 
 (de *fsqrt (x y)
   (when (and (eq (uxsqrt x y) 0) (not (eq fp-except-mode* 0)))
      (stderror "Floating point error in fsqrt")))

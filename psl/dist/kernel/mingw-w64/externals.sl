@@ -141,11 +141,12 @@
 (external-function external_getenv     (envstring))
 (external-function uxfloat             (buffer integer))
 (external-function uxfix               (buffer))
-(external-function uxassign            (arg1-buffer arg2-buffere))
+(external-function uxassign            (arg1-buffer arg2-buffer))
 (external-function uxplus2             (result-buffer arg1-buffer arg2-buffer))
 (external-function uxdifference        (result-buffer arg1-buffer arg2-buffer))
 (external-function uxtimes2            (result-buffer arg1-buffer arg2-buffer))
 (external-function uxquotient          (result-buffer arg1-buffer arg2-buffer))
+(external-function uxminus             (arg1-buffer arg2-buffer))
 (external-function uxgreaterp          (arg1-buffer arg2-buffer tee nill))
 (external-function uxlessp             (arg1-buffer arg2-buffer tee nill))
 (external-function uxwritefloat        (buffer floatptr convstr))
@@ -173,9 +174,9 @@
  
 % Defined in sigs.c
 %
-(external-function sun3_sigset               (signame handler))
-(external-function sigrelse             (signame ))
- 
+(external-function sun3_sigset         (signame handler))
+(external-function sigrelse            (signame))
+(external-function _resetstkoflw       ())
  
 % Defined In unexec.c
 %

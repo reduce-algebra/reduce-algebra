@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXNK:arithmetic.sl  for SUN386 /387
+% File:         PXNK:arithmetic.sl  for x86_64
 % Description:  Generic arithmetic routines for PSL (New model, less hairy)
 % Author:       Eric Benson and Martin Griss 
 % Created:      9 August 1982 
@@ -126,7 +126,8 @@
             *fgreaterp *flessp)
         (function(lambda(x)(remprop x 'opencode)))))
 
-(fluid '(arithargloc staticfloatloc))
+
+(fluid '(arithargloc staticfloatloc fpstatusloc* fp-except-mode*))
 
 (loadtime
   (progn % Allocate Physical Space                                         
@@ -134,7 +135,56 @@
          (wputv arithargloc 0 0)
          (wputv arithargloc 1 0)
          (setq staticfloatloc (gtwarray 3))
+         (setq fpstatusloc* (gtwarray 1))
+         (setq fp-except-mode* 1)
          nil))
+
+
+(if_system IEEE
+
+(progn	   
+
+(compiletime (load ieee-decls))
+
+(de float-is-finite (x)
+    (and (floatp x)
+	 (wlessp (ieeeexpt x) ieeemaxexp)))
+
+(de float-is-nan (x)
+    (and (floatp x)
+	 (weq (ieeeexpt x) ieeemaxexp)
+	 (wneq (ieeemant x) 0)))
+
+(de float-is-infinite (x)
+    (and (floatp x)
+	 (weq (ieeeexpt x) ieeemaxexp)
+	 (weq (ieeemant x) 0)))
+
+(de float-is-subnormal (x)
+    (and (floatp x)
+	 (weq (ieeeexpt x) 0)))
+
+(de float-is-negative (x)
+    (and (floatp x)
+	 (wneq (ieeesign x) 0)))
+	 
+)
+
+(progn
+
+(de float-is-finite (x) t)
+
+(de float-is-nan (x) nil)
+
+(de float-is-infinite (x) nil)
+
+(de float-is-subnormal (x) nil)
+
+(de float-is-negative (x) (floatlessp x '0.00000E+000))
+
+)
+) % if_system IEEE
+
 
 (de betap (x)
   % Test tagged number is in Beta Range when BIGNUM loaded                 
@@ -451,21 +501,28 @@
 (defarith1entry sub1 isub1 (lambda (x)
                                    (floatdifference x '1.0)) bigsub1)
 
-(defarith1entry minus iminus 
-                (lambda (x)
-                        (floatdifference '0.00000E+000 x)) bigminus)
+(defarith1entry minus iminus floatminus bigminus)
+
+(de floatminus (x)
+  (let ((y (gtfltn)))
+    (*fminus (floatbase y) (floatbase (fltinf x)))
+    (mkfltn y))
+)
 
 (defarith1entry fix (lambda (x)
                             x) floatfix (lambda (x)
                                                 x))
 
 (de floatfix (x)
-  (sys2int (!*wfix (floatbase (fltinf x)))))
+  (if (float-is-finite x)
+      (sys2int (!*wfix (floatbase (fltinf x))))
+    (continuableerror 99 "Non-finite float in fix" x)))
 
 (de float (x)
   (case (tag x) ((posint-tag negint-tag) (intfloat x)) 
         ((fixnum-tag) (intfloat (fixval (fixinf x)))) 
-        ((floatnum-tag) x) ((bignum-tag) (floatfrombignum x)) 
+        ((floatnum-tag) x)
+	((bignum-tag) (floatfrombignum x)) 
         (nil (nonnumber1error x 'float))))
 
 (de intfloat (x)
@@ -488,5 +545,19 @@
 
 (de returnnil (u)
   nil)
+
+(de sqrt (x)
+ (case (tag x)
+   ((posint-tag negint-tag) (setq x (intfloat x))) 
+   ((fixnum-tag) (setq x (intfloat (fixval (fixinf x)))))
+   ((bignum-tag) (setq x (floatfrombignum x)))
+   ((floatnum-tag) nil)
+   (nil (nonnumber1error x 'sqrt)))
+ (when (and (not (eq fp-except-mode* 0)) (floatlessp x '0.0))
+       (continuableerror 99 "Negative argument to sqrt" (list 'sqrt x)))
+ (let ((y (gtfltn)))
+   (*fsqrt (floatbase y) (floatbase (fltinf x)))
+   (mkfltn y))
+)
 
 % End of file.

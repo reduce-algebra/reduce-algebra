@@ -7,7 +7,7 @@
 # Modified:
 # Mode:         Text
 # Package:      
-# Status:
+# Status:       Open Source: BSD License
 #
 # (c) Copyright 1982, University of Utah
 # %
@@ -59,7 +59,7 @@ PXDIST  = $(PDIST)/$(MACHINE)
 PL      = $(PSL)/lap/$(MACHINE)
 
 PXNKFILES= \
-	$(PNKL)/dumplisp.b  $(PNKL)/copying-gc.b $(PNKL)/funct-prims.b \
+	$(PNKL)/dumplisp.b  $(PNKL)/copying-gc.b $(PNKL)/funct-prims.b $(PNKL)/ieee-decls.b \
 	$(PNKL)/io-data.b $(PNKL)/lap.b $(PNKL)/load-psl.b $(PNKL)/putd-getd.b \
 	$(PNKL)/arithmetic.b $(PNKL)/backtrace.b $(PNKL)/printf.b $(PNKL)/fixup.b \
 	$(PNKL)/allocators.b $(PNKL)/binding.b $(PNKL)/386-ext.b \
@@ -82,6 +82,9 @@ $(PNKL)/backtrace.b: $(PXNK)/backtrace.sl
 
 $(PNKL)/binding.b: $(PXNK)/binding.sl
 	$(PDIST)/make-pnk-lap $(PXNK) binding
+
+$(PNKL)/ieee-decls.b: $(PXNK)/ieee-decls.sl  $(PL)/if-system.b
+	$(PDIST)/make-pnk-lap $(PXNK) ieee-decls
 
 $(PNKL)/io-data.b: $(PXNK)/io-data.sl $(PNKL)/io-decls.b $(PL)/sys-macros.b
 	$(PDIST)/make-pnk-lap $(PXNK) io-data

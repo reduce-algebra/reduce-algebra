@@ -500,7 +500,7 @@
 (de decode-sib(p mod)
    (prog(scale index base offset seg b w)
      (setq b (pop bytes*))
-     (setq  lth* (add1 lth*))
+     (setq lth* (add1 lth*))
      (setq scale (lsh 1 (wshift b -6)))     
      (setq index (wand 7 (wshift b -3)))
      (when rex_x (setq index (wplus2 index 8)))
@@ -509,7 +509,8 @@
      (when rex_b (setq base (wplus2 base 8)))
      (setq offset "")
      (cond ((and (not rex_w) (eq size-override* 16#66)) (setq reg* (reg-m16 regnr*)))
-	   ((or byte-operand* (and (not rex_w) (eq scale 1))) (setq reg* (reg-m8 regnr*))))
+%	   ((or byte-operand* (and (not rex_w) (eq scale 1))) (setq reg* (reg-m8 regnr*))))
+	   (byte-operand* (setq reg* (reg-m8 regnr*))))
      (when (eq mod 1)
            (setq offset (pop bytes*))
 	   (setq offset
@@ -542,11 +543,11 @@
              (t "")))
      (setq segment* nil)
      (if *gassyntax 
-	 (return (bldmsg "%w(%%%w%w)" offset (reg-m base)
-			 (if (equal index "") "" (bldmsg ",%%%w,%d" (reg-m index) scale))))
-       (return (bldmsg "[%w%w%w]" (reg-m base) 
+	 (return (bldmsg "%w(%%%w%w)" offset (reg-m64 base)
+			 (if (equal index "") "" (bldmsg ",%%%w,%d" (reg-m64 index) scale))))
+       (return (bldmsg "[%w%w%w]" (reg-m64 base) 
 		       (if (equal index "") ""
-			 (bldmsg "+%w*%w" (reg-m index) scale))
+			 (bldmsg "+%w*%w" (reg-m64 index) scale))
 		       offset))))
    )
 

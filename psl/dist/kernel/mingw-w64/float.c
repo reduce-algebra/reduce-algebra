@@ -90,7 +90,18 @@ uxassign(f1,f2)
   *f1 = *f2;
 }
 
+
 fexcept_t flagp;
+
+int
+uxminus(f1,f2)
+     double *f1, *f2;
+{
+  *f1 = -*f2;
+  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
+  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  return (1);
+}
 
 /* Tag( uxplus2 )
  */
@@ -166,7 +177,6 @@ long long uxlessp(f1,f2,val1,val2)
 
 /* Tag( uxwritefloat )
  */
-
 void
 uxwritefloat(buf, flt, convstr)
      char *buf;          /* String buffer to return float int */
@@ -181,7 +191,7 @@ uxwritefloat(buf, flt, convstr)
 
   sprintf(temps,convstr, *flt);
 
-  if (finite(*flt))
+  if (finite(*flt)) 
     {
 
     /* Make sure that there is a trailing .0
@@ -193,15 +203,15 @@ uxwritefloat(buf, flt, convstr)
        */
       if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
         {
-	  strcpy(tempbuf, e);       /* save save exponent part */
+	  strcpy(tempbuf, e);       /* save exponent part */
 	  *e = '\0'; 
 	  strcat(temps, ".0");     /* Add .0 ono original string */
 	  strcat(temps, tempbuf);  /* add the exponent part onto the end */
         }
-      else
-        {
-          strcat(temps, ".0");
-        }
+    else
+      {
+        strcat(temps, ".0");
+      }
     }
   /* Install the length of the string into the Lisp header word
    */
@@ -275,7 +285,6 @@ uxasin (r, x)
   if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
     {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
-
 }
 
 int
@@ -286,7 +295,6 @@ uxacos (r, x)
   if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
     {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
-
 }
 
 int
@@ -297,7 +305,6 @@ uxatan (r, x)
   if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
     {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
-
 }
 
 int
@@ -305,10 +312,9 @@ uxsqrt (r, x)
      double *r, *x;
 {
     *r = sqrt( *x );
-  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
-    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID) != 0)
+    {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID); return (0);}
   return (1);
-
 }
 
 int
@@ -319,7 +325,6 @@ uxexp (r, x)
   if(fetestexcept(FE_OVERFLOW | FE_DIVBYZERO) != 0)
     {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
   return (1);
-
 }
 
 int

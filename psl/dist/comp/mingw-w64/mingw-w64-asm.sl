@@ -135,9 +135,10 @@
   (LOr !!)) 'BinaryASMOp)
 
 (DefList '(     (t1 "%rdi") (t2 "%rsi") 
-                (eax "%rax") (al "%al") (ax "%ax")
+                (rax "%rax") (al "%al") (ax "%ax")
+                (rbx "%rbx") (rcx "%rcx")
                 (rdx "%rdx") (rdi "%rdi") (rsi "%rsi")
-                (ecx "%ecx") (edx "%edx")
+                (ecx "%ecx") (edx "%edx") (ebx "%ebx") (eax "%eax")
                 (r8  "%r8") ( r9 "%r9") (r10 "%r10")
                 (r11 "%r11") ( r12 "%r12") (r13 "%r13")
                 (r14 "%r14") ( r15 "%r15") 
@@ -153,7 +154,7 @@
                 (xmm10 "%xmm10") (xmm11 "%xmm11")
                 (xmm12 "%xmm12") (xmm13 "%xmm13")
                 (xmm14 "%xmm14") (xmm15 "%xmm15")
-          	(sp "%rsp") (rip "%rip")
+          	(sp "%rsp") (rip "%rip") 
           	(st "%rsp") )                      % Stack Pointer
   'RegisterName)
 
