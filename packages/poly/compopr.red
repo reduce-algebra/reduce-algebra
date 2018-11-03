@@ -76,25 +76,7 @@ symbolic procedure cmpx_conjsf u;
       if atom u or not get(car u, 'cmpxfn)
           then u ./ 1  else conjsq(u ./ 1)
     else addsq(cmpx_conjt lt u, cmpx_conjsf red u);
-
-%symbolic procedure cmpx_conjt u;
-%   begin scalar x,y,z;
-%     y := tvar u;
-%     z := if atom y and flagp(y, 'realvalued) then !*k2q y
-%           else if null atom y and flagp(y,'alwaysrealvalued)
-%	     then !*k2q y
-%           else if null atom y and flagp(car y, 'selfconjugate)
-%             then simp {car y, 'conj . cdr y}
-%           else if x := rassoc({y}, get('conj, 'kvalue))
-%                   then !*k2q cadar x
-%                 else <<x := car getpower(fkern({'conj, y}),1);
-%                        if x := assoc(x, get('conj, 'kvalue))
-%                           then simp cadr x
-%                         else conjsq simp y>>;
-%     return multsq(exptsq(z,tdeg u), cmpx_conjsf tc u)
-%end;
-
-
+    
 symbolic procedure cmpx_conjt u;
    begin scalar x,y,z;
      y := tvar u;
@@ -103,24 +85,15 @@ symbolic procedure cmpx_conjt u;
 	     then !*k2q y
            else if null atom y and flagp(car y, 'selfconjugate)
              then simp((car y) . foreach arg in cdr y collect {'conj, arg})
-           else if x := get_conj(y) then x
-	   else if null atom y and (x := get_conj_opr(car y)) then
-	       simp(x  .  foreach arg in cdr y collect {'conj, arg}) 
-           else conjsq simp y;
-     return multsq(exptsq(z,tdeg u), cmpx_conjsf tc u)
+           else if x := get_conj(y) then simp x
+	   else if null atom y and (x := get_conj(car y)) then
+	          if null atom x then typerr(x, "operator")
+                  else simp(x . foreach arg in cdr y collect {'conj, arg})
+	   else conjsq simp y;
+     return multsq(exptsq(z,tdeg u), cmpx_conjsf tc u);
 end;
 
 symbolic procedure get_conj y;
-begin scalar cnj;
-   cnj := rassoc({y}, get('conj, 'kvalue));
-   if cnj then return !*k2q cadar cnj;
-   cnj := car getpower(fkern({'conj, y}),1);
-   cnj := assoc(cnj, get('conj, 'kvalue));
-   if cnj then return simp cadr cnj
-   else return nil;
-end;
-
-symbolic procedure get_conj_opr y;
 begin scalar cnj;
    cnj := rassoc({y}, get('conj, 'kvalue));
    if cnj then return cadar cnj;
@@ -129,7 +102,6 @@ begin scalar cnj;
    if cnj then return cadr cnj
    else return nil;
 end;
-
 
 symbolic procedure conjsq u;
   (if null numr w then u else addsq(repartsq u,negsq multsq(simp 'i,w)))
@@ -433,9 +405,8 @@ symbolic procedure conjugate u;
 % fails only on the branch cuts (which are subsets of the real axis).
 
 flag('(exp sin cos tan csc sec cot sind cosd tand cscd secd
-       cotd sinh cosh tanh csch sech coth
-       atan atand acot acotd asinh acsch),
-     'selfconjugate);
+       cotd sinh cosh tanh csch sech coth atan atand acot acotd asinh acsch
+       df), 'selfconjugate);
 
 symbolic procedure selfconjugate u;
    % Command to allow the user to declare operators to be
