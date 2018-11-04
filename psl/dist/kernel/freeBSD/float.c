@@ -245,6 +245,9 @@ uuxcos (r, x)
      double *r, *x;
 {
     *r = cos( *x );
+  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
+  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  return (1);
 }
 
 int
@@ -272,6 +275,9 @@ uuxacos (r, x)
      double *r, *x;
 {
     *r = acos( *x );
+  fegetexceptflag(&flagp, FE_OVERFLOW | FE_DIVBYZERO);
+  if(flagp != 0) {feclearexcept(FE_OVERFLOW | FE_DIVBYZERO); return (0);}
+  return (1);
 }
 
 int

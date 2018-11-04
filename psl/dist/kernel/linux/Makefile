@@ -3,6 +3,10 @@
 # File:		 PXK:Makefile
 # Description:  Makefile for bpsl (microkernel).
 # Author:	   Harold Carr and Leigh Stoller.
+# Mode:		 Text
+# Package:
+# Status:        Open Source: BSD License
+#
 # (c) Copyright 1982, University of Utah
 # %
 # % Redistribution and use in source and binary forms, with or without
