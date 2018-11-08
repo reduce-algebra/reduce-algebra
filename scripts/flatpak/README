@@ -1,0 +1,16 @@
+The purpose here is to make REDUCE available as a flatpak application.
+
+flatpak must be installed on your system. Some linux distributions come already with it - on others one needs to find a repository and install it from there.  
+
+The script 'mk-reduce-flatpakbundle.sh' generates a flatpak bundle called 'reduce.flatpak' for REDUCE.
+
+To deploy the bundle simply execute the command
+
+flatpak install reduce.flatpak
+
+Now you are ready to run various flavors of REDUCE. To run redcsl, for example, one would say 
+
+flatpak --command=redcsl run de.camusings.Reduce
+
+Besides redcsl also rfcsl, bootstrapreduce, redpsl and rfpsl are provided.
+

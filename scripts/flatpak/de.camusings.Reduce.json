@@ -1,0 +1,78 @@
+{
+    "app-id": "de.camusings.Reduce",
+    "runtime": "org.freedesktop.Platform",
+    "runtime-version": "18.08",
+    "sdk": "org.freedesktop.Sdk",
+    "modules": [
+        {
+            "name": "libffi",
+            "builddir": true,
+            "config-opts": ["--prefix=/app/"],
+            "sources": [
+                {
+                    "type": "git",
+                    "url": "https://github.com/libffi/libffi.git"
+                }
+                ]
+           },
+        {
+            "name": "ncurses",
+            "builddir": true,
+            "config-opts": ["--prefix=/app/"],
+            "sources": [
+                {
+                    "type": "git",
+                    "url": "https://github.com/mirror/ncurses.git"
+                }
+                ]
+           },
+        {
+            "name": "reduce",
+            "buildsystem": "simple",
+            "build-commands": [
+              "ls /run/build/reduce/*",
+              "./configure --with-csl --prefix=/app",
+              "make csl sequential",
+              "./configure --with-psl --prefix=/app",
+              "make psl sequential",
+              "mkdir -p /app/lib/reduce/cslbuild/csl",
+              "mkdir -p /app/lib/reduce/pslbuild",
+
+              "cp -r pslbuild/x*/psl /app/lib/reduce/pslbuild",
+              "cp -r pslbuild/x*/red /app/lib/reduce/pslbuild",
+              "cp debianbuild/reduce/debian/runpsl.sh /app/bin/redpsl",
+              "cp bin/rfpsl /app/bin",
+
+              "cp cslbuild/x*/csl/bootstrapreduce /app/lib/reduce/cslbuild/csl",
+              "cp cslbuild/x*/csl/bootstrapreduce.img /app/lib/reduce/cslbuild/csl",
+              "cp cslbuild/x*/csl/csl /app/lib/reduce/cslbuild/csl",
+              "cp cslbuild/x*/csl/csl.img /app/lib/reduce/cslbuild/csl",
+              "cp cslbuild/x*/csl/reduce /app/lib/reduce/cslbuild/csl",
+              "cp cslbuild/x*/csl/reduce.img /app/lib/reduce/cslbuild/csl",
+              "cp debianbuild/reduce/debian/runcsl.sh /app/bin/redcsl",
+              "cp debianbuild/reduce/debian/runbootstrapreduce.sh /app/bin/bootstrapreduce",
+              "cp bin/rfcsl /app/bin",
+
+              "cp -r cslbuild/x*/csl/reduce.fonts /app/lib/reduce/cslbuild/csl",
+              "cp -r cslbuild/x*/csl/reduce.resources /app/lib/reduce/cslbuild/csl",   
+              "cp -r cslbuild/x*/csl/reduce.doc /app/lib/reduce/cslbuild/csl",
+              "cp cslbuild/x*/csl/reduce.doc/BINARY-LICENSE.txt /app/lib/reduce/cslbuild/csl/reduce.doc",
+              "cp cslbuild/x*/csl/reduce.doc/BSD-LICENSE.txt /app/lib/reduce/cslbuild/csl/reduce.doc",
+
+              "mkdir -p /app/share/reduce",
+              "ln -s /app/lib/reduce/pslbuild /app/share/reduce",
+              "ln -s /app/lib/reduce/cslbuild /app/share/reduce",
+              "cp -r packages /app/share/reduce",
+
+              "chmod +x /app/bin/redcsl /app/bin/rfcsl",
+              "chmod +x /app/bin/redpsl /app/bin/rfpsl"
+            ],
+            "sources": [
+                {
+                    "type": "svn",
+                    "url": "svn://svn.code.sf.net/p/reduce-algebra/code/trunk"
+                }
+            ]
+        }
+    ]
+}
