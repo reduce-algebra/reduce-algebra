@@ -114,8 +114,9 @@ symbolic procedure onoff(u,bool);
       if !*switchcheck and lispeval x eq bool then return nil
        else if y := atsoc(bool,get(u,'simpfg))
         then lispeval('progn . append(cdr y,list nil));
-      if bool and x = '!*!r!a!i!s!e then x := '!*raise; % Special case.
-       set(x,bool)
+      if bool and x = '!*!r!a!i!s!e then x := '!*raise       % Special case.
+      else if bool and x = '!*!L!O!W!E!R then x := '!*lower; % Special case.
+      set(x,bool)
    end;
 
 fluid '(swcksave);
@@ -166,7 +167,7 @@ flag ('(off on),'ignore);
 % Symbolic mode switches:
 
 switch backtrace,comp,defn,demo,echo,errcont,fastfor,   % eoldelimp
-       int,lessspace,msg,output,pret,quotenewnam,raise,time,
+       int,lessspace,msg,output,pret,quotenewnam,raise,lower,time,
        strict_argcount, report_colons;
 
 !*report_colons := t;

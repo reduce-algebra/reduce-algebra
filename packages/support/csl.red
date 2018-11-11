@@ -109,8 +109,8 @@ symbolic inline procedure timbf(u, v); csl_timbf(u, v);
 !#endif
 
 symbolic procedure fl2bf x;
-  if not fp!-finite x then rederr "Floating point infinity or NaN" else
-  begin scalar u;
+  if not fp!-finite x then rederr list("Floating point infinity or NaN",x)
+  else begin scalar u;
     u := frexp x;
     x := cdr u; % mantissa between 0.5 and 1
     u := car u; % exponent

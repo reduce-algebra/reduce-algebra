@@ -47,9 +47,6 @@ symbolic procedure create!-package(u,v);
 % create!-package('(cslprolo),nil);
 
 symbolic procedure evload l;
-% This is coded out as an explicit loop because it is processed rather
-% early in the bootstrap sequence, and the nicer syntax I might prefer
-% to use may not be stable...
   begin
      while l do <<
         load!-module car l;

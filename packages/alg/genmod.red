@@ -46,12 +46,12 @@ symbolic procedure set!-general!-modulus p;
 % Allow for use of small moduli where appropriate. What this bit is about is
 % that CSL supports "set-small-modulus" setting a general potentially bignum
 % modulus, and modular-plus and related functions then handle the big cases
-% gracefully, meansing that the functions here like general-modular-plus are
+% gracefully, meaning that the functions here like general-modular-plus are
 % basically redundant. I am now making Jlisp do the same. But rather than
 % checking the identity of the Lisp system I now see if set!-small!-modulus
 % will accept an argument that is rather large. I test at 2^64 because I
 % expect that to be above any reasonable "small" range.
-% The re-binding of !*protfg is to precent rederr from displaying a message
+% The re-binding of !*protfg is to prevent rederr from displaying a message
 % if things fail.
 #if (errorp (errorset
       '((lambda (!*protfg) (set!-small!-modulus (expt 2 64))) t)

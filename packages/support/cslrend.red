@@ -809,8 +809,9 @@ flag('(copyd), 'lose);
 % CSL defined a function called VECTOR but Reduce wants to as well, so I
 % will move the CSL one out of the way. I rather dislike this.
 
-copyd('csl!-vector, 'vector);
-remd 'vector;
+if getd 'vector then <<
+  copyd('csl!-vector, 'vector);
+  remd 'vector >>;
 
 % The following is intended to run the test on a single package.
 % In due course I will improve it so it also checks the output,

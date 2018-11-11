@@ -109,7 +109,8 @@ symbolic procedure princ u; prin2 u;
 symbolic procedure putc(name, type, body);
    % Defines a non-standard function, such as an inline. Returns NAME.
    begin
-      if !*comp and flagp(type, 'compile) then compd(name, type, body)
+      if !*comp and flagp(type, 'compile) and getd 'compd then
+         compd(name, type, body)
       else put(name, type, body);
       return name
    end;
