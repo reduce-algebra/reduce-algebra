@@ -1,4 +1,4 @@
-// arith01.cpp                             Copyright (C) 1990-2017 Codemist
+// arith01.cpp                             Copyright (C) 1990-2018 Codemist
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -527,7 +527,7 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
 #ifdef LITTLEENDIAN
 static float128_t f128_TWO_31 = {{0, INT64_C(0x401e000000000000)}};
 #else
-statuc float128_t f128_TWO_31 = {{INT64_C(0x401e000000000000), 0}};
+static float128_t f128_TWO_31 = {{INT64_C(0x401e000000000000), 0}};
 #endif
 
 static float128_t bignum_to_float128(LispObject v, int32_t h, int *xp)
@@ -1310,7 +1310,8 @@ static inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // AHAHA. With the "Late 2016" model garbage collector and preserve/restart
 // plus the "Early 2017" rework of mapstore() I believe there will never be
 // any linear scanning of active heap, and so this (minor) extra cost could
-// be avoided. I will leave it in here as a matter of being tidy.
+// be avoided. I will leave it in here as a matter of being tidy as well as
+// against the possibility that future GC re-works require it!
 //
             *(Header *)&bignum_digits(c)[i] = make_bighdr(2L);
             return c;
