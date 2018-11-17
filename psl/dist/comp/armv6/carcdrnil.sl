@@ -7,6 +7,7 @@
 % Created:      3-Apr-86
 % Modified:     
 % Package:      PSL
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
