@@ -14,3 +14,4 @@ flatpak --command=redcsl run de.camusings.Reduce
 
 Besides redcsl also rfcsl, bootstrapreduce, redpsl and rfpsl are provided.
 
+The sandbox permissions are set in de.camusings.Reduce.json to allow for restricted access to the host filessystems (in the "finish-args" section). If other permissions are wanted they need to be set there (see docs.flatpak.org/en/latest/sandbox-permissions.html). 
