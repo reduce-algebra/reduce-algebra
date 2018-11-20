@@ -54,14 +54,38 @@ operator.  For example:
 \subsection{CONJ}\ttindex{CONJ}
 \hypertarget{operator:CONJ}{}
 This returns the complex conjugate
-of an expression, if that argument has an numerical value.  A
-non-numerical argument is returned as an expression in the operators
-\texttt{REPART}\ttindex{REPART} and \texttt{IMPART}\ttindex{IMPART}. For example:
+of an expression, if that argument has a numerical value.  By default the
+complex conjugate of a non-numerical argument is returned as an expression
+in the operators
+\texttt{REPART}\ttindex{REPART} and \texttt{IMPART}\ttindex{IMPART}.
+For example:
 \begin{verbatim}
         conj(1+i)     -> 1-I
         conj(a+i*b)   -> REPART(A) - REPART(B)*I
                          - IMPART(A)*I - IMPART(B)
 \end{verbatim}
+
+However, if rules have been previously defined for the complex conjugate(s)
+of one or more non-numerical terms appearing in the argument, these rules are
+applied and the expansion in terms of the operators
+\texttt{REPART}\ttindex{REPART} and \texttt{IMPART}\ttindex{IMPART} is
+suppressed.
+
+For example:
+\begin{verbatim}
+        realvalued a,b;
+        conj(a+i*b)   ->   a-b*i
+        let conj z => z!*, conj c => c!*;
+        conj(a+b*z*z!*+z*c!*)   ->   a+b*z*z* + c*z*
+        conj atan z    ->   atan(z*)  
+\end{verbatim}
+
+Note that in defining the rule \texttt{conj z => z!*}, the rule
+\texttt{conj z!*  => z} is (in effect) automatically defined.
+Note also that the standard elementary functions and their inverses
+(where appropriate) are automatically defined to be
+  \texttt{SELFCONJUGATE}\ttindex{SELFCONJUGATE} so that
+ \texttt{conj(f(z)) => f(conj(z))}.
 
 \subsection{FACTORIAL}\ttindex{FACTORIAL}
 \hypertarget{operator:FACTORIAL}{}
@@ -105,7 +129,10 @@ has an numerical value.  A non-numerical argument is returned as an expression
 in the operators \texttt{REPART}\ttindex{REPART} and \texttt{IMPART}.  For example:
 \begin{verbatim}
         impart(1+i)   -> 1
-        impart(a+i*b) -> REPART(B) + IMPART(A)
+        impart(sin(3+4*i)) -> cos(3)*sinh(4)
+        impart(log(2+i))   -> atan(1/2)
+        impart(asin(1+i))  -> acosh(sqrt(5)+2)/2
+        impart(a+i*b)      -> impart(a) + repart(b)
 \end{verbatim}
 
 \subsection{MAX/MIN}
@@ -175,7 +202,10 @@ the operators \texttt{REPART} and \texttt{IMPART}\ttindex{IMPART}.
 For example:
 \begin{verbatim}
         repart(1+i)   -> 1
-        repart(a+i*b) -> REPART(A) - IMPART(B)
+        repart(sin(3+4*i)) -> cosh(4)*sin(3)
+        repart(log(2+i))   -> log(5)/2
+        repart(asin(1+i))  -> acos(sqrt(5)-2)/2         
+        repart(a+i*b)      ->  - impart(b) + repart(a)
 \end{verbatim}
 
 \subsection{ROUND}\ttindex{ROUND}
@@ -502,6 +532,30 @@ if given complex arguments.  For example, with \texttt{on rounded,complex;}
     2.3^(5.6i)  ->  -0.0480793490914 - 0.998843519372*I
     cos(2+3i)   ->  -4.18962569097 - 9.10922789376*I
 \end{verbatim}
+
+For \texttt{log} and the inverse trig. and hyperbolic functions which are
+multi-valued, the principal value is returned. The branch cuts chosen
+(except for \texttt{acot}) are now
+those recommended by W.~Kahan (Branch Cuts for Complex Elementary Functions,
+or Much Ado About Nothing's Sign Bit,
+\textbf{in} The State of the Art in Numerical Analysis,
+A.~Iserles, M.J.D.~Powell Eds., Clarendon Press, Oxford, 1987).
+
+The exception for \texttt{acot} is necessary as elsewhere in Reduce
+$acot(-z)$ is taken to be $\pi - acot(z)$ rather than $-acot(z)$.
+The branch cuts are:\\
+\begin{tabular}{ll}
+  $\log$:           & $ \{r   \mid r \in\mathbb{R} \land r < 0\} $\\
+  $\mathop{\mathrm{asin}}$, $\mathop{\mathrm{acos}}$: & $ \{r   \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
+  $\mathop{\mathrm{acsc}}$, $\mathop{\mathrm{asec}}$: & $ \{r   \mid r \in\mathbb{R} \land r \not= 0 \land r > -1 \land r < 1\} $\\
+  $\mathop{\mathrm{atan}}$, $\mathop{\mathrm{acot}}$: & $ \{r*i \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
+  $\mathop{\mathrm{asinh}}$:         & $ \{r*i \mid r \in\mathbb{R} \land (r \geq  1 \lor r \leq  -1)\} $\\
+  $\mathop{\mathrm{acsch}}$:         & $ \{r*i \mid r \in\mathbb{R} \land r \not= 0 \land r \geq  -1 \land r \leq  1\} $\\
+  $\mathop{\mathrm{acosh}}$:         & $ \{r   \mid r \in\mathbb{R} \land r < 1\} $\\
+  $\mathop{\mathrm{asech}}$:         & $ \{r   \mid r \in\mathbb{R} \land (r > 1 \lor r < 0)\} $\\
+  $\mathop{\mathrm{atanh}}$:         & $ \{r   \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
+  $\mathop{\mathrm{acoth}}$:         & $ \{r   \mid r \in\mathbb{R} \land r > -1 \land r < 1\} $
+\end{tabular}
 
 \section{Bernoulli Numbers and Euler Numbers}
 \ttindex{Bernoulli}\index{Bernoulli numbers}
