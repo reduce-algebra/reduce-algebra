@@ -63,6 +63,21 @@ expressions test the impart for checking the value range:
            2*x*y
 \end{verbatim}
 
+\section{SELFCONJUGATE Declaration}
+
+
+The declaration \texttt{SELFCONJUGATE}\ttindex{SELFCONJUGATE} may be used 
+to declare an operator to be self-conjuate in the sense that
+\texttt{conj(f(z)) = f(conj(z))}. The syntax is:
+\begin{verbatim}
+        selfconjugate f1,...fn;
+\end{verbatim}
+
+Such declarations are not needed for the standard elementary functions nor
+for the inverses \texttt{atan, acot, asinh, acsch}. The remaining inverse
+functions \texttt{log, asin, acos, atanh, acosh} etc. and
+\texttt{sqrt} fail to be self-conjugate on their branch cuts (which are all
+subsets of the real axis).
 
 \section{Declaring Expressions Positive or Negative}
 

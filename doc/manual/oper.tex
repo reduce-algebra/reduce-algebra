@@ -542,15 +542,16 @@ or Much Ado About Nothing's Sign Bit,
 A.~Iserles, M.J.D.~Powell Eds., Clarendon Press, Oxford, 1987).
 
 The exception for \texttt{acot} is necessary as elsewhere in Reduce
-$acot(-z)$ is taken to be $\pi - acot(z)$ rather than $-acot(z)$.
+$\mathop{\mathrm{acot}}(-z)$ is taken to be $\pi - \mathop{\mathrm{acot}}(z)$
+rather than $-\mathop{\mathrm{acot}}(z)$.
 The branch cuts are:\\
 \begin{tabular}{ll}
   $\log$:           & $ \{r   \mid r \in\mathbb{R} \land r < 0\} $\\
   $\mathop{\mathrm{asin}}$, $\mathop{\mathrm{acos}}$: & $ \{r   \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
-  $\mathop{\mathrm{acsc}}$, $\mathop{\mathrm{asec}}$: & $ \{r   \mid r \in\mathbb{R} \land r \not= 0 \land r > -1 \land r < 1\} $\\
+  $\mathop{\mathrm{acsc}}$, $\mathop{\mathrm{asec}}$: & $ \{r   \mid r \in\mathbb{R} \land r \neq 0 \land r > -1 \land r < 1\} $\\
   $\mathop{\mathrm{atan}}$, $\mathop{\mathrm{acot}}$: & $ \{r*i \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
   $\mathop{\mathrm{asinh}}$:         & $ \{r*i \mid r \in\mathbb{R} \land (r \geq  1 \lor r \leq  -1)\} $\\
-  $\mathop{\mathrm{acsch}}$:         & $ \{r*i \mid r \in\mathbb{R} \land r \not= 0 \land r \geq  -1 \land r \leq  1\} $\\
+  $\mathop{\mathrm{acsch}}$:         & $ \{r*i \mid r \in\mathbb{R} \land r \neq 0 \land r \geq  -1 \land r \leq  1\} $\\
   $\mathop{\mathrm{acosh}}$:         & $ \{r   \mid r \in\mathbb{R} \land r < 1\} $\\
   $\mathop{\mathrm{asech}}$:         & $ \{r   \mid r \in\mathbb{R} \land (r > 1 \lor r < 0)\} $\\
   $\mathop{\mathrm{atanh}}$:         & $ \{r   \mid r \in\mathbb{R} \land (r > 1 \lor r < -1)\} $\\
