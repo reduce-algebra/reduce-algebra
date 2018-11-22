@@ -7,9 +7,10 @@ how to inform {\REDUCE} of such assumptions.
 
 
 \section{REALVALUED Declaration and Check}
+\hypertarget{command:REALVALUED}{}
+\hypertarget{command:NOTREALVALUED}{}
 
-
-The declaration \texttt{REALVALUED}\ttindex{REALVALUED} may be used 
+The declaration \texttt{REALVALUED}\ttindextype{REALVALUED}{declaration} may be used 
 to restrict variables to the real numbers. The syntax is:
 \begin{verbatim}
         realvalued v1,...vn;
@@ -36,11 +37,12 @@ real values. Example:
 Such declarations are not needed for the standard elementary functions.
         
 To remove the propery from a variable or an operator use the declaration
-\texttt{NOTREALVALUED}\ttindex{NOTREALVALUED} with the syntax:
+\texttt{NOTREALVALUED}\ttindextype{NOTREALVALUED}{declaration} with the syntax:
 \begin{verbatim}
         notrealvalued v1,...vn;
 \end{verbatim}
 
+\hypertarget{operator:REALVALUEDP}{}
 The boolean operator \texttt{REALVALUEDP}\ttindex{REALVALUEDP}
 allows you to check if a variable, an operator, or
 an operator expression is known as real valued.
@@ -64,9 +66,9 @@ expressions test the impart for checking the value range:
 \end{verbatim}
 
 \section{SELFCONJUGATE Declaration}
+\hypertarget{command:SELFCONJUGATE}{}
 
-
-The declaration \texttt{SELFCONJUGATE}\ttindex{SELFCONJUGATE} may be used 
+The declaration \texttt{SELFCONJUGATE}\ttindextype{SELFCONJUGATE}{declaration} may be used 
 to declare an operator to be self-conjuate in the sense that
 \texttt{conj(f(z)) = f(conj(z))}. The syntax is:
 \begin{verbatim}
