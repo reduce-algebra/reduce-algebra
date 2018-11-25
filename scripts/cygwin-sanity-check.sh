@@ -56,7 +56,8 @@ fordistrib="texlive-collection-latexrecommended \
   texlive-collection-latexextra \
   texlive-collection-fontsrecommended \
   texlive-collection-fontsextra \
-  texlive-collection-htmlxml  \
+  texlive-collection-formatsextra \
+  texlive-collection-plaingeneric \
   rsync"
 
 case `uname -m` in

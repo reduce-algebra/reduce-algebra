@@ -59,6 +59,9 @@ case $host in
   echo "AMD64_ext"
 #  echo "AMD64"
   ;;
+*armv6*|*armv7*)
+  echo "armv6"
+  ;;
 *arm*)
   echo "arm"
   ;;
