@@ -220,7 +220,7 @@
 		((memq instr '(CMP CMN TST TEQ))
 		 (setq operand2 (bldmsg "%w, %w" regn operand2)))
 		(t
-		 (setq operand2 (bldmsg "%w, %w,%w" regd regn operand2))))
+		 (setq operand2 (bldmsg "%w, %w, %w" regd regn operand2))))
 	  (setq instr (intern (bldmsg "%w%w%s" instr cc (if set-bit "s" ""))))
 	  (return (list 4 instr operand2))))
 
@@ -237,14 +237,16 @@
 	  (return (bldmsg "#%d" (if (weq rotate_imm 0) immed_8 (rotate-right immed_8 rotate_imm))))))
 
 (setq shiftoplist*
-      '((2#000 . lsl) (2#010 . lsr) (2#100 . asr) (2#110 . ror)))
+      '((2#00 . lsl) (2#01 . lsr) (2#10 . asr) (2#11 . ror)))
 
 (de decode-shifter-operand (bits)
     (prog (regm shift shift_imm regs instr)
 	  (setq regm (regnum-to-regname (wand bits 16#0f)))
-	  (setq shift (wand (wshift bits -4) 2#111))
+	  (setq shift (wand (wshift bits -5) 2#11))
 	  (cond ((weq 0 (wand bits 2#10000)) % immediate shift
 		 (setq shift_imm (wand (wshift bits -7) 2#11111))
+		 (if (and (weq shift_imm 0) (or (weq shift 1) (weq shift 2)))
+		     (setq shift_imm 32))
 		 (cond ((weq shift_imm 0)
 			(if (weq shift 3)
 			    (return (bldmsg "%w, rrx" regm))
@@ -319,7 +321,9 @@
 			(stderror "Unprivileged LDRT/STRT not handled")
 			)
 		       ((2)		% offset adressing immediate
-			(return (list 4 instr regd (bldmsg "[%w, #%d]" regn offset12)))
+			(return (list 4 instr regd
+				      (if (weq offset12 0) (bldmsg "[%w]" regn)
+					(bldmsg "[%w, #%d]" regn offset12))))
 			)
 		       ((3)		% offset addressing, preindexed
 			(return (list 4 instr regd (bldmsg "[%w, #%d]!" regn offset12)))
@@ -345,20 +349,22 @@
 		%%  )
 
 	        (t			% register offset/indexed
-                 (if (weq shift_imm 0)
-                     (setq shift (if (weq shift 3) ", rrx" ""))
+		 (if (and (weq shift_imm 0) (or (weq shift 1) (weq shift 2)))
+		     (setq shift_imm 32))
+                 (if (and (weq shift_imm 0) (weq shift 3))
+		     (setq shift ", rrx")
                    (setq shift (bldmsg ", %w #%d" (cdr (assoc shift shiftoplist*)) shift_imm)))
 		 (case (wor (wshift p-bit 1) w-bit)
-		       ((0)		% normal memory access, postindexed
+		       ((0)		% register offset adressing, postindexed
 			(return (list 4 instr regd (bldmsg "[%w], %s%w%s" regn (if (null u-bit) "-" "") regm shift)))
 			)
 		       ((1)		% unprivileged LDRT/STRT -- not handled
 			(stderror "Unprivileged LDRT/STRT not handled")
 			)
-		       ((2)		% offset adressing immediate
+		       ((2)		% register offset adressing
 			(return (list 4 instr regd (bldmsg "[%w, %s%w%s]" regn (if (null u-bit) "-" "") regm shift)))
 			)
-		       ((3)		% offset addressing, preindexed
+		       ((3)		% register offset addressing, preindexed
 			(return (list 4 instr regd (bldmsg "[%w, %s%w%s]!" regn (if (null u-bit) "-" "") regm shift)))
 			)
 		      )
@@ -433,7 +439,9 @@
 		 (stderror "Unpredictable misc. load/store")
 		 )
 		((2)		% offset adressing immediate
-		 (return (list 4 instr regd (or specialop (bldmsg "[%w, %w]" regn offset))))
+		 (return (list 4 instr regd (or specialop
+						(if (weq offset 0) (bldmsg "[%w]" regn)
+						  (bldmsg "[%w, %w]" regn offset)))))
 		 )
 		((3)		% offset addressing, preindexed
 		 (return (list 4 instr regd (bldmsg "[%w, %w]!" regn offset)))
