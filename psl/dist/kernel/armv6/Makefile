@@ -179,15 +179,9 @@ $(USERDIR)/bpsl_om: $(CFILES)  \
 
  
 $(USERDIR)/dmain.o: $(USERDIR)/dmain.s 
-	mv $(USERDIR)/dmain.s $(USERDIR)/dmain.temp
-	sed -f $(PXK)/dmain.linux.sed $(USERDIR)/dmain.temp > $(USERDIR)/dmain.s
-	# rm -f $(USERDIR)/dmain.temp
 	gcc -c -m32 $(ASARGS) -o $(USERDIR)/dmain.o $(USERDIR)/dmain.s
 
 $(USERDIR)/main.o: $(USERDIR)/main.s
-	mv $(USERDIR)/main.s $(USERDIR)/main.temp
-	sed -f $(PXK)/main.linux.sed $(USERDIR)/main.temp > $(USERDIR)/main.s
-	# rm -f $(USERDIR)/main.temp
 	gcc -c -m32 $(ASARGS) -o $(USERDIR)/main.o $(USERDIR)/main.s
  
 $(USERDIR)/main.s: $(BFILES) $(SLFILES) $(PXK)/main.linux.sed $(PXK)/dmain.linux.sed

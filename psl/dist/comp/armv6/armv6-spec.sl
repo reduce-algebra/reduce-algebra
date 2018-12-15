@@ -148,6 +148,25 @@
 %    )
 %  )
 
+(de ExpandIDLoc (x) (SaveConstant x))
+
+(put 'IDloc 'Pass1PseudoOp 'ExpandIDLoc)
+
+(de ExpandItem (Expression)
+  (prog (LabelOfContents)
+	(return (cond ((InumP Expression) Expression)
+                      ((IdlocP Expression) Expression)
+		      ((IDP Expression)
+		       (MakeMkItem (TagNumber Expression)
+				   (list 'IDLoc Expression)))
+		      ((CodeP Expression)
+		       (MakeMkItem (TagNumber Expression)
+			           Expression))
+		      (t (progn (setq LabelOfContents
+				      (SaveContents Expression))
+				(MakeMkItem (TagNumber Expression)
+					    LabelOfContents)))))))
+
 (de AppendContents (ExpressionLabelPair)
   (prog (Expression UpperBound I)
 %	(if (and *writingasmfile (StringP (car ExpressionLabelPair)))

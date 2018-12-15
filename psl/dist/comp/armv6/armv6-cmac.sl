@@ -315,7 +315,7 @@
        ((regp regp)	    	 (MOV ArgTwo ArgOne))
        ((imm8-rotatedp regp)     (MOV Argtwo ArgOne))
        ((immediatep regp)        (MOV Argtwo ArgOne))
-       ((fixp regp)              (*LoadConstant ArgTwo (quote ArgOne)))
+       ((fixp regp)              (*LoadConstant ArgTwo ArgOne))
        ((idlocp regp)            (*LoadIDLoc ArgTwo ArgOne))
        ((fluid-arg-p regp)       (*LoadIdNumber LDR ArgTwo ArgOne))
        ((indirectp regp)         (LDR ArgTwo ArgOne))
@@ -339,11 +339,14 @@
 (DefCMacro *LoadConstant)
 
 (de *LoadIDLoc (dest src)
-    (cond ((and (idlocp src) (wlessp (id2int (cadr src)) 257))
+  (let ((idnumber (WConstEvaluable src)))
+    (cond ((and (fixp idnumber) (wlessp idnumber 257))
 	   (*LoadConstant dest (id2int (cadr src))))
+	  ((and *writingasmfile (fixp idnumber))
+	   `( (ldr ,dest (quote ,idnumber))))
 	  (t
-	   `( (ldr ,dest (quote ,src))))
-    ))
+	   `( (ldr ,dest ,src)))
+    )))
 
 
 (DefCMacro *LoadIDLoc)

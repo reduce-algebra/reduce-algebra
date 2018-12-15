@@ -413,7 +413,7 @@ stacklowerbound:
  .long [[253*0x8000000]+338]
  .long [[253*0x8000000]+339]
  .long [[253*0x8000000]+340]
- .long 507
+ .long 508
  .long symnam
  .long [[253*0x8000000]+343]
  .long [[254*0x8000000]+256]
@@ -579,7 +579,8 @@ stacklowerbound:
  .long [[253*0x8000000]+504]
  .long [[253*0x8000000]+505]
  .long [[253*0x8000000]+506]
-  .space 2395952
+ .long [[253*0x8000000]+507]
+  .space 2395944
  .globl symprp
 symprp:
  .long [[254*0x8000000]+256]
@@ -1089,185 +1090,10 @@ symprp:
  .long [[254*0x8000000]+256]
  .long [[254*0x8000000]+256]
  .long [[254*0x8000000]+256]
-  .space 2395952
+ .long [[254*0x8000000]+256]
+  .space 2395944
  .globl symnam
 symnam:
- .globl l0408
- .long [[4*0x8000000]+l0408]
- .globl l0409
- .long [[4*0x8000000]+l0409]
- .globl l0410
- .long [[4*0x8000000]+l0410]
- .globl l0411
- .long [[4*0x8000000]+l0411]
- .globl l0412
- .long [[4*0x8000000]+l0412]
- .globl l0413
- .long [[4*0x8000000]+l0413]
- .globl l0414
- .long [[4*0x8000000]+l0414]
- .globl l0415
- .long [[4*0x8000000]+l0415]
- .globl l0416
- .long [[4*0x8000000]+l0416]
- .globl l0417
- .long [[4*0x8000000]+l0417]
- .globl l0418
- .long [[4*0x8000000]+l0418]
- .globl l0419
- .long [[4*0x8000000]+l0419]
- .globl l0420
- .long [[4*0x8000000]+l0420]
- .globl l0421
- .long [[4*0x8000000]+l0421]
- .globl l0422
- .long [[4*0x8000000]+l0422]
- .globl l0423
- .long [[4*0x8000000]+l0423]
- .globl l0424
- .long [[4*0x8000000]+l0424]
- .globl l0425
- .long [[4*0x8000000]+l0425]
- .globl l0426
- .long [[4*0x8000000]+l0426]
- .globl l0427
- .long [[4*0x8000000]+l0427]
- .globl l0428
- .long [[4*0x8000000]+l0428]
- .globl l0429
- .long [[4*0x8000000]+l0429]
- .globl l0430
- .long [[4*0x8000000]+l0430]
- .globl l0431
- .long [[4*0x8000000]+l0431]
- .globl l0432
- .long [[4*0x8000000]+l0432]
- .globl l0433
- .long [[4*0x8000000]+l0433]
- .globl l0434
- .long [[4*0x8000000]+l0434]
- .globl l0435
- .long [[4*0x8000000]+l0435]
- .globl l0436
- .long [[4*0x8000000]+l0436]
- .globl l0437
- .long [[4*0x8000000]+l0437]
- .globl l0438
- .long [[4*0x8000000]+l0438]
- .globl l0439
- .long [[4*0x8000000]+l0439]
- .globl l0440
- .long [[4*0x8000000]+l0440]
- .globl l0441
- .long [[4*0x8000000]+l0441]
- .globl l0442
- .long [[4*0x8000000]+l0442]
- .globl l0443
- .long [[4*0x8000000]+l0443]
- .globl l0444
- .long [[4*0x8000000]+l0444]
- .globl l0445
- .long [[4*0x8000000]+l0445]
- .globl l0446
- .long [[4*0x8000000]+l0446]
- .globl l0447
- .long [[4*0x8000000]+l0447]
- .globl l0448
- .long [[4*0x8000000]+l0448]
- .globl l0449
- .long [[4*0x8000000]+l0449]
- .globl l0450
- .long [[4*0x8000000]+l0450]
- .globl l0451
- .long [[4*0x8000000]+l0451]
- .globl l0452
- .long [[4*0x8000000]+l0452]
- .globl l0453
- .long [[4*0x8000000]+l0453]
- .globl l0454
- .long [[4*0x8000000]+l0454]
- .globl l0455
- .long [[4*0x8000000]+l0455]
- .globl l0456
- .long [[4*0x8000000]+l0456]
- .globl l0457
- .long [[4*0x8000000]+l0457]
- .globl l0458
- .long [[4*0x8000000]+l0458]
- .globl l0459
- .long [[4*0x8000000]+l0459]
- .globl l0460
- .long [[4*0x8000000]+l0460]
- .globl l0461
- .long [[4*0x8000000]+l0461]
- .globl l0462
- .long [[4*0x8000000]+l0462]
- .globl l0463
- .long [[4*0x8000000]+l0463]
- .globl l0464
- .long [[4*0x8000000]+l0464]
- .globl l0465
- .long [[4*0x8000000]+l0465]
- .globl l0466
- .long [[4*0x8000000]+l0466]
- .globl l0467
- .long [[4*0x8000000]+l0467]
- .globl l0468
- .long [[4*0x8000000]+l0468]
- .globl l0469
- .long [[4*0x8000000]+l0469]
- .globl l0470
- .long [[4*0x8000000]+l0470]
- .globl l0471
- .long [[4*0x8000000]+l0471]
- .globl l0472
- .long [[4*0x8000000]+l0472]
- .globl l0473
- .long [[4*0x8000000]+l0473]
- .globl l0474
- .long [[4*0x8000000]+l0474]
- .globl l0475
- .long [[4*0x8000000]+l0475]
- .globl l0476
- .long [[4*0x8000000]+l0476]
- .globl l0477
- .long [[4*0x8000000]+l0477]
- .globl l0478
- .long [[4*0x8000000]+l0478]
- .globl l0479
- .long [[4*0x8000000]+l0479]
- .globl l0480
- .long [[4*0x8000000]+l0480]
- .globl l0481
- .long [[4*0x8000000]+l0481]
- .globl l0482
- .long [[4*0x8000000]+l0482]
- .globl l0483
- .long [[4*0x8000000]+l0483]
- .globl l0484
- .long [[4*0x8000000]+l0484]
- .globl l0485
- .long [[4*0x8000000]+l0485]
- .globl l0486
- .long [[4*0x8000000]+l0486]
- .globl l0487
- .long [[4*0x8000000]+l0487]
- .globl l0488
- .long [[4*0x8000000]+l0488]
- .globl l0489
- .long [[4*0x8000000]+l0489]
- .globl l0490
- .long [[4*0x8000000]+l0490]
- .globl l0491
- .long [[4*0x8000000]+l0491]
- .globl l0492
- .long [[4*0x8000000]+l0492]
- .globl l0493
- .long [[4*0x8000000]+l0493]
- .globl l0494
- .long [[4*0x8000000]+l0494]
- .globl l0495
- .long [[4*0x8000000]+l0495]
  .globl l0496
  .long [[4*0x8000000]+l0496]
  .globl l0497
@@ -2106,7 +1932,185 @@ symnam:
  .long [[4*0x8000000]+l0913]
  .globl l0914
  .long [[4*0x8000000]+l0914]
-  .space 2395952
+ .globl l0915
+ .long [[4*0x8000000]+l0915]
+ .globl l0916
+ .long [[4*0x8000000]+l0916]
+ .globl l0917
+ .long [[4*0x8000000]+l0917]
+ .globl l0918
+ .long [[4*0x8000000]+l0918]
+ .globl l0919
+ .long [[4*0x8000000]+l0919]
+ .globl l0920
+ .long [[4*0x8000000]+l0920]
+ .globl l0921
+ .long [[4*0x8000000]+l0921]
+ .globl l0922
+ .long [[4*0x8000000]+l0922]
+ .globl l0923
+ .long [[4*0x8000000]+l0923]
+ .globl l0924
+ .long [[4*0x8000000]+l0924]
+ .globl l0925
+ .long [[4*0x8000000]+l0925]
+ .globl l0926
+ .long [[4*0x8000000]+l0926]
+ .globl l0927
+ .long [[4*0x8000000]+l0927]
+ .globl l0928
+ .long [[4*0x8000000]+l0928]
+ .globl l0929
+ .long [[4*0x8000000]+l0929]
+ .globl l0930
+ .long [[4*0x8000000]+l0930]
+ .globl l0931
+ .long [[4*0x8000000]+l0931]
+ .globl l0932
+ .long [[4*0x8000000]+l0932]
+ .globl l0933
+ .long [[4*0x8000000]+l0933]
+ .globl l0934
+ .long [[4*0x8000000]+l0934]
+ .globl l0935
+ .long [[4*0x8000000]+l0935]
+ .globl l0936
+ .long [[4*0x8000000]+l0936]
+ .globl l0937
+ .long [[4*0x8000000]+l0937]
+ .globl l0938
+ .long [[4*0x8000000]+l0938]
+ .globl l0939
+ .long [[4*0x8000000]+l0939]
+ .globl l0940
+ .long [[4*0x8000000]+l0940]
+ .globl l0941
+ .long [[4*0x8000000]+l0941]
+ .globl l0942
+ .long [[4*0x8000000]+l0942]
+ .globl l0943
+ .long [[4*0x8000000]+l0943]
+ .globl l0944
+ .long [[4*0x8000000]+l0944]
+ .globl l0945
+ .long [[4*0x8000000]+l0945]
+ .globl l0946
+ .long [[4*0x8000000]+l0946]
+ .globl l0947
+ .long [[4*0x8000000]+l0947]
+ .globl l0948
+ .long [[4*0x8000000]+l0948]
+ .globl l0949
+ .long [[4*0x8000000]+l0949]
+ .globl l0950
+ .long [[4*0x8000000]+l0950]
+ .globl l0951
+ .long [[4*0x8000000]+l0951]
+ .globl l0952
+ .long [[4*0x8000000]+l0952]
+ .globl l0953
+ .long [[4*0x8000000]+l0953]
+ .globl l0954
+ .long [[4*0x8000000]+l0954]
+ .globl l0955
+ .long [[4*0x8000000]+l0955]
+ .globl l0956
+ .long [[4*0x8000000]+l0956]
+ .globl l0957
+ .long [[4*0x8000000]+l0957]
+ .globl l0958
+ .long [[4*0x8000000]+l0958]
+ .globl l0959
+ .long [[4*0x8000000]+l0959]
+ .globl l0960
+ .long [[4*0x8000000]+l0960]
+ .globl l0961
+ .long [[4*0x8000000]+l0961]
+ .globl l0962
+ .long [[4*0x8000000]+l0962]
+ .globl l0963
+ .long [[4*0x8000000]+l0963]
+ .globl l0964
+ .long [[4*0x8000000]+l0964]
+ .globl l0965
+ .long [[4*0x8000000]+l0965]
+ .globl l0966
+ .long [[4*0x8000000]+l0966]
+ .globl l0967
+ .long [[4*0x8000000]+l0967]
+ .globl l0968
+ .long [[4*0x8000000]+l0968]
+ .globl l0969
+ .long [[4*0x8000000]+l0969]
+ .globl l0970
+ .long [[4*0x8000000]+l0970]
+ .globl l0971
+ .long [[4*0x8000000]+l0971]
+ .globl l0972
+ .long [[4*0x8000000]+l0972]
+ .globl l0973
+ .long [[4*0x8000000]+l0973]
+ .globl l0974
+ .long [[4*0x8000000]+l0974]
+ .globl l0975
+ .long [[4*0x8000000]+l0975]
+ .globl l0976
+ .long [[4*0x8000000]+l0976]
+ .globl l0977
+ .long [[4*0x8000000]+l0977]
+ .globl l0978
+ .long [[4*0x8000000]+l0978]
+ .globl l0979
+ .long [[4*0x8000000]+l0979]
+ .globl l0980
+ .long [[4*0x8000000]+l0980]
+ .globl l0981
+ .long [[4*0x8000000]+l0981]
+ .globl l0982
+ .long [[4*0x8000000]+l0982]
+ .globl l0983
+ .long [[4*0x8000000]+l0983]
+ .globl l0984
+ .long [[4*0x8000000]+l0984]
+ .globl l0985
+ .long [[4*0x8000000]+l0985]
+ .globl l0986
+ .long [[4*0x8000000]+l0986]
+ .globl l0987
+ .long [[4*0x8000000]+l0987]
+ .globl l0988
+ .long [[4*0x8000000]+l0988]
+ .globl l0989
+ .long [[4*0x8000000]+l0989]
+ .globl l0990
+ .long [[4*0x8000000]+l0990]
+ .globl l0991
+ .long [[4*0x8000000]+l0991]
+ .globl l0992
+ .long [[4*0x8000000]+l0992]
+ .globl l0993
+ .long [[4*0x8000000]+l0993]
+ .globl l0994
+ .long [[4*0x8000000]+l0994]
+ .globl l0995
+ .long [[4*0x8000000]+l0995]
+ .globl l0996
+ .long [[4*0x8000000]+l0996]
+ .globl l0997
+ .long [[4*0x8000000]+l0997]
+ .globl l0998
+ .long [[4*0x8000000]+l0998]
+ .globl l0999
+ .long [[4*0x8000000]+l0999]
+ .globl l1000
+ .long [[4*0x8000000]+l1000]
+ .globl l1001
+ .long [[4*0x8000000]+l1001]
+ .globl l1002
+ .long [[4*0x8000000]+l1002]
+ .globl l1003
+ .long [[4*0x8000000]+l1003]
+  .space 2395944
  .globl symfnc
 symfnc:
  .long undefinedfunction
@@ -2380,14 +2384,6 @@ symfnc:
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
- .globl l0001
- .long l0001
- .long undefinedfunction
- .long undefinedfunction
- .long undefinedfunction
- .long undefinedfunction
- .long undefinedfunction
- .long undefinedfunction
  .globl l0003
  .long l0003
  .long undefinedfunction
@@ -2396,6 +2392,8 @@ symfnc:
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
+ .globl l0013
+ .long l0013
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
@@ -2412,25 +2410,31 @@ symfnc:
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
- .globl l0004
- .long l0004
- .long undefinedfunction
- .globl l0303
- .long l0303
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
- .globl l0019
- .long l0019
- .globl l0030
- .long l0030
- .globl l0012
- .long l0012
- .globl l0304
- .long l0304
- .globl l0357
- .long l0357
+ .long undefinedfunction
+ .long undefinedfunction
+ .globl l0038
+ .long l0038
+ .long undefinedfunction
+ .globl l0387
+ .long l0387
+ .long undefinedfunction
+ .long undefinedfunction
+ .long undefinedfunction
+ .long undefinedfunction
+ .globl l0064
+ .long l0064
+ .globl l0076
+ .long l0076
+ .globl l0055
+ .long l0055
+ .globl l0388
+ .long l0388
+ .globl l0442
+ .long l0442
  .globl _psl_main
  .long _psl_main
  .globl reduceup
@@ -2443,124 +2447,124 @@ symfnc:
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
- .globl l0350
- .long l0350
- .globl l0050
- .long l0050
+ .globl l0435
+ .long l0435
+ .globl l0101
+ .long l0101
  .globl initcode
  .long initcode
- .globl l0031
- .long l0031
- .globl l0035
- .long l0035
+ .globl l0078
+ .long l0078
+ .globl l0082
+ .long l0082
  .globl faslin
  .long faslin
  .long undefinedfunction
- .globl l0348
- .long l0348
- .globl l0349
- .long l0349
- .globl l0033
- .long l0033
- .globl l0347
- .long l0347
- .globl l0352
- .long l0352
- .globl l0292
- .long l0292
+ .globl l0433
+ .long l0433
+ .globl l0434
+ .long l0434
+ .globl l0080
+ .long l0080
+ .globl l0432
+ .long l0432
+ .globl l0437
+ .long l0437
+ .globl l0376
+ .long l0376
  .globl binaryopenread
  .long binaryopenread
- .globl l0368
- .long l0368
+ .globl l0453
+ .long l0453
  .globl binaryread
  .long binaryread
- .globl l0360
- .long l0360
+ .globl l0445
+ .long l0445
  .globl binaryreadblock
  .long binaryreadblock
- .globl l0359
- .long l0359
+ .globl l0444
+ .long l0444
  .globl binaryclose
  .long binaryclose
  .long undefinedfunction
  .long undefinedfunction
- .globl l0093
- .long l0093
+ .globl l0149
+ .long l0149
  .long undefinedfunction
- .globl l0217
- .long l0217
+ .globl l0295
+ .long l0295
  .globl intern
  .long intern
  .globl subseq
  .long subseq
- .globl l0060
- .long l0060
- .globl l0076
- .long l0076
+ .globl l0111
+ .long l0111
+ .globl l0131
+ .long l0131
  .globl gtid
  .long gtid
  .globl gtconststr
  .long gtconststr
  .globl copystringtofrom
  .long copystringtofrom
- .globl l0104
- .long l0104
- .globl l0109
- .long l0109
- .globl l0223
- .long l0223
+ .globl l0163
+ .long l0163
+ .globl l0168
+ .long l0168
+ .globl l0301
+ .long l0301
  .long undefinedfunction
  .long undefinedfunction
  .globl plantunbound
  .long plantunbound
- .globl l0307
- .long l0307
- .globl l0178
- .long l0178
- .globl l0171
- .long l0171
+ .globl l0391
+ .long l0391
+ .globl l0250
+ .long l0250
+ .globl l0241
+ .long l0241
  .globl gtbps
  .long gtbps
  .globl gtwrds
  .long gtwrds
- .globl l0140
- .long l0140
- .globl l0130
- .long l0130
+ .globl l0206
+ .long l0206
+ .globl l0195
+ .long l0195
  .long undefinedfunction
- .globl l0277
- .long l0277
+ .globl l0359
+ .long l0359
  .globl delbps
  .long delbps
  .globl bittable
  .long bittable
- .globl l0148
- .long l0148
- .globl l0150
- .long l0150
- .globl l0153
- .long l0153
- .globl l0157
- .long l0157
- .globl l0168
- .long l0168
+ .globl l0214
+ .long l0214
+ .globl l0216
+ .long l0216
+ .globl l0219
+ .long l0219
+ .globl l0224
+ .long l0224
+ .globl l0235
+ .long l0235
  .globl putd
  .long putd
  .globl putentry
  .long putentry
- .globl l0192
- .long l0192
+ .globl l0268
+ .long l0268
  .long undefinedfunction
  .long undefinedfunction
  .globl stderror
  .long stderror
  .long undefinedfunction
- .globl l0196
- .long l0196
+ .globl l0273
+ .long l0273
  .globl gtheap
  .long gtheap
- .globl l0201
- .long l0201
+ .globl l0278
+ .long l0278
  .long undefinedfunction
  .long undefinedfunction
  .globl cons
@@ -2569,187 +2573,41 @@ symfnc:
  .long interrogate
  .globl modify
  .long modify
- .globl l0238
- .long l0238
+ .globl l0316
+ .long l0316
  .globl put
  .long put
- .globl l0247
- .long l0247
+ .globl l0327
+ .long l0327
  .globl atsoc
  .long atsoc
  .long undefinedfunction
- .globl l0246
- .long l0246
- .globl l0255
- .long l0255
+ .globl l0325
+ .long l0325
+ .globl l0336
+ .long l0336
  .globl plantcodepointer
  .long plantcodepointer
  .long undefinedfunction
  .long undefinedfunction
- .globl l0269
- .long l0269
+ .globl l0351
+ .long l0351
  .globl fluid
  .long fluid
  .long undefinedfunction
- .globl l0274
- .long l0274
+ .globl l0356
+ .long l0356
  .long undefinedfunction
  .globl plantlambdalink
  .long plantlambdalink
- .globl l0285
- .long l0285
+ .globl l0368
+ .long l0368
  .globl undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
  .globl compiledcallinginterpreted
  .long compiledcallinginterpreted
- .globl l0293
- .long l0293
- .globl l0294
- .long l0294
- .globl l0295
- .long l0295
- .globl l0296
- .long l0296
- .globl l0297
- .long l0297
- .globl l0298
- .long l0298
- .globl l0299
- .long l0299
- .globl l0300
- .long l0300
- .globl l0301
- .long l0301
- .globl l0302
- .long l0302
- .globl l0305
- .long l0305
- .globl l0306
- .long l0306
- .globl l0308
- .long l0308
- .globl l0309
- .long l0309
- .globl l0310
- .long l0310
- .globl l0311
- .long l0311
- .globl l0312
- .long l0312
- .globl l0313
- .long l0313
- .globl l0314
- .long l0314
- .globl l0315
- .long l0315
- .globl l0316
- .long l0316
- .globl l0317
- .long l0317
- .globl l0318
- .long l0318
- .globl l0319
- .long l0319
- .globl l0320
- .long l0320
- .globl l0321
- .long l0321
- .globl l0322
- .long l0322
- .globl l0323
- .long l0323
- .globl l0324
- .long l0324
- .globl l0325
- .long l0325
- .globl l0326
- .long l0326
- .globl l0327
- .long l0327
- .globl l0328
- .long l0328
- .globl l0329
- .long l0329
- .globl l0330
- .long l0330
- .globl l0331
- .long l0331
- .globl l0332
- .long l0332
- .globl l0333
- .long l0333
- .globl l0334
- .long l0334
- .globl l0335
- .long l0335
- .globl l0336
- .long l0336
- .globl l0337
- .long l0337
- .globl l0338
- .long l0338
- .globl l0339
- .long l0339
- .globl l0340
- .long l0340
- .globl l0341
- .long l0341
- .globl l0342
- .long l0342
- .globl l0343
- .long l0343
- .globl l0344
- .long l0344
- .globl sigrelse
- .long sigrelse
- .globl l0345
- .long l0345
- .globl l0346
- .long l0346
- .globl l0351
- .long l0351
- .globl l0353
- .long l0353
- .globl l0354
- .long l0354
- .globl l0355
- .long l0355
- .globl l0356
- .long l0356
- .globl l0358
- .long l0358
- .globl l0361
- .long l0361
- .globl l0362
- .long l0362
- .globl l0363
- .long l0363
- .globl l0364
- .long l0364
- .globl l0365
- .long l0365
- .globl l0366
- .long l0366
- .globl l0367
- .long l0367
- .globl l0369
- .long l0369
- .globl l0370
- .long l0370
- .globl l0371
- .long l0371
- .globl l0372
- .long l0372
- .globl l0373
- .long l0373
- .globl l0374
- .long l0374
- .globl l0375
- .long l0375
- .globl l0376
- .long l0376
  .globl l0377
  .long l0377
  .globl l0378
@@ -2770,16 +2628,10 @@ symfnc:
  .long l0385
  .globl l0386
  .long l0386
- .globl l0387
- .long l0387
- .globl l0388
- .long l0388
  .globl l0389
  .long l0389
  .globl l0390
  .long l0390
- .globl l0391
- .long l0391
  .globl l0392
  .long l0392
  .globl l0393
@@ -2790,12 +2642,166 @@ symfnc:
  .long l0395
  .globl l0396
  .long l0396
+ .globl l0397
+ .long l0397
+ .globl l0398
+ .long l0398
+ .globl l0399
+ .long l0399
+ .globl l0400
+ .long l0400
+ .globl l0401
+ .long l0401
+ .globl l0402
+ .long l0402
+ .globl l0403
+ .long l0403
+ .globl l0404
+ .long l0404
+ .globl l0405
+ .long l0405
+ .globl l0406
+ .long l0406
+ .globl l0407
+ .long l0407
+ .globl l0408
+ .long l0408
+ .globl l0409
+ .long l0409
+ .globl l0410
+ .long l0410
+ .globl l0411
+ .long l0411
+ .globl l0412
+ .long l0412
+ .globl l0413
+ .long l0413
+ .globl l0414
+ .long l0414
+ .globl l0415
+ .long l0415
+ .globl l0416
+ .long l0416
+ .globl l0417
+ .long l0417
+ .globl l0418
+ .long l0418
+ .globl l0419
+ .long l0419
+ .globl l0420
+ .long l0420
+ .globl l0421
+ .long l0421
+ .globl l0422
+ .long l0422
+ .globl l0423
+ .long l0423
+ .globl l0424
+ .long l0424
+ .globl l0425
+ .long l0425
+ .globl l0426
+ .long l0426
+ .globl l0427
+ .long l0427
+ .globl l0428
+ .long l0428
+ .globl l0429
+ .long l0429
+ .globl sigrelse
+ .long sigrelse
+ .globl l0430
+ .long l0430
+ .globl l0431
+ .long l0431
+ .globl l0436
+ .long l0436
+ .globl l0438
+ .long l0438
+ .globl l0439
+ .long l0439
+ .globl l0440
+ .long l0440
+ .globl l0441
+ .long l0441
+ .globl l0443
+ .long l0443
+ .globl l0446
+ .long l0446
+ .globl l0447
+ .long l0447
+ .globl l0448
+ .long l0448
+ .globl l0449
+ .long l0449
+ .globl l0450
+ .long l0450
+ .globl l0451
+ .long l0451
+ .globl l0452
+ .long l0452
+ .globl l0454
+ .long l0454
+ .globl l0455
+ .long l0455
+ .globl l0456
+ .long l0456
+ .globl l0457
+ .long l0457
+ .globl l0458
+ .long l0458
+ .globl l0459
+ .long l0459
+ .globl l0460
+ .long l0460
+ .globl l0461
+ .long l0461
+ .globl l0462
+ .long l0462
+ .globl l0463
+ .long l0463
+ .globl l0464
+ .long l0464
+ .globl l0465
+ .long l0465
+ .globl l0466
+ .long l0466
+ .globl l0467
+ .long l0467
+ .globl l0468
+ .long l0468
+ .globl l0469
+ .long l0469
+ .globl l0470
+ .long l0470
+ .globl l0471
+ .long l0471
+ .globl l0472
+ .long l0472
+ .globl l0473
+ .long l0473
+ .globl l0474
+ .long l0474
+ .globl l0475
+ .long l0475
+ .globl l0476
+ .long l0476
+ .globl l0477
+ .long l0477
+ .globl l0478
+ .long l0478
+ .globl l0479
+ .long l0479
+ .globl l0480
+ .long l0480
+ .globl l0481
+ .long l0481
  .long undefinedfunction
  .globl codeaddressp
  .long codeaddressp
  .globl lastkernel
  .long lastkernel
-  .space 2395952
+  .space 2395944
  .globl symget
 symget:
  .long [[254*0x8000000]+256]
@@ -3305,4 +3311,5 @@ symget:
  .long [[254*0x8000000]+256]
  .long [[254*0x8000000]+256]
  .long [[254*0x8000000]+256]
-  .space 2395952
+ .long [[254*0x8000000]+256]
+  .space 2395944
