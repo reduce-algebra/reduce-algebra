@@ -354,9 +354,9 @@
 (de *LoadIdNumber (load-or-store reg nonlocal)
   (let ((idnumber
 	 (WConstEvaluable `(idloc ,(cadr nonlocal)))))
-    (if (and (fixp idnumber) (lessp idnumber 257) (greaterp idnumber -1))
+    (if (and idnumber (fixp idnumber) (lessp idnumber 257) (greaterp idnumber -1))
 	`( (,load-or-store ,reg (displacement (reg symval) ,(times 4 idnumber))) )
-      `( (LDR (reg t2) (quote ,idnumber))
+      `( (LDR (reg t2) ,(if (null idnumber) `(idloc ,(cadr nonlocal)) (quote ,idnumber)))
 	 (,load-or-store ,reg (displacement (reg symval) (regshifted t2 LSL 2))) )
       )))
 
