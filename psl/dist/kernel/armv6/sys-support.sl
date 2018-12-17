@@ -84,6 +84,7 @@
          30 2))
 
 (lap '((*entry undefinedfunction expr 1)
+       (*move (reg t3) (reg t1))
        (*JCall undefinedfunction-aux)))
 
    % to be redefined in nonkernel

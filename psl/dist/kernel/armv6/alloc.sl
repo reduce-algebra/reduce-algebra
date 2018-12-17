@@ -61,7 +61,7 @@
 % Returns the number of items left in BPS if N is NIL.
 
 (de gtbps (number-of-items)
-  (when (null number-of-items)(gtbps-nil-error))
+  (when (null number-of-items) (gtbps-nil-error number-of-items))
 
       % adjust to multiple of 16 for faslin objects 
   (when (and (wgreaterp number-of-items 10)
@@ -82,8 +82,8 @@
 
 
 
-(de gtbps-nil-error ()
-  (stderror "GTBPS called with NIL.")
+(de gtbps-nil-error (x)
+  (stderror "GTBPS called with NIL."))
   )
 
 

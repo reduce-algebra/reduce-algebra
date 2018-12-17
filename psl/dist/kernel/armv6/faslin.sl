@@ -100,8 +100,7 @@
     % Read the bit table
     (setf bit-table-size (binaryread fid))
     (setq bit-table (mkwrds (gtwrds bit-table-size)))
-%   (binaryreadblock fid (loc (words-fetch bit-table 0)) bit-table-size)
-    (binaryreadblock fid (wplus2 4 (mkfixn bit-table)) bit-table-size)
+    (binaryreadblock fid (loc (words-fetch bit-table 0)) bit-table-size)
 
     % Close the file
     (binaryclose fid)

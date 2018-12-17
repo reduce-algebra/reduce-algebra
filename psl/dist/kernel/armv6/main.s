@@ -1214,9 +1214,7 @@ l0187:
  mov r1, r1, ror #5
  str r1, [sp, #20]
  ldr r2, [sp, #4]
- mov r1, r1, lsl #5
- orr r1, r1, #1
- mov r1, r1, ror #5
+ bic r1, r1, #4160749568
  add r1, r1, #4
  ldr r0, [sp, #8]
  ldr r7, l0180
@@ -1904,8 +1902,8 @@ l0267:
  .byte 71,84,66,80,83,32,99,97,108,108,101
  .byte 100,32,119,105,116,104,32,78,73,76
  .byte 46,0,0
- .long 0
-@ (*entry gtbps-nil-error expr 0)
+ .long 1
+@ (*entry gtbps-nil-error expr 1)
  .globl l0268
 l0268:
  stmdb sp!, {lr}
@@ -2744,6 +2742,7 @@ l0361:
 @ (*entry undefinedfunction expr 1)
  .globl undefinedfunction
 undefinedfunction:
+ mov r5, r7
  ldr r7, l0362
  ldr r6, [r10, r7, lsl #2]
  ldmia sp!, {lr}
