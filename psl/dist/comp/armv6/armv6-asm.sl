@@ -113,7 +113,7 @@
 % This does *not* make zero blocks, however, the Sun manuals
 % promise that a.out memory is init'ed to 0s
 % Changed below to be like Vax version, so heap will be in bss. 
-(setq ReserveZeroBlockFormat* "  .comm %w,%e%n")
+(setq ReserveZeroBlockFormat* "%w:%n  .space %e%n")
 
 (put 'MkItem 'ASMExpressionFormat "[[%e*0x8000000]+%e]" )
 

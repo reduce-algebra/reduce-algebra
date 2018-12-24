@@ -638,6 +638,12 @@
 
 (put 'string 'asmpseudoop 'asmpseudoprintstring)
 
+(de asmpseudoprintcomment (x)
+    (printcomment (cdr x)))
+
+(put 'comment 'asmpseudoop 'asmpseudoprintcomment)
+(put 'samelinecomment 'asmpseudoop 'asmpseudoprintcomment)
+
 (de PrintOperand (x)
   (cond ((stringp x) (prin2 x))
         ((numberp x) (printnumericoperand x))

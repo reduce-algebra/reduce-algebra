@@ -150,7 +150,7 @@
 (de &convert-mac(arg args params)
      (if (or (eq (cadr params) '*JUMPTYPE) 
              (eq (cadr params) '*JUMPEQ))
-         'je 'jne))
+         'beq 'bne))
 
 (put 'tstpat 'pattern 
      '(nil !&fixregtest ((regn any) (mac dest a1 a2)) 

@@ -49,11 +49,6 @@
  
 (fluid '(lengthfunctions))
 (setq lengthfunctions
-    '((OP-reg-effa . lth-reg-effa)
-      (OP-reg-effa-2 . lth-reg-effa-2)
-      (OP-xmmreg-effa . lth-xmmreg-effa)
-      (Op-imm      . lth-imm)
-      (Op-imm-reg  . lth-imm-reg)
       (OP-reg-imm8 . lth-reg-imm8 )
       (OP-regn-imm8 . lth-regn-imm8 )
       (OP-regd-imm8 . lth-regd-imm8 )
@@ -69,23 +64,6 @@
       (OP-clz . lth-clz)
       (OP-branch-imm . lth-branch-imm)
       (OP-branch-reg . lth-branch-reg)
-      (Op-imm-effa . lth-imm-effa)
-      (Op-imm8-effa. lth-imm8-effa)
-      (Op-byte     . lth-byte)
-      (OP-effa     . lth-effa)
-      (OP2-effa    . lth2-effa)
-      (Op-mul      . lth-mul)
-      (Op-imul     . lth-imul)
-      (Op-shift    . lth-shift)
-      (Op-shiftimm . lth-shiftimm)
-      (Op-dshift   . lth-dshift)
-      (Op-dshiftimm. lth-dshiftimm)
-      (Op-jump     . lth-jump)
-      (Op-jump-effa .lth-jump-effa)
-      (Op-jump-short.lth-jump-short) 
-      (OP-jump     . lth-jump-long) 
-      (Op-ret-n    . lth-ret-n)
-      (Op-enter    . lth-enter)
       ))
  
 (load strings compiler)
@@ -117,8 +95,6 @@
 % the final defOpCode calls are generated from these slots
  
 (fluid '(allInstrs!* allInstrPatterns!* formalParameters!* instr* instrlist!*))
-(fluid '(Op-k Op-j-k Op-i-j-k Op-load Op-store Op-immediate-000-k
-	 Op-immediate-001-k Op-branch-short Op-branch-long))
  
 (setq formalParameters!* '(par1 par2 par3 par4))
  
@@ -154,9 +130,6 @@
 (df instr (l)
      (prog (name namepattern operands format namelist)
        (setq instr* l)
-       (setq l (subla '((/0 . 0)(/1 . 8#10) (/2 . 8#20)
-			(/3 . 8#30) (/4 . 8#40) (/5 . 8#50)
-			(/6 . 8#60) (/7 . 8#70)) l))
        (setq name (pop l))
        (setq namepattern (pop l))
        (setq operands (pop l))
@@ -215,7 +188,7 @@
 			 x
 		       (mkquote x))))))
 
-(de mktest(format code operands rev)
+(de mktest (format code operands rev)
    (prog (params lhs rhs type val)
       (setq params formalParameters!*)
   loop (when (null operands) (go ready))
@@ -494,10 +467,6 @@ nil)
 (instr LDR (LDR *cond*) (reg pm-reg-shifter) OP-ld-st *condbits* 2#0110000 1)
 (instr STR (STR *cond*) (reg pm-reg-shifter) OP-ld-st *condbits* 2#0110000 0)
 
-% special case for loading a lisp id into a register: (LDR Rn (idloc x))
-% a variant of pm-reg-shifter wher ethe argument is handled in a special way
-%(instr LDR (LDR *cond*) (reg idloc) OP-ldr-id *condbits* 2#0110000 1)
-
 (instr LDRB (LDR *cond* B) (reg reg-offset12)  OP-ld-st *condbits* 2#0100010 1)
 (instr STRB (STR *cond* B) (reg reg-offset12)  OP-ld-st *condbits* 2#0100010 0)
 (instr LDRB (LDR *cond* B) (reg pm-reg-shifter)  OP-ld-st *condbits* 2#0110010 1)
@@ -554,7 +523,7 @@ nil)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% now we generate the CXINSTR dataset
+% now we generate the armv6-inst.dat file
 (off usermode) (de linelength (x) 1000)
 (reload chars)
 (pp nil)

@@ -1,4 +1,4 @@
-<%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:         PXC:armv6-LAP.SL
 % Description:  Armv6 PSL Assembler
@@ -90,9 +90,10 @@
 	*lapopt
 	*trlapopt
 	*big-endian*    		% True if big-endian version
-	shift-ops*			% known shift operations
-	*cond*
-	*set*
+	shift-ops*			% known armv6 shift operations
+	comment*                        % optional comment in lap output
+%	*cond*
+%	*set*
 	*OpNameList*
 	!*LDM-adressing-modes
 	!*condition-codes*
@@ -111,6 +112,14 @@
 					% put in memory
 
 (setq shift-ops* '(LSL LSR ASR ROR RRX))
+
+(compiletime (load addr2id))
+
+(compiletime
+ (put 'getword32 'opencode
+      '(
+	(movl (indexed (reg 1) (displacement (reg 2) 0)) (reg EAX)))))
+ 
 
 % ------------------------------------------------------------
 % Constant declarations:
@@ -145,7 +154,7 @@
 
     (when *WritingFaslFile       % round off to fullword address
 	  (while (not (eq (wshift (wshift currentOffset* -2) 2) currentOffset*))
-		 (depositbyte 0) ))
+		 (DepositByte 0) ))
  
     (SETQ U (ReformBranches U))         % process conditional branches
     (setq U (OptimizeBranches U))       % optimize branches and
@@ -486,6 +495,9 @@
 	 (setq x (wand 16#ffffffff x))
 	 (decode-32bit-imm8-rotated x)))
 
+(de sixteenbit-p (x)
+    (and (fixp x) (eq (wand 16#ffff x) x)))
+
 % possibly shifted register (data movement), one of:
 % (reg x)
 % (regshifted x LSL/LSR.. amount)    amount is a number or a register
@@ -504,7 +516,7 @@
     (cond ((stringp x) t)
 	  ((atom x) nil)
 	  ((eq (car x) 'indirect) (regp (cadr x)))
-	  ((and (memq (car x) '(displacement indirect)) (regp (cadr x)))
+	  ((and (memq (car x) '(displacement indirect indexed)) (regp (cadr x)))
 	   (eight-bit-p (caddr x)))
 	  (t nil)))
 
@@ -512,7 +524,7 @@
     (cond ((stringp x) t)
 	  ((atom x) nil)
 	  ((eq (car x) 'indirect) (regp (cadr x)))
-	  ((and (memq (car x) '(displacement indirect)) (regp (cadr x)))
+	  ((and (memq (car x) '(displacement indirect indexed)) (regp (cadr x)))
 	   (twelve-bit-p (caddr x)))
 
 %	  (or
@@ -529,7 +541,7 @@
     (and (fixp x) (lessp x 256) (greaterp x -256)))
 
 (de pm-reg-shifter-p (x)
-    (and (eqcar x 'displacement)
+    (and (eqcar x 'displacement indexed)
 	 (regp (cadr x))
 	 (and (pairp (caddr x)) (memq (car (caddr x)) '(reg regshifted plus minus))))
     )
@@ -542,7 +554,8 @@
 
 (de offset26-p (x)
     (or (labelp x)
-	(and (eqcar x 'immediate) (setq x (cadr x))
+	(eqcar x 'internalentry)
+	(and (or (eqcar x 'immediate) (setq x (cadr x)))
 	     (fixp x)
 	     (lessp x (add1 16#1FFFFFC))
 	     (greaterp x (sub1 -33554432))
@@ -600,7 +613,7 @@
 	   (lr  14)			% link register
 	   (pc  15)			% program counter
 	   (heaplast 8)
-	   (heapupperbound 9)
+	   (heaptrapbound 9)
 	   (symfnc 10)
 	   (symval 11)
 	   (nil 12)
@@ -618,79 +631,6 @@
     (if (eqcar u 'immediate) (cadr u) u))
 
 %------------------------------------------------------------------------
-% code is one byte, op1 is a register, op2 is an effective address
-(de OP-reg-effa (code op1 op2)
-    (reg-5-prefix op2)
-    (depositbyte (car code))
-    (modR/M op1 op2))
-
-(de LTH-reg-effa (code op1 op2) 
-   (plus 1 (lth-reg-5-prefix op2) (lthmodR/M op1 op2)))
- 
-%------------------------------------------------------------------------
-% op1 is an immediate, op2 is an effective address which patches into
-% the second byte of the code
-(de OP-imm-effa (code op1 op2)
-    (reg-5-prefix op2)
-    (depositbyte (car code))
-    (modR/M (cadr code) op2)
-    (depositextension (unimmediate op1)))
-
-(de lth-imm-effa (code op1 op2)
-   (plus 5 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
-
-(de OP-imm8-effa (code op1 op2)
-    (reg-5-prefix op2)
-    (depositbyte (car code))
-    (modR/M (cadr code) op2)
-    (depositbyte (unimmediate op1)))
-(de lth-imm8-effa (code op1 op2)
-   (plus 2 (lth-reg-5-prefix op2) (lthmodR/M (cadr code) op2)))
-
-%------------------------------------------------------------------------
-% code is two bytes, op1 is a register, op2 is an effective address
-(de OP-reg-effa-2 (code op1 op2)
-    (reg-5-prefix op2)
-    (depositbyte (car code))
-    (depositbyte (cadr code))
-    (modR/M op1 op2))
-
-(de LTH-reg-effa-2 (code op1 op2)
-   (plus 2 (lth-reg-5-prefix op2) (lthmodR/M op1 op2)))
-
-
-%-----------------------------------------------------------------------
-% format: fixed modV/M byte
-(de OP-EFFA (code op1) (OP-reg-effa code (cadr code) op1))
-(de lth-EFFA (code op1) (LTH-reg-effa code (cadr code) op1))
-
-(de OP2-effa(code op1)
-    (depositbyte (car code))
-    (op-EFFA (cdr code) op1))
-
-(de lth2-EFFA(code op1) (add1 (lth-effa(cdr code) op1)))
-
-%---------------------------------------------------------------------
-% immediate to reg
-% code is one byte + ModR?m byte, op1 the immediate, op2 the reg
-% sometimes there is no ModR/M byte; then the reg is placed in the opcode 
-%  (adc 17 (reg ABX)) 
-(de OP-imm-reg (code op1 op2)
-    (prog(n c1 c2)
-      (when (cdr code) (depositbyte (car code))(setq code (cdr code)))
-      (depositbyte (lor (car code) (reg2int op2)))
-      (depositextension (unimmediate op1))))
- 
-(de LTH-imm-reg (code op1 op2) (if (cdr code) 6 5))
-
-(de OP-imm8-reg (code op1 op2)
-    (prog(n c1 c2)
-      (when (cdr code) (depositbyte (car code))(setq code (cdr code))) 
-      (depositbyte (lor (car code) (reg2int op2)))
-      (depositbyte (bytep op1))))
-
-(de LTH-imm8-reg (code op1 op2) (if (cdr code) 3 2))
-
 (de OP-branch-imm (code offset)
     (setq offset (MakeExpressionRelative offset 8))
     (if (not (weq (land offset 2#11) 0))
@@ -720,157 +660,57 @@
 
 (de lth-branch-reg (code reg) 4)
 
-%---------------------------------------------------------------------
-% absolute n-byte instruction
-(de OP-byte (code)
-	(foreach x in code do (depositbyte x)))
-(de lth-byte (code) (length code))
 
-%% %---------------------------------------------------------------------
-%% % jump to absolute address
-%% % 386 has only relative jumps
-%% (de OP-Jump (code op1)
-%%   (prog(n)
-%%    (depositbyte (car code))
-%%    (when (cdr code) (depositbyte (cadr code)))
-%%    (setq op1 (saniere-Sprungziel op1))
-%%    (setq n(MakeExpressionrelative op1 8)) % offset wrt next instr
-%%    (depositword n)
-%%    (when *testlap (tab 15)(prin2 "-> ")
-%% 	 (prin2 n) (prin2 " rel = ")
-%% 	 (prin2 (plus CurrentOffset* n))(prin2t " abs"))))
-%% (de lth-jump (code op1) (if (cdr code) 6 5))
-
-
-%% %jump short (8-bit displacement)
-%% (de OP-JUMP-SHORT (code op1)
-%%   (prog(n a)
-%%    (depositbyte (car code))
-%%    (setq op1 (saniere-Sprungziel op1))
-%%    (setq n(MakeExpressionrelative op1 1)) % offset wrt next instr
-%%    (when (not (bytep n)) (stderror  "distance too long for short jump"))
-%%    (depositbyte (bytep n))
-%%    (when *testlap (tab 15)(prin2 "-> ") 
-%% 	 (prin2 n) (prin2 " rel = ")
-%% 	 (prin2 (plus CurrentOffset* n))(prin2t " abs"))))
-%% (de lth-JUMP-SHORT (code op1) 2)
- 
-% indirect jump to effective address
-(de OP-JUMP-EFFA (code op1)
-	      % a tag "inirect" contained already in the operation if not
-	      % explicit reg reference
-	   (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
-		 (setq op1 (cadr op1)))
-	   (op-reg-effa code (cadr code) op1))
-(de LTH-JUMP-EFFA (code op1) 
-	   (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
-		 (setq op1 (cadr op1)))
-	   (lth-reg-effa code (cadr code) op1))
- 
-
-(commentoutcode
-%jump full size (32 bit displacement)
-(de OP-JUMP-LONG(code op1)
-    (depositbyte (car code))
-    (setq op1 (saniere-Sprungziel op1))
-    (when (cdr code) (depositbyte (cadr code))) %conditional jumps
-    (depositExtension op1))
-(de lth-JUMP-LONG(code op1) (if (cdr code) 6 5))
-)
-
-(de saniere-Sprungziel(l)
+(de saniere-Sprungziel (l)
     (cond ((atom l) l)
 	  ((eqcar l 'IMMEDIATE) (saniere-Sprungziel (cadr l)))
 	  ((eqcar l 'LABEL) (saniere-Sprungziel (cadr l)))
 	  (T l)))
-% RET n
-(de OP-RET-n (code op1) 
-   (depositbyte (car code)) 
-   (deposithalfword (halfwordp (unimmediate op1))))
-(de lth-RET-n (code op1) 3) 
-  
-%-------------------------------------------------------------
-%enter 
-(de OP-enter (code op1) 
-   (depositbyte (car code)) 
-   (deposithalfword (unimmediate op1))
-   (depositbyte 0))  % support for level 0 only
-(de lth-enter (code op1) 4)
 
-%-------------------------------------------------------------
-% PUSH imm32
-(de OP-imm   (code op1)
-   (depositbyte (car code))
-   (depositextension (unimmediate op1)))
-(de lth-imm   (code op1) 5)
  
-
-%-------------------------------------------------------------
-% shift with one parameter
-(de op-shift (code dummy op1)
-    (depositbyte (car code))
-    (modr/m (cadr code) op1))
-(de lth-shift (code op1) (add1 (lthmodR/M (cadr code) op1)))
- 
-%shift with immediate amount
-(de op-shiftimm(code op2 op1)
-    (depositbyte (car code)) 
-    (depositbyte (lor 2#11000000 (lor (cadr code) (reg2int op1))))
-    (depositbyte (bytep (unimmediate op2))))
-(de lth-shiftimm(code op1 op2) 3)
- 
-% double shifts
-(de op-dshift (code dummy op1) 
-    (depositbyte (cadr code)) 
-    (modR/M op1 0)) 
-(de lth-dshift (code op1) (plus 2 (lthmodR/M op1 0)))
- 
-(de op-dshiftimm (code op2 op1)  
-    (depositbyte (cadr code))  
-    (modR/M op1 0)  
-    (depositbyte (bytep (unimmediate op2))))
-(de lth-dshiftimm (code op1) (plus 3 (lthmodR/M op1 0)))
-
-%-------------------------------------------------------------
-% MUL and DIV
-(de OP-MUL (code op1) (op-reg-effa code (cadr code) op1))
-(de lth-mul (code op1) (lth-reg-effa code (cadr code) op1))
-
-% special: IMUL
-(de OP-IMUL (code op1 op2)
-    (depositbyte (car code))
-    (depositbyte (cadr code))
-    (modR/M op1 op2))
-(de lth-imul (code op1 op2) 3)
-
 (de rotate-right (n m)
     (lor
      (lsh n (minus m))
      (land 16#ffffffff (lsh n (difference 32 m)))))
+		    
+(de rotate-left (n m)
+    (lor
+     (land 16#ffffffff (lsh n m))
+     (land 16#ffffffff (lsh n (difference m 32)))))
 		    
 (de decode-32bit-imm8-rotated (n)
     (for (from i 0 15 1)
 	 (do
 	  (if (lessp n 256)
 	      (return (cons i n))
-	    (setq n (rotate-right n 2))
+	    (setq n (rotate-left n 2))
 	    )
 	  )
 	 )
     )
 
 (de DepositInstructionBytes (byte1 byte2 byte3 byte4)
+    (printf "Deposit instruction %w at %x -> %x%n"
+	    (wor (wshift byte1 24) (wor (wshift byte2 16) (wor (wshift byte3 8) byte4)))
+	    CurrentOffset* (wplus2 codebase* CurrentOffset*))
     (if *big-endian*
 	(progn
-	  (depositbyte byte1)
-	  (depositbyte byte2)
-	  (depositbyte byte3)
-	  (depositbyte byte4))
+	  (DepositByte byte1)
+	  (DepositByte byte2)
+	  (DepositByte byte3)
+	  (DepositByte byte4))
       (progn
-	(depositbyte byte4)
-	(depositbyte byte3)
-	(depositbyte byte2)
-	(depositbyte byte1))))
+	(DepositByte byte4)
+	(DepositByte byte3)
+	(DepositByte byte2)
+	(DepositByte byte1)))
+    (printf "Deposited at %x: %x >%x< %x%n"
+	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
+	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
+	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
+	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
+	    )
+    )
 	  
     
 (de OP-reg-imm8 (code reg1 reg2 imm8-rotated)
@@ -1045,7 +885,7 @@
 	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) shift-amount 0)
 	  (if (and
 	       (not (stringp reg-offset12))
-	       (or (not (pairp reg-offset12)) (not (memq (car reg-offset12) '(displacement indirect))) (not (regp (cadr reg-offset12)))))
+	       (or (not (pairp reg-offset12)) (not (memq (car reg-offset12) '(displacement indirect indexed))) (not (regp (cadr reg-offset12)))))
 	      (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset12)))
 	  (if (labelp reg-offset12)	% label --> pc-relative
 	      (progn
@@ -1243,7 +1083,7 @@
     (for (from I 0 (Size X) 1) (do (DepositByte (Indx X I)))) 
     (DepositByte 0) 
 	(while (not (eq 0 (remainder CurrentOffset!* 4)))
-	       (depositbyte 0))))
+	       (DepositByte 0))))
 % align to word boundary
 
 (de DepositFloat (X)                    % this will not work in cross-assembly
@@ -1256,6 +1096,13 @@
 (put 'byte 'InstructionDepositFunction 'DepositByteBlock)
 (put 'string 'InstructionDepositFunction 'DepositString)
 (put 'float 'InstructionDepositFunction 'DepositFloat)
+
+(de AddLapComment (X)
+    (setq comment* (cdr X))
+    )
+
+(put 'comment 'InstructionDepositFunction 'AddLapComment)
+(put 'samelinecomment 'InstructionDepositFunction 'AddLapComment)
 
 % Auxiliary functions for computing instruction bit patterns
 
@@ -1284,9 +1131,9 @@
 		     (difference offset 
 		      (plus2 CurrentOffset* offsetfromhere))))
 		  (progn
-		    (setq forwardinternalreferences* 
+		    (setq ForwardInternalReferences* 
 		     (cons (cons CurrentOffset* nam) 
-		      forwardinternalreferences*))
+		      ForwardInternalReferences*))
 		    0)))))
 	% will be fixed in SystemFasl...
 
@@ -1652,6 +1499,8 @@
 
 
 (put '*entry 'InstructionLength 0)
+(put 'comment 'InstructionLength 0)
+(put 'samelinecomment 'InstructionLength 0)
 
 % ------------------------------------------------------------
 % Depositing Operations
@@ -1680,10 +1529,11 @@
 	   (iplus2 offset (if *writingfaslfile 0 codebase*)))
   (updatebittable 4 (const reloc_word))
   (setq CurrentOffset* (plus CurrentOffset* 4)))
-  
+
 (de DepositWordExpression (x)
   % Only limited expressions now handled
   (let (y)
+    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 codebase* CurrentOffset*))
     (cond
       ((fixp x) (depositword (int2sys x)))
       ((labelp x) (deposit-relocated-word (labeloffset x)))
@@ -1692,9 +1542,9 @@
 	 (if offset
 	     (deposit-relocated-word offset)
 	     (progn
-	       (setq forwardinternalreferences*
+	       (setq ForwardInternalReferences*
 		     (cons (cons CurrentOffset* (second x))
-			   forwardinternalreferences*))
+			   ForwardInternalReferences*))
 	       (deposit-relocated-word 0)))))
       ((and (eq (car x) 'mkitem)
 	    (eq (cadr x) id-tag)
@@ -1702,10 +1552,17 @@
 	    (wlessp (id2int (cadr y)) 257))
 	(depositword (cadr y)))
       ((equal (first x) 'idloc) (depositwordidnumber (second x)))
-      ((equal (first x) 'mkitem) (deposititem (second x) (third x)))
-      ((equal (first x) 'entry) (depositentry x))
+      ((equal (first x) 'mkitem) (DepositItem (second x) (third x)))
+      ((equal (first x) 'entry) (DepositEntry x))
       ((setq y (wconstevaluable x)) (DepositWord (int2sys y)))
-      (t (stderror (bldmsg "Expression too complicated %r" x))))))
+      (t (stderror (bldmsg "Expression too complicated %r" x))))
+    (printf "Deposited at %x: %x >%x< %x%n"
+	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
+	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
+	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
+	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
+	    )
+    ))
 
 (de depositwordidnumber (x) 
   (cond
@@ -1788,19 +1645,19 @@
   (prog (x)
      % THIS VERSION ASSUMES 32 bit RELATIVE ADDESSES, HM.
      (setq x (remainder CurrentOffset* 16))
-     (while (greaterp x 0) (depositbyte 0) (setq x (sub1 x)))
-     (while forwardinternalreferences*
-       (setq x (get (cdr (first forwardinternalreferences*)) 
+     (while (greaterp x 0) (DepositByte 0) (setq x (sub1 x)))
+     (while ForwardInternalReferences*
+       (setq x (get (cdr (first ForwardInternalReferences*)) 
 		    'internalentryoffset))
        (when (null x) 
 	      (errorprintf "***** %r not defined in this module, call incorrect" 
-			   (cdr (first forwardinternalreferences*))))
+			   (cdr (first ForwardInternalReferences*))))
 	       % calculate the offset
        (setq x (plus -4             % offset to next word
-	     (difference x (car (first forwardinternalreferences*)))))
+	     (difference x (car (first ForwardInternalReferences*)))))
 			 % insert the fixup
-       (putword (iplus2 codebase* (car (first forwardinternalreferences*))) 0 x)
-       (setq forwardinternalreferences* (cdr forwardinternalreferences*)))
+       (putword (iplus2 codebase* (car (first ForwardInternalReferences*))) 0 x)
+       (setq ForwardInternalReferences* (cdr ForwardInternalReferences*)))
 	      % Now remove the InternalEntry offsets from everyone
    (mapobl 'remove-ieo-property)))
 
@@ -1901,7 +1758,7 @@
       % replace (reg lr) in ldm by (reg pc) and remove bx instruction
      ((and (equal i2 '(bx (reg lr)))
 	   (pairp i1)
-	   (eq (car i1) 'ldm)
+	   (eq (car i1) 'ldmia)
 	   (equal (cadr i1) '(reg sp))
 	   (member '(reg lr) (caddr i1))
 	   )
@@ -1947,7 +1804,7 @@
 (de &indirectbase(u)
   (cond ((atom u) nil)
 	((atom (cdr u)) nil)
-	((eq (car u) 'displacement)(cadr u))
+	((eq (car u) 'displacement) (cadr u))
 	((eq (car u) 'indirect) (cadr u))
 	(t (or (&indirectbase (car u))(&indirectbase (cdr u)))) ))
 

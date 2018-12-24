@@ -108,6 +108,8 @@
 
 (de negp (value) (and (numberp value) (lessp value 0)))
 
+(de fixplusp (x) (and (fixp x) (not (minusp x))))
+
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
 
 (de NegativeImmediateP (Expression)
@@ -160,22 +162,22 @@
                    (Displacement REGISTER 4)))
 
 
-(DefAnyreg MEMORY
+(DefAnyreg Memory
 	   AnyregMEMORY
 	   ((RegP ZeroP)      (indirect SOURCE))
-	   ((Anyp ZeroP)      (*MOVE SOURCE REGISTER)
+	   ((Anyp ZeroP)      (*Move SOURCE REGISTER)
 			       (indirect REGISTER))
  	   ((RegP twelve-bit-p)      (Displacement SOURCE ARGTWO))
-	   ((AnyP twelve-bit-p)      (*MOVE SOURCE REGISTER)
+	   ((AnyP twelve-bit-p)      (*Move SOURCE REGISTER)
 	                       (Displacement REGISTER ARGTWO))
 	   ((RegP RegP)       (Indexed ARGTWO (Displacement source 0)))
-	   ((RegP AnyP)       (*MOVE SOURCE REGISTER)
-			       (*WPLUS2 REGISTER ARGTWO)
+	   ((RegP AnyP)       (*Move SOURCE REGISTER)
+			       (*WPlus2 REGISTER ARGTWO)
 			       (indirect REGISTER))
-	   ((AnyP DispInumP)  (!*MOVE SOURCE REGISTER)
+	   ((AnyP DispInumP)  (!*Move SOURCE REGISTER)
 			       (Indexed REGISTER (Displacement ARGTWO 0)))
-	   (                   (!*MOVE SOURCE REGISTER)
-			       (!*WPLUS2 REGISTER ARGTWO)
+	   (                   (!*Move SOURCE REGISTER)
+			       (!*WPlus2 REGISTER ARGTWO)
 			       (indirect REGISTER)))
 
 
@@ -289,14 +291,14 @@
 
 (DefCMacro *Call
        ((InternallyCallableP)  (blx (InternalEntry ArgOne)))
-	(         (*move (idloc argone) (reg t3))
+	(         (*Move (idloc argone) (reg t3))
 		  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
 		  (BLX (reg t2)))
 )
 
 (DefCMacro *JCall
        ((InternallyCallableP)  (b (InternalEntry ArgOne)))
-	(         (*move (idloc argone) (reg t3))
+	(         (*Move (idloc argone) (reg t3))
 		  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
 		  % pop link register
 		  (LDMIA (reg sp) ((reg lr)) writeback)
@@ -308,7 +310,7 @@
 
 (de idlocp (x) (eqcar x 'idloc))
 
-(remprop '*move 'optfn)
+(remprop '*Move 'optfn)
 
 (DefCMacro *Move
        (Equal)
@@ -331,6 +333,10 @@
 	   `( (MOV ,dest ,cst)))
 	  ((imm8-rotatedp (land 16#ffffffff (lnot cst)))
 	   `( (MVN ,dest  ,(land 16#ffffffff (lnot cst)))))
+	  ((sixteenbit-p cst)
+	   % sixteen bits: load in two steps
+	   `( (MOV ,dest ,(land 16#ff cst))
+	      (ADD ,dest ,dest ,(land 16#ff00 cst))))
 	  (t
 	   `( (ldr ,dest (quote ,cst))))
 	  )
@@ -339,26 +345,30 @@
 (DefCMacro *LoadConstant)
 
 (de *LoadIDLoc (dest src)
-  (let ((idnumber (WConstEvaluable src)))
-    (cond ((and (fixp idnumber) (wlessp idnumber 257))
-	   (*LoadConstant dest (id2int (cadr src))))
-	  ((and *writingasmfile (fixp idnumber))
-	   `( (ldr ,dest (quote ,idnumber))))
-	  (t
-	   `( (ldr ,dest ,src)))
-    )))
+  (let ((idnumber (WConstEvaluable src))
+	(comment (if *writingasmfile `((comment ,@src)))))
+    (append comment
+      (cond ((and (fixp idnumber) (wlessp idnumber 257))
+	     (*LoadConstant dest (id2int (cadr src))))
+	    ((and *writingasmfile (fixp idnumber))
+	     `( (ldr ,dest (quote ,idnumber))))
+	    (t
+	     `( (ldr ,dest ,src)))
+    ))))
 
 
 (DefCMacro *LoadIDLoc)
 
 (de *LoadIdNumber (load-or-store reg nonlocal)
   (let ((idnumber
-	 (WConstEvaluable `(idloc ,(cadr nonlocal)))))
-    (if (and idnumber (fixp idnumber) (lessp idnumber 257) (greaterp idnumber -1))
-	`( (,load-or-store ,reg (displacement (reg symval) ,(times 4 idnumber))) )
-      `( (LDR (reg t2) ,(if (null idnumber) `(idloc ,(cadr nonlocal)) (quote ,idnumber)))
-	 (,load-or-store ,reg (displacement (reg symval) (regshifted t2 LSL 2))) )
-      )))
+	 (WConstEvaluable `(idloc ,(cadr nonlocal))))
+	(comment (if *writingasmfile `((comment ,@nonlocal)))))
+    (append comment
+      (if (and idnumber (fixp idnumber) (lessp idnumber 257) (greaterp idnumber -1))
+ 	`( (,load-or-store ,reg (displacement (reg symval) ,(times 4 idnumber))) )
+       `( (LDR (reg t2) ,(if (null idnumber) `(idloc ,(cadr nonlocal)) `(quote ,idnumber))) 
+ 	 (,load-or-store ,reg (displacement (reg symval) (regshifted t2 LSL 2))) )
+      ))))
 
 (DefCMacro *LoadIdNumber)
 
@@ -430,12 +440,16 @@
 
 (DefCMacro *WPlus2)
 
-(de *wplus2 (arg1 arg2) (when (not (zerop arg2))(*wplus3 arg1 arg1 arg2)))
+(de *WPlus2 (arg1 arg2)
+    (when (not (or (zerop arg2) (equal arg2 '(wconst 0))))
+      (*wplus3 arg1 arg1 arg2)))
 
-(de *wplus3(arg1 arg2 arg3)
+(de *WPlus3 (arg1 arg2 arg3)
     (expand3operandcmacro arg1 arg2 arg3 '*wplus3))
 
 (DefCMacro *WPlus3
+	   ((regp zerop regp) (*Move ArgOne ArgThree))
+	   ((regp regp zerop) (*Move ArgOne ArgTwo))
 	   ((regp regp regp) (ADD ArgOne ArgTwo ArgThree))
 	   ((regp imm8-rotatedp regp)
 		                (ADD ArgOne Argthree ArgTwo))
@@ -455,17 +469,19 @@
 	   (                   (*Move ArgTwo (reg t3))
 		               (*Move ArgThree (reg t2))
 		               (ADD (reg t3) (reg t2) (reg t3))
-		               (*move (reg t3) ArgOne)))
+		               (*Move (reg t3) ArgOne)))
 
 (DefCMacro *WDifference
-       ((*Wdifference3 ArgOne ArgOne ArgTwo)))
+       ((*WDifference3 ArgOne ArgOne ArgTwo)))
 
-(de *wdifference3 (arg1 arg2 arg3)
+(de *WDifference3 (arg1 arg2 arg3)
     (expand3operandcmacro arg1 arg2 arg3 '*wdifference3))
 
 % format ArgOne = ArgTwo - ArgThree
 
-(DefCMacro *Wdifference3
+(DefCMacro *WDifference3
+	   ((regp zerop regp) (RSB ArgOne ArgThree 0))
+	   ((regp regp zerop) (*Move ArgOne ArgTwo))
 	   ((regp regp regp) (SUB ArgOne ArgTwo ArgThree))
 	   ((regp regp imm8-rotatedp)
 				(SUB ArgOne ArgTwo ArgThree))
@@ -529,12 +545,26 @@
 (DefCMacro *wquotientshift)
 
 (DefCMacro *wremainder
-	   (       (*move ArgOne (reg t2))
-	           (*move ArgTwo (reg t1))
+	   (       (*Move ArgOne (reg t2))
+	           (*Move ArgTwo (reg t1))
 		   (*sdiv (reg t2) (reg t2) (reg t1))
 		   (mul (reg t1) (reg t1) (reg t2))
 		   (*wdifference3 ArgOne ArgOne (reg t1))))
-				
+
+(de *Wcmp(arg1 arg2)
+  (Expand2OperandCMacro arg1 arg2 '*Wcmp))
+
+(DefCmacro *Wcmp
+       ((regp regp) (CMP ArgOne ArgTwo))
+       ((regp imm8-rotatedp) (CMP ArgOne ArgTwo))
+       ((Anyp Regp) (*Move ArgOne (reg t3))
+	            (CMP (reg t3) ArgTwo))
+       ((Regp Anyp) (*Move ArgTwo (reg t3))
+		    (CMP ArgOne (reg t3)))
+       (            (*Move ArgOne (reg t1))
+                    (*Wcmp (reg t1) ArgTwo) ))
+ 
+
 (DefCMacro *WAnd
        ((*3op ArgOne ArgTwo and)))
 
@@ -543,8 +573,6 @@
 
 (DefCMacro *WXOr
        ((*3op ArgOne ArgTwo eor)))
-
-(de fixplusp (x) (and (fixp x) (not (minusp x))))
 
 (de *asr (Arg1 Arg2 Arg3)
   (Expand3OperandCMacro Arg1 Arg2 Arg3 '*asr))
@@ -621,11 +649,11 @@
 
 (DefCMacro *WMinus
 	((regp regp)  (rsb ArgOne ArgTwo 0))
-	((regp Anyp)  (*move ArgTwo ArgOne)
+	((regp Anyp)  (*Move ArgTwo ArgOne)
 		      (rsb ArgOne ArgOne 0))
-	(	      (*move ArgTwo (reg t3))
+	(	      (*Move ArgTwo (reg t3))
 	        	(*wminus (reg t3) (reg t3))
-			(*move (reg t3) ArgOne)))
+			(*Move (reg t3) ArgOne)))
 
 (DefCMacro *MkItem
        ((regp fixp)	(MOV ArgOne (regshifted Argone LSL 5))
@@ -645,8 +673,8 @@
       ((regp regp) (MOV ArgOne (regshifted ArgTwo LSR 27)))
       ((Anyp regp) (MOV (reg t1) (regshifted ArgTwo LSR 27))
 		    (*Move (reg t1) ArgOne))
-      ((regp anyp) (*Move ArgTwo ArgOne))
-		    (MOV ArgOne (regshifted ArgOne LSR 27))
+      ((regp anyp) (*Move ArgTwo ArgOne)
+		    (MOV ArgOne (regshifted ArgOne LSR 27)))
       (             (*Move ArgTwo (reg t1))
 		    (*Tag ArgOne (reg t1))))
 
@@ -766,12 +794,12 @@
 (de *loc (ArgOne ArgTwo)
    (let ((resolvedarg (resolveoperand '(reg t2) ArgTwo)))
       (cond ((deferred-p resolvedarg)
-	 `((*move (undeferred ,resolvedarg) ,ArgOne))) % get the address.
+	 `((*Move (undeferred ,resolvedarg) ,ArgOne))) % get the address.
 	 ((displacement-p resolvedarg)
 	    `((ai ,ArgOne ,(cadr resolvedarg) ,(caddr resolvedarg) )))
 	 ((eqcar resolvedarg 'cdr)
 	    `((ai ,ArgOne ,(cadr resolvedarg) 4)))
-	 (t `((*movex ,resolvedarg ,ArgOne))))))
+	 (t `((*Movex ,resolvedarg ,ArgOne))))))
 
 (DefCMacro *loc)
 
@@ -882,40 +910,6 @@
 
 (on fast-integers)
 
-(commentoutcode
-(for (in function '(idapply0 idapply1 idapply2 idapply3 idapply4))
-     (from register 1)
-     (do
-      (put function 'opencode
-	 `((ai (reg t1) (reg symfnccenter) -32000)
-	   (rlinm (reg t2) (reg ,register) 2 5 31)
-	   (lx (reg t1) (reg t1) (reg t2))
-	   (*move (reg ,register) (reg t3))
-	   (mtspr (reg ctr) (reg t1))
-	   (bccl always 0)))
-      (put function 'exitopencode
-	 `((ai (reg t1) (reg symfnccenter) -32000)
-	   (rlinm (reg t2) (reg ,register) 2 5 31)
-	   (lx (reg t1) (reg t1) (reg t2))
-	   (*move (reg ,register) (reg t3))
-	   (mtspr (reg ctr) (reg t1))
-	   (bcc always 0)))
-))
-)
-
-(commentoutcode
-(for (in function '(addressapply0 addressapply1 addressapply2
-		addressapply3 addressapply4))
-     (from register 1)
-     (do
-      (put function 'opencode
-	 `((mtspr (reg ctr) (reg ,register))
-	   (bccl always 0)))
-      (put function 'exitopencode
-	 `((mtspr (reg ctr) (reg ,register))
-	   (bcc always 0)))
-      ))
-)
 
 % *feq, *fgreaterp and *flessp can only occur once in a function.
 
@@ -937,10 +931,10 @@
 		     (st (reg t3) (displacement (reg st) -16))
 		     (lfd (freg 1) (displacement (reg st) -8))
 		     (lfd (freg 2) (displacement (reg st) -16))
-		     (*move (quote t) (reg 1))
+		     (*Move (quote t) (reg 1))
 		     (fcmpo 0 (freg 1) (freg 2))
 		     (bc true gt *donefgreaterp*)
-		     (*move (reg nil) (reg 1))
+		     (*Move (reg nil) (reg 1))
 		*donefgreaterp*))
 	   (*flessp ((l (reg t2) (displacement (reg 2) 4))
 		     (l (reg t1) (displacement (reg 2) 0))
@@ -952,10 +946,10 @@
 		     (st (reg t3) (displacement (reg st) -16))
 		     (lfd (freg 1) (displacement (reg st) -8))
 		     (lfd (freg 2) (displacement (reg st) -16))
-		     (*move (quote t) (reg 1))
+		     (*Move (quote t) (reg 1))
 		     (fcmpo 0 (freg 1) (freg 2))
 		     (bc true lt *doneflessp*)
-		     (*move (reg nil) (reg 1))
+		     (*Move (reg nil) (reg 1))
 		*doneflessp*))
 	   (*fplus2 ((l (reg t2) (displacement (reg 2) 4))
 		     (l (reg t1) (displacement (reg 2) 0))
@@ -1026,16 +1020,16 @@
 	 'opencode)
 
 (DefCMacro *fast-apply-load
-   ( (*move ArgOne (reg t1)) ))
+   ( (*Move ArgOne (reg t1)) ))
 
 (put 'fast-idapply    'opencode
-     '((*move (reg t1) (reg t2)) % save id number
+     '((*Move (reg t1) (reg t2)) % save id number
        (*wshift (reg t2) 2)	   % times 4
        (ldr (reg t2) (displacement (reg symfnc) (reg t2)))
        (blx (reg t2))))
      
 (put 'fast-idapply    'exitopencode
-     '((*move (reg t1) (reg t2)) % save id number
+     '((*Move (reg t1) (reg t2)) % save id number
        (*wshift (reg t2) 2)	   % times 4
        (ldr (reg t2) (displacement (reg symfnc) (reg t2)))
        (bx (reg t2))))
@@ -1073,7 +1067,7 @@
 preload  (setq initload
        (progn (setq cadrcfluids
 		(nconc cadrcfluids (cons (car freeregs) nil)))
-	(nconc initload `((*move ,(car cfluids) ,(car freeregs))))
+	(nconc initload `((*Move ,(car cfluids) ,(car freeregs))))
        )   )
        (setq freeregs (cdr freeregs))
        (setq cfluids (cdr cfluids))
@@ -1085,14 +1079,14 @@ preload  (setq initload
        % freeregs contains the list of preloaded regs
        % and not preloaded fluids if those exist
 
-      (setq list `((*move ($fluid BndStkPtr) (Reg t1))
+      (setq list `((*Move ($fluid BndStkPtr) (Reg t1))
 		   (*wplus3 (Reg t2) (Reg t1) ,lng)
-		   (*move ($fluid BndstkUpperBound) (reg t1))
+		   (*Move ($fluid BndstkUpperBound) (reg t1))
 		   (cmp (reg t2) (reg t1))
 		   (bmi ,genlabel)
 		   (*call Bstackoverflow) % never come back
 		  ,genlabel
-		   (*move (Reg t2) ($fluid BndstkPtr))   )) %start of code
+		   (*Move (Reg t2) ($fluid BndstkPtr))   )) %start of code
 
       (setq list (append initload list))
 
@@ -1104,10 +1098,10 @@ preload  (setq initload
 	   (stderror "T and NIL cannot be rebound"))
       (setq n (wplus2 n 8))
       (Setq list (append list
-     `((*move ,(car freeregs) (indexed (Reg t1) ,n))
-       (*move (quote ,Cadrcfluids)
+     `((*Move ,(car freeregs) (indexed (Reg t1) ,n))
+       (*Move (quote ,Cadrcfluids)
 		   (indexed (reg t1) ,(wplus2 n -4)))
-       (*move ,cregs ,cfluids)
+       (*Move ,cregs ,cfluids)
       )          ))
       (setq fluids (cdr Fluids))
       (setq freeregs (cdr freeregs))
@@ -1133,7 +1127,7 @@ preload  (setq initload
 preload  (setq initload
        (progn (setq cadrcfluids
 		(nconc cadrcfluids (cons (car freeregs) nil)))
-	(nconc initload `((*move ,(car cfluids) ,(car freeregs))))
+	(nconc initload `((*Move ,(car cfluids) ,(car freeregs))))
        )   )
        (setq freeregs (cdr freeregs))
        (setq cfluids (cdr cfluids))
@@ -1187,7 +1181,7 @@ preload  (setq initload
       (setq cfluids fluids) % copy of fluids
       (setq n (wtimes2 4 (wdifference 2 lng)))
       (setq lng (wtimes2 lng 4)) % * addressingunitperitem
-      (setq initload (list '(*move ($fluid Bndstkptr) (reg t1))))
+      (setq initload (list '(*Move ($fluid Bndstkptr) (reg t1))))
       (setq n 0)
 
 preload  (setq initload
@@ -1197,7 +1191,7 @@ preload  (setq initload
 		(nconc listfluids (cons nil nil))) )
 	(nconc initload
 	 (if freeregs
-     `((*move (displacement (reg t1) ,n) ,(car freeregs))) nil)
+     `((*Move (displacement (reg t1) ,n) ,(car freeregs))) nil)
        )   ))
        (setq n (wplus2 n 8))
        (when freeregs (setq freeregs (cdr freeregs)))
@@ -1228,8 +1222,8 @@ preload  (setq initload
   % insert reloaded register or memory reference
 
       (setq list (append list
-	   (if (car freeregs) `((*move ,(car freeregs) ,cfluids ))
-		`((*move (displacement (reg t2) ,n) ,cfluids )))
+	   (if (car freeregs) `((*Move ,(car freeregs) ,cfluids ))
+		`((*Move (displacement (reg t2) ,n) ,cfluids )))
 
       )          )
       (setq freeregs (cdr freeregs))
@@ -1282,12 +1276,19 @@ preload  (setq initload
 (de *foreignlink (functionname functiontype numberofarguments)
 
     `((STMDB (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback) % save caller-saved registers
-%      (*move (quote t) (fluid *kernelmode))
+%      (*Move (quote t) (fluid *kernelmode))
       (BLX (foreignentry ,functionname))
-%      (*move (reg NIL) (fluid *kernelmode))
+%      (*Move (reg NIL) (fluid *kernelmode))
       (LDMIA (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback))) % restore saved registers
 
 (DefCMacro !*foreignlink)
 
+
+(put 'id-tag 'compiler-constant? t)
+(put 'bstruct-tag 'compiler-constant? t)
+(put 'negint-tag 'compiler-constant? t)
+(put 'id-tag 'compiler-constant-value 30)
+(put 'bstruct-tag 'compiler-constant-value 22)
+(put 'negint-tag 'compiler-constant-value 31)
 
 
