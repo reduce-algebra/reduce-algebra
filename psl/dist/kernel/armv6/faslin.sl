@@ -89,17 +89,23 @@
 
     % Read in the ID table.
     (setf local-id-table (read-id-table fid))
-
+%(console-print-string "ID table at 0x")(unixputn local-id-table)(console-newline)
+    
     % Read the code.
     (setf code-size (binaryread fid)) % Size of code segment in words
+%(console-print-string "Code-size=0x")(unixputn code-size)(console-newline)
     (setf code-base (gtbps code-size)) % Allocate space in BPS
+%(console-print-string "Code-base=0x")(unixputn code-base)(console-newline)
     (setq Btop (GtBPS 0))              % pointer to top of alloc. BPS
     (setf init-function-address (wplus2 code-base (binaryread fid)))
+%(console-print-string "Init-function at 0x")(unixputn init-function-address)(console-newline)
     (binaryreadblock fid (loc (wgetv code-base 0)) code-size)
 
     % Read the bit table
     (setf bit-table-size (binaryread fid))
+%(console-print-string "Bittable size =0x")(unixputn bit-table-size)(console-newline)
     (setq bit-table (mkwrds (gtwrds bit-table-size)))
+%(console-print-string "Bittable at 0x")(unixputn bit-table)(console-newline)
     (binaryreadblock fid (loc (words-fetch bit-table 0)) bit-table-size)
 
     % Close the file
@@ -147,9 +153,17 @@
 	(code-location code-base) 
 	 entry)
      (setq bit-table (strbase (strinf bit-table)))
+%(console-print-string "do-relocation-new ")
+%(unixputn code-base)
+%(console-newline)
      (while (not (izerop (setq entry (wand 16#ff (byte bit-table ptr)))))     
+%(console-print-string "do-relocation-new-while ")
+%(unixputn (wand 16#ff (byte bit-table ptr)))
 	  (setq ptr (iadd1 ptr))
 	  (setq code-location (iplus2 code-location (wand entry 16#3f)))
+%(console-print-string " at ")
+%(unixputn code-location)
+%(console-newline)
 	  (setq entry (wshift entry -6))
 	  (case entry
 	      ((reloc-word)

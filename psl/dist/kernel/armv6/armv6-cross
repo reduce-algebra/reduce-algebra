@@ -1,5 +1,6 @@
 # /bin/csh
 echo "cross"
+bl=`dirname $pl`/armv6-cross ; export bl
 $psys/pslcomp <<EOF
 (off redefmsg verboseload)
 (load debug)
@@ -18,11 +19,29 @@ $psys/pslcomp <<EOF
 (print (list "nextidnumber*" nextidnumber*))
 (load armv6-asm)
 (load armv6-cmac)
+(load armv6-comp)
 (load armv6-spec)
 (remprop 'wquotient 'opencode)
 (remprop 'wremainder 'opencode)
-(print (list "nextidnumber*" nextidnumber*))
-%(dskin "unix-patch.sl")
+(setq nil-t-diff* 140)
+%(put 'NEGINTP 	'OPENTST 	'(TSTPAT2 !*JUMPTYPE    31))
+%(put 'NOTNEGINTP 'OPENTST 	'(TSTPAT2 !*JUMPNOTTYPE 31))
+%(put 'IDP 	'OPENTST 	'(TSTPAT2 !*JUMPTYPE    30))
+%(put 'NOTIDP 	'OPENTST 	'(TSTPAT2 !*JUMPNOTTYPE 30))
+%(put 'BSTRUCTP 'OPENTST 	'(TSTPAT2 !*JUMPTYPE    22))
+%(put 'NOTBSTRUCTP 'OPENTST 	'(TSTPAT2 !*JUMPNOTTYPE 22))
+%(put 'NEGINTP 	'OPENFN 	'(TVPAT-tag !*JUMPTYPE    31))
+%(put 'NOTNEGINTP 'OPENFN 	'(TVPAT-tag !*JUMPNOTTYPE 31))
+%(put 'IDP 	'OPENFN 	'(TVPAT-tag !*JUMPTYPE    30))
+%(put 'NOTIDP 	'OPENFN 	'(TVPAT-tag !*JUMPNOTTYPE 30))
+%(put 'BSTRUCTP 'OPENFN 		'(TVPAT-tag !*JUMPTYPE    22))
+%(put 'NOTBSTRUCTP 'OPENFN 	'(TVPAT-tag !*JUMPNOTTYPE 22))
+(put 'id-tag 'compiler-constant? t)
+(put 'bstruct-tag 'compiler-constant? t)
+(put 'negint-tag 'compiler-constant? t)
+(put 'id-tag 'compiler-constant-value 30)
+(put 'bstruct-tag 'compiler-constant-value 22)
+(put 'negint-tag 'compiler-constant-value 31)
 (print (list "nextidnumber*" nextidnumber*))
 
 (remd 'foreignlink)

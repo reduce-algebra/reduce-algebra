@@ -47,6 +47,7 @@
 (compiletime (put 'UndefinedFunction 'entrypoint 'UndefinedFunction))
 
 (lap '((!*entry PlantUnbound expr 1)
+       (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
        (LDR (reg t1) UndefinedFunctionInstruction)
        (STR (reg t1) (displacement (reg SYMFNC) (regshifted 1 LSL 2)))
        (!*EXIT 0)
@@ -57,8 +58,8 @@
 
 
 (lap '((!*entry PlantCodePointer expr 2)
-       (*wor (reg 2) 16#8000000)
-       (STR (reg 2) (displacement (reg SYMFNC) (regshifted 2 LSL 2)))
+       (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
+       (STR (reg 2) (displacement (reg SYMFNC) (regshifted 1 LSL 2)))
        (!*EXIT 0)))
 
 (compiletime 
@@ -67,6 +68,7 @@
  (put 'CompiledCallingInterpreted 'entrypoint 'CompiledCallingInterpreted))
 
 (lap '((!*entry PlantLambdaLink expr 1)
+       (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
        (LDR (reg t1) LambdaLinkInstruction)
        (STR (reg t1) (displacement (reg SYMFNC) (regshifted 1 LSL 2)))
        (!*EXIT 0)
@@ -76,7 +78,7 @@
 
 
 (lap '((*entry addressapply0 expr 1)
-       (BLX (reg 1))))
+       (BX (reg 1))))
   
 (de bittable (baseaddress bitoffset)
   (field (ilsh (byte baseaddress (ilsh bitoffset -2))
@@ -84,12 +86,14 @@
          30 2))
 
 (lap '((*entry undefinedfunction expr 1)
+       (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
        (*move (reg t3) (reg t1))
        (*JCall undefinedfunction-aux)))
 
    % to be redefined in nonkernel
 
 (lap '((*entry undefinedfunction-aux expr 1)
+       (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
        (*move (reg t1) (displacement (reg st) 0 postindexed))
        (*move (quote "Undefined function called: ") (reg 1))
        (*call console-print-string)
@@ -97,6 +101,7 @@
        (*move (displacement (reg st) 0 postindexed) (reg t1))
        (LDR (reg 1) (displacement (reg t2) (regshifted t1 LSL 2)))
        (*call console-print-string)
+       (*call console-newline)
        (*move 0 (reg 1))
        (*call Exit-with-status)
        (*exit 0)
@@ -107,6 +112,7 @@
        % Called by JMP in the function cell. Stores the ID of the interpreted
        % function in CodeForm!* without disturbing its argument registers
        %
+       (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
        (*MKITEM (reg t1) (wconst id-tag))
        (*MOVE (reg t1) (Fluid CodeForm!*))
        (*JCALL CompiledCallingInterpretedAux)))

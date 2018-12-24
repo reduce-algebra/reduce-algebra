@@ -1,5 +1,6 @@
 (setf *writingasmfile t)
 (reload sys-consts)
+(setq addressingunitsperitem 4)
 (off pcmac)
 (off usermode)
 (on verboseload)

@@ -84,7 +84,6 @@
 
 (de gtbps-nil-error (x)
   (stderror "GTBPS called with NIL."))
-  )
 
 
 (de gtheap (number-of-items)

@@ -56,7 +56,7 @@
 
 (ds occupied-slot? (u) 
   (let ((hte (hash-table-entry u)))
-	(and (wlessp hte 16#ffffffff) (> hte 0)))
+	(and (wleq hte 16#7fffffff) (> hte 0)))
   )
 
 %
