@@ -488,7 +488,7 @@
 
 (de smallimmediatep (x)
      (when (eqcar x 'IMMEDIATE) (setq x (unimmediate x)))
-     (bytep x)) 
+     (imm8-rotatedp x)) 
 
 (de imm8-rotatedp (x)
     (and (fixp x)

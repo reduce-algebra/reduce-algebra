@@ -228,7 +228,6 @@
 	  ((eq op 'writeback?) '(writeback-p))
 	  ((eq op 'pm-reg-shifter) '(pm-reg-shifter-p))
 	  ((eq op 'idloc) '(idlocp))
-	  ((eq op '!n) '(SMALLIMMEDIATEP))
 	  ((eq op 'effa) '(EFFAP))
 	  ((eq op 'mem) '(MEMORYP))
 	  ((eq op 'shortlabel) '(SHORTLABELP))

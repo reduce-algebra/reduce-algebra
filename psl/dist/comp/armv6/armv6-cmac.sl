@@ -42,6 +42,12 @@
 
 (loadtime (off ImmediateQuote))
 
+(loadtime
+ (progn
+   (remprop 'wtimes2 'openfn)
+   (remprop 'wtimes2 'MemModFn)
+   ))
+
 % The following terminal operands try to follow the same meanings as
 % those outlined in the Motorola manuals.
  
@@ -60,7 +66,7 @@
  
 
 (flag '(Immediate UnImmediate Indirect deferred label extrareg Indexed
-	displacement) 'TerminalOperand)
+		  displacement unindirect) 'TerminalOperand)
 
 % MkItem may be used when evaluating WConst expressions.
 
@@ -111,6 +117,14 @@
 (de fixplusp (x) (and (fixp x) (not (minusp x))))
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
+
+(de indirectregp (x)
+    (and (pairp x)
+	 (eq (car x) 'indirect)
+	 (regp (cadr x))))
+
+(de unindirect (x)
+    (if (eqcar x 'indirect) (cadr x) x))
 
 (de NegativeImmediateP (Expression)
   (and (FixP Expression) (minusp Expression) (GreaterP Expression -64)))
@@ -316,7 +330,6 @@
        (Equal)
        ((regp regp)	    	 (MOV ArgTwo ArgOne))
        ((imm8-rotatedp regp)     (MOV Argtwo ArgOne))
-       ((immediatep regp)        (MOV Argtwo ArgOne))
        ((fixp regp)              (*LoadConstant ArgTwo ArgOne))
        ((idlocp regp)            (*LoadIDLoc ArgTwo ArgOne))
        ((fluid-arg-p regp)       (*LoadIdNumber LDR ArgTwo ArgOne))
@@ -444,17 +457,24 @@
     (when (not (or (zerop arg2) (equal arg2 '(wconst 0))))
       (*wplus3 arg1 arg1 arg2)))
 
+(de Expand3OperandCMacro (Arg1 Arg2 Arg3 CMacroName)
+  (prog (ResultingCode!*)
+    (return (CMacroPatternExpand (list (ResolveOperand '(REG t1) Arg1)
+				       (ResolveOperand '(REG t2) Arg2)
+				       (ResolveOperand '(REG t3) Arg3))
+				 (get CMacroName 'CMacroPatternTable)))))
+
 (de *WPlus3 (arg1 arg2 arg3)
     (expand3operandcmacro arg1 arg2 arg3 '*wplus3))
 
 (DefCMacro *WPlus3
-	   ((regp zerop regp) (*Move ArgOne ArgThree))
-	   ((regp regp zerop) (*Move ArgOne ArgTwo))
+	   ((regp zerop regp) (*Move ArgThree ArgOne))
+	   ((regp regp zerop) (*Move ArgTwo ArgOne))
 	   ((regp regp regp) (ADD ArgOne ArgTwo ArgThree))
 	   ((regp imm8-rotatedp regp)
 		                (ADD ArgOne Argthree ArgTwo))
 	   ((regp regp imm8-rotatedp)
-		                (ADD ArgOne ArgTwo ArgThree ))
+		                (ADD ArgOne ArgTwo ArgThree))
 	   ((regp imm8-rotatedp anyp)
 		               (*Move ArgThree (reg t3))
 		               (ADD ArgOne (reg t3) ArgTwo))
@@ -497,6 +517,8 @@
 		               (*Move ArgThree (reg t2))
 		               (SUB (reg t3) (reg t2) (reg t3))
 		               (*Move (reg t3) ArgOne)))
+
+(put 'wtimes2 'opencode '((MUL (reg 1) (reg 1) (reg 2))))
 
 (defcmacro *wtimes2)
 
@@ -791,18 +813,21 @@
      (member (car x) '(!$fluid !$global fluid global))))
 
 
-(de *loc (ArgOne ArgTwo)
-   (let ((resolvedarg (resolveoperand '(reg t2) ArgTwo)))
-      (cond ((deferred-p resolvedarg)
-	 `((*Move (undeferred ,resolvedarg) ,ArgOne))) % get the address.
-	 ((displacement-p resolvedarg)
-	    `((ai ,ArgOne ,(cadr resolvedarg) ,(caddr resolvedarg) )))
-	 ((eqcar resolvedarg 'cdr)
-	    `((ai ,ArgOne ,(cadr resolvedarg) 4)))
-	 (t `((*Movex ,resolvedarg ,ArgOne))))))
+(DefCMacro *Loc                          % This needs more study    scs
+	  ((regP smallimmediatep)(MOV ARGONE (unimmediate ARGTWO)))
+	  ((regP indirectp)(*LoadAddress ARGONE ARGTWO))
+	  ((RegP AnyP)      (MOV              ARGONE  ARGTWO))
+	  ((AnyP smallimmediatep)(*MOVE           ARGTWO  ARGONE))
+	  (                  (MOV              (Reg T2) ARGTWO)
+			     (*MOVE          (Reg T2) ARGONE)))
 
-(DefCMacro *loc)
+(de *LoadAddress (dest src)
+    %% dest is a register, src an indirect reference
+    (if (eqcar src 'indirect)
+	`((MOV ,dest ,(cadr src)))
+      `((MOV ,dest ,src))))
 
+(DefCMacro *LoadAddress)
 
 
 (DefCMacro *Field
@@ -1121,7 +1146,7 @@ preload  (setq initload
       (setq Fluids (rest fluids)) % Remove NONLOCALVARS
       (setq lng (wtimes2 (length Fluids) 8)) % two words per BndStk entry
 		                         % * 4 addressingunits
-      (setq freeregs '((reg t3)(reg T4)(reg 1)(reg 2)(reg 3)(reg 4)(reg 5)))
+      (setq freeregs '((reg t3)(reg 1)(reg 2)(reg 3)(reg 4)(reg 5)))
       (setq cfluids fluids) % copy of fluids
 
 preload  (setq initload
@@ -1177,7 +1202,7 @@ preload  (setq initload
       (setq n 0)
       (setq Fluids (rest fluids)) % Remove NONLOCALVARS
       (setq lng (wtimes2 (length Fluids) 2)) % two words per BndStk entry
-      (setq freeregs '((reg t3)(reg t4)(reg 2)(reg 3)(reg 4)(reg 5)))
+      (setq freeregs '((reg t3)(reg 2)(reg 3)(reg 4)(reg 5)))
       (setq cfluids fluids) % copy of fluids
       (setq n (wtimes2 4 (wdifference 2 lng)))
       (setq lng (wtimes2 lng 4)) % * addressingunitperitem
@@ -1247,15 +1272,19 @@ preload  (setq initload
 	(if (and (weq lowerbound 0) (weq upperbound 31))
 					% jumpon on tags (most probably)
 					% 4 bytes per jumptable entry
-      `((b (indirect (indexed (times ,register 8) (label ,ll2))))
+      `((ldr (reg t1) (label ,ll2))
+        (add (reg t1) ,register (regshifted t1 LSL 2))
+	(bx (reg t1))
        ,ll2)
       `((cmp ,register ,upperbound )
 	(beq ,(lastcar labellist))
 	(bgt (label ,ll))
 	(cmp ,register ,Lowerbound )
-	(b lt (label ,ll))
+	(blt (label ,ll))
         (*wdifference ,register ,lowerbound )
-	(jmp (indirect (indexed (times ,register 8) (label ,ll2))))
+	(ldr (reg t1) (label ,ll2))
+	(add (reg t1) ,register (regshifted t1 LSL 2))
+	(bx (reg t1))
        ,ll2) ) )
       Loop  (Setq x (nconc X `((B ,(car Labellist)))))
 	    (setq Labellist (cdr Labellist))
