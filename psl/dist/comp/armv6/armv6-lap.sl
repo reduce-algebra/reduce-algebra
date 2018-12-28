@@ -131,7 +131,7 @@
 	 RELOC_WORD 1 
 	 RELOC_INF 3)
 
-(DefConst MaximumShortBranch 127)
+(DefConst MaximumPCRelLoadOffset 4096)
 
 % ------------------------------------------------------------
 % Start of actual code
@@ -157,7 +157,7 @@
 		 (DepositByte 0) ))
  
     (SETQ U (ReformBranches U))         % process conditional branches
-    (setq U (OptimizeBranches U))       % optimize branches and
+    (setq U (ReplaceFarLoads U))       % optimize branches and
 					% calculate offsets and total length
     
     (when (not *WritingFaslFile)       
@@ -690,9 +690,9 @@
     )
 
 (de DepositInstructionBytes (byte1 byte2 byte3 byte4)
-    (printf "Deposit instruction %w at %x -> %x%n"
-	    (wor (wshift byte1 24) (wor (wshift byte2 16) (wor (wshift byte3 8) byte4)))
-	    CurrentOffset* (wplus2 codebase* CurrentOffset*))
+%    (printf "Deposit instruction %w at %x -> %x%n"
+%	    (wor (wshift byte1 24) (wor (wshift byte2 16) (wor (wshift byte3 8) byte4)))
+%	    CurrentOffset* (wplus2 codebase* CurrentOffset*))
     (if *big-endian*
 	(progn
 	  (DepositByte byte1)
@@ -704,12 +704,12 @@
 	(DepositByte byte3)
 	(DepositByte byte2)
 	(DepositByte byte1)))
-    (printf "Deposited at %x: %x >%x< %x%n"
-	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
-	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
-	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
-	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
-	    )
+%    (printf "Deposited at %x: %x >%x< %x%n"
+%	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
+%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
+%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
+%	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
+%	    )
     )
 	  
     
@@ -910,6 +910,8 @@
 		   (setq u-bit 1))
 		 (setq temp (lsh displ -8))
 		 (setq lastbyte (land displ 16#FF)))
+		((fixp displ)		% integer offset out of range
+		 (stderror (bldmsg "Invalid LDR/STR operand: %w - offset out of range: %d" reg-offset12 displ)))
 		((or (not (pairp displ))
 		     (not (memq (car displ) '(reg regshifted plus minus))))
 		 (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset12)))
@@ -1121,7 +1123,7 @@
 
 (de makeinternalentryrelative (nam offsetfromhere)
   (prog (offset)
-	(setq offset (atsoc nam labeloffsets*))
+	(setq offset (atsoc nam LabelOffsets*))
 	(setq offset (if offset
 		(cdr offset)
 		(get nam 'internalentryoffset)))
@@ -1138,13 +1140,13 @@
 	% will be fixed in SystemFasl...
 
 
-(de labeloffset (l)
+(de LabelOffset (l)
   (let (offset)
     (cond 
      ((codep l) (if *writingfaslfile
 		  (inf l)
 		  (wdifference (inf l) codebase*)))
-     ((setq offset  (atsoc l labeloffsets*)) (cdr offset))
+     ((setq offset  (atsoc l LabelOffsets*)) (cdr offset))
      (t (stderror (bldmsg "Unknown label %r" l)))
      )))
 
@@ -1176,7 +1178,7 @@
 		(pairp instr)
 		(setq x (atsoc (car instr) ConditionalJumps*))
 		(setq y (saniere-Sprungziel (cadr instr)))
-		(eqcar (car code) 'JMP)
+		(eqcar (car code) 'B)
 		(cdr code)
 		(equal (cadr code) y))
 	     (setq instr (cons (cdr x) (cdr (pop code)))))
@@ -1186,25 +1188,28 @@
 		(atsoc (car instr) ConditionalJumps*)
 		(not (atom (saniere-Sprungziel (cadr instr)))))
 	     (setq x (gensym))
-	     (push (cons 'JMP (cdr instr)) bottom)
+	     (push (cons 'B (cdr instr)) bottom)
 	     (push x bottom)
 	     (setq instr (list (car instr) x))   )
 	(push instr rcode))
 	(return (nconc (reversip rcode) bottom))))
  
-% ------------------------------------------------------------
-% Branch optimization (in favour of short jumps)
-% ------------------------------------------------------------
+%% ------------------------------------------------------------
+%% Branch optimization (in favour of short jumps)
+%% ------------------------------------------------------------
+%
+%(deflist '(
+%   (BEQ BEQ) (BNE BNE) (BCS BCS)(BCC BCC)
+%   (BMI BMI) (BPL BPL) (BVS BVS)(BVC BVC)
+%   (BHI BHI)(BLS BLS)(BGE BGE)(BLT BLT)
+%   (BGT BGT)(BLE BLE)(BAL BAL)
+%   (B B) (BX BX) (BLX BLX)
+%) 'WordBranch)
+%
+%(de GeneralBranchInstructionP (i) (get i 'WordBranch))
 
-(deflist '(
-   (BEQ BEQ) (BNE BNE) (BCS BCS)(BCC BCC)
-   (BMI BMI) (BPL BPL) (BVS BVS)(BVC BVC)
-   (BHI BHI)(BLS BLS)(BGE BGE)(BLT BLT)
-   (BGT BGT)(BLE BLE)(BAL BAL)
-   (B B) (BX BX) (BLX BLX)
-) 'WordBranch)
+(de GeneralLDRInstructionP (i) (eq i 'LDR))
 
-(de GeneralBranchInstructionP (i) (get i 'WordBranch))
 (de LocalLabelp (l) (atom (saniere-Sprungziel l)))
 
 % ProcessInitCode CodeList
@@ -1219,28 +1224,62 @@
     (return CodeList)))
 
 
-% OptimizeBranches BranchCodeList!*;
+% ReplaceFarLoads BranchCodeList!*;
 % Purpose: Take a code list which has already been expanded by Pass1Lap
-%          and try to optimize the branches
+%          and look for LDR instructions where the source memory address outside
+%          the $pc+/-4096 range. E.g.
+%
+%          (LDR (reg xy) "l0123")
+%          ...
+%          l0123
+%          (fullword something)
+%
+%          where l0123 is more that 4096 away from the LDR instruction.
+%          Replace this by
+%
+%          (BL l4567)
+%          ...
+%          l4567
+%          (LDR (reg xy) "l0123")
+%          (BX (REG LR))
+%          l0123
+%          (fullword something)
+%
+%          since branches have a 26 bit offset.
+%          The BL instruction stores the return address into register lr, so that
+%          the BX instruction jumps back to the address immediately following.
+%
 % Returns: a new code list
 
-(de OptimizeBranches (u) (OptimizeBranches0 u *WritingFaslFile))
-
-(de OptimizeBranches0 (u m) 
-(prog (BranchAndLabelAList* InstructionChanged* q w) 
-    (setq BranchCodeList* (if m (alignCode u) u))
+(de ReplaceFarLoads (u)
+(prog (BranchAndLabelAList* InstructionChanged*) 
+    (setq BranchCodeList* u)
     (BuildOffsetTable)                  % find branches, labels, and entries
     (setq InstructionChanged* nil)
-    (FindLongBranches)
-    (when (and m InstructionChanged*)   
-	      % give up aligned code 
-	  (return (OptimizeBranches0 u nil)))
-    (while InstructionChanged* 
-	 (setq InstructionChanged* nil) 
-	 (FindLongBranches)) 
+    (setq InstructionChanged* (FindFarLoads))
+    (while InstructionChanged*
+      (setq BranchCodeList* (UpdateCodeList BranchCodeList* InstructionChanged*))
+      (BuildOffsetTable)   
+      (setq InstructionChanged* (FindFarLoads)))
     (setq LabelOffsets* (DeleteAllButLabels BranchAndLabelAList*)) 
     (return BranchCodeList*)))
 
+(de UpdateCodeList (codelist alist)
+    %% alist contains pairs (lbl . codelist)
+    %% codelist is to be inserted immediately before lbl
+    (prog (l l1)
+      (setq l codelist)
+     loop
+      (setq l1 (cdr l))
+      (when (null l1) (return codelist))
+      (setq pp (atsoc (first (rest l)) alist))
+      (cond ((null pp))			% nothing to do - advance
+	    (t				% found - splice in the new code
+	     (nconc (cdr pp) l1)
+	     (rplacd l (cdr pp))))
+      (setq l l1)
+      (go loop)))
+    
 %% (de &make-nop(n)
 %%    % make n bytes of nop instructions
 %%    (cond ((wleq n 0) nil)
@@ -1249,78 +1288,78 @@
 %% 	 ((eq n 3)'((lea (displacement(reg t1)0) (reg t1))))
 %% 	 (t (append (&make-nop 3)(&make-nop (difference n 3)))) ))
 
-(de &make-nop(n))
+%% (de &make-nop(n))
 
-(de alignCode(u)
-  (if (&smember 'fastapply u) u (alignCode1 u)))
+%% (de alignCode(u)
+%%   (if (&smember 'fastapply u) u (alignCode1 u)))
 
-(de alignCode1(u)
-   (let(rcode w (a CurrentOffset*) l x y z q s nops)
-     (while u
-       (setq w (pop u))
-       (setq nops 0)
-       (cond 
+%% (de alignCode1(u)
+%%    (let(rcode w (a CurrentOffset*) l x y z q s nops)
+%%      (while u
+%%        (setq w (pop u))
+%%        (setq nops 0)
+%%        (cond 
 
-	 % initial start: sync. entry point
-	   ((null rcode)
-	     (setq x a)
-	     (setq y u q w)
-	     (setq s (eqcar w '*entry))
-	     (while y
-		 (when (pairp q)(setq x (iplus2 x (instructionlength q))))
-		 (if (eqcar q '*entry) (setq y nil) (setq q (pop y))))
-	     (setq x (wand x 15))
-	     (when (not (eq x 0)) (setq nops (idifference 16 x)))
-	    )
+%% 	 % initial start: sync. entry point
+%% 	   ((null rcode)
+%% 	     (setq x a)
+%% 	     (setq y u q w)
+%% 	     (setq s (eqcar w '*entry))
+%% 	     (while y
+%% 		 (when (pairp q)(setq x (iplus2 x (instructionlength q))))
+%% 		 (if (eqcar q '*entry) (setq y nil) (setq q (pop y))))
+%% 	     (setq x (wand x 15))
+%% 	     (when (not (eq x 0)) (setq nops (idifference 16 x)))
+%% 	    )
  
-	% entry: executable code starts
-	    ((eqcar w '*entry)(setq s t))
+%% 	% entry: executable code starts
+%% 	    ((eqcar w '*entry)(setq s t))
 	    
-	% fullword: executable code terminated
-	    ((eqcar w 'fullword)(setq s nil)) 
+%% 	% fullword: executable code terminated
+%% 	    ((eqcar w 'fullword)(setq s nil)) 
 
-        % label under *align16
-	   ((and s (atom w) *align16)
-	      % next instruction should begin on cache line
-	     (setq x (wand a 15))   
-	     (when (not (eq x 0)) 
-		   (setq nops(wdifference 16 x))))
+%%         % label under *align16
+%% 	   ((and s (atom w) *align16)
+%% 	      % next instruction should begin on cache line
+%% 	     (setq x (wand a 15))   
+%% 	     (when (not (eq x 0)) 
+%% 		   (setq nops(wdifference 16 x))))
 
-	% label in standard mode
-	   ((and s (atom w) u (pairp (car u))) 
-	      % next instruction should not split cache lines
-	    (setq x (iplus2 (wand a 15) (instructionlength (car u))))
-	    (when (not (igreaterp x 16))
-		  (setq nops (idifference 16 (wand a 15))))
-	   )
+%% 	% label in standard mode
+%% 	   ((and s (atom w) u (pairp (car u))) 
+%% 	      % next instruction should not split cache lines
+%% 	    (setq x (iplus2 (wand a 15) (instructionlength (car u))))
+%% 	    (when (not (igreaterp x 16))
+%% 		  (setq nops (idifference 16 (wand a 15))))
+%% 	   )
 	       
-       % call under *align16
-	   ((and *align16 (eqcar w 'call))  
-	      % put call exactly at the end of cache line
-	    (setq x (wand (iplus2 a (instructionlength w)) 15))
-	    (when (not (eq x 0)) (setq nops (idifference 16 x)))
-	   )
+%%        % call under *align16
+%% 	   ((and *align16 (eqcar w 'call))  
+%% 	      % put call exactly at the end of cache line
+%% 	    (setq x (wand (iplus2 a (instructionlength w)) 15))
+%% 	    (when (not (eq x 0)) (setq nops (idifference 16 x)))
+%% 	   )
 
-	% call 
-	   ((and (eqcar w 'call) u (pairp (car u)))  
-	      % following instruction should not split over cache line
-	    (setq x (wand (iplus2 a (instructionlength w)) 15))
-	    (when (igreaterp (iplus2 x (instructionlength (car u)))16)
-		  (setq nops (idifference 16 x)))
-	   )
-	 )   
-       (when (and (igreaterp nops 0) 
-		  (ilessp nops 9))  % not too many
-	     (foreach q in (&make-nop nops) do (push q rcode))
-	     (setq a (iplus2 a nops)))
-       (when (pairp w)(setq a (iplus2 a (InstructionLength w))))
-       (push w rcode)
-      )
-      (while rcode
-	 (when (not (eq (setq w (pop rcode)) '!%temp-label))
-	       (push w u)))
-    u      
-))
+%% 	% call 
+%% 	   ((and (eqcar w 'call) u (pairp (car u)))  
+%% 	      % following instruction should not split over cache line
+%% 	    (setq x (wand (iplus2 a (instructionlength w)) 15))
+%% 	    (when (igreaterp (iplus2 x (instructionlength (car u)))16)
+%% 		  (setq nops (idifference 16 x)))
+%% 	   )
+%% 	 )   
+%%        (when (and (igreaterp nops 0) 
+%% 		  (ilessp nops 9))  % not too many
+%% 	     (foreach q in (&make-nop nops) do (push q rcode))
+%% 	     (setq a (iplus2 a nops)))
+%%        (when (pairp w)(setq a (iplus2 a (InstructionLength w))))
+%%        (push w rcode)
+%%       )
+%%       (while rcode
+%% 	 (when (not (eq (setq w (pop rcode)) '!%temp-label))
+%% 	       (push w u)))
+%%     u      
+%% ))
 
 (de DeleteAllButLabels (X) 
 (prog (Y) 
@@ -1346,6 +1385,7 @@
      %   labels:           ( label . CurrentOffset)
      %   procedures:       ( procedurename . CurrentOffset)
      %   branch instrs     ( (opcode label) . CurrentOffset)
+     %   LDR instrs        ( (opcode dest label) . CurrentOffset)
 % otherwise, the CurrentOffset is advanced by the length of the instruction
 
 (de BuildInitCodeOffsetTable (CodeList) 
@@ -1356,16 +1396,13 @@
 	  (setq AList (cons (cons X CodeSize*) AList))) 
    ((equal (setq Instr (first X)) '*entry) 
 	  (setq AList (cons (cons (second X) CodeSize*) AList))) 
-   ((and (GeneralBranchInstructionP Instr)(locallabelp (second X))) 
-	  (progn (Rplaca X (get Instr 'WordBranch)) 
-
-		    (setq CodeSize* (plus CodeSize* (InstructionLength X))) 
-		    (setq AList (cons (cons X CodeSize*) AList)))) (t 
+   ((and (GeneralLDRInstructionP Instr) (LocalLabelp (third X)))
+           (setq AList (cons (cons X CodeSize*) AList)))
 		
-   (setq CodeSize* (plus CodeSize* (InstructionLength X))))))) 
+   (t (setq CodeSize* (plus CodeSize* (InstructionLength X)))))))
     
 
-    (setq BranchAndLabelAList* (ReversIP AList)) 
+    (setq BranchAndLabelAList* (ReversIP AList))
     (return CodeList)))
 
 
@@ -1375,6 +1412,7 @@
      %   labels:           ( label . CurrentOffset)
      %   procedures:       ( procedurename . CurrentOffset)
      %   branch instrs     ( (opcode label) . CurrentOffset)
+     %   LDR instrs        ( (opcode dest label) . CurrentOffset)
 
 (de BuildOffsetTable nil 
  (prog (AList Instr) 
@@ -1385,33 +1423,50 @@
 	   ((equal (setq Instr (first X)) '*entry) 
 	    (setq AList (cons (cons (second X) CodeSize*) AList))) 
 	       % branch: enter the address of the following instruction
-	   ((and (GeneralBranchInstructionP Instr) (locallabelp (second X))) 
+	   ((and (GeneralLDRInstructionP Instr) (LocalLabelp (third X))) 
 	    (setq CodeSize* (plus CodeSize* (InstructionLength X))) 
-	    (setq AList (cons (cons X CodeSize*) AList))) 
+	    (setq AList (cons (cons X CodeSize*) AList)))
 	   (t (setq CodeSize* (plus CodeSize* (InstructionLength X)))))))
   (setq BranchAndLabelAList* (ReversIP AList)) 
   (setq InstructionChanged* BranchAndLabelAList*)
   (return BranchAndLabelAList*) ))
 
 
-(de FindLongBranches nil 
- (prog (CurrentDisplacement) 
+%(de FindLongBranches nil 
+% (prog (CurrentDisplacement) 
+%  (foreach entry on BranchAndLabelAList* do 
+%    (cond ((not (LabelP (car (first entry)))) 
+%      (progn 
+%	(setq CurrentDisplacement (FindDisplacement (first entry))) 
+%	(cond 
+%	   ((or (GreaterP CurrentDisplacement (const MaximumShortBranch)) 
+%		(ZeroP CurrentDisplacement))    % Must have long brahch.
+%	  
+%	  (progn (setq InstructionChanged* t) 
+%	      (IncreaseAllOffsets entry (MakeLongBranch entry)))))))))))
+      
+(de FindFarLoads nil
+ (prog (CurrentDisplacement ResultList newcode)
   (foreach entry on BranchAndLabelAList* do 
     (cond ((not (LabelP (car (first entry)))) 
       (progn 
-	(setq CurrentDisplacement (FindDisplacement (first entry))) 
+	(setq CurrentDisplacement (FindDisplacement (first entry)))
 	(cond 
-	   ((or (GreaterP CurrentDisplacement (const MaximumShortBranch)) 
-		(ZeroP CurrentDisplacement))    % Must have long brahch.
-	  
-	  (progn (setq InstructionChanged* t) 
-	      (IncreaseAllOffsets entry (MakeLongBranch entry)))))))))))
+	 ((or (GreaterP CurrentDisplacement (const MaximumPCRelLoadOffset))
+	      (Lessp CurrentDisplacement (minus (const MaximumPCRelLoadOffset))))
+
+	  (setq newcode (MakeFarLoad entry ResultList))
+%	  (printf "BranchCodeList is %w%n" BranchCodeList*)
+	  (cond ((not (atsoc (car newcode) ResultList))
+		 (setq ResultList (cons newcode ResultList))))))))))
+  (return (reversip ResultList))
+  ))
       
 
 
 (de FindDisplacement (InstructionOffsetPair) 
     (Abs (Difference (cdr InstructionOffsetPair) 
-		    (FindLabelOffset (second (first InstructionOffsetPair))))))
+		    (FindLabelOffset (third (first InstructionOffsetPair))))))
 
 %  FindLabelOffset(Label)
 % Purpose: looks up the location of Label in BranchAndLabelAList!*
@@ -1435,16 +1490,36 @@
 (de FindEntryOffset (L) 
     (cond ((setq L (Atsoc L BranchAndLabelAList*)) (cdr L)) (t -2000)))
 
-(de MakeLongBranch (AList) 
-(prog (InstructionList Result OppositeBranch n) 
-    (setq InstructionList (car (first AList))) 
-    (setq n (instructionlength InstructionList))
-    (Rplaca InstructionList (get (first InstructionList) 'WordBranch)) 
-    (setq n (difference (instructionlength InstructionList) n))
-    (cond ((cdr AList) (Rplacw AList (cdr AList)))
-	  (t (Rplacw AList (list (cons '~DummyLabel~ 0))))) 
-    (return n))) % increased length of subsequent code
+%(de MakeLongBranch (AList) 
+%(prog (InstructionList Result OppositeBranch n) 
+%    (setq InstructionList (car (first AList))) 
+%    (setq n (instructionlength InstructionList))
+%    (Rplaca InstructionList (get (first InstructionList) 'WordBranch)) 
+%    (setq n (difference (instructionlength InstructionList) n))
+%    (cond ((cdr AList) (Rplacw AList (cdr AList)))
+%	  (t (Rplacw AList (list (cons '~DummyLabel~ 0))))) 
+%    (return n))) % increased length of subsequent code
 
+(de MakeFarLoad (AList ResultList)
+(prog (InstructionList Result OppositeBranch n oldopcode olddest oldlabel newlabel) 
+      (setq InstructionList (car (first AList)))
+      (setq oldopcode (first InstructionList))
+      (setq olddest (second InstructionList))
+      (setq oldlabel (third InstructionList))
+      (cond ((null (setq newlabel (atsoc oldlabel ResultList)))
+	     (setq newlabel (gensym)))
+	    (t (setq newlabel (cadr newlabel))))
+      (printf "Replacing %w " InstructionList)
+      (Rplaca InstructionList 'BL)
+      (Rplacd InstructionList (list newlabel))
+      (printf " by %w%n " InstructionList)
+      (return (cons oldlabel
+		    %% These are the instructions to be inserted immediately before
+		    %% the label 
+		    (list newlabel
+			  (list oldopcode olddest oldlabel)
+			  (list 'BX (list 'REG 'LR)))
+		    ))))
 
 (de IncreaseAllOffsets (X N) 
     (foreach Y in X do (Rplacd Y (plus (cdr Y) N))) 
@@ -1533,10 +1608,10 @@
 (de DepositWordExpression (x)
   % Only limited expressions now handled
   (let (y)
-    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 codebase* CurrentOffset*))
+%    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 codebase* CurrentOffset*))
     (cond
       ((fixp x) (depositword (int2sys x)))
-      ((labelp x) (deposit-relocated-word (labeloffset x)))
+      ((labelp x) (deposit-relocated-word (LabelOffset x)))
       ((equal (first x) 'internalentry) 
        (let ((offset (get (second x) 'internalentryoffset)))
 	 (if offset
@@ -1556,12 +1631,12 @@
       ((equal (first x) 'entry) (DepositEntry x))
       ((setq y (wconstevaluable x)) (DepositWord (int2sys y)))
       (t (stderror (bldmsg "Expression too complicated %r" x))))
-    (printf "Deposited at %x: %x >%x< %x%n"
-	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
-	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
-	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
-	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
-	    )
+%    (printf "Deposited at %x: %x >%x< %x%n"
+%	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
+%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
+%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
+%	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
+%	    )
     ))
 
 (de depositwordidnumber (x) 
@@ -1850,11 +1925,8 @@
    (*jumpwgeq    . *jumpwlessp)      (*jumpwlessp     . *jumpwgeq)
    (*jumpwleq    . *jumpwgreaterp)   (*jumpwgreaterp  . *jumpwleq)
    (*jumptype    . *jumpnottype)     (*jumpnottype    . *jumptype)
-   (*jumpintype  . *jumpnotintype)   (*jumpnotintypte . *jumpintype)
-   (*jumpeqtag   . *jumpnoteqtag)    (*jumpnoteqtag   . *jumpeqtag)
-   (*jumpwgeqtag . *jumpwlessptag)   (*jumpwlessptag  . *jumpwgeqtag)
+   (*jumpintype  . *jumpnotintype)   (*jumpnotintype  . *jumpintype)
   % no inverse jumps for
-   (*jumpwgreaterptag)
    (*jumpon)
    
 ))

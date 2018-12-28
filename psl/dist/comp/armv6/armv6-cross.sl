@@ -255,3 +255,6 @@
 
 (setq nil-t-diff* 140)
 
+(remprop 'bndstkptr 'registercode)
+(remprop 'bndstklowerbound 'registercode)
+(remprop 'bndstkupperbound 'registercode)

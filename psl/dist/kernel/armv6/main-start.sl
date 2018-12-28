@@ -269,6 +269,7 @@
        (*move (reg fp) (frame 3)) % have to save frame pointer
        (*move (reg 3) (reg symval))	% pointer to symval array
 
+       (*MOVE (reg symval) ($global symval))
        (*MOVE ($global symfnc) (reg symfnc))
  %      (*MOVE ($global symval) (reg symval))
        (*move 256 (reg NIL))

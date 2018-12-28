@@ -222,9 +222,8 @@
 
 (put 'cons 'opencode
       '((STR (reg 1) (displacement (reg heaplast) 0))
-        (*move 9 (reg 1))
-        (*wshift (reg 1) 27)
-        (*wplus2 (reg 1) (reg heaplast))
+        (*move (reg heaplast) (reg 1))
+        (*wor (reg 1) 16#48000000)	% add pair tag
         (STR (reg 2) (displacement (reg heaplast) 4))
         (*wplus2 (reg heaplast) 8)
         (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
@@ -236,9 +235,8 @@
 
 (put 'ncons 'opencode
       '((STR (reg 1) (displacement (reg heaplast) 0))
-        (*move 9 (reg 1))
-        (*wshift (reg 1) 27)
-        (*wplus2 (reg 1) (reg heaplast))
+        (*move (reg heaplast) (reg 1))
+        (*wor (reg 1) 16#48000000)	% add pair tag
         (STR (reg nil) (displacement (reg heaplast) 4))
         (*wplus2 (reg heaplast) 8)
         (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
@@ -251,9 +249,8 @@
 
 (put 'xcons 'opencode
       '((STR (reg 1) (displacement (reg heaplast) 4))
-        (*move 9 (reg 1))
-        (*wshift (reg 1) 27)
-        (*wplus2 (reg 1) (reg heaplast))
+        (*move (reg heaplast) (reg 1))
+        (*wor (reg 1) 16#48000000)	% add pair tag
         (STR (reg 2) (displacement (reg heaplast) 0))
         (*wplus2 (reg heaplast) 8)
         (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
