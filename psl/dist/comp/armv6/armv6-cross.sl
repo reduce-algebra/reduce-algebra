@@ -234,7 +234,8 @@
 	      (UpdateBitTable 4 (const RELOC_INF))))))
 
 (de systemfaslfixup ()
-  (prog (x)
+  (prog (x wrd)
+     (printf "%nForwardInternalReferences: %w%n" ForwardInternalReferences*)
      % THIS VERSION ASSUMES 32 bit RELATIVE ADDESSES, HM.
      (setq x (remainder CurrentOffset* 16))
      (while (greaterp x 0) (DepositByte 0) (setq x (sub1 x)))
@@ -244,11 +245,20 @@
        (when (null x) 
 	      (errorprintf "***** %r not defined in this module, call incorrect" 
 			   (cdr (first ForwardInternalReferences*))))
-	       % calculate the offset
-       (setq x (plus -4             % offset to next word
-	     (difference x (car (first ForwardInternalReferences*)))))
-			 % insert the fixup
-       (putword32 (iplus2 codebase* (car (first ForwardInternalReferences*))) x)
+       % calculate the offset
+       % offset is actual offset -8
+       (setq x (plus -8             % offset of PC in branch instruction
+		     (difference x (car (first ForwardInternalReferences*)))))
+       (printf "Offset is %d%n" x)
+       (setq x (wshift x -2))		% offset is in words, not bytes
+       % insert the fixup into the lower 24 bits, upper 8 bits are condition bits and opcode
+       (setq wrd (wgetv (iplus2 codebase* (car (first ForwardInternalReferences*))) 0))
+       (printf "instruction is %x --> %x%n"
+	       (wand wrd 16#ffffffff)
+	       (wor (wand wrd 16#ff000000) x))
+       (putword32 (iplus2 codebase* (car (first ForwardInternalReferences*)))
+		(wor (wand wrd 16#ff000000) x))
+       (printf "New instruction is %x%n" (wand (wgetv (iplus2 codebase* (car (first ForwardInternalReferences*))) 0) 16#ffffffff))
        (setq ForwardInternalReferences* (cdr ForwardInternalReferences*)))
 	      % Now remove the InternalEntry offsets from everyone
    (mapobl 'remove-ieo-property)))

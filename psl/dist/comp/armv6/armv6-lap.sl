@@ -521,7 +521,7 @@
 	  (t nil)))
 
 (de reg-offset12-p (x)
-    (cond ((stringp x) t)
+    (cond ((labelp x) t)
 	  ((atom x) nil)
 	  ((eq (car x) 'indirect) (regp (cadr x)))
 	  ((and (memq (car x) '(displacement indirect indexed)) (regp (cadr x)))
@@ -884,7 +884,7 @@
     (prog (cc ld-bit opcode1 temp shift-op shift-amount regn displ pre-post p-bit u-bit w-bit regm lastbyte)
 	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) shift-amount 0)
 	  (if (and
-	       (not (stringp reg-offset12))
+	       (not (labelp reg-offset12))
 	       (or (not (pairp reg-offset12)) (not (memq (car reg-offset12) '(displacement indirect indexed))) (not (regp (cadr reg-offset12)))))
 	      (stderror (bldmsg "Invalid LDR/STR operand: %w" reg-offset12)))
 	  (if (labelp reg-offset12)	% label --> pc-relative
@@ -1636,7 +1636,7 @@
 %	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
 %	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
 %	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
-%	    )
+	    )
     ))
 
 (de depositwordidnumber (x) 
@@ -1717,21 +1717,28 @@
 % ------------------------------------------------------------
 
 (de systemfaslfixup ()
-  (prog (x)
+  (prog (x wrd)
+%     (printf "%nForwardInternalReferences: %w%n" ForwardInternalReferences*)
      % THIS VERSION ASSUMES 32 bit RELATIVE ADDESSES, HM.
      (setq x (remainder CurrentOffset* 16))
      (while (greaterp x 0) (DepositByte 0) (setq x (sub1 x)))
      (while ForwardInternalReferences*
        (setq x (get (cdr (first ForwardInternalReferences*)) 
 		    'internalentryoffset))
+%       (printf "Fix Forward ref at %d to %d%n" (car (first ForwardInternalReferences*)) x)
        (when (null x) 
 	      (errorprintf "***** %r not defined in this module, call incorrect" 
 			   (cdr (first ForwardInternalReferences*))))
-	       % calculate the offset
-       (setq x (plus -4             % offset to next word
+       % calculate the offset
+       % offset is actual offset -8
+       (setq x (plus -8             % offset of PC in branch instruction
 	     (difference x (car (first ForwardInternalReferences*)))))
-			 % insert the fixup
-       (putword (iplus2 codebase* (car (first ForwardInternalReferences*))) 0 x)
+       (setq x (wshift x -2))		% offset is in words, not bytes
+       % insert the fixup into the lower 24 bits, upper 8 bits are condition bits and opcode
+       (setq wrd (wgetv (iplus2 codebase* (car (first ForwardInternalReferences*))) 0))
+       (putword (iplus2 codebase* (car (first ForwardInternalReferences*)))
+		0
+		(wor (wand wrd 16#ff000000) x))
        (setq ForwardInternalReferences* (cdr ForwardInternalReferences*)))
 	      % Now remove the InternalEntry offsets from everyone
    (mapobl 'remove-ieo-property)))
@@ -1767,16 +1774,19 @@
 		      (pop u)
 		      (push (list 'mov x src) u))
 		    % pattern:
-		    %      (mov (quote nil) (frame 1))  
-		    %      (mov (quote nil) (frame 2)) ...
-		(when (and
-			(eq op 'mov)
-			(immediatep (setq src (cadr instr)))
-			(not (regp (caddr instr)))
-			(eqcar nextinstr 'mov)
-			(equal (cadr nextinstr) src))   % at 2 of that type
-		      (setq u (LapoptFrame1 src (push instr u)))
-		      (setq instr (list 'mov src '(reg t1))))
+		    %    (sub (reg st) (reg st) 4)
+		    %    (str (reg k) (indirect (reg st))) a.k.a. (frame 1)) 
+		    % replace by (str (reg k) (displacement (reg st) -4 preindexed))
+		(when (and (eq op 'SUB)
+			   (equal (cadr instr) '(reg st))
+			   (equal (caddr instr) '(reg st))
+			   (equal (cadddr instr) '4)
+			   (null (cddddr instr))
+			   (eqcar nextinstr 'STR)
+			   (regp (cadr nextinstr))
+			   (equal (caddr nextinstr) '(indirect (reg st))))
+		      (pop u)
+		      (setq instr `(STR ,(cadr nextinstr) (displacement (reg st) -4 preindexed))))
 		    % pattern: 
 		    %      (push (quote nil) )   
 		    %      (push (quote nil) ) ... 

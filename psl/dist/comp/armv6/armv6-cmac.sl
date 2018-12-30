@@ -83,6 +83,25 @@
 %	     bndstkptr bndstklowerbound bndstkupperbound
 	     ))))
  
+%-------------
+%  ImmediateP tests if an item is tagged IMMEDIATE. (immediate x)
+%  WConsts and WArrays are tagged immediate when they are not
+%  inside MEMORY. The tagging means that the following expression
+%  is to be used as an immediate value. For example, if WArray
+%  SYMFNC is the base of some table, the expression
+%       (*WPLUS2 (Reg 1) (immediate (WArray SYMFNC)))
+%  means to add the address of SYMFNC to (Reg 1) and not the contents
+%  of the SYMFNC location. Another immediate expression example would be
+%  (*MOVE (postincrement (Reg st)) (immediate (plus2 (WArray ArgumentBlock) 32))'
+%  which means move the popped value of the stack to the address resulting from
+%  the plus computation.
+%-------------
+ 
+(de ImmediateP (x)
+  (and  (EqCar x 'Immediate) (Null (fixp (cadr x)))))
+ 
+(de TaggedLabel (X) (EqCar X 'Label))
+ 
 (de short-immediate-p (X) (eq x (ashift (wshift x 16) -16)))
 
 (de pos-short-immediate-p (x) (and (numberp x)
@@ -304,7 +323,7 @@
  
 
 (DefCMacro *Call
-       ((InternallyCallableP)  (blx (InternalEntry ArgOne)))
+       ((InternallyCallableP)  (BL (InternalEntry ArgOne)))
 	(         (*Move (idloc argone) (reg t3))
 		  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
 		  (BLX (reg t2)))
@@ -312,7 +331,7 @@
 
 (DefCMacro *JCall
        ((InternallyCallableP)  (LDMIA (reg sp) ((reg lr)) writeback) % pop link register
-                               (b (InternalEntry ArgOne)))
+                               (B (InternalEntry ArgOne)))
 	(         (*Move (idloc argone) (reg t3))
 		  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
 		  % pop link register
@@ -338,6 +357,7 @@
        ((idlocp regp)            (*LoadIDLoc ArgTwo ArgOne))
        ((fluid-arg-p regp)       (*LoadIdNumber LDR ArgTwo ArgOne))
        ((indirectp regp)         (LDR ArgTwo ArgOne))
+       ((immediatep regp)        (LDR ArgTwo (unimmediate ArgOne)))
        ((regp fluid-arg-p)       (*LoadIdNumber STR ArgOne ArgTwo))
        ((regp indirectp)         (STR ArgOne ArgTwo))
        ((regp extraregp)         (!*StoreIntoExtraReg ArgOne ArgTwo))
@@ -463,10 +483,10 @@
 (DefCMacro *LinkE)
  
 (DefCMacro *Push
-  ( (!*Move ArgOne (displacement (reg st) 0 postindexed))))
+  ( (!*Move ArgOne (displacement (reg st) -4 preindexed))))
 
 (DefCMacro *Pop
-  ( (!*Move (displacement (reg st) 0 postindexed) ArgOne)))
+  ( (!*Move (displacement (reg st) 4 postindexed) ArgOne)))
 
 (de *3op (a1 a2 instruction)
   (prog (ResultingCode*)
@@ -511,8 +531,9 @@
     (expand3operandcmacro arg1 arg2 arg3 '*wplus3))
 
 (DefCMacro *WPlus3
-	   ((regp zerop regp) (*Move ArgThree ArgOne))
-	   ((regp regp zerop) (*Move ArgTwo ArgOne))
+	   ((anyp zerop anyp) (*Move ArgThree ArgOne))
+	   ((anyp anyp zerop) (*Move ArgTwo ArgOne))
+	   ((anyp anyp negp) (*WDifference3 Argone ArgTwo (minus Argthree)))
 	   ((regp regp regp) (ADD ArgOne ArgTwo ArgThree))
 	   ((regp imm8-rotatedp regp)
 		                (ADD ArgOne Argthree ArgTwo))
@@ -526,8 +547,18 @@
 		               (ADD ArgOne (reg t3) ArgThree))
 	   ((regp regp anyp)  (*Move ArgThree (reg t3))
 		               (ADD ArgOne ArgTwo (reg t3)))
+	   ((regp anyp regp)  (*Move ArgTwo (reg t3))
+		               (ADD ArgOne (reg t3) ArgThree))
+	   ((regp anyp anyp)  (*Move ArgTwo (reg t3))
+		               (*Move ArgThree (reg t2))
+		               (ADD ArgOne (reg t2) (reg t3)))
+	   ((anyp regp imm8-rotatedp) (ADD (Reg t3) ArgTwo ArgThree)
+		               (*Move (reg t3) ArgOne))
 	   ((anyp regp anyp)  (*Move ArgThree (reg t3))
 		               (ADD (Reg t3) ArgTwo (reg t3))
+		               (*Move (reg t3) ArgOne))
+	   ((anyp anyp imm8-rotatedp) (*Move ArgTwo (reg t3))
+		               (ADD (reg t3) (reg t3) ArgThree)
 		               (*Move (reg t3) ArgOne))
 	   (                   (*Move ArgTwo (reg t3))
 		               (*Move ArgThree (reg t2))
@@ -545,16 +576,32 @@
 (DefCMacro *WDifference3
 	   ((regp zerop regp) (RSB ArgOne ArgThree 0))
 	   ((regp regp zerop) (*Move ArgOne ArgTwo))
+	   ((regp regp negp) (*Wplus3 ArgOne ArgTwo (minus ArgThree)))
 	   ((regp regp regp) (SUB ArgOne ArgTwo ArgThree))
+	   ((regp imm8-rotatedp regp)
+		                (RSB ArgOne Argthree ArgTwo))
 	   ((regp regp imm8-rotatedp)
 				(SUB ArgOne ArgTwo ArgThree))
+	   ((regp imm8-rotatedp anyp)
+		               (*Move ArgThree (reg t3))
+		               (RSB ArgOne (reg t3) ArgTwo))
+	   ((regp anyp imm8-rotatedp)
+		               (*Move ArgTwo (reg t3))
+		               (SUB ArgOne (reg t3) ArgThree))
+	   ((regp regp anyp)  (*Move ArgThree (reg t3))
+		               (SUB ArgOne ArgTwo (reg t3)))
 	   ((regp anyp regp) (*Move ArgTwo (reg t3))
-		               (SUB ArgOne ArgThree (reg t3) ))
+		               (SUB ArgOne (reg t3) ArgThree))
 	   ((regp anyp anyp)  (*Move ArgTwo (reg t3))
 		               (*Move ArgThree (reg t2))
 		               (SUB ArgOne (reg t2) (reg t3)))
+	   ((anyp regp imm8-rotatedp) (SUB (Reg t3) ArgTwo ArgThree)
+		               (*Move (reg t3) ArgOne))
 	   ((anyp regp anyp)  (*Move ArgThree (reg t3))
 		               (SUB (Reg t3) (reg t3) ArgTwo )
+		               (*Move (reg t3) ArgOne))
+	   ((anyp anyp imm8-rotatedp) (*Move ArgTwo (reg t3))
+		               (SUB (reg t3) (reg t3) ArgThree)
 		               (*Move (reg t3) ArgOne))
 	   (                   (*Move ArgTwo (reg t3))
 		               (*Move ArgThree (reg t2))
@@ -646,13 +693,13 @@
  
 
 (DefCMacro *WAnd
-       ((*3op ArgOne ArgTwo and)))
+       ((*3op ArgOne ArgTwo AND)))
 
 (DefCMacro *WOr
-       ((*3op ArgOne ArgTwo orr)))
+       ((*3op ArgOne ArgTwo ORR)))
 
 (DefCMacro *WXOr
-       ((*3op ArgOne ArgTwo eor)))
+       ((*3op ArgOne ArgTwo EOR)))
 
 (de *asr (Arg1 Arg2 Arg3)
   (Expand3OperandCMacro Arg1 Arg2 Arg3 '*asr))
@@ -807,7 +854,7 @@
 (DefCMacro *JumpInType
        (            (*Tag (reg t3) ArgOne)
 		     (CMP (reg t3) ArgTwo )
-		     (BGE  ArgThree)
+		     (BLE  ArgThree)
 		     (CMP (reg t3) 31) % negint-tag)
 		     (BEQ ArgThree)
 		     templabel)
@@ -896,6 +943,7 @@
 (DefCMacro *Loc                          % This needs more study    scs
 	  ((regP smallimmediatep)(MOV ARGONE (unimmediate ARGTWO)))
 	  ((regP indirectp)(*LoadAddress ARGONE ARGTWO))
+	  ((regP displacementp)(*LoadAddress ARGONE ARGTWO))
 	  ((RegP AnyP)      (MOV              ARGONE  ARGTWO))
 	  ((AnyP smallimmediatep)(*MOVE           ARGTWO  ARGONE))
 	  (                  (MOV              (Reg T2) ARGTWO)
@@ -903,9 +951,12 @@
 
 (de *LoadAddress (dest src)
     %% dest is a register, src an indirect reference
-    (if (eqcar src 'indirect)
-	`((MOV ,dest ,(cadr src)))
-      `((MOV ,dest ,src))))
+    (cond((eqcar src 'indirect)
+	  `((MOV ,dest ,(cadr src))))
+	 ((and (displacementp src) (regp (cadr src)) (fixp (caddr src)))
+	  `((MOV ,dest ,(cadr src))
+	    (ADD ,dest ,dest ,(caddr src))))
+	 (t `((MOV ,dest ,src)))))
 
 (DefCMacro *LoadAddress)
 
@@ -1006,6 +1057,7 @@
  
 
 (deflist '((Byte        ((LDRSB (reg 1) (displacement (reg 2) (reg 1)))))
+	   (r_Byte      ((LDRSB (reg 1) (displacement (reg 2) (reg 1)))))
 	   (PutByte     ((STRB (reg 3) (displacement (reg 2) (reg 1)))))
 	   (HalfWord    ((LDRSH (reg 1) (displacement (reg 2) (reg 1)))))
 	   (PutHalfWord ((STRH (reg 3) (displacement (reg 2) (reg 1))))))
@@ -1129,12 +1181,14 @@
 
 (put 'fast-idapply    'opencode
      '((*Move (reg t1) (reg t2)) % save id number
+       (!*Field (reg t2) (reg t2)  (wconst infstartingbit) (wconst infbitlength))	% remove tag
        (*wshift (reg t2) 2)	   % times 4
        (ldr (reg t2) (displacement (reg symfnc) (reg t2)))
        (blx (reg t2))))
      
 (put 'fast-idapply    'exitopencode
      '((*Move (reg t1) (reg t2)) % save id number
+       (!*Field (reg t2) (reg t2)  (wconst infstartingbit) (wconst infbitlength))	% remove tag
        (*wshift (reg t2) 2)	   % times 4
        (ldr (reg t2) (displacement (reg symfnc) (reg t2)))
        (bx (reg t2))))
@@ -1396,8 +1450,9 @@ preload  (setq initload
 (put 'id-tag 'compiler-constant? t)
 (put 'bstruct-tag 'compiler-constant? t)
 (put 'negint-tag 'compiler-constant? t)
+(put 'unbound-tag 'compiler-constant? t)
 (put 'id-tag 'compiler-constant-value 30)
 (put 'bstruct-tag 'compiler-constant-value 22)
 (put 'negint-tag 'compiler-constant-value 31)
-
+(put 'unbound-tag 'compiler-constant-value 29)
 
