@@ -339,6 +339,11 @@
 		  (BX (reg t2)))
 )
 
+%% could be:
+%% (LDMIA (reg sp) ((reg lr)) writeback)
+%% (LDR (reg pc) (displacement (reg symfnc) (regshifted t3 LSL 2)))
+
+
 (de indirectp (x)
     (eqcar x 'indirect))
 
@@ -349,6 +354,7 @@
 
 (remprop '*Move 'optfn)
 
+%% optimize (*Move nil (fluid something))
 (DefCMacro *Move
        (Equal)
        ((regp regp)	    	 (MOV ArgTwo ArgOne))
@@ -877,16 +883,18 @@
      ((regp regp)       (CMP ArgOne ArgTwo)
 		         (ArgFour ArgThree))
      ((regp imm8-rotatedp) (CMP ArgOne ArgTwo)
+%% imm8-rotatedp regp
 			 (ArgFour ArgThree))
      ((regp anyp)       (*Move ArgTwo (reg t3))
 		         (CMP ArgOne (reg t3))
 		         (ArgFour ArgThree))
-     ((anyp  regp)      (*Move ArgOne (reg t3))
+     ((anyp regp)       (*Move ArgOne (reg t3))
 		         (CMP (reg t3) ArgTwo )
 		         (ArgFour ArgThree))
      ((anyp imm8-rotatedp) (*Move ArgOne (reg t3))
 		         (CMP (reg t3) ArgTwo)
 		         (ArgFour ArgThree))
+%% imm8-rotatedp anyp?
      (                   (*Move ArgOne (reg t3))
 		         (*Move ArgTwo (reg t2))
 		         (CMP (reg t3) (reg t2))
@@ -906,32 +914,32 @@
 (DefCMacro *JumpEQ)
 
 (de *JumpEQ (Lbl ArgOne ArgTwo)
-       (*JumpIF ArgOne ArgTwo lbl '(beq . beq)))
+       (*JumpIF ArgOne ArgTwo Lbl '(beq . beq)))
 
 (DefCMacro *JumpNotEQ)
 
 (de *JumpNotEQ(Lbl ArgOne ArgTwo)
-	(*JumpIF ArgOne ArgTwo lbl '(bne . 'bne)))
+	(*JumpIF ArgOne ArgTwo Lbl '(bne . 'bne)))
 
 (DefCMacro *JumpWlessp)
 
 (de *JumpWlessp (Lbl ArgOne ArgTwo)
-	(*JumpIF ArgOne ArgTwo lbl '(blt . bge)))
+	(*JumpIF ArgOne ArgTwo Lbl '(blt . bge)))
 
 (DefCMacro *JumpWgreaterp)
 
 (de *JumpwGreaterp (Lbl ArgOne ArgTwo)
-	(*JumpIF ArgOne ArgTwo lbl '(bgt . ble)))
+	(*JumpIF ArgOne ArgTwo Lbl '(bgt . ble)))
 
 (DefCMacro *JumpWleq)
 
 (de  *JumpWleq(Lbl ArgOne ArgTwo)
-	(*JumpIF ArgOne ArgTwo lbl '(ble . bgt)))
+	(*JumpIF ArgOne ArgTwo Lbl '(ble . bgt)))
 
 (DefCMacro *JumpWgeq)
 
 (de *jumpWgeq (Lbl ArgOne ArgTwo)
-	(*JumpIF ArgOne ArgTwo lbl '(bge . blt)))
+	(*JumpIF ArgOne ArgTwo Lbl '(bge . blt)))
 
 % --------------------
 
@@ -1056,11 +1064,11 @@
  )
  
 
-(deflist '((Byte        ((LDRSB (reg 1) (displacement (reg 2) (reg 1)))))
-	   (r_Byte      ((LDRSB (reg 1) (displacement (reg 2) (reg 1)))))
-	   (PutByte     ((STRB (reg 3) (displacement (reg 2) (reg 1)))))
-	   (HalfWord    ((LDRSH (reg 1) (displacement (reg 2) (reg 1)))))
-	   (PutHalfWord ((STRH (reg 3) (displacement (reg 2) (reg 1))))))
+(deflist '((Byte        ((LDRSB (reg 1) (displacement (reg 1) (reg 2)))))
+	   (r_Byte      ((LDRSB (reg 1) (displacement (reg 1) (reg 2)))))
+	   (PutByte     ((STRB (reg 3) (displacement (reg 1) (reg 2)))))
+	   (HalfWord    ((LDRSH (reg 1) (displacement (reg 1) (reg 2)))))
+	   (PutHalfWord ((STRH (reg 3) (displacement (reg 1) (reg 2))))))
   'OpenCode)
 
 (&OneReg '(Byte PutByte HalfWord PutHalfWord))
@@ -1177,29 +1185,32 @@
 	 'opencode)
 
 (DefCMacro *fast-apply-load
-   ( (*Move ArgOne (reg t1)) ))
+   ( (*Move ArgOne (reg t2)) ))
 
 (put 'fast-idapply    'opencode
-     '((*Move (reg t1) (reg t2)) % save id number
-       (!*Field (reg t2) (reg t2)  (wconst infstartingbit) (wconst infbitlength))	% remove tag
-       (*wshift (reg t2) 2)	   % times 4
-       (ldr (reg t2) (displacement (reg symfnc) (reg t2)))
-       (blx (reg t2))))
+     '((!*Field (reg t3) (reg t2)  (wconst infstartingbit) (wconst infbitlength))	% remove tag
+       (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
+       (BLX (reg t2))))
      
 (put 'fast-idapply    'exitopencode
-     '((*Move (reg t1) (reg t2)) % save id number
-       (!*Field (reg t2) (reg t2)  (wconst infstartingbit) (wconst infbitlength))	% remove tag
-       (*wshift (reg t2) 2)	   % times 4
-       (ldr (reg t2) (displacement (reg symfnc) (reg t2)))
-       (bx (reg t2))))
+     '((!*Field (reg t3) (reg t2)  (wconst infstartingbit) (wconst infbitlength))	% remove tag
+       (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
+       (LDMIA (reg sp) ((reg lr)) writeback) % pop link register
+       (BX (reg t2))))
+
+%% could be:
+%% (LDMIA (reg sp) ((reg lr)) writeback) % pop link register
+%% (LDR (reg pc) (displacement (reg symfnc) (regshifted t3 LSL 2)))
+
 
 (put 'fast-codeapply    'opencode
-     '((*field (reg t2) (reg t2) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
-       (blx (reg t2))))
+     '((*Field (reg t2) (reg t2) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
+       (BLX (reg t2))))
 
 (put 'fast-codeapply    'exitopencode
-	'((*field (reg t2) (reg t2) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
-	  (bx (reg t2))))
+     '((*Field (reg t2) (reg t2) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
+       (LDMIA (reg sp) ((reg lr)) writeback) % pop link register
+       (BX (reg t2))))
 
 (De *LamBind (Regs Fluids)
 
@@ -1220,7 +1231,6 @@
 		                (cond ((member x regs) nil)
 		                       (t (cons x nil))
       )              ) )         )  )
-      (setq freeregs (nconc (list '(reg T3)) freeregs))
       (setq cfluids fluids) % copy of fluids
 
 preload  (setq initload
@@ -1238,10 +1248,12 @@ preload  (setq initload
        % freeregs contains the list of preloaded regs
        % and not preloaded fluids if those exist
 
+       %% careful with temp registers:
+       %% (reg t2) is clobbered when loading or storing a fluid
       (setq list `((*Move ($fluid BndStkPtr) (Reg t1))
+		   (*Move ($fluid BndstkUpperBound) (reg t3))
 		   (*wplus3 (Reg t2) (Reg t1) ,lng)
-		   (*Move ($fluid BndstkUpperBound) (reg t1))
-		   (cmp (reg t2) (reg t1))
+		   (cmp (reg t2) (reg t3))
 		   (bmi ,genlabel)
 		   (*call Bstackoverflow) % never come back
 		  ,genlabel
@@ -1280,7 +1292,7 @@ preload  (setq initload
       (setq Fluids (rest fluids)) % Remove NONLOCALVARS
       (setq lng (wtimes2 (length Fluids) 8)) % two words per BndStk entry
 		                         % * 4 addressingunits
-      (setq freeregs '((reg t3)(reg 1)(reg 2)(reg 3)(reg 4)(reg 5)))
+      (setq freeregs '((reg 1)(reg 2)(reg 3)(reg 4)(reg 5)))
       (setq cfluids fluids) % copy of fluids
 
 preload  (setq initload
@@ -1298,11 +1310,12 @@ preload  (setq initload
        % freeregs contains the list of preloaded regs
        % and not preloaded fluids if those exist
 
-
+       %% careful with temp registers:
+       %% (reg t2) is clobbered when loading or storing a fluid
       (setq list `((*Move ($fluid BndStkPtr) (Reg t1))
+		   (*Move ($fluid BndstkUpperBound) (reg t3))
                    (*wplus3 (reg t2) (reg t1) ,lng)
-		   (*Move ($fluid BndstkUpperBound) (reg t1))
-		   (CMP (reg t2) (reg t1))
+		   (CMP (reg t2) (reg t3))
 		   (BMI ,genlabel)
                    (*Call Bstackoverflow)  % is never come back
 		   ,genlabel
@@ -1336,7 +1349,7 @@ preload  (setq initload
       (setq n 0)
       (setq Fluids (rest fluids)) % Remove NONLOCALVARS
       (setq lng (wtimes2 (length Fluids) 2)) % two words per BndStk entry
-      (setq freeregs '((reg t3)(reg 2)(reg 3)(reg 4)(reg 5)))
+      (setq freeregs '((reg 2)(reg 3)(reg 4)(reg 5)))
       (setq cfluids fluids) % copy of fluids
       (setq n (wtimes2 4 (wdifference 2 lng)))
       (setq lng (wtimes2 lng 4)) % * addressingunitperitem
@@ -1363,9 +1376,11 @@ preload  (setq initload
        % freeregs contains the list of preloaded regs
        % and nil if not enough regs available
 
-       (setq list `((SUB (reg t2) (reg t1) ,lng)
-		    (*Move ($fluid BndstkLowerBound) (reg t1))
-		    (CMP (reg t2) (reg t1))
+       %% careful with temp registers:
+       %% (reg t2) is clobbered when loading or storing a fluid
+       (setq list `((*Move ($fluid BndstkLowerBound) (reg t3))
+		    (SUB (reg t2) (reg t1) ,lng)
+		    (CMP (reg t2) (reg t3))
 		    (BPL ,genlabel)
 		    (*Call Bstackunderflow) % never returns
 		   ,genlabel
@@ -1382,7 +1397,7 @@ preload  (setq initload
 
       (setq list (append list
 	   (if (car freeregs) `((*Move ,(car freeregs) ,cfluids ))
-		`((*Move (displacement (reg t2) ,n) ,cfluids )))
+		`((*Move (displacement (reg t1) ,n) ,cfluids )))
 
       )          )
       (setq freeregs (cdr freeregs))
@@ -1396,7 +1411,14 @@ preload  (setq initload
 
 (global '(*writingasmfile))
 
-(de !*jumpon (register lowerbound upperbound labellist)
+(de !*xjumpon (register lowerbound upperbound labellist)
+      (for (from x lowerbound upperbound)
+                (join
+                  `((CMP ,x ,register)
+                    (BEQ ,(pop labellist))))))
+
+
+(de !*JumpOn (register lowerbound upperbound labellist)
    (if *writingasmfile
        (*xjumpon register lowerbound upperbound labellist)
      (PROG (X LL LL2)
@@ -1406,21 +1428,22 @@ preload  (setq initload
 	(if (and (weq lowerbound 0) (weq upperbound 31))
 					% jumpon on tags (most probably)
 					% 4 bytes per jumptable entry
-      `((ldr (reg t1) (label ,ll2))
-        (add (reg t1) ,register (regshifted t1 LSL 2))
-	(bx (reg t1))
+      `((LDR (reg pc) (displacement (reg pc) (regshifted ,(cadr register) LSL 2)))
+	% new value of the PC is:
+	% (address of the LDR instruction) + PC + 8 + 4*(contents of register)
+	% therefore we need 4 bytes (one instruction) to jump over
+	(B (label ,ll))
        ,ll2)
       `((cmp ,register ,upperbound )
 	(beq ,(lastcar labellist))
 	(bgt (label ,ll))
 	(cmp ,register ,Lowerbound )
 	(blt (label ,ll))
-        (*wdifference ,register ,lowerbound )
-	(ldr (reg t1) (label ,ll2))
-	(add (reg t1) ,register (regshifted t1 LSL 2))
-	(bx (reg t1))
+        (*WDifference ,register ,lowerbound)
+	(LDR (reg pc) (displacement (reg pc) (regshifted ,(cadr register) LSL 2)))
+	(B (label ,ll))		        % extra instruction to jump over
        ,ll2) ) )
-      Loop  (Setq x (nconc X `((B ,(car Labellist)))))
+      Loop  (Setq x (nconc X `((fullword ,(car Labellist)))))
 	    (setq Labellist (cdr Labellist))
 	    (cond (Labellist (go loop)))
 
@@ -1428,7 +1451,7 @@ preload  (setq initload
 	    (return x)
 )  )  )
 
-(DefCMacro !*jumpon)
+(DefCMacro !*JumpOn)
 
 
 

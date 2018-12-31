@@ -504,7 +504,8 @@
 % (regshift-by-reg x LSL/LSR (reg y))
 
 (de reg-shifter-p (x)
-    (or (and (pairp x) (regp x))
+    (or (labelp x)
+	(and (pairp x) (regp x))
 	(and (eqcar x 'regshifted) (or (regp (cadr x)) (regp (list 'reg (cadr x))))
 	     (memq (caddr x) shift-ops*)
 	     (or (fixp (cadddr x)) (regp (cadddr x))
@@ -1828,6 +1829,31 @@
    (when *optimize-armv6 (setq code (LapoptPeepArmv6 code)))
    code)
 
+
+%% Reminders:
+%% 1) optimize (LDR (reg n) (addr)) followed by (LDR/STR (reg m) (addr))
+%%    [tostringwritechar]
+%%
+%%(*wplus2 (memory ($fluid tokenbuffer) (wconst 0)) (wconst 1))
+%%        (ldr (reg t2) (idloc tokenbuffer))
+%%        (ldr (reg t1) (displacement (reg symval) (regshifted t2 lsl 2)))
+%%        (ldr (reg t2) (idloc tokenbuffer))
+%%        (ldr (reg t2) (displacement (reg symval) (regshifted t2 lsl 2)))
+%%        (ldr (reg t3) (indirect (reg t2)))
+%%        (add (reg t3) (reg t3) 1)
+%%        (str (reg t3) (indirect (reg t1)))
+%%
+%%(*move (memory ($fluid tokenbuffer) (wconst 0)) (reg 2))
+%%        (ldr (reg t2) (idloc tokenbuffer))
+%%        (ldr (reg t1) (displacement (reg symval) (regshifted t2 lsl 2)))
+%%        (ldr (reg 2) (indirect (reg t1)))
+%%
+%% 2) optimize (mov (reg n) (reg m)) (lsl (reg n) (reg n) 2)
+%%         --> (mov (reg n) (regshifted m LSL 2)) [from wgetv]
+%% 3) optimize (add (reg n) (reg n) (reg m)) (ldr (reg k) (indirect (reg n))
+%%         --> (ldr (reg k) (displacement (reg n) (reg m))) [from wgetv]
+%% 4) optimize (b<cond> lbl) (dataop ...) lbl
+%%         --> (dataop<cond> ...) lbl
 (de LapoptPeepArmv6 (code)
 % peephole optimizer for armv6 code
 % interchanging instructions for dependencies.
