@@ -63,7 +63,9 @@
 */
  
 #include <stdio.h>
- 
+#include <stdlib.h>
+#include <unistd.h>
+
 /* There is an assumption here that coercing addresses into ints is OK */
 /*
 asm("   alias   _unix_stdin,UNIXSTDIN");
@@ -83,6 +85,7 @@ extern int unixnull, unixeof;
  
 /* Tag( unixinitio )
  */
+void
 unixinitio()
 {
     unixstdin = stdin;
@@ -96,6 +99,7 @@ unixinitio()
 /* Tag( unixputc )
  * Used by kernel routines that write to the console
  */
+void
 unixputc(c)
 char c;
 {
@@ -104,6 +108,7 @@ char c;
  
 /* Tag( unixputs )
  */
+void
 unixputs(str)
 char *str;
 {
@@ -112,6 +117,7 @@ char *str;
  
 /* Tag( unixputn )
  */
+void
 unixputn(n)
 int n;
 {
@@ -120,6 +126,7 @@ int n;
  
 /* Tag( unixcleario )
  */
+void
 unixcleario()
 {
     unixinitio();
@@ -210,13 +217,13 @@ char *fname;
  
 extern int errno;
  
-
+FILE *
 unixopen(filename, type)
      char *filename, *type;
 {
-  int fptr;
+  FILE * fptr;
  
-  fptr = (int) fopen(expand_file_name(filename), type);
+  fptr = fopen(expand_file_name(filename), type);
   return(fptr);
 }
 
@@ -250,17 +257,20 @@ unixopen(filename, type)
 }
 #endif
 
+void
 unixcd(filename)
      char *filename;
 {
   chdir(expand_file_name(filename));
 }
- 
+
+int
 unixfclose (ix)
 FILE* ix;
 
 { fclose (ix); }
 
+int
 external_system(command)
      char *command;
 {
@@ -271,6 +281,7 @@ external_system(command)
  
 /* Tag( external_exit )
  */
+int
 external_exit(status)
      int status;
 {
@@ -278,7 +289,8 @@ external_exit(status)
 }
  
 char *static_argv[20];  /* static place to hold argv so it doesn't get gc'd */
- 
+
+char **
 copy_argv(argc,argv)    /* copy argv into static space. */
 int argc;
 char *argv[];
@@ -288,7 +300,7 @@ char *argv[];
   for (i=0; i < argc; i++)
      static_argv[i]=argv[i];
  
-  return((int)static_argv);
+  return(static_argv);
 }
 
 /* convert a pathname to canonical form */

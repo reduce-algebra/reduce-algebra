@@ -57,9 +57,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <errno.h>
+#include <limits.h>    /* for PAGESIZE */
+#include <inttypes.h>  // Make newer integer types  of known width available
+#include <unistd.h>
+
+#ifndef PAGESIZE
+#define PAGESIZE 4096
+#endif
+
 long unexec();
 
-#include <stdio.h>
 
 /* Use 1 if using compacting collector ($pxnk/compact-gc.sl).
    Use 2 if using copying collector ($pnk/copying-gc.sl).
@@ -104,7 +115,7 @@ extern int  oldheaplast;
 extern int  oldheaptrapbound;
 
 /* Write this ourselves to keep from including half the math library */
-static power(x, n)
+static int power(x, n)
      int x, n;
 {
   int i, p;
@@ -115,6 +126,15 @@ static power(x, n)
   return(p);
 }
 
+long sizeofsymvectors = 0;
+
+void setupbps();
+void getheap(int);
+void read_error(char *,int,int);
+char *external_user_homedir_string();
+char *external_anyuser_homedir_string(char *);
+
+int
 setupbpsandheap(argc,argv)
      int argc;
      char *argv[];
@@ -126,7 +146,7 @@ setupbpsandheap(argc,argv)
   int    current_size_in_bytes, heapsize_in_bytes;
   double bpspercent, heappercent;
   char   *argp, *scanptr, *scanformat;
-  int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
+  void *ii1,*ii2,*ii3,*ii4,*ii5,*ii6,*ii7,*ii8,*ii9,*ii10,*ii11;
   long hugo;
 
   total        = MINSIZE;
@@ -256,14 +276,14 @@ setupbpsandheap(argc,argv)
 		  exit (-19); }
        fread (headerword,4,4,imago);
        hugo = fread (&symval,1,headerword[0],imago);
-       if (hugo != headerword[0]) read_error();
+       if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
 
        hugo = fread ((char*)heaplowerbound,1,headerword[1],imago);
-       if (hugo != headerword[1]) read_error();
+       if (hugo != headerword[1]) read_error("heap",hugo,headerword[1]);
        hugo = fread (&hashtable,1,headerword[2],imago);
-       if (hugo != headerword[2]) read_error();
+       if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
        hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
-       if (hugo != headerword[3]) read_error();
+       if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
        fclose (imago);
        if (memset) {
         oldheaplowerbound = ohl; oldheapupperbound = ohub;
@@ -277,19 +297,13 @@ return (0);
 
 }
 
-read_error()
+void
+read_error(char * what,int bytesread,int byteswanted)
   {
-    printf("file too short\n");
+    printf("File too short while reading %s: bytes read = %lld (%llx), bytes expected = %lld (%llx)\n",
+           what,bytesread,bytesread,byteswanted,byteswanted);
     exit(-1);
   }
-
-#include <sys/mman.h>
-#include <errno.h>
-#include <limits.h>    /* for PAGESIZE */
-       #ifndef PAGESIZE
-       #define PAGESIZE 4096
-       #endif
-
 
 
 
@@ -297,6 +311,7 @@ read_error()
    array defined in bps.c to an address and store it in nextbps. A check
    is made to make sure that nextbps falls on an even word boundry.
  */
+void
 setupbps()
 { char *p = (char *) bps;
   int bpssize;
@@ -320,12 +335,13 @@ setupbps()
    nextbps is now greater than heaplast means that unexec should be not be
    tried after this routine is called. The image would be huge.
  */
+int
 allocatemorebps()
 {
   int current_size_in_bytes;
   int old_nextbps = nextbps;
 
-  current_size_in_bytes = sbrk(0);
+  current_size_in_bytes = (int)sbrk(0);
 
   if ((current_size_in_bytes + EXTRABPSSIZE) >= max_image_size)
     return(0);
@@ -343,14 +359,14 @@ allocatemorebps()
   return(EXTRABPSSIZE);   /* This will be a paramter later */
 }
 
-
+void
 getheap(heapsize)
      int heapsize;
 {
 
 #if (NUMBEROFHEAPS == 1)
-//  heaplowerbound        = (int)sbrk(heapsize);  /* allocate first heap */;
-//  oldheaplowerbound     = -1;
+  heaplowerbound        = (int)sbrk(heapsize);  /* allocate first heap */;
+  oldheaplowerbound     = -1;
 #else
 
   heaplowerbound        = (int)sbrk(2 * heapsize);  /* allocate first heap */;
@@ -359,9 +375,11 @@ getheap(heapsize)
     perror("GETHEAP");
     exit(-1);
   }
-  heapsize = 119000000;
+
+  /*heapsize = 119000000;
   heaplowerbound = &bps;
   heaplowerbound += BPSSIZE;
+  */
   heapupperbound        = heaplowerbound + heapsize;
   heaplast              = heaplowerbound;
   heaptrapbound         = heapupperbound -120;
@@ -378,6 +396,7 @@ getheap(heapsize)
 
 /* Tag( alterheapsize )
  */
+int
 alterheapsize(increment)
 int increment;
 {
@@ -417,7 +436,7 @@ int increment;
        (((heaplast + MINIMUMHEAPADD - heaplowerbound) * 9) / 8)))
     return(0);
 
-  current_size_in_bytes = sbrk(0);
+  current_size_in_bytes = (int)sbrk(0);
 
   if ((current_size_in_bytes +  increment) >= max_image_size)
     return(0);

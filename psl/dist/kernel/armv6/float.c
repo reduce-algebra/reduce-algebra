@@ -44,6 +44,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <fenv.h>
@@ -64,6 +65,7 @@
 
 /* Tag( uxfloat )
  */
+void
 uxfloat(f,i)
      double *f;
      int i;
@@ -81,6 +83,7 @@ int uxfix(f)
 
 /* Tag( uxassign )
  */
+void
 uxassign(f1,f2)
      double *f1, *f2;
 {
@@ -173,6 +176,7 @@ int uxlessp(f1,f2,val1,val2)
 
 /* Tag( uxwritefloat )
  */
+void
 uxwritefloat(buf, flt, convstr)
      char *buf;          /* String buffer to return float int */
      double *flt;        /* Pointer to the float */
@@ -215,6 +219,7 @@ uxwritefloat(buf, flt, convstr)
 
 /* Tag( uxdoubletofloat )
  */
+void
 uuxdoubletofloat (dbl,flt)
      double *dbl;
      float  *flt;
@@ -222,6 +227,7 @@ uuxdoubletofloat (dbl,flt)
   *flt = (float) *dbl;
 }
 
+void
 uuxfloattodouble (flt,dbl)
      float  *flt;             
      double *dbl;             

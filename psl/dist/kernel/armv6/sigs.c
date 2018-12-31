@@ -35,9 +35,14 @@
  *           renamed sigset to sun3_sigset for sun os 4.
  */
  
+#include <unistd.h>
 #include <stdio.h>
 #include <signal.h>
 #include <fenv.h>
+
+#ifndef ALTSIGSTACKSIZE
+#define ALTSIGSTACKSIZE (16*SIGSTKSZ)
+#endif
 
 #ifndef LINUX
 #include <ieeefp.h>
@@ -46,24 +51,32 @@ fp_except fp_mask,fp_stick;
 int      fp_first=0;
 #endif
 
-fenv_t envp;
+static char alternate_signalstack[ALTSIGSTACKSIZE];
+static stack_t stackinfo = { (void *) alternate_signalstack, 0, sizeof(alternate_signalstack) };
+static stack_t *stackinfo_ptr = NULL;
 
+
+void
 sun3_sigset( sig, action )
 void (*action)();
 int sig;
 { 
-  struct sigaction actio;
+  struct sigaction act = {};
 
-  if (sig == 500) { fegetenv(&envp); return(0);}
-  if (sig == 501) { fesetenv(&envp); return(0);}
+  if (signal(sig, SIG_IGN) != SIG_IGN) {
+    act.sa_sigaction = action;
+    act.sa_flags = SA_SIGINFO | SA_RESTART;
 
-  actio.sa_flags = SA_SIGINFO;
-  actio.sa_sigaction = action;
-  sigaction(sig, &actio, NULL);
-
- /*  if (signal(sig, SIG_IGN) != SIG_IGN) 
-    signal(sig, action);
- */
+     // set up alternate signal stack for SIGSEGV
+     if (sig == 11) {
+       if (stackinfo_ptr == NULL) {
+           stackinfo_ptr = &stackinfo;
+           sigaltstack(stackinfo_ptr,NULL);
+        }
+        act.sa_flags |= SA_ONSTACK;
+     }
+     sigaction(sig, &act, NULL);
+  }
 
 #ifndef LINUX
    if(sig == SIGFPE && fp_first == 0)
@@ -77,18 +90,20 @@ int sig;
      
  
 }
- 
+
+void
 sun3_sigrelse(sig, action)
 void (*action)();
 int sig;
 {
+  /*
  sigset_t set;
  if (sig==2){ 
  sigemptyset(&set);
  sigaddset(&set,2);
  sigprocmask(SIG_UNBLOCK,&set,NULL);
 	   } 
-
+  */
 #ifndef LINUX
    if(sig == SIGFPE)
      { fpsetsticky(0);
@@ -101,16 +116,12 @@ int sig;
 }
  
 
- 
- 
+int
 ieee_handler()
 {
 }
-ualarm()
 
-{
-}
-
+int
 ieee_flags()
 {
 }

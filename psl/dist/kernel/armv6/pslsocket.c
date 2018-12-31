@@ -39,6 +39,8 @@
 */
 
 #include <stdio.h> 
+#include <unistd.h> 
+#include <strings.h>
 #include <sys/types.h> 
 #include <sys/socket.h> 
 #include <netdb.h> 
@@ -48,6 +50,7 @@
 /* #define PORT_NUMBER 1188    /* Port number to listen on. 
                                Must be the same as in client!!!! */ 
 
+int
 unixsocketopen(name , number)
 
 char * name;
@@ -60,7 +63,7 @@ int number;
    int mail_fd, temp;
    int continue1;
    char message[80]; 
-   char *malloc(), *gethostname(), *getlogin();
+   char *getlogin();
  
   if (name == (char *) 0)
   {
@@ -81,7 +84,7 @@ int number;
  *   Open up a socket for us to accept connections on and
  *   bind an address to it which other systems can see.
  */
-   if (bind (port_fd, &mail_addr, mail_len) != 0) 
+   if (bind (port_fd, (struct sockaddr *)&mail_addr, mail_len) != 0) 
    { perror ("bind"); close (port_fd); return(-1); } 
 /* 
  *   Allow for up to 5 connection requests to be pending at one time. 
@@ -89,7 +92,7 @@ int number;
    if (listen (port_fd, 5) != 0) 
    { perror ("listen"); close (port_fd); return(-1); } 
  
-  conn_fd = accept (port_fd, &mail_addr, &mail_len);
+  conn_fd = accept (port_fd, (struct sockaddr *)&mail_addr, &mail_len);
   return(conn_fd);
   }
   else
@@ -107,12 +110,13 @@ int number;
    mail_addr.sin_family = AF_INET;
    mail_addr.sin_port = number;
    bcopy (host_info->h_addr, (char *) &mail_addr.sin_addr, host_info->h_length); 
-   if (connect (mail_fd, &mail_addr, sizeof (mail_addr)) != 0)
+   if (connect (mail_fd, (struct sockaddr *)&mail_addr, sizeof (mail_addr)) != 0)
    { perror ("connect"); return(-1); }
    return (mail_fd);   
   }
 }
 
+int
 getsocket (mail_fd , string , length)
 
 int mail_fd,length;
@@ -125,6 +129,7 @@ char * string;
   else { string[len] = (char) 0x00;
          return(len);}}}
 
+ssize_t
 writesocket (mail_fd , string , length) 
 
 int mail_fd,length; 
@@ -132,6 +137,7 @@ char * string;
  
 { send (mail_fd, string, length, 0); }
 
+int
 unixclosesocket (conn_fd)
 int conn_fd;
 

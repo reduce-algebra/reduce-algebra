@@ -48,8 +48,8 @@
 #define BPSSIZE 1600000  /* Minimum size in bytes */
 #endif
 
-// char bps[BPSSIZE] = {0}; 
+char bps[BPSSIZE] = {0}; 
 
-char bps[BPSSIZE+119000000];
+//char bps[BPSSIZE+119000000];
 
 

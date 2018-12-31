@@ -54,6 +54,7 @@
 ******************************************************************************
 */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <setjmp.h>
 
@@ -66,7 +67,7 @@ char *abs_execfilepath;
  
 void clear_iob(), clear_dtabsize();
 
-void psl_main(int argc, char *argv[], int *symvalptr);
+void _psl_main(int argc, char *argv[], int *symvalptr);
 
 char ** copy_argv();
 
@@ -74,6 +75,7 @@ int Debug = 0;
 
 extern int symval;
 
+int
 main(argc,argv)
 int argc;
 char *argv[];
@@ -97,15 +99,19 @@ char *argv[];
 exit(0);
  
 }
- 
- 
+
+
+int setupbpsandheap(int argc, char *argv[]);
+
+void
 os_startup_hook(argc, argv)
      int argc;
      char *argv[];
 {
   setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
 }
- 
+
+void
 os_cleanup_hook(x)
 int x;
 
@@ -118,6 +124,7 @@ char * get_execfilepath ()
   return abs_execfilepath;
 }
 
+void
 clear_iob()
 {
 }
@@ -135,6 +142,7 @@ extern char *end;
 /*
  *     Size of dtabsize is 0x34c bytes.
  */
+void
 clear_dtabsize()
 {
  int i;

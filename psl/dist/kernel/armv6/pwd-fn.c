@@ -44,6 +44,8 @@
  * worth of swap space (potentially many megabytes) just to exec "pwd".
  */
 
+#include <stdlib.h>
+
 #ifdef USE_GETWD
 #define MAXPATHLEN 255
 
