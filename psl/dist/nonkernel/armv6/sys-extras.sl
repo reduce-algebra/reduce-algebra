@@ -163,11 +163,6 @@
 % code, but more importantly assures it points to existing                 
 % memory. /csp                                                             
 
-(compiletime (put 'get_a_halfword 'opencode '(
-   (*move (reg 1) (reg 2))
-   (*wxor (reg 1) (reg 1))
-   (mov (displacement (reg ebx) 0) (reg eax)))))
-
 (de returnaddressp (x)
   (prog (s y)
         (unless (and (fixnp x) (>= x 2000)) (return nil))
@@ -197,13 +192,16 @@
 %%  1. load id number into r7
 %%  2. load symfnc+4*r7 into r6
 %%  3. branch to adress in r6
-%% The first step comes in two variants:
+%% The first step comes in three variants:
 %%  1a. load id number immediate (only for id numbers <=256): MOV r7,#cst
 %%      bit pattern is 0xe3a07 + 1 nibble rotate + 1 byte immediate
 %%  1b. load id number from memory (pc-relative): LDR r7,pc-rel-addr
 %%      bit pattern is 0xe59f7 + 12 bit relative offset
+%%  1c. far load: the relative address doesn't fit into a 12 bit offset.
+%%      instruction is a branch (BL) to the address containing the LDR isntruction.
+%%      bit pattern is 0xeb + 24 bit relative offset (in words) to 8 + addr of BL instruction
 
-(de get-called-word (adr)
+(de get-called-addr (adr)
     (let* ((adr-load-instr (wgetv adr -3))
 	   (bit-pattern (wshift adr-load-instr -12))
 	   (rest (wand addr-load-inst 0xfff)))
@@ -218,6 +216,16 @@
 	     %  a) data < 256, in which case rest = 0 + data,
 	     %  b) date = 256, ie. rest = C01
 	     (if (eq rest 16#c01) 256 rest))
+	    ((eq (wshift bit-pattern -12) 16#eb)
+	     % BL addr-of-ldr
+	     % mask lower 24bit, shift left by 2
+	     % adr is 3 words after BL instruction, so subtract 1 word to add 8 bytes
+	     (let* ((offset (wshift (wand adr-load-instr 0xffffff) 2))
+		    (actual-addr (wdifference (wplus2 adr offset) addressingunitsperitem))
+		    (actual-load-instruction (wgetv actual-addr 0)))
+	       (if (eq (wshift actual-load-instruction -12) 16#e59f7)
+		   (wgetv (wplus2 actual-addr (wand actual-load-instruction 0xfff)) 2)
+		 nil)))
 	    (t nil))))
 
 % ****************************************************************         

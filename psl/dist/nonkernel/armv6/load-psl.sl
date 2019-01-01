@@ -142,7 +142,6 @@
     ))
   (suck-in-files '(
     "putd-getd.b"
-    "386-ext.b"
   ))
   (setf $eof$ '!)             % Must find the correct place to do this.
   (pre-main)

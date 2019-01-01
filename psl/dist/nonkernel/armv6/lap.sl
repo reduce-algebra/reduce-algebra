@@ -149,50 +149,35 @@ TooMany
   (!*entry XIDApply0 expr 1)              %  IDApply0(CodePointer)
   (*field (reg 1) (reg 1)
 	  (wconst InfStartingBit) (wconst InfBitLength))
-  (!*move   (reg  1) (reg t2))           %  copy ID
-  (!*wplus2 (reg t2) (reg t2))           %  x 2
-  (!*wplus2 (reg t2) (reg  1))           %  x 3
-  (!*wplus2 (reg t2) (reg t2))           %  x 6
-  (!*wplus2 (reg t2) (fluid SymFnc))     % index into function cell
-  (!*jump (memory (reg t2) 0))           % jump to function
+  (!*move   (reg  1) (reg t3))           %  copy ID
+  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2))) % load function pointer
+  (BX (reg t2))				% jump to function
 
   (!*entry XIDApply1 expr 2)              %  IDApply1(Arg1, CodePointer)
   (*field (reg 2) (reg 2) 
 	  (wconst InfStartingBit) (wconst InfBitLength))
-  (!*move   (reg 2) (reg t2))           %  copy ID
-  (!*wplus2 (reg t2) (reg t2))           %  x 2
-  (!*wplus2 (reg t2) (reg  2))           %  x 3
-  (!*wplus2 (reg t2) (reg t2))           %  x 6
-  (!*wplus2 (reg t2) (fluid SymFnc))     % index into function cell
-  (!*jump (memory (reg t2) 0))           % jump to function
+  (!*move   (reg 2) (reg t3))           %  copy ID
+  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2))) % load function pointer
+  (BX (reg t2))			% jump to function
 
   (!*entry XIDApply2 expr 3)              %  IDApply2(Arg1, Arg2, CodePointer)
   (*field (reg 3) (reg 3) (wconst InfStartingBit) (wconst InfBitLength))
-  (!*move   (reg  3) (reg t2))           %  copy ID
-  (!*wplus2 (reg t2) (reg t2))           %  x 2
-  (!*wplus2 (reg t2) (reg  3))           %  x 3
-  (!*wplus2 (reg t2) (reg t2))           %  x 6
-  (!*wplus2 (reg t2) (fluid SymFnc))     % index into function cell
-  (!*jump (memory (reg t2) 0))           % jump to function
+  (!*move   (reg  3) (reg t3))           %  copy ID
+  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2))) % load function pointer
+  (BX (reg t2))			% jump to function
 
   (!*entry XIDApply3 expr 4)    %  IDApply3(Arg1, Arg2, Arg3, CodePointer)
   (*field (reg 4) (reg 4) (wconst InfStartingBit) (wconst InfBitLength))
   (!*move   (reg  4) (reg t2))        
-  (!*wplus2 (reg t2) (reg t2))        
-  (!*wplus2 (reg t2) (reg  4))        
-  (!*wplus2 (reg t2) (reg t2))        
-  (!*wplus2 (reg t2) (fluid SymFnc))     % index into function cell
-  (!*jump (memory (reg t2) 0))           % jump to function
+  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2))) % load function pointer
+  (BX (reg t2))			% jump to function
 
   (!*entry XIDApply4 expr 5)    %  IDApply4(Arg1, Arg2, Arg3, Arg4, CodePointer)
   (*field (reg 5) (reg 5)
 	  (wconst InfStartingBit) (wconst InfBitLength))
-  (!*move   (reg  5) (reg t2))   
-  (!*wplus2 (reg t2) (reg t2))   
-  (!*wplus2 (reg t2) (reg  5))   
-  (!*wplus2 (reg t2) (reg t2))   
-  (!*wplus2 (reg t2) (fluid SymFnc))      % index into function cell
-  (!*jump (memory (reg t2) 0))            % jump to function
+  (!*move   (reg  5) (reg t3))   
+  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2))) % load function pointer
+  (BX (reg t2))			% jump to function
       ))
 
 
@@ -202,28 +187,33 @@ TooMany
 
 (lap '((!*entry FastApply expr 0)	%. Apply with arguments loaded
 %
-% Called with arguments in the registers and functional form in reg t2 (14)
+% Called with arguments in the registers and functional form in reg t1 (6)
 % Note: this routine is called from the compiler
 %       
 
-        (*MOVE (reg t2) (Fluid Codeform*))     %put lambda in codeform!*
-        (!*FIELD (reg t1) (reg t2)
+        (*ALLOC 0)
+	(*MOVE (reg t1) (reg t3))
+	% note: reg t2, as it is clobbered by loading or storing a fluid
+        (*MOVE (reg t3) (Fluid Codeform*))     %put lambda in codeform!*
+        (!*FIELD (reg t1) (reg t3)
 		 (wconst TagStartingBit) (wconst TagBitLength)) %tag in t1
 	
-        (!*FIELD (reg t2) (reg t2)
+        (!*FIELD (reg t2) (reg t3)
 		 (wconst InfStartingBit) (wconst InfBitLength)) %inf in t2
 	
         (!*JUMPNOTEQ (Label NotAnID) (reg t1) (wconst id-tag))
-        
-        (*move (fluid symfnc) (reg t1))
-        (*wshift (reg t2) 2)
-        (*wplus2 (reg t2) (reg t1))
+
+	% t2 contains id number, load function pointer into t3
+	(LDR (reg t3) (displacement (reg symfnc) (regshifted t2 LSL 2)))
         (*move (Fluid Codeform*) (reg t1))
-        (jmp (indirect (reg t2)))
+	(LDMIA (reg sp) ((reg lr)) writeback) % pop link register
+        (BX (reg t3))
 NotAnID
 	(!*JUMPNOTEQ (Label NotACodePointer) (reg t1) (wconst code-tag))
+	(*Move (reg t2) (reg t3))	% save function pointer in reg t3
         (*move (Fluid Codeform*) (reg t1))
-        (jmp (reg t2))
+	(LDMIA (reg sp) ((reg lr)) writeback) % pop link register
+        (BX (reg t3))
 
 NotACodePointer
 	(*JUMPNOTEQ (Label IllegalFunctionalForm) (reg t1) (wconst pair-tag))
@@ -247,6 +237,7 @@ IllegalFunctionalForm
        %
        % also called by JMP in the Function Cell
        %
+       (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
        (*move (reg t1) (reg 2))
        (*MKITEM (reg 2) (wconst id-tag))
        (*MOVE (QUOTE "Undefined function %r called from compiled code")
@@ -299,22 +290,20 @@ IllegalFunctionalForm
 
 (lap '((*entry list2 expr 2)
           (*alloc 0)
-          (*move (global heaplast) (reg 3))
-          (*move (global heaptrapbound) (reg 4))
-          (*move (reg 3) (reg 5))
+          (*move (reg heaplast) (reg 5))
           (*wplus2 (reg 5) (times addressingunitsperitem 4))
-          (*jumpwgeq (label callslow) (reg 5) (reg 4))
-          (*move (reg 1) (memory (reg 3) 0))
-          (*move (reg 2) (memory (reg 3) (times addressingunitsperitem 2)))
-          (*move (quote nil) (memory (reg 3) (times addressingunitsperitem 3)))
-          (*move (reg 5) (global heaplast))
-          (*move (reg 3)(reg 2))
+          (*jumpwgeq (label callslow) (reg 5) (reg heaptrapbound))
+          (*move (reg 1) (memory (reg heaplast) 0))
+          (*move (reg 2) (memory (reg heaplast) (times addressingunitsperitem 2)))
+          (*move (quote nil) (memory (reg heaplast) (times addressingunitsperitem 3)))
+          (*move (reg 5) (reg heaplast))
+          (*move (reg heaplast) (reg 2))
           (*wplus2 (reg 2) (times addressingunitsperitem 2))
           (*move pair-tag (reg 5))
           (*wshift (reg 5) (wconst infbitlength))
           (*wor (reg 2) (reg 5))
-          (*move (reg 2) (memory (reg 3) addressingunitsperitem))
-          (*move (reg 3) (reg 1))
+          (*move (reg 2) (memory (reg heaplast) addressingunitsperitem))
+          (*move (reg heaplast) (reg 1))
           (*wor (reg 1) (reg 5))
           (*exit 0)
       callslow
@@ -324,27 +313,27 @@ IllegalFunctionalForm
  
 (lap '((*entry list3 expr 3)
           (*alloc 0)
-          (*move (global heaplast) (reg 4))
+          (*move (global heaplast) (reg heaplast))
           (*move (global heaptrapbound) (reg t1))
-          (*move (reg 4) (reg 5))
+          (*move (reg heaplast) (reg 5))
           (*wplus2 (reg 5) (times addressingunitsperitem 6))
           (*jumpwgeq (label callslow) (reg 5)  (reg t1))
-          (*move (reg 1) (memory (reg 4) 0))
-          (*move (reg 2) (memory (reg 4) (times addressingunitsperitem 2)))
-          (*move (reg 3) (memory (reg 4) (times addressingunitsperitem 4)))
-          (*move (quote nil) (memory (reg 4) (times addressingunitsperitem 5)))
+          (*move (reg 1) (memory (reg heaplast) 0))
+          (*move (reg 2) (memory (reg heaplast) (times addressingunitsperitem 2)))
+          (*move (reg 3) (memory (reg heaplast) (times addressingunitsperitem 4)))
+          (*move (quote nil) (memory (reg heaplast) (times addressingunitsperitem 5)))
           (*move (reg 5) (global heaplast))
           (*move pair-tag (reg 5))
           (*wshift (reg 5) (wconst infbitlength))
-          (*move (reg 4)(reg 2))
+          (*move (reg heaplast)(reg 2))
           (*wplus2 (reg 2) (times addressingunitsperitem 2))
           (*wor (reg 2) (reg 5))
-          (*move (reg 2) (memory (reg 4) addressingunitsperitem))
-          (*move (reg 4)(reg 2))
+          (*move (reg 2) (memory (reg heaplast) addressingunitsperitem))
+          (*move (reg heaplast)(reg 2))
           (*wplus2 (reg 2) (times addressingunitsperitem 4))
           (*wor (reg 2) (reg 5))
-          (*move (reg 2) (memory (reg 4) (times addressingunitsperitem 3)))
-          (*move (reg 4) (reg 1))
+          (*move (reg 2) (memory (reg heaplast) (times addressingunitsperitem 3)))
+          (*move (reg heaplast) (reg 1))
           (*wor (reg 1) (reg 5))
           (*exit 0)
       callslow

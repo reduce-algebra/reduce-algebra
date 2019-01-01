@@ -1185,15 +1185,15 @@
 	 'opencode)
 
 (DefCMacro *fast-apply-load
-   ( (*Move ArgOne (reg t2)) ))
+   ( (*Move ArgOne (reg t1)) ))
 
 (put 'fast-idapply    'opencode
-     '((!*Field (reg t3) (reg t2)  (wconst infstartingbit) (wconst infbitlength))	% remove tag
+     '((!*Field (reg t3) (reg t1)  (wconst infstartingbit) (wconst infbitlength))	% remove tag
        (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
        (BLX (reg t2))))
      
 (put 'fast-idapply    'exitopencode
-     '((!*Field (reg t3) (reg t2)  (wconst infstartingbit) (wconst infbitlength))	% remove tag
+     '((!*Field (reg t3) (reg t1)  (wconst infstartingbit) (wconst infbitlength))	% remove tag
        (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
        (LDMIA (reg sp) ((reg lr)) writeback) % pop link register
        (BX (reg t2))))
@@ -1204,11 +1204,11 @@
 
 
 (put 'fast-codeapply    'opencode
-     '((*Field (reg t2) (reg t2) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
+     '((*Field (reg t2) (reg t1) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
        (BLX (reg t2))))
 
 (put 'fast-codeapply    'exitopencode
-     '((*Field (reg t2) (reg t2) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
+     '((*Field (reg t2) (reg t1) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
        (LDMIA (reg sp) ((reg lr)) writeback) % pop link register
        (BX (reg t2))))
 
@@ -1257,7 +1257,8 @@ preload  (setq initload
 		   (bmi ,genlabel)
 		   (*call Bstackoverflow) % never come back
 		  ,genlabel
-		   (*Move (Reg t2) ($fluid BndstkPtr))   )) %start of code
+		   (MOV (reg t3) (reg t2))		   % save reg t2 as it is clobbered
+		   (*Move (Reg t3) ($fluid BndstkPtr))   )) %start of code
 
       (setq list (append initload list))
 
@@ -1319,7 +1320,8 @@ preload  (setq initload
 		   (BMI ,genlabel)
                    (*Call Bstackoverflow)  % is never come back
 		   ,genlabel
-		   (*Move (Reg t2) ($fluid BndstkPtr))   )) %start of code
+		   (MOV (reg t3) (reg t2))		   % save reg t2 as it is clobbered
+		   (*Move (Reg t3) ($fluid BndstkPtr))   )) %start of code
 
       (setq list (append initload list))
 
@@ -1354,7 +1356,6 @@ preload  (setq initload
       (setq n (wtimes2 4 (wdifference 2 lng)))
       (setq lng (wtimes2 lng 4)) % * addressingunitperitem
       (setq initload (list '(*Move ($fluid Bndstkptr) (reg t1))))
-      (setq n 0)
 
 preload  (setq initload
        (progn (setq listfluids
@@ -1384,10 +1385,11 @@ preload  (setq initload
 		    (BPL ,genlabel)
 		    (*Call Bstackunderflow) % never returns
 		   ,genlabel
-		   (*Move (reg t2) ($fluid Bndstkptr))  )) %start of code
+		   (MOV (reg t3) (reg t2))		   % save reg t2 as it is clobbered
+		   (*Move (reg t3) ($fluid Bndstkptr))  )) %start of code
 
      (setq list (append initload list))
-     (setq n 0)
+     (setq n 0)<
 
  loop
       (setq cfluids (car Fluids))

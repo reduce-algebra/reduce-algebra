@@ -504,7 +504,7 @@
 % (regshift-by-reg x LSL/LSR (reg y))
 
 (de reg-shifter-p (x)
-    (or (labelp x)
+    (or (stringp x)
 	(and (pairp x) (regp x))
 	(and (eqcar x 'regshifted) (or (regp (cadr x)) (regp (list 'reg (cadr x))))
 	     (memq (caddr x) shift-ops*)
@@ -745,8 +745,8 @@
 			(setq reg4 (reg2int (cadddr reg-shifter)))
 			(setq opcode2 (subla '((LSL . 2#0001) (LSR . 2#0011) (ASR . 2#0101) (ROR 2#0111)) shift-op))
 			)
-		       (T (stderr (bldmsg "Invalid operand %w" reg-shifter)))))
-		(T (stderr (bldmsg "Invalid operand %w" reg-shifter))))
+		       (T (stderror (bldmsg "Invalid operand %w" reg-shifter)))))
+		(T (stderror (bldmsg "Invalid operand %w" reg-shifter))))
 	  (DepositInstructionBytes
 	   (lor (lsh cc 4) (lsh opcode1 -3))
 	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4)) (reg2int reg2))
@@ -791,8 +791,8 @@
 			(setq reg4 (reg2int (cadddr reg-shifter)))
 			(setq opcode2 (subla '((LSL . 2#0001) (LSR . 2#0011) (ASR . 2#0101) (ROR 2#0111)) shift-op))
 			)
-		       (T (stderr (bldmsg "Invalid operand %w" reg-shifter)))))
-		(T (stderr (bldmsg "Invalid operand %w" reg-shifter))))
+		       (T (stderror (bldmsg "Invalid operand %w" reg-shifter)))))
+		(T (stderror (bldmsg "Invalid operand %w" reg-shifter))))
 	  (DepositInstructionBytes
 	   (lor (lsh cc 4) (lsh opcode1 -3))
 	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4)) (reg2int regn))
