@@ -494,7 +494,7 @@ begin
 %%%            printsq simp sbst;
 %%%        >>;
 %%%        res := integratesq!-substituted(integrand, newvar);
-        remflag(newvar,'look_for_rational);
+        remprop(newvar,'look_for_rational);
 %%%        if null res
 %%%          then <<if !*trint or !*trintsubst then printc "Substituted integral FAILED!";
 %%%                 return nil>>;
