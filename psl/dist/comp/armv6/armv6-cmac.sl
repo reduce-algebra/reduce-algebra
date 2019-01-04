@@ -352,6 +352,13 @@
 
 (de idlocp (x) (eqcar x 'idloc))
 
+(de smallid-p (x)
+    (and (idp x)
+	 (wgeq (idinf x) 0)
+	 (wlessp (idinf x) 256)))
+
+(de true-p (x) (eq x 't))
+
 (remprop '*Move 'optfn)
 
 %% optimize (*Move nil (fluid something))
@@ -360,10 +367,12 @@
        ((regp regp)	    	 (MOV ArgTwo ArgOne))
        ((imm8-rotatedp regp)     (MOV Argtwo ArgOne))
        ((fixp regp)              (*LoadConstant ArgTwo ArgOne))
+%       ((true-p regp)            (*LoadIDLoc t ArgTwo)
+%	                         (*MkItem ArgTwo (compiler-constant 'id-tag)))
        ((idlocp regp)            (*LoadIDLoc ArgTwo ArgOne))
        ((fluid-arg-p regp)       (*LoadIdNumber LDR ArgTwo ArgOne))
        ((indirectp regp)         (LDR ArgTwo ArgOne))
-       ((immediatep regp)        (LDR ArgTwo (unimmediate ArgOne)))
+       ((immediatep regp)        (*LoadImmediate ArgTwo ArgOne))
        ((regp fluid-arg-p)       (*LoadIdNumber STR ArgOne ArgTwo))
        ((regp indirectp)         (STR ArgOne ArgTwo))
        ((regp extraregp)         (!*StoreIntoExtraReg ArgOne ArgTwo))
@@ -416,6 +425,16 @@
       ))))
 
 (DefCMacro *LoadIdNumber)
+
+(de *LoadImmediate (dest src)
+    (setq src (unimmediate src))
+    (print (list src (prop (unimmediate src))))
+    (if (not (idp src))
+	`((LDR ,dest ,(unimmediate src)))
+      `((ADRL ,dest ,src))))		% two instruction load address pseudo-op
+    )
+
+(DefCMacro *LoadImmediate)
 
 (de !*LoadExtraReg (src dest)
     `( (!*Move (memory ($fluid argumentblock)
@@ -756,8 +775,8 @@
     ((regp fixplusp) (*lsl ArgOne ArgOne ArgTwo))
     ((regp regp)     (CMP argtwo 0)
 		      (BGE templabel)
-                      (RSB (reg r0) ArgTwo 0)
-		      (*lsl ArgOne Argone (reg r0))
+                      (RSB (reg t2) ArgTwo 0)
+		      (*lsr ArgOne Argone (reg t2))
                       (B templabel2)
                      templabel
                       (*lsl ArgOne ArgOne ArgTwo)
@@ -834,7 +853,7 @@
 		         (*mkitem (reg t1) ArgTwo)
 		         (*Move (reg t1) ArgOne)))
 
-(DefCmacro *Tag
+(DefCMacro *Tag
       ((regp regp) (MOV ArgOne (regshifted ArgTwo LSR 27)))
       ((Anyp regp) (MOV (reg t1) (regshifted ArgTwo LSR 27))
 		    (*Move (reg t1) ArgOne))
@@ -1461,12 +1480,19 @@ preload  (setq initload
 % then doing "calls" instr indirect via the target address of the jmp
 % instruction stored there.  Use old direct link for asm (kernel) compile.
 
-(de *foreignlink (functionname functiontype numberofarguments)
+(de *ForeignLink (functionname functiontype numberofarguments)
 
+    %% stack has to be aligned on an 8byte boundary for doubles to be handled correctly.
     `((STMDB (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback) % save caller-saved registers
+      (!*Move (reg sp) (reg r6))
+      (MVN (reg r7) (wconst 7))
+      (SUB (reg sp) (reg sp) 8)
+      (AND (reg sp) (reg sp) (reg r7))
+      (!*Move (reg r6) (displacement (reg sp) 0))
 %      (*Move (quote t) (fluid *kernelmode))
       (BLX (foreignentry ,functionname))
 %      (*Move (reg NIL) (fluid *kernelmode))
+      (!*Move (displacement (reg sp) 0) (reg sp))
       (LDMIA (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback))) % restore saved registers
 
 (DefCMacro !*foreignlink)

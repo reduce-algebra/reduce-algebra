@@ -320,10 +320,10 @@
 	    ((setq Y (get (first X) 'InstructionDepositMacro))
 	     (apply3safe y (cdr x)))
 	    (t (StdError (BldMsg "Unknown ARMv6 instruction %p" X))))
-      (when (and offs (not (equal CurrentOffset* (plus offs (instructionlength x)))))
+      (when (and offs (not (equal CurrentOffset* (plus offs (InstructionLength x)))))
 	(StdError (BldMsg "length error with instruction %p: %p"
 			  x (difference (difference CurrentOffset* offs)
-					(instructionlength x)))))
+					(InstructionLength x)))))
       ))
 
 (de DepositLabel (x) 
@@ -1107,6 +1107,38 @@
 (put 'comment 'InstructionDepositFunction 'AddLapComment)
 (put 'samelinecomment 'InstructionDepositFunction 'AddLapComment)
 
+(de DepositLoadAddress (X)
+    (prog (src dest rel)
+	  (setq src (caddr X) dest (cadr X))
+	  (cond ((or (not (idp src)) (not (regp dest)))
+		 (stderror (bldmsg "Invalid ADRL pseudo-op: %w" X)))
+		(t
+		 (setq rel (MakeExpressionRelative src 8))
+		 (print (list src dest rel))
+		 (cond ((lessp rel 0)
+			(setq rel (minus rel))
+			(cond ((imm8-rotatedp rel)
+			       (DepositInstruction `(SUB ,dest (reg pc) ,rel))
+			       (DepositInstruction '(MOV (reg 1) (reg 1))))
+			      ((lessp rel 16#10000)
+			       (DepositInstruction `(SUB ,dest (reg pc) ,(wand 16#ff rel)))
+			       (DepositInstruction `(SUB ,dest ,dest ,(wand 16#ff00 rel))))
+			      (t (stderror (bldmsg "ADRL load too far: %w" rel)))))
+		       ((imm8-rotatedp rel)
+			(DepositInstruction `(ADD ,dest (reg pc) ,(wminus rel)))
+			(DepositInstruction '(MOV (reg 1) (reg 1))))
+		       ((lessp rel 16#10000)
+			(DepositInstruction `(ADD ,dest (reg pc) ,(wand 16#ff rel)))
+			(DepositInstruction `(ADD ,dest ,dest ,(wand 16#ff00 rel))))
+		       (t (stderror (bldmsg "ADRL load too far: %w" rel)))))
+		)))
+			
+
+(put 'ADRL 'InstructionDepositFunction 'DepositLoadAddress)
+
+%(put 'ADR 'InstructionLength 4)
+(put 'ADRL 'InstructionLength 8)
+
 % Auxiliary functions for computing instruction bit patterns
 
 (de MakeExpressionRelative (Exp OffsetFromHere) 
@@ -1122,7 +1154,7 @@
     (return (Difference Y X))))
 
 
-(de makeinternalentryrelative (nam offsetfromhere)
+(de MakeInternalentryRelative (nam offsetfromhere)
   (prog (offset)
 	(setq offset (atsoc nam LabelOffsets*))
 	(setq offset (if offset
@@ -1260,7 +1292,7 @@
     (setq InstructionChanged* (FindFarLoads))
     (while InstructionChanged*
       (setq BranchCodeList* (UpdateCodeList BranchCodeList* InstructionChanged*))
-      (BuildOffsetTable)   
+      (BuildOffsetTable)
       (setq InstructionChanged* (FindFarLoads)))
     (setq LabelOffsets* (DeleteAllButLabels BranchAndLabelAList*)) 
     (return BranchCodeList*)))
@@ -1268,7 +1300,7 @@
 (de UpdateCodeList (codelist alist)
     %% alist contains pairs (lbl . codelist)
     %% codelist is to be inserted immediately before lbl
-    (prog (l l1)
+    (prog (l l1 pp)
       (setq l codelist)
      loop
       (setq l1 (cdr l))
@@ -1637,7 +1669,7 @@
 %	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
 %	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
 %	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
-	    )
+%	    )
     ))
 
 (de depositwordidnumber (x) 

@@ -43,7 +43,10 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber* errorcall* sigaddr))
+(fluid '(errornumber* sigaddr faultaddr* arith-exception-type* stack-pointer*
+                      on-altstack*      % variable to indicate that we are on an
+ alternate signal stack
+))
 
 
 (compiletime
@@ -67,14 +70,21 @@
        `((*entry ,function expr 0)
          (*alloc 0)
      ,handler
-     (*move (displacement (reg st) 12 ) (reg 1))
-     (*move (displacement (reg 1) 76) (reg 2))
-     (*move (reg 2) (fluid sigaddr))
-     (*move (wconst ,signumber) (reg 2))
-     (*move (reg 2)(fluid errornumber*))
+     % at this point, r11 does not point to symval, 
+     % so load the symval address from the ucontext structure
+     (*move (wconst ,signumber) (reg 1))
+     (*move (reg 1) (fluid errornumber*))
+
+     % Reg r2 contains a pointer to a siginto_t structure
+     % for SIGILL, SIGFPE, SIGSEGV, SIGBUS, get faulting address (at offset 16 of siginfo_t structure)
+     (*move (memory (reg 2) 16) (fluid faultaddr*))
+     % for arithmetic expressions, get exception subtype: at offset 8 of siginfo_t structure
+     % there is si_code (4 byte integer) which is the FPE subtype
+     (*move (displacement (reg 2) 8) (reg 2))
+     (*move (reg 2) (fluid arith-exception-type*))
      (*move ,handler (reg 2))
-     (*move  ($fluid errorcall*) (reg 2))
-     (*move (reg 2) (displacement (reg 1) 76))
+     (*move (memory (reg 2) 168) (fluid sigaddr*))   % instruction pointer at fault
+     (*move (memory (reg 2) 160) (fluid stack-pointer*))   % stack pointer at fault
      (*link sigrelse expr 2)
      (*move (quote ,errorstring) (reg 1))
      (*jcall sigunwind))
@@ -114,7 +124,7 @@
        (*sigcall)
        (*exit 0)))
  
-(de initializeinterrupts (nn)
+%(de initializeinterrupts (nn)
 %%       (ieee_flags (strbase (strinf "set")) (strbase (strinf "direction"))
 %%				(strbase (strinf "tozero")) 0)
 %%       (ieee_handler (strbase (strinf "set"))
@@ -124,7 +134,7 @@
 %%       (initializeinterrupts-1)
 %%       (unless (eq 17 nn) (sun3_sigset 500)) % Hack! If stated from top-loop, save
 %					       the fp environment.
-)
+%)
  
 (lap
  '((!*entry sigunwind expr 0)
@@ -140,25 +150,51 @@
      % (*link build-trap-message expr 2)     % This leaves its result in reg
                                            % 1, so the new message is
      (*alloc 0)
-     (push (reg 1))
+     (*push (reg 1))
+     (*move 256 (reg nil))
+     (*mkitem (reg NIL) id-tag)	    % make sure (reg nil) contains nil
+     % if this is a terminal interrupt (errornumber* = 2) we check
+     % whether it occured within lisp code. If not, just return.
+     (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
+     (*move (quote "Terminal Interrupt") (reg 1))
+     (*call console-print-string)
+     (*call console-newline)
+     (*move (fluid sigaddr*) (reg 1))
+     (*link codeaddressp expr 1)
+     (!*jumpnoteq (label in-lisp) (reg 1) (quote nil))
+     (*pop (reg 1))
+     (*exit 0)
+    in-lisp
 %     (*link *freset expr 0)
-     (*move 17 (reg 1))
-     (*link initializeinterrupts expr 1) % MK
-     (pop (reg 1))
-     (*move (fluid sigaddr ) (reg 2))
-     (*call build-trap-message)
-     (*move (reg 1) (reg 2))
-     (*move (reg 1) (fluid sigaddr ))
+     (*link initializeinterrupts expr 0) % MK
+     (*pop (reg 2))
      (*move (fluid errornumber*) (reg 1))
+     (*move (reg nil) (fluid on-altstack*))
      (*wplus2 (reg 1)(wconst 10000))
-     (!*exit 0) %%%(*jcall error) 
+     % if the error number = 11 (segmentation violation, 
+     %  set on-altstack* to t and try to check for stack overflow
+     (*jumpnoteq (label nostackoverflow) (fluid errornumber*) 11)
+     (*move (quote t) (fluid on-altstack*))
+     % if rsp + 1024 >= faultaddr* >= rsp - 1024, assume a stack overflow
+     (*move ($fluid faultaddr*) (reg 3))
+     (*WPlus2 (reg 3) 1024)
+     (*jumpwgreaterp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
+     (!*WDifference (reg 3) 2048)
+     (*jumpwlessp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
+     (*move (quote "Stack overflow") (reg 2))
+    nostackoverflow
+     (*move (wconst 0) (reg 3))
+     (*jumpnoteq (label done) (fluid errornumber*) 8)
+     (*move (fluid arith-exception-type*) (reg 3))
+    done
+     (*jcall error-trap) 
      ))
 
-(de errortrap () (sun3_sigset 501) (error (wplus2 errornumber* 10000) sigaddr))
+%(de errortrap () (sun3_sigset 501) (error (wplus2 errornumber* 10000) sigaddr))
 
 % (sun3_sigset 501)  restauriert das FP Environment
 
-(setq errorcall* (wgetv symfnc (id2int 'errortrap)))
+%(setq errorcall* (wgetv symfnc (id2int 'errortrap)))
 
 (commentoutcode
 (lap '((*entry *freset expr 0)
@@ -185,21 +221,57 @@
        (*exit 0)))
 )
 
+%% Error subtypes for arithmetic exception
+(define-constant FPE_INTDIV 1)
+(define-constant FPE_INTOVF 2)
+(define-constant FPE_FLTDIV 3)
+(define-constant FPE_FLTOVF 4)
+(define-constant FPE_FLTUND 5)
+(define-constant FPE_FLTRES 6)
+(define-constant FPE_FLTINV 7)
+(define-constant FPE_FLTSUB 8)
+
+%% convert arithmetic error subtype to error message
+(de get-fpe-errmsg (n)
+  (cond
+    ((eq n FPE_INTDIV) "Integer divide by zero")
+    ((eq n FPE_INTOVF) "Integer overflow")
+    ((eq n FPE_FLTDIV) "Floating point divide by zero")
+    ((eq n FPE_FLTOVF) "Floating point overflow")
+    ((eq n FPE_FLTUND) "Floating point underflow")
+    ((eq n FPE_FLTRES) "Floating point inexact result")
+    ((eq n FPE_FLTINV) "Floating point invalid operation")
+    ((eq n FPE_FLTSUB) "Subscript out of range")
+    (t "Arithmetic exception")))
+
+(de error-trap (errornumber errorstring arithsubtype)
+  (error errornumber
+   (build-trap-message
+    (if (eq errornumber* 8) (get-fpe-errmsg arithsubtype)
+        errorstring)
+    sigaddr*)))
+
 (de build-trap-message (trap-type trap-addr)
     (let (extra-info)
-      (if (funboundp 'code-address-to-symbol)
-        (setf extra-info
-          (bldmsg "%w%n%w%n%w"
-              " : the name of the routine that trapped can't be"
-              " reported unless the function CODE-ADDRESS-TO-SYMBOL"
-              " has been defined, by loading ADDR2ID."))
-    % else, get the name of the offending function
-    (setf extra-info (bldmsg "%w%w"
-                 " in "
-                 (code-address-to-symbol (inf trap-addr))))
+      (cond ((funboundp 'code-address-to-symbol)
+             (setf extra-info
+                   (bldmsg "%w%x%w%n%w%n%w%n%w"
+                           " at address 0x"
+                           (inf trap-addr)
+                           " :"
+                           " the name of the routine that trapped can't be"
+                           " reported unless the function CODE-ADDRESS-TO-SYMBOL"
+                           " has been defined, by loading ADDR2ID.")))
+            % else, get the name of the offending function
+            ((setf extra-info (code-address-to-symbol (inf trap-addr)))
+             (setf extra-info (bldmsg "%w%w" " in " extra-info)))
+            (t (setf extra-info (bldmsg "%w%x" " at address 0x" (inf trap-addr))))
       )
       (bldmsg "%w%w" trap-type extra-info)))
- 
+
+(de mask-terminal-interrupt (block?)
+  (mask_signal 2 (if block? 1 0)))
+
 (fluid '(code-address* closest-address* closest-symbol*))
 
 (de x-code-address-to-symbol (code-address*)

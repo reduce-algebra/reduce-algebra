@@ -94,11 +94,11 @@
 
 (lap '((*entry undefinedfunction-aux expr 1)
        (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
-       (*move (reg t1) (displacement (reg st) 0 postindexed))
+       (*push (reg t1))
        (*move (quote "Undefined function called: ") (reg 1))
        (*call console-print-string)
        (*move (fluid symnam) (reg t2))
-       (*move (displacement (reg st) 0 postindexed) (reg t1))
+       (*pop (reg t1))
        (LDR (reg 1) (displacement (reg t2) (regshifted t1 LSL 2)))
        (*call console-print-string)
        (*call console-newline)

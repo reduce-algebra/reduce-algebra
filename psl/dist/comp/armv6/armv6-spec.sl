@@ -118,8 +118,7 @@
 
 (setq &fillframeholes t)
 
-% install filling of hooles in lap-to-asm too.
-
+% install filling of holes in lap-to-asm too.
 
 (fluid '(locallabels* codeout*))
 

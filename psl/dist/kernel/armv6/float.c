@@ -183,12 +183,12 @@ uxwritefloat(buf, flt, convstr)
      char *convstr;      /* String containing conversion field for sprintf */
 {
   char *temps, *dot, *e;
-  char tempbuf[100]; /* reasonable size limit */
+  char tempbuf[102]; /* reasonable size limit */
   double tempf;
 
   temps = buf + 4;       /* Skip over lisp string length to write data */
 
-  sprintf(temps, convstr, *flt);
+  snprintf(temps, 99, convstr, *flt);
 
   if (finite(*flt))
     {
@@ -203,7 +203,7 @@ uxwritefloat(buf, flt, convstr)
 	{
 	  strcpy(tempbuf, e);       /* save save exponent part */
 	  *e = '\0'; 
-	  strcat(temps, ".0");     /* Add .0 ono original string */
+	  strcat(temps, ".0");     /* Add .0 onto original string */
 	  strcat(temps, tempbuf);  /* add the exponent part onto the end */
 	}
       else

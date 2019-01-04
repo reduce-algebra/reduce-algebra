@@ -117,7 +117,7 @@
 %                                                                          
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(compiletime (load if-system))
+(compiletime (load if-system backquote))
 
 (compiletime 
    (mapc ' (*wfix *wfloat 
@@ -455,7 +455,22 @@
 % Beware of Overflow                                                       
 (deffloatentry floattimes2 !*ftimes2)
 
-(defarith2entry quotient wquotient floatquotient bigquotient)
+(compiletime
+ (dm wquotient2 (u)
+     (let ((divisor (gensym)))
+     (print (cdr u))
+     `(let ((,divisor ,(caddr u)))
+	(if (eq ,divisor 0)
+	    (continuableerror 99 "Division by zero" (list 'quotient ,(cadr u) ,divisor))
+	  (wquotient ,(cadr u) ,divisor))))
+))
+
+%(de wquotient2 (x y)
+%    (if (eq y 0)
+%	(continuableerror 99 "Division by zero" (list 'quotient x y))
+%      (wquotient x y)))
+
+(defarith2entry quotient wquotient2 floatquotient bigquotient)
 
 (deffloatentry floatquotient !*fquotient)
 
