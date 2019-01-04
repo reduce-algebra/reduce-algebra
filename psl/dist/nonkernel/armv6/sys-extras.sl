@@ -165,7 +165,7 @@
 
 (de returnaddressp (x)
   (prog (s y)
-        (unless (and (fixnp x) (>= x 2000)) (return nil))
+        (unless (and (posintp x) (>= x 2000)) (return nil))
         % Check that return address is even                                           
         (when (weq (wand x 1) 1)
           (return nil))
@@ -179,10 +179,8 @@
         (setq s (inf symfnc))
 %        (unless (weq (halfword x -3) 16#15ff) (return nil))
         % call word                                                     
-        (setq y (get-called-addr x))
+        (setq y (get-called-idnumber x))
 	(when (null y) (return nil))
-        (setq y (wdifference y s))
-        (setq y (wquotient y addressingunitsperfunctioncell))
         (if (or (wlessp y 0) (wgreaterp y maxsymbols))
           (return nil)
           (return (mkid y)))))
@@ -201,13 +199,13 @@
 %%      instruction is a branch (BL) to the address containing the LDR isntruction.
 %%      bit pattern is 0xeb + 24 bit relative offset (in words) to 8 + addr of BL instruction
 
-(de get-called-addr (adr)
+(de get-called-idnumber (adr)
     (let* ((adr-load-instr (wgetv adr -3))
 	   (bit-pattern (wshift adr-load-instr -12))
-	   (rest (wand addr-load-inst 0xfff)))
+	   (rest (wand adr-load-instr 16#fff)))
       (cond ((eq bit-pattern 16#e59f7)
 	     % LDR r7,pc-rel-addr
-	     % actual address is address of instruction + 8 + pc-rel-addr
+	     % address where id number is stored is address of instruction + 8 + pc-rel-addr
 	     (wgetv (wplus2 adr rest) -1))
 	    ((eq bit-pattern 16#e59f7)
 	     % MOV r7,#cst
@@ -220,12 +218,12 @@
 	     % BL addr-of-ldr
 	     % mask lower 24bit, shift left by 2
 	     % adr is 3 words after BL instruction, so subtract 1 word to add 8 bytes
-	     (let* ((offset (wshift (wand adr-load-instr 0xffffff) 2))
+	     (let* ((offset (wshift (wand adr-load-instr 16#ffffff) 2))
 		    (actual-addr (wdifference (wplus2 adr offset) addressingunitsperitem))
 		    (actual-load-instruction (wgetv actual-addr 0)))
 	       (if (eq (wshift actual-load-instruction -12) 16#e59f7)
-		   (wgetv (wplus2 actual-addr (wand actual-load-instruction 0xfff)) 2)
-		 nil)))
+		   (wgetv (wplus2 actual-addr (wand actual-load-instruction 16#fff)) 2))
+		 nil))
 	    (t nil))))
 
 % ****************************************************************         
