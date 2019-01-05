@@ -178,7 +178,16 @@
                (return nil)))
         (setq s (inf symfnc))
 %        (unless (weq (halfword x -3) 16#15ff) (return nil))
-        % call word                                                     
+        % call word
+	% The usual call instruction is "BLX R6" (0xe12fff36).
+	% However, for calls to internal functions, there is only one instruction
+	%  BL <pc-rel address>.
+	% check that there is indeed a "BLX R6" call.
+	(setq y (wgetv x -1)) 		% possible branch instruction 
+	% Note: comapre in two steps since the compiler converts 16#e12fff36 into a fixnum object
+	(unless (and (weq (wand y 16#ffff) 16#ff36)
+		     (weq (wand (wshift y -16) 16#ffff) 16#e12f))
+	  (return nil))
         (setq y (get-called-idnumber x))
 	(when (null y) (return nil))
         (if (or (wlessp y 0) (wgreaterp y maxsymbols))
@@ -189,7 +198,7 @@
 %% The usual calling sequence is
 %%  1. load id number into r7
 %%  2. load symfnc+4*r7 into r6
-%%  3. branch to adress in r6
+%%  3. branch to adress in r6 (BLX r6)
 %% The first step comes in three variants:
 %%  1a. load id number immediate (only for id numbers <=256): MOV r7,#cst
 %%      bit pattern is 0xe3a07 + 1 nibble rotate + 1 byte immediate
@@ -198,6 +207,7 @@
 %%  1c. far load: the relative address doesn't fit into a 12 bit offset.
 %%      instruction is a branch (BL) to the address containing the LDR isntruction.
 %%      bit pattern is 0xeb + 24 bit relative offset (in words) to 8 + addr of BL instruction
+%% However, for calls to internal functions, the calling sequence is simply 
 
 (de get-called-idnumber (adr)
     (let* ((adr-load-instr (wgetv adr -3))

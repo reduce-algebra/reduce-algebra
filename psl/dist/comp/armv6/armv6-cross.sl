@@ -268,3 +268,6 @@
 (remprop 'bndstkptr 'registercode)
 (remprop 'bndstklowerbound 'registercode)
 (remprop 'bndstkupperbound 'registercode)
+
+(remprop '*get-stack 'opencode)
+(remprop '*put-stack 'opencode)

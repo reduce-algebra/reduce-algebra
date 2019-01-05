@@ -797,7 +797,7 @@
 (DefCMacro *WLShift                     %Logical shift to the left.
 	   ((AnyP  ZeroP)           )
 	   ((RegP  OneP)      (*WPLUS2 ARGONE ARGONE))
-	   ((RegP NegP))      (*Cerror "*WLshift with negative shift amount")
+	   ((RegP NegP)       (*Cerror "*WLshift with negative shift amount"))
 	   ((RegP InumP)      (*lsl ArgOne ArgOne ArgTwo))
 	   ((RegP regP)       (*lsl ArgOne ArgOne ArgTwo))
 	   ((RegP AnyP)       (*MOVE ARGTWO (Reg T3))
@@ -812,7 +812,7 @@
  
 (DefCMacro *WRShift                     %Logical shift to the right
 	   ((AnyP  ZeroP)           )
-	   ((RegP NegP))      (*Cerror "*WRshift with negative shift amount")
+	   ((RegP NegP)       (*Cerror "*WRshift with negative shift amount"))
 	   ((RegP InumP)      (*lsr ArgOne ArgOne ArgTwo))
 	   ((RegP regP)       (*lsr ArgOne ArgOne ArgTwo))
 	   ((RegP AnyP)       (*MOVE ARGTWO (Reg T3))

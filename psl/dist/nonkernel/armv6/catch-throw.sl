@@ -208,6 +208,7 @@
        (*jump (indexed (reg 2) 0))))
 
 (lap '((*entry throwaux expr 3)
+       (*alloc 0)
        (*move (reg 3) (reg st))
        (*move (reg 2) (memory (reg st) (wconst 0)))
        (*exit 0)))

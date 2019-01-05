@@ -42,6 +42,15 @@
  
 )
 
+(compiletime
+ (when (not (member 'i386 system_list*))
+   (ds *get-stack(u) (getmem u))
+   (ds *put-stack(u w)(putmem u w))
+   (when (not (member 'armv6 system_list*))
+     (ds wrshift(a b)(wshift a (minus b)))
+     (ds wlshift(a b)(wshift a b))
+     )
+))
 
 
 (compiletime (load inum hash-decls if-system))
@@ -398,7 +407,7 @@
 
 (de markfromallbases ()
   (prog (b)
-	(markfromonesymbol 128)    % NIL first
+	(markfromonesymbol 256)    % NIL first
 	(markfromstack)
 	(setq b bndstklowerbound)
 	(while (progn (setq b (adjustbndstkptr b 1))
@@ -410,11 +419,7 @@
 
 (de markfromsymbols ()
   (prog (b)
-	(ifor (from i 0 127 1)
-	      (do (unless (markedid i)
-			  (markfromonesymbol i))))
-	
-	(ifor (from i 129 255 1)
+	(ifor (from i 0 255 1)
 	      (do (unless (markedid i)
 			  (markfromonesymbol i))))
 	
@@ -445,7 +450,7 @@
 				    olditem*
                      unixnull unixstderr unixstdout unixstdin unixtty
 		ebxsave!*		    heaptrapbound heapupperbound)))
-	(if (wgreaterp x kernel-maxsymbols)
+	(if (or (null kernel-maxsymbols) (null old_symval) (wgreaterp x kernel-maxsymbols))
 	    (markfrombase (symval x))
 	    (markfrombase (wgetv old_symval x))))
   (setq gcfunction* 0)    
@@ -467,6 +472,9 @@
 	 %%%  olditem*
 	 )
 	%%% (SETQ OLDITEM* (INF BASE))
+	(when (eq !*gc 17) % be verbose
+	  (console-print-string " Mark from base: 0x")
+	  (unixputn base) (console-newline))
 	(setq marktag (tag base))
 	(unless (pointertagp marktag)
 		(return (progn (when (and (weq marktag id-tag) (not (null base)))
@@ -520,8 +528,8 @@
 
 (de makeidfreelist ()
   (prog (previous)
-	(ifor (from i 0 255 1) (do (clearidmark i)))
-	(setq previous 256)
+	(ifor (from i 0 256 1) (do (clearidmark i)))
+	(setq previous 257)
 	(while (and (markedid previous) (wlessp previous maxsymbols))
 	       (clearidmark previous)
 	       (setq previous (wplus2 previous 1)))
@@ -542,6 +550,7 @@
 (de force-heap-enlargement() NIL)
 
 (lap '((*entry current-stack-pointer expr 0)
+       (*alloc 0)
        (*move (reg st) (reg 1))
        %      (*wplus2 (reg 1) 20) % a "magic" offset
        (*exit 0)
@@ -975,35 +984,36 @@
 (de set-bps-size (n) (try-other-bps-spaces n))
 
 (de try-other-bps-spaces (number-of-items)
-    (let*((*moving-heap* nil)
+   (let* ((*moving-heap* nil)
 	  (bpsrest (wquotient (wdifference lastbps nextbps) 
 		   addressingunitsperitem))
 	  (amount (wtimes2 25000 
 			   (iadd1 (wquotient number-of-items 25000)))))
-	 (when (wgreaterp bpsrest amount) (return bpsrest))
+     (if (wgreaterp bpsrest amount) bpsrest
+       (progn
 	 (errorprintf "*** enlarging fasl space by %d items" amount)
 	 (compactheap)
-	     % now we have a simplified memory layout
+					% now we have a simplified memory layout
 	 (when (wgreaterp amount
 			  (wquotient (wdifference heapupperbound
 						  heaplast)
-				      addressingunitsperitem))
-	       (stderror "*** fasl space cannot be enlarged"))
+				     addressingunitsperitem))
+	   (stderror "*** fasl space cannot be enlarged"))
 
-     (setq amount (wtimes2 amount addressingunitsperitem))   
-     (setq *moving-heap* amount)
-     (update-bases)
-     (move-heap amount)
-	% update bps pointers
-     (setq nextbps heap)
-     (setq lastbps (wplus2 nextbps (wdifference amount addressingunitsperitem)))
-	% update heap pointers
-     (setq heaplowerbound (wplus2 heaplowerbound amount))
-     (setq heap heaplowerbound)
-     (setq heaplast (wplus2 heaplast amount))
-     (init-gcarray)
-     (wquotient amount addressingunitsperitem)
-  ))
+	 (setq amount (wtimes2 amount addressingunitsperitem))   
+	 (setq *moving-heap* amount)
+	 (update-bases)
+	 (move-heap amount)
+	 % update bps pointers
+	 (setq nextbps heap)
+	 (setq lastbps (wplus2 nextbps (wdifference amount addressingunitsperitem)))
+         % update heap pointers
+	 (setq heaplowerbound (wplus2 heaplowerbound amount))
+	 (setq heap heaplowerbound)
+	 (setq heaplast (wplus2 heaplast amount))
+	 (init-gcarray)
+	 (wquotient amount addressingunitsperitem)))
+     ))
 
 (de move-heap(amount)
     (ifor (from i heaplast heap -1)

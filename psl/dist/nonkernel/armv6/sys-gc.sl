@@ -52,6 +52,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                                                            
 %                                                                          
+
+(de internal_beforegcsystemhook nil nil)
+
+(de internal_aftergcsystemhook nil nil)
+
 (de beforegcsystemhook nil
    (unless (or  (funboundp 'beforegcuserhook)
                 (flambdalinkp 'beforegcuserhook))

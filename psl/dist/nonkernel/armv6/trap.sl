@@ -43,9 +43,8 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber* sigaddr faultaddr* arith-exception-type* stack-pointer*
-                      on-altstack*      % variable to indicate that we are on an
- alternate signal stack
+(fluid '(errornumber* sigaddr* faultaddr* arith-exception-type* stack-pointer*
+	 on-altstack*      % variable to indicate that we are on an alternate signal stack
 ))
 
 
@@ -76,15 +75,15 @@
      (*move (reg 1) (fluid errornumber*))
 
      % Reg r2 contains a pointer to a siginto_t structure
-     % for SIGILL, SIGFPE, SIGSEGV, SIGBUS, get faulting address (at offset 16 of siginfo_t structure)
-     (*move (memory (reg 2) 16) (fluid faultaddr*))
+     % for SIGILL, SIGFPE, SIGSEGV, SIGBUS, get faulting address (at offset 12 of siginfo_t structure)
+     (*move (memory (reg 2) 12) (fluid faultaddr*))
      % for arithmetic expressions, get exception subtype: at offset 8 of siginfo_t structure
      % there is si_code (4 byte integer) which is the FPE subtype
      (*move (displacement (reg 2) 8) (reg 2))
      (*move (reg 2) (fluid arith-exception-type*))
      (*move ,handler (reg 2))
-     (*move (memory (reg 2) 168) (fluid sigaddr*))   % instruction pointer at fault
-     (*move (memory (reg 2) 160) (fluid stack-pointer*))   % stack pointer at fault
+     (*move (memory (reg 3) 92) (fluid sigaddr*))   % instruction pointer at fault
+     (*move (memory (reg 3) 84) (fluid stack-pointer*))   % stack pointer at fault
      (*link sigrelse expr 2)
      (*move (quote ,errorstring) (reg 1))
      (*jcall sigunwind))
@@ -178,9 +177,9 @@
      % if rsp + 1024 >= faultaddr* >= rsp - 1024, assume a stack overflow
      (*move ($fluid faultaddr*) (reg 3))
      (*WPlus2 (reg 3) 1024)
-     (*jumpwgreaterp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
-     (!*WDifference (reg 3) 2048)
      (*jumpwlessp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
+     (!*WDifference (reg 3) 2048)
+     (*jumpwgreaterp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
      (*move (quote "Stack overflow") (reg 2))
     nostackoverflow
      (*move (wconst 0) (reg 3))
@@ -285,7 +284,8 @@
                                   (setq closest-symbol* symbol))))))
        closest-symbol*))
 
-(de code-address-to-symbol (ad) (x-code-address-to-symbol (inf ad)))
+(de code-address-to-symbol (ad)
+    (and (lessp (inf ad) nextbps) (x-code-address-to-symbol (inf ad))))
 
 % End of file.
  

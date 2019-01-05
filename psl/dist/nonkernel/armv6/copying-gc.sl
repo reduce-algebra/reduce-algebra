@@ -321,9 +321,8 @@
 (de copyfromallbases ()
  
   % Mark fixed ID's;  NIL first.
-  (markandcopyfromid 128)
-  (for (from i 0 127 1) (do (unless (markedid i) (markandcopyfromid i))))
-  (for (from i 129 255 1) (do (unless (markedid i) (markandcopyfromid i))))
+  (markandcopyfromid 256)
+  (for (from i 0 255 1) (do (unless (markedid i) (markandcopyfromid i))))
  
   % Mark other IDs.
   (for (from i 0 hash-table-size 1)
@@ -584,8 +583,8 @@
  
 (de makeidfreelist ()
   (prog (previous)
-        (for (from i 0 128 1) (do (clearidmark i)))
-        (setq previous 129)
+        (for (from i 0 256 1) (do (clearidmark i)))
+        (setq previous 257)
         (while (and (markedid previous) (< previous maxsymbols))
           (clearidmark previous)
           (setq previous (+ previous 1)))
