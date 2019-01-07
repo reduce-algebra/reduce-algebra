@@ -318,7 +318,7 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 % symbol with that simple name, while afterwards you get a version with
 % a "~" stuck on the front. The test in the code here will continue to test
 % for what it used to! So to survive parsing WHILE loops both before and
-% after I need to allow for both spellings. 
+% after I need to allow for both spellings.
 
 (de whilstat ()
    (prog (!*blockp bool bool2)
@@ -369,7 +369,7 @@ a     (setq hold (nconc hold (list (xread1 nil))))
       'prog nil
     lab  body
          (list 'cond
-            (list (list 'not bool) (list 'go lab))))))))))
+            (list (list 'not bool) (list 'go lab)))))))))
 
 (put 'repeat 'stat 'repeatstat)
 (flag '(repeat) 'nochange)
@@ -377,4 +377,3 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 % It is useful to have a temporary version of this in place until the
 % real one gets compiled...
 (de make!-string!-unique (x) x)
-
