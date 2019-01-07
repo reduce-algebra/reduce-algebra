@@ -830,7 +830,7 @@ symbolic procedure token1;
         else if x eq car y then go to bsloop;
 % Here I need to set things back so that all the peeked-ahead stuff is
 % put ready for re-scanning and I can merely return the "\".
-        peekchar!* := cdr reverse (x . z); 
+        peekchar!* := cdr reverse (x . z);
         ttype!* := 3;
         crchar!* := readch1();
         nxtsym!* := '!\;
@@ -867,7 +867,7 @@ symbolic procedure token1;
         if x = '!: then go to maybeextpackage;
         peekchar!* := list x;
         x := '!:;
-        go to ordinarysym; 
+        go to ordinarysym;
     maybeextpackage:                            % Seen abc::
         x := readch1();
         if (not (x eq !$eof!$)) and
@@ -1287,7 +1287,7 @@ symbolic procedure read!-comment;
          z := list crchar!*;
       a: named!-character!* := nil;
          if (x := readch()) = '!* and not named!-character!* then
-            if (y := readch()) = '!/ and not named!-character!* then return
+            if (y := readch()) = '!/ and not named!-character!* then return nil
             else z := y . x . z
          else if x = !$eof!$ then rederr "EOF encountered in comment"
          else z := x . z;
