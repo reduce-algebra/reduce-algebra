@@ -30,6 +30,7 @@
 !#if (memq 'psl lispsystem!*)
      create!-package('(support pslrend compat fastmath compat psl entry pslprolo),
                     nil);
+!#endif
 
 % This file is temporarily empty.
 
