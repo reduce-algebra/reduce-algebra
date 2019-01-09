@@ -215,7 +215,7 @@ symbolic procedure linineq0(prob,vars,dir,rec);
       return res end;
 
 symbolic procedure linineqint(prob,vars,msg,dir,rec,intvars);
-  begin scalar x,x0,y,y0,y1,z,w,problems,best,z,z0,zbest,zf,bestr;
+  begin scalar x,x0,y,y0,y1,z,w,problems,best,z0,zbest,zf,bestr;
        % test integer variables and adjust order;
     for each x in vars do
       if member(x,intvars)then<<w:=x.w;intvars:=delete(x,intvars)>>;
