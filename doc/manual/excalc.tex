@@ -493,14 +493,17 @@ is provided.  It has the syntax:
 
   spacedim 4;
 
-  l:= -1/2*d a^#d a;   %Free Maxwell field;
+  l := -1/2*d a^#d a$   %Free Maxwell field;
 
-  tvector x(k);        %An unspecified generator;
+  tvector x;        %An unspecified generator;
 
-  noether(l,a,x(-k));
+  noether(l,a,x);
 
-  ( - 2*d(X _|A)^# d A - (X _|d A)^# d A + d A^(X _|# d A))/2
-           K               K                     K
+  - 2*d(x _| a)^# d a + d a^x _| # d a - x _| d a^# d a
+--------------------------------------------------------
+                           2
+
+
 \end{verbatim}
 
 The above expression would be the canonical energy
@@ -739,28 +742,29 @@ quantity with the desired indices.
 
      pform f(k,l)=0;
 
-     antisymmetric f;
+     index_symmetries f(k,l): antisymmetric;
 
-     f(-t,-x):=ex$ f(-x,-y):=b$  f(-t,-y):=0$
+     f(k,l) := 0$
+     f(-t,-x):=ex$ f(-x,-y):=b$ 
      on nero;
 
-     f(k,-l):=f(k,-l);
+     f(k,-l);
 
-      X
-     F    := - EX
-        T
+       X
+     NS     := - EX
+         T
 
-      T
-     F    := - EX
-        X
+       T
+     NS     := - EX
+         X
 
-      Y
-     F    := - B
-        X
+       Y
+     NS     := - B
+         X
 
-      X
-     F    := B
-        Y
+       X
+     NS    := B
+         Y
 \end{verbatim}
 
 Any expression containing differentials of the coordinate functions will

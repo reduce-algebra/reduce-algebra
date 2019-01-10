@@ -176,6 +176,7 @@ symbolic procedure noncomp1 u;
    else if pairp car u then noncomfp u
    else if car u eq '!*sq then noncomfp numr cadr u
    else if car u eq 'taylor!* then nil
+   else if car u eq 'mat then noncomlistp cadr u
    else flagp(car u,'noncom) or noncomlistp cdr u;
 
 symbolic procedure noncomlistp u;
