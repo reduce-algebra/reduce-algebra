@@ -47,6 +47,11 @@ procedure redfront_oh(m,l);
          prin2!* l
       else if m eq 'terpri then
          terpri!* l
+      else if m eq 'assgnpri then <<
+            redfront_on();
+	    assgnpri(l,nil,nil);
+            redfront_off()
+         >>
       else
          rederr {"unknown method ",m," in redfront_oh"}
    end;

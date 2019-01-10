@@ -397,9 +397,11 @@ symbolic procedure assgnpri(u,v,w);
        would!-be!-huge u then <<
        fmp!-switch nil;
        tm := t >>;
-    if (x := getrtype u) and flagp(x,'sprifn) and null outputhandler!*
-      then <<if null v then apply1(get(get(x,'tag),'prifn),u)
-             else maprin list('setq,car v,u) >>
+    if (x := getrtype u) and flagp(x,'sprifn)
+      then <<if null outputhandler!*
+               then <<if null v then apply1(get(get(x,'tag),'prifn),u)
+                       else maprin ('setq . aconc(v,u)) >>
+              else apply2(outputhandler!*,'assgnpri,u)>>
     else <<
       if w memq '(first only) then terpri!* t;
       v := evalvars v;

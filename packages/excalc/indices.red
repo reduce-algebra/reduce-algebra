@@ -488,6 +488,8 @@ symbolic procedure covposp u;
 
 put('ns,'prifn,'indvarprt);
 
+put('ns,'fancy!-pprifn,'xindvarprt);
+
 symbolic procedure simpindexvar u;
    %simplification function for indexed quantities;
    !*pf2sq partitindexvar u;

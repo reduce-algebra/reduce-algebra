@@ -488,6 +488,17 @@ symbolic procedure fancy!-output(mode,l);
          most_recent_fancy := l . most_recent_fancy;
 #endif
          fancy!-maprin0 l >>
+      else if mode = 'assgnpri then <<
+#if (memq 'csl lispsystem!*)
+% math!-display 1 will not do anything, but returns true if a spool_file
+% is active.
+         if getd 'math!-display and
+            math!-display 0 and
+            math!-display 1 then <<
+            assgnpri(l,nil,nil) where outputhandler!* = nil >>;
+         most_recent_fancy := l . most_recent_fancy;
+#endif
+         fancy!-assgnpri l >>
       else <<
 #if (memq 'csl lispsystem!*)
          if getd 'math!-display and
@@ -497,6 +508,16 @@ symbolic procedure fancy!-output(mode,l);
                              !*standard!-output!* = !*spool!-output!* >>;
 #endif
          fancy!-flush() >> >>;
+
+% fancy!-assignpri checks whether a special printing function is defined
+% and calls it
+symbolic procedure fancy!-assgnpri u;
+   begin scalar x,y;
+     x := getrtype u;
+     y := get(get(x,'tag),'fancy!-assgnpri);
+     return if y then apply1(y,u) else fancy!-maprin0 u
+  end;
+
 
 symbolic procedure fancy!-out!-header();
     <<

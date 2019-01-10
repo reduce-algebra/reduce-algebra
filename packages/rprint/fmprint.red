@@ -236,9 +236,20 @@ symbolic procedure fancy!-output(mode,l);
      else
    <<set!-fancymode t;
      if mode = 'maprin then fancy!-maprin0 l
+     else if mode = 'assgnpri then fancy!-assgnpri l
      else
      fancy!-flush();
     >>;
+
+% fancy!-assignpri checks whether a special printing function is defined
+% and calls it
+symbolic procedure fancy!-assgnpri u;
+   begin scalar x,y;
+     x := getrtype u;
+     y := get(get(x,'tag),'fancy!-assgnpri);
+     return if y then apply1(y,u) else fancy!-maprin0 u
+  end;
+
 
 symbolic procedure fancy!-flush();
     << fancy!-terpri!* t;

@@ -1,0 +1,49 @@
+
+Comment Bug report #90.
+  https://sourceforge.net/p/reduce-algebra/bugs/90/
+$
+
+
+#if (and (not (member 'tmprint loaded!-packages!*)) (not (getd 'linelength!-orig)))
+%#if (not (member 'tmprint loaded!-packages!*))
+load_package tmprint$
+
+
+linelength 5000$
+
+
+#endif
+
+on fancy;
+
+
+
+load_package "excalc"$
+
+
+*** ^ redefined 
+
+coframe e theta = r * d theta, e phi = r * sin(theta) * d phi$
+
+
+riemannconx om$
+
+
+write "Display the connection forms";
+
+latex:\black$\displaystyle  \mathrm{Display~the~connection~forms}$
+on fancy;
+
+
+om(k,-l);
+
+latex:\black$\displaystyle  \mathrm{ns}\mathrm{{}}^{\theta}\mathrm{{}}_{\theta}\mathrm{:=}0$
+latex:\black$\displaystyle  \mathrm{ns}\mathrm{{}}^{\phi}\mathrm{{}}_{\theta}\mathrm{:=}\frac{\cos\left(\theta\right)\*e^{\phi}}{\sin\left(\theta\right)\*r}$
+latex:\black$\displaystyle  \mathrm{ns}\mathrm{{}}^{\theta}\mathrm{{}}_{\phi}\mathrm{:=}\frac{-\cos\left(\theta\right)\*e^{\phi}}{\sin\left(\theta\right)\*r}$
+latex:\black$\displaystyle  \mathrm{ns}\mathrm{{}}^{\phi}\mathrm{{}}_{\phi}\mathrm{:=}0$
+
+off fancy;
+
+
+end;
+

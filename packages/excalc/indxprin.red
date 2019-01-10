@@ -66,6 +66,8 @@ put('form!-with!-free!-indices,'prifn,'indxpri1);
 
 put('form!-with!-free!-indices,'fancy!-setprifn,'indxpri);
 
+put('form!-with!-free!-indices,'fancy!-assgnpri,'indxpri1);
+
 flag('(form!-with!-free!-indices),'sprifn);
 
 put('indvarprt,'expt,'inbrackets);
