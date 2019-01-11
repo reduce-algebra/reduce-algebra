@@ -166,8 +166,7 @@
 % CatchSetup puts the return address in reg 2, the stack pointer in reg 3
 % and calls CatchSetupAux
 (lap '((*entry catchsetup expr 1) % CatchSetup(Tag)
-       (*alloc 0)
-       (*move (memory (reg st) (wconst 0)) (reg 2))
+       (*move (reg lr) (reg 2))
        (*move (reg st) (reg 3))
        (*jcall catchsetupaux)))
 
@@ -201,17 +200,10 @@
                         (setf throwtag* tag)
                         (return (throwaux value pc sp)))))))
 
-(if_system sel
 (lap '((*entry throwaux expr 3)
        (*move (reg 3) (reg st))
-       (*move (indexed (reg st) 1) (reg code_base))
-       (*jump (indexed (reg 2) 0))))
-
-(lap '((*entry throwaux expr 3)
-       (*alloc 0)
-       (*move (reg 3) (reg st))
-       (*move (reg 2) (memory (reg st) (wconst 0)))
-       (*exit 0)))
+       (*move (reg 2) (reg lr))
+       (BX (reg lr)))
 )
 
 (de throw (tag value)

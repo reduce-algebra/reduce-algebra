@@ -151,6 +151,10 @@
 
 (put 'IDloc 'Pass1PseudoOp 'ExpandIDLoc)
 
+(de ExpandSysint (x) (SaveConstant (cadr x)))
+
+(put 'sysint 'Pass1PseudoOp 'ExpandSysint)
+
 (de ExpandItem (Expression)
   (prog (LabelOfContents)
 	(return (cond ((InumP Expression) Expression)

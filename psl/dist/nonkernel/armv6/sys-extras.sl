@@ -184,7 +184,7 @@
 	%  BL <pc-rel address>.
 	% check that there is indeed a "BLX R6" call.
 	(setq y (wgetv x -1)) 		% possible branch instruction 
-	% Note: comapre in two steps since the compiler converts 16#e12fff36 into a fixnum object
+	% Note: compare in two steps since the compiler converts 16#e12fff36 into a fixnum object
 	(unless (and (weq (wand y 16#ffff) 16#ff36)
 		     (weq (wand (wshift y -16) 16#ffff) 16#e12f))
 	  (return nil))

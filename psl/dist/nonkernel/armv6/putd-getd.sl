@@ -247,11 +247,11 @@
 	)
   )
 
-(de trampoline()(compiledcallinginterpreted))
+(de trampoline () (compiledcallinginterpreted))
  
 (de planttrampoline(u p)
-   % install an indirect call to compiledcallinginterpreted
-   (let ((m (gtbps 4))
+   % install an indirect call to compiledcallinginterpreted (12 words)
+   (let ((m (gtbps 13))
 	 (n (id2int u))
 	 %  (p (getmem (wdifference (inf (cdr (getd u))) 4)))
 	 (a (inf (cdr (getd 'trampoline)))) )
@@ -259,7 +259,14 @@
 	(putmem (wplus2 m 4) (getmem a))
 	(putmem (wplus2 m 8) (getmem (wplus2 a 4)))
 	(putmem (wplus2 m 12) (getmem (wplus2 a 8)))
-	(putmem (wplus2 m 5) n)
+	(putmem (wplus2 m 16) (getmem (wplus2 a 12)))
+	(putmem (wplus2 m 20) (getmem (wplus2 a 16)))
+	(putmem (wplus2 m 24) (getmem (wplus2 a 20)))
+	(putmem (wplus2 m 28) (getmem (wplus2 a 24)))
+	(putmem (wplus2 m 32) (getmem (wplus2 a 28)))
+	(putmem (wplus2 m 36) (getmem (wplus2 a 32)))
+	(putmem (wplus2 m 40) (getmem (wplus2 a 36)))
+	(putmem (wplus2 m 44)  n)
 	   % now plant it
 	(setf (getmem (wplus2 symfnc (wtimes2 n 4))) (wplus2 m 4))
 	  ))

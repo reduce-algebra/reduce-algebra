@@ -63,7 +63,8 @@
 % Then, push all the registers on the stack and set up a pointer to them
 (lap '((*entry printf1 expr 15)
        (*alloc 0)
-       (*push (reg 2))
+       (*Move (reg 2) (indirect (reg sp)))
+%       (*push (reg 2))
        (*push (reg 3))
        (*push (reg 4))
        (*push (reg 5))

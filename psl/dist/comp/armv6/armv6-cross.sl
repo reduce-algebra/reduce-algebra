@@ -255,9 +255,9 @@
        (setq wrd (wgetv (iplus2 codebase* (car (first ForwardInternalReferences*))) 0))
 %       (printf "instruction is %x --> %x%n"
 %	       (wand wrd 16#ffffffff)
-%	       (wor (wand wrd 16#ff000000) x))
+%	       (wor (wand wrd 16#ff000000) (wand x 16#00ffffff)))
        (putword32 (iplus2 codebase* (car (first ForwardInternalReferences*)))
-		(wor (wand wrd 16#ff000000) x))
+		(wor (wand wrd 16#ff000000) (wand x 16#00ffffff)))
 %       (printf "New instruction is %x%n" (wand (wgetv (iplus2 codebase* (car (first ForwardInternalReferences*))) 0) 16#ffffffff))
        (setq ForwardInternalReferences* (cdr ForwardInternalReferences*)))
 	      % Now remove the InternalEntry offsets from everyone
@@ -271,3 +271,13 @@
 
 (remprop '*get-stack 'opencode)
 (remprop '*put-stack 'opencode)
+
+(remprop 'wconst 'anyregresolutionfunction)
+(remprop 'wconst 'anyregpatterntable)
+
+(de InumP (Expression)
+    (and (fixp expression)
+	 (or (zerop expression)
+	     (and (greaterp expression 0) (lessp expression (lshift 1 27)))
+	     (and (lessp expression 16#100000000) (geq expression (lshift -1 27))))))
+

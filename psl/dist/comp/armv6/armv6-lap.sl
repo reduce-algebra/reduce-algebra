@@ -498,6 +498,9 @@
 (de sixteenbit-p (x)
     (and (fixp x) (eq (wand 16#ffff x) x)))
 
+(de thirtytwobit-p (x)
+    (and (fixp x) (equal (land 16#ffffffff x) x)))
+
 % possibly shifted register (data movement), one of:
 % (reg x)
 % (regshifted x LSL/LSR.. amount)    amount is a number or a register
@@ -691,9 +694,9 @@
     )
 
 (de DepositInstructionBytes (byte1 byte2 byte3 byte4)
-%    (printf "Deposit instruction %w at %x -> %x%n"
-%	    (wor (wshift byte1 24) (wor (wshift byte2 16) (wor (wshift byte3 8) byte4)))
-%	    CurrentOffset* (wplus2 codebase* CurrentOffset*))
+    (printf "Deposit instruction %w at %x -> %x%n"
+	    (wor (wshift byte1 24) (wor (wshift byte2 16) (wor (wshift byte3 8) byte4)))
+	    CurrentOffset* (wplus2 codebase* CurrentOffset*))
     (if *big-endian*
 	(progn
 	  (DepositByte byte1)
@@ -705,12 +708,12 @@
 	(DepositByte byte3)
 	(DepositByte byte2)
 	(DepositByte byte1)))
-%    (printf "Deposited at %x: %x >%x< %x%n"
-%	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
-%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
-%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
-%	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
-%	    )
+    (printf "Deposited at %x: %x >%x< %x%n"
+	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
+	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
+	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
+	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
+	    )
     )
 	  
     
@@ -1641,7 +1644,7 @@
 (de DepositWordExpression (x)
   % Only limited expressions now handled
   (let (y)
-%    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 codebase* CurrentOffset*))
+    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 codebase* CurrentOffset*))
     (cond
       ((fixp x) (depositword (int2sys x)))
       ((labelp x) (deposit-relocated-word (LabelOffset x)))
@@ -1664,12 +1667,12 @@
       ((equal (first x) 'entry) (DepositEntry x))
       ((setq y (wconstevaluable x)) (DepositWord (int2sys y)))
       (t (stderror (bldmsg "Expression too complicated %r" x))))
-%    (printf "Deposited at %x: %x >%x< %x%n"
-%	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
-%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
-%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
-%	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
-%	    )
+    (printf "Deposited at %x: %x >%x< %x%n"
+	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
+	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
+	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
+	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
+	    )
     ))
 
 (de depositwordidnumber (x) 
@@ -1771,7 +1774,7 @@
        (setq wrd (wgetv (iplus2 codebase* (car (first ForwardInternalReferences*))) 0))
        (putword (iplus2 codebase* (car (first ForwardInternalReferences*)))
 		0
-		(wor (wand wrd 16#ff000000) x))
+		(wor (wand wrd 16#ff000000) (wand x 16#00ffffff)))
        (setq ForwardInternalReferences* (cdr ForwardInternalReferences*)))
 	      % Now remove the InternalEntry offsets from everyone
    (mapobl 'remove-ieo-property)))

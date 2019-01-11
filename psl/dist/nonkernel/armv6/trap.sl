@@ -67,10 +67,8 @@
              *sigcalls*))
        % Return the the function definition for the signal handler.
        `((*entry ,function expr 0)
-         (*alloc 0)
      ,handler
-     % at this point, r11 does not point to symval, 
-     % so load the symval address from the ucontext structure
+     (*alloc 0)
      (*move (wconst ,signumber) (reg 1))
      (*move (reg 1) (fluid errornumber*))
 
@@ -86,6 +84,7 @@
      (*move (memory (reg 3) 84) (fluid stack-pointer*))   % stack pointer at fault
      (*link sigrelse expr 2)
      (*move (quote ,errorstring) (reg 1))
+     (*dealloc 0)
      (*jcall sigunwind))
        )
  
@@ -185,7 +184,8 @@
      (*move (wconst 0) (reg 3))
      (*jumpnoteq (label done) (fluid errornumber*) 8)
      (*move (fluid arith-exception-type*) (reg 3))
-    done
+     done
+     (*dealloc 0)
      (*jcall error-trap) 
      ))
 

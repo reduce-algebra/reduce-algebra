@@ -130,7 +130,7 @@
   (!*move (car (reg t2)) (reg 14))     % the 14th and last argument 
 
 L0
-  (!*exit 0)                           % JUMP to code pointer by RTS    scs
+  (LDMIA (reg sp) ((reg pc)) writeback)	% JUMP to code pointer by RTS    scs
 
 TooMany
 	(!*MOVE (QUOTE "Too many arguments to function") (reg 1))
@@ -187,33 +187,32 @@ TooMany
 
 (lap '((!*entry FastApply expr 0)	%. Apply with arguments loaded
 %
-% Called with arguments in the registers and functional form in reg t1 (6)
+% Called with arguments in the registers and functional form in reg t1 (r5)
 % Note: this routine is called from the compiler
 %       
 
         (*ALLOC 0)
-	(*MOVE (reg t1) (reg t3))
-	% note: reg t2, as it is clobbered by loading or storing a fluid
-        (*MOVE (reg t3) (Fluid Codeform*))     %put lambda in codeform!*
-        (!*FIELD (reg t1) (reg t3)
+	(*MOVE (reg t1) (reg t2))
+	% note: reg t3 is clobbered by loading or storing a fluid
+        (*MOVE (reg t2) (Fluid Codeform*))     %put lambda in codeform!*
+        (!*FIELD (reg t1) (reg t2)
 		 (wconst TagStartingBit) (wconst TagBitLength)) %tag in t1
 	
-        (!*FIELD (reg t2) (reg t3)
+        (!*FIELD (reg t2) (reg t2)
 		 (wconst InfStartingBit) (wconst InfBitLength)) %inf in t2
 	
         (!*JUMPNOTEQ (Label NotAnID) (reg t1) (wconst id-tag))
 
-	% t2 contains id number, load function pointer into t3
-	(LDR (reg t3) (displacement (reg symfnc) (regshifted t2 LSL 2)))
+	% t2 contains id number, load function pointer into t2
+	(LDR (reg t2) (displacement (reg symfnc) (regshifted t2 LSL 2)))
         (*move (Fluid Codeform*) (reg t1))
-	(LDMIA (reg sp) ((reg lr)) writeback) % pop link register
-        (BX (reg t3))
+	(!*DeAlloc 0)
+        (BX (reg t2))
 NotAnID
 	(!*JUMPNOTEQ (Label NotACodePointer) (reg t1) (wconst code-tag))
-	(*Move (reg t2) (reg t3))	% save function pointer in reg t3
         (*move (Fluid Codeform*) (reg t1))
-	(LDMIA (reg sp) ((reg lr)) writeback) % pop link register
-        (BX (reg t3))
+	(!*DeAlloc 0)
+        (BX (reg t2))
 
 NotACodePointer
 	(*JUMPNOTEQ (Label IllegalFunctionalForm) (reg t1) (wconst pair-tag))
@@ -221,11 +220,13 @@ NotACodePointer
         
 	(*JUMPNOTEQ (Label IllegalFunctionalForm) (reg t2) (QUOTE LAMBDA))
 
+	(*DeAlloc 0)
 	(*JCALL FastLambdaApply)
 IllegalFunctionalForm
 	(*MOVE (QUOTE "Illegal functional form in Apply") (reg 1))
 	(*MOVE (reg t2) (reg 2))
 	(*CALL List5)
+	(*DeAlloc 0)
 	(*JCALL StdError)
 ))
 
@@ -243,6 +244,7 @@ IllegalFunctionalForm
        (*MOVE (QUOTE "Undefined function %r called from compiled code")
 	       (reg 1))
        (*CALL BldMsg)
+       (!*DeAlloc 0)
        (*JCALL StdError)
        ))
 

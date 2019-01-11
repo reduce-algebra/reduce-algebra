@@ -472,9 +472,6 @@
 	 %%%  olditem*
 	 )
 	%%% (SETQ OLDITEM* (INF BASE))
-	(when (eq !*gc 17) % be verbose
-	  (console-print-string " Mark from base: 0x")
-	  (unixputn base) (console-newline))
 	(setq marktag (tag base))
 	(unless (pointertagp marktag)
 		(return (progn (when (and (weq marktag id-tag) (not (null base)))
@@ -635,7 +632,7 @@
 			  ((hvect-tag)
 			   (wplus2 1 (vectpack (veclen currentitem))))
 			  (nil (illegal-item currentitem 1))  ))
-	      
+
 	      (setq gcoccupied* (wplus2 gcoccupied* seglen))
 	      (setq olditem* currentitem)
 	      (setq currentitem
