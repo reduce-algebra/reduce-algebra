@@ -1949,7 +1949,46 @@ put('list,'fancy!-flatprifn,'fancy!-listpri);
 put('!*sq,'fancy!-reform,'fancy!-sqreform);
 
 symbolic procedure fancy!-sqreform u;
-    prepsq!* sqhorner!* cadr u;
+   << u := cadr u;
+      if !*pri or wtl!* then prepsq!* sqhorner!* u
+       else if denr u = 1 then fancy!-sfreform numr u
+       else {'quotient,fancy!-sfreform numr u,fancy!-sfreform denr u} >>;
+
+symbolic procedure fancy!-sfreform u;
+    begin scalar z;
+      while not domainp u do <<z := fancy!-termreform lt u . z; u := red u >>;
+      if not null u then z := prepd u . z;
+      return replus reversip z;
+   end;
+
+
+symbolic procedure fancy!-termreform u;
+     begin scalar v,w,z,sgn;
+	v := tc u;
+      	u := tpow u;
+      	if (w := kernlp v) and not !:onep w
+        then <<v := quotf(v,w);
+               if minusf w then <<sgn := t; w := !:minus w>>>>;
+      if w and not !:onep w
+        then z := (if domainp w then prepd w else w) . z;
+      z := fancy!-powerreform u . z;
+      if not(domainp v and !:onep v) then z := fancy!-sfreform v . z;
+      z := retimes reversip z;
+      if sgn then z := {'minus,z};
+      return z;
+     end;
+
+symbolic procedure fancy!-powerreform u;
+   begin scalar b;
+      % Process main variable.
+      if atom car u then b := car u
+       else if not atom caar u then b := fancy!-sfreform car u
+       else if caar u eq '!*sq then b := fancy!-sqreform cadar u
+       else b := car u;
+      % Process degree.
+      if (u := pdeg u)=1 then return b
+      else return {'expt,b,u}
+   end;
 
 put('df,'fancy!-pprifn,'fancy!-dfpri);
 
@@ -2627,10 +2666,11 @@ fluid '(promptstring!* tm_switches!* tm_switches!-this!-sl!* lessspace!*);
 
 fluid '(!*promptnumbers);
 switch promptnumbers;
-if texmacsp () then % We don't want prompt numbers in a Texmacs worksheet
-   off1 'promptnumbers
-else
-   on1 'promptnumbers;
+%% Show prompts in TeXmacs as well.
+%if texmacsp () then % We don't want prompt numbers in a Texmacs worksheet
+%   off1 'promptnumbers
+%else
+on1 'promptnumbers;
 
 tm_switches!* := {!*msg,!*output};
 

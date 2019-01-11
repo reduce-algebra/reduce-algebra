@@ -1,0 +1,30 @@
+
+#if (and (not (member 'tmprint loaded!-packages!*)) (not (getd 'linelength!-orig)))
+load_package tmprint$
+
+
+linelength 5000$
+
+
+#endif
+
+on fancy;
+
+
+
+exp(a)*exp(b);
+
+latex:\black$\displaystyle  e^{a+b}$
+off pri;
+
+
+ws;
+
+latex:\black$\displaystyle  e^a\*e^b$
+
+off fancy;
+
+
+
+end;
+

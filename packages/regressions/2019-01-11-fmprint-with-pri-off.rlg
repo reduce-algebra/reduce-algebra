@@ -1,0 +1,30 @@
+
+load_package fmprint;
+
+
+on fancy,fancy_tex;
+
+
+
+exp(a)*exp(b);
+
+\>e^{a\,+\,b}
+
+off pri;
+
+
+ws;
+
+\>e^a\,e^b
+
+
+on pri;
+
+
+
+off fancy;
+
+
+
+end;
+
