@@ -101,23 +101,36 @@
  
  
 (lap '(
-   % (*sigsetup 1  Huphandler  Huphandlerinstruction  "Hup")
-       (*sigsetup 2  Inthandler  IntHandlerInstruction  "Interrupt")
-       (*sigsetup 3  QuitHandler QuitHandlerInstruction "Quit")
-       (*sigsetup 4  IllHandler  IllHandlerInstruction  "Illegal Instruction")
-       (*sigsetup 5  Traphandler TrapHandlerInstruction "Trace Trap")
-       (*sigsetup 6  IotHandler  IotHandlerInstruction  "IOT Instruction")
-       (*sigsetup 7  Emthandler  EmtHandlerInstruction  "EMT Instruction")
-       (*sigsetup 8  FpeHandler  FpeHandlerInstruction "Floating Pt Exception")
-       (*sigsetup 10 Bushandler  BusHandlerInstruction  "Bus Error")
-       (*sigsetup 11 SegHandler  SegHandlerInstruction
-                                    "Segmentation Violation")
-       (*sigsetup 12 SysHandler  SysHandlerInstruction
-                                    "Bad Args to System Call")
-       (*sigsetup 13 PipeHandler PipeHandlerinstruction
-                                    "Write on Pipe With Noone to Read")
-       (*sigsetup 14 AlrmHandler AlrmHandlerInstruction "Alarm Clock")
-       (*entry initializeinterrupts expr 0)
+   % (*sigsetup 1  Huphandler  Huphandlerinstruction   "Hup")
+   (*sigsetup 2  Inthandler   IntHandlerInstruction   "Interrupt")
+   (*sigsetup 3  QuitHandler  QuitHandlerInstruction  "Quit")
+   (*sigsetup 4  IllHandler   IllHandlerInstruction   "Illegal Instruction")
+   (*sigsetup 5  Traphandler  TrapHandlerInstruction  "Trace Trap")
+   (*sigsetup 6  AbortHandler AbortHandlerInstruction "Program aborted")
+   (*sigsetup 7  Emthandler   BusHandlerInstruction   "Bus error")
+   (*sigsetup 8  FpeHandler   FpeHandlerInstruction   "Arithmetic Exception")
+%   (*sigsetup 10 Usr1handler  Usr1HandlerInstruction  "User defined signal 1")
+   (*sigsetup 11 SegHandler   SegHandlerInstruction   "Segmentation Violation")
+%   (*sigsetup 12 Usr2handler  Usr2HandlerInstruction  "User defined signal 2")
+   (*sigsetup 13 PipeHandler PipeHandlerinstruction   "Write on Pipe With Noone to Read")
+   (*sigsetup 14 AlrmHandler AlrmHandlerInstruction   "Alarm Clock")
+   (*sigsetup 15 TermHandler  TermHandlerInstruction  "Termination signal")
+%   (*sigsetup 16 STKXhandler STKXHandlerInstruction   "Stack fault")
+%   (*sigsetup 17 Childhandler ChildHandlerInstruction "Child waiting")
+%   (*sigsetup 18 Conthandler  ContHandlerInstruction  "SIGCONT received")
+%   (*sigsetup 20 Stophandler  StopHandlerInstruction  "SIGTSTP received")
+%   (*sigsetup 21 Ttinhandler  TtinHandlerInstruction  "Bg process waiting for input")
+%   (*sigsetup 22 Ttouhandler  TtouHandlerInstruction  "Bg process waiting for output")
+%   (*sigsetup 23 Urghandler   UrgHandlerInstruction   "Urgent out-of-band data")
+   (*sigsetup 24 CPUXhandler  CPUXHandlerInstruction  "CPU time limit exceeded")
+   (*sigsetup 25 FileXhandler FileXHandlerInstruction "File size limit exceeded")
+%   (*sigsetup 26 VAlrmHandler VAlrmHandlerInstruction "CPU Timer")
+%   (*sigsetup 27 ProfHandler ProfHandlerInstruction  "Profiling timer")
+%   (*sigsetup 28 WinchHandler WinchHandlerInstruction "Window size change")
+%   (*sigsetup 29 IOHandler    IOHandlerInstruction    "IO ready")
+   (*sigsetup 30 Pwrhandler   PwrHandlerInstruction   "Power failure")
+   (*sigsetup 31 Syshandler   SysHandlerInstruction   "Bad system call")
+        (*entry initializeinterrupts expr 0)
        (*alloc 0)
        (*sigcall)
        (*exit 0)))
@@ -137,18 +150,10 @@
 (lap
  '((!*entry sigunwind expr 0)
      % At this point, an arg is already set up in register 1 with a message
-     % describing the kind of trap.  First, though, we want to find the
-     % name of the routine that caused the trap by using the "interrupted
-     % address" in the signal handler stack frame.  Then we want to
-     % pop this frame off the stack.  On the SUN, this adds up to 320 bytes.
-     % Who know why.
+     % describing the kind of trap.
  
-     % (*move (memory (reg st) 312) (reg 2)) % Addr. at which signal occurred
-     %(*wplus2 (reg st) 320)                % Pop signal-handling frame
-     % (*link build-trap-message expr 2)     % This leaves its result in reg
-                                           % 1, so the new message is
-     (*alloc 0)
-     (*push (reg 1))
+     (*alloc 1)
+     (*move (reg 1) (frame 1))
      (*move 256 (reg nil))
      (*mkitem (reg NIL) id-tag)	    % make sure (reg nil) contains nil
      % if this is a terminal interrupt (errornumber* = 2) we check
@@ -160,12 +165,12 @@
      (*move (fluid sigaddr*) (reg 1))
      (*link codeaddressp expr 1)
      (!*jumpnoteq (label in-lisp) (reg 1) (quote nil))
-     (*pop (reg 1))
-     (*exit 0)
+     (*move (frame 1) (reg 1))
+     (*exit 1)
     in-lisp
 %     (*link *freset expr 0)
      (*link initializeinterrupts expr 0) % MK
-     (*pop (reg 2))
+     (*move (frame 1) (reg 2))
      (*move (fluid errornumber*) (reg 1))
      (*move (reg nil) (fluid on-altstack*))
      (*wplus2 (reg 1)(wconst 10000))
@@ -185,13 +190,9 @@
      (*jumpnoteq (label done) (fluid errornumber*) 8)
      (*move (fluid arith-exception-type*) (reg 3))
      done
-     (*dealloc 0)
+     (*dealloc 1)
      (*jcall error-trap) 
      ))
-
-%(de errortrap () (sun3_sigset 501) (error (wplus2 errornumber* 10000) sigaddr))
-
-% (sun3_sigset 501)  restauriert das FP Environment
 
 %(setq errorcall* (wgetv symfnc (id2int 'errortrap)))
 

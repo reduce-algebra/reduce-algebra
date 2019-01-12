@@ -979,7 +979,7 @@
        ((regp fixp)	(MOV ArgOne (regshifted Argone LSL 5))
                         (ORR ArgOne ArgOne (land ArgTwo 31))
 			(MOV ArgOne (regshifted ArgOne ROR 5)))
-       ((regp regp)	(and (reg t3) ArgOne 31)
+       ((regp regp)	(and (reg t3) ArgTwo 31)
                         (MOV ArgOne (regshifted Argone LSL 5))
 			(ORR ArgOne ArgOne (reg t3))
                         (MOV ArgOne (regshifted ArgOne ROR 5)))
