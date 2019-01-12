@@ -721,17 +721,17 @@ order mm;
 
 
 
-operator ga,gb;
+operator gga,ggb;
 
 
 
-for all p let ga(p)=g(la,p)+mm, gb(p)= g(lb,p)+mm;
+for all p let gga(p)=g(la,p)+mm, ggb(p)= g(lb,p)+mm;
 
  
 
-ga(-p2)*g(la,ix)*ga(-p4)*g(la,iy)* (gb(p3)*g(lb,ix)*gb(qi)*
-    g(lb,iz)*gb(p1)*g(lb,iy)*gb(q2)*g(lb,iz)   +   gb(p3)*
-    g(lb,iz)*gb(q2)*g(lb,ix)*gb(p1)*g(lb,iz)*gb(qi)*g(lb,iy))$
+gga(-p2)*g(la,ix)*gga(-p4)*g(la,iy)* (ggb(p3)*g(lb,ix)*ggb(qi)*
+    g(lb,iz)*ggb(p1)*g(lb,iy)*ggb(q2)*g(lb,iz)   +   ggb(p3)*
+    g(lb,iz)*ggb(q2)*g(lb,ix)*ggb(p1)*g(lb,iz)*ggb(qi)*g(lb,iy))$
 
 
 

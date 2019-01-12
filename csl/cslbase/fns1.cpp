@@ -898,7 +898,7 @@ LispObject Lliststar_4up(LispObject env, LispObject a, LispObject b,
         a4up = r;
         r = w;
     }
-    return onevalue(a4up);
+    return onevalue(list3star(a, b, c, a4up));
 }
 
 LispObject Lpair(LispObject env, LispObject a, LispObject b)
