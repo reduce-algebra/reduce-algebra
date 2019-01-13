@@ -253,7 +253,8 @@ symbolic procedure define_spaces u;
 % define_spaces s={ds,euclidean}
 % or
 % define_spaces s={ds,signature=<number>,indexrange=a .. b}
-  if !*onespace then nil
+  if !*onespace 
+     then rederr "For the definition of subspaces the switch onespace needs to be set to off (see the documentation for details)."
    else
   if not fixp sgn!* then rederr "set the global sign please" else
    begin scalar sp;rmsubs();
