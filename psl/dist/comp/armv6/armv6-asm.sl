@@ -525,17 +525,9 @@
 
 (DefCMacro *cerror)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% A HORRID patch for BRA/BRA!.W incompatibility between
-% KERNEL and LAP
-% In Kernel, BRA means word sized branch
-% IN LAp and FASL BRA seems to mean bytes sized (?) even though
-% must be coerced somewhere
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%@%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 (de datareserveblock (x)
-  (DataPrintF "  .space %w%n" (times x addressingunitsperitem)))
+  (DataPrintF "  .space %w%n" (times x (compiler-constant 'addressingunitsperitem))))
 
 % (for (from i 1 x) (do (DataPrintF " .long 0 %n"))))
 % (rplaca printexpressionformpointer*
@@ -543,7 +535,7 @@
 % (DataPrintF reservedatablockformat* (gensym) printexpressionform*))
 
 (de datareservefunctioncellblock (x)
-  (DataPrintF "  .space %w%n" (times x addressingunitsperitem)))
+  (DataPrintF "  .space %w%n" (times x (compiler-constant 'addressingunitsperitem))))
 
 % (for (from i 1 x) (do (DataPrintF " .long 00 %n"))))
 % (rplaca printexpressionformpointer*
