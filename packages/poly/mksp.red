@@ -92,30 +92,30 @@ symbolic procedure mksfpf(u,n);
      else exptf2(x,n))
     where x=mkprod u;
 
-symbolic procedure mksq(u,n);
-    % U is a kernel, N a non-zero integer.
+symbolic procedure mksq(u,nn);
+    % U is a kernel, NN a non-zero integer.
     % Value is a standard quotient of U**N, after making any
     % possible substitutions for U.
    begin scalar x,y,z;
 %  (begin scalar x,y,z;
         if null subfg!* then go to a1
          else if (y := assoc(u,wtl!*))
-                and null car(y := mksq('k!*,n*cdr y)) then return y
+                and null car(y := mksq('k!*,nn*cdr y)) then return y
          else if not atom u then go to b
          else if null !*nosubs and (z:= get(u,'avalue)) then go to c;
         if idp u then flag(list u,'used!*);
         %tell system U used as algebraic var (unless it's a string);
-    a:  if !*nosubs or n=1 then go to a1
-         else if (z:= assoc(u,asymplis!*)) and cdr z<=n
+    a:  if !*nosubs or nn=1 then go to a1
+         else if (z:= assoc(u,asymplis!*)) and cdr z<=nn
           then return nil ./ 1
          else if ((z:= assoc(u,powlis!*))
                 or not atom u and car u memq '(expt sqrt)
                 and (z := assoc(cadr u,powlis!*)))
-             and not(n*cadr z<0)
+             and not(nn*cadr z<0)
            % Implements explicit sign matching.
           then !*sub2 := t;
     a1: if null x then x := fkern u;
-        x := !*p2f getpower(x,n) ./ 1;
+        x := !*p2f getpower(x,nn) ./ 1;
         return if y then multsq(y,x) else x;
     b:  if null !*nosubs and atom car u
            and ((z := get(car u,'mksqsubfn)) and (z := apply1(z,u))
@@ -128,13 +128,13 @@ symbolic procedure mksq(u,n);
 %       varstack!* := u . varstack!*;   % I don't think this is needed.
         %optimization is possible as shown if all expression
         %dependency is known;
-        %if cdr z then return exptsq(cdr z,n); % Value already computed.
+        %if cdr z then return exptsq(cdr z,nn); % Value already computed.
         if null !*resubs then !*nosubs := t;
         x := simpcar z;
         !*nosubs := nil;
         %rplacd(z,x);           % Save simplified value.
         %subl!* := z . subl!*;
-        return exptsq(x,n)
+        return exptsq(x,nn)
    end;
 %  end) where varstack!* := varstack!*; % I don't think this is needed.
 
