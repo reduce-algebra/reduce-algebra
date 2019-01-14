@@ -1335,7 +1335,7 @@ void write_function(void *p)
 
 
 // This code will need to be able to report failure if either
-// the underlying byte-stream is coprrupted or if storage allocation
+// the underlying byte-stream is corrupted or if storage allocation
 // here fails. It also needs to be safe against garbage collection.
 
 LispObject serial_read()
@@ -3731,6 +3731,13 @@ void warm_setup()
     qplist(nil) = nil;
     qfastgets(nil) = nil;
     qpackage(nil) = nil;
+    ifn0(nil) = (intptr_t)undefined_0;
+    ifn1(nil) = (intptr_t)undefined_1;
+    ifn2(nil) = (intptr_t)undefined_2;
+    ifn3(nil) = (intptr_t)undefined_3;
+    ifn4up(nil) = (intptr_t)undefined_4up;
+    qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR;
+
 #define boffo_size 256
     boffo = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
     memset((void *)((char *)boffo + (CELL - TAG_VECTOR)), '@', boffo_size);
