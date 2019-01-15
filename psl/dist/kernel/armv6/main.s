@@ -261,16 +261,16 @@ _psl_main:
 @ (fluid stacklowerbound)
  ldr r7, l0047
  str r3, [r11, r7, lsl #2]
-@ (idloc init-gcarray)
- ldr r7, l0048
- ldr r6, [r10, r7, lsl #2]
- blx r6
 @ ($fluid heaplast)
- ldr r7, l0049
+ ldr r7, l0048
  ldr r8, [r11, r7, lsl #2]
 @ ($fluid heaptrapbound)
- ldr r7, l0050
+ ldr r7, l0049
  ldr r9, [r11, r7, lsl #2]
+@ (idloc init-gcarray)
+ ldr r7, l0050
+ ldr r6, [r10, r7, lsl #2]
+ blx r6
 @ (idloc pre-main)
  ldr r7, l0051
  ldr r6, [r10, r7, lsl #2]
@@ -309,11 +309,11 @@ l0052:
 l0051:
  .long 309
 l0050:
- .long 269
-l0049:
- .long 268
-l0048:
  .long 308
+l0049:
+ .long 269
+l0048:
+ .long 268
 l0047:
  .long 307
 l0046:

@@ -291,10 +291,10 @@
        (*wshift (reg 4) -5)
        (*move (reg 4)  (fluid stacklowerbound))
 
-       (*link init-gcarray expr 0)
-
        (*MOVE ($fluid heaplast) (reg R8))
        (*MOVE ($fluid heaptrapbound) (reg R9))
+
+       (*link init-gcarray expr 0)
 
        (*call pre-main)                                 % call PSL
 

@@ -99,6 +99,7 @@ extern int  alreadysetupbpsandheap;
 extern int  hashtable;
 extern char bps[];
 extern int  symval;
+extern int  symprp;
 extern int  lastbps;
 extern int  nextbps;
 extern int  bpslowerbound;
@@ -126,6 +127,8 @@ static int power(x, n)
   return(p);
 }
 
+int creloc (unsigned int array, int len, int diff, unsigned int lowb, unsigned int uppb, int do_symval);
+
 long sizeofsymvectors = 0;
 
 void setupbps();
@@ -139,6 +142,7 @@ setupbpsandheap(argc,argv)
      int argc;
      char *argv[];
 { int ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub;
+  int diff;
   int memset = 0;
   FILE * imago;
   int headerword [8];
@@ -250,10 +254,16 @@ setupbpsandheap(argc,argv)
 
 
   if (imagefile == NULL)
-  printf("bpssize = %d (%X), heapsize = %d (%X)\nTotal image size = %d (%X)\n",
-          bpssize, bpssize,
-          heapsize, heapsize,
-          (int) sbrk(0), (int) sbrk(0));
+  printf("symbol table size = %u (%X), symbol table address = %u (%X)\n"
+	 "bpssize = %u (%X), , bps address =  %u (%X)\n"
+	 "heapsize = %u (%X), heap address = %u (%X)\nTotal image size = %d (%X)\n",
+	 5*(&symprp - &symval), 5*(&symprp - &symval),
+	 &symval, &symval,
+	 bpssize, bpssize,
+	 bpslowerbound, bpslowerbound,
+	 heapsize, heapsize,
+	 heaplowerbound, heaplowerbound,
+	 (int) sbrk(0), (int) sbrk(0));
 
    if (imagefile != NULL) {
 	ohl = oldheaplowerbound; ohub = oldheapupperbound;
@@ -261,46 +271,86 @@ setupbpsandheap(argc,argv)
         hlb = heaplowerbound; hub = heapupperbound;
         hl =  heaplast; htb = heaptrapbound;
     /* save the new values around restore of the old ones */
+#ifdef DEBUG	
+	printf("symbol table size = %u (%X), symbol table address = %u (%X)\n"
+	       "bpssize = %u (%X), bps address =  %u (%X)\n"
+	       "heapsize = %u (%X), heap address = %u (%X)\nTotal image size = %d (%X)\n",
+	       5*(&symprp - &symval), 5*(&symprp - &symval),
+	       &symval, &symval,
+	       bpssize, bpssize,
+	       bpslowerbound, bpslowerbound,
+	       heapsize, heapsize,
+	       heaplowerbound, heaplowerbound,
+	       (int) sbrk(0), (int) sbrk(0));
+#endif
+	printf("Loading image file :%s \n",imagefile); 
+	imago = fopen (imagefile,"r");
+	if (imago == NULL) { 
+	  perror ("error");
+	  exit (-1);
+	}
+	fread (headerword,4,2,imago);
+	unexec();      /* set control vector */
+	if ((int) bpscontrol[0] != headerword[0] 
+	    || bpscontrol[1] != headerword[1])
+	  { printf(" Cannot start the image with this bpsl \n");
+	    printf(" %x != %x, %x != %x\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
+	    exit (-19);
+	  }
+	fread (headerword,4,4,imago);
+#ifdef DEBUG
+	printf("symbol table: %u (%x) bytes\n",headerword[0],headerword[0]);
+	printf("heap: %u (%x) bytes\n",headerword[1],headerword[1]);
+	printf("hash table: %u (%x) bytes\n",headerword[2],headerword[2]);
+	printf("BPS: %u (%x) bytes\n",headerword[3],headerword[3]);
+#endif
+	hugo = fread (&symval,1,headerword[0],imago);
+	diff = hlb-heaplowerbound;
+#ifdef DEBUG
+	printf("neu: %lx => %lx: shift by %d\n", heaplowerbound, hlb, diff);
+#endif
+	if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
+	if (hlb < heaplowerbound) {
+	  creloc((unsigned int) &symval,headerword[0]/4,diff,hlb -1,heapupperbound+1,1);
+	} 
+        else {
+	  creloc((unsigned int) &symval,headerword[0]/4,diff, heaplowerbound -1, heapupperbound+1,1);
+	}
 
-//       printf("Loading image file :%s \n",imagefile); 
-       imago = fopen (imagefile,"r");
-       if (imago == NULL) { 
-		printf("Loading image file :%s \n",imagefile);
-		perror ("error"); exit (-1); }
-       fread (headerword,4,2,imago);
-       unexec();      /* set control vector */
-      if ((int) bpscontrol[0] != headerword[0] 
-                || bpscontrol[1] != headerword[1])
-		{ printf(" Cannot start the image with this bpsl \n");
-                  printf(" %x != %x, %x != %x\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
-		  exit (-19); }
-       fread (headerword,4,4,imago);
-       hugo = fread (&symval,1,headerword[0],imago);
-       if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
+	sizeofsymvectors = headerword[0]/4;
 
-       hugo = fread ((char*)heaplowerbound,1,headerword[1],imago);
-       if (hugo != headerword[1]) read_error("heap",hugo,headerword[1]);
-       hugo = fread (&hashtable,1,headerword[2],imago);
-       if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
-       hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
-       if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
-       fclose (imago);
-       if (memset) {
-        oldheaplowerbound = ohl; oldheapupperbound = ohub;
-        oldheaplast = ohl; oldheaptrapbound = ohtb;
-        heaplowerbound = hlb; heapupperbound = hub;
-        heaptrapbound = htb;}
-       abs_imagefile = realpath(imagefile,NULL);
-       return (4711);
-     }
-return (0);
+	hugo = fread ((char*)hlb,1,headerword[1],imago);
+	if (hugo != headerword[1]) read_error("heap",hugo,headerword[1]);
+	if (hlb < heaplowerbound) {
+	  creloc(hlb,headerword[1]/4,diff,hlb -1,heapupperbound+1,0);
+	}
+        else {
+	  creloc(hlb,headerword[1]/4,diff, heaplowerbound -1,heapupperbound+1,0);
+	}
+	heaplast += diff;
+
+	hugo = fread (&hashtable,1,headerword[2],imago);
+	if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
+	hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
+	if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
+	fclose (imago);
+	if (memset) {
+	  oldheaplowerbound = ohl; oldheapupperbound = ohub;
+	  oldheaplast = ohl; oldheaptrapbound = ohtb;
+	  heaplowerbound = hlb; heapupperbound = hub;
+	  heaptrapbound = htb;
+	}
+	abs_imagefile = realpath(imagefile,NULL);
+	return (4711);
+   }
+   return (0);
 
 }
 
 void
 read_error(char * what,int bytesread,int byteswanted)
   {
-    printf("File too short while reading %s: bytes read = %lld (%llx), bytes expected = %lld (%llx)\n",
+    printf("File too short while reading %s: bytes read = %d (%x), bytes expected = %d (%x)\n",
            what,bytesread,bytesread,byteswanted,byteswanted);
     exit(-1);
   }
