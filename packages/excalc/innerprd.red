@@ -121,7 +121,6 @@ symbolic procedure innerprodwedge1(u,v,w);
                 else wedgepf2(innerprodf(u,lwf v),
                               rwf v .* mksgnsq w .+ nil));
 
-
 symbolic procedure innerprodnvec(u,v);
    if eqcar(v,'d) and null deg!*form cadr v
       and null freeindp cadr v
@@ -135,7 +134,8 @@ symbolic procedure innerprodnvec(u,v);
                                     partitop cdr assoc(v,keepl!*));
                    subfg!* := osubfg;
                    return repartit x
-                 end;
+                 end
+   else mkinnerprod(u,v);
 
 symbolic procedure innerprodbasis(u,v);
    if freeindp u or freeindp v then mkinnerprod(u,v)
