@@ -334,7 +334,7 @@ setupbpsandheap(argc,argv)
 	hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
 	if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
 	fclose (imago);
-	if (memset) {
+	if (memset || diff != 0) {
 	  oldheaplowerbound = ohl; oldheapupperbound = ohub;
 	  oldheaplast = ohl; oldheaptrapbound = ohtb;
 	  heaplowerbound = hlb; heapupperbound = hub;

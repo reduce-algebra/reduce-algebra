@@ -694,9 +694,9 @@
     )
 
 (de DepositInstructionBytes (byte1 byte2 byte3 byte4)
-    (printf "Deposit instruction %w at %x -> %x%n"
-	    (wor (wshift byte1 24) (wor (wshift byte2 16) (wor (wshift byte3 8) byte4)))
-	    CurrentOffset* (wplus2 codebase* CurrentOffset*))
+%    (printf "Deposit instruction %w at %x -> %x%n"
+%	    (wor (wshift byte1 24) (wor (wshift byte2 16) (wor (wshift byte3 8) byte4)))
+%	    CurrentOffset* (wplus2 codebase* CurrentOffset*))
     (if *big-endian*
 	(progn
 	  (DepositByte byte1)
@@ -708,12 +708,12 @@
 	(DepositByte byte3)
 	(DepositByte byte2)
 	(DepositByte byte1)))
-    (printf "Deposited at %x: %x >%x< %x%n"
-	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
-	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
-	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
-	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
-	    )
+%    (printf "Deposited at %x: %x >%x< %x%n"
+%	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
+%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
+%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
+%	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
+%	    )
     )
 	  
     
@@ -1644,7 +1644,7 @@
 (de DepositWordExpression (x)
   % Only limited expressions now handled
   (let (y)
-    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 codebase* CurrentOffset*))
+%    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 codebase* CurrentOffset*))
     (cond
       ((fixp x) (depositword (int2sys x)))
       ((labelp x) (deposit-relocated-word (LabelOffset x)))
@@ -1667,12 +1667,12 @@
       ((equal (first x) 'entry) (DepositEntry x))
       ((setq y (wconstevaluable x)) (DepositWord (int2sys y)))
       (t (stderror (bldmsg "Expression too complicated %r" x))))
-    (printf "Deposited at %x: %x >%x< %x%n"
-	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
-	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
-	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
-	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
-	    )
+%    (printf "Deposited at %x: %x >%x< %x%n"
+%	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
+%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
+%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
+%	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
+%	    )
     ))
 
 (de depositwordidnumber (x) 

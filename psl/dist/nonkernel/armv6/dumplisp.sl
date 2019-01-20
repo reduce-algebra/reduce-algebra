@@ -72,7 +72,6 @@
 (compiletime (flag '(dumplispaux ) 'internalfunction))
 
 (de dumplisp (filename)
-  (move-regs-to-mem)
   (dumplispaux filename nextbps heaplast))
  
 (de dumplispaux (filename data-start bss-start)
@@ -98,6 +97,7 @@
         (setq gcknt* 0 gctime* 0)
         (setq unexecresult (binaryopenwrite (bldmsg "%w.img" filename)))
 	(binarywriteblock unexecresult bpscontrol 2)
+	(move-regs-to-mem)
         (binarywrite unexecresult (times 4 5 maxsymbols))
         (binarywrite unexecresult 
 		(Wplus2 (wdifference heaplast heaplowerbound) 12))

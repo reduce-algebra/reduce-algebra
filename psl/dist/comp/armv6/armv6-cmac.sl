@@ -393,7 +393,7 @@
 
 (de ZIBanyregGlobal (reg source)
    (cond ((and (idp source) (get source 'registercode))
-		         `(reg ,source 'registercode))
+		         `(reg ,source))
 	 (t       `($global ,SOURCE))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
