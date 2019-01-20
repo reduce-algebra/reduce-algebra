@@ -152,12 +152,13 @@ symbolic procedure varywedge(u,v,w);
      begin
        y := varysq(simp car j,v,w);
        a: if y then
-           z := addpsf(if deg!*form w then
+           z := addpsf( % if deg!*form w then
                        !*pf2psf(partitop append(x,prepf ldpf y . cdr j),
                                 lc y)
-                     else ldpf y .* multsq(1 ./ denr lc y,simp
-                             append(x,prepf numr lc y . cdr j))
-                             .+ nil,z);
+                         % else ldpf y .* multsq(1 ./ denr lc y,simp
+                         %      append(x,prepf numr lc y . cdr j))
+                         %    .+ nil
+                                    ,z);
           if y and (y := red y) then go to a;
        x := append(x,list car j);
      end;
