@@ -7,7 +7,7 @@
 % Modified:     2-Jan-85 13:13:16 (Vicki O'Day)
 % Mode:         Lisp
 % Package:
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
@@ -173,7 +173,8 @@
        (wait)
        (*move (displacement (reg 3) 0) (reg 2))
 %       (*wor (reg 2)  2#110000000000)
-       (*wand (reg 2) 2#11111111110010)
+%       (*wand (reg 2) 2#11111111110010)
+       (*wor (reg 2) 2#111111)		% set all interrupt mask bits
        (*move (reg 2) (displacement (reg 3) 0))
        (fldcw (displacement (reg 3) 0))
        (wait)
