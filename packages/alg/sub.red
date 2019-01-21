@@ -43,7 +43,7 @@ symbolic procedure subeval u;
       put('sub,'psopfn,'subeval0);
 #if (not (getd 'unwind!-protect))
       x := errorset2{'subeval0,mkquote u};
-      put('sub,'psopfn,'subeval));
+      put('sub,'psopfn,'subeval);
 #else
       unwind!-protect(x := errorset2{'subeval0,mkquote u},
         put('sub,'psopfn,'subeval));
@@ -236,7 +236,7 @@ symbolic procedure subf1(u,l);
            w := multsq(subs2 exptsq(x,m-n),w);
            n := m;
            z := addsq(multsq(w,subf1(tc j,l)),z)>>;
-    e:  
+    e:
         % At this point the current mvar is substituted by 0
         % so that only the constant term of the polynomial remains.
         % The simplest way to do this would be to drop the list of coefficients:
