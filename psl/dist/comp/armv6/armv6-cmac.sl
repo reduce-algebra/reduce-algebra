@@ -543,13 +543,24 @@
 
 (DefCMacro !*StoreIntoExtraReg)
 
-
+%%% fill extra frame with nil!
+%% *Alloc pushes the link register onto the stack and allocate framesize stack frames
+%% If framesize is even, this means that the stack pointer is not 8byte aligned.
+%% In this case, push an extra value of nil onto the stack immediately below lr
+%%  and increase NAlloc!* by 1.
+%% Hence, for odd framesize the instructions are
+%%  STMDB sp!, {lr}
+%%  SUB sp, sp, (4*framesize)
+%% but with an extra "STR r12,[sp, #-4]!" (a.k.a. "push r12") in between for even framesize
 (de *ALLOC (framesize)
-    (setq NAlloc!* framesize)
-    % Make sure that the stack is always 8 byte aligned
-    (if (evenp framesize) (setq framesize (plus2 framesize 1)))
-    `( (STMDB (reg st) ((reg lr)) writeback)
-       (SUB (reg st) (reg st) ,(times2 4 framesize))))
+    (let ((ll `((SUB (reg st) (reg st) ,(times2 4 framesize)))))
+      % Make sure that the stack is always 8 byte aligned
+      (if (evenp framesize)
+	  (progn
+	    (setq ll (cons '(*push (reg nil)) ll))
+	    (setq NAlloc!* (add1  framesize)))
+	(setq NAlloc!* framesize))
+      (cons '(STMDB (reg st) ((reg lr)) writeback) ll)))
 
 (DefCmacro *ALLOC)
 
