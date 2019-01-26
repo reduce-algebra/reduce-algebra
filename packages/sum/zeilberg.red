@@ -674,7 +674,7 @@ algebraic procedure summation(f,k,n);
 begin
 scalar l,localhypersum ,upper,lower,z,term,i,tmp,
 startl, aj,piecewiseterm,piecewiseseq,f1,partj,
-recursion,counter,m,tmpterm,upper,lower,z,prefactor,init,ht,
+recursion,counter,m,tmpterm,prefactor,init,ht,
 initial,initialnumber,summand,j,gammasummand,!*exp;
 on exp;
 ht:=sumtohyper(f,k);
@@ -1788,7 +1788,7 @@ algebraic procedure sumtohyper(ank,k);
 begin
 scalar de,rat,numerator,denominator,numfactors,denfactors,lc,l,numlist,
 oldnumlist, olddenlist,tmp,tmp2,
-numdegree,denfactors,denlist, dendegree,i,j,lcden,
+numdegree,denlist, dendegree,i,j,lcden,
 lcnum,!*exp,!*factor,!*gcd, gcdterm;
 on exp;on gcd;
 ank:=simplify_combinatorial(ank);
