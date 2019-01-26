@@ -100,7 +100,7 @@ symbolic procedure spunsymdet(mat1);
   % bounds of the machine accuracy (ie: acc s.t. 1+acc > 1).
   %
   begin
-    scalar x,y,in_mat,tmp,int_vec,l,u,col,tp_mat1,tp_mat2,val,col2;
+    scalar x,y,in_mat,tmp,int_vec,u,col,tp_mat1,tp_mat2,val,col2;
     integer i,j,k,l,n;
     j := 1;
     in_mat := copy_vect(mat1,nil);
@@ -228,7 +228,7 @@ symbolic procedure spcompdet(mat1);
   % if A, modified by rounding errors, is singular.
   %
   begin
-    scalar x,y,in_mat,tmp,int_vec,l,u,p,pp,v,w,z,col,tp_mat1,rcol,recol,
+    scalar x,y,in_mat,tmp,int_vec,u,p,pp,v,w,z,col,tp_mat1,rcol,recol,
            re,icol,imcol,im,rval,ival,rl,il,cl;
     integer i,j,k,l,n;
     if algebraic (det(mat1)) = 0 then rederr
@@ -485,4 +485,3 @@ end;
 %
 %=======================================================================
 %***********************************************************************
-
