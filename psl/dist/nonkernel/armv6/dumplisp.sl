@@ -98,12 +98,13 @@
         (setq unexecresult (binaryopenwrite (bldmsg "%w.img" filename)))
 	(binarywriteblock unexecresult bpscontrol 2)
 	(move-regs-to-mem)
-        (binarywrite unexecresult (times 4 5 maxsymbols))
+	%% The symbol table has slots 0 ... maxsymbols, i.e. size maxsymbols + 1
+        (binarywrite unexecresult (times 4 5 (plus2 maxsymbols 1)))
         (binarywrite unexecresult 
 		(Wplus2 (wdifference heaplast heaplowerbound) 12))
         (binarywrite unexecresult  (times (quotient (plus2 3 hash-table-size) 4) 16))
         (binarywrite unexecresult bpssize)
-        (binarywriteblock unexecresult SYMVAL (times2 5 maxsymbols))
+        (binarywriteblock unexecresult SYMVAL (times2 5 (plus2 maxsymbols 1)))
         (binarywriteblock unexecresult heaplowerbound 
 		(wshift (wplus2 (wdifference heaplast heaplowerbound) 12) -2))
         (binarywriteblock unexecresult hashtable (times (quotient (plus2 3 hash-table-size) 4) 4))

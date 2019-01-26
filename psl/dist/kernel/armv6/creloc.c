@@ -44,6 +44,8 @@
 
 #include <stdio.h>
 
+extern int Debug;
+
 void creloc (unsigned int array[], int len, int diff, unsigned int lowb, unsigned int uppb, int do_symval)
 
 {  long i;
@@ -59,7 +61,9 @@ void creloc (unsigned int array[], int len, int diff, unsigned int lowb, unsigne
           if ( tag == 0 ) continue;  // posint
           if ( tag > 26 ) continue; // negint to forward
 #ifdef DEBUG
-	  printf("at %lx: %d before %d %lx",&array[i],tag,i,array[i]);
+	  if (Debug > 1) {
+	    printf("at %lx: %d before %d %lx",&array[i],tag,i,array[i]);
+	  }
 #endif
 	  if ( tag < 23  && (inf > lowb) && (inf < uppb))
                   {array[i] += diff;}
@@ -69,7 +73,9 @@ void creloc (unsigned int array[], int len, int diff, unsigned int lowb, unsigne
              else if (tag==26 && inf < 1000000) { skip = 1;} // work on the vect contents
 // One has to make sure that bignums are *NOT* vectors in gc, but WORD-VECT.
 #ifdef DEBUG
-	  printf(" %d after %lx\n",skip, array[i]);
+	  if (Debug > 1) {
+	    printf(" %d after %lx\n",skip, array[i]);
+	  }
 #endif
 	  if (do_symval != 0) {
 	    // symval entries must be relocated word by word

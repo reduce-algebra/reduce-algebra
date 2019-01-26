@@ -1802,7 +1802,6 @@
 		    %    (ldr (reg k) (frame m))
 		(when (and (eq op 'STR) 
 			   (regp (setq src (cadr instr)))
-			   (not (sregp src))  % not for segment registers
 			   (setq dest (caddr instr))
 			   (eqcar nextinstr 'LDR)
 			   (equal (caddr nextinstr) dest)
@@ -1823,6 +1822,32 @@
 			   (equal (caddr nextinstr) '(indirect (reg st))))
 		      (pop u)
 		      (setq instr `(STR ,(cadr nextinstr) (displacement (reg st) -4 preindexed))))
+		    % pattern:
+		    %    (sub (reg st) (reg st) <multiple-of-4>)
+		    %    (str (reg k) (displacement (reg st) n)) a.k.a. (frame ..)) 
+                    % if n = <multiple-of-4>-4
+		    % replace by 
+                    %    (str (reg k) (displacement (reg st) -4 preindexed))
+                    %    (sub (reg st) (reg st) <multiple-of-4>-4)
+		(when (and (eq op 'SUB)
+			   (equal (cadr instr) '(reg st))
+			   (equal (caddr instr) '(reg st))
+			   (fixp (cadddr instr))
+			   (equal (cadddr instr) (wshift (wshift (cadddr instr) -2) 2)) % multiple of 4
+			   (null (cddddr instr))
+			   (eqcar nextinstr 'STR)
+			   (regp (setq src (cadr nextinstr)))
+			   (pairp (setq dest (caddr nextinstr)))
+			   (eq (car dest) 'displacement)
+			   (equal (cadr dest) '(reg st))
+			   (fixp (setq x (caddr dest)))
+			   (equal (difference (cadddr instr) x) 4))
+		      (print (list 'lapopt-before (car u) instr))
+		      (pop u)
+		      (push `(SUB (reg st) (reg st) ,x) u)
+		      (setq instr `(STR ,src (displacement (reg st) -4 preindexed)))
+		      (print (list 'lapopt-after (car u) instr))
+		      )
 		    % pattern: 
 		    %      (push (quote nil) )   
 		    %      (push (quote nil) ) ... 
@@ -1888,7 +1913,7 @@
 %% 3) optimize (add (reg n) (reg n) (reg m)) (ldr (reg k) (indirect (reg n))
 %%         --> (ldr (reg k) (displacement (reg n) (reg m))) [from wgetv]
 %% 4) optimize (b<cond> lbl) (dataop ...) lbl
-%%         --> (dataop<cond> ...) lbl
+%%         --> (dataop<invertedcond> ...) lbl
 (de LapoptPeepArmv6 (code)
 % peephole optimizer for armv6 code
 % interchanging instructions for dependencies.

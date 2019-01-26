@@ -90,7 +90,10 @@ char *argv[];
    /* Record path to exec file */
   if (argc > 0)
     abs_execfilepath = realpath(argv[0],NULL);
- 
+
+  if (getenv("BPSL_DEBUG") != NULL)
+    Debug = 1;
+
   val=setjmp(mainenv);        /* set non-local return point for exit    */
  
   if (val == 0)

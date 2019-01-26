@@ -4,7 +4,7 @@
  .globl firstkernel
 firstkernel:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {pc}
  .long 0
@@ -12,7 +12,7 @@ firstkernel:
  .globl l0003
 l0003:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
 @ ($fluid heaplast)
  ldr r7, l0001
  str r8, [r11, r7, lsl #2]
@@ -30,7 +30,7 @@ l0001:
  .globl l0013
 l0013:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
 @ ($global catchstack)
  ldr r7, l0004
  ldr r5, [r11, r7, lsl #2]
@@ -88,7 +88,7 @@ l0004:
  .globl l0038
 l0038:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r0, r12
 @ ($global gcarraylowerbound)
  ldr r7, l0014
@@ -353,11 +353,11 @@ l0057:
  .globl reduceup
 reduceup:
  stmdb sp!, {lr}
- sub sp, sp, #20
- str r12, [sp, #12]
- str r12, [sp, #8]
- str r1, [sp, #4]
- str r3, [sp]
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r1, [sp, #-4]!
+ str r3, [sp, #-4]!
  mov r1, r2
 @ (idloc stringopen)
  ldr r7, l0058
@@ -431,7 +431,7 @@ l0058:
  .globl l0065
 l0065:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r0, r12
  add sp, sp, #4
  ldmia sp!, {pc}
@@ -449,7 +449,7 @@ l0076:
  .globl l0077
 l0077:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
 @ (idloc unixcleario)
  ldr r7, l0066
  ldr r6, [r10, r7, lsl #2]
@@ -505,7 +505,7 @@ l0066:
  .globl l0079
 l0079:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  bic r0, r0, #4160749568
  add r0, r0, #4
  add sp, sp, #4
@@ -521,7 +521,7 @@ l0078:
  .globl l0081
 l0081:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
 @ (idloc unixputn)
@@ -535,7 +535,7 @@ l0080:
  .globl l0083
 l0083:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r0, #10
  add sp, sp, #4
  ldmia sp!, {lr}
@@ -559,7 +559,7 @@ l0089:
  .globl binaryopenread
 binaryopenread:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  ldr r1, l0084
  bic r1, r1, #4160749568
  add r1, r1, #4
@@ -594,7 +594,7 @@ l0084:
  .globl binaryread
 binaryread:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
 @ (idloc getw)
@@ -608,7 +608,7 @@ l0091:
  .globl binaryreadblock
 binaryreadblock:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r4, r1
  mov r3, r0
  mov r1, #4
@@ -626,7 +626,7 @@ l0092:
  .globl binaryclose
 binaryclose:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
 @ (idloc fclose)
@@ -640,9 +640,9 @@ l0093:
  .globl l0102
 l0102:
  stmdb sp!, {lr}
- sub sp, sp, #12
- str r12, [sp, #4]
- str r12, [sp]
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
  ldr r1, l0094
 @ ($global nextsymbol)
  ldr r7, l0095
@@ -767,10 +767,9 @@ l0094:
  .globl l0112
 l0112:
  stmdb sp!, {lr}
- sub sp, sp, #12
- str r12, [sp, #8]
- str r12, [sp, #4]
- str r0, [sp]
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r0, [sp, #-4]!
  mov r1, r0
  mov r0, #0
 @ (idloc search-string-for-character)
@@ -849,7 +848,7 @@ l0109:
  .globl intern
 intern:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
 @ (idloc unchecked-string-intern)
@@ -869,7 +868,8 @@ l0131:
  .globl l0132
 l0132:
  stmdb sp!, {lr}
- sub sp, sp, #28
+ str r12, [sp, #-4]!
+ sub sp, sp, #24
  str r0, [sp]
  mov r4, r12
  mov r3, r4
@@ -1029,11 +1029,11 @@ l0149:
  .globl l0150
 l0150:
  stmdb sp!, {lr}
- sub sp, sp, #20
- str r12, [sp, #12]
- str r12, [sp, #8]
- str r12, [sp, #4]
- str r0, [sp]
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r0, [sp, #-4]!
 @ (idloc hash-function)
  ldr r7, l0140
  ldr r6, [r10, r7, lsl #2]
@@ -1150,7 +1150,8 @@ l0140:
  .globl l0164
 l0164:
  stmdb sp!, {lr}
- sub sp, sp, #12
+ str r12, [sp, #-4]!
+ sub sp, sp, #8
  str r0, [sp]
  mov r0, r0, lsl #5
  orr r0, r0, #30
@@ -1461,7 +1462,7 @@ l0173:
  .globl delbps
 delbps:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r0, r12
  add sp, sp, #4
  ldmia sp!, {pc}
@@ -1470,7 +1471,8 @@ delbps:
  .globl l0194
 l0194:
  stmdb sp!, {lr}
- sub sp, sp, #28
+ str r12, [sp, #-4]!
+ sub sp, sp, #24
  str r12, [sp, #16]
  str r0, [sp, #12]
  str r2, [sp, #4]
@@ -1558,7 +1560,8 @@ l0190:
  .globl l0205
 l0205:
  stmdb sp!, {lr}
- sub sp, sp, #28
+ str r12, [sp, #-4]!
+ sub sp, sp, #24
  str r12, [sp, #8]
  str r0, [sp, #16]
  str r2, [sp]
@@ -1644,7 +1647,8 @@ l0202:
  .globl l0213
 l0213:
  stmdb sp!, {lr}
- sub sp, sp, #12
+ str r12, [sp, #-4]!
+ sub sp, sp, #8
  str r0, [sp]
  str r1, [sp, #4]
  ldr r7, [r0]
@@ -1669,7 +1673,8 @@ l0212:
  .globl l0215
 l0215:
  stmdb sp!, {lr}
- sub sp, sp, #12
+ str r12, [sp, #-4]!
+ sub sp, sp, #8
  str r0, [sp]
  str r1, [sp, #4]
  ldr r7, [r0]
@@ -1699,7 +1704,8 @@ l0214:
  .globl l0218
 l0218:
  stmdb sp!, {lr}
- sub sp, sp, #12
+ str r12, [sp, #-4]!
+ sub sp, sp, #8
  str r0, [sp]
  str r1, [sp, #4]
  ldr r7, [r0]
@@ -1818,7 +1824,7 @@ l0219:
  .globl l0232
 l0232:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r7, #255
  add r7, r7, #1792
  sub r0, r0, r7
@@ -1833,13 +1839,13 @@ l0232:
  .globl l0238
 l0238:
  stmdb sp!, {lr}
- sub sp, sp, #28
- str r12, [sp, #20]
- str r12, [sp, #16]
- str r12, [sp, #12]
- str r12, [sp, #8]
- str r12, [sp, #4]
- str r0, [sp]
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r0, [sp, #-4]!
 @ (idloc binaryread)
  ldr r7, l0233
  ldr r6, [r10, r7, lsl #2]
@@ -1934,7 +1940,7 @@ l0233:
  .globl putentry
 putentry:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
 @ ($fluid code-base-hack)
  ldr r7, l0241
  ldr r7, [r11, r7, lsl #2]
@@ -1962,7 +1968,7 @@ l0246:
  .globl l0247
 l0247:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  ldr r0, l0243
 @ (idloc console-print-string)
  ldr r7, l0244
@@ -2094,7 +2100,7 @@ l0264:
  .globl l0265
 l0265:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  ldr r0, l0262
  add sp, sp, #4
  ldmia sp!, {lr}
@@ -2111,7 +2117,7 @@ l0262:
  .globl gtheap
 gtheap:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  cmp r0, r12
  bne l0268
  add sp, sp, #4
@@ -2136,7 +2142,7 @@ l0266:
  .globl l0270
 l0270:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r2, r0
  mov r0, r8
  mov r1, r2
@@ -2167,7 +2173,7 @@ l0274:
  .globl l0275
 l0275:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  ldr r0, l0272
  add sp, sp, #4
  ldmia sp!, {lr}
@@ -2188,7 +2194,7 @@ l0281:
  .globl gtid
 gtid:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r5, #0
 @ ($global nextsymbol)
  ldr r7, l0276
@@ -2261,7 +2267,8 @@ l0283:
  .globl gtconststr
 gtconststr:
  stmdb sp!, {lr}
- sub sp, sp, #12
+ str r12, [sp, #-4]!
+ sub sp, sp, #8
  str r0, [sp]
  add r0, r0, #5
  mov r1, r0
@@ -2296,10 +2303,11 @@ l0288:
  .globl subseq
 subseq:
  stmdb sp!, {lr}
- sub sp, sp, #28
- str r12, [sp, #20]
- str r12, [sp, #16]
- str r12, [sp, #12]
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ sub sp, sp, #12
  str r0, [sp]
  str r1, [sp, #4]
  str r2, [sp, #8]
@@ -2401,8 +2409,8 @@ l0295:
  .globl l0298
 l0298:
  stmdb sp!, {lr}
- sub sp, sp, #12
- str r12, [sp, #8]
+ str r12, [sp, #-4]!
+ sub sp, sp, #8
  bic r0, r0, #4160749568
  str r0, [sp]
  bic r1, r1, #4160749568
@@ -2457,8 +2465,9 @@ l0297:
  .globl copystringtofrom
 copystringtofrom:
  stmdb sp!, {lr}
- sub sp, sp, #20
- str r0, [sp, #12]
+ str r12, [sp, #-4]!
+ str r0, [sp, #-4]!
+ sub sp, sp, #12
  bic r2, r0, #4160749568
  str r2, [sp, #4]
  bic r3, r1, #4160749568
@@ -2513,7 +2522,8 @@ l0306:
  .globl cons
 cons:
  stmdb sp!, {lr}
- sub sp, sp, #12
+ str r12, [sp, #-4]!
+ sub sp, sp, #8
  str r0, [sp]
  str r1, [sp, #4]
  mov r0, #2
@@ -2537,7 +2547,7 @@ l0307:
  .globl interrogate
 interrogate:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r0, r0, lsl #2
  add r0, r0, r11
  ldr r0, [r0]
@@ -2548,7 +2558,7 @@ interrogate:
  .globl modify
 modify:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r0, r0, lsl #2
  add r0, r0, r11
  str r1, [r0]
@@ -2560,7 +2570,7 @@ modify:
  .globl put
 put:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
 @ (idloc unchecked-put)
@@ -2574,8 +2584,9 @@ l0308:
  .globl l0313
 l0313:
  stmdb sp!, {lr}
- sub sp, sp, #20
- str r12, [sp, #12]
+ str r12, [sp, #-4]!
+ str r12, [sp, #-4]!
+ sub sp, sp, #12
  str r0, [sp]
  str r1, [sp, #4]
  str r2, [sp, #8]
@@ -2651,7 +2662,7 @@ l0309:
  .globl atsoc
 atsoc:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
 l0318:
  mov r7, r1, lsr #27
  cmp r7, #9
@@ -2684,7 +2695,7 @@ l0320:
  .globl l0322
 l0322:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  bic r0, r0, #4160749568
  mov r0, r0, lsl #2
 @ ($global symprp)
@@ -2702,7 +2713,7 @@ l0321:
  .globl l0324
 l0324:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  bic r0, r0, #4160749568
  mov r0, r0, lsl #2
 @ ($global symprp)
@@ -2719,7 +2730,7 @@ l0323:
  .globl putd
 putd:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
 @ (idloc code-putd)
@@ -2800,8 +2811,8 @@ l0326:
  .globl fluid
 fluid:
  stmdb sp!, {lr}
- sub sp, sp, #12
- str r12, [sp, #8]
+ str r12, [sp, #-4]!
+ sub sp, sp, #8
  str r0, [sp]
  mov r0, r12
  ldr r5, [sp]
@@ -2856,7 +2867,7 @@ l0337:
  .globl l0348
 l0348:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  ldr r2, l0345
  ldr r1, l0346
  add sp, sp, #4
@@ -2876,7 +2887,7 @@ l0345:
  .globl stderror
 stderror:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
 @ (idloc kernel-fatal-error)
@@ -2890,7 +2901,7 @@ l0349:
  .globl l0353
 l0353:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  bic r2, r0, #4160749568
  mov r2, r2, lsl #2
  add r2, r2, r11
@@ -2914,7 +2925,7 @@ l0350:
  .globl plantunbound
 plantunbound:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  ldr r5, l0354
  str r5, [r10, r0, lsl #2]
  add sp, sp, #4
@@ -2927,7 +2938,7 @@ l0354:
  .globl plantcodepointer
 plantcodepointer:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  str r1, [r10, r0, lsl #2]
  add sp, sp, #4
  ldmia sp!, {pc}
@@ -2936,7 +2947,7 @@ plantcodepointer:
  .globl plantlambdalink
 plantlambdalink:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  ldr r5, l0355
  str r5, [r10, r0, lsl #2]
  add sp, sp, #4
@@ -2954,7 +2965,7 @@ l0356:
  .globl bittable
 bittable:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r3, r1
  mov r1, r1, lsr #2
  ldrsb r0, [r0, r1]
@@ -2979,7 +2990,7 @@ l0358:
  .globl undefinedfunction
 undefinedfunction:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r5, r7
 @ (idloc undefinedfunction-aux)
  ldr r7, l0359
@@ -2997,7 +3008,7 @@ l0365:
  .globl l0366
 l0366:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  str r5, [sp, #-4]!
  ldr r0, l0360
 @ (idloc console-print-string)
@@ -3039,7 +3050,7 @@ l0360:
  .globl compiledcallinginterpreted
 compiledcallinginterpreted:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
 @ (idloc *tehcalledid*)
  ldr r5, l0367
 @ ($fluid codeform*)
@@ -3099,7 +3110,7 @@ l0370:
  .globl l0376
 l0376:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3117,7 +3128,7 @@ l0376:
  .globl l0377
 l0377:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3135,7 +3146,7 @@ l0377:
  .globl l0378
 l0378:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3153,7 +3164,7 @@ l0378:
  .globl l0379
 l0379:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3171,7 +3182,7 @@ l0379:
  .globl l0380
 l0380:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3189,7 +3200,7 @@ l0380:
  .globl l0381
 l0381:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3207,7 +3218,7 @@ l0381:
  .globl l0382
 l0382:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3225,7 +3236,7 @@ l0382:
  .globl l0383
 l0383:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3243,7 +3254,7 @@ l0383:
  .globl l0384
 l0384:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3261,7 +3272,7 @@ l0384:
  .globl l0385
 l0385:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3279,7 +3290,7 @@ l0385:
  .globl l0386
 l0386:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3297,7 +3308,7 @@ l0386:
  .globl l0387
 l0387:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3315,7 +3326,7 @@ l0387:
  .globl l0388
 l0388:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3333,7 +3344,7 @@ l0388:
  .globl l0389
 l0389:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3351,7 +3362,7 @@ l0389:
  .globl l0390
 l0390:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3369,7 +3380,7 @@ l0390:
  .globl l0391
 l0391:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3387,7 +3398,7 @@ l0391:
  .globl l0392
 l0392:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3405,7 +3416,7 @@ l0392:
  .globl l0393
 l0393:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3423,7 +3434,7 @@ l0393:
  .globl l0394
 l0394:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3441,7 +3452,7 @@ l0394:
  .globl l0395
 l0395:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3459,7 +3470,7 @@ l0395:
  .globl l0396
 l0396:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3477,7 +3488,7 @@ l0396:
  .globl l0397
 l0397:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3495,7 +3506,7 @@ l0397:
  .globl l0398
 l0398:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3513,7 +3524,7 @@ l0398:
  .globl l0399
 l0399:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3531,7 +3542,7 @@ l0399:
  .globl l0400
 l0400:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3549,7 +3560,7 @@ l0400:
  .globl l0401
 l0401:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3567,7 +3578,7 @@ l0401:
  .globl l0402
 l0402:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3585,7 +3596,7 @@ l0402:
  .globl l0403
 l0403:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3603,7 +3614,7 @@ l0403:
  .globl l0404
 l0404:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3621,7 +3632,7 @@ l0404:
  .globl l0405
 l0405:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3639,7 +3650,7 @@ l0405:
  .globl l0406
 l0406:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3657,7 +3668,7 @@ l0406:
  .globl l0407
 l0407:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3675,7 +3686,7 @@ l0407:
  .globl l0408
 l0408:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3693,7 +3704,7 @@ l0408:
  .globl l0409
 l0409:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3711,7 +3722,7 @@ l0409:
  .globl l0410
 l0410:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3729,7 +3740,7 @@ l0410:
  .globl l0411
 l0411:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3747,7 +3758,7 @@ l0411:
  .globl l0412
 l0412:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3765,7 +3776,7 @@ l0412:
  .globl l0413
 l0413:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3783,7 +3794,7 @@ l0413:
  .globl l0414
 l0414:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3801,7 +3812,7 @@ l0414:
  .globl l0415
 l0415:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3819,7 +3830,7 @@ l0415:
  .globl l0416
 l0416:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3837,7 +3848,7 @@ l0416:
  .globl l0417
 l0417:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3855,7 +3866,7 @@ l0417:
  .globl l0418
 l0418:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3873,7 +3884,7 @@ l0418:
  .globl l0419
 l0419:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3891,7 +3902,7 @@ l0419:
  .globl l0420
 l0420:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3909,7 +3920,7 @@ l0420:
  .globl l0421
 l0421:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3927,7 +3938,7 @@ l0421:
  .globl l0422
 l0422:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3945,7 +3956,7 @@ l0422:
  .globl l0423
 l0423:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3963,7 +3974,7 @@ l0423:
  .globl l0424
 l0424:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3981,7 +3992,7 @@ l0424:
  .globl l0425
 l0425:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -3999,7 +4010,7 @@ l0425:
  .globl l0426
 l0426:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4017,7 +4028,7 @@ l0426:
  .globl l0427
 l0427:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4035,7 +4046,7 @@ l0427:
  .globl l0428
 l0428:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4053,7 +4064,7 @@ l0428:
  .globl sigrelse
 sigrelse:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4071,7 +4082,7 @@ sigrelse:
  .globl l0429
 l0429:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4089,7 +4100,7 @@ l0429:
  .globl l0430
 l0430:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4107,7 +4118,7 @@ l0430:
  .globl l0431
 l0431:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4125,7 +4136,7 @@ l0431:
  .globl l0432
 l0432:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4143,7 +4154,7 @@ l0432:
  .globl l0433
 l0433:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4161,7 +4172,7 @@ l0433:
  .globl l0434
 l0434:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4179,7 +4190,7 @@ l0434:
  .globl l0435
 l0435:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4197,7 +4208,7 @@ l0435:
  .globl l0436
 l0436:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4215,7 +4226,7 @@ l0436:
  .globl l0437
 l0437:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4233,7 +4244,7 @@ l0437:
  .globl l0438
 l0438:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4251,7 +4262,7 @@ l0438:
  .globl l0439
 l0439:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4269,7 +4280,7 @@ l0439:
  .globl l0440
 l0440:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4287,7 +4298,7 @@ l0440:
  .globl l0441
 l0441:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4305,7 +4316,7 @@ l0441:
  .globl l0442
 l0442:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4323,7 +4334,7 @@ l0442:
  .globl l0443
 l0443:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4341,7 +4352,7 @@ l0443:
  .globl l0444
 l0444:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4359,7 +4370,7 @@ l0444:
  .globl l0445
 l0445:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4377,7 +4388,7 @@ l0445:
  .globl l0446
 l0446:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4395,7 +4406,7 @@ l0446:
  .globl l0447
 l0447:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4413,7 +4424,7 @@ l0447:
  .globl l0448
 l0448:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4431,7 +4442,7 @@ l0448:
  .globl l0449
 l0449:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4449,7 +4460,7 @@ l0449:
  .globl l0450
 l0450:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4467,7 +4478,7 @@ l0450:
  .globl l0451
 l0451:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4485,7 +4496,7 @@ l0451:
  .globl l0452
 l0452:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4503,7 +4514,7 @@ l0452:
  .globl l0453
 l0453:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4521,7 +4532,7 @@ l0453:
  .globl l0454
 l0454:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4539,7 +4550,7 @@ l0454:
  .globl l0455
 l0455:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4557,7 +4568,7 @@ l0455:
  .globl l0456
 l0456:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4575,7 +4586,7 @@ l0456:
  .globl l0457
 l0457:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4593,7 +4604,7 @@ l0457:
  .globl l0458
 l0458:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4611,7 +4622,7 @@ l0458:
  .globl l0459
 l0459:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4629,7 +4640,7 @@ l0459:
  .globl l0460
 l0460:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4647,7 +4658,7 @@ l0460:
  .globl l0461
 l0461:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4665,7 +4676,7 @@ l0461:
  .globl l0462
 l0462:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4683,7 +4694,7 @@ l0462:
  .globl l0463
 l0463:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4701,7 +4712,7 @@ l0463:
  .globl l0464
 l0464:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4719,7 +4730,7 @@ l0464:
  .globl l0465
 l0465:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4737,7 +4748,7 @@ l0465:
  .globl l0466
 l0466:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4755,7 +4766,7 @@ l0466:
  .globl l0467
 l0467:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4773,7 +4784,7 @@ l0467:
  .globl l0468
 l0468:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4791,7 +4802,7 @@ l0468:
  .globl l0469
 l0469:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4809,7 +4820,7 @@ l0469:
  .globl l0470
 l0470:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4827,7 +4838,7 @@ l0470:
  .globl l0471
 l0471:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4845,7 +4856,7 @@ l0471:
  .globl l0472
 l0472:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4863,7 +4874,7 @@ l0472:
  .globl l0473
 l0473:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4881,7 +4892,7 @@ l0473:
  .globl l0474
 l0474:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4899,7 +4910,7 @@ l0474:
  .globl l0475
 l0475:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4917,7 +4928,7 @@ l0475:
  .globl l0476
 l0476:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4935,7 +4946,7 @@ l0476:
  .globl l0477
 l0477:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4953,7 +4964,7 @@ l0477:
  .globl l0478
 l0478:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4971,7 +4982,7 @@ l0478:
  .globl l0479
 l0479:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -4989,7 +5000,7 @@ l0479:
  .globl l0480
 l0480:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {lr}
  stmdb sp!, {r1,r2,r3,r4,r8,r9,r10,r11,r12,lr}
@@ -5087,7 +5098,7 @@ l0481:
  .globl lastkernel
 lastkernel:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  add sp, sp, #4
  ldmia sp!, {pc}
  .long 0
@@ -5095,7 +5106,7 @@ lastkernel:
  .globl initcode
 initcode:
  stmdb sp!, {lr}
- sub sp, sp, #4
+ str r12, [sp, #-4]!
  mov r0, r12
  add sp, sp, #4
  ldmia sp!, {pc}

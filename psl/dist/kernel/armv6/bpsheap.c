@@ -88,6 +88,8 @@ long unexec();
 #define BPSSIZE         1600000    /* Default bps size in number of bytes */
 #endif
 
+extern int Debug;
+
 char *  imagefile;
 char *  abs_imagefile = NULL; /* like imagefile, but as an absolute path */
 int     max_image_size;
@@ -271,18 +273,18 @@ setupbpsandheap(argc,argv)
         hlb = heaplowerbound; hub = heapupperbound;
         hl =  heaplast; htb = heaptrapbound;
     /* save the new values around restore of the old ones */
-#ifdef DEBUG	
-	printf("symbol table size = %u (%X), symbol table address = %u (%X)\n"
-	       "bpssize = %u (%X), bps address =  %u (%X)\n"
-	       "heapsize = %u (%X), heap address = %u (%X)\nTotal image size = %d (%X)\n",
-	       5*(&symprp - &symval), 5*(&symprp - &symval),
-	       &symval, &symval,
-	       bpssize, bpssize,
-	       bpslowerbound, bpslowerbound,
-	       heapsize, heapsize,
-	       heaplowerbound, heaplowerbound,
-	       (int) sbrk(0), (int) sbrk(0));
-#endif
+	if (Debug > 0) {
+	  printf("symbol table size = %u (%X), symbol table address = %u (%X)\n"
+		 "bpssize = %u (%X), bps address =  %u (%X)\n"
+		 "heapsize = %u (%X), heap address = %u (%X)\nTotal image size = %d (%X)\n",
+		 5*(&symprp - &symval), 5*(&symprp - &symval),
+		 &symval, &symval,
+		 bpssize, bpssize,
+		 bpslowerbound, bpslowerbound,
+		 heapsize, heapsize,
+		 heaplowerbound, heaplowerbound,
+		 (int) sbrk(0), (int) sbrk(0));
+	}
 	printf("Loading image file :%s \n",imagefile); 
 	imago = fopen (imagefile,"r");
 	if (imago == NULL) { 
@@ -298,17 +300,20 @@ setupbpsandheap(argc,argv)
 	    exit (-19);
 	  }
 	fread (headerword,4,4,imago);
-#ifdef DEBUG
-	printf("symbol table: %u (%x) bytes\n",headerword[0],headerword[0]);
-	printf("heap: %u (%x) bytes\n",headerword[1],headerword[1]);
-	printf("hash table: %u (%x) bytes\n",headerword[2],headerword[2]);
-	printf("BPS: %u (%x) bytes\n",headerword[3],headerword[3]);
-#endif
+	if (Debug > 0) {
+	  printf("symbol table: %u (%x) bytes\n",headerword[0],headerword[0]);
+	  printf("heap: %u (%x) bytes\n",headerword[1],headerword[1]);
+	  printf("hash table: %u (%x) bytes\n",headerword[2],headerword[2]);
+	  printf("BPS: %u (%x) bytes\n",headerword[3],headerword[3]);
+	}
+
 	hugo = fread (&symval,1,headerword[0],imago);
 	diff = hlb-heaplowerbound;
-#ifdef DEBUG
-	printf("neu: %lx => %lx: shift by %d\n", heaplowerbound, hlb, diff);
-#endif
+
+	if (Debug > 0) {
+	printf("Relocate heap: %lx => %lx: shift by %d\n", heaplowerbound, hlb, diff);
+	}
+
 	if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
 	if (hlb < heaplowerbound) {
 	  creloc((unsigned int) &symval,headerword[0]/4,diff,hlb -1,heapupperbound+1,1);

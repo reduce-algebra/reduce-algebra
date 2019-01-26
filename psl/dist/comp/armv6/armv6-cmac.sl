@@ -553,7 +553,9 @@
 %%  SUB sp, sp, (4*framesize)
 %% but with an extra "STR r12,[sp, #-4]!" (a.k.a. "push r12") in between for even framesize
 (de *ALLOC (framesize)
-    (let ((ll `((SUB (reg st) (reg st) ,(times2 4 framesize)))))
+    (let (ll)
+      (if (greaterp framesize 0)
+	  (setq ll `((SUB (reg st) (reg st) ,(times2 4 framesize)))))
       % Make sure that the stack is always 8 byte aligned
       (if (evenp framesize)
 	  (progn
