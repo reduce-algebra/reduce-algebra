@@ -97,7 +97,7 @@ end;
 % for use in a <semantic> tag.
 
 symbolic procedure omsir();
-begin scalar cd, name, sem, aa, bb, cd, attr, symb, validcd;
+begin scalar cd, name, sem, aa, bb, attr, symb, validcd;
   attr:=nil;
 
   % We read in from the input the name and CD contained
