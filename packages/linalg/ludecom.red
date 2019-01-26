@@ -164,7 +164,7 @@ symbolic procedure unsymdet(mat1);
   % accuracy (ie: acc s.t. 1+acc > 1).
   %
   begin
-    scalar x,y,in_mat,tmp,int_vec,l,u; %d1,d2,det;
+    scalar x,y,in_mat,tmp,int_vec,u; %d1,d2,det;
     integer i,j,k,l,n;
     j := 1;
     in_mat := copy_mat(mat1);
@@ -328,7 +328,7 @@ symbolic procedure compdet(mat1);
   % if A, modified by rounding errors, is singular.
   %
   begin
-    scalar x,y,in_mat,tmp,int_vec,l,u,p,pp,v,w,z; %detr,deti,dete,det;
+    scalar x,y,in_mat,tmp,int_vec,u,p,pp,v,w,z; %detr,deti,dete,det;
     integer i,j,k,l,n;
     if algebraic (det(mat1)) = 0 then rederr
 "Error in lu_decom: matrix is singular. LU decomposition not possible.";

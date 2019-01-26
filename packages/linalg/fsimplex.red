@@ -479,7 +479,7 @@ procedure fs_init(max!-or!-min,objective,eql);
    % [nonslacks] of variables in the [eql] so we know where to stop
    % making answers in fs_make!-answer!-list.
    begin
-      scalar a,b,obj!-mat,x,vl,obj!-mat,nonslacks,w,slackeqs,a,b,x;
+      scalar a,b,obj!-mat,x,vl,nonslacks,w,slackeqs,a,b,x;
       if max!-or!-min = 'max then
        	 objective := sc_negsq objective;
       vl := fs_eqlvarl eql;
