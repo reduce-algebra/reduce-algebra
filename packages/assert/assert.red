@@ -239,7 +239,7 @@ procedure assert_declarestat1(l);
    % Returns forms that define a suitable wrapper function, store relevant
    % information on the property list of the original function, and add the
    % original function to the global list assert_functionl!*.
-   begin scalar fnx,progn,assertfn,noassertfn,argl,w1,w2,w3,w4,w4,w5;
+   begin scalar fnx,progn,assertfn,noassertfn,argl,w1,w2,w3,w4,w5;
       integer i;
       fnx := explode car l;
       assertfn := intern compress nconc(explode 'assert!:,fnx);
