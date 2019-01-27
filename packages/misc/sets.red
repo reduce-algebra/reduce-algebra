@@ -215,10 +215,10 @@ symbolic procedure evalsubset(u, v);
    (if atom r then r else evalsymsubset r)
       where r = evalsetbool('subset, u, v);
 
-put('subset, 'setboolfn, function subsetneqp);
-
 symbolic procedure subsetneqp(u, v);
    subsetp(u,v) and not subsetp(v,u);
+
+put('subset, 'setboolfn, function subsetneqp);
 
 symbolic procedure evalsymsubset args;
    %% This analysis assumes symbolic sets are non-empty, otherwise
@@ -239,10 +239,10 @@ symbolic procedure evalset_eq(u, v);
    (if atom r then r else apply(function equal, r))
       where r = evalsetbool('set_eq, u, v);
 
-put('set_eq, 'setboolfn, function setequal);
-
 symbolic procedure setequal(u, v);
    subsetp(u,v) and subsetp(v,u);
+
+put('set_eq, 'setboolfn, function setequal);
 
 symbolic procedure evalsetbool(setbool, u, v);
    begin local r, set_args, sym_args;
