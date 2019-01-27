@@ -4,9 +4,8 @@
 % Title:        Unix pipe interface
 % Author:       Winfried Neun
 % Created:      5 February 1991
-% Status:       Experimental 
-% Mode:         Lisp 
 % Status:       Open Source: BSD License
+% Mode:         Lisp 
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:

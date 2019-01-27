@@ -1,4 +1,13 @@
-% Status: Open Source: BSD License
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% File:         PXU:FASTCONS.SL 
+% Description:  
+% Author:       
+% Created:      
+% Modified:	
+% Mode:         Lisp 
+% Package:      Utilities 
+% Status:       Open Source: BSD License
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
