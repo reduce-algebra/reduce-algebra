@@ -6,6 +6,7 @@
 % Created:      27 August 1981                                             
 % Modified:     29-Oct-84 09:10:42 (Vicki O'Day)
 % Package:                                                                 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -33,7 +34,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Revisions:                                                               
+% Revisions:
 %
 % 28-May-87 (Leigh Stoller & Harold Carr)
 %  Added fluid declarations of in* and out*.
@@ -63,12 +64,12 @@
   (flag '(printf1 printf2) 'iinternalfunction))
 
 (fluid '(in* out*))
+
 (fluid '(formatforprintf*))
 
-% First, lambda-bind FormatForPrintF!*                                     
+% First, lambda-bind FormatForPrintF!*
 (de printf (formatforprintf* a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13)
-  % scs                                                                    
-
+  % scs
   (printf1 formatforprintf* a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13))
 
 % scs                                                                      
@@ -93,46 +94,44 @@
        (*call printf2)
        (*exit 13)))
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%                          Formatted print
+%
+% Format is a string, either in the heap or not, whose characters will be
+% written on the currently selected output channel.  The exception to this is
+% that when a % is encountered, the following character is interpreted as a
+% format character, to decide how to print one of the other arguments.  The
+% following format characters are currently supported:
+%	%b - blanks; take the next argument as integer and print that many
+%		blanks
+%	%c - print the next argument as a single character
+%	%d - print the next argument as a decimal integer
+%       %e - EVALs the next argument for side-effect -- most useful if the
+%            thing EVALed does some printing
+%	%f - fresh-line, print end-of-line char if not at beginning of line
+%	%l - same as %w, except lists are printed without top level parens
+%	%n - print end-of-line character
+%	%o - print the next argument as an octal integer
+%	%p - print the next argument as a Lisp item, using Prin1
+%       %r - print the next argument as a Lisp item, using ErrPrin (`FOO')
+%	%s - print the next argument as a string
+%	%t - tab; take the next argument as an integer and
+%		print spaces to that column
+%	%w - print the next argument as a Lisp item, using Prin2
+%	%x - print the next argument as a hexidecimal integer
+%	%% - print a %
+%
+% If the character is not one of these (either upper or lower case), then an
+% error occurs.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %  scs                                                                     
 % Finally, actual printf, with 1 argument, pointer to array of parameters  
 (de printf2 (printfargs)
-  %. Formatted print                                                       
-  %                                                                        
-  % Format is a string, either in the heap or not, whose characters will be
-  % written on the currently selected output channel.  The exception to this is
-                                                                           
-  % that when a % is encountered, the following character is interpreted as a
-                                                                           
-  % format character, to decide how to print one of the other arguments.  The
-                                                                           
-  % following format characters are currently supported:                   
-  %	%b - blanks; take the next argument as integer and print that many 
-  %		blanks                                                     
-  %	%c - print the next argument as a single character                 
-  %	%d - print the next argument as a decimal integer                  
-  %       %e - EVALs the next argument for side-effect -- most useful if the
-                                                                           
-  %            thing EVALed does some printing                             
-  %	%f - fresh-line, print end-of-line char if not at beginning of line
-  %	%l - same as %w, except lists are printed without top level parens 
-  %	%n - print end-of-line character                                   
-  %	%o - print the next argument as an octal integer                   
-  %	%p - print the next argument as a Lisp item, using Prin1           
-  %       %r - print the next argument as a Lisp item, using ErrPrin (`FOO')
-                                                                           
-  %	%s - print the next argument as a string                           
-  %	%t - tab; take the next argument as an integer and                 
-  %		print spaces to that column                                
-  %	%w - print the next argument as a Lisp item, using Prin2           
-  %	%x - print the next argument as a hexidecimal integer              
-  %	%% - print a %                                                     
-  %                                                                        
-  % If the character is not one of these (either upper or lower case), then an
-                                                                           
-  % error occurs.                                                          
-  %                                                                        
   (prog (uplim i ch upch)
-
         (setq uplim (strlen (strinf formatforprintf*)))
         (setq i 0)
         (while (wleq i uplim)
@@ -246,15 +245,15 @@
         (return (copystring tokenbuffer))))
 
 (de errprin (u)
-  %. `Prin1 with quotes'                                                   
+  %. `Prin1 with quotes'
   (progn (writechar (char !`))
          (prin1 u)
          (writechar (char !'))))
 
 (de prin2l (itm)
-  %. Prin2 without top-level parens                                        
+  %. Prin2 without top-level parens
   (cond ((null itm) nil)
-        % NIL is (), print nothing                                         
+        % NIL is (), print nothing
         ((not (pairp itm)) (prin2 itm))
         (t (progn (while (progn (prin2 (car itm))
                                 (setq itm (cdr itm))

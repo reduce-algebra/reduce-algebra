@@ -7,7 +7,7 @@
 % Modified:     05-Oct-87 (Harold Carr)
 % Mode:         Lisp                                                       
 % Package:                                                                 
-% Status:       Experimental (Do Not Distribute)                           
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
