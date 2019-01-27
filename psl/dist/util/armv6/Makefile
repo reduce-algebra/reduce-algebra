@@ -1,7 +1,9 @@
 ###############################################################################
 #
 # File:         PXU:Makefile
-# Description:  Makefile for armv6 specific utilities directory.
+# Description:  Makefile for psl vax specific utilities directory.
+# Author:       Harold Carr and Leigh Stoller.
+# Created:      08-Oct-86
 # Modified:
 # Mode:         Text
 # Package:      
@@ -37,7 +39,7 @@
 # 
 ###############################################################################
 
-PROOT	= /silo/cons/verkaufpsl
+##	PROOT	= /silo/cons/verkaufpsl
 
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin
@@ -72,7 +74,7 @@ $(PL)/c2l.o: $(PXU)/c2l.c
 	as c2ltemp.s -o $(PL)/c2l.o
 	rm -f c2ltemp.s
 
-$(PL)/fc-indirect.b: $(PXU)/fc-indirect.sl
+$(PL)/fc-indirect.b: $(PXU)/fc-indir.sl
 	$(PDIST)/make-lap $(PXU) fc-indirect
 
 $(PL)/get-options.b: $(PXU)/get-options.sl
@@ -93,6 +95,8 @@ $(PL)/spy.b: $(PXU)/spy.sl
 $(PL)/qualified-timing.b: $(PXU)/qualified-timing.sl
 	$(PDIST)/make-lap $(PXU) qualified-timing
 
+$(PL)/oload.b: $(PXU)/oload.sl
+	$(PDIST)/make-lap $(PXU) oload
 
 $(PL)/nbig30.b:  $(PXU)/nbig30.sl
 	$(PDIST)/make-lap $(PXU) nbig30
