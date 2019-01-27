@@ -46,7 +46,7 @@ if print_ then <<
 >>        else                           else
 
 begin scalar pdes, newpdes1, sb, sb2, sb3, h, pf, newp, tm, tmcp,
-             s, newp, print_bak, fcp, f1, f2, fhomtem$
+             s, print_bak, fcp, f1, f2, fhomtem$
  % fl: list of new unknowns
  % sb: substitution list
  print_bak:=print_; print_:=nil$
@@ -83,7 +83,7 @@ begin scalar pdes, newpdes1, sb, sb2, sb3, h, pf, newp, tm, tmcp,
    % Adding the new 2-term equation to pdes
    newp:=subtrsq(multsq(mksq(car fcp,1),mksq(f,1)),mksq(h,1));
    newpdes1:=cons(mkeqSQ(newp,nil,nil,ftem_,vl_,allflags_,t,list(0),nil,pdes),newpdes1)$
-   (f . h) 
+   (f . h)
   >>;
   sb:=cons(((car fcp) . sb3),sb);
   fcp:=cdr fcp;
@@ -92,9 +92,9 @@ begin scalar pdes, newpdes1, sb, sb2, sb3, h, pf, newp, tm, tmcp,
  % now conversion of equations
  write"Conversion of equations"$terpri()$
 
- for each p in pdes do 
- if get(p,'fct_hom) and (h:=get(p,'hom_deg)) and 
-    (( car h=2) or ( car h=0)) and 
+ for each p in pdes do
+ if get(p,'fct_hom) and (h:=get(p,'hom_deg)) and
+    (( car h=2) or ( car h=0)) and
     ((cadr h=2) or (cadr h=0)) then << % convert this equation
   newp:=simp 0$
   pf:=numr get(p,'sqval);
@@ -145,9 +145,9 @@ begin scalar tm,f,sb,l1,l2,mod_switched$
  tm:=first_term_SF p$
  l1:=gensym()$
  l2:=gensym()$
- for each f in flin_ do 
+ for each f in flin_ do
     sb:=cons((f . {'times,f,l1}), sb)$
- for each f in setdiff(fhom_,flin_) do 
+ for each f in setdiff(fhom_,flin_) do
     sb:=cons((f . {'times,f,l2}), sb)$
  if modular_comp and null !*modular then <<on modular$ mod_switched:=t>>$
  tm:=numr quotsq(simp {'!*sq,subf(tm,sb),nil}, (tm . 1))$
@@ -159,7 +159,7 @@ begin scalar tm,f,sb,l1,l2,mod_switched$
                          ((pairp tm) and (car tm = '!:gi!:))
                       then {ldeg tm, 0        }
                       else {ldeg tm,ldeg lc tm}
-                 else if (domainp lc tm) or 
+                 else if (domainp lc tm) or
                          ((pairp tm) and (car tm = '!:gi!:))
                       then { 0,        ldeg tm}
                       else {ldeg lc tm,ldeg tm}
@@ -170,14 +170,14 @@ end$
 %%                         dg2 is the degree of non-flin_ functions
 %begin scalar tm,f$
 % % take first term only
-% if (arglength(p)<0) or (part(p,0) neq plus) then tm:=p 
+% if (arglength(p)<0) or (part(p,0) neq plus) then tm:=p
 %                                             else tm:=part(p,1)$
 % l1:=lisp gensym()$
 % l2:=lisp gensym()$
 % sb:=append(for each f in lisp(cons('list,              flin_ )) collect f=f*l1,
 %            for each f in lisp(cons('list,setdiff(ftem_,flin_))) collect f=f*l2)$
 % tm:=sub(sb,tm)/tm$
- 
+
 % if freeof(tm,l1) then <<
 %  dg1:=0;
 %  dg2:=bi_lin_expt(tm);
@@ -186,7 +186,7 @@ end$
 %  dg1:=bi_lin_expt(tm);
 %  dg2:=0;
 % >>               else
-% if (arglength(tm)=2) and (part(tm,0)=times) then 
+% if (arglength(tm)=2) and (part(tm,0)=times) then
 % if freeof(part(tm,1),l2) then <<dg1:=bi_lin_expt(part(tm,1));
 %                                 dg2:=bi_lin_expt(part(tm,2)) >>
 %                          else <<dg1:=bi_lin_expt(part(tm,2));
@@ -202,15 +202,15 @@ end$
 
 
 symbolic procedure find_homo_weights(pdes)$
-% We assume that equations are algebraic polynomial and that 
+% We assume that equations are algebraic polynomial and that
 % denominators are homogeneous
 if null alg_poly then nil else
-begin 
+begin
  scalar w,p,s,
         sf,   % numerator of an equation (minus first terms..)
         tf,   % (first) term of sf
         wl,   % list of all weight names (needed for solveeval)
-        ali,  % association list of (unknown . weight_name) 
+        ali,  % association list of (unknown . weight_name)
         wtli, % list of conditions resulting from one equation
         wt,   % weight of one term in one equation
         eli   % list of all condiltions on weights
@@ -221,8 +221,8 @@ $
   ali:=cons((f . w), ali);
  >>;
 
- for each p in pdes do 
- if (get(p,'terms)>1) and 
+ for each p in pdes do
+ if (get(p,'terms)>1) and
     (null get(p,'nonrational)) then <<
   sf:=numr get(p,'sqval);   % sf is the numerator of the equation
   wtli:=nil;
@@ -238,7 +238,7 @@ $
     tf:=lc tf
    >>;
    wt:=if null wt then 0              else
-       if cdr  wt then cons('plus,wt) else 
+       if cdr  wt then cons('plus,wt) else
                        car wt$
    wtli:=cons(wt,wtli)
   >>;
@@ -248,7 +248,7 @@ $
   % the same weight as the first term, eli is the resulting
   % list of conditions
   for each w in cdr wtli do
-  eli:=cons(reval {'difference,car wtli,w}, eli) 
+  eli:=cons(reval {'difference,car wtli,w}, eli)
 
  >>;
 
@@ -305,7 +305,7 @@ end$
 %  for each f1 in fl_1 do <<
 %   if print_ then write "Separation wrt. ",f1,". "$
 %   su:=nil;
-%   for each f in fl_1 do 
+%   for each f in fl_1 do
 %   su:=cons(if f=f1 then {'equal,f,1}
 %		     else {'equal,f,0},su);
 %   su:=cons('list,su);
@@ -314,7 +314,7 @@ end$
 %
 %   for each f2 in fl_2 do <<
 %    su:=nil;
-%    for each f in fl_2 do 
+%    for each f in fl_2 do
 %    su:=cons(if f=f2 then {'equal,f,1}
 %		      else {'equal,f,0},su);
 %    su:=cons('list,su);
@@ -350,12 +350,12 @@ end$
 symbolic procedure drop_dep_bi_lin(arglist)$
 begin scalar pdes,cnd,fl,f,cndcp,c,linde,again$
  pdes:=car arglist$
- if pdes and cdr pdes then 
+ if pdes and cdr pdes then
  repeat <<
   again:=nil$    % #?#
   cnd:=bi_lin_eqn_lin_comb(pdes)$
   fl:=caddr cnd$
-% cnd:=bi_lin_sep(cadr cnd,fl_1,fl_2)$ 
+% cnd:=bi_lin_sep(cadr cnd,fl_1,fl_2)$
 %  cnd:=split_simplify({{'list,cadr cnd},{'list},
 %                       cons('list,append(fl_1,fl_2)),{'list},t})$
   cnd:=split_simplify({{'list,cadr cnd},{'list},
@@ -366,14 +366,14 @@ begin scalar pdes,cnd,fl,f,cndcp,c,linde,again$
   cnd:=cadr solveeval list(cnd,fl)$
 
   if cnd then <<
-   cnd:=car cnd$  % the first 
+   cnd:=car cnd$  % the first
    for f:=1:!!arbint do <<
     cndcp:=cnd;
     for c:=1:!!arbint do
     if c neq f then cndcp:=algebraic(sub(arbcomplex(c)=0,cndcp));
     cndcp:=cdr cndcp;
 
-    while cndcp and 
+    while cndcp and
           ((zerop caddar cndcp) or
            (not freeof(linde,cadar cndcp))) do cndcp:=cdr cndcp;
     if null cndcp then <<
@@ -406,7 +406,7 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
  write"redundant equations have to be dropped."$terpri()$
  write"Has this already been done? (y/n) "$
 
- change_prompt_to ""$ 
+ change_prompt_to ""$
  repeat h:=termread() until (h='y) or (h='n)$
  If h='n then arglist:=drop_dep_bi_lin(arglist)$
  terpri()$
@@ -414,9 +414,9 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
  fl_1:=flin_;
  fl_2:=setdiff_according_to(ftem_,flin_,ftem_);
  pdes:=car arglist$
- write"Start of determining factorizable equations."$terpri()$ 
+ write"Start of determining factorizable equations."$terpri()$
  repeat <<
-  
+
   write"Give a factor of the sum of equations to be found: (terminate with ; ) "$
   terpri()$
   fc:=termxread()$
@@ -434,7 +434,7 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
   lhsfl:=caddr lhs;
   lhs:=cadr lhs$
 
-% cnd:=bi_lin_sep(algebraic(fc*lhs-rhs),fl_1,fl_2)$ 
+% cnd:=bi_lin_sep(algebraic(fc*lhs-rhs),fl_1,fl_2)$
 %  cnd:=split_simplify({{'list,algebraic(fc*lhs-rhs)},{'list},
 %                       cons('list,append(fl_1,fl_2)),{'list},t})$
   cnd:=split_simplify({{'list,algebraic(fc*lhs-rhs)},{'list},
@@ -444,7 +444,7 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
   !!arbint:=0;
   cnd:=cdr solveeval list(cnd,cons('list,append(cdr lhsfl,cdr fl)))$
   if cnd then <<
-  
+
    cnd:=car cnd; % i.e. take the first solution
    lhs:=algebraic(sub(cnd,lhs));
 
@@ -478,7 +478,7 @@ begin scalar h,pdes,fc,rhs,lhs,lhsfl,cnd,cndcp,fl,fl_1,fl_2,
           else again:=nil$
  >> until null again$
 
- restore_interactive_prompt()$ 
+ restore_interactive_prompt()$
  return if foundsome then cons(pdes,cdr arglist)
                      else nil
 end$
@@ -487,21 +487,21 @@ symbolic procedure eligible_eqn(p,allnzf,fewest_f_so_far)$
 % This procedure returns a list of non-zero functions
 % if the equation is eligible.
 begin scalar hd,maxdeg,maxdegderivs,alld,der;
-  hd:=get(p,'hom_deg); 
+  hd:=get(p,'hom_deg);
   return
   if get(p,'nonrational)                   or % non-rational
      (null hd)                             or % not homogeneous
      (car  get(p,'hom_deg) neq 0)          or % involves flin_ functions
      (cadr get(p,'hom_deg)  <  2)          or % is lin in non-flin_ functions
      (length get(p,'fct_hom) > 3)          or % more than 3 functions
-     ((fewest_f_so_far=2)            and 
+     ((fewest_f_so_far=2)            and
       (length get(p,'fct_hom) neq 2)     ) or % does not have 2 fnc if needed
      freeoflist(get(p,'fct_hom),allnzf)       % no function is non-zero
-  then nil else 
+  then nil else
   if (length get(p,'fct_hom) = 2) then cons(2,smemberl(allnzf,get(p,'fct_hom)))
                                   else <<     % 3 functions
 
-    % We want to introduce a non-homogeneous function only if it is worth it, i.e. 
+    % We want to introduce a non-homogeneous function only if it is worth it, i.e.
     % if one non-zero function occurs with a higher power than all other functions
 
     % Find all functions with the highest power
@@ -511,7 +511,7 @@ begin scalar hd,maxdeg,maxdegderivs,alld,der;
     maxdegderivs:=nil;
     while alld do <<
       der:=car alld;   alld:=cdr alld;
-      if null cdar der then % i.e. this is just the function, not a derivative  
+      if null cdar der then % i.e. this is just the function, not a derivative
       if cdr der = maxdeg then maxdegderivs:=cons(der,maxdegderivs) else
       if cdr der > maxdeg then <<maxdegderivs:={der};maxdeg:=cdr der>>
     >>$
@@ -520,24 +520,24 @@ begin scalar hd,maxdeg,maxdegderivs,alld,der;
     cons(3,smemberl(allnzf,maxdegderivs))
   >>
 end$
- 
+
 symbolic procedure para_solve_hom_equ(arglist)$
-% This procedure prepares for substitutions fi=c*f1 to be done where 
-% - f1,fi are known functions in which the equations are homogeneous, 
-% - f1 is known to be non-zero, and 
-% - there are equations that satisfy the criteria listed in procedure 
+% This procedure prepares for substitutions fi=c*f1 to be done where
+% - f1,fi are known functions in which the equations are homogeneous,
+% - f1 is known to be non-zero, and
+% - there are equations that satisfy the criteria listed in procedure
 %   eligible_eqn().
-% It could be that there are equations which satisfy all that except 
+% It could be that there are equations which satisfy all that except
 % there is no function known to be non-zero. For this case a procedure
 % generating case distinctions like 65 or 74 should be in the proc_list_
 % but with a lower priority.
-% 
+%
 % The following two lines are necessary at least as long as the property
 % 'hom_deg in undefined if fhom_=nil
-if null fhom_ then 
-if print_ then 
-write"This function is only applicable to homogeneous problems." 
-          else   else 
+if null fhom_ then
+if print_ then
+write"This function is only applicable to homogeneous problems."
+          else   else
 begin scalar p,h,f,fp,bestf,l1,pdes,forg,nzf,allnzf,
              pli,allf,newf,newe,vl,fewest_f_so_far$
  pdes:=car arglist$
@@ -548,10 +548,10 @@ begin scalar p,h,f,fp,bestf,l1,pdes,forg,nzf,allnzf,
  if no_number_atom_SQ p then allnzf:=cons(mvar numr p,allnzf);
 
  % Find a rational equation with only 2 or 3 functions of all variables
- % with homogeneity degree (0 n). Find a case where one of the 
+ % with homogeneity degree (0 n). Find a case where one of the
  % functions is known to be non-zero
 
- % nzf is an assoc list of non-zero functions with the number of 
+ % nzf is an assoc list of non-zero functions with the number of
  % eligible equations they occur in.
 
  fewest_f_so_far:=100;
@@ -560,7 +560,7 @@ begin scalar p,h,f,fp,bestf,l1,pdes,forg,nzf,allnzf,
   h:=eligible_eqn(p,allnzf,fewest_f_so_far);
   if h then <<
    fewest_f_so_far:=car h;
-   pli:=cons(p,pli);       
+   pli:=cons(p,pli);
    for each f in cdr h do <<  % cdr h = list of functions
     fp:=assoc(f,nzf);
     if null fp then nzf:=cons((f . 1),nzf)
@@ -569,7 +569,7 @@ begin scalar p,h,f,fp,bestf,l1,pdes,forg,nzf,allnzf,
   >>
  >>;
 
- if null nzf then return 
+ if null nzf then return
  if print_ then <<
   write"Either the equations do involve more than 3 functions,"$terpri()$
   write" or they do not involve functions that are known"$terpri()$
@@ -595,13 +595,13 @@ begin scalar p,h,f,fp,bestf,l1,pdes,forg,nzf,allnzf,
  if null cdr allf then return nil$
 
  vl:=fctargs(bestf)$
- for each f in allf do 
+ for each f in allf do
  if f neq bestf then <<
   newf:=newfct(fname_,vl,nfct_)$  nfct_:=add1 nfct_$
   ftem_:=append(ftem_,list newf)$
   newe:=mkeqSQ(simp {'difference,f,{'times,newf,bestf}},nil,nil,
                {f,newf,bestf},vl,allflags_,t,list(0),nil,pdes);
-  pdes:=eqinsert(newe,pdes)$ 
+  pdes:=eqinsert(newe,pdes)$
   % The substitution f=>newf*bestf is (unfortunately) done in all
   % equations, also in equations where bestf does initially not occur,
   % i.e. where
@@ -614,4 +614,3 @@ end$
 endmodule$
 
 end$
-

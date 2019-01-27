@@ -44,13 +44,13 @@ comment
 begin scalar a;
  vl:=union(reverse argset cdr fl,cdr vl)$
  if null ftem_ then ftem_:=cdr fl$
- a:=dropredund(list(for each a in cdr ex collect simp 
+ a:=dropredund(list(for each a in cdr ex collect simp
                     if (pairp a) and (car a='equal) then caddr a else a,{},
                     cdr fl,for each a in cdr unequ collect simp a),nil,vl);
- % dropredund() returns 
+ % dropredund() returns
  % {{{equal,f,0},..},{SQ-exp,..},{{equal,f,SQ-exp},..},
  %  union(nofl_arbit,flstart),{ineq_ in SQ-form}}
- return if a then 
+ return if a then
  {'list,cons('list,car    a),
 	cons('list,for each b in caddr a collect
                    {'equal,cadr b,prepsq caddr b}),
@@ -71,21 +71,21 @@ begin
 % proc_list_:=default_proc_list_;
 % if null ftem_ then ftem_:=cadr arglist$
 %
-% for each f in cadr arglist do 
+% for each f in cadr arglist do
 % if not pairp f then nofl:=cons(f,nofl) else
 % if car f='equal then fli:=cons(f,fli)$
 % fred:=setdiff(ftem_,nofl);
 
  % fsub_ substitutions are done in forg:
  bak:=fsub_;
- for each f in (newforg:=sub_fsub_in_itself_and_in_forg cadr arglist) do 
+ for each f in (newforg:=sub_fsub_in_itself_and_in_forg cadr arglist) do
  % i.e. for each f in forg
  if not pairp f then nofl:=cons(f,nofl) else
- if car f='equal then fli:=cons(f,fli)$  
+ if car f='equal then fli:=cons(f,fli)$
  % fli has the form {{equal,f,SQ-form},...}
  fred:=setdiff(ftem_,nofl);
  if null fred then return if null bak then nil
-                                      else {car arglist,newforg}; 
+                                      else {car arglist,newforg};
  % not always return nil because if fsub_ was not nil (i.e. if lazy_eval=t
  % and lin_problem=nil) then substitutions have been made in forg.
  fsub_:=bak;
@@ -101,12 +101,12 @@ begin
  >>$
 
  redu:=
- dropredund({for each p in car  arglist collect get(p,'sqval),  
+ dropredund({for each p in car  arglist collect get(p,'sqval),
              fli,      % all of form: {equal,f,SQ-form}
              fred,     % functions that can be dropped
              ineq_},
             nofl,vl_);
- % dropredund() returns 
+ % dropredund() returns
  % {{{equal,f,0},..},{SQ-exp,..},{{equal,f,SQ-exp},..},
  %  union(nofl_arbit,flstart),{ineq_ in SQ-form}}
 
@@ -124,9 +124,9 @@ begin
   newpval:=cadr redu$        % a list of all SQ-form values of all equations
 
   while newpval do <<        % newpdes starts as nil
-   newpdes:=if get(car oldpdes,'sqval) = car newpval 
-            then eqinsert(car oldpdes,newpdes) 
-            else <<for each f in allflags_ do flag1(car oldpdes,f)$ 
+   newpdes:=if get(car oldpdes,'sqval) = car newpval
+            then eqinsert(car oldpdes,newpdes)
+            else <<for each f in allflags_ do flag1(car oldpdes,f)$
                    % initialization before calling update
                    p:=updateSQ(car oldpdes,car newpval,nil,nil,get(car oldpdes,'fcts),
                                get(car oldpdes,'vars),t,{0},newpdes)$
@@ -137,7 +137,7 @@ begin
                  >>;
    newpval:=cdr newpval;
    oldpdes:=cdr oldpdes
-  >>$  
+  >>$
 
   % delete the dropped functions in the property list of the forg functions
   for each f in dropped do
@@ -151,7 +151,7 @@ begin
  >>
 end$
 
-symbolic procedure dropredund(a,nofl,vl)$   
+symbolic procedure dropredund(a,nofl,vl)$
 % a has the structure of one solution of CRACK in symbolic mode,
 % {{SQ-expressions},{{equal,f,SQ-form}},{f},{ineq_ in SQ-form}}
 % nofl is a list of functions not to be modified or dropped
@@ -167,7 +167,7 @@ symbolic procedure dropredund(a,nofl,vl)$
 
 % if no assignment or no function f then return of nil
 if cadr  a then if length cadr  a > 0 then
-if caddr a then if length caddr a > 0 then 
+if caddr a then if length caddr a > 0 then
 begin
  scalar sol,arbit,fl,el1,el2,el3,corres,b,b1,b2,condi,oldcon,
         redund,flstart,fldrop,fldupli2,newfu,newcorres,unequ,unsolved,
@@ -190,26 +190,26 @@ begin
 
  %
  for each el1 in append(car a,cadr a) do
- if el1 then b1:=cons(if pairp el1 then 
+ if el1 then b1:=cons(if pairp el1 then
                       if car el1 = 'equal then caddr el1
                                           else el1
 	                           else el1             ,b1);
- % b1 is the list of expressions in SQ-form to be invariant  
+ % b1 is the list of expressions in SQ-form to be invariant
  % These are all equations and rhs's of assignments. Strictly speaking,
- % after a fix of redundand functions the new system need not 
+ % after a fix of redundand functions the new system need not
  % reduce to exactly the same system but only an equivalent one
  % but for simplicity we require here the redundancy for each equation.
- b2:=b1;                            
+ b2:=b1;
 
  % arbit is the list of original free functions in the input solution
  arbit:=caddr a;
- flin_bak:=flin_$   
+ flin_bak:=flin_$
 
  % For the following comments an >eligible< function is a function that is
  % provided as a so far free function (arbint) but which is not in forg
  % i.e. which is not a so far unevaluated original function.
  %
- % flstart is the list of eligible functions that 
+ % flstart is the list of eligible functions that
  %         turn up in the invariant expressions including the
  %         duplicates of these functions
  % fldrop is the list of eligible functions which do not
@@ -219,7 +219,7 @@ begin
  % fl      is the list of all functions (potentially dropable + their new copy)
  % corres  is a list of correspondences of functions and their dupl.
 
- for each el1 in arbit do 
+ for each el1 in arbit do
  if not freeof(nofl,el1) then nofl_arbit:=cons(el1,nofl_arbit)
                          else
  if not my_freeof(b1,el1) then <<
@@ -253,16 +253,16 @@ begin
  % for c_9(b,a,x,t), c_8(b,a,x,t), c_12(b,a,t), c_14(b,t)
  % because in the crack computation below it could not integrate
  % 0=c_46  - c_47
- %       a      
+ %       a
  % therefore potint_ is switched back on for now.
  % potint_:=nil;
  potint_:=t;
- session_bak:=session_; 
+ session_bak:=session_;
  session_:=nil$   % to prevent interference with solutions and the casetree
  % orderings_:=mkvect(1)$
  % putv(orderings_,0,list(vl,fl,'default_ordering_function))$
- ineq_bak    :=ineq_;       ineq_      :=nil; 
- ineq_or_bak :=ineq_or;     ineq_or    :=nil; 
+ ineq_bak    :=ineq_;       ineq_      :=nil;
+ ineq_or_bak :=ineq_or;     ineq_or    :=nil;
  vl_bak      :=vl_;         vl_        :=vl;
  old_hist_bak:=old_history; old_history:=nil$
  ftem_bak    :=ftem_;       ftem_      :=nil$
@@ -284,40 +284,40 @@ begin
  collect_sol:=collect_sol_bak$ flin_:=flin_bak;
  adjust_fnc:=adjust_fnc_bak;  level_:=level_bak;
  ineq_:=ineq_bak;  ineq_or:=ineq_or_bak;
- vl_:=vl_bak;      ftem_:=ftem_bak$ % temporarily 
+ vl_:=vl_bak;      ftem_:=ftem_bak$ % temporarily
  if proc_list_bak then proc_list_:=proc_list_bak;
  old_history:=old_hist_bak$
 
- % Now we look for a solution without inequalities and without remaining 
+ % Now we look for a solution without inequalities and without remaining
  % equations where each right hand side contains at least one fl-function.
  % All useful ones are copied into b2. If none is useful then only fldrop
  % functions are dropped else b:=car b2 is the solution to be investigated
  % further.
- 
- for each b1 in b do                       
+
+ for each b1 in b do
  if pairp b1 % then
-% if ((not car b1) or         % no remaining equations or they involve  
-%     freeoflist(car b1,fl))  % only functions just introduced in crack 
+% if ((not car b1) or         % no remaining equations or they involve
+%     freeoflist(car b1,fl))  % only functions just introduced in crack
 % apparently no need for this condition as appearance of new free functions
 % in remaining conditions `unsolved' is tested below
-    % and (not cadddr b1) % i.e. ineq_=nil has been dropped because the 
-    %% functions to be checked whether they can be zero or not (e.g. c_30) 
-    %% are not in ftem_ and thus can not become identical zero which, and in 
+    % and (not cadddr b1) % i.e. ineq_=nil has been dropped because the
+    %% functions to be checked whether they can be zero or not (e.g. c_30)
+    %% are not in ftem_ and thus can not become identical zero which, and in
     %% the case of an equation 0=c_30-c_60 means that c_60 which is in ftem_
     %% can not become zero which means cadddr b1=(c_60) <> nil but
     %% which has no implication that this solution could not be used
-    %% for dropping other functions than c_30, so the condition 
+    %% for dropping other functions than c_30, so the condition
     %% (not cadddr b1) is dropped.
  then <<
   el1:=t;
-  % if there is a right hand side of any computed assignment which is free 
+  % if there is a right hand side of any computed assignment which is free
   % of fl and free of all free variables from the solution b1 then el1:=nil .
   for each el2 in cadr b1 do % for each computed assignment
   if (pairp el2) and         % should always be true
      (car el2='equal) and    % should always be true
      (null smemberl(fl,caddr el2)) and
      (null smemberl(caddr b1,caddr el2)) then el1:=nil;
-  if el1 then b2:=cons(b1,b2);  
+  if el1 then b2:=cons(b1,b2);
  >>$
  potint_:=potold;
  session_:=session_bak;
@@ -328,12 +328,12 @@ begin
   write"------------------------------------------------------------"$terpri()$
  >>$
  !*batch_mode:=batch_mode_old;
- if null b2 then return <<   
-  for each el1 in append(fldupli,fldrop) do 
+ if null b2 then return <<
+  for each el1 in append(fldupli,fldrop) do
   drop_fct(el1)$ % depl!*:=delete(assoc(el1,depl!*),depl!*)$
   if null fldrop then nil
                  else <<    % drop at least all functions fldrop
-   redund:=for each el1 in fldrop collect list('equal,el1,0); 
+   redund:=for each el1 in fldrop collect list('equal,el1,0);
 
    % `a' has the structure of one solution of CRACK in symbolic mode,
    % {{SQ-expressions},{{equal,f,SQ-form}},{f},{ineq_ in SQ-form}}
@@ -345,10 +345,10 @@ begin
    % so that oldcon is in exact same order as car a.
 
    % substitutions in assignments
-   sol:=for each el3 in cadr a collect 
+   sol:=for each el3 in cadr a collect
         {'equal,cadr el3, subsq(caddr el3,el2)};
 
-   % substitutions in inequalities 
+   % substitutions in inequalities
    unequ:=for each el3 in cadddr a collect subsq(el3,el2);
 
    list(redund,oldcon,sol,union(nofl_arbit,flstart),unequ)
@@ -362,16 +362,16 @@ begin
  %          setdiff(ftem_,forg),
  %          ineq_,
  %          ineq_or)
- unsolved:=car b$               
+ unsolved:=car b$
  arbit:=caddr b;   % arbit are the free functions of the last CRACK run
                    % newfu are the assignments computed in the last CRACK run
  for each el1 in cadr b do
  if not((pairp el1       ) and
         (car el1 = 'equal)     ) then arbit:=cons(el1,arbit)
-                                 else newfu:=cons(el1,newfu)$ 
- oldcon:=car a;   
- sol:=cadr a;     
- unequ:=cadddr a; 
+                                 else newfu:=cons(el1,newfu)$
+ oldcon:=car a;
+ sol:=cadr a;
+ unequ:=cadddr a;
 
  % flstart are the remaining essential free functions
  % redund are the functions to be dropped, they are set to 0 in
@@ -399,14 +399,14 @@ begin
   fl:=delete(car el1,fl);
   fl:=delete(cdr el1,fl);
   flstart:=delete(car el1,flstart);
-  fldupli2:=delete(cdr el1,fldupli2); 
+  fldupli2:=delete(cdr el1,fldupli2);
   % newfu is a list of assignments of the last crackmain run
-  newfu:=for each el2 in newfu collect 
+  newfu:=for each el2 in newfu collect
   {'equal,cadr el2, subsq(caddr el2,{(car el1 . 0),(cdr el1 . 0)})}
  >>                                                 else
  newcorres:=cons(el1,newcorres);
 
- % fldupli2 are the duplicated functions which are not deleted as 
+ % fldupli2 are the duplicated functions which are not deleted as
  % redundand yet.
  % Eliminate from all equations the fldupli2 function in terms of
  % the corresponding flstart function and possibly other terms
@@ -414,17 +414,17 @@ begin
  % by expressions in old functions.
 
  while newfu do <<
-  el1:=car newfu; % el1: evaluated function = expression 
-  el2:=cadr el1;  % el2: evaluated function 
+  el1:=car newfu; % el1: evaluated function = expression
+  el2:=cadr el1;  % el2: evaluated function
   b:=newcorres;   % the remaining correspondences
   while b and (el2 neq cdar b) do b:=cdr b;
-  if b then       % el2 = cdar b is a new function 
+  if b then       % el2 = cdar b is a new function
   if (not freeof(el1,caar b)) then newnewfu:=cons(el1,newnewfu)
                               else <<
-   % The right hand side ex1 of equation el1: el2=ex1 does not 
-   % contain the old function, say f, which corresponds to the 
+   % The right hand side ex1 of equation el1: el2=ex1 does not
+   % contain the old function, say f, which corresponds to the
    % new function el2
-   % --> search for an equation car el3 in newfu of the form 
+   % --> search for an equation car el3 in newfu of the form
    % f = ex2, then add el2=ex1+f-ex2 to newnewfu
    el3:=newfu;
    while el3 and (cadar el3 neq caar b) do el3:=cdr el3;
@@ -436,7 +436,7 @@ begin
                    newnewfu);
     newfu:=delete(car el3,newfu)
    >>     else newnewfu:=nil;  % means later that it can not be treated
-  >>   else <<    % el2 is an old function 
+  >>   else <<    % el2 is an old function
    % like in the case above, only that in order to add equations of
    % the form new_fct = expr in old_fcts can be added to newnewfu,
    % the equations has to be solved for new_fct
@@ -465,7 +465,7 @@ begin
                     newnewfu);
      newfu:=delete(car el3,newfu)
     >>     else newnewfu:=nil;  % means later that it can not be treated
-   >>    
+   >>
   >>;
   newfu:=cdr newfu
  >>;
@@ -473,12 +473,12 @@ begin
 
  % test, whether each new function has exactly one substitution
  % and no new function appears on a rhs
- if length fldupli2 = length newfu then 
- while newnewfu and freeoflist(caddar newnewfu,fldupli2) do 
+ if length fldupli2 = length newfu then
+ while newnewfu and freeoflist(caddar newnewfu,fldupli2) do
  newnewfu:=cdr newnewfu;
-   
- if newfu and (not newnewfu) then <<  
-  % now the conditions have really been solved for the new 
+
+ if newfu and (not newnewfu) then <<
+  % now the conditions have really been solved for the new
   % functions, no new function is on the rhs
 
   % arbit are all free old and new functions after the above CRACK-run
@@ -494,13 +494,13 @@ begin
   for each el1 in newfu collect <<
    b:=cadr el1;     % b is a new function
    el2:=newcorres;  % caar el2 the corresponding old function
-   while b neq cdar el2 do el2:=cdr el2; 
+   while b neq cdar el2 do el2:=cdr el2;
    list('equal,caar el2,caddr el1)
   >>;
 
   % arbit are now all functions which came in only through the
   % last CRACK run. From them we take only those who do not turn up in
-  % remaining unsolved equations `unsolved'. The idea is to use them 
+  % remaining unsolved equations `unsolved'. The idea is to use them
   % to compensate as many as possible functions flstart such that the
   % counterpart of the flstart function which is solved for in the
   % assignment can be made to zero. These are the new values of the
@@ -510,14 +510,14 @@ begin
   % Specifying the functions in arbit which are free to get as many
   % as possible functions flstart to zero
   arbit:=fctsort(arbit)$  % to use the functions with most variables first
-  for each el1 in arbit do 
+  for each el1 in arbit do
   if freeof(unsolved,el1) then << % only if el1 is truely free
-   % +&+ It probably is enough to test whether el1 does not 
+   % +&+ It probably is enough to test whether el1 does not
    % appear in an equation of `unsolved' which has only as
    % independent variables the same as el1 depends on.
    vla:=fctargs el1; % variables of the function to be eliminated
    el2:=newfu;
-   while el2 do 
+   while el2 do
    if freeof(car el2,el1) then el2:=cdr el2
                           else <<
     vlf:=fctargs cadar el2;
@@ -536,7 +536,7 @@ begin
        deprint {{'!*sq,caddar el2,t}};
        write" has always a solution in ",el1;terpri()$
        write" functions: ";
-       el3:=append(flstart,arbit); 
+       el3:=append(flstart,arbit);
        b:=nil;
        while el3 do <<
         if not freeof(caddar el2,car el3) then b:=cons(car el3,b);
@@ -548,13 +548,13 @@ begin
       fldrop:=cons(cadar el2,fldrop);
       oldcon:=for each el3 in oldcon collect subsq(el3,{(cadar el2 . 0)});
       sol:=for each el3 in sol collect <<
-       if (pairp el3) and (car el3='equal) then 
+       if (pairp el3) and (car el3='equal) then
        put(cadr el3,'fcts,delete(cadar el2,get(cadr el3,'fcts)));
        {'equal,cadr el3, subsq(caddr el3,{(cadar el2 . 0)})}
       >>$
       unequ:=for each el3 in unequ collect subsq(el3,{(cadar el2 . 0)});
       flstart:=delete(cadar el2,flstart);
-      newfu:=delete(car el2,newfu);     
+      newfu:=delete(car el2,newfu);
       el2:=nil;
      >>
     >>;
@@ -562,11 +562,11 @@ begin
    >>
   >>;
 
-  % substituting all remaining functions arbit in the substitutions 
+  % substituting all remaining functions arbit in the substitutions
   % newfu to zero which are not already specified
   % 12.8.2007: I don't see how newfu is used after the substitution
   el2:=for each el1 in arbit collect (el1 . 0);
-  newfu:=for each el1 in newfu collect 
+  newfu:=for each el1 in newfu collect
          {'equal,cadr el1, subsq(caddr el1,el2)}
  >>;
  if fldrop and print_ then <<
@@ -574,7 +574,7 @@ begin
   write"non-essential dropped constant(s) or function(s): ";
   fctprint fldrop
  >>$
- for each el1 in append(fldupli,fldrop) do 
+ for each el1 in append(fldupli,fldrop) do
  depl!*:=delete(assoc(el1,depl!*),depl!*)$
  return
  if null fldrop then nil
@@ -603,7 +603,7 @@ begin
   sb:={};
   for each e1 in flist do <<
     n1:=nil;
-    % to make a change of sign at least one equation 
+    % to make a change of sign at least one equation
     % must demand it which is cs1=t
     % and no equation must forbit it which is cs2=nil
     cs1:=nil; cs2:=t;
@@ -619,15 +619,15 @@ begin
 	  if part(n,0)='minus then cs1:=t else
 	  if part(n,0)='quotient then
           <<nu:=part(n,1);
-            if lisp( pairp reval algebraic nu) and 
+            if lisp( pairp reval algebraic nu) and
                (part(nu,0)='minus) then cs1:=t else
             if (numberp nu) and (nu<0) then cs1:=t else
-            if (arglength(nu)>0) and (part(nu,0)='plus) and 
-               (arglength(part(nu,1))>0) and 
+            if (arglength(nu)>0) and (part(nu,0)='plus) and
+               (arglength(part(nu,1))>0) and
                (part(part(nu,1),0)='minus) then cs1:=t
                                            else cs2:=nil
-          >>                     else 
-	  if (part(n,0)='plus) and (arglength(part(n,1))>0) and 
+          >>                     else
+	  if (part(n,0)='plus) and (arglength(part(n,1))>0) and
              (part(part(n,1),0)='minus) then cs1:=t
                                         else cs2:=nil
 	>>;
@@ -714,15 +714,15 @@ begin
 end$ % of drop_const
 
 comment
- The following are routines to help finding bugs. 
+ The following are routines to help finding bugs.
  Advantages and disadvantages of current routines:
 
- solution_check1: 
+ solution_check1:
  it uses from the special external solution all assignments in
  equation form and is thus very general but also very slow.
-                
- solution_check2: 
- checks whether the substitutions of the special solution 
+
+ solution_check2:
+ checks whether the substitutions of the special solution
  contradict inequalities. --> fast but limited in scope
 
  solution_check3:
@@ -737,17 +737,17 @@ algebraic procedure sol_define1$
 begin scalar a,b,assi$
   % This procedure contains the statements that specify a solution
   %
-  %  %======= Example 1: Test whether u=h-y**2/t**2,  v=y/t 
-  %  %                   is a solution where h=h(t) 
+  %  %======= Example 1: Test whether u=h-y**2/t**2,  v=y/t
+  %  %                   is a solution where h=h(t)
   %
   %  depend c_7,t$
-  %  % returned is a list of 
-  %  % - a list of vanishing expressions defining the solution to be tested, 
+  %  % returned is a list of
+  %  % - a list of vanishing expressions defining the solution to be tested,
   %  % - a list of free constants, functions which can have any value except
   %  %   not a number of values excluded by inequalities
   %  %   for example:
   %  return {{u-(c_7-c_8*y**2/t**2),v-c_9*y/t},{c_7,c_8,c_9}}
-  % 
+  %
   %  %======= Example 2: The solution is given in a file
   %
   %  in "so113-18-Nov-1.1.1.1.1.1.1.1."$
@@ -770,7 +770,7 @@ begin scalar a,b,assi$
   %    a:=cdr backup_;  backup_:=nil$  % to free space
   %    {'list,
   %     cons('list,
-  %          append(car a,for each assi in cadr a 
+  %          append(car a,for each assi in cadr a
   %	                  collect {'DIFFERENCE,caddr assi,cadr assi})),
   %     cons('list, caddr a)}
   %  >>
@@ -795,7 +795,7 @@ symbolic procedure solution_check1(arglist)$
 
 begin scalar pdes,forg,a,fsub,solu,l1,l2,batch_bak,session_bak,
              proc_list_bak,print_bak,old_history_bak,batchcount_bak,
-             stepcounter_bak,repeat_mode_bak,print_bak,freef$
+             stepcounter_bak,repeat_mode_bak,freef$
 
  pdes:=car arglist$
  forg:=cadr arglist$
@@ -817,7 +817,7 @@ begin scalar pdes,forg,a,fsub,solu,l1,l2,batch_bak,session_bak,
 
  forg:=sub_fsub_in_itself_and_in_forg forg$
  for each a in forg do
- if (pairp a) and (car a='equal) then 
+ if (pairp a) and (car a='equal) then
  fsub:=cons({'equal,cadr a,{'!*sq,caddr a,t}},fsub)$
 
  if fsub then solu:=algebraic(sub(lisp cons('list,fsub),solu))$
@@ -833,7 +833,7 @@ begin scalar pdes,forg,a,fsub,solu,l1,l2,batch_bak,session_bak,
    terpri()$write "solution is included in the current system."
  >>;
  % further necessary step to call crackmain():
- recycle_fcts:=nil$  % such that functions generated in the sub-call 
+ recycle_fcts:=nil$  % such that functions generated in the sub-call
                      % will not clash with existing functions
  % solu should be in {list,!*sq-form,...} but to make sure it is
  % evaluated with aeval again
@@ -844,9 +844,9 @@ begin scalar pdes,forg,a,fsub,solu,l1,l2,batch_bak,session_bak,
  a:=ftem_;
  for each l1 in forg do
  if not atom l1 then for each l2 in get(cadr l1,'fcts) do
-                     if freeof(a,l2) and 
-                        freeof(freef,l2) then a:=fctinsert(l2,a) 
-                                         else                 
+                     if freeof(a,l2) and
+                        freeof(freef,l2) then a:=fctinsert(l2,a)
+                                         else
                 else if freeof(a,l1) and
                         freeof(freef,l1) then a:=fctinsert(l1,a)$
  if freef then <<
@@ -854,7 +854,7 @@ begin scalar pdes,forg,a,fsub,solu,l1,l2,batch_bak,session_bak,
   for each l1 in pdes do solu:=cons(get(l1,'sqval),solu)$
   pdes:=nil$
   pdes:=mkeqSQlist(solu,nil,nil,a,vl_,allflags_,t,list(0),pdes)$
- >>       else  
+ >>       else
  pdes:=append(mkeqSQlist(solu,nil,nil,a,vl_,allflags_,t,list(0),pdes),pdes)$
  print_more:=nil$
  proc_list_:=delete('solution_check1,proc_list_);
@@ -880,7 +880,7 @@ begin scalar pdes,forg,a,fsub,solu,l1,l2,batch_bak,session_bak,
  if l1 and not contradiction_ then write"+++++ Solution IS included."
                               else write"+++++ Solution is NOT included."$
  terpri()$
- contradiction_:=nil$ 
+ contradiction_:=nil$
  session_:=session_bak$ % to restore the right session
  l1:=restore_backup_from_file(pdes,forg,nil)$
  % not needed: pdes:=car l1;  forg:=cadr l1;
@@ -890,20 +890,20 @@ end$
 
 algebraic procedure sol_define2$
 % This procedure returns a substitution list which is to be used
-% in solution_check2() to check whether it violates an inequality   
+% in solution_check2() to check whether it violates an inequality
 % The computation can be speeded up by making hsub global and
 % calling this procedure only once initially.
-begin 
+begin
 % scalar hsub$
 % return
 % lisp <<
 %  in "so28--9-Jul-2004-2.3.2."$
 %  hsub:=nil$
 %
-%  for each h in caddr backup_ do 
-%  if not freeof('(a11 a12 a13 a22 a23 a33 
-%                  b11 b12 b13 b21 b22 b23 b31 b32 b33  
-%                  c11 c12 c13 c22 c23 c33 n1 n2 n3 m1 m2 m3),cadr h) then 
+%  for each h in caddr backup_ do
+%  if not freeof('(a11 a12 a13 a22 a23 a33
+%                  b11 b12 b13 b21 b22 b23 b31 b32 b33
+%                  c11 c12 c13 c22 c23 c33 n1 n2 n3 m1 m2 m3),cadr h) then
 %  hsub:=cons(h,hsub)$
 %  cons('list,hsub)
 % >>
@@ -913,7 +913,7 @@ symbolic procedure solution_check2(arglist)$
 % arglist=(pdes,forg,vl_,pdes)
 
 % This procedure tests whether a solution that is defined in
-% an external procedure sol_define2() is a solution of the 
+% an external procedure sol_define2() is a solution of the
 % currend system under investigation by checking whether
 % it violates the inequalities or not. This procedure is useful
 % if CRACK looses an inequality and finds a solution which violates
@@ -933,15 +933,15 @@ begin scalar g,h,k,p,ineq_cp,hsub$
   nil
  >>$
  ineq_cp:=ineq_$
- while ineq_cp and 
-       not zerop(h:=algebraic(sub(hsub,lisp {'!*sq,car ineq_cp,t}))) do 
+ while ineq_cp and
+       not zerop(h:=algebraic(sub(hsub,lisp {'!*sq,car ineq_cp,t}))) do
  ineq_cp:=cdr ineq_cp$
  if null ineq_cp then <<
   ineq_cp:=ineq_or$
   while ineq_cp and <<
    g:=car ineq_cp;   % g is a list of which at least one factor list
                      % must not vanish
-   while g and 
+   while g and
          zerop (h:=algebraic(sub(hsub,lisp <<
            % car g is a factor list, we multiply all SQ-form factors
            p:=caar g;
@@ -951,7 +951,7 @@ begin scalar g,h,k,p,ineq_cp,hsub$
    g
   >> do ineq_cp:=cdr ineq_cp$
  >>$
- if null ineq_cp then 
+ if null ineq_cp then
  write".......... No inequality was violated. ............" else <<
   write"########## At least one inequality was violated: "$
   mathprint                    % car ineq_cp is a single or-inequality
@@ -996,7 +996,7 @@ symbolic procedure solution_check3(arglist)$
 % arglist=(pdes,forg,vl_,pdes)
 
 % This procedure tests whether a solution that is defined in
-% an external procedure sol_define3() is a solution of the 
+% an external procedure sol_define3() is a solution of the
 % currend system under investigation.
 % This procedure is useful to find an error in the computation
 % where the system becomes suddenly less restrictive and allows
@@ -1008,7 +1008,7 @@ symbolic procedure solution_check3(arglist)$
 % we mean all/some of the free parameters of the solution defined
 % in sol_define.
 % solution_check3 performs substitutions directly, so that will
-% only work in a system which does not have substitutions done yet. 
+% only work in a system which does not have substitutions done yet.
 
 begin scalar solu,a,b,p,f,h,cpa$
 
@@ -1028,32 +1028,32 @@ begin scalar solu,a,b,p,f,h,cpa$
  solu:=nil;
 
  % test all pdes
- for each p in car arglist do <<                    
-  h:=algebraic (sub(lisp a,lisp {'!*sq,get(p,'sqval),t}))$   
+ for each p in car arglist do <<
+  h:=algebraic (sub(lisp a,lisp {'!*sq,get(p,'sqval),t}))$
   % This will be tested later due to lack of time now and because
   % there are no remaining equations in the solution to be used now.
   % if not zerop h and b then ; % reduce h moulo b
-  if null h or not zerop h then 
+  if null h or not zerop h then
   <<write"***** Equation ",p," is violated! *****"$terpri()$
     algebraic write "0 = ",lisp h>>$
  >>$
 
  % collect all relations due to forg
- for each f in cadr arglist do 
+ for each f in cadr arglist do
  if pairp f then <<
-  if denr caddr f = 1 then  
+  if denr caddr f = 1 then
   % to speedup, we only substitute one bye one if the denominator is not 1
   h:=algebraic (sub(lisp a,lisp {'!*sq,subtrsq(caddr f,simp cadr f),t}))
                       else <<
    h:={'!*sq,subtrsq(caddr f,simp cadr f),t}$
-   cpa:=cdr a$ 
-   while cpa and 
+   cpa:=cdr a$
+   while cpa and
          (h:=err_catch_sub(cadar cpa,caddar cpa,h)) do cpa:=cdr cpa$
   >>$
   % This will be tested later due to lack of time now and because
   % there are no remaining equations in the solution to be used now.
   % if not zerop h and b then ; % reduce h moulo b
-  if null h or not zerop h then 
+  if null h or not zerop h then
   <<write"***** Function ",cadr f," value is contradicted! *****"$
     terpri()>>$
  >>$
