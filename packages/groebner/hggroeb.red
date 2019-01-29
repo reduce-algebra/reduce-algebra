@@ -83,7 +83,7 @@ symbolic procedure dd!-bbg w;
      return caar r end;
 
 symbolic procedure dd_homog!-check w;
-  begin scalar d,q,tst,q;
+  begin scalar d,q,tst;
     if not memq(dipsortmode!*,'(graded weighted gradlex revgradlex))
       then typerr(dipsortmode!*,"term order for dd_groebner");
     for each p in w do
