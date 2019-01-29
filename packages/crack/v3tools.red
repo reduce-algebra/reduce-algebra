@@ -147,7 +147,7 @@ if null all then {cons(nil,for each h in wgths_ collect 0)}
                    % {{{'bu},0,1,1}}    % i.e. if bu is an overall factor
                    % but then reductions are wrong
             else begin
-  scalar h,v,vw,oldli,newli,h,vwcp,wgcp,found_less,found_more,b,c,d$
+  scalar h,v,vw,oldli,newli,vwcp,wgcp,found_less,found_more,b,c,d$
 
   h:=car all$  all:=cdr all$
   v:=car h; vw:=cdr h$    % the next factor to be multiplied + its weight-list
