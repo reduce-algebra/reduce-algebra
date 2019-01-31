@@ -49,12 +49,12 @@
      % the return value are the low order bits of the product.
      % The high order bits are placed in fluid variable.
      '(% double length unsigned mutiply; 
-       % EDX:EAX <- EAX * reg 
+       % reg1:reg2 <- reg1 * reg2 
        (UMULL (reg 1) (reg 2) (reg 1) (reg 2))
       % now we have 32 low bits in REG1, 32 high bits in REG2
        (*MOVE (reg 2) ($FLUID *second-value*))
      ))
-(put 'addAndSetCarry 'destroys '((reg 1)(reg 3)))
+(put 'wtimesdouble 'destroys '((reg 1)(reg 2)))
 
 
 (put 'wxtimes2 'opencode % different version for $pxu/mbarith
@@ -68,8 +68,8 @@
       % Result is the single length quotient.
       % the remainder is placed in a fluid variable.
       '(  % load address of fluid variable in (reg 4)
-        (*LoadIdNumber LDR (reg 4) ($FLUID *second-value*))
-	(*MOVE (reg 4) (displacement (reg symval) (regshifted 4 LSL 2)))
+        (LDR (reg 4) (idloc *second-value*))
+	(ADD (reg 4) (reg symval) (regshifted 4 LSL 2))
         (*JCall wxquotientdouble)
       ))
 
@@ -95,13 +95,14 @@ eput 'addAndSetCarry 'opencode
 (put 'addwithcarry 'opencode
        '(
            % move carry* to register CF
-         (*WDifference3 (reg t1) (wconst 0) ($fluid carry*))
+	 (*Move ($fluid carry*) (reg t1))
+         (RSBS (reg t1) (wconst 0) (reg t1))
            % add with carry
          (ADCS (reg 1) (reg 2) (reg 1))
            % move cf to carry*
-         (MOVCC (reg 2) 0)
-         (MVNCS (reg 2) 0)
-         (*Move (reg 2) ($FLUID carry*))
+         (MOVCC (reg t1) 0)
+         (MVNCS (reg t1) 0)
+         (*Move (reg t1) ($FLUID carry*))
        ))
 (put 'addWithCarry 'destroys '((reg 1)))
 
@@ -113,7 +114,7 @@ eput 'addAndSetCarry 'opencode
        '(
          (ADDS (reg 1) (reg 2) (reg 1))
          (*move ($FLUID *second-value*) (reg 2))
-         (ADC (wconst 0)(reg 2))
+         (ADC (reg 2) (reg 2) (wconst 0))
          (*move (reg 2) ($FLUID *second-value*))
        ))
 (put 'addAndAddCarry 'destroys '((reg 1)(reg 2)))
@@ -125,13 +126,14 @@ eput 'addAndSetCarry 'opencode
 (put 'subtractwithborrow 'opencode
        '(
            % move carry* to cf
-         (*WDifference3 (reg t1) (wconst 0) ($fluid carry*))
+	 (*Move ($fluid carry*) (reg t1))
+         (RSBS (reg t1) (wconst 0) (reg t1))
            % subtract with borrow
          (SBCS (reg 1) (reg 2) (reg 1))
            % move new borrow to carry*
-         (MOVCC (reg 2) 0)
-         (MVNCS (reg 2) 0)
-         (*Move (reg 2) ($FLUID carry*))
+         (MOVHI (reg t1) 0)
+         (MVNLS (reg t1) 0)
+         (*Move (reg t1) ($FLUID carry*))
        ))
 (put 'subtractwithborrow 'destroys '((reg 1)))
 
@@ -142,11 +144,22 @@ eput 'addAndSetCarry 'opencode
  
 (put 'ugreaterp* 'opencode 
    % returns 1 if arg1 > arg2 unsigned.
-'( (SUBS (reg 1) (reg 1) (reg 2))        % compare, setting carry if r1>r2
+'( (RSBS (reg 1) (reg 1) (reg 2))        % compare, setting carry if r1>r2
      % move carry to lowest bit
-   (MOVCC (reg 1) 0)
-   (MOVCS (reg 1) 1)
+   (MOVHI (reg 1) 0)
+   (MOVLS (reg 1) 1)
 ))
 (ds ugreaterp(a b)(eq 1 (ugreaterp* a b)))
+
+(commentoutcode
+(put 'ugreaterp 'opencode 
+   % returns 1 if arg1 > arg2 unsigned.
+'( (RSBS (reg 1) (reg 1) (reg 2))        % compare, setting carry if r1>r2
+     % move carry to lowest bit
+   (MOVHI (reg 1) (reg nil))
+   (SUBLS (reg 1) (reg nil) (wconst nil-t-diff*))
+))
+
+ )
 
 
