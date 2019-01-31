@@ -111,7 +111,7 @@ asserted procedure rl_serviceStatList(): Alist;
 	    rederr {"expecting alphabetic key in rl_service but found", cursym!*};
       	 key := cursym!*;
 	 % Now the four cases (a)-(d) discussed above:
-	 entry := if key eq 'default then  % case (c)
+	 entry := if key eq '!d!e!f!a!u!l!t then  % case (c)
 	    rl_amReadDefaultToForm()
 	 else if key eq 'type then  % case (d)
 	    rl_csReadTypeToString()

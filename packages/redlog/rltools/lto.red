@@ -193,7 +193,7 @@ asserted procedure lto_nconcn(l: List): List;
    % lists. Returns a list. The returned list is the concatenation of
    % all lists in [l]. The lists in [l] are possibly modyfied.
    for each l1 in l join l1;
-   
+
 asserted procedure lto_alunion(all: List): Alist;
    % List tools assoc list union. [all] is a list of alists $((k1 .
    % e1) ... (kn . en))$, where all ki are unique and all ei are
@@ -544,7 +544,7 @@ asserted procedure lto_delqip(u: Any, v: List): List;
       lto_delqip1(u,v);
       v
    >>;
-   
+
 asserted procedure lto_delqip1(u: Any, v: List): List;
    % Delete with memq in place subroutine. [u] is ANY; [v] is a
    % list, such that [not(car v eq u)]. Returns a list. The first
@@ -632,8 +632,10 @@ asserted procedure lto_0listp(l: List): Boolean;
 
 asserted procedure lto_alphap(x: Id): ExtraBoolean;
    begin scalar alphabet, c, l;
-      alphabet := '(a b c d e f g h i j k l m n o p q r s t u v w x y z
-	 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z);
+      alphabet := '(!a !b !c !d !e !f !g !h !i !j !k !l !m
+		 !n !o !p !q !r !s !t !u !v !w !x !y !z
+	 		!A !B !C !D !E !F !G !H !I !J !K !L !M
+			   !N !O !P !Q !R !S !T !U !V !W !X !Y !Z);
       c := t;
       l := explode x;
       while c and l do
@@ -883,7 +885,7 @@ asserted procedure lto_cdrassoc(entry: Any, al: Alist): ExtraBoolean;
       car al
    else
       lto_cdrassoc(entry, cdr al);
-   
+
 % begin lto procedures from ofsfcadproj.red
 
 asserted procedure lto_remove(fn: Any, l: List): List;
