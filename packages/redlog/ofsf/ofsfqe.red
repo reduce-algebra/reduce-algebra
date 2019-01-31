@@ -2446,7 +2446,7 @@ procedure ofsf_linsf2anu(f, v);
    end;
 
 procedure ofsf_quasf2anu(f, v, rootno);
-   begin scalar aex, mid, a, b, mid, lb, ub;
+   begin scalar aex, mid, a, b, lb, ub;
       f := sfto_sqfpartf f;
       if eqn(ldeg f, 1) then
 	 return ofsf_linsf2anu(f, v);

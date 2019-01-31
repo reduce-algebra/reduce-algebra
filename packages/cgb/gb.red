@@ -362,7 +362,7 @@ procedure gb_ltb(l);
    for each p in l collect
       vdp_fmon(bc_a2bc 1,vdp_evlmon p);
 
-procedure gb_gbggsys0(p,dummy,dummy);
+procedure gb_gbggsys0(p,dummy,dummy1);
    gb_gbgsys p;
 
 procedure gb_gbgsys0(p,dummy);

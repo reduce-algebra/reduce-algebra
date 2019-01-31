@@ -694,7 +694,7 @@ asserted procedure ofsfic!*cl_qevar(f: QfFormula, vl: KernelL, an: Answer, theo:
    end;
 
 asserted procedure ofsfic!*cl_process!-candvl(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL, candvl: KernelL): TaggedContainerElementL;
-   begin scalar w,ww,v,alp,ww,status,newForm,ww2,elimset,tpl;
+   begin scalar w,ww,v,alp,status,newForm,ww2,elimset,tpl;
       while candvl do <<
 	 v := pop candvl;
 	 alp := cl_qeatal(f,v,theo,ans);

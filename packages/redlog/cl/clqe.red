@@ -784,7 +784,7 @@ asserted procedure cl_varsel(f: QfFormula, vl: KernelL, theo: Theory): KernelL;
    end;
 
 asserted procedure cl_process!-candvl(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL, candvl: KernelL): TaggedContainerElementL;
-   begin scalar w,ww,v,alp,hit,ww,status;
+   begin scalar w,ww,v,alp,hit,status;
       while candvl do <<
 	 v := pop candvl;
       	 alp := cl_qeatal(f,v,theo,ans);

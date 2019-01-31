@@ -546,7 +546,7 @@ procedure cgb_gsys1(u,theo,xvarl);
       scalar spac,stime,p1,!*factor,!*exp,!*gcd,!*ezgcd,cgb_cd!*,!*cgbverbose;
       integer cgp_pcount!*,cgb_contcount!*,cgb_hcount!*,cgb_hzerocount!*,
          cgb_tr1count!*,cgb_tr2count!*,cgb_tr3count!*,cgb_b4count!*,
-         cgb_strangecount!*,cgb_paircount!*,cgb_gbcount!*,cgb_contcount!*;
+         cgb_strangecount!*,cgb_paircount!*,cgb_gbcount!*;
       if theo = '(false) then
          rederr "cgb_gsys1: inconsistent theory";
       !*exp := !*gcd := !*ezgcd := t;

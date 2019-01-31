@@ -563,7 +563,7 @@ procedure dcfsf_qebasis1(f1,g,v,theo);
 
 procedure dcfsf_qebasis2(f1,g,v,theo);
    % CASC Recursion Subcase 2.2
-   begin scalar psi,sp,s1,sf1,if1,qr,r,dp,phi1p,phi3p,r;
+   begin scalar psi,sp,s1,sf1,if1,qr,r,dp,phi1p,phi3p;
       if1 := lc f1;
       sp := dcfsf_ordf(g,v);
       s1 := dcfsf_ordf(f1,v);
