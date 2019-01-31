@@ -45,8 +45,8 @@
 %       for other implementations.
 
 (lap '((*entry symfnc-hack expr 0)
-       (*move (entry (int2id 0)) (reg 1))
-       (*exit 0)
+       (*move (reg symfnc) (reg 1))
+       (bx (reg lr))
        ))
 
 (fluid '(symfnc))

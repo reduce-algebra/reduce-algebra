@@ -40,10 +40,6 @@
 
 (de memo (x) (getmem x))
 
-(lap '((*entry memo_gs expr 1)
-       (GS:)(mov (indexed (reg 1) 0) (reg 1))
-	        (*exit 0) ))
-
 (de info (x) (inf x))
 
 (de valo (x) (symval (inf x)))
@@ -136,7 +132,7 @@ T )
 )  )
 
 (compiletime (put 'memory_abs 'opencode
-  '    ( (mov (indirect (reg 1)) (reg 1)))))
+  '    ( (ldr (reg 1) (indirect (reg 1)) ))))
 
 (de dumpo_abs (x n)
    (prog (outputbase* addr)
@@ -188,8 +184,7 @@ T )
            (unixputc (wplus2 65 (wdifference dig 10)))))
 
 (lap'((*entry flaggo expr 0)
-      (pushfd)
-	  (pop (reg 1))
-	  (*exit 0)))
+      (mrs (reg 1) cpsr)
+      (bx (reg lr))))
 
 (compiletime (setq *syslisp nil))

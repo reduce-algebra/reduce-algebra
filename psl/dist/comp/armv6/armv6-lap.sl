@@ -551,7 +551,7 @@
     )
 
 (de streg-p (x)
-    (eq x 'cpsr))
+    (or (eq x 'cpsr) (eq x 'spsr)))
 
 (de writeback-p (x)
     t)
@@ -864,6 +864,22 @@
     )
 
 (de lth-clz (code regd regm) 4)
+
+(de OP-streg (code regd cpsr-or-spsr)
+    (prog (cc opcode1 opcode2 reg3 reg4 shift-op shift-amount set-bit r)
+	  (cond ((eq cpsr-or-spsr 'cpsr) (setq r 0))
+		((eq cpsr-or-spsr 'spsr) (setq r 1))
+		(t (stderror (bldmsg "Invalid MRS operand: %w" cpsr-or-spsr))))
+	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) opcode2 (cadddr code))
+	  (DepositInstructionBytes
+	   (lor (lsh cc 4) (lsh opcode1 -3))
+	   (lor (lsh r 6) 2#01111)
+	   (lor (lsh (reg2int regd) 4) 2#0000)
+	   (lsh opcode2 4))
+	  )
+    )
+
+(de lth-streg (code regd regm) 4)
 
 
 %%  Instruction                                      Lisp expression for second operand

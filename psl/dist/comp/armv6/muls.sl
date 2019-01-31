@@ -2,9 +2,9 @@
 %
 % File:         PXC/MULS.SL
 % Description:  support for BIGNUM package with double INUM operations
-%               lap source for 80386 processor
-% Author:       H. Melenk
-% Created:      11 Sept  1989
+%               lap source for armv6 processor
+% Author:       Rainer Schöpf
+% Created:      31 Jan 2019
 % Modified:
 % Mode:         Lisp
 % Status:       Open Source: BSD License
@@ -46,10 +46,10 @@
      % the return value are the low order bits of the product.
      % The high order bits are placed in fluid variable.
      '(% double length unsigned mutiply; 
-       % EDX:EAX <- EAX * reg 
-       (MUL (reg 2))
-      % now we have 32 low bits in REG1, 32 high bits in REG4(=EDX)
-       (*MOVE (reg EDX) (reg 3))
+       % reg1:reg2 <- reg1 * reg2 
+       (UMULL (reg 1) (reg 2) (reg 1) (reg 2))
+      % now we have 32 low bits in REG1, 32 high bits in REG2
+       (*MOVE (reg 2) (reg 3))
        (*WSHIFT (reg 3) 2)
        (*MOVE (reg 1) (reg 2))
        (*WSHIFT (reg 2) -30)
@@ -59,8 +59,8 @@
        (*WSHIFT (reg 1) -2) ))
 
 (put 'wxtimes2 'opencode % different version for $pxu/mbarith
-     '((IMUL (reg 2))
-      (*MOVE (reg 4)($FLUID *second-value*))
+     '((SMULL (reg 1) (reg 2) (reg 1) (reg 2))
+      (*MOVE (reg 2)($FLUID *second-value*))
       ))
 
 (put 'wquotientdouble 'opencode
@@ -68,17 +68,11 @@
       % and a single length number in par 3.
       % Result is the single length quotient.
       % the remainder is placed in a fluid variable.
-      '(  % adjusting the words first
-        (*MOVE (reg 1) (reg 4))
-        (*WSHIFT (reg 1) -2)
-        (*WSHIFT (reg 4) 30)
-        (*WOR (reg 2) (reg 4))
-          % EDX:EAX / reg, EAX=Quo, EDX=Rem 
-        (*MOVE (reg 1) (reg EDX)) % EDX
-        (*MOVE (reg 2) (reg EAX)) % EAX
-        (DIV (reg 3))
-        (*MOVE (reg EDX) ($FLUID *second-value*))
-        (*MOVE (reg EAX) (reg 1))))
+      '(  % load address of fluid variable in (reg 4)
+        (LDR (reg 4) (idloc *second-value*))
+	(ADD (reg 4) (reg symval) (regshifted 4 LSL 2))
+        (*JCall wxquotientdouble)
+      ))
 
 (put 'addcarry 'opencode
        '(

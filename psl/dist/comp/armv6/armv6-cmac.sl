@@ -425,10 +425,6 @@
 		  (BX (reg t2)))
 )
 
-%% could be:
-%% (LDMIA (reg sp) ((reg lr)) writeback)
-%% (LDR (reg pc) (displacement (reg symfnc) (regshifted t3 LSL 2)))
-
 
 (de indirectp (x)
     (eqcar x 'indirect))

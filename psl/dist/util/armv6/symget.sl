@@ -85,9 +85,10 @@
        (put x 'symflagval val))
 
 (de install-symget (x val)       % install a first class property
-       (when (memq x '(symget? symgetval)) (return nil))
-       (put x 'symget? t)        % Caution cant symget id symget itself!
-       (put x 'symgetval val))
+       (cond ((memq x '(symget? symgetval)) nil)
+             (t
+              (put x 'symget? t)        % Caution cant symget id symget itself!
+              (put x 'symgetval val))))
 
 (put 'symflag 'openfn  '(nonassocpat *symflag)) % not really correct
  
@@ -100,15 +101,6 @@
 (de *symflag (ArgOne ArgTwo)
     (expand2operandcmacro ArgOne ArgTwo '*symflag))
 
-(if_system Cray
-   (defcmacro *symflag  ((*move argone (reg a6))
-			 (*move (reg t15) (reg a7))
-			 (*wplus2 (reg a6) (reg a7))
-			 (*move (indexed (reg a6) 1) (reg s6))
-			 (*move 1 (reg s7))
-			 (*wrshift (reg s6) argtwo)
-			 (*wand (reg s6) (reg s7))
-			 (*move (reg s6) argone)))
    (defcmacro *symflag  ((*move argone (reg t1))
 			 (*move ($fluid &symflag&) (reg t2))
 			 (*wshift (reg t1) 5)  % inf
@@ -120,7 +112,7 @@
 			 (*wshift (reg t1) (minus argtwo))
 			 (*wand (reg t1) 1)
 			 (*move (reg t1) argone)))
-)
+
 (compiletime
 (if_system Cray
  (progn
