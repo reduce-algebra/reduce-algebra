@@ -339,7 +339,7 @@ procedure clprl_clp1(progm,state,varal,goalvarl);
    % is a list, the set of variables in the initial QUERY. Returns a
    % STATE.
    begin
-      scalar a,gll,c,op,scprog,cnt,hc,hcop,hcop,hchead,unif,newgll,newc,w,rec;
+      scalar a,gll,c,op,scprog,cnt,hc,hcop,hchead,unif,newgll,newc,w,rec;
       state := clprl_simplstate(state,goalvarl);
       if !*clprlverbose then
 	 clprl_pristate state;
