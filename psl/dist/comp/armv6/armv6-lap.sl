@@ -714,6 +714,7 @@
 %	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
 %	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
 %	    )
+%    (bldmsg "%w" (list 'ForwardInternalReferences* ForwardInternalReferences*))
     )
 	  
     
@@ -1317,18 +1318,22 @@
     (return BranchCodeList*)))
 
 (de UpdateCodeList (codelist alist)
-    %% alist contains pairs (lbl . codelist)
-    %% codelist is to be inserted immediately before lbl
+    %% alist contains pairs (lbl . instrlist)
+    %% instrlist is to be inserted immediately before lbl
     (prog (l l1 pp)
+      (printf "start: %p %p %n" (car alist) (caar alist))
       (setq l codelist)
      loop
       (setq l1 (cdr l))
       (when (null l1) (return codelist))
-      (setq pp (atsoc (first (rest l)) alist))
+      (printf "Trying %p:" (first (rest l)))
+      (setq pp (assoc (first (rest l)) alist))
       (cond ((null pp))			% nothing to do - advance
 	    (t				% found - splice in the new code
+	     (printf " --> %p" (cdr pp))
 	     (nconc (cdr pp) l1)
 	     (rplacd l (cdr pp))))
+      (terpri)
       (setq l l1)
       (go loop)))
     
@@ -1484,21 +1489,8 @@
   (return BranchAndLabelAList*) ))
 
 
-%(de FindLongBranches nil 
-% (prog (CurrentDisplacement) 
-%  (foreach entry on BranchAndLabelAList* do 
-%    (cond ((not (LabelP (car (first entry)))) 
-%      (progn 
-%	(setq CurrentDisplacement (FindDisplacement (first entry))) 
-%	(cond 
-%	   ((or (GreaterP CurrentDisplacement (const MaximumShortBranch)) 
-%		(ZeroP CurrentDisplacement))    % Must have long brahch.
-%	  
-%	  (progn (setq InstructionChanged* t) 
-%	      (IncreaseAllOffsets entry (MakeLongBranch entry)))))))))))
-      
 (de FindFarLoads nil
- (prog (CurrentDisplacement ResultList newcode)
+ (prog (CurrentDisplacement ResultList newcode x y)
   (foreach entry on BranchAndLabelAList* do 
     (cond ((not (LabelP (car (first entry)))) 
       (progn 
@@ -1507,12 +1499,31 @@
 	 ((or (GreaterP CurrentDisplacement (const MaximumPCRelLoadOffset))
 	      (Lessp CurrentDisplacement (minus (const MaximumPCRelLoadOffset))))
 
-	  (setq newcode (MakeFarLoad entry ResultList))
+	  (setq newcode (MakeFarLoad (car entry) ResultList))
 %	  (printf "BranchCodeList is %w%n" BranchCodeList*)
-	  (cond ((not (atsoc (car newcode) ResultList))
-		 (setq ResultList (cons newcode ResultList))))))))))
-  (return (reversip ResultList))
-  ))
+	  (cond (newcode
+		 %% make sure that the label of th edata itme occurs only once
+		 %% by collecting code for the same data item
+		 (setq x ResultList)
+		 (setq ResultList (cons newcode ResultList))
+		 (while x
+		   (cond ((equal (second newcode) (second (first x)))
+			  %% found, collect instructions
+			  (nconc (first x) (cddr newcode))
+			  (printf "Appended %p to %p%n" (cddr newcode) (first x))
+			  %% pop ResultList
+			  (setq ResultList (cdr ResultList))
+			  (setq x nil))
+			 (t (setq x (cdr x))))
+		 )))))))))
+  %% inline version of reversip with using cdr of each element
+  (while (pairp ResultList)
+    (setq x (cdr ResultList))
+    (rplaca ResultList (cdar ResultList))
+    (setq y (rplacd ResultList y))
+    (setq ResultList x))
+  (return y))
+  )
       
 
 
@@ -1542,36 +1553,31 @@
 (de FindEntryOffset (L) 
     (cond ((setq L (Atsoc L BranchAndLabelAList*)) (cdr L)) (t -2000)))
 
-%(de MakeLongBranch (AList) 
-%(prog (InstructionList Result OppositeBranch n) 
-%    (setq InstructionList (car (first AList))) 
-%    (setq n (instructionlength InstructionList))
-%    (Rplaca InstructionList (get (first InstructionList) 'WordBranch)) 
-%    (setq n (difference (instructionlength InstructionList) n))
-%    (cond ((cdr AList) (Rplacw AList (cdr AList)))
-%	  (t (Rplacw AList (list (cons '~DummyLabel~ 0))))) 
-%    (return n))) % increased length of subsequent code
-
-(de MakeFarLoad (AList ResultList)
-(prog (InstructionList Result OppositeBranch n oldopcode olddest oldlabel newlabel) 
-      (setq InstructionList (car (first AList)))
-      (setq oldopcode (first InstructionList))
-      (setq olddest (second InstructionList))
-      (setq oldlabel (third InstructionList))
-      (cond ((null (setq newlabel (atsoc oldlabel ResultList)))
+(de MakeFarLoad (instpair ResultList)
+(prog (Instruction Result OppositeBranch n oldopcode olddest oldlabel newlabel found) 
+      (setq Instruction (car instpair))
+      (setq oldopcode (first Instruction))
+      (setq olddest (second Instruction))
+      (setq oldlabel (third Instruction))
+      %% Check whether a far load for this instruction was already generated
+      (setq found (assoc Instruction ResultList))
+      (cond ((null found)
 	     (setq newlabel (gensym)))
-	    (t (setq newlabel (cadr newlabel))))
-      (printf "Replacing %w " InstructionList)
-      (Rplaca InstructionList 'BL)
-      (Rplacd InstructionList (list newlabel))
-      (printf " by %w%n " InstructionList)
-      (return (cons oldlabel
+	    (t
+	     (setq newlabel (caddr found))))
+      (printf "Replacing %w " Instruction)
+      (Rplaca Instruction 'BL)
+      (Rplacd Instruction (list newlabel))
+      (printf " by %w%n " Instruction)
+      (cond (found (return nil)))
+      (return `(,(list oldopcode olddest oldlabel)
+		,oldlabel
 		    %% These are the instructions to be inserted immediately before
-		    %% the label 
-		    (list newlabel
-			  (list oldopcode olddest oldlabel)
-			  (list 'BX (list 'REG 'LR)))
-		    ))))
+		    %% the label oldlabel
+		.,(list newlabel
+			(list oldopcode olddest oldlabel)
+			(list 'BX (list 'REG 'LR)))
+		))))
 
 (de IncreaseAllOffsets (X N) 
     (foreach Y in X do (Rplacd Y (plus (cdr Y) N))) 

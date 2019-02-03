@@ -263,6 +263,15 @@
 	      % Now remove the InternalEntry offsets from everyone
    (mapobl 'remove-ieo-property)))
 
+(de findidnumber (u)
+  (prog (i)
+        (return (cond ((null u) 256)
+		      ((ileq (setq i (idinf u)) 256) i)
+                      ((setq i (get u fasl-idnumber-property*)) i)
+                      (t (put u fasl-idnumber-property* (setq i nextidnumber*))
+                         (setq orderedidlist* (tconc orderedidlist* u))
+                         (setq nextidnumber* (iadd1 nextidnumber*)) i)))))
+
 (setq nil-t-diff* 140)
 
 (remprop 'bndstkptr 'registercode)

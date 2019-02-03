@@ -1399,7 +1399,7 @@
       )              ) )         )  )
       (setq cfluids fluids) % copy of fluids
 preload 
-      (cond ((null (and freeregs cfluids) (go afterpreload))))
+      (cond ((null (and freeregs cfluids)) (go afterpreload)))
       (setq initload
 	       (progn
 		 (setq cadrcfluids
