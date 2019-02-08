@@ -247,28 +247,32 @@
 	)
   )
 
-(de trampoline () (compiledcallinginterpreted))
- 
+%(de trampoline () (compiledcallinginterpreted))
+
+(lap '((!*entry trampoline expr 0)
+       (!*move (idloc compiledcallinginterpreted) (reg t3))
+       (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
+       % move id of called function into reg t3, for compiledcallinginterpreted
+       (!*move (idloc *TheCalledID*) (reg t3))
+       (BX (reg t2))))
+
 (de planttrampoline(u p)
-   % install an indirect call to compiledcallinginterpreted (12 words)
-   (let ((m (gtbps 13))
+   % install an indirect call to compiledcallinginterpreted
+   % by copying the code for trampoline (7 words)
+   (let ((m (gtbps 8))
 	 (n (id2int u))
 	 %  (p (getmem (wdifference (inf (cdr (getd u))) 4)))
-	 (a (inf (cdr (getd 'trampoline)))) )
+	 (a (inf (cdr (getd 'trampoline)))) ) % start address of trampoline
 	(putmem m p)
 	(putmem (wplus2 m 4) (getmem a))
 	(putmem (wplus2 m 8) (getmem (wplus2 a 4)))
 	(putmem (wplus2 m 12) (getmem (wplus2 a 8)))
 	(putmem (wplus2 m 16) (getmem (wplus2 a 12)))
-	(putmem (wplus2 m 20) (getmem (wplus2 a 16)))
+	(putmem (wplus2 m 20) n)	% replace *TheCalledID* by actual id of called function
 	(putmem (wplus2 m 24) (getmem (wplus2 a 20)))
-	(putmem (wplus2 m 28) (getmem (wplus2 a 24)))
-	(putmem (wplus2 m 32) (getmem (wplus2 a 28)))
-	(putmem (wplus2 m 36) (getmem (wplus2 a 32)))
-	(putmem (wplus2 m 40) (getmem (wplus2 a 36)))
-	(putmem (wplus2 m 44)  n)
 	   % now plant it
 	(setf (getmem (wplus2 symfnc (wtimes2 n 4))) (wplus2 m 4))
 	  ))
+
 
 (setq nonkernelupperbound!* (inf(cdr(getd 'putd))))

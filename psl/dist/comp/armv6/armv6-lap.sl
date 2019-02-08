@@ -157,7 +157,7 @@
 		 (DepositByte 0) ))
  
     (SETQ U (ReformBranches U))         % process conditional branches
-    (setq U (ReplaceFarLoads U))       % optimize branches and
+    (setq U (OptimizeBranches U))       % optimize branches and
 					% calculate offsets and total length
     
     (when (not *WritingFaslFile)       
@@ -214,13 +214,13 @@
    % if X = ( _____ !*!*!*Code!*!*Pointer!*!*!* ... )
    ((equal (second x) '***code**pointer***) 
     (setq lapreturnvalue* 
-      (if *writingfaslfile CurrentOffset* (wplus2 codebase* CurrentOffset*))))
+      (if *writingfaslfile CurrentOffset* (wplus2 CodeBase* CurrentOffset*))))
 
    % If depositing into memory
    ((not *writingfaslfile) 
     (setq entries* (cons (cons (rest x) CurrentOffset*) entries*)) 
     (unless lapreturnvalue* (setq lapreturnvalue*
-		 (wplus2 codebase* CurrentOffset*))))
+		 (wplus2 CodeBase* CurrentOffset*))))
 
    % if X = ( _____ !*!*Fasl!*!*InitCode!*!* ... )
    ((equal (second x) '**fasl**initcode**) 
@@ -258,6 +258,7 @@
 
 (de DepositLabel (x) nil)
 
+(commentoutcode
 (de string-begins-with (s opname)
     (if (lessp (size s) (size opname))
 	nil
@@ -307,6 +308,7 @@
 
 	  )
     )
+)
 
 (fluid '(*testlap))
 (de DepositInstruction (X) 
@@ -351,79 +353,7 @@
 
 (setq !*LDM-adressing-modes '(IA IB DA DB))
 
-
-(CompileTime (progn 
-
-(dm DefOpcode (U) 
-%
-% (DefOpcode name (parameters) pattern)
-%
-(prog (OpName variants vars pattern fname condbits set!? opname-string) 
-    (setq U (rest U)) 
-    (setq OpName (pop U))
-    (setq opname-string (string OpName))
-    (setq fname (intern (bldmsg "%w.INSTR" OpName)))
-    (setq OpName (MkQuote OpName))
-%    (setq variants (pop u))
-    (setq vars (pop u))
-    (setq pattern
-      (append u
-	`((t (laperr ',OpName  (list .,vars))))))
-    (setq pattern (cons 'cond pattern))
-    %% (setq pattern
-    %% 	  `((lambda (*condbits* *set* *ldm-addr*) ,pattern)
-    %% 	    (get (or ,(car variants) 'AL) 'condition-bits)
-    %% 	    ,(if (cdr variants)
-    %% 		 `(if ,(cadr variants) 1 0)
-    %% 	       )
-    %% 	    ,(if (and (cdr variants) (cddr variants))
-    %% 		 `(get (or ,(caddr variants) 'IA) 'ldm-addressing-modes))
-    %% 	    ))
-    % (setq u `(lambda ,vars ,pattern)) 
-    % (return `(put ,OpName 'InstructionDepositMacro ',u))
-    (push opname-string *OpNameList*)
-    (return
-      `(progn
-	 (de ,fname ,vars ,pattern)
-%	 (put ,OpName 'variants ',variants)
-	 (put ,OpName 'InstructionDepositMacro ',fname)))
-    ))
-
-
-
-(dm DefOpLength (U)
-%
-% (DefOpLength name (parameters) pattern)
-%
-(prog (OpName variants vars pattern fname)
-    (setq U (rest U))
-    (setq OpName (pop U))   % (quote name)
-    (setq fname (intern (bldmsg "%w.LTH" OpName)))
-    (setq OpName (MkQuote OpName))   % (quote name)
-%    (setq variants (pop u)) 
-    (setq vars (pop u)) 
-    (setq pattern
-      (append u 
-	`((t (laperr ',OpName  (list .,vars))))))  
-    (setq pattern (cons 'cond pattern)) 
-    % (setq u `(lambda ,vars ,pattern))
-    % (return `(put ,OpName 'InstructionLengthFunction ',u))
-    (return 
-      `(progn
-	 (de ,fname ,vars ,pattern) 
-	 (put ,OpName 'InstructionLengthFunction ',fname))) 
-)) 
- 
- 
- 
-))
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-%
-%    getting the instructions in 
-  
-( dskin "armv6-inst.dat")
+(load armv6-instrs)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -696,7 +626,7 @@
 (de DepositInstructionBytes (byte1 byte2 byte3 byte4)
 %    (printf "Deposit instruction %w at %x -> %x%n"
 %	    (wor (wshift byte1 24) (wor (wshift byte2 16) (wor (wshift byte3 8) byte4)))
-%	    CurrentOffset* (wplus2 codebase* CurrentOffset*))
+%	    CurrentOffset* (wplus2 CodeBase* CurrentOffset*))
     (if *big-endian*
 	(progn
 	  (DepositByte byte1)
@@ -709,15 +639,14 @@
 	(DepositByte byte2)
 	(DepositByte byte1)))
 %    (printf "Deposited at %x: %x >%x< %x%n"
-%	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
-%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
-%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
-%	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
+%	    (wplus2 (wplus2 CodeBase* CurrentOffset*) -4)
+%	    (getword32 (wplus2 (wplus2 CodeBase* CurrentOffset*) -8) 0)
+%	    (getword32 (wplus2 (wplus2 CodeBase* CurrentOffset*) -4) 0)
+%	    (getword32 (wplus2 CodeBase* CurrentOffset*) 0)
 %	    )
-%    (bldmsg "%w" (list 'ForwardInternalReferences* ForwardInternalReferences*))
     )
-	  
-    
+
+
 (de OP-reg-imm8 (code reg1 reg2 imm8-rotated)
     (prog (cc opcode1 opcode2 imm8-decoded set-bit)
 	  (setq imm8-decoded (decode-32bit-imm8-rotated imm8-rotated))
@@ -826,6 +755,17 @@
 
 (de lth-regd-shifter (code reg reg-shifter) 4)
 
+(de OP-mov-imm16 (code reg1 imm16)
+    (prog (cc opcode1)
+	  (setq cc (car code) opcode1 (cadr code))
+	  (DepositInstructionBytes
+	   (lor (lsh cc 4) (lsh opcode1 -4))
+	   (lor (lsh (land opcode1 2#1111) 4) (lsh imm16 -12))
+	   (lor (lsh (reg2int reg1) 4) (land 2#1111 (lsh imm16 -8)))
+	   (land 16#ff imm16)))
+    )
+
+(de lth-mov-imm16 (code reg1 imm16) 4)
 
 (de OP-mul3 (code reg1 reg2 reg3)
     (prog (cc opcode1 opcode2 set-bit rest)
@@ -1130,7 +1070,7 @@
 (de DepositLoadAddress (X)
     (prog (src dest rel)
 	  (setq src (caddr X) dest (cadr X))
-	  (cond ((or (not (idp src)) (not (regp dest)))
+	  (cond ((or (not (or (idp src) (stringp src))) (not (regp dest)))
 		 (stderror (bldmsg "Invalid ADRL pseudo-op: %w" X)))
 		(t
 		 (setq rel (MakeExpressionRelative src 8))
@@ -1143,21 +1083,41 @@
 			      ((lessp rel 16#10000)
 			       (DepositInstruction `(SUB ,dest (reg pc) ,(wand 16#ff rel)))
 			       (DepositInstruction `(SUB ,dest ,dest ,(wand 16#ff00 rel))))
+			      ((and (eq 0 (wand rel 3)) % divisible by 4
+				    (lessp rel 16#40000))
+			       (DepositInstruction `(SUB ,dest (reg pc) ,(wand 16#3ff rel)))
+			       (DepositInstruction `(SUB ,dest ,dest ,(wand 16#3fc00 rel))))
 			      (t (stderror (bldmsg "ADRL load too far: %w" rel)))))
 		       ((imm8-rotatedp rel)
-			(DepositInstruction `(ADD ,dest (reg pc) ,(wminus rel)))
+			(DepositInstruction `(ADD ,dest (reg pc) ,rel))
 			(DepositInstruction '(MOV (reg 1) (reg 1))))
 		       ((lessp rel 16#10000)
 			(DepositInstruction `(ADD ,dest (reg pc) ,(wand 16#ff rel)))
 			(DepositInstruction `(ADD ,dest ,dest ,(wand 16#ff00 rel))))
+		       ((and (eq 0 (wand rel 3)) % divisible by 4
+			     (lessp rel 16#40000))
+			(DepositInstruction `(ADD ,dest (reg pc) ,(wand 16#3ff rel)))
+			(DepositInstruction `(ADD ,dest ,dest ,(wand 16#3fc00 rel))))
 		       (t (stderror (bldmsg "ADRL load too far: %w" rel)))))
 		)))
-			
 
 (put 'ADRL 'InstructionDepositFunction 'DepositLoadAddress)
 
 %(put 'ADR 'InstructionLength 4)
 (put 'ADRL 'InstructionLength 8)
+
+(de DepositFarLoadAddress (X)
+    (prog (src dest)
+	  (setq src (caddr X) dest (cadr X))  
+	  (cond ((or (not (or (idp src) (stringp src))) (not (regp dest)))
+		 (stderror (bldmsg "Invalid LDR!= pseudo-op: %p" X)))
+		(t
+		 (DepositLoadAddress `(ADRL ,dest ,src))
+		 (DepositInstruction `(LDR ,dest (indirect ,dest)))))))
+
+(put 'LDR!= 'InstructionDepositFunction 'DepositFarLoadAddress)
+
+(put 'LDR!= 'InstructionLength 12)
 
 % Auxiliary functions for computing instruction bit patterns
 
@@ -1198,7 +1158,7 @@
     (cond 
      ((codep l) (if *writingfaslfile
 		  (inf l)
-		  (wdifference (inf l) codebase*)))
+		  (wdifference (inf l) CodeBase*)))
      ((setq offset  (atsoc l LabelOffsets*)) (cdr offset))
      (t (stderror (bldmsg "Unknown label %r" l)))
      )))
@@ -1277,7 +1237,7 @@
     (return CodeList)))
 
 
-% ReplaceFarLoads BranchCodeList!*;
+% OptimizeBranches BranchCodeList!*;
 % Purpose: Take a code list which has already been expanded by Pass1Lap
 %          and look for LDR instructions where the source memory address outside
 %          the $pc+/-4096 range. E.g.
@@ -1288,6 +1248,8 @@
 %          (fullword something)
 %
 %          where l0123 is more that 4096 away from the LDR instruction.
+%
+% 1. Approach:
 %          Replace this by
 %
 %          (BL l4567)
@@ -1302,9 +1264,32 @@
 %          The BL instruction stores the return address into register lr, so that
 %          the BX instruction jumps back to the address immediately following.
 %
+%   Disadvantage: a simple load is replaced by jump-load-jump. 
+%
+% 2. Approach:
+%          If the offset between the original load instruction and the target of the
+%          load is n, replace this by
+%
+%          (move n into (reg xy))
+%          (LDR (reg xy) (displacement (reg pc) (plus (reg xy))))
+%
+%          Since n is a multiple of 4, an offset of 18 bits can be accessed via
+%
+%          (MOV (reg xy) n1)
+%          (ORR (reg xy) (reg xy) n2)
+%          (LDR (reg xy) (displacement (reg pc) (plus (reg xy))))
+%
+%          with n1 = (n & 0x3ff) and n2 = (n & 0x3fc00).
+%
+%          (For negative n, move (-n) into (reg xy) and repalce "plus" by "minus".)
+%
+%          An 18 bit offset is +/-256kB which should be sufficient.
+%%
 % Returns: a new code list
 
-(de ReplaceFarLoads (u)
+(commentoutcode
+ %% 1. Approach: commented out
+(de OptimizeBranches (u)
 (prog (BranchAndLabelAList* InstructionChanged*) 
     (setq BranchCodeList* u)
     (BuildOffsetTable)                  % find branches, labels, and entries
@@ -1336,7 +1321,22 @@
       (terpri)
       (setq l l1)
       (go loop)))
-    
+
+)
+
+(de OptimizeBranches (u) 
+(prog (BranchAndLabelAList* InstructionChanged* q w) 
+    (setq BranchCodeList* u)
+    (BuildOffsetTable)                  % find branches, labels, and entries
+    (setq InstructionChanged* nil)
+    (FindFarLoads)
+    (while InstructionChanged*
+         (BuildOffsetTable)    
+	 (setq InstructionChanged* nil) 
+	 (FindFarLoads)) 
+    (setq LabelOffsets* (DeleteAllButLabels BranchAndLabelAList*)) 
+    (return BranchCodeList*)))
+
 %% (de &make-nop(n)
 %%    % make n bytes of nop instructions
 %%    (cond ((wleq n 0) nil)
@@ -1489,6 +1489,9 @@
   (return BranchAndLabelAList*) ))
 
 
+(commentoutcode
+ %% 1. Approach: commented out
+
 (de FindFarLoads nil
  (prog (CurrentDisplacement ResultList newcode x y)
   (foreach entry on BranchAndLabelAList* do 
@@ -1524,7 +1527,60 @@
     (setq ResultList x))
   (return y))
   )
-      
+
+(de MakeFarLoad (instpair ResultList)
+(prog (Instruction Result OppositeBranch n oldopcode olddest oldlabel newlabel found) 
+      (setq Instruction (car instpair))
+      (setq oldopcode (first Instruction))
+      (setq olddest (second Instruction))
+      (setq oldlabel (third Instruction))
+      %% Check whether a far load for this instruction was already generated
+      (setq found (assoc Instruction ResultList))
+      (cond ((null found)
+	     (setq newlabel (gensym)))
+	    (t
+	     (setq newlabel (caddr found))))
+      (printf "Replacing %w " Instruction)
+      (Rplaca Instruction 'BL)
+      (Rplacd Instruction (list newlabel))
+      (printf " by %w%n " Instruction)
+      (cond (found (return nil)))
+      (return `(,(list oldopcode olddest oldlabel)
+		,oldlabel
+		    %% These are the instructions to be inserted immediately before
+		    %% the label oldlabel
+		.,(list newlabel
+			(list oldopcode olddest oldlabel)
+			(list 'BX (list 'REG 'LR)))
+		))))
+
+)
+
+(de FindFarLoads nil 
+ (prog (CurrentDisplacement) 
+  (foreach entry on BranchAndLabelAList* do 
+    (cond ((not (LabelP (car (first entry)))) 
+      (progn 
+	(setq CurrentDisplacement (FindDisplacement (first entry))) 
+	(cond 
+	 ((or (GreaterP CurrentDisplacement (const MaximumPCRelLoadOffset))
+	      (Lessp CurrentDisplacement (minus (const MaximumPCRelLoadOffset))))
+
+	  (progn (setq InstructionChanged* t) 
+	      (IncreaseAllOffsets entry (MakeFarLoad entry)))))))))))
+
+(de MakeFarLoad (AList)
+    %% AList if the rest of BranchAndLabelAList*,
+    %% starting with the far load to be replaced
+  (prog (InstructionList Result n) 
+    (setq InstructionList (car (first AList))) 
+    (setq n (instructionlength InstructionList))
+    (Rplaca InstructionList 'LDR!=) 	% Address load pseudo instruction
+    (setq n (difference (instructionlength InstructionList) n))
+    (cond ((cdr AList) (Rplacw AList (cdr AList)))
+	  (t (Rplacw AList (list (cons '~DummyLabel~ 0))))) 
+    (return n))) % increased length of subsequent code
+
 
 
 (de FindDisplacement (InstructionOffsetPair) 
@@ -1552,32 +1608,6 @@
 
 (de FindEntryOffset (L) 
     (cond ((setq L (Atsoc L BranchAndLabelAList*)) (cdr L)) (t -2000)))
-
-(de MakeFarLoad (instpair ResultList)
-(prog (Instruction Result OppositeBranch n oldopcode olddest oldlabel newlabel found) 
-      (setq Instruction (car instpair))
-      (setq oldopcode (first Instruction))
-      (setq olddest (second Instruction))
-      (setq oldlabel (third Instruction))
-      %% Check whether a far load for this instruction was already generated
-      (setq found (assoc Instruction ResultList))
-      (cond ((null found)
-	     (setq newlabel (gensym)))
-	    (t
-	     (setq newlabel (caddr found))))
-      (printf "Replacing %w " Instruction)
-      (Rplaca Instruction 'BL)
-      (Rplacd Instruction (list newlabel))
-      (printf " by %w%n " Instruction)
-      (cond (found (return nil)))
-      (return `(,(list oldopcode olddest oldlabel)
-		,oldlabel
-		    %% These are the instructions to be inserted immediately before
-		    %% the label oldlabel
-		.,(list newlabel
-			(list oldopcode olddest oldlabel)
-			(list 'BX (list 'REG 'LR)))
-		))))
 
 (de IncreaseAllOffsets (X N) 
     (foreach Y in X do (Rplacd Y (plus (cdr Y) N))) 
@@ -1650,23 +1680,23 @@
     (setq CurrentOffset* (plus CurrentOffset* 2))))
 
 (de DepositWord (x)
-  (putword (wplus2 codebase* CurrentOffset*) 0 x)
+  (putword (wplus2 CodeBase* CurrentOffset*) 0 x)
   (updatebittable 4 0)
   (setq CurrentOffset* (plus CurrentOffset* 4)))
 
 (de deposit-relocated-word (offset)
   % Given an OFFSET from CODEBASE*, deposit a word containing the
   % absolute address of that offset.
-  (putword (wplus2 codebase* CurrentOffset*)
+  (putword (wplus2 CodeBase* CurrentOffset*)
 	   0 
-	   (iplus2 offset (if *writingfaslfile 0 codebase*)))
+	   (iplus2 offset (if *writingfaslfile 0 CodeBase*)))
   (updatebittable 4 (const reloc_word))
   (setq CurrentOffset* (plus CurrentOffset* 4)))
 
 (de DepositWordExpression (x)
   % Only limited expressions now handled
   (let (y)
-%    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 codebase* CurrentOffset*))
+%    (printf "Deposit %w at %x -> %x%n" x CurrentOffset* (wplus2 CodeBase* CurrentOffset*))
     (cond
       ((fixp x) (depositword (int2sys x)))
       ((labelp x) (deposit-relocated-word (LabelOffset x)))
@@ -1690,10 +1720,10 @@
       ((setq y (wconstevaluable x)) (DepositWord (int2sys y)))
       (t (stderror (bldmsg "Expression too complicated %r" x))))
 %    (printf "Deposited at %x: %x >%x< %x%n"
-%	    (wplus2 (wplus2 codebase* CurrentOffset*) -4)
-%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -8) 0)
-%	    (getword32 (wplus2 (wplus2 codebase* CurrentOffset*) -4) 0)
-%	    (getword32 (wplus2 codebase* CurrentOffset*) 0)
+%	    (wplus2 (wplus2 CodeBase* CurrentOffset*) -4)
+%	    (getword32 (wplus2 (wplus2 CodeBase* CurrentOffset*) -8) 0)
+%	    (getword32 (wplus2 (wplus2 CodeBase* CurrentOffset*) -4) 0)
+%	    (getword32 (wplus2 CodeBase* CurrentOffset*) 0)
 %	    )
     ))
 
@@ -1702,7 +1732,7 @@
     ((or (not *writingfaslfile) (leq (idinf x) 256)) 
      (depositword (idinf X)))
     (t
-      (putword (wplus2 codebase* CurrentOffset*) 0 
+      (putword (wplus2 CodeBase* CurrentOffset*) 0 
 	       (makerelocword (const reloc_id_number) (findidnumber x))) 
       (setq CurrentOffset* (plus CurrentOffset* 4)) 
       (updatebittable 4 (const reloc_word)))))
@@ -1760,7 +1790,7 @@
     (cond ((or (not *WritingFaslFile) (LEQ (IDInf X) 128)) 
 	(DepositHalfWord (IDInf X))) (t 
     
-    (progn (puthalfword (wplus2 codebase* CurrentOffset*) 0 
+    (progn (puthalfword (wplus2 CodeBase* CurrentOffset*) 0 
 		    (makerelochalfword (const reloc_id_number) (findidnumber x))) 
 	(setq CurrentOffset* (plus CurrentOffset* 2)) 
 	(updatebittable 2 (const reloc_halfword))))))
@@ -1793,8 +1823,8 @@
 	     (difference x (car (first ForwardInternalReferences*)))))
        (setq x (wshift x -2))		% offset is in words, not bytes
        % insert the fixup into the lower 24 bits, upper 8 bits are condition bits and opcode
-       (setq wrd (wgetv (iplus2 codebase* (car (first ForwardInternalReferences*))) 0))
-       (putword (iplus2 codebase* (car (first ForwardInternalReferences*)))
+       (setq wrd (wgetv (iplus2 CodeBase* (car (first ForwardInternalReferences*))) 0))
+       (putword (iplus2 CodeBase* (car (first ForwardInternalReferences*)))
 		0
 		(wor (wand wrd 16#ff000000) (wand x 16#00ffffff)))
        (setq ForwardInternalReferences* (cdr ForwardInternalReferences*)))
@@ -1864,11 +1894,11 @@
 			   (equal (cadr dest) '(reg st))
 			   (fixp (setq x (caddr dest)))
 			   (equal (difference (cadddr instr) x) 4))
-		      (print (list 'lapopt-before (car u) instr))
+%		      (print (list 'lapopt-before (car u) instr))
 		      (pop u)
 		      (push `(SUB (reg st) (reg st) ,x) u)
 		      (setq instr `(STR ,src (displacement (reg st) -4 preindexed)))
-		      (print (list 'lapopt-after (car u) instr))
+%		      (print (list 'lapopt-after (car u) instr))
 		      )
 		    % pattern: 
 		    %      (push (quote nil) )   

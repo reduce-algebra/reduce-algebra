@@ -424,7 +424,7 @@ stacklowerbound:
  .long [[29*0x8000000]+339]
  .long [[29*0x8000000]+340]
  .long [[29*0x8000000]+341]
- .long 511
+ .long 510
  .long symnam
  .long [[29*0x8000000]+344]
  .long [[30*0x8000000]+256]
@@ -592,8 +592,7 @@ stacklowerbound:
  .long [[29*0x8000000]+507]
  .long [[29*0x8000000]+508]
  .long [[29*0x8000000]+509]
- .long [[29*0x8000000]+510]
-  .space 1197960
+  .space 1197964
  .globl symprp
 symprp:
  .long [[30*0x8000000]+256]
@@ -1106,10 +1105,11 @@ symprp:
  .long [[30*0x8000000]+256]
  .long [[30*0x8000000]+256]
  .long [[30*0x8000000]+256]
- .long [[30*0x8000000]+256]
-  .space 1197960
+  .space 1197964
  .globl symnam
 symnam:
+ .globl l0495
+ .long [[4*0x8000000]+l0495]
  .globl l0496
  .long [[4*0x8000000]+l0496]
  .globl l0497
@@ -2128,11 +2128,7 @@ symnam:
  .long [[4*0x8000000]+l1003]
  .globl l1004
  .long [[4*0x8000000]+l1004]
- .globl l1005
- .long [[4*0x8000000]+l1005]
- .globl l1006
- .long [[4*0x8000000]+l1006]
-  .space 1197960
+  .space 1197964
  .globl symfnc
 symfnc:
  .long undefinedfunction
@@ -2442,8 +2438,8 @@ symfnc:
  .long l0038
  .long undefinedfunction
  .long undefinedfunction
- .globl l0386
- .long l0386
+ .globl l0385
+ .long l0385
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
@@ -2454,10 +2450,10 @@ symfnc:
  .long l0077
  .globl l0056
  .long l0056
- .globl l0387
- .long l0387
- .globl l0442
- .long l0442
+ .globl l0386
+ .long l0386
+ .globl l0441
+ .long l0441
  .globl _psl_main
  .long _psl_main
  .globl reduceup
@@ -2470,8 +2466,8 @@ symfnc:
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
- .globl l0435
- .long l0435
+ .globl l0434
+ .long l0434
  .globl l0102
  .long l0102
  .globl initcode
@@ -2483,30 +2479,30 @@ symfnc:
  .globl faslin
  .long faslin
  .long undefinedfunction
- .globl l0433
- .long l0433
- .globl l0434
- .long l0434
- .globl l0081
- .long l0081
  .globl l0432
  .long l0432
- .globl l0437
- .long l0437
- .globl l0375
- .long l0375
+ .globl l0433
+ .long l0433
+ .globl l0081
+ .long l0081
+ .globl l0431
+ .long l0431
+ .globl l0436
+ .long l0436
+ .globl l0374
+ .long l0374
  .globl binaryopenread
  .long binaryopenread
- .globl l0453
- .long l0453
+ .globl l0452
+ .long l0452
  .globl binaryread
  .long binaryread
- .globl l0445
- .long l0445
- .globl binaryreadblock
- .long binaryreadblock
  .globl l0444
  .long l0444
+ .globl binaryreadblock
+ .long binaryreadblock
+ .globl l0443
+ .long l0443
  .globl binaryclose
  .long binaryclose
  .long undefinedfunction
@@ -2540,8 +2536,8 @@ symfnc:
  .long undefinedfunction
  .globl plantunbound
  .long plantunbound
- .globl l0390
- .long l0390
+ .globl l0389
+ .long l0389
  .globl l0247
  .long l0247
  .globl l0238
@@ -2629,9 +2625,10 @@ symfnc:
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
- .long undefinedfunction
  .globl compiledcallinginterpreted
  .long compiledcallinginterpreted
+ .globl l0375
+ .long l0375
  .globl l0376
  .long l0376
  .globl l0377
@@ -2650,12 +2647,12 @@ symfnc:
  .long l0383
  .globl l0384
  .long l0384
- .globl l0385
- .long l0385
+ .globl l0387
+ .long l0387
  .globl l0388
  .long l0388
- .globl l0389
- .long l0389
+ .globl l0390
+ .long l0390
  .globl l0391
  .long l0391
  .globl l0392
@@ -2732,26 +2729,26 @@ symfnc:
  .long l0427
  .globl l0428
  .long l0428
- .globl l0429
- .long l0429
  .globl sigrelse
  .long sigrelse
+ .globl l0429
+ .long l0429
  .globl l0430
  .long l0430
- .globl l0431
- .long l0431
- .globl l0436
- .long l0436
+ .globl l0435
+ .long l0435
+ .globl l0437
+ .long l0437
  .globl l0438
  .long l0438
  .globl l0439
  .long l0439
  .globl l0440
  .long l0440
- .globl l0441
- .long l0441
- .globl l0443
- .long l0443
+ .globl l0442
+ .long l0442
+ .globl l0445
+ .long l0445
  .globl l0446
  .long l0446
  .globl l0447
@@ -2764,8 +2761,8 @@ symfnc:
  .long l0450
  .globl l0451
  .long l0451
- .globl l0452
- .long l0452
+ .globl l0453
+ .long l0453
  .globl l0454
  .long l0454
  .globl l0455
@@ -2820,14 +2817,12 @@ symfnc:
  .long l0479
  .globl l0480
  .long l0480
- .globl l0481
- .long l0481
  .long undefinedfunction
  .globl codeaddressp
  .long codeaddressp
  .globl lastkernel
  .long lastkernel
-  .space 1197960
+  .space 1197964
  .globl symget
 symget:
  .long [[30*0x8000000]+256]
@@ -3340,5 +3335,4 @@ symget:
  .long [[30*0x8000000]+256]
  .long [[30*0x8000000]+256]
  .long [[30*0x8000000]+256]
- .long [[30*0x8000000]+256]
-  .space 1197960
+  .space 1197964

@@ -80,12 +80,14 @@
          modulename*
          codeout*
          initoffset*
-         currentoffset*
+         CurrentOffset*
          faslblockend*
          maxfasloffset*
          bittableoffset*
          faslfilenameformat*
          fasl-idnumber-property*
+         CodeBase*
+         ForwardInternalReferences*
          ))
 
 (de codefiletrailer ()
@@ -104,13 +106,13 @@
         (binarywrite codeout* % S is size in words
                      (setq s
                       (iquotient
-                       (iplus2 currentoffset*
+                       (iplus2 CurrentOffset*
                         (isub1 4))
                        4)))
         (printf "code size is %d/%x%n" s s)
         (printf "initoffset is %d/%x%n" initoffset* initoffset*)
         (binarywrite codeout* initoffset*)
-        (binarywriteblock codeout* codebase* s)
+        (binarywriteblock codeout* CodeBase* s)
 	(if *compact-bittable
          (let((b (compact-bittable bittablebase* bittableoffset*))
               (bpw (quotient 32 8)))
@@ -140,15 +142,15 @@
 	(movl (reg ebx) (displacement (reg rax) 0)))))
 
 (de DepositWord (x)
-  (putword32 (wplus2 codebase* CurrentOffset*) x)
+  (putword32 (wplus2 CodeBase* CurrentOffset*) x)
   (updatebittable 4 0)
   (setq CurrentOffset* (plus CurrentOffset* 4)))
 
 (de deposit-relocated-word (offset)
   % Given an OFFSET from CODEBASE*, deposit a word containing the
   % absolute address of that offset.
-  (putword32 (wplus2 codebase* CurrentOffset*)
-	   (iplus2 offset (if *writingfaslfile 0 codebase*)))
+  (putword32 (wplus2 CodeBase* CurrentOffset*)
+	   (iplus2 offset (if *writingfaslfile 0 CodeBase*)))
   (updatebittable 4 (const reloc_word))
   (setq CurrentOffset* (plus CurrentOffset* 4)))
   
@@ -157,7 +159,7 @@
     ((or (not *writingfaslfile) (leq (idinf x) 256)) 
      (depositword (idinf X)))
     (t
-      (putword32 (wplus2 codebase* CurrentOffset*)
+      (putword32 (wplus2 CodeBase* CurrentOffset*)
 	       (makerelocword (const reloc_id_number) (findidnumber x))) 
       (setq CurrentOffset* (plus CurrentOffset* 4)) 
       (updatebittable 4 (const reloc_word)))))
@@ -252,13 +254,13 @@
 %       (printf "Offset is %d%n" x)
        (setq x (wshift x -2))		% offset is in words, not bytes
        % insert the fixup into the lower 24 bits, upper 8 bits are condition bits and opcode
-       (setq wrd (wgetv (iplus2 codebase* (car (first ForwardInternalReferences*))) 0))
+       (setq wrd (wgetv (iplus2 CodeBase* (car (first ForwardInternalReferences*))) 0))
 %       (printf "instruction is %x --> %x%n"
 %	       (wand wrd 16#ffffffff)
 %	       (wor (wand wrd 16#ff000000) (wand x 16#00ffffff)))
-       (putword32 (iplus2 codebase* (car (first ForwardInternalReferences*)))
+       (putword32 (iplus2 CodeBase* (car (first ForwardInternalReferences*)))
 		(wor (wand wrd 16#ff000000) (wand x 16#00ffffff)))
-%       (printf "New instruction is %x%n" (wand (wgetv (iplus2 codebase* (car (first ForwardInternalReferences*))) 0) 16#ffffffff))
+%       (printf "New instruction is %x%n" (wand (wgetv (iplus2 CodeBase* (car (first ForwardInternalReferences*))) 0) 16#ffffffff))
        (setq ForwardInternalReferences* (cdr ForwardInternalReferences*)))
 	      % Now remove the InternalEntry offsets from everyone
    (mapobl 'remove-ieo-property)))

@@ -73,6 +73,14 @@
 
 (define-constant first-local-id-number 2048)
 
+%
+% Extra function arguments (beyond maxrealregs) are passed via a static argumentblock.
+% The necessary relocation has an index number >= first-extraargument-number.
+% This used to be the explicit constant 8150, but this means that a fasl file cannot 
+% reference more than about 6100 IDs. With 65450 it can reference up to 63400 IDs.
+
+(define-constant first-extraargument-number 65510)
+
 (ds local-id-number? (u)
   (wgeq u first-local-id-number)
   )
@@ -82,11 +90,11 @@
 %
 
 (ds extraargumentp (u)
-  (wgeq u 8150)
+  (wgeq u first-extraargument-number)
   )
 
 (ds makeextraargument (u)
-  (wdifference u (wplus2 8150 (wplus2 maxrealregs 1)))
+  (wdifference u (wplus2 first-extraargument-number (wplus2 maxrealregs 1)))
   )
 
 (define-constant bittable-entries-per-word 16)

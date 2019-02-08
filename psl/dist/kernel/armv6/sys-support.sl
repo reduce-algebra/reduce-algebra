@@ -112,9 +112,10 @@
        % Called by JMP in the function cell. Stores the ID of the interpreted
        % function in CodeForm!* without disturbing its argument registers
        %
-       (*ALLOC 0)			% Make sure that (reg lr) is saved on stack
+       (*Move (reg t3) (reg t1))
        (*MKITEM (reg t1) (wconst id-tag))
        (*MOVE (reg t1) (Fluid CodeForm!*))
+%       (*MOVE (idloc *tehcalledid*) (Fluid CodeForm!*))
        (*JCALL CompiledCallingInterpretedAux)))
 
 (de kernel-fatal-error (string)

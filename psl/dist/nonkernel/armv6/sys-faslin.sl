@@ -86,7 +86,7 @@
                        (wdifference x (wplus2 maxrealregs 1)))))
            (setf currentoffset* (iplus2 currentoffset* 4)))
     (progn (setf (getmem (iplus2 codebase* currentoffset*)) 
-                 (makerelocword reloc-value-cell (wplus2 x 8150)))
+                 (makerelocword reloc-value-cell (wplus2 x first-extraargument-number)))
            (setf currentoffset* (iplus2 currentoffset* 4))
            (updatebittable 4 reloc-word))))
 
