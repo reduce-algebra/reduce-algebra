@@ -1044,21 +1044,30 @@ LispObject interpreted_1(LispObject def, LispObject a1)
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck1(def);
-    return apply_lambda(qenv(def), ncons(a1), nil, def);
+    push(def);
+    a1 = ncons(a1);
+    pop(def);
+    return apply_lambda(qenv(def), a1, nil, def);
 }
 
 LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck1(def);
-    return apply_lambda(qenv(def), list2(a1, a2), nil, def);
+    push(def);
+    a1 = list2(a1, a2);
+    pop(def);
+    return apply_lambda(qenv(def), a1, nil, def);
 }
 
 LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2, LispObject a3)
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck1(def);
-    return apply_lambda(qenv(def), list3(a1, a2, a3), nil, def);
+    push(def);
+    a1 = list3(a1, a2, a3);
+    pop(def);
+    return apply_lambda(qenv(def), a1, nil, def);
 }
 
 LispObject interpreted_4up(LispObject def, LispObject a1, LispObject a2,
@@ -1066,7 +1075,10 @@ LispObject interpreted_4up(LispObject def, LispObject a1, LispObject a2,
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck1(def);
-    return apply_lambda(qenv(def), list3star(a1, a2, a3, a4up), nil, def);
+    push(def);
+    a1 = list3star(a1, a2, a3, a4up);
+    pop(def);
+    return apply_lambda(qenv(def), a1, nil, def);
 }
 
 LispObject funarged_0(LispObject def)
@@ -1082,7 +1094,10 @@ LispObject funarged_1(LispObject def, LispObject a1)
     save_current_function saver(def);
     stackcheck1(def);
     def = qenv(def);
-    return apply_lambda(qcdr(def), ncons(a1), qcar(def), qcdr(def));
+    push(def);
+    a1 = ncons(a1);
+    pop(def);
+    return apply_lambda(qcdr(def), a1, qcar(def), qcdr(def));
 }
 
 LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
@@ -1090,7 +1105,10 @@ LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
     save_current_function saver(def);
     stackcheck1(def);
     def = qenv(def);
-    return apply_lambda(qcdr(def), list2(a1, a2), qcar(def), qcdr(def));
+    push(def);
+    a1 = list2(a1, a2);
+    pop(def);
+    return apply_lambda(qcdr(def), a1, qcar(def), qcdr(def));
 }
 
 LispObject funarged_3(LispObject def, LispObject a1, LispObject a2, LispObject a3)
@@ -1098,7 +1116,10 @@ LispObject funarged_3(LispObject def, LispObject a1, LispObject a2, LispObject a
     save_current_function saver(def);
     stackcheck1(def);
     def = qenv(def);
-    return apply_lambda(qcdr(def), list3(a1, a2, a3), qcar(def), qcdr(def));
+    push(def);
+    a1 = list3(a1, a2, a3);
+    pop(def);
+    return apply_lambda(qcdr(def), a1, qcar(def), qcdr(def));
 }
 
 LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
@@ -1107,7 +1128,10 @@ LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
     save_current_function saver(def);
     stackcheck1(def);
     def = qenv(def);
-    return apply_lambda(qcdr(def), list3star(a1, a2, a3, a4up), qcar(def), qcdr(def));
+    push(def);
+    a1 = list3star(a1, a2, a3, a4up);
+    pop(def);
+    return apply_lambda(qcdr(def), a1, qcar(def), qcdr(def));
 }
 
 static LispObject macroexpand_1(LispObject form, LispObject env)
@@ -1130,8 +1154,10 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
                         return nvalues(form, 2);
                     }
                     push2(form, done);
+                    push(env);
                     w = cons(lambda, w);
                     w = list3(w, stack[-1], nil);
+                    pop(env);
                     on_backtrace(
                         p = apply(qvalue(macroexpand_hook),
                                   w,

@@ -176,11 +176,11 @@ if cygwin
 EXE=
 
 $(absolute_cyg32):	$(cslbase)/other-cygwin.cpp
-	i686-w64-mingw32-g++ -O3 -DFORCE32 $(cslbase)/other-cygwin.cpp -static -o $(absolute_cyg32)
+	i686-w64-mingw32-g++ -static -O3 -DFORCE32 $(cslbase)/other-cygwin.cpp -static -o $(absolute_cyg32)
 	i686-w64-mingw32-strip $(absolute_cyg32)
 
 $(absolute_cyg64):	$(cslbase)/other-cygwin.cpp
-	i686-w64-mingw32-g++ -O3 -DFORCE64 $(cslbase)/other-cygwin.cpp -static -o $(absolute_cyg64)
+	i686-w64-mingw32-g++ -static -O3 -DFORCE64 $(cslbase)/other-cygwin.cpp -static -o $(absolute_cyg64)
 	i686-w64-mingw32-strip $(absolute_cyg64)
 
 else !cygwin
