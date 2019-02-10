@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:           PXC:armv6-instrs.sl
+% File:           PXC:armv6-instrs1.sl
 % Title:          Instructions for ARM v6
 % Author:         Winfried Neun
 % Created:        April 21 2014
@@ -104,4 +104,4 @@
 %
 %    getting the instructions in 
   
-( dskin "armv6-inst.dat")
+( dskin "armv6-inst1.dat")

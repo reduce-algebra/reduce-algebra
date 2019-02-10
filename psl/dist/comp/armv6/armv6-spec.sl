@@ -147,9 +147,9 @@
 %    )
 %  )
 
-(de ExpandIDLoc (x) (SaveConstant x))
+%(de ExpandIDLoc (x) (SaveConstant x))
 
-(put 'IDloc 'Pass1PseudoOp 'ExpandIDLoc)
+%(put 'IDloc 'Pass1PseudoOp 'ExpandIDLoc)
 
 (de ExpandSysint (x) (SaveConstant (cadr x)))
 
@@ -158,7 +158,8 @@
 (de ExpandItem (Expression)
   (prog (LabelOfContents)
 	(return (cond ((InumP Expression) Expression)
-                      ((IdlocP Expression) Expression)
+                      ((eqcar Expression 'saveidloc)
+		       (list 'idloc (cadr Expression)))
 		      ((IDP Expression)
 		       (MakeMkItem (TagNumber Expression)
 				   (list 'IDLoc Expression)))
@@ -168,7 +169,8 @@
 		      (t (progn (setq LabelOfContents
 				      (SaveContents Expression))
 				(MakeMkItem (TagNumber Expression)
-					    LabelOfContents)))))))
+					    LabelOfContents))))))
+  )
 
 (de AppendContents (ExpressionLabelPair)
   (prog (Expression UpperBound I)

@@ -64,6 +64,7 @@
 	(OP-clz . lth-clz)
 	(OP-branch-imm . lth-branch-imm)
 	(OP-branch-reg . lth-branch-reg)
+	(OP-mov-imm16 . lth-mov-imm16)
       ))
  
 (load strings compiler)
@@ -216,8 +217,8 @@
 	  ((eq op 'reg)'(REGP))
 	  ((eq op 'evenreg)'(evenREGP)) 
 	  ((eq op 'streg)'(streg-p))
-	  ((eq op 'EAX) '(EAXP))
 	  ((eq op 'imm) '(STDIMMEDIATEP))
+	  ((eq op 'imm16) '(sixteenbit-p))
 	  ((eq op 'imm8-rotated) '(imm8-rotatedp))
 	  ((eq op 'reg-shifter) '(reg-shifter-p))
 	  ((eq op 'reg-offset8) '(reg-offset8-p))
@@ -264,10 +265,24 @@
 % 1st application: generation of defOpcode file
 %
  
-(de collectInstructions (file)
-   (when file (setq file (open file 'OUTPUT)) (wrs file))
-   (setq allInstrs!* (sort allInstrs!* (function string-lessp)))
-   (mapc allInstrs!* (function makeOneInstruction))
+(de collectInstructions (filelist)
+  (prog (i file)
+    (setq i 0)
+    (setq allInstrs!* (sort allInstrs!* (function string-lessp)))
+    (when (and (pairp filelist) (car filelist))
+      (setq file (open (car filelist) 'OUTPUT))
+      (wrs file)
+      (setq filelist (cdr filelist)))
+    (foreach instr in allInstrs!* do
+      (progn
+        (makeOneInstruction instr)
+	(setq i (add1 i)))
+        (when (and file (pairp filelist) (zerop (remainder i 1000)))
+	  (wrs nil)
+	  (close file)
+	  (setq file (open (car filelist) 'OUTPUT))
+	  (wrs file)
+	  (setq filelist (cdr filelist))))
    (when file (wrs nil) (close file)))
 nil)
  
@@ -377,6 +392,10 @@ nil)
 (instr MVN (MVN *cond* *set*)  (reg reg-shifter)         OP-regd-shifter *condbits* 2#0001111 *setbit*)
 (instr MVN (MVN *cond* *set*)  (reg imm8-rotated)        OP-regd-imm8    *condbits* 2#0011111 *setbit*)
 
+%% instructions for ARMv6T2
+%%(instr MOV (MOV *cond*)   (reg imm16)               OP-mov-imm16  *condbits*  2#00110000)
+%%(instr MOVT (MOVT *cond*) (reg imm16)               OP-mov-imm16  *condbits*  2#00110100)
+      
 (commentoutcode
 (instr SDIV (SDIV *cond*)  (reg reg reg)             OP-mul3      *condbits* 2#0111000 1 2#0001 2#1111)
 (instr UDIV (UDIV *cond*)  (reg reg reg)         OP-mul3      *condbits* 2#0111001 1 2#1001 2#1111)
@@ -525,7 +544,7 @@ nil)
 (off usermode) (de linelength (x) 1000)
 (reload chars)
 (pp nil)
-(collectInstructions "armv6-inst.dat")
+(collectInstructions (list "armv6-inst1.dat" "armv6-inst2.dat"))
 % (disassembletables "disasstb")
 % (displayInstructions "386instrlist")
 

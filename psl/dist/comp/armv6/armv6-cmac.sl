@@ -409,18 +409,17 @@
 % (de *WFOO (Arg1 Arg2)%
 %   (Expand2OperandCmacro Arg1 Arg2 '*Wfoo))%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
 
 (DefCMacro *Call
        ((InternallyCallableP)  (BL (InternalEntry ArgOne)))
-	(         (*Move (idloc argone) (reg t3))
+	(         (*Move (idloc ArgOne) (reg t3))
 		  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
 		  (BLX (reg t2)))
 )
 
 (DefCMacro *JCall
        ((InternallyCallableP)  (B (InternalEntry ArgOne)))
-	(         (*Move (idloc argone) (reg t3))
+	(         (*Move (idloc ArgOne) (reg t3))
 		  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
 		  (BX (reg t2)))
 )
@@ -486,6 +485,16 @@
 
 (DefCMacro *LoadConstant)
 
+%%% *LoadIDLoc and *LoadIdNumber need to load the internal number (id2int id) of an
+%%% identifier id into (reg t3). It looks like a good idea to use (idloc id) as a
+%%% constant, since it would be replaced by a relocatable id number later in
+%%% Depositexpression.
+%%% However, ExpandItem and friends in pass-1-lap.sl cannot easily distinguish between
+%%%  (idloc id)   and    (quote (idloc id)),
+%%% since the quote in the latter form is stripped before passing it on.
+%%% Therefore, a special form (saveidloc id) is used.  This will be handled in
+%%% ExpandItem (see the redefintion in armv6-spec.sl.
+
 (de *LoadIDLoc (dest src)
   (let ((idnumber (WConstEvaluable src))
 	(comment (if *writingasmfile `((comment ,@src)))))
@@ -495,7 +504,7 @@
 	    ((and *writingasmfile (fixp idnumber))
 	     `( (ldr ,dest (quote ,idnumber))))
 	    (t
-	     `( (ldr ,dest ,src)))
+	     `( (ldr ,dest ,(SaveConstant `(saveidloc ,(cadr src))))))
     ))))
 
 
@@ -508,7 +517,7 @@
     (append comment
       (if (and idnumber (fixp idnumber) (lessp idnumber 257) (greaterp idnumber -1))
  	`( (,load-or-store ,reg (displacement (reg symval) ,(times 4 idnumber))) )
-       `( (LDR (reg t3) ,(if (null idnumber) `(idloc ,(cadr nonlocal)) `(quote ,idnumber))) 
+       `( (LDR (reg t3) ,(if (null idnumber) (SaveConstant `(saveIDLoc ,(cadr nonlocal))) `(quote ,idnumber))) 
  	 (,load-or-store ,reg (displacement (reg symval) (regshifted t3 LSL 2))) )
       ))))
 

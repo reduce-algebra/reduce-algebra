@@ -270,9 +270,14 @@
         (return (cond ((null u) 256)
 		      ((ileq (setq i (idinf u)) 256) i)
                       ((setq i (get u fasl-idnumber-property*)) i)
-                      (t (put u fasl-idnumber-property* (setq i nextidnumber*))
-                         (setq orderedidlist* (tconc orderedidlist* u))
-                         (setq nextidnumber* (iadd1 nextidnumber*)) i)))))
+                      (t
+		       (if (extraargumentp nextidnumber*)
+			   (stderror "Too many identifiers is fasl file")
+			 (progn
+			   (put u fasl-idnumber-property* (setq i nextidnumber*))
+			   (setq orderedidlist* (tconc orderedidlist* u))
+			   (setq nextidnumber* (iadd1 nextidnumber*)) i)))))))
+
 
 (setq nil-t-diff* 140)
 

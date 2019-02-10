@@ -353,7 +353,7 @@
 
 (setq !*LDM-adressing-modes '(IA IB DA DB))
 
-(load armv6-instrs)
+(load armv6-instrs1 armv6-instrs2)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -1084,9 +1084,13 @@
 			       (DepositInstruction `(SUB ,dest (reg pc) ,(wand 16#ff rel)))
 			       (DepositInstruction `(SUB ,dest ,dest ,(wand 16#ff00 rel))))
 			      ((and (eq 0 (wand rel 3)) % divisible by 4
-				    (lessp rel 16#40000))
+				    (imm8-rotatedp (wand rel 16#fffffc00)))
 			       (DepositInstruction `(SUB ,dest (reg pc) ,(wand 16#3ff rel)))
-			       (DepositInstruction `(SUB ,dest ,dest ,(wand 16#3fc00 rel))))
+			       (DepositInstruction `(SUB ,dest ,dest ,(wand 16#fffffc00 rel))))
+			      ((and (eq 0 (wand rel 7)) % divisible by 8
+				    (imm8-rotatedp (wand rel 16#fffff800)))
+			       (DepositInstruction `(SUB ,dest (reg pc) ,(wand 16#7ff rel)))
+			       (DepositInstruction `(SUB ,dest ,dest ,(wand 16#fffff800 rel))))
 			      (t (stderror (bldmsg "ADRL load too far: %w" rel)))))
 		       ((imm8-rotatedp rel)
 			(DepositInstruction `(ADD ,dest (reg pc) ,rel))
@@ -1095,9 +1099,13 @@
 			(DepositInstruction `(ADD ,dest (reg pc) ,(wand 16#ff rel)))
 			(DepositInstruction `(ADD ,dest ,dest ,(wand 16#ff00 rel))))
 		       ((and (eq 0 (wand rel 3)) % divisible by 4
-			     (lessp rel 16#40000))
+			     (imm8-rotatedp (wand rel 16#fffffc00)))
 			(DepositInstruction `(ADD ,dest (reg pc) ,(wand 16#3ff rel)))
-			(DepositInstruction `(ADD ,dest ,dest ,(wand 16#3fc00 rel))))
+			(DepositInstruction `(ADD ,dest ,dest ,(wand 16#fffffc00 rel))))
+		       ((and (eq 0 (wand rel 7)) % divisible by 8
+			     (imm8-rotatedp (wand rel 16#fffff800)))
+			(DepositInstruction `(ADD ,dest (reg pc) ,(wand 16#7ff rel)))
+			(DepositInstruction `(ADD ,dest ,dest ,(wand 16ffff7f800 rel))))
 		       (t (stderror (bldmsg "ADRL load too far: %w" rel)))))
 		)))
 
