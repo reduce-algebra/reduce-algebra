@@ -294,6 +294,6 @@
 (de InumP (Expression)
     (and (fixp expression)
 	 (or (zerop expression)
-	     (and (greaterp expression 0) (lessp expression (lshift 1 27)))
-	     (and (lessp expression 16#100000000) (geq expression (lshift -1 27))))))
+	     (and (greaterp expression 0) (lessp expression 16#10000000))
+	     (and (lessp expression 16#100000000) (geq expression 16#f8000000)))))
 
