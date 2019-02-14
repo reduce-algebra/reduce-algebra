@@ -33,7 +33,7 @@ symbolic procedure contfract2 (u,b1);
  % or approximation has reached system precision.
   begin scalar b0,l,a,b,g,gg,ggg,h,hh,hhh;
     b:= u; g:=0; gg:=1; h:=1; hh:=0;
-    if null b1 then b0:= absf !:times(b,!:expt(10,- precision 0));
+    if null b1 then b0:= absf !:times(b,!:expt(10,-precision 0));
   loop:
     a:=rd!-fix b;
     ggg:=a*gg + g;
@@ -55,7 +55,9 @@ symbolic procedure contfract2 (u,b1);
 symbolic procedure !:lessp(u,v); !:minusp !:difference(u,v);
 
 symbolic procedure rd!-fix u;
-   if atom cdr u then fix cdr u else ashift(cadr u,cddr u);
+   if atom u then u
+   else if atom cdr u then fix cdr u
+   else ashift(cadr u,cddr u);
 
 symbolic procedure contfract1(u,b);
   begin scalar oldmode,v;
