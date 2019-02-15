@@ -1502,6 +1502,7 @@ preload  (setq initload
 
 		   (*Move (Reg t2) ($fluid BndstkPtr)) 
                    (*Move (reg t1) (reg t2))		    % (reg t1 may be reused in *move
+      %% (reg t2) is now the old bndstkptr (before increase)
 		   ))
 
       %start of code
@@ -1568,7 +1569,6 @@ preload  (setq initload
 		    (*Call Bstackunderflow) % never returns
 		   ,genlabel
 		   (*Move (reg t2) ($fluid Bndstkptr)) 
-                   (*Move (reg t1) (reg t2))
 		   ))
 
      %start of code

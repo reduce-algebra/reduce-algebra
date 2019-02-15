@@ -229,4 +229,3 @@
      (for (from i 0 amount)
       (do (putmem (wplus2 (inf ptr) (wshift i 2)) 0))))
 
-
