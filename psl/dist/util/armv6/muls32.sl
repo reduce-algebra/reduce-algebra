@@ -68,7 +68,7 @@
       % Result is the single length quotient.
       % the remainder is placed in a fluid variable.
       '(  % load address of fluid variable in (reg 4)
-        (LDR (reg 4) (idloc *second-value*))
+        (*Move (idloc *second-value*) (reg 4))
 	(ADD (reg 4) (reg symval) (regshifted 4 LSL 2))
         (*JCall wxquotientdouble)
       ))
