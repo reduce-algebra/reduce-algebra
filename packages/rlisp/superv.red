@@ -229,15 +229,29 @@ symbolic procedure update!_prompt;
 symbolic procedure begin1;
    begin1a nil;
 
+% In the code here is the variable now called !~x!~ was just called x
+% then there could be a conflict between the binding here and use of x
+% as a top-level variable in symbolic mode code in the case where all
+% of Reduce is interpreted and where "local" variables are in fact implemented
+% using shallow binding and hence behave rather like fluids. In such a
+% situation the input
+%     symbolic; x := 5; list(x, x);
+% used to return an unexpected ((list x x) (list x x)) rather than (5 5).
+% I have renamed the delicate variables as (eg) !~x!~ believing that altough
+% casual users might well use x as a variable name few will use that.
+% Variables such as errmsg!* already have "unusual" names to reduce the
+% chances of conflict. The changes here do not provider a technical resolution
+% of the underlying issue, but probably make it a lot less liable to bit in
+% the real world.
 
-symbolic procedure begin1a prefixchars;
-   begin scalar parserr,result,x;
+symbolic procedure begin1a !~prefixchars!~;
+   begin scalar !~parserr!~,!~result!~,!~x!~;
       otime!* := time();
       % The next line is that way for bootstrapping purposes.
       if getd 'gctime then ogctime!* := gctime() else ogctime!* := 0;
       otime1!* := otime2!* := otime3!* := otime!*;
       ogctime1!* := ogctime2!* := ogctime3!* := ogctime!*;
-      peekchar!* := prefixchars;
+      peekchar!* := !~prefixchars!~;
       cursym!* := '!*semicol!*;
       curescaped!* := nil;
   a:  if terminalp()
@@ -246,7 +260,7 @@ symbolic procedure begin1a prefixchars;
                    update!_prompt()>> ;
       !*nosave!* := nil;
       !*strind := 0;     % Used by some versions of input editor.
-      parserr := nil;
+      !~parserr!~ := nil;
       if !*time then lispeval '(showtime nil);   % Since a STAT.
       if !*output and null ofl!* and terminalp() and null !*defn
          and null !*lessspace
@@ -255,8 +269,8 @@ symbolic procedure begin1a prefixchars;
         then << !*slin := car tslin!*;
                 lreadfn!* := cdr tslin!*;
                 tslin!* := nil >>;
-      x := initl!*;
- b:   if x then << sinitl car x; x := cdr x; go to b >>;
+      !~x!~ := initl!*;
+ b:   if !~x!~ then << sinitl car !~x!~; !~x!~ := cdr !~x!~; go to b >>;
       remflag(forkeywords!*,'delim);
       remflag(repeatkeywords!*,'delim);
       remflag( whilekeywords!*,'delim);
@@ -265,17 +279,17 @@ symbolic procedure begin1a prefixchars;
        % Note that key* was set from *previous* command in following.
        else if terminalp() and null(key!* = 'ed)
         then printprompt promptexp!*;
-      x := errorset!*('(command),t);
+      !~x!~ := errorset!*('(command),t);
       condterpri();
-      if errorp x then go to err1;
-      x := car x;
-      if car x = 'symbolic and eqcar(cadr x,'xmodule)
-        then result := xmodloop eval cadr x
-       else result := begin11 x;
-      if null result then go to a
-       else if result = 'end then return nil
-       else if result = 'err2 then go to err2
-       else if result = 'err3 then go to err3;
+      if errorp !~x!~ then go to err1;
+      !~x!~ := car !~x!~;
+      if car !~x!~ = 'symbolic and eqcar(cadr !~x!~,'xmodule)
+        then !~result!~ := xmodloop eval cadr !~x!~
+       else !~result!~ := begin11 !~x!~;
+      if null !~result!~ then go to a
+       else if !~result!~ = 'end then return nil
+       else if !~result!~ = 'err2 then go to err2
+       else if !~result!~ = 'err3 then go to err3;
   c:  if crbuf1!* then <<
          lprim "Closing object improperly removed. Redo edit.";
          crbuf1!* := nil;
@@ -287,8 +301,8 @@ symbolic procedure begin1a prefixchars;
        else return nil;
   err1:
       if eofcheck() or eof!*>0 then go to c
-       else if x="BEGIN invalid" then go to a;
-      parserr := t;
+       else if !~x!~="BEGIN invalid" then go to a;
+      !~parserr!~ := t;
   err2:
       resetparser();  % In case parser needs to be modified.
   err3:
@@ -300,8 +314,8 @@ symbolic procedure begin1a prefixchars;
                       then lprie "Continuing with parsing only ...");
                    cmsg!* := t >>
        else if null !*errcont
-        then << result := pause1 parserr;
-                   (if result then return null lispeval result);
+        then << !~result!~ := pause1 !~parserr!~;
+                   (if !~result!~ then return null lispeval !~result!~);
                    erfg!* := nil >>
        else erfg!* := nil;
       go to a
@@ -313,8 +327,8 @@ symbolic procedure begin1a prefixchars;
 fluid '(ulimit!* trap!-time!*);
 ulimit!* := nil;
 
-symbolic procedure begin11 x;
-   begin scalar errmsg!*,mode,result,newrule!*;
+symbolic procedure begin11 !~x!~;
+   begin scalar errmsg!*,!~mode!~,!~result!~,newrule!*;
       if cursym!* = 'end
          then if terminalp() and null !*lisp!_hook
                 then << cursym!* := '!*semicol!*;
@@ -322,29 +336,29 @@ symbolic procedure begin11 x;
                            !*nosave!* := t;
                            return nil >>
                else << comm1 'end; return 'end >>
-       else if eqcar((if !*reduce4 then x else cadr x),'retry)
-        then if programl!* then x := programl!*
+       else if eqcar((if !*reduce4 then !~x!~ else cadr !~x!~),'retry)
+        then if programl!* then !~x!~ := programl!*
               else << lprim "No previous expression"; return nil >>;
-      if null !*reduce4 then << mode := car x; x := cadr x >>;
-      program!* := x;    % Keep it around for debugging purposes.
+      if null !*reduce4 then << !~mode!~ := car !~x!~; !~x!~ := cadr !~x!~ >>;
+      program!* := !~x!~;    % Keep it around for debugging purposes.
       if eofcheck() then return 'c else eof!* := 0;
-      add2inputbuf(x,if !*reduce4 then nil else mode);
-      if null atom x
-          and car x memq '(bye quit)
+      add2inputbuf(!~x!~,if !*reduce4 then nil else !~mode!~);
+      if null atom !~x!~
+          and car !~x!~ memq '(bye quit)
         then if getd 'bye
-               then << lispeval x; !*nosave!* := t; return nil >>
+               then << lispeval !~x!~; !*nosave!* := t; return nil >>
               else << !*byeflag!* := t; return nil >>
-       else if null !*reduce4 and eqcar(x,'ed)
+       else if null !*reduce4 and eqcar(!~x!~,'ed)
         then <<(if getd 'cedit and terminalp()
-                      then cedit cdr x
+                      then cedit cdr !~x!~
                      else lprim "ED not supported");
                    !*nosave!* := t;
                     return nil >>
        else if !*defn
         then if erfg!* then return nil
               else if null flagp(key!*,'ignore)
-                and null eqcar(x,'quote)
-               then << (if x then dfprint x else nil);
+                and null eqcar(!~x!~,'quote)
+               then << (if !~x!~ then dfprint !~x!~ else nil);
                           if null flagp(key!*,'eval) then return nil >>;
       if !*output and ifl!* and !*echo and null !*lessspace
         then terpri();
@@ -356,45 +370,45 @@ symbolic procedure begin11 x;
 % yet have the macro "with-timeout" and so I need to use a forward
 % reference to an ordinary function.
       if fixp ulimit!* then <<
-        result := errorset!_with!_timeout(ulimit!*, x);
-        if not atom result then result := car result >>
-      else result := errorset!*(x,t);
-      if errorp result or erfg!*
-        then << programl!* := list(mode,x); return 'err2 >>
+        !~result!~ := errorset!_with!_timeout(ulimit!*, !~x!~);
+        if not atom !~result!~ then !~result!~ := car !~result!~ >>
+      else !~result!~ := errorset!*(!~x!~,t);
+      if errorp !~result!~ or erfg!*
+        then << programl!* := list(!~mode!~,!~x!~); return 'err2 >>
        else if !*defn then return nil;
       if null !*reduce4
-        then if null(mode = 'symbolic) then x := getsetvars x else nil
-       else << result := car result;
-                  (if null result then result := mkobject(nil,'noval));
-                  mode := type result;
-                  result := value result >>;
-      add2resultbuf((if null !*reduce4 then car result else result),
-                    mode);
+        then if null(!~mode!~ = 'symbolic) then !~x!~ := getsetvars !~x!~ else nil
+       else << !~result!~ := car !~result!~;
+                  (if null !~result!~ then !~result!~ := mkobject(nil,'noval));
+                  !~mode!~ := type !~result!~;
+                  !~result!~ := value !~result!~ >>;
+      add2resultbuf((if null !*reduce4 then car !~result!~ else !~result!~),
+                    !~mode!~);
       if null !*output then return nil
        else if null(semic!* = '!$)
         then if !*reduce4 then (begin
                    terpri();
-                   if mode = 'noval then return nil
+                   if !~mode!~ = 'noval then return nil
                     else if !*debug then prin2t "Value:";
-                   rapply1('print,list list(mode,result))
+                   rapply1('print,list list(!~mode!~,!~result!~))
                  end)
-       else if mode = 'symbolic
-              then if null car result and null(!*mode = 'symbolic)
+       else if !~mode!~ = 'symbolic
+              then if null car !~result!~ and null(!*!~mode!~ = 'symbolic)
                      then nil
               else begin
                   terpri();
-                  result:=
-                       errorset!*(list('print,mkquote car result),t)
+                  !~result!~:=
+                       errorset!*(list('print,mkquote car !~result!~),t)
                     end
-       else if car result
-        then result := errorset!*(list('assgnpri,mkquote car result,
-                                       (if x then 'list . x else nil),
+       else if car !~result!~
+        then !~result!~ := errorset!*(list('assgnpri,mkquote car !~result!~,
+                                       (if !~x!~ then 'list . !~x!~ else nil),
                                        mkquote 'only),
                                   t);
       if null !*reduce4
-        then return if errorp result then 'err3 else nil
-       else if null(!*mode = 'noval) % and !*debug
-        then << terpri(); prin2 "of type: "; print mode >>;
+        then return if errorp !~result!~ then 'err3 else nil
+       else if null(!*!~mode!~ = 'noval) % and !*debug
+        then << terpri(); prin2 "of type: "; print !~mode!~ >>;
       return nil
    end;
 

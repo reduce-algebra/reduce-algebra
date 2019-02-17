@@ -232,10 +232,11 @@ symbolic procedure trap!-time!-value();
 % Absolute time limit in milliseconds...
 
 smacro procedure with!-timeout(n, u);
-  (lambda ott;
+  (lambda !~ott!~;
     (lambda trap!-time!*;
       << trap!-time!* := time() + fix n;
-         if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
+         if numberp !~ott!~ and trap!-time!* > !~ott!~ then
+            trap!-time!* := !~ott!~;
          catch('!@timeout!@, u . nil)>>)(nil))
     (trap!-time!-value());
 
@@ -246,10 +247,11 @@ smacro procedure with!-timeout(n, u);
 % so mid or high-range laptops or desktops will take less than that time.
 
 smacro procedure with!-normalized!-timeout(n, u);
-  (lambda ott;
+  (lambda !~ott!~;
     (lambda trap!-time!*;
       << trap!-time!* := time() + fix (n/machine_speed());
-         if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
+         if numberp !~ott!~ and trap!-time!* > !~ott!~ then
+             trap!-time!* := !~ott!~;
          catch('!@timeout!@, u . nil)>>)(nil))
     (trap!-time!-value());
 
@@ -289,8 +291,8 @@ smacro procedure with!-normalized!-timeout(n, u);
 smacro procedure without!-timeout u;
   (lambda trap!-time!*; u)(nil);
 
-symbolic procedure errorset_with_timeout(n, u);
-  with!-timeout(n, errorset!*(u, t));
+symbolic procedure errorset_with_timeout(!~n!~, !~u!~);
+  with!-timeout(!~n!~, errorset!*(!~u!~, t));
 
 endmodule;
 

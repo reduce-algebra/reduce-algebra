@@ -58,13 +58,13 @@ symbolic procedure copyd(new,old);
 
 symbolic procedure eqcar(u,v); null atom u and car u eq v;
 
-symbolic procedure errorset!*(u,v); errorset(u,v,!*backtrace);
+symbolic procedure errorset!*(!~u!~,!~v!~); errorset(!~u!~,!~v!~,!*backtrace);
 
-symbolic procedure errorset2 u;
+symbolic procedure errorset2 !~u!~;
    begin
       scalar !*protfg;
       !*protfg := t;
-      return errorset(u, nil, nil)
+      return errorset(!~u!~, nil, nil)
    end;
 
 symbolic procedure flagpcar(u,v);
