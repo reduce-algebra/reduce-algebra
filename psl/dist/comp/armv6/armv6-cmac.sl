@@ -97,9 +97,7 @@
 % QInumP              8 >= x >=        -8          (  several bits )
 % PosQInumP           8 >= x >          0          (  3 bits, unsigned)
 % NegQInumP           0 >  x >=        -8          (  3 bits, unsigned)
-% PosShiftInumP      31 >= x >=         0          (  5 bits, unsigned) 
-% NegShiftInumP       0 >  x >=       -31          (  5 bits, unsigned)
-
+ 
 (off R2I)            % This function should exist in the kernel!           scs
 (de IntP(N) (IntP N))
 (on  R2I)
@@ -149,16 +147,6 @@
 (de NegQInumP (Expression) (and (IntP Expression)
 					  (minusp Expression)
 					  (geq    Expression -8)))
-
-(de PosShiftInumP (Expression) (and (IntP Expression)
-					  (GreaterP Expression 0)
-					  (leq      Expression 31)))
- 
-(de NegShiftInumP (Expression) (and (IntP Expression)
-					  (minusp Expression)
-					  (geq    Expression -31)))
-
-
  
 %---------------------------------------------------------
 % The following set of predicates describes certain classes of
@@ -916,44 +904,44 @@
     ((regp negp)     (MOV ArgOne (regshifted ArgOne ASR (minus ArgTwo))))
     ((regp fixplusp) (MOV ArgOne (regshifted ArgOne LSL ArgTwo)))
     ((regp regp)     (CMP ArgTwo 0)
-                      (BPL templabel)
+                      (BGE templabel)
                       (RSB (reg t2) ArgOne 0)
-		      (MOV ArgOne (regshifted ArgOne ASR (reg t2)))
+                      (*asr ArgOne ArgOne (reg t2))
                       (B templabel2)
-		      templabel
-		      (MOV ArgOne (regshifted ArgOne LSL ArgTwo))
+                     templabel
+                      (*lsl ArgOne ArgOne ArgTwo)
                      templabel2)
 
     ((regp anyp)     (*Move ArgTwo (reg t2))
-		      (*AShift ArgOne (reg t2)))
+		      (*ashift ArgOne (reg t2)))
     ((Anyp fixp)      (*Move ArgOne (reg t1))
-		      (*AShift (reg t1) ArgTwo)
+		      (*ashift (reg t1) ArgTwo)
 		      (*Move (reg t1) ArgOne))
     (                 (*Move ArgOne (reg t1))
-		      (*AShift (reg t1) ArgTwo)
+		      (*ashift (reg t1) ArgTwo)
 		      (*Move (reg t1) ArgOne))
 )
 
 
 (DefCMacro *WShift
     ((AnyP ZeroP))
-    ((regp negp)     (*WRShift ArgOne (minus ArgTwo)))
+    ((regp negp)     (*lsr ArgOne ArgOne (minus ArgTwo)))
     ((regp fixplusp) (*lsl ArgOne ArgOne ArgTwo))
     ((regp regp)     (CMP argtwo 0)
-		      (BPL templabel)
+		      (BGE templabel)
                       (RSB (reg t2) ArgTwo 0)
-		      (MOV ArgOne (regshifted ArgOne LSR (reg t2)))
+		      (*lsr ArgOne Argone (reg t2))
                       (B templabel2)
-		      templabel
-		      (MOV ArgOne (regshifted ArgOne LSL ArgTwo))
+                     templabel
+                      (*lsl ArgOne ArgOne ArgTwo)
                      templabel2)
     ((regp anyp)     (*Move ArgTwo (reg t2))
-		      (*WShift ArgOne (reg t2)))
+		      (*wshift ArgOne (reg t2)))
     ((Anyp fixp)      (*Move ArgOne (reg t1))
-		      (*WShift (reg t1) ArgTwo)
+		      (*wshift (reg t1) ArgTwo)
 		      (*Move (reg t1) ArgOne))
     (                 (*Move ArgOne (reg t1))
-		      (*WShift (reg t1) ArgTwo)
+		      (*wshift (reg t1) ArgTwo)
 		      (*Move (reg t1) ArgOne)))
 
 
@@ -966,11 +954,11 @@
 	   ((RegP NegP)       (*Cerror "*WLshift with negative shift amount"))
 	   ((RegP InumP)      (*lsl ArgOne ArgOne ArgTwo))
 	   ((RegP regP)       (*lsl ArgOne ArgOne ArgTwo))
-	   ((RegP AnyP)       (*Move ARGTWO (Reg t2))
-			      (*WLShift argone (reg t2)))
-	   (                  (*Move ARGONE (Reg t1))
-			      (*WLShift (Reg t1) ARGTWO)
-			      (*Move (Reg t1) ARGONE))
+	   ((RegP AnyP)       (*MOVE ARGTWO (Reg t2))
+			      (*wlshift argone (reg t2)))
+	   (                  (*MOVE ARGONE (Reg t1))
+			      (*WlSHIFT (Reg t1) ARGTWO)
+			      (*MOVE (Reg t1) ARGONE))
 )
  
 (de *WRshift (ARG1 arg2)
@@ -980,12 +968,12 @@
 	   ((AnyP  ZeroP)           )
 	   ((RegP NegP)       (*Cerror "*WRshift with negative shift amount"))
 	   ((RegP InumP)      (*lsr ArgOne ArgOne ArgTwo))
-	   ((RegP regP)       (MOV ArgOne (regshifted ArgOne LSR ArgTwo)))
-	   ((RegP AnyP)       (*Move ARGTWO (Reg t2))
-			      (*WRShift argone (reg t2)))
-	   (                  (*Move ARGONE (Reg t1))
-			      (*WRShift (Reg t1) ARGTWO)
-			      (*Move (Reg t1) ARGONE))
+	   ((RegP regP)       (*lsr ArgOne ArgOne ArgTwo))
+	   ((RegP AnyP)       (*MOVE ARGTWO (Reg t2))
+			      (*wrshift argone (reg t2)))
+	   (                  (*MOVE ARGONE (Reg t1))
+			      (*WRSHIFT (Reg t1) ARGTWO)
+			      (*MOVE (Reg t1) ARGONE))
 )
 
 

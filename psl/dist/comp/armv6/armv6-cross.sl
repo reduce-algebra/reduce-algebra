@@ -293,7 +293,7 @@
 
 (de InumP (Expression)
     (and (fixp expression)
-	 (or (zerop expression)
+	 (or (zerop (setq expression (land 16#ffffffff expression))) % mask 32bit
 	     (and (greaterp expression 0) (lessp expression 16#10000000))
 	     (and (lessp expression 16#100000000) (geq expression 16#f8000000)))))
 
