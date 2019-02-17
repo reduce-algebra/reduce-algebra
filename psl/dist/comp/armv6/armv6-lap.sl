@@ -615,7 +615,7 @@
 (de decode-32bit-imm8-rotated (n)
     (for (from i 0 15 1)
 	 (do
-	  (if (lessp n 256)
+	  (if (equal (land n 255) n)
 	      (return (cons i n))
 	    (setq n (rotate-left n 2))
 	    )
