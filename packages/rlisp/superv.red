@@ -393,7 +393,7 @@ symbolic procedure begin11 !~x!~;
                    rapply1('print,list list(!~mode!~,!~result!~))
                  end)
        else if !~mode!~ = 'symbolic
-              then if null car !~result!~ and null(!*!~mode!~ = 'symbolic)
+              then if null car !~result!~ and null(!*mode = 'symbolic)
                      then nil
               else begin
                   terpri();
@@ -407,7 +407,7 @@ symbolic procedure begin11 !~x!~;
                                   t);
       if null !*reduce4
         then return if errorp !~result!~ then 'err3 else nil
-       else if null(!*!~mode!~ = 'noval) % and !*debug
+       else if null(!*mode = 'noval) % and !*debug
         then << terpri(); prin2 "of type: "; print !~mode!~ >>;
       return nil
    end;
