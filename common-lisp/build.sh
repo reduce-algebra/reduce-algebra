@@ -10,9 +10,11 @@
 # Usage: ./build.sh [-c]
 
 # Option -c ensures a clean build by deleting any previous build.
-if getopts c clean
+# Option -f forces recompilation of all packages.
+if getopts cf option
 then
-	rm -rf fasl log
+	if [ $option = c ]; then rm -rf fasl log;
+	elif [ $option = f ]; then force='!*forcecompile := t;'; fi
 fi
 
 if [ ! "$reduce" ]; then export reduce=.; fi
@@ -31,7 +33,7 @@ alias grep_errors=\
 sbcl --noinform --core fasl/bootstrap.img << XXX &> log/build.blg
 (standard-lisp)
 (begin)
-symbolic;
+symbolic; $force
 
 package!-remake2('clprolo, nil);
 package!-remake2('revision, 'support);
@@ -77,7 +79,7 @@ echo +++++ Remaking core package $p
 sbcl --noinform --core fasl/bootstrap.img << XXX &> log/$p.blg
 (standard-lisp)
 (begin)
-symbolic;
+symbolic; $force
 
 begin
   scalar w, i, s;
@@ -122,12 +124,13 @@ sbcl --noinform << XXX &> log/reduce.blg
 (cl:defparameter !*init!-stats!* (list (time) (gtheap)))
 
 (setq !*verboseload t)
-(cl:defvar !*argnochk t)           % Check argument count.
+(setq !*redefmsg nil)
+(cl:defvar !*argnochk t)        % check argument count
 
 % Load is expected to be a macro but isn't; does that matter?
 
-(load "module")                 % Contains definition of load-package.
-(load "clprolo")                % Initial CL specific code.
+(load "module")                 % for definition of load-package
+(load "clprolo")                % initial CL specific code
 
 (load!-package 'revision)
 (load!-package 'rlisp)
@@ -145,7 +148,8 @@ sbcl --noinform << XXX &> log/reduce.blg
 (setq version!* (cl:format nil "REDUCE (Free SBCL version, revision ~a)" revision!*))
 (initreduce)
 
-(setq !*verboseload nil)           % Inhibit loading messages.
+(setq !*verboseload nil)        % inhibit loading messages
+(setq !*redefmsg t)				% display redefinition messages
 
 (setq sb-ext:*muffled-warnings* 'warning)
 
@@ -179,7 +183,7 @@ echo +++++ Remaking noncore package $p
 sbcl --noinform --core fasl/reduce.img << XXX &> log/$p.blg
 (standard-lisp)
 (begin)
-symbolic;
+symbolic; $force
 
 %load compiler;
 on verboseload;

@@ -13,6 +13,7 @@
 ;; intended primarily for running REDUCE (which provides its own REPL)
 ;; on Common Lisp.
 
+;; (declaim (optimize (speed 3) (safety 0)))
 (declaim (optimize debug))				; same as (debug 3)
 (declaim (sb-ext:muffle-conditions sb-ext:compiler-note style-warning))
 
@@ -296,26 +297,30 @@ EXPR PROCEDURE ZEROP(U);
 
 (import '(cl:first cl:second cl:third cl:fourth cl:rest))
 
-(defalias 'lastpair 'cl:last
-  "(lastpair L:pair): any expr
-Returns the last pair of a L. It is often useful to think of this
-as a pointer to the last element for use with destructive
-functions such as rplaca. If L is not a pair then a type mismatch
-error occurs.
-\(de lastpair (l)
-	(if (or (atom l) (atom (cdr l)))
-		l
-	  (lastpair (cdr l))))")
+(declaim (inline lastpair lastcar nth pnth))
 
-(defun lastcar (l)						; should be inlined
+(defun lastpair (l)
+  "(lastpair L:pair): any expr
+Returns the last pair of a L. It is often useful to think of this as a
+pointer to the last element for use with destructive functions such as
+rplaca. If L is not a pair then a type mismatch error occurs.
+\(de lastpair (l)
+  (if (or (atom l) (atom (cdr l)))
+    l
+    (lastpair (cdr l))))"
+  ;; The inconsistent description above is from the PSL manual!
+  (if (atom l) l (cl:last l)))
+
+(defun lastcar (l)						; inlined
   "(lastcar L:pair): any expr
-Returns the last element of the pair L. A type mismatch error
-results if L is not a pair."
-  ;; This inconsistent description above and code below are from the
-  ;; PSL manual!
+Returns the last element of the pair L. A type mismatch error results
+if L is not a pair.
+\(de lastcar (l)
+  (if (atom l) l (car (lastpair l))))"
+  ;; The inconsistent description above is from the PSL manual!
   (if (atom l) l (car (cl:last l))))
 
-(defun nth (l n)						; should be inlined
+(defun nth (l n)						; inlined
   "(nth L:pair N:integer): any expr
 Returns the Nth element of the list L. If L is atomic or contains
 fewer than N elements, an out of range error occurs.
@@ -328,7 +333,7 @@ Common LISP definition reverses the arguments and defines the car
 of a list to be the \"zeroth\" element."
   (cl:nth (1- n) l))
 
-(defun pnth (l n)						; should be inlined
+(defun pnth (l n)						; inlined
   "(pnth L:list N:integer): any expr
 Returns a list starting with the nth element of the list L. Note
 that the result is a pointer to the nth element of L, a
@@ -1255,38 +1260,73 @@ MACRO PROCEDURE TIMES(U);
   "TIMES2(U:number, V:number):number eval, spread
 Returns the product of U and V.")
 
-;; Fast built-in small integer (inum) arithmetic:
+;; Small integer (fixnum) arithmetic operators defined in
+;; alg/farith.red:
 
-;; (defalias 'IPLUS '+)
-;; (defalias 'ITIMES '*)
+(defun iplus2 (u v)
+  (declare (fixnum u v))
+  (the fixnum (+ u v)))
 
-;; (defun iplus2 (u v)
-;;   "PLUS2(U:number, V:number):number eval, spread
-;; Returns the sum of U and V."
-;;   (declare (optimize (speed 3) (safety 0)))
+(defun itimes2 (u v)
+  (declare (fixnum u v))
+  (the fixnum (* u v)))
+
+(defun isub1 (u)
+  (declare (fixnum u))
+  (the fixnum (1- u)))
+
+(defun iadd1 (u)
+  (declare (fixnum u))
+  (the fixnum (1+ u)))
+
+(defun iminus (u)
+  (declare (fixnum u))
+  (the fixnum (- u)))
+
+(defun idifference (u v)
+  (declare (fixnum u v))
+  (the fixnum (- u v)))
+
+(defun iquotient (u v)
+  (declare (fixnum u v))
+  (the fixnum (truncate u v)))
+
+(defun iremainder (u v)
+  (declare (fixnum u v))
+  (the fixnum (rem u v)))
+
+(defun igreaterp (u v)
+  (declare (fixnum u v))
+  (> u v))
+
+(defun ilessp (u v)
+  (declare (fixnum u v))
+  (< u v))
+
+(defun iminusp (u)
+  (declare (fixnum u))
+  (cl:minusp u))
+
+;; (defun iequal (u v)
 ;;   (declare (fixnum u v))
-;;   (the fixnum (+ u v)))
+;;   (eql u v))
 
-;; (defalias 'ITIMES2 '*)
-;; (defalias 'IADD1 '1+)
-;; (defalias 'ISUB1 '1-)
-(defalias 'iminus '-)				 ; used early in rlisp
-;; (defalias 'IMINUSP 'cl-minusp)
-;; (defalias 'IDIFFERENCE '-)
-;; (defalias 'IQUOTIENT '/)
-;; (defalias 'IREMAINDER '%)
-;; (defalias 'ILESSP '<)
-;; (defalias 'IGREATERP '>)
-;; (defalias 'ILEQ '<=)
-;; (defalias 'IGEQ '>=)
+;; iequal is defined in CSL (but not PSL).  It is called with a list
+;; as its first argument in sqrt2top in int/df2q.red, so it does not
+;; always have integer arguments!  But I assume it will not be called
+;; with float arguments.
 
-;; (defmacro IZEROP (number)
-;;   "Return t if NUMBER is zero."
-;;   `(= ,number 0))
+(defalias 'iequal 'eql)
 
-;; (defmacro IONEP (number)
-;;   "Return t if NUMBER is one."
-;;   `(= ,number 1))
+;; Small integer (fixnum) arithmetic operators required but not defined:
+
+(defun itimes (u v)		  ; used as a binary operator in dipoly/torder
+  (declare (fixnum u v))
+  (the fixnum (* u v)))
+
+(defun izerop (u)						; used in plot/plotexp3
+  (declare (fixnum u))
+  (cl:zerop u))
 
 ;; Fast built-in floating point functions:
 
@@ -1327,7 +1367,7 @@ Returns the product of U and V.")
 Applies FN to successive CDR segments of X. NIL is returned.
 EXPR PROCEDURE MAP(X, FN);
    WHILE X DO << FN X; X := CDR X >>;"
-  (cl:mapl (%%lam2fn fn) x)
+  (cl:mapl fn x)
   nil)
 
 (defun mapc (x fn)
@@ -1335,7 +1375,7 @@ EXPR PROCEDURE MAP(X, FN);
 FN is applied to successive CAR segments of list X. NIL is returned.
 EXPR PROCEDURE MAPC(X, FN);
    WHILE X DO << FN CAR X; X := CDR X >>;"
-  (cl:mapc (%%lam2fn fn) x)
+  (cl:mapc fn x)
   nil)
 
 (defun mapcan (x fn)
@@ -1345,7 +1385,7 @@ is returned.
 EXPR PROCEDURE MAPCAN(X, FN);
    IF NULL X THEN NIL
       ELSE NCONC(FN CAR X, MAPCAN(CDR X, FN));"
-  (cl:mapcan (%%lam2fn fn) x))
+  (cl:mapcan fn x))
 
 (defun mapcar (x fn)
   "MAPCAR(X:list, FN:function):any eval, spread
@@ -1353,7 +1393,7 @@ Returned is a constructed list of FN applied to each CAR of list X.
 EXPR PROCEDURE MAPCAR(X, FN);
    IF NULL X THEN NIL
       ELSE FN CAR X . MAPCAR(CDR X, FN);"
-  (cl:mapcar (%%lam2fn fn) x))
+  (cl:mapcar fn x))
 
 (defun mapcon (x fn)
   "MAPCON(X:list, FN:function):any eval, spread
@@ -1362,7 +1402,7 @@ segments of X.
 EXPR PROCEDURE MAPCON(X, FN);
    IF NULL X THEN NIL
       ELSE NCONC(FN X, MAPCON(CDR X, FN));"
-  (cl:mapcon (%%lam2fn fn) x))
+  (cl:mapcon fn x))
 
 (defun maplist (x fn)
   "MAPLIST(X:list, FN:function):any eval, spread
@@ -1371,7 +1411,7 @@ of X.
 EXPR PROCEDURE MAPLIST(X, FN);
    IF NULL X THEN NIL
       ELSE FN X . MAPLIST(CDR X, FN);"
-  (cl:maplist (%%lam2fn fn) x))
+  (cl:maplist fn x))
 
 
 ;;; Composite Functions
@@ -1683,9 +1723,16 @@ The function FN is to be passed to another function. If FN is to have
 side effects its free variables must be fluid or global. FUNCTION is
 like QUOTE but its argument may be affected by compilation. We
 do not consider FUNARGs in this report."
-  ;; In Common Lisp, fn must have a function definition, so...
-  (if (fboundp 'fn)
-	  `(cl:function ,fn)
+  ;; In Common Lisp, fn must be a *defined* function or a lambda
+  ;; expression.  The symbol car satisfies fboundp and (lambda ...)
+  ;; satisfies functionp, so
+  ;; (if (or (eqcar fn 'lambda) (fboundp `,fn))
+  ;; But with the test above, the eds package will not build because
+  ;; (function list) evaluates to #<FUNCTION LIST>, which cannot be
+  ;; serialized so faslout fails.  At least temporarily, this should
+  ;; work:
+  (if (eqcar fn 'lambda)
+  	  `(cl:function ,fn)
 	  `(cl:quote ,fn)))
 
 (import 'cl:quote)
@@ -2382,6 +2429,10 @@ elements (for example ids, strings, and vectors) are not.")
   "(union X:list Y:list): list expr
 Returns the union of sets X and Y."
   (cl:union x y :test #'equal))
+
+(defalias 'gcdn 'cl:gcd)
+(defalias 'lcmn 'cl:lcm)
+(defalias 'yesp1 'cl:y-or-n-p)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

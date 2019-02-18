@@ -80,6 +80,7 @@ symbolic procedure inmodule(u,v);
    % FJW: Print name of file being read.
    begin scalar file;
 	  terpri();
+	  terpri();
 	  prin2 "+++ Reading file: ";
 	  prin2(file := module2!-to!-file(u,v));
 	  terpri();

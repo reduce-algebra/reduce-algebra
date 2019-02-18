@@ -60,8 +60,9 @@ symbolic procedure evload l;
 % This useful utility function is defined in sl-on-cl:
 flag('(eqcar),'lose);
 
-% These functions are already defined in Common Lisp:
-flag('(first second third rest evenp oddp symbol!-name),'lose);
+% These functions are already defined (more or less) in Common Lisp:
+flag('(first second third rest lastpair lastcar nth pnth reversip
+   evenp oddp symbol!-name),'lose);
 
 % These two functions are defined in arith/smlbflot.red, but
 % smallcompress is re-implemented in sl-on-cl.lisp and smallsplit is
@@ -75,9 +76,15 @@ flag('(list2widestring widestring2list
    string!-store1 string!-store2 string!-store3 string!-store4
 	  moan!-if!-not!-follower moan!-if!-truncated),'lose);
 
-% Common Lisp provides integer functions gcd and lcm, which I could use.
+% These small integer (fixnum) operators are defined in
+% alg/farith.red, but optimised versions are defined in sl-on-cl:
+flag('(iplus2 itimes2 isub1 iadd1 iminus idifference
+   iquotient iremainder igreaterp ilessp iminusp iequal),'lose);
 
-% flag('(gcdn),'lose);     % Defined in bignum package.
+% Procedure gcdn is defined in alg/numsup, and procedure lcmn is
+% defined in algint/fracdi and taylor/tayutils, but these functions
+% are already provided (as gcd and lcm) in Common Lisp:
+flag('(gcdn lcmn),'lose);
 
 % The definitions of geq and leq in rlisp/rsupport.red don't work
 % correctly with mixed integer and float arguments because (equal 1.0
@@ -86,19 +93,12 @@ flag('(list2widestring widestring2list
 % However, Common Lisp provides numerical predicates >= and <= that
 % correctly accept mixed-type arguments, to which I alias geq and leq,
 % so...
+flag('(geq leq),'lose);
 
-flag('(geq leq reversip),'lose);
-
-% yesp1 is more or less equivalent to y-or-n-p.
-
-remflag('(yesp1),'lose);
-
-symbolic procedure yesp1; y!-or!-n!-p();
-
+% yesp1 is defined as an alias for Common Lisp y-or-n-p in sl-on-cl:
 flag('(yesp1),'lose);
 
-% orderp is needed in rlisp/switch, so define it here.
-
+% orderp is needed in rlisp/switch, so define it here:
 symbolic procedure orderp(u,v);
    % This CL-specific definition of ORDERP is designed to work in
    % lexicographical order.  It assumes arguments are truly id's,
@@ -109,13 +109,6 @@ symbolic procedure orderp(u,v);
 % (See rlisp/proc.red and rlisp/smacro.red for details.)
 
 !*noinlines := t;
-
-% Note that rlisp/proc.red claims that
-
-% !*loginlines will cause a compile-time report of patterns of inline usage.
-
-% This is just what I need to turn off in faslout, but this variable
-% is ignored in proc, although it is used in smacro, so it might work!
 
 % endmodule;
 
