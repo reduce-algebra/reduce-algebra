@@ -246,6 +246,7 @@
 	(PutD (first (car X)) (second (car X))
 		 (MkCODE (wplus2 CodeBase* (cdr X))))))
 
+(commentoutcode
 (de DepositInstruction (X)
 % This actually dispatches to the procedures to assemble the instrucitons
 (prog (Y)
@@ -254,7 +255,7 @@
 	  ((setq Y (get (first X) 'InstructionDepositMacro))
 	   (apply3safe y (cdr x))) 
 	  (t (StdError (BldMsg "Unknown ARMv6 instruction %p" X))))))
-
+)
 
 (de DepositLabel (x) nil)
 
@@ -320,7 +321,7 @@
       (cond ((setq Y (get (first X) 'InstructionDepositFunction)) 
 	     (Apply Y (list X)))
 	    ((setq Y (get (first X) 'InstructionDepositMacro))
-	     (apply3safe y (cdr x)))
+	     (apply4safe y (cdr x)))
 	    (t (StdError (BldMsg "Unknown ARMv6 instruction %p" X))))
       (when (and offs (not (equal CurrentOffset* (plus offs (InstructionLength x)))))
 	(StdError (BldMsg "length error with instruction %p: %p"
@@ -1105,7 +1106,7 @@
 		       ((and (eq 0 (wand rel 7)) % divisible by 8
 			     (imm8-rotatedp (wand rel 16#fffff800)))
 			(DepositInstruction `(ADD ,dest (reg pc) ,(wand 16#7ff rel)))
-			(DepositInstruction `(ADD ,dest ,dest ,(wand 16ffff7f800 rel))))
+			(DepositInstruction `(ADD ,dest ,dest ,(wand 16#fffff800 rel))))
 		       (t (stderror (bldmsg "ADRL load too far: %w" rel)))))
 		)))
 
@@ -1628,7 +1629,7 @@
 (de InstructionLength (X)
    (prog (Y) 
        (when (setq Y (get (car x) 'InstructionLengthFunction))
-	     (return (apply3safe y (cdr x))))
+	     (return (apply4safe y (cdr x))))
        (when (setq Y (get (car x) 'INSTRUCTIONLENGTH))
 	 (return (if (numberp y) y (apply y (list x)))))
        (return 4)))
@@ -1639,11 +1640,18 @@
 	   ((null (cdr x)) (apply y (list (car x) nil)))
 	   (t (apply y (list (car x)(cadr x))))))
 
-(de apply3safe(y x) % ensure that plly has two parameters at least
+(de apply3safe(y x) % ensure that plly has three parameters at least
      (cond ((null x) (apply y (list nil nil nil)))
 	   ((null (cdr x)) (apply y (list (car x) nil nil)))
 	   ((null (cddr x)) (apply y (list (car x) (cadr x) nil)))
 	   (t (apply y (list (car x)(cadr x)(caddr x))))))
+
+(de apply4safe(y x) % ensure that plly has four parameters at least
+     (cond ((null x) (apply y (list nil nil nil nil)))
+	   ((null (cdr x)) (apply y (list (car x) nil nil nil)))
+	   ((null (cddr x)) (apply y (list (car x) (cadr x) nil nil)))
+	   ((null (cdddr x)) (apply y (list (car x) (cadr x) (caddr x) nil)))
+	   (t (apply y (list (car x)(cadr x)(caddr x)(cadddr x))))))
 
 (de InlineConstantLength (X) 
 % Purpose: returns the Size_Of_Unit_In_Bytes * Number_Of_Such_Units
