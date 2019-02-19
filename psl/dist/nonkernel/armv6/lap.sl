@@ -205,7 +205,7 @@ TooMany
 
 	% t2 contains id number, load function pointer into t2
 	(LDR (reg t2) (displacement (reg symfnc) (regshifted t2 LSL 2)))
-        (*move (Fluid Codeform*) (reg t1))
+        (*move (Fluid Codeform*) (reg t3))
 	(!*DeAlloc 0)
         (BX (reg t2))
 NotAnID
