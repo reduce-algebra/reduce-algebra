@@ -225,43 +225,27 @@
                ',(minus (powerof2p (constant-value arg2)))))
      (t form))))
 
-(put 'cons 'opencode
-      '((STR (reg 1) (displacement (reg heaplast) 0))
-        (*move (reg heaplast) (reg 1))
-        (*wor (reg 1) 16#48000000)	% add pair tag
-        (STR (reg 2) (displacement (reg heaplast) 4))
-        (*wplus2 (reg heaplast) 8)
-        (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
-        (*push (reg 1))
-        (*link !%reclaim expr 0)
-        (*pop (reg 1))
-
-        (labelref templabel)))
 
 (put 'ncons 'opencode
-      '((STR (reg 1) (displacement (reg heaplast) 0))
-        (*move (reg heaplast) (reg 1))
-        (*wor (reg 1) 16#48000000)	% add pair tag
-        (STR (reg nil) (displacement (reg heaplast) 4))
-        (*wplus2 (reg heaplast) 8)
-        (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
-        (*push (reg 1))
-        (*link !%reclaim expr 0)
-        (*pop (reg 1))
+      '((*Move (reg nil) (reg 2))
+	(*Call cons))
+)
 
-        (labelref templabel))
+(put 'ncons 'exitopencode
+      '((*Move (reg nil) (reg 2))
+	(*JCall cons))
 )
 
 (put 'xcons 'opencode
-      '((STR (reg 1) (displacement (reg heaplast) 4))
-        (*move (reg heaplast) (reg 1))
-        (*wor (reg 1) 16#48000000)	% add pair tag
-        (STR (reg 2) (displacement (reg heaplast) 0))
-        (*wplus2 (reg heaplast) 8)
-        (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
-        (*push (reg 1))
-        (*link !%reclaim expr 0)
-        (*pop (reg 1))
+      '((*Move (reg 1) (reg t3))
+	(*Move (reg 2) (reg 1))
+	(*Move (reg t3) (reg 2))
+	(*Call cons))
+)
 
-        (labelref templabel))
+(put 'xcons 'exitopencode
+      '((*Move (reg 1) (reg t3))
+	(*Move (reg 2) (reg 1))
+	(*Move (reg t3) (reg 2))
+	(*JCall cons))
 )

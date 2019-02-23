@@ -57,12 +57,14 @@
  
 (de qualtime11(u)
   (let ((name (intern (gensym)))(name2 (intern (gensym))))
-  (push u *allqualtime*)
-  (unless (getd u) (return nil))
-  (when (eq u 'equal) (prin2t " Timing for Equal impoosible")
-                      (return NIL))
-  (put u 'original_getd (getd u))
-  (fluid1 name)
+    (push u *allqualtime*)
+    (cond ((null (getd u)) nil)
+	  ((eq u 'equal)
+	   (prin2t " Timing for Equal impoosible")
+	   nil)
+	  (t
+	   (put u 'original_getd (getd u))
+	   (fluid1 name)
    `(progn
        (copyd ',name ',u)
        (setq ,name t)
@@ -90,7 +92,8 @@
         )  )
         (compile (list ',name2))
         (copyd ',u ',name2)
-) )  )
+	) )  )
+    ))
  
 (de print-qualtime ()
   (prog (uu uuu)

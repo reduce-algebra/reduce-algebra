@@ -291,6 +291,8 @@
 (remprop 'wconst 'anyregresolutionfunction)
 (remprop 'wconst 'anyregpatterntable)
 
+(remprop 'cons 'opencode)
+
 (de InumP (Expression)
     (and (fixp expression)
 	 (or (zerop (setq expression (land 16#ffffffff expression))) % mask 32bit

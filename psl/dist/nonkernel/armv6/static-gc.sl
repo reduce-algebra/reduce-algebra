@@ -132,7 +132,7 @@
 % Boolean: has trap occurred since GC?
 (compiletime
   (progn 
-   
+
    (flag '(close-slot skip-slot look-for-slot  cleargcarray
 		      !%reclaim1 !%reclaim2  
 		      markfromallbases markfromsymbols markfromonesymbol
@@ -148,7 +148,7 @@
 		      trailingzeros-8
 		      trailingzeros-4)
 	 'internalfunction)
-   
+
    (ds pointertagp (x)
        (wgeq (wor (- x (wplus2 posint-tag 1)) (- (wplus2 code-tag -1) x)) 0))
    
@@ -547,16 +547,22 @@
 (de force-heap-enlargement() NIL)
 
 (lap '((*entry current-stack-pointer expr 0)
-       (*alloc 0)
        (*move (reg st) (reg 1))
-       %      (*wplus2 (reg 1) 20) % a "magic" offset
-       (*exit 0)
+       (BX (reg lr))
        ))
 
 %
 %        Pass 2 - Build SEGMENTS
 %
 
+
+(lap '((*entry trailingzeros-intrinsic expr 1)
+       (rsbs (reg 2) (reg 1) 0)
+       (and (reg 1) (reg 1) (reg 2))
+       (clz (reg 1) (reg 1))
+       (rsbne (reg 1) (reg 1) 31)
+       (bx (reg lr))
+       ))
 
 (de trailingzeros (w)
   % count the number of trailing zeros in the 32-bit-word w
