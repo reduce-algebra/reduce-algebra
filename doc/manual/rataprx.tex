@@ -1,4 +1,3 @@
-
 \subsection{Periodic Decimal Representation}
 
 \index{Periodic decimal representation}
@@ -157,7 +156,7 @@ A more compact way of writing this is as
 \ttindextype{CONTFRAC}{operator}
 This is represented in {\small REDUCE} as
 \[{\tt
-   contfrac(\text{\sl Rational\hspace{2mm} approximant},
+   contfrac(\text{\sl Rational\hspace{1mm} approximant},
                 \{b0, \{a1,b1\}, \{a2,b2\},.....\})
 }\]
 
@@ -173,9 +172,9 @@ This is represented in {\small REDUCE} as
 \> \texttt{cfrac(f, var, length);}\\[\baselineskip]
 
 \textbf{INPUT:}
-\> \texttt{number} \hspace{3mm} \= is any real number\\
-\> \texttt{f}                   \> is a function\\
-\> \texttt{var}                 \> is the function variable\\
+\> \texttt{number} \hspace{3mm} \= \ is any real number\\
+\> \texttt{f}                   \> \ is a function\\
+\> \texttt{var}                 \> \ is the function variable\\
 %\> \texttt{length}              \> is the upper bound of the number\\ 
 %\>                           \> of \{ai,bi\} returned (optional)\\[\baselineskip]
 \end{tabbing}
@@ -183,101 +182,253 @@ This is represented in {\small REDUCE} as
 \textbf{Optional Argument: \texttt{length}}\\
 %
 The \texttt{length} argument is optional. 
-For an NON-RATIONAL function input the \texttt{length} argument specifies
+For a NON-RATIONAL function input the \texttt{length} argument specifies
 the number of ordered pairs, $\{a_i,b_i\}$, to be 
-returned. It's default value is five.
-For a RATIONAL function input the
+returned. Its default value is five.
+For RATIONAL function input the
 \texttt{length} argument can only truncate the answer, it cannot
 return additional pairs even if the precision is increased.
-The default value is the complete continued fraction of the
-rational input. For a NUMBER input the default value is 
-dependent on the precision of the session, and the
+The default for rational function input is the complete continued
+fraction.
+
+For numerical input the default value is exact for
+rational number arguments whilst for irrational or rounded input it is
+dependent on the precision of the session. The
 \texttt{length} argument will only take effect if it has a smaller
 value than that of the number of ordered pairs which the default
 value would return.\\[\baselineskip]
-%
-%
-%
+
+If the number of pairs in the list of coefficients returned does not exceed
+twelve, the result will usually be pretty-printed as a two element list
+consisting of the convergent followed by a rendering of the traditional
+continued fraction expansion. For a larger number of pairs the output is
+of the second element is printed as a list of pairs.
+
+Thus, usually the operator \texttt{contfrac} is not seen in the output.
+
 %\newpage
 \large{\textbf{EXAMPLES}}
 \begin{verbatim}
-13: cfrac(23.696);
+2: cfrac(23.696);
 
-          2962
-contfrac(------,{23,{1,1},{1,2},{1,3},{1,2},{1,5}})
-          125
+  2962                    1
+{------,23 + ---------------------------}
+  125                       1
+              1 + ---------------------
+                              1
+                   2 + ---------------
+                                1
+                        3 + ---------
+                                  1
+                             2 + ---
+                                  5
 
+3: cfrac(23.696,3);
 
-14: cfrac(23.696,3);
+  237              1
+{-----,23 + ---------------}
+  10                 1
+             1 + ---------
+                       1
+                  2 + ---
+                       3
 
-          237
-contfrac(-----,{23,{1,1},{1,2},{1,3}})
-          10
+4: cfrac(pi,3);
 
-15: cfrac pi;
-
-
-          1146408
-contfrac(---------,
-          364913
-
-         {3,{1,7},{1,15},{1,1},{1,292},{1,1},{1,1},{1,1},{1,2},{1,1}})
-
-16: cfrac(pi,3);
-
-          355
-contfrac(-----,{3,{1,7},{1,15},{1,1}})
-          113
-
-17: cfrac(pi*e*sqrt(2),4);
-
-          10978
-contfrac(-------,{12,{1,12},{1,1},{1,68},{1,1}})
-           909
-
-18: cfrac((x+2/3)^2/(6*x-5),x,1);
-
-             2
-          9*x  + 12*x + 4    6*x + 13      24*x - 20
-contfrac(-----------------,{----------,{1,-----------}})
-             54*x - 45          36             9
-
-19: cfrac((x+2/3)^2/(6*x-5),x,10);
-
-             2
-          9*x  + 12*x + 4    6*x + 13      24*x - 20
-contfrac(-----------------,{----------,{1,-----------}})
-             54*x - 45          36             9
+  355             1
+{-----,3 + ----------------}
+  113               1
+            7 + ----------
+                       1
+                 15 + ---
+                       1
 
 
-20: cfrac(e^x,x);
+5: cfrac(pi*e*sqrt(2),4);
 
+  10978                  1
+{-------,12 + -----------------------}
+   909                     1
+               12 + ----------------
+                             1
+                     1 + ----------
+                                1
+                          68 + ---
+                                1
 
+6: cfrac((x+2/3)^2/(6*x-5),x,1);
 
-           3      2
-          x  + 9*x  + 36*x + 60
-contfrac(-----------------------,{1,{x,1},{ - x,2},{x,3},{ - x,2},{x,5}})
-               2
-            3*x  - 24*x + 60
+     2
+  9*x  + 12*x + 4
+{-----------------,
+     54*x - 45
 
-21: cfrac(x^2/(x-1)*e^x,x);
+  6*x + 13          1
+ ---------- + -------------}
+     36         24*x - 20
+               -----------
+                    9
 
-           6      4    2
-          x  + 3*x  + x
-contfrac(----------------,{0,
-             4    2
-          3*x  - x  - 1
+7: cfrac((x+2/3)^2/(6*x-5),x,10);
 
-                 2            2       2       2       2
-            { - x ,1}, { - 2*x ,1}, {x ,1}, {x ,1}, {x ,1}})
+     2
+  9*x  + 12*x + 4
+{-----------------,
+     54*x - 45
 
-22: cfrac(x^2/(x-1)*e^x,x,2);
+  6*x + 13          1
+ ---------- + -------------}
+     36         24*x - 20
+               -----------
+                    9
 
-             2
-             x              2           2
-contfrac(----------,{0,{ - x ,1},{ - 2*x ,1}})
-             2
-          2*x  - 1
+8: cfrac(e^x,x);
+
+   3      2
+  x  + 9*x  + 36*x + 60
+{-----------------------,
+       2
+    3*x  - 24*x + 60
+
+                  x
+ 1 + ---------------------------}
+                   - x
+      1 + ---------------------
+                      x
+           2 + ---------------
+                       - x
+                3 + ---------
+                          x
+                     2 + ---
+                          5
+
+9: cfrac(x^2/(x-1)*e^x,x);
+
+   6      4    2
+  x  + 3*x  + x
+{----------------,
+     4    2
+  3*x  - x  - 1
+
+                2
+             - x
+ ----------------------------}
+                   2
+              - 2*x
+  1 + ----------------------
+                   2
+                  x
+       1 + ----------------
+                     2
+                    x
+            1 + ----------
+                       2
+                      x
+                 1 + ----
+                      1
+
+\end{verbatim}
+
+\hypertarget{CF:operator}{}
+
+To facilitate pretty-printing of a continued fraction expansion produced
+by the operator
+\texttt{CONTINUED\_FRACTION} \ttindextype{CONTINUED\_FRACTION}{operator}
+a new operator \texttt{CF} \ttindextype{CF}{operator} has been
+introduced.
+\begin{syntaxtable}
+    \texttt{cf(}\meta{num}\texttt{)} 
+\end{syntaxtable}
+or
+\begin{syntaxtable}
+    \texttt{cf(}\meta{num}\texttt{,}\meta{size}\texttt{)}
+\end{syntaxtable}
+The meaning of the arguments is the same as for the operator
+\texttt{CONTINUED\_FRACTION}.
+
+\ttindextype{CONFRAC1}{operator}
+\hypertarget{CONFRAC1:operator}{}
+
+The output is similar to that of \texttt{CONTINUED\_FRACTION}, but
+has an extra element, namely the originating expression of the
+continued fraction and everything is wrapped inside the operator
+\texttt{CONFRAC1}.
+
+Thus in {\small REDUCE} it is represented as
+\[{\tt
+  confrac1(\text{\sl Originating\hspace{1mm} expression,\hspace{1mm}
+            Rational\hspace{1mm} approximant},
+                \{b0, b1, b2,.....\})
+}\]
+
+Normally output of \texttt{CF} is pretty-printed so the operator
+\texttt{confrac1} will not be seen.
+
+\hypertarget{CF_EXPRESSION:operator}{}
+\hypertarget{CF_COEFLIST:operator}{}
+\hypertarget{CF_CONVERGENT:operator}{}
+\hypertarget{CF_CONVLIST:operator}{}
+
+The operators \texttt{CF\_EXPRESSION} \ttindextype{CF\_EXPRESSION}{operator},
+\texttt{CF\_CONVERGENT} \ttindextype{CF\_CONVERGENT}{operator},
+\texttt{CF\_COEFLIST} \ttindextype{CF\_COEFLIST}{operator} and
+\texttt{CF\_CONVLIST} \ttindextype{CF\_CONVLIST}{operator} allow the various
+parts of a continued fraction object as returned by the operator
+\texttt{CF} to be extracted. These return respectively the originating
+expression of the continued fraction object, the last convergent of the
+continued fraction, a list of the coefficients in the expansion and finally
+a list of all the convergents of the expansion.
+For example
+\begin{syntaxtable}
+    \texttt{cf\_coeflist(}\meta{cf\_object}\texttt{)} 
+\end{syntaxtable}
+
+With the exception of \texttt{CF\_EXPRESSION} they may also be used on the
+value returned by calls to 
+\texttt{CFRAC} and \texttt{CONTINUED\_FRACTION}. 
+
+\large{\textbf{EXAMPLES}}
+
+\begin{verbatim}
+2: cf(6/11);
+
+  6    6          1
+{----,----,---------------}
+  11   11           1
+            1 + ---------
+                      1
+                 1 + ---
+                      5
+
+3: a := cf(pi,1000);
+
+          355             1
+a := {pi,-----,3 + ----------------}
+          113               1
+                    7 + ----------
+                               1
+                         15 + ---
+                               1
+
+4: cf_convlist a;
+
+    22   333   355
+{3,----,-----,-----}
+    7    106   113
+
+5: cf_coeflist a;
+
+{3,7,15,1}
+
+6: precision 20;
+
+12
+
+7: cf pi;
+
+     21053343141
+{pi,-------------,{3,7,15,1,292,1,1,1,2,1,3,1,14,2,1,1,2,2,2,2,1}}
+     6701487259
 
 \end{verbatim}
 

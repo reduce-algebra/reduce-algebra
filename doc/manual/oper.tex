@@ -762,10 +762,13 @@ and returns the result
 \hypertarget{operator:CONTINUED_FRACTION}{}
 \index{approximation}\index{rational number}
 
-The operator \texttt{CONTINUED\_FRACTION} \ttindextype{CONTINUED\_FRACTION}{operator}
-approximates the real number 
-(rational number, rounded number)
-into a continued fraction. \texttt{CONTINUED\_FRACTION} has one or
+The operator \texttt{CONTINUED\_FRACTION}
+\ttindextype{CONTINUED\_FRACTION}{operator}
+generates the continued fraction expansion of a rational number argument.
+For irrational or rounded arguments it approximates the real number
+as a rational number (to the current system precision) and generates
+the continued fraction expansion.
+\texttt{CONTINUED\_FRACTION} has one or
 two arguments, the number to be converted and an optional
 precision:
 \begin{syntaxtable}
@@ -775,13 +778,15 @@ or
 \begin{syntaxtable}
     \texttt{continued\_fraction(}\meta{num}\texttt{,}\meta{size}\texttt{)}
 \end{syntaxtable}
-The result is a list of two elements: the
-first one is the rational value of the approximation, the second one
-is the list of terms of the continued fraction which represents the
-same value according to the definition \texttt{t0 +1/(t1 + 1/(t2 + ...))}.
+The result is a list of two elements: the first is the rational value of
+the approximation (final convergent)
+and the second is the list of terms of the continued fraction
+which represents the same value according to the definition
+\texttt{t0 +1/(t1 + 1/(t2 + ...))}.
 Precision: the second optional parameter \meta{size} is an upper bound
 for the absolute value of the result denominator. If omitted, the
-approximation is performed up to the current system precision.
+expansion performed is exact for rational number arguments and for irrational
+or rounded arguments it is up to the current system precision.
 
 \textit{Examples:}
 \begin{verbatim}
