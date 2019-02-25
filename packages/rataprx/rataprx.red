@@ -2,6 +2,7 @@ module rataprx;  % Rational Approximations Package.
 
 % Author: Lisa Temme (Student of the University of Bath in
 %                     placement at ZIB Berlin)
+% cfutil added by Alan Barnes, February 2019.
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -34,7 +35,7 @@ module rataprx;  % Rational Approximations Package.
 %                           Continued Fractions for numbers;
 %                           Pade Function.
 
-create!-package('(rataprx decrep contfrac contfr primitive pade),nil);
+create!-package('(rataprx decrep contfrac contfr cfutil primitive pade),nil);
 
 endmodule;
 

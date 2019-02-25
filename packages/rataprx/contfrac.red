@@ -498,28 +498,6 @@ procedure inv_cfracall(c_list);
     return ans
   end;
 
-symbolic procedure print!-contfract(x);
-
-% printing continued fractions
-
-  begin scalar xx,xxx;
-    if null !*nat or atom x or length x < 3
-        or not eqcar(caddr x,'list)
-        then return 'failed;
-    xx := reverse cddr caddr x;
-    if length xx > 12 then  return 'failed;
-    if xx then
-     <<xxx := list('quotient ,cadr first xx,caddr first xx);
-       for each tt in rest xx do
-         xxx := list('quotient ,cadr tt,list('plus,caddr tt,xxx));
-       if cadr caddr x = 0 then maprin list('list,cadr x,xxx) else
-        maprin list('list,cadr x,list ('plus,cadr caddr x ,xxx));
-     >> else maprin list('list,cadr x,cadr caddr x);
-    return t;
-   end;
-
-put('contfrac,'prifn,'print!-contfract);
-
 endmodule;
 
 end;

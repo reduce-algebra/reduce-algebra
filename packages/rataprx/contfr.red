@@ -3,6 +3,10 @@ module contfr;  % Simultaneous approximation of a real number by a
                 % user controlled precision (upper bound for numerator).
 
 % Author: Herbert Melenk.
+% Major changes by : A Barnes, February 2019
+% to use integer arithmetic in contfract2. This avoids problems with
+% rounding which resulted in a non-canonical continued fraction
+% being returned for some rational number arguments.
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -27,41 +31,59 @@ module contfr;  % Simultaneous approximation of a real number by a
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-
-symbolic procedure contfract2 (u,b1);
+symbolic procedure contfract2 (u, inexact, b1);
  % compute continued fraction until either numerator exceeds b1
  % or approximation has reached system precision.
-  begin scalar b0,l,a,b,g,gg,ggg,h,hh,hhh;
-    b:= u; g:=0; gg:=1; h:=1; hh:=0;
-    if null b1 then b0:= absf !:times(b,!:expt(10,-precision 0));
-  loop:
-    a:=rd!-fix b;
+ % Now uses integer arithmetic throughout
+  begin scalar b0,l,a,b,c,g,gg,ggg,h,hh,hhh;
+    a:= car u; b:= cdr u;
+    g:=0; gg:=1; h:=1; hh:=0;
+    % precision irrelevant if we have an exact rational
+    if null b1 and inexact then  b0 := (expt(10, precision 0)*b)/abs a;
+    
+    c:=divide(a,b);
+    if a<0 then c := (car c - 1).(cdr c + b); % need the positive remainder!!
+ loop:
+    a:= car c;
     ggg:=a*gg + g;
     hhh:=a*hh + h;
     if b1 and abs hhh > b1 then goto ret;
     g := gg; gg:=ggg; h:=hh; hh:=hhh;
     l:=a.l;
-    b:=!:difference(b,a);
-    if null b
-      or !:lessp(absf !:difference(!:quotient(i2rd!* gg,i2rd!* hh),u),
-                 b0)
-         then go to ret;
-    b:=!:quotient(1,b);
-    go to loop;
-  ret:
+    a:=b;
+    b:= cdr c;
+    % Note gg/hh & ggg/hhh straddle the true value and gg*hhh - ggg*hh = +/-1.
+    if b = 0 or b0 and hh*hhh>b0 then goto ret;
+    c:=divide(a,b);
+    goto loop;
+ret:    
     return  (gg . hh) . reversip l
   end;
 
-symbolic procedure !:lessp(u,v); !:minusp !:difference(u,v);
-
-symbolic procedure rd!-fix u;
-   if atom u then u
-   else if atom cdr u then fix cdr u
-   else ashift(cadr u,cddr u);
 
 symbolic procedure contfract1(u,b);
-  begin scalar oldmode,v;
-   if eqcar(v:=u,'!:rd!:) then goto c;
+% Usually returns dotted pair (numr w . denr w)
+% where w is equal to u if u is a rational number or the best rational 
+% approximation to u for the current precision if u is irrational.
+% Returns the continued fraction result directly if u is an integer
+
+begin scalar oldmode,v,w;
+% check for rational or rounded argument   
+   if eqcar(u, '!:rd!:) then goto c;  % rounded prefix form 
+   if fixp u then return (u . 1).{u};
+   if eqcar(u,'quotient) and fixp cadr u and fixp caddr u then
+      return contfract2((cadr u) . (caddr u), nil, b) ;
+   if eqcar(u, '!*sq) then <<
+      v := cadr u;  % standard quotient
+      if domainp(w:= car v) then
+        if  fixp w and fixp cdr v then
+          return contfract2(v, nil, b)
+	else if eqcar(w, '!:rn!:) and cdr v = 1 then
+          return contfract2(cdr w, nil, b)
+	else if eqcar(w, '!:rd!:) and cdr v = 1 then <<
+	   v := w; goto c>>
+    >>;
+%  change to rounded mode to evaluate argument such as pi, e, sqrt 2 etc.
    oldmode := get(dmode!*,'dname).!*rounded;
    if car oldmode then setdmode(car oldmode,nil);
    setdmode('rounded,t); !*rounded := t;
@@ -72,10 +94,11 @@ symbolic procedure contfract1(u,b);
    if eqcar(v,'minus) and (numberp cadr v or eqcar(cadr v,'!:rd!:))
      then v:=!:minus cadr v;
    if fixp v then return (v . 1).{v};
-   if not eqcar(v,'!:rd!:) then
-     typerr(u,"continued fraction argument");
+   if not eqcar(v,'!:rd!:) then typerr(u,"continued fraction argument");
  c:
-   return contfract2(v,b);
+% convert rounded value to rational dotted pair
+  v:= rd2rn1 v;     % is this the best choice??
+  return contfract2(v, t, b);
   end;
 
 symbolic procedure cont!-fract u;
