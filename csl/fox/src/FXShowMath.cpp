@@ -123,15 +123,15 @@ static int DEBUGFONT = 0;
 
 // I make the size of my memory pool depend on the size of a pointer
 // because the size of box components depends on that. The setting here
-// will use 256K on a 32-bit machine or 512K on a 64-bit one and will
-// cache around say 150 full lines of maths display. Beyond that the
+// will use 1M on a 32-bit machine or 2M on a 64-bit one and will
+// cache around say a few hundres full lines of maths display. Beyond that the
 // system would need to re-parse for redisplay. A consequence will be that
 // scrolling forward or back by a couple of pages will be instant and longer
 // scrolls will trigger repetition of TeX-style analysis, which is not in fact
 // terribly expensive.
 
 
-#define memoryPoolSize (0x10000*sizeof(void *))
+#define memoryPoolSize (0x40000*sizeof(void *))
 
 static void *memoryPool = NULL;
 static unsigned int memoryPoolIn, memoryPoolOut;

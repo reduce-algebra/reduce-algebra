@@ -1793,7 +1793,8 @@ long FXTerminal::onCmdReduce(FXObject *c, FXSelector s, void *ptr)
     for (int i=0; i<9; i++) labels[i] = initcontents[i] = "";
     p = p1;
     for (int i=0; i<n; i++)
-    { for (p1=p; *p1!='@' && *p1!=':'; p1++);
+    { for (p1=p; *p1!='@' && *p1!=':'; p1++)
+      {}
       labels[i] = FXString(p, p1-p);
       p = p1+1;
       while (*p1!='@') p1++;
@@ -2971,7 +2972,7 @@ int FXTerminal::editPrevChar()
 // If the mark is set maybe I should extend the selection...?
 // If I am accepting input I will not let the user move backwards into the
 // prompt string.
-    if ((options && TEXT_READONLY) == 0 &&
+    if ((options & TEXT_READONLY) == 0 &&
         cursorpos == promptEnd)
     {   getApp()->beep();
         return 1;
@@ -2992,7 +2993,7 @@ int FXTerminal::editPrevWord()
         return 1;
     }
     onCmdCursorWordLeft(this, 0, NULL);
-    if ((options && TEXT_READONLY) == 0 &&
+    if ((options & TEXT_READONLY) == 0 &&
         w > promptEnd &&
         cursorpos < promptEnd) setCursorPos(promptEnd);
     return 1;
@@ -3711,6 +3712,33 @@ void FXTerminal::findTeXstart() const
     if (ch == 0x0f) charPointer = cp+1;
 }
 
+#define APPEND_BUFFER_SIZE 0x100000  // 1 Mbyte buffer
+
+static char append_buffer[APPEND_BUFFER_SIZE];
+static int append_point = 0;
+
+void buffered_append(FXTerminal *t, const char *s, int len)
+{   if (append_point+len >= APPEND_BUFFER_SIZE)
+    {   t->FXText::appendStyledText(append_buffer, append_point,
+                                    FXTerminal::STYLE_MATH);
+        append_point = 0;
+    }
+    if (len >= APPEND_BUFFER_SIZE)
+        t->FXText::appendStyledText(s, len, FXTerminal::STYLE_MATH);
+    else
+    {   memcpy(&append_buffer[append_point], s, len);
+        append_point += len;
+    }
+}
+
+void flush_append(FXTerminal *t)
+{   if (append_point!=0)
+    {   t->FXText::appendStyledText(append_buffer, append_point,
+                                    FXTerminal::STYLE_MATH);
+        append_point = 0;
+    }
+}
+
 void FXTerminal::insertMathsLines()
 {
     const char *p = fwin_maths;
@@ -3770,7 +3798,7 @@ void FXTerminal::insertMathsLines()
 // change under the feet of the box-management package. This is an ugly
 // constraint and probably shows that the two chunks of code need a tighter
 // interface...
-        FXText::appendStyledText("000xxxx", 7, STYLE_MATH);
+        buffered_append(this, "000xxxx", 7);
 // At the stage the 000xxxx is split up as:
 //     00      will be number of rows used;
 //      00     will be centering indent and scale factor;
@@ -3779,10 +3807,11 @@ void FXTerminal::insertMathsLines()
 //     {02}nnPPPP
 // where {02} is a byte that marks the start of some maths, nn is the
 // two byte scale and indent information and PPPP is a pointer.
-        FXText::appendStyledText(fwin_maths, p-fwin_maths, STYLE_MATH);
+        buffered_append(this, fwin_maths, p-fwin_maths);
         linecount++;
         fwin_maths = p;
     }
+    flush_append(this);
     int scale = 4;
     int p1 = start;
     while (p1<length)

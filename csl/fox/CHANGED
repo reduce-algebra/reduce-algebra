@@ -140,4 +140,8 @@ August 2017. Tidy up the use of "namespace" with the files that I had
 May 2018. Put test for presence of sigaction into the autoconf stuff, so that
       my fwin.h/fwin.cpp can use if where available.
 
+February 2019: Changes in FXterminal.cpp and my parts of FXText.cpp that
+put an extra level of buffering into the transfer of matereial to the GUI.
+This (I hope!) speeds up display of huge formulae in Reduce.
+
 <end of CHANGED>
