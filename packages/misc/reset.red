@@ -66,7 +66,7 @@ put('precise,'switchdefault,t);
 put('prephold,'switchdefault,t);
 put('pri,'switchdefault,t);
 put('quotenewnam,'switchdefault,t);
-put('raise,'switchdefault,t);
+% put('raise,'switchdefault,t);   % Led to upsets in February 2019!
 put('ratpri,'switchdefault,t);
 put('revalp,'switchdefault,t);
 put('roundall,'switchdefault,t);
