@@ -75,7 +75,7 @@ mstyle!*:='!d!i!s!p!l!a!y!m!a!t!h;         % Default mathematical style
 mstyles!*:= '(!m!a!t!h !d!i!s!p!l!a!y!m!a!t!h !e!q!u!a!t!i!o!n);
 
 % Declaration of symbols and operators for LaTeX
-flag('(!a!lp!h!a !b!e!t!a !g!a!m!m!a !d!e!l!t!a !e!p!s!i!l!o!n
+flag('(!a!l!p!h!a !b!e!t!a !g!a!m!m!a !d!e!l!t!a !e!p!s!i!l!o!n
        !v!a!r!e!p!s!i!l!o!n !z!e!t!a !e!t!a !t!h!e!t!a !v!a!r!t!h!e!t!a
        !i!o!t!a !k!a!p!p!a !l!a!m!b!d!a !m!u !n!u !x!i !p!i !v!a!r!p!i
        !r!h!o !v!a!r!r!h!o !s!i!g!m!a !v!a!r!s!i!g!m!a !t!a!u
