@@ -38,12 +38,13 @@
 (compiletime (load common))
 
 
-(fluid '(bytes* lth* reg* regnr* segment*  symvalhigh symfnchigh *curradr* *currinst* *big-endian*))
+(fluid '(bytes* lth* reg* regnr* segment*  symvalhigh symfnchigh *curradr* *currinst* *big-endian*
+		*largest-target-addr*))
 
           (de getwrd(a)(getmem a))
 
           (de getfunctionaddress(fkt) 
-             (wor 16#8000000 (wshift(wshift (cdr (getd fkt)) 5) -5)))
+             (wshift(wshift (cdr (getd fkt)) 5) -5))
 
           (de idnumberp(x)
            (cond ((not (posintp x)) nil)
@@ -195,10 +196,15 @@
 	      (setq offset (wor 16#3f000000 offset)))
 	  (setq offset (wshift offset 2))
 	  (setq targetaddr (wplus2 8 (wplus2 *curradr* offset)))
-	  (return (list 4 instr (list targetaddr)))))
+	  (if (wgreaterp targetaddr *largest-target-addr*)
+	      (setq *largest-target-addr* targetaddr))
+	  (return (list 4 instr (bldmsg "0x%x" targetaddr)))))
 	  
 (de decode-branchx (p1 pp cc opcode1 opcode2)
-    (if (not (weq (wand pp 16#0fffffd0) 16#012fff10))
+    % first check that the bit pattern is <cc nibble> 0x12fff <three bits> 2#10000
+    % be careful to not use constants with more than 27 bits!
+    (if (not (and (weq (wand 16#fffff (wshift pp -8)) 16#012fff)
+		  (wand 16#d0 pp) 16#10))
 	(stderror (bldmsg "Unknown armv6 instruction %x" pp)))
     (list 4
 	  (if (weq opcode2 3) 'blx 'bx)
@@ -221,10 +227,10 @@
 		 (setq operand2 (bldmsg "%w, %w" regn operand2)))
 		(t
 		 (setq operand2 (bldmsg "%w, %w, %w" regd regn operand2))))
-	  (setq instr (intern (bldmsg "%w%w%s" instr cc (if set-bit "s" ""))))
+	  (setq instr (intern (bldmsg "%w%w%s" instr cc (if (and set-bit (not (memq instr '(CMP CMN TST TEQ)))) "s" ""))))
 	  (return (list 4 instr operand2))))
 
-(de rotate-right (n m)
+(ds disassemble-rotate-right (n m)
     (lor
      (wshift n (wminus m))
      (wand 16#ffffffff (wshift n (wdifference 32 m)))))
@@ -234,7 +240,7 @@
 	  (setq rotate_imm (wshift (wand 16#0f (wshift bits -8)) 1))
 	  (setq immed_8 (wand bits 16#ff))
 	  %% rotate right immed_8 by rotate_imm bits
-	  (return (bldmsg "#%d" (if (weq rotate_imm 0) immed_8 (rotate-right immed_8 rotate_imm))))))
+	  (return (bldmsg "#%d" (if (weq rotate_imm 0) immed_8 (disassemble-rotate-right immed_8 rotate_imm))))))
 
 (setq shiftoplist*
       '((2#00 . lsl) (2#01 . lsr) (2#10 . asr) (2#11 . ror)))
@@ -390,13 +396,13 @@
 		      ((2) 'db)
 		      ((3) 'ib)
 		      ))
-	  (setq instr (bldmsg "%w%w%w" (if (weq l-bit 1) 'ldm 'stm) cc op))
+	  (setq instr (intern (bldmsg "%w%w%w" (if (weq l-bit 1) 'ldm 'stm) cc op)))
 	  (setq reglist-bits (wand pp 16#ffff))
 	  (setq reglist "")
 	  (for (from i 0 15 1)
 	       (do
 		(if (weq 1 (wand reglist-bits 1))
-		    (setq reglist (bldmsg "%w%s%w" reglist (if (weq i 0) "{" ",") (regnum-to-regname i))))
+		    (setq reglist (bldmsg "%w%s%w" reglist (if (equal reglist "") "{" ",") (regnum-to-regname i))))
 		(setq reglist-bits (wshift reglist-bits -1))))
 	  (setq reglist (concat reglist "}"))
 	  (return (list 4 instr regn reglist))
@@ -453,6 +459,9 @@
     )
 
 
+(de decode-special (p1 pp adr)
+    (printf "decode-special not yet implemented: %x %x %x%n" p1 pp adr))
+
 (de bytes2word()
   (prog(w)
     (when (lessp (length bytes*) 4)
@@ -475,13 +484,17 @@
 
 (de xgreaterp(a b)(and (numberp a)(numberp b)(greaterp a b)))
 
-
+(de return-instr-p (instr)
+    (or (and (memq (car instr) '(bx blx)) (eq (cadr instr) 'lr))
+	(and (eq (car instr) 'ldmia) (string-search "pc" (caddr instr)))))
+    
 (de disassemble (fkt)
     (prog(base instr jk jk77 p1 pp lth x
 	       symvalhigh symfnchigh frame
 	       argumentblockhigh labels label bstart bend breg com4 memp1
 	       !*lower lc name)
          (setq !*lower t)
+	 (setq *largest-target-addr* 0)
 
          (cond ((numberp fkt) (setq base fkt))
                ((pairp fkt) (setq base (car fkt))
@@ -549,9 +562,12 @@ loop
 		  (do (setq pp (wor (wshift pp 8) (wand 255 (byte (int2sys base) i))))))
 	   (progn 
 	     (for (from i 1 3 1)
-		  (do (setq pp (wor pp (wshift (wand 255 (byte (int2sys base) i)) (times2 i 8))))
+		  (do
+		   (setq pp (wor pp (wshift (wand 255 (byte (int2sys base) i)) (times2 i 8))))
 		      ))
-	     (setq p1 (wand 16#ff (wshift pp -24))))
+	     (setq p1 (wand 16#ff (wshift pp -24)))
+	     )
+	   
 	   )
          (cond((eq pp 0)(return nil)))
 
@@ -559,16 +575,18 @@ loop
          (setq !*comment nil)
          (setq instr (decode p1 pp base))      % instruction
 	 (if (null instr) (return nil))
+	 (when (and (return-instr-p (cdr instr)) (not (wgreaterp *largest-target-addr* base)))
+	   (setq bend base))
          (setq lth (pop instr))
          (setq name (when instr (pop instr)))
 
          (ttab 1)
          (prinbnx base 8)
          (prin2 " ")
-         (prinbnx pp 8)
-         (ttab 30)
+         (prinbnx (sys2int pp) 8)
+         (ttab 20)
          (when name (prin2 name))
-         (ttab 38)
+         (ttab 28)
          (while (cdr instr)
 	   (prin2 (car instr)) (prin2 ", ")
 	   (pop instr))
