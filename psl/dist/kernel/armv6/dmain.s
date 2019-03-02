@@ -1108,6 +1108,8 @@ symprp:
   .space 1197964
  .globl symnam
 symnam:
+ .globl l0494
+ .long [[4*0x8000000]+l0494]
  .globl l0495
  .long [[4*0x8000000]+l0495]
  .globl l0496
@@ -2126,8 +2128,6 @@ symnam:
  .long [[4*0x8000000]+l1002]
  .globl l1003
  .long [[4*0x8000000]+l1003]
- .globl l1004
- .long [[4*0x8000000]+l1004]
   .space 1197964
  .globl symfnc
 symfnc:
@@ -2438,8 +2438,8 @@ symfnc:
  .long l0038
  .long undefinedfunction
  .long undefinedfunction
- .globl l0385
- .long l0385
+ .globl l0383
+ .long l0383
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
@@ -2450,10 +2450,10 @@ symfnc:
  .long l0077
  .globl l0056
  .long l0056
- .globl l0386
- .long l0386
- .globl l0441
- .long l0441
+ .globl l0384
+ .long l0384
+ .globl l0440
+ .long l0440
  .globl _psl_main
  .long _psl_main
  .globl reduceup
@@ -2466,8 +2466,8 @@ symfnc:
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
- .globl l0434
- .long l0434
+ .globl l0433
+ .long l0433
  .globl l0102
  .long l0102
  .globl initcode
@@ -2479,30 +2479,30 @@ symfnc:
  .globl faslin
  .long faslin
  .long undefinedfunction
- .globl l0432
- .long l0432
- .globl l0433
- .long l0433
- .globl l0081
- .long l0081
  .globl l0431
  .long l0431
- .globl l0436
- .long l0436
- .globl l0374
- .long l0374
+ .globl l0432
+ .long l0432
+ .globl l0081
+ .long l0081
+ .globl l0430
+ .long l0430
+ .globl l0435
+ .long l0435
+ .globl l0372
+ .long l0372
  .globl binaryopenread
  .long binaryopenread
- .globl l0452
- .long l0452
+ .globl l0451
+ .long l0451
  .globl binaryread
  .long binaryread
- .globl l0444
- .long l0444
- .globl binaryreadblock
- .long binaryreadblock
  .globl l0443
  .long l0443
+ .globl binaryreadblock
+ .long binaryreadblock
+ .globl l0442
+ .long l0442
  .globl binaryclose
  .long binaryclose
  .long undefinedfunction
@@ -2536,8 +2536,8 @@ symfnc:
  .long undefinedfunction
  .globl plantunbound
  .long plantunbound
- .globl l0389
- .long l0389
+ .globl l0387
+ .long l0387
  .globl l0247
  .long l0247
  .globl l0238
@@ -2551,8 +2551,8 @@ symfnc:
  .globl l0194
  .long l0194
  .long undefinedfunction
- .globl l0356
- .long l0356
+ .globl l0354
+ .long l0354
  .globl delbps
  .long delbps
  .globl bittable
@@ -2596,37 +2596,40 @@ symfnc:
  .long l0313
  .globl put
  .long put
- .globl l0324
- .long l0324
- .globl atsoc
- .long atsoc
- .long undefinedfunction
  .globl l0322
  .long l0322
- .globl l0333
- .long l0333
+ .globl atsoc
+ .long atsoc
+ .globl l0320
+ .long l0320
+ .globl l0331
+ .long l0331
  .globl plantcodepointer
  .long plantcodepointer
  .long undefinedfunction
  .long undefinedfunction
- .globl l0348
- .long l0348
+ .globl l0346
+ .long l0346
  .globl fluid
  .long fluid
  .long undefinedfunction
- .globl l0353
- .long l0353
+ .globl l0351
+ .long l0351
  .long undefinedfunction
  .globl plantlambdalink
  .long plantlambdalink
- .globl l0366
- .long l0366
+ .globl l0364
+ .long l0364
  .globl undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
  .long undefinedfunction
  .globl compiledcallinginterpreted
  .long compiledcallinginterpreted
+ .globl l0373
+ .long l0373
+ .globl l0374
+ .long l0374
  .globl l0375
  .long l0375
  .globl l0376
@@ -2643,14 +2646,14 @@ symfnc:
  .long l0381
  .globl l0382
  .long l0382
- .globl l0383
- .long l0383
- .globl l0384
- .long l0384
- .globl l0387
- .long l0387
+ .globl l0385
+ .long l0385
+ .globl l0386
+ .long l0386
  .globl l0388
  .long l0388
+ .globl l0389
+ .long l0389
  .globl l0390
  .long l0390
  .globl l0391
@@ -2727,26 +2730,26 @@ symfnc:
  .long l0426
  .globl l0427
  .long l0427
- .globl l0428
- .long l0428
  .globl sigrelse
  .long sigrelse
+ .globl l0428
+ .long l0428
  .globl l0429
  .long l0429
- .globl l0430
- .long l0430
- .globl l0435
- .long l0435
+ .globl l0434
+ .long l0434
+ .globl l0436
+ .long l0436
  .globl l0437
  .long l0437
  .globl l0438
  .long l0438
  .globl l0439
  .long l0439
- .globl l0440
- .long l0440
- .globl l0442
- .long l0442
+ .globl l0441
+ .long l0441
+ .globl l0444
+ .long l0444
  .globl l0445
  .long l0445
  .globl l0446
@@ -2759,8 +2762,8 @@ symfnc:
  .long l0449
  .globl l0450
  .long l0450
- .globl l0451
- .long l0451
+ .globl l0452
+ .long l0452
  .globl l0453
  .long l0453
  .globl l0454
@@ -2815,8 +2818,6 @@ symfnc:
  .long l0478
  .globl l0479
  .long l0479
- .globl l0480
- .long l0480
  .long undefinedfunction
  .globl codeaddressp
  .long codeaddressp

@@ -261,6 +261,12 @@ int wremainder(int x, int y)
 	return (x % y);
 }
 
+int wxdivide(unsigned int x, unsigned int y, unsigned int * rem)
+{
+        *rem = x % y;
+	return (x / y);
+}
+
 unsigned int wxquotientdouble(unsigned long long dividend,unsigned int divisor,unsigned int *rem)
 {
         *rem = (dividend % divisor);

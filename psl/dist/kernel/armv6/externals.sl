@@ -125,6 +125,7 @@
 (external-function get_execfilepath     ())
 (external-function wquotient 		(x y))
 (external-function wremainder		(x y))
+(external-function wxdivide             (x y rem))
 (external-function wxquotientdouble     (dlo dhi quot rem))
 
  

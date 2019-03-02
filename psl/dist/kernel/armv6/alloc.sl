@@ -116,7 +116,7 @@
       )))
 
 
-(de get-heap-trap (number-of-items) % To be redefined
+(de get-heap-trap (pointer number-of-items) % To be redefined
   (kernel-fatal-error "Garbage collection required.")
   )
 

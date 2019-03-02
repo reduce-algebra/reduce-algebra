@@ -788,7 +788,7 @@
 	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) opcode2 (cadddr code))
 	  (DepositInstructionBytes
 	   (lor (lsh cc 4) (lsh opcode1 -4))
-	   (lor (land opcode1 2#1111) (reg2int reg1))
+	   (lor (lor (lsh (land opcode1 2#111) 5) set-bit) (reg2int reg1))
 	   (lor (lsh (reg2int reg4) 4) (reg2int reg3))
 	   (lor (lsh opcode2 4) (reg2int reg2)))))
 
@@ -1276,23 +1276,27 @@
 %   Disadvantage: a simple load is replaced by jump-load-jump. 
 %
 % 2. Approach:
-%          If the offset between the original load instruction and the target of the
-%          load is n, replace this by
+%          Let n be the offset between the original load instruction and the target of the
+%          load. (This means that n is a multiple of 4).
+%          Replace the original LDR by the LDR!= pseudo instruction:
 %
-%          (move n into (reg xy))
-%          (LDR (reg xy) (displacement (reg pc) (plus (reg xy))))
+%          (LDR!= (reg xy) "l0123")
 %
-%          Since n is a multiple of 4, an offset of 18 bits can be accessed via
+%          which expands to
 %
-%          (MOV (reg xy) n1)
-%          (ORR (reg xy) (reg xy) n2)
-%          (LDR (reg xy) (displacement (reg pc) (plus (reg xy))))
+%          (ADRL (reg xy) "l0123")
+%          (LDR (reg xy) (indirect (reg xy)))
 %
-%          with n1 = (n & 0x3ff) and n2 = (n & 0x3fc00).
+%          Assuming that n>0, the ADRL pseudo instruction expands in turn
+%          to the following pair of instructions:
 %
-%          (For negative n, move (-n) into (reg xy) and repalce "plus" by "minus".)
+%          (ADD (reg xy) (reg pc) n1)
+%          (ADD (reg xy) (reg xy) n2)
 %
-%          An 18 bit offset is +/-256kB which should be sufficient.
+%          with n1 = (n & 0x3ff) and n2 = (n & 0x3fc00), provided that n is an 18bit offset, i.e. +/-256kB.
+%
+%          For negative n, replace n by (-n) and ADD by SUB. See the definition of the ADRL
+%          pseudo instruction below for more information.
 %%
 % Returns: a new code list
 
@@ -1574,7 +1578,7 @@
 	(cond 
 	 ((or (GreaterP CurrentDisplacement (const MaximumPCRelLoadOffset))
 	      (Lessp CurrentDisplacement (minus (const MaximumPCRelLoadOffset))))
-
+	  %% PC-relative offset is beyond the 12 bit limit +/-4096
 	  (progn (setq InstructionChanged* t) 
 	      (IncreaseAllOffsets entry (MakeFarLoad entry)))))))))))
 

@@ -77,13 +77,13 @@
 %
 %   (a + b) -> (carry*,result)
 
-eput 'addAndSetCarry 'opencode
+(put 'addAndSetCarry 'opencode
        '(
          (ADDS (reg 1) (reg 2) (reg 1))
            % move cf to carry*
-         (MOVCC (reg 2) 0)
-         (MVNCS (reg 2) 0)
-         (*Move (reg 2) ($FLUID carry*))
+         (MOVCC (reg t1) 0)
+         (MOVCS (reg t1) 1)
+         (*Move (reg t1) ($FLUID carry*))
        ))
 (put 'addAndSetCarry 'destroys '((reg 1)))
 
@@ -96,12 +96,12 @@ eput 'addAndSetCarry 'opencode
        '(
            % move carry* to register CF
 	 (*Move ($fluid carry*) (reg t1))
-         (RSBS (reg t1) (wconst 0) (reg t1))
+         (MOVS (reg t1) (regshifted t1 LSR 1)) % shifted out bit goes into carry flag
            % add with carry
          (ADCS (reg 1) (reg 2) (reg 1))
            % move cf to carry*
          (MOVCC (reg t1) 0)
-         (MVNCS (reg t1) 0)
+         (MOVCS (reg t1) 1)
          (*Move (reg t1) ($FLUID carry*))
        ))
 (put 'addWithCarry 'destroys '((reg 1)))
@@ -127,12 +127,12 @@ eput 'addAndSetCarry 'opencode
        '(
            % move carry* to cf
 	 (*Move ($fluid carry*) (reg t1))
-         (RSBS (reg t1) (wconst 0) (reg t1))
+         (RSBS (reg t1) (reg t1) (wconst 0))
            % subtract with borrow
-         (SBCS (reg 1) (reg 2) (reg 1))
+         (SBCS (reg 1) (reg 1) (reg 2))
            % move new borrow to carry*
-         (MOVHI (reg t1) 0)
-         (MVNLS (reg t1) 0)
+         (MOVHS (reg t1) 0)
+         (MOVLO (reg t1) 1)
          (*Move (reg t1) ($FLUID carry*))
        ))
 (put 'subtractwithborrow 'destroys '((reg 1)))
@@ -146,8 +146,8 @@ eput 'addAndSetCarry 'opencode
    % returns 1 if arg1 > arg2 unsigned.
 '( (RSBS (reg 1) (reg 1) (reg 2))        % compare, setting carry if r1>r2
      % move carry to lowest bit
-   (MOVHI (reg 1) 0)
-   (MOVLS (reg 1) 1)
+   (MOVHS (reg 1) 0)
+   (MOVLO (reg 1) 1)
 ))
 (ds ugreaterp(a b)(eq 1 (ugreaterp* a b)))
 
@@ -155,7 +155,7 @@ eput 'addAndSetCarry 'opencode
 (put 'ugreaterp 'opencode 
    % returns 1 if arg1 > arg2 unsigned.
 '( (RSBS (reg 1) (reg 1) (reg 2))        % compare, setting carry if r1>r2
-     % move carry to lowest bit
+     % load nil or t depending on carry
    (MOVHI (reg 1) (reg nil))
    (SUBLS (reg 1) (reg nil) (wconst nil-t-diff*))
 ))
