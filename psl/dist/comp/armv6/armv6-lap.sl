@@ -1737,6 +1737,7 @@
       ((equal (first x) 'idloc) (depositwordidnumber (second x)))
       ((equal (first x) 'mkitem) (DepositItem (second x) (third x)))
       ((equal (first x) 'entry) (DepositEntry x))
+      ((memq (first x) '(fluid global $fluid $global)) (DepositValueCellLocation (second x)))
       ((setq y (wconstevaluable x)) (DepositWord (int2sys y)))
       (t (stderror (bldmsg "Expression too complicated %r" x))))
 %    (printf "Deposited at %x: %x >%x< %x%n"
