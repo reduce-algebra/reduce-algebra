@@ -788,9 +788,9 @@
 	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) opcode2 (cadddr code))
 	  (DepositInstructionBytes
 	   (lor (lsh cc 4) (lsh opcode1 -4))
-	   (lor (lor (lsh (land opcode1 2#111) 5) set-bit) (reg2int reg1))
-	   (lor (lsh (reg2int reg4) 4) (reg2int reg3))
-	   (lor (lsh opcode2 4) (reg2int reg2)))))
+	   (lor (lor (lsh (land opcode1 2#111) 5) set-bit) (reg2int reg2))
+	   (lor (lsh (reg2int reg1) 4) (reg2int reg4))
+	   (lor (lsh opcode2 4) (reg2int reg3)))))
 
 (de lth-mul4 (code reg1 reg2 reg3 reg4) 4)
 
