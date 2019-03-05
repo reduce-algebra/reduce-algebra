@@ -64,13 +64,18 @@
 
 (put 'wquotientdouble 'opencode
       % called with a double length number in params 1 and 2
+      % (high word in (reg 1), low word in (reg 2))
       % and a single length number in par 3.
       % Result is the single length quotient.
       % the remainder is placed in a fluid variable.
-      '(  % load address of fluid variable in (reg 4)
+      '(% to pass a 64 bit number, load high word in (reg 2) and low word in (reg 1)
+	(*Move (reg 1) (reg 4))
+	(*Move (reg 2) (reg 1))
+	(*Move (reg 4) (reg 2))
+        % load address of fluid variable in (reg 4)
         (*Move (idloc *second-value*) (reg 4))
 	(ADD (reg 4) (reg symval) (regshifted 4 LSL 2))
-        (*JCall wxquotientdouble)
+        (*Call wxquotientdouble)
       ))
 
 % add and set carry

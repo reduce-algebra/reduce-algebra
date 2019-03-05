@@ -67,7 +67,7 @@
 (compiletime 
  (progn
   
-  (setq bigtest nil)
+  (setq bigtest t)
 
   (dm bigtest(u)
     (if bigtest
@@ -155,8 +155,8 @@
    (de *CleanStack()
        (prog (u)
 	 (for (from i 1 nalloc* 1)
-	      (do (setq u (cons `(*MOVE (reg 2) (FRAME ,i)) u))))
-	 (return (cons '(*MOVE (quote NIL) (reg 2)) u))))
+	      (do (setq u (cons `(*MOVE (reg NIL) (FRAME ,i)) u))))
+	 (return  u)))
    (put 'CleanStack1 'OpenCode
 	  '((*CleanStack)))
    (put 'CleanStack2 'OpenCode '((*MOVE (reg 1)(reg 1)))) % this is a dummy
@@ -1063,8 +1063,6 @@ error
 
 
 (de bchannelprin2 (channel v1)
-  (if (not (eq channel 4))
-    (checklinefit (flatsize2 v1) channel 'bchannelprin2 v1))
   ((lambda (v2 myobase i ob sn)
      (while (not (izerop i))
        (progn (iputv v2 i (igetv v1 i)) (setq i (isub1 i))))
@@ -1116,7 +1114,7 @@ error
     (channelwritechar channel (igetv digl d2))
     (return (channelwritechar channel (igetv digl d1)))))
  
-% divide the bignum v1 (of length l1) by 100000, except the quotient is
+% divide the bignum v1 (of length l1) by 1000000, except the quotient is
 % accumulated in the same place, the remainder, of course, ripples
 % down to the bottom.  Because the argument is modified there is no need
 % to CONS up a result, but simply return the remainder.
@@ -1524,7 +1522,7 @@ error
   (progn % IEEE double arithmetic
    (setq BigFloatHi!* (btimes2 (bsub1 (btwopower 53)) (btwopower 971)))
    (setq BigFloatLow!* (bminus BigFloatHi!*))))
- 
+
 
 (prog (y syshi syslo)
 	% Lowest value of Ai                                               
@@ -1537,7 +1535,7 @@ error
      (setq FloatSysHi!* (float SysHi))
      (setq FloatSysLow!* (float SysLo))
 )
- 
+
 (if_system IEEE
     (let ((one 1))
          (setq ieee-hidden-bit* (lshift bone* 16#34))))
