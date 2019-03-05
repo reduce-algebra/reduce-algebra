@@ -47,7 +47,9 @@ symbolic procedure spacedim u;
      dimex!* := !*q2f simp car u
    end;
 
-symbolic procedure fdomain u;
+symbolic procedure fdomain u; fdomain1 u;
+
+symbolic procedure fdomain1 u;
    %Sets up implicit dependencies;
    while u do
      <<if not eqexpr car u then errpri2(car u,'hold)

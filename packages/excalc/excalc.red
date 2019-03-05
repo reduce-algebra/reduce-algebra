@@ -41,8 +41,8 @@ module excalc; % header for EXCALC, a differential geometry package.
 
 
 create!-package('(excalc exintro exaux degform exdf forder frames hodge
-                  idexf indices indsymm indxprin innerprd liedf
-                  lievalfm partdf partitsf vardf vecanlys exlists
+                  idexf indices indsymm indxprin innerprd killing_vector
+                  liedf lievalfm partdf partitsf vardf vecanlys exlists
                   wedge),
                 '(contrib excalc));
 
