@@ -6,6 +6,7 @@
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 
 # Compile all required fasl files and save a final REDUCE image.
+# Assume this script is run in the top-level CL REDUCE directory.
 
 # Usage: ./build.sh [-c]
 
@@ -51,7 +52,7 @@ begin
   rds s;
   close i;
   for each x in w do
-     if member('psl, x) then <<
+     if member('csl, x) and member('psl, x) then <<
         if member('core, x) then core := x . core
         else noncore := x . noncore >>;
   i := open("fasl/core-packages.dat", 'output);
@@ -193,7 +194,9 @@ else if '$p eq 'mrvlimit then load_package taylor
 % Temporary hack to avoid build errors:
 else if '$p eq 'tmprint then <<
    lispsystem!* := 'psl . lispsystem!*;
-   switch usermode >>;
+   switch usermode >>
+% Temporary hack to partially fix a letter-case issue:
+else if '$p eq 'sstools then put('d,'prifn,'bigdpri); % 'd was '!d
 
 load remake;
 

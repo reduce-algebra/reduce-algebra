@@ -147,6 +147,13 @@ flag follows the function name, enclosed in parentheses:
 		    point in milliseconds;
 
 
+% Operating system interface:
+
+flag('(system pwd cd getenv),'opfn);
+
+flag('(system),'noval);
+
+
 Comment There are a number of system constants required for each
 implementation. In systems that don't support inums, the equivalent
 single precision integers should be used;
@@ -216,46 +223,12 @@ symbolic procedure initreduce;
 
 % flag('(load),'opfn); % unnecessary ? -- see rlisp/module.red
 
-% A machine independent traceset.
 
-symbolic procedure traceset1 u;
-   if atom u then u
-    else if car u eq 'setq
-     then list('progn,
-               list('prin2,mkquote cadr u),
-               '(prin2 " := "),
-               u,
-               list('prin2t,cadr u))
-    else traceset1 car u . traceset1 cdr u;
-
-symbolic procedure traceset u;
-   if get(u,'original!-defn) then lprim list(u,"already traceset")
-    else (if not x or not(eqcar(cdr x,'lambda)
-                       or eqcar(cdr x,'lambda!-closure))
-            then lprim list(u,"has wrong form for traceset")
-           else <<put(u,'original!-defn,x);
-                  remd u;   % To prevent spurious messages.
-                  putd(u,car x,traceset1 cdr x)>>)
-          where x=getd u;
-
-symbolic procedure untraceset u;
-   (if x
-      then <<remprop(u,'original!-defn);
-             remd u;   % To prevent spurious messages.
-             putd(u,car x,cdr x)>>
-     else lprim list(u,"not traceset"))
-    where x=get(u,'original!-defn);
-
-symbolic procedure trst u; for each x in u do traceset x;
-
-symbolic procedure untrst u; for each x in u do untraceset x;
-
-% Tr and untr are essentially new names for the CL trace and untrace
-% macros:
-symbolic procedure tr u; eval('trace . u);
-symbolic procedure untr u; eval('untrace . u);
-
+% tr etc. are defined as macros in "trace.lisp".
+% The following two declarations are from pslrend/cslrend:
+flag('(tr untr trst untrst),'noform);
 deflist('((tr rlis) (untr rlis) (trst rlis) (untrst rlis)),'stat);
+
 
 % The following function is necessary in Common Lisp startup sequence,
 % since initial packages are not loaded with load-package.
@@ -312,6 +285,8 @@ symbolic inline procedure printc x; << prin2 x; terpri(); x >>;
 
 flag('(printc), 'lose);
 
+symbolic procedure ttab n;  while posn() < n do prin2 " ";
+
 symbolic inline procedure explodec x; explode2 x;
 
 % This function is called in redlog but only defined for PSL or CSL
@@ -354,6 +329,45 @@ procedure i!&prn x;
    end;
 
 flag('(i!&prn), 'lose);
+
+% Fixes for the crack suite
+% =========================
+
+% "crack/crinit.red" defines procedure random_init for PSL or CSL
+% specifically with no generic definition, so here is a CL version.
+% Procedure `random_new_seed' is defined in "rlisp/random.red" to take
+% a single argument, offset, which must be a positive integer.
+% Function `datestamp' is defined in "sl-on-cl" to return the number
+% of seconds that have elapsed since some epoch.
+
+symbolic procedure random_init(); random_new_seed datestamp();
+
+% "crack/crutil.red" defines this procedure only for PSL.
+% Using the CL version directly doesn't work in all cases, so I
+% redefine it here as in crack!
+
+symbolic procedure rename!-file(fromname, toname)$
+   % Rename fromname to toname and return t on success.
+   % (it is defined in csl)
+   system bldmsg("mv %w %w", fromname, toname) = 0;
+
+% From "pslrend.red"; does this also apply to Common Lisp? Not
+% required to run "crack.tst"!
+
+% In the crack code it is essential that subst arranges to share some of
+% its output with its input. The same may be the case for sublist too?
+% The standard implementation of subst in PSL does not do this.
+
+%% symbolic procedure subst(a, b, c);
+%%   if c = b then a
+%%   else if atom c then c
+%%   else begin
+%%     scalar sa, sd;
+%%     sa := subst(a, b, car c);
+%%     sd := subst(a, b, cdr c);
+%%     if sa eq car c and sd eq cdr c then return c
+%%     else return sa . sd
+%%   end;
 
 endmodule;
 

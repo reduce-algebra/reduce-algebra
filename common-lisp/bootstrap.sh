@@ -24,6 +24,15 @@ sbcl << XXX &> log/sl-on-cl.blg
 XXX
 fi
 
+if [ "trace.lisp" -nt "trace.fasl" ]
+then
+echo +++++ Compiling trace
+sbcl << XXX &> log/trace.blg
+(load "sl-on-cl")
+(compile-file "trace")
+XXX
+fi
+
 echo +++++ Building bootstrap REDUCE
 
 sbcl << XXX &> log/bootstrap.blg

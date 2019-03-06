@@ -17,6 +17,9 @@
 (declaim (optimize debug))				; same as (debug 3)
 (declaim (sb-ext:muffle-conditions sb-ext:compiler-note style-warning))
 
+#+SBCL (eval-when (:compile-toplevel :load-toplevel :execute)
+		 (require :sb-posix))
+
 (defpackage :standard-lisp
   (:nicknames :sl)
   (:documentation "Standard Lisp on Common Lisp")
@@ -31,9 +34,11 @@
 		   :delete :length :member :sublis :subst :rassoc :apply :eval
 		   :function :close :open :princ :print :prin1 :prin2 :read
 		   :terpri :complexp :union :compile-file :load :time
-		   :char-downcase :char-upcase :string-downcase)
+		   :char-downcase :char-upcase :string-downcase :mod
+		   :char-code)
 
   #+SBCL (:import-from :sb-ext :exit :quit :gc :save-lisp-and-die)
+  #+SBCL (:import-from :sb-posix :getenv :getpid)
 
   #+CLISP (:import-from :ext :exit :quit :bye :getenv)
   )
@@ -116,10 +121,12 @@ is printed whenever a function is redefined by PUTD.")
 (defun %%redefmsg (fname)
   "Optionally warn about function redefinition."
   ;; Assume fname is input quoted.
-  (if (and *redefmsg (fboundp fname))
-	  ;; (warn "Function ~a has been redefined" fname)
-	  ;; Warnings are currently suppressed!
-	  (format t "~&*** Function `~(~a~)' has been redefined~%" fname)))
+  (when (and *redefmsg (fboundp fname))
+	;; (warn "Function ~a has been redefined" fname)
+	;; Warnings are currently suppressed!
+	;; (format t "~&*** Function `~(~a~)' has been redefined~%" fname)
+	(format t "~&*** Function `~a' has been redefined~%"
+			(%%prin1-id-to-string fname))))
 
 ;;; FUNCTIONS
 ;;; =========
@@ -174,6 +181,19 @@ the same value and type."				; i.e. the same SL type!
 	  ;;  the same value. = is used to compare mathematical values.
 	  (and (floatp u) (floatp v) (= u v))))
 
+;; (defun equal (u v)
+;;   "EQUAL(U:any, V:any):boolean eval, spread
+;; Returns T if U and V are the same. Dotted-pairs are compared
+;; recursively to the bottom levels of their trees. Vectors must
+;; have identical dimensions and EQUAL values in all
+;; positions. Strings must have identical characters. Function
+;; pointers must have EQ values. Other atoms must be EQN equal."
+;;   (or (cl:equal u v)
+;; 	  ;;  equal may not be true of two floats even when they represent
+;; 	  ;;  the same value. = is used to compare mathematical values.
+;; 	  (and (floatp u) (floatp v) (= u v))
+;; 	  (and (vectorp u) (vectorp v) (equalp u v))))
+
 (defun equal (u v)
   "EQUAL(U:any, V:any):boolean eval, spread
 Returns T if U and V are the same. Dotted-pairs are compared
@@ -181,11 +201,13 @@ recursively to the bottom levels of their trees. Vectors must
 have identical dimensions and EQUAL values in all
 positions. Strings must have identical characters. Function
 pointers must have EQ values. Other atoms must be EQN equal."
-  (or (cl:equal u v)
-	  ;;  equal may not be true of two floats even when they represent
-	  ;;  the same value. = is used to compare mathematical values.
-	  (and (floatp u) (floatp v) (= u v))
-	  (and (vectorp u) (vectorp v) (equalp u v))))
+  (and (cl:equal (type-of u) (type-of v))
+	   (if (atom u) (cond ((cl:symbolp u) (eq u v))
+						  ((cl:floatp u) (= u v))
+						  ((cl:numberp u) (eql u v))
+						  ((cl:stringp u) (string= u v))
+						  ((cl:vectorp u) (equalp u v)))
+		   (and (equal (car u) (car v)) (equal (cdr u) (cdr v))))))
 
 (defalias 'fixp 'cl:integerp
   "FIXP(U:any):boolean eval, spread
@@ -667,9 +689,13 @@ is returned."
 			  ;; some cases):
 			  (let ((f (function-lambda-expression
 						(setq fname (symbol-function fname)))))
-				;; Omit any declarations and documentation string:
+				;; Note that a CL function definition may contain
+				;; declarations and a documentation string, and the
+				;; body is wrapped in a block form, i.e.
+				;; (lambda params [decls] [doc] (block name body))
+				;; Extract the function body:
 				(if f (setq fname
-							`(lambda ,(cadr f) ,(car (last f))))))
+							`(lambda ,(cadr f) ,(caddar (last f))))))
 			  (cons 'expr fname)))))
 
 (defun putd (fname type body)
@@ -1002,15 +1028,14 @@ dependent format."
 ;;; Vectors
 ;;; =======
 
-(defun getv (v index)
+(defalias 'getv 'aref
   "GETV(V:vector, INDEX:integer):any eval, spread
 Returns the value stored at position INDEX of the vector V. The
 type mismatch error may occur. An error occurs if the INDEX does
 not lie within 0...UPBV(V) inclusive:
-***** INDEX subscript is out of range"
-  (aref v index))
+***** INDEX subscript is out of range")
 
-(defalias 'igetv 'getv)
+(defalias 'igetv 'aref)
 
 (defun mkvect (uplim)
   "MKVECT(UPLIM:integer):vector eval, spread
@@ -1035,6 +1060,18 @@ lie in 0...UPBV(V) an error occurs:
   "UPBV(U:any):NIL,integer eval, spread
 Returns the upper limit of U if U is a vector, or NIL if it is not."
   (if (vectorp u) (1- (cl:length u))))
+
+(defun mkvect8 (uplim)					; CSL
+  "Make a vector of 8-bit signed integers, cf. mkvect."
+  (make-array (1+ uplim) :element-type '(signed-byte 8) :initial-element 0))
+(defalias 'getv8 'aref)					; CSL
+(defalias 'putv8 'putv)					; CSL
+
+(defun mkvect16 (uplim)					; CSL
+  "Make a vector of 16-bit signed integers, cf. mkvect."
+  (make-array (1+ uplim) :element-type '(signed-byte 16) :initial-element 0))
+(defalias 'getv16 'aref)				; CSL
+(defalias 'putv16 'putv)				; CSL
 
 
 ;;; Boolean Functions and Conditionals
@@ -1355,7 +1392,7 @@ Returns the product of U and V.")
 ;; arguments are complex so all commented out for now.
 
 
-;;; MAP Composite Functions
+;;; Map Composite Functions
 ;;; =======================
 
 (defun %%lam2fn (fn)
@@ -1506,24 +1543,29 @@ EXPR PROCEDURE LITER(U);
                  \a \b \c \d \e \f \g \h \i \j \k \l \m
                  \n \o \p \q \r \s \t \u \v \w \x \y \z) :test #'eq))
 
-(defun member (a b)
-  "MEMBER(A:any, B:list):extra-boolean eval, spread
-Returns NIL if A is not a member of list B, returns the remainder of
-B whose first element is A.
-EXPR PROCEDURE MEMBER(A, B);
-   IF NULL B THEN NIL
-      ELSE IF A = CAR B THEN B
-      ELSE MEMBER(A, CDR B);"
-  (cl:member a b :test #'equal))
+(defun member (a l)
+  "(member A:any L:any): extra-boolean expr
+Returns nil if A is not equal to some top level element of the list L;
+otherwise it returns the remainder of L whose first element is equal
+to A."
+  ;; This is the PSl definition, which accepts *anything* as its second argument!
+  ;; REDUCE (crack in particular) requires this flexibility.
+  ;; In Common Lisp, the second argument must be a proper list.
+  (cond ((atom l) nil)
+		((equal a (car l)) l)
+		(t (member a (cdr l)))))
 
-(defun memq (a b)
-  "MEMQ(A:any, B:list):extra-boolean eval, spread
-Same as MEMBER but an EQ check is used for comparison.
-EXPR PROCEDURE MEMQ(A, B);
-   IF NULL B THEN NIL
-      ELSE IF A EQ CAR B THEN B
-      ELSE MEMQ(A, CDR B);"
-  (cl:member a b :test #'eq))
+(defun memq (a l)
+  "(memq A:any L:any): extra-boolean expr
+Returns nil if A is not eq to some top level element of the list L;
+otherwise it returns the remainder of L whose first element is equal
+to A."
+  ;; This is the PSl definition, which accepts *anything* as its second argument!
+  ;; REDUCE probably requires this flexibility.
+  ;; In Common Lisp, the second argument must be a proper list.
+  (cond ((atom l) nil)
+		((eq a (car l)) l)
+		(t (memq a (cdr l)))))
 
 (import 'cl:nconc)
 ;; NCONC(U:list, V:list):list eval, spread
@@ -1798,8 +1840,12 @@ of a page, 0 is returned."
 (defun substitute-in-file-name (filename)
   "Return a copy of FILENAME with all environment variables expanded.
 Replace every substring of the form `$name' terminated by a
-non-alphanumeric character by its value.  Called by `open'."
-  ;; A simplified version of the Elisp function.
+non-alphanumeric character by its value.  Called by `open'.
+Also replace a leading `.' by the current working directory and each
+leading `..' its parent."
+  ;; A simplified combination of the Elisp functions
+  ;; `substitute-in-file-name' and `expand-file-name'.
+  ;; Replace environment variables with their values:
   (loop
 	 with beg and end = 0 and l
 	 while
@@ -1809,13 +1855,32 @@ non-alphanumeric character by its value.  Called by `open'."
 	   (setq end (position-if-not #'alphanumericp filename :start (1+ beg)))
 	   (push (getenv (subseq filename (1+ beg) end)) l)
 	 finally
-	   (return (if l
+	   (if l (setq filename
 				   (cl:apply #'concatenate 'string
 							 (nreverse
 							  (if end
 								  (push (subseq filename end) l)
-								  l)))
-				   filename))))
+								  l))))))
+  ;; sb-ext:native-pathname seems necessary to preserve odd characters
+  ;; such as ^ in a filename:
+  (setq filename (sb-ext:native-pathname filename))
+  (let ((d (pathname-directory filename)))
+	(when (eq (car d) :relative)
+	  ;; Replace a leading "." with the current working directory:
+	  (when (equal (cadr d) ".")
+		(setf (cdr d) (cddr d))			; remove "." component
+		(setq filename (merge-pathnames
+						(make-pathname :directory d :defaults filename))))
+	  ;; Replace each leading ".." with the parent directory:
+	  (loop with cwd = (pathname-directory *default-pathname-defaults*)
+		 while (cl:member (cadr d) '(".." :up :back))
+		 do
+		   (setf (cdr d) (cddr d))		; remove ".." component
+		   (setq cwd (butlast cwd))
+		   (setq filename (merge-pathnames
+						   (make-pathname :directory d :defaults filename)
+						   (make-pathname :directory cwd))))))
+  filename)
 
 (defun open (file how)
   "OPEN(FILE:any, HOW:id):any eval, spread
@@ -1827,9 +1892,7 @@ WRS. An error occurs if HOW is something other than INPUT or
 OUTPUT or the file can't be opened.
 ***** HOW is not option for OPEN
 ***** FILE could not be opened"
-  ;; sb-ext:native-pathname seems necessary to preserve odd characters
-  ;; such as ^ in a filename:
-  (setq file (sb-ext:native-pathname (substitute-in-file-name file)))
+  (setq file (substitute-in-file-name file))
   (cond ((eq how 'input)
 		 (let ((fh (cl:open file :direction :input)))
 		   ;; An input filehandle is a pair of the form
@@ -1861,14 +1924,28 @@ Returns the number of characters in the output buffer. When the
 buffer is empty, 0 is returned."
   %%posn)
 
+(defvar %%prin-space-maybe nil
+  "True if there is a pending space to print.")
+
+(defun %%prin-space-maybe ()
+  "Record that a space should be printed unless at the beginning or
+end of a line."
+  (if (> %%posn 0)
+	  (setq %%prin-space-maybe t)))
+
 (defun %%prin-string (s)
-  "Print string S preceded by a newline if necessary.
-Check and update `%%posn' to keep it <= `%%linelength'."
+  "Print string S preceded by a space or newline if necessary.
+Check and update `%%posn' to keep it <= `%%linelength'.
+This is the only function that actually produces graphical output."
   (let ((len (cl:length s)))
-	(incf %%posn len)
-	(when (> %%posn %%linelength)
-	  (setq %%posn len)
-	  (cl:terpri))
+	(if %%prin-space-maybe (incf %%posn))
+	(incf %%posn len)					; posn after printing s
+	(if (> %%posn %%linelength)
+		(progn
+		  (cl:terpri)
+		  (setq %%posn len))			; posn after printing s
+		(if %%prin-space-maybe (cl:princ #\Space)))
+	(setq %%prin-space-maybe nil)
 	(cl:princ s)))
 
 (defun princ (u)
@@ -2000,12 +2077,6 @@ If nil then floats are printed without any additional rounding.")
   (%%prin-cdr (cdr u) prinfn)
   (%%prin-string ")"))
 
-(defun %%prin-space-maybe ()
-  "Print a space unless at the end of a line."
-  (if (< %%posn (1- %%linelength))
-	  (%%prin-string " ")
-	(terpri)))
-
 (defun %%prin-cdr (u prinfn)
   "If U is non-nil then print it or its elements spaced appropriately.
 U is the cdr of a cons cell: nil, an atom or another cons cell.
@@ -2100,7 +2171,11 @@ the OBLIST (see the INTERN function in \"Identifiers\"). READ
 returns the value of !$EOF!$ when the end of the currently
 selected input file is reached."
   (let* ((*readtable* *sl-readtable*))
-	(cl:read (%%read-stream) nil $eof$)))
+	;; Using read-preserving-whitespace rather than read seems to be
+	;; more consistent with PSL and CSL: it leaves the EOL to be read
+	;; by REDUCE, which counts input lines in each file into the value
+	;; of curline* and this is used in rlisp88.tst.
+	(cl:read-preserving-whitespace (%%read-stream) nil $eof$)))
 
 (defvar %%readch-escape nil
   "True if the next character to be read by READCH should be escaped.")
@@ -2188,6 +2263,14 @@ The date in the form \"day-month-year\"
     (format nil "~2,'0d-~a-~d"
 			date (aref +short-month-names+ (1- month)) year)))
 
+(defalias 'datestamp 'get-universal-time
+  "The number of seconds that have elapsed since some epoch.
+This version uses the Common Lisp epoch at the beginning of the year
+1900, whereas the CSL version uses the \"Unix time\" epoch at the
+beginning of the year 1970.  The difference of 70 years is
+70*31,536,000 = 2,207,520,000 seconds.  This function should not be
+used to determine an absolute date or time!")
+
 (defconstant +milliseconds-per-internal-time-unit+
   (/ 1000 internal-time-units-per-second)
   "Multiplier to convert internal time units to milliseconds.")
@@ -2238,8 +2321,15 @@ PRIN2-like version of EXPLODE without escapes or double quotes."
 		  #'(lambda (c) (cl:intern (string c)))
 		  (princ-to-string u)))
 
+(defun explode2uc (u)					; defined in "pslrend.red"
+  "Upper-case version of explode2."
+  (let ((*print-case* :upcase))
+	(cl:map 'list
+			#'(lambda (c) (cl:intern (string c)))
+			(princ-to-string u))))
+
 ;; Don't use variable numbers of arguments since it triggers a warning
-;; in REDUCE!
+;; in REDUCE!  (Actually, could flag such functions variadic.)
 
 ;; (defun string-concat (&rest s)			; PSL
 ;;   "(string-concat [S:string]): string macro
@@ -2266,7 +2356,7 @@ characters into small integers.
 lisp> (string2list \"STRING\")
 \(83 84 82 73 78 71)"
   (cl:map 'list
-		  #'(lambda (x) (char-code x))
+		  #'(lambda (x) (cl:char-code x))
 		  s))
 
 (defun %%character (x)
@@ -2289,6 +2379,16 @@ lisp> (list2string '(83 84 82 73 78 71))
 \"STRING\""
   (cl:map 'string #'%%character l))
 
+;; (defun list2widestring (u)
+;;   "Take a list U of integers (each in the range 0-0x0010ffff) and turn
+;; it into a string encoding those using UTF-8.  It will also support use
+;; of identifiers or strings as well as integers, and will use the first
+;; character (N.B. not octet) as the code concerned."
+;;   ;; This is a re-implementation of the procedure in rlisp/tok.red.
+;;   ;; It must be flagged lose in clprolo.
+;;   ;; It should make string!-store etc. redundant.
+;;   (cl:map 'string #'code-char u))
+
 (defun list2widestring (u)
   "Take a list U of integers (each in the range 0-0x0010ffff) and turn
 it into a string encoding those using UTF-8.  It will also support use
@@ -2297,7 +2397,9 @@ character (N.B. not octet) as the code concerned."
   ;; This is a re-implementation of the procedure in rlisp/tok.red.
   ;; It must be flagged lose in clprolo.
   ;; It should make string!-store etc. redundant.
-  (cl:map 'string #'code-char u))
+  (cl:map 'string
+		  #'(lambda (x) (if (integerp x) (code-char x) (character x)))
+		  u))
 
 (defun widestring2list (u)
   "Given a string U that may contain bytes that are over 127, return a
@@ -2307,7 +2409,7 @@ are not valid UTF-8 is to be considered undefined."
   ;; This is a re-implementation of the procedure in rlisp/tok.red.
   ;; It must be flagged lose in clprolo.
   ;; It should make moan!-if!-truncated etc. redundant.
-  (cl:map 'list #'char-code u))
+  (cl:map 'list #'cl:char-code u))
 
 ;; (defun string-store (s i x)				; PSL
 ;;   "(string-store S:string I:integer X:char): None Returned expr
@@ -2341,7 +2443,9 @@ id NIL is always found by (int2id 128)."
 (defun id2int (d)						; PSL
   "(id2int D:id): integer expr
 Returns the id space position of D as a LISP integer."
-  (char-code (character d)))
+  (cl:char-code (character d)))
+
+(defalias 'char-code 'id2int)			; CSL
 
 (defalias 'id2string 'cl:symbol-name	; PSL
   "(id2string D:id): string expr
@@ -2388,8 +2492,6 @@ order.
 \(L I S T)"
   (cl:map 'list #'cl:identity v))
 
-(defalias 'filep 'probe-file)			; PSL
-
 (defalias 'copy 'copy-tree				; PSL
   "(copy X:any): any expr
 This function returns a copy of X. While each pair is copied, atomic
@@ -2398,8 +2500,6 @@ elements (for example ids, strings, and vectors) are not.")
 ;; REDUCE needs complexp in various places but also needs to be able
 ;; to overwrite it, as in rlisp88.tst:
 (defalias 'complexp 'cl:complexp)
-
-(defalias 'getenv 'sb-ext:posix-getenv)	; PSL
 
 ;; The next three PSL definitions are based on those at the end of
 ;; support/csl.red:
@@ -2417,6 +2517,12 @@ elements (for example ids, strings, and vectors) are not.")
   `(eval-when (:load-toplevel :execute) ,u))
 
 (defalias 'prop 'cl:symbol-plist)		; PSL
+(defalias 'plist 'cl:symbol-plist)		; CSL
+
+(defun setprop (u l)					; PSL
+  "(setprop U:id L:any): L:any expr
+Store item L as the property list of U."
+  (setf (symbol-plist u) l))
 
 ;; CL union and intersection return different orderings that those in
 ;; the REDUCE source, which leads to different (although probably not
@@ -2430,11 +2536,74 @@ elements (for example ids, strings, and vectors) are not.")
 Returns the union of sets X and Y."
   (cl:union x y :test #'equal))
 
+(defalias 'mod 'cl:mod)	; not just imported because cali redefines mod
 (defalias 'gcdn 'cl:gcd)
 (defalias 'lcmn 'cl:lcm)
 (defalias 'yesp1 'cl:y-or-n-p)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun smallcompress (li)
+  "Compress list LI to a string representing a number (only).
+Defined and called only in \"arith/smlbflot.red\" and redefined here
+to down-case the E in floats."
+  (cl:string-downcase (cl:map 'string #'character li)))
+
+
+;;; Operating system interface
+;;; ==========================
+
+;; (defun system (command)					; PSL
+;;   "(system COMMAND:string):undefined expr
+;; Run a (system specific) command interpreter synchronously, pass
+;; COMMAND to the interpreter and return the process exit code."
+;;   ;; Split off the arguments:
+;;   (setq command
+;; 		(loop with beg and end = 0
+;; 		   while end
+;; 		   do (setq beg (position-if #'(lambda (x) (char/= x #\Space))
+;; 									 command :start end))
+;; 			 (unless beg (loop-finish))
+;; 			 (setq end (position #\Space command :start beg))
+;; 		   collect (subseq command beg end)))
+;;   (sb-ext:process-exit-code
+;;    (sb-ext:run-program "cmd" (cons "/c" command)
+;; 					   :search t :output t :escape-arguments nil)))
+
+(defun system (command)					; PSL
+  "(system COMMAND:string):undefined expr
+Run a (system specific) command interpreter synchronously, pass
+COMMAND to the interpreter and return the process exit code."
+  (sb-ext:process-exit-code
+   (sb-ext:run-program "cmd" (list "/c" command)
+					   :search t :output t :escape-arguments nil)))
+
+(defun pwd ()							; PSL
+  "(pwd):STRING expr
+Return the current working directory in system specific format."
+  (sb-ext:native-namestring *default-pathname-defaults*))
+
+(defun cd (dir)							; PSL
+  "(cd DIR:string):BOOLEAN expr
+Set the current working directory to DIR after expanding the filename
+according to the rules of the operating system.  If this operation is
+not sucessful, the value Nil is returned."
+  (setq dir (pathname dir))
+  ;; Allow dir not to end with a separator:
+  (if (string/= (file-namestring dir) "")
+	  (setq dir (make-pathname :directory
+							   (append (or (pathname-directory dir) '(:relative))
+									   (list (file-namestring dir))))))
+  ;; Expand environment variables, "." and "..":
+  (setq dir (substitute-in-file-name (namestring dir)))
+  (setq dir (merge-pathnames dir))
+  (and (probe-file dir)
+	   (sb-ext:native-namestring	; more useful return value than t!
+		(setq *default-pathname-defaults* dir))))
+
+(defalias 'filep 'probe-file)			; PSL
+
+
+;;; Compile and load
+;;; ================
 
 (defun compile-file (input-file &rest other-args)
   ;; (compile-file input-file &key output-file verbose print
@@ -2450,9 +2619,10 @@ Returns the union of sets X and Y."
   "*verboseload = [Initially: nil] switch
 If non-nil, a message is displayed when a request is made to load a
 file which has already been loaded, when a file is about to be loaded,
-and when the loading of a file is complete. Since *redefmsg is set to
-the value of *verboseload, a non-nil value will also cause a message
-to be printed whenever a function is redefined during a load.")
+and when the loading of a file is complete.  Since *redefmsg is set to
+the value of *verboseload within `load', a non-nil value will also
+cause a message to be printed whenever a function is redefined during
+a load.")
 
 (defvar options* nil
   "A list of loaded `modules', which are loaded only once.
@@ -2472,7 +2642,8 @@ Load a \".sl\" file using Standard Lisp read syntax."
   ;; filename defaults are taken from *default-pathname-defaults*,
   ;; which defaults to the directory in which SBCL was started.
   (let ((*readtable* (copy-readtable nil)) ; normal CL syntax
-		(*load-verbose* *verboseload))
+		(*load-verbose* *verboseload)
+		(*redefmsg *verboseload))
 	(if (symbolp file)
 		(progn
 		  (if (cl:member file options*) (return-from load)) ; already loaded
@@ -2483,12 +2654,6 @@ Load a \".sl\" file using Standard Lisp read syntax."
 	;; Look in "." and "./fasl" and if not found then throw an error:
 	(or (cl:load file :if-does-not-exist nil)
 		(cl:load (concat2 "fasl/" file)))))
-
-(defun smallcompress (li)
-  "Compress list LI to a string representing a number (only).
-Defined and called only in \"arith/smlbflot.red\" and redefined here
-to down-case the E in floats."
-  (cl:string-downcase (cl:map 'string #'character li)))
 
 
 ;;; Faslout/faslend interface
@@ -2628,9 +2793,10 @@ interpret otherwise.  The default is compile."
  '(cl:lambda cl:warning cl:*features*
    cl:unwind-protect cl:evenp cl:oddp
    cl:string-not-greaterp cl:symbol-name cl:y-or-n-p ; used in clprolo
-   cl:force-output cl:trace cl:untrace ; used in clrend
-   cl:file-write-date ; used in remake
-   cl:symbol-name	  ; used in rlisp
+   cl:force-output									 ; used in clrend
+   cl:file-write-date								 ; used in remake
+   cl:symbol-name									 ; used in rlisp
+   cl:catch cl:throw								 ; used in rubi_red
    ))
 
 ;; Cease inheriting the external symbols of :common-lisp except for
