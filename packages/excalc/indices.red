@@ -323,6 +323,8 @@ symbolic procedure indexlet(u,v,ltype,b,rtype);
                       remprop(car u,'partitfn);
                       remprop(car u,'indxsymmetries);
                       remprop(car u,'indxsymmetrize);
+                      if flagp(car u,'covariant) 
+                         then remflag(list car u,'covariant);
                       remflag(list car u,'indexvar)>>
              end
     else if subla(frasc!*,u) neq u then
@@ -487,6 +489,8 @@ symbolic procedure covposp u;
    null u or (null atom car u and covposp cdr u);
 
 put('ns,'prifn,'indvarprt);
+put('ns,'fancy!-pprifn,'xindvarprt);
+flag('(form!-with!-free!-indices),'specassgn);
 
 put('ns,'fancy!-pprifn,'xindvarprt);
 

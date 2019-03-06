@@ -70,7 +70,7 @@ symbolic procedure killing_normalize_pde u;
 
 symbolic procedure ignore_partdf u;
    if domainp u then u
-    else if eqcar(mvar u, 'partf) then ignore_partdf lc u
+    else if eqcar(mvar u, 'partdf) then ignore_partdf lc u
     else lpow u .* ignore_partdf lc u .+ ignore_partdf red u;
    
 

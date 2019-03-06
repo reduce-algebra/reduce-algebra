@@ -304,6 +304,17 @@ remfdomain y,q,j;
 
 % Problem:
 % --------
+% Calculate the pde's which determine the Killing vector's for S2.
+
+coframe e th = d th,e ph = sin th*d ph;
+
+killing_vector u;
+
+clear e k,u k;
+remfdomain u;
+
+% Problem:
+% --------
 % Show that the metric structure given by Eguchi and Hanson induces a
 % self-dual curvature.
 % c.f. T. Eguchi, P.B. Gilkey, A.J. Hanson, "Gravitation, Gauge Theories
