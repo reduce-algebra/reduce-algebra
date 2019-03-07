@@ -206,7 +206,8 @@ sign_rules :=
 %%   sign(abs ~a)   => 1,
 %%   sign ~a => rd!-sign a when rd!-sign a,
      % Next rule here for convenience.
-     abs(~x)^2 => x^2 when symbolic not !*precise}$
+     abs(~x)^2 => x^2 when symbolic not !*precise or realvaluedp x
+   }$
      % $ above needed for bootstrap.
 
 let sign_rules;

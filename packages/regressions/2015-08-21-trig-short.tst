@@ -26,6 +26,11 @@ atan2(x^2, 2i*x^2);
 {repart log(1+i), impart log(1+i), repart log(-1-i), impart log(-1-i)};
 
 % new rules involving atan
+r1:= sin(atan z/2);
+r2:= cos(atan z/2);
+r1^2+r2^2;
+
+% and now with an argument that is known to be real
 r1:= sin(atan x/2);
 r2:= cos(atan x/2);
 r1^2+r2^2;

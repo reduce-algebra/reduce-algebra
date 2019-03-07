@@ -1295,18 +1295,20 @@ cf_expression(!*c);
 cf(e^x);
 
 
-***** (expt e x) invalid as continued fraction argument 
+       x
+***** e  invalid as continued fraction argument
 
 cf(e^x,x);
 
 
-***** x invalid as integer 
+***** x invalid as integer
 
 cf_coeflist({1/2,{1,2,x}});
 
 
-***** (list (quotient 1 2) (list 1 2 x)) invalid as 
-continued fraction: cf_coeflist 
+        1
+***** {---,{1,2,x}} invalid as continued fraction: cf_coeflist
+        2
 
 cf_convlist(!*d);
 
@@ -1316,8 +1318,8 @@ cf_convlist(!*d);
 cf_convergent((x+y)^2);
 
 
-***** (plus (expt x 2) (times 2 x y) (expt y 2)) invalid as 
-continued fraction: cf_expression 
+       2            2
+***** x  + 2*x*y + y  invalid as continued fraction: cf_expression
 
 
 % Pade representations
@@ -1526,3 +1528,4 @@ taylor(ws-sin(sqrt(x)),x,0,10);
 
 
 end;
+
