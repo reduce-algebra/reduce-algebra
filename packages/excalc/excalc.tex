@@ -950,6 +950,40 @@ inner products.
           PH
 \end{verbatim}
 
+\section{Killing Vectors}  \index{Killing Vectors} The command {\tt KILLING\_VECTOR} is provided for calculating the \index{KILLING_VECTOR command} \label{KILLING\_VECTOR} determining system of partial differential equations of Killing vectors for
+a given metric structure provided by the coframe statement.  The result is 
+a list where the first entry is a vector constructed from the identifier 
+given to the command and the second entry consists of a list of partial 
+differential equations for the coefficients of this vector.  
+
+\example (Calculate the determining pde's for a Killing vector of S(2)) \index{EXCALC package ! example}
+
+ \begin{verbatim}
+
+coframe e th = d th,e ph = sin th*d ph;
+
+
+killing_vector u;
+
+
+      ph        th
+{@  *u   + @  *u  ,
+  ph        th
+
+       th
+ {@  (u  ),
+   th
+
+       ph         2        th
+  @  (u  )*sin(th)  + @  (u  ),
+   th                  ph
+
+           th        ph
+  cos(th)*u   + @  (u  )*sin(th)}}
+                 ph
+
+\end{verbatim}
+
 \section{Ordering and Structuring}
 
 \index{ordering ! exterior form} \index{FORDER command}
