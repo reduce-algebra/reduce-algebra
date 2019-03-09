@@ -27,7 +27,8 @@ makeindex -o ${JOBNAME}.ind ${JOBNAME}.4dx
 
 mk4ht htlatex ${JOBNAME} ${CONFIG},${SECTIONINGDEPTH}
 
-cp ${JOBNAME}.html index.html
+sed -e 's#https://reduce-_algebra\.sourceforge\.io/#https://reduce-algebra.sourceforge.io/#' ${JOBNAME}.html >index.html
+cp index.html ${JOBNAME}.html
 
 exit 0
 
