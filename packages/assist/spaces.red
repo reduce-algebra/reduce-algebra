@@ -95,9 +95,9 @@ symbolic procedure get_indexrange_space u;
    if null spaces!* then nil
     else
    (if x then
-       if not atom x and cddr x and cdddr x then cadddr x
+       if not atom x and pairp cdr x and pairp cddr x and pairp cdddr x then cadddr x
         else
-       if cddr x and not atom caddr x then caddr x)
+       if pairp cddr x and not atom caddr x then caddr x)
                            where x=if spaces!* then subla(spaces!*,u);
 
 
@@ -144,7 +144,10 @@ flag({'onespace,'show_spaces,'wholespace_dim ,
 
 % taken from INEQ
 
-newtok '( (!. !.) !*interval!*);
+begin
+   scalar !*msg;  % So we do not get a redefinition moan at load time
+   newtok '((!. !.) !*interval!*)
+end;
 
 % first, introduction of interval through the command a .. b
 
@@ -315,6 +318,8 @@ symbolic procedure space_index_range u;
   x:=get_indexrange_space u;
  return
   if null x then nil
+   else if not eqcar(x,'!*interval!*)
+    then rerror(cantensor,4,list("Invalid indexrange ",x," (Forgot space around .. operator?)"))
    else bubblesort1( caddr cadr x . caddr x . nil)
  end;
 
