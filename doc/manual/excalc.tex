@@ -73,9 +73,9 @@ For example
 \begin{verbatim}
      pform u=k,v=4,f=0,w=dim-1;
 \end{verbatim}
-declares {\tt U} to be an exterior form of degree {\tt K}, {\tt V} to be a
-form of degree 4, {\tt F} to be a form of degree 0 (a function), and {\tt W}
-to be a form of degree {\tt DIM}-1.
+declares \texttt{U} to be an exterior form of degree \texttt{K}, \texttt{V} to be a
+form of degree 4, \texttt{F} to be a form of degree 0 (a function), and \texttt{W}
+to be a form of degree \texttt{DIM}-1.
 
 If the exterior form should have indices, the declaration would be
 \index{Exterior form!with indices}
@@ -88,12 +88,12 @@ Exterior forms of the same degree can be grouped into lists to save typing.
 \begin{verbatim}
      pform {x,y,z}=0,{rho(k,l),u,v(k)}=1;
 \end{verbatim}
-The declaration of vectors is similar. The command {\tt TVECTOR}\label{TVECTOR}
+The declaration of vectors is similar. The command \f{TVECTOR}\label{TVECTOR}
 takes a list of names. \ttindextype{TVECTOR}{command} \index{Exterior form!vector}
 
 \hspace*{2em} \k{TVECTOR} \s{name$_1$}, \s{name$_2$}, \ldots;
 
-For example, to declare {\tt X} as a vector and {\tt COMM} as a vector with 
+For example, to declare \texttt{X} as a vector and \texttt{COMM} as a vector with 
 two indices, one would say
 \begin{verbatim}
      tvector x,comm(a,b);
@@ -171,8 +171,8 @@ space, it is replaced by 0:
 
 \subsection{Partial Differentiation}
 
-Partial differentiation is denoted by the operator {\tt @}\label{at}.  Its
-capability is the same as the {\REDUCE} {\tt DF} operator.
+Partial differentiation is denoted by the operator \f{@}\label{at}.  Its
+capability is the same as the {\REDUCE} \f{DF} operator.
 \ttindextype{"@}{operator} \index{Partial differentiation}
 \index{Differentiation!partial}
 
@@ -190,14 +190,14 @@ capability is the same as the {\REDUCE} {\tt DF} operator.
 
 An identifier can be declared to be a function of certain variables.
 \ttindextype{FDOMAIN}{command}
-This is done with the command {\tt FDOMAIN}\label{FDOMAIN}.  The
-following would tell the partial differentiation operator that {\tt F}
-is a function of the variables {\tt X} and {\tt Y} and that {\tt H} is
-a function of {\tt X}.
+This is done with the command \f{FDOMAIN}\label{FDOMAIN}.  The
+following would tell the partial differentiation operator that \var{F}
+is a function of the variables \var{X} and \var{Y} and that \var{H} is
+a function of \var{X}.
 \begin{verbatim}
      fdomain f=f(x,y),h=h(x);
 \end{verbatim}
-Applying {\tt @} to {\tt F} and {\tt H} would result in
+Applying \f{@} to \var{F} and \var{H} would result in
 \begin{verbatim}
      @(x*f,x);
 
@@ -226,9 +226,8 @@ vector\label{at1}.
 \subsection{Exterior Differentiation}
 \index{Exterior differentiation}
 Exterior differentiation of exterior forms is carried out by the
-operator {\tt d}\label{d}.  Products are normally differentiated out,
-{\em i.e.}
-
+operator \f{d}\label{d}.  Products are normally differentiated out,
+\emph{i.e.}
 \begin{verbatim}
      pform x=0,y=k,z=m;
 
@@ -246,7 +245,7 @@ operator {\tt d}\label{d}.  Products are normally differentiated out,
      ( - 1) *X*Y^d Z  + X*d Y^Z + d X^Y^Z
 \end{verbatim}
 
-This expansion can be suppressed by the command \texttt{NOXPND D}\label{NOXPNDD}.
+This expansion can be suppressed by the command \f{NOXPND D}\label{NOXPNDD}.
 \ttindextype{NOXPND}{! D}
 
 \begin{verbatim}
@@ -258,7 +257,7 @@ This expansion can be suppressed by the command \texttt{NOXPND D}\label{NOXPNDD}
 \end{verbatim}
 
 To obtain a canonical form for an exterior product when the expansion
-is switched off, the operator {\tt D} is shifted to the right if it
+is switched off, the operator \texttt{D} is shifted to the right if it
 appears in the leftmost place.
 
 \begin{verbatim}
@@ -268,10 +267,10 @@ appears in the leftmost place.
      - ( - 1) *Y^d Z + d(Y^Z)
 \end{verbatim}
 
-Expansion is performed again when the command {\tt XPND D}\label{XPNDD}
+Expansion is performed again when the command \f{XPND D}\label{XPNDD}
 is executed. \ttindextype{XPND}{! \texttt{D}}
 
-Functions which are implicitly defined by the {\tt FDOMAIN} command are
+Functions which are implicitly defined by the \f{FDOMAIN} command are
 expanded into partial derivatives:
 
 \begin{verbatim}
@@ -286,7 +285,7 @@ expanded into partial derivatives:
 \end{verbatim}
 
 If an argument of an implicitly defined function has further
-dependencies the chain rule will be applied {\em e.g.} \index{Chain rule}
+dependencies the chain rule will be applied \emph{e.g.} \index{Chain rule}
 
 
 \begin{verbatim}
@@ -299,8 +298,8 @@ dependencies the chain rule will be applied {\em e.g.} \index{Chain rule}
 \end{verbatim}
 
 Expansion into partial derivatives can be inhibited by
-{\tt NOXPND @}\label{NOXPNDA}
-and enabled again by {\tt XPND @}\label{XPNDA}.
+\f{NOXPND @}\label{NOXPNDA}
+and enabled again by \texttt{XPND @}\label{XPNDA}.
 \ttindextype{NOXPND}{! "@} \ttindextype{XPND}{! "@}
 
 The operator is of course aware of the rules that a repeated
@@ -322,7 +321,7 @@ higher degree than the dimension of the space.
 \subsection{Inner Product}
 \index{Inner product!exterior form}
 The inner product between a vector and an exterior form is represented
-by the diphthong \_$|$ \label{innerp} (underscore or-bar), which is the
+by the diphthong \f{\_\textbar} \label{innerp} (underscore or-bar), which is the
 notation of many textbooks.  If the exterior form is an exterior
 product, the inner product is carried through any factor.
 \ttindextype{\_\textbar}{(inner product) operator}
@@ -341,7 +340,7 @@ product, the inner product is carried through any factor.
 \end{verbatim}
 
 In repeated applications of the inner product to the same exterior
-form the vector arguments are ordered {\em e.g.}
+form the vector arguments are ordered \emph{e.g.}
 
 \begin{verbatim}
      (u+x*v) _| (u _| (3*z));
@@ -349,7 +348,7 @@ form the vector arguments are ordered {\em e.g.}
      - 3*U _| V _| Z
 \end{verbatim}
 
-The duality of natural base elements is also known by the system, {\em i.e.}
+The duality of natural base elements is also known by the system, \emph{i.e.}
 
 \begin{verbatim}
      pform {x,y}=0;
@@ -363,7 +362,7 @@ The duality of natural base elements is also known by the system, {\em i.e.}
 
 \index{Lie Derivative}
 The Lie derivative can be taken between a vector and an exterior form
-or between two vectors.  It is represented by the infix operator $|$\_
+or between two vectors.  It is represented by the infix operator \f{\textbar\_}
 \label{lie}.  In the case of Lie differentiating, an exterior form by
 a vector, the Lie derivative is expressed through inner products and
 exterior differentiations, \emph{i.e.} 
@@ -423,7 +422,7 @@ example shows how the factor is chosen here
 The indeterminate SGN in the above example denotes the sign of the
 determinant of the metric. It can be assigned a value or will be
 automatically set if more of the metric structure is specified (via
-COFRAME), {\em i.e.} it is then set to $g/|g|$, where $g$ is the
+COFRAME), \emph{i.e.} it is then set to $g/|g|$, where $g$ is the
 determinant of the metric.  If the Hodge-* operator appears in an
 exterior product of maximal degree as the leftmost factor, the Hodge-*
 is shifted to the right according to
@@ -476,11 +475,11 @@ Syntax:
 Restrictions:
 
 In the current implementation, the Lagrangian must be built up by the
-fields and the operations {\tt d}, {\tt \#}, and {\tt @}. Variation
+fields and the operations \texttt{d}, \texttt{\#}, and \texttt{@}. Variation
 with respect to indexed quantities is currently not allowed.
 
 For the calculation of the conserved currents induced by symmetry
-operators (vector fields), the function {\tt NOETHER}\label{NOETHER}
+operators (vector fields), the function \texttt{NOETHER}\label{NOETHER}
 \ttindextype{NOETHER}{function}
 is provided.  It has the syntax:
 
@@ -493,14 +492,14 @@ is provided.  It has the syntax:
 
   spacedim 4;
 
-  l := -1/2*d a^#d a$   %Free Maxwell field;
+  l := -1/2*d a^#d a;   %Free Maxwell field;
 
   tvector x;        %An unspecified generator;
 
   noether(l,a,x);
 
-  - 2*d(x _| a)^# d a + d a^x _| # d a - x _| d a^# d a
---------------------------------------------------------
+    - 2*d(x _| a)^# d a + d a^x _| # d a - x _| d a^# d a
+   --------------------------------------------------------
                            2
 
 
@@ -517,7 +516,7 @@ as a translation;
 Exterior forms and vectors may have indices.  On input, the indices
 are given as arguments of the object.  A positive argument denotes a
 superscript and a negative argument a subscript.  On output, the
-indexed quantity is displayed two dimensionally if \texttt{NAT} is on.
+indexed quantity is displayed two dimensionally if \sw{NAT} is on.
 \ttindexswitch{NAT}
 Indices may be identifiers or numbers.  
 
@@ -643,15 +642,15 @@ specified index names, or at all.  For this the command
 \ttindextype{NOSUM}{command}
 \hspace*{2em} \k{NOSUM} \s{indexname$_1$}, \ldots;\label{NOSUM}
 
-and the switch \texttt{NOSUM} are\ttindexswitch[EXCALC]{NOSUM}
-available.  The command \texttt{NOSUM} has the effect that summation is
+and the switch \sw{NOSUM} are\ttindexswitch[EXCALC]{NOSUM}
+available.  The command \f{NOSUM} has the effect that summation is
 not performed over those indices which had been listed.  The command
-{\tt RENOSUM}\label{RENOSUM} enables summation again.  The switch \sw{NOSUM}, 
+\f{RENOSUM}\label{RENOSUM} enables summation again.  The switch \sw{NOSUM}, 
 if on, inhibits any summation. \ttindextype{RENOSUM}{command}
 
 \label{INDEXSYMMETRIES} \ttindextype{INDEX\_SYMMETRIES}{command}
 It is possible to declare symmetry properties for an indexed quantity by 
-the command {\tt INDEX\_SYMMETRIES}. A prototypical example is as
+the command \f{INDEX\_SYMMETRIES}. A prototypical example is as
 follows
 
 \begin{verbatim}
@@ -662,11 +661,11 @@ follows
 
 \end{verbatim}
 
-It declares the object {\tt u} symmetric in the first two and last 
+It declares the object \texttt{u} symmetric in the first two and last 
 two indices and antisymmetric with respect to commutation of the given
 index pairs. If an object is completely symmetric or antisymmetric,
 the indices need not to be given after the corresponding keyword as
-shown above for {\tt g} and {\tt h}.
+shown above for \texttt{g} and \texttt{h}.
 
 If applicable, this command should
 be issued, since great savings in memory and execution time result.
@@ -697,9 +696,9 @@ Syntax:\label{COFRAME}
 
 \index{Euclidean metric} \index{COFRAME!WITH METRIC}
 This statement automatically sets the dimension of the space and the
-index range. The clause {\tt WITH METRIC} can be omitted if the metric
+index range. The clause \texttt{WITH METRIC} can be omitted if the metric
 \index{COFRAME!WITH SIGNATURE}
-is Euclidean and the shorthand {\tt WITH SIGNATURE \s{diagonal elements}}
+is Euclidean and the shorthand \texttt{WITH SIGNATURE \s{diagonal elements}}
 \label{SIGNATURE} can be used in the case of a pseudo-Euclidean metric. The
 splitting of a metric structure in its metric tensor coefficients and
 basis one-forms is completely arbitrary including the extremes of an
@@ -727,9 +726,9 @@ orthonormal frame and a coordinate frame.
 Individual elements of the metric can be accessed just by calling them
 with the desired indices. The value of the determinant of the
 \index{Determinant!in DETM"!*} \ttindextype{DETM"!*}{variable}
-covariant metric is stored in the variable {\tt DETM!*}.  The metric
+covariant metric is stored in the variable \texttt{DETM!*}.  The metric
 is not needed for lowering or raising of indices as the system
-performs this automatically, {\em i.e.} no matter in what index
+performs this automatically, \emph{i.e.} no matter in what index
 position values were assigned to an indexed quantity, the values can
 be retrieved for any index position just by writing the indexed
 quantity with the desired indices.
@@ -803,7 +802,7 @@ knows how to take the exterior derivative of the basis one-forms.
          R           TH              PH
 \end{verbatim}
 
-The frame dual to the frame defined by the {\tt COFRAME} command can
+The frame dual to the frame defined by the \f{COFRAME} command can
 be introduced by \k{FRAME} command. \ttindextype{FRAME}{command}
 
 \hspace*{2em} \k{FRAME} \s{identifier};\label{FRAME}
@@ -849,7 +848,7 @@ coordinate functions are replaced by the frame basis vectors.
 
 \ttindextype{DISPLAYFRAME}{command} \index{Tracing!EXCALC package}\index{EXCALC package!tracing}
 As a convenience, the frames can be displayed at any point in a program
-by the command {\tt DISPLAYFRAME;}\label{DISPLAYFRAME}.
+by the command \f{DISPLAYFRAME;}\label{DISPLAYFRAME}.
 
 \index{Hodge-* duality operator}
 The Hodge-* duality operator returns the explicitly constructed dual
@@ -857,18 +856,18 @@ element if applied to coframe base elements. The metric is properly
 taken into account.
 
 \index{Levi-Cevita tensor} \ttindex{EPS}
-The total antisymmetric Levi-Cevita tensor {\tt EPS}\label{EPS} is
-also available.  The value of {\tt EPS} with an even permutation of the
+The total antisymmetric Levi-Cevita tensor \texttt{EPS}\label{EPS} is
+also available.  The value of \texttt{EPS} with an even permutation of the
 indices in a covariant position is taken to be +1.
 
 
 \subsection{Riemannian Connections}
 
 \index{Riemannian Connections}
-The command {\tt RIEMANNCONX} is provided for calculating the
+The command \f{RIEMANNCONX} is provided for calculating the
 \ttindextype{RIEMANNCONX}{command} \label{RIEMANNCONX}
-connection 1 forms.  The values are stored on the name given to {\tt
-RIEMANNCONX}.  This command is far more efficient than calculating the
+connection 1 forms.  The values are stored on the name given to
+\f{RIEMANNCONX}.  This command is far more efficient than calculating the
 connection from the differential of the basis one-forms and using
 inner products.
 
@@ -922,22 +921,61 @@ inner products.
           PH
 \end{verbatim}
 
+\subsection{Killing Vectors}
+
+\index{Killing Vectors}
+The command \f{KILLING\_VECTOR} is provided for calculating the
+\ttindextype{KILLING\_VECTOR}{command} \label{KILLING_VECTOR}
+determining system of partial differential equations of Killing vectors for
+a given metric structure provided by the coframe statement.  The result is 
+a list where the first entry is a vector constructed from the identifier 
+given to the command and the second entry consists of a list of partial 
+differential equations for the coefficients of this vector.
+
+\example (Calculate the determining pde's for a Killing vector of S(2))
+\index{EXCALC package ! example}
+\begin{verbatim}
+
+coframe e th = d th,e ph = sin th*d ph;
+
+killing_vector u;
+
+
+      ph        th
+{@  *u   + @  *u  ,
+  ph        th
+
+       th
+ {@  (u  ),
+   th
+
+       ph         2        th
+  @  (u  )*sin(th)  + @  (u  ),
+   th                  ph
+
+           th        ph
+  cos(th)*u   + @  (u  )*sin(th)}}
+                 ph
+
+\end{verbatim}
+
+
 \subsection{Ordering and Structuring}
 
 \index{Ordering!exterior form} \index{Exterior form!ordering}
 \ttindextype{FORDER}{command}
 The ordering of an exterior form or vector can be changed by the
-command {\tt FORDER}.\label{FORDER}  In an expression, the first
-identifier or kernel in the arguments of {\tt FORDER} is ordered ahead
+command \f{FORDER}.\label{FORDER}  In an expression, the first
+identifier or kernel in the arguments of \texttt{FORDER} is ordered ahead
 of the second, and so on, and ordered ahead of all not appearing as
 arguments.  This ordering is done on the internal level and not only
 on output.  The execution of this statement can therefore have
-tremendous effects on computation time and memory requirements.  {\tt
-REMFORDER}\label{REMFORDER} brings back standard ordering for those
+tremendous effects on computation time and memory requirements.
+\f{REMFORDER}\label{REMFORDER} brings back standard ordering for those
 elements that are listed as arguments. \ttindextype{REMFORDER}{command}
 
 An expression can be put in a more structured form by renaming a
-subexpression.  This is done with the command {\tt KEEP} which
+subexpression.  This is done with the command \f{KEEP} which
 has the syntax \ttindextype{KEEP}{command}\label{KEEP}
 
 \hspace*{2em} \k{KEEP}
@@ -976,91 +1014,94 @@ possible.
 \end{verbatim}
 
 \index{Exterior product}
-The capabilities of {\tt KEEP} are currently very limited.  Only exterior
-products should occur as righthand sides in {\tt KEEP}.
+The capabilities of \f{KEEP} are currently very limited.  Only exterior
+products should occur as righthand sides in \f{KEEP}.
 
-
+\pagebreak
 \subsection{Summary of Operators and Commands}
 Table~\ref{EXCALC:sum} summarizes EXCALC commands and the page number they are
 defined on.
-
-\begin{table}
+\nopagebreak
+\begin{center}
 \begin{tabular}{l l r}
 \ttindextype{"\^}{operator!exterior multiplication}
 \index{Wedge}
-\^{ }  &  Exterior Multiplication & \pageref{wedge} \\
+\f{\^}  &  Exterior Multiplication & \pageref{wedge} \\
 \ttindextype{"@}{operator!partial differentiation}
-@  & Partial Differentiation & \pageref{at}  \\
+\f{@}  & Partial Differentiation & \pageref{at}  \\
 \ttindextype{"@}{operator!tangent vector}
-@  & Tangent Vector  & \pageref{at1}  \\
+\f{@}  & Tangent Vector  & \pageref{at1}  \\
 \ttindextype{"\#}{(Hodge-*) operator}
-\#  & Hodge-* Operator & \pageref{hodge} \\
+\f{\#}  & Hodge-* Operator & \pageref{hodge} \\
 \ttindextype{\_\textbar}{(inner product) operator}
-\_$|$  & Inner Product  & \pageref{innerp} \\
+\f{\_\textbar}  & Inner Product  & \pageref{innerp} \\
 \ttindextype{\textbar\_}{(Lie derivative) operator}
-$|$\_  & Lie Derivative  & \pageref{lie}  \\
+\f{\textbar\_}  & Lie Derivative  & \pageref{lie}  \\
 \ttindextype{COFRAME}{command}
-COFRAME & Declaration of a coframe & \pageref{COFRAME} \\
+\f{COFRAME} & Declaration of a coframe & \pageref{COFRAME} \\
 \ttindextype{d}{! exterior differentiation}
-d &  Exterior differentiation & \pageref{d} \\
+\f{d} &  Exterior differentiation & \pageref{d} \\
 \ttindextype{DISPLAYFRAME}{command}
-DISPLAYFRAME & Displays the frame & \pageref{DISPLAYFRAME}\\
+\f{DISPLAYFRAME} & Displays the frame & \pageref{DISPLAYFRAME}\\
 \ttindextype{EPS}{! Levi-Civita tensor}
-EPS & Levi-Civita tensor  & \pageref{EPS}  \\
+\f{EPS} & Levi-Civita tensor  & \pageref{EPS}  \\
 \ttindex{EXDEGREE}
-EXDEGREE & Calculates the exterior degree of an expression & \pageref{EXDEGREE}  \\
+\f{EXDEGREE} & Calculates the exterior degree of an expression & \pageref{EXDEGREE}  \\
 \ttindextype{FDOMAIN}{command}
-FDOMAIN & Declaration of implicit dependencies &\pageref{FDOMAIN} \\
+\f{FDOMAIN} & Declaration of implicit dependencies &\pageref{FDOMAIN} \\
 \ttindextype{FORDER}{command}
-FORDER & Ordering command  & \pageref{FORDER} \\
+\f{FORDER} & Ordering command  & \pageref{FORDER} \\
 \ttindextype{FRAME}{command}
-FRAME & Declares the frame dual to the coframe & \pageref{FRAME} \\
+\f{FRAME} & Declares the frame dual to the coframe & \pageref{FRAME} \\
 \ttindextype{INDEXRANGE}{command}
-INDEXRANGE & Declaration of indices & \pageref{INDEXRANGE} \\
+\f{INDEXRANGE} & Declaration of indices & \pageref{INDEXRANGE} \\
 \ttindextype{INDEX\_SYMMETRIES}{command}
-INDEX\_SYMMETRIES & Declares arbitrary index symmetry properties  & \pageref{INDEXSYMMETRIES} \\
+\f{INDEX\_SYMMETRIES} & Declares arbitrary index symmetry properties  & \pageref{INDEXSYMMETRIES} \\
 \ttindextype{KEEP}{command}
-KEEP & Structuring command  & \pageref{KEEP} \\
+\f{KEEP} & Structuring command  & \pageref{KEEP} \\
+\ttindextype{KILLING\_VECTOR}{command}
+\f{KILLING\_VECTOR} & Structuring command  & \pageref{KILLING_VECTOR} \\
 \ttindextype{METRIC}{command}
-METRIC & Clause of COFRAME to specify a metric & \pageref{COFRAME} \\
+\f{METRIC} & Clause of COFRAME to specify a metric & \pageref{COFRAME} \\
 \ttindextype{NOETHER}{function}
-NOETHER & Calculates the Noether current & \pageref{NOETHER} \\
+\f{NOETHER} & Calculates the Noether current & \pageref{NOETHER} \\
 \ttindextype{NOSUM}{command}
-NOSUM & Inhibits summation convention & \pageref{NOSUM} \\
+\f{NOSUM} & Inhibits summation convention & \pageref{NOSUM} \\
 \ttindextype{NOXPND}{command}
-NOXPND d & Inhibits the use of product rule for d &
+\f{NOXPND} d & Inhibits the use of product rule for d &
 \pageref{NOXPNDD} \\
 \ttindextype{NOXPND "@}{command}
-NOXPND @ & Inhibits expansion into partial derivatives &
+\f{NOXPND @} & Inhibits expansion into partial derivatives &
 \pageref{NOXPNDA} \\
 \ttindextype{PFORM}{command}
-PFORM & Declaration of exterior forms & \pageref{PFORM} \\
+\f{PFORM} & Declaration of exterior forms & \pageref{PFORM} \\
 \ttindextype{REMFORDER}{command}
-REMFORDER & Clears ordering  & \pageref{REMFORDER} \\
+\f{REMFORDER} & Clears ordering  & \pageref{REMFORDER} \\
 \ttindextype{RENOSUM}{command}
-RENOSUM & Enables summation convention & \pageref{RENOSUM} \\
+\f{RENOSUM} & Enables summation convention & \pageref{RENOSUM} \\
 \ttindextype{RIEMANNCONX}{command}
-RIEMANNCONX & Calculation of a Riemannian Connection &
+\f{RIEMANNCONX} & Calculation of a Riemannian Connection &
 \pageref{RIEMANNCONX} \\
 \ttindextype{SIGNATURE}{command}
-SIGNATURE & Clause of COFRAME to specify a pseudo- & \pageref{SIGNATURE} \\
+\f{SIGNATURE} & Clause of COFRAME to specify a pseudo- & \pageref{SIGNATURE} \\
   & Euclidean metric &   \\
 \ttindextype{SPACEDIM}{command}
-SPACEDIM & Command to set the dimension of a space &
+\f{SPACEDIM} & Command to set the dimension of a space &
 \pageref{SPACEDIM} \\
 \ttindextype{TVECTOR}{command}
-TVECTOR & Declaration of vectors  & \pageref{TVECTOR} \\
+\f{TVECTOR} & Declaration of vectors  & \pageref{TVECTOR} \\
 \ttindex{VARDF}
-VARDF & Variational derivative  & \pageref{VARDF} \\
+\f{VARDF} & Variational derivative  & \pageref{VARDF} \\
 \ttindextype{XPND}{command}
-XPND d & Enables the use of product rule for d & \pageref{XPNDD} \\
+\f{XPND d} & Enables the use of product rule for d & \pageref{XPNDD} \\
   & (default)  &   \\
 \ttindex{XPND!"@}
-XPND @ & Enables expansion into partial derivatives & \pageref{XPNDA} \\
+\f{XPND @} & Enables expansion into partial derivatives & \pageref{XPNDA} \\
   & (default)
 \end{tabular}
-\caption{EXCALC Command Summary}\label{EXCALC:sum}
-\end{table}
+\captionsetup{hypcap=false}
+\captionof{table}{EXCALC Command Summary}\label{EXCALC:sum}
+\end{center}
 \newpage
 \subsection{Examples}
 
