@@ -360,7 +360,8 @@ public:
        int left, int right, int top, int bottom);
 
   /// Construct multi-line text widget
-  FXTerminal(FXComposite *p, FXObject* tgt=NULL, FXSelector sel=0,
+  FXTerminal(const char *argv0,
+             FXComposite *p, FXObject* tgt=NULL, FXSelector sel=0,
              FXuint opts=0, FXint x=0, FXint y=0, FXint w=0, FXint h=0);
 
   virtual void create();

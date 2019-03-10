@@ -44,9 +44,7 @@
 // interface.  In GUI mode it is built on and relies upon the Fox Toolkit
 // and an associated threads package: by virtue of that it is expected
 // to be reasonably cross-platform portable, and in particular it supports
-// Linux and Windows (via MinGW32). It is (somewhat) modelled on an earlier
-// windowed framework that I had that I called "cwin". Cwin was built using
-// the Microsoft Foundation Classes and only ran on Windows.
+// Linux and Windows (via MinGW32).
 //
 // When used anywhere (including within FOX) this code is licensed as above
 // and not under any more restrictice license.
@@ -60,9 +58,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <signal.h>
-
-// Although this is in the FOX directory it is to a significant extent
-// free-standing code - so I am NOT putting it in the FX namespace.
 
 //
 // Logging support, only enabled in debug mode.
@@ -158,7 +153,7 @@ extern void fwin_exit(int return_code);
 // cases the user has taken explicit interactive action to terminate the
 // program so an extra prompt seems unnecessary.
 //
-extern int fwin_pause_at_end;
+extern bool fwin_pause_at_end;
 
 
 //
@@ -279,7 +274,7 @@ extern void fwin_callback_on_delay(delay_callback_t *f);
 // the expectation is that 0 is returned if the previous exception has
 // now been accepted and processed.
 // The case TICK_INTERRUPT is to be triggered roughly every second to
-// give the worket thread a chance to do any chores. It is NOT intended
+// give the worker thread a chance to do any chores. It is NOT intended
 // to disrupt the main thread of the computation.
 //
 // If fwin detects an interrupt condition while it is waiting for keyboard
@@ -292,7 +287,8 @@ extern void fwin_callback_on_delay(delay_callback_t *f);
 // If the callback function tries to raise exceptions etc then great care
 // may be needed to ensure it can not abort the worker in the middle of
 // a handshake where it synchronizes with the GUI thread.  Hmm yet more
-// thought is called for here!
+// thought is called for here! And beware - the callback function can be
+// invoked multiple times or even several times at once.
 //
 
 #define QUERY_INTERRUPT 0
@@ -469,19 +465,23 @@ extern void put_fileinfo(date_and_type *p, const char *name);
 // than inventing a new header file.
 //
 
+// The integer variable "windowed" is zero if running in console mode, but
+// has other non-zero values depending on whether the window starts off
+// normally or minimised.
+
 extern int windowed;
 
 extern int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main);
 
-extern int fwin_use_xft;
+extern bool fwin_use_xft;
 
 extern bool directoryp(char *f, const char *o, size_t n);
 
-extern int using_termed;
+extern bool using_termed;
 
 extern int fwin_plain_getchar();
 
-extern int texmacs_mode;
+extern bool texmacs_mode;
 
 #ifdef HAVE_SIGACTION
 extern void sigint_handler(int signo, siginfo_t *t, void *v);

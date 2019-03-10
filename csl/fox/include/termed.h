@@ -52,28 +52,37 @@
 //
 // Start up input through this package. Returns 0 if local editing
 // actually gets enabled, or a non-zero value if there is some problem.
-// The problem will probably be that your terminal is unknown! But in
-// general you need not worry about the return value here in that if
-// local-editing can not be supported the remaining things still
-// have some sort of default behaviour.
-// Give an argument of 0 if you do not even want it to try to enable
-// local editing (eg because you know input will be generated not be
-// a real user but by a program).
-// The second argument is used to indicate colour options. NULL or "-"
+// The non-zero value may encode some information about what went wrong,
+// but I am not going to document it! It is for use by developers only.
+// The problem will probably be that your terminal is unknown!
+// If the result is non-zero then you should fall back and just use
+// putchar and getchar.
+// The argument is used to indicate colour options. NULL or "-"
 // will indicate "use default". An empty string will prevent any attempt
 // to use colour. Other strings set colours as follows:
-//      ...
-//
+//      There are three characters, which specify the colours for
+//      output, input and prompt (in that order). Each character can be one
+//      of
+//      kw   black or white
+//      rgb  red, green or blue
+//      cmy  cyan, magenta or yellow
+// (I think that the colour selection is not available on Windows).
 
-// Not in the FX namespace...
-
-extern int term_setup(int flag, const char *colours);
+extern int term_setup(const char *argv0, const char *colours);
 
 //
 // Set the prompt string.
 //
 extern void term_setprompt(const char *s);
 extern void term_wide_setprompt(const wchar_t *s);
+
+//
+// This sets callbacks for ^C and ^G input
+//
+typedef void (keyboard_interrupt_callback)();
+extern void set_keyboard_callbacks(keyboard_interrupt_callback *f1,
+                                   keyboard_interrupt_callback *f2);
+
 
 //
 // Read a line from the terminal, applying history and local editing
@@ -101,7 +110,7 @@ extern void term_close(void);
 extern wchar_t *input_history[INPUT_HISTORY_SIZE];
 extern int input_history_next;
 
-extern void input_history_init(void);
+extern void input_history_init(const char *argv0);
 
 extern void input_history_end(void);
 
