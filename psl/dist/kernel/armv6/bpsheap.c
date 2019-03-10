@@ -189,8 +189,8 @@ setupbpsandheap(argc,argv)
         }
     }   /* end of for loop -- arg vector searched */
 
-  /* insure valid values */
-  if (total == 0)
+  /* protect against invalid values */
+  if (total < MINSIZE)
     total = MINSIZE;
 
   if (mallocsize <= 0)

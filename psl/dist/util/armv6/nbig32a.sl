@@ -67,7 +67,7 @@
 (compiletime 
  (progn
   
-  (setq bigtest t)
+  (setq bigtest nil)
 
   (dm bigtest(u)
     (if bigtest
@@ -697,7 +697,7 @@ error
 	(setq snu (bbminusp u))
 	(setq snv (bbminusp v))
 	% Note that these are not extra-boolean, i.e.                      
-	% for positive numbers MBinusP returns nil, for                    
+	% for positive numbers BBMinusP returns nil, for                    
 	% negative it returns its argument. Thus the                       
 	% test (SnU=SnV) does not reliably compare the signs of            
 	% U and V;                                                         

@@ -430,7 +430,7 @@
     (and (fixp x) (eq (wand 16#ffff x) x)))
 
 (de thirtytwobit-p (x)
-    (and (fixp x) (equal (land 16#ffffffff x) x)))
+    (and (fixp x) (equal (wand 16#ffffffff x) x)))
 
 % possibly shifted register (data movement), one of:
 % (reg x)
@@ -556,11 +556,11 @@
 )
 (de bytep(n)
     (when (and (numberp n) (lessp n 128) (greaterp n -128))
-	  (land n 255)))
+	  (wand n 255)))
  
 (de halfwordp(n)
     (when (and (numberp n) (lessp n 32768) (greaterp n -32768))
-	  (land n 65535)))
+	  (wand n 65535)))
 
 (de unimmediate(u)
     (if (eqcar u 'immediate) (cadr u) u))
@@ -609,14 +609,14 @@
      (land 16#ffffffff (lsh n (difference 32 m)))))
 		    
 (de rotate-left (n m)
-    (lor
-     (land 16#ffffffff (lsh n m))
-     (land 16#ffffffff (lsh n (difference m 32)))))
+    (wor
+     (wand 16#ffffffff (wshift n m))
+     (wand 16#ffffffff (wshift n (wdifference m 32)))))
 		    
 (de decode-32bit-imm8-rotated (n)
     (for (from i 0 15 1)
 	 (do
-	  (if (equal (land n 255) n)
+	  (if (equal (wand n 255) n)
 	      (return (cons i n))
 	    (setq n (rotate-left n 2))
 	    )
@@ -1075,7 +1075,7 @@
 		 (stderror (bldmsg "Invalid ADRL pseudo-op: %w" X)))
 		(t
 		 (setq rel (MakeExpressionRelative src 8))
-		 (print (list src dest rel))
+%		 (print (list src dest rel))
 		 (cond ((lessp rel 0)
 			(setq rel (minus rel))
 			(cond ((imm8-rotatedp rel)

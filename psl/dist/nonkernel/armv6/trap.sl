@@ -66,9 +66,18 @@
                (*link sun3_sigset expr 2))
              *sigcalls*))
        % Return the the function definition for the signal handler.
-       `((*entry ,function expr 0)
+       `(% addresses of symval and symfnc fluid variables
+	 (fullword (fluid symval))
+	 (fullword (fluid symfnc))
+	 (*entry ,function expr 0)
      ,handler
      (*alloc 0)
+     % load address of symval value cell and move contents to (reg symval)
+     (*MOVE (displacement (reg pc) -24) (reg symval))
+     (*MOVE (indirect (reg symval)) (reg symval))
+     % load address of symfnc value cell and move contents to (reg symfnc)     
+     (*MOVE (displacement (reg pc) -28) (reg symfnc))
+     (*MOVE (indirect (reg symfnc)) (reg symfnc))
      (*move (wconst ,signumber) (reg 1))
      (*move (reg 1) (fluid errornumber*))
 
@@ -148,7 +157,7 @@
 %)
  
 (lap
- '((!*entry sigunwind expr 0)
+ '((!*entry sigunwind expr 1)
      % At this point, an arg is already set up in register 1 with a message
      % describing the kind of trap.
  
@@ -173,23 +182,23 @@
      (*move (frame 1) (reg 2))
      (*move (fluid errornumber*) (reg 1))
      (*move (reg nil) (fluid on-altstack*))
-     (*wplus2 (reg 1)(wconst 10000))
      % if the error number = 11 (segmentation violation, 
      %  set on-altstack* to t and try to check for stack overflow
-     (*jumpnoteq (label nostackoverflow) (fluid errornumber*) 11)
+     (*jumpnoteq (label nostackoverflow) (reg 1) 11)
      (*move (quote t) (fluid on-altstack*))
-     % if rsp + 1024 >= faultaddr* >= rsp - 1024, assume a stack overflow
+     % if sp + 1024 >= faultaddr* >= sp - 1024, assume a stack overflow
      (*move ($fluid faultaddr*) (reg 3))
      (*WPlus2 (reg 3) 1024)
-     (*jumpwlessp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
+     (*jumplessp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
      (!*WDifference (reg 3) 2048)
      (*jumpwgreaterp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
      (*move (quote "Stack overflow") (reg 2))
     nostackoverflow
      (*move (wconst 0) (reg 3))
-     (*jumpnoteq (label done) (fluid errornumber*) 8)
+     (*jumpnoteq (label done) (reg 1) 8)
      (*move (fluid arith-exception-type*) (reg 3))
      done
+     (*wplus2 (reg 1)(wconst 10000))
      (*dealloc 1)
      (*jcall error-trap) 
      ))
@@ -286,7 +295,7 @@
        closest-symbol*))
 
 (de code-address-to-symbol (ad)
-    (and (lessp (inf ad) nextbps) (x-code-address-to-symbol (inf ad))))
+    (and (wlessp ad nextbps) (x-code-address-to-symbol ad)))
 
 % End of file.
  

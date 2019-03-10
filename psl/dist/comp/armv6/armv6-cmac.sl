@@ -297,15 +297,21 @@
 (DefAnyreg Memory
            AnyregMEMORY
            ((RegP ZeroP)      (indirect SOURCE))
+	   ((fluid-arg-p ZeroP) (*Move SOURCE (reg t3))
+                               (indirect (reg t3)))
            ((Anyp ZeroP)      (*Move SOURCE REGISTER)
                                (indirect REGISTER))
            ((RegP twelve-bit-p)      (Displacement SOURCE ARGTWO))
+	   ((fluid-arg-p twelve-bit-p) (*Move SOURCE (reg t3))
+                               (Displacement (reg t3) ARGTWO))
            ((AnyP twelve-bit-p)      (*Move SOURCE REGISTER)
                                (Displacement REGISTER ARGTWO))
            ((RegP RegP)       (Indexed ARGTWO (Displacement source 0)))
            ((RegP AnyP)       (*Move SOURCE REGISTER)
                                (*WPlus2 REGISTER ARGTWO)
                                (indirect REGISTER))
+	   ((fluid-arg-p DispInumP)  (!*Move SOURCE (reg t3))
+                               (Indexed (reg t3) (Displacement ARGTWO 0)))
            ((AnyP DispInumP)  (!*Move SOURCE REGISTER)
                                (Indexed REGISTER (Displacement ARGTWO 0)))
            (                   (!*Move SOURCE REGISTER)
@@ -648,8 +654,26 @@
                        OpenCodeSequence)
                       ((setq OpenCodeSequence
                              (get FunctionName 'OpenCode))
-                       (Append OpenCodeSequence
-                               (list '(BX (reg lr)))))
+		       % check whether the opncode sequence ends with *Call
+		       % and replace it with *JCall
+		       (if (eqcar (lastcar OpenCodeSequence) '*Call)
+			   (progn
+			     (setq OpenCodeSequence (reversip OpenCodeSequence))
+			     (setq OpenCodeSequence
+				   (reversip
+				    (cons
+				     (cons '*JCall (cdr (car OpenCodeSequence)))
+				     (cdr OpenCodeSequence)))))
+			 (setq OpenCodeSequence
+			       (Append OpenCodeSequence
+				 (list '(BX (reg lr))))))
+		       % check that there isn't another *Call somewhere
+		       (if (atsoc '*Call OpenCodeSequence)
+			   (stderror
+			    (bldmsg "Cannot have *Call in opencode sequence for %w")
+			    FunctionName)
+			 OpenCodeSequence
+			 ))
                       (t (CMacroPatternExpand (list FunctionName)
                                               (get '*JCall
                                                    'CMacroPatternTable)))))))
@@ -798,19 +822,17 @@
                                (*Move (reg t2) ArgOne)))
 
 (put 'wdivide 'opencode
-     % returns quotient an d puts remainer in *second-value*
-     '(  % load address of fluid variable in (reg 3)
-        (*Move (idloc *second-value*) (reg 3))
-	(ADD (reg 3) (reg symval) (regshifted 3 LSL 2))
-        (*Call wxdivide)
-      ))
-
-(put 'wdivide 'exitopencode
-     % returns quotient an d puts remainer in *second-value*
-     '(  % load address of fluid variable in (reg 3)
-        (*Move (idloc *second-value*) (reg 3))
-	(ADD (reg 3) (reg symval) (regshifted 3 LSL 2))
-        (*JCall wxdivide)
+     % returns (signed) quotient and puts remainder in *second-value*
+     '( % save dividend and divisor on stack
+        (*Push (reg 1))
+        (*Push (reg 2))
+        (*Call wquotient)
+	(*Pop (reg t2))
+	(*Pop (reg t1))
+	% calculate remainder as t1-q*t2
+	(MUL (reg 2) (reg 1) (reg t2))
+	(SUB (reg 2) (reg t1) (reg 2))
+        (*Move (reg 2) (fluid *second-value*))
       ))
 
 (de *WNegate(ARG1)
