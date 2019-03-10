@@ -333,6 +333,46 @@ typedef __int128 int128_t;
 // With luck that will have regularised the situation with regard to
 // integer types!
 
+ifdef MAXALING4
+
+// In the horrid case where malloc might return a fairly unaligned block
+// of memory I will allocate a block that is 32-bytes larger than will be
+// required. If I round that address up to be a multiple of 16 I can then
+// guarantee to leave 16 bytes that are both free and aligned at a 16 byte
+// boundary. I put a "void *" value in there (it will very probably not use
+// up all the space, but I do not mind) pointing at the original start of
+// the block.
+
+inline void *aligned_malloc(size_t n)
+{   void *p = (void *)malloc(n + 32);
+    if (p == NULL) return p;
+    void *r = (void *)((((uintptr_t)p + 15) & -(uint64_t)16) + 16);
+    (void *)((uintptr_t)r - 16) = p;
+    return r;
+}
+
+// To free something I need to retrieve the pointer to the genuine block
+// start and hand that to free().
+
+inline void aligned_free(void *p)
+{   if (p == NULL) return;
+    free(*(void *)((uintptr_t)p - 16));
+}
+#else // MAXALING4
+
+// IN the hugely more common case where malloc does align things to at least
+// 8 byte boundaries I can use malloc() and free() directly.
+
+inline void *aligned_malloc(size_t n)
+{   return (void *)malloc(n);
+}
+
+inline void aligned_free(void *p)
+{   free(p);
+}
+
+#endif // MAXALING4
+
 #endif // header_machine_h
 
 // end machine.h

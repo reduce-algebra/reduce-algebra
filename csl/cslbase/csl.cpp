@@ -2629,7 +2629,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // nil-segment and cons().
 //
 
-        nilsegment = (LispObject *)malloc(NIL_SEGMENT_SIZE);
+        nilsegment = (LispObject *)aligned_malloc(NIL_SEGMENT_SIZE);
         if (nilsegment == NULL) abort();
 #ifdef COMMON
         nil = (LispObject)nilsegment + TAG_CONS + 8;
@@ -2637,7 +2637,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         nil = (LispObject)nilsegment + TAG_SYMBOL;
 #endif
         pages_count = heap_pages_count = vheap_pages_count = 0;
-        stacksegment = (LispObject *)malloc(CSL_PAGE_SIZE);
+        stacksegment = (LispObject *)aligned_malloc(CSL_PAGE_SIZE);
         if (stacksegment == NULL) abort();
         heaplimit = (LispObject)stacksegment;
         heaplimit = (LispObject)stacksegment;

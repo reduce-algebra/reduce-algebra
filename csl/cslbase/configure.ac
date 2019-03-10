@@ -803,6 +803,12 @@ else
   AC_DEFINE([NORETURN], [[/* noreturn */]], [C++-11 attributes available?])
 fi
 
+# The sad news is that some 32-bit systems only set maxalign to 4, so for
+# instance even double precision floats can be aligned only that well. A
+# consequence is that they are entitles to let malloc() return an address
+# that is not 8-byte aligned, and that hurts my tagging scheme. I need to
+# review uses of malloc() and do alignment for myself where it is needed.
+
 AC_COMPUTE_INT(maxalign, alignof(std::max_align_t), [#include <cstddef>],
                maxalign="0")
 if test "$maxalign" = "0"
@@ -818,11 +824,11 @@ fi
 # it to be 16 on most if not all 64-bit systems. The test here is in case
 # somebody tries a build on a system where everything can be placed at
 # arbitrary byte boundaries and hence where malloc (and friends) feel
-# entitles to return values that are not aligned at all.
+# entitled to return values that are not aligned at all.
 
 if test $maxalign -lt 8
 then
-  AC_MSG_ERROR([max_align_t must be at least 8 for CSL to work])
+  AC_DEFINE([MAXALIGN4], [1], [alignof(max_align_t)==4])
 fi
 
 # I have alternative ways of doing things on Windows and Macintosh, but

@@ -2284,15 +2284,13 @@ void init_heap_segments(double store_size)
     set_next_active_page();
 
 // There are other bits of memory that I will grab manually for now...
-    nilsegment = (LispObject *)malloc(NIL_SEGMENT_SIZE+16);
+    nilsegment = (LispObject *)aligned_malloc(NIL_SEGMENT_SIZE+16);
 #ifdef COMMON
-    nil = (LispObject)(doubleword_align_up((uintptr_t)nilsegment) +
-           TAG_CONS + 8);
+    nil = (LispObject)((uintptr_t)nilsegment + TAG_CONS + 8);
 #else
-    nil = (LispObject)(doubleword_align_up((uintptr_t)nilsegment) +
-           TAG_SYMBOL);
+    nil = (LispObject)((uintptr_t)nilsegment + TAG_SYMBOL);
 #endif
-    stacksegment = (LispObject *)malloc(CSL_PAGE_SIZE);
+    stacksegment = (LispObject *)alligned_malloc(CSL_PAGE_SIZE);
     if (stacksegment == NULL) fatal_error(err_no_store);
     stackbase = (LispObject *)stacksegment;
 }
@@ -2310,8 +2308,8 @@ void drop_heap_segments(void)
         }
 #endif
     }
-    free(nilsegment);
-    free(stacksegment);
+    aligned_free(nilsegment);
+    aligned_free(stacksegment);
 }
 
 // This allocates another page of memory if that is allowed and if it is
@@ -3270,11 +3268,9 @@ uintptr_t *C_stackbase;
 /*@*/                pool = pool + NIL_SEGMENT_SIZE;
 #ifdef COMMON
 /*@*/// NB here that NIL is tagged as a CONS not as a symbol
-/*@*/                nil = (LispObject)(
-/*@*/                    doubleword_align_up((uintptr_t)nilsegment) + TAG_CONS + 8);
+/*@*/                nil = (LispObject)((uintptr_t)nilsegment + TAG_CONS + 8);
 #else
-/*@*/                nil = (LispObject)(
-/*@*/                    doubleword_align_up((uintptr_t)nilsegment) + TAG_SYMBOL);
+/*@*/                nil = (LispObject)((uintptr_t)nilsegment + TAG_SYMBOL);
 #endif
 /*@*/// If at the end of the run I am going to free some space I had better not
 /*@*/// free these pages. When I free the nilsegment they all get discarded at
@@ -3298,7 +3294,7 @@ uintptr_t *C_stackbase;
 /*@*/    if (nilsegment != NULL && pages_count > 0)
 /*@*/    {   if (stack_segsize != 1)
 /*@*/        {   stacksegment =
-/*@*/                (LispObject *)malloc(stack_segsize*CSL_PAGE_SIZE);
+/*@*/                (LispObject *)aligned_malloc(stack_segsize*CSL_PAGE_SIZE);
 /*@*/            if (stacksegment == NULL) fatal_error(err_no_store);
 /*@*/        }
 /*@*/        else stacksegment = (LispObject *)pages[--pages_count];
@@ -3326,7 +3322,7 @@ uintptr_t *C_stackbase;
 /*@*/// all be recycled in one go when the whole chunk is freed. Note that
 /*@*/// the whole of the "big chunk" tends to get allocated as part of the
 /*@*/// segment that contans nil.
-/*@*/        if (w != NULL && !is_in_big_chunk(w)) free(w);
+/*@*/        if (w != NULL && !is_in_big_chunk(w)) aligned_free(w);
 /*@*/    }
 /*@*/}
 /*@*/
@@ -3334,8 +3330,8 @@ uintptr_t *C_stackbase;
 /*@*/{   abandon(pages,           pages_count);
 /*@*/    abandon(heap_pages,      heap_pages_count);
 /*@*/    abandon(vheap_pages,     vheap_pages_count);
-/*@*/    if (!is_in_big_chunk(stacksegment)) free(stacksegment);
-/*@*/    free(nilsegment);
+/*@*/    if (!is_in_big_chunk(stacksegment)) aligned_free(stacksegment);
+/*@*/    aligned_free(nilsegment);
 /*@*/}
 /*@*/
 /*@*/// This allocates another page of memory if that is allowed and if it is

@@ -2528,7 +2528,7 @@ void setup(int restart_flag, double store_size)
     {   int32_t more = heap_pages_count + vheap_pages_count;
         more = 3 *more - pages_count;
         while (more-- > 0)
-        {   void *page = (void *)malloc((size_t)CSL_PAGE_SIZE);
+        {   void *page = (void *)aligned_malloc((size_t)CSL_PAGE_SIZE);
             if (page == NULL)
             {   init_flags &= ~INIT_EXPANDABLE;
                 break;

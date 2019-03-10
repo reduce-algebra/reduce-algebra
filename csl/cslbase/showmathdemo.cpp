@@ -73,16 +73,25 @@ extern int main(int argc,char *argv[]);
 
 #ifdef HAVE_LIBXFT
 
+namespace FX
+{
+extern XftDraw      *ftDraw;
+extern XftColor     ftBlack;
+extern XftFont      *ftFont;
+}
+
 extern Display      *dpy;
 extern int          screen;
-extern XftDraw      *ftDraw;
+extern XftDraw      *FX::ftDraw;
 extern Visual       *ftVisual;
 extern Colormap     ftColormap;
-extern XftColor     ftBlack;
+extern XftColor     FX::ftBlack;
 extern FcConfig     *config;
-extern XftFont      *ftFont;
+extern XftFont      *FX::ftFont;
 
 #endif
+
+using namespace FX;
 
 // At least for testing purposes I will extract the LaTeX-like stuff
 // from a string...
