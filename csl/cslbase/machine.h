@@ -333,7 +333,7 @@ typedef __int128 int128_t;
 // With luck that will have regularised the situation with regard to
 // integer types!
 
-ifdef MAXALING4
+#ifdef MAXALING4
 
 // In the horrid case where malloc might return a fairly unaligned block
 // of memory I will allocate a block that is 32-bytes larger than will be
