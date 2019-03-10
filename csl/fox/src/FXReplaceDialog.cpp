@@ -229,8 +229,8 @@ long FXReplaceDialog::onUpdMode(FXObject* sender,FXSelector sel,void*){
 
 // Append entry
 void FXReplaceDialog::appendHistory(const FXString& search,const FXString& replace,FXuint mode){
-  register const char* val;
-  register int i;
+  const char* val;
+  int i;
   if(!search.empty()){
     if(search!=getApp()->reg().readStringEntry(searchgroup,skey[0],FXString::null)){
       for(i=19; i>0; i--){

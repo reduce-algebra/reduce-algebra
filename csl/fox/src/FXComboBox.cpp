@@ -427,8 +427,8 @@ FXint FXComboBox::setItem(FXint index,const FXString& text,void* ptr){
 
 // Fill list by appending items from array of strings
 FXint FXComboBox::fillItems(const FXchar** strings){
-  register FXint numberofitems=list->getNumItems();
-  register FXint n=list->fillItems(strings);
+  FXint numberofitems=list->getNumItems();
+  FXint n=list->fillItems(strings);
   if(numberofitems<=list->getCurrentItem()){
     field->setText(list->getItemText(list->getCurrentItem()));
     }
@@ -439,8 +439,8 @@ FXint FXComboBox::fillItems(const FXchar** strings){
 
 // Fill list by appending items from newline separated strings
 FXint FXComboBox::fillItems(const FXString& strings){
-  register FXint numberofitems=list->getNumItems();
-  register FXint n=list->fillItems(strings);
+  FXint numberofitems=list->getNumItems();
+  FXint n=list->fillItems(strings);
   if(numberofitems<=list->getCurrentItem()){
     field->setText(list->getItemText(list->getCurrentItem()));
     }

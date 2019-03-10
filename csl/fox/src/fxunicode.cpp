@@ -1078,13 +1078,13 @@ FXuint charCategory(FXwchar ucs){
 
 
 bool isLetter(FXwchar ucs){
-  register FXuint c=charCategory(ucs);
+  FXuint c=charCategory(ucs);
   return (CatLetterUpper<=c && c<=CatLetterOther);
   }
 
 
 bool isAlphaNumeric(FXwchar ucs){
-  register FXuint c=charCategory(ucs);
+  FXuint c=charCategory(ucs);
   return (CatLetterUpper<=c && c<=CatNumberOther);
   }
 
@@ -1095,43 +1095,43 @@ bool isControl(FXwchar ucs){
 
 
 bool isSpace(FXwchar ucs){
-  register FXuint c=charCategory(ucs);
+  FXuint c=charCategory(ucs);
   return (CatMarkNonSpacing<=c && c<=CatSeparatorParagraph) || (9<=ucs && ucs<=13);
   }
 
 
 bool isBlank(FXwchar ucs){
-  register FXuint c=charCategory(ucs);
+  FXuint c=charCategory(ucs);
   return (CatMarkNonSpacing<=c && c<=CatSeparatorSpace) || (ucs==9);
   }
 
 
 bool isMark(FXwchar ucs){
-  register FXuint c=charCategory(ucs);
+  FXuint c=charCategory(ucs);
   return (CatMarkNonSpacing<=c && c<=CatMarkEnclosing);
   }
 
 
 bool isSep(FXwchar ucs){
-  register FXuint c=charCategory(ucs);
+  FXuint c=charCategory(ucs);
   return (CatSeparatorSpace<=c && c<=CatSeparatorParagraph);
   }
 
 
 bool isPunct(FXwchar ucs){
-  register FXuint c=charCategory(ucs);
+  FXuint c=charCategory(ucs);
   return CatPunctConnector<=c && c<=CatPunctOther;
   }
 
 
 bool isGraph(FXwchar ucs){
-  register FXuint c=charCategory(ucs);
+  FXuint c=charCategory(ucs);
   return CatLetterUpper<=c && c<=CatSymbolOther;
   }
 
 
 bool isPrint(FXwchar ucs){
-  register FXuint c=charCategory(ucs);
+  FXuint c=charCategory(ucs);
   return CatMarkNonSpacing<=c && c<=CatSymbolOther;
   }
 
@@ -1152,7 +1152,7 @@ bool isTitle(FXwchar ucs){
 
 
 bool hasCase(FXwchar ucs){
-  register FXuint c=charCategory(ucs);
+  FXuint c=charCategory(ucs);
   return CatLetterUpper<=c && c<=CatLetterTitle;
   }
 
@@ -1163,7 +1163,7 @@ bool isAscii(FXwchar ucs){
 
 
 bool isSymbol(FXwchar ucs){
-  register FXuint c=charCategory(ucs);
+  FXuint c=charCategory(ucs);
   return CatSymbolMath<=c && c<=CatSymbolOther;
   }
 
@@ -3738,10 +3738,10 @@ const FXwchar compose_data[920]={
 
 FXwchar charCompose(FXwchar ucsa,FXwchar ucsb){
   if(0x3c<=ucsa && ucsa<=0x30fd && 0x300<=ucsb && ucsb<=0x309a){
-    register FXwchar combo=(ucsa<<16)|ucsb;
-    register FXint h=919;
-    register FXint l=0;
-    register FXint m;
+    FXwchar combo=(ucsa<<16)|ucsb;
+    FXint h=919;
+    FXint l=0;
+    FXint m;
     do{
       m=(h+l)>>1;
       if(combo<compose_index[m]) h=m-1;
@@ -4104,13 +4104,13 @@ FXint digitValue(FXwchar ucs){
 
 
 bool isHexDigit(FXwchar ucs){
-  register FXint c=digitValue(ucs);
+  FXint c=digitValue(ucs);
   return 0<=c && c<16;
   }
 
 
 bool isDigit(FXwchar ucs){
-  register FXint c=digitValue(ucs);
+  FXint c=digitValue(ucs);
   return 0<=c && c<10;
   }
 

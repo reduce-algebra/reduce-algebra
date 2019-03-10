@@ -174,7 +174,7 @@ static const FXint dither[16]={
 
 // Find shift amount
 static inline FXuint findshift(FXPixel mask){
-  register FXuint sh=0;
+  FXuint sh=0;
   while(!(mask&(1<<sh))) sh++;
   return sh;
   }
@@ -182,7 +182,7 @@ static inline FXuint findshift(FXPixel mask){
 
 // Apply gamma correction to an intensity value in [0..max].
 static FXuint gamma_adjust(FXdouble gamma,FXuint value,FXuint max){
-  register FXdouble x=(FXdouble)value / (FXdouble)max;
+  FXdouble x=(FXdouble)value / (FXdouble)max;
   return (FXuint) (((FXdouble)max * pow(x,1.0/gamma))+0.5);
   }
 
@@ -193,11 +193,11 @@ static inline double fxabs(double a){ return a<0 ? -a : a; }
 
 // Setup for true color
 void FXVisual::setuptruecolor(){
-  register FXuint  redshift,greenshift,blueshift;
-  register FXPixel redmask,greenmask,bluemask;
-  register FXPixel redmax,greenmax,bluemax;
-  register FXuint i,c,d,r,g,b;
-  register FXdouble gamma;
+  FXuint  redshift,greenshift,blueshift;
+  FXPixel redmask,greenmask,bluemask;
+  FXPixel redmax,greenmax,bluemax;
+  FXuint i,c,d,r,g,b;
+  FXdouble gamma;
 
   // Get gamma
   gamma=getApp()->reg().readRealEntry("SETTINGS","displaygamma",1.0);
@@ -251,13 +251,13 @@ void FXVisual::setuptruecolor(){
 
 // Setup direct color
 void FXVisual::setupdirectcolor(){
-  register FXuint  redshift,greenshift,blueshift;
-  register FXPixel redmask,greenmask,bluemask;
-  register FXPixel redmax,greenmax,bluemax;
-  register FXuint  mapsize,maxcols,i,j,r,g,b,emax,rr,gg,bb,d;
-  register FXuint  bestmatchr,bestmatchg,bestmatchb;
-  register FXdouble mindist,dist,gamma;
-  register FXbool gottable,allocedcolor;
+  FXuint  redshift,greenshift,blueshift;
+  FXPixel redmask,greenmask,bluemask;
+  FXPixel redmax,greenmax,bluemax;
+  FXuint  mapsize,maxcols,i,j,r,g,b,emax,rr,gg,bb,d;
+  FXuint  bestmatchr,bestmatchg,bestmatchb;
+  FXdouble mindist,dist,gamma;
+  FXbool gottable,allocedcolor;
   XColor *table,color;
   FXPixel *alloced;
 
@@ -402,10 +402,10 @@ void FXVisual::setupdirectcolor(){
 
 // Setup for pseudo color
 void FXVisual::setuppseudocolor(){
-  register FXuint r,g,b,mapsize,bestmatch,maxcols,i,d;
-  register FXdouble mindist,dist,gamma,dr,dg,db;
-  register FXPixel redmax,greenmax,bluemax;
-  register FXbool gottable,allocedcolor;
+  FXuint r,g,b,mapsize,bestmatch,maxcols,i,d;
+  FXdouble mindist,dist,gamma,dr,dg,db;
+  FXPixel redmax,greenmax,bluemax;
+  FXbool gottable,allocedcolor;
   XColor table[256],color;
 
   // Get gamma
@@ -534,9 +534,9 @@ void FXVisual::setuppseudocolor(){
 
 // Setup for static color
 void FXVisual::setupstaticcolor(){
-  register FXuint mapsize,bestmatch,i,nr,ng,nb,r,g,b,j,d;
-  register FXdouble mindist,dist,gamma,dr,dg,db;
-  register FXPixel redmax,greenmax,bluemax;
+  FXuint mapsize,bestmatch,i,nr,ng,nb,r,g,b,j,d;
+  FXdouble mindist,dist,gamma,dr,dg,db;
+  FXPixel redmax,greenmax,bluemax;
   FXbool rcnt[256],gcnt[256],bcnt[256];
   XColor table[256],color;
 
@@ -640,9 +640,9 @@ void FXVisual::setupstaticcolor(){
 
 // Setup for gray scale
 void FXVisual::setupgrayscale(){
-  register FXuint g,bestmatch,mapsize,maxcols,graymax,i,d;
-  register FXdouble mindist,dist,gamma,dr,dg,db;
-  register FXbool gottable,allocedcolor;
+  FXuint g,bestmatch,mapsize,maxcols,graymax,i,d;
+  FXdouble mindist,dist,gamma,dr,dg,db;
+  FXbool gottable,allocedcolor;
   XColor table[256],color;
   FXPixel alloced[256];
 
@@ -746,8 +746,8 @@ void FXVisual::setupgrayscale(){
 
 // Setup for static gray
 void FXVisual::setupstaticgray(){
-  register FXuint i,d,c,graymax;
-  register FXdouble gamma;
+  FXuint i,d,c,graymax;
+  FXdouble gamma;
 
   // Get gamma
   gamma=getApp()->reg().readRealEntry("SETTINGS","displaygamma",1.0);
@@ -779,8 +779,8 @@ void FXVisual::setupstaticgray(){
 
 // Setup for pixmap monochrome; this one has no colormap!
 void FXVisual::setuppixmapmono(){
-  register FXuint d,i,c;
-  register FXdouble gamma;
+  FXuint d,i,c;
+  FXdouble gamma;
 
   // Get gamma
   gamma=getApp()->reg().readRealEntry("SETTINGS","displaygamma",1.0);
@@ -918,7 +918,7 @@ struct BITMAPINFO256 {
 
 // Get number of bits in n
 static inline FXuint findnbits(DWORD n){
-  register FXuint nb=0;
+  FXuint nb=0;
   while(n){nb+=(n&1);n>>=1;}
   return nb;
   }

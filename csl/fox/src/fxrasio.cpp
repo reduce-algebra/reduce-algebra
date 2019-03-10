@@ -206,7 +206,7 @@ bool fxcheckRAS(FXStream& store){
 // Load SUN raster image file format
 bool fxloadRAS(FXStream& store,FXColor*& data,FXint& width,FXint& height){
   FXuchar red[256],green[256],blue[256],*line,count,c,*p,*q,bit;
-  register FXint npixels,depth,linesize,x,y,i;
+  FXint npixels,depth,linesize,x,y,i;
   HEADER header;
 
   // Null out
@@ -398,7 +398,7 @@ static inline void write32(FXStream& store,FXuint i){
 
 // Save SUN raster image file format
 bool fxsaveRAS(FXStream& store,const FXColor *data,FXint width,FXint height){
-  register FXint npixels=width*height;
+  FXint npixels=width*height;
 
   // Must make sense
   if(!data || width<=0 || height<=0) return false;

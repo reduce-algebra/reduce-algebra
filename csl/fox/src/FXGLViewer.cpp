@@ -657,7 +657,7 @@ void FXGLViewer::drawAnti(FXViewport& wv){
 #ifdef HAVE_GL_H
   FXViewport jt=wv;
   FXdouble d=0.5*worldpx;
-  register FXuint i;
+  FXuint i;
   glClearAccum(0.0f,0.0f,0.0f,0.0f);
   glClear(GL_ACCUM_BUFFER_BIT);
   for(i=0; i<ARRAYNUMBER(jitter); i++){
@@ -676,8 +676,8 @@ void FXGLViewer::drawAnti(FXViewport& wv){
 // Fill select buffer with hits in rectangle
 FXint FXGLViewer::selectHits(FXuint*& hits,FXint& nhits,FXint x,FXint y,FXint w,FXint h){
 #ifdef HAVE_GL_H
-  register FXfloat pickx,picky,pickw,pickh;
-  register FXint mh=maxhits;
+  FXfloat pickx,picky,pickw,pickh;
+  FXint mh=maxhits;
   hits=NULL;
   nhits=0;
   if(makeCurrent()){
@@ -1079,7 +1079,7 @@ void FXGLViewer::getMaterial(FXMaterial &mtl) const {
 
 // Get screen point from eye coordinate
 void FXGLViewer::eyeToScreen(FXint& sx,FXint& sy,FXVec3f e){
-  register double xp,yp;
+  double xp,yp;
   if(projection==PERSPECTIVE){
     if(e.z==0.0f){ fxerror("%s::eyeToScreen: cannot transform point.\n",getClassName()); }
     xp=-distance*e.x/e.z;
@@ -1096,7 +1096,7 @@ void FXGLViewer::eyeToScreen(FXint& sx,FXint& sy,FXVec3f e){
 
 // Convert screen point to eye coords
 FXVec3f FXGLViewer::screenToEye(FXint sx,FXint sy,FXfloat eyez){
-  register float xp,yp;
+  float xp,yp;
   FXVec3f e;
   xp=(float)(worldpx*sx+ax);
   yp=(float)(ay-worldpx*sy);
@@ -2324,7 +2324,7 @@ FXbool FXGLViewer::readPixels(FXColor*& buffer,FXint x,FXint y,FXint w,FXint h){
 #ifdef HAVE_GL_H
   if(1<=w && 1<=h){
     GLint swapbytes,lsbfirst,rowlength,skiprows,skippixels,alignment,oldbuf;
-    register FXColor *p,*q,*pp,*qq,t;
+    FXColor *p,*q,*pp,*qq,t;
 
     // Try allocate buffer
     if(FXMALLOC(&buffer,FXColor,w*h)){

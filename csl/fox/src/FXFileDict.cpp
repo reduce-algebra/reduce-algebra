@@ -182,8 +182,8 @@ FXFileDict::FXFileDict(FXApp* app,FXSettings* db):settings(db){
 
 // Create new association from extension
 void *FXFileDict::createData(const void* ptr){
-  register const FXchar *p=(const FXchar*)ptr;
-  register FXchar *q;
+  const FXchar *p=(const FXchar*)ptr;
+  FXchar *q;
   FXchar command[COMMANDLEN];
   FXchar extension[EXTENSIONLEN];
   FXchar mimetype[MIMETYPELEN];
@@ -320,8 +320,8 @@ FXFileAssoc* FXFileDict::remove(const FXchar* ext){
 
 // Find file association
 FXFileAssoc* FXFileDict::find(const FXchar* ext){
-  register FXFileAssoc* record=NULL;
-  register const FXchar* binding;
+  FXFileAssoc* record=NULL;
+  const FXchar* binding;
   FXTRACE((300,"FXFileDict: trying key: %s\n",ext));
   if(ext && ext[0]){
     record=(FXFileAssoc*)FXDict::find(ext);
@@ -338,9 +338,9 @@ FXFileAssoc* FXFileDict::find(const FXchar* ext){
 
 // Find file association from registry
 FXFileAssoc* FXFileDict::findFileBinding(const FXchar* pathname){
-  register const FXchar *filename=pathname;
-  register const FXchar *p=pathname;
-  register FXFileAssoc* record;
+  const FXchar *filename=pathname;
+  const FXchar *p=pathname;
+  FXFileAssoc* record;
   FXTRACE((300,"FXFileDict: searching file binding for: %s\n",pathname));
   while(*p){ if(ISPATHSEP(*p)){ filename=p+1; } p++; }
   record=find(filename);
@@ -357,8 +357,8 @@ FXFileAssoc* FXFileDict::findFileBinding(const FXchar* pathname){
 
 // Find directory association from registry
 FXFileAssoc* FXFileDict::findDirBinding(const FXchar* pathname){
-  register const FXchar* path=pathname;
-  register FXFileAssoc* record;
+  const FXchar* path=pathname;
+  FXFileAssoc* record;
   FXTRACE((300,"FXFileDict: searching dir binding for: %s\n",pathname));
   while(*path){
     record=find(path);

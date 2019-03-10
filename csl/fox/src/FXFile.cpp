@@ -278,7 +278,7 @@ bool FXFile::flush(){
 // Test if we're at the end
 bool FXFile::eof(){
   if(isOpen()){
-    register FXlong pos=position();
+    FXlong pos=position();
     return 0<=pos && size()<=pos;
     }
   return true;

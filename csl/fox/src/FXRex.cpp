@@ -954,7 +954,7 @@ x:fxmessage("end\n");
 
 // Parse hex escape code
 FXint hex(const FXchar*& pat){
-  register FXint ch,n;
+  FXint ch,n;
   for(ch=0,n=2; Ascii::isHexDigit(*pat) && n; n--){
     ch=(ch<<4)+Ascii::digitValue(*pat++);
     }
@@ -964,7 +964,7 @@ FXint hex(const FXchar*& pat){
 
 // Parse octal escape code
 FXint oct(const FXchar*& pat){
-  register FXint ch,n;
+  FXint ch,n;
   for(ch=0,n=3; '0'<=*pat && *pat<='7' && n; n--){
     ch=(ch<<3)+(*pat++-'0');
     }
@@ -1609,7 +1609,7 @@ inline int isdelim(int ch){
 //
 // Parse character class
 FXRexError FXCompile::charset(){
-  register FXint first,last,op,i;
+  FXint first,last,op,i;
   FXint set[8];
   CLEAR(set);
   first=-1;
@@ -1764,7 +1764,7 @@ in: last=*pat++;
 
 // Append opcode
 FXint* FXCompile::append(FXint op){
-  register FXint *val=pc;
+  FXint *val=pc;
   if(code){
     pc[0]=op;
     }
@@ -1775,7 +1775,7 @@ FXint* FXCompile::append(FXint op){
 
 // Append one-argument opcode
 FXint* FXCompile::append(FXint op,FXint arg){
-  register FXint *val=pc;
+  FXint *val=pc;
   if(code){
     pc[0]=op;
     pc[1]=arg;
@@ -1787,7 +1787,7 @@ FXint* FXCompile::append(FXint op,FXint arg){
 
 // Append two-argument opcode
 FXint* FXCompile::append(FXint op,FXint arg1,FXint arg2){
-  register FXint *val=pc;
+  FXint *val=pc;
   if(code){
     pc[0]=op;
     pc[1]=arg1;
@@ -1800,7 +1800,7 @@ FXint* FXCompile::append(FXint op,FXint arg1,FXint arg2){
 
 // Append character class opcode
 FXint* FXCompile::append(FXint op,FXint set[]){
-  register FXint *val=pc;
+  FXint *val=pc;
   if(code){
     pc[0]=op;
     pc[1]=set[0];
@@ -1819,7 +1819,7 @@ FXint* FXCompile::append(FXint op,FXint set[]){
 
 // Append character array
 FXint* FXCompile::append(FXint op,FXint len,FXint *data){
-  register FXint *val=pc;
+  FXint *val=pc;
   if(code){
     pc[0]=op;
     pc[1]=len;
@@ -1885,7 +1885,7 @@ FXint* FXCompile::insert(FXint *ptr,FXint op,FXint arg1,FXint arg2){
 // to->10:  ....      10:  ....
 //
 void FXCompile::patch(FXint *fm,FXint *to){
-  register FXint delta;
+  FXint delta;
   if(code && fm){
     do{
       delta=*fm;
@@ -1903,9 +1903,9 @@ void FXCompile::patch(FXint *fm,FXint *to){
 
 // The workhorse
 bool FXExecute::match(const FXint* prog){
-  register FXint no,keep,rep_min,rep_max,greed,op;
-  register const FXchar *save,*beg,*end;
-  register FXchar ch;
+  FXint no,keep,rep_min,rep_max,greed,op;
+  const FXchar *save,*beg,*end;
+  FXchar ch;
   for(;;){
     op=*prog++;
     switch(op){
@@ -2433,7 +2433,7 @@ rep:    if(str+rep_min>str_end) return false;
 
 // regtry - try match at specific point; 0 failure, 1 success
 bool FXExecute::attempt(const FXchar* string){
-  register FXint i=npar;
+  FXint i=npar;
   str=string;
   do{--i;sub_beg[i]=sub_end[i]=-1;}while(i);          // Possibly move this to FXExecute::execute?
   if(match(code+1)){
@@ -2449,7 +2449,7 @@ bool FXExecute::attempt(const FXchar* string){
 
 // Match subject string, returning number of matches found
 bool FXExecute::execute(const FXchar* fm,const FXchar* to){
-  register FXchar ch;
+  FXchar ch;
 
   // Simple case
   if(fm==to) return attempt(fm);
@@ -2698,7 +2698,7 @@ bool FXRex::match(const FXString& string,FXint* beg,FXint* end,FXint mode,FXint 
 
 // Return substitution string
 FXString FXRex::substitute(const FXchar* string,FXint len,FXint* beg,FXint* end,const FXString& replace,FXint npar){
-  register FXint ch,n,i=0;
+  FXint ch,n,i=0;
   FXString result;
   if(!string || len<0 || !beg || !end || npar<1 || NSUBEXP<npar){ fxerror("FXRex::substitute: bad argument.\n"); }
   while((ch=replace[i++])!='\0'){

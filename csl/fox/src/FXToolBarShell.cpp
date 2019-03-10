@@ -196,9 +196,9 @@ long FXToolBarShell::onPaint(FXObject*,FXSelector,void* ptr){
 
 // Get width
 FXint FXToolBarShell::getDefaultWidth(){
-  register FXWindow* child=getFirst();
-  register FXuint hints;
-  register FXint w=0;
+  FXWindow* child=getFirst();
+  FXuint hints;
+  FXint w=0;
   if(child && child->shown()){
     hints=child->getLayoutHints();
     if(hints&LAYOUT_FIX_WIDTH){       // Fixed width
@@ -217,9 +217,9 @@ FXint FXToolBarShell::getDefaultWidth(){
 
 // Get height
 FXint FXToolBarShell::getDefaultHeight(){
-  register FXWindow* child=getFirst();
-  register FXuint hints;
-  register FXint h=0;
+  FXWindow* child=getFirst();
+  FXuint hints;
+  FXint h=0;
   if(child && child->shown()){
     hints=child->getLayoutHints();
     if(hints&LAYOUT_FIX_HEIGHT){      // Fixed height

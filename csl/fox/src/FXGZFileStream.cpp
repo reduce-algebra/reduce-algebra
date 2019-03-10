@@ -63,7 +63,7 @@ FXGZFileStream::FXGZFileStream(const FXObject* cont):FXFileStream(cont),z(NULL),
 
 // Save to a file
 FXuval FXGZFileStream::writeBuffer(FXuval){
-  register FXival m,n; int zerror;
+  FXival m,n; int zerror;
   if(dir!=FXStreamSave){fxerror("FXGZFileStream::writeBuffer: wrong stream direction.\n");}
   FXASSERT(begptr<=rdptr);
   FXASSERT(rdptr<=wrptr);
@@ -91,7 +91,7 @@ FXuval FXGZFileStream::writeBuffer(FXuval){
 
 // Load from file
 FXuval FXGZFileStream::readBuffer(FXuval){
-  register FXival n; int zerror;
+  FXival n; int zerror;
   if(dir!=FXStreamLoad){fxerror("FXGZFileStream::readBuffer: wrong stream direction.\n");}
   FXASSERT(begptr<=rdptr);
   FXASSERT(rdptr<=wrptr);

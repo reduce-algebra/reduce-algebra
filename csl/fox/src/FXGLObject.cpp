@@ -115,7 +115,7 @@ FXIMPLEMENT(FXGLGroup,FXGLObject,NULL,0)
 
 // Get bounding box
 void FXGLGroup::bounds(FXRangef& box){
-  register FXint i;
+  FXint i;
   FXRangef b;
   box.lower.x=box.lower.y=box.lower.z=0.0f;
   box.upper.x=box.upper.y=box.upper.z=0.0f;

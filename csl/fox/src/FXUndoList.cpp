@@ -131,7 +131,7 @@ FXIMPLEMENT(FXCommandGroup,FXCommand,NULL,0)
 
 // Undoing a command group undoes each sub command
 void FXCommandGroup::undo(){
-  register FXCommand *command;
+  FXCommand *command;
   while(undolist){
     command=undolist;
     undolist=undolist->next;
@@ -144,7 +144,7 @@ void FXCommandGroup::undo(){
 
 // Undoing a command group undoes each sub command
 void FXCommandGroup::redo(){
-  register FXCommand *command;
+  FXCommand *command;
   while(redolist){
     command=redolist;
     redolist=redolist->next;
@@ -157,8 +157,8 @@ void FXCommandGroup::redo(){
 
 // Return the size of the information in the undo command group.
 FXuint FXCommandGroup::size() const {
-  register FXuint result=sizeof(FXCommandGroup);
-  register FXCommand *command;
+  FXuint result=sizeof(FXCommandGroup);
+  FXCommand *command;
   for(command=undolist; command; command=command->next){
     result+=command->size();
     }
@@ -171,7 +171,7 @@ FXuint FXCommandGroup::size() const {
 
 // Destrying the command group destroys the subcommands
 FXCommandGroup::~FXCommandGroup(){
-  register FXCommand *command;
+  FXCommand *command;
   while(redolist){
     command=redolist;
     redolist=redolist->next;
@@ -243,7 +243,7 @@ bool FXUndoList::marked() const {
 // Cut the redo list; can no longer revert to marked
 // state if mark is inside the redo list.
 void FXUndoList::cut(){
-  register FXCommand *command;
+  FXCommand *command;
   if(marker<0) marker=NOMARK;
   while(redolist){
     command=redolist;
@@ -257,8 +257,8 @@ void FXUndoList::cut(){
 
 // Add new command, executing if desired
 void FXUndoList::add(FXCommand* command,bool doit,bool merge){
-  register FXCommandGroup* g=this;
-  register FXuint size=0;
+  FXCommandGroup* g=this;
+  FXuint size=0;
 
   // Must pass a command
   if(!command){ fxerror("FXCommandGroup::add: NULL command argument.\n"); }
@@ -321,7 +321,7 @@ void FXUndoList::add(FXCommand* command,bool doit,bool merge){
 
 // Begin a new undo command group
 void FXUndoList::begin(FXCommandGroup *command){
-  register FXCommandGroup* g=this;
+  FXCommandGroup* g=this;
 
   // Must pass a command group
   if(!command){ fxerror("FXCommandGroup::begin: NULL command argument.\n"); }
@@ -342,8 +342,8 @@ void FXUndoList::begin(FXCommandGroup *command){
 
 // End undo command group
 void FXUndoList::end(){
-  register FXCommandGroup *command;
-  register FXCommandGroup *g=this;
+  FXCommandGroup *command;
+  FXCommandGroup *g=this;
 
   // Must have called begin
   if(!g->group){ fxerror("FXCommandGroup::end: no matching call to begin.\n"); }
@@ -388,7 +388,7 @@ void FXUndoList::end(){
 
 // Abort undo command group
 void FXUndoList::abort(){
-  register FXCommandGroup *g=this;
+  FXCommandGroup *g=this;
 
   // Must be called after begin
   if(!g->group){ fxerror("FXCommandGroup::abort: no matching call to begin.\n"); }
@@ -409,7 +409,7 @@ void FXUndoList::abort(){
 
 // Undo last command
 void FXUndoList::undo(){
-  register FXCommand *command;
+  FXCommand *command;
   if(group){ fxerror("FXCommandGroup::undo: cannot call undo inside begin-end block.\n"); }
   if(undolist){
     working=true;
@@ -430,7 +430,7 @@ void FXUndoList::undo(){
 
 // Redo next command
 void FXUndoList::redo(){
-  register FXCommand *command;
+  FXCommand *command;
   if(group){ fxerror("FXCommandGroup::redo: cannot call undo inside begin-end block.\n"); }
   if(redolist){
     working=true;
@@ -504,7 +504,7 @@ FXString FXUndoList::redoName() const {
 
 // Clear list
 void FXUndoList::clear(){
-  register FXCommand *command;
+  FXCommand *command;
   FXTRACE((100,"FXUndoList::clear: space=%d undocount=%d redocount=%d marker=%d\n",space,undocount,redocount,marker));
   while(redolist){
     command=redolist;
@@ -621,9 +621,9 @@ FXuint FXUndoList::size() const {
 void FXUndoList::trimCount(FXint nc){
   FXTRACE((100,"FXUndoList::trimCount: was: space=%d undocount=%d; marker=%d ",space,undocount,marker));
   if(undocount>nc){
-    register FXCommand **pp=&undolist;
-    register FXCommand *p=*pp;
-    register FXint i=0;
+    FXCommand **pp=&undolist;
+    FXCommand *p=*pp;
+    FXint i=0;
     while(p && i<nc){
       pp=&p->next;
       p=*pp;
@@ -646,9 +646,9 @@ void FXUndoList::trimCount(FXint nc){
 void FXUndoList::trimSize(FXuint sz){
   FXTRACE((100,"FXUndoList::trimSize: was: space=%d undocount=%d; marker=%d ",space,undocount,marker));
   if(space>sz){
-    register FXCommand **pp=&undolist;
-    register FXCommand *p=*pp;
-    register FXuint s=0;
+    FXCommand **pp=&undolist;
+    FXCommand *p=*pp;
+    FXuint s=0;
     while(p && (s=s+p->size())<=sz){
       pp=&p->next;
       p=*pp;

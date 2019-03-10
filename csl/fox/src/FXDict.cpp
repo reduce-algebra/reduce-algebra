@@ -63,9 +63,9 @@ namespace FX {
 
 // Hash function for string
 FXint FXDict::hash(const FXchar* str){
-  register const FXuchar *s=(const FXuchar*)str;
-  register FXint h=0;
-  register FXint c;
+  const FXuchar *s=(const FXuchar*)str;
+  FXint h=0;
+  FXint c;
   while((c=*s++)!='\0'){
     h = ((h << 5) + h) ^ c;
     }
@@ -79,7 +79,7 @@ FXIMPLEMENT(FXDict,FXObject,NULL,0)
 
 // Construct empty dictionary
 FXDict::FXDict(){
-  register FXint i;
+  FXint i;
   FXMALLOC(&dict,FXDictEntry,DEF_HASH_SIZE);
   for(i=0; i<DEF_HASH_SIZE; i++){
     dict[i].key=NULL;
@@ -94,7 +94,7 @@ FXDict::FXDict(){
 
 // Copy constructor
 FXDict::FXDict(const FXDict& orig):FXObject(orig){
-  register FXint i;
+  FXint i;
   FXMALLOC(&dict,FXDictEntry,orig.total);
   for(i=0; i<orig.total; i++){
     if(0<=orig.dict[i].hash){
@@ -116,7 +116,7 @@ FXDict::FXDict(const FXDict& orig):FXObject(orig){
 
 // Assignment operator
 FXDict& FXDict::operator=(const FXDict& orig){
-  register FXint i;
+  FXint i;
   if(&orig!=this){
     clear();
     FXRESIZE(&dict,FXDictEntry,orig.total);
@@ -150,7 +150,7 @@ void FXDict::deleteData(void*){ }
 
 // Resize table
 void FXDict::size(FXint m){
-  register FXint i,n,p,x,h;
+  FXint i,n,p,x,h;
   FXDictEntry *k;
   FXASSERT(number<=total);
   if(m<DEF_HASH_SIZE) m=DEF_HASH_SIZE;
@@ -185,8 +185,8 @@ void FXDict::size(FXint m){
 
 // Insert a new entry, leave it alone if already existing
 void* FXDict::insert(const FXchar* ky,const void* pdata,bool mrk){
-  register FXint p,i,x,h,n;
-  register void *ptr;
+  FXint p,i,x,h,n;
+  void *ptr;
   if(!ky){ fxerror("FXDict::insert: NULL key argument.\n"); }
   FXASSERT(number<total);
   h=hash(ky);
@@ -223,8 +223,8 @@ void* FXDict::insert(const FXchar* ky,const void* pdata,bool mrk){
 
 // Add or replace entry
 void* FXDict::replace(const FXchar* ky,const void* pdata,bool mrk){
-  register FXint p,i,x,h,n;
-  register void *ptr;
+  FXint p,i,x,h,n;
+  void *ptr;
   if(!ky){ fxerror("FXDict::replace: NULL key argument.\n"); }
   FXASSERT(number<total);
   h=hash(ky);
@@ -267,7 +267,7 @@ void* FXDict::replace(const FXchar* ky,const void* pdata,bool mrk){
 
 // Remove entry
 void* FXDict::remove(const FXchar* ky){
-  register FXint p,x,h,n;
+  FXint p,x,h,n;
   if(!ky){ fxerror("FXDict::remove: NULL key argument.\n"); }
   if(0<number){
     h=hash(ky);
@@ -302,7 +302,7 @@ void* FXDict::remove(const FXchar* ky){
 
 // Find entry
 void* FXDict::find(const FXchar* ky) const {
-  register FXint p,x,h,n;
+  FXint p,x,h,n;
   if(!ky){ fxerror("FXDict::find: NULL key argument.\n"); }
   if(0<number){
     h=hash(ky);
@@ -327,7 +327,7 @@ void* FXDict::find(const FXchar* ky) const {
 
 // Get first non-empty entry
 FXint FXDict::first() const {
-  register FXint pos=0;
+  FXint pos=0;
   while(pos<total){ if(0<=dict[pos].hash) break; pos++; }
   FXASSERT(total<=pos || 0<=dict[pos].hash);
   return pos;
@@ -336,7 +336,7 @@ FXint FXDict::first() const {
 
 // Get last non-empty entry
 FXint FXDict::last() const {
-  register FXint pos=total-1;
+  FXint pos=total-1;
   while(0<=pos){ if(0<=dict[pos].hash) break; pos--; }
   FXASSERT(pos<0 || 0<=dict[pos].hash);
   return pos;
@@ -363,7 +363,7 @@ FXint FXDict::prev(FXint pos) const {
 
 // Remove all
 void FXDict::clear(){
-  register FXint i;
+  FXint i;
   for(i=0; i<total; i++){
     if(dict[i].hash>=0){
       dict[i].hash=-1;

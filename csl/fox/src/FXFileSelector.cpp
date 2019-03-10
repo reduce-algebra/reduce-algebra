@@ -277,8 +277,8 @@ FXFileSelector::FXFileSelector(FXComposite *p,FXObject* tgt,FXSelector sel,FXuin
 
 // Change in items which are selected
 long FXFileSelector::onCmdItemSelected(FXObject*,FXSelector,void* ptr){
-  register FXint index=(FXint)(FXival)ptr;
-  register FXint i;
+  FXint index=(FXint)(FXival)ptr;
+  FXint i;
   FXString text,file;
   if(selectmode==SELECTFILE_MULTIPLE){
     for(i=0; i<filebox->getNumItems(); i++){
@@ -316,7 +316,7 @@ long FXFileSelector::onCmdItemSelected(FXObject*,FXSelector,void* ptr){
 
 // Change in items which are selected
 long FXFileSelector::onCmdItemDeselected(FXObject*,FXSelector,void*){
-  register FXint i;
+  FXint i;
   FXString text,file;
   if(selectmode==SELECTFILE_MULTIPLE){
     for(i=0; i<filebox->getNumItems(); i++){
@@ -543,8 +543,8 @@ long FXFileSelector::onUpdNew(FXObject* sender,FXSelector,void*){
 
 // Selected files and directories
 FXString *FXFileSelector::getSelectedFiles() const {
-  register FXString *files=NULL;
-  register FXint i,n;
+  FXString *files=NULL;
+  FXint i,n;
   for(i=n=0; i<filebox->getNumItems(); i++){
     if(filebox->isItemSelected(i) && filebox->getItemFilename(i)!=".." && filebox->getItemFilename(i)!="."){
       n++;
@@ -565,8 +565,8 @@ FXString *FXFileSelector::getSelectedFiles() const {
 
 // Selected files only
 FXString *FXFileSelector::getSelectedFilesOnly() const {
-  register FXString *files=NULL;
-  register FXint i,n;
+  FXString *files=NULL;
+  FXint i,n;
   for(i=n=0; i<filebox->getNumItems(); i++){
     if(filebox->isItemSelected(i) && !filebox->isItemDirectory(i)){
       n++;
@@ -860,7 +860,7 @@ void FXFileSelector::setFilename(const FXString& path){
 
 // Get complete path + filename
 FXString FXFileSelector::getFilename() const {
-  register FXint i;
+  FXint i;
   if(selectmode==SELECTFILE_MULTIPLE_ALL){
     for(i=0; i<filebox->getNumItems(); i++){
       if(filebox->isItemSelected(i) && filebox->getItemFilename(i)!=".." && filebox->getItemFilename(i)!="."){
@@ -888,7 +888,7 @@ FXString FXFileSelector::getFilename() const {
 
 // Return empty-string terminated list of selected file names, or NULL
 FXString* FXFileSelector::getFilenames() const {
-  register FXString *files;
+  FXString *files;
   if(selectmode==SELECTFILE_MULTIPLE_ALL){
     files=getSelectedFiles();
     }

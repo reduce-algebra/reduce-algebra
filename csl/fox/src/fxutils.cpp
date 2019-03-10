@@ -369,7 +369,7 @@ FXColor makeShadowColor(FXColor clr){
 
 // Convert string of length len to MSDOS; return new string and new length
 bool fxtoDOS(FXchar*& string,FXint& len){
-  register FXint f=0,t=0;
+  FXint f=0,t=0;
   while(f<len && string[f]!='\0'){
     if(string[f++]=='\n') t++; t++;
     }
@@ -385,7 +385,7 @@ bool fxtoDOS(FXchar*& string,FXint& len){
 
 // Convert string of length len from MSDOS; return new string and new length
 bool fxfromDOS(FXchar*& string,FXint& len){
-  register FXint f=0,t=0,c;
+  FXint f=0,t=0,c;
   while(f<len && string[f]!='\0'){
     if((c=string[f++])!='\r') string[t++]=c;
     }
@@ -465,9 +465,9 @@ void fxhsv_to_rgb(FXfloat& r,FXfloat& g,FXfloat& b,FXfloat h,FXfloat s,FXfloat v
 
 // Calculate a hash value from a string; algorithm same as in perl
 FXuint fxstrhash(const FXchar* str){
-  register const FXuchar *s=(const FXuchar*)str;
-  register FXuint h=0;
-  register FXuint c;
+  const FXuchar *s=(const FXuchar*)str;
+  FXuint h=0;
+  FXuint c;
   while((c=*s++)!='\0'){
     h = ((h << 5) + h) ^ c;
     }
@@ -648,7 +648,7 @@ FXuint fxcpuid(){
 
 
 /*
-* Return clock ticks from x86 TSC register [GCC/ICC x86 version].
+* Return clock ticks from x86 TSC [GCC/ICC x86 version].
 */
 #if (defined(__GNUC__) || defined(__ICC)) && defined(__linux__) && defined(__i386__)
 extern FXAPI FXlong fxgetticks();
@@ -666,7 +666,7 @@ FXlong fxgetticks(){
 #if defined(__GNUC__) && defined(__linux__) && defined(__x86_64__)
 extern FXAPI FXlong fxgetticks();
 FXlong fxgetticks(){
-  register FXuint a,d;
+  FXuint a,d;
   asm volatile("rdtsc" : "=a" (a), "=d" (d));
 //asm volatile("rdtscp" : "=a" (a), "=d" (d): : "%ecx");        // Serializing version (%ecx has processor id)
   return ((FXulong)a) | (((FXulong)d)<<32);

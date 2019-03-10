@@ -210,7 +210,7 @@ void FXGradientBar::create(){
 
 // Get default width
 FXint FXGradientBar::getDefaultWidth(){
-  register FXint w=BAR_WIDTH;
+  FXint w=BAR_WIDTH;
   if(options&GRADIENTBAR_VERTICAL){
     w=BAR_HEIGHT;
     if(options&GRADIENTBAR_CONTROLS_LEFT) w+=CONTROL_SIZE+1;
@@ -222,7 +222,7 @@ FXint FXGradientBar::getDefaultWidth(){
 
 // Get default height
 FXint FXGradientBar::getDefaultHeight(){
-  register FXint h=BAR_WIDTH;
+  FXint h=BAR_WIDTH;
   if(!(options&GRADIENTBAR_VERTICAL)){
     h=BAR_HEIGHT;
     if(options&GRADIENTBAR_CONTROLS_TOP) h+=CONTROL_SIZE+1;
@@ -234,7 +234,7 @@ FXint FXGradientBar::getDefaultHeight(){
 
 // Resize the bar
 void FXGradientBar::layout(){
-  register FXint ww,hh;
+  FXint ww,hh;
   ww=width-padleft-padright-(border<<1)-4;
   hh=height-padtop-padbottom-(border<<1)-4;
   if(options&GRADIENTBAR_VERTICAL){
@@ -264,7 +264,7 @@ typedef FXdouble (*BLENDFUNC)(FXdouble,FXdouble);
 
 // Linear blend
 FXdouble FXGradientBar::blendlinear(FXdouble middle,FXdouble pos){
-  register FXdouble factor;
+  FXdouble factor;
   if(pos<=middle){
     factor=(middle<EPSILON) ? 0.0 : 0.5*pos/middle;
     }
@@ -307,11 +307,11 @@ FXdouble FXGradientBar::blenddecreasing(FXdouble middle,FXdouble pos){
 
 // Fill with gradient ramp
 void FXGradientBar::gradient(FXColor *ramp,FXint nramp){
-  register FXint s,lr,lg,lb,la,ur,ug,ub,ua,d,l,h,m,i;
-  register FXdouble len=seg[nsegs-1].upper-seg[0].lower;
-  register FXdouble del=nramp-1;
-  register BLENDFUNC blend=NULL;
-  register FXdouble f,t;
+  FXint s,lr,lg,lb,la,ur,ug,ub,ua,d,l,h,m,i;
+  FXdouble len=seg[nsegs-1].upper-seg[0].lower;
+  FXdouble del=nramp-1;
+  BLENDFUNC blend=NULL;
+  FXdouble f,t;
 
   FXASSERT(len>0.0);
 
@@ -363,10 +363,10 @@ void FXGradientBar::gradient(FXColor *ramp,FXint nramp){
 
 // Update bar
 void FXGradientBar::updatebar(){
-  register FXint barw=bar->getWidth();
-  register FXint barh=bar->getHeight();
-  register FXint x,y,r,g,b,a;
-  register FXColor clr;
+  FXint barw=bar->getWidth();
+  FXint barh=bar->getHeight();
+  FXint x,y,r,g,b,a;
+  FXColor clr;
   FXColor *ramp=NULL;
 
   // Vertical
@@ -488,8 +488,8 @@ void FXGradientBar::drawLtArrow(FXDCWindow& dc,FXint x,FXint y,FXColor clr){
 
 // Draw top arrows
 void FXGradientBar::drawTopArrows(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint h){
-  register FXdouble len=seg[nsegs-1].upper-seg[0].lower;
-  register FXint s,l,m,r;
+  FXdouble len=seg[nsegs-1].upper-seg[0].lower;
+  FXint s,l,m,r;
   FXASSERT(len>0.0);
   for(s=0; s<nsegs; s++){
     l=(FXint)(0.5+((w-1)*(seg[s].lower-seg[0].lower))/len);
@@ -507,8 +507,8 @@ void FXGradientBar::drawTopArrows(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint h
 
 // Draw bottom arrows
 void FXGradientBar::drawBottomArrows(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint h){
-  register FXdouble len=seg[nsegs-1].upper-seg[0].lower;
-  register FXint s,l,m,r;
+  FXdouble len=seg[nsegs-1].upper-seg[0].lower;
+  FXint s,l,m,r;
   FXASSERT(len>0.0);
   for(s=0; s<nsegs; s++){
     l=(FXint)(0.5+((w-1)*(seg[s].lower-seg[0].lower))/len);
@@ -526,8 +526,8 @@ void FXGradientBar::drawBottomArrows(FXDCWindow& dc,FXint x,FXint y,FXint w,FXin
 
 // Draw left arrows
 void FXGradientBar::drawLeftArrows(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint h){
-  register FXdouble len=seg[nsegs-1].upper-seg[0].lower;
-  register FXint s,t,m,b;
+  FXdouble len=seg[nsegs-1].upper-seg[0].lower;
+  FXint s,t,m,b;
   FXASSERT(len>0.0);
   for(s=0; s<nsegs; s++){
     t=(FXint)(0.5+((h-1)*(seg[s].upper-seg[0].lower))/len);
@@ -545,8 +545,8 @@ void FXGradientBar::drawLeftArrows(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint 
 
 // Draw right arrows
 void FXGradientBar::drawRightArrows(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint h){
-  register FXdouble len=seg[nsegs-1].upper-seg[0].lower;
-  register FXint s,t,m,b;
+  FXdouble len=seg[nsegs-1].upper-seg[0].lower;
+  FXint s,t,m,b;
   FXASSERT(len>0.0);
   for(s=0; s<nsegs; s++){
     t=(FXint)(0.5+((h-1)*(seg[s].upper-seg[0].lower))/len);
@@ -755,8 +755,8 @@ void FXGradientBar::moveSegmentUpper(FXint sg,FXdouble val,FXbool notify){
 
 // Move segments
 void FXGradientBar::moveSegments(FXint sglo,FXint sghi,FXdouble val,FXbool notify){
-  register FXdouble delta, below,above,room;
-  register FXint i;
+  FXdouble delta, below,above,room;
+  FXint i;
   if(0<=sglo && sghi<nsegs && sglo<=sghi){
     below=seg[sglo].middle-seg[sglo].lower;
     above=seg[sghi].upper-seg[sglo].middle;
@@ -795,8 +795,8 @@ void FXGradientBar::moveSegments(FXint sglo,FXint sghi,FXdouble val,FXbool notif
 
 // Split segment at the midpoint
 void FXGradientBar::splitSegments(FXint sglo,FXint sghi,FXbool notify){
-  register FXint n=sghi-sglo+1;
-  register FXint i,j;
+  FXint n=sghi-sglo+1;
+  FXint i,j;
   if(0<=sglo && sghi<nsegs && 0<n){
     FXRESIZE(&seg,FXGradient,nsegs+n);
     memmove(&seg[sghi+n],&seg[sghi],sizeof(FXGradient)*(nsegs-sghi));
@@ -823,7 +823,7 @@ void FXGradientBar::splitSegments(FXint sglo,FXint sghi,FXbool notify){
 
 // Merge segments
 void FXGradientBar::mergeSegments(FXint sglo,FXint sghi,FXbool notify){
-  register FXint n=sghi-sglo;
+  FXint n=sghi-sglo;
   if(0<=sglo && sghi<nsegs && 0<n){
     seg[sglo].middle=(n&1)?seg[(sghi+sglo)/2].upper:seg[(sghi+sglo)/2].middle;
     seg[sglo].upper=seg[sghi].upper;
@@ -843,8 +843,8 @@ void FXGradientBar::mergeSegments(FXint sglo,FXint sghi,FXbool notify){
 
 // Make segments uniformly distributed
 void FXGradientBar::uniformSegments(FXint sglo,FXint sghi,FXbool notify){
-  register FXdouble m,d,a;
-  register FXint s;
+  FXdouble m,d,a;
+  FXint s;
   if(0<=sglo && sghi<nsegs && sglo<=sghi){
     d=sghi-sglo+1;
     m=seg[sghi].upper-seg[sglo].lower;
@@ -862,7 +862,7 @@ void FXGradientBar::uniformSegments(FXint sglo,FXint sghi,FXbool notify){
 
 // Change blend curve of segment
 void FXGradientBar::blendSegments(FXint sglo,FXint sghi,FXuint blend,FXbool notify){
-  register FXint s;
+  FXint s;
   if(0<=sglo && sghi<nsegs && sglo<=sghi){
     for(s=sglo; s<=sghi; s++){
       seg[s].blend=blend;
@@ -875,11 +875,11 @@ void FXGradientBar::blendSegments(FXint sglo,FXint sghi,FXuint blend,FXbool noti
 
 // Determine which segment got hit
 FXint FXGradientBar::getSegment(FXint x,FXint y) const {
-  register FXdouble shi=seg[nsegs-1].upper;
-  register FXdouble slo=seg[0].lower;
-  register FXdouble len=shi-slo;
-  register FXdouble del;
-  register FXint lo,hi,v,s;
+  FXdouble shi=seg[nsegs-1].upper;
+  FXdouble slo=seg[0].lower;
+  FXdouble len=shi-slo;
+  FXdouble del;
+  FXint lo,hi,v,s;
   FXASSERT(len>0.0);
   if(options&GRADIENTBAR_VERTICAL){
     if(y<border+padtop+2) return nsegs-1;
@@ -905,11 +905,11 @@ FXint FXGradientBar::getSegment(FXint x,FXint y) const {
 // Get grip in segment
 FXint FXGradientBar::getGrip(FXint sg,FXint x,FXint y) const {
   if(0<=sg && sg<nsegs){
-    register FXdouble shi=seg[nsegs-1].upper;
-    register FXdouble slo=seg[0].lower;
-    register FXdouble len=shi-slo;
-    register FXdouble del;
-    register FXint lo,hi,md,v;
+    FXdouble shi=seg[nsegs-1].upper;
+    FXdouble slo=seg[0].lower;
+    FXdouble len=shi-slo;
+    FXdouble del;
+    FXint lo,hi,md,v;
     FXASSERT(len>0.0);
     if(options&GRADIENTBAR_VERTICAL){
       v=height-border-padbottom-y-3;
@@ -936,9 +936,9 @@ FXint FXGradientBar::getGrip(FXint sg,FXint x,FXint y) const {
 
 // Get value given position x,y
 FXdouble FXGradientBar::getValue(FXint x,FXint y) const {
-  register FXdouble slo=seg[0].lower;
-  register FXdouble shi=seg[nsegs-1].upper;
-  register FXdouble val;
+  FXdouble slo=seg[0].lower;
+  FXdouble shi=seg[nsegs-1].upper;
+  FXdouble val;
   if(options&GRADIENTBAR_VERTICAL)
     val=slo+(height-padbottom-border-3-y)*(shi-slo)/(bar->getHeight()-1);
   else
@@ -949,10 +949,10 @@ FXdouble FXGradientBar::getValue(FXint x,FXint y) const {
 
 // Get position of lower edge of segment
 FXint FXGradientBar::getSegmentLowerPos(FXint sg) const {
-  register FXdouble shi=seg[nsegs-1].upper;
-  register FXdouble slo=seg[0].lower;
-  register FXdouble len=shi-slo;
-  register FXint pos;
+  FXdouble shi=seg[nsegs-1].upper;
+  FXdouble slo=seg[0].lower;
+  FXdouble len=shi-slo;
+  FXint pos;
   FXASSERT(0<=sg && sg<nsegs);
   FXASSERT(0<len);
   if(options&GRADIENTBAR_VERTICAL){
@@ -967,10 +967,10 @@ FXint FXGradientBar::getSegmentLowerPos(FXint sg) const {
 
 // Get position of upper edge of segment
 FXint FXGradientBar::getSegmentUpperPos(FXint sg) const {
-  register FXdouble shi=seg[nsegs-1].upper;
-  register FXdouble slo=seg[0].lower;
-  register FXdouble len=shi-slo;
-  register FXint pos;
+  FXdouble shi=seg[nsegs-1].upper;
+  FXdouble slo=seg[0].lower;
+  FXdouble len=shi-slo;
+  FXint pos;
   FXASSERT(0<=sg && sg<nsegs);
   FXASSERT(0<len);
   if(options&GRADIENTBAR_VERTICAL){
@@ -985,10 +985,10 @@ FXint FXGradientBar::getSegmentUpperPos(FXint sg) const {
 
 // Get position of middle of segment
 FXint FXGradientBar::getSegmentMiddlePos(FXint sg) const {
-  register FXdouble shi=seg[nsegs-1].upper;
-  register FXdouble slo=seg[0].lower;
-  register FXdouble len=shi-slo;
-  register FXint pos;
+  FXdouble shi=seg[nsegs-1].upper;
+  FXdouble slo=seg[0].lower;
+  FXdouble len=shi-slo;
+  FXint pos;
   FXASSERT(0<=sg && sg<nsegs);
   FXASSERT(0<len);
   if(options&GRADIENTBAR_VERTICAL){

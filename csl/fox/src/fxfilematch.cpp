@@ -82,11 +82,11 @@ namespace FX {
 
 // Perform match
 static bool domatch(const char *pattern,const char *string,FXuint flags){
-  register const char *p=pattern;
-  register const char *q=string;
-  register const char *s;
-  register char c,cs,ce,cc,neg;
-  register int level;
+  const char *p=pattern;
+  const char *q=string;
+  const char *s;
+  char c,cs,ce,cc,neg;
+  int level;
   while((c=*p++)!='\0'){
     switch(c){
       case '?':
@@ -181,9 +181,9 @@ nxt:    if(domatch(p,q,flags)) return true;
 
 // Public API to matcher
 bool fxfilematch(const char *pattern,const char *string,FXuint flags){
-  register const char *p=pattern;
-  register const char *q=string;
-  register int level;
+  const char *p=pattern;
+  const char *q=string;
+  int level;
   if(p && q){
 nxt:if(domatch(p,q,flags)) return true;
     for(level=0; *p && 0<=level; ){

@@ -324,7 +324,7 @@ FXString FXSystem::getUserDirectory(const FXString& user){
   struct passwd pwdresult,*pwd;
   char buffer[1024];
   if(user.empty()){
-    register const FXchar* str;
+    const FXchar* str;
     if((str=getenv("HOME"))!=NULL) return str;
     if((str=getenv("USER"))!=NULL || (str=getenv("LOGNAME"))!=NULL){
       if(getpwnam_r(str,&pwdresult,buffer,sizeof(buffer),&pwd)==0 && pwd) return pwd->pw_dir;
@@ -335,9 +335,9 @@ FXString FXSystem::getUserDirectory(const FXString& user){
   if(getpwnam_r(user.text(),&pwdresult,buffer,sizeof(buffer),&pwd)==0 && pwd) return pwd->pw_dir;
   return PATHSEPSTRING;
 #else
-  register struct passwd *pwd;
+  struct passwd *pwd;
   if(user.empty()){
-    register const FXchar* str;
+    const FXchar* str;
     if((str=getenv("HOME"))!=NULL) return str;
     if((str=getenv("USER"))!=NULL || (str=getenv("LOGNAME"))!=NULL){
       if((pwd=getpwnam(str))!=NULL) return pwd->pw_dir;
@@ -350,12 +350,12 @@ FXString FXSystem::getUserDirectory(const FXString& user){
 #endif
 #else
   if(user.empty()){
-    register const FXchar *str1,*str2;
+    const FXchar *str1,*str2;
     FXchar home[MAXPATHLEN];
     DWORD size=MAXPATHLEN;
     HKEY hKey;
     LONG result;
-    if((str1=getenv("USERPROFILE"))!=NULL) return str1; // Daniël Hörchner <dbjh@gmx.net>
+    if((str1=getenv("USERPROFILE"))!=NULL) return str1; // Danikl Hvrchner <dbjh@gmx.net>
     if((str1=getenv("HOME"))!=NULL) return str1;
     if((str2=getenv("HOMEPATH"))!=NULL){      // This should be good for WinNT, Win2K according to MSDN
       if((str1=getenv("HOMEDRIVE"))==NULL) str1="c:";

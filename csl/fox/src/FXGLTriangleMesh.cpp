@@ -122,8 +122,8 @@ void FXGLTriangleMesh::setVertexBuffer(FXfloat *vertices){
 
 // Recompute range
 void FXGLTriangleMesh::recomputerange(){
-  register FXint i,n;
-  register FXfloat t;
+  FXint i,n;
+  FXfloat t;
   range.lower.x=range.upper.x=0.0f;
   range.lower.y=range.upper.y=0.0f;
   range.lower.z=range.upper.z=0.0f;
@@ -153,7 +153,7 @@ void FXGLTriangleMesh::drawshape(FXGLViewer*){
 
 #if !defined(GL_VERSION_1_1) && !defined(GL_VERSION_1_2)
 
-  register FXint i;
+  FXint i;
 
   // Yes we know this is not efficient but hell, OpenGL 1.0 is old...
   glBegin(GL_TRIANGLES);
@@ -205,7 +205,7 @@ void FXGLTriangleMesh::drawshape(FXGLViewer*){
 
 // Routine to calculate FLAT normals at each triangle
 void FXGLTriangleMesh::generatenormals(){
-  register FXint i;
+  FXint i;
   FXVec3f vec,a,b,c;
   FXASSERT(vertexBuffer);
   if(!normalBuffer){

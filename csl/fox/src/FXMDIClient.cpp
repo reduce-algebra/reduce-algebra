@@ -168,8 +168,8 @@ FXint FXMDIClient::getDefaultHeight(){
 
 // Recalculate layout
 void FXMDIClient::layout(){
-  register FXMDIChild* child;
-  register FXint xx,yy,ww,hh;
+  FXMDIChild* child;
+  FXint xx,yy,ww,hh;
 
   // Place children
   for(child=(FXMDIChild*)getFirst(); child; child=(FXMDIChild*)child->getNext()){
@@ -206,7 +206,7 @@ void FXMDIClient::layout(){
 
 // Cascade windows
 void FXMDIClient::cascade(FXbool notify){
-  register FXMDIChild* child;
+  FXMDIChild* child;
   FXint childx,childy,childw,childh;
   childx=5;
   childy=5;
@@ -234,8 +234,8 @@ void FXMDIClient::cascade(FXbool notify){
 
 // Layout horizontally
 void FXMDIClient::horizontal(FXbool notify){
-  register FXMDIChild* child;
-  register FXint n,nr,nc,hroom,vroom,r,c;
+  FXMDIChild* child;
+  FXint n,nr,nc,hroom,vroom,r,c;
   for(n=0,child=(FXMDIChild*)getFirst(); child; child=(FXMDIChild*)child->getNext()){
     if(child->shown() && !child->isMinimized()) n++;
     }
@@ -264,8 +264,8 @@ void FXMDIClient::horizontal(FXbool notify){
 
 // Layout vertically
 void FXMDIClient::vertical(FXbool notify){
-  register FXMDIChild* child;
-  register FXint n,nr,nc,hroom,vroom,r,c;
+  FXMDIChild* child;
+  FXint n,nr,nc,hroom,vroom,r,c;
   for(n=0,child=(FXMDIChild*)getFirst(); child; child=(FXMDIChild*)child->getNext()){
     if(child->shown() && !child->isMinimized()) n++;
     }
@@ -514,7 +514,7 @@ long FXMDIClient::onUpdCascade(FXObject* sender,FXSelector,void*){
 // Pass message to all MDI windows; the crufty loop is because
 // it is possible for the child receiving the message to be deleted
 long FXMDIClient::forallWindows(FXObject* sender,FXSelector sel,void* ptr){
-  register FXWindow *child,*nextchild;
+  FXWindow *child,*nextchild;
   for(child=getFirst(); child; child=nextchild){
     nextchild=child->getNext();
     if(!child->handle(sender,sel,ptr)) return 0;
@@ -528,7 +528,7 @@ long FXMDIClient::forallWindows(FXObject* sender,FXSelector sel,void* ptr){
 // document may be deleted; also, we want to send only ONE of the
 // document-sharing children a message.
 long FXMDIClient::forallDocuments(FXObject* sender,FXSelector sel,void* ptr){
-  register FXWindow *child,*nextchild,*ch;
+  FXWindow *child,*nextchild,*ch;
   for(child=getFirst(); child; child=nextchild){
     nextchild=child->getNext();
 x:  if(nextchild && nextchild->getTarget()){
@@ -548,7 +548,7 @@ x:  if(nextchild && nextchild->getTarget()){
 // Pass message to all MDI windows whose target is document;
 // note that the child may be deleted as a result of the message.
 long FXMDIClient::forallDocWindows(FXObject* document,FXObject* sender,FXSelector sel,void* ptr){
-  register FXWindow *child,*nextchild;
+  FXWindow *child,*nextchild;
   for(child=getFirst(); child; child=nextchild){
     nextchild=child->getNext();
     if(child->getTarget()==document){

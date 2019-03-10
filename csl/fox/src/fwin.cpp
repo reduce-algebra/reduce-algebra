@@ -1,4 +1,4 @@
-// fwin.cpp                                 Copyright A C Norman 2003-2017
+// fwin.cpp                                 Copyright A C Norman 2003-2018
 //
 //
 // Window interface for old-fashioned C/C++ applications. Intended to
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -138,6 +138,10 @@ extern "C" char *getcwd(const char *s, size_t n);
 #endif // __APPLE__
 
 #include "termed.h"
+
+#ifndef HAVE_MY_MALLOC
+#define my_malloc(n) malloc(n);
+#endif
 
 //
 // The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
@@ -273,15 +277,15 @@ static int macApp = 0;
 
 int windowed = 0;
 
-int texmacs_mode = 0;
+bool texmacs_mode = 0;
 
 #ifdef HAVE_LIBXFT
-int fwin_use_xft = 1;
+bool fwin_use_xft = 1;
 #else // HAVE_LIBXFT
-int fwin_use_xft = 0;
+bool fwin_use_xft = 0;
 #endif // HAVE_LIBXFT
 
-int fwin_pause_at_end = 0;
+bool fwin_pause_at_end = false;
 
 #ifdef __APPLE__
 
@@ -307,7 +311,7 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
             (buf.st_mode & S_IFDIR) != 0)
         {
 // Well foo.app exists and is a directory, so I will try to use it
-            const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
+            const char **nargs = (const char **)my_malloc(sizeof(char *)*(argc+3));
             int i;
 #ifdef DEBUG
 //
@@ -881,51 +885,19 @@ void sigint_handler(int signo)
 #endif // !HAVE_SIGACTION
 {
 // interrupt_callback ought to be atomic and volatile, and any function
-// that it identified should be very cautious!
+// that it identified should be very cautious! However I will perhaps be
+// sloppy here!
     if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
 }
 
-#endif // EMBEDDED
-
-//
-// I will only try to use my own local editing and history package
-// if both stdin and stdout are routed directly to a "tty" or "console".
-// The test I apply can probably never be 100% satisfactory, but if I
-// catch all the most common cases I will feel reasonably relaxed!
-//
-int using_termed = 0;
-
-static int direct_to_terminal(int argc, const char *argv[])
-{
-#ifdef WIN32
-    HANDLE h;
-    DWORD w;
-    CONSOLE_SCREEN_BUFFER_INFO csb;
-//
-// Standard input must be from a character device and must be accepted
-// by the GetConsoleMode function
-//
-    h = GetStdHandle(STD_INPUT_HANDLE);
-    if (GetFileType(h) != FILE_TYPE_CHAR) return 0;
-    if (!GetConsoleMode(h, &w)) return 0;
-//
-// Standard output must be a character device and a ConsoleScreenBuffer
-//
-    h = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (GetFileType(h) != FILE_TYPE_CHAR) return 0;
-    if (!GetConsoleScreenBufferInfo(h, &csb)) return 0;
-//
-// Note that I will allow stderr to have been redirected as much
-// as you like without that having an effect here.
-//
-    return 1;
-#else // WIN32
-    return isatty(fileno(stdin)) && isatty(fileno(stdout));
-#endif // WIN32
-}
+#endif // !EMBEDDED
 
 int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
-{   int r;
+{
+#ifndef EMBEDDED
+// Even though these days I mostly intend ^C to be detected by observing
+// it as a character read in raw mode, I probably need to support some
+// external task explictly raising the signal. So I trap it here.
 #ifdef HAVE_SIGACTION
     struct sigaction sa;
     sa.sa_sigaction = sigint_handler;
@@ -944,16 +916,11 @@ int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 #else // !HAVE_SIGACTION
     signal(SIGINT, sigint_handler);
 #endif // !HAVE_SIGACTION
-    if (!texmacs_mode && direct_to_terminal(argc, argv))
-    {   input_history_init();
-        term_setup(1, colour_spec);
-        atexit(term_close);
-        using_termed = 1;
-    }
-    else using_termed = 0;
+#endif // !EMBEDDED
+    term_setup(argv[0], colour_spec);
+    atexit(term_close);
     strcpy(fwin_prompt_string, "> ");
-    r = (*fwin_main)(argc, argv);
-    input_history_end();
+    int r = (*fwin_main)(argc, argv);
     term_close();
     return r;
 }
@@ -968,32 +935,12 @@ static int prompt_needed = 1;
 
 int fwin_plain_getchar()
 {   int ch;
-    if (using_termed)
     {   while (chars_left == 0)
         {   term_setprompt(fwin_prompt_string);
             current_line = term_getline();
             if (current_line == NULL) return EOF;  // failed or EOF
             chars_left = strlen(current_line);
-//          input_history_add(current_line);
         }
-    }
-    else if (chars_left == 0)
-    {   if (prompt_needed)
-        {   printf("%s", fwin_prompt_string);
-            prompt_needed = 0;
-        }
-        fflush(stdout);
-        for (chars_left=0; chars_left<INPUT_BUFFER_SIZE;)
-        {   int c = getchar();
-            if (c == EOF) c = (0x1f & 'D');
-            input_buffer[chars_left++] = c;
-            if (c == '\n' || c == (0x1f & 'D'))
-            {   prompt_needed = 1;
-                break;
-            }
-        }
-        if (chars_left == 0) return EOF;
-        current_line = input_buffer;
     }
     chars_left--;
     ch = *current_line++;
@@ -1183,7 +1130,7 @@ int find_program_directory(const char *argv0)
         return 0;
     }
 
-    w = (char *)malloc(1+strlen(ww));
+    w = (char *)my_malloc(1+strlen(ww));
     if (w == NULL) return 5;           // 5 = malloc fails
     strcpy(w, ww);
     fullProgramName = w;
@@ -1229,12 +1176,12 @@ int find_program_directory(const char *argv0)
     ndir = len - npgm - 1;
     if (ndir < 0) programDir = ".";  // none really visible
     else
-    {   if ((w = (char *)malloc(ndir+1)) == NULL) return 1;
+    {   if ((w = (char *)my_malloc(ndir+1)) == NULL) return 1;
         strncpy(w, fullProgramName, ndir);
         w[ndir] = 0;
         programDir = w;
     }
-    if ((w = (char *)malloc(npgm+1)) == NULL) return 1;
+    if ((w = (char *)my_malloc(npgm+1)) == NULL) return 1;
     strncpy(w, fullProgramName + len - npgm, npgm);
     w[npgm] = 0;
     programName = w;
@@ -1426,7 +1373,7 @@ int find_program_directory(const char *argv0)
 // Now fullProgramName is set up, but may refer to an array that
 // is stack allocated. I need to make it proper!
 //
-    w1 = (char *)malloc(1+strlen(fullProgramName));
+    w1 = (char *)my_malloc(1+strlen(fullProgramName));
     if (w1 == NULL) return 5;           // 5 = malloc fails
     strcpy(w1, fullProgramName);
     fullProgramName = w1;
@@ -1484,7 +1431,7 @@ int find_program_directory(const char *argv0)
     for (n=strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               // 6 = no "/" in full file path
-    w1 = (char *)malloc(1+n);
+    w1 = (char *)my_malloc(1+n);
     if (w1 == NULL) return 7;           // 7 = malloc fails
     strncpy(w1, fullProgramName, n);
     w1[n] = 0;
@@ -1493,7 +1440,7 @@ int find_program_directory(const char *argv0)
 //
     programDir = w1;
     n1 = strlen(fullProgramName) - n;
-    w1 = (char *)malloc(n1);
+    w1 = (char *)my_malloc(n1);
     if (w1 == NULL) return 8;           // 8 = malloc fails
     strncpy(w1, fullProgramName+n+1, n1-1);
     w1[n1-1] = 0;
@@ -2211,7 +2158,7 @@ static void exall(int namelength,
             if (strcmp(leafname, ".") == 0 ||
                 strcmp(leafname, "..") == 0) continue;
             if (more_files()) break;
-            copyname = (char *)malloc(1+strlen(leafname));
+            copyname = (char *)my_malloc(1+strlen(leafname));
             if (copyname == NULL) break;
             strcpy(copyname, leafname);
             found_files[n_found_files++] = copyname;
@@ -2447,7 +2394,7 @@ int list_directory_members(char *filename, const char *old, char **filelist[],
     //
     if (number_of_entries == -1) return -1;
 
-    files=(char **)malloc(number_of_entries*sizeof(char *));
+    files=(char **)my_malloc(number_of_entries*sizeof(char *));
 
     for (i=0; i<number_of_entries; ++i)
     {   files[i] = strdup(namelist[i]->d_name);
@@ -2540,7 +2487,7 @@ char *get_truename(char *filename, const char *old, size_t n)
         {   strcpy(filename, "truename: cannot change directory");
             return NULL;
         }
-        dir1 = (char*)malloc(LONGEST_LEGAL_FILENAME);
+        dir1 = (char*)my_malloc(LONGEST_LEGAL_FILENAME);
         if (getcwd(dir1,LONGEST_LEGAL_FILENAME) == NULL)
         {   strcpy(filename, "truename: cannot get current working directory");
             free(dir1);
@@ -2569,7 +2516,7 @@ char *get_truename(char *filename, const char *old, size_t n)
         {   // Found a directory component
             char theDir[LONGEST_LEGAL_FILENAME];
             memset(theDir, 0, sizeof(theDir));
-            fn   = (char *)malloc(1+strlen(temp));
+            fn   = (char *)my_malloc(1+strlen(temp));
             strcpy(fn, temp);
             *temp = '\0';
             // fn is now "/file" and filename is the directory
@@ -2587,7 +2534,7 @@ char *get_truename(char *filename, const char *old, size_t n)
             {   strcpy(filename, "truename: cannot change directory");
                 return NULL;
             }
-            dir = (char *)malloc((strlen(temp) + strlen(fn) + 1)*sizeof(char));
+            dir = (char *)my_malloc((strlen(temp) + strlen(fn) + 1)*sizeof(char));
             if (dir == NULL)
             {   strcpy(filename, "truename: run out of memory");
                 return NULL;
@@ -2598,7 +2545,7 @@ char *get_truename(char *filename, const char *old, size_t n)
             return dir;
         }
         else
-        {   dir = (char *)malloc((strlen(pwd) + strlen(filename) + 2)*sizeof(char));
+        {   dir = (char *)my_malloc((strlen(pwd) + strlen(filename) + 2)*sizeof(char));
             if (dir == NULL)
             {   strcpy(filename, "truename: run out of memory");
                 return NULL;

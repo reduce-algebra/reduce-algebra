@@ -666,7 +666,7 @@ FXint FXCompile::lookup(const FXchar *list){
 
 // Obtain next token from input
 void FXCompile::gettok(){
-  register FXchar c;
+  FXchar c;
   head=tail;
   while((c=*tail)!='\0'){
     switch(c){
@@ -1007,8 +1007,8 @@ FXExpressionError FXExpression::parse(const FXString& expression,const FXString&
 // Evaluate expression
 FXdouble FXExpression::evaluate(const FXdouble *args){
   FXdouble stack[MAXSTACKDEPTH];
-  register const FXuchar *pc=code+4;
-  register FXdouble *sp=stack-1;
+  const FXuchar *pc=code+4;
+  FXdouble *sp=stack-1;
   while(1){
     switch(*pc++){
       case OP_END:   return *sp;

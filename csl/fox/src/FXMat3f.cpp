@@ -190,7 +190,7 @@ FXMat3f& FXMat3f::operator*=(FXfloat w){
 
 // Multiply matrix by matrix
 FXMat3f& FXMat3f::operator*=(const FXMat3f& w){
-  register FXfloat x,y,z;
+  FXfloat x,y,z;
   x=m[0][0]; y=m[0][1]; z=m[0][2];
   m[0][0]=x*w[0][0]+y*w[1][0]+z*w[2][0];
   m[0][1]=x*w[0][1]+y*w[1][1]+z*w[2][1];
@@ -243,7 +243,7 @@ FXMat3f FXMat3f::operator-(const FXMat3f& w) const {
 
 // Multiply matrices
 FXMat3f FXMat3f::operator*(const FXMat3f& w) const {
-  register FXfloat x,y,z;
+  FXfloat x,y,z;
   FXMat3f r;
   x=m[0][0]; y=m[0][1]; z=m[0][2];
   r[0][0]=x*w[0][0]+y*w[1][0]+z*w[2][0];
@@ -295,14 +295,14 @@ FXMat3f operator/(const FXMat3f& m,FXfloat x){
 
 // Matrix times vector
 FXVec3f FXMat3f::operator*(const FXVec3f& v) const {
-  register FXfloat x=v.x,y=v.y,z=v.z;
+  FXfloat x=v.x,y=v.y,z=v.z;
   return FXVec3f(x*m[0][0]+y*m[0][1]+z*m[0][2], x*m[1][0]+y*m[1][1]+z*m[1][2], x*m[2][0]+y*m[2][1]+z*m[2][2]);
   }
 
 
 // Matrix times vector
 FXVec2f FXMat3f::operator*(const FXVec2f& v) const {
-  register FXfloat x=v.x,y=v.y;
+  FXfloat x=v.x,y=v.y;
   FXASSERT(m[0][2]==0.0f && m[1][2]==0.0f && m[2][2]==1.0f);
   return FXVec2f(x*m[0][0]+y*m[0][1]+m[0][2], x*m[1][0]+y*m[1][1]+m[1][2]);
   }
@@ -319,7 +319,7 @@ FXMat3f& FXMat3f::eye(){
 
 // Rotate by cosine, sine
 FXMat3f& FXMat3f::rot(FXfloat c,FXfloat s){
-  register FXfloat u,v;
+  FXfloat u,v;
   FXASSERT(-1.00001f<c && c<1.00001f && -1.00001f<s && s<1.00001f);
   u=m[0][0]; v=m[1][0]; m[0][0]=c*u+s*v; m[1][0]=c*v-s*u;
   u=m[0][1]; v=m[1][1]; m[0][1]=c*u+s*v; m[1][1]=c*v-s*u;
@@ -375,7 +375,7 @@ FXMat3f FXMat3f::transpose() const {
 
 // Invert matrix
 FXMat3f FXMat3f::invert() const {
-  register FXfloat det;
+  FXfloat det;
   FXMat3f res;
   res[0][0]=m[1][1]*m[2][2]-m[1][2]*m[2][1];
   res[0][1]=m[0][2]*m[2][1]-m[0][1]*m[2][2];

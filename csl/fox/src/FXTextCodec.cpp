@@ -108,7 +108,7 @@ static inline FXint utflen(FXwchar w){
 
 // Convert utf8 to wide character
 FXint FXTextCodec::utf2wc(FXwchar& wc,const FXchar* src,FXint nsrc){
-  register FXwchar c;
+  FXwchar c;
   if(nsrc<1) return -1;
   wc=c=(FXuchar)src[0];
   if(0x80<=c){
@@ -256,7 +256,7 @@ FXint FXTextCodec::mb2wc(FXwchar& wc,const FXchar* src,FXint nsrc) const {
 
 // Count number of utf8 characters needed to convert multi-byte characters from src
 FXint FXTextCodec::mb2utflen(const FXchar* src,FXint nsrc) const {
-  register FXint nr,len=0;
+  FXint nr,len=0;
   FXwchar w;
   if(src && 0<nsrc){
     do{
@@ -280,7 +280,7 @@ FXint FXTextCodec::mb2utflen(const FXString& src) const {
 
 // Convert multi-byte characters from src to utf8 characters at dst
 FXint FXTextCodec::mb2utf(FXchar* dst,FXint ndst,const FXchar* src,FXint nsrc) const {
-  register FXint nr,nw,len=0;
+  FXint nr,nw,len=0;
   FXwchar w;
   if(dst && src && 0<nsrc){
     do{
@@ -314,7 +314,7 @@ FXint FXTextCodec::mb2utf(FXchar* dst,FXint ndst,const FXString& src) const {
 
 // Convert multi-byte characters from src to utf8 string
 FXString FXTextCodec::mb2utf(const FXchar* src,FXint nsrc) const {
-  register FXint len;
+  FXint len;
   if(src && 0<nsrc){
     if((len=mb2utflen(src,nsrc))>0){
       FXString result;
@@ -351,7 +351,7 @@ FXint FXTextCodec::wc2mb(FXchar* dst,FXint ndst,FXwchar wc) const {
 
 // Count multi-byte characters characters needed to convert utf8 from src
 FXint FXTextCodec::utf2mblen(const FXchar* src,FXint nsrc) const {
-  register FXint nr,len=0;
+  FXint nr,len=0;
   FXchar buffer[64];
   FXwchar w;
   if(src && 0<nsrc){
@@ -376,7 +376,7 @@ FXint FXTextCodec::utf2mblen(const FXString& src) const {
 
 // Convert utf8 characters at src to multi-byte characters at dst
 FXint FXTextCodec::utf2mb(FXchar* dst,FXint ndst,const FXchar* src,FXint nsrc) const {
-  register FXint nr,nw,len=0;
+  FXint nr,nw,len=0;
   FXwchar w;
   if(dst && src && 0<nsrc){
     do{
@@ -410,7 +410,7 @@ FXint FXTextCodec::utf2mb(FXchar* dst,FXint ndst,const FXString& src) const {
 
 // Convert utf8 characters at src to multi-byte string
 FXString FXTextCodec::utf2mb(const FXchar* src,FXint nsrc) const {
-  register FXint len;
+  FXint len;
   if(src && 0<nsrc){
     if((len=utf2mblen(src,nsrc))>0){
       FXString result;

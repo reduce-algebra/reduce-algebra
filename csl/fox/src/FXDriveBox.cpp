@@ -181,8 +181,8 @@ long FXDriveBox::onCmdGetStringValue(FXObject*,FXSelector,void* ptr){
 
 // Fill list with names of available drives
 void FXDriveBox::listDrives(){
-  register FXFileAssoc *fileassoc;
-  register FXIcon *icon;
+  FXFileAssoc *fileassoc;
+  FXIcon *icon;
 
   // Remove old items first
   clearItems();
@@ -205,8 +205,8 @@ void FXDriveBox::listDrives(){
 
 // Fill list with names of available drives
 void FXDriveBox::listDrives(){
-  register FXFileAssoc *fileassoc;
-  register FXIcon *icon;
+  FXFileAssoc *fileassoc;
+  FXIcon *icon;
   FXchar drivename[10];
   FXuint drivemask;
 

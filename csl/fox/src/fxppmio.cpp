@@ -50,7 +50,7 @@ extern FXAPI bool fxsavePPM(FXStream& store,const FXColor *data,FXint width,FXin
 
 // Read one integer
 static FXint getint(FXStream& store){
-  register FXint num=0;
+  FXint num=0;
   FXuchar c;
   while(!store.eof()){
     store >> c;
@@ -82,8 +82,8 @@ bool fxcheckPPM(FXStream& store){
 
 // Load image from stream
 bool fxloadPPM(FXStream& store,FXColor*& data,FXint& width,FXint& height){
-  register FXint npixels,i,j,maxvalue=1;
-  register FXuchar *pp;
+  FXint npixels,i,j,maxvalue=1;
+  FXuchar *pp;
   FXuchar magic,format,byte,r,g,b;
 
   // Null out
@@ -204,8 +204,8 @@ bool fxloadPPM(FXStream& store,FXColor*& data,FXint& width,FXint& height){
 
 // Save a bmp file to a stream
 bool fxsavePPM(FXStream& store,const FXColor *data,FXint width,FXint height){
-  register const FXuchar *pp=(const FXuchar*)data;
-  register FXint i,j,nsize;
+  const FXuchar *pp=(const FXuchar*)data;
+  FXint i,j,nsize;
   FXchar size[20];
 
   // Must make sense

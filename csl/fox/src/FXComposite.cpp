@@ -120,7 +120,7 @@ void FXComposite::destroy(){
 
 // Get width
 FXint FXComposite::getDefaultWidth(){
-  register FXWindow *child;
+  FXWindow *child;
   FXint t,w=0;
   for(child=getFirst(); child; child=child->getNext()){
     if(child->shown()){
@@ -134,7 +134,7 @@ FXint FXComposite::getDefaultWidth(){
 
 // Get height
 FXint FXComposite::getDefaultHeight(){
-  register FXWindow *child;
+  FXWindow *child;
   FXint t,h=0;
   for(child=getFirst(); child; child=child->getNext()){
     if(child->shown()){
@@ -148,9 +148,9 @@ FXint FXComposite::getDefaultHeight(){
 
 // Get maximum child width
 FXint FXComposite::maxChildWidth() const {
-  register FXWindow* child;
-  register FXuint hints;
-  register FXint t,m;
+  FXWindow* child;
+  FXuint hints;
+  FXint t,m;
   for(m=0,child=getFirst(); child; child=child->getNext()){
     if(child->shown()){
       hints=child->getLayoutHints();
@@ -165,9 +165,9 @@ FXint FXComposite::maxChildWidth() const {
 
 // Get maximum child height
 FXint FXComposite::maxChildHeight() const {
-  register FXWindow* child;
-  register FXuint hints;
-  register FXint t,m;
+  FXWindow* child;
+  FXuint hints;
+  FXint t,m;
   for(m=0,child=getFirst(); child; child=child->getNext()){
     if(child->shown()){
       hints=child->getLayoutHints();
@@ -182,7 +182,7 @@ FXint FXComposite::maxChildHeight() const {
 
 // Just tell server where the windows are!
 void FXComposite::layout(){
-  register FXWindow *child;
+  FXWindow *child;
   for(child=getFirst(); child; child=child->getNext()){
     if(child->shown()){
       child->position(child->getX(),child->getY(),child->getWidth(),child->getHeight());
@@ -194,7 +194,7 @@ void FXComposite::layout(){
 
 // Update all subwindows
 long FXComposite::onCmdUpdate(FXObject* sender,FXSelector,void* ptr){
-  register FXWindow *child;
+  FXWindow *child;
   update();
   for(child=getFirst(); child; child=child->getNext()){
     if(child->shown()) child->handle(sender,FXSEL(SEL_COMMAND,ID_UPDATE),ptr);
@@ -241,7 +241,7 @@ long FXComposite::onFocusPrev(FXObject*,FXSelector sel,void* ptr){
 
 // Keyboard press
 long FXComposite::onKeyPress(FXObject* sender,FXSelector sel,void* ptr){
-  register FXEvent* event=(FXEvent*)ptr;
+  FXEvent* event=(FXEvent*)ptr;
 
   FXTRACE((200,"%p->%s::onKeyPress keysym=0x%04x state=%04x\n",this,getClassName(),((FXEvent*)ptr)->code,((FXEvent*)ptr)->state));
 

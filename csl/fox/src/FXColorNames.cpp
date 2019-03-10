@@ -781,7 +781,7 @@ FXColor fxcolorfromname(const FXchar* colorname){
 
 // Get color name from RGBA
 FXchar* fxnamefromcolor(FXchar* colorname,FXColor color){
-  register FXuint i;
+  FXuint i;
   if(!colorname){fxerror("fxnamefromcolor: NULL colorname argument.\n");}
   if(color && FXALPHAVAL(color)<255){
     sprintf(colorname,"#%02x%02x%02x%02x",FXREDVAL(color),FXGREENVAL(color),FXBLUEVAL(color),FXALPHAVAL(color));

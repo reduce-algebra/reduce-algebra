@@ -82,7 +82,7 @@ int FXRootWindow::ReleaseDC(FXID hdc) const {
 
 // When created, create subwindows ONLY
 void FXRootWindow::create(){
-  register FXWindow *child;
+  FXWindow *child;
   if(!xid){
 
 #ifndef WIN32
@@ -132,7 +132,7 @@ void FXRootWindow::create(){
 
 // Detach window
 void FXRootWindow::detach(){
-  register FXWindow *child;
+  FXWindow *child;
   visual->detach();
   if(xid){
     for(child=getFirst(); child; child=child->getNext()) child->detach();
@@ -143,7 +143,7 @@ void FXRootWindow::detach(){
 
 // When deleted, delete subwindows ONLY
 void FXRootWindow::destroy(){
-  register FXWindow *child;
+  FXWindow *child;
   if(xid){
     for(child=getFirst(); child; child=child->getNext()) child->destroy();
     xid=0;

@@ -192,11 +192,11 @@ FXString FXDirBox::getItemPathname(FXTreeItem *item) const {
 
 // Return the item from the absolute pathname
 FXTreeItem* FXDirBox::getPathnameItem(const FXString& path){
-  register FXFileAssoc *fileassoc;
-  register FXTreeItem *item;
-  register FXIcon *icon;
-  register FXint beg=0;
-  register FXint end=0;
+  FXFileAssoc *fileassoc;
+  FXTreeItem *item;
+  FXIcon *icon;
+  FXint beg=0;
+  FXint end=0;
 
   // Remove old items first
   clearItems();
@@ -256,11 +256,11 @@ FXTreeItem* FXDirBox::getPathnameItem(const FXString& path){
 
 // Return the item from the absolute pathname
 FXTreeItem* FXDirBox::getPathnameItem(const FXString& path){
-  register FXFileAssoc *fileassoc;
-  register FXTreeItem *item,*it;
-  register FXIcon *icon;
-  register FXint beg=0;
-  register FXint end=0;
+  FXFileAssoc *fileassoc;
+  FXTreeItem *item,*it;
+  FXIcon *icon;
+  FXint beg=0;
+  FXint end=0;
   FXchar drivename[10];
 //  FXchar volumename[256];
 //  FXchar filesystem[100];

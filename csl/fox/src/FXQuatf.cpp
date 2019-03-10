@@ -72,8 +72,8 @@ FXQuatf::FXQuatf(const FXMat3f& mat){
 
 // Adjust quaternion length
 FXQuatf& FXQuatf::adjust(){
-  register FXfloat t=x*x+y*y+z*z+w*w;
-  register FXfloat f;
+  FXfloat t=x*x+y*y+z*z+w*w;
+  FXfloat f;
   if(t>0.0f){
     f=1.0f/sqrtf(t);
     x*=f;
@@ -87,8 +87,8 @@ FXQuatf& FXQuatf::adjust(){
 
 // Set axis and angle
 void FXQuatf::setAxisAngle(const FXVec3f& axis,FXfloat phi){
-  register FXfloat a=0.5f*phi;
-  register FXfloat s=sinf(a)/axis.length();
+  FXfloat a=0.5f*phi;
+  FXfloat s=sinf(a)/axis.length();
   x=axis.x*s;
   y=axis.y*s;
   z=axis.z*s;
@@ -100,7 +100,7 @@ void FXQuatf::setAxisAngle(const FXVec3f& axis,FXfloat phi){
 // Remeber that: q = sin(A/2)*(x*i+y*j+z*k)+cos(A/2)
 // for unit quaternion |q| == 1
 void FXQuatf::getAxisAngle(FXVec3f& axis,FXfloat& phi) const {
-  register FXfloat n=sqrtf(x*x+y*y+z*z);
+  FXfloat n=sqrtf(x*x+y*y+z*z);
   if(n>0.0f){
     axis.x=x/n;
     axis.y=y/n;
@@ -118,10 +118,10 @@ void FXQuatf::getAxisAngle(FXVec3f& axis,FXfloat& phi) const {
 
 // Set quaternion from roll (x), pitch (y), yaw (z)
 void FXQuatf::setRollPitchYaw(FXfloat roll,FXfloat pitch,FXfloat yaw){
-  register FXfloat sr,cr,sp,cp,sy,cy;
-  register FXfloat rr=0.5f*roll;
-  register FXfloat pp=0.5f*pitch;
-  register FXfloat yy=0.5f*yaw;
+  FXfloat sr,cr,sp,cp,sy,cy;
+  FXfloat rr=0.5f*roll;
+  FXfloat pp=0.5f*pitch;
+  FXfloat yy=0.5f*yaw;
   sr=sinf(rr); cr=cosf(rr);
   sp=sinf(pp); cp=cosf(pp);
   sy=sinf(yy); cy=cosf(yy);
@@ -134,10 +134,10 @@ void FXQuatf::setRollPitchYaw(FXfloat roll,FXfloat pitch,FXfloat yaw){
 
 // Set quaternion from yaw (z), pitch (y), roll (x)
 void FXQuatf::setYawPitchRoll(FXfloat yaw,FXfloat pitch,FXfloat roll){
-  register FXfloat sr,cr,sp,cp,sy,cy;
-  register FXfloat rr=0.5f*roll;
-  register FXfloat pp=0.5f*pitch;
-  register FXfloat yy=0.5f*yaw;
+  FXfloat sr,cr,sp,cp,sy,cy;
+  FXfloat rr=0.5f*roll;
+  FXfloat pp=0.5f*pitch;
+  FXfloat yy=0.5f*yaw;
   sr=sinf(rr); cr=cosf(rr);
   sp=sinf(pp); cp=cosf(pp);
   sy=sinf(yy); cy=cosf(yy);
@@ -150,10 +150,10 @@ void FXQuatf::setYawPitchRoll(FXfloat yaw,FXfloat pitch,FXfloat roll){
 
 // Set quaternion from roll (x), yaw (z), pitch (y)
 void FXQuatf::setRollYawPitch(FXfloat roll,FXfloat yaw,FXfloat pitch){
-  register FXfloat sr,cr,sp,cp,sy,cy;
-  register FXfloat rr=0.5f*roll;
-  register FXfloat pp=0.5f*pitch;
-  register FXfloat yy=0.5f*yaw;
+  FXfloat sr,cr,sp,cp,sy,cy;
+  FXfloat rr=0.5f*roll;
+  FXfloat pp=0.5f*pitch;
+  FXfloat yy=0.5f*yaw;
   sr=sinf(rr); cr=cosf(rr);
   sp=sinf(pp); cp=cosf(pp);
   sy=sinf(yy); cy=cosf(yy);
@@ -166,10 +166,10 @@ void FXQuatf::setRollYawPitch(FXfloat roll,FXfloat yaw,FXfloat pitch){
 
 // Set quaternion from pitch (y), roll (x),yaw (z)
 void FXQuatf::setPitchRollYaw(FXfloat pitch,FXfloat roll,FXfloat yaw){
-  register FXfloat sr,cr,sp,cp,sy,cy;
-  register FXfloat rr=0.5f*roll;
-  register FXfloat pp=0.5f*pitch;
-  register FXfloat yy=0.5f*yaw;
+  FXfloat sr,cr,sp,cp,sy,cy;
+  FXfloat rr=0.5f*roll;
+  FXfloat pp=0.5f*pitch;
+  FXfloat yy=0.5f*yaw;
   sr=sinf(rr); cr=cosf(rr);
   sp=sinf(pp); cp=cosf(pp);
   sy=sinf(yy); cy=cosf(yy);
@@ -182,10 +182,10 @@ void FXQuatf::setPitchRollYaw(FXfloat pitch,FXfloat roll,FXfloat yaw){
 
 // Set quaternion from pitch (y), yaw (z), roll (x)
 void FXQuatf::setPitchYawRoll(FXfloat pitch,FXfloat yaw,FXfloat roll){
-  register FXfloat sr,cr,sp,cp,sy,cy;
-  register FXfloat rr=0.5f*roll;
-  register FXfloat pp=0.5f*pitch;
-  register FXfloat yy=0.5f*yaw;
+  FXfloat sr,cr,sp,cp,sy,cy;
+  FXfloat rr=0.5f*roll;
+  FXfloat pp=0.5f*pitch;
+  FXfloat yy=0.5f*yaw;
   sr=sinf(rr); cr=cosf(rr);
   sp=sinf(pp); cp=cosf(pp);
   sy=sinf(yy); cy=cosf(yy);
@@ -198,10 +198,10 @@ void FXQuatf::setPitchYawRoll(FXfloat pitch,FXfloat yaw,FXfloat roll){
 
 // Set quaternion from yaw (z), roll (x), pitch (y)
 void FXQuatf::setYawRollPitch(FXfloat yaw,FXfloat roll,FXfloat pitch){
-  register FXfloat sr,cr,sp,cp,sy,cy;
-  register FXfloat rr=0.5f*roll;
-  register FXfloat pp=0.5f*pitch;
-  register FXfloat yy=0.5f*yaw;
+  FXfloat sr,cr,sp,cp,sy,cy;
+  FXfloat rr=0.5f*roll;
+  FXfloat pp=0.5f*pitch;
+  FXfloat yy=0.5f*yaw;
   sr=sinf(rr); cr=cosf(rr);
   sp=sinf(pp); cp=cosf(pp);
   sy=sinf(yy); cy=cosf(yy);
@@ -219,7 +219,7 @@ void FXQuatf::setYawRollPitch(FXfloat yaw,FXfloat roll,FXfloat pitch){
 // test Sy against -1 and 1; this is numerically more stable, as
 // asin doesn't like arguments outside [-1,1].
 void FXQuatf::getRollPitchYaw(FXfloat& roll,FXfloat& pitch,FXfloat& yaw) const {
-  register FXfloat s=-2.0f*(x*z-w*y);
+  FXfloat s=-2.0f*(x*z-w*y);
   if(s<1.0f){
     if(-1.0f<s){
       roll=atan2f(2.0f*(y*z+w*x),1.0f-2.0f*(x*x+y*y));
@@ -242,7 +242,7 @@ void FXQuatf::getRollPitchYaw(FXfloat& roll,FXfloat& pitch,FXfloat& yaw) const {
 
 // Obtain yaw, pitch, and roll
 void FXQuatf::getYawPitchRoll(FXfloat& yaw,FXfloat& pitch,FXfloat& roll) const {
-  register FXfloat s=2.0f*(x*z+w*y);
+  FXfloat s=2.0f*(x*z+w*y);
   if(s<1.0f){
     if(-1.0f<s){
       yaw=atan2f(-2.0f*(x*y-w*z),1.0f-2.0f*(y*y+z*z));
@@ -265,7 +265,7 @@ void FXQuatf::getYawPitchRoll(FXfloat& yaw,FXfloat& pitch,FXfloat& roll) const {
 
 // Obtain roll, yaw, pitch
 void FXQuatf::getRollYawPitch(FXfloat& roll,FXfloat& yaw,FXfloat& pitch) const {
-  register FXfloat s=2.0f*(x*y+w*z);
+  FXfloat s=2.0f*(x*y+w*z);
   if(s<1.0f){
     if(-1.0f<s){
       roll=atan2f(-2.0f*(y*z-w*x),1.0f-2.0f*(x*x+z*z));
@@ -288,7 +288,7 @@ void FXQuatf::getRollYawPitch(FXfloat& roll,FXfloat& yaw,FXfloat& pitch) const {
 
 // Obtain pitch, roll, yaw
 void FXQuatf::getPitchRollYaw(FXfloat& pitch,FXfloat& roll,FXfloat& yaw) const {
-  register FXfloat s=2.0f*(y*z+w*x);
+  FXfloat s=2.0f*(y*z+w*x);
   if(s<1.0f){
     if(-1.0f<s){
       pitch=atan2f(-2.0f*(x*z-w*y),1.0f-2.0f*(x*x+y*y));
@@ -311,7 +311,7 @@ void FXQuatf::getPitchRollYaw(FXfloat& pitch,FXfloat& roll,FXfloat& yaw) const {
 
 // Obtain pitch, yaw, roll
 void FXQuatf::getPitchYawRoll(FXfloat& pitch,FXfloat& yaw,FXfloat& roll) const {
-  register FXfloat s=-2.0f*(x*y-w*z);
+  FXfloat s=-2.0f*(x*y-w*z);
   if(s<1.0f){
     if(-1.0f<s){
       pitch=atan2f(2.0f*(x*z+w*y),1.0f-2.0f*(y*y+z*z));
@@ -334,7 +334,7 @@ void FXQuatf::getPitchYawRoll(FXfloat& pitch,FXfloat& yaw,FXfloat& roll) const {
 
 // Obtain yaw, roll, pitch
 void FXQuatf::getYawRollPitch(FXfloat& yaw,FXfloat& roll,FXfloat& pitch) const {
-  register FXfloat s=-2.0f*(y*z-w*x);
+  FXfloat s=-2.0f*(y*z-w*x);
   if(s<1.0f){
     if(-1.0f<s){
       yaw=atan2f(2.0f*(x*y+w*z),1.0f-2.0f*(x*x+z*z));
@@ -357,8 +357,8 @@ void FXQuatf::getYawRollPitch(FXfloat& yaw,FXfloat& roll,FXfloat& pitch) const {
 
 // Set quaternion from axes
 void FXQuatf::setAxes(const FXVec3f& ex,const FXVec3f& ey,const FXVec3f& ez){
-  register FXfloat trace=ex.x+ey.y+ez.z;
-  register FXfloat scale;
+  FXfloat trace=ex.x+ey.y+ez.z;
+  FXfloat scale;
   if(trace>0.0f){
     scale=sqrtf(1.0f+trace);
     w=0.5f*scale;
@@ -393,18 +393,18 @@ void FXQuatf::setAxes(const FXVec3f& ex,const FXVec3f& ey,const FXVec3f& ez){
 
 // Get quaternion axes
 void FXQuatf::getAxes(FXVec3f& ex,FXVec3f& ey,FXVec3f& ez) const {
-  register FXfloat tx=2.0f*x;
-  register FXfloat ty=2.0f*y;
-  register FXfloat tz=2.0f*z;
-  register FXfloat twx=tx*w;
-  register FXfloat twy=ty*w;
-  register FXfloat twz=tz*w;
-  register FXfloat txx=tx*x;
-  register FXfloat txy=ty*x;
-  register FXfloat txz=tz*x;
-  register FXfloat tyy=ty*y;
-  register FXfloat tyz=tz*y;
-  register FXfloat tzz=tz*z;
+  FXfloat tx=2.0f*x;
+  FXfloat ty=2.0f*y;
+  FXfloat tz=2.0f*z;
+  FXfloat twx=tx*w;
+  FXfloat twy=ty*w;
+  FXfloat twz=tz*w;
+  FXfloat txx=tx*x;
+  FXfloat txy=ty*x;
+  FXfloat txz=tz*x;
+  FXfloat tyy=ty*y;
+  FXfloat tyz=tz*y;
+  FXfloat tzz=tz*z;
   ex.x=1.0f-tyy-tzz;
   ex.y=txy+twz;
   ex.z=txz-twy;
@@ -419,24 +419,24 @@ void FXQuatf::getAxes(FXVec3f& ex,FXVec3f& ey,FXVec3f& ez) const {
 
 // Obtain local x axis
 FXVec3f FXQuatf::getXAxis() const {
-  register FXfloat ty=2.0f*y;
-  register FXfloat tz=2.0f*z;
+  FXfloat ty=2.0f*y;
+  FXfloat tz=2.0f*z;
   return FXVec3f(1.0f-ty*y-tz*z,ty*x+tz*w,tz*x-ty*w);
   }
 
 
 // Obtain local y axis
 FXVec3f FXQuatf::getYAxis() const {
-  register FXfloat tx=2.0f*x;
-  register FXfloat tz=2.0f*z;
+  FXfloat tx=2.0f*x;
+  FXfloat tz=2.0f*z;
   return FXVec3f(tx*y-tz*w,1.0f-tx*x-tz*z,tz*y+tx*w);
   }
 
 
 // Obtain local z axis
 FXVec3f FXQuatf::getZAxis() const {
-  register FXfloat tx=2.0f*x;
-  register FXfloat ty=2.0f*y;
+  FXfloat tx=2.0f*x;
+  FXfloat ty=2.0f*y;
   return FXVec3f(tx*z+ty*w,ty*z-tx*w,1.0f-tx*x-ty*y);
   }
 
@@ -445,8 +445,8 @@ FXVec3f FXQuatf::getZAxis() const {
 // Given q = theta*(x*i+y*j+z*k), where length of (x,y,z) is 1,
 // then exp(q) = sin(theta)*(x*i+y*j+z*k)+cos(theta).
 FXQuatf FXQuatf::exp() const {
-  register FXfloat theta=sqrtf(x*x+y*y+z*z);
-  register FXfloat scale;
+  FXfloat theta=sqrtf(x*x+y*y+z*z);
+  FXfloat scale;
   FXQuatf result(x,y,z,cosf(theta));
   if(theta>0.000001f){
     scale=sinf(theta)/theta;
@@ -462,8 +462,8 @@ FXQuatf FXQuatf::exp() const {
 // Given q = sin(theta)*(x*i+y*j+z*k)+cos(theta), length of (x,y,z) is 1,
 // then log(q) = theta*(x*i+y*j+z*k).
 FXQuatf FXQuatf::log() const {
-  register FXfloat scale=sqrtf(x*x+y*y+z*z);
-  register FXfloat theta=atan2f(scale,w);
+  FXfloat scale=sqrtf(x*x+y*y+z*z);
+  FXfloat theta=atan2f(scale,w);
   FXQuatf result(x,y,z,0.0f);
   if(scale>0.0f){
     scale=theta/scale;
@@ -477,7 +477,7 @@ FXQuatf FXQuatf::log() const {
 
 // Invert quaternion
 FXQuatf FXQuatf::invert() const {
-  register FXfloat n=x*x+y*y+z*z+w*w;
+  FXfloat n=x*x+y*y+z*z+w*w;
   return FXQuatf(-x/n,-y/n,-z/n,w/n);
   }
 
@@ -525,7 +525,7 @@ FXQuatf FXQuatf::conj() const {
 //  2 * cos(theta/2)   = sqrt(2 + 2 * (f . t))
 //
 FXQuatf& FXQuatf::arc(const FXVec3f& f,const FXVec3f& t){
-  register FXfloat dot=f.x*t.x+f.y*t.y+f.z*t.z,div;
+  FXfloat dot=f.x*t.x+f.y*t.y+f.z*t.z,div;
   if(dot> 0.999999f){           // Unit quaternion
     x= 0.0f;
     y= 0.0f;
@@ -568,8 +568,8 @@ FXQuatf& FXQuatf::arc(const FXVec3f& f,const FXVec3f& t){
 
 // Spherical lerp
 FXQuatf& FXQuatf::lerp(const FXQuatf& u,const FXQuatf& v,FXfloat f){
-  register FXfloat alpha,beta,theta,sin_t,cos_t;
-  register FXint flip=0;
+  FXfloat alpha,beta,theta,sin_t,cos_t;
+  FXint flip=0;
   cos_t = u.x*v.x+u.y*v.y+u.z*v.z+u.w*v.w;
   if(cos_t<0.0f){ cos_t = -cos_t; flip=1; }
   if((1.0f-cos_t)<0.000001f){

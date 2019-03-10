@@ -83,8 +83,8 @@ FXWindow* FXScrollWindow::contentWindow() const {
 
 // Determine content width of scroll area
 FXint FXScrollWindow::getContentWidth(){
-  register FXuint hints;
-  register FXint w=1;
+  FXuint hints;
+  FXint w=1;
   if(contentWindow()){
     hints=contentWindow()->getLayoutHints();
     if(hints&LAYOUT_FIX_WIDTH) w=contentWindow()->getWidth();
@@ -96,8 +96,8 @@ FXint FXScrollWindow::getContentWidth(){
 
 // Determine content height of scroll area
 FXint FXScrollWindow::getContentHeight(){
-  register FXuint hints;
-  register FXint h=1;
+  FXuint hints;
+  FXint h=1;
   if(contentWindow()){
     hints=contentWindow()->getLayoutHints();
     if(hints&LAYOUT_FIX_HEIGHT) h=contentWindow()->getHeight();
@@ -109,9 +109,9 @@ FXint FXScrollWindow::getContentHeight(){
 
 // Move contents; moves child window
 void FXScrollWindow::moveContents(FXint x,FXint y){
-  register FXWindow* contents=contentWindow();
-  register FXint xx,yy,ww,hh;
-  register FXuint hints;
+  FXWindow* contents=contentWindow();
+  FXint xx,yy,ww,hh;
+  FXuint hints;
   if(contents){
 
     // Get hints
@@ -147,9 +147,9 @@ void FXScrollWindow::moveContents(FXint x,FXint y){
 
 // Recalculate layout
 void FXScrollWindow::layout(){
-  register FXWindow* contents=contentWindow();
-  register FXint xx,yy,ww,hh;
-  register FXuint hints;
+  FXWindow* contents=contentWindow();
+  FXint xx,yy,ww,hh;
+  FXuint hints;
 
   // Layout scroll bars and viewport
   FXScrollArea::layout();

@@ -199,7 +199,7 @@ FXMat4f& FXMat4f::operator*=(FXfloat w){
 
 // Multiply matrix by matrix
 FXMat4f& FXMat4f::operator*=(const FXMat4f& w){
-  register FXfloat x,y,z,h;
+  FXfloat x,y,z,h;
   x=m[0][0]; y=m[0][1]; z=m[0][2]; h=m[0][3];
   m[0][0]=x*w[0][0]+y*w[1][0]+z*w[2][0]+h*w[3][0];
   m[0][1]=x*w[0][1]+y*w[1][1]+z*w[2][1]+h*w[3][1];
@@ -263,7 +263,7 @@ FXMat4f FXMat4f::operator-(const FXMat4f& w) const {
 
 // Composite matrices
 FXMat4f FXMat4f::operator*(const FXMat4f& w) const {
-  register FXfloat x,y,z,h;
+  FXfloat x,y,z,h;
   FXMat4f r;
   x=m[0][0]; y=m[0][1]; z=m[0][2]; h=m[0][3];
   r[0][0]=x*w[0][0]+y*w[1][0]+z*w[2][0]+h*w[3][0];
@@ -327,14 +327,14 @@ FXMat4f operator/(const FXMat4f& a,FXfloat x){
 
 // Matrix times vector
 FXVec4f FXMat4f::operator*(const FXVec4f& v) const {
-  register FXfloat x=v.x,y=v.y,z=v.z,w=v.w;
+  FXfloat x=v.x,y=v.y,z=v.z,w=v.w;
   return FXVec4f(x*m[0][0]+y*m[0][1]+z*m[0][2]+w*m[0][3], x*m[1][0]+y*m[1][1]+z*m[1][2]+w*m[1][3], x*m[2][0]+y*m[2][1]+z*m[2][2]+w*m[2][3], x*m[3][0]+y*m[3][1]+z*m[3][2]+w*m[3][3]);
   }
 
 
 // Matrix times vector
 FXVec3f FXMat4f::operator*(const FXVec3f& v) const {
-  register FXfloat x=v.x,y=v.y,z=v.z;
+  FXfloat x=v.x,y=v.y,z=v.z;
   FXASSERT(m[0][3]==0.0f && m[1][3]==0.0f && m[2][3]==0.0f && m[3][3]==1.0f);
   return FXVec3f(x*m[0][0]+y*m[0][1]+z*m[0][2]+m[0][3], x*m[1][0]+y*m[1][1]+z*m[1][2]+m[1][3], x*m[2][0]+y*m[2][1]+z*m[2][2]+m[2][3]);
   }
@@ -352,7 +352,7 @@ FXMat4f& FXMat4f::eye(){
 
 // Orthographic projection
 FXMat4f& FXMat4f::ortho(FXfloat left,FXfloat right,FXfloat bottom,FXfloat top,FXfloat hither,FXfloat yon){
-  register FXfloat x,y,z,tx,ty,tz,rl,tb,yh,r0,r1,r2,r3;
+  FXfloat x,y,z,tx,ty,tz,rl,tb,yh,r0,r1,r2,r3;
   rl=right-left;
   tb=top-bottom;
   yh=yon-hither;
@@ -401,7 +401,7 @@ FXMat4f& FXMat4f::ortho(FXfloat left,FXfloat right,FXfloat bottom,FXfloat top,FX
 
 // Perspective projection
 FXMat4f& FXMat4f::frustum(FXfloat left,FXfloat right,FXfloat bottom,FXfloat top,FXfloat hither,FXfloat yon){
-  register FXfloat x,y,a,b,c,d,rl,tb,yh,r0,r1,r2,r3;
+  FXfloat x,y,a,b,c,d,rl,tb,yh,r0,r1,r2,r3;
   FXASSERT(0.0f<hither && hither<yon);  // Throw exception in future
   rl=right-left;
   tb=top-bottom;
@@ -461,7 +461,7 @@ FXMat4f& FXMat4f::left(){
 
 // Rotate using quaternion
 FXMat4f& FXMat4f::rot(const FXQuatf& q){
-  register FXfloat x,y,z;
+  FXfloat x,y,z;
 
   // Get rotation matrix
   FXMat3f r(q);
@@ -489,12 +489,12 @@ FXMat4f& FXMat4f::rot(const FXQuatf& q){
 
 // Rotate by angle (cos,sin) about arbitrary vector
 FXMat4f& FXMat4f::rot(const FXVec3f& v,FXfloat c,FXfloat s){
-  register FXfloat xx,yy,zz,xy,yz,zx,xs,ys,zs,t;
-  register FXfloat r00,r01,r02,r10,r11,r12,r20,r21,r22;
-  register FXfloat x=v.x;
-  register FXfloat y=v.y;
-  register FXfloat z=v.z;
-  register FXfloat mag=x*x+y*y+z*z;
+  FXfloat xx,yy,zz,xy,yz,zx,xs,ys,zs,t;
+  FXfloat r00,r01,r02,r10,r11,r12,r20,r21,r22;
+  FXfloat x=v.x;
+  FXfloat y=v.y;
+  FXfloat z=v.z;
+  FXfloat mag=x*x+y*y+z*z;
   FXASSERT(-1.00001f<c && c<1.00001f && -1.00001f<s && s<1.00001f);
   if(mag<=1.0E-30f) return *this;         // Rotation about 0-length axis
   mag=sqrtf(mag);
@@ -550,7 +550,7 @@ FXMat4f& FXMat4f::rot(const FXVec3f& v,FXfloat phi){
 
 // Rotate about x-axis
 FXMat4f& FXMat4f::xrot(FXfloat c,FXfloat s){
-  register FXfloat u,v;
+  FXfloat u,v;
   FXASSERT(-1.00001f<c && c<1.00001f && -1.00001f<s && s<1.00001f);
   u=m[1][0]; v=m[2][0]; m[1][0]=c*u+s*v; m[2][0]=c*v-s*u;
   u=m[1][1]; v=m[2][1]; m[1][1]=c*u+s*v; m[2][1]=c*v-s*u;
@@ -568,7 +568,7 @@ FXMat4f& FXMat4f::xrot(FXfloat phi){
 
 // Rotate about y-axis
 FXMat4f& FXMat4f::yrot(FXfloat c,FXfloat s){
-  register FXfloat u,v;
+  FXfloat u,v;
   FXASSERT(-1.00001f<c && c<1.00001f && -1.00001f<s && s<1.00001f);
   u=m[0][0]; v=m[2][0]; m[0][0]=c*u-s*v; m[2][0]=c*v+s*u;
   u=m[0][1]; v=m[2][1]; m[0][1]=c*u-s*v; m[2][1]=c*v+s*u;
@@ -586,7 +586,7 @@ FXMat4f& FXMat4f::yrot(FXfloat phi){
 
 // Rotate about z-axis
 FXMat4f& FXMat4f::zrot(FXfloat c,FXfloat s){
-  register FXfloat u,v;
+  FXfloat u,v;
   FXASSERT(-1.00001f<c && c<1.00001f && -1.00001f<s && s<1.00001f);
   u=m[0][0]; v=m[1][0]; m[0][0]=c*u+s*v; m[1][0]=c*v-s*u;
   u=m[0][1]; v=m[1][1]; m[0][1]=c*u+s*v; m[1][1]=c*v-s*u;
@@ -661,8 +661,8 @@ FXMat4f FXMat4f::transpose() const {
 FXMat4f FXMat4f::invert() const {
   FXMat4f r(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
   FXMat4f x(*this);
-  register FXfloat pvv,t;
-  register int i,j,pvi;
+  FXfloat pvv,t;
+  int i,j,pvi;
   for(i=0; i<4; i++){
     pvv=x[i][i];
     pvi=i;
@@ -693,7 +693,7 @@ FXMat4f FXMat4f::invert() const {
 
 // Look at
 FXMat4f& FXMat4f::look(const FXVec3f& eye,const FXVec3f& cntr,const FXVec3f& vup){
-  register FXfloat x0,x1,x2,tx,ty,tz;
+  FXfloat x0,x1,x2,tx,ty,tz;
   FXVec3f rz,rx,ry;
   rz=normalize(eye-cntr);
   rx=normalize(vup^rz);

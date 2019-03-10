@@ -72,7 +72,7 @@ struct str_data {
 
 
 static int sgetc(struct str_data* sd){
-  register unsigned int ret = *sd->str++;
+  unsigned int ret = *sd->str++;
   return ret ? (int)ret : -1;
   }
 
@@ -198,8 +198,8 @@ scan_hex:       tpch=A_GETC(fn);
                 }
               }
             while(tpch!=-1){
-              register unsigned long c=tpch&0xff;
-              register unsigned long d=c|0x20;
+              unsigned long c=tpch&0xff;
+              unsigned long d=c|0x20;
               c=(d>='a'?d-'a'+10:c<='9'?c-'0':0xff);
               if(c>=_div) break;
               d=v*_div;

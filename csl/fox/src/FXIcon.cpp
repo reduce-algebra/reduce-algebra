@@ -79,8 +79,8 @@ FXIcon::FXIcon(FXApp* a,const FXColor *pix,FXColor clr,FXuint opts,FXint w,FXint
 
 // Guess alpha color based on corners; the initial guess is standard GUI color
 FXColor FXIcon::guesstransp(){
-  register FXColor guess=FXRGB(192,192,192);
-  register FXint best,t;
+  FXColor guess=FXRGB(192,192,192);
+  FXint best,t;
   FXColor color[4];
   if(data && 0<width && 0<height){
     best=-1;
@@ -99,9 +99,9 @@ FXColor FXIcon::guesstransp(){
 
 // Determine threshold for etch mask
 static FXshort guessthresh(const FXColor *data,FXint width,FXint height){
-  register FXint med=(width*height)>>1;
-  register FXint cum,i,j;
-  register FXshort guess;
+  FXint med=(width*height)>>1;
+  FXint cum,i,j;
+  FXshort guess;
   FXint frequency[766];
   memset(frequency,0,sizeof(frequency));
   for(i=0; i<width*height; ++i){
@@ -218,12 +218,12 @@ void FXIcon::destroy(){
 // Render icon X Windows
 void FXIcon::render(){
   if(xid){
-    register Visual *vis;
-    register XImage *xim=NULL;
-    register bool shmi=false;
-    register FXColor *img;
-    register FXint x,y;
-    register FXshort thresh;    // Local variable in 1.6
+    Visual *vis;
+    XImage *xim=NULL;
+    bool shmi=false;
+    FXColor *img;
+    FXint x,y;
+    FXshort thresh;    // Local variable in 1.6
     XGCValues values;
     GC gc;
 #ifdef HAVE_XSHM_H
@@ -408,12 +408,12 @@ struct BITMAPINFO2 {
 // Render Icon MS-Windows
 void FXIcon::render(){
   if(xid){
-    register FXint bytes_per_line,x,y;
-    register FXuchar *msk,*ets;
-    register FXColor *img;
+    FXint bytes_per_line,x,y;
+    FXuchar *msk,*ets;
+    FXColor *img;
     FXuchar *maskdata;
     FXuchar *etchdata;
-    register FXshort thresh;    // Local variable in 1.6
+    FXshort thresh;    // Local variable in 1.6
     BITMAPINFO2 bmi;
     HDC hdcmsk;
 

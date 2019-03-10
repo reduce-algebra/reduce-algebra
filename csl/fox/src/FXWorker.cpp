@@ -1,4 +1,3 @@
-//
 // "FXWorker.cpp"                            Copyright A C Norman 2003-2018
 //
 //
@@ -383,7 +382,7 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // lets me wrap lines at exactly 80 columns, regardless of how whitespace
 // happens to lie.
     LOG("now the FXTerminal object\n");
-    text = new FXTerminal(main_window, NULL, 0,
+    text = new FXTerminal(argv[0], main_window, NULL, 0,
         HSCROLLER_NEVER | TEXT_FIXEDWRAP | TEXT_WORDWRAP | TEXT_COLUMNWRAP |
         TEXT_SHOWACTIVE | LAYOUT_FILL_X | LAYOUT_FILL_Y);
     LOG("Next a menupane\n");
@@ -656,10 +655,8 @@ FXFont *selectFont(const char *name, int size,
     return f;
 }
 
-
 void fwin_callback_on_delay(delay_callback_t *f)
-{
-    delay_callback = f;
+{   delay_callback = f;
 }
 
 
@@ -1000,10 +997,7 @@ void fwin_exit(int return_code)
         pthread_exit(&returncode);
 #endif
     }
-    if (using_termed)
-    {   input_history_end();
-        term_close();
-    }
+    term_close();
     exit(return_code);
 }
 

@@ -69,7 +69,7 @@ bool fxcheckPCX(FXStream& store){
 
 // Read possibly compressed scanline
 static void readscanline(FXStream& store,FXuchar line[],int size,int compressed){
-  register FXint count,i=0;
+  FXint count,i=0;
   FXuchar cc;
   if(compressed==1){
     while(i<size){

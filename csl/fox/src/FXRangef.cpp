@@ -53,27 +53,27 @@ FXRangef::FXRangef(const FXSpheref& sphere):
 
 // Longest side
 FXfloat FXRangef::longest() const {
-  register FXfloat x=upper.x-lower.x;
-  register FXfloat y=upper.y-lower.y;
-  register FXfloat z=upper.z-lower.z;
+  FXfloat x=upper.x-lower.x;
+  FXfloat y=upper.y-lower.y;
+  FXfloat z=upper.z-lower.z;
   return FXMAX3(x,y,z);
   }
 
 
 // Shortest side
 FXfloat FXRangef::shortest() const {
-  register FXfloat x=upper.x-lower.x;
-  register FXfloat y=upper.y-lower.y;
-  register FXfloat z=upper.z-lower.z;
+  FXfloat x=upper.x-lower.x;
+  FXfloat y=upper.y-lower.y;
+  FXfloat z=upper.z-lower.z;
   return FXMIN3(x,y,z);
   }
 
 
 // Length of diagonal
 FXfloat FXRangef::diameter() const {
-  register FXfloat x=upper.x-lower.x;
-  register FXfloat y=upper.y-lower.y;
-  register FXfloat z=upper.z-lower.z;
+  FXfloat x=upper.x-lower.x;
+  FXfloat y=upper.y-lower.y;
+  FXfloat z=upper.z-lower.z;
   return sqrtf(x*x+y*y+z*z);
   }
 
@@ -225,9 +225,9 @@ FXint FXRangef::intersect(const FXVec4f& plane) const {
 
 // Intersect box with ray u-v
 bool FXRangef::intersect(const FXVec3f& u,const FXVec3f& v){
-  register FXfloat d,ni,fi,t;
-  register FXfloat f= FLT_MAX;
-  register FXfloat n=-FLT_MAX;
+  FXfloat d,ni,fi,t;
+  FXfloat f= FLT_MAX;
+  FXfloat n=-FLT_MAX;
   d = v.x-u.x;
   if(d==0.0f){
     if((upper.x<u.x) || (u.x<lower.x)) return false;

@@ -63,7 +63,7 @@ FXVec4d::operator FXColor() const {
 
 
 FXVec4d normalize(const FXVec4d& v){
-  register FXdouble t=v.length();
+  FXdouble t=v.length();
   if(t>0.0){ return FXVec4d(v.x/t,v.y/t,v.z/t,v.w/t); }
   return FXVec4d(0.0,0.0,0.0,0.0);
   }
@@ -92,7 +92,7 @@ FXVec4d plane(const FXVec3d& vec,const FXVec3d& p){
 
 // Compute plane equation from 4 vector
 FXVec4d plane(const FXVec4d& vec){
-  register FXdouble t=sqrt(vec.x*vec.x+vec.y*vec.y+vec.z*vec.z);
+  FXdouble t=sqrt(vec.x*vec.x+vec.y*vec.y+vec.z*vec.z);
   return FXVec4d(vec.x/t,vec.y/t,vec.z/t,vec.w/t);
   }
 

@@ -134,7 +134,7 @@ FXRegistry::FXRegistry(const FXString& akey,const FXString& vkey):applicationkey
 // Read registry
 bool FXRegistry::read(){
   FXString dirname;
-  register bool ok=false;
+  bool ok=false;
 
 #ifdef WIN32      // Either file based or system registry for WIN32
 

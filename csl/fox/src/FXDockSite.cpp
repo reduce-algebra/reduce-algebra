@@ -102,9 +102,9 @@ FXbool FXDockSite::wrapGalleys() const {
 
 // Compute minimum width based on child layout hints
 FXint FXDockSite::getDefaultWidth(){
-  register FXint total=0,galw=0,any=0,w;
-  register FXWindow *child;
-  register FXuint hints;
+  FXint total=0,galw=0,any=0,w;
+  FXWindow *child;
+  FXuint hints;
 
   // Vertically oriented
   if(options&LAYOUT_SIDE_LEFT){
@@ -150,9 +150,9 @@ FXint FXDockSite::getDefaultWidth(){
 
 // Compute minimum height based on child layout hints
 FXint FXDockSite::getDefaultHeight(){
-  register FXint total=0,galh=0,any=0,h;
-  register FXWindow *child;
-  register FXuint hints;
+  FXint total=0,galh=0,any=0,h;
+  FXWindow *child;
+  FXuint hints;
 
   // Vertically oriented
   if(options&LAYOUT_SIDE_LEFT){
@@ -198,9 +198,9 @@ FXint FXDockSite::getDefaultHeight(){
 
 // Return width for given height (vertical orientation)
 FXint FXDockSite::getWidthForHeight(FXint givenheight){
-  register FXint space,total,galh,galw,any,w,h;
-  register FXWindow *child;
-  register FXuint hints;
+  FXint space,total,galh,galw,any,w,h;
+  FXWindow *child;
+  FXuint hints;
   total=galh=galw=any=0;
   space=givenheight-padtop-padbottom-(border<<1);
   for(child=getFirst(); child; child=child->getNext()){
@@ -227,9 +227,9 @@ FXint FXDockSite::getWidthForHeight(FXint givenheight){
 
 // Return height for given width (horizontal orientation)
 FXint FXDockSite::getHeightForWidth(FXint givenwidth){
-  register FXint space,total,galh,galw,any,w,h;
-  register FXWindow *child;
-  register FXuint hints;
+  FXint space,total,galh,galw,any,w,h;
+  FXWindow *child;
+  FXuint hints;
   total=galh=galw=any=0;
   space=givenwidth-padleft-padright-(border<<1);
   for(child=getFirst(); child; child=child->getNext()){
@@ -256,9 +256,9 @@ FXint FXDockSite::getHeightForWidth(FXint givenwidth){
 
 // Determine vertical galley size
 FXint FXDockSite::galleyWidth(FXWindow *begin,FXWindow*& end,FXint space,FXint& require,FXint& expand) const {
-  register FXint galley,any,w,h;
-  register FXWindow *child;
-  register FXuint hints;
+  FXint galley,any,w,h;
+  FXWindow *child;
+  FXuint hints;
   require=expand=galley=any=0;
   for(child=end=begin; child; end=child,child=child->getNext()){
     if(child->shown()){
@@ -287,9 +287,9 @@ FXint FXDockSite::galleyWidth(FXWindow *begin,FXWindow*& end,FXint space,FXint& 
 
 // Determine horizontal galley size
 FXint FXDockSite::galleyHeight(FXWindow *begin,FXWindow*& end,FXint space,FXint& require,FXint& expand) const {
-  register FXint galley,any,w,h;
-  register FXWindow *child;
-  register FXuint hints;
+  FXint galley,any,w,h;
+  FXWindow *child;
+  FXuint hints;
   require=expand=galley=any=0;
   for(child=end=begin; child; end=child,child=child->getNext()){
     if(child->shown()){

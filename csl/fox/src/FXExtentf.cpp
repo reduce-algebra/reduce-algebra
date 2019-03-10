@@ -42,24 +42,24 @@ namespace FX {
 
 // Longest side
 FXfloat FXExtentf::longest() const {
-  register FXfloat x=upper.x-lower.x;
-  register FXfloat y=upper.y-lower.y;
+  FXfloat x=upper.x-lower.x;
+  FXfloat y=upper.y-lower.y;
   return FXMAX(x,y);
   }
 
 
 // Shortest side
 FXfloat FXExtentf::shortest() const {
-  register FXfloat x=upper.x-lower.x;
-  register FXfloat y=upper.y-lower.y;
+  FXfloat x=upper.x-lower.x;
+  FXfloat y=upper.y-lower.y;
   return FXMIN(x,y);
   }
 
 
 // Length of diagonal
 FXfloat FXExtentf::diameter() const {
-  register FXfloat x=upper.x-lower.x;
-  register FXfloat y=upper.y-lower.y;
+  FXfloat x=upper.x-lower.x;
+  FXfloat y=upper.y-lower.y;
   return sqrtf(x*x+y*y);
   }
 

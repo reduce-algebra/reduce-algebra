@@ -60,8 +60,8 @@ static inline FXuint read16(FXStream& store){
 
 
 static bool loadTarga32(FXStream& store,FXColor* data,FXint width,FXint height,FXuchar imgdescriptor,FXuchar ImageType){
-  register FXuchar *pp;
-  register FXint i,j,rc;
+  FXuchar *pp;
+  FXint i,j,rc;
   FXuchar R,G,B,A,c;
 
   // 2 - Uncompressed, RGB images.
@@ -198,8 +198,8 @@ static bool loadTarga32(FXStream& store,FXColor* data,FXint width,FXint height,F
 
 
 static bool loadTarga24(FXStream& store,FXColor* data,FXint width,FXint height,FXuchar imgdescriptor,FXuchar ImageType){
-  register int i,j,rc;
-  register FXuchar *pp;
+  int i,j,rc;
+  FXuchar *pp;
   FXuchar R,G,B,c;
 
   // 2 - Uncompressed, RGB images.
@@ -330,9 +330,9 @@ static bool loadTarga24(FXStream& store,FXColor* data,FXint width,FXint height,F
 
 
 static bool loadTarga16(FXStream& store,FXColor* data,FXint width,FXint height,FXuchar imgdescriptor,FXuchar ImageType){
-  register FXushort rgb16;
-  register FXuchar *pp;
-  register int i,j,rc;
+  FXushort rgb16;
+  FXuchar *pp;
+  int i,j,rc;
   FXuchar R,G,B,c;
 
   // 2 - Uncompressed, RGB images.
@@ -466,8 +466,8 @@ static bool loadTarga16(FXStream& store,FXColor* data,FXint width,FXint height,F
 
 
 static bool loadTarga8(FXStream& store,FXColor* data,FXint width,FXint height,FXuchar colormap[][4],FXuchar imgdescriptor,FXuchar ImageType){
-  register FXint i,j,rc;
-  register FXuchar *pp;
+  FXint i,j,rc;
+  FXuchar *pp;
   FXuchar R,G,B,A,c;
 
   // 1 - Uncompressed, color-mapped images
@@ -602,8 +602,8 @@ static bool loadTarga8(FXStream& store,FXColor* data,FXint width,FXint height,FX
 
 
 static bool loadTargaGray(FXStream& store,FXColor* data,FXint width,FXint height,FXuchar imgdescriptor,FXuchar ImageType){
-  register FXint i,j,rc;
-  register FXuchar *pp;
+  FXint i,j,rc;
+  FXuchar *pp;
   FXuchar c;
 
   // 3 - Uncompressed, black and white images.

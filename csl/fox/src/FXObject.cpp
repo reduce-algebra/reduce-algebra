@@ -73,7 +73,7 @@ FXint fxcalloc(void** ptr,unsigned long size){
 
 // Resize memory
 FXint fxresize(void** ptr,unsigned long size){
-  register void *p=NULL;
+  void *p=NULL;
   if(size!=0){
     if((p=realloc(*ptr,size))==NULL) return FALSE;
     }
@@ -98,7 +98,7 @@ FXint fxmemdup(void** ptr,const void* src,unsigned long size){
 
 // String duplicate
 FXchar *fxstrdup(const FXchar* str){
-  register FXchar *copy;
+  FXchar *copy;
   if(str!=NULL && (copy=(FXchar*)malloc(strlen(str)+1))!=NULL){
     strcpy(copy,str);
     return copy;
@@ -126,9 +126,9 @@ FXuint              FXMetaClass::nmetaClasses=0;
 
 // Hash function for string
 static inline FXuint hashstring(const FXchar* str){
-  register const FXuchar *s=(const FXuchar*)str;
-  register FXuint h=0;
-  register FXuint c;
+  const FXuchar *s=(const FXuchar*)str;
+  FXuint h=0;
+  FXuint c;
   while((c=*s++)!='\0'){
     h = ((h << 5) + h) ^ c;
     }
@@ -139,7 +139,7 @@ static inline FXuint hashstring(const FXchar* str){
 // Constructor adds metaclass to the table
 FXMetaClass::FXMetaClass(const FXchar* name,FXObject *(fac)(),const FXMetaClass* base,const void* ass,FXuint nass,FXuint assz):
   className(name),manufacture(fac),baseClass(base),assoc(ass),nassocs(nass),assocsz(assz){
-  register FXuint p,x,m;
+  FXuint p,x,m;
 
   // Adding one
   ++nmetaClasses;
@@ -169,7 +169,7 @@ FXMetaClass::FXMetaClass(const FXchar* name,FXObject *(fac)(),const FXMetaClass*
 // Find the FXMetaClass belonging to class name
 const FXMetaClass* FXMetaClass::getMetaClassFromName(const FXchar* name){
   if(nmetaClassTable){
-    register FXuint p,x,m;
+    FXuint p,x,m;
     p=hashstring(name);
     x=(p<<1)|1;
     m=nmetaClassTable-1;
@@ -187,7 +187,7 @@ const FXMetaClass* FXMetaClass::getMetaClassFromName(const FXchar* name){
 
 // Test if subclass
 bool FXMetaClass::isSubClassOf(const FXMetaClass* metaclass) const {
-  register const FXMetaClass* cls;
+  const FXMetaClass* cls;
   for(cls=this; cls; cls=cls->baseClass){
     if(cls==metaclass) return true;
     }
@@ -203,8 +203,8 @@ FXObject* FXMetaClass::makeInstance() const {
 
 // Find function
 const void* FXMetaClass::search(FXSelector key) const {
-  register const FXObject::FXMapEntry* lst=(const FXObject::FXMapEntry*)assoc;
-  register FXuint n=nassocs;
+  const FXObject::FXMapEntry* lst=(const FXObject::FXMapEntry*)assoc;
+  FXuint n=nassocs;
   while(n--){
     if(lst->keylo<=key && key<=lst->keyhi) return lst;
     lst=(const FXObject::FXMapEntry*) (((const FXchar*)lst)+assocsz);
@@ -215,7 +215,7 @@ const void* FXMetaClass::search(FXSelector key) const {
 
 // Destructor removes metaclass from the table
 FXMetaClass::~FXMetaClass(){
-  register FXuint p,x,m;
+  FXuint p,x,m;
 
   // Find hash slot
   p=hashstring(className);
@@ -245,7 +245,7 @@ FXMetaClass::~FXMetaClass(){
 // Resize global hash table
 void FXMetaClass::resize(FXuint n){
   const FXMetaClass **newtable,*ptr;
-  register FXuint p,x,i,m;
+  FXuint p,x,i,m;
   FXCALLOC(&newtable,FXMetaClass*,n);
   for(i=0; i<nmetaClassTable; i++){
     ptr=metaClassTable[i];

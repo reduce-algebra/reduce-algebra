@@ -68,8 +68,8 @@ FXHash::FXHash(){
 
 // Resize hash table, and rehash old stuff into it
 void FXHash::size(FXuint m){
-  register void *key,*value;
-  register FXuint q,x,i;
+  void *key,*value;
+  FXuint q,x,i;
   FXEntry *newtable;
   FXCALLOC(&newtable,FXEntry,m);
   for(i=0; i<total; i++){
@@ -91,7 +91,7 @@ void FXHash::size(FXuint m){
 
 // Insert key into the table
 void* FXHash::insert(void* key,void* value){
-  register FXuint p,q,x;
+  FXuint p,q,x;
   if(key){
     if((free<<1)<=total) size(total<<1);
     p=HASH1(key,total);
@@ -118,7 +118,7 @@ y:  return table[q].value;
 
 // Replace key in the table
 void* FXHash::replace(void* key,void* value){
-  register FXuint p,q,x;
+  FXuint p,q,x;
   if(key){
     if((free<<1)<=total) size(total<<1);
     p=HASH1(key,total);
@@ -145,8 +145,8 @@ y:  table[q].value=value;
 
 // Remove association from the table
 void* FXHash::remove(void* key){
-  register FXuint q,x;
-  register void* val;
+  FXuint q,x;
+  void* val;
   if(key){
     q=HASH1(key,total);
     x=HASH2(key,total);
@@ -167,7 +167,7 @@ x:return NULL;
 
 // Return true if association in table
 void* FXHash::find(void* key) const {
-  register FXuint q,x;
+  FXuint q,x;
   if(key){
     q=HASH1(key,total);
     x=HASH2(key,total);

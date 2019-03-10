@@ -102,8 +102,8 @@ FXbool FXGLContext::isShared() const { return sgnext!=this; }
 void FXGLContext::create(){
   ///visual->create();    // Should we call this here?
 #ifdef HAVE_GL_H
-  register FXGLContext *context;
-  register void *sharedctx=NULL;
+  FXGLContext *context;
+  void *sharedctx=NULL;
   if(!xid){
     if(getApp()->isInitialized()){
       FXTRACE((100,"FXGLContext::create %p\n",this));

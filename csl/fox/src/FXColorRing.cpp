@@ -212,9 +212,9 @@ FXint FXColorRing::getDefaultHeight(){
 
 // Resize the dial
 void FXColorRing::layout(){
-  register FXint ww=width-padleft-padright-(border<<1);
-  register FXint hh=height-padtop-padbottom-(border<<1);
-  register FXint ss;
+  FXint ww=width-padleft-padright-(border<<1);
+  FXint hh=height-padtop-padbottom-(border<<1);
+  FXint ss;
 
   // Enforce minimum triangle size
   ringinner=FXMIN(ww,hh)/2-ringwidth;
@@ -255,8 +255,8 @@ void FXColorRing::layout(){
 
 // Recompute the dial image
 void FXColorRing::updatering(){
-  register FXfloat invdet,a,s,v;
-  register FXint o2,i2,r2,rx,ry,x,y;
+  FXfloat invdet,a,s,v;
+  FXint o2,i2,r2,rx,ry,x,y;
   FXfloat r,g,b;
 
   // Hue angle in radians
@@ -318,8 +318,8 @@ void FXColorRing::updatering(){
 
 // Test if inside hue ring
 FXbool FXColorRing::inHueRing(FXint x,FXint y) const {
-  register FXint rx=x-dialx-ringouter;
-  register FXint ry=y-dialy-ringouter;
+  FXint rx=x-dialx-ringouter;
+  FXint ry=y-dialy-ringouter;
   return ringinner*ringinner<=rx*rx+ry*ry;
   }
 
@@ -332,8 +332,8 @@ FXfloat FXColorRing::hueFromXY(FXint x,FXint y) const {
 
 // Compute position on ring from hue
 void FXColorRing::hueToXY(FXint& x,FXint& y,FXfloat hue) const {
-  register FXfloat a=(hue-180.0f)*DTOR;
-  register FXfloat r=ringouter-ringwidth*0.5f;
+  FXfloat a=(hue-180.0f)*DTOR;
+  FXfloat r=ringouter-ringwidth*0.5f;
   x=dialx+ringouter+(FXint)(r*cosf(a)+0.5f);
   y=dialy+ringouter+(FXint)(r*sinf(a)+0.5f);
   }
@@ -342,16 +342,16 @@ void FXColorRing::hueToXY(FXint& x,FXint& y,FXfloat hue) const {
 
 // Test if inside saturation/value triangle
 FXbool FXColorRing::inTriangle(FXint x,FXint y) const {
-  register FXint rx=x-dialx-ringouter;
-  register FXint ry=y-dialy-ringouter;
+  FXint rx=x-dialx-ringouter;
+  FXint ry=y-dialy-ringouter;
   return 0<=(clry-blky)*(rx-clrx)-(clrx-blkx)*(ry-clry) && 0<=(whty-clry)*(rx-whtx)-(whtx-clrx)*(ry-whty) && 0<=(blky-whty)*(rx-blkx)-(blkx-whtx)*(ry-blky);
   }
 
 
 // Compute x,y location from saturation and value
 void FXColorRing::satValToXY(FXint& x,FXint& y,FXfloat s,FXfloat v) const {
-  register FXfloat px=whtx+(clrx-whtx)*s;
-  register FXfloat py=whty+(clry-whty)*s;
+  FXfloat px=whtx+(clrx-whtx)*s;
+  FXfloat py=whty+(clry-whty)*s;
   x=dialx+ringouter+blkx+(FXint)((px-blkx)*v+0.5f);
   y=dialy+ringouter+blky+(FXint)((py-blky)*v+0.5f);
   }
@@ -359,9 +359,9 @@ void FXColorRing::satValToXY(FXint& x,FXint& y,FXfloat s,FXfloat v) const {
 
 // Compute saturation and value given x, y in triangle and hue
 void FXColorRing::satValFromXY(FXfloat& s,FXfloat& v,FXint x,FXint y) const {
-  register FXint rx=x-dialx-ringouter;
-  register FXint ry=y-dialy-ringouter;
-  register FXfloat ss,vv;
+  FXint rx=x-dialx-ringouter;
+  FXint ry=y-dialy-ringouter;
+  FXfloat ss,vv;
 
   // Outside triangle on blk-clr side
   if((clry-blky)*(rx-clrx)-(clrx-blkx)*(ry-clry)<0){
@@ -504,8 +504,8 @@ long FXColorRing::onPaint(FXObject*,FXSelector,void* ptr){
 
 // Determine if special case applies
 FXbool FXColorRing::inCorner(FXint x,FXint y) const {
-  register FXint rx=x-dialx-ringouter;
-  register FXint ry=y-dialy-ringouter;
+  FXint rx=x-dialx-ringouter;
+  FXint ry=y-dialy-ringouter;
   return (ringouter*ringouter<=rx*rx+ry*ry) && (0.99999f<=hsv[1] && 0.99999f<=hsv[2]);
   }
 

@@ -174,9 +174,9 @@ bool fxloadTIF(FXStream& store,FXColor*& data,FXint& width,FXint& height,FXushor
   TIFFRGBAImage img;
   TIFF *image;
   char emsg[1024];
-  register FXColor *up,*dn,t;
-  register FXint i;
-  register long size;
+  FXColor *up,*dn,t;
+  FXint i;
+  long size;
 
   // Null out
   data=NULL;
@@ -331,7 +331,7 @@ bool fxloadTIF(FXStream&,FXColor*& data,FXint& width,FXint& height,FXushort& cod
    0x45, 0x38, 0x81, 0xa0, 0x05, 0x00, 0x00, 0xa0, 0x05, 0x00, 0x00, 0xa0,
    0x05, 0x00, 0x00, 0xa0, 0x05, 0x00, 0x00, 0xa0, 0xfd, 0xff, 0xff, 0xbf,
    0x01, 0x00, 0x00, 0x80, 0xff, 0xff, 0xff, 0xff};
-  register FXint p;
+  FXint p;
   FXMALLOC(&data,FXColor,32*32);
   for(p=0; p<32*32; p++){
     data[p]=(tiff_bits[p>>3]&(1<<(p&7))) ? FXRGB(0,0,0) : FXRGB(255,255,255);

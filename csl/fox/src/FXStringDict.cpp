@@ -52,7 +52,7 @@ FXStringDict::FXStringDict(){
 
 // Copy constructor
 FXStringDict::FXStringDict(const FXStringDict& orig):FXDict(orig){
-  register FXint i;
+  FXint i;
   for(i=0; i<orig.total; i++){
     if(0<=dict[i].hash){
       dict[i].data=createData(orig.dict[i].data);
@@ -63,7 +63,7 @@ FXStringDict::FXStringDict(const FXStringDict& orig):FXDict(orig){
 
 // Assignment operator
 FXStringDict& FXStringDict::operator=(const FXStringDict& orig){
-  register FXint i;
+  FXint i;
   if(&orig!=this){
     FXDict::operator=(orig);
     for(i=0; i<orig.total; i++){

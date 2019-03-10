@@ -139,8 +139,8 @@ FXString FXURL::fileFromURL(const FXString& url){
 
 // Decode url string
 FXString FXURL::decode(const FXString& url){
-  register FXint p=0;
-  register FXint c;
+  FXint p=0;
+  FXint c;
   FXString result;
   while(p<url.length()){
     c=url[p++];
@@ -164,8 +164,8 @@ FXString FXURL::decode(const FXString& url){
 
 // Encode url string
 FXString FXURL::encode(const FXString& url){
-  register FXint p=0;
-  register FXint c;
+  FXint p=0;
+  FXint c;
   FXString result;
   while(p<url.length()){
     c=url[p++];

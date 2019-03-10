@@ -89,7 +89,7 @@ struct WU {
 
 // Build 3-D color histogram of counts, r/g/b, c^2
 static void histogram(WU& wu,const FXColor *data,FXint size){
-  register FXint r,g,b,inr,ing,inb,i;
+  FXint r,g,b,inr,ing,inb,i;
 
   // Clear counters
   memset(&wu,0,sizeof(wu));
@@ -113,7 +113,7 @@ static void histogram(WU& wu,const FXColor *data,FXint size){
 
 // Compute cumulative moments
 static void moments(WU& wu){
-  register FXint linet,liner,lineg,lineb,i,r,g,b;
+  FXint linet,liner,lineg,lineb,i,r,g,b;
   FXint areat[33],arear[33],areag[33],areab[33];
   FXfloat line2,area2[33];
   for(r=1; r<=32; ++r){
@@ -173,7 +173,7 @@ static int volume(box& cube,FXint mmt[33][33][33]){
 // Compute part of Vol(cube, mmt) that doesn't depend
 // on r1, g1, or b1 (depending on dir)
 static FXint bottom(box& cube,FXuchar dir,FXint mmt[33][33][33]){
-  register FXint result=0;
+  FXint result=0;
   switch(dir){
     case RED:
       result= -mmt[cube.r0][cube.g1][cube.b1]
@@ -201,7 +201,7 @@ static FXint bottom(box& cube,FXuchar dir,FXint mmt[33][33][33]){
 // Compute remainder of Vol(cube, mmt), substituting pos
 // for r1, g1, or b1 (depending on dir)
 static FXint top(box& cube,FXuchar dir,FXint pos,FXint mmt[33][33][33]){
-  register FXint result=0;
+  FXint result=0;
   switch(dir){
     case RED:
       result= mmt[pos][cube.g1][cube.b1]
@@ -229,7 +229,7 @@ static FXint top(box& cube,FXuchar dir,FXint pos,FXint mmt[33][33][33]){
 // Compute the weighted variance of a box
 // NB: as with the raw statistics, this is really the variance * size
 static FXfloat variance(WU& wu,box& cube){
-  register FXfloat dr,dg,db,xx;
+  FXfloat dr,dg,db,xx;
 
   dr = (FXfloat)volume(cube,wu.mr);
   dg = (FXfloat)volume(cube,wu.mg);
@@ -254,8 +254,8 @@ static FXfloat variance(WU& wu,box& cube){
 // The remaining terms have a minus sign in the variance formula,
 // so we drop the minus sign and MAXIMIZE the sum of the two terms.
 static FXfloat maximize(WU& wu,box& cube,FXuchar dir,FXint first,FXint last,FXint *cut,FXint whole_r,FXint whole_g,FXint whole_b,FXint whole_w){
-  register FXint half_r,half_g,half_b,half_w,base_r,base_g,base_b,base_w,i;
-  register FXfloat temp,max;
+  FXint half_r,half_g,half_b,half_w,base_r,base_g,base_b,base_w,i;
+  FXfloat temp,max;
 
   base_r=bottom(cube,dir,wu.mr);
   base_g=bottom(cube,dir,wu.mg);
@@ -354,7 +354,7 @@ static FXint cut(WU& wu,box& set1,box& set2){
 
 // Each entry in box maps to label
 static void mark(box& cube,FXint label,FXuchar map[33][33][33]){
-  register FXint r,g,b;
+  FXint r,g,b;
   for(r=cube.r0+1; r<=cube.r1; ++r){
     for(g=cube.g0+1; g<=cube.g1; ++g){
       for(b=cube.b0+1; b<=cube.b1; ++b){
@@ -367,8 +367,8 @@ static void mark(box& cube,FXint label,FXuchar map[33][33][33]){
 
 // Wu's quantization method based on recursive partitioning
 FXbool fxwuquantize(FXuchar* dst,const FXColor* src,FXColor* colormap,FXint& actualcolors,FXint w,FXint h,FXint maxcolors){
-  register FXint i,k,weight,next,size,r,g,b;
-  register FXfloat temp;
+  FXint i,k,weight,next,size,r,g,b;
+  FXfloat temp;
   FXuchar  map[33][33][33];
   FXfloat  vv[MAXCOLOR];
   box      cube[MAXCOLOR];

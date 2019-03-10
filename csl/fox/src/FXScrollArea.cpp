@@ -125,8 +125,8 @@ FXScrollArea::FXScrollArea(FXComposite* p,FXuint opts,FXint x,FXint y,FXint w,FX
 
 // Get default width
 FXint FXScrollArea::getDefaultWidth(){
-  register FXint w=0;
-  register FXint t;
+  FXint w=0;
+  FXint t;
   if((options&HSCROLLER_NEVER)&&(options&HSCROLLER_ALWAYS)) w=getContentWidth();
   if(!(options&HSCROLLER_NEVER) && (t=horizontal->getDefaultWidth())>w) w=t;
   if(!(options&VSCROLLER_NEVER)) w+=vertical->getDefaultWidth();
@@ -136,8 +136,8 @@ FXint FXScrollArea::getDefaultWidth(){
 
 // Get default height
 FXint FXScrollArea::getDefaultHeight(){
-  register FXint h=0;
-  register FXint t;
+  FXint h=0;
+  FXint t;
   if((options&VSCROLLER_NEVER)&&(options&VSCROLLER_ALWAYS)) h=getContentHeight();
   if(!(options&VSCROLLER_NEVER) && (t=vertical->getDefaultHeight())>h) h=t;
   if(!(options&HSCROLLER_NEVER)) h+=horizontal->getDefaultHeight();
@@ -219,9 +219,9 @@ long FXScrollArea::onHMouseWheel(FXObject* sender,FXSelector sel,void* ptr){
 
 // Timeout
 long FXScrollArea::onAutoScroll(FXObject*,FXSelector sel,void* ptr){
-  register FXEvent* event=(FXEvent*)ptr;
-  register FXint dx=0;
-  register FXint dy=0;
+  FXEvent* event=(FXEvent*)ptr;
+  FXint dx=0;
+  FXint dy=0;
 
   // If scrolling only while inside, and not inside, we stop scrolling
   if((flags&FLAG_SCROLLINSIDE) && !(0<=event->win_x && 0<=event->win_y && event->win_x<viewport_w && event->win_y<viewport_h)) return 0;
@@ -262,7 +262,7 @@ long FXScrollArea::onAutoScroll(FXObject*,FXSelector sel,void* ptr){
 
 // Start automatic scrolling
 FXbool FXScrollArea::startAutoScroll(FXEvent *event,FXbool onlywheninside){
-  register FXbool autoscrolling=FALSE;
+  FXbool autoscrolling=FALSE;
   flags&=~FLAG_SCROLLINSIDE;
   if(onlywheninside) flags|=FLAG_SCROLLINSIDE;
   if(horizontal->getPage()<horizontal->getRange()){
@@ -356,9 +356,9 @@ FXint FXScrollArea::getContentHeight(){
 
 // Recalculate layout
 void FXScrollArea::layout(){
-  register FXint new_x,new_y,content_w,content_h;
-  register FXint sh_h=0;
-  register FXint sv_w=0;
+  FXint new_x,new_y,content_w,content_h;
+  FXint sh_h=0;
+  FXint sv_w=0;
 
   // Inviolate
   FXASSERT(pos_x<=0 && pos_y<=0);

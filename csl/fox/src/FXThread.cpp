@@ -255,7 +255,7 @@ void FXCondition::wait(FXMutex& mtx){
 
 // Wait for condition but fall through after timeout
 FXbool FXCondition::wait(FXMutex& mtx,FXlong nsec){
-  register int result;
+  int result;
   struct timespec ts;
   ts.tv_sec=nsec/1000000000;
   ts.tv_nsec=nsec%1000000000;
@@ -315,7 +315,7 @@ FXbool FXThread::running() const {
 // this thread using thread-local storage accessed with self_key.
 // Also, we catch any errors thrown by the thread code here.
 void* FXThread::execute(void* thread){
-  register FXint code=-1;
+  FXint code=-1;
   pthread_setspecific(self_key,thread);
   pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,NULL);
   pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
@@ -329,7 +329,7 @@ void* FXThread::execute(void* thread){
 // We can't check for it because not all machines have this the
 // PTHREAD_STACK_MIN definition.
 FXbool FXThread::start(unsigned long stacksize){
-  register FXbool code;
+  FXbool code;
   pthread_attr_t attr;
   pthread_attr_init(&attr);
   pthread_attr_setinheritsched(&attr,PTHREAD_INHERIT_SCHED);
@@ -343,7 +343,7 @@ FXbool FXThread::start(unsigned long stacksize){
 
 // Suspend calling thread until thread is done
 FXbool FXThread::join(FXint& code){
-  register pthread_t ttid=(pthread_t)tid;
+  pthread_t ttid=(pthread_t)tid;
   void *trc=NULL;
   if(ttid && pthread_join(ttid,&trc)==0){
     code=(FXint)(FXival)trc;
@@ -356,7 +356,7 @@ FXbool FXThread::join(FXint& code){
 
 // Suspend calling thread until thread is done
 FXbool FXThread::join(){
-  register pthread_t ttid=(pthread_t)tid;
+  pthread_t ttid=(pthread_t)tid;
   if(ttid && pthread_join(ttid,NULL)==0){
     tid=0;
     return TRUE;
@@ -367,7 +367,7 @@ FXbool FXThread::join(){
 
 // Cancel the thread
 FXbool FXThread::cancel(){
-  register pthread_t ttid=(pthread_t)tid;
+  pthread_t ttid=(pthread_t)tid;
   if(ttid && pthread_cancel(ttid)==0){
     pthread_join(ttid,NULL);
     tid=0;
@@ -379,7 +379,7 @@ FXbool FXThread::cancel(){
 
 // Detach thread
 FXbool FXThread::detach(){
-  register pthread_t ttid=(pthread_t)tid;
+  pthread_t ttid=(pthread_t)tid;
   return ttid && pthread_detach(ttid)==0;
   }
 
@@ -477,7 +477,7 @@ FXThreadID FXThread::current(){
 
 // Set thread priority
 void FXThread::priority(FXint prio){
-  register pthread_t ttid=(pthread_t)tid;
+  pthread_t ttid=(pthread_t)tid;
   if(ttid){
     sched_param sched={0};
     int pcy=0;
@@ -496,7 +496,7 @@ void FXThread::priority(FXint prio){
 
 // Return thread priority
 FXint FXThread::priority(){
-  register pthread_t ttid=(pthread_t)tid;
+  pthread_t ttid=(pthread_t)tid;
   if(ttid){
     sched_param sched={0};
     int pcy=0;
@@ -509,7 +509,7 @@ FXint FXThread::priority(){
 
 // Destroy; if it was running, stop it
 FXThread::~FXThread(){
-  register pthread_t ttid=(pthread_t)tid;
+  pthread_t ttid=(pthread_t)tid;
   if(ttid){
     pthread_cancel(ttid);
     }
@@ -733,7 +733,7 @@ FXbool FXThread::running() const {
 // this thread using thread-local storage accessed with self_key.
 // Also, we catch any errors thrown by the thread code here.
 unsigned int CALLBACK FXThread::execute(void* thread){
-  register FXint code=-1;
+  FXint code=-1;
   TlsSetValue(self_key,thread);
   try{ code=((FXThread*)thread)->run(); } catch(...){ }
   ((FXThread*)thread)->tid=0;
@@ -751,7 +751,7 @@ FXbool FXThread::start(unsigned long stacksize){
 
 // Suspend calling thread until thread is done
 FXbool FXThread::join(FXint& code){
-  register HANDLE ttid=(HANDLE)tid;
+  HANDLE ttid=(HANDLE)tid;
   if(ttid && WaitForSingleObject(ttid,INFINITE)==WAIT_OBJECT_0){
     GetExitCodeThread(ttid,(DWORD*)&code);
     CloseHandle(ttid);
@@ -764,7 +764,7 @@ FXbool FXThread::join(FXint& code){
 
 // Suspend calling thread until thread is done
 FXbool FXThread::join(){
-  register HANDLE ttid=(HANDLE)tid;
+  HANDLE ttid=(HANDLE)tid;
   if(ttid && WaitForSingleObject(ttid,INFINITE)==WAIT_OBJECT_0){
     CloseHandle(ttid);
     tid=0;
@@ -776,7 +776,7 @@ FXbool FXThread::join(){
 
 // Cancel the thread
 FXbool FXThread::cancel(){
-  register HANDLE ttid=(HANDLE)tid;
+  HANDLE ttid=(HANDLE)tid;
   if(ttid && TerminateThread(ttid,0)){
     CloseHandle(ttid);
     tid=0;
@@ -845,7 +845,7 @@ FXThread* FXThread::self(){
 
 // Set thread priority
 void FXThread::priority(FXint prio){
-  register HANDLE ttid=(HANDLE)tid;
+  HANDLE ttid=(HANDLE)tid;
   if(ttid){
     SetThreadPriority(ttid,prio);
     }
@@ -854,7 +854,7 @@ void FXThread::priority(FXint prio){
 
 // Return thread priority
 FXint FXThread::priority(){
-  register HANDLE ttid=(HANDLE)tid;
+  HANDLE ttid=(HANDLE)tid;
   if(ttid){
     return GetThreadPriority(ttid);
     }
@@ -864,7 +864,7 @@ FXint FXThread::priority(){
 
 // Destroy
 FXThread::~FXThread(){
-  register HANDLE ttid=(HANDLE)tid;
+  HANDLE ttid=(HANDLE)tid;
   if(ttid){
     TerminateThread(ttid,0);
     CloseHandle(ttid);

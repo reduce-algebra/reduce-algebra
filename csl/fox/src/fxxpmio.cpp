@@ -62,7 +62,7 @@ extern FXAPI bool fxsaveXPM(FXStream& store,const FXColor *data,FXint width,FXin
 
 // Read till end of line
 static void readline(FXStream& store,FXchar* buffer,FXuint size){
-  register FXuint i=0;
+  FXuint i=0;
   while(!store.eof() && i<size){
     store >> buffer[i];
     if(buffer[i]=='\r') continue;
@@ -75,7 +75,7 @@ static void readline(FXStream& store,FXchar* buffer,FXuint size){
 
 // Read quoted text
 static void readtext(FXStream& store,FXchar* buffer,FXuint size){
-  register FXuint i=0;
+  FXuint i=0;
   FXchar ch;
   store >> ch;
   while(!store.eof() && ch!='"') store >> ch;
@@ -90,7 +90,7 @@ static void readtext(FXStream& store,FXchar* buffer,FXuint size){
 
 // Parse next word
 static FXint nextword(const FXchar*& src,FXchar* dst){
-  register FXchar *ptr=dst;
+  FXchar *ptr=dst;
   while(*src && Ascii::isSpace(*src)) src++;
   while(*src && !Ascii::isSpace(*src)) *ptr++=*src++;
   *ptr=0;

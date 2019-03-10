@@ -240,7 +240,7 @@ long FXSpinner::onWheelEntry(FXObject*,FXSelector,void* ptr){
 
 // Text field changed
 long FXSpinner::onChgEntry(FXObject*,FXSelector,void*){
-  register FXint value=FXIntVal(textField->getText());
+  FXint value=FXIntVal(textField->getText());
   if(value<range[0]) value=range[0];
   if(value>range[1]) value=range[1];
   if(value!=pos){

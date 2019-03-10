@@ -147,7 +147,7 @@ void FXStream::setSpace(FXuval size){
     if(begptr+size!=endptr){
 
       // Old buffer location
-      register FXuchar *oldbegptr=begptr;
+      FXuchar *oldbegptr=begptr;
 
       // Only resize if owned
       if(!owns){ fxerror("FXStream::setSpace: cannot resize external data buffer.\n"); }
@@ -376,7 +376,7 @@ FXStream& FXStream::save(const FXuchar* p,FXuval n){
 
 // Write array of shorts
 FXStream& FXStream::save(const FXushort* p,FXuval n){
-  register const FXuchar *q=(const FXuchar*)p;
+  const FXuchar *q=(const FXuchar*)p;
   if(code==FXStreamOK){
     n<<=1;
     FXASSERT(begptr<=rdptr);
@@ -419,7 +419,7 @@ FXStream& FXStream::save(const FXushort* p,FXuval n){
 
 // Write array of ints
 FXStream& FXStream::save(const FXuint* p,FXuval n){
-  register const FXuchar *q=(const FXuchar*)p;
+  const FXuchar *q=(const FXuchar*)p;
   if(code==FXStreamOK){
     n<<=2;
     FXASSERT(begptr<=rdptr);
@@ -466,7 +466,7 @@ FXStream& FXStream::save(const FXuint* p,FXuval n){
 
 // Write array of doubles
 FXStream& FXStream::save(const FXdouble* p,FXuval n){
-  register const FXuchar *q=(const FXuchar*)p;
+  const FXuchar *q=(const FXuchar*)p;
   if(code==FXStreamOK){
     n<<=3;
     FXASSERT(begptr<=rdptr);
@@ -647,7 +647,7 @@ FXStream& FXStream::load(FXuchar* p,FXuval n){
 
 // Read array of shorts
 FXStream& FXStream::load(FXushort* p,FXuval n){
-  register FXuchar *q=(FXuchar*)p;
+  FXuchar *q=(FXuchar*)p;
   if(code==FXStreamOK){
     n<<=1;
     FXASSERT(begptr<=rdptr);
@@ -690,7 +690,7 @@ FXStream& FXStream::load(FXushort* p,FXuval n){
 
 // Read array of ints
 FXStream& FXStream::load(FXuint* p,FXuval n){
-  register FXuchar *q=(FXuchar*)p;
+  FXuchar *q=(FXuchar*)p;
   if(code==FXStreamOK){
     n<<=2;
     FXASSERT(begptr<=rdptr);
@@ -737,7 +737,7 @@ FXStream& FXStream::load(FXuint* p,FXuval n){
 
 // Read array of doubles
 FXStream& FXStream::load(FXdouble* p,FXuval n){
-  register FXuchar *q=(FXuchar*)p;
+  FXuchar *q=(FXuchar*)p;
   if(code==FXStreamOK){
     n<<=3;
     FXASSERT(begptr<=rdptr);
@@ -812,8 +812,8 @@ FXStream& FXStream::addObject(const FXObject* v){
 
 // Save object
 FXStream& FXStream::saveObject(const FXObject* v){
-  register const FXMetaClass *cls;
-  register const FXchar *name;
+  const FXMetaClass *cls;
+  const FXchar *name;
   FXuint tag,zero=0;
   if(dir!=FXStreamSave){ fxerror("FXStream::saveObject: wrong stream direction.\n"); }
   if(code==FXStreamOK){
@@ -848,7 +848,7 @@ FXStream& FXStream::saveObject(const FXObject* v){
 
 // Load object
 FXStream& FXStream::loadObject(FXObject*& v){
-  register const FXMetaClass *cls;
+  const FXMetaClass *cls;
   FXchar name[MAXCLASSNAME+1];
   FXuint tag,esc;
   if(dir!=FXStreamLoad){ fxerror("FXStream::loadObject: wrong stream direction.\n"); }

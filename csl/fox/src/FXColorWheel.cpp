@@ -132,7 +132,7 @@ FXint FXColorWheel::getDefaultHeight(){
 
 // Resize the dial
 void FXColorWheel::layout(){
-  register FXint ww,hh,ss;
+  FXint ww,hh,ss;
   ww=width-padleft-padright-(border<<1);
   hh=height-padtop-padbottom-(border<<1);
   ss=FXMAX(3,FXMIN(ww,hh));
@@ -150,8 +150,8 @@ void FXColorWheel::layout(){
 
 // Compute x,y location from hue and saturation
 FXbool FXColorWheel::hstoxy(FXint& x,FXint& y,FXfloat h,FXfloat s) const {
-  register FXfloat r=dial->getWidth()*0.5f;
-  register FXfloat a=(h-180.0f)*DTOR;
+  FXfloat r=dial->getWidth()*0.5f;
+  FXfloat a=(h-180.0f)*DTOR;
   x=(FXint)(s*r*cosf(a)+r+0.5f);
   y=(FXint)(s*r*sinf(a)+r+0.5f);
   return TRUE;
@@ -160,10 +160,10 @@ FXbool FXColorWheel::hstoxy(FXint& x,FXint& y,FXfloat h,FXfloat s) const {
 
 // Compute hue and saturation from x,y, return FALSE if outside of dial
 FXbool FXColorWheel::xytohs(FXfloat& h,FXfloat& s,FXint x,FXint y) const {
-  register FXfloat r=dial->getWidth()*0.5f;
-  register FXfloat rx=x-r;
-  register FXfloat ry=y-r;
-  register FXfloat v=sqrtf(rx*rx+ry*ry);
+  FXfloat r=dial->getWidth()*0.5f;
+  FXfloat rx=x-r;
+  FXfloat ry=y-r;
+  FXfloat v=sqrtf(rx*rx+ry*ry);
   h=0.0f;
   s=0.0f;
   if(0.0f<v){
@@ -181,8 +181,8 @@ FXbool FXColorWheel::xytohs(FXfloat& h,FXfloat& s,FXint x,FXint y) const {
 // Recompute the dial image
 void FXColorWheel::updatedial(){
   FXfloat h,s,r,g,b;
-  for(register FXint y=0; y<dial->getHeight(); y++){
-    for(register FXint x=0; x<dial->getWidth(); x++){
+  for(FXint y=0; y<dial->getHeight(); y++){
+    for(FXint x=0; x<dial->getWidth(); x++){
       if(xytohs(h,s,x,y)){
         fxhsv_to_rgb(r,g,b,h,s,hsv[2]);
         dial->setPixel(x,y,FXRGB(255.0f*r,255.0f*g,255.0f*b));

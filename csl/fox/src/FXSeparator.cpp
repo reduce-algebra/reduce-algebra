@@ -94,7 +94,7 @@ FXint FXSeparator::getDefaultHeight(){
 long FXSeparator::onPaint(FXObject*,FXSelector,void* ptr){
   FXEvent *ev=(FXEvent*)ptr;
   FXDCWindow dc(this,ev);
-  register FXint kk,ll;
+  FXint kk,ll;
 
   // Draw background
   dc.setForeground(backColor);

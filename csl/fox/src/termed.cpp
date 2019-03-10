@@ -1,7 +1,7 @@
-// termed.cpp                              Copyright (C) 2004-2017 Codemist    
+// termed.cpp                              Copyright (C) 2004-2018 Codemist
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -149,45 +149,52 @@ extern char **loadable_packages, **switches;
 
 #include <windows.h>
 
-#else // WIN32
+#else // !WIN32
+
+// The name EMBEDDED is used here in the sense of building the software
+// here to be included as a component of some other software. Ie for this to
+// be "embedded" within something else. In such cases it would be presumptuous
+// to implement bits of user interace, and it is possible that all sorts of
+// interface-related facilities will not be available at all.
+
+#ifndef EMBEDDED
+
+// If the symbol EMBEDDED is defined then this whole edifice will simplify
+// to give not much more then direct use of getchar and putchar. Even if that
+// is not defined, if the attempt to find how to do cursor movement on the
+// terminal fails it will fall back to that (and setup_term will return a non-
+// zero value so that whatever uses this can be aware).
 
 #ifdef HAVE_NCURSES_H
 #include <ncurses.h>
-#else
+#else // !HAVE_NCURSES_H
 #ifdef HAVE_CURSES_H
 #include <curses.h>
-#else
-#define DISABLE 1
-#if defined __GNUC__ || defined __clang__
-#warning termed capabilites unavailable because neither ncurses.h nor curses.h were found.
-#endif
-#endif
-#endif
+#else // !HAVE_CURSES_H
+#error termed capabilites unavailable because neither ncurses.h nor curses.h were found.
+#endif // !HAVE_CURSES_H
+#endif // HAVE_NCURSES_H
 
 #if defined HAVE_NCURSES_H && defined HAVE_NCURSES_TERM_H
 #include <ncurses/term.h>
-#else
+#else // !HAVE_NCURSES_TERM_H
 #ifdef HAVE_TERM_H
 #include <term.h>
-#else
+#else // !HAVE_TERM_H
 #ifdef HAVE_TGETENT
 #define SIMULATE_TERM_H 1
-#else
-#ifndef DISABLE
-#define DISABLE 1
-#endif
-#if defined __GNUC__ || defined __clang__
-#warning termed capabilites unavailable because term.h (etc) was not found.
-#endif
-#endif
-#endif
-#endif
+#else // !HAVE_TGETENT
+#error termed capabilites unavailable because term.h (etc) was not found.
+#endif // !HAVE_TGETENT
+#endif // !HAVE_TERM_H
+#endif // !HAVE_NCURSES_TERM_H
 
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
-#endif
+#endif // HAVE_TERMIOS_H
 
-#endif // WIN32
+#endif // !EMBEDDED
+#endif // !WIN32
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -195,6 +202,10 @@ extern char **loadable_packages, **switches;
 
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
+#endif
+
+#ifndef HAVE_MY_MALLOC
+#define my_malloc(n) malloc(n)
 #endif
 
 #include <stdlib.h>
@@ -205,50 +216,27 @@ extern char **loadable_packages, **switches;
 #include <string.h>
 #include <signal.h>
 
+// I require C++-11 or later.
+
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+
+#ifndef WIN32
+#include <sys/select.h>
+#endif
+
 #include "termed.h"
 
-// These are colors used when in curses/term/termcap mode
+// When the code is built it can still determine (dynamically) that it
+// should not intervene, Eg when stdin/stdout have been redirected. When
+// it is not enabled it can do simple getchar/putchar IO.
 
-static const char *term_colour;
-
-// The following are the colour codes supported by curses/term.
-//
-//   0  black     B, K, k
-//   1  red       R, r
-//   2  green     G, g
-//   3  yellow    Y, y
-//   4  blue      b         n.b. only lower case here!
-//   5  magenta   M, m
-//   6  cyan      C, c
-//   7  white     W, w
-
-#ifndef WIN32
-
-static int map_colour(int ch)
-{   switch (ch)
-    {   case 'k': case 'K':
-        case 'B':           return 0;
-        case 'r': case 'R': return 1;
-        case 'g': case 'G': return 2;
-        case 'y': case 'Y': return 3;
-        case 'b':           return 4;
-        case 'm': case 'M': return 5;
-        case 'c': case 'C': return 6;
-        case 'w': case 'W': return 7;
-        default:            return -1;
-    }
-}
-
-#endif // WIN32
-
-// The default values set here can be changed as a result of the colour
-// option passed to term_setup.
-
-static int promptColour = 4;   // Blue
-static int inputColour  = 1;   // Red
-#ifndef WIN32
-static int outputColour = -1;  // whatever user had been using
-#endif // WIN32
+static bool term_enabled = false;
 
 #ifndef DEBUG
 
@@ -274,6 +262,297 @@ static void write_log(const char *s, ...)
 
 #endif
 
+// The keyboard will need to be handled in a thread - the reason for that
+// is that the code here sets the keyboard to "raw" mode and that lead
+// to no automatic detection of "^C" interrupts. So my own local line
+// editing code must ALWAYS be trying to read a character, and when it
+// receives a ^C it needs to act on that back promptly. A messy issue is
+// that in C++11 a thread must be joined as the main application terminates.
+// To allow for that I will arrange that whenever I am waiting for a new
+// character from the keyboard I will also wait on a pipe. When a byte
+// is available from the pipe I will terminate the thread and that will
+// allow a join to proceed. Well I can not do that on Windows because it does
+// not provide a useful select(), so there I forcibly kill the thread.
+// I will do this even when EMBEDDED is true since it will arrange that
+// I am more or less always trying to read from the keyboard, and that allows
+// ^C to be detected promptly.
+
+static std::thread keyboard_thread;
+
+#ifdef WIN32
+static HANDLE keyboard_thread_handle = (HANDLE)(-1);
+
+static void quit_keyboard_thread()
+{   while (keyboard_thread_handle == (HANDLE)(-1)) Sleep(10);
+    TerminateThread(keyboard_thread_handle, 0);
+    keyboard_thread.join();
+}
+
+#else // !WIN32
+
+static int keyboard_pipe[2];    // entry 0 is read end, 1 is write end
+
+static void quit_keyboard_thread()
+{   write(keyboard_pipe[1], "\n\n\n\n", 4);
+    keyboard_thread.join();
+    close(keyboard_pipe[1]);
+}
+
+#endif // !WIN32
+
+int get_from_keyboard()
+{
+#ifdef WIN32
+// I have so much less messing around here because on Windows I will
+// just kill this thread at system exit time. That risks leaving locks etc
+// in a messy state, but since it is when the program is exiting I do not
+// mind. 
+    return getchar();
+#else // !WIN32
+// On other platforms I go to a lot of trouble so that the main program
+// can alert this one when it is time to close down. This is needed because
+// C++ demands that all threads are tidied up as a program exits. The
+// technique used here is to arrange that when this thread blocks at all
+// it waits not just for keyboard input but also for a signal byte on
+// a pipe, where that byte will be posted when it should give up.
+    fd_set read_fd;
+    FD_ZERO(&read_fd);
+    int n1 = fileno(stdin), n2 = keyboard_pipe[0];
+    FD_SET(n1, &read_fd);
+    FD_SET(n2, &read_fd);
+    int n = n1 > n2 ? n1 : n2;
+    int r = select(n+1, &read_fd, NULL, NULL, NULL);
+    if (r == -1) abort(); // select failed
+    if (FD_ISSET(n2, &read_fd))
+    {   close(n2);
+        return EOF; // pipe told us to quit!
+    }
+// I must use read not getchar here because select checks if read()
+// would block while getchar can do extra strange processing...
+    char buffer[1];
+    if (read(fileno(stdin), buffer, 1) == 1) return buffer[0] & 0xff;
+// stdin could become unblocked by virtue of a end of file situation. I will
+// view that or any error as marking the end of all input.
+    return EOF;
+#endif // !WIN32
+}
+
+// I will always be accepting characters from the keyboard even when the
+// user is busy computing. I will have a limit on how many can be buffered,
+// and just discard ones beyond that.
+
+#define TYPEAHEAD_MAX 1000
+static char typeahead_buffer[TYPEAHEAD_MAX];
+static unsigned int ahead_in = 0, ahead_out = 0;
+static bool eof_seen = false;
+static std::mutex keyboard_mutex;
+static std::condition_variable keyboard_condvar;
+
+typedef void (keyboard_interrupt_callback)();
+
+keyboard_interrupt_callback *quiet_interrupt_callback = NULL;
+keyboard_interrupt_callback *noisy_interrupt_callback = NULL;
+
+// The application that uses this code can set callbacks that get activated
+// on ^C and ^G at least in the proper world where cursor control is
+// possible.
+
+void set_keyboard_callbacks(keyboard_interrupt_callback *f1,
+                            keyboard_interrupt_callback *f2)
+{   quiet_interrupt_callback = f1;
+    noisy_interrupt_callback = f2;
+}
+
+static void keyboard_thread_function()
+{
+#ifdef WIN32
+    keyboard_thread_handle = GetCurrentThread();
+#endif
+// Here I will read characters constantly. If I see a ^C or a ^G I will
+// call the CSL function that reports an exception Well doing that ties this
+// code in with CSL somewhat tightly if I do it directly, so I will use a
+// configurable callback.
+// I all allow a significant but not unlimited amount of type-ahead, and
+// then return stuff unechoed and (mostly) uninterpreted when asked
+// by the main thread. Note that it gets input from the keyboard as octets,
+// and if the main program asks for a wide character then a sequence of those
+// will be assembled as necessary using UTF8 encoding.
+// If ^C or ^G is encountered that will flush the buffer...
+    ahead_in = ahead_out = 0;
+    eof_seen = false;
+    while (true)
+    {   int c = get_from_keyboard();
+        {   std::lock_guard<std::mutex> lock(keyboard_mutex);
+            if (c == EOF)
+            {   eof_seen = true;
+                break;
+            }
+            else if (c == EOF) eof_seen = true;
+            else if (c == ('C' & 0x1f) ||
+                     c == ('G' & 0x1f))
+            {   ahead_out = 0;
+                ahead_in = 1;
+                if (c == ('C' & 0x1f))
+                {   if (quiet_interrupt_callback != NULL)
+                        (*quiet_interrupt_callback)();
+                }
+                else
+                {   if (noisy_interrupt_callback != NULL)
+                        (*noisy_interrupt_callback)();
+                }
+                typeahead_buffer[0] = c;
+            }
+            else
+            {   unsigned int in = (ahead_in + 1) % TYPEAHEAD_MAX;
+                if (in != ahead_out)   // Do not put into a full buffer!
+                {   typeahead_buffer[ahead_in] = c;
+                    ahead_in = in;
+                }
+            }
+        }
+        keyboard_condvar.notify_one();
+    }
+}
+
+int getc_from_thread()
+{   std::unique_lock<std::mutex> lock(keyboard_mutex);
+    while (ahead_in == ahead_out && !eof_seen) keyboard_condvar.wait(lock);
+    if (ahead_in == ahead_out) return EOF;
+    int ch = typeahead_buffer[ahead_out];
+    ahead_out = (ahead_out + 1) % TYPEAHEAD_MAX;
+    return ch;
+}
+
+// Decode UTF8. There are several special hacks here:
+// If the raw underlying stream returns EOF for any octet that might be
+// within an UTF8 sequence the decoder will return WEOF. Thus a sequence
+// that starts with an octet introducing a multi-byte sequence that
+// encounters an EOF part way through just returns WEOF.
+// In a similar way if ^C or ^G arises in the underlying octet stream then
+// that is returned, discarding and prior prefix bytes. That is done because
+// those are used as interrupt characters. Having one of them "within" an
+// UTF8 sequence would be invalid, so what I do will not disrupt any valid
+// UTF8 input sequence.
+// Any illegal sequence of octets leads to a return of WEOF. Ie if an UTF8
+// prefix byte expects several following octents and any of those are not
+// of the form 10xxxxxx then WEOF will be returned. 
+// The effect of all of these are the valid UTF input should be handled in
+// a straightforward way and the various edge cases that represent end of
+// file, escapes or plain formatting errors are handled in a repeatable
+// manner. This will also mean that following an input of EOF, ^C or ^G
+// this code does not try to read further octets, and so it should not
+// block. This function is only used when cursor-addressing is not available
+// and hence local editing can not be supported much.
+
+int getwc_from_thread()
+{   int c1 = getc_from_thread();
+    if (c1 == EOF) return WEOF;
+    if ((c1 & 0x80) == 0) return c1 & 0xff;
+    int c2 = getc_from_thread();
+    if (c2 == EOF) return WEOF;
+    if (c2 == ('C' & 0x1f) || c2 == ('G' & 0x1f)) return c2;
+    if ((c2 & 0xc0) != 0x80) return WEOF; // malformed UTF8
+    c2 &= 0x3f;
+    if ((c1 & 0xe0) == 0xc0)
+        return ((c1 & 0x1f)<<6) | c2;
+    int c3 = getc_from_thread();
+    if (c3 == EOF) return WEOF;
+    if (c3 == ('C' & 0x1f) || c3 == ('G' & 0x1f)) return c3;
+    if ((c3 & 0xc0) != 0x80) return WEOF; // malformed UTF8
+    c3 &= 0x3f;
+    if ((c1 & 0xf0) == 0xe0)
+        return ((c1 & 0xf)<<12) | (c2<<6) | c3;
+    int c4 = getc_from_thread();
+    if (c4 == EOF) return WEOF;
+    if (c4 == ('C' & 0x1f) || c4 == ('G' & 0x1f)) return c4;
+    if ((c4 & 0xc0) != 0x80) return WEOF; // malformed UTF8
+    c4 &= 0x3f;
+    if ((c1 & 0xf8) == 0xf0)
+        return ((c1 & 0x7)<<18) | (c2<<12) | (c3<<6) | c4;
+    return WEOF;                           // malformed UTF8
+}
+
+#ifdef WIN32
+
+static void start_keyboard_thread()
+{   keyboard_thread = std::thread(keyboard_thread_function);
+    atexit(quit_keyboard_thread);
+}
+
+#else // !WIN32
+
+static void start_keyboard_thread()
+{   if (pipe(keyboard_pipe) == -1) printf("pipe creation failed\n");
+    keyboard_thread = std::thread(keyboard_thread_function);
+    atexit(quit_keyboard_thread);
+}
+
+#endif // !WIN32
+
+
+#ifdef EMBEDDED
+
+wchar_t *input_history[100]; // Not used in the case that
+                             // cursor control is not  available
+int input_history_next = 0;
+
+void input_history_init(const char *argv0)
+{}
+
+void input_history_end()
+{}
+
+void input_history_add(const wchar_t *s)
+{}
+
+const wchar_t *input_history_get(int n)
+{   return L"History not available in EMBEDDED version";
+}
+
+#else // !EMBEDDED
+
+// These are colors used when in curses/term/termcap mode
+
+static const char *term_colour;
+
+// The following are the colour codes supported by curses/term.
+//
+//   0  black     K, k
+//   1  red       R, r
+//   2  green     G, g
+//   3  yellow    Y, y
+//   4  blue      B, b
+//   5  magenta   M, m
+//   6  cyan      C, c
+//   7  white     W, w
+
+#ifndef WIN32
+
+static int map_colour(int ch)
+{   switch (ch)
+    {   case 'k': case 'K': return 0;
+        case 'r': case 'R': return 1;
+        case 'g': case 'G': return 2;
+        case 'y': case 'Y': return 3;
+        case 'b': case 'B': return 4;
+        case 'm': case 'M': return 5;
+        case 'c': case 'C': return 6;
+        case 'w': case 'W': return 7;
+        default:            return -1;
+    }
+}
+
+#endif // !WIN32
+
+// The default values set here can be changed as a result of the colour
+// option passed to term_setup.
+
+static int promptColour = 4;   // Blue
+static int inputColour  = 1;   // Red
+#ifndef WIN32
+static int outputColour = -1;  // whatever user had been using
+#endif // !WIN32
+
 
 // My support for a history mechanism here is really primitive and simple.
 // I have a fixed size history buffer and just dump strings into it.
@@ -285,22 +564,76 @@ wchar_t *pending_history_line = NULL;
 int input_history_next = 0,
     input_history_current = 0,
     longest_history_line = 0;
+static bool history_active = false;
 
+static std::string history_filename;
 
-void input_history_init(void)
+void input_history_init(const char *argv0)
 {   int i;
     input_history_next = longest_history_line = 0;
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
         input_history[i] = NULL;
     pending_history_line = NULL;
+// load_history_from_file();
+    const char *p = strrchr(argv0, '/');
+    if (p == NULL) p = strrchr(argv0, '\\');
+    if (p != NULL) argv0 = p + 1; // now just the leaf part
+    const char *h1, *h2, *h3;
+#ifdef WIN32
+    h1 = getenv("HOMEDRIVE");
+    h2 = getenv("HOMEPATH");
+    h3 = "\\";
+#else // !WIN32
+    h1 = getenv("HOME");
+    h2 = "";
+    h3 = "/";
+#endif // !WIN32
+    std::stringstream fname;
+    fname << h1 << h2 << h3 << "." << argv0 << "_History";
+    history_filename = fname.str();
+    history_active = true;
 }
 
 void input_history_end(void)
-{   int i;
-    for (i=0; i<INPUT_HISTORY_SIZE; i++)
-    {   if (input_history[i] != NULL) free(input_history[i]);
+{
+    if (!history_active) return;
+// Dump_history_to_file.
+// The format that I use is:
+//      History <size> <index>
+//      <size> times:
+//          either - for an empty entry, or
+//          a string starting and ending in '"' with most simple printable
+//          characters randered as themselves, but '\', '"' and unprintable
+//          things included as \dddd where dddd stands for a 4-byte hex
+//          value. I suspect I should render the inner text as UTF8 but
+//          with some magic to avoid needing to deal specially with 
+    std::ofstream h(history_filename, std::ofstream::out);
+    h << "History " << INPUT_HISTORY_SIZE
+      << " " << input_history_next << std::endl;
+    for (int i=0; i<INPUT_HISTORY_SIZE; i++)
+    {   wchar_t *l = input_history[i];
+        if (l == NULL) h << "-" << std::endl;
+        else
+        {   h << "\"";
+            int ch;
+// I emit a line with (most) printable ASCII characters rendered as themselves
+// but with control characters, the special cases '\' and '"', and any
+// character from 0x7f upwards shown as a '\' followed by 4 hexadecimal
+// digits. A special case of that will be that a newline will be "\000a".
+            while ((ch = *l++) != 0)
+            {   if (0x20 <= ch && ch <= 0x7e &&
+                    ch != '\\' && ch != '"') h << (char)ch;
+                else h << "\\" << std::hex << std::setw(4) <<
+                     std::setfill('0') << (ch & 0xffff);
+            } 
+            h << "\"" << std::endl;
+            free(l);
+        }
     }
+    h << "History end" << std::endl;
     if (pending_history_line != NULL) free(pending_history_line);
+    history_active = false;
+// Now as h goes out of scope the output stream will be closed.
 }
 
 
@@ -311,8 +644,8 @@ void input_history_stage(const wchar_t *s)
 // line.
     if (pending_history_line == NULL)
     {   pending_history_line = (wchar_t *)
-                               malloc((wcslen(s)+1)*sizeof(wchar_t));
-        if (pending_history_line != NULL) // in case malloc fails
+                               my_malloc((wcslen(s)+1)*sizeof(wchar_t));
+        if (pending_history_line != NULL) // in case my_malloc fails
             wcscpy(pending_history_line, s);
         return;
     }
@@ -346,9 +679,9 @@ void input_history_add(const wchar_t *s)
         (scopy = input_history[(p-1)%INPUT_HISTORY_SIZE]) != NULL &&
         wcscmp(s, scopy) == 0) return;
 // Make a copy of the input string...
-    scopy = (wchar_t *)malloc((wcslen(s) + 1)*sizeof(wchar_t));
+    scopy = (wchar_t *)my_malloc((wcslen(s) + 1)*sizeof(wchar_t));
     p = input_history_next % INPUT_HISTORY_SIZE;
-// If malloc returns NULL I just store an empty history entry.
+// If my_malloc returns NULL I just store an empty history entry.
     if (scopy != NULL) wcscpy(scopy, s);
     LOG("History entry has %d characters in it\n", wcslen(s));
 // I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
@@ -371,7 +704,7 @@ const wchar_t *input_history_get(int n)
         n >= input_history_next ||
         n < input_history_next-INPUT_HISTORY_SIZE) return NULL;
     s = input_history[n % INPUT_HISTORY_SIZE];
-// The NULL here would be if malloc had failed earlier.
+// The NULL here would be if my_malloc had failed earlier.
     if (s == NULL) return L"";
     else return s;
 }
@@ -386,13 +719,16 @@ const wchar_t *input_history_get(int n)
 static int historyFirst, historyNumber, historyLast;
 static int searchFlags;
 
+#endif // !EMBEDDED
 
 #define MAX_PROMPT_LENGTH 80
 
 static wchar_t termed_prompt_string[MAX_PROMPT_LENGTH+1] = L">";
 
 wchar_t *input_line;
+#ifndef EMBEDDED
 static wchar_t *display_line;
+#endif // !EMBEDDED
 int prompt_length = 1, prompt_width = 1;
 static int input_line_size;
 
@@ -410,19 +746,17 @@ static int input_line_size;
 static void term_putchar(int c);
 
 static wchar_t *term_wide_plain_getline(void)
-{   int n;
-    wint_t ch;
-    int i;
-#ifdef TERMED_TEST
-    fprintf(stderr, "plain_getline:");
-    fflush(stderr);
-#endif
-    for (i=0; i<prompt_length; i++) term_putchar(termed_prompt_string[i]);
+{   for (int i=0; i<prompt_length; i++) term_putchar(termed_prompt_string[i]);
     fflush(stdout);
     if (input_line_size == 0) return NULL;
     input_line[0] = 0;
-    n = 0;
-    for (ch=getwchar(); ch!=WEOF && ch!=L'\n'; ch=getwchar())
+    int n = 0;
+    wint_t ch;
+    for (ch=getwc_from_thread();
+         ch!=WEOF && ch!=L'\n' &&
+         ch!=('C'&0x1f) && ch!=('G'&0x1f) &&
+         ch!=('D'&0x1f);
+         ch=getwc_from_thread())
     {
 // I will expand the buffer so that if sizeof(wchar_t)==2 I have 1.5 times
 // as many bytes as there are wchar_t items in use. This is so that when and
@@ -443,7 +777,7 @@ static wchar_t *term_wide_plain_getline(void)
         input_line[n++] = ch;
         input_line[n] = 0;
     }
-    if (ch==WEOF)
+    if (ch==WEOF || ch==('D'&0x1f))
     {   if (n == 0) return NULL;
     }
     else
@@ -473,21 +807,30 @@ void term_setprompt(const char *s)
 // particular code page... or if the prompt is expressed in UTF8. However
 // this version is explicity for narrow character prompt strings - see the
 // following function for the more general case.
+#ifndef EMBEDDED
     bool changed = false;
+#endif // !EMBEDDED
     for (i=0; i<prompt_length; i++)
     {   wint_t c = *s++ & 0xff;
         if (c != termed_prompt_string[i])
         {   termed_prompt_string[i] = c;
+#ifndef EMBEDDED
             changed = true;
+#endif // !EMBEDDED
         }
     }
     if (termed_prompt_string[i] != 0)
     {   termed_prompt_string[i] = 0;
+#ifndef EMBEDDED
         changed = true;
+#endif // !EMBEDDED
     }
+#ifndef EMBEDDED
+#ifdef REDUCE_PROMPTS
 // Now when I set a prompt that is different from the previous one I need
-// to add the previous bunch of lines to the history.
-    if (pending_history_line != NULL && changed)
+// to add the previous bunch of lines to the history. There is no point
+// in doing this if I do not have cursor-editing enabled!
+    if (term_enabled && pending_history_line != NULL && changed)
     {   input_history_add(pending_history_line);
 // Adding an entry could cause an old one to be discarded. So I now ensure
 // that I know what the first and last recorded numbers are.
@@ -498,6 +841,8 @@ void term_setprompt(const char *s)
         free(pending_history_line);
         pending_history_line = NULL;
     }
+#endif // REDUCE_PROMPTS
+#endif // !EMBEDDED
 }
 
 // Now a version that takes a wide string so that it is possible to
@@ -518,10 +863,14 @@ void term_wide_setprompt(const wchar_t *s)
     wchar_t temp[MAX_PROMPT_LENGTH+1];
     wcsncpy(temp, s, prompt_length);
     temp[prompt_length] = 0;
+#ifndef EMBEDDED
     bool changed = false;
+#endif // !EMBEDDED
     if (wcscmp(temp, termed_prompt_string) != 0)
     {   wcscpy(termed_prompt_string, temp);
+#ifndef EMBEDDED
         changed = true;
+#endif // !EMBEDDED
     }
 // Now in the face of possible surrogate pairs the width in columns of the
 // prompt may not be the same as the number of wchar_t items that make it
@@ -529,7 +878,8 @@ void term_wide_setprompt(const wchar_t *s)
     prompt_width = 0;
     for (s=termed_prompt_string; *s!=0; s++)
         if (!is_high_surrogate(*s)) prompt_width++;
-    if (pending_history_line != NULL && changed)
+#ifndef EMBEDDED
+    if (term_enabled && pending_history_line != NULL && changed)
     {   input_history_add(pending_history_line);
 // Adding an entry could cause an old one to be discarded. So I now ensure
 // that I know what the first and last recorded numbers are.
@@ -540,94 +890,19 @@ void term_wide_setprompt(const wchar_t *s)
         free(pending_history_line);
         pending_history_line = NULL;
     }
+#endif // !EMBEDDED
 }
 
-#ifdef DISABLE
-
-// In some cases this code can not be activated because not enough
-// libraries are available. In that case I will provide stubs that do
-// non-clever input. It may be that an external package or body of code
-// will still be providing a good environment for the user.
-
-// Start up input through this package. Returns 1 in this case because
-// local editing is not supported on this platform. Hence the colour
-// option is ignored.
-
-int term_setup(int flag, const char *colour)
-{
-#ifdef TERMED_TEST
-    fprintf(stderr,
-            "term_setup in the DISABLE (no cursor addressability) case\n");
-#endif
-    input_line = (wchar_t *)malloc(200*sizeof(wchar_t));
-    if (input_line == NULL) input_line_size = 0;
-    else input_line_size = 200;
-    return 1;
-}
-
-// Before returning from your code it would be a really good idea to
-// call "term_close" since that can re-set all sorts of terminal
-// characteristics. In some cases use of "atexit" to ensure this will
-// make sense.
-
-void term_close(void)
-{   if (input_line != NULL)
-    {   free(input_line);
-        input_line = NULL;
-    }
-}
-
-static const int term_enabled = 0;
-
-static wchar_t *term_wide_fancy_getline(void)
-{   return NULL; // Should never be called
-}
+#ifdef EMBEDDED
 
 static void term_putchar(int c)
-{
-// The character passed here will actually be an wchar_t and probably if I
-// was being truly proper the argument type would need to be wint_t not int.
-// However I am going to be sloppy and assume that int is good enough. Well
-// things are worse than that. I probably want the argument to be a 20-bit
-// Unicode character and in some cases that will turn into a surrogate pair
-// under Windows. But then I will need to be careful when writing from a
-// (wchar_t *) style wide string where surrogates can already exist.
-
-#ifdef WIN32
-    DWORD nwritten;
-    wchar_t buffer[4];
-    if (c <= 0xffff)
-    {   buffer[0] = c;
-        WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
-    }
-    else
-    {   buffer[0] = 0xd800 + (((c - 0x10000) >> 10) & 0x3ff);
-        buffer[1] = 0xdc00 + (c & 0x3ff);
-        WriteConsole(stdout_handle, buffer, 2, &nwritten, NULL);
-    }
-#else
-// Other than on Windows I will encode things using UTF-8
-    unsigned char buffer[8];
-    int i, n = utf_encode(buffer, c);
-    for (i=0; i<n; i++)
-    {   c = buffer[i];
-#ifdef __CYGWIN__
-// On Cygwin at the stage I am printing my terminal may be in RAW mode
-// and so I need to send CR/LF for a newline. This seems to be the case
-// just on Cygwin: on a typical Linux/Unix/BSD system I do not need this.
-        if (c == '\n') putchar('\r');
-#endif
-        putchar(c);
-    }
-#endif
+{   putchar(c);
 }
 
-#else // DISABLE
+#else // !EMBEDDED
 
 #ifndef WIN32
-
 static int stdin_handle, stdout_handle;
-
 #endif
 
 #ifdef SIMULATE_TERM_H
@@ -701,8 +976,7 @@ static void putp(char *s)
 {   tputs(s, 1, putpc);
 }
 
-
-#endif
+#endif // SIMULATE_TERM_H
 
 #ifndef WIN32
 
@@ -733,7 +1007,7 @@ static void my_reset_prog_mode(void)
     tcsetattr(stdout_handle, TCSADRAIN, &prog_term_o);
 }
 
-#endif
+#endif // !WIN32
 
 // In case the system did not provide this I will supply the ANSI
 // escape code and I will use that regardless...
@@ -745,12 +1019,6 @@ static void my_reset_prog_mode(void)
 #ifndef set_foreground
 #define set_foreground NULL
 #endif
-
-// When the code is built it can still determine (dynamically) that it
-// should not intervene, Eg when stdin/stdout have been redirected. When
-// it is not enabled it can do simple getchar/putchar IO.
-
-static int term_enabled = 0;
 
 static int cursorx, cursory, final_cursorx, final_cursory, max_cursory;
 int insert_point;
@@ -775,7 +1043,7 @@ static HANDLE stdin_handle, stdout_handle;
 static WORD plainAttributes, revAttributes, promptAttributes, inputAttributes;
 static DWORD stdin_attributes, stdout_attributes;
 
-#endif
+#endif // WIN32
 
 extern int utf_encode(unsigned char *b, int c);
 
@@ -856,96 +1124,79 @@ static void resetCP()
 {   SetConsoleOutputCP(originalCodePage);
 }
 
-#endif
+#endif // WIN32
 
-int term_setup(int flag, const char *colour)
+#endif // !EMBEDDED
+
+static int direct_to_terminal()
 {
+#ifdef WIN32
+    HANDLE h;
+    DWORD w;
+    CONSOLE_SCREEN_BUFFER_INFO csb;
+// Standard input must be from a character device and must be accepted
+// by the GetConsoleMode function
+    h = GetStdHandle(STD_INPUT_HANDLE);
+    if (GetFileType(h) != FILE_TYPE_CHAR) return 0;
+    if (!GetConsoleMode(h, &w)) return 0;
+// Standard output must be a character device and a ConsoleScreenBuffer
+    h = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (GetFileType(h) != FILE_TYPE_CHAR) return 0;
+    if (!GetConsoleScreenBufferInfo(h, &csb)) return 0;
+// Note that I will allow stderr to have been redirected as much
+// as you like without that having an effect here.
+    return 1;
+#else // WIN32
+    return isatty(fileno(stdin)) && isatty(fileno(stdout));
+#endif // WIN32
+}
+
+int term_setup(const char *argv0, const char *colour)
+{
+#ifdef EMBEDDED
+    input_line = (wchar_t *)my_malloc(200*sizeof(wchar_t));
+    if (input_line == NULL)
+    {   input_line_size = 0;
+        return 1;  // failed to allocate buffers
+    }
+    else input_line_size = 200;
+    start_keyboard_thread();
+    term_enabled = false;
+    return 2;
+#else // !EMBEDDED
 #ifdef WIN32
     DWORD w;
     CONSOLE_SCREEN_BUFFER_INFO csb;
-#ifdef TERMED_TEST
-    fprintf(stderr, "term_setup in the WIN32 case\n");
-#endif
 // It is VITAL to use "w+" as the access mode here for otherwise
 // it is not possible to access the Console Output Buffer sufficiently.
     freopen("CONOUT$", "w+", stdout);
-    term_enabled = 0;
+    term_enabled = false;
     keyboard_buffer[0].Event.KeyEvent.wRepeatCount = 0;
     term_colour = (colour == NULL ? "-" : colour);
-    input_line = (wchar_t *)malloc(200*sizeof(wchar_t));
-    display_line = (wchar_t *)malloc(200*sizeof(wchar_t));
+    input_line = (wchar_t *)my_malloc(200*sizeof(wchar_t));
+    display_line = (wchar_t *)my_malloc(200*sizeof(wchar_t));
     if (input_line == NULL || display_line == NULL)
     {   input_line_size = 0;
-#ifdef TERMED_TEST
-        fprintf(stderr, "unable to allocate buffers\n");
-#endif
-        return 1;
+        return 1;  // failed to allocate buffers
     }
     else input_line_size = 200;
-    if (!flag)
-    {
-#ifdef TERMED_TEST
-        fprintf(stderr, "user asked for no local editing\n");
-#endif
-        return 1;
-    }
 // Standard input must be from a character device and must be accepted
 // by the GetConsoleMode function
     stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
     if (GetFileType(stdin_handle) != FILE_TYPE_CHAR)
-    {
-#ifdef TERMED_TEST
-        fprintf(stderr, "stdin not CHAR type\n");
-#endif
-        return 1;
-    }
+        return 2;   // stdin is not from a console
     if (!GetConsoleMode(stdin_handle, &w))
-    {
-#ifdef TERMED_TEST
-        fprintf(stderr, "could not get stdin console mode \n");
-#endif
-        return 1;
-    }
+        return 3;    // failed to get stdin console mode
 // Standard output must be a character device and a ConsoleScreenBuffer
     stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-#ifdef TERMED_TEST
-    fprintf(stderr, "stdin handle = %p, stdout handle = %p\n", stdin_handle, stdout_handle);
-#endif
     if (GetFileType(stdout_handle) != FILE_TYPE_CHAR)
-    {
-#ifdef TERMED_TEST
-        fprintf(stderr, "stdout not CHAR type\n");
-#endif
-        return 1;
-    }
+        return 4; // stdout not to a console
     if (!GetConsoleScreenBufferInfo(stdout_handle, &csb))
-    {
-#ifdef TERMED_TEST
-// This was here stdout_handled needed READ access as well as WRITE access.
-// All the extra printing was useful while I was tracking that problem down!
-        DWORD e = GetLastError();
-        char *msg;
-        fprintf(stderr, "trouble with GetConsoleScreenBufferInfo(stdout)\n");
-        fprintf(stderr, "Error code = %d\n", (int)e);
-        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                      NULL,
-                      e,
-                      0,
-                      (LPSTR)&msg,
-                      0,
-                      NULL);
-        fprintf(stderr, "msg = %s\n", msg);
-#endif
-        return 1;
-    }
+        return 5;  // failed to get stdout console information
     if (!GetConsoleMode(stdin_handle, &stdin_attributes) ||
         !GetConsoleMode(stdout_handle, &stdout_attributes))
-    {
-#ifdef TERMED_TEST
-        fprintf(stderr, "trouble GetConsoleMode\n");
-#endif
-        return 1;
-    }
+        return 6; // GetConsoleMode failed
+// I guess this is where I could customize colours in the Windows case...
     plainAttributes = csb.wAttributes;
     revAttributes = plainAttributes ^
                     (FOREGROUND_RED | BACKGROUND_RED |
@@ -955,40 +1206,23 @@ int term_setup(int flag, const char *colour)
     promptAttributes = plainAttributes ^ FOREGROUND_BLUE;
     inputAttributes = plainAttributes ^ FOREGROUND_RED;
     if (!SetConsoleMode(stdout_handle, 0))
-    {
-#ifdef TERMED_TEST
-        fprintf(stderr, "trouble setting stdout attributes\n");
-#endif
-        return 1;
-    }
+        return 7; // Unable to set console attributes on stdout
     if (!SetConsoleMode(stdin_handle,
                         ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT))
-    {
-#ifdef TERMED_TEST
-        fprintf(stderr, "trouble setting stdin attributes\n");
-#endif
-        return 1;
-    }
+        return 8; // unable to set console attributes on stdin
     columns = csb.srWindow.Right - csb.srWindow.Left + 1;
     lines = csb.srWindow.Bottom - csb.srWindow.Top + 1;
-    SetConsoleMode(stdout_handle, stdout_attributes);
     term_can_invert = 1;
 // If I am using the Unicode functions to write to the console then
 // the issue of a code page for it becomes somewhat irrelevant!
     originalCodePage = GetConsoleOutputCP();
     atexit(resetCP);
     SetConsoleOutputCP(CP_UTF8);
-#ifdef TERMED_TEST
-    printf("Original page = %d.  \xc3\xbc\n", originalCodePage);
-#endif
-#else // WIN32
+#else // !WIN32
     int errval, errcode;
     const char *s;
     struct termios my_term;
-#ifdef TERMED_TEST
-    fprintf(stderr, "term_setup in the non-Windows case\n");
-#endif
-    term_enabled = 0;
+    term_enabled = false;
     term_colour = (colour == NULL ? "-" : colour);
     {   s = term_colour;
         if (*s)
@@ -1007,24 +1241,26 @@ int term_setup(int flag, const char *colour)
             promptColour = c;
         }
     }
-    if (!flag) return 1;
-    input_line = (wchar_t *)malloc(200*sizeof(wchar_t));
-    display_line = (wchar_t *)malloc(200*sizeof(wchar_t));
+    input_line = (wchar_t *)my_malloc(200*sizeof(wchar_t));
+    display_line = (wchar_t *)my_malloc(200*sizeof(wchar_t));
     if (input_line == NULL || display_line == NULL)
     {   input_line_size = 0;
-        return 1;
+        return 1; // no space for buffer
     }
     else input_line_size = 200;
+// I rather expect the handles for stdin and sstout to be 0 and 1, but
+// let's extract them explictly!
     stdin_handle = fileno(stdin);
     stdout_handle = fileno(stdout);
 // Check for redirected stdin/stdout.
-    if (!isatty(stdin_handle) || !isatty(stdout_handle)) return 1;
+    if (!direct_to_terminal())
+        return 2; // not attached to a tty
 // Next check if the terminal is one that we know about...
     s = getenv("TERM");
     if (s == NULL) s = "dumb";
 // There is a bit of a misery here. The standard function setupterm takes
 // a "char *" argument not a "const char *", even though it is not liable
-// to change anything there. To be very proper I will cope my data
+// to change anything there. To be very proper I will copy my data
 // so as to survive that!
     {   char s1[80];
         strncpy(s1, s, sizeof(s1)); // Copy data
@@ -1032,7 +1268,7 @@ int term_setup(int flag, const char *colour)
         errcode = setupterm(s1,              // terminal type
                             stdout_handle,   // ie to stdout
                             &errval);
-        if (errcode != OK || errval != 1) return 1;
+        if (errcode != OK || errval != 1) return 3; // setupterm fails
     }
 // I really want the very basic units of cursor movement to be available,
 // and if they are not I will just give up.
@@ -1040,7 +1276,7 @@ int term_setup(int flag, const char *colour)
         cursor_down == NULL ||
         cursor_left == NULL ||
         cursor_right == NULL ||
-        carriage_return == NULL) return 1;
+        carriage_return == NULL) return 4; // not even basic cursor control
     if (enter_reverse_mode != NULL &&
         exit_attribute_mode != NULL) term_can_invert = 1;
     else term_can_invert = 0;
@@ -1080,15 +1316,18 @@ int term_setup(int flag, const char *colour)
     signal(SIGTTOU, SIG_IGN);
     tcsetattr(stdin_handle, TCSADRAIN, &my_term);
     my_def_prog_mode();
-    my_reset_shell_mode();
 #endif // WIN32
-    term_enabled = 1;
-    input_history_init();
+    term_enabled = true;
+    input_history_init(argv0);
     historyFirst = historyNumber = 0;
     historyLast = -1;
     searchFlags = 0;
     invert_start = invert_end = -1;
+// The terminal is now set up. Start the thread that keeps trying to
+// read from it!
+    start_keyboard_thread();
     return 0;
+#endif // !EMBEDDED
 }
 
 void term_close(void)
@@ -1096,26 +1335,43 @@ void term_close(void)
 // Note here and elsewhere in this file that I go "fflush(stdout)" before
 // doing anything that may change styles or options for stream handling.
     fflush(stdout);
+#ifndef EMBEDDED
 #ifdef WIN32
-    if (term_enabled)
-    {   SetConsoleMode(stdin_handle, stdin_attributes);
-        SetConsoleMode(stdout_handle, stdout_attributes);
+    fflush(stdout);
+    if (*term_colour != 0)
+        SetConsoleTextAttribute(stdout_handle, plainAttributes);
+    SetConsoleMode(stdout_handle, stdout_attributes);
+    SetConsoleMode(stdin_handle, stdin_attributes);
+#else // !WIN32
+    fflush(stdout);
+    if (*term_colour == 0) /* nothing */;
+    else if (orig_pair) putp(orig_pair);
+    else if (orig_colors) putp(orig_colors);
+    else if (set_a_foreground)
+    {
+#ifdef SOLARIS
+        solaris_foreground(0);
+#else // !SOLARIS
+        putp(tparm(set_a_foreground, 0));
+#endif // !SOLARIS
     }
-#else
-    if (term_enabled)
-    {   my_reset_shell_mode();
-    }
-#endif
-    term_enabled = 0;
-    if (input_line != NULL)
-    {   free(input_line);
-        input_line = NULL;
-    }
+    fflush(stdout);
+    my_reset_shell_mode();
+#endif // !WIN32
     if (display_line != NULL)
     {   free(display_line);
         display_line = NULL;
     }
+#endif // !EMBEDDED
+    if (input_line != NULL)
+    {   free(input_line);
+        input_line = NULL;
+    }
+    input_history_end();
+    term_enabled = false;
 }
+
+#ifndef EMBEDDED
 
 // term_getchar() will block until the user has typed something. I will use
 // this place as where I unravel various funny escape sequences that
@@ -1213,7 +1469,7 @@ static int term_getchar(void)
                 }
         }
     }
-#else
+#else // !WIN32
 // In the Unix-like case I run a state-machine to grab sequences of
 // characters by way of escape codes. One consequence of this is that
 // a single ESC character is generally not passed through to the user.
@@ -1251,7 +1507,7 @@ static int term_getchar(void)
     int state = BASE_STATE, esc_esc = 0, ch, numval1=0, numval2=0;
     for (;;)
     {   int c1, c2, c3;
-        ch = getchar();
+        ch = getc_from_thread();
         if (ch == EOF) return EOF;
         ch &= 0xff;
 // Here I will swallow extra octets if the leading one seems to introduce
@@ -1277,7 +1533,7 @@ static int term_getchar(void)
                 break;  // out of place continuation marker
             case 0xc0:
             case 0xd0:
-                c1 = getchar();
+                c1 = getc_from_thread();
                 if (c1 == EOF) return EOF;
                 c1 &= 0xff;
                 if ((c1 & 0xc0) != 0x80)
@@ -1287,14 +1543,14 @@ static int term_getchar(void)
                 ch = ((ch & 0x1f) << 6) | (c1 & 0x3f);
                 break;
             case 0xe0:
-                c1 = getchar();
+                c1 = getc_from_thread();
                 if (c1 == EOF) return EOF;
                 c1 &= 0xff;
                 if ((c1 & 0xc0) != 0x80)
                 {   ch = L'?'; // not continuation
                     break;
                 }
-                c2 = getchar();
+                c2 = getc_from_thread();
                 if (c2 == EOF) return EOF;
                 c1 &= 0xff;
                 if ((c2 & 0xc0) != 0x80)
@@ -1308,21 +1564,21 @@ static int term_getchar(void)
                 {   ch = L'?';
                     break;
                 }
-                c1 = getchar();
+                c1 = getc_from_thread();
                 if (c1 == EOF) return EOF;
                 c1 &= 0xff;
                 if ((c1 & 0xc0) != 0x80)
                 {   ch = L'?';
                     break;
                 } // not continuation
-                c2 = getchar();
+                c2 = getc_from_thread();
                 if (c2 == EOF) return EOF;
                 c2 &= 0xff;
                 if ((c2 & 0xc0) != 0x80)
                 {   ch = L'?';
                     break;
                 } // not continuation
-                c3 = getchar();
+                c3 = getc_from_thread();
                 if (c3 == EOF) return EOF;
                 c3 &= 0xff;
                 if ((c3 & 0xc0) != 0x80)
@@ -1406,7 +1662,7 @@ static int term_getchar(void)
                 }
         }
     }
-#endif
+#endif // !WIN32
 }
 
 
@@ -2116,7 +2372,7 @@ static int matchString(const wchar_t *pat, int n, const wchar_t *text)
 
 
 static int trySearch(void)
-{   int r = -1;
+{   int r= -1;
     const wchar_t *history_string = input_history_get(historyNumber);
     if (history_string == NULL) return -1;
     while ((r = matchString(searchBuff, searchLen, history_string)) < 0)
@@ -5059,22 +5315,33 @@ void term_unicode_convert(void)
     term_bell();
 }
 
+#endif // !EMBEDDED
 
 static void term_interrupt(void)
 {
+#ifndef EMBEDDED
 // @@@@@
     insert_point += swprintf(&input_line[insert_point],
                              input_line_size-insert_point, L"<^C>");
     term_redisplay();
+#endif // !EMBEDDED
 }
 
 
 static void term_noisy_interrupt(void)
 {
+#ifndef EMBEDDED
 // @@@@@
     insert_point += swprintf(&input_line[insert_point],
                              input_line_size-insert_point, L"<^G>");
     term_redisplay();
+#endif // !EMBEDDED
+}
+
+#ifndef EMBEDDED
+
+static void term_exit_program(void)
+{   exit(0);
 }
 
 
@@ -5084,11 +5351,6 @@ static void term_pause_execution(void)
     insert_point += swprintf(&input_line[insert_point],
                              input_line_size-insert_point, L"<^Z>");
     term_redisplay();
-}
-
-
-static void term_exit_program(void)
-{   exit(0);
 }
 
 
@@ -5190,31 +5452,6 @@ static void set_fg(int n)
 #endif
 }
 
-static void set_normal(void)
-{
-#ifdef WIN32
-    fflush(stdout);
-    if (*term_colour != 0)
-        SetConsoleTextAttribute(stdout_handle, plainAttributes);
-    SetConsoleMode(stdout_handle, stdout_attributes);
-#else
-    fflush(stdout);
-    if (*term_colour == 0) /* nothing */;
-    else if (orig_pair) putp(orig_pair);
-    else if (orig_colors) putp(orig_colors);
-    else if (set_a_foreground)
-    {
-#ifdef SOLARIS
-        solaris_foreground(0);
-#else
-        putp(tparm(set_a_foreground, 0));
-#endif
-    }
-    fflush(stdout);
-    my_reset_shell_mode();
-#endif
-}
-
 static void set_shell(void)
 {
 #ifdef WIN32
@@ -5254,21 +5491,13 @@ static wchar_t *term_wide_fancy_getline(void)
     if (left_over != 0)
     {
     }
-#ifdef WIN32
-    SetConsoleMode(stdout_handle, 0);
-#else
-    my_reset_prog_mode();
-#endif
 // I am going to take strong action to ensure that the prompt appears
 // at the left-hand side of the screen.
     term_move_first_column();
     set_fg(promptColour);
     for (i=0; i<prompt_length; i++) term_putchar(termed_prompt_string[i]);
     fflush(stdout);
-    if (input_line_size == 0)
-    {   set_normal();
-        return NULL;
-    }
+    if (input_line_size == 0) return NULL;
     set_fg(inputColour);
     wcsncpy(input_line, termed_prompt_string, prompt_length);
     wcsncpy(display_line, termed_prompt_string, prompt_length);
@@ -5279,10 +5508,7 @@ static wchar_t *term_wide_fancy_getline(void)
     for (;;)
     {   int n;
         ch = term_getchar();
-        if (ch == EOF || (ch == CTRL('D') && !any_keys))
-        {   set_normal();
-            return NULL;
-        }
+        if (ch == EOF || (ch == CTRL('D') && !any_keys)) return NULL;
         any_keys = 1;
 // First ensure there is space in the buffer. In some cases maybe putting
 // the test here is marginally over-keen, since the keystroke entered
@@ -5305,7 +5531,6 @@ static wchar_t *term_wide_fancy_getline(void)
             display_line = (wchar_t *)realloc(display_line, 2*input_line_size*sizeof(wchar_t));
             if (input_line == NULL || display_line == NULL)
             {   input_line_size = 0;
-                set_normal();
                 return NULL;
             }
             else input_line_size = 2*input_line_size;
@@ -5573,52 +5798,25 @@ static wchar_t *term_wide_fancy_getline(void)
         break;
     }
 // Put the cursor at the start of the final line of displayed (wrapped)
-// input before moving back to normal screen mode.
+// input.
     term_move_first_column();
     term_move_down(final_cursory-cursory, true);
-    set_normal();
     term_putchar('\n');
     fflush(stdout);
     insert_point = wcslen(input_line);
     if (insert_point==prompt_length && ch==EOF) return NULL;
 // Stick the line into my history record: WITHOUT any newline at its end.
     input_line[insert_point] = 0;
+#ifdef REDUCE_PROMPTS
     input_history_stage(input_line+prompt_length);
+#else // !REDUCE_PROMPTS
+    input_history_add(input_line+prompt_length);
+#endif // !REDUCE_PROMPTS
 // Whether the user terminated the line with CR or LF I will always
 // return "\n" to the program.
     input_line[insert_point++] = L'\n';
     input_line[insert_point] = 0;
     return input_line + prompt_length;
-}
-
-#endif // DISABLE
-
-// Encode into buffer b as up to 4 characters (plus a nul). Because I
-// am only concerned with Unicode I only need encode values in the
-// range 0 to 0x10ffff. Returns the number of chars packed (not counting
-// the terminating '\0').
-
-int utf_encode(unsigned char *b, int c)
-{   unsigned char *p = b;
-    c &= 0x1fffff;   // limit myself to 21-bit values here
-    if (c <= 0x7f) *p++ = c;
-    else if (c <= 0x7ff)
-    {   *p++ = 0xc0 | (c >> 6);
-        *p++ = 0x80 | (c & 0x3f);
-    }
-    else if (c <= 0xffff)
-    {   *p++ = 0xe0 | (c >> 12);
-        *p++ = 0x80 | ((c >> 6) & 0x3f);
-        *p++ = 0x80 | (c & 0x3f);
-    }
-    else
-    {   *p++ = 0xf0 | (c >> 18);
-        *p++ = 0x80 | ((c >> 12) & 0x3f);
-        *p++ = 0x80 | ((c >> 6) & 0x3f);
-        *p++ = 0x80 | (c & 0x3f);
-    }
-    *p = 0;
-    return (int)(p - b);
 }
 
 // Decode utf-8 or return -1 if invalid.
@@ -5672,9 +5870,44 @@ int utf_decode(const unsigned char *b)
     }
 }
 
+#endif // !EMBEDDED
+
+// Encode into buffer b as up to 4 characters (plus a nul). Because I
+// am only concerned with Unicode I only need encode values in the
+// range 0 to 0x10ffff. Returns the number of chars packed (not counting
+// the terminating '\0').
+
+int utf_encode(unsigned char *b, int c)
+{   unsigned char *p = b;
+    c &= 0x1fffff;   // limit myself to 21-bit values here
+    if (c <= 0x7f) *p++ = c;
+    else if (c <= 0x7ff)
+    {   *p++ = 0xc0 | (c >> 6);
+        *p++ = 0x80 | (c & 0x3f);
+    }
+    else if (c <= 0xffff)
+    {   *p++ = 0xe0 | (c >> 12);
+        *p++ = 0x80 | ((c >> 6) & 0x3f);
+        *p++ = 0x80 | (c & 0x3f);
+    }
+    else
+    {   *p++ = 0xf0 | (c >> 18);
+        *p++ = 0x80 | ((c >> 12) & 0x3f);
+        *p++ = 0x80 | ((c >> 6) & 0x3f);
+        *p++ = 0x80 | (c & 0x3f);
+    }
+    *p = 0;
+    return (int)(p - b);
+}
+
 wchar_t *term_wide_getline(void)
-{   if (!term_enabled) return term_wide_plain_getline();
+{
+#ifdef EMBEDDED
+    return term_wide_plain_getline();
+#else // !EMBEDDED
+    if (!term_enabled) return term_wide_plain_getline();
     else return term_wide_fancy_getline();
+#endif // !EMBEDDED
 }
 
 char *term_getline(void)
@@ -5776,7 +6009,7 @@ static void record_keys(void)
 }
 
 int main(int argc, char *argv[])
-{   term_setup(1, NULL);
+{   term_setup(argv[0], NULL);
 //    def_prog_mode();
     record_keys();
 //    reset_shell_mode();
@@ -5784,6 +6017,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-#endif
+#endif // RECORD_KEYS
 
 // end of file termed.cpp

@@ -185,7 +185,7 @@ void FXBitmap::destroy(){
 
 // Find shift amount
 static inline FXuint findshift(unsigned long mask){
-  register FXuint sh=0;
+  FXuint sh=0;
   while(!(mask&(1<<sh))) sh++;
   return sh;
   }
@@ -200,8 +200,8 @@ static inline FXPixel lowbit(FXPixel mask){
 // Restore client-side pixel buffer from bitmap
 void FXBitmap::restore(){
   if(xid){
-    register XImage *xim=NULL;
-    register FXint size,x,y;
+    XImage *xim=NULL;
+    FXint size,x,y;
 
     FXTRACE((100,"%s::restore bitmap %p\n",getClassName(),this));
 
@@ -252,11 +252,11 @@ void FXBitmap::restore(){
 // Render into pixmap
 void FXBitmap::render(){
   if(xid){
-    register XImage *xim=NULL;
-    register Visual *vis;
-    register int size;
-    register FXuchar *pix;
-    register int i;
+    XImage *xim=NULL;
+    Visual *vis;
+    int size;
+    FXuchar *pix;
+    int i;
     XGCValues values;
     GC gc;
 
@@ -327,8 +327,8 @@ struct BITMAPINFO256 {
 // Restore client-side pixel buffer from bitmap
 void FXBitmap::restore(){
   if(xid){
-    register FXint x,y,bytes_per_line;
-    register FXuchar *p,*q;
+    FXint x,y,bytes_per_line;
+    FXuchar *p,*q;
     FXuchar *pixels;
 
     FXTRACE((100,"%s::restore image %p\n",getClassName(),this));
@@ -399,8 +399,8 @@ void FXBitmap::restore(){
 // Render into pixmap
 void FXBitmap::render(){
   if(xid){
-    register FXint x,y,bytes_per_line;
-    register FXuchar *p,*q;
+    FXint x,y,bytes_per_line;
+    FXuchar *p,*q;
     FXuchar *pixels;
 
     FXTRACE((100,"%s::render bitmap %p\n",getClassName(),this));
@@ -467,7 +467,7 @@ void FXBitmap::render(){
 
 // Resize bitmap to the specified width and height; the contents become undefined
 void FXBitmap::resize(FXint w,FXint h){
-  register FXint bw;
+  FXint bw;
   if(w<1) w=1;
   if(h<1) h=1;
   FXTRACE((100,"%s::resize(%d,%d)\n",getClassName(),w,h));
@@ -530,11 +530,11 @@ void FXBitmap::scale(FXint w,FXint h){
   FXTRACE((100,"%s::scale(%d,%d)\n",getClassName(),w,h));
   if(w!=width || h!=height){
     if(data){
-      register FXuchar *q,*p,bits;
-      register FXint xs=(width<<16)/w;
-      register FXint ys=(height<<16)/h;
-      register FXint bw=bytewidth;
-      register FXint i,j,x,y,xx;
+      FXuchar *q,*p,bits;
+      FXint xs=(width<<16)/w;
+      FXint ys=(height<<16)/h;
+      FXint bw=bytewidth;
+      FXint i,j,x,y,xx;
       FXuchar *interim;
 
       // Copy to old buffer
@@ -581,10 +581,10 @@ void FXBitmap::mirror(FXbool horizontal,FXbool vertical){
   FXTRACE((100,"%s::mirror(%d,%d)\n",getClassName(),horizontal,vertical));
   if(horizontal || vertical){
     if(data){
-      register FXuchar *paa,*pa,*pbb,*pb;
-      register FXint sa=(8-width)&7;
-      register FXint sb=8-sa;
-      register FXuint t;
+      FXuchar *paa,*pa,*pbb,*pb;
+      FXint sa=(8-width)&7;
+      FXint sb=8-sa;
+      FXuint t;
       FXuchar line[4096];               // Maximum width is 32768/8=4096 bytes
       if(vertical && height>1){         // Mirror vertically
         paa=data;
@@ -630,9 +630,9 @@ void FXBitmap::rotate(FXint degrees){
   degrees=(degrees+360)%360;
   if(degrees!=0 && width>1 && height>1){
     if(data){
-      register FXuchar *p,*q,bits;
-      register FXint bw=bytewidth;
-      register FXint i,j,x;
+      FXuchar *p,*q,bits;
+      FXint bw=bytewidth;
+      FXint i,j,x;
       FXuchar *olddata;
       if(!FXMEMDUP(&olddata,data,FXuchar,bytewidth*height)){ throw FXMemoryException("unable to rotate bitmap"); }
       switch(degrees){
@@ -725,18 +725,18 @@ void FXBitmap::crop(FXint x,FXint y,FXint w,FXint h,FXbool color){
   if(x>=width || y>=height || x+w<=0 || y+h<=0){ fxerror("%s::crop: bad arguments.\n",getClassName()); }
   FXTRACE((100,"%s::crop(%d,%d,%d,%d)\n",getClassName(),x,y,w,h));
   if(data){
-    register FXuchar *pnn,*poo,*yyy,*pn,*po,*xx;
-    register FXint oldbw=bytewidth;
-    register FXint newbw=(w+7)>>3;
-    register FXint cpybw;
-    register FXint ow=width;
-    register FXint oh=height;
-    register FXint nw=w;
-    register FXint nh=h;
-    register FXint cw;
-    register FXint ch;
-    register FXint sh;
-    register FXuint t;
+    FXuchar *pnn,*poo,*yyy,*pn,*po,*xx;
+    FXint oldbw=bytewidth;
+    FXint newbw=(w+7)>>3;
+    FXint cpybw;
+    FXint ow=width;
+    FXint oh=height;
+    FXint nw=w;
+    FXint nh=h;
+    FXint cw;
+    FXint ch;
+    FXint sh;
+    FXuint t;
     FXuchar *olddata;
     if(!FXMALLOC(&olddata,FXuchar,oh*bytewidth+1)){ throw FXMemoryException("unable to crop bitmap"); }
     memcpy(olddata,data,oh*bytewidth);

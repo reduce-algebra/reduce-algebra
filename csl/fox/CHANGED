@@ -140,8 +140,24 @@ August 2017. Tidy up the use of "namespace" with the files that I had
 May 2018. Put test for presence of sigaction into the autoconf stuff, so that
       my fwin.h/fwin.cpp can use if where available.
 
+September 2018. I have tried to rationalize the issue about builds that do
+      or do not support windowing and ones that do or do not support
+      local editing via cursor addressing at a console - both with those
+      choices made at build time and when it is not clear until run-time
+      what can happen. I have made what should be enhancements to terminal
+      handling code that should - for instance - make detection of ^C more
+      prompt and reliable. And input history here now gets saved from
+      session to session.
+
 February 2019: Changes in FXterminal.cpp and my parts of FXText.cpp that
-put an extra level of buffering into the transfer of matereial to the GUI.
-This (I hope!) speeds up display of huge formulae in Reduce.
+      put an extra level of buffering into the transfer of matereial to
+      the GUI.
+      This (I hope!) speeds up display of huge formulae in Reduce.
+
+March 2019. The word "register" will be utterly rejeced in C++17, and now
+      we are in 2019, and so C++17 gradually become the default. Since the
+      keyword was only ever to help with performance I will just delete it
+      everywhere it occurs! Yuk for the C++ standard breaking existing code!
+
 
 <end of CHANGED>

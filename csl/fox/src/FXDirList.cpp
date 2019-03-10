@@ -229,36 +229,36 @@ FXTreeItem* FXDirList::createItem(const FXString& text,FXIcon* oi,FXIcon* ci,voi
 
 // Sort ascending order, keeping directories first
 FXint FXDirList::ascending(const FXTreeItem* pa,const FXTreeItem* pb){
-  register const FXDirItem *a=(FXDirItem*)pa;
-  register const FXDirItem *b=(FXDirItem*)pb;
-  register FXint diff=(FXint)b->isDirectory() - (FXint)a->isDirectory();
+  const FXDirItem *a=(FXDirItem*)pa;
+  const FXDirItem *b=(FXDirItem*)pb;
+  FXint diff=(FXint)b->isDirectory() - (FXint)a->isDirectory();
   return diff ? diff : compare(a->label,b->label);
   }
 
 
 // Sort descending order, keeping directories first
 FXint FXDirList::descending(const FXTreeItem* pa,const FXTreeItem* pb){
-  register const FXDirItem *a=(FXDirItem*)pa;
-  register const FXDirItem *b=(FXDirItem*)pb;
-  register FXint diff=(FXint)b->isDirectory() - (FXint)a->isDirectory();
+  const FXDirItem *a=(FXDirItem*)pa;
+  const FXDirItem *b=(FXDirItem*)pb;
+  FXint diff=(FXint)b->isDirectory() - (FXint)a->isDirectory();
   return diff ? diff : compare(b->label,a->label);
   }
 
 
 // Sort ascending order, case insensitive, keeping directories first
 FXint FXDirList::ascendingCase(const FXTreeItem* pa,const FXTreeItem* pb){
-  register const FXDirItem *a=(FXDirItem*)pa;
-  register const FXDirItem *b=(FXDirItem*)pb;
-  register FXint diff=(FXint)b->isDirectory() - (FXint)a->isDirectory();
+  const FXDirItem *a=(FXDirItem*)pa;
+  const FXDirItem *b=(FXDirItem*)pb;
+  FXint diff=(FXint)b->isDirectory() - (FXint)a->isDirectory();
   return diff ? diff : comparecase(a->label,b->label);
   }
 
 
 // Sort descending order, case insensitive, keeping directories first
 FXint FXDirList::descendingCase(const FXTreeItem* pa,const FXTreeItem* pb){
-  register const FXDirItem *a=(FXDirItem*)pa;
-  register const FXDirItem *b=(FXDirItem*)pb;
-  register FXint diff=(FXint)b->isDirectory() - (FXint)a->isDirectory();
+  const FXDirItem *a=(FXDirItem*)pa;
+  const FXDirItem *b=(FXDirItem*)pb;
+  FXint diff=(FXint)b->isDirectory() - (FXint)a->isDirectory();
   return diff ? diff : comparecase(b->label,a->label);
   }
 
@@ -393,7 +393,7 @@ long FXDirList::onDNDRequest(FXObject* sender,FXSelector sel,void* ptr){
 
 // Start a drag operation
 long FXDirList::onBeginDrag(FXObject* sender,FXSelector sel,void* ptr){
-  register FXTreeItem *item;
+  FXTreeItem *item;
   if(FXTreeList::onBeginDrag(sender,sel,ptr)) return 1;
   if(beginDrag(&urilistType,1)){
     dragfiles=FXString::null;
@@ -1069,8 +1069,8 @@ FXString FXDirList::getItemPathname(const FXTreeItem* item) const {
 
 // Return the item from the absolute pathname
 FXTreeItem* FXDirList::getPathnameItem(const FXString& path){
-  register FXTreeItem *item,*it;
-  register FXint beg=0,end=0;
+  FXTreeItem *item,*it;
+  FXint beg=0,end=0;
   FXString name;
   if(!path.empty()){
 #ifndef WIN32

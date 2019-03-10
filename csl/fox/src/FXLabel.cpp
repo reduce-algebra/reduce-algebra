@@ -146,8 +146,8 @@ void FXLabel::disable(){
 
 // Get height of multi-line label
 FXint FXLabel::labelHeight(const FXString& text) const {
-  register FXint beg,end;
-  register FXint th=0;
+  FXint beg,end;
+  FXint th=0;
   beg=0;
   do{
     end=beg;
@@ -162,8 +162,8 @@ FXint FXLabel::labelHeight(const FXString& text) const {
 
 // Get width of multi-line label
 FXint FXLabel::labelWidth(const FXString& text) const {
-  register FXint beg,end;
-  register FXint w,tw=0;
+  FXint beg,end;
+  FXint w,tw=0;
   beg=0;
   do{
     end=beg;
@@ -232,8 +232,8 @@ void FXLabel::just_y(FXint& ty,FXint& iy,FXint th,FXint ih){
 
 // Draw multi-line label, with underline for hotkey
 void FXLabel::drawLabel(FXDCWindow& dc,const FXString& text,FXint hot,FXint tx,FXint ty,FXint tw,FXint){
-  register FXint beg,end;
-  register FXint xx,yy;
+  FXint beg,end;
+  FXint xx,yy;
   yy=ty+font->getFontAscent();
   beg=0;
   do{

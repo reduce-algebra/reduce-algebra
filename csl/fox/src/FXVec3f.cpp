@@ -61,7 +61,7 @@ FXVec3f::operator FXColor() const {
 
 
 FXVec3f normalize(const FXVec3f& v){
-  register FXfloat t=v.length();
+  FXfloat t=v.length();
   if(t>0.0f){ return FXVec3f(v.x/t,v.y/t,v.z/t); }
   return FXVec3f(0.0f,0.0f,0.0f);
   }

@@ -102,7 +102,7 @@ static inline FXint strlen(const FXchar *src){
 
 // Length of wide character string
 static inline FXint strlen(const FXwchar *src){
-  register FXint i=0;
+  FXint i=0;
   while(src[i]) i++;
   return i;
   }
@@ -110,7 +110,7 @@ static inline FXint strlen(const FXwchar *src){
 
 // Length of narrow character string
 static inline FXint strlen(const FXnchar *src){
-  register FXint i=0;
+  FXint i=0;
   while(src[i]) i++;
   return i;
   }
@@ -121,7 +121,7 @@ static inline FXint strlen(const FXnchar *src){
 
 // Return wide character from utf8 string at ptr
 FXwchar wc(const FXchar *ptr){
-  register FXwchar w=(FXuchar)ptr[0];
+  FXwchar w=(FXuchar)ptr[0];
   if(0xC0<=w){ w=(w<<6)^(FXuchar)ptr[1]^0x3080;
   if(0x800<=w){ w=(w<<6)^(FXuchar)ptr[2]^0x20080;
   if(0x10000<=w){ w=(w<<6)^(FXuchar)ptr[3]^0x400080;
@@ -133,7 +133,7 @@ FXwchar wc(const FXchar *ptr){
 
 // Return wide character from utf16 string at ptr
 FXwchar wc(const FXnchar *ptr){
-  register FXwchar w=ptr[0];
+  FXwchar w=ptr[0];
   if(0xD800<=w && w<0xDC00){ w=(w<<10)+ptr[1]+SURROGATE_OFFSET; }
   return w;
   }
@@ -214,9 +214,9 @@ bool isutfvalid(const FXchar* str){
 
 // Length of utf8 representation of wide characters string str of length n
 FXint utfslen(const FXwchar *str,FXint n){
-  register FXint len=0;
-  register FXint p=0;
-  register FXwchar w;
+  FXint len=0;
+  FXint p=0;
+  FXwchar w;
   while(p<n){
     w=str[p++];
     len++;
@@ -239,9 +239,9 @@ FXint utfslen(const FXwchar *str){
 // Length of utf8 representation of narrow characters string str of length n
 // Test for surrogates is deferred till code possibly exceeds 0xD800
 FXint utfslen(const FXnchar *str,FXint n){
-  register FXint len=0;
-  register FXint p=0;
-  register FXwchar w;
+  FXint len=0;
+  FXint p=0;
+  FXwchar w;
   while(p<n){
     w=str[p++];
     len++;
@@ -263,8 +263,8 @@ FXint utfslen(const FXnchar *str){
 
 // Length of wide character representation of utf8 string str of length n
 FXint wcslen(const FXchar *str,FXint n){
-  register FXint len=0;
-  register FXint p=0;
+  FXint len=0;
+  FXint p=0;
   while(p<n){
     p+=FXString::utfBytes[(FXuchar)str[p]];
     len++;
@@ -282,9 +282,9 @@ FXint wcslen(const FXchar *str){
 // Length of narrow character representation of utf8 string str of length n
 // Assume surrogates are needed if utf8 code is more than 16 bits
 FXint ncslen(const FXchar *str,FXint n){
-  register FXint len=0;
-  register FXint p=0;
-  register FXwchar c;
+  FXint len=0;
+  FXint p=0;
+  FXwchar c;
   while(p<n){
     c=(FXuchar)str[p++];
     if(0xC0<=c){ p++;
@@ -309,9 +309,9 @@ FXint ncslen(const FXchar *str){
 
 // Copy utf8 string of length n to wide character string dst
 FXint utf2wcs(FXwchar *dst,const FXchar *src,FXint n){
-  register FXint len=0;
-  register FXint p=0;
-  register FXwchar w;
+  FXint len=0;
+  FXint p=0;
+  FXwchar w;
   while(p<n){
     w=(FXuchar)src[p++];
     if(0xC0<=w){ w=(w<<6)^(FXuchar)src[p++]^0x3080;
@@ -334,9 +334,9 @@ FXint utf2wcs(FXwchar *dst,const FXchar *src){
 // Copy utf8 string of length n to narrow character string dst
 // Assume surrogates are needed if utf8 code is more than 16 bits
 FXint utf2ncs(FXnchar *dst,const FXchar *src,FXint n){
-  register FXint len=0;
-  register FXint p=0;
-  register FXwchar w;
+  FXint len=0;
+  FXint p=0;
+  FXwchar w;
   while(p<n){
     w=(FXuchar)src[p++];
     if(0xC0<=w){ w=(w<<6)^(FXuchar)src[p++]^0x3080;
@@ -360,9 +360,9 @@ FXint utf2ncs(FXnchar *dst,const FXchar *src){
 
 // Copy wide character substring of length n to dst
 FXint wc2utfs(FXchar* dst,const FXwchar *src,FXint n){
-  register FXint len=0;
-  register FXint p=0;
-  register FXwchar w;
+  FXint len=0;
+  FXint p=0;
+  FXwchar w;
   while(p<n){
     w=src[p++];
     if(w<0x80){
@@ -415,9 +415,9 @@ FXint wc2utfs(FXchar* dst,const FXwchar *src){
 // Copy narrow character substring of length n to dst
 // Test for surrogates is deferred till code possibly exceeds 0xD800
 FXint nc2utfs(FXchar* dst,const FXnchar *src,FXint n){
-  register FXint len=0;
-  register FXint p=0;
-  register FXwchar w;
+  FXint len=0;
+  FXint p=0;
+  FXwchar w;
   while(p<n){
     w=src[p++];
     if(w<0x80){
@@ -502,7 +502,7 @@ FXint FXString::dec(FXint p) const { return wcdec(str,p); }
 
 // Return wide character starting at offset i
 FXwchar FXString::wc(FXint i) const {
-  register FXwchar w=(FXuchar)str[i];
+  FXwchar w=(FXuchar)str[i];
   if(0xC0<=w){ w=(w<<6)^(FXuchar)str[i+1]^0x3080;
   if(0x800<=w){ w=(w<<6)^(FXuchar)str[i+2]^0x20080;
   if(0x10000<=w){ w=(w<<6)^(FXuchar)str[i+3]^0x400080;
@@ -514,7 +514,7 @@ FXwchar FXString::wc(FXint i) const {
 
 // Count number of utf8 characters in subrange
 FXint FXString::count(FXint pos,FXint len) const {
-  register FXint cnt=0;
+  FXint cnt=0;
   while(pos<len){
     pos+=utfBytes[(FXuchar)str[pos]];
     cnt++;
@@ -531,9 +531,9 @@ FXint FXString::count() const {
 
 // Return index of utf8 character at byte offset
 FXint FXString::index(FXint offs) const {
-  register FXint len=length();
-  register FXint i=0;
-  register FXint p=0;
+  FXint len=length();
+  FXint i=0;
+  FXint p=0;
   while(p<offs && p<len){
     p+=utfBytes[(FXuchar)str[p]];
     i++;
@@ -544,9 +544,9 @@ FXint FXString::index(FXint offs) const {
 
 // Return byte offset of utf8 character at index
 FXint FXString::offset(FXint indx) const {
-  register FXint len=length();
-  register FXint i=0;
-  register FXint p=0;
+  FXint len=length();
+  FXint i=0;
+  FXint p=0;
   while(i<indx && p<len){
     p+=utfBytes[(FXuchar)str[p]];
     i++;
@@ -562,7 +562,7 @@ FXString::FXString():str(EMPTY){
 
 // Copy construct
 FXString::FXString(const FXString& s):str(EMPTY){
-  register FXint n=s.length();
+  FXint n=s.length();
   if(0<n){
     length(n);
     memcpy(str,s.str,n);
@@ -573,7 +573,7 @@ FXString::FXString(const FXString& s):str(EMPTY){
 // Construct and init
 FXString::FXString(const FXchar* s):str(EMPTY){
   if(s && s[0]){
-    register FXint n=strlen(s);
+    FXint n=strlen(s);
     length(n);
     memcpy(str,s,n);
     }
@@ -583,7 +583,7 @@ FXString::FXString(const FXchar* s):str(EMPTY){
 // Construct and init
 FXString::FXString(const FXwchar* s):str(EMPTY){
   if(s && s[0]){
-    register FXint n=utfslen(s);
+    FXint n=utfslen(s);
     length(n);
     wc2utfs(str,s);
     }
@@ -593,7 +593,7 @@ FXString::FXString(const FXwchar* s):str(EMPTY){
 // Construct and init
 FXString::FXString(const FXnchar* s):str(EMPTY){
   if(s && s[0]){
-    register FXint n=utfslen(s);
+    FXint n=utfslen(s);
     length(n);
     nc2utfs(str,s);
     }
@@ -612,7 +612,7 @@ FXString::FXString(const FXchar* s,FXint n):str(EMPTY){
 // Construct and init with wide character substring
 FXString::FXString(const FXwchar* s,FXint m):str(EMPTY){
   if(s && 0<m){
-    register FXint n=utfslen(s,m);
+    FXint n=utfslen(s,m);
     length(n);
     wc2utfs(str,s,m);
     }
@@ -622,7 +622,7 @@ FXString::FXString(const FXwchar* s,FXint m):str(EMPTY){
 // Construct and init with narrow character substring
 FXString::FXString(const FXnchar* s,FXint m):str(EMPTY){
   if(s && 0<m){
-    register FXint n=utfslen(s,m);
+    FXint n=utfslen(s,m);
     length(n);
     nc2utfs(str,s,m);
     }
@@ -640,7 +640,7 @@ FXString::FXString(FXchar c,FXint n):str(EMPTY){
 
 // Return partition of string separated by delimiter delim
 FXString FXString::section(FXchar delim,FXint start,FXint num) const {
-  register FXint len=length(),s,e;
+  FXint len=length(),s,e;
   s=0;
   if(0<start){
     while(s<len){
@@ -661,8 +661,8 @@ FXString FXString::section(FXchar delim,FXint start,FXint num) const {
 
 // Return partition of string separated by delimiters in delim
 FXString FXString::section(const FXchar* delim,FXint n,FXint start,FXint num) const {
-  register FXint len=length(),s,e,i;
-  register FXchar c;
+  FXint len=length(),s,e,i;
+  FXchar c;
   s=0;
   if(0<start){
     while(s<len){
@@ -749,7 +749,7 @@ FXString& FXString::assign(const FXchar* s,FXint n){
 // Assign first n characters of wide character string s to this string
 FXString& FXString::assign(const FXwchar* s,FXint m){
   if(s && 0<m){
-    register FXint n=utfslen(s,m);
+    FXint n=utfslen(s,m);
     length(n);
     wc2utfs(str,s,m);
     }
@@ -763,7 +763,7 @@ FXString& FXString::assign(const FXwchar* s,FXint m){
 // Assign first n characters of narrow character string s to this string
 FXString& FXString::assign(const FXnchar* s,FXint m){
   if(s && 0<m){
-    register FXint n=utfslen(s,m);
+    FXint n=utfslen(s,m);
     length(n);
     nc2utfs(str,s,m);
     }
@@ -777,7 +777,7 @@ FXString& FXString::assign(const FXnchar* s,FXint m){
 // Assign input string to this string
 FXString& FXString::assign(const FXchar* s){
   if(s && s[0]){
-    register FXint n=strlen(s);
+    FXint n=strlen(s);
     length(n);
     memmove(str,s,n);
     }
@@ -791,7 +791,7 @@ FXString& FXString::assign(const FXchar* s){
 // Assign wide character string s to this string
 FXString& FXString::assign(const FXwchar* s){
   if(s && s[0]){
-    register FXint n=utfslen(s);
+    FXint n=utfslen(s);
     length(n);
     wc2utfs(str,s);
     }
@@ -805,7 +805,7 @@ FXString& FXString::assign(const FXwchar* s){
 // Assign narrow character string s to this string
 FXString& FXString::assign(const FXnchar* s){
   if(s && s[0]){
-    register FXint n=utfslen(s);
+    FXint n=utfslen(s);
     length(n);
     nc2utfs(str,s);
     }
@@ -850,7 +850,7 @@ FXString& FXString::operator=(const FXString& s){
 
 // Insert character at position
 FXString& FXString::insert(FXint pos,FXchar c){
-  register FXint len=length();
+  FXint len=length();
   length(len+1);
   if(pos<=0){
     memmove(str+1,str,len);
@@ -870,7 +870,7 @@ FXString& FXString::insert(FXint pos,FXchar c){
 // Insert n characters c at specified position
 FXString& FXString::insert(FXint pos,FXchar c,FXint n){
   if(0<n){
-    register FXint len=length();
+    FXint len=length();
     length(len+n);
     if(pos<=0){
       memmove(str+n,str,len);
@@ -892,7 +892,7 @@ FXString& FXString::insert(FXint pos,FXchar c,FXint n){
 // Insert string at position
 FXString& FXString::insert(FXint pos,const FXchar* s,FXint n){
   if(s && 0<n){
-    register FXint len=length();
+    FXint len=length();
     length(len+n);
     if(pos<=0){
       memmove(str+n,str,len);
@@ -913,8 +913,8 @@ FXString& FXString::insert(FXint pos,const FXchar* s,FXint n){
 // Insert wide character string at position
 FXString& FXString::insert(FXint pos,const FXwchar* s,FXint m){
   if(s && 0<m){
-    register FXint len=length();
-    register FXint n=utfslen(s,m);
+    FXint len=length();
+    FXint n=utfslen(s,m);
     length(len+n);
     if(pos<=0){
       memmove(str+n,str,len);
@@ -935,8 +935,8 @@ FXString& FXString::insert(FXint pos,const FXwchar* s,FXint m){
 // Insert narrow character string at position
 FXString& FXString::insert(FXint pos,const FXnchar* s,FXint m){
   if(s && 0<m){
-    register FXint len=length();
-    register FXint n=utfslen(s,m);
+    FXint len=length();
+    FXint n=utfslen(s,m);
     length(len+n);
     if(pos<=0){
       memmove(str+n,str,len);
@@ -957,8 +957,8 @@ FXString& FXString::insert(FXint pos,const FXnchar* s,FXint m){
 // Insert string at position
 FXString& FXString::insert(FXint pos,const FXchar* s){
   if(s && s[0]){
-    register FXint len=length();
-    register FXint n=strlen(s);
+    FXint len=length();
+    FXint n=strlen(s);
     length(len+n);
     if(pos<=0){
       memmove(str+n,str,len);
@@ -979,8 +979,8 @@ FXString& FXString::insert(FXint pos,const FXchar* s){
 // Insert wide character string at position
 FXString& FXString::insert(FXint pos,const FXwchar* s){
   if(s && s[0]){
-    register FXint len=length();
-    register FXint n=utfslen(s);
+    FXint len=length();
+    FXint n=utfslen(s);
     length(len+n);
     if(pos<=0){
       memmove(str+n,str,len);
@@ -1001,8 +1001,8 @@ FXString& FXString::insert(FXint pos,const FXwchar* s){
 // Insert narrow character string at position
 FXString& FXString::insert(FXint pos,const FXnchar* s){
   if(s && s[0]){
-    register FXint len=length();
-    register FXint n=utfslen(s);
+    FXint len=length();
+    FXint n=utfslen(s);
     length(len+n);
     if(pos<=0){
       memmove(str+n,str,len);
@@ -1028,7 +1028,7 @@ FXString& FXString::insert(FXint pos,const FXString& s){
 
 // Append character c to this string
 FXString& FXString::append(FXchar c){
-  register FXint len=length();
+  FXint len=length();
   length(len+1);
   str[len]=c;
   return *this;
@@ -1038,7 +1038,7 @@ FXString& FXString::append(FXchar c){
 // Append n characters c to this string
 FXString& FXString::append(FXchar c,FXint n){
   if(0<n){
-    register FXint len=length();
+    FXint len=length();
     length(len+n);
     memset(str+len,c,n);
     }
@@ -1049,7 +1049,7 @@ FXString& FXString::append(FXchar c,FXint n){
 // Append string to this string
 FXString& FXString::append(const FXchar* s,FXint n){
   if(s && 0<n){
-    register FXint len=length();
+    FXint len=length();
     length(len+n);
     memcpy(str+len,s,n);
     }
@@ -1060,8 +1060,8 @@ FXString& FXString::append(const FXchar* s,FXint n){
 // Append string to this string
 FXString& FXString::append(const FXwchar* s,FXint m){
   if(s && 0<m){
-    register FXint len=length();
-    register FXint n=utfslen(s,m);
+    FXint len=length();
+    FXint n=utfslen(s,m);
     length(len+n);
     wc2utfs(str+len,s,m);
     }
@@ -1072,8 +1072,8 @@ FXString& FXString::append(const FXwchar* s,FXint m){
 // Append string to this string
 FXString& FXString::append(const FXnchar* s,FXint m){
   if(s && 0<m){
-    register FXint len=length();
-    register FXint n=utfslen(s,m);
+    FXint len=length();
+    FXint n=utfslen(s,m);
     length(len+n);
     nc2utfs(str+len,s,m);
     }
@@ -1084,8 +1084,8 @@ FXString& FXString::append(const FXnchar* s,FXint m){
 // Append string to this string
 FXString& FXString::append(const FXchar* s){
   if(s && s[0]){
-    register FXint len=length();
-    register FXint n=strlen(s);
+    FXint len=length();
+    FXint n=strlen(s);
     length(len+n);
     memcpy(str+len,s,n);
     }
@@ -1096,8 +1096,8 @@ FXString& FXString::append(const FXchar* s){
 // Append string to this string
 FXString& FXString::append(const FXwchar* s){
   if(s && s[0]){
-    register FXint len=length();
-    register FXint n=utfslen(s);
+    FXint len=length();
+    FXint n=utfslen(s);
     length(len+n);
     wc2utfs(str+len,s);
     }
@@ -1108,8 +1108,8 @@ FXString& FXString::append(const FXwchar* s){
 // Append string to this string
 FXString& FXString::append(const FXnchar* s){
   if(s && s[0]){
-    register FXint len=length();
-    register FXint n=utfslen(s);
+    FXint len=length();
+    FXint n=utfslen(s);
     length(len+n);
     nc2utfs(str+len,s);
     }
@@ -1155,7 +1155,7 @@ FXString& FXString::operator+=(const FXString& s){
 
 // Prepend character
 FXString& FXString::prepend(FXchar c){
-  register FXint len=length();
+  FXint len=length();
   length(len+1);
   memmove(str+1,str,len);
   str[0]=c;
@@ -1166,7 +1166,7 @@ FXString& FXString::prepend(FXchar c){
 // Prepend string with n characters c
 FXString& FXString::prepend(FXchar c,FXint n){
   if(0<n){
-    register FXint len=length();
+    FXint len=length();
     length(len+n);
     memmove(str+n,str,len);
     memset(str,c,n);
@@ -1178,7 +1178,7 @@ FXString& FXString::prepend(FXchar c,FXint n){
 // Prepend string
 FXString& FXString::prepend(const FXchar* s,FXint n){
   if(s && 0<n){
-    register FXint len=length();
+    FXint len=length();
     length(len+n);
     memmove(str+n,str,len);
     memcpy(str,s,n);
@@ -1190,8 +1190,8 @@ FXString& FXString::prepend(const FXchar* s,FXint n){
 // Prepend wide character string
 FXString& FXString::prepend(const FXwchar* s,FXint m){
   if(s && 0<m){
-    register FXint len=length();
-    register FXint n=utfslen(s,m);
+    FXint len=length();
+    FXint n=utfslen(s,m);
     length(len+n);
     memmove(str+n,str,len);
     wc2utfs(str,s,m);
@@ -1203,8 +1203,8 @@ FXString& FXString::prepend(const FXwchar* s,FXint m){
 // Prepend narrow character string
 FXString& FXString::prepend(const FXnchar* s,FXint m){
   if(s && 0<m){
-    register FXint len=length();
-    register FXint n=utfslen(s,m);
+    FXint len=length();
+    FXint n=utfslen(s,m);
     length(len+n);
     memmove(str+n,str,len);
     nc2utfs(str,s,m);
@@ -1216,8 +1216,8 @@ FXString& FXString::prepend(const FXnchar* s,FXint m){
 // Prepend string
 FXString& FXString::prepend(const FXchar* s){
   if(s && s[0]){
-    register FXint len=length();
-    register FXint n=strlen(s);
+    FXint len=length();
+    FXint n=strlen(s);
     length(len+n);
     memmove(str+n,str,len);
     memcpy(str,s,n);
@@ -1229,8 +1229,8 @@ FXString& FXString::prepend(const FXchar* s){
 // Prepend wide character string
 FXString& FXString::prepend(const FXwchar* s){
   if(s && s[0]){
-    register FXint len=length();
-    register FXint n=utfslen(s);
+    FXint len=length();
+    FXint n=utfslen(s);
     length(len+n);
     memmove(str+n,str,len);
     wc2utfs(str,s);
@@ -1242,8 +1242,8 @@ FXString& FXString::prepend(const FXwchar* s){
 // Prepend narrow character string
 FXString& FXString::prepend(const FXnchar* s){
   if(s && s[0]){
-    register FXint len=length();
-    register FXint n=utfslen(s);
+    FXint len=length();
+    FXint n=utfslen(s);
     length(len+n);
     memmove(str+n,str,len);
     nc2utfs(str,s);
@@ -1260,7 +1260,7 @@ FXString& FXString::prepend(const FXString& s){
 
 // Replace character in string
 FXString& FXString::replace(FXint pos,FXchar c){
-  register FXint len=length();
+  FXint len=length();
   if(pos<0){
     length(len+1);
     memmove(str+1,str,len);
@@ -1279,7 +1279,7 @@ FXString& FXString::replace(FXint pos,FXchar c){
 
 // Replace the m characters at pos with n characters c
 FXString& FXString::replace(FXint pos,FXint m,FXchar c,FXint n){
-  register FXint len=length();
+  FXint len=length();
   if(pos<0){
     m+=pos;
     if(m<0) m=0;
@@ -1304,7 +1304,7 @@ FXString& FXString::replace(FXint pos,FXint m,FXchar c,FXint n){
 
 // Replace part of string
 FXString& FXString::replace(FXint pos,FXint m,const FXchar* s,FXint n){
-  register FXint len=length();
+  FXint len=length();
   if(pos<0){
     m+=pos;
     if(m<0) m=0;
@@ -1329,8 +1329,8 @@ FXString& FXString::replace(FXint pos,FXint m,const FXchar* s,FXint n){
 
 // Replace part of wide character string
 FXString& FXString::replace(FXint pos,FXint m,const FXwchar* s,FXint n){
-  register FXint w=utfslen(s,n);
-  register FXint len=length();
+  FXint w=utfslen(s,n);
+  FXint len=length();
   if(pos<0){
     m+=pos;
     if(m<0) m=0;
@@ -1355,8 +1355,8 @@ FXString& FXString::replace(FXint pos,FXint m,const FXwchar* s,FXint n){
 
 // Replace part of narrow character string
 FXString& FXString::replace(FXint pos,FXint m,const FXnchar* s,FXint n){
-  register FXint w=utfslen(s,n);
-  register FXint len=length();
+  FXint w=utfslen(s,n);
+  FXint len=length();
   if(pos<0){
     m+=pos;
     if(m<0) m=0;
@@ -1405,7 +1405,7 @@ FXString& FXString::replace(FXint pos,FXint m,const FXString& s){
 
 // Move range of m characters from src position to dst position
 FXString& FXString::move(FXint dst,FXint src,FXint n){
-  register FXint len=length();
+  FXint len=length();
   if(0<n && 0<=src && src+n<=len){
     if(dst<0){                                  // Move below begin
       if(dst<-n) dst=-n;
@@ -1428,7 +1428,7 @@ FXString& FXString::move(FXint dst,FXint src,FXint n){
 
 // Remove one character
 FXString& FXString::erase(FXint pos){
-  register FXint len=length();
+  FXint len=length();
   if(0<=pos && pos<len){
     memmove(str+pos,str+pos+1,len-pos-1);
     length(len-1);
@@ -1440,7 +1440,7 @@ FXString& FXString::erase(FXint pos){
 // Remove section from buffer
 FXString& FXString::erase(FXint pos,FXint n){
   if(0<n){
-    register FXint len=length();
+    FXint len=length();
     if(pos<len && pos+n>0){
       if(pos<0){n+=pos;pos=0;}
       if(pos+n>len){n=len-pos;}
@@ -1454,10 +1454,10 @@ FXString& FXString::erase(FXint pos,FXint n){
 
 // Return number of occurrences of ch in string
 FXint FXString::contains(FXchar ch) const {
-  register FXint len=length();
-  register FXint c=ch;
-  register FXint m=0;
-  register FXint i=0;
+  FXint len=length();
+  FXint c=ch;
+  FXint m=0;
+  FXint i=0;
   while(i<len){
     if(str[i]==c){
       m++;
@@ -1470,9 +1470,9 @@ FXint FXString::contains(FXchar ch) const {
 
 // Return number of occurrences of string sub in string
 FXint FXString::contains(const FXchar* sub,FXint n) const {
-  register FXint len=length()-n;
-  register FXint m=0;
-  register FXint i=0;
+  FXint len=length()-n;
+  FXint m=0;
+  FXint i=0;
   while(i<=len){
     if(compare(str+i,sub,n)==0){
       m++;
@@ -1560,10 +1560,10 @@ FXString operator+(FXchar c,const FXString& s){
 
 // Substitute one character by another
 FXString& FXString::substitute(FXchar org,FXchar sub,bool all){
-  register FXint len=length();
-  register FXint c=org;
-  register FXint s=sub;
-  register FXint i=0;
+  FXint len=length();
+  FXint c=org;
+  FXint s=sub;
+  FXint i=0;
   while(i<len){
     if(str[i]==c){
       str[i]=s;
@@ -1578,7 +1578,7 @@ FXString& FXString::substitute(FXchar org,FXchar sub,bool all){
 // Substitute one string by another
 FXString& FXString::substitute(const FXchar* org,FXint olen,const FXchar* rep,FXint rlen,bool all){
   if(0<olen){
-    register FXint pos=0;
+    FXint pos=0;
     while(pos<=length()-olen){
       if(compare(str+pos,org,olen)==0){
         replace(pos,olen,rep,rlen);
@@ -1608,9 +1608,9 @@ FXString& FXString::substitute(const FXString& org,const FXString& rep,bool all)
 // Simplify whitespace in string
 FXString& FXString::simplify(){
   if(str!=EMPTY){
-    register FXint s=0;
-    register FXint d=0;
-    register FXint e=length();
+    FXint s=0;
+    FXint d=0;
+    FXint e=length();
     while(s<e && Ascii::isSpace(str[s])) s++;
     while(1){
       while(s<e && !Ascii::isSpace(str[s])) str[d++]=str[s++];
@@ -1627,8 +1627,8 @@ FXString& FXString::simplify(){
 // Remove leading and trailing whitespace
 FXString& FXString::trim(){
   if(str!=EMPTY){
-    register FXint s=0;
-    register FXint e=length();
+    FXint s=0;
+    FXint e=length();
     while(0<e && Ascii::isSpace(str[e-1])) e--;
     while(s<e && Ascii::isSpace(str[s])) s++;
     memmove(str,&str[s],e-s);
@@ -1641,8 +1641,8 @@ FXString& FXString::trim(){
 // Remove leading whitespace
 FXString& FXString::trimBegin(){
   if(str!=EMPTY){
-    register FXint s=0;
-    register FXint e=length();
+    FXint s=0;
+    FXint e=length();
     while(s<e && Ascii::isSpace(str[s])) s++;
     memmove(str,str+s,e-s);
     length(e-s);
@@ -1654,7 +1654,7 @@ FXString& FXString::trimBegin(){
 // Remove trailing whitespace
 FXString& FXString::trimEnd(){
   if(str!=EMPTY){
-    register FXint e=length();
+    FXint e=length();
     while(0<e && Ascii::isSpace(str[e-1])) e--;
     length(e);
     }
@@ -1664,7 +1664,7 @@ FXString& FXString::trimEnd(){
 
 // Truncate string
 FXString& FXString::trunc(FXint pos){
-  register FXint len=length();
+  FXint len=length();
   if(pos>len) pos=len;
   length(pos);
   return *this;
@@ -1681,7 +1681,7 @@ FXString& FXString::clear(){
 // Get leftmost part
 FXString FXString::left(FXint n) const {
   if(0<n){
-    register FXint len=length();
+    FXint len=length();
     if(n>len) n=len;
     return FXString(str,n);
     }
@@ -1692,7 +1692,7 @@ FXString FXString::left(FXint n) const {
 // Get rightmost part
 FXString FXString::right(FXint n) const {
   if(0<n){
-    register FXint len=length();
+    FXint len=length();
     if(n>len) n=len;
     return FXString(str+len-n,n);
     }
@@ -1703,7 +1703,7 @@ FXString FXString::right(FXint n) const {
 // Get some part in the middle
 FXString FXString::mid(FXint pos,FXint n) const {
   if(0<n){
-    register FXint len=length();
+    FXint len=length();
     if(pos<len && pos+n>0){
       if(pos<0){n+=pos;pos=0;}
       if(pos+n>len){n=len-pos;}
@@ -1716,8 +1716,8 @@ FXString FXString::mid(FXint pos,FXint n) const {
 
 // Return all characters before the nth occurrence of ch, searching forward
 FXString FXString::before(FXchar c,FXint n) const {
-  register FXint len=length();
-  register FXint p=0;
+  FXint len=length();
+  FXint p=0;
   if(0<n){
     while(p<len){
       if(str[p]==c && --n==0) break;
@@ -1730,7 +1730,7 @@ FXString FXString::before(FXchar c,FXint n) const {
 
 // Return all characters before the nth occurrence of ch, searching backward
 FXString FXString::rbefore(FXchar c,FXint n) const {
-  register FXint p=length();
+  FXint p=length();
   if(0<n){
     while(0<p){
       p--;
@@ -1743,8 +1743,8 @@ FXString FXString::rbefore(FXchar c,FXint n) const {
 
 // Return all characters after the nth occurrence of ch, searching forward
 FXString FXString::after(FXchar c,FXint n) const {
-  register FXint len=length();
-  register FXint p=0;
+  FXint len=length();
+  FXint p=0;
   if(0<n){
     while(p<len){
       p++;
@@ -1757,8 +1757,8 @@ FXString FXString::after(FXchar c,FXint n) const {
 
 // Return all characters after the nth occurrence of ch, searching backward
 FXString FXString::rafter(FXchar c,FXint n) const {
-  register FXint len=length();
-  register FXint p=len;
+  FXint len=length();
+  FXint p=len;
   if(0<n){
     while(0<p){
       if(str[p-1]==c && --n==0) break;
@@ -1795,9 +1795,9 @@ FXString& FXString::upper(){
 
 // Compare strings
 FXint compare(const FXchar* s1,const FXchar* s2){
-  register const FXuchar *p1=(const FXuchar *)s1;
-  register const FXuchar *p2=(const FXuchar *)s2;
-  register FXint c1,c2;
+  const FXuchar *p1=(const FXuchar *)s1;
+  const FXuchar *p2=(const FXuchar *)s2;
+  FXint c1,c2;
   do{
     c1=*p1++;
     c2=*p2++;
@@ -1824,9 +1824,9 @@ FXint compare(const FXString& s1,const FXString& s2){
 
 // Compare strings up to n
 FXint compare(const FXchar* s1,const FXchar* s2,FXint n){
-  register const FXuchar *p1=(const FXuchar *)s1;
-  register const FXuchar *p2=(const FXuchar *)s2;
-  register FXint c1,c2;
+  const FXuchar *p1=(const FXuchar *)s1;
+  const FXuchar *p2=(const FXuchar *)s2;
+  FXint c1,c2;
   if(0<n){
     do{
       c1=*p1++;
@@ -1866,7 +1866,7 @@ FXint compare(const FXString& s1,const FXString& s2,FXint n){
 //     case using the Unicode, and compare.  Skip to the start of
 //     the next character by consulting character-width table.
 FXint comparecase(const FXchar* s1,const FXchar* s2){
-  register FXint c1,c2;
+  FXint c1,c2;
   do{
     if((*s1 & 0x80) && (*s2 & 0x80)){
       c1=Unicode::toLower(wc(s1)); s1+=wclen(s1);
@@ -1884,7 +1884,7 @@ FXint comparecase(const FXchar* s1,const FXchar* s2){
 
 // Compare strings case insensitive up to n
 FXint comparecase(const FXchar* s1,const FXchar* s2,FXint n){
-  register FXint c1,c2;
+  FXint c1,c2;
   if(0<n){
     do{
       if((*s1 & 0x80) && (*s2 & 0x80)){
@@ -1906,9 +1906,9 @@ FXint comparecase(const FXchar* s1,const FXchar* s2,FXint n){
 #if 0
 // Compare strings case insensitive
 FXint comparecase(const FXchar* s1,const FXchar* s2){
-  register const FXuchar *p1=(const FXuchar *)s1;
-  register const FXuchar *p2=(const FXuchar *)s2;
-  register FXint c1,c2;
+  const FXuchar *p1=(const FXuchar *)s1;
+  const FXuchar *p2=(const FXuchar *)s2;
+  FXint c1,c2;
   do{
     c1=Ascii::toLower(*p1++);
     c2=Ascii::toLower(*p2++);
@@ -1936,9 +1936,9 @@ FXint comparecase(const FXString& s1,const FXString& s2){
 #if 0
 // Compare strings case insensitive up to n
 FXint comparecase(const FXchar* s1,const FXchar* s2,FXint n){
-  register const FXuchar *p1=(const FXuchar *)s1;
-  register const FXuchar *p2=(const FXuchar *)s2;
-  register FXint c1,c2;
+  const FXuchar *p1=(const FXuchar *)s1;
+  const FXuchar *p2=(const FXuchar *)s2;
+  FXint c1,c2;
   if(0<n){
     do{
       c1=Ascii::toLower(*p1++);
@@ -2039,9 +2039,9 @@ bool operator>=(const FXchar* s1,const FXString& s2){
 
 // Find n-th occurrence of character, searching forward; return position or -1
 FXint FXString::find(FXchar c,FXint pos,FXint n) const {
-  register FXint len=length();
-  register FXint p=pos;
-  register FXint cc=c;
+  FXint len=length();
+  FXint p=pos;
+  FXint cc=c;
   if(p<0) p=0;
   if(n<=0) return p;
   while(p<len){
@@ -2054,9 +2054,9 @@ FXint FXString::find(FXchar c,FXint pos,FXint n) const {
 
 // Find n-th occurrence of character, searching backward; return position or -1
 FXint FXString::rfind(FXchar c,FXint pos,FXint n) const {
-  register FXint len=length();
-  register FXint p=pos;
-  register FXint cc=c;
+  FXint len=length();
+  FXint p=pos;
+  FXint cc=c;
   if(p>=len) p=len-1;
   if(n<=0) return p;
   while(0<=p){
@@ -2069,9 +2069,9 @@ FXint FXString::rfind(FXchar c,FXint pos,FXint n) const {
 
 // Find a character, searching forward; return position or -1
 FXint FXString::find(FXchar c,FXint pos) const {
-  register FXint len=length();
-  register FXint p=pos;
-  register FXint cc=c;
+  FXint len=length();
+  FXint p=pos;
+  FXint cc=c;
   if(p<0) p=0;
   while(p<len){ if(str[p]==cc){ return p; } ++p; }
   return -1;
@@ -2080,9 +2080,9 @@ FXint FXString::find(FXchar c,FXint pos) const {
 
 // Find a character, searching backward; return position or -1
 FXint FXString::rfind(FXchar c,FXint pos) const {
-  register FXint len=length();
-  register FXint p=pos;
-  register FXint cc=c;
+  FXint len=length();
+  FXint p=pos;
+  FXint cc=c;
   if(p>=len) p=len-1;
   while(0<=p){ if(str[p]==cc){ return p; } --p; }
   return -1;
@@ -2091,9 +2091,9 @@ FXint FXString::rfind(FXchar c,FXint pos) const {
 
 // Find a substring of length n, searching forward; return position or -1
 FXint FXString::find(const FXchar* substr,FXint n,FXint pos) const {
-  register FXint len=length();
+  FXint len=length();
   if(0<=pos && 0<n && n<=len){
-    register FXint c=substr[0];
+    FXint c=substr[0];
     len=len-n+1;
     while(pos<len){
       if(str[pos]==c){
@@ -2122,9 +2122,9 @@ FXint FXString::find(const FXString& substr,FXint pos) const {
 
 // Find a substring of length n, searching backward; return position or -1
 FXint FXString::rfind(const FXchar* substr,FXint n,FXint pos) const {
-  register FXint len=length();
+  FXint len=length();
   if(0<=pos && 0<n && n<=len){
-    register FXint c=substr[0];
+    FXint c=substr[0];
     len-=n;
     if(pos>len) pos=len;
     while(0<=pos){
@@ -2154,12 +2154,12 @@ FXint FXString::rfind(const FXString& substr,FXint pos) const {
 
 // Find first character in the set of size n, starting from pos; return position or -1
 FXint FXString::find_first_of(const FXchar* set,FXint n,FXint pos) const {
-  register FXint len=length();
-  register FXint p=pos;
+  FXint len=length();
+  FXint p=pos;
   if(p<0) p=0;
   while(p<len){
-    register FXint c=str[p];
-    register FXint i=n;
+    FXint c=str[p];
+    FXint i=n;
     while(--i>=0){ if(set[i]==c) return p; }
     p++;
     }
@@ -2181,9 +2181,9 @@ FXint FXString::find_first_of(const FXString& set,FXint pos) const {
 
 // Find first character, starting from pos; return position or -1
 FXint FXString::find_first_of(FXchar c,FXint pos) const {
-  register FXint len=length();
-  register FXint p=pos;
-  register FXint cc=c;
+  FXint len=length();
+  FXint p=pos;
+  FXint cc=c;
   if(p<0) p=0;
   while(p<len){ if(str[p]==cc){ return p; } p++; }
   return -1;
@@ -2192,12 +2192,12 @@ FXint FXString::find_first_of(FXchar c,FXint pos) const {
 
 // Find last character in the set of size n, starting from pos; return position or -1
 FXint FXString::find_last_of(const FXchar* set,FXint n,FXint pos) const {
-  register FXint len=length();
-  register FXint p=pos;
+  FXint len=length();
+  FXint p=pos;
   if(p>=len) p=len-1;
   while(0<=p){
-    register FXint c=str[p];
-    register FXint i=n;
+    FXint c=str[p];
+    FXint i=n;
     while(--i>=0){ if(set[i]==c) return p; }
     p--;
     }
@@ -2219,9 +2219,9 @@ FXint FXString::find_last_of(const FXString& set,FXint pos) const {
 
 // Find last character, starting from pos; return position or -1
 FXint FXString::find_last_of(FXchar c,FXint pos) const {
-  register FXint len=length();
-  register FXint p=pos;
-  register FXint cc=c;
+  FXint len=length();
+  FXint p=pos;
+  FXint cc=c;
   if(p>=len) p=len-1;
   while(0<=p){ if(str[p]==cc){ return p; } p--; }
   return -1;
@@ -2231,12 +2231,12 @@ FXint FXString::find_last_of(FXchar c,FXint pos) const {
 
 // Find first character NOT in the set of size n, starting from pos; return position or -1
 FXint FXString::find_first_not_of(const FXchar* set,FXint n,FXint pos) const {
-  register FXint len=length();
-  register FXint p=pos;
+  FXint len=length();
+  FXint p=pos;
   if(p<0) p=0;
   while(p<len){
-    register FXint c=str[p];
-    register FXint i=n;
+    FXint c=str[p];
+    FXint i=n;
     while(--i>=0){ if(set[i]==c) goto x; }
     return p;
 x:  p++;
@@ -2259,9 +2259,9 @@ FXint FXString::find_first_not_of(const FXString& set,FXint pos) const {
 
 // Find first character NOT equal to c, starting from pos; return position or -1
 FXint FXString::find_first_not_of(FXchar c,FXint pos) const {
-  register FXint len=length();
-  register FXint p=pos;
-  register FXint cc=c;
+  FXint len=length();
+  FXint p=pos;
+  FXint cc=c;
   if(p<0) p=0;
   while(p<len){ if(str[p]!=cc){ return p; } p++; }
   return -1;
@@ -2271,12 +2271,12 @@ FXint FXString::find_first_not_of(FXchar c,FXint pos) const {
 
 // Find last character NOT in the set of size n, starting from pos; return position or -1
 FXint FXString::find_last_not_of(const FXchar* set,FXint n,FXint pos) const {
-  register FXint len=length();
-  register FXint p=pos;
+  FXint len=length();
+  FXint p=pos;
   if(p>=len) p=len-1;
   while(0<=p){
-    register FXint c=str[p];
-    register FXint i=n;
+    FXint c=str[p];
+    FXint i=n;
     while(--i>=0){ if(set[i]==c) goto x; }
     return p;
 x:  p--;
@@ -2297,9 +2297,9 @@ FXint FXString::find_last_not_of(const FXString& set,FXint pos) const {
 
 // Find last character NOT equal to c, starting from pos; return position or -1
 FXint FXString::find_last_not_of(FXchar c,FXint pos) const {
-  register FXint len=length();
-  register FXint p=pos;
-  register FXint cc=c;
+  FXint len=length();
+  FXint p=pos;
+  FXint cc=c;
   if(p>=len) p=len-1;
   while(0<=p){ if(str[p]!=cc){ return p; } p--; }
   return -1;
@@ -2308,9 +2308,9 @@ FXint FXString::find_last_not_of(FXchar c,FXint pos) const {
 
 // Get hash value
 FXuint FXString::hash() const {
-  register FXint len=length();
-  register FXuint h=0;
-  for(register FXint i=0; i<len; i++){  // This should be a very good hash function:- just 4 collisions
+  FXint len=length();
+  FXuint h=0;
+  for(FXint i=0; i<len; i++){  // This should be a very good hash function:- just 4 collisions
     h = ((h << 5) + h) ^ str[i];        // on the webster web2 dictionary of 234936 words, and no
     }                                   // collisions at all on the standard dict!
   return h;
@@ -2338,9 +2338,9 @@ FXStream& operator>>(FXStream& store,FXString& s){              // Note stream f
 
 // Print formatted string a-la vprintf
 FXString& FXString::vformat(const FXchar* fmt,va_list args){
-  register FXint len=0;
+  FXint len=0;
   if(fmt && *fmt){
-    register FXint n=strlen(fmt);       // Result is longer than format string
+    FXint n=strlen(fmt);       // Result is longer than format string
 #if defined(WIN32) || defined(HAVE_VSNPRINTF)
 //    va_list a;
 //    n+=128;                             // Add a bit of slop
@@ -2418,8 +2418,8 @@ FXString FXStringFormat(const FXchar* fmt,...){
 // Conversion of integer to string
 FXString FXStringVal(FXlong num,FXint base){
   FXchar buf[66];
-  register FXchar *p=buf+66;
-  register FXulong nn=(FXulong)num;
+  FXchar *p=buf+66;
+  FXulong nn=(FXulong)num;
   if(base<2 || base>16){ fxerror("FXStringVal: base out of range.\n"); }
   if(num<0){nn=(FXulong)(~num)+1;}
   do{
@@ -2436,8 +2436,8 @@ FXString FXStringVal(FXlong num,FXint base){
 // Conversion of unsigned long to string
 FXString FXStringVal(FXulong num,FXint base){
   FXchar buf[66];
-  register FXchar *p=buf+66;
-  register FXulong nn=num;
+  FXchar *p=buf+66;
+  FXulong nn=num;
   if(base<2 || base>16){ fxerror("FXStringVal: base out of range.\n"); }
   do{
     *--p=FXString::HEX[nn%base];
@@ -2452,8 +2452,8 @@ FXString FXStringVal(FXulong num,FXint base){
 // Conversion of integer to string
 FXString FXStringVal(FXint num,FXint base){
   FXchar buf[34];
-  register FXchar *p=buf+34;
-  register FXuint nn=(FXuint)num;
+  FXchar *p=buf+34;
+  FXuint nn=(FXuint)num;
   if(base<2 || base>16){ fxerror("FXStringVal: base out of range.\n"); }
   if(num<0){nn=(FXuint)(~num)+1;}
   do{
@@ -2470,8 +2470,8 @@ FXString FXStringVal(FXint num,FXint base){
 // Conversion of unsigned integer to string
 FXString FXStringVal(FXuint num,FXint base){
   FXchar buf[34];
-  register FXchar *p=buf+34;
-  register FXuint nn=num;
+  FXchar *p=buf+34;
+  FXuint nn=num;
   if(base<2 || base>16){ fxerror("FXStringVal: base out of range.\n"); }
   do{
     *--p=FXString::HEX[nn%base];
@@ -2545,7 +2545,7 @@ FXdouble FXDoubleVal(const FXString& s){
 
 // Return utf8 from ascii containing unicode escapes
 FXString fromAscii(const FXString& s){
-  register FXint p=0;
+  FXint p=0;
   FXString result;
   FXwchar c;
   while(p<s.length()){
@@ -2577,7 +2577,7 @@ FXString fromAscii(const FXString& s){
 
 // Return ascii containing unicode escapes from utf8
 FXString toAscii(const FXString& s){
-  register FXint p=0;
+  FXint p=0;
   FXString result;
   FXwchar c;
   while(p<s.length()){
@@ -2598,8 +2598,8 @@ FXString toAscii(const FXString& s){
 
 // Escape special characters in a string
 FXString escape(const FXString& s){
-  register FXint p=0;
-  register FXint c;
+  FXint p=0;
+  FXint c;
   FXString result;
   while(p<s.length()){
     c=s[p++];
@@ -2652,8 +2652,8 @@ FXString escape(const FXString& s){
 
 // Unescape special characters in a string
 FXString unescape(const FXString& s){
-  register FXint p=0;
-  register FXint c;
+  FXint p=0;
+  FXint c;
   FXString result;
   while(p<s.length()){
     c=s[p++];
@@ -2744,8 +2744,8 @@ enum {
 
 // Decompose hangul method, if it is hangul (from TR# 15)
 static FXint decomposehangul(FXwchar *result,FXwchar w){
-  register FXwchar SIndex=w-SBase;
-  register FXwchar L,V,T;
+  FXwchar SIndex=w-SBase;
+  FXwchar L,V,T;
   if(0<=SIndex && SIndex<SCount){
     L=LBase+SIndex/NCount;
     V=VBase+(SIndex%NCount)/TCount;
@@ -2765,8 +2765,8 @@ static FXint decomposehangul(FXwchar *result,FXwchar w){
 
 // Compose hangul in situ; return new length (from TR# 15)
 static FXint composehangul(FXwchar *result,FXint len){
-  register FXwchar w,last,LIndex,VIndex,SIndex,TIndex;
-  register FXint p,q;
+  FXwchar w,last,LIndex,VIndex,SIndex,TIndex;
+  FXint p,q;
   if(0<len){
     last=result[0];
     for(p=q=1; q<len; q++){
@@ -2810,10 +2810,10 @@ static FXint composehangul(FXwchar *result,FXint len){
 
 // Recursive decomposition of type kind
 static FXint decomposerecursive(FXwchar *result,FXwchar w,FXuint kind){
-  register const FXwchar* decomposition=Unicode::charDecompose(w);
+  const FXwchar* decomposition=Unicode::charDecompose(w);
   if((FXuint)decomposition[-2]>=kind){
-    register FXint p=0;
-    register FXint n=0;
+    FXint p=0;
+    FXint n=0;
     while(p<decomposition[-1]){
       n+=decomposerecursive(result+n,decomposition[p++],kind);
       }
@@ -2825,8 +2825,8 @@ static FXint decomposerecursive(FXwchar *result,FXwchar w,FXuint kind){
 
 // Canonicalize wide character string s, by rearranging combining marks
 static FXwchar *normalize(FXwchar* result,FXint len){
-  register FXwchar uf,us,cf,cs;
-  register FXint p=0;
+  FXwchar uf,us,cf,cs;
+  FXint p=0;
   while(p+1<len){
 
     // Second character is a starter; advance by 2
@@ -2858,8 +2858,8 @@ static FXwchar *normalize(FXwchar* result,FXint len){
 
 // Compose characters from canonical/compatible decomposition
 static FXint compose(FXwchar* result,FXint len){
-  register FXint p,q,cc,starterpos,startercc;
-  register FXwchar w;
+  FXint p,q,cc,starterpos,startercc;
+  FXwchar w;
   if(0<len){
     starterpos=0;
     startercc=0;
@@ -2963,11 +2963,11 @@ enum {
 // returning less than, equal to or greater than zero if S1 is less than,
 // equal to or greater than S2 (for more info, see the texinfo doc).
 FXint compareversion(const FXchar *s1,const FXchar *s2){
-  register const FXuchar *p1=(const FXuchar*)s1;
-  register const FXuchar *p2=(const FXuchar*)s2;
-  register FXuchar c1,c2;
-  register FXint state;
-  register FXint diff;
+  const FXuchar *p1=(const FXuchar*)s1;
+  const FXuchar *p2=(const FXuchar*)s2;
+  FXuchar c1,c2;
+  FXint state;
+  FXint diff;
 
   /* Symbol(s)    0       [1-9]   others  (padding)
      Transition   (10) 0  (01) d  (00) x  (11) -   */
@@ -3031,8 +3031,8 @@ FXint compareversion(const FXString& s1,const FXString& s2){
 
 // Convert to dos
 FXString& unixToDos(FXString& str){
-  register FXint f=0;
-  register FXint t=0;
+  FXint f=0;
+  FXint t=0;
   while(f<str.length()){
     if(str[f++]=='\n') t++; t++;
     }
@@ -3046,7 +3046,7 @@ FXString& unixToDos(FXString& str){
 
 // Convert from dos
 FXString& dosToUnix(FXString& str){
-  register FXint f=0,t=0,c;
+  FXint f=0,t=0,c;
   while(f<str.length()){
     if((c=str[f++])!='\r') str[t++]=c;
     }

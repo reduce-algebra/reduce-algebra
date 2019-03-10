@@ -81,7 +81,7 @@ void FXDate::greg2jul(FXuint& jd,FXint y,FXint m,FXint d){
 
 // Convert julian day number to gregorian date
 void FXDate::jul2greg(FXuint jd,FXint& y,FXint& m,FXint& d){
-  register FXint l,n,i,j;
+  FXint l,n,i,j;
   l=jd+68569;
   n=(4*l)/146097;
   l=l-(146097*n+3)/4;

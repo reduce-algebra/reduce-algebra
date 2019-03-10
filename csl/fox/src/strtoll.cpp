@@ -71,12 +71,12 @@ using namespace FX;
 extern "C" FXlong strtoll(const char *nptr,char **endptr,int base);
 
 FXlong strtoll(const char *nptr,char **endptr,int base){
-  register FXulong cutoff,cutlim,value;
-  register FXchar *s=(FXchar*)nptr;
-  register FXuchar neg=0;
-  register FXuchar any=0;
-  register FXuchar ovf=0;
-  register FXuchar c;
+  FXulong cutoff,cutlim,value;
+  FXchar *s=(FXchar*)nptr;
+  FXuchar neg=0;
+  FXuchar any=0;
+  FXuchar ovf=0;
+  FXuchar c;
 
   // Initialize
   value=0;
@@ -168,12 +168,12 @@ extern "C" FXulong strtoull(const char *nptr,char **endptr,int base);
 
 
 FXulong strtoull(const char *nptr,char **endptr,int base){
-  register FXulong cutoff,cutlim,value;
-  register FXchar *s=(FXchar*)nptr;
-  register FXuchar neg=0;
-  register FXuchar any=0;
-  register FXuchar ovf=0;
-  register FXuchar c;
+  FXulong cutoff,cutlim,value;
+  FXchar *s=(FXchar*)nptr;
+  FXuchar neg=0;
+  FXuchar any=0;
+  FXuchar ovf=0;
+  FXuchar c;
 
   // Initialize
   value=0;

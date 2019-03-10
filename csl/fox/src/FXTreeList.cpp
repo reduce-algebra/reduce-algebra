@@ -81,9 +81,9 @@ FXIMPLEMENT(FXTreeItem,FXObject,NULL,0)
 
 // Draw item
 void FXTreeItem::draw(const FXTreeList* list,FXDC& dc,FXint xx,FXint yy,FXint,FXint hh) const {
-  register FXIcon *icon=(state&OPENED)?openIcon:closedIcon;
-  register FXFont *font=list->getFont();
-  register FXint th=0,tw=0,ih=0,iw=0;
+  FXIcon *icon=(state&OPENED)?openIcon:closedIcon;
+  FXFont *font=list->getFont();
+  FXint th=0,tw=0,ih=0,iw=0;
   xx+=SIDE_SPACING/2;
   if(icon){
     iw=icon->getWidth();
@@ -115,8 +115,8 @@ void FXTreeItem::draw(const FXTreeList* list,FXDC& dc,FXint xx,FXint yy,FXint,FX
 
 // See if item got hit, and where:- 1 is icon, 2 is text
 FXint FXTreeItem::hitItem(const FXTreeList* list,FXint xx,FXint yy) const {
-  register FXint oiw=0,ciw=0,oih=0,cih=0,tw=0,th=0,iw,ih,ix,iy,tx,ty,h;
-  register FXFont *font=list->getFont();
+  FXint oiw=0,ciw=0,oih=0,cih=0,tw=0,th=0,iw,ih,ix,iy,tx,ty,h;
+  FXFont *font=list->getFont();
   if(openIcon){
     oiw=openIcon->getWidth();
     oih=openIcon->getHeight();
@@ -241,8 +241,8 @@ void FXTreeItem::detach(){
 
 // Get number of child items
 FXint FXTreeItem::getNumChildren() const {
-  register FXTreeItem *item=first;
-  register FXint n=0;
+  FXTreeItem *item=first;
+  FXint n=0;
   while(item){item=item->next;n++;}
   return n;
   }
@@ -251,7 +251,7 @@ FXint FXTreeItem::getNumChildren() const {
 
 // Get item (logically) below this one
 FXTreeItem* FXTreeItem::getBelow() const {
-  register FXTreeItem* item=(FXTreeItem*)this;
+  FXTreeItem* item=(FXTreeItem*)this;
   if(first) return first;
   while(!item->next && item->parent) item=item->parent;
   return item->next;
@@ -260,7 +260,7 @@ FXTreeItem* FXTreeItem::getBelow() const {
 
 // Get item (logically) above this one
 FXTreeItem* FXTreeItem::getAbove() const {
-  register FXTreeItem* item=prev;
+  FXTreeItem* item=prev;
   if(!item) return parent;
   while(item->last) item=item->last;
   return item;
@@ -269,7 +269,7 @@ FXTreeItem* FXTreeItem::getAbove() const {
 
 // Return true if child of parent item
 FXbool FXTreeItem::isChildOf(const FXTreeItem* item) const {
-  register const FXTreeItem* child=this;
+  const FXTreeItem* child=this;
   while(child){ child=child->parent; if(child==item) return TRUE; }
   return FALSE;
   }
@@ -277,7 +277,7 @@ FXbool FXTreeItem::isChildOf(const FXTreeItem* item) const {
 
 // Return true if parent of child item
 FXbool FXTreeItem::isParentOf(const FXTreeItem* item) const {
-  register const FXTreeItem* child=item;
+  const FXTreeItem* child=item;
   while(child){ child=child->parent; if(child==this) return TRUE; }
   return FALSE;
   }
@@ -285,7 +285,7 @@ FXbool FXTreeItem::isParentOf(const FXTreeItem* item) const {
 
 // Get item width
 FXint FXTreeItem::getWidth(const FXTreeList* list) const {
-  register FXint w=0,oiw=0,ciw=0;
+  FXint w=0,oiw=0,ciw=0;
   if(openIcon) oiw=openIcon->getWidth();
   if(closedIcon) ciw=closedIcon->getWidth();
   w=FXMAX(oiw,ciw);
@@ -299,7 +299,7 @@ FXint FXTreeItem::getWidth(const FXTreeList* list) const {
 
 // Get item height
 FXint FXTreeItem::getHeight(const FXTreeList* list) const {
-  register FXint th=0,oih=0,cih=0;
+  FXint th=0,oih=0,cih=0;
   if(openIcon) oih=openIcon->getHeight();
   if(closedIcon) cih=closedIcon->getHeight();
   if(!label.empty()) th=4+list->getFont()->getFontHeight();
@@ -444,7 +444,7 @@ FXTreeList::FXTreeList(FXComposite *p,FXObject* tgt,FXSelector sel,FXuint opts,F
 
 // Create window
 void FXTreeList::create(){
-  register FXTreeItem *item=firstitem;
+  FXTreeItem *item=firstitem;
   FXScrollArea::create();
   while(item){
     item->create();
@@ -458,7 +458,7 @@ void FXTreeList::create(){
 
 // Detach window
 void FXTreeList::detach(){
-  register FXTreeItem *item=firstitem;
+  FXTreeItem *item=firstitem;
   FXScrollArea::detach();
   while(item){
     item->detach();
@@ -521,8 +521,8 @@ void FXTreeList::setNumVisible(FXint nvis){
 
 // Get number of toplevel items
 FXint FXTreeList::getNumItems() const {
-  register FXTreeItem *item=firstitem;
-  register FXint n=0;
+  FXTreeItem *item=firstitem;
+  FXint n=0;
   while(item){
     item=item->next;
     n++;
@@ -533,8 +533,8 @@ FXint FXTreeList::getNumItems() const {
 
 // Recompute interior
 void FXTreeList::recompute(){
-  register FXTreeItem* item;
-  register FXint x,y,w,h;
+  FXTreeItem* item;
+  FXint x,y,w,h;
   x=y=0;
   treeWidth=0;
   treeHeight=0;
@@ -714,8 +714,8 @@ FXbool FXTreeList::isItemVisible(const FXTreeItem* item) const {
 
 // Make item fully visible
 void FXTreeList::makeItemVisible(FXTreeItem* item){
-  register FXTreeItem *par;
-  register FXint x,y,h,w;
+  FXTreeItem *par;
+  FXint x,y,h,w;
   if(item){
 
     // Remember for later
@@ -764,8 +764,8 @@ void FXTreeList::makeItemVisible(FXTreeItem* item){
 
 // Get item at position x,y
 FXTreeItem* FXTreeList::getItemAt(FXint,FXint y) const {
-  register FXTreeItem* item=firstitem;
-  register FXint ix,iy,ih;
+  FXTreeItem* item=firstitem;
+  FXint ix,iy,ih;
   ix=pos_x;
   iy=pos_y;
   if(options&TREELIST_ROOT_BOXES) ix+=(4+indent);
@@ -790,7 +790,7 @@ FXTreeItem* FXTreeList::getItemAt(FXint,FXint y) const {
 
 // Did we hit the item, and which part of it did we hit (0=outside, 1=icon, 2=text, 3=box)
 FXint FXTreeList::hitItem(const FXTreeItem* item,FXint x,FXint y) const {
-  register FXint ix,iy,ih,xh,yh,hit=0;
+  FXint ix,iy,ih,xh,yh,hit=0;
   if(item){
     x-=pos_x;
     y-=pos_y;
@@ -925,8 +925,8 @@ FXbool FXTreeList::toggleItem(FXTreeItem* item,FXbool notify){
 
 // Extend selection
 FXbool FXTreeList::extendSelection(FXTreeItem* item,FXbool notify){
-  register FXTreeItem *it,*i1,*i2,*i3;
-  register FXbool changes=FALSE;
+  FXTreeItem *it,*i1,*i2,*i3;
+  FXbool changes=FALSE;
   if(item && anchoritem && extentitem){
     it=firstitem;
     i1=i2=i3=NULL;
@@ -1004,8 +1004,8 @@ FXbool FXTreeList::extendSelection(FXTreeItem* item,FXbool notify){
 
 // Kill selection
 FXbool FXTreeList::killSelection(FXbool notify){
-  register FXTreeItem *item=firstitem;
-  register FXbool changes=FALSE;
+  FXTreeItem *item=firstitem;
+  FXbool changes=FALSE;
   while(item){
     if(item->isSelected()){
       item->setSelected(FALSE);
@@ -1960,7 +1960,7 @@ void FXTreeList::sortChildItems(FXTreeItem* item){
 
 // Sort all items recursively
 void FXTreeList::sortItems(){
-  register FXTreeItem *item;
+  FXTreeItem *item;
   if(sortfunc){
     sortRootItems();
     item=firstitem;
@@ -2033,7 +2033,7 @@ FXTreeItem* FXTreeList::createItem(const FXString& text,FXIcon* oi,FXIcon* ci,vo
 
 // Insert item under father before other item
 FXTreeItem* FXTreeList::insertItem(FXTreeItem* other,FXTreeItem* father,FXTreeItem* item,FXbool notify){
-  register FXTreeItem* olditem=currentitem;
+  FXTreeItem* olditem=currentitem;
 
   // Verify correctness of arguments
   if(!item){ fxerror("%s::insertItem: NULL item argument.\n",getClassName()); }
@@ -2132,7 +2132,7 @@ FXTreeItem* FXTreeList::prependItem(FXTreeItem* father,const FXString& text,FXIc
 
 // Fill list by appending items from array of strings
 FXint FXTreeList::fillItems(FXTreeItem* father,const FXchar** strings,FXIcon* oi,FXIcon* ci,void* ptr,FXbool notify){
-  register FXint n=0;
+  FXint n=0;
   if(strings){
     while(strings[n]){
       appendItem(father,strings[n++],oi,ci,ptr,notify);
@@ -2144,7 +2144,7 @@ FXint FXTreeList::fillItems(FXTreeItem* father,const FXchar** strings,FXIcon* oi
 
 // Fill list by appending items from newline separated strings
 FXint FXTreeList::fillItems(FXTreeItem* father,const FXString& strings,FXIcon* oi,FXIcon* ci,void* ptr,FXbool notify){
-  register FXint n=0;
+  FXint n=0;
   FXString text;
   while(!(text=strings.section('\n',n)).empty()){
     appendItem(father,text,oi,ci,ptr,notify);
@@ -2208,11 +2208,11 @@ FXTreeItem *FXTreeList::moveItem(FXTreeItem* other,FXTreeItem* father,FXTreeItem
 
 // Extract node from list
 FXTreeItem* FXTreeList::extractItem(FXTreeItem* item,FXbool notify){
-  register FXTreeItem *olditem=currentitem;
-  register FXTreeItem *result=item;
-  register FXTreeItem *prv;
-  register FXTreeItem *nxt;
-  register FXTreeItem *par;
+  FXTreeItem *olditem=currentitem;
+  FXTreeItem *result=item;
+  FXTreeItem *prv;
+  FXTreeItem *nxt;
+  FXTreeItem *par;
   if(item){
 
     // Remember hookups
@@ -2277,10 +2277,10 @@ FXTreeItem* FXTreeList::extractItem(FXTreeItem* item,FXbool notify){
 
 // Remove all siblings from [fm,to]
 void FXTreeList::removeItems(FXTreeItem* fm,FXTreeItem* to,FXbool notify){
-  register FXTreeItem *olditem=currentitem;
-  register FXTreeItem *prv;
-  register FXTreeItem *nxt;
-  register FXTreeItem *par;
+  FXTreeItem *olditem=currentitem;
+  FXTreeItem *prv;
+  FXTreeItem *nxt;
+  FXTreeItem *par;
   if(fm && to){
     if(fm->parent!=to->parent){ fxerror("%s::removeItems: arguments have different parent.\n",getClassName()); }
 
@@ -2359,9 +2359,9 @@ typedef FXint (*FXCompareFunc)(const FXString&,const FXString &,FXint);
 
 // Get item by name
 FXTreeItem* FXTreeList::findItem(const FXString& text,FXTreeItem* start,FXuint flgs) const {
-  register FXCompareFunc comparefunc;
-  register FXTreeItem *item;
-  register FXint len;
+  FXCompareFunc comparefunc;
+  FXTreeItem *item;
+  FXint len;
   if(firstitem){
     comparefunc=(flgs&SEARCH_IGNORECASE) ? (FXCompareFunc)comparecase : (FXCompareFunc)compare;
     len=(flgs&SEARCH_PREFIX)?text.length():2147483647;
@@ -2398,7 +2398,7 @@ FXTreeItem* FXTreeList::findItem(const FXString& text,FXTreeItem* start,FXuint f
 
 // Get item by data
 FXTreeItem* FXTreeList::findItemByData(const void *ptr,FXTreeItem* start,FXuint flgs) const {
-  register FXTreeItem *item;
+  FXTreeItem *item;
   if(firstitem){
     if(flgs&SEARCH_BACKWARD){
       item=start;

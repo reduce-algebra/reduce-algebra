@@ -40,7 +40,7 @@ namespace FX {
 
 
 FXVec2d normalize(const FXVec2d& v){
-  register FXdouble t=v.length();
+  FXdouble t=v.length();
   if(t>0.0){ return FXVec2d(v.x/t,v.y/t); }
   return FXVec2d(0.0,0.0);
   }

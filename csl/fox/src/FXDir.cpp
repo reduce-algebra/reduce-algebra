@@ -315,7 +315,7 @@ FXint FXDir::listFiles(FXString*& filelist,const FXString& path,const FXString& 
 
 // List drives, i.e. roots of directory trees.
 FXint FXDir::listDrives(FXString*& drivelist){
-  register FXint count=0;
+  FXint count=0;
 #ifdef WIN32
   TCHAR drives[256],*drive;
   GetLogicalDriveStrings(256,drives);
@@ -607,7 +607,7 @@ fnd:*pn=item;
 
 
 void fxenumWNetContainerResource(NETRESOURCE* netResource,FXObjectListOf<FXStringObject>& netResourceList,DWORD openEnumScope){
-//  Comments are mine, unless indicated otherwise. - Daniël Hörchner <dbjh@gmx.net>
+//  Comments are mine, unless indicated otherwise. - Danikl Hvrchner <dbjh@gmx.net>
 //
 //  Passing the value RESOURCE_GLOBALNET for openEnumScope will make this
 //  function search recursively through the network shares for disk resources.

@@ -84,7 +84,7 @@ FXRegion::FXRegion(const FXPoint* points,FXuint npoints,bool winding){
 #ifndef WIN32
   region=XPolygonRegion((XPoint*)points,npoints,winding?WindingRule:EvenOddRule);
 #else
-  register FXuint i;
+  FXuint i;
   POINT pts[1024];
   for(i=0; i<npoints; i++){
     pts[i].x=points[i].x;

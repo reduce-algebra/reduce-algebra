@@ -220,7 +220,8 @@ static int paste_flags, paste_n, paste_p, paste_is_html;
 
 FXIMPLEMENT(FXTerminal, FXText, FXTerminalMap, ARRAYNUMBER(FXTerminalMap))
 
-FXTerminal::FXTerminal(FXComposite *p,FXObject* tgt,FXSelector sel,
+FXTerminal::FXTerminal(const char *argv0,
+                       FXComposite *p,FXObject* tgt,FXSelector sel,
                        FXuint opts,
                        FXint x,FXint y,FXint w,FXint h) :
     FXText(p, tgt, sel, opts, x, y, w, h)
@@ -246,7 +247,7 @@ FXTerminal::FXTerminal(FXComposite *p,FXObject* tgt,FXSelector sel,
     paste_buffer = NULL;
     paste_flags = paste_n = paste_p = paste_is_html = 0;
 
-    input_history_init();
+    input_history_init(argv0);
     historyFirst = 0;
     historyLast = -1; // flag to say history is empty.
     pauseFlags = keyFlags = historyNumber = searchFlags = 0;
@@ -3746,10 +3747,12 @@ void FXTerminal::insertMathsLines()
     int linecount = 0;
     bool shifted=false;
     while (*p != 0)
-    {   while (*p!=0)
+    {
+// Find next line break that is not within "shifted" material. Obviously
+// stop at end of buffer too.
+        while(*p!=0 && (shifted || *p!='\n'))
         {   if (*p==0x0e) shifted=true;
             else if (*p==0x0f) shifted=false;
-            else if (!shifted && *p=='\n') break;
             p++;
         }
         if (*p=='\n') p++;
@@ -3814,6 +3817,8 @@ void FXTerminal::insertMathsLines()
     flush_append(this);
     int scale = 4;
     int p1 = start;
+fprintf(stderr, "FXTerminal.cpp line %d, process %d bytes\n",
+        __LINE__, (int)(length-start));
     while (p1<length)
     {   charPointer = p1+7;
 // First parse the line of stuff to get a box-structure. The parsed box gets
@@ -4465,11 +4470,11 @@ long FXTerminal::onTimeout(FXObject *c, FXSelector s, void *p)
 // reflect displayed maths so that one display expression is one "row".
 
 void FXTerminal::drawContents(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint h) const {
-  register FXint hh=font->getFontHeight();
-  register FXint yy=pos_y+margintop+toprow*hh;
-  register FXint tl=(y-yy)/hh;
-  register FXint bl=(y+h-yy)/hh;
-  register FXint ln;
+  FXint hh=font->getFontHeight();
+  FXint yy=pos_y+margintop+toprow*hh;
+  FXint tl=(y-yy)/hh;
+  FXint bl=(y+h-yy)/hh;
+  FXint ln;
   if(tl<0) tl=0;
   if(bl>=nvisrows) bl=nvisrows-1;
 // Now if I have any mathematical expression that is to be displayed I want to
@@ -4520,8 +4525,8 @@ void FXTerminal::drawContents(FXDCWindow& dc,FXint x,FXint y,FXint w,FXint h) co
 // and of a line.
 
 void FXTerminal::drawTextRow(FXDCWindow& dc,FXint line,FXint left,FXint right) const {
-  register FXint x,y,w,h,linebeg,lineend,truelineend,cw,sp,ep,row,edge;
-  register FXuint curstyle,newstyle;
+  FXint x,y,w,h,linebeg,lineend,truelineend,cw,sp,ep,row,edge;
+  FXuint curstyle,newstyle;
   linebeg=visrows[line];
   lineend=truelineend=visrows[line+1];
   if(linebeg<lineend && Ascii::isSpace(getByte(lineend-1))) lineend--;         // Back off last space
@@ -4672,8 +4677,8 @@ void FXTerminal::drawTextRow(FXDCWindow& dc,FXint line,FXint left,FXint right) c
 // colours.
 
 void FXTerminal::drawBufferText(FXDCWindow& dc,FXint x,FXint y,FXint,FXint,FXint pos,FXint n,FXuint style1) const {
-  register FXuint index=(style1&STYLE_MASK);
-  register FXColor color;
+  FXuint index=(style1&STYLE_MASK);
+  FXColor color;
   FXchar str[2];
   color=0;
   if(hilitestyles && index){                                                    // Get colors from style table

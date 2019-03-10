@@ -72,8 +72,8 @@ FXQuatd::FXQuatd(const FXMat3d& mat){
 
 // Adjust quaternion length
 FXQuatd& FXQuatd::adjust(){
-  register FXdouble t=x*x+y*y+z*z+w*w;
-  register FXdouble f;
+  FXdouble t=x*x+y*y+z*z+w*w;
+  FXdouble f;
   if(t>0.0){
     f=1.0/sqrt(t);
     x*=f;
@@ -87,8 +87,8 @@ FXQuatd& FXQuatd::adjust(){
 
 // Set axis and angle
 void FXQuatd::setAxisAngle(const FXVec3d& axis,FXdouble phi){
-  register FXdouble a=0.5*phi;
-  register FXdouble s=sin(a)/axis.length();
+  FXdouble a=0.5*phi;
+  FXdouble s=sin(a)/axis.length();
   x=axis.x*s;
   y=axis.y*s;
   z=axis.z*s;
@@ -100,7 +100,7 @@ void FXQuatd::setAxisAngle(const FXVec3d& axis,FXdouble phi){
 // Remeber that: q = sin(A/2)*(x*i+y*j+z*k)+cos(A/2)
 // for unit quaternion |q| == 1
 void FXQuatd::getAxisAngle(FXVec3d& axis,FXdouble& phi) const {
-  register FXdouble n=sqrt(x*x+y*y+z*z);
+  FXdouble n=sqrt(x*x+y*y+z*z);
   if(n>0.0){
     axis.x=x/n;
     axis.y=y/n;
@@ -118,10 +118,10 @@ void FXQuatd::getAxisAngle(FXVec3d& axis,FXdouble& phi) const {
 
 // Set quaternion from roll (x), pitch (y), yaw (z)
 void FXQuatd::setRollPitchYaw(FXdouble roll,FXdouble pitch,FXdouble yaw){
-  register FXdouble sr,cr,sp,cp,sy,cy;
-  register FXdouble rr=0.5*roll;
-  register FXdouble pp=0.5*pitch;
-  register FXdouble yy=0.5*yaw;
+  FXdouble sr,cr,sp,cp,sy,cy;
+  FXdouble rr=0.5*roll;
+  FXdouble pp=0.5*pitch;
+  FXdouble yy=0.5*yaw;
   sr=sin(rr); cr=cos(rr);
   sp=sin(pp); cp=cos(pp);
   sy=sin(yy); cy=cos(yy);
@@ -134,10 +134,10 @@ void FXQuatd::setRollPitchYaw(FXdouble roll,FXdouble pitch,FXdouble yaw){
 
 // Set quaternion from yaw (z), pitch (y), roll (x)
 void FXQuatd::setYawPitchRoll(FXdouble yaw,FXdouble pitch,FXdouble roll){
-  register FXdouble sr,cr,sp,cp,sy,cy;
-  register FXdouble rr=0.5*roll;
-  register FXdouble pp=0.5*pitch;
-  register FXdouble yy=0.5*yaw;
+  FXdouble sr,cr,sp,cp,sy,cy;
+  FXdouble rr=0.5*roll;
+  FXdouble pp=0.5*pitch;
+  FXdouble yy=0.5*yaw;
   sr=sin(rr); cr=cos(rr);
   sp=sin(pp); cp=cos(pp);
   sy=sin(yy); cy=cos(yy);
@@ -150,10 +150,10 @@ void FXQuatd::setYawPitchRoll(FXdouble yaw,FXdouble pitch,FXdouble roll){
 
 // Set quaternion from roll (x), yaw (z), pitch (y)
 void FXQuatd::setRollYawPitch(FXdouble roll,FXdouble yaw,FXdouble pitch){
-  register FXdouble sr,cr,sp,cp,sy,cy;
-  register FXdouble rr=0.5*roll;
-  register FXdouble pp=0.5*pitch;
-  register FXdouble yy=0.5*yaw;
+  FXdouble sr,cr,sp,cp,sy,cy;
+  FXdouble rr=0.5*roll;
+  FXdouble pp=0.5*pitch;
+  FXdouble yy=0.5*yaw;
   sr=sin(rr); cr=cos(rr);
   sp=sin(pp); cp=cos(pp);
   sy=sin(yy); cy=cos(yy);
@@ -166,10 +166,10 @@ void FXQuatd::setRollYawPitch(FXdouble roll,FXdouble yaw,FXdouble pitch){
 
 // Set quaternion from pitch (y), roll (x),yaw (z)
 void FXQuatd::setPitchRollYaw(FXdouble pitch,FXdouble roll,FXdouble yaw){
-  register FXdouble sr,cr,sp,cp,sy,cy;
-  register FXdouble rr=0.5*roll;
-  register FXdouble pp=0.5*pitch;
-  register FXdouble yy=0.5*yaw;
+  FXdouble sr,cr,sp,cp,sy,cy;
+  FXdouble rr=0.5*roll;
+  FXdouble pp=0.5*pitch;
+  FXdouble yy=0.5*yaw;
   sr=sin(rr); cr=cos(rr);
   sp=sin(pp); cp=cos(pp);
   sy=sin(yy); cy=cos(yy);
@@ -182,10 +182,10 @@ void FXQuatd::setPitchRollYaw(FXdouble pitch,FXdouble roll,FXdouble yaw){
 
 // Set quaternion from pitch (y), yaw (z), roll (x)
 void FXQuatd::setPitchYawRoll(FXdouble pitch,FXdouble yaw,FXdouble roll){
-  register FXdouble sr,cr,sp,cp,sy,cy;
-  register FXdouble rr=0.5*roll;
-  register FXdouble pp=0.5*pitch;
-  register FXdouble yy=0.5*yaw;
+  FXdouble sr,cr,sp,cp,sy,cy;
+  FXdouble rr=0.5*roll;
+  FXdouble pp=0.5*pitch;
+  FXdouble yy=0.5*yaw;
   sr=sin(rr); cr=cos(rr);
   sp=sin(pp); cp=cos(pp);
   sy=sin(yy); cy=cos(yy);
@@ -198,10 +198,10 @@ void FXQuatd::setPitchYawRoll(FXdouble pitch,FXdouble yaw,FXdouble roll){
 
 // Set quaternion from yaw (z), roll (x), pitch (y)
 void FXQuatd::setYawRollPitch(FXdouble yaw,FXdouble roll,FXdouble pitch){
-  register FXdouble sr,cr,sp,cp,sy,cy;
-  register FXdouble rr=0.5*roll;
-  register FXdouble pp=0.5*pitch;
-  register FXdouble yy=0.5*yaw;
+  FXdouble sr,cr,sp,cp,sy,cy;
+  FXdouble rr=0.5*roll;
+  FXdouble pp=0.5*pitch;
+  FXdouble yy=0.5*yaw;
   sr=sin(rr); cr=cos(rr);
   sp=sin(pp); cp=cos(pp);
   sy=sin(yy); cy=cos(yy);
@@ -218,7 +218,7 @@ void FXQuatd::setYawRollPitch(FXdouble yaw,FXdouble roll,FXdouble pitch){
 // test Sy against -1 and 1; this is numerically more stable, as
 // asin doesn't like arguments outside [-1,1].
 void FXQuatd::getRollPitchYaw(FXdouble& roll,FXdouble& pitch,FXdouble& yaw) const {
-  register FXdouble s=-2.0f*(x*z-w*y);
+  FXdouble s=-2.0f*(x*z-w*y);
   if(s<1.0){
     if(-1.0<s){
       roll=atan2(2.0*(y*z+w*x),1.0-2.0*(x*x+y*y));
@@ -241,7 +241,7 @@ void FXQuatd::getRollPitchYaw(FXdouble& roll,FXdouble& pitch,FXdouble& yaw) cons
 
 // Obtain yaw, pitch, and roll
 void FXQuatd::getYawPitchRoll(FXdouble& yaw,FXdouble& pitch,FXdouble& roll) const {
-  register FXdouble s=2.0*(x*z+w*y);
+  FXdouble s=2.0*(x*z+w*y);
   if(s<1.0){
     if(-1.0<s){
       yaw=atan2(-2.0*(x*y-w*z),1.0-2.0*(y*y+z*z));
@@ -264,7 +264,7 @@ void FXQuatd::getYawPitchRoll(FXdouble& yaw,FXdouble& pitch,FXdouble& roll) cons
 
 // Obtain roll, yaw, pitch
 void FXQuatd::getRollYawPitch(FXdouble& roll,FXdouble& yaw,FXdouble& pitch) const {
-  register FXdouble s=2.0*(x*y+w*z);
+  FXdouble s=2.0*(x*y+w*z);
   if(s<1.0){
     if(-1.0<s){
       roll=atan2(-2.0*(y*z-w*x),1.0-2.0*(x*x+z*z));
@@ -287,7 +287,7 @@ void FXQuatd::getRollYawPitch(FXdouble& roll,FXdouble& yaw,FXdouble& pitch) cons
 
 // Obtain pitch, roll, yaw
 void FXQuatd::getPitchRollYaw(FXdouble& pitch,FXdouble& roll,FXdouble& yaw) const {
-  register FXdouble s=2.0*(y*z+w*x);
+  FXdouble s=2.0*(y*z+w*x);
   if(s<1.0){
     if(-1.0<s){
       pitch=atan2(-2.0*(x*z-w*y),1.0-2.0*(x*x+y*y));
@@ -310,7 +310,7 @@ void FXQuatd::getPitchRollYaw(FXdouble& pitch,FXdouble& roll,FXdouble& yaw) cons
 
 // Obtain pitch, yaw, roll
 void FXQuatd::getPitchYawRoll(FXdouble& pitch,FXdouble& yaw,FXdouble& roll) const {
-  register FXdouble s=-2.0*(x*y-w*z);
+  FXdouble s=-2.0*(x*y-w*z);
   if(s<1.0){
     if(-1.0<s){
       pitch=atan2(2.0*(x*z+w*y),1.0-2.0*(y*y+z*z));
@@ -333,7 +333,7 @@ void FXQuatd::getPitchYawRoll(FXdouble& pitch,FXdouble& yaw,FXdouble& roll) cons
 
 // Obtain yaw, roll, pitch
 void FXQuatd::getYawRollPitch(FXdouble& yaw,FXdouble& roll,FXdouble& pitch) const {
-  register FXdouble s=-2.0*(y*z-w*x);
+  FXdouble s=-2.0*(y*z-w*x);
   if(s<1.0){
     if(-1.0<s){
       yaw=atan2(2.0*(x*y+w*z),1.0-2.0*(x*x+z*z));
@@ -356,8 +356,8 @@ void FXQuatd::getYawRollPitch(FXdouble& yaw,FXdouble& roll,FXdouble& pitch) cons
 
 // Set quaternion from axes
 void FXQuatd::setAxes(const FXVec3d& ex,const FXVec3d& ey,const FXVec3d& ez){
-  register FXdouble trace=ex.x+ey.y+ez.z;
-  register FXdouble scale;
+  FXdouble trace=ex.x+ey.y+ez.z;
+  FXdouble scale;
   if(trace>0.0){
     scale=sqrt(1.0+trace);
     w=0.5*scale;
@@ -392,18 +392,18 @@ void FXQuatd::setAxes(const FXVec3d& ex,const FXVec3d& ey,const FXVec3d& ez){
 
 // Get quaternion axes
 void FXQuatd::getAxes(FXVec3d& ex,FXVec3d& ey,FXVec3d& ez) const {
-  register FXdouble tx=2.0*x;
-  register FXdouble ty=2.0*y;
-  register FXdouble tz=2.0*z;
-  register FXdouble twx=tx*w;
-  register FXdouble twy=ty*w;
-  register FXdouble twz=tz*w;
-  register FXdouble txx=tx*x;
-  register FXdouble txy=ty*x;
-  register FXdouble txz=tz*x;
-  register FXdouble tyy=ty*y;
-  register FXdouble tyz=tz*y;
-  register FXdouble tzz=tz*z;
+  FXdouble tx=2.0*x;
+  FXdouble ty=2.0*y;
+  FXdouble tz=2.0*z;
+  FXdouble twx=tx*w;
+  FXdouble twy=ty*w;
+  FXdouble twz=tz*w;
+  FXdouble txx=tx*x;
+  FXdouble txy=ty*x;
+  FXdouble txz=tz*x;
+  FXdouble tyy=ty*y;
+  FXdouble tyz=tz*y;
+  FXdouble tzz=tz*z;
   ex.x=1.0-tyy-tzz;
   ex.y=txy+twz;
   ex.z=txz-twy;
@@ -418,24 +418,24 @@ void FXQuatd::getAxes(FXVec3d& ex,FXVec3d& ey,FXVec3d& ez) const {
 
 // Obtain local x axis
 FXVec3d FXQuatd::getXAxis() const {
-  register FXdouble ty=2.0*y;
-  register FXdouble tz=2.0*z;
+  FXdouble ty=2.0*y;
+  FXdouble tz=2.0*z;
   return FXVec3d(1.0-ty*y-tz*z,ty*x+tz*w,tz*x-ty*w);
   }
 
 
 // Obtain local y axis
 FXVec3d FXQuatd::getYAxis() const {
-  register FXdouble tx=2.0*x;
-  register FXdouble tz=2.0*z;
+  FXdouble tx=2.0*x;
+  FXdouble tz=2.0*z;
   return FXVec3d(tx*y-tz*w,1.0-tx*x-tz*z,tz*y+tx*w);
   }
 
 
 // Obtain local z axis
 FXVec3d FXQuatd::getZAxis() const {
-  register FXdouble tx=2.0*x;
-  register FXdouble ty=2.0*y;
+  FXdouble tx=2.0*x;
+  FXdouble ty=2.0*y;
   return FXVec3d(tx*z+ty*w,ty*z-tx*w,1.0-tx*x-ty*y);
   }
 
@@ -444,8 +444,8 @@ FXVec3d FXQuatd::getZAxis() const {
 // Given q = theta*(x*i+y*j+z*k), where length of (x,y,z) is 1,
 // then exp(q) = sin(theta)*(x*i+y*j+z*k)+cos(theta).
 FXQuatd FXQuatd::exp() const {
-  register FXdouble theta=sqrt(x*x+y*y+z*z);
-  register FXdouble scale;
+  FXdouble theta=sqrt(x*x+y*y+z*z);
+  FXdouble scale;
   FXQuatd result(x,y,z,cos(theta));
   if(theta>0.000001){
     scale=sin(theta)/theta;
@@ -461,8 +461,8 @@ FXQuatd FXQuatd::exp() const {
 // Given q = sin(theta)*(x*i+y*j+z*k)+cos(theta), length of (x,y,z) is 1,
 // then log(q) = theta*(x*i+y*j+z*k).
 FXQuatd FXQuatd::log() const {
-  register FXdouble scale=sqrt(x*x+y*y+z*z);
-  register FXdouble theta=atan2(scale,w);
+  FXdouble scale=sqrt(x*x+y*y+z*z);
+  FXdouble theta=atan2(scale,w);
   FXQuatd result(x,y,z,0.0);
   if(scale>0.0){
     scale=theta/scale;
@@ -476,7 +476,7 @@ FXQuatd FXQuatd::log() const {
 
 // Invert quaternion
 FXQuatd FXQuatd::invert() const {
-  register FXdouble n=x*x+y*y+z*z+w*w;
+  FXdouble n=x*x+y*y+z*z+w*w;
   return FXQuatd(-x/n,-y/n,-z/n,w/n);
   }
 
@@ -524,7 +524,7 @@ FXQuatd FXQuatd::conj() const {
 //  2 * cos(theta/2)   = sqrt(2 + 2 * (f . t))
 //
 FXQuatd& FXQuatd::arc(const FXVec3d& f,const FXVec3d& t){
-  register FXdouble dot=f.x*t.x+f.y*t.y+f.z*t.z,div;
+  FXdouble dot=f.x*t.x+f.y*t.y+f.z*t.z,div;
   if(dot> 0.999999){            // Unit quaternion
     x= 0.0;
     y= 0.0;
@@ -567,8 +567,8 @@ FXQuatd& FXQuatd::arc(const FXVec3d& f,const FXVec3d& t){
 
 // Spherical lerp
 FXQuatd& FXQuatd::lerp(const FXQuatd& u,const FXQuatd& v,FXdouble f){
-  register FXdouble alpha,beta,theta,sin_t,cos_t;
-  register FXint flip=0;
+  FXdouble alpha,beta,theta,sin_t,cos_t;
+  FXint flip=0;
   cos_t = u.x*v.x+u.y*v.y+u.z*v.z+u.w*v.w;
   if(cos_t<0.0){ cos_t = -cos_t; flip=1; }
   if((1.0-cos_t)<0.000001){

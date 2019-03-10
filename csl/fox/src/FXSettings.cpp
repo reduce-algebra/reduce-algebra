@@ -80,7 +80,7 @@ FXSettings::FXSettings(){
 
 // Construct copy of existing database
 FXSettings::FXSettings(const FXSettings& orig):FXDict(orig){
-  register FXint i;
+  FXint i;
   modified=orig.modified;
   for(i=0; i<orig.total; i++){
     if(0<=dict[i].hash){
@@ -92,7 +92,7 @@ FXSettings::FXSettings(const FXSettings& orig):FXDict(orig){
 
 // Assignment operator
 FXSettings& FXSettings::operator=(const FXSettings& orig){
-  register FXint i;
+  FXint i;
   if(&orig!=this){
     FXDict::operator=(orig);
     for(i=0; i<orig.total; i++){
@@ -119,7 +119,7 @@ void FXSettings::deleteData(void* ptr){
 
 // Read string
 static bool readString(FXFile& file,FXchar *buffer,FXint& bol,FXint& eol,FXint& end){
-  register FXint n;
+  FXint n;
   do{
     if(eol>=end){
       if(bol<end){ memmove(buffer,buffer+bol,end-bol); }
@@ -217,7 +217,7 @@ next: bol=eol;
 
 // Write string
 static bool writeString(FXFile& file,const FXchar* string){
-  register FXint len=strlen(string);
+  FXint len=strlen(string);
   return file.writeBlock(string,len)==len;
   }
 
@@ -270,9 +270,9 @@ x:return false;
 
 // Dequote a value, in situ
 FXchar* FXSettings::dequote(FXchar* text) const {
-  register FXchar *result=text;
-  register FXchar *ptr=text;
-  register FXuint v;
+  FXchar *result=text;
+  FXchar *ptr=text;
+  FXuint v;
   if(*text=='"'){
     text++;
     while((v=*text++)!='\0' && v!='\n' && v!='"'){
@@ -346,8 +346,8 @@ FXchar* FXSettings::dequote(FXchar* text) const {
 
 // Check if quotes are needed
 static bool needquotes(const FXchar* text){
-  register const FXchar *ptr=text;
-  register FXuchar c;
+  const FXchar *ptr=text;
+  FXuchar c;
   while((c=*ptr++)!='\0'){
     if(0x7f<=c || c<0x20 || c=='"' || c=='\'' || c=='\\' || (c==' ' && (ptr==(text+1) || *ptr=='\0'))) return true;
     }
@@ -357,9 +357,9 @@ static bool needquotes(const FXchar* text){
 
 // Enquote a value
 FXchar* FXSettings::enquote(FXchar* result,const FXchar* text){
-  register FXchar *end=result+MAXVALUE-6;
-  register FXchar *ptr=result;
-  register FXuchar c;
+  FXchar *end=result+MAXVALUE-6;
+  FXchar *ptr=result;
+  FXuchar c;
   if(needquotes(text)){
     *ptr++='"';
     while((c=*text++)!='\0' && ptr<end){

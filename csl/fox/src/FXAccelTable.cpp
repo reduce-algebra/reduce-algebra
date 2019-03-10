@@ -88,7 +88,7 @@ FXAccelTable::FXAccelTable(){
 
 // Resize hash table, and rehash old stuff into it
 void FXAccelTable::resize(FXuint m){
-  register FXuint p,i,c;
+  FXuint p,i,c;
   FXAccelKey *newkey;
   FXMALLOC(&newkey,FXAccelKey,m+1);
   for(i=0; i<=m; i++){
@@ -113,8 +113,8 @@ void FXAccelTable::resize(FXuint m){
 void FXAccelTable::addAccel(FXHotKey hotkey,FXObject* target,FXSelector seldn,FXSelector selup){
   if(hotkey){
     FXTRACE((150,"%p->FXAccelTable::addAccel: code=%04x state=%04x\n",this,(FXushort)hotkey,(FXushort)(hotkey>>16)));
-    register FXuint p=(hotkey*13)&max;
-    register FXuint c;
+    FXuint p=(hotkey*13)&max;
+    FXuint c;
     FXASSERT(hotkey!=UNUSEDSLOT);
     FXASSERT(hotkey!=EMPTYSLOT);
     while((c=key[p].code)!=UNUSEDSLOT){ // Check if in table already
@@ -142,8 +142,8 @@ x:  key[p].code=hotkey;                 // Add or replace accelerator info
 void FXAccelTable::removeAccel(FXHotKey hotkey){
   if(hotkey){
     FXTRACE((150,"%p->FXAccelTable::removeAccel: code=%04x state=%04x\n",this,(FXushort)hotkey,(FXushort)(hotkey>>16)));
-    register FXuint p=(hotkey*13)&max;
-    register FXuint c;
+    FXuint p=(hotkey*13)&max;
+    FXuint c;
     FXASSERT(hotkey!=UNUSEDSLOT);
     FXASSERT(hotkey!=EMPTYSLOT);
     while((c=key[p].code)!=hotkey){
@@ -169,8 +169,8 @@ void FXAccelTable::removeAccel(FXHotKey hotkey){
 // See if accelerator exists
 bool FXAccelTable::hasAccel(FXHotKey hotkey) const {
   if(hotkey){
-    register FXuint p=(hotkey*13)&max;
-    register FXuint c;
+    FXuint p=(hotkey*13)&max;
+    FXuint c;
     FXASSERT(hotkey!=UNUSEDSLOT);
     FXASSERT(hotkey!=EMPTYSLOT);
     while((c=key[p].code)!=hotkey){
@@ -186,8 +186,8 @@ bool FXAccelTable::hasAccel(FXHotKey hotkey) const {
 // Return target object of the given accelerator
 FXObject* FXAccelTable::targetOfAccel(FXHotKey hotkey) const {
   if(hotkey){
-    register FXuint p=(hotkey*13)&max;
-    register FXuint c;
+    FXuint p=(hotkey*13)&max;
+    FXuint c;
     FXASSERT(hotkey!=UNUSEDSLOT);
     FXASSERT(hotkey!=EMPTYSLOT);
     while((c=key[p].code)!=hotkey){
@@ -203,10 +203,10 @@ FXObject* FXAccelTable::targetOfAccel(FXHotKey hotkey) const {
 // Keyboard press; forward to accelerator target
 long FXAccelTable::onKeyPress(FXObject* sender,FXSelector,void* ptr){
   FXTRACE((200,"%p->FXAccelTable::onKeyPress keysym=0x%04x state=%04x\n",this,((FXEvent*)ptr)->code,((FXEvent*)ptr)->state));
-  register FXEvent* event=(FXEvent*)ptr;
-  register FXuint code=MKUINT(event->code,event->state&(SHIFTMASK|CONTROLMASK|ALTMASK|METAMASK));
-  register FXuint p=(code*13)&max;
-  register FXuint c;
+  FXEvent* event=(FXEvent*)ptr;
+  FXuint code=MKUINT(event->code,event->state&(SHIFTMASK|CONTROLMASK|ALTMASK|METAMASK));
+  FXuint p=(code*13)&max;
+  FXuint c;
   FXASSERT(code!=UNUSEDSLOT);
   FXASSERT(code!=EMPTYSLOT);
   while((c=key[p].code)!=code){
@@ -223,10 +223,10 @@ long FXAccelTable::onKeyPress(FXObject* sender,FXSelector,void* ptr){
 // Keyboard release; forward to accelerator target
 long FXAccelTable::onKeyRelease(FXObject* sender,FXSelector,void* ptr){
   FXTRACE((200,"%p->FXAccelTable::onKeyRelease keysym=0x%04x state=%04x\n",this,((FXEvent*)ptr)->code,((FXEvent*)ptr)->state));
-  register FXEvent* event=(FXEvent*)ptr;
-  register FXuint code=MKUINT(event->code,event->state&(SHIFTMASK|CONTROLMASK|ALTMASK|METAMASK));
-  register FXuint p=(code*13)&max;
-  register FXuint c;
+  FXEvent* event=(FXEvent*)ptr;
+  FXuint code=MKUINT(event->code,event->state&(SHIFTMASK|CONTROLMASK|ALTMASK|METAMASK));
+  FXuint p=(code*13)&max;
+  FXuint c;
   FXASSERT(code!=UNUSEDSLOT);
   FXASSERT(code!=EMPTYSLOT);
   while((c=key[p].code)!=code){
@@ -357,8 +357,8 @@ FXString unparseAccel(FXHotKey key){
 
 // Parse accelerator from menu
 FXHotKey parseAccel(const FXString& string){
-  register FXuint code=0,mods=0;
-  register FXint pos=0;
+  FXuint code=0,mods=0;
+  FXint pos=0;
 
   // Parse leading space
   while(pos<string.length() && Ascii::isSpace(string[pos])) pos++;
@@ -461,9 +461,9 @@ FXHotKey parseAccel(const FXString& string){
 
 // Parse hot key from string
 FXHotKey parseHotKey(const FXString& string){
-  register FXuint code=0,mods=0;
-  register FXint pos=0;
-  register FXwchar w;
+  FXuint code=0,mods=0;
+  FXint pos=0;
+  FXwchar w;
   while(pos<string.length()){
     if(string[pos]=='&'){
       if(string[pos+1]!='&'){
@@ -484,8 +484,8 @@ FXHotKey parseHotKey(const FXString& string){
 
 // Obtain hot key offset in string
 FXint findHotKey(const FXString& string){
-  register FXint pos=0;
-  register FXint n=0;
+  FXint pos=0;
+  FXint n=0;
   while(pos<string.length()){
     if(string[pos]=='&'){
       if(string[pos+1]!='&'){
@@ -503,8 +503,8 @@ FXint findHotKey(const FXString& string){
 // Strip hot key from string
 FXString stripHotKey(const FXString& string){
   FXString result=string;
-  register FXint len=result.length();
-  register FXint i,j;
+  FXint len=result.length();
+  FXint i,j;
   for(i=j=0; j<len; j++){
     if(result[j]=='&'){
       if(result[j+1]!='&') continue;
@@ -519,7 +519,7 @@ FXString stripHotKey(const FXString& string){
 
 // Save data
 void FXAccelTable::save(FXStream& store) const {
-  register FXuint i;
+  FXuint i;
   FXObject::save(store);
   store << max;
   store << num;
@@ -534,7 +534,7 @@ void FXAccelTable::save(FXStream& store) const {
 
 // Load data
 void FXAccelTable::load(FXStream& store){
-  register FXuint i;
+  FXuint i;
   FXObject::load(store);
   store >> max;
   store >> num;

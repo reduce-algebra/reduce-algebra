@@ -88,10 +88,10 @@ FXIMPLEMENT(FXFoldingItem,FXObject,NULL,0)
 
 // Draw item
 void FXFoldingItem::draw(const FXFoldingList* list,FXDC& dc,FXint x,FXint y,FXint,FXint h) const {
-  register FXHeader *header=list->getHeader();
-  register FXIcon *icon=(state&OPENED)?openIcon:closedIcon;
-  register FXFont *font=list->getFont();
-  register FXint th=0,tw=0,ih=0,iw=0,yt,xb,beg,end,hi,drw,space,used,dw,xx;
+  FXHeader *header=list->getHeader();
+  FXIcon *icon=(state&OPENED)?openIcon:closedIcon;
+  FXFont *font=list->getFont();
+  FXint th=0,tw=0,ih=0,iw=0,yt,xb,beg,end,hi,drw,space,used,dw,xx;
   if(header->getNumItems()==0) return;
   xx=x+SIDE_SPACING/2;
   if(icon){
@@ -148,8 +148,8 @@ void FXFoldingItem::draw(const FXFoldingList* list,FXDC& dc,FXint x,FXint y,FXin
 
 // See if item got hit, and where:- 1 is icon, 2 is text
 FXint FXFoldingItem::hitItem(const FXFoldingList* list,FXint x,FXint y) const {
-  register FXint oiw=0,ciw=0,oih=0,cih=0,tw=0,th=0,iw,ih,ix,iy,tx,ty,h;
-  register FXFont *font=list->getFont();
+  FXint oiw=0,ciw=0,oih=0,cih=0,tw=0,th=0,iw,ih,ix,iy,tx,ty,h;
+  FXFont *font=list->getFont();
   if(openIcon){
     oiw=openIcon->getWidth();
     oih=openIcon->getHeight();
@@ -277,8 +277,8 @@ void FXFoldingItem::detach(){
 
 // Get number of child items
 FXint FXFoldingItem::getNumChildren() const {
-  register FXFoldingItem *item=first;
-  register FXint n=0;
+  FXFoldingItem *item=first;
+  FXint n=0;
   while(item){item=item->next;n++;}
   return n;
   }
@@ -287,7 +287,7 @@ FXint FXFoldingItem::getNumChildren() const {
 
 // Get item (logically) below this one
 FXFoldingItem* FXFoldingItem::getBelow() const {
-  register FXFoldingItem* item=(FXFoldingItem*)this;
+  FXFoldingItem* item=(FXFoldingItem*)this;
   if(first) return first;
   while(!item->next && item->parent) item=item->parent;
   return item->next;
@@ -296,7 +296,7 @@ FXFoldingItem* FXFoldingItem::getBelow() const {
 
 // Get item (logically) above this one
 FXFoldingItem* FXFoldingItem::getAbove() const {
-  register FXFoldingItem* item=prev;
+  FXFoldingItem* item=prev;
   if(!item) return parent;
   while(item->last) item=item->last;
   return item;
@@ -305,7 +305,7 @@ FXFoldingItem* FXFoldingItem::getAbove() const {
 
 // Return true if child of parent item
 FXbool FXFoldingItem::isChildOf(const FXFoldingItem* item) const {
-  register const FXFoldingItem* child=this;
+  const FXFoldingItem* child=this;
   while(child){ child=child->parent; if(child==item) return TRUE; }
   return FALSE;
   }
@@ -313,7 +313,7 @@ FXbool FXFoldingItem::isChildOf(const FXFoldingItem* item) const {
 
 // Return true if parent of child item
 FXbool FXFoldingItem::isParentOf(const FXFoldingItem* item) const {
-  register const FXFoldingItem* child=item;
+  const FXFoldingItem* child=item;
   while(child){ child=child->parent; if(child==this) return TRUE; }
   return FALSE;
   }
@@ -327,7 +327,7 @@ FXint FXFoldingItem::getWidth(const FXFoldingList*) const {
 
 // Get item height
 FXint FXFoldingItem::getHeight(const FXFoldingList* list) const {
-  register FXint th=0,oih=0,cih=0;
+  FXint th=0,oih=0,cih=0;
   if(openIcon) oih=openIcon->getHeight();
   if(closedIcon) cih=closedIcon->getHeight();
   if(!label.empty()) th=4+list->getFont()->getFontHeight();
@@ -475,7 +475,7 @@ FXFoldingList::FXFoldingList(FXComposite *p,FXObject* tgt,FXSelector sel,FXuint 
 
 // Create window
 void FXFoldingList::create(){
-  register FXFoldingItem *item=firstitem;
+  FXFoldingItem *item=firstitem;
   FXScrollArea::create();
   while(item){
     item->create();
@@ -489,7 +489,7 @@ void FXFoldingList::create(){
 
 // Detach window
 void FXFoldingList::detach(){
-  register FXFoldingItem *item=firstitem;
+  FXFoldingItem *item=firstitem;
   FXScrollArea::detach();
   while(item){
     item->detach();
@@ -562,8 +562,8 @@ void FXFoldingList::setNumVisible(FXint nvis){
 
 // Get number of toplevel items
 FXint FXFoldingList::getNumItems() const {
-  register FXFoldingItem *item=firstitem;
-  register FXint n=0;
+  FXFoldingItem *item=firstitem;
+  FXint n=0;
   while(item){
     item=item->next;
     n++;
@@ -574,8 +574,8 @@ FXint FXFoldingList::getNumItems() const {
 
 // Recompute interior
 void FXFoldingList::recompute(){
-  register FXFoldingItem* item;
-  register FXint x,y,h;
+  FXFoldingItem* item;
+  FXint x,y,h;
   x=y=0;
   treeWidth=0;
   treeHeight=0;
@@ -838,9 +838,9 @@ FXbool FXFoldingList::isItemVisible(const FXFoldingItem* item) const {
 
 // Make item fully visible
 void FXFoldingList::makeItemVisible(FXFoldingItem* item){
-  register FXint hh=header->getHeight();
-  register FXFoldingItem *par;
-  register FXint y,h;
+  FXint hh=header->getHeight();
+  FXFoldingItem *par;
+  FXint y,h;
   if(item){
 
     // Remember for later
@@ -877,9 +877,9 @@ void FXFoldingList::makeItemVisible(FXFoldingItem* item){
 
 // Get item at position x,y
 FXFoldingItem* FXFoldingList::getItemAt(FXint,FXint y) const {
-  register FXint hh=header->getHeight();
-  register FXFoldingItem* item=firstitem;
-  register FXint ix,iy,ih;
+  FXint hh=header->getHeight();
+  FXFoldingItem* item=firstitem;
+  FXint ix,iy,ih;
   ix=pos_x;
   iy=pos_y+hh;
   if(options&FOLDINGLIST_ROOT_BOXES) ix+=(4+indent);
@@ -904,8 +904,8 @@ FXFoldingItem* FXFoldingList::getItemAt(FXint,FXint y) const {
 
 // Did we hit the item, and which part of it did we hit (0=outside, 1=icon, 2=text, 3=box)
 FXint FXFoldingList::hitItem(const FXFoldingItem* item,FXint x,FXint y) const {
-  register FXint hh=header->getHeight();
-  register FXint ix,iy,ih,xh,yh,hit=0;
+  FXint hh=header->getHeight();
+  FXint ix,iy,ih,xh,yh,hit=0;
   if(item){
     x-=pos_x;
     y-=pos_y;
@@ -1041,8 +1041,8 @@ FXbool FXFoldingList::toggleItem(FXFoldingItem* item,FXbool notify){
 
 // Extend selection
 FXbool FXFoldingList::extendSelection(FXFoldingItem* item,FXbool notify){
-  register FXFoldingItem *it,*i1,*i2,*i3;
-  register FXbool changes=FALSE;
+  FXFoldingItem *it,*i1,*i2,*i3;
+  FXbool changes=FALSE;
   if(item && anchoritem && extentitem){
     it=firstitem;
     i1=i2=i3=NULL;
@@ -1120,8 +1120,8 @@ FXbool FXFoldingList::extendSelection(FXFoldingItem* item,FXbool notify){
 
 // Kill selection
 FXbool FXFoldingList::killSelection(FXbool notify){
-  register FXFoldingItem *item=firstitem;
-  register FXbool changes=FALSE;
+  FXFoldingItem *item=firstitem;
+  FXbool changes=FALSE;
   while(item){
     if(item->isSelected()){
       item->setSelected(FALSE);
@@ -1961,7 +1961,7 @@ long FXFoldingList::onTripleClicked(FXObject*,FXSelector,void* ptr){
 
 // Compare sectioned strings
 FXint FXFoldingList::compareSection(const FXchar *p,const FXchar* q,FXint s){
-  register FXint c1,c2,x;
+  FXint c1,c2,x;
   for(x=s; x && *p; x-=(*p++=='\t'));
   for(x=s; x && *q; x-=(*q++=='\t'));
   do{
@@ -1975,7 +1975,7 @@ FXint FXFoldingList::compareSection(const FXchar *p,const FXchar* q,FXint s){
 
 // Compare sectioned strings, case-insensitive
 FXint FXFoldingList::compareSectionCase(const FXchar *p,const FXchar* q,FXint s){
-  register FXint c1,c2,x;
+  FXint c1,c2,x;
   for(x=s; x && *p; x-=(*p++=='\t'));
   for(x=s; x && *q; x-=(*q++=='\t'));
   do{
@@ -2117,7 +2117,7 @@ void FXFoldingList::sortChildItems(FXFoldingItem* item){
 
 // Sort all items recursively
 void FXFoldingList::sortItems(){
-  register FXFoldingItem *item;
+  FXFoldingItem *item;
   if(sortfunc){
     sortRootItems();
     item=firstitem;
@@ -2190,7 +2190,7 @@ FXFoldingItem* FXFoldingList::createItem(const FXString& text,FXIcon* oi,FXIcon*
 
 // Insert item under father before other item
 FXFoldingItem* FXFoldingList::insertItem(FXFoldingItem* other,FXFoldingItem* father,FXFoldingItem* item,FXbool notify){
-  register FXFoldingItem* olditem=currentitem;
+  FXFoldingItem* olditem=currentitem;
 
   // Verify correctness of arguments
   if(!item){ fxerror("%s::insertItem: NULL item argument.\n",getClassName()); }
@@ -2289,7 +2289,7 @@ FXFoldingItem* FXFoldingList::prependItem(FXFoldingItem* father,const FXString& 
 
 // Fill list by appending items from array of strings
 FXint FXFoldingList::fillItems(FXFoldingItem* father,const FXchar** strings,FXIcon* oi,FXIcon* ci,void* ptr,FXbool notify){
-  register FXint n=0;
+  FXint n=0;
   if(strings){
     while(strings[n]){
       appendItem(father,strings[n++],oi,ci,ptr,notify);
@@ -2301,7 +2301,7 @@ FXint FXFoldingList::fillItems(FXFoldingItem* father,const FXchar** strings,FXIc
 
 // Fill list by appending items from newline separated strings
 FXint FXFoldingList::fillItems(FXFoldingItem* father,const FXString& strings,FXIcon* oi,FXIcon* ci,void* ptr,FXbool notify){
-  register FXint n=0;
+  FXint n=0;
   FXString text;
   while(!(text=strings.section('\n',n)).empty()){
     appendItem(father,text,oi,ci,ptr,notify);
@@ -2365,11 +2365,11 @@ FXFoldingItem *FXFoldingList::moveItem(FXFoldingItem* other,FXFoldingItem* fathe
 
 // Extract node from list
 FXFoldingItem* FXFoldingList::extractItem(FXFoldingItem* item,FXbool notify){
-  register FXFoldingItem *olditem=currentitem;
-  register FXFoldingItem *result=item;
-  register FXFoldingItem *prv;
-  register FXFoldingItem *nxt;
-  register FXFoldingItem *par;
+  FXFoldingItem *olditem=currentitem;
+  FXFoldingItem *result=item;
+  FXFoldingItem *prv;
+  FXFoldingItem *nxt;
+  FXFoldingItem *par;
   if(item){
 
     // Remember hookups
@@ -2434,10 +2434,10 @@ FXFoldingItem* FXFoldingList::extractItem(FXFoldingItem* item,FXbool notify){
 
 // Remove all siblings from [fm,to]
 void FXFoldingList::removeItems(FXFoldingItem* fm,FXFoldingItem* to,FXbool notify){
-  register FXFoldingItem *olditem=currentitem;
-  register FXFoldingItem *prv;
-  register FXFoldingItem *nxt;
-  register FXFoldingItem *par;
+  FXFoldingItem *olditem=currentitem;
+  FXFoldingItem *prv;
+  FXFoldingItem *nxt;
+  FXFoldingItem *par;
   if(fm && to){
     if(fm->parent!=to->parent){ fxerror("%s::removeItems: arguments have different parent.\n",getClassName()); }
 
@@ -2516,9 +2516,9 @@ typedef FXint (*FXCompareFunc)(const FXString&,const FXString &,FXint);
 
 // Get item by name
 FXFoldingItem* FXFoldingList::findItem(const FXString& text,FXFoldingItem* start,FXuint flgs) const {
-  register FXCompareFunc comparefunc;
-  register FXFoldingItem *item;
-  register FXint len;
+  FXCompareFunc comparefunc;
+  FXFoldingItem *item;
+  FXint len;
   if(firstitem){
     comparefunc=(flgs&SEARCH_IGNORECASE) ? (FXCompareFunc)comparecase : (FXCompareFunc)compare;
     len=(flgs&SEARCH_PREFIX)?text.length():2147483647;
@@ -2555,7 +2555,7 @@ FXFoldingItem* FXFoldingList::findItem(const FXString& text,FXFoldingItem* start
 
 // Get item by data
 FXFoldingItem* FXFoldingList::findItemByData(const void *ptr,FXFoldingItem* start,FXuint flgs) const {
-  register FXFoldingItem *item;
+  FXFoldingItem *item;
   if(firstitem){
     if(flgs&SEARCH_BACKWARD){
       item=start;
