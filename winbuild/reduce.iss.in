@@ -72,6 +72,7 @@ Source: "@here@\C\doc\misc\primer.pdf"; DestDir: "{app}\doc\"; Flags: ignorevers
 Source: "@here@\C\doc\misc\sl.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\misc\sl.bib"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\misc\sl.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
+Source: "@here@\C\doc\misc\reduce.sty"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\manual\redlogo.png"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\manual\*.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\manual\manual.pdf"; DestDir: "{app}\lib\csl\reduce.doc\"; Flags: ignoreversion; Components: common

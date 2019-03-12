@@ -125,7 +125,7 @@ install-stamp: build-stamp
 	mkdir -p $(SHAREDIR)/scripts $(LIBDIR)/pslbuild/psl $(LIBDIR)/pslbuild/red $(LIBDIR)/cslbuild/csl $(SHAREDIR)/packages $(BINDIR) $(DOCDIR) $(MANDIR)/man1
 	mkdir -p $(REDFRONTSHAREDIR)/redfront $(EMACSSITELISPDIR) $(EMACSSITESTARTDIR) $(ADDONDOCDIR)
 # copy documentation files
-	cp $(TOPDIR)/doc/misc/primer.tex $(TOPDIR)/doc/misc/primer.pdf $(TOPDIR)/doc/misc/sl.tex $(TOPDIR)/doc/misc/sl.bib $(TOPDIR)/doc/misc/sl.pdf \
+	cp $(TOPDIR)/doc/misc/primer.tex $(TOPDIR)/doc/misc/primer.pdf $(TOPDIR)/doc/misc/sl.tex $(TOPDIR)/doc/misc/sl.bib $(TOPDIR)/doc/misc/sl.pdf $(TOPDIR)/doc/misc/reduce.sty \
            $(TOPDIR)/csl/reduce.doc/BINARY-LICENSE.txt $(TOPDIR)/csl/reduce.doc/BSD-LICENSE.txt $(TOPDIR)/csl/reduce.doc/LGPL-2.1.txt $(TOPDIR)/doc/manual/redlogo.png $(DOCDIR)
 	cp $(DOCSRCDIR)/*.tex $(DOCDIR)
 	cp $(DOCSRCDIR)/$(DOCBASENAME).pdf $(DOCSRCDIR)/$(DOCBASENAME)*.html $(DOCSRCDIR)/$(DOCBASENAME)*.png $(DOCSRCDIR)/$(DOCBASENAME).css $(DOCDIR)
