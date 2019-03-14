@@ -1001,7 +1001,7 @@ static void lisp_main(void)
                     {   START_TRY_BLOCK;
                         a = read_from_vector(exit_charvec);
                     }
-                    catch (LispException e) // all sorts of Lisp issues!
+                    catch (LispException &e) // all sorts of Lisp issues!
                     {   a = nil;
                     }
                     free(exit_charvec);
@@ -1016,7 +1016,7 @@ static void lisp_main(void)
 //
             else read_eval_print(lisp_true);
         }
-        catch (LispSignal e)
+        catch (LispSignal &e)
         {   if (errorset_msg != NULL)
             {   term_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = NULL;
@@ -1024,7 +1024,7 @@ static void lisp_main(void)
             unwind_stack(save, false);
             exit_reason = UNWIND_ERROR;
         }
-        catch (LispException e)
+        catch (LispException &e)
         {
             if (exit_reason == UNWIND_RESTART)
             {   if (exit_tag == fixnum_of_int(0))      // "stop"
@@ -2802,14 +2802,14 @@ static void cslaction(void)
             }
         }
     }
-    catch (LispSignal e)
+    catch (LispSignal &e)
     {   if (errorset_msg != NULL)
         {   term_printf("\n%s detected\n", errorset_msg);
             errorset_msg = NULL;
         }
         return;
     }
-    catch (LispException e)
+    catch (LispException &e)
     {   return;
     }
 }

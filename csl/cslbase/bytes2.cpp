@@ -2477,7 +2477,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 //*****************************************************************************
     } // end of switch block
     } // end of try block
-    catch (LispException e)
+    catch (LispException &e)
     {
 // What follows is my current guess for a good diagnostic...
         if (SHOW_FNAME)

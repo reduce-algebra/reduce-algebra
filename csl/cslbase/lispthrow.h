@@ -666,7 +666,7 @@ public:
 //    {   START_TRY_BLOCK;
 //        <activity>
 //    }
-//    catch (LispException e)
+//    catch (LispException &e)
 //    { whatever }
 // and I will make them write the catch clauses explictly since what will be
 // needed there is liable to vary from case to case.
@@ -708,7 +708,7 @@ public:
     {   START_TRY_BLOCK;                            \
         a;                                          \
     }                                               \
-    catch (LispError e)                             \
+    catch (LispError &e)                            \
     {   int _reason = exit_reason;                  \
         b;                                          \
         exit_reason = _reason;                      \
@@ -727,7 +727,7 @@ public:
     {   START_TRY_BLOCK;                            \
         a;                                          \
     }                                               \
-    catch (LispError e)                             \
+    catch (LispError &e)                            \
     {   b;                                          \
     }
 
@@ -736,7 +736,7 @@ public:
     {   START_TRY_BLOCK;                            \
         a;                                          \
     }                                               \
-    catch (LispError e)                             \
+    catch (LispError &e)                            \
     {                                               \
     }
 
@@ -752,7 +752,7 @@ public:
     {   START_SETJMP_BLOCK;                         \
         a;                                          \
     }                                               \
-    catch (LispError e)                             \
+    catch (LispError &e)                            \
     {                                               \
     }
 

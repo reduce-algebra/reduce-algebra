@@ -228,7 +228,7 @@ static LispObject block_fn(LispObject args, LispObject env)
         {   START_TRY_BLOCK;
             p = eval(p, env);
         }
-        catch (LispReturnFrom e)
+        catch (LispReturnFrom &e)
         {   qcar(my_tag) = fixnum_of_int(2); // Invalidate
             if (exit_tag == my_tag)
             {   popv(3);
@@ -236,7 +236,7 @@ static LispObject block_fn(LispObject args, LispObject env)
             }
             else throw;
         }
-        catch (LispError e)
+        catch (LispError &e)
         {   int _reason = exit_reason;
             err_printf("\nEvaluating: ");
             loop_print_error(qcar(args));
@@ -267,7 +267,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
     {   START_SETJMP_BLOCK;
         v = progn_fn(qcdr(args), env);
     }
-    catch (LispThrow e)
+    catch (LispThrow &e)
     {   pop(tag);
         catch_tags = qcdr(tag);
         qcar(tag) = tag;
@@ -275,7 +275,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
         if (exit_tag == tag) return nvalues(exit_value, exit_count);
         else throw;
     }
-    catch (LispException e)
+    catch (LispException &e)
     {   pop(tag);
         catch_tags = qcdr(tag);
         qcar(tag) = tag;
@@ -868,7 +868,7 @@ static LispObject letstar_fn(LispObject args, LispObject env)
             Return(bodyx);
         }
     }
-    catch (LispException e)
+    catch (LispException &e)
     {   for (bvl = specenv; bvl != nil; bvl = qcdr(bvl))
         {   LispObject w = qcar(bvl), v = qcar(w), z = qcdr(w);
             qvalue(v) = z;

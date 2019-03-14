@@ -218,6 +218,8 @@ static int ahead_buffer[TYPEAHEAD_SIZE];
 static char *paste_buffer;
 static int paste_flags, paste_n, paste_p, paste_is_html;
 
+static int longest_history_line;
+
 FXIMPLEMENT(FXTerminal, FXText, FXTerminalMap, ARRAYNUMBER(FXTerminalMap))
 
 FXTerminal::FXTerminal(const char *argv0,
@@ -252,7 +254,8 @@ FXTerminal::FXTerminal(const char *argv0,
     historyNumber = 0;
     pauseFlags = keyFlags = searchFlags = 0;
     promptEnd = length;
-    input_history_init(argv0);
+    input_history_init(argv0, historyFirst, historyLast, historyNumber,
+                       input_history_next, longest_history_line);
     InitMutex(pauseMutex);
 
     InitMutex(mutex1);
@@ -3818,8 +3821,6 @@ void FXTerminal::insertMathsLines()
     flush_append(this);
     int scale = 4;
     int p1 = start;
-fprintf(stderr, "FXTerminal.cpp line %d, process %d bytes\n",
-        __LINE__, (int)(length-start));
     while (p1<length)
     {   charPointer = p1+7;
 // First parse the line of stuff to get a box-structure. The parsed box gets

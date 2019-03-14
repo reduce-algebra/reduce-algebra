@@ -492,7 +492,9 @@ wchar_t *input_history[100]; // Not used in the case that
                              // cursor control is not  available
 int input_history_next = 0;
 
-void input_history_init(const char *argv0)
+void input_history_init(const char *argv0,
+    int &phistoryFirst, int &phistoryLast, int &phistoryNumber,
+    int &pinput_history_next, int &plongest_history_line)
 {}
 
 void input_history_end()
@@ -578,13 +580,15 @@ static int searchFlags;
 
 bool is_reduce = false;
 
-void input_history_init(const char *argv0)
+void input_history_init(const char *argv0,
+    int &phistoryFirst, int &phistoryLast, int &phistoryNumber,
+    int &pinput_history_next, int &plongest_history_line)
 {
 // I am going to handle input in a way that I want for Reduce is the
 // current executable has a name including the string "red".
     is_reduce = (strstr(argv0, "red") != NULL);
     int i;
-    input_history_next = longest_history_line = 0;
+    pinput_history_next = plongest_history_line = 0;
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
         input_history[i] = NULL;
     pending_history_line = NULL;
@@ -610,25 +614,23 @@ void input_history_init(const char *argv0)
     std::ifstream h(history_filename, std::ifstream::in);
     if (h.fail()) return;
 // Can now re-load.
-    longest_history_line = 0;
+    plongest_history_line = 0;
     std::string histline;
 // I read into a std::string because that means I do not need to worry about
 // the length of the input line.
     std::getline(h, histline);
     if (h.fail()) return;
-//std::cout << histline << std::endl;
 // But then because I am old fashioned I will decode the input as a C string!
     const char *hl = histline.c_str();
     unsigned int hsize;
-    if (sscanf(hl, "History %u %u", &hsize, &input_history_next) != 2 ||
+    if (sscanf(hl, "History %u %u", &hsize, &pinput_history_next) != 2 ||
         hsize != INPUT_HISTORY_SIZE)
         return; // malformed
-    historyNumber = historyLast = input_history_next - 1;
+    phistoryNumber = phistoryLast = pinput_history_next - 1;
 // Headline OK
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
     {   std::getline(h, histline);
         if (h.fail()) return;
-//std::cout << histline << std::endl;
         hl = histline.c_str();
         if (strncmp(hl, "History end", 11) == 0) break;
 // Now the line I have read is either "-NN" to indicate NN blank entries
@@ -637,7 +639,6 @@ void input_history_init(const char *argv0)
         else if (hl[0] == '-')
         {   int nblanks = std::atoi(hl+1);
             if (nblanks <= 0) nblanks = 1;
-//std::cout << "set " << nblanks << "entries to NULL" << std::endl;
             for (int j=0; j<nblanks; j++) input_history[i++] = NULL;
             i--; // avoid overshoot
             continue;
@@ -669,10 +670,9 @@ void input_history_init(const char *argv0)
                     else *q1++ = *q++;
                 }
                 *q1 = 0;
-//std::cout << "set ih[" << i << "] to \"" << hl1 << "\"" << std::endl;
                 input_history[i] = hl1;
                 int size = wcslen(hl1);
-                if (size > longest_history_line) longest_history_line = size;
+                if (size > plongest_history_line) plongest_history_line = size;
             }
         }
         else return; // bad format;
@@ -1445,7 +1445,8 @@ int term_setup(const char *argv0, const char *colour)
     historyFirst = historyNumber = 0;
     historyLast = -1;
     searchFlags = 0;
-    input_history_init(argv0);
+    input_history_init(argv0, historyFirst, historyLast, historyNumber,
+                       input_history_next, longest_history_line);
     invert_start = invert_end = -1;
 // The terminal is now set up. Start the thread that keeps trying to
 // read from it!

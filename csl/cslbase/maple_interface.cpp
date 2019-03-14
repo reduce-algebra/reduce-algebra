@@ -111,7 +111,7 @@ int execute_lisp_function(char *fname,
         procedural_output = w;
         Lapply0(nil, ff);
     }
-    catch (LispException e)
+    catch (LispException &e)
     {   procedural_input = NULL;
         procedural_output = NULL;
         return 1;

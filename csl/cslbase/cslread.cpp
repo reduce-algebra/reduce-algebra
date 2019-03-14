@@ -1861,7 +1861,7 @@ static void wait_for_char()
             }
             break;
         }
-        catch (LispSigint e)
+        catch (LispSigint &e)
         {   if (errorset_msg != NULL)
             {   term_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = NULL;
@@ -3393,7 +3393,7 @@ void read_eval_print(int noisy)
         {   START_SETJMP_BLOCK;
             u = Lread(nil);
         }
-        catch (LispSignal e)
+        catch (LispSignal &e)
         {   u = nil;
             if (errorset_msg != NULL)
             {   err_printf("\n%s detected\n", errorset_msg);
@@ -3407,13 +3407,13 @@ void read_eval_print(int noisy)
                 resource_exceeded();
             else continue;
         }
-        catch (LispResource e)
+        catch (LispResource &e)
         {   throw;
         }
-        catch (LispRestart e)
+        catch (LispRestart &e)
         {   throw;
         }
-        catch (LispException e)
+        catch (LispException &e)
         {
 //
 // Maybe (stop) or (preserve) was called from a read-macro?  Otherwise
@@ -3466,13 +3466,13 @@ void read_eval_print(int noisy)
                 exit_count = 1; // Because I care how many results are returned
                 u = eval(u, nil);
             }
-            catch (LispResource e)
+            catch (LispResource &e)
             {   throw;
             }
-            catch (LispRestart e)
+            catch (LispRestart &e)
             {   throw;
             }
-            catch (LispException e)
+            catch (LispException &e)
             {   err_printf("\n... continuing after error\n");
                 if (spool_file != NULL) fflush(spool_file);
                 if (stop_on_error) throw;
@@ -3512,7 +3512,7 @@ void read_eval_print(int noisy)
 #endif
             }
         }
-        catch (LispSignal e)
+        catch (LispSignal &e)
         {   if (errorset_msg != NULL)
             {   err_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = NULL;
@@ -3648,7 +3648,7 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
     {   START_SETJMP_BLOCK;
         read_eval_print(noisy);
     }
-    catch (LispException e)
+    catch (LispException &e)
     {   int _reason = exit_reason;
         if (exit_reason == UNWIND_ERROR ||
             exit_reason == UNWIND_FNAME ||

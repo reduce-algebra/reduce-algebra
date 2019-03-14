@@ -759,7 +759,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
             }
         }
     }
-    catch (LispException e)
+    catch (LispException &e)
     {   stack = stacksave;
 // On any exception raised above I will need to restore any fluid bindings
 // that have been made.

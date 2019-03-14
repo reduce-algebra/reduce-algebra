@@ -114,7 +114,7 @@ LispObject bytecoded_1(LispObject def, LispObject a)
     {   START_TRY_BLOCK;
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-1);
     }
-    catch (LispError e)
+    catch (LispError &e)
     {   int _reason = exit_reason;
 // START_TRY_BLOCK arranges to preserve the stack pointer and restore it so
 // that when I get here it is just as it was at the start of "try".... But
@@ -152,7 +152,7 @@ LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
     {   START_TRY_BLOCK;
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-2);
     }
-    catch (LispError e)
+    catch (LispError &e)
     {   int _reason = exit_reason;
         if (SHOW_ARGS)
         {   err_printf("Arg 1: ");
@@ -174,7 +174,7 @@ LispObject bytecoded_3(LispObject def, LispObject a, LispObject b, LispObject c)
     {   START_TRY_BLOCK;
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-3);
     }
-    catch (LispError e)
+    catch (LispError &e)
     {   int _reason = exit_reason;
         if (SHOW_ARGS)
         {   err_printf("Arg1: ");
@@ -217,7 +217,7 @@ LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
     {   START_TRY_BLOCK;
         r = bytestream_interpret(CELL-TAG_VECTOR+1, def, stack-nargs);
     }
-    catch (LispError e)
+    catch (LispError &e)
     {   int _reason = exit_reason;
         if (SHOW_ARGS)
         {   for (int i=1; i<=nargs; i++)
@@ -346,7 +346,7 @@ static LispObject byteopt(LispObject def, LispObject a1, LispObject a2,
     {   START_TRY_BLOCK;
         r = bytestream_interpret(CELL-TAG_VECTOR+2, def, stack-nargs);
     }
-    catch (LispError e)
+    catch (LispError &e)
     {   int _reason = exit_reason;
         if (SHOW_ARGS)
         {   for (i=1; i<=nargs; i++)

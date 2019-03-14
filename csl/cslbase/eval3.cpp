@@ -158,7 +158,7 @@ static LispObject prog_fn(LispObject args, LispObject env)
     {   START_TRY_BLOCK;
         let_fn_1(qcar(args), qcdr(args), env, BODY_PROG);
     }
-    catch (LispReturnFrom e)
+    catch (LispReturnFrom &e)
     {   qcar(my_tag) = fixnum_of_int(2);    // Invalidate
         if (exit_tag == my_tag)
         {   popv(3);
@@ -168,7 +168,7 @@ static LispObject prog_fn(LispObject args, LispObject env)
 // enclosing block.
         else throw;
     }
-    catch (LispError e)
+    catch (LispError &e)
     {   int _reason = exit_reason;
         if (SHOW_FNAME)
         {   err_printf("\nEvaluating: "); // A bit of backtrace on errors
@@ -520,7 +520,7 @@ LispObject tagbody_fn(LispObject args, LispObject env)
         {   START_TRY_BLOCK;
             (void)eval(f, env);
         }
-        catch (LispGo e)
+        catch (LispGo &e)
         {   int _reason = exit_reason;
             pop3(f, env, p);
             my_env = stack[0];
@@ -554,7 +554,7 @@ LispObject tagbody_fn(LispObject args, LispObject env)
             exit_reason = _reason;
             throw;
         }
-        catch (LispError e)
+        catch (LispError &e)
         {   int _reason = exit_reason;
             pop3(f, env, p);
             if (SHOW_FNAME)
@@ -667,7 +667,7 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
     {   START_TRY_BLOCK;
         r = eval(r, env);
     }
-    catch (LispException e)
+    catch (LispException &e)
     {   pop2(env, args);
         LispObject xt, xv;
         int xc, xr;
@@ -884,7 +884,7 @@ static LispObject errorset3(volatile LispObject env,
     {   START_TRY_BLOCK;
         r = eval(form, nil);
     }
-    catch (LispError e)
+    catch (LispError &e)
     {
 // I am not going to catch exceptions such as the ones that restart the
 // system - only ones that couunt as "errors".
@@ -1126,7 +1126,7 @@ static LispObject resource_limit7(LispObject env,
         r2 = io_now - io_base;
         r3 = errors_now - errors_base;
     }
-    catch (LispResource e)
+    catch (LispResource &e)
     {   form = list4(fixnum_of_int(r0),
                      fixnum_of_int(r1),
                      fixnum_of_int(r2),

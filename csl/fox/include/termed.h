@@ -109,7 +109,9 @@ extern void term_close(void);
 extern wchar_t *input_history[INPUT_HISTORY_SIZE];
 extern int input_history_next;
 
-extern void input_history_init(const char *argv0);
+extern void input_history_init(const char *argv0,
+    int &historyFirst, int &historyLast, int &historyNumber,
+    int &input_history_next, int &longest_history_line);
 
 extern void input_history_end(void);
 
