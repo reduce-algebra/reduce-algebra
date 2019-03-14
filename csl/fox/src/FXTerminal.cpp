@@ -1,5 +1,5 @@
 //
-// "FXTerminal.cpp"                         Copyright A C Norman 2003-2014
+// "FXTerminal.cpp"                         Copyright A C Norman 2003-2019
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -8,7 +8,7 @@
 //
 
 /******************************************************************************
-* Copyright (C) 2003-14 by Arthur Norman, Codemist.  All Rights Reserved.     *
+* Copyright (C) 2003-19 by Arthur Norman, Codemist.  All Rights Reserved.     *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -247,11 +247,12 @@ FXTerminal::FXTerminal(const char *argv0,
     paste_buffer = NULL;
     paste_flags = paste_n = paste_p = paste_is_html = 0;
 
-    input_history_init(argv0);
     historyFirst = 0;
     historyLast = -1; // flag to say history is empty.
-    pauseFlags = keyFlags = historyNumber = searchFlags = 0;
+    historyNumber = 0;
+    pauseFlags = keyFlags = searchFlags = 0;
     promptEnd = length;
+    input_history_init(argv0);
     InitMutex(pauseMutex);
 
     InitMutex(mutex1);

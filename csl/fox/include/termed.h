@@ -1,8 +1,8 @@
-// termed.h                                Copyright (C) 2004-2017 Codemist
+// termed.h                                Copyright (C) 2004-2019 Codemist
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -52,12 +52,11 @@
 //
 // Start up input through this package. Returns 0 if local editing
 // actually gets enabled, or a non-zero value if there is some problem.
-// The non-zero value may encode some information about what went wrong,
-// but I am not going to document it! It is for use by developers only.
-// The problem will probably be that your terminal is unknown!
-// If the result is non-zero then you should fall back and just use
-// putchar and getchar.
-// The argument is used to indicate colour options. NULL or "-"
+// The problem will probably be that your terminal is unknown! But in
+// general you need not worry about the return value here in that if
+// local-editing can not be supported the remaining things still
+// have some sort of default behaviour.
+// The second argument is used to indicate colour options. NULL or "-"
 // will indicate "use default". An empty string will prevent any attempt
 // to use colour. Other strings set colours as follows:
 //      There are three characters, which specify the colours for

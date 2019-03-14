@@ -139,10 +139,6 @@ extern "C" char *getcwd(const char *s, size_t n);
 
 #include "termed.h"
 
-#ifndef HAVE_MY_MALLOC
-#define my_malloc(n) malloc(n);
-#endif
-
 //
 // The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
 // buffer overflow! I will just blandly assume throughout all my code that
@@ -277,7 +273,7 @@ static int macApp = 0;
 
 int windowed = 0;
 
-bool texmacs_mode = 0;
+bool texmacs_mode = false;
 
 #ifdef HAVE_LIBXFT
 bool fwin_use_xft = 1;
@@ -311,7 +307,7 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
             (buf.st_mode & S_IFDIR) != 0)
         {
 // Well foo.app exists and is a directory, so I will try to use it
-            const char **nargs = (const char **)my_malloc(sizeof(char *)*(argc+3));
+            const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
             int i;
 #ifdef DEBUG
 //
@@ -731,7 +727,7 @@ int main(int argc, const char *argv[])
     {   fprintf(stderr, "Unable to identify program name and directory (%d)\n", i);
         return 1;
     }
-    texmacs_mode = 0;
+    texmacs_mode = false;
 //
 // An option "--my-path" just prints the path to the executable
 // and stops. An option "--args" indicates that I should not look at any
@@ -766,7 +762,7 @@ int main(int argc, const char *argv[])
     windowed = 2;
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
-        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
+        else if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = true;
         else if (strncmp(argv[i], "-w", 2) == 0)
         {   if (argv[i][2] == '+') windowed = 1;
             else if (argv[i][2] == '.') windowed = -1;
@@ -833,7 +829,7 @@ int main(int argc, const char *argv[])
 //
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
-        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
+        else if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = true;
         else if (strncmp(argv[i], "-w", 2) == 0)
         {   if (argv[i][2] == '+') windowed = 1;
             else if (argv[i][2] == '.') windowed = -1;
@@ -1130,7 +1126,7 @@ int find_program_directory(const char *argv0)
         return 0;
     }
 
-    w = (char *)my_malloc(1+strlen(ww));
+    w = (char *)malloc(1+strlen(ww));
     if (w == NULL) return 5;           // 5 = malloc fails
     strcpy(w, ww);
     fullProgramName = w;
@@ -1176,12 +1172,12 @@ int find_program_directory(const char *argv0)
     ndir = len - npgm - 1;
     if (ndir < 0) programDir = ".";  // none really visible
     else
-    {   if ((w = (char *)my_malloc(ndir+1)) == NULL) return 1;
+    {   if ((w = (char *)malloc(ndir+1)) == NULL) return 1;
         strncpy(w, fullProgramName, ndir);
         w[ndir] = 0;
         programDir = w;
     }
-    if ((w = (char *)my_malloc(npgm+1)) == NULL) return 1;
+    if ((w = (char *)malloc(npgm+1)) == NULL) return 1;
     strncpy(w, fullProgramName + len - npgm, npgm);
     w[npgm] = 0;
     programName = w;
@@ -1373,7 +1369,7 @@ int find_program_directory(const char *argv0)
 // Now fullProgramName is set up, but may refer to an array that
 // is stack allocated. I need to make it proper!
 //
-    w1 = (char *)my_malloc(1+strlen(fullProgramName));
+    w1 = (char *)malloc(1+strlen(fullProgramName));
     if (w1 == NULL) return 5;           // 5 = malloc fails
     strcpy(w1, fullProgramName);
     fullProgramName = w1;
@@ -1431,7 +1427,7 @@ int find_program_directory(const char *argv0)
     for (n=strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               // 6 = no "/" in full file path
-    w1 = (char *)my_malloc(1+n);
+    w1 = (char *)malloc(1+n);
     if (w1 == NULL) return 7;           // 7 = malloc fails
     strncpy(w1, fullProgramName, n);
     w1[n] = 0;
@@ -1440,7 +1436,7 @@ int find_program_directory(const char *argv0)
 //
     programDir = w1;
     n1 = strlen(fullProgramName) - n;
-    w1 = (char *)my_malloc(n1);
+    w1 = (char *)malloc(n1);
     if (w1 == NULL) return 8;           // 8 = malloc fails
     strncpy(w1, fullProgramName+n+1, n1-1);
     w1[n1-1] = 0;
@@ -2158,7 +2154,7 @@ static void exall(int namelength,
             if (strcmp(leafname, ".") == 0 ||
                 strcmp(leafname, "..") == 0) continue;
             if (more_files()) break;
-            copyname = (char *)my_malloc(1+strlen(leafname));
+            copyname = (char *)malloc(1+strlen(leafname));
             if (copyname == NULL) break;
             strcpy(copyname, leafname);
             found_files[n_found_files++] = copyname;
@@ -2394,7 +2390,7 @@ int list_directory_members(char *filename, const char *old, char **filelist[],
     //
     if (number_of_entries == -1) return -1;
 
-    files=(char **)my_malloc(number_of_entries*sizeof(char *));
+    files=(char **)malloc(number_of_entries*sizeof(char *));
 
     for (i=0; i<number_of_entries; ++i)
     {   files[i] = strdup(namelist[i]->d_name);
@@ -2487,7 +2483,7 @@ char *get_truename(char *filename, const char *old, size_t n)
         {   strcpy(filename, "truename: cannot change directory");
             return NULL;
         }
-        dir1 = (char*)my_malloc(LONGEST_LEGAL_FILENAME);
+        dir1 = (char*)malloc(LONGEST_LEGAL_FILENAME);
         if (getcwd(dir1,LONGEST_LEGAL_FILENAME) == NULL)
         {   strcpy(filename, "truename: cannot get current working directory");
             free(dir1);
@@ -2516,7 +2512,7 @@ char *get_truename(char *filename, const char *old, size_t n)
         {   // Found a directory component
             char theDir[LONGEST_LEGAL_FILENAME];
             memset(theDir, 0, sizeof(theDir));
-            fn   = (char *)my_malloc(1+strlen(temp));
+            fn   = (char *)malloc(1+strlen(temp));
             strcpy(fn, temp);
             *temp = '\0';
             // fn is now "/file" and filename is the directory
@@ -2534,7 +2530,7 @@ char *get_truename(char *filename, const char *old, size_t n)
             {   strcpy(filename, "truename: cannot change directory");
                 return NULL;
             }
-            dir = (char *)my_malloc((strlen(temp) + strlen(fn) + 1)*sizeof(char));
+            dir = (char *)malloc((strlen(temp) + strlen(fn) + 1)*sizeof(char));
             if (dir == NULL)
             {   strcpy(filename, "truename: run out of memory");
                 return NULL;
@@ -2545,7 +2541,7 @@ char *get_truename(char *filename, const char *old, size_t n)
             return dir;
         }
         else
-        {   dir = (char *)my_malloc((strlen(pwd) + strlen(filename) + 2)*sizeof(char));
+        {   dir = (char *)malloc((strlen(pwd) + strlen(filename) + 2)*sizeof(char));
             if (dir == NULL)
             {   strcpy(filename, "truename: run out of memory");
                 return NULL;
