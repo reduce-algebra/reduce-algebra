@@ -468,7 +468,7 @@ size_t repeat_heap_size = 0, repeat_count = 0;
 
 // This tiny function exists just so that I can set a breakpoint on it.
 
-void my_abort()
+NORETURN void my_abort()
 {   fflush(stdout);
     fflush(stderr);
     ensure_screen();

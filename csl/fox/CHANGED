@@ -161,6 +161,7 @@ March 2019. The word "register" will be utterly rejected in C++17, and now
 
       (more in March) All sorts of adjustment to get the September 2018
       changes working after many of them got accidentally messed up in an
-      editing error.
+      editing error. Also edit configure.ac to force compilation in at least
+      C++11 mode.
 
 <end of CHANGED>
