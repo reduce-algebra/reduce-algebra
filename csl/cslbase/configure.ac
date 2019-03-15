@@ -1,6 +1,6 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                                     2008-2017
+# A C Norman.                                                     2008-2019
 
 # I guess that this file scan be subject to the same BSD license that
 # applies to almost all other parts of the code here.
@@ -765,9 +765,16 @@ then
 fi
 
 # The following seems to be an "official" way to ensure that I have at least
-# -std=gnu++11 (or gnu++0x) available.
+# -std=gnu++11 (or gnu++0x) available. If I have C++17 I have "inline"
+# variables, and that is good too, so I will use that if I can.
 
-AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
+AX_CXX_COMPILE_STDCXX([17], [ext], [optional])
+
+if test "x$HAVE_CXX17" != "x1"
+then
+    AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
+fi
+
 
 # If I can not use C++-14 I will INSIST on C++-11. This is somewhat an issue
 # in thet older platforms may not support this instantly. A particular case
@@ -777,8 +784,11 @@ AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
 # things like static_assert and type traits that at present are used in just
 # a small corner of the code, but that are potentially generally valuable.
 
-if test "x$HAVE_CXX14" != "x1"
+if test "x$HAVE_CXX17" == "x1" || \
+   test "x$HAVE_CXX14" == "x1"
 then
+  AC_MSG_NOTICE([A modern C++ compiler is available])
+else
     AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
 fi
 
