@@ -1273,8 +1273,10 @@ static int direct_to_terminal()
 #endif // WIN32
 }
 
+static bool term_active = false;
+
 int term_setup(const char *argv0, const char *colour)
-{
+{   term_active = true;
 #ifdef EMBEDDED
     input_line = (wchar_t *)my_malloc(200*sizeof(wchar_t));
     if (input_line == NULL)
@@ -1456,7 +1458,8 @@ int term_setup(const char *argv0, const char *colour)
 }
 
 void term_close(void)
-{
+{   if (!term_active) return; // Avoid closing more than once.
+    term_active = false;
 // Note here and elsewhere in this file that I go "fflush(stdout)" before
 // doing anything that may change styles or options for stream handling.
     fflush(stdout);
@@ -1469,19 +1472,25 @@ void term_close(void)
     SetConsoleMode(stdin_handle, stdin_attributes);
 #else // !WIN32
     fflush(stdout);
-    if (*term_colour == 0) /* nothing */;
-    else if (orig_pair) putp(orig_pair);
-    else if (orig_colors) putp(orig_colors);
-    else if (set_a_foreground)
+    if (term_enabled)
     {
+printf("orig_pair = %llx\n", (long long int)orig_pair);
+printf("orig_colors = %llx\n", (long long int)orig_colors);
+fflush(stdout);
+        if (*term_colour == 0) /* nothing */;
+        else if (orig_pair) putp(orig_pair);
+        else if (orig_colors) putp(orig_colors);
+        else if (set_a_foreground)
+        {
 #ifdef SOLARIS
-        solaris_foreground(0);
+            solaris_foreground(0);
 #else // !SOLARIS
-        putp(tparm(set_a_foreground, 0));
+            putp(tparm(set_a_foreground, 0));
 #endif // !SOLARIS
+        }
+        fflush(stdout);
+        my_reset_shell_mode();
     }
-    fflush(stdout);
-    my_reset_shell_mode();
 #endif // !WIN32
     if (display_line != NULL)
     {   free(display_line);

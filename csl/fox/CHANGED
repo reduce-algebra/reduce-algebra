@@ -154,10 +154,13 @@ February 2019: Changes in FXterminal.cpp and my parts of FXText.cpp that
       the GUI.
       This (I hope!) speeds up display of huge formulae in Reduce.
 
-March 2019. The word "register" will be utterly rejeced in C++17, and now
+March 2019. The word "register" will be utterly rejected in C++17, and now
       we are in 2019, and so C++17 gradually become the default. Since the
       keyword was only ever to help with performance I will just delete it
       everywhere it occurs! Yuk for the C++ standard breaking existing code!
 
+      (more in March) All sorts of adjustment to get the September 2018
+      changes working after many of them got accidentally messed up in an
+      editing error.
 
 <end of CHANGED>
