@@ -311,8 +311,7 @@ LispObject Lmkhash_3(LispObject env, LispObject size, LispObject flavour, LispOb
 //    #define HASH_AS_EQUALP    4
 //    #define HASH_AS_SYMBOL    5  // potential internal use for symbol table.
 //    #define HASH_AS_SXHASH    6  // never used for a hash table!
-{   STACK_SANITY;
-    if (!is_fixnum(flavour) ||
+{   if (!is_fixnum(flavour) ||
         int_of_fixnum(flavour) < 0 ||
         int_of_fixnum(flavour) > HASH_AS_SYMBOL)
     {   if (flavour == eq_symbol) flavour = fixnum_of_int(HASH_AS_EQ);
@@ -359,8 +358,7 @@ LispObject Lmkhash_1(LispObject env, LispObject a)
 
 LispObject Lmkhashset(LispObject env, LispObject flavour)
 // (mkhashset flavour)
-{   STACK_SANITY;
-    if (!is_fixnum(flavour)) aerror1("mkhashset", flavour);
+{   if (!is_fixnum(flavour)) aerror1("mkhashset", flavour);
     size_t bits = 3;
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
     push(v1);
@@ -863,8 +861,7 @@ static bool hash_compare_symtab(LispObject key, LispObject hashentry)
 //==========================================================================
 
 LispObject Lget_hash(LispObject env, LispObject key, LispObject tab, LispObject dflt)
-{   STACK_SANITY;
-    size_t pos;
+{   size_t pos;
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
     {   if (type_of_header(vechdr(tab)) != TYPE_HASHX)
             aerror1("gethash", tab);
@@ -926,8 +923,7 @@ LispObject Lmap_hash(LispObject env, LispObject fn, LispObject tab)
 // the table is re-tagged from TYPE_HASH to TYPE_HASHX. So I believe
 // that provided nobody tries either lookup or set operations on the table I
 // will be OK.
-{   STACK_SANITY;
-    int32_t size, i;
+{   int32_t size, i;
     LispObject v, v1;
     if (!is_vector(tab) ||
         (type_of_header(vechdr(tab)) != TYPE_HASH &&
@@ -959,8 +955,7 @@ LispObject Lhash_contents(LispObject env, LispObject tab)
 // I make this work on both hashsets and hashtables. In the former case it
 // returns a list of keys, in the latter an association list of keys
 // and values.
-{   STACK_SANITY;
-    size_t size, i;
+{   size_t size, i;
     LispObject v, v1, r;
     if (!is_vector(tab) ||
         (type_of_header(vechdr(tab)) != TYPE_HASH &&
@@ -1007,8 +1002,7 @@ LispObject Lget_hash_2(LispObject env, LispObject key, LispObject tab)
 
 LispObject Lput_hash(LispObject env,
                         LispObject key, LispObject tab, LispObject val)
-{   STACK_SANITY;
-    LispObject k1;
+{   LispObject k1;
     bool needs_rehashing = false;
     if (!is_vector(tab)) aerror1("puthash", tab);
     if (type_of_header(vechdr(tab)) != TYPE_HASH)

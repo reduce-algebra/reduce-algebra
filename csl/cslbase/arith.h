@@ -719,12 +719,6 @@ extern float128_t atof128(const char *s);
 // got be suffixing the top-level name with one of the above letters.
 // arith_dispatch_2 ends up with 64 sub-functions to call.
 
-// NOTE: If you have an old C compiler that does not deal with the
-// option that indicates that aerror() never returns then the dispatch
-// code here will appear to exit without a proper return value, and this
-// will lead to rather a lot of warning messages. With a more modern C++
-// compiler that issue should not arise.
-
 // First for 1-arg functions
 
 #define arith_dispatch_1(stgclass, type, name)                      \
@@ -732,8 +726,6 @@ stgclass type name(LispObject a1)                                   \
 {   if (is_fixnum(a1)) return name##_i(a1);                         \
     switch (a1 & TAG_BITS)                                          \
     {                                                               \
-    case (XTAG_SFLOAT & TAG_BITS):                                  \
-        return name##_s(a1);                                        \
     case TAG_NUMBERS:                                               \
         switch (type_of_header(numhdr(a1)))                         \
         {                                                           \
@@ -760,6 +752,8 @@ stgclass type name(LispObject a1)                                   \
         }                                                           \
     default:                                                        \
         aerror1("bad arg for " #name, a1);                          \
+    case (XTAG_SFLOAT & TAG_BITS):                                  \
+        return name##_s(a1);                                        \
     }                                                               \
 }
 
@@ -770,8 +764,6 @@ stgclass type name(LispObject a1, LispObject a2)                    \
 {   if (is_fixnum(a2)) return name##_i(a1, a2);                     \
     switch (a2 & TAG_BITS)                                          \
     {                                                               \
-    case (XTAG_SFLOAT & TAG_BITS):                                  \
-        return name##_s(a1, a2);                                    \
     case TAG_NUMBERS:                                               \
         switch (type_of_header(numhdr(a2)))                         \
         {                                                           \
@@ -798,6 +790,8 @@ stgclass type name(LispObject a1, LispObject a2)                    \
         }                                                           \
     default:                                                        \
         aerror2("bad arg for " #rawname, a1, a2);                   \
+    case (XTAG_SFLOAT & TAG_BITS):                                  \
+        return name##_s(a1, a2);                                    \
     }                                                               \
 }
 
@@ -822,8 +816,6 @@ stgclass type name(LispObject a1, LispObject a2)                    \
 {   if (is_fixnum(a1)) return name##_i(a1, a2);                     \
     switch (a1 & TAG_BITS)                                          \
     {                                                               \
-    case (XTAG_SFLOAT & TAG_BITS):                                  \
-        return name##_s(a1, a2);                                    \
     case TAG_NUMBERS:                                               \
         switch (type_of_header(numhdr(a1)))                         \
         {                                                           \
@@ -850,6 +842,8 @@ stgclass type name(LispObject a1, LispObject a2)                    \
         }                                                           \
     default:                                                        \
         aerror2("bad arg for " #name, a1, a2);                      \
+    case (XTAG_SFLOAT & TAG_BITS):                                  \
+        return name##_s(a1, a2);                                    \
     }                                                               \
 }
 

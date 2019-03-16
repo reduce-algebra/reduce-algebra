@@ -162,6 +162,11 @@ March 2019. The word "register" will be utterly rejected in C++17, and now
       (more in March) All sorts of adjustment to get the September 2018
       changes working after many of them got accidentally messed up in an
       editing error. Also edit configure.ac to force compilation in at least
-      C++11 mode.
+      C++11 mode. This adds a directory "fox/m4" with a macro for detecting
+      C++ versions, but subversion will tend to report a conflict fetching
+      that because there will be an existing m4 directory. Resolve eg by going
+      "svn -R revert ." in the fox directory followed by a further svn update,
+      or possibly deleting the fox/m4 directory and then letting subversion
+      restore it (and then doing a full reconfigure)...
 
 <end of CHANGED>

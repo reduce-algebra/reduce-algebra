@@ -173,7 +173,6 @@ LispObject apply(LispObject fn, LispObject args,
 static LispObject and_fn(LispObject args, LispObject env)
 // also needs to be a macro for Common Lisp
 {   stackcheck2(args, env);
-    STACK_SANITY;
     if (!consp(args)) return onevalue(lisp_true);
     for (;;)
     {   LispObject v = qcar(args);
@@ -204,7 +203,6 @@ static LispObject and_fn(LispObject args, LispObject env)
 
 static LispObject block_fn(LispObject args, LispObject env)
 {   LispObject p;
-    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     stackcheck2(args, env);
     push3(qcar(args),          // my_tag
@@ -254,7 +252,6 @@ static LispObject block_fn(LispObject args, LispObject env)
 
 static LispObject catch_fn(LispObject args, LispObject env)
 {   LispObject tag, v;
-    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     stackcheck2(args, env);
     push2(args, env);
@@ -458,13 +455,11 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 
 static LispObject compiler_let_fn(LispObject args, LispObject env)
 {   if (!consp(args)) return onevalue(nil);
-    STACK_SANITY;
     return let_fn_1(qcar(args), qcdr(args), env, BODY_COMPILER_LET);
 }
 
 static LispObject cond_fn(LispObject args, LispObject env)
 {   stackcheck2(args, env);
-    STACK_SANITY;
     while (consp(args))
     {   LispObject p = qcar(args);
         if (consp(p))
@@ -513,7 +508,6 @@ static LispObject defun_fn(LispObject args, LispObject)
 // in CSL mode
 //
     LispObject fname;
-    STACK_SANITY;
     if (consp(args))
     {   fname = qcar(args);
         args = qcdr(args);
@@ -568,7 +562,6 @@ static LispObject defmacro_fn(LispObject args, LispObject)
 // build it in as a special form.
 //
     LispObject fname;
-    STACK_SANITY;
     if (consp(args))
     {   fname = qcar(args);
         args = qcdr(args);
@@ -630,7 +623,6 @@ static LispObject eval_when_fn(LispObject args, LispObject env)
 // When interpreted, eval-when just looks for the situation EVAL.
 //
 {   LispObject situations;
-    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     situations = qcar(args);
     args = qcdr(args);
@@ -643,7 +635,6 @@ static LispObject eval_when_fn(LispObject args, LispObject env)
 
 static LispObject flet_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
-    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     stackcheck2(args, env);
     my_env = env;
@@ -676,7 +667,6 @@ LispObject function_fn(LispObject args, LispObject env)
 // (function (lambda (x) y)) gets converted to
 // (funarg env (x) y).
 //
-    STACK_SANITY;
     if (consp(args) && qcdr(args) == nil)
     {   args = qcar(args);
         if (consp(args) && qcar(args) == lambda)
@@ -689,7 +679,6 @@ LispObject function_fn(LispObject args, LispObject env)
 
 static LispObject go_fn(LispObject args, LispObject env)
 {   LispObject p, tag;
-    STACK_SANITY;
     if (!consp(args)) aerror("go");
     else tag = qcar(args);
     for(p=env; consp(p); p=qcdr(p))
@@ -707,7 +696,6 @@ static LispObject go_fn(LispObject args, LispObject env)
 
 static LispObject if_fn(LispObject args, LispObject env)
 {   LispObject p=nil, tr=nil, fs=nil;
-    STACK_SANITY;
     if (!consp(args)) aerror("if");
     p = qcar(args);
     args = qcdr(args);
@@ -731,7 +719,6 @@ static LispObject if_fn(LispObject args, LispObject env)
 
 static LispObject labels_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
-    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     stackcheck2(args, env);
     my_env = env;
@@ -761,7 +748,6 @@ static LispObject labels_fn(LispObject args, LispObject env)
 
 static LispObject let_fn(LispObject args, LispObject env)
 {   if (!consp(args)) return onevalue(nil);
-    STACK_SANITY;
     return let_fn_1(qcar(args), qcdr(args), env, BODY_LET);
 }
 
@@ -771,7 +757,6 @@ static LispObject letstar_fn(LispObject args, LispObject env)
 // I am in CSL mode.
 //
 {   if (!consp(args)) return onevalue(nil);
-    STACK_SANITY;
     stackcheck2(args, env);
     push3(qcar(args), qcdr(args), env);
     push5(nil, nil,                // p, q

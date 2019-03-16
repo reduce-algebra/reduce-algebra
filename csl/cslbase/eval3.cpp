@@ -47,8 +47,6 @@
 
 static LispObject macrolet_fn(LispObject args, LispObject env)
 {   LispObject d;
-    STACK_SANITY;
-    if (!consp(args)) return onevalue(nil);
     stackcheck2(args, env);
     d = qcar(args);     // The bunch of definitions
     while (consp(d))
@@ -83,7 +81,6 @@ static LispObject macrolet_fn(LispObject args, LispObject env)
 
 static LispObject mv_prog1_fn(LispObject args, LispObject env)
 {   LispObject r, rl;
-    STACK_SANITY;
     int nargs, i;
     if (!consp(args)) return onevalue(nil);
     stackcheck2(args, env);
@@ -122,7 +119,6 @@ static LispObject or_fn(LispObject args, LispObject env)
 // also needs to be a macro for Common Lisp
 {   if (!consp(args)) return onevalue(nil);
     stackcheck2(args, env);
-    STACK_SANITY;
     for (;;)
     {   LispObject v = qcar(args);
         args = qcdr(args);
@@ -141,7 +137,6 @@ static LispObject or_fn(LispObject args, LispObject env)
 static LispObject prog_fn(LispObject args, LispObject env)
 {   if (!consp(args) || !consp(qcdr(args))) return onevalue(nil);
     stackcheck2(args, env);
-    STACK_SANITY;
     push3(nil, args, env);
 #define env    stack[0]
 #define args   stack[-1]
@@ -188,7 +183,6 @@ static LispObject prog_fn(LispObject args, LispObject env)
 
 LispObject progn_fn(LispObject args, LispObject env)
 {   LispObject f;
-    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     stackcheck2(args, env);
     f = nil;
@@ -217,7 +211,6 @@ static LispObject prog1_fn(LispObject args, LispObject env)
 // that that will be good for performance.
 //
 {   LispObject f;
-    STACK_SANITY;
     if (!consp(args)) return onevalue(nil); // (prog1) -> nil
     stackcheck2(args, env);
     push2(args, env);
@@ -240,7 +233,6 @@ static LispObject prog1_fn(LispObject args, LispObject env)
 
 static LispObject prog2_fn(LispObject args, LispObject env)
 {   LispObject f;
-    STACK_SANITY;
     if (!consp(args)) return onevalue(nil); // (prog2) -> nil
     stackcheck2(args, env);
     push2(args, env);
@@ -291,7 +283,6 @@ public:
 
 static LispObject progv_fn(LispObject args_x, LispObject env_x)
 {   LispObject syms_x, vals_x, specenv_x, w;
-    STACK_SANITY;
     if (!consp(args_x)) return onevalue(nil);
     stackcheck2(args_x, env_x);
     syms_x = vals_x = specenv_x = nil;
@@ -351,7 +342,6 @@ static LispObject return_fn(LispObject args, LispObject env)
 //
 // First check that the block name (nil in this case) is lexically available
 //
-    STACK_SANITY;
     LispObject p;
     stackcheck2(args, env);
     for(p=env; consp(p); p=qcdr(p))
@@ -383,7 +373,6 @@ tag_found:
 static LispObject return_from_fn(LispObject args, LispObject env)
 {   LispObject p, tag;
     stackcheck2(args, env);
-    STACK_SANITY;
     if (!consp(args)) tag = nil;
     else
     {   tag = qcar(args);
@@ -417,7 +406,6 @@ tag_found:
 
 static LispObject setq_fn(LispObject args, LispObject env)
 {   LispObject var, val = nil;
-    STACK_SANITY;
     stackcheck2(args, env);
     while (consp(args))
     {   var = qcar(args);
@@ -488,7 +476,6 @@ LispObject tagbody_fn(LispObject args, LispObject env)
 // even thinks that they can use (go xx) to get back in.
 //
     stackcheck2(args, env);
-    STACK_SANITY;
     push2(env, args);
     for (p=args; consp(p); p=qcdr(p))
     {   LispObject w = qcar(p);
@@ -596,7 +583,6 @@ static LispObject the_fn(LispObject args, LispObject env)
 
 static LispObject throw_fn(LispObject args, LispObject env)
 {   LispObject tag, p;
-    STACK_SANITY;
     if (!consp(args)) aerror("throw");
     stackcheck2(args, env);
     tag = qcar(args);
@@ -626,7 +612,6 @@ tag_found:
 
 void Lthrow_one_value(LispObject env, LispObject tag, LispObject val)
 {   LispObject p;
-    STACK_SANITY;
     for (p = catch_tags; p!=nil; p=qcdr(p))
         if (tag == qcar(p)) goto tag_found;
     aerror("throw: tag not found");
@@ -644,7 +629,6 @@ LispObject Lthrow_nil(LispObject env, LispObject tag)
 
 static LispObject unless_fn(LispObject args, LispObject env)
 {   LispObject w;
-    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     stackcheck2(args, env);
     push2(args, env);
@@ -657,7 +641,6 @@ static LispObject unless_fn(LispObject args, LispObject env)
 
 static LispObject unwind_protect_fn(LispObject args, LispObject env)
 {   LispObject r = nil, rl = nil;
-    STACK_SANITY;
     int nargs = 0, i;
     if (!consp(args)) return onevalue(nil);
     stackcheck2(args, env);
@@ -797,7 +780,6 @@ static LispObject errorset3(volatile LispObject env,
                             volatile LispObject fg1,
                             volatile LispObject fg2)
 {   LispObject r;
-    STACK_SANITY;
     volatile uint32_t flags = miscflags;
 //
 // See also (ENABLE-BACKTRACE level) and (ENABLE-ERROSET min max)
@@ -947,8 +929,7 @@ LispObject Lerrorset_3(LispObject env, LispObject form, LispObject fg1, LispObje
 // like unwind-protect, it has to re-gain control after an evaluation
 // error.
 //
-{   STACK_SANITY;
-    return errorset3(env, form, fg1, fg2);
+{   return errorset3(env, form, fg1, fg2);
 }
 
 LispObject Lerrorset_1(LispObject env, LispObject form)
@@ -1049,7 +1030,6 @@ static LispObject resource_limit7(LispObject env,
 // This is being extended to make it possible to limit the C and Lisp stack
 // usage. At present the controls for that are not in place!
 //
-    STACK_SANITY;
     LispObject r;
     int64_t lltime, llspace, llio, llerrors;
     RAIIresource_variables RAIIresource_variables_object;
@@ -1153,7 +1133,6 @@ static LispObject resource_limit7(LispObject env,
 LispObject Lresource_limit_4up(LispObject env, LispObject form, LispObject ltime,
     LispObject lspace, LispObject a4up)
 {   LispObject lio, lerrors, Csk, Lsk;
-    STACK_SANITY;
     if (!is_fixnum(ltime)) ltime = fixnum_of_int(-1);
     if (!is_fixnum(lspace)) lspace = fixnum_of_int(-1);
     lio = lerrors = Csk = Lsk = fixnum_of_int(-1);
@@ -1196,7 +1175,6 @@ LispObject Lresource_limit_3(LispObject env, LispObject form, LispObject ltime, 
 
 static LispObject when_fn(LispObject args, LispObject env)
 {   LispObject w;
-    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     stackcheck2(args, env);
     push2(args, env);

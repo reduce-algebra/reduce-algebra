@@ -75,8 +75,7 @@ LispObject nreverse(LispObject a)
 //                                    and can never be an atom.
 
 LispObject eval(LispObject u, LispObject env)
-{   STACK_SANITY;
-    assert (env == nil || consp(env));
+{   assert (env == nil || consp(env));
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__)) aerror("deep stack in eval");
 #endif
@@ -200,13 +199,11 @@ restart:
             Header h = qheader(fn);
             debug_record_symbol(fn);
             if (h & SYM_SPECIAL_FORM)
-            {   STACK_SANITY1(u);
-                assert(qfn1(fn) != NULL);
+            {   assert(qfn1(fn) != NULL);
                 return (qfn1(fn))(args, env);
             }
             else if (h & SYM_MACRO)
-            {   STACK_SANITY;
-                push2(u, env);
+            {   push2(u, env);
 // the environment passed to macroexpand should only be needed to cope
 // with macrolet, I think.  Since I use just one datastructure for the
 // whole environment I also pass along lexical bindings etc, but I hope that
@@ -280,8 +277,7 @@ restart:
         }
 // I have evaluated the first 3 args if the function was a symbol, so
 // now I process the rest.
-        {   STACK_SANITY1(u);
-            while (consp(args))
+        {   while (consp(args))
             {   LispObject w;
                 push4(fn, args, env, eargs);
                 w = qcar(args);
@@ -801,8 +797,7 @@ LispObject Leval(LispObject env, LispObject a)
 }
 
 LispObject Levlis(LispObject env, LispObject a)
-{   STACK_SANITY;
-    save_current_function saver(eval_symbol);
+{   save_current_function saver(eval_symbol);
     LispObject r;
     stackcheck1(a);
     r = nil;
@@ -828,8 +823,7 @@ LispObject Levlis(LispObject env, LispObject a)
 
 LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
         LispObject a2, LispObject a3up)
-{   STACK_SANITY;
-    save_current_function saver(apply_symbol);
+{   save_current_function saver(apply_symbol);
 // Here I have something like
 //   (APPLY fn a1 a2 (a3 a4 a5up))
 // where a5up will be a list (a5 a6 ...).
@@ -1007,8 +1001,7 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 //                            (values a3 a4 a5) a6 (values a7 a8))
 // (for example) is rather like
 //   (FUNCALL 'fn a1 a2 a3 a4 a5 a6 a7 a8)
-{   STACK_SANITY;
-    save_current_function saver(mv_call_symbol);
+{   save_current_function saver(mv_call_symbol);
     if (!consp(args)) return nil;       // (multiple-value-call) => nil
     stackcheck2(args, env);
     push2(args, env);
@@ -1034,15 +1027,13 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 }
 
 LispObject interpreted_0(LispObject def)
-{   STACK_SANITY;
-    save_current_function saver(def);
+{   save_current_function saver(def);
     stackcheck1(def);
     return apply_lambda(qenv(def), nil, nil, def);
 }
 
 LispObject interpreted_1(LispObject def, LispObject a1)
-{   STACK_SANITY;
-    save_current_function saver(def);
+{   save_current_function saver(def);
     stackcheck1(def);
     push(def);
     a1 = ncons(a1);
@@ -1051,8 +1042,7 @@ LispObject interpreted_1(LispObject def, LispObject a1)
 }
 
 LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
-{   STACK_SANITY;
-    save_current_function saver(def);
+{   save_current_function saver(def);
     stackcheck1(def);
     push(def);
     a1 = list2(a1, a2);
@@ -1061,8 +1051,7 @@ LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
 }
 
 LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2, LispObject a3)
-{   STACK_SANITY;
-    save_current_function saver(def);
+{   save_current_function saver(def);
     stackcheck1(def);
     push(def);
     a1 = list3(a1, a2, a3);
@@ -1072,8 +1061,7 @@ LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2, LispObjec
 
 LispObject interpreted_4up(LispObject def, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
-{   STACK_SANITY;
-    save_current_function saver(def);
+{   save_current_function saver(def);
     stackcheck1(def);
     push(def);
     a1 = list3star(a1, a2, a3, a4up);
@@ -1082,16 +1070,14 @@ LispObject interpreted_4up(LispObject def, LispObject a1, LispObject a2,
 }
 
 LispObject funarged_0(LispObject def)
-{   STACK_SANITY;
-    save_current_function saver(def);
+{   save_current_function saver(def);
     stackcheck1(def);
     def = qenv(def);
     return apply_lambda(qcdr(def), nil, qcar(def), qcdr(def));
 }
 
 LispObject funarged_1(LispObject def, LispObject a1)
-{   STACK_SANITY;
-    save_current_function saver(def);
+{   save_current_function saver(def);
     stackcheck1(def);
     def = qenv(def);
     push(def);
@@ -1101,8 +1087,7 @@ LispObject funarged_1(LispObject def, LispObject a1)
 }
 
 LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
-{   STACK_SANITY;
-    save_current_function saver(def);
+{   save_current_function saver(def);
     stackcheck1(def);
     def = qenv(def);
     push(def);
@@ -1112,8 +1097,7 @@ LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
 }
 
 LispObject funarged_3(LispObject def, LispObject a1, LispObject a2, LispObject a3)
-{   STACK_SANITY;
-    save_current_function saver(def);
+{   save_current_function saver(def);
     stackcheck1(def);
     def = qenv(def);
     push(def);
@@ -1124,8 +1108,7 @@ LispObject funarged_3(LispObject def, LispObject a1, LispObject a2, LispObject a
 
 LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
-{   STACK_SANITY;
-    save_current_function saver(def);
+{   save_current_function saver(def);
     stackcheck1(def);
     def = qenv(def);
     push(def);
@@ -1136,7 +1119,6 @@ LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
 
 static LispObject macroexpand_1(LispObject form, LispObject env)
 {   // The environment here seems only necessary for macrolet
-    STACK_SANITY;
     LispObject done;
     LispObject f;
     stackcheck2(form, env);
@@ -1199,7 +1181,6 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
 
 LispObject macroexpand(LispObject form, LispObject env)
 {   // The environment here seems only necessary for macrolet
-    STACK_SANITY;
     LispObject done;
     stackcheck2(form, env);
     done = nil;
@@ -1238,8 +1219,7 @@ LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
 // function involved.
 
 LispObject autoload_0(LispObject fname)
-{   STACK_SANITY;
-    fname = qenv(fname);
+{   fname = qenv(fname);
     push(qcar(fname));
     set_fns(qcar(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
     qenv(qcar(fname)) = qcar(fname);
@@ -1254,8 +1234,7 @@ LispObject autoload_0(LispObject fname)
 }
 
 LispObject autoload_1(LispObject fname, LispObject a1)
-{   STACK_SANITY;
-    fname = qenv(fname);
+{   fname = qenv(fname);
     push2(qcar(fname), a1);
     set_fns(qcar(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
     qenv(qcar(fname)) = qcar(fname);
@@ -1272,8 +1251,7 @@ LispObject autoload_1(LispObject fname, LispObject a1)
 }
 
 LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
-{   STACK_SANITY;
-    fname = qenv(fname);
+{   fname = qenv(fname);
     push3(qcar(fname), a1, a2);
     set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
     qenv(qcar(fname)) = qcar(fname);
@@ -1290,8 +1268,7 @@ LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
 }
 
 LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2, LispObject a3)
-{   STACK_SANITY;
-    fname = qenv(fname);
+{   fname = qenv(fname);
     push4(qcar(fname), a1, a2, a3);
     set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
     qenv(qcar(fname)) = qcar(fname);
@@ -1309,8 +1286,7 @@ LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2, LispObject
 
 LispObject autoload_4up(LispObject fname, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
-{   STACK_SANITY;
-    fname = qenv(fname);
+{   fname = qenv(fname);
     push5(fname, a1, a2, a3, a4up);
     set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
     qenv(qcar(fname)) = qcar(fname);
@@ -1518,8 +1494,7 @@ static void write_result(LispObject env, LispObject r, char *shared)
 }
 
 LispObject Lparallel(LispObject env, LispObject a, LispObject b)
-{   STACK_SANITY;
-    pid_t pid1, pid2, pidx, pidy;
+{   pid_t pid1, pid2, pidx, pidy;
 // Create an identifier for a private shared segment of memory of size
 // 2*PARSIZE. This will be used for passing a result from the sub-task
 // to the main one. Give up if such a segment can not be allocated.

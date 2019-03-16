@@ -3404,8 +3404,7 @@ void loop_print_error(LispObject o)
 }
 
 void loop_print_trace(LispObject o)
-{   STACK_SANITY;
-    LispObject w = qvalue(standard_output);
+{   LispObject w = qvalue(standard_output);
     push(w);
     if (is_stream(qvalue(trace_output)))
         qvalue(standard_output) = qvalue(trace_output);
