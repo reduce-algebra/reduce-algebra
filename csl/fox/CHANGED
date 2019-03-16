@@ -169,4 +169,7 @@ March 2019. The word "register" will be utterly rejected in C++17, and now
       or possibly deleting the fox/m4 directory and then letting subversion
       restore it (and then doing a full reconfigure)...
 
+      One checkin had left some stray trace print statements in... I have
+      now removed them.
+
 <end of CHANGED>

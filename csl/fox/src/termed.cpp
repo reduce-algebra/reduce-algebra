@@ -1473,11 +1473,7 @@ void term_close(void)
 #else // !WIN32
     fflush(stdout);
     if (term_enabled)
-    {
-printf("orig_pair = %llx\n", (long long int)orig_pair);
-printf("orig_colors = %llx\n", (long long int)orig_colors);
-fflush(stdout);
-        if (*term_colour == 0) /* nothing */;
+    {   if (*term_colour == 0) /* nothing */;
         else if (orig_pair) putp(orig_pair);
         else if (orig_colors) putp(orig_colors);
         else if (set_a_foreground)
