@@ -172,4 +172,9 @@ March 2019. The word "register" will be utterly rejected in C++17, and now
       One checkin had left some stray trace print statements in... I have
       now removed them.
 
+      Fixes to make the situation where input is not direct from a terminal
+      in termed.cpp work again!
+
+      Add some debugging hooks to fx.h, eg my_assert and friends.
+
 <end of CHANGED>

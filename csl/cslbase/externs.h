@@ -94,7 +94,6 @@ inline void my_assert(bool ok, F&& action)
 #endif //NDEBUG
 }
 
-
 //
 // I have a bunch of macros that I use for desparation-mode debugging,
 // and in particular when I have bugs that wriggle back into their lairs
@@ -104,27 +103,37 @@ inline void my_assert(bool ok, F&& action)
 //
 
 #define D do { \
-          const char *fffff = strrchr(__FILE__, '/'); \
-          if (fffff == NULL) fffff = strrchr(__FILE__, '\\'); \
-          if (fffff == NULL) fffff = __FILE__; else fffff++; \
-          fprintf(stderr, "Line %d File %s\n", __LINE__, fffff); \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s\n", __LINE__, _f_); \
           fflush(stderr); \
           } while (0)
 
 #define DS(s) do { \
-          const char *fffff = strrchr(__FILE__, '/'); \
-          if (fffff == NULL) fffff = strrchr(__FILE__, '\\'); \
-          if (fffff == NULL) fffff = __FILE__; else fffff++; \
-          fprintf(stderr, "Line %d File %s: %s\n", __LINE__, fffff, (s)); \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s: %s\n", __LINE__, _f_, (s)); \
           fflush(stderr); \
           } while (0)
 
 #define DX(s) do { \
-          const char *fffff = strrchr(__FILE__, '/'); \
-          if (fffff == NULL) fffff = strrchr(__FILE__, '\\'); \
-          if (fffff == NULL) fffff = __FILE__; else fffff++; \
-          fprintf(stderr, "Line %d File %s: %llx\n", __LINE__, fffff, \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s: %llx\n", __LINE__, _f_, \
                           (long long unsigned)(s)); \
+          fflush(stderr); \
+          } while (0)
+
+#define DF(f,...) do { \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s: ", __LINE__, _f_); \
+          fprintf(stderr, f, __VA_ARGS__); \
+          fprintf(stderr, "\n"); \
           fflush(stderr); \
           } while (0)
 

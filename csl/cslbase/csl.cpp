@@ -288,7 +288,7 @@ void DebugTrace(const char *fmt, int i)
 
 #define ARG_CUT_OFF 10
 
-void error(int nargs, int code, ...)
+NORETURN void error(int nargs, int code, ...)
 //
 // nargs indicates how many values have been provided AFTER the
 // code.  Thus nargs==0 will just display a simple message, nargs==1
@@ -335,10 +335,8 @@ void error(int nargs, int code, ...)
     throw LispError();
 }
 
-void cerror(int nargs, int code1, int code2, ...)
-//
+NORETURN void cerror(int nargs, int code1, int code2, ...)
 // nargs indicated the number of EXTRA args after code1 & code2.
-//
 {   LispObject w1;
     va_list a;
     int i;
@@ -374,7 +372,7 @@ void cerror(int nargs, int code1, int code2, ...)
 //
 // This can be used when a resource expires...
 //
-void resource_exceeded()
+NORETURN void resource_exceeded()
 {   exit_reason = UNWIND_RESOURCE;
     exit_value = exit_tag = nil;
     exit_count = 0;
@@ -468,7 +466,7 @@ LispObject interrupted(LispObject p)
     throw LispError();
 }
 
-void aerror(const char *s)
+NORETURN void aerror(const char *s)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error bad args for %s\n", s);
@@ -485,7 +483,7 @@ void aerror(const char *s)
     throw LispError();
 }
 
-void aerror0(const char *s)
+NORETURN void aerror0(const char *s)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error: %s\n", s);
@@ -502,7 +500,7 @@ void aerror0(const char *s)
     throw LispError();
 }
 
-void aerror1(const char *s, LispObject a)
+NORETURN void aerror1(const char *s, LispObject a)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
@@ -522,7 +520,7 @@ void aerror1(const char *s, LispObject a)
     throw LispError();
 }
 
-void aerror2(const char *s, LispObject a, LispObject b)
+NORETURN void aerror2(const char *s, LispObject a, LispObject b)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
@@ -544,7 +542,7 @@ void aerror2(const char *s, LispObject a, LispObject b)
     throw LispError();
 }
 
-void aerror3(const char *s, LispObject a, LispObject b, LispObject c)
+NORETURN void aerror3(const char *s, LispObject a, LispObject b, LispObject c)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
@@ -968,7 +966,7 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
 //}
 jmp_buf *global_jb;
 
-void global_longjmp()
+NORETURN void global_longjmp()
 {   longjmp(*global_jb, 1);
 }
 
@@ -1381,9 +1379,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             if (stackLimit <= 20*1024*1024)
             {   // I try to give myself 64K spare...
                 C_stacklimit = (uintptr_t)C_stackbase - stackLimit + 0x10000;
-#ifdef DEBUG
-                fprintf(stderr, "[debug] stack %dK\n", (int)(stackLimit/1024));
-#endif
             }
         }
     }
@@ -1419,9 +1414,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // I view values under 200K as silly and ignore them!
             if (stackLimit >= 200*1024)
             {   C_stacklimit = (uintptr_t)C_stackbase - stackLimit + 0x10000;
-#ifdef DEBUG
-                fprintf(stderr, "[debug] stack %dK\n", (int)(stackLimit/1024));
-#endif
             }
         }
     }
@@ -1430,9 +1422,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // If I can not read a value then I will set a limit at 4 Mbytes...
     if (C_stacklimit == 0)
     {   C_stacklimit = (uintptr_t)C_stackbase - 4*1024*1024 + 0x10000;
-#ifdef DEBUG
-        fprintf(stderr, "[debug] stack defaulting to 4Mb\n");
-#endif
     }
 #endif // EMBEDDED
 

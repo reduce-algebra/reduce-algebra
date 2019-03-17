@@ -860,6 +860,7 @@ static void resetCP()
 
 int term_setup(int flag, const char *colour)
 {
+    DS("term_setup");
 #ifdef WIN32
     DWORD w;
     CONSOLE_SCREEN_BUFFER_INFO csb;
@@ -894,6 +895,7 @@ int term_setup(int flag, const char *colour)
     stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
     if (GetFileType(stdin_handle) != FILE_TYPE_CHAR)
     {
+        DS("stdin not char type");
 #ifdef TERMED_TEST
         fprintf(stderr, "stdin not CHAR type\n");
 #endif
@@ -901,6 +903,7 @@ int term_setup(int flag, const char *colour)
     }
     if (!GetConsoleMode(stdin_handle, &w))
     {
+        DS("GetConsoleMode fails");
 #ifdef TERMED_TEST
         fprintf(stderr, "could not get stdin console mode \n");
 #endif
@@ -946,6 +949,7 @@ int term_setup(int flag, const char *colour)
 #endif
         return 1;
     }
+    DS("Windows console OK");
     plainAttributes = csb.wAttributes;
     revAttributes = plainAttributes ^
                     (FOREGROUND_RED | BACKGROUND_RED |
@@ -981,6 +985,7 @@ int term_setup(int flag, const char *colour)
 #ifdef TERMED_TEST
     printf("Original page = %d.  \xc3\xbc\n", originalCodePage);
 #endif
+    DS("end of win32 specials");
 #else // WIN32
     int errval, errcode;
     const char *s;
@@ -1019,6 +1024,7 @@ int term_setup(int flag, const char *colour)
     stdout_handle = fileno(stdout);
 // Check for redirected stdin/stdout.
     if (!isatty(stdin_handle) || !isatty(stdout_handle)) return 1;
+    DS("stdin and stdout OK");
 // Next check if the terminal is one that we know about...
     s = getenv("TERM");
     if (s == NULL) s = "dumb";
@@ -1081,6 +1087,7 @@ int term_setup(int flag, const char *colour)
     tcsetattr(stdin_handle, TCSADRAIN, &my_term);
     my_def_prog_mode();
     my_reset_shell_mode();
+    DS("*ix stuff done");
 #endif // WIN32
     term_enabled = 1;
     input_history_init();

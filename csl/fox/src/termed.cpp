@@ -137,6 +137,72 @@
 #include "config.h"
 #endif
 
+#include <cstdio>
+#include <cstdlib>
+
+// An "my_assert" scheme that lets me write in my own code to print the
+// diagnostics. Included here because this files does not icnlude "fx.h".
+
+[[noreturn]] static void my_abort()
+{   std::abort();
+}
+
+template <typename F>
+inline void my_assert(bool ok, F&& action)
+{
+#ifndef NDEBUG
+// Use this as in
+//     my_assert(predicate, [&]{...});
+// where the "..." is an arbitrary sequence of actions to be taken
+// if the assertion fails.
+    if (!ok) { action(); my_abort(); }
+#endif //NDEBUG
+}
+
+//
+// I have a bunch of macros that I use for desparation-mode debugging,
+// and in particular when I have bugs that wriggle back into their lairs
+// when I try running under "gdb" or whatever. These print dull messages
+// to stderr. The "do..while" idiom is to keep C syntax safe with regard to
+// semicolons.
+//
+
+#define D do { \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s\n", __LINE__, _f_); \
+          fflush(stderr); \
+          } while (0)
+
+#define DS(s) do { \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s: %s\n", __LINE__, _f_, (s)); \
+          fflush(stderr); \
+          } while (0)
+
+#define DX(s) do { \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s: %llx\n", __LINE__, _f_, \
+                          (long long unsigned)(s)); \
+          fflush(stderr); \
+          } while (0)
+
+#define DF(f,...) do { \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s: ", __LINE__, _f_); \
+          fprintf(stderr, f, __VA_ARGS__); \
+          fprintf(stderr, "\n"); \
+          fflush(stderr); \
+          } while (0)
+
+
 // The following variables must hold arrays of strings to be used in
 // the completion of various items... For CSL they are provided with
 // useful values - for free-standing use they can be defined with
@@ -411,11 +477,15 @@ static void keyboard_thread_function()
 }
 
 int getc_from_thread()
-{   std::unique_lock<std::mutex> lock(keyboard_mutex);
-    while (ahead_in == ahead_out && !eof_seen) keyboard_condvar.wait(lock);
-    if (ahead_in == ahead_out) return EOF;
-    int ch = typeahead_buffer[ahead_out];
-    ahead_out = (ahead_out + 1) % TYPEAHEAD_MAX;
+{   int ch;
+    if (!term_enabled) ch = getchar(); // degenerate case!
+    else
+    {   std::unique_lock<std::mutex> lock(keyboard_mutex);
+        while (ahead_in == ahead_out && !eof_seen) keyboard_condvar.wait(lock);
+        if (ahead_in == ahead_out) return EOF;
+        ch = typeahead_buffer[ahead_out];
+        ahead_out = (ahead_out + 1) % TYPEAHEAD_MAX;
+    }
     return ch;
 }
 
@@ -995,19 +1065,23 @@ static void term_putchar(int c)
 // (wchar_t *) style wide string where surrogates can already exist.
 
 #ifdef WIN32
-    DWORD nwritten;
-    wchar_t buffer[4];
-    if (c <= 0xffff)
-    {   buffer[0] = c;
-        WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
+    if (term_enabled)
+    {   DWORD nwritten;
+        wchar_t buffer[4];
+        if (c <= 0xffff)
+        {   buffer[0] = c;
+            WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
+        }
+        else
+        {   buffer[0] = 0xd800 + (((c - 0x10000) >> 10) & 0x3ff);
+            buffer[1] = 0xdc00 + (c & 0x3ff);
+            WriteConsole(stdout_handle, buffer, 2, &nwritten, NULL);
+        }
+        return;
     }
-    else
-    {   buffer[0] = 0xd800 + (((c - 0x10000) >> 10) & 0x3ff);
-        buffer[1] = 0xdc00 + (c & 0x3ff);
-        WriteConsole(stdout_handle, buffer, 2, &nwritten, NULL);
-    }
-#else
-// Other than on Windows I will encode things using UTF-8
+#endif // WIN32
+// Other than on Windows I will encode things using UTF-8. Also WIN32 if
+// writing to a file or pipe.
     unsigned char buffer[8];
     int i, n = utf_encode(buffer, c);
     for (i=0; i<n; i++)
@@ -1020,7 +1094,6 @@ static void term_putchar(int c)
 #endif
         putchar(c);
     }
-#endif
 }
 
 #else // !EMBEDDED
@@ -1177,19 +1250,23 @@ static void term_putchar(int c)
 // not int. However I am going to be sloppy and assume that int is good enough.
 
 #ifdef WIN32
-    DWORD nwritten;
-    wchar_t buffer[4];
-    if (c <= 0xffff)
-    {   buffer[0] = c;
-        WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
+    if (term_enabled)
+    {   DWORD nwritten;
+        wchar_t buffer[4];
+        if (c <= 0xffff)
+        {   buffer[0] = c;
+            WriteConsole(stdout_handle, buffer, 1, &nwritten, NULL);
+        }
+        else
+        {   buffer[0] = 0xd800 + (((c - 0x10000) >> 10) & 0x3ff);
+            buffer[1] = 0xdc00 + (c & 0x3ff);
+            WriteConsole(stdout_handle, buffer, 2, &nwritten, NULL);
+        }
+        return;
     }
-    else
-    {   buffer[0] = 0xd800 + (((c - 0x10000) >> 10) & 0x3ff);
-        buffer[1] = 0xdc00 + (c & 0x3ff);
-        WriteConsole(stdout_handle, buffer, 2, &nwritten, NULL);
-    }
-#else
-// Other than on Windows I will encode things using UTF-8
+#endif // WIN32
+// Other than on Windows I will encode things using UTF-8. Also on Windows
+// if writing to a pipe or a file.
     unsigned char buffer[8];
     int i, n = utf_encode(buffer, c);
     for (i=0; i<n; i++)
@@ -1199,7 +1276,6 @@ static void term_putchar(int c)
 #endif
         putchar(c);
     }
-#endif
 }
 
 // If possible I would like to be able to retrieve the actual size of
@@ -1273,10 +1349,8 @@ static int direct_to_terminal()
 #endif // WIN32
 }
 
-static bool term_active = false;
-
 int term_setup(const char *argv0, const char *colour)
-{   term_active = true;
+{
 #ifdef EMBEDDED
     input_line = (wchar_t *)my_malloc(200*sizeof(wchar_t));
     if (input_line == NULL)
@@ -1284,7 +1358,6 @@ int term_setup(const char *argv0, const char *colour)
         return 1;  // failed to allocate buffers
     }
     else input_line_size = 200;
-    start_keyboard_thread();
     term_enabled = false;
     return 2;
 #else // !EMBEDDED
@@ -1293,7 +1366,10 @@ int term_setup(const char *argv0, const char *colour)
     CONSOLE_SCREEN_BUFFER_INFO csb;
 // It is VITAL to use "w+" as the access mode here for otherwise
 // it is not possible to access the Console Output Buffer sufficiently.
-    freopen("CONOUT$", "w+", stdout);
+// For reasons I do not understand the use of CONOUT$ now seems to fail. Well
+// it is probably to do with access rights! But it was painful to track down.
+//  freopen("CONOUT$", "w+", stdout);
+    freopen(NULL, "w+", stdout);
     term_enabled = false;
     keyboard_buffer[0].Event.KeyEvent.wRepeatCount = 0;
     term_colour = (colour == NULL ? "-" : colour);
@@ -1443,7 +1519,6 @@ int term_setup(const char *argv0, const char *colour)
     my_def_prog_mode();
     my_reset_shell_mode();
 #endif // WIN32
-    term_enabled = true;
     historyFirst = historyNumber = 0;
     historyLast = -1;
     searchFlags = 0;
@@ -1453,13 +1528,13 @@ int term_setup(const char *argv0, const char *colour)
 // The terminal is now set up. Start the thread that keeps trying to
 // read from it!
     start_keyboard_thread();
+    term_enabled = true;
     return 0;
 #endif // !EMBEDDED
 }
 
 void term_close(void)
-{   if (!term_active) return; // Avoid closing more than once.
-    term_active = false;
+{
 // Note here and elsewhere in this file that I go "fflush(stdout)" before
 // doing anything that may change styles or options for stream handling.
     fflush(stdout);
@@ -1527,6 +1602,12 @@ void term_close(void)
 
 static int term_getchar(void)
 {
+// If input was from a file or a pipe I am not going to use a separate
+// thread to handle it. I may in fact take this simplistic stance if
+// input is from a terminal that is dumb and I am on a platform where
+// terminal control is not available. However I still call getc_from_thread
+// so that tests for that case all happen in one place.
+    if (!term_enabled) return getchar();
 #ifdef WIN32
     DWORD n;
     int down, key, ascii, unicode, ctrl;
@@ -1546,7 +1627,7 @@ static int term_getchar(void)
 // one of a range of sorts! At present I only do anything at all with KEY
 // events, but I could potentially look for mouse activity.
         switch (keyboard_buffer[0].EventType)
-    {       default:              // Ignore non-keyboard event
+        {   default:              // Ignore non-keyboard event
                 continue;
             case KEY_EVENT:
                 keyboard_buffer[0].Event.KeyEvent.wRepeatCount--;

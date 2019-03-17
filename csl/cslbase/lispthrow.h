@@ -76,133 +76,90 @@ extern  jmp_buf *global_jb;
 
 static inline void push(LispObject a)
 {   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void push2(LispObject a, LispObject b)
 {   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = b;
-    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void push3(LispObject a, LispObject b, LispObject c)
 {   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = b;
-    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = c;
-    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void push4(LispObject a, LispObject b, LispObject c,
                          LispObject d)
 {   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = b;
-    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = c;
-    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = d;
-    my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void push5(LispObject a, LispObject b, LispObject c,
                          LispObject d, LispObject e)
 {   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = b;
-    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = c;
-    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = d;
-    my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = e;
-    my_assert(e != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void push6(LispObject a, LispObject b, LispObject c,
                          LispObject d, LispObject e, LispObject f)
 {   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = b;
-    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = c;
-    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = d;
-    my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = e;
-    my_assert(e != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = f;
-    my_assert(f != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void pop(LispObject& a)
 {   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop(volatile LispObject& a)
 {   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop2(LispObject& a, LispObject& b)
 {   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
     b = *stack--;
-    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop3(LispObject& a, LispObject& b, LispObject& c)
 {   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
     b = *stack--;
-    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
     c = *stack--;
-    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop4(LispObject& a, LispObject& b, LispObject& c,
                         LispObject& d)
 {   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
     b = *stack--;
-    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
     c = *stack--;
-    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
     d = *stack--;
-    my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop5(LispObject& a, LispObject& b, LispObject& c,
                         LispObject& d, LispObject& e)
 {   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
     b = *stack--;
-    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
     c = *stack--;
-    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
     d = *stack--;
-    my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
     e = *stack--;
-    my_assert(e != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop6(LispObject& a, LispObject& b, LispObject& c,
                         LispObject& d, LispObject& e, LispObject& f)
 {   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
     b = *stack--;
-    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
     c = *stack--;
-    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
     d = *stack--;
-    my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
     e = *stack--;
-    my_assert(e != 0, [&]{ trace_printf("popped a zero\n"); });
     f = *stack--;
-    my_assert(f != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void popv(int n)

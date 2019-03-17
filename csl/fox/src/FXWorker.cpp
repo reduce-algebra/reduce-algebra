@@ -784,8 +784,7 @@ void fwin_minimize()
 static void fwin_ensure_buffer_space();
 
 void fwin_puts(const char *s)
-{
-    if (!windowed)
+{   if (!windowed)
     {
 #ifdef __CYGWIN__
         while (*s != 0) fwin_putchar(*s++);
@@ -1009,8 +1008,7 @@ void fwin_restore()
 }
 
 void fwin_putchar(int c)
-{
-    if (!windowed)
+{   if (!windowed)
     {
 #ifdef __CYGWIN__
         if (c == '\n') putchar('\r');
