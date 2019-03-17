@@ -2,8 +2,13 @@
 
 ifeq ($(REVISION),)
 SNAPSHOT=$(shell LANG=C date "+%Y-%m-%d")
+#
+# Try to find the global svn revision number
+#
+SVNREVISION := $(shell svnversion .. | sed -e 's/[^0-9].*$$//')
 else
 SNAPSHOT=$(REVISION)
+SVNREVISION := $(REVISION)
 endif
 BUILDTOPDIR=C
 REVISION=HEAD
@@ -74,7 +79,7 @@ docs.stamp:	$(BUILDTOPDIR).stamp
 # reliance on any "current directory".
 
 reduce.iss:	reduce.iss.in
-	sed -e 's#\@here\@#$(subst /,\\,$(shell cygpath -m $(abspath .)))#; s#\@VERSION\@#$(shell date +%Y-%m-%d)#' \
+	sed -e 's#\@here\@#$(subst /,\\,$(shell cygpath -m $(abspath .)))#; s#\@VERSION\@#$(shell date +%Y-%m-%d) (Rev. $(SVNREVISION))#' \
 		<reduce.iss.in >reduce.iss
 
 # The final step in the creation of an installer involved saving PSL

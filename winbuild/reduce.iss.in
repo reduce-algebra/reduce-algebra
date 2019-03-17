@@ -142,11 +142,11 @@ Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\psl\"; Component
 
 
 [Icons]
-;Name: "{group}\redcsl"; Filename: "{app}\bin\redcsl.bat"; IconFileName: "{app}\bin\redcsl.bat"; Components: csl
-Name: "{group}\CSL Reduce"; Filename: "{app}\lib\csl\winreduce.exe"; Components: csl
-Name: "{group}\CSL Bootstrap Reduce"; Filename: "{app}\lib\csl\bootstrapreduce.exe"; Components: csl
-Name: "{group}\CSL Lisp system"; Filename: "{app}\lib\csl\wincsl.exe"; Components: csl
-Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{app}\lib\psl\psl\bpslw.exe"; Components: psl32 psl64
+;Name: "{group}\redcsl"; Filename: "{app}\bin\redcsl.bat"; IconFileName: "{app}\bin\redcsl.bat"; WorkingDir: "%USERPROFILE%\Documents"; Components: csl
+Name: "{group}\CSL Reduce"; Filename: "{app}\lib\csl\winreduce.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: csl
+Name: "{group}\CSL Bootstrap Reduce"; Filename: "{app}\lib\csl\bootstrapreduce.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: csl
+Name: "{group}\CSL Lisp system"; Filename: "{app}\lib\csl\wincsl.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: csl
+Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{app}\lib\psl\psl\bpslw.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: psl32 psl64
 
 
 [Run]
