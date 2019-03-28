@@ -26,6 +26,7 @@ D="$1.app/Contents/MacOS/reduce.doc"
 cp $srcdir/../reduce.doc/*.txt                        $D
 cp $srcdir/../reduce.doc/*.tex                        $D
 cp $srcdir/../reduce.doc/*.html                       $D
+cp $srcdir/../reduce.gif/*.tex                        $D
 F="$1.app/Contents/MacOS/reduce.fonts"
 # Copy everything from my source tree. This makes sense if the tree is
 # clean and does not contain any local extras!

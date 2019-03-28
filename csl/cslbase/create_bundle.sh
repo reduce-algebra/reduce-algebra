@@ -23,6 +23,7 @@ D="$1.app/Contents/MacOS/reduce.doc"
 cp $srcdir/../reduce.doc/*.txt                   $D
 cp $srcdir/../reduce.doc/*.tex                   $D
 cp $srcdir/../reduce.doc/*.html                  $D
+cp $srcdir/../reduce.doc/*.gif                   $D
 F="$1.app/Contents/Resources/Fonts"
 cp $srcdir/wxfonts/STIX*.pdf                     $F
 cp $srcdir/wxfonts/*.ttf                         $F
