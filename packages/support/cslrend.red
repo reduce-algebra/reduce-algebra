@@ -503,7 +503,7 @@ set!-small!-modulus 3;
 % and (hence?) maybe low level tricks or special floating point
 % tricks can help with speed.
 
-!#if (memq  'vsl lispsystem!*)
+!#if (or (memq  'vsl lispsystem!*) (memq 'jlisp lispsystem!*))
 
 flag('(cos exp expt log sin sqrt fix
        ceiling floor round clrhash puthash gethash remhash), 'lose);
