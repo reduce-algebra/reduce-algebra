@@ -867,7 +867,8 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
             p++;
         }
         if (bp!=0)
-        {   x = printBufferText(dc, x, y, buff, bp, style1);
+        {   buff[bp] = 0;     // Make sure the string is NUL-terminated
+            x = printBufferText(dc, x, y, buff, bp, style1);
         }
         if (p == length) return p;        // end of buffer
         if (ch == '\n') return p+1;       // end of (ordinary) line

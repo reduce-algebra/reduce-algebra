@@ -168,6 +168,9 @@ March 2019. The word "register" will be utterly rejected in C++17, and now
       "svn -R revert ." in the fox directory followed by a further svn update,
       or possibly deleting the fox/m4 directory and then letting subversion
       restore it (and then doing a full reconfigure)...
+      #include both <stdlib.h> and <cstdlib> in fx.h so that one can be
+      certain of accessing library functions either with undecorated names
+      like "abort" and with qualified ones like "std::abort"
 
       One checkin had left some stray trace print statements in... I have
       now removed them.
@@ -176,5 +179,12 @@ March 2019. The word "register" will be utterly rejected in C++17, and now
       in termed.cpp work again!
 
       Add some debugging hooks to fx.h, eg my_assert and friends.
+
+      #include both <stdlib.h> and <cstdlib> so that library functions can be
+      referenced either as (eg) "abort" or "std::abort", where I view the
+      latter as the safer and more forward looking, if uglier!
+
+      Ensure that lines that are to be printed are nul-terminated when
+      passed to printBufferText  
 
 <end of CHANGED>
