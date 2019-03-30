@@ -27,6 +27,7 @@
 // Basic includes
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstdlib>  // so that std::abort() is available.
 #include <stdarg.h>
 #include <math.h>
 #include <string.h>
