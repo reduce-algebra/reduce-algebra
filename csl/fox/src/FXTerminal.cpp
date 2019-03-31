@@ -796,6 +796,7 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
         indent += ((getByte(charPointer+1) - '0') & 0x38) << 3;
 // Get pointer to box structure for the formula, or NULL if it has been
 // discarded because of space limitations.
+        charPointer++;
         Box *b = getBoxAddress(charPointer+1);
         if (b == NULL)
         {   int p1 = charPointer;
