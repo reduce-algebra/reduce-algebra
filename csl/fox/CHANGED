@@ -187,4 +187,7 @@ March 2019. The word "register" will be utterly rejected in C++17, and now
       Ensure that lines that are to be printed are nul-terminated when
       passed to printBufferText  
 
+      Correct accessing the "gap" when trying to get a pointer to the box structure
+      for the formula.
+      
 <end of CHANGED>
