@@ -191,6 +191,17 @@ return additional pairs even if the precision is increased.
 The default for rational function input is the complete continued
 fraction.
 
+\hypertarget{CF_TAYLOR:switch}{}
+\ttindextype{CF\_TAYLOR}{switch}
+
+For a NON-RATIONAL function a power series expansions are necessary. The new
+switch \texttt{cf\_taylor} controls whether the TAYLOR or the TPS package is 
+used to produce the power series required. By default this switch is OFF and
+so the TPS package is normally employed.
+In most cases the choice is not important, but the TPS option is somewhat better
+at handling cases where the series expansion is rather sparse. In a few cases
+TPS may fail to produce a series expansion when TAYLOR succeeds and vice-versa.
+
 For numerical input the default value is exact for
 rational number arguments whilst for irrational or rounded input it is
 dependent on the precision of the session. The

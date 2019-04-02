@@ -424,7 +424,7 @@ operator.
 \subsection{Comparison to other packages}
 
 At the moment there is only one \REDUCE{} package that I know of:
-the truncated power series package by Alan Barnes and Julian Padget.
+the extendible power series package by Alan Barnes and Julian Padget.
 In my opinion there are two major differences:
 \begin{itemize}
   \item The interface. They use the domain mechanism for their power
@@ -432,7 +432,7 @@ In my opinion there are two major differences:
         approaches have advantages and disadvantages: with domain
         modes, it is easier
         to do certain things automatically, e.g., conversions.
-  \item The concept of a truncated series. Their idea is to remember
+  \item The concept of an extendible series: their idea is to remember
         the original expression and to compute more coefficients when
         more of them are needed. My approach is to truncate at a
         certain order and forget how the unexpanded expression
