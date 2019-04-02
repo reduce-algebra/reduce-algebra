@@ -12,6 +12,95 @@ begin scalar cfr, v;
    return cons('confrac1, cfr);
 end;
 
+symbolic procedure contfract1(u,b);
+% Usually returns dotted pair (numr w . denr w)
+% where w is equal to u if u is a rational number or the best rational 
+% approximation to u for the current precision if u is irrational.
+% Returns the continued fraction result directly if u is an integer
+
+begin scalar oldmode,v,w;
+% check for rational or rounded argument   
+   if eqcar(u, '!:rd!:) then goto c;  % rounded prefix form 
+   if fixp u then return (u . 1).{u};
+   if eqcar(u,'quotient) and fixp cadr u and fixp caddr u then
+      return contfract2((cadr u) . (caddr u), nil, b) ;
+   if eqcar(u, '!*sq) then <<
+      v := cadr u;  % standard quotient
+      if domainp(w:= car v) then
+        if  fixp w and fixp cdr v then
+          return contfract2(v, nil, b)
+	else if eqcar(w, '!:rn!:) and cdr v = 1 then
+          return contfract2(cdr w, nil, b)
+	else if eqcar(w, '!:rd!:) and cdr v = 1 then <<
+	   v := w; goto c>>
+    >>;
+%  change to rounded mode to evaluate argument such as pi, e, sqrt 2 etc.
+   oldmode := get(dmode!*,'dname).!*rounded;
+   if car oldmode then setdmode(car oldmode,nil);
+   setdmode('rounded,t); !*rounded := t;
+   v:=reval u;
+   setdmode('rounded,nil);
+   if car oldmode then setdmode(car oldmode,t);
+   !*rounded:=cdr oldmode;
+   if eqcar(v,'minus) and (numberp cadr v or eqcar(cadr v,'!:rd!:))
+     then v:=!:minus cadr v;
+   if fixp v then return (v . 1).{v};
+   if not eqcar(v,'!:rd!:) then typerr(u,"continued fraction argument");
+ c:
+% convert rounded value to rational dotted pair
+  v:= rd2rn1 v;     % is this the best choice??
+  return contfrac2(v, t, b);
+  end;
+
+symbolic procedure contfrac2 (u, inexact, b1);
+ % compute continued fraction until either numerator exceeds b1
+ % or approximation has reached system precision.
+ % Now uses integer arithmetic throughout
+  begin scalar b0,l,a,b,c,g,gg,ggg,h,hh,hhh;
+    a:= car u; b:= cdr u;
+    g:=0; gg:=1; h:=1; hh:=0;
+    % precision irrelevant if we have an exact rational
+    if null b1 and inexact then  b0 := (expt(10, precision 0)*b)/abs a;
+    
+    c:=divide(a,b);
+    if a<0 then c := (car c - 1).(cdr c + b); % need the positive remainder!!
+ loop:
+    a:= car c;
+    ggg:=a*gg + g;
+    hhh:=a*hh + h;
+    if b1 and abs hhh > b1 then goto ret;
+    g := gg; gg:=ggg; h:=hh; hh:=hhh;
+    l:= a . l;
+    a:=b;
+    b:= cdr c;
+    % Note gg/hh & ggg/hhh straddle the true value and gg*hhh - ggg*hh = +/-1.
+    if b = 0 or b0 and hh*hhh>b0 then goto ret;
+    c:=divide(a,b);
+    goto loop;
+ret:    
+    return  (gg . hh) . reversip l
+  end;
+
+symbolic procedure simpcf u;
+begin scalar arg2;
+  arg2 := aeval cadr u;
+  u:= list('confrac1, car u, arg2, caddr u);
+  return !*k2q u;
+end;
+
+put('confrac1, 'simpfn, 'simpcf);
+
+put('cf,'psopfn,'con!-frac);
+
+% The following code for printing borrows heavily from the code in contfrac.red
+
+symbolic procedure con!-frac u;
+begin scalar cfr, v;
+   v := contfract1(car u, if cdr u then ieval cadr u);
+   cfr := list(car u, list('quotient, caar v, cdar v), 'list . cdr v);
+   return cons('confrac1, cfr);
+end;
+
 symbolic procedure simpcf u;
 begin scalar arg2;
   arg2 := aeval cadr u;
@@ -27,28 +116,9 @@ put('cf,'psopfn,'con!-frac);
 
 symbolic procedure print!-confrac(x);
 % print a continued fraction
-  begin scalar xx, xxx, coeflist;
-    if null !*nat or atom x or length x < 4
-        or not eqcar(cadddr x,'list)
-        then return 'failed;
-    coeflist := cadddr x;
-    xx := reverse cddr coeflist;
-    if length xx > 12 then <<
-      maprin list('list, cadr x, caddr x, cadddr x);
-      return t>>;
-    if xx then <<
-        xxx := list('quotient, 1, car xx);
-        for each tt in rest xx do
-           xxx := list('quotient, 1, list('plus, tt, xxx));
-        if cadr coeflist = 0 then
-          maprin list('list, cadr x, caddr x, xxx)
-        else
-          maprin list('list, cadr x, caddr x, list ('plus, cadr coeflist, xxx));
-     >>
-     else
-       maprin list('list, cadr x, caddr x, cadr coeflist);
-    return t;
-   end;
+  if null !*nat or atom x or length x < 4
+       or not eqcar(cadddr x,'list) then'failed
+  else << maprin reform!-confrac(x); t >>;
 
 put('confrac1, 'prifn, 'print!-confrac);
 
@@ -74,72 +144,78 @@ end;
 
 put('confrac1,'fancy!-reform, 'reform!-confrac);
 
-symbolic procedure print!-contfract(x);
-% printing continued fractions
-  begin scalar xx, xxx, coeflist;
-    coeflist := caddr x;
-    if null !*nat or atom x or length x < 3
-        or not eqcar(caddr x,'list)
-        then return 'failed;
-    xx := reverse cddr coeflist;
-    if length xx > 12 then <<
-         maprin list('list, cadr x, caddr x); 
-         return t>>;
-    if xx then <<
-        xxx := list('quotient, cadr car xx, caddr car xx);
-        for each tt in rest xx do
-          xxx := list('quotient, cadr tt, list('plus, caddr tt, xxx));
-        if cadr coeflist = 0 then
-	  maprin list('list, cadr x, xxx)
-	else
-          maprin list('list, cadr x, list ('plus, cadr coeflist, xxx));
-     >>
-     else
-       maprin list('list, cadr x, cadr coeflist);
-     return t;
-   end;
-
-put('contfrac, 'prifn, 'print!-contfract);
-
-% symbolic procedure print!-contfract-old(x);
+symbolic procedure fix!-negative(n);
+ if numberp n then if n < 0 then (-n) . t else list n
+ else if eqcar(n, 'minus) then (cadr n) . t
+ else list n;
+ 
+% symbolic procedure print!-contfract(x);
 % % printing continued fractions
-%   begin scalar xx,xxx;
+%   begin scalar xx, xxx, coeflist;
+%     coeflist := caddr x;
 %     if null !*nat or atom x or length x < 3
 %         or not eqcar(caddr x,'list)
 %         then return 'failed;
-%     xx := reverse cddr caddr x;
-%     if length xx > 12 then  return 'failed;
-%     if xx then
-%      <<xxx := list('quotient ,cadr first xx,caddr first xx);
-%        for each tt in rest xx do
-%          xxx := list('quotient ,cadr tt,list('plus,caddr tt,xxx));
-%        if cadr caddr x = 0 then maprin list('list,cadr x,xxx) else
-%         maprin list('list,cadr x,list ('plus,cadr caddr x ,xxx));
-%      >> else maprin list('list,cadr x,cadr caddr x);
+%     xx := reverse cddr coeflist;
+%     if length xx > 12 then <<
+%          maprin list('list, cadr x, caddr x); 
+%          return t>>;
+%     if xx then <<
+%        n := fix!-negative(cadr car xx);
+%        xxx := list('quotient, car n, caddr car xx);
+%        for each tt in rest xx do <<
+%           xxx := list('plus, caddr tt,
+% 	               if cdr n then list('minus, xxx) else xxx);
+% 	  n := fix!-negative(cadr tt);
+%           xxx := list('quotient, car n, xxx)
+%        >>;
+%        if cadr coeflist = 0 then
+%           maprin list ('list, cadr x,
+% 	               if cdr n then list('minus, xxx) else xxx)
+%        else 
+%            maprin list('list, cadr x,
+% 	                list('plus, cadr coeflist,
+% 		             if cdr n then list('minus, xxx) else xxx));
+%     >>
+%     else
+%        maprin list('list, cadr x, cadr coeflist);
 %     return t;
-%    end;
-% 
-% put('contfrac,'prifn,'print!-contfract-old);
-% 
+% end;
+
+symbolic procedure print!-contfract(x);
+% printing continued fractions
+  if null !*nat or atom x or length x < 3
+       or not eqcar(caddr x,'list) then 'failed
+  else << maprin reform!-contfract(x); t>>;
+
+put('contfrac, 'prifn, 'print!-contfract);
 
 symbolic procedure reform!-contfract(x);
 % prepare a continued fraction for pretty-printing
-begin scalar xx, xxx, coeflist;
+begin scalar xx, xxx, coeflist, n;
     coeflist := caddr x;
     xx := reverse cddr coeflist;
     if length xx > 12 then
        return list('list, cadr x, caddr x);
     if xx then <<
-       xxx := list('quotient, cadr car xx, caddr car xx);
-       for each tt in rest xx do
-          xxx := list('quotient, cadr tt, list('plus, caddr tt, xxx));
+       n := fix!-negative(cadr car xx);
+       xxx := list('quotient, car n, caddr car xx);
+       for each tt in rest xx do <<
+          xxx := list('plus, caddr tt,
+	               if cdr n then list('minus, xxx) else xxx);
+	  n := fix!-negative(cadr tt);
+          xxx := list('quotient, car n, xxx)
+       >>;
        if cadr coeflist = 0 then
-          return list('list, cadr x, xxx)
-       else
-          return list('list, cadr x, list('plus, cadr coeflist, xxx));
-     >>
-     else
-        return list('list, cadr x, cadr coeflist);
+          return list('list, cadr x,
+	               if cdr n then list('minus, xxx) else xxx)
+       else 
+          return list('list, cadr x,
+	               list('plus, cadr coeflist,
+		            if cdr n then list('minus, xxx) else xxx));
+    >>
+    else
+       return list('list, cadr x, cadr coeflist);
 end;
 
 put('contfrac, 'fancy!-reform, 'reform!-contfract);

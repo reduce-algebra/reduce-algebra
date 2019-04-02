@@ -35,7 +35,7 @@ module rataprx;  % Rational Approximations Package.
 %                           Continued Fractions for numbers;
 %                           Pade Function.
 
-create!-package('(rataprx decrep contfrac contfr cfutil primitive pade),nil);
+create!-package('(rataprx decrep contfr cfutil primitive pade contfrac),nil);
 
 endmodule;
 
