@@ -109,17 +109,26 @@ sbcl << XXX &> log/sl-on-cl.blg
 XXX
 fi
 
+if [ "trace.lisp" -nt "trace.fasl" ]
+then
+echo +++++ Compiling trace
+sbcl << XXX &> log/trace.blg
+(load "sl-on-cl")
+(compile-file "trace")
+XXX
+fi
+
 echo +++++ Creating the REDUCE image file
 
 # Start a new invocation of Lisp and load the key modules compiled
-# above.  Then save a final REDUCE image that wil be used below to
+# above.  Then save a final REDUCE image that will be used below to
 # compile the non-core modules.
 
 sbcl --noinform << XXX &> log/reduce.blg
 ;(declaim (optimize debug)				; same as (debug 3)
 ;		 (sb-ext:muffle-conditions sb-ext:compiler-note style-warning))
 
-(load "sl-on-cl")
+(load "sl-on-cl") (load "trace") ; temporary -- until I can arrange autoloading!
 (standard-lisp)
 
 (cl:defparameter !*init!-stats!* (list (time) (gtheap)))
@@ -213,6 +222,12 @@ begin
 end;
 
 package!-remake '$p;
+
+% Hack to make gnuplot work:
+if '$p eq 'gnuplot then
+   begin scalar !*int, !*forcecompile; !*forcecompile := t;
+   	  update!-fasl2('gnuintfc, nil);
+   end;
 
 bye;
 XXX

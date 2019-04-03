@@ -1787,6 +1787,14 @@ do not consider FUNARGs in this report."
 ;;; Input and Output
 ;;; ================
 
+;; An output filehandle is a dotted-list of the form
+;; ('file . output-stream) or ('pipe output-stream . process).
+
+;; An input filehandle is a pair of the form
+;; (input-stream . echo-stream).
+
+;; Filehandles should probably be structures rather than lists!
+
 (defun close (filehandle)
   "CLOSE(FILEHANDLE:any):any eval, spread
 Closes the file with the internal name FILEHANDLE writing any
@@ -1797,13 +1805,19 @@ closed.
 ***** FILEHANDLE could not be closed"
   ;; A null filehandle represents standard IO; ignore it.
   (if filehandle
-	  (if (consp filehandle)
-		  ;; Input filehandle -- close echo stream then input stream:
-		  (progn (cl:close (cdr filehandle))
-				 (cl:close (car filehandle)))
-		  ;; Output filehandle:
-		  (cl:close filehandle)))
-  filehandle)
+	  (prog1 filehandle
+		(cond
+		  ((eq (car filehandle) 'file)
+		   ;; Output file stream ('file . output-stream):
+		   (cl:close (cdr filehandle)))
+		  ((eq (car filehandle) 'pipe)
+		   ;; Output pipe stream ('pipe output-stream . process):
+		   (sb-ext:process-close (cddr filehandle))
+		   (sb-ext:process-kill (cddr filehandle) 9)) ; 9 = SIGKILL
+		  (t
+		   ;; Input filehandle -- close echo stream then input stream:
+		   (cl:close (cdr filehandle))
+		   (cl:close (car filehandle)))))))
 
 (defun eject ()
   "EJECT():NIL eval, spread
@@ -1899,8 +1913,9 @@ OUTPUT or the file can't be opened.
 		   ;; (input-stream . echo-stream):
 		   (cons fh (make-echo-stream fh *standard-output*))))
 		((eq how 'output)
-		 (cl:open file :direction :output
-				  :if-exists :supersede :if-does-not-exist :create))
+		 (cons 'file
+			   (cl:open file :direction :output
+						:if-exists :supersede :if-does-not-exist :create)))
 		(t (cl:error "~a is not option for OPEN" how))))
 
 (defun pagelength (len)
@@ -2093,8 +2108,8 @@ Cons cell elements are printed using PRINFN."
   "The read stream using the initial value of *standard-input*.")
 
 (defvar %%read-stream +default-read-stream+
-  "A cons pair of the form (input-stream . echo-stream), where the cdr
-may be nil.")
+  "The current input filehandle: a cons pair of the form
+\(input-stream . echo-stream), where the cdr may be nil.")
 
 (defun %%read-stream ()
   "Return the appropriate input stream depending on the value of *echo."
@@ -2207,8 +2222,12 @@ The current print line is terminated."
   (cl:terpri)
   nil)
 
-(defconstant +default-write-stream+ *standard-output*
+(defconstant +default-write-stream+ (cons 'file *standard-output*)
   "The write stream using the initial value of *standard-output*.")
+
+(defvar %%write-stream +default-read-stream+
+  "The current output filehandle: a dotted-list of the form
+\('file . output-stream) or ('pipe output-stream . process).")
 
 (defun wrs (filehandle)
   "WRS(FILEHANDLE:any):any eval, spread
@@ -2220,11 +2239,38 @@ device is selected. WRS returns the internal name of the previously
 selected output file.
 ***** FILEHANDLE could not be selected for output"
   (prog1
-	  *standard-output*
-	(setq *standard-output*
-		  (if (and filehandle (open-stream-p filehandle))
-			  filehandle
-			  +default-write-stream+))))
+	  %%write-stream
+	(setq %%write-stream +default-write-stream+) ; default
+	(when filehandle
+	  (cond
+		((eq (car filehandle) 'file)
+		 ;; Output file stream ('file . output-stream):
+		 (if (open-stream-p (cdr filehandle))
+			 (setq *standard-output* (cdr filehandle)
+				   %%write-stream filehandle)))
+		((eq (car filehandle) 'pipe)
+		 ;; Output pipe stream ('pipe output-stream . process):
+		 (if (open-stream-p (cadr filehandle))
+			 (setq *standard-output* (cadr filehandle)
+				   %%write-stream filehandle)))))))
+
+(defun pipe-open (command how)
+  "Run COMMAND asynchronously with input via the pipe returned as a
+stream by this function."
+  (cond ((eq how 'output)
+		 ;; An output filehandle is a dotted-list of the form ('file .
+		 ;; output-stream) or ('pipe output-stream . process):
+		 (let ((p (sb-ext:run-program "cmd" (list "/c" command)
+									  :wait nil :search t :input :stream
+									  :escape-arguments nil)))
+		   (cons 'pipe (cons (sb-ext:process-input p) p))))
+		(t (cl:error "~a is not (currently) an option for PIPE-OPEN" how))))
+
+(defun channelflush (filehandle)
+  "Flush FILEHANDLE if it is a pipe stream."
+  ;; filehandle = ('pipe output-stream . process)
+  (if (eq (car filehandle) 'pipe)
+	  (finish-output (cadr filehandle))))
 
 
 ;;; PSL/CSL functions and some other required functions
@@ -2328,21 +2374,14 @@ PRIN2-like version of EXPLODE without escapes or double quotes."
 			#'(lambda (c) (cl:intern (string c)))
 			(princ-to-string u))))
 
-;; Don't use variable numbers of arguments since it triggers a warning
-;; in REDUCE!  (Actually, could flag such functions variadic.)
-
-;; (defun string-concat (&rest s)			; PSL
-;;   "(string-concat [S:string]): string macro
-;; Concatenates all of its string arguments, returning the newly created string."
-;;   (cl:apply #'concatenate 'string s))
-
-(defun concat (s1 s2)
-  "Concatenates its two string arguments, returning the newly created string."
-  (concatenate 'string s1 s2))
-
 (defun concat2 (s1 s2)
   "Concatenates its two string arguments, returning the newly created string."
   (concatenate 'string s1 s2))
+
+(defun concat (&rest s)
+  "Concatenates all of its string arguments, returning the newly created string."
+  ;; Flagged variadic in clprolo.
+  (cl:apply #'concatenate 'string s))
 
 ;; (defalias 'allocate-string 'cl:make-string ; PSL
 ;;   "(allocate-string SIZE:integer): string expr
@@ -2378,16 +2417,6 @@ range of 0 ... 127 will result in an error.
 lisp> (list2string '(83 84 82 73 78 71))
 \"STRING\""
   (cl:map 'string #'%%character l))
-
-;; (defun list2widestring (u)
-;;   "Take a list U of integers (each in the range 0-0x0010ffff) and turn
-;; it into a string encoding those using UTF-8.  It will also support use
-;; of identifiers or strings as well as integers, and will use the first
-;; character (N.B. not octet) as the code concerned."
-;;   ;; This is a re-implementation of the procedure in rlisp/tok.red.
-;;   ;; It must be flagged lose in clprolo.
-;;   ;; It should make string!-store etc. redundant.
-;;   (cl:map 'string #'code-char u))
 
 (defun list2widestring (u)
   "Take a list U of integers (each in the range 0-0x0010ffff) and turn
@@ -2791,6 +2820,7 @@ interpret otherwise.  The default is compile."
 ;; CL symbols used in REDUCE source code:
 (import
  '(cl:lambda cl:warning cl:*features*
+   :common-lisp :win32
    cl:unwind-protect cl:evenp cl:oddp
    cl:string-not-greaterp cl:symbol-name cl:y-or-n-p ; used in clprolo
    cl:force-output									 ; used in clrend

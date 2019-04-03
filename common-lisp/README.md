@@ -5,7 +5,7 @@ Francis Wright, March 2019
 
 **This code is currently experimental!**
 
-The files in this directory are intended to build and run the current distributed version of REDUCE on Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support explicitly only the native Windows port of SBCL (Steel Bank Common Lisp), but in the longer term I plan to support also Ubuntu Linux and a couple of other implementations of Common Lisp.
+The files in this directory are intended to build and run the current distributed version of REDUCE on ANSI Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support explicitly only the native Windows port of SBCL (Steel Bank Common Lisp), but in the longer term I plan to support also Ubuntu Linux and a couple of other implementations of Common Lisp, probably CLISP and GCL (GNU Common Lisp).
 
 Building REDUCE
 ---------------
@@ -79,7 +79,7 @@ All core test files run to completion and the output agrees with CSL except for 
 * `arith.tst` displays less numerical error;
 * `rlisp88.tst` and `assist.tst` show insignificant implementation differences.
 
-73% of the noncore test files produce output that agrees with CSL except for timings and minor numerical, letter case and/or implementation differences.  This includes the crack suite.  A big chunk of the noncore packages that do not yet run correctly consists of the redlog suite.
+76% of the noncore test files produce output that agrees with CSL except for timings and minor numerical, letter case and/or implementation differences.  This includes the crack suite.  A big chunk of the noncore packages that do not yet run correctly consists of the redlog suite.
 
 Timings
 -------
