@@ -1882,7 +1882,7 @@
    (*jumpwgeq    . *jumpwlessp)      (*jumpwlessp     . *jumpwgeq)
    (*jumpwleq    . *jumpwgreaterp)   (*jumpwgreaterp  . *jumpwleq)
    (*jumptype    . *jumpnottype)     (*jumpnottype    . *jumptype)
-   (*jumpintype  . *jumpnotintype)   (*jumpnotintypte . *jumpintype)
+   (*jumpintype  . *jumpnotintype)   (*jumpnotintype . *jumpintype)
    (*jumpeqtag   . *jumpnoteqtag)    (*jumpnoteqtag   . *jumpeqtag)
    (*jumpwgeqtag . *jumpwlessptag)   (*jumpwlessptag  . *jumpwgeqtag)
   % no inverse jumps for
