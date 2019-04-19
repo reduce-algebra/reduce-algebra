@@ -429,8 +429,8 @@
 (de sixteenbit-p (x)
     (and (fixp x) (eq (wand 16#ffff x) x)))
 
-(de thirtytwobit-p (x)
-    (and (fixp x) (equal (wand 16#ffffffff x) x)))
+%(de thirtytwobit-p (x)
+%    (and (fixp x) (equal (wand 16#ffffffff x) x)))
 
 % possibly shifted register (data movement), one of:
 % (reg x)

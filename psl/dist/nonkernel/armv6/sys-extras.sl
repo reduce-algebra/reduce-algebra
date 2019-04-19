@@ -205,8 +205,18 @@
 %%  1b. load id number from memory (pc-relative): LDR r7,pc-rel-addr
 %%      bit pattern is 0xe59f7 + 12 bit relative offset
 %%  1c. far load: the relative address doesn't fit into a 12 bit offset.
-%%      instruction is a branch (BL) to the address containing the LDR isntruction.
-%%      bit pattern is 0xeb + 24 bit relative offset (in words) to 8 + addr of BL instruction
+%%      the load is performed with three instructions: two ADD or SUB instructions
+%%      to load the address containing the id number into r7, and one LDR instruction
+%%      to actually load the id number.
+%%      The bit patterns for the first two instructions are either:
+%%       (ADD Rx,PC,#n)    0xe28f + 1 nibble reg x + 1 nibble rotate + 1 byte immediate
+%%       (ADD Rx,Rx,#m)    0xe28 + 1 nibble reg x + 1 nibble reg x + 1 nibble rotate + 1 byte immediate
+%%      or:
+%%       (SUB Rx,PC,#n)    0xe24f
+%%       (SUB Rx,Rx,#m)    0xe24
+%%      The bit pattern for the LDR instruction is
+%%       0xe59 + 1 nibble reg x + 1 nibble reg x + 0x000 (12 bit offset)
+%%
 %% However, for calls to internal functions, the calling sequence is simply 
 
 (de get-called-idnumber (adr)
@@ -224,16 +234,51 @@
 	     %  a) data < 256, in which case rest = 0 + data,
 	     %  b) date = 256, ie. rest = C01
 	     (if (eq rest 16#c01) 256 rest))
-	    ((eq (wshift bit-pattern -12) 16#eb)
-	     % BL addr-of-ldr
-	     % mask lower 24bit, shift left by 2
-	     % adr is 3 words after BL instruction, so subtract 1 word to add 8 bytes
-	     (let* ((offset (wshift (wand adr-load-instr 16#ffffff) 2))
-		    (actual-addr (wdifference (wplus2 adr offset) addressingunitsperitem))
-		    (actual-load-instruction (wgetv actual-addr 0)))
-	       (if (eq (wshift actual-load-instruction -12) 16#e59f7)
-		   (wgetv (wplus2 actual-addr (wand actual-load-instruction 16#fff)) 2))
-		 nil))
+	    ((and (eq (wshift bit-pattern -8) 16#e59)
+		  (eq (wand 16#f (wshift bit-pattern -4)) (wand 16#f bit-pattern))
+		  (eq rest 0))
+	     % OK, so the instruction is actually LDR Rx,[Rx]
+	     % Check whether the two preceding instructions are the appropriate ADD/SUB
+	     (let ((instr1 (wgetv addr -5))
+		   (instr2 (wgetv addr -4))
+		   (regno (wand 16#f bit-pattern))
+		   (offset))
+	       (cond ((and (eq (wshift instr1 -16) 16#e28f)            % ADD Ry,PC
+			   (eq (wand 16#f (wshift instr1 -12)) regno)  % Rx=Ry
+			   (eq (wshift instr2 -20) 16#e28)	       % ADD Ry,Rz
+			   (eq (wand 16#f (wshift instr2 -16)) regno)  % Rz=Rx
+			   (eq (wand 16#f (wshift instr2 -12)) regno)) % Ry=Rx
+		      % match found; compute immediate number from last 3 nibbles:
+		      % rotate right by n can be replaced by LSR by 32-n (in this case!)
+		      (setq
+		       offset
+		       (wplus2
+			(wshift (wand 16#ff instr1)
+				(wdifference 32 (wtimes2 2 (wand 16#f (wshift -8 instr1)))))
+			(wshift (wand 16#ff instr2)
+				(wdifference 32 (wtimes2 2 (wand 16#f (wshift -8 instr2)))))))
+		      % offset is relative to first ADD instruction + 2 * addressingunitsperitem
+		      % adr is 5 words after first ADD instruction, so subtract 3 words to add 8 bytes
+		      (wgetv (wplus2 addr offset) -3))
+		     ((and (eq (wshift instr1 -16) 16#e24f)            % SUB Ry,PC
+			   (eq (wand 16#f (wshift instr1 -12)) regno)  % Rx=Ry
+			   (eq (wshift instr2 -20) 16#e24)	       % SUB Ry,Rz
+			   (eq (wand 16#f (wshift instr2 -16)) regno)  % Rz=Rx
+			   (eq (wand 16#f (wshift instr2 -12)) regno)) % Ry=Rx
+		      % match found; compute immediate number from last 3 nibbles:
+		      % rotate right by n can be replaced by LSR by 32-n (in this case!)
+		      (setq
+		       offset
+		       (wplus2
+			(wshift (wand 16#ff instr1)
+				(wdifference 32 (wtimes2 2 (wand 16#f (wshift -8 instr1)))))
+			(wshift (wand 16#ff instr2)
+				(wdifference 32 (wtimes2 2 (wand 16#f (wshift -8 instr2)))))))
+		      % offset is relative to first ADD instruction + 2 * addressingunitsperitem
+		      % adr is 5 words after first ADD instruction, so subtract 3 words to add 8 bytes
+		      (wgetv (wdifference addr offset) -3))
+		     (t nil)))
+	       )
 	    (t nil))))
 
 % ****************************************************************         
