@@ -1,0 +1,17 @@
+
+% Bug reported by Andrey G. Grozin 2019-04-15
+
+vector v,m;
+
+f:=1/v.v$
+
+% This should return -2m*v/(v.v)^2
+sub(x=0,df(sub(v=v+x*m,f),x));
+
+% This should return 1
+sub(x=0,df(sub(y=x,sin(y)),x));
+
+% This should return 2*x
+sub(z=1,df(sub(y=x,y^2),x));
+
+end;

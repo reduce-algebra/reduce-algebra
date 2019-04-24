@@ -60,11 +60,13 @@ symbolic procedure subeval0 u;
                       then x := {caar u,cadar u,y} . x;
                     u := cdr u>>;
    if null x then return car u else u := reversip2(x,u);
+   if (x := assoc(u,sublist!*))
+     then return if null cdr x then mk!*sq !*p2q mksp('sub . u,1)
+                  else cdr x
+    else sublist!* := (u . nil) . sublist!*;
+   if null(u and cdr u)
+    then rederr "SUB requires at least 2 arguments"; % F.J. Wright.
    % Separate assignments from expression.
-      if u member sublist!* then return mk!*sq !*p2q mksp('sub . u,1)
-       else sublist!* := u . sublist!*;
-      if null(u and cdr u)
-       then rederr "SUB requires at least 2 arguments"; % F.J. Wright.
       (while cdr u do
           <<x := reval car u;
             if getrtype x eq 'list then u := append(cdr x,cdr u)
@@ -79,7 +81,9 @@ symbolic procedure subeval0 u;
 %     currently doesn't.  However, subeval2 suffers from the problem
 %     that its evaluation is sequential.
 %     if ns then x := subeval2(ns,x);
-      return subeval1(append(ns,z),x)
+      x := subeval1(append(ns,z),x);
+      if null cdar sublist!* then rplacd(car sublist!*,x);
+      return x	 
    end;
 
 symbolic procedure subeval1(u,v);
