@@ -48,7 +48,7 @@ create!-package('(spde),'(contrib spde));
  algebraic operator x,u,xi,eta,c,xi!*,eta!*$
  algebraic operator deq,dx,du,gl,gen,sder,rule$
  fluid '(depl!*);
- global'(pclass mm nn num!-cgen num!-dgen)$
+ fluid'(pclass mm nn num!-cgen num!-dgen)$
  share pclass,mm,nn$
  lisp(pclass:=mm:=nn:=num!-cgen:=num!-dgen:=0)$
 
