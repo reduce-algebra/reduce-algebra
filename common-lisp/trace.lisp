@@ -9,15 +9,19 @@
 ;; tracing code in "package/rtrace/rtrace.red".  But this is a
 ;; completely independent Common Lisp implementation.
 
+;; Must load "sl-on-cl" before loading or compiling this file.
+
 ;; ****************************
 ;; Can be loaded into REDUCE by
-;; lisp load trace
+;; : lisp load trace
 ;; (without quotes) or
-;; lisp load "trace.lisp"
+;; : lisp load "trace.lisp"
 ;; etc.
 ;; ****************************
 
 (cl:in-package :common-lisp-user)
+
+(declaim (optimize debug))
 
 (defpackage :standard-lisp-trace
   (:nicknames :sl-trace)
@@ -88,8 +92,8 @@ NAME must be quoted when called!"
 		;; wrapped in a block form,
 		;; i.e. defn = (lambda params [decls] [doc] (block name body))
 		(setf (caddr defn) (caddar (last defn)))
-		(if (and *trace-setq*
-				 (setq defn (get-fasl-source name)))
+		(if (setq defn (get-fasl-source name))
+			;; defn = (de name arglist body)
 			(setq defn (cons 'lambda (cddr defn)))))
 	;;
 	(if defn
@@ -206,10 +210,10 @@ the rhs only once in case of side effects (such as a gensym)."
   (let ((*readtable* (copy-readtable nil)) ; read CL syntax
 		file pos stream form)
 	(when (and
-		   (setq file (get name 'sl::defined-in-file)) ; of form "pgk/mod.red"
-		   (setq pos (position #\/ (setq file (symbol-name file))))) ; 3
-	  (setq file (subseq file (1+ pos) (- (length file) 4))) ; "mod"
-	  (setq file (concatenate 'string "fasl/" file ".lisp")) ; "fasl/mod.lisp"
+		   (setq file (get name 'sl::defined-in-file)) ; e.g. "pgk/mod.red"
+		   (setq pos (position #\/ (setq file (symbol-name file))))) ; e.g. 3
+	  (setq file (subseq file pos (- (length file) 3))) ; e.g. "/mod."
+	  (setq file (concatenate 'string "fasl" file "lisp")) ; e.g. "fasl/mod.lisp"
 	  (when (setq stream (open file :external-format :UTF-8))
 		(loop
 		   do

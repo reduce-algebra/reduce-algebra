@@ -106,10 +106,9 @@ symbolic procedure orderp(u,v);
    % which should be true with current REDUCE.  Ignore case.
    string!-not!-greaterp(symbol!-name u, symbol!-name v);
 
-% TEMPORARY -- Ignore inline declarations for now:
-% (See rlisp/proc.red and rlisp/smacro.red for details.)
-
-!*noinlines := t;
+% To ignore inline declarations (see rlisp/proc.red and
+% rlisp/smacro.red):
+% !*noinlines := t;
 
 % endmodule;
 

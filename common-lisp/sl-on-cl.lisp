@@ -8,10 +8,9 @@
 ;; Current target is Windows SBCL (Steel Bank Common Lisp) 1.4.14.
 
 ;; This file implements a superset of Standard Lisp that is a subset
-;; of the union of PSL and CSL in a package called STANDARD-LISP with
-;; nickname SL.  It does not provide a Standard Lisp REPL and is
-;; intended primarily for running REDUCE (which provides its own REPL)
-;; on Common Lisp.
+;; of PSL and CSL in a package called STANDARD-LISP with nickname SL.
+;; It does not provide a Standard Lisp REPL and is intended primarily
+;; for running REDUCE (which provides its own REPL) on Common Lisp.
 
 ;; (declaim (optimize (speed 3) (safety 0)))
 (declaim (optimize debug))				; same as (debug 3)
@@ -1812,7 +1811,7 @@ closed.
 		   (cl:close (cdr filehandle)))
 		  ((eq (car filehandle) 'pipe)
 		   ;; Output pipe stream ('pipe output-stream . process):
-		   (sb-ext:process-close (cddr filehandle))
+		   (sb-ext:process-close (cddr filehandle))	  ; closes output-stream
 		   (sb-ext:process-kill (cddr filehandle) 9)) ; 9 = SIGKILL
 		  (t
 		   ;; Input filehandle -- close echo stream then input stream:
@@ -2240,7 +2239,12 @@ selected output file.
 ***** FILEHANDLE could not be selected for output"
   (prog1
 	  %%write-stream
-	(setq %%write-stream +default-write-stream+) ; default
+	;; This fails to compile (report as SBCL bug?):
+	;; (setq *standard-output* (cdr +default-write-stream+)
+	;; 	  %%write-stream +default-write-stream+)
+	;; But this version compiles OK:
+	(setq %%write-stream +default-write-stream+
+		  *standard-output* (cdr %%write-stream))
 	(when filehandle
 	  (cond
 		((eq (car filehandle) 'file)
