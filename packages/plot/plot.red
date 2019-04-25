@@ -67,7 +67,7 @@ fluid '(
 % Create .. as infix operator.
 
 begin
-   scalar !*msg;  % So we do not get a refefinition moan at load time
+   scalar !*msg;  % So we do not get a redefinition moan at load time
    newtok '((!. !.) !*interval!*)
 end;
 

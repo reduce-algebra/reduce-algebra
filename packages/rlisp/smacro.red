@@ -418,12 +418,12 @@ symbolic procedure expand_accessor(u, path, r);
   else <<
     r := list('put, mkquote u, ''number!-of!-args, 1) . r;
     if not !*noinlines then
-	begin scalar p;
-       p := list('putc, mkquote u, ''inline,
-                 mkquote list('lambda, '(u), makecarcdr(path, 'u)));
-	   if !*defn then eval p;
-	   r := p . r
-	end
+      begin scalar p;
+         p := list('putc, mkquote u, ''inline,
+                   mkquote list('lambda, '(u), makecarcdr(path, 'u)));
+         if !*defn then lispeval p;
+         r := p . r
+      end
     else <<
        r := list('de, u, '(u), makecarcdr(path, 'u)) . r;
        r := list('put, mkquote u, ''setqfn,
@@ -434,15 +434,15 @@ symbolic procedure expand_accessor(u, path, r);
     u := intern list2string append('(s e t !_), explode2 u);
     r := list('put, mkquote u, ''number!-of!-args, 2) . r;
     if not !*noinlines then
-	begin scalar p;
-       p := list('putc, mkquote u, ''inline,
-          	 	 mkquote list('lambda, '(u v),
-                         list(get(car path, 'mutator),
-                              makecarcdr(cdr path, 'u),
-                              'v)));
-	   if !*defn then eval p;
-	   r := p . r
-	end
+       begin scalar p;
+         p := list('putc, mkquote u, ''inline,
+                          mkquote list('lambda, '(u v),
+                          list(get(car path, 'mutator),
+                               makecarcdr(cdr path, 'u),
+                               'v)));
+         if !*defn then lispeval p;
+         r := p . r
+       end
     else r := list('de, u, '(u v),
                    list(get(car path, 'mutator),
                         makecarcdr(cdr path, 'u),

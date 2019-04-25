@@ -169,10 +169,10 @@ symbolic procedure formproc(u,vars,mode);
          else if (x := get(type,'procfn))
           then return apply3(x,name,varlis,body)
          else << body := list('putc,
-			                  mkquote name,
-			   	  	 	   	  mkquote type,
-			   	  	 	   	  mkquote list('lambda,varlis,body));
-			if !*defn then eval body >>;
+                              mkquote name,
+                              mkquote type,
+                              mkquote list('lambda,varlis,body));
+                 if !*defn then lispeval body >>;
         if not(mode = 'symbolic)
           then body :=
               mkprogn(list('flag,mkquote list name,mkquote 'opfn),body);
