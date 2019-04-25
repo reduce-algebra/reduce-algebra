@@ -168,10 +168,11 @@ symbolic procedure formproc(u,vars,mode);
          else if type = 'macro then body := list('dm,name,varlis,body)
          else if (x := get(type,'procfn))
           then return apply3(x,name,varlis,body)
-         else body := list('putc,
-                           mkquote name,
-                           mkquote type,
-                           mkquote list('lambda,varlis,body));
+         else << body := list('putc,
+			                  mkquote name,
+			   	  	 	   	  mkquote type,
+			   	  	 	   	  mkquote list('lambda,varlis,body));
+			if !*defn then eval body >>;
         if not(mode = 'symbolic)
           then body :=
               mkprogn(list('flag,mkquote list name,mkquote 'opfn),body);
@@ -355,7 +356,7 @@ symbolic procedure read_namelist();
     if not (cursym!* = '!*comma!*) then return list a;
     scan();
     return a . read_namelist()
-  end;    
+  end;
 
 % valid_as_variable is a function that exists because the Rlisp tokenization
 % code does not make a clear distinction between reserved words and ordinary
@@ -431,7 +432,7 @@ symbolic procedure read_signature();
 %        u infix_op v [: type] [: type]
       y := cursym!*;
       scan();
-      x := list(y, x . 'general, read_typed_name()) >> 
+      x := list(y, x . 'general, read_typed_name()) >>
     else x := list(x, read_typed_name());
     if cursym!* = '!*colon!* then <<
       scan();
@@ -508,7 +509,7 @@ symbolic procedure procstat1 mode;
 % where the type had not been speciied, and otherwise at present types
 % are merely symbols.
                puttype := list('put, mkquote caar x, ''procedure_type,
-                   mkquote('arrow . make_tuple_type cdar x . cdr x)); 
+                   mkquote('arrow . make_tuple_type cdar x . cdr x));
                x := car x;
                fname!* := car x;
                x := fname!* . collect_cars cdr x;

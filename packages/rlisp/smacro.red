@@ -134,7 +134,7 @@ module smacro;  % Support for SMACRO expansion
 % The flag !*loginlines enables reports that may help identify places where
 % some of the above issues arise.  ACN March 2013.
 
-fluid '(inlineinfo);
+fluid '(!*defn inlineinfo);
 
 symbolic procedure applsmacro(u,vals,name);
    % U is smacro body of form (lambda <varlist> <body>), VALS is
@@ -214,12 +214,12 @@ symbolic procedure log_assignment(varlist, u);
 symbolic procedure log_assignment_list_list(varlist, u);
   if atom u then nil
   else if log_assignment_list(varlist, car u) then t
-  else log_assignment_list_list(varlist, cdr u); 
+  else log_assignment_list_list(varlist, cdr u);
 
 symbolic procedure log_assignment_list(varlist, u);
   if atom u then nil
   else if log_assignment(varlist, car u) then t
-  else log_assignment_list(varlist, cdr u); 
+  else log_assignment_list(varlist, cdr u);
 
 symbolic procedure log_freevars(varlist, u);
   if atom u then <<
@@ -252,13 +252,13 @@ symbolic procedure log_freevars(varlist, u);
 symbolic procedure log_freevars_list_list(varlist, u);
   if atom u then nil
   else if log_freevars_list(varlist, car u, nil) then t
-  else log_freevars_list_list(varlist, cdr u); 
+  else log_freevars_list_list(varlist, cdr u);
 
 symbolic procedure log_freevars_list(varlist, u, isprog);
   if atom u then nil
   else if isprog and atom car u then log_freevars_list(varlist, cdr u, t)
   else if log_freevars(varlist, car u) then t
-  else log_freevars_list(varlist, cdr u, isprog); 
+  else log_freevars_list(varlist, cdr u, isprog);
 
 symbolic procedure no!-side!-effectp u;
    if atom u then numberp u or (idp u and not(fluidp u or globalp u))
@@ -418,8 +418,12 @@ symbolic procedure expand_accessor(u, path, r);
   else <<
     r := list('put, mkquote u, ''number!-of!-args, 1) . r;
     if not !*noinlines then
-       r := list('putc, mkquote u, ''inline,
-                 mkquote list('lambda, '(u), makecarcdr(path, 'u))) . r
+	begin scalar p;
+       p := list('putc, mkquote u, ''inline,
+                 mkquote list('lambda, '(u), makecarcdr(path, 'u)));
+	   if !*defn then eval p;
+	   r := p . r
+	end
     else <<
        r := list('de, u, '(u), makecarcdr(path, 'u)) . r;
        r := list('put, mkquote u, ''setqfn,
@@ -430,11 +434,15 @@ symbolic procedure expand_accessor(u, path, r);
     u := intern list2string append('(s e t !_), explode2 u);
     r := list('put, mkquote u, ''number!-of!-args, 2) . r;
     if not !*noinlines then
-       r := list('putc, mkquote u, ''inline,
-          mkquote list('lambda, '(u v),
+	begin scalar p;
+       p := list('putc, mkquote u, ''inline,
+          	 	 mkquote list('lambda, '(u v),
                          list(get(car path, 'mutator),
                               makecarcdr(cdr path, 'u),
-                              'v))) . r
+                              'v)));
+	   if !*defn then eval p;
+	   r := p . r
+	end
     else r := list('de, u, '(u v),
                    list(get(car path, 'mutator),
                         makecarcdr(cdr path, 'u),
