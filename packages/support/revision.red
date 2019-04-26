@@ -24,13 +24,13 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: cslrend.red 3469 2016-02-17 14:50:53Z arthurcnorman $
+% $Id$
 
 % This file will be automatically updated by the code in scripts/commit.sh
 % to show the latest subversion revision number.
 
 fluid '(revision!*);
 
-revision!* := 4971;
+revision!* := 4972;
 
 end;
