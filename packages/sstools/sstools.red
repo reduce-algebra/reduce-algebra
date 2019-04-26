@@ -267,7 +267,7 @@ if domainp u then nil
 if fermionicp mvar u then not fermionicfp lc u
                      else     fermionicfp lc u$
 
-% The following function makes reording of sstools expresion possible
+% The following function makes reordering of sstools expressions possible
 % (as needed by coeffn for example). Unfortunately some redefinitions
 % of standard REDUCE functions are necessary.
 
@@ -3085,7 +3085,7 @@ symbolic procedure sshelp2$
  wl1"Fields f(1),f(2),.. are treated as fermionic, and b(1),.. are"$   
  wl1"treated as bosonic. The independent variables are t, x and in"$
  wl1"symmetry computations the symmetry `time' variable is s. "$  
- wl2"Further femionic variables can be defined, for example, theta."$
+ wl2"Further fermionic variables can be defined, for example, theta."$
 
  wl1"The super derivatives D_i which satisfy (D_i)**2 = d/dx "$    
  wl2"are implemented as d(i, .. ) .  "$                              
