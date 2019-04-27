@@ -821,6 +821,7 @@ Author: James W. Eastwood.
 
 \newpage
 
+
 \section{PHYSOP: Operator calculus in quantum theory}
 
 \indexpackage{PHYSOP}
@@ -865,6 +866,46 @@ Author: Kevin McIsaac.
 %\cbinput{polydiv}
 %
 %\newpage
+
+\section{QHULL: Compute the complex hull}
+
+\indexpackage{Qhull}
+
+This package is an interface to qhull (\url{www.qhull.org}), which has to be installed
+externally. There are 3 options for this package to find the qhull program:
+\begin{enumerate}
+\item Put it into the path of your shell (recommended).
+\item Set and export an environment variable \texttt{QHULL} to the complete path, e.g., in
+the Bash:
+\begin{verbatim}
+export QHULL=/usr/bin/qhull
+\end{verbatim}
+\item Inside Reduce set the variable \var{qhull\_call!*} to the complete path, e.g.,
+\begin{verbatim}
+symbolic(qhull_call!* := "/usr/bin/qhull");
+\end{verbatim}
+\end{enumerate}
+Example: 
+Compute the convex hull of a list integer points as a subset
+of that list as follows:
+\begin{verbatim}
+1: qhull {{2,0,0}, {0,2,0}, {0,2,2}, {0,0,0}, {1,1,1}};
+
+{{2,0,0},{0,2,0},{0,2,2},{0,0,0}}
+
+2: symbolic;
+
+nil
+
+3* qhull_qhull {{2,0,0}, {0,2,0}, {0,2,2}, {0,0,0}, {1,1,1}};
+
+((2 0 0) (0 2 0) (0 2 2) (0 0 0))
+\end{verbatim}
+
+Author: Thomas Sturm, March 2013
+
+\newpage
+
 
 \section{QSUM: Indefinite and Definite Summation
 of \textsl{q}-hypergeometric Terms}
