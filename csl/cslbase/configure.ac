@@ -213,13 +213,6 @@ AC_SUBST(PSLBUILD)
 
 AC_SUBST(DLL_CFLAGS)
 
-# The following are always to be defined when I go through this route
-
-if test "x$with_gui" != "xno"
-then
-  AC_DEFINE(WINDOW_SYSTEM,[1],[True for a (potentially) Windowed system])
-fi
-
 AC_DEFINE_UNQUOTED(HOST_CPU,"$host_cpu",[Name of CPU])
 AC_DEFINE_UNQUOTED(HOST_VENDOR,"$host_vendor",[Name of vendor])
 AC_DEFINE_UNQUOTED(HOST_OS,"$host_os",[Name of Operating System])
@@ -264,10 +257,34 @@ AC_ARG_WITH(force,
 
 if test "x$with_fox" != "xno" || test "x$with_wx" != "xno"
 then
+  if test "x$with_gui" = "xno"
+  then
+    AC_MSG_ERROR([Have asked for Fox or wXWidgets but no GUI at all])
+  fi
   with_gui="yes"
 else
   with_gui="no"
 fi
+
+if test "x$with_gui" = "xno"
+then
+  with_fox="no"
+  with_wx="no"
+fi
+
+if test "x$with_gui" != "xno"
+then
+# This symbol is now deprecated in favour of testing the state of
+# WITHOUT_GUI which has the opposite sense but whihc I hope captures
+# the intent more clearly.
+  AC_DEFINE(WINDOW_SYSTEM,[1],[True for a (potentially) Windowed system])
+fi
+
+if test "x$with_gui" == "xno"
+then
+  AC_DEFINE(WITHOUT_GUI,[1],[Not even an attempt at support for GUI])
+fi
+
 
 AC_SUBST(MAKE)
 AC_SUBST(AR)
@@ -827,7 +844,7 @@ then
   AC_COMPUTE_INT(maxalign, alignof(double), [#include <cstddef>],
     AC_MSG_ERROR([Unable to get alignment of std::max_align_t]))
 fi
-
+#--
 # I will expect that malloc and new will return blocks of memory
 # aligned at least as per maxalign... and I require that it be at least
 # 8 so that I have 3 low bits for use as tags. In reality I fully expect

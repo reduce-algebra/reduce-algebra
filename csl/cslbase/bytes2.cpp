@@ -177,10 +177,6 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (miscflags & HEADLINE_FLAG)
                     err_printf("\n+++ Error %s: ", errorset_msg);
                 throw LispSignal();
-        case 2: exit_reason = UNWIND_SIGINT;
-                if (miscflags & HEADLINE_FLAG)
-                    err_printf("\n+++ Error %s: ", errorset_msg);
-                throw LispSigint();
         case 0: break;
     }
     global_jb = &jb;
@@ -388,7 +384,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_CLOSURE:
-                push2(B_reg, A_reg);
+                push(B_reg, A_reg);
 //
 // This will be the address where the first arg of this function lives on
 // the stack.  It provides a hook for the called function to access lexical
@@ -424,7 +420,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         stack[-(int)(w + next_byte)] = A_reg;
                         continue;
                     case 0x80:                  // CLOSURE extended
-                        push2(B_reg, A_reg);
+                        push(B_reg, A_reg);
                         w = ((w & 0x3f) << 8) + next_byte;
                         A_reg = encapsulate_sp(&stack[-2-(int)w]);
                         pop(B_reg);
@@ -589,15 +585,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_APPLY4:
-                pop2(r1, r3);
+                pop(r1, r3);
 // The 4 arguments are now r3, r1, B_reg, A_reg in that order, and as with
 // APPLY3 I do not wrap the final two arguments up in a list but instead pass
 // them individually.
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
-                {   push4(r2, r3, r1, B_reg);
+                {   push(r2, r3, r1, B_reg);
                     A_reg = ncons(A_reg);    // Make 4th arg a list!
-                    pop4(B_reg, r1, r3, r2);
+                    pop(B_reg, r1, r3, r2);
                     f4up = qfn4up(r2);
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call4up(basic_elt(litvec, 0), f4up, r2, r3, r1, B_reg, A_reg);
@@ -1384,7 +1380,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             catcher:
                 A_reg = cons(A_reg, catch_tags);
                 catch_tags = A_reg;
-                push3(fixnum_of_int(w+1), catch_tags, SPID_CATCH);
+                push(fixnum_of_int(w+1), catch_tags, SPID_CATCH);
                 continue;
 
             case OP_UNCATCH:
@@ -1404,7 +1400,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 catch_tags = qcdr(r1);
                 qcar(r1) = r1; qcdr(r1) = nil;
                 A_reg = Lmv_list(nil, A_reg);
-                push3(nil, fixnum_of_int(UNWIND_NULL), A_reg);
+                push(nil, fixnum_of_int(UNWIND_NULL), A_reg);
                 continue;
 
             case OP_UNPROTECT:
@@ -1413,7 +1409,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // PROTECT had been done by an unwinding then exit_reason and exit_tag
 // must also be restored, and the unwind condition must be re-instated.
 //
-                pop3(A_reg, B_reg, exit_tag);
+                pop(A_reg, B_reg, exit_tag);
                 exit_reason = int_of_fixnum(B_reg);
 // Here I have multiple values to restore.
                 exit_count = 0;
@@ -1445,7 +1441,6 @@ next_opcode:   // This label is so that I can restart what I am doing
                 case UNWIND_RESTART:   throw LispRestart();
                 case UNWIND_RESOURCE:  throw LispResource();
                 case UNWIND_SIGNAL:    throw LispSignal();
-                case UNWIND_SIGINT:    throw LispSigint();
                 case UNWIND_ERROR:     throw LispError();
                 case UNWIND_FNAME:     throw LispError();
                 case UNWIND_UNWIND:    throw LispError();
@@ -1643,7 +1638,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
-                    push2(B_reg, A_reg);
+                    push(B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
@@ -1675,7 +1670,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f3 = qfn3(r1);
                 push(r1);
                 poll_jump_back(A_reg);
-                pop2(r1, r2);
+                pop(r1, r2);
                 if (f3 == bytecoded_3 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
@@ -1688,7 +1683,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
-                    push3(r2, B_reg, A_reg);
+                    push(r2, B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
@@ -1720,7 +1715,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // In some other JCALL cases I optimise if the called function is
 // bytecoded. I have not done that here (yet?).
                 poll_jump_back(A_reg);
-                pop2(r2, r1);
+                pop(r2, r1);
                 B_reg = list3star(r1, r2, B_reg, A_reg);
                 A_reg = basic_elt(litvec, fname);
                 debug_record_symbol(A_reg);
@@ -1812,13 +1807,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   fname = 0;
                     goto call1;
                 }
-                push3(codevec, litvec, A_reg); // the argument
-                if (--countdown < 0) deal_with_tick();
-                if (++reclaim_trigger_count == reclaim_trigger_target ||
-                    stack >= stacklimit)
-                    reclaim(nil, "stack", GC_STACK, 0);
+                push(codevec, litvec, A_reg); // the argument
+                if (stack >= stacklimit) respond_to_stack_event();
                 A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0), stack-1);
-                pop2(litvec, codevec);
+                pop(litvec, codevec);
                 assert(A_reg != 0);
                 continue;
 
@@ -1859,13 +1851,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   fname = 0;
                     goto call2;
                 }
-                push4(codevec, litvec, B_reg, A_reg);
-                if (--countdown < 0) deal_with_tick();
-                if (++reclaim_trigger_count == reclaim_trigger_target ||
-                    stack >= stacklimit)
-                    reclaim(nil, "stack", GC_STACK, 0);
+                push(codevec, litvec, B_reg, A_reg);
+                if (stack >= stacklimit) respond_to_stack_event();
                 A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0), stack-2);
-                pop2(litvec, codevec);
+                pop(litvec, codevec);
                 assert(A_reg != 0);
                 continue;
 
@@ -1928,7 +1917,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CALL4:
 // All but the last two args have been pushed onto the stack already.
 // The last two are in A and B.
-                pop2(r2, r1);
+                pop(r2, r1);
                 B_reg = list3star(r1, r2, B_reg, A_reg);
 // Here the post-byte indicates the function to be called.
                 A_reg = basic_elt(litvec, ((unsigned char *)codevec)[ppc]);
@@ -2386,11 +2375,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_PUSHNIL2:
-                push2(nil, nil);
+                push(nil, nil);
                 continue;
 
             case OP_PUSHNIL3:
-                push3(nil, nil, nil);
+                push(nil, nil, nil);
                 continue;
 
             case OP_POP:
@@ -2487,13 +2476,13 @@ next_opcode:   // This label is so that I can restart what I am doing
         {   unwind_stack(entry_stack, true);
             if (stack == entry_stack) throw;   // re-throw!
 // Here I have a CATCH/UNWIND record within the current function
-            pop2(r1, r2);
+            pop(r1, r2);
 // If the tag matches exit_tag then I must reset pc based on offset (r2)
 // and continue. NB need to restore A_reg from exit_value.
             w = int_of_fixnum(r2);
             if (qcar(r1) == SPID_PROTECT)
             {   // This is an UNWIND catcher
-                push2(exit_tag, fixnum_of_int(exit_reason));
+                push(exit_tag, fixnum_of_int(exit_reason));
                 A_reg = Lmv_list(nil, exit_value);
                 push(A_reg);
                 ppc = w;

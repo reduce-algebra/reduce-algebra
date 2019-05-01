@@ -505,7 +505,7 @@ set!-small!-modulus 3;
 
 !#if (or (memq  'vsl lispsystem!*) (memq 'jlisp lispsystem!*))
 
-flag('(cos exp expt log sin sqrt fix
+flag('(cos exp expt log sin sqrt atan fix
        ceiling floor round clrhash puthash gethash remhash), 'lose);
 
 !#else

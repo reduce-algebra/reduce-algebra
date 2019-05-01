@@ -34,39 +34,11 @@ then
   exit 1
 fi
 
-# Here I list all the directories that might be relevant. Note that in
-# some circumstances some may not be present!
+# At an earlier stage I ran autoreconf on several directories even when they
+# are not actually used by this simple test. To speed this up and leave it a
+# more basic check I now concentrate on what I need immediately.
 
-# There are some directories that I have chosen not to process here:
-#  ./foxtests
-# taking a view that people who wish to build those are in a minority
-# and so can sort things out more or less for themselves.
-
-L=". \
-  ./cslbase \
-  ./fox"
-
-# On any particular machine I will regenerate the autoconf stuff from
-# outside packages just once. The packages that I do some of my own
-# maintenence on get reconfigured every time.
-
-if ! test -f ./cslbase/gc-7/reconf.stamp
-then
-  L="$L ./cslbase/gc-7"
-  touch ./cslbase/gc-7/reconf.stamp
-fi
-
-for d in $L
-do
-  printf "\nautoreconf in directory '%s'\n" $d
-  if test -d $d
-  then
-    cd $d
-    printf "autoreconf -i -v$f\n"
-    autoreconf -i -v$f
-    cd $here
-  fi
-done
+sutoreconf -f -i -v
    
 cd $save
 exit 0

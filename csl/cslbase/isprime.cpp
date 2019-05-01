@@ -75,13 +75,13 @@ extern bool isprime(uint64_t n);
 // In my use here nlz should never be given a zero argument - that would
 // correspond to trying to perform modular arithmetic with a zero modulus. 
 
-static inline int nlz(uint64_t x)
+inline int nlz(uint64_t x)
 {   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
 }
 
 #else // __GNUC__
 
-static inline int nlz(uint64_t x)
+inline int nlz(uint64_t x)
 {   int n = 0;
     if (x <= 0x00000000FFFFFFFFU) {n = n +32; x = x <<32;}
     if (x <= 0x0000FFFFFFFFFFFFU) {n = n +16; x = x <<16;}
@@ -99,7 +99,7 @@ static inline int nlz(uint64_t x)
 
 #ifdef __SIZEOF_INT128__
 
-static inline uint64_t mulmod64(uint64_t a, uint64_t b, uint64_t c)
+inline uint64_t mulmod64(uint64_t a, uint64_t b, uint64_t c)
 {   return (uint64_t)(((unsigned __int128)a * b) % c);
 }
 
@@ -425,7 +425,7 @@ static uint16_t witness[870] =
 
 // Compute x^n mod p
 
-static inline uint64_t exptmod(uint64_t x, uint64_t n, uint64_t p)
+inline uint64_t exptmod(uint64_t x, uint64_t n, uint64_t p)
 {   uint64_t y = 1;
     while (n > 1)
     {   if (n%2 != 0) y = mulmod64(x, y, p);
@@ -442,7 +442,7 @@ static inline uint64_t exptmod(uint64_t x, uint64_t n, uint64_t p)
 // use if is called with carefully selected first arguments so as to avoid
 // strong pseudo-primes.
 
-static inline bool miller_rabin_isprime(uint64_t a, uint64_t n)
+inline bool miller_rabin_isprime(uint64_t a, uint64_t n)
 {   uint64_t d = n-1;
     int s = 0;
     while ((d % 2) == 0)  // Find largest power of 2 dividing n-1
@@ -463,7 +463,7 @@ static inline bool miller_rabin_isprime(uint64_t a, uint64_t n)
 // To make the treatment of 32-bit inputs faster I have a second copy
 // of the above code, but here restricted to 32-bit inputs.
 
-static inline uint32_t exptmod32(uint32_t x, uint32_t n, uint32_t p)
+inline uint32_t exptmod32(uint32_t x, uint32_t n, uint32_t p)
 {   uint32_t y = 1;
     while (n > 1)
     {   if (n%2 != 0) y = (uint32_t)(((uint64_t)x*y)%p);
@@ -473,7 +473,7 @@ static inline uint32_t exptmod32(uint32_t x, uint32_t n, uint32_t p)
     return (uint32_t)(((uint64_t)x*y)%p);
 }
 
-static inline bool miller_rabin_isprime32(uint32_t a, uint32_t n)
+inline bool miller_rabin_isprime32(uint32_t a, uint32_t n)
 {   uint32_t d = n-1;
     int s = 0;
     while ((d % 2) == 0)  // Find largest power of 2 dividing n-1
@@ -491,18 +491,18 @@ static inline bool miller_rabin_isprime32(uint32_t a, uint32_t n)
     return false;
 }
 
-static inline int32_t hash32_function(uint32_t p)
+inline int32_t hash32_function(uint32_t p)
 {   return (uint32_t)
         ((hash32_multiplier*(uint64_t)p)>>32) % number32_of_buckets;
 }
 
-static inline int32_t hash44_function(uint64_t p)
+inline int32_t hash44_function(uint64_t p)
 {   return (uint32_t)
         (((hash44_multiplier*p)>>32) ^
          ((hash44_multiplier1*(p>>32))>>32)) % number44_of_buckets;
 }
 
-static inline int32_t hash52_function(uint64_t p)
+inline int32_t hash52_function(uint64_t p)
 {   return (uint32_t)
         (((hash52_multiplier*p)>>32) ^
          ((hash52_multiplier1*(p>>32))>>32)) % number52_of_buckets;
@@ -525,7 +525,7 @@ static uint32_t oddprime_bitmap[] =
     0x01140868, 0x802832ca, 0x264b0400, 0x60901300
 };
 
-static inline int jacobi_symbol_positive_args(uint64_t a, uint64_t b)
+inline int jacobi_symbol_positive_args(uint64_t a, uint64_t b)
 {   if (b%2 == 0) return 0;
     int j = 1;
     uint64_t r;
@@ -564,7 +564,7 @@ static int signed_jacobi_symbol(int64_t a, uint64_t b)
 //    integer_length(4)   = 3
 //    integer_length(8)   = 4
 
-static inline int integer_length(uint64_t n)
+inline int integer_length(uint64_t n)
 {   return 64 - nlz(n);
 }
 
@@ -576,7 +576,7 @@ static inline int integer_length(uint64_t n)
 //    lsd(4)   = 3
 //    lsd(8)   = 4
 
-static inline int lsd(uint64_t n)
+inline int lsd(uint64_t n)
 {
 #ifdef __GNUC__
     return __builtin_ctzll(n) + 1;
@@ -595,11 +595,11 @@ static inline int lsd(uint64_t n)
 
 // logbitp counts the least significant bit of the number as bit 0.
 
-static inline int logbitp(int pos, uint64_t a)
+inline int logbitp(int pos, uint64_t a)
 {   return (a & ((uint64_t)1<<pos)) != 0;
 }
 
-static inline uint64_t addmod64(uint64_t a, uint64_t b, uint64_t c)
+inline uint64_t addmod64(uint64_t a, uint64_t b, uint64_t c)
 {
 // If a and b are both in the range [0..c-1] then (a+b)%c will be either
 // a+b or a+b-c. There are two circumstances where I must go for the second
@@ -614,7 +614,7 @@ static inline uint64_t addmod64(uint64_t a, uint64_t b, uint64_t c)
     return w;
 }
 
-static inline uint64_t negatemod64(uint64_t a, uint64_t c)
+inline uint64_t negatemod64(uint64_t a, uint64_t c)
 {   if (a == 0) return a;
     else return c - a;
 }

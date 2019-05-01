@@ -1,11 +1,11 @@
-// File cslgc.cpp                         Copyright (c) Codemist, 1990-2018
+// File cslgc.cpp                         Copyright (c) Codemist, 1990-2019
 
 //
 // Garbage collection.
 //
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,14 +37,6 @@
 
 #include "headers.h"
 
-#ifndef WINDOWS_SYSTEM
-// A short-term patch so that the code builds when "--without-gui" is
-// specified at configure time. This will get removed when I have the
-// transition in my code more complete!
-#define EMBEDDED 1
-#endif
-
-
 #ifndef CONSERVATIVE
 // AT least for now I comment ALL of this file out if I am experimenting
 // with the conservative version of the GC, and I have copied all the code in
@@ -70,12 +62,9 @@ LispObject Lgc0(LispObject env)
 }
 
 LispObject Lgc(LispObject env, LispObject a)
-{
-// If GC is called with a non-nil argument the garbage collection
-// will be a full one - otherwise it will be soft and may do hardly
-// anything.
-    return reclaim(nil, "user request",
-                   a != nil ? GC_USER_HARD : GC_USER_SOFT, 0);
+{   reclaim(nil, "user request",
+            a != nil ? GC_USER_HARD : GC_USER_SOFT, 0);
+    return nil;
 }
 
 LispObject Lverbos(LispObject env, LispObject a)
@@ -93,12 +82,6 @@ LispObject Lverbos(LispObject env, LispObject a)
     return onevalue(fixnum_of_int(old_code));
 }
 
-
-bool volatile already_in_gc, tick_on_gc_exit;
-bool volatile interrupt_pending, tick_pending;
-LispObject volatile saveheaplimit;
-LispObject volatile savevheaplimit;
-LispObject * volatile savestacklimit;
 
 static int stop_after_gc = 0;
 
@@ -398,11 +381,13 @@ static void copy(LispObject *p)
     }
 }
 
-static bool reset_limit_registers(size_t vheap_need, bool stack_flag)
+static bool reset_limit_registers()
 // returns true if after resetting the limit registers there was
 // enough space left for me to proceed. Return false on failure, ie
 // need for a more genuine GC.
 {   void *p;
+// Put in a fence just to be cautious!
+    std::atomic_thread_fence(std::memory_order_seq_cst);
     bool full = false;
 // I wonder about the next test - memory would only really be full
 // if there was enough LIVE data to fill all the available free pages,
@@ -412,21 +397,20 @@ static bool reset_limit_registers(size_t vheap_need, bool stack_flag)
 // old and new spaces so if there are some large vectors they may leave
 // nasty gaps at the end of a page.
 //
-    size_t len = (char *)vheaplimit - (char *)vfringe;
 // If I get here during system start-up I will try to give myself some
 // more memory. I expect that will usually be possible!
     if (!garbage_collection_permitted)
-    {   if (fringe <= heaplimit && pages_count == 0)
+    {   if (pages_count == 0)
             full = !allocate_more_memory();
-        if (vheap_need > len && pages_count == 0)
-        {   if (!allocate_more_memory()) full = true;
-        }
     }
     else full = (pages_count <=
         heap_pages_count + (3*vheap_pages_count + 1)/2);
+    if (full) return false;
+// reset_limit_registers should only be called when something has run out,
+// so if it is CONS space I will expand the CONS heap, otherwise the VECTOR
+// heap.
     if (fringe <= heaplimit)
-    {   if (full) return false;
-        p = pages[--pages_count];
+    {   p = pages[--pages_count];
         space_now++;
         zero_out(p);
         heap_pages[heap_pages_count++] = p;
@@ -434,9 +418,8 @@ static bool reset_limit_registers(size_t vheap_need, bool stack_flag)
         fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
         heaplimit = (LispObject)((char *)heaplimit + SPARE);
     }
-    if (vheap_need > len)
+    else
     {   char *vf, *vh;
-        if (full) return false;
         p = pages[--pages_count];
         space_now++;
         zero_out(p);
@@ -446,40 +429,7 @@ static bool reset_limit_registers(size_t vheap_need, bool stack_flag)
         vh = vf + (CSL_PAGE_SIZE - 16);
         vheaplimit = (LispObject)vh;
     }
-    if (stack_flag) return (stack < stacklimit);
-    else return true;
-}
-
-// I need a way that a thread that is not synchronised with this one can
-// generate a Lisp-level interrupt. I achieve that by
-// letting that thread reset stacklimit. Then rather soon CSL will
-// do a stackcheck() and will call reclaim with type GC_STACK.
-//
-// call this with
-//    arg=0 to have no effect at all (!)   QUERY_INTERRUPT
-//    arg=1 for a clock tick event         TICK_INTERRUPT
-//    arg=2 for quiet unwind               QUIET_INTERRUPT
-//    arg=3 for backtrace.                 NOISY_INTERRUPT
-// in each case the previous value of the flag is returned. Note that
-// I do not do a "test-and-set" here so do NOT treat this as a proper
-// start at a mutex or semaphore! However if I apply a rule that the
-// asynchronous (GUI) task only ever sets the flag to a non-zero value
-// and only ever tests then to see if it has been reset to zero, while the
-// main worker thread only reads it to check for non-zero and then
-// resets it I have some degree of sanity.
-
-static volatile int async_type = QUERY_INTERRUPT;
-
-// The following fnction can be called from a signal handler. It just looks
-// and and sets some volatile variables.
-
-int async_interrupt(int type)
-{   int prev = async_type;
-    if (type != QUERY_INTERRUPT)
-    {   async_type = type;
-        stacklimit = stackbase;
-    }
-    return prev;
+    return true;
 }
 
 bool force_verbos = false;
@@ -490,25 +440,20 @@ static void report_at_end()
     double fn = (double)n*(CSL_PAGE_SIZE/(1024.0*1024.0));
     double fn1 = (double)n1*(CSL_PAGE_SIZE/(1024.0*1024.0));
     double z = (100.0*n)/n1;
-#ifdef WINDOW_SYSTEM
-    {   report_space(gc_number, z, fn1);
-        if (verbos_flag & 1 || force_verbos) trace_printf(
-                "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
-                fn, fn1, z);
-    }
-#else // WINDOW_SYSTEM
+#ifdef WITH_GUI
+    report_space(gc_number, z, fn1);
+#endif // WITH_GUI
     if (verbos_flag & 1 || force_verbos)
     {   trace_printf(
             "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
             fn, fn1, z);
     }
-#endif // WINDOW_SYSTEM
 // This reports in Kbytes, and does not overflow until over 100 Gbytes
     qvalue(used_space) = fixnum_of_int((int)(1024.0*fn));
     qvalue(avail_space) = fixnum_of_int((int)(1024.0*fn1));
 }
 
-LispObject use_gchook(LispObject p, LispObject arg)
+void use_gchook(LispObject arg)
 {   LispObject g = gchook;
     if (symbolp(g) && g != unset_var)
     {   g = qvalue(g);
@@ -526,16 +471,10 @@ LispObject use_gchook(LispObject p, LispObject arg)
                     reclaim_trigger_target = target;
                 }
             } RAII_trapcount;
-            push(p);
             Lapply1(nil, g, arg);  // Call the hook
-            pop(p);
         }
     }
-    return onevalue(p);
 }
-
-static double prev_consolidated = 0.0;
-static int prev_consolidated_set = 1;
 
 bool garbage_collection_permitted = false;
 
@@ -620,112 +559,51 @@ static void real_garbage_collector()
     new_vheap_pages_count = 0;
 }
 
-LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
-{   clock_t t0, t1, t2;
-    size_t vheap_need = 0;
-// If the trigger is reached I will force a full GC. But only if I
-// am allowed to!
-    if (reclaim_trigger_count == reclaim_trigger_target &&
-        garbage_collection_permitted)
-        stg_class = GC_USER_HARD;
+// The string "why" is just a message that I can include in any message that
+// the garbage collector displays. The "std_class" indicates what sort of
+// memory might be running low and the cases are:
+//   GC_CONS     cons heap
+//   GC_VEC      vector heap   (and GC_BPS)
+//   GC_STACK    Stack overflow. I think I should use respond_to_stack_event()
+//   GC_USER_HARD              (and GC_USER_SOFT)
+// The key thing is that in the GC_CONS and GC_VEC cases if I have an
+// available memory page I should just allocate it and not do anything at all
+// more.
+
+void reclaim(const char *why, int stg_class)
+{   if (pages_count != 0 ||
+        (!garbage_collection_permitted && allocate_more_memory()))
+    {   void *p;
+        char *vf, *vh;
+        switch (stg_class)
+        {
+        case GC_CONS:
+            p = pages[--pages_count];
+            space_now++;
+            zero_out(p);
+            heap_pages[heap_pages_count++] = p;
+            heaplimit = (intptr_t)p;
+            fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
+            heaplimit = (LispObject)((char *)heaplimit + SPARE);
+            return;
+        case GC_VEC: case GC_BPS:
+            p = pages[--pages_count];
+            space_now++;
+            zero_out(p);
+            vheap_pages[vheap_pages_count++] = p;
+            vf = (char *)p + 8;
+            vfringe = (LispObject)vf;
+            vh = vf + (CSL_PAGE_SIZE - 16);
+            vheaplimit = (LispObject)vh;
+            return;
+        default:
+        // GC_STACK, GC_USER_SOFT, GC_USER_HARD
+            break;
+        }
+    }
+    uint64_t t0;
     stop_after_gc = 0;
-// The precise garbage collector is given a target such that it would
-// take action of itself if it could not allocate enought space.
-    if (stg_class == GC_VEC || stg_class == GC_BPS) vheap_need = size;
-    already_in_gc = true;
-#if defined WIN32 && !defined __CYGWIN__
-    _kbhit(); // Fairly harmless anyway, but is here to let ^c get noticed
-//    printf("(*)"); fflush(stdout);  // while I debug!
-#endif // WIN32
-    push_clock(); t0 = base_time;
-// Life is a bit horrid here. I can have two significantly different sorts of
-// thing that cause this soft-GC to happen under FWIN. One is when I am in
-// windowed mode and FWIN provokes an asynchronous event for me. The other is
-// in non-windowed mode when my software_ticks counter overflows and does
-// a somewhat similar job... but from within this worker thread. The really
-// bad news is the thought of both of these active together, and so conflict
-// and confusion. Fresh and careful thought about that is needed before I
-// re-work this code.
-//
-// In non-windowed mode a problem I have is the detection of ^C interrupts.
-// Under Windows I have used SetConsoleMode (and under Unix/Linux tcsetattr)
-// to put the input into raw mode if it is direct from a keyboard. Thus
-// the operating system will not process ^C for me.
-    if (stg_class == GC_STACK && stacklimit == stackbase)
-    {   stacklimit = savestacklimit;
-        if (tick_pending)
-        {   tick_pending = 0;
-            heaplimit = saveheaplimit;
-            vheaplimit = savevheaplimit;
-            stacklimit = savestacklimit;
-        }
-        already_in_gc = false;
-        pop_clock();
-// There could, of course, be another async interrupt generated even during
-// this processing and certainly by the time I get into interrupted(),
-// and there could be "genuine" need for garbage collection or stack overflow
-// processing at any stage.
-        if (async_type == TICK_INTERRUPT)
-        {   long int t = (long int)(100.0 * consolidated_time[0]);
-            long int gct = (long int)(100.0 * gc_time);
-            async_type = QUERY_INTERRUPT;     // accepted!
-            fwin_acknowledge_tick();
-#ifndef EMBEDDED
-            report_time(t, gct);
-#endif
-            time_now = (int)consolidated_time[0];
-            if ((time_limit >= 0 && time_now > time_limit) ||
-                (io_limit >= 0 && io_now > io_limit))
-                resource_exceeded();
-            return onevalue(p);
-        }
-// If the user provokes a backtrace then at present I *ALWAYS* make it
-// a 100% full one. At some stage I could provide a different menu item
-// to deliver a semi-quiet interrupt...
-        else if (async_type == NOISY_INTERRUPT)
-            miscflags |= BACKTRACE_MSG_BITS;
-        else miscflags &= ~BACKTRACE_MSG_BITS;
-        async_type = QUERY_INTERRUPT;     // accepted!
-        return interrupted(p);
-    }
-    else
-    {
-// Some entries to reclaim() are fundamentally artificial: they happen because
-// some event has temporarily reset limit registers so that the next operation
-// that could even possibly call for a collection triggers one - even if it
-// is not really needed. reset_limit_registers() tidies things up and
-// allows processing to continue without doing a real collection in some
-// cases.
-        if ((!next_gc_is_hard || stg_class == GC_STACK) &&
-            stg_class != GC_USER_HARD &&
-            reset_limit_registers(vheap_need, true))
-        {   already_in_gc = false;
-            pop_clock();
-            if (space_limit >= 0 && space_now > space_limit)
-                resource_exceeded();
-// I have "soft" garbage collections - perhaps fairly frequently. I will
-// only call the GC hook function around once every 5 seconds to avoid undue
-// overhead in it.
-            if (!prev_consolidated_set)
-            {   prev_consolidated = consolidated_time[0];
-                prev_consolidated_set = 1;
-            }
-            if (consolidated_time[0] > prev_consolidated + 5.0)
-            {   prev_consolidated = consolidated_time[0];
-                return use_gchook(p, nil); // Soft GC
-            }
-            return onevalue(p);
-        }
-    }
-
-    if (stack >= stacklimit)
-    {   if (stacklimit != stackbase)
-        {   stacklimit = &stacklimit[50];  // Allow a bit of slack
-            pop_clock();
-            error(0, err_stack_overflow);
-        }
-    }
-
+    t0 = read_clock();
 // There are parts of the code in setup/restart where perhaps things are not
 // yet in a consistent state and so any attempt at garbage collection could
 // cause chaos. So during them I set a flag that I test here! Since this
@@ -738,19 +616,20 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
         my_exit(EXIT_FAILURE);    // totally drastic...
     }
 
-    push(p);
-
     gc_number++;
-    next_gc_is_hard = false;
     if (!valid_as_fixnum(gc_number)) gc_number = 0; // wrap round on 32-bit
                                                     // machines if too big.
     qvalue(gcknt_symbol) = fixnum_of_int(gc_number);
 
-#ifdef WINDOW_SYSTEM
+#ifdef WITH_GUI
 // If I have a window system I tell it the current time every so often
-// just to keep things cheery...
-    {   long int t = (long int)(100.0 * consolidated_time[0]);
-        long int gct = (long int)(100.0 * gc_time);
+// just to keep things cheery... so in such cases I will read the time
+// every time there is a garbage collection regardless of whether I am
+// generating GC messages. If I am not on a GUI system then  I only
+// report time if GC messages are enabled, so I will only read the clock
+// in that situation.
+    {   long int t = (t0 - base_time)/10000; // in centiseconds
+        long int gct = gc_time/10000;
 // @@@@
 // I guess that I want garbage collection messages, if any, to
 // be sent to stderr rather than whatever output stream happens to
@@ -758,11 +637,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
 // At present messages go to the normal output stream, which only makes
 // sense if GC messages are almost always disabled - maybe that will
 // be the case!
-#ifndef EMBEDDED
         report_time(t, gct);
-#endif
-        time_now = (int)consolidated_time[0];
-        if (verbos_flag & 1 || force_verbos)
+        time_now = read_clock();
+        if ((verbos_flag & 1) || force_verbos)
         {   freshline_trace();
             trace_printf(
                 "+++ Garbage collection %" PRId64
@@ -770,10 +647,10 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
                 gc_number, why, t/100, t%100, gct/100, gct%100);
         }
     }
-#else // WINDOW_SYSTEM
-    if (verbos_flag & 1 || force_verbos)
-    {   long int t = (long int)(100.0 * consolidated_time[0]);
-        long int gct = (long int)(100.0 * gc_time);
+#else // !WITH_GUI
+    if ((verbos_flag & 1) || force_verbos)
+    {   long int t = (t0 - base_time)/10000;
+        long int gct = gc_time/10000;
 // @@@@
 // I guess that I want garbage collection messages, if any, to
 // be sent to stderr rather than whatever output stream happens to
@@ -781,7 +658,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
 // At present messages go to the normal output stream, which only makes
 // sense if GC messages are almost always disabled - maybe that will
 // be the case!
-        time_now = (int)consolidated_time[0];
+        time_now = t0;
         if ((time_limit >= 0 && time_now > time_limit) ||
             (io_limit >= 0 && io_now > io_limit))
             resource_exceeded();
@@ -790,7 +667,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
             "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
             (long)gc_number, why, t/100, t%100, gct/100, gct%100);
     }
-#endif // WINDOW_SYSTEM
+#endif // !WITH_GUI
     switch (pages_count)
     {
     case 0: allocate_more_memory(); // ...and drop through...
@@ -820,23 +697,15 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
         aerror("reclaim-stack-limit");
     }
 
-    t2 = t1 = t0;   // Time is not split down in this case
     if (reclaim_trigger_target != 0)
         trace_printf("+++ GC trigger = %" PRId64 "\n", reclaim_trigger_count);
 
 // Now do the REAL work!
     real_garbage_collector();
 
-    gc_time += pop_clock();
-    t2 = base_time;
-
-    if ((verbos_flag & 5) == 5)
-// (verbos 4) gets the system to tell me how long each phase of GC took,
-// but (verbos 1) must be ORd in too.
-    {   trace_printf("Copy %ld ms\n",
-                     (long int)(1000.0 *
-                                (double)(t2-t0)/(double)CLOCKS_PER_SEC));
-    }
+    uint64_t t1 = read_clock();
+    gc_time += t1 - t0;
+    base_time += t1 - t0;
 // (verbos 5) causes a display breaking down how space is used
     if ((verbos_flag & 5) == 5)
     {   trace_printf(
@@ -849,34 +718,30 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
                      getvecs, (((char *)C_stackbase-(char *)&why)+1023)/1024,
                      (intptr_t)((stack-stackbase)+1023)/1024);
     }
-    pop(p);
 
     grab_more_memory(heap_pages_count + vheap_pages_count);
 
-// Put limit registers back again...
-    if (!reset_limit_registers(vheap_need, false))
-    {   if (stack < stacklimit || stacklimit != stackbase)
-        {   report_at_end();
-            term_printf("\n+++ Run out of memory\n");
-            ensure_screen();
-            my_exit(EXIT_FAILURE);    // totally drastic...
-        }
-    }
     report_at_end();
-    if (stop_after_gc) Lstop1(nil, fixnum_of_int(0));
-    if (interrupt_pending)
-    {   interrupt_pending = false;
-        already_in_gc = false;
-        tick_on_gc_exit = false;
-        return interrupted(p);
+// Put limit registers back again...
+    if (!reset_limit_registers())
+    {   term_printf("\n+++ Run out of memory\n");
+        ensure_screen();
+        my_exit(EXIT_FAILURE);    // totally drastic...
     }
-    already_in_gc = false;
+    if (stop_after_gc) Lstop1(nil, fixnum_of_int(0));
     if ((space_limit >= 0 && space_now > space_limit) ||
         (time_limit >= 0 && time_now > time_limit) ||
         (io_limit >= 0 && io_now > io_limit))
         resource_exceeded();
-    prev_consolidated = consolidated_time[0];
-    return use_gchook(p, lisp_true);
+    stackcheck();
+    use_gchook(lisp_true);
+}
+
+LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
+{   push(p);
+    reclaim(why, stg_class);
+    pop(p);
+    return p;
 }
 
 #endif // !CONSERVATIVE

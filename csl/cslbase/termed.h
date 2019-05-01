@@ -1,8 +1,8 @@
-// termed.h                                Copyright (C) 2004-2017 Codemist
+// termed.h                                Copyright (C) 2004-2019 Codemist
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -56,23 +56,37 @@
 // general you need not worry about the return value here in that if
 // local-editing can not be supported the remaining things still
 // have some sort of default behaviour.
-// Give an argument of 0 if you do not even want it to try to enable
-// local editing (eg because you know input will be generated not be
-// a real user but by a program).
 // The second argument is used to indicate colour options. NULL or "-"
 // will indicate "use default". An empty string will prevent any attempt
 // to use colour. Other strings set colours as follows:
-//      ...
-//
+//      There are three characters, which specify the colours for
+//      output, input and prompt (in that order). Each character can be one
+//      of
+//      kw   black or white
+//      rgb  red, green or blue
+//      cmy  cyan, magenta or yellow
+// (I think that the colour selection is not available on Windows).
 
-
-extern int term_setup(int flag, const char *colours);
+extern int term_setup(const char *argv0, const char *colours);
 
 //
 // Set the prompt string.
 //
 extern void term_setprompt(const char *s);
 extern void term_wide_setprompt(const wchar_t *s);
+
+//
+// This sets callbacks for ^C and ^G and ALT-^C and ALT-^G input
+//
+typedef int (keyboard_interrupt_callback)(int);
+extern keyboard_interrupt_callback *async_interrupt_callback;
+extern void set_keyboard_callbacks(keyboard_interrupt_callback *f1);
+
+#define QUERY_INTERRUPT 0
+#define QUIET_INTERRUPT 1
+#define NOISY_INTERRUPT 2
+#define BREAK_LOOP      3
+#define QUIT_PROGRAM    4
 
 //
 // Read a line from the terminal, applying history and local editing
@@ -100,7 +114,9 @@ extern void term_close(void);
 extern wchar_t *input_history[INPUT_HISTORY_SIZE];
 extern int input_history_next;
 
-extern void input_history_init(void);
+extern void input_history_init(const char *argv0,
+    int &historyFirst, int &historyLast, int &historyNumber,
+    int &input_history_next, int &longest_history_line);
 
 extern void input_history_end(void);
 

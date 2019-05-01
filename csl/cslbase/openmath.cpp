@@ -396,7 +396,7 @@ LispObject om_openFileDev(LispObject env, int nargs, ...)
     lenc = va_arg(args, LispObject);
     va_end(args);
 
-    push3(lname, lmode, lenc);
+    push(lname, lmode, lenc);
 
     // Convert the parameters into their C equivalents.
     if (!is_vector(lname) || !(type_of_header(vechdr(lname)) == TYPE_STRING))
@@ -415,7 +415,7 @@ LispObject om_openFileDev(LispObject env, int nargs, ...)
 //   * That may be a bit dodgy...
     fenc = om_toEncodingType(lenc);
 
-    pop3(lname, lmode, lenc);
+    pop(lname, lmode, lenc);
 
     f = fopen(fname, fmode);
     if (f == NULL)
@@ -448,7 +448,7 @@ LispObject om_openStringDev(LispObject env, LispObject lstr, LispObject lenc)
     OMdev dev;
     LispObject ldev;
 
-    push2(lstr, lenc);
+    push(lstr, lenc);
 
     pstr = om_toCString(lstr);
 
@@ -457,7 +457,7 @@ LispObject om_openStringDev(LispObject env, LispObject lstr, LispObject lenc)
     dev = OMmakeDevice(enc, OMmakeIOString(pstr));
     ldev = om_fromDev(dev);
 
-    pop2(lstr, lenc);
+    pop(lstr, lenc);
     return onevalue(ldev);
 }
 
@@ -479,7 +479,7 @@ LispObject om_setDevEncoding(LispObject env, LispObject ldev, LispObject lenc)
 {   OMdev dev;
     OMencodingType enc;
 
-    push2(ldev, lenc);
+    push(ldev, lenc);
 
     dev = om_toDev(ldev);
     if (!dev)
@@ -491,7 +491,7 @@ LispObject om_setDevEncoding(LispObject env, LispObject ldev, LispObject lenc)
 //   * That may be a bit dodgy...
     enc = om_toEncodingType(lenc);
 
-    pop2(ldev, lenc);
+    pop(ldev, lenc);
 
     OMsetDeviceEncoding(dev, enc);
     return onevalue(om_fromDev(dev));
@@ -597,7 +597,7 @@ LispObject om_connectTCP(LispObject env, int nargs, ...)
     lport = va_arg(args, LispObject);
     va_end(args);
 
-    push3(lconn, lhost, lport);
+    push(lconn, lhost, lport);
 
     // Convert the parameters into their C equivalents.
     conn = om_toConn(lconn);
@@ -614,7 +614,7 @@ LispObject om_connectTCP(LispObject env, int nargs, ...)
         aerror("om_connectTCP: port number must be a fixnum");
     port = int_of_fixnum(lport);
 
-    pop3(lconn, lhost, lport);
+    pop(lconn, lhost, lport);
 
     status = OMconnTCP(conn, host, port);
     if (status != OMsuccess)
@@ -629,7 +629,7 @@ LispObject om_bindTCP(LispObject env, LispObject lconn, LispObject lport)
     int32_t port;
     OMstatus status;
 
-    push2(lconn, lport);
+    push(lconn, lport);
 
     conn = om_toConn(lconn);
     if (!conn)
@@ -639,7 +639,7 @@ LispObject om_bindTCP(LispObject env, LispObject lconn, LispObject lport)
         aerror("om_bindTCP: port number must be a fixnum");
     port = int_of_fixnum(lport);
 
-    pop2(lconn, lport);
+    pop(lconn, lport);
 
     status = OMbindTCP(conn, port);
     if (status != OMsuccess)
@@ -1515,7 +1515,7 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
     else
     {   cdstr = make_string(cd);
         namestr = make_string(name);
-        // FIXME: is this needed?  push2(cdstr, namestr);
+        // FIXME: is this needed?  push(cdstr, namestr);
         obj = cons(cdstr, cons(namestr, nil));
     }
 

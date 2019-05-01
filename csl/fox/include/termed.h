@@ -76,12 +76,17 @@ extern void term_setprompt(const char *s);
 extern void term_wide_setprompt(const wchar_t *s);
 
 //
-// This sets callbacks for ^C and ^G input
+// This sets callbacks for ^C and ^G and ALT-^C and ALT-^G input
 //
-typedef void (keyboard_interrupt_callback)();
-extern void set_keyboard_callbacks(keyboard_interrupt_callback *f1,
-                                   keyboard_interrupt_callback *f2);
+typedef int (keyboard_interrupt_callback)(int);
+extern keyboard_interrupt_callback *async_interrupt_callback;
+extern void set_keyboard_callbacks(keyboard_interrupt_callback *f1);
 
+#define QUERY_INTERRUPT 0
+#define QUIET_INTERRUPT 1
+#define NOISY_INTERRUPT 2
+#define BREAK_LOOP      3
+#define QUIT_PROGRAM    4
 
 //
 // Read a line from the terminal, applying history and local editing

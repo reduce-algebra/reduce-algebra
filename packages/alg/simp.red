@@ -357,6 +357,7 @@ symbolic procedure mkop u;
    begin scalar x;
     if null u then typerr("Local variable","operator")
      else if u eq 'lambda then typerr("The symbol ""lambda""","operator")
+     else if get(u, 'formfn) then typerr("Reserved word", "operator")
      else if (x := gettype u) eq 'operator
       then lprim list(u,"already defined as operator")
     % Allow a scalar to also be an operator.

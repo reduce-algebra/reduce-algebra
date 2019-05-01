@@ -203,6 +203,7 @@ public:
   long onCmdResetWindow(FXObject *c, FXSelector s, void *ptr);
   long onCmdBreak(FXObject *c, FXSelector s, void *ptr);
   long onCmdBacktrace(FXObject *c, FXSelector s, void *ptr);
+  long onCmdBreakLoop(FXObject *c, FXSelector s, void *ptr);
   long onCmdPause(FXObject *c, FXSelector s, void *ptr);
   long onCmdResume(FXObject *c, FXSelector s, void *ptr);
   long onCmdStop(FXObject *c, FXSelector s, void *ptr);
@@ -249,6 +250,7 @@ public:
   int editPrevChar();
   int editPrevWord();
   int editBreak();
+  int editBreakLoop();
   int editCapitalize();
   int editDeleteForward();
   int editDeleteForwardWord();
@@ -324,6 +326,7 @@ public:
     ID_RESET_WINDOW,
     ID_BREAK,
     ID_BACKTRACE,
+    ID_BREAKLOOP,
     ID_PAUSE,
     ID_RESUME,
     ID_STOP,

@@ -193,6 +193,7 @@ FXDEFMAP(FXTerminal) FXTerminalMap[] =
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_RESET_WINDOW, FXTerminal::onCmdResetWindow),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_BREAK, FXTerminal::onCmdBreak),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_BACKTRACE, FXTerminal::onCmdBacktrace),
+    FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_BREAKLOOP, FXTerminal::onCmdBreakLoop),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_PAUSE, FXTerminal::onCmdPause),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_RESUME, FXTerminal::onCmdResume),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_STOP, FXTerminal::onCmdStop),
@@ -424,13 +425,6 @@ long FXTerminal::onCmdStop(FXObject *c, FXSelector sel, void *ptr)
     {   LockMutex(pauseMutex);
         main_window->setTitle("Stopped: press ^Z to resume");
         pauseFlags |= (PAUSE_PAUSE | PAUSE_STOP);
-// Now to ensure that we hang up SOON I will take steps to provoke a soft
-// interrupt. I want this to cause the worker to lock and then instantly
-// unlock the pauseMutex...
-        if (interrupt_callback != NULL)
-        {   int r = (*interrupt_callback)(QUERY_INTERRUPT);
-            if (r == 0) (*interrupt_callback)(TICK_INTERRUPT);
-        }
     }
     setFocus();   // I am uncertain, but without this I lose focus...
     return 1;
@@ -1617,9 +1611,9 @@ long FXTerminal::onCmdBreak(FXObject *c, FXSelector s, void *ptr)
 // call to return a control-C.
     if (pauseFlags & PAUSE_DISCARD) main_window->setTitle(window_full_title);
     pauseFlags &= ~PAUSE_DISCARD;
-    if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
+    if (async_interrupt_callback != NULL) (*async_interrupt_callback)(QUIET_INTERRUPT);
     if (isEditable()) // at present we are waiting for keyboard input.
-    {   inputBuffer[0] = 0x1f & 'C';
+    {   inputBuffer[0] = '\n';
         inputBuffer[1] = 0;
         inputBufferLen = 1;
         inputBufferP = 0;
@@ -1636,7 +1630,6 @@ long FXTerminal::onCmdBreak(FXObject *c, FXSelector s, void *ptr)
             UnlockMutex(mutex2);
         }
         recently_flushed = 0;
-        FXText::appendText("^C", 2);
         long r = FXText::onCmdInsertNewline(c, s, ptr);
         setEditable(FALSE);
         setFocus();   // I am uncertain, but without this I lose focus...
@@ -1652,9 +1645,9 @@ long FXTerminal::onCmdBacktrace(FXObject *c, FXSelector s, void *ptr)
     keyFlags &= ~ESC_PENDING;
     if (pauseFlags & PAUSE_DISCARD) main_window->setTitle(window_full_title);
     pauseFlags &= ~PAUSE_DISCARD;
-    if (interrupt_callback != NULL) (*interrupt_callback)(NOISY_INTERRUPT);
+    if (async_interrupt_callback != NULL) (*async_interrupt_callback)(NOISY_INTERRUPT);
     if (isEditable()) // at present we are waiting for keyboard input.
-    {   inputBuffer[0] = 0x1f & 'G';
+    {   inputBuffer[0] = '\n';
         inputBuffer[1] = 0;
         inputBufferLen = 1;
         inputBufferP = 0;
@@ -1672,6 +1665,44 @@ long FXTerminal::onCmdBacktrace(FXObject *c, FXSelector s, void *ptr)
         }
         recently_flushed = 0;
         FXText::appendText("^G", 2);
+        long r = FXText::onCmdInsertNewline(c, s, ptr);
+        setEditable(FALSE);
+        setFocus();   // I am uncertain, but without this I lose focus...
+        return r;
+    }
+    type_in = type_out = 0;
+    setFocus();   // I am uncertain, but without this I lose focus...
+    return 1;
+}
+
+long FXTerminal::onCmdBreakLoop(FXObject *c, FXSelector s, void *ptr)
+{
+    keyFlags &= ~ESC_PENDING;
+// I always call the interrupt callback procedure. If the user task was
+// suspended waiting for input then I release it causing the fwin_getchar()
+// call to return a control-C.
+    if (pauseFlags & PAUSE_DISCARD) main_window->setTitle(window_full_title);
+    pauseFlags &= ~PAUSE_DISCARD;
+    if (async_interrupt_callback != NULL)
+        (*async_interrupt_callback)(BREAK_LOOP);
+    if (isEditable()) // at present we are waiting for keyboard input.
+    {   inputBuffer[0] = '\n';
+        inputBuffer[1] = 0;
+        inputBufferLen = 1;
+        inputBufferP = 0;
+        if (sync_even)
+        {   sync_even = 0;
+            UnlockMutex(mutex3);
+            LockMutex(mutex2);
+            UnlockMutex(mutex4);
+        }
+        else
+        {   sync_even = 1;
+            UnlockMutex(mutex1);
+            LockMutex(mutex4);
+            UnlockMutex(mutex2);
+        }
+        recently_flushed = 0;
         long r = FXText::onCmdInsertNewline(c, s, ptr);
         setEditable(FALSE);
         setFocus();   // I am uncertain, but without this I lose focus...
@@ -2392,7 +2423,7 @@ default:
 //      Also ^D before any other input on a line sends EOF
 // E    To end               [Edit menu]          (also End key)
 // F    Forward char         Foward word          (also right arrow key)
-// G    ^G interrupt/cancel input         -       <<also escape search mode>>
+// G    ^G backtrace         enter Break Loop     <<also escape search mode>>
 //
 // H    Delete back          Del word back
 // I    TAB                  [File menu]          (also TAB key)
@@ -2749,7 +2780,9 @@ case KEY_b:
         else if (event->state & ALTMASK) return editPrevWord();
         else goto defaultlabel;
 case KEY_c:
-        if (event->state & CONTROLMASK) return editBreak();
+        if ((event->state & ALTMASK) &&
+            (event->state & CONTROLMASK)) exit(0);
+        else if (event->state & CONTROLMASK) return editBreak();
         else if (event->state & ALTMASK) return editCapitalize();
         else goto defaultlabel;
 case KEY_Delete:
@@ -2772,7 +2805,9 @@ case KEY_f:
         else if (event->state & ALTMASK) return editNextWord();
         else goto defaultlabel;
 case KEY_g:
-        if (event->state & (CONTROLMASK | ALTMASK)) return editBacktrace();
+        if ((event->state & ALTMASK) &&
+            (event->state & CONTROLMASK)) return editBreakLoop();
+        else if (event->state & CONTROLMASK) return editBacktrace();
         else goto defaultlabel;
 case KEY_h:
         if (event->state & CONTROLMASK) return editDeleteBackward();
@@ -3011,7 +3046,13 @@ int FXTerminal::editPrevWord()
 int FXTerminal::editBreak()
 {
 // Note that ^C generates a break action whether I am waiting for input or not.
-    return onCmdBreak(this, 0, NULL);;
+    return onCmdBreak(this, 0, NULL);
+}
+
+int FXTerminal::editBreakLoop()
+{
+// Note that ALT-^G generates a break action whether I am waiting for input or not.
+    return onCmdBreakLoop(this, 0, NULL);
 }
 
 // ALT-c  capitalize a word
@@ -4333,10 +4374,9 @@ long FXTerminal::requestRequestInput()
 // interrupt has been posted but not yet accepted I will return at once
 // with a "^C" or "^G" as relevant, and hope that the worker then picks up
 // the interrupt promptly.
-    if (interrupt_callback != NULL &&
-        (x = (*interrupt_callback)(QUERY_INTERRUPT)) != 0 &&
-        x != TICK_INTERRUPT)
-    {   inputBuffer[0] = x == QUIET_INTERRUPT ? 0x1f & 'C' : 0x1f & 'G';
+    if (async_interrupt_callback != NULL &&
+        (x = (*async_interrupt_callback)(QUERY_INTERRUPT)) != 0)
+    {   inputBuffer[0] = '\n';
         inputBuffer[1] = 0;
         inputBufferLen = 1;
         inputBufferP = 0;
@@ -4442,16 +4482,6 @@ long FXTerminal::onTimeout(FXObject *c, FXSelector s, void *p)
 //
 // Restart the timer so I get a continuing stream of ticks.
     application_object->addTimeout(this, ID_TIMEOUT, 1000, NULL);
-// I signal the user process with a "tick" around once per second. This can
-// be used eg to cause it to update the time display at the top of the
-// screen, or whatever... Note that if this happens just after somebody had
-// tried to post a more genuine interrupt this might risk overriding that, so
-// I only post a timer interrupt if no other one is pending.
-    if (interrupt_callback != NULL)
-    {   int r = (*interrupt_callback)(QUERY_INTERRUPT);
-        if (r == 0) (*interrupt_callback)(TICK_INTERRUPT);
-    }
-//
     if (++recently_flushed < 2) return 0;
 // When this handler is triggered it is in the interface thread and so
 // no other interface code is running. This it may update fwin_out. However
@@ -4742,7 +4772,5 @@ void FXTerminal::drawBufferText(FXDCWindow& dc,FXint x,FXint y,FXint,FXint,FXint
 // not in the FX namespace...
 
 int showmathInitialised = 0;
-
-
 
 // End of FXTerminal.cpp

@@ -83,7 +83,7 @@ then
   exit 1
 fi
 
-sudo port install          \
+sudo port -N install       \
   astyle                   \
   autoconf                 \
   autoconf-archive         \
@@ -144,7 +144,7 @@ sudo port install          \
 # a copy of Reduce fetched from subversion will - from time to time - be in
 # need of some patching before it builds successfully!
 
-sudo port install  gnome-system-monitor
+sudo port -N install gnome-system-monitor
 
 # In around January 2016 and for some while after that I found that macports
 # did not generate a libfontconfig.a while installing fontconfig, and that

@@ -4483,9 +4483,6 @@ void fwin_putchar(int c)
 {
     if (!windowed)
     {
-#ifdef __CYGWIN__
-        if (c == '\n') fwin_putchar('\r');
-#endif
 #ifdef WIN32
         if ((c & 0xc0) != 0x80 && line_buffer_p > LINE_BUFFER_SIZE-5)
             flush_line_buffer();

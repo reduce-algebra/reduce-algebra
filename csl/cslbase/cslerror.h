@@ -38,7 +38,7 @@
 #ifndef header_cslerror_h
 #define header_cslerror_h 1
 
-extern LispObject interrupted(LispObject p);
+extern void interrupted(bool noisy);
 
 NORETURN extern void error(int nargs, int code, ...);
 NORETURN extern void cerror(int nargs, int code1, int code2, ...);
@@ -155,6 +155,7 @@ NORETURN extern void aerror(const char *s);         // Called from C not Lisp
 NORETURN extern void aerror0(const char *s);
 NORETURN extern void aerror1(const char *s, LispObject a);
 NORETURN extern void aerror2(const char *s, LispObject a, LispObject b);
+NORETURN extern void aerror2(const char *s, const char *a, LispObject b);
 NORETURN extern void aerror3(const char *s, LispObject a, LispObject b, LispObject c);
 NORETURN extern void fatal_error(int code, ...);
 

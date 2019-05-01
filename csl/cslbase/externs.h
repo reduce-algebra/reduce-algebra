@@ -137,6 +137,16 @@ inline void my_assert(bool ok, F&& action)
           fflush(stderr); \
           } while (0)
 
+#define DF(f,...) do { \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s: ", __LINE__, _f_); \
+          fprintf(stderr, f, __VA_ARGS__); \
+          fprintf(stderr, "\n"); \
+          fflush(stderr); \
+          } while (0)
+
 extern std::mutex debug_lock;
 extern const char *debug_file;
 extern int debug_line;
@@ -170,20 +180,18 @@ extern volatile char stack_contents_temp;
 extern int check_stack(const char *file, int line);
 extern void show_stack();
 
-static intline void if_check_stack()
+inline void if_check_stack()
 {   if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         aerror("stack overflow");
     }
 }
 #else
-static inline void if_check_stack()
+inline void if_check_stack()
 {   const char *_p_ = (const char *)&_p_; \
     if ((uintptr_t)_p_ < C_stacklimit) aerror("stack overflow"); \
 }
 #endif
-
-extern int32_t software_ticks, countdown;
 
 //
 // Extra debugging help...
@@ -270,7 +278,6 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 //   64-bit    nil+4     nil
 //
 
-extern LispObject * volatile stacklimit;
 
 #ifdef CONSERVATIVE
 extern uintptr_t heapstart;
@@ -283,12 +290,19 @@ extern uintptr_t vfringe;
 extern uintptr_t vheaplimit;
 extern uintptr_t vlen;
 extern uintptr_t vxor_chain;
+
+
+extern uintptr_t stacklimit;
 #else
 extern LispObject fringe, next_fringe;
 extern LispObject heaplimit;
 extern LispObject vfringe, next_vfringe;
 extern LispObject vheaplimit;
+
+extern LispObject *stacklimit;
 #endif
+
+extern volatile std::atomic<uintptr_t> event_flag;
 
 extern intptr_t nwork;
 
@@ -434,12 +448,6 @@ extern void simple_print(LispObject x);
 extern void simple_msg(const char *s, LispObject x);
 extern uint64_t hash_equal(LispObject key);
 
-//
-// The following are used to help <escape> processing.
-//
-extern LispObject * volatile savestacklimit;
-extern LispObject volatile saveheaplimit;
-extern LispObject volatile savevheaplimit;
 extern char *exit_charvec;
 
 //
@@ -496,6 +504,7 @@ extern int errorset_min, errorset_max;
 
 extern bool force_verbos, force_echo, force_backtrace;
 extern bool stop_on_error;
+extern uint64_t force_cons, force_vec;
 
 extern size_t number_of_input_files,
        number_of_symbols_to_define,
@@ -507,16 +516,20 @@ extern const char *standard_directory;
 extern int64_t gc_number;
 extern int64_t reclaim_trap_count;
 extern uintptr_t reclaim_stack_limit;
-extern bool next_gc_is_hard;
 extern uint64_t reclaim_trigger_count, reclaim_trigger_target;
 
-extern int deal_with_tick();
+#ifdef CONSERVATIVE
+extern void reclaim(const char *why);
+#else
 extern LispObject reclaim(LispObject value_to_return, const char *why,
                           int stg_class, size_t size);
+#endif
+extern void use_gchook(LispObject arg);
 
 extern uint64_t force_cons, force_vec;
+extern bool next_gc_is_hard;
 
-static inline bool cons_forced(size_t n)
+inline bool cons_forced(size_t n)
 {
 #ifdef DEBUG
     if (force_cons == 0) return false;
@@ -530,7 +543,7 @@ static inline bool cons_forced(size_t n)
     return false;
 }
 
-static inline bool vec_forced(size_t n)
+inline bool vec_forced(size_t n)
 {
 #ifdef DEBUG
     if (force_vec == 0) return false;
@@ -666,13 +679,8 @@ extern void ensure_screen();
 extern int window_heading;
 NORETURN extern void my_exit(int n);
 
-extern clock_t base_time;
-extern double *clock_stack;
-extern void push_clock();
-extern double pop_clock();
-extern double consolidated_time[10], gc_time;
-extern bool volatile already_in_gc, tick_on_gc_exit;
-extern bool volatile interrupt_pending, tick_pending;
+extern uint64_t base_time;
+extern uint64_t gc_time;
 extern bool trap_floating_overflow;
 extern const volatile char *errorset_msg;
 extern int errorset_code;
@@ -745,8 +753,8 @@ extern LispObject get_vector(int tag, int type, size_t length);
 extern LispObject get_vector_init(size_t n, LispObject v);
 extern LispObject reduce_vector_size(LispObject n, size_t length);
 extern void       prepare_for_borrowing();
-static inline void zero_out(void *p)
-{   char *p1 = (char *)doubleword_align_up((intptr_t)p);
+inline void zero_out(void *p)
+{   char *p1 = (char *)doubleword_align_up((uintptr_t)p);
     memset(p1, 0, CSL_PAGE_SIZE);
 }
 extern LispObject borrow_basic_vector(int tag, int type, size_t length);
@@ -849,12 +857,12 @@ extern void validate_string_fn(LispObject a, const char *f, int l);
 // leaves the variable exit_count set to indicate how many results it is
 // returning.
 
-static inline LispObject onevalue(LispObject r)
+inline LispObject onevalue(LispObject r)
 {   exit_count = 1;
     return r;
 }
 
-static inline LispObject nvalues(LispObject r, int n)
+inline LispObject nvalues(LispObject r, int n)
 {   exit_count = n;
     return r;
 }
@@ -871,21 +879,21 @@ static inline LispObject nvalues(LispObject r, int n)
 //            then they are not EQUAL (those types need to be EQ to be EQUAL)
 //   otherwise call equal_fn(a, b) to decide the issue.
 //
-static inline bool equal(LispObject a, LispObject b)
+inline bool equal(LispObject a, LispObject b)
 {   if (a == b) return true;  // This may be bad for (equal NaN NaN) ?
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return equal_fn(a, b);
     else return false;
 }
 
-static inline bool cl_equal(LispObject a, LispObject b)
+inline bool cl_equal(LispObject a, LispObject b)
 {   if (a == b) return true;  // This may be bad for (equal NaN NaN) ?
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return cl_equal_fn(a, b);
     else return false;
 }
 
-static inline bool eql(LispObject a, LispObject b)
+inline bool eql(LispObject a, LispObject b)
 {   if (a == b) return true;  // This may be bad for (equal NaN NaN) ?
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return eql_fn(a, b);

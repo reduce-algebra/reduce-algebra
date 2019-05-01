@@ -1326,10 +1326,10 @@ void write_function(void *p)
 
 #define GC_PROTECT(stmt)                             \
     do                                               \
-    {   push4(r, s, pbase, b);                       \
+    {   push(r, s, pbase, b);                        \
         ip = (LispObject)p - pbase;                  \
         stmt;                                        \
-        pop4(b, pbase, s, r);                        \
+        pop(b, pbase, s, r);                         \
         p = (LispObject *)(pbase + ip);              \
     } while (0)
 
@@ -3204,13 +3204,13 @@ bool setup_codepointers = false;
 LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
 {
 #ifdef DEBUG_FASL
-    push2(a, b);
+    push(a, b);
     trace_printf("FASLOUT: ");
     loop_print_trace(a);
     trace_printf("\n");
     loop_print_trace(b);
     trace_printf("\n");
-    pop2(b, a);
+    pop(b, a);
 #endif // DEBUG_FASL
     if (!setup_codepointers)
     {   set_up_function_tables();
@@ -3339,7 +3339,7 @@ static LispObject load_module(LispObject env, LispObject file,
 // overhead to be counted as "garbage collector time" rather than
 // regular "cpu time"
 //
-    push_clock();
+    uint64_t t0 = read_clock();
     if (verbos_flag & 2)
     {   freshline_trace();
         if (option != F_LOAD_MODULE)
@@ -3357,10 +3357,12 @@ static LispObject load_module(LispObject env, LispObject file,
     class serializer_tidy
     {   LispObject *save;
         bool from_stream;
+        uint64_t t0b;
     public:
-        serializer_tidy(bool fg)
+        serializer_tidy(bool fg, uint64_t t0a)
         {   save = stack;
             from_stream = fg;
+            t0b = t0a;
         }
         ~serializer_tidy()
         {   stack = save;
@@ -3374,10 +3376,12 @@ static LispObject load_module(LispObject env, LispObject file,
             {   pop(qvalue(echo_symbol));
                 pop(qvalue(standard_input));
             }
-            gc_time += pop_clock();
+            uint64_t delta = read_clock() - t0b;
+            gc_time += delta;
+            base_time += delta;
         }
     };
-    {   serializer_tidy raii(from_stream);
+    {   serializer_tidy raii(from_stream, t0);
         reader_setup_repeats(read_u64());
         r = serial_read();
 #ifdef DEBUG_SERIALIZE
@@ -3423,16 +3427,16 @@ static LispObject load_module(LispObject env, LispObject file,
                 w = get(name, load_selected_source_symbol, nil);
                 if (w == nil) getsavedef = false;
                 else if (integerp(w) != nil && consp(def))
-                {   push4(name, file, r, def);
+                {   push(name, file, r, def);
 // The md60 function is called on something like (fname (args...) body...)
                     def = cons(name, qcdr(def));
                     LispObject w1 = Lmd60(nil, def);
                     if (!numeq2(w, w1)) getsavedef = false;
-                    pop4(def, r, file, name);
+                    pop(def, r, file, name);
                 }
             }
             if (getsavedef)
-            {   push3(name, file, r);
+            {   push(name, file, r);
                 if (name == nil)
                 {   LispObject p1 = qcdr(p);
                     LispObject n1 = qcar(p1);
@@ -3441,23 +3445,23 @@ static LispObject load_module(LispObject env, LispObject file,
                     putprop(n1, t1, v1);
                 }
                 else putprop(name, savedef, def);
-                pop3(r, file, name);
+                pop(r, file, name);
 // Build up a list of the names of all functions whose !*savedef information
 // has been established.
-                push2(r, name);
+                push(r, name);
                 file = cons(name, file);
-                pop2(name, r);
+                pop(name, r);
             }
 // Now set up the load_source property on the function name to indicate the
 // module it was found in.
             LispObject w;
             w = get(name, load_source_symbol, nil);
-            push3(name, file, r);
+            push(name, file, r);
             w = cons(current_module, w);
-            pop3(r, file, name);
-            push3(name, file, r);
+            pop(r, file, name);
+            push(name, file, r);
             putprop(name, load_source_symbol, w);
-            pop3(r, file, name);
+            pop(r, file, name);
         }
     }
     if (option == F_LOAD_MODULE) return onevalue(nil);
@@ -3479,16 +3483,16 @@ LispObject load_source0(int option)
 // names.
     LispObject mods = nil;
     for (LispObject l = qvalue(input_libraries); is_cons(l); l = qcdr(l))
-    {   push2(mods, l);
+    {   push(mods, l);
         LispObject m = Llibrary_members(nil, qcar(l));
-        pop2(l, mods);
+        pop(l, mods);
         while (is_cons(m))
         {   LispObject m1 = qcar(m);
             m = qcdr(m);
             if (Lmemq(nil, m1, mods) != nil) continue;
-            push2(l, m);
+            push(l, m);
             mods = cons(m1, mods);
-            pop2(m, l);
+            pop(m, l);
         }
     }
 // Now I will do load-source or load-selected-source on each module, and
@@ -3498,9 +3502,9 @@ LispObject load_source0(int option)
     while (is_cons(mods))
     {   LispObject m = qcar(mods);
         mods = qcdr(mods);
-        push2(r, mods);
+        push(r, mods);
         LispObject w = load_module(nil, m, option);
-        pop2(mods, r);
+        pop(mods, r);
         push(mods);
 // The special version of UNION here always works in linear time, and that
 // is MUCH better than the more general version. Well with bootstrapreduce
@@ -3849,6 +3853,10 @@ void warm_setup()
 // I find onto the stack... My function returns true if it fails because
 // of stack overflow, and in that case the stack will be (almost) full but
 // not all symbols will be on it.
+//
+// BUT.... this stuff is only used for an explicit list-all-symbols function
+// that the user could call or for mapstore(), and so I am really not very
+// concerned about its limitation!
 
 typedef bool symbol_processor_predicate(LispObject);
 
@@ -3881,7 +3889,8 @@ down:
         case TAG_SYMBOL:
             debug_record("push_symbols SYMBOL");
             if (address_used(p - TAG_SYMBOL)) goto up;
-            if (stack+100 < stacklimit)
+// I will stop 256 bytes before letting the stack overflow.
+            if ((uintptr_t)stack+256 < (uintptr_t)stacklimit)
             {   if ((*pp)(p)) push(p);
             }
             else fail = true; // I must keep traversing to restore things.

@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
     {   fprintf(stderr, "Unable to identify program name and directory\n");
         return 1;
     }
-    term_setup(1, NULL);
+    term_setup(argv[0], NULL);
     atexit(term_close);
     try
     {   res = submain(argc, argv);

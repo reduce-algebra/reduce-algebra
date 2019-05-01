@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 With much help from Auston Sterling
 
-Thanks to Stefan Deigmüller for finding
+Thanks to Stefan Deigmï¿½ller for finding
 a bug in operator*.
 
-Thanks to François Dessenne for convincing me
+Thanks to Franï¿½ois Dessenne for convincing me
 to do a general rewrite of this class.
 */
 

@@ -108,14 +108,14 @@ static LispObject quotib(LispObject a, LispObject b)
 static LispObject CLquotib(LispObject a, LispObject b)
 {   LispObject g;
     bool w;
-    push2(a, b);
+    push(a, b);
     w = minusp(b);
     g = gcd(stack[0], stack[-1]);
     if (w) g = negate(g);
     a = stack[-1];
     push(g);
     a = quot2(a, g);
-    pop2(g, b);
+    pop(g, b);
     stack[0] = a;
     b = quot2(b, g);
     pop(a);
@@ -137,7 +137,7 @@ static LispObject quotir(LispObject a, LispObject b)
 {   LispObject w;
     mv_2 = fixnum_of_int(0);
     if (a == fixnum_of_int(0)) return a;
-    push3(b, a, nil);
+    push(b, a, nil);
 #define g   stack[0]
 #define a   stack[-1]
 #define b   stack[-2]
@@ -168,7 +168,7 @@ static LispObject quotic(LispObject a, LispObject b)
 //
 {   LispObject u, v;
     mv_2 = fixnum_of_int(0);
-    push2(a, b);
+    push(a, b);
 #define b stack[0]
 #define a stack[-1]
 //
@@ -626,7 +626,7 @@ static LispObject quotbs(LispObject a, LispObject b)
 // lengths of a and b unchanged by negation so there can be no risk. So it
 // seems that I have just a single edge case to test for!
 
-static inline LispObject short_numerator(LispObject a, size_t lena,
+inline LispObject short_numerator(LispObject a, size_t lena,
                                          LispObject b, size_t lenb)
 {   mv_2 = a;
 // I can only have trouble if the representation of a is just one
@@ -646,7 +646,7 @@ static inline LispObject short_numerator(LispObject a, size_t lena,
     return fixnum_of_int(-1);
 }
 
-static inline size_t copy_unsigned(LispObject r, LispObject a, size_t lena)
+inline size_t copy_unsigned(LispObject r, LispObject a, size_t lena)
 {   if (bignum_digits(a)[lena] == 0) lena--;
     for (size_t i=0; i<=lena; i++)
        bignum_digits(r)[i] = bignum_digits(a)[i];
@@ -656,7 +656,7 @@ static inline size_t copy_unsigned(LispObject r, LispObject a, size_t lena)
 // The following should only ever be used for negating numbers that
 // start off negative, so the result should always be positive.
 
-static inline size_t copy_negated(LispObject r, LispObject a, size_t lena)
+inline size_t copy_negated(LispObject r, LispObject a, size_t lena)
 {   uint32_t carry = 1;
 //  show("input to copy_negated ", a, lena);
 //  trace_printf("with lena = %d\n", (int)lena);
@@ -675,33 +675,33 @@ static inline size_t copy_negated(LispObject r, LispObject a, size_t lena)
 #define SIGN_QUOTIENT_NEGATIVE   1
 #define SIGN_REMAINDER_NEGATIVE  2
 
-static inline int make_positive_and_copy(LispObject &a, size_t &lena,
+inline int make_positive_and_copy(LispObject &a, size_t &lena,
                                          LispObject &b, size_t &lenb)
 {
 // Before I do anything else I will ensure that there is space available
 // in the working variables... And I will leave myself a few bytes in hand.
     while (bignum_length(a)+16 >= bignum_length(big_dividend))
     {   size_t newlen = 2*bignum_length(big_dividend);
-        push2(a, b);
+        push(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
-        pop2(b, a);
+        pop(b, a);
         big_dividend = w;
     }
     while (bignum_length(b)+16 >= bignum_length(big_divisor))
     {   size_t newlen = 2*bignum_length(big_divisor);
-        push2(a, b);
+        push(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
-        pop2(b, a);
+        pop(b, a);
         big_divisor = w;
     }
     while (bignum_length(a)-bignum_length(b)+16 >= bignum_length(big_quotient))
     {   size_t newlen = 2*bignum_length(big_quotient);
-        push2(a, b);
+        push(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
-        pop2(b, a);
+        pop(b, a);
         big_quotient = w;
     }
     int sign = 0;
@@ -731,7 +731,7 @@ static inline int make_positive_and_copy(LispObject &a, size_t &lena,
 // most 0x40000000U and each digit in a is at most 0x7fffffffU, so the
 // carry digit returned is at worst 0x3fffffffU.
 
-static inline uint32_t timesbn(LispObject a, size_t len, uint32_t scale)
+inline uint32_t timesbn(LispObject a, size_t len, uint32_t scale)
 {   uint32_t carry = 0;
     for (size_t i=0; i<=len; i++)
     {   uint64_t d = (uint64_t)bignum_digits(a)[i] * (uint64_t)scale + carry;
@@ -741,7 +741,7 @@ static inline uint32_t timesbn(LispObject a, size_t len, uint32_t scale)
     return carry;   
 }
 
-static inline int32_t multiply_and_subtract(LispObject a, size_t lena,
+inline int32_t multiply_and_subtract(LispObject a, size_t lena,
                                             uint32_t q0,
                                             LispObject b, size_t lenb)
 {   int32_t carry = 0;
@@ -764,7 +764,7 @@ static inline int32_t multiply_and_subtract(LispObject a, size_t lena,
     return carry;   
 }
 
-static inline int32_t add_back_correction(LispObject a, size_t lena,
+inline int32_t add_back_correction(LispObject a, size_t lena,
                                           LispObject b, size_t lenb)
 {    uint32_t carry = 0;
      for (size_t i=0; i<=lenb; i++)
@@ -777,7 +777,7 @@ static inline int32_t add_back_correction(LispObject a, size_t lena,
      return carry;   
 }
 
-static inline uint32_t next_quotient_digit(uint32_t atop,
+inline uint32_t next_quotient_digit(uint32_t atop,
                                            LispObject a, size_t &lena,
                                            LispObject b, size_t lenb)
 {   uint64_t p0 = (uint64_t)atop<<31 | bignum_digits(a)[lena];
@@ -815,7 +815,7 @@ static inline uint32_t next_quotient_digit(uint32_t atop,
 // a is a scaled positive value that , when divided by the scale factor
 // will be less than the original divisor.
 
-static inline size_t unscale(LispObject a, size_t lena, uint32_t scale)
+inline size_t unscale(LispObject a, size_t lena, uint32_t scale)
 {   uint32_t atop = 0;
     size_t i = lena;
     for (;;)
@@ -838,7 +838,7 @@ static inline size_t unscale(LispObject a, size_t lena, uint32_t scale)
 // Adjust the quotient format so it will be OK for my awkward internal
 // representation.
 
-static inline size_t fix_up_bignum_length(LispObject q, size_t lenq)
+inline size_t fix_up_bignum_length(LispObject q, size_t lenq)
 {
     if ((bignum_digits(q)[lenq] & 0x40000000U) != 0)
     {   lenq++;
@@ -853,7 +853,7 @@ static inline size_t fix_up_bignum_length(LispObject q, size_t lenq)
 // For this one the input starts off positive and so it will end up negative.
 // That could lead to it being able to get away with just one fewer digit.
 
-static inline size_t negate_in_place(LispObject a, size_t lena)
+inline size_t negate_in_place(LispObject a, size_t lena)
 {   uint32_t carry = 1;
     for (size_t i=0; i<lena; i++)
     {   uint32_t d = (bignum_digits(a)[i] ^ 0x7fffffff) + carry;
@@ -875,7 +875,7 @@ static inline size_t negate_in_place(LispObject a, size_t lena)
     return lena;
 }
 
-static inline LispObject pack_up_result(LispObject a, size_t lena)
+inline LispObject pack_up_result(LispObject a, size_t lena)
 {
 //  show("pack_up_result ", a, lena);
     if (lena == 0 &&
@@ -1020,7 +1020,7 @@ static LispObject quotri(LispObject a, LispObject b)
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(0))
         aerror2("bad arg for quotient", a, b);
-    push3(a, b, nil);
+    push(a, b, nil);
 #define g   stack[0]
 #define b   stack[-1]
 #define a   stack[-2]
@@ -1050,9 +1050,9 @@ static LispObject quotrs(LispObject a, LispObject b)
 static LispObject quotrr(LispObject a, LispObject b)
 {   LispObject w;
     mv_2 = fixnum_of_int(0);
-    push5(numerator(a), denominator(a),
-          denominator(b), numerator(b), // NB switched order
-          nil);
+    push(numerator(a), denominator(a),
+         denominator(b), numerator(b), // NB switched order
+         nil);
 #define g   stack[0]
 #define db  stack[-1]
 #define nb  stack[-2]
@@ -1096,9 +1096,9 @@ static LispObject quotci(LispObject a, LispObject b)
 {   LispObject r = real_part(a), i = imag_part(a);
     mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(0)) aerror2("bad arg for quotient", a, b);
-    push2(b, r);
+    push(b, r);
     i = quot2(i, b);
-    pop2(r, b);
+    pop(r, b);
     push(i);
     r = quot2(r, b);
     pop(i);

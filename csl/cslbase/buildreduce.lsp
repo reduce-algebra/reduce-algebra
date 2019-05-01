@@ -250,7 +250,7 @@
 
 (put '!> 'switch!* '(((!= nil geq) (!> nil !*rsqbkt!*)) greaterp))
 
-% When the full pareser is loaded the function mkprec() will reset all
+% When the full parser is loaded the function mkprec() will reset all
 % these precedences. Until then please parenthesize expressions carefully.
 
 (put '!*comma!* 'infix 1)
@@ -721,12 +721,12 @@ rdf "$reduce/cslbuild/generated-c/u58.lsp"$
 rdf "$reduce/cslbuild/generated-c/u59.lsp"$
 rdf "$reduce/cslbuild/generated-c/u60.lsp"$
 
-!#endif
+!#endif  % jlisp
 
 if modulep 'smacros then load!-module 'smacros;
 
 faslend;
-!#endif
+!#endif  % embedded
 
 faslout 'remake;
 
@@ -734,7 +734,7 @@ faslout 'remake;
 
 load!-module "user";
 
-!#endif
+!#endif % embedded
 
 in "$reduce/packages/support/remake.red"$
 

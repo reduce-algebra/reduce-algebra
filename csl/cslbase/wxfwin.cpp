@@ -1,4 +1,4 @@
-// wxfwin.cpp                                     Copyright A C Norman 2017
+// wxfwin.cpp                                     Copyright A C Norman 2018
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -396,9 +396,9 @@ void display_font_information()
 
 int windowed = 0;
 
-int texmacs_mode = 0;
+bool texmacs_mode = false;
 
-int fwin_pause_at_end = 0;
+bool fwin_pause_at_end = false;
 
 #ifdef WIN32
 
@@ -858,22 +858,6 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
     return windowed_worker(argc, argv, fwin_main);
 }
 
-#ifdef HAVE_SIGACTION
-void sigint_handler(int signo, siginfo_t *t, void *v)
-#else // !HAVE_SIGACTION
-void sigint_handler(int signo)
-#endif // !HAVE_SIGACTION
-{
-// For debugging I may want to see when signals get caught... Note that
-// doing anything such as printing to a log file represents undefined
-// behaviour in a signal handler, so this may be useful for debugging but
-// is not guaranteed safe in general. Well I could arrange to use "write"
-// rather than "fprintf" and then I would actually be safe!
-    FWIN_LOG("sigint_handler called %d %#x\n", signo, signo);
-    if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
-    return;
-}
-
 #endif // EMBEDDED
 
 //
@@ -882,7 +866,7 @@ void sigint_handler(int signo)
 // The test I apply can probably never be 100% satisfactory, but if I
 // catch all the most common cases I will feel reasonably relaxed!
 //
-int using_termed = 0;
+bool using_termed = false;
 
 static int direct_to_terminal(int argc, const char *argv[])
 {
@@ -915,31 +899,13 @@ static int direct_to_terminal(int argc, const char *argv[])
 
 int plain_worker(int argc, const char *argv[], fwin_entrypoint *main)
 {   int r;
-#ifdef HAVE_SIGACTION
-    struct sigaction sa;
-    sa.sa_sigaction = sigint_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART | SA_SIGINFO | SA_ONSTACK | SA_NODEFER;
-// (a) restart system calls after signal (if possible),
-// (b) use handler that gets more information,
-// (c) use alternative stack for the handler,
-// (d) leave the SIGINT unmasked while the handler is active. This
-//     will be vital if then handler "exits" using longjmp, because as
-//     far as the exception system is concerned that leaves us within the
-//     handler. But after the  exit is caught by setjmp I want the
-//     exception to remain trapped.
-    if (sigaction(SIGINT, &sa, NULL) == -1)
-        /* I can not thing of anything useful to do if I fail here! */;
-#else // !HAVE_SIGACTION
-    signal(SIGINT, sigint_handler);
-#endif // !HAVE_SIGACTION
     if (!texmacs_mode && direct_to_terminal(argc, argv))
     {   input_history_init();
-        term_setup(1, colour_spec);
+        term_setup(argv[0], colour_spec);
         atexit(term_close);
-        using_termed = 1;
+        using_termed = true;
     }
-    else using_termed = 0;
+    else using_termed = false;
     strcpy(fwin_prompt_string, "> ");
     r = (*main)(argc, argv);
     input_history_end();
@@ -963,7 +929,6 @@ int fwin_plain_getchar()
             current_line = term_getline();
             if (current_line == NULL) return EOF;  // failed or EOF
             chars_left = strlen(current_line);
-//          input_history_add(current_line);
         }
     }
     else if (chars_left == 0)

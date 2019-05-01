@@ -1,4 +1,4 @@
-// fwin.cpp                                 Copyright A C Norman 2003-2018
+// fwin.cpp                                 Copyright A C Norman 2003-2019
 //
 //
 // Window interface for old-fashioned C/C++ applications. Intended to
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -69,7 +69,7 @@
 //   distinction between 32 and 64-bit windows, but within the Linux
 //   sections I will sometimes need to be conditional on __CYGWIN__.
 //
-//   If EMBEDDED is defined a somewhatr abbreviated version will be built
+//   If EMBEDDED is defined a somewhat abbreviated version will be built
 //   since in that context simplicity trumps capability.
 
 #ifdef HAVE_CONFIG_H
@@ -325,7 +325,6 @@ char fwin_prompt_string[MAX_PROMPT_LENGTH] = "> ";
 int fwin_linelength = 80;
 
 delay_callback_t *delay_callback;
-interrupt_callback_t *interrupt_callback;
 
 extern const char *my_getenv(const char *s);
 
@@ -342,9 +341,9 @@ int windowed = 0;
 bool texmacs_mode = false;
 
 #ifdef HAVE_LIBXFT
-bool fwin_use_xft = 1;
+bool fwin_use_xft = true;
 #else // HAVE_LIBXFT
-bool fwin_use_xft = 0;
+bool fwin_use_xft = false;
 #endif // HAVE_LIBXFT
 
 bool fwin_pause_at_end = false;
@@ -940,16 +939,17 @@ int main(int argc, const char *argv[])
 #endif // PART_OF_FOX
 }
 
+// SIGINT really ought not to happen, because when I am using a terminal
+// I set it into raw mode, so ^C is treated as input not a request for an
+// exception. However some external source could still signal me, so I will
+// do what ^C would have.
+
 #ifdef HAVE_SIGACTION
 void sigint_handler(int signo, siginfo_t *t, void *v)
 #else // !HAVE_SIGACTION
 void sigint_handler(int signo)
 #endif // !HAVE_SIGACTION
-{
-// interrupt_callback ought to be atomic and volatile, and any function
-// that it identified should be very cautious! However I will perhaps be
-// sloppy here!
-    if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
+{   if (async_interrupt_callback != NULL) (*async_interrupt_callback)(QUIET_INTERRUPT);
 }
 
 #endif // !EMBEDDED
@@ -1099,6 +1099,7 @@ int fwin_getchar()
 void fwin_set_prompt(const char *s)
 {   strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
     fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
+    term_setprompt(fwin_prompt_string);
 }
 
 void fwin_menus(char **modules, char **switches,

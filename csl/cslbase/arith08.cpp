@@ -208,7 +208,7 @@ LispObject Lgcd_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 
 LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
-{   push2(a4up, a3);
+{   push(a4up, a3);
     a1 = gcd(a1, a2);
     pop(a3);
     a1 = gcd(a1, a3);
@@ -259,7 +259,7 @@ LispObject Llcm_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 
 LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
-{   push2(a4up, a3);
+{   push(a4up, a3);
     a1 = lcm(a1, a2);
     pop(a3);
     a1 = lcm(a1, a3);
@@ -988,12 +988,12 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 {   LispObject p, q, r, w, w1;
     p = numerator(a);
     q = denominator(a); // note that q will always be positive!
-    push2(q, p);
+    push(q, p);
     r = quot2(p, q);
     p = stack[0];
     stack[0] = r;
     p = Cremainder(p, stack[-1]);
-    pop2(r, q);
+    pop(r, q);
 // The quotient is now in r and the remainder in p. The original divisor
 // is back in q.
     switch (roundmode)
@@ -1003,12 +1003,12 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 // Here p is the eventual remainder. If it is less then -q/2 or greater
 // then q/2 I will need to adjust things. And if it is equal in either of
 // those edge cases I need to think even harder!
-            push3(p, q, r);
+            push(p, q, r);
             w = times2(p, fixnum_of_int(2));
             push(w);
             w1 = negate(w);
             pop(w);
-            pop3(r, q, p);
+            pop(r, q, p);
             if (greaterp2(w, q) ||
                 (numeq2(w, q) && Loddp(nil, r)!=nil))
             {   push(r);
@@ -1077,7 +1077,7 @@ LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
         pop(r);
         return nvalues(r, 2);
     }
-    push2(a, b);
+    push(a, b);
     q = quot2(a, b);
     a = stack[-1];
     b = stack[0];
@@ -1092,7 +1092,7 @@ LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
             negb = negate(stack[-2]);
             push(negb);
             r2 = times2(r, fixnum_of_int(2));
-            pop2(negb, r);
+            pop(negb, r);
             q = stack[0];
             b = stack[-1];
             if (lessp2(b, r2) ||
@@ -1121,7 +1121,7 @@ LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
             stack[0] = q;
             break;
     }
-    pop3(q, b, a);
+    pop(q, b, a);
     mv_2 = r;
     return nvalues(q, 2);
 }

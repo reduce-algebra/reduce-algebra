@@ -196,6 +196,7 @@ cyg64.exe:	$(cslbase)/other-cygwin.cpp
 	i686-w64-mingw32-strip cyg64
 
 if wx
+FWIN = fwin.h
 WXC=../bin/wx-config
 BUILT_SOURCES = $(WXC)
 MY_CPPFLAGS := $(shell ../bin/wx-config --cppflags 2>/dev/null)
@@ -216,6 +217,7 @@ AM_CXXFLAGS      = $(MY_CXXFLAGS)
 AM_LIBS          = $(MY_LIBS)
 
 else !wx
+FWIN = wxfwin.h
 WXC=
 endif !wx
 
@@ -284,13 +286,17 @@ endif !mac_framework
 
 all-local:	csl.img $(REDUCE_IMG)
 
+# I include arith-plus here and in due course all the other new bits of
+# arithmetic code - that will mean I can test them.
+
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
 		arith11.cpp arith12.cpp arith13.cpp arith14.cpp isprime.cpp \
                 allocate.cpp bytes1.cpp \
 		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
-		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp
+		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp \
+		arith-plus.cpp
 
 # Thie little rule is because from time to time I really want to see the
 # expanded version of a C++ file (ie after C++ macroexpansion has taken place).
@@ -1817,13 +1823,16 @@ reduce.prototypes:	prototypes
 machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
 			makeheaders$(EXEEXT) Makefile \
 			$(cslbase)/machine.h $(cslbase)/int128_t.h \
+			$(cslbase)/$(FWIN) \
 			$(cslbase)/tags.h $(cslbase)/cslerror.h \
 			$(cslbase)/externs.h $(cslbase)/arith.h \
-			$(cslbase)/entries.h $(cslbase)/lispthrow.h $(USE_CORRECT_CYGWIN)
+			$(cslbase)/entries.h $(cslbase)/lispthrow.h \
+			$(USE_CORRECT_CYGWIN)
 	./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
 		machineid-1.cpp $(COMPILE_DLL)
 	./makeheaders$(EXEEXT) config.h \
 		$(CYGSRC)/machine.h \
+		$(CYGSRC)/$(FWIN) \
 		$(CYGSRC)/int128_t.h \
 		$(CYGSRC)/tags.h \
 		$(CYGSRC)/cslerror.h \

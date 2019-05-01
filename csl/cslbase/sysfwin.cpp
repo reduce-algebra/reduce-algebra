@@ -1,4 +1,4 @@
-// sysfwin.cpp                             Copyright (C) 1989-2017 Codemist    
+// sysfwin.cpp                             Copyright (C) 1989-2018 Codemist    
 
 //
 // System-specific code for use with the "fwin" window interface code.
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -39,11 +39,9 @@
 // $Id$
 
 #ifdef __CYGWIN__
-//
 // If I am under Cygwin and I will need to use some Windows calls it
 // appears best to include this file very early - otherwise I have found
 // some confusion between cygwin and mingw entrypoints hurting me.
-//
 #include <winsock.h>
 #include <windows.h>
 #include <sys/cygwin.h>
@@ -51,6 +49,9 @@
 
 #include "headers.h"
 
+//
+// There is platform-specific code in this file. Here are some of the
+// issues it tries to encapsulate.
 //
 // WIN32                     all Windows platforms that I support
 // <else>                    Unix-like
@@ -108,7 +109,7 @@
 //
 // At present CSL is single threaded - at least as regards file IO - and
 // using the unlocked versions of putc and getc can be a MAJOR saving.
-// I put these macros here not in soem header to try to keep me reminded
+// I put these macros here not in some header to try to keep me reminded
 // that if threads ever happened I would need to do my own buffering.
 //
 
@@ -127,6 +128,12 @@
 //
 
 static char time_string[40], space_string[32];
+
+// If I am running the CSL GUI then on the top bar of the window I
+// display some status information about how much time and space the
+// calculation has been using. These two functions update that display, and
+// are called periodically - ideally so that the user gets to see things
+// chance roughtly once per second.
 
 void report_time(int32_t t, int32_t gct)
 {
@@ -162,6 +169,10 @@ void pause_for_user()
 
 int terminal_eof_seen = 0;
 
+#define CTRL_C  3
+#define CTRL_D  4
+#define CTRL_G  7
+
 int wimpget(char *buf)
 {   int c, n=0;
     ensure_screen();
@@ -169,10 +180,9 @@ int wimpget(char *buf)
     {   if (terminal_eof_seen) c = EOF;
         else
         {   c = fwin_getchar();
-            if (c == EOF || c == (0x1f & 'D')) terminal_eof_seen = 1;
+            stackcheck();       // Responds to exceptions!
+            if (c == EOF || c == CTRL_D) terminal_eof_seen = 1;
         }
-        if (c == (0x1f & 'C') ||           // ^C - quiet : quit
-            c == (0x1f & 'G')) return 0;   // ^G - noisy : interrupt
         if (c == EOF) c = 0x1f & 'D';
         buf[n++] = (char)c;
         if (c == '\n' || c == (0x1f & 'D')) break;
@@ -389,51 +399,60 @@ char *look_in_lisp_variable(char *o, int prefix)
 
 #if defined HAVE_CLOCK_GETTIME && defined HAVE_DECL_CLOCK_THREAD_CPUTIME_ID
 
-//
-// Where possible I read the time used by the current thread...
-//
+// Where possible I read the time used by the current thread... I return
+// a value expressed in microseconds, but of course there is no guarantee that
+// I will have anything like that as my actual granularity!
 
-clock_t read_clock(void)
+uint64_t read_clock_microseconds(void)
 {   struct timespec tt;
-    double w1;
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tt);
-    w1 = (double)tt.tv_sec + (double)tt.tv_nsec/1000000000.0;
-    return (clock_t)(w1 * (double)CLOCKS_PER_SEC);
+    double w1 = (double)tt.tv_sec + (double)tt.tv_nsec/1000000000.0;
+    return (uint64_t)(1000000.0*w1);
 }
 
 
 #elif defined HAVE_SYS_TIME_H && defined HAVE_TIMES && !defined WIN32 && !defined EMBEDDED
 
-//
 // This is a BSD-style clock facility, possibly giving a resolution of
-// only 1/100 second.  I believe that Portable Standard Lisp typically
-// reports user time, which is why I do this.
-//
+// only 1/100 second.
 
-int unix_ticks = 0;
+double unix_ticks = 0;
 
-clock_t read_clock(void)
+uint64_t read_clock(void)
 {   struct tms tmsbuf;
-    clock_t w1, w2, w3;
     times(&tmsbuf);
-    w1 = tmsbuf.tms_utime;   // User time in UNIX_TIMES ticks
-    w2 = CLOCKS_PER_SEC;
-    if (unix_ticks == 0)
-    {
+    clock_t w1 = tmsbuf.tms_utime;   // User time in UNIX_TIMES ticks
 #ifdef HAVE_UNISTD_H
-        unix_ticks = sysconf(_SC_CLK_TCK);
-#else
-        unix_ticks = 100;
+    if (unix_ticks == 0.0) unix_ticks = (double)sysconf(_SC_CLK_TCK);
 #endif
-    }
-    w3 = unix_ticks;
-    return (clock_t)((double)w1 * ((double)w2/(double)w3));
+    if (unix_ticks == 0.0) unix_ticks = 100.0;
+    return (uint64_t)((1000000.0/unix_ticks) * (double)w1);
+}
+
+#elif defined WIN32
+
+uint64_t read_clock()
+{   FILETIME t0, t1, t2, t3;
+    if (GetProcessTimes(GetCurrentProcess(), &t0, &t1, &t2, &t3)) return 0;
+// The 4 times are: CreationTime, ExitTime, KernelTime, UserTime
+   ULARGE_INTEGER ul;
+// Times are returned in FILETIME format so I need to convert to an arithmetic
+// type that I can use.
+   ul.LowPart = t3.dwLowDateTime;
+   ul.HighPart = t3.dwHighDateTime;
+   uint64_t n = ul.QuadPart;
+// Times are returned in units of 100ns, so I divide by 10 to get
+// microseconds.
+   return n/10;
 }
 
 #else
 
-clock_t read_clock()
-{   return clock();
+// In cases where clock_t is a 32-bit data type this fallback version
+// will wraps round after around 20 minutes of CPU time!
+
+uint64_t read_clock()
+{   return (uint64_t)((1000000.0/CLOCKS_PER_SEC)*(double)clock());
 }
 
 #endif

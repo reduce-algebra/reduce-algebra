@@ -36,7 +36,7 @@
 // never more) to retrieve information. It tries a potentially large
 // number of hash functions and picks one that optimises table occupancy.
 // I use this for building a hash table that holds metrics for characters,
-// and (to my amazement) acheive around 99% table occupancy with a worst
+// and (to my amazement) achieve around 99% table occupancy with a worst
 // case access cost of 3 probes.
 //
 // A central part of the process of setting up the hash table involves

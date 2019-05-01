@@ -175,4 +175,18 @@ must cope with ambiguous pointers it processes all data apart from C.
     containing a reference to C as dirty, and all others as clean. I rather
     hope to be able to build up that information as part of steps (3) and
     (4) since they already need to test for references into C.
- 
+
+
+
+===============
+
+March 2019 updated thoughts:
+
+If the GC evacuates material into the new half-space using a simple first-fit
+strategy then there can be big trouble both in the cost of searching for a fit
+and for wasted space skipped over in the process. Of course if there are very
+few pinned items this should still be minor I guess! But special thought about
+allocating and copying large items may be a good idea.
+
+The number of pinned items here might be expected to be bounded by the amount
+of stack used. So very deep recursion is a bad bad thing.

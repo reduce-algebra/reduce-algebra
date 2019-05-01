@@ -94,7 +94,7 @@ inline uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b, uint32_t c)
     return (uint32_t)(r >> 31);
 }
 
-static inline LispObject timesii(LispObject a, LispObject b)
+inline LispObject timesii(LispObject a, LispObject b)
 //
 // multiplying two fixnums together is much messier than adding them,
 // mainly because the result can easily be a bignum
@@ -256,7 +256,7 @@ static LispObject timesir(LispObject a, LispObject b)
 {   LispObject w = nil;
     if (a == fixnum_of_int(0)) return a;
     else if (a == fixnum_of_int(1)) return b;
-    push3(b, a, nil);
+    push(b, a, nil);
 #define g   stack[0]
 #define a   stack[-1]
 #define b   stack[-2]
@@ -280,9 +280,9 @@ static LispObject timesic(LispObject a, LispObject b)
 // multiply an arbitrary non-complex number by a complex one
 //
 {   LispObject r = real_part(b), i = imag_part(b);
-    push2(a, r);
+    push(a, r);
     i = times2(a, i);
-    pop2(r, a);
+    pop(r, a);
     push(i);
     r = times2(a, r);
     pop(i);
@@ -899,7 +899,7 @@ static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
     }
 }
 
-size_t karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
+size_t kparallel, karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
 
 static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
                        uint32_t *d, size_t lena, size_t lenb, size_t lenc)
@@ -1031,7 +1031,7 @@ static LispObject timesbb(LispObject a, LispObject b)
         lena = lenb;
         lenb = lenc;
     }
-    push2(a, b);
+    push(a, b);
 //
 // For very big numbers I have two special actions called for here.  First
 // I must round up the size of the result vector to have a big enough power
@@ -1088,7 +1088,7 @@ static LispObject timesbb(LispObject a, LispObject b)
             pop(c);
         }
     }
-    pop2(b, a);
+    pop(b, a);
     d = multiplication_buffer;
     {   uint32_t *da = &bignum_digits(a)[0],
                  *db = &bignum_digits(b)[0],
@@ -1222,8 +1222,8 @@ static LispObject timesrr(LispObject a, LispObject b)
 // multiply a pair of rational numbers
 //
 {   LispObject w = nil;
-    push5(numerator(a), denominator(a),
-          numerator(b), denominator(b), nil);
+    push(numerator(a), denominator(a),
+         numerator(b), denominator(b), nil);
 #define g   stack[0]
 #define db  stack[-1]
 #define nb  stack[-2]
@@ -1264,9 +1264,9 @@ static LispObject timescc(LispObject a, LispObject b)
 // multiply a pair of complex values
 //
 {   LispObject w = nil;
-    push4(real_part(a), imag_part(a),
-          real_part(b), imag_part(b));
-    push2(nil, nil);
+    push(real_part(a), imag_part(a),
+         real_part(b), imag_part(b));
+    push(nil, nil);
 #define u   stack[0]
 #define v   stack[-1]
 #define ib  stack[-2]
@@ -1303,7 +1303,7 @@ static LispObject timescc(LispObject a, LispObject b)
 
 #define timesfc(a, b) timescf(b, a)
 
-static inline LispObject timesff(LispObject a, LispObject b)
+inline LispObject timesff(LispObject a, LispObject b)
 {   int ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
     int hc;
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
@@ -1337,24 +1337,24 @@ extern LispObject genuine_times2(LispObject a, LispObject b);
 
 LispObject times2(LispObject a, LispObject b)
 {   LispObject ab1, aa, bb;
-    push2(a, b);
+    push(a, b);
     ab1 = plus2(a, b);               // a + b
     ab1 = genuine_times2(ab1, ab1);  // a^2 + 2*a*b + b^2
-    pop2(b, a);
-    push3(a, b, ab1);
+    pop(b, a);
+    push(a, b, ab1);
     aa = genuine_times2(a, a);       // a^2
-    pop3(ab1, b, a);
-    push4(a, b, aa, ab1);
+    pop(ab1, b, a);
+    push(a, b, aa, ab1);
     bb = genuine_times2(b, b);       // b^2
     pop(ab1);
     ab1 = difference2(ab1, bb);      // now a^2 + 2*a*b
     pop(aa);
     ab1 = difference2(ab1, aa);      // 2*a*b
     ab1 = quot2(ab1, fixnum_of_int(2));
-    pop2(b, a);
-    push3(ab1, a, b);
+    pop(b, a);
+    push(ab1, a, b);
     aa = genuine_times2(a, b);
-    pop3(b, a, ab1);
+    pop(b, a, ab1);
     if (!numeq2(aa, ab1))
     {   err_printf("multiply messed up\n");
         err_printf("a = "); prin_to_error(a);

@@ -93,7 +93,7 @@ std::atomic_flag memory_used[(MAX_MEMORY+MAX_PAGE_SIZE+MIN_PAGE_SIZE-1)/
 static size_t page_size;
 
 
-static inline void fail(const char *msg)
+inline void fail(const char *msg)
 {
     printf("%s", msg);
     exit(EXIT_FAILURE);
@@ -127,7 +127,7 @@ typedef int action_handler(int, const siginfo_t *, void *);
 //      does use it can never be activated while it is being used, and the
 //      masking done here should achieve that.
 
-static inline int safe_mprotect(void *a, size_t n, int m)
+inline int safe_mprotect(void *a, size_t n, int m)
 {   sigset_t ss, ssold;
     sigemptyset(&ss);
     sigaddset(&ss, SIGSEGV);

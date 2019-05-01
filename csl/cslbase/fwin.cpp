@@ -1,4 +1,4 @@
-// fwin.cpp                                 Copyright A C Norman 2003-2017
+// fwin.cpp                                 Copyright A C Norman 2003-2019
 //
 //
 // Window interface for old-fashioned C/C++ applications. Intended to
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -69,7 +69,7 @@
 //   distinction between 32 and 64-bit windows, but within the Linux
 //   sections I will sometimes need to be conditional on __CYGWIN__.
 //
-//   If EMBEDDED is defined a somewhatr abbreviated version will be built
+//   If EMBEDDED is defined a somewhat abbreviated version will be built
 //   since in that context simplicity trumps capability.
 
 #ifdef HAVE_CONFIG_H
@@ -138,6 +138,72 @@ extern "C" char *getcwd(const char *s, size_t n);
 #endif // __APPLE__
 
 #include "termed.h"
+
+#include <cstdio>
+#include <cstdlib>
+
+// An "my_assert" scheme that lets me write in my own code to print the
+// diagnostics. Included here because this files does not icnlude "fx.h".
+
+[[noreturn]] static void my_abort()
+{   std::abort();
+}
+
+template <typename F>
+inline void my_assert(bool ok, F&& action)
+{
+#ifndef NDEBUG
+// Use this as in
+//     my_assert(predicate, [&]{...});
+// where the "..." is an arbitrary sequence of actions to be taken
+// if the assertion fails.
+    if (!ok) { action(); my_abort(); }
+#endif //NDEBUG
+}
+
+//
+// I have a bunch of macros that I use for desparation-mode debugging,
+// and in particular when I have bugs that wriggle back into their lairs
+// when I try running under "gdb" or whatever. These print dull messages
+// to stderr. The "do..while" idiom is to keep C syntax safe with regard to
+// semicolons.
+//
+
+#define D do { \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s\n", __LINE__, _f_); \
+          fflush(stderr); \
+          } while (0)
+
+#define DS(s) do { \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s: %s\n", __LINE__, _f_, (s)); \
+          fflush(stderr); \
+          } while (0)
+
+#define DX(s) do { \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s: %llx\n", __LINE__, _f_, \
+                          (long long unsigned)(s)); \
+          fflush(stderr); \
+          } while (0)
+
+#define DF(f,...) do { \
+          const char *_f_ = strrchr(__FILE__, '/'); \
+          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
+          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+          fprintf(stderr, "Line %d File %s: ", __LINE__, _f_); \
+          fprintf(stderr, f, __VA_ARGS__); \
+          fprintf(stderr, "\n"); \
+          fflush(stderr); \
+          } while (0)
+
 
 //
 // The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
@@ -259,7 +325,6 @@ char fwin_prompt_string[MAX_PROMPT_LENGTH] = "> ";
 int fwin_linelength = 80;
 
 delay_callback_t *delay_callback;
-interrupt_callback_t *interrupt_callback;
 
 extern const char *my_getenv(const char *s);
 
@@ -273,15 +338,15 @@ static int macApp = 0;
 
 int windowed = 0;
 
-int texmacs_mode = 0;
+bool texmacs_mode = false;
 
 #ifdef HAVE_LIBXFT
-int fwin_use_xft = 1;
+bool fwin_use_xft = true;
 #else // HAVE_LIBXFT
-int fwin_use_xft = 0;
+bool fwin_use_xft = false;
 #endif // HAVE_LIBXFT
 
-int fwin_pause_at_end = 0;
+bool fwin_pause_at_end = false;
 
 #ifdef __APPLE__
 
@@ -727,7 +792,7 @@ int main(int argc, const char *argv[])
     {   fprintf(stderr, "Unable to identify program name and directory (%d)\n", i);
         return 1;
     }
-    texmacs_mode = 0;
+    texmacs_mode = false;
 //
 // An option "--my-path" just prints the path to the executable
 // and stops. An option "--args" indicates that I should not look at any
@@ -762,7 +827,7 @@ int main(int argc, const char *argv[])
     windowed = 2;
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
-        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
+        else if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = true;
         else if (strncmp(argv[i], "-w", 2) == 0)
         {   if (argv[i][2] == '+') windowed = 1;
             else if (argv[i][2] == '.') windowed = -1;
@@ -829,7 +894,7 @@ int main(int argc, const char *argv[])
 //
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
-        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
+        else if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = true;
         else if (strncmp(argv[i], "-w", 2) == 0)
         {   if (argv[i][2] == '+') windowed = 1;
             else if (argv[i][2] == '.') windowed = -1;
@@ -874,58 +939,27 @@ int main(int argc, const char *argv[])
 #endif // PART_OF_FOX
 }
 
+// SIGINT really ought not to happen, because when I am using a terminal
+// I set it into raw mode, so ^C is treated as input not a request for an
+// exception. However some external source could still signal me, so I will
+// do what ^C would have.
+
 #ifdef HAVE_SIGACTION
 void sigint_handler(int signo, siginfo_t *t, void *v)
 #else // !HAVE_SIGACTION
 void sigint_handler(int signo)
 #endif // !HAVE_SIGACTION
-{
-// interrupt_callback ought to be atomic and volatile, and any function
-// that it identified should be very cautious!
-    if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
+{   if (async_interrupt_callback != NULL) (*async_interrupt_callback)(QUIET_INTERRUPT);
 }
 
-#endif // EMBEDDED
-
-//
-// I will only try to use my own local editing and history package
-// if both stdin and stdout are routed directly to a "tty" or "console".
-// The test I apply can probably never be 100% satisfactory, but if I
-// catch all the most common cases I will feel reasonably relaxed!
-//
-int using_termed = 0;
-
-static int direct_to_terminal(int argc, const char *argv[])
-{
-#ifdef WIN32
-    HANDLE h;
-    DWORD w;
-    CONSOLE_SCREEN_BUFFER_INFO csb;
-//
-// Standard input must be from a character device and must be accepted
-// by the GetConsoleMode function
-//
-    h = GetStdHandle(STD_INPUT_HANDLE);
-    if (GetFileType(h) != FILE_TYPE_CHAR) return 0;
-    if (!GetConsoleMode(h, &w)) return 0;
-//
-// Standard output must be a character device and a ConsoleScreenBuffer
-//
-    h = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (GetFileType(h) != FILE_TYPE_CHAR) return 0;
-    if (!GetConsoleScreenBufferInfo(h, &csb)) return 0;
-//
-// Note that I will allow stderr to have been redirected as much
-// as you like without that having an effect here.
-//
-    return 1;
-#else // WIN32
-    return isatty(fileno(stdin)) && isatty(fileno(stdout));
-#endif // WIN32
-}
+#endif // !EMBEDDED
 
 int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
-{   int r;
+{
+#ifndef EMBEDDED
+// Even though these days I mostly intend ^C to be detected by observing
+// it as a character read in raw mode, I probably need to support some
+// external task explictly raising the signal. So I trap it here.
 #ifdef HAVE_SIGACTION
     struct sigaction sa;
     sa.sa_sigaction = sigint_handler;
@@ -944,16 +978,11 @@ int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 #else // !HAVE_SIGACTION
     signal(SIGINT, sigint_handler);
 #endif // !HAVE_SIGACTION
-    if (!texmacs_mode && direct_to_terminal(argc, argv))
-    {   input_history_init();
-        term_setup(1, colour_spec);
-        atexit(term_close);
-        using_termed = 1;
-    }
-    else using_termed = 0;
+#endif // !EMBEDDED
+    term_setup(argv[0], colour_spec);
+    atexit(term_close);
     strcpy(fwin_prompt_string, "> ");
-    r = (*fwin_main)(argc, argv);
-    input_history_end();
+    int r = (*fwin_main)(argc, argv);
     term_close();
     return r;
 }
@@ -968,32 +997,12 @@ static int prompt_needed = 1;
 
 int fwin_plain_getchar()
 {   int ch;
-    if (using_termed)
     {   while (chars_left == 0)
         {   term_setprompt(fwin_prompt_string);
             current_line = term_getline();
             if (current_line == NULL) return EOF;  // failed or EOF
             chars_left = strlen(current_line);
-//          input_history_add(current_line);
         }
-    }
-    else if (chars_left == 0)
-    {   if (prompt_needed)
-        {   printf("%s", fwin_prompt_string);
-            prompt_needed = 0;
-        }
-        fflush(stdout);
-        for (chars_left=0; chars_left<INPUT_BUFFER_SIZE;)
-        {   int c = getchar();
-            if (c == EOF) c = (0x1f & 'D');
-            input_buffer[chars_left++] = c;
-            if (c == '\n' || c == (0x1f & 'D'))
-            {   prompt_needed = 1;
-                break;
-            }
-        }
-        if (chars_left == 0) return EOF;
-        current_line = input_buffer;
     }
     chars_left--;
     ch = *current_line++;
@@ -1090,6 +1099,7 @@ int fwin_getchar()
 void fwin_set_prompt(const char *s)
 {   strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
     fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
+    term_setprompt(fwin_prompt_string);
 }
 
 void fwin_menus(char **modules, char **switches,

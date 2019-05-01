@@ -408,7 +408,7 @@ static LispObject Lplus_4up(LispObject env, LispObject a1, LispObject a2,
 //    (+ (+ (+ (+ a1 a2) a3) a4) a5)
 {
     intptr_t c;
-    push2(a4up, a3);
+    push(a4up, a3);
 // While the arithmetic involved fixnums I do it inline in the twin hopes that
 // this will be an expecially common case and that the inline code will
 // help with performance.
@@ -442,7 +442,7 @@ static LispObject Lplus_4up(LispObject env, LispObject a1, LispObject a2,
 
 static LispObject Ldifference_4up(LispObject env, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
-{   push2(a4up, a3);
+{   push(a4up, a3);
     a1 = difference2(a1, a2);
     pop(a3);
     a1 = difference2(a1, a3);
@@ -459,7 +459,7 @@ static LispObject Ldifference_4up(LispObject env, LispObject a1, LispObject a2,
 
 static LispObject Ltimes_4up(LispObject env, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
-{   push2(a4up, a3);
+{   push(a4up, a3);
     a1 = times2(a1, a2);
     pop(a3);
     a1 = times2(a1, a3);
@@ -495,7 +495,7 @@ LispObject LCLquotient_3(LispObject env, LispObject a1, LispObject a2, LispObjec
 
 LispObject LCLquotient_4up(LispObject env,
         LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   push2(a4up, a3);
+{   push(a4up, a3);
     a1 = CLquot2(a1, a2);
     pop(a3);
     a1 = CLquot2(a1, a3);
@@ -531,7 +531,7 @@ LispObject Lquotient_3(LispObject env, LispObject a1, LispObject a2, LispObject 
 
 LispObject Lquotient_4up(LispObject env,
         LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   push2(a4up, a3);
+{   push(a4up, a3);
     a1 = quot2(a1, a2);
     pop(a3);
     a1 = quot2(a1, a3);
@@ -548,7 +548,7 @@ LispObject Lquotient_4up(LispObject env,
 
 LispObject Ldivide_2(LispObject env, LispObject a, LispObject b)
 {   LispObject q;
-    stackcheck2(a, b);
+    stackcheck(a, b);
     mv_2 = SPID_NIL;
     q = quotrem2(a, b);
     if (is_spid(mv_2)) aerror2("divide", a, b);
@@ -648,7 +648,7 @@ static boolopfn *boolop_array[] =
 static LispObject Lbool_4up(LispObject env, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
 {   int what = int_of_fixnum(qenv(env));
-    push2(a4up, a3);
+    push(a4up, a3);
     a1 = (*boolop_array[what])(a1, a2);
     pop(a3);
     a1 = (*boolop_array[what])(a1, a3);
@@ -713,7 +713,7 @@ LispObject Lplusp(LispObject env, LispObject a)
 
 LispObject Leqn_4up(LispObject env,
         LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   push3(a4up, a3, a2);
+{   push(a4up, a3, a2);
     if (!SL_numeq2(a1, a2))
     {   popv(3);
         return onevalue(nil);
@@ -751,9 +751,9 @@ LispObject Leqn_1(LispObject, LispObject)
 }
 
 LispObject Leqn_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   push2(a3, a2);
+{   push(a3, a2);
     if (!SL_numeq2(a1, a2)) return onevalue(nil);
-    pop2(a2, a3);
+    pop(a2, a3);
     return onevalue(SL_numeq2(a2, a3) ? lisp_true : nil);
 }
 
@@ -763,7 +763,7 @@ LispObject Leqn_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lcl_equals_sign_4up(LispObject env,
         LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   push3(a4up, a3, a2);
+{   push(a4up, a3, a2);
     if (!numeq2(a1, a2))
     {   popv(3);
         return onevalue(nil);
@@ -801,9 +801,9 @@ LispObject Lcl_equals_sign_1(LispObject, LispObject)
 }
 
 LispObject Lcl_equals_sign_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   push2(a3, a2);
+{   push(a3, a2);
     if (!numeq2(a1, a2)) return onevalue(nil);
-    pop2(a2, a3);
+    pop(a2, a3);
     return onevalue(numeq2(a2, a3) ? lisp_true : nil);
 }
 
@@ -813,7 +813,7 @@ LispObject Lcl_equals_sign_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Llessp_4up(LispObject env,
         LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   push3(a4up, a3, a2);
+{   push(a4up, a3, a2);
     if (!lessp2(a1, a2))
     {   popv(3);
         return onevalue(nil);
@@ -842,9 +842,9 @@ LispObject Llessp_4up(LispObject env,
 }
 
 LispObject Llessp_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   push2(a3, a2);
+{   push(a3, a2);
     if (!lessp2(a1, a2)) return onevalue(nil);
-    pop2(a2, a3);
+    pop(a2, a3);
     return onevalue(lessp2(a2, a3) ? lisp_true : nil);
 }
 
@@ -862,7 +862,7 @@ LispObject Llessp_0(LispObject env)
 
 LispObject Lgreaterp_4up(LispObject env,
         LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   push3(a4up, a3, a2);
+{   push(a4up, a3, a2);
     if (!lessp2(a2, a1))
     {   popv(3);
         return onevalue(nil);
@@ -891,9 +891,9 @@ LispObject Lgreaterp_4up(LispObject env,
 }
 
 LispObject Lgreaterp_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   push2(a3, a2);
+{   push(a3, a2);
     if (!lessp2(a2, a1)) return onevalue(nil);
-    pop2(a2, a3);
+    pop(a2, a3);
     return onevalue(lessp2(a3, a2) ? lisp_true : nil);
 }
 
@@ -914,7 +914,7 @@ static LispObject Lnum_neq_4up(LispObject env, LispObject a1, LispObject a2,
 //
 // "/=" is supposed to check that no pair of args match.
 //
-{   push4(a4up, a3, a2, a1);
+{   push(a4up, a3, a2, a1);
     if (numeq2(stack[0], stack[-1]))  // a1=a2
     {   popv(4);
         return onevalue(nil);
@@ -947,7 +947,7 @@ static LispObject Lnum_neq_4up(LispObject env, LispObject a1, LispObject a2,
 }
 
 LispObject Lnum_neq_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   push3(a3, a2, a1);
+{   push(a3, a2, a1);
     bool w = numeq2(stack[0], stack[-1]) ||
              numeq2(stack[0], stack[-2]) ||
              numeq2(stack[-1], stack[-2]);
@@ -969,7 +969,7 @@ LispObject Lnum_neq_0(LispObject env)
 
 LispObject Lgeq_4up(LispObject env,
         LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   push3(a4up, a3, a2);
+{   push(a4up, a3, a2);
     if (!lesseq2(a2, a1))
     {   popv(3);
         return onevalue(nil);
@@ -998,9 +998,9 @@ LispObject Lgeq_4up(LispObject env,
 }
 
 LispObject Lgeq_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   push2(a3, a2);
+{   push(a3, a2);
     if (!lesseq2(a2, a1)) return onevalue(nil);
-    pop2(a2, a3);
+    pop(a2, a3);
     return onevalue(lesseq2(a3, a2) ? lisp_true : nil);
 }
 
@@ -1019,7 +1019,7 @@ LispObject Lgeq_0(LispObject env)
 
 LispObject Lleq_4up(LispObject env,
         LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   push3(a4up, a3, a2);
+{   push(a4up, a3, a2);
     if (!lesseq2(a1, a2))
     {   popv(3);
         return onevalue(nil);
@@ -1048,9 +1048,9 @@ LispObject Lleq_4up(LispObject env,
 }
 
 LispObject Lleq_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   push2(a3, a2);
+{   push(a3, a2);
     if (!lesseq2(a1, a2)) return onevalue(nil);
-    pop2(a2, a3);
+    pop(a2, a3);
     return onevalue(lesseq2(a2, a3) ? lisp_true : nil);
 }
 
@@ -1069,24 +1069,24 @@ LispObject Lleq_0(LispObject env)
 
 LispObject Lmax_2(LispObject env, LispObject a, LispObject b)
 {   bool w;
-    push2(a, b);
+    push(a, b);
     w = lessp2(a, b);
-    pop2(b, a);
+    pop(b, a);
     if (w) return onevalue(b);
     else return onevalue(a);
 }
 
 LispObject Lmin_2(LispObject env, LispObject a, LispObject b)
 {   bool w;
-    push2(a, b);
+    push(a, b);
     w = lessp2(b, a);
-    pop2(b, a);
+    pop(b, a);
     if (w) return onevalue(b);
     else return onevalue(a);
 }
 
 LispObject Lmax_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   push3(a3, a2, a1);
+{   push(a3, a2, a1);
     if (lessp2(a1, a2)) stack[0] = stack[-1];
     if (lessp2(stack[0], stack[-2])) stack[0] = stack[-2];
     pop(a1);
@@ -1095,7 +1095,7 @@ LispObject Lmax_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 }
 
 LispObject Lmin_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   push3(a3, a2, a1);
+{   push(a3, a2, a1);
     if (greaterp2(a1, a2)) stack[0] = stack[-1];
     if (greaterp2(stack[0], stack[-2])) stack[0] = stack[-2];
     pop(a1);
@@ -1105,7 +1105,7 @@ LispObject Lmin_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 
 LispObject Lmax_4up(LispObject env, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
-{   push2(a4up, a3);
+{   push(a4up, a3);
     if (lessp2(a2, a1)) a1 = a2;
     pop(a3);
     if (lessp2(a3, a1)) a1 = a3;
@@ -1122,7 +1122,7 @@ LispObject Lmax_4up(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Lmin_4up(LispObject env, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
-{   push2(a4up, a3);
+{   push(a4up, a3);
     if (greaterp2(a2, a1)) a1 = a2;
     pop(a3);
     if (greaterp2(a3, a1)) a1 = a3;

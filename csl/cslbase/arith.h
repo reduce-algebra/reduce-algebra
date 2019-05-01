@@ -149,11 +149,11 @@ extern LispObject lisp_ifix(LispObject a, LispObject b, int roundmode);
 // for that architecture will use SSE instructions that behave in a more
 // obvious IEEE manner.
 
-static inline bool floating_edge_case(double r)
+inline bool floating_edge_case(double r)
 {   return (1.0/r == 0.0 || r != r);
 }
 
-static inline void floating_clear_flags()
+inline void floating_clear_flags()
 {}
 
 // An alternative possible implementation could go
@@ -212,7 +212,7 @@ static inline void floating_clear_flags()
 #define bignum_minusp(a) \
     ((int32_t)bignum_digits(a)[((bignum_length(a)-CELL)/4)-1]<0)
 
-static inline double value_of_immediate_float(LispObject a)
+inline double value_of_immediate_float(LispObject a)
 {   Float_union aa;
     if (SIXTY_FOUR_BIT) aa.i = (int32_t)((uint64_t)a>>32);
     else aa.i = (int32_t)(a - XTAG_SFLOAT);
@@ -224,7 +224,7 @@ extern LispObject make_boxfloat128(float128_t a);
 
 // Pack something as a short (28-bit) float
 
-static inline LispObject pack_short_float(double d)
+inline LispObject pack_short_float(double d)
 {   Float_union aa;
     aa.f = d;
     if (trap_floating_overflow &&
@@ -241,7 +241,7 @@ static inline LispObject pack_short_float(double d)
 // Create a single (32-bit) float. Just like make_single_float but inlined
 // in the 64-bit case
 
-static inline LispObject pack_single_float(double d)
+inline LispObject pack_single_float(double d)
 {   if (SIXTY_FOUR_BIT)
     {   Float_union aa;
         aa.f = d;
@@ -270,7 +270,7 @@ static inline LispObject pack_single_float(double d)
 // be a 28-bit value. If a second argument l2 is provided the width of the
 // result will match the wider of the two.
 
-static inline LispObject pack_immediate_float(double d,
+inline LispObject pack_immediate_float(double d,
                                               LispObject l1, LispObject l2=0)
 {   Float_union aa;
     aa.f = d;
@@ -296,7 +296,7 @@ static inline LispObject pack_immediate_float(double d,
 // a Dr Doobs article in 2013, the other is in (MIT Licensed) Julia and
 // a discussion at https://github.com/JuliaLang/julia/issues/257.
 
-static inline bool eq_i64d(int64_t a, double b)
+inline bool eq_i64d(int64_t a, double b)
 {
 // The integer can always be converted to a double, but of course
 // sometimes there will be rounding involved. But if the value does not
@@ -317,7 +317,7 @@ static inline bool eq_i64d(int64_t a, double b)
     return a == (int64_t)b;
 }
 
-static inline bool lessp_i64d(int64_t a, double b)
+inline bool lessp_i64d(int64_t a, double b)
 {
 // If the integer is <= 2^53 then converting it to a double does not
 // introduce any error at all, so I can perform the comparison reliably
@@ -346,7 +346,7 @@ static inline bool lessp_i64d(int64_t a, double b)
     return a < (int64_t)b;
 }
 
-static inline bool lessp_di64(double a, int64_t b)
+inline bool lessp_di64(double a, int64_t b)
 {
 // The logic here is much as above - by omitting all the commentary
 // you can see much more clearly just how long the code is.
@@ -411,19 +411,19 @@ extern LispObject make_n5_word_bignum(int32_t a4, uint32_t a3,
 extern LispObject make_power_of_two(size_t n);
 
 extern LispObject make_lisp_integer32_fn(int32_t n);
-static inline LispObject make_lisp_integer32(int32_t n)
+inline LispObject make_lisp_integer32(int32_t n)
 {   if (SIXTY_FOUR_BIT || valid_as_fixnum(n)) return fixnum_of_int((intptr_t)n);
     else return make_lisp_integer32_fn(n);
 }
 
 extern LispObject make_lisp_integer64_fn(int64_t n);
-static inline LispObject make_lisp_integer64(int64_t n)
+inline LispObject make_lisp_integer64(int64_t n)
 {   if (valid_as_fixnum(n)) return fixnum_of_int((intptr_t)n);
     else return make_lisp_integer64_fn(n);
 }
 
 extern LispObject make_lisp_unsigned64_fn(uint64_t n);
-static inline LispObject make_lisp_unsigned64(uint64_t n)
+inline LispObject make_lisp_unsigned64(uint64_t n)
 {   if (n < ((uint64_t)1)<<(8*sizeof(intptr_t)-5))
         return fixnum_of_int((intptr_t)n);
     else return make_lisp_unsigned64_fn(n);
@@ -445,26 +445,26 @@ extern LispObject make_lisp_integerptr_fn(intptr_t n);
 // in the meanwhile having conservative code feels safer... so this comment is
 // the main cost.
 
-static inline LispObject make_lisp_integerptr(intptr_t n)
+inline LispObject make_lisp_integerptr(intptr_t n)
 {   if (intptr_valid_as_fixnum(n)) return fixnum_of_int(n);
     else return make_lisp_integerptr_fn(n);
 }
 
 extern LispObject make_lisp_unsignedptr_fn(uintptr_t n);
-static inline LispObject make_lisp_unsignedptr(uintptr_t n)
+inline LispObject make_lisp_unsignedptr(uintptr_t n)
 {   if (n < ((uintptr_t)1)<<(8*sizeof(intptr_t)-5))
         return fixnum_of_int((intptr_t)n);
     else return make_lisp_unsignedptr_fn(n);
 }
 
 extern LispObject make_lisp_integer128_fn(int128_t n);
-static inline LispObject make_lisp_integer128(int128_t n)
+inline LispObject make_lisp_integer128(int128_t n)
 {   if (valid_as_fixnum(n)) return fixnum_of_int(NARROW128(n));
     else return make_lisp_integer128_fn(n);
 }
 
 extern LispObject make_lisp_unsigned128_fn(uint128_t n);
-static inline LispObject make_lisp_unsigned128(uint128_t n)
+inline LispObject make_lisp_unsigned128(uint128_t n)
 {   if (uint128_valid_as_fixnum(n))
         return fixnum_of_int((uint64_t)NARROW128(n));
     else return make_lisp_unsigned128_fn(n);
@@ -526,7 +526,7 @@ extern int kara_done;
 
 #endif
 
-extern size_t karatsuba_parallel;
+extern size_t kparallel, karatsuba_parallel;
 
 //
 // Tests on my Intel i7 4770K system running Windows 7 (64-bit) I find that
@@ -578,65 +578,65 @@ extern void f128M_split(
 #define LOPART 1
 #endif
 
-static inline bool f128M_zero(const float128_t *p)
+inline bool f128M_zero(const float128_t *p)
 {   return ((p->v[HIPART] & INT64_C(0x7fffffffffffffff)) == 0) &&
             (p->v[LOPART] == 0);
 }
 
-static inline bool f128M_infinite(const float128_t *p)
+inline bool f128M_infinite(const float128_t *p)
 {   return (((p->v[HIPART] >> 48) & 0x7fff) == 0x7fff) &&
             ((p->v[HIPART] & INT64_C(0xffffffffffff)) == 0) &&
             (p->v[LOPART] == 0);
 }
 
-static inline bool f128M_finite(const float128_t *p)
+inline bool f128M_finite(const float128_t *p)
 {   return (((p->v[HIPART] >> 48) & 0x7fff) != 0x7fff);
 }
 
-static inline void f128M_make_infinite(float128_t *p)
+inline void f128M_make_infinite(float128_t *p)
 {   p->v[HIPART] |= UINT64_C(0x7fff000000000000);
     p->v[HIPART] &= UINT64_C(0xffff000000000000);
     p->v[LOPART] = 0;
 }
 
-static inline void f128M_make_zero(float128_t *p)
+inline void f128M_make_zero(float128_t *p)
 {   p->v[HIPART] &= UINT64_C(0x8000000000000000);
     p->v[LOPART] = 0;
 }
 
 // Here I do not count 0.0 (or -0.0) as sub-normal.
 
-static inline bool f128M_subnorm(const float128_t *p)
+inline bool f128M_subnorm(const float128_t *p)
 {   return (((p->v[HIPART] >> 48) & 0x7fff) == 0) &&
             (((p->v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
              (p->v[LOPART] != 0));
 }
 
-static inline bool f128M_nan(const float128_t *p)
+inline bool f128M_nan(const float128_t *p)
 {   return (((p->v[HIPART] >> 48) & 0x7fff) == 0x7fff) &&
             (((p->v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
              (p->v[LOPART] != 0));
 }
 
-static inline bool f128M_negative(const float128_t *x)
+inline bool f128M_negative(const float128_t *x)
 {   if (f128M_nan(x)) return false;
     return ((int64_t)x->v[HIPART]) < 0;
 }
 
-static inline int f128M_exponent(const float128_t *p)
+inline int f128M_exponent(const float128_t *p)
 {   return ((p->v[HIPART] >> 48) & 0x7fff) - 0x3fff;
 }
 
-static inline void f128M_set_exponent(float128_t *p, int n)
+inline void f128M_set_exponent(float128_t *p, int n)
 {   p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
         (((uint64_t)n + 0x3fff) << 48);
 }
 
-static inline void f128M_negate(float128_t *x)
+inline void f128M_negate(float128_t *x)
 {   x->v[HIPART] ^= UINT64_C(0x8000000000000000);
 }
 
-static inline bool floating_edge_case128(float128_t *r)
+inline bool floating_edge_case128(float128_t *r)
 {   return f128M_infinite(r) || f128M_nan(r);
 }
 
@@ -671,7 +671,7 @@ typedef struct _float256_t
 #endif
 } float256_t;
 
-static inline void f128M_to_f256M(const float128_t *a, float256_t *b)
+inline void f128M_to_f256M(const float128_t *a, float256_t *b)
 {   b->hi = *a;
     b->lo = f128_0;
 } 
@@ -796,21 +796,21 @@ stgclass type name(LispObject a1, LispObject a2)                    \
 }
 
 #define arith_dispatch_2(stgclass, type, name)                      \
-arith_dispatch_1a(static inline, type, name##_i, name)              \
+arith_dispatch_1a(inline, type, name##_i, name)              \
                                                                     \
-arith_dispatch_1a(static inline, type, name##_b, name)              \
+arith_dispatch_1a(inline, type, name##_b, name)              \
                                                                     \
-arith_dispatch_1a(static inline, type, name##_r, name)              \
+arith_dispatch_1a(inline, type, name##_r, name)              \
                                                                     \
-arith_dispatch_1a(static inline, type, name##_c, name)              \
+arith_dispatch_1a(inline, type, name##_c, name)              \
                                                                     \
-arith_dispatch_1a(static inline, type, name##_s, name)              \
+arith_dispatch_1a(inline, type, name##_s, name)              \
                                                                     \
-arith_dispatch_1a(static inline, type, name##_f, name)              \
+arith_dispatch_1a(inline, type, name##_f, name)              \
                                                                     \
-arith_dispatch_1a(static inline, type, name##_d, name)              \
+arith_dispatch_1a(inline, type, name##_d, name)              \
                                                                     \
-arith_dispatch_1a(static inline, type, name##_l, name)              \
+arith_dispatch_1a(inline, type, name##_l, name)              \
                                                                     \
 stgclass type name(LispObject a1, LispObject a2)                    \
 {   if (is_fixnum(a1)) return name##_i(a1, a2);                     \

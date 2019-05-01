@@ -227,27 +227,20 @@ default_gui="fox"
 #default_gui="wx"
 
 AC_ARG_WITH(wx,
-  AC_HELP_STRING([--with-wx=DIR],
-                 [wxWidgets installation location, or disable use of wxWidgets (CSL only)]),
+  AC_HELP_STRING([--with-wx],
+                 [enable or disable use of wxWidgets (CSL only)]),
   [],
   [with_wx="default"])
 
 AC_ARG_WITH(fox,
-  AC_HELP_STRING([--with-fox=DIR],
-                 [FOX installation location, or disable use of FOX (CSL only)]),
+  AC_HELP_STRING([--with-fox],
+                 [enable or disable use of FOX (CSL only)]),
   [],
   [with_fox="default"])
-
-AC_ARG_WITH(fox-pending,
-  AC_HELP_STRING([--with-fox-pending],
-                 [do not check dir from --with-fox (CSL only)]),
-  [],
-  [with_fox_pending="no"])
 
 if test "x$with_psl" != "xno"
 then
   with_fox=no
-  with_fox_pending=no
   with_wx=no
   with_gui=no
 fi
@@ -263,7 +256,7 @@ then
 #    <nothing>         build using default GUI in directory x-y-z
 #                      (eg in cslbuild/i386-pc-windows)
 #    --without-gui     build non-GUI version in x-y-x-nogui
-#    --with-fox        build FOX version in x-y-z-fox
+#    --with-fox        build FOX version in x-y-z
 #    --with-wx         build wxWidgets version in x-y-z-wx
 #    --without-fox     if FOX is the default behave as --without -gui
 #    --without-wx      if wxWidgets is the default behave as --without-gui
@@ -273,7 +266,7 @@ then
 # and --without-gui, but each can be used in separate calls to the
 # configure script to build parallel versions.
 #
-# At the TOP LEVEL there is no point or merit in --with-fox=XXXX for some XXX
+# There is no point or merit in --with-fox=XXXX for some XXX
 # other than "yes" OR "no", and "--with-fox=no" is interpreted as being the
 # same as "--without-fox" (etc). I use "--with-fox=default" as the situation
 # if the user does not specify "--with-fox" at all.
@@ -1291,7 +1284,7 @@ then
         CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
-        $pass_host --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
+        $pass_host --with-fox=\"$builddir\" $pass_build --without-wx"
   else
 # This final version will be without any GUI.
     pass_build="--with-build=\"$build\""
@@ -1547,6 +1540,9 @@ else
   passcc=""
 fi
 AC_MSG_NOTICE([passcc = $passcc])
+
+# NOTE that there is now a SoftFloat-3e and I should migrate to use of it!
+
 doconfig="$SHELL $abssrcdir/libraries/SoftFloat-3a/source/configure -C \
         $filtered \
         $pass_host \

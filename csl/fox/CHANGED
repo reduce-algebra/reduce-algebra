@@ -189,5 +189,15 @@ March 2019. The word "register" will be utterly rejected in C++17, and now
 
       Correct accessing the "gap" when trying to get a pointer to the box structure
       for the formula.
+
+May 2019. A lot more changes to terminal handling and ^C processing. My latest
+      model is that it should be
+        ^C raise an exception in the Lisp that unwinds without a backtrace
+        ^G raise an exception that unwinds with a backtrace
+        ALT-^C exit the system at once
+        ALG-^G run a break loop
+      At present CSL has the start of a framework for break loops but has
+      not got that in a workable state, so ALT-^G causes an odd effect - but
+      that is an issue for CSL not for my FOX adjustments here.
       
 <end of CHANGED>

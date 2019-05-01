@@ -1,4 +1,4 @@
-// csl.cpp                                 Copyright (C) 1989-2018 Codemist
+// csl.cpp                                 Copyright (C) 1989-2019 Codemist
 
 //
 // This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -143,10 +143,6 @@
 
 bool symbol_protect_flag = true;
 bool warn_about_protected_symbols = false;
-
-#if defined WINDOW_SYSTEM && !defined EMBEDDED
-bool use_wimp;
-#endif
 
 #ifdef USE_MPI
 int32_t mpi_rank,mpi_size;
@@ -313,7 +309,7 @@ NORETURN void error(int nargs, int code, ...)
         va_end(a);
         for (i=0; i<nargs; i++) push(*--w);
         if (code != err_stack_overflow)  // Be cautious here!
-        {   stackcheck0();
+        {   stackcheck();
         }
         for (i=0; i<nargs; i++)
         {   LispObject p;
@@ -348,7 +344,7 @@ NORETURN void cerror(int nargs, int code1, int code2, ...)
         for (i=0; i<nargs; i++) *w++ = va_arg(a, LispObject);
         va_end(a);
         for (i=0; i<nargs; i++) push(*--w);
-        stackcheck0();
+        stackcheck();
         for (i=0; i<nargs; i++)
         {   LispObject p;
             pop(p);
@@ -379,12 +375,9 @@ NORETURN void resource_exceeded()
     throw LispResource();
 }
 
-LispObject interrupted(LispObject p)
-//
-// Could return onevalue(p) to proceed from the interrupt event...
-//
+void interrupted()
 {   LispObject w;
-//
+    char save_prompt[80];
 // If I have a windowed system I expect that the mechanism for
 // raising an exception will have had a menu that gave me a chance
 // to decide whether to proceed or abort.  Thus the following code
@@ -392,34 +385,15 @@ LispObject interrupted(LispObject p)
 // this may be an active check.
 //
     if ((fwin_windowmode() & FWIN_IN_WINDOW) == 0)
-    {   if (clock_stack == &consolidated_time[0])
-        {   clock_t t0 = read_clock();
-//
-// On at least some (Unix) systems clock_t is a 32-bit signed value
-// and CLOCKS_PER_SEC = 1000000. The effect is that integer overflow
-// occurs after around 35 minutes of running. I must therefore check the
-// clock and move information into a floating point variable at least
-// every half-hour.  With luck I will do it more like 20 times per second
-// because I have code muck like this in a tick handler that is activated
-// on a rather regular basis on at least some systems. On others this
-// clock overfow issue is a bit of a pain and I really ought just to use
-// a different low-level API for timing that can not so suffer. But
-// as a bit of a fall-back I will see if the garbage collector can
-// consolidate time for me and since I ignore time spent waiting for the
-// keyboard overflows due to 35 minutes of activity there will not hurt so
-// I am probably at worst at risk if I can compute for a solid half
-// hour without triggering garbage collection.
-//
-            double delta = (double)(t0 - base_time)/(double)CLOCKS_PER_SEC;
-            base_time = t0;
-            consolidated_time[0] += delta;
-        }
-        term_printf("\n");
+    {   term_printf("\n");
         ensure_screen();
         push(prompt_thing);
         prompt_thing = nil;  // switch off the regular prompts
+        strncpy(save_prompt, fwin_prompt_string, sizeof(save_prompt));
+        save_prompt[sizeof(save_prompt)-1] = 0;
+// Well I will want this to run a break-loop, but doing what I once did will
+// at least give me something to test!
         fwin_set_prompt("+++ Type C to continue, A to abort, X to exit: ");
-
         other_read_action(READ_FLUSH, lisp_terminal_io);
         for (;;)
         {   int c = char_from_terminal(nil);
@@ -431,8 +405,8 @@ LispObject interrupted(LispObject p)
             switch (c)
             {   case 'c': case 'C':         // proceed as if no interrupt
                     pop(prompt_thing);
-                    fwin_set_prompt(prompt_string);
-                    return onevalue(p);
+                    fwin_set_prompt(save_prompt);
+                    return;
                 case 'a': case 'A':         // raise an exception
                     break;
                 case 'x': case 'X':
@@ -446,11 +420,10 @@ LispObject interrupted(LispObject p)
             break;
         }
         pop(prompt_thing);
-        fwin_set_prompt(prompt_string);
+        fwin_set_prompt(save_prompt);
     }
-//
-// now for the common code to be used in all cases.
-//
+// Now for the common code to be used in all cases.
+    miscflags |= HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Interrupted\n");
     if ((w = qvalue(break_function)) != nil &&
@@ -871,9 +844,9 @@ void my_exit(int n)
     MPI_Finalize();
 #endif
     ensure_screen();
-#ifdef WINDOW_SYSTEM
+#ifdef WITH_GUI
     pause_for_user();
-#endif
+#endif // WITH_GUI
     throw n;   // I use thrown on a simple integer to causse exit with that
                // value as my return code.
 }
@@ -1036,9 +1009,9 @@ static void lisp_main(void)
                     {   msg = &celt(exit_value, 0);
                         len = (int)(length_of_byteheader(vechdr(exit_value)) - CELL);
                     }
-                    push2(codevec, litvec);
+                    push(codevec, litvec);
                     preserve(msg, len);
-                    pop2(litvec, codevec);
+                    pop(litvec, codevec);
                 }
                 else if (exit_tag == fixnum_of_int(3)) // "preserve & restart"
                 {   const char *msg = "";
@@ -1052,9 +1025,9 @@ static void lisp_main(void)
                     {   msg = &celt(exit_value, 0);
                         len = (int)(length_of_byteheader(vechdr(exit_value)) - CELL);
                     }
-                    push2(litvec, codevec);
+                    push(litvec, codevec);
                     preserve(msg, len);
-                    pop2(codevec, litvec);
+                    pop(codevec, litvec);
 #ifdef CONSERVATIVE
 // I believe that this is all to abandon all existing in-use pages and
 // put things back as if all memory is totally empty.
@@ -1092,8 +1065,6 @@ static void lisp_main(void)
                     exit_tag = exit_value = nil;
                     exit_reason = UNWIND_NULL;
                     stream_pushed_char(lisp_terminal_io) = fd;
-                    interrupt_pending = already_in_gc = false;
-                    tick_pending = tick_on_gc_exit  = false;
                     continue;
                 }
                 else                                   // "restart"
@@ -1105,10 +1076,7 @@ static void lisp_main(void)
 // Of course a tick may very well have happened rather recently - so
 // I will flush it out now just to clear the air.
 //
-                    if (++reclaim_trigger_count == reclaim_trigger_target ||
-                        stack >= stacklimit)
-                    {   ignore_error(reclaim(nil, "stack", GC_STACK, 0));
-                    }
+                    if ((stack+event_flag.load()) >= stacklimit) respond_to_stack_event();
                     cold_start = (exit_value == nil);
                     Lrds(nil, nil);
                     Lwrs(nil, nil);
@@ -1203,8 +1171,6 @@ static void lisp_main(void)
                     exit_tag = exit_value = nil;
                     exit_reason = UNWIND_NULL;
                     stream_pushed_char(lisp_terminal_io) = fd;
-                    interrupt_pending = already_in_gc = false;
-                    tick_pending = tick_on_gc_exit  = false;
                     if (!cold_start && new_fn[0] != 0)
                     {   LispObject w;
                         if (new_module[0] != 0)
@@ -1225,64 +1191,6 @@ static void lisp_main(void)
     }
 }
 
-//
-// OK, I need to write a short essay on "software ticks". A major issue
-// for me is synchronization between the worker and the GUI tasks. Lisp
-// code can not easily be unilaterally interrupted since it needs to
-// preserve GC safety. The easiest way of making progress that I have come up
-// with is to arrange that the worker thead (ie the Lisp engine) arranges
-// to poll the GUI on a fairly regular basis. I achieve this by making it
-// count down in a variable called "countdown" and when that reaches zero
-// it deems that a poll is due. I put instructions to decrement countdown in
-// a number of places that I expect to be used often enough, and would like
-// to have these within all possible loops and such that they are performed
-// uniformly over time. These are IDEALS not reality! The countdown overflow
-// may happen at somewhat irregular intervals and often at places in the
-// code where I am not GC safe. So what I do is to set heap fringes and
-// stack fringes so that the next time I try to allocate memory or check
-// the stack the situation is noticed and I enter the GC. Once there I
-// rapidly detect that this is not a genuine case of having run out of
-// memory so I do not do a full GC: I just reset the varios fringes and
-// proceed. But while there I know I am in a tidy situation and I can
-// exchange information with the GUI. Perhaps as clear-cut case of
-// consequence that can arise is that I may respond to a GUI request to
-// interrupt what I was doing.
-// I try to tune the value that I count down from to get a rate of polling
-// that I count as "reasonable" - ie a few per second.
-//
-// deal_with_tick() is called when the countdown overflows. It resets the
-// fringe variables to provoke a GC.
-//
-// handle_tick() is then a call back out from the GC and could do more
-// as required.
-//
-
-int32_t software_ticks = 3000;
-int32_t number_of_ticks = 0;
-int32_t countdown = 3000;
-
-int deal_with_tick(void)
-{
-#ifdef PENDING_TICK_SUPPORT
-    printf("(!)"); fflush(stdout);
-    number_of_ticks++;
-    if (!tick_pending)
-    {   if (already_in_gc) tick_on_gc_exit = true;
-        else
-        {   tick_pending = true;
-            saveheaplimit = heaplimit;
-            heaplimit = fringe;
-            savevheaplimit = vheaplimit;
-            vheaplimit = vfringe;
-            savestacklimit = stacklimit;
-            stacklimit = stackbase;
-        }
-    }
-#endif
-    countdown = software_ticks;
-    return 1;
-}
-
 static long int initial_random_seed;
 
 const char *files_to_read[MAX_INPUT_FILES],
@@ -1299,9 +1207,9 @@ size_t number_of_input_files = 0,
     number_of_fasl_paths = 0;
 int init_flags = 0;
 
-#ifdef WINDOW_SYSTEM
+#ifdef WITH_GUI
 FILE *alternative_stdout = NULL;
-#endif
+#endif // WITH_GUI
 
 //
 // standard_directory holds the name of the default image file that CSL
@@ -1336,8 +1244,6 @@ std::condition_variable cv_kara_ready, cv_kara_done;
 unsigned int kara_ready = 0;
 int kara_done = 0;
 #endif
-
-static int kparallel = -1;
 
 void cslstart(int argc, const char *argv[], character_writer *wout)
 {   int i;
@@ -1432,45 +1338,15 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     errorset_max = 3;
     stack_segsize = 1;
     module_enquiry = NULL;
-    countdown = 0x7fffffff;
 // put resource limiting info in a tidy or at least safe state
     time_base  = space_base  = io_base  = errors_base  = 0;
     time_now   = space_now   = io_now   = errors_now   = 0;
     time_limit = space_limit = io_limit = errors_limit = -1;
-//
-// Note that I will set up clock_stack AGAIN later on! The one further down
-// happens after command line options have been decoded and is where I really
-// want to consider Lisp to be starting. The setting here is because
-// if I call ensure_screen() it can push and pop the clock stack, and
-// especially if I have an error in my options I may print to the terminal
-// and then flush it. Thus I need SOMETHING set up early to prevent any
-// possible frivolous disasters in that area.
-//
     base_time = read_clock();
-    consolidated_time[0] = gc_time = 0.0;
-    clock_stack = &consolidated_time[0];
-#if defined WINDOW_SYSTEM && !defined EMBEDDED
-    use_wimp = true;
-#endif
-//
-// On fwin the "-w" flag should disable all attempts at use of the wimp.
-//
-    for (i=1; i<argc; i++)
-    {   const char *opt = argv[i];
-        if (opt == NULL) continue;
-        else if (strcmp(argv[i], "--args")==0) break;
-#if defined WINDOW_SYSTEM && !defined EMBEDDED
-        if (opt[0] == '-' && (char)tolower((unsigned char)opt[1]) == 'w')
-        {   use_wimp = !use_wimp;
-            break;
-        }
-#endif
-    }
-    fwin_pause_at_end = 1;
-//
+    gc_time = 0.0;
+    fwin_pause_at_end = true;
 // Now that the window manager is active I can send output through
 // xx_printf() and get it on the screen neatly.
-//
     procedural_input = NULL;
     procedural_output = wout;
     standard_directory = find_image_directory(argc, argv);
@@ -1563,6 +1439,24 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
                         if (strcmp(w, "cygwin") == 0)
                         { }
+/*! options [--wait] item [{ttfamily --wait}] index{{ttfamily --wait}}
+ * This displays the process number and waits for 15 seconds at the
+ * start of a run. This may be useful for those who have built everything
+ * with debugging options and then want to start it fairly normally and
+ * then attach from gdb or som eother debugger.
+ */
+                        else if (strcmp(w, "wait") == 0)
+                        {   printf("Process identifier = %d\r\n", getpid());
+                            printf("Waiting 15 seconds in case you want to attach\r\n");
+                            printf("from gdb or some other debugger...\r\n");
+                            fflush(stdout);
+#ifdef WIN32
+                            Sleep(15);
+#else
+                            sleep(15);
+#endif
+                            printf("... continuing\r\n");
+                        }
 /*! options [--texmacs] \item [{\ttfamily --texmacs}] \index{{\ttfamily --texmacs}}
  * If CSL/Reduce is launched from texmacs this command-line flag should be
  * used to arrange that the {\ttfamily texmacs} flag is set in
@@ -1640,14 +1534,15 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
                         else if (strcmp(w, "force-echo") == 0)
                             force_echo = true;
-/*! options [--force-backtrace] \item [{\ttfamily --force-backtrace}] \index{{\ttfamily --force-backtrace}}
+/*! options [--force-backtrace//--bt] \item [{\ttfamily --force-backtrace, --bt}] \index{{\ttfamily --force-backtrace, --bt}}
  * Forces any error to generate a backtrace regardless of any
  * attempt from with the system to change that (eg via use of errorset).
  * Intended for use during system  debugging where it may be important to
- * observe behaviour otherwise hiddenn by (errorset X nil nil) but when it
+ * observe behaviour otherwise hidden by (errorset X nil nil) but when it
  * undesirable to change the input script at all.
  */
-                        else if (strcmp(w, "force-backtrace") == 0)
+                        else if (strcmp(w, "force-backtrace") == 0 ||
+                                 strcmp(w, "bt") == 0)
                             force_backtrace = true;
 /*! options [--help] \item [{\ttfamily --help}] \index{{\ttfamily --help}}
  * It is probably obvious what this option does! Note that on Windows the
@@ -1681,10 +1576,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                                 "-d VVV or  -d VVV=VVV define a Lisp symbol as the system start\n");
                             term_printf(
                                 "-e   enable some feature that is at present an experiment. Not for users!\n");
-                            term_printf(
-                                "-f or -f nnn  listen on socket 1206 or nnn to run a remote session.\n");
-                            term_printf(
-                                "              This option is not for normal users.\n");
                             term_printf(
                                 "-g   enable some options that help when debugging. You get backtraces.\n");
                             term_printf(
@@ -1765,9 +1656,13 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                                 "--texmacs run in texmacs mode. You must use the plugin from the\n"
                                 "     cslbase/texmacs-plugin directory.\n");
                             term_printf(
-                                "--force-backtrace, --force-echo, --force-verbos. Make system much nosier\n");
+                                "--force-backtrace/--bt, --force-echo, --force-verbos. Make system much noisier\n");
                             term_printf(
                                 "     in ways that may help debugging when hunting low-level bugs in Reduce.\n");
+                            term_printf(
+                                "--trace/--tr fname causes the named function to be traced. Useful in debugging\n");
+                            term_printf(
+                                "     in that this does not need changes to the reduce source files under test.\n");
                             term_printf(
                                 "--gc-trigger=NNNN causes a garbage collection to be forced on the NNNNth\n"
                                 "     occasion when that could possibly happen. This may sometimes be relevant\n"
@@ -1780,7 +1675,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                                 "--version display some version information then exit.\n");
                             term_printf(
                                 "--help this output!\n");
-#ifdef WX
+#ifdef HAVE_LIBWX
 //
 // NOTE that the LaTeX Project Public License requires that every
 // component of a derived work contain priminent notices logging
@@ -1841,7 +1736,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                                 buffer[i] = 0;
                                 max_store_size = atof(buffer);
                                 switch (*w)
-                                {   case 'k': case 'K':
+                                 {   case 'k': case 'K':
                                         break;
                                     case 'g': case 'G':
                                         max_store_size *= 1024.0*1024.0;
@@ -1883,9 +1778,23 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                             if (kparallel < KARATSUBA_CUTOFF)
                                 kparallel = KARATSUBA_CUTOFF;
                         }
+/*! options [--trace/--tr] \item [{\ttfamily --trace, --tr}] \index{{\ttfamily --trace, --tr}}
+ * When followed by the name of a function this command-line option has and
+ * effect as if (trace '(fname)) had been called at system start-up so that
+ * all calls to the named function are reported to the user. Perhaps often to
+ * be combined with --bt so that on any error a backtrace will get generated,
+ * and used when an input script leads to failure and one wants to investigate
+ * its behaviour without altering the script at all.
+ */
+                        else if (strcmp(w, "trace") == 0 ||
+                                 strcmp(w, "tr") == 0)
+                        {   if (i != argc) i++;
+// This option is processed later! So at this stage I just need to ignore it.
+                            continue;
+                        }
                         else
                         {   fwin_restore();
-                            term_printf("Unknown extended option \"--%s\"\n", w);
+                            term_printf("\nUnknown extended option \"--%s\"\n", w);
                             term_printf("NB: use \"-- filename\" (with whitespace)\n");
                             term_printf("    for output redirection now.\n");
                         }
@@ -1896,7 +1805,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     {   char filename[LONGEST_LEGAL_FILENAME];
                         FILE *f;
                         memset(filename, 0, sizeof(filename));
-#ifdef WINDOW_SYSTEM
+#ifdef WITH_GUI
                         f = open_file(filename, w, strlen(w), "w", NULL);
                         if (f == NULL)
                         {
@@ -1918,7 +1827,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                         if (alternative_stdout != NULL)
                             fclose(alternative_stdout);
                         alternative_stdout = f;
-#else
+#else // !WITH_GUI
 //
 // I use freopen() on stdout here to get my output sent elsewhere.  Quite
 // what sort of mess I am in if the freopen fails is hard to understand!
@@ -1933,7 +1842,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                                     filename);
                             throw EXIT_FAILURE;
                         }
-#endif
+#endif // !WITH_GUI
                     }
                     continue;
 
@@ -1992,7 +1901,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
                 case 'c':
                     fwin_restore();
-                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2018\n");
+                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2019\n");
                     term_printf("Distributed under the Modified BSD License\n");
                     term_printf("See also --help\n");
                     continue;
@@ -2071,7 +1980,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     errorset_min = 3;
                     errorset_max = 3;
 // -gw switches on debugging and also causes a 5-second pause before the code
-// really gets going. The intent of this pause is so that a debgger can start
+// really gets going. The intent of this pause is so that a debugger can start
 // and perhaps have time to attach to the task.
                     if (opt[2] == 'w')
 #ifdef WIN32
@@ -2441,14 +2350,13 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     }
                     continue;
 
-#ifdef WINDOW_SYSTEM
 /*! options [-w] \item [{\ttfamily -w}] \index{{\ttfamily -w}}
  * On a typical system if the system is launched it creates a new window and uses
  * its own windowed intarface in that. If it is run such that at startup the
  * standard input or output are associated with a file or pipe, or under X the
  * variable {\ttfamily DISPLAY} is not set it will try to start up in console
  * mode. The flag {\ttfamily -w} indicates that the system should run in console
- * more regadless, while {\ttfamily -w+} attempts a window even if that seems
+ * more regardless, while {\ttfamily -w+} attempts a window even if that seems
  * doomed to failure. When running the system to obey a script it will often make
  * sense to use the {\ttfamily -w} option. Note that on Windows the system is
  * provided as two separate (but almost identical) binaries. For example the
@@ -2459,6 +2367,9 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * In contrast {\ttfamily csl.com} is a console mode version of just the same
  * program, so when launched from a command line it can communicate with the
  * console in the ordinary expected manner.
+ *
+ * The option is in fact processed at an earlier stage then here if windowing
+ * is possible at all!
  */
 
                 case 'w':
@@ -2472,8 +2383,21 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // will be when running under some debuggers) try to create and use a
 // window.
 //
-                    continue;
+                    if (strcmp(&opt[1], "wait") == 0 ||
+                        strcmp(&opt[1], "w-ait") == 0 ||
+                        strcmp(&opt[1], "w+ait") == 0)
+                    {   printf("Process identifier = %d\r\n", getpid());
+                        printf("Waiting 15 seconds in case you want to attach\r\n");
+                        printf("from gdb or some other debugger...\r\n");
+                        fflush(stdout);
+#ifdef WIN32
+                        Sleep(15);
+#else
+                        sleep(15);
 #endif
+                        printf("... continuing\r\n");
+                    }
+                    continue;
 
 /*! options [-x] \item [{\ttfamily -x}] \index{{\ttfamily -x}}
  * {\ttfamily -x} is an option intended for use only by system
@@ -2621,15 +2545,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         nilsegment = (LispObject *)aligned_malloc(NIL_SEGMENT_SIZE);
         if (nilsegment == NULL) abort();
 #ifdef COMMON
-        nil = (LispObject)nilsegment + TAG_CONS + 8;
+        nil = doubleword_align_up((LispObject)nilsegment) + TAG_CONS + 8;
 #else
-        nil = (LispObject)nilsegment + TAG_SYMBOL;
+        nil = doubleword_align_up((LispObject)nilsegment) + TAG_SYMBOL;
 #endif
         pages_count = heap_pages_count = vheap_pages_count = 0;
         stacksegment = (LispObject *)aligned_malloc(CSL_PAGE_SIZE);
         if (stacksegment == NULL) abort();
-        heaplimit = (LispObject)stacksegment;
-        heaplimit = (LispObject)stacksegment;
+        heaplimit = doubleword_align_up((LispObject)stacksegment);
         fringe = heaplimit + CSL_PAGE_SIZE - 16;
         input_libraries = heaplimit + 16 + TAG_SYMBOL;
         heaplimit += 64;
@@ -2652,17 +2575,15 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         term_printf("%.24s   size=%" PRIuPTR " file=%s\n",
                     datestamp, (uintptr_t)size, fullname);
         init_flags &= ~INIT_VERBOSE;
-        fwin_pause_at_end = 0;
+        fwin_pause_at_end = false;
     }
     else
     {   base_time = read_clock();
-        consolidated_time[0] = gc_time = 0.0;
-        clock_stack = &consolidated_time[0];
-        push_clock();
+        gc_time = 0;
 
         if (init_flags & INIT_VERBOSE)
         {
-#ifndef WINDOW_SYSTEM
+#ifdef WITHOUT_GUI
 //
 // If I do NOT have a window system I will print a newline here so that I
 // can be very certain that my banner appears at the start of a line.
@@ -2672,17 +2593,17 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             term_printf("\n");
 #endif
 
-#ifndef COMMON
-            term_printf("Codemist Standard Lisp revision %d for %s: %s\n",
-#else
+#ifdef COMMON
             term_printf("Codemist Common Lisp revision %d for %s: %s\n",
-#endif
+#else // !COMMON
+            term_printf("Codemist Standard Lisp revision %d for %s: %s\n",
+#endif // !COMMON
                         REVISION, IMPNAME, __DATE__);
         }
-#ifdef WINDOW_SYSTEM
+#ifdef WITH_GUI
         ensure_screen();
 // If the user hits the close button here I may be in trouble
-#endif
+#endif // WITH_GUI
 
         if (number_of_processors() >= 3)
         {   karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
@@ -2714,14 +2635,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 //
         Csrand((uint32_t)initial_random_seed);
 
-        gc_time += pop_clock();
+        uint64_t t0 = read_clock();
+        gc_time += t0;
+        base_time += t0;
 
-        countdown = software_ticks;
-        interrupt_pending = already_in_gc = false;
-        tick_pending = tick_on_gc_exit  = false;
-
-// "^C" trapping and handling happens within fwin.
-//
         ensure_screen();
         procedural_output = NULL;
 //
@@ -2729,15 +2646,181 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // disasters will have reached the user, so I can allow FWIN to terminate
 // rather more promptly.
 //
-        fwin_pause_at_end = 0;
+        fwin_pause_at_end = false;
     }
-#ifdef HAVE_LIBFOX
-//
-// Activate the BREAK and BACKTRACE menu items. Note not needed unless
-// FOX is used and so there is a prospect of there actually being menus!
-//
-    fwin_callback_to_interrupt(async_interrupt);
+
+// Now if --trace/--tr has been specified set up some traced functions.
+    for (i=1; i<=argc; i++)
+    {   const char *opt = argv[i];
+        if (opt == NULL || *opt == 0) continue;
+        else if (strcmp(opt, "--args")==0) break;
+        if (opt[0] == '-' && opt[1] == '-' && opt[2] != 0)
+        {   const char *w = &opt[2];
+/*! options [--nogui] \item [{\ttfamily --nogui}] \index{{\ttfamily --nogui}}
+ * Encourage the system to run as a console-style application. Similar
+ * to {\ttfamily -w-} or just simply {\ttfamily -w}.
+ */
+            if (strcmp(w, "trace") == 0 ||
+                strcmp(w, "tr") == 0)
+            {   if (i!=argc)
+                {   const char *name=argv[++i];
+                    Ltrace(nil, ncons(make_undefined_symbol(name)));
+                }
+            }
+        }
+    }
+}
+
+// I have some background threads to help me, so here is the code to start
+// them up. It seems to be important to terminate deteched threads or join
+// with regular ones before quitting, so I also cope with that.
+
+static void quit_threads()
+{   {   std::lock_guard<std::mutex> lk(kara_mutex);
+        kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
+        kara_done = 0;
+    }
+    cv_kara_ready.notify_all();
+}
+
+static void start_threads()
+{
+#ifndef HAVE_CILK
+// If CILK is available then the concurrency is expressed using its
+// higher level constructs. Otherwise I will do the thread creation
+// and coordination myself.
+    kara_ready = kara_done = 0;
+    for (int i=0; i<2; i++)
+    {   kara_thread[i] = std::thread(kara_worker, i);
+// By making detaching the threads I will not need to join them when the
+// program exits. Well it seems that just what happens when threads are left
+// running at program exit (and in fact waiting on a condition variable!)
+// may be "undefined", but my EXPECTATION is that they will be killed for me.
+        kara_thread[i].detach();
+    }
 #endif
+    atexit(quit_threads);
+}
+
+
+// I need a way that a thread that is not synchronised with this one can
+// generate a Lisp-level interrupt. I achieve that by
+// letting that thread reset stacklimit. Then rather soon CSL will
+// do a stackcheck() and will notice it.
+//
+// call this with
+//    arg=0 to have no effect at all (!)   QUERY_INTERRUPT
+//####arg=1 for a clock tick event#########TICK_INTERRUPT
+//    arg=2 for quiet unwind               QUIET_INTERRUPT
+//    arg=3 for backtrace.                 NOISY_INTERRUPT
+//    arg=4 for termination                QUIT_PROGRAM
+//    arg=5 for a break loop               BREAK_LOOP
+// in each case the result is non-zero if some event has been
+// posted but not yet acknowledged. So a call with QUERY_INTERRUPT
+// can be used just to check if a previously posted event had been noticed.
+
+// The value I store in event_flag is either 0 if there is no request pending,
+// or it has the bottom 8 bits as a map showing what event or events have been
+// requested and all other bits set. It is used in tests of the form
+//   if ((stackpointer | event_flag.load()) >= stacklimit) ...
+// and for this toi make sense I must have stacklimitC a lower address than
+// within 256 bytes of the top of my address space. Being of a neurotic
+// style I ensure this by rounding stacklimit down to a multiple of 256
+// when I set it! This scheme allows for 8 independent ways in which the IO
+// system can report "events" or "requests" back to the code here. Having
+// a couple in hand for any future thread-supporting system seems a good idea.
+
+volatile std::atomic<uintptr_t> event_flag(0);
+
+// The following function can be called from a signal handler. It just
+// sets a volatile atomic variable, because basically that is the only
+// think it can do and remain "safe".
+
+const intptr_t RECEIVE_TICK       = 0x01;
+const intptr_t RECEIVE_INTERRUPT  = 0x02;
+const intptr_t RECEIVE_BACKTRACE  = 0x04;
+const intptr_t RECEIVE_QUIT       = 0x08;
+const intptr_t RECEIVE_BREAK_LOOP = 0x10;
+
+int async_interrupt(int type)
+{   uintptr_t newval;
+    switch (type)
+    {
+        default:
+        case QUERY_INTERRUPT:
+           newval = 0;
+           break;
+//        case TICK_INTERRUPT:
+//// The non-zero values used here have some information about what the
+//// request was in their low order 4 bits, but otherwise all bits are set.
+//// By having separate bits for each request it is OK to OR these together.
+//           newval = INTPTR_MAX - 0xff + RECEIVE_TICK;
+//           break;
+        case QUIET_INTERRUPT:
+           newval = INTPTR_MAX - 0xff + RECEIVE_INTERRUPT;
+           break;
+        case NOISY_INTERRUPT:
+           newval = INTPTR_MAX - 0xff + RECEIVE_BACKTRACE;
+           break;
+        case QUIT_PROGRAM:
+           newval = INTPTR_MAX - 0xff + RECEIVE_QUIT;
+           break;
+        case BREAK_LOOP:
+           newval = INTPTR_MAX - 0xff + RECEIVE_BREAK_LOOP;
+           break;
+    }
+// C++11 provides fetch_or(). Well I could have written "|=" to invoke
+// it, but spelling it out helps to stress what is going on. I really want
+// the implemention to be lock-free and I very much expect that given that
+// the atomic value is a wrapped uintptr_t that this will be possible. However
+// C++ could have been implemented with std::atomic<uintptr_t> as a type
+// that is not lock-free - eg perhaps on a machine where the bus size
+// is less than the size of an address?
+    uintptr_t oldval = event_flag.fetch_or(newval);
+    return (int)oldval & 0xff;
+}
+
+void respond_to_stack_event()
+{   uintptr_t f = event_flag.fetch_and(0);
+    if (f == 0) aerror("stack overflow");
+// Each of the messages that I might be sent comes in a separate bit, so
+// here I have to test each bit. I will test the bits in some sort of
+// order because I will only perform one major operation!
+    if ((f&RECEIVE_QUIT) != 0) my_exit(0);
+    if ((f&RECEIVE_TICK) != 0)
+    {   //fwin_acknowledge_tick();
+#if !defined EMBEDDED && !defined WITHOUT_GUI
+        uintptr_t tt = read_clock() - base_time;
+        long int t = (long int)(tt/10000);
+        long int gct = gc_time/100000;
+        report_time(t, gct);
+#endif
+        time_now = read_clock()/1000;  // in milliseconds now
+        if ((time_limit >= 0 && time_now > time_limit) ||
+            (io_limit >= 0 && io_now > io_limit))
+            resource_exceeded();
+    }
+    if ((f&RECEIVE_BACKTRACE) != 0)
+    {   exit_reason = UNWIND_ERROR;
+        exit_value = exit_tag = nil;
+        exit_count = 0;
+        throw LispError();
+    }
+    if ((f&RECEIVE_INTERRUPT) != 0)
+    {   exit_reason = UNWIND_UNWIND;
+        exit_value = exit_tag = nil;
+        exit_count = 0;
+        throw LispError();
+    }
+    if ((f&RECEIVE_BREAK_LOOP) != 0)
+    {
+// If interrupted() returns I will just resume the calculation I had been
+// doing. Well if the reading and printing within that function causes
+// garbage collection I need to be GC safe here, and that will be the case
+// with a conservative collector but not in the current version of the code
+// with the precise collector perhaps?
+        interrupted();
+    }
 }
 
 static void cslaction(void)
@@ -2755,18 +2838,18 @@ static void cslaction(void)
     {   START_SETJMP_BLOCK;
         set_up_signal_handlers();
         non_terminal_input = NULL;
-#ifdef WINDOW_SYSTEM
+#ifdef WITH_GUI
         terminal_eof_seen = 0;
-#endif
+#endif // WITH_GUI
         if (number_of_input_files == 0) lisp_main();
         else
         {   size_t i;
             for (i=0; i<number_of_input_files; i++)
             {   if (strcmp(files_to_read[i], "-") == 0)
                 {   non_terminal_input = NULL;
-#ifdef WINDOW_SYSTEM
+#ifdef WITH_GUI
                     terminal_eof_seen = 0;
-#endif
+#endif // WITH_GUI
                     lisp_main();
                 }
                 else
@@ -2813,18 +2896,9 @@ int cslfinish(character_writer *w)
 #ifdef TRACED_EQUAL
     dump_equals();
 #endif
-//
-// clock_t is an arithmetic type but I do not know what sort - so I
-// widen to double to do arithmetic on it. Actually what I MUST do is
-// to compute a time difference in the type clock_t and hope I never
-// get a difference that that overflows. The worst case I know of overflows
-// after 35 minutes.
-//
     if (init_flags & INIT_VERBOSE)
-    {   long int t = (long int)(100.0 * (consolidated_time[0] +
-                                         (double)(read_clock() - base_time)/
-                                         (double)CLOCKS_PER_SEC));
-        long int gct = (long int)(100.0 * gc_time);
+    {   uint64_t t = (read_clock() - base_time)/10000;  // centisecond units
+        uint64_t gct = gc_time/10000;
 #ifdef HASH_STATISTICS
         term_printf("oblist: found: %" PRIu64 " probes: %" PRIu64 " (%.2f)\n"
                     "        added: %" PRIu64 " probes: %" PRIu64 " (%.2f)\n",
@@ -2837,7 +2911,8 @@ int cslfinish(character_writer *w)
             Nhput1, Nhputp1, Nhputp1/(double)Nhput1,
             Nhput2, Nhputp2, Nhputp2/(double)Nhput2);
 #endif
-        term_printf("\n\nEnd of Lisp run after %ld.%.2ld+%ld.%.2ld seconds\n",
+        term_printf("\n\nEnd of Lisp run after %" PRId64 ".%.2" PRId64
+                    "+%" PRId64 ".%.2" PRId64 " seconds\n",
                     t/100, t%100, gct/100, gct%100);
     }
     drop_heap_segments();
@@ -2928,28 +3003,8 @@ static void iput(int c)
 }
 
 #endif
-static void quit_kara_threads()
-{   {   std::lock_guard<std::mutex> lk(kara_mutex);
-        kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
-        kara_done = 0;
-    }
-    cv_kara_ready.notify_all();
-}
 
-static void start_threads()
-{   kara_ready = kara_done = 0;
-    for (int i=0; i<2; i++)
-    {   kara_thread[i] = std::thread(kara_worker, i);
-// By making detaching the threads I will not need to join them when the
-// program exits. Well it seems that just what happens when threads are left
-// running at program exit (and in fact waiting on a condition variable!)
-// may be "undefined", but my EXPECTATION is that they will be killed for me.
-        kara_thread[i].detach();
-    }
-    atexit(quit_kara_threads);
-}
-
-static int submain(int argc, const char *argv[])
+[[noreturn]] static int submain(int argc, const char *argv[])
 {   cslstart(argc, argv, NULL);
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
     strcpy(ibuff, "(print '(a b c d))");
@@ -2958,22 +3013,12 @@ static int submain(int argc, const char *argv[])
     printf("Buffered output is <%s>\n", obuff);
 #else
     if (module_enquiry == NULL)
-    {
-#ifndef HAVE_CILK
-// I will now always create threads even if on a uniprocessor. If my CPU
-// has fewer than 3 cores (or virtual cores) I will not make any use of
-// the two worker threads, but it is simpler if I always create them.
-        start_threads();
-#endif
+    {   start_threads(); // For Parallel Karatsuba
+        set_keyboard_callbacks(async_interrupt);
         cslaction();
     }
 #endif
     my_exit(cslfinish(NULL));
-//
-// The "return 0" here is unreachable but it still quietens down as many
-// C compilers as it causes to moan noisily!
-//
-    return 0;
 }
 
 #ifdef EMBEDDED

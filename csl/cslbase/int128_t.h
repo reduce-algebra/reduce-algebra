@@ -44,47 +44,52 @@
 
 #ifdef HAVE_NATIVE_INT128
 
-static inline bool greaterp128(int128_t a, int128_t b)
+inline bool greaterp128(int128_t a, int128_t b)
 {   return a > b;
 }
 
-static inline bool lessp128(int128_t a, int128_t b)
+inline bool lessp128(int128_t a, int128_t b)
 {   return a < b;
 }
 
-static inline bool geq128(int128_t a, int128_t b)
+inline bool geq128(int128_t a, int128_t b)
 {   return a >= b;
 }
 
-static inline bool leq128(int128_t a, int128_t b)
+inline bool leq128(int128_t a, int128_t b)
 {   return a <= b;
 }
 
-static inline int128_t ASL128(int128_t a, int n)
-{   return (uint128_t)a << MAXSHIFT(n, int128_t);
+inline int128_t ASL128(int128_t a, int n)
+{   if (n<0 || n>=8*(int)sizeof(int128_t)) n = 0;
+    return(int128_t) ((uint128_t)a) << n;
 }
 
 #ifdef SIGNED_SHIFTS_ARE_ARITHMETIC
 
-static inline int128_t ASR128(int128_t a, int n)
-{   return a >> MAXSHIFT(n, int128_t);
+inline int128_t ASR128(int128_t a, int n)
+{   if (n<0 || n>=8*(int)sizeof(int128_t)) n = 0;
+    return a >> n;
 }
 
 #else // SIGNED_SHIFTS_ARE_ARITHMETIC
 
-static inline int128_t ASR128(int128_t a, int n)
-{   n = MAXSHIFT(n, int128_t);
-    return (a & ~((uint128_t)1<<n - 1))/(int128_t)1<<n;
+inline int128_t ASR128(int128_t a, int n)
+{   if (n<0 || n>=sizeof(uint128_t)) n = 0;
+    uint128_t r = ((uint128_t)a) >> n;
+    uint128_t signbit = ((uint128_t)a) >> (8*sizeof(uint128_t)-1);
+    if (n != 0) r |= ((-signbit) << (8*sizeof(uint128_t) - n);
+    return (int128_t)r;
 }
 
 #endif // SIGNED_SHIFTS_ARE_ARITHMETIC
 
-static inline int64_t NARROW128(int128_t a)
+inline int64_t NARROW128(int128_t a)
 {   return (int64_t)a;
 }
 
-static inline void divrem128(int128_t a, int128_t b,
-                             int128_t & q, int128_t & r)
+inline void divrem128(int128_t a, int128_t b,
+                             int128_t &q, int128_t &r)
 {   uint128_t qq = a/b;
     q = qq;
     r = a - qq*b;
@@ -102,32 +107,32 @@ typedef uint128_t int128_t;
 // Ordered comparisons need special treatment. I will do them using
 // verbosely names functions.
 
-static inline bool greaterp128(const uint128_t & a, const uint128_t & b)
+inline bool greaterp128(const uint128_t & a, const uint128_t & b)
 {   uint128_t aa(a.upper() ^ UINT64_C(0x8000000000000000), a.lower());
     uint128_t bb(b.upper() ^ UINT64_C(0x8000000000000000), b.lower());
     return aa > bb;
 }
 
-static inline bool lessp128(const uint128_t & a, const uint128_t & b)
+inline bool lessp128(const uint128_t & a, const uint128_t & b)
 {   uint128_t aa(a.upper() ^ UINT64_C(0x8000000000000000), a.lower());
     uint128_t bb(b.upper() ^ UINT64_C(0x8000000000000000), b.lower());
     return aa < bb;
 }
 
-static inline bool geq128(const uint128_t & a, const uint128_t & b)
+inline bool geq128(const uint128_t & a, const uint128_t & b)
 {   uint128_t aa(a.upper() ^ UINT64_C(0x8000000000000000), a.lower());
     uint128_t bb(b.upper() ^ UINT64_C(0x8000000000000000), b.lower());
     return aa >= bb;
 }
 
-static inline bool leq128(const uint128_t & a, const uint128_t & b)
+inline bool leq128(const uint128_t & a, const uint128_t & b)
 {   uint128_t aa(a.upper() ^ UINT64_C(0x8000000000000000), a.lower());
     uint128_t bb(b.upper() ^ UINT64_C(0x8000000000000000), b.lower());
     return aa <= bb;
 }
 
-static inline int128_t ASL128(const int128_t & a, int n)
-{   n = MAXSHIFT(n, int128_t);
+inline int128_t ASL128(const int128_t & a, int n)
+{   if (n >= 128) return 0;
     if (n < 64) return
         int128_t((a.upper()<<n) | (a.lower()>>(64-n)),
                  a.lower()<<n);
@@ -135,17 +140,19 @@ static inline int128_t ASL128(const int128_t & a, int n)
     else return int128_t(a.lower()<<(n-64), 0);
 }
 
-static inline int128_t ASR128(const int128_t & a, int n)
-{   n = MAXSHIFT(n, int128_t);
+inline int128_t ASR128(const int128_t & a, int n)
+{   if (n >= 128) return (a < 0 ? -1 : 0);
     if (n < 64) return int128_t(ASR((int64_t)a.upper(), n),
                                 (a.upper()<<(64-n)) | (a.lower()>>n));
     else if (n == 64) return int128_t(-(int64_t)(a.upper()<0),
                                       a.upper());
+    else if (n < 64) return int128_t(ASR((int64_t)a.upper(), n),
+                                     (a.upper()<<(64-n)) | (a.lower()>>n));
     else return int128_t(-(int64_t)(a.upper()<0),
                          ASR(((int64_t)a.upper()), n-64));
 }
 
-static inline int64_t NARROW128(const int128_t & a)
+inline int64_t NARROW128(const int128_t & a)
 {   return (int64_t)a.lower();
 }
 
@@ -153,7 +160,7 @@ static inline int64_t NARROW128(const int128_t & a)
 // absolute values of a and b as unsigned numbers. Note that the negations
 // and divisions here are done as on unsigned values.
 
-static inline void divrem128(const int128_t & a, const int128_t & b,
+inline void divrem128(const int128_t & a, const int128_t & b,
                              int128_t & q, int128_t & r)
 {   if ((int64_t)a.upper() < 0)
     {   if ((int64_t)b.upper() < 0) q = (-a)/(-b);

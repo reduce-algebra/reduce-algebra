@@ -248,7 +248,6 @@ typedef char *lookup_function(char *s, int ch);
 
 extern void fwin_set_lookup(lookup_function *f);
 
-
 //
 // fwin will call the function passed here before (with an arg of 1)
 // and after (with an arg of 0) any time it is liable to delay. In
@@ -273,16 +272,13 @@ extern void fwin_callback_on_delay(delay_callback_t *f);
 // backtrace). If QUERY_INTERRUPT is passed no exception is raised, but
 // the expectation is that 0 is returned if the previous exception has
 // now been accepted and processed.
-// The case TICK_INTERRUPT is to be triggered roughly every second to
-// give the worker thread a chance to do any chores. It is NOT intended
-// to disrupt the main thread of the computation.
 //
 // If fwin detects an interrupt condition while it is waiting for keyboard
 // input or if it has generated an interrupt just before the start of
 // such a wait and a QUERY_INTERRUPT call indicates that its interrupt
 // request is still pending then as well as the activation of the callback
 // function fwin_getchar returns promptly, discarding any typed-ahead
-// stuff and returning character code 3 ("^C").
+// stuff and returning some character.
 //
 // If the callback function tries to raise exceptions etc then great care
 // may be needed to ensure it can not abort the worker in the middle of
@@ -292,20 +288,10 @@ extern void fwin_callback_on_delay(delay_callback_t *f);
 //
 
 #define QUERY_INTERRUPT 0
-#define TICK_INTERRUPT  1
-#define QUIET_INTERRUPT 2
-#define NOISY_INTERRUPT 3
-
-typedef int interrupt_callback_t(int);
-
-extern void fwin_callback_to_interrupt(interrupt_callback_t *f);
-
-//
-// When a TICK is handed to the user the following should be called
-// to confirm that it has been seen.
-//
-extern void fwin_acknowledge_tick();
-
+#define QUIET_INTERRUPT 1
+#define NOISY_INTERRUPT 2
+#define BREAK_LOOP      3
+#define QUIT_PROGRAM    4
 
 //
 // The following is just for use by REDUCE. It adjusts menu entries
@@ -382,7 +368,6 @@ extern void fwin_set_help_file(const char *key, const char *path);
 //
 extern int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main);
 extern delay_callback_t *delay_callback;
-extern interrupt_callback_t *interrupt_callback;
 
 //
 // The following three functions (putchar_overwrite, move_cursor_vertically

@@ -405,6 +405,8 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
                                 (FXObject *)text, FXTerminal::ID_BREAK);
     new FXMenuCommand(fileMenu, "Bac&ktrace\tCtl-G\tInterrupt/backtrace", NULL,
                                 (FXObject *)text, FXTerminal::ID_BACKTRACE);
+    new FXMenuCommand(fileMenu, "BreakLoop\tALT-Ctl-G\tInterrupt", NULL,
+                                (FXObject *)text, FXTerminal::ID_BREAKLOOP);
     new FXMenuCommand(fileMenu, "&Pause\tCtl-S", NULL,
                                 (FXObject *)text, FXTerminal::ID_PAUSE);
     new FXMenuCommand(fileMenu, "&Resume\tCtl-Q", NULL,
@@ -970,11 +972,6 @@ void fwin_set_help_file(const char *key, const char *path)
     if (!windowed) return;
     printf("fwin_set_help_file called\n");
     fflush(stdout);
-}
-
-void fwin_callback_to_interrupt(interrupt_callback_t *f)
-{
-    interrupt_callback = f;
 }
 
 int fwin_windowmode()

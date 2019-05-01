@@ -192,9 +192,9 @@ LispObject Lmaple_integer(LispObject env, LispObject a)
     int len = (int)(*p & 0x03ffffff);
     for (i=1; i<len; i++)
     {   int d = fixnum_of_int((int)p[i]);
-        push2(r, t);
+        push(r, t);
         d = Ltimes2(nil, d, t);
-        pop2(t, r);
+        pop(t, r);
         push(t);
         r = Lplus2(nil, r, d);
         pop(t);
@@ -412,7 +412,7 @@ LispObject simplify_string(LispObject s)
     n = int_of_fixnum(qcar(h1));            // Look at size involved
     h1 = basic_elt(s, 5);                         // Fill pointer
     if (is_fixnum(h1)) n = int_of_fixnum(h1);
-    stackcheck1(s);
+    stackcheck(s);
     push(s);
 // Size limited
     w = get_vector(TAG_VECTOR, TYPE_STRING_4, n+CELL);
@@ -1572,9 +1572,9 @@ LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
 {   LispObject r = nil;
     size_t n = 3;
     for (LispObject x=a4up; x!=nil; x=qcdr(x)) n++;
-    push4(a1, a2, a3, a4up);
+    push(a1, a2, a3, a4up);
     r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(n+1));
-    pop4(a4up, a3, a2, a1);
+    pop(a4up, a3, a2, a1);
     elt(r, 0) = a1;
     elt(r, 1) = a2;
     elt(r, 2) = a3;
@@ -1598,18 +1598,18 @@ LispObject Lvector_1(LispObject env, LispObject a)
 }
 
 LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
-{   push2(a, b);
+{   push(a, b);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 3*CELL);
-    pop2(b, a);
+    pop(b, a);
     elt(r, 0) = a;
     elt(r, 1) = b;
     return onevalue(r);
 }
 
 LispObject Lvector_3(LispObject env, LispObject a, LispObject b, LispObject c)
-{   push3(a, b, c);
+{   push(a, b, c);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 4*CELL);
-    pop3(c, b, a);
+    pop(c, b, a);
     elt(r, 0) = a;
     elt(r, 1) = b;
     elt(r, 2) = c;
@@ -1808,9 +1808,9 @@ LispObject list_subseq(LispObject sequence, size_t start, size_t end)
 // Store the values
     push(sequence);
     while (consp(seq) && pntr < seq_length)
-    {   push3(seq,copy,last);
+    {   push(seq,copy,last);
         newv = Lcons(nil,qcar(seq),nil);
-        pop3(last,copy,seq);
+        pop(last,copy,seq);
         if (pntr == 0) copy = newv;
         else qcdr(last) = newv;
         last = newv;
@@ -1889,10 +1889,10 @@ LispObject vector_subseq(LispObject sequence, size_t start, size_t end)
         // original Lisp-coded version.
         //
         for (i=start; i<end; ++i)
-        {   push2(sequence,copy);
+        {   push(sequence,copy);
             Lbputv(nil,copy,fixnum_of_int(i-start),
                    Lbgetv(nil,sequence,fixnum_of_int(i)));
-            pop2(copy,sequence);
+            pop(copy,sequence);
         }
 
         return onevalue(copy);

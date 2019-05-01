@@ -1,4 +1,4 @@
-// machine.h                               Copyright (C) 1990-2018 Codemist
+// machine.h                               Copyright (C) 1990-2019 Codemist
 
 //
 // This was ONCE a place where all system-specific options were detected
@@ -14,7 +14,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -79,7 +79,26 @@
 #endif
 #endif
 
-// WIth really old versions of C++ you may not be able to write
+#ifdef __cpp_inline_variables
+// For versions of C++ up to C++17 I will put constant values in header
+// files using something along the line of "static const int VAR = VAL;".
+// This should give the compiler a chance to replace the name with its value
+// throughout the compilation unit, and if the compiler is clever enough it
+// will avoid leaving a word of memory with the value stored if all uses
+// have been dealt with more directly. However it will tend to lead to a
+// lot of "static variable defined but not used" warnings.
+// From C++17 onwards (and C++ mandates the __cpp_inline_variables macro to
+// indicate if the feature is in place) I will use
+// "inline const int VAR = VAL;" and now if memory is allocated for the
+// variable it will only be allocated once, and I hope that compilers will
+// not feel entitled to moan about cases where there are no references.
+//
+#define INLINE_VAR inline
+#else
+#define INLINE_VAR static
+#endif
+
+// With really old versions of C++ you may not be able to write
 // large literal integers without some decoration. So e.g.
 // 0x7fffffffffffffff might count as an overflow. In those old days you
 // could either add a suffix (typically L or LL, but different platforms
@@ -112,7 +131,8 @@
 
 // At some stage I might wish to move to "#include <cstdio>" etc however
 // that would put things in the std: namespace, and the killer for me is
-// that with g++ I can then not find putc_unlocked and getc_unlocked.
+// that with g++ I can then not find putc_unlocked and getc_unlocked. Well
+// I bet that I can if I try a bit harder...
 
 #ifdef WIN32
 // The aim here is to avoid use of the Microsoft versions of printf and
@@ -149,7 +169,10 @@
 
 // I should possibly migrate to use of <iostream> rather than <stdio.h>,
 // but doing so will involve changes across rather a latge swathe of the
-// code!
+// code! But I will make the iostream stuff available...
+#include <iostream>
+// I might also migrate from using <stdio.h> to using <cstdio> and face up to
+// any namespace issues that are caused that way... But not today.
 #include <stdio.h>
 // Similarly I should probably go either "#include <cstdlib>" or just
 // "#include <stdlib>" and in general migrate to be "more C++ than C"
@@ -180,7 +203,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-
+#include <atomic>
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
@@ -215,8 +238,7 @@
 extern "C"
 {
 // At present softfloat.h needs inclusion in C mode not C++ mode.
-// This must be included before tags.h, but after __STDC_CONSTANT_MACROS
-// has been defined.
+// This must be included before tags.h.
 
 #include "softfloat.h"
 }
@@ -270,8 +292,6 @@ extern "C"
 // manifest. If that is not the case they are still cheap and ensure that
 // my code behaves in a defined manner (even if that could be wrong!).
 
-#define MAXSHIFT(n, a)   ((n) >= (int)(8*sizeof(a)) || (n) < 0 ? 0 : (n))
-
 #ifdef SIGNED_SHIFTS_ARE_ARITHMETIC
 
 // In this case I can make it simpler for the compiler! Something that is
@@ -279,36 +299,56 @@ extern "C"
 // "undefined" in that the optimiser has to preserve whetever semantics the
 // implementation settled on!
 
-#define ASR(a, n) ((a) >> MAXSHIFT((n), a))
+inline int32_t ASR(int32_t a, int n)
+{   if (n<0 || n>=8*(int)sizeof(int32_t)) n=0;
+    return a >> n;
+}
+
+inline int64_t ASR(int64_t a, int n)
+{   if (n<0 || n>=8*(int)sizeof(int64_t)) n=0;
+    return a >> n;
+}
 
 #else // SIGNED_SHIFTS_ARE_ARITHMETIC
 
-// I use <type_traits> so ensure that I have a signed type for when I do the
-// division. It is a header file that was introduced in C++-11, but g++
-// supports it with -std-gnu++0x, and I have checked and it seems to
-// exists as far back as Fedora 9 (which is, I think, now as old as I am
-// interested in going).
+inline int32_t ASR(int32_t a, int n)
+{   if (n<0 || n>=8*(int)sizeof(int32_t)) n=0;
+    uint32_t r = ((uint32_t)a) >> n;
+    uint32_t signbit = ((uint32_t)a) >> (8*sizeof(uint32_t)-1);
+    if (n != 0) r |= ((-signbit) << (8*sizeof(uint32_t) - n);
+    return (int32_t)r;
+}
 
-#include <type_traits>
-
-template <typename T>
-static inline T ASR(T a, int n)
-{   typedef typename std::make_signed<T>::type ST;
-    return ((ST)(a&~(((T)1<<MAXSHIFT(n,T))-1)))/((ST)1<<MAXSHIFT(n,T));
+inline int64_t ASR(int64_t a, int n)
+{   if (n<0 || n>=8*(int)sizeof(int64_t)) n=0;
+    uint64_t r = ((uint64_t)a) >> n;
+    uint64_t signbit = ((uint64_t)a) >> (8*sizeof(uint64_t)-1);
+    if (n != 0) r |= ((-signbit) << (8*sizeof(uint64_t) - n);
+    return (int64_t)r;
 }
 
 #endif // SIGNED_SHIFTS_ARE_ARITHMETIC
+
 
 // The behaviour of left shifts on negative (signed) values seems to be
 // labelled as undefined in C/C++, so any time I am going to do a left shift
 // I need to work in an unsigned type. Rather than messing with templates
 // again I will have versions for each possible width that I might use.
 
-#define ASL32(a,n)  ((int32_t)((uint32_t)(a)<<MAXSHIFT((n),uint32_t)))
-#define ASLptr(a,n) ((intptr_t)((uintptr_t)(a)<<MAXSHIFT((n),uintptr_t)))
-#define ASL64(a,n)  ((int64_t)((uint64_t)(a)<<MAXSHIFT((n),uint64_t)))
-// The following is provided in int128_t.h not here
-// #define ASL128(a,n) ((int128_t)((uint128_t)(a)<<MAXSHIFT((n),uint128_t)))
+inline int32_t ASL(int32_t a, int n)
+{   if (n < 0 || n>=8*(int)sizeof(uint32_t)) n = 0;
+    return (int32_t)(((uint32_t)a) << n);
+}
+
+inline int64_t ASL(int64_t a, int n)
+{   if (n < 0 || n>=8*(int)sizeof(uint64_t)) n = 0;
+    return (int64_t)(((uint64_t)a) << n);
+}
+
+inline uint64_t ASL(uint64_t a, int n)
+{   if (n < 0 || n>=8*(int)sizeof(uint64_t)) n = 0;
+    return a << n;
+}
 
 // Tidy up re possible 128-bit arithemetic support.
 

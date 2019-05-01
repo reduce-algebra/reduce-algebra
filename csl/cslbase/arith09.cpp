@@ -755,8 +755,8 @@ LispObject lcm(LispObject a, LispObject b)
 {   LispObject g;
     if (a == fixnum_of_int(0) ||
         b == fixnum_of_int(0)) return fixnum_of_int(0);
-    stackcheck2(a, b);
-    push2(a, b);
+    stackcheck(a, b);
+    push(a, b);
     g = gcd(a, b);
     pop(b);
     b = quot2(b, g);
@@ -811,12 +811,12 @@ LispObject ash(LispObject a, LispObject b)
 //
             if (SIXTY_FOUR_BIT && bb > 62) bb = 62;
             else if (!SIXTY_FOUR_BIT && bb > 30) bb = 30;
-            aa = ASR(aa, bb);
+            aa = ASR((int64_t)aa, bb);
             return fixnum_of_int(aa);
         }
         else if (SIXTY_FOUR_BIT && bb < 64)
         {   int64_t lo = aa << bb;  // low 64-bits of result
-            int64_t hi = ASR(aa, 64-bb);
+            int64_t hi = ASR((int64_t)aa, 64-bb);
             uint32_t d0 = (uint32_t)(lo & 0x7fffffff);
             uint32_t d1 = (uint32_t)((lo>>31) & 0x7fffffff);
             uint32_t d2 = (uint32_t)((lo>>62) & 0x3) |

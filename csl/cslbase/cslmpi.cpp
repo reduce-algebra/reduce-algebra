@@ -52,7 +52,7 @@
 
 #include "mpipack.c"
 
-static inline LispObject get_fix_arg(LispObject& v, const char *fun_name)
+inline LispObject get_fix_arg(LispObject& v, const char *fun_name)
 {   if (!is_fixnum(v)) aerror1(fun_name, v)
     v = int_of_fixnum(v);
 }

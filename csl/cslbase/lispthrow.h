@@ -3,7 +3,7 @@
 // Some exception processing stuff for CSL
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -57,6 +57,20 @@
 // when I have a conservative garbage collector I will not need the separate
 // Lisp stack that is at issue here!
 
+// Later (April 2019). Access to thread_local values has low overhead on
+// Linux and on Windows while compiling using msvc. On the Macintosh using
+// clang it is modest. However at the time of writing there are severe costs
+// on either Cygwin or compiling for native Windows using the mingw32
+// compilers. This seems to be because in the favourable cases the C++
+// system uses an x86 segment register, while with Cygwin and mingw a
+// nasty system call is made each time. On the Raspberry pi and on the
+// Macintosh there is an intermediate effect.
+// Exactly what happens may be senitive to the exact release of compiler
+// used etc, and so the report here should not be viewed as behaviour
+// guaranteed for the future! But merely declaring a few variables to be
+// thread_local can sometimes have dramatic consequences!
+
+
 //extern thread_local LispObject *stack;
 extern LispObject *stack;
 //extern thread_local jmp_buf *global_jb;
@@ -74,22 +88,27 @@ extern  jmp_buf *global_jb;
 
 // End of thread_local hack.
 
-static inline void push(LispObject a)
+inline void push(LispObject a)
 {   *++stack = a;
 }
 
-static inline void push2(LispObject a, LispObject b)
+// Since I am now using C++ I could just overload the names push, pop and
+// stackcheck to cope with the number of operands rather than having so many
+// distinct names. Well I will do that, but I will leave the old versions
+// in place for at least a few weeks to help with a transition.
+
+inline void push2(LispObject a, LispObject b)
 {   *++stack = a;
     *++stack = b;
 }
 
-static inline void push3(LispObject a, LispObject b, LispObject c)
+inline void push3(LispObject a, LispObject b, LispObject c)
 {   *++stack = a;
     *++stack = b;
     *++stack = c;
 }
 
-static inline void push4(LispObject a, LispObject b, LispObject c,
+inline void push4(LispObject a, LispObject b, LispObject c,
                          LispObject d)
 {   *++stack = a;
     *++stack = b;
@@ -97,7 +116,7 @@ static inline void push4(LispObject a, LispObject b, LispObject c,
     *++stack = d;
 }
 
-static inline void push5(LispObject a, LispObject b, LispObject c,
+inline void push5(LispObject a, LispObject b, LispObject c,
                          LispObject d, LispObject e)
 {   *++stack = a;
     *++stack = b;
@@ -106,7 +125,7 @@ static inline void push5(LispObject a, LispObject b, LispObject c,
     *++stack = e;
 }
 
-static inline void push6(LispObject a, LispObject b, LispObject c,
+inline void push6(LispObject a, LispObject b, LispObject c,
                          LispObject d, LispObject e, LispObject f)
 {   *++stack = a;
     *++stack = b;
@@ -116,26 +135,65 @@ static inline void push6(LispObject a, LispObject b, LispObject c,
     *++stack = f;
 }
 
-static inline void pop(LispObject& a)
+// Well here I provide the overloads...
+
+inline void push(LispObject a, LispObject b)
+{   *++stack = a;
+    *++stack = b;
+}
+
+inline void push(LispObject a, LispObject b, LispObject c)
+{   *++stack = a;
+    *++stack = b;
+    *++stack = c;
+}
+
+inline void push(LispObject a, LispObject b, LispObject c, LispObject d)
+{   *++stack = a;
+    *++stack = b;
+    *++stack = c;
+    *++stack = d;
+}
+
+inline void push(LispObject a, LispObject b, LispObject c,
+                 LispObject d, LispObject e)
+{   *++stack = a;
+    *++stack = b;
+    *++stack = c;
+    *++stack = d;
+    *++stack = e;
+}
+
+inline void push(LispObject a, LispObject b, LispObject c,
+                 LispObject d, LispObject e, LispObject f)
+{   *++stack = a;
+    *++stack = b;
+    *++stack = c;
+    *++stack = d;
+    *++stack = e;
+    *++stack = f;
+}
+
+inline void pop(LispObject& a)
 {   a = *stack--;
 }
 
-static inline void pop(volatile LispObject& a)
+inline void pop(volatile LispObject& a)
 {   a = *stack--;
 }
 
-static inline void pop2(LispObject& a, LispObject& b)
+inline void pop2(LispObject& a, LispObject& b)
 {   a = *stack--;
     b = *stack--;
 }
 
-static inline void pop3(LispObject& a, LispObject& b, LispObject& c)
+inline void pop3(LispObject& a, LispObject& b, LispObject& c)
 {   a = *stack--;
     b = *stack--;
     c = *stack--;
 }
 
-static inline void pop4(LispObject& a, LispObject& b, LispObject& c,
+inline void pop4(LispObject& a, LispObject& b, LispObject& c,
                         LispObject& d)
 {   a = *stack--;
     b = *stack--;
@@ -143,7 +201,7 @@ static inline void pop4(LispObject& a, LispObject& b, LispObject& c,
     d = *stack--;
 }
 
-static inline void pop5(LispObject& a, LispObject& b, LispObject& c,
+inline void pop5(LispObject& a, LispObject& b, LispObject& c,
                         LispObject& d, LispObject& e)
 {   a = *stack--;
     b = *stack--;
@@ -152,7 +210,7 @@ static inline void pop5(LispObject& a, LispObject& b, LispObject& c,
     e = *stack--;
 }
 
-static inline void pop6(LispObject& a, LispObject& b, LispObject& c,
+inline void pop6(LispObject& a, LispObject& b, LispObject& c,
                         LispObject& d, LispObject& e, LispObject& f)
 {   a = *stack--;
     b = *stack--;
@@ -162,64 +220,194 @@ static inline void pop6(LispObject& a, LispObject& b, LispObject& c,
     f = *stack--;
 }
 
-static inline void popv(int n)
+inline void pop(LispObject& a, LispObject& b)
+{   a = *stack--;
+    b = *stack--;
+}
+
+inline void pop(LispObject& a, LispObject& b, LispObject& c)
+{   a = *stack--;
+    b = *stack--;
+    c = *stack--;
+}
+
+inline void pop(LispObject& a, LispObject& b, LispObject& c, LispObject& d)
+{   a = *stack--;
+    b = *stack--;
+    c = *stack--;
+    d = *stack--;
+}
+
+inline void pop(LispObject& a, LispObject& b, LispObject& c,
+                LispObject& d, LispObject& e)
+{   a = *stack--;
+    b = *stack--;
+    c = *stack--;
+    d = *stack--;
+    e = *stack--;
+}
+
+inline void pop(LispObject& a, LispObject& b, LispObject& c,
+                LispObject& d, LispObject& e, LispObject& f)
+{   a = *stack--;
+    b = *stack--;
+    c = *stack--;
+    d = *stack--;
+    e = *stack--;
+    f = *stack--;
+}
+
+inline void popv(int n)
 {   stack -= n;
 }
 
-static inline void stackcheck0()                                       
+extern volatile bool tick_pending;
+extern volatile int unwind_pending;
+
+extern void respond_to_stack_event();
+
+inline void stackcheck0()
 {   if_check_stack();                                         
-    if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (--countdown < 0 && deal_with_tick()) ||             
-        stack >= stacklimit)                                 
-    {   reclaim(nil, "stack", GC_STACK, 0);                  
-    }
+    if (((uintptr_t)stack | event_flag.load()) >=
+        (uintptr_t)stacklimit) respond_to_stack_event();
 }
 
-static inline void stackcheck1(LispObject& a1)                                   
+inline void stackcheck1(LispObject& a1)                                   
 {   if_check_stack();                                        
-    if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (--countdown < 0 && deal_with_tick()) ||             
-        stack >= stacklimit)
-    {   a1 = reclaim(a1, "stack", GC_STACK, 0);              
+    if (((uintptr_t)stack | event_flag.load()) >=
+        (uintptr_t)stacklimit)
+    {   push(a1);
+        respond_to_stack_event();
+        pop(a1);
     }
 }
 
-static inline void stackcheck2(LispObject& a1, LispObject& a2)                               
+inline void stackcheck2(LispObject& a1, LispObject& a2)                               
 {   if_check_stack();                                        
-    if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (--countdown < 0 && deal_with_tick()) ||             
-        stack >= stacklimit)
-    {   push(a2);                                            
-        a1 = reclaim(a1, "stack", GC_STACK, 0);
-        pop(a2);     
+    if (((uintptr_t)stack | event_flag.load()) >=
+        (uintptr_t)stacklimit)
+    {   push(a1, a2);
+        respond_to_stack_event();
+        pop(a2, a1);
     }
 }
 
-static inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)                           
+inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)                           
 {   if_check_stack();                                        
-    if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (--countdown < 0 && deal_with_tick()) ||             
-        stack >= stacklimit)
-    {   push2(a2, a3);                                       
-        a1 = reclaim(a1, "stack", GC_STACK, 0);              
-        pop2(a3, a2);                                        
+    if (((uintptr_t)stack | event_flag.load()) >=
+        (uintptr_t)stacklimit)
+    {   push(a1, a2, a3);
+        respond_to_stack_event();
+        pop(a3, a2, a1);
     }
 }
 
-static inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObject& a4)                       
+inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObject& a4)                       
 {   if_check_stack();                                        
-    if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (--countdown < 0 && deal_with_tick()) ||             
-        stack >= stacklimit)
-    {   push3(a2, a3, a4);                                   
-        a1 = reclaim(a1, "stack", GC_STACK, 0);              
-        pop3(a4, a3, a2);                                    
+    if (((uintptr_t)stack | event_flag.load()) >=
+        (uintptr_t)stacklimit)
+    {   push(a1, a2, a3, a4);
+        respond_to_stack_event();
+        pop(a4, a3, a2, a1);
     }
 }
 
+// Now overloads...
 
+inline void stackcheck()
+{   if_check_stack();                                         
+    if (((uintptr_t)stack | event_flag.load()) >=
+        (uintptr_t)stacklimit) respond_to_stack_event();
+}
 
-// If I know just how mant items will need removing from the stack I
+inline void stackcheck(LispObject& a1)        
+{   if_check_stack();                                        
+    if (((uintptr_t)stack | event_flag.load()) >=
+        (uintptr_t)stacklimit)
+    {   push(a1);
+        respond_to_stack_event();
+        pop(a1);
+    }
+}
+
+inline void stackcheck(LispObject& a1, LispObject& a2)                               
+{   if_check_stack();                                        
+    if (((uintptr_t)stack | event_flag.load()) >=
+        (uintptr_t)stacklimit)
+    {   push(a1, a2);
+        respond_to_stack_event();
+        pop(a2, a1);
+    }
+}
+
+inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)                           
+{   if_check_stack();                                        
+    if (((uintptr_t)stack | event_flag.load()) >=
+        (uintptr_t)stacklimit)
+    {   push(a1, a2, a3);
+        respond_to_stack_event();
+        pop(a3, a2, a1);
+    }
+}
+
+inline void stackcheck(LispObject& a1, LispObject& a2,
+                       LispObject& a3, LispObject& a4)                       
+{   if_check_stack();                                        
+    if (((uintptr_t)stack | event_flag.load()) >=
+        (uintptr_t)stacklimit)
+    {   push(a1, a2, a3, a4);
+        respond_to_stack_event();
+        pop(a4, a3, a2, a1);
+    }
+}
+
+inline void respond_to_fringe_event(LispObject &r, const char *msg)
+{
+// One possibility is that this is a genuine case of the current part of the
+// heap having become full, and so I need to invoke garbage collection to
+// try to tidy up.
+#ifdef BOOTSTRAP
+// The bootstrap version provides a special scheme that is present to
+// help me debug storage management. It is set up by calling the Lisp-level
+// function gc-forcer. That sets a variable force_cons and each time
+// the system checks for space that is decremented. When it becomes zero
+// the respond_to_fringe_event() function is called with its second
+// argument NULL. No fringes have been messed with. The system should just
+// invoke the garbage collector and return. The intent here is to provide
+// a way to force garbage collection at specific (if rather hard to compute!)
+// moments.
+    if (msg == NULL)
+    {
+#ifdef CONSERVATIVE
+        reclaim("gc-forcer");
+#else
+// With a precise collector r is a variable that must be preserved.
+        r = reclaim(r, "gc-forcer", GC_USER_HARD, 0);
+#endif
+        return;
+    }
+#endif // BOOTSTRAP
+//
+// If an asynchronous event has arisen then event_flag has an interesting
+// value. I want to read and reset it atomically, and these two lines
+// using compare_exchange_weak() should achieve that.
+    uintptr_t f = event_flag.load();
+    while (!event_flag.compare_exchange_weak(f, 0)) {}
+// Now one possibility is that this is a perfectly normal ordinary case
+// for garbage collection because event_flag had been zero. In that case
+// just garbage collect.
+    if (f == 0)
+    {
+#ifdef CONSERVATIVE
+        reclaim(msg);
+#else
+        r = reclaim(r, "gc-forcer", GC_USER_HARD, 0);
+#endif
+        return;
+    }
+}
+
+// If I know just how many items will need removing from the stack I
 // can create an instance of this class and the stack will be popped when
 // that goes out of scope. I rather hope that good compilers will perform
 // constant propagation if the argument is a literal constant and so there
@@ -348,13 +536,6 @@ struct LispException : public std::exception
             }
         };
 
-        struct LispSigint : public LispError
-        {   virtual const char *what() const throw()
-            {   return "Lisp Sigint";
-            }
-        };
-
-
 // Things that are not LispErrors are exceptions used to the system to
 // support Lisp features - GO, RETURN, THROW and RESTART.
 
@@ -382,6 +563,13 @@ struct LispException : public std::exception
         }
     };
 
+// From C++17 the function uncaught_exception() is deprecated and a new
+// variant uncaught_exceptions() is introduced, and from C++20 the first
+// of these is expected to be removed, thereby preventing the old version
+// of this code from building. The circumstances that lead to the change here
+// involve exceptions raised within C++ destructors and the like - much
+// more agressive use of C++ features that I tends to be into, so I will
+// use uncaught_exceptions() in a rather naive manner.
 // I used to have code here that could verify (Lisp) stack consistency,
 // however C__17 deprecates std::uncaught_exception() and demands a change
 // to use a new function std::uncaught_exceptions() not present in earlier
@@ -389,7 +577,85 @@ struct LispException : public std::exception
 // the original function. I used it and rather than modify my code with ugly
 // checks for whether I have C++17 or not anbd rather that put up with the
 // torrent of warnings that GCC generates in response to deprecated features
-// I just drop the checks that I use dto be  ready to do.
+
+// If I build for debugging I will verify that the stack pointer is
+// properly unchanged across some scopes. This will help...
+
+class RAIIstack_sanity
+{   LispObject *saveStack;
+    const char *fname;
+    const char *file;
+    int line;
+    LispObject w;
+public:
+    RAIIstack_sanity(const char *fn, const char *fi, int li)
+    {   saveStack = stack;
+        fname = fn;
+        file = fi;
+        line = li;
+        w = nil;
+    }
+    RAIIstack_sanity(const char *fn, const char *fi, int li, LispObject ww)
+    {   saveStack = stack;
+        fname = fn;
+        file = fi;
+        line = li;
+        w = ww;
+    }
+// While I am unwinding the stack because of exception handling the stack
+// can remain un-restored. It is only once I have caught the exception
+// that it must end up correct. Hence the use of std::uncaught_exception()
+// here to avoid complaints when they are not justified. Well C++17 recognizes
+// a special challenge with nested use of exceptions, hence the move to use
+// of std::uncaught_exceptions() but since the code here is just used for
+// debugging and anyway because I think it is reasonable I will only report
+// a problem if my software stack ends up in an odd state when I am not doing
+// any unwinding at all. If I moved to having a load of Lisp code runnable
+// during unwinding (well perhaps unwind-protect can lead to that) I might
+// want to review this.
+    ~RAIIstack_sanity()
+    {
+#ifdef __cpp_lib_uncaught_exceptions
+        if (saveStack != stack && !std::uncaught_exceptions() != 0)
+#else
+        if (saveStack != stack && !std::uncaught_exception())
+#endif
+        {   err_printf("[Stack Sanity Oddity] %p => %p in %s : %s:%d\n",
+                       saveStack, stack, fname, file, line);
+            err_printf("Data: ");
+            prin_to_error(w);
+            err_printf("\n");
+            err_printf("exit_count = %d, exit_reason = %d\n",
+                       exit_count, exit_reason);
+        }
+    }
+};
+
+inline const char *tidy_filename(const char *a)
+{   const char *b = strrchr(a, '/');
+    return (b == NULL ? a : b+1);
+}
+
+// If the (Lisp) stack were to get out of step with expectations the
+// consequences could be dire. To help me check against that I can use one
+// of these two macros. The second takes a LispObject that would then
+// appear in any diagnostics about stack confusion. If you are compiling
+// production code all that is generated is a null statement. But in debug
+// mode an object is created that recorsd the current stack pointer, and
+// when it goes out of scope at the end of the block it checks if things
+// have been put back as expected.
+
+#ifdef DEBUG
+#define STACK_SANITY                                  \
+    RAIIstack_sanity stack_sanity_object(__func__,    \
+        tidy_filename(__FILE__), __LINE__);
+#define STACK_SANITY1(w)                              \
+    RAIIstack_sanity stack_sanity_object(__func__,    \
+        tidy_filename(__FILE__), __LINE__, w);
+#else
+#define STACK_SANITY            ;
+#define STACK_SANITY1(w)        ;
+#endif
 
 // In parts of the interpreter I want to save litvec and codevec and be
 // certain that I will restore them at function exit. This macro will help
@@ -402,12 +668,12 @@ class RAIIsave_codevec
 {   LispObject *saveStack;
 public:
     RAIIsave_codevec()
-    {   push2(litvec, codevec);
+    {   push(litvec, codevec);
         saveStack = stack;
     }
     ~RAIIsave_codevec()
     {   stack = saveStack;
-        pop2(codevec, litvec);
+        pop(codevec, litvec);
     }
 };
 
@@ -416,9 +682,9 @@ public:
 
 // First I will comment on protection for push/pop against exceptions that
 // might arise, as in
-//    push2(a, b);
+//    push(a, b);
 //    <exception or sigaction triggered here>
-//    pop2(b, a);
+//    pop(b, a);
 // where at present I always take care to restore the stack pointer before
 // returning. In the newer model I observe that if the condition that causes
 // an abrupt is either a throw or a signal (ending in a longjmp) then the
@@ -441,9 +707,8 @@ public:
 // (6) Some places where backtrace-style reports are called for.
 //
 // Note that the setjmp/longjmp stuff is something I need to think about a
-// a lot harder. Including it represents a run-time cost. SIGINT is for
-// interrupts (i.e. ^C) and I need to handle that in my terminal handler code.
-// And poll for it! Other signals (SIGSEGC, SIGBUS, SIGILL, SIGFPE) all
+// a lot harder. Including it represents a run-time cost. I really ought not
+// to get any exceptions raised! SIGSEGC, SIGBUS, SIGILL, SIGFPE all
 // represent system failures, so ANY recovery at all would be a bonus. Perhaps
 // the most common or plausible circumstance for them to arise is on stack
 // overflow, and typically some level of recovery or backtrace there is
@@ -570,8 +835,7 @@ public:
 // needed there is liable to vary from case to case.
 
 // I provide two variants. One JUST preserves the sstack pointer, the more
-// costly one converts longjmp activations into throws of LispSignal or
-// LispSigint.
+// costly one converts longjmp activations into throws of LispSignal.
 
 #define START_SETJMP_BLOCK                          \
     jmp_buf jb;                                     \
@@ -582,10 +846,6 @@ public:
                 if (miscflags & HEADLINE_FLAG)      \
                     err_printf("\n+++ Error %s: ", errorset_msg); \
                 throw LispSignal();                 \
-        case 2: exit_reason = UNWIND_SIGINT;        \
-                if (miscflags & HEADLINE_FLAG)      \
-                    err_printf("\n+++ Error %s: ", errorset_msg); \
-                throw LispSigint();                 \
         case 0: break;                              \
     }                                               \
     global_jb = &jb;

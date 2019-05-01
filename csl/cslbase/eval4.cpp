@@ -108,7 +108,7 @@ LispObject bytecoded_0(LispObject def)
 
 LispObject bytecoded_1(LispObject def, LispObject a)
 {   SAVE_CODEVEC;
-    push2(def, a);
+    push(def, a);
     LispObject r;
     try
     {   START_TRY_BLOCK;
@@ -146,7 +146,7 @@ LispObject bytecoded_1(LispObject def, LispObject a)
 
 LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
 {   SAVE_CODEVEC;
-    push3(def, a, b);
+    push(def, a, b);
     LispObject r;
     try
     {   START_TRY_BLOCK;
@@ -168,7 +168,7 @@ LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
 
 LispObject bytecoded_3(LispObject def, LispObject a, LispObject b, LispObject c)
 {   SAVE_CODEVEC;
-    push4(def, a, b, c);
+    push(def, a, b, c);
     LispObject r;
     try
     {   START_TRY_BLOCK;
@@ -190,7 +190,7 @@ LispObject bytecoded_3(LispObject def, LispObject a, LispObject b, LispObject c)
     return r;
 }
 
-static inline int countargs(LispObject a4up)
+inline int countargs(LispObject a4up)
 {    int r = 3;
      while (a4up != nil)
      {   r++;
@@ -208,7 +208,7 @@ LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
         error(2, err_wrong_no_args, def, fixnum_of_int(nargs));
 // I now know that there will be the right number of arguments.
     push(def);
-    push3(a1, a2, a3);
+    push(a1, a2, a3);
     for (int i=4; i<=nargs; i++)
     {   push(qcar(a4up));
         a4up = qcdr(a4up);
@@ -303,12 +303,12 @@ static LispObject byteopt(LispObject def, LispObject a1, LispObject a2,
             nargs++;
         }
         if (restp)
-        {   push2(def, a4up);
+        {   push(def, a4up);
 // On this path the number of actual arguments could not even supply all
 // &OPTIONAL args, and so the &RESR value will definitely be nil. So stick
 // a NIL on the end.
             a1 = ncons(nil);
-            pop2(a4up, def);
+            pop(a4up, def);
             a4up = nreverse2(a4up, a1);
             nargs++; // allow for the &REST arg.
         }
@@ -323,14 +323,14 @@ static LispObject byteopt(LispObject def, LispObject a1, LispObject a2,
 // length. So I can pick off nargs-(wantargs+optargs) items to make
 // a &REST argument...
         while (nargs > wantargs+wantopts)
-        {   push2(def, qcdr(a4up));
+        {   push(def, qcdr(a4up));
             ra = cons(qcar(a4up), ra);
-            pop2(a4up, def);
+            pop(a4up, def);
         }
 // Here I have (eg) a4up = (a3 a2 a1) and ra = (a4 a5 ...).
-        push2(def, a4up);
+        push(def, a4up);
         a4up = ncons(ra);
-        pop2(ra, def);
+        pop(ra, def);
 // Make a final extra argument out of the list, and then reverse the rest
 // of the arguments back, to get (eg again) (a1 a2 a3 (a4 a5 ...)).
         a4up = nreverse2(a4up, ra);

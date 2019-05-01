@@ -410,7 +410,7 @@ page_header *active_page;
 // Test if a pointer (p) points at an object header. This interacts
 // with the details of memory allocation in a pretty delicate manner!
 
-static inline bool is_header_address(Header *p, page_header *page)
+inline bool is_header_address(Header *p, page_header *page)
 {   uintptr_t offset = (char *)p - (char *)page;
 // If the putative pointer refers to parts of the header that are before
 // any useful data (for instance it refers into the bitmap) or if it points
@@ -436,14 +436,14 @@ static inline bool is_header_address(Header *p, page_header *page)
 // When I set or clear bits that mark an object header I will only do so
 // with addresses that are validly in-range.
 
-static inline void set_header_bit(LispObject p, page_header *page)
+inline void set_header_bit(LispObject p, page_header *page)
 {   size_t offset = ((uintptr_t)p - (uintptr_t)page)/8;
     size_t n = offset/64;
     uint64_t bit = ((uint64_t)1)<<(offset%64);
     page->objectstart_bitmap[n] |= bit;
 }
 
-static inline void clear_header_bit(LispObject p, page_header *page)
+inline void clear_header_bit(LispObject p, page_header *page)
 {   size_t offset = ((uintptr_t)p - (uintptr_t)page)/8;
     size_t n = offset/64;
     uint64_t bit = ((uint64_t)1)<<(offset%64);
@@ -453,7 +453,7 @@ static inline void clear_header_bit(LispObject p, page_header *page)
 //## The commented out version here was a model implementation to show the
 //## intended behaviour of the function that clears a succession of bits.
 
-//## static inline void clear_header_bits(LispObject p, size_t n, page_header *page)
+//## inline void clear_header_bits(LispObject p, size_t n, page_header *page)
 //## {   while (n != 0)
 //##     {   clear_header_bit(p, page);
 //##         p += 8;
@@ -461,7 +461,7 @@ static inline void clear_header_bit(LispObject p, page_header *page)
 //##     }
 //## }
 
-static inline void clear_header_bits(LispObject p, size_t n, page_header *page)
+inline void clear_header_bits(LispObject p, size_t n, page_header *page)
 {   if (n == 0) return; // degenerate simple case.
 // I sort out the first bit that needs clearing.
     size_t first_offset = (p - (LispObject)page)/8;
@@ -493,7 +493,7 @@ static inline void clear_header_bits(LispObject p, size_t n, page_header *page)
     }
 }
 
-static inline bool is_pinned(LispObject p, page_header *page)
+inline bool is_pinned(LispObject p, page_header *page)
 {   size_t offset = p - (LispObject)page;
 // If the putative pointer refers to parts of the header that are before
 // any useful data (for instance it refers into the bitmap) or if it points
@@ -506,7 +506,7 @@ static inline bool is_pinned(LispObject p, page_header *page)
     return (page->pinned_bitmap[n] & bit) != 0;
 }
 
-static inline void set_pinned(LispObject p, page_header *page)
+inline void set_pinned(LispObject p, page_header *page)
 {   size_t offset = (uintptr_t)p - (uintptr_t)page;
     offset /= 8;
     size_t n = offset/64;
@@ -514,7 +514,7 @@ static inline void set_pinned(LispObject p, page_header *page)
     page->pinned_bitmap[n] |= bit;
 }
 
-static inline void clear_pinned(LispObject p, page_header *page)
+inline void clear_pinned(LispObject p, page_header *page)
 {   size_t offset = (uintptr_t)p - (uintptr_t)page;
     offset /= 8;
     size_t n = offset/64;
@@ -739,7 +739,7 @@ bool clear_bitmap(size_t h)
     return true;
 }
 
-static inline void atomic_set_bit(uint64_t *base, size_t offset)
+inline void atomic_set_bit(uint64_t *base, size_t offset)
 {   uint64_t *addr = &base[offset/(8*sizeof(uint64_t))];
     uint64_t bit = ((uint64_t)1) << (offset%(8*sizeof(uint64_t)));
     while (spin_lock.test_and_set(std::memory_order_acquire)) {}
@@ -747,7 +747,7 @@ static inline void atomic_set_bit(uint64_t *base, size_t offset)
     spin_lock.clear();
 }
 
-static inline void non_atomic_set_bit(uint64_t *base, size_t offset)
+inline void non_atomic_set_bit(uint64_t *base, size_t offset)
 {   uint64_t *addr = &base[offset/(8*sizeof(uint64_t))];
     uint64_t bit = ((uint64_t)1) << (offset%(8*sizeof(uint64_t)));
     *addr |= bit;
@@ -1033,7 +1033,7 @@ uintptr_t xor_chain;
 
 static void allocate_next_page(), gc_allocate_next_page();
 
-static inline Header make_padding_header(size_t n)
+inline Header make_padding_header(size_t n)
 {   return TAG_HDR_IMMED+TYPE_PADDER+(n<<(Tw+7));
 }
 
@@ -1105,7 +1105,7 @@ static void get_2_words_past_pin()
 // the allocation of 2 consecutive words of memory until the current active
 // block is full or until pinned data within it is reached.
 
-static inline LispObject get_2_words()
+inline LispObject get_2_words()
 {
 // If there is a free doubleword immediately available then use it. I very
 // much hope that this will be the situation almost all of the time.
@@ -1165,7 +1165,7 @@ static void get_n_bytes_past_pin()
 // is setting and clearing bitmap information for the identification of
 // object start addresses.
 
-static inline LispObject get_n_bytes(size_t n)
+inline LispObject get_n_bytes(size_t n)
 {
 // I may at some stage arrange that I always call this function asking for
 // a multiple of 8 bytes, but for now and as a matter of caution I will
@@ -1228,7 +1228,7 @@ static void borrow_n_bytes_past_pin()
     borrowing_vfringe += 2*sizeof(uintptr_t);
 }
 
-static inline LispObject borrow_n_bytes(size_t n)
+inline LispObject borrow_n_bytes(size_t n)
 {   n = doubleword_align_up(n);
     if (borrowing_vheaptop == borrowing_heapstart)
         borrowing_vheaplimit = borrowing_vheapstart;
@@ -1278,7 +1278,7 @@ static void gc_get_2_words_past_pin()
     xor_chain = ((uintptr_t *)heaplimit)[1];
 }
 
-static inline LispObject gc_get_2_words()
+inline LispObject gc_get_2_words()
 {
     fringe -= 2*CELL;
     if (fringe < heaplimit) gc_get_2_words_past_pin();
@@ -1313,7 +1313,7 @@ static void gc_get_n_bytes_past_pin()
     vheapstart = vfringe;
 }
 
-static inline LispObject gc_get_n_bytes(size_t n)
+inline LispObject gc_get_n_bytes(size_t n)
 {
     n = doubleword_align_up(n);
     if (vheaptop == heapstart) vheaplimit = fringe;
@@ -1967,13 +1967,13 @@ LispObject borrow_vector(int tag, int type, size_t n)
 // Here are the allocation functions implementing the above.
 
 
-static inline LispObject packed_get_2_words()
+inline LispObject packed_get_2_words()
 {
 // No use of padder space yet!
     return gc_get_2_words();
 }
 
-static inline LispObject packed_get_n_bytes(size_t n)
+inline LispObject packed_get_n_bytes(size_t n)
 {
 // No use of padder space yet!
     return gc_get_n_bytes(n);
@@ -2137,7 +2137,7 @@ void middle_reclaim()
 // valid Lisp Object I will return a tagged pointer if the form of a
 // LispObject. I will return zero if the address passed is not satisfactory.
 
-static inline LispObject find_object_start(uintptr_t v, page_header *p)
+inline LispObject find_object_start(uintptr_t v, page_header *p)
 {
 // v is expected to be double-CELL aligned on entry, and what is returned
 // will be a proper tagged object.
@@ -2317,7 +2317,7 @@ void drop_heap_segments(void)
 
 bool allocate_more_memory()
 {   if ((init_flags & INIT_EXPANDABLE) == 0) return false;
-    void *page = (void *)malloc((size_t)CSL_PAGE_SIZE);
+    void *page = (void *)aligned_malloc((size_t)CSL_PAGE_SIZE);
     if (page == NULL)
     {   init_flags &= ~INIT_EXPANDABLE;
         return false;
@@ -2370,27 +2370,27 @@ void grab_more_memory(size_t npages)
 // functions here expected to expand into a direct search tree in the
 // generated code.
 
-static inline int find_segment2(uintptr_t p, int n)
+inline int find_segment2(uintptr_t p, int n)
 {   if (p < (uintptr_t)heap_segment[n+1]) return n;
     else return n+1;
 }
 
-static inline int find_segment4(uintptr_t p, int n)
+inline int find_segment4(uintptr_t p, int n)
 {   if (p < (uintptr_t)heap_segment[n+2]) return find_segment2(p, n);
     else return find_segment2(p, n+2);
 }
 
-static inline int find_segment8(uintptr_t p, int n)
+inline int find_segment8(uintptr_t p, int n)
 {   if (p < (uintptr_t)heap_segment[n+4]) return find_segment4(p, n);
     else return find_segment4(p, n+4);
 }
 
-static inline int find_segment16(uintptr_t p, int n)
+inline int find_segment16(uintptr_t p, int n)
 {   if (p < (uintptr_t)heap_segment[n+8]) return find_segment8(p, n);
     else return find_segment8(p, n+8);
 }
 
-static inline int find_segment32(uintptr_t p, int n)
+inline int find_segment32(uintptr_t p, int n)
 {   if (p < (uintptr_t)heap_segment[n+16]) return find_segment8(p, n);
     else return find_segment16(p, n+16);
 }
@@ -2446,8 +2446,8 @@ LispObject Lverbos(LispObject env, LispObject a)
     return onevalue(fixnum_of_int(old_code));
 }
 
-bool volatile already_in_gc, tick_on_gc_exit;
-bool volatile interrupt_pending, tick_pending;
+bool volatile already_in_gc;
+bool volatile interrupt_pending;
 LispObject volatile saveheaplimit;
 LispObject volatile savevheaplimit;
 LispObject * volatile savestacklimit;
@@ -2767,38 +2767,6 @@ static bool reset_limit_registers(size_t vheap_need, bool stack_flag)
     else return true;
 }
 
-// I need a way that a thread that is not synchronised with this one can
-// generate a Lisp-level interrupt. I achieve that by
-// letting that thread reset stacklimit. Then rather soon CSL will
-// do a stackcheck() and will call reclaim with type GC_STACK.
-//
-// call this with
-//    arg=0 to have no effect at all (!)   QUERY_INTERRUPT
-//    arg=1 for a clock tick event         TICK_INTERRUPT
-//    arg=2 for quiet unwind               QUIET_INTERRUPT
-//    arg=3 for backtrace.                 NOISY_INTERRUPT
-// in each case the previous value of the flag is returned. Note that
-// I do not do a "test-and-set" here so do NOT treat this as a proper
-// start at a mutex or semaphore! However if I apply a rule that the
-// asynchronous (GUI) task only ever sets the flag to a non-zero value
-// and only ever tests then to see if it has been reset to zero, while the
-// main worker thread only reads it to check for non-zero and then
-// resets it I have some degree of sanity.
-
-static volatile int async_type = QUERY_INTERRUPT;
-
-// The following fnction can be called from a signal handler. It just looks
-// and and sets some volatile variables.
-
-int async_interrupt(int type)
-{   int prev = async_type;
-    if (type != QUERY_INTERRUPT)
-    {   async_type = type;
-        stacklimit = stackbase;
-    }
-    return prev;
-}
-
 bool force_verbos = false;
 
 static void report_at_end()
@@ -2938,7 +2906,7 @@ static void real_garbage_collector()
 }
 
 LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
-{   clock_t t0, t1, t2;
+{   uint64_t t0, t1, t2;
     size_t vheap_need = 0;
 // If the trigger is reached I will force a full GC. But only if I
 // am allowed to!
@@ -2952,83 +2920,18 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
     _kbhit(); // Fairly harmless anyway, but is here to let ^c get noticed
 //    printf("(*)"); fflush(stdout);  // while I debug!
 #endif // WIN32
-    push_clock(); t0 = base_time;
-// Life is a bit horrid here. I can have two significantly different sorts of
-// thing that cause this soft-GC to happen under FWIN. One is when I am in
-// windowed mode and FWIN provokes an asynchronous event for me. The other is
-// in non-windowed mode when my software_ticks counter overflows and does
-// a somewhat similar job... but from within this worker thread. The really
-// bad news is the thought of both of these active together, and so conflict
-// and confusion. Fresh and careful thought about that is needed before I
-// re-work this code.
-//
-// In non-windowed mode a problem I have is the detection of ^C interrupts.
-// Under Windows I have used SetConsoleMode (and under Unix/Linux tcsetattr)
-// to put the input into raw mode if it is direct from a keyboard. Thus
-// the operating system will not process ^C for me.
-    if (stg_class == GC_STACK && stacklimit == stackbase)
-    {   stacklimit = savestacklimit;
-        if (tick_pending)
-        {   tick_pending = 0;
-            heaplimit = saveheaplimit;
-            vheaplimit = savevheaplimit;
-            stacklimit = savestacklimit;
-        }
-        already_in_gc = false;
-        pop_clock();
-// There could, of course, be another async interrupt generated even during
-// this processing and certainly by the time I get into interrupted(),
-// and there could be "genuine" need for garbage collection or stack overflow
-// processing at any stage.
-        if (async_type == TICK_INTERRUPT)
-        {   long int t = (long int)(100.0 * consolidated_time[0]);
-            long int gct = (long int)(100.0 * gc_time);
-            async_type = QUERY_INTERRUPT;     // accepted!
-            fwin_acknowledge_tick();
-#ifndef EMBEDDED
-            report_time(t, gct);
-#endif
-            time_now = (int)consolidated_time[0];
-            if ((time_limit >= 0 && time_now > time_limit) ||
-                (io_limit >= 0 && io_now > io_limit))
-                resource_exceeded();
-            return onevalue(p);
-        }
-// If the user provokes a backtrace then at present I *ALWAYS* make it
-// a 100% full one. At some stage I could provide a different menu item
-// to deliver a semi-quiet interrupt...
-        else if (async_type == NOISY_INTERRUPT)
-            miscflags |= BACKTRACE_MSG_BITS;
-        else miscflags &= ~BACKTRACE_MSG_BITS;
-        async_type = QUERY_INTERRUPT;     // accepted!
-        return interrupted(p);
-    }
-    else
-    {   if ((!next_gc_is_hard || stg_class == GC_STACK) &&
-            stg_class != GC_USER_HARD &&
-            reset_limit_registers(vheap_need, true))
-        {   already_in_gc = false;
-            pop_clock();
-            if (space_limit >= 0 && space_now > space_limit)
-                resource_exceeded();
-// I have "soft" garbage collections - perhaps fairly frequently. I will
-// only call the GC hook function around once every 5 seconds to avoid undue
-// overhead in it.
-            if (!prev_consolidated_set)
-            {   prev_consolidated = consolidated_time[0];
-                prev_consolidated_set = 1;
-            }
-            if (consolidated_time[0] > prev_consolidated + 5.0)
-            {   prev_consolidated = consolidated_time[0];
-                return use_gchook(p, nil); // Soft GC
-            }
-            return onevalue(p);
-        }
+    t0 = read_clock();
+    if (!next_gc_is_hard &&
+        stg_class != GC_USER_HARD &&
+        reset_limit_registers(vheap_need, true))
+    {   already_in_gc = false;
+        if (space_limit >= 0 && space_now > space_limit)
+            resource_exceeded();
+        return p;
     }
     if (stack >= stacklimit)
     {   if (stacklimit != stackbase)
         {   stacklimit = &stacklimit[50];  // Allow a bit of slack
-            pop_clock();
             error(0, err_stack_overflow);
         }
     }
@@ -3132,16 +3035,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
         trace_printf("+++ GC trigger = %" PRId64 "\n", reclaim_trigger_count);
     real_garbage_collector();
 
-    gc_time += pop_clock();
-    t2 = base_time;
-
-    if ((verbos_flag & 5) == 5)
-// (verbos 4) gets the system to tell me how long each phase of GC took,
-// but (verbos 1) must be ORd in too.
-    {   trace_printf("Copy %ld ms\n",
-                     (long int)(1000.0 *
-                                (double)(t2-t0)/(double)CLOCKS_PER_SEC));
-    }
+    t1 = read_clock();
+    gc_time += t1 - t0;
+    base_time += t1 - t0;
 // (verbos 5) causes a display breaking down how space is used
     if ((verbos_flag & 5) == 5)
     {   trace_printf(
@@ -3171,7 +3067,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
     if (interrupt_pending)
     {   interrupt_pending = false;
         already_in_gc = false;
-        tick_on_gc_exit = false;
         return interrupted(p);
     }
     already_in_gc = false;
@@ -3306,7 +3201,7 @@ uintptr_t *C_stackbase;
 /*@*/    stackbase = (LispObject *)stacksegment;
 /*@*/}
 /*@*/
-/*@*/static inline bool is_in_big_chunk(void *p)
+/*@*/inline bool is_in_big_chunk(void *p)
 /*@*/{   return ((char *)p >= big_chunk_start &&
 /*@*/            (char *)p <= big_chunk_end);
 /*@*/}
@@ -3393,27 +3288,27 @@ uintptr_t *C_stackbase;
 /*@*/// functions here expected to expand into a direct search tree in the
 /*@*/// generated code.
 /*@*/
-/*@*/static inline int find_segment2(uintptr_t p, int n)
+/*@*/inline int find_segment2(uintptr_t p, int n)
 /*@*/{   if (p < (uintptr_t)heap_segment[n+1]) return n;
 /*@*/    else return n+1;
 /*@*/}
 /*@*/
-/*@*/static inline int find_segment4(uintptr_t p, int n)
+/*@*/inline int find_segment4(uintptr_t p, int n)
 /*@*/{   if (p < (uintptr_t)heap_segment[n+2]) return find_segment2(p, n);
 /*@*/    else return find_segment2(p, n+2);
 /*@*/}
 /*@*/
-/*@*/static inline int find_segment8(uintptr_t p, int n)
+/*@*/inline int find_segment8(uintptr_t p, int n)
 /*@*/{   if (p < (uintptr_t)heap_segment[n+4]) return find_segment4(p, n);
 /*@*/    else return find_segment4(p, n+4);
 /*@*/}
 /*@*/
-/*@*/static inline int find_segment16(uintptr_t p, int n)
+/*@*/inline int find_segment16(uintptr_t p, int n)
 /*@*/{   if (p < (uintptr_t)heap_segment[n+8]) return find_segment8(p, n);
 /*@*/    else return find_segment8(p, n+8);
 /*@*/}
 /*@*/
-/*@*/static inline int find_segment32(uintptr_t p, int n)
+/*@*/inline int find_segment32(uintptr_t p, int n)
 /*@*/{   if (p < (uintptr_t)heap_segment[n+16]) return find_segment8(p, n);
 /*@*/    else return find_segment16(p, n+16);
 /*@*/}

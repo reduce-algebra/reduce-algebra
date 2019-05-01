@@ -59,7 +59,7 @@ LispObject apply(LispObject fn, LispObject args,
 // have been prepared and in the list "args"
             bool tracing = (qheader(fn) & SYM_TRACED) != 0;
             if (tracing)
-            {   push3(args, fn, from);
+            {   push(args, fn, from);
                 freshline_trace();
                 trace_printf("Calling ");
                 loop_print_trace(stack[-1]); // Function being called
@@ -74,7 +74,7 @@ LispObject apply(LispObject fn, LispObject args,
                     stack[0] = qcdr(stack[0]);
                 }
                 popv(1);
-                pop2(fn, args);
+                pop(fn, args);
             }
             def = fn; // this is passed as arg1 to the called code
             push(fn); // I may need the function name when tracing
@@ -140,9 +140,9 @@ LispObject apply(LispObject fn, LispObject args,
         else if (def == cfunarg)
         {   def = qcdr(fn);
             fn = qcar(def);
-            push2(fn, env);
+            push(fn, env);
             args = cons(qcdr(def), args);
-            pop2(env, fn);
+            pop(env, fn);
 // The "continue" here just goes back and tries again!
             continue;
         }
@@ -172,15 +172,16 @@ LispObject apply(LispObject fn, LispObject args,
 
 static LispObject and_fn(LispObject args, LispObject env)
 // also needs to be a macro for Common Lisp
-{   stackcheck2(args, env);
+{   stackcheck(args, env);
+    STACK_SANITY;
     if (!consp(args)) return onevalue(lisp_true);
     for (;;)
     {   LispObject v = qcar(args);
         args = qcdr(args);
         if (!consp(args)) return eval(v, env);
-        push2(args, env);
+        push(args, env);
         v = eval(v, env);
-        pop2(env, args);
+        pop(env, args);
         if (v == nil) return onevalue(nil);
     }
 }
@@ -192,7 +193,7 @@ static LispObject and_fn(LispObject args, LispObject env)
 //{
 //  if (!consp(a)) return b;
 //  else
-//  {   stackcheck2(a, b);
+//  {   stackcheck(a, b);
 //      push(a);
 //      b = append(qcdr(a), b);
 //      pop(a);
@@ -203,9 +204,10 @@ static LispObject and_fn(LispObject args, LispObject env)
 
 static LispObject block_fn(LispObject args, LispObject env)
 {   LispObject p;
+    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(args, env);
-    push3(qcar(args),          // my_tag
+    stackcheck(args, env);
+    push(qcar(args),          // my_tag
           qcdr(args),          // args
           env);
 #define env    stack[0]
@@ -252,13 +254,14 @@ static LispObject block_fn(LispObject args, LispObject env)
 
 static LispObject catch_fn(LispObject args, LispObject env)
 {   LispObject tag, v;
+    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(args, env);
-    push2(args, env);
+    stackcheck(args, env);
+    push(args, env);
     tag = qcar(args);
     tag = eval(tag, env);
     tag = catch_tags = cons(tag, catch_tags);
-    pop2(env, args);
+    pop(env, args);
     push(tag);
     try
     {   START_SETJMP_BLOCK;
@@ -329,8 +332,8 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 // the Compiler, but in the interpreter in non-Common mode every variable
 // is SPECIAL.
 //
-{   stackcheck3(bvlx, bodyx, envx);
-    push3(bvlx, bodyx, envx);
+{   stackcheck(bvlx, bodyx, envx);
+    push(bvlx, bodyx, envx);
     push5(nil, nil, envx, nil, nil);
 //
 // Find local declarations - it is necessary to macro-expand
@@ -455,19 +458,21 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 
 static LispObject compiler_let_fn(LispObject args, LispObject env)
 {   if (!consp(args)) return onevalue(nil);
+    STACK_SANITY;
     return let_fn_1(qcar(args), qcdr(args), env, BODY_COMPILER_LET);
 }
 
 static LispObject cond_fn(LispObject args, LispObject env)
-{   stackcheck2(args, env);
+{   stackcheck(args, env);
+    STACK_SANITY;
     while (consp(args))
     {   LispObject p = qcar(args);
         if (consp(p))
         {   LispObject p1;
-            push2(args, env);
+            push(args, env);
             p1 = qcar(p);
             p1 = eval(p1, env);
-            pop2(env, args);
+            pop(env, args);
             if (p1 != nil)
             {   args = qcdr(qcar(args));
 // Here I support the case "(cond (predicate) ...)" with no consequents
@@ -508,6 +513,7 @@ static LispObject defun_fn(LispObject args, LispObject)
 // in CSL mode
 //
     LispObject fname;
+    STACK_SANITY;
     if (consp(args))
     {   fname = qcar(args);
         args = qcdr(args);
@@ -562,6 +568,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
 // build it in as a special form.
 //
     LispObject fname;
+    STACK_SANITY;
     if (consp(args))
     {   fname = qcar(args);
         args = qcdr(args);
@@ -623,6 +630,7 @@ static LispObject eval_when_fn(LispObject args, LispObject env)
 // When interpreted, eval-when just looks for the situation EVAL.
 //
 {   LispObject situations;
+    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     situations = qcar(args);
     args = qcdr(args);
@@ -635,8 +643,9 @@ static LispObject eval_when_fn(LispObject args, LispObject env)
 
 static LispObject flet_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
+    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(args, env);
+    stackcheck(args, env);
     my_env = env;
     d = qcar(args);     // The bunch of definitions
     args = qcdr(args);
@@ -644,13 +653,13 @@ static LispObject flet_fn(LispObject args, LispObject env)
     {   LispObject w = qcar(d);
         if (consp(w) && consp(qcdr(w)))
         {   LispObject w1;
-            push4(args, d, env, w);
+            push(args, d, env, w);
             w1 = list2star(funarg, my_env, qcdr(w));
             pop(w);
             w1 = cons(w1, qcar(w));
             pop(env);
             env = cons(w1, env);
-            pop2(d, args);
+            pop(d, args);
         }
         d = qcdr(d);
     }
@@ -667,6 +676,7 @@ LispObject function_fn(LispObject args, LispObject env)
 // (function (lambda (x) y)) gets converted to
 // (funarg env (x) y).
 //
+    STACK_SANITY;
     if (consp(args) && qcdr(args) == nil)
     {   args = qcar(args);
         if (consp(args) && qcar(args) == lambda)
@@ -679,6 +689,7 @@ LispObject function_fn(LispObject args, LispObject env)
 
 static LispObject go_fn(LispObject args, LispObject env)
 {   LispObject p, tag;
+    STACK_SANITY;
     if (!consp(args)) aerror("go");
     else tag = qcar(args);
     for(p=env; consp(p); p=qcdr(p))
@@ -696,6 +707,7 @@ static LispObject go_fn(LispObject args, LispObject env)
 
 static LispObject if_fn(LispObject args, LispObject env)
 {   LispObject p=nil, tr=nil, fs=nil;
+    STACK_SANITY;
     if (!consp(args)) aerror("if");
     p = qcar(args);
     args = qcdr(args);
@@ -708,10 +720,10 @@ static LispObject if_fn(LispObject args, LispObject env)
         args = qcdr(args);
         if (args != nil) aerror("if");
     }
-    stackcheck4(p, env, tr, fs);
-    push3(fs, tr, env);
+    stackcheck(p, env, tr, fs);
+    push(fs, tr, env);
     p = eval(p, env);
-    pop3(env, tr, fs);
+    pop(env, tr, fs);
     if (p == nil)
         return eval(fs, env);      // tail call on result
     else return eval(tr, env);      // ... passing back values
@@ -719,21 +731,22 @@ static LispObject if_fn(LispObject args, LispObject env)
 
 static LispObject labels_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
+    STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(args, env);
+    stackcheck(args, env);
     my_env = env;
     d = qcar(args);     // The bunch of definitions
     while (consp(d))
     {   LispObject w = qcar(d);
         if (consp(w) && consp(qcdr(w)))
         {   LispObject w1;
-            push4(args, d, env, w);
+            push(args, d, env, w);
             w1 = list2star(funarg, nil, qcdr(w));
             pop(w);
             w1 = cons(w1, qcar(w));
             pop(env);
             env = cons(w1, env);
-            pop2(d, args);
+            pop(d, args);
         }
         d = qcdr(d);
     }
@@ -748,6 +761,7 @@ static LispObject labels_fn(LispObject args, LispObject env)
 
 static LispObject let_fn(LispObject args, LispObject env)
 {   if (!consp(args)) return onevalue(nil);
+    STACK_SANITY;
     return let_fn_1(qcar(args), qcdr(args), env, BODY_LET);
 }
 
@@ -757,8 +771,9 @@ static LispObject letstar_fn(LispObject args, LispObject env)
 // I am in CSL mode.
 //
 {   if (!consp(args)) return onevalue(nil);
-    stackcheck2(args, env);
-    push3(qcar(args), qcdr(args), env);
+    STACK_SANITY;
+    stackcheck(args, env);
+    push(qcar(args), qcdr(args), env);
     push5(nil, nil,                // p, q
           env, nil, nil);          // env1, specenv, local_decs
 #define local_decs stack[0]

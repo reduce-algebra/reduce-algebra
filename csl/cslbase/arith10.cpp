@@ -1,11 +1,11 @@
-//  arith10.cpp                            Copyright (C) 1990-2017 Codemist
+// arith10.cpp                            Copyright (C) 1990-2019 Codemist
 
 //
 // Arithmetic functions.
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -105,10 +105,10 @@ double my_sin(double x)
     x = arg_reduce(x, &quadrant);
     switch (quadrant)
 {       default:
-        case 0: return sin(x);
-        case 1: return cos(x);
-        case 2: return sin(-x);
-        case 3: return -cos(x);
+        case 0: return CSLsin(x);
+        case 1: return CSLcos(x);
+        case 2: return CSLsin(-x);
+        case 3: return -CSLcos(x);
     }
 }
 
@@ -117,23 +117,23 @@ double my_cos(double x)
     x = arg_reduce(x, &quadrant);
     switch (quadrant)
 {       default:
-        case 0: return cos(x);
-        case 1: return sin(-x);
-        case 2: return -cos(x);
-        case 3: return sin(x);
+        case 0: return CSLcos(x);
+        case 1: return CSLsin(-x);
+        case 2: return -CSLcos(x);
+        case 3: return CSLsin(x);
     }
 }
 
 #else   // WIN32
 
-#define my_sin sin
-#define my_cos cos
+#define my_sin CSLsin
+#define my_cos CSLcos
 
 #endif  // WIN32
 #else
 
-#define my_sin sin
-#define my_cos cos
+#define my_sin CSLsin
+#define my_cos CSLcos
 
 #endif // HAVE_CRLIBM
 
@@ -211,7 +211,7 @@ static Complex CSLcsin(Complex z)
     double s = my_sin(x), c = my_cos(x);
     double absy = fabs(y);
     if (absy <= 50.0)
-    {   double sh = sinh(y), ch = cosh(y);
+    {   double sh = CSLsinh(y), ch = CSLcosh(y);
         z.real = s * ch;
         z.imag = c * sh;
         return z;
@@ -309,7 +309,7 @@ static Complex CSLctan(Complex z)
 //
 // tan(x + iy) = (tan(x) + i tanh(y))/(1 - i tan(x)*tanh(y))
 //
-    double t = tan(x), th = tanh(y);
+    double t = CSLtan(x), th = tanh(y);
     double t2 = t*t, th2 = th*th;
     // many risks of premature overflow here
     double d = 1.0 + t2*th2;
@@ -409,7 +409,7 @@ static LispObject make_complex_float(Complex v, LispObject a)
 static double rln(double x)
 {   if (!(x == x)) return x;   // Ie a NaN
     else if (x < 0.0) x = -x;
-    return log(x);
+    return CSLlog(x);
 }
 
 static double iln(double x)
@@ -433,7 +433,7 @@ static double isqrt(double x)
 static double rasin(double x)
 {   if (1.0 < x) return _half_pi;
     else if (x <= -1.0) return -_half_pi;
-    else return asin(x);
+    else return CSLasin(x);
 }
 
 
@@ -444,13 +444,13 @@ static double iasin(double x)
     else sign = false;
     if (x < 2.0)
     {   x += sqrt(x*x - 1.0);
-        x = log(x);             // /* serious inaccuracy here
+        x = CSLlog(x);             // /* serious inaccuracy here
     }
     else if (x < 1.0e9)
     {   x += sqrt(x*x - 1.0);
-        x = log(x);
+        x = CSLlog(x);
     }
-    else x = CSL_log_2 + log(x);
+    else x = CSL_log_2 + CSLlog(x);
     if (sign) return -x;
     else return x;
 }
@@ -458,7 +458,7 @@ static double iasin(double x)
 static double racos(double x)
 {   if (x <= -1.0) return _pi;
     else if (1.0 <= x) return 0.0;
-    else return acos(x);
+    else return CSLacos(x);
 }
 
 static double iacos(double x)
@@ -468,13 +468,13 @@ static double iacos(double x)
     else return 0.0;
     if (x < 2.0)
     {   x += sqrt(x*x - 1.0);
-        x = log(x);             // /* serious inaccuracy here
+        x = CSLlog(x);             // /* serious inaccuracy here
     }
     else if (x < 1.0e9)
     {   x += sqrt(x*x - 1.0);
-        x = log(x);
+        x = CSLlog(x);
     }
-    else x = CSL_log_2 + log(x);
+    else x = CSL_log_2 + CSLlog(x);
     if (sign) return x;
     else return -x;
 }
@@ -489,9 +489,9 @@ static double CSLasinh(double x)
     }
     else if (x < 1.0e9)
     {   x += sqrt(1.0 + x*x);
-        x = log(x);
+        x = CSLlog(x);
     }
-    else x = log(x) + CSL_log_2;
+    else x = CSLlog(x) + CSL_log_2;
     if (sign) x = -x;
     return x;
 }
@@ -530,9 +530,9 @@ static double racosh(double x)
     }
     else if (x < 1.0e9)
     {   x += sqrt((x - 1.0)*(x + 1.0));
-        x = log(x);
+        x = CSLlog(x);
     }
-    else x = log(x) + CSL_log_2;
+    else x = CSLlog(x) + CSL_log_2;
     if (sign) return -x;
     else return x;
 }
@@ -540,7 +540,7 @@ static double racosh(double x)
 static double iacosh(double x)
 {   if (1.0 <= x) return 0.0;
     else if (x <= -1.0) return _pi;
-    else return acos(x);
+    else return CSLacos(x);
 }
 
 static double ratanh(double z)
@@ -550,7 +550,7 @@ static double ratanh(double z)
     }
     z = (1.0 + z) / (1.0 - z);
     if (z < 0.0) z = -z;
-    return log(z) / 2.0;
+    return CSLlog(z) / 2.0;
 }
 
 static double iatanh(double x)
@@ -574,10 +574,10 @@ static double iatanh(double x)
 
 static double racosd(double a)
 {   if (a <= -1.0) return 180.0;
-    else if (a < -sqrthalf) return 180.0 - n180pi*acos(-a);
-    else if (a < 0.0) return 90.0 + n180pi*asin(-a);
-    else if (a < sqrthalf) return 90.0 - n180pi*asin(a);
-    else if (a < 1.0) return n180pi*acos(a);
+    else if (a < -sqrthalf) return 180.0 - n180pi*CSLacos(-a);
+    else if (a < 0.0) return 90.0 + n180pi*CSLasin(-a);
+    else if (a < sqrthalf) return 90.0 - n180pi*CSLasin(a);
+    else if (a < 1.0) return n180pi*CSLacos(a);
     else return 0.0;
 }
 
@@ -591,18 +591,18 @@ static double iacosd(double a)
 
 static double racot(double a)
 {   if (a >= 0.0)
-        if (a > 1.0) return atan(1.0/a);
-        else return _half_pi - atan(a);
-    else if (a < -1.0) return _pi - atan(-1.0/a);
-    else return _half_pi + atan(-a);
+        if (a > 1.0) return CSLatan(1.0/a);
+        else return _half_pi - CSLatan(a);
+    else if (a < -1.0) return _pi - CSLatan(-1.0/a);
+    else return _half_pi + CSLatan(-a);
 }
 
 static double racotd(double a)
 {   if (a >= 0.0)
-        if (a > 1.0) return n180pi*atan(1.0/a);
-        else return 90.0 - n180pi*atan(a);
-    else if (a < -1.0) return 180.0 - n180pi*atan(-1.0/a);
-    else return 90.0 + n180pi*atan(-a);
+        if (a > 1.0) return n180pi*CSLatan(1.0/a);
+        else return 90.0 - n180pi*CSLatan(a);
+    else if (a < -1.0) return 180.0 - n180pi*CSLatan(-1.0/a);
+    else return 90.0 + n180pi*CSLatan(-a);
 }
 
 static double racoth(double a)
@@ -620,7 +620,7 @@ static double iacoth(double a)
 
 static double racsc(double a)
 {   if (a > -1.0 && a < 1.0) return 0.0;
-    else return asin(1.0/a);
+    else return CSLasin(1.0/a);
 }
 
 static double iacsc(double a)
@@ -633,7 +633,7 @@ static double racscd(double a)
 //
 // I could do better than this, I suspect...
 //
-    else return n180pi*asin(1.0/a);
+    else return n180pi*CSLasin(1.0/a);
 }
 
 static double iacscd(double a)
@@ -648,7 +648,7 @@ static double racsch(double a)
 
 static double rasec(double a)
 {   if (a > -1.0 && a <= 1.0) return 0.0;
-    else return acos(1.0/a);
+    else return CSLacos(1.0/a);
 }
 
 static double iasec(double a)
@@ -661,7 +661,7 @@ static double rasecd(double a)
 //
 // I could do better than this, I suspect...
 //
-    else return n180pi*acos(1.0/a);
+    else return n180pi*CSLacos(1.0/a);
 }
 
 static double iasecd(double a)
@@ -681,9 +681,9 @@ static double iasech(double a)
 
 static double rasind(double a)
 {   if (a <= -1.0) return -90.0;
-    else if (a < -sqrthalf) return -90.0 + n180pi*acos(-a);
-    else if (a < sqrthalf) return n180pi*asin(a);
-    else if (a < 1.0) return 90.0 - n180pi*acos(a);
+    else if (a < -sqrthalf) return -90.0 + n180pi*CSLacos(-a);
+    else if (a < sqrthalf) return n180pi*CSLasin(a);
+    else if (a < 1.0) return 90.0 - n180pi*CSLacos(a);
     else return 90.0;
 }
 
@@ -693,9 +693,9 @@ static double iasind(double a)
 }
 
 static double ratand(double a)
-{   if (a < -1.0) return -90.0 + n180pi*atan(-1.0/a);
-    else if (a < 1.0) return n180pi*atan(a);
-    else return 90.0 - n180pi*atan(1.0/a);
+{   if (a < -1.0) return -90.0 + n180pi*CSLatan(-1.0/a);
+    else if (a < 1.0) return n180pi*CSLatan(a);
+    else return 90.0 - n180pi*CSLatan(1.0/a);
 }
 
 static double rcbrt(double a)
@@ -742,7 +742,7 @@ static double rcot(double a)
 // a slower formula for big a.
 //
 {   if (a > 1000.0 || a < -1000.0) return my_cos(a)/my_sin(a);
-    else return 1.0/tan(a);
+    else return 1.0/CSLtan(a);
 }
 
 static double arg_reduce_degrees(double a, int *quadrant)
@@ -770,10 +770,10 @@ static double rsind(double a)
     a = arg_reduce_degrees(a, &quadrant);
     switch (quadrant)
 {       default:
-        case 0: return sin(a);
-        case 1: return cos(a);
-        case 2: return sin(-a);
-        case 3: return -cos(a);
+        case 0: return CSLsin(a);
+        case 1: return CSLcos(a);
+        case 2: return CSLsin(-a);
+        case 3: return -CSLcos(a);
     }
 }
 
@@ -782,10 +782,10 @@ static double rcosd(double a)
     a = arg_reduce_degrees(a, &quadrant);
     switch (quadrant)
 {       default:
-        case 0: return cos(a);
-        case 1: return sin(-a);
-        case 2: return -cos(a);
-        case 3: return sin(a);
+        case 0: return CSLcos(a);
+        case 1: return CSLsin(-a);
+        case 2: return -CSLcos(a);
+        case 3: return CSLsin(a);
     }
 }
 
@@ -795,9 +795,9 @@ static double rtand(double a)
     switch (quadrant)
 {       default:
         case 0:
-        case 2: return tan(a);
+        case 2: return CSLtan(a);
         case 1:
-        case 3: return 1.0/tan(-a);
+        case 3: return 1.0/CSLtan(-a);
     }
 }
 
@@ -807,9 +807,9 @@ static double rcotd(double a)
     switch (quadrant)
 {       default:
         case 0:
-        case 2: return 1.0/tan(a);
+        case 2: return 1.0/CSLtan(a);
         case 1:
-        case 3: return tan(-a);
+        case 3: return CSLtan(-a);
     }
 }
 
@@ -839,15 +839,15 @@ static double rcsch(double a)
 // here. Much.
 //
     if (a == 0.0) return HUGE_VAL;
-    else if (a > 20.0) return 2.0*exp(-a);
-    else if (a < -20.0) return -2.0*exp(a);
-    else return 1.0/sinh(a);
+    else if (a > 20.0) return 2.0*CSLexp(-a);
+    else if (a < -20.0) return -2.0*CSLexp(a);
+    else return 1.0/CSLsinh(a);
 }
 
 #define CSL_log10 2.302585092994045684
 
 static double rlog10(double a)
-{   if (a > 0.0) return log(a)/CSL_log10;
+{   if (a > 0.0) return CSLlog(a)/CSL_log10;
     else return 0.0;
 }
 
@@ -862,7 +862,7 @@ static double rlog2(double a)
 {   if (a > 0.0)
     {   int x;
         a = frexp(a, &x);
-        return log(a)/CSL_log2 + (double)x;
+        return CSLlog(a)/CSL_log2 + (double)x;
     }
     else return 0.0;
 }
@@ -889,7 +889,7 @@ static double rsech(double a)
 //
 // When |a| is big I ought to return 0.0
 //
-    return 1.0/cosh(a);
+    return 1.0/CSLcosh(a);
 }
 
 #define i_times(z) \
@@ -1186,7 +1186,7 @@ static trigfn_record const trig_functions[] =
     {rasin,  iasin,  CSLcasin,  "asin"},  // asin   12 inverse sin, rads, [-pi/2, pi/2]
     {rasind, iasind, CSLcasind, "asind"}, // asind  13 inverse sin, degs, [-90, 90]
     {CSLasinh, NULL, CSLcasinh, "asinh"}, // asinh  14 inverse hyperbolic sin
-    {atan,   NULL,   CSLcatan,  "atan"},  // atan   15 1-arg inverse tan, (-pi/2, pi/2)
+    {CSLatan,   NULL,   CSLcatan,  "atan"},  // atan   15 1-arg inverse tan, (-pi/2, pi/2)
     {ratand, NULL,   CSLcatand, "atand"}, // atand  16 inverse tan, degs, (-90, 90)
     {NULL,   NULL,   NULL,      "atan2"}, // atan2  17 2-arg inverse tan, [0, 2pi)
     {NULL,   NULL,   NULL,      "atan2d"},// atan2d 18 2-arg inverse tan, degs, [0, 360)
@@ -1194,14 +1194,14 @@ static trigfn_record const trig_functions[] =
     {rcbrt,  NULL,   ccbrt,     "cbrt"},  // cbrt   20 cube root
     {my_cos, NULL,   Ccos,      "cos"},   // cos    21 cosine, rads
     {rcosd,  NULL,   CSLccosd,  "cosd"},  // cosd   22 cosine, degs
-    {cosh,   NULL,   CSLccosh,  "cosh"},  // cosh   23 hyperbolic cosine
+    {CSLcosh,   NULL,   CSLccosh,  "cosh"},  // cosh   23 hyperbolic cosine
     {rcot,   NULL,   CSLccot,   "cot"},   // cot    24 cotangent, rads
     {rcotd,  NULL,   CSLccotd,  "cotd"},  // cotd   25 cotangent, degs
     {rcoth,  NULL,   CSLccoth,  "coth"},  // coth   26 hyperbolic cotangent
     {rcsc,   NULL,   CSLccsc,   "csc"},   // csc    27 cosecant, rads
     {rcscd,  NULL,   CSLccscd,  "cscd"},  // cscd   28 cosecant, degs
     {rcsch,  NULL,   CSLccsch,  "csch"},  // csch   29 hyperbolic cosecant
-    {exp,    NULL,   Cexp,      "exp"},   // exp    30 exp(x) = e^z, e approx 2.71828
+    {CSLexp,    NULL,   Cexp,      "exp"},   // exp    30 exp(x) = e^z, e approx 2.71828
     {NULL,   NULL,   NULL,      "expt"},  // expt   31 expt(a,b) = a^b
     {NULL,   NULL,   NULL,      "hypot"}, // hypot  32 hypot(a,b) = sqrt(a^2+b^2)
     {rln,    iln,    Cln,       "ln"},    // ln     33 log base e, e approx 2.71828
@@ -1212,9 +1212,9 @@ static trigfn_record const trig_functions[] =
     {rsech,  NULL,   CSLcsech,  "sech"},  // sech   38 hyperbolic secant
     {my_sin, NULL,   CSLcsin,   "sin"},   // sin    39 sine, rads
     {rsind,  NULL,   CSLcsind,  "sind"},  // sind   40 sine, degs
-    {sinh,   NULL,   CSLcsinh,  "sinh"},  // sinh   41 hyperbolic sine
+    {CSLsinh,NULL,   CSLcsinh,  "sinh"},  // sinh   41 hyperbolic sine
     {rsqrt,  isqrt,  CSLcsqrt,  "sqrt"},  // sqrt   42 square root
-    {tan,    NULL,   CSLctan,   "tan"},   // tan    43 tangent, rads
+    {CSLtan, NULL,   CSLctan,   "tan"},   // tan    43 tangent, rads
     {rtand,  NULL,   CSLctand,  "tand"},  // tand   44 tangent, degs
     {tanh,   NULL,   CSLctanh,  "tanh"},  // tanh   45 hyperbolic tangent
     {rlog2,  ilog2,  CSLclog2,  "log2"}   // log2   46 log to base 2
@@ -1528,7 +1528,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         a = make_complex(a, b);
         return onevalue(a);
     }
-    d = pow(d, e);
+    d = CSLpow(d, e);
     a = make_boxfloat(d, restype);
     return onevalue(a);
 }
@@ -1547,13 +1547,13 @@ LispObject Llog_2(LispObject env, LispObject a, LispObject b)
 }
 
 #ifdef ISQRT_IMPLEMENTED_PROPERLY
-// This can only be used wgen it is implemented properly!
+// This can only be used when it is implemented properly!
 static LispObject Lisqrt(LispObject, LispObject a)
 {   double d;
 // This makes some pretence at computing an integer square root, but it
 // does so incredibly clumsily by mapping onto a floating point value and
-// then expecting the square root computed that way to fir into a fixnum,
-// ie to be at worst 27 bits long. That is not at all good enough for
+// then expecting the square root computed that way to fit into a fixnum,
+// ie to be at worst 27 or 60 bits long. That is not at all good enough for
 // serious use so I am disabling it for now!
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
@@ -1684,7 +1684,7 @@ LispObject Latan2(LispObject env, LispObject y, LispObject x)
 // Here I am assuming IEEE arithmetic and hence that a division by zero
 // just yields an infinity, not an error.
 //
-    else if (u >= 0.0) r = atan(v/u);
+    else if (u >= 0.0) r = CSLatan(v/u);
 //
 // On the next line x was negative so I will be careful about the sign
 // of a zero value for y because the negative real axis is a branch cut.
@@ -1694,8 +1694,8 @@ LispObject Latan2(LispObject env, LispObject y, LispObject x)
 // The adjustment here is done by computing pi/2+atan(-u/v) rather
 // than as pi-atan(-v/u) to reduce risk of cancellation errors.
 //
-        r = _half_pi + atan(-u/v);
-    else r = -_half_pi - atan(u/v);
+        r = _half_pi + CSLatan(-u/v);
+    else r = -_half_pi - CSLatan(u/v);
     x = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
     return onevalue(x);
 }
@@ -1705,10 +1705,10 @@ LispObject Latan2d(LispObject env, LispObject y, LispObject x)
     u = float_of_number(x);
     v = float_of_number(y);
     if (u == 0.0 && v == 0.0) r = 0.0; // really an error case
-    else if (u >= 0.0) r = n180pi*atan(v/u);
+    else if (u >= 0.0) r = n180pi*CSLatan(v/u);
     else if (v > 0.0 || (v == 0.0 && 1.0/v > 0.0))
-        r = 90.0 + n180pi*atan(-u/v);
-    else r = -90.0 - n180pi*atan(u/v);
+        r = 90.0 + n180pi*CSLatan(-u/v);
+    else r = -90.0 - n180pi*CSLatan(u/v);
     x = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
     return onevalue(x);
 }

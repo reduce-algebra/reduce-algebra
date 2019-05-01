@@ -69,7 +69,7 @@ extern LispObject nil;
 // My hope is that writing CSL_IGNORE(x) will cause the compiler to believe
 // that x is "used" enough that it does not give any "not used" warnings.
 
-static inline void CSL_IGNORE(LispObject x)
+inline void CSL_IGNORE(LispObject x)
 {   (void)x;
 }
 
@@ -148,27 +148,27 @@ static inline void CSL_IGNORE(LispObject x)
 // an immediate representation. 
 #define XTAG_FLOAT32    16
 
-static inline bool is_forward(LispObject p)
+inline bool is_forward(LispObject p)
 {   return (p & TAG_BITS) == TAG_FORWARD;
 }
 
-static inline bool is_number(LispObject p)
+inline bool is_number(LispObject p)
 {   return (p & TAG_BITS) >= TAG_NUMBERS;
 }
 
-static inline bool is_float(LispObject p)
+inline bool is_float(LispObject p)
 {   return ((0xc040 >> (p & XTAG_BITS)) & 1) != 0;
 }
 
-static inline bool is_immed_or_cons(LispObject p)
+inline bool is_immed_or_cons(LispObject p)
 {   return ((0x85 >> (p & TAG_BITS)) & 1) != 0;
 }
 
-static inline bool is_immed_cons_sym(LispObject p)
+inline bool is_immed_cons_sym(LispObject p)
 {   return ((0x95 >> (p & TAG_BITS)) & 1) != 0;
 }
 
-static inline bool need_more_than_eq(LispObject p)
+inline bool need_more_than_eq(LispObject p)
 {   return ((0x63 >> (p & TAG_BITS)) & 1) != 0;
 }
 
@@ -184,7 +184,7 @@ static inline bool need_more_than_eq(LispObject p)
 // when I cast back to a signed value I am in "implementation defined"
 // territory.
 
-static inline LispObject fixnum_of_int(intptr_t x)
+inline LispObject fixnum_of_int(intptr_t x)
 {   return  (LispObject)((((uintptr_t)x)<<4) + TAG_FIXNUM);
 }
 
@@ -200,7 +200,7 @@ static inline LispObject fixnum_of_int(intptr_t x)
 // low bits and then doing a signed division should achieve this affect in a
 // portable manner. 
 
-static inline intptr_t int_of_fixnum(LispObject x)
+inline intptr_t int_of_fixnum(LispObject x)
 {   return ((intptr_t)x & ~(intptr_t)15)/16;
 }
 
@@ -218,16 +218,16 @@ static inline intptr_t int_of_fixnum(LispObject x)
 
 // I need to overload these to cover various integer widths.
 
-static inline bool valid_as_fixnum(int32_t x)
+inline bool valid_as_fixnum(int32_t x)
 {   if (SIXTY_FOUR_BIT) return true;
     else return int_of_fixnum(fixnum_of_int(x)) == x;
 }
 
-static inline bool valid_as_fixnum(int64_t x)
+inline bool valid_as_fixnum(int64_t x)
 {   return int_of_fixnum(fixnum_of_int(x)) == x;
 }
 
-static inline bool valid_as_fixnum(int128_t x)
+inline bool valid_as_fixnum(int128_t x)
 {   return int_of_fixnum(fixnum_of_int(NARROW128(x))) == x;
 }
 
@@ -238,20 +238,20 @@ static inline bool valid_as_fixnum(int128_t x)
 // int64_t. So if I try to provide overloads that accept all of int32_t,
 // intptr_t and int64_t there is scope for confusion between the 3 versions. 
 
-static inline bool intptr_valid_as_fixnum(intptr_t x)
+inline bool intptr_valid_as_fixnum(intptr_t x)
 {   return int_of_fixnum(fixnum_of_int(x)) == x;
 }
 
-static inline bool valid_as_fixnum(uint32_t x)
+inline bool valid_as_fixnum(uint32_t x)
 {   if (SIXTY_FOUR_BIT) return true;
     else return x < (((uintptr_t)1) << 28);
 }
 
-static inline bool valid_as_fixnum(uint64_t x)
+inline bool valid_as_fixnum(uint64_t x)
 {   return x < (((uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
 }
 
-static inline bool uint128_valid_as_fixnum(uint128_t x)
+inline bool uint128_valid_as_fixnum(uint128_t x)
 {   return x < (((uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
 }
 
@@ -261,70 +261,70 @@ static inline bool uint128_valid_as_fixnum(uint128_t x)
 #define MOST_POSITIVE_FIXNUM fixnum_of_int(MOST_POSITIVE_FIXVAL)
 #define MOST_NEGATIVE_FIXNUM fixnum_of_int(MOST_NEGATIVE_FIXVAL)
 
-static inline bool is_cons(LispObject p)
+inline bool is_cons(LispObject p)
 {   return ((((int)(p)) & TAG_BITS)  == TAG_CONS);
 }
 
-static inline bool is_fixnum(LispObject p)
+inline bool is_fixnum(LispObject p)
 {   return ((((int)(p)) & XTAG_BITS) == TAG_FIXNUM);
 }
 
-static inline bool is_odds(LispObject p)
+inline bool is_odds(LispObject p)
 {   return ((((int)(p)) & TAG_BITS)  == TAG_HDR_IMMED); // many subcases
 }
 
-static inline bool is_sfloat(LispObject p)
+inline bool is_sfloat(LispObject p)
 {   return ((((int)(p)) & XTAG_BITS) == XTAG_SFLOAT);
 }
 
-static inline bool is_symbol(LispObject p)
+inline bool is_symbol(LispObject p)
 {   return ((((int)(p)) & TAG_BITS)  == TAG_SYMBOL);
 }
 
-static inline bool is_numbers(LispObject p)
+inline bool is_numbers(LispObject p)
 {   return ((((int)(p)) & TAG_BITS)  == TAG_NUMBERS);
 }
 
-static inline bool is_vector(LispObject p)
+inline bool is_vector(LispObject p)
 {   return ((((int)(p)) & TAG_BITS)  == TAG_VECTOR);
 }
 
-static inline bool is_bfloat(LispObject p)
+inline bool is_bfloat(LispObject p)
 {   return ((((int)(p)) & TAG_BITS)  == TAG_BOXFLOAT);
 }
 
-static inline bool consp(LispObject p)
+inline bool consp(LispObject p)
 {   return is_cons(p);
 }
-static inline bool symbolp(LispObject p)
+inline bool symbolp(LispObject p)
 {   return is_symbol(p);
 }
 
 // For Common Lisp it would be necessary to detect and trap any attempt
 // to take CAR or CDR of NIL and do something special.
 
-static inline bool car_legal(LispObject p)
+inline bool car_legal(LispObject p)
 {   return is_cons(p);
 }
 
-typedef struct Cons_Cell
+typedef struct Cons_Cell_
 {   LispObject car;
     LispObject cdr;
 } Cons_Cell;
 
-static inline LispObject& qcar(LispObject p)
+inline LispObject& qcar(LispObject p)
 {   return ((Cons_Cell *)p)->car;
 }
 
-static inline LispObject& qcdr(LispObject p)
+inline LispObject& qcdr(LispObject p)
 {   return ((Cons_Cell *)p)->cdr;
 }
 
-static inline LispObject& qcar(char * p)
+inline LispObject& qcar(char * p)
 {   return ((Cons_Cell *)p)->car;
 }
 
-static inline LispObject& qcdr(char * p)
+inline LispObject& qcdr(char * p)
 {   return ((Cons_Cell *)p)->cdr;
 }
 
@@ -486,7 +486,7 @@ typedef uintptr_t Header;
 #define TYPE_PADDER      ( 0x7b <<Tw) // a padder vector
 
 
-static inline bool vector_holds_binary(Header h)
+inline bool vector_holds_binary(Header h)
 {   return  ((h) & (0x2<<Tw)) != 0;
 }
 
@@ -543,19 +543,19 @@ static Header& vechdr(LispObject v)
 {   return *(Header *)((char *)(v) - TAG_VECTOR);
 }
 
-static inline unsigned int type_of_header(Header h)
+inline unsigned int type_of_header(Header h)
 {   return ((unsigned int)h) & header_mask;
 }
 
 // length_of_header returns the length of a word or doubleword oriented
 // object in bytes. NOT in words.
 
-static inline size_t length_of_header(Header h)
+inline size_t length_of_header(Header h)
 {   return (((size_t)h) >> (Tw+7)) << 2;
 }
 
 // length_of_bitheader returns a length in bits.
-static inline size_t length_of_bitheader(Header h)
+inline size_t length_of_bitheader(Header h)
 {   return (((size_t)h) >> (Tw+2)) - 31;
 }
 
@@ -563,16 +563,16 @@ static inline size_t length_of_bitheader(Header h)
 // length_of_header used to do on byte arrays (and hence strings)
 
 
-static inline size_t length_of_byteheader(Header h)
+inline size_t length_of_byteheader(Header h)
 {   return (((size_t)h) >> (Tw+5))  - 3;
 }
 
 // length_of_hwordheader gives the number of halfwords used.
-static inline size_t length_of_hwordheader(Header h)
+inline size_t length_of_hwordheader(Header h)
 {   return (((size_t)h) >> (Tw+6)) - 1;
 }
 
-static inline Header bitvechdr_(size_t n)
+inline Header bitvechdr_(size_t n)
 {   return TYPE_BITVEC_1 + (((n+31)&31)<<(Tw+2));
 }
 
@@ -631,28 +631,28 @@ static inline Header bitvechdr_(size_t n)
 
 #define symhdr_length       (doubleword_align_up(sizeof(Symbol_Head)))
 
-static inline bool is_symbol_header(Header h)
+inline bool is_symbol_header(Header h)
 {   return ((int)h & (0xf<<Tw)) == TYPE_SYMBOL;
 }
 
-static inline bool is_symbol_header_full_test(Header h)
+inline bool is_symbol_header_full_test(Header h)
 {   return ((int)h & ((0xf<<Tw) + TAG_BITS)) == (TYPE_SYMBOL + TAG_HDR_IMMED);
 }
 
-static inline int header_fastget(Header h)
+inline int header_fastget(Header h)
 {   return (h >> SYM_FASTGET_SHIFT) & 0x3f;
 }
 
-static inline bool is_number_header_full_test(Header h)
+inline bool is_number_header_full_test(Header h)
 {   return ((int)h & ((0x1d<<Tw) + TAG_BITS)) == ((0x1d<<Tw) + TAG_HDR_IMMED);
 }
 
 // The "vector" case here includes vector-like number cases
-static inline bool is_vector_header_full_test(Header h)
+inline bool is_vector_header_full_test(Header h)
 {   return is_odds(h) && (((int)h & (0x3<<Tw)) != 0);
 }
 
-static inline bool is_array_header(Header h)
+inline bool is_array_header(Header h)
 {   return type_of_header(h) == TYPE_ARRAY;
 }
 
@@ -732,84 +732,84 @@ static inline bool is_array_header(Header h)
 // case would do much better. I expect that strings and bignums will be
 // the most common cases.
 
-static inline bool is_basic_vector(LispObject v)
+inline bool is_basic_vector(LispObject v)
 {   return type_of_header(vechdr(v)) != TYPE_INDEXVEC;
 }
 
-static inline bool vector_i8(Header h)
+inline bool vector_i8(Header h)
 {   return ((0x7f070707u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-static inline bool vector_i16(Header h)
+inline bool vector_i16(Header h)
 {   return ((0x00080008u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-static inline bool vector_i32(Header h)
+inline bool vector_i32(Header h)
 {   return ((0x00000090u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-static inline bool vector_i64(Header h)
+inline bool vector_i64(Header h)
 {   return ((0x00007820u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-static inline bool vector_i128(Header h)
+inline bool vector_i128(Header h)
 {   return ((0x00000040u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-static inline bool vector_f32(Header h)
+inline bool vector_f32(Header h)
 {   return ((0x00108000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-static inline bool vector_f64(Header h)
+inline bool vector_f64(Header h)
 {   return ((0x00a00000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-static inline bool vector_f128(Header h)
+inline bool vector_f128(Header h)
 {   return ((0x80400000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-static inline LispObject& basic_elt(LispObject v, size_t n)
+inline LispObject& basic_elt(LispObject v, size_t n)
 {   return *(LispObject *)((char *)v +
                            (CELL-TAG_VECTOR) +
                            (n*sizeof(LispObject)));
 }
 
-static inline bool vector_i8(LispObject n)
+inline bool vector_i8(LispObject n)
 {   if (is_basic_vector(n)) return vector_i8(vechdr(n));
     else return vector_i8(vechdr(basic_elt(n, 0)));
 }
 
-static inline bool vector_i16(LispObject n)
+inline bool vector_i16(LispObject n)
 {   if (is_basic_vector(n)) return vector_i16(vechdr(n));
     else return vector_i16(vechdr(basic_elt(n, 0)));
 }
 
-static inline bool vector_i32(LispObject n)
+inline bool vector_i32(LispObject n)
 {   if (is_basic_vector(n)) return vector_i32(vechdr(n));
     else return vector_i32(vechdr(basic_elt(n, 0)));
 }
 
-static inline bool vector_i64(LispObject n)
+inline bool vector_i64(LispObject n)
 {   if (is_basic_vector(n)) return vector_i64(vechdr(n));
     else return vector_i64(vechdr(basic_elt(n, 0)));
 }
 
-static inline bool vector_i128(LispObject n)
+inline bool vector_i128(LispObject n)
 {   if (is_basic_vector(n)) return vector_i128(vechdr(n));
     else return vector_i128(vechdr(basic_elt(n, 0)));
 }
 
-static inline bool vector_f32(LispObject n)
+inline bool vector_f32(LispObject n)
 {   if (is_basic_vector(n)) return vector_f32(vechdr(n));
     else return vector_f32(vechdr(basic_elt(n, 0)));
 }
 
-static inline bool vector_f64(LispObject n)
+inline bool vector_f64(LispObject n)
 {   if (is_basic_vector(n)) return vector_f64(vechdr(n));
     else return vector_f64(vechdr(basic_elt(n, 0)));
 }
 
-static inline bool vector_f128(LispObject n)
+inline bool vector_f128(LispObject n)
 {   if (is_basic_vector(n)) return vector_f128(vechdr(n));
     else return vector_f128(vechdr(basic_elt(n, 0)));
 }
@@ -831,11 +831,11 @@ static inline bool vector_f128(LispObject n)
 //      unused              ( 0x7d <<Tw)
 #define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
 
-static inline Header& numhdr(LispObject v)
+inline Header& numhdr(LispObject v)
 {   return *(Header *)((char *)(v) - TAG_NUMBERS);
 }
 
-static inline Header& flthdr(LispObject v)
+inline Header& flthdr(LispObject v)
 {   return *(Header *)((char *)(v) - TAG_BOXFLOAT);
 }
 
@@ -843,82 +843,82 @@ static inline Header& flthdr(LispObject v)
 // The following tests are valid provided that n is already known to
 // have tag TAG_NUMBERS, i.e. it is a bignum, ratio or complex.
 //
-static inline bool is_ratio(LispObject n)
+inline bool is_ratio(LispObject n)
 {   return type_of_header(numhdr(n)) == TYPE_RATNUM;
 }
 
-static inline bool is_complex(LispObject n)
+inline bool is_complex(LispObject n)
 {   return type_of_header(numhdr(n)) == TYPE_COMPLEX_NUM;
 }
 
-static inline bool is_bignum_header(Header h)
+inline bool is_bignum_header(Header h)
 {   return type_of_header(h) == TYPE_BIGNUM;
 }
 
-static inline bool is_bignum(LispObject n)
+inline bool is_bignum(LispObject n)
 {   /*if (is_basic_vector(n) */return is_bignum_header(numhdr(n));
     /*else return is_bignum_header(numhdr(basic_elt(n, 0))); */
 }
 
-static inline bool is_string_header(Header h)
+inline bool is_string_header(Header h)
 {   return (type_of_header(h) & (0x1f<<Tw)) == TYPE_STRING_1;
 }
 
-static inline bool is_string(LispObject n)
+inline bool is_string(LispObject n)
 {   if (is_basic_vector(n)) return is_string_header(vechdr(n));
     else return is_string_header(vechdr(basic_elt(n, 0)));
 }
 
-static inline bool is_vec8_header(Header h)
+inline bool is_vec8_header(Header h)
 {   return (type_of_header(h) & (0x1f<<Tw)) == TYPE_VEC8_1;
 }
 
-static inline bool is_vec8(LispObject n)
+inline bool is_vec8(LispObject n)
 {   if (is_basic_vector(n)) return is_vec8_header(vechdr(n));
     else return is_vec8_header(vechdr(basic_elt(n, 0)));
 }
 
-static inline bool is_bps_header(Header h)
+inline bool is_bps_header(Header h)
 {   return (type_of_header(h) & (0x1f<<Tw)) == TYPE_BPS_1;
 }
 
-static inline bool is_bps(LispObject n)
+inline bool is_bps(LispObject n)
 {   return is_bps_header(vechdr(n));
 }
 
-static inline bool is_vec16_header(Header h)
+inline bool is_vec16_header(Header h)
 {   return (type_of_header(h) & (0x3f<<Tw)) == TYPE_VEC16_1;
 }
 
-static inline bool is_vec16(LispObject n)
+inline bool is_vec16(LispObject n)
 {   if (is_basic_vector(n)) return is_vec16_header(vechdr(n));
     else  return is_vec16_header(vechdr(basic_elt(n, 0)));
 }
 
-static inline bool is_bitvec_header(Header h)
+inline bool is_bitvec_header(Header h)
 {   return  (type_of_header(h) & (0x03<<Tw)) == TYPE_BITVEC_1;
 }
 
-static inline bool is_bitvec(LispObject n)
+inline bool is_bitvec(LispObject n)
 {   if (is_basic_vector(n)) return is_bitvec_header(vechdr(n));
     else  return is_bitvec_header(vechdr(basic_elt(n, 0)));
 }
 
-static inline char& basic_celt(LispObject v, size_t n)
+inline char& basic_celt(LispObject v, size_t n)
 {   return *((char *)(v) + (CELL-TAG_VECTOR) + n);
 }
 
-static inline unsigned char& basic_ucelt(LispObject v, size_t n)
+inline unsigned char& basic_ucelt(LispObject v, size_t n)
 {   return *((unsigned char *)v + (CELL-TAG_VECTOR) + n);
 }
 
-static inline signed char& basic_scelt(LispObject v, size_t n)
+inline signed char& basic_scelt(LispObject v, size_t n)
 {   return *((signed char *)v + (CELL-TAG_VECTOR) + n);
 }
 
 #define BPS_DATA_OFFSET (CELL-TAG_VECTOR)
 
-static inline unsigned char* data_of_bps(LispObject v)
+inline unsigned char* data_of_bps(LispObject v)
 {   return (unsigned char *)v + BPS_DATA_OFFSET;
 }
 
@@ -937,7 +937,7 @@ static inline unsigned char* data_of_bps(LispObject v)
 // structures in terms of their raw representation and so any issues of
 // large vs basic vectors does not apply.
 
-static inline LispObject& vselt(LispObject v, size_t n)
+inline LispObject& vselt(LispObject v, size_t n)
 {   return *(LispObject *)(((intptr_t)v & ~((intptr_t)TAG_BITS)) +
                             ((1 + n)*sizeof(LispObject)));
 }
@@ -952,13 +952,13 @@ static inline LispObject& vselt(LispObject v, size_t n)
 // ARM did not support 16-bit usage at all well. However these days I intend
 // to expect that int16_t will exist and will be something I can rely on.
 //
-static inline int16_t& basic_helt(LispObject v, size_t n)
+inline int16_t& basic_helt(LispObject v, size_t n)
 {   return *(int16_t *)((char *)v +
                         (CELL-TAG_VECTOR) +
                         n*sizeof(int16_t));
 }
 
-static inline intptr_t& basic_ielt(LispObject v, size_t n)
+inline intptr_t& basic_ielt(LispObject v, size_t n)
 {   return  *(intptr_t *)((char *)v +
                          (CELL-TAG_VECTOR) +
                          n*sizeof(intptr_t));
@@ -968,19 +968,19 @@ static inline intptr_t& basic_ielt(LispObject v, size_t n)
 // Even on a 64-bit machine I will support packed arrays of 32-bit
 // ints or short-floats.
 //
-static inline int32_t& basic_ielt32(LispObject v, size_t n)
+inline int32_t& basic_ielt32(LispObject v, size_t n)
 {   return *(int32_t *)((char *)v +
                         (CELL-TAG_VECTOR) +
                         n*sizeof(int32_t));
 }
 
-static inline float& basic_felt(LispObject v, size_t n)
+inline float& basic_felt(LispObject v, size_t n)
 {   return *(float *)((char *)v +
                       (CELL-TAG_VECTOR) +
                       n*sizeof(float));
 }
 
-static inline double& basic_delt(LispObject v, size_t n)
+inline double& basic_delt(LispObject v, size_t n)
 {   return *(double *)((char *)v +
                        (8-TAG_VECTOR) +
                        n*sizeof(double));
@@ -1011,11 +1011,11 @@ static inline double& basic_delt(LispObject v, size_t n)
 // and issue until people are using computers with several terabytes of
 // main memory.
 
-static inline bool is_power_of_two(uint64_t n)
+inline bool is_power_of_two(uint64_t n)
 {    return (n == (n & (-n)));
 }
 
-static inline int intlog2(uint64_t n)
+inline int intlog2(uint64_t n)
 {
 // This fragment takes a 64-bit number that is a power of 2 and
 // finds its logarithm, ie the number of bits that 1 needs to be shifted
@@ -1050,7 +1050,7 @@ static inline int intlog2(uint64_t n)
 // and even that type_of_header(vechdr(v)) is something where repeated
 // evaluation can be avoided.
 
-static inline int type_of_vector(LispObject v)
+inline int type_of_vector(LispObject v)
 {   if (is_basic_vector(v)) return type_of_header(vechdr(v));
     else return type_of_header(vechdr(basic_elt(v, 0)));
 }
@@ -1061,7 +1061,7 @@ static inline int type_of_vector(LispObject v)
 // and header words, and cells_in_vector() will get the number of
 // LispObjects that can be stored.
 
-static inline size_t bytes_in_bytevector(LispObject v)
+inline size_t bytes_in_bytevector(LispObject v)
 {   if (is_basic_vector(v)) return length_of_byteheader(vechdr(v)) - CELL;
     size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
 // Observe that the final chunk has its length treated individually. This
@@ -1071,7 +1071,7 @@ static inline size_t bytes_in_bytevector(LispObject v)
            length_of_byteheader(vechdr(basic_elt(v, n-1))) - CELL;
 }
 
-static inline size_t hwords_in_hwordvector(LispObject v)
+inline size_t hwords_in_hwordvector(LispObject v)
 {   if (is_basic_vector(v)) return length_of_hwordheader(vechdr(v)) - (CELL/2);
     size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
 // Observe that the final chunk has its length treated individually. This
@@ -1081,7 +1081,7 @@ static inline size_t hwords_in_hwordvector(LispObject v)
            length_of_hwordheader(vechdr(basic_elt(v, n-1))) - (CELL/2);
 }
 
-static inline size_t bits_in_bitvector(LispObject v)
+inline size_t bits_in_bitvector(LispObject v)
 {   if (is_basic_vector(v)) return length_of_bitheader(vechdr(v)) - 8*CELL;
     size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
 // Observe that the final chunk has its length treated individually. This
@@ -1094,7 +1094,7 @@ static inline size_t bits_in_bitvector(LispObject v)
 // This is the general one, and it is applicable to any sort of
 // vector with elements of size at least 4 bytes.
 
-static inline size_t bytes_in_vector(LispObject v)
+inline size_t bytes_in_vector(LispObject v)
 {   if (is_basic_vector(v)) return length_of_header(vechdr(v)) - CELL;
     size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
 // Observe that the final chunk has its length treated individually. This
@@ -1104,11 +1104,11 @@ static inline size_t bytes_in_vector(LispObject v)
            length_of_header(vechdr(basic_elt(v, n-1))) - CELL;
 }
 
-static inline size_t cells_in_vector(LispObject v)
+inline size_t cells_in_vector(LispObject v)
 {   return bytes_in_vector(v)/CELL;
 }
 
-static inline bool vector_holds_binary(LispObject v)
+inline bool vector_holds_binary(LispObject v)
 {   if (is_basic_vector(v)) return vector_holds_binary(vechdr(v));
     else return vector_holds_binary(vechdr(basic_elt(v, 0)));
 }
@@ -1118,7 +1118,7 @@ static inline bool vector_holds_binary(LispObject v)
 
 extern LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1];
 
-static inline void discard_basic_vector(LispObject v)
+inline void discard_basic_vector(LispObject v)
 {   size_t size = length_of_header(vechdr(v));
 // I should never try to discard a vector that has a size that is not
 // a multiple of CELL. If I did then the division on the next line could
@@ -1141,7 +1141,7 @@ static inline void discard_basic_vector(LispObject v)
     }
 }
 
-static inline void discard_vector(LispObject v)
+inline void discard_vector(LispObject v)
 {   if (is_basic_vector(v)) discard_basic_vector(v);
     else
     {   size_t n1 = length_of_header(vechdr(v))/CELL - 1;
@@ -1155,78 +1155,78 @@ static inline void discard_vector(LispObject v)
 // I should probably consider using a template to generate the code
 // here.
 
-static inline LispObject& elt(LispObject v, size_t n)
+inline LispObject& elt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_elt(v, n);
     return basic_elt(basic_elt(v, n/(VECTOR_CHUNK_BYTES/CELL)),
                      n%(VECTOR_CHUNK_BYTES/CELL));
 }
 
-static inline char& celt(LispObject v, size_t n)
+inline char& celt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_celt(v, n);
     return basic_celt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
                       n%VECTOR_CHUNK_BYTES);
 }
 
-static inline unsigned char& ucelt(LispObject v, size_t n)
+inline unsigned char& ucelt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_ucelt(v, n);
     return basic_ucelt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
                        n%VECTOR_CHUNK_BYTES);
 }
 
-static inline signed char& scelt(LispObject v, size_t n)
+inline signed char& scelt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_scelt(v, n);
     return basic_scelt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
                        n%VECTOR_CHUNK_BYTES);
 }
 
-static inline int16_t& helt(LispObject v, size_t n)
+inline int16_t& helt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_helt(v, n);
     return basic_helt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(int16_t))),
                       n%(VECTOR_CHUNK_BYTES/sizeof(int16_t)));
 }
 
-static inline intptr_t& ielt(LispObject v, size_t n)
+inline intptr_t& ielt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_ielt(v, n);
     return basic_ielt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(intptr_t))),
                       n%(VECTOR_CHUNK_BYTES/sizeof(intptr_t)));
 }
 
-static inline int32_t& ielt32(LispObject v, size_t n)
+inline int32_t& ielt32(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_ielt32(v, n);
     return basic_ielt32(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(int32_t))),
                         n%(VECTOR_CHUNK_BYTES/sizeof(int32_t)));
 }
 
-static inline float& felt(LispObject v, size_t n)
+inline float& felt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_felt(v, n);
     return basic_felt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(float))),
                       n%(VECTOR_CHUNK_BYTES/sizeof(float)));
 }
 
-static inline double& delt(LispObject v, size_t n)
+inline double& delt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_delt(v, n);
     return basic_delt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(double))),
                       n%(VECTOR_CHUNK_BYTES/sizeof(double)));
 }
 
 
-static inline bool is_header(LispObject x)
+inline bool is_header(LispObject x)
 {   return ((int)x & (0x3<<Tw)) != 0; // valid if TAG_HDR_IMMED
 }
 
-static inline bool is_char(LispObject x)
+inline bool is_char(LispObject x)
 {   return ((int)x & HDR_IMMED_MASK) == TAG_CHAR;
 }
 
-static inline bool is_spid(LispObject x)
+inline bool is_spid(LispObject x)
 {   return ((int)x & HDR_IMMED_MASK) == TAG_SPID;
 }
 
-static inline bool is_library(LispObject x)
+inline bool is_library(LispObject x)
 {   return ((int)x & 0xfffff) == SPID_LIBRARY;
 }
 
-static inline unsigned int library_number(LispObject x)
+inline unsigned int library_number(LispObject x)
 {   return (x >> 20) & 0xfff;
 }
 
@@ -1244,20 +1244,20 @@ static inline unsigned int library_number(LispObject x)
 // with or that it has any respectable purpose today, and I only support
 // 16 distinct "Font" codes when I am on 32-bit hardware.
 
-static inline int font_of_char(LispObject n)
+inline int font_of_char(LispObject n)
 {   return ((int32_t)n >> (21+4+Tw)) & 0xf;
 }
 
 // The Common Lisp "bits" part of a character object no longer makes any sense!
-static inline int bits_of_char(LispObject n)
+inline int bits_of_char(LispObject n)
 {   return 0;
 }
 
-static inline unsigned int code_of_char(LispObject n)
+inline unsigned int code_of_char(LispObject n)
 {   return   ((uint32_t)(n) >>  (4+Tw)) & 0x001fffff;
 }
 
-static inline LispObject pack_char(int font, unsigned int code)
+inline LispObject pack_char(int font, unsigned int code)
 {   return (LispObject)((((uint32_t)(font)) << (21+4+Tw)) |
                         (((uint32_t)(code)) << (4+Tw)) | TAG_CHAR);
 }
@@ -1274,7 +1274,7 @@ static inline LispObject pack_char(int font, unsigned int code)
 typedef int32_t junk;      // Unused 4-byte field for structures (for padding)
 typedef intptr_t junkxx;   // Unused cell-sized field for structures
 
-typedef struct Symbol_Head
+typedef struct Symbol_Head_
 {
     Header header;       // Standard format header for vector types
     LispObject value;    // Global or special value cell
@@ -1312,7 +1312,7 @@ typedef struct Symbol_Head
 // Hmmm these space savings are not utterly convincing in today's world,
 // even though the proposed scheme looks "tidy". More thought is needed!
 
-typedef struct Symbol_Head
+typedef struct Symbol_Head_
 {   Header header;       // Standard format header for vector types
     LispObject value;    // Global or special value cell
 
@@ -1327,7 +1327,7 @@ typedef struct Symbol_Head
 } Symbol_Head;
 
 
-typedef struct Function_Object
+typedef struct Function_Object_
 {   Header header;       // Standard format header for vector types
     LispObject env;      // Extra stuff to provide literals etc
 
@@ -1347,7 +1347,7 @@ typedef struct Function_Object
 // that would be at most 100K, but again I think it would win as regards
 // elegance.
 
-typedef struct Bytecoded_Function_Object
+typedef struct Bytecoded_Function_Object_
 {   Header header;       // Standard format header for vector types
     LispObject env;      // Extra stuff to provide literals etc
 
@@ -1376,82 +1376,82 @@ typedef struct Bytecoded_Function_Object
 // macro) to stress that I view the store layout as fixed, and because
 // offsetof is badly supported by some C compilers I have come across.
 //
-static inline Header& qheader(LispObject p)
+inline Header& qheader(LispObject p)
 {   return *(Header *)((char *)p + (0*CELL-TAG_SYMBOL));
 }
 
-static inline LispObject& qvalue(LispObject p)
+inline LispObject& qvalue(LispObject p)
 {   return *(LispObject *)((char *)p + (1*CELL-TAG_SYMBOL));
 }
 
-static inline LispObject& qenv(LispObject p)
+inline LispObject& qenv(LispObject p)
 {   return *(LispObject *)((char *)p + (2*CELL-TAG_SYMBOL));
 }
 
-static inline LispObject& qplist(LispObject p)
+inline LispObject& qplist(LispObject p)
 {   return *(LispObject *)((char *)p + (3*CELL-TAG_SYMBOL));
 }
 
-static inline LispObject& qfastgets(LispObject p)
+inline LispObject& qfastgets(LispObject p)
 {   return *(LispObject *)((char *)p + (4*CELL-TAG_SYMBOL));
 }
 
-static inline LispObject& qpackage(LispObject p)
+inline LispObject& qpackage(LispObject p)
 {   return *(LispObject *)((char *)p + (5*CELL-TAG_SYMBOL));
 }
 
-static inline LispObject& qpname(LispObject p)
+inline LispObject& qpname(LispObject p)
 {   return *(LispObject *)((char *)p + (6*CELL-TAG_SYMBOL));
 }
 
 // The ifn() selector gives access to the qfn() cell, but treating its
 // contents as (intptr_t).
 //
-static inline intptr_t& ifn0(LispObject p)
+inline intptr_t& ifn0(LispObject p)
 {   return *(intptr_t *)((char *)p + (7*CELL-TAG_SYMBOL));
 }
 
-static inline intptr_t& ifn1(LispObject p)
+inline intptr_t& ifn1(LispObject p)
 {   return *(intptr_t *)((char *)p + (8*CELL-TAG_SYMBOL));
 }
 
-static inline intptr_t& ifn2(LispObject p)
+inline intptr_t& ifn2(LispObject p)
 {   return *(intptr_t *)((char *)p + (9*CELL-TAG_SYMBOL));
 }
 
-static inline intptr_t& ifn3(LispObject p)
+inline intptr_t& ifn3(LispObject p)
 {   return *(intptr_t *)((char *)p + (10*CELL-TAG_SYMBOL));
 }
 
-static inline intptr_t& ifn4up(LispObject p)
+inline intptr_t& ifn4up(LispObject p)
 {   return *(intptr_t *)((char *)p + (11*CELL-TAG_SYMBOL));
 }
 
-static inline intptr_t& ifnunused(LispObject p)
+inline intptr_t& ifnunused(LispObject p)
 {   return *(intptr_t *)((char *)p + (12*CELL-TAG_SYMBOL));
 }
 
-static inline intptr_t& ifnn(LispObject p)
+inline intptr_t& ifnn(LispObject p)
 {   return *(intptr_t *)((char *)p + (13*CELL-TAG_SYMBOL));
 }
 
-static inline no_args*& qfn0(LispObject p)
+inline no_args*& qfn0(LispObject p)
 {   return *(no_args **)((char *)p + (7*CELL-TAG_SYMBOL));
 }
 
-static inline one_arg*& qfn1(LispObject p)
+inline one_arg*& qfn1(LispObject p)
 {   return *(one_arg **)((char *)p + (8*CELL-TAG_SYMBOL));
 }
 
-static inline two_args*& qfn2(LispObject p)
+inline two_args*& qfn2(LispObject p)
 {   return *(two_args **)((char *)p + (9*CELL-TAG_SYMBOL));
 }
 
-static inline three_args*& qfn3(LispObject p)
+inline three_args*& qfn3(LispObject p)
 {   return *(three_args **)((char *)p + (10*CELL-TAG_SYMBOL));
 }
 
-static inline fourup_args*& qfn4up(LispObject p)
+inline fourup_args*& qfn4up(LispObject p)
 {   return *(fourup_args **)((char *)p + (11*CELL-TAG_SYMBOL));
 }
 
@@ -1460,12 +1460,12 @@ NORETURN extern void aerror1(const char *s, LispObject a);
 // When I have functions with 4 or more args I may need to
 // extract them..
 
-static inline LispObject arg4(const char *name, LispObject a4up)
+inline LispObject arg4(const char *name, LispObject a4up)
 {   if (qcdr(a4up) != nil) aerror1(name, a4up); // Too many args provided
     return qcar(a4up);
 }
 
-static inline void a4a5(const char *name, LispObject a4up,
+inline void a4a5(const char *name, LispObject a4up,
                         LispObject& a4, LispObject& a5)
 {   a4 = qcar(a4up);
     a4up = qcdr(a4up);
@@ -1473,7 +1473,7 @@ static inline void a4a5(const char *name, LispObject a4up,
     a5 = qcar(a4up);
 }
 
-static inline void a4a5a6(const char *name, LispObject a4up,
+inline void a4a5a6(const char *name, LispObject a4up,
                           LispObject& a4, LispObject& a5, LispObject& a6)
 {   a4 = qcar(a4up);
     a4up = qcdr(a4up);
@@ -1484,7 +1484,7 @@ static inline void a4a5a6(const char *name, LispObject a4up,
     a6 = qcar(a4up);
 }
 
-static inline uint64_t& qcount(LispObject p)
+inline uint64_t& qcount(LispObject p)
 {   return *(uint64_t *)((char *)p + (12*CELL-TAG_SYMBOL));
 }
 
@@ -1497,11 +1497,11 @@ typedef union _Float_union
 // The following macro clears any bits in a LispObject above the
 // bottom 32.
 
-static inline LispObject low32(LispObject a)
+inline LispObject low32(LispObject a)
 {   return (LispObject)(uint32_t)a;
 }
 
-typedef struct Big_Number
+typedef struct Big_Number_
 {
 // see "arith.h" for a description of bignum formats
     Header h;
@@ -1515,17 +1515,17 @@ typedef struct Big_Number
     uint32_t d[1];  // generally more digits than this
 } Big_Number;
 
-static inline size_t bignum_length(LispObject b)
+inline size_t bignum_length(LispObject b)
 {   return length_of_header(numhdr(b));
 }
 
-static inline uint32_t* bignum_digits(LispObject b)
+inline uint32_t* bignum_digits(LispObject b)
 {   return (uint32_t *)((char *)b  + (CELL-TAG_NUMBERS));
 }
 
 // For work on bignums when I have a 64-bit machine I frequently need the
 // top word of a bignum as a 64-bit (signed) value...
-static inline int64_t bignum_digits64(LispObject b, size_t n)
+inline int64_t bignum_digits64(LispObject b, size_t n)
 {   return (int64_t)((int32_t *)((char *)b+(CELL-TAG_NUMBERS)))[n];
 }
 
@@ -1533,7 +1533,7 @@ static inline int64_t bignum_digits64(LispObject b, size_t n)
 // make_bighdr takes an argument measured in 32-bit units, including space
 // for the header word. This is the natural space unit used in the tagging
 // scheme so I just need to shift the count to where it has to live.
-static inline Header make_bighdr(size_t n)
+inline Header make_bighdr(size_t n)
 {   return TAG_HDR_IMMED+TYPE_BIGNUM+(n<<(Tw+7));
 }
 
@@ -1549,35 +1549,35 @@ static inline Header make_bighdr(size_t n)
 //@#define pack_hdrlengthbytes(n) ((3+(intptr_t)(n))<<(Tw+5))
 //@#define pack_hdrlengthhwords(n) ((1+(intptr_t)(n))<<(Tw+4))
 
-typedef struct Rational_Number
+typedef struct Rational_Number_
 {   Header header;
     LispObject num;
     LispObject den;
 } Rational_Number;
 
-static inline LispObject& numerator(LispObject r)
+inline LispObject& numerator(LispObject r)
 {   return ((Rational_Number *)((char *)r-TAG_NUMBERS))->num;
 }
 
-static inline LispObject& denominator(LispObject r)
+inline LispObject& denominator(LispObject r)
 {   return ((Rational_Number *)((char *)r-TAG_NUMBERS))->den;
 }
 
-typedef struct Complex_Number
+typedef struct Complex_Number_
 {   Header header;
     LispObject real;
     LispObject imag;
 } Complex_Number;
 
-static inline LispObject& real_part(LispObject r)
+inline LispObject& real_part(LispObject r)
 {   return ((Complex_Number *)((char *)r-TAG_NUMBERS))->real;
 }
 
-static inline LispObject& imag_part(LispObject r)
+inline LispObject& imag_part(LispObject r)
 {   return ((Complex_Number *)((char *)r-TAG_NUMBERS))->imag;
 }
 
-typedef struct Single_Float
+typedef struct Single_Float_
 {   Header header;
     union float_or_int
     {   float f;
@@ -1586,15 +1586,15 @@ typedef struct Single_Float
     } f;
 } Single_Float;
 
-static inline float& single_float_val(LispObject v)
+inline float& single_float_val(LispObject v)
 {   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.f;
 }
 
-static inline float32_t& float32_t_val(LispObject v)
+inline float32_t& float32_t_val(LispObject v)
 {   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.f32;
 }
 
-static inline int32_t& intfloat32_t_val(LispObject v)
+inline int32_t& intfloat32_t_val(LispObject v)
 {   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.i;
 }
 
@@ -1603,7 +1603,7 @@ static inline int32_t& intfloat32_t_val(LispObject v)
 // as strong control of alignment as I would like. So I use macros that
 // do address arithmetic explicitly for me...
 //
-//  typedef struct Double_Float
+//  typedef struct Double_Float_
 //  {
 //      Header header;
 //                            // SIXTY_FOUR_BIT is not a compile-time constant
@@ -1628,33 +1628,33 @@ typedef union _Double_union
 } Double_union;
 
 #define SIZEOF_DOUBLE_FLOAT     16
-static inline double *double_float_addr(LispObject v)
+inline double *double_float_addr(LispObject v)
 {   return (double *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
 // on 32-bit machines there has to be a padding work in a double_float,
 // and this lets me clear it out.
-static inline int32_t& double_float_pad(LispObject v)
+inline int32_t& double_float_pad(LispObject v)
 {   return *(int32_t *)((char *)v + (4-TAG_BOXFLOAT));
 }
 
-static inline double& double_float_val(LispObject v)
+inline double& double_float_val(LispObject v)
 {   return *(double *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-static inline float64_t& float64_t_val(LispObject v)
+inline float64_t& float64_t_val(LispObject v)
 {   return *(float64_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-static inline int64_t& intfloat64_t_val(LispObject v)
+inline int64_t& intfloat64_t_val(LispObject v)
 {   return *(int64_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-static inline int32_t& intfloat64_t_val_hi(LispObject v)
+inline int32_t& intfloat64_t_val_hi(LispObject v)
 {   return *(int32_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-static inline int32_t& intfloat64_t_val_lo(LispObject v)
+inline int32_t& intfloat64_t_val_lo(LispObject v)
 {   return *(int32_t *)((char *)v + (12-TAG_BOXFLOAT));
 }
 
@@ -1664,10 +1664,10 @@ static inline int32_t& intfloat64_t_val_lo(LispObject v)
 // For "long double" I use float128_t as implemented in the SoftFloat_3a
 // library. This represents each float with 16-bits of exponent and 113
 // bits of mantissa (including the hidden bit). Basic arithmetic is
-// supported, but not the elemantary functions. I am going to ASSUME that
+// supported, but not the elementary functions. I am going to ASSUME that
 // everything can be aligned at 8-byte boundaries.
 //
-//  typedef struct Long_Float
+//  typedef struct Long_Float_
 //  {
 //      Header header;
 //  #ifndef SIXTY_FOUR_BIT  // Illegal #ifdef here!
@@ -1685,73 +1685,73 @@ static inline int32_t& intfloat64_t_val_lo(LispObject v)
 //
 
 #define SIZEOF_LONG_FLOAT       24
-static inline float128_t *long_float_addr(LispObject v)
+inline float128_t *long_float_addr(LispObject v)
 {   return (float128_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-static inline int32_t& long_float_pad(LispObject v)
+inline int32_t& long_float_pad(LispObject v)
 {   return *(int32_t *)((char *)v + (4-TAG_BOXFLOAT));
 }
 
-static inline float128_t& long_float_val(LispObject v)
+inline float128_t& long_float_val(LispObject v)
 {   return *(float128_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-static inline float128_t& float128_t_val(LispObject v)
+inline float128_t& float128_t_val(LispObject v)
 {   return *(float128_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-static inline int64_t& intfloat128_t_val0(LispObject v)
+inline int64_t& intfloat128_t_val0(LispObject v)
 {   return *(int64_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-static inline int64_t& intfloat128_t_val1(LispObject v)
+inline int64_t& intfloat128_t_val1(LispObject v)
 {   return *(int64_t *)((char *)v + (16-TAG_BOXFLOAT));
 }
 
-static inline int32_t& intfloat128_t_val32_0(LispObject v)
+inline int32_t& intfloat128_t_val32_0(LispObject v)
 {   return *(int32_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-static inline int32_t& intfloat128_t_val32_1(LispObject v)
+inline int32_t& intfloat128_t_val32_1(LispObject v)
 {   return *(int32_t *)((char *)v + (12-TAG_BOXFLOAT));
 }
 
-static inline int32_t& intfloat128_t_val32_2(LispObject v)
+inline int32_t& intfloat128_t_val32_2(LispObject v)
 {   return *(int32_t *)((char *)v + (16-TAG_BOXFLOAT));
 }
 
-static inline int32_t& intfloat128_t_val32_3(LispObject v)
+inline int32_t& intfloat128_t_val32_3(LispObject v)
 {   return *(int32_t *)((char *)v + (20-TAG_BOXFLOAT));
 }
 
-static inline uintptr_t word_align_up(uintptr_t n)
+inline uintptr_t word_align_up(uintptr_t n)
 {   return (LispObject)((n + 3) & (-(uintptr_t)4U));
 }
 
-static inline uintptr_t doubleword_align_up(uintptr_t n)
+inline uintptr_t doubleword_align_up(uintptr_t n)
 {   return (uintptr_t)((n + 7) & (-(uintptr_t)8U));
 }
 
-static inline LispObject doubleword_align_up(LispObject n)
+inline LispObject doubleword_align_up(LispObject n)
 {   return (LispObject)(((uintptr_t)n + 7) & (-(uintptr_t)8U));
 }
 
-static inline uintptr_t doubleword_align_down(uintptr_t n)
+inline uintptr_t doubleword_align_down(uintptr_t n)
 {   return (uintptr_t)((intptr_t)n & (-(uintptr_t)8U));
 }
 
-static inline uintptr_t object_align_up(uintptr_t n)
+inline uintptr_t object_align_up(uintptr_t n)
 {   return (uintptr_t)((n + sizeof(LispObject) - 1) &
                        (-(uintptr_t)sizeof(LispObject)));
 }
 
-static inline uintptr_t object_2_align_up(uintptr_t n)
+inline uintptr_t object_2_align_up(uintptr_t n)
 {   return (uintptr_t)((n + 2*sizeof(LispObject) - 1) &
                        (-(uintptr_t)2*sizeof(LispObject)));
 }
 
-//static inline uintptr_t quadword_align_up(uintptr_t n)
+//inline uintptr_t quadword_align_up(uintptr_t n)
 //{   return (uintptr_t)((n + 15) & (-(uintptr_t)16U));
 //}
 

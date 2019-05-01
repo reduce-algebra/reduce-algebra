@@ -1,4 +1,4 @@
-//  syscsl.h                               Copyright (C) 1992-2017 Codemist
+//  syscsl.h                               Copyright (C) 1992-2018 Codemist
 
 //
 // This file should contain a list of all the functions in CSL that have
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -180,7 +180,7 @@ extern char *get_truename(char *filename, const char *old, size_t n);
 extern int list_directory_members(char *filename, const char *old, char **filelist[],
                                   size_t n);
 
-#else
+#else // !NAG_VERSION
 
 //
 // list_directory_members calls the given callback function handing it
@@ -192,7 +192,7 @@ typedef void directory_callback(const char *, int, long int);
 extern void list_directory_members(char *filename, const char *old,
                                    size_t n, directory_callback *fn);
 
-#endif
+#endif // !NAG_VERSION
 
 //
 // (f) is an open file - truncate it at position (where).
@@ -297,7 +297,7 @@ extern int batchp(void);
 // Ideally I will want the clock to report "user time" to me rather than
 // "elapsed time", since that will make recording benchmark info easier.
 //
-extern clock_t read_clock(void);
+extern uint64_t read_clock(void);
 
 #ifdef SHOW_COUNTS_AVAILABLE
 //
@@ -311,7 +311,7 @@ extern clock_t read_clock(void);
 extern void show_counts(void);
 extern void write_profile(const char *filename);
 
-#endif
+#endif // SHOW_COUNTS_AVAILABLE
 
 extern uint32_t Imultiply(uint32_t *rlow, uint32_t a,
                           uint32_t b, uint32_t c);
@@ -335,11 +335,12 @@ extern int32_t ok_to_grab_memory(int32_t current_pages);
 
 extern int number_of_processors();
 
-#ifdef WINDOW_SYSTEM
 //
 // The next represents the only way in which characters will be
-// sent to the screen - in the case of WINDOW_SYSTEM it write to the
-// screen.  Possibly this is more complicated than just writing to stdout.
+// sent to the screen - in the case of WITHOUT_GUI it probably does
+// just write to stdout, but if !WITHOUT_GUI there may be a GUI active
+// and it may be writing to the screen, with whatever extra complication
+// that entails.
 //
 extern void putc_stdout(int c);
 //
@@ -370,10 +371,14 @@ extern void report_space(uint64_t gccount, double percent, double mbytes);
 // system to delay before closing the main output window.
 //
 extern void pause_for_user(void);
-#endif
 
-// These can be used (without 100% reliability") to check if memory
-// addresses are proper.
+// These can be used (without 100% reliability!) to check if memory
+// addresses are proper. They are only for use in desparate debugging
+// situations where some invalid data might arise where a pointer is
+// expected and by using these the issue can be detected early and
+// the debugging information available may therefore be nicer that that
+// which would have been encountered if the wild pseudo-pointer had been
+// left and only detected when dereferenced.
 
 extern bool valid_address(void *p);
 extern bool valid_address(uintptr_t p);
