@@ -1,0 +1,8 @@
+This version of SoftFP-3a has just the same main code as the original
+(and a copy of the original distribution archive is present in an adjacent
+directory). But it has been changes so as to use autoconf and automake to
+cope with customisation for differing targets. This may leave it less
+well optimised in some cases, but reduces need for manual selection of
+which target it is to be used with.
+
+                                            Arthur Norman. February 2016
