@@ -196,7 +196,7 @@ cyg64.exe:	$(cslbase)/other-cygwin.cpp
 	i686-w64-mingw32-strip cyg64
 
 if wx
-FWIN = fwin.h
+FWIN = wxfwin.h
 WXC=../bin/wx-config
 BUILT_SOURCES = $(WXC)
 MY_CPPFLAGS := $(shell ../bin/wx-config --cppflags 2>/dev/null)
@@ -217,7 +217,7 @@ AM_CXXFLAGS      = $(MY_CXXFLAGS)
 AM_LIBS          = $(MY_LIBS)
 
 else !wx
-FWIN = wxfwin.h
+FWIN = fwin.h
 WXC=
 endif !wx
 
