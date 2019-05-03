@@ -199,5 +199,6 @@ May 2019. A lot more changes to terminal handling and ^C processing. My latest
       At present CSL has the start of a framework for break loops but has
       not got that in a workable state, so ALT-^G causes an odd effect - but
       that is an issue for CSL not for my FOX adjustments here.
+      Futher fix when cfmakeraw is available.w
       
 <end of CHANGED>

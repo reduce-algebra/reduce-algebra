@@ -1072,7 +1072,7 @@ static int input_line_size;
 static void term_putchar(int c);
 
 static wchar_t *term_wide_plain_getline(void)
-{   fflush(stdout);
+{   fflush(stdout); fflush(stderr);
     for (int i=0; i<prompt_length; i++)
         term_putchar(termed_prompt_string[i]);
     fflush(stdout);
@@ -1460,9 +1460,6 @@ static void term_putchar(int c)
     int i, n = utf_encode(buffer, c);
     for (i=0; i<n; i++)
     {   c = buffer[i];
-#ifdef __CYGWIN__
-        if (c == '\n') putchar('\r');
-#endif
         putchar(c);
     }
 }
@@ -1683,7 +1680,9 @@ int term_setup(const char *argv0, const char *colour)
 // raw mode. Otherwise I will set the flags that I expect cfmakeraw to set.
 // The one that it took be a while to spot was c_cc[VMIN] to ensure that
 // reading characters still waits for at least one...
+// Bute note that I want O_POST set most of the time...
     cfmakeraw(&my_term);
+    my_term.c_oflag |= OPOST;
 #else
     my_term.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP |
                          INLCR | IGNCR | ICRNL | IXON);
@@ -1698,7 +1697,13 @@ int term_setup(const char *argv0, const char *colour)
 //    ./reduce -v .... &
 // unless SIGTTOU is blocked or ignored...
     signal(SIGTTOU, SIG_IGN);
-// Put terminal in raw mode for input but with OPOST for output
+// Put terminal in raw mode for input but with OPOST for output.
+//
+// A note here. C/C++ level stdout and stderr might buffer output, while
+// tcsetattr works at a lower level. So to keep things in step I will go
+// fflush on both output FILE things to make myself feel safe.
+//
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &my_term);
     memcpy(&my_term, &prog_term, sizeof(my_term));
     my_term.c_oflag &= ~OPOST;
@@ -1723,13 +1728,12 @@ void term_close(void)
 // Note here and elsewhere in this file that I go "fflush(stdout)" before
 // doing anything that may change styles or options for stream handling.
     fflush(stdout);
+    fflush(stderr);
 #ifndef EMBEDDED
 #ifdef WIN32
-    fflush(stdout);
     if (*term_colour != 0)
         SetConsoleTextAttribute(console_output_handle, plainAttributes);
 #else // !WIN32
-    fflush(stdout);
     if (term_enabled)
     {   tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
         if (*term_colour == 0) /* nothing */;
@@ -1989,6 +1993,7 @@ static int term_getchar(void)
 static void term_move_down(int del)
 {
     if (del == 0) return;
+    fflush(stdout); fflush(stderr);
 #ifdef WIN32
 // Since the screen is on the same machine as the rest of my process, and
 // I am in general interacting with a (slow) user here I will not try ANY
@@ -2014,6 +2019,7 @@ static void term_move_down(int del)
     {   putp(cursor_up);
         del++;
     }
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif
 }
@@ -2021,6 +2027,7 @@ static void term_move_down(int del)
 
 static void term_move_right(int del)
 {   if (del == 0) return;
+    fflush(stdout); fflush(stderr);
 #ifdef WIN32
     CONSOLE_SCREEN_BUFFER_INFO csb;
     if (!GetConsoleScreenBufferInfo(console_output_handle, &csb)) return;
@@ -2054,12 +2061,14 @@ static void term_move_right(int del)
     {   putp(cursor_left);
         del++;
     }
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
 }
 
 static void term_move_first_column(void)
 {
+    fflush(stdout); fflush(stderr);
 #ifdef WIN32 
     CONSOLE_SCREEN_BUFFER_INFO csb;
     if (!GetConsoleScreenBufferInfo(console_output_handle, &csb)) return;
@@ -2071,18 +2080,21 @@ static void term_move_first_column(void)
     tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
     putp(carriage_return);
     cursorx = 0;
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
 }
 
 static void term_bell(void)
 {
+    fflush(stdout); fflush(stderr);
 #ifdef WIN32
     Beep(1000, 100);
 #else // !WIN32
     tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
     if (term_enabled && bell) putp(bell);
     else putchar(0x07);
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
 }
@@ -2299,19 +2311,23 @@ static void refresh_display(void)
 #ifdef WIN32
             SetConsoleTextAttribute(console_output_handle, revAttributes);
 #else // !WIN32
+            fflush(stdout); fflush(stderr);
             tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
             putp(enter_reverse_mode);
+            fflush(stdout); fflush(stderr);
             tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
             inverse = 1;
         }
         if (term_can_invert && invert_start<invert_end && i==invert_end)
-        {   fflush(stdout);
+        {
+            fflush(stdout); fflush(stderr);
 #ifdef WIN32
             SetConsoleTextAttribute(console_output_handle, plainAttributes);
 #else // !WIN32
             tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
             putp(exit_attribute_mode);
+            fflush(stdout); fflush(stderr);
             tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
             inverse = 0;
@@ -2356,11 +2372,13 @@ static void refresh_display(void)
 // Clear inverse video mode.
     if (inverse)
     {
+        fflush(stdout); fflush(stderr);
 #ifdef WIN32
         SetConsoleTextAttribute(console_output_handle, plainAttributes);
 #else // !WIN32
         tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
         putp(exit_attribute_mode);
+        fflush(stdout); fflush(stderr);
         tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
     }
@@ -3022,6 +3040,7 @@ static void term_redisplay(void)
 static void term_clear_screen(void)
 {
 // This will then leave the input-line displayed at the top of your window...
+    fflush(stdout); fflush(stderr);
 #ifdef WIN32
     CONSOLE_SCREEN_BUFFER_INFO csb;
     DWORD size, nbytes;
@@ -3036,6 +3055,7 @@ static void term_clear_screen(void)
 #else // !WIN32
     tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
     if (clear_screen != NULL) putp(clear_screen);
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
     display_line[0] = input_line[0] + 1;
@@ -5698,7 +5718,7 @@ static void solaris_foreground(int n)
 #endif // SOLARIS
 
 static void set_foreground_colour(int n)
-{   fflush(stdout);
+{   fflush(stdout); fflush(stderr);
 #ifdef WIN32
     int k;
     if (*term_colour == 0) return;
@@ -5716,13 +5736,14 @@ static void set_foreground_colour(int n)
         else if (set_foreground) putp(tparm(set_foreground, n));
 #endif // !SOLARIS
     }
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
     fflush(stdout);
 }
 
 static void set_default_colour(void)
-{   fflush(stdout);
+{   fflush(stdout); fflush(stderr);
 #ifdef WIN32
     if (*term_colour != 0)
         SetConsoleTextAttribute(console_output_handle, plainAttributes);
@@ -5739,6 +5760,7 @@ static void set_default_colour(void)
         putp(tparm(set_a_foreground, 0));
 #endif // SOLARIS
     }
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
     fflush(stdout);
