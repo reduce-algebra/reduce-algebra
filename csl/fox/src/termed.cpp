@@ -1675,14 +1675,19 @@ int term_setup(const char *argv0, const char *colour)
 // the use of tcgetattr/tcsetattr would only do things to the stdin
 // one here.
     tcgetattr(stdin_handle, &my_term);
+    tcflag_t oflag = my_term.c_oflag,
+             rawoflag;
 #ifdef HAVE_CFMAKERAW
 // If I have cfmakeraw that is liable to be a definitive way of setting
 // raw mode. Otherwise I will set the flags that I expect cfmakeraw to set.
 // The one that it took be a while to spot was c_cc[VMIN] to ensure that
 // reading characters still waits for at least one...
-// Bute note that I want O_POST set most of the time...
+// Bute note that I want O_POST set most of the time..., so I record
+// the oflags and put that back later.
     cfmakeraw(&my_term);
-    my_term.c_oflag |= OPOST;
+// I really do not want to clobber the output processing!
+    rawoflag = my_term.c_oflag;
+    my_term.c_oflag = oflag;
 #else
     my_term.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP |
                          INLCR | IGNCR | ICRNL | IXON);
@@ -1691,13 +1696,14 @@ int term_setup(const char *argv0, const char *colour)
     my_term.c_cflag |= CS8;
     my_term.c_cc[VMIN] = 1;
     my_term.c_cc[VTIME] = 0;
+    rawoflag = oflag & ~OPOST & ~ONLCR & ~OCRNL & ~ONOCR & ~ONLRET;
 #endif
 // The tcsetattr HANGS if the console is detached/backgrounded when
 // it is  performed, As in
 //    ./reduce -v .... &
 // unless SIGTTOU is blocked or ignored...
     signal(SIGTTOU, SIG_IGN);
-// Put terminal in raw mode for input but with OPOST for output.
+// Put terminal in raw mode for input but with OPOST etc for output.
 //
 // A note here. C/C++ level stdout and stderr might buffer output, while
 // tcsetattr works at a lower level. So to keep things in step I will go
@@ -1705,9 +1711,9 @@ int term_setup(const char *argv0, const char *colour)
 //
     fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &my_term);
-    memcpy(&my_term, &prog_term, sizeof(my_term));
-    my_term.c_oflag &= ~OPOST;
-    memcpy(&my_term, &cursor_term, sizeof(my_term));
+    memcpy(&prog_term, &my_term, sizeof(my_term));
+    my_term.c_oflag = rawoflag;
+    memcpy(&cursor_term, &my_term, sizeof(my_term));
 #endif // WIN32
     historyFirst = historyNumber = 0;
     historyLast = -1;
