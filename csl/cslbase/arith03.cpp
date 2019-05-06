@@ -1153,8 +1153,9 @@ static LispObject quotff(LispObject a, LispObject b)
 {   int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
     int32_t hc;
     mv_2 = fixnum_of_int(0);
+#ifdef HAVE_SOFTFLOAT
 // If EITHER argument is a long float I will need to do things differently,
-// bacause I can not use machine-native arithmetic on float128_t.
+// because I can not use machine-native arithmetic on float128_t.
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
     {   float128_t x, y, z;
         x = float128_of_number(a);
@@ -1162,7 +1163,9 @@ static LispObject quotff(LispObject a, LispObject b)
         f128M_div(&x, &y, &z);
         return make_boxfloat128(z);
     }
-    else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
+    else
+#endif // HAVE_SOFTFLOAT
+    if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
         hc = TYPE_DOUBLE_FLOAT;
     else hc = TYPE_SINGLE_FLOAT;
     double d;

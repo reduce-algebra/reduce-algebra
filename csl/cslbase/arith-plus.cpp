@@ -1,5 +1,4 @@
 #ifdef EXPERIMENT
-
 // arith-plus.cpp                          Copyright (C) 1990-2019 Codemist
 
 // $Id: version.h 4783 2018-09-25 20:26:06Z arthurcnorman $
@@ -339,5 +338,4 @@ LispObject newplus(LispObject a, LispObject b)
 
 // end of arith-plus.cpp
 
-
-#endif // EXPERIMENT
+#endif

@@ -1455,7 +1455,7 @@ inline fourup_args*& qfn4up(LispObject p)
 {   return *(fourup_args **)((char *)p + (11*CELL-TAG_SYMBOL));
 }
 
-NORETURN extern void aerror1(const char *s, LispObject a);
+[[noreturn]] extern void aerror1(const char *s, LispObject a);
 
 // When I have functions with 4 or more args I may need to
 // extract them..
@@ -1487,6 +1487,16 @@ inline void a4a5a6(const char *name, LispObject a4up,
 inline uint64_t& qcount(LispObject p)
 {   return *(uint64_t *)((char *)p + (12*CELL-TAG_SYMBOL));
 }
+
+#ifndef HAVE_SOFTFLOAT
+typedef struct _float32_t
+{   uint32_t v;
+} float32_t;
+
+typedef struct _float64_t
+{   uint64_t v;
+} float64_t;
+#endif
 
 typedef union _Float_union
 {   float f;
@@ -1576,7 +1586,6 @@ inline LispObject& real_part(LispObject r)
 inline LispObject& imag_part(LispObject r)
 {   return ((Complex_Number *)((char *)r-TAG_NUMBERS))->imag;
 }
-
 typedef struct Single_Float_
 {   Header header;
     union float_or_int
@@ -1684,6 +1693,7 @@ inline int32_t& intfloat64_t_val_lo(LispObject v)
 //  } Long_Float;
 //
 
+#ifdef HAVE_SOFTFLOAT
 #define SIZEOF_LONG_FLOAT       24
 inline float128_t *long_float_addr(LispObject v)
 {   return (float128_t *)((char *)v + (8-TAG_BOXFLOAT));
@@ -1724,6 +1734,7 @@ inline int32_t& intfloat128_t_val32_2(LispObject v)
 inline int32_t& intfloat128_t_val32_3(LispObject v)
 {   return *(int32_t *)((char *)v + (20-TAG_BOXFLOAT));
 }
+#endif // HAVE_SOFTFLOAT
 
 inline uintptr_t word_align_up(uintptr_t n)
 {   return (LispObject)((n + 3) & (-(uintptr_t)4U));

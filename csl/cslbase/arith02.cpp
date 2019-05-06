@@ -291,12 +291,15 @@ static LispObject timesic(LispObject a, LispObject b)
 
 static LispObject timesif(LispObject a, LispObject b)
 {   switch (type_of_header(flthdr(b)))
-    {   case TYPE_LONG_FLOAT:
+    {
+#ifdef HAVE_SOFTFLOAT
+        case TYPE_LONG_FLOAT:
         {   float128_t x, z;
             i64_to_f128M(int_of_fixnum(a), &x);
             f128M_mul(&x, long_float_addr(b), &z);
             return make_boxfloat128(z);
         }
+#endif // HAVE_SOFTFLOAT
         case TYPE_SINGLE_FLOAT:
             return make_boxfloat(
                 (double)int_of_fixnum(a) * single_float_val(b),
@@ -326,12 +329,15 @@ static LispObject timessb(LispObject a, LispObject b)
 
 static LispObject timessf(LispObject a, LispObject b)
 {   switch (type_of_header(flthdr(b)))
-    {   case TYPE_LONG_FLOAT:
+    {
+#ifdef HAVE_SOFTFLOAT
+        case TYPE_LONG_FLOAT:
             {   float128_t x, z;
                 x = float128_of_number(a);
                 f128M_mul(&x, long_float_addr(b), &z);
                 return make_boxfloat128(z);
             }
+#endif // HAVE_SOFTFLOAT
         case TYPE_SINGLE_FLOAT:
             return make_boxfloat(
                 float_of_number(a) * single_float_val(b), TYPE_SINGLE_FLOAT);
@@ -1306,6 +1312,7 @@ static LispObject timescc(LispObject a, LispObject b)
 inline LispObject timesff(LispObject a, LispObject b)
 {   int ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
     int hc;
+#ifdef HAVE_SOFTFLOAT
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
     {   float128_t x, y, z;
         x = float128_of_number(a);
@@ -1313,7 +1320,9 @@ inline LispObject timesff(LispObject a, LispObject b)
         f128M_mul(&x, &y, &z);
         return make_boxfloat128(z);
     }
-    else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
+    else
+#endif // HAVE_SOFTFLOAT
+    if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
         hc = TYPE_DOUBLE_FLOAT;
     else hc = TYPE_SINGLE_FLOAT;
     double r = float_of_number(a) * float_of_number(b);

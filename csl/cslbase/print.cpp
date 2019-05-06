@@ -1747,7 +1747,7 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
     else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
 }
 
-
+#ifdef HAVE_SOFTFLOAT
 static void fp_sprint128(char *buff, float128_t x, int prec, int xchar)
 {   if (f128M_eq(&x, &f128_0))
     {   if (f128M_negative(&x)) strcpy(buff, "-0.0L+00");
@@ -1811,7 +1811,7 @@ static void fp_sprint128(char *buff, float128_t x, int prec, int xchar)
     if (*(buff+1) == 0) char_ins(buff, '0');
     else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
 }
-
+#endif // HAVE_SOFTFLOAT
 
 static int32_t local_gensym_count;
 
@@ -3155,6 +3155,7 @@ restart:
                     else fp_sprint(my_buff, double_float_val(u),
                                    print_precision, 'e');
                     break;
+#ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
                     if (escaped_printing & escape_checksum)
                     {   int64_t v0 = intfloat128_t_val0(u);
@@ -3208,6 +3209,7 @@ restart:
                     else fp_sprint128(my_buff, long_float_val(u),
                                       print_precision, 'L');
                     break;
+#endif // HAVE_SOFTFLOAT
                 default:
                     sprintf(my_buff, "?%.8lx?", (long)(uint32_t)u);
                     break;

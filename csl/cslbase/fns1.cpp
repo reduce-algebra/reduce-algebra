@@ -1197,7 +1197,7 @@ LispObject Lunwind(LispObject env)
 // the system will unwind in the usual manner.
 //
 
-NORETURN void error_N(LispObject args)
+[[noreturn]] void error_N(LispObject args)
 {   LispObject w;
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
@@ -1251,24 +1251,24 @@ NORETURN void error_N(LispObject args)
     throw LispError();
 }
 
-NORETURN void Lerror_1(LispObject env, LispObject a1)
+[[noreturn]] void Lerror_1(LispObject env, LispObject a1)
 {   error_N(ncons(a1));
 }
 
-NORETURN void Lerror_2(LispObject env, LispObject a1, LispObject a2)
+[[noreturn]] void Lerror_2(LispObject env, LispObject a1, LispObject a2)
 {   error_N(list2(a1, a2));
 }
 
-NORETURN void Lerror_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+[[noreturn]] void Lerror_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   error_N(list3(a1, a2, a3));
 }
 
-NORETURN void Lerror_4up(LispObject env, LispObject a1, LispObject a2,
+[[noreturn]] void Lerror_4up(LispObject env, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
 {   error_N(list3star(a1, a2, a3, a4up));
 }
 
-NORETURN void Lerror_0(LispObject env)
+[[noreturn]] void Lerror_0(LispObject env)
 {
 //
 // Silently provoked error - unwind to surrounding errorset level. Note that
@@ -1670,7 +1670,7 @@ LispObject get_vector_init(size_t n, LispObject val)
     return p;
 }
 
-NORETURN void Lstop1(LispObject env, LispObject code)
+[[noreturn]] void Lstop1(LispObject env, LispObject code)
 {   if (!is_fixnum(code)) aerror("stop");
     if (Lposn(nil) != fixnum_of_int(0)) Lterpri(nil);
     exit_value = code;
@@ -1680,7 +1680,7 @@ NORETURN void Lstop1(LispObject env, LispObject code)
     throw LispRestart();
 }
 
-NORETURN void Lstop0(LispObject env)
+[[noreturn]] void Lstop0(LispObject env)
 {   Lstop1(env, fixnum_of_int(0));
 }
 
@@ -2498,7 +2498,7 @@ setup_type const funcs1_setup[] =
     {"enable-errorset",         G0W2, G1W2, Lenable_errorset, G3W2, G4W2},
     {"enable-backtrace",        G0W1, Lenable_backtrace, G2W1, G3W1, G4W1},
 // The casts here are because error, stop and a few related functions
-// have the NORETURN attribute which would otherwise upset the type checker
+// have the [[noreturn]] attribute which would otherwise upset the type checker
 // in C++.
     {"error",                   (no_args *)Lerror_0, (one_arg *)Lerror_1, (two_args *)Lerror_2, (three_args *)Lerror_3, (fourup_args *)Lerror_4up},
     {"error1",                  (no_args *)Lerror_0, G1W0, G2W0, G3W0, G4W0},

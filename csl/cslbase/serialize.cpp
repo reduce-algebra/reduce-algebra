@@ -468,7 +468,7 @@ size_t repeat_heap_size = 0, repeat_count = 0;
 
 // This tiny function exists just so that I can set a breakpoint on it.
 
-NORETURN void my_abort()
+[[noreturn]] void my_abort()
 {   fflush(stdout);
     fflush(stderr);
     ensure_screen();
@@ -942,6 +942,7 @@ void write_f64(double f)
 }
 
 
+#ifdef HAVE_SOFTFLOAT
 float128_t read_f128()
 {   float128_t r;
 #ifdef LITTLEENDIAN
@@ -964,6 +965,7 @@ void write_f128(float128_t f)
     write_u64(f.v[0]);
 #endif
 }
+#endif // HAVE_SOFTFLOAT
 
 // At times I need to read and write values that are the entrypoints of
 // functions that are defined in the kernel. I do this by referring back to
@@ -1724,6 +1726,7 @@ down:
                     *p = prev;
                     goto up;
 
+#ifdef HAVE_SOFTFLOAT
                 case SER_FLOAT128:
 // a 128-bit (double-length) float.
                     assert(opcode_repeats == 0);
@@ -1731,6 +1734,7 @@ down:
                     long_float_val(prev) = read_f128();
                     *p = prev;
                     goto up;
+#endif // HAVE_SOFTFLOAT
 
                 case SER_CHARSPID:
 // A packed characters literal. Characters that are Basic Latin can be coded
@@ -1986,12 +1990,14 @@ down:
                     for (size_t i=0; i<(size_t)w; i++) *x++ = read_f32();
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
+#ifdef HAVE_SOFTFLOAT
                 else if (vector_f128(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
                     *p = prev;
                     fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
                     my_abort();
                 }
+#endif // HAVE_SOFTFLOAT
                 else if (vector_i128(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
                     *p = prev;
@@ -3006,10 +3012,12 @@ down:
                 write_u64(len = (length_of_header(h) - CELL)/4);
                 for (size_t i=0; i<len/4; i++) write_f32(*x++);
             }
+#ifdef HAVE_SOFTFLOAT
             else if (vector_f128(h))
             {   fprintf(stderr, "128-bit float arrays not supported (yet?)\n");
                 my_abort();
             }
+#endif // HAVE_SOFTFLOAT
             else if (vector_i128(h))
             {   fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
                 my_abort();
@@ -3046,6 +3054,7 @@ down:
                     write_f64(double_float_val(p));
                 }
                 break;
+#ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
                 {   char msg[40];
 // At present I do not have a good scheme to display the 128-bit float value.
@@ -3056,6 +3065,7 @@ down:
                     write_f128(long_float_val(p));
                 }
                 break;
+#endif // HAVE_SOFTFLOAT
                 default:
                     fprintf(stderr, "floating point representation not recognized\n");
                     my_abort();

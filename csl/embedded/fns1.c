@@ -1490,6 +1490,15 @@ Lisp_Object Lsymbol_globalp(Lisp_Object nil, Lisp_Object a)
     else return onevalue(nil);
 }
 
+Lisp_Object Lkeywordp(Lisp_Object nil, Lisp_Object a)
+{
+    if (!symbolp(a)) return onevalue(nil);
+    else if ((qheader(a) & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
+                            (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR))
+        return onevalue(lisp_true);
+    else return onevalue(nil);
+}
+
 Lisp_Object Lboundp(Lisp_Object nil, Lisp_Object a)
 {
     if (!symbolp(a)) return onevalue(nil);
@@ -2164,6 +2173,7 @@ setup_type const funcs1_setup[] =
     {"fixp",                    Lfixp, too_many_1, wrong_no_1},
     {"floatp",                  Lfloatp, too_many_1, wrong_no_1},
     {"fluidp",                  Lsymbol_specialp, too_many_1, wrong_no_1},
+    {"keywordp",                Lkeywordp, too_many_1, wrong_no_1},
     {"gctime",                  wrong_no_na, wrong_no_nb, Lgctime},
     {"globalp",                 Lsymbol_globalp, too_many_1, wrong_no_1},
     {"hash-table-p",            Lhash_table_p, too_many_1, wrong_no_1},

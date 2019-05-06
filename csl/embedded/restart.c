@@ -4482,7 +4482,7 @@ static void cold_setup()
     gensym_ser = 0;
     print_precision = 15;
     current_modulus = 1;
-    fastget_size = 32;
+    fastget_size = 8*sizeof(Lisp_Object);
     package_bits = 0;
     unset_var = nil;
 /*

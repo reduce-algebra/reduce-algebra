@@ -197,6 +197,16 @@ then
   AC_DEFINE(HAVE_CRLIBM, [1], [Correct Rounding maths library should be used])
 fi
 
+AC_ARG_WITH(softfloat,
+   AC_HELP_STRING([--with-softfloat], [Can be used to disable use of softfloat]),
+   [],
+   [with_softfloat="yes"])
+
+if test "x$with_softfloat" != "xno"
+then
+  AC_DEFINE(HAVE_SOFTFLOAT, [1], [support for 128-bit long double/float128_t])
+fi
+
 if test "x$BUILTFOR" = "xunknown"
 then
   BUILTFOR=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
@@ -807,27 +817,6 @@ then
   AC_MSG_NOTICE([A modern C++ compiler is available])
 else
     AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
-fi
-
-# See if C++-11 attributes (specifically [[noreturn]]) will be accepted.
-# It jolly well ought to be now I am insisting on C++-11 compatibility!
-
-AC_COMPILE_IFELSE([AC_LANG_SOURCE(
-  [[#include <exception>
-    [[noreturn]] static void foo(void);
-    static void foo(void)
-    { throw std::exception();
-    }]])],
-  has_noreturn="yes",
-  has_noreturn="no")
-
-AC_MSG_NOTICE([noreturn = $has_noreturn])
-
-if test "x$has_noreturn" = "xyes"
-then
-  AC_DEFINE([NORETURN], [[[[noreturn]]]], [C++-11 attributes available?])
-else
-  AC_DEFINE([NORETURN], [[/* noreturn */]], [C++-11 attributes available?])
 fi
 
 # The sad news is that some 32-bit systems only set maxalign to 4, so for
@@ -1740,6 +1729,7 @@ AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
 AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
+AM_CONDITIONAL(softfloat, test "x$with_softfloat" != "xno")
 AM_CONDITIONAL(redfront, test "x$with_redfront" != "xno")
 
 AC_OUTPUT

@@ -79,7 +79,7 @@ extern LispObject multiplication_buffer;
 // An "my_assert" scheme that lets me write in my own code to print the
 // diagnostics.
 
-NORETURN extern void my_abort();
+[[noreturn]] extern void my_abort();
 extern void trace_printf(const char *fmt, ...);
 
 template <typename F>
@@ -677,7 +677,7 @@ extern void checksum(LispObject a);
 
 extern void ensure_screen();
 extern int window_heading;
-NORETURN extern void my_exit(int n);
+[[noreturn]] extern void my_exit(int n);
 
 extern uint64_t base_time;
 extern uint64_t gc_time;
@@ -989,7 +989,7 @@ extern LispObject tagbody_fn(LispObject args, LispObject env);
 // The variables here are always extern - they never survive in an image
 // file.
 //
-NORETURN extern void resource_exceeded();
+[[noreturn]] extern void resource_exceeded();
 extern int64_t time_base,  space_base,  io_base,  errors_base;
 extern int64_t time_now,   space_now,   io_now,   errors_now;
 extern int64_t time_limit, space_limit, io_limit, errors_limit;

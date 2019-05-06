@@ -1346,9 +1346,11 @@ static LispObject makenum(LispObject a, int32_t n)
         }
         case TAG_BOXFLOAT:
             restype = type_of_header(flthdr(a));
+#ifdef HAVE_SOFTFLOAT
             if (restype == TYPE_LONG_FLOAT)
                 return onevalue(make_boxfloat128(
                     float128_of_number(fixnum_of_int(n))));
+#endif // HAVE_SOFTFLOAT
             return onevalue(make_boxfloat((double)n, restype));
         default:
             aerror1("bad arg for makenumber",  a);

@@ -15,9 +15,9 @@
 #define HAVE_DIRENT_H 1
 
 /* Correct Rounding maths library should be used */
-#define HAVE_CRLIBM 1
+// #define HAVE_CRLIBM 1
 
-#if defined __linux__ || defined __APPLE__ || defined __CYGWIN32__
+#if defined __linux__ || defined __APPLE__ || defined __CYGWIN32__|| defined __CYGWIN__
 #define HAVE_UNISTD_H 1
 #define HAVE_UTIME_H
 #define HAVE_UTIME
@@ -44,6 +44,8 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
+#define HAVE_SIGACTION
+
 #define HAVE_STDINT_H 1
 
 /* Define to 1 if the system has the type `uint16_t'. */
@@ -60,6 +62,10 @@
 
 /* Define to 1 if the system has the type `uintptr_t'. */
 #define HAVE_UINTPTR_T 1
+
+#define SIGNED_SHIFTS_ARE_ARITHMETIC 1
+#define HAVE_UNSIGNED___INT128 1
+#define HAVE___INT128 1
 
 /* System identification for internal use */
 #define BUILTFOR "generic"

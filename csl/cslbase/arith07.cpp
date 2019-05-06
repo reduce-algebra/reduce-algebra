@@ -211,11 +211,13 @@ LispObject negate(LispObject a)
                 case TYPE_DOUBLE_FLOAT:
                     return make_boxfloat(-double_float_val(a),
                                          TYPE_DOUBLE_FLOAT);
+#ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
                     {   float128_t aa = long_float_val(a);
                         f128M_negate(&aa);
                         return make_boxfloat128(aa);
                     }
+#endif // HAVE_SOFTFLOAT
             }
         default:
             aerror1("bad arg for minus",  a);

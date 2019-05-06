@@ -152,9 +152,20 @@ inline double CSLpow(double x, double y)
 
 #include <cmath>
 
-using namespace std::sin, std::cos, std::tan, std::sinh, std::cosh, std::asin;
-using namespace std::acos, std::atan, std::exp, std::exp2, std::log, std::log2;
-using namespace std::log10, std::pow;
+using std::sin;
+using std::cos;
+using std::tan;
+using std::sinh;
+using std::cosh;
+using std::asin;
+using std::acos;
+using std::atan;
+using std::exp;
+using std::exp2;
+using std::log;
+using std::log2;
+using std::log10;
+using std::pow;
 
 inline double CSLsin(double x)
 {   return sin(x);

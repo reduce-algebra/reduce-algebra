@@ -1,4 +1,4 @@
-// sysfwin.cpp                             Copyright (C) 1989-2018 Codemist    
+// sysfwin.cpp                             Copyright (C) 1989-2019 Codemist    
 
 //
 // System-specific code for use with the "fwin" window interface code.
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -433,7 +433,8 @@ uint64_t read_clock(void)
 
 uint64_t read_clock()
 {   FILETIME t0, t1, t2, t3;
-    if (GetProcessTimes(GetCurrentProcess(), &t0, &t1, &t2, &t3)) return 0;
+    if (GetProcessTimes(GetCurrentProcess(), &t0, &t1, &t2, &t3) == 0)
+        return 0;
 // The 4 times are: CreationTime, ExitTime, KernelTime, UserTime
    ULARGE_INTEGER ul;
 // Times are returned in FILETIME format so I need to convert to an arithmetic

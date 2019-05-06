@@ -284,7 +284,7 @@ void DebugTrace(const char *fmt, int i)
 
 #define ARG_CUT_OFF 10
 
-NORETURN void error(int nargs, int code, ...)
+[[noreturn]] void error(int nargs, int code, ...)
 //
 // nargs indicates how many values have been provided AFTER the
 // code.  Thus nargs==0 will just display a simple message, nargs==1
@@ -331,7 +331,7 @@ NORETURN void error(int nargs, int code, ...)
     throw LispError();
 }
 
-NORETURN void cerror(int nargs, int code1, int code2, ...)
+[[noreturn]] void cerror(int nargs, int code1, int code2, ...)
 // nargs indicated the number of EXTRA args after code1 & code2.
 {   LispObject w1;
     va_list a;
@@ -368,7 +368,7 @@ NORETURN void cerror(int nargs, int code1, int code2, ...)
 //
 // This can be used when a resource expires...
 //
-NORETURN void resource_exceeded()
+[[noreturn]] void resource_exceeded()
 {   exit_reason = UNWIND_RESOURCE;
     exit_value = exit_tag = nil;
     exit_count = 0;
@@ -439,7 +439,7 @@ void interrupted()
     throw LispError();
 }
 
-NORETURN void aerror(const char *s)
+[[noreturn]] void aerror(const char *s)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error bad args for %s\n", s);
@@ -456,7 +456,7 @@ NORETURN void aerror(const char *s)
     throw LispError();
 }
 
-NORETURN void aerror0(const char *s)
+[[noreturn]] void aerror0(const char *s)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error: %s\n", s);
@@ -473,7 +473,7 @@ NORETURN void aerror0(const char *s)
     throw LispError();
 }
 
-NORETURN void aerror1(const char *s, LispObject a)
+[[noreturn]] void aerror1(const char *s, LispObject a)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
@@ -493,7 +493,7 @@ NORETURN void aerror1(const char *s, LispObject a)
     throw LispError();
 }
 
-NORETURN void aerror2(const char *s, LispObject a, LispObject b)
+[[noreturn]] void aerror2(const char *s, LispObject a, LispObject b)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
@@ -515,7 +515,7 @@ NORETURN void aerror2(const char *s, LispObject a, LispObject b)
     throw LispError();
 }
 
-NORETURN void aerror3(const char *s, LispObject a, LispObject b, LispObject c)
+[[noreturn]] void aerror3(const char *s, LispObject a, LispObject b, LispObject c)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
@@ -539,7 +539,7 @@ NORETURN void aerror3(const char *s, LispObject a, LispObject b, LispObject c)
     throw LispError();
 }
 
-NORETURN static void wrong(int given, int wanted, LispObject env)
+[[noreturn]] static void wrong(int given, int wanted, LispObject env)
 {   char msg[64];
     if (wanted == 4)
         sprintf(msg,
@@ -559,7 +559,7 @@ NORETURN static void wrong(int given, int wanted, LispObject env)
     aerror(msg);
 }
 
-NORETURN static void wrong(int given, LispObject env)
+[[noreturn]] static void wrong(int given, LispObject env)
 {   char msg[64];
     if (given == 4)
         sprintf(msg, "Function called incorrectly with more than 3 args");
@@ -572,125 +572,125 @@ NORETURN static void wrong(int given, LispObject env)
     aerror(msg);
 }
 
-NORETURN void got_0_wanted_1(LispObject env)
+[[noreturn]] void got_0_wanted_1(LispObject env)
 {   wrong(0, 1, env);
 }
 
-NORETURN void got_0_wanted_2(LispObject env)
+[[noreturn]] void got_0_wanted_2(LispObject env)
 {   wrong(0, 2, env);
 }
 
-NORETURN void got_0_wanted_3(LispObject env)
+[[noreturn]] void got_0_wanted_3(LispObject env)
 {   wrong(0, 3, env);
 }
 
-NORETURN void got_0_wanted_4up(LispObject env)
+[[noreturn]] void got_0_wanted_4up(LispObject env)
 {   wrong(0, 4, env);
 }
 
-NORETURN void got_0_wanted_other(LispObject env)
+[[noreturn]] void got_0_wanted_other(LispObject env)
 {   wrong(0, env);
 }
 
 
-NORETURN void got_1_wanted_0(LispObject env, LispObject a1)
+[[noreturn]] void got_1_wanted_0(LispObject env, LispObject a1)
 {   wrong(0, 1, env);
 }
 
-NORETURN void got_1_wanted_2(LispObject env, LispObject a1)
+[[noreturn]] void got_1_wanted_2(LispObject env, LispObject a1)
 {   wrong(2, 1, env);
 }
 
-NORETURN void got_1_wanted_3(LispObject env, LispObject a1)
+[[noreturn]] void got_1_wanted_3(LispObject env, LispObject a1)
 {   wrong(3, 1, env);
 }
 
-NORETURN void got_1_wanted_4up(LispObject env, LispObject a1)
+[[noreturn]] void got_1_wanted_4up(LispObject env, LispObject a1)
 {   wrong(4, 1, env);
 }
 
-NORETURN void got_1_wanted_other(LispObject env, LispObject a1)
+[[noreturn]] void got_1_wanted_other(LispObject env, LispObject a1)
 {   wrong(1, env);
 }
 
 
-NORETURN void got_2_wanted_0(LispObject env, LispObject a1,
+[[noreturn]] void got_2_wanted_0(LispObject env, LispObject a1,
                              LispObject a2)
 {   wrong(0, 2, env);
 }
 
-NORETURN void got_2_wanted_1(LispObject env, LispObject a1,
+[[noreturn]] void got_2_wanted_1(LispObject env, LispObject a1,
                              LispObject a2)
 {   wrong(1, 2, env);
 }
 
-NORETURN void got_2_wanted_3(LispObject env, LispObject a1,
+[[noreturn]] void got_2_wanted_3(LispObject env, LispObject a1,
                              LispObject a2)
 {   wrong(3, 2, env);
 }
 
-NORETURN void got_2_wanted_4up(LispObject env, LispObject a1,
+[[noreturn]] void got_2_wanted_4up(LispObject env, LispObject a1,
                                LispObject a2)
 {   wrong(4, 2, env);
 }
 
-NORETURN void got_2_wanted_other(LispObject env, LispObject a1,
+[[noreturn]] void got_2_wanted_other(LispObject env, LispObject a1,
                                  LispObject a2)
 {   wrong(2, env);
 }
 
 
-NORETURN void got_3_wanted_0(LispObject env, LispObject a1,
+[[noreturn]] void got_3_wanted_0(LispObject env, LispObject a1,
                              LispObject a2, LispObject a3)
 {   wrong(0, 3, env);
 }
 
-NORETURN void got_3_wanted_1(LispObject env, LispObject a1,
+[[noreturn]] void got_3_wanted_1(LispObject env, LispObject a1,
                              LispObject a2, LispObject a3)
 {   wrong(1, 3, env);
 }
 
-NORETURN void got_3_wanted_2(LispObject env, LispObject a1,
+[[noreturn]] void got_3_wanted_2(LispObject env, LispObject a1,
                              LispObject a2, LispObject a3)
 {   wrong(2, 3, env);
 }
 
-NORETURN void got_3_wanted_4up(LispObject env, LispObject a1,
+[[noreturn]] void got_3_wanted_4up(LispObject env, LispObject a1,
                                LispObject a2, LispObject a3)
 {   wrong(4, 3, env);
 }
 
-NORETURN void got_3_wanted_other(LispObject env, LispObject a1,
+[[noreturn]] void got_3_wanted_other(LispObject env, LispObject a1,
                                  LispObject a2, LispObject a3)
 {   wrong(3, env);
 }
 
 
-NORETURN void got_4up_wanted_0(LispObject env, LispObject a1,
+[[noreturn]] void got_4up_wanted_0(LispObject env, LispObject a1,
                                LispObject a2, LispObject a3,
                                LispObject a4up)
 {   wrong(0, 4, env);
 }
 
-NORETURN void got_4up_wanted_1(LispObject env, LispObject a1,
+[[noreturn]] void got_4up_wanted_1(LispObject env, LispObject a1,
                                LispObject a2, LispObject a3,
                                LispObject a4up)
 {   wrong(1, 4, env);
 }
 
-NORETURN void got_4up_wanted_2(LispObject env, LispObject a1,
+[[noreturn]] void got_4up_wanted_2(LispObject env, LispObject a1,
                                LispObject a2, LispObject a3,
                                LispObject a4up)
 {   wrong(2, 4, env);
 }
 
-NORETURN void got_4up_wanted_3(LispObject env, LispObject a1,
+[[noreturn]] void got_4up_wanted_3(LispObject env, LispObject a1,
                                LispObject a2, LispObject a3,
                                LispObject a4up)
 {   wrong(3, 4, env);
 }
 
-NORETURN void got_4up_wanted_other(LispObject env, LispObject a1,
+[[noreturn]] void got_4up_wanted_other(LispObject env, LispObject a1,
                                    LispObject a2, LispObject a3,
                                    LispObject a4up)
 {   wrong(4, env);
@@ -939,7 +939,7 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
 //}
 jmp_buf *global_jb;
 
-NORETURN void global_longjmp()
+[[noreturn]] void global_longjmp()
 {   longjmp(*global_jb, 1);
 }
 

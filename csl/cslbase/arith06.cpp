@@ -74,10 +74,12 @@ LispObject Lfloat_2(LispObject env, LispObject a, LispObject b)
         return onevalue(pack_immediate_float(d, b));
     }
     else if (!is_bfloat(b)) aerror1("bad arg for float",  b);
+#ifdef HAVE_SOFTFLOAT
     else if (type_of_header(flthdr(b)) == TYPE_LONG_FLOAT)
     {   float128_t dd = float128_of_number(a);
         return onevalue(make_boxfloat128(dd));
     }
+#endif // HAVE_SOFTFLOAT
     else
     {   double d = float_of_number(a);
         return onevalue(make_boxfloat(d, type_of_header(flthdr(b))));

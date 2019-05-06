@@ -269,6 +269,7 @@ extern Lisp_Object Lsymbol_globalp(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Lsymbol_name(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Lsymbol_restore_fns(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Lsymbol_specialp(Lisp_Object env, Lisp_Object a);
+extern Lisp_Object Lkeywordp(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Lsymbol_value(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Lsystem(Lisp_Object env, Lisp_Object a);
 extern Lisp_Object Lthreevectorp(Lisp_Object env, Lisp_Object a);

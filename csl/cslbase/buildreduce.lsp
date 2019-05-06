@@ -82,67 +82,31 @@
                  (go top))))
               name))))
 
-   (rdf "$reduce/cslbuild/generated-c/u01.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u02.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u03.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u04.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u05.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u06.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u07.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u08.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u09.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u10.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u11.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u12.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u13.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u14.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u15.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u16.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u17.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u18.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u19.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u20.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u21.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u22.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u23.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u24.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u25.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u26.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u27.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u28.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u29.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u30.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u31.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u32.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u33.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u34.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u35.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u36.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u37.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u38.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u39.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u40.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u41.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u42.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u43.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u44.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u45.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u46.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u47.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u48.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u49.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u50.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u51.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u52.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u53.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u54.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u55.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u56.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u57.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u58.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u59.lsp")
-   (rdf "$reduce/cslbuild/generated-c/u60.lsp")
-    )))
+   (prog (name names)
+      (setq names '(
+         "u01.lsp"   "u02.lsp"   "u03.lsp"   "u04.lsp"   "u05.lsp"
+         "u06.lsp"   "u07.lsp"   "u08.lsp"   "u09.lsp"   "u10.lsp"
+         "u11.lsp"   "u12.lsp"   "u13.lsp"   "u14.lsp"   "u15.lsp"
+         "u16.lsp"   "u17.lsp"   "u18.lsp"   "u19.lsp"   "u20.lsp"
+         "u21.lsp"   "u22.lsp"   "u23.lsp"   "u24.lsp"   "u25.lsp"
+         "u26.lsp"   "u27.lsp"   "u28.lsp"   "u29.lsp"   "u30.lsp"
+         "u31.lsp"   "u32.lsp"   "u33.lsp"   "u34.lsp"   "u35.lsp"
+         "u36.lsp"   "u37.lsp"   "u38.lsp"   "u39.lsp"   "u40.lsp"
+         "u41.lsp"   "u42.lsp"   "u43.lsp"   "u44.lsp"   "u45.lsp"
+         "u46.lsp"   "u47.lsp"   "u48.lsp"   "u49.lsp"   "u50.lsp"
+         "u51.lsp"   "u52.lsp"   "u53.lsp"   "u54.lsp"   "u55.lsp"
+         "u56.lsp"   "u57.lsp"   "u58.lsp"   "u59.lsp"   "u60.lsp"))
+   top(cond ((null names) (return nil)))
+      (setq name (car names))
+      (setq names (cdr names))
+% If I am "generic" I will find u01.lsp etc in the current directory...
+      (cond
+        ((not (memq 'generic lispsystem!*))
+         (setq name (compress (cons '!"
+            (append (explodec "$reduce/cslbuild/generated-c/")
+                    (cdr (explode name))))))))
+      (rdf name)
+      (go top)))))
 
 (rdf "$srcdir/fastgets.lsp")
 (rdf "$srcdir/compat.lsp")
@@ -660,66 +624,26 @@ symbolic procedure c!:install(name, env, c!-version, !&optional, c1);
     return name;
   end;
 
-rdf "$reduce/cslbuild/generated-c/u01.lsp"$
-rdf "$reduce/cslbuild/generated-c/u02.lsp"$
-rdf "$reduce/cslbuild/generated-c/u03.lsp"$
-rdf "$reduce/cslbuild/generated-c/u04.lsp"$
-rdf "$reduce/cslbuild/generated-c/u05.lsp"$
-rdf "$reduce/cslbuild/generated-c/u06.lsp"$
-rdf "$reduce/cslbuild/generated-c/u07.lsp"$
-rdf "$reduce/cslbuild/generated-c/u08.lsp"$
-rdf "$reduce/cslbuild/generated-c/u09.lsp"$
-rdf "$reduce/cslbuild/generated-c/u10.lsp"$
-rdf "$reduce/cslbuild/generated-c/u11.lsp"$
-rdf "$reduce/cslbuild/generated-c/u12.lsp"$
-rdf "$reduce/cslbuild/generated-c/u13.lsp"$
-rdf "$reduce/cslbuild/generated-c/u14.lsp"$
-rdf "$reduce/cslbuild/generated-c/u15.lsp"$
-rdf "$reduce/cslbuild/generated-c/u16.lsp"$
-rdf "$reduce/cslbuild/generated-c/u17.lsp"$
-rdf "$reduce/cslbuild/generated-c/u18.lsp"$
-rdf "$reduce/cslbuild/generated-c/u19.lsp"$
-rdf "$reduce/cslbuild/generated-c/u20.lsp"$
-rdf "$reduce/cslbuild/generated-c/u21.lsp"$
-rdf "$reduce/cslbuild/generated-c/u22.lsp"$
-rdf "$reduce/cslbuild/generated-c/u23.lsp"$
-rdf "$reduce/cslbuild/generated-c/u24.lsp"$
-rdf "$reduce/cslbuild/generated-c/u25.lsp"$
-rdf "$reduce/cslbuild/generated-c/u26.lsp"$
-rdf "$reduce/cslbuild/generated-c/u27.lsp"$
-rdf "$reduce/cslbuild/generated-c/u28.lsp"$
-rdf "$reduce/cslbuild/generated-c/u29.lsp"$
-rdf "$reduce/cslbuild/generated-c/u30.lsp"$
-rdf "$reduce/cslbuild/generated-c/u31.lsp"$
-rdf "$reduce/cslbuild/generated-c/u32.lsp"$
-rdf "$reduce/cslbuild/generated-c/u33.lsp"$
-rdf "$reduce/cslbuild/generated-c/u34.lsp"$
-rdf "$reduce/cslbuild/generated-c/u35.lsp"$
-rdf "$reduce/cslbuild/generated-c/u36.lsp"$
-rdf "$reduce/cslbuild/generated-c/u37.lsp"$
-rdf "$reduce/cslbuild/generated-c/u38.lsp"$
-rdf "$reduce/cslbuild/generated-c/u39.lsp"$
-rdf "$reduce/cslbuild/generated-c/u40.lsp"$
-rdf "$reduce/cslbuild/generated-c/u41.lsp"$
-rdf "$reduce/cslbuild/generated-c/u42.lsp"$
-rdf "$reduce/cslbuild/generated-c/u43.lsp"$
-rdf "$reduce/cslbuild/generated-c/u44.lsp"$
-rdf "$reduce/cslbuild/generated-c/u45.lsp"$
-rdf "$reduce/cslbuild/generated-c/u46.lsp"$
-rdf "$reduce/cslbuild/generated-c/u47.lsp"$
-rdf "$reduce/cslbuild/generated-c/u48.lsp"$
-rdf "$reduce/cslbuild/generated-c/u49.lsp"$
-rdf "$reduce/cslbuild/generated-c/u50.lsp"$
-rdf "$reduce/cslbuild/generated-c/u51.lsp"$
-rdf "$reduce/cslbuild/generated-c/u52.lsp"$
-rdf "$reduce/cslbuild/generated-c/u53.lsp"$
-rdf "$reduce/cslbuild/generated-c/u54.lsp"$
-rdf "$reduce/cslbuild/generated-c/u55.lsp"$
-rdf "$reduce/cslbuild/generated-c/u56.lsp"$
-rdf "$reduce/cslbuild/generated-c/u57.lsp"$
-rdf "$reduce/cslbuild/generated-c/u58.lsp"$
-rdf "$reduce/cslbuild/generated-c/u59.lsp"$
-rdf "$reduce/cslbuild/generated-c/u60.lsp"$
+
+
+for each name in '(
+   "u01.lsp"   "u02.lsp"   "u03.lsp"   "u04.lsp"   "u05.lsp"
+   "u06.lsp"   "u07.lsp"   "u08.lsp"   "u09.lsp"   "u10.lsp"
+   "u11.lsp"   "u12.lsp"   "u13.lsp"   "u14.lsp"   "u15.lsp"
+   "u16.lsp"   "u17.lsp"   "u18.lsp"   "u19.lsp"   "u20.lsp"
+   "u21.lsp"   "u22.lsp"   "u23.lsp"   "u24.lsp"   "u25.lsp"
+   "u26.lsp"   "u27.lsp"   "u28.lsp"   "u29.lsp"   "u30.lsp"
+   "u31.lsp"   "u32.lsp"   "u33.lsp"   "u34.lsp"   "u35.lsp"
+   "u36.lsp"   "u37.lsp"   "u38.lsp"   "u39.lsp"   "u40.lsp"
+   "u41.lsp"   "u42.lsp"   "u43.lsp"   "u44.lsp"   "u45.lsp"
+   "u46.lsp"   "u47.lsp"   "u48.lsp"   "u49.lsp"   "u50.lsp"
+   "u51.lsp"   "u52.lsp"   "u53.lsp"   "u54.lsp"   "u55.lsp"
+   "u56.lsp"   "u57.lsp"   "u58.lsp"   "u59.lsp"   "u60.lsp") do <<
+   if not memq('generic, lispsystem!*) then
+      name := compress('!" .
+                 append(explodec "$reduce/cslbuild/generated-c/",
+                        cdr explode name));
+   rdf name >>;
 
 !#endif  % jlisp
 

@@ -616,8 +616,10 @@ LispObject intern(size_t len, bool escaped)
                 case 2:
                     return make_boxfloat(atof((char *)&boffo_char(0)),
                                          TYPE_DOUBLE_FLOAT);
+#ifdef HAVE_SOFTFLOAT
                 case 3:
                     return make_boxfloat128(atof128((char *)&boffo_char(0)));
+#endif // HAVE_SOFTFLOAT
             }
         }
     }
@@ -1820,43 +1822,22 @@ static void wait_for_char()
 //
     fflush(stdout);
     fflush(stderr);
-    for (;;) // The while loop is so I can restart after ^C
-    {   errorset_msg = NULL;
-        try
-        {   START_SETJMP_BLOCK;
-            while (tty_count<TTYBUF_SIZE && !interrupt_pending)
-            {   int c;
+    errorset_msg = NULL;
+    while (tty_count<TTYBUF_SIZE)
+    {   int c;
 // I really need to understand what to do here so that ^C gets processed
 // properly even while I am suspended waiting for getchar() to return...
-                c = getchar();
-                if (c == EOF)
-                {   clearerr(stdin);    // Believed to be what is wanted
-                    c = CTRL_D;         // Use ASCII ^D as EOF marker
+// However basically handling of interrupts here will be really uncertain!
+        c = getchar();
+        if (c == EOF)
+        {   clearerr(stdin);    // Believed to be what is wanted
+            c = CTRL_D;         // Use ASCII ^D as EOF marker
 // I should perhaps use the UTF8 sequence f7/bf/bf/bf rather than 04?
-                }
-//
+        }
 // If I fetched a wide character I would need to utf-8 encode it here...
 // unless getchar has already delivered in that way.
-//
-                tty_buffer[tty_count++] = (char)c;
-                if (c == '\n' || c == '\v' || c == CTRL_D) break;
-            }
-            if (interrupt_pending)
-            {   interrupt_pending = false;
-                interrupted(nil);
-                tty_count = 0;
-                continue;
-            }
-            break;
-        }
-        catch (LispSigint &e)
-        {   if (errorset_msg != NULL)
-            {   term_printf("\n%s detected\n", errorset_msg);
-                errorset_msg = NULL;
-            }
-            interrupt_pending = true;
-            tty_count = 0;
-        }
+        tty_buffer[tty_count++] = (char)c;
+        if (c == '\n' || c == '\v' || c == CTRL_D) break;
     }
     tty_pointer = tty_buffer;
 #endif // WINDOW_SYSTEM

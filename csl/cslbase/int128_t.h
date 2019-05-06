@@ -1,11 +1,11 @@
-// int128_t.h                              Copyright (C) 1990-2017 Codemist
+// int128_t.h                              Copyright (C) 1990-2019 Codemist
 
 #ifndef header_int128_t_h
 #define header_int128_t_h 1
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -36,7 +36,7 @@
 // $Id$
 
 // This header provides a shallow abstraction for signed 128-bit integers.
-// In the ueasy case it uses a built-in type, in the hard case it maps
+// In the easy case it uses a built-in type, in the hard case it maps
 // operations onto use of the 128-bit unsigned type that is supported
 // in software.
 

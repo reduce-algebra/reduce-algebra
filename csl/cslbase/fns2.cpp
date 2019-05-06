@@ -1174,7 +1174,7 @@ static LispObject Lcheckpoint_1(LispObject env, LispObject startup)
 // been an overflow.
 //
 
-NORETURN static LispObject Lresource_exceeded(LispObject env)
+[[noreturn]] static LispObject Lresource_exceeded(LispObject env)
 {   resource_exceeded();
 }
 
@@ -1234,8 +1234,12 @@ bool eql_fn(LispObject a, LispObject b)
             return (single_float_val(a) == single_float_val(b));
         else if (type_of_header(h) == TYPE_DOUBLE_FLOAT)
             return (double_float_val(a) == double_float_val(b));
+#ifdef HAVE_SOFTFLOAT
 // Here I must have a long float.
         return f128_eq(float128_of_number(a), float128_of_number(b));
+#else
+        return false;
+#endif // HAVE_SOFTFLOAT
     }
     else    // ratio, complex or bignum
     {   Header h = numhdr(a);
@@ -1495,10 +1499,14 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                         double_float_val(cb)) return false;
                                     else break;
                                 }
+#ifdef HAVE_SOFTFLOAT
                                 else if (!f128_eq(
                                     float128_of_number(ca),
                                     float128_of_number(cb))) return false;
                                 else break;
+#else
+                                else return false;
+#endif // HAVE_SOFTFLOAT
                             }
                         }
                     break;  // out of the for (;;) loop
@@ -1549,9 +1557,13 @@ bool cl_equal_fn(LispObject a, LispObject b)
                             return false;
                         else return true;
                     }
+#ifdef HAVE_SOFTFLOAT
                     else return f128_eq(
                         float128_of_number(a),
                         float128_of_number(b));
+#else
+                    else return false;
+#endif // HAVE_SOFTFLOAT
                 }
             }
     }
@@ -1735,10 +1747,14 @@ bool equal_fn(LispObject a, LispObject b)
                                         double_float_val(cb)) return false;
                                     else break;
                                 }
+#ifdef HAVE_SOFTFLOAT
                                 else if (!f128_eq(
                                     float128_of_number(ca),
                                     float128_of_number(cb))) return false;
                                 else break;
+#else
+                                else return false;
+#endif // HAVE_SOFTFLOAT
                             }
                         }
                     break;  // out of the for (;;) loop
@@ -1784,9 +1800,13 @@ bool equal_fn(LispObject a, LispObject b)
                             return false;
                         else return true;
                     }
+#ifdef HAVE_SOFTFLOAT
                     else return f128_eq(
                         float128_of_number(a),
                         float128_of_number(b));
+#else
+                    else return false;
+#endif // HAVE_SOFTFLOAT
                 }
             }
     }
@@ -1933,10 +1953,14 @@ bool equalp(LispObject a, LispObject b)
                                         double_float_val(cb)) return false;
                                     else break;
                                 }
+#ifdef HAVE_SOFTFLOAT
                                 else if (!f128_eq(
                                     float128_of_number(ca),
                                     float128_of_number(cb))) return false;
                                 else break;
+#else
+                                else return false;
+#endif // HAVE_SOFTFLOAT
                             }
                         }
                     break;  // out of the for (;;) loop
@@ -1984,9 +2008,13 @@ bool equalp(LispObject a, LispObject b)
                             return false;
                         else return true;
                     }
+#ifdef HAVE_SOFTFLOAT
                     else return f128_eq(
                         float128_of_number(a),
                         float128_of_number(b));
+#else
+                    else return false;
+#endif // HAVE_SOFTFLOAT
                 }
             }
     }

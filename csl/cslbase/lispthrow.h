@@ -1,4 +1,4 @@
-// lispthrow.h                                      Copyright Codemist 2018
+// lispthrow.h                                      Copyright Codemist 2019
 
 // Some exception processing stuff for CSL
 
@@ -37,7 +37,7 @@
 #define __lispthrow_h 1
 
 // In C++ I ought to be able to have "extern thread_local" values where the
-// variablke is defined in one compilation unit but refereed to from others.
+// variable is defined in one compilation unit but refereed to from others.
 // However some versions of gcc from (at least) 2016 to 2018 give linker
 // errors "undefined reference to `TLS init function ..." in this case. That
 // is a wide enought range of gcc configurations that I need to do something!
@@ -509,6 +509,8 @@ public:
 
 // LispException is rather abstract...
 
+#ifndef LISPEXCEPTION_DEFINED
+
 struct LispException : public std::exception
 {   virtual const char *what() const throw()
     {   return "Generic Lisp Exception";
@@ -529,6 +531,8 @@ struct LispException : public std::exception
             {   return "Lisp Signal";
             }
         };
+
+#endif // LISPEXCEPTION_DEFINED
 
         struct LispResource : public LispError
         {   virtual const char *what() const throw()
@@ -739,7 +743,9 @@ public:
 // RAII classes that it relies on.:
 //
 
-NORETURN extern void global_longjmp();
+[[noreturn]] extern void global_longjmp();
+
+#ifndef SAVE_STACK_AND_JB_DEFINED
 
 class RAIIsave_stack_and_jb
 {   LispObject *saveStack;
@@ -754,6 +760,8 @@ public:
         stack = saveStack;   // restore stack
     }
 };
+
+#endif
 
 class RAIIsave_stack
 {   LispObject *saveStack;

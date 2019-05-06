@@ -1,7 +1,7 @@
 # Makefile for this SIMPLE setup for Reduce building
 
 CC=gcc
-CFLAGS=-m32 -O2 -DHAVE_CONFIG_H=1 -DEMBEDDED=1 -pg
+CFLAGS=-O0 -g -DHAVE_CONFIG_H=1 -DEMBEDDED=1
 
 all:	reduce
 
@@ -37,7 +37,7 @@ reduce.img:	reduce
 	-mv reduce.img reduce.img.old
 	-rm -f reduce.img
 	./reduce -w -z -Dno_init_file ../cslbase/buildreduce.lsp \
-		-D@srcdir=../cslbase \
+		-D@srcdir=../cslbase -DEMBEDDED=1 \
 		-o reduce.img \
 		-l image.log
 

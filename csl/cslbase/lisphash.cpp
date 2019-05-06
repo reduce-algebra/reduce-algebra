@@ -486,6 +486,7 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
                 if (double_float_val(key) == 0.0) UPDATE(r, 0);
                 else UPDATE(r, intfloat64_t_val(key));
                 return r;
+#ifdef HAVE_SOFTFLOAT
             case TYPE_LONG_FLOAT:
                 UPDATE32(r, (uint64_t)h);
                 if (f128M_zero(long_float_addr(key)))
@@ -497,6 +498,7 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
                     UPDATE(r, intfloat128_t_val1(key));
                 }
                 return r;
+#endif // HAVE_SOFTFLOAT
         }
     }
     else if (is_numbers(key))
@@ -608,6 +610,7 @@ static uint64_t hash_nonsimple_bitvector(uint64_t r, LispObject key)
 // and if the denominator is a power of 2 so that there is no underflow.
 // Sub-normal numbers represent a special edge case for this.
 
+#ifdef HAVE_SOFTFLOAT
 static float128_t bigfloat_result;
 
 static bool float_if_exact(LispObject x)
@@ -641,6 +644,7 @@ static bool float_if_exact(LispObject x)
     else if (is_sfloat(x)) return false;      // @@@ More work
     else return false;
 }
+#endif // HAVE_SOFTFLOAT
 
 static uint64_t hash_generic_equal(uint64_t r, LispObject key,
                                       int mode, size_t depth)

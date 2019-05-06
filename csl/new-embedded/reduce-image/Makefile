@@ -1,17 +1,8 @@
 # Makefile for building reduce.img suitable for embedded use.
 
-# The idea here is that I want a C compiler and set of flags that will
-# generate a 32-bit executable. I assume absolutely that "gcc -m32"
-# will do the trick. On a 64-bit Linux you are liable to need to
-# check that you have multilib support and relevant development libraries
-# all installed. That may cost you some messy playing around - as an
-# alternative you may find it easier to set up a 32-bit Linux in a
-# virtual machine and use that.
-
 CC=g++
-CPPFLAGS=$(CFLAGS) -O2 -I. -I../include -L../lib \
-    -DPAGE_BITS=19 -DHAVE_CONFIG_H=1 \
-    -DHAVE_CRLIBM=1 -DEMBEDDED=1
+CPPFLAGS=$(CFLAGS) -std=gnu++17 -O0 -g -I. -I../include -L../lib \
+    -DHAVE_CONFIG_H=1 -DEMBEDDED=1
 
 S=../../cslbase
 R=../../..
@@ -20,21 +11,21 @@ VPATH=$(S)
 
 all:	reduce reduce.img image.cpp
 
-reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
+reduce:		allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
 		arith11.o arith12.o arith13.o arith14.o bytes.o char.o \
 		csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
-		preserve.o print.o restart.o sysfwin.o termed.o \
+		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
 		inthash.o serialize.o stubs.o
-	$(CC) $(CPPFLAGS) arith01.o arith02.o arith03.o arith04.o arith05.o \
+	$(CC) $(CPPFLAGS) allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
 		arith11.o arith12.o arith13.o arith14.o bytes.o char.o \
 		csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
-		preserve.o print.o restart.o sysfwin.o termed.o \
+		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
 		inthash.o serialize.o stubs.o \
-		-lcrlibm -lsoftfloat -lm -o reduce
+		-lm -lffi -lz -o reduce
 
 .cpp.o:                                                                          <
 	$(CC) $(CPPFLAGS) -c -o $@ $<
@@ -58,13 +49,13 @@ clean:
 	-rm -f *.o reduce hello reduce.img image.log make-image image.cpp
 
 HEADERS = ../include/config.h \
-	$(S)/arith.h $(S)/bytes.h $(S)/clsyms.h $(S)/cslerror.h \
+	$(S)/arith.h $(S)/bytes.h $(S)/cslerror.h \
 	$(S)/cslread.h $(S)/entries.h $(S)/externs.h $(S)/fwin.h \
 	$(S)/headers.h $(S)/machine.h $(S)/proc.h $(S)/sockhdr.h \
 	$(S)/stream.h $(S)/syscsl.h $(S)/tags.h $(S)/termed.h \
 	$(S)/version.h
 
-
+allocate.o:	$(S)/allocate.cpp $(HEADERS)
 arith01.o:	$(S)/arith01.cpp $(HEADERS)
 arith02.o:	$(S)/arith02.cpp $(HEADERS)
 arith03.o:	$(S)/arith03.cpp $(HEADERS)
@@ -98,6 +89,7 @@ fns3.o:		$(S)/fns3.cpp $(HEADERS)
 fwin.o:		$(S)/fwin.cpp $(HEADERS)
 cslgc.o:	$(S)/cslgc.cpp $(HEADERS)
 lisphash.o:	$(S)/lisphash.cpp $(HEADERS)
+isprime.o:	$(S)/isprime.cpp $(HEADERS)
 preserve.o:	$(S)/preserve.cpp $(HEADERS)
 print.o:	$(S)/print.cpp $(HEADERS)
 restart.o:	$(S)/restart.cpp machineid.cpp $(HEADERS)

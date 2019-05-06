@@ -41,6 +41,7 @@
 
 #include "headers.h"
 
+#ifdef HAVE_SOFTFLOAT
 // It is convenient to have a number of constants available. The
 // values I have here are 0, 1/2, -1/2, 1, 10, 0.1, 10^17, 10^18 and 2^4096
 // all as 128-bit numbers, and 1, 10 and 0.1 as 256-bit ones.
@@ -784,5 +785,6 @@ float128_t atof128(const char *s)
     if (sign) f128M_negate(&r);
     return r;
 }
+#endif // HAVE_SOFTFLOAT
 
 // end of arith14.cpp

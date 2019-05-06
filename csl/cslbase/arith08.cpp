@@ -295,6 +295,7 @@ static LispObject Lrealpart(LispObject env, LispObject a)
     else return onevalue(a);
 }
 
+#ifdef HAVE_SOFTFLOAT
 LispObject decode_long_float(LispObject a)
 {   float128_t d = long_float_val(a);
     if (f128M_infinite(&d) || f128M_nan(&d))
@@ -330,14 +331,17 @@ LispObject decode_long_float(LispObject a)
     return list3(sign, fixnum_of_int(x), a);
 #endif
 }
+#endif // HAVE_SOFTFLOAT
 
 LispObject Ldecode_float(LispObject env, LispObject a)
 {   double d, neg = 1.0;
     int x;
     LispObject sign;
     if (!is_float(a)) aerror("decode-float");
+#ifdef HAVE_SOFTFLOAT
     if (is_bfloat(a) && type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
         return decode_long_float(a);
+#endif // HAVE_SOFTFLOAT
     d = float_of_number(a);
     if (floating_edge_case(d))
     {   if (trap_floating_overflow) aerror("decode-float");
@@ -382,10 +386,13 @@ static LispObject Lfp_infinite(LispObject env, LispObject a)
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
-            {   case TYPE_LONG_FLOAT:
+            {
+#ifdef HAVE_SOFTFLOAT
+                case TYPE_LONG_FLOAT:
                     if (f128M_infinite(&long_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
+#endif // HAVE_SOFTFLOAT
                 case TYPE_SINGLE_FLOAT:
                 case TYPE_DOUBLE_FLOAT:
                     if (1.0 / double_float_val(a) == 0.0)
@@ -416,10 +423,12 @@ static LispObject Lfp_nan(LispObject env, LispObject a)
                     if (single_float_val(a) != single_float_val(a))
                         return onevalue(lisp_true);
                     return onevalue(nil);
+#ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
                     if (f128M_nan(&long_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
+#endif // HAVE_SOFTFLOAT
                 case TYPE_DOUBLE_FLOAT:
                     if (double_float_val(a) != double_float_val(a))
                         return onevalue(lisp_true);
@@ -440,10 +449,13 @@ static LispObject Lfp_finite(LispObject env, LispObject a)
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
-            {   case TYPE_LONG_FLOAT:
+            {
+#ifdef HAVE_SOFTFLOAT
+                case TYPE_LONG_FLOAT:
                     if (f128M_finite(&long_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
+#endif // HAVE_SOFTFLOAT
                 case TYPE_SINGLE_FLOAT:
                     if (single_float_val(a)-single_float_val(a) == 0.0)
                         return onevalue(lisp_true);
@@ -478,10 +490,12 @@ static LispObject Lfp_subnorm(LispObject env, LispObject a)
                         return onevalue(((uint32_t)ff.i & 0x7f800000U) == 0 ?
                             lisp_true : nil);
                     }
+#ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
                     if (f128M_subnorm(&long_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
+#endif // HAVE_SOFTFLOAT
                 case TYPE_DOUBLE_FLOAT:
                     if (double_float_val(a) == 0.0) return onevalue(nil);
                     {   Double_union ff;
@@ -521,9 +535,11 @@ static LispObject Lfp_signbit(LispObject env, LispObject a)
                         return onevalue((int32_t)ff.i < 0 ? lisp_true : nil);
                     }
 #endif
+#ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
                     return onevalue(f128M_negative(&long_float_val(a)) ?
                                     lisp_true : nil);
+#endif // HAVE_SOFTFLOAT
                 case TYPE_DOUBLE_FLOAT:
 #ifdef HAVE_SIGNBIT
                     return onevalue(signbit(double_float_val(a)) ? lisp_true : nil);
@@ -603,7 +619,9 @@ static LispObject Lfloat_radix(LispObject env, LispObject a2)
 }
 
 static LispObject Lfloat_sign2(LispObject env, LispObject a, LispObject b)
-{   if (is_bfloat(b) &&
+{
+#ifdef HAVE_SOFTFLOAT
+    if (is_bfloat(b) &&
         type_of_header(flthdr(b)) == TYPE_LONG_FLOAT)
     {   float128_t d = float128_of_number(b);
 // If a is another long float then float_of_number may overflow, but
@@ -611,6 +629,7 @@ static LispObject Lfloat_sign2(LispObject env, LispObject a, LispObject b)
         if (float_of_number(a) < 0.0) f128M_negate(&d);
         return onevalue(make_boxfloat128(d));
     }
+#endif // HAVE_SOFTFLOAT
     double d = float_of_number(b);
 // Worry a bit about -0.0 here
     if (float_of_number(a) < 0.0) d = -d;
@@ -621,13 +640,16 @@ static LispObject Lfloat_sign2(LispObject env, LispObject a, LispObject b)
 }
 
 static LispObject Lfloat_sign1(LispObject env, LispObject a)
-{   if (is_bfloat(1) &&
+{
+#ifdef HAVE_SOFTFLOAT
+    if (is_bfloat(1) &&
         type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
     {   float128_t d = float128_of_number(a);
         float128_t r = f128_1;
         if (f128M_negative(&d)) f128M_negate(&r);
         return onevalue(make_boxfloat128(r));
     }
+#endif // HAVE_SOFTFLOAT
     double d = float_of_number(a);
 // worry a bit about -0.0 here
     if (d < 0.0) d = -1.0; else d = 1.0;
@@ -644,6 +666,7 @@ static LispObject Lftruncate(LispObject env, LispObject a1, LispObject a2)
 {   aerror("ftruncate");
 }
 
+#ifdef HAVE_SOFTFLOAT
 LispObject integer_decode_long_float(LispObject a)
 {   float128_t d = long_float_val(a);
     if (f128M_infinite(&d) || f128M_nan(&d))
@@ -679,13 +702,16 @@ LispObject integer_decode_long_float(LispObject a)
                  neg ? fixnum_of_int(-1) : fixnum_of_int(1));
 #endif
 }
+#endif // HAVE_SOFTFLOAT
 
 
 LispObject Linteger_decode_float(LispObject env, LispObject a)
 {   double d;
     if (!is_float(a)) aerror("integer-decode-float");
+#ifdef HAVE_SOFTFLOAT
     if (is_bfloat(a) && type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
         return integer_decode_long_float(a);
+#endif // HAVE_SOFTFLOAT
     d = float_of_number(a);
     if (floating_edge_case(d))
     {   if (trap_floating_overflow) aerror("integer-decode-float");
@@ -775,6 +801,7 @@ static LispObject Lmask_field(LispObject env, LispObject a1, LispObject a2)
 {   aerror("mask-field");
 }
 
+#ifdef HAVE_SOFTFLOAT
 static LispObject scale_float128(LispObject a, intptr_t x)
 {   float128_t d = long_float_val(a);
     if (f128M_nan(&d)) return a;
@@ -798,13 +825,16 @@ static LispObject scale_float128(LispObject a, intptr_t x)
     else f128M_set_exponent(&d, x);
     return make_boxfloat128(d);
 }
+#endif // HAVE_SOFTFLOAT
         
 
 static LispObject Lscale_float(LispObject env, LispObject a, LispObject b)
 {   if (!is_fixnum(b)) aerror("scale-float");
     intptr_t x = int_of_fixnum(b);
+#ifdef HAVE_SOFTFLOAT
     if (is_bfloat(a) && type_of_header(a) == TYPE_LONG_FLOAT)
        return scale_float128(a, x);
+#endif // HAVE_SOFTFLOAT
     double d = float_of_number(a);
     if (x >= 4096) x = 4096;
     else if (x <= -4096) x = -4096;
@@ -815,6 +845,7 @@ static LispObject Lscale_float(LispObject env, LispObject a, LispObject b)
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(a))));
 }
 
+#ifdef HAVE_SOFTFLOAT
 // long float version of the following function. Commentary is in the
 // double precision version.
 
@@ -916,13 +947,17 @@ static LispObject lisp_fix_sub128(LispObject a, int roundmode)
         return make_n5_word_bignum(d4, d3, d2, d1, d0, x1);
     }
 }
+#endif // HAVE_SOFTFLOAT
 
 static LispObject lisp_fix_sub(LispObject a, int roundmode)
 // This converts from a double to a Lisp integer, which will
 // quite often have to be a bignum.  No overflow is permitted - the
 // result can always be accurate.
-{   if (is_bfloat(a) && type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
+{
+#ifdef HAVE_SOFTFLOAT
+    if (is_bfloat(a) && type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
         return lisp_fix_sub128(a, roundmode);
+#endif // HAVE_SOFTFLOAT
     double d = float_of_number(a);
     if (!(d == d)) aerror("NaN in fix");
     if (1.0/d == 0.0) aerror("infinity in fix");

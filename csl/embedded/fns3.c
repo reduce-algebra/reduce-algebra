@@ -361,6 +361,7 @@ Lisp_Object MS_CDECL Lmkhash(Lisp_Object nil, int nargs, ...)
     if (!is_fixnum(size)) return aerror1("mkhash", size);
     size1 = int_of_fixnum(size);
     if (size1 <= 0) return aerror1("mkhash", size);
+    if (symbolp(flavour)) flavour = fixnum_of_int(2); // default to EQUAL
     if (!is_fixnum(flavour) && !consp(flavour))
         return aerror1("mkhash", flavour);
 /*
@@ -412,6 +413,10 @@ Lisp_Object MS_CDECL Lmkhash(Lisp_Object nil, int nargs, ...)
     elt(v1, 4) = v;
     vechdr(v1) ^= (TYPE_SIMPLE_VEC ^ TYPE_HASH);
     return onevalue(v1);
+}
+
+Lisp_Object Lmkhash1(Lisp_Object nil, Lisp_Object a1)
+{   return Lmkhash(nil, 3, fixnum_of_int(8), a1, nil);
 }
 
 /*
@@ -3816,7 +3821,7 @@ setup_type const funcs3_setup[] =
     {"mkvect32",                Lmkvect32, too_many_1, wrong_no_1},
     {"mkfvect32",               Lmkfvect32, too_many_1, wrong_no_1},
     {"mkfvect64",               Lmkfvect64, too_many_1, wrong_no_1},
-    {"mkhash",                  wrong_no_3a, wrong_no_3b, Lmkhash},
+    {"mkhash",                  Lmkhash1, wrong_no_3b, Lmkhash},
     {"gethash",                 Lget_hash_1, Lget_hash_2, Lget_hash},
     {"puthash",                 wrong_no_3a, Lput_hash_2, Lput_hash},
     {"remhash",                 Lrem_hash_1, Lrem_hash, wrong_no_2},

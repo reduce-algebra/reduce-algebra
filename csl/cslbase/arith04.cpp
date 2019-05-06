@@ -101,7 +101,7 @@ LispObject make_power_of_two(size_t n)
     else return make_n_word_bignum(((int32_t)1) << (n % 31), 0, 0, (n/31)-2);
 }
 
-inline LispObject make_fix_or_big2(int32_t a1, uint32_t a2)
+static LispObject make_fix_or_big2(int32_t a1, uint32_t a2)
 {   return make_lisp_integer64(((int64_t)a1 << 31) | a2);
 }
 
@@ -319,6 +319,7 @@ static LispObject rationalizef(double dd, int bits)
     return make_ratio(p1, q1);
 }
 
+#ifdef HAVE_SOFTFLOAT
 // The following constants are 2^112 and -2^112 and their reciprocals, which
 // are used in rationalf128 because any 128-bit floating point value that
 // is that large is necessarily an exact integer.
@@ -594,6 +595,8 @@ static LispObject rationalizef128(float128_t *dd)
     return make_ratio(p1, q1);
 }
 
+#endif // HAVE_SOFTFLOAT
+
 LispObject rational(LispObject a)
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
@@ -613,9 +616,12 @@ LispObject rational(LispObject a)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
+#ifdef HAVE_SOFTFLOAT
             if (type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
                 return rationalf128(long_float_addr(a));
-            else return rationalf(float_of_number(a));
+            else
+#endif // HAVE_SOFTFLOAT
+            return rationalf(float_of_number(a));
         default:
             aerror1("bad arg for rational", a);
     }
@@ -647,8 +653,10 @@ LispObject rationalize(LispObject a)
                     return rationalizef(single_float_val(a), 24);
                 case TYPE_DOUBLE_FLOAT:
                     return rationalizef(double_float_val(a), 53);
+#ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
                     return rationalizef128(long_float_addr(a));
+#endif // HAVE_SOFTFLOAT
             }
         default:
             aerror1("bad arg for rationalize", a);
@@ -659,77 +667,91 @@ LispObject rationalize(LispObject a)
 // Arithmetic comparison: lessp
 //
 
-static bool lessp_i_i(LispObject a1, LispObject a2);
-static bool lessp_i_b(LispObject a1, LispObject a2);
-static bool lessp_i_r(LispObject a1, LispObject a2);
-static bool lessp_i_c(LispObject a1, LispObject a2);
-static bool lessp_i_s(LispObject a1, LispObject a2);
-static bool lessp_i_f(LispObject a1, LispObject a2);
-static bool lessp_i_d(LispObject a1, LispObject a2);
-static bool lessp_i_l(LispObject a1, LispObject a2);
+inline bool lessp_i_i(LispObject a1, LispObject a2);
+inline bool lessp_i_b(LispObject a1, LispObject a2);
+inline bool lessp_i_r(LispObject a1, LispObject a2);
+inline bool lessp_i_c(LispObject a1, LispObject a2);
+inline bool lessp_i_s(LispObject a1, LispObject a2);
+inline bool lessp_i_f(LispObject a1, LispObject a2);
+inline bool lessp_i_d(LispObject a1, LispObject a2);
+#ifdef HAVE_SOFTFLOAT
+inline bool lessp_i_l(LispObject a1, LispObject a2);
+#endif // HAVE_SOFTFLOAT
 
-static bool lessp_b_i(LispObject a1, LispObject a2);
-static bool lessp_b_b(LispObject a1, LispObject a2);
-static bool lessp_b_r(LispObject a1, LispObject a2);
-static bool lessp_b_c(LispObject a1, LispObject a2);
-static bool lessp_b_s(LispObject a1, LispObject a2);
-static bool lessp_b_f(LispObject a1, LispObject a2);
-static bool lessp_b_d(LispObject a1, LispObject a2);
-static bool lessp_b_l(LispObject a1, LispObject a2);
+inline bool lessp_b_i(LispObject a1, LispObject a2);
+inline bool lessp_b_b(LispObject a1, LispObject a2);
+inline bool lessp_b_r(LispObject a1, LispObject a2);
+inline bool lessp_b_c(LispObject a1, LispObject a2);
+inline bool lessp_b_s(LispObject a1, LispObject a2);
+inline bool lessp_b_f(LispObject a1, LispObject a2);
+inline bool lessp_b_d(LispObject a1, LispObject a2);
+#ifdef HAVE_SOFTFLOAT
+inline bool lessp_b_l(LispObject a1, LispObject a2);
+#endif // HAVE_SOFTFLOAT
 
-static bool lessp_r_i(LispObject a1, LispObject a2);
-static bool lessp_r_b(LispObject a1, LispObject a2);
-static bool lessp_r_r(LispObject a1, LispObject a2);
-static bool lessp_r_c(LispObject a1, LispObject a2);
-static bool lessp_r_s(LispObject a1, LispObject a2);
-static bool lessp_r_f(LispObject a1, LispObject a2);
-static bool lessp_r_d(LispObject a1, LispObject a2);
-static bool lessp_r_l(LispObject a1, LispObject a2);
+inline bool lessp_r_i(LispObject a1, LispObject a2);
+inline bool lessp_r_b(LispObject a1, LispObject a2);
+inline bool lessp_r_r(LispObject a1, LispObject a2);
+inline bool lessp_r_c(LispObject a1, LispObject a2);
+inline bool lessp_r_s(LispObject a1, LispObject a2);
+inline bool lessp_r_f(LispObject a1, LispObject a2);
+inline bool lessp_r_d(LispObject a1, LispObject a2);
+#ifdef HAVE_SOFTFLOAT
+inline bool lessp_r_l(LispObject a1, LispObject a2);
+#endif // HAVE_SOFTFLOAT
 
-static bool lessp_c_i(LispObject a1, LispObject a2);
-static bool lessp_c_b(LispObject a1, LispObject a2);
-static bool lessp_c_r(LispObject a1, LispObject a2);
-static bool lessp_c_c(LispObject a1, LispObject a2);
-static bool lessp_c_s(LispObject a1, LispObject a2);
-static bool lessp_c_f(LispObject a1, LispObject a2);
-static bool lessp_c_d(LispObject a1, LispObject a2);
-static bool lessp_c_l(LispObject a1, LispObject a2);
+inline bool lessp_c_i(LispObject a1, LispObject a2);
+inline bool lessp_c_b(LispObject a1, LispObject a2);
+inline bool lessp_c_r(LispObject a1, LispObject a2);
+inline bool lessp_c_c(LispObject a1, LispObject a2);
+inline bool lessp_c_s(LispObject a1, LispObject a2);
+inline bool lessp_c_f(LispObject a1, LispObject a2);
+inline bool lessp_c_d(LispObject a1, LispObject a2);
+#ifdef HAVE_SOFTFLOAT
+inline bool lessp_c_l(LispObject a1, LispObject a2);
+#endif // HAVE_SOFTFLOAT
 
-static bool lessp_s_i(LispObject a1, LispObject a2);
-static bool lessp_s_b(LispObject a1, LispObject a2);
-static bool lessp_s_r(LispObject a1, LispObject a2);
-static bool lessp_s_c(LispObject a1, LispObject a2);
-static bool lessp_s_s(LispObject a1, LispObject a2);
-static bool lessp_s_f(LispObject a1, LispObject a2);
-static bool lessp_s_d(LispObject a1, LispObject a2);
-static bool lessp_s_l(LispObject a1, LispObject a2);
+inline bool lessp_s_i(LispObject a1, LispObject a2);
+inline bool lessp_s_b(LispObject a1, LispObject a2);
+inline bool lessp_s_r(LispObject a1, LispObject a2);
+inline bool lessp_s_c(LispObject a1, LispObject a2);
+inline bool lessp_s_s(LispObject a1, LispObject a2);
+inline bool lessp_s_f(LispObject a1, LispObject a2);
+inline bool lessp_s_d(LispObject a1, LispObject a2);
+#ifdef HAVE_SOFTFLOAT
+inline bool lessp_s_l(LispObject a1, LispObject a2);
+#endif // HAVE_SOFTFLOAT
 
-static bool lessp_f_i(LispObject a1, LispObject a2);
-static bool lessp_f_b(LispObject a1, LispObject a2);
-static bool lessp_f_r(LispObject a1, LispObject a2);
-static bool lessp_f_c(LispObject a1, LispObject a2);
-static bool lessp_f_s(LispObject a1, LispObject a2);
-static bool lessp_f_f(LispObject a1, LispObject a2);
-static bool lessp_f_d(LispObject a1, LispObject a2);
-static bool lessp_f_l(LispObject a1, LispObject a2);
+inline bool lessp_f_i(LispObject a1, LispObject a2);
+inline bool lessp_f_b(LispObject a1, LispObject a2);
+inline bool lessp_f_r(LispObject a1, LispObject a2);
+inline bool lessp_f_c(LispObject a1, LispObject a2);
+inline bool lessp_f_s(LispObject a1, LispObject a2);
+inline bool lessp_f_f(LispObject a1, LispObject a2);
+inline bool lessp_f_d(LispObject a1, LispObject a2);
+#ifdef HAVE_SOFTFLOAT
+inline bool lessp_f_l(LispObject a1, LispObject a2);
+#endif // HAVE_SOFTFLOAT
 
-static bool lessp_d_i(LispObject a1, LispObject a2);
-static bool lessp_d_b(LispObject a1, LispObject a2);
-static bool lessp_d_r(LispObject a1, LispObject a2);
-static bool lessp_d_c(LispObject a1, LispObject a2);
-static bool lessp_d_s(LispObject a1, LispObject a2);
-static bool lessp_d_f(LispObject a1, LispObject a2);
-static bool lessp_d_d(LispObject a1, LispObject a2);
-static bool lessp_d_l(LispObject a1, LispObject a2);
+inline bool lessp_d_i(LispObject a1, LispObject a2);
+inline bool lessp_d_b(LispObject a1, LispObject a2);
+inline bool lessp_d_r(LispObject a1, LispObject a2);
+inline bool lessp_d_c(LispObject a1, LispObject a2);
+inline bool lessp_d_s(LispObject a1, LispObject a2);
+inline bool lessp_d_f(LispObject a1, LispObject a2);
+inline bool lessp_d_d(LispObject a1, LispObject a2);
+#ifdef HAVE_SOFTFLOAT
+inline bool lessp_d_l(LispObject a1, LispObject a2);
 
-static bool lessp_l_i(LispObject a1, LispObject a2);
-static bool lessp_l_b(LispObject a1, LispObject a2);
-static bool lessp_l_r(LispObject a1, LispObject a2);
-static bool lessp_l_c(LispObject a1, LispObject a2);
-static bool lessp_l_s(LispObject a1, LispObject a2);
-static bool lessp_l_f(LispObject a1, LispObject a2);
-static bool lessp_l_d(LispObject a1, LispObject a2);
-static bool lessp_l_l(LispObject a1, LispObject a2);
+inline bool lessp_l_i(LispObject a1, LispObject a2);
+inline bool lessp_l_b(LispObject a1, LispObject a2);
+inline bool lessp_l_r(LispObject a1, LispObject a2);
+inline bool lessp_l_c(LispObject a1, LispObject a2);
+inline bool lessp_l_s(LispObject a1, LispObject a2);
+inline bool lessp_l_f(LispObject a1, LispObject a2);
+inline bool lessp_l_d(LispObject a1, LispObject a2);
+inline bool lessp_l_l(LispObject a1, LispObject a2);
+#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_i_i(LispObject a, LispObject b)
 {   return (intptr_t)a < (intptr_t)b;
@@ -780,11 +802,13 @@ inline bool lessp_i_d(LispObject a, LispObject b)
     return lessp_i64d(int_of_fixnum(a), double_float_val(b));
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool lessp_i_l(LispObject a, LispObject b)
 {   float128_t aa;
     i64_to_f128M((int64_t)int_of_fixnum(a), &aa);
     return f128M_lt(&aa, long_float_addr(b));
 }
+#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_f_i(LispObject a, LispObject b)
 {   if (!SIXTY_FOUR_BIT)
@@ -798,11 +822,13 @@ inline bool lessp_d_i(LispObject a, LispObject b)
     return lessp_di64(double_float_val(a), int_of_fixnum(b));
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool lessp_l_i(LispObject a, LispObject b)
 {   float128_t bb;
     i64_to_f128M((int64_t)int_of_fixnum(b), &bb);
     return f128M_lt(long_float_addr(a), &bb);
 }
+#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_rawd_b(double a, LispObject b)
 // a is a floating point number and b a bignum.  Compare them.
@@ -911,6 +937,7 @@ inline bool lessp_b_rawd(LispObject a, double b)
 {   return greaterp_rawd_b(b, a);
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool lessp_rawl_b(float128_t *a, LispObject b)
 {
 // I am not going to worry too much about performance here - code
@@ -966,7 +993,6 @@ inline bool lessp_rawl_b(float128_t *a, LispObject b)
     aerror("comparison between log float and large bignum - not implemented yet");
 }
 
-
 inline bool lessp_b_rawl(LispObject a, float128_t *b)
 {
     size_t n = (length_of_header(numhdr(a))-CELL)/4;
@@ -1019,6 +1045,7 @@ inline bool lessp_rawl_r(float128_t *a, LispObject b)
 inline bool lessp_r_rawl(LispObject a, float128_t *b)
 {   aerror("comparison between long float and raion not coded yet");
 }
+#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_s_s(LispObject a, LispObject b)
 {   return value_of_immediate_float(a) < value_of_immediate_float(b);
@@ -1068,9 +1095,11 @@ inline bool lessp_d_b(LispObject a, LispObject b)
 {   return lessp_rawd_b(double_float_val(a), b);
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool lessp_b_l(LispObject a, LispObject b)
 {   return lessp_b_rawl(a, long_float_addr(b));
 }
+#endif // HAVE_SOFTFLOAT
 
 inline bool lessp_r_r(LispObject a, LispObject b)
 {   LispObject c;
@@ -1248,6 +1277,7 @@ inline bool lessp_d_c(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool lessp_l_c(LispObject a, LispObject b)
 {   aerror2("ordered comparison on complex values", a, b);
 }
@@ -1315,6 +1345,7 @@ inline bool lessp_d_l(LispObject a, LispObject b)
     f64_to_f128M(d.f64, &aa);
     return f128M_lt(&aa, long_float_addr(b));
 }
+#endif // HAVE_SOFTFLOAT
 
 // Now I have given all the helper type-specific rules - do the
 // big dispatch.
@@ -1364,10 +1395,12 @@ inline bool geq_i_d(LispObject a1, LispObject a2)
     return !lessp_i_d(a1, a2);
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool geq_i_l(LispObject a1, LispObject a2)
 {   if (f128M_nan(long_float_addr(a2))) return false;
     return !lessp_i_l(a1, a2);
 }
+#endif // HAVE_SOFTFLOAT
 
 inline bool geq_b_i(LispObject a1, LispObject a2)
 {   return lessp_i_b(a2, a1);
@@ -1403,10 +1436,12 @@ inline bool geq_b_d(LispObject a1, LispObject a2)
     return !lessp_b_d(a1, a2);
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool geq_b_l(LispObject a1, LispObject a2)
 {   if (f128M_nan(long_float_addr(a2))) return false;
     return !lessp_b_l(a1, a2);
 }
+#endif // HAVE_SOFTFLOAT
 
 inline bool geq_r_i(LispObject a1, LispObject a2)
 {   return !lessp_r_i(a1, a2);
@@ -1442,10 +1477,12 @@ inline bool geq_r_d(LispObject a1, LispObject a2)
     return !lessp_r_d(a1, a2);
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool geq_r_l(LispObject a1, LispObject a2)
 {   if (f128M_nan(long_float_addr(a2))) return false;
     return !lessp_r_l(a1, a2);
 }
+#endif // HAVE_SOFTFLOAT
 
 inline bool geq_c_i(LispObject a1, LispObject a2)
 {   return !lessp_c_i(a1, a2);
@@ -1481,10 +1518,12 @@ inline bool geq_c_d(LispObject a1, LispObject a2)
     return !lessp_c_d(a1, a2);
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool geq_c_l(LispObject a1, LispObject a2)
 {   if (f128M_nan(long_float_addr(a2))) return false;
     return !lessp_c_l(a1, a2);
 }
+#endif // HAVE_SOFTFLOAT
 
 inline bool geq_s_i(LispObject a1, LispObject a2)
 {   double a1d = value_of_immediate_float(a1);
@@ -1522,12 +1561,14 @@ inline bool geq_s_d(LispObject a1, LispObject a2)
 {   return value_of_immediate_float(a1) >= double_float_val(a2);
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool geq_s_l(LispObject a1, LispObject a2)
 {   double a1d = value_of_immediate_float(a1);
     if (a1d != a1d) return false;
     if (f128M_nan(long_float_addr(a2))) return false;
     return !lessp_s_l(a1, a2);
 }
+#endif // HAVE_SOFTFLOAT
 
 inline bool geq_f_i(LispObject a1, LispObject a2)
 {   double a1d = single_float_val(a1);
@@ -1565,12 +1606,14 @@ inline bool geq_f_d(LispObject a1, LispObject a2)
 {   return single_float_val(a1) >= double_float_val(a2);
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool geq_f_l(LispObject a1, LispObject a2)
 {   double a1d = single_float_val(a1);
     if (a1d != a1d) return false;
     if (f128M_nan(long_float_addr(a2))) return false;
     return !lessp_f_l(a1, a2);
 }
+#endif // HAVE_SOFTFLOAT
 
 inline bool geq_d_i(LispObject a1, LispObject a2)
 {   double a1d = double_float_val(a1);
@@ -1608,6 +1651,7 @@ inline bool geq_d_d(LispObject a1, LispObject a2)
 {   return double_float_val(a1) >= double_float_val(a2);
 }
 
+#ifdef HAVE_SOFTFLOAT
 inline bool geq_d_l(LispObject a1, LispObject a2)
 {   double a1d = double_float_val(a1);
     if (a1d != a1d) return false;
@@ -1661,6 +1705,7 @@ inline bool geq_l_l(LispObject a1, LispObject a2)
     if (f128M_nan(long_float_addr(a2))) return false;
     return !lessp_l_l(a1, a2);
 }
+#endif // HAVE_SOFTFLOAT
 
 arith_dispatch_2(inline, bool, geq)
 

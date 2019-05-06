@@ -235,6 +235,7 @@
 #undef PACKAGE_TARNAME
 #undef PACKAGE_URL
 
+#ifndef EMBEDDED
 extern "C"
 {
 // At present softfloat.h needs inclusion in C mode not C++ mode.
@@ -242,7 +243,7 @@ extern "C"
 
 #include "softfloat.h"
 }
-
+#endif
 
 //
 // I will decode information that config.h has given me and define a simple
@@ -315,7 +316,7 @@ inline int32_t ASR(int32_t a, int n)
 {   if (n<0 || n>=8*(int)sizeof(int32_t)) n=0;
     uint32_t r = ((uint32_t)a) >> n;
     uint32_t signbit = ((uint32_t)a) >> (8*sizeof(uint32_t)-1);
-    if (n != 0) r |= ((-signbit) << (8*sizeof(uint32_t) - n);
+    if (n != 0) r |= ((-signbit) << (8*sizeof(uint32_t) - n));
     return (int32_t)r;
 }
 
@@ -323,7 +324,7 @@ inline int64_t ASR(int64_t a, int n)
 {   if (n<0 || n>=8*(int)sizeof(int64_t)) n=0;
     uint64_t r = ((uint64_t)a) >> n;
     uint64_t signbit = ((uint64_t)a) >> (8*sizeof(uint64_t)-1);
-    if (n != 0) r |= ((-signbit) << (8*sizeof(uint64_t) - n);
+    if (n != 0) r |= ((-signbit) << (8*sizeof(uint64_t) - n));
     return (int64_t)r;
 }
 

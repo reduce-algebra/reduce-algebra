@@ -1,4 +1,4 @@
-// proc.h                                       Copyright (C) 2017 Codemist
+// proc.h                                       Copyright (C) 2019 Codemist
 
 #ifndef header_proc_h
 #define header_proc_h 1
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -46,7 +46,7 @@ extern int find_program_directory(const char *argv0);
 
 // .. and this to exit
 
-NORETURN extern void my_exit(int n);
+[[noreturn]] extern void my_exit(int n);
 
 //
 // These types are used for callback functions used to send and receive
@@ -365,6 +365,80 @@ extern int PROC_lisp_eval();
 extern PROC_handle PROC_get_raw_value();
 
 extern volatile int my_return_code;
+
+// The following would normally be picked up from "lispthrow.h" but to make
+// stuff here more free-stannding I have my own copy.
+
+#include <stdint.h>
+#include <setjmp.h>
+#include <exception>
+
+typedef intptr_t LispObject;
+extern  jmp_buf *global_jb;
+extern LispObject *stack;
+[[noreturn]] extern void global_longjmp();
+extern intptr_t exit_reason, miscflags;
+extern void err_printf(const char *fmt, ...);
+extern const volatile char *errorset_msg;
+
+#ifndef UNWIND_SIGNAL
+#define UNWIND_SIGNAL  0x06
+#endif
+#ifndef HEADLINE_FLAG
+#define HEADLINE_FLAG  0x08
+#endif
+
+class RAIIsave_stack_and_jb
+{   LispObject *saveStack;
+    jmp_buf *jbsave;
+public:
+    RAIIsave_stack_and_jb()
+    {   jbsave = global_jb;  // preserve the enclosing jmp_buff.
+        saveStack = stack;   // record stack value from entry here.
+    }
+    ~RAIIsave_stack_and_jb()
+    {   global_jb = jbsave;  // restore jmp_buf pointer
+        stack = saveStack;   // restore stack
+    }
+};
+
+#define SAVE_STACK_AND_JB_DEFINED 1
+
+struct LispException : public std::exception
+{   virtual const char *what() const throw()
+    {   return "Generic Lisp Exception";
+    }
+};
+
+struct LispError : public LispException
+{   virtual const char *what() const throw()
+    {   return "Lisp Error";
+    }
+};
+
+struct LispSignal : public LispError
+{   virtual const char *what() const throw()
+    {   return "Lisp Signal";
+    }
+};
+
+#define LISPEXCEPTION_DEFINED 1
+
+#define START_SETJMP_BLOCK                          \
+    jmp_buf jb;                                     \
+    RAIIsave_stack_and_jb save_stack_Object;        \
+    switch (setjmp(jb))                             \
+    {   default:                                    \
+        case 1: exit_reason = UNWIND_SIGNAL;        \
+                if (miscflags & HEADLINE_FLAG)      \
+                    err_printf("\n+++ Error %s: ", errorset_msg); \
+                throw LispSignal();                 \
+        case 0: break;                              \
+    }                                               \
+    global_jb = &jb;
+
+
+
 
 #endif // header_proc_h
 
