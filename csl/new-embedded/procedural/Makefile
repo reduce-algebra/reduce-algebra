@@ -1,16 +1,34 @@
 # Makefile for building reduce.img suitable for embedded use.
+# This directory is a build that showcases the "procedural" interface
+# as used in the file cal/cslbase/driver.cpp
 
-# The idea here is that I want a C compiler and set of flags that will
-# generate a 32-bit executable. I assume absolutely that "gcc -m32"
-# will do the trick. On a 64-bit Linux you are liable to need to
-# check that you have multilib support and relevant development libraries
-# all installed. That may cost you some messy playing around - as an
-# alternative you may find it easier to set up a 32-bit Linux in a
-# virtual machine and use that.
+# I *HOPE* that with the following conditions and provided you use GNU make
+# that this will build on 64-bit Linux, 64-bit Cygwin and on a Macintosh
+# that has macports installed and libffi fetched via macports.
+# I expect that other platforms might not be too hard... but some
+# will need the include/config.h file adjusted.
 
+ifeq ($(shell uname),Darwin)
+#CC=g++
+CC=clang++
+XCFLAGS= -I/opt/local/lib/libffi-3.2.1/include
+XLIBS=-lm
+else
+ifeq ($(shell uname -o),Cygwin)
 CC=g++
-CPPFLAGS=$(CFLAGS) -std=gnu++17 -O0 -g -I. -I../include -L../lib \
-    -DHAVE_CONFIG_H=1 -DEMBEDDED=1
+XLIBS=-lm
+else
+CC=g++
+XLIBS=-lm -lpthread
+endif
+endif
+
+OPT=-O0 -g
+#OPT=-O3
+
+CPPFLAGS=$(CFLAGS) -std=gnu++11 $(OPT) -I. -I../include \
+    -DHAVE_CONFIG_H=1 -DEMBEDDED=1 $(XCFLAGS)
+LIBS=$(XLIBS) -lz -lffi
 
 S=../../cslbase
 R=../../..
@@ -26,14 +44,14 @@ reduce:		allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
 		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
 		inthash.o serialize.o stubs.o
-	$(CC) $(CPPFLAGS) allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
+	$(CC) allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
 		arith11.o arith12.o arith13.o arith14.o bytes.o char.o driver.o \
 		embedcsl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
 		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o cslgc.o lisphash.o \
 		isprime.o preserve.o print.o restart.o sysfwin.o termed.o \
 		inthash.o serialize.o stubs.o \
-		-lm -lffi -lz -o reduce
+		$(LIBS) -o reduce
 	cp ../reduce.img .
 
 .cpp.o:
@@ -43,11 +61,13 @@ clean:
 	-rm -f *.o reduce hello reduce.img
 
 HEADERS = ../include/config.h \
-	$(S)/arith.h $(S)/bytes.h $(S)/cslerror.h \
-	$(S)/cslread.h $(S)/entries.h $(S)/externs.h $(S)/fwin.h \
-	$(S)/headers.h $(S)/machine.h $(S)/proc.h $(S)/sockhdr.h \
-	$(S)/stream.h $(S)/syscsl.h $(S)/tags.h $(S)/termed.h \
-	$(S)/version.h
+	$(S)/md5.h       $(S)/termed.h    $(S)/arith.h       $(S)/openmath.h \
+	$(S)/uint128_t.h $(S)/bigvector.h $(S)/entries.h     $(S)/proc.h     \
+	$(S)/uninames.h  $(S)/bytes.h     $(S)/externs.h     $(S)/int128_t.h \
+	$(S)/sockhdr.h   $(S)/version.h   $(S)/charmetrics.h $(S)/fwin.h     \
+	$(S)/inthash.h   $(S)/stream.h    $(S)/cslerror.h    $(S)/headers.h  \
+	$(S)/lispthrow.h $(S)/syscsl.h    $(S)/cslread.h     $(S)/machine.h  \
+	$(S)/tags.h
 
 allocate.o:	$(S)/allocate.cpp $(HEADERS)
 arith01.o:	$(S)/arith01.cpp $(HEADERS)
@@ -91,5 +111,6 @@ sysfwin.o:	$(S)/sysfwin.cpp $(HEADERS)
 termed.o:	$(S)/termed.cpp $(HEADERS)
 inthash.o:	$(S)/inthash.cpp $(HEADERS)
 serialize.o:	$(S)/serialize.cpp $(HEADERS)
+
 
 # end of Makefile

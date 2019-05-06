@@ -7,16 +7,13 @@ needs a bunch of files of C++ code to be compiled and linked together. You
 should not expect "help" capability etc, but the ALGEBRA bits of Reduce
 should work the way they always have.
 
-This is at present set up so that it ONLY compiles using "gcc -m32" which
-is required to generate 32-bit executables. Under cygwin on Windows that
-will be straightforward. On a 64-bit Linux you will need to have multilib
-support installed and you may find it easier to move to a 32-bit Linux
-virtual machine.
+This is at present set up so that it ONLY compiles using "g++" or "clang++"
 
 When this was set up in 2009 CSL was self-contained. Now it is 2016 and the
 code relies on external libraries: crlibm and SoftFloat-3a. They are both
-built using autoconf here, and the relevant headers in library files end
-up in "include" and "lib" much as you would expect.
+partially included here, but the copy of reduce build avoids using them to
+simplify things a bit. That will means that the accuracy of some floating
+point elementary functions will be set by the system libraries used.
 
 At the top level you can go either "make reduce" or "make minireduce" and
 those use the reduce-image and minireduce-image directories to make either
@@ -31,13 +28,13 @@ The code here is NOT intended for making systems for distribution or release
 to end users. Before anything like that the very simple Makefiles used here
 would need to be turned into something rather closer to the autoconf and
 automake supported build scheme used for the full code, so that platform
-dependencies (among other thinsg 32 vs. 64-bit) would be handled neatly.
+dependencies (among other things 32 vs. 64-bit) would be handled neatly.
 User interfaces and error recovery will be weak here. The fixed files here
 called "config.h" give some indication of the range of issues that full
 system support might involve. It is also very plausible that the code here
 would (for many uses) want to be build not in the form of a free-standing
 application, but as a dynamically loadable library. Part of the idea of
-having simple and rather rigit Makefiles here is to provide those who might
+having simple and rather rigid Makefiles here is to provide those who might
 want to do things like that a simple basis to start their work from.
 
 If you are going to end up producing a version of Reduce that is for general
@@ -50,4 +47,5 @@ build mechanism.
 
 
                                  Arthur Norman.   July 2009 - March 2016
+                                                  updated May 2019
 
