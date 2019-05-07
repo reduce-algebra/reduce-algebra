@@ -2117,11 +2117,11 @@ inline double frexp_bignum(const Bignum &x, int64_t &xx)
 
 #ifdef softfloat_h
 
-inline double frexp128_bignum(const Bignum &x, int64_t &xx)
-{   return op_dispatch1<Float128,float128_t>(x.val, xx);
+inline float128_t frexp128_bignum(const Bignum &x, int64_t &xx)
+{   return op_dispatch1<Frexp128,float128_t>(x.val, xx);
 }
 
-inline double float128_bignum(const Bignum &x)
+inline float128_t float128_bignum(const Bignum &x)
 {   return op_dispatch1<Float128,float128_t>(x.val);
 }
 
@@ -3330,12 +3330,12 @@ inline float128_t Float128::op(int64_t a)
 inline float128_t Frexp128::op(int64_t a, int64_t &x)
 {   float128_t d = i64_to_f128(a), d1;
     int xi = 0;
-    f128M_frex(&d, &d1, &xi); // in the CSL sources.
+    f128M_frexp(&d, &d1, &xi); // in the CSL sources.
     x = xi;
     return d1;
 }
 
-inline float128_t Frexp128::op(uint64_t *a, int54_t &x)
+inline float128_t Frexp128::op(uint64_t *a, int64_t &x)
 {   size_t lena = number_size(a);
     if (lena == 1) return Float128::op((int64_t)a[0]);
     uint64_t top113, top113a;
@@ -3352,7 +3352,7 @@ inline float128_t Frexp128::op(uint64_t *a, int54_t &x)
 // Grap the top 192 bits of the number as {top,next}.
     top = a[lena-1];
     next1 = a[lena-2];
-    next2 = len1==2 ? 0 : a[lena-3];
+    next2 = lena==2 ? 0 : a[lena-3];
 // Take its absolute value.
     if (negative(top))
     {   sign = true;
@@ -3379,7 +3379,7 @@ inline float128_t Frexp128::op(uint64_t *a, int54_t &x)
     int sh = 192-113-lz;
 // Note that sh can never be zero here.
     if (sh < 64)
-    {   top113 = (next >> sh) | (top << (64-sh));
+    {   top113 = (next1 >> sh) | (top << (64-sh));
         top113a = (next2 >> sh) | (next1 << (64-sh));
     }
     else
@@ -3416,13 +3416,14 @@ inline float128_t Frexp128::op(uint64_t *a, int54_t &x)
     }
 //  float128_t d = i64_to_f128({top113, top113a});
     float128_t d = i64_to_f128(top113);
-    d = f128_add(f128_multiply(2.0^64, d), u64_to_f128(top113a));
-    if (sign) d = f128_negate(d);
+    float128_t two32 = i64_to_f128(0x100000000);
+    d = f128_add(f128_mul(f128_mul(two32, two32), d), ui64_to_f128(top113a));
+    if (sign) d = f128_sub(i64_to_f128(0), d);
     x = 192-113-lz+64*(lena-2);
     return d;
 }
 
-inline double Float128::op(uint64_t *a)
+inline float128_t Float128::op(uint64_t *a)
 {   int64_t x = 0;
     float128_t d = Frexp128::op(a, x);
     if (x > 100000) x = 100000;
@@ -4068,12 +4069,64 @@ inline bool Eqn::op(double a, uint64_t *b)
 }
 
 #ifdef softfloat_h
+inline bool eqnbigfloat(uint64_t *a, size_t lena, float128_t b)
+{
+// For an explanation of all this see greaterpfloat()
+    if (!f128_eq(b, b)) return false;  // a NaN if b!=b
+    float128_t zero = i64_to_f128(0);
+    float128_t one = i64_to_f128(1);
+    if (f128_eq(f128_div(one, b), zero)) return false; // 1/inf == 0 
+    int64_t top = (int64_t)a[lena-1];
+    if (top >= 0 && b <= 0.0) return false;
+    if (top < 0 && b >= 0.0) return false;
+    uint64_t next = a[lena-2];
+    if (top < 0)
+    {   b = -b;
+        next = ~next;
+        uint64_t carry = 1;
+        for (size_t i=0; i<lena-2; i++)
+        {   if (a[i] != 0)
+            {   carry = 0;
+                break;
+            }
+        }
+        next += carry;
+        if (next == 0) top++;
+        if (carry == 0) next |= 1;
+    }
+    size_t lz;
+    if (top == 0) lz = 64 + nlz(next);
+    else lz = nlz(top);
+    int x;
+    b = std::frexp(b, &x);
+    int64_t ix = 64*((int64_t)lena-2)+128-(int64_t)lz;
+    if (x != ix) return false;
+    b = std::ldexp(b, 53);
+    int64_t ib = (int64_t)b;
+    int sh = (int)lz - 64 + 53;
+    if (sh < 0)
+    {   next |= (((uint64_t)top) << (64+sh));
+        top = top >> (-sh);
+    }
+    else if (sh != 0)
+    {   top = (top<<sh) | (next<<(64-sh));
+        next = next<<sh;
+    };
+    if (top != ib) return false;
+    if (next != 0) return false;
+    return true;
+}
+
+
+
 inline bool Eqn::op(int64_t a, float128_t b)
-{   abort("not implemented yet");
+{   return f128_eq(i64_to_f128(a), b);
 }
 
 inline bool Eqn::op(uint64_t *a, float128_t b)
-{   abort("not implemented yet");
+{   size_t lena = number_size(a);
+    if (lena == 1) return Eqn::op((int64_t)a[0], b);
+    return eqnbigfloat(a, lena, b);
 }
 
 inline bool Eqn::op(float128_t a, int64_t b)
@@ -4274,11 +4327,14 @@ inline bool Greaterp::op(double a, uint64_t *b)
 
 #ifdef softfloat_h
 inline bool Greaterp::op(int64_t a, float128_t b)
-{   abort("not implemented yet");
+{   return f128_lt(b, i64_to_f128(a));
 }
 
 inline bool Greaterp::op(uint64_t *a, float128_t b)
-{   abort("not implemented yet");
+{   size_t lena = number_size(a);
+    if (lena == 1) return Greaterp::op((int64_t)a[0], b);
+    return greaterpbigfloat(a, lena, b);
+
 }
 
 inline bool Greaterp::op(float128_t a, int64_t b)
@@ -4350,13 +4406,14 @@ inline bool Geq::op(double a, uint64_t *b)
 
 #ifdef softfloat_h
 inline bool Geq::op(int64_t a, float128_t b)
-{   abort("not implemented yet");
+{   return f128_le(b, i64_to_f128(a));
     return false;
 }
 
 inline bool Geq::op(uint64_t *a, float128_t b)
-{   abort("not implemented yet");
-    return false;
+{   size_t lena = number_size(a);
+    if (lena == 1) return Greaterp::op((int64_t)a[0], b);
+    return greaterpbigfloat(a, lena, b, true, true);
 }
 
 inline bool Geq::op(float128_t a, int64_t b)
@@ -4428,12 +4485,15 @@ inline bool Lessp::op(double a, uint64_t *b)
 
 #ifdef softfloat_h
 inline bool Lessp::op(int64_t a, float128_t b)
-{   abort("not implemented yet");
+{   return f128_lt(i64_to_f128(a), b);
     return false;
 }
 
 inline bool Lessp::op(uint64_t *a, float128_t b)
-{   abort("not implemented yet");
+{   size_t lena = number_size(a);
+    if (lena == 1) return Lessp::op((int64_t)a[0], b);
+    return greaterpbigfloat(a, lena, b, false, false);
+
     return false;
 }
 
@@ -4506,13 +4566,14 @@ inline bool Leq::op(double a, uint64_t *b)
 
 #ifdef softfloat_h
 inline bool Leq::op(int64_t a, float128_t b)
-{   abort("not implemented yet");
+{   return f128_le(i64_to_f128(a), b);
     return false;
 }
 
 inline bool Leq::op(uint64_t *a, float128_t b)
-{   abort("not implemented yet");
-    return false;
+{   size_t lena = number_size(a);
+    if (lena == 1) return Leq::op((int64_t)a[0], b);
+    return greaterpbigfloat(a, lena, b, false, true);
 }
 
 inline bool Leq::op(float128_t a, int64_t b)

@@ -44,6 +44,14 @@
 
 #ifdef HAVE_NATIVE_INT128
 
+inline uint128_t uint128(int64_t v)
+{   return (uint128_t)v;
+}
+
+inline int128_t int128(int64_t v)
+{   return (int128_t)v;
+}
+
 inline bool greaterp128(int128_t a, int128_t b)
 {   return a > b;
 }
@@ -89,7 +97,7 @@ inline int64_t NARROW128(int128_t a)
 }
 
 inline void divrem128(int128_t a, int128_t b,
-                             int128_t &q, int128_t &r)
+                      int128_t &q, int128_t &r)
 {   uint128_t qq = a/b;
     q = qq;
     r = a - qq*b;
@@ -97,9 +105,26 @@ inline void divrem128(int128_t a, int128_t b,
 
 #else // HAVE_NATIVE_INT128_T
 
-// Used if there is no native int128_t type available.
+// Used if there is no native int128_t type available. I use a software
+// uint128_t type. However note that converting a signed value to 128 bits
+// using a simple cast doe snot propagate sign information into the top half,
+// so here is code that does:
+
+inline uint128_t uint128(int64_t v)
+{   uint128_t r;
+    r.UPPER = -(uint64_t)(v < 0);
+    r.lower = (uint64_t)v;
+    return r;
+}
 
 typedef uint128_t int128_t;
+
+inline int128_t int128(int64_t v)
+{   int128_t r;
+    r.UPPER = -(uint64_t)(v < 0);
+    r.lower = (uint64_t)v;
+    return r;
+}
 
 // assignment, +, -, *, &, |, ^, ~, == and != can all behave exactly
 // the same when I think of a value as being signed.

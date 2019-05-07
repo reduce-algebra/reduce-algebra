@@ -494,12 +494,12 @@ static LispObject quotbi(LispObject a, LispObject b)
             break;
         case 2:
             p = bignum_digits64(a, 2)<<31 | bignum_digits(a)[1];
-            p = ((uint128_t)p << 31) | bignum_digits(a)[0];
+            p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;
         case 3:        
             p = bignum_digits64(a, 3)<<31 | bignum_digits(a)[2];
-            p = ((uint128_t)p << 31) | bignum_digits(a)[1];
-            p = ((uint128_t)p << 31) | bignum_digits(a)[0];
+            p = (uint128(p) << 31) | bignum_digits(a)[1];
+            p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;
     default:
         return quotbb(a, make_fake_bignum(n), QUOTBB_QUOTIENT_NEEDED);
@@ -543,12 +543,12 @@ static LispObject quotrembi(LispObject a, LispObject b)
             break;
         case 2:
             p = bignum_digits64(a, 2)<<31 | bignum_digits(a)[1];
-            p = ((uint128_t)p << 31) | bignum_digits(a)[0];
+            p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;
         case 3:        
             p = bignum_digits64(a, 3)<<31 | bignum_digits(a)[2];
-            p = ((uint128_t)p << 31) | bignum_digits(a)[1];
-            p = ((uint128_t)p << 31) | bignum_digits(a)[0];
+            p = (uint128(p) << 31) | bignum_digits(a)[1];
+            p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;
         default:
             return quotbb(a, make_fake_bignum(n),

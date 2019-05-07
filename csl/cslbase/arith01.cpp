@@ -248,8 +248,8 @@ LispObject make_lisp_unsignedptr_fn(uintptr_t n)
 LispObject make_lisp_integer128_fn(int128_t r)
 {
 // The result will be a bignum using 2, 3, 4 or 5 digits.
-    if (lessp128(r, (int128_t)INT64_C(0x2000000000000000)) &&
-        geq128(r, -(int128_t)INT64_C(0x2000000000000000)))
+    if (lessp128(r, int128(INT64_C(0x2000000000000000))) &&
+        geq128(r, -int128(INT64_C(0x2000000000000000))))
         return make_two_word_bignum((int32_t)ASR(NARROW128(r), 31),
                                     (uint32_t)(r & 0x7fffffff));
 // I will split off the high and low 62-bit chunks...
@@ -279,7 +279,7 @@ LispObject make_lisp_integer128_fn(int128_t r)
 LispObject make_lisp_unsigned128_fn(uint128_t r)
 {
 // The result will be a bignum using 2, 3 or 4 digits.
-    if (lessp128(r, (int128_t)INT64_C(0x2000000000000000)))
+    if (lessp128(r, int128(INT64_C(0x2000000000000000))))
         return make_two_word_bignum((int32_t)ASR(NARROW128(r), 31),
             (uint32_t)(NARROW128(r) & 0x7fffffff));
 // I will split off the high and low 62-bit chunks...
