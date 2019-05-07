@@ -261,8 +261,8 @@ static LispObject rationalizef(double dd, int bits)
         double d2 = 1.0/d;
         a = (uint64_t)d2;
 // Given a quotient I can compute a remainder as q = 1<<(53-x) - a*p.
-//      int128_t w1 = (int128_t)1<<(53-x);
-//      int128_t w2 = (int128_t)a*(int128_t)p;
+//      int128_t w1 = int128(1)<<(53-x);
+//      int128_t w2 = (uint128_t)a*(uint128_t)p;
 // but if the quotient (a) was correct then the remainder will be less
 // than p, and p is known to be a 53-bit integer. Even if the computed
 // quotient was a little bit out the value of q that I get here will not
@@ -468,7 +468,7 @@ uint128_t uint128_fix(float128_t *a)
 // shuffle to be in the form of the uint128_t integer.
     uint64_t hi = (aa.v[HIPART] & UINT64_C(0x0000ffffffffffff)) |
                   UINT64_C(0x0001000000000000);
-    uint128_t w = aa.v[LOPART] | ((uint128_t)hi<<64);
+    uint128_t w = aa.v[LOPART] | (uint128(hi)<<64);
 // Now I may need to shift b by an amount determined by x.
     x = x - 113;
     if (x > 0) w = w<<x;
@@ -487,19 +487,19 @@ void uint128_float(uint128_t a, float128_t *b)
 // the "hidden bit".
 //
 // Here what I want is a "find most significant bit" operation.
-    while (a >= ((uint128_t)1<<113))
+    while (a >= (uint128_t(1)<<113))
     {   a = a>>1;
         x++;
     }
-    while (a < ((uint128_t)1<<(96-24+1)))
+    while (a < (uint128_t(1)<<(96-24+1)))
     {   a = a<<24;
         x = x - 24;
     }
-    while (a < ((uint128_t)1<<(96-5+1)))
+    while (a < (uint128_t(1)<<(96-5+1)))
     {   a = a<<5;
         x = x - 5;
     }
-    while (a < ((uint128_t)1<<112))
+    while (a < (uint128_t(1)<<112))
     {   a = a<<1;
         x--;
     }
@@ -534,7 +534,7 @@ static LispObject rationalizef128(float128_t *dd)
         f128M_frexp(&d, &d1, &x);
         f128M_ldexp(&d1, 113);
         p = uint128_fix(&d1);
-        q = (uint128_t)1 << (113-x);
+        q = uint128_t(1) << (113-x);
         u1 = p/q;
         a = p%q;
         u0 = 1;
@@ -552,7 +552,7 @@ static LispObject rationalizef128(float128_t *dd)
         f128M_div(&f128_1, &d, &d2);
         a = uint128_fix(&d2);
         uint128_t w1;
-        if (113-x < 128) w1 = (uint128_t)1 << (113-x);
+        if (113-x < 128) w1 = uint128_t(1) << (113-x);
         else w1 = 0;
         q = w1 - a*p;
         while ((q >> 127) != 0)  // i.e. "negative"
@@ -586,7 +586,7 @@ static LispObject rationalizef128(float128_t *dd)
         v0 = v1; v1 = v2;
     }
     LispObject p1;
-    if (f128M_negative(dd)) p1 = make_lisp_integer128(-(int128_t)u1);
+    if (f128M_negative(dd)) p1 = make_lisp_integer128(-int128(u1));
     else p1 = make_lisp_unsigned128(u1);
     if (v1 == 1) return p1;
     push(p1);
