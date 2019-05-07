@@ -231,27 +231,76 @@ write"error in ord!"
                        mkid(caddr li,cadr  li),l2s(cons(car  li,cdddr li))} }$
 %----------------------------------------------------
 
+%% symbolic procedure permu_repi(li)$
+%% % generates a list of permutations of the elements of li without multiple
+%% % permutations but where li can have multiple elements
+%% begin scalar p,perm,red_perm$
+%%  perm:=
+%%  if 1=length li then list(li)
+%%                 else for each x in li join
+%%                      for each y in permu_repi(delete(x,li)) collect cons(x,y)$
+%%
+%%  if perm and length car perm = 3 then <<
+%%   for each p in perm do
+%%   if cadr p neq caddr p then red_perm:=cons(p,red_perm)$
+%%   perm:=red_perm;
+%%   red_perm:=nil$
+%%  >>$
+%%
+%%  % deleting multiple lists
+%%  for each p in perm do
+%%  if not member(p,red_perm) then red_perm:=cons(p,red_perm)$
+%%
+%%  return red_perm
+%% end$
+
+% FJW, May 2019: The following version of permu_repi caches function
+% values and generates only unique permutations.  This makes it very
+% significantly more efficient when there are many repeated elements
+% in the list being permuted, as is the case when it is called in
+% v3tools.tst.  Assuming this represents the normal use case then it
+% should be a worthwhile improvement.  However, when there are no
+% repeats it will be slower and generate a lot of irrelevant
+% intermediate data.  If this is an issue then it could be
+% conditionalized to pick the best strategy, so I have preserved the
+% original version above as a comment.
+
+fluid '(permu_repi_cache)$
+
 symbolic procedure permu_repi(li)$
 % generates a list of permutations of the elements of li without multiple
 % permutations but where li can have multiple elements
-begin scalar p,perm,red_perm$
+begin scalar permu_repi_cache$
+ % permu_repi_cache is used to avoid recursively recomputing
+ % the same sub-permutations within this call of permu_repi.
+ return permu_repi_1(li)
+end$
+
+symbolic procedure permu_repi_1(li)$
+begin scalar r,p,perm,red_perm, lix, xlix, perms_seen$
+ % perms_seen is used to ignore duplicate permutations at this level.
+ if r:=assoc(li,permu_repi_cache) then return cdr r$
  perm:=
  if 1=length li then list(li)
-                else for each x in li join
-                     for each y in permu_repi(delete(x,li)) collect cons(x,y)$
+                else for each x in li join <<
+                     lix := delete(x,li)$  xlix := x . lix$
+                     if not (xlix member perms_seen) then <<
+                            perms_seen := xlix . perms_seen$
+                            for each y in permu_repi_1 lix collect cons(x,y) >>
+                >>$
 
  if perm and length car perm = 3 then <<
   for each p in perm do
   if cadr p neq caddr p then red_perm:=cons(p,red_perm)$
   perm:=red_perm;
-  red_perm:=nil$
  >>$
 
- % deleting multiple lists
- for each p in perm do
- if not member(p,red_perm) then red_perm:=cons(p,red_perm)$
+ % This line is here only to preserve the ordering returned by the
+ % original version of this procedure:
+ perm:=reversip perm$
 
- return red_perm
+ permu_repi_cache:=(li.perm).permu_repi_cache$
+ return perm
 end$
 %----------------------------------------------------
 
