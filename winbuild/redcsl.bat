@@ -1,7 +1,11 @@
 @echo off
 set h=%~dp0
 set reduce=%h%..
-IF NOT EXISTS %USERPROFILE%\Documents\ GOTO NOWINDIR
-cd %USERPROFILE%\Documents
-:NOWINDIR
+if "%~1"=="-nocd" goto nowindir
+if not exist %USERPROFILE%\Documents goto nowindir
+pushd %USERPROFILE%\Documents
+"%reduce%\lib\csl\reduce.exe" %*
+popd
+goto :eof
+:nowindir
 "%reduce%\lib\csl\reduce.exe" %*
