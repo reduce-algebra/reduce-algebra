@@ -44,6 +44,14 @@
 
 #ifdef HAVE_NATIVE_INT128
 
+inline uint128_t uint128(int128_t v)
+{   return (uint128_t)v;
+}
+
+inline uint128_t uint128(uint64_t v)
+{   return (uint128_t)v;
+}
+
 inline uint128_t uint128(int64_t v)
 {   return (uint128_t)v;
 }
@@ -107,17 +115,31 @@ inline void divrem128(int128_t a, int128_t b,
 
 // Used if there is no native int128_t type available. I use a software
 // uint128_t type. However note that converting a signed value to 128 bits
-// using a simple cast doe snot propagate sign information into the top half,
+// using a simple cast does not propagate sign information into the top half,
 // so here is code that does:
+
+typedef uint128_t int128_t;
+
+inline uint128_t uint128(int128_t v)
+{   uint128_t r;
+    r.UPPER = v.UPPER;
+    r.lower = v.LOWER;
+    return r;
+}
 
 inline uint128_t uint128(int64_t v)
 {   uint128_t r;
-    r.UPPER = -(uint64_t)(v < 0);
+    r.UPPER = 0;
     r.lower = (uint64_t)v;
     return r;
 }
 
-typedef uint128_t int128_t;
+inline uint128_t uint128(uint64_t v)
+{   uint128_t r;
+    r.UPPER = 0;
+    r.lower = (uint64_t)v;
+    return r;
+}
 
 inline int128_t int128(int64_t v)
 {   int128_t r;
