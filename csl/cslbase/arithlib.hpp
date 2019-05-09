@@ -657,6 +657,9 @@ inline intptr_t string_to_bignum(const char *s);
 inline intptr_t int_to_bignum(int64_t n);
 inline intptr_t unsigned_int_to_bignum(uint64_t n);
 inline intptr_t double_to_bignum(double d);
+#ifdef softfloat_h
+inline intptr_t float128_to_bignum(float128_t d);
+#endif
 inline intptr_t double_to_floor(double d);
 inline intptr_t double_to_ceiling(double d);
 inline intptr_t uniform_positive(size_t n);
@@ -1742,6 +1745,11 @@ public:
     Bignum(double d)
     {   val = double_to_bignum(d);
     }
+#ifdef softfloat_h
+    Bignum(float128_t d)
+    {   val = float128_to_bignum(d);
+    }
+#endif
     Bignum(float d)
     {   val = double_to_bignum((double)d);
     }
@@ -3066,6 +3074,30 @@ inline intptr_t double_to_bignum(double d)
     return r;
 }
 
+#ifdef softfloat_h
+
+inline intptr_t float128_to_bignum(float128_t d)
+{
+// I return 0 if the input is a NaN or either +infinity or -infinity.
+// This is somewhat arbitrary, but right now I am not minded to raise an
+// exception.
+    if (f128_eq(d, i64_to_f128(0)) || !f128_eq(d,d)) return int_to_handle(0);
+    int x;
+    float128_t dd;
+    f128M_frexp(&d, &dd, &x);
+    printf("float128_to_bignum exponent %d = %x\n", x, x);
+    if (x == 0x7fff) return int_to_handle(0); // infinity?
+    f128M_ldexp(&dd, 113);
+    abort("The next line only extracts 64 bits not 112");
+    intptr_t i = int_to_bignum(
+                     f128_to_i64(dd,softfloat_round_near_even,false));
+    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-113);
+    abandon(i);
+    return r;
+}
+
+#endif
+
 inline intptr_t double_to_floor(double d)
 {   if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
     int x;
@@ -4009,9 +4041,7 @@ inline bool Eqn::op(int64_t a, double b)
 }
 
 inline bool eqnfloat(uint64_t *a, size_t lena, double b)
-{
-// For an explanation of all this see greaterpfloat()
-    if (std::isnan(b)) return false;
+{   if (std::isnan(b)) return false;
     if (std::isinf(b)) return false;
     int64_t top = (int64_t)a[lena-1];
     if (top >= 0 && b <= 0.0) return false;
@@ -4069,55 +4099,64 @@ inline bool Eqn::op(double a, uint64_t *b)
 }
 
 #ifdef softfloat_h
+
+// The following constants are 2^112 and -2^112 and their reciprocals, which
+// are used in rationalf128 because any 128-bit floating point value that
+// is that large is necessarily an exact integer.
+//
+// FP128_SMALL_LIMIT is 2^-113 and is used in rationalizef128.
+
+#ifdef LITTLEENDIAN
+
+static float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
+static float128_t FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
+static float128_t FP128_SMALL_LIMIT = {{0, INT64_C(0x3f8e000000000000)}};
+
+#else
+
+static float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
+static float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
+static float128_t FP128_LARGE_LIMIT = {{INT64_C(0x4070000000000000), 0}};
+static float128_t FP128_SMALL_LIMIT = {{INT64_C(0x3f8e000000000000), 0}};
+
+#endif
+
+
 inline bool eqnbigfloat(uint64_t *a, size_t lena, float128_t b)
-{
-// For an explanation of all this see greaterpfloat()
-    if (!f128_eq(b, b)) return false;  // a NaN if b!=b
+{   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
     float128_t zero = i64_to_f128(0);
-    float128_t one = i64_to_f128(1);
-    if (f128_eq(f128_div(one, b), zero)) return false; // 1/inf == 0 
     int64_t top = (int64_t)a[lena-1];
-    if (top >= 0 && b <= 0.0) return false;
-    if (top < 0 && b >= 0.0) return false;
-    uint64_t next = a[lena-2];
-    if (top < 0)
-    {   b = -b;
-        next = ~next;
-        uint64_t carry = 1;
-        for (size_t i=0; i<lena-2; i++)
-        {   if (a[i] != 0)
-            {   carry = 0;
-                break;
-            }
-        }
-        next += carry;
-        if (next == 0) top++;
-        if (carry == 0) next |= 1;
+    if (top >= 0 && f128_lt(b, zero)) return false;
+    if (top < 0 && !f128_lt(b, zero)) return false;
+// Now the two inputs have the same sign.
+    if (lena == 1 ||
+        (lena == 2 &&
+         !((a[1] > 0x0001000000000000 ||
+            (a[1] == 0x0001000000000000 && a[0] != 0)) ||
+           (int64_t)a[1] < -(int64_t)0x0001000000000000)))
+    {
+// Here the integer is of modest size - if the float is huge we can
+// resolve matters cheaply.
+        if (f128_lt(FP128_INT_LIMIT, b) ||
+            f128_lt(b, FP128_MINUS_INT_LIMIT)) return false;
+// Convert a to a float128 and compare. The conversion will not lose any
+// information because the |a| <= 2^112 so it will fit within the mantissa
+// bits that are available.
+        float128_t aa = Float128::op(a);
+        return f128_eq(aa, b);
     }
-    size_t lz;
-    if (top == 0) lz = 64 + nlz(next);
-    else lz = nlz(top);
-    int x;
-    b = std::frexp(b, &x);
-    int64_t ix = 64*((int64_t)lena-2)+128-(int64_t)lz;
-    if (x != ix) return false;
-    b = std::ldexp(b, 53);
-    int64_t ib = (int64_t)b;
-    int sh = (int)lz - 64 + 53;
-    if (sh < 0)
-    {   next |= (((uint64_t)top) << (64+sh));
-        top = top >> (-sh);
+    else
+    {
+// Now the integer is rather big. If I was KEEN I would estimate the size of
+// the float from its exponent and compare with the number of bits in the
+// integer to filter out cases where their sized were very different. However
+// I am not feeling very keen! I can afford to convert the float to an integer,
+// and because it is large when I fix it there will not be any discarded
+// fractional part...
+        intptr_t bb = float128_to_bignum(b); 
+        return op_dispatch2<Eqn,bool>(vector_to_handle(a), bb);
     }
-    else if (sh != 0)
-    {   top = (top<<sh) | (next<<(64-sh));
-        next = next<<sh;
-    };
-    if (top != ib) return false;
-    if (next != 0) return false;
-    return true;
 }
-
-
 
 inline bool Eqn::op(int64_t a, float128_t b)
 {   return f128_eq(i64_to_f128(a), b);
@@ -4326,6 +4365,67 @@ inline bool Greaterp::op(double a, uint64_t *b)
 }
 
 #ifdef softfloat_h
+
+//@@ This is not sorted out yet!
+
+// This one function does >, >=, < and <= with "great" indicating if
+// the base is > or < and "ifequal" distinguishing > from >= and < from <=.
+
+inline bool greaterpbigfloat(uint64_t *a, size_t lena, float128_t b,
+                             bool great, bool ifequal)
+{   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
+    float128_t zero = i64_to_f128(0);
+    int64_t top = (int64_t)a[lena-1];
+    if (top >= 0 && f128_lt(b, zero)) return great;
+    if (top < 0 && !f128_lt(b, zero)) return !great;
+// Now the two inputs have the same sign.
+    if (lena == 1 ||
+        (lena == 2 &&
+         !((a[1] > 0x0001000000000000 ||
+            (a[1] == 0x0001000000000000 && a[0] != 0)) ||
+           (int64_t)a[1] < -(int64_t)0x0001000000000000)))
+    {
+// Here the integer is of modest size - if the float is huge we can
+// resolve matters cheaply.
+        if (f128_lt(FP128_INT_LIMIT, b)) return !great;
+        if (f128_lt(b, FP128_MINUS_INT_LIMIT)) return great;
+// Convert a to a float128 and compare. The conversion will not lose any
+// information because the |a| <= 2^112 so it will fit within the mantissa
+// bits that are available.
+        float128_t aa = Float128::op(a);
+        if (great)
+        {   if (ifequal) return f128_le(b, aa);
+            else return f128_lt(b, aa);
+        }
+        else
+        {   if (ifequal) return f128_le(aa, b);
+            else return f128_lt(aa, b);
+        }
+    }
+    else
+    {
+// Now the integer is rather big. If I was KEEN I would estimate the size of
+// the float from its exponent and compare with the number of bits in the
+// integer to filter out cases where their sized were very different. However
+// I am not feeling very keen! I can afford to convert the float to an integer,
+// and because it is large when I fix it there will not be any discarded
+// fractional part...
+        // ...
+        intptr_t bb = float128_to_bignum(b);
+// At the moment I think there is a space-leak on bb here...
+        if (great)
+            if (ifequal)
+                return op_dispatch2<Geq,bool>(vector_to_handle(a), bb);
+            else return op_dispatch2<Greaterp,bool>(vector_to_handle(a), bb);
+        else
+            if (ifequal)
+                return op_dispatch2<Leq,bool>(vector_to_handle(a), bb);
+            else return op_dispatch2<Lessp,bool>(vector_to_handle(a), bb);
+    }
+}
+
+
+
 inline bool Greaterp::op(int64_t a, float128_t b)
 {   return f128_lt(b, i64_to_f128(a));
 }
@@ -4333,7 +4433,7 @@ inline bool Greaterp::op(int64_t a, float128_t b)
 inline bool Greaterp::op(uint64_t *a, float128_t b)
 {   size_t lena = number_size(a);
     if (lena == 1) return Greaterp::op((int64_t)a[0], b);
-    return greaterpbigfloat(a, lena, b);
+    return greaterpbigfloat(a, lena, b, true, false);
 
 }
 

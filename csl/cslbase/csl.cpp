@@ -515,6 +515,26 @@ void interrupted()
     throw LispError();
 }
 
+[[noreturn]] void aerror2(const char *s, const char *a, LispObject b)
+{   LispObject w;
+    if (miscflags & HEADLINE_FLAG)
+    {   err_printf("+++ Error: %s %s ", s, a);
+        loop_print_error(b);
+        err_printf("\n");
+    }
+    if ((w = qvalue(break_function)) != nil &&
+        symbolp(w) &&
+        qfn1(w) != undefined_1)
+    {   ignore_exception((*qfn1(w))(qenv(w), nil));
+    }
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
+                  UNWIND_UNWIND;
+    exit_value = exit_tag = nil;
+    exit_count = 0;
+    throw LispError();
+}
+
 [[noreturn]] void aerror3(const char *s, LispObject a, LispObject b, LispObject c)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)

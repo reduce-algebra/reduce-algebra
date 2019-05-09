@@ -34,8 +34,10 @@
  *************************************************************************/
 
 #include "headers.h"
+
 #include "softfloat.h"
 #define softfloat_h 1
+
 #include "arithlib.hpp"
 #include "dispatch.h"
 
@@ -70,27 +72,31 @@ public:
     }
 // rational + fixnum
     static inline LispObject op(Rat a, intptr_t b)
-    {   abort("plus not coded yet");
+    {   if (b == 0) return a.value();
+        return make_ratio(newplus(a.numerator(),
+                                  newtimes(a.denominator(), b)),
+                          a.denominator());
     }
 // complex + fixnum
     static inline LispObject op(Cpx a, intptr_t b)
-    {   abort("plus not coded yet");
+    {   if (b == 0) return a.v;
+        return make_complex(newplus(a.real_part(), b), a.imag_part());
     }
 // short float + fixnum
     static inline LispObject op(SFlt a, intptr_t b)
-    {   abort("plus not coded yet");
+    {   return pack_short_float(a.floatval() + (double)b);
     }
 // single float + fixnum
     static inline LispObject op(Flt a, intptr_t b)
-    {   abort("plus not coded yet");
+    {   return pack_single_float(a.floatval() + (double)b);
     }
 // double float + fixnum
     static inline LispObject op(double a, intptr_t b)
-    {   return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+    {   return make_boxfloat(a + (double)b, TYPE_DOUBLE_FLOAT);
     }
 // long float + fixnum
     static inline LispObject op(LFlt a, intptr_t b)
-    {   abort("plus not coded yet");
+    {   return make_boxfloat128(f128_add(a.floatval(), i64_to_f128(b)));
     }
 //............................................
 // fixnum + bignum
