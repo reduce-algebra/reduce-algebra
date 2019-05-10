@@ -4103,21 +4103,16 @@ inline bool Eqn::op(double a, uint64_t *b)
 // The following constants are 2^112 and -2^112 and their reciprocals, which
 // are used in rationalf128 because any 128-bit floating point value that
 // is that large is necessarily an exact integer.
-//
-// FP128_SMALL_LIMIT is 2^-113 and is used in rationalizef128.
 
 #ifdef LITTLEENDIAN
 
 static float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
 static float128_t FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
-static float128_t FP128_SMALL_LIMIT = {{0, INT64_C(0x3f8e000000000000)}};
 
 #else
 
 static float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
 static float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
-static float128_t FP128_LARGE_LIMIT = {{INT64_C(0x4070000000000000), 0}};
-static float128_t FP128_SMALL_LIMIT = {{INT64_C(0x3f8e000000000000), 0}};
 
 #endif
 

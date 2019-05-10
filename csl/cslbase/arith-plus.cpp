@@ -53,293 +53,364 @@
 // a number of them merely delegate to the version with arguments the other
 // way round.
 
+// Well I will make it even worse and include LispObject in the overloads
+// and that makes it 81 little functions!
+
+using number_dispatcher::Fixnum;
+// uint64_t *
 using number_dispatcher::Rat;
 using number_dispatcher::Cpx;
 using number_dispatcher::SFlt;
+// double
 using number_dispatcher::Flt;
 using number_dispatcher::LFlt;
 
-class Plus
-{
-public:
+// The main generic addition function is
+//       LispObject Plus.op(LispObject, LispObject);
+
+LispObject Plus::op(LispObject a, LispObject b)
+{   return number_dispatcher::binary<LispObject,Plus>("plus", a, b);
+}
+
+
+LispObject Plus::op(LispObject a, Fixnum b)
+{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+}
+
+
+LispObject Plus::op(LispObject a, uint64_t *b)
+{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(LispObject a, Rat b)
+{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(LispObject a, Cpx b)
+{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(LispObject a, SFlt b)
+{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(LispObject a, Flt b)
+{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(LispObject a, double b)
+{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(LispObject a, LFlt b)
+{   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(Fixnum a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+}
+
+
+LispObject Plus::op(uint64_t *a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(Rat a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(Cpx a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(SFlt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(Flt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(double a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+}
+
+LispObject Plus::op(LFlt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
+}
+
 // fixnum + fixnum
-    static inline LispObject op(intptr_t a, intptr_t b)
-    {   return arithlib::Plus::op(a, b);
-    }
+inline LispObject Plus::op(Fixnum a, Fixnum b)
+{   return arithlib::Plus::op(a.intvalue(), b.intvalue());
+}
 // bignum + fixnum
-    static inline LispObject op(uint64_t *a, intptr_t b)
-    {   return arithlib::Plus::op(a, b);
-    }
+LispObject Plus::op(uint64_t *a, Fixnum b)
+{   return arithlib::Plus::op(a, b.intvalue());
+}
 // rational + fixnum
-    static inline LispObject op(Rat a, intptr_t b)
-    {   if (b == 0) return a.value();
-        return make_ratio(newplus(a.numerator(),
-                                  newtimes(a.denominator(), b)),
-                          a.denominator());
-    }
+LispObject Plus::op(Rat a, Fixnum b)
+{   if (b.intvalue() == 0) return a.value();
+    return make_ratio(Plus::op(a.numerator(),
+                               Times::op(a.denominator(), b)),
+                      a.denominator());
+}
 // complex + fixnum
-    static inline LispObject op(Cpx a, intptr_t b)
-    {   if (b == 0) return a.v;
-        return make_complex(newplus(a.real_part(), b), a.imag_part());
-    }
+LispObject Plus::op(Cpx a, Fixnum b)
+{   if (b.intvalue() == 0) return a.v;
+    return make_complex(Plus::op(a.real_part(), b), a.imag_part());
+}
 // short float + fixnum
-    static inline LispObject op(SFlt a, intptr_t b)
-    {   return pack_short_float(a.floatval() + (double)b);
-    }
+LispObject Plus::op(SFlt a, Fixnum b)
+{   return pack_short_float(a.floatval() + (double)b.value());
+}
 // single float + fixnum
-    static inline LispObject op(Flt a, intptr_t b)
-    {   return pack_single_float(a.floatval() + (double)b);
-    }
+LispObject Plus::op(Flt a, Fixnum b)
+{   return pack_single_float(a.floatval() + (double)b.intvalue());
+}
 // double float + fixnum
-    static inline LispObject op(double a, intptr_t b)
-    {   return make_boxfloat(a + (double)b, TYPE_DOUBLE_FLOAT);
-    }
+LispObject Plus::op(double a, Fixnum b)
+{   return make_boxfloat(a + (double)b.intvalue(), TYPE_DOUBLE_FLOAT);
+}
 // long float + fixnum
-    static inline LispObject op(LFlt a, intptr_t b)
-    {   return make_boxfloat128(f128_add(a.floatval(), i64_to_f128(b)));
-    }
+LispObject Plus::op(LFlt a, Fixnum b)
+{   return make_boxfloat128(f128_add(a.floatval(), i64_to_f128(b.intvalue())));
+}
 //............................................
 // fixnum + bignum
-    static inline LispObject op(intptr_t a, uint64_t *b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Fixnum a, uint64_t *b)
+{   return Plus::op(b, a);
+}
 // bignum + bignum
-    static inline LispObject op(uint64_t *a, uint64_t *b)
-    {   return arithlib::Plus::op(a, b);
-    }
+LispObject Plus::op(uint64_t *a, uint64_t *b)
+{   return arithlib::Plus::op(a, b);
+}
 // rational + bignum
-    static inline LispObject op(Rat a, uint64_t *b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(Rat a, uint64_t *b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // complex + bignum
-    static inline LispObject op(Cpx a, uint64_t *b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(Cpx a, uint64_t *b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // short float + bignum
-    static inline LispObject op(SFlt a, uint64_t *b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(SFlt a, uint64_t *b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // single float + bignum
-    static inline LispObject op(Flt a, uint64_t *b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(Flt a, uint64_t *b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // double float + bignum
-    static inline LispObject op(double a, uint64_t *b)
-    {   return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
-    }
+LispObject Plus::op(double a, uint64_t *b)
+{   return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+}
 // long float + bignum
-    static inline LispObject op(LFlt a, uint64_t *b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(LFlt a, uint64_t *b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 
 //............................................
 // fixnum + rational
-    static inline LispObject op(intptr_t a, Rat b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Fixnum a, Rat b)
+{   return Plus::op(b, a);
+}
 // bignum + rational
-    static inline LispObject op(uint64_t *a, Rat b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(uint64_t *a, Rat b)
+{   return Plus::op(b, a);
+}
 // rational + rational
-    static inline LispObject op(Rat a, Rat b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(Rat a, Rat b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // complex + rational
-    static inline LispObject op(Cpx a, Rat b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(Cpx a, Rat b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // short float + rational
-    static inline LispObject op(SFlt a, Rat b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(SFlt a, Rat b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // single float + rational
-    static inline LispObject op(Flt a, Rat b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(Flt a, Rat b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // double float + rational
-    static inline LispObject op(double a, Rat b)
-    {   abort("plus not coded yet");
+LispObject Plus::op(double a, Rat b)
+{   return (LispObject)0; abort("plus not coded yet");
 //      return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
-    }
+}
 // long float + rational
-    static inline LispObject op(LFlt a, Rat b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(LFlt a, Rat b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 //............................................
 // fixnum + complex
-    static inline LispObject op(intptr_t a, Cpx b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Fixnum a, Cpx b)
+{   return Plus::op(b, a);
+}
 // bignum + complex
-    static inline LispObject op(uint64_t *a, Cpx b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(uint64_t *a, Cpx b)
+{   return Plus::op(b, a);
+}
 // rational + complex
-    static inline LispObject op(Rat a, Cpx b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Rat a, Cpx b)
+{   return Plus::op(b, a);
+}
 // complex + complex
-    static inline LispObject op(Cpx a, Cpx b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(Cpx a, Cpx b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // short float + complex
-    static inline LispObject op(SFlt a, Cpx b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(SFlt a, Cpx b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // single float + complex
-    static inline LispObject op(Flt a, Cpx b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(Flt a, Cpx b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // double float + complex
-    static inline LispObject op(double a, Cpx b)
-    {   abort("plus not coded yet");
+LispObject Plus::op(double a, Cpx b)
+{   return (LispObject)0; abort("plus not coded yet");
 //      return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
-    }
+}
 // long float + complex
-    static inline LispObject op(LFlt a, Cpx b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(LFlt a, Cpx b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 //............................................
 // fixnum + short float
-    static inline LispObject op(intptr_t a, SFlt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Fixnum a, SFlt b)
+{   return Plus::op(b, a);
+}
 // bignum + short float
-    static inline LispObject op(uint64_t *a, SFlt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(uint64_t *a, SFlt b)
+{   return Plus::op(b, a);
+}
 // rational + short float
-    static inline LispObject op(Rat a, SFlt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Rat a, SFlt b)
+{   return Plus::op(b, a);
+}
 // complex + short float
-    static inline LispObject op(Cpx a, SFlt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Cpx a, SFlt b)
+{   return Plus::op(b, a);
+}
 // short float + short float
-    static inline LispObject op(SFlt a, SFlt b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(SFlt a, SFlt b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // single float + short float
-    static inline LispObject op(Flt a, SFlt b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(Flt a, SFlt b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // double float + short float
-    static inline LispObject op(double a, SFlt b)
-    {   abort("plus not coded yet");
+LispObject Plus::op(double a, SFlt b)
+{   return (LispObject)0; abort("plus not coded yet");
 //      return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
-    }
+}
 // long float + short float
-    static inline LispObject op(LFlt a, SFlt b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(LFlt a, SFlt b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 //............................................
 // fixnum + single float
-    static inline LispObject op(intptr_t a, Flt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Fixnum a, Flt b)
+{   return Plus::op(b, a);
+}
 // bignum + single float
-    static inline LispObject op(uint64_t *a, Flt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(uint64_t *a, Flt b)
+{   return Plus::op(b, a);
+}
 // rational + single float
-    static inline LispObject op(Rat a, Flt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Rat a, Flt b)
+{   return Plus::op(b, a);
+}
 // complex + single float
-    static inline LispObject op(Cpx a, Flt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Cpx a, Flt b)
+{   return Plus::op(b, a);
+}
 // short float + single float
-    static inline LispObject op(SFlt a, Flt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(SFlt a, Flt b)
+{   return Plus::op(b, a);
+}
 // single float + single float
-    static inline LispObject op(Flt a, Flt b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(Flt a, Flt b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 // double float + single float
-    static inline LispObject op(double a, Flt b)
-    {   abort("plus not coded yet");
+LispObject Plus::op(double a, Flt b)
+{   return (LispObject)0; abort("plus not coded yet");
 //      return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
-    }
+}
 // long float + single float
-    static inline LispObject op(LFlt a, Flt b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(LFlt a, Flt b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 
 //............................................
 // fixnum + double float
-    static inline LispObject op(intptr_t a, double b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Fixnum a, double b)
+{   return Plus::op(b, a);
+}
 // bignum + double float
-    static inline LispObject op(uint64_t *a, double b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(uint64_t *a, double b)
+{   return Plus::op(b, a);
+}
 // rational + double float
-    static inline LispObject op(Rat a, double b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Rat a, double b)
+{   return Plus::op(b, a);
+}
 // complex + double float
-    static inline LispObject op(Cpx a, double b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Cpx a, double b)
+{   return Plus::op(b, a);
+}
 // short float + double float
-    static inline LispObject op(SFlt a, double b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(SFlt a, double b)
+{   return Plus::op(b, a);
+}
 // single float + double float
-    static inline LispObject op(Flt a, double b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Flt a, double b)
+{   return Plus::op(b, a);
+}
 // double float + double float
-    static inline LispObject op(double a, double b)
-    {   return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
-    }
+LispObject Plus::op(double a, double b)
+{   return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+}
 // long float + double float
-    static inline LispObject op(LFlt a, double b)
-    {   abort("plus not coded yet");
-    }
+LispObject Plus::op(LFlt a, double b)
+{   return (LispObject)0; abort("plus not coded yet");
+}
 //............................................
 // fixnum + long float
-    static inline LispObject op(intptr_t a, LFlt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Fixnum a, LFlt b)
+{   return Plus::op(b, a);
+}
 // bignum + long float
-    static inline LispObject op(uint64_t *a, LFlt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(uint64_t *a, LFlt b)
+{   return Plus::op(b, a);
+}
 // rational + long float
-    static inline LispObject op(Rat a, LFlt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Rat a, LFlt b)
+{   return Plus::op(b, a);
+}
 // complex + long float
-    static inline LispObject op(Cpx a, LFlt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Cpx a, LFlt b)
+{   return Plus::op(b, a);
+}
 // short float + long float
-    static inline LispObject op(SFlt a, LFlt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(SFlt a, LFlt b)
+{   return Plus::op(b, a);
+}
 // single float + long float
-    static inline LispObject op(Flt a, LFlt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(Flt a, LFlt b)
+{   return Plus::op(b, a);
+}
 // double float + long float
-    static inline LispObject op(double a, LFlt b)
-    {   return op(b, a);
-    }
+LispObject Plus::op(double a, LFlt b)
+{   return Plus::op(b, a);
+}
 // long float + long float
-    static inline LispObject op(LFlt a, LFlt b)
-    {   abort("plus not coded yet");
-    }
-
-};
-
-LispObject newplus(LispObject a, LispObject b)
-{   return number_dispatcher::binary<LispObject,Plus>("plus", a, b);
+LispObject Plus::op(LFlt a, LFlt b)
+{   return (LispObject)0; abort("plus not coded yet");
 }
 
 // end of arith-plus.cpp
