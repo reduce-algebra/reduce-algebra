@@ -186,19 +186,21 @@ LispObject Plus::op(uint64_t *a, uint64_t *b)
 }
 // rational + bignum
 LispObject Plus::op(Rat a, uint64_t *b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_ratio(Plus::op(a.numerator(),
+                               Times::op(a.denominator(), b)),
+                      a.denominator());
 }
 // complex + bignum
 LispObject Plus::op(Cpx a, uint64_t *b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_complex(Plus::op(a.real_part(), b), a.imag_part());
 }
 // short float + bignum
 LispObject Plus::op(SFlt a, uint64_t *b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return pack_short_float(a.floatval() + arithlib::Double::op(b));
 }
 // single float + bignum
 LispObject Plus::op(Flt a, uint64_t *b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return pack_single_float(a.floatval() + arithlib::Double::op(b));
 }
 // double float + bignum
 LispObject Plus::op(double a, uint64_t *b)
@@ -206,7 +208,7 @@ LispObject Plus::op(double a, uint64_t *b)
 }
 // long float + bignum
 LispObject Plus::op(LFlt a, uint64_t *b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_boxfloat128(f128_add(a.floatval(), arithlib::Float128::op(b)));
 }
 
 //............................................
@@ -220,28 +222,37 @@ LispObject Plus::op(uint64_t *a, Rat b)
 }
 // rational + rational
 LispObject Plus::op(Rat a, Rat b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   LispObject p1 = a.numerator(), q1 = a.denominator();
+    LispObject p2 = b.numerator(), q2 = b.denominator();
+    LispObject g = Gcdn::op(q1, q2);
+    LispObject w;
+    LispObject num = Plus::op(
+        Times::op(p1, w = Quotient::op(q2, g)),
+        Times::op(p2, Quotient::op(q1, g)));
+    LispObject den = Times::op(w, q1);
+    g = Gcdn::op(num, den);
+    return make_ratio(Quotient::op(num, g),
+                      Quotient::op(den, g));
 }
 // complex + rational
 LispObject Plus::op(Cpx a, Rat b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_complex(Plus::op(a.real_part(), b), a.imag_part());
 }
 // short float + rational
 LispObject Plus::op(SFlt a, Rat b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return pack_short_float(a.floatval() + Float::op(b));
 }
 // single float + rational
 LispObject Plus::op(Flt a, Rat b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return pack_single_float(a.floatval() + Float::op(b));
 }
 // double float + rational
 LispObject Plus::op(double a, Rat b)
-{   return (LispObject)0; abort("plus not coded yet");
-//      return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a + Float::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float + rational
 LispObject Plus::op(LFlt a, Rat b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_boxfloat128(f128_add(a.floatval(), Float128::op(b)));
 }
 //............................................
 // fixnum + complex
@@ -258,24 +269,24 @@ LispObject Plus::op(Rat a, Cpx b)
 }
 // complex + complex
 LispObject Plus::op(Cpx a, Cpx b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_complex(Plus::op(a.real_part(), b.real_part()),
+                        Plus::op(a.imag_part(), b.imag_part()));
 }
 // short float + complex
 LispObject Plus::op(SFlt a, Cpx b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_complex(Plus::op(a, b.real_part()), b.imag_part());
 }
 // single float + complex
 LispObject Plus::op(Flt a, Cpx b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_complex(Plus::op(a, b.real_part()), b.imag_part());
 }
 // double float + complex
 LispObject Plus::op(double a, Cpx b)
-{   return (LispObject)0; abort("plus not coded yet");
-//      return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_complex(Plus::op(a, b.real_part()), b.imag_part());
 }
 // long float + complex
 LispObject Plus::op(LFlt a, Cpx b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_complex(Plus::op(a, b.real_part()), b.imag_part());
 }
 //............................................
 // fixnum + short float
@@ -296,20 +307,19 @@ LispObject Plus::op(Cpx a, SFlt b)
 }
 // short float + short float
 LispObject Plus::op(SFlt a, SFlt b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return pack_short_float(a.floatval() + b.floatval());
 }
 // single float + short float
 LispObject Plus::op(Flt a, SFlt b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return pack_single_float(a.floatval() + b.floatval());
 }
 // double float + short float
 LispObject Plus::op(double a, SFlt b)
-{   return (LispObject)0; abort("plus not coded yet");
-//      return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a + b.floatval(), TYPE_DOUBLE_FLOAT);
 }
 // long float + short float
 LispObject Plus::op(LFlt a, SFlt b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_boxfloat128(f128_add(a.floatval(), Float128::op(b)));
 }
 //............................................
 // fixnum + single float
@@ -334,16 +344,15 @@ LispObject Plus::op(SFlt a, Flt b)
 }
 // single float + single float
 LispObject Plus::op(Flt a, Flt b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return pack_single_float(a.floatval() + b.floatval()); 
 }
 // double float + single float
 LispObject Plus::op(double a, Flt b)
-{   return (LispObject)0; abort("plus not coded yet");
-//      return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a + b.floatval(), TYPE_DOUBLE_FLOAT);
 }
 // long float + single float
 LispObject Plus::op(LFlt a, Flt b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_boxfloat128(f128_add(a.floatval(), Float128::op(b)));
 }
 
 //............................................
@@ -373,11 +382,11 @@ LispObject Plus::op(Flt a, double b)
 }
 // double float + double float
 LispObject Plus::op(double a, double b)
-{   return make_boxfloat(a + arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a + b, TYPE_DOUBLE_FLOAT);
 }
 // long float + double float
 LispObject Plus::op(LFlt a, double b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_boxfloat128(f128_add(a.floatval(), Float128::op(b)));
 }
 //............................................
 // fixnum + long float
@@ -410,7 +419,7 @@ LispObject Plus::op(double a, LFlt b)
 }
 // long float + long float
 LispObject Plus::op(LFlt a, LFlt b)
-{   return (LispObject)0; abort("plus not coded yet");
+{   return make_boxfloat128(f128_add(a.floatval(), b.floatval()));
 }
 
 // end of arith-plus.cpp

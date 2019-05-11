@@ -506,7 +506,10 @@ using number_dispatcher::Flt;        // 32 bit float (immediate on 64-bit host)
 //                       double      // 64 bit float
 using number_dispatcher::LFlt;       // 128 bit float supported in software
 
-// I declare a class for each operation that is to be supported...
+// I declare a class for each operation that is to be supported... The
+// bulk of all the declarations here represents a real statement or reminder
+// of how much work it is to support Lisp generic arithmetic! Because this
+// is just the declarations, not the implementation.
 
 
 // Basic generic arithmetic
@@ -2202,8 +2205,124 @@ public:
     static bool op(uint64_t *b);
 };
 
+class Float
+{
+public:
+    static double op(LispObject a);
 
+    static double op(Fixnum b);
+    static double op(uint64_t *b);
+    static double op(Rat b);
+    static double op(Cpx b);
+    static double op(SFlt b);
+    static double op(Flt b);
+    static double op(double b);
+#ifdef softfloat_h
+    static double op(LFlt b);
+#endif // softfloat_h
+};
 
+class Float128
+{
+public:
+    static float128_t op(LispObject a);
+
+    static float128_t op(Fixnum b);
+    static float128_t op(uint64_t *b);
+    static float128_t op(Rat b);
+    static float128_t op(Cpx b);
+    static float128_t op(SFlt b);
+    static float128_t op(Flt b);
+    static float128_t op(double b);
+#ifdef softfloat_h
+    static float128_t op(LFlt b);
+#endif // softfloat_h
+};
+
+class Fix
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
+    static LispObject op(Rat b);
+    static LispObject op(Cpx b);
+    static LispObject op(SFlt b);
+    static LispObject op(Flt b);
+    static LispObject op(double b);
+#ifdef softfloat_h
+    static LispObject op(LFlt b);
+#endif // softfloat_h
+};
+
+class Floor
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
+    static LispObject op(Rat b);
+    static LispObject op(Cpx b);
+    static LispObject op(SFlt b);
+    static LispObject op(Flt b);
+    static LispObject op(double b);
+#ifdef softfloat_h
+    static LispObject op(LFlt b);
+#endif // softfloat_h
+};
+
+class Ceiling
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
+    static LispObject op(Rat b);
+    static LispObject op(Cpx b);
+    static LispObject op(SFlt b);
+    static LispObject op(Flt b);
+    static LispObject op(double b);
+#ifdef softfloat_h
+    static LispObject op(LFlt b);
+#endif // softfloat_h
+};
+
+class Frexp
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
+    static LispObject op(Rat b);
+    static LispObject op(Cpx b);
+    static LispObject op(SFlt b);
+    static LispObject op(Flt b);
+    static LispObject op(double b);
+#ifdef softfloat_h
+    static LispObject op(LFlt b);
+#endif // softfloat_h
+};
+
+class Ldexp
+{
+public:
+    static LispObject op(LispObject a, int n);
+
+    static LispObject op(Fixnum b, int n);
+    static LispObject op(uint64_t *b, int n);
+    static LispObject op(Rat b, int n);
+    static LispObject op(Cpx b, int n);
+    static LispObject op(SFlt b, int n);
+    static LispObject op(Flt b, int n);
+    static LispObject op(double b, int n);
+#ifdef softfloat_h
+    static LispObject op(LFlt b, int n);
+#endif // softfloat_h
+};
 
 #endif // header_dispatch_h
 
