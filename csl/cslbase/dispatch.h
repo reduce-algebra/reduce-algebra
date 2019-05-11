@@ -113,7 +113,7 @@ public:
     LispObject value()
     {   return v;
     }
-    intptr_t intvalue()
+    intptr_t intval()
     {   return int_of_fixnum(v);
     }
 };
@@ -399,7 +399,7 @@ inline R ibinary(const char *fname, LispObject a, LispObject b)
             aerror2("Non-integer argument", fname, a);
         }
     case TAG_FIXNUM:
-        return ibinaryL<R,T,intptr_t>(fname, Fixnum(int_of_fixnum(a)), b);
+        return ibinaryL<R,T,Fixnum>(fname, Fixnum(int_of_fixnum(a)), b);
     }
 }
 

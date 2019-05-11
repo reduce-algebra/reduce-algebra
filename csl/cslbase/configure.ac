@@ -656,6 +656,13 @@ then
   enable_test="yes"
 fi
 
+AC_ARG_WITH(arithlib,
+  AC_HELP_STRING([--with-arithlib],
+                 [arithlib.hpp version]),
+  [],
+  [with_arithlib="no"])
+AC_MSG_RESULT([$with_arithlib])
+
 if test "x$enable_test" = "xyes"
 then
 # I force EXPERIMENT into CPPFLAGS because when u01.cpp to u60.cpp get
@@ -663,6 +670,12 @@ then
 # on the option!
   CPPFLAGS="$CPPFLAGS -DEXPERIMENT=1"
   AC_DEFINE(EXPERIMENT, [1], [True if this is an experimental testing mode variant])
+fi
+
+if test "x$with_arithlib" = "xyes"
+then
+  CPPFLAGS="$CPPFLAGS -DARITHLIB=1"
+  AC_DEFINE(ARITHLIB, [1], [Work on a transition to use of arithlib.hpp for bignums])
 fi
 
 # Want to build "embedded" variant?
@@ -1725,6 +1738,7 @@ AM_CONDITIONAL(fox,test "x$with_fox" != "xno")
 AM_CONDITIONAL(wx,test "x$with_wx" != "xno")
 AM_CONDITIONAL(gui,test "x$with_fox" != "xno" || test "x$with_wx" != "xno")
 AM_CONDITIONAL(experiment,test "x$enable_test" = "xyes")
+AM_CONDITIONAL(arithlib,test "x$with_arithlib" = "xyes")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")

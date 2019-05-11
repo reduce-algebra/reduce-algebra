@@ -1,13 +1,10 @@
-// version.h                               Copyright (C) 1990-2018 Codemist
+// arith-float.cpp                         Copyright (C) 1990-2019 Codemist
 
-#ifndef header_version_h
-#define header_version_h 1
-
-// $Id$
+// $Id: version.h 4783 2018-09-25 20:26:06Z arthurcnorman $
 
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,12 +32,74 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// Rather than having a simple version I will cause my script
-// (scripts/commit.sh) that is used to update the subversion repository to
-// update the revision number here.
+#include "headers.h"
 
-#define REVISION 4991
+#include "softfloat.h"
+#define softfloat_h 1
 
-#endif // header_version_h
+#include "arithlib.hpp"
+#include "dispatch.h"
 
-// end of version.h
+using number_dispatcher::Fixnum;
+// uint64_t *
+using number_dispatcher::Rat;
+using number_dispatcher::Cpx;
+using number_dispatcher::SFlt;
+// double
+using number_dispatcher::Flt;
+using number_dispatcher::LFlt;
+
+//@@@
+//@@@ At present this is basically the code for Plus, edited so that the
+//@@@ names used are different. Every function here will thus need review!
+//@@@ However as a place-holder this is still useful.
+//@@@
+
+
+double Float::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Float>("float", a);
+}
+
+
+double Float::op(Fixnum a)
+{   return (double)a.intval();
+}
+
+
+double Float::op(uint64_t *a)
+{   return arithlib::Float::op(a);
+}
+
+double Float::op(Rat a)
+{   return Float::op(a.numerator()) / Float::op(a.denominator());
+}
+
+double Float::op(Cpx a)
+{   aerror1("bad argument for float", a.value());
+}
+
+double Float::op(SFlt a)
+{   return a.floatval();
+}
+
+double Float::op(Flt a)
+{   return a.floatval();
+}
+
+double Float::op(double a)
+{   return a;
+}
+
+double Float::op(LFlt a)
+{   float64_t f = f128_to_f64(a.floatval());
+// Ha ha - the jolly activity here is a response to the Strict Aliasing Rules
+// that (I believe) allow me to feel safe if I move things treating it as
+// byte data.
+    double d;
+    memcpy(&d, &f, sizeof(double));
+    return d;
+}
+
+
+// end of arith-float.cpp
+

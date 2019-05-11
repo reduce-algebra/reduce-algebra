@@ -286,8 +286,12 @@ endif !mac_framework
 
 all-local:	csl.img $(REDUCE_IMG)
 
-# I include arith-plus here and in due course all the other new bits of
-# arithmetic code - that will mean I can test them.
+if arithlib
+arith_sources = arith-plus.cpp arith-times.cpp arith-float.cpp \
+		arith-gcdn.cpp
+else !arithlib
+arith_sources =
+endif !arithlib
 
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
@@ -296,7 +300,7 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
 		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp \
-		arith-plus.cpp arith-times.cpp
+		$(arith_sources)
 
 # Thie little rule is because from time to time I really want to see the
 # expanded version of a C++ file (ie after C++ macroexpansion has taken place).
@@ -905,6 +909,17 @@ $(SOFTFLOATDEPS):	$(USE_CORRECT_CYGWIN)
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
 # taken as specifing conflicting actions.
+
+if arithlib
+csl-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+csl-arith-times.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+
+bootstrapreduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+bootstrapreduce-arith-times.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+
+reduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+reduce-arith-times.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+endif arithlib
 
 csl-allocate.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 csl-arith01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
