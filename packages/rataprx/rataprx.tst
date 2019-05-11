@@ -5,96 +5,87 @@
 % periodic decimal representations
 rational2periodic(1/3);
 periodic2rational(ws);
-rational2periodic(-1/3);
+rational2periodic(1/7);
 periodic2rational(ws);
-rational2periodic(1.2/3);
+% previously lost the minus sign
+rational2periodic(-1/700);
 periodic2rational(ws);
-rational2periodic(1/3.4);
+% periodic part has length 34
+rational2periodic(1/103);
 periodic2rational(ws);
-rational2periodic(1.2/3.4);
-periodic2rational(ws);
-rational2periodic(352673/3124);
-periodic2rational(ws);
-rational2periodic(53765/5216);
-periodic2rational(ws);
+periodic2rational({0},{},{1,2,3,4,5,6,7,8,9});
 
+% hexadecimals
+rational2periodic(1/7, 16);
+periodic2rational(ws);
+rational2periodic(1/13, 16);
+periodic2rational(ws);
+periodic2rational({0},{},{1,2,3,4,5,6,7,8,9}, 16);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % continued fractions
 % of numbers
-cfrac pi;
-cfrac(pi,3);
-cfrac(pi,20);
-oldprec:=precision 20;
-!*b := cfrac pi;
-cfrac(pi^2);
-cfrac(pi*e*sqrt(2));
-precision oldprec;
+cf(6/11);        % exact continued fraction result
+!*a := cf pi;    % terminates at system precision
+cf(pi, 1000);    % sets a bound of 1000 on denominator
+cf(pi, 0, 8);    % produces 8 terms in expansion  -- same as cfrac(pi, 8)
+
+% twelve terms of some well known periodic  expansions
+cf(sqrt(2), 0, 12);
+cfrac(sqrt(3), 12);
+cfrac((1+sqrt(5))/2, 12);  % golden ratio
+
+cf(e, 100000);      % denominator bound = 100 000
+cf(e, 100000, 8);   % denominator bound = 100 000 or at most 8 terms
+cf(e, 1000, 12);    % denominator bound = 1000 or at most 12 terms
+
+
 
 % of rational functions
-cfrac((x+2/3)^2/(6*x-5),x);
-cfrac((x+2/3)^2/(6*x-5),x,0);
-cfrac((x+2/3)^2/(6*x-5),x,1);
-cfrac((x+2/3)^2/(6*x-5),x,10);
-cfrac((x*8-7/2)^4/(x^5-2/3),x);
-cfrac((x*8-7/2)^4/(x^5-2/3),x,2);
+!*b := cfrac((x^5+2)^2/(x^3-5), x);
+cfrac((x^5+2)^2/(x^3-5), x, 10);
+cfrac((x^5+2)^2/(x^3-5), x, 3);
+
 
 % of analytic functions
-cfrac(e^x,x,10);
+cfrac(e^x, x, 8);
 % default order is 5
-!*d := cfrac(e^x,x);
-cfrac(x^2/(x-1)*e^x,x);
-cfrac(x^2/(x-1)*e^x,x,2);
-cfrac(atan(x),x,10);
-cfrac(asin(x),x,5);
+!*c := cfrac(e^x, x);
+!*d := cfrac(x^2/(x-1)*e^x, x);
 
 % not implemented
 cfrac(log(x),x,4);
 cfrac(asech(x),x,5);
 cfrac(sin sqrt x,x,4);
-% wrong input
-cfrac(1,x);
-cfrac(x,x,x);
-cfrac(x,x,x,5);
-
-% shows changes to continued_fraction 
-continued_fraction(6/11);  % Used to crash at default precision
-oldprec := precision 30;
-continued_fraction(6/11);  % Result used to depend on precision
-precision 50;
-continued_fraction(6/11);  % Result used to depend on precision
-precision oldprec;
 
 % New operators cf etc. added by A. Barnes
-!*a := cf pi;
-cf_convergent(!*a);
-cf_convlist(!*a);
-cf_coeflist(!*a);
+cf_continuents(!*a);
 cf_expression(!*a);
+cf_convergent(!*a);
+cf_convergents(!*a);
 
-% should also work with cfrac output
+% also works with cfrac output
 cf_convergent(!*b);
-cf_convlist(!*b);
-cf_coeflist(!*b);
+cf_continuents(!*b);
+cf_convergents(!*b);
 
-% and with continued_fraction output
-!*c := continued_fraction pi;
-cf_convergent(!*c);
-cf_convlist(!*c);
-cf_coeflist(!*c);
+cf_expression !*c;
+ps(cf_convergent !*c, x, 0);
 
-% some well known expansions
-cf(e);
-cf(sqrt(2));
-cf(sqrt(3));
-cf((1+sqrt(5))/2);
+cf_expression !*d;
+ps(cf_expression !*d, x, 0);
+ps(cf_convergent !*d, x, 0);
 
-% erroneous input
-cf_expression(!*b);
-cf_expression(!*c);
-cf(e^x);
-cf(e^x,x);
-cf_coeflist({1/2,{1,2,x}});
-cf_convlist(!*d);
-cf_convergent((x+y)^2);
+% more new operators
+cf_remove_fractions(cf_euler(e^x, x, 4));
+!*a := cf_remove_fractions(cf_euler(4*atan x, x, 4));
+!*b := (!*a where x => 1);
+!*c := cf(pi, 0, 6);
+cf_remove_constant !*c;
+!*c:= cf(pi, 0, 8)$
+!*d := cf_even_odd !*c;
+cf_convergents !*c;
+cf_convergents first !*d;
+cf_convergents second !*d;
 
 % Pade representations
 pade(sin(x),x,0,3,3);

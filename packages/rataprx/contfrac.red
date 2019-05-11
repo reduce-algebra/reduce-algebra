@@ -100,96 +100,53 @@ algebraic;
 
 operator cfrac;
 
-operator contfrac;
-
 procedure a_constant (x);
   lisp constant_exprp (x);
 
 cfracrules :=
-{ cfrac (~x) => (begin scalar cf, pt2, q, res;
-                       cf  := continued_fraction x;
-                       pt2 := part(cf,2);
-                       res := for q := 2:(length pt2)
-                              collect append({1},{part(pt2,q)});
-                       return contfrac(part(cf,1),
-                                   append({part(pt2,1)},res));
-                 end)
-                when a_constant(x),
+{ cfrac (~x) => continued_fraction(x)
+                  when a_constant(x),
 
-  cfrac (~x,~s) => (begin scalar kk, cf, cf1, pt2, cf2, cf3,
-                                 bs, m, p, q, res;
-                          cf := continued_fraction(x);
-                          pt2 := part(cf,2);
-                          if s>=length(part(cf,2))
-                          then
-                          << cf1 :=
-                                for q:=2:(length pt2)
-                                collect append({1},{part(pt2,q)});
-                             res := contfrac(part(cf,1),
-                                             append({part(pt2,1)},cf1));
-                          >>
-                          else
-                          << cf2 :=
-                              for kk:=1:s+1
-                              collect part(pt2,kk);
-                             bs  := part(cf2,s+1);
-                              for m:= s step -1 until 1
-                              do bs := part(cf2,m)+1/bs;
-                             cf3 :=
-                              for p:=2:(length cf2)
-                              collect append({1},{part(cf2,p)});
-                             res:=contfrac(bs,append({part(cf2,1)},cf3))
-                          >>;
-                      %%  res := continued_fraction(x,s);
-                          return res;
-                    end)
-                   when a_constant(x) and numberp s,
+  cfrac (~x,~s) => continued_fraction(x, 0, s)
+                     when a_constant(x) and numberp s,
 
-  cfrac (~x,~s) => (begin scalar cf, pt2, q, r, res;
-                          cf  := cfracall(x,s);
-                          pt2 := part(cf,2);
-                          if type_ratpoly(x,s)
-                          then
-                          <<res :=
-                               for r:=2:(length pt2)
-                               collect append({1},{part(pt2,r)})
-                          >>
-                          else
-                          <<res :=
-                               for q:=2:(length pt2)
-                               collect list(num(part(pt2,q)),
-                                            den(part(pt2,q)))
-                          >>;
-                          return contfrac(part(cf,1),
-                                      append({part(pt2,1)},res));
-                    end)
-                   when not numberp x and vari s,
+  cfrac (~x,~s) =>
+     (begin scalar cf, pt2, res, pt2r;
+         cf  := cfracall(x, s);
+         pt2 := part(cf, 2);
+         res :=
+	    if type_ratpoly(x, s) then
+               for r := 2 : length pt2 collect {1, part(pt2, r)}
+            else
+               for r := 2 : length pt2 collect <<
+	          pt2r := part(pt2, r); {num pt2r, den pt2r}
+               >>;
+         return contfrac(x, part(cf, 1), part(pt2, 1) . res);
+     end)
+        when not numberp x and vari s,
 
-  cfrac(~a,~b,~c) => (begin scalar cf, pt2, q, res;
-                            cf  := cfrac_ratpoly(a,b,c);
-                            pt2 := part(cf,2);
-                            res :=
-                               for q:=2:(length pt2)
-                               collect append({1},{part(pt2, q)});
-                            return contfrac(part(cf,1),
-                                        append({part(pt2,1)},res));
-                      end)
-                     when numberp c and  vari b
-                      and type_ratpoly(a,b),
+  cfrac(~a,~b,~c) =>
+     (begin scalar cf, pt2, res;
+         cf  := cfrac_ratpoly(a, b, c);
+         pt2 := part(cf, 2);
+         res :=
+            for q := 2: length pt2 collect {1, part(pt2, q)};
 
-  cfrac(~a,~b,~c) => (begin scalar cf, pt2, q, res;
-                          cf  := cfrac_nonratpoly(a,b,c);
-                          pt2 := part(cf, 2);
-                          res :=
-                             for q:=2:length(pt2)
-                             collect list(num(part(pt2,q)),
-                                          den(part(pt2,q)));
-                          return contfrac(part(cf,1),
-                                      append({part(pt2,1)},res));
-                      end)
-                     when numberp c and  vari b
-                      and not(type_ratpoly(a,b))%,
+         return contfrac(a, part(cf, 1), part(pt2, 1) . res);
+      end)
+         when numberp c and vari b and type_ratpoly(a, b),
 
+  cfrac(~a,~b,~c) =>
+     (begin scalar cf, pt2, pt2r, res;
+         cf  := cfrac_nonratpoly(a,b,c);
+         pt2 := part(cf, 2);
+         res :=
+            for r := 2 : length pt2 collect <<
+	        pt2r := part(pt2, r); {num pt2r, den pt2r}
+            >>;
+         return contfrac(a, part(cf, 1), part(pt2, 1) . res);
+       end)
+          when numberp c and vari b and not type_ratpoly(a, b)
 };
 
 let cfracrules;

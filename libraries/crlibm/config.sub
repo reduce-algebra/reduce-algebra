@@ -53,7 +53,8 @@ timestamp='2018-02-22'
 me=`echo "$0" | sed -e 's,.*/,,'`
 
 usage="\
-Usage: $0 [OPTION] CPU-MFR-OPSYS or ALIAS
+Usage: $0 [OPTION] CPU-MFR-OPSYS
+       $0 [OPTION] ALIAS
 
 Canonicalize a configuration name.
 
@@ -117,7 +118,7 @@ case $maybe_os in
   nto-qnx* | linux-gnu* | linux-android* | linux-dietlibc | linux-newlib* | \
   linux-musl* | linux-uclibc* | uclinux-uclibc* | uclinux-gnu* | kfreebsd*-gnu* | \
   knetbsd*-gnu* | netbsd*-gnu* | netbsd*-eabi* | \
-  kopensolaris*-gnu* | cloudabi*-eabi* | \
+  kopensolaris*-gnu* | \
   storm-chaos* | os2-emx* | rtmk-nova*)
     os=-$maybe_os
     basic_machine=`echo "$1" | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\1/'`
@@ -298,7 +299,6 @@ case $basic_machine in
 	| open8 | or1k | or1knd | or32 \
 	| pdp10 | pj | pjl \
 	| powerpc | powerpc64 | powerpc64le | powerpcle \
-	| pru \
 	| pyramid \
 	| riscv32 | riscv64 \
 	| rl78 | rx \
@@ -426,7 +426,6 @@ case $basic_machine in
 	| orion-* \
 	| pdp10-* | pdp11-* | pj-* | pjl-* | pn-* | power-* \
 	| powerpc-* | powerpc64-* | powerpc64le-* | powerpcle-* \
-	| pru-* \
 	| pyramid-* \
 	| riscv32-* | riscv64-* \
 	| rl78-* | romp-* | rs6000-* | rx-* \
@@ -520,7 +519,7 @@ case $basic_machine in
 		basic_machine=i386-pc
 		os=-aros
 		;;
-	asmjs)
+        asmjs)
 		basic_machine=asmjs-unknown
 		;;
 	aux)
@@ -1030,7 +1029,7 @@ case $basic_machine in
 	ppc-* | ppcbe-*)
 		basic_machine=powerpc-`echo "$basic_machine" | sed 's/^[^-]*-//'`
 		;;
-	ppcle | powerpclittle)
+	ppcle | powerpclittle | ppc-le | powerpc-little)
 		basic_machine=powerpcle-unknown
 		;;
 	ppcle-* | powerpclittle-*)
@@ -1040,7 +1039,7 @@ case $basic_machine in
 		;;
 	ppc64-*) basic_machine=powerpc64-`echo "$basic_machine" | sed 's/^[^-]*-//'`
 		;;
-	ppc64le | powerpc64little)
+	ppc64le | powerpc64little | ppc64-le | powerpc64-little)
 		basic_machine=powerpc64le-unknown
 		;;
 	ppc64le-* | powerpc64little-*)
@@ -1372,14 +1371,14 @@ case $os in
 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
 	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -knetbsd* | -mirbsd* | -netbsd* \
-	      | -bitrig* | -openbsd* | -solidbsd* | -libertybsd* \
+	      | -bitrig* | -openbsd* | -solidbsd* \
 	      | -ekkobsd* | -kfreebsd* | -freebsd* | -riscix* | -lynxos* \
 	      | -bosx* | -nextstep* | -cxux* | -aout* | -elf* | -oabi* \
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
-	      | -chorusos* | -chorusrdb* | -cegcc* | -glidix* \
+	      | -chorusos* | -chorusrdb* | -cegcc* \
 	      | -cygwin* | -msys* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
-	      | -midipix* | -mingw32* | -mingw64* | -linux-gnu* | -linux-android* \
+	      | -mingw32* | -mingw64* | -linux-gnu* | -linux-android* \
 	      | -linux-newlib* | -linux-musl* | -linux-uclibc* \
 	      | -uxpv* | -beos* | -mpeix* | -udk* | -moxiebox* \
 	      | -interix* | -uwin* | -mks* | -rhapsody* | -darwin* \
@@ -1520,8 +1519,6 @@ case $os in
 		;;
 	-nacl*)
 		;;
-	-ios)
-		;;
 	-none)
 		;;
 	*)
@@ -1616,9 +1613,6 @@ case $basic_machine in
 		;;
 	sparc-* | *-sun)
 		os=-sunos4.1.1
-		;;
-	pru-*)
-		os=-elf
 		;;
 	*-be)
 		os=-beos

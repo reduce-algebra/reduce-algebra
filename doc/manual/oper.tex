@@ -765,47 +765,128 @@ and returns the result
 The operator \texttt{CONTINUED\_FRACTION}
 \ttindextype{CONTINUED\_FRACTION}{operator}
 generates the continued fraction expansion of a rational number argument.
-For irrational or rounded arguments it approximates the real number
-as a rational number (to the current system precision) and generates
-the continued fraction expansion.
-\texttt{CONTINUED\_FRACTION} has one or
-two arguments, the number to be converted and an optional
-precision:
+For irrational or rounded arguments, it approximates the real number
+as a rational number to the current system precision and generates
+the continued fraction expansion. Currently the operator \texttt{CF} is a
+complete synonym for \texttt{CONTINUED\_FRACTION} although this may change
+in future updates of the package \texttt{RATAPRX}. 
+\ttindextype{CF}{operator}
+
+The operator \texttt{CONTINUED\_FRACTION} accepts one, two or
+three arguments: the number to be expanded; an \textbf{optional} maximum size
+permitted for the denominator of the convergent
+and an \textbf{optional} number of continuents to be generated:
 \begin{syntaxtable}
-    \texttt{continued\_fraction(}\meta{num}\texttt{)} 
+  \texttt{continued\_fraction(}\meta{num}\texttt{)}\\
+  \texttt{continued\_fraction(}\meta{num}\texttt{,}\meta{size}\texttt{)} \\
+  \texttt{continued\_fraction(}\meta{num}\texttt{,}
+  \meta{size}\texttt{,}\meta{numterms}\texttt{)}
 \end{syntaxtable}
-or
-\begin{syntaxtable}
-    \texttt{continued\_fraction(}\meta{num}\texttt{,}\meta{size}\texttt{)}
-\end{syntaxtable}
-The result is a list of two elements: the first is the rational value of
-the approximation (final convergent)
-and the second is the list of terms of the continued fraction
-which represents the same value according to the definition
-\texttt{t0 +1/(t1 + 1/(t2 + ...))}.
-Precision: the second optional parameter \meta{size} is an upper bound
-for the absolute value of the result denominator. If omitted, the
-expansion performed is exact for rational number arguments and for irrational
-or rounded arguments it is up to the current system precision.
+The result is the special operator \texttt{contfrac}
+\ttindextype{contfrac}{operator}
+with three arguments: the original number to be expanded
+\meta{num}, secondly the rational number approximation (the final convergent)
+and thirdly a list of continuents of the continued fraction (i\.e. a list of
+pairs of partial numerators and denominators)
+\begin{quote}
+\begin{tabbing}
+\hspace{10mm} \= \texttt{\{t0, \{1, t1\}, \{1, t2\}, .... \}}\\ \\
+which represents the same value according to the definition\\ \\
+ \> \texttt{t0 +1/(t1 + 1/(t2 + ...))}.
+\end{tabbing}
+\end{quote}
+Note that, although with the current
+algorithm all the partial numerators have the value 1, they are stored
+in the list of continuents. This is for compatibility with the output of
+other continued fractions functions \texttt{cfrac} and \texttt{cf\_euler}.
+This facilitates pretty-printing and the implementation of various equivalence
+transformations all of which are documented in the continued fraction
+subsection of the \texttt{RATAPRX} manual (Section 16.51).
+\ttindextype{cfrac}{operator}
+\ttindextype{cf\_euler}{operator}
+
+\textbf{Precision}: the second optional parameter \meta{size} is an upper
+bound for the absolute value of the  denominator of the convergent.\\
+\textbf{Number of terms}: the third optional parameter \meta{numterms} is
+the maximum number of terms (continuents) to be generated.\\
+If both optional parameters omitted, the expansion performed is exact for
+rational number arguments and for irrational or rounded arguments it is up
+to the current system precision.
+If both optional parameters are given the expansion is halted when the desired
+precision is reached or when the specified maximum number of terms have 
+been generated whichever is the sooner. If the size parameter is zero,
+its value is ignored.  Thus to obtain a continued fraction expansion to,
+for example, 10 terms one would specify the \meta{size} parameter to be 0 and
+the \meta{numterms} parameter to be 10.
+
+Note that the operator \texttt{contfrac} is not normally seen as the output
+is pretty-printed, unless the number of continuents generated is larger
+than 12.
 
 \textit{Examples:}
 \begin{verbatim}
-continued_fraction pi;
+continued_fraction(6/11);
 
-                  ->
+  6                1
+{----,exact,---------------}
+  11                 1
+             1 + ---------
+                       1
+                  1 + ---
+                       5
 
-  1146408
-{---------,{3,7,15,1,292,1,1,1,2,1}}
-  364913
+continued_fraction(pi,1000);
 
-continued_fraction(pi,100);
+     355             1
+{pi,-----,3 + ----------------}
+     113               1
+               7 + ----------
+                          1
+                    15 + ---
+                          1
 
-                  ->
+continued_fraction(pi,0,6);
 
-  22
-{----,{3,7}}
-  7
+     104348                    1
+{pi,--------,3 + ------------------------------}
+     33215                       1
+                  7 + ------------------------
+                                    1
+                       15 + -----------------
+                                      1
+                             1 + -----------
+                                         1
+                                  292 + ---
+                                         1
 
+continued_fraction(pi,1000,3);
+
+     333          1
+{pi,-----,3 + ----------}
+     106            1
+               7 + ----
+                    15
+
+continued_fraction(pi,1000,6);
+
+     355             1
+{pi,-----,3 + ----------------}
+     113               1
+               7 + ----------
+                          1
+                    15 + ---
+                          1
+
+continued_fraction e;
+
+{e,
+
+  13580623
+ ----------,
+  4996032
+
+ {2, {1,1}, {1,2}, {1,1}, {1,1}, {1,4}, {1,1}, {1,1}, {1,6},
+  {1,1}, {1,1}, {1,8}, {1,1}, {1,1}, {1,10}, {1,1}, {1,1}, {1,12}}}
 \end{verbatim}
 
 

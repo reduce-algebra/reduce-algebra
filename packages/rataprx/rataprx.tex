@@ -1,4 +1,99 @@
-\documentstyle[11pt,reduce]{article}
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{makeidx}
+\usepackage{alltt}
+\usepackage{times}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{chapterbib}
+\usepackage{graphicx}
+\usepackage{xspace}
+\usepackage{caption}
+
+
+\hyphenation{unique}
+\hyphenation{effect}
+\hyphenation{Stand-ard}
+\hyphenation{libr-ary}
+\hyphenation{direct-ory}
+\hyphenation{state-ment}
+\hyphenation{argu-ment}
+\hyphenation{oper-ators}
+\hyphenation{symb-olic}
+\hyphenation{needs}
+\hyphenation{GVARSLAST}
+\hyphenation{ODE-SOLVE}
+\hyphenation{hyper-geometric}
+\hyphenation{equat-ion}
+\hyphenation{equat-ions}
+\hyphenation{OFF}
+\hyphenation{Opt-ions}
+\hyphenation{execu-tion}
+\hyphenation{poly-nom-ials}
+\hyphenation{func-t-ions}
+\hyphenation{Inte-grals}
+\hyphenation{Stutt-gart}
+\hyphenation{rat-ional}
+\hyphenation{irrat-ional}
+\hyphenation{par-am-eter}
+
+\setlength{\parindent}{0pt}
+
+\setlength{\parskip}{6pt}
+
+\setlength{\hfuzz}{10pt}  % don't complain about tiny overfull boxes
+\setlength{\vfuzz}{1pt}
+
+\renewcommand{\sloppy}{\tolerance=9999\relax%}
+                       \setlength{\emergencystretch}{0.2\hsize}}
+
+\tolerance=1000
+
+\raggedbottom
+
+\newlength{\reduceboxwidth}
+\setlength{\reduceboxwidth}{4in}
+
+\newlength{\redboxwidth}
+\setlength{\redboxwidth}{3.5in}
+
+\newlength{\rboxwidth}
+\setlength{\rboxwidth}{2.6in}
+
+\newcommand{\REDUCE}{REDUCE\xspace}
+\newcommand{\RLISP}{RLISP\xspace}
+\newcommand{\underscore}{\char`\_}
+\newcommand{\ttindex}[1]{{\renewcommand{\_}{\protect\underscore}%
+                          \renewcommand{\|}{\protect\textbar}%
+                          \index{#1@\texttt{#1}}}}
+\def\ttindextypehelper#1!#2\relax{\def\blubbera{#1}\def\blubberb{#2}}
+\def\capitalizehelper#1#2\relax{\edef\blubba{\uppercase{#1}\lowercase{#2}}}
+\def\capitalize#1{\capitalizehelper#1\relax}
+\newcommand{\ttindextype}[2]{{\renewcommand{\_}{\protect\underscore}%
+                              \renewcommand{\|}{\protect\textbar}%
+                              \ttindextypehelper#2!\relax
+                              \ifx\\\blubberb\\% true if \blubberb is empty
+                                \index{#1 #2@\texttt{#1} #2}%
+                              \else
+                                \index{#1 \blubbera@\texttt{#1} \blubbera!\blubberb}%
+                              \fi}}
+
+\newenvironment{syntax}{%
+    \list{}{\setlength{\leftmargin}{1em}\setlength{\listparindent}{0em}}%
+    \item\relax\math\displaystyle
+    \catcode`\|=\active
+}{\endmath\endlist}
+
+\newenvironment{syntaxtable}{
+    \syntax
+    \begin{array}{lcl}%
+}{\end{array}\endsyntax}
+
+\newcommand{\meta}[1]{\mbox{$\langle$\textit{#1}$\rangle$}}
+
 \title{{\bf Rational Approximations Package for REDUCE}}
 \author{Lisa Temme\\Wolfram Koepf\\ e-mail: {\tt koepf@zib.de}\\\& Alan Barnes\\ email: {\tt Alan.Barnes45678@gmail.com}}
 \date{August 1995 \& February 2019}
@@ -7,140 +102,130 @@
 
 \section{Periodic Decimal Representation}
 
+\index{Periodic decimal representation}
 The division of one integer by another often results in
-a period in the decimal part. The {\tt rational2periodic}
+a period in the decimal part. The \texttt{rational2periodic}
 function in this package can recognise and represent
 such an answer in a periodic representation. The inverse
-function, {\tt periodic2rational}, can also convert a
-periodic representation back to a rational number.\\
+function, \texttt{periodic2rational}, converts a
+periodic representation back to a rational number.
 
-
+\ttindextype{RATIONAL2PERIODIC}{operator}
+\ttindextype{PERIODIC2RATIONAL}{operator}
+\ttindextype{PERIODIC}{operator}
 \begin{tabbing}
-{\bf \underline{Periodic Representation of a Rational Number}}\\ \\
+\textbf{\underline{Periodic Representation of a Rational Number}}\\[\baselineskip]
 
+\textbf{SYNTAX:} \hspace{3mm} 
+       \= \texttt{rational2periodic(n);}\\
+\> {\tt rational2periodic(n, b);}\\[\baselineskip]
 
-{\bf SYNTAX:} \hspace{3mm} 
-     \= {\tt rational2periodic(n);}\\ \\
+\textbf{INPUT:}  
+\> \texttt{n} \hspace{3mm} is a rational number\\
+\> {\tt b} \hspace{3mm} is the number base, if absent the default is 10.\\[\baselineskip]
 
-{\bf INPUT:}  
-     \> {\tt n} \hspace{3mm} is a rational number\\ \\
+\textbf{RESULT:}
+     \> {\tt periodic(\{a1,...,an\},\{b1,...,bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\
+ \> where  {\tt\{a1,...,an\}} is a list of the digits in the integer part,\\
+ \> {\tt\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
+ \> {\tt\{c1,...,ck\}} is a list of the digits in the periodic part\\
+ \> and $\pm${\tt b} where {\tt b} is the number base $2 \leq {\rm b} \leq 16$, \\
+ \> a minus indicating the rational number {\tt n} was negative. \\[\baselineskip]
 
-{\bf RESULT:}
-     \> {\tt periodic(\{a,b\} , \{c1,...,cn\})} \\ \\
-     \> where  {\tt a/b} is the non-periodic part\\
-     \> and {\tt c1,...,cn} are the digits of the periodic part.\\ \\
+\textbf{EXAMPLES:}\\
+    \> $-59/70$ written as $-0.8\overline{428571}$\\
+    \>  \texttt{1: rational2periodic(-59/70);}\\
+    \> \texttt{ periodic(\{0\}, \{8\}, \{4,2,8,5,7,1\}, -10)}\\[\baselineskip]
+    \> $1/80$ written as a hexadecimal is $0.0\overline{3}$\\
+    \>  \texttt{2: rational2periodic(1/80,16);}\\
+    \> \texttt{ periodic(\{0\}, \{0\}, \{3\}, 16)}\\[\baselineskip]
 
+    Normally the operator {\tt periodic} will not be seen as the output will
+    be prettyprinted\\
+    as $-0.8\overline{428571}$ and $0.0\overline{3}\ {\rm (base\ 16)}$
+    respectively. Currently pretty-printed output \\
+    looks better when the switch \texttt{FANCY} is \texttt{OFF}.\\
+\end{tabbing}
+\begin{tabbing}
+  \textbf{\underline{Rational Number of a Periodic Representation}}\\[\baselineskip]
+\textbf{SYNTAX:}\\
+\hspace{3mm} \= \texttt{periodic2rational(periodic(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\
+   \> \texttt{periodic2rational(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\[\baselineskip]
 
-{\bf EXAMPLE:}
-    \> $59/70$ written as $0.8\overline{428571}$\\
-    \>  {\tt 1: rational2periodic(59/70);}\\ \\
-    \> {\tt periodic(\{8,10\},\{4,2,8,5,7,1\})}\\ \\
+\textbf{INPUT:}\\
+     \> \texttt{\{a1,...,an\}} is a list of the digits in the integer part,\\
+     \> \texttt{\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
+     \>\texttt{\{c1,...,ck\}} is a list of the digits in the periodic part\\
+     \> and {\tt b} is the number base $2 \leq {\rm b} \leq 16$, a minus\\
+     \> indicating the rational number result should be negative. \\
+     \> If the base is omitted, 10 is assumed. \\[\baselineskip]
 
+\textbf{RESULT:}\\
+     \> A rational number.\\[\baselineskip]
 
-{\bf \underline{Rational Number of a Periodic Representation}}\\ \\
-
-
-{\bf SYNTAX:}
-     \> {\tt periodic2rational(periodic(\{a,b\},\{c1,...,cn\}))}\\
-     \> {\tt periodic2rational(\{a,b\},\{c1,...,cn\})}\\ \\
-
-
-{\bf INPUT:}
-     \> \hspace{15mm} {\tt a} \hspace{3mm}\= is an integer\\
-     \> \hspace{15mm} {\tt b}             \> is $1$, $-1$ or an 
-                                             integer multiple of $10$\\
-     \> {\tt c1,...,cn}               \> is a list of positive digits\\ \\
-
-{\bf RESULT:}
-     \> A rational number.\\ \\
-
-{\bf EXAMPLE:}
-    \> $0.8\overline{428571}$ written as $59/70$ \\
-    \> {\tt 2: periodic2rational(periodic(\{8,10\},\{4,2,8,5,7,1\}));}
-\\ \\
+\textbf{EXAMPLES:}\\[\baselineskip]
+\hspace{10mm} \= $0.8\overline{428571}$ written as $59/70$ \\
+    \> \texttt{3: periodic2rational(periodic(\{0\},\{8\},\{4,2,8,5,7,1\}));}
+\\[\baselineskip]
     \> \hspace{1mm} {\tt 59}\\
     \> {\tt ----}\\
-    \> \hspace{1mm} {\tt 70}\\ \\
-    \> {\tt 3: periodic2rational(\{8,10\},\{4,2,8,5,7,1\});}
-\\ \\
-    \> \hspace{1mm} {\tt 59}\\
-    \> {\tt ----}\\
-    \> \hspace{1mm} {\tt 70}
+    \> \hspace{1mm} {\tt 70}\\[\baselineskip]
+    \> \texttt{4: periodic2rational(\{0\},\{8\},\{4,2,8,5,7,1\}, -10);}
+\\[\baselineskip]
+    \> \hspace{4mm} \texttt{59}\\
+    \> \texttt{- ----}\\
+    \> \hspace{4mm} \texttt{70}
 \end{tabbing}
 
-Note that if {\tt a} is zero, {\tt b} will indicate how many places
-after the decimal point that the period occurs. Note also that if the answer
-is negative then this will be indicated by the sign of {\tt a} (unless
-{\tt a} is zero in which case it is indicated by the sign of {\tt b}).
-\\ \\
+Note that \texttt{periodic2rational} will produce the correct rational result
+when passed a parameter for the periodic part which is not minimal.
+Similarly, a parameter for the periodic part which consists of all 9's
+(or in base $b$, all $(b-1)$'s) is treated correctly although such periodic
+parts are not canonical and are never generated by calls to
+\texttt{rational2periodic}.
 
+\begin{tabbing}
+For example,\\
+\hspace{10mm} \= \texttt{periodic2rational(\{0\}, \{\}, \{1, 2, 1, 2\});} \\
+    \> \texttt{periodic2rational(\{0\}, \{1\}, \{2, 1\});} \\
+    \> \texttt{periodic2rational(\{0\}, \{1, 2\}, \{1, 2, 1, 2\});} \\[\baselineskip]
+all produce the same rational result, namely $\frac{4}{33}$, as the canonical input\\
+    \> \texttt{periodic2rational(\{0\}, \{\}, \{1, 2\});}\\[\baselineskip]
+Similarly,\\
+    \> \texttt{periodic2rational(\{0\}, \{\}, \{9\});} \\
+    \> \texttt{periodic2rational(\{0\}, \{9\}, \{9\});} \\
+    \> \texttt{periodic2rational(\{0\}, \{\}, \{9, 9, 9, 9\});} \\
+all produce the same rational result, namely $1$, as the  canonical input\\
+    \> \texttt{periodic2rational(\{1\}, \{\}, \{\});}
+\end{tabbing}
 
-{\bf ERROR MESSAGE}\\
+Although the operators \texttt{periodic2rational} and \texttt{rational2periodic} work even when \texttt{ROUNDED} is \texttt{ON}, they
+are best used when \texttt{ROUNDED} is \texttt{OFF}. The input
+to \texttt{rational2periodic} should not be a rounded number, otherwise an error results.
 
-{\tt ***** operator to be used in off rounded mode}\\
+For example, the input \texttt{rational2periodic(1/7);} will produce the
+intended periodic representation even with \texttt{ROUNDED ON}. However,
+ the input
 
-The periodicity of a function can only be recognised in
-the {\tt off rounded} mode. This is also true for the inverse
-procedure.\\ 
+\texttt{a := 1/7; rational2periodic(a);}
 
-{\large\bf EXAMPLES}\\
-\begin{verbatim}
-4: rational2periodic(1/3);
+will result in an error as the simplifier is applied in the assignment and
+rounds the rational number.
 
-periodic({0,1},{3})
+Similarly, although the result of \texttt{periodic2rational} will always be
+a rational number (represented by a \texttt{QUOTIENT} prefix form), if the
+simplifier is applied to the result a rounded value will be produced.
 
-5: periodic2rational(ws);
-
- 1
----
- 3
-
-6: periodic2rational({0,1},{3});
-
- 1
----
- 3
-
-7: rational2periodic(-1/6);
-
-periodic({-1,10},{6})
-
-8: periodic2rational(ws);
-
-  - 1
-------
-  6
-
-9: rational2periodic(6/17);
-
-periodic({0,1},{3,5,2,9,4,1,1,7,6,4,7,0,5,8,8,2})
-
-10: periodic2rational(ws);
- 6
-----
- 17
-
-11: rational2periodic(352673/3124);
-
-periodic({11289,100},{1,4,8,5,2,7,5,2,8,8,0,9,2,1,8,9,5,0,0,6,
-                      4,0,2,0,4,8,6,5,5,5,6,9,7,8,2,3,3,0,3,4,
-                      5,7,1,0,6,2,7,4,0,0,7,6,8,2,4,5,8,3,8,6,
-                      6,8,3,7,3,8,7,9,6,4})
-
-12: periodic2rational(ws);
-
- 352673
---------
-  3124
-
-\end{verbatim}
+%
+%
+%
 %\newpage
 \section{Continued Fractions}
 
-
-A continued fraction (see ~\cite{PA} \S 4.2) has the general form
+\index{Continued fractions}
+A continued fraction (see ~\cite{CF}) has the general form
 {\Large
-\[b_0 + \frac{a_1}{b_1 +
+\[a_0 + \frac{a_1}{b_1 +
          \frac{a_2}{b_2+
           \frac{a_3}{b_3 + \ldots
         }}}
@@ -148,245 +233,187 @@ A continued fraction (see ~\cite{PA} \S 4.2) has the general form
 }
 
 A more compact way of writing this is as
-\[b_0 + \frac{a_1|}{|b_1} + \frac{a_2|}{|b_2} + \frac{a_3|}{|b_3} + \ldots\,.\]
+\[a_0 + \frac{a_1|}{|b_1} + \frac{a_2|}{|b_2} + \frac{a_3|}{|b_3} + \ldots\,.\]
 \\
+Even more succinctly:
+$$\{a_0,\ \{a_1, b_1\},\ \{a_2, b_2\},\ \ldots\}$$
+
+%
+\ttindextype{CONTFRAC}{operator}
 This is represented in {\small REDUCE} as
 \[{\tt
-   contfrac({\sl Rational\hspace{1mm} approximant},
-                \{b0, \{a1,b1\}, \{a2,b2\},.....\})
+  contfrac(\textsl{Expression},
+    \textsl{Rational approximant},
+                \{a0, \{a1,b1\}, \{a2,b2\},.....\})
 }\]
 
-\begin{tabbing}
-{\bf SYNTAX:} \hspace{5mm} 
-\= {\tt cfrac(number);}\\
-\> {\tt cfrac(number,length);}\\
-\> {\tt cfrac(f, var);}\\
-\> {\tt cfrac(f, var, length);}\\ \\
+\ttindextype{CFRAC}{operator}
+The operator \texttt{CFRAC} is used to generate a generalised continued
+fraction expansion of an algebraic expression.\\
+\begin{syntaxtable}
+  \texttt{cfrac(}\meta{num}\texttt{)} \\
+  \texttt{cfrac(}\meta{num}\texttt{,}\meta{length}\texttt{)}\\
+  \texttt{cfrac(}\meta{func}\texttt{,}\meta{var}\texttt{)}\\
+  \texttt{cfrac(}\meta{func}\texttt{,}\meta{var}\texttt{,}
+  \meta{length}\texttt{)}
+\end{syntaxtable}
 
-{\bf INPUT:}
-\> {\tt number} \hspace{3mm} \= is any real number\\
-\> {\tt f}                   \> is a function\\
-\> {\tt var}                 \> is the function variable\\
-%\> {\tt length}              \> is the upper bound of the number\\ 
-%\>                           \> of \{ai,bi\} returned (optional)\\ \\
+\begin{tabbing}
+
+\textbf{INPUT:}\hspace{5mm} 
+\= \meta{num} \hspace{3mm} \= \ is any real number\\
+\> \meta{func}                   \> \ is a function\\
+\> \meta{var}                 \> \ is the function main variable\\
+\> \meta{length}     \> \ is the maximum number of terms (continuents)\\
+\>    \> \ to be generated and is \textbf{optional}.
 \end{tabbing}
 
-{\bf Optional Argument: {\tt length}}\\
-The \texttt{length} argument is optional. 
-For a NON-RATIONAL function input the \texttt{length} argument specifies
-the number of ordered pairs, $\{a_i,b_i\}$, to be 
-returned. Its default value is five.
-For RATIONAL function input the
+For non-rational function or irrational number input the \meta{length}
+argument specifies the number of continuents (ordered pairs, $\{a_i,b_i\}$),
+to be returned. Its default value is five.
+For rational function or rational number input the
 \texttt{length} argument can only truncate the answer, it cannot
 return additional pairs even if the precision is increased.
-The default for rational function input is the complete continued
-fraction.
+The default for rational function or rational number input is the
+complete continued fraction.
 
-For a NON-RATIONAL function a power series expansions are necessary. The new
+\ttindextype{CF\_TAYLOR}{switch}
+
+For a non-rational function, power series expansion is necessary. The new
 switch \texttt{cf\_taylor} controls whether the TAYLOR or the TPS package is 
 used to produce the power series required. By default this switch is OFF and
 so the TPS package is normally employed.
-In most cases the choice is not important, but the TPS option is somewhat better
-at handling cases where the series expansion is rather sparse. In a few cases
-TPS may fail to produce a series expansion when TAYLOR succeeds and vice-versa.
+In most cases the choice is not important, but the TPS option is somewhat
+better at handling cases where the series expansion is rather sparse.
+In a few cases TPS may fail to produce a series expansion when TAYLOR succeeds
+and vice-versa.
 
 For numerical input the default value is exact for
 rational number arguments whilst for irrational or rounded input it is
 dependent on the precision of the session. The
-\texttt{length} argument will only take effect if it has a smaller
-value than that of the number of ordered pairs which the default
-value would return.
+\texttt{length} argument will only take effect if is smaller
+than the number of ordered pairs which the default value would return.
 
-If the number of pairs in the list of coefficients returned does not exceed
+If the number of continuent pairs returned does not exceed
 twelve, the result will usually be pretty-printed as a two element list
 consisting of the convergent followed by a rendering of the traditional
 continued fraction expansion. For a larger number of pairs the output is
-of the second element is printed as a list of pairs.
-
-Thus, usually the operator \texttt{contfrac} is not seen in the output.
+of the second element is printed as a list of pairs. Thus, usually the
+operator \texttt{contfrac} is not seen in the output.
 
 %\newpage
-\large{{\bf EXAMPLES}}
+\large{\textbf{EXAMPLES}}
 \begin{verbatim}
-2: cfrac(23.696);
+cfrac(pi, 4);
 
-  2962                    1
-{------,23 + ---------------------------}
-  125                       1
-              1 + ---------------------
-                              1
+     355             1
+{pi,-----,3 + ----------------}
+     113               1
+               7 + ----------
+                          1
+                    15 + ---
+                          1
+
+cfrac(sqrt 2, 5);
+
+          41                1
+{sqrt(2),----,1 + ---------------------}
+          29                  1
                    2 + ---------------
                                 1
-                        3 + ---------
+                        2 + ---------
                                   1
                              2 + ---
-                                  5
+                                  2
 
-3: cfrac(23.696,3);
+cfrac(23.696, 4);
 
-  237              1
-{-----,23 + ---------------}
-  10                 1
-             1 + ---------
-                       1
-                  2 + ---
-                       3
+  2962   237              1
+{------,-----,23 + ---------------}
+  125    10                 1
+                    1 + ---------
+                              1
+                         2 + ---
+                              3
 
-4: cfrac(pi,3);
-
-  355             1
-{-----,3 + ----------------}
-  113               1
-            7 + ----------
-                       1
-                 15 + ---
-                       1
-
-
-5: cfrac(pi*e*sqrt(2),4);
-
-  10978                  1
-{-------,12 + -----------------------}
-   909                     1
-               12 + ----------------
-                             1
-                     1 + ----------
-                                1
-                          68 + ---
-                                1
-
-
-6: cfrac((x+2/3)^2/(6*x-5),x,1);
+cfrac((x+2/3)^2/(6*x-5), x, 10);
 
      2
   9*x  + 12*x + 4
-{-----------------,
+{-----------------,   exact,
      54*x - 45
 
-  6*x + 13          1
+   6*x + 13          1
  ---------- + -------------}
      36         24*x - 20
                -----------
                     9
 
-7: cfrac((x+2/3)^2/(6*x-5),x,10);
-
-     2
-  9*x  + 12*x + 4
-{-----------------,
-     54*x - 45
-
-  6*x + 13          1
- ---------- + -------------}
-     36         24*x - 20
-               -----------
-                    9
-
-8: cfrac(e^x,x);
-
-   3      2
-  x  + 9*x  + 36*x + 60
-{-----------------------,
-       2
-    3*x  - 24*x + 60
+cfrac(e^x, x);
 
 
-
-
-
-
+       3      2
+  x   x  + 9*x  + 36*x + 60
+{e , -----------------------,
+           2
+        3*x  - 24*x + 60
 
                   x
  1 + ---------------------------}
-                   - x
-      1 + ---------------------
+                    x
+      1 - ---------------------
                       x
            2 + ---------------
-                       - x
-                3 + ---------
+                        x
+                3 - ---------
                           x
                      2 + ---
                           5
-
-9: cfrac(x^2/(x-1)*e^x,x);
-
-   6      4    2
-  x  + 3*x  + x
-{----------------,
-     4    2
-  3*x  - x  - 1
-
-                2
-             - x
- ----------------------------}
-                   2
-              - 2*x
-  1 + ----------------------
-                   2
-                  x
-       1 + ----------------
-                     2
-                    x
-            1 + ----------
-                       2
-                      x
-                 1 + ----
-                      1
-
 \end{verbatim}
 
-To facilitate pretty-printing of a continued fraction expansion produced
-by the operator
-\texttt{CONTINUED\_FRACTION} a new operator \texttt{CF} has been
-introduced.
 
-\begin{tabbing}
-{\bf SYNTAX:} \hspace{5mm} 
-\= {\tt cf(number);}\\
-\> {\tt cf(number, size);}\\ 
+The operator \texttt{CF} \ttindextype{CF}{operator} is a 
+synonym for the operator \texttt{CONTINUED\_FRACTION}.
+\begin{syntaxtable}
+  \texttt{cf(}\meta{num}\texttt{)} \hspace{5mm}\\
+  \texttt{cf(}\meta{num}\texttt{,}\meta{size}\texttt{)} \\
+  \texttt{cf(}\meta{num}\texttt{,}\meta{size}
+  \texttt{,}\meta{numterms}\texttt{)}
+\end{syntaxtable}
 
-{\bf INPUT:}
-\> {\tt number} \hspace{3mm} \= is any real number\\
-\> {\tt size}              \> is the upper bound of the \\ 
-\>                           \> denominator of the convergent \\ 
-\end{tabbing}
 The meaning of the arguments is the same as for the operator
-\texttt{CONTINUED\_FRACTION}.
+\texttt{CONTINUED\_FRACTION}: the original number to be expanded
+\meta{num}, an optional maximum size \meta{size} permitted for the
+denominator of the convergent and an optional maximum number of continuents
+\meta{numterms} to be generated.
 
-The output is similar to that of \texttt{CONTINUED\_FRACTION}, but
-has an extra element, namely the originating expression of the
-continued fraction and everything is wrapped inside the operator
-\texttt{CONFRAC1}. Thus in {\small REDUCE} it is represented as
-\[{\tt
-  confrac1({\sl Originating\hspace{1mm} expression,\hspace{1mm}
-            Rational\hspace{1mm} approximant},
-                \{b0, b1, b2,.....\})
-}\]
+The output is in the same format as that of \texttt{CFRAC} described above.
+As with the operator \texttt{CFRAC} output of \texttt{CF} is normally
+pretty-printed so the operator \texttt{confract} will not be seen.
 
-Normally output of \texttt{CF} is pretty-printed so the operator
-\texttt{confrac1} will not be seen.
+The accessor operators \texttt{CF\_EXPRESSION},
+\ttindextype{CF\_EXPRESSION}{operator}
+\texttt{CF\_CONVERGENT} \ttindextype{CF\_CONVERGENT}{operator} and \\ 
+\texttt{CF\_CONTINUENTS} \ttindextype{CF\_CONTINUENTS}{operator} allow
+the various parts of a continued fraction object \meta{cf\_object}
+(as returned by any of the operators \texttt{cf}, \texttt{cfrac},
+\texttt{continued\_fraction} and \texttt{cf\_euler}) to be extracted.
+\ttindextype{CF\_EULER}{operator}
 
-The operators \texttt{CF\_EXPRESSION}, \texttt{CF\_CONVERGENT},
-\texttt{CF\_COEFLIST} and \texttt{CF\_CONVLIST} allow the various
-parts of a continued fraction object as returned by the operator
-\texttt{CF} to be extracted. These return respectively the originating
+These three operators return, respectively, the originating
 expression of the continued fraction object, the last convergent of the
-continued fraction, a list of the coefficients in the expansion and finally
-a list of all the convergents of the expansion.
-For example
-\begin{tabbing}
-\\
-{\bf SYNTAX:} \hspace{5mm} 
-\= {\tt cf\_coeflist(cf\_object);}\\\\
+continued fraction, a list of its continuents
+(that is a list of pairs of partial numerators and denominators).
 
-{\bf INPUT:}
-\> {\tt cf\_object} \hspace{3mm} \= is any continued fraction object \\ 
-\end{tabbing}
+The operator \texttt{CF\_CONVERGENTS} \ttindextype{CF\_CONVERGENTS}{operator}
+returns a list of all the convergents of the expansion.
+\begin{syntaxtable}
+  \texttt{cf\_expression(}\meta{cf\_object}\texttt{)} \\
+  \texttt{cf\_convergent(}\meta{cf\_object}\texttt{)} \\
+  \texttt{cf\_continuents(}\meta{cf\_object}\texttt{)} \\
+  \texttt{cf\_convergents(}\meta{cf\_object}\texttt{)} 
+\end{syntaxtable}
 
-With the exception of \texttt{CF\_EXPRESSION} they may also be used on the
-value returned by calls to 
-\texttt{CFRAC} and \texttt{CONTINUED\_FRACTION}. 
- 
 \large{\textbf{EXAMPLES}}
 \begin{verbatim}
 2: cf(6/11);
@@ -408,17 +435,19 @@ a := {pi,-----,3 + ----------------}
                                1
                          15 + ---
                                1
-4: cf_convlist a;
+
+4: cf_convergents a;
 
     22   333   355
 {3,----,-----,-----}
     7    106   113
 
-5: cf_coeflist a;
+5: cf_continuents a;
 
 {3,7,15,1}
 
 6: precision 20;
+
 12
 
 7: cf pi;
@@ -426,62 +455,265 @@ a := {pi,-----,3 + ----------------}
      21053343141
 {pi,-------------,{3,7,15,1,292,1,1,1,2,1,3,1,14,2,1,1,2,2,2,2,1}}
      6701487259
-
 \end{verbatim}
 
+\ttindextype{CF\_EULER}{operator}
+The operator \texttt{CF\_EULER} is used to generate a generalised
+continued fraction expansion of an algebraic expression using a formula due to
+Leonhard Euler (see ~\cite{LE})).
+\begin{syntaxtable}
+ \texttt{cf\_euler(}\meta{func}\texttt{,}\meta{var}\texttt{)}\\
+ \texttt{cf\_euler(}\meta{func}\texttt{,}\meta{var}\texttt{,}
+  \meta{length}\texttt{)}
+\end{syntaxtable}
+
+\begin{tabbing}
+\textbf{INPUT:}\hspace{5mm} 
+\= \meta{func} \hspace{15mm} \= \ is a function\\
+\> \meta{var}                 \> \ is the function main variable\\
+\> \meta{length}     \> \ is the maximum number of continuents\\
+\>    \> \ to be generated and is \textbf{optional}.
+\end{tabbing}
+
+The meaning of the parameters is similar to those of \texttt{CFRAC}, but the
+continued fraction expansion generated will usually be different. Note that
+unlike \texttt{CFRAC}, \texttt{CF\_EULER} cannot currently generate
+continued fraction expansion of numbers and for a rational function argument
+(with a non-constant denominator) the expansion will not be exact.
+
+\ttindextype{CF\_UNIT\_NUMERATORS}{operator}
+\ttindextype{SCF_UNIT_DENOMINATORS}{operator}
+\ttindextype{CF\_REMOVE\_FRACTIONS}{operator}
+\ttindextype{CF\_REMOVE\_CONSTANT}{operator}
+A number of operators are provided for transforming their continued
+fraction argument \meta{cf\_object} into an equivalent expansion,
+that is one with exactly the same convergents.
+They all accept as their single argument any continued fraction
+object \meta{cf\_object}.
+These are:\\
+\begin{tabbing}
+  \= \texttt{cf\_unit\_denominators}
+  \hspace{10mm} \= converts all partial denominators to 1. \\
+  \> \texttt{cf\_unit\_numerators}
+  \> converts all partial numerators to 1. \\
+  \> \texttt{cf\_remove\_fractions}
+  \> converts the denominators of the partial\\
+  \> \ \    \> numerators and partial denominators in\\
+  \>  \> the continuents to 1.\\
+  \> \texttt{cf\_remove\_constant}
+  \> removes the zeroth continuent (if non-zero)\\
+  \> \ \  \>  absorbing it into the first continuent pair.\\
+\end{tabbing}
+
+\ttindextype{CF\_TRANSFORM}{operator}
+The operator \texttt{CF\_TRANSFORM} is a general purpose function
+for transforming its continued fraction argument \meta{cf\_object} into
+an equivalent expansion. Unlike the four preceding operators it requires
+a second argument: a list of multipliers used to modify the partial
+numerators and denominators of the original expansion.
+\begin{syntaxtable}
+  \texttt{cf\_transform(}\meta{cf\_object}\texttt{,}
+  \meta{multiplier-list}\texttt{)}
+\end{syntaxtable}
+To understand the operation of \texttt{cf\_transform} consider first the
+special case where \meta{multiplier-list} is a list of the
+form $\{1, 1, \ldots, 1, l_n, 1, \ldots, 1\}$ whose nth element is $l_n$.
+Only the nth continuent pair $\{a_n,\ b_n\}$ and (n+1)th partial numerator
+$a_{n+1}$ are altered and become $\{l_na_n,\ l_nb_n\}$ and $l_na_{n+1}$
+respectively. For a \meta{multiplier-list} that has more than one non-unit
+element, the above transformations are applied sequentially from left to
+right.
+
+If the number of continuent pairs in the \meta{cf\_object}
+is greater than the length of the \meta{multiplier-list}, the latter is
+(in effect) padded with 1's. Conversely if it is shorter, the surplus
+elements of \meta{multiplier-list} are ignored.
+
+\ttindextype{CF\_EVEN\_ODD}{operator}
+The operator \texttt{CF\_EVEN\_ODD} splits its continued fraction argument
+\meta{cf\_object} into two continued fraction objects: namely its even and
+odd parts (in that order) which are returned as a two-element list.
+\begin{syntaxtable}
+  \texttt{cf\_even\_odd(}\meta{cf\_object}\texttt{)}
+\end{syntaxtable}
+The convergents of the even part are the even-numbered convergents of the
+original expansion and those of the odd part are the odd-numbered ones
+(except the zeroth convergent which is necessarily zero).  For the continued
+fraction expansions generated by the operators \texttt{cf} and
+\texttt{cfrac} with a numerical first argument \meta{num}. The convergents of
+the even part form a monotonically increasing sequence whilst those of the
+odd part (after the zeroth) form a monotonically decreasing sequence.
+
+\large{\textbf{EXAMPLES}}
+\begin{verbatim}
+cf_remove_fractions(cf_euler(e^x, x, 4));
+
+        3      2
+  x    x  + 3*x  + 6*x + 6
+{e , ---------------------,
+              6
+
+                   1
+ -------------------------------------}
+                     x
+  1 - -------------------------------
+                          x
+       (x + 1) - -------------------
+                              2*x
+                  (x + 2) - -------
+                             x + 3
+
+a := cf_remove_fractions(cf_euler(4*atan x, x, 4));
+
+a := {4*atan(x),
+
+              7       5        3
+        - 60*x  + 84*x  - 140*x  + 420*x
+      -----------------------------------,
+                      105
+
+                               4*x
+      -----------------------------------------------------}
+                                  2
+                                 x
+       1 + -----------------------------------------------
+                                          2
+                 2                     9*x
+            ( - x  + 3) + -------------------------------
+                                                   2
+                                  2            25*x
+                           ( - 3*x  + 5) + -------------
+                                                  2
+                                             - 5*x  + 7
+
+b := (a where x => 1);
+
+          304            4
+b := {pi,-----,----------------------}
+          105              1
+                1 + ----------------
+                             9
+                     2 + ----------
+                               25
+                          2 + ----
+                               2
+
+c := cf(pi, 0, 6);
+
+          104348                    1
+c := {pi,--------,3 + ------------------------------}
+          33215                       1
+                       7 + ------------------------
+                                         1
+                            15 + -----------------
+                                           1
+                                  1 + -----------
+                                              1
+                                       292 + ---
+                                              1
+
+cf_remove_constant c;
+
+     104348                22
+{pi,--------,-------------------------------}
+     33215                    1
+              7 + -------------------------
+                                22
+                   333 + -----------------
+                                   1
+                          1 + -----------
+                                      1
+                               292 + ---
+                                      1
+
+c:= cf(pi, 0, 8)$
+d := cf_even_odd c;
+
+           208341                15
+d := {{pi,--------,3 + ----------------------},
+           66317                   292
+                        106 - --------------
+                                       15
+                               4687 - -----
+                                       585
+
+           312689             22
+      {pi,--------,-------------------------}}
+           99532                 1
+                    7 + -------------------
+                                   22
+                         355 - -----------
+                                       1
+                                294 - ---
+                                       3
+cf_convergents c;
+
+    22   333   355   103993   104348   208341   312689
+{3,----,-----,-----,--------,--------,--------,--------}
+    7    106   113   33102    33215    66317    99532
+
+cf_convergents first d;
+
+    333   103993   208341
+{3,-----,--------,--------}
+    106   33102    66317
+
+cf_convergents second d;
+
+    22   355   104348   312689
+{0,----,-----,--------,--------}
+    7    113   33215    99532
+\end{verbatim}
 
 %\newpage
 \section{Pad\'{e} Approximation}
-
+\index{Pad\'{e} Approximation}
 
 The Pad\'{e} approximant represents a function by the ratio of two 
-polynomials. The coefficients of the powers occuring in the polynomials 
+polynomials (see ~\cite{PA} \S 4.2). The coefficients of the powers occuring
+in the polynomials 
 are determined by the coefficients in the Taylor series
 expansion of the function (see ~\cite{PA}). Given a power series
 \[ f(x) = c_0 + c_1 (x-h) + c_2 (x-h)^2 \ldots \]
 and the degree of numerator, $n$, and of the denominator, $d$,
-the {\tt pade} function finds the unique coefficients 
+the \texttt{pade} function finds the unique coefficients 
 $a_i,\, b_i$ in the Pad\'{e} approximant 
 \[ \frac{a_0+a_1 x+ \cdots + a_n x^n}{b_0+b_1 x+ \cdots + b_d x^d} \; .\]
-\\ \\
 
+\ttindextype{PADE}{operator}
 \begin{tabbing}
-{\bf SYNTAX:} \hspace{5mm}\= {\tt pade(f, x, h, n, d);}\\ \\
+\textbf{SYNTAX:} \hspace{5mm}\= \texttt{pade(f, x, h, n, d);}\\[\baselineskip]
 
-{\bf INPUT:}
-\> {\tt f} \hspace{3mm} \= is the funtion to be approximated\\
-\> {\tt x}             \> is the function variable\\
-\> {\tt h}             \> is the point at which the approximation is\\ 
-\>                     \> evaluated\\
-\> {\tt n}             \> is the (specified) degree of the numerator\\
-\> {\tt d}             \> is the (specified) degree of the denominator\\ \\
-
-
-{\bf RESULT:} 
-\> Pad\a'{e} Approximant, ie. a rational function.\\ \\
+\textbf{INPUT:}
+\> \texttt{f} \hspace{3mm} \= the funtion to be approximated\\
+\> \texttt{x}             \> the function variable\\
+\> \texttt{h}             \> the point at which the approximation is evaluated\\
+\> \texttt{n}             \> the (specified) degree of the numerator\\
+\> \texttt{d}             \> the (specified) degree of the denominator\\[\baselineskip]
+\textbf{RESULT:} 
+\> Pad\a'{e} Approximant, ie. a rational function.\\[\baselineskip]
 \end{tabbing}
-
-
-{\bf ERROR MESSAGES}\\
-
-{\tt ***** not yet implemented}\\
-
+\textbf{ERROR MESSAGES:}\\
+%
+\texttt{***** not yet implemented}\\
+%
 The Taylor series expansion for the function, f, has not yet
-been implemented in the {\small REDUCE} Taylor Package.\\ \\
-
-
-{\tt ***** no Pade Approximation exists}\\
-
-A Pad\'{e} Approximant of this function does not exist.\\ \\
-
-{\tt ***** Pade Approximation of this order does not exist}\\
-
+been implemented in the {\small REDUCE} Taylor Package.\\[\baselineskip]
+%
+%
+\texttt{***** no Pade Approximation exists}\\
+%
+A Pad\'{e} Approximant of this function does not exist.\\[\baselineskip]
+%
+%\newpage
+\texttt{***** Pade Approximation of this order does not exist}\\
+%
 A Pad\'{e} Approximant of this order (ie. the specified
 numerator and denominator orders) does not exist but one
-of a different order may exist.\\ \\
-
-
-\large{{\bf EXAMPLES}}
+of a different order may exist.\\[\baselineskip]
+%
+%
+\large{\textbf{EXAMPLES}}
 
 \begin{verbatim}
 
@@ -538,8 +770,6 @@ log(x)*(0 + O(x  ))
 
 ***** Pade Approximation of this order does not exist
 
-
-
 31:  pade(sin(x)/x^2,x,0,10,2);
 
      10        8         6           4            2
@@ -547,7 +777,7 @@ log(x)*(0 + O(x  ))
 
   + 39916800)/(39916800*x)
 
-32: pade(exp(x),x,0,10,10); 
+32: pade(exp(x),x,0,10,10);
 
 
 
@@ -571,14 +801,6 @@ log(x)*(0 + O(x  ))
 
          - 335221286400*x + 670442572800)
 
-
-
-
-
-
-
-
-
 33: pade(sin(sqrt(x)),x,0,3,3);
         
 (sqrt(x)*
@@ -589,12 +811,16 @@ log(x)*(0 + O(x  ))
     (7*(179*x  - 7200*x  - 2209680*x - 126498240))
 \end{verbatim}
 
-
 \begin{thebibliography}{9}
-\bibitem{PA} Baker(Jr.), George A. and Graves-Morris, Peter:\\
+\bibitem{CF} Jones, W B.; Thron, W.J., \\
+{\it Continued fractions. Analytic Theory and Applications},
+ (Encyclopedia of Mathematics and its Applications, Vol 11),
+Addison-Wesley Publishing Company, Reading, Massachusetts, 1980.
+\bibitem{LE} L Euler L., {\it Introductio in analysin infinitorum, Vol 1,
+ Chapter 18}, 1748.
+\bibitem{PA} Baker(Jr.), G.A. and Graves-Morris, P.,\\
 {\it Pad\'{e} Approximants, Part I: Basic Theory},
-(Encyclopedia of mathematics and its applications, Vol 13,
-Section: Mathematics of physics),
+(Encyclopedia of Mathematics and its Applications, Vol 13),
 Addison-Wesley Publishing Company, Reading, Massachusetts, 1981.
 \end{thebibliography}
 

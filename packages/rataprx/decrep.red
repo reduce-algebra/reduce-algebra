@@ -1,6 +1,8 @@
 module decrep;  % Periodic Decimal Representation.
 
-% Author: Lisa Temme
+% Author: Alan Barnes
+% symbolic mode version and extension to other bases
+% of earlier work by Lisa Temme, 1995
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -25,343 +27,327 @@ module decrep;  % Periodic Decimal Representation.
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% Date:   April 2019.
 
-% Date:   August 1995.
+symbolic; procedure digits2num(x, base);
+%% convert an list of digits to a number
+begin scalar n;
 
-algebraic;
+     if not pairp x then
+         rederr "digits2num: arg should be list of non-negative digits";
 
-% Procedure to check if an argument is a list.
+     n := 0;
 
-procedure paarp(x); lisp eqcar(x,'list);
+     foreach d in x do 
+       if fixp d and d >= 0 and d < base then
+	  n := n*base + d
+       else
+	  rederr  "digits2num: arg should be list of non-negative digits";
+	  
+     return n;
+end;
 
-procedure tidy(u);
-   % tidy {wholepart, {non_recursive_decimal_part},
-   %    {recursive_decimal_part}}
-   % to {{num_non_per_part, den_non_per_part}, {recursive_decimal_part}}
-  begin
-   scalar a, b, b1, c, num_non_per_part, den_non_per_part;
+symbolic procedure num2digits(n, base);
+%% convert a number to a list of digits in specified base ignoring sign
+begin scalar result;
 
-    a := part(u,1);
-    b := part(u,2);
-    c := part(u,3);  %recursive part
-
-    if length(b)=0 then << b1 := 0 >>
-    else b1 := digits2number(b);
-
-%%match -ve value
-    if a<0
-    then num_non_per_part :=a*(10^length(b)) - b1
-    else num_non_per_part :=a*(10^length(b)) + b1;
-
-    den_non_per_part := 10^length(b);
-
-    return list(list(num_non_per_part, den_non_per_part), c)
-  end;
-
-%******************
-
-procedure digits2number(x);
-%%convert an list of digits to a number
-  begin
-     scalar j, number, !*rounded, dmode!*;
-
-     if x={} or not(paarp x)  %check for empty list OR non-list
-     then rederr
-     "argument of digits2number should be list of non-negative digits";
-
-     number := part(x,1);
-
-     for j:=1:(length(x)-1) do
-     <<
-        if (numberp(part(x,j)) and part(x,j)>0 and part(x,j)<10)
-           or part(x,j)=0
-        then number := number*10 + part(x,j+1)
-        else rederr
-       "argument of digits2number should be list of non-negative digits"
-     >>;
-     return number
-  end;
-
-
-procedure number2digits(n);
-%%convert a number to a list of digits
-  begin
-    scalar number, list_of_ints, tmp, next_number, flg,
-           !*rounded, dmode!*;
-
-    flg := 0;
-
-%%check for integer argument
     if not(fixp n) then
-         rederr "argument must be an integer";
+       rederr "num2digits: arg must be an integer";
 
-%%match -ve Input => -ve Output
-    if n<0 then << flg:=1; n:=-n >>;
+    if n=0 then return list 0;
+    if n < 0 then n := -n;
 
-%%match zero Input => zero Output
-    if n=0 then return {0}
-           else list_of_ints := {};
+    while n > 0 do <<
+        n := divide(n, base);
+        result := cdr n . result;
+        n := car n;
+    >>;
 
-    tmp := n;
-    while tmp>0 do
-       <<  next_number := remainder(tmp,10);
-           list_of_ints := next_number.list_of_ints;
-            tmp := (tmp - next_number)/10
-       >>;
-
-%%match -ve Input => -ve Output
-    if flg=1
-    then return append(list(- first list_of_ints), rest list_of_ints)
-    else return list_of_ints;
-
-%    if flg=1 then return list("-",list_of_ints)
-%             else return list_of_ints;
-  end;
+    return result;   
+end;
 
 %***********************
 operator periodic;
+put('rational2periodic, 'psopfn, 'r2p!*!*);
 
-procedure rational2periodic(xx);
-%%gives periodic decimal representation of integer division
- %%check to see if rounded switch is off
-  if lisp !*rounded
-  then rederr "operator to be used in off rounded mode"
-  else
-  <<begin
-      scalar n, m, z, n_repr, answer, numerator, wholepart,
-             nexttryresult, result, numb, remd, negflg,
-             !*rounded, dmode!*;
+symbolic procedure r2p!*!* u;
+begin scalar base, n, d, res, neg_flag;
+   base := if cdr u then ieval cadr u else 10;
+   if base < 2 or base > 16 then
+      rederr "rational2periodic: base must be >=2 and <= 16";
+   u := car u;
+   if eqcar(u, 'minus) then <<
+      u := cadr u, neg_flag := t; >>;
+   u := r2p!-num!-den u;
+   n := car u;
+   d := cdr u;
+   if n < 0 then <<
+      neg_flag := t; n := -n>>;
+   res := rat2fixed_pt(n, d, base);
+   if neg_flag then 
+      base := -base;
+   return list('periodic, 'list . car res, 'list . cadr res,
+                'list . caddr res, base);
 
-%%check for rational number argument
-      if not(numberp xx)
-      then rederr "argument must be a rational number";
+end;
 
-      n := num xx;
-      m := den xx;
+symbolic procedure r2p!-num!-den(u);     
+begin scalar v, w;
+   if fixp u then  return u . 1;
+   
+   if eqcar(u,'quotient) and  fixp cadr u and fixp caddr u then 
+            return (cadr u) . caddr u;
 
-%%match -ve Input => -ve Output
-      negflg := 0;
-      if xx<0
-      then
-        << n_repr := append(list(- first number2digits(n)),
-                                    rest number2digits(n));
-           negflg := negflg + 1
-        >>
-      else n_repr := number2digits(n);
+   if eqcar(u, '!*sq) then <<
+           v := cadr u;  % standard quotient
+           if domainp(w := car v) then
+             if  fixp w and fixp cdr v then
+	        return w . cdr v
+             else if eqcar(w, '!:rn!:) and cdr v = 1 then 
+                return cdr w;
+   >>;
+   rederr "rational2periodic: 1st arg must be a rational number";
+end;
 
-%%calculate before decimal point
-    answer := {};
-    numerator := first(n_repr);
-    while length(n_repr) >1 do
-    <<
-      n_repr := rest n_repr;
-      answer := ((numerator - remainder(numerator, m))/m).answer;
-      numerator := remainder(numerator, m) * 10 + first n_repr
-    >>;
-    answer := ((numerator - remainder(numerator, m))/m).answer ;
-    wholepart := digits2number(reverse(answer));
+symbolic procedure rat2fixed_pt(n, d, base);
+%% gives periodic fixed point base b representation of rational n/d
+begin scalar m, z, intpart, non_periodic, repeating;
 
-%%calculate first decimal digit
-    numerator := remainder(numerator,m)*10;
-    numb := (numerator - remainder(numerator, m))/m;
-    remd := remainder(numerator, m);
-    z := {};
-    numerator := remd*10;
+ %% calculate integer part
+    m := divide(n, d);
+    intpart := car m;
+    n := base*cdr m;
+    m := divide(n, d);
 
-%%calculate decimal part & check for recursion
-    while length(nexttry(numb, remd, z)) neq 2
-    do
-    << z := {numb, remd}.z;
-       numb := (numerator - remainder(numerator, m))/m;
-       remd := remainder(numerator,m);
-       numerator   := remd*10;
-    >>;
+%% calculate digits in fractional part
+   while n neq 0 and not member(m, z) do <<
+      z := m  . z;
+      n := base*cdr m;
+      m := divide(n, d);
+   >>;  
 
-%%nexttry returns either {} or {decimal_ans, recurrence}
-    nexttryresult := nexttry(numb, remd, z);
-
-%%put result in form
-%% { {numerator non-periodic part, denominator non-periodic part},
-%%                                                       {period} }
-
-    %%match -ve Input => -ve Output
-    if negflg neq 0
-    then
-      << if wholepart=0
-         then
-           << partresult := tidy(list(wholepart,
-                                       first(nexttryresult),
-                                       second(nexttryresult)));
-
-              if length(first(nexttryresult))=0
-              then
-                << result := list(first  first partresult,
-                                  - second first partresult).
-                             rest partresult;
-                >>
-              else
-                << result := list(-first  first partresult,
-                                   second first partresult).
-                             rest partresult
-                >>;
+   z := reversip z;
+   if n = 0 then
+      non_periodic := foreach pr in z collect car pr
+   else <<
+       while z do 
+          if m neq car z then <<
+	      non_periodic := (caar z) . non_periodic;
+	      z := cdr z;
            >>
-         else
-           << partresult := tidy(list(wholepart,
-                                       first(nexttryresult),
-                                       second(nexttryresult)));
-
-              result := list(-first  first partresult,
-                              second first partresult).
-                        rest partresult
-           >>;
-      >>
-    else
-      << result := tidy(list(wholepart,
-                             first(nexttryresult),
-                             second(nexttryresult)))
-      >>;
-
-%return result;
-    return periodic(first result, second result);
-  end
-  >>;
-
-
-procedure nexttry(x,y,z);
-%%compare {x,y} with z (the list of previous ordered pairs {x,y})
-  begin
-   scalar recurrence, decimal_ans, num_rem, ans, h, k, j,
-          !*rounded, dmode!*; %added dmode!* here
-
-     recurrence :={};
-     decimal_ans := {};
-     num_rem := {x,y};
-     ans := {};
-     h:=0;
-     k := length(z);
-
-%%look through z to see if {x,y} has already occured
-     while (k>0 and h=0) do
-     <<
-        if num_rem = part(z,k) then
-        <<
-           for j := 1:k do recurrence  := first(part(z,j)).recurrence;
-           for j := k+1:length(z)
-                        do decimal_ans := first(part(z,j)).decimal_ans;
-           h:=1;
-        >>;
-     k := k-1;
-     if h=1 then ans := list(decimal_ans,recurrence)
-     >>;
-
-%%return list(decimal_ans,recurrence)
-    return ans
-  end;
-
-
-
-operator periodic2rational;
-
-%% Ruleset to allow two types of periodic input.
-per2ratrules :=
-{
-    periodic2rational(periodic(~x,~y)) => periodic2rational(x,y)
-                                          when paarp x and length x=2
-                                                       and paarp y,
-
-    periodic2rational(~x,~y) => per2rat(x,y)
-                                when paarp x and length x=2
-                                             and paarp y
-
-};
-let per2ratrules;
-
+           else <<
+	      repeating := foreach pr in z collect  car pr;
+	      z := nil;
+	   >>; 
+        non_periodic := reversip non_periodic;
+   >>;
+   return list(num2digits(intpart, base), non_periodic, repeating);
+end;
 
 
 %% Procedure to convert a periodic representation to a rational one.
-procedure per2rat(ab,c);
- %%check to see if rounded switch is off
-  if lisp !*rounded
-  then rederr "operator to be used in off rounded mode"
-  else
-  <<begin
-      scalar a, b, number_c, power, fract;
+symbolic procedure fixed_pt2rat(ip, npp, pp, b);
+begin scalar lnpp, lpp, n, d, pp1, g;
+   lnpp := length npp;
+   lpp := length pp;
 
-      a := first ab;
-      b := second ab;
+   ip := digits2num(ip, b);
+   if lnpp neq 0 then
+      npp := digits2num(npp, b)
+   else
+      npp := 0;
 
-      if a<0 then << a:=-a; b:=-b>>;
+   d := expt(b, lnpp);
+   n := ip*d + npp;
 
-      if not(fixp b) or
-         ( (remainder(b,10) neq 0)  and (b neq 1) and (b neq -1) )
-      then rederr "denominator must be 1, -1 or a multiple of 10";
+   if lpp neq 0 then <<
+      pp := digits2num(pp, b);
+      pp1 := expt(b, lpp) - 1;
+      n := n*pp1 + pp;
+      d := d*pp1;
+   >>;
+   g := gcdn(n, d);
+   n := n/g;
+   d := d/g;
 
-      if length c = 0 then number_c = 0
-      else number_c := digits2number c;
+   if d = 1 then
+      return n
+   else
+     return list('quotient, n , d);
 
-      power := length c;
+end;
 
-      fract := a/b + 1/b*(number_c/10^power*(1/(1-1/10^power)));
+symbolic procedure !*digit_listp(u, b);
+begin scalar res;
+  if not eqcar(u, 'list) then 
+     return nil;
 
-      return fract
-
-    end
+  res := t;
+  u := cdr u;
+  while res and u do <<
+     if car u < 0 or car u > b then
+        res := nil;
+     u := cdr u;
   >>;
+  return res;
+end; 
+ 
+put('periodic2rational, 'psopfn, 'p2r!*!*);
+
+symbolic procedure p2r!*!* u;
+begin scalar l, ip, npp, pp, base, neg_flag, res;
+  l := length u;
+  if l = 1 then
+     if caar u = 'periodic then <<
+        u := cdar u;
+	ip := car u;
+        npp := cadr u;
+        pp := caddr u;
+        base := cadddr u;
+	if base < 0 then <<
+	   neg_flag := t;
+	   base := -base
+	>>;
+	res :=  fixed_pt2rat(cdr ip, cdr npp, cdr pp, base);
+	if neg_flag then
+	   return list('minus, res)
+	else
+	   return res;
+     >>
+     else
+        rederr "periodic2rational: single arg must be (periodic, ....)";
+
+  if l = 2 or l > 4 then
+     rederr "periodic2rational: too many arguments -- must be 1, 3 or 4"; 
+
+  ip := car u;
+  npp := cadr u;
+  pp := caddr u;
+  if cdddr u then
+     base := ieval cadddr u
+  else
+     base := 10;
+  if base < 0 then <<
+     neg_flag := t;
+     base := -base;
+  >>;
+  if base < 2 or base > 16 then
+     rederr "periodic2rational: base must be >=2 and <= 16";
+  if length ip = 1 or not (!*digit_listp(ip, base) and 
+                           !*digit_listp(npp, base) and
+                           !*digit_listp(pp, base)) then
+        rederr "periodic2rational: invalid digit list(s) for this base";
+  res :=  fixed_pt2rat(cdr ip, cdr npp, cdr pp, base);
+  if neg_flag then
+     return list('minus, res)
+  else
+     return res;
+end;
 
 % printers
+
+fluid '(!*digit2ch);
+!*digit2ch := mkvect 15$
 
 symbolic procedure print_periodic (u);
 
    if not(!*nat) or
         (length caddr u + 10) > (linelength nil) then 'failed else
 
-   begin scalar oo,x,intpart,intstring,l1,l2,perio,minussign;
+   begin scalar oo, ip, npp, pp, base, neg_flag, l1, l2, l3, l;
 
-    intpart := cdr cadr u;
-    if cadr intpart= (-1) then
-        << minussign := t; intpart := list (car intpart, 1)>>;
-    if car intpart < 0 then
-        << minussign := t;
-           intpart := list (-(car intpart),cadr intpart)>>;
-    intstring :=  explode car intpart;
-    l1 := length intstring;
-    l2 := length explode cadr intpart;
+    ip := cdr cadr u;
+    l1 := length ip;
+    
+    npp := cdr caddr u;
+    l2 := length npp;
+    
+    pp := cdr cadddr u;
+    l3 := length pp;
+    
+    base := cadr cdddr u;
+    if base < 0 then <<
+       neg_flag := t;
+       base := -base;
+    >>;
 
-    perio   := cdr caddr u;
-    ycoord!* := ycoord!* +1;
-    oo := posn!*;
-    ymax!* := max(ymax!*,ycoord!*);
-    x:= max(l1,l2);
-    if minussign then x  := x + 1;
-    for i:=0:x do prin2!* " ";
-    x := for each q in perio sum length explode q;
-    if not(caddr u = '(list 0)) then
-            for i:=1:x do prin2!* "_";
+    if l3 > 0 then <<
+       l := l1+l2+1;   % 'decimal' point needed
+       if neg_flag then %  and minus sign
+          l  := l + 1;
+       ycoord!* := ycoord!* +1;
+       oo := posn!*;
+       ymax!* := max(ymax!*,ycoord!*);
+    
+       for i := 1 : l do prin2!* " ";
+       for i := 1 : l3 do prin2!* "_";
+       posn!* := oo;
+       ycoord!* := ycoord!* -1;
+    >>;
 
-    posn!* := oo;
-    ycoord!* := ycoord!* -1;
-    if minussign then prin2!* "-";
-
-    if l1 < l2 then <<l2 := l2 -1; prin2!* "0.">> else
-      while l1 > 0 do <<
-        prin2!* car intstring;
-        intstring := cdr intstring;
-        l1 := l1 -1;
-        if l1 < l2 then << l1 := 0; l2 := l2 -1;  prin2!* ".">>;
-        >>;
-    while l2 > 0 do <<
-        if intstring then <<prin2!* car intstring;
-                            intstring := cdr intstring;>>
-                else prin2!* '!0;
-        l2 := l2 -1 >>;
-
-    if not(caddr u = '(list 0)) then for each q in perio do prin2!* q;
+    if neg_flag then prin2!* "-";
+    foreach d in ip do prin2!* getv(!*digit2ch, d);
+    if l2 > 0 or l3 > 0 then <<
+       prin2!* ".";
+       foreach d in npp do prin2!* getv(!*digit2ch, d);
+       foreach d in pp do prin2!* getv(!*digit2ch, d);
+    >>;
+    
+    if base neq 10 then <<
+       prin2!* "  (base ";
+       prin2!* base;
+       prin2!* ")";
+    >>;
+    
     return t;
 end;
 
-put('periodic,'prifn,'print_periodic);
+for i:=0:9 do putv(!*digit2ch, i, i)$
+putv(!*digit2ch, 10, '!A)$ putv(!*digit2ch, 11, '!B)$
+putv(!*digit2ch, 12, '!C)$ putv(!*digit2ch, 13, '!D)$
+putv(!*digit2ch, 14, '!E)$ putv(!*digit2ch, 15, '!F)$
+
+put('periodic, 'prifn, 'print_periodic);
+put('periodic,'fancy!-prifn,'fancy!-periodic);
+
+symbolic procedure fancy!-periodic(u);
+fancy!-level
+  begin scalar w0, ip, npp, pp, base, neg_flag, l2, l3;
+    ip := cdr cadr u;
+    npp := cdr caddr u;
+    l2 := length npp;
+    pp := cdr cadddr u;
+    l3 := length pp;
+    
+    base := cadr cdddr u;
+    if base < 0 then <<
+       neg_flag := t;
+       base := -base;
+    >>;
+
+    if neg_flag then fancy!-prin2!*("-", 0);
+    foreach d in ip do fancy!-prin2!*(getv(!*digit2ch, d), 0);
+    if l2 > 0 or l3 > 0 then <<
+      fancy!-prin2!*(".", 0);
+      foreach d in npp do fancy!-prin2!*(getv(!*digit2ch, d), 0);
+      if l3 > 0 then <<
+      % *************** temporary hack to enclose periodic part in 
+      % ********* brackets rather than overlining
+	 fancy!-prin2!*('![, 0);
+         foreach d in pp do fancy!-prin2!*(getv(!*digit2ch, d), 0);
+         fancy!-prin2!*('!], 0);
+      >>;
+    >>;
+    % print number base as a subscript if it is not 10
+    if base neq 10 then <<
+       fancy!-prin2!*('!_, 0);
+       fancy!-prin2!*('!{, 0);
+       w0 := fancy!-maprint(base,0) where !*list=nil;
+       fancy!-prin2!*('!}, 0);
+    >>;
+  return w0;
+end;
 
 endmodule;
 
 end;
-

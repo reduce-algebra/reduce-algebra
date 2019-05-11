@@ -24,9 +24,6 @@
 /* Define to 1 if you have the `atexit' function. */
 #undef HAVE_ATEXIT
 
-/* Boehm conservative collector should be available */
-#undef HAVE_BOEHM
-
 /* Define to 1 if you have the `cfmakeraw' function. */
 #undef HAVE_CFMAKERAW
 
@@ -56,6 +53,9 @@
 
 /* define if the compiler supports basic C++14 syntax */
 #undef HAVE_CXX14
+
+/* define if the compiler supports basic C++17 syntax */
+#undef HAVE_CXX17
 
 /* Define to 1 if you have the declaration of `RLIM_SAVED_CUR', and to 0 if
    you don't. */
@@ -110,9 +110,6 @@
 
 /* Define to 1 if the system has the type `int128_t'. */
 #undef HAVE_INT128_T
-
-/* Define to 1 if the system has the type `intptr_t'. */
-#undef HAVE_INTPTR_T
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -211,6 +208,9 @@
 /* Define to 1 if the system has the type `socklen_t'. */
 #undef HAVE_SOCKLEN_T
 
+/* support for 128-bit long double/float128_t */
+#undef HAVE_SOFTFLOAT
+
 /* Define to 1 if you have the `sqrt' function. */
 #undef HAVE_SQRT
 
@@ -247,6 +247,9 @@
 
 /* Define to 1 if you have the `strstr' function. */
 #undef HAVE_STRSTR
+
+/* Define to 1 if the system has the type `struct sigaction'. */
+#undef HAVE_STRUCT_SIGACTION
 
 /* Define to 1 if the system has the type `struct timeval'. */
 #undef HAVE_STRUCT_TIMEVAL
@@ -325,9 +328,6 @@
 /* Define to 1 if the system has the type `uint128_t'. */
 #undef HAVE_UINT128_T
 
-/* Define to 1 if the system has the type `uintptr_t'. */
-#undef HAVE_UINTPTR_T
-
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
@@ -395,11 +395,11 @@
 /* Apple MacOS frameworks available */
 #undef MAC_FRAMEWORK
 
+/* alignof(max_align_t)==4 */
+#undef MAXALIGN4
+
 /* Makes use of a debugger easier, I hope. */
 #undef NILSEG_EXTERNS
-
-/* C++-11 attributes available? */
-#undef NORETURN
 
 /* Name of package */
 #undef PACKAGE
@@ -434,18 +434,6 @@
 /* Not guaranteed by ANSI spec */
 #undef SIGNED_SHIFTS_ARE_ARITHMETIC
 
-/* The size of `int', as computed by sizeof. */
-#undef SIZEOF_INT
-
-/* The size of `long', as computed by sizeof. */
-#undef SIZEOF_LONG
-
-/* The size of `long long', as computed by sizeof. */
-#undef SIZEOF_LONG_LONG
-
-/* The size of `void *', as computed by sizeof. */
-#undef SIZEOF_VOID_P
-
 /* The size of `wchar_t', as computed by sizeof. */
 #undef SIZEOF_WCHAR_T
 
@@ -475,6 +463,9 @@
 
 /* True for a (potentially) Windowed system */
 #undef WINDOW_SYSTEM
+
+/* Not even an attempt at support for GUI */
+#undef WITHOUT_GUI
 
 /* True if Intel or AMD (32 or 64-bit) */
 #undef X86
