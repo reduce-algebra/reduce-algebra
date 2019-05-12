@@ -31,9 +31,7 @@
 % make REDUCE and the underlying CL system compatible, and which need
 % to be input before the system independent REDUCE source is loaded.
 
-fluid '(lispsystem!* !*savedef !*gc!-hook!* !*noinlines);
-
-lispsystem!* := !*features!*;			% must include COMMON-LISP
+fluid '(!*savedef !*gc!-hook!* !*noinlines);
 
 global '(!*psl !*csl);					% CL is neither!
 

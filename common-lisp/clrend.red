@@ -33,6 +33,7 @@ fluid '(!*echo
         !*int
         !*mode
         ifl!*
+        lispsystem!*
         promptstring!*
 		outputhandler!*);
 
@@ -193,9 +194,9 @@ symbolic procedure begin;
         if !*mode eq 'algebraic then !*break := nil;
            %since most REDUCE users won't use LISP
         date!* := nil;
-a:      if errorp errorset('(begin1),nil,nil) then go to a;
+  a:    if errorp errorset('(begin1),nil,nil) then go to a;
         prin2t "Entering LISP ... "
- end;
+   end;
 
 flag('(begin),'go);
 
@@ -310,9 +311,11 @@ procedure compute!-prompt!-string(count,level); "";
 % put('defn, 'simpfg, '((t (!require '!eslpretty))
 %                       (nil (!esl!-reinstate!-plists))));
 
+#if (memq 'sbcl lispsystem!*)
 % Make the COMP switch control the SBCL evaluation mode:
 put('comp, 'simpfg, '((t (compilation t))
                       (nil (compilation nil))));
+#endif
 
 % This procedure is defined in "rlisp88/inspect.red", but it prints
 % all letters as lower case.  This version fixes that:

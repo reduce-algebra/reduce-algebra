@@ -9,28 +9,46 @@
 # does not form part of the final REDUCE system and should not need to
 # be rebuilt very often.  It is used (by build.sh) to compile REDUCE.
 
-# Usage: ./bootstrap.sh
+# Usage: ./bootstrap.sh -l sbcl/clisp
+
+if getopts l: option; then lisp=$OPTARG; fi
+
+if [ "$lisp" = 'sbcl' ]; then
+    runlisp='sbcl'
+    faslext='fasl'
+    if_sbcl=''
+    if_clisp='%'
+elif [ "$lisp" = 'clisp' ]; then
+    runlisp='clisp -ansi'
+    faslext='fas'
+    if_sbcl='%'
+    if_clisp=''
+else
+    echo 'Error: option -l sbcl/clisp is required'
+    exit
+fi
 
 if [ ! "$reduce" ]; then export reduce=.; fi
 
-mkdir -p log				 # -p avoids complaint if directory exists
+mkdir -p log                 # -p avoids complaint if directory exists
 mkdir -p fasl
 
-if [ "sl-on-cl.lisp" -nt "sl-on-cl.fasl" ]
+if [ "sl-on-cl.lisp" -nt "sl-on-cl.$faslext" ]
 then
 echo +++++ Compiling sl-on-cl
-sbcl << XXX &> log/sl-on-cl.blg
+$runlisp << XXX &> log/sl-on-cl.blg
 (compile-file "sl-on-cl")
 XXX
 fi
 
 echo +++++ Building bootstrap REDUCE
 
-sbcl << XXX &> log/bootstrap.blg
-;(declaim (optimize debug)				; same as (debug 3)
-;		 (sb-ext:muffle-conditions sb-ext:compiler-note style-warning))
+$runlisp << XXX &> log/bootstrap.blg
+;(declaim (optimize debug)              ; same as (debug 3)
+;        (sb-ext:muffle-conditions sb-ext:compiler-note style-warning))
 
 (load "sl-on-cl")
+;;;(load "sl-on-cl.lisp")
 (standard-lisp)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,7 +56,7 @@ sbcl << XXX &> log/bootstrap.blg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (setq !*verboseload t)
-(setq !*redefmsg nil)			% Just duplicates CL warnings!
+(setq !*redefmsg nil)           % Just duplicates CL warnings!
 
 (cl:defparameter !*init!-time!* (time))
 
@@ -78,7 +96,8 @@ rds(xxx := open("build.red",'input));
    (prin2t " secs")
    (prin2 "Heap left: ")
    (prin2 (gtheap))
-   (prin2t " bytes"))
+   (prin2t " bytes")
+)
 
 (initreduce)
 (setq date!* (date))
@@ -86,7 +105,9 @@ rds(xxx := open("build.red",'input));
 
 % SBCL (see SBCL User Manual / Stopping SBCL / Saving a Core Image):
 % save!-lisp!-and!-die("fasl/bootstrap", !:executable, t, !:toplevel, (lambda () (standard-lisp) (begin)))
-(save!-lisp!-and!-die "fasl/bootstrap.img")  % better for debugging
+% For better debugging...
+$if_sbcl (save!-lisp!-and!-die "fasl/bootstrap.img")
+$if_clisp (saveinitmem "fasl/bootstrap.mem")
 
 XXX
 

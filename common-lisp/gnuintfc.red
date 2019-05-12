@@ -6,39 +6,31 @@ module gnuintfc; % REDUCE-gnuplot interface.
 % Includes some code from "packages/support/psl.red".
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Redistribution and use in source and binary forms, with or without		   %
+% Redistribution and use in source and binary forms, with or without           %
 % modification, are permitted provided that the following conditions are met:  %
-%																			   %
-%    * Redistributions of source code must retain the relevant copyright	   %
-%      notice, this list of conditions and the following disclaimer.		   %
-%    * Redistributions in binary form must reproduce the above copyright	   %
-%      notice, this list of conditions and the following disclaimer in the	   %
-%      documentation and/or other materials provided with the distribution.	   %
-%																			   %
+%                                                                              %
+%    * Redistributions of source code must retain the relevant copyright       %
+%      notice, this list of conditions and the following disclaimer.           %
+%    * Redistributions in binary form must reproduce the above copyright       %
+%      notice, this list of conditions and the following disclaimer in the     %
+%      documentation and/or other materials provided with the distribution.    %
+%                                                                              %
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"  %
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE	   %
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE    %
 % IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE   %
-% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS BE	   %
-% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR		   %
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF		   %
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS	   %
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN	   %
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)	   %
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS BE    %
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR          %
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF         %
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS     %
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN      %
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)      %
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE   %
-% POSSIBILITY OF SUCH DAMAGE.												   %
+% POSSIBILITY OF SUCH DAMAGE.                                                  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fluid '(dirchar!*);
 
 global '(tempdir!*);
-
-!#if (memq 'win32 lispsystem!*)
-   dirchar!* := "\";
-   tempdir!* := getenv "TMP" or getenv "TEMP";
-!#else
-   dirchar!* := "/";
-   tempdir!* := "/tmp";
-!#endif
 
 % This file complements the (notionally) generic file "gnuplot.red" to
 % provide system-specific interfaces between REDUCE and the gnuplot
@@ -47,15 +39,15 @@ global '(tempdir!*);
 fluid '(plotstyle!*);
 
 global '(
-   !*plotinterrupts	% list of error codes caused by interrupts (ctl-C)
-   !*plotpause		% NIL if gnuplot should not wait
-   !*plotusepipe	% T if using pipes, NIL if writing to command file
-   plotheader!*	    % list of gnuplot commands (strings) for initializing gnuplot
+   !*plotinterrupts % list of error codes caused by interrupts (ctl-C)
+   !*plotpause      % NIL if gnuplot should not wait
+   !*plotusepipe    % T if using pipes, NIL if writing to command file
+   plotheader!*     % list of gnuplot commands (strings) for initializing gnuplot
    plotcleanup!*    % list of OS command for cleaning up (like removing temp files)
    plottmp!*        % dir for temp files (inc. trailing directory separator)
    );
 
-!*plotusepipe := t;					 % declared switch in gnupldrv.red
+!*plotusepipe := t;                  % declared switch in gnupldrv.red
 
 % Since it was first introduced the GNUPLOT package has passed a command
 % "set term XXX" to gnuplot, where XXX has typically been x11, aqua, vga
@@ -99,70 +91,95 @@ gnuplot_select_terminal!* :=
 
 symbolic procedure initialize_gnuplot();
    <<
-#if (member 'unix lispsystem!*)
+#if (member 'cygwin lispsystem!*)       % *** Cygwin on MS Windows ***
 
-   !*plotusepipe:=t;               % pipes: yes
-   !*plotpause:=nil;                 % pause: no
-   if getenv "LOGNAME" then
-      plottmp!* := bldmsg("%w%w%w.",get!-tempdir(),dirchar!*,getenv "LOGNAME")
-    else if getenv "USER" then
-      plottmp!* := bldmsg("%w%w%w.",get!-tempdir(),dirchar!*,getenv "USER")
-    else
-      plottmp!* := concat(get!-tempdir(),dirchar!*);
-   plotdta!* := for i:=1:10 collect
-         bldmsg("%wplotdt%w",plottmp!*,i); % scratch data files
-   plotcmds!* :=bldmsg("%wplotcmds",plottmp!*); % if pipes not accessible
+   gnuplot_select_terminal!* := "dumb"; % ***** TEMPORARY *****
 
-     % select header lines for setting the appropriate GNUPLOT
-     % terminal type if force_gnuplot_term is set on.
+   if system "type gnuplot &> /dev/null" = 0 then <<
+      % *** Prefer Cygwin gnuplot if available ***
+      % Assume gnuplot is in PATH.
 
+   !*plotpause := "mouse close";
+   plottmp!* := "/tmp/";
+   plotdta!* := for i:= 1:10 collect
+      bldmsg("%wplotdt%w", plottmp!*, i); % scratch data files
+   plotcleanup!* :=                       % delete data files
+      concat("rm ", plottmp!*, "plotdt*");
+   if !*plotusepipe then <<             % default as set above
+      plotcommand!* := "gnuplot";
+      plotcleanup!* := {plotcleanup!*}; % must be a list
+   >> else <<
+      plotcmds!* := concat(plottmp!*, "plotcmds");
+      plotcommand!* := concat("gnuplot ", plotcmds!*);
+      plotcleanup!* :=                  % also delete command file
+         {concat(plotcleanup!*, " ", plotcmds!*)};
+   >>;
+
+   % Select header lines for setting the appropriate GNUPLOT terminal
+   % type if force_gnuplot_term is set on:
    if null plotheader!* then
-   if null !*force_gnuplot_term then plotheader!* := ""
-   else << if null x then
-      if getenv "DISPLAY" then x := nil . gnuplot_select_terminal!*
-                        else x:='(nil."dumb");
-      if wlessp (strlen strinf cdr x, 20)
-                 then  plotheader!* :=bldmsg("set term %w",cdr x)
-                       else plotheader!* := cdr x ;
-   >>
-     where x =
-      assoc(getenv "TERM",
-	    ("xterm" . gnuplot_select_terminal!*) .
-	    ("xterm-color" . gnuplot_select_terminal!*) .
-           '(
-          %% You may want to extend or modify the terminal list above
-                ("sun-cmd" . "x11")
-                ("sun" . "x11")
-                ("hpterm" . "x11")
-                ("vt52"  . "tek40xx")
-                ("vt100" . "tek40xx")
-                ("vt102" . "tek40xx")
-           ));
+      if null !*force_gnuplot_term then plotheader!* := ""
+      else << if null x then
+         if getenv "DISPLAY" then x := nil . gnuplot_select_terminal!*
+         else x := '(nil . "dumb");
+      if string!-length cdr x < 20
+      then plotheader!* := bldmsg("set term %w", cdr x)
+      else plotheader!* := cdr x;
+      >>
+         where x =
+            assoc(getenv "TERM",
+               ("xterm" . gnuplot_select_terminal!*) .
+                  ("xterm-color" . gnuplot_select_terminal!*) .
+                     '(
+                        %% You may want to extend or modify the terminal list above
+                        ("sun-cmd" . "x11")
+                        ("sun" . "x11")
+                        ("hpterm" . "x11")
+                        ("vt52"  . "tek40xx")
+                        ("vt100" . "tek40xx")
+                        ("vt102" . "tek40xx")
+                           ));
 
-   plotcommand!* := find!-gnuplot();
+   >> else if system "cmd /c start /wait wgnuplot.exe -V" = 0 then <<
+      % *** Fall back to Cygwin running native MS Windows gnuplot ***
 
-   plotcleanup!* :=                  % delete scratch files
-       {bldmsg("rm %wplotdt*",plottmp!*),bldmsg("rm %wplotcmds*",plottmp!*)};
+      !*plotpause := "mouse close";
+      plottmp!* := concat(getenv "LOCALAPPDATA", "\Temp\");
+      plotdta!* := for i:= 1:10 collect
+         bldmsg("%wplotdt%w.dat", plottmp!*, i); % scratch data files
+      plotcleanup!* :=                     % delete data files
+         concat("cmd /c del '", plottmp!*, "plotdt*.dat'");
+      if !*plotusepipe then <<             % default as set above
+         plotcommand!* := "cmd /c start /b gnuplot.exe";
+         plotcleanup!* := {plotcleanup!*}; % must be a list
+      >> else <<
+         plotcmds!* := concat(plottmp!*, "plotcmds");
+         plotcommand!* := concat("cmd /c start /wait wgnuplot.exe '", plotcmds!*, "'");
+         plotcleanup!* :=                  % also delete command file
+            {concat(plotcleanup!*, " '", plotcmds!*, "'")};
+      >>;
 
-#elif (memq 'win32 lispsystem!*)		% *** MS WINDOWS ***
+      plotheader!* := "";
 
-   if null tempdir!* then
-   << prin2t "warning: no TMP directory found. Using >C:<";
-      plottmp!* := "C:\" >>
-   else plottmp!* := concat(tempdir!*, "\");
+   >>;
+
+#elif (memq 'win32 lispsystem!*)        % *** MS Windows ***
+
+   plottmp!* := concat(getenv "TMP", "\");
    !*plotpause := "mouse close";
    plotdta!* := for i:=1:10 collect
-	  bldmsg("%wplotdt%w.dat", plottmp!*, i); % scratch data files
+      bldmsg("%wplotdt%w.dat", plottmp!*, i); % scratch data files
    plotheader!* := "";
-   plotcleanup!* :=						% delete data files
-	  {concat("del ", plottmp!*, "plotdt*.dat")};
-   if !*plotusepipe then				% default as set above
-   	  plotcommand!* := "start /b gnuplot.exe"
-   else <<
-   	  plotcmds!* := concat(plottmp!*, "plotcmds");
-   	  plotcommand!* := concat("start /wait wgnuplot.exe ", plotcmds!*);
-   	  plotcleanup!* :=					% also delete command file
-	  	 {concat(plotcleanup!*, " ", plotcmds!*)};
+   plotcleanup!* :=                     % delete data files
+      concat("del ", plottmp!*, "plotdt*.dat");
+   if !*plotusepipe then <<             % default as set above
+      plotcommand!* := "start /b gnuplot.exe";
+      plotcleanup!* := {plotcleanup!*}; % must be a list
+   >> else <<
+      plotcmds!* := concat(plottmp!*, "plotcmds");
+      plotcommand!* := concat("start /wait wgnuplot.exe ", plotcmds!*);
+      plotcleanup!* :=                  % also delete command file
+         {concat(plotcleanup!*, " ", plotcmds!*)};
    >>;
 
 #endif
@@ -183,10 +200,10 @@ symbolic procedure find!-gnuplot!-aux path;
      if idp path then path := id2string path;
 
      % Remove trailing directory separator if present:
-	 begin scalar p;
-	 	if cadr (p := reversip explode path) eq dirchar!* then
-		   path := '!" . compress reversip cddr p;
-	 end;
+     begin scalar p;
+        if cadr (p := reversip explode path) eq dirchar!* then
+           path := '!" . compress reversip cddr p;
+     end;
 
      % Build path:
      path := bldmsg("%w%w%w", path, dirchar!*, "gnuplot");
