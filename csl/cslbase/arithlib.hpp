@@ -421,6 +421,11 @@
 #include <ctime>
 #include <chrono>
 #include <utility>
+#include <string>
+#include <thread>
+#include <chrono>
+#include <mutex>
+#include <atomic>
 
 namespace arithlib
 {
@@ -625,7 +630,243 @@ namespace std
 namespace arithlib
 {
 
-// declare a number of functions that maight usefully be used elsewhere. If
+// When I get to big-integer multiplication I will use two worker threads
+// so that elapsed times for really large multiplications are reduced
+// somewhat. Well ideally by a factor approaching 3. I set up a framework
+// of support for the threads here (and also include as comments a skeleton
+// of code showing how to exploit them).
+
+// Each worker thread needs some data that it shares with the main thread.
+// this structure encapsulates that.
+
+typedef struct worker_data_
+{   size_t maxa,
+           maxb,
+           maxc,
+           maxw;
+    uint64_t *a;
+    size_t lena;
+    uint64_t *b;
+    size_t lenb;
+    uint64_t *c;
+    uint64_t *w;
+} worker_data;
+
+inline void worker_thread(std::mutex *mutex[4], worker_data *w);
+
+// I *really* want there to be just one copy of all these across all
+// compilation units. With full C++17 support that would be achievable
+// through use of inline variables, but that is too recent for me to
+// count as portable yet: versions of g++ that I still wish to use do
+// not implement it. So I use a fallback scheme that lets me guarantee
+// a singleton pattern.
+
+typedef struct singleton_data_
+{   std::thread *worker0 = NULL,
+                *worker1 = NULL;
+    std::mutex  *mutex0[4],
+                *mutex1[4];
+    int         send_count = 0;
+    bool        quit_threads = false;
+    worker_data worker_data0,
+                worker_data1;
+} singleton_data;
+
+// C++ 11 (in section 7.1.2) says that static data defined within an inline
+// function will exist in a singleton mode. Thus however many compilation
+// units this header is included from there will be exactly one copy of
+// "data" and singletone_data() will retrieve its address. So to access
+// one of the variables I go something like
+//           unique()->send_count
+// where if I had inline variables I could have written just
+//           send_count
+// but with the unique() function expanded inline and some not even too
+// challenging optimization I can expect pretty well no performance overhead.
+
+inline singleton_data *unique()
+{   static singleton_data data;
+    return &data;
+}
+
+inline void start_threads();
+
+// Probably the most "official" way to coordinate threads would be to use
+// condition variables, but doing so involves several synchronization
+// primitives for each step of the transaction. For the simple level of
+// coordination I need here it would be more costly that necessary. I can
+// manage here with a scheme that when thread A want to allow thread B to
+// proceed it unlocks a mutex that thread B was waiting on. There is some
+// mess associated with ensuring that the main thread waits for results and
+// that there are no race situations where all threads compete for a single
+// mutex.
+//
+// There are 3 mutexes for each worker thread, but each synchronization step
+// just involves a single mutex, transferring ownership between main and worker
+// thread. Here is the patter of transfer and subsequent ownership, with "?"
+// marking a muxex that has been waiting and the ">n" or <n" in the middle
+// also showing which muxex has just been activated:
+//       X  X  .  .         ?  .  X  X    Idle state. Worker waiting on mutex 0
+// To start a transaction the main thread sets up data and unlocks mutex 0.
+// That allows the worker to proceed and pick up the data.
+//       .  X  .  .   >0    ?X .  X  X    first transaction
+// The main thread must not alter data until the worker is finished. It waits
+// on mutex 1 until the worker tells it that a result is available.
+//       .  X ?X  .   <2    X  .  .  X
+// The main thread is now entitles to start using the results of the activity
+// just completed and setting up data for the next one. It can not release
+// mutex 0 to restart the worker because the worker alread owns that. And even
+// though it owns mutex 2 it had better not release that, because for that
+// to make sense the worker would need to be waiting on it, and that would mean
+// the worker had just done m3.unlock(); m3.lock() in quick succesion, which
+// might have led it to grab m3 rather than the main program managing to. So
+// use the third mutex, which the worker must be waiting on.
+//       .  .  X  .   >1    X ?X  .  X    second transaction
+// When it has finished its task the worker now unlocks mutex 3. This leaves
+// a situation symmetric with the initial one
+//       .  .  X ?X   <3    X  X  .  .
+//       .  .  .  X   >2    X  X  ?X  .    third transaction
+//       ?X .  .  X   <0    .  X  X  .
+//       X  .  .  .   >3    .  X  X ?X    fourth transaction
+//       X ?X  .  .   <1    .  .  X  X    back in initial configuration!
+//
+// The pattern is thus that the master goes
+//  [initially lock 0 and 1]
+//  unlock 0  wait 2
+//  unlock 1  wait 3
+//  unlock 2  wait 0
+//  unlock 3  wait 1
+// while the worker goes
+//  [initially lock 2 and 3]
+//  wait 0    unlock 2
+//  wait 1    unlock 3
+//  wait 2    unlock 0
+//  wait 3    unlock 1
+// Observe that I can use (n^2) to map between the mutex number in the first
+// and second columns here.
+
+
+
+// Call post_data() when worker_data0 and worker_data1 have been set up
+// and it is time to let the worker threads loose. This will create the
+// threads if necessary too.
+
+inline void post_data()
+{   if (unique()->worker0 == NULL) start_threads();
+    unique()->mutex0[unique()->send_count]->unlock(); // allows worker to proceed
+    unique()->mutex1[unique()->send_count]->unlock(); // allows worker to proceed
+}
+
+// After doing a post_data() the main thread can do some work of its own.
+// When it has done as much as it can and it needs output from the work done
+// by the threads it calls wait_for_results() which does what you might
+// expect. The threads are expected to have left their output within the
+// structures worker_data0 and worker_data1.
+
+inline void wait_for_result()
+{   unique()->mutex0[unique()->send_count^2]->lock();
+    unique()->mutex1[unique()->send_count^2]->lock();
+    unique()->send_count = (unique()->send_count+1)&3;
+}
+
+// When the program is about to exit it needs to ensure that the threads
+// are terminated and joined and that the various support material that
+// goes along with them has been tidied up. Terminate_threads() arranges that.
+
+inline void terminate_threads()
+{   unique()->quit_threads = true;
+    post_data();
+    unique()->worker0->join();
+    unique()->worker1->join();
+    delete unique()->worker0;
+    delete unique()->worker1;
+    for (int i=0; i<4; i++)
+    {   delete unique()->mutex0[i];
+        delete unique()->mutex1[i];
+    }
+    if (unique()->worker_data0.a != NULL) delete unique()->worker_data0.a;
+    if (unique()->worker_data0.b != NULL) delete unique()->worker_data0.b;
+    if (unique()->worker_data0.c != NULL) delete unique()->worker_data0.c;
+    if (unique()->worker_data0.w != NULL) delete unique()->worker_data0.w;
+    if (unique()->worker_data1.a != NULL) delete unique()->worker_data1.a;
+    if (unique()->worker_data1.b != NULL) delete unique()->worker_data1.b;
+    if (unique()->worker_data1.c != NULL) delete unique()->worker_data1.c;
+    if (unique()->worker_data1.w != NULL) delete unique()->worker_data1.w;
+}
+
+// thart_threads() tries to initialize everything that might usefully be
+// initialized and then create mutexes and threads.
+
+inline void start_threads()
+{   unique()->send_count = 0;
+    unique()->quit_threads = false;
+    unique()->worker_data0.maxa = unique()->worker_data0.maxb = 
+        unique()->worker_data0.maxc = unique()->worker_data0.maxw = 0;
+    unique()->worker_data1.maxa = unique()->worker_data1.maxb = 
+        unique()->worker_data1.maxc = unique()->worker_data1.maxw = 0;
+    unique()->worker_data0.a = unique()->worker_data0.b = 
+        unique()->worker_data0.c = unique()->worker_data0.w = NULL;
+    unique()->worker_data1.a = unique()->worker_data1.b = 
+        unique()->worker_data1.c = unique()->worker_data1.w = NULL;
+    for (int i=0; i<4; i++)
+    {   unique()->mutex0[i] = new std::mutex();
+        unique()->mutex1[i] = new std::mutex();
+        if (i < 2)
+        {   unique()->mutex0[i]->lock();
+            unique()->mutex1[i]->lock();
+        }
+    }
+// As soon as each thread starts it locks the two mutexes that it needs to
+// have locked at the start, and goes into a loop where it waits to be sent
+// requests.
+    unique()->worker0 =
+        new std::thread(worker_thread, unique()->mutex0,
+                                       &unique()->worker_data0);
+    unique()->worker1 =
+        new std::thread(worker_thread, unique()->mutex1,
+                                       &unique()->worker_data1);
+    atexit(terminate_threads);
+}
+
+// Here I have a sketch of how the thread stuff can be used...
+
+//-- // My main program here is just a SIMPLE illustration of how things can be
+//-- // used.
+//--
+//-- int main()
+//-- {   using namespace std::chrono_literals;
+//--     for (int round=0; round<6; round++)
+//--     {
+//-- // Set up input for the threads here.
+//--         unique()->worker_data0.lena = round+7;
+//--         unique()->worker_data1.lena = round+1000;
+//--         post_data();
+//-- // Here one puts work to be done while the threads are active.
+//--         std::this_thread::sleep_for(4s);
+//--         wait_for_result();
+//-- // Here the thread output can be used.
+//--     }
+//--     return 0;
+//-- }
+
+// The worker_thread() function is started in each of two threads, and
+//-- // processes requests until a "quit" request is sent to it.
+//--
+//-- inline void worker_thread(std::mutex *mutex[4], worker_data *wd)
+//-- {   mutex[2]->lock();
+//--     mutex[3]->lock();
+//--     int receive_count = 0;
+//--     for (;;)
+//--     {   mutex[receive_count]->lock();
+//--         if (unique()->quit_threads) return;
+//--         using namespace std::chrono_literals;
+//-- // This is where I do some work!
+//--         std::this_thread::sleep_for(6s);
+//--         mutex[receive_count^2]->unlock();
+//--         receive_count = (receive_count + 1) & 3;
+//--     }
+//-- }
+
+// Declare a number of functions that might usefully be used elsewhere. If
 // I declare them "inline" then it will be OK even if I include this header
 // from multiple source files because only one copy should end up in the
 // eventually-linked executable.
@@ -676,7 +917,7 @@ inline void pop(intptr_t&);
 // an array of uint64_t objects, so when I push it I must convert it back to
 // a Lisp-friendly form.
 inline void push(uint64_t *p)
-{   push(vector_to_handle(p);
+{   push(vector_to_handle(p));
 }
 inline void pop(uint64_t *&p)
 {   intptr_t w;
@@ -696,6 +937,11 @@ inline void pop(intptr_t&)
 inline void push(uint64_t *p)
 {}
 inline void pop(uint64_t *&p)
+{}
+
+inline void push(const uint64_t *p)
+{}
+inline void pop(const uint64_t *&p)
 {}
 
 #endif
@@ -876,7 +1122,8 @@ public:
                 }
                 if (n != 0)
                     std::cout << "Freechain " << i << " length: "
-                              << n << std::endl;
+                              << n << " " << (((size_t)1)<<i)
+                              << std::endl;
             }
             while (f != NULL)
             {   uint64_t w = f[1];
@@ -1764,6 +2011,10 @@ public:
     {   return vector_of_handle(val);
     }
 
+// In a way that is BAD I make the result of an assignment void rather than
+// the value that is assigned. This is so I do not make gratuitous extra
+// copies of it in the common case where the value is not used, but it could
+// catch out the unwary.
     inline void operator = (const Bignum &x)
     {   if (this == &x) return; // assign to self - a silly case!
         abandon(val);
@@ -5549,7 +5800,7 @@ intptr_t Revdifference::op(uint64_t *a, int64_t b)
 // I want:
 //    kadd(a, lena, c, lenc);          // c += a
 
-inline uint64_t kadd(uint64_t *a, size_t lena,
+inline uint64_t kadd(const uint64_t *a, size_t lena,
                      uint64_t *c, size_t lenc,
                      uint64_t carry=0)
 {   size_t i;
@@ -5564,8 +5815,8 @@ inline uint64_t kadd(uint64_t *a, size_t lena,
 
 // c = a - b.   must have length(a) >= length(b).
 
-inline uint64_t ksub(uint64_t *a, size_t lena,
-                     uint64_t *b, size_t lenb,
+inline uint64_t ksub(const uint64_t *a, size_t lena,
+                     const uint64_t *b, size_t lenb,
                      uint64_t *c)
 {   assert(lena >= lenb);
     uint64_t borrow = 0;
@@ -5588,8 +5839,8 @@ inline void kneg(uint64_t *a, size_t lena)
 // the result is zero the value is not terribly important. Must be
 // called with the first argument at least as long as the second.
 
-inline bool absdiff(uint64_t *a, size_t lena,
-                    uint64_t *b, size_t lenb,
+inline bool absdiff(const uint64_t *a, size_t lena,
+                    const uint64_t *b, size_t lenb,
                     uint64_t *c)
 {
 // I will do a cheap comparison of a and b first, based on an understanding
@@ -5741,8 +5992,8 @@ void mul4x4(uint64_t a3, uint64_t a2, uint64_t a1, uint64_t a0,
 
 // This forms a product digit by digit.
 
-inline void classical_multiply(uint64_t *a, size_t lena,
-                               uint64_t *b, size_t lenb,
+inline void classical_multiply(const uint64_t *a, size_t lena,
+                               const uint64_t *b, size_t lenb,
                                uint64_t *c)
 {   if (lena < lenb)
     {   std::swap(a, b);
@@ -5797,8 +6048,8 @@ inline void classical_multiply(uint64_t *a, size_t lena,
 
 // c = c + a*b. Potentially carry all the way up to lenc.
 
-inline void classical_multiply_and_add(uint64_t *a, size_t lena,
-                                       uint64_t *b, size_t lenb,
+inline void classical_multiply_and_add(const uint64_t *a, size_t lena,
+                                       const uint64_t *b, size_t lenb,
                                        uint64_t *c, size_t lenc)
 {   if (lena < lenb)
     {   std::swap(a, b);
@@ -5853,7 +6104,7 @@ inline void classical_multiply_and_add(uint64_t *a, size_t lena,
 // as optimized cases.
 
 inline void classical_multiply(uint64_t a,
-                               uint64_t *b, size_t lenb,
+                               const uint64_t *b, size_t lenb,
                                uint64_t *c)
 {   uint64_t hi=0;
     for (size_t j=0; j<lenb; j++)
@@ -5864,7 +6115,7 @@ inline void classical_multiply(uint64_t a,
 // c = c + a*b and return any carry.
 
 inline void classical_multiply_and_add(uint64_t a,
-                                       uint64_t *b, size_t lenb,
+                                       const uint64_t *b, size_t lenb,
                                        uint64_t *c, size_t lenc)
 {   uint64_t hi=0, lo;
     for (size_t j=0; j<lenb; j++)
@@ -5887,16 +6138,31 @@ INLINE_VAR constexpr size_t K=18;
 // value during testing and tuning.
 
 #ifndef KARATSUBA_CUTOFF
-// It may be defined globvally as a severe override of what happens here!
+// It may be defined globally as a severe override of what happens here!
 INLINE_VAR size_t KARATSUBA_CUTOFF = K;
 #endif
 
-inline void small_or_big_multiply(uint64_t *a, size_t lena,
-                                  uint64_t *b, size_t lenb,
+#if !defined K1 && !defined K1_DEFINED
+// I provide a default here but can override it at compile time
+INLINE_VAR constexpr size_t K1=20;
+#define K1_DEFINED 1
+#endif
+
+// When I have completed and measured things I am liable to make this a
+// "const", but for now it is a simple variable so I can tinker with the
+// value during testing and tuning.
+
+#ifndef PARAKARA_CUTOFF
+// It may be defined globally as a severe override of what happens here!
+INLINE_VAR size_t PARAKARA_CUTOFF = K1;
+#endif
+
+inline void small_or_big_multiply(const uint64_t *a, size_t lena,
+                                  const uint64_t *b, size_t lenb,
                                   uint64_t *c, uint64_t *w);
 
-inline void small_or_big_multiply_and_add(uint64_t *a, size_t lena,
-                                          uint64_t *b, size_t lenb,
+inline void small_or_big_multiply_and_add(const uint64_t *a, size_t lena,
+                                          const uint64_t *b, size_t lenb,
                                           uint64_t *c, size_t lenc,
                                           uint64_t *w);
 
@@ -5914,8 +6180,8 @@ inline void small_or_big_multiply_and_add(uint64_t *a, size_t lena,
 //         a1*b1, a0*b0, |a0-a1|*|b0-b1|
 
 
-inline void karatsuba(uint64_t *a, size_t lena,
-                      uint64_t *b, size_t lenb,
+inline void karatsuba(const uint64_t *a, size_t lena,
+                      const uint64_t *b, size_t lenb,
                       uint64_t *c, uint64_t *w)
 {
     assert(lena == lenb ||
@@ -5976,8 +6242,73 @@ inline void karatsuba(uint64_t *a, size_t lena,
     }
 }
 
-inline void karatsuba_and_add(uint64_t *a, size_t lena,
-                              uint64_t *b, size_t lenb,
+inline void top_level_karatsuba(const uint64_t *a, size_t lena,
+                                const uint64_t *b, size_t lenb,
+                                uint64_t *c, uint64_t *w)
+{   if (lena < 40) // PARAKARA_CUTOFF)
+        return karatsuba(a, lena, b, lenb, c, w);
+// Here I have a HUGE case and I should use threads!
+std::cout << "Use HUGE karatsuba on size " << lena << " here" << std::endl;
+    assert(lena == lenb ||
+           (lena%2 == 0 && lenb == lena-1));
+    assert(lena >= 2);
+    size_t n = (lena+1)/2;    // size of a "half-number"
+    size_t lenc = lena+lenb;
+// lena-n and lenb-n will each be either n or n-1.
+    if (absdiff(a, n, a+n, lena-n, w) !=
+        absdiff(b, n, b+n, lenb-n, w+n))
+    {
+// Here I will collect
+//    a1*b1    (a1*b0 + b1*a0 - a1*b1 - a0*b0)     a0*b0   
+// First write the middle part into place.
+        small_or_big_multiply(w, n, w+n, n, c+n, w+2*n);     // (a1-a0)*(b0-b1)
+// Now I just need to add back in parts of the a1*b1 and a0*b0
+        small_or_big_multiply(a+n, lena-n, b+n, lenb-n, w, w+2*n); // a1*b1
+// First insert the copy at the very top. Part can just be copied because I
+// have not yet put anything into c there, the low half then has to be added
+// in (and carries could propagate all the way up).
+        for (size_t i=n; i<lenc-2*n; i++) c[2*n+i] = w[i];
+        kadd(w, n, c+2*n, lenc-2*n);
+// Now add in the second copy
+        kadd(w, lenc-2*n, c+n, lenc-n);
+// Now I can deal with the a0*b0.
+        small_or_big_multiply(a, n, b, n, w, w+2*n);               // a0*b0
+        for (size_t i=0; i<n; i++) c[i] = w[i];
+        kadd(w+n, n, c+n, lenc-n);
+        kadd(w, 2*n, c+n, lenc-n);
+    }
+    else
+    {
+// This case is slightly more awkward because the key parts of the middle
+// part are negated. 
+//    a1*b1    (-a1*b0 - b1*a0 + a1*b1 + a0*b0)     a0*b0   
+        small_or_big_multiply(w, n, w+n, n, c+n, w+2*n);     // (a1-a0)*(b1-b0)
+        small_or_big_multiply(a+n, lena-n, b+n, lenb-n, w, w+2*n); // a1*b1
+        for (size_t i=n; i<lenc-2*n; i++) c[2*n+i] = w[i];
+// Now I will do {c3,c2,c1} = {c3,w0,0} - {0,c2,c1) which has a mere negation
+// step for the c1 digit, but is otherwise a reverse subtraction. Note I had
+// just done c3 = w1 so that first term on the RHS is "really" {w1,w0,0}.
+//      c1 = 0 - c1 [and generate borrow]
+//      c2 = w0 - c2 - borrow [and generate borrow]
+//      c3 = c3 - borrow
+        uint64_t borrow = 0;
+        for (size_t i=0; i<n; i++)
+            borrow = subtract_with_borrow(0, c[n+i], borrow, c[n+i]);
+        for (size_t i=0; i<n; i++)
+            borrow = subtract_with_borrow(w[i], c[2*n+i], borrow, c[2*n+i]);
+        for (size_t i=0; i<lenc-3*n && borrow!=0; i++)
+            borrow = subtract_with_borrow(c[3*n+i], borrow, c[3*n+i]);
+// Now I can proceed as before
+        kadd(w, lenc-2*n, c+n, lenc-n);
+        small_or_big_multiply(a, n, b, n, w, w+2*n);               // a0*b0
+        for (size_t i=0; i<n; i++) c[i] = w[i];
+        kadd(w+n, n, c+n, lenc-n);
+        kadd(w, 2*n, c+n, lenc-n);
+    }
+}
+
+inline void karatsuba_and_add(const uint64_t *a, size_t lena,
+                              const uint64_t *b, size_t lenb,
                               uint64_t *c, size_t lenc, uint64_t *w)
 {   assert(lena == lenb ||
            (lena%2 == 0 && lenb == lena-1));
@@ -6024,8 +6355,8 @@ inline void karatsuba_and_add(uint64_t *a, size_t lena,
 // rather along the lines of "short" multiplication treating the size of the
 // smaller operand as the digit size.
 
-inline void certainly_big_multiply(uint64_t *a, size_t lena,
-                                   uint64_t *b, size_t lenb,
+inline void certainly_big_multiply(const uint64_t *a, size_t lena,
+                                   const uint64_t *b, size_t lenb,
                                    uint64_t *c, uint64_t *w)
 {   if (lena == lenb)
     {   karatsuba(a, lena, b, lenb, c, w);
@@ -6049,7 +6380,8 @@ inline void certainly_big_multiply(uint64_t *a, size_t lena,
 // I will be willing to do chunks that are of an even size that is
 // either lenb or lenb+1. 
     size_t len = lenb + (lenb & 1);
-    uint64_t *a1 = a, *c1 = c;
+    const uint64_t *a1 = a;
+    uint64_t *c1 = c;
     size_t lena1 = lena;
 // Multiply-and-add will be (slightly) more expensive than just Multiply,
 // so I do a sequence of multiplications where their outputs will not overlap
@@ -6107,8 +6439,92 @@ inline void certainly_big_multiply(uint64_t *a, size_t lena,
         small_or_big_multiply_and_add(a1, lena1, b, lenb, c1, lenc1, w);
 }
 
-inline void certainly_big_multiply_and_add(uint64_t *a, size_t lena,
-                                           uint64_t *b, size_t lenb,
+inline void top_level_certainly_big_multiply(const uint64_t *a, size_t lena,
+                                             const uint64_t *b, size_t lenb,
+                                             uint64_t *c, uint64_t *w)
+{   if (lena == lenb)
+    {   top_level_karatsuba(a, lena, b, lenb, c, w);
+        return;
+    }
+    if (lena < lenb)
+    {   std::swap(a, b);
+        std::swap(lena, lenb);
+    }
+// Now b is the shorter operand. The case (2n)*(2n-1) will be handled
+// using Karatsuba merely by treating the smaller number as if padded with
+// a leading zero.
+    if (lena%2==0 && lenb==lena-1)
+    {   top_level_karatsuba(a, lena, b, lenb, c, w);
+        return;
+    }
+// If the two inputs are unbalanced in length I will perform multiple
+// balanced operations each of which can be handled specially. I will
+// try to make each subsidiary multiplication as big as possible.
+// This will be lenb rounded up to an even number.
+// I will be willing to do chunks that are of an even size that is
+// either lenb or lenb+1. 
+    size_t len = lenb + (lenb & 1);
+    const uint64_t *a1 = a;
+    uint64_t *c1 = c;
+    size_t lena1 = lena;
+// Multiply-and-add will be (slightly) more expensive than just Multiply,
+// so I do a sequence of multiplications where their outputs will not overlap
+// first, and then do the interleaved multiplications adding in.
+    for (;;)
+    {
+// I may have rounded the size of b up by 1, and if I have I would generate
+// 2*len-1 digits not 2*len and hence risk leaving a 1-word gap between filled
+// in data. I zero that here to avoid trouble. However I must not do this
+// for if the multiplication I am about to do will write in the very top
+// digits of the final answer, because if I did that would be a sort of
+// buffer overrun.
+        if (len < lena1) c1[2*len-1] = 0;
+        top_level_karatsuba(a1, len, b, lenb, c1, w);
+        c1 += 2*len;
+// I will keep going provided the next multiplication I will do will fully fit.
+        if (lena1 < 3*len) break;
+        a1 += 2*len;
+        lena1 -= 2*len;
+    }
+    if (lena1 > 2*len)
+    {   a1 += 2*len;
+        lena1 -= 2*len;
+// Do a shorter nice Multiply (without Add) to reach the end of input a.
+        small_or_big_multiply(a1, lena1, b, lenb, c1, w);
+    }
+    else if (lena1!=len)
+    {
+// I may need to pad with zeros when the top digit to be generated will be
+// put there using multiply_and_add.
+        for (size_t i=c1-c; i<lena+lenb; i++) c[i] = 0;
+    }
+// Now I need to do much the same for the odd numbered digits of a, but
+// adding the products in rather than writing them into place.
+    a1 = a + len;
+    c1 = c + len;
+    size_t lenc1 = lena+lenb-len;
+// I know that I had lena>lenb at the start. This means I have at
+// least a part block to process here, but there is no guarantee that
+// I have a whole one.
+    lena1 = lena - len;
+    for (;;)
+    {   if (lena1 < len) break;
+        karatsuba_and_add(a1, len, b, lenb, c1, lenc1, w);
+        if (lena1 <= 2*len)
+        {   lena1 = 0;
+            break;
+        }
+        c1 += 2*len;
+        lenc1 -= 2*len;
+        a1 += 2*len;
+        lena1 -= 2*len;
+    }
+    if (lena1!=0)
+        small_or_big_multiply_and_add(a1, lena1, b, lenb, c1, lenc1, w);
+}
+
+inline void certainly_big_multiply_and_add(const uint64_t *a, size_t lena,
+                                           const uint64_t *b, size_t lenb,
                                            uint64_t *c, size_t lenc,
                                            uint64_t *w)
 {   if (lena == lenb)
@@ -6133,7 +6549,8 @@ inline void certainly_big_multiply_and_add(uint64_t *a, size_t lena,
 // I will be willing to do chunks that are of an even size that is
 // either lenb or lenb+1. 
     size_t len = lenb + (lenb & 1);
-    uint64_t *a1 = a, *c1 = c;
+    const uint64_t *a1 = a;
+    uint64_t *c1 = c;
     size_t lena1 = lena, lenc1 = lenc;
 // because this is "certainly big" I know I can do at least one
 // Karatsuba stage.
@@ -6155,8 +6572,8 @@ inline void certainly_big_multiply_and_add(uint64_t *a, size_t lena,
 // either certainly_big_multiply or classical_multiply with very
 // little overhead.
 
-inline void small_or_big_multiply(uint64_t *a, size_t lena,
-                                  uint64_t *b, size_t lenb,
+inline void small_or_big_multiply(const uint64_t *a, size_t lena,
+                                  const uint64_t *b, size_t lenb,
                                   uint64_t *c, uint64_t *w)
 {   if (lena < KARATSUBA_CUTOFF || lenb < KARATSUBA_CUTOFF)
     {   if (lena==1) classical_multiply(a[0], b, lenb, c);
@@ -6166,8 +6583,8 @@ inline void small_or_big_multiply(uint64_t *a, size_t lena,
     else certainly_big_multiply(a, lena, b, lenb, c, w);
 }
 
-inline void small_or_big_multiply_and_add(uint64_t *a, size_t lena,
-                                          uint64_t *b, size_t lenb,
+inline void small_or_big_multiply_and_add(const uint64_t *a, size_t lena,
+                                          const uint64_t *b, size_t lenb,
                                           uint64_t *c, size_t lenc,
                                           uint64_t *w)
 {   if (lena < KARATSUBA_CUTOFF || lenb < KARATSUBA_CUTOFF)
@@ -6192,8 +6609,8 @@ inline constexpr int BY(int m, int n)
 // This is the main entrypoint to the integer multiplication code. It
 // takes two signed numbers and forms their product.
 
-inline void bigmultiply(uint64_t *a, size_t lena,
-                        uint64_t *b, size_t lenb,
+inline void bigmultiply(const uint64_t *a, size_t lena,
+                        const uint64_t *b, size_t lenb,
                         uint64_t *c, size_t &lenc)
 {
 // If a and/or be are negative then I can treat their true values as
@@ -6492,7 +6909,7 @@ inline void bigmultiply(uint64_t *a, size_t lena,
 // and hence avoid potential storage management overheads.
         if (lena <= KARA_FIXED_WORKSPACE_SIZE ||
             lenb <= KARA_FIXED_WORKSPACE_SIZE)
-            certainly_big_multiply(a, lena, b, lenb, c, kara_workspace);
+            top_level_certainly_big_multiply(a, lena, b, lenb, c, kara_workspace);
         else
         {   push(a); push(b);
             size_t lenw;
@@ -6505,7 +6922,7 @@ inline void bigmultiply(uint64_t *a, size_t lena,
 // gets rounded up by a constant amount for each level of division.
             uint64_t *w = reserve(2*lenw);
             pop(b); pop(a);
-            certainly_big_multiply(a, lena, b, lenb, c, w);
+            top_level_certainly_big_multiply(a, lena, b, lenb, c, w);
             abandon(w);
         }
     }
@@ -6601,10 +7018,18 @@ intptr_t Times::op(uint64_t *a, int64_t b)
 //
 // For negative inputs I can form the product first treating the inputs
 // as if they had been unsigned, and then subtract 2*2^w*a from the result.
+//
+// I think my view here is that I should still be willing to move across
+// to Karatsuba, but only at a distinctly larger threshold than for
+// simple multiplication.
 
-inline void bigsquare(const uint64_t *a, size_t lena,
+inline void bigsquare(uint64_t *a, size_t lena,
                       uint64_t *r, size_t &lenr)
-{   for (size_t i=0; i<2*lena; i++) r[i] = 0;
+{   if (lena > 3*KARATSUBA_CUTOFF)
+    {   bigmultiply(a, lena, a, lena, r, lenr);
+        return;
+    }
+    for (size_t i=0; i<2*lena; i++) r[i] = 0;
     uint64_t carry;
     lenr = 2*lena;
     for (size_t i=0; i<lena; i++)
