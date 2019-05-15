@@ -231,6 +231,7 @@
  (listvecops    "listvecops"            test                 csl psl)
  (cde           "cde"                   test                 csl psl)
  (sstools       "sstools"               test                 csl psl)
+%  (heugcd        "heugcd"               test                 csl psl)
 )
 
 % End of package.map

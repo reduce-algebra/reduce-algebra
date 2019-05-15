@@ -28,11 +28,13 @@ module gcd; % Greatest common divisor routines.
 %
 
 
-fluid '(!*exp !*anygcd !*ezgcd !*gcd !*heugcd !*mcd asymplis!* dmode!*
+fluid '(!*exp !*anygcd !*ezgcd !*gcd !*heu!-gcd !*mcd asymplis!* dmode!*
         !*combineexpt);
 
 switch anygcd,ezgcd,heugcd;
 !*anygcd := t;
+
+% put('heugcd,'simpfg,'((t (load!-package 'heugcd)))); % added by AB
 
 % Note: The handling of non-commuting quantities in the following is
 % dubious. The problem is that to do things properly, a left- and
@@ -204,7 +206,8 @@ symbolic procedure gcdk(u,v);
          else if domainp u or degr(v,(var := mvar u))=0 then return 1
          else if ldeg u<ldeg v then <<w := u; u := v; v := w>>;
         if quotf1(u,v) then return v
-         else if !*heugcd and (x := heu!-gcd(u,v)) then return x
+         else if !*heugcd and not !*ezgcd and   % added by AB
+	         (x := heu!-gcd(u,v)) then return x
 %        else if flagp(dmode!*,'field) then return 1
               % otherwise problems arise.
          else if ldeg v=1

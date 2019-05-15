@@ -44,9 +44,11 @@ module heugcd;
 %       heu!-gcdl, analyse!-polynomials, negshiftz, gen!-poly,
 %       gen!-poly!-forward, gen!-poly!-backward, gcdlist2, gcdf2
 
+% create!-package('(heugcd),nil);
+
 fluid '(!*heugcd reduction!-count);
 
-global '(ee);
+global '(!!ee);
 
 
 % ****************** Various polynomial utilities **********************
@@ -186,12 +188,12 @@ symbolic inline procedure force!-odd x;
    if evenp x then x+1 else x;
 
 symbolic inline procedure next!-even!-value x;
-   if (denr x)=1 then force!-even fix(numr x * ee) ./ 1
-    else 1 ./ force!-even fix(denr x * ee);
+   if (denr x)=1 then force!-even fix(numr x * !!ee) ./ 1
+    else 1 ./ force!-even fix(denr x * !!ee);
 
 symbolic inline procedure next!-odd!-value x;
-   if (denr x)=1 then force!-odd fix(numr x * ee) ./ 1
-    else 1 ./ force!-odd fix(denr x * ee);
+   if (denr x)=1 then force!-odd fix(numr x * !!ee) ./ 1
+    else 1 ./ force!-odd fix(denr x * !!ee);
 
 symbolic inline procedure first!-value(inp,inq,lcp,lcq,tcp,tcq);
    % Initial evaluation is based on Cauchy's inequality.
@@ -334,8 +336,13 @@ loop:
    value:=next!-even!-value value;
    k:=k+1;
    if k < 10 then goto loop;
-   print "(HEUGCD):heu-gcd fails";
-   return nil
+   
+   if !*ezgcd then
+     rederr "heu-gcd failed -- EZGCD ON"
+   else <<
+      lprie "heu-gcd failed -- EZGCD OFF";
+      return nil;
+   >>;
 end;
 
 symbolic procedure analyse!-polynomial p;

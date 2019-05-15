@@ -305,8 +305,8 @@ symbolic procedure gcdlist2(l,vars);
 % In the univariate case I do not need to think very hard about
 % the selection of a main variable!! ;
     if null cdr vars
-      then return if !*heugcd and (x := heu!-gcd!-list(mapcarcar l))
-                    then x
+      then return if !*heugcd % and not !*ezgcd  % added by AB
+                   and (x := heu!-gcd!-list(mapcarcar l)) then x
                    else gcdlist3(mapcarcar l,nil,list caar vars);
     oldmod := set!-modulus nil;
 % If some variable appears at most to degree two in some pair of the
