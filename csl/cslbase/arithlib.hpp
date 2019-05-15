@@ -343,13 +343,20 @@
 //     simpler than GMP. When its capabilities cover what is needed and when
 //     its speed is sufficient I would suggest that "small and tidy is good".
 //
-// A key use-case that arithlib is not set up to support is arithmetic on
+// A key use-case that arithlib is NOT set up to support is arithmetic on
 // long but fixed precision numbers - this is liable to mean that it will
 // not be the technlogy of choice for a range of cryptography applications!
 // The code here has been tested and runs on both 32 and 64-bit machines,
 // however its internal workings are almost all expressed in terms on the
 // type "uint64_t". This may result in there being significant scope for
 // better specialization for code to run on 32-bit targets.
+//
+// What about thread safety? Well the code should be thread-safe.
+// with the C++ "NEW" option I provide several options and you need to
+// configure one (at compile time, and by editing this file or adding
+// overriding predefined symbols), choosing the one you like or that
+// will run fastest on your platform. Search for "CONCURRENCY SUPPORT" to
+// find the commentary.
 //
 // I have run some VERY SIMPLISTIC benchmark comparisons between this code
 // and gmp. All that has been tested is the low-level code for multiplying
@@ -405,6 +412,14 @@
 #endif
 
 
+#ifdef __has_cpp_attribute_maybe_unused
+// Another useful C++17 feature.
+#define MAYBE_UNUSED [[maybe_unused]]
+#elif defined __GNUC__
+#define MAYBE_UNUSED [[gnu::unused]]
+#else
+#define MAYBE_UNUSED
+#endif
 
 #include <cstdio>
 #include <cstring>
@@ -440,21 +455,31 @@ namespace arithlib
 #define STRINGIFY1(x) #x
 #define STRINGIFY(x) STRINGIFY1(x)
 
-INLINE_VAR const char *_abort_location = "";
+INLINE_VAR thread_local const char *_abort_location = "";
 
 // abort() mainly exists so I can set a breakpoint on it! Setting one
 // on the system abort() function sometimes does not give me as much help
 // as I might have hoped on at least some platforms, while a break-point
 // on abort() does what I expect.
 
+inline std::mutex *diagnostic_mutex()
+{
+// C++11 guarantees that even if this header is included from many
+// compilation units there will be a single unique mutex here.
+    static std::mutex m;
+    return &m;
+}
+
 inline void abort1(const char *msg)
-{   std::cout << "About to abort at " << _abort_location << ": "
+{   std::lock_guard<std::mutex> lock(*diagnostic_mutex());
+    std::cout << "About to abort at " << _abort_location << ": "
               << msg << std::endl;
     std::abort();
 }
 
 inline void abort1()
-{   std::cout << "About to abort at " << _abort_location << std::endl;
+{   std::lock_guard<std::mutex> lock(*diagnostic_mutex());
+    std::cout << "About to abort at " << _abort_location << std::endl;
     std::abort();
 }
 
@@ -514,8 +539,6 @@ inline void assert1(bool ok, const char *why, const char *location)
 // to a log file.... This should not be used in final production code
 // but still may help while debugging.
 
-INLINE_VAR FILE *logfile = NULL;
-
 // Making this "inline" avoids warning messages if it is not
 // used. So even though this may somewhat waste space when it is used,
 // I like this option.
@@ -524,6 +547,8 @@ inline void logprintf(const char *fmt, ...)
 {
 // I use a fixed name for the log file. This is another respect in which
 // this has to be seen as code only suitable for temporary use.
+    static FILE *logfile = NULL;
+    std::lock_guard<std::mutex> lock(*diagnostic_mutex());
     if (logfile == NULL) logfile = std::fopen("arith.log", "w");
     std::va_list args;
     va_start(args, fmt);
@@ -634,19 +659,16 @@ namespace arithlib
 // so that elapsed times for really large multiplications are reduced
 // somewhat. Well ideally by a factor approaching 3. I set up a framework
 // of support for the threads here (and also include as comments a skeleton
-// of code showing how to exploit them).
+// of code showing how to exploit them: the actual code that does so comes
+// later).
 
 // Each worker thread needs some data that it shares with the main thread.
 // this structure encapsulates that.
 
-typedef struct worker_data_
-{   size_t maxa,
-           maxb,
-           maxc,
-           maxw;
-    uint64_t *a;
+typedef struct _worker_data
+{   const uint64_t *a;
     size_t lena;
-    uint64_t *b;
+    const uint64_t *b;
     size_t lenb;
     uint64_t *c;
     uint64_t *w;
@@ -682,6 +704,11 @@ typedef struct singleton_data_
 //           send_count
 // but with the unique() function expanded inline and some not even too
 // challenging optimization I can expect pretty well no performance overhead.
+// Well C++ permits a compiler to initialize the singleton_data here early,
+// but it also allows it to defer initialization until the execution path of
+// the code first crosses the declaration, and if it follows that policy
+// there is an implecit test on a hiddent "have you been initialized yet?"
+// variable. Even if that is present it should not be too painful.
 
 inline singleton_data *unique()
 {   static singleton_data data;
@@ -747,11 +774,12 @@ inline void start_threads();
 
 
 // Call post_data() when worker_data0 and worker_data1 have been set up
-// and it is time to let the worker threads loose. This will create the
-// threads if necessary too.
+// and it is time to let the worker threads loose. This call to start_threads
+// is a call to an inline function without any executable statements in its
+// body, so it should not have any cost!
 
 inline void post_data()
-{   if (unique()->worker0 == NULL) start_threads();
+{   start_threads();
     unique()->mutex0[unique()->send_count]->unlock(); // allows worker to proceed
     unique()->mutex1[unique()->send_count]->unlock(); // allows worker to proceed
 }
@@ -763,68 +791,65 @@ inline void post_data()
 // structures worker_data0 and worker_data1.
 
 inline void wait_for_result()
-{   unique()->mutex0[unique()->send_count^2]->lock();
+{   logprintf("About to wait for results\n");
+    unique()->mutex0[unique()->send_count^2]->lock();
+    logprintf("task 0 completed\n");
     unique()->mutex1[unique()->send_count^2]->lock();
+    logprintf("task 1 completed\n");
     unique()->send_count = (unique()->send_count+1)&3;
 }
 
 // When the program is about to exit it needs to ensure that the threads
 // are terminated and joined and that the various support material that
-// goes along with them has been tidied up. Terminate_threads() arranges that.
+// goes along with them has been tidied up. I achieve this by having a
+// class with a destructor that does the tidying up needed, and putting
+// a static instance of it within start_threads() so that the constructor
+// gets used early and the destructor will run at program termination. 
 
-inline void terminate_threads()
-{   unique()->quit_threads = true;
-    post_data();
-    unique()->worker0->join();
-    unique()->worker1->join();
-    delete unique()->worker0;
-    delete unique()->worker1;
-    for (int i=0; i<4; i++)
-    {   delete unique()->mutex0[i];
-        delete unique()->mutex1[i];
-    }
-    if (unique()->worker_data0.a != NULL) delete unique()->worker_data0.a;
-    if (unique()->worker_data0.b != NULL) delete unique()->worker_data0.b;
-    if (unique()->worker_data0.c != NULL) delete unique()->worker_data0.c;
-    if (unique()->worker_data0.w != NULL) delete unique()->worker_data0.w;
-    if (unique()->worker_data1.a != NULL) delete unique()->worker_data1.a;
-    if (unique()->worker_data1.b != NULL) delete unique()->worker_data1.b;
-    if (unique()->worker_data1.c != NULL) delete unique()->worker_data1.c;
-    if (unique()->worker_data1.w != NULL) delete unique()->worker_data1.w;
-}
-
-// thart_threads() tries to initialize everything that might usefully be
-// initialized and then create mutexes and threads.
-
-inline void start_threads()
-{   unique()->send_count = 0;
-    unique()->quit_threads = false;
-    unique()->worker_data0.maxa = unique()->worker_data0.maxb = 
-        unique()->worker_data0.maxc = unique()->worker_data0.maxw = 0;
-    unique()->worker_data1.maxa = unique()->worker_data1.maxb = 
-        unique()->worker_data1.maxc = unique()->worker_data1.maxw = 0;
-    unique()->worker_data0.a = unique()->worker_data0.b = 
-        unique()->worker_data0.c = unique()->worker_data0.w = NULL;
-    unique()->worker_data1.a = unique()->worker_data1.b = 
-        unique()->worker_data1.c = unique()->worker_data1.w = NULL;
-    for (int i=0; i<4; i++)
-    {   unique()->mutex0[i] = new std::mutex();
-        unique()->mutex1[i] = new std::mutex();
-        if (i < 2)
-        {   unique()->mutex0[i]->lock();
-            unique()->mutex1[i]->lock();
+class Thread_manager
+{
+public:
+    Thread_manager()
+    {   unique()->send_count = 0;
+        unique()->quit_threads = false;
+        for (int i=0; i<4; i++)
+        {   unique()->mutex0[i] = new std::mutex();
+            unique()->mutex1[i] = new std::mutex();
+            if (i < 2)
+            {   unique()->mutex0[i]->lock();
+                unique()->mutex1[i]->lock();
+            }
         }
-    }
 // As soon as each thread starts it locks the two mutexes that it needs to
 // have locked at the start, and goes into a loop where it waits to be sent
 // requests.
-    unique()->worker0 =
-        new std::thread(worker_thread, unique()->mutex0,
-                                       &unique()->worker_data0);
-    unique()->worker1 =
-        new std::thread(worker_thread, unique()->mutex1,
-                                       &unique()->worker_data1);
-    atexit(terminate_threads);
+        unique()->worker0 =
+            new std::thread(worker_thread, unique()->mutex0,
+                                           &unique()->worker_data0);
+        unique()->worker1 =
+            new std::thread(worker_thread, unique()->mutex1,
+                                           &unique()->worker_data1);
+    }
+
+    ~Thread_manager()
+    {   unique()->quit_threads = true;
+        post_data();
+        unique()->worker0->join();
+        unique()->worker1->join();
+        delete unique()->worker0;
+        delete unique()->worker1;
+        for (int i=0; i<4; i++)
+        {   delete unique()->mutex0[i];
+            delete unique()->mutex1[i];
+        }
+    }
+};
+
+// start_threads() tries to initialize everything that might usefully be
+// initialized and then create mutexes and threads.
+
+inline void start_threads()
+{   static Thread_manager for_its_destructor;
 }
 
 // Here I have a sketch of how the thread stuff can be used...
@@ -959,7 +984,13 @@ inline void pop(const uint64_t *&p)
 
 // The following are provided so that a user can update malloc_function,
 // realloc_function and free_function to refer to their own choice of
-// allocation technology.
+// allocation technology. Well it is a bit uglier than that! If you compile
+// using C++17 then the function pointers here are unique across every
+// compilation unit and things behave "as you might expect". If you have an
+// earlier C standard in play than each compilation unit gets its own static
+// set of variables that can be used to divert memory allocation, and hence
+// each compilation unit that includes this header is liable to need to reset
+// them all.
 
 typedef void *malloc_t(size_t);
 typedef void *realloc_t(void *, size_t);
@@ -1088,26 +1119,96 @@ inline intptr_t copy_if_no_garbage_collector(intptr_t pp)
 
 inline unsigned int log_next_power_of_2(size_t n);
 
-INLINE_VAR uint64_t *freechain_table[64];
+// There is a serious issue here as regards thread safety. And a subsidiary
+// on about C++17.
+//
+// As things stand if you use C++ memory allocation the local allocation
+// and reallocation here is not thread safe. The result could be a disaster
+// if multiple threads used big-numbers via the C++ type Bignum. Note that
+// if you do not have "NEW" defined but instead use MALLOC or LISP you are
+// safe.
 
-// The intent is that for most purposes freechains.allocate() and
-// freechains.abandon() behave rather like malloc, save that they REQUIRE
-// the user of the memory that is returned to avoid overwriting the first
-// 32 bit word of the block. Note that this is a 32-bit chunk even on
-// 64-bit machines.
+// CONCURRENCY SUPPORT:
+// I provide three options, and the selection as to which is used
+// can be made by predefining a symbol.
+//
+// ARITHLIB_MUTEX. Use a mutex to protect memory allocation. One hope
+//                 is that in situations where there is low contention the
+//                 overhead will be small, and so this is the default.
+// ARITHLIB_THREAD_LOCAL. Have a separate memory pool for use by each thread.
+//                 This can use more memory than a scheme that uses shared
+//                 allocation, and on some platforms there mere use of
+//                 thread_local values carries an amazingly high overhead.
+// ARITHLIB_NO_THREADS. Assume that no concurrent use of arithlib will
+//                 arise and so no extra complication or overhead is needed.
+//                 I do not make this the default because I can imagine
+//                 people extending a program to use threads and then not
+//                 looking here!
+//
+// I looked into having an ARITHLIB_LOCK_FREE to use compare-and-swap
+// operations to maintain the freestore pool, but support via gcc on x86_64
+// is uncertain (in part because not all variants on x86_64 CPUs implement
+// the CMPXCHG16B instruction (though soon the ones that do not will count as
+// museum pieces), and also because reports on the performance impact
+// do not see quite clear-cut. I also see various unspecific comments about
+// patents, but I have not followed them up.
+// I could fairly happily imagine replacing the discard() code with a lock
+// free "push" operation, which is simple to implement and does not suffer
+// from the "ABA" issue. allocate() seems to be harder to implement and
+// especially harder to implement in a way that will give reliably high
+// performance across all platforms while avoiding machine depemdent
+// components and especially in-line assembly code.
 
-class freechains
+// If no options has been pre-defined I will default to ARITHLIB_MUTEX
+#if !defined ARITHLIB_MUTEX && \
+    !defined ARITHLIB_THREAD_LOCAL && \
+    !defined ARITHLIB_NO_THREADS
+#define ARITHLIB_MUTEX 1
+#endif
+
+// Attempts to select more that one option at once get detected and moaned
+// about.
+
+#if (defined ARITHLIB_MUTEX && defined ARITHLIB_THREAD_LOCAL) || \
+    (defined ARITHLIB_THREAD_LOCAL && defined ARITHLIB_NO_THREADS) || \
+    (defined ARITHLIB_NO_THREADS && defined ARITHLIB_MUTEX)
+#error Only one thread-support policy can be selected.
+#endif
+
+class Freechains
 {
+private:
+// The following obscure line ensures that when I make an instance
+// of Freechains it forces the standard streams into existence. Having
+// that initilization happening early helps a LITTLE bit to reassure me
+// that the standard streams should still be alive during the destructor
+// for this class. 
+    std::ios_base::Init force_iostreams_initialization;
+
 public:
 // I keep my freechain table within an object so that the object can
 // be created as the program starts up and particularly so that it will
 // then be deleted on program termination. Its destructor can free all the
 // memory that it is keeping track of.
-    freechains()
-    {   for (size_t i=0; i<64; i++) freechain_table[i] = NULL;
+// Note that what I have here are merely declarations - I have to put
+// definitions written outside the class body.
+
+#ifdef ARITHLIB_MUTEX
+    static std::mutex freechain_mutex;
+#endif
+#ifdef ARITHLIB_THREAD_LOCAL
+    thread_local static uint64_t *freechain_table[64];
+#else
+    static uint64_t *freechain_table[64];
+#endif
+    Freechains()
+    {   std::cout << "Constructor being called" << std::endl;
+        for (int i=0; i<64; i++) freechain_table[i] = NULL;
     }
-    ~freechains()
-    {   for (size_t i=0; i<64; i++)
+
+    ~Freechains()
+    {   std::cout << "Destructor being called" << std::endl;
+        for (size_t i=0; i<64; i++)
         {   uint64_t *f = freechain_table[i];
             if (debug_arith)
 // Report how many entries there are in the freechain.
@@ -1127,15 +1228,13 @@ public:
             }
             while (f != NULL)
             {   uint64_t w = f[1];
-                delete f;
+                delete [] f;
                 f = (uint64_t *)w;
             }
             freechain_table[i] = NULL;
         }
     }
-// Finding the number of bits in n is achieved by counting the leading
-// zeros in the representation of n, and on many platforms an intrinsic
-// function will compile this into a single machine code instruction.
+
     static uint64_t *allocate(size_t n)
     {
 #ifdef DEBUG_OVERRUN
@@ -1143,31 +1242,43 @@ public:
 // just beyond what would have been the end of my block, and I will
 // fill everything with a pattern that might let me spot some cases where
 // I write beyond the proper size of data. This option is only supported
-// when storage allocation is uing NEW.
+// when storage allocation is using NEW.
         int bits = log_next_power_of_2(n+1);
 #else
+// Finding the number of bits in n is achieved by counting the leading
+// zeros in the representation of n, and on many platforms an intrinsic
+// function will compile this into a single machine code instruction.
         int bits = log_next_power_of_2(n);
 #endif
         assert(n<=(((size_t)1)<<bits) && n>0);
-        uint64_t *r = freechain_table[bits];
+        uint64_t *r;
+#if defined ARITHLIB_THREAD_LOCAL || ARITHLIB_NO_THREADS
+        r = freechain_table[bits];
+        if (r != NULL) freechain_table[bits] = (uint64_t *)r[1];
+#elif defined ARITHLIB_MUTEX
+        {   std::lock_guard<std::mutex> lock(freechain_mutex);
+            r = freechain_table[bits];
+            if (r != NULL) freechain_table[bits] = (uint64_t *)r[1];
+        }
+#else
+#error Internal inconsistency
+#endif
+// If no memory had been found on the freechain I need to allocate some
+// more.
         if (r == NULL)
         {   r = new uint64_t[((size_t)1)<<bits];
-            assert(r != NULL);
-#ifdef DEBUG_OVERRUN
-            if (debug_arith)
-            {   std::memset(r, 0xaa, (((size_t)1)<<bits)*sizeof(uint64_t));
-                r[0] = 0;
-            }
-#endif
+            if (r == NULL) abort("Run out of memory");
         }
-        else
-        {   freechain_table[bits] = (uint64_t *)r[1];
 #ifdef DEBUG_OVERRUN
-            assert(r[0] == -(uint64_t)1);
-            std::memset(r, 0xaa, (((size_t)1)<<bits)*sizeof(uint64_t));
+// When debugging I tend to initialize all memory to a known pattern
+// when it is allocated and check that the final word has not been
+// overwritten when I release it. This is not foolproof but it helps me
+// by being able to detect many possible cases of overrun.
+        if (debug_arith)
+        {   std::memset(r, 0xaa, (((size_t)1)<<bits)*sizeof(uint64_t));
             r[0] = 0;
-#endif
         }
+#endif
 // Just the first 32-bits of the header word record the block capacity.
 // The casts here look (and indeed are) ugly, but when I store data into
 // memory as a 32-bit value that is how I will read it later on, and the
@@ -1175,28 +1286,61 @@ public:
         ((uint32_t *)r)[0] = bits;
         return r;
     }
+
 // When I abandon a memory block I will push it onto a relevant free chain.
+
     static void abandon(uint64_t *p)
-    {   assert(p[0] != -(uint64_t)1);
+    {
+        assert(p[0] != -(uint64_t)1);
         int bits = ((uint32_t *)p)[0];
         assert(bits>0 && bits<48);
 // Here I assume that sizeof(uint64_t) >= sizeof(intptr_t) so I am not
 // risking loss of information.
         if (debug_arith) p[0] = -(uint64_t)1;
+#ifdef ARITHLIB_ATOMIC
+        lockfree_push(p, freechain_table, bits);
+#else
+#ifdef ARITHLIB_MUTEX
+        std::lock_guard<std::mutex> lock(freechain_mutex);
+#endif
         p[1] = (uint64_t)freechain_table[bits];
         freechain_table[bits] = p;
+#endif
     }
+
 };
 
-// Set up the object that manages the freechains. At program startup this
-// fills freechain_table with NULL entries, and at the end of execution
-// it frees all the memory blocks mentioned there.
+// Although I do not use the word "static" in these definitions note that
+// the names concerned had been declared static within the class. Also see
+// that the different concurrency options lead to variation here.
 
-INLINE_VAR freechains fc;
+#ifdef ARITHLIB_THREAD_LOCAL
+thread_local uint64_t *Freechains::freechain_table[64];
+#elif defined ARITHLIB_MUTEX
+std::mutex Freechains::freechain_mutex;
+uint64_t *Freechains::freechain_table[64];
+#else
+uint64_t *Freechains::freechain_table[64];
+#endif
+
+// The following weird definition is one that exists so that it is an
+// inline function containing a static value that is an instance of
+// Freechains. Static values defined within an (extern) inline function
+// are guaranteed to exist just once. I rather hope that at program
+// termination the destructor for Freechains will then get called.
+// But it then seems that the static within this function is not set up
+// unless (??) there is some use of the function. So I call it whenever I
+// allocate store. Since it is inline and has no executable body this should
+// not lead to any extra code!
+
+inline void arrange_for_freechains_destructor()
+{   static Freechains the_freechains;
+}
 
 inline uint64_t *reserve(size_t n)
 {   assert(n>0);
-    return &(fc.allocate(n+1))[1];
+    arrange_for_freechains_destructor();
+    return &(Freechains::allocate(n+1))[1];
 }
 
 inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
@@ -1208,7 +1352,7 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
 #endif
     if (final == 1 && fits_into_fixnum((int64_t)p[0]))
     {   intptr_t r = int_to_handle((int64_t)p[0]);
-        fc.abandon(&p[-1]);
+        Freechains::abandon(&p[-1]);
         return r;
     }
 // I compare the final size with the capacity and if it is a LOT smaller
@@ -1218,9 +1362,9 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
     int bits = ((uint32_t *)(&p[-1]))[0];
     size_t capacity = ((size_t)1)<<bits;
     if (capacity > 4*final)
-    {   uint64_t *w = fc.allocate(((size_t)1)<<log_next_power_of_2(final+1));
+    {   uint64_t *w = Freechains::allocate(((size_t)1)<<log_next_power_of_2(final+1));
         memcpy(&w[1], p, final*sizeof(uint64_t));
-        fc.abandon(&p[-1]);
+        Freechains::abandon(&p[-1]);
         p = &w[1];
     }
     ((uint32_t *)(&p[-1]))[1] = final;
@@ -1273,13 +1417,13 @@ inline bool fits_into_fixnum(int64_t a)
 }
 
 inline void abandon(uint64_t *p)
-{   fc.abandon(&p[-1]);
+{   Freechains::abandon(&p[-1]);
 }
 
 inline void abandon(intptr_t p)
 {   if (!stored_as_fixnum(p) && p!=0)
     {   uint64_t *pp = vector_of_handle(p);
-        fc.abandon(&pp[-1]);
+        Freechains::abandon(&pp[-1]);
     }
 }
 
@@ -1294,7 +1438,7 @@ inline char *confirm_size_string(char *p, size_t n, size_t final)
 }
 
 inline void abandon_string(char *s)
-{   delete s;
+{   delete [] s;
 }
 
 // In the NEW case I will want to make all operations cope with both
@@ -2972,6 +3116,16 @@ inline int read_u3(const uint64_t *v, size_t n, size_t i)
 // generators whenever I felt the need to.
 //
 
+// The code here is explicitly aware of the prospect of threading, and
+// should lead to different pseudo-random sequences in each thread.
+// If you do not have C++17 inline variables then there will be a separate
+// generator for each compilation unit and especially if you have an
+// unreliable std::random_device about the only thing liable to keep
+// things distinct in each will be the high resolution clock. Well to
+// try to improve things there I will use the address of one of these
+// variables as part of the seeding process, so that if they all end
+// up static rather than inline that will give per-compilation-uint variation.
+
 INLINE_VAR std::random_device basic_randomness;
 INLINE_VAR uint64_t thread_local threadid =
     (uint64_t)(std::hash<std::thread::id>()(std::this_thread::get_id()));
@@ -3002,7 +3156,10 @@ INLINE_VAR thread_local std::seed_seq random_seed{
     (uint32_t)(seed_component_2>>32),
     (uint32_t)(seed_component_3>>32),
     (uint32_t)(time_now>>32),
-    (uint32_t)(chrono_now>>32)};
+    (uint32_t)(chrono_now>>32),
+    (uint32_t)(uintptr_t)&seed_component_1,
+    (uint32_t)(((uint64_t)(uintptr_t)&seed_component_1)>>32)
+    };
 
 INLINE_VAR thread_local std::mt19937_64 mersenne_twister(random_seed);
 // mersenne_twister() now generates 64-bit unsigned integers.
@@ -3011,9 +3168,17 @@ INLINE_VAR thread_local std::mt19937_64 mersenne_twister(random_seed);
 // to gain more repeatable behaviour, and so I am fairly happy about
 // limiting the amount of input entropy here to 64-bits. If I was keen I
 // could provide a reseed-method taking a bignum argument that could have
-// lots of data in it.
+// lots of data in it. Note that this will reseed the random number
+// generator associated with the thread it is called from.
+//
+// If you pre-date C++17 then there will be one generator per compilation
+// unit. That is probably reasonable, however it means that you then need to
+// call reseed() from each compilation unit to update the relevant generator!
+// To make that work I make the reseed() function static not inline so that
+// there will be a version for each compilation unit! It is so short that
+// I do not expect the cost to matter.
 
-inline void reseed(uint64_t n)
+MAYBE_UNUSED static void reseed(uint64_t n)
 {   mersenne_twister.seed(n);
 }
 
@@ -6143,7 +6308,11 @@ INLINE_VAR size_t KARATSUBA_CUTOFF = K;
 #endif
 
 #if !defined K1 && !defined K1_DEFINED
-// I provide a default here but can override it at compile time
+// I provide a default here but can override it at compile time. I suspect
+// that a good value here might be of the order of 100. For the old CSL
+// version I used the number 120. But for initial testing I will make
+// almost all uses of Karatsuba go through the parallel path.
+
 INLINE_VAR constexpr size_t K1=20;
 #define K1_DEFINED 1
 #endif
@@ -6242,28 +6411,73 @@ inline void karatsuba(const uint64_t *a, size_t lena,
     }
 }
 
+// The worker_thread() function is started in each of two threads, and
+// processes requests until a "quit" request is sent to it.
+
+inline void worker_thread(std::mutex *mutex[4], worker_data *wd)
+{   mutex[2]->lock();
+    mutex[3]->lock();
+    int receive_count = 0;
+    for (;;)
+    {   mutex[receive_count]->lock();
+        if (unique()->quit_threads) return;
+// This is where I do some work!
+        logprintf("Thread starting on %d * %d multiplication\n",
+                  wd->lena, wd->lenb);
+        logprintf("a=%p b=%p c=%p w=%p\n", wd->a, wd->b, wd->c, wd->w);
+        small_or_big_multiply(wd->a, wd->lena,
+                              wd->b, wd->lenb,
+                              wd->c, wd->w);
+        logprintf("Thread multiplication complete\n");
+        mutex[receive_count^2]->unlock();
+        receive_count = (receive_count + 1) & 3;
+    }
+}
+
 inline void top_level_karatsuba(const uint64_t *a, size_t lena,
                                 const uint64_t *b, size_t lenb,
-                                uint64_t *c, uint64_t *w)
-{   if (lena < 40) // PARAKARA_CUTOFF)
-        return karatsuba(a, lena, b, lenb, c, w);
+                                uint64_t *c, uint64_t *w,
+                                uint64_t *w0, uint64_t *w1)
+{
 // Here I have a HUGE case and I should use threads!
-std::cout << "Use HUGE karatsuba on size " << lena << " here" << std::endl;
+    logprintf("Use HUGE karatsuba on size %d * %d here\n", lena, lenb);
+    logprintf("TLK: %p %p %p %p\n", a, b, c, w);
     assert(lena == lenb ||
            (lena%2 == 0 && lenb == lena-1));
     assert(lena >= 2);
     size_t n = (lena+1)/2;    // size of a "half-number"
     size_t lenc = lena+lenb;
+// I start by arranging that the two threads that can do things in parallel
+// can get access to data from here and that I will be able to retrieve
+// results. And that the worker threads have workspace to make use of.
+    unique()->worker_data0.a = a;
+    unique()->worker_data0.lena = n;
+    unique()->worker_data0.b = b;
+    unique()->worker_data0.lenb = n;
+    unique()->worker_data0.c = w0;
+    unique()->worker_data0.w = w0+2*n;
+
+    unique()->worker_data1.a = a+n;
+    unique()->worker_data1.lena = lena-n;
+    unique()->worker_data1.b = b+n;
+    unique()->worker_data1.lenb = lenb-n;
+    unique()->worker_data1.c = w1;
+    unique()->worker_data1.w = w1+2*n;
+// Now trigger the two threads to do some work for me. One will be forming
+// alo*blo while the other computes ahi*bhi . 
+    post_data();
+    logprintf("Threads triggered, I hope\n");
+// Now I will work on either |ahi-alo|*|bhi-blo|
 // lena-n and lenb-n will each be either n or n-1.
-    if (absdiff(a, n, a+n, lena-n, w) !=
-        absdiff(b, n, b+n, lenb-n, w+n))
+    bool signs_differ = absdiff(a, n, a+n, lena-n, w) !=
+                        absdiff(b, n, b+n, lenb-n, w+n);
+    small_or_big_multiply(w, n, w+n, n, c+n, w+2*n);     // (a1-a0)*(b0-b1)
+    logprintf("Master multiplication done\n");
+// That has the product of differences written into the middle
+    wait_for_result();
+    logprintf("Threads complete\n");
+    if (signs_differ)
     {
-// Here I will collect
-//    a1*b1    (a1*b0 + b1*a0 - a1*b1 - a0*b0)     a0*b0   
-// First write the middle part into place.
-        small_or_big_multiply(w, n, w+n, n, c+n, w+2*n);     // (a1-a0)*(b0-b1)
-// Now I just need to add back in parts of the a1*b1 and a0*b0
-        small_or_big_multiply(a+n, lena-n, b+n, lenb-n, w, w+2*n); // a1*b1
 // First insert the copy at the very top. Part can just be copied because I
 // have not yet put anything into c there, the low half then has to be added
 // in (and carries could propagate all the way up).
@@ -6271,8 +6485,6 @@ std::cout << "Use HUGE karatsuba on size " << lena << " here" << std::endl;
         kadd(w, n, c+2*n, lenc-2*n);
 // Now add in the second copy
         kadd(w, lenc-2*n, c+n, lenc-n);
-// Now I can deal with the a0*b0.
-        small_or_big_multiply(a, n, b, n, w, w+2*n);               // a0*b0
         for (size_t i=0; i<n; i++) c[i] = w[i];
         kadd(w+n, n, c+n, lenc-n);
         kadd(w, 2*n, c+n, lenc-n);
@@ -6441,9 +6653,10 @@ inline void certainly_big_multiply(const uint64_t *a, size_t lena,
 
 inline void top_level_certainly_big_multiply(const uint64_t *a, size_t lena,
                                              const uint64_t *b, size_t lenb,
-                                             uint64_t *c, uint64_t *w)
+                                             uint64_t *c, uint64_t *w,
+                                             uint64_t *w0, uint64_t *w1)
 {   if (lena == lenb)
-    {   top_level_karatsuba(a, lena, b, lenb, c, w);
+    {   top_level_karatsuba(a, lena, b, lenb, c, w, w0, w1);
         return;
     }
     if (lena < lenb)
@@ -6454,7 +6667,7 @@ inline void top_level_certainly_big_multiply(const uint64_t *a, size_t lena,
 // using Karatsuba merely by treating the smaller number as if padded with
 // a leading zero.
     if (lena%2==0 && lenb==lena-1)
-    {   top_level_karatsuba(a, lena, b, lenb, c, w);
+    {   top_level_karatsuba(a, lena, b, lenb, c, w, w0, w1);
         return;
     }
 // If the two inputs are unbalanced in length I will perform multiple
@@ -6479,7 +6692,7 @@ inline void top_level_certainly_big_multiply(const uint64_t *a, size_t lena,
 // digits of the final answer, because if I did that would be a sort of
 // buffer overrun.
         if (len < lena1) c1[2*len-1] = 0;
-        top_level_karatsuba(a1, len, b, lenb, c1, w);
+        top_level_karatsuba(a1, len, b, lenb, c1, w, w0, w1);
         c1 += 2*len;
 // I will keep going provided the next multiplication I will do will fully fit.
         if (lena1 < 3*len) break;
@@ -6598,9 +6811,33 @@ inline void small_or_big_multiply_and_add(const uint64_t *a, size_t lena,
 // Finally I can provide the top-level entrypoint that accepts signed
 // integers that may not be the same size.
 
-INLINE_VAR const size_t KARA_FIXED_WORKSPACE_SIZE = 200;
+// FIXED_LENGTH_LIMIT: Can multiply inputs with up to this number of
+//                     64-bit digits using the fixed workspace.
+// WORKSPACE_SIZE:     Length of the "w" work-vector needed for the above
+//                     which is a bit over twice the length of the inputs.
+
+INLINE_VAR const size_t KARA_FIXED_LENGTH_LIMIT = 200;
 INLINE_VAR const size_t KARA_WORKSPACE_SIZE = 408;
-INLINE_VAR uint64_t kara_workspace[KARA_WORKSPACE_SIZE];
+
+// These two functions allocate workspace for Karatsuba on the stack and
+// are called when the inputs are short enough for that to feel reasonable.
+
+void allocate_one_array(const uint64_t *a, size_t lena,
+                        const uint64_t *b, size_t lenb,
+                        uint64_t *c)
+{   uint64_t kara_workspace[KARA_WORKSPACE_SIZE];
+    certainly_big_multiply(a, lena, b, lenb, c, kara_workspace);
+}
+
+void allocate_three_arrays(const uint64_t *a, size_t lena,
+                           const uint64_t *b, size_t lenb,
+                           uint64_t *c)
+{   uint64_t kara_workspace[KARA_WORKSPACE_SIZE];
+    uint64_t kara_workspace0[KARA_WORKSPACE_SIZE];
+    uint64_t kara_workspace1[KARA_WORKSPACE_SIZE];
+    top_level_certainly_big_multiply(a, lena, b, lenb, c,
+        kara_workspace, kara_workspace0, kara_workspace1);
+}
 
 inline constexpr int BY(int m, int n)
 {   return m + 4*n;
@@ -6907,9 +7144,13 @@ inline void bigmultiply(const uint64_t *a, size_t lena,
     {
 // For many smaller cases I will just use some static pre-allocated workspace
 // and hence avoid potential storage management overheads.
-        if (lena <= KARA_FIXED_WORKSPACE_SIZE ||
-            lenb <= KARA_FIXED_WORKSPACE_SIZE)
-            top_level_certainly_big_multiply(a, lena, b, lenb, c, kara_workspace);
+        if (lena <= KARA_FIXED_LENGTH_LIMIT ||
+            lenb <= KARA_FIXED_LENGTH_LIMIT)
+        {   if (lena < PARAKARA_CUTOFF ||
+                lenb < PARAKARA_CUTOFF)
+                allocate_one_array(a, lena, b, lenb, c);
+            else allocate_three_arrays(a, lena, b, lenb, c);
+        }
         else
         {   push(a); push(b);
             size_t lenw;
@@ -6921,8 +7162,20 @@ inline void bigmultiply(const uint64_t *a, size_t lena,
 // and bottom parts I may have an odd number and so the workspace needed
 // gets rounded up by a constant amount for each level of division.
             uint64_t *w = reserve(2*lenw);
-            pop(b); pop(a);
-            top_level_certainly_big_multiply(a, lena, b, lenb, c, w);
+            if (lena < PARAKARA_CUTOFF ||
+                lenb < PARAKARA_CUTOFF)
+            {   pop(b); pop(a);
+                certainly_big_multiply(a, lena, b, lenb, c, w);
+            }
+            else
+            {   uint64_t *w0 = reserve(4*lenw);
+                uint64_t *w1 = reserve(4*lenw);
+                pop(b); pop(a);
+                top_level_certainly_big_multiply(a, lena, b, lenb, c,
+                                                 w, w0, w1);
+                abandon(w1);
+                abandon(w0);
+            }
             abandon(w);
         }
     }
@@ -7021,7 +7274,9 @@ intptr_t Times::op(uint64_t *a, int64_t b)
 //
 // I think my view here is that I should still be willing to move across
 // to Karatsuba, but only at a distinctly larger threshold than for
-// simple multiplication.
+// simple multiplication. Just where that threshold should be i snot really
+// clear to me, but for now I am setting it as 3 times the point at which
+// ordinary multiplications moves on from classical methods.
 
 inline void bigsquare(uint64_t *a, size_t lena,
                       uint64_t *r, size_t &lenr)
