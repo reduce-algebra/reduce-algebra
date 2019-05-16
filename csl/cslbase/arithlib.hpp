@@ -791,11 +791,8 @@ inline void post_data()
 // structures worker_data0 and worker_data1.
 
 inline void wait_for_result()
-{   logprintf("About to wait for results\n");
-    unique()->mutex0[unique()->send_count^2]->lock();
-    logprintf("task 0 completed\n");
+{   unique()->mutex0[unique()->send_count^2]->lock();
     unique()->mutex1[unique()->send_count^2]->lock();
-    logprintf("task 1 completed\n");
     unique()->send_count = (unique()->send_count+1)&3;
 }
 
@@ -1202,12 +1199,11 @@ public:
     static uint64_t *freechain_table[64];
 #endif
     Freechains()
-    {   std::cout << "Constructor being called" << std::endl;
-        for (int i=0; i<64; i++) freechain_table[i] = NULL;
+    {   for (int i=0; i<64; i++) freechain_table[i] = NULL;
     }
 
     ~Freechains()
-    {   std::cout << "Destructor being called" << std::endl;
+    {   if (debug_arith) std::cout << "Destructor being called" << std::endl;
         for (size_t i=0; i<64; i++)
         {   uint64_t *f = freechain_table[i];
             if (debug_arith)
@@ -2087,9 +2083,9 @@ inline string_handle bignum_to_string_binary(intptr_t aa);
 
 class Bignum;
 
-inline void display(const char *label, uint64_t *a, size_t lena);
+inline void display(const char *label, const uint64_t *a, size_t lena);
 inline void display(const char *label, intptr_t a);
-inline void display(const char *label, Bignum &a);
+inline void display(const char *label, const Bignum &a);
 
 
 //=========================================================================
@@ -2539,7 +2535,7 @@ inline float128_t float128_bignum(const Bignum &x)
 //=========================================================================
 //=========================================================================
 
-inline void display(const char *label, uint64_t *a, size_t lena)
+inline void display(const char *label, const uint64_t *a, size_t lena)
 {   std::cout << label << " [" << (int)lena << "]";
     for (size_t i=0; i<lena; i++)
     {   if (i!=0 && i%3==0) std::cout << std::endl << "     ";
@@ -2555,7 +2551,7 @@ inline void display(const char *label, uint64_t *a, size_t lena)
 // The format is    name := 0xDDDDDDD$
 // which will be easy to copy and paste into Reduce.
 
-inline void rdisplay(const char *label, uint64_t *a, size_t lena)
+inline void rdisplay(const char *label, const uint64_t *a, size_t lena)
 {   std::cout << label << " := 0x";
     for (size_t i=0; i<lena; i++)
     {   std::cout << std::hex << std::setfill('0')
@@ -2605,7 +2601,7 @@ inline void display(const char *label, intptr_t a)
     std::cout << std::endl;
 }
 
-inline void display(const char *label, Bignum &a)
+inline void display(const char *label, const Bignum &a)
 {   display(label, a.val);
 }
 
@@ -6310,10 +6306,9 @@ INLINE_VAR size_t KARATSUBA_CUTOFF = K;
 #if !defined K1 && !defined K1_DEFINED
 // I provide a default here but can override it at compile time. I suspect
 // that a good value here might be of the order of 100. For the old CSL
-// version I used the number 120. But for initial testing I will make
-// almost all uses of Karatsuba go through the parallel path.
+// version I used the number 120. Well for now I will use 3*KARATSUBA_CUTOFF
 
-INLINE_VAR constexpr size_t K1=20;
+INLINE_VAR constexpr size_t K1=3*K;
 #define K1_DEFINED 1
 #endif
 
@@ -6323,7 +6318,10 @@ INLINE_VAR constexpr size_t K1=20;
 
 #ifndef PARAKARA_CUTOFF
 // It may be defined globally as a severe override of what happens here!
-INLINE_VAR size_t PARAKARA_CUTOFF = K1;
+// But also if the current host computer does not support at least three
+// genuine concurrent activities I 
+INLINE_VAR size_t PARAKARA_CUTOFF = \
+    std::thread::hardware_concurrency() >= 3 ? K1 : SIZE_MAX;
 #endif
 
 inline void small_or_big_multiply(const uint64_t *a, size_t lena,
@@ -6422,13 +6420,9 @@ inline void worker_thread(std::mutex *mutex[4], worker_data *wd)
     {   mutex[receive_count]->lock();
         if (unique()->quit_threads) return;
 // This is where I do some work!
-        logprintf("Thread starting on %d * %d multiplication\n",
-                  wd->lena, wd->lenb);
-        logprintf("a=%p b=%p c=%p w=%p\n", wd->a, wd->b, wd->c, wd->w);
         small_or_big_multiply(wd->a, wd->lena,
                               wd->b, wd->lenb,
                               wd->c, wd->w);
-        logprintf("Thread multiplication complete\n");
         mutex[receive_count^2]->unlock();
         receive_count = (receive_count + 1) & 3;
     }
@@ -6440,8 +6434,6 @@ inline void top_level_karatsuba(const uint64_t *a, size_t lena,
                                 uint64_t *w0, uint64_t *w1)
 {
 // Here I have a HUGE case and I should use threads!
-    logprintf("Use HUGE karatsuba on size %d * %d here\n", lena, lenb);
-    logprintf("TLK: %p %p %p %p\n", a, b, c, w);
     assert(lena == lenb ||
            (lena%2 == 0 && lenb == lena-1));
     assert(lena >= 2);
@@ -6463,59 +6455,69 @@ inline void top_level_karatsuba(const uint64_t *a, size_t lena,
     unique()->worker_data1.lenb = lenb-n;
     unique()->worker_data1.c = w1;
     unique()->worker_data1.w = w1+2*n;
+
+//    display("ahi ", a+n, lena-n);
+//    display("alo ", a,   n);
+//    display("bhi ", b+n, lenb-n);
+//    display("blo ", b,   n);
+
+
 // Now trigger the two threads to do some work for me. One will be forming
 // alo*blo while the other computes ahi*bhi . 
     post_data();
-    logprintf("Threads triggered, I hope\n");
 // Now I will work on either |ahi-alo|*|bhi-blo|
 // lena-n and lenb-n will each be either n or n-1.
     bool signs_differ = absdiff(a, n, a+n, lena-n, w) !=
                         absdiff(b, n, b+n, lenb-n, w+n);
     small_or_big_multiply(w, n, w+n, n, c+n, w+2*n);     // (a1-a0)*(b0-b1)
-    logprintf("Master multiplication done\n");
-// That has the product of differences written into the middle
+// That has the product of differences written into the middle of c.
     wait_for_result();
-    logprintf("Threads complete\n");
     if (signs_differ)
     {
-// First insert the copy at the very top. Part can just be copied because I
-// have not yet put anything into c there, the low half then has to be added
-// in (and carries could propagate all the way up).
-        for (size_t i=n; i<lenc-2*n; i++) c[2*n+i] = w[i];
-        kadd(w, n, c+2*n, lenc-2*n);
-// Now add in the second copy
-        kadd(w, lenc-2*n, c+n, lenc-n);
-        for (size_t i=0; i<n; i++) c[i] = w[i];
-        kadd(w+n, n, c+n, lenc-n);
-        kadd(w, 2*n, c+n, lenc-n);
+// Here I have
+//     w0:             ;              ;           alo*blo [2*n]
+//     w1:      ahi*bhi [lenc-2*n]    ;                   ;
+//     c:     ?[lenc-n];     (ahi-alo)*(blo-bhi)[2n]      ;    ?[n]
+//          =         ?; ahi*blo+bhi*alo -ahi*bhi-alo*blo ;    ?[n]
+// so I need to add bits from w0 and w1 into c.
+//
+// First deal with ahi*bhi. The top half can be copied into the very top of
+// the result, then I add in the bottom half.
+        for (size_t i=n; i<lenc-2*n; i++) c[2*n+i] = w1[i];
+        kadd(w1, n, c+2*n, lenc-2*n);
+// Now add in the second copy of ahi*bhi
+        kadd(w1, lenc-2*n, c+n, lenc-n);
+// Now something similar with alo*blo
+        for (size_t i=0; i<n; i++) c[i] = w0[i];
+        kadd(w0+n, n, c+n, lenc-n);
+        kadd(w0, 2*n, c+n, lenc-n);
     }
     else
     {
 // This case is slightly more awkward because the key parts of the middle
 // part are negated. 
-//    a1*b1    (-a1*b0 - b1*a0 + a1*b1 + a0*b0)     a0*b0   
-        small_or_big_multiply(w, n, w+n, n, c+n, w+2*n);     // (a1-a0)*(b1-b0)
-        small_or_big_multiply(a+n, lena-n, b+n, lenb-n, w, w+2*n); // a1*b1
-        for (size_t i=n; i<lenc-2*n; i++) c[2*n+i] = w[i];
-// Now I will do {c3,c2,c1} = {c3,w0,0} - {0,c2,c1) which has a mere negation
-// step for the c1 digit, but is otherwise a reverse subtraction. Note I had
-// just done c3 = w1 so that first term on the RHS is "really" {w1,w0,0}.
+//    a1*b1    (-a1*b0 - b1*a0 + a1*b1 + a0*b0)     a0*b0
+// Call the desired result {c3,c2,c1,c0} then the middle product is in
+// {c2,c1} and I can copy the top half of ahi*bhi into c3.
+        for (size_t i=n; i<lenc-2*n; i++) c[2*n+i] = w1[i];
+// Now I will do {c3,c2,c1} = {c3,low(ahi*bhi),0} - {0,c2,c1) which has a
+// mere negation step for the c1 digit, but is otherwise a reverse
+// subtraction. Note I had just done c3 = high(ahi*bhi) so that first term on
+// the RHS is "really" {{ahi*bhi},0}.
 //      c1 = 0 - c1 [and generate borrow]
-//      c2 = w0 - c2 - borrow [and generate borrow]
+//      c2 = low(w0) - c2 - borrow [and generate borrow]
 //      c3 = c3 - borrow
         uint64_t borrow = 0;
         for (size_t i=0; i<n; i++)
             borrow = subtract_with_borrow(0, c[n+i], borrow, c[n+i]);
         for (size_t i=0; i<n; i++)
-            borrow = subtract_with_borrow(w[i], c[2*n+i], borrow, c[2*n+i]);
+            borrow = subtract_with_borrow(w1[i], c[2*n+i], borrow, c[2*n+i]);
         for (size_t i=0; i<lenc-3*n && borrow!=0; i++)
             borrow = subtract_with_borrow(c[3*n+i], borrow, c[3*n+i]);
-// Now I can proceed as before
-        kadd(w, lenc-2*n, c+n, lenc-n);
-        small_or_big_multiply(a, n, b, n, w, w+2*n);               // a0*b0
-        for (size_t i=0; i<n; i++) c[i] = w[i];
-        kadd(w+n, n, c+n, lenc-n);
-        kadd(w, 2*n, c+n, lenc-n);
+        kadd(w1, lenc-2*n, c+n, lenc-n);
+        for (size_t i=0; i<n; i++) c[i] = w0[i];
+        kadd(w0+n, n, c+n, lenc-n);
+        kadd(w0, 2*n, c+n, lenc-n);
     }
 }
 
@@ -6816,8 +6818,8 @@ inline void small_or_big_multiply_and_add(const uint64_t *a, size_t lena,
 // WORKSPACE_SIZE:     Length of the "w" work-vector needed for the above
 //                     which is a bit over twice the length of the inputs.
 
-INLINE_VAR const size_t KARA_FIXED_LENGTH_LIMIT = 200;
-INLINE_VAR const size_t KARA_WORKSPACE_SIZE = 408;
+INLINE_VAR const size_t KARA_FIXED_LENGTH_LIMIT = 20*K1;
+INLINE_VAR const size_t KARA_WORKSPACE_SIZE = 2*KARA_FIXED_LENGTH_LIMIT+50;
 
 // These two functions allocate workspace for Karatsuba on the stack and
 // are called when the inputs are short enough for that to feel reasonable.

@@ -47,4 +47,40 @@ c2cpp:	c2cpp.cpp
 #	./c2cpp $< $@
 #	astyle $@
 
+# Tests and demonstrations of arithlib.hpp
+
+ifeq ($(shell uname -o),Cygwin)
+LIBS=-lgmp
+else
+LIBS=-lgmp -lpthread
+endif
+
+# "arithtest" tries to do fairly full testing of arithlib.hpp for correctness
+# while running it in the mode where it is accessed via C++. Towards the top
+# of arithtest.cpp there are a sequence of #define statements that enable
+# various papts of the testing. The complete set of tests runs for a time
+# that may be of the order of 15 minutes to a few hours depending on the
+# speed of the computer being used. It starts with some dull output that is
+# just there to confirm the basic setup, but then as it runs the hoped-for
+# output is merely "Bitwise operation tests completed in NNN sec" and the
+# like, while in the case of trouble it should be more verbose.
+
+arithtest:	arithtest.cpp arithlib.hpp
+	g++ -O3 arithtest.cpp $(LIBS) -o arithtest
+	time ./arithtest
+
+# "time-arith" tries to compare (crudely) the speed of the existing (or
+# dare I now say "old"?) CSL arithmetic based on 31-bit digits with the
+# performance of arithlib that used 64-bit digits. On a 64-bit machine
+# this shows the newer code winning fairly convincingly! On general grounds
+# one could start with a prediction that long addition and subtraction might
+# be twice as fast using 64-bit digits, with long multiplication and division
+# showing a factor of 4 in the range where classical methods are used and
+# one of 3 for numbers big enough to trigger Karatsuba multiplication. I
+# believe that the results from this test (which just tries huge
+# multiplication) is in reasonable agreement with that.
+
+time-arith:	time-arith.sh
+	./time-arith.sh
+
 # end of Makefile in cslbase
