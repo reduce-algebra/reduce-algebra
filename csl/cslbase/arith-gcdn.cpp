@@ -75,11 +75,11 @@ LispObject Gcdn::op(uint64_t *a, LispObject b)
 // and in such cases return a bignum result.
 
 inline LispObject Gcdn::op(Fixnum a, Fixnum b)
-{   return arithlib::Gcd::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::Gcd::op(a.intval(), b.intval());
 }
 // bignum + fixnum
 LispObject Gcdn::op(uint64_t *a, Fixnum b)
-{   return arithlib::Gcd::op(a, b.intval());
+{   return arithlib_lowlevel::Gcd::op(a, b.intval());
 }
 // fixnum + bignum
 LispObject Gcdn::op(Fixnum a, uint64_t *b)
@@ -87,7 +87,7 @@ LispObject Gcdn::op(Fixnum a, uint64_t *b)
 }
 // bignum + bignum
 LispObject Gcdn::op(uint64_t *a, uint64_t *b)
-{   return arithlib::Gcd::op(a, b);
+{   return arithlib_lowlevel::Gcd::op(a, b);
 }
 
 LispObject Lcmn::op(LispObject a, LispObject b)
@@ -116,11 +116,11 @@ LispObject Lcmn::op(uint64_t *a, LispObject b)
 // and in such cases return a bignum result.
 
 inline LispObject Lcmn::op(Fixnum a, Fixnum b)
-{   return arithlib::Lcm::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::Lcm::op(a.intval(), b.intval());
 }
 // bignum + fixnum
 LispObject Lcmn::op(uint64_t *a, Fixnum b)
-{   return arithlib::Lcm::op(a, b.intval());
+{   return arithlib_lowlevel::Lcm::op(a, b.intval());
 }
 // fixnum + bignum
 LispObject Lcmn::op(Fixnum a, uint64_t *b)
@@ -128,7 +128,7 @@ LispObject Lcmn::op(Fixnum a, uint64_t *b)
 }
 // bignum + bignum
 LispObject Lcmn::op(uint64_t *a, uint64_t *b)
-{   return arithlib::Lcm::op(a, b);
+{   return arithlib_lowlevel::Lcm::op(a, b);
 }
 
 // end of arith-gcdn.cpp

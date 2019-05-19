@@ -65,6 +65,8 @@ endif
 # output is merely "Bitwise operation tests completed in NNN sec" and the
 # like, while in the case of trouble it should be more verbose.
 
+.PHONY:	arithtest
+
 arithtest:	arithtest.cpp arithlib.hpp
 	g++ -O3 arithtest.cpp $(LIBS) -o arithtest
 	time ./arithtest
@@ -79,6 +81,8 @@ arithtest:	arithtest.cpp arithlib.hpp
 # one of 3 for numbers big enough to trigger Karatsuba multiplication. I
 # believe that the results from this test (which just tries huge
 # multiplication) is in reasonable agreement with that.
+
+.PHONY:	time-arith
 
 time-arith:	time-arith.sh
 	./time-arith.sh

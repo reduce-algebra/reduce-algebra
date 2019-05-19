@@ -67,7 +67,7 @@ double Float::op(Fixnum a)
 
 
 double Float::op(uint64_t *a)
-{   return arithlib::Float::op(a);
+{   return arithlib_lowlevel::Float::op(a);
 }
 
 double Float::op(Rat a)
@@ -98,6 +98,52 @@ double Float::op(LFlt a)
     double d;
     memcpy(&d, &f, sizeof(double));
     return d;
+}
+
+
+
+float128_t Float128::op(LispObject a)
+{   return number_dispatcher::unary<float128_t,Float128>("float128", a);
+}
+
+
+float128_t Float128::op(Fixnum a)
+{   return i64_to_f128(a.intval());
+}
+
+
+float128_t Float128::op(uint64_t *a)
+{   return arithlib_lowlevel::Float128::op(a);
+}
+
+float128_t Float128::op(Rat a)
+{   return f128_div(Float128::op(a.numerator()), Float128::op(a.denominator()));
+}
+
+float128_t Float128::op(Cpx a)
+{   aerror1("bad argument for float128", a.value());
+}
+
+float128_t Float128::op(SFlt a)
+{   double d = a.floatval();
+    float64_t dd;
+    return f64_to_f128(dd);
+}
+
+float128_t Float128::op(Flt a)
+{   double d = a.floatval();
+    float64_t dd;
+    return f64_to_f128(dd);
+}
+
+float128_t Float128::op(double a)
+{   double d = a;
+    float64_t dd;
+    return f64_to_f128(dd);
+}
+
+float128_t Float128::op(LFlt a)
+{   return a.floatval();
 }
 
 

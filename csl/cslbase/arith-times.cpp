@@ -135,11 +135,11 @@ LispObject Times::op(LFlt a, LispObject b)
 
 // fixnum * fixnum
 inline LispObject Times::op(Fixnum a, Fixnum b)
-{   return arithlib::Times::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::Times::op(a.intval(), b.intval());
 }
 // bignum * fixnum
 LispObject Times::op(uint64_t *a, Fixnum b)
-{   return arithlib::Times::op(a, b.intval());
+{   return arithlib_lowlevel::Times::op(a, b.intval());
 }
 // rational * fixnum
 LispObject Times::op(Rat a, Fixnum b)
@@ -176,7 +176,7 @@ LispObject Times::op(Fixnum a, uint64_t *b)
 }
 // bignum * bignum
 LispObject Times::op(uint64_t *a, uint64_t *b)
-{   return arithlib::Times::op(a, b);
+{   return arithlib_lowlevel::Times::op(a, b);
 }
 // rational * bignum
 LispObject Times::op(Rat a, uint64_t *b)
@@ -196,7 +196,7 @@ LispObject Times::op(Flt a, uint64_t *b)
 }
 // double float * bignum
 LispObject Times::op(double a, uint64_t *b)
-{   return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float * bignum
 LispObject Times::op(LFlt a, uint64_t *b)
@@ -231,7 +231,7 @@ LispObject Times::op(Flt a, Rat b)
 // double float * rational
 LispObject Times::op(double a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float * rational
 LispObject Times::op(LFlt a, Rat b)
@@ -265,7 +265,7 @@ LispObject Times::op(Flt a, Cpx b)
 // double float * complex
 LispObject Times::op(double a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float * complex
 LispObject Times::op(LFlt a, Cpx b)
@@ -299,7 +299,7 @@ LispObject Times::op(Flt a, SFlt b)
 // double float * short float
 LispObject Times::op(double a, SFlt b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float * short float
 LispObject Times::op(LFlt a, SFlt b)
@@ -333,7 +333,7 @@ LispObject Times::op(Flt a, Flt b)
 // double float * single float
 LispObject Times::op(double a, Flt b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float * single float
 LispObject Times::op(LFlt a, Flt b)
@@ -367,7 +367,7 @@ LispObject Times::op(Flt a, double b)
 }
 // double float * double float
 LispObject Times::op(double a, double b)
-{   return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float * double float
 LispObject Times::op(LFlt a, double b)
@@ -478,276 +478,276 @@ LispObject Quotient::op(LFlt a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
-// fixnum * fixnum
+// fixnum/fixnum
 inline LispObject Quotient::op(Fixnum a, Fixnum b)
-{   return arithlib::Quotient::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::Quotient::op(a.intval(), b.intval());
 }
-// bignum * fixnum
+// bignum/fixnum
 LispObject Quotient::op(uint64_t *a, Fixnum b)
-{   return arithlib::Quotient::op(a, b.intval());
+{   return arithlib_lowlevel::Quotient::op(a, b.intval());
 }
-// rational * fixnum
+// rational/fixnum
 LispObject Quotient::op(Rat a, Fixnum b)
 {   if (b.intval() == 0) return a.value();
     return make_ratio(Quotient::op(a.numerator(),
                                Quotient::op(a.denominator(), b)),
                       a.denominator());
 }
-// complex * fixnum
+// complex/fixnum
 LispObject Quotient::op(Cpx a, Fixnum b)
 {   if (b.intval() == 0) return a.v;
     return make_complex(Quotient::op(a.real_part(), b), a.imag_part());
 }
-// short float * fixnum
+// short float/fixnum
 LispObject Quotient::op(SFlt a, Fixnum b)
 {   return pack_short_float(a.floatval() * (double)b.value());
 }
-// single float * fixnum
+// single float/fixnum
 LispObject Quotient::op(Flt a, Fixnum b)
 {   return pack_single_float(a.floatval() * (double)b.intval());
 }
-// double float * fixnum
+// double float/fixnum
 LispObject Quotient::op(double a, Fixnum b)
 {   return make_boxfloat(a * (double)b.intval(), TYPE_DOUBLE_FLOAT);
 }
-// long float * fixnum
+// long float/fixnum
 LispObject Quotient::op(LFlt a, Fixnum b)
 {   return make_boxfloat128(f128_add(a.floatval(), i64_to_f128(b.intval())));
 }
 //............................................
-// fixnum * bignum
+// fixnum/bignum
 LispObject Quotient::op(Fixnum a, uint64_t *b)
 {   return Quotient::op(b, a);
 }
-// bignum * bignum
+// bignum/bignum
 LispObject Quotient::op(uint64_t *a, uint64_t *b)
-{   return arithlib::Quotient::op(a, b);
+{   return arithlib_lowlevel::Quotient::op(a, b);
 }
-// rational * bignum
+// rational/bignum
 LispObject Quotient::op(Rat a, uint64_t *b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// complex * bignum
+// complex/bignum
 LispObject Quotient::op(Cpx a, uint64_t *b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// short float * bignum
+// short float/bignum
 LispObject Quotient::op(SFlt a, uint64_t *b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// single float * bignum
+// single float/bignum
 LispObject Quotient::op(Flt a, uint64_t *b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// double float * bignum
+// double float/bignum
 LispObject Quotient::op(double a, uint64_t *b)
-{   return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * bignum
+// long float/bignum
 LispObject Quotient::op(LFlt a, uint64_t *b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 
 //............................................
-// fixnum * rational
+// fixnum/rational
 LispObject Quotient::op(Fixnum a, Rat b)
 {   return Quotient::op(b, a);
 }
-// bignum * rational
+// bignum/rational
 LispObject Quotient::op(uint64_t *a, Rat b)
 {   return Quotient::op(b, a);
 }
-// rational * rational
+// rational/rational
 LispObject Quotient::op(Rat a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// complex * rational
+// complex/rational
 LispObject Quotient::op(Cpx a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// short float * rational
+// short float/rational
 LispObject Quotient::op(SFlt a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// single float * rational
+// single float/rational
 LispObject Quotient::op(Flt a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// double float * rational
+// double float/rational
 LispObject Quotient::op(double a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * rational
+// long float/rational
 LispObject Quotient::op(LFlt a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 //............................................
-// fixnum * complex
+// fixnum/complex
 LispObject Quotient::op(Fixnum a, Cpx b)
 {   return Quotient::op(b, a);
 }
-// bignum * complex
+// bignum/complex
 LispObject Quotient::op(uint64_t *a, Cpx b)
 {   return Quotient::op(b, a);
 }
-// rational * complex
+// rational/complex
 LispObject Quotient::op(Rat a, Cpx b)
 {   return Quotient::op(b, a);
 }
-// complex * complex
+// complex/complex
 LispObject Quotient::op(Cpx a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// short float * complex
+// short float/complex
 LispObject Quotient::op(SFlt a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// single float * complex
+// single float/complex
 LispObject Quotient::op(Flt a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// double float * complex
+// double float/complex
 LispObject Quotient::op(double a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * complex
+// long float/complex
 LispObject Quotient::op(LFlt a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 //............................................
-// fixnum * short float
+// fixnum/short float
 LispObject Quotient::op(Fixnum a, SFlt b)
 {   return Quotient::op(b, a);
 }
-// bignum * short float
+// bignum/short float
 LispObject Quotient::op(uint64_t *a, SFlt b)
 {   return Quotient::op(b, a);
 }
-// rational * short float
+// rational/short float
 LispObject Quotient::op(Rat a, SFlt b)
 {   return Quotient::op(b, a);
 }
-// complex * short float
+// complex/short float
 LispObject Quotient::op(Cpx a, SFlt b)
 {   return Quotient::op(b, a);
 }
-// short float * short float
+// short float/short float
 LispObject Quotient::op(SFlt a, SFlt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// single float * short float
+// single float/short float
 LispObject Quotient::op(Flt a, SFlt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// double float * short float
+// double float/short float
 LispObject Quotient::op(double a, SFlt b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * short float
+// long float/short float
 LispObject Quotient::op(LFlt a, SFlt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 //............................................
-// fixnum * single float
+// fixnum/single float
 LispObject Quotient::op(Fixnum a, Flt b)
 {   return Quotient::op(b, a);
 }
-// bignum * single float
+// bignum/single float
 LispObject Quotient::op(uint64_t *a, Flt b)
 {   return Quotient::op(b, a);
 }
-// rational * single float
+// rational/single float
 LispObject Quotient::op(Rat a, Flt b)
 {   return Quotient::op(b, a);
 }
-// complex * single float
+// complex/single float
 LispObject Quotient::op(Cpx a, Flt b)
 {   return Quotient::op(b, a);
 }
-// short float * single float
+// short float/single float
 LispObject Quotient::op(SFlt a, Flt b)
 {   return Quotient::op(b, a);
 }
-// single float * single float
+// single float/single float
 LispObject Quotient::op(Flt a, Flt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// double float * single float
+// double float/single float
 LispObject Quotient::op(double a, Flt b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * single float
+// long float/single float
 LispObject Quotient::op(LFlt a, Flt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 
 //............................................
-// fixnum * double float
+// fixnum/double float
 LispObject Quotient::op(Fixnum a, double b)
 {   return Quotient::op(b, a);
 }
-// bignum * double float
+// bignum/double float
 LispObject Quotient::op(uint64_t *a, double b)
 {   return Quotient::op(b, a);
 }
-// rational * double float
+// rational/double float
 LispObject Quotient::op(Rat a, double b)
 {   return Quotient::op(b, a);
 }
-// complex * double float
+// complex/double float
 LispObject Quotient::op(Cpx a, double b)
 {   return Quotient::op(b, a);
 }
-// short float * double float
+// short float/double float
 LispObject Quotient::op(SFlt a, double b)
 {   return Quotient::op(b, a);
 }
-// single float * double float
+// single float/double float
 LispObject Quotient::op(Flt a, double b)
 {   return Quotient::op(b, a);
 }
-// double float * double float
+// double float/double float
 LispObject Quotient::op(double a, double b)
-{   return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * double float
+// long float/double float
 LispObject Quotient::op(LFlt a, double b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 //............................................
-// fixnum * long float
+// fixnum/long float
 LispObject Quotient::op(Fixnum a, LFlt b)
 {   return Quotient::op(b, a);
 }
-// bignum * long float
+// bignum/long float
 LispObject Quotient::op(uint64_t *a, LFlt b)
 {   return Quotient::op(b, a);
 }
-// rational * long float
+// rational/long float
 LispObject Quotient::op(Rat a, LFlt b)
 {   return Quotient::op(b, a);
 }
-// complex * long float
+// complex/long float
 LispObject Quotient::op(Cpx a, LFlt b)
 {   return Quotient::op(b, a);
 }
-// short float * long float
+// short float/long float
 LispObject Quotient::op(SFlt a, LFlt b)
 {   return Quotient::op(b, a);
 }
-// single float * long float
+// single float/long float
 LispObject Quotient::op(Flt a, LFlt b)
 {   return Quotient::op(b, a);
 }
-// double float * long float
+// double float/long float
 LispObject Quotient::op(double a, LFlt b)
 {   return Quotient::op(b, a);
 }
-// long float * long float
+// long float/long float
 LispObject Quotient::op(LFlt a, LFlt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
@@ -823,623 +823,777 @@ LispObject Remainder::op(LFlt a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Remainder>("remainder", a, b);
 }
 
-// fixnum * fixnum
+// fixnum remainder fixnum
 inline LispObject Remainder::op(Fixnum a, Fixnum b)
-{   return arithlib::Remainder::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::Remainder::op(a.intval(), b.intval());
 }
-// bignum * fixnum
+// bignum remainder fixnum
 LispObject Remainder::op(uint64_t *a, Fixnum b)
-{   return arithlib::Remainder::op(a, b.intval());
+{   return arithlib_lowlevel::Remainder::op(a, b.intval());
 }
-// rational * fixnum
+// rational remainder fixnum
 LispObject Remainder::op(Rat a, Fixnum b)
 {   if (b.intval() == 0) return a.value();
     return make_ratio(Remainder::op(a.numerator(),
                                Remainder::op(a.denominator(), b)),
                       a.denominator());
 }
-// complex * fixnum
+// complex remainder fixnum
 LispObject Remainder::op(Cpx a, Fixnum b)
 {   if (b.intval() == 0) return a.v;
     return make_complex(Remainder::op(a.real_part(), b), a.imag_part());
 }
-// short float * fixnum
+// short float remainder fixnum
 LispObject Remainder::op(SFlt a, Fixnum b)
 {   return pack_short_float(a.floatval() * (double)b.value());
 }
-// single float * fixnum
+// single float remainder fixnum
 LispObject Remainder::op(Flt a, Fixnum b)
 {   return pack_single_float(a.floatval() * (double)b.intval());
 }
-// double float * fixnum
+// double float remainder fixnum
 LispObject Remainder::op(double a, Fixnum b)
 {   return make_boxfloat(a * (double)b.intval(), TYPE_DOUBLE_FLOAT);
 }
-// long float * fixnum
+// long float remainder fixnum
 LispObject Remainder::op(LFlt a, Fixnum b)
 {   return make_boxfloat128(f128_add(a.floatval(), i64_to_f128(b.intval())));
 }
 //............................................
-// fixnum * bignum
+// fixnum remainder bignum
 LispObject Remainder::op(Fixnum a, uint64_t *b)
 {   return Remainder::op(b, a);
 }
-// bignum * bignum
+// bignum remainder bignum
 LispObject Remainder::op(uint64_t *a, uint64_t *b)
-{   return arithlib::Remainder::op(a, b);
+{   return arithlib_lowlevel::Remainder::op(a, b);
 }
-// rational * bignum
+// rational remainder bignum
 LispObject Remainder::op(Rat a, uint64_t *b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// complex * bignum
+// complex remainder bignum
 LispObject Remainder::op(Cpx a, uint64_t *b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// short float * bignum
+// short float remainder bignum
 LispObject Remainder::op(SFlt a, uint64_t *b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// single float * bignum
+// single float remainder bignum
 LispObject Remainder::op(Flt a, uint64_t *b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// double float * bignum
+// double float remainder bignum
 LispObject Remainder::op(double a, uint64_t *b)
-{   return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * bignum
+// long float remainder bignum
 LispObject Remainder::op(LFlt a, uint64_t *b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 
 //............................................
-// fixnum * rational
+// fixnum remainder rational
 LispObject Remainder::op(Fixnum a, Rat b)
 {   return Remainder::op(b, a);
 }
-// bignum * rational
+// bignum remainder rational
 LispObject Remainder::op(uint64_t *a, Rat b)
 {   return Remainder::op(b, a);
 }
-// rational * rational
+// rational remainder rational
 LispObject Remainder::op(Rat a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// complex * rational
+// complex remainder rational
 LispObject Remainder::op(Cpx a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// short float * rational
+// short float remainder rational
 LispObject Remainder::op(SFlt a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// single float * rational
+// single float remainder rational
 LispObject Remainder::op(Flt a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// double float * rational
+// double float remainder rational
 LispObject Remainder::op(double a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * rational
+// long float remainder rational
 LispObject Remainder::op(LFlt a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 //............................................
-// fixnum * complex
+// fixnum remainder complex
 LispObject Remainder::op(Fixnum a, Cpx b)
 {   return Remainder::op(b, a);
 }
-// bignum * complex
+// bignum remainder complex
 LispObject Remainder::op(uint64_t *a, Cpx b)
 {   return Remainder::op(b, a);
 }
-// rational * complex
+// rational remainder complex
 LispObject Remainder::op(Rat a, Cpx b)
 {   return Remainder::op(b, a);
 }
-// complex * complex
+// complex remainder complex
 LispObject Remainder::op(Cpx a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// short float * complex
+// short float remainder complex
 LispObject Remainder::op(SFlt a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// single float * complex
+// single float remainder complex
 LispObject Remainder::op(Flt a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// double float * complex
+// double float remainder complex
 LispObject Remainder::op(double a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * complex
+// long float remainder complex
 LispObject Remainder::op(LFlt a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 //............................................
-// fixnum * short float
+// fixnum remainder short float
 LispObject Remainder::op(Fixnum a, SFlt b)
 {   return Remainder::op(b, a);
 }
-// bignum * short float
+// bignum remainder short float
 LispObject Remainder::op(uint64_t *a, SFlt b)
 {   return Remainder::op(b, a);
 }
-// rational * short float
+// rational remainder short float
 LispObject Remainder::op(Rat a, SFlt b)
 {   return Remainder::op(b, a);
 }
-// complex * short float
+// complex remainder short float
 LispObject Remainder::op(Cpx a, SFlt b)
 {   return Remainder::op(b, a);
 }
-// short float * short float
+// short float remainder short float
 LispObject Remainder::op(SFlt a, SFlt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// single float * short float
+// single float remainder short float
 LispObject Remainder::op(Flt a, SFlt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// double float * short float
+// double float remainder short float
 LispObject Remainder::op(double a, SFlt b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * short float
+// long float remainder short float
 LispObject Remainder::op(LFlt a, SFlt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 //............................................
-// fixnum * single float
+// fixnum remainder single float
 LispObject Remainder::op(Fixnum a, Flt b)
 {   return Remainder::op(b, a);
 }
-// bignum * single float
+// bignum remainder single float
 LispObject Remainder::op(uint64_t *a, Flt b)
 {   return Remainder::op(b, a);
 }
-// rational * single float
+// rational remainder single float
 LispObject Remainder::op(Rat a, Flt b)
 {   return Remainder::op(b, a);
 }
-// complex * single float
+// complex remainder single float
 LispObject Remainder::op(Cpx a, Flt b)
 {   return Remainder::op(b, a);
 }
-// short float * single float
+// short float remainder single float
 LispObject Remainder::op(SFlt a, Flt b)
 {   return Remainder::op(b, a);
 }
-// single float * single float
+// single float remainder single float
 LispObject Remainder::op(Flt a, Flt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
-// double float * single float
+// double float remainder single float
 LispObject Remainder::op(double a, Flt b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * single float
+// long float remainder single float
 LispObject Remainder::op(LFlt a, Flt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 
 //............................................
-// fixnum * double float
+// fixnum remainder double float
 LispObject Remainder::op(Fixnum a, double b)
 {   return Remainder::op(b, a);
 }
-// bignum * double float
+// bignum remainder double float
 LispObject Remainder::op(uint64_t *a, double b)
 {   return Remainder::op(b, a);
 }
-// rational * double float
+// rational remainder double float
 LispObject Remainder::op(Rat a, double b)
 {   return Remainder::op(b, a);
 }
-// complex * double float
+// complex remainder double float
 LispObject Remainder::op(Cpx a, double b)
 {   return Remainder::op(b, a);
 }
-// short float * double float
+// short float remainder double float
 LispObject Remainder::op(SFlt a, double b)
 {   return Remainder::op(b, a);
 }
-// single float * double float
+// single float remainder double float
 LispObject Remainder::op(Flt a, double b)
 {   return Remainder::op(b, a);
 }
-// double float * double float
+// double float remainder double float
 LispObject Remainder::op(double a, double b)
-{   return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
-// long float * double float
+// long float remainder double float
 LispObject Remainder::op(LFlt a, double b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 //............................................
-// fixnum * long float
+// fixnum remainder long float
 LispObject Remainder::op(Fixnum a, LFlt b)
 {   return Remainder::op(b, a);
 }
-// bignum * long float
+// bignum remainder long float
 LispObject Remainder::op(uint64_t *a, LFlt b)
 {   return Remainder::op(b, a);
 }
-// rational * long float
+// rational remainder long float
 LispObject Remainder::op(Rat a, LFlt b)
 {   return Remainder::op(b, a);
 }
-// complex * long float
+// complex remainder long float
 LispObject Remainder::op(Cpx a, LFlt b)
 {   return Remainder::op(b, a);
 }
-// short float * long float
+// short float remainder long float
 LispObject Remainder::op(SFlt a, LFlt b)
 {   return Remainder::op(b, a);
 }
-// single float * long float
+// single float remainder long float
 LispObject Remainder::op(Flt a, LFlt b)
 {   return Remainder::op(b, a);
 }
-// double float * long float
+// double float remainder long float
 LispObject Remainder::op(double a, LFlt b)
 {   return Remainder::op(b, a);
 }
-// long float * long float
+// long float remainder long float
 LispObject Remainder::op(LFlt a, LFlt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 
 LispObject Divide::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 
 LispObject Divide::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 
 LispObject Divide::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 
 LispObject Divide::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 LispObject Divide::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
-// fixnum * fixnum
+// fixnum divide fixnum
 inline LispObject Divide::op(Fixnum a, Fixnum b)
-{   return arithlib::Divide::op(a.intval(), b.intval());
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// bignum * fixnum
+// bignum divide fixnum
 LispObject Divide::op(uint64_t *a, Fixnum b)
-{   return arithlib::Divide::op(a, b.intval());
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// rational * fixnum
+// rational divide fixnum
 LispObject Divide::op(Rat a, Fixnum b)
-{   if (b.intval() == 0) return a.value();
-    return make_ratio(Divide::op(a.numerator(),
-                               Divide::op(a.denominator(), b)),
-                      a.denominator());
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// complex * fixnum
+// complex divide fixnum
 LispObject Divide::op(Cpx a, Fixnum b)
-{   if (b.intval() == 0) return a.v;
-    return make_complex(Divide::op(a.real_part(), b), a.imag_part());
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// short float * fixnum
+// short float divide fixnum
 LispObject Divide::op(SFlt a, Fixnum b)
-{   return pack_short_float(a.floatval() * (double)b.value());
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// single float * fixnum
+// single float divide fixnum
 LispObject Divide::op(Flt a, Fixnum b)
-{   return pack_single_float(a.floatval() * (double)b.intval());
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// double float * fixnum
+// double float divide fixnum
 LispObject Divide::op(double a, Fixnum b)
-{   return make_boxfloat(a * (double)b.intval(), TYPE_DOUBLE_FLOAT);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// long float * fixnum
+// long float divide fixnum
 LispObject Divide::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_add(a.floatval(), i64_to_f128(b.intval())));
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 //............................................
-// fixnum * bignum
+// fixnum divide bignum
 LispObject Divide::op(Fixnum a, uint64_t *b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// bignum * bignum
+// bignum divide bignum
 LispObject Divide::op(uint64_t *a, uint64_t *b)
-{   return arithlib::Divide::op(a, b);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// rational * bignum
+// rational divide bignum
 LispObject Divide::op(Rat a, uint64_t *b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// complex * bignum
+// complex divide bignum
 LispObject Divide::op(Cpx a, uint64_t *b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// short float * bignum
+// short float divide bignum
 LispObject Divide::op(SFlt a, uint64_t *b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// single float * bignum
+// single float divide bignum
 LispObject Divide::op(Flt a, uint64_t *b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// double float * bignum
+// double float divide bignum
 LispObject Divide::op(double a, uint64_t *b)
-{   return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// long float * bignum
+// long float divide bignum
 LispObject Divide::op(LFlt a, uint64_t *b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 //............................................
-// fixnum * rational
+// fixnum divide rational
 LispObject Divide::op(Fixnum a, Rat b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// bignum * rational
+// bignum divide rational
 LispObject Divide::op(uint64_t *a, Rat b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// rational * rational
+// rational divide rational
 LispObject Divide::op(Rat a, Rat b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// complex * rational
+// complex divide rational
 LispObject Divide::op(Cpx a, Rat b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// short float * rational
+// short float divide rational
 LispObject Divide::op(SFlt a, Rat b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// single float * rational
+// single float divide rational
 LispObject Divide::op(Flt a, Rat b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// double float * rational
+// double float divide rational
 LispObject Divide::op(double a, Rat b)
-{   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// long float * rational
+// long float divide rational
 LispObject Divide::op(LFlt a, Rat b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 //............................................
-// fixnum * complex
+// fixnum divide complex
 LispObject Divide::op(Fixnum a, Cpx b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// bignum * complex
+// bignum divide complex
 LispObject Divide::op(uint64_t *a, Cpx b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// rational * complex
+// rational divide complex
 LispObject Divide::op(Rat a, Cpx b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// complex * complex
+// complex divide complex
 LispObject Divide::op(Cpx a, Cpx b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// short float * complex
+// short float divide complex
 LispObject Divide::op(SFlt a, Cpx b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// single float * complex
+// single float divide complex
 LispObject Divide::op(Flt a, Cpx b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// double float * complex
+// double float divide complex
 LispObject Divide::op(double a, Cpx b)
-{   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// long float * complex
+// long float divide complex
 LispObject Divide::op(LFlt a, Cpx b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 //............................................
-// fixnum * short float
+// fixnum divide short float
 LispObject Divide::op(Fixnum a, SFlt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// bignum * short float
+// bignum divide short float
 LispObject Divide::op(uint64_t *a, SFlt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// rational * short float
+// rational divide short float
 LispObject Divide::op(Rat a, SFlt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// complex * short float
+// complex divide short float
 LispObject Divide::op(Cpx a, SFlt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// short float * short float
+// short float divide short float
 LispObject Divide::op(SFlt a, SFlt b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// single float * short float
+// single float divide short float
 LispObject Divide::op(Flt a, SFlt b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// double float * short float
+// double float divide short float
 LispObject Divide::op(double a, SFlt b)
-{   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// long float * short float
+// long float divide short float
 LispObject Divide::op(LFlt a, SFlt b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 //............................................
-// fixnum * single float
+// fixnum divide single float
 LispObject Divide::op(Fixnum a, Flt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// bignum * single float
+// bignum divide single float
 LispObject Divide::op(uint64_t *a, Flt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// rational * single float
+// rational divide single float
 LispObject Divide::op(Rat a, Flt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// complex * single float
+// complex divide single float
 LispObject Divide::op(Cpx a, Flt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// short float * single float
+// short float divide single float
 LispObject Divide::op(SFlt a, Flt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// single float * single float
+// single float divide single float
 LispObject Divide::op(Flt a, Flt b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// double float * single float
+// double float divide single float
 LispObject Divide::op(double a, Flt b)
-{   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// long float * single float
+// long float divide single float
 LispObject Divide::op(LFlt a, Flt b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 //............................................
-// fixnum * double float
+// fixnum divide double float
 LispObject Divide::op(Fixnum a, double b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// bignum * double float
+// bignum divide double float
 LispObject Divide::op(uint64_t *a, double b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// rational * double float
+// rational divide double float
 LispObject Divide::op(Rat a, double b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// complex * double float
+// complex divide double float
 LispObject Divide::op(Cpx a, double b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// short float * double float
+// short float divide double float
 LispObject Divide::op(SFlt a, double b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// single float * double float
+// single float divide double float
 LispObject Divide::op(Flt a, double b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// double float * double float
+// double float divide double float
 LispObject Divide::op(double a, double b)
-{   return make_boxfloat(a * arithlib::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// long float * double float
+// long float divide double float
 LispObject Divide::op(LFlt a, double b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 //............................................
-// fixnum * long float
+// fixnum divide long float
 LispObject Divide::op(Fixnum a, LFlt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// bignum * long float
+// bignum divide long float
 LispObject Divide::op(uint64_t *a, LFlt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// rational * long float
+// rational divide long float
 LispObject Divide::op(Rat a, LFlt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// complex * long float
+// complex divide long float
 LispObject Divide::op(Cpx a, LFlt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// short float * long float
+// short float divide long float
 LispObject Divide::op(SFlt a, LFlt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// single float * long float
+// single float divide long float
 LispObject Divide::op(Flt a, LFlt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// double float * long float
+// double float divide long float
 LispObject Divide::op(double a, LFlt b)
-{   return Divide::op(b, a);
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
-// long float * long float
+// long float divide long float
 LispObject Divide::op(LFlt a, LFlt b)
-{   return (LispObject)0; abort("times not coded yet");
+{   LispObject q = Quotient::op(a, b);
+    LispObject r = Remainder::op(a, b);
+    return cons(q, r);
 }
 
 // end of arith-times.cpp

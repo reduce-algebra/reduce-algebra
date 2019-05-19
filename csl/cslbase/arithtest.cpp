@@ -109,26 +109,28 @@ inline void referencemultiply(const uint64_t *a, size_t lena,
 // means that in all other cases (and in particular unless lo==0) hi ends
 // up LESS than the maximum, and so adding one to it can happen without
 // overflow.
-            multiply64(a[i], b[j], hi, hi, lo);
-            hi += add_with_carry(lo, c[i+j], c[i+j]);
+            arithlib_implementation::multiply64(a[i], b[j], hi, hi, lo);
+            hi += arithlib_implementation::add_with_carry(lo, c[i+j], c[i+j]);
         }
         c[i+lenb] = hi;
     }
-    if (negative(a[lena-1]))
+    if (arithlib_implementation::negative(a[lena-1]))
     {   uint64_t carry = 1;
         for (size_t i=0; i<lenb; i++)
-            carry = add_with_carry(c[i+lena], ~b[i], carry, c[i+lena]);
+            carry = arithlib_implementation::add_with_carry(
+                c[i+lena], ~b[i], carry, c[i+lena]);
     }
-    if (negative(b[lenb-1]))
+    if (arithlib_implementation::negative(b[lenb-1]))
     {   uint64_t carry = 1;
         for (size_t i=0; i<lena; i++)
-            carry = add_with_carry(c[i+lenb], ~a[i], carry, c[i+lenb]);
+            carry = arithlib_implementation::add_with_carry(
+                c[i+lenb], ~a[i], carry, c[i+lenb]);
     }
     lenc = lena + lenb;
 // The actual value may be shorter than this.
 //  test top digit or c and if necessary reduce lenc.
-    truncate_positive(c, lenc);
-    truncate_negative(c, lenc);
+    arithlib_implementation::truncate_positive(c, lenc);
+    arithlib_implementation::truncate_negative(c, lenc);
 }
 
 
@@ -229,7 +231,8 @@ int main(int argc, char *argv[])
                     switch (method)
                     {
                     case 0:
-                        bigmultiply(a, lena, b, lenb, c1, lenc1);
+                        arithlib_implementation::bigmultiply(
+                            a, lena, b, lenb, c1, lenc1);
                         c[lena+lenb-1] = 0;
                         mpn_mul((mp_ptr)c,
                                 (mp_srcptr)a,
@@ -240,7 +243,8 @@ int main(int argc, char *argv[])
                         for (size_t i=0; i<lena+lenb; i++)
                         {   if (c[i] != c1[i])
                             {   ok = false;
-                                std::cout << "Failed at " << std::dec << i << std::endl;
+                                std::cout << "Failed at " << std::dec
+                                          << i << std::endl;
                             }
                         }
                         if (!ok)
@@ -253,7 +257,8 @@ int main(int argc, char *argv[])
                         break;
                     case 1:
                         for (size_t m=0; m<500; m++)
-                            bigmultiply(a, lena, b, lenb, c1, lenc1);
+                            arithlib_implementation::bigmultiply(
+                                a, lena, b, lenb, c1, lenc1);
 // By accumulating a sort of checksum on all the products that I compute
 // I will be able to reassure myself that the output from gmp and from my
 // own code agrees.

@@ -45,7 +45,13 @@ int main(int argc, char *argv[])
     return 0;
 }
 XXX
+
+echo Time using arithlib directly from C++
+
 time ./time-arith
+
+echo Now try using Reduce
+
 time redcsl -w - <<XXX
 lisp;
 on comp, time;

@@ -57,9 +57,10 @@
 // every compilation uint, while if it was "extern" it could seem to be
 // multiply defined. Use of "inline" resolves that, leaving just one
 // copy in the eventual linked binary. From C++17 onwards data as well as
-// code can be tagged "inline" in this sense. Up until then data that is
-// used with inline functions probably needs to be made static and the
-// cost of multiple instances ending up in binaries suffered.
+// code can be tagged "inline" in this sense. Until I can be confident that
+// everybody will use a compiler that supports C++17 I need to go through
+// quite odd-looking steps so that when this header is included from several
+// compilation units I do not end up with multiply-defined entities.
 //
 // This code uses 64-bit digits and a 2s complement representation for
 // negative numbers. This means it will work best on 64-bit platforms
@@ -402,18 +403,25 @@
 // lot of "static variable defined but not used" warnings.
 // From C++17 onwards (and C++ mandates the __cpp_inline_variables macro to
 // indicate if the feature is in place) I will use
-// "inline const int VAR = VAL;" and now if memory is allocated for the
-// variable it will only be allocated once, and I hope that compilers will
-// not feel entitled to moan about cases where there are no references.
-//
+//             inline const int VAR = VAL;
+// and now if memory is allocated for the variable it will only be allocated
+// once, and I hope that compilers will not feel entitled to moan about
+// cases where there are no references. I will only use this idiom for things
+// that are at least "almost" constant so that in the case that the variables
+// end up static and there are different copies in each compilation unit
+// it should not cause cconfusion.
+
 #define INLINE_VAR inline
 #else
 #define INLINE_VAR static
 #endif
 
 
+// Another useful C++17 feature.... with a fallback to a GNU-specific
+// way of achieving the same through use of C++11 annotations. And a final
+// fall back to just not worrying.
+
 #ifdef __has_cpp_attribute_maybe_unused
-// Another useful C++17 feature.
 #define MAYBE_UNUSED [[maybe_unused]]
 #elif defined __GNUC__
 #define MAYBE_UNUSED [[gnu::unused]]
@@ -442,7 +450,7 @@
 #include <mutex>
 #include <atomic>
 
-namespace arithlib
+namespace arithlib_implementation
 {
 
 // A scheme "arithlib::assert" lets me write in my own code to print the
@@ -455,39 +463,64 @@ namespace arithlib
 #define STRINGIFY1(x) #x
 #define STRINGIFY(x) STRINGIFY1(x)
 
-INLINE_VAR thread_local const char *_abort_location = "";
-
 // abort() mainly exists so I can set a breakpoint on it! Setting one
 // on the system abort() function sometimes does not give me as much help
 // as I might have hoped on at least some platforms, while a break-point
-// on abort() does what I expect.
+// on abort() does what I expect. But also the version I have here explains
+// where it was called from nicely. The location gets passed in as a string
+// and in a multi-file multi-thread world that could be "interesting", and
+// so I will have mutex protection for the failure message (getting two
+// aborts at once would be horrid, and I will be happy if ONE of the reports
+// come out neatly!). The function diagnostic_muxex returns a reference
+// to a mutex that can be used to protect things, and there will be just
+// one of if. It also sets its argument to a reference to a const char *
+// pointer that will be used for transmitting the location information.
 
-inline std::mutex *diagnostic_mutex()
+inline std::mutex &diagnostic_mutex(const char ***where)
 {
 // C++11 guarantees that even if this header is included from many
-// compilation units there will be a single unique mutex here.
+// compilation units there will be a single unique mutex here. I guarantees
+// that the mutex will have been constructed (ie initialized) by the time
+// an execution path flows past its definition.
     static std::mutex m;
-    return &m;
+    static const char *location;
+    *where = &location;
+    return m;
 }
 
 inline void abort1(const char *msg)
-{   std::lock_guard<std::mutex> lock(*diagnostic_mutex());
-    std::cout << "About to abort at " << _abort_location << ": "
+{   const char **where;
+// The call to diagnostic_mutex here is just to retrieve the location of the
+// const char * variable that holds the location. I am already within
+// the scope of a mutex.
+    (void)diagnostic_mutex(&where);
+    std::cout << "About to abort at " << *where << ": "
               << msg << std::endl;
     std::abort();
 }
 
 inline void abort1()
-{   std::lock_guard<std::mutex> lock(*diagnostic_mutex());
-    std::cout << "About to abort at " << _abort_location << std::endl;
+{   const char **where;
+    (void)diagnostic_mutex(&where);
+    std::cout << "About to abort at " << *where << std::endl;
     std::abort();
 }
 
 #undef abort
 
+// This version of an abort() macro established a log_guard so that only one
+// part of the code can be aborting at any one time, and sets up information
+// about the file and line where trouble arose. It could cope with arbitrary
+// overloads of abort1() and the fact that the location information is not
+// passed as an extra argument to abort1() is because of limitations in
+// __VA_ARGS__ in portable code until C++2a.
+
 #define abort(...)                                                         \
-    {   arithlib::_abort_location = __FILE__ " line " STRINGIFY(__LINE__); \
-        arithlib::abort1(__VA_ARGS__);                                     \
+    {   const char **where;                                                \
+        std::lock_guard<std::mutex> lock(                                  \
+            arithlib_implementation::diagnostic_mutex(&where));                           \
+        *where = __FILE__ " line " STRINGIFY(__LINE__);                    \
+        arithlib_implementation::abort1(__VA_ARGS__);                                     \
     }
 
 // The following variable (well constant) enabled "assert" checking. The
@@ -495,11 +528,18 @@ inline void abort1()
 // macro __OPTIMIZE__ will be set up if any g++ optimizations are in force, so
 // here I only activate assertions in the case of compilation subject to
 // "-O0" which will often be associated with "-g".
+//
+// However the user can override this by predefining FORCE_DEBUG_ARITH to
+// encourage debugging of FORCE_NO_DEBUG_ARITH to discourage it.
 
-#ifdef __OPTIMIZE__
-INLINE_VAR const bool debug_arith = false;
+// Note I make the flags static not inline in case compilation flags for
+// different files in a multi-file project differ.
+
+#if (defined __OPTIMIZE__ && !defined FORCE_DEBUG_ARITH) || \
+    defined FORCE_NO_DEBUG_ARITH
+static const bool debug_arith = false;
 #else  // __OPTIMIZE__
-INLINE_VAR const bool debug_arith = true;
+static const bool debug_arith = true;
 #endif // __OPTIMIZE__
 
 template <typename F>
@@ -513,7 +553,9 @@ inline void assert1(bool ok, const char *why,
 // extra information about what went wrong.
     if (debug_arith && !ok)
     {   action();
-        _abort_location = location;
+        const char **where;
+        std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
+        *where = location;
         abort1();
     }
 }
@@ -523,15 +565,17 @@ inline void assert1(bool ok, const char *why, const char *location)
 // For simple use where a customised message is not required:
 //     assert(predicate);
     if (debug_arith && !ok)
-    {   _abort_location = location;
+    {   const char **where;
+        std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
+        *where = location;
         abort1(why);
     }
 }
 
 #undef assert
 
-#define assert(...)                                            \
-    arithlib::assert1(__VA_ARGS__, "assert(" #__VA_ARGS__ ")",   \
+#define assert(...)                                                \
+    arithlib_implementation::assert1(__VA_ARGS__, "assert(" #__VA_ARGS__ ")",     \
                       __FILE__ " line " STRINGIFY(__LINE__))
 
 
@@ -548,13 +592,24 @@ inline void logprintf(const char *fmt, ...)
 // I use a fixed name for the log file. This is another respect in which
 // this has to be seen as code only suitable for temporary use.
     static FILE *logfile = NULL;
-    std::lock_guard<std::mutex> lock(*diagnostic_mutex());
+    const char **where;
+    std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
     if (logfile == NULL) logfile = std::fopen("arith.log", "w");
     std::va_list args;
     va_start(args, fmt);
     std::vfprintf(logfile, fmt, args);
     va_end(args);
     std::fflush(logfile);
+}
+
+inline void traceprintf(const char *fmt, ...)
+{   const char **where;
+    std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
+    std::va_list args;
+    va_start(args, fmt);
+    std::vprintf(fmt, args);
+    va_end(args);
+    std::fflush(stdout);
 }
 
 // The C++ rules about shifts are not always very comfortable, in particular
@@ -646,76 +701,25 @@ private:
 // This will be used much as std::oct, std::dec and std::hex.
 
 namespace std
-{   std::ostream &bin(std::ostream &os)
-    {   arithlib::radix::set_binary_output(os);
+{   inline std::ostream &bin(std::ostream &os)
+    {   arithlib_implementation::radix::set_binary_output(os);
         return os;
     }
 }
 
-namespace arithlib
+namespace arithlib_implementation
 {
 
 // When I get to big-integer multiplication I will use two worker threads
 // so that elapsed times for really large multiplications are reduced
 // somewhat. Well ideally by a factor approaching 3. I set up a framework
-// of support for the threads here (and also include as comments a skeleton
-// of code showing how to exploit them: the actual code that does so comes
-// later).
+// of support for the threads here. Each main program thread will want
+// its own pair of worker threads here. Each worker thread gets passed a
+// nice object called "worker_data" that encapsulates the way it receives
+// data from the caller and passes results back.
 
 // Each worker thread needs some data that it shares with the main thread.
 // this structure encapsulates that.
-
-typedef struct _worker_data
-{   const uint64_t *a;
-    size_t lena;
-    const uint64_t *b;
-    size_t lenb;
-    uint64_t *c;
-    uint64_t *w;
-} worker_data;
-
-inline void worker_thread(std::mutex *mutex[4], worker_data *w);
-
-// I *really* want there to be just one copy of all these across all
-// compilation units. With full C++17 support that would be achievable
-// through use of inline variables, but that is too recent for me to
-// count as portable yet: versions of g++ that I still wish to use do
-// not implement it. So I use a fallback scheme that lets me guarantee
-// a singleton pattern.
-
-typedef struct singleton_data_
-{   std::thread *worker0 = NULL,
-                *worker1 = NULL;
-    std::mutex  *mutex0[4],
-                *mutex1[4];
-    int         send_count = 0;
-    bool        quit_threads = false;
-    worker_data worker_data0,
-                worker_data1;
-} singleton_data;
-
-// C++ 11 (in section 7.1.2) says that static data defined within an inline
-// function will exist in a singleton mode. Thus however many compilation
-// units this header is included from there will be exactly one copy of
-// "data" and singletone_data() will retrieve its address. So to access
-// one of the variables I go something like
-//           unique()->send_count
-// where if I had inline variables I could have written just
-//           send_count
-// but with the unique() function expanded inline and some not even too
-// challenging optimization I can expect pretty well no performance overhead.
-// Well C++ permits a compiler to initialize the singleton_data here early,
-// but it also allows it to defer initialization until the execution path of
-// the code first crosses the declaration, and if it follows that policy
-// there is an implecit test on a hiddent "have you been initialized yet?"
-// variable. Even if that is present it should not be too painful.
-
-inline singleton_data *unique()
-{   static singleton_data data;
-    return &data;
-}
-
-inline void start_threads();
 
 // Probably the most "official" way to coordinate threads would be to use
 // condition variables, but doing so involves several synchronization
@@ -727,7 +731,7 @@ inline void start_threads();
 // that there are no race situations where all threads compete for a single
 // mutex.
 //
-// There are 3 mutexes for each worker thread, but each synchronization step
+// There are 4 mutexes for each worker thread, but each synchronization step
 // just involves a single mutex, transferring ownership between main and worker
 // thread. Here is the patter of transfer and subsequent ownership, with "?"
 // marking a muxex that has been waiting and the ">n" or <n" in the middle
@@ -769,124 +773,100 @@ inline void start_threads();
 //  wait 2    unlock 0
 //  wait 3    unlock 1
 // Observe that I can use (n^2) to map between the mutex number in the first
-// and second columns here.
+// and second columns here. That couting is what send_count and
+// receive_count are doing. 
 
 
 
-// Call post_data() when worker_data0 and worker_data1 have been set up
-// and it is time to let the worker threads loose. This call to start_threads
-// is a call to an inline function without any executable statements in its
-// body, so it should not have any cost!
-
-inline void post_data()
-{   start_threads();
-    unique()->mutex0[unique()->send_count]->unlock(); // allows worker to proceed
-    unique()->mutex1[unique()->send_count]->unlock(); // allows worker to proceed
-}
-
-// After doing a post_data() the main thread can do some work of its own.
-// When it has done as much as it can and it needs output from the work done
-// by the threads it calls wait_for_results() which does what you might
-// expect. The threads are expected to have left their output within the
-// structures worker_data0 and worker_data1.
-
-inline void wait_for_result()
-{   unique()->mutex0[unique()->send_count^2]->lock();
-    unique()->mutex1[unique()->send_count^2]->lock();
-    unique()->send_count = (unique()->send_count+1)&3;
-}
-
-// When the program is about to exit it needs to ensure that the threads
-// are terminated and joined and that the various support material that
-// goes along with them has been tidied up. I achieve this by having a
-// class with a destructor that does the tidying up needed, and putting
-// a static instance of it within start_threads() so that the constructor
-// gets used early and the destructor will run at program termination. 
-
-class Thread_manager
+class Worker_data
 {
 public:
-    Thread_manager()
-    {   unique()->send_count = 0;
-        unique()->quit_threads = false;
-        for (int i=0; i<4; i++)
-        {   unique()->mutex0[i] = new std::mutex();
-            unique()->mutex1[i] = new std::mutex();
-            if (i < 2)
-            {   unique()->mutex0[i]->lock();
-                unique()->mutex1[i]->lock();
-            }
-        }
-// As soon as each thread starts it locks the two mutexes that it needs to
-// have locked at the start, and goes into a loop where it waits to be sent
-// requests.
-        unique()->worker0 =
-            new std::thread(worker_thread, unique()->mutex0,
-                                           &unique()->worker_data0);
-        unique()->worker1 =
-            new std::thread(worker_thread, unique()->mutex1,
-                                           &unique()->worker_data1);
-    }
+    std::mutex mutex[4];
+    bool quit_flag;
+    const uint64_t *a;
+    size_t lena;
+    const uint64_t *b;
+    size_t lenb;
+    uint64_t *c;
+    uint64_t *w;
 
-    ~Thread_manager()
-    {   unique()->quit_threads = true;
-        post_data();
-        unique()->worker0->join();
-        unique()->worker1->join();
-        delete unique()->worker0;
-        delete unique()->worker1;
-        for (int i=0; i<4; i++)
-        {   delete unique()->mutex0[i];
-            delete unique()->mutex1[i];
-        }
+// When I construct an intance of Worker data I set its quit_flag to
+// false and lock two of the mutexes. That sets things up so that when
+// it is passed to a new worker thread that thread behaves in the way I
+// want it to.
+    Worker_data()
+    {   quit_flag = false;
+        mutex[0].lock();
+        mutex[1].lock();
     }
 };
 
-// start_threads() tries to initialize everything that might usefully be
-// initialized and then create mutexes and threads.
+inline void worker_thread(Worker_data *w);
 
-inline void start_threads()
-{   static Thread_manager for_its_destructor;
+// Then each main thread will have a structure that encapsulated the
+// two worker threads that it ends up with and the data it sets up for
+// them and that they then access. When this structures is created it will
+// cause the worker threads and the data block they need to be constructed.
+
+class Driver_data
+{
+public:
+    int         send_count = 0;
+    Worker_data wd_0,
+                wd_1;
+// When an instance of Driver_data is created the two sets of Worker_data
+// get constructed with two of their mutexes locked. This will mean that when
+// worker threads are created and start running they will politely wait for
+// work.
+
+    std::thread w_0, w_1;
+    Driver_data()
+    {   w_0 = std::thread(worker_thread, &wd_0),
+        w_1 = std::thread(worker_thread, &wd_1);
+    }
+
+// When the Driver_data object is to be destroyed it must arrange to
+// stop and then join the two threads that it set up. This code that sends
+// a "quit" message to each thread will be executed before the thread object
+// is deleted, and the destructor of the thread object should be activated
+// before that of the Worker_data and the mutexes within that.
+
+    ~Driver_data()
+    {   wd_0.quit_flag = wd_1.quit_flag = true;
+        release_workers();
+        w_0.join();
+        w_1.join();
+    }
+
+// Using the worker threads is then rather easy: one sets up data in
+// the Worker_data structures and then call release_workers(). Then
+// you can do your own thing in parallel with the two workers picking up
+// the tasks that they had been given. When you are ready you call
+// wait_for_workers() which does what one might imagine, and the workers
+// are expecte dto have left their results in the Worker_data object so
+// you can find it.
+
+    void release_workers()
+    {   wd_0.mutex[send_count].unlock();
+        wd_1.mutex[send_count].unlock();
+    }
+
+    void wait_for_workers()
+    {   wd_0.mutex[send_count^2].lock();
+        wd_1.mutex[send_count^2].lock();
+        send_count = (send_count+1)&3;
+    }
+
+};
+
+// I encapsulate the driver data in this function, which will ensure that
+// exactly one copy gets made for each top-level thread that calls this,
+// ie that uses a huge multiplication.
+
+inline Driver_data &get_driver_data()
+{   thread_local Driver_data data;
+    return data;
 }
-
-// Here I have a sketch of how the thread stuff can be used...
-
-//-- // My main program here is just a SIMPLE illustration of how things can be
-//-- // used.
-//--
-//-- int main()
-//-- {   using namespace std::chrono_literals;
-//--     for (int round=0; round<6; round++)
-//--     {
-//-- // Set up input for the threads here.
-//--         unique()->worker_data0.lena = round+7;
-//--         unique()->worker_data1.lena = round+1000;
-//--         post_data();
-//-- // Here one puts work to be done while the threads are active.
-//--         std::this_thread::sleep_for(4s);
-//--         wait_for_result();
-//-- // Here the thread output can be used.
-//--     }
-//--     return 0;
-//-- }
-
-// The worker_thread() function is started in each of two threads, and
-//-- // processes requests until a "quit" request is sent to it.
-//--
-//-- inline void worker_thread(std::mutex *mutex[4], worker_data *wd)
-//-- {   mutex[2]->lock();
-//--     mutex[3]->lock();
-//--     int receive_count = 0;
-//--     for (;;)
-//--     {   mutex[receive_count]->lock();
-//--         if (unique()->quit_threads) return;
-//--         using namespace std::chrono_literals;
-//-- // This is where I do some work!
-//--         std::this_thread::sleep_for(6s);
-//--         mutex[receive_count^2]->unlock();
-//--         receive_count = (receive_count + 1) & 3;
-//--     }
-//-- }
 
 // Declare a number of functions that might usefully be used elsewhere. If
 // I declare them "inline" then it will be OK even if I include this header
@@ -982,12 +962,15 @@ inline void pop(const uint64_t *&p)
 // The following are provided so that a user can update malloc_function,
 // realloc_function and free_function to refer to their own choice of
 // allocation technology. Well it is a bit uglier than that! If you compile
-// using C++17 then the function pointers here are unique across every
+// using C++17 then the function pointers here are per_thread across every
 // compilation unit and things behave "as you might expect". If you have an
-// earlier C standard in play than each compilation unit gets its own static
+// earlier C++ standard in play than each compilation unit gets its own static
 // set of variables that can be used to divert memory allocation, and hence
 // each compilation unit that includes this header is liable to need to reset
 // them all.
+// I view tha ability to replace the allocation functions as somewhat
+// specialist and to be used by people who will have the skill to modify this
+// code as necessary, so this slight oddity does not worry me.
 
 typedef void *malloc_t(size_t);
 typedef void *realloc_t(void *, size_t);
@@ -1172,6 +1155,10 @@ inline unsigned int log_next_power_of_2(size_t n);
 #error Only one thread-support policy can be selected.
 #endif
 
+class Freechains;
+
+inline Freechains &get_freechains();
+
 class Freechains
 {
 private:
@@ -1183,21 +1170,11 @@ private:
     std::ios_base::Init force_iostreams_initialization;
 
 public:
-// I keep my freechain table within an object so that the object can
-// be created as the program starts up and particularly so that it will
-// then be deleted on program termination. Its destructor can free all the
-// memory that it is keeping track of.
-// Note that what I have here are merely declarations - I have to put
-// definitions written outside the class body.
-
 #ifdef ARITHLIB_MUTEX
-    static std::mutex freechain_mutex;
+    std::mutex freechain_mutex;
 #endif
-#ifdef ARITHLIB_THREAD_LOCAL
-    thread_local static uint64_t *freechain_table[64];
-#else
-    static uint64_t *freechain_table[64];
-#endif
+    uint64_t *freechain_table[64];
+
     Freechains()
     {   for (int i=0; i<64; i++) freechain_table[i] = NULL;
     }
@@ -1249,15 +1226,18 @@ public:
         assert(n<=(((size_t)1)<<bits) && n>0);
         uint64_t *r;
 #if defined ARITHLIB_THREAD_LOCAL || ARITHLIB_NO_THREADS
-        r = freechain_table[bits];
-        if (r != NULL) freechain_table[bits] = (uint64_t *)r[1];
+        r = get_freechains().freechain_table[bits];
+        if (r != NULL)
+            get_freechains().freechain_table[bits] = (uint64_t *)r[1];
 #elif defined ARITHLIB_MUTEX
-        {   std::lock_guard<std::mutex> lock(freechain_mutex);
-            r = freechain_table[bits];
-            if (r != NULL) freechain_table[bits] = (uint64_t *)r[1];
+        {   std::lock_guard<std::mutex>
+                lock(get_freechains().freechain_mutex);
+            r = get_freechains().freechain_table[bits];
+            if (r != NULL)
+                get_freechains().freechain_table[bits] = (uint64_t *)r[1];
         }
 #else
-#error Internal inconsistency
+#error Internal inconsistency in arithlib.hpp: memory allocation strategy.
 #endif
 // If no memory had been found on the freechain I need to allocate some
 // more.
@@ -1291,52 +1271,34 @@ public:
         int bits = ((uint32_t *)p)[0];
         assert(bits>0 && bits<48);
 // Here I assume that sizeof(uint64_t) >= sizeof(intptr_t) so I am not
-// risking loss of information.
+// going to lose information here on any platform I can consider.
         if (debug_arith) p[0] = -(uint64_t)1;
 #ifdef ARITHLIB_ATOMIC
-        lockfree_push(p, freechain_table, bits);
+        lockfree_push(p, get_freechains().freechain_table, bits);
 #else
 #ifdef ARITHLIB_MUTEX
-        std::lock_guard<std::mutex> lock(freechain_mutex);
+        std::lock_guard<std::mutex> lock(get_freechains().freechain_mutex);
 #endif
-        p[1] = (uint64_t)freechain_table[bits];
-        freechain_table[bits] = p;
+        p[1] = (uint64_t)get_freechains().freechain_table[bits];
+        get_freechains().freechain_table[bits] = p;
 #endif
     }
 
 };
 
-// Although I do not use the word "static" in these definitions note that
-// the names concerned had been declared static within the class. Also see
-// that the different concurrency options lead to variation here.
-
+inline Freechains &get_freechains()
+{
 #ifdef ARITHLIB_THREAD_LOCAL
-thread_local uint64_t *Freechains::freechain_table[64];
-#elif defined ARITHLIB_MUTEX
-std::mutex Freechains::freechain_mutex;
-uint64_t *Freechains::freechain_table[64];
+    thread_local Freechains the_freechains;
 #else
-uint64_t *Freechains::freechain_table[64];
+    static Freechains the_freechains;
 #endif
-
-// The following weird definition is one that exists so that it is an
-// inline function containing a static value that is an instance of
-// Freechains. Static values defined within an (extern) inline function
-// are guaranteed to exist just once. I rather hope that at program
-// termination the destructor for Freechains will then get called.
-// But it then seems that the static within this function is not set up
-// unless (??) there is some use of the function. So I call it whenever I
-// allocate store. Since it is inline and has no executable body this should
-// not lead to any extra code!
-
-inline void arrange_for_freechains_destructor()
-{   static Freechains the_freechains;
+    return the_freechains;
 }
 
 inline uint64_t *reserve(size_t n)
 {   assert(n>0);
-    arrange_for_freechains_destructor();
-    return &(Freechains::allocate(n+1))[1];
+    return &(get_freechains().allocate(n+1))[1];
 }
 
 inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
@@ -1348,7 +1310,7 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
 #endif
     if (final == 1 && fits_into_fixnum((int64_t)p[0]))
     {   intptr_t r = int_to_handle((int64_t)p[0]);
-        Freechains::abandon(&p[-1]);
+        get_freechains().abandon(&p[-1]);
         return r;
     }
 // I compare the final size with the capacity and if it is a LOT smaller
@@ -1358,9 +1320,11 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
     int bits = ((uint32_t *)(&p[-1]))[0];
     size_t capacity = ((size_t)1)<<bits;
     if (capacity > 4*final)
-    {   uint64_t *w = Freechains::allocate(((size_t)1)<<log_next_power_of_2(final+1));
+    {   uint64_t *w =
+            get_freechains().allocate(
+                ((size_t)1)<<log_next_power_of_2(final+1));
         memcpy(&w[1], p, final*sizeof(uint64_t));
-        Freechains::abandon(&p[-1]);
+        get_freechains().abandon(&p[-1]);
         p = &w[1];
     }
     ((uint32_t *)(&p[-1]))[1] = final;
@@ -1402,7 +1366,7 @@ inline intptr_t int_to_handle(int64_t n)
 }
 
 // The following two lines are slighly delicate in that INTPTR_MIN and _MAX
-// may not have the low tage bits to be proper fixnums. But if I implement
+// may not have the low tag bits to be proper fixnums. But if I implement
 // int_of_handle so that it ignores tag bits that will be OK.
 
 INLINE_VAR const int64_t MIN_FIXNUM = int_of_handle(INTPTR_MIN);
@@ -1413,13 +1377,13 @@ inline bool fits_into_fixnum(int64_t a)
 }
 
 inline void abandon(uint64_t *p)
-{   Freechains::abandon(&p[-1]);
+{   get_freechains().abandon(&p[-1]);
 }
 
 inline void abandon(intptr_t p)
 {   if (!stored_as_fixnum(p) && p!=0)
     {   uint64_t *pp = vector_of_handle(p);
-        Freechains::abandon(&pp[-1]);
+        get_freechains().abandon(&pp[-1]);
     }
 }
 
@@ -1593,9 +1557,6 @@ constexpr inline int64_t int_of_handle(intptr_t a)
 inline intptr_t int_to_handle(int64_t n)
 {   return packfixnum(n);
 }
-
-INLINE_VAR const int64_t MIN_FIXNUM = int_of_handle(INTPTR_MIN);
-INLINE_VAR const int64_t MAX_FIXNUM = int_of_handle(INTPTR_MAX);
 
 inline bool fits_into_fixnum(int64_t a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
@@ -2622,7 +2583,7 @@ inline void display(const char *label, const Bignum &a)
 
 // Count the leading zeros in a 64-bit word.
 
-static int nlz(uint64_t x)
+inline int nlz(uint64_t x)
 {   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
 }
 
@@ -3087,7 +3048,56 @@ inline int read_u3(const uint64_t *v, size_t n, size_t i)
 //=========================================================================
 //=========================================================================
 
-
+// Well this is the first place in this file where an issue arises that will
+// apply in several other places. I want some data that is static and
+// some that is thread_local. But I am making this a header-only library, so
+// it is liable to be included from several compilation units, and so if
+// I simply make variables
+//     static int something;
+//     thread_local int something_else;
+// I will suffer from multiple-definition problems. For the next few years
+// (the current date is May 2019) I can not use "inline static int something;"
+// which would do the trick but which is not supported by all the slightly
+// older C++ implementations I want to be able to use. My resolution is
+// along the lines of
+//     inline int &something() { static int x = 17; return x; }
+// And then I can go for instance:
+//     int a = something();
+//     something()++;
+//     int &aref = something();
+//     ... aref .. aref ... aref;
+// The effect is that about the only misery is that when I refer to the value
+// I need to write and extra pair of parentheses. And the last fragment of
+// example shows how if I am going to make multiple uses of something I can
+// do the function call just once. That minor optimization may become
+// more important if I use thread_local instead of static, since it can
+// make the access overhead of of thread local variable arise just once
+// rather than potentially many times.
+// There is (I am afraid) more to say, especially in the static value is
+// a more complex type than merely "int". The initialization of x will
+// happen just once. But about all you can guarantee is that it will happen
+// at latest when something() is first called. This could result in the code
+// for something() needing to incorporate a "has it been initialized" test.
+// That though may be extra encouragement to use the "aref" idiom.
+// Now if x is a class object we can also worry about when its destructor
+// will be called! Well x is static it gets destroyed at program termination
+// with all the usual joys regarding seqencing. If it is thread_local its
+// destructor is invoked as the thread terminates. Again it will be prudent
+// to avoid too many assumptions about the ordering of destruction, and when
+// such odrerings are relied upon to include copious comments in the code
+// as to why everything will be OK. In particular it will be hard to have
+// guarantees about the order in which constructors have been called.
+//
+// Note to self: one might believe that
+//    class Something { static int x; ... }
+// was going to be helpful, because that guarantees that there will only be
+// a single instance of x (and if it was thread_local similarly). However
+// what you have there is a declation of x not a definition, and without a
+//    ?thread_local? int Something::x = 3;
+// sort of definition somewhere. But without it being "inline int.." This
+// would cause trouble with multiple-file scenarios. So I am not going to
+// be using static members of classes to sort myself out.
+//
 // It is useful to be able to generate random values. C++11 is simultaneously
 // very helpful and rather unhelpful. The class std::random_device is
 // expected to yield genuine unpredictable values, but it is not guaranteed
@@ -3122,17 +3132,16 @@ inline int read_u3(const uint64_t *v, size_t n, size_t i)
 // variables as part of the seeding process, so that if they all end
 // up static rather than inline that will give per-compilation-uint variation.
 
-INLINE_VAR std::random_device basic_randomness;
-INLINE_VAR uint64_t thread_local threadid =
-    (uint64_t)(std::hash<std::thread::id>()(std::this_thread::get_id()));
-INLINE_VAR uint64_t seed_component_1 = (uint64_t)basic_randomness();
-INLINE_VAR uint64_t seed_component_2 = (uint64_t)basic_randomness();
-INLINE_VAR uint64_t seed_component_3 = (uint64_t)basic_randomness();
-INLINE_VAR thread_local uint64_t time_now = (uint64_t)std::time(NULL);
-INLINE_VAR thread_local uint64_t chrono_now = (uint64_t)
-    (std::chrono::high_resolution_clock::now().time_since_epoch().count());
-
-// Observe the thread_local status here.
+inline std::mt19937_64 &ref_mersenne_twister()
+{   std::random_device basic_randomness;
+    static uint64_t thread_local threadid =
+        (uint64_t)(std::hash<std::thread::id>()(std::this_thread::get_id()));
+    static uint64_t seed_component_1 = (uint64_t)basic_randomness();
+    static uint64_t seed_component_2 = (uint64_t)basic_randomness();
+    static uint64_t seed_component_3 = (uint64_t)basic_randomness();
+    static thread_local uint64_t time_now = (uint64_t)std::time(NULL);
+    static thread_local uint64_t chrono_now = (uint64_t)
+        (std::chrono::high_resolution_clock::now().time_since_epoch().count());
 // In my first draft of this library I had made the random seed directly
 // from uint64_t values. However when testing on a Raspberry Pi that
 // triggered a messages about bugs in gcc before gcc7 (relating to the
@@ -3140,42 +3149,51 @@ INLINE_VAR thread_local uint64_t chrono_now = (uint64_t)
 // the seed sequence using 32-bit values avoids that issue, and since this
 // is only done during initialization it is not time-critical.
 //
-INLINE_VAR thread_local std::seed_seq random_seed{
-    (uint32_t)threadid,
-    (uint32_t)seed_component_1,
-    (uint32_t)seed_component_2,
-    (uint32_t)seed_component_3,
-    (uint32_t)time_now,
-    (uint32_t)chrono_now,
-    (uint32_t)(threadid>>32),
-    (uint32_t)(seed_component_1>>32),
-    (uint32_t)(seed_component_2>>32),
-    (uint32_t)(seed_component_3>>32),
-    (uint32_t)(time_now>>32),
-    (uint32_t)(chrono_now>>32),
-    (uint32_t)(uintptr_t)&seed_component_1,
-    (uint32_t)(((uint64_t)(uintptr_t)&seed_component_1)>>32)
-    };
+    static thread_local std::seed_seq random_seed{
+        (uint32_t)threadid,
+        (uint32_t)seed_component_1,
+        (uint32_t)seed_component_2,
+        (uint32_t)seed_component_3,
+        (uint32_t)time_now,
+        (uint32_t)chrono_now,
+        (uint32_t)(threadid>>32),
+        (uint32_t)(seed_component_1>>32),
+        (uint32_t)(seed_component_2>>32),
+        (uint32_t)(seed_component_3>>32),
+        (uint32_t)(time_now>>32),
+        (uint32_t)(chrono_now>>32),
+        (uint32_t)(uintptr_t)&seed_component_1,
+        (uint32_t)(((uint64_t)(uintptr_t)&seed_component_1)>>32)
+        };
 
-INLINE_VAR thread_local std::mt19937_64 mersenne_twister(random_seed);
+    static thread_local std::mt19937_64 inner_mersenne_twister(random_seed);
 // mersenne_twister() now generates 64-bit unsigned integers.
+    return inner_mersenne_twister;
+}
+
+// If you are going to use vary many random numbers it may be a good
+// and you might be running inder Cygwin or mingw32 it could be idea to
+// use ref_mersenne_twister() once to collect the thread local instance
+// relevant to you [note that it is a class object that provides operator(),
+// not really a function, despite appearances!]. That way you only do the
+// thread_local activity once (I hope).
+
+MAYBE_UNUSED static uint64_t mersenne_twister()
+{   return ref_mersenne_twister()();
+}
 
 // To re-seed I can just call this. I think that when I re-seed it will be
 // to gain more repeatable behaviour, and so I am fairly happy about
 // limiting the amount of input entropy here to 64-bits. If I was keen I
 // could provide a reseed-method taking a bignum argument that could have
 // lots of data in it. Note that this will reseed the random number
-// generator associated with the thread it is called from.
+// generator associated with the thread it is called from. Note that there
+// is one generator per thread, so if you have multiple threads and you reseed
+// you are liable to want to reseed each of them.
 //
-// If you pre-date C++17 then there will be one generator per compilation
-// unit. That is probably reasonable, however it means that you then need to
-// call reseed() from each compilation unit to update the relevant generator!
-// To make that work I make the reseed() function static not inline so that
-// there will be a version for each compilation unit! It is so short that
-// I do not expect the cost to matter.
 
 MAYBE_UNUSED static void reseed(uint64_t n)
-{   mersenne_twister.seed(n);
+{   ref_mersenne_twister().seed(n);
 }
 
 // Now a number of functions for setting up random bignums. These may be
@@ -3200,8 +3218,9 @@ inline uint64_t uniform_uint64(uint64_t n)
 // as 1. In that case on average I will need to call mersenne_twister
 // twice. Either larger or smaller inputs will behave better, and rather
 // small inputs will mean I hardly ever need to re-try.
+    std::mt19937_64 &mt = ref_mersenne_twister();
     do
-    {   r = mersenne_twister();
+    {   r = mt();
     } while (r >= w);
     return r%n;
 }
@@ -3216,8 +3235,12 @@ inline void uniform_positive(uint64_t *r, size_t &lenr, size_t bits)
         lenr = 1;
     }
     lenr = (bits+63)/64;
+// ref_mersenne_twister returns a reference to a thread_local entity and
+// I hope that my cacheing its value here I reduce thread local access
+// overheads.
+    std::mt19937_64 &mt = ref_mersenne_twister();
     for (size_t i=0; i<lenr; i++)
-        r[i] = mersenne_twister();
+        r[i] = mt();
     if (bits%64 == 0) r[lenr-1] = 0;
     else r[lenr-1] &= UINT64_C(0xffffffffffffffff) >> (64-bits%64);
     while (lenr!=1 && shrinkable(r[lenr-1], r[lenr-2])) lenr--;
@@ -3239,8 +3262,9 @@ inline intptr_t uniform_positive(size_t n)
 
 inline void uniform_signed(uint64_t *r, size_t &lenr, size_t bits)
 {   lenr = 1 + bits/64;
+    std::mt19937_64 &mt = ref_mersenne_twister();
     for (size_t i=0; i<lenr; i++)
-        r[i] = mersenne_twister();
+        r[i] = mt();
 // Now if the "extra" bit is zero my number will end up positive.
     if ((r[lenr-1] & (UINT64_C(1) << (bits%64))) == 0)
     {   r[lenr-1] &= UINT64_C(0xffffffffffffffff) >> (63-bits%64);
@@ -3410,8 +3434,9 @@ inline void random_upto_bits(uint64_t *r, size_t &lenr, size_t n)
     }
 // The number will have from 1 to 64 bits in its top digit.
     lenr = (bits+63)/64;
+    std::mt19937_64 &mt = ref_mersenne_twister();
     for (size_t i=0; i<lenr; i++)
-        r[i] = mersenne_twister();
+        r[i] = mt();
     if (n%64 != 0)
         r[lenr-1] &= UINT64_C(0xffffffffffffffff) >> (64-bits%64);
     r[lenr-1] |= UINT64_C(1) << ((bits-1)%64);
@@ -3497,6 +3522,11 @@ inline intptr_t float128_to_bignum(float128_t d)
     int x;
     float128_t dd;
     f128M_frexp(&d, &dd, &x);
+
+//@
+//@ The code here is unfinished, which is why it still have print statements
+//@ in it!
+//@ 
     printf("float128_to_bignum exponent %d = %x\n", x, x);
     if (x == 0x7fff) return int_to_handle(0); // infinity?
     f128M_ldexp(&dd, 113);
@@ -4518,13 +4548,13 @@ inline bool Eqn::op(double a, uint64_t *b)
 
 #ifdef LITTLEENDIAN
 
-static float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
-static float128_t FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
+INLINE_VAR float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
+INLINE_VAR float128_t FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
 
 #else
 
-static float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
-static float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
+INLINE_VAR float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
+INLINE_VAR float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
 
 #endif
 
@@ -5121,7 +5151,7 @@ inline void bignegate(const uint64_t *a, size_t lena, uint64_t *r, size_t &lenr)
     lenr = lena;
 }
 
-intptr_t Minus::op(uint64_t *a)
+inline intptr_t Minus::op(uint64_t *a)
 {   size_t n = number_size(a);
     push(a);
     uint64_t *p = reserve(n+1);
@@ -5137,28 +5167,28 @@ intptr_t Minus::op(uint64_t *a)
 // even in that case (-a) can not overflow 64-bit arithmetic because
 // the fixnum will have had at least one tag bit.
 
-intptr_t Minus::op(int64_t a)
+inline intptr_t Minus::op(int64_t a)
 {   if (a == MIN_FIXNUM) return int_to_bignum(-a);
     else return int_to_handle(-a);
 }
 
-intptr_t Add1::op(uint64_t *a)
+inline intptr_t Add1::op(uint64_t *a)
 {   return Plus::op(a, 1);
 }
 
-intptr_t Add1::op(int64_t a)
+inline intptr_t Add1::op(int64_t a)
 {   return int_to_bignum(a+1);
 }
 
-intptr_t Sub1::op(uint64_t *a)
+inline intptr_t Sub1::op(uint64_t *a)
 {   return Plus::op(a, -1);
 }
 
-intptr_t Sub1::op(int64_t a)
+inline intptr_t Sub1::op(int64_t a)
 {   return int_to_bignum(a-1);
 }
 
-intptr_t Abs::op(uint64_t *a)
+inline intptr_t Abs::op(uint64_t *a)
 {   size_t n = number_size(a);
     if (!negative(a[n-1]))
     {   push(a);
@@ -5181,7 +5211,7 @@ intptr_t Abs::op(uint64_t *a)
 // even in that case (-a) can not overflow 64-bit arithmetic because
 // the fixnum will have had at least one tag bit.
 
-intptr_t Abs::op(int64_t a)
+inline intptr_t Abs::op(int64_t a)
 {   if (a == MIN_FIXNUM) return unsigned_int_to_bignum(-a);
     else return int_to_handle(a<0 ? -a : a);
 }
@@ -5195,7 +5225,7 @@ inline void biglognot(const uint64_t *a, size_t lena, uint64_t *r, size_t &lenr)
     lenr = lena;
 }
 
-intptr_t Lognot::op(uint64_t *a)
+inline intptr_t Lognot::op(uint64_t *a)
 {   size_t n = number_size(a);
     push(a);
     uint64_t *p = reserve(n+1);
@@ -5205,7 +5235,7 @@ intptr_t Lognot::op(uint64_t *a)
     return confirm_size(p, n+1, final_n);
 }
 
-intptr_t Lognot::op(int64_t a)
+inline intptr_t Lognot::op(int64_t a)
 {   return int_to_handle(~a);
 }
 
@@ -5231,7 +5261,7 @@ inline void biglogand(const uint64_t *a, size_t lena,
     else return ordered_biglogand(b, lenb, a, lena, r, lenr);
 }
 
-intptr_t Logand::op(uint64_t *a, uint64_t *b)
+inline intptr_t Logand::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     size_t n;
@@ -5250,7 +5280,7 @@ intptr_t Logand::op(uint64_t *a, uint64_t *b)
 // I am not going to expect that to be on the critical performance path for
 // enough programs for me to worry too much!
 
-intptr_t Logand::op(uint64_t *a, int64_t b)
+inline intptr_t Logand::op(uint64_t *a, int64_t b)
 {   size_t lena = number_size(a);
     push(a);
     uint64_t *p = reserve(lena);
@@ -5261,7 +5291,7 @@ intptr_t Logand::op(uint64_t *a, int64_t b)
     return confirm_size(p, lena, final_n);
 }
 
-intptr_t Logand::op(int64_t a, uint64_t *b)
+inline intptr_t Logand::op(int64_t a, uint64_t *b)
 {   size_t lenb = number_size(b);
     push(b);
     uint64_t *p = reserve(lenb);
@@ -5272,7 +5302,7 @@ intptr_t Logand::op(int64_t a, uint64_t *b)
     return confirm_size(p, lenb, final_n);
 }
 
-intptr_t Logand::op(int64_t a, int64_t b)
+inline intptr_t Logand::op(int64_t a, int64_t b)
 {   return int_to_handle(a & b);
 }
 
@@ -5298,7 +5328,7 @@ inline void biglogor(const uint64_t *a, size_t lena,
     else return ordered_biglogor(b, lenb, a, lena, r, lenr);
 }
 
-intptr_t Logor::op(uint64_t *a, uint64_t *b)
+inline intptr_t Logor::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     size_t n;
@@ -5312,7 +5342,7 @@ intptr_t Logor::op(uint64_t *a, uint64_t *b)
     return confirm_size(p, n, final_n);
 }
 
-intptr_t Logor::op(uint64_t *a, int64_t b)
+inline intptr_t Logor::op(uint64_t *a, int64_t b)
 {   size_t lena = number_size(a);
     push(a);
     uint64_t *p = reserve(lena);
@@ -5323,7 +5353,7 @@ intptr_t Logor::op(uint64_t *a, int64_t b)
     return confirm_size(p, lena, final_n);
 }
 
-intptr_t Logor::op(int64_t a, uint64_t *b)
+inline intptr_t Logor::op(int64_t a, uint64_t *b)
 {   size_t lenb = number_size(b);
     push(b);
     uint64_t *p = reserve(lenb);
@@ -5334,7 +5364,7 @@ intptr_t Logor::op(int64_t a, uint64_t *b)
     return confirm_size(p, lenb, final_n);
 }
 
-intptr_t Logor::op(int64_t a, int64_t b)
+inline intptr_t Logor::op(int64_t a, int64_t b)
 {   return int_to_handle(a | b);
 }
 
@@ -5367,7 +5397,7 @@ inline void biglogxor(const uint64_t *a, size_t lena,
     else return ordered_biglogxor(b, lenb, a, lena, r, lenr);
 }
 
-intptr_t Logxor::op(uint64_t *a, uint64_t *b)
+inline intptr_t Logxor::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     size_t n;
@@ -5381,7 +5411,7 @@ intptr_t Logxor::op(uint64_t *a, uint64_t *b)
     return confirm_size(p, n, final_n);
 }
 
-intptr_t Logxor::op(uint64_t *a, int64_t b)
+inline intptr_t Logxor::op(uint64_t *a, int64_t b)
 {   size_t lena = number_size(a);
     push(a);
     uint64_t *p = reserve(lena);
@@ -5392,7 +5422,7 @@ intptr_t Logxor::op(uint64_t *a, int64_t b)
     return confirm_size(p, lena, final_n);
 }
 
-intptr_t Logxor::op(int64_t a, uint64_t *b)
+inline intptr_t Logxor::op(int64_t a, uint64_t *b)
 {   size_t lenb = number_size(b);
     push(b);
     uint64_t *p = reserve(lenb);
@@ -5403,7 +5433,7 @@ intptr_t Logxor::op(int64_t a, uint64_t *b)
     return confirm_size(p, lenb, final_n);
 }
 
-intptr_t Logxor::op(int64_t a, int64_t b)
+inline intptr_t Logxor::op(int64_t a, int64_t b)
 {   return int_to_handle(a ^ b);
 }
 
@@ -5448,7 +5478,7 @@ inline void bigleftshift(const uint64_t *a, size_t lena,
 
 inline intptr_t rightshift_b(uint64_t *a, int n);
 
-intptr_t Leftshift::op(uint64_t *a, int64_t n)
+inline intptr_t Leftshift::op(uint64_t *a, int64_t n)
 {   if (n == 0) return copy_if_no_garbage_collector(a);
     else if (n < 0) return Rightshift::op(a, -n);
     size_t lena = number_size(a);
@@ -5461,11 +5491,11 @@ intptr_t Leftshift::op(uint64_t *a, int64_t n)
     return confirm_size(p, nr, final_n);
 }
 
-intptr_t Leftshift::op(uint64_t *a, int32_t n)
+inline intptr_t Leftshift::op(uint64_t *a, int32_t n)
 {   return Leftshift::op(a, (int64_t)n);
 }
 
-intptr_t Leftshift::op(int64_t aa, int64_t n)
+inline intptr_t Leftshift::op(int64_t aa, int64_t n)
 {   if (n == 0) return int_to_handle(aa);
     else if (n < 0) return Rightshift::op(aa, -n);
     size_t nr = (n/64) + 2;
@@ -5476,7 +5506,7 @@ intptr_t Leftshift::op(int64_t aa, int64_t n)
     return confirm_size(p, nr, final_n);
 }
 
-intptr_t Leftshift::op(int64_t a, int32_t n)
+inline intptr_t Leftshift::op(int64_t a, int32_t n)
 {   return Leftshift::op(a, (int64_t)n);
 }
 
@@ -5514,7 +5544,7 @@ inline void bigrightshift(const uint64_t *a, size_t lena,
     truncate_negative(r, lenr);
 }
 
-intptr_t Rightshift::op(uint64_t *a, int64_t n)
+inline intptr_t Rightshift::op(uint64_t *a, int64_t n)
 {   if (n == 0) return copy_if_no_garbage_collector(a);
     else if (n < 0) return Leftshift::op(a, -n);
     size_t lena = number_size(a);
@@ -5529,11 +5559,11 @@ intptr_t Rightshift::op(uint64_t *a, int64_t n)
     return confirm_size(p, nr, final_n);
 }
 
-intptr_t Rightshift::op(uint64_t *a, int32_t n)
+inline intptr_t Rightshift::op(uint64_t *a, int32_t n)
 {   return Rightshift::op(a, (int64_t)n);
 }
 
-intptr_t Rightshift::op(int64_t a, int64_t n)
+inline intptr_t Rightshift::op(int64_t a, int64_t n)
 {   if (n == 0) return int_to_handle(a);
     else if (n < 0) return Leftshift::op(a, -n);
 // Shifts of 64 and up obviously lose all the input data apart from its
@@ -5546,15 +5576,15 @@ intptr_t Rightshift::op(int64_t a, int64_t n)
     return int_to_handle((a & ~(q-1))/q);
 }
 
-intptr_t Rightshift::op(int64_t a, int32_t n)
+inline intptr_t Rightshift::op(int64_t a, int32_t n)
 {   return Rightshift::op(a, (int64_t)n);
 }
 
-size_t Integer_length::op(uint64_t *a)
+inline size_t Integer_length::op(uint64_t *a)
 {   return bignum_bits(a, number_size(a));
 }
 
-size_t Integer_length::op(int64_t aa)
+inline size_t Integer_length::op(int64_t aa)
 {   uint64_t a;
     if (aa == 0 || aa == -1) return 0;
     else if (aa < 0) a = -(uint64_t)aa - 1;
@@ -5562,7 +5592,7 @@ size_t Integer_length::op(int64_t aa)
     return (size_t)(64-nlz(a));
 }
 
-size_t Low_bit::op(uint64_t *a)
+inline size_t Low_bit::op(uint64_t *a)
 {   size_t lena = number_size(a);
     if (negative(a[lena-1])) // count trailing 1 bits!
     {   size_t r=0, i=0;
@@ -5579,7 +5609,7 @@ size_t Low_bit::op(uint64_t *a)
     }
 }
 
-size_t Low_bit::op(int64_t aa)
+inline size_t Low_bit::op(int64_t aa)
 {   uint64_t a;
     if (aa == 0) return 0;
     else if (aa < 0) a = ~(uint64_t)aa;
@@ -5588,7 +5618,7 @@ size_t Low_bit::op(int64_t aa)
     return (size_t)(64-nlz(a));
 }
 
-size_t Logcount::op(uint64_t *a)
+inline size_t Logcount::op(uint64_t *a)
 {   size_t lena = number_size(a);
     size_t r = 0;
     if (negative(a[lena-1]))
@@ -5598,18 +5628,18 @@ size_t Logcount::op(uint64_t *a)
     return r;
 }
 
-size_t Logcount::op(int64_t a)
+inline size_t Logcount::op(int64_t a)
 {   if (a < 0) return (size_t)popcount(~a);
     else return (size_t)popcount(a);
 }
 
-bool Logbitp::op(uint64_t *a, size_t n)
+inline bool Logbitp::op(uint64_t *a, size_t n)
 {   size_t lena = number_size(a);
     if (n >= 64*lena) return negative(a[lena-1]);
     return (a[n/64] & (((uint64_t)1) << (n%64))) != 0;
 }
 
-bool Logbitp::op(int64_t a, size_t n)
+inline bool Logbitp::op(int64_t a, size_t n)
 {   if (n >= 64) return (a < 0);
     else return (a & (((uint64_t)1) << n)) != 0;
 }
@@ -5664,7 +5694,7 @@ inline void bigplus(const uint64_t *a, size_t lena,
     else return ordered_bigplus(b, lenb, a, lena, r, lenr);
 }
 
-intptr_t Plus::op(uint64_t *a, uint64_t *b)
+inline intptr_t Plus::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     size_t n;
@@ -5684,7 +5714,7 @@ intptr_t Plus::op(uint64_t *a, uint64_t *b)
 // most efficient implementation, so at a later stage I will want to hone
 // the code to make it better!
 
-intptr_t Plus::op(int64_t a, int64_t b)
+inline intptr_t Plus::op(int64_t a, int64_t b)
 {
 // The two integer arguments will in fact each have been derived from a
 // tagged representation, and a consequence of that is that I can add
@@ -5699,7 +5729,7 @@ intptr_t Plus::op(int64_t a, int64_t b)
     return confirm_size(r, 1, 1);
 }
 
-intptr_t Plus::op(int64_t a, uint64_t *b)
+inline intptr_t Plus::op(int64_t a, uint64_t *b)
 {   uint64_t aa[1];
     aa[0] = a;
     size_t lenb = number_size(b);
@@ -5711,7 +5741,7 @@ intptr_t Plus::op(int64_t a, uint64_t *b)
     return confirm_size(r, lenb+1, final_n);
 }
 
-intptr_t Plus::op(uint64_t *a, int64_t b)
+inline intptr_t Plus::op(uint64_t *a, int64_t b)
 {   size_t lena = number_size(a);
     uint64_t bb[1];
     bb[0] = b;
@@ -5819,7 +5849,7 @@ inline void bigsubtract(const uint64_t *a, size_t lena,
     else return ordered_bigrevsubtract(b, lenb, a, lena, r, lenr);
 }
 
-intptr_t Difference::op(uint64_t *a, uint64_t *b)
+inline intptr_t Difference::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     size_t n;
@@ -5833,7 +5863,7 @@ intptr_t Difference::op(uint64_t *a, uint64_t *b)
     return confirm_size(p, n, final_n);
 }
 
-intptr_t Difference::op(int64_t a, int64_t b)
+inline intptr_t Difference::op(int64_t a, int64_t b)
 {   uint64_t aa[1], bb[1];
     aa[0] = a;
     bb[0] = b;
@@ -5843,7 +5873,7 @@ intptr_t Difference::op(int64_t a, int64_t b)
     return confirm_size(r, 2, final_n);
 }
 
-intptr_t Difference::op(int64_t a, uint64_t *b)
+inline intptr_t Difference::op(int64_t a, uint64_t *b)
 {   uint64_t aa[1];
     aa[0] = a;
     size_t lenb = number_size(b);
@@ -5855,7 +5885,7 @@ intptr_t Difference::op(int64_t a, uint64_t *b)
     return confirm_size(r, lenb+1, final_n);
 }
 
-intptr_t Difference::op(uint64_t *a, int64_t b)
+inline intptr_t Difference::op(uint64_t *a, int64_t b)
 {   size_t lena = number_size(a);
     uint64_t bb[1];
     bb[0] = b;
@@ -5868,7 +5898,7 @@ intptr_t Difference::op(uint64_t *a, int64_t b)
 }
 
 
-intptr_t Revdifference::op(uint64_t *a, uint64_t *b)
+inline intptr_t Revdifference::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     size_t n;
@@ -5882,7 +5912,7 @@ intptr_t Revdifference::op(uint64_t *a, uint64_t *b)
     return confirm_size(p, n, final_n);
 }
 
-intptr_t Revdifference::op(int64_t a, int64_t b)
+inline intptr_t Revdifference::op(int64_t a, int64_t b)
 {   uint64_t aa[1], bb[1];
     aa[0] = a;
     bb[0] = b;
@@ -5892,7 +5922,7 @@ intptr_t Revdifference::op(int64_t a, int64_t b)
     return confirm_size(r, 2, final_n);
 }
 
-intptr_t Revdifference::op(int64_t a, uint64_t *b)
+inline intptr_t Revdifference::op(int64_t a, uint64_t *b)
 {   uint64_t aa[1];
     aa[0] = a;
     size_t lenb = number_size(b);
@@ -5904,7 +5934,7 @@ intptr_t Revdifference::op(int64_t a, uint64_t *b)
     return confirm_size(r, lenb+1, final_n);
 }
 
-intptr_t Revdifference::op(uint64_t *a, int64_t b)
+inline intptr_t Revdifference::op(uint64_t *a, int64_t b)
 {   size_t lena = number_size(a);
     uint64_t bb[1];
     bb[0] = b;
@@ -6131,7 +6161,7 @@ inline void mul3x3S(uint64_t a2, uint64_t a1, uint64_t a0,
     }
 }
 
-void mul4x4(uint64_t a3, uint64_t a2, uint64_t a1, uint64_t a0,
+inline void mul4x4(uint64_t a3, uint64_t a2, uint64_t a1, uint64_t a0,
             uint64_t b3, uint64_t b2, uint64_t b1, uint64_t b0,
             uint64_t &c7, uint64_t &c6, uint64_t &c5, uint64_t &c4,
             uint64_t &c3, uint64_t &c2, uint64_t &c1, uint64_t &c0)
@@ -6288,9 +6318,16 @@ inline void classical_multiply_and_add(uint64_t a,
         carry = add_with_carry(c[i], carry, c[i]);
 }
 
+// I make the variables that indicate when it is worth transitioning from
+// classical multiplication to something that is assymptotically faster
+// static rather than inline because if different overrides are provided
+// via the command line definitions when different source files are
+// being processed that could cause linker clashes otherwise.
+
+
 #if !defined K && !defined K_DEFINED
 // I provide a default here but can override it at compile time
-INLINE_VAR constexpr size_t K=18;
+static constexpr size_t K=18;
 #define K_DEFINED 1
 #endif
 
@@ -6300,7 +6337,7 @@ INLINE_VAR constexpr size_t K=18;
 
 #ifndef KARATSUBA_CUTOFF
 // It may be defined globally as a severe override of what happens here!
-INLINE_VAR size_t KARATSUBA_CUTOFF = K;
+static size_t KARATSUBA_CUTOFF = K;
 #endif
 
 #if !defined K1 && !defined K1_DEFINED
@@ -6308,7 +6345,7 @@ INLINE_VAR size_t KARATSUBA_CUTOFF = K;
 // that a good value here might be of the order of 100. For the old CSL
 // version I used the number 120. Well for now I will use 3*KARATSUBA_CUTOFF
 
-INLINE_VAR constexpr size_t K1=3*K;
+static constexpr size_t K1=3*K;
 #define K1_DEFINED 1
 #endif
 
@@ -6319,8 +6356,10 @@ INLINE_VAR constexpr size_t K1=3*K;
 #ifndef PARAKARA_CUTOFF
 // It may be defined globally as a severe override of what happens here!
 // But also if the current host computer does not support at least three
-// genuine concurrent activities I 
-INLINE_VAR size_t PARAKARA_CUTOFF = \
+// genuine concurrent activities I will not try use of threads because it
+// would not be helpful!
+ 
+static size_t PARAKARA_CUTOFF =
     std::thread::hardware_concurrency() >= 3 ? K1 : SIZE_MAX;
 #endif
 
@@ -6412,18 +6451,18 @@ inline void karatsuba(const uint64_t *a, size_t lena,
 // The worker_thread() function is started in each of two threads, and
 // processes requests until a "quit" request is sent to it.
 
-inline void worker_thread(std::mutex *mutex[4], worker_data *wd)
-{   mutex[2]->lock();
-    mutex[3]->lock();
+inline void worker_thread(Worker_data *wd)
+{   wd->mutex[2].lock();
+    wd->mutex[3].lock();
     int receive_count = 0;
     for (;;)
-    {   mutex[receive_count]->lock();
-        if (unique()->quit_threads) return;
+    {   wd->mutex[receive_count].lock();
+        if (wd->quit_flag) return;
 // This is where I do some work!
         small_or_big_multiply(wd->a, wd->lena,
                               wd->b, wd->lenb,
                               wd->c, wd->w);
-        mutex[receive_count^2]->unlock();
+        wd->mutex[receive_count^2].unlock();
         receive_count = (receive_count + 1) & 3;
     }
 }
@@ -6442,36 +6481,31 @@ inline void top_level_karatsuba(const uint64_t *a, size_t lena,
 // I start by arranging that the two threads that can do things in parallel
 // can get access to data from here and that I will be able to retrieve
 // results. And that the worker threads have workspace to make use of.
-    unique()->worker_data0.a = a;
-    unique()->worker_data0.lena = n;
-    unique()->worker_data0.b = b;
-    unique()->worker_data0.lenb = n;
-    unique()->worker_data0.c = w0;
-    unique()->worker_data0.w = w0+2*n;
+    Driver_data &dd = get_driver_data();
+    dd.wd_0.a = a;
+    dd.wd_0.lena = n;
+    dd.wd_0.b = b;
+    dd.wd_0.lenb = n;
+    dd.wd_0.c = w0;
+    dd.wd_0.w = w0+2*n;
 
-    unique()->worker_data1.a = a+n;
-    unique()->worker_data1.lena = lena-n;
-    unique()->worker_data1.b = b+n;
-    unique()->worker_data1.lenb = lenb-n;
-    unique()->worker_data1.c = w1;
-    unique()->worker_data1.w = w1+2*n;
-
-//    display("ahi ", a+n, lena-n);
-//    display("alo ", a,   n);
-//    display("bhi ", b+n, lenb-n);
-//    display("blo ", b,   n);
-
+    dd.wd_1.a = a+n;
+    dd.wd_1.lena = lena-n;
+    dd.wd_1.b = b+n;
+    dd.wd_1.lenb = lenb-n;
+    dd.wd_1.c = w1;
+    dd.wd_1.w = w1+2*n;
 
 // Now trigger the two threads to do some work for me. One will be forming
 // alo*blo while the other computes ahi*bhi . 
-    post_data();
+    dd.release_workers();
 // Now I will work on either |ahi-alo|*|bhi-blo|
 // lena-n and lenb-n will each be either n or n-1.
     bool signs_differ = absdiff(a, n, a+n, lena-n, w) !=
                         absdiff(b, n, b+n, lenb-n, w+n);
     small_or_big_multiply(w, n, w+n, n, c+n, w+2*n);     // (a1-a0)*(b0-b1)
 // That has the product of differences written into the middle of c.
-    wait_for_result();
+    dd.wait_for_workers();
     if (signs_differ)
     {
 // Here I have
@@ -6810,30 +6844,31 @@ inline void small_or_big_multiply_and_add(const uint64_t *a, size_t lena,
     else certainly_big_multiply_and_add(a, lena, b, lenb, c, lenc, w);
 }
 
-// Finally I can provide the top-level entrypoint that accepts signed
-// integers that may not be the same size.
-
 // FIXED_LENGTH_LIMIT: Can multiply inputs with up to this number of
 //                     64-bit digits using the fixed workspace.
 // WORKSPACE_SIZE:     Length of the "w" work-vector needed for the above
 //                     which is a bit over twice the length of the inputs.
+//
+// These need to be such that it is OK to put three arrays of length
+// KARA_WORKSPACE_SIZE*sizeof(uint64_t) on the stack without that feeling
+// embarassing. The settings I use here can use around 50 Kbytes of stack.
 
-INLINE_VAR const size_t KARA_FIXED_LENGTH_LIMIT = 20*K1;
-INLINE_VAR const size_t KARA_WORKSPACE_SIZE = 2*KARA_FIXED_LENGTH_LIMIT+50;
+INLINE_VAR const size_t KARA_FIXED_LENGTH_LIMIT = 1000;
+INLINE_VAR const size_t KARA_WORKSPACE_SIZE = 2050;
 
 // These two functions allocate workspace for Karatsuba on the stack and
 // are called when the inputs are short enough for that to feel reasonable.
 
-void allocate_one_array(const uint64_t *a, size_t lena,
-                        const uint64_t *b, size_t lenb,
-                        uint64_t *c)
+inline void allocate_one_array(const uint64_t *a, size_t lena,
+                               const uint64_t *b, size_t lenb,
+                               uint64_t *c)
 {   uint64_t kara_workspace[KARA_WORKSPACE_SIZE];
     certainly_big_multiply(a, lena, b, lenb, c, kara_workspace);
 }
 
-void allocate_three_arrays(const uint64_t *a, size_t lena,
-                           const uint64_t *b, size_t lenb,
-                           uint64_t *c)
+inline void allocate_three_arrays(const uint64_t *a, size_t lena,
+                                  const uint64_t *b, size_t lenb,
+                                  uint64_t *c)
 {   uint64_t kara_workspace[KARA_WORKSPACE_SIZE];
     uint64_t kara_workspace0[KARA_WORKSPACE_SIZE];
     uint64_t kara_workspace1[KARA_WORKSPACE_SIZE];
@@ -6844,6 +6879,9 @@ void allocate_three_arrays(const uint64_t *a, size_t lena,
 inline constexpr int BY(int m, int n)
 {   return m + 4*n;
 }
+
+// Finally I can provide the top-level entrypoint that accepts signed
+// integers that may not be the same size.
 
 // This is the main entrypoint to the integer multiplication code. It
 // takes two signed numbers and forms their product.
@@ -7209,7 +7247,7 @@ inline void bigmultiply(const uint64_t *a, size_t lena,
 //===========================================================================
 //===========================================================================
 
-intptr_t Times::op(uint64_t *a, uint64_t *b)
+inline intptr_t Times::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     size_t n = lena+lenb;
@@ -7222,7 +7260,7 @@ intptr_t Times::op(uint64_t *a, uint64_t *b)
     return confirm_size(p, n, final_n);
 }
 
-intptr_t Times::op(int64_t a, int64_t b)
+inline intptr_t Times::op(int64_t a, int64_t b)
 {   int64_t hi;
     uint64_t lo;
     signed_multiply64(a, b, hi, lo);
@@ -7240,7 +7278,7 @@ intptr_t Times::op(int64_t a, int64_t b)
     return confirm_size(r, 2, 2);
 }
 
-intptr_t Times::op(int64_t a, uint64_t *b)
+inline intptr_t Times::op(int64_t a, uint64_t *b)
 {   size_t lenb = number_size(b);
     push(b);
     uint64_t *c = reserve(lenb+1);
@@ -7261,7 +7299,7 @@ intptr_t Times::op(int64_t a, uint64_t *b)
     return confirm_size(c, lenb+1, lenc);
 }
 
-intptr_t Times::op(uint64_t *a, int64_t b)
+inline intptr_t Times::op(uint64_t *a, int64_t b)
 {   return Times::op(b, a);
 }
 
@@ -7334,7 +7372,7 @@ inline void bigsquare(uint64_t *a, size_t lena,
     truncate_negative(r, lenr);
 }
 
-intptr_t Square::op(uint64_t *a)
+inline intptr_t Square::op(uint64_t *a)
 {   size_t lena = number_size(a);
     size_t n = 2*lena;
     push(a);
@@ -7345,7 +7383,7 @@ intptr_t Square::op(uint64_t *a)
     return confirm_size(p, n, final_n);
 }
 
-intptr_t Square::op(int64_t a)
+inline intptr_t Square::op(int64_t a)
 {   uint64_t hi, lo;
     multiply64(a, a, hi, lo);
     if (a < 0) hi -= 2u*(uint64_t)a;
@@ -7365,7 +7403,7 @@ intptr_t Square::op(int64_t a)
     return confirm_size(p, 2, 2);
 }
 
-intptr_t Isqrt::op(uint64_t *a)
+inline intptr_t Isqrt::op(uint64_t *a)
 {   size_t lena = number_size(a);
     if (lena == 1) return Isqrt::op((int64_t)a[0]);
     size_t lenx = (lena+1)/2;
@@ -7425,7 +7463,7 @@ intptr_t Isqrt::op(uint64_t *a)
     return r;
 }
 
-intptr_t Isqrt::op(int64_t aa)
+inline intptr_t Isqrt::op(int64_t aa)
 {   if (aa <= 0) return int_to_bignum(0);
     uint64_t a = (uint64_t)aa;
     size_t w = 64 - nlz(a);
@@ -7497,7 +7535,7 @@ inline void bigpow(uint64_t *a, size_t lena, uint64_t n,
 // The code that dispatches into here should have filtered cases such that
 // the exponent n is not 0, 1 or 2 here.
 
-intptr_t Pow::op(uint64_t *a, int64_t n)
+inline intptr_t Pow::op(uint64_t *a, int64_t n)
 {   size_t lena = number_size(a);
 //  1^(-n) == 1,
 //  (-1)^(-n) == 1 if n is even or -1 if n is odd.
@@ -7545,13 +7583,13 @@ intptr_t Pow::op(uint64_t *a, int64_t n)
     return confirm_size(r, olenr, lenr);
 }
 
-intptr_t Pow::op(uint64_t *a, int32_t n)
+inline intptr_t Pow::op(uint64_t *a, int32_t n)
 {   return Pow::op(a, (int64_t)n);
 }
 
 // Again the cases n = 0, 1 and 2 have been filtered out
 
-intptr_t Pow::op(int64_t a, int64_t n)
+inline intptr_t Pow::op(int64_t a, int64_t n)
 {   if (n < 0)
     {   int z = 0;
         if (a == 1) z = 1;
@@ -7596,15 +7634,15 @@ intptr_t Pow::op(int64_t a, int64_t n)
     return confirm_size(r, olenr, lenr);
 }
 
-intptr_t Pow::op(int64_t a, int32_t n)
+inline intptr_t Pow::op(int64_t a, int32_t n)
 {   return Pow::op(a, (int64_t)n);
 }
 
-double Pow::op(uint64_t *a, double n)
+inline double Pow::op(uint64_t *a, double n)
 {   return pow(Double::op(a), n);
 }
 
-double Pow::op(int64_t a, double n)
+inline double Pow::op(int64_t a, double n)
 {   return pow(Double::op(a), n);
 }
 
@@ -8155,7 +8193,7 @@ inline void unsigned_long_remainder(uint64_t *a, size_t &lena,
                            false, NULL, w, w);
 }
 
-intptr_t Quotient::op(uint64_t *a, uint64_t *b)
+inline intptr_t Quotient::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     uint64_t *q, *r;
@@ -8166,7 +8204,7 @@ intptr_t Quotient::op(uint64_t *a, uint64_t *b)
     return confirm_size(q, olenq, lenq);
 }
 
-intptr_t Quotient::op(uint64_t *a, int64_t b)
+inline intptr_t Quotient::op(uint64_t *a, int64_t b)
 {   size_t lena = number_size(a);
     uint64_t *q, *r;
     size_t olenq, olenr, lenq, lenr;
@@ -8180,7 +8218,7 @@ intptr_t Quotient::op(uint64_t *a, int64_t b)
 // A fixnum divided by a bignum ought always to yield 0, except that
 // maybe -0x8000000000000000} / {0,0x8000000000000000) => -1
 
-intptr_t Quotient::op(int64_t a, uint64_t *b)
+inline intptr_t Quotient::op(int64_t a, uint64_t *b)
 {   if (number_size(b)==1 &&
         b[0]==-(uint64_t)a) return int_to_handle(-1);
     return int_to_handle(0);
@@ -8188,12 +8226,12 @@ intptr_t Quotient::op(int64_t a, uint64_t *b)
 
 // unpleasantly -0x8000000000000000 / -1 => a bignum
 
-intptr_t Quotient::op(int64_t a, int64_t b)
+inline intptr_t Quotient::op(int64_t a, int64_t b)
 {   if (b==-1 && a == MIN_FIXNUM) return int_to_bignum(-a);
     else return int_to_handle(a / b);
 }
 
-intptr_t Remainder::op(uint64_t *a, uint64_t *b)
+inline intptr_t Remainder::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     uint64_t *q, *r;
@@ -8204,7 +8242,7 @@ intptr_t Remainder::op(uint64_t *a, uint64_t *b)
     return confirm_size(r, olenr, lenr);
 }
 
-intptr_t Remainder::op(uint64_t *a, int64_t b)
+inline intptr_t Remainder::op(uint64_t *a, int64_t b)
 {   size_t lena = number_size(a);
     uint64_t *q, *r;
     size_t olenq, olenr, lenq, lenr;
@@ -8215,13 +8253,13 @@ intptr_t Remainder::op(uint64_t *a, int64_t b)
     return confirm_size(r, olenr, lenr);
 }
 
-intptr_t Remainder::op(int64_t a, uint64_t *b)
+inline intptr_t Remainder::op(int64_t a, uint64_t *b)
 {   if (number_size(b)==1 &&
         b[0]==-(uint64_t)a) return int_to_handle(0);
     return int_to_handle(a);
 }
 
-intptr_t Remainder::op(int64_t a, int64_t b)
+inline intptr_t Remainder::op(int64_t a, int64_t b)
 {   return int_to_handle(a % b);
 }
 
@@ -8238,12 +8276,12 @@ intptr_t Remainder::op(int64_t a, int64_t b)
 
 // The declaration of "cons" here *MUST* match the one in code that uses
 // this library!
-static inline LispObject cons(LispObject a, LispObject b);
+inline LispObject cons(LispObject a, LispObject b);
 
-namespace arithlib
+namespace arithlib_implementation
 {
 
-intptr_t Divide::op(uint64_t *a, uint64_t *b)
+inline intptr_t Divide::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     uint64_t *q, *r;
@@ -8256,7 +8294,7 @@ intptr_t Divide::op(uint64_t *a, uint64_t *b)
     return cons(qq, rr);
 }
 
-intptr_t Divide::op(uint64_t *a, int64_t bb)
+inline intptr_t Divide::op(uint64_t *a, int64_t bb)
 {   size_t lena = number_size(a);
     uint64_t *q, *r;
     size_t olenq, olenr, lenq, lenr;
@@ -8269,7 +8307,7 @@ intptr_t Divide::op(uint64_t *a, int64_t bb)
     return cons(qq, rr);
 }
 
-intptr_t Divide::op(int64_t aa, uint64_t *b)
+inline intptr_t Divide::op(int64_t aa, uint64_t *b)
 {   size_t lenb = number_size(b);
     uint64_t *q, *r;
     size_t olenq, olenr, lenq, lenr;
@@ -8282,7 +8320,7 @@ intptr_t Divide::op(int64_t aa, uint64_t *b)
     return cons(qq, rr);
 }
 
-intptr_t Divide::op(int64_t aa, int64_t bb)
+inline intptr_t Divide::op(int64_t aa, int64_t bb)
 {   uint64_t *q, *r;
     size_t olenq, olenr, lenq, lenr;
     uint64_t a[1] = {(uint64_t)aa};
@@ -8297,7 +8335,7 @@ intptr_t Divide::op(int64_t aa, int64_t bb)
 
 #else
 
-intptr_t Divide::op(uint64_t *a, uint64_t *b, intptr_t &rem)
+inline intptr_t Divide::op(uint64_t *a, uint64_t *b, intptr_t &rem)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     uint64_t *q, *r;
@@ -8343,9 +8381,6 @@ inline bool shifted_reduce_for_gcd(uint64_t *a, size_t lena,
                                    uint64_t *b, size_t lenb,
                                    int shift)
 {   assert(lena == lenb+1 || lena == lenb+2);
-//    display("a", a, lena);
-//    display("b", b, lenb);
-//    display("B", b, lenb, shift);
     uint64_t hi = 0, hi1, lo, borrow = 0;
     for (size_t i=0; i<=lenb; i++)
     {   multiply64(shifted_digit(b, lenb, shift, i), q, hi1, lo);
@@ -8360,7 +8395,6 @@ inline bool shifted_reduce_for_gcd(uint64_t *a, size_t lena,
 // will be a reliable test for overshoot. I might want to formalize this
 // argument a bit better!
     if (lena > lenb+1) a[lena-1] = a[lena-1] - hi - borrow;
-//    display("A", a, lena);
     return negative(a[lena-1]);
 }
 
@@ -8449,13 +8483,11 @@ inline bool minus_ua_plus_vb(uint64_t *a, size_t lena,
 //    swap(a, b);
 // but a Lehmer-style scheme can go distinctly faster overall.
 
-void gcd_reduction(uint64_t *&a, size_t &lena,
+inline void gcd_reduction(uint64_t *&a, size_t &lena,
                    uint64_t *&b, size_t &lenb,
                    size_t &olena, size_t &olenb,
                    uint64_t *&temp, size_t &lentemp)
 {
-//    display("a", a, lena);
-//    display("b", b, lenb);
 // I will start by collecting high bits from a and b. If I collect the
 // contents of the top 3 words (ie 192 bits in all) then I will be able
 // to normalize that to get 128 bits to work with however the top bits
@@ -8528,11 +8560,6 @@ void gcd_reduction(uint64_t *&a, size_t &lena,
 // I am keeping these values as signed... but the code U have above that
 // calculates u*a-b*v will take unsigned inputs!
         int64_t ua = 1, va = 0, ub = 0, vb = 1;
-#ifdef LEHMER
-printf("For Lehmer:\n");
-printf("a = %.16" PRIx64 ":%.16" PRIx64 "\n"
-       "b = %.16" PRIx64 ":%.16" PRIx64 "\n", a0, a1, b0, b1);
-#endif
         while (b0!=0 || b1!=0)
         {   uint64_t q;
 // Here I want to set q = {a0,a1}/{b0,b1}, and I expect that the answer
@@ -8552,18 +8579,12 @@ printf("a = %.16" PRIx64 ":%.16" PRIx64 "\n"
             else if (lza1 < 64) bhi = (b0<<lza1) | (b1>>(64-lza1));
             else if (lza1 == 64) bhi = b1;
             else bhi = b1<<(lza1-64);
-#ifdef LEHMER
-printf("Find q from %" PRIx64 " / %" PRIx64 "\n", ahi, bhi);
-#endif
             if (bhi == 0) break;
 // q could end up and over-estimate for the true quotient because bhi has
 // been truncated and so under-represents b. If that happens then a-q*b will
 // end up negative.
             q = ahi/bhi;
             if (negative(q)) break;
-#ifdef LEHMER
-printf("q = %" PRIu64 "\n", q);
-#endif
             assert(q != 0);
 // Now I need to go
 //              ua -= q*va;
@@ -8604,11 +8625,6 @@ printf("q = %" PRIu64 "\n", q);
                 ua = -ua;
                 ub = -ub;
             }
-#ifdef LEHMER
-printf("q=%" PRIu64 " a = %.16" PRIx64 ":%.16" PRIx64
-       "  ua=%" PRId64 " ub=%" PRId64 "\n",
-       q, a0, a1, ua, ub);
-#endif
             if (b0 > a0 ||
                 (b0 == a0 && b1 > a1))
             {   std::swap(a0, b0);
@@ -8643,9 +8659,6 @@ printf("q=%" PRIu64 " a = %.16" PRIx64 ":%.16" PRIx64
                 internal_negate(temp, lentemp, temp);
         }
         truncate_unsigned(temp, lentemp);
-#ifdef LEHMER
-display("temp: ", temp, lentemp);
-#endif
         if (vb < 0)
         {   assert(va >= 0);
             if (ua_minus_vb(a, lena, va, b, lenb, -vb, a, lena))
@@ -8659,10 +8672,6 @@ display("temp: ", temp, lentemp);
         truncate_unsigned(a, lena);
         internal_copy(temp, lentemp, b);
         lenb = lentemp;
-#ifdef LEHMER
-display("new a: ", a, lena);
-display("new b: ", b, lenb);
-#endif
         return;
     }
 // If I drop through to here I will do a simple reduction. This happens
@@ -8716,11 +8725,9 @@ display("new b: ", b, lenb);
         }
 // Now just do "a = a-q*b;", then ensure that the result is positive
 // and clear away any leading zeros left in its representation.
-//            printf("Q = %" PRIu64 "\n", q);
         if (reduce_for_gcd(a, lena, q, b, lenb))
             internal_negate(a, lena, a);
         truncate_unsigned(a, lena);
-//      display("next A1", a , lena);
     }
     else
     {
@@ -8730,22 +8737,17 @@ display("new b: ", b, lenb);
 // multiple of 64 then this is merely a shift by some whole number of words.
         if ((diff%64) == 0)
         {   size_t diffw = diff/64;
-//          printf("Q = %" PRIu64 " << %u words\n", q, (unsigned int)diffw);
             if (reduce_for_gcd(a+diffw-1, lena+1-diffw, q, b, lenb))
                 internal_negate(a, lena, a);
             truncate_unsigned(a, lena);
-//          display("next A2", a , lena);
         }
         else
         {   size_t diffw = diff/64;
             diff = diff%64;
-//          printf("Q = %" PRIu64 " << %u words, %d bits\n",
-//                  q, (unsigned int)diffw, (int)diff);
             if (shifted_reduce_for_gcd(a+diffw-1, lena+1-diffw,
                                        q, b, lenb, diff))
                 internal_negate(a, lena, a);
             truncate_unsigned(a, lena);
-//          display("next A3", a , lena);
         }
     }
 }
@@ -8783,7 +8785,7 @@ display("new b: ", b, lenb);
 // what are logically multiple individual reduction steps.
 
 
-intptr_t Gcd::op(uint64_t *a, uint64_t *b)
+inline intptr_t Gcd::op(uint64_t *a, uint64_t *b)
 {   if (number_size(b) == 1) return Gcd::op(a, (int64_t)b[0]);
 // I will start by making copies of |a| and |b| that I can overwrite
 // during the calculation and use part of in my result.
@@ -8832,7 +8834,7 @@ intptr_t Gcd::op(uint64_t *a, uint64_t *b)
         return unsigned_int_to_bignum(bb);
     }
 // In some cases performing a reduction will require a workspace vector.
-// I woll only allocate this as and when first needed.
+// I will only allocate this as and when first needed.
     uint64_t *temp = NULL;
     size_t lentemp = lena;
 // Now at last a and b and genuine unsigned vectors without leading digits
@@ -8843,7 +8845,6 @@ intptr_t Gcd::op(uint64_t *a, uint64_t *b)
         {   std::swap(a, b);
             std::swap(lena, lenb);
             std::swap(olena, olenb);
-//          printf("Swapped a and b\n");
         }
     }
     if (temp != NULL) abandon(temp);
@@ -8901,7 +8902,7 @@ intptr_t Gcd::op(uint64_t *a, uint64_t *b)
     return unsigned_int_to_bignum(bb);
 }
 
-intptr_t Gcd::op(uint64_t *a, int64_t bb)
+inline intptr_t Gcd::op(uint64_t *a, int64_t bb)
 {
 // This case involved doing a long-by-short remainder operation and then
 // it reduces to the small-small case. The main problem is the handling of
@@ -8920,11 +8921,11 @@ intptr_t Gcd::op(uint64_t *a, int64_t bb)
     return Gcd::op(b, hi);
 }
 
-intptr_t Gcd::op(int64_t a, uint64_t *b)
+inline intptr_t Gcd::op(int64_t a, uint64_t *b)
 {   return Gcd::op(b, a);
 }
 
-intptr_t Gcd::op(int64_t a, int64_t b)
+inline intptr_t Gcd::op(int64_t a, int64_t b)
 {
 // Take absolute values of both arguments.
     uint64_t aa = a < 0 ? -(uint64_t)a : a;
@@ -8942,7 +8943,7 @@ intptr_t Gcd::op(int64_t a, int64_t b)
     return unsigned_int_to_bignum(aa);
 }
 
-intptr_t Lcm::op(uint64_t *a, uint64_t *b)
+inline intptr_t Lcm::op(uint64_t *a, uint64_t *b)
 {   push(a); push(b);
     intptr_t g = Gcd::op(a, b);
     pop(b);
@@ -8955,7 +8956,7 @@ intptr_t Lcm::op(uint64_t *a, uint64_t *b)
     return op_dispatch2<Times,intptr_t>(vector_to_handle(a), q);
 }
 
-intptr_t Lcm::op(uint64_t *a, int64_t b)
+inline intptr_t Lcm::op(uint64_t *a, int64_t b)
 {   push(a);
     intptr_t g = Gcd::op(a, b);
     intptr_t q = op_dispatch2<Quotient,intptr_t>(int_to_handle(b), g);
@@ -8963,11 +8964,11 @@ intptr_t Lcm::op(uint64_t *a, int64_t b)
     return op_dispatch2<Times,intptr_t>(vector_to_handle(a), q);
 }
 
-intptr_t Lcm::op(int64_t a, uint64_t *b)
+inline intptr_t Lcm::op(int64_t a, uint64_t *b)
 {   return Lcm::op(b, a);
 }
 
-intptr_t Lcm::op(int64_t a, int64_t b)
+inline intptr_t Lcm::op(int64_t a, int64_t b)
 {   intptr_t g = Gcd::op(a, b);
 // The GCD can be a bignum if a = b = MIN_FIXNUM.
     if (stored_as_fixnum(g))
@@ -8984,7 +8985,74 @@ intptr_t Lcm::op(int64_t a, int64_t b)
     }
 }
 
-} // end of namespace arithlib
+} // end of namespace arithlib_implementation
+
+// I want a namespace that the user can activate via "using" that only
+// gives access to things that ought to be exported by this library. So
+// arithlib_implementation is to be thought of as somewhat low level and
+// private, while just plain arithlib may be enough for the typical C++
+// user jwho is just going to be using the "Bignum" type.
+
+namespace arithlib
+{
+using arithlib_implementation::operator"" _Z;
+using arithlib_implementation::Bignum;
+
+using arithlib_implementation::mersenne_twister;
+using arithlib_implementation::reseed;
+using arithlib_implementation::uniform_uint64;
+using arithlib_implementation::uniform_positive;
+using arithlib_implementation::uniform_signed;
+using arithlib_implementation::random_upto_bits_bignum;
+
+using arithlib_implementation::display;
+using arithlib_implementation::fix_bignum;
+}
+
+namespace arithlib_lowlevel
+{
+using arithlib_implementation::Plus;
+using arithlib_implementation::Difference;
+using arithlib_implementation::Revdifference;
+using arithlib_implementation::Times;
+using arithlib_implementation::Quotient;
+using arithlib_implementation::Remainder;
+using arithlib_implementation::Divide;
+using arithlib_implementation::Gcd;
+using arithlib_implementation::Lcm;
+using arithlib_implementation::Logand;
+using arithlib_implementation::Logor;
+using arithlib_implementation::Logxor;
+using arithlib_implementation::Zerop;
+using arithlib_implementation::Onep;
+using arithlib_implementation::Minusp;
+using arithlib_implementation::Evenp;
+using arithlib_implementation::Oddp;
+using arithlib_implementation::Eqn;
+using arithlib_implementation::Geq;
+using arithlib_implementation::Greaterp;
+using arithlib_implementation::Leq;
+using arithlib_implementation::Lessp;
+using arithlib_implementation::Add1;
+using arithlib_implementation::Sub1;
+using arithlib_implementation::Minus;
+using arithlib_implementation::Abs;
+using arithlib_implementation::Square;
+using arithlib_implementation::Isqrt;
+using arithlib_implementation::Lognot;
+using arithlib_implementation::Pow;
+using arithlib_implementation::Leftshift;
+using arithlib_implementation::Rightshift;
+using arithlib_implementation::Integer_length;
+using arithlib_implementation::Low_bit;
+using arithlib_implementation::Logbitp;
+using arithlib_implementation::Logcount;
+using arithlib_implementation::Float;
+using arithlib_implementation::Double;
+using arithlib_implementation::Frexp;
+using arithlib_implementation::Float128;
+using arithlib_implementation::Frexp128;
+}
 
 #endif // __arithlib_hpp
 
