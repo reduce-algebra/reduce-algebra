@@ -399,6 +399,9 @@ setup_type const *setup_tables[] =
     arith13_setup, char_setup, eval1_setup, eval2_setup, eval3_setup,
     funcs1_setup, funcs2_setup, funcs3_setup, lisphash_setup,
     print_setup, read_setup, restart_setup, mpi_setup,
+#ifdef ARITHLIB
+    arith_setup,
+#endif
     NULL
 };
 
@@ -1410,6 +1413,9 @@ void set_up_functions(int restart_flag)
     create_symbols(read_setup, restart_flag);
     create_symbols(restart_setup, restart_flag);
     create_symbols(mpi_setup, restart_flag);
+#ifdef ARITHLIB
+    create_symbols(arith_setup, restart_flag);
+#endif
 //
 // Although almost everything is mapped into upper case in a Common Lisp
 // world, I will preserve the case of symbols defined in u01 to u60.

@@ -287,8 +287,8 @@ endif !mac_framework
 all-local:	csl.img $(REDUCE_IMG)
 
 if arithlib
-arith_sources = arith-plus.cpp arith-times.cpp arith-float.cpp \
-		arith-gcdn.cpp
+arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
+		arith-float.cpp arith-gcdn.cpp
 else !arithlib
 arith_sources =
 endif !arithlib
@@ -911,14 +911,24 @@ $(SOFTFLOATDEPS):	$(USE_CORRECT_CYGWIN)
 # taken as specifing conflicting actions.
 
 if arithlib
+csl-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 csl-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 csl-arith-times.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+csl-arith-float.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+csl-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 
+bootstrapreduce-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 bootstrapreduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 bootstrapreduce-arith-times.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+bootstrapreduce-arith-float.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+bootstrapreduce-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 
+reduce-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 reduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 reduce-arith-times.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+reduce-arith-float.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+reduce-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+
 endif arithlib
 
 csl-allocate.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)

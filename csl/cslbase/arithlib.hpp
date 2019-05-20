@@ -1476,9 +1476,19 @@ inline intptr_t copy_if_no_garbage_collector(intptr_t pp)
 
 //=========================================================================
 //=========================================================================
-// The LISP code is for incorporation in VSL.
+// The LISP code is for incorporation in VSL or CSL.
 //=========================================================================
 //=========================================================================
+
+// The code in this region needs to be adapted to work with whatever
+// language implementation you are going to use the arithmetic library from.
+// In my case this will be one of two fairly closely related Lisp systems,
+// where VSL is a "small" one and CSL is larger (and more complicated).
+// The code here is left visible and available since it may provide some
+// sort of model for anybody wanting to use this code in their own
+// project.
+
+#ifdef CSL
 
 inline uint64_t *reserve(size_t n)
 {   assert(n>0);
@@ -1651,6 +1661,181 @@ inline intptr_t copy_if_no_garbage_collector(intptr_t pp)
     return confirm_size(r, n, n);
 }
 
+
+#else // !CSL
+
+inline uint64_t *reserve(size_t n)
+{   assert(n>0);
+// I must allow for alignment padding on 32-bit platforms.
+    if (sizeof(LispObject)==4) n = n*sizeof(uint64_t) + 4;
+    else n = n*sizeof(uint64_t);
+    LispObject a = allocateatom(n);
+    return (uint64_t *)(a + 8 - tagATOM);
+}
+
+inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
+{   assert(final>0 && n>=final);
+    if (final == 1 && fits_into_fixnum((int64_t)p[0]))
+    {   intptr_t r = int_to_handle((int64_t)p[0]);
+        return r;
+    }
+    ((LispObject *)&p[-1])[0] =
+        tagHDR + typeBIGNUM + packlength(final*sizeof(uint64_t) +
+                                         (sizeof(LispObject)==4 ? 4 : 0));
+// If I am on a 32-bit system the data for a bignum is 8 bit aligned and
+// that leaves a 4-byte gat after the header. In such a case I will write
+// in a zero just to keep memory tidy.
+    if (sizeof(LispObject) == 4)
+        ((LispObject *)&p[-1])[1] = 0;
+// Here I should reset fringe down by (final-n) perhaps. Think about that
+// later!
+    return vector_to_handle(p);
+}
+
+inline intptr_t confirm_size_x(uint64_t *p, size_t n, size_t final)
+{   assert(final>0 && n>=final);
+// Here I might need to write a nice dummy object into the gap left by
+// shrinking the object.
+    return confirm_size(p, n, final);
+}
+
+inline intptr_t vector_to_handle(uint64_t *p)
+{   return (intptr_t)p - 8 + tagATOM;
+}
+
+inline uint64_t *vector_of_handle(intptr_t n)
+{   return (uint64_t *)(n + 8 - tagATOM);
+}
+
+inline size_t number_size(uint64_t *p)
+{
+// The odd looking cast here is because in arithlib I am passing around
+// arrays of explicitly 64-bit values, however in the underlying Lisp
+// I expect to be modelling memory as made up of intptr-sized items
+// that I arrange to have aligned on 8-byte boundaries. So to show some
+// though about strict aliasing and the like I will access memory as
+// an array of LispObject things when I access the header of an item.
+    uintptr_t h = (uintptr_t)*(LispObject *)&p[-1];
+    size_t r = veclength(h);
+// On 32-bit systems a bignum will have a wasted 32-bit word after the
+// header and before the digits, so that the digits are properly aligned
+// in memory. The result will be that the bignum is laid out as follows
+//      |     hdr64     | digit64 | digit64 | ... |    (64-bit world)
+//      | hdr32 | gap32 | digit64 | digit64 | ... |    (32-bit world)
+// The length value packed into the header is the length of the vector
+// excluding its header.
+//  if (sizeof(LispObject) == 4) r -= 4; { the remaindering does all I need! }
+    r = r/sizeof(uint64_t);
+    assert(r>0);
+    return r;
+}
+
+inline bool stored_as_fixnum(intptr_t a)
+{    return isFIXNUM(a);
+}
+
+constexpr inline int64_t int_of_handle(intptr_t a)
+{   return qfixnum(a);
+}
+
+inline intptr_t int_to_handle(int64_t n)
+{   return packfixnum(n);
+}
+
+inline bool fits_into_fixnum(int64_t a)
+{   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
+}
+
+inline void abandon(uint64_t *p)
+{   // No need to do anything! But MIGHT reset fringe pointer?
+}
+
+inline void abandon(intptr_t p)
+{   if (!stored_as_fixnum(p) && p!=0)
+    {   uint64_t *pp = vector_of_handle(p);
+        abandon(pp);
+    }
+}
+
+inline char *reserve_string(size_t n)
+{    LispObject a = allocateatom(n);
+     return (char *)(a - tagATOM + sizeof(LispObject));
+}
+
+inline LispObject confirm_size_string(char *p, size_t n, size_t final)
+{   LispObject *a = (LispObject *)(p - sizeof(LispObject));
+// On 32-bit platforms I do not have a padder word before string data
+// so things are simpler here than when confirming the size of a number.
+    *a = tagHDR + typeSTRING + packlength(final);
+    return (LispObject)a +tagATOM;
+}
+
+inline void abandon_string(string_handle s)
+{   // Do nothing.
+}
+
+template <class OP,class RES>
+inline RES op_dispatch1(intptr_t a1)
+{   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1));
+    else return OP::op(vector_of_handle(a1));
+}
+
+template <class OP,class RES>
+inline RES op_dispatch1(intptr_t a1, int64_t n)
+{   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), n);
+    else return OP::op(vector_of_handle(a1), n);
+}
+
+template <class OP,class RES>
+inline RES op_dispatch1(intptr_t a1, int32_t n)
+{   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), (int64_t)n);
+    else return OP::op(vector_of_handle(a1), (int64_t)n);
+}
+
+template <class OP,class RES>
+inline RES op_dispatch2(intptr_t a1, intptr_t a2)
+{   if (stored_as_fixnum(a1))
+    {   if (stored_as_fixnum(a2))
+            return OP::op(int_of_handle(a1), int_of_handle(a2));
+        else return OP::op(int_of_handle(a1), vector_of_handle(a2));
+    }
+    else
+    {   if (stored_as_fixnum(a2))
+            return OP::op(vector_of_handle(a1), int_of_handle(a2));
+        else return OP::op(vector_of_handle(a1), vector_of_handle(a2));
+    }
+}
+
+inline intptr_t always_copy_bignum(uint64_t *p)
+{   size_t n = number_size(p);
+    push(p);
+    uint64_t *r = reserve(n);
+    pop(p);
+    std::memcpy(r, p, n*sizeof(uint64_t));
+    return confirm_size(r, n, n);
+}
+
+inline intptr_t copy_if_no_garbage_collector(uint64_t *p)
+{   size_t n = number_size(p);
+    push(p);
+    uint64_t *r = reserve(n);
+    pop(p);
+    std::memcpy(r, p, n*sizeof(uint64_t));
+    return confirm_size(r, n, n);
+}
+
+inline intptr_t copy_if_no_garbage_collector(intptr_t pp)
+{   if (stored_as_fixnum(pp)) return pp;
+    uint64_t *p = vector_of_handle(pp);
+    size_t n = number_size(p);
+    push(p);
+    uint64_t *r = reserve(n);
+    pop(p);
+    std::memcpy(r, p, n*sizeof(uint64_t));
+    return confirm_size(r, n, n);
+}
+
+#endif // !CSL
 
 #else // none if MALLOC, LISP or NEW specified.
 #error Unspecified memory model

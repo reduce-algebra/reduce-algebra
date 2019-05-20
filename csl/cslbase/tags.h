@@ -820,7 +820,9 @@ inline bool vector_f128(LispObject n)
 // numbers are (pairs of) Lisp objects, while bignums and boxed floats have
 // binary data. The case BIGNUMINDEX is for bignums that need more than
 // 4 Mbytes of memory and is an index vector containing a number of lower-
-// level vectors of binary information. That case is not supported yet.
+// level vectors of binary information. That case is not supported yet, and
+// there is a real prospect that I will rearrange storage layout strategies
+// so it never is!
 
 #define TYPE_BIGNUMINDEX    ( 0x1d <<Tw)
 #define TYPE_BIGNUM         ( 0x1f <<Tw)
@@ -829,6 +831,10 @@ inline bool vector_f128(LispObject n)
 #define TYPE_COMPLEX_NUM    ( 0x5d <<Tw)
 #define TYPE_DOUBLE_FLOAT   ( 0x5f <<Tw)
 //      unused              ( 0x7d <<Tw)
+// While gradually working on a new implementation of big-numbers I will
+// have a "TYPE_NEW_BIGNUM" for big integers represented using 64-bit
+// digits. These well not be fully integrated with everything else!
+#define TYPE_NEW_BIGNUM     ( 0x7d <<Tw)  // Temporary provision!
 #define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
 
 inline Header& numhdr(LispObject v)
@@ -858,6 +864,15 @@ inline bool is_bignum_header(Header h)
 inline bool is_bignum(LispObject n)
 {   /*if (is_basic_vector(n) */return is_bignum_header(numhdr(n));
     /*else return is_bignum_header(numhdr(basic_elt(n, 0))); */
+}
+
+inline bool is_new_bignum_header(Header h)
+{   return type_of_header(h) == TYPE_NEW_BIGNUM;
+}
+
+inline bool is_new_bignum(LispObject n)
+{   /*if (is_basic_vector(n) */return is_new_bignum_header(numhdr(n));
+    /*else return is_new_bignum_header(numhdr(basic_elt(n, 0))); */
 }
 
 inline bool is_string_header(Header h)
@@ -1545,6 +1560,12 @@ inline int64_t bignum_digits64(LispObject b, size_t n)
 // scheme so I just need to shift the count to where it has to live.
 inline Header make_bighdr(size_t n)
 {   return TAG_HDR_IMMED+TYPE_BIGNUM+(n<<(Tw+7));
+}
+
+// New bignums come in 64-bit units.
+
+inline Header make_new_bighdr(size_t n)
+{   return TAG_HDR_IMMED+TYPE_NEW_BIGNUM+(n<<(Tw+8));
 }
 
 // pack_hdrlength takes a length in 32-bit words (including the size of
