@@ -122,22 +122,22 @@ inline void CSL_IGNORE(LispObject x)
 // this idea works provided all memory addresses needed can be kept
 // doubleword aligned.  The main tag allocation is documented here.
 
-#define TAG_BITS        0x7
-#define XTAG_BITS       0xf
+static const int TAG_BITS      = 0x7;
+static const int XTAG_BITS     = 0xf;
 
-//                                                       bit-mask in (1<<tag)
+//                                                               bit-mask in (1<<tag)
 
-#define TAG_CONS        0   // Cons cells                                01
-#define TAG_VECTOR      1   // Regular Lisp vectors                      02
-#define TAG_HDR_IMMED   2   // Char constants, vechdrs etc               04
-#define TAG_FORWARD     3   // For the Garbage Collector                 08
-#define TAG_SYMBOL      4   // Symbols                                   10
+static const int TAG_CONS      = 0;   // Cons cells                                01
+static const int TAG_VECTOR    = 1;   // Regular Lisp vectors                      02
+static const int TAG_HDR_IMMED = 2;   // Char constants, vechdrs etc               04
+static const int TAG_FORWARD   = 3;   // For the Garbage Collector                 08
+static const int TAG_SYMBOL    = 4;   // Symbols                                   10
 // Note that tags from 5 up are all for numeric date
-#define TAG_NUMBERS     5   // Bignum, Rational, Complex                 20
-#define TAG_BOXFLOAT    6   // Boxed floats                              40
-#define TAG_FIXNUM      7   // 28/60-bit integers                        80
-#define TAG_XBIT        8   // extra bit!
-#define XTAG_SFLOAT     15  // Short float, 28+ bits of immediate data   80
+static const int TAG_NUMBERS   = 5;   // Bignum, Rational, Complex                 20
+static const int TAG_BOXFLOAT  = 6;   // Boxed floats                              40
+static const int TAG_FIXNUM    = 7;   // 28/60-bit integers                        80
+static const int TAG_XBIT      = 8;   // extra bit!
+static const int XTAG_SFLOAT   = 15;  // Short float, 28+ bits of immediate data   80
 
 // On a 32-bit machine I can pack a 28-bit float (implemented as a 32-bit
 // one with the low 4 bits crudely masked off) by putting XTAG_FLOAT as the
@@ -146,7 +146,7 @@ inline void CSL_IGNORE(LispObject x)
 // a 28 or a 32-bit value and the high 28 or 32-bits can be that value.
 // Thus on a 64-bit machine single floats as well as short floats have
 // an immediate representation. 
-#define XTAG_FLOAT32    16
+static const int XTAG_FLOAT32  = 16;
 
 inline bool is_forward(LispObject p)
 {   return (p & TAG_BITS) == TAG_FORWARD;
@@ -184,12 +184,14 @@ inline bool need_more_than_eq(LispObject p)
 // when I cast back to a signed value I am in "implementation defined"
 // territory.
 
-inline LispObject fixnum_of_int(intptr_t x)
+inline constexpr LispObject fixnum_of_int(intptr_t x)
 {   return  (LispObject)((((uintptr_t)x)<<4) + TAG_FIXNUM);
 }
 
-// There are places where I want to use this as a case=constant and then I
+// There are places where I want to use this as a case-constant and then I
 // may not use the inline procedure...
+// Well maybe these days I could make it constexpr and that would do the
+// trick?
 
 #define FIXNUM_OF_INT(n) (16*(n)+TAG_FIXNUM)
 
@@ -200,7 +202,7 @@ inline LispObject fixnum_of_int(intptr_t x)
 // low bits and then doing a signed division should achieve this affect in a
 // portable manner. 
 
-inline intptr_t int_of_fixnum(LispObject x)
+inline constexpr intptr_t int_of_fixnum(LispObject x)
 {   return ((intptr_t)x & ~(intptr_t)15)/16;
 }
 

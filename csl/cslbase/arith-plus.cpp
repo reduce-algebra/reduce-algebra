@@ -38,7 +38,6 @@
 #include "softfloat.h"
 #define softfloat_h 1
 
-#include "arithlib.hpp"
 #include "dispatch.h"
 
 // ====== addition =====

@@ -5,7 +5,41 @@
 This note is to help me while I design and implement one, and comments on
 changes from a previous world. This is a fresh version of these notes and
 is being started in April 2016. I had done some redesign in October 2017, but
-the latest changes are from June 2018.
+the latest changes are from June 2018 - no now May 2019!
+
+
+This year's plan is that memory exists in two large pools that I might
+call Heap1 and Heap2. A major garbage collection will copy almost everything
+from Heap1 to Heap2 and then swap their status. To support threads and a
+generational scheme blocks of memory are allocated from the Heap and each
+thread will have two special blocks: a "current" one that it is in the process
+of allocating into and a "previous" one that is handled specially as part
+of the generational scheme. These blocks are (maybe?) 4Mbytes large.
+Any allocation of objects of size up to 64Kbytes gets done in one of these,
+so in the most extreme case one of these will end up filled with 64 objects
+of that size. Any objects larger than 64Kbytes get allocated directly in the
+main region of the Heap.
+Allocation within a current page does not involve any overhead beyond that
+involved in the access to thread local frings and limit pointers, and
+I will note that 256K conses are needed use up a page, so in most use cases
+almost all memory allocation will use them. The allocation of either a new
+page or an object that is larger than 64K will need a mutex lock so that
+threads do not interfere with each other. I argue in three steps that this
+will not end up as a severe overhead.
+(1) in most Lisp uses only a small proportion of allocations are of
+    large objects.
+(2) If a large object is allocated thet at the very least it will need to
+    be initialized, and this at a minimum involves quite a few thousand
+    memory references. In almost all worthwhile cases there will be a lot
+    more work than that - the muxex overhead on allocation will tend to have
+    its cost swamped by this.
+(3) Because of both (1) and (2) (and because allocating from the main heap is
+    generally an inexpensive process once the relevant mutex has been
+    claimed) the frequency of large allocations will be modest and so with
+    a sensible number of threads the contention on muxexes will not become
+    severe.
+
+
 
 The work discussed here is to arrange that CSL uses a mostly-copying
 conservative collector. The details are substantially tuned to the expected

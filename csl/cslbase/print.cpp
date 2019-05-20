@@ -3211,7 +3211,7 @@ restart:
                     break;
 #endif // HAVE_SOFTFLOAT
                 default:
-                    sprintf(my_buff, "?%.8lx?", (long)(uint32_t)u);
+                    sprintf(my_buff, "?%p?", (void *)u);
                     break;
             }
         float_print_tidyup:   // label to join in from short float printing
@@ -3266,7 +3266,7 @@ restart:
         // Else drop through to treat as an error
         default:
         error_case:
-            sprintf(my_buff, "?%.8lx?", (long)(uint32_t)u);
+            sprintf(my_buff, "?%p?", (void *)u);
             break;
     }
 print_my_buff:

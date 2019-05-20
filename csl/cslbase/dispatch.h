@@ -46,7 +46,6 @@
 //                     be either 32 or 64 bits depending on the platform.
 //                     (and machines with pointers that are neither 32 nor
 //                     64 bits are not supported!)
-//                     supported!
 // (big) integers.     Passed as (uint64_t *), ie pointers to arrays of
 //                     digits.
 // Rationals.          Uses a class Rat that has a single field in it that
@@ -82,6 +81,14 @@
 
 #define softfloat_h 1
 
+// arithlib.hpp needs to know that it will be being used in a way that
+// interfaces with a Lisp system rather than being used as a free-standing
+// C++ library.
+
+#define LISP 1
+#ifndef CSL
+#define CSL 1
+#endif
 #include "arithlib.hpp"
 
 namespace number_dispatcher
@@ -240,7 +247,7 @@ inline R binaryL(const char *fname, V lhsVal, LispObject b)
     case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
         switch (type_of_header(numhdr(b)))
         {
-        case TYPE_BIGNUM:
+        case TYPE_NEW_BIGNUM:
             return T::op(lhsVal, (uint64_t *)((char *)b + 8 - TAG_NUMBERS));
         case TYPE_RATNUM:
             return T::op(lhsVal, Rat(b));
@@ -250,7 +257,7 @@ inline R binaryL(const char *fname, V lhsVal, LispObject b)
             aerror2("Non-numeric argument", fname, b);
         }
     case TAG_FIXNUM:
-        return T::op(lhsVal, Fixnum(int_of_fixnum(b)));
+        return T::op(lhsVal, Fixnum(b));
     case XTAG_SFLOAT:
         return T::op(lhsVal, SFlt(b));
     }
@@ -279,7 +286,7 @@ inline R binaryR(const char *fname, LispObject a, V rhsval)
     case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
         switch (type_of_header(numhdr(a)))
         {
-        case TYPE_BIGNUM:
+        case TYPE_NEW_BIGNUM:
             return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS), rhsval);
         case TYPE_RATNUM:
             return T::op(Rat(a), rhsval);
@@ -289,7 +296,7 @@ inline R binaryR(const char *fname, LispObject a, V rhsval)
             aerror2("Non-numeric argument", fname, a);
         }
     case TAG_FIXNUM:
-        return T::op(Fixnum(int_of_fixnum(a)), rhsval);
+        return T::op(Fixnum(a), rhsval);
     case XTAG_SFLOAT:
         return T::op(SFlt(a), rhsval);
     }
@@ -319,10 +326,10 @@ inline R binary(const char *fname, LispObject a, LispObject b)
         default:
             aerror2("Non-numeric argument", fname, a);
         }
-    case TAG_NUMBERS:
+    case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
         switch (type_of_header(numhdr(a)))
         {
-        case TYPE_BIGNUM:
+        case TYPE_NEW_BIGNUM:
             return binaryL<R,T,uint64_t *>(fname,
                 (uint64_t *)((char *)a + 8 - TAG_NUMBERS), b);
         case TYPE_RATNUM:
@@ -333,7 +340,7 @@ inline R binary(const char *fname, LispObject a, LispObject b)
             aerror2("Non-numeric argument", fname, a);
         }
     case TAG_FIXNUM:
-        return binaryL<R,T,Fixnum>(fname, Fixnum(int_of_fixnum(a)), b);
+        return binaryL<R,T,Fixnum>(fname, Fixnum(a), b);
     case XTAG_SFLOAT:
         return binaryL<R,T,SFlt>(fname, SFlt(a), b);
     }
@@ -352,13 +359,13 @@ inline R ibinaryL(const char *fname, V lhsVal, LispObject b)
     case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
         switch (type_of_header(numhdr(b)))
         {
-        case TYPE_BIGNUM:
+        case TYPE_NEW_BIGNUM:
             return T::op(lhsVal, (uint64_t *)((char *)b + 8 - TAG_NUMBERS));
         default:
             aerror2("Non-integer argument", fname, b);
         }
     case TAG_FIXNUM:
-        return T::op(lhsVal, Fixnum(int_of_fixnum(b)));
+        return T::op(lhsVal, Fixnum(b));
     }
 }
 
@@ -372,13 +379,13 @@ inline R ibinaryR(const char *fname, LispObject a, V rhsval)
     case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
         switch (type_of_header(numhdr(a)))
         {
-        case TYPE_BIGNUM:
+        case TYPE_NEW_BIGNUM:
             return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS), rhsval);
         default:
             aerror2("Non-integer argument", fname, a);
         }
     case TAG_FIXNUM:
-        return T::op(Fixnum(int_of_fixnum(a)), rhsval);
+        return T::op(Fixnum(a), rhsval);
     }
 }
 
@@ -389,17 +396,17 @@ inline R ibinary(const char *fname, LispObject a, LispObject b)
     {
     default:
         aerror2("Non-integer argument", fname, a);
-    case TAG_NUMBERS:
+    case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
         switch (type_of_header(numhdr(a)))
         {
-        case TYPE_BIGNUM:
+        case TYPE_NEW_BIGNUM:
             return ibinaryL<R,T,uint64_t *>(fname,
                 (uint64_t *)((char *)a + 8 - TAG_NUMBERS), b);
         default:
             aerror2("Non-integer argument", fname, a);
         }
     case TAG_FIXNUM:
-        return ibinaryL<R,T,Fixnum>(fname, Fixnum(int_of_fixnum(a)), b);
+        return ibinaryL<R,T,Fixnum>(fname, Fixnum(a), b);
     }
 }
 
@@ -426,10 +433,10 @@ inline R unary(const char *fname, LispObject a)
         default:
             aerror2("Non-numeric argument", fname, a);
         }
-    case TAG_NUMBERS:
+    case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
         switch (type_of_header(numhdr(a)))
         {
-        case TYPE_BIGNUM:
+        case TYPE_NEW_BIGNUM:
             return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS));
         case TYPE_RATNUM:
             return T::op(Rat(a));
@@ -456,10 +463,10 @@ inline R iunary(const char *fname, LispObject a)
     {
     default:
         aerror2("Non-integer argument", fname, a);
-    case TAG_NUMBERS:
+    case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
         switch (type_of_header(numhdr(a)))
         {
-        case TYPE_BIGNUM:
+        case TYPE_NEW_BIGNUM:
             return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS));
         default:
             aerror2("Non-integer argument", fname, a);
@@ -482,10 +489,10 @@ inline R shiftlike(const char *fname, LispObject a, LispObject n)
     {
     default:
         aerror2("Non-integer argument", fname, a);
-    case TAG_NUMBERS:
+    case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
         switch (type_of_header(numhdr(a)))
         {
-        case TYPE_BIGNUM:
+        case TYPE_NEW_BIGNUM:
             return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS), nv);
         default:
             aerror2("Non-integer argument", fname, a);

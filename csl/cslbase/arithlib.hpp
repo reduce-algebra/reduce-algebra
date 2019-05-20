@@ -1367,7 +1367,7 @@ inline intptr_t int_to_handle(int64_t n)
 
 // The following two lines are slighly delicate in that INTPTR_MIN and _MAX
 // may not have the low tag bits to be proper fixnums. But if I implement
-// int_of_handle so that it ignores tag bits that will be OK.
+// int_of_fixnum so that it ignores tag bits that will be OK.
 
 INLINE_VAR const int64_t MIN_FIXNUM = int_of_handle(INTPTR_MIN);
 INLINE_VAR const int64_t MAX_FIXNUM = int_of_handle(INTPTR_MAX);
@@ -1490,13 +1490,17 @@ inline intptr_t copy_if_no_garbage_collector(intptr_t pp)
 
 #ifdef CSL
 
+// The code here can only make sense in the context of the CSL sources,
+// and it is assumed that all the relevant CSL header files have already
+// been #included.
+
 inline uint64_t *reserve(size_t n)
 {   assert(n>0);
-// I must allow for alignment padding on 32-bit platforms.
-    if (sizeof(LispObject)==4) n = n*sizeof(uint64_t) + 4;
-    else n = n*sizeof(uint64_t);
-    LispObject a = allocateatom(n);
-    return (uint64_t *)(a + 8 - tagATOM);
+// During a transition period I will use TYPE_NEW_BIGNUM rather than
+// TYPE_BIGNUM.
+    LispObject a = get_basic_vector(TAG_NUMBERS, TYPE_NEW_BIGNUM,
+                                    n*sizeof(uint64_t)+8);
+    return (uint64_t *)(a + 8 - TAG_NUMBERS);
 }
 
 inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
@@ -1505,11 +1509,18 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
     {   intptr_t r = int_to_handle((int64_t)p[0]);
         return r;
     }
+// Note that pack_hdrlength() takes its argument measured in units of
+// 32-bit words. That is because the way the length field is packed into
+// an object header supported just that resolution (and special treatment is
+// given to halfword, byte and bit-vectors to allow for their finer grain).
+// The length also includes the size of a header-word, and on 32-bit platforms
+// it has to allow for padding the data to allow the array of 64-bit digits
+// to be properly aligned in memory.
     ((LispObject *)&p[-1])[0] =
-        tagHDR + typeBIGNUM + packlength(final*sizeof(uint64_t) +
-                                         (sizeof(LispObject)==4 ? 4 : 0));
+        TAG_HDR_IMMED + TYPE_NEW_BIGNUM +
+        pack_hdrlength((final+1)*sizeof(uint64_t)/sizeof(int32_t));
 // If I am on a 32-bit system the data for a bignum is 8 bit aligned and
-// that leaves a 4-byte gat after the header. In such a case I will write
+// that leaves a 4-byte gap after the header. In such a case I will write
 // in a zero just to keep memory tidy.
     if (sizeof(LispObject) == 4)
         ((LispObject *)&p[-1])[1] = 0;
@@ -1526,11 +1537,11 @@ inline intptr_t confirm_size_x(uint64_t *p, size_t n, size_t final)
 }
 
 inline intptr_t vector_to_handle(uint64_t *p)
-{   return (intptr_t)p - 8 + tagATOM;
+{   return (intptr_t)p - 8 + TAG_NUMBERS;
 }
 
 inline uint64_t *vector_of_handle(intptr_t n)
-{   return (uint64_t *)(n + 8 - tagATOM);
+{   return (uint64_t *)(n + 8 - TAG_NUMBERS);
 }
 
 inline size_t number_size(uint64_t *p)
@@ -1541,32 +1552,34 @@ inline size_t number_size(uint64_t *p)
 // that I arrange to have aligned on 8-byte boundaries. So to show some
 // though about strict aliasing and the like I will access memory as
 // an array of LispObject things when I access the header of an item.
-    uintptr_t h = (uintptr_t)*(LispObject *)&p[-1];
-    size_t r = veclength(h);
+    Header h = (Header)*(LispObject *)&p[-1];
+    size_t r = length_of_header(h);
 // On 32-bit systems a bignum will have a wasted 32-bit word after the
 // header and before the digits, so that the digits are properly aligned
 // in memory. The result will be that the bignum is laid out as follows
 //      |     hdr64     | digit64 | digit64 | ... |    (64-bit world)
 //      | hdr32 | gap32 | digit64 | digit64 | ... |    (32-bit world)
 // The length value packed into the header is the length of the vector
-// excluding its header.
-//  if (sizeof(LispObject) == 4) r -= 4; { the remaindering does all I need! }
-    r = r/sizeof(uint64_t);
+// including its header.
+    r = (r-8)/sizeof(uint64_t);
     assert(r>0);
     return r;
 }
 
 inline bool stored_as_fixnum(intptr_t a)
-{    return isFIXNUM(a);
+{    return is_fixnum(a);
 }
 
 constexpr inline int64_t int_of_handle(intptr_t a)
-{   return qfixnum(a);
+{   return int_of_fixnum(a);
 }
 
 inline intptr_t int_to_handle(int64_t n)
-{   return packfixnum(n);
+{   return fixnum_of_int(n);
 }
+
+INLINE_VAR const int64_t MIN_FIXNUM = int_of_handle(INTPTR_MIN);
+INLINE_VAR const int64_t MAX_FIXNUM = int_of_handle(INTPTR_MAX);
 
 inline bool fits_into_fixnum(int64_t a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
@@ -1584,16 +1597,14 @@ inline void abandon(intptr_t p)
 }
 
 inline char *reserve_string(size_t n)
-{    LispObject a = allocateatom(n);
-     return (char *)(a - tagATOM + sizeof(LispObject));
+{    LispObject a = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
+     return (char *)(a - TAG_VECTOR + sizeof(LispObject));
 }
 
 inline LispObject confirm_size_string(char *p, size_t n, size_t final)
 {   LispObject *a = (LispObject *)(p - sizeof(LispObject));
-// On 32-bit platforms I do not have a padder word before string data
-// so things are simpler here than when confirming the size of a number.
-    *a = tagHDR + typeSTRING + packlength(final);
-    return (LispObject)a +tagATOM;
+    *a = TAG_HDR_IMMED + TYPE_STRING_4 + (final<<(Tw+5));
+    return (LispObject)a + TAG_VECTOR;
 }
 
 inline void abandon_string(string_handle s)
@@ -2513,7 +2524,7 @@ public:
             s = bignum_to_string_binary(a.val);
         else s = bignum_to_string(a.val);
 #ifdef LISP
-        std::string ss(s, veclength(qheader(s)));
+        std::string ss(s, length_of_byteheader(qheader(s)));
         out << ss;
 #else
         out << s;
@@ -8458,10 +8469,6 @@ inline intptr_t Remainder::op(int64_t a, int64_t b)
 // the remainder via an additional argument.
 
 }
-
-// The declaration of "cons" here *MUST* match the one in code that uses
-// this library!
-inline LispObject cons(LispObject a, LispObject b);
 
 namespace arithlib_implementation
 {
