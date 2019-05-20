@@ -38,7 +38,7 @@ fi
 # are not actually used by this simple test. To speed this up and leave it a
 # more basic check I now concentrate on what I need immediately.
 
-sutoreconf -f -i -v
+autoreconf -f -i -v
    
 cd $save
 exit 0
