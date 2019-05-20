@@ -121,30 +121,31 @@ inline void divrem128(int128_t a, int128_t b,
 typedef uint128_t int128_t;
 
 inline uint128_t uint128(int128_t v)
-{   uint128_t r;
-    r.UPPER = v.UPPER;
-    r.lower = v.LOWER;
+{   uint128_t r = v;
     return r;
 }
 
 inline uint128_t uint128(int64_t v)
-{   uint128_t r;
-    r.UPPER = 0;
-    r.lower = (uint64_t)v;
+{   uint128_t r = (uint64_t)v;
     return r;
 }
 
 inline uint128_t uint128(uint64_t v)
-{   uint128_t r;
-    r.UPPER = 0;
-    r.lower = (uint64_t)v;
+{   uint128_t r = v;
     return r;
 }
 
+// This MESS is based on me reading the code for uint128_t and hoping that
+// this achieves what I need! Getting values into the top 64-bits is not
+// as easy as I might have hoped!
+
 inline int128_t int128(int64_t v)
-{   int128_t r;
-    r.UPPER = -(uint64_t)(v < 0);
-    r.lower = (uint64_t)v;
+{   int128_t r = (uint64_t)v;
+    if (v < 0)
+    {   int128_t w = -(uint64_t)1;
+        w = w <<64;
+        r = r | w;
+    }
     return r;
 }
 

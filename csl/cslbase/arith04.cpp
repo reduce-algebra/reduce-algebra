@@ -586,7 +586,7 @@ static LispObject rationalizef128(float128_t *dd)
         v0 = v1; v1 = v2;
     }
     LispObject p1;
-    if (f128M_negative(dd)) p1 = make_lisp_integer128(-int128(u1));
+    if (f128M_negative(dd)) p1 = make_lisp_integer128(-u1);
     else p1 = make_lisp_unsigned128(u1);
     if (v1 == 1) return p1;
     push(p1);
