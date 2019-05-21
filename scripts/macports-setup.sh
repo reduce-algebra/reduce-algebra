@@ -61,7 +61,7 @@ cd $here
 
 # First I intend to check if macports.conf is set up the way I want it!
 # If it is then it should have the following two lines present:
-#   macosx_deployment_target 10.10
+#   macosx_deployment_target 10.11
 #   buildfromsource always
 # My check is CRUDE here and can be confused in both directions. For instance
 # a line "buildfromsource always" with a comment marker in front of it might
@@ -77,7 +77,7 @@ if ! test -f $conf || \
    ! grep "buildfromsource always" $conf > /dev/null
 then
   printf "macports.conf seems not to exist, or does not contain the lines\n"
-  printf "   macosx_deployment_target 10.10\n"
+  printf "   macosx_deployment_target 10.11\n"
   printf "   buildfromsource always\n"
   printf "Please correct that and try again.\n"
   exit 1

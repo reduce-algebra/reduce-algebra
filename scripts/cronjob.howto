@@ -67,7 +67,7 @@ export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 export O=/Users/acn1/reduce-algebra
 export C=$O/csl/cslbase
 export DONT_USE_XPORT="yes"
-export MACOSX_DEPLOYMENT_TARGET=10.10
+export MACOSX_DEPLOYMENT_TARGET=10.11
 
 My macports.conf file insists that MacPorts always build from source even
 if there is a ready-built binary archive available. So I have in it extra

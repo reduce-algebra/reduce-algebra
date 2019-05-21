@@ -704,9 +704,15 @@ AC_ARG_ENABLE(experiment,
   [],
   [enable_experiment="no"])
 
-if test "x$enable_experiment" = "xyes"
+AC_ARG_ENABLE(arithlib,
+  AC_HELP_STRING([--enable-arithlib],
+                 [CSL starst to use arithlib.hpp bignums]),
+  [],
+  [enable_arithlib="no"])
+
+if test "x$enable_arithlib" = "xyes"
 then
-  enable_test="yes"
+  AC_DEFINE(
 fi
 
 AC_ARG_ENABLE(jit,
