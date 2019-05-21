@@ -122,6 +122,8 @@ pg_gauss({(a^2-1)*x=0,0=a-1,0=a+1},{x});
 	             a30*x+a31*y+a32*z+a33*w+a34*u=0,
 	             a40*x+a41*y+a42*z+a43*w+a44*u=0},{x,y,z,w,u})$
 
+symbolic;
+
 % test for sm_surep, sm_redp, sm_whitep.
 
 sm_surep(nil,cond_0mkuneqt(numr simp 'a)); %ok nil
