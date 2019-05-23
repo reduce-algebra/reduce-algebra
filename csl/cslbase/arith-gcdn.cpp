@@ -1,6 +1,6 @@
-// arith-gcdn.cpp                          Copyright (C) 1990-2019 Codemist
+// arith-gcdn.cpp                               Copyright (C) 2019 Codemist
 
-// $Id: version.h 4783 2018-09-25 20:26:06Z arthurcnorman $
+// $Id$
 
 
 /**************************************************************************
@@ -33,10 +33,6 @@
  *************************************************************************/
 
 #include "headers.h"
-
-#include "softfloat.h"
-#define softfloat_h 1
-
 #include "dispatch.h"
 
 using number_dispatcher::Fixnum;

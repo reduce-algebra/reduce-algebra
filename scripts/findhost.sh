@@ -120,6 +120,7 @@ fi
 
 debug=
 test=
+arithlib=
 m32=
 m64=
 nogui=
@@ -145,6 +146,12 @@ do
     ;;
   --enable-test* | --enable-experiment* | --enable-conservative*)
     test=-test
+    ;;
+  --with-arithlib=no | --without-arithlib)
+    arithlib=
+    ;;
+  --with-arithlib*)
+    arithlib=-arithlib
     ;;
   --with-mingw64=no | --without-mingw64)
     host=$original
@@ -197,13 +204,9 @@ do
     wx=-wx
     nogui=
     ;;
-  --with-smallpage*)
-# At present the small page size is 19-bits/512Kbytes
-    smallpage=-page19
-    ;;
   esac
 done
 
-echo $host$m32$m64$nogui$fox$wx$smallpage$test$debug
+echo $host$m32$m64$nogui$fox$wx$test$arithlib$debug
 
 exit 0

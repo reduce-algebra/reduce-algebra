@@ -4245,12 +4245,23 @@ inline size_t predict_size_in_bytes(const uint64_t *a, size_t lena)
     return r;
 }
 
+inline size_t bignum_to_string_length(uint64_t *a, size_t lena)
+{   if (lena == 1)
+    {   int64_t v = a[0];
+        if (v <= 9999999 && v >= -999999) return 7;
+        else if (v < 999999999999999 && v >= -99999999999999) return 15;
+        else return 23;
+    }
+    else return predict_size_in_bytes(a, lena);
+}
+
 // The "as_unsigned" option here is not for general use - it is JUST for
 // internal debugging because at times I work with values that are known
 // to be positive and so where the top digit must be treated as unsigned...
 
-inline string_handle bignum_to_string(uint64_t *a, size_t lena,
-                                      bool as_unsigned=false)
+inline size_t bignum_to_string(char *result, size_t m,
+                               uint64_t *a, size_t lena,
+                               bool as_unsigned=false)
 {
 // Making one-word numbers a special case simplifies things later on! It may
 // also make this case go just slightly faster.
@@ -4273,9 +4284,8 @@ inline string_handle bignum_to_string(uint64_t *a, size_t lena,
 // if needed (and deal with the special case of zero).
         if (sign) buffer[len++] = '-';
         else if (len == 0) buffer[len++] = '0';
-        char *r = reserve_string(len);
-        for (size_t i=0; i<len; i++) r[i] = buffer[len-i-1];
-        return confirm_size_string(r, len, len);
+        for (size_t i=0; i<len; i++) result[i] = buffer[len-i-1];
+        return len;
     }
 // The size (m) for the block of memory that I put my result in is
 // such that it could hold the string representation of my input, and
@@ -4289,7 +4299,7 @@ inline string_handle bignum_to_string(uint64_t *a, size_t lena,
 // output string. The case liable to be tightest will be that of the
 // smallest 2-woed bignum, so if I ensure that is OK all the rest will
 // certainly be safe.
-    uint64_t m = predict_size_in_bytes(a, lena);
+//
 // I am going to build up (decimal) digits of the converted number by
 // repeatedly dividing by 10^19. Each time I do that the remainder I
 // amd left with is the next low 19 decimal digits of my number. Doing the
@@ -4298,16 +4308,14 @@ inline string_handle bignum_to_string(uint64_t *a, size_t lena,
 // I will copy my input into a fresh vector. And I will force it to be
 // positive. The made-positive version might have a leading digit with
 // its top bit set - that will not worry me because I view it as unsigned.
-    push(a);
-    char *rc = reserve_string(m);
-    pop(a);
+//
 // I have allocated the space that will be needed for the eventual string of
 // characters. I will use that space to save numeric values along the way, so
 // here I cast so I can use that same memory as a vector of 64-bit integers.
 // I will only ever access data in the format that it was placed into memory!
 // Note that this will assume that the string data was allocated so as to
 // be aligned suitably for uint64_t values.
-    uint64_t *r = (uint64_t *)rc;
+    uint64_t *r = (uint64_t *)result;
     size_t i;
 // For the edge case lena==2 and m==20. I copy 2 words across. That will leave
 // 4 bytes unused.
@@ -4345,7 +4353,7 @@ inline string_handle bignum_to_string(uint64_t *a, size_t lena,
     uint64_t top = r[p++];
     if (top == 0) top = r[p++]; // discard potential leading zero!
 // Get a pointer into the buffer as character data...
-    char *p1 = (char *)rc;
+    char *p1 = (char *)result;
     size_t len = 0;
     if (sign)
     {   *p1++ = '-';
@@ -4380,7 +4388,6 @@ inline string_handle bignum_to_string(uint64_t *a, size_t lena,
         *p1 = '0' + (int)top;
         p1 += 19;
         len += 19;
-        assert(len <= m);
     }
 // To convince myself that this is safe consider when I pick up the final
 // chunk. It will turn into 19 bytes of output, so where it comes from must
@@ -4390,7 +4397,17 @@ inline string_handle bignum_to_string(uint64_t *a, size_t lena,
 // beyond it that are there to support proper alignment - so that last chunk
 // lives within the final 15 bytes of the buffer and that is a fortiori within
 // the last 19 as required.
-    return confirm_size_string(rc, m, len);
+    return len;
+}
+
+inline string_handle bignum_to_string(uint64_t *a, size_t lena,
+                                      bool as_unsigned=false)
+{   size_t len = bignum_to_string_length(a, lena);
+    push(a);
+    char *s = reserve_string(len);
+    pop(a);
+    size_t final_len = bignum_to_string(s, len, a, lena, as_unsigned);
+    return confirm_size_string(s, final_len, len);
 }
 
 inline string_handle bignum_to_string(intptr_t aa)
@@ -4409,6 +4426,10 @@ inline string_handle bignum_to_string(intptr_t aa)
 }
 
 // As well as converting to decimal I can do hex, octal or binary!
+
+inline size_t bignum_to_string_hex_length(intptr_t aa)
+{   return 24;
+}
 
 inline string_handle bignum_to_string_hex(intptr_t aa)
 {   uint64_t *a, v[1];
@@ -4474,6 +4495,10 @@ inline string_handle bignum_to_string_hex(intptr_t aa)
     return confirm_size_string(r, m, m);
 }
 
+inline size_t bignum_to_string_octal_length(intptr_t aa)
+{   return 24;
+}
+
 inline string_handle bignum_to_string_octal(intptr_t aa)
 {   uint64_t *a, v[1];
     size_t n;
@@ -4512,6 +4537,10 @@ inline string_handle bignum_to_string_octal(intptr_t aa)
     for (size_t i=0; i<width; i++)
         *p++ = '0' + read_u3(a, n, width-i-1);
     return confirm_size_string(r, nn, width);
+}
+
+inline size_t bignum_to_string_binary_length(intptr_t aa)
+{   return 24;
 }
 
 inline string_handle bignum_to_string_binary(intptr_t aa)
@@ -9244,6 +9273,16 @@ using arithlib_implementation::Double;
 using arithlib_implementation::Frexp;
 using arithlib_implementation::Float128;
 using arithlib_implementation::Frexp128;
+
+using arithlib_implementation::bignum_to_string;
+using arithlib_implementation::bignum_to_string_length;
+using arithlib_implementation::bignum_to_string_hex;
+using arithlib_implementation::bignum_to_string_hex_length;
+using arithlib_implementation::bignum_to_string_octal;
+using arithlib_implementation::bignum_to_string_octal_length;
+using arithlib_implementation::bignum_to_string_binary;
+using arithlib_implementation::bignum_to_string_binary_length;
+
 }
 
 #endif // __arithlib_hpp

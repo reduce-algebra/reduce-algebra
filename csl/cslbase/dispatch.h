@@ -1,9 +1,9 @@
-// dispatch.h                              Copyright (C) 1990-2019 Codemist
+// dispatch.h                                   Copyright (C) 2019 Codemist
 
 #ifndef header_dispatch_h
 #define header_dispatch_h 1
 
-// $Id: version.h 4783 2018-09-25 20:26:06Z arthurcnorman $
+// $Id$
 
 
 /**************************************************************************
@@ -79,6 +79,7 @@
 // where a1.v and a2.v are of type LispObject and are whatever internal
 // representation the Lisp uses for the sort of data involved.
 
+#include "softfloat.h"
 #define softfloat_h 1
 
 // arithlib.hpp needs to know that it will be being used in a way that
@@ -86,9 +87,11 @@
 // C++ library.
 
 #define LISP 1
+
 #ifndef CSL
 #define CSL 1
-#endif
+#endif // CSL
+
 #include "arithlib.hpp"
 
 namespace number_dispatcher

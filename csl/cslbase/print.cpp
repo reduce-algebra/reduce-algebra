@@ -3236,6 +3236,26 @@ restart:
                                  (escaped_printing & escape_nolinebreak) || tmprint_flag);
                 return;
             }
+#ifdef ARITHLIB
+            if (is_new_bignum(u))
+            {   if (escaped_printing & escape_hex)
+                    print_newbighexoctbin(u, 16, escape_width(escaped_printing),
+                                          blankp,
+                                          (escaped_printing & escape_nolinebreak) || tmprint_flag);
+                else if (escaped_printing & escape_octal)
+                    print_newbighexoctbin(u, 8, escape_width(escaped_printing),
+                                          blankp,
+                                          (escaped_printing & escape_nolinebreak) || tmprint_flag);
+                else if (escaped_printing & escape_binary)
+                    print_newbighexoctbin(u, 2, escape_width(escaped_printing),
+                                          blankp,
+                                          (escaped_printing & escape_nolinebreak) || tmprint_flag);
+                else
+                    print_newbignum(u, blankp,
+                                    (escaped_printing & escape_nolinebreak) || tmprint_flag);
+                return;
+            }
+#endif
             else if (is_ratio(u))
             {   push(u);
 //
@@ -3456,16 +3476,26 @@ LispObject prinraw(LispObject u)
         sprintf(b, "%.8x%.8x", (int)hi, (int)lo);
         for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
     }
-    else if (!is_numbers(u) || type_of_header(h = numhdr(u)) != TYPE_BIGNUM)
-    {   for (i=0; i<11; i++)
-            putc_stream("<NotNumber>"[i], active_stream);
-    }
-    else
+    if (is_numbers(u) && type_of_header(h = numhdr(u)) == TYPE_BIGNUM)
     {   len = length_of_header(h);
         for (i=CELL; i<len; i+=4)
         {   sprintf(b, "%.8x ", bignum_digits(u)[(i-CELL)/4]);
             for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
         }
+    }
+#ifdef ARITHLIB
+    else if (is_numbers(u) && type_of_header(h) == TYPE_NEW_BIGNUM)
+    {   len = length_of_header(h);
+        for (i=8; i<len; i+=8)
+        {   sprintf(b, "%.16" PRIx64 " ",
+                *(uint64_t *)((char *)u - TAG_NUMBERS + i));
+            for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
+        }
+    }
+#endif // ARITHLIB
+    else
+    {   for (i=0; i<11; i++)
+            putc_stream("<NotNumber>"[i], active_stream);
     }
     pop(u);
     return u;

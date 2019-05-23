@@ -605,6 +605,15 @@ symbolic procedure token!-number x;
          go to num2 >>
        else if digit x then go to num1
        else if y = '(!0) and (x = '!x or x = '!X) then go to hexnum
+% The next line is a HACK so that 0zNNNNN will let ACN read in a potentially
+% big integer explicitly using an experimental version of the CSL bignum
+% arithmetic. The syntax will only be available if a function called "newplus"
+% is defined, which I take to be a signature of the testing code. When (and
+% I should probably say "if") CSL has fully adopted its new code I can get
+% rid of this!
+       else if y = '(!0) and
+               (x = '!z or x = '!Z) and
+               getd 'newplus then go to znum
 % For whatever original reason this ignores backslashes within numbers. This
 % I guess lets one write 12\34567\89000 and group digits in fives if you like.
 % I can not see this mentioned in the manual and wonder if anybody uses it.
@@ -624,7 +633,7 @@ symbolic procedure token!-number x;
 % will behave the way it used to. Similarly for cases with other letters at the
 % end of of numbers.
 %
-% To show part of why U believe that the status quo was wrong, note the
+% To show part of why I believe that the status quo was wrong, note the
 % different behaviour of
 %    2sqrt x;       (times 2 (list 'sqrt 'x))
 %    2exp x;        (times '(!:rd!: 2 . 0) (list 'xp 'x))
@@ -655,6 +664,14 @@ symbolic procedure token!-number x;
       if not (z := get(x := readch1(), 'hexdigit)) then go to ret1;
       y := 16*y + z;
       go to hexnum1;
+   znum:
+      y := 0;
+   znum1:
+      if not digit (x := readch1()) then go to ret1;
+% This uses functions newplus and newtimes that are only available in
+% non-standard testing builds of the CSL version...
+      y := newplus(newtimes(10, y), get(z, 'hexdigit));
+      go to znum1;
    nume2:
       if null z then rerror('rlisp,4,
          concat("Syntax error: improper number ",

@@ -1363,6 +1363,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     time_now   = space_now   = io_now   = errors_now   = 0;
     time_limit = space_limit = io_limit = errors_limit = -1;
     base_time = read_clock();
+    base_walltime = std::chrono::high_resolution_clock::now();
     gc_time = 0.0;
     fwin_pause_at_end = true;
 // Now that the window manager is active I can send output through

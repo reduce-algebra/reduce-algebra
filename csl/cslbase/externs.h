@@ -680,6 +680,7 @@ extern int window_heading;
 [[noreturn]] extern void my_exit(int n);
 
 extern uint64_t base_time;
+extern std::chrono::high_resolution_clock::time_point base_walltime;
 extern uint64_t gc_time;
 extern bool trap_floating_overflow;
 extern const volatile char *errorset_msg;
@@ -820,6 +821,9 @@ extern LispObject  printc(LispObject u);
 extern void        print_bignum(LispObject u, bool blankp, int nobreak);
 extern void        print_bighexoctbin(LispObject u,
                                       int radix, int width, bool blankp, int nobreak);
+extern void        print_newbignum(LispObject u, bool blankp, int nobreak);
+extern void        print_newbighexoctbin(LispObject u,
+                                         int radix, int width, bool blankp, int nobreak);
 extern LispObject  putprop(LispObject a, LispObject b,
                            LispObject c);
 extern LispObject  quot2(LispObject a, LispObject b);

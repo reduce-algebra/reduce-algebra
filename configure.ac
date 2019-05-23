@@ -688,7 +688,7 @@ AC_ARG_ENABLE(debug,
 
 AC_ARG_ENABLE(conservative,
   AC_HELP_STRING([--enable-conservative],
-                 [garbage collect option: testing andf development use (CSL only)]),
+                 [garbage collect option: testing and development use (CSL only)]),
   [],
   [enable_conservative="no"])
 
@@ -704,16 +704,16 @@ AC_ARG_ENABLE(experiment,
   [],
   [enable_experiment="no"])
 
-AC_ARG_ENABLE(arithlib,
-  AC_HELP_STRING([--enable-arithlib],
-                 [CSL starst to use arithlib.hpp bignums]),
-  [],
-  [enable_arithlib="no"])
-
-if test "x$enable_arithlib" = "xyes"
+if test "x$enable_experiment" = "xyes"
 then
-  AC_DEFINE(
+  enable_test="yes"
 fi
+
+AC_ARG_WITH(arithlib,
+  AC_HELP_STRING([--with-arithlib],
+                 [development of arithlib.hpp support (CSL only)]),
+  [],
+  [with_arithlib="no"])
 
 AC_ARG_ENABLE(jit,
   AC_HELP_STRING([--enable-jit],

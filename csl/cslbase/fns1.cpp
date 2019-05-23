@@ -1686,10 +1686,20 @@ LispObject get_vector_init(size_t n, LispObject val)
 
 uint64_t base_time;
 uint64_t gc_time;
+std::chrono::high_resolution_clock::time_point base_walltime;
 
 LispObject Ltime(LispObject env)
 {   uint64_t t0 = read_clock() - base_time;
     LispObject r = make_lisp_unsigned64(t0/1000);
+    return onevalue(r);
+}
+
+LispObject Lwalltime(LispObject env)
+{   using namespace std::chrono;
+    high_resolution_clock::time_point t0 = high_resolution_clock::now();
+    duration<double> span =
+        duration_cast<duration<double>>(t0 - base_walltime);
+    LispObject r = make_lisp_unsigned64((uint64_t)(1000.0*span.count()));
     return onevalue(r);
 }
 
@@ -2545,6 +2555,7 @@ setup_type const funcs1_setup[] =
     {"symbol-function",         G0W1, Lsymbol_function, G2W1, G3W1, G4W1},
     {"symbol-value",            G0W1, Lsymbol_value, G2W1, G3W1, G4W1},
     {"time",                    Ltime, G1W0, G2W0, G3W0, G4W0},
+    {"walltime",                Lwalltime, G1W0, G2W0, G3W0, G4W0},
     {"datelessp",               G0W2, G1W2, Ldatelessp, G3W2, G4W2},
     {"union",                   G0W2, G1W2, Lunion, G3W2, G4W2},
     {"union-symlist",           G0W2, G1W2, Lunion_symlist, G3W2, G4W2},
