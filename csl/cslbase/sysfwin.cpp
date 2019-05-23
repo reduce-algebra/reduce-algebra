@@ -416,7 +416,7 @@ uint64_t read_clock_microseconds(void)
 // This is a BSD-style clock facility, possibly giving a resolution of
 // only 1/100 second.
 
-double unix_ticks = 0;
+double unix_ticks = 0.0;
 
 uint64_t read_clock(void)
 {   struct tms tmsbuf;

@@ -2656,9 +2656,9 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 //
         Csrand((uint32_t)initial_random_seed);
 
-        uint64_t t0 = read_clock();
-        gc_time += t0;
-        base_time += t0;
+//?        uint64_t t0 = read_clock();
+//?        gc_time += t0;
+//?        base_time += t0;
 
         ensure_screen();
         procedural_output = NULL;
