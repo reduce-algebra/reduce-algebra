@@ -19,7 +19,7 @@ if [ "$lisp" = 'sbcl' ]; then
     if_sbcl=''
     if_clisp='%'
 elif [ "$lisp" = 'clisp' ]; then
-    runlisp='clisp -ansi'
+    runlisp='clisp -ansi -modern'
     faslext='fas'
     if_sbcl='%'
     if_clisp=''
@@ -37,9 +37,9 @@ if [ "sl-on-cl.lisp" -nt "sl-on-cl.$faslext" ]
 then
 echo +++++ Compiling sl-on-cl
 $runlisp << XXX &> log/sl-on-cl.blg
-(compile-file "sl-on-cl")
+(or (compile-file "sl-on-cl") (exit 1))
 XXX
-fi
+fi || (echo '***** Compilation failed'; exit)
 
 echo +++++ Building bootstrap REDUCE
 
@@ -63,7 +63,8 @@ $runlisp << XXX &> log/bootstrap.blg
 (cl:defvar !*argnochk t)
 (cl:defvar !*int nil)  % Prevents input buffer being saved.
 (cl:defvar !*msg nil)
-% (setq !*comp t)  % It's faster in some lisps if we compile.
+
+%if_clisp (setq !*comp t)  % It's faster in some lisps if we compile.
 
 % Do not use fasl version of "boot.sl": the CL compiler may optimize
 % away (i.e. discard) uses of fluid variables that are needed later in

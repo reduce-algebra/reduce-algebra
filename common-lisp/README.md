@@ -7,7 +7,7 @@ From the introductory chapter of [*Common Lisp the Language, 2nd edition,* by Gu
 
 > The goals of Common Lisp are thus very close to those of Standard Lisp and Portable Standard Lisp. Common Lisp differs from Standard Lisp primarily in incorporating more features, including a richer and more complicated set of data types and more complex control structures.
 
-**This code is currently experimental!**
+**This code is currently experimental!  The references to SBCL do not apply to this revision, which runs only on CLISP.**
 
 The files in this directory are intended to build and run the current distributed version of REDUCE on ANSI Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support explicitly only
 
@@ -51,7 +51,7 @@ Run the build script by executing the `bash` command
 
     ./build.sh -l lisp
 
-where lisp is either sbcl or clisp.
+where `lisp` is either `sbcl` or `clisp`.
 
 The build process should create two sub-directories in the build directory called `fasl` and `log`.  The whole `log` directory and the `*.lisp`, `*.dat` and `bootstrap.*` files in the `fasl` directory could be deleted after the build; only the files `fasl/reduce.*` and `fasl/*.fasl` are required to run REDUCE.  (I will probably delete superfluous files automatically at some later date, but for now they are useful for debugging.)  The SBCL and CLISP builds can in principle coexist since they use different extensions for fasl and memory image file names.
 
@@ -96,34 +96,35 @@ Current status
 
 The process described above should build all of REDUCE without any obvious errors.  So far, I have avoided the need to customise the main REDUCE source code (apart from the file `gnuintfc.red`).
 
-All core test files run to completion and the output agrees with CSL except for timings and the following:
+All available core test files produce output that agrees with CSL except for timings and the following:
 
 * `arith.tst` displays less numerical error;
 * `rlisp88.tst` and `assist.tst` show insignificant implementation differences.
 
-78% of the noncore test files produce output that agrees with CSL except for timings and minor numerical, letter case and/or implementation differences.  This includes the crack suite and plotting packages.  A big chunk of the noncore packages that do not yet run correctly consists of the redlog suite.
+All available noncore test files produce output that agrees with CSL except for timings and minor numerical and/or implementation differences, except for the following:
+
+* `pm` hangs on loading;
+* `ibalp` fails on CLISP with a program stack overflow error;
+* `pasf` output appears to be mathematically correct but is ordered differently;
+* I don't currently test `rubi_red` and `lalr`, which are rather CSL-specific.
 
 Timings
 -------
 
-I estimate that SBCL REDUCE is 3 or 4 times slower than PSL/CSL REDUCE, but note that it is currently built for comfort (of debugging) rather than speed!
+I estimate that SBCL REDUCE is 3 or 4 times slower than PSL/CSL REDUCE, but note that it is currently built for comfort (of debugging) rather than speed!  CLISP is a lot slower than SBCL!
 
-Operation                               | CSL Time | Previous Time | Latest Time
-----------------------------------------|----------|---------------|------------
-Build bootstrap REDUCE image            |          | 3.8 secs      | 4.1 secs
-Build final REDUCE image                |          | 0.4 secs      | 0.4 secs
-Run alg.tst                             | 47 ms    | 344 ms        | 282 ms
-Run (and check) all core test files     | 29 secs  |  50 secs      |  50 secs
-Run (and check) most noncore test files |  5 mins  |  17 mins      |  17 mins
+Operation                               | CSL Time | Latest SBCL | Latest CLISP
+----------------------------------------|----------|-------------|-------------
+Build bootstrap REDUCE image            |          | 4.1 secs    | 33.2 secs
+Build final REDUCE image                |          | 0.4 secs    |  3.3 secs
+Run alg.tst                             | 47 ms    | 282 ms      |  860 ms
+Run (and check) all core test files     | 29 secs  |  50 secs    |  4 m 25 s
+Run (and check) most noncore test files |  5 mins  |  17 mins    | 87 m 11 s
 
-The shorter times above are probably not very meaningful.  Most of the time building REDUCE goes in compiling the packages, which takes a couple of minutes, but I don't currently have any precise timings for this.  The CSL times do not include checking, which involves running `diff`.  The CL time for the noncore tests does not include all packages since some of the tests currently hang.
-
-CLISP is a lot slower than SBCL!
+The shorter times above are probably not very meaningful.  Most of the time building REDUCE goes in compiling the packages, which takes a few minutes, but I don't currently have any precise timings for this.  The CSL test times do not include checking, which involves running `diff`.  The CL time for the noncore tests does not include all packages since some of the tests currently hang.
 
 Known bugs
 ----------
-
-By default, with `on defn` all output (including strings) will be lower case.  If you set `off printlower` then string case will be correct but all identifiers will be upper case.  This bug is a consequence of the fact that SL-on-CL is currently an upper-case lisp internally, whereas REDUCE assumes a lower-case lisp.  Input is up-cased when it is read and down-cased when it is printed, except for strings, for which character case is preserved.  However, in a few situations, strings are printed as a sequence of single-character identifiers, which are down-cased by default.  I have not found a solution to this bug, but it's essentially cosmetic and I don't suppose "on defn" is used a great deal.
 
 PSL and CSL prettyprint _ without an escape (unless it appears alone), whereas CL REDUCE always prettyprints _ with an escape.  This appears to be because CL REDUCE uses "rprint/pretty.red", whereas PSL and CSL don't!
 
@@ -142,12 +143,12 @@ Optimise SL-on-CL to improve its speed.
 
 Better error handling.
 
-Implement a proper Lisp init function and dump an executable file.
+Implement a proper Lisp init function (and possibly dump an executable file).
 
 Replace shell scripts with Common Lisp code to build REDUCE portably?
 
-Make SL-on-CL lower case and stop downcasing in the print functions.  (Internal functions could remain upper case.)  This would solve the problem that prettyprinted strings are downcased and avoid the need for a couple of ugly print-case related hacks.  With SBCL, this will probably cause problems with a few key symbols, such as NIL, T, LAMBDA, QUOTE, as it does with Emacs Lisp, so I'm not too eager to try it.  (Could translate nil to '().)  However, this should be straightforward with CLISP, which provides a lower-case "modern" version of Common Lisp.
+Make SL-on-CL lower case on SBCL.
 
 Allow REDUCE to be run with a current directory other than the build directory.
 
-Improve support for the noncore packages &ndash; **work currently in progress**.
+Improve support for the few remaining noncore packages that do not run.

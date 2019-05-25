@@ -30,9 +30,9 @@ if [ "$lisp" = 'sbcl' ]; then
     if_sbcl=''
     if_clisp='%'
 elif [ "$lisp" = 'clisp' ]; then
-    runlisp='clisp -ansi'
-    runbootstrap='clisp -q -M fasl/bootstrap.mem'
-    runreduce='clisp -q -M fasl/reduce.mem'
+    runlisp='clisp -ansi -modern'
+    runbootstrap='clisp -q -norc -M fasl/bootstrap.mem'
+    runreduce='clisp -q -norc -M fasl/reduce.mem'
     saveext='mem'
     faslext='fas'
     if_sbcl='%'
@@ -129,18 +129,18 @@ if [ "sl-on-cl.lisp" -nt "sl-on-cl.$faslext" ]
 then
 echo +++++ Compiling sl-on-cl
 $runlisp << XXX &> log/sl-on-cl.blg
-(compile-file "sl-on-cl")
+(or (compile-file "sl-on-cl") (exit 1))
 XXX
-fi
+fi || (echo '***** Compilation failed'; exit)
 
 if [ "trace.lisp" -nt "trace.$faslext" ]
 then
 echo +++++ Compiling trace
 $runlisp << XXX &> log/trace.blg
 (load "sl-on-cl")
-(compile-file "trace")
+(or (compile-file "trace") (exit 1))
 XXX
-fi
+fi || (echo '***** Compilation failed'; exit)
 
 echo +++++ Creating the REDUCE image file
 

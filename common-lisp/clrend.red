@@ -289,22 +289,6 @@ symbolic procedure ttab n;  while posn() < n do prin2 " ";
 
 symbolic inline procedure explodec x; explode2 x;
 
-% This function is called in redlog but only defined for PSL or CSL
-% specifically.  Otherwise, it only gets an autoload definition that
-% causes infinite recursion when called.  This stub is an attempt to
-% avoid this error, but nothing more.  It will need attention later!
-
-remflag('(systo_get!-resource!-directory), 'lose);
-
-procedure systo_get!-resource!-directory; "";
-
-flag('(systo_get!-resource!-directory), 'lose);
-
-% This function is called in tmprint and apparently defined in PSL.
-% This stub is an attempt to avoid an error, but nothing more.  It
-% will need attention later!
-
-procedure compute!-prompt!-string(count,level); "";
 
 % Make ON DEFN load the prettyprinter if necessary and
 % OFF DEFN reinstate property lists saved during ON DEFN:
@@ -317,9 +301,15 @@ put('comp, 'simpfg, '((t (compilation t))
                       (nil (compilation nil))));
 #endif
 
+
+#if (not (memq 'clisp lispsystem!*))
+% These two functions are defined in arith/smlbflot.red, but
+% smallcompress is re-implemented in sl-on-cl.lisp and smallsplit is
+% used only in smallcompress, so is no longer required:
+flag('(smallcompress smallsplit),'lose);
+
 % This procedure is defined in "rlisp88/inspect.red", but it prints
 % all letters as lower case.  This version fixes that:
-
 remflag('(i!&prn), 'lose);
 
 procedure i!&prn x;
@@ -331,6 +321,27 @@ procedure i!&prn x;
    end;
 
 flag('(i!&prn), 'lose);
+#endif
+
+
+remflag('(systo_get!-resource!-directory), 'lose);
+
+% This function is called in redlog but only defined for PSL or CSL
+% specifically.  Otherwise, it only gets an autoload definition that
+% causes infinite recursion when called.  This stub is an attempt to
+% avoid this error, but nothing more.  It may need attention later,
+% but what is the Common Lisp resource directory?
+symbolic procedure systo_get!-resource!-directory; "";
+
+flag('(systo_get!-resource!-directory), 'lose);
+
+
+% This function is called in tmprint and apparently defined in PSL.
+% This stub is an attempt to avoid an error, but nothing more.  It
+% will need attention later!
+
+procedure compute!-prompt!-string(count,level); "";
+
 
 % Fixes for the crack suite
 % =========================

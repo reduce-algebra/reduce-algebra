@@ -33,7 +33,8 @@
 
 fluid '(!*savedef !*gc!-hook!* !*noinlines);
 
-global '(!*psl !*csl);					% CL is neither!
+global '(!*psl !*csl);					% CL is neither
+!*psl := t;                             % but pretend to be PSL!
 
 % Support for package creation.
 
@@ -62,11 +63,6 @@ flag('(eqcar),'lose);
 % These functions are already defined (more or less) in Common Lisp:
 flag('(first second third rest lastpair lastcar nth pnth reversip
    evenp oddp symbol!-name),'lose);
-
-% These two functions are defined in arith/smlbflot.red, but
-% smallcompress is re-implemented in sl-on-cl.lisp and smallsplit is
-% used only in smallcompress, so is no longer required:
-flag('(smallcompress smallsplit),'lose);
 
 % These functions are defined in rlisp/tok.red, but I have
 % re-implemented them in sl-on-cl.lisp:
@@ -97,12 +93,21 @@ flag('(geq leq),'lose);
 % yesp1 is defined as an alias for Common Lisp y-or-n-p in sl-on-cl:
 flag('(yesp1),'lose);
 
-% orderp is needed in rlisp/switch, so define it here:
+% red!-char!-downcase is defined in sl-on-cl, used in rlisp/tok.red
+% and redefined in several files:
+flag('(red!-char!-downcase),'lose);
+
+% orderp is needed in rlisp/switch, so define it here and prevent if
+% being redefined as it would be for PSL:
+remflag('(orderp),'lose);
+
 symbolic procedure orderp(u,v);
    % This CL-specific definition of ORDERP is designed to work in
    % lexicographical order.  It assumes arguments are truly id's,
    % which should be true with current REDUCE.  Ignore case.
    string!-not!-greaterp(symbol!-name u, symbol!-name v);
+
+flag('(orderp),'lose);
 
 % To ignore inline declarations (see rlisp/proc.red and
 % rlisp/smacro.red):
