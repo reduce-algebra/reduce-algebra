@@ -2110,6 +2110,23 @@ public:
 #endif // softfloat_h
 };
 
+class Square
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
+    static LispObject op(Rat b);
+    static LispObject op(Cpx b);
+    static LispObject op(SFlt b);
+    static LispObject op(Flt b);
+    static LispObject op(double b);
+#ifdef softfloat_h
+    static LispObject op(LFlt b);
+#endif // softfloat_h
+};
+
 class Reciprocal
 {
 public:
@@ -2214,6 +2231,9 @@ public:
     static bool op(Fixnum b);
     static bool op(uint64_t *b);
 };
+
+// Note that for Float and Float128 I return the unwrapped floating
+// point value.
 
 class Float
 {
@@ -2320,7 +2340,7 @@ public:
 class Ldexp
 {
 public:
-    static LispObject op(LispObject a, int n);
+    static LispObject op(LispObject a, LispObject n);
 
     static LispObject op(Fixnum b, int n);
     static LispObject op(uint64_t *b, int n);

@@ -1591,6 +1591,127 @@ LispObject Divide::op(LFlt a, LFlt b)
     return cons(q, r);
 }
 
+LispObject Square::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Square>("square", a);
+}
+
+
+LispObject Square::op(Fixnum a)
+{   return arithlib_lowlevel::Square::op(a.intval());
+}
+
+
+LispObject Square::op(uint64_t *a)
+{   return arithlib_lowlevel::Square::op(a);
+}
+
+LispObject Square::op(Rat a)
+{   LispObject p = a.numerator(), q = a.denominator();
+    return make_ratio(Square::op(p), Square::op(q));
+}
+
+LispObject Square::op(Cpx a)
+{   // (x + iy)^2 = x^2 - y^2 + 2*i*x*y
+    LispObject x = a.real_part(), y = a.imag_part();
+    LispObject vx = Difference::op(Square::op(x), Square::op(y));
+    LispObject vy = Times::op(fixnum_of_int(2), Times::op(x, y));
+    return make_complex(vx, vy);
+}
+
+LispObject Square::op(SFlt a)
+{   return pack_short_float(a.floatval()*a.floatval());
+}
+
+LispObject Square::op(Flt a)
+{   return pack_single_float(a.floatval()*a.floatval());
+}
+
+LispObject Square::op(double a)
+{   return make_boxfloat(a*a, TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Square::op(LFlt a)
+{   return make_boxfloat128(f128_mul(a.floatval(), a.floatval()));
+}
+
+LispObject Reciprocal::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Reciprocal>("reciprocal", a);
+}
+
+
+LispObject Reciprocal::op(Fixnum a)
+{   switch (a.intval())
+    {   case 0:  aerror("reciprocal of zero");
+        case 1:  return int_of_fixnum(1);
+        case -1: return int_of_fixnum(-1);
+        default: return int_of_fixnum(0);
+    }
+}
+
+
+LispObject Reciprocal::op(uint64_t *a)
+{   return int_of_fixnum(0);
+}
+
+LispObject Reciprocal::op(Rat a)
+{   LispObject p = a.numerator(), q = a.denominator();
+    if (Zerop::op(p)) aerror("reciprocal of zero");
+    else if (Minusp::op(p))
+    {   p = Minus::op(p);
+        q = Minus::op(q);
+    }
+    return make_ratio(q, p);
+}
+
+LispObject Reciprocal::op(Cpx a)
+{   // 1/(x + iy) = (x - iy)/(x^2+y^2)
+    LispObject x = a.real_part(), y = a.imag_part();
+    LispObject d = Plus::op(Square::op(x), Square::op(y));
+    if (Zerop::op(d)) aerror("reciprocal of zero");
+// If the complex value has both components integers I will upgrade
+// them to floating point.
+    bool promote = false;
+    switch (d & XTAG_BITS)
+    {   case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
+            switch (type_of_header(numhdr(d)))
+            {   case TYPE_NEW_BIGNUM:
+                case TYPE_BIGNUM:
+                    promote = true;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case TAG_FIXNUM:
+            promote = true;
+            break;
+        default:
+            break;
+    }
+    if (promote)
+    {   x = Float::op(x);
+        y = Float::op(y);
+        d = Float::op(d);
+    }
+    return make_complex(Quotient::op(x, d), Quotient::op(y, d));
+}
+
+LispObject Reciprocal::op(SFlt a)
+{   return pack_short_float(1.0 / a.floatval());
+}
+
+LispObject Reciprocal::op(Flt a)
+{   return pack_single_float(1.0 / a.floatval());
+}
+
+LispObject Reciprocal::op(double a)
+{   return make_boxfloat(1.0 / a, TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Reciprocal::op(LFlt a)
+{   return make_boxfloat128(f128_div(i64_to_f128(1), a.floatval()));
+}
+
 // end of arith-times.cpp
 
 #endif // ARITHLIB

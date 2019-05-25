@@ -288,7 +288,8 @@ all-local:	csl.img $(REDUCE_IMG)
 
 if arithlib
 arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
-		arith-float.cpp arith-gcdn.cpp arith-print.cpp
+		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
+		arith-compare.cpp
 else !arithlib
 arith_sources =
 endif !arithlib
@@ -917,6 +918,7 @@ csl-arith-times.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 csl-arith-float.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 csl-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 csl-arith-print.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+csl-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 
 bootstrapreduce-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 bootstrapreduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)

@@ -625,6 +625,50 @@ LispObject intern(size_t len, bool escaped)
     }
 }
 
+LispObject intern_hex(size_t len)
+{   size_t i;
+    LispObject v = fixnum_of_int(0);
+    int32_t d = 0, d1 = 10;
+    for (i=2; i<boffop; i++)
+    {   if (d1 == 0x10000000 || i == boffop-1)
+        {   d = 16*d + (int32_t)value_in_radix(boffo_char(i), 16);
+            v = times2(v, fixnum_of_int(d1));
+            v = plus2(v, fixnum_of_int(d));
+            d = 0;
+            d1 = 16;
+        }
+        else
+        {   d = 16*d + (int32_t)value_in_radix(boffo_char(i), 16);
+            d1 = 16*d1;
+        }
+    }
+    return v;
+}
+
+#ifdef ARITHLIB
+#include "dispatch.h"
+
+LispObject intern_new(size_t len)
+{   size_t i;
+    LispObject v = fixnum_of_int(0);
+    int32_t d = 0, d1 = 10;
+    for (i=2; i<boffop; i++)
+    {   if (d1 == 10000000 || i == boffop-1)
+        {   d = 10*d + (int32_t)value_in_radix(boffo_char(i), 10);
+            v = Times::op(v, fixnum_of_int(d1));
+            v = Plus::op(v, fixnum_of_int(d));
+            d = 0;
+            d1 = 10;
+        }
+        else
+        {   d = 10*d + (int32_t)value_in_radix(boffo_char(i), 10);
+            d1 = 10*d1;
+        }
+    }
+    return v;
+}
+#endif
+
 LispObject make_undefined_symbol(char const *s)
 {   return make_symbol(s, 0, undefined_0, undefined_1, undefined_2,
                              undefined_3, undefined_4up);
@@ -2618,14 +2662,26 @@ static LispObject read_s(LispObject stream)
                     if (curchar > 0xff || !isdigit(curchar))
                         return intern(boffop, false);
                 }
-                while (curchar <= 0xff && isdigit(curchar))
+                bool ishex = false, isnew = false;
+// The mess here should allow  nnnnnn  0Xxxxxxxx 0Znnnnnnn where n denotes
+// 0..9 and x denotes 0..9a..fA..F.
+// The "0z" notation is a TEMPORARY provision while I work on an upgraded
+// arithmetic package.
+                while (curchar <= 0xff &&
+                    (isdigit(curchar) ||
+                     ((boffop == 1 &&
+                       boffo_char(0)=='0' &&
+                       (((curchar=='x' || curchar=='X') && (ishex=true)) ||
+                        ((curchar=='z' || curchar=='Z') && (isnew=true))))) ||
+                     (ishex && (('a'<=curchar && curchar<='f') ||
+                                ('A'<=curchar && curchar<='F')))))
                 {   push(stream);
                     packcharacter(curchar);  // Should be '0 to '9' (only)
                     pop(stream);
                     curchar = getc_stream(stream);
                 }
 // accept possible decimal point
-                if (curchar == '.')
+                if (!ishex && curchar == '.')
                 {   push(stream);
                     packcharacter(curchar);
                     pop(stream);
@@ -2638,13 +2694,14 @@ static LispObject read_s(LispObject stream)
                     }
                 }
 // accept possible exponent
-                if (curchar == 'e' || curchar == 'E' ||
+                if (!ishex &&
+                    (curchar == 'e' || curchar == 'E' ||
 // Extend syntax to support more exponent signifiers. This is a change so
 // that e.g "1.23D45" will now be parsed as one symbol not two.
-                    curchar == 's' || curchar == 'S' ||
-                    curchar == 'f' || curchar == 'F' ||
-                    curchar == 'd' || curchar == 'D' ||
-                    curchar == 'l' || curchar == 'L')
+                     curchar == 's' || curchar == 'S' ||
+                     curchar == 'f' || curchar == 'F' ||
+                     curchar == 'd' || curchar == 'D' ||
+                     curchar == 'l' || curchar == 'L'))
                 {   push(stream);
                     packcharacter(curchar);
                     pop(stream);
@@ -2662,7 +2719,11 @@ static LispObject read_s(LispObject stream)
                         curchar = getc_stream(stream);
                     }
                 }
-                return intern(boffop, false);
+                if (ishex) return intern_hex(boffop);
+#ifdef ARITHLIB
+                else if (isnew) return intern_new(boffop);
+#endif
+                else return intern(boffop, false);
             }
 
             case '_':       // This seems to have to be a funny case for REDUCE

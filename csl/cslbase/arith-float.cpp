@@ -44,12 +44,7 @@ using number_dispatcher::SFlt;
 using number_dispatcher::Flt;
 using number_dispatcher::LFlt;
 
-//@@@
-//@@@ At present this is basically the code for Plus, edited so that the
-//@@@ names used are different. Every function here will thus need review!
-//@@@ However as a place-holder this is still useful.
-//@@@
-
+//========================================================================
 
 double Float::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Float>("float", a);
@@ -95,6 +90,7 @@ double Float::op(LFlt a)
     return d;
 }
 
+//========================================================================
 
 
 float128_t Float128::op(LispObject a)
@@ -122,23 +118,244 @@ float128_t Float128::op(Cpx a)
 float128_t Float128::op(SFlt a)
 {   double d = a.floatval();
     float64_t dd;
+    memcpy(&dd, &d, sizeof(double));
     return f64_to_f128(dd);
 }
 
 float128_t Float128::op(Flt a)
 {   double d = a.floatval();
     float64_t dd;
+    memcpy(&dd, &d, sizeof(double));
     return f64_to_f128(dd);
 }
 
 float128_t Float128::op(double a)
 {   double d = a;
     float64_t dd;
+    memcpy(&dd, &d, sizeof(double));
     return f64_to_f128(dd);
 }
 
 float128_t Float128::op(LFlt a)
 {   return a.floatval();
+}
+
+//========================================================================
+
+
+LispObject Fix::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Fix>("fix", a);
+}
+
+
+LispObject Fix::op(Fixnum a)
+{   return a.value();
+}
+
+
+LispObject Fix::op(uint64_t *a)
+{   return (LispObject)((char *)a - 8 + TAG_NUMBERS);
+}
+
+LispObject Fix::op(Rat a)
+{   return Quotient::op(a.numerator(), a.denominator());
+}
+
+LispObject Fix::op(Cpx a)
+{   aerror1("bad argument for fix", a.value());
+}
+
+LispObject Fix::op(SFlt a)
+{   return arithlib_lowlevel::double_to_bignum(a.floatval());
+}
+
+LispObject Fix::op(Flt a)
+{   return arithlib_lowlevel::double_to_bignum(a.floatval());
+}
+
+LispObject Fix::op(double a)
+{   return arithlib_lowlevel::double_to_bignum(a);
+}
+
+LispObject Fix::op(LFlt a)
+{   return arithlib_lowlevel::float128_to_bignum(a.floatval());
+}
+
+//========================================================================
+
+LispObject Floor::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Floor>("floor", a);
+}
+
+
+LispObject Floor::op(Fixnum a)
+{   return a.value();
+}
+
+
+LispObject Floor::op(uint64_t *a)
+{   return (LispObject)((char *)a - 8 + TAG_NUMBERS);
+}
+
+LispObject Floor::op(Rat a)   // @@@
+{   return Quotient::op(a.numerator(), a.denominator());
+}
+
+LispObject Floor::op(Cpx a)
+{   aerror1("bad argument for floor", a.value());
+}
+
+LispObject Floor::op(SFlt a)
+{   return arithlib_lowlevel::double_to_floor(a.floatval());
+}
+
+LispObject Floor::op(Flt a)
+{   return arithlib_lowlevel::double_to_floor(a.floatval());
+}
+
+LispObject Floor::op(double a)
+{   return arithlib_lowlevel::double_to_floor(a);
+}
+
+LispObject Floor::op(LFlt a)
+{   return arithlib_lowlevel::float128_to_floor(a.floatval());
+}
+
+//========================================================================
+
+LispObject Ceiling::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Ceiling>("ceiling", a);
+}
+
+
+LispObject Ceiling::op(Fixnum a)
+{   return a.value();
+}
+
+
+LispObject Ceiling::op(uint64_t *a)
+{   return (LispObject)((char *)a - 8 + TAG_NUMBERS);
+}
+
+LispObject Ceiling::op(Rat a)   // @@@
+{   return Quotient::op(a.numerator(), a.denominator());
+}
+
+LispObject Ceiling::op(Cpx a)
+{   aerror1("bad argument for ceiling", a.value());
+}
+
+LispObject Ceiling::op(SFlt a)
+{   return arithlib_lowlevel::double_to_ceiling(a.floatval());
+}
+
+LispObject Ceiling::op(Flt a)
+{   return arithlib_lowlevel::double_to_ceiling(a.floatval());
+}
+
+LispObject Ceiling::op(double a)
+{   return arithlib_lowlevel::double_to_ceiling(a);
+}
+
+LispObject Ceiling::op(LFlt a)
+{   return arithlib_lowlevel::float128_to_ceiling(a.floatval());
+}
+
+//========================================================================
+
+LispObject Frexp::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Frexp>("frexp", a);
+}
+
+
+LispObject Frexp::op(Fixnum a)
+{   aerror1("bad argument to frexp", a.value());
+}
+
+
+LispObject Frexp::op(uint64_t *a)
+{   aerror1("bad argument to frexp", (LispObject)((char *)a - 8 + TAG_NUMBERS));
+}
+
+LispObject Frexp::op(Rat a)
+{   aerror1("bad argument for frexp", a.value());
+}
+
+LispObject Frexp::op(Cpx a)
+{   aerror1("bad argument for frexp", a.value());
+}
+
+LispObject Frexp::op(SFlt a)
+{   int x;
+    double d = std::frexp(a.floatval(), &x);
+    return cons(pack_short_float(d), fixnum_of_int(x));
+}
+
+LispObject Frexp::op(Flt a)
+{   int x;
+    double d = std::frexp(a.floatval(), &x);
+    return cons(pack_single_float(d), fixnum_of_int(x));
+}
+
+LispObject Frexp::op(double a)
+{   int x;
+    double d = std::frexp(a, &x);
+    return cons(make_boxfloat(d, TYPE_DOUBLE_FLOAT), fixnum_of_int(x));
+}
+
+LispObject Frexp::op(LFlt a)
+{   int x;
+    float128_t d = a.floatval();
+    f128M_frexp(&d, &d, &x);
+    return cons(make_boxfloat128(d), fixnum_of_int(x));
+}
+
+//========================================================================
+
+LispObject Ldexp::op(LispObject a, LispObject b)
+{   return number_dispatcher::shiftlike<LispObject,Ldexp>("ldexp", a, b);
+}
+
+
+LispObject Ldexp::op(Fixnum a, int b)
+{   double d = std::ldexp((double)a.intval(), b);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+
+LispObject Ldexp::op(uint64_t *a, int b)
+{   double d = std::ldexp(Float::op(a), b);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Ldexp::op(Rat a, int b)
+{   double d = std::ldexp(Float::op(a), b);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Ldexp::op(Cpx a, int b)
+{   aerror1("bad argument for ldexp", a.value());
+}
+
+LispObject Ldexp::op(SFlt a, int b)
+{   double d = std::ldexp(a.floatval(), b);
+    return pack_short_float(d);
+}
+
+LispObject Ldexp::op(Flt a, int b)
+{   double d = std::ldexp(a.floatval(), b);
+    return pack_single_float(d);
+}
+
+LispObject Ldexp::op(double a, int b)
+{   double d = std::ldexp(a, b);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Ldexp::op(LFlt a, int b)
+{   float128_t f = a.floatval();
+    f128M_ldexp(&f, b);
+    return make_boxfloat128(f);
 }
 
 

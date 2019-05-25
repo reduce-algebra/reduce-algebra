@@ -74,20 +74,176 @@ static LispObject Nplus(LispObject env, LispObject a1, LispObject a2,
     return onevalue(w);
 }
 
+static LispObject Ntimes(LispObject env)
+{   return onevalue(fixnum_of_int(1));
+}
+
+static LispObject Ntimes(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+static LispObject Ntimes(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Times::op(a1, a2));
+}
+
+static LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
+                                 LispObject a3)
+{   return onevalue(Times::op(Times::op(a1, a2), a3));
+}
+
+static LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
+                                 LispObject a3, LispObject a4plus)
+{   LispObject w = Times::op(Times::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Times::op(w, qcar(a4plus));
+        a4plus = qcdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+static LispObject Ngcdn(LispObject env)
+{   return onevalue(fixnum_of_int(0));
+}
+
+static LispObject Ngcdn(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+static LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Gcdn::op(a1, a2));
+}
+
+static LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
+                                 LispObject a3)
+{   return onevalue(Gcdn::op(Gcdn::op(a1, a2), a3));
+}
+
+static LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
+                                 LispObject a3, LispObject a4plus)
+{   LispObject w = Gcdn::op(Gcdn::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Gcdn::op(w, qcar(a4plus));
+        a4plus = qcdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+static LispObject Nlcmn(LispObject env)
+{   return onevalue(fixnum_of_int(1));
+}
+
+static LispObject Nlcmn(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+static LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Lcmn::op(a1, a2));
+}
+
+static LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
+                                 LispObject a3)
+{   return onevalue(Lcmn::op(Lcmn::op(a1, a2), a3));
+}
+
+static LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
+                                 LispObject a3, LispObject a4plus)
+{   LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Lcmn::op(w, qcar(a4plus));
+        a4plus = qcdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+
+static LispObject Ndifference(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Difference::op(a1, a2));
+}
+
+
+static LispObject Nquotient(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Quotient::op(a1, a2));
+}
+
+
+static LispObject Nremainder(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Remainder::op(a1, a2));
+}
+
+
+static LispObject Ndivide(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Divide::op(a1, a2));
+}
+
 static LispObject Nadd1(LispObject env, LispObject a1)
 {   return onevalue(Plus::op(a1, fixnum_of_int(1)));
 }
 
+static LispObject Nsub1(LispObject env, LispObject a1)
+{   return onevalue(Difference::op(a1, fixnum_of_int(1)));
+}
+
+static LispObject Nonep(LispObject env, LispObject a1)
+{   return onevalue(Onep::op(a1));
+}
+
+static LispObject Nevenp(LispObject env, LispObject a1)
+{   return onevalue(Evenp::op(a1));
+}
+
+static LispObject Noddp(LispObject env, LispObject a1)
+{   return onevalue(Oddp::op(a1));
+}
+
+static LispObject Nzerop(LispObject env, LispObject a1)
+{   return onevalue(Zerop::op(a1));
+}
+
+static LispObject Nminusp(LispObject env, LispObject a1)
+{   return onevalue(Minusp::op(a1));
+}
+
+static LispObject Nminus(LispObject env, LispObject a1)
+{   return onevalue(Minus::op(a1));
+}
+
+static LispObject Nreciprocal(LispObject env, LispObject a1)
+{   return onevalue(Reciprocal::op(a1));
+}
+
+static LispObject Nfloat(LispObject env, LispObject a1)
+{   return onevalue(Float::op(a1));
+}
+
+static LispObject Nfix(LispObject env, LispObject a1)
+{   return onevalue(Fix::op(a1));
+}
+
+static LispObject Nfloor(LispObject env, LispObject a1)
+{   return onevalue(Floor::op(a1));
+}
+
+static LispObject Nceiling(LispObject env, LispObject a1)
+{   return onevalue(Ceiling::op(a1));
+}
+
+static LispObject Nfloat128(LispObject env, LispObject a1)
+{   return onevalue(make_boxfloat128(Float128::op(a1)));
+}
+
+static LispObject Nfrexp(LispObject env, LispObject a1)
+{   return onevalue(Frexp::op(a1));
+}
+
+static LispObject Nldexp(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Ldexp::op(a1, a2));
+}
+
+
+
 #if 0
-Nplus,                   Nplus,                   Nplus,                   Nplus,                   Nplus,
-Nadd1,                   Nadd1,                   Nadd1,                   Nadd1,                   Nadd1,
-Nsub1,                   Nsub1,                   Nsub1,                   Nsub1,                   Nsub1,
-Ndifference,             Ndifference,             Ndifference,             Ndifference,             Ndifference,
-Ntimes,                  Ntimes,                  Ntimes,                  Ntimes,                  Ntimes,
-Nquotient,               Nquotient,               Nquotient,               Nquotient,               Nquotient,
-Nremainder,              Nremainder,              Nremainder,              Nremainder,              Nremainder,
-Ndivide,                 Ndivide,                 Ndivide,                 Ndivide,                 Ndivide,
-Nexpt,                   Nexpt,                   Nexpt,                   Nexpt,                   Nexpt,
+// Pending...
+Nexpt,
 Neqn,                    Neqn,                    Neqn,                    Neqn,                    Neqn,
 Nneqn,                   Nneqn,                   Nneqn,                   Nneqn,                   Nneqn,
 Ngreaterp,               Ngreaterp,               Ngreaterp,               Ngreaterp,               Ngreaterp,
@@ -100,42 +256,44 @@ Nlogxor,                 Nlogxor,                 Nlogxor,                 Nlogx
 Nlogeqv,                 Nlogeqv,                 Nlogeqv,                 Nlogeqv,                 Nlogeqv,
 Nlshift,                 Nlshift,                 Nlshift,                 Nlshift,                 Nlshift,
 Nrshift,                 Nrshift,                 Nrshift,                 Nrshift,                 Nrshift,
-Ngcdn,                   Ngcdn,                   Ngcdn,                   Ngcdn,                   Ngcdn,
-Nlcmn,                   Nlcmn,                   Nlcmn,                   Nlcmn,                   Nlcmn,
 Nmodular_plus,           Nmodular_plus,           Nmodular_plus,           Nmodular_plus,           Nmodular_plus,
 Nmodular_difference,     Nmodular_difference,     Nmodular_difference,     Nmodular_difference,     Nmodular_difference,
 Nmodular_times,          Nmodular_times,          Nmodular_times,          Nmodular_times,          Nmodular_times,
 Nmodular_quotient,       Nmodular_quotient,       Nmodular_quotient,       Nmodular_quotient,       Nmodular_quotient,
-Nminus,                  Nminus,                  Nminus,                  Nminus,                  Nminus,
-Nminusp,                 Nminusp,                 Nminusp,                 Nminusp,                 Nminusp,
-Nreciprocal,             Nreciprocal,             Nreciprocal,             Nreciprocal,             Nreciprocal,
-Nzerop,                  Nzerop,                  Nzerop,                  Nzerop,                  Nzerop,
-Nonep,                   Nonep,                   Nonep,                   Nonep,                   Nonep,
-Noddp,                   Noddp,                   Noddp,                   Noddp,                   Noddp,
-Nevenp,                  Nevenp,                  Nevenp,                  Nevenp,                  Nevenp,
 Nbitnot,                 Nbitnot,                 Nbitnot,                 Nbitnot,                 Nbitnot,
 Nset_Modulus,            Nset_Modulus,            Nset_Modulus,            Nset_Modulus,            Nset_Modulus,
 Nmodular_number,         Nmodular_number,         Nmodular_number,         Nmodular_number,         Nmodular_number,
 Nmodular_minus,          Nmodular_minus,          Nmodular_minus,          Nmodular_minus,          Nmodular_minus,
-Nfloat,                  Nfloat,                  Nfloat,                  Nfloat,                  Nfloat,
-Nfloat128,               Nfloat128,               Nfloat128,               Nfloat128,               Nfloat128,
-Nfix,                    Nfix,                    Nfix,                    Nfix,                    Nfix,
-Nfloor,                  Nfloor,                  Nfloor,                  Nfloor,                  Nfloor,
-Nceiling,                Nceiling,                Nceiling,                Nceiling,                Nceiling,
-Nfrexp,                  Nfrexp,                  Nfrexp,                  Nfrexp,                  Nfrexp,
-Nldexp,                  Nldexp,                  Nldexp,                  Nldexp,                  Nldexp,
 #endif
 
 setup_type const arith_setup[] =
 {
     {"newplus",              Nplus,              Nplus,              Nplus,              Nplus,              Nplus},
     {"newadd1",              G0W1,               Nadd1,              G2W1,               G3W1,               G4W1},
-#if 0
-    {"newdifference",        Ndifference,        Ndifference,        Ndifference,        Ndifference,        Ndifference},
+    {"newdifference",        G0W2,               G1W2,               Ndifference,        G3W2,               G4W2},
     {"newtimes",             Ntimes,             Ntimes,             Ntimes,             Ntimes,             Ntimes},
-    {"newquotient",          Nquotient,          Nquotient,          Nquotient,          Nquotient,          Nquotient},
-    {"newremainder",         Nremainder,         Nremainder,         Nremainder,         Nremainder,         Nremainder},
-    {"newdivide",            Ndivide,            Ndivide,            Ndivide,            Ndivide,            Ndivide},
+    {"newquotient",          G0W2,               G1W2,               Nquotient,          G3W2,               G4W2},
+    {"newremainder",         G0W2,               G1W2,               Nremainder,         G3W2,               G4W2},
+    {"newdivide",            G0W2,               G1W2,               Ndivide,            G3W2,               G4W2},
+    {"newgcdn",              Ngcdn,              Ngcdn,              Ngcdn,              Ngcdn,              Ngcdn},
+    {"newlcmn",              Nlcmn,              Nlcmn,              Nlcmn,              Nlcmn,              Nlcmn},
+    {"newminus",             G0W1,               Nminus,             G2W1,               G3W1,               G4W1},
+    {"newminusp",            G0W1,               Nminusp,            G2W1,               G3W1,               G4W1},
+    {"newreciprocal",        G0W1,               Nreciprocal,        G2W1,               G3W1,               G4W1},
+    {"newsub1",              G0W1,               Nsub1,              G2W1,               G3W1,               G4W1},
+    {"newzerop",             G0W1,               Nzerop,             G2W1,               G3W1,               G4W1},
+    {"newonep",              G0W1,               Nonep,              G2W1,               G3W1,               G4W1},
+    {"newoddp",              G0W1,               Noddp,              G2W1,               G3W1,               G4W1},
+    {"newevenp",             G0W1,               Nevenp,             G2W1,               G3W1,               G4W1},
+    {"newfloat",             G0W1,               Nfloat,             G2W1,               G3W1,               G4W1},
+    {"newfloat128",          G0W1,               Nfloat128,          G2W1,               G3W1,               G4W1},
+    {"newfix",               G0W1,               Nfix,               G2W1,               G3W1,               G4W1},
+    {"newfloor",             G0W1,               Nfloor,             G2W1,               G3W1,               G4W1},
+    {"newceiling",           G0W1,               Nceiling,           G2W1,               G3W1,               G4W1},
+    {"newfrexp",             G0W1,               Nfrexp,             G2W1,               G3W1,               G4W1},
+    {"newldexp",             G0W1,               G1W2,               Nldexp,             G3W1,               G4W1},
+#if 0
+// These ones do not even have stubs by way of dummy implementation.
     {"newexpt",              Nexpt,              Nexpt,              Nexpt,              Nexpt,              Nexpt},
     {"neweqn",               Neqn,               Neqn,               Neqn,               Neqn,               Neqn},
     {"newneqn",              Nneqn,              Nneqn,              Nneqn,              Nneqn,              Nneqn},
@@ -149,31 +307,14 @@ setup_type const arith_setup[] =
     {"newlogeqv",            Nlogeqv,            Nlogeqv,            Nlogeqv,            Nlogeqv,            Nlogeqv},
     {"newlshift",            Nlshift,            Nlshift,            Nlshift,            Nlshift,            Nlshift},
     {"newrshift",            Nrshift,            Nrshift,            Nrshift,            Nrshift,            Nrshift},
-    {"newgcdn",              Ngcdn,              Ngcdn,              Ngcdn,              Ngcdn,              Ngcdn},
-    {"newlcmn",              Nlcmn,              Nlcmn,              Nlcmn,              Nlcmn,              Nlcmn},
     {"newmodular-plus",      Nmodular_plus,      Nmodular_plus,      Nmodular_plus,      Nmodular_plus,      Nmodular_plus},
     {"newmodular-difference",Nmodular_difference,Nmodular_difference,Nmodular_difference,Nmodular_difference,Nmodular_difference},
     {"newmodular-times",     Nmodular_times,     Nmodular_times,     Nmodular_times,     Nmodular_times,     Nmodular_times},
     {"newmodular-quotient",  Nmodular_quotient,  Nmodular_quotient,  Nmodular_quotient,  Nmodular_quotient,  Nmodular_quotient},
-    {"newminus",             Nminus,             Nminus,             Nminus,             Nminus,             Nminus},
-    {"newminusp",            Nminusp,            Nminusp,            Nminusp,            Nminusp,            Nminusp},
-    {"newreciprocal",        Nreciprocal,        Nreciprocal,        Nreciprocal,        Nreciprocal,        Nreciprocal},
-    {"newsub1",              Nsub1,              Nsub1,              Nsub1,              Nsub1,              Nsub1},
-    {"newzerop",             Nzerop,             Nzerop,             Nzerop,             Nzerop,             Nzerop},
-    {"newonep",              Nonep,              Nonep,              Nonep,              Nonep,              Nonep},
-    {"newoddp",              Noddp,              Noddp,              Noddp,              Noddp,              Noddp},
-    {"newevenp",             Nevenp,             Nevenp,             Nevenp,             Nevenp,             Nevenp},
     {"newbitnot",            Nbitnot,            Nbitnot,            Nbitnot,            Nbitnot,            Nbitnot},
     {"newset-modulus",       Nset_Modulus,       Nset_Modulus,       Nset_Modulus,       Nset_Modulus,       Nset_Modulus},
     {"newmodular-number",    Nmodular_number,    Nmodular_number,    Nmodular_number,    Nmodular_number,    Nmodular_number},
     {"newmodular-minus",     Nmodular_minus,     Nmodular_minus,     Nmodular_minus,     Nmodular_minus,     Nmodular_minus},
-    {"newfloat",             Nfloat,             Nfloat,             Nfloat,             Nfloat,             Nfloat},
-    {"newfloat128",          Nfloat128,          Nfloat128,          Nfloat128,          Nfloat128,          Nfloat128},
-    {"newfix",               Nfix,               Nfix,               Nfix,               Nfix,               Nfix},
-    {"newfloor",             Nfloor,             Nfloor,             Nfloor,             Nfloor,             Nfloor},
-    {"newceiling",           Nceiling,           Nceiling,           Nceiling,           Nceiling,           Nceiling},
-    {"newfrexp",             Nfrexp,             Nfrexp,             Nfrexp,             Nfrexp,             Nfrexp},
-    {"newldexp",             Nldexp,             Nldexp,             Nldexp,             Nldexp,             Nldexp},
 #endif
     {NULL,                   0, 0, 0, 0, 0}
 };

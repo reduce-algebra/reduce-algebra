@@ -900,11 +900,13 @@ inline intptr_t string_to_bignum(const char *s);
 inline intptr_t int_to_bignum(int64_t n);
 inline intptr_t unsigned_int_to_bignum(uint64_t n);
 inline intptr_t double_to_bignum(double d);
-#ifdef softfloat_h
-inline intptr_t float128_to_bignum(float128_t d);
-#endif
 inline intptr_t double_to_floor(double d);
 inline intptr_t double_to_ceiling(double d);
+#ifdef softfloat_h
+inline intptr_t float128_to_bignum(float128_t d);
+inline intptr_t float128_to_floor(float128_t d);
+inline intptr_t float128_to_ceiling(float128_t d);
+#endif
 inline intptr_t uniform_positive(size_t n);
 inline intptr_t uniform_signed(size_t n);
 inline intptr_t uniform_upto(intptr_t a);
@@ -1990,6 +1992,30 @@ class Oddp
 };
 
 class Eqn
+{   public:
+    static bool op(int64_t, int64_t);
+    static bool op(int64_t, uint64_t *);
+    static bool op(uint64_t *, int64_t);
+    static bool op(uint64_t *, uint64_t *);
+// Even comparing a floating point number with an integer for equality
+// turns out to be messier than one might have hoped!
+    static bool op(int64_t, float);
+    static bool op(uint64_t *, float);
+    static bool op(float, int64_t);
+    static bool op(float, uint64_t *);
+    static bool op(int64_t, double);
+    static bool op(uint64_t *, double);
+    static bool op(double, int64_t);
+    static bool op(double, uint64_t *);
+#ifdef softfloat_h
+    static bool op(int64_t, float128_t);
+    static bool op(uint64_t *, float128_t);
+    static bool op(float128_t, int64_t);
+    static bool op(float128_t, uint64_t *);
+#endif
+};
+
+class Neqn
 {   public:
     static bool op(int64_t, int64_t);
     static bool op(int64_t, uint64_t *);
@@ -3707,6 +3733,30 @@ inline intptr_t double_to_bignum(double d)
     return r;
 }
 
+inline intptr_t double_to_floor(double d)
+{   if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
+    int x;
+    d = std::floor(d);
+    d = std::frexp(d, &x);
+    d = std::ldexp(d, 53);
+    intptr_t i = int_to_bignum((int64_t)d);
+    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-53);
+    abandon(i);
+    return r;
+}
+
+inline intptr_t double_to_ceiling(double d)
+{   if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
+    int x;
+    d = std::ceil(d);
+    d = std::frexp(d, &x);
+    d = std::ldexp(d, 53);
+    intptr_t i = int_to_bignum((int64_t)d);
+    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-53);
+    abandon(i);
+    return r;
+}
+
 #ifdef softfloat_h
 
 inline intptr_t float128_to_bignum(float128_t d)
@@ -3734,31 +3784,57 @@ inline intptr_t float128_to_bignum(float128_t d)
     return r;
 }
 
+inline intptr_t float128_to_floor(float128_t d)
+{
+// I return 0 if the input is a NaN or either +infinity or -infinity.
+// This is somewhat arbitrary, but right now I am not minded to raise an
+// exception.
+    if (f128_eq(d, i64_to_f128(0)) || !f128_eq(d,d)) return int_to_handle(0);
+    int x;
+    float128_t dd;
+    f128M_frexp(&d, &dd, &x);
+
+//@
+//@ The code here is unfinished, which is why it still have print statements
+//@ in it!
+//@ 
+    printf("float128_to_bignum exponent %d = %x\n", x, x);
+    if (x == 0x7fff) return int_to_handle(0); // infinity?
+    f128M_ldexp(&dd, 113);
+    abort("The next line only extracts 64 bits not 112");
+    intptr_t i = int_to_bignum(
+                     f128_to_i64(dd,softfloat_round_near_even,false));
+    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-113);
+    abandon(i);
+    return r;
+}
+
+inline intptr_t float128_to_ceiling(float128_t d)
+{
+// I return 0 if the input is a NaN or either +infinity or -infinity.
+// This is somewhat arbitrary, but right now I am not minded to raise an
+// exception.
+    if (f128_eq(d, i64_to_f128(0)) || !f128_eq(d,d)) return int_to_handle(0);
+    int x;
+    float128_t dd;
+    f128M_frexp(&d, &dd, &x);
+
+//@
+//@ The code here is unfinished, which is why it still have print statements
+//@ in it!
+//@ 
+    printf("float128_to_bignum exponent %d = %x\n", x, x);
+    if (x == 0x7fff) return int_to_handle(0); // infinity?
+    f128M_ldexp(&dd, 113);
+    abort("The next line only extracts 64 bits not 112");
+    intptr_t i = int_to_bignum(
+                     f128_to_i64(dd,softfloat_round_near_even,false));
+    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-113);
+    abandon(i);
+    return r;
+}
+
 #endif
-
-inline intptr_t double_to_floor(double d)
-{   if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
-    int x;
-    d = std::floor(d);
-    d = std::frexp(d, &x);
-    d = std::ldexp(d, 53);
-    intptr_t i = int_to_bignum((int64_t)d);
-    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-53);
-    abandon(i);
-    return r;
-}
-
-inline intptr_t double_to_ceiling(double d)
-{   if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
-    int x;
-    d = std::ceil(d);
-    d = std::frexp(d, &x);
-    d = std::ldexp(d, 53);
-    intptr_t i = int_to_bignum((int64_t)d);
-    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-53);
-    abandon(i);
-    return r;
-}
 
 // On Cygwin (at least) the std::ldexpf function that is part of C++11
 // is hidden in the header file perhaps because of issues about thread
@@ -4836,6 +4912,90 @@ inline bool Eqn::op(float128_t a, int64_t b)
 
 inline bool Eqn::op(float128_t a, uint64_t *b)
 {   return Eqn::op(b, a);
+}
+
+#endif
+
+inline bool Neqn::op(uint64_t *a, uint64_t *b)
+{   size_t lena = number_size(a);
+    size_t lenb = number_size(b);
+    return !bigeqn(a, lena, b, lenb);
+}
+
+inline bool Neqn::op(uint64_t *a, int64_t b)
+{   size_t lena = number_size(a);
+    return lena!=1 || (int64_t)a[0]!=b;
+}
+
+inline bool Neqn::op(int64_t a, uint64_t *b)
+{   size_t lenb = number_size(b);
+    return lenb!=1 || a!=(int64_t)b[0];
+}
+
+inline bool Neqn::op(int64_t a, int64_t b)
+{   return (a != b);
+}
+
+inline bool Neqn::op(int64_t a, float b)
+{   return Neqn::op(a, (double)b);
+}
+
+inline bool Neqn::op(uint64_t *a, float b)
+{   return Neqn::op(a, (double)b);
+}
+
+inline bool Neqn::op(float a, int64_t b)
+{   return Neqn::op((double)a, b);
+}
+
+inline bool Neqn::op(float a, uint64_t *b)
+{   return Neqn::op((double)a, b);
+}
+
+inline bool Neqn::op(int64_t a, double b)
+{
+    static const int64_t range = ((int64_t)1)<<53;
+    if (a >= -range && a <= range) return (double)a != b;
+// The value on the next line is a floating point representation of 2^63,
+// so any floating value at least that large is bigger than any int64_t value.
+    if (b >= 9223372036854775808.0) return true;
+    else if (b < -9223372036854775808.0) return true;
+    if (std::isnan(b)) return false;   // Ha Ha Ha!
+    return a != (int64_t)b;
+}
+
+inline bool Neqn::op(uint64_t *a, double b)
+{   size_t lena = number_size(a);
+    if (lena == 1) return Neqn::op((int64_t)a[0], b);
+    return !eqnfloat(a, lena, b);
+}
+
+inline bool Neqn::op(double a, int64_t b)
+{   return Neqn::op(b, a);
+}
+
+inline bool Neqn::op(double a, uint64_t *b)
+{   return Neqn::op(b, a);
+}
+
+#ifdef softfloat_h
+
+inline bool Neqn::op(int64_t a, float128_t b)
+{   return !f128_eq(i64_to_f128(a), b);
+}
+
+inline bool Neqn::op(uint64_t *a, float128_t b)
+{   size_t lena = number_size(a);
+    if (lena == 1) return Neqn::op((int64_t)a[0], b);
+    return !eqnbigfloat(a, lena, b);
+}
+
+inline bool Neqn::op(float128_t a, int64_t b)
+{   return Neqn::op(b, a);
+}
+
+inline bool Neqn::op(float128_t a, uint64_t *b)
+{   return Neqn::op(b, a);
 }
 
 #endif
@@ -9212,7 +9372,11 @@ inline intptr_t Lcm::op(int64_t a, int64_t b)
 // gives access to things that ought to be exported by this library. So
 // arithlib_implementation is to be thought of as somewhat low level and
 // private, while just plain arithlib may be enough for the typical C++
-// user jwho is just going to be using the "Bignum" type.
+// user who is just going to be using the "Bignum" type.
+//
+// [The issue of whether I have everything I need included in this list
+//  remains uncertain, however a user can either add to the section here
+//  or use the arithlib_implementation namespace directly in case of upset]
 
 namespace arithlib
 {
@@ -9229,6 +9393,8 @@ using arithlib_implementation::random_upto_bits_bignum;
 using arithlib_implementation::display;
 using arithlib_implementation::fix_bignum;
 }
+
+// I am putting in names that CSL uses here...
 
 namespace arithlib_lowlevel
 {
@@ -9250,6 +9416,7 @@ using arithlib_implementation::Minusp;
 using arithlib_implementation::Evenp;
 using arithlib_implementation::Oddp;
 using arithlib_implementation::Eqn;
+using arithlib_implementation::Neqn;
 using arithlib_implementation::Geq;
 using arithlib_implementation::Greaterp;
 using arithlib_implementation::Leq;
@@ -9271,8 +9438,6 @@ using arithlib_implementation::Logcount;
 using arithlib_implementation::Float;
 using arithlib_implementation::Double;
 using arithlib_implementation::Frexp;
-using arithlib_implementation::Float128;
-using arithlib_implementation::Frexp128;
 
 using arithlib_implementation::bignum_to_string;
 using arithlib_implementation::bignum_to_string_length;
@@ -9282,6 +9447,21 @@ using arithlib_implementation::bignum_to_string_octal;
 using arithlib_implementation::bignum_to_string_octal_length;
 using arithlib_implementation::bignum_to_string_binary;
 using arithlib_implementation::bignum_to_string_binary_length;
+
+using arithlib_implementation::double_to_bignum;
+using arithlib_implementation::double_to_floor;
+using arithlib_implementation::double_to_ceiling;
+
+#ifdef softfloat_h
+using arithlib_implementation::Float128;
+using arithlib_implementation::Frexp128;
+using arithlib_implementation::float128_to_bignum;
+using arithlib_implementation::float128_to_floor;
+using arithlib_implementation::float128_to_ceiling;
+#endif
+
+using arithlib_implementation::negative;
+using arithlib_implementation::number_size;
 
 }
 
