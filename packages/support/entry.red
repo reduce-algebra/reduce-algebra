@@ -79,6 +79,9 @@ symbolic macro procedure defautoload u;
           else if numargs=4 then '(x1 x2 x3 x4)
           else if numargs=5 then '(x1 x2 x3 x4 x5)
           else if numargs=6 then '(x1 x2 x3 x4 x5 x6)
+          else if numargs=7 then '(x1 x2 x3 x4 x5 x6 x7)
+          else if numargs=8 then '(x1 x2 x3 x4 x5 x6 x7 x8)
+          else if numargs=9 then '(x1 x2 x3 x4 x5 x6 x7 x8 x9)
           else error(99,list(numargs,"too large in DEFAUTOLOAD"));
     name := mkquote name;
     return
