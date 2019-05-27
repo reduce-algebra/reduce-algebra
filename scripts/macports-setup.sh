@@ -1,114 +1,164 @@
-#! /bin/sh -v
+#! /bin/bash
 
-# scripts/macports-setup.sh
-#
-# This script assumes that MacPorts has already been installed and that
-# relevant changes have been made to your PATH so that it is ready for use.
-# I hope you have gone "sudo port selfupdate" recently too.
-# Given that it used "port install" to install a bunch of packages. The list
-# here is intended to be such that once these have all been built and
-# installed the things that they depend on will also have been installed
-# and the result will be an environment in which Reduce can be built.
-# Despite this list seeming fairly modest I find that in all I end up with
-# just over 300 installed ports. Fetching and building them all is an
-# overnight task!
-#
-# Some of the ports listed here are not essential for building Reduce, but
-# I want them for one reason or another. Here is a short commentary on some
-# of the ones you might most notably question. I note that their presence in
-# the list here may also be for the things they depend on, so removing things
-# you think you do not need might mean you lose other things you do need!
-#
-# astyle      Can be used to re-format C++ code, and I use it on the
-#             CSL sources.
-# autoconf-archive,
-# autoconf213 I believe that having lots of versions of autoconf/automake
-#             helps with portability of build sequences! 
-# bc          used by scripts/testall.sh 
-# dvipng      used to re-make documentation
-# findutils   I count them as useful
-# fontforge   I use this when checking fonts during development
-# gdb         Invaluable following a bad crash
-# git         Useful to access projects that use git not subversion!
-# gnome-system-monitor Apart from the fact that I like this as a tool
-#             to review system load etc, installing it causes port to
-#             install many X11-related packages that I need.
-# gnuplot     Used by Reduce for plotting
-# gnutar      Probably not needed?
-# gzip        For packing and unpacking things I wish to ship elsewhere
-# md5sha1sum  For checking integrity of files I copy
-# netpbm      Used for documentation
-# polyml      My experiment with an ML implementation of TeX layout
-#             algorithms needs this.
-# psutils
-# subversion  a newer version than the one that comes with OSX/Xcode
-# TeX stuff   For building documentation
-# timeout     Handy for making some scripts more robust
-# vim         Some of you may want emacs (too?)
-# wget        For fetching stuff from elsewhere.
+# macports-setup.sh                                    A C Norman June 2019
 
-# Let me again stress that some of the above are not shown because they
-# are themselves needed for building Reduce, but because they call in
-# dependencies that are. Some may be used when building optional or
-# experimental variants on Reduce.
+# $Id$
 
-here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
-here=`dirname "$here"`
-here=`cd "$here"; pwd -P`
-
-save=`pwd`
-cd $here
-
-# First I intend to check if macports.conf is set up the way I want it!
-# If it is then it should have the following two lines present:
-#   macosx_deployment_target 10.11
-#   buildfromsource always
-# My check is CRUDE here and can be confused in both directions. For instance
-# a line "buildfromsource always" with a comment marker in front of it might
-# be spotted by "grep" here and accepted even though it is not operational,
-# and a line with one of these directive but with variant whitespace (eg a
-# a tab rather than a single space) between the words might not get noticed.
-# I suggest you review the file by hand! But having a very simple test here
-# is perhaps better than nothing.
-
-conf=/opt/local/etc/macports/macports.conf
-if ! test -f $conf || \
-   ! grep macosx_deployment_target $conf > /dev/null || \
-   ! grep "buildfromsource always" $conf > /dev/null
+if test "$1" = "--help"
 then
-  printf "macports.conf seems not to exist, or does not contain the lines\n"
-  printf "   macosx_deployment_target 10.11\n"
-  printf "   buildfromsource always\n"
-  printf "Please correct that and try again.\n"
-  exit 1
+  printf "macports-setup.sh [--help] [--minimal] [[force]\n"
+  printf "  help:    displays this message\n"
+  printf "  minimal: only the bare minimum for local Reduce use\n"
+  printf "  force:   overwrite any existing $HOME/.macports/macports.conf\n\n"
+  exit 0
 fi
 
-sudo port -N install       \
+
+# This script can be used on either a new Macintosh (once macports has
+# been installed, and that in turn required Xcode tools icnluding its
+# command-line option). It installs a collection of "ports" sufficient for
+# building, testing and distributing Reduce.
+#
+# When a new release of the main Macintosh operating system is installed
+# or an updated version of Xcode tools gets released it will be proper
+# to refresh all ports. For a new operating system in general a fresh
+# and updated version of macports itself may be required. But in both cases
+# doing "sudo port uninstall all" will discard all current material
+# and then this script can be used to reinstate it.
+
+
+
+# I want binaries of Reduce that I build to be able to support version of
+# the Macintosh back as far as 10.11, and so where there are ports that
+# lead to linkable libraries I will forcibly build from source with
+# macosx_deployment_target set via macports.conf. To achieve that I set up
+# a copy of that file in $HOME/.macports if necessary.
+#
+# For tools that are merely used locally while building Reduce I will let
+# the port system fetch pre-built binaries when it has any, and dong so
+# saves a major amount of time here.
+# On a 2014 Macbook Pro a "minimal" installation takes around 25 minutes
+# and a full one somewhat over an hour. It is OK to run this script without
+# the "--minimal" flag at any stage after you have done a --minimal install,
+# and it will check the alread-installed components but then just go on to
+# fetch and install the rest.
+
+if grep macosx_deployment_target /opt/local/etc/macports/macports.conf 2>/dev/null
+then
+  printf "/opt/local/etc/macports/macports.conf already sets macosx_deployment_target\n"
+
+else
+
+  cp /opt/local/etc/macports/macports.conf /tmp/macports.conf
+  printf "macosx_deployment_target 10.11\n" >> /tmp/macports.conf
+
+  if ! test -f $HOME/.macports/macports.conf
+  then
+    mkdir $HOME/.macports
+    mv /tmp/macports.conf $HOME/.macports
+    printf "I have just created $HOME/.macports/macports.conf\n"
+    printf "to set macosx_deployment_target for you\n"
+  else
+
+    if diff $HOME/.macports/macports.conf /tmp/macports.conf
+    then
+      printf "You already have $HOME/.macports/macports.conf set up\n"
+    else
+
+      printf "Your $HOME/.macports/macports.conf clashes with mine\n"
+      printf "Please review it against /tmp/macports.conf\n"
+      printf "This script will not continue unless you specify '--force'\n"
+      printf "or delete your own macports.conf or bring it into step.\n"
+      case "$*" in
+      *--force*)
+        ;;
+      *)
+        exit 1
+        ;;
+      esac
+    fi
+  fi
+fi
+
+
+# Report that date at start and end of this just for interest.
+date
+
+# Ensure that the latest version of macports will be in use.
+port       selfupdate
+
+# The ordering of the installations here is not arbitrary - I have made at
+# least some attempt to set it up so that dependencies do not lead to
+# ports being built from source (or not) against my intention. So for
+# instance if I had listed ncurses lower down I could have found a binary
+# install of it triggered by some package that depended on it, while
+# if I moved xorg-libX11 up then various of its dependencies would end up
+# compiled from source in an unnecessary way.
+
+port -N -s install ncurses gperf libiconv
+port -N -s install gettext xz zlib libedit
+port -N -s install bzip2 expat
+port -N    install pkgconfig subversion
+port -N    install autoconf autoconf-archive
+port -N    install m4 perl5 autoconf213
+port -N    install automake libtool
+port -N    install bzip2 libffi python_select
+port -N    install python2_select python27
+port -N -s install xorg-libX11
+port -N    install perl5.28
+port -N -s install Xft2
+port -N -s install xorg-libXext
+port -N    install ccache gtime
+port -N    install gmake bc timeout
+port -N -s install xorg-libXrandr
+port -N -s install xorg-libXcursor
+date
+
+case "$*" in
+*--minimal*)
+  printf "You probably have enough installed for a minimal local\n"
+  printf "build of Reduce. But if you want to build documentation and\n"
+  printf "try all [sometimes experimental] options please install the\n"
+  printf "rest of the ports here. They are in general fetched in binary\n"
+  printf "and it should not take TOO long...\n"
+  exit 0
+  ;;
+*)
+  ;;
+esac
+
+# Once again several of the ports that follow are really not essential
+# for Reduce use, but by installing them I find that the full set of tools
+# that I (ACN) have made use of in Reduce development and experiment
+# will be set up. As an exammple of ports that may not matter as much to
+# others, "gmp" is the GNU multiprocesion library and I have some test
+# code that benchmarks CSL arithmetic against it. "polyml" has been used in
+# that start of an experiment involving the core algorithms from TeX coded
+# in Standard ML. The gnome-system-monitor is an alternative to the regular
+# Mac Activity Monitor and I sometimes prefer it. "fontforge" is obviously
+# relevant when considering details of fonts that may be used in a future
+# Reduce GUI. "astyle" helps to keep C++ source code laid out consistently.
+# All the texlive components are used when building the Reduce manual.
+
+port -N install            \
   astyle                   \
-  autoconf                 \
-  autoconf-archive         \
-  autoconf213              \
-  automake                 \
-  bc                       \
-  ccache                   \
   dvipng                   \
   findutils                \
   fontconfig               \
   fontforge                \
   gdb                      \
   git                      \
+  gmp                      \
+  gnome-system-monitor     \
   gnuplot                  \
   gnutar                   \
   gzip                     \
   libffi                   \
-  libiconv                 \
   md5sha1sum               \
   netpbm                   \
-  pkgconfig                \
   polyml                   \
   psutils                  \
   rsync                    \
-  subversion               \
   texinfo                  \
   texlive-fonts-extra      \
   texlive-formats-extra    \
@@ -116,47 +166,8 @@ sudo port -N install       \
   texlive-plain-generic    \
   texlive-bin-extra        \
   texlive-fonts-recommended \
-  timeout                  \
   vim                      \
   wget
-
-# I like to have gnome-system-monitor installed, however there was a period
-# when it failed to build and install via macports. If I left it listed
-# amongst the long list of essentials this caused the entire install to
-# end up incomplete.
-# Because this utility is not essential for building CSL or Reduce I just
-# lift the attempt to install it into a separate use of port, so that if the
-# install there fails all that happens is that the system monitor does not
-# get installed, and all important parts of Reduce are supported.
-# If it mattered to me more I would take more agressive action, as I used
-# to for fontconf g (see below).
-# For this particular case https://trac.macports.org/ticket/56809 explains
-# that basically "sudo port install gstreamer-gst-plugins-base +x11" will
-# sort things out, but obviously changing from the default options on any
-# package is to be done with some caution, and equally obviously it is
-# probable that there will be adjustments made to all the macports
-# configuration files so that manual action is not needed - so I am not going
-# to automate my work-around, but just include this comment to encourage
-# anybody who at some stage in the future faces a similar-looking problem.
-# I wish to stress that with a collection of packages as large and as dynamic
-# as that supported by macports it is utterly reasonable that at times one or
-# more of the parts of it needs a bit of help before it builds. Just as
-# a copy of Reduce fetched from subversion will - from time to time - be in
-# need of some patching before it builds successfully!
-
-sudo port -N install gnome-system-monitor
-
-# In around January 2016 and for some while after that I found that macports
-# did not generate a libfontconfig.a while installing fontconfig, and that
-# caused pain when I wanted to build my code with static linking. As of
-# September 2018 this issue no longer applies, and that naturally-build
-# fontconfig does all that I need. However again as an illustration of the
-# sort of way in which potential issues can be worked around I leave the
-# work-around that I used to have available but commented out.
-
-#- cd $here/../csl/cslbase
-#- ./make-static-fontconfig-for-macintosh.sh
-#- cd $save
 
 exit 0
 
