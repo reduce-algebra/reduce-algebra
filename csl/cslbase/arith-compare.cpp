@@ -1,5 +1,6 @@
-#ifdef ARITHLIB
 // arith-compare-cpp                            Copyright (C) 2019 Codemist
+
+#ifdef ARITHLIB
 
 // $Id$
 
@@ -2233,8 +2234,7 @@ bool Minusp::op(Fixnum a)
 }
 
 bool Minusp::op(uint64_t *a)
-{   return arithlib_lowlevel::negative(
-        a[arithlib_lowlevel::number_size(a)-1]);
+{   return arithlib_lowlevel::Minusp::op(a);
 }
 
 bool Minusp::op(Rat a )
@@ -2264,12 +2264,7 @@ bool Minusp::op(LFlt a)
 
 //========================================================================
 
-
-
-
-//========================================================================
-
+#endif // ARITHLIB
 
 // end of arith-compare.cpp
 
-#endif // ARITHLIB

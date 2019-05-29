@@ -127,6 +127,33 @@ public:
     {   return int_of_fixnum(v);
     }
 };
+
+// I should probably transition to wrapping bignums up in a class!
+// Until I do here are two free-standing functions.
+
+inline LispObject bignum_value(uint64_t *a)
+{   return TAG_NUMBERS + (uintptr_t)a - 8;
+}
+
+inline uint64_t *bignum_intval(LispObject a)
+{    return (uint64_t *)(a - TAG_NUMBERS + 8);
+}
+
+class Bignum // for big integers
+{
+public:
+    LispObject v;
+    Bignum(LispObject a)
+    {   v = a;
+    }
+    LispObject value()
+    {   return v;
+    }
+    uint64_t *intval()
+    {   return (uint64_t *)(v - TAG_NUMBERS + 8);
+    }
+};
+
 class Rat // for rational numbers
 {
 public:
@@ -318,7 +345,7 @@ inline R binary(const char *fname, LispObject a, LispObject b)
     default:
         aerror2("Non-numeric argument", fname, a);
     case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
-        switch (type_of_header(numhdr(a)))
+        switch (type_of_header(flthdr(a)))
         {
         case TYPE_SINGLE_FLOAT:
             return binaryL<R,T,Flt>(fname, Flt(a), b);
@@ -425,7 +452,7 @@ inline R unary(const char *fname, LispObject a)
     default:
         aerror2("Non-numeric argument", fname, a);
     case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
-        switch (type_of_header(numhdr(a)))
+        switch (type_of_header(flthdr(a)))
         {
         case TYPE_SINGLE_FLOAT:
             return T::op(Flt(a));
@@ -475,33 +502,7 @@ inline R iunary(const char *fname, LispObject a)
             aerror2("Non-integer argument", fname, a);
         }
     case TAG_FIXNUM:
-        return T::op((intptr_t)int_of_fixnum(a));
-    }
-}
-
-// Things like "leftshift" that take and integer and a fixnum.
-
-
-template <class R, class T>
-inline R shiftlike(const char *fname, LispObject a, LispObject n)
-{   using namespace number_dispatcher;
-    if ((n & XTAG_BITS) != TAG_FIXNUM)
-        aerror2("Non-integer argument", fname, n);
-    intptr_t nv = int_of_fixnum(n);
-    switch (a & XTAG_BITS)
-    {
-    default:
-        aerror2("Non-integer argument", fname, a);
-    case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
-        switch (type_of_header(numhdr(a)))
-        {
-        case TYPE_NEW_BIGNUM:
-            return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS), nv);
-        default:
-            aerror2("Non-integer argument", fname, a);
-        }
-    case TAG_FIXNUM:
-        return T::op((intptr_t)int_of_fixnum(a), nv);
+        return T::op(Fixnum(a));
     }
 }
 
@@ -1928,40 +1929,41 @@ public:
     static LispObject op(uint64_t *a, uint64_t *b);
 };
 
+class Lognot
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum a);
+    static LispObject op(uint64_t *a);
+};
+
 class Lshift
 {
 public:
     static LispObject op(LispObject a, LispObject b);
-
     static LispObject op(LispObject a, Fixnum b);
     static LispObject op(LispObject a, uint64_t *b);
-
-    static LispObject op(Fixnum a, LispObject b);
-    static LispObject op(uint64_t *a, LispObject b);
-
-    static LispObject op(Fixnum a, Fixnum b);
-    static LispObject op(uint64_t *a, Fixnum b);
-
-    static LispObject op(Fixnum a, uint64_t *b);
-    static LispObject op(uint64_t *a, uint64_t *b);
+    static LispObject op(Fixnum a,     LispObject b);
+    static LispObject op(uint64_t *a,  LispObject b);
+    static LispObject op(Fixnum a,     Fixnum b);
+    static LispObject op(uint64_t *a,  Fixnum b);
+    static LispObject op(Fixnum a,     uint64_t *b);
+    static LispObject op(uint64_t *a,  uint64_t *b);
 };
 
 class Rshift
 {
 public:
     static LispObject op(LispObject a, LispObject b);
-
     static LispObject op(LispObject a, Fixnum b);
     static LispObject op(LispObject a, uint64_t *b);
-
-    static LispObject op(Fixnum a, LispObject b);
-    static LispObject op(uint64_t *a, LispObject b);
-
-    static LispObject op(Fixnum a, Fixnum b);
-    static LispObject op(uint64_t *a, Fixnum b);
-
-    static LispObject op(Fixnum a, uint64_t *b);
-    static LispObject op(uint64_t *a, uint64_t *b);
+    static LispObject op(Fixnum a,     LispObject b);
+    static LispObject op(uint64_t *a,  LispObject b);
+    static LispObject op(Fixnum a,     Fixnum b);
+    static LispObject op(uint64_t *a,  Fixnum b);
+    static LispObject op(Fixnum a,     uint64_t *b);
+    static LispObject op(uint64_t *a,  uint64_t *b);
 };
 
 class Gcdn
@@ -2000,7 +2002,7 @@ public:
     static LispObject op(uint64_t *a, uint64_t *b);
 };
 
-class Modular_plus
+class ModularPlus
 {
 public:
     static LispObject op(LispObject a, LispObject b);
@@ -2018,7 +2020,7 @@ public:
     static LispObject op(uint64_t *a, uint64_t *b);
 };
 
-class Modular_difference
+class ModularDifference
 {
 public:
     static LispObject op(LispObject a, LispObject b);
@@ -2036,7 +2038,7 @@ public:
     static LispObject op(uint64_t *a, uint64_t *b);
 };
 
-class Modular_times
+class ModularTimes
 {
 public:
     static LispObject op(LispObject a, LispObject b);
@@ -2054,7 +2056,21 @@ public:
     static LispObject op(uint64_t *a, uint64_t *b);
 };
 
-class Modular_quotient
+class ModularExpt
+{
+public:
+    static LispObject op(LispObject a, LispObject b);
+    static LispObject op(LispObject a, Fixnum b);
+    static LispObject op(LispObject a, uint64_t *b);
+    static LispObject op(Fixnum a,     LispObject b);
+    static LispObject op(uint64_t *a,  LispObject b);
+    static LispObject op(Fixnum a,     Fixnum b);
+    static LispObject op(uint64_t *a,  Fixnum b);
+    static LispObject op(Fixnum a,     uint64_t *b);
+    static LispObject op(uint64_t *a,  uint64_t *b);
+};
+
+class ModularQuotient
 {
 public:
     static LispObject op(LispObject a, LispObject b);
@@ -2205,31 +2221,40 @@ public:
     static LispObject op(uint64_t *b);
 };
 
-class Set_Modulus
+class SetModulus
 {
 public:
-    static bool op(LispObject a);
+    static LispObject op(LispObject a);
 
-    static bool op(Fixnum b);
-    static bool op(uint64_t *b);
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
 };
 
-class Modular_number
+class ModularNumber
 {
 public:
-    static bool op(LispObject a);
+    static LispObject op(LispObject a);
 
-    static bool op(Fixnum b);
-    static bool op(uint64_t *b);
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
 };
 
-class Modular_minus
+class ModularMinus
 {
 public:
-    static bool op(LispObject a);
+    static LispObject op(LispObject a);
 
-    static bool op(Fixnum b);
-    static bool op(uint64_t *b);
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
+};
+
+class ModularReciprocal
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
 };
 
 // Note that for Float and Float128 I return the unwrapped floating
@@ -2342,15 +2367,25 @@ class Ldexp
 public:
     static LispObject op(LispObject a, LispObject n);
 
-    static LispObject op(Fixnum b, int n);
-    static LispObject op(uint64_t *b, int n);
-    static LispObject op(Rat b, int n);
-    static LispObject op(Cpx b, int n);
-    static LispObject op(SFlt b, int n);
-    static LispObject op(Flt b, int n);
-    static LispObject op(double b, int n);
+    static LispObject op(Fixnum b, Fixnum n);
+    static LispObject op(uint64_t *b, Fixnum n);
+    static LispObject op(Rat b, Fixnum n);
+    static LispObject op(Cpx b, Fixnum n);
+    static LispObject op(SFlt b, Fixnum n);
+    static LispObject op(Flt b, Fixnum n);
+    static LispObject op(double b, Fixnum n);
 #ifdef softfloat_h
-    static LispObject op(LFlt b, int n);
+    static LispObject op(LFlt b, Fixnum n);
+#endif // softfloat_h
+    static LispObject op(Fixnum b, uint64_t *n);
+    static LispObject op(uint64_t *b, uint64_t *n);
+    static LispObject op(Rat b, uint64_t *n);
+    static LispObject op(Cpx b, uint64_t *n);
+    static LispObject op(SFlt b, uint64_t *n);
+    static LispObject op(Flt b, uint64_t *n);
+    static LispObject op(double b, uint64_t *n);
+#ifdef softfloat_h
+    static LispObject op(LFlt b, uint64_t *n);
 #endif // softfloat_h
 };
 

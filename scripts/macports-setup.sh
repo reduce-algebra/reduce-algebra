@@ -132,41 +132,36 @@ esac
 # that I (ACN) have made use of in Reduce development and experiment
 # will be set up. As an exammple of ports that may not matter as much to
 # others, "gmp" is the GNU multiprocesion library and I have some test
-# code that benchmarks CSL arithmetic against it. "polyml" has been used in
-# that start of an experiment involving the core algorithms from TeX coded
-# in Standard ML. The gnome-system-monitor is an alternative to the regular
-# Mac Activity Monitor and I sometimes prefer it. "fontforge" is obviously
-# relevant when considering details of fonts that may be used in a future
-# Reduce GUI. "astyle" helps to keep C++ source code laid out consistently.
-# All the texlive components are used when building the Reduce manual.
+# code that benchmarks CSL arithmetic against it.
+# "fontforge" is obviously relevant when considering details of fonts that
+# may be used in a future Reduce GUI. "astyle" helps to keep C++ source
+# code laid out consistently. All the texlive components are used when
+# building the Reduce manual.
 
-port -N install            \
-  astyle                   \
-  dvipng                   \
-  findutils                \
-  fontconfig               \
-  fontforge                \
-  gdb                      \
-  git                      \
-  gmp                      \
-  gnome-system-monitor     \
-  gnuplot                  \
-  gnutar                   \
-  gzip                     \
-  libffi                   \
-  md5sha1sum               \
-  netpbm                   \
-  polyml                   \
-  psutils                  \
-  rsync                    \
-  texinfo                  \
-  texlive-fonts-extra      \
-  texlive-formats-extra    \
-  texlive-latex-extra      \
-  texlive-plain-generic    \
-  texlive-bin-extra        \
+port -N install             \
+  astyle                    \
+  dvipng                    \
+  findutils                 \
+  fontconfig                \
+  fontforge                 \
+  gdb                       \
+  git                       \
+  gmp                       \
+  gnuplot                   \
+  gnutar                    \
+  gzip                      \
+  libffi                    \
+  md5sha1sum                \
+  netpbm                    \
+  psutils                   \
+  rsync                     \
+  texinfo                   \
+  texlive-fonts-extra       \
+  texlive-formats-extra     \
+  texlive-latex-extra       \
+  texlive-plain-generic     \
+  texlive-bin-extra         \
   texlive-fonts-recommended \
-  vim                      \
   wget
 
 exit 0

@@ -1,5 +1,6 @@
-#ifdef ARITHLIB
 // arith-times.cpp                              Copyright (C) 2019 Codemist
+
+#ifdef ARITHLIB
 
 // $Id$
 
@@ -33,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// Times, Quotient, Remainder, Divide
+// Times, Quotient, Remainder, Divide etc
 
 #include "headers.h"
 #include "dispatch.h"
@@ -47,25 +48,14 @@ using number_dispatcher::SFlt;
 using number_dispatcher::Flt;
 using number_dispatcher::LFlt;
 
-//@@@
-//@@@ At present this is basically the code for Plus, edited so that the
-//@@@ names used are Times. Every function here will thus need review!
-//@@@ However as a place-holder this is still useful.
-//@@@
-
-
-// The main generic addition function is
-//       LispObject Times.op(LispObject, LispObject);
 
 LispObject Times::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<LispObject,Times>("times", a, b);
 }
 
-
 LispObject Times::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
 }
-
 
 LispObject Times::op(LispObject a, uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
@@ -99,7 +89,6 @@ LispObject Times::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
 
-
 LispObject Times::op(uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
@@ -129,7 +118,7 @@ LispObject Times::op(LFlt a, LispObject b)
 }
 
 // fixnum * fixnum
-inline LispObject Times::op(Fixnum a, Fixnum b)
+LispObject Times::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::Times::op(a.intval(), b.intval());
 }
 // bignum * fixnum
@@ -162,7 +151,7 @@ LispObject Times::op(double a, Fixnum b)
 }
 // long float * fixnum
 LispObject Times::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_add(a.floatval(), i64_to_f128(b.intval())));
+{   return make_boxfloat128(f128_mul(a.floatval(), i64_to_f128(b.intval())));
 }
 //............................................
 // fixnum * bignum
@@ -402,15 +391,420 @@ LispObject Times::op(LFlt a, LFlt b)
 {   return (LispObject)0; abort("times not coded yet");
 }
 
+LispObject Expt::op(LispObject a, LispObject b)
+{   return number_dispatcher::binary<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(LispObject a, Fixnum b)
+{   return number_dispatcher::binaryR<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(LispObject a, uint64_t *b)
+{   return number_dispatcher::binaryR<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(LispObject a, Rat b)
+{   return number_dispatcher::binaryR<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(LispObject a, Cpx b)
+{   return number_dispatcher::binaryR<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(LispObject a, SFlt b)
+{   return number_dispatcher::binaryR<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(LispObject a, Flt b)
+{   return number_dispatcher::binaryR<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(LispObject a, double b)
+{   return number_dispatcher::binaryR<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(LispObject a, LFlt b)
+{   return number_dispatcher::binaryR<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(Fixnum a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(uint64_t *a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(Rat a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(Cpx a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(SFlt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(Flt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(double a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Expt>("expt", a, b);
+}
+
+LispObject Expt::op(LFlt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Expt>("expt", a, b);
+}
+
+// fixnum ** fixnum
+LispObject Expt::op(Fixnum a, Fixnum b)
+{   return arithlib_lowlevel::Pow::op(a.intval(), b.intval());
+}
+// bignum ** fixnum
+LispObject Expt::op(uint64_t *a, Fixnum b)
+{   return arithlib_lowlevel::Pow::op(a, b.intval());
+}
+template <typename T>
+LispObject generic_expt(T a, int64_t n)
+{   if (n == 1) return a.value();
+    else
+    {   LispObject aa = generic_expt(a, n/2);
+        aa = Square::op(aa);
+        if ((n & 1) != 0) aa = Times::op(aa, a);
+        return aa;
+    }
+}
+
+// rational ** fixnum
+LispObject Expt::op(Rat a, Fixnum b)
+{   int64_t n = b.intval();
+    if (n == 0) return make_ratio(fixnum_of_int(1), fixnum_of_int(1));
+    else if (n == 1) return a.value();
+    else if (n < 0)
+    {   n = -n;
+        a = Reciprocal::op(a);
+    }
+    return generic_expt(a, n);
+}
+
+LispObject match_type(LispObject in, int value)
+{   switch (in & XTAG_BITS)
+    {
+    case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
+        switch (type_of_header(flthdr(in)))
+        {
+        case TYPE_SINGLE_FLOAT:
+            return pack_single_float((double)value);
+        case TYPE_DOUBLE_FLOAT:
+            return make_boxfloat((double)value, TYPE_DOUBLE_FLOAT);
+        case TYPE_LONG_FLOAT:
+            return make_boxfloat128(i64_to_f128(value));
+        default:
+            aerror1("Invalid component in complex number", in);
+        }
+    case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
+        switch (type_of_header(numhdr(in)))
+        {
+        case TYPE_NEW_BIGNUM:
+        case TYPE_BIGNUM:
+            return fixnum_of_int(value);
+        case TYPE_RATNUM:
+            return make_ratio(fixnum_of_int(value), fixnum_of_int(1));
+        case TYPE_COMPLEX_NUM:
+        default:
+            aerror1("Invalid component in complex number", in);
+        }
+    default:
+    case TAG_FIXNUM:
+        return fixnum_of_int(value);
+    case XTAG_SFLOAT:
+        if ((in & XTAG_FLOAT32) != 0)
+            return pack_single_float((double)value);
+        else return pack_short_float((double)value);
+    }
+}
+
+LispObject Expt::op(Cpx a, Fixnum b)
+{   int64_t n = b.intval();
+// A complex number ought to have both components the same type, but that
+// could be integer, rational or one of the various sorts of float. If I
+// raise it to the power zero I want a result that has value 1 + 0i but both
+// the "1" and the "0" should match the input in type.
+    if (n == 0) return make_complex(match_type(a.real_part(), 1),
+                                    match_type(a.imag_part(), 0));
+    else if (n == 1) return a.value();
+    if (n < 0)
+    {   n = -n;
+        a = Reciprocal::op(a);
+    }
+    return generic_expt(a, n);
+}
+
+// short float ** fixnum
+LispObject Expt::op(SFlt a, Fixnum b)
+{   return pack_short_float(a.floatval() * (double)b.value());
+}
+// single float ** fixnum
+LispObject Expt::op(Flt a, Fixnum b)
+{   return pack_single_float(a.floatval() * (double)b.intval());
+}
+// double float ** fixnum
+LispObject Expt::op(double a, Fixnum b)
+{   return make_boxfloat(a * (double)b.intval(), TYPE_DOUBLE_FLOAT);
+}
+// long float ** fixnum
+LispObject Expt::op(LFlt a, Fixnum b)
+{   return make_boxfloat128(f128_add(a.floatval(), i64_to_f128(b.intval())));
+}
+//............................................
+// fixnum ** bignum
+LispObject Expt::op(Fixnum a, uint64_t *b)
+{   return Expt::op(b, a);
+}
+// bignum ** bignum
+LispObject Expt::op(uint64_t *a, uint64_t *b)
+{   if (arithlib_lowlevel::Minusp::op(b)) return fixnum_of_int(0);
+    aerror("arguments to expt are too large");
+}
+// rational ** bignum
+LispObject Expt::op(Rat a, uint64_t *b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// complex ** bignum
+LispObject Expt::op(Cpx a, uint64_t *b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// short float ** bignum
+LispObject Expt::op(SFlt a, uint64_t *b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// single float ** bignum
+LispObject Expt::op(Flt a, uint64_t *b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// double float ** bignum
+LispObject Expt::op(double a, uint64_t *b)
+{   return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
+}
+// long float ** bignum
+LispObject Expt::op(LFlt a, uint64_t *b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+
+//............................................
+// fixnum ** rational
+LispObject Expt::op(Fixnum a, Rat b)
+{   return Expt::op(b, a);
+}
+// bignum ** rational
+LispObject Expt::op(uint64_t *a, Rat b)
+{   return Expt::op(b, a);
+}
+// rational ** rational
+LispObject Expt::op(Rat a, Rat b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// complex ** rational
+LispObject Expt::op(Cpx a, Rat b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// short float ** rational
+LispObject Expt::op(SFlt a, Rat b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// single float ** rational
+LispObject Expt::op(Flt a, Rat b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// double float ** rational
+LispObject Expt::op(double a, Rat b)
+{   return (LispObject)0; abort("times not coded yet");
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
+}
+// long float ** rational
+LispObject Expt::op(LFlt a, Rat b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+//............................................
+// fixnum ** complex
+LispObject Expt::op(Fixnum a, Cpx b)
+{   return Expt::op(b, a);
+}
+// bignum ** complex
+LispObject Expt::op(uint64_t *a, Cpx b)
+{   return Expt::op(b, a);
+}
+// rational ** complex
+LispObject Expt::op(Rat a, Cpx b)
+{   return Expt::op(b, a);
+}
+// complex ** complex
+LispObject Expt::op(Cpx a, Cpx b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// short float ** complex
+LispObject Expt::op(SFlt a, Cpx b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// single float ** complex
+LispObject Expt::op(Flt a, Cpx b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// double float ** complex
+LispObject Expt::op(double a, Cpx b)
+{   return (LispObject)0; abort("times not coded yet");
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
+}
+// long float ** complex
+LispObject Expt::op(LFlt a, Cpx b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+//............................................
+// fixnum ** short float
+LispObject Expt::op(Fixnum a, SFlt b)
+{   return Expt::op(b, a);
+}
+// bignum ** short float
+LispObject Expt::op(uint64_t *a, SFlt b)
+{   return Expt::op(b, a);
+}
+// rational ** short float
+LispObject Expt::op(Rat a, SFlt b)
+{   return Expt::op(b, a);
+}
+// complex ** short float
+LispObject Expt::op(Cpx a, SFlt b)
+{   return Expt::op(b, a);
+}
+// short float ** short float
+LispObject Expt::op(SFlt a, SFlt b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// single float ** short float
+LispObject Expt::op(Flt a, SFlt b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// double float ** short float
+LispObject Expt::op(double a, SFlt b)
+{   return (LispObject)0; abort("times not coded yet");
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
+}
+// long float ** short float
+LispObject Expt::op(LFlt a, SFlt b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+//............................................
+// fixnum ** single float
+LispObject Expt::op(Fixnum a, Flt b)
+{   return Expt::op(b, a);
+}
+// bignum ** single float
+LispObject Expt::op(uint64_t *a, Flt b)
+{   return Expt::op(b, a);
+}
+// rational ** single float
+LispObject Expt::op(Rat a, Flt b)
+{   return Expt::op(b, a);
+}
+// complex ** single float
+LispObject Expt::op(Cpx a, Flt b)
+{   return Expt::op(b, a);
+}
+// short float ** single float
+LispObject Expt::op(SFlt a, Flt b)
+{   return Expt::op(b, a);
+}
+// single float ** single float
+LispObject Expt::op(Flt a, Flt b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+// double float ** single float
+LispObject Expt::op(double a, Flt b)
+{   return (LispObject)0; abort("times not coded yet");
+//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
+}
+// long float ** single float
+LispObject Expt::op(LFlt a, Flt b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+
+//............................................
+// fixnum ** double float
+LispObject Expt::op(Fixnum a, double b)
+{   return Expt::op(b, a);
+}
+// bignum ** double float
+LispObject Expt::op(uint64_t *a, double b)
+{   return Expt::op(b, a);
+}
+// rational ** double float
+LispObject Expt::op(Rat a, double b)
+{   return Expt::op(b, a);
+}
+// complex ** double float
+LispObject Expt::op(Cpx a, double b)
+{   return Expt::op(b, a);
+}
+// short float ** double float
+LispObject Expt::op(SFlt a, double b)
+{   return Expt::op(b, a);
+}
+// single float ** double float
+LispObject Expt::op(Flt a, double b)
+{   return Expt::op(b, a);
+}
+// double float ** double float
+LispObject Expt::op(double a, double b)
+{   return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
+}
+// long float ** double float
+LispObject Expt::op(LFlt a, double b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+//............................................
+// fixnum ** long float
+LispObject Expt::op(Fixnum a, LFlt b)
+{   return Expt::op(b, a);
+}
+// bignum ** long float
+LispObject Expt::op(uint64_t *a, LFlt b)
+{   return Expt::op(b, a);
+}
+// rational ** long float
+LispObject Expt::op(Rat a, LFlt b)
+{   return Expt::op(b, a);
+}
+// complex ** long float
+LispObject Expt::op(Cpx a, LFlt b)
+{   return Expt::op(b, a);
+}
+// short float ** long float
+LispObject Expt::op(SFlt a, LFlt b)
+{   return Expt::op(b, a);
+}
+// single float ** long float
+LispObject Expt::op(Flt a, LFlt b)
+{   return Expt::op(b, a);
+}
+// double float ** long float
+LispObject Expt::op(double a, LFlt b)
+{   return Expt::op(b, a);
+}
+// long float ** long float
+LispObject Expt::op(LFlt a, LFlt b)
+{   return (LispObject)0; abort("times not coded yet");
+}
+
 LispObject Quotient::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<LispObject,Quotient>("quotient", a, b);
 }
 
-
 LispObject Quotient::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
 }
-
 
 LispObject Quotient::op(LispObject a, uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
@@ -444,7 +838,6 @@ LispObject Quotient::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
-
 LispObject Quotient::op(uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
@@ -474,7 +867,7 @@ LispObject Quotient::op(LFlt a, LispObject b)
 }
 
 // fixnum/fixnum
-inline LispObject Quotient::op(Fixnum a, Fixnum b)
+LispObject Quotient::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::Quotient::op(a.intval(), b.intval());
 }
 // bignum/fixnum
@@ -495,19 +888,19 @@ LispObject Quotient::op(Cpx a, Fixnum b)
 }
 // short float/fixnum
 LispObject Quotient::op(SFlt a, Fixnum b)
-{   return pack_short_float(a.floatval() * (double)b.value());
+{   return pack_short_float(a.floatval() / (double)b.value());
 }
 // single float/fixnum
 LispObject Quotient::op(Flt a, Fixnum b)
-{   return pack_single_float(a.floatval() * (double)b.intval());
+{   return pack_single_float(a.floatval() / (double)b.intval());
 }
 // double float/fixnum
 LispObject Quotient::op(double a, Fixnum b)
-{   return make_boxfloat(a * (double)b.intval(), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a / (double)b.intval(), TYPE_DOUBLE_FLOAT);
 }
 // long float/fixnum
 LispObject Quotient::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_add(a.floatval(), i64_to_f128(b.intval())));
+{   return make_boxfloat128(f128_div(a.floatval(), i64_to_f128(b.intval())));
 }
 //............................................
 // fixnum/bignum
@@ -536,7 +929,7 @@ LispObject Quotient::op(Flt a, uint64_t *b)
 }
 // double float/bignum
 LispObject Quotient::op(double a, uint64_t *b)
-{   return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a / arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float/bignum
 LispObject Quotient::op(LFlt a, uint64_t *b)
@@ -571,7 +964,7 @@ LispObject Quotient::op(Flt a, Rat b)
 // double float/rational
 LispObject Quotient::op(double a, Rat b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a / arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float/rational
 LispObject Quotient::op(LFlt a, Rat b)
@@ -605,7 +998,7 @@ LispObject Quotient::op(Flt a, Cpx b)
 // double float/complex
 LispObject Quotient::op(double a, Cpx b)
 {   return (LispObject)0; abort("times not coded yet");
-//      return make_boxfloat(a * arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
+//      return make_boxfloat(a / arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float/complex
 LispObject Quotient::op(LFlt a, Cpx b)
@@ -751,11 +1144,9 @@ LispObject Remainder::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<LispObject,Remainder>("remainder", a, b);
 }
 
-
 LispObject Remainder::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Remainder>("remainder", a, b);
 }
-
 
 LispObject Remainder::op(LispObject a, uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Remainder>("remainder", a, b);
@@ -789,7 +1180,6 @@ LispObject Remainder::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Remainder>("remainder", a, b);
 }
 
-
 LispObject Remainder::op(uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Remainder>("remainder", a, b);
 }
@@ -819,7 +1209,7 @@ LispObject Remainder::op(LFlt a, LispObject b)
 }
 
 // fixnum remainder fixnum
-inline LispObject Remainder::op(Fixnum a, Fixnum b)
+LispObject Remainder::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::Remainder::op(a.intval(), b.intval());
 }
 // bignum remainder fixnum
@@ -852,7 +1242,7 @@ LispObject Remainder::op(double a, Fixnum b)
 }
 // long float remainder fixnum
 LispObject Remainder::op(LFlt a, Fixnum b)
-{   return make_boxfloat128(f128_add(a.floatval(), i64_to_f128(b.intval())));
+{   return make_boxfloat128(f128_div(a.floatval(), i64_to_f128(b.intval())));
 }
 //............................................
 // fixnum remainder bignum
@@ -1098,13 +1488,11 @@ LispObject Divide::op(LispObject a, LispObject b)
     return cons(q, r);
 }
 
-
 LispObject Divide::op(LispObject a, Fixnum b)
 {   LispObject q = Quotient::op(a, b);
     LispObject r = Remainder::op(a, b);
     return cons(q, r);
 }
-
 
 LispObject Divide::op(LispObject a, uint64_t *b)
 {   LispObject q = Quotient::op(a, b);
@@ -1154,7 +1542,6 @@ LispObject Divide::op(Fixnum a, LispObject b)
     return cons(q, r);
 }
 
-
 LispObject Divide::op(uint64_t *a, LispObject b)
 {   LispObject q = Quotient::op(a, b);
     LispObject r = Remainder::op(a, b);
@@ -1198,7 +1585,7 @@ LispObject Divide::op(LFlt a, LispObject b)
 }
 
 // fixnum divide fixnum
-inline LispObject Divide::op(Fixnum a, Fixnum b)
+LispObject Divide::op(Fixnum a, Fixnum b)
 {   LispObject q = Quotient::op(a, b);
     LispObject r = Remainder::op(a, b);
     return cons(q, r);
@@ -1595,11 +1982,9 @@ LispObject Square::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Square>("square", a);
 }
 
-
 LispObject Square::op(Fixnum a)
 {   return arithlib_lowlevel::Square::op(a.intval());
 }
-
 
 LispObject Square::op(uint64_t *a)
 {   return arithlib_lowlevel::Square::op(a);
@@ -1638,7 +2023,6 @@ LispObject Reciprocal::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Reciprocal>("reciprocal", a);
 }
 
-
 LispObject Reciprocal::op(Fixnum a)
 {   switch (a.intval())
     {   case 0:  aerror("reciprocal of zero");
@@ -1647,7 +2031,6 @@ LispObject Reciprocal::op(Fixnum a)
         default: return int_of_fixnum(0);
     }
 }
-
 
 LispObject Reciprocal::op(uint64_t *a)
 {   return int_of_fixnum(0);
@@ -1712,6 +2095,6 @@ LispObject Reciprocal::op(LFlt a)
 {   return make_boxfloat128(f128_div(i64_to_f128(1), a.floatval()));
 }
 
-// end of arith-times.cpp
-
 #endif // ARITHLIB
+
+// end of arith-times.cpp

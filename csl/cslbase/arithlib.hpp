@@ -449,6 +449,7 @@
 #include <chrono>
 #include <mutex>
 #include <atomic>
+#include <vector>
 
 namespace arithlib_implementation
 {
@@ -1119,8 +1120,7 @@ inline unsigned int log_next_power_of_2(size_t n);
 //                 overhead will be small, and so this is the default.
 // ARITHLIB_THREAD_LOCAL. Have a separate memory pool for use by each thread.
 //                 This can use more memory than a scheme that uses shared
-//                 allocation, and on some platforms there mere use of
-//                 thread_local values carries an amazingly high overhead.
+//                 allocation.
 // ARITHLIB_NO_THREADS. Assume that no concurrent use of arithlib will
 //                 arise and so no extra complication or overhead is needed.
 //                 I do not make this the default because I can imagine
@@ -1426,12 +1426,6 @@ inline RES op_dispatch1(intptr_t a1, int64_t &n)
 }
 
 template <class OP,class RES>
-inline RES op_dispatch1(intptr_t a1, int32_t n)
-{   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), (int64_t)n);
-    else return OP::op(vector_of_handle(a1), (int64_t)n);
-}
-
-template <class OP,class RES>
 inline RES op_dispatch2(intptr_t a1, intptr_t a2)
 {   if (stored_as_fixnum(a1))
     {   if (stored_as_fixnum(a2))
@@ -1626,12 +1620,6 @@ inline RES op_dispatch1(intptr_t a1, int64_t n)
 }
 
 template <class OP,class RES>
-inline RES op_dispatch1(intptr_t a1, int32_t n)
-{   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), (int64_t)n);
-    else return OP::op(vector_of_handle(a1), (int64_t)n);
-}
-
-template <class OP,class RES>
 inline RES op_dispatch2(intptr_t a1, intptr_t a2)
 {   if (stored_as_fixnum(a1))
     {   if (stored_as_fixnum(a2))
@@ -1800,12 +1788,6 @@ inline RES op_dispatch1(intptr_t a1, int64_t n)
 }
 
 template <class OP,class RES>
-inline RES op_dispatch1(intptr_t a1, int32_t n)
-{   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), (int64_t)n);
-    else return OP::op(vector_of_handle(a1), (int64_t)n);
-}
-
-template <class OP,class RES>
 inline RES op_dispatch2(intptr_t a1, intptr_t a2)
 {   if (stored_as_fixnum(a1))
     {   if (stored_as_fixnum(a2))
@@ -1954,6 +1936,14 @@ class Logor
 };
 
 class Logxor
+{   public:
+    static intptr_t op(int64_t, int64_t);
+    static intptr_t op(int64_t, uint64_t *);
+    static intptr_t op(uint64_t *, int64_t);
+    static intptr_t op(uint64_t *, uint64_t *);
+};
+
+class Logeqv
 {   public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
@@ -2172,15 +2162,10 @@ class Lognot
     static intptr_t op(uint64_t *);
 };
 
-// Pow can have a second argument that is a double. Shifts only use
-// the integer arg2 case.
-
 class Pow
 {   public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(uint64_t *, int64_t);
-    static intptr_t op(int64_t, int32_t);
-    static intptr_t op(uint64_t *, int32_t);
     static double op(int64_t, double);
     static double op(uint64_t *, double);
 };
@@ -2189,16 +2174,12 @@ class Leftshift
 {   public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(uint64_t *, int64_t);
-    static intptr_t op(int64_t, int32_t);
-    static intptr_t op(uint64_t *, int32_t);
 };
 
 class Rightshift
 {   public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(uint64_t *, int64_t);
-    static intptr_t op(int64_t, int32_t);
-    static intptr_t op(uint64_t *, int32_t);
 };
 
 class Integer_length
@@ -2255,6 +2236,70 @@ class Frexp128
 {   public:
     static float128_t op(int64_t, int64_t &x);
     static float128_t op(uint64_t *, int64_t &x);
+};
+
+class ModularPlus
+{   public:
+    static intptr_t op(int64_t, int64_t);
+    static intptr_t op(int64_t, uint64_t *);
+    static intptr_t op(uint64_t *, int64_t);
+    static intptr_t op(uint64_t *, uint64_t *);
+};
+
+class ModularDifference
+{   public:
+    static intptr_t op(int64_t, int64_t);
+    static intptr_t op(int64_t, uint64_t *);
+    static intptr_t op(uint64_t *, int64_t);
+    static intptr_t op(uint64_t *, uint64_t *);
+};
+
+class ModularTimes
+{   public:
+    static intptr_t op(int64_t, int64_t);
+    static intptr_t op(int64_t, uint64_t *);
+    static intptr_t op(uint64_t *, int64_t);
+    static intptr_t op(uint64_t *, uint64_t *);
+};
+
+class ModularExpt
+{   public:
+    static intptr_t op(int64_t, int64_t);
+    static intptr_t op(int64_t, uint64_t *);
+    static intptr_t op(uint64_t *, int64_t);
+    static intptr_t op(uint64_t *, uint64_t *);
+};
+
+class ModularQuotient
+{   public:
+    static intptr_t op(int64_t, int64_t);
+    static intptr_t op(int64_t, uint64_t *);
+    static intptr_t op(uint64_t *, int64_t);
+    static intptr_t op(uint64_t *, uint64_t *);
+};
+
+class ModularMinus
+{   public:
+    static intptr_t op(int64_t);
+    static intptr_t op(uint64_t *);
+};
+
+class ModularReciprocal
+{   public:
+    static intptr_t op(int64_t);
+    static intptr_t op(uint64_t *);
+};
+
+class ModularNumber
+{   public:
+    static intptr_t op(int64_t);
+    static intptr_t op(uint64_t *);
+};
+
+class SetModulus
+{   public:
+    static intptr_t op(int64_t);
+    static intptr_t op(uint64_t *);
 };
 
 #endif
@@ -2643,10 +2688,6 @@ inline double double_bignum(const Bignum &x);
 
 inline double pow(const Bignum &x, double n)
 {   return std::pow(double_bignum(x), n);
-}
-
-inline Bignum pow(const Bignum &x, int32_t n)
-{   return pow(x, (int64_t)n);
 }
 
 inline Bignum gcd(const Bignum &x, const Bignum &y)
@@ -3174,6 +3215,7 @@ inline bool negative(uint64_t a)
 {   return ((int64_t)a) < 0;
 }
 
+
 // This next function might be naivly written as
 //    return ((a1==0 && positive(a2)) ||
 //            (a1==-1 && negative(a2)));
@@ -3352,7 +3394,16 @@ inline int read_u3(const uint64_t *v, size_t n, size_t i)
 // things distinct in each will be the high resolution clock. Well to
 // try to improve things there I will use the address of one of these
 // variables as part of the seeding process, so that if they all end
-// up static rather than inline that will give per-compilation-uint variation.
+// up static rather than inline that will give per-compilation-uint
+// variation.
+
+// Note that the thread local status information for a random number
+// generator will be initialized in EVERY thread that is created. This
+// includes the worker threads for Karatsuba multiplicatin and in a
+// broader context where I use this library it will include threads that
+// are used for GUI or other I/O purposes. So theer is a benefit if C++
+// delays initialization of any of the variables within the following
+// function until the function is first used!
 
 inline std::mt19937_64 &ref_mersenne_twister()
 {   std::random_device basic_randomness;
@@ -5823,12 +5874,79 @@ inline intptr_t Logxor::op(int64_t a, int64_t b)
 }
 
 
+inline void ordered_biglogeqv(const uint64_t *a, size_t lena,
+                              const uint64_t *b, size_t lenb,
+                              uint64_t *r, size_t &lenr)
+{   size_t i;
+    for (i=0; i<lenb; i++)
+        r[i] = ~a[i] ^ b[i];
+    if (negative(b[lenb-1]))
+    {   for (; i<lena; i++)
+            r[i] = a[i];
+    }
+    else
+    {   for (; i<lena; i++)
+            r[i] = ~a[i];
+    }
+    lenr = lena;
+// The logxor operation can cause the inputs to shrink.
+    truncate_positive(r, lenr);
+    truncate_negative(r, lenr);
+}
+
+inline void biglogeqv(const uint64_t *a, size_t lena,
+                      const uint64_t *b, size_t lenb,
+                      uint64_t *r, size_t &lenr)
+{   if (lena >= lenb) return ordered_biglogeqv(a, lena, b, lenb, r, lenr);
+    else return ordered_biglogeqv(b, lenb, a, lena, r, lenr);
+}
+
+inline intptr_t Logeqv::op(uint64_t *a, uint64_t *b)
+{   size_t lena = number_size(a);
+    size_t lenb = number_size(b);
+    size_t n;
+    if (lena >= lenb) n = lena;
+    else n = lenb;
+    push(a); push(b);
+    uint64_t *p = reserve(n);
+    pop(b); pop(a);
+    size_t final_n;
+    biglogeqv(a, lena, b, lenb, p, final_n);
+    return confirm_size(p, n, final_n);
+}
+
+inline intptr_t Logeqv::op(uint64_t *a, int64_t b)
+{   size_t lena = number_size(a);
+    push(a);
+    uint64_t *p = reserve(lena);
+    pop(a);
+    size_t final_n;
+    uint64_t bb[1] = {(uint64_t)b};
+    biglogeqv(a, lena, bb, 1, p, final_n);
+    return confirm_size(p, lena, final_n);
+}
+
+inline intptr_t Logeqv::op(int64_t a, uint64_t *b)
+{   size_t lenb = number_size(b);
+    push(b);
+    uint64_t *p = reserve(lenb);
+    pop(b);
+    size_t final_n;
+    uint64_t aa[1] = {(uint64_t)a};
+    biglogeqv(aa, 1, b, lenb, p, final_n);
+    return confirm_size(p, lenb, final_n);
+}
+
+inline intptr_t Logeqv::op(int64_t a, int64_t b)
+{   return int_to_handle(~a ^ b);
+}
+
 inline void bigrightshift(const uint64_t *a, size_t lena,
-                          int n,
+                          int64_t n,
                           uint64_t *r, size_t &lenr);
 
 inline void bigleftshift(const uint64_t *a, size_t lena,
-                         int n,
+                         int64_t n,
                          uint64_t *r, size_t &lenr)
 {   if (n == 0)
     {   internal_copy(a, lena, r);
@@ -5861,7 +5979,7 @@ inline void bigleftshift(const uint64_t *a, size_t lena,
 
 }
 
-inline intptr_t rightshift_b(uint64_t *a, int n);
+inline intptr_t rightshift_b(uint64_t *a, int64_t n);
 
 inline intptr_t Leftshift::op(uint64_t *a, int64_t n)
 {   if (n == 0) return copy_if_no_garbage_collector(a);
@@ -5876,10 +5994,6 @@ inline intptr_t Leftshift::op(uint64_t *a, int64_t n)
     return confirm_size(p, nr, final_n);
 }
 
-inline intptr_t Leftshift::op(uint64_t *a, int32_t n)
-{   return Leftshift::op(a, (int64_t)n);
-}
-
 inline intptr_t Leftshift::op(int64_t aa, int64_t n)
 {   if (n == 0) return int_to_handle(aa);
     else if (n < 0) return Rightshift::op(aa, -n);
@@ -5891,12 +6005,8 @@ inline intptr_t Leftshift::op(int64_t aa, int64_t n)
     return confirm_size(p, nr, final_n);
 }
 
-inline intptr_t Leftshift::op(int64_t a, int32_t n)
-{   return Leftshift::op(a, (int64_t)n);
-}
-
 inline void bigrightshift(const uint64_t *a, size_t lena,
-                          int n,
+                          int64_t n,
                           uint64_t *r, size_t &lenr)
 {   if (n == 0)
     {   internal_copy(a, lena, r);
@@ -5944,10 +6054,6 @@ inline intptr_t Rightshift::op(uint64_t *a, int64_t n)
     return confirm_size(p, nr, final_n);
 }
 
-inline intptr_t Rightshift::op(uint64_t *a, int32_t n)
-{   return Rightshift::op(a, (int64_t)n);
-}
-
 inline intptr_t Rightshift::op(int64_t a, int64_t n)
 {   if (n == 0) return int_to_handle(a);
     else if (n < 0) return Leftshift::op(a, -n);
@@ -5959,10 +6065,6 @@ inline intptr_t Rightshift::op(int64_t a, int64_t n)
 // a power of 2. Because I have n <= 62 here I will not get overflow.
     int64_t q = ((int64_t)1)<<n;
     return int_to_handle((a & ~(q-1))/q);
-}
-
-inline intptr_t Rightshift::op(int64_t a, int32_t n)
-{   return Rightshift::op(a, (int64_t)n);
 }
 
 inline size_t Integer_length::op(uint64_t *a)
@@ -7968,10 +8070,6 @@ inline intptr_t Pow::op(uint64_t *a, int64_t n)
     return confirm_size(r, olenr, lenr);
 }
 
-inline intptr_t Pow::op(uint64_t *a, int32_t n)
-{   return Pow::op(a, (int64_t)n);
-}
-
 // Again the cases n = 0, 1 and 2 have been filtered out
 
 inline intptr_t Pow::op(int64_t a, int64_t n)
@@ -8017,10 +8115,6 @@ inline intptr_t Pow::op(int64_t a, int64_t n)
     abandon(w);
     abandon(v);
     return confirm_size(r, olenr, lenr);
-}
-
-inline intptr_t Pow::op(int64_t a, int32_t n)
-{   return Pow::op(a, (int64_t)n);
 }
 
 inline double Pow::op(uint64_t *a, double n)
@@ -9366,6 +9460,127 @@ inline intptr_t Lcm::op(int64_t a, int64_t b)
     }
 }
 
+inline intptr_t ModularPlus::op(int64_t, int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularPlus::op(int64_t, uint64_t *)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularPlus::op(uint64_t *, int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularPlus::op(uint64_t *, uint64_t *)
+{   aerror("incomplete");
+}
+
+
+inline intptr_t ModularDifference::op(int64_t, int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularDifference::op(int64_t, uint64_t *)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularDifference::op(uint64_t *, int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularDifference::op(uint64_t *, uint64_t *)
+{   aerror("incomplete");
+}
+
+
+inline intptr_t ModularTimes::op(int64_t, int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularTimes::op(int64_t, uint64_t *)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularTimes::op(uint64_t *, int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularTimes::op(uint64_t *, uint64_t *)
+{   aerror("incomplete");
+}
+
+
+inline intptr_t ModularExpt::op(int64_t, int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularExpt::op(int64_t, uint64_t *)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularExpt::op(uint64_t *, int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularExpt::op(uint64_t *, uint64_t *)
+{   aerror("incomplete");
+}
+
+
+inline intptr_t ModularQuotient::op(int64_t, int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularQuotient::op(int64_t, uint64_t *)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularQuotient::op(uint64_t *, int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularQuotient::op(uint64_t *, uint64_t *)
+{   aerror("incomplete");
+}
+
+
+inline intptr_t ModularMinus::op(int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularMinus::op(uint64_t *)
+{   aerror("incomplete");
+}
+
+
+inline intptr_t ModularReciprocal::op(int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularReciprocal::op(uint64_t *)
+{   aerror("incomplete");
+}
+
+
+inline intptr_t ModularNumber::op(int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t ModularNumber::op(uint64_t *)
+{   aerror("incomplete");
+}
+
+
+inline intptr_t SetModulus::op(int64_t)
+{   aerror("incomplete");
+}
+
+inline intptr_t SetModulus::op(uint64_t *)
+{   aerror("incomplete");
+}
+
+
 } // end of namespace arithlib_implementation
 
 // I want a namespace that the user can activate via "using" that only
@@ -9410,6 +9625,7 @@ using arithlib_implementation::Lcm;
 using arithlib_implementation::Logand;
 using arithlib_implementation::Logor;
 using arithlib_implementation::Logxor;
+using arithlib_implementation::Logeqv;
 using arithlib_implementation::Zerop;
 using arithlib_implementation::Onep;
 using arithlib_implementation::Minusp;
@@ -9438,6 +9654,15 @@ using arithlib_implementation::Logcount;
 using arithlib_implementation::Float;
 using arithlib_implementation::Double;
 using arithlib_implementation::Frexp;
+using arithlib_implementation::ModularPlus;
+using arithlib_implementation::ModularDifference;
+using arithlib_implementation::ModularTimes;
+using arithlib_implementation::ModularExpt;
+using arithlib_implementation::ModularQuotient;
+using arithlib_implementation::ModularMinus;
+using arithlib_implementation::ModularReciprocal;
+using arithlib_implementation::ModularNumber;
+using arithlib_implementation::SetModulus;
 
 using arithlib_implementation::bignum_to_string;
 using arithlib_implementation::bignum_to_string_length;
@@ -9460,8 +9685,8 @@ using arithlib_implementation::float128_to_floor;
 using arithlib_implementation::float128_to_ceiling;
 #endif
 
-using arithlib_implementation::negative;
-using arithlib_implementation::number_size;
+//using arithlib_implementation::negative;
+//using arithlib_implementation::number_size;
 
 }
 

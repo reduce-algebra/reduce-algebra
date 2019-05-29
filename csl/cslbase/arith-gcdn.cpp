@@ -1,5 +1,7 @@
 // arith-gcdn.cpp                               Copyright (C) 2019 Codemist
 
+#ifdef ARITHLIB
+
 // $Id$
 
 
@@ -64,23 +66,18 @@ LispObject Gcdn::op(uint64_t *a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,Gcdn>("gcdn", a, b);
 }
 
-// fixnum + fixnum
-// Note that this can not just go "a+b" in any totally simple way
-// because it must cope gracefully with any overflow in native arithmetic
-// and in such cases return a bignum result.
-
-inline LispObject Gcdn::op(Fixnum a, Fixnum b)
+LispObject Gcdn::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::Gcd::op(a.intval(), b.intval());
 }
-// bignum + fixnum
+// bignum gcdn fixnum
 LispObject Gcdn::op(uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Gcd::op(a, b.intval());
 }
-// fixnum + bignum
+// fixnum gcdn bignum
 LispObject Gcdn::op(Fixnum a, uint64_t *b)
 {   return Gcdn::op(b, a);
 }
-// bignum + bignum
+// bignum gcdn bignum
 LispObject Gcdn::op(uint64_t *a, uint64_t *b)
 {   return arithlib_lowlevel::Gcd::op(a, b);
 }
@@ -105,26 +102,23 @@ LispObject Lcmn::op(uint64_t *a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,Lcmn>("lcmn", a, b);
 }
 
-// fixnum + fixnum
-// Note that this can not just go "a+b" in any totally simple way
-// because it must cope gracefully with any overflow in native arithmetic
-// and in such cases return a bignum result.
-
-inline LispObject Lcmn::op(Fixnum a, Fixnum b)
+LispObject Lcmn::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::Lcm::op(a.intval(), b.intval());
 }
-// bignum + fixnum
+// bignum lcmn fixnum
 LispObject Lcmn::op(uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Lcm::op(a, b.intval());
 }
-// fixnum + bignum
+// fixnum lcmn bignum
 LispObject Lcmn::op(Fixnum a, uint64_t *b)
 {   return Lcmn::op(b, a);
 }
-// bignum + bignum
+// bignum lcmn bignum
 LispObject Lcmn::op(uint64_t *a, uint64_t *b)
 {   return arithlib_lowlevel::Lcm::op(a, b);
 }
+
+#endif //ARITHLIB
 
 // end of arith-gcdn.cpp
 

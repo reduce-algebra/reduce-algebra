@@ -1,5 +1,6 @@
 //  arith-print.cpp                             Copyright (C) 2019 Codemist    
 
+#ifdef ARITHLIB
 
 /**************************************************************************
  * Copyright (C) 20179, Codemist.                         A C Norman       *
@@ -106,5 +107,7 @@ void print_newbighexoctbin(LispObject u, int radix, int width,
 
 */
 }
+
+#endif // ARITHLIB
 
 // end of arith-print.cpp

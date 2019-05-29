@@ -139,7 +139,7 @@ LispObject Plus::op(LFlt a, LispObject b)
 // because it must cope gracefully with any overflow in native arithmetic
 // and in such cases return a bignum result.
 
-inline LispObject Plus::op(Fixnum a, Fixnum b)
+LispObject Plus::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::Plus::op(a.intval(), b.intval());
 }
 // bignum + fixnum
@@ -494,7 +494,7 @@ LispObject Difference::op(LFlt a, LispObject b)
 }
 
 // fixnum - fixnum
-inline LispObject Difference::op(Fixnum a, Fixnum b)
+LispObject Difference::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::Difference::op(a.intval(), b.intval());
 }
 // bignum - fixnum

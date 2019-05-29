@@ -1,5 +1,7 @@
 // arith-float.cpp                              Copyright (C) 2019 Codemist
 
+#ifdef ARITHLIB
+
 // $Id$
 
 
@@ -313,51 +315,110 @@ LispObject Frexp::op(LFlt a)
 //========================================================================
 
 LispObject Ldexp::op(LispObject a, LispObject b)
-{   return number_dispatcher::shiftlike<LispObject,Ldexp>("ldexp", a, b);
+{   return number_dispatcher::ibinary<LispObject,Ldexp>("ldexp", a, b);
 }
 
 
-LispObject Ldexp::op(Fixnum a, int b)
-{   double d = std::ldexp((double)a.intval(), b);
+LispObject Ldexp::op(Fixnum a, Fixnum b)
+{   double d = std::ldexp((double)a.intval(), b.intval());
     return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
 }
 
 
-LispObject Ldexp::op(uint64_t *a, int b)
-{   double d = std::ldexp(Float::op(a), b);
+LispObject Ldexp::op(uint64_t *a, Fixnum b)
+{   double d = std::ldexp(Float::op(a), b.intval());
     return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
 }
 
-LispObject Ldexp::op(Rat a, int b)
-{   double d = std::ldexp(Float::op(a), b);
+LispObject Ldexp::op(Rat a, Fixnum b)
+{   double d = std::ldexp(Float::op(a), b.intval());
     return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
 }
 
-LispObject Ldexp::op(Cpx a, int b)
+LispObject Ldexp::op(Cpx a, Fixnum b)
 {   aerror1("bad argument for ldexp", a.value());
 }
 
-LispObject Ldexp::op(SFlt a, int b)
-{   double d = std::ldexp(a.floatval(), b);
+LispObject Ldexp::op(SFlt a, Fixnum b)
+{   double d = std::ldexp(a.floatval(), b.intval());
     return pack_short_float(d);
 }
 
-LispObject Ldexp::op(Flt a, int b)
-{   double d = std::ldexp(a.floatval(), b);
+LispObject Ldexp::op(Flt a, Fixnum b)
+{   double d = std::ldexp(a.floatval(), b.intval());
     return pack_single_float(d);
 }
 
-LispObject Ldexp::op(double a, int b)
-{   double d = std::ldexp(a, b);
+LispObject Ldexp::op(double a, Fixnum b)
+{   double d = std::ldexp(a, b.intval());
     return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
 }
 
-LispObject Ldexp::op(LFlt a, int b)
+LispObject Ldexp::op(LFlt a, Fixnum b)
 {   float128_t f = a.floatval();
-    f128M_ldexp(&f, b);
+    f128M_ldexp(&f, b.intval());
     return make_boxfloat128(f);
 }
 
+// If the exponent imposed by ldexp is a bignum I map to zero if it is
+// negative and I force in an exponent of 10000000 otherwise, expecting
+// that to leave 0.0 as 0.0 but turn everything else into an infinity.
+
+LispObject Ldexp::op(Fixnum a, uint64_t *b)
+{   if (Minusp::op(b)) return make_boxfloat(0.0, TYPE_DOUBLE_FLOAT);
+    double d = std::ldexp((double)a.intval(), 100000000);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+
+LispObject Ldexp::op(uint64_t *a, uint64_t *b)
+{   if (Minusp::op(b)) return make_boxfloat(0.0, TYPE_DOUBLE_FLOAT);
+    double d = std::ldexp(Float::op(a), 100000000);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Ldexp::op(Rat a, uint64_t *b)
+{   if (Minusp::op(b)) return make_boxfloat(0.0, TYPE_DOUBLE_FLOAT);
+    double d = std::ldexp(Float::op(a), 100000000);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Ldexp::op(Cpx a, uint64_t *b)
+{   aerror1("bad argument for ldexp", a.value());
+}
+
+LispObject Ldexp::op(SFlt a, uint64_t *b)
+{   if (Minusp::op(b)) return pack_short_float(
+        a.floatval() == a.floatval() ? 0.0 : 0.0/0.0);
+    double d = std::ldexp(a.floatval(), 100000000);
+    return pack_short_float(d);
+}
+
+LispObject Ldexp::op(Flt a, uint64_t *b)
+{   if (Minusp::op(b)) return pack_single_float(
+        a.floatval() == a.floatval() ? 0.0 : 0.0/0.0);
+    double d = std::ldexp(a.floatval(), 100000000);
+    return pack_single_float(d);
+}
+
+LispObject Ldexp::op(double a, uint64_t *b)
+{   if (Minusp::op(b)) return make_boxfloat(
+        a == a ? 0.0 : 0.0/0.0,
+        TYPE_DOUBLE_FLOAT);
+    double d = std::ldexp(a, 100000000);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+// I am not dealing with a NaN in the float128 case at present.
+
+LispObject Ldexp::op(LFlt a, uint64_t *b)
+{   if (Minusp::op(b)) return make_boxfloat128(i64_to_f128(0));
+    float128_t f = a.floatval();
+    f128M_ldexp(&f, 100000000);
+    return make_boxfloat128(f);
+}
+
+#endif // ARITHLIB
 
 // end of arith-float.cpp
 

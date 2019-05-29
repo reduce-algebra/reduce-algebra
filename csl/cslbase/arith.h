@@ -225,6 +225,8 @@ inline void floating_clear_flags()
 
 inline double value_of_immediate_float(LispObject a)
 {   Float_union aa;
+// Worry about strict aliasing here, at least maybe. With GCC I believe I am
+// safe, but as per the standards I think I am not.
     if (SIXTY_FOUR_BIT) aa.i = (int32_t)((uint64_t)a>>32);
     else aa.i = (int32_t)(a - XTAG_SFLOAT);
     return aa.f;
@@ -284,7 +286,7 @@ inline LispObject pack_single_float(double d)
 // result will match the wider of the two.
 
 inline LispObject pack_immediate_float(double d,
-                                              LispObject l1, LispObject l2=0)
+                                       LispObject l1, LispObject l2=0)
 {   Float_union aa;
     aa.f = d;
     if (trap_floating_overflow &&
@@ -780,7 +782,9 @@ stgclass type name(LispObject a1)                                   \
     default:                                                        \
         aerror1("bad arg for " #name, a1);                          \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
-        return name##_s(a1);                                        \
+        if (SIXTY_FOUR_BIT && ((a1 & XTAG_FLOAT32) != 0)            \
+            return name##_f(a1);                                    \
+        else return name##_s(a1);                                   \
     }                                                               \
 }
 
@@ -818,7 +822,9 @@ stgclass type name(LispObject a1, LispObject a2)                    \
     default:                                                        \
         aerror2("bad arg for " #rawname, a1, a2);                   \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
-        return name##_s(a1, a2);                                    \
+        if (SIXTY_FOUR_BIT && ((a2 & XTAG_FLOAT32) != 0))           \
+            return name##_f(a1, a2);                                \
+        else return name##_s(a1, a2);                               \
     }                                                               \
 }
 
@@ -870,7 +876,9 @@ stgclass type name(LispObject a1, LispObject a2)                    \
     default:                                                        \
         aerror2("bad arg for " #name, a1, a2);                      \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
-        return name##_s(a1, a2);                                    \
+        if (SIXTY_FOUR_BIT && ((a1 & XTAG_FLOAT32) != 0))           \
+            return name##_f(a1, a2);                                \
+        else return name##_s(a1, a2);                               \
     }                                                               \
 }
 
@@ -912,7 +920,9 @@ stgclass type name(LispObject a1)                                   \
     default:                                                        \
         aerror1("bad arg for " #name, a1);                          \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
-        return name##_s(a1);                                        \
+        if (SIXTY_FOUR_BIT && ((a1 & XTAG_FLOAT32) != 0))           \
+            return name##_f(a1);                                    \
+        else return name##_s(a1);                                   \
     }                                                               \
 }
 
@@ -948,7 +958,9 @@ stgclass type name(LispObject a1, LispObject a2)                    \
     default:                                                        \
         aerror2("bad arg for " #rawname, a1, a2);                   \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
-        return name##_s(a1, a2);                                    \
+        if (SIXTY_FOUR_BIT && ((a2 & XTAG_FLOAT32) != 0))           \
+            return name##_f(a1, a2);                                \
+        else return name##_s(a1, a2);                               \
     }                                                               \
 }
 
@@ -996,7 +1008,9 @@ stgclass type name(LispObject a1, LispObject a2)                    \
     default:                                                        \
         aerror2("bad arg for " #name, a1, a2);                      \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
-        return name##_s(a1, a2);                                    \
+        if (SIXTY_FOUR_BIT && ((a1 & XTAG_FLOAT32) != 0))           \
+            return name##_f(a1, a2);                                \
+        else return name##_s(a1, a2);                               \
     }                                                               \
 }
 
