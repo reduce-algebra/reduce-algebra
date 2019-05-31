@@ -476,7 +476,7 @@ inline R unary(const char *fname, LispObject a)
             aerror2("Non-numeric argument", fname, a);
         }
     case TAG_FIXNUM:
-        return T::op((intptr_t)int_of_fixnum(a));
+        return T::op(Fixnum(a));
     case XTAG_SFLOAT:
         return T::op(SFlt(a));
     }
@@ -2257,10 +2257,41 @@ public:
     static LispObject op(uint64_t *b);
 };
 
-// Note that for Float and Float128 I return the unwrapped floating
-// point value.
-
 class Float
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
+    static LispObject op(Rat b);
+    static LispObject op(Cpx b);
+    static LispObject op(SFlt b);
+    static LispObject op(Flt b);
+    static LispObject op(double b);
+#ifdef softfloat_h
+    static LispObject op(LFlt b);
+#endif // softfloat_h
+};
+
+class Float128
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
+    static LispObject op(Rat b);
+    static LispObject op(Cpx b);
+    static LispObject op(SFlt b);
+    static LispObject op(Flt b);
+    static LispObject op(double b);
+#ifdef softfloat_h
+    static LispObject op(LFlt b);
+#endif // softfloat_h
+};
+
+class RawFloat
 {
 public:
     static double op(LispObject a);
@@ -2277,7 +2308,7 @@ public:
 #endif // softfloat_h
 };
 
-class Float128
+class RawFloat128
 {
 public:
     static float128_t op(LispObject a);

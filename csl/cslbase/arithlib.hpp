@@ -9874,13 +9874,39 @@ inline intptr_t ModularMinus::op(uint64_t *a)
     return Difference::op(large_modulus(), a);
 }
 
+inline intptr_t general_modular_reciprocal(intptr_t a)
+{   aerror("not coded yet");
+}
 
-inline intptr_t ModularReciprocal::op(int64_t a)
-{   aerror("incomplete");
+inline intptr_t ModularReciprocal::op(int64_t aa)
+{   if (aa <= 0) aerror1("bad argument to modular-reciprocal",
+                         int_to_handle(aa));
+    else if (modulus_size == modulus_big)
+        return general_modular_reciprocal(int_to_handle(aa));
+    int64_t a = small_modulus,
+            b = aa,
+            x = 0,
+            y = 1;
+    while (b != 1)
+    {   uint64_t w, t;
+        if (b == 0)
+            aerror2("non-prime modulus in modular-reciprocal",
+                           int_to_handle(small_modulus),
+                           int_to_handle(aa));
+        w = a / b;
+        t = b;
+        b = a - b*w;
+        a = t;
+        t = y;
+        y = x - y*w;
+        x = t;
+    }
+    if (y < 0) y += small_modulus;
+    return int_to_handle(y);
 }
 
 inline intptr_t ModularReciprocal::op(uint64_t *a)
-{   aerror("incomplete");
+{   return general_modular_reciprocal(vector_to_handle(a));
 }
 
 

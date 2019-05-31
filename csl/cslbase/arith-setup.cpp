@@ -46,6 +46,9 @@
 #include "headers.h"
 #include "dispatch.h"
 
+LispObject onebool(bool b)
+{   return onevalue(b ? lisp_true : nil);
+}
 
 static LispObject Nplus(LispObject env)
 {   return onevalue(fixnum_of_int(0));
@@ -163,16 +166,13 @@ static LispObject Ndifference(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Difference::op(a1, a2));
 }
 
-
 static LispObject Nquotient(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Quotient::op(a1, a2));
 }
 
-
 static LispObject Nremainder(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Remainder::op(a1, a2));
 }
-
 
 static LispObject Ndivide(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Divide::op(a1, a2));
@@ -187,23 +187,23 @@ static LispObject Nsub1(LispObject env, LispObject a1)
 }
 
 static LispObject Nonep(LispObject env, LispObject a1)
-{   return onevalue(Onep::op(a1));
+{   return onebool(Onep::op(a1));
 }
 
 static LispObject Nevenp(LispObject env, LispObject a1)
-{   return onevalue(Evenp::op(a1));
+{   return onebool(Evenp::op(a1));
 }
 
 static LispObject Noddp(LispObject env, LispObject a1)
-{   return onevalue(Oddp::op(a1));
+{   return onebool(Oddp::op(a1));
 }
 
 static LispObject Nzerop(LispObject env, LispObject a1)
-{   return onevalue(Zerop::op(a1));
+{   return onebool(Zerop::op(a1));
 }
 
 static LispObject Nminusp(LispObject env, LispObject a1)
-{   return onevalue(Minusp::op(a1));
+{   return onebool(Minusp::op(a1));
 }
 
 static LispObject Nminus(LispObject env, LispObject a1)
@@ -235,7 +235,7 @@ static LispObject Nceiling(LispObject env, LispObject a1)
 }
 
 static LispObject Nfloat128(LispObject env, LispObject a1)
-{   return onevalue(make_boxfloat128(Float128::op(a1)));
+{   return onevalue(Float128::op(a1));
 }
 
 static LispObject Nfrexp(LispObject env, LispObject a1)
@@ -244,10 +244,6 @@ static LispObject Nfrexp(LispObject env, LispObject a1)
 
 static LispObject Nldexp(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Ldexp::op(a1, a2));
-}
-
-LispObject onebool(bool b)
-{   return onevalue(b ? lisp_true : nil);
 }
 
 static LispObject Ngreaterp(LispObject env, LispObject a1, LispObject a2)
@@ -720,16 +716,13 @@ static LispObject Nidifference(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Difference::op(a1, a2));
 }
 
-
 static LispObject Niquotient(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Quotient::op(a1, a2));
 }
 
-
 static LispObject Niremainder(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Remainder::op(a1, a2));
 }
-
 
 static LispObject Nidivide(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Divide::op(a1, a2));
@@ -1039,7 +1032,6 @@ static LispObject Nileftshift(LispObject env, LispObject a1, LispObject a2)
 static LispObject Nirightshift(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(RightShift::op(a1, a2));
 }
-
 
 
 setup_type const arith_setup[] =

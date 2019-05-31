@@ -46,43 +46,130 @@ using number_dispatcher::SFlt;
 using number_dispatcher::Flt;
 using number_dispatcher::LFlt;
 
-//========================================================================
-
-double Float::op(LispObject a)
+LispObject Float::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Float>("float", a);
 }
 
-
-double Float::op(Fixnum a)
-{   return (double)a.intval();
+LispObject Float::op(Fixnum a)
+{   return make_boxfloat((double)a.intval(), TYPE_DOUBLE_FLOAT);
 }
 
-
-double Float::op(uint64_t *a)
-{   return arithlib_lowlevel::Float::op(a);
+LispObject Float::op(uint64_t *a)
+{   return make_boxfloat(arithlib_lowlevel::Float::op(a), TYPE_DOUBLE_FLOAT);
 }
 
-double Float::op(Rat a)
-{   return Float::op(a.numerator()) / Float::op(a.denominator());
+LispObject Float::op(Rat a)
+{   aerror("float of rat not coded yet");
+//    return Float::op(a.numerator()) / Float::op(a.denominator());
 }
 
-double Float::op(Cpx a)
+LispObject Float::op(Cpx a)
 {   aerror1("bad argument for float", a.value());
 }
 
-double Float::op(SFlt a)
+LispObject Float::op(SFlt a)
+{   return make_boxfloat(a.floatval(), TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Float::op(Flt a)
+{   return make_boxfloat(a.floatval(), TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Float::op(double a)
+{   return make_boxfloat(a, TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Float::op(LFlt a)
+{   float64_t f = f128_to_f64(a.floatval());
+// Ha ha - the jolly activity here is a response to the Strict Aliasing Rules
+// that (I believe) allow me to feel safe if I move things treating it as
+// byte data.
+    double d;
+    memcpy(&d, &f, sizeof(double));
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Float128::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Float128>("float128", a);
+}
+
+LispObject Float128::op(Fixnum a)
+{   return make_boxfloat128(i64_to_f128(a.intval()));
+}
+
+LispObject Float128::op(uint64_t *a)
+{   return make_boxfloat128(arithlib_lowlevel::Float128::op(a));
+}
+
+LispObject Float128::op(Rat a)
+{   aerror("floating a rat not implemented yet");
+//return f128_div(Float128::op(a.numerator()), Float128::op(a.denominator()));
+}
+
+LispObject Float128::op(Cpx a)
+{   aerror1("bad argument for float128", a.value());
+}
+
+LispObject Float128::op(SFlt a)
+{   double d = a.floatval();
+    float64_t dd;
+    memcpy(&dd, &d, sizeof(double));
+    return make_boxfloat128(f64_to_f128(dd));
+}
+
+LispObject Float128::op(Flt a)
+{   double d = a.floatval();
+    float64_t dd;
+    memcpy(&dd, &d, sizeof(double));
+    return make_boxfloat128(f64_to_f128(dd));
+}
+
+LispObject Float128::op(double a)
+{   double d = a;
+    float64_t dd;
+    memcpy(&dd, &d, sizeof(double));
+    return make_boxfloat128(f64_to_f128(dd));
+}
+
+LispObject Float128::op(LFlt a)
+{   return a.value();
+}
+
+double RawFloat::op(LispObject a)
+{   return number_dispatcher::unary<double,RawFloat>("float", a);
+}
+
+double RawFloat::op(Fixnum a)
+{   return (double)a.intval();
+}
+
+double RawFloat::op(uint64_t *a)
+{   return arithlib_lowlevel::Float::op(a);
+}
+
+double RawFloat::op(Rat a)
+{   // This is not good enough yet. Huge numerators etc would overflow
+    // early.
+    return RawFloat::op(a.numerator()) / RawFloat::op(a.denominator());
+}
+
+double RawFloat::op(Cpx a)
+{   aerror1("bad argument for float", a.value());
+}
+
+double RawFloat::op(SFlt a)
 {   return a.floatval();
 }
 
-double Float::op(Flt a)
+double RawFloat::op(Flt a)
 {   return a.floatval();
 }
 
-double Float::op(double a)
+double RawFloat::op(double a)
 {   return a;
 }
 
-double Float::op(LFlt a)
+double RawFloat::op(LFlt a)
 {   float64_t f = f128_to_f64(a.floatval());
 // Ha ha - the jolly activity here is a response to the Strict Aliasing Rules
 // that (I believe) allow me to feel safe if I move things treating it as
@@ -92,68 +179,60 @@ double Float::op(LFlt a)
     return d;
 }
 
-//========================================================================
-
-
-float128_t Float128::op(LispObject a)
-{   return number_dispatcher::unary<float128_t,Float128>("float128", a);
+float128_t RawFloat128::op(LispObject a)
+{   return number_dispatcher::unary<float128_t,RawFloat128>("float128", a);
 }
 
-
-float128_t Float128::op(Fixnum a)
+float128_t RawFloat128::op(Fixnum a)
 {   return i64_to_f128(a.intval());
 }
 
-
-float128_t Float128::op(uint64_t *a)
+float128_t RawFloat128::op(uint64_t *a)
 {   return arithlib_lowlevel::Float128::op(a);
 }
 
-float128_t Float128::op(Rat a)
-{   return f128_div(Float128::op(a.numerator()), Float128::op(a.denominator()));
+float128_t RawFloat128::op(Rat a)
+{   // Not good enough yet
+    return f128_div(RawFloat128::op(a.numerator()),
+                    RawFloat128::op(a.denominator()));
 }
 
-float128_t Float128::op(Cpx a)
+float128_t RawFloat128::op(Cpx a)
 {   aerror1("bad argument for float128", a.value());
 }
 
-float128_t Float128::op(SFlt a)
+float128_t RawFloat128::op(SFlt a)
 {   double d = a.floatval();
     float64_t dd;
     memcpy(&dd, &d, sizeof(double));
     return f64_to_f128(dd);
 }
 
-float128_t Float128::op(Flt a)
+float128_t RawFloat128::op(Flt a)
 {   double d = a.floatval();
     float64_t dd;
     memcpy(&dd, &d, sizeof(double));
     return f64_to_f128(dd);
 }
 
-float128_t Float128::op(double a)
+float128_t RawFloat128::op(double a)
 {   double d = a;
     float64_t dd;
     memcpy(&dd, &d, sizeof(double));
     return f64_to_f128(dd);
 }
 
-float128_t Float128::op(LFlt a)
+float128_t RawFloat128::op(LFlt a)
 {   return a.floatval();
 }
-
-//========================================================================
-
 
 LispObject Fix::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Fix>("fix", a);
 }
 
-
 LispObject Fix::op(Fixnum a)
 {   return a.value();
 }
-
 
 LispObject Fix::op(uint64_t *a)
 {   return (LispObject)((char *)a - 8 + TAG_NUMBERS);
@@ -183,17 +262,13 @@ LispObject Fix::op(LFlt a)
 {   return arithlib_lowlevel::float128_to_bignum(a.floatval());
 }
 
-//========================================================================
-
 LispObject Floor::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Floor>("floor", a);
 }
 
-
 LispObject Floor::op(Fixnum a)
 {   return a.value();
 }
-
 
 LispObject Floor::op(uint64_t *a)
 {   return (LispObject)((char *)a - 8 + TAG_NUMBERS);
@@ -223,17 +298,13 @@ LispObject Floor::op(LFlt a)
 {   return arithlib_lowlevel::float128_to_floor(a.floatval());
 }
 
-//========================================================================
-
 LispObject Ceiling::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Ceiling>("ceiling", a);
 }
 
-
 LispObject Ceiling::op(Fixnum a)
 {   return a.value();
 }
-
 
 LispObject Ceiling::op(uint64_t *a)
 {   return (LispObject)((char *)a - 8 + TAG_NUMBERS);
@@ -263,17 +334,13 @@ LispObject Ceiling::op(LFlt a)
 {   return arithlib_lowlevel::float128_to_ceiling(a.floatval());
 }
 
-//========================================================================
-
 LispObject Frexp::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Frexp>("frexp", a);
 }
 
-
 LispObject Frexp::op(Fixnum a)
 {   aerror1("bad argument to frexp", a.value());
 }
-
 
 LispObject Frexp::op(uint64_t *a)
 {   aerror1("bad argument to frexp", (LispObject)((char *)a - 8 + TAG_NUMBERS));
@@ -312,18 +379,14 @@ LispObject Frexp::op(LFlt a)
     return cons(make_boxfloat128(d), fixnum_of_int(x));
 }
 
-//========================================================================
-
 LispObject Ldexp::op(LispObject a, LispObject b)
 {   return number_dispatcher::ibinary<LispObject,Ldexp>("ldexp", a, b);
 }
-
 
 LispObject Ldexp::op(Fixnum a, Fixnum b)
 {   double d = std::ldexp((double)a.intval(), b.intval());
     return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
 }
-
 
 LispObject Ldexp::op(uint64_t *a, Fixnum b)
 {   double d = std::ldexp(Float::op(a), b.intval());
@@ -369,7 +432,6 @@ LispObject Ldexp::op(Fixnum a, uint64_t *b)
     double d = std::ldexp((double)a.intval(), 100000000);
     return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
 }
-
 
 LispObject Ldexp::op(uint64_t *a, uint64_t *b)
 {   if (Minusp::op(b)) return make_boxfloat(0.0, TYPE_DOUBLE_FLOAT);
@@ -421,4 +483,3 @@ LispObject Ldexp::op(LFlt a, uint64_t *b)
 #endif // ARITHLIB
 
 // end of arith-float.cpp
-

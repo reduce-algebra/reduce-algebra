@@ -1,8 +1,8 @@
-#ifdef ARITHLIB
 // arith-plus.cpp                               Copyright (C) 2019 Codemist
 
 // $Id$
 
+#ifdef ARITHLIB
 
 /**************************************************************************
  * Copyright (C) 2019, Codemist.                         A C Norman       *
@@ -67,11 +67,9 @@ LispObject Plus::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<LispObject,Plus>("plus", a, b);
 }
 
-
 LispObject Plus::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
 }
-
 
 LispObject Plus::op(LispObject a, uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Plus>("plus", a, b);
@@ -104,7 +102,6 @@ LispObject Plus::op(LispObject a, LFlt b)
 LispObject Plus::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
 }
-
 
 LispObject Plus::op(uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Plus>("plus", a, b);
@@ -172,7 +169,6 @@ LispObject Plus::op(double a, Fixnum b)
 LispObject Plus::op(LFlt a, Fixnum b)
 {   return make_boxfloat128(f128_add(a.floatval(), i64_to_f128(b.intval())));
 }
-//............................................
 // fixnum + bignum
 LispObject Plus::op(Fixnum a, uint64_t *b)
 {   return Plus::op(b, a);
@@ -207,8 +203,6 @@ LispObject Plus::op(double a, uint64_t *b)
 LispObject Plus::op(LFlt a, uint64_t *b)
 {   return make_boxfloat128(f128_add(a.floatval(), arithlib_lowlevel::Float128::op(b)));
 }
-
-//............................................
 // fixnum + rational
 LispObject Plus::op(Fixnum a, Rat b)
 {   return Plus::op(b, a);
@@ -237,21 +231,20 @@ LispObject Plus::op(Cpx a, Rat b)
 }
 // short float + rational
 LispObject Plus::op(SFlt a, Rat b)
-{   return pack_short_float(a.floatval() + Float::op(b));
+{   return pack_short_float(a.floatval() + RawFloat::op(b));
 }
 // single float + rational
 LispObject Plus::op(Flt a, Rat b)
-{   return pack_single_float(a.floatval() + Float::op(b));
+{   return pack_single_float(a.floatval() + RawFloat::op(b));
 }
 // double float + rational
 LispObject Plus::op(double a, Rat b)
-{   return make_boxfloat(a + Float::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a + RawFloat::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float + rational
 LispObject Plus::op(LFlt a, Rat b)
-{   return make_boxfloat128(f128_add(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(f128_add(a.floatval(), RawFloat128::op(b)));
 }
-//............................................
 // fixnum + complex
 LispObject Plus::op(Fixnum a, Cpx b)
 {   return Plus::op(b, a);
@@ -285,7 +278,6 @@ LispObject Plus::op(double a, Cpx b)
 LispObject Plus::op(LFlt a, Cpx b)
 {   return make_complex(Plus::op(a, b.real_part()), b.imag_part());
 }
-//............................................
 // fixnum + short float
 LispObject Plus::op(Fixnum a, SFlt b)
 {   return Plus::op(b, a);
@@ -316,9 +308,8 @@ LispObject Plus::op(double a, SFlt b)
 }
 // long float + short float
 LispObject Plus::op(LFlt a, SFlt b)
-{   return make_boxfloat128(f128_add(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(f128_add(a.floatval(), RawFloat128::op(b)));
 }
-//............................................
 // fixnum + single float
 LispObject Plus::op(Fixnum a, Flt b)
 {   return Plus::op(b, a);
@@ -349,10 +340,8 @@ LispObject Plus::op(double a, Flt b)
 }
 // long float + single float
 LispObject Plus::op(LFlt a, Flt b)
-{   return make_boxfloat128(f128_add(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(f128_add(a.floatval(), RawFloat128::op(b)));
 }
-
-//............................................
 // fixnum + double float
 LispObject Plus::op(Fixnum a, double b)
 {   return Plus::op(b, a);
@@ -383,9 +372,8 @@ LispObject Plus::op(double a, double b)
 }
 // long float + double float
 LispObject Plus::op(LFlt a, double b)
-{   return make_boxfloat128(f128_add(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(f128_add(a.floatval(), RawFloat128::op(b)));
 }
-//............................................
 // fixnum + long float
 LispObject Plus::op(Fixnum a, LFlt b)
 {   return Plus::op(b, a);
@@ -419,15 +407,12 @@ LispObject Plus::op(LFlt a, LFlt b)
 {   return make_boxfloat128(f128_add(a.floatval(), b.floatval()));
 }
 
-
 // I will also put difference() in this file, since the logic is very
 // similar indeed to that for plus()
 
 LispObject Difference::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<LispObject,Difference>("difference", a, b);
 }
-
-// -------------------------------------------------------------------------
 
 LispObject Difference::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Difference>("difference", a, b);
@@ -527,7 +512,6 @@ LispObject Difference::op(double a, Fixnum b)
 LispObject Difference::op(LFlt a, Fixnum b)
 {   return make_boxfloat128(f128_sub(a.floatval(), i64_to_f128(b.intval())));
 }
-//............................................
 // fixnum - bignum
 LispObject Difference::op(Fixnum a, uint64_t *b)
 {   return arithlib_lowlevel::Difference::op(b, a.intval());
@@ -563,7 +547,6 @@ LispObject Difference::op(LFlt a, uint64_t *b)
 {   return make_boxfloat128(f128_sub(a.floatval(), arithlib_lowlevel::Float128::op(b)));
 }
 
-//............................................
 // fixnum - rational
 LispObject Difference::op(Fixnum a, Rat b)
 {   return make_ratio(Difference::op(Times::op(b.denominator(), a),
@@ -596,21 +579,20 @@ LispObject Difference::op(Cpx a, Rat b)
 }
 // short float - rational
 LispObject Difference::op(SFlt a, Rat b)
-{   return pack_short_float(a.floatval() - Float::op(b));
+{   return pack_short_float(a.floatval() - RawFloat::op(b));
 }
 // single float - rational
 LispObject Difference::op(Flt a, Rat b)
-{   return pack_single_float(a.floatval() - Float::op(b));
+{   return pack_single_float(a.floatval() - RawFloat::op(b));
 }
 // double float - rational
 LispObject Difference::op(double a, Rat b)
-{   return make_boxfloat(a - Float::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a - RawFloat::op(b), TYPE_DOUBLE_FLOAT);
 }
 // long float - rational
 LispObject Difference::op(LFlt a, Rat b)
-{   return make_boxfloat128(f128_sub(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(f128_sub(a.floatval(), RawFloat128::op(b)));
 }
-//............................................
 // fixnum - complex
 LispObject Difference::op(Fixnum a, Cpx b)
 {   return make_complex(Difference::op(a, b.real_part()),
@@ -651,18 +633,17 @@ LispObject Difference::op(LFlt a, Cpx b)
 {   return make_complex(Difference::op(a, b.real_part()),
                         Minus::op(b.imag_part()));
 }
-//............................................
 // fixnum - short float
 LispObject Difference::op(Fixnum a, SFlt b)
 {   return pack_short_float((double)a.intval() - b.floatval());
 }
 // bignum - short float
 LispObject Difference::op(uint64_t *a, SFlt b)
-{   return pack_single_float(Float::op(a) - b.floatval());
+{   return pack_single_float(RawFloat::op(a) - b.floatval());
 }
 // rational - short float
 LispObject Difference::op(Rat a, SFlt b)
-{   return pack_single_float(Float::op(a) - b.floatval());
+{   return pack_single_float(RawFloat::op(a) - b.floatval());
 }
 // complex - short float
 LispObject Difference::op(Cpx a, SFlt b)
@@ -682,20 +663,19 @@ LispObject Difference::op(double a, SFlt b)
 }
 // long float - short float
 LispObject Difference::op(LFlt a, SFlt b)
-{   return make_boxfloat128(f128_sub(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(f128_sub(a.floatval(), RawFloat128::op(b)));
 }
-//............................................
 // fixnum - single float
 LispObject Difference::op(Fixnum a, Flt b)
 {   return pack_single_float((double)a.intval() - b.floatval());
 }
 // bignum - single float
 LispObject Difference::op(uint64_t *a, Flt b)
-{   return pack_single_float(Float::op(a) - b.floatval());
+{   return pack_single_float(RawFloat::op(a) - b.floatval());
 }
 // rational - single float
 LispObject Difference::op(Rat a, Flt b)
-{   return pack_single_float(Float::op(a) - b.floatval());
+{   return pack_single_float(RawFloat::op(a) - b.floatval());
 }
 // complex - single float
 LispObject Difference::op(Cpx a, Flt b)
@@ -715,21 +695,19 @@ LispObject Difference::op(double a, Flt b)
 }
 // long float - single float
 LispObject Difference::op(LFlt a, Flt b)
-{   return make_boxfloat128(f128_sub(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(f128_sub(a.floatval(), RawFloat128::op(b)));
 }
-
-//............................................
 // fixnum - double float@
 LispObject Difference::op(Fixnum a, double b)
 {   return make_boxfloat((double)a.intval() - b, TYPE_DOUBLE_FLOAT);
 }
 // bignum - double float
 LispObject Difference::op(uint64_t *a, double b)
-{   return make_boxfloat(Float::op(a) - b, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(RawFloat::op(a) - b, TYPE_DOUBLE_FLOAT);
 }
 // rational - double float
 LispObject Difference::op(Rat a, double b)
-{   return make_boxfloat(Float::op(a) - b, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(RawFloat::op(a) - b, TYPE_DOUBLE_FLOAT);
 }
 // complex - double float
 LispObject Difference::op(Cpx a, double b)
@@ -749,20 +727,19 @@ LispObject Difference::op(double a, double b)
 }
 // long float - double float
 LispObject Difference::op(LFlt a, double b)
-{   return make_boxfloat128(f128_sub(a.floatval(), Float128::op(b)));
+{   return make_boxfloat128(f128_sub(a.floatval(), RawFloat128::op(b)));
 }
-//............................................
 // fixnum - long float
 LispObject Difference::op(Fixnum a, LFlt b)
-{   return make_boxfloat128(f128_sub(Float128::op(a), b.floatval()));
+{   return make_boxfloat128(f128_sub(RawFloat128::op(a), b.floatval()));
 }
 // bignum - long float
 LispObject Difference::op(uint64_t *a, LFlt b)
-{   return make_boxfloat128(f128_sub(Float128::op(a), b.floatval()));
+{   return make_boxfloat128(f128_sub(RawFloat128::op(a), b.floatval()));
 }
 // rational - long float
 LispObject Difference::op(Rat a, LFlt b)
-{   return make_boxfloat128(f128_sub(Float128::op(a), b.floatval()));
+{   return make_boxfloat128(f128_sub(RawFloat128::op(a), b.floatval()));
 }
 // complex - long float
 LispObject Difference::op(Cpx a, LFlt b)
@@ -770,15 +747,15 @@ LispObject Difference::op(Cpx a, LFlt b)
 }
 // short float - long float
 LispObject Difference::op(SFlt a, LFlt b)
-{   return make_boxfloat128(f128_sub(Float128::op(a), b.floatval()));
+{   return make_boxfloat128(f128_sub(RawFloat128::op(a), b.floatval()));
 }
 // single float - long float
 LispObject Difference::op(Flt a, LFlt b)
-{   return make_boxfloat128(f128_sub(Float128::op(a), b.floatval()));
+{   return make_boxfloat128(f128_sub(RawFloat128::op(a), b.floatval()));
 }
 // double float - long float
 LispObject Difference::op(double a, LFlt b)
-{   return make_boxfloat128(f128_sub(Float128::op(a), b.floatval()));
+{   return make_boxfloat128(f128_sub(RawFloat128::op(a), b.floatval()));
 }
 // long float - long float
 LispObject Difference::op(LFlt a, LFlt b)
@@ -791,47 +768,39 @@ LispObject Minus::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Minus>("minus", a);
 }
 
-
 LispObject Minus::op(Fixnum a)
-{   return nil; //(double)a.intval();
+{   return arithlib_lowlevel::Minus::op(a.intval());
 }
-
 
 LispObject Minus::op(uint64_t *a)
 {   return arithlib_lowlevel::Minus::op(a);
 }
 
 LispObject Minus::op(Rat a)
-{   return nil; //Minus::op(a.numerator()) / Minus::op(a.denominator());
+{   return make_ratio(Minus::op(a.numerator()), a.denominator());
 }
 
 LispObject Minus::op(Cpx a)
-{   aerror1("bad argument for float", a.value());
+{   return make_complex(Minus::op(a.real_part()), Minus::op(a.imag_part()));
 }
 
 LispObject Minus::op(SFlt a)
-{   return nil;// a.floatval();
+{   return pack_short_float(-a.floatval());
 }
 
 LispObject Minus::op(Flt a)
-{   return nil; //a.floatval();
+{   return pack_single_float(-a.floatval());
 }
 
 LispObject Minus::op(double a)
-{   return nil;
+{   return make_boxfloat(-a, TYPE_DOUBLE_FLOAT);
 }
 
 LispObject Minus::op(LFlt a)
-{   float64_t f = f128_to_f64(a.floatval());
-// Ha ha - the jolly activity here is a response to the Strict Aliasing Rules
-// that (I believe) allow me to feel safe if I move things treating it as
-// byte data.
-    double d;
-    memcpy(&d, &f, sizeof(double));
-    return nil;
+{   return make_boxfloat128(f128_sub(i64_to_f128(0), a.floatval()));
 }
 
+#endif // ARITHLIB
 
 // end of arith-plus.cpp
 
-#endif // ARITHLIB
