@@ -507,12 +507,12 @@ static LispObject Nlognot(LispObject env, LispObject a1)
 {   return onevalue(Lognot::op(a1));
 }
 
-static LispObject Nlshift(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Lshift::op(a1, a2));
+static LispObject Nleftshift(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(LeftShift::op(a1, a2));
 }
 
-static LispObject Nrshift(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Rshift::op(a1, a2));
+static LispObject Nrightshift(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(RightShift::op(a1, a2));
 }
 
 static LispObject Nmodular_plus(LispObject env)
@@ -1032,12 +1032,12 @@ static LispObject Nilognot(LispObject env, LispObject a1)
 {   return onevalue(Lognot::op(a1));
 }
 
-static LispObject Nilshift(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Lshift::op(a1, a2));
+static LispObject Nileftshift(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(LeftShift::op(a1, a2));
 }
 
-static LispObject Nirshift(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Rshift::op(a1, a2));
+static LispObject Nirightshift(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(RightShift::op(a1, a2));
 }
 
 
@@ -1073,7 +1073,7 @@ setup_type const arith_setup[] =
 // Neqn is a name that gives trouble. In one part of the code here it is
 // "N" followed by "eqn", and denotes the function that will perform equality
 // tests on numbers. In another it is "Neqn", otherwise "neqn" but capitalized
-// and it is the name of a class that implements "neqn". So I tah a "_a" on
+// and it is the name of a class that implements "neqn". So I tag "_a" on
 // the end of one of these to resolve the clash.
     {"neweqn",               G0W2,               G1W2,               Neqn_a,             Neqn_a,             Neqn_a},
     {"newneqn",              G0W2,               G1W2,               Nneqn,              Nneqn,              Nneqn},
@@ -1086,14 +1086,15 @@ setup_type const arith_setup[] =
     {"newlogxor",            Nlogxor,            Nlogxor,            Nlogxor,            Nlogxor,            Nlogxor},
     {"newlogeqv",            Nlogeqv,            Nlogeqv,            Nlogeqv,            Nlogeqv,            Nlogeqv},
     {"newlognot",            G0W1,               Nlognot,            G2W1,               G3W1,               G4W1},
-    {"newlshift",            G0W2,               G1W2,               Nlshift,            G3W1,               G4W1},
-    {"newrshift",            G0W2,               G1W2,               Nrshift,            G3W1,               G4W1},
+    {"newlshift",            G0W2,               G1W2,               Nleftshift,         G3W1,               G4W1},
+    {"newrshift",            G0W2,               G1W2,               Nrightshift,        G3W1,               G4W1},
     {"newmodular-plus",      Nmodular_plus,      Nmodular_plus,      Nmodular_plus,      Nmodular_plus,      Nmodular_plus},
     {"newmodular-difference",G0W2,               G1W2,               Nmodular_difference,G3W2,               G4W2},
     {"newmodular-times",     Nmodular_times,     Nmodular_times,     Nmodular_times,     Nmodular_times,     Nmodular_times},
     {"newmodular-quotient",  G0W2,               G1W2,               Nmodular_quotient,  G3W2,               G4W2},
     {"newmodular-expt",      G0W2,               G1W2,               Nmodular_expt,      G3W2,               G4W2},
     {"newset-modulus",       G0W1,               Nset_modulus,       G2W1,               G3W1,               G4W1},
+    {"newset-small-modulus", G0W1,               Nset_modulus,       G2W1,               G3W1,               G4W1},
     {"newmodular-number",    G0W1,               Nmodular_number,    G2W1,               G3W1,               G4W1},
     {"newmodular-minus",     G0W1,               Nmodular_minus,     G2W1,               G3W1,               G4W1},
     {"newmodular-reciprocal",G0W1,               Nmodular_reciprocal,G2W1,               G3W1,               G4W1},
@@ -1127,8 +1128,8 @@ setup_type const arith_setup[] =
     {"newilogxor",           Nilogxor,           Nilogxor,           Nilogxor,           Nilogxor,           Nilogxor},
     {"newilogeqv",           Nilogeqv,           Nilogeqv,           Nilogeqv,           Nilogeqv,           Nilogeqv},
     {"newilognot",           G0W1,               Nilognot,           G2W1,               G3W1,               G4W1},
-    {"newilshift",           G0W2,               G1W2,               Nilshift,           G3W1,               G4W1},
-    {"newirshift",           G0W2,               G1W2,               Nirshift,           G3W1,               G4W1},
+    {"newilshift",           G0W2,               G1W2,               Nileftshift,        G3W1,               G4W1},
+    {"newirshift",           G0W2,               G1W2,               Nirightshift,       G3W1,               G4W1},
     {NULL,                   0, 0, 0, 0, 0}
 };
 

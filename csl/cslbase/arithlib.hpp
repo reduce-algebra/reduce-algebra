@@ -6,7 +6,9 @@
 #define __arithlib_hpp 1
 
 // To do:
-//    Write full documentation.
+//    Write full documentation! [Meanwhile there is a reasonably extended
+//     commentary included as comments here, and a file arithtest.cpp that
+//     can accompany it and illustrate its use]
 
 /**************************************************************************
  * Copyright (C) 2019, Codemist.                         A C Norman       *
@@ -624,7 +626,7 @@ inline void traceprintf(const char *fmt, ...)
 // the "obvious way" already, so the code here is something of an exercise
 // in pedantry.
 
-inline int32_t ASR(int32_t a, int n)
+inline int32_t ASR(int32_t a, int64_t n)
 {   if (n<0 || n>=8*(int)sizeof(int32_t)) n=0;
     uint32_t r = ((uint32_t)a) >> n;
     uint32_t signbit = ((uint32_t)a) >> (8*sizeof(uint32_t)-1);
@@ -632,7 +634,7 @@ inline int32_t ASR(int32_t a, int n)
     return (int32_t)r;
 }
 
-inline int64_t ASR(int64_t a, int n)
+inline int64_t ASR(int64_t a, int64_t n)
 {   if (n<0 || n>=8*(int)sizeof(int64_t)) n=0;
     uint64_t r = ((uint64_t)a) >> n;
     uint64_t signbit = ((uint64_t)a) >> (8*sizeof(uint64_t)-1);
@@ -640,7 +642,7 @@ inline int64_t ASR(int64_t a, int n)
     return (int64_t)r;
 }
 
-inline uint64_t ASR(uint64_t a, int n)
+inline uint64_t ASR(uint64_t a, int64_t n)
 {   return ASR((int64_t)a, n);
 }
 
@@ -651,12 +653,12 @@ inline uint64_t ASR(uint64_t a, int n)
 // complement form and shifts on them behave "as naively expected" but at
 // present that can not be relied upon.
 
-inline int32_t ASL(int32_t a, int n)
+inline int32_t ASL(int32_t a, int64_t n)
 {   if (n < 0 || n>=8*(int)sizeof(uint32_t)) n = 0;
     return (int32_t)(((uint32_t)a) << n);
 }
 
-inline int64_t ASL(int64_t a, int n)
+inline int64_t ASL(int64_t a, int64_t n)
 {   if (n < 0 || n>=8*(int)sizeof(uint64_t)) n = 0;
     return (int64_t)(((uint64_t)a) << n);
 }
@@ -710,6 +712,155 @@ namespace std
 
 namespace arithlib_implementation
 {
+
+// Cygwin and mingw32 both seem to use "emutls" to support the C++11
+// keyword "thread_local". This can have significant adverse performance
+// consequences. So as to improve performance on those platforms while
+// still remaining thread-safe I will use the Microsoft scheme for
+// thread-local store when relevant. I have an optimisation beyond that by
+// providing my own versions of the Microsoft functions that actually
+// access thread-local data, and by doing so I can get much of the code
+// inlined.
+//
+
+#if defined __CYGWIN__ || defined __MINGW32__
+
+#define ON_WINDOWS 1
+
+#if __SIZEOF_POINTER__ == 4
+#define ON_WINDOWS_32 1
+#endif
+
+#endif // __CYGWIN__ || __MINGW32__
+
+#ifdef ON_WINDOWS
+
+#include <intrin.h>    // Provides code to read relative to FS or GS
+#include <windows.h>
+
+// This class exists so that its constructor and destructor can manage
+// allocation of a slot in the Windows vector of thread local values.
+
+class TLS_slot_container
+{
+public:
+    int mine;
+    TLS_slot_container()
+    {   mine = TlsAlloc();
+    }
+    ~TLS_slot_container()
+    {   TlsFree(mine);
+    }
+};
+
+// On or before the first call of this the constructor for the
+// TLS_slot_container will be activated and that will allocate a slot.
+// These days I expect the C compiler to turn the implementation of this
+// into little more that a load from a static location in memory. It may
+// also have a test to see if the call is a first one so it can in that
+// case do the initialization.
+// Just one slot-number is needed for my entire program - the same value is
+// used by every thread.
+
+inline int get_my_TEB_slot()
+{   static TLS_slot_container w;
+    return w.mine;
+}
+
+#ifdef CAUTIOUS
+// The CAUTIOUS option uses the Microsoft API to access thread-local slots,
+// and so should be robust against potential changes in Windows.
+
+inline void *tls_load()
+{   return (void *)TlsGetValue(get_my_TEB_slot());
+}
+
+void *tls_store(void *v)
+{   return TlsSetValue(get_my_TEB_slot(), v);
+}
+
+#else // CAUTIOUS
+// The version is intended and expected to behave exactly like the version
+// that calls the Microsoft-provided functions, except (1) it does not
+// do even basic sanity checks on the slot-number saved via get_my_TAB_slot()
+// and (b) it can expand into inline code that then runs faster that the
+// official version even if it does just the same thing.
+
+#ifdef ON_WINDOWS_32
+// I abstract away 32 vs 64-bit Windows issues here. The offsets used are from
+// www.geoffchappell.com/studies/windows/win32/ntdll/structs/teb/index.htm
+// which has repeated comments about the long term stability of the memory
+// layout involved.
+#define read_via_segment_register  __readfsdword
+#define write_via_segment_register __writefsdword
+#define basic_TLS_offset           0xe10
+#define extended_TLS_offset        0xf94
+#else
+#define read_via_segment_register  __readgsqword
+#define write_via_segment_register __writegsqword
+#define basic_TLS_offset           0x1480
+#define extended_TLS_offset        0x1780
+#endif // Windows 32 vs 64 bit
+
+inline void *extended_tls_load()
+{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+    return a[get_my_TEB_slot() - 64];
+}
+
+inline void extended_tls_store(void *v)
+{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+    a[get_my_TEB_slot() - 64] = v;
+}
+
+inline void *tls_load()
+{   if (get_my_TEB_slot() >= 64) return extended_tls_load();
+    else return (void *)read_via_segment_register(
+        basic_TLS_offset + sizeof(uintptr_t)*get_my_TEB_slot());
+}
+
+inline void tls_store(void *v)
+{   if (get_my_TEB_slot() >= 64) return extended_tls_store(v);
+    else write_via_segment_register(
+        basic_TLS_offset + sizeof(uintptr_t)*get_my_TEB_slot(), (uintptr_t)v);
+}
+
+#endif // CAUTIOUS
+#endif // ON_WINDOWS
+
+// [Almost] every value that this library keeps as thread-local will live
+// within this class. I will access it via get_thread_locals().
+
+class arithlib_thread_locals
+{
+public:
+    int example;
+#ifdef ON_WINDOWS
+// When I create my (thread local) instance of this class I will register
+// it by putting its address in the Microsoft Thread Local slot that I will
+// be using.
+    arithlib_thread_locals()
+    {   tls_store(this);
+    }
+#endif
+};
+
+inline arithlib_thread_locals *get_thread_locals()
+{   thread_local arithlib_thread_locals w;
+// On many platforms I just return the address of the thread-local object
+// shown above. But on Windows as I created that object it registered itself
+// with the Microsoft thread local mechanism and I arrange to retrieve it
+// that way.
+#ifdef ON_WINDOWS
+    return (arithlib_thread_locals *)tls_load();
+#else
+    return &w;
+#endif
+}
+
+// Now for each value that in a simple world would 
+inline int &example()
+{   return get_thread_locals()->example;
+}
 
 // When I get to big-integer multiplication I will use two worker threads
 // so that elapsed times for really large multiplications are reduced
@@ -1420,7 +1571,13 @@ inline RES op_dispatch1(intptr_t a1)
 }
 
 template <class OP,class RES>
-inline RES op_dispatch1(intptr_t a1, int64_t &n)
+inline RES op_dispatch1(intptr_t a1, int64_t n)
+{   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), n);
+    else return OP::op(vector_of_handle(a1), n);
+}
+
+template <class OP,class RES>
+inline RES op_dispatch1(intptr_t a1, uint64_t *n)
 {   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), n);
     else return OP::op(vector_of_handle(a1), n);
 }
@@ -1620,6 +1777,12 @@ inline RES op_dispatch1(intptr_t a1, int64_t n)
 }
 
 template <class OP,class RES>
+inline RES op_dispatch1(intptr_t a1, uint64_t *n)
+{   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), n);
+    else return OP::op(vector_of_handle(a1), n);
+}
+
+template <class OP,class RES>
 inline RES op_dispatch2(intptr_t a1, intptr_t a2)
 {   if (stored_as_fixnum(a1))
     {   if (stored_as_fixnum(a2))
@@ -1788,6 +1951,12 @@ inline RES op_dispatch1(intptr_t a1, int64_t n)
 }
 
 template <class OP,class RES>
+inline RES op_dispatch1(intptr_t a1, uint64_t *n)
+{   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), n);
+    else return OP::op(vector_of_handle(a1), n);
+}
+
+template <class OP,class RES>
 inline RES op_dispatch2(intptr_t a1, intptr_t a2)
 {   if (stored_as_fixnum(a1))
     {   if (stored_as_fixnum(a2))
@@ -1859,7 +2028,7 @@ class Difference
     static intptr_t op(uint64_t *, uint64_t *);
 };
 
-class Revdifference
+class RevDifference
 {   public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
@@ -2166,23 +2335,29 @@ class Pow
 {   public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(uint64_t *, int64_t);
+    static intptr_t op(int64_t, uint64_t *);
+    static intptr_t op(uint64_t *, uint64_t *);
     static double op(int64_t, double);
     static double op(uint64_t *, double);
 };
 
-class Leftshift
+class LeftShift
 {   public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(uint64_t *, int64_t);
+    static intptr_t op(int64_t, uint64_t *);
+    static intptr_t op(uint64_t *, uint64_t *);
 };
 
-class Rightshift
+class RightShift
 {   public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(uint64_t *, int64_t);
+    static intptr_t op(int64_t, uint64_t *);
+    static intptr_t op(uint64_t *, uint64_t *);
 };
 
-class Integer_length
+class IntegerLength
 {   public:
     static size_t op(int64_t);
     static size_t op(uint64_t *);
@@ -2451,12 +2626,12 @@ public:
     {   return Bignum(true, op_dispatch2<Logxor,intptr_t>(val, x.val));
     }
 
-    inline Bignum operator <<(int n) const
-    {   return Bignum(true, op_dispatch1<Leftshift,intptr_t>(val, n));
+    inline Bignum operator <<(int64_t n) const
+    {   return Bignum(true, op_dispatch1<LeftShift,intptr_t>(val, n));
     }
 
-    inline Bignum operator >>(int n) const
-    {   return Bignum(true, op_dispatch1<Rightshift,intptr_t>(val, n));
+    inline Bignum operator >>(int64_t n) const
+    {   return Bignum(true, op_dispatch1<RightShift,intptr_t>(val, n));
     }
 
     inline Bignum operator ~() const
@@ -2534,14 +2709,14 @@ public:
         val = r;
     }
 
-    inline void operator <<=(int n)
-    {   intptr_t r = op_dispatch1<Leftshift,intptr_t>(val, n);
+    inline void operator <<=(int64_t n)
+    {   intptr_t r = op_dispatch1<LeftShift,intptr_t>(val, n);
         abandon(val);
         val = r;
     }
 
-    inline void operator >>=(int n)
-    {   intptr_t r = op_dispatch1<Rightshift,intptr_t>(val, n);
+    inline void operator >>=(int64_t n)
+    {   intptr_t r = op_dispatch1<RightShift,intptr_t>(val, n);
         abandon(val);
         val = r;
     }
@@ -3779,7 +3954,7 @@ inline intptr_t double_to_bignum(double d)
     d = std::frexp(d, &x);
     d = std::ldexp(d, 53);
     intptr_t i = int_to_bignum((int64_t)d);
-    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-53);
+    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-53);
     abandon(i);
     return r;
 }
@@ -3791,7 +3966,7 @@ inline intptr_t double_to_floor(double d)
     d = std::frexp(d, &x);
     d = std::ldexp(d, 53);
     intptr_t i = int_to_bignum((int64_t)d);
-    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-53);
+    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-53);
     abandon(i);
     return r;
 }
@@ -3803,7 +3978,7 @@ inline intptr_t double_to_ceiling(double d)
     d = std::frexp(d, &x);
     d = std::ldexp(d, 53);
     intptr_t i = int_to_bignum((int64_t)d);
-    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-53);
+    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-53);
     abandon(i);
     return r;
 }
@@ -3830,7 +4005,7 @@ inline intptr_t float128_to_bignum(float128_t d)
     abort("The next line only extracts 64 bits not 112");
     intptr_t i = int_to_bignum(
                      f128_to_i64(dd,softfloat_round_near_even,false));
-    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-113);
+    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-113);
     abandon(i);
     return r;
 }
@@ -3855,7 +4030,7 @@ inline intptr_t float128_to_floor(float128_t d)
     abort("The next line only extracts 64 bits not 112");
     intptr_t i = int_to_bignum(
                      f128_to_i64(dd,softfloat_round_near_even,false));
-    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-113);
+    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-113);
     abandon(i);
     return r;
 }
@@ -3880,7 +4055,7 @@ inline intptr_t float128_to_ceiling(float128_t d)
     abort("The next line only extracts 64 bits not 112");
     intptr_t i = int_to_bignum(
                      f128_to_i64(dd,softfloat_round_near_even,false));
-    intptr_t r = op_dispatch1<Leftshift,intptr_t>(i, x-113);
+    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-113);
     abandon(i);
     return r;
 }
@@ -5981,9 +6156,9 @@ inline void bigleftshift(const uint64_t *a, size_t lena,
 
 inline intptr_t rightshift_b(uint64_t *a, int64_t n);
 
-inline intptr_t Leftshift::op(uint64_t *a, int64_t n)
+inline intptr_t LeftShift::op(uint64_t *a, int64_t n)
 {   if (n == 0) return copy_if_no_garbage_collector(a);
-    else if (n < 0) return Rightshift::op(a, -n);
+    else if (n < 0) return RightShift::op(a, -n);
     size_t lena = number_size(a);
     size_t nr = lena + (n/64) + 1;
     push(a);
@@ -5994,9 +6169,9 @@ inline intptr_t Leftshift::op(uint64_t *a, int64_t n)
     return confirm_size(p, nr, final_n);
 }
 
-inline intptr_t Leftshift::op(int64_t aa, int64_t n)
+inline intptr_t LeftShift::op(int64_t aa, int64_t n)
 {   if (n == 0) return int_to_handle(aa);
-    else if (n < 0) return Rightshift::op(aa, -n);
+    else if (n < 0) return RightShift::op(aa, -n);
     size_t nr = (n/64) + 2;
     uint64_t *p = reserve(nr);
     size_t final_n;
@@ -6039,9 +6214,9 @@ inline void bigrightshift(const uint64_t *a, size_t lena,
     truncate_negative(r, lenr);
 }
 
-inline intptr_t Rightshift::op(uint64_t *a, int64_t n)
+inline intptr_t RightShift::op(uint64_t *a, int64_t n)
 {   if (n == 0) return copy_if_no_garbage_collector(a);
-    else if (n < 0) return Leftshift::op(a, -n);
+    else if (n < 0) return LeftShift::op(a, -n);
     size_t lena = number_size(a);
     size_t nr;
     if (lena > (size_t)n/64) nr = lena - n/64;
@@ -6054,9 +6229,9 @@ inline intptr_t Rightshift::op(uint64_t *a, int64_t n)
     return confirm_size(p, nr, final_n);
 }
 
-inline intptr_t Rightshift::op(int64_t a, int64_t n)
+inline intptr_t RightShift::op(int64_t a, int64_t n)
 {   if (n == 0) return int_to_handle(a);
-    else if (n < 0) return Leftshift::op(a, -n);
+    else if (n < 0) return LeftShift::op(a, -n);
 // Shifts of 64 and up obviously lose all the input data apart from its
 // sign, but so does a shift by 63.
     if (n >= 63) return int_to_handle(a>=0 ? 0 : -1);
@@ -6067,11 +6242,11 @@ inline intptr_t Rightshift::op(int64_t a, int64_t n)
     return int_to_handle((a & ~(q-1))/q);
 }
 
-inline size_t Integer_length::op(uint64_t *a)
+inline size_t IntegerLength::op(uint64_t *a)
 {   return bignum_bits(a, number_size(a));
 }
 
-inline size_t Integer_length::op(int64_t aa)
+inline size_t IntegerLength::op(int64_t aa)
 {   uint64_t a;
     if (aa == 0 || aa == -1) return 0;
     else if (aa < 0) a = -(uint64_t)aa - 1;
@@ -6385,7 +6560,7 @@ inline intptr_t Difference::op(uint64_t *a, int64_t b)
 }
 
 
-inline intptr_t Revdifference::op(uint64_t *a, uint64_t *b)
+inline intptr_t RevDifference::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
     size_t lenb = number_size(b);
     size_t n;
@@ -6399,7 +6574,7 @@ inline intptr_t Revdifference::op(uint64_t *a, uint64_t *b)
     return confirm_size(p, n, final_n);
 }
 
-inline intptr_t Revdifference::op(int64_t a, int64_t b)
+inline intptr_t RevDifference::op(int64_t a, int64_t b)
 {   uint64_t aa[1], bb[1];
     aa[0] = a;
     bb[0] = b;
@@ -6409,7 +6584,7 @@ inline intptr_t Revdifference::op(int64_t a, int64_t b)
     return confirm_size(r, 2, final_n);
 }
 
-inline intptr_t Revdifference::op(int64_t a, uint64_t *b)
+inline intptr_t RevDifference::op(int64_t a, uint64_t *b)
 {   uint64_t aa[1];
     aa[0] = a;
     size_t lenb = number_size(b);
@@ -6421,7 +6596,7 @@ inline intptr_t Revdifference::op(int64_t a, uint64_t *b)
     return confirm_size(r, lenb+1, final_n);
 }
 
-inline intptr_t Revdifference::op(uint64_t *a, int64_t b)
+inline intptr_t RevDifference::op(uint64_t *a, int64_t b)
 {   size_t lena = number_size(a);
     uint64_t bb[1];
     bb[0] = b;
@@ -9460,123 +9635,251 @@ inline intptr_t Lcm::op(int64_t a, int64_t b)
     }
 }
 
-inline intptr_t ModularPlus::op(int64_t, int64_t)
+// While initially developing this bit of code I will assume C++17 and I
+// will not have the code thread-safe. Both of those issues can be
+// addressed later!
+
+static const int modulus_32 = 0;
+static const int modulus_64 = 1;
+static const int modulus_big = 2;
+/*thread_local*/ inline int modulus_size = 0;
+/*thread_local*/ inline uint64_t small_modulus = 2;
+/*thread_local*/ inline std::vector<uint64_t> large_modulus_vector;
+
+inline uint64_t *large_modulus()
+{   return 1 + (uint64_t *)large_modulus_vector.data();
+}
+
+inline intptr_t value_of_current_modulus()
+{   if (modulus_size == modulus_big)
+    {   size_t n = number_size(large_modulus());
+        uint64_t *r = reserve(n);
+        memcpy(r, large_modulus(), n*sizeof(uint64_t));
+        return confirm_size(r, n, n);
+    }
+    else return int_to_handle(small_modulus);
+}
+
+inline intptr_t SetModulus::op(int64_t n)
+{   if (n <= 1) aerror1("Invalid arg to set-modulus", int_to_handle(n));
+    intptr_t r = value_of_current_modulus();
+    small_modulus = n;
+    if (n <= 0xffffffffU) modulus_size = modulus_32;
+    else modulus_size = modulus_64;
+    return r;
+}
+
+inline intptr_t SetModulus::op(uint64_t *n)
+{   if (Minusp::op(n))
+        aerror1("Invalid arg to set-modulus", vector_to_handle(n));
+    intptr_t r = value_of_current_modulus();
+    size_t lenn = number_size(n);
+    size_t bytes = (lenn+1)*sizeof(uint64_t);
+    if (bytes > large_modulus_vector.size())
+        large_modulus_vector.resize(bytes);
+    memcpy(large_modulus_vector.data(), &n[-1], bytes);
+    modulus_size = modulus_big;
+    return r;
+}
+
+inline intptr_t ModularNumber::op(int64_t a)
+{   if (a >= 0)
+    {   if (modulus_size == modulus_big) return int_to_handle(a);
+        else return int_to_handle(a % small_modulus);
+    }
+    if (modulus_size == modulus_big) return Plus::op(large_modulus(), a);
+    else
+    {   a = a % small_modulus;
+        if (a < 0) a += small_modulus;
+        return int_to_handle(a);
+    }
+}
+
+inline intptr_t ModularNumber::op(uint64_t *a)
+{   if (Minusp::op(a))
+    {   intptr_t r = Remainder::op(a, large_modulus());
+        if (Minusp::op(r))
+        {   intptr_t r1 = op_dispatch1<Plus,intptr_t>(r, large_modulus());
+            abandon(r);
+            return r1;
+        }
+        else return r;
+    }
+    else return Remainder::op(a, large_modulus());
+}
+
+inline intptr_t ModularPlus::op(int64_t a, int64_t b)
+{   uint64_t ua = a, ub = b;
+// Because a and b are 64-bit signed values and they should be positive,
+// their sum will fit within a 64-bit unsigned integer, but if the modulus
+// is large it could be just a 1-word bignum...
+    if (modulus_size == modulus_big)
+    {   uint64_t r = ua + ub;
+        if (number_size(large_modulus()) == 1 &&
+            r >= large_modulus()[0]) r -= large_modulus()[0];
+        return unsigned_int_to_bignum(r);
+    }
+    uint64_t r = ua + ub;
+    if (r >= small_modulus) r -= small_modulus;
+    return int_to_handle((int64_t)r);
+}
+
+inline intptr_t ModularPlus::op(int64_t a, uint64_t *b)
+{
+// One of the inputs here is a bignum, and that can only be valid if we
+// have a large modulus.
+    if (modulus_size != modulus_big) aerror1("bad arg for modular-plus",
+                                             vector_to_handle(b));
+    intptr_t r = Plus::op(a, b);
+    if (Geq::op(r, large_modulus()))
+    {   intptr_t r1 = op_dispatch1<Difference,intptr_t>(r, large_modulus());
+        abandon(r);
+        return r1;
+    }
+    else return r;
+}
+
+inline intptr_t ModularPlus::op(uint64_t *a, int64_t b)
+{   return ModularPlus::op(b, a);
+}
+
+inline intptr_t ModularPlus::op(uint64_t *a, uint64_t *b)
+{   if (modulus_size != modulus_big) aerror1("bad arg for modular-plus",
+                                             vector_to_handle(a));
+    intptr_t r = Plus::op(a, b);
+    if (Geq::op(r, large_modulus()))
+    {   intptr_t r1 = op_dispatch1<Difference,intptr_t>(r, large_modulus());
+        abandon(r);
+        return r1;
+    }
+    else return r;
+}
+
+inline intptr_t ModularDifference::op(int64_t a, int64_t b)
+{   if (a >= b) return int_to_handle(a - b);
+    if (modulus_size == modulus_big) return Plus::op(large_modulus(), a - b);
+    else return int_to_handle(small_modulus - b + a); 
+}
+
+inline intptr_t ModularDifference::op(int64_t a, uint64_t *b)
+{   if (modulus_size != modulus_big) aerror1("bad arg for modular-plus",
+                                             vector_to_handle(b));
+    intptr_t r = Difference::op(b, a);
+    intptr_t r1 = op_dispatch1<RevDifference,intptr_t>(r, large_modulus());
+    abandon(r);
+    return r1;
+}
+
+inline intptr_t ModularDifference::op(uint64_t *a, int64_t b)
+{   if (modulus_size != modulus_big) aerror1("bad arg for modular-plus",
+                                             vector_to_handle(a));
+    return Difference::op(a, b);
+}
+
+inline intptr_t ModularDifference::op(uint64_t *a, uint64_t *b)
+{   if (modulus_size != modulus_big) aerror1("bad arg for modular-plus",
+                                             vector_to_handle(a));
+    if (Geq::op(a, b)) return Difference::op(a, b);
+    intptr_t r = Difference::op(b, a);
+    intptr_t r1 = op_dispatch1<RevDifference,intptr_t>(r, large_modulus());
+    abandon(r);
+    return r1;
+}
+
+
+inline intptr_t ModularTimes::op(int64_t a, int64_t b)
+{   switch (modulus_size)
+    {
+    case modulus_32:
+        return int_to_handle((uint64_t)a*(uint64_t)b % small_modulus);
+    case modulus_64:
+        {   uint64_t hi, lo, q, r;
+            multiply64((uint64_t)a, (uint64_t)b, hi, lo);
+            divide64(hi, lo, small_modulus, q, r);
+            return int_to_handle(r);
+        }
+    default:
+    case modulus_big:
+        {   intptr_t w = Times::op(a, b);
+            intptr_t r = op_dispatch1<Remainder,intptr_t>(w, large_modulus());
+            abandon(w);
+            return r;
+        }
+    }
+}
+
+inline intptr_t ModularTimes::op(int64_t a, uint64_t *b)
+{   intptr_t w = Times::op(a, b);
+    intptr_t r = op_dispatch1<Remainder,intptr_t>(w, large_modulus());
+    abandon(w);
+    return r;
+}
+
+inline intptr_t ModularTimes::op(uint64_t *a, int64_t b)
+{   return ModularTimes::op(b, a);
+}
+
+inline intptr_t ModularTimes::op(uint64_t *a, uint64_t *b)
+{   intptr_t w = Times::op(a, b);
+    intptr_t r = op_dispatch1<Remainder,intptr_t>(w, large_modulus());
+    abandon(w);
+    return r;
+}
+
+
+inline intptr_t ModularExpt::op(int64_t a, int64_t b)
 {   aerror("incomplete");
 }
 
-inline intptr_t ModularPlus::op(int64_t, uint64_t *)
+inline intptr_t ModularExpt::op(int64_t a, uint64_t *b)
 {   aerror("incomplete");
 }
 
-inline intptr_t ModularPlus::op(uint64_t *, int64_t)
+inline intptr_t ModularExpt::op(uint64_t *a, int64_t b)
 {   aerror("incomplete");
 }
 
-inline intptr_t ModularPlus::op(uint64_t *, uint64_t *)
-{   aerror("incomplete");
-}
-
-
-inline intptr_t ModularDifference::op(int64_t, int64_t)
-{   aerror("incomplete");
-}
-
-inline intptr_t ModularDifference::op(int64_t, uint64_t *)
-{   aerror("incomplete");
-}
-
-inline intptr_t ModularDifference::op(uint64_t *, int64_t)
-{   aerror("incomplete");
-}
-
-inline intptr_t ModularDifference::op(uint64_t *, uint64_t *)
+inline intptr_t ModularExpt::op(uint64_t *a, uint64_t *b)
 {   aerror("incomplete");
 }
 
 
-inline intptr_t ModularTimes::op(int64_t, int64_t)
+inline intptr_t ModularQuotient::op(int64_t a, int64_t b)
 {   aerror("incomplete");
 }
 
-inline intptr_t ModularTimes::op(int64_t, uint64_t *)
+inline intptr_t ModularQuotient::op(int64_t a, uint64_t *b)
 {   aerror("incomplete");
 }
 
-inline intptr_t ModularTimes::op(uint64_t *, int64_t)
+inline intptr_t ModularQuotient::op(uint64_t *a, int64_t b)
 {   aerror("incomplete");
 }
 
-inline intptr_t ModularTimes::op(uint64_t *, uint64_t *)
-{   aerror("incomplete");
-}
-
-
-inline intptr_t ModularExpt::op(int64_t, int64_t)
-{   aerror("incomplete");
-}
-
-inline intptr_t ModularExpt::op(int64_t, uint64_t *)
-{   aerror("incomplete");
-}
-
-inline intptr_t ModularExpt::op(uint64_t *, int64_t)
-{   aerror("incomplete");
-}
-
-inline intptr_t ModularExpt::op(uint64_t *, uint64_t *)
+inline intptr_t ModularQuotient::op(uint64_t *a, uint64_t *b)
 {   aerror("incomplete");
 }
 
 
-inline intptr_t ModularQuotient::op(int64_t, int64_t)
-{   aerror("incomplete");
+inline intptr_t ModularMinus::op(int64_t a)
+{   if (a == 0) return int_to_handle(a);
+    if (modulus_size == modulus_big)
+        return Difference::op(large_modulus(), a);
+    else return int_to_handle(small_modulus - a);
 }
 
-inline intptr_t ModularQuotient::op(int64_t, uint64_t *)
-{   aerror("incomplete");
-}
-
-inline intptr_t ModularQuotient::op(uint64_t *, int64_t)
-{   aerror("incomplete");
-}
-
-inline intptr_t ModularQuotient::op(uint64_t *, uint64_t *)
-{   aerror("incomplete");
+inline intptr_t ModularMinus::op(uint64_t *a)
+{   if (modulus_size != modulus_big)
+        aerror1("bad argument for modular-minus", vector_to_handle(a));
+    return Difference::op(large_modulus(), a);
 }
 
 
-inline intptr_t ModularMinus::op(int64_t)
+inline intptr_t ModularReciprocal::op(int64_t a)
 {   aerror("incomplete");
 }
 
-inline intptr_t ModularMinus::op(uint64_t *)
-{   aerror("incomplete");
-}
-
-
-inline intptr_t ModularReciprocal::op(int64_t)
-{   aerror("incomplete");
-}
-
-inline intptr_t ModularReciprocal::op(uint64_t *)
-{   aerror("incomplete");
-}
-
-
-inline intptr_t ModularNumber::op(int64_t)
-{   aerror("incomplete");
-}
-
-inline intptr_t ModularNumber::op(uint64_t *)
-{   aerror("incomplete");
-}
-
-
-inline intptr_t SetModulus::op(int64_t)
-{   aerror("incomplete");
-}
-
-inline intptr_t SetModulus::op(uint64_t *)
+inline intptr_t ModularReciprocal::op(uint64_t *a)
 {   aerror("incomplete");
 }
 
@@ -9615,7 +9918,7 @@ namespace arithlib_lowlevel
 {
 using arithlib_implementation::Plus;
 using arithlib_implementation::Difference;
-using arithlib_implementation::Revdifference;
+using arithlib_implementation::RevDifference;
 using arithlib_implementation::Times;
 using arithlib_implementation::Quotient;
 using arithlib_implementation::Remainder;
@@ -9645,9 +9948,9 @@ using arithlib_implementation::Square;
 using arithlib_implementation::Isqrt;
 using arithlib_implementation::Lognot;
 using arithlib_implementation::Pow;
-using arithlib_implementation::Leftshift;
-using arithlib_implementation::Rightshift;
-using arithlib_implementation::Integer_length;
+using arithlib_implementation::LeftShift;
+using arithlib_implementation::RightShift;
+using arithlib_implementation::IntegerLength;
 using arithlib_implementation::Low_bit;
 using arithlib_implementation::Logbitp;
 using arithlib_implementation::Logcount;

@@ -1938,7 +1938,7 @@ public:
     static LispObject op(uint64_t *a);
 };
 
-class Lshift
+class LeftShift
 {
 public:
     static LispObject op(LispObject a, LispObject b);
@@ -1952,7 +1952,7 @@ public:
     static LispObject op(uint64_t *a,  uint64_t *b);
 };
 
-class Rshift
+class RightShift
 {
 public:
     static LispObject op(LispObject a, LispObject b);

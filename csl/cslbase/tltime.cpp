@@ -34,7 +34,7 @@
 //
 // To use this one needs to collect all (or most) thread local variables
 // and replace them with structure members as in
-//    typedef struct hread_locals_
+//    typedef struct thread_locals_
 //    {   uintptr_t fringe;
 //        uintptr_t limit;
 //        ...
@@ -87,80 +87,109 @@
 thread_local int tl_vars[10];
 int              simple_vars[10];
 
-// The messy parts of thies file are only relevant on Cygwin and Mingw.
 
 #if defined __CYGWIN__ || defined __MINGW32__
+
 #define ON_WINDOWS 1
+
 #if __SIZEOF_POINTER__ == 4
 #define ON_WINDOWS_32 1
 #endif
-#endif
 
+#endif // __CYGWIN__ || __MINGW32__
 
-#if defined ON_WINDOWS
-
-// This version uses direct access via the GS segment register, which is
-// where 64-bit Windows saves a thread information block. The mode of access
-// here is not following properly documented policies and so is basically
-// unsafe. But I observe
-// www.geoffchappell.com/studies/windows/win32/ntdll/structs/teb/index.htm
-// which has repeated comments about the long term stability of the memory
-// layout involved.
-// On a 64-bit machine the first 64 thread-local slots are at
-// offset 0x1480. Then there are more available via TlsExpansionSlots
-// at offset 0x1780. For 32-bit platforms those offsets are different:
-// 0xe10 and 0xf94. Yuk!!!!!
+#ifdef ON_WINDOWS
 
 #include <intrin.h>    // Provides code to read relative to FS or GS
 #include <windows.h>
 
-static unsigned int my_slot, my_slot_scaled;
+// This class exists so that its constructor and destructor can manage
+// allocation of a slot in the Windows vector of thread local values.
+
+class TLS_slot_container
+{
+public:
+    int mine;
+    TLS_slot_container()
+    {   mine = TlsAlloc();
+    }
+    ~TLS_slot_container()
+    {   TlsFree(mine);
+    }
+};
+
+// On or before the first call of this the constructor for the
+// TLS_slot_container will be activated and that will allocate a slot.
+// These days I expect the C compiler to turn the implementation of this
+// into little more that a load from a static location in memory. It may
+// also have a test to see if the call is a first one so it can in that
+// case do the initialization.
+// Just one slot-number is needed for my entire program - the same value is
+// used by every thread.
+
+inline int get_my_TEB_slot()
+{   static TLS_slot_container w;
+    return w.mine;
+}
+
+#ifdef CAUTIOUS
+// The CAUTIOUS option uses the Microsoft API to access thread-local slots,
+// and so should be robust against potential changes in Windows.
+
+inline void *tls_load()
+{   return (void *)TlsGetValue(get_my_TEB_slot());
+}
+
+uintptr_t tls_store(void *v)
+{   return TlsSetValue(get_my_TEB_slot(), v);
+}
+
+#else // CAUTIOUS
+// The version is intended and expected to behave exactly like the version
+// that calls the Microsoft-provided functions, except (1) it does not
+// do even basic sanity checks on the slot-number saved via get_my_TAB_slot()
+// and (b) it can expand into inline code that then runs faster that the
+// official version even if it does just the same thing.
 
 #ifdef ON_WINDOWS_32
-
-uint32_t extended_tls_load()
-{   uint32_t a = __readfsdword(0xf94);
-    return *(uint32_t *)(a - 0x100 + my_slot_scaled);
-}
-
-void extended_tls_store(uint32_t v)
-{   uint32_t a = __readfsdword(0xf94);
-    *(uint32_t *)(a - 0x100 + my_slot_scaled) = v;
-}
-
-uint32_t tls_load()
-{   if (my_slot_scaled >= 0x100) return extended_tls_load();
-    else return __readfsdword(my_slot_scaled+0xe10);
-}
-
-void tls_store(uint32_t v)
-{   if (my_slot_scaled >= 0x100) return extended_tls_store(v);
-    else __writefsdword(my_slot_scaled+0xe10, v);
-}
-
+// I abstract away 32 vs 64-bit Windows issues here. The offsets used are from
+// www.geoffchappell.com/studies/windows/win32/ntdll/structs/teb/index.htm
+// which has repeated comments about the long term stability of the memory
+// layout involved.
+#define read_via_segment_register  __readfsdword
+#define write_via_segment_register __writefsdword
+#define basic_TLS_offset           0xe10
+#define extended_TLS_offset        0xf94
 #else
-
-uint64_t extended_tls_load()
-{   uint64_t a = __readgsqword(0x1780);
-    return *(uint64_t *)(a - 0x200 + my_slot_scaled);
-}
-
-void extended_tls_store(uint64_t v)
-{   uint64_t a = __readgsqword(0x1780);
-    *(uint64_t *)(a - 0x200 + my_slot_scaled) = v;
-}
-
-uint64_t tls_load()
-{   if (my_slot_scaled >= 0x200) return extended_tls_load();
-    else return __readgsqword(my_slot_scaled+0x1480);
-}
-
-void tls_store(uint64_t v)
-{   if (my_slot_scaled >= 0x200) return extended_tls_store(v);
-    else __writegsqword(my_slot_scaled+0x1480, v);
-}
-
+#define read_via_segment_register  __readgsqword
+#define write_via_segment_register __writegsqword
+#define basic_TLS_offset           0x1480
+#define extended_TLS_offset        0x1780
 #endif // Windows 32 vs 64 bit
+
+inline void *extended_tls_load()
+{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+    return a[get_my_TEB_slot() - 64];
+}
+
+inline void extended_tls_store(void *v)
+{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+    a[get_my_TEB_slot() - 64] = v;
+}
+
+inline void *tls_load()
+{   if (get_my_TEB_slot() >= 64) return extended_tls_load();
+    else return (void *)read_via_segment_register(
+        basic_TLS_offset + sizeof(void *)*get_my_TEB_slot());
+}
+
+inline void tls_store(void *v)
+{   if (get_my_TEB_slot() >= 64) return extended_tls_store(v);
+    else write_via_segment_register(
+        basic_TLS_offset + sizeof(void *)*get_my_TEB_slot(), (intptr_t)v);
+}
+
+#endif // CAUTIOUS
 #endif // ON_WINDOWS
 
 // Now the four versions that I will compare. I force each to avoid getting
@@ -180,8 +209,11 @@ void tls_store(uint64_t v)
 
 #ifdef ON_WINDOWS
 
+// These two tests are only relevant on Windows-based systems.
+
+
 [[gnu::noinline]] void windows_inc()
-{   ((int *)TlsGetValue(my_slot))[5]++;
+{   ((int *)TlsGetValue(get_my_TEB_slot()))[5]++;
 }
 
 [[gnu::noinline]] void gs_inc()
@@ -221,13 +253,13 @@ void runtests(const char *msg)
 #if defined ON_WINDOWS
 // Each thread must set the slot that is relative to ITS version of the GS
 // segment register to point at the data that it will use.
-    TlsSetValue(my_slot, (void *)&tl_vars);
+    TlsSetValue(get_my_TEB_slot(), (void *)&tl_vars);
 #ifdef ON_WINDOWS_32
     timeit("thread local via FS", gs_inc,     tl_vars);
 #else
     timeit("thread local via GS", gs_inc,     tl_vars);
 #endif
-    TlsSetValue(my_slot, (void *)&tl_vars);
+    TlsSetValue(get_my_TEB_slot(), (void *)&tl_vars);
     timeit("Using Windows Tls API", windows_inc, tl_vars);
 #endif // ON_WINDOWS
 // The final test uses direct C++11 "thread_local" storage qualification.
@@ -238,14 +270,10 @@ void runtests(const char *msg)
 int main(int argc, char *argv[])
 {
 #if defined ON_WINDOWS
-// Allocate a slot in the Windows threal-local vector.
-// I deliberatly allocate (and waste) over 64 slots to start with so that
+// I deliberately allocate (and waste) over 64 slots to start with so that
 // the one I end up with will be an "extension slot", which will lead
 // to the more expensive path through my access code.
-    for (int i=0; i<70; i++)
-        my_slot = TlsAlloc();
-    std::cout << "My slot will be " << my_slot << std::endl;
-    my_slot_scaled = my_slot*sizeof(void *);
+    for (int i=0; i<70; i++) TlsAlloc();
 #endif // ON_WINDOWS
 
 // Run all tests in the main program...
