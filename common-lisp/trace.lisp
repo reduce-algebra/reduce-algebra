@@ -88,25 +88,30 @@ NAME must be quoted when called!"
     ;;
     ;; Get a lambda expression and extract the parameters if possible:
     (if (setq defn (function-lambda-expression defn))
-        ;; Note that a CL function definition may contain
-        ;; declarations and a documentation string, and the body is
-        ;; wrapped in a block form,
-        ;; i.e. defn = (lambda params [decls] [doc] (block name body))
-        (setf (caddr defn) (caddar (last defn)))
+        ;; Note that a CL function definition may contain declarations
+        ;; and a documentation string, and the body may be wrapped in
+        ;; a block form, i.e.
+        ;; defn = (lambda params [decls] [doc] body)
+        ;; or
+        ;; defn = (lambda params [decls] [doc] (block name body))
+        (let ((b (car (last defn))))
+          (setq defn (list 'lambda (cadr defn)
+                           (if (eqcar b 'block) (caddr b) b))))
         (if (setq defn (get-fasl-source name))
             ;; defn = (de name arglist body)
             (setq defn (cons 'lambda (cddr defn)))))
     ;;
     (if defn
         (progn                          ; defn = (lambda params body)
-          (if (eqcar (cadddr defn) 'run-traced-function)
+          (if (eqcar (caddr defn) 'run-traced-function)
               (return-from trace1
                 (if (eq (get name 'traced-setq) *trace-setq*)
                     ;; i.e. both true or both false
                     (format *trace-output*
                             "*** ~a already traced.~%" name)
                     (re-trace1 name)))
-              (setq params (cadr defn))))
+              ;; wrap params in a list in case params = () = nil!
+              (setq params (list (cadr defn)))))
         (progn                          ; defn = compiled form
           (setq defn olddefn)
           (if *trace-setq*
@@ -118,22 +123,23 @@ NAME must be quoted when called!"
                         "*** Tracing arguments and return value only.")
                 (setq *trace-setq* nil)))))
     ;;
-    (unless params
-      (if (setq params (get name 'sl::number-of-args))
-          (progn
-            (setq params
-                  (loop
-                     for i from 1 upto params collect
-                       (intern (format nil "Arg~d" i))))
-            (format *trace-output*
-                    "*** ~a is compiled: ~a~%"
-                    name
-                    "portable tracing may not show recursive calls."))
-          (progn
-            (format *trace-output*
-                    "***** parameters for ~a unavailable so cannot apply portable tracing.~%"
-                    name)
-            (return-from trace1))))
+    (if params
+        (setq params (car params))      ; unwrap params
+        (if (setq params (get name 'sl::number-of-args))
+            (progn
+              (setq params
+                    (loop
+                       for i from 1 upto params collect
+                         (intern (format nil "Arg~d" i))))
+              (format *trace-output*
+                      "*** ~a is compiled: ~a~%"
+                      name
+                      "portable tracing may not show recursive calls."))
+            (progn
+              (format *trace-output*
+                      "***** parameters for ~a unavailable so cannot apply portable tracing.~%"
+                      name)
+              (return-from trace1))))
     ;;
     (pushnew name *traced-functions*)
     (if *trace-setq*
@@ -182,12 +188,20 @@ NAME must be quoted when called!"
 
 (defvar trace-depth 0)
 
+(defvar *trpause nil
+  "If non-nil then ask whether to continue before each traced execution.
+Abort with an error if the answer is no.")
+
 (defun run-traced-function (name params args)
   (let ((trace-depth (1+ trace-depth))
         (result (get name 'traced-function)))
     (format *trace-output* "Enter (~a) ~a~%" trace-depth name)
     (loop for param in params for arg in args do
          (format *trace-output* "   ~a:  ~s~%" param arg))
+
+    (if (and *trpause (not (y-or-n-p "Continue?")))
+        (error "Tracing aborted!"))
+
     (setq result
           (sl::errorset `(apply ,(eval result) ',args) nil nil))
     (if (or (atom result) (cdr result)) ; errorp result

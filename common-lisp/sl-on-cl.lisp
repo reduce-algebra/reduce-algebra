@@ -17,10 +17,11 @@
 ;; (declaim (optimize (speed 3) (safety 0)))
 #+SBCL (declaim (optimize debug))       ; same as (debug 3)
 ;; CLISP seems to be *very* slow, so...
-;; #+CLISP (declaim (optimize speed))
+#+CLISP (declaim (optimize speed))
 
 #+SBCL (declaim (sb-ext:muffle-conditions sb-ext:compiler-note style-warning))
-#+CLISP (setf custom:*suppress-check-redefinition* t)
+#+CLISP (setq custom:*suppress-check-redefinition* t
+              custom:*compile-warnings* nil)
 
 #+SBCL (eval-when (:compile-toplevel :load-toplevel :execute)
          (require :sb-posix))
@@ -189,6 +190,22 @@ EXPR PROCEDURE CONSTANTP(U);
 ;; EQ(U:any, V:any):boolean eval, spread
 ;; Returns T if U points to the same object as V. EQ is not a reliable
 ;; comparison between numeric arguments.
+
+;; The following code seems to cause problems if used in eq or equal.
+
+;; (defun eq (u v)
+;;   "EQ(U:any, V:any):boolean eval, spread
+;; Returns T if U points to the same object as V. EQ is not a reliable
+;; comparison between numeric arguments."
+;;   ;; After evaluating (setq gg intern(setq g (gensym))) in PSL/CSL
+;;   ;; then (eq g gg) gives true, but in Common Lisp the equivalent
+;;   ;; gives false, so...
+;;   (if (and (cs-cl:symbolp u) (cs-cl:symbolp v)) ; both symbols
+;;       ;; Look for both symbols NOW in the current package:
+;;       (let ((uu (find-symbol (symbol-name u)))
+;;             (vv (find-symbol (symbol-name v))))
+;;         (and uu vv (cs-cl:eq uu vv)))
+;;       (cs-cl:eq u v)))
 
 (defun eqn (u v)
   "EQN(U:any, V:any):boolean eval, spread
@@ -405,8 +422,6 @@ an out of range error occurs.
   "Convert a list of single-character symbols to a case-inverted string."
   (cs-cl:map 'string #'%character-inverted u))
 
-(defvar %u)
-
 (defun compress (u)                     ; PSL spec
   "COMPRESS(U:id-list):{atom-vector} eval, spread
 U is a list of single character identifiers which is built into a
@@ -416,67 +431,73 @@ characters.  Identifiers are not interned.  Function pointers may not
 be compressed.  If an entity cannot be parsed out of U an error
 occurs:
 ***** Poorly formed atom in COMPRESS"
-  (let ((%u u))
-    (%compress)))
-
-(defun %compress-skip-spaces ()
-  (loop while (eq (car %u) '| |) do (setq %u (cdr %u))))
-
-(defun %compress ()
-  ;; Concatenate the characters into a string and then handle any !
-  ;; characters as follows:
-  ;; A string begins with " and should retain any ! characters without
-  ;; change.
-  ;; A number begins with - or a digit and should not contain any !
-  ;; characters.
-  ;; Otherwise, assume an identifier and replace ! by \, but !! by \!
-  (let (u0)                             ; first element
-    (%compress-skip-spaces)             ; skip leading spaces
-    (setq u0 (car %u))
-    (cond
-      ;; LIST?
-      ((eq u0 '|(|) (setq %u (cdr %u))
-       (%compress-skip-spaces)          ; skip leading spaces
-       (loop
-          while (not (eq (car %u) '|)|))
-          collect (%compress)
-          do (%compress-skip-spaces)))
-      ;; STRING?
-      ((eq u0 '\")
-       ;; In Standard Lisp, "" in a string represents ":
-       (loop with newu while (setq %u (cdr %u)) do
-            (when (eq (car %u) '\")
-              (setq %u (cdr %u))
-              (if (not (and %u (eq (car %u) '\"))) ; end of string
-                  (return (%compress-list-to-inverted-string (nreverse newu)))))
-            (push (car %u) newu)))
-      ;; NUMBER?
-      ((or (digit u0) (char= (character u0) #\-))
-       ;; (eq u0 '-) fails because u0 is in SL but - is (an operator) in CL.
-       (multiple-value-bind (obj pos)
-           (read-from-string (%compress-list-to-string %u))
-         (setq %u (nthcdr pos %u))
-         obj))
-      ;; IDENTIFIER
-      (t
-       ;; Delete a single ! but replace !! by !
-       ;; In PSL, an identifier can contain any of the special characters
-       ;; + - $ & * / : ; | < = > ? ˆ _ { } ˜ @
-       ;; and hence not any of
-       ;; space ! " ' ( ) , . # % [ \ ] `
-       ;; unless they are escaped with ! (which must be handled specially).
-       (loop with newu do
-            (cond ((or (null %u)
-                       (cs-cl:member (car %u)
-                                     '(\  \" \' \( \) \, \. \# \% \[ \\ \] \`)))
-                   (return
-                     (make-symbol       ; uninterned symbol
-                      (%compress-list-to-string (nreverse newu)))))
-                  ((eq (car %u) '!) ; ignore ! but keep WHATEVER follows it
-                   (if (setf %u (cdr %u))
-                       (push (car %u) newu)))
-                  (t (push (car %u) newu)))
-            (setf %u (cdr %u)))))))
+  (labels
+      ((compress () ; This internal function recursively process lists.
+         ;; Concatenate the characters into a string and then handle any !
+         ;; characters as follows:
+         ;; A string begins with " and should retain any ! characters without
+         ;; change.
+         ;; A number begins with - or a digit and should not contain any !
+         ;; characters.
+         ;; Otherwise, assume an identifier and replace ! by \, but !! by \!
+         (let (u0)                      ; first element
+           (compress-skip-spaces)       ; skip leading spaces
+           (if (or (null u)
+                   (cs-cl:member (setq u0 (car u))
+                                 '(\' \) \, \% \[ \\ \`))) ; PSL
+               (cs-cl:error "Poorly formed S-expression in COMPRESS"))
+           (cond
+             ;; LIST?
+             ((eq u0 '|(|) (setq u (cdr u))
+              (compress-skip-spaces)    ; skip leading spaces
+              (loop
+                 while (not (eq (car u) '|)|))
+                 collect (compress)
+                 do (compress-skip-spaces)))
+             ;; STRING?
+             ((eq u0 '\")
+              ;; In Standard Lisp, "" in a string represents ":
+              (loop with newu while (setq u (cdr u)) do
+                   (when (eq (car u) '\")
+                     (setq u (cdr u))
+                     (if (not (and u (eq (car u) '\"))) ; end of string
+                         (return-from compress
+                           (%compress-list-to-inverted-string (nreverse newu)))))
+                   (push (car u) newu))
+              ;; String not terminated:
+              (cs-cl:error "Poorly formed S-expression in COMPRESS"))
+             ;; NUMBER?
+             ((or (digit u0) (char= (character u0) #\-))
+              ;; (eq u0 '-) fails because u0 is in SL but - is (an operator) in CL.
+              (multiple-value-bind (obj pos)
+                  (read-from-string (%compress-list-to-string u))
+                (setq u (nthcdr pos u))
+                obj))
+             ;; IDENTIFIER
+             (t
+              ;; Delete a single ! but replace !! by !
+              ;; In PSL, an identifier can contain any of the special characters
+              ;; + - $ & * / : ; | < = > ? ˆ _ { } ˜ @
+              ;; and hence not any of
+              ;; space ! " ' ( ) , . # % [ \ ] `
+              ;; unless they are escaped with ! (which must be handled specially).
+              (loop with newu do
+                   (cond ((or (null u)
+                              (cs-cl:member (car u)
+                                            '(\  \" \' \( \) \, \% \[ \\ \] \`)))
+                          (return
+                            (make-symbol ; uninterned symbol
+                             (%compress-list-to-string (nreverse newu)))))
+                         ((eq (car u) '!) ; ignore ! but keep WHATEVER follows it
+                          (if (setf u (cdr u))
+                              (push (car u) newu)))
+                         (t (push (car u) newu)))
+                   (setf u (cdr u)))))))
+       ;;
+       (compress-skip-spaces ()
+         (loop while (eq (car u) '| |) do (setq u (cdr u)))))
+    ;;
+    (compress)))
 
 (defun explode (u)                      ; PSL spec
   "(explode U:any): id-list expr
@@ -676,19 +697,17 @@ Returns the removed property or NIL if there was no such indicator."
 ;; the property %%FTYPE with value EXPR just for symmetry, but this
 ;; property value is not actually used by GETD.
 
-(defmacro de (fname params fn)
-  "DE(FNAME:id, PARAMS:id-list, FN:any):id noeval, nospread
-The function FN with the formal parameter list PARAMS is added to
-the set of defined functions with the name FNAME. Any previous
-definitions of the function are lost. The function created is of
-type EXPR. If the !*COMP variable is non-NIL, the EXPR is first
-compiled. The name of the defined function is returned.
-FEXPR PROCEDURE DE(U);
-   PUTD(CAR U, 'EXPR, LIST('LAMBDA, CADR U, CADDR U));"
+(defmacro de (fname params &rest fn)    ; PSL definition
+  "(de Fname:id PARAMS:id-list [FN:form]): id macro
+Defines the function named FNAME, of type expr. The forms FN are made
+into a lambda expression with the formal parameter list PARAMS, and
+this is used as the body of the function.  Previous definitions of the
+function are lost. The name of the defined function, FNAME, is
+returned."
   `(progn
      (%%redefmsg ',fname)
      (put ',fname '%%ftype 'expr)
-     (defun ,fname ,params ,fn)
+     (defun ,fname ,params ,@fn)
      ;; It makes no sense to include code to compile this function
      ;; when the function definition is being compiled into a fasl
      ;; file, so examine *COMP when the macro is expanded/compiled and
@@ -754,12 +773,15 @@ is returned."
               (let (f)
                 ;; Note that a CL function definition may contain
                 ;; declarations and a documentation string, and the
-                ;; body is wrapped in a block form, i.e.
+                ;; body MAY BE wrapped in a block form, i.e.
                 ;; (lambda params [decls] [doc] (block name body))
+                ;; [A compiled CLISP function may not contain a block!]
                 ;; Extract the function body:
-                (if (and (functionp (setq fname (symbol-function fname)))
-                         (setq f (function-lambda-expression fname)))
-                    (setq fname `(lambda ,(cadr f) ,(caddar (last f))))))
+                (when (and (functionp (setq fname (symbol-function fname)))
+                           (setq f (function-lambda-expression fname)))
+                  (setq fname (car (last f))) ; block or body form
+                  (if (eqcar fname 'block) (setq fname (caddr fname)))
+                  (setq fname `(lambda ,(cadr f) ,fname))))
               (cons 'expr fname)))))
 
 (defun putd (fname type body)
@@ -854,8 +876,7 @@ from GLOBAL to FLUID is not permissible and results in the error:
 
 (defun fluidp (u)
   "FLUIDP(U:any):boolean eval, spread
-If U has been declared FLUID (by declaration only) T is returned,
-otherwise NIL is returned."
+If U has been declared fluid then t is returned, otherwise nil is returned."
   (get u 'fluid))
 
 (defun %%global (x)
@@ -892,9 +913,8 @@ results in the error:
 
 (defun globalp (u)
   "GLOBALP(U:any):boolean eval, spread
-If U has been declared GLOBAL or is the name of a defined function,
-T is returned, else NIL is returned."
-  (or (get u 'global) (fboundp u)))
+If U has been declared global then t is returned, otherwise nil is returned."
+  (get u 'global))                      ; PSL/CSL definition
 
 (import 'cs-cl:set)
 ;; Auto fluid not implemented!
@@ -938,11 +958,6 @@ in interpreted functions are automatically considered fluid."
 
 ;;; Program Feature Functions
 ;;; =========================
-
-;; **********************************************************************
-;; NB: In CL, tagbody, and hence prog, contents cannot be null. So
-;; prog probably needs modification as for EL.
-;; **********************************************************************
 
 (import 'cs-cl:go)
 ;; GO(LABEL:id) noeval, nospread
@@ -1086,6 +1101,9 @@ dependent format."
         (cs-cl:error
             (err)
           (if msgp (format t "~&***** CL error: ~a~%" err))
+          ;; This doesn't really work because it breaks in the context
+          ;; of the errorset rather than the error!
+          (break "errorset(~a)" u)
           999))))
 
 
@@ -1533,19 +1551,19 @@ first element of V. The list U is copied, but V is not."
   ;; have any type:
   (if (consp u) (cs-cl:append u v) v))
 
-(defun assoc (u v)
-  "ASSOC(U:any, V:alist):{dotted-pair, NIL} eval, spread
-If U occurs as the CAR portion of an element of the alist V, the
-dotted-pair in which U occurred is returned, else NIL is
-returned.  ASSOC might not detect a poorly formed alist so an
-invalid construction may be detected by CAR or CDR.
-EXPR PROCEDURE ASSOC(U, V);
-   IF NULL V THEN NIL
-      ELSE IF ATOM CAR V THEN
-         ERROR(000, LIST(V, \"is a poorly formed alist\"))
-      ELSE IF U = CAAR V THEN CAR V
-      ELSE ASSOC(U, CDR V);"
-  (cs-cl:assoc u v :test #'equal))
+(defun assoc (u v)                      ; PSL definition
+  "(assoc U:any V:any): pair, nil expr
+If U occurs as the car portion of an element of the a-list V, the pair in which
+U occurred is returned, otherwise nil is returned. The function equal is used
+to test for equality.
+\(de assoc (u v)
+  (cond ((not (pairp v)) nil)
+        ((and (pairp (car v)) (equal u (caar v))) (car v))
+        (t (assoc u (cdr v)))))"
+  (and (consp v)
+       (loop for x in v do
+            (if (and (consp x) (equal u (car x)))
+                (return x)))))
 
 (defun deflist (u ind)
   "DEFLIST(U:dlist, IND:id):list eval, spread

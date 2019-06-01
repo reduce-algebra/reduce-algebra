@@ -39,16 +39,12 @@ echo +++++ Compiling sl-on-cl
 $runlisp << XXX &> log/sl-on-cl.blg
 (or (compile-file "sl-on-cl") (exit 1))
 XXX
-fi || (echo '***** Compilation failed'; exit)
+fi || { echo '***** Compilation failed'; exit; }
 
 echo +++++ Building bootstrap REDUCE
 
 $runlisp << XXX &> log/bootstrap.blg
-;(declaim (optimize debug)              ; same as (debug 3)
-;        (sb-ext:muffle-conditions sb-ext:compiler-note style-warning))
-
 (load "sl-on-cl")
-;;;(load "sl-on-cl.lisp")
 (standard-lisp)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -64,13 +60,13 @@ $runlisp << XXX &> log/bootstrap.blg
 (cl:defvar !*int nil)  % Prevents input buffer being saved.
 (cl:defvar !*msg nil)
 
-%if_clisp (setq !*comp t)  % It's faster in some lisps if we compile.
-
 % Do not use fasl version of "boot.sl": the CL compiler may optimize
 % away (i.e. discard) uses of fluid variables that are needed later in
 % the build process!
 
 (load "boot.sl")
+
+$if_clisp (setq !*comp t)  % It's faster in some lisps if we compile.
 
 (cl:defvar xxx)
 (begin2)
@@ -114,7 +110,7 @@ XXX
 
 echo +++++ Bootstrap REDUCE built
 
-echo 'Errors:'
+echo 'Possible errors:'
 grep --ignore-case '\*\*\*\*\*\|\<error\>' log/bootstrap.blg
 
 echo $'\a'

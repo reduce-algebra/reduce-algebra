@@ -382,6 +382,33 @@ symbolic procedure rename!-file(fromname, toname)$
 %%     else return sa . sd
 %%   end;
 
+% Fixes for the lalr package
+% ==========================
+
+% This procedure is defined in "lalr/genparser.red".  Because Common
+% Lisp seems to view equality of uninterned and interned symbols
+% differently from PSL/CSL, I need explicitly to apply intern to
+% identifiers but not to strings handled within this procedure until I
+% can think of a way to modify sl-on-cl that works.
+
+remflag('(lalr_collect_terminals), 'lose);
+
+symbolic procedure lalr_collect_terminals grammar;
+  begin
+    scalar rhs_symbols;
+    for each productions in grammar do
+      for each production in cdr productions do
+        for each symbol in car production do
+        <<
+           if idp symbol then symbol := intern symbol; % FJW
+           if not (symbol member rhs_symbols) then
+              rhs_symbols := symbol . rhs_symbols
+        >>;
+    return setdiff(rhs_symbols, nonterminals)
+  end;
+
+flag('(lalr_collect_terminals), 'lose);
+
 endmodule;
 
 end;

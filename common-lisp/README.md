@@ -1,7 +1,7 @@
 REDUCE on Common Lisp
 =====================
 
-Francis Wright, May 2019
+Francis Wright, June 2019
 
 From the introductory chapter of [*Common Lisp the Language, 2nd edition,* by Guy L. Steele Jr.](https://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html):
 
@@ -37,7 +37,7 @@ The build directory must contain the following files from the common-lisp direct
 * `remake.red`
 * `bootstrap.sh`
 * `build.sh`
-* `gnuintfc.red` (for gnuplot but it could be commented out in `build.sh`)
+* `gnuintfc.red` (for `gnuplot` but it could be commented out in `build.sh`)
 
 The build directory must also contain a link to or copy of the file [psl/boot.sl](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/psl/boot.sl), which is included in the [REDUCE trunk](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/) but not in binary distributions.  (The way to create a link in Windows is with the `mklink` command at a Windows command prompt; I use a symbolic link for `boot.sl`.  A Windows shortcut created using the File Explorer GUI will probably not work!)
 
@@ -96,42 +96,38 @@ Current status
 
 The process described above should build all of REDUCE without any obvious errors.  So far, I have avoided the need to customise the main REDUCE source code (apart from the file `gnuintfc.red`).
 
-All available core test files produce output that agrees with CSL except for timings and the following:
+All available test files produce output that agrees with CSL except for timings and minor numerical and/or implementation differences, except for the following:
 
-* `arith.tst` displays less numerical error;
-* `rlisp88.tst` and `assist.tst` show insignificant implementation differences.
-
-All available noncore test files produce output that agrees with CSL except for timings and minor numerical and/or implementation differences, except for the following:
-
-* `pm` hangs on loading;
+* `reduce4` fails in a similar same way as on CSL &ndash; excluded from regular testing;
 * `ibalp` fails on CLISP with a program stack overflow error;
 * `pasf` output appears to be mathematically correct but is ordered differently;
-* I don't currently test `rubi_red` and `lalr`, which are rather CSL-specific.
+* `rubi_red` is very slow, generates very much output, and timeouts don't work on CLISP (see below), but otherwise it appears to run correctly &ndash; excluded from regular testing;
+* `lalr` output appears to be correct apart from very many (1088) minor cosmetic differences &ndash; excluded from regular testing.
 
 Timings
 -------
 
 I estimate that SBCL REDUCE is 3 or 4 times slower than PSL/CSL REDUCE, but note that it is currently built for comfort (of debugging) rather than speed!  CLISP is a lot slower than SBCL!
 
-Operation                               | CSL Time | Latest SBCL | Latest CLISP
-----------------------------------------|----------|-------------|-------------
-Build bootstrap REDUCE image            |          | 4.1 secs    | 33.2 secs
-Build final REDUCE image                |          | 0.4 secs    |  3.3 secs
-Run alg.tst                             | 47 ms    | 282 ms      |  860 ms
-Run (and check) all core test files     | 29 secs  |  50 secs    |  4 m 25 s
-Run (and check) most noncore test files |  5 mins  |  17 mins    | 87 m 11 s
+Operation                               | CSL Time | Prev. SBCL | Prev. CLISP | Latest CLISP
+----------------------------------------|----------|------------|-------------|-------------
+Build bootstrap REDUCE image            |          | 4.1 secs   | 33.2 secs   | 21.3 secs
+Build final REDUCE image                |          | 0.4 secs   |  3.3 secs   |  3.3 secs
+Run alg.tst                             |  78 ms   | 282 ms     |  860 ms     |  828 ms
+Run (and check) all core test files     |  33 secs |  50 secs   |  4 m 25 s   |  4 m 21 s
+Run (and check) most noncore test files | 4 m 24 s |  17 mins   | 87 m 11 s   | 90 m 16 s
 
-The shorter times above are probably not very meaningful.  Most of the time building REDUCE goes in compiling the packages, which takes a few minutes, but I don't currently have any precise timings for this.  The CSL test times do not include checking, which involves running `diff`.  The CL time for the noncore tests does not include all packages since some of the tests currently hang.
+The shorter times above are probably not very meaningful.  Most of the time building REDUCE goes in compiling the packages, which takes a few minutes, but I don't currently have any precise timings for this.  The CSL test times do not include checking, which involves running `diff`.  The time for the noncore tests does not include all packages as explained above, and `gnuplot` and `turtle` are excluded because they need to be run interactively.
 
 Known bugs
 ----------
 
-PSL and CSL prettyprint _ without an escape (unless it appears alone), whereas CL REDUCE always prettyprints _ with an escape.  This appears to be because CL REDUCE uses "rprint/pretty.red", whereas PSL and CSL don't!
+I cannot see any way to support the facilities for limiting execution time on CLISP.  In more detail: The file "rlisp/inter.red" defines procedures `with!-timeout` and similar that use garbage collection to provide an interrupt by assigning a function to the variable `!*gc!-hook!*`, but no such garbage collection hook exists in CLISP.  The procedures `with!-timeout` and similar just run without any limit so don't use CLISP REDUCE is you need this facility!  It should work on SBCL.  This affects `rubi_red` and possibly other packages.
+
+PSL and CSL prettyprint `_` without an escape (unless it appears alone), whereas CL REDUCE always prettyprints `_` with an escape.  This appears to be because CL REDUCE uses "rprint/pretty.red", whereas PSL and CSL don't!
 
 To do
 -----
-
-In `rlisp/inter.red`, `*gc-hook*` is undefined.  It's called `sb-ext:*after-gc-hooks*` in SBCL, so this needs sorting out later.
 
 In `alg/intro.red`, `outputhandler*` is undefined. Should be declared fluid. Done temporarily in `clrend`.
 
@@ -150,5 +146,3 @@ Replace shell scripts with Common Lisp code to build REDUCE portably?
 Make SL-on-CL lower case on SBCL.
 
 Allow REDUCE to be run with a current directory other than the build directory.
-
-Improve support for the few remaining noncore packages that do not run.
