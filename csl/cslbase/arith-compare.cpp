@@ -2161,6 +2161,50 @@ bool Minusp::op(LFlt a)
 {   return f128_lt(a.floatval(), i64_to_f128(0));
 }
 
+LispObject Abs::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Abs>("abs", a);
+}
+
+LispObject Abs::op(Fixnum a)
+{   if (a.intval() < 0) return Minus::op(a);
+    else return a.value();
+}
+
+LispObject Abs::op(uint64_t *a)
+{   if (Minusp::op(a)) return Minus::op(a);
+    else return (LispObject)((uintptr_t)a - 8 + TAG_NUMBERS);
+}
+
+LispObject Abs::op(Rat a)
+{   if (Minusp::op(a)) return Minus::op(a);
+    else return a.value();
+}
+
+LispObject Abs::op(Cpx a)
+{   return Sqrt::op(Plus::op(Square::op(a.real_part()),
+                             Square::op(a.imag_part())));
+}
+
+LispObject Abs::op(SFlt a)
+{   if (Minusp::op(a)) return Minus::op(a);
+    else return a.value();
+}
+
+LispObject Abs::op(Flt a)
+{   if (Minusp::op(a)) return Minus::op(a);
+    else return a.value();
+}
+
+LispObject Abs::op(double a)
+{   if (Minusp::op(a)) return Minus::op(a);
+    else return make_boxfloat(a, TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Abs::op(LFlt a)
+{   if (Minusp::op(a)) return Minus::op(a);
+    else return a.value();
+}
+
 #endif // ARITHLIB
 
 // end of arith-compare.cpp

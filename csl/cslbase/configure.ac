@@ -334,6 +334,9 @@ case $host in
 # Note that I may be under either cygwin32 or cygwin64 here...
   x86="yes"
   exeext="yes"
+# Here I will certainly be using gcc and I like to limit the number of
+# diagnostics it can generate in any one build.
+  CPPFLAGS="$CPPFLAGS -fmax-errors=10"
   if test "x$with_cygwin" != "xno"
   then
 # The next line may ALMOST count as a lie, but under raw cygwin the world

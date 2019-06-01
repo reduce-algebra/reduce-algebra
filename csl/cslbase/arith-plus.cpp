@@ -514,7 +514,7 @@ LispObject Difference::op(LFlt a, Fixnum b)
 }
 // fixnum - bignum
 LispObject Difference::op(Fixnum a, uint64_t *b)
-{   return arithlib_lowlevel::Difference::op(b, a.intval());
+{   return arithlib_lowlevel::Difference::op(a.intval(), b);
 }
 // bignum - bignum
 LispObject Difference::op(uint64_t *a, uint64_t *b)

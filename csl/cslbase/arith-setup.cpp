@@ -210,8 +210,20 @@ static LispObject Nminus(LispObject env, LispObject a1)
 {   return onevalue(Minus::op(a1));
 }
 
+static LispObject Nabs(LispObject env, LispObject a1)
+{   return onevalue(Abs::op(a1));
+}
+
 static LispObject Nreciprocal(LispObject env, LispObject a1)
 {   return onevalue(Reciprocal::op(a1));
+}
+
+static LispObject Nsqrt(LispObject env, LispObject a1)
+{   return onevalue(Sqrt::op(a1));
+}
+
+static LispObject Nisqrt(LispObject env, LispObject a1)
+{   return onevalue(Isqrt::op(a1));
 }
 
 static LispObject Nsquare(LispObject env, LispObject a1)
@@ -760,6 +772,10 @@ static LispObject Niminus(LispObject env, LispObject a1)
 {   return onevalue(Minus::op(a1));
 }
 
+static LispObject Niabs(LispObject env, LispObject a1)
+{   return onevalue(Abs::op(a1));
+}
+
 static LispObject Nireciprocal(LispObject env, LispObject a1)
 {   return onevalue(Reciprocal::op(a1));
 }
@@ -1047,8 +1063,11 @@ setup_type const arith_setup[] =
     {"newlcmn",              Nlcmn,              Nlcmn,              Nlcmn,              Nlcmn,              Nlcmn},
     {"newminus",             G0W1,               Nminus,             G2W1,               G3W1,               G4W1},
     {"newminusp",            G0W1,               Nminusp,            G2W1,               G3W1,               G4W1},
+    {"newabs",               G0W1,               Nabs,               G2W1,               G3W1,               G4W1},
     {"newreciprocal",        G0W1,               Nreciprocal,        G2W1,               G3W1,               G4W1},
     {"newsquare",            G0W1,               Nsquare,            G2W1,               G3W1,               G4W1},
+    {"newsqrt",              G0W1,               Nsqrt,              G2W1,               G3W1,               G4W1},
+    {"newisqrt",             G0W1,               Nisqrt,             G2W1,               G3W1,               G4W1},
     {"newsub1",              G0W1,               Nsub1,              G2W1,               G3W1,               G4W1},
     {"newzerop",             G0W1,               Nzerop,             G2W1,               G3W1,               G4W1},
     {"newonep",              G0W1,               Nonep,              G2W1,               G3W1,               G4W1},
@@ -1101,6 +1120,7 @@ setup_type const arith_setup[] =
     {"newilcmn",             Nilcmn,             Nilcmn,             Nilcmn,             Nilcmn,             Nilcmn},
     {"newiminus",            G0W1,               Niminus,            G2W1,               G3W1,               G4W1},
     {"newiminusp",           G0W1,               Niminusp,           G2W1,               G3W1,               G4W1},
+    {"newiabs",              G0W1,               Niabs,              G2W1,               G3W1,               G4W1},
     {"newireciprocal",       G0W1,               Nireciprocal,       G2W1,               G3W1,               G4W1},
     {"newisquare",           G0W1,               Nisquare,           G2W1,               G3W1,               G4W1},
     {"newisub1",             G0W1,               Nisub1,             G2W1,               G3W1,               G4W1},

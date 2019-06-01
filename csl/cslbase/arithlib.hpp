@@ -6,6 +6,8 @@
 #define __arithlib_hpp 1
 
 // To do:
+//    Use newer thread-local stuff, and especially put in thread locality
+//     support for the modular arithmetic.
 //    Write full documentation! [Meanwhile there is a reasonably extended
 //     commentary included as comments here, and a file arithtest.cpp that
 //     can accompany it and illustrate its use]
@@ -9593,17 +9595,18 @@ inline intptr_t Gcd::op(int64_t a, int64_t b)
     return unsigned_int_to_bignum(aa);
 }
 
+// I think I have space-leaks within my code for LCM. For use in
+// a system with garbage collection that will not matter (hoorah) but at
+// some stage I need to come back here and look harder and tidy things up.
+
 inline intptr_t Lcm::op(uint64_t *a, uint64_t *b)
 {   push(a); push(b);
     intptr_t g = Gcd::op(a, b);
     pop(b);
-    if (stored_as_fixnum(g) && int_of_handle(g)==1)
-    {   pop(a);
-        return Times::op(a, b);
-    }
     intptr_t q = op_dispatch2<Quotient,intptr_t>(vector_to_handle(b), g);
     pop(a);
-    return op_dispatch2<Times,intptr_t>(vector_to_handle(a), q);
+    q = op_dispatch2<Times,intptr_t>(vector_to_handle(a), q);
+    return op_dispatch1<Abs,intptr_t>(q);
 }
 
 inline intptr_t Lcm::op(uint64_t *a, int64_t b)
@@ -9611,7 +9614,8 @@ inline intptr_t Lcm::op(uint64_t *a, int64_t b)
     intptr_t g = Gcd::op(a, b);
     intptr_t q = op_dispatch2<Quotient,intptr_t>(int_to_handle(b), g);
     pop(a);
-    return op_dispatch2<Times,intptr_t>(vector_to_handle(a), q);
+    q = op_dispatch2<Times,intptr_t>(vector_to_handle(a), q);
+    return op_dispatch1<Abs,intptr_t>(q);
 }
 
 inline intptr_t Lcm::op(int64_t a, uint64_t *b)
@@ -9620,19 +9624,13 @@ inline intptr_t Lcm::op(int64_t a, uint64_t *b)
 
 inline intptr_t Lcm::op(int64_t a, int64_t b)
 {   intptr_t g = Gcd::op(a, b);
-// The GCD can be a bignum if a = b = MIN_FIXNUM.
+// The GCD can only be a bignum if a = b = MIN_FIXNUM.
     if (stored_as_fixnum(g))
-    {   int64_t gg = int_of_handle(g);
-        if (gg == 1) return Times::op(a, b);
-        intptr_t q = Quotient::op(b, gg);
-        if (stored_as_fixnum(q)) return Times::op(a, int_of_handle(q));
-        else return Times::op(a, vector_of_handle(q));
+    {   b = b / int_of_handle(g);
+        intptr_t q = Times::op(a, b); // possibly a bignum now
+        return op_dispatch1<Abs,intptr_t>(q);
     }
-    else
-    {   intptr_t q = Quotient::op(b, vector_of_handle(g));
-        if (stored_as_fixnum(q)) return Times::op(a, int_of_handle(q));
-        else return Times::op(a, vector_of_handle(q));
-    }
+    else return unsigned_int_to_bignum(-(uint64_t)MIN_FIXNUM);
 }
 
 // While initially developing this bit of code I will assume C++17 and I

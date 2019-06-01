@@ -480,6 +480,78 @@ LispObject Ldexp::op(LFlt a, uint64_t *b)
     return make_boxfloat128(f);
 }
 
+LispObject Sqrt::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Sqrt>("sqrt", a);
+}
+
+LispObject Sqrt::op(Fixnum a)
+{   return make_boxfloat(sqrt((double)a.intval()));
+}
+
+LispObject Sqrt::op(uint64_t *a)
+{   return make_boxfloat(sqrt(Float::op(a)));
+}
+
+LispObject Sqrt::op(Rat a)
+{   return Sqrt::op(a.numerator()) / Sqrt::op(a.denominator());
+}
+
+LispObject Sqrt::op(Cpx a)
+{   aerror1("complex sqrt not coded yet", a.value());
+}
+
+LispObject Sqrt::op(SFlt a)
+{   return make_boxfloat(sqrt(Float::op(a)));
+}
+
+LispObject Sqrt::op(Flt a)
+{  return make_boxfloat(sqrt(Float::op(a)));
+}
+
+LispObject Sqrt::op(double a)
+{   return make_boxfloat(a, TYPE_DOUBLE_FLOAT);
+}
+
+LispObject Sqrt::op(LFlt a)
+{   return make_boxfloat128(f128_sqrt(a.floatval()));
+}
+
+LispObject Isqrt::op(LispObject a)
+{   return number_dispatcher::iunary<LispObject,Isqrt>("isqrt", a);
+}
+
+LispObject Isqrt::op(Fixnum a)
+{   return arithlib_lowlevel::Isqrt::op(a.intval());
+}
+
+LispObject Isqrt::op(uint64_t *a)
+{   return arithlib_lowlevel::Isqrt::op(a);
+}
+
+LispObject Isqrt::op(Rat a)
+{   aerror1("bad argument for isqrt", a.value());
+}
+
+LispObject Isqrt::op(Cpx a)
+{   aerror1("bad argument for isqrt", a.value());
+}
+
+LispObject Isqrt::op(SFlt a)
+{   aerror1("bad argument for isqrt", a.value());
+}
+
+LispObject Isqrt::op(Flt a)
+{   aerror1("bad argument for isqrt", a.value());
+}
+
+LispObject Isqrt::op(double a)
+{   aerror1("bad argument for isqrt", make_boxfloat(a));
+}
+
+LispObject Isqrt::op(LFlt a)
+{   aerror1("bad argument for isqrt", a.value());
+}
+
 #endif // ARITHLIB
 
 // end of arith-float.cpp

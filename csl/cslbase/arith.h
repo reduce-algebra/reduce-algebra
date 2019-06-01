@@ -232,7 +232,7 @@ inline double value_of_immediate_float(LispObject a)
     return aa.f;
 }
 
-extern LispObject make_boxfloat(double a, int type);
+extern LispObject make_boxfloat(double a, int type=TYPE_DOUBLE_FLOAT);
 #ifdef HAVE_SOFTFLOAT
 extern LispObject make_boxfloat128(float128_t a);
 #endif // HAVE_SOFTFLOAT
