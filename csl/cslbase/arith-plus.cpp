@@ -36,8 +36,6 @@
 #include "headers.h"
 #include "dispatch.h"
 
-// ====== addition =====
-
 // Each generic arithmetic operation will involve a class styled rather
 // along the lines of this one. It will use mechanisms from the header
 // file dispatch.h to go from tagged LispObjects to the data for each
@@ -163,7 +161,7 @@ LispObject Plus::op(Flt a, Fixnum b)
 }
 // double float + fixnum
 LispObject Plus::op(double a, Fixnum b)
-{   return make_boxfloat(a + (double)b.intval(), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a + (double)b.intval());
 }
 // long float + fixnum
 LispObject Plus::op(LFlt a, Fixnum b)
@@ -197,7 +195,7 @@ LispObject Plus::op(Flt a, uint64_t *b)
 }
 // double float + bignum
 LispObject Plus::op(double a, uint64_t *b)
-{   return make_boxfloat(a + arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a + arithlib_lowlevel::Double::op(b));
 }
 // long float + bignum
 LispObject Plus::op(LFlt a, uint64_t *b)
@@ -239,7 +237,7 @@ LispObject Plus::op(Flt a, Rat b)
 }
 // double float + rational
 LispObject Plus::op(double a, Rat b)
-{   return make_boxfloat(a + RawFloat::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a + RawFloat::op(b));
 }
 // long float + rational
 LispObject Plus::op(LFlt a, Rat b)
@@ -304,7 +302,7 @@ LispObject Plus::op(Flt a, SFlt b)
 }
 // double float + short float
 LispObject Plus::op(double a, SFlt b)
-{   return make_boxfloat(a + b.floatval(), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a + b.floatval());
 }
 // long float + short float
 LispObject Plus::op(LFlt a, SFlt b)
@@ -336,7 +334,7 @@ LispObject Plus::op(Flt a, Flt b)
 }
 // double float + single float
 LispObject Plus::op(double a, Flt b)
-{   return make_boxfloat(a + b.floatval(), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a + b.floatval());
 }
 // long float + single float
 LispObject Plus::op(LFlt a, Flt b)
@@ -368,7 +366,7 @@ LispObject Plus::op(Flt a, double b)
 }
 // double float + double float
 LispObject Plus::op(double a, double b)
-{   return make_boxfloat(a + b, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a + b);
 }
 // long float + double float
 LispObject Plus::op(LFlt a, double b)
@@ -506,7 +504,7 @@ LispObject Difference::op(Flt a, Fixnum b)
 }
 // double float - fixnum
 LispObject Difference::op(double a, Fixnum b)
-{   return make_boxfloat(a - (double)b.intval(), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a - (double)b.intval());
 }
 // long float - fixnum
 LispObject Difference::op(LFlt a, Fixnum b)
@@ -540,7 +538,7 @@ LispObject Difference::op(Flt a, uint64_t *b)
 }
 // double float - bignum
 LispObject Difference::op(double a, uint64_t *b)
-{   return make_boxfloat(a - arithlib_lowlevel::Double::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a - arithlib_lowlevel::Double::op(b));
 }
 // long float - bignum
 LispObject Difference::op(LFlt a, uint64_t *b)
@@ -587,7 +585,7 @@ LispObject Difference::op(Flt a, Rat b)
 }
 // double float - rational
 LispObject Difference::op(double a, Rat b)
-{   return make_boxfloat(a - RawFloat::op(b), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a - RawFloat::op(b));
 }
 // long float - rational
 LispObject Difference::op(LFlt a, Rat b)
@@ -659,7 +657,7 @@ LispObject Difference::op(Flt a, SFlt b)
 }
 // double float - short float
 LispObject Difference::op(double a, SFlt b)
-{   return make_boxfloat(a - b.floatval(), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a - b.floatval());
 }
 // long float - short float
 LispObject Difference::op(LFlt a, SFlt b)
@@ -691,7 +689,7 @@ LispObject Difference::op(Flt a, Flt b)
 }
 // double float - single float
 LispObject Difference::op(double a, Flt b)
-{   return make_boxfloat(a - b.floatval(), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a - b.floatval());
 }
 // long float - single float
 LispObject Difference::op(LFlt a, Flt b)
@@ -699,15 +697,15 @@ LispObject Difference::op(LFlt a, Flt b)
 }
 // fixnum - double float@
 LispObject Difference::op(Fixnum a, double b)
-{   return make_boxfloat((double)a.intval() - b, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat((double)a.intval() - b);
 }
 // bignum - double float
 LispObject Difference::op(uint64_t *a, double b)
-{   return make_boxfloat(RawFloat::op(a) - b, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(RawFloat::op(a) - b);
 }
 // rational - double float
 LispObject Difference::op(Rat a, double b)
-{   return make_boxfloat(RawFloat::op(a) - b, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(RawFloat::op(a) - b);
 }
 // complex - double float
 LispObject Difference::op(Cpx a, double b)
@@ -715,15 +713,15 @@ LispObject Difference::op(Cpx a, double b)
 }
 // short float - double float
 LispObject Difference::op(SFlt a, double b)
-{   return make_boxfloat(a.floatval() - b, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a.floatval() - b);
 }
 // single float - double float
 LispObject Difference::op(Flt a, double b)
-{   return make_boxfloat(a.floatval() - b, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a.floatval() - b);
 }
 // double float - double float
 LispObject Difference::op(double a, double b)
-{   return make_boxfloat(a - b, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a - b);
 }
 // long float - double float
 LispObject Difference::op(LFlt a, double b)
@@ -793,7 +791,7 @@ LispObject Minus::op(Flt a)
 }
 
 LispObject Minus::op(double a)
-{   return make_boxfloat(-a, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(-a);
 }
 
 LispObject Minus::op(LFlt a)

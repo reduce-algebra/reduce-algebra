@@ -20,7 +20,7 @@ so in the most extreme case one of these will end up filled with 64 objects
 of that size. Any objects larger than 64Kbytes get allocated directly in the
 main region of the Heap.
 Allocation within a current page does not involve any overhead beyond that
-involved in the access to thread local frings and limit pointers, and
+involved in the access to thread local fringe and limit pointers, and
 I will note that 256K conses are needed use up a page, so in most use cases
 almost all memory allocation will use them. The allocation of either a new
 page or an object that is larger than 64K will need a mutex lock so that
@@ -28,7 +28,7 @@ threads do not interfere with each other. I argue in three steps that this
 will not end up as a severe overhead.
 (1) in most Lisp uses only a small proportion of allocations are of
     large objects.
-(2) If a large object is allocated thet at the very least it will need to
+(2) If a large object is allocated that at the very least it will need to
     be initialized, and this at a minimum involves quite a few thousand
     memory references. In almost all worthwhile cases there will be a lot
     more work than that - the muxex overhead on allocation will tend to have
@@ -39,16 +39,72 @@ will not end up as a severe overhead.
     a sensible number of threads the contention on muxexes will not become
     severe.
 
+============
+But now a fragment of thought added in June 2019...
 
+// Here is how I can do CONS. The code for allocating larger objects is
+// essentially the same but with a non-constant increment. This can be
+// done with a single region of memory and just one fringe and one limit
+// shared across all threads.
+
+#include <cstdint>
+#include <cinttypes>
+#include <atomic>
+#include <cstdlib>
+
+typedef intptr_t LispObject;
+
+extern std::atomic_uintptr_t fringe;
+extern std::atomic_uintptr_t limit;
+
+extern uintptr_t gc_and_allocate(uintptr_t r, size_t n);
+
+LispObject cons(LispObject a, LispObject b)
+{   LispObject result = (LispObject)fringe.fetch_add(2*sizeof(LispObject));
+    if (fringe.load() >= limit.load())
+        result = gc_and_allocate(result, 2*sizeof(LispObject));
+    return result;
+}
+
+// gc_and_allocate is called if the allocation fails with the location
+// of the block that could not be allocated as its first argument and the
+// size of block that is needed as its second. The first argument is
+// needed because heap space up as far as that is properly in use, while
+// space above it is not. If there are multiple threads then the first
+// one that fails to achieve an allocation will have left fringe >= limit
+// and so all the subsequent ones will also fail. So if one can synchronize
+// all threads then the lowest value passed to gc_and_allocate will represent
+// the top of real data in the heap.
+
+// If I want to trigger a garbage collection "soon" I can go
+//       uintptr_t save = limit.fetch_and(0);
+// and then any thread that tries to allocate memory will enter the GC soon.
+// and code can go
+//       if (limit.load() == 0) gc_and_allocate(fringe.load(), 0);
+// as a voluntary way of yielding. Extra protocols will be needed where
+// a thread is about to do something that might block. The fetch_and() lets
+// me zero out the limit register but record what it used to be so that I
+// can restore it later by going
+//       limit.store(save);
+// or some such.
+
+So what I say elsewhere about having per-thread allocation blocks is
+maybe now outdated!
+
+============
 
 The work discussed here is to arrange that CSL uses a mostly-copying
 conservative collector. The details are substantially tuned to the expected
 patterns of memory usage. Although the initial implementation will be
 single threaded the intent is to allow for a threaded system in the future.
 Following CST project work by Jamie Davenport I now intend to try for a
-design that is conservative, generational and somewhat threaded.
+design that is conservative, generational and somewhat threaded. This
+is also informed by work done by Vlad Badelita.
 
-Memory is used in pages (of size CSL_PAGE_SIZE). Each page will either hold
+Memory is used in pages (of size CSL_PAGE_SIZE).
+[Hmmm - there may be no real point in having things arranged in pages
+like that!]
+Each page will either hold
 CONS cells (and other items of size 2*CELL) or larger items (typically
 symbol headers and vectors). Given an arbitrary bit-pattern it will be
 possible to tell if it refers to an address within an object in one of these
@@ -224,3 +280,66 @@ allocating and copying large items may be a good idea.
 
 The number of pinned items here might be expected to be bounded by the amount
 of stack used. So very deep recursion is a bad bad thing.
+
+The scheme as above based on using memory protection to take an exception
+on the first write into an (old) page may have severe costs in that on many
+operating systems taking an exception and changing page access rights is
+liable to be very expensive. I see some commentary that its costs are high
+enough that the other expensive route, ie use of software write barriers,
+may in fact be competitive.
+
+The following sketch may show how I can have a slightly odd C++ class that
+lets me arrange that variables (such as x and y in the code below) can be
+writtent in the source code as if utterly ordinary, but such that reading
+from them compiles into simple code that merely does a load while writing
+can perform extra operations (in particular messing with maps of dirty
+pages). Use of that might seriously clean up my code it I do want to follow
+the software write-barrier path.
+
+#include <iostream>
+#include <cstdint>
+#include <cinttypes>
+
+class PointerWrapper
+{
+public:
+    intptr_t value;
+    PointerWrapper ()
+    {   std::cout << "constructing " << (void *)this << std::endl;
+    }
+    PointerWrapper (const intptr_t &x)
+    {   std::cout << "constructing " << (void *)this << " with " << x << std::endl;
+    }
+    PointerWrapper& operator= (const intptr_t &x)
+    {   value = x;
+        std::cout << "writing " << x << " into " << (void *)this << std::endl;
+        return *this;
+    }
+    operator intptr_t()
+    {   std::cout << "reading from " << (void *)this << std::endl;
+        return value;
+    }
+};
+
+int main(int argc, char *argv[])
+{   std::cout << "About to construct x" << std::endl;
+    PointerWrapper x;
+    std::cout << "About assign into x" << std::endl;
+    x = 12345;
+    std::cout << "About declare y as a copy of x" << std::endl;
+    PointerWrapper y = x;
+    std::cout << "About increment y" << std::endl;
+    y = y + 1;
+    std::cout << "About display x and y" << std::endl;
+    std::cout << x << " and " << y << std::endl;
+    return 0;
+}
+
+At present while I have looked into concurrency between a collector and the
+main mutator it seems to me that if one uses a copying collector that the
+Lisp EQ test runs into severe trouble. I may continue to think about that,
+but for now a stop-all-threads scheme is all I can feel happy about, but
+my hope is that if it is generational then each disruption will be short.
+A big issue is that of synchronising all the threads to stop them. It looks
+at present as if the only safe and portable scheme involves each thread
+polling.

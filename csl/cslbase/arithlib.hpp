@@ -493,21 +493,21 @@ inline std::mutex &diagnostic_mutex(const char ***where)
     return m;
 }
 
-inline void abort1(const char *msg)
+[[noreturn]] inline void abort1(const char *msg)
 {   const char **where;
 // The call to diagnostic_mutex here is just to retrieve the location of the
 // const char * variable that holds the location. I am already within
 // the scope of a mutex.
     (void)diagnostic_mutex(&where);
-    std::cout << "About to abort at " << *where << ": "
+    std::cout << std::endl << "About to abort at " << *where << ": "
               << msg << std::endl;
     std::abort();
 }
 
-inline void abort1()
+[[noreturn]] inline void abort1()
 {   const char **where;
     (void)diagnostic_mutex(&where);
-    std::cout << "About to abort at " << *where << std::endl;
+    std::cout << std::endl << "About to abort at " << *where << std::endl;
     std::abort();
 }
 

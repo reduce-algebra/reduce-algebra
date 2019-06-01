@@ -2197,7 +2197,7 @@ LispObject Abs::op(Flt a)
 
 LispObject Abs::op(double a)
 {   if (Minusp::op(a)) return Minus::op(a);
-    else return make_boxfloat(a, TYPE_DOUBLE_FLOAT);
+    else return make_boxfloat(a);
 }
 
 LispObject Abs::op(LFlt a)

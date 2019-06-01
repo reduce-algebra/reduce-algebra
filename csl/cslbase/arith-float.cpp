@@ -51,11 +51,11 @@ LispObject Float::op(LispObject a)
 }
 
 LispObject Float::op(Fixnum a)
-{   return make_boxfloat((double)a.intval(), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat((double)a.intval());
 }
 
 LispObject Float::op(uint64_t *a)
-{   return make_boxfloat(arithlib_lowlevel::Float::op(a), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(arithlib_lowlevel::Float::op(a));
 }
 
 LispObject Float::op(Rat a)
@@ -68,15 +68,15 @@ LispObject Float::op(Cpx a)
 }
 
 LispObject Float::op(SFlt a)
-{   return make_boxfloat(a.floatval(), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a.floatval());
 }
 
 LispObject Float::op(Flt a)
-{   return make_boxfloat(a.floatval(), TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a.floatval());
 }
 
 LispObject Float::op(double a)
-{   return make_boxfloat(a, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a);
 }
 
 LispObject Float::op(LFlt a)
@@ -86,7 +86,7 @@ LispObject Float::op(LFlt a)
 // byte data.
     double d;
     memcpy(&d, &f, sizeof(double));
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d);
 }
 
 LispObject Float128::op(LispObject a)
@@ -334,20 +334,33 @@ LispObject Ceiling::op(LFlt a)
 {   return arithlib_lowlevel::float128_to_ceiling(a.floatval());
 }
 
+// (frexp nn) => (double-float . fixnum)
+
 LispObject Frexp::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Frexp>("frexp", a);
 }
 
+LispObject frexp_finalize(double d, int x)
+{   int x1;
+    d = std::frexp(d, &x1);
+    return cons(make_boxfloat(d), fixnum_of_int(x + x1));
+}
+
 LispObject Frexp::op(Fixnum a)
-{   aerror1("bad argument to frexp", a.value());
+{   return frexp_finalize((double)a.intval(), 0);
 }
 
 LispObject Frexp::op(uint64_t *a)
-{   aerror1("bad argument to frexp", (LispObject)((char *)a - 8 + TAG_NUMBERS));
+{   abort("not done yet");
+    aerror1("bad argument to frexp", (LispObject)((char *)a - 8 + TAG_NUMBERS));
 }
 
 LispObject Frexp::op(Rat a)
-{   aerror1("bad argument for frexp", a.value());
+{   int64_t xp;
+    double p = Frexp::op(a.numerator(), xp);
+    int64_t xq;
+    double q = Frexp::op(a.denominator(), xq);
+    return frexp_finalize(p/q, xp-xq);
 }
 
 LispObject Frexp::op(Cpx a)
@@ -355,28 +368,158 @@ LispObject Frexp::op(Cpx a)
 }
 
 LispObject Frexp::op(SFlt a)
-{   int x;
-    double d = std::frexp(a.floatval(), &x);
-    return cons(pack_short_float(d), fixnum_of_int(x));
+{   return frexp_finalize(a.floatval(), 0);
 }
 
 LispObject Frexp::op(Flt a)
-{   int x;
-    double d = std::frexp(a.floatval(), &x);
-    return cons(pack_single_float(d), fixnum_of_int(x));
+{   return frexp_finalize(a.floatval(), 0);
 }
 
 LispObject Frexp::op(double a)
-{   int x;
-    double d = std::frexp(a, &x);
-    return cons(make_boxfloat(d, TYPE_DOUBLE_FLOAT), fixnum_of_int(x));
+{   return frexp_finalize(a, 0);
 }
 
 LispObject Frexp::op(LFlt a)
-{   int x;
-    float128_t d = a.floatval();
-    f128M_frexp(&d, &d, &x);
-    return cons(make_boxfloat128(d), fixnum_of_int(x));
+{   return frexp_finalize(Float::op(a), 0);
+}
+
+double frexp_finalize(double d, int x, int64_t &xx)
+{   int x1;
+    d = std::frexp(d, &x1);
+    xx = x + x1;
+    return d;
+}
+
+double Frexp::op(LispObject a, int64_t &xx)
+{   return number_dispatcher::unary<double,Frexp>("frexp", a, xx);
+}
+
+double Frexp::op(Fixnum a, int64_t &xx)
+{   return frexp_finalize((double)a.intval(), 0, xx);
+}
+
+double Frexp::op(uint64_t *a, int64_t &xx)
+{   abort("not done yet");
+    aerror1("bad argument to frexp", (LispObject)((char *)a - 8 + TAG_NUMBERS));
+}
+
+double Frexp::op(Rat a, int64_t &xx)
+{   int64_t xp;
+    double p = Frexp::op(a.numerator(), xp);
+    int64_t xq;
+    double q = Frexp::op(a.denominator(), xq);
+    return frexp_finalize(p/q, xp-xq, xx);
+}
+
+double Frexp::op(Cpx a, int64_t &xx)
+{   aerror1("bad argument for frexp", a.value());
+}
+
+double Frexp::op(SFlt a, int64_t &xx)
+{   return frexp_finalize((double)a.floatval(), 0, xx);
+}
+
+double Frexp::op(Flt a, int64_t &xx)
+{   return frexp_finalize((double)a.floatval(), 0, xx);
+}
+
+double Frexp::op(double a, int64_t &xx)
+{   return frexp_finalize((double)a, 0, xx);
+}
+
+double Frexp::op(LFlt a, int64_t &xx)
+{   return frexp_finalize(Float::op(a), 0, xx);
+}
+
+LispObject frexp_finalize(float128_t d, int x)
+{   int x1;
+    f128M_frexp(&d, &d, &x1);
+    return cons(make_boxfloat128(d), fixnum_of_int(x+x1));
+}
+
+LispObject Frexp128::op(Fixnum a)
+{   return frexp_finalize((double)a.intval(), 0);
+}
+
+LispObject Frexp128::op(uint64_t *a)
+{   abort("not done yet");
+    aerror1("bad argument to frexp", (LispObject)((char *)a - 8 + TAG_NUMBERS));
+}
+
+LispObject Frexp128::op(Rat a)
+{   int64_t xp;
+    float128_t p = Frexp128::op(a.numerator(), xp);
+    int64_t xq;
+    float128_t q = Frexp128::op(a.denominator(), xq);
+    return frexp_finalize(f128_div(p, q), xp-xq);
+}
+
+LispObject Frexp128::op(Cpx a)
+{   aerror1("bad argument for frexp", a.value());
+}
+
+LispObject Frexp128::op(SFlt a)
+{   return frexp_finalize(a.floatval(), 0);
+}
+
+LispObject Frexp128::op(Flt a)
+{   return frexp_finalize(a.floatval(), 0);
+}
+
+LispObject Frexp128::op(double a)
+{   return frexp_finalize(a, 0);
+}
+
+LispObject Frexp128::op(LFlt a)  // maybe this should return just a double?
+{   return frexp_finalize(a.floatval(), 0);
+}
+
+float128_t Frexp128::op(LispObject a, int64_t &xx)
+{   return number_dispatcher::unary<float128_t,Frexp128>("frexp128", a, xx);
+}
+
+float128_t frexp_finalize(float128_t d, int x, int64_t &xx)
+{   int x1;
+    f128M_frexp(&d, &d, &x1);
+    xx = x + x1;
+    return d;
+}
+
+float128_t Frexp128::op(Fixnum a, int64_t &xx)
+{   return frexp_finalize(RawFloat128::op(a), 0, xx);
+}
+
+float128_t Frexp128::op(uint64_t *a, int64_t &xx)
+{   abort("not done yet");
+    aerror1("bad argument to frexp", (LispObject)((char *)a - 8 + TAG_NUMBERS));
+}
+
+float128_t Frexp128::op(Rat a, int64_t &xx)
+{   int64_t xp;
+    float128_t p = Frexp128::op(a.numerator(), xp);
+    int64_t xq;
+    float128_t q = Frexp128::op(a.denominator(), xq);
+    return frexp_finalize(f128_div(p, q), xp-xq, xx);
+}
+
+float128_t Frexp128::op(Cpx a, int64_t &xx)
+{   aerror1("bad argument for frexp", a.value());
+}
+
+float128_t Frexp128::op(SFlt a, int64_t &xx)
+{   return frexp_finalize(RawFloat128::op(a), 0, xx);
+}
+
+float128_t Frexp128::op(Flt a, int64_t &xx)
+{   return frexp_finalize(RawFloat128::op(a), 0, xx);
+}
+
+float128_t Frexp128::op(double a, int64_t &xx)
+{   return frexp_finalize(RawFloat128::op(a), 0, xx);
+}
+
+float128_t Frexp128::op(LFlt a, int64_t &xx)  // maybe this should return just a double?
+{   return frexp_finalize(a.floatval(), 0, xx);
 }
 
 LispObject Ldexp::op(LispObject a, LispObject b)
@@ -385,17 +528,17 @@ LispObject Ldexp::op(LispObject a, LispObject b)
 
 LispObject Ldexp::op(Fixnum a, Fixnum b)
 {   double d = std::ldexp((double)a.intval(), b.intval());
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d);
 }
 
 LispObject Ldexp::op(uint64_t *a, Fixnum b)
 {   double d = std::ldexp(Float::op(a), b.intval());
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d);
 }
 
 LispObject Ldexp::op(Rat a, Fixnum b)
 {   double d = std::ldexp(Float::op(a), b.intval());
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d);
 }
 
 LispObject Ldexp::op(Cpx a, Fixnum b)
@@ -414,7 +557,7 @@ LispObject Ldexp::op(Flt a, Fixnum b)
 
 LispObject Ldexp::op(double a, Fixnum b)
 {   double d = std::ldexp(a, b.intval());
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d);
 }
 
 LispObject Ldexp::op(LFlt a, Fixnum b)
@@ -428,21 +571,21 @@ LispObject Ldexp::op(LFlt a, Fixnum b)
 // that to leave 0.0 as 0.0 but turn everything else into an infinity.
 
 LispObject Ldexp::op(Fixnum a, uint64_t *b)
-{   if (Minusp::op(b)) return make_boxfloat(0.0, TYPE_DOUBLE_FLOAT);
+{   if (Minusp::op(b)) return make_boxfloat(0.0);
     double d = std::ldexp((double)a.intval(), 100000000);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d);
 }
 
 LispObject Ldexp::op(uint64_t *a, uint64_t *b)
-{   if (Minusp::op(b)) return make_boxfloat(0.0, TYPE_DOUBLE_FLOAT);
+{   if (Minusp::op(b)) return make_boxfloat(0.0);
     double d = std::ldexp(Float::op(a), 100000000);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d);
 }
 
 LispObject Ldexp::op(Rat a, uint64_t *b)
-{   if (Minusp::op(b)) return make_boxfloat(0.0, TYPE_DOUBLE_FLOAT);
+{   if (Minusp::op(b)) return make_boxfloat(0.0);
     double d = std::ldexp(Float::op(a), 100000000);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d);
 }
 
 LispObject Ldexp::op(Cpx a, uint64_t *b)
@@ -468,7 +611,7 @@ LispObject Ldexp::op(double a, uint64_t *b)
         a == a ? 0.0 : 0.0/0.0,
         TYPE_DOUBLE_FLOAT);
     double d = std::ldexp(a, 100000000);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d);
 }
 
 // I am not dealing with a NaN in the float128 case at present.
@@ -509,7 +652,7 @@ LispObject Sqrt::op(Flt a)
 }
 
 LispObject Sqrt::op(double a)
-{   return make_boxfloat(a, TYPE_DOUBLE_FLOAT);
+{   return make_boxfloat(a);
 }
 
 LispObject Sqrt::op(LFlt a)
