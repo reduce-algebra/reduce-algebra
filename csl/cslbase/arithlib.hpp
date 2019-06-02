@@ -859,10 +859,36 @@ inline arithlib_thread_locals *get_thread_locals()
 #endif
 }
 
-// Now for each value that in a simple world would 
+// Now for each value that in a simple world would be just "example" I will
+// at present write "example()"...
 inline int &example()
 {   return get_thread_locals()->example;
 }
+
+// HOWEVER here is how I can make it possible to write just "example" again
+// by wrapping stuff up in a class with overrides for assigmnet and casts!
+// This idea is from http://www.cplusplus.com/doc/tutorial/typecasting/
+// which is available subject to http://creativecommons.org/licenses/by-sa/3.0/
+// class A {};
+// class B {
+// public:
+//   // conversion from A (constructor):
+//   B (const A& x) {}
+//   // conversion from A (assignment):
+//   B& operator= (const A& x) {return *this;}
+//   // conversion to A (type-cast operator)
+//   operator A() {return A();}
+// };
+//
+// int main ()
+// {
+//   A foo;
+//   B bar = foo;    // calls constructor
+//   bar = foo;      // calls assignment
+//   foo = bar;      // calls type-cast operator
+//   return 0;
+// }
+// [end of extract from cplusplus.com]
 
 // When I get to big-integer multiplication I will use two worker threads
 // so that elapsed times for really large multiplications are reduced
@@ -4064,6 +4090,59 @@ inline intptr_t float128_to_ceiling(float128_t d)
 
 #endif
 
+// A cast from a double to a float is entitled, by the C++ standard to
+// make a system-defined choice as to whether to round up or down.
+// I want to guarantee to follow IEEE round-to-nearest-with-tie-break-
+// -to-even, and so I will write a messy function here to achieve that and
+// hence end up with better portability.
+//
+// The two things I think are illustrated here are
+// (1) How horrible this is!
+// (2) That C++11 manages to provide enough facilities for me to implement it
+//     in a manner that I believe is standards-conforming at least on IEEE
+//     platforms with the rounding-style set normally.
+
+inline float cast_to_float(double d)
+{
+// If the argument is a NaN then return a NaN of type float.
+    if (std::isnan(d)) return std::nanf("");
+// In C++ a narrowing cast here where the result would be out of range gives
+// undefined behaviour, so I need to filter that case first. I am going
+// to allow double values that are up to FLT_MAX*(1+2^(-24)) to round
+// down to FLT_MAX - beyond that lies overflow reported as HUGE_VALF which
+// on all modern systems will be an IEEE infinity.
+    double limit = (double)FLT_MAX + (double)FLT_MAX/(double)0x1000000;
+    if (d >= limit) return HUGE_VALF;
+    else if (d <= -limit) return -HUGE_VALF;
+    else if (d >= (double)FLT_MAX) return FLT_MAX;
+    else if (d <= (double)FLT_MIN) return FLT_MIN;
+// Now I am not going to get any overflow - whew.
+    float r1 = (float)d;
+// If the conversion was exact I do not have anything more to do!
+    if ((double)r1 == d) return r1;
+    double err1 = (double)r1 - d;
+    float r2;
+    double err2;
+// Now I am going to find the next consecutive floating point value (in
+// the correct direction) so that r1 and r2 are two values with d between
+// them.
+    if (err1 > 0.0)
+    {   r2 = std::nextafterf(r1, FLT_MIN);
+        err2 = d - (double)r2;
+    }
+    else
+    {   r2 = std::nextafterf(r1, FLT_MAX);
+        err2 = (double)r2 - d;
+        err1 = -err1;
+    }
+    if (err1 < err2) return r1;
+    else if (err2 < err1) return r2;
+// Here I am at a half-way point. Hah - can add my error to a candidate
+// result and the rounding there will then follow the "rounding style" that
+// is in force - which I jolly well expect to be IEEE!
+    return (r1 < r2 ? r1 : r2) + (float)err1;  
+}
+
 // On Cygwin (at least) the std::ldexpf function that is part of C++11
 // is hidden in the header file perhaps because of issues about thread
 // safety in its implementation. I reason here that converting from a
@@ -4072,40 +4151,25 @@ inline intptr_t float128_to_ceiling(float128_t d)
 // overflow leading to a result that is an IEEE infinity.
 
 inline float ldexpf(float a, int n)
-{   return (float)ldexp((double)a, n);
+{   return cast_to_float(ldexp((double)a, n));
 }
 
 inline float Float::op(int64_t a)
 {
-// The bad news here is that I am not confident that C++ will guarantee
-// to round large integer values in any particular way when it converts
-// them to floating point. So I will take careful action so that the
-// conversions that I do are ones that will be exact, and I will perform
-// rounding in IEEE style myself.
-// First I will see if the value is small enough that I can work directly.
-// In fact I would still be safe with the simple case without the "-1" in
-// the netx line, but that would slightly complicate the code lower down.
-    static const int64_t range = ((int64_t)1)<<24;
-    if (a >= -range && a <= range) return (float)a;
-// I will now drop down to a sign and magnitude representation
-    bool sign = a < 0;
-    uint64_t top24 = sign ? -(uint64_t)a : a;
-// Because top24 > 2^24 the number of leading zeros in its representation is
-// at most 39. Ha ha. That guaranteed that the shift below will not overflow
-// and is why I chose my range as I did.
-    int lz = nlz(top24);
-    uint64_t low = top24 << (lz+24);
-    top24 = top24 >> (64-24-lz);
-    if (low > 0x8000000000000000U) top24++;
-    else if (low == 0x8000000000000000U) top24 += (top24 & 1); // round to even
-    assert(top24 >= ((int64_t)1)<<23 &&
-           top24 <= ((int64_t)1)<<24);
-// The next line should never introduce any rounding at all.
-    float d = (float)top24;
-    assert(top24 == (uint64_t)d);
-    d = ldexpf(d, (int)(64-24-lz));
-    if (sign) return -d;
-    else return d;
+// if |a| < 2^52 I can convert to a double exactly
+    if (a > -0x10000000000000 && a < 0x10000000000000)
+        return cast_to_float((double)a);
+    int64_t hi  = a & 0xfffffc0000000000;   // 22 bits
+    int64_t mid = a & 0x000003fffff00000;   // 22 bits
+    int64_t lo  = a & 0x00000000000fffff;   // 20 bits
+    if (hi == 0 || hi == 0xfffffc000000000)
+        return cast_to_float((double)hi + (double)mid + (double)lo);
+// This next line will move a ">0.5ulp" case so that it is visible
+// within just the high 44 bits.  This is because the whole number can
+// only be a 0.5ulp case if all the bits below the top 24 are zero, and
+// for that to happen certainly the low 20 bits must all be zero...
+    if (lo != 0) mid |= 1; 
+    else return cast_to_float((double)hi + (double)mid);
 }
 
 inline float Float::op(uint64_t *a)
@@ -4209,18 +4273,24 @@ inline double Frexp::op(int64_t a, int64_t &x)
 }
 
 inline double Double::op(int64_t a)
-{   int64_t x = 0;
-    double d = Frexp::op(a, x);
-// For truly ridiculously huge inputs the exponent could be one that
-// would not fit into an int. I truncate here so I am certain I will get
-// HUGE_VAL as the result from ldexp().
-    if (x > 10000) x = 10000;
-    return std::ldexp(d, (int)x);
+{
+// One would obviously like to go "return (double)a;" however C++ says
+//  "If the value being converted is in the range of values that can
+//   be represented but the value cannot be represented exactly, it is
+//   an implementation-defined choice of either the next lower or higher
+//   representable value."
+// and I feel I should guarantee to round in IEEE style. I can do that
+// by splitting the integer into two parts. Each of the two casts can deliver
+// a double precision result without need for rounding
+    int64_t hi = a & 0xffffffff00000000;
+    int64_t lo = a & 0x00000000ffffffff;
+    double d = (double)lo;
+    return d + (double)hi;
 }
 
 inline double Frexp::op(uint64_t *a, int64_t &x)
 {   size_t lena = number_size(a);
-    if (lena == 1) return Double::op((int64_t)a[0]);
+    if (lena == 1) return Frexp::op((int64_t)a[0], x);
 // Now I need to do something similar to that done for the int64_t case
 // but written larger. Specifically I want to split my input number into
 // its top 53 bits and then all the rest. I will take separate paths
@@ -10015,6 +10085,7 @@ using arithlib_implementation::float128_to_ceiling;
 //using arithlib_implementation::negative;
 //using arithlib_implementation::number_size;
 
+using arithlib_implementation::cast_to_float;
 }
 
 #endif // __arithlib_hpp

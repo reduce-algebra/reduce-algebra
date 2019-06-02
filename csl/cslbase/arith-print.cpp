@@ -78,6 +78,7 @@ void print_newbignum(LispObject u, bool blankp, int nobreak)
         respond_to_stack_event();
 }
 
+#pragma message ("print_newbighexoctbin")
 void print_newbighexoctbin(LispObject u, int radix, int width,
                         bool blankp, int nobreak)
 //

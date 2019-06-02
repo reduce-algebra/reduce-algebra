@@ -53,7 +53,7 @@
 (setq w (reverse (pair old new)))
 
 (de check1 (a1 fold fnew)
-  (print (list fold (car a1))) % @@@
+% (print (list fold (car a1))) % Reinstate this in case of debugging problems
   (cond
     ((equal (explode (funcall fold (car a1)))
             (explode (funcall fnew (cdr a1)))) nil)
@@ -119,10 +119,32 @@
     (check2 x y 'lcmn 'newlcmn)
     ))
 
-% Now add a pile of floating point values to the list of test cases
+% Now add a pile of floating point values to the list of test cases.
+
+(set!-print!-precision 20)
 
 (dolist (xy w)
-  (setq w (cons (cons (float (car xy)) (newfloat (cdr xy))) w)))
+  (when (lessp (abs (car xy)) 1.0e300)
+      (setq old (float (car xy)))
+      (setq new (newfloat (cdr xy)))
+      (when (not (equal (explode old) (explode new)))
+         (terpri)
+         (princ "Original: ") (print xy)
+         (princ "Old: ") (print old)
+         (princ "New: ") (print new)
+         (stop 1))
+      (setq w (cons (cons old new) w))))
+
+
+(dolist (xy w)
+   (when (not (equal (explode (car xy)) (explode (cdr xy))))
+      (terpri)
+      (princ "Old: ") (print (car xy))
+      (princ "New: ") (print (cdr xy))
+      (stop 1)))
+
+(de sqrtabs (x) (sqrt (abs x)))
+(de newsqrtabs (x) (newsqrt (newabs x)))
 
 (dolist (x w)
   (check1 x 'minus 'newminus)
@@ -135,7 +157,7 @@
   (check1 x 'ceiling 'newceiling)
   (check1 x 'fix 'newfix)
   (check1 x 'frexp 'newfrexp)
-  (check1 x 'sqrt 'newsqrt)
+  (check1 x 'sqrtabs 'newsqrtabs)
   )
 
 (dolist (x w)

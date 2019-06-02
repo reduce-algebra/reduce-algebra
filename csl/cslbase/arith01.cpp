@@ -1030,9 +1030,8 @@ LispObject make_complex(LispObject r, LispObject i)
 }
 
 LispObject make_ratio(LispObject p, LispObject q)
-//
 // By the time this is called (p/q) must be in its lowest terms, q>0
-//
+// If q=1 then this just returns p, so the rational reverts to an integer.
 {   LispObject v;
     if (q == fixnum_of_int(1)) return p;
     stackcheck(p, q);
