@@ -847,6 +847,14 @@ inline Header& flthdr(LispObject v)
 {   return *(Header *)((char *)(v) - TAG_BOXFLOAT);
 }
 
+inline bool is_double_float(LispObject v)
+{   return is_bfloat(v) && type_of_header(flthdr(v)) == TYPE_DOUBLE_FLOAT;
+}
+
+inline bool is_long_float(LispObject v)
+{   return is_bfloat(v) && type_of_header(flthdr(v)) == TYPE_LONG_FLOAT;
+}
+
 //
 // The following tests are valid provided that n is already known to
 // have tag TAG_NUMBERS, i.e. it is a bignum, ratio or complex.

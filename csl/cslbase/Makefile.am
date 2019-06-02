@@ -289,7 +289,8 @@ all-local:	csl.img $(REDUCE_IMG)
 if arithlib
 arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
-		arith-compare.cpp arith-logops.cpp arith-modular.cpp
+		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
+		arith-float128.cpp
 else !arithlib
 arith_sources =
 endif !arithlib
@@ -921,6 +922,7 @@ csl-arith-print.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 csl-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 csl-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 csl-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+csl-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 
 bootstrapreduce-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 bootstrapreduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
@@ -931,6 +933,7 @@ bootstrapreduce-arith-print.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 bootstrapreduce-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 bootstrapreduce-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 bootstrapreduce-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+bootstrapreduce-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 
 reduce-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 reduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
@@ -941,6 +944,7 @@ reduce-arith-print.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 reduce-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 reduce-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 reduce-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+reduce-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
 
 endif arithlib
 

@@ -166,7 +166,6 @@
     (check2 x y 'difference 'newdifference)
     (check2 x y 'times 'newtimes)
     (check2 x y 'quotient 'newquotient)
-    (check2 x y 'remainder 'newremainder)
     (check2 x y 'greaterp 'newgreaterp)
     (check2 x y 'lessp 'newlessp)
     (check2 x y 'geq 'newgeq)

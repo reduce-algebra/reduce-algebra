@@ -2065,6 +2065,42 @@ bool Onep::op(LFlt a)
 {   return f128_eq(a.floatval(), i64_to_f128(1));
 }
 
+bool MinusOnep::op(LispObject a)
+{   return number_dispatcher::unary<bool,MinusOnep>("minusonep", a);
+}
+
+bool MinusOnep::op(Fixnum a)
+{   return a.value() == fixnum_of_int(-1);
+}
+
+bool MinusOnep::op(uint64_t *a)
+{   return false;
+}
+
+bool MinusOnep::op(Rat a)
+{   return MinusOnep::op(a.numerator()) && Onep::op(a.denominator());
+}
+
+bool MinusOnep::op(Cpx a)
+{   return MinusOnep::op(a.real_part()) && Zerop::op(a.imag_part());
+}
+
+bool MinusOnep::op(SFlt a)
+{   return a.floatval() == -1.0;
+}
+
+bool MinusOnep::op(Flt a)
+{   return a.floatval() == -1.0;
+}
+
+bool MinusOnep::op(double a)
+{   return a == -1.0;
+}
+
+bool MinusOnep::op(LFlt a)
+{   return f128_eq(a.floatval(), i64_to_f128(-1));
+}
+
 bool Zerop::op(LispObject a)
 {   return number_dispatcher::unary<bool,Zerop>("zerop", a);
 }
