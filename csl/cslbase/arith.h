@@ -96,7 +96,7 @@ extern unsigned char msd_table[256], lsd_table[256];
 #define top_bit_set(n)     (((int32_t)(n)) < 0)
 #define top_bit(n)         ((int32_t)(((uint32_t)(n)) >> 31))
 #define set_top_bit(n)     ((int32_t)((uint32_t)(n) | (uint32_t)0x80000000U))
-#define clear_top_bit(n)   ((int32_t)(n) & 0x7fffffff)
+#define clear_top_bit(n)   ((int32_t)((uint32_t)(n) & 0x7fffffff))
 
 // As with fixnum_of_int I need to take care here that the arithmetic I do
 // here can not overflow, since if it did the behaviour would be undefined

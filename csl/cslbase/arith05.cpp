@@ -135,8 +135,8 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
             int i, j;
             if (((int32_t)d1) < 0)
             {   negativep = true;
-                d0 = clear_top_bit(-(int32_t)d0);
-                if (d0 == 0) d1 = -(int32_t)d1;
+                d0 = clear_top_bit(-(uint32_t)d0);
+                if (d0 == 0) d1 = -(uint32_t)d1;
                 else d1 = ~d1;
             }
             d0high = ((uint32_t)d0)>>16;
@@ -223,7 +223,8 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         sign = true;
         for (i=0; i<len; i++)
         // negate the number so I am working with a +ve value
-        {   carry = clear_top_bit(~bignum_digits(u)[i]) + top_bit(carry);
+        {   carry = ADD32(clear_top_bit(~bignum_digits(u)[i]),
+                          top_bit(carry));
             bignum_digits(w)[i] = clear_top_bit(carry);
         }
     }

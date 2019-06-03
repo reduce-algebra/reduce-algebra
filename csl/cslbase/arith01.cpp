@@ -1306,7 +1306,7 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
     pop(a2);
 // Add in the lowest digit by hand because at this stage s1 can have
 // more than 31 bits and so intrudes beyond there.
-    uint32_t d0 = bignum_digits(a2)[0] + clear_top_bit(s1);
+    uint32_t d0 = bignum_digits(a2)[0] + (uint32_t)clear_top_bit(s1);
     bignum_digits(c)[0] = clear_top_bit(d0);
     s1 = ASR((int64_t)s1, 31);
     if (top_bit_set(d0)) s1 = s1 + 1;
@@ -1316,9 +1316,9 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
     {   uint32_t s = bignum_digits(a2)[i] + (s1 & 0x7fffffff);
         s1 = ASR((int64_t)s1, 31); // Note that s1 was signed so this is -1, 0 or 1
         bignum_digits(c)[i] = s & 0x7fffffff;
-        s1 += top_bit(s);
+        s1 = ADD32(s1, top_bit(s));
     }
-    s1 = s1 + (int32_t)bignum_digits(a2)[i];
+    s1 = ADD32(s1, (int32_t)bignum_digits(a2)[i]);
     if (!signed_overflow(s1))         // did it overflow?
     {
 // Here the most significant digit did not produce an overflow, but maybe
@@ -1521,18 +1521,18 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
 // copies of 0 or -1 as needbe to get up to the length of a.
 // Note that the index "i" is left over from the previous loop...
     {   s = (int32_t)bignum_digits(b)[i];
-        carry =  bignum_digits(a)[i] + clear_top_bit(s) +
+        carry =  bignum_digits(a)[i] + (uint32_t)clear_top_bit(s) +
                  (uint32_t)top_bit(carry);
         bignum_digits(c)[i] = clear_top_bit(carry);
         if (s < 0) s = -1;
         else s = 0;
         for (i++; i<la; i++)
-        {   carry = bignum_digits(a)[i] + clear_top_bit(s) +
+        {   carry = bignum_digits(a)[i] + (uint32_t)clear_top_bit(s) +
                     (uint32_t)top_bit(carry);
             bignum_digits(c)[i] = clear_top_bit(carry);
         }
     }
-    carry = (int32_t)bignum_digits(a)[i] + s +
+    carry = (int32_t)bignum_digits(a)[i] + (uint32_t)s +
             (uint32_t)top_bit(carry);
 // I need to know if the top digit leads to 31-bit signed overflow.
     if (!signed_overflow(carry))
