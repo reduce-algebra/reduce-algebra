@@ -1865,7 +1865,7 @@ inline LispObject plus_d_i(LispObject a1, LispObject a2)
 }
 
 inline LispObject plus_d_b(LispObject a1, LispObject a2)
-{   return plus_b_d(a1, a1);
+{   return plus_b_d(a2, a1);
 }
 
 inline LispObject plus_d_r(LispObject a1, LispObject a2)
@@ -2291,7 +2291,7 @@ inline LispObject difference_d_b(LispObject a1, LispObject a2)
 {   int x;
     double a2d = bignum_to_float(a2, length_of_header(numhdr(a2)), &x);
     double d = double_float_val(a1) - ldexp(a2d, x);
-    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
 }
 
 inline LispObject difference_d_r(LispObject a1, LispObject a2)
