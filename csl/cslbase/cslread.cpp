@@ -628,9 +628,9 @@ LispObject intern(size_t len, bool escaped)
 LispObject intern_hex(size_t len)
 {   size_t i;
     LispObject v = fixnum_of_int(0);
-    int32_t d = 0, d1 = 10;
+    int32_t d = 0, d1 = 16;
     for (i=2; i<boffop; i++)
-    {   if (d1 == 0x10000000 || i == boffop-1)
+    {   if (d1 == 0x1000000 || i == boffop-1)
         {   d = 16*d + (int32_t)value_in_radix(boffo_char(i), 16);
             v = times2(v, fixnum_of_int(d1));
             v = plus2(v, fixnum_of_int(d));

@@ -22,7 +22,7 @@
 
 % At present I will not be testing using the value 0. That is mainly because
 % it causes pain in division. I will need a separate set of tests to
-// combine it with other values.
+% combine it with other values.
 
 (setq old (setq new '(1 -1)))
 

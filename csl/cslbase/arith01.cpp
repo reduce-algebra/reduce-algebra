@@ -1313,12 +1313,12 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // Now s1 is at most 29 bits... I can treat it as a carry from the
 // previous digit. Note that it may be either positive or negative
     for (i=1; i<len-1; i++)
-    {   uint32_t s = bignum_digits(a2)[i] + (s1 & 0x7fffffff);
+    {   uint32_t s = bignum_digits(a2)[i] + (uint32_t)(s1 & 0x7fffffff);
         s1 = ASR((int64_t)s1, 31); // Note that s1 was signed so this is -1, 0 or 1
         bignum_digits(c)[i] = s & 0x7fffffff;
-        s1 = ADD32(s1, top_bit(s));
+        s1 = s1 + top_bit(s);
     }
-    s1 = ADD32(s1, (int32_t)bignum_digits(a2)[i]);
+    s1 = ADD32(s1, bignum_digits(a2)[i]);
     if (!signed_overflow(s1))         // did it overflow?
     {
 // Here the most significant digit did not produce an overflow, but maybe

@@ -238,12 +238,52 @@ static LispObject Nfix(LispObject env, LispObject a1)
 {   return onevalue(Fix::op(a1));
 }
 
+static LispObject Ntruncate(LispObject env, LispObject a1)
+{   return onevalue(Truncate::op(a1));
+}
+
 static LispObject Nfloor(LispObject env, LispObject a1)
 {   return onevalue(Floor::op(a1));
 }
 
 static LispObject Nceiling(LispObject env, LispObject a1)
 {   return onevalue(Ceiling::op(a1));
+}
+
+static LispObject Nftruncate(LispObject env, LispObject a1)
+{   return onevalue(Ftruncate::op(a1));
+}
+
+static LispObject Nffloor(LispObject env, LispObject a1)
+{   return onevalue(Ffloor::op(a1));
+}
+
+static LispObject Nfceiling(LispObject env, LispObject a1)
+{   return onevalue(Fceiling::op(a1));
+}
+
+static LispObject Ntruncate(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Truncate::op(a1, a2));
+}
+
+static LispObject Nfloor(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Floor::op(a1, a2));
+}
+
+static LispObject Nceiling(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Ceiling::op(a1, a2));
+}
+
+static LispObject Nftruncate(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Ftruncate::op(a1, a2));
+}
+
+static LispObject Nffloor(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Ffloor::op(a1, a2));
+}
+
+static LispObject Nfceiling(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Fceiling::op(a1,  a2));
 }
 
 static LispObject Nfloat128(LispObject env, LispObject a1)
@@ -1076,8 +1116,12 @@ setup_type const arith_setup[] =
     {"newfloat",             G0W1,               Nfloat,             G2W1,               G3W1,               G4W1},
     {"newfloat128",          G0W1,               Nfloat128,          G2W1,               G3W1,               G4W1},
     {"newfix",               G0W1,               Nfix,               G2W1,               G3W1,               G4W1},
-    {"newfloor",             G0W1,               Nfloor,             G2W1,               G3W1,               G4W1},
-    {"newceiling",           G0W1,               Nceiling,           G2W1,               G3W1,               G4W1},
+    {"newtruncate",          G0W1,               Ntruncate,          Ntruncate,          G3W1,               G4W1},
+    {"newfloor",             G0W1,               Nfloor,             Nfloor,             G3W1,               G4W1},
+    {"newceiling",           G0W1,               Nceiling,           Nceiling,           G3W1,               G4W1},
+    {"newftruncate",         G0W1,               Nftruncate,         Nftruncate,         G3W1,               G4W1},
+    {"newffloor",            G0W1,               Nffloor,            Nffloor,            G3W1,               G4W1},
+    {"newfceiling",          G0W1,               Nfceiling,          Nfceiling,          G3W1,               G4W1},
     {"newfrexp",             G0W1,               Nfrexp,             G2W1,               G3W1,               G4W1},
     {"newldexp",             G0W1,               G1W2,               Nldexp,             G3W2,               G4W1},
     {"newexpt",              G0W2,               G1W2,               Nexpt,              G3W2,               G4W2},

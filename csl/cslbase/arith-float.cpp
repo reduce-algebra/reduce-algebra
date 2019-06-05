@@ -271,6 +271,43 @@ LispObject Fix::op(LFlt a)
 {   return arithlib_lowlevel::float128_to_bignum(a.floatval());
 }
 
+LispObject Truncate::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Truncate>("floor", a);
+}
+
+LispObject Truncate::op(Fixnum a)
+{   return a.value();
+}
+
+LispObject Truncate::op(uint64_t *a)
+{   return (LispObject)((char *)a - 8 + TAG_NUMBERS);
+}
+
+LispObject Truncate::op(Rat a)
+{   return Quotient::op(a.numerator(), a.denominator());
+#pragma message ("Truncate(Rat)")
+}
+
+LispObject Truncate::op(Cpx a)
+{   aerror1("bad argument for floor", a.value());
+}
+
+LispObject Truncate::op(SFlt a)
+{   return arithlib_lowlevel::double_to_floor(a.floatval());
+}
+
+LispObject Truncate::op(Flt a)
+{   return arithlib_lowlevel::double_to_floor(a.floatval());
+}
+
+LispObject Truncate::op(double a)
+{   return arithlib_lowlevel::double_to_floor(a);
+}
+
+LispObject Truncate::op(LFlt a)
+{   return arithlib_lowlevel::float128_to_floor(a.floatval());
+}
+
 LispObject Floor::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Floor>("floor", a);
 }
@@ -342,6 +379,117 @@ LispObject Ceiling::op(double a)
 }
 
 LispObject Ceiling::op(LFlt a)
+{   return arithlib_lowlevel::float128_to_ceiling(a.floatval());
+}
+
+LispObject Ftruncate::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Ftruncate>("floor", a);
+}
+
+LispObject Ftruncate::op(Fixnum a)
+{   return a.value();
+}
+
+LispObject Ftruncate::op(uint64_t *a)
+{   return (LispObject)((char *)a - 8 + TAG_NUMBERS);
+}
+
+LispObject Ftruncate::op(Rat a)
+{   return Quotient::op(a.numerator(), a.denominator());
+#pragma message ("Ftruncate(Rat)")
+}
+
+LispObject Ftruncate::op(Cpx a)
+{   aerror1("bad argument for floor", a.value());
+}
+
+LispObject Ftruncate::op(SFlt a)
+{   return arithlib_lowlevel::double_to_floor(a.floatval());
+}
+
+LispObject Ftruncate::op(Flt a)
+{   return arithlib_lowlevel::double_to_floor(a.floatval());
+}
+
+LispObject Ftruncate::op(double a)
+{   return arithlib_lowlevel::double_to_floor(a);
+}
+
+LispObject Ftruncate::op(LFlt a)
+{   return arithlib_lowlevel::float128_to_floor(a.floatval());
+}
+
+LispObject Ffloor::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Ffloor>("floor", a);
+}
+
+LispObject Ffloor::op(Fixnum a)
+{   return a.value();
+}
+
+LispObject Ffloor::op(uint64_t *a)
+{   return (LispObject)((char *)a - 8 + TAG_NUMBERS);
+}
+
+LispObject Ffloor::op(Rat a)
+{   return Quotient::op(a.numerator(), a.denominator());
+#pragma message ("Ffloor(Rat)")
+}
+
+LispObject Ffloor::op(Cpx a)
+{   aerror1("bad argument for floor", a.value());
+}
+
+LispObject Ffloor::op(SFlt a)
+{   return arithlib_lowlevel::double_to_floor(a.floatval());
+}
+
+LispObject Ffloor::op(Flt a)
+{   return arithlib_lowlevel::double_to_floor(a.floatval());
+}
+
+LispObject Ffloor::op(double a)
+{   return arithlib_lowlevel::double_to_floor(a);
+}
+
+LispObject Ffloor::op(LFlt a)
+{   return arithlib_lowlevel::float128_to_floor(a.floatval());
+}
+
+LispObject Fceiling::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Fceiling>("ceiling", a);
+}
+
+LispObject Fceiling::op(Fixnum a)
+{   return a.value();
+}
+
+LispObject Fceiling::op(uint64_t *a)
+{   return (LispObject)((char *)a - 8 + TAG_NUMBERS);
+}
+
+LispObject Fceiling::op(Rat a)
+{   return Quotient::op(a.numerator(), a.denominator());
+#pragma message ("Fceiling(Rat)")
+}
+
+LispObject Fceiling::op(Cpx a)
+{   aerror1("bad argument for ceiling", a.value());
+}
+
+LispObject Fceiling::op(SFlt a)
+{   return arithlib_lowlevel::double_to_ceiling(a.floatval());
+}
+
+LispObject Fceiling::op(Flt a)
+{   return arithlib_lowlevel::double_to_ceiling(a.floatval());
+}
+
+LispObject Fceiling::op(double a)
+{   return arithlib_lowlevel::double_to_ceiling(a);
+}
+
+LispObject Fceiling::op(LFlt a)
 {   return arithlib_lowlevel::float128_to_ceiling(a.floatval());
 }
 

@@ -5,7 +5,7 @@
 This note is to help me while I design and implement one, and comments on
 changes from a previous world. This is a fresh version of these notes and
 is being started in April 2016. I had done some redesign in October 2017, but
-the latest changes are from June 2018 - no now May 2019!
+the latest changes are from June 2018 - no now May/June 2019!
 
 
 This year's plan is that memory exists in two large pools that I might
@@ -90,6 +90,21 @@ LispObject cons(LispObject a, LispObject b)
 
 So what I say elsewhere about having per-thread allocation blocks is
 maybe now outdated!
+
+Then as an extra related thought I could let there be a sort of soft break
+every few kilobytes which arranges that associated with heap memory there is
+an index vector such that for each page of it I store a pointer to the
+start of an object. Then when I have an ambigious pointer to process I can
+observe which page it is in and from that get a pointer to the first
+object-start within that page and thence scan until I find the exact object
+that must be pinned. The alternatives that I can think of include putting
+all 2-word objects (ie cons cslls) in dedicated pages and having bitmaps
+that tag the first word of each larger object. Well I guess that cons cells
+are really common so maybe I have cons cells segregated so that any address
+in a cons page knows what it refers to, and have my "first object in page"
+info for each page that contains vectors. Note that if one has a huge vector
+that some pages will lie totally within it and so will not have any object
+start to mention.
 
 ============
 
@@ -334,6 +349,64 @@ int main(int argc, char *argv[])
     std::cout << x << " and " << y << std::endl;
     return 0;
 }
+
+
+Hmmm the above may be overkill. Let me consider places where one writes to
+old material. Well the first and very common case is to locations within
+symbol-heads. In Reduce if EVERYTHING is loaded then teher are about 44K
+symbols. Chain all those (using weak pointers so that symbols can be subject
+to GC?) and always scavenge from them.The fields that may contain up-pointers
+will be value, plist, fastgets and environment. Arrange that any update to
+symname (eg when a gensym crystalizes) goes straight into the stable heap.
+This is work for a small phase of garbage collection but is probably OK, and
+means that writes there can all be cheap. PUT and REMPROP will need review
+either to make them activate a write barrier or to leave old data unaltered.
+I think that adds to the cost of PUT, but some extra will be unavoidable.
+The second issue will be RPLACx operations, including NREVERSE, CONC and the
+rather small number of others. Putting software write barriers into them
+should be a reasdonably modest job, and the cost implications are liable to
+be small. Cases where the code goes "a = nreverse a; ... ; a = nreverse a;"
+putting the list back soon after it has been corrupted would not need a
+write barrier if there was no chance of garbage collection within the "..."
+segment, so spotting that idiom will be a good idea. And reviewing cases
+where lists are built up backwards and then destructively reversed may not
+need a barrier in the special case that ALL the new list is in a "recent"
+not an "ancient" region of memory. Some thought will be required there.
+Note that NREVERSE updates many items, but the idiom that builds
+a fresh list "backwards" and then uses NREVERSE to rearrange it will not need
+to trigger a write barrier in the case that the earliest new item in the
+list is still not in the "old" heap. So maybe that sort of code can be
+mapped onto a version that checks for that situation and does a REVERSE if
+it applied and an NREVERSE otherwise.
+Writing into vectors and hash tables is another issue. Each such write needs
+a write barrier, but again it will be easy to see where to put those in. Also
+I think it may make sense for the write barrier for updating a vector to
+compare to see if the new write is into the vector that most recently triggered
+a write barrier - on the expectation that vector writes will often happen in
+clumps all to just one vector, and that the case of alternating updates
+to several distinct vectors will be much less common. Maybe.
+
+Now how shall I implement the write barrier? Well today's idea is to use the
+thread safe lock-avoiding scheme using a std::atomic pointer so that each
+individual write appends the exact address of the altered object to a
+table. Maybe that should be a megabyte or so in size? There is a real prospect
+of multiple updates to some objects. When the table becomes full then
+until it is tidy again no thread may add to it - this is acheived by virtue
+of its fringe being above its limit, so that is not reset until it is clear.
+All values in it are consolided into a hash table so that duplicated are
+got rid of. In good cases this hash table will be a lot smaller than the
+whole vector. When the hash table becomes too full a garbage collection must
+be triggered. One probably wants to tune table size such that this happens
+about when garbage collection was needed anyway, or so that most garbage
+collections are trigerred by other events (and they clear the vector and
+hash table). This makes the overheap on a RPLACx or PUTV operation something
+like
+    vecloc = fringe.fetch_add(sizeof(LispObject));
+    if (fringe.load() >= limit.load())
+        vecloc = move_vector_to_hash_table();
+    *vecloc = object_to_be_updated;
+    qcar(object_to_be_updated) = ...
+
 
 At present while I have looked into concurrency between a collector and the
 main mutator it seems to me that if one uses a copying collector that the
