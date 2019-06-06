@@ -97,7 +97,7 @@ flag('(yesp1),'lose);
 % and redefined in several files:
 flag('(red!-char!-downcase),'lose);
 
-% orderp is needed in rlisp/switch, so define it here and prevent if
+% orderp is needed in rlisp/switch, so define it here and prevent it
 % being redefined as it would be for PSL:
 remflag('(orderp),'lose);
 

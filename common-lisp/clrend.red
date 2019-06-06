@@ -302,28 +302,6 @@ put('comp, 'simpfg, '((t (compilation t))
 #endif
 
 
-#if (not (memq 'clisp lispsystem!*))
-% These two functions are defined in arith/smlbflot.red, but
-% smallcompress is re-implemented in sl-on-cl.lisp and smallsplit is
-% used only in smallcompress, so is no longer required:
-flag('(smallcompress smallsplit),'lose);
-
-% This procedure is defined in "rlisp88/inspect.red", but it prints
-% all letters as lower case.  This version fixes that:
-remflag('(i!&prn), 'lose);
-
-procedure i!&prn x;
-   % I!&PRN(x) -- Display the characters of list x and then terminate
-   % the line.
-   begin scalar !*printlower;
-      for each c in x do prin2 c;
-   	  terpri()
-   end;
-
-flag('(i!&prn), 'lose);
-#endif
-
-
 remflag('(systo_get!-resource!-directory), 'lose);
 
 % This function is called in redlog but only defined for PSL or CSL
@@ -390,6 +368,8 @@ symbolic procedure rename!-file(fromname, toname)$
 % differently from PSL/CSL, I need explicitly to apply intern to
 % identifiers but not to strings handled within this procedure until I
 % can think of a way to modify sl-on-cl that works.
+
+fluid '(nonterminals);
 
 remflag('(lalr_collect_terminals), 'lose);
 

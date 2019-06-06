@@ -23,14 +23,96 @@
 #+CLISP (setq custom:*suppress-check-redefinition* t
               custom:*compile-warnings* nil)
 
+
+;; Support case-sensitive and case-inverting Common Lisp on
+;; implementations other than CLISP, modelled on that in CLISP.
+
+#-CLISP
+(defpackage :cs-common-lisp
+  (:nicknames :cs-cl)
+  (:documentation "Case-sensitive and case-inverting Common Lisp")
+  (:use :common-lisp)
+  (:shadow :symbol-name :intern :find-symbol
+           :princ-to-string :prin1-to-string))
+
+#-CLISP
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  ;; Based on CLISP source file "case-sensitive.lisp":
+  (let ((cs-cl-package (find-package :cs-common-lisp)))
+    ;; For each symbol standard-sym in CL find the same symbol cs-sym in
+    ;; CS-CL and export it:
+    (do-external-symbols (standard-sym :common-lisp)
+      (let ((cs-sym (find-symbol (symbol-name standard-sym) cs-cl-package)))
+        ;; (print cs-sym)
+        (export (list cs-sym) cs-cl-package)))))
+
+;; #-CLISP
+;; (defpackage :cs-common-lisp-user
+;;   (:nicknames :cs-cl-user)
+;;   (:documentation "Case-sensitive and case-inverting Common Lisp user")
+;;   (:use :common-lisp-user))
+
+;; The CLISP "CS-COMMON-LISP" package provides several case-inverted
+;; functions, among which I only use the following:
+
+;; cs-cl:symbol-name
+;;   returns the case-inverted symbol name.
+;; cs-cl:intern
+;; cs-cl:find-symbol
+;;   work consistently with cs-cl:symbol-name.
+;; cs-cl:shadow
+;;   converts a SYMBOL to a STRING and therefore exist in a variant
+;;   that uses cs-cl:symbol-name instead of SYMBOL-NAME.
+
+;; (in-package :cs-common-lisp)
+
+#-CLISP
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+(defun cs-cl::%string-invert-case (s)
+  "Invert the case of each letter in a string."
+  ;; The consequences are undefined if a symbol name is ever modified.
+  ;; Hence the following copy is necessary, at least in SBCL...
+  (setq s (copy-seq s))
+  (loop for i below (length s) with c do
+       (setq c (aref s i))
+       (if (both-case-p c)
+           (setf (aref s i)
+                 (if (lower-case-p c) (char-upcase c) (char-downcase c)))))
+  s)
+
+(defun cs-cl:symbol-name (s)
+  "symbol-name symbol => name"
+  (cs-cl::%string-invert-case (cl:symbol-name s)))
+
+(defun cs-cl:intern (s)
+  "intern string => symbol"
+  (cl:intern (cs-cl::%string-invert-case s)))
+
+(defun cs-cl:find-symbol (s)
+  "find-symbol string => symbol"
+  (cl:find-symbol (cs-cl::%string-invert-case s)))
+
+(defun cs-cl:princ-to-string (u)
+  "As cl:princ-to-string but invert case of a symbol."
+  (if (symbolp u) (cs-cl::%string-invert-case (cl:princ-to-string u))
+      (cl:princ-to-string u)))
+
+(defun cs-cl:prin1-to-string (u)
+  "As cl:prin1-to-string but invert case of a symbol."
+  (if (symbolp u) (cs-cl::%string-invert-case (cl:prin1-to-string u))
+      (cl:prin1-to-string u)))
+)                               ; end progn setting up :cs-common-lisp
+
+
 #+SBCL (eval-when (:compile-toplevel :load-toplevel :execute)
          (require :sb-posix))
 
 (defpackage :standard-lisp
   (:nicknames :sl)
   (:documentation "Lower-case Standard Lisp on Common Lisp")
-  (:modern t)
-  (:use :common-lisp)
+  #+CLISP (:case-sensitive t) #+CLISP (:case-inverted t)
+  (:use :cs-common-lisp)
 
   ;; Best to use the shadow option here and not separate calls of the
   ;; shadow function, mainly because the shadow function is not
@@ -39,7 +121,7 @@
            :gensym :intern :get :remprop :error :expt :float :map
            :mapc :mapcan :mapcar :mapcon :maplist :append :assoc
            :delete :length :member :sublis :subst :rassoc :apply :eval
-           :function :close :open :princ :print :prin1 :prin2 :read
+           :function :close :open :princ :print :prin1 :read
            :terpri :complexp :union :compile-file :load :time
            :char-downcase :char-upcase :string-downcase :mod
            :char-code)
@@ -52,9 +134,10 @@
 
 (in-package :standard-lisp)
 
-(defun %intern-character (c)
-  "Convert character C to an interned symbol."
-  (cs-cl:intern (string c)))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun %intern-character (c)
+    "Convert character C to an interned symbol."
+    (cs-cl:intern (string c))))
 
 ;; The following definitions roughly follow the order in the Standard
 ;; Lisp Report.
@@ -97,7 +180,7 @@ system dependent messages may be displayed.")
 ;; by SET or SETQ.
 
 ;; **********************************************************************
-;; Make CLISP REDUCE case-insensitive for now to facilitate comparison
+;; Make REDUCE case-insensitive for now to facilitate comparison
 ;; with the test output from CSL/PSL REDUCE.  Later, could make it
 ;; case-sensitive with a switch *legacy that enables *raise for
 ;; compatibility with legacy REDUCE.
@@ -477,7 +560,7 @@ occurs:
              (t
               ;; Delete a single ! but replace !! by !
               ;; In PSL, an identifier can contain any of the special characters
-              ;; + - $ & * / : ; | < = > ? ˆ _ { } ˜ @
+              ;; + - $ & * / : ; | < = > ? ^ _ { } ~ @
               ;; and hence not any of
               ;; space ! " ' ( ) , . # % [ \ ] `
               ;; unless they are escaped with ! (which must be handled specially).
@@ -505,12 +588,13 @@ Explode returns a list of interned single-character identifiers
 representing the characters required to print the S-expression U in a
 way that could be read by Lisp.  It is implemented by effectively
 printing (using prin1) to a list.  E.g.
-1 lisp> (explode ’foo)
+1 lisp> (explode 'foo)
 \(f o o)
-2 lisp> (explode ’(a . b))
+2 lisp> (explode '(a . b))
 \(!( a !  !. !  b !))"
   ;; Add support for vectors?  Share code with print routines?
   (if (consp u)
+      ;; Exploding a cons:
       (let ((ll (list (explode (car u)) (list '|(|))))
         (loop while (consp (setq u (cdr u)))
            do (push (list '| |) ll)
@@ -520,6 +604,7 @@ printing (using prin1) to a list.  E.g.
           (push (explode u) ll))
         (push (list '|)|) ll)
         (cs-cl:apply #'nconc (nreverse ll)))
+      ;; Exploding an atom:
       (cs-cl:map
        'list
        #'%intern-character
@@ -1103,7 +1188,8 @@ dependent format."
           (if msgp (format t "~&***** CL error: ~a~%" err))
           ;; This doesn't really work because it breaks in the context
           ;; of the errorset rather than the error!
-          (break "errorset(~a)" u)
+          ;; It also breaks building bootstrap REDUCE on SBCL!
+          ;; (break "errorset(~a)" u)
           999))))
 
 
@@ -2548,7 +2634,10 @@ PRIN2-like version of EXPLODE without escapes or double quotes."
 
 (defun explode2uc (u)                   ; defined in "pslrend.red"
   "Upper-case version of explode2."
-  (let ((*print-case* :upcase)) (explode2 u)))
+  ;; NB: downcase because of symbol name case inversion!
+  (cl:map 'list
+          #'(lambda (c) (cl:intern (cl:string c)))
+          (cl:string-downcase (cl:princ-to-string u))))
 
 (defun concat2 (s1 s2)
   "Concatenates its two string arguments, returning the newly created string."
@@ -2758,13 +2847,6 @@ Returns the union of sets X and Y."
 (defalias 'lcmn 'cs-cl:lcm)
 (defalias 'yesp1 'cs-cl:y-or-n-p)
 
-#-CLISP                                 ; not required on CLISP
-(defun smallcompress (li)
-  "Compress list LI to a string representing a number (only).
-Defined and called only in \"arith/smlbflot.red\" and redefined here
-to down-case the E in floats."
-  (cs-cl:string-downcase (cs-cl:map 'string #'character li)))
-
 
 ;;; Operating system interface
 ;;; ==========================
@@ -2827,7 +2909,7 @@ not sucessful, the value Nil is returned."
                                        (list (file-namestring dir))))))
   ;; Expand environment variables, "." and "..":
   (setq dir (substitute-in-file-name (namestring dir)))
-  (setq file (expand-file-name file))
+  (setq dir (expand-file-name dir))
   (setq dir (merge-pathnames dir))
   (and (probe-file dir)
        ;; Return a more useful value than t:
@@ -3025,7 +3107,7 @@ When all done, execute FASLEND;~2%" name))
   (standard-lisp)
   (begin))
 
-(import '(standard-lisp start-reduce) :cs-cl-user)
+(import '(standard-lisp start-reduce) #+CLISP :cs-cl-user #+SBCL :cl-user)
 
 (defun reset-readtable ()
   "Switch to Common Lisp read syntax."

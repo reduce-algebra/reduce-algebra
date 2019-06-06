@@ -60,6 +60,8 @@ $runbootstrap << XXX &> log/build.blg
 (begin)
 symbolic; $force
 
+off redefmsg;
+
 package!-remake2('clprolo, nil);
 package!-remake2('revision, 'support);
 package!-remake2('clrend, nil);
@@ -106,6 +108,8 @@ $runbootstrap << XXX &> log/$p.blg
 (begin)
 symbolic; $force
 
+off redefmsg;
+
 begin
   scalar w, i, s;
   i := open("$reduce/packages/package.map", 'input);
@@ -129,7 +133,7 @@ if [ "sl-on-cl.lisp" -nt "sl-on-cl.$faslext" ]
 then
 echo +++++ Compiling sl-on-cl
 $runlisp << XXX &> log/sl-on-cl.blg
-(or (compile-file "sl-on-cl") (exit 1))
+(or (compile-file "sl-on-cl") (exit #+SBCL :code 1))
 XXX
 fi || { echo '***** Compilation failed'; exit; }
 
@@ -138,7 +142,7 @@ then
 echo +++++ Compiling trace
 $runlisp << XXX &> log/trace.blg
 (load "sl-on-cl")
-(or (compile-file "trace") (exit 1))
+(or (compile-file "trace") (exit #+SBCL :code 1))
 XXX
 fi || { echo '***** Compilation failed'; exit; }
 
@@ -225,13 +229,11 @@ on verboseload;
 
 if '$p eq 'fps then load_package limits,factor,specfn,sfgamma
 else if '$p eq 'mrvlimit then load_package taylor
+% Temporary hacks to avoid build errors:
 else if '$p eq 'rubi_red then flag('(flush),'rlisp)
-% Temporary hack to avoid build errors:
 else if '$p eq 'tmprint then <<
    lispsystem!* := 'psl . lispsystem!*;
-   switch usermode >>
-% Temporary hack to partially fix a letter-case issue:
-else if 'sbcl memq lispsystem!* and '$p eq 'sstools then put('d,'prifn,'bigdpri); % 'd was '!d
+   switch usermode >>;
 
 load remake;
 
