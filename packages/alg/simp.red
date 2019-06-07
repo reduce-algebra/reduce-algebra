@@ -863,8 +863,7 @@ symbolic procedure radf(u,n);
       while not domainp u do
      <<y := comfac u;
        if car y
-         then <<x := if !*precise_complex %and not realvaluedp!-sf u
-                       then 0 . pdeg car y
+         then <<x := if !*precise_complex then 0 . pdeg car y
                       else divide(pdeg car y,n);
             if car x neq 0
               then ipart := multf(
