@@ -1,4 +1,4 @@
-// Big-number arithmetic.                                  A C Norman, 2019
+// Big Number arithmetic.                                  A C Norman, 2019
 
 // To use this, go "#include "arithlib.hpp".
 
@@ -777,7 +777,7 @@ inline void *tls_load()
 {   return (void *)TlsGetValue(get_my_TEB_slot());
 }
 
-void *tls_store(void *v)
+inline void *tls_store(void *v)
 {   return TlsSetValue(get_my_TEB_slot(), v);
 }
 
@@ -1079,14 +1079,16 @@ constexpr inline int64_t int_of_handle(intptr_t n);
 inline intptr_t string_to_bignum(const char *s);
 inline intptr_t int_to_bignum(int64_t n);
 inline intptr_t unsigned_int_to_bignum(uint64_t n);
-inline intptr_t double_to_bignum(double d);
-inline intptr_t double_to_floor(double d);
-inline intptr_t double_to_ceiling(double d);
+inline intptr_t round_double_to_int(double d);
+inline intptr_t trunc_double_to_int(double d);
+inline intptr_t floor_double_to_int(double d);
+inline intptr_t ceiling_double_to_int(double d);
 #ifdef softfloat_h
-inline intptr_t float128_to_bignum(float128_t d);
-inline intptr_t float128_to_floor(float128_t d);
-inline intptr_t float128_to_ceiling(float128_t d);
-#endif
+inline intptr_t round_float128_to_int(float128_t d);
+inline intptr_t trunc_float128_to_int(float128_t d);
+inline intptr_t floor_float128_to_int(float128_t d);
+inline intptr_t ceiling_float128_to_int(float128_t d);
+#endif // softfloat_h
 inline intptr_t uniform_positive(size_t n);
 inline intptr_t uniform_signed(size_t n);
 inline intptr_t uniform_upto(intptr_t a);
@@ -2199,7 +2201,7 @@ class Eqn
     static bool op(uint64_t *, float128_t);
     static bool op(float128_t, int64_t);
     static bool op(float128_t, uint64_t *);
-#endif
+#endif // softfloat_h
 };
 
 class Neqn
@@ -2223,7 +2225,7 @@ class Neqn
     static bool op(uint64_t *, float128_t);
     static bool op(float128_t, int64_t);
     static bool op(float128_t, uint64_t *);
-#endif
+#endif // softfloat_h
 };
 
 class Geq
@@ -2248,7 +2250,7 @@ class Geq
     static bool op(uint64_t *, float128_t);
     static bool op(float128_t, int64_t);
     static bool op(float128_t, uint64_t *);
-#endif
+#endif // softfloat_h
 };
 
 class Greaterp
@@ -2270,7 +2272,7 @@ class Greaterp
     static bool op(uint64_t *, float128_t);
     static bool op(float128_t, int64_t);
     static bool op(float128_t, uint64_t *);
-#endif
+#endif // softfloat_h
 };
 
 class Leq
@@ -2292,7 +2294,7 @@ class Leq
     static bool op(uint64_t *, float128_t);
     static bool op(float128_t, int64_t);
     static bool op(float128_t, uint64_t *);
-#endif
+#endif // softfloat_h
 };
 
 class Lessp
@@ -2314,7 +2316,7 @@ class Lessp
     static bool op(uint64_t *, float128_t);
     static bool op(float128_t, int64_t);
     static bool op(float128_t, uint64_t *);
-#endif
+#endif // softfloat_h
 };
 
 class Add1
@@ -2441,6 +2443,8 @@ class Frexp128
     static float128_t op(uint64_t *, int64_t &x);
 };
 
+#endif // softfloat_h
+
 class ModularPlus
 {   public:
     static intptr_t op(int64_t, int64_t);
@@ -2505,8 +2509,6 @@ class SetModulus
     static intptr_t op(uint64_t *);
 };
 
-#endif
-
 inline string_handle bignum_to_string(intptr_t aa);
 inline string_handle bignum_to_string_hex(intptr_t aa);
 inline string_handle bignum_to_string_octal(intptr_t aa);
@@ -2561,15 +2563,15 @@ public:
     {   val = int_to_bignum(n);
     }
     Bignum(double d)
-    {   val = double_to_bignum(d);
+    {   val = round_double_to_int(d);
     }
 #ifdef softfloat_h
     Bignum(float128_t d)
-    {   val = float128_to_bignum(d);
+    {   val = round_float128_to_int(d);
     }
-#endif
+#endif // softfloat_h
     Bignum(float d)
-    {   val = double_to_bignum((double)d);
+    {   val = round_double_to_int((double)d);
     }
     Bignum(const char *s)
     {   val = string_to_bignum(s);
@@ -2902,19 +2904,35 @@ inline Bignum lcm(const Bignum &x, const Bignum &y)
 }
 
 inline Bignum fix_bignum(double d)
-{   return Bignum(true, double_to_bignum(d));
+{   return Bignum(true, trunc_double_to_int(d));
+}
+
+inline Bignum round_bignum(double d)
+{   return Bignum(true, round_double_to_int(d));
+}
+
+inline Bignum trunc_bignum(double d)
+{   return Bignum(true, trunc_double_to_int(d));
 }
 
 inline Bignum floor_bignum(double d)
-{   return Bignum(true, double_to_floor(d));
+{   return Bignum(true, floor_double_to_int(d));
 }
 
 inline Bignum ceil_bignum(double d)
-{   return Bignum(true, double_to_ceiling(d));
+{   return Bignum(true, ceiling_double_to_int(d));
 }
 
 inline Bignum fix_bignum(float d)
 {   return fix_bignum((double)d);
+}
+
+inline Bignum round_bignum(float d)
+{   return round_bignum((double)d);
+}
+
+inline Bignum trunc_bignum(float d)
+{   return trunc_bignum((double)d);
 }
 
 inline Bignum floor_bignum(float d)
@@ -2951,7 +2969,7 @@ inline float128_t float128_bignum(const Bignum &x)
 {   return op_dispatch1<Float128,float128_t>(x.val);
 }
 
-#endif
+#endif // softfloat_h
 
 //=========================================================================
 //=========================================================================
@@ -3972,13 +3990,286 @@ inline intptr_t unsigned_int_to_bignum(uint64_t n)
     return confirm_size(r, w, lenr);
 }
 
-inline intptr_t double_to_bignum(double d)
+#ifdef softfloat_h
+// Some constants that are useful when I am dealing with float128_t.
+
+#ifdef LITTLEENDIAN
+INLINE_VAR float128_t
+    f128_0      = {{0, INT64_C(0x0000000000000000)}},
+    f128_1      = {{0, INT64_C(0x3fff000000000000)}},
+    f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
+#else // !LITTLEENDIAN
+INLINE_VAR float128_t
+    f128_0      = {{INT64_C(0x0000000000000000), 0}},
+    f128_1      = {{INT64_C(0x3fff000000000000), 0}},
+    f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
+#endif // !LITTLEENDIAN
+
+// The following tests are not supported by the version of softfloat that
+// I am using, so I implement them myself.
+
+inline bool f128_zero(float128_t p)
+{  return (p.v[HIPART] & 0x7fffffffffffffff) == 0 &&
+           p.v[LOPART] == 0;
+}
+
+inline bool f128_infinite(float128_t p)
+{  return (p.v[HIPART] & 0x7fffffffffffffff) == 0x7fff000000000000 &&
+           p.v[LOPART] == 0;
+}
+
+inline bool f128_nan(float128_t p)
+{  return (p.v[HIPART] & 0x7fff000000000000) == 0x7fff000000000000 &&
+          ((p.v[HIPART] & 0x0000ffffffffffff) != 0 ||
+            p.v[LOPART] != 0);
+}
+
+inline float128_t f128_ldexp(float128_t p, int x)
+{   if (f128_zero(p) ||
+        f128_infinite(p) ||
+        f128_nan(p)) return p;  // special cases!
+// Calculate the value I expect to want to leave in the exponent field.
+    x = ((p.v[HIPART] >> 48) & 0x7fff) + x;
+// In case of overflow leave an infinity of the right sign. This involves
+// forcing all bits of the exponent to be 1, all bits of the mantissa to be
+// zero and leaving the sign bit unaltered.
+    if (x >= 0x7fff)
+    {   p.v[HIPART] |= INT64_C(0x7fff000000000000);
+        p.v[HIPART] &= INT64_C(0xffff000000000000);
+        p.v[LOPART] = 0;
+        return p;
+    }
+// Using ldexp() to decrease an expeonent can lead to underflow. The value
+// 0 in x here would be the exponent one below that of the smallest
+// normal number, so a value < -114 corresponds to a number so much smaller
+// that it would not even qualify as a sub-norm. But even in that case
+// I need to preserve the sign bit.
+    else if (x < -114)
+    {   p.v[HIPART] &= INT64_C(0x8000000000000000); // preserve sign of input
+        p.v[LOPART] = 0;
+        return p;
+    }
+// In the case that ldexp underflows I have to be especially careful
+// because of the joys of sub-normal numbers and gradual underflow.
+// I deal with this by first forcing the exponent to be one that will
+// not lead to a sub-norm and then using a multiply to scale it down.
+    if (x <= 0)
+    {   p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
+                      ((uint64_t)(x+4096) << 48);
+        p = f128_div(p, f128_N1);
+    }
+    else p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
+                       ((uint64_t)x << 48);
+    return p;
+}
+
+inline float128_t f128_frexp(float128_t p, int &x)
+{   if (f128_zero(p) ||
+        f128_infinite(p) ||
+        f128_nan(p))
+    {   x = 0;
+        return p;
+    }
+    int px = ((p.v[HIPART] >> 48) & 0x7fff);
+// If I had a sub-normal number I will multiply if by 2^4096 before
+// extracting its exponent. Doing that will have turned any non-zero
+// sub-norm into a legitimate normalized number while not getting large
+// enough to risk overflow...
+    if (px == 0)
+    {   p = f128_mul(p, f128_N1);
+        px = ((p.v[HIPART] >> 48) & 0x7fff) - 4096;
+    }
+// Now I can set the exponent field such that the resulting number is in
+// the range 0.5 <= p < 1.0.
+    p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
+                  ((uint64_t)0x3ffe << 48);
+// .. and adjust the exponent value that I will return so it is if the
+// scaled mantissa is now exactly the same as the input.
+    x = px - 0x3ffe;
+    return p;
+}    
+
+#endif // softfloat_h
+
+// When doubles (and float128_t values where available) are to be
+// compared against a bignum to get proper results the double should
+// (at least in effect) be converted to a bignum. If one does the comparison
+// by converting both inputs to floating point (which may feel easier) there
+// are multiple problems. First the bignum might have a value outside
+// the range of floats, so you get overflow. Then it might differ from
+// a float in a bit position several hundred betlow its most significant
+// one, and converting to a float would lose that information.
+
+// double_to_bits() turns a floating point value into an integer plus
+// an exponent. It sets mantissa*2^exponent = d. This function will not
+// give sensible output if passed an infinty or a NaN and so they should be
+// filtered out before it is called.
+
+inline void double_to_bits(double d, int64_t &mantissa, int &exponent)
+{   if (d == 0.0)
+    {   mantissa = 0;
+        exponent = 0;
+        return;
+    }
+    int x;
+    d = std::frexp(d, &x);
+// now |d| is in the range [0.5,1) -- note closed at the 0.5 end and open
+// at the other. And x is the power of 2 that the original input was scaled
+// by to achieve this.
+    d = d*9007199254740992.0; // 2^53;
+    x -= 53;
+    mantissa = (int64_t)d;
+    exponent = 0;
+}
+
+// This next sets top and next to the two top 64-bit digits for a bignum,
+// and len to the length (measured in words) of that bignum. For values
+// |d| < 2^63 next will in fact be a signed value, len==1 and top will
+// in fact be irrelevant. This should be seen as a special degenerate case.
+// Whenever len>1 on output the number should be such that to make a bignum
+// with value to match the float you append len-2 zero words. Note that
+// for inputs in 2^63 <= d < 2^64 the result will have top==0 and next
+// the integer value of d and len==2, with something similar for the
+// equivalent negative range. The leading 0 or -1 is required in those
+// cases.
+
+inline void double_to_virtual_bignum(double d,
+        int64_t &top, uint64_t &next, size_t &len)
+{
+// NaN leads to a returned value with zero length. Having a zero length
+// for a bignum is invalid, so this marks the situation well.
+    if (std::isnan(d))
+    {   top = next = 0;
+        len = 0;
+    }
+// Infinties turn into values with maximum length and a top digit that
+// captures the sign of the input.
+    if (std::isinf(d))
+    {   top = d < 0.0 ? -1 : 1;
+        next = 0;
+        len = SIZE_MAX;
+    }
+    int64_t mantissa;
+    int exponent;
+    double_to_bits(d, mantissa, exponent);
+// I will ignore zero and infinity and NaN values here just for now!
+    uint64_t lowbit = mantissa & -(uint64_t)mantissa;;
+    int lz = 63 - nlz(lowbit); // low zero bits
+    mantissa = ASR(mantissa, lz);
+    exponent += lz;
+// now mantissa has its least significant bit a "1". At this stage the
+// input 1.0 should have turned into mantissa=1, exponent==0;
+    next = (uint64_t)mantissa;
+    top = d<0.0 ? -1 : 0;
+// Now I am going to assume |d| > 1.0 so exponent >= 0 here.
+    len = exponent/64;
+    exponent = exponent%64;
+// Now shift left by exponent, which is less than 64.
+    if (exponent != 0)
+    {   top = (top << exponent) | (next >> (64-exponent));
+        next = next << exponent;
+    }
+// In some cases this has still left all the bits I care about in mid.
+    if (shrinkable(top, next) && len>1)
+    {   top = next;
+        next = 0;
+        len--;
+    }
+}
+
+#ifdef softfloat_h
+
+// For int128_t the mantissa needs to be returned as a 128-bit integer, and
+// I do that as a pair of 64-bit integers here. Infinities and NaNs would
+// lead to nonsense output. Subnormal numbers are got wrong at present!
+
+inline void float128_to_bits(float128_t d,
+                             int64_t &mhi, uint64_t &mlo, int &exponent)
+{   if (f128_zero(d))
+    {   mhi = mlo = 0;
+        exponent = 0;
+        return;
+    }
+// With float128_t the easier way to go is to access the bit-patterns.
+    exponent = ((d.v[HIPART] >> 48) & 0x7fff);
+    if (exponent == 0) // subnormal number
+    {   d = f128_mul(d, f128_N1);
+        exponent -= 4096;
+    }
+    exponent -= 0x3ffe;
+    mhi = (d.v[HIPART] & 0xffffffffffff) | 0x0001000000000000;;
+    mlo = d.v[LOPART];
+    if ((int64_t)d.v[HIPART] < 0)
+    {   mlo = -mlo;
+        if (mlo == 0) mhi = -mhi;
+        else mhi = ~mhi;
+    }
+    exponent -= 114;
+}
+
+// For a float128_t value I need to generate (up to) 3 64-bit digits for
+// the way it would end up as a bignum.
+
+inline void float128_to_virtual_bignum(float128_t d,
+        int64_t &top, uint64_t &mid, uint64_t &next, size_t &len)
+{   int64_t mhi;
+    uint64_t mlo;
+    int exponent;
+    float128_to_bits(d, mhi, mlo, exponent);
+// I will ignore zero and infinity and NaN values here just for now!
+    int lz;
+    if (mlo == 0) lz = 64 + 63 - nlz(mhi & -(uint64_t)mhi);
+    else lz = 63 - nlz(mlo & -mlo);
+    if (lz == 0) {}
+    else if (lz < 64)
+    {   mlo = (mlo >> lz) | ((uint64_t)mhi << (64-lz));
+        mhi = ASR(mhi, lz);
+    }
+    else if (lz == 64)
+    {   mlo = mhi;
+        mhi = mhi < 0 ? -1 : 0;
+    }
+    else
+    {   mlo = ASR(mhi, lz-64);
+        mhi = mhi < 0 ? -1 : 0;
+    }
+    exponent += lz;
+// Put the mantissa as a 3-word integer in (top,mid,next).
+    next = mlo;
+    mid = (uint64_t)mhi;
+    top = mhi<0 ? -1 : 0;
+    len = exponent/64;
+    exponent = exponent%64;
+// Now shift left by exponent, which is less than 64.
+    if (exponent != 0)
+    {   top = (top << exponent) | (mid >> (64-exponent));
+        mid = (mid << exponent) | (next >> (64-exponent));
+        next = next << exponent;
+    }
+    if (shrinkable(top, mid) && len>1)
+    {   top = mid;
+        mid = next;
+        next = 0;
+        len--;
+        if (shrinkable(top, mid) && len>1)
+        {   top = mid;
+            mid = next;
+            next = 0;
+            len--;
+        }
+    }
+}
+
+#endif // softfloat_h
+
+inline intptr_t round_double_to_int(double d)
 {
 // I return 0 if the input is a NaN or either +infinity or -infinity.
 // This is somewhat arbitrary, but right now I am not minded to raise an
 // exception.
     if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
     int x;
+    d = std::round(d);
     d = std::frexp(d, &x);
     d = std::ldexp(d, 53);
     intptr_t i = int_to_bignum((int64_t)d);
@@ -3987,7 +4278,19 @@ inline intptr_t double_to_bignum(double d)
     return r;
 }
 
-inline intptr_t double_to_floor(double d)
+inline intptr_t trunc_double_to_int(double d)
+{   if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
+    int x;
+    d = std::trunc(d);
+    d = std::frexp(d, &x);
+    d = std::ldexp(d, 53);
+    intptr_t i = int_to_bignum((int64_t)d);
+    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-53);
+    abandon(i);
+    return r;
+}
+
+inline intptr_t floor_double_to_int(double d)
 {   if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
     int x;
     d = std::floor(d);
@@ -3999,7 +4302,7 @@ inline intptr_t double_to_floor(double d)
     return r;
 }
 
-inline intptr_t double_to_ceiling(double d)
+inline intptr_t ceiling_double_to_int(double d)
 {   if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
     int x;
     d = std::ceil(d);
@@ -4013,12 +4316,12 @@ inline intptr_t double_to_ceiling(double d)
 
 #ifdef softfloat_h
 
-inline intptr_t float128_to_bignum(float128_t d)
+inline intptr_t round_float128_to_int(float128_t d)
 {
 // I return 0 if the input is a NaN or either +infinity or -infinity.
 // This is somewhat arbitrary, but right now I am not minded to raise an
 // exception.
-    if (f128_eq(d, i64_to_f128(0)) || !f128_eq(d,d)) return int_to_handle(0);
+    if (f128_eq(d, f128_0) || !f128_eq(d,d)) return int_to_handle(0);
     int x;
     float128_t dd;
     f128M_frexp(&d, &dd, &x);
@@ -4027,7 +4330,7 @@ inline intptr_t float128_to_bignum(float128_t d)
 //@ The code here is unfinished, which is why it still have print statements
 //@ in it!
 //@ 
-    printf("float128_to_bignum exponent %d = %x\n", x, x);
+    printf("round_float128_to_int exponent %d = %x\n", x, x);
     if (x == 0x7fff) return int_to_handle(0); // infinity?
     f128M_ldexp(&dd, 113);
     abort("The next line only extracts 64 bits not 112");
@@ -4038,12 +4341,12 @@ inline intptr_t float128_to_bignum(float128_t d)
     return r;
 }
 
-inline intptr_t float128_to_floor(float128_t d)
+inline intptr_t trunc_float128_to_int(float128_t d)
 {
 // I return 0 if the input is a NaN or either +infinity or -infinity.
 // This is somewhat arbitrary, but right now I am not minded to raise an
 // exception.
-    if (f128_eq(d, i64_to_f128(0)) || !f128_eq(d,d)) return int_to_handle(0);
+    if (f128_eq(d, f128_0) || !f128_eq(d,d)) return int_to_handle(0);
     int x;
     float128_t dd;
     f128M_frexp(&d, &dd, &x);
@@ -4052,7 +4355,7 @@ inline intptr_t float128_to_floor(float128_t d)
 //@ The code here is unfinished, which is why it still have print statements
 //@ in it!
 //@ 
-    printf("float128_to_bignum exponent %d = %x\n", x, x);
+    printf("round_float128_to_int exponent %d = %x\n", x, x);
     if (x == 0x7fff) return int_to_handle(0); // infinity?
     f128M_ldexp(&dd, 113);
     abort("The next line only extracts 64 bits not 112");
@@ -4063,12 +4366,12 @@ inline intptr_t float128_to_floor(float128_t d)
     return r;
 }
 
-inline intptr_t float128_to_ceiling(float128_t d)
+inline intptr_t floor_float128_to_int(float128_t d)
 {
 // I return 0 if the input is a NaN or either +infinity or -infinity.
 // This is somewhat arbitrary, but right now I am not minded to raise an
 // exception.
-    if (f128_eq(d, i64_to_f128(0)) || !f128_eq(d,d)) return int_to_handle(0);
+    if (f128_eq(d, f128_0) || !f128_eq(d,d)) return int_to_handle(0);
     int x;
     float128_t dd;
     f128M_frexp(&d, &dd, &x);
@@ -4077,7 +4380,7 @@ inline intptr_t float128_to_ceiling(float128_t d)
 //@ The code here is unfinished, which is why it still have print statements
 //@ in it!
 //@ 
-    printf("float128_to_bignum exponent %d = %x\n", x, x);
+    printf("round_float128_to_int exponent %d = %x\n", x, x);
     if (x == 0x7fff) return int_to_handle(0); // infinity?
     f128M_ldexp(&dd, 113);
     abort("The next line only extracts 64 bits not 112");
@@ -4088,7 +4391,32 @@ inline intptr_t float128_to_ceiling(float128_t d)
     return r;
 }
 
-#endif
+inline intptr_t ceiling_float128_to_int(float128_t d)
+{
+// I return 0 if the input is a NaN or either +infinity or -infinity.
+// This is somewhat arbitrary, but right now I am not minded to raise an
+// exception.
+    if (f128_eq(d, f128_0) || !f128_eq(d,d)) return int_to_handle(0);
+    int x;
+    float128_t dd;
+    f128M_frexp(&d, &dd, &x);
+
+//@
+//@ The code here is unfinished, which is why it still have print statements
+//@ in it!
+//@ 
+    printf("round_float128_to_int exponent %d = %x\n", x, x);
+    if (x == 0x7fff) return int_to_handle(0); // infinity?
+    f128M_ldexp(&dd, 113);
+    abort("The next line only extracts 64 bits not 112");
+    intptr_t i = int_to_bignum(
+                     f128_to_i64(dd,softfloat_round_near_even,false));
+    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-113);
+    abandon(i);
+    return r;
+}
+
+#endif // softfloat_h
 
 // A cast from a double to a float is entitled, by the C++ standard to
 // make a system-defined choice as to whether to round up or down.
@@ -4476,9 +4804,6 @@ inline float128_t Float128::op(uint64_t *a)
     f128M_ldexp(&d, (int)x);
     return d;
 }
-
-
-
 
 #endif // softfloat_t
 
@@ -5150,20 +5475,19 @@ inline bool Eqn::op(double a, uint64_t *b)
 INLINE_VAR float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
 INLINE_VAR float128_t FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
 
-#else
+#else // !LITTLEENDIAN
 
 INLINE_VAR float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
 INLINE_VAR float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
 
-#endif
+#endif // !LITTLEENDIAN
 
 
 inline bool eqnbigfloat(uint64_t *a, size_t lena, float128_t b)
 {   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
-    float128_t zero = i64_to_f128(0);
     int64_t top = (int64_t)a[lena-1];
-    if (top >= 0 && f128_lt(b, zero)) return false;
-    if (top < 0 && !f128_lt(b, zero)) return false;
+    if (top >= 0 && f128_lt(b, f128_0)) return false;
+    if (top < 0 && !f128_lt(b, f128_0)) return false;
 // Now the two inputs have the same sign.
     if (lena == 1 ||
         (lena == 2 &&
@@ -5189,7 +5513,7 @@ inline bool eqnbigfloat(uint64_t *a, size_t lena, float128_t b)
 // I am not feeling very keen! I can afford to convert the float to an integer,
 // and because it is large when I fix it there will not be any discarded
 // fractional part...
-        intptr_t bb = float128_to_bignum(b); 
+        intptr_t bb = round_float128_to_int(b); 
         return op_dispatch2<Eqn,bool>(vector_to_handle(a), bb);
     }
 }
@@ -5212,7 +5536,7 @@ inline bool Eqn::op(float128_t a, uint64_t *b)
 {   return Eqn::op(b, a);
 }
 
-#endif
+#endif // softfloat_h
 
 inline bool Neqn::op(uint64_t *a, uint64_t *b)
 {   size_t lena = number_size(a);
@@ -5296,7 +5620,7 @@ inline bool Neqn::op(float128_t a, uint64_t *b)
 {   return Neqn::op(b, a);
 }
 
-#endif
+#endif // softfloat_h
 
 // greaterp
 
@@ -5494,10 +5818,9 @@ inline bool Greaterp::op(double a, uint64_t *b)
 inline bool greaterpbigfloat(uint64_t *a, size_t lena, float128_t b,
                              bool great, bool ifequal)
 {   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
-    float128_t zero = i64_to_f128(0);
     int64_t top = (int64_t)a[lena-1];
-    if (top >= 0 && f128_lt(b, zero)) return great;
-    if (top < 0 && !f128_lt(b, zero)) return !great;
+    if (top >= 0 && f128_lt(b, f128_0)) return great;
+    if (top < 0 && !f128_lt(b, f128_0)) return !great;
 // Now the two inputs have the same sign.
     if (lena == 1 ||
         (lena == 2 &&
@@ -5531,7 +5854,7 @@ inline bool greaterpbigfloat(uint64_t *a, size_t lena, float128_t b,
 // and because it is large when I fix it there will not be any discarded
 // fractional part...
         // ...
-        intptr_t bb = float128_to_bignum(b);
+        intptr_t bb = round_float128_to_int(b);
 // At the moment I think there is a space-leak on bb here...
         if (great)
             if (ifequal)
@@ -5543,8 +5866,6 @@ inline bool greaterpbigfloat(uint64_t *a, size_t lena, float128_t b,
             else return op_dispatch2<Lessp,bool>(vector_to_handle(a), bb);
     }
 }
-
-
 
 inline bool Greaterp::op(int64_t a, float128_t b)
 {   return f128_lt(b, i64_to_f128(a));
@@ -5565,7 +5886,7 @@ inline bool Greaterp::op(float128_t a, uint64_t *b)
 {   return Lessp::op(b, a);
 }
 
-#endif
+#endif // softfloat_h
 
 // geq
 
@@ -5625,6 +5946,7 @@ inline bool Geq::op(double a, uint64_t *b)
 }
 
 #ifdef softfloat_h
+
 inline bool Geq::op(int64_t a, float128_t b)
 {   return f128_le(b, i64_to_f128(a));
     return false;
@@ -5644,7 +5966,7 @@ inline bool Geq::op(float128_t a, uint64_t *b)
 {   return Leq::op(b, a);
 }
 
-#endif
+#endif // softfloat_h
 
 // lessp
 
@@ -5704,6 +6026,7 @@ inline bool Lessp::op(double a, uint64_t *b)
 }
 
 #ifdef softfloat_h
+
 inline bool Lessp::op(int64_t a, float128_t b)
 {   return f128_lt(i64_to_f128(a), b);
     return false;
@@ -5725,7 +6048,7 @@ inline bool Lessp::op(float128_t a, uint64_t *b)
 {   return Greaterp::op(b, a);
 }
 
-#endif
+#endif // softfloat_h
 
 // leq
 
@@ -5785,6 +6108,7 @@ inline bool Leq::op(double a, uint64_t *b)
 }
 
 #ifdef softfloat_h
+
 inline bool Leq::op(int64_t a, float128_t b)
 {   return f128_le(i64_to_f128(a), b);
     return false;
@@ -5804,7 +6128,7 @@ inline bool Leq::op(float128_t a, uint64_t *b)
 {   return Geq::op(b, a);
 }
 
-#endif
+#endif // softfloat_h
 
 
 // Negation, addition and subtraction. These are easy apart from a mess
@@ -10070,17 +10394,19 @@ using arithlib_implementation::bignum_to_string_octal_length;
 using arithlib_implementation::bignum_to_string_binary;
 using arithlib_implementation::bignum_to_string_binary_length;
 
-using arithlib_implementation::double_to_bignum;
-using arithlib_implementation::double_to_floor;
-using arithlib_implementation::double_to_ceiling;
+using arithlib_implementation::round_double_to_int;
+using arithlib_implementation::trunc_double_to_int;
+using arithlib_implementation::floor_double_to_int;
+using arithlib_implementation::ceiling_double_to_int;
 
 #ifdef softfloat_h
 using arithlib_implementation::Float128;
 using arithlib_implementation::Frexp128;
-using arithlib_implementation::float128_to_bignum;
-using arithlib_implementation::float128_to_floor;
-using arithlib_implementation::float128_to_ceiling;
-#endif
+using arithlib_implementation::round_float128_to_int;
+using arithlib_implementation::trunc_float128_to_int;
+using arithlib_implementation::floor_float128_to_int;
+using arithlib_implementation::ceiling_float128_to_int;
+#endif // softfloat_h
 
 //using arithlib_implementation::negative;
 //using arithlib_implementation::number_size;

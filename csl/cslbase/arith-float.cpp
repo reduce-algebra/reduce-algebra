@@ -256,19 +256,19 @@ LispObject Fix::op(Cpx a)
 }
 
 LispObject Fix::op(SFlt a)
-{   return arithlib_lowlevel::double_to_bignum(a.floatval());
+{   return arithlib_lowlevel::trunc_double_to_int(a.floatval());
 }
 
 LispObject Fix::op(Flt a)
-{   return arithlib_lowlevel::double_to_bignum(a.floatval());
+{   return arithlib_lowlevel::trunc_double_to_int(a.floatval());
 }
 
 LispObject Fix::op(double a)
-{   return arithlib_lowlevel::double_to_bignum(a);
+{   return arithlib_lowlevel::trunc_double_to_int(a);
 }
 
 LispObject Fix::op(LFlt a)
-{   return arithlib_lowlevel::float128_to_bignum(a.floatval());
+{   return arithlib_lowlevel::trunc_float128_to_int(a.floatval());
 }
 
 LispObject Truncate::op(LispObject a)
@@ -289,23 +289,23 @@ LispObject Truncate::op(Rat a)
 }
 
 LispObject Truncate::op(Cpx a)
-{   aerror1("bad argument for floor", a.value());
+{   aerror1("bad argument for trunc", a.value());
 }
 
 LispObject Truncate::op(SFlt a)
-{   return arithlib_lowlevel::double_to_floor(a.floatval());
+{   return arithlib_lowlevel::trunc_double_to_int(a.floatval());
 }
 
 LispObject Truncate::op(Flt a)
-{   return arithlib_lowlevel::double_to_floor(a.floatval());
+{   return arithlib_lowlevel::trunc_double_to_int(a.floatval());
 }
 
 LispObject Truncate::op(double a)
-{   return arithlib_lowlevel::double_to_floor(a);
+{   return arithlib_lowlevel::trunc_double_to_int(a);
 }
 
 LispObject Truncate::op(LFlt a)
-{   return arithlib_lowlevel::float128_to_floor(a.floatval());
+{   return arithlib_lowlevel::trunc_float128_to_int(a.floatval());
 }
 
 LispObject Floor::op(LispObject a)
@@ -330,19 +330,19 @@ LispObject Floor::op(Cpx a)
 }
 
 LispObject Floor::op(SFlt a)
-{   return arithlib_lowlevel::double_to_floor(a.floatval());
+{   return arithlib_lowlevel::floor_double_to_int(a.floatval());
 }
 
 LispObject Floor::op(Flt a)
-{   return arithlib_lowlevel::double_to_floor(a.floatval());
+{   return arithlib_lowlevel::floor_double_to_int(a.floatval());
 }
 
 LispObject Floor::op(double a)
-{   return arithlib_lowlevel::double_to_floor(a);
+{   return arithlib_lowlevel::floor_double_to_int(a);
 }
 
 LispObject Floor::op(LFlt a)
-{   return arithlib_lowlevel::float128_to_floor(a.floatval());
+{   return arithlib_lowlevel::floor_float128_to_int(a.floatval());
 }
 
 LispObject Ceiling::op(LispObject a)
@@ -367,19 +367,19 @@ LispObject Ceiling::op(Cpx a)
 }
 
 LispObject Ceiling::op(SFlt a)
-{   return arithlib_lowlevel::double_to_ceiling(a.floatval());
+{   return arithlib_lowlevel::ceiling_double_to_int(a.floatval());
 }
 
 LispObject Ceiling::op(Flt a)
-{   return arithlib_lowlevel::double_to_ceiling(a.floatval());
+{   return arithlib_lowlevel::ceiling_double_to_int(a.floatval());
 }
 
 LispObject Ceiling::op(double a)
-{   return arithlib_lowlevel::double_to_ceiling(a);
+{   return arithlib_lowlevel::ceiling_double_to_int(a);
 }
 
 LispObject Ceiling::op(LFlt a)
-{   return arithlib_lowlevel::float128_to_ceiling(a.floatval());
+{   return arithlib_lowlevel::ceiling_float128_to_int(a.floatval());
 }
 
 LispObject Ftruncate::op(LispObject a)
@@ -400,23 +400,23 @@ LispObject Ftruncate::op(Rat a)
 }
 
 LispObject Ftruncate::op(Cpx a)
-{   aerror1("bad argument for floor", a.value());
+{   aerror1("bad argument for trunc", a.value());
 }
 
 LispObject Ftruncate::op(SFlt a)
-{   return arithlib_lowlevel::double_to_floor(a.floatval());
+{   return arithlib_lowlevel::trunc_double_to_int(a.floatval());
 }
 
 LispObject Ftruncate::op(Flt a)
-{   return arithlib_lowlevel::double_to_floor(a.floatval());
+{   return arithlib_lowlevel::trunc_double_to_int(a.floatval());
 }
 
 LispObject Ftruncate::op(double a)
-{   return arithlib_lowlevel::double_to_floor(a);
+{   return arithlib_lowlevel::trunc_double_to_int(a);
 }
 
 LispObject Ftruncate::op(LFlt a)
-{   return arithlib_lowlevel::float128_to_floor(a.floatval());
+{   return arithlib_lowlevel::trunc_float128_to_int(a.floatval());
 }
 
 LispObject Ffloor::op(LispObject a)
@@ -441,19 +441,19 @@ LispObject Ffloor::op(Cpx a)
 }
 
 LispObject Ffloor::op(SFlt a)
-{   return arithlib_lowlevel::double_to_floor(a.floatval());
+{   return arithlib_lowlevel::floor_double_to_int(a.floatval());
 }
 
 LispObject Ffloor::op(Flt a)
-{   return arithlib_lowlevel::double_to_floor(a.floatval());
+{   return arithlib_lowlevel::floor_double_to_int(a.floatval());
 }
 
 LispObject Ffloor::op(double a)
-{   return arithlib_lowlevel::double_to_floor(a);
+{   return arithlib_lowlevel::floor_double_to_int(a);
 }
 
 LispObject Ffloor::op(LFlt a)
-{   return arithlib_lowlevel::float128_to_floor(a.floatval());
+{   return arithlib_lowlevel::floor_float128_to_int(a.floatval());
 }
 
 LispObject Fceiling::op(LispObject a)
@@ -478,19 +478,19 @@ LispObject Fceiling::op(Cpx a)
 }
 
 LispObject Fceiling::op(SFlt a)
-{   return arithlib_lowlevel::double_to_ceiling(a.floatval());
+{   return arithlib_lowlevel::ceiling_double_to_int(a.floatval());
 }
 
 LispObject Fceiling::op(Flt a)
-{   return arithlib_lowlevel::double_to_ceiling(a.floatval());
+{   return arithlib_lowlevel::ceiling_double_to_int(a.floatval());
 }
 
 LispObject Fceiling::op(double a)
-{   return arithlib_lowlevel::double_to_ceiling(a);
+{   return arithlib_lowlevel::ceiling_double_to_int(a);
 }
 
 LispObject Fceiling::op(LFlt a)
-{   return arithlib_lowlevel::float128_to_ceiling(a.floatval());
+{   return arithlib_lowlevel::ceiling_float128_to_int(a.floatval());
 }
 
 // (frexp nn) => (double-float . fixnum)
