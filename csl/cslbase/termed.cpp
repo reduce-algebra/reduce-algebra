@@ -140,68 +140,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-// An "my_assert" scheme that lets me write in my own code to print the
-// diagnostics. Included here because this files does not icnlude "fx.h".
-
-[[noreturn]] static void my_abort()
-{   std::abort();
-}
-
-template <typename F>
-inline void my_assert(bool ok, F&& action)
-{
-#ifndef NDEBUG
-// Use this as in
-//     my_assert(predicate, [&]{...});
-// where the "..." is an arbitrary sequence of actions to be taken
-// if the assertion fails.
-    if (!ok) { action(); my_abort(); }
-#endif //NDEBUG
-}
-
-//
-// I have a bunch of macros that I use for desparation-mode debugging,
-// and in particular when I have bugs that wriggle back into their lairs
-// when I try running under "gdb" or whatever. These print dull messages
-// to stderr. The "do..while" idiom is to keep C syntax safe with regard to
-// semicolons.
-//
-
-#define D do { \
-          const char *_f_ = strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          fprintf(stderr, "Line %d File %s\n", __LINE__, _f_); \
-          fflush(stderr); \
-          } while (0)
-
-#define DS(s) do { \
-          const char *_f_ = strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          fprintf(stderr, "Line %d File %s: %s\n", __LINE__, _f_, (s)); \
-          fflush(stderr); \
-          } while (0)
-
-#define DX(s) do { \
-          const char *_f_ = strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          fprintf(stderr, "Line %d File %s: %llx\n", __LINE__, _f_, \
-                          (long long unsigned)(s)); \
-          fflush(stderr); \
-          } while (0)
-
-#define DF(f,...) do { \
-          const char *_f_ = strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          fprintf(stderr, "Line %d File %s: ", __LINE__, _f_); \
-          fprintf(stderr, f, __VA_ARGS__); \
-          fprintf(stderr, "\n"); \
-          fflush(stderr); \
-          } while (0)
-
+#include "log.h"
 
 // The following variables must hold arrays of strings to be used in
 // the completion of various items... For CSL they are provided with
@@ -825,10 +764,7 @@ bool is_reduce = false;
 void input_history_init(const char *argv0,
     int &phistoryFirst, int &phistoryLast, int &phistoryNumber,
     int &pinput_history_next, int &plongest_history_line)
-{
-// I am going to handle input in a way that I want for Reduce is the
-// current executable has a name including the string "red".
-    is_reduce = (strstr(argv0, "red") != NULL);
+{   printlog("input_history_init %s\n", argv0);
     int i;
     pinput_history_next = plongest_history_line = 0;
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
@@ -838,6 +774,12 @@ void input_history_init(const char *argv0,
     const char *p = strrchr(argv0, '/');
     if (p == NULL) p = strrchr(argv0, '\\');
     if (p != NULL) argv0 = p + 1; // now just the leaf part
+// I am going to handle input in a way that I want for Reduce is the
+// current executable has a name including the string "red" in its leaf-part,
+// so for instance "redcsl" and "bootstrapreduce" as well as "reduce" will
+// qualify, while "csl" should not.
+    is_reduce = (strstr(argv0, "red") != NULL);
+    printlog("is_reduce = %s\n", is_reduce ? "true" : "false");
     const char *h1, *h2, *h3;
 #ifdef WIN32
     h1 = getenv("HOMEDRIVE");
@@ -869,6 +811,9 @@ void input_history_init(const char *argv0,
         hsize != INPUT_HISTORY_SIZE)
         return; // malformed
     phistoryNumber = phistoryLast = pinput_history_next - 1;
+    printlog("phistoryNumber = %d\n", phistoryNumber);
+    printlog("phistoryLast = %d\n", phistoryLast);
+    printlog("pinput_history_next = %d\n", pinput_history_next);
 // Headline OK
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
     {   std::getline(h, histline);
@@ -919,11 +864,35 @@ void input_history_init(const char *argv0,
         }
         else return; // bad format;
     }
+#if defined __GNUC__ && !defined __OPTIMIZE__
+    int blankcount = 0;
+    for (int j=0; j<INPUT_HISTORY_SIZE; j++)
+    {   wchar_t *l = input_history[j];
+        if (l == NULL) blankcount++;
+        else
+        {   if (blankcount != 0)
+            {   printlog("-%d\n", blankcount);
+                blankcount = 0;
+            }
+            printlog("\"");
+            int ch;
+            wchar_t *ll = l;
+            while ((ch = *ll++) != 0)
+            {   if (0x20 <= ch && ch <= 0x7e &&
+                    ch != '\\' && ch != '"') printlog("%c", ch);
+                else printlog("\\%0.4x", ch & 0xffff);
+            } 
+            printlog("\"\n");
+        }
+    }
+    if (blankcount != 0) printlog("-%d\n", blankcount);
+#endif // __OPTIMIZE__
 // The input stream is closed at end of block
 }
 
 void input_history_end(void)
 {   if (!history_active) return;
+    printlog("Write out updated history\n");
 // Dump_history_to_file.
 // The format that I use is:
 //      History <size> <index>
@@ -1072,7 +1041,7 @@ static int input_line_size;
 static void term_putchar(int c);
 
 static wchar_t *term_wide_plain_getline(void)
-{   fflush(stdout);
+{   fflush(stdout); fflush(stderr);
     for (int i=0; i<prompt_length; i++)
         term_putchar(termed_prompt_string[i]);
     fflush(stdout);
@@ -1139,7 +1108,7 @@ void term_setprompt(const char *s)
     bool changed = false;
 #endif // !EMBEDDED
     for (i=0; i<prompt_length; i++)
-    {   wint_t c = *s++ & 0xff;
+    {   wchar_t c = *s++ & 0xff;
         if (c != termed_prompt_string[i])
         {   termed_prompt_string[i] = c;
 #ifndef EMBEDDED
@@ -1460,9 +1429,6 @@ static void term_putchar(int c)
     int i, n = utf_encode(buffer, c);
     for (i=0; i<n; i++)
     {   c = buffer[i];
-#ifdef __CYGWIN__
-        if (c == '\n') putchar('\r');
-#endif
         putchar(c);
     }
 }
@@ -1678,12 +1644,19 @@ int term_setup(const char *argv0, const char *colour)
 // the use of tcgetattr/tcsetattr would only do things to the stdin
 // one here.
     tcgetattr(stdin_handle, &my_term);
+    tcflag_t oflag = my_term.c_oflag,
+             rawoflag;
 #ifdef HAVE_CFMAKERAW
 // If I have cfmakeraw that is liable to be a definitive way of setting
 // raw mode. Otherwise I will set the flags that I expect cfmakeraw to set.
 // The one that it took be a while to spot was c_cc[VMIN] to ensure that
 // reading characters still waits for at least one...
+// Bute note that I want O_POST set most of the time..., so I record
+// the oflags and put that back later.
     cfmakeraw(&my_term);
+// I really do not want to clobber the output processing!
+    rawoflag = my_term.c_oflag;
+    my_term.c_oflag = oflag;
 #else
     my_term.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP |
                          INLCR | IGNCR | ICRNL | IXON);
@@ -1692,17 +1665,24 @@ int term_setup(const char *argv0, const char *colour)
     my_term.c_cflag |= CS8;
     my_term.c_cc[VMIN] = 1;
     my_term.c_cc[VTIME] = 0;
+    rawoflag = oflag & ~OPOST & ~ONLCR & ~OCRNL & ~ONOCR & ~ONLRET;
 #endif
 // The tcsetattr HANGS if the console is detached/backgrounded when
 // it is  performed, As in
 //    ./reduce -v .... &
 // unless SIGTTOU is blocked or ignored...
     signal(SIGTTOU, SIG_IGN);
-// Put terminal in raw mode for input but with OPOST for output
+// Put terminal in raw mode for input but with OPOST etc for output.
+//
+// A note here. C/C++ level stdout and stderr might buffer output, while
+// tcsetattr works at a lower level. So to keep things in step I will go
+// fflush on both output FILE things to make myself feel safe.
+//
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &my_term);
-    memcpy(&my_term, &prog_term, sizeof(my_term));
-    my_term.c_oflag &= ~OPOST;
-    memcpy(&my_term, &cursor_term, sizeof(my_term));
+    memcpy(&prog_term, &my_term, sizeof(my_term));
+    my_term.c_oflag = rawoflag;
+    memcpy(&cursor_term, &my_term, sizeof(my_term));
 #endif // WIN32
     historyFirst = historyNumber = 0;
     historyLast = -1;
@@ -1723,13 +1703,12 @@ void term_close(void)
 // Note here and elsewhere in this file that I go "fflush(stdout)" before
 // doing anything that may change styles or options for stream handling.
     fflush(stdout);
+    fflush(stderr);
 #ifndef EMBEDDED
 #ifdef WIN32
-    fflush(stdout);
     if (*term_colour != 0)
         SetConsoleTextAttribute(console_output_handle, plainAttributes);
 #else // !WIN32
-    fflush(stdout);
     if (term_enabled)
     {   tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
         if (*term_colour == 0) /* nothing */;
@@ -1989,6 +1968,7 @@ static int term_getchar(void)
 static void term_move_down(int del)
 {
     if (del == 0) return;
+    fflush(stdout); fflush(stderr);
 #ifdef WIN32
 // Since the screen is on the same machine as the rest of my process, and
 // I am in general interacting with a (slow) user here I will not try ANY
@@ -2014,6 +1994,7 @@ static void term_move_down(int del)
     {   putp(cursor_up);
         del++;
     }
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif
 }
@@ -2021,6 +2002,7 @@ static void term_move_down(int del)
 
 static void term_move_right(int del)
 {   if (del == 0) return;
+    fflush(stdout); fflush(stderr);
 #ifdef WIN32
     CONSOLE_SCREEN_BUFFER_INFO csb;
     if (!GetConsoleScreenBufferInfo(console_output_handle, &csb)) return;
@@ -2054,12 +2036,14 @@ static void term_move_right(int del)
     {   putp(cursor_left);
         del++;
     }
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
 }
 
 static void term_move_first_column(void)
 {
+    fflush(stdout); fflush(stderr);
 #ifdef WIN32 
     CONSOLE_SCREEN_BUFFER_INFO csb;
     if (!GetConsoleScreenBufferInfo(console_output_handle, &csb)) return;
@@ -2071,18 +2055,21 @@ static void term_move_first_column(void)
     tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
     putp(carriage_return);
     cursorx = 0;
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
 }
 
 static void term_bell(void)
 {
+    fflush(stdout); fflush(stderr);
 #ifdef WIN32
     Beep(1000, 100);
 #else // !WIN32
     tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
     if (term_enabled && bell) putp(bell);
     else putchar(0x07);
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
 }
@@ -2299,19 +2286,23 @@ static void refresh_display(void)
 #ifdef WIN32
             SetConsoleTextAttribute(console_output_handle, revAttributes);
 #else // !WIN32
+            fflush(stdout); fflush(stderr);
             tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
             putp(enter_reverse_mode);
+            fflush(stdout); fflush(stderr);
             tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
             inverse = 1;
         }
         if (term_can_invert && invert_start<invert_end && i==invert_end)
-        {   fflush(stdout);
+        {
+            fflush(stdout); fflush(stderr);
 #ifdef WIN32
             SetConsoleTextAttribute(console_output_handle, plainAttributes);
 #else // !WIN32
             tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
             putp(exit_attribute_mode);
+            fflush(stdout); fflush(stderr);
             tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
             inverse = 0;
@@ -2356,11 +2347,13 @@ static void refresh_display(void)
 // Clear inverse video mode.
     if (inverse)
     {
+        fflush(stdout); fflush(stderr);
 #ifdef WIN32
         SetConsoleTextAttribute(console_output_handle, plainAttributes);
 #else // !WIN32
         tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
         putp(exit_attribute_mode);
+        fflush(stdout); fflush(stderr);
         tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
     }
@@ -3022,6 +3015,7 @@ static void term_redisplay(void)
 static void term_clear_screen(void)
 {
 // This will then leave the input-line displayed at the top of your window...
+    fflush(stdout); fflush(stderr);
 #ifdef WIN32
     CONSOLE_SCREEN_BUFFER_INFO csb;
     DWORD size, nbytes;
@@ -3036,6 +3030,7 @@ static void term_clear_screen(void)
 #else // !WIN32
     tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
     if (clear_screen != NULL) putp(clear_screen);
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
     display_line[0] = input_line[0] + 1;
@@ -5698,7 +5693,7 @@ static void solaris_foreground(int n)
 #endif // SOLARIS
 
 static void set_foreground_colour(int n)
-{   fflush(stdout);
+{   fflush(stdout); fflush(stderr);
 #ifdef WIN32
     int k;
     if (*term_colour == 0) return;
@@ -5716,13 +5711,14 @@ static void set_foreground_colour(int n)
         else if (set_foreground) putp(tparm(set_foreground, n));
 #endif // !SOLARIS
     }
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
     fflush(stdout);
 }
 
 static void set_default_colour(void)
-{   fflush(stdout);
+{   fflush(stdout); fflush(stderr);
 #ifdef WIN32
     if (*term_colour != 0)
         SetConsoleTextAttribute(console_output_handle, plainAttributes);
@@ -5739,6 +5735,7 @@ static void set_default_colour(void)
         putp(tparm(set_a_foreground, 0));
 #endif // SOLARIS
     }
+    fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
     fflush(stdout);
