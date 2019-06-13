@@ -45,16 +45,34 @@
 #define FP_EVALUATE   1
 
 LispObject Lfrexp(LispObject env, LispObject a)
-{   double d;
-    int x;
-    d = float_of_number(a);
-    d = frexp(d, &x);
-    if (d == 1.0) d = 0.5, x++;
-    a = make_boxfloat(d, TYPE_DOUBLE_FLOAT);
-    return Lcons(nil, fixnum_of_int((int32_t)x), a);
+{
+    if (is_long_float(a))
+    {   float128_t d;
+        int x;
+        f128M_frexp(long_float_addr(a), &d, &x);
+        return cons(fixnum_of_int(x), make_boxfloat128(d));
+    }
+    else if (is_single_float(a))
+    {   int x;
+        float d = std::frexp(single_float_val(a), &x);
+        return cons(fixnum_of_int(x), pack_single_float(d));
+    }
+    else if (is_short_float(a))
+    {   int x;
+// I can afford to do the frexp on a double here.
+        double d = std::frexp(value_of_immediate_float(a), &x);
+        return cons(fixnum_of_int(x), pack_short_float(d));
+    }
+    else
+    {   int x;
+        double d = std::frexp(float_of_number(a), &x);
+// I clearly once encountered a C library that failed on this edge case!
+        if (d == 1.0) d = 0.5, x++;
+        return cons(fixnum_of_int(x),make_boxfloat(d));
+    }
 }
 
-// N.B. that the moduklar arithmetic functions must cope with any small
+// N.B. that the modular arithmetic functions must cope with any small
 // modulus that could fit in a fixnum.
 
 LispObject Lmodular_difference(LispObject env, LispObject a, LispObject b)

@@ -4024,7 +4024,7 @@ inline bool f128_nan(float128_t p)
             p.v[LOPART] != 0);
 }
 
-inline float128_t f128_ldexp(float128_t p, int x)
+inline float128_t ldexp(float128_t p, int x)
 {   if (f128_zero(p) ||
         f128_infinite(p) ||
         f128_nan(p)) return p;  // special cases!
@@ -4063,7 +4063,7 @@ inline float128_t f128_ldexp(float128_t p, int x)
     return p;
 }
 
-inline float128_t f128_frexp(float128_t p, int &x)
+inline float128_t frexp(float128_t p, int &x)
 {   if (f128_zero(p) ||
         f128_infinite(p) ||
         f128_nan(p))
@@ -4089,6 +4089,31 @@ inline float128_t f128_frexp(float128_t p, int &x)
     return p;
 }    
 
+// return fractional part and set i to integer part. Since this is in C++
+// I can use a reference argument for i now a pointer and I can overload the
+// vanilla name "modf" along the style of the way C++11 does.
+
+inline float128_t modf(float128_t d, float128_t &i)
+{   i = d;
+// Extract the exponent
+    int x = ((d.v[HIPART] >> 48) & 0x7fff) - 0x3ffe;
+// If |d| < 1.0 then the integer part is zero. 
+    if (x <= 0) i = f128_0;
+// Next look at cases where the integer part will life entirely within
+// the high word.
+    else if (x <= 49)   // 49 not 48 because of hidden bit.
+    {   i.v[HIPART] &= ASR(0xffff000000000000, x-1);
+        i.v[LOPART] = 0;
+    }
+    else if (x <= 112)
+    {   i.v[LOPART] &= (-(uint64_t)1) << (113-x);
+    }
+// If the number is large enough then then it is its own integer part, and
+// the fractional part will be zero.
+    else return f128_0;
+    return f128_sub(d, i);
+}
+
 #endif // softfloat_h
 
 // When doubles (and float128_t values where available) are to be
@@ -4102,7 +4127,7 @@ inline float128_t f128_frexp(float128_t p, int &x)
 
 // double_to_bits() turns a floating point value into an integer plus
 // an exponent. It sets mantissa*2^exponent = d. This function will not
-// give sensible output if passed an infinty or a NaN and so they should be
+// give sensible output if passed an infinity or a NaN and so they should be
 // filtered out before it is called.
 
 inline void double_to_bits(double d, int64_t &mantissa, int &exponent)
@@ -4119,6 +4144,7 @@ inline void double_to_bits(double d, int64_t &mantissa, int &exponent)
     d = d*9007199254740992.0; // 2^53;
     x -= 53;
     mantissa = (int64_t)d;
+// The conversion to an integer here will always be exact.
     exponent = 0;
 }
 
@@ -4131,16 +4157,31 @@ inline void double_to_bits(double d, int64_t &mantissa, int &exponent)
 // for inputs in 2^63 <= d < 2^64 the result will have top==0 and next
 // the integer value of d and len==2, with something similar for the
 // equivalent negative range. The leading 0 or -1 is required in those
-// cases.
+// cases. The result will be be any fractional part left over when d is
+// converted to an integer, and this can only be nonzero is cases where
+// |d| < 2^53.
+//
+// In the case that the floating point input is small its value may lie
+// between two integers, and in that case I might want to adjust it in the
+// sense of ROUND, TRUNC, FLOOR or CEILING. I will pass an extra argument
+// to explain which I require.
+
+enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 
 inline void double_to_virtual_bignum(double d,
-        int64_t &top, uint64_t &next, size_t &len)
-{
+        int64_t &top, uint64_t &next, size_t &len,
+        RoundingMode mode)
+{   if (d == 0.0)
+    {   top = next = 0;
+        len = 1;
+        return;
+    }
 // NaN leads to a returned value with zero length. Having a zero length
 // for a bignum is invalid, so this marks the situation well.
-    if (std::isnan(d))
+    else if (std::isnan(d))
     {   top = next = 0;
         len = 0;
+        return;
     }
 // Infinties turn into values with maximum length and a top digit that
 // captures the sign of the input.
@@ -4148,32 +4189,57 @@ inline void double_to_virtual_bignum(double d,
     {   top = d < 0.0 ? -1 : 1;
         next = 0;
         len = SIZE_MAX;
+        return;
     }
+// From here down I do not need to worry about zero, infinity or NaNs. But
+// I may need to think about rounding!
+    double intpart;
+    double fracpart = std::modf(d, &intpart);
     int64_t mantissa;
     int exponent;
-    double_to_bits(d, mantissa, exponent);
-// I will ignore zero and infinity and NaN values here just for now!
-    uint64_t lowbit = mantissa & -(uint64_t)mantissa;;
+    double_to_bits(intpart, mantissa, exponent);
+// Now I know intpart(d) = mantissa*2^exponent and mantissa is an integer, so 
+    uint64_t lowbit = mantissa & -(uint64_t)mantissa;
     int lz = 63 - nlz(lowbit); // low zero bits
     mantissa = ASR(mantissa, lz);
     exponent += lz;
-// now mantissa has its least significant bit a "1". At this stage the
-// input 1.0 should have turned into mantissa=1, exponent==0;
-    next = (uint64_t)mantissa;
-    top = d<0.0 ? -1 : 0;
-// Now I am going to assume |d| > 1.0 so exponent >= 0 here.
-    len = exponent/64;
-    exponent = exponent%64;
-// Now shift left by exponent, which is less than 64.
-    if (exponent != 0)
-    {   top = (top << exponent) | (next >> (64-exponent));
-        next = next << exponent;
+// Now mantissa has its least significant bit a "1". At this stage the
+// input 1.0 (eg) should have turned into mantissa=1, exponent==0. And 1.5
+// should have become mantissa=1, exponent=0 and fracpart = 0.5. fracpart has
+// the same sign as the original input.
+// So now I can apply my rounding mode...
+    switch (mode)
+    {
+    case ROUND:
+        if (fracpart >= 0.5) mantissa++;
+        else if (fracpart <= -0.5) mantissa--;
+        break;
+    case TRUNC:  // the effect of modf is this already.
+        break;
+    case FLOOR:
+        if (fracpart != 0.0 && d < 0.0) mantissa--;
+        break;
+    case CEILING:
+        if (fracpart != 0.0 && d > 0.0) mantissa++;
+        break;
     }
-// In some cases this has still left all the bits I care about in mid.
-    if (shrinkable(top, next) && len>1)
-    {   top = next;
-        next = 0;
-        len--;
+    next = (uint64_t)mantissa;
+    top = d<0.0 && mantissa!=0 ? -1 : 0;
+    if (exponent <= 0) len = 1;
+    else
+    {   len = 1 + exponent/64;
+        exponent = exponent%64;
+// Now shift left by exponent, which is less than 64 here.
+        if (exponent != 0)
+        {   top = (top << exponent) | (next >> (64-exponent));
+            next = next << exponent;
+        }
+// In some cases this has still left all the bits I care about in next.
+        if (shrinkable(top, next) && len>1)
+        {   top = next;
+            next = 0;
+            len--;
+        }
     }
 }
 
@@ -4185,9 +4251,15 @@ inline void double_to_virtual_bignum(double d,
 
 inline void float128_to_bits(float128_t d,
                              int64_t &mhi, uint64_t &mlo, int &exponent)
-{   if (f128_zero(d))
+{   if (f128_nan(d) || f128_zero(d))
     {   mhi = mlo = 0;
         exponent = 0;
+        return;
+    }
+    else if (f128_infinite(d))
+    {   if (f128_lt(d, f128_0)) mhi = mlo = -1;
+        else mhi = mlo = 0;
+        exponent = INT_MAX;
         return;
     }
 // With float128_t the easier way to go is to access the bit-patterns.
@@ -4210,13 +4282,28 @@ inline void float128_to_bits(float128_t d,
 // For a float128_t value I need to generate (up to) 3 64-bit digits for
 // the way it would end up as a bignum.
 
-inline void float128_to_virtual_bignum(float128_t d,
+inline float128_t float128_to_virtual_bignum(float128_t d,
         int64_t &top, uint64_t &mid, uint64_t &next, size_t &len)
-{   int64_t mhi;
+{   if (f128_zero(d))
+    {   top = mid = next = 0;
+        len = 1;
+        return f128_0;
+    }
+    else if (f128_nan(d))
+    {   top = mid = next = 0;
+        len = 0;
+        return f128_0;
+    }
+    else if (f128_infinite(d))
+    {   if (f128_lt(d, f128_0)) top = mid = next = -1;
+        else top = mid = next = 0;
+        len = SIZE_MAX;
+        return f128_0;
+    }
+    int64_t mhi;
     uint64_t mlo;
     int exponent;
     float128_to_bits(d, mhi, mlo, exponent);
-// I will ignore zero and infinity and NaN values here just for now!
     int lz;
     if (mlo == 0) lz = 64 + 63 - nlz(mhi & -(uint64_t)mhi);
     else lz = 63 - nlz(mlo & -mlo);
@@ -4270,6 +4357,7 @@ inline intptr_t round_double_to_int(double d)
     if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
     int x;
     d = std::round(d);
+    
     d = std::frexp(d, &x);
     d = std::ldexp(d, 53);
     intptr_t i = int_to_bignum((int64_t)d);
@@ -4479,7 +4567,7 @@ inline float cast_to_float(double d)
 // overflow leading to a result that is an IEEE infinity.
 
 inline float ldexpf(float a, int n)
-{   return cast_to_float(ldexp((double)a, n));
+{   return cast_to_float(std::ldexp((double)a, n));
 }
 
 inline float Float::op(int64_t a)
@@ -10406,6 +10494,15 @@ using arithlib_implementation::round_float128_to_int;
 using arithlib_implementation::trunc_float128_to_int;
 using arithlib_implementation::floor_float128_to_int;
 using arithlib_implementation::ceiling_float128_to_int;
+// These next few are just raw float128_t operations.
+using arithlib_implementation::f128_0;
+using arithlib_implementation::f128_1;
+using arithlib_implementation::f128_zero;
+using arithlib_implementation::f128_infinite;
+using arithlib_implementation::f128_nan;
+using arithlib_implementation::frexp;
+using arithlib_implementation::ldexp;
+using arithlib_implementation::modf;
 #endif // softfloat_h
 
 //using arithlib_implementation::negative;

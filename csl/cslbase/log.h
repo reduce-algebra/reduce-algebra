@@ -153,7 +153,7 @@ inline void printlog(const char *s, ...)
         if (logfile == NULL) logfile = std::fopen("/tmp/fwin.log", "w");
         if (logfile == NULL) return; // the file can not be used
         std::time_t now = std::time(NULL);
-        std::fprintf(logfile, "New log segment started %s\n",
+        std::fprintf(logfile, "New log segment started %s",
             std::asctime(std::localtime(&now)));
     }
     va_start(x, s);

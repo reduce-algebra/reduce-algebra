@@ -847,6 +847,18 @@ inline Header& flthdr(LispObject v)
 {   return *(Header *)((char *)(v) - TAG_BOXFLOAT);
 }
 
+inline bool is_short_float(LispObject v)
+{   if (!is_sfloat(v)) return false;
+    if (SIXTY_FOUR_BIT && (v & XTAG_FLOAT32) != 0) return false;
+    return true;
+}
+
+inline bool is_single_float(LispObject v)
+{   if (SIXTY_FOUR_BIT && is_sfloat(v) && (v & XTAG_FLOAT32) != 0)
+        return true;
+    return is_bfloat(v) && type_of_header(flthdr(v)) == TYPE_SINGLE_FLOAT;
+}
+
 inline bool is_double_float(LispObject v)
 {   return is_bfloat(v) && type_of_header(flthdr(v)) == TYPE_DOUBLE_FLOAT;
 }

@@ -1089,9 +1089,40 @@ static LispObject Nirightshift(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(RightShift::op(a1, a2));
 }
 
+static LispObject Nmodf(LispObject env, LispObject a1)
+{   float fi, ff;
+    double di, df;
+    float128_t li, lf;
+    switch (a1 & XTAG_BITS)
+    {
+    default:
+        return cons(a1, make_boxfloat(0.0));
+    case XTAG_SFLOAT:   // float28 or perhaps float32
+        ff = std::modf(value_of_immediate_float(a1), &fi);
+        if (SIXTY_FOUR_BIT && ((a1 & XTAG_FLOAT32) != 0))
+            return cons(pack_single_float(fi), pack_single_float(ff));
+        else return cons(pack_short_float(fi), pack_short_float(ff));
+    case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
+        switch (type_of_header(flthdr(a1)))
+        {
+        default:
+            aerror("badly formatted float data");
+        case TYPE_SINGLE_FLOAT:
+            ff = std::modf(single_float_val(a1), &fi);
+            return cons(pack_single_float(fi), pack_single_float(ff));
+        case TYPE_DOUBLE_FLOAT:
+            df = std::modf(double_float_val(a1), &di);
+            return cons(make_boxfloat(di), make_boxfloat(df));
+        case TYPE_LONG_FLOAT:
+            lf = arithlib_lowlevel::modf(long_float_val(a1), li);
+            return cons(make_boxfloat128(li), make_boxfloat128(lf));
+        }
+    }
+}
 
 setup_type const arith_setup[] =
 {
+    {"modf",                 G0W1,               Nmodf,              G2W1,               G3W1,               G4W1},
     {"newplus",              Nplus,              Nplus,              Nplus,              Nplus,              Nplus},
     {"newadd1",              G0W1,               Nadd1,              G2W1,               G3W1,               G4W1},
     {"newdifference",        G0W2,               G1W2,               Ndifference,        G3W2,               G4W2},

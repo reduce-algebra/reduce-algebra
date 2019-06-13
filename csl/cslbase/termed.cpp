@@ -237,52 +237,7 @@ extern char **loadable_packages, **switches;
 // should not intervene, Eg when stdin/stdout have been redirected. When
 // it is not enabled it can do simple getchar/putchar IO.
 
-static bool term_enabled = false;
-
-#ifndef DEBUG
-
-#define LOG(...)
-#define LOG1(...)
-
-#else
-
-#include <stdarg.h>
-
-// I have two copies or versions of the logging scheme. The intent is that
-// I will use LOG1() in my keyboard-manager thread and LOG() in the main
-// thread.
-
-static FILE *termed_logfile = NULL;
-
-inline void write_log(const char *s, ...)
-{   va_list x;
-    if (termed_logfile == NULL) termed_logfile = fopen("termed.log", "a");
-    if (termed_logfile == NULL) termed_logfile = fopen("/tmp/termed.log", "a");
-    va_start(x, s);
-    vfprintf(termed_logfile, s, x);
-    fflush(termed_logfile);
-    va_end(x);
-}
-
-#define LOG(...) \
-    do { write_log("%d: ", __LINE__); write_log(__VA_ARGS__); } while (0)
-
-static FILE *termed_logfile1 = NULL;
-
-inline void write_log1(const char *s, ...)
-{   va_list x;
-    if (termed_logfile1 == NULL) termed_logfile1 = fopen("termed1.log", "a");
-    if (termed_logfile1 == NULL) termed_logfile1 = fopen("/tmp/termed1.log", "a");
-    va_start(x, s);
-    vfprintf(termed_logfile1, s, x);
-    fflush(termed_logfile1);
-    va_end(x);
-}
-
-#define LOG1(...) \
-    do { write_log1("%d: ", __LINE__); write_log1(__VA_ARGS__); } while (0)
-
-#endif
+static bool termEnabled = false;
 
 // The keyboard will need to be handled in a thread - the reason for that
 // is that the code here sets the keyboard to "raw" mode and that lead
@@ -311,33 +266,33 @@ inline void write_log1(const char *s, ...)
 #define ALT_BIT    0x20000000
 #define ARROW_BIT  0x40000000
 
-static std::thread keyboard_thread;
+static std::thread keyboardThread;
 
 #ifdef WIN32
-static HANDLE keyboard_thread_handle = (HANDLE)(-1);
+static HANDLE keyboardThreadHandle = (HANDLE)(-1);
 
-static void quit_keyboard_thread()
-{   while (keyboard_thread_handle == (HANDLE)(-1)) Sleep(10);
-    TerminateThread(keyboard_thread_handle, 0);
-    keyboard_thread.join();
+static void quitKeyboardThread()
+{   while (keyboardThreadHandle == (HANDLE)(-1)) Sleep(10);
+    TerminateThread(keyboardThreadHandle, 0);
+    keyboardThread.join();
 }
 
-static INPUT_RECORD keyboard_buffer[1];
-static HANDLE console_input_handle, console_output_handle;
+static INPUT_RECORD keyboardBuffer[1];
+static HANDLE consoleInputHandle, consoleOutputHandle;
 
 #else // !WIN32
 
-static int keyboard_pipe[2];    // entry 0 is read end, 1 is write end
+static int keyboardPipe[2];    // entry 0 is read end, 1 is write end
 
-static void quit_keyboard_thread()
-{   write(keyboard_pipe[1], "\n\n\n\n", 4);
-    keyboard_thread.join();
-    close(keyboard_pipe[1]);
+static void quitKeyboardThread()
+{   write(keyboardPipe[1], "\n\n\n\n", 4);
+    keyboardThread.join();
+    close(keyboardPipe[1]);
 }
 
 #endif // !WIN32
 
-int get_from_keyboard()
+int getFromKeyboard()
 {
 #ifdef WIN32
 // I have so much less messing around here because on Windows I will
@@ -353,25 +308,25 @@ int get_from_keyboard()
 // I has a keyboard event with a residual repeat-count left over I will
 // just have to handle that. Otherwise I need to call ReadConsoleInput to
 // get some more. If that call fails I will return EOF as an error indication.
-        if ((keyboard_buffer[0].EventType != KEY_EVENT ||
-             keyboard_buffer[0].Event.KeyEvent.wRepeatCount == 0) &&
-            !ReadConsoleInput(console_input_handle, keyboard_buffer, 1, &n))
+        if ((keyboardBuffer[0].EventType != KEY_EVENT ||
+             keyboardBuffer[0].Event.KeyEvent.wRepeatCount == 0) &&
+            !ReadConsoleInput(consoleInputHandle, keyboardBuffer, 1, &n))
         {   return EOF;
         }
-// By the time I get here keyboard_buffer will hold an event. It might be
+// By the time I get here keyboardBuffer will hold an event. It might be
 // one of a range of sorts! At present I only do anything at all with KEY
 // events, but I could potentially look for mouse activity.
-        switch (keyboard_buffer[0].EventType)
+        switch (keyboardBuffer[0].EventType)
         {   default:              // Ignore non-keyboard event
                 continue;
             case KEY_EVENT:
-                keyboard_buffer[0].Event.KeyEvent.wRepeatCount--;
-                down = keyboard_buffer[0].Event.KeyEvent.bKeyDown;
+                keyboardBuffer[0].Event.KeyEvent.wRepeatCount--;
+                down = keyboardBuffer[0].Event.KeyEvent.bKeyDown;
                 if (!down) continue; // discard KEY-UP events
-                key = keyboard_buffer[0].Event.KeyEvent.wVirtualKeyCode;
-                ascii = keyboard_buffer[0].Event.KeyEvent.uChar.AsciiChar;
-                unicode = keyboard_buffer[0].Event.KeyEvent.uChar.UnicodeChar;
-                ctrl = keyboard_buffer[0].Event.KeyEvent.dwControlKeyState;
+                key = keyboardBuffer[0].Event.KeyEvent.wVirtualKeyCode;
+                ascii = keyboardBuffer[0].Event.KeyEvent.uChar.AsciiChar;
+                unicode = keyboardBuffer[0].Event.KeyEvent.uChar.UnicodeChar;
+                ctrl = keyboardBuffer[0].Event.KeyEvent.dwControlKeyState;
 // If Windows thinks that the key that has been hit corresponded to an
 // ordinary character than I will just return it. No hassle here! Well
 // not quite so easy after all. If ALT is held down at the same time as
@@ -381,7 +336,7 @@ int get_from_keyboard()
 // notionally system independent key-code for "@" is 0xc0 (well I can worry
 // in case that is really for "'") so I test for that. Anyway at least
 // with my keyboard this lets "^@" get through!
-//              if (key != 0x11) LOG("\nunicode=%x VK=%x ctrl=%x\n", unicode, key, ctrl);
+//              if (key != 0x11) log("\nunicode=%x VK=%x ctrl=%x\n", unicode, key, ctrl);
                 if (unicode != 0 || key == 0xc0)
                 {   if (ctrl & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))
                         unicode |= ALT_BIT;
@@ -423,15 +378,15 @@ int get_from_keyboard()
 // technique used here is to arrange that when this thread blocks at all
 // it waits not just for keyboard input but also for a signal byte on
 // a pipe, where that byte will be posted when it should give up.
-    fd_set read_fd;
-    FD_ZERO(&read_fd);
-    int n1 = fileno(stdin), n2 = keyboard_pipe[0];
-    FD_SET(n1, &read_fd);
-    FD_SET(n2, &read_fd);
+    fd_set readFd;
+    FD_ZERO(&readFd);
+    int n1 = fileno(stdin), n2 = keyboardPipe[0];
+    FD_SET(n1, &readFd);
+    FD_SET(n2, &readFd);
     int n = n1 > n2 ? n1 : n2;
-    int r = select(n+1, &read_fd, NULL, NULL, NULL);
+    int r = select(n+1, &readFd, NULL, NULL, NULL);
     if (r == -1) abort(); // select failed
-    if (FD_ISSET(n2, &read_fd))
+    if (FD_ISSET(n2, &readFd))
     {   close(n2);
         return EOF; // pipe told us to quit!
     }
@@ -439,7 +394,7 @@ int get_from_keyboard()
 // would block while getchar can do extra strange processing...
     char buffer[1];
     if (read(fileno(stdin), buffer, 1) == 1)
-    {   // LOG1("read() => %.2x\n", buffer[0]);
+    {   // log("read() => %.2x\n", buffer[0]);
         return buffer[0] & 0xff;
     }
 // stdin could become unblocked by virtue of a end of file situation. I will
@@ -453,11 +408,11 @@ int get_from_keyboard()
 // and just discard ones beyond that.
 
 #define TYPEAHEAD_MAX 1000
-static char typeahead_buffer[TYPEAHEAD_MAX];
-static unsigned int ahead_in = 0, ahead_out = 0;
-static bool eof_seen = false;
-static std::mutex keyboard_mutex;
-static std::condition_variable keyboard_condvar;
+static char typeaheadBuffer[TYPEAHEAD_MAX];
+static unsigned int aheadIn = 0, aheadOut = 0;
+static bool eofSeen = false;
+static std::mutex keyboardMutex;
+static std::condition_variable keyboardCondvar;
 
 typedef int(keyboard_interrupt_callback)(int);
 
@@ -506,10 +461,10 @@ void set_keyboard_callbacks(keyboard_interrupt_callback *f1)
 // ONLY thing they are allowed to do is to set an atomic variable!
  
 
-static void keyboard_thread_function()
+static void keyboardThreadFunction()
 {
 #ifdef WIN32
-    keyboard_thread_handle = GetCurrentThread();
+    keyboardThreadHandle = GetCurrentThread();
 #endif
 // Here I will read characters constantly. If I see a ^C or a ^G I will
 // call the CSL function that reports an exception Well doing that ties this
@@ -521,25 +476,25 @@ static void keyboard_thread_function()
 // and if the main program asks for a wide character then a sequence of those
 // will be assembled as necessary using UTF8 encoding.
 // If ^C or ^G is encountered that will flush the buffer...
-    ahead_in = ahead_out = 0;
-    eof_seen = false;
-    bool prev_was_esc = false;
+    aheadIn = aheadOut = 0;
+    eofSeen = false;
+    bool prevWasEsc = false;
     while (true)
-    {   int c = get_from_keyboard();
+    {   int c = getFromKeyboard();
 //      if (c >= ' ' && c < 0x7f)
-//          LOG1("Keyboard delivers %.2x (%c) prev=%d\n", c, c, prev_was_esc);
-//      else LOG1("Keyboard delivers %.2x prev=%d\n", c, prev_was_esc);
-        {   std::lock_guard<std::mutex> lock(keyboard_mutex);
+//          log("Keyboard delivers %.2x (%c) prev=%d\n", c, c, prevWasEsc);
+//      else log("Keyboard delivers %.2x prev=%d\n", c, prevWasEsc);
+        {   std::lock_guard<std::mutex> lock(keyboardMutex);
             if (c == EOF)
-            {   eof_seen = true;
+            {   eofSeen = true;
                 break;
             }
-            else if (c == EOF) eof_seen = true;
+            else if (c == EOF) eofSeen = true;
             else if (c == CTRL_C ||
                      c == CTRL_G ||
                      c == (CTRL_C | ALT_BIT) ||
                      c == (CTRL_G | ALT_BIT))
-            {   ahead_in = ahead_out;
+            {   aheadIn = aheadOut;
 // If the user types ^C or ^G that cancels all typed-ahead characters. Then
 // if there is a callback registered that gets called, otherwise the single
 // character gets provided as input, but any previous type-ahead is discarded..
@@ -550,10 +505,10 @@ static void keyboard_thread_function()
 // may be able to use either ALT-^C (all pressed at the same time) or ESC
 // pressed first and then ^C.
                 if (async_interrupt_callback != NULL)
-                {   if ((c == CTRL_C && prev_was_esc) ||
+                {   if ((c == CTRL_C && prevWasEsc) ||
                         c == (CTRL_C|ALT_BIT))
                         (*async_interrupt_callback)(QUIT_PROGRAM);
-                    else if ((c == CTRL_G && prev_was_esc) ||
+                    else if ((c == CTRL_G && prevWasEsc) ||
                         c == (CTRL_G|ALT_BIT))
                         (*async_interrupt_callback)(BREAK_LOOP);
                     else if (c == CTRL_C)
@@ -565,37 +520,37 @@ static void keyboard_thread_function()
 // to terminate leaps into action and the code that is eventually waiting
 // for input gets to see something - and when it does so it will notice
 // the event I have just posted.
-                typeahead_buffer[ahead_in] = '\n';
-                ahead_in = (ahead_in + 1) % TYPEAHEAD_MAX;
+                typeaheadBuffer[aheadIn] = '\n';
+                aheadIn = (aheadIn + 1) % TYPEAHEAD_MAX;
             }
             else
-            {   unsigned int in = (ahead_in + 1) % TYPEAHEAD_MAX;
-                if (in != ahead_out)   // Do not put into a full buffer!
-                {   typeahead_buffer[ahead_in] = c;
-                    ahead_in = in;
+            {   unsigned int in = (aheadIn + 1) % TYPEAHEAD_MAX;
+                if (in != aheadOut)   // Do not put into a full buffer!
+                {   typeaheadBuffer[aheadIn] = c;
+                    aheadIn = in;
                 }
-                prev_was_esc = (c == 0x1b);
+                prevWasEsc = (c == 0x1b);
             }
         }
-        keyboard_condvar.notify_one();
+        keyboardCondvar.notify_one();
     }
 }
 
-int getc_from_thread()
+int getcFromThread()
 {   int ch;
-    if (!term_enabled) ch = getchar(); // degenerate case!
+    if (!termEnabled) ch = getchar(); // degenerate case!
     else
-    {   std::unique_lock<std::mutex> lock(keyboard_mutex);
+    {   std::unique_lock<std::mutex> lock(keyboardMutex);
 // It is important that if the user types a ^C that the keyboard thread
-// notified keyboard_condvar so that this function, which is in the main
+// notified keyboardCondvar so that this function, which is in the main
 // thread, is released.
-        while (ahead_in == ahead_out && !eof_seen) keyboard_condvar.wait(lock);
-        if (ahead_in == ahead_out) return EOF;
-        ch = typeahead_buffer[ahead_out];
-        ahead_out = (ahead_out + 1) % TYPEAHEAD_MAX;
+        while (aheadIn == aheadOut && !eofSeen) keyboardCondvar.wait(lock);
+        if (aheadIn == aheadOut) return EOF;
+        ch = typeaheadBuffer[aheadOut];
+        aheadOut = (aheadOut + 1) % TYPEAHEAD_MAX;
 //      if (ch >= ' ' && ch < 0x7f)
-//          LOG("getc_from_thread = %.2x (%c)\n", ch, ch);
-//      else LOG("getc_from_thread = %.2x\n", ch);
+//          log("getcFromThread = %.2x (%c)\n", ch, ch);
+//      else log("getcFromThread = %.2x\n", ch);
     }
     return ch;
 }
@@ -621,25 +576,25 @@ int getc_from_thread()
 // block. This function is only used when cursor-addressing is not available
 // and hence local editing can not be supported much.
 
-int getwc_from_thread()
-{   int c1 = getc_from_thread();
+int getwcFromThread()
+{   int c1 = getcFromThread();
     if (c1 == EOF) return WEOF;
     if ((c1 & 0x80) == 0) return c1 & 0xff;
-    int c2 = getc_from_thread();
+    int c2 = getcFromThread();
     if (c2 == EOF) return WEOF;
     if (c2 == CTRL_C || c2 == CTRL_G) return c2;
     if ((c2 & 0xc0) != 0x80) return WEOF; // malformed UTF8
     c2 &= 0x3f;
     if ((c1 & 0xe0) == 0xc0)
         return ((c1 & 0x1f)<<6) | c2;
-    int c3 = getc_from_thread();
+    int c3 = getcFromThread();
     if (c3 == EOF) return WEOF;
     if (c3 == CTRL_C || c3 == CTRL_G) return c3;
     if ((c3 & 0xc0) != 0x80) return WEOF; // malformed UTF8
     c3 &= 0x3f;
     if ((c1 & 0xf0) == 0xe0)
         return ((c1 & 0xf)<<12) | (c2<<6) | c3;
-    int c4 = getc_from_thread();
+    int c4 = getcFromThread();
     if (c4 == EOF) return WEOF;
     if (c4 == CTRL_C || c4 == CTRL_G) return c4;
     if ((c4 & 0xc0) != 0x80) return WEOF; // malformed UTF8
@@ -651,17 +606,17 @@ int getwc_from_thread()
 
 #ifdef WIN32
 
-static void start_keyboard_thread()
-{   keyboard_thread = std::thread(keyboard_thread_function);
-    atexit(quit_keyboard_thread);
+static void startKeyboardThread()
+{   keyboardThread = std::thread(keyboardThreadFunction);
+    atexit(quitKeyboardThread);
 }
 
 #else // !WIN32
 
-static void start_keyboard_thread()
-{   if (pipe(keyboard_pipe) == -1) printf("pipe creation failed\n");
-    keyboard_thread = std::thread(keyboard_thread_function);
-    atexit(quit_keyboard_thread);
+static void startKeyboardThread()
+{   if (pipe(keyboardPipe) == -1) printf("pipe creation failed\n");
+    keyboardThread = std::thread(keyboardThreadFunction);
+    atexit(quitKeyboardThread);
 }
 
 #endif // !WIN32
@@ -810,7 +765,8 @@ void input_history_init(const char *argv0,
     if (sscanf(hl, "History %u %u", &hsize, &pinput_history_next) != 2 ||
         hsize != INPUT_HISTORY_SIZE)
         return; // malformed
-    phistoryNumber = phistoryLast = pinput_history_next - 1;
+    phistoryLast = pinput_history_next - 1;
+    phistoryNumber = pinput_history_next;
     printlog("phistoryNumber = %d\n", phistoryNumber);
     printlog("phistoryLast = %d\n", phistoryLast);
     printlog("pinput_history_next = %d\n", pinput_history_next);
@@ -874,7 +830,7 @@ void input_history_init(const char *argv0,
             {   printlog("-%d\n", blankcount);
                 blankcount = 0;
             }
-            printlog("\"");
+            printlog("%d: \"", j);
             int ch;
             wchar_t *ll = l;
             while ((ch = *ll++) != 0)
@@ -968,6 +924,7 @@ void input_history_stage(const wchar_t *s)
 
 void input_history_add(const wchar_t *s)
 {   wchar_t *scopy;
+    printlog("input_history_add(%ls)\n", s);
     int p;
 // If the line I am attempting to add is empty or is identical to the
 // most recently added entry that is already present I will do nothing.
@@ -979,6 +936,7 @@ void input_history_add(const wchar_t *s)
 //         3};
 // had better not discard any of the "1,2," lines.
     if (s==NULL || *s==0) return;
+    printlog("input_history_next = %d\n", input_history_next);
     p = input_history_next;
     if (p > 0 &&
         (scopy = input_history[(p-1)%INPUT_HISTORY_SIZE]) != NULL &&
@@ -992,8 +950,11 @@ void input_history_add(const wchar_t *s)
 // I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
 // entries.
     if (input_history[p] != NULL) free(input_history[p]);
+    printlog("insert new item in slot %d\n", p);
     input_history[p] = scopy;
+    historyLast = input_history_next;
     input_history_next++;
+    historyNumber = input_history_next;
     if (scopy != NULL)
     {   p = wcslen(scopy);
         if (p > longest_history_line) longest_history_line = p;
@@ -1010,6 +971,7 @@ const wchar_t *input_history_get(int n)
         n < input_history_next-INPUT_HISTORY_SIZE) return NULL;
     s = input_history[n % INPUT_HISTORY_SIZE];
 // The NULL here would be if malloc had failed earlier.
+    printlog("input_history_get(%d) = %ls\n", n, s==NULL ? L"<nil>" : s);
     if (s == NULL) return L"";
     else return s;
 }
@@ -1049,11 +1011,11 @@ static wchar_t *term_wide_plain_getline(void)
     input_line[0] = 0;
     int n = 0;
     wint_t ch;
-    for (ch=getwc_from_thread();
+    for (ch=getwcFromThread();
          ch!=WEOF && ch!='\n' &&
          ch!=CTRL_C && ch!=CTRL_G &&
          ch!=CTRL_D;
-         ch=getwc_from_thread())
+         ch=getwcFromThread())
     {
 // I will expand the buffer so that if sizeof(wchar_t)==2 I have 1.5 times
 // as many bytes as there are wchar_t items in use. This is so that when and
@@ -1094,7 +1056,7 @@ static wchar_t *term_wide_plain_getline(void)
 void term_setprompt(const char *s)
 {   int i;
     prompt_length = prompt_width = strlen(s);
-//  LOG("prompt = %s len %d\n", s, prompt_length);
+//  log("prompt = %s len %d\n", s, prompt_length);
 // I truncate prompts if they are really ridiculous in length since otherwise
 // it may look silly.
     if (prompt_length > MAX_PROMPT_LENGTH) prompt_length = MAX_PROMPT_LENGTH;
@@ -1130,7 +1092,7 @@ void term_setprompt(const char *s)
 // in doing this if I do not have cursor-editing enabled! And if I am not
 // using Reduce I will not expect the prompts to change and so history
 // will be collected line by line.
-        if (term_enabled && pending_history_line != NULL && changed)
+        if (termEnabled && pending_history_line != NULL && changed)
         {   input_history_add(pending_history_line);
 // Adding an entry could cause an old one to be discarded. So I now ensure
 // that I know what the first and last recorded numbers are.
@@ -1179,7 +1141,7 @@ void term_wide_setprompt(const wchar_t *s)
     for (s=termed_prompt_string; *s!=0; s++)
         if (!is_high_surrogate(*s)) prompt_width++;
 #ifndef EMBEDDED
-    if (term_enabled && pending_history_line != NULL && changed)
+    if (termEnabled && pending_history_line != NULL && changed)
     {   input_history_add(pending_history_line);
 // Adding an entry could cause an old one to be discarded. So I now ensure
 // that I know what the first and last recorded numbers are.
@@ -1208,17 +1170,17 @@ static void term_putchar(int c)
 // (wchar_t *) style wide string where surrogates can already exist.
 
 #ifdef WIN32
-    if (term_enabled)
+    if (termEnabled)
     {   DWORD nwritten;
         wchar_t buffer[4];
         if (c <= 0xffff)
         {   buffer[0] = c;
-            WriteConsole(console_output_handle, buffer, 1, &nwritten, NULL);
+            WriteConsole(consoleOutputHandle, buffer, 1, &nwritten, NULL);
         }
         else
         {   buffer[0] = 0xd800 + (((c - 0x10000) >> 10) & 0x3ff);
             buffer[1] = 0xdc00 + (c & 0x3ff);
-            WriteConsole(console_output_handle, buffer, 2, &nwritten, NULL);
+            WriteConsole(consoleOutputHandle, buffer, 2, &nwritten, NULL);
         }
         return;
     }
@@ -1380,7 +1342,7 @@ static unsigned int cursorx, cursory,
                 max_cursory;
 int insert_point;
 
-static int term_can_invert, invert_start, invert_end;
+static int term_can_invert, invert_start, invertEnd;
 
 #ifdef WIN32
 
@@ -1408,17 +1370,17 @@ static void term_putchar(int c)
 // not int. However I am going to be sloppy and assume that int is good enough.
 
 #ifdef WIN32
-    if (term_enabled)
+    if (termEnabled)
     {   DWORD nwritten;
         wchar_t buffer[4];
         if (c <= 0xffff)
         {   buffer[0] = c;
-            WriteConsole(console_output_handle, buffer, 1, &nwritten, NULL);
+            WriteConsole(consoleOutputHandle, buffer, 1, &nwritten, NULL);
         }
         else
         {   buffer[0] = 0xd800 + (((c - 0x10000) >> 10) & 0x3ff);
             buffer[1] = 0xdc00 + (c & 0x3ff);
-            WriteConsole(console_output_handle, buffer, 2, &nwritten, NULL);
+            WriteConsole(consoleOutputHandle, buffer, 2, &nwritten, NULL);
         }
         return;
     }
@@ -1443,7 +1405,7 @@ static void measure_screen(void)
 // on some systems I may not be able to!
 #ifdef WIN32
     CONSOLE_SCREEN_BUFFER_INFO csb;
-    if (!GetConsoleScreenBufferInfo(console_output_handle, &csb)) return;
+    if (!GetConsoleScreenBufferInfo(consoleOutputHandle, &csb)) return;
     columns = csb.srWindow.Right - csb.srWindow.Left + 1;
     lines = csb.srWindow.Bottom - csb.srWindow.Top + 1;
 #else
@@ -1465,7 +1427,7 @@ static void measure_screen(void)
 #endif // TIOCGWINSZ
 #endif // HAVE_SYS_IOCTL_H
 #endif // WIN32
-//  LOG("[screen:%dx%d]\n", columns, lines);
+//  log("[screen:%dx%d]\n", columns, lines);
 }
 
 #ifdef WIN32
@@ -1511,7 +1473,7 @@ int term_setup(const char *argv0, const char *colour)
         return 1;  // failed to allocate buffers
     }
     else input_line_size = 200;
-    term_enabled = false;
+    termEnabled = false;
     return 2;
 #else // !EMBEDDED
 #ifdef WIN32
@@ -1523,8 +1485,8 @@ int term_setup(const char *argv0, const char *colour)
 // it is probably to do with access rights! But it was painful to track down.
 //  freopen("CONOUT$", "w+", stdout);
     freopen(NULL, "w+", stdout);
-    term_enabled = false;
-    keyboard_buffer[0].Event.KeyEvent.wRepeatCount = 0;
+    termEnabled = false;
+    keyboardBuffer[0].Event.KeyEvent.wRepeatCount = 0;
     term_colour = (colour == NULL ? "-" : colour);
     input_line = (wchar_t *)malloc(200*sizeof(wchar_t));
     display_line = (wchar_t *)malloc(200*sizeof(wchar_t));
@@ -1535,19 +1497,19 @@ int term_setup(const char *argv0, const char *colour)
     else input_line_size = 200;
 // Standard input must be from a character device and must be accepted
 // by the GetConsoleMode function
-    console_input_handle = GetStdHandle(STD_INPUT_HANDLE);
-    console_output_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (GetFileType(console_input_handle) != FILE_TYPE_CHAR)
+    consoleInputHandle = GetStdHandle(STD_INPUT_HANDLE);
+    consoleOutputHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (GetFileType(consoleInputHandle) != FILE_TYPE_CHAR)
         return 2;   // stdin is not from a console
-    if (!GetConsoleMode(console_input_handle, &w))
+    if (!GetConsoleMode(consoleInputHandle, &w))
         return 3;    // failed to get stdin console mode
 // Standard output must be a character device and a ConsoleScreenBuffer
-    console_output_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (GetFileType(console_output_handle) != FILE_TYPE_CHAR)
+    consoleOutputHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (GetFileType(consoleOutputHandle) != FILE_TYPE_CHAR)
         return 4; // stdout not to a console
-    if (!GetConsoleScreenBufferInfo(console_output_handle, &csb))
+    if (!GetConsoleScreenBufferInfo(consoleOutputHandle, &csb))
         return 5;  // failed to get stdout console information
-    if (!GetConsoleMode(console_input_handle, &stdin_attributes))
+    if (!GetConsoleMode(consoleInputHandle, &stdin_attributes))
         return 6; // GetConsoleMode failed
 // I guess this is where I could customize colours in the Windows case...
     plainAttributes = csb.wAttributes;
@@ -1558,7 +1520,7 @@ int term_setup(const char *argv0, const char *colour)
                      FOREGROUND_INTENSITY | BACKGROUND_INTENSITY);
     promptAttributes = plainAttributes ^ FOREGROUND_BLUE;
     inputAttributes = plainAttributes ^ FOREGROUND_RED;
-    if (!SetConsoleMode(console_input_handle,
+    if (!SetConsoleMode(consoleInputHandle,
                         ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT))
         return 8; // unable to set console attributes on stdin
     columns = csb.srWindow.Right - csb.srWindow.Left + 1;
@@ -1573,7 +1535,7 @@ int term_setup(const char *argv0, const char *colour)
     int errval, errcode;
     const char *s;
     struct termios my_term;
-    term_enabled = false;
+    termEnabled = false;
     term_colour = (colour == NULL ? "-" : colour);
     {   s = term_colour;
         if (*s)
@@ -1689,11 +1651,11 @@ int term_setup(const char *argv0, const char *colour)
     searchFlags = 0;
     input_history_init(argv0, historyFirst, historyLast, historyNumber,
                        input_history_next, longest_history_line);
-    invert_start = invert_end = -1;
+    invert_start = invertEnd = -1;
 // The terminal is now set up. Start the thread that keeps trying to
 // read from it!
-    start_keyboard_thread();
-    term_enabled = true;
+    startKeyboardThread();
+    termEnabled = true;
     return 0;
 #endif // !EMBEDDED
 }
@@ -1707,9 +1669,9 @@ void term_close(void)
 #ifndef EMBEDDED
 #ifdef WIN32
     if (*term_colour != 0)
-        SetConsoleTextAttribute(console_output_handle, plainAttributes);
+        SetConsoleTextAttribute(consoleOutputHandle, plainAttributes);
 #else // !WIN32
-    if (term_enabled)
+    if (termEnabled)
     {   tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
         if (*term_colour == 0) /* nothing */;
         else if (orig_pair) putp(orig_pair);
@@ -1723,7 +1685,7 @@ void term_close(void)
 #endif // !SOLARIS
         }
         tcsetattr(stdin_handle, TCSADRAIN, &shell_term);
-//      LOG("closing terminal\n");
+//      log("closing terminal\n");
     }
 #endif // !WIN32
     if (display_line != NULL)
@@ -1736,7 +1698,7 @@ void term_close(void)
         input_line = NULL;
     }
     input_history_end();
-    term_enabled = false;
+    termEnabled = false;
 }
 
 #ifndef EMBEDDED
@@ -1757,11 +1719,11 @@ static int term_getchar(void)
 // thread to handle it. I may in fact take this simplistic stance if
 // input is from a terminal that is dumb and I am on a platform where
 // terminal control is not available.
-    if (!term_enabled) return getchar();
+    if (!termEnabled) return getchar();
 #ifdef WIN32
 // On Windows my keyboard-managing thread deals with control keys,
 // repeats and the like.
-    return getc_from_thread();
+    return getcFromThread();
 #else // !WIN32
 // In the Unix-like case I run a state-machine to grab sequences of
 // characters by way of escape codes. One consequence of this is that
@@ -1784,7 +1746,7 @@ static int term_getchar(void)
 //  key_right = tgetstr("kr", &p);
 //  key_dc = tgetstr("kD", &p);
 //  key_home = tgetstr("kh", &p);
-//  key_end = tgetstr("@7", &p);
+//  keyEnd = tgetstr("@7", &p);
 //
 // So rather than trying to have a general state machine to parse things
 // perhaps I could just check against the above strings (when they are
@@ -1800,7 +1762,7 @@ static int term_getchar(void)
     int state = BASE_STATE, esc_esc = 0, ch, numval1=0, numval2=0;
     for (;;)
     {   int c1, c2, c3;
-        ch = getc_from_thread();
+        ch = getcFromThread();
         if (ch == EOF) return EOF;
         ch &= 0xff;
 // Here I will swallow extra octets if the leading one seems to introduce
@@ -1826,7 +1788,7 @@ static int term_getchar(void)
                 break;  // out of place continuation marker
             case 0xc0:
             case 0xd0:
-                c1 = getc_from_thread();
+                c1 = getcFromThread();
                 if (c1 == EOF) return EOF;
                 c1 &= 0xff;
                 if ((c1 & 0xc0) != 0x80)
@@ -1836,14 +1798,14 @@ static int term_getchar(void)
                 ch = ((ch & 0x1f) << 6) | (c1 & 0x3f);
                 break;
             case 0xe0:
-                c1 = getc_from_thread();
+                c1 = getcFromThread();
                 if (c1 == EOF) return EOF;
                 c1 &= 0xff;
                 if ((c1 & 0xc0) != 0x80)
                 {   ch = '?'; // not continuation
                     break;
                 }
-                c2 = getc_from_thread();
+                c2 = getcFromThread();
                 if (c2 == EOF) return EOF;
                 c1 &= 0xff;
                 if ((c2 & 0xc0) != 0x80)
@@ -1857,21 +1819,21 @@ static int term_getchar(void)
                 {   ch = '?';
                     break;
                 }
-                c1 = getc_from_thread();
+                c1 = getcFromThread();
                 if (c1 == EOF) return EOF;
                 c1 &= 0xff;
                 if ((c1 & 0xc0) != 0x80)
                 {   ch = '?';
                     break;
                 } // not continuation
-                c2 = getc_from_thread();
+                c2 = getcFromThread();
                 if (c2 == EOF) return EOF;
                 c2 &= 0xff;
                 if ((c2 & 0xc0) != 0x80)
                 {   ch = '?';
                     break;
                 } // not continuation
-                c3 = getc_from_thread();
+                c3 = getcFromThread();
                 if (c3 == EOF) return EOF;
                 c3 &= 0xff;
                 if ((c3 & 0xc0) != 0x80)
@@ -1882,8 +1844,8 @@ static int term_getchar(void)
                      ((c2 & 0x3f) << 6) | (c3 & 0x3f);
                 break;
         }
-//      if (ch >= ' ' && ch < 0x7f) LOG("RAW ch=%.2x : <%c>\n", ch, ch);
-//      else LOG("RAW ch=%.2x\n", ch);
+//      if (ch >= ' ' && ch < 0x7f) log("RAW ch=%.2x : <%c>\n", ch, ch);
+//      else log("RAW ch=%.2x\n", ch);
         switch (state)
         {   default:
             case BASE_STATE:
@@ -1974,9 +1936,9 @@ static void term_move_down(int del)
 // I am in general interacting with a (slow) user here I will not try ANY
 // optimisations at all!
     CONSOLE_SCREEN_BUFFER_INFO csb;
-    if (!GetConsoleScreenBufferInfo(console_output_handle, &csb)) return;
+    if (!GetConsoleScreenBufferInfo(consoleOutputHandle, &csb)) return;
     csb.dwCursorPosition.Y += del;
-    SetConsoleCursorPosition(console_output_handle, csb.dwCursorPosition);
+    SetConsoleCursorPosition(consoleOutputHandle, csb.dwCursorPosition);
 // I do not quite know if the above is always what I want! When I move down
 // and I start on the line that is the lowest one on the screen I do really
 // want a new line to appear for me to move onto.
@@ -2005,9 +1967,9 @@ static void term_move_right(int del)
     fflush(stdout); fflush(stderr);
 #ifdef WIN32
     CONSOLE_SCREEN_BUFFER_INFO csb;
-    if (!GetConsoleScreenBufferInfo(console_output_handle, &csb)) return;
+    if (!GetConsoleScreenBufferInfo(consoleOutputHandle, &csb)) return;
     csb.dwCursorPosition.X += del;
-    SetConsoleCursorPosition(console_output_handle, csb.dwCursorPosition);
+    SetConsoleCursorPosition(consoleOutputHandle, csb.dwCursorPosition);
 // The above would be unsatisfactory if it ever happened that the
 // movement was liable to take me beyond the width of the terminal, and
 // there is a special worry about the bottom rightmost position on the
@@ -2046,9 +2008,9 @@ static void term_move_first_column(void)
     fflush(stdout); fflush(stderr);
 #ifdef WIN32 
     CONSOLE_SCREEN_BUFFER_INFO csb;
-    if (!GetConsoleScreenBufferInfo(console_output_handle, &csb)) return;
+    if (!GetConsoleScreenBufferInfo(consoleOutputHandle, &csb)) return;
     csb.dwCursorPosition.X = 0;
-    SetConsoleCursorPosition(console_output_handle, csb.dwCursorPosition);
+    SetConsoleCursorPosition(consoleOutputHandle, csb.dwCursorPosition);
     cursorx = 0;
     return;
 #else // !WIN32
@@ -2067,7 +2029,7 @@ static void term_bell(void)
     Beep(1000, 100);
 #else // !WIN32
     tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
-    if (term_enabled && bell) putp(bell);
+    if (termEnabled && bell) putp(bell);
     else putchar(0x07);
     fflush(stdout); fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
@@ -2093,7 +2055,7 @@ static void term_bell(void)
 //     lines           height of the screen
 //     term_can_invert display is capable of inverse video
 //     invert_start,
-//     invert_end      region (if any) to highlight.
+//     invertEnd      region (if any) to highlight.
 //
 // [I have annotated items that are updated here with (!)]
 //
@@ -2144,7 +2106,7 @@ static void term_bell(void)
 
 static int line_wrap(int ch, int tab_offset)
 {
-//  LOG("wrap_line ch=%#x tab_offset=%d cursorx=%d\n", ch, tab_offset, cursorx);
+//  log("wrap_line ch=%#x tab_offset=%d cursorx=%d\n", ch, tab_offset, cursorx);
     cursorx++;
 // "columns" is defined as a macro in <term.h> that maps onto an int value.
 // I think that the number of lines and columns should always to positive
@@ -2165,7 +2127,7 @@ static int line_wrap(int ch, int tab_offset)
 // outputting a newline character.
         if (cursory == max_cursory)
         {   term_move_first_column();
-//          LOG("need to scroll page\n");
+//          log("need to scroll page\n");
             term_putchar('\n');
             cursory++;
             max_cursory = cursory;
@@ -2198,8 +2160,8 @@ static void refresh_display(void)
     unsigned int curx=columns, cury=lines,
                finx, finy;
     bool window_size_changed;
-//  LOG("refresh_display cx=%d cy=%d\n", cursorx, cursory);
-//  LOG("il:<%ls>\ndl:<%ls>\n", input_line, display_line);
+//  log("refresh_display cx=%d cy=%d\n", cursorx, cursory);
+//  log("il:<%ls>\ndl:<%ls>\n", input_line, display_line);
 //
 // Rather than believing in any SIGWINCH signal (or some such!) to alert
 // me to screen size changes, I will (on systems that give me a way to)
@@ -2223,7 +2185,7 @@ static void refresh_display(void)
 // desired, and that there may be residual stuff on the screen down as far
 // as the almost-rightmost column of the bottom line that I have ever put
 // anything on.
-//      LOG("Window size has changed\n");
+//      log("Window size has changed\n");
         display_line[0] = input_line[0] + 1;
         display_line[1] = 0;
         final_cursory = max_cursory;
@@ -2281,10 +2243,10 @@ static void refresh_display(void)
         {   curx = cursorx;
             cury = cursory;
         }
-        if (term_can_invert && invert_start<invert_end && i==invert_start)
+        if (term_can_invert && invert_start<invertEnd && i==invert_start)
         {   fflush(stdout);
 #ifdef WIN32
-            SetConsoleTextAttribute(console_output_handle, revAttributes);
+            SetConsoleTextAttribute(consoleOutputHandle, revAttributes);
 #else // !WIN32
             fflush(stdout); fflush(stderr);
             tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
@@ -2294,11 +2256,11 @@ static void refresh_display(void)
 #endif // !WIN32
             inverse = 1;
         }
-        if (term_can_invert && invert_start<invert_end && i==invert_end)
+        if (term_can_invert && invert_start<invertEnd && i==invertEnd)
         {
             fflush(stdout); fflush(stderr);
 #ifdef WIN32
-            SetConsoleTextAttribute(console_output_handle, plainAttributes);
+            SetConsoleTextAttribute(consoleOutputHandle, plainAttributes);
 #else // !WIN32
             tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
             putp(exit_attribute_mode);
@@ -2349,7 +2311,7 @@ static void refresh_display(void)
     {
         fflush(stdout); fflush(stderr);
 #ifdef WIN32
-        SetConsoleTextAttribute(console_output_handle, plainAttributes);
+        SetConsoleTextAttribute(consoleOutputHandle, plainAttributes);
 #else // !WIN32
         tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
         putp(exit_attribute_mode);
@@ -2357,7 +2319,7 @@ static void refresh_display(void)
         tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
     }
-    if (invert_start >= invert_end) invert_start = invert_end = -1;
+    if (invert_start >= invertEnd) invert_start = invertEnd = -1;
     if (i == insert_point)
     {   curx = cursorx;
         cury = cursory;
@@ -2413,7 +2375,7 @@ static void term_to_start(void)
 }
 
 
-static void term_to_end(void)
+static void term_toEnd(void)
 {   while (input_line[insert_point] != 0) insert_point++;
     refresh_display();
 }
@@ -2423,7 +2385,7 @@ static void term_to_end(void)
 // by words, with a FOX-like interpretation of the term "word", which I
 // hope will also be an emacs-like interpretation.
 
-static int term_find_next_word_forwards(void)
+static int term_findNext_word_forwards(void)
 {   int n = insert_point;
     if (input_line[n] == 0) return n;
     do
@@ -2437,7 +2399,7 @@ static int term_find_next_word_forwards(void)
     return n;
 }
 
-static int term_find_next_word_backwards(void)
+static int term_findNext_word_backwards(void)
 {   int n = insert_point;
     if (n == prompt_length) return n;
     do
@@ -2466,7 +2428,7 @@ static void term_forwards_char(void)
 static void term_forwards_word(void)
 {   if (input_line[insert_point] == 0) term_bell();
     else
-    {   insert_point = term_find_next_word_forwards();
+    {   insert_point = term_findNext_word_forwards();
         refresh_display();
     }
 }
@@ -2483,7 +2445,7 @@ static void term_back_char(void)
 static void term_back_word(void)
 {   if (insert_point == prompt_length) term_bell();
     else
-    {   insert_point = term_find_next_word_backwards();
+    {   insert_point = term_findNext_word_backwards();
         refresh_display();
     }
 }
@@ -2531,7 +2493,7 @@ static void term_delete_word_forwards(void)
 {   if (input_line[insert_point] == 0) term_bell();
     else
     {   int i = insert_point;
-        int n = term_find_next_word_forwards() - insert_point;
+        int n = term_findNext_word_forwards() - insert_point;
         for (;;)
         {   input_line[i] = input_line[i+n];
             if (input_line[i] == 0) break;
@@ -2545,7 +2507,7 @@ static void term_delete_word_forwards(void)
 static void term_delete_word_backwards(void)
 {   if (insert_point == prompt_length) term_bell();
     else
-    {   int i = term_find_next_word_backwards();
+    {   int i = term_findNext_word_backwards();
         int n = insert_point - i;
         insert_point = i;
         for (;;)
@@ -2571,11 +2533,13 @@ static void term_history_next(void)
     {   term_bell();
         return;
     }
+    printlog("term_history_next hNum=%d hLast=%d\n", historyNumber, historyLast);
     if (historyNumber < historyLast) historyNumber++;
     if ((history_string = input_history_get(historyNumber)) == NULL)
     {   term_bell();
         return;
     }
+    printlog("history string = %ls\n", history_string);
     insert_point = wcslen(history_string);
     wcsncpy(input_line+prompt_length, history_string, insert_point);
     insert_point += prompt_length;
@@ -2584,8 +2548,10 @@ static void term_history_next(void)
 }
 
 
-static void term_previous_history(void)
-{   const wchar_t *history_string;
+static void term_history_previous(void)
+{   printlog("term_history_previous hNum=%d hFirst=%dhLast=%d\n",
+             historyNumber, historyFirst, historyLast);
+    const wchar_t *history_string;
     if (historyLast == -1) // no previous lines to retrieve
     {   term_bell();
         return;
@@ -2598,6 +2564,7 @@ static void term_previous_history(void)
     {   term_bell();
         return;
     }
+    printlog("history string = %ls\n", history_string);
     insert_point = wcslen(history_string);
     wcsncpy(input_line+prompt_length, history_string, insert_point);
     insert_point += prompt_length;
@@ -2606,21 +2573,21 @@ static void term_previous_history(void)
 }
 
 
-static int regular_line_end = 0;
+static int regular_lineEnd = 0;
 static int search_saved_point = 0;
 static int search_found = 0;
 static wchar_t searchBuff[100];
 static int searchStack[100];
 static int searchLen;
 
-static void term_search_next(void)
+static void term_searchNext(void)
 {
 // I remember where I was on the input line but then move to the end and
 // append a message that indicates to the user that a search is in progress.
     search_found = search_saved_point = insert_point;
-    regular_line_end = wcslen(input_line);
-    wcscpy(&input_line[regular_line_end], L"\nN-search: ");
-    insert_point = regular_line_end + 11;
+    regular_lineEnd = wcslen(input_line);
+    wcscpy(&input_line[regular_lineEnd], L"\nN-search: ");
+    insert_point = regular_lineEnd + 11;
     searchLen = 0;
     searchBuff[0] = 0;
     searchFlags = 1;
@@ -2630,9 +2597,9 @@ static void term_search_next(void)
 
 static void term_search_previous(void)
 {   search_found = search_saved_point = insert_point;
-    regular_line_end = wcslen(input_line);
-    wcscpy(&input_line[regular_line_end], L"\nP-search: ");
-    insert_point = regular_line_end + 11;
+    regular_lineEnd = wcslen(input_line);
+    wcscpy(&input_line[regular_lineEnd], L"\nP-search: ");
+    insert_point = regular_lineEnd + 11;
     searchLen = 0;
     searchBuff[0] = 0;
     searchFlags = -1;
@@ -2691,7 +2658,7 @@ static int trySearch(void)
 static void set_input(const wchar_t *s)
 {   wcscpy(&input_line[prompt_length], s);
     insert_point = prompt_length + wcslen(s);
-    regular_line_end = insert_point;
+    regular_lineEnd = insert_point;
     input_line[insert_point++] = '\n';
     input_line[insert_point++] = searchFlags > 0 ? 'N' : 'P';
     wcscpy(&input_line[insert_point], L"-search: ");
@@ -2728,7 +2695,7 @@ static int term_search_char(int ch)
                 search_found = r;
                 set_input(input_history_get(historyNumber));
                 invert_start = prompt_length + search_found;
-                invert_end = invert_start + searchLen;
+                invertEnd = invert_start + searchLen;
                 refresh_display();
             }
             return 1;
@@ -2751,7 +2718,7 @@ static int term_search_char(int ch)
                 search_found = r;
                 set_input(input_history_get(historyNumber));
                 invert_start = prompt_length + search_found;
-                invert_end = invert_start + searchLen;
+                invertEnd = invert_start + searchLen;
                 refresh_display();
             }
             return 1;
@@ -2768,7 +2735,7 @@ static int term_search_char(int ch)
                 search_found = trySearch();   // ought to succeed
                 set_input(input_history_get(historyNumber));
                 invert_start = prompt_length + search_found;
-                invert_end = invert_start + searchLen;
+                invertEnd = invert_start + searchLen;
                 refresh_display();
                 return 1;
             }
@@ -2787,9 +2754,9 @@ static int term_search_char(int ch)
 // The approved means of switching some highlights off is as follows. This
 // leads the next refresh_display to re-write the bit that had previously
 // been in inverse video... ie leave invert_start at the start of where
-// inverting had started, but set invert_end to the same value.
-                invert_end = invert_start;
-                input_line[regular_line_end] = 0;
+// inverting had started, but set invertEnd to the same value.
+                invertEnd = invert_start;
+                input_line[regular_lineEnd] = 0;
                 insert_point = prompt_length + search_found + searchLen;
                 refresh_display();
 // "^U" will exit search mode, and when it does that it does not do anything
@@ -2820,7 +2787,7 @@ static int term_search_char(int ch)
         search_found = r;
         set_input(input_history_get(historyNumber));
         invert_start = prompt_length + search_found;
-        invert_end = invert_start + searchLen;
+        invertEnd = invert_start + searchLen;
     }
     refresh_display();
     return 1;
@@ -2839,7 +2806,7 @@ static int term_find_word_start(void)
     return n+1;
 }
 
-static int term_find_word_end(void)
+static int term_find_wordEnd(void)
 {
 // returns the address of the first character beyond the end of a current
 // word. If the character at the insert point is not alphanumeric then its
@@ -2853,7 +2820,7 @@ static int term_find_word_end(void)
 
 static void term_capitalize_word(void)
 {   int a = term_find_word_start();
-    int b = term_find_word_end();
+    int b = term_find_wordEnd();
     int i;
 // towupper and towlower are only guaranteed valid if the code-point passed
 // represents a valid character in the current locale. That is, I think,
@@ -2871,7 +2838,7 @@ static void term_capitalize_word(void)
 
 static void term_lowercase_word(void)
 {   int a = term_find_word_start();
-    int b = term_find_word_end();
+    int b = term_find_wordEnd();
     int i;
     for (i=a; i<b; i++)
         if (!is_surrogate(input_line[i]))
@@ -2882,7 +2849,7 @@ static void term_lowercase_word(void)
 
 static void term_uppercase_word(void)
 {   int a = term_find_word_start();
-    int b = term_find_word_end();
+    int b = term_find_wordEnd();
     int i;
     for (i=a; i<b; i++)
         if (!is_surrogate(input_line[i]))
@@ -3020,13 +2987,13 @@ static void term_clear_screen(void)
     CONSOLE_SCREEN_BUFFER_INFO csb;
     DWORD size, nbytes;
     COORD topleft = {0, 0};
-    if (!GetConsoleScreenBufferInfo(console_output_handle, &csb)) return;
+    if (!GetConsoleScreenBufferInfo(consoleOutputHandle, &csb)) return;
     size = csb.dwSize.X * csb.dwSize.Y;
-    if (!FillConsoleOutputCharacter(console_output_handle,
+    if (!FillConsoleOutputCharacter(consoleOutputHandle,
                                     (TCHAR)' ', size, topleft, &nbytes)) return;
-    if (!FillConsoleOutputAttribute(console_output_handle,
+    if (!FillConsoleOutputAttribute(consoleOutputHandle,
                                     csb.wAttributes, size, topleft, &nbytes)) return;
-    SetConsoleCursorPosition(console_output_handle, topleft);
+    SetConsoleCursorPosition(consoleOutputHandle, topleft);
 #else // !WIN32
     tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
     if (clear_screen != NULL) putp(clear_screen);
@@ -5700,7 +5667,7 @@ static void set_foreground_colour(int n)
     if (n == inputColour) k = inputAttributes;
     else if (n == promptColour) k = promptAttributes;
     else k = plainAttributes;
-    SetConsoleTextAttribute(console_output_handle, k);
+    SetConsoleTextAttribute(consoleOutputHandle, k);
 #else // !WIN32
     if (*term_colour != 0)
     {   tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
@@ -5721,7 +5688,7 @@ static void set_default_colour(void)
 {   fflush(stdout); fflush(stderr);
 #ifdef WIN32
     if (*term_colour != 0)
-        SetConsoleTextAttribute(console_output_handle, plainAttributes);
+        SetConsoleTextAttribute(consoleOutputHandle, plainAttributes);
 #else // !WIN32
     tcsetattr(stdin_handle, TCSADRAIN, &cursor_term);
     if (*term_colour == 0) /* nothing */;
@@ -5796,7 +5763,7 @@ static wchar_t *term_wide_fancy_getline(void)
 // that can possibly get into the history-record.
         if (n > longest_history_line) longest_history_line = n;
         if (searchFlags != 0)
-            n = n - regular_line_end + longest_history_line;
+            n = n - regular_lineEnd + longest_history_line;
 // Again allow extra space in case of a need to convert to utf-8.
         if ((n+20)*(5-sizeof(wchar_t)) >=
             input_line_size*(4/sizeof(wchar_t)))
@@ -5846,7 +5813,7 @@ static wchar_t *term_wide_fancy_getline(void)
             case CTRL('E'):
             case ARROW_BIT + TERM_END:
             case ARROW_BIT + TERM_END + ALT_BIT:
-                term_to_end();
+                term_toEnd();
                 continue;
             case CTRL('F'):
             case ARROW_BIT+TERM_RIGHT:
@@ -5887,7 +5854,7 @@ static wchar_t *term_wide_fancy_getline(void)
                 continue;
             case CTRL('P'):
             case ARROW_BIT+TERM_UP:
-                term_previous_history();
+                term_history_previous();
                 continue;
             case CTRL('Q'):
                 term_resume_output();
@@ -5986,7 +5953,7 @@ static wchar_t *term_wide_fancy_getline(void)
                 continue;
             case CTRL('N') + ALT_BIT: case 'N' + ALT_BIT: case 'n' + ALT_BIT:
             case ARROW_BIT + TERM_DOWN + ALT_BIT:
-                term_search_next();
+                term_searchNext();
                 continue;
             case CTRL('O') + ALT_BIT: case 'O' + ALT_BIT: case 'o' + ALT_BIT:
                 term_font_menu();
@@ -6178,7 +6145,7 @@ wchar_t *term_wide_getline(void)
 #ifdef EMBEDDED
     return term_wide_plain_getline();
 #else // !EMBEDDED
-    if (!term_enabled) return term_wide_plain_getline();
+    if (!termEnabled) return term_wide_plain_getline();
     else return term_wide_fancy_getline();
 #endif // !EMBEDDED
 }
