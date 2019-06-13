@@ -58,15 +58,13 @@ The build process should create two sub-directories in the build directory calle
 Running REDUCE
 --------------
 
-SBCL REDUCE can be run by double-clicking the file `reduce.bat`, or from a Windows command prompt with the build directory current by executing the command
+*SBCL REDUCE* can be run by double-clicking the file `reduce.bat`, or from a Windows command prompt with the build directory current by executing the command
 
     reduce
 
-At present, the current directory when REDUCE is run must be the build directory, but I will remove that restriction at some later date.
-
 (Don't try to run Windows SBCL interactively under `bash` because you'll probably find that input editing doesn't work as you would wish; fortunately, it runs fine in batch mode under `bash`.)
 
-CLISP REDUCE can be run by executing the `bash` command
+*CLISP REDUCE* can be run by executing the `bash` command
 
     clisp -q -M fasl/reduce.mem
 
@@ -75,6 +73,8 @@ and then evaluating the Lisp form
     (start-reduce)
 
 (I will provide a more elegant start-up procedure eventually.)
+
+At present, the current directory when REDUCE is run must be the build directory, but I will remove that restriction at some later date.
 
 On both Lisps, interrupting REDUCE (with Control-C) invokes the Lisp debugger and aborting that enters Lisp, which is very useful for low-level debugging!  Evaluate `(begin)` to get back into REDUCE.
 
@@ -96,35 +96,30 @@ Current status
 
 The process described above should build all of REDUCE without any obvious errors.  So far, I have avoided the need to customise the main REDUCE source code (apart from the file `gnuintfc.red`).
 
-All available test files produce output that agrees with CSL except for timings and minor numerical and/or implementation differences, except for the following:
+All available test files produce output that agrees with CSL REDUCE apart for timings and minor numerical and/or implementation differences, except for the following:
 
-* `reduce4` fails in a similar same way as on CSL &ndash; excluded from regular testing;
-* `ibalp` fails on CLISP with a program stack overflow error and just stops abruptly on SBCL;
-* `pasf` output appears to be mathematically correct but is ordered differently on CLISP, whereas it agrees on SBCL (and appears to run twice as fast as on CSL!);
-* `rubi_red` is very slow, generates very much output, and timeouts can't work on CLISP (see below) and don't seem to be working on SBCL although they should, but otherwise the early part of the test file appears to run correctly &ndash; excluded from regular testing;
-* `lalr` output appears to be correct apart from a few minor cosmetic differences &ndash; excluded from regular testing.
+* The `reduce4` test fails in a similar way as on CSL &ndash; excluded from regular testing.
+* The `ibalp` test fails on CLISP with a program stack overflow error; it just stops abruptly on SBCL.
+* The `pasf` test output appears to be mathematically correct but is ordered differently on CLISP, whereas it agrees on SBCL (and appears to run twice as fast as on CSL!).
+* The `lalr` test output appears to be correct apart from two issues causing minor cosmetic differences.
+* The `rubi_red` test is very slow, generates very much output, and timeouts can't work on CLISP (see below), but otherwise the early part of the test file appears to run correctly &ndash; excluded from regular testing.  On SBCL, the the first error is similar to that shown on CSL, but SBCL REDUCE does not recover after this error, probably due to the currently crude general error handling.
 
 Timings
 -------
 
-I estimate that SBCL REDUCE is 3 or 4 times slower than PSL/CSL REDUCE, but note that it is currently built for comfort (of debugging) rather than speed!  CLISP is a lot slower than SBCL!
+New timing methodology uses the bash time command.  "Best" means the fastest previous time.
 
-Operation                               | CSL Time | Prev SBCL | Last SBCL | Prev CLISP | Last CLISP
-----------------------------------------|----------|-----------|-----------|------------|------------
-Build bootstrap REDUCE image            |          | 4.1 secs  | 5.4 secs  | 33.2 secs  | 21.3 secs
-Build final REDUCE image                |          | 0.4 secs  | 0.5 secs  |  3.3 secs  |  3.3 secs
-Run alg.tst                             |  78 ms   | 282 ms    | 360 ms    |  860 ms    |  828 ms
-Run (and check) all core test files     |  33 secs |  50 secs  |  64 secs  |  4 m 25 s  |  4 m 21 s
-Run (and check) most noncore test files | 4 m 24 s |  17 mins  | 21 m 53 s | 87 m 11 s  | 90 m 16 s
+Operation                               | CSL Time  | Best SBCL | This SBCL | Best CLISP | This CLISP
+----------------------------------------|-----------|-----------|-----------|------------|-----------
+Run (and check) all core test files     |  30 secs  |  48 secs  |  47 secs  |  3 m 30 s  |  3 m 23 s
+Run (and check) most noncore test files |  4 m 13 s | 16 m 24 s | 15 m 14 s | 72 m 13 s  | 67 m 27 s
 
-The shorter times above are probably not very meaningful.  Most of the time building REDUCE goes in compiling the packages, which takes a few minutes, but I don't currently have any precise timings for this.  The CSL test times do not include checking, which involves running `diff`.  The time for the noncore tests does not include all packages as explained above, and `gnuplot` and `turtle` are excluded because they need to be run interactively.
+The CSL test times do not include checking, which involves running `diff`.  The times for the noncore tests do not include `reduce4` or `rubi_red` as explained above, and `gnuplot` and `turtle` are excluded because they need to be run interactively.
 
-Known bugs
-----------
+Known limitations
+-----------------
 
-I cannot see any way to support the facilities for limiting execution time on CLISP.  In more detail: The file "rlisp/inter.red" defines procedures `with!-timeout` and similar that use garbage collection to provide an interrupt by assigning a function to the variable `!*gc!-hook!*`, but no such garbage collection hook exists in CLISP.  The procedures `with!-timeout` and similar just run without any limit so don't use CLISP REDUCE is you need this facility!  It should work on SBCL.  This affects `rubi_red` and possibly other packages.
-
-PSL and CSL prettyprint `_` without an escape (unless it appears alone), whereas CL REDUCE always prettyprints `_` with an escape.  This appears to be because CL REDUCE uses "rprint/pretty.red", whereas PSL and CSL don't!
+I cannot see any way to support the facilities for restricting execution time on CLISP.  In more detail: the file "rlisp/inter.red" defines procedures `with!-timeout` and similar that use garbage collection to provide an interrupt by assigning a function to the variable `!*gc!-hook!*`, but no garbage collection hooks exist in CLISP.  The procedures `with!-timeout` and similar just run without any restriction so don't use CLISP REDUCE is you need this facility!  This affects `rubi_red` and possibly other packages.  It works on SBCL!
 
 To do
 -----
@@ -144,3 +139,5 @@ Implement a proper Lisp init function (and possibly dump an executable file).
 Replace shell scripts with Common Lisp code to build REDUCE portably?
 
 Allow REDUCE to be run with a current directory other than the build directory.
+
+Implement a genuinely lower-case Standard Lisp, perhaps using case-inversion for a few special symbols such as `lambda`, `nil`, `t`?

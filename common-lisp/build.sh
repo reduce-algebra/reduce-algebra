@@ -30,7 +30,7 @@ if [ "$lisp" = 'sbcl' ]; then
     if_sbcl=''
     if_clisp='%'
 elif [ "$lisp" = 'clisp' ]; then
-    runlisp='clisp -ansi -modern -norc'
+    runlisp='clisp -ansi -norc'
     runbootstrap='clisp -q -norc -M fasl/bootstrap.mem'
     runreduce='clisp -q -norc -M fasl/reduce.mem'
     saveext='mem'
@@ -99,7 +99,7 @@ XXX
 # Compile the "core" packages, each in a separate invocation of
 # bootstrap REDUCE to avoid adverse interactions:
 
-for p in $(< fasl/core-packages.dat)
+time for p in $(< fasl/core-packages.dat)
 do
 echo +++++ Remaking core package $p
 
@@ -152,7 +152,7 @@ echo +++++ Creating the REDUCE image file
 # above.  Then save a final REDUCE image that will be used below to
 # compile the non-core modules.
 
-$runlisp << XXX &> log/reduce.blg
+time $runlisp << XXX &> log/reduce.blg
 (load "sl-on-cl") (load "trace") ; temporary -- until I can arrange autoloading!
 (standard-lisp)
 
@@ -215,7 +215,7 @@ XXX
 # Finally, compile the "noncore" packages using reduce.img rather than
 # bootstrap.img.
 
-for p in $(< fasl/noncore-packages.dat)
+time for p in $(< fasl/noncore-packages.dat)
 do
 echo +++++ Remaking noncore package $p
 

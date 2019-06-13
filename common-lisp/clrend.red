@@ -65,7 +65,7 @@ complete the definition of REDUCE:
 	EVLOAD -- defined in "clprolo.red"
 	ERROR1 -- defined in "sl-on-cl.lisp"
 	MKFIL
-	ORDERP -- defined in "clprolo.red"
+	ORDERP -- defined in "sl-on-cl.lisp"
 	QUIT
 	SEPRP
 	SETPCHAR.
@@ -219,38 +219,12 @@ symbolic procedure initreduce;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Common LISP specific definitions.
-
-% flag('(load),'opfn); % unnecessary ? -- see rlisp/module.red
-
 
 % tr etc. are defined as macros in "trace.lisp".
 % The following two declarations are from pslrend/cslrend:
 flag('(tr untr trst untrst),'noform);
 deflist('((tr rlis) (untr rlis) (trst rlis) (untrst rlis)),'stat);
 
-
-% The following function is necessary in Common Lisp startup sequence,
-% since initial packages are not loaded with load-package.
-
-% symbolic procedure fixup!-packages!*;
-%    for each x in '(rlisp clrend entry poly arith alg mathpr) do
-%       if not(x memq loaded!-packages!*)
-%         then <<loaded!-packages!* := x . loaded!-packages!*;
-%                if (x := get(x,'patchfn)) then eval list x>>;
-
-
-% FLOOR is already defined.
-
-% flag('(floor),'lose);
-
-% CL doesn't like '(function ...) in defautoload (module entry).
-
-% remflag('(mkfunction),'lose);
-
-% inline procedure mkfunction u; mkquote u;
-
-% flag('(mkfunction),'lose);
 
 %% Fix problems in the arith package
 %% =================================

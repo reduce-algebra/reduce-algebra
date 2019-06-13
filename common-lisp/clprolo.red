@@ -90,28 +90,16 @@ flag('(gcdn lcmn),'lose);
 % so...
 flag('(geq leq),'lose);
 
-% yesp1 is defined as an alias for Common Lisp y-or-n-p in sl-on-cl:
+% yesp1 is defined (as an alias for Common Lisp y-or-n-p) in sl-on-cl:
 flag('(yesp1),'lose);
 
 % red!-char!-downcase is defined in sl-on-cl, used in rlisp/tok.red
 % and redefined in several files:
 flag('(red!-char!-downcase),'lose);
 
-% orderp is needed in rlisp/switch, so define it here and prevent it
+% orderp is defined in sl-on-cl and used in rlisp/switch; prevent it
 % being redefined as it would be for PSL:
-remflag('(orderp),'lose);
-
-symbolic procedure orderp(u,v);
-   % This CL-specific definition of ORDERP is designed to work in
-   % lexicographical order.  It assumes arguments are truly id's,
-   % which should be true with current REDUCE.  Ignore case.
-   string!-not!-greaterp(symbol!-name u, symbol!-name v);
-
 flag('(orderp),'lose);
-
-% To ignore inline declarations (see rlisp/proc.red and
-% rlisp/smacro.red):
-% !*noinlines := t;
 
 % endmodule;
 

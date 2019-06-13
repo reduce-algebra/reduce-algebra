@@ -19,15 +19,12 @@
 ;; etc.
 ;; ****************************
 
-;; (cs-cl:in-package :cs-common-lisp-user)
-
 (declaim (optimize debug))
 
 (defpackage :standard-lisp-trace
   (:nicknames :sl-trace)
   (:documentation "Lower-case Standard Lisp on Common Lisp trace facilities")
-  #-CLISP (:use :cs-common-lisp)
-  #+CLISP (:modern t) #+CLISP (:use :common-lisp)
+  (:use :common-lisp)
   (:import-from :sl :eqcar :put)
   (:export :tr :untr :trst :untrst))
 
@@ -47,13 +44,13 @@
   "Trace the functions specified.
 If no functions are specified then list all traced functions."
   (if fns
-      `(cs-cl:mapcar #'trace1 ',fns)
+      `(cl:mapcar #'trace1 ',fns)
       '*traced-functions*))
 
 (defmacro untr (&rest fns)
   "Untrace(set) the functions specified.
 Untrace(set) all traced functions if no functions are specified."
-  `(cs-cl:mapcar #'untrace1 ',(or fns *traced-functions*)))
+  `(cl:mapcar #'untrace1 ',(or fns *traced-functions*)))
 
 (defvar *trace-setq* nil)
 
@@ -62,7 +59,7 @@ Untrace(set) all traced functions if no functions are specified."
 If no functions are specified then list all traced functions."
   (if fns
       `(let ((*trace-setq* t))
-         (cs-cl:mapcar #'trace1 ',fns))
+         (cl:mapcar #'trace1 ',fns))
       '*traced-functions*))
 
 (setf (macro-function 'untrst) (macro-function 'untr))

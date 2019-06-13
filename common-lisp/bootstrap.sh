@@ -19,7 +19,7 @@ if [ "$lisp" = 'sbcl' ]; then
     if_sbcl=''
     if_clisp='%'
 elif [ "$lisp" = 'clisp' ]; then
-    runlisp='clisp -ansi -modern'
+    runlisp='clisp -ansi'
     faslext='fas'
     if_sbcl='%'
     if_clisp=''
@@ -43,7 +43,9 @@ fi || { echo '***** Compilation failed'; exit; }
 
 echo +++++ Building bootstrap REDUCE
 
-$runlisp << XXX &> log/bootstrap.blg
+time $runlisp << XXX &> log/bootstrap.blg
+(declaim (optimize speed))
+
 (load "sl-on-cl")
 (standard-lisp)
 
