@@ -3996,12 +3996,18 @@ inline intptr_t unsigned_int_to_bignum(uint64_t n)
 #ifdef LITTLEENDIAN
 INLINE_VAR float128_t
     f128_0      = {{0, INT64_C(0x0000000000000000)}},
+    f128_half   = {{0, INT64_C(0x3ffe000000000000)}},
+    f128_mhalf  = {{0, INT64_C(0xbffe000000000000)}},
     f128_1      = {{0, INT64_C(0x3fff000000000000)}},
+    f128_m1     = {{0, INT64_C(0xbfff000000000000)}},
     f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
 #else // !LITTLEENDIAN
 INLINE_VAR float128_t
     f128_0      = {{INT64_C(0x0000000000000000), 0}},
+    f128_half   = {{INT64_C(0x3ffe000000000000), 0}},
+    f128_mhalf  = {{INT64_C(0xbffe000000000000), 0}},
     f128_1      = {{INT64_C(0x3fff000000000000), 0}},
+    f128_m1     = {{INT64_C(0xbfff000000000000), 0}},
     f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
 #endif // !LITTLEENDIAN
 
@@ -4142,10 +4148,71 @@ inline void double_to_bits(double d, int64_t &mantissa, int &exponent)
 // at the other. And x is the power of 2 that the original input was scaled
 // by to achieve this.
     d = d*9007199254740992.0; // 2^53;
-    x -= 53;
-    mantissa = (int64_t)d;
 // The conversion to an integer here will always be exact.
-    exponent = 0;
+    mantissa = (int64_t)d;
+    exponent = x - 53;
+}
+
+// There are places where I need to shift a 128 or 192-bit number that is
+// represented using several int64 values...
+
+inline void shiftleft(int64_t &hi, uint64_t &lo, int n)
+{   if (n == 0) return;
+    else if (n < 64)
+    {   hi = ASL(hi, n) | (lo >> (64-n));
+        lo = lo << n;
+    }
+    else if (n == 64)
+    {   hi = lo;
+        lo = 0;
+    }
+    else
+    {   hi = lo << (n-64);
+        lo = 0;
+    }
+}
+
+inline void shiftleft(int64_t &hi, uint64_t &mid, uint64_t &lo, int n)
+{   if (n == 0) return;
+    else if (n < 64)
+    {   hi = ASL(hi, n) | (mid >> (64-n));
+        mid = (mid << n) | (lo >> (64-n));
+        lo = lo << n;
+    }
+    else if (n == 64)
+    {   hi = mid;
+        mid = lo;
+        lo = 0;
+    }
+    else if (n < 128)
+    {   hi = (mid << (n-64)) | (lo >> (128-n));
+        mid = lo << (n-64);
+        lo = 0;
+    }
+    else if (n == 128)
+    {   hi = lo;
+        mid = lo = 0;
+    }
+    else
+    {   hi = lo << (n-128);
+        mid = lo = 0;
+    }
+}
+
+inline void shiftright(int64_t &hi, uint64_t &lo, int n)
+{   if (n == 0) return;
+    else if (n < 64)
+    {   lo = (lo >> n) | ASL(hi, 64-n);
+        hi = ASR(hi, n);
+    }
+    else if (n == 64)
+    {   lo = hi;
+        hi = hi<0 ? -1 : 0;
+    }
+    else
+    {   lo = ASR(hi, n-64);
+        hi = hi<0 ? -1 : 0;
+    }
 }
 
 // This next sets top and next to the two top 64-bit digits for a bignum,
@@ -4198,7 +4265,7 @@ inline void double_to_virtual_bignum(double d,
     int64_t mantissa;
     int exponent;
     double_to_bits(intpart, mantissa, exponent);
-// Now I know intpart(d) = mantissa*2^exponent and mantissa is an integer, so 
+// Now I know intpart(d) = mantissa*2^exponent and mantissa is an integer.
     uint64_t lowbit = mantissa & -(uint64_t)mantissa;
     int lz = 63 - nlz(lowbit); // low zero bits
     mantissa = ASR(mantissa, lz);
@@ -4225,17 +4292,18 @@ inline void double_to_virtual_bignum(double d,
     }
     next = (uint64_t)mantissa;
     top = d<0.0 && mantissa!=0 ? -1 : 0;
-    if (exponent <= 0) len = 1;
+    if (exponent < 0)
+    {   top = 0;
+        len = 1;
+    }
     else
-    {   len = 1 + exponent/64;
+    {   len = 2 + exponent/64;
         exponent = exponent%64;
 // Now shift left by exponent, which is less than 64 here.
-        if (exponent != 0)
-        {   top = (top << exponent) | (next >> (64-exponent));
-            next = next << exponent;
-        }
-// In some cases this has still left all the bits I care about in next.
-        if (shrinkable(top, next) && len>1)
+        shiftleft(top, next, exponent);
+// In some cases this has still left all the bits I care about in next,
+// with top not needed, so in such cases I will shrink by a word.
+        if (shrinkable(top, next))
         {   top = next;
             next = 0;
             len--;
@@ -4276,69 +4344,100 @@ inline void float128_to_bits(float128_t d,
         if (mlo == 0) mhi = -mhi;
         else mhi = ~mhi;
     }
-    exponent -= 114;
+    exponent -= 113;
+}
+
+inline void inc128(int64_t &hi, uint64_t &lo)
+{   if (++lo == 0) hi++;
+}
+
+inline void dec128(int64_t &hi, uint64_t &lo)
+{   if (lo-- == 0) hi--;
 }
 
 // For a float128_t value I need to generate (up to) 3 64-bit digits for
 // the way it would end up as a bignum.
 
-inline float128_t float128_to_virtual_bignum(float128_t d,
-        int64_t &top, uint64_t &mid, uint64_t &next, size_t &len)
+inline void float128_to_virtual_bignum(float128_t d,
+        int64_t &top, uint64_t &mid, uint64_t &next, size_t &len,
+        RoundingMode mode)
 {   if (f128_zero(d))
     {   top = mid = next = 0;
         len = 1;
-        return f128_0;
+        return;
     }
     else if (f128_nan(d))
     {   top = mid = next = 0;
         len = 0;
-        return f128_0;
+        return;
     }
     else if (f128_infinite(d))
     {   if (f128_lt(d, f128_0)) top = mid = next = -1;
         else top = mid = next = 0;
         len = SIZE_MAX;
-        return f128_0;
+        return;
     }
+    float128_t intpart;
+    float128_t fracpart = modf(d, intpart);
     int64_t mhi;
     uint64_t mlo;
     int exponent;
-    float128_to_bits(d, mhi, mlo, exponent);
+    float128_to_bits(intpart, mhi, mlo, exponent);
+// Now I know intpart(d) = mantissa*2^exponent and mantissa is an integer. 
     int lz;
-    if (mlo == 0) lz = 64 + 63 - nlz(mhi & -(uint64_t)mhi);
-    else lz = 63 - nlz(mlo & -mlo);
-    if (lz == 0) {}
-    else if (lz < 64)
-    {   mlo = (mlo >> lz) | ((uint64_t)mhi << (64-lz));
-        mhi = ASR(mhi, lz);
-    }
-    else if (lz == 64)
-    {   mlo = mhi;
-        mhi = mhi < 0 ? -1 : 0;
+    if (mlo != 0)
+    {   uint64_t lowbit = mlo & (-mlo);
+        lz = 63 - nlz(lowbit); // low zero bits
     }
     else
-    {   mlo = ASR(mhi, lz-64);
-        mhi = mhi < 0 ? -1 : 0;
+    {   uint64_t lowbit = mhi & (-(uint64_t)mhi);
+        lz = 64 + 63 - nlz(lowbit); // low zero bits
     }
+    shiftright(mhi, mlo, lz);
     exponent += lz;
-// Put the mantissa as a 3-word integer in (top,mid,next).
-    next = mlo;
-    mid = (uint64_t)mhi;
-    top = mhi<0 ? -1 : 0;
-    len = exponent/64;
-    exponent = exponent%64;
-// Now shift left by exponent, which is less than 64.
-    if (exponent != 0)
-    {   top = (top << exponent) | (mid >> (64-exponent));
-        mid = (mid << exponent) | (next >> (64-exponent));
-        next = next << exponent;
+// Now mantissa has its least significant bit a "1". At this stage the
+// input 1.0 (eg) should have turned into mantissa=1, exponent==0. And 1.5
+// should have become mantissa=1, exponent=0 and fracpart = 0.5. fracpart has
+// the same sign as the original input.
+// So now I can apply my rounding mode...
+    switch (mode)
+    {
+    case ROUND:
+        if (!f128_lt(fracpart, f128_half)) inc128(mhi, mlo);
+        else if (f128_le(fracpart, f128_mhalf)) dec128(mhi, mlo);
+        break;
+    case TRUNC:  // the effect of modf is this already.
+        break;
+    case FLOOR:
+        if (!f128_zero(fracpart) && f128_lt(d, f128_0)) dec128(mhi, mlo);
+        break;
+    case CEILING:
+        if (!f128_zero(fracpart) && !f128_lt(d, f128_0)) inc128(mhi, mlo);
+        break;
     }
-    if (shrinkable(top, mid) && len>1)
-    {   top = mid;
-        mid = next;
-        next = 0;
-        len--;
-        if (shrinkable(top, mid) && len>1)
+// Now I need to shift things left so that the number of trailing zeros
+// to the right of my value is a multiple of 64. That may cause the
+// mantissa to spread into parts of 3 words: (top, mid, next).
+
+    next = mlo;
+    mid = mhi;
+    top = mhi<0 ? -1 : 0;
+    if (exponent < 0)
+    {   top = 0;
+        len = 1;
+    }
+    else
+    {   len = 3 + exponent/64;
+        exponent = exponent%64;
+        shiftleft(top, mid, next, exponent);
+// In some cases this has still left all the bits I care about in next.
+        if (shrinkable(top, mid))
+        {   top = mid;
+            mid = next;
+            next = 0;
+            len--;
+        }
+        if (shrinkable(top, mid))
         {   top = mid;
             mid = next;
             next = 0;
@@ -4349,159 +4448,81 @@ inline float128_t float128_to_virtual_bignum(float128_t d,
 
 #endif // softfloat_h
 
-inline intptr_t round_double_to_int(double d)
+inline intptr_t double_to_int(double d, RoundingMode mode)
 {
 // I return 0 if the input is a NaN or either +infinity or -infinity.
 // This is somewhat arbitrary, but right now I am not minded to raise an
 // exception.
     if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
-    int x;
-    d = std::round(d);
-    
-    d = std::frexp(d, &x);
-    d = std::ldexp(d, 53);
-    intptr_t i = int_to_bignum((int64_t)d);
-    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-53);
-    abandon(i);
-    return r;
+    int64_t top;
+    uint64_t next;
+    size_t len;
+    double_to_virtual_bignum(d, top, next, len, mode);
+    uint64_t *r = reserve(len);
+    if (len == 1) r[0] = top;
+    else
+    {   for (size_t i=0; i<len-2; i++) r[i] = 0;
+        r[len-1] = top;
+        r[len-2] = next;
+    }
+    return confirm_size(r, len, len);
+}
+
+inline intptr_t round_double_to_int(double d)
+{   return double_to_int(d, RoundingMode::ROUND);
 }
 
 inline intptr_t trunc_double_to_int(double d)
-{   if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
-    int x;
-    d = std::trunc(d);
-    d = std::frexp(d, &x);
-    d = std::ldexp(d, 53);
-    intptr_t i = int_to_bignum((int64_t)d);
-    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-53);
-    abandon(i);
-    return r;
+{   return double_to_int(d, RoundingMode::TRUNC);
 }
 
 inline intptr_t floor_double_to_int(double d)
-{   if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
-    int x;
-    d = std::floor(d);
-    d = std::frexp(d, &x);
-    d = std::ldexp(d, 53);
-    intptr_t i = int_to_bignum((int64_t)d);
-    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-53);
-    abandon(i);
-    return r;
+{   return double_to_int(d, RoundingMode::FLOOR);
 }
 
 inline intptr_t ceiling_double_to_int(double d)
-{   if (!std::isfinite(d) || d==0.0) return int_to_handle(0);
-    int x;
-    d = std::ceil(d);
-    d = std::frexp(d, &x);
-    d = std::ldexp(d, 53);
-    intptr_t i = int_to_bignum((int64_t)d);
-    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-53);
-    abandon(i);
-    return r;
+{   return double_to_int(d, RoundingMode::CEILING);
 }
 
 #ifdef softfloat_h
 
-inline intptr_t round_float128_to_int(float128_t d)
-{
-// I return 0 if the input is a NaN or either +infinity or -infinity.
-// This is somewhat arbitrary, but right now I am not minded to raise an
-// exception.
-    if (f128_eq(d, f128_0) || !f128_eq(d,d)) return int_to_handle(0);
-    int x;
-    float128_t dd;
-    f128M_frexp(&d, &dd, &x);
+inline intptr_t float128_to_int(float128_t d, RoundingMode mode)
+{   if (f128_zero(d) ||
+        f128_infinite(d) ||
+        f128_nan(d)) return int_to_handle(0);
+    int64_t top;
+    uint64_t mid, next;
+    size_t len;
+    float128_to_virtual_bignum(d, top, mid, next, len, mode);
+    uint64_t *r = reserve(len);
+    if (len == 1) r[0] = top;
+    else if (len == 2)
+    {   r[1] = top;
+        r[0] = mid;
+    }
+    else
+    {   for (size_t i=0; i<len-3; i++) r[i] = 0;
+        r[len-1] = top;
+        r[len-2] = mid;
+        r[len-3] = next;
+    }
+    return confirm_size(r, len, len);
+}
 
-//@
-//@ The code here is unfinished, which is why it still have print statements
-//@ in it!
-//@ 
-    printf("round_float128_to_int exponent %d = %x\n", x, x);
-    if (x == 0x7fff) return int_to_handle(0); // infinity?
-    f128M_ldexp(&dd, 113);
-    abort("The next line only extracts 64 bits not 112");
-    intptr_t i = int_to_bignum(
-                     f128_to_i64(dd,softfloat_round_near_even,false));
-    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-113);
-    abandon(i);
-    return r;
+inline intptr_t round_float128_to_int(float128_t d)
+{   return float128_to_int(d, RoundingMode::ROUND);
 }
 
 inline intptr_t trunc_float128_to_int(float128_t d)
-{
-// I return 0 if the input is a NaN or either +infinity or -infinity.
-// This is somewhat arbitrary, but right now I am not minded to raise an
-// exception.
-    if (f128_eq(d, f128_0) || !f128_eq(d,d)) return int_to_handle(0);
-    int x;
-    float128_t dd;
-    f128M_frexp(&d, &dd, &x);
-
-//@
-//@ The code here is unfinished, which is why it still have print statements
-//@ in it!
-//@ 
-    printf("round_float128_to_int exponent %d = %x\n", x, x);
-    if (x == 0x7fff) return int_to_handle(0); // infinity?
-    f128M_ldexp(&dd, 113);
-    abort("The next line only extracts 64 bits not 112");
-    intptr_t i = int_to_bignum(
-                     f128_to_i64(dd,softfloat_round_near_even,false));
-    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-113);
-    abandon(i);
-    return r;
+{   return float128_to_int(d, RoundingMode::TRUNC);
 }
 
 inline intptr_t floor_float128_to_int(float128_t d)
-{
-// I return 0 if the input is a NaN or either +infinity or -infinity.
-// This is somewhat arbitrary, but right now I am not minded to raise an
-// exception.
-    if (f128_eq(d, f128_0) || !f128_eq(d,d)) return int_to_handle(0);
-    int x;
-    float128_t dd;
-    f128M_frexp(&d, &dd, &x);
-
-//@
-//@ The code here is unfinished, which is why it still have print statements
-//@ in it!
-//@ 
-    printf("round_float128_to_int exponent %d = %x\n", x, x);
-    if (x == 0x7fff) return int_to_handle(0); // infinity?
-    f128M_ldexp(&dd, 113);
-    abort("The next line only extracts 64 bits not 112");
-    intptr_t i = int_to_bignum(
-                     f128_to_i64(dd,softfloat_round_near_even,false));
-    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-113);
-    abandon(i);
-    return r;
+{   return float128_to_int(d, RoundingMode::FLOOR);
 }
 
 inline intptr_t ceiling_float128_to_int(float128_t d)
-{
-// I return 0 if the input is a NaN or either +infinity or -infinity.
-// This is somewhat arbitrary, but right now I am not minded to raise an
-// exception.
-    if (f128_eq(d, f128_0) || !f128_eq(d,d)) return int_to_handle(0);
-    int x;
-    float128_t dd;
-    f128M_frexp(&d, &dd, &x);
-
-//@
-//@ The code here is unfinished, which is why it still have print statements
-//@ in it!
-//@ 
-    printf("round_float128_to_int exponent %d = %x\n", x, x);
-    if (x == 0x7fff) return int_to_handle(0); // infinity?
-    f128M_ldexp(&dd, 113);
-    abort("The next line only extracts 64 bits not 112");
-    intptr_t i = int_to_bignum(
-                     f128_to_i64(dd,softfloat_round_near_even,false));
-    intptr_t r = op_dispatch1<LeftShift,intptr_t>(i, x-113);
-    abandon(i);
-    return r;
+{   return float128_to_int(d, RoundingMode::CEILING);
 }
 
 #endif // softfloat_h
@@ -5495,46 +5516,25 @@ inline bool Eqn::op(int64_t a, double b)
 }
 
 inline bool eqnfloat(uint64_t *a, size_t lena, double b)
-{   if (std::isnan(b)) return false;
-    if (std::isinf(b)) return false;
+{   if (std::isnan(b)||
+        std::isinf(b)) return false;
     int64_t top = (int64_t)a[lena-1];
+// If the signs differn than the values are certainly not equal.
     if (top >= 0 && b <= 0.0) return false;
     if (top < 0 && b >= 0.0) return false;
-    uint64_t next = a[lena-2];
-    if (top < 0)
-    {   b = -b;
-        next = ~next;
-        uint64_t carry = 1;
-        for (size_t i=0; i<lena-2; i++)
-        {   if (a[i] != 0)
-            {   carry = 0;
-                break;
-            }
-        }
-        next += carry;
-        if (next == 0) top++;
-        if (carry == 0) next |= 1;
-    }
-    size_t lz;
-    if (top == 0) lz = 64 + nlz(next);
-    else lz = nlz(top);
-    int x;
-    b = std::frexp(b, &x);
-    int64_t ix = 64*((int64_t)lena-2)+128-(int64_t)lz;
-    if (x != ix) return false;
-    b = std::ldexp(b, 53);
-    int64_t ib = (int64_t)b;
-    int sh = (int)lz - 64 + 53;
-    if (sh < 0)
-    {   next |= (((uint64_t)top) << (64+sh));
-        top = top >> (-sh);
-    }
-    else if (sh != 0)
-    {   top = (top<<sh) | (next<<(64-sh));
-        next = next<<sh;
-    };
-    if (top != ib) return false;
-    if (next != 0) return false;
+    double ipart;
+    double fpart = std::modf(b, &ipart);
+    if (fpart != 0.0) return false; // not an integer so not equal.
+    int64_t hi;
+    uint64_t next;
+    size_t len;
+    double_to_virtual_bignum(ipart, hi, next, len, RoundingMode::TRUNC);
+    if (len != lena) return false;
+    if (len == 1) return a[0] == (uint64_t)top;
+    if (a[len-1] != (uint64_t)top ||
+        a[len-2] != next) return false;
+    for (size_t i=0; i<len-2; i++)
+        if (a[i] != 0) return false;
     return true;
 }
 
@@ -5817,75 +5817,97 @@ inline bool Greaterp::op(int64_t a, double b)
     return a > (int64_t)b;
 }
 
-// This compares a bignum that has at least 2 words against a double.
-// if great is true the test is either > or >=
-// ifequal is the value to be returned if the two numbers are
-// equal in value, and so supports >= and <=.
+// This compares a bignum against a double. It may in fact only be called
+// in the case where it is at least a 2-word bignum, and that would render
+// the first segment of code unnecessary!
+//
+// The code here feels ugly and perhaps repetitive to me. For now I will
+// just be content to get something that works in all cases, but thinking
+// about how to make it tidier will be desirable. I might perhaps also
+// think if generalizing it to have EQN and NEQN options in the CompareMode
+// enumeration.
+
+enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
 inline bool greaterpfloat(uint64_t *a, size_t lena, double b,
-                          bool great,   // > or >=
-                          bool ifequal) // > or <
+                          CompareMode mode)
 {   if (std::isnan(b)) return false;
-    if (std::isinf(b)) return (b<0.0) == great;
-    int64_t top = (int64_t)a[lena-1];
-// here a is a bignum with at least 2 words, and so it is certainly
-// nonzero.
-    if (top >= 0 && b <= 0.0) return great;
-    if (top < 0 && b >= 0.0) return !great;
-// Now both have the same sign.
-    uint64_t next = a[lena-2];
-    if (top < 0)
-    {   great = !great; // (-a)>(-b) is like a<b
-        b = -b;
-        next = ~next;
-        uint64_t carry = 1;
-        for (size_t i=0; i<lena-2; i++)
-        {   if (a[i] != 0)
-            {   carry = 0;
-                break;
+// If the integer is small enough it can be converted to a double
+// without any rounding, so then I can do the comparison easily.
+    if (lena == 1)
+    {   int64_t aa = a[0];
+        const int64_t range = ((int64_t)1)<<53;
+        if (aa >= -range && aa <= range)
+        {   double ad = (double)aa;
+            switch (mode)
+            {
+            case CompareMode::GREATERP:
+                return (double)ad > b;
+            case CompareMode::GEQ:
+                return (double)ad >= b;
+            case CompareMode::LESSP:
+                return (double)ad < b;
+            case CompareMode::LEQ:
+                return (double)ad <= b;
             }
         }
-        next += carry;
-        if (next == 0) top++;
-        if (carry == 0) next |= 1;
     }
-// Now I have {top,next} as the top two word of the absolute value of a,
-// and if there had been any lower bits set at all I have forced the
-// bottom bit of next to be 1.
-    size_t lz;
-    if (top == 0) lz = 64 + nlz(next);
-    else lz = nlz(top);
-// I now have between 64 and 128 bits at the top of the integer, and knowing
-// the number of bits means I can compare against the magnitude of the
-// double by checking its exponent;
-    int x;
-    b = std::frexp(b, &x);
-// bit-length of the bignum...
-    int64_t ix = 64*((int64_t)lena-2)+128-(int64_t)lz;
-    if (x != ix) return ((x < ix) == great);
-    b = std::ldexp(b, 53);
-// The following conversion should be exact.
-    int64_t ib = (int64_t)b;
-// Now shift {top,next} so that just 53 bits are used in top and if any bits
-// remain below that next will be nonzero.
-    int sh = (int)lz - 64 + 53; // amount to shift left by.
-    if (sh < 0)
-    {   next |= (((uint64_t)top) << (64+sh));
-        top = top >> (-sh);
+// If b==+infinity then a<b and a<=b, while if b=-=infinity then
+// a>b and a>=b.
+    if (std::isinf(b))
+    {   return (b > 0.0 && (mode==CompareMode::LESSP ||
+                            mode==CompareMode::LEQ)) ||
+               (b < 0.0 && (mode==CompareMode::GREATERP ||
+                            mode==CompareMode::GEQ));
     }
-    else if (sh != 0)
-    {   top = (top<<sh) | (next<<(64-sh));
-        next = next<<sh;
-    };
-    if (top != ib) return ((ib < top) == great);
-    if (next == 0) return ifequal;
-    return !great;
+// Also if a and b have different signs it is easy to resolve the issue.
+    if (negative(a[lena-1]) && b >= 0.0)
+        return (mode==CompareMode::LESSP || mode==CompareMode::LEQ);
+    if (positive(a[lena-1]) && b <= 0.0)
+        return (mode==CompareMode::GREATERP || mode==CompareMode::GEQ);
+// Now if I convert b to an integer and compare I can lose a fractional
+// part in the case when b is small. But given that |a| is large if I
+// truncate b as I map it onto an integer the comparisons I make will still
+// be valid.
+    int64_t top;
+    uint64_t next;
+    size_t len;
+    double_to_virtual_bignum(b, top, next, len, RoundingMode::TRUNC);
+// If the numbers now differ in length that can tell me what the result is.
+    if (lena > len)
+    {   if (negative(a[lena-1]))
+            return (mode==CompareMode::LESSP || mode==CompareMode::LEQ);
+        if (positive(a[lena-1]))
+            return (mode==CompareMode::GREATERP || mode==CompareMode::GEQ);
+    }
+    if (lena < len)
+    {   if (positive(a[lena-1]))
+            return (mode==CompareMode::LESSP || mode==CompareMode::LEQ);
+        if (negative(a[lena-1]))
+            return (mode==CompareMode::GREATERP || mode==CompareMode::GEQ);
+    }
+// Now the arguments have the same length as bignums. First check for
+// differences in the top two digits.
+    if ((int64_t)a[lena-1] < top ||
+        ((int64_t)a[lena-1] == top && a[lena-2] < next))
+        return (mode==CompareMode::LESSP || mode==CompareMode::LEQ);
+    if ((int64_t)a[lena-1] > top ||
+        ((int64_t)a[lena-1] == top && a[lena-2] > next))
+        return (mode==CompareMode::GREATERP || mode==CompareMode::GEQ);
+// Now the top two digits of the two inputs match. If all lower digits of a
+// are zero then the two inputs are equal.
+    for (size_t i=0; i<len; i++)
+    {   if (a[i] != 0) return (mode==CompareMode::GREATERP ||
+                               mode==CompareMode::GEQ);
+    }
+// Here the inputs seem to be exactly equal in value.
+    return mode==CompareMode::GEQ || mode==CompareMode::LEQ;
 }
 
 inline bool Greaterp::op(uint64_t *a, double b)
 {   size_t lena = number_size(a);
     if (lena == 1) return Greaterp::op((int64_t)a[0], b);
-    return greaterpfloat(a, lena, b, true, false);
+    return greaterpfloat(a, lena, b, CompareMode::GREATERP);
 }
 
 inline bool Greaterp::op(double a, int64_t b)
@@ -5905,7 +5927,7 @@ inline bool Greaterp::op(double a, uint64_t *b)
 
 inline bool greaterpbigfloat(uint64_t *a, size_t lena, float128_t b,
                              bool great, bool ifequal)
-{   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
+{   if (f128_nan(b)) return false;  // Comparisons involving a NaN => false.
     int64_t top = (int64_t)a[lena-1];
     if (top >= 0 && f128_lt(b, f128_0)) return great;
     if (top < 0 && !f128_lt(b, f128_0)) return !great;
@@ -6022,7 +6044,7 @@ inline bool Geq::op(int64_t a, double b)
 inline bool Geq::op(uint64_t *a, double b)
 {   size_t lena = number_size(a);
     if (lena == 1) return Geq::op((int64_t)a[0], b);
-    return greaterpfloat(a, lena, b, true, true);
+    return greaterpfloat(a, lena, b, CompareMode::GEQ);
 }
 
 inline bool Geq::op(double a, int64_t b)
@@ -6102,7 +6124,7 @@ inline bool Lessp::op(int64_t a, double b)
 inline bool Lessp::op(uint64_t *a, double b)
 {   size_t lena = number_size(a);
     if (lena == 1) return Lessp::op((int64_t)a[0], b);
-    return greaterpfloat(a, lena, b, false, false);
+    return greaterpfloat(a, lena, b, CompareMode::LESSP);
 }
 
 inline bool Lessp::op(double a, int64_t b)
@@ -6184,7 +6206,7 @@ inline bool Leq::op(int64_t a, double b)
 inline bool Leq::op(uint64_t *a, double b)
 {   size_t lena = number_size(a);
     if (lena == 1) return Lessp::op((int64_t)a[0], b);
-    return greaterpfloat(a, lena, b, false, true);
+    return greaterpfloat(a, lena, b, CompareMode::LEQ);
 }
 
 inline bool Leq::op(double a, int64_t b)
@@ -10496,7 +10518,10 @@ using arithlib_implementation::floor_float128_to_int;
 using arithlib_implementation::ceiling_float128_to_int;
 // These next few are just raw float128_t operations.
 using arithlib_implementation::f128_0;
+using arithlib_implementation::f128_half;
+using arithlib_implementation::f128_mhalf;
 using arithlib_implementation::f128_1;
+using arithlib_implementation::f128_m1;
 using arithlib_implementation::f128_zero;
 using arithlib_implementation::f128_infinite;
 using arithlib_implementation::f128_nan;

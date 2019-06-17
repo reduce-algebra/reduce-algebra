@@ -170,6 +170,10 @@ static LispObject Nquotient(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Quotient::op(a1, a2));
 }
 
+static LispObject NCLQuotient(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(CLQuotient::op(a1, a2));
+}
+
 static LispObject Nremainder(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Remainder::op(a1, a2));
 }
@@ -232,6 +236,10 @@ static LispObject Nsquare(LispObject env, LispObject a1)
 
 static LispObject Nfloat(LispObject env, LispObject a1)
 {   return onevalue(Float::op(a1));
+}
+
+static LispObject Nfloat(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Float::op(a1, a2));
 }
 
 static LispObject Nfix(LispObject env, LispObject a1)
@@ -402,6 +410,28 @@ static LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2,
     a2 = a3;
     while (is_cons(a4plus))
     {   if (Eqn::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = qcdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+static LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(CLEqn::op(a1, a2));
+}
+
+static LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
+                                         LispObject a3)
+{   return onebool(CLEqn::op(a1, a2) && CLEqn::op(a2, a3));
+}
+
+static LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
+                                         LispObject a3, LispObject a4plus)
+{   if (!CLEqn::op(a1, a2)) return onevalue(nil);
+    if (!CLEqn::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (CLEqn::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
         a2 = a3;
         a4plus = qcdr(a4plus);
     }
@@ -1124,10 +1154,16 @@ setup_type const arith_setup[] =
 {
     {"modf",                 G0W1,               Nmodf,              G2W1,               G3W1,               G4W1},
     {"newplus",              Nplus,              Nplus,              Nplus,              Nplus,              Nplus},
+    {"new+",                 Nplus,              Nplus,              Nplus,              Nplus,              Nplus},
     {"newadd1",              G0W1,               Nadd1,              G2W1,               G3W1,               G4W1},
+    {"new1+",                G0W1,               Nadd1,              G2W1,               G3W1,               G4W1},
     {"newdifference",        G0W2,               G1W2,               Ndifference,        G3W2,               G4W2},
+    {"new-",                 G0W2,               Nminus,             Ndifference,        G3W2,               G4W2},
     {"newtimes",             Ntimes,             Ntimes,             Ntimes,             Ntimes,             Ntimes},
+    {"new*",                 Ntimes,             Ntimes,             Ntimes,             Ntimes,             Ntimes},
     {"newquotient",          G0W2,               G1W2,               Nquotient,          G3W2,               G4W2},
+    {"new//",                G0W2,               G1W2,               Nquotient,          G3W2,               G4W2},
+    {"new/",                 G0W2,               G1W2,               NCLQuotient,        G3W2,               G4W2},
     {"newremainder",         G0W2,               G1W2,               Nremainder,         G3W2,               G4W2},
     {"newdivide",            G0W2,               G1W2,               Ndivide,            G3W2,               G4W2},
     {"newgcdn",              Ngcdn,              Ngcdn,              Ngcdn,              Ngcdn,              Ngcdn},
@@ -1140,11 +1176,12 @@ setup_type const arith_setup[] =
     {"newsqrt",              G0W1,               Nsqrt,              G2W1,               G3W1,               G4W1},
     {"newisqrt",             G0W1,               Nisqrt,             G2W1,               G3W1,               G4W1},
     {"newsub1",              G0W1,               Nsub1,              G2W1,               G3W1,               G4W1},
+    {"new1-",                G0W1,               Nsub1,              G2W1,               G3W1,               G4W1},
     {"newzerop",             G0W1,               Nzerop,             G2W1,               G3W1,               G4W1},
     {"newonep",              G0W1,               Nonep,              G2W1,               G3W1,               G4W1},
     {"newoddp",              G0W1,               Noddp,              G2W1,               G3W1,               G4W1},
     {"newevenp",             G0W1,               Nevenp,             G2W1,               G3W1,               G4W1},
-    {"newfloat",             G0W1,               Nfloat,             G2W1,               G3W1,               G4W1},
+    {"newfloat",             G0W1,               Nfloat,             Nfloat,               G3W1,               G4W1},
     {"newfloat128",          G0W1,               Nfloat128,          G2W1,               G3W1,               G4W1},
     {"newfix",               G0W1,               Nfix,               G2W1,               G3W1,               G4W1},
     {"newtruncate",          G0W1,               Ntruncate,          Ntruncate,          G3W1,               G4W1},
@@ -1162,17 +1199,24 @@ setup_type const arith_setup[] =
 // and it is the name of a class that implements "neqn". So I tag "_a" on
 // the end of one of these to resolve the clash.
     {"neweqn",               G0W2,               G1W2,               Neqn_a,             Neqn_a,             Neqn_a},
+    {"new=",                 G0W2,               G1W2,               NCLEqn,             NCLEqn,             NCLEqn},
     {"newneqn",              G0W2,               G1W2,               Nneqn,              Nneqn,              Nneqn},
     {"newgreaterp",          G0W2,               G1W2,               Ngreaterp,          Ngreaterp,          Ngreaterp},
+    {"new>",                 G0W2,               G1W2,               Ngreaterp,          Ngreaterp,          Ngreaterp},
     {"newgeq",               G0W2,               G1W2,               Ngeq,               Ngeq,               Ngeq},
+    {"new>=",                G0W2,               G1W2,               Ngeq,               Ngeq,               Ngeq},
     {"newlessp",             G0W2,               G1W2,               Nlessp,             Nlessp,             Nlessp},
+    {"new<",                 G0W2,               G1W2,               Nlessp,             Nlessp,             Nlessp},
     {"newleq",               G0W2,               G1W2,               Nleq,               Nleq,               Nleq},
+    {"new<=",                G0W2,               G1W2,               Nleq,               Nleq,               Nleq},
     {"newlogand",            Nlogand,            Nlogand,            Nlogand,            Nlogand,            Nlogand},
-    {"newlogor",             Nlogor,             Nlogor,             Nlogor,             Nlogor,             Nlogor},
+    {"newlogor" ,            Nlogor,             Nlogor,             Nlogor,             Nlogor,             Nlogor},
+    {"newlogior",            Nlogor,             Nlogor,             Nlogor,             Nlogor,             Nlogor},
     {"newlogxor",            Nlogxor,            Nlogxor,            Nlogxor,            Nlogxor,            Nlogxor},
     {"newlogeqv",            Nlogeqv,            Nlogeqv,            Nlogeqv,            Nlogeqv,            Nlogeqv},
     {"newlognot",            G0W1,               Nlognot,            G2W1,               G3W1,               G4W1},
     {"newlshift",            G0W2,               G1W2,               Nleftshift,         G3W1,               G4W1},
+    {"newash",               G0W2,               G1W2,               Nleftshift,         G3W1,               G4W1},
     {"newrshift",            G0W2,               G1W2,               Nrightshift,        G3W1,               G4W1},
     {"newmodular-plus",      Nmodular_plus,      Nmodular_plus,      Nmodular_plus,      Nmodular_plus,      Nmodular_plus},
     {"newmodular-difference",G0W2,               G1W2,               Nmodular_difference,G3W2,               G4W2},

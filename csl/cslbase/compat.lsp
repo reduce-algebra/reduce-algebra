@@ -628,5 +628,15 @@ top (cond ((null a) (return (reversip r))))
         subla gcdn lcmn printprompt pair putc) 'lose)
 
 
+% For testing my new arithmetic I want a function that maps from existing
+% numbers to the new ones. This is onky temporary and is no use unless
+% CSL has been built with the experimental --with-arithlib option.
+
+(de newbig (a)
+  (if (minusp a)
+      (newminus (newbig (minus a)))
+      (compress (cons '!0 (cons '!z (explode a))))))
+
+
 % end of compat.lsp
 

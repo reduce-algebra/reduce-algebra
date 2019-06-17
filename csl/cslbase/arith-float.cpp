@@ -56,13 +56,14 @@ LispObject Float::op(Fixnum a)
 {   return make_boxfloat(arithlib_lowlevel::Double::op(a.intval()));
 }
 
-// In this next one note thar atithlib has a class Float that converts
+// In this next one note thar arithlib has a class Float that converts
 // to a C++ float and a separate one called Double that converts to a
 // C++ double and hence is what I need here!
 LispObject Float::op(uint64_t *a)
 {   return make_boxfloat(arithlib_lowlevel::Double::op(a));
 }
 
+#pragma message ("conversion from ratio to float not done yet")
 LispObject Float::op(Rat a)
 {   aerror("float of rat not coded yet");
 //    return Float::op(a.numerator()) / Float::op(a.denominator());
@@ -138,6 +139,416 @@ LispObject Float128::op(double a)
 
 LispObject Float128::op(LFlt a)
 {   return a.value();
+}
+
+// In Common Lisp the 1-argument version of FLOAT converts to a
+// single precisoin float and if the second argument of the 2-argument
+// version is unhelpful it does the same. I view that as old fashioned
+// and ridiculous and make double the default. If at any stage strict
+// Common Lisp compatibility was required and it was essential to continue
+// to support short and single floats the changes here might be extensive
+// but would not be difficulty. Except that when I convert to a short or
+// single float I often do so by first creating a (double) float and then
+// narrowing. If the conversion to the double round up (say) in such a way
+// then the subsequent narrowing operation then only rounds up because of
+// the exact value generated then overall the rounding up was incorrect.
+// This case is not common but it is straightforward to construct an
+// example. Since few people (any people?) will use the narrower CSL floats
+// and even fewer will then worry about that level of correctness I propose
+// to ignore the issue. There will in fact be plenty of other places where
+// floating point support fails strict challenges to be as perfect as one
+// might imagine - both in terms of correct vs incorrect rounding and in
+// instances where premature overflow can arise.              ACN June 2019
+
+LispObject Float::op(LispObject a, LispObject b)
+{   return number_dispatcher::binary<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(LispObject a, Fixnum b)
+{   return number_dispatcher::binaryR<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(LispObject a, uint64_t *b)
+{   return number_dispatcher::binaryR<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(LispObject a, Rat b)
+{   return number_dispatcher::binaryR<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(LispObject a, Cpx b)
+{   return number_dispatcher::binaryR<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(LispObject a, SFlt b)
+{   return number_dispatcher::binaryR<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(LispObject a, Flt b)
+{   return number_dispatcher::binaryR<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(LispObject a, double b)
+{   return number_dispatcher::binaryR<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(LispObject a, LFlt b)
+{   return number_dispatcher::binaryR<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(Fixnum a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(uint64_t *a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(Rat a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(Cpx a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(SFlt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(Flt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(double a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Float>("float", a, b);
+}
+
+LispObject Float::op(LFlt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,Float>("float", a, b);
+}
+
+// fixnum FLOAT fixnum
+
+LispObject Float::op(Fixnum a, Fixnum b)
+{   return Float::op(a);
+}
+
+// bignum FLOAT fixnum
+LispObject Float::op(uint64_t *a, Fixnum b)
+{   return Float::op(a);
+}
+
+// rational FLOAT fixnum
+LispObject Float::op(Rat a, Fixnum b)
+{   return Float::op(a);
+}
+
+// complex FLOAT fixnum
+LispObject Float::op(Cpx a, Fixnum b)
+{   return Float::op(a);
+}
+
+// short float FLOAT fixnum
+LispObject Float::op(SFlt a, Fixnum b)
+{   return Float::op(a);
+}
+
+// single float FLOAT fixnum
+LispObject Float::op(Flt a, Fixnum b)
+{   return Float::op(a);
+}
+
+// double float FLOAT fixnum
+LispObject Float::op(double a, Fixnum b)
+{   return Float::op(a);
+}
+
+// long float FLOAT fixnum
+LispObject Float::op(LFlt a, Fixnum b)
+{   return Float::op(a);
+}
+
+// fixnum FLOAT bignum
+LispObject Float::op(Fixnum a, uint64_t *b)
+{   return Float::op(a);
+}
+
+// bignum FLOAT bignum
+LispObject Float::op(uint64_t *a, uint64_t *b)
+{   return Float::op(a);
+}
+
+// rational FLOAT bignum
+LispObject Float::op(Rat a, uint64_t *b)
+{   return Float::op(a);
+}
+
+// complex FLOAT bignum
+LispObject Float::op(Cpx a, uint64_t *b)
+{   return Float::op(a);
+}
+
+// short float FLOAT bignum
+LispObject Float::op(SFlt a, uint64_t *b)
+{   return Float::op(a);
+}
+
+// single float FLOAT bignum
+LispObject Float::op(Flt a, uint64_t *b)
+{   return Float::op(a);
+}
+
+// double float FLOAT bignum
+LispObject Float::op(double a, uint64_t *b)
+{   return Float::op(a);
+}
+
+// long float FLOAT bignum
+LispObject Float::op(LFlt a, uint64_t *b)
+{   return Float::op(a);
+}
+
+// fixnum FLOAT rational
+LispObject Float::op(Fixnum a, Rat b)
+{   return Float::op(a);
+}
+
+// bignum FLOAT rational
+LispObject Float::op(uint64_t *a, Rat b)
+{   return Float::op(a);
+}
+
+// rational FLOAT rational
+LispObject Float::op(Rat a, Rat b)
+{   return Float::op(a);
+}
+
+// complex FLOAT rational
+LispObject Float::op(Cpx a, Rat b)
+{   return Float::op(a);
+}
+
+// short float FLOAT rational
+LispObject Float::op(SFlt a, Rat b)
+{   return Float::op(a);
+}
+
+// single float FLOAT rational
+LispObject Float::op(Flt a, Rat b)
+{   return Float::op(a);
+}
+
+// double float FLOAT rational
+LispObject Float::op(double a, Rat b)
+{   return Float::op(a);
+}
+
+// long float FLOAT rational
+LispObject Float::op(LFlt a, Rat b)
+{   return Float::op(a);
+}
+
+// fixnum FLOAT complex
+LispObject Float::op(Fixnum a, Cpx b)
+{   return Float::op(a);
+}
+
+// bignum FLOAT complex
+LispObject Float::op(uint64_t *a, Cpx b)
+{   return Float::op(a);
+}
+
+// rational FLOAT complex
+LispObject Float::op(Rat a, Cpx b)
+{   return Float::op(a);
+}
+
+// complex FLOAT complex
+LispObject Float::op(Cpx a, Cpx b)
+{   return Float::op(a);
+}
+
+// short float FLOAT complex
+LispObject Float::op(SFlt a, Cpx b)
+{   return Float::op(a);
+}
+
+// single float FLOAT complex
+LispObject Float::op(Flt a, Cpx b)
+{   return Float::op(a);
+}
+
+// double float FLOAT complex
+LispObject Float::op(double a, Cpx b)
+{   return Float::op(a);
+}
+
+// long float FLOAT complex
+LispObject Float::op(LFlt a, Cpx b)
+{   return Float::op(a);
+}
+
+// fixnum FLOAT short float
+// The implementation gere relies on the result if Float::op(a) being
+// a double float.
+LispObject Float::op(Fixnum a, SFlt b)
+{   return pack_short_float(double_float_val(Float::op(a)));
+}
+
+// bignum FLOAT short float
+LispObject Float::op(uint64_t *a, SFlt b)
+{   return pack_short_float(double_float_val(Float::op(a)));
+}
+
+// rational FLOAT short float
+LispObject Float::op(Rat a, SFlt b)
+{   return pack_short_float(double_float_val(Float::op(a)));
+}
+
+// complex FLOAT short float
+LispObject Float::op(Cpx a, SFlt b)
+{   return pack_short_float(double_float_val(Float::op(a)));
+}
+
+// short float FLOAT short float
+LispObject Float::op(SFlt a, SFlt b)
+{   return a.value();
+}
+
+// single float FLOAT short float
+LispObject Float::op(Flt a, SFlt b)
+{   return pack_short_float(double_float_val(Float::op(a)));
+}
+
+// double float FLOAT short float
+LispObject Float::op(double a, SFlt b)
+{   return pack_short_float(double_float_val(Float::op(a)));
+}
+
+// long float FLOAT short float
+LispObject Float::op(LFlt a, SFlt b)
+{   return pack_short_float(double_float_val(Float::op(a)));
+}
+
+// fixnum FLOAT single float
+LispObject Float::op(Fixnum a, Flt b)
+{   return pack_single_float(double_float_val(Float::op(a)));
+}
+
+// bignum FLOAT single float
+LispObject Float::op(uint64_t *a, Flt b)
+{   return pack_single_float(double_float_val(Float::op(a)));
+}
+
+// rational FLOAT single float
+LispObject Float::op(Rat a, Flt b)
+{   return pack_single_float(double_float_val(Float::op(a)));
+}
+
+// complex FLOAT single float
+LispObject Float::op(Cpx a, Flt b)
+{   return pack_single_float(double_float_val(Float::op(a)));
+}
+
+// short float FLOAT single float
+LispObject Float::op(SFlt a, Flt b)
+{   return pack_single_float(double_float_val(Float::op(a)));
+}
+
+// single float FLOAT single float
+LispObject Float::op(Flt a, Flt b)
+{   return a.value();
+}
+
+// double float FLOAT single float
+LispObject Float::op(double a, Flt b)
+{   return pack_single_float(double_float_val(Float::op(a)));
+}
+
+// long float FLOAT single float
+LispObject Float::op(LFlt a, Flt b)
+{   return pack_single_float(double_float_val(Float::op(a)));
+}
+
+// fixnum FLOAT double float
+LispObject Float::op(Fixnum a, double b)
+{   return Float::op(a);
+}
+
+// bignum FLOAT double float
+LispObject Float::op(uint64_t *a, double b)
+{   return Float::op(a);
+}
+
+// rational FLOAT double float
+LispObject Float::op(Rat a, double b)
+{   return Float::op(a);
+}
+
+// complex FLOAT double float
+LispObject Float::op(Cpx a, double b)
+{   return Float::op(a);
+}
+
+// short float FLOAT double float
+LispObject Float::op(SFlt a, double b)
+{   return Float::op(a);
+}
+
+// single float FLOAT double float
+LispObject Float::op(Flt a, double b)
+{   return Float::op(a);
+}
+
+// double float FLOAT double float
+LispObject Float::op(double a, double b)
+{   return make_boxfloat(a);
+}
+
+// long float FLOAT double float
+LispObject Float::op(LFlt a, double b)
+{   return Float::op(a);
+}
+
+// fixnum FLOAT long float
+LispObject Float::op(Fixnum a, LFlt b)
+{   return Float128::op(a);
+}
+
+// bignum FLOAT long float
+LispObject Float::op(uint64_t *a, LFlt b)
+{   return Float128::op(a);
+}
+
+// rational FLOAT long float
+LispObject Float::op(Rat a, LFlt b)
+{   return Float128::op(a);
+}
+
+// complex FLOAT long float
+LispObject Float::op(Cpx a, LFlt b)
+{   return Float128::op(a);
+}
+
+// short float FLOAT long float
+LispObject Float::op(SFlt a, LFlt b)
+{   return Float128::op(a);
+}
+
+// single float FLOAT long float
+LispObject Float::op(Flt a, LFlt b)
+{   return Float128::op(a);
+}
+
+// double float FLOAT long float
+LispObject Float::op(double a, LFlt b)
+{   return Float128::op(a);
+}
+
+// long float FLOAT long float
+LispObject Float::op(LFlt a, LFlt b)
+{   return make_boxfloat128(a.floatval());
 }
 
 double RawFloat::op(LispObject a)

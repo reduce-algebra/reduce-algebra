@@ -670,7 +670,7 @@ symbolic procedure token!-number x;
       if not digit (x := readch1()) then go to ret1;
 % This uses functions newplus and newtimes that are only available in
 % non-standard testing builds of the CSL version...
-      y := newplus(newtimes(10, y), get(z, 'hexdigit));
+      y := newplus(newtimes(10, y), get(x, 'hexdigit));
       go to znum1;
    nume2:
       if null z then rerror('rlisp,4,

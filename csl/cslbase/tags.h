@@ -1590,6 +1590,10 @@ inline Header make_new_bighdr(size_t n)
 {   return TAG_HDR_IMMED+TYPE_NEW_BIGNUM+(n<<(Tw+8));
 }
 
+inline uint64_t* new_bignum_digits(LispObject b)
+{   return (uint64_t *)((char *)b  + (8-TAG_NUMBERS));
+}
+
 // pack_hdrlength takes a length in 32-bit words (including the size of
 // the header). NOTE VERY WELL that although the other header length packers
 // take a count of items this one takes a length in 32-bit words!

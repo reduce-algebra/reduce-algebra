@@ -1942,6 +1942,11 @@ LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
                 for (size_t i=len; i>0; i--)
                     trace_printf("%.8x ", bignum_digits(a)[i-1]);
             }
+            if (is_numbers(a) && is_new_bignum(a))
+            {   size_t len = (length_of_header(numhdr(a))-8)/8;
+                for (size_t i=len; i>0; i--)
+                    trace_printf("%.8x ", new_bignum_digits(a)[i-1]);
+            }
             else if (is_fixnum(a))
                 trace_printf("#%cFIX:%" PRIx64, ((intptr_t)a>=0 ? 'p' : 'n'),
                              int_of_fixnum(a));
