@@ -487,6 +487,16 @@ inline std::mutex &diagnostic_mutex(const char ***where)
 // compilation units there will be a single unique mutex here. I guarantees
 // that the mutex will have been constructed (ie initialized) by the time
 // an execution path flows past its definition.
+// HOWEVER this idiom - ie defining static variables within functions - may
+// not be anything like as nice as I had hoped because it seems that the
+// mechanization of it at least on some platforms uses synchronization
+// primitives and extra complication to project agains a case where two
+// threads simultaneously made first cslls to the function, and to avoid
+// disaster if the function calls itself recursively. So this may cost a lot
+// more than a mere simple static "have you been initialized" flag being
+// tested! In this case where I am concerned with diagnostics I do not mind
+// a lot about performance so will leave this in. Elsewhere I may need to
+// avoid it.
     static std::mutex m;
     static const char *location;
     *where = &location;
@@ -865,30 +875,9 @@ inline int &example()
 {   return get_thread_locals()->example;
 }
 
-// HOWEVER here is how I can make it possible to write just "example" again
-// by wrapping stuff up in a class with overrides for assigmnet and casts!
-// This idea is from http://www.cplusplus.com/doc/tutorial/typecasting/
-// which is available subject to http://creativecommons.org/licenses/by-sa/3.0/
-// class A {};
-// class B {
-// public:
-//   // conversion from A (constructor):
-//   B (const A& x) {}
-//   // conversion from A (assignment):
-//   B& operator= (const A& x) {return *this;}
-//   // conversion to A (type-cast operator)
-//   operator A() {return A();}
-// };
-//
-// int main ()
-// {
-//   A foo;
-//   B bar = foo;    // calls constructor
-//   bar = foo;      // calls assignment
-//   foo = bar;      // calls type-cast operator
-//   return 0;
-// }
-// [end of extract from cplusplus.com]
+// HOWEVER I can use references to give simple name alises to the items
+// concerned, as in
+//    int &example = get_thread_locals()->example;
 
 // When I get to big-integer multiplication I will use two worker threads
 // so that elapsed times for really large multiplications are reduced

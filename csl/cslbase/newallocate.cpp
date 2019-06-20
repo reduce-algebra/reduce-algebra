@@ -1,4 +1,4 @@
-// allocate.cpp                            Copyright (C) 1989-2018 Codemist
+// allocate.cpp                            Copyright (C) 1989-2019 Codemist
 
 //
 // Code to deal with storage allocation, both grabbing memory at the start
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -34,21 +34,434 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: allocate.cpp 4935 2019-03-10 17:01:42Z arthurcnorman $
+// $Id$
 
 /*!!! csl
 */
 
 #include "headers.h"
 
-#ifdef WIN32
-#include <windows.h>
-#else // !WIN32
-#include <unistd.h>
-#include <sys/mman.h>
-#endif // !WIN32
+
+
+//
+// This is a place for my latest round of thinking about a new storage
+// management scheme. The ideal I set now is that garbage collection should
+// be both conservative and generational and that it should be able to
+// support multiple mutator threads. I am NOT intending either to run
+// garbage collection concurrently with the mutator (so the GC is a "stop
+// the world" one, although most garbage collections should be "minor" ones
+// and hence not too disruptive). I am also not at present planning on having
+// garbage collection use more than one thread to do its work, although that
+// might be seriously easier to retrofit later then having the GC and the
+// mutator concurrent.
+
+// In previous sketches relating to this I was considering using memory
+// protection and thus exceptions to implement a write barrier that is needed
+// to make the collector ephemeral/generational. My thoughts are now moving
+// to accepting that having the operating system handle exceptions is liable
+// to be unpleasantly expensive and that a software scheme can in fact have
+// almost modest overhead.
+
+// The design here has to mingle plans for global storage allocation,
+// the CONS operation as well as operations involving Lisp atoms, the
+// way that Lisp threads can access the values of variables, synchronization
+// matters and so on. In general it seems that almost all aspects from the
+// lowest to the most global level interact. So some of what I have here
+// are my CURRENT notes on how I think I will make it all work. The code
+// in this file is at present generall the OLD code and much of it will be
+// thrown away and replaced!
+
+
+#if 0
+
+#include <cinttypes>  // automatically include <cstdint>
+#include <atomic>
+#include <cstdlib>
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <cassert>
+
+
+
+// The pointer-tagging scheme used here is exactly as in CSL so that
+// transfer of code ideas will be especially easy.
+
+constexpr unsigned int TAG_BITS      = 7;
+constexpr unsigned int TAG_CONS      = 0;
+constexpr unsigned int TAG_VECTOR    = 1;
+constexpr unsigned int TAG_HDR_IMMED = 2;
+constexpr unsigned int TAG_FORWARD   = 3;
+constexpr unsigned int TAG_SYMBOL    = 4;
+constexpr unsigned int TAG_NUMBERS   = 5;
+constexpr unsigned int TAG_BOXFLOAT  = 6;
+constexpr unsigned int TAG_FIXNUM    = 7;
+
+
+typedef intptr_t LispObject;
+
+
+// Strategy:
+//
+// The plan is to support mutator threads but garbage collection will run
+// in just one thread and will be a "stop the world" activity. Furthermore
+// the intent is to have a (mostly-) copying collector so that live data is
+// collected intop a compact region and free-space comes in contiguous blocks.
+//
+// At any moment the memory will be considered partitioned into these
+// regions:
+// (1) Nursery: the region within which allocations are being made. All
+//     data in the nursery is treated as live during a minor GC.
+// (2) Pending: After a while material graduates from the nursery to this
+//     region. It is still treated as live during a minor GC, but the
+//     purpose of this state is to allow data to mature, so that although
+//     some material may be re-classified from Nursery to Pending while it
+//     is still very young anything that graduates out from Pending must
+//     have some age.
+// (3) Scavangable: When memory moved out of Pending it becomes Scavengable,
+//     and a minor GC will then scan it and evacuate live data into the
+//     Stable region. A minor GC will use Nursery and Pending as roots
+//     and must also mark from global list-bases, ambiguous locations on the
+//     stack and places in the Stable region where a write-barrier has
+//     recorded a change. Well while any memory is classified as Scavangable
+//     a garbage collection process will run to migrate data into the Stable
+//     region, and when that is complete the Scavangable region becomes part
+//     of Free!
+//     Note that if Garbage Collection was concurrent with other processing
+//     then there would be an active Scavengable region while programs were
+//     running. CAR and CDR (etc) might need to be equiped with read barriers
+//     so that they accessed the correct copy of data, and EQ would probably
+//     have to check if either of its arguments were references into the
+//     Scavengable region and if so if the item concerned had been relocated.
+//     The issue of CAR/CDR might be addressed by leaving the region untouched
+//     until the end of a scavanging scan, but in that case some scheme other
+//     that in-place forwarding addresses would be needed to track which
+//     items had been evecuated and where they ended up. But avoiding serious
+//     overhead in EQ tests at present looks intractable to me. I will not be
+//     developing fully concurrent collection! Thus this region has a purely
+//     transient existence!
+// (4) Stable: Minor GCs will assume that all data here will have remained
+//     alive, and will not relocate any of it. A Major GC just treats all
+//     data (Nursery, Pending and Stable) as part of Scavangable so that
+//     everything is considered for reclamation.
+// (5) Free: Memory currently not in use and so available for future
+//     reallocation to the Nursery or Stable regions.
+//
+// Each of regions (1) to (4) will have a component that only holds items
+// of size up to that of a CONS cell (so I could put very short strings and
+// bignums there if that was going to help, but doing so would probably add
+// to complication and overhead without enough compensating benefit). The
+// second is for all other sizes of object. The reasoning behind having this
+// partition will emerge in thd discussion of pinned items.
+//
+// So now let's consider the key events that can arise:
+//
+// The Nursary becomes full: Re-badge Pending as Scavengable, re-badge
+// Nursery as Pending and grab fresh space from Free to be the new Nursery.
+// As a scavangable region comes into existance a sweep of evacuation is
+// triggered and live data there is moved into to Stable region, and that
+// may need to grab extra space from Free as it grows. When Stable has grown
+// to an extent that is starting to look embarassing the system sets a tag
+// so that the next garbage collection will be a full one. 
+//
+// Some other thread fills the Nursery: when they do fringe will be above
+// limit - of if they just tried to allocated a vector vfringe will be
+// above vlimit. They must then set limit as well. The current thread will
+// then attempt an allocation or perform a poll() operation, and it then
+// enters the garbage collector. When a thread is going to perform an
+// operation that can block it must first set flags that indicate that it will
+// be quiescent, and so other threads garbage collecting will be safe. As it
+// becomes ready to proceed it must poll to ensure that nobody else has
+// initiated garbage collection.
+//
+// I will now try to document the evacuation process from the Scavengable
+// region - and this will have a range of sub-tasks several of which I will
+// just assume to start with and come back to the details of later.
+//
+// I take all ambiguous pointers. Those that are pointing anywhere into the
+// heap are candidate genuine pointers - I tag the items pointed to that are
+// in the Scavangable region as "pinned".
+//
+// I need to unpack the above. Firstly some people would tend to pin chunks
+// of memory (perhaps referred to as "cards") rather than just single items.
+// There may be some performance balances to be struck there. There are at
+// least two potential areas for "ambiguous pointers" too, also with issues
+// of balancing one performance issue agsinst another. So I will decribe two
+// extreme strategies here to show what I need to decide between:
+// (a) The only ambigious pointers are the values on the stack of each
+//     thread. All other pointers that will be considered during garbage
+//     collection will be precise. But an ambiguous pointer may point within
+//     an object not to its head. To pin that object the location of the
+//     object head must be deduced from the crude address that one starts from
+//     an a bit in a bitmap set to tag it a spinned. Because during a full
+//     garbage collection all of Nursery, Pending and Stable are viewed
+//     as scavengable the bitmap must cover all of the heap that may be in
+//     use - ie the "old" half-space.
+//     All memory will lie within up to 16 big blocks that get grabbed from
+//     the operating system, and about 4 comparisons make it possible to
+//     identify which. Within each big block thare needs to be information
+//     about memory class. For references into scavangable CONS space the
+//     object starts at an address got by rounding down to a multiple of
+//     sizeof(ConsCell).
+//     As GC starts I will do a linear scan of scavangable memory that can
+//     hold vectors setting up a bitmap that identified object starts.
+//     While setting that up I can also build a table such that for any
+//     address that is a multiple of (say) 4K it identifies the start of
+//     the last object whose start address is no higher. This latter is
+//     to make identifying the start of large objects cheaper.
+//     Now given an ambiguous pointer known to be in a vector region start
+//     with its address to resolution 1K and the address of an object that
+//     that identifies. Starting from there check the bitmap to find the
+//     last object start that is at or before the given address.
+//     How much space does this all use? Well the bitmap can use one bit for
+//     every 8 bytes, i.e. (1/64) of the heap size. The table of pointers
+//     will use an 8-byte pointer for every 1K chunk, ie (1/128) of the
+//     space. The table identifies a valid object that is within 1K of the
+//     item, and that is 128 8-byte units. So using 64 bit integers in the
+//     bitmap, searching for it involved looking at just 2 words.
+//     All this is mildly messy but tolerably fast!
+// (b) An alternative suggestion pins not merely single objects but chunks
+//     of memory that contain those objects and a range of other objects that
+//     happen to be their neighbours. A key motivation for this is to replace
+//     the detailed bitmap in (a) with a coarser grain record of pinned
+//     regions. This could be a particular saving if many ambiguous pointers
+//     tended to be to objects that were fairly close to each other in memory.
+//     It could also seen attractive if the total number of pinned items was
+//     kept small: perhaps a hash table could record pinning rather than a
+//     bitmap, and during a major GC this might save significant memory.
+//     The biggest issue I see here arises if I want a pointer anyhere within
+//     an object to be able to pin that object, and the key argument for that
+//     is low level code with a pointer traversing a vector. Even if source
+//     for was written as "for (i=0; i<len; i++) { ... a[i] ... }" one can
+//     imagine a compiler mapping that onto code that sets up a pointer into
+//     the array a[] and steps it along sequantially, rather as if it had
+//     been "for (p=&a[0]; p<&a[len]; p++) { ... *p ... }". To avoid trouble
+//     with that it is vital that the pointer p (stored on the stack) is
+//     identified as something that must pin a[]. The hard part of that is
+//     that a[] may be a large vector, and to identify a chunk of memory
+//     containing it either one needs to pin a blick that is larger than the
+//     largest legal vector or to identify the start of a[] precisely, and
+//     the table/bitmap scheme shown in (a) is about as good as I can imagine
+//     for that. And having done that recording the single precise item that
+//     is pinned seems sensible!
+// (c) In a different direction there is an issue of what values are to be
+//     treated as ambigious pointers. In a minor GC I need to mark from
+//     all of the Nursery, all the Pending region and from locations
+//     in Stable that have been written to (and that contain "up-pointers").
+//     As in (b) above I might identify these dirty parts of the Stable area
+//     either precisely by the exact cell that was updated, or in a block.
+//     If I identify dirty cells precisely then they will hold unambiguous
+//     values, and though I must mark from them there is no special trouble.
+//     However in an implemention of a write barrier keeping exact information
+//     will be hard (I will explain a proposed mechanism in a while) and it
+//     will probably be more feasible to tag segments of memory as having been
+//     written to. The alignment between these regions and the starts and ends
+//     of binary and list-containing vectors may not be tidy. So it seems
+//     simplest to treat all the contents of a dirty region as ambiguous
+//     pointers.
+//
+// To back up (c) I need to consider the need for an implemention of write
+// barriers. For a conservative GC any time a part of the Stable heap is
+// changed this information must be known to the GC so that if the update
+// leads to the stable region containing a reference to something in the
+// Scavangable area it gets brought up to date as scavenging happend. Well
+// ons case is simple - when a major GC happens none of the heap is considered
+// Stable and everything is Scavengable so this issue does not arise.
+// But ahead of a minor GC the mutator must arrange that when any update
+// to the Stable heap is made the GC will be able to track it. The cases
+// that arise seem to be:
+// (1) The value cells associated with symbols;
+// (2) Property list cells associated with symbols;
+// (3) Property-vectors associated with Symbols;
+// (4) function definitions and associated data (the "env" call of symbols)
+// (5) print-names if there are operations that can reset a print-name to
+//     refer to newly allocated memory.
+// To cope with all of these I think that all symbols will be collected on
+// a chain of weak pointers (weak so that in the case that the symbol ceases
+// to be needed it can be discarded). The main cells in every symbol will
+// always be scanned from in even minor GCs. For reference I note that in
+// REDUCE with everything loaded thera are around 44K symbols present, of
+// which under 9K are present when basic algebra is being performed.
+// (6) Vector and hash-table updates;
+// I expect that multiple updates to the same object will generally cluster,
+// so for these having a record of the "most recently updated object" and
+// only storing an update to something that differs may be a good
+// optimization. Parhaps any code that uses vector will be complicated enough
+// that adding a bit of overhead to vector writes will not hurt a lot?
+// (7) RPLACA and RPLACD (and RPLACW); Perhaps these are not used TOO much so
+// adding cost will not hurt.
+// (8) NREVERSE; A particular use of RPLAC operations is when a list is
+// created using CONS and then at the end of that it is reversed in place.
+// That idiom arises in transformed versions of what would otherwise be
+// recursive list-building operations. If it can be established that ALL the
+// new CONS cells are still in the Nursery then no write barrier activity
+// would be needed at all. I think that is probably not a helpful direction
+// to look for optimization.
+//
+// [Note that all items in a cons segment of the heap will be a reliable
+// pointer not an ambiguous one. It will just be items in the vector region
+// that can cause trouble!]
+//
+// It could be tempting to look for a precise write barrier that tags exactly
+// the cell that is updated, perhaps using a bitmap. In a multi-threaded world
+// the bitmap can be updates using std::atomic::fetch_or and that then lets
+// one use a bitmap that consumes (1/64) of the memory used by the Stable heap.
+// If one was happy to marks (say) 256 byte blocks as dirty then either
+// it would still be OK to use a bitmap, or with a little less overheap a
+// map with flag of type std::atomic<unsigned char> for each block (ie (1/256)
+// of the memory capacity) could be used.
+// When the write barrier is used the address involved is known to be a valid
+// Lisp address, and it is know whether it is a CONS or a vector. So for the
+// CONS case I will propose that cons cells are always allocated within
+// blocks of memory that are say 1 Mbyte large and that always have a 16 Kbyte
+// chunk at their start for use as a "dirty" bitmap and a second 16K as a
+// pinned bitmap. Then we can have something like:
+
+
+// First a version that uses a bitmap and gives precise info about the
+// updated pair of cells. I have these two versions so I can compile
+// thos cide into assembly code and check how the two versions compare
+// at that level.
+
+LispObject rplaca1(LispObject a, LispObject b)
+{   uintptr_t aa = static_cast<uintptr_t>(a);
+    uintptr_t base = aa & ~UINT64_C(0xfffff); // round down to 1M boundary
+    std::atomic<uint64_t> *bitmap =
+        reinterpret_cast<std::atomic<uint64_t> *>(base);
+    size_t offset = (aa - base)/(2*sizeof(LispObject));
+    bitmap[offset/64] |= UINT64_C(1) << (offset%64);
+    (reinterpret_cast<LispObject *>(a))[0] = b;
+    return a;
+}
+
+// Now a version that uses a byte-map and coarser granularity records.
+
+LispObject rplaca2(LispObject a, LispObject b)
+{   uintptr_t aa = static_cast<uintptr_t>(a);
+    uintptr_t base = aa & ~UINT64_C(0xfffff); // round down to 1M boundary
+    std::atomic<uint8_t> *bitmap =
+        reinterpret_cast<std::atomic<uint8_t> *>(base);
+// I want to record that this megabyte segmnent contains at last one
+// dirty fragment.
+    bitmap[0].store(1);
+    size_t offset = (aa - base);
+// This is a flag for every 64 bytes, ie 8 LispObjects on a 64-bit
+// platform.
+    bitmap[offset/64].store(1);
+    (reinterpret_cast<LispObject *>(a))[0] = b;
+    return a;
+}
+
+// Looking at the machine code generated for each of the above two (on
+// x86_64 and using "g++ -O3" it looks to me as if the byte-map version is
+// sufficiently more concise that I wish to use it, and the larger size
+// of pinned regions that it introduces does not feel like a severe problem.
+//
+// However that part of the evaluation just looks at the cost of the write
+// barrier for the mutator. The other component of cost is in the garbage
+// collector where even for a minor garbage collection all dirty fragments
+// of memory need to be identified. If there are N bytes of memory in use
+// in all then as I have things coded above that involves checking N/64
+// bytes in all. Well I have two optimizations. The first is that if a
+// megabyte block of cons space is totally clean I can observe that from
+// a 1-byte flag. Then when that does not apply but if I expect that only
+// a small fraction of memory will be dirty I can scan 8 bytes at a time by
+// fetching 64-bit words, so the number of read operations needed to scan
+// all memory is more like N/512. For multi-gigabyte memory this is still
+// not good. This can be (slightly) softened by using the bytemap scheme with
+// a coarser granularity. Having /256 rather than /64 would reduce the bitmap
+// sized by 4, and using /1024 by 16. Maybe my current GUESS will be that
+// "/512" will give an acceptable balance. With a 32GB heap to cover
+// that leaves each minor GC checking up to 8M words (but the actual cost
+// will be a lot less because of fully clean pages) and when a region is
+// tagged as dirty it will be 512 bytes = 64 words that are tagged.
+//
+// Of course the right things to do will be to make all the parameters
+// adjustable so that behaviour can be tuned over time. 
+//
+// So now I can come back to garbage collection!
+// After a major garbage collection set all the up-pointer maps to zero
+// and clear all the pinned maps.
+// During computation arrange that when any RPLACx or PUTV (or PUTHASH)
+// operation is performed update the "dirty" maps.
+// At the start of any garbage collection clear that pinned bits for the
+// Scavengable region. Scan all C stacks and all dirty regions in the
+// stable heap and mark each location that is (potentially) addressed via
+// an ambiguous pointer as pinned.
+//
+// Now for all unambiguous roots and all field within pinned items evacuate
+// data into the Free region leaving a forwarding pointer. The presence of the
+// forwarding pointer identifies items that have already been processed.
+//
+// Scan the new material just moved into a Free region evacuating its
+// contents where relevant, until everything is done.
+//
+// Take the block that was scavengable and identify all the pinned
+// regions within it. Built a sort of free-list showing the blocks that
+// are actually free and re-classify the region as Free.
+
+extern std::atomic<LispObject *> fringe;
+extern std::atomic<LispObject *> limit;
+
+extern std::atomic<LispObject *> vfringe;
+extern std::atomic<LispObject *> vlimit;
+
+std::mutex gc_mutex;
+extern LispObject *gc_and_allocate(LispObject *r, size_t n);
+extern void gc_elsewhere();
+
+LispObject cons(LispObject a, LispObject b)
+{   LispObject *result = fringe.fetch_add(2);
+    if (fringe.load() >= limit.load())
+        result = gc_and_allocate(result, 2);
+    result[0] = a;
+    result[1] = b;
+    return TAG_CONS+reinterpret_cast<LispObject>(result);
+}
+
+// In the fullness of time I will need to arrange for both vectors
+// containing Lisp object-references and ones that hold raw binary data:
+// for now I will not deal with that!
+
+LispObject getvec(size_t n)
+{   LispObject *result = fringe.fetch_add(n);
+    if (fringe.load() >= limit.load())
+        result = gc_and_allocate(result, n);
+    result[0] = TAG_HDR_IMMED + (n<<4); // size packed into header word
+// Only the header word is filled in here.
+    return TAG_VECTOR+reinterpret_cast<LispObject>(result);
+}
+
+// It will be important to call this frequently because when one thread
+// observes that it needs to garbage collect all other threads must be
+// paused. Any other that calls cons() or getvec() will pause there, but
+// code in a loop that did not allocate memory could cause an unbounded
+// delay unless this is called such that the loop can be interrupred.
+// Extra steps will be needed when library calls that might block are
+// made, but details of that belong elsewhere.
+
+void poll()
+{   if (fringe.load() >= limit.load()) gc_elsewhere();
+}
+
+
+#endif // 0
+
+
+
+
+
+
+
+
+
+
+
+
 
 #ifdef CONSERVATIVE
+//@@@@ FUDGES
+
 // The definitions here are ones that will eventually not be needed with
 // the conservative model - or will be re-introduced with quite different
 // implementation or impact. But they are defined here to allow me to
@@ -63,6 +476,12 @@ void *allocate_page(const char *why)
 {   printf("allocate_page called\n");
     my_abort();
 }
+
+#else // !CONSERVATIVE
+
+LispObject fringe, heaplimit;
+
+#endif // !CONSERVATIVE             @@@@ END OF FUDGES
 
 // The work discussed here is to arrange that CSL uses a mostly-copying
 // conservative collector. The details are substantially tuned to the expected
@@ -514,15 +933,6 @@ inline void clear_pinned(LispObject p, page_header *page)
     page->pinned_bitmap[n] &= ~bit;
 }
 
-#endif // CONSERVATIVE
-
-// A fair amount of code that will in fact only be relevant with a
-// conservative garbage collector (and indeed with a generational one)
-// is always included here. It adds bulk to the standard version of the
-// code but should not prevent it from working, and doing things this
-// way makes me feel that I am making the transition to a conservative
-// GC in a more incremental manner.
-
 #ifdef USE_SIGALTSTACK
 
 static unsigned char signal_stack_block[SIGSTKSZ];
@@ -537,88 +947,6 @@ stack_t signal_stack;
 // the mingw compilers/libraries do not support sigaction (one might
 // reasonably believe that simulating it when running on Windows might be
 // pretty horrid!), so on Windows I will still use just signal().
-
-#ifdef HAVE_SIGACTION
-static void low_level_signal_handler(int signo, siginfo_t *t, void *v);
-#else // !HAVE_SIGACTION
-static void low_level_signal_handler(int signo);
-#endif // !HAVE_SIGACTION
-
-void set_up_signal_handlers()
-{
-//
-#ifdef USE_SIGALTSTACK
-// If I get a SIGSEGV that is caused by a stack overflow then I am in
-// a world of pain because the regular stack does not have space to run my
-// exception handler. So where I can I will arrange that the exception
-// handler runs in its own small stack. This may itself lead to pain,
-// but perhaps less?
-    signal_stack.ss_sp = (void *)signal_stack_block;
-    signal_stack.ss_size = SIGSTKSZ;
-    signal_stack.ss_flags = 0;
-    sigaltstack(&signal_stack, (stack_t *)0);
-#endif
-    for (int i=0; i<32; i++)
-        heap_segment[i] = (void *)UINTPTR_MAX;
-#ifdef HAVE_SIGACTION
-    struct sigaction sa;
-    sa.sa_sigaction = low_level_signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART | SA_SIGINFO; //???@@@ | SA_ONSTACK | SA_NODEFER;
-// (a) restart system calls after signal (if possible),
-// (b) use handler that gets more information,
-// (c) use alternative stack for the handler,
-// (d) leave the exception unmasked while the handler is active. This
-//     will be vital if then handler "exits" using longjmp, because as
-//     far as the exception system is concerned that leaves us within the
-//     handler. But after the  exit is caught by setjmp I want the
-//     exception to remain trapped.
-    if (sigaction(SIGSEGV, &sa, NULL) == -1)
-        /* I can not thing of anything useful to do if I fail here! */;
-#ifdef SIGBUS
-    if (sigaction(SIGBUS, &sa, NULL) == -1)
-        /* I can not thing of anything useful to do if I fail here! */;
-#endif
-#ifdef SIGILL
-    if (sigaction(SIGILL, &sa, NULL) == -1)
-        /* I can not thing of anything useful to do if I fail here! */;
-#endif
-    if (sigaction(SIGFPE, &sa, NULL) == -1)
-        /* I can not thing of anything useful to do if I fail here! */;
-#else // !HAVE_SIGACTION
-#ifndef WIN32
-#error All platforms other than Windows are expected to support sigaction.
-#endif // !WIN32
-    signal(SIGSEGV, low_level_signal_handler);
-#ifdef SIGBUS
-    signal(SIGBUS, low_level_signal_handler);
-#endif
-#ifdef SIGILL
-    signal(SIGILL, low_level_signal_handler);
-#endif
-    signal(SIGFPE, low_level_signal_handler);
-#endif // !HAVE_SIGACTION
-}
-
-static volatile char signal_msg[32];
-//static volatile thread_local char signal_msg[32];
-
-static volatile char *int2str(volatile char *s, int n)
-{   unsigned int n1;
-// Even though I really only expect this to be called with small positive
-// arguments I will code it so it should support ANY integer value, including
-// the most negative one.
-    if (n >= 0) n1 = (unsigned int)n;
-    {   *s++ = '-';
-        n1 = -(unsigned int)n;
-    }
-    if (n1 >= 10)
-    {   s = int2str(s, n1/10);
-        n1 = n1 % 10;
-    }
-    *s++ = '0' + n1;
-    return s;
-}
 
 // All the heap memory I use here will be allocated within (up to) 32
 // segments that are grabbed using either malloc or VirtualAlloc. Each
@@ -719,18 +1047,6 @@ bool clear_bitmap(size_t h)
 {   size_t n = heap_segment_size[h]/page_size; // measured in bits
     n = (n + 7) & -(size_t)8;                  // now in bytes
     memset(heap_dirty_pages_bitmap_1[h], 0, n);  // clear the map
-#ifdef WIN32
-    if (ResetWriteWatch(heap_segment[h], heap_segment_size[h]) != 0)
-        return false;
-#else // !WIN32
-    mprotect_valid = false;
-    if (mprotect(heap_segment[h], heap_segment_size[h],
-                 PROT_READ) == -1)
-    {   mprotect_valid = true;
-        return false;
-    }
-    mprotect_valid = true;
-#endif // !Win32
     return true;
 }
 
@@ -803,6 +1119,94 @@ bool refresh_bitmap(size_t h)
 extern int find_heap_segment(uintptr_t p);
 
 #ifdef HAVE_SIGACTION
+static void low_level_signal_handler(int signo, siginfo_t *t, void *v);
+#else // !HAVE_SIGACTION
+static void low_level_signal_handler(int signo);
+#endif // !HAVE_SIGACTION
+
+void set_up_signal_handlers()
+{
+//
+#ifdef USE_SIGALTSTACK
+// If I get a SIGSEGV that is caused by a stack overflow then I am in
+// a world of pain because the regular stack does not have space to run my
+// exception handler. So where I can I will arrange that the exception
+// handler runs in its own small stack. This may itself lead to pain,
+// but perhaps less?
+    signal_stack.ss_sp = (void *)signal_stack_block;
+    signal_stack.ss_size = SIGSTKSZ;
+    signal_stack.ss_flags = 0;
+    sigaltstack(&signal_stack, (stack_t *)0);
+#endif
+    for (int i=0; i<32; i++)
+        heap_segment[i] = (void *)UINTPTR_MAX;
+#ifdef HAVE_SIGACTION
+    struct sigaction sa;
+    sa.sa_sigaction = low_level_signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART | SA_SIGINFO; //???@@@ | SA_ONSTACK | SA_NODEFER;
+// (a) restart system calls after signal (if possible),
+// (b) use handler that gets more information,
+// (c) use alternative stack for the handler,
+// (d) leave the exception unmasked while the handler is active. This
+//     will be vital if then handler "exits" using longjmp, because as
+//     far as the exception system is concerned that leaves us within the
+//     handler. But after the  exit is caught by setjmp I want the
+//     exception to remain trapped.
+    if (sigaction(SIGSEGV, &sa, NULL) == -1)
+        /* I can not thing of anything useful to do if I fail here! */;
+#ifdef SIGBUS
+    if (sigaction(SIGBUS, &sa, NULL) == -1)
+        /* I can not thing of anything useful to do if I fail here! */;
+#endif
+#ifdef SIGILL
+    if (sigaction(SIGILL, &sa, NULL) == -1)
+        /* I can not thing of anything useful to do if I fail here! */;
+#endif
+    if (sigaction(SIGFPE, &sa, NULL) == -1)
+        /* I can not thing of anything useful to do if I fail here! */;
+#else // !HAVE_SIGACTION
+#ifndef WIN32
+#error All platforms other than Windows are expected to support sigaction.
+#endif // !WIN32
+    signal(SIGSEGV, low_level_signal_handler);
+#ifdef SIGBUS
+    signal(SIGBUS, low_level_signal_handler);
+#endif
+#ifdef SIGILL
+    signal(SIGILL, low_level_signal_handler);
+#endif
+    signal(SIGFPE, low_level_signal_handler);
+#endif // !HAVE_SIGACTION
+}
+
+// On old versions of Xcode on the Mac it seems that thread_local is not
+// supported. And older Mac hardware do not support versions of Xcode that
+// are new enough to cope (boo hiss!). So for now I will avoid it even though
+// it is going to be a forward-facing feature that I will wish to restore
+// use of some day.
+
+//static volatile thread_local char signal_msg[32];
+static volatile char signal_msg[32];
+
+static volatile char *int2str(volatile char *s, int n)
+{   unsigned int n1;
+// Even though I really only expect this to be called with small positive
+// arguments I will code it so it should support ANY integer value, including
+// the most negative one.
+    if (n >= 0) n1 = (unsigned int)n;
+    {   *s++ = '-';
+        n1 = -(unsigned int)n;
+    }
+    if (n1 >= 10)
+    {   s = int2str(s, n1/10);
+        n1 = n1 % 10;
+    }
+    *s++ = '0' + n1;
+    return s;
+}
+
+#ifdef HAVE_SIGACTION
 static void low_level_signal_handler(int signo, siginfo_t *si, void *v)
 #else // !HAVE_SIGACTION
 static void low_level_signal_handler(int signo)
@@ -819,58 +1223,6 @@ static void low_level_signal_handler(int signo)
 // I can produce will be better than nothing, and if things get confused
 // or crash again then that is not much worse than the exception having
 // arisen in the first case!
-#ifndef WIN32
-// On non-Windows systems I set heap pages as read-only, and then the
-// first time I perform a write to a page I set a bit in a map to record
-// that it is dirty. This is to support a possible future development of
-// a generational garbage collector, where this scheme will serve as part
-// of the implementation of a write barrier.
-    if ((signo == SIGSEGV
-#ifdef SIGBUS
-         || signo == SIGBUS
-#endif
-         ) && mprotect_valid)
-    {   void *addr = si->si_addr;   // The address that was at fault
-// See if the faulting address was within the memory that we had allocated
-// for our heap. If so there is a real prospect that all I need to do is
-// to record what has happened and re-flag the page as read-write.
-        int h = find_heap_segment((uintptr_t)addr);
-        if (h >= 0)
-        {
-// mprotect is not async signal safe, and I find uncertain explanations as
-// to whether it is thread-safe  (I believe it is on Linux). To be safe
-// I protect it with a spin-lock here. Well the spin lock could be expensive
-// if mprotect takes long to execute! Also this is still not async signal
-// safe, merely safe against page faults in different threads. If in the
-// main body of some thread I perform an mprotect then I must not have a
-// SIGSEGV within the inner execution of the mprotect, and nothing within
-// the critical region guarded by the spinlock here may cause a SIGSEGV.
-// Well all there is in the critical region is access to the spinlock
-// itself and the mprotect call.
-            addr = (void *)((uintptr_t)addr & -(uintptr_t)page_size);
-            while (spin_lock.test_and_set(std::memory_order_acquire)) {}
-            int rc = mprotect(addr, page_size, PROT_READ | PROT_WRITE);
-            spin_lock.clear();
-            if (rc == -1)
-            {   errorset_msg = "Unable to restore R/W status of memory page";
-                global_longjmp();
-            }
-// Now fill in a map!
-            void *base = heap_segment[h];
-            size_t page_offset = ((char *)addr - (char *)base)/page_size;
-// I will re-acquire the spin lock to update the bitmap, but this time I
-// know that the critical region is very short, so I am not concerned about
-// performance here.
-            atomic_set_bit(heap_dirty_pages_bitmap_1[h], page_offset);
-// When the SIGSEGV or SIGBUS was activation of a wtite barrier I will
-// exit from the signal handler when I have dealt with it. That should
-// re-try the memory access, which ought now to succeed.
-            return;
-        }
-    }
-#endif
-// For all exceptions that are not to do with a write barrier I will create
-// a message string (which I put in threead local memory)
     if (miscflags & HEADLINE_FLAG)
     {   switch (signo)
         {   default:
@@ -914,41 +1266,9 @@ static void low_level_signal_handler(int signo)
     global_longjmp();
 }
 
-// gc-forcer(a, b) should arrange that a garbage collection is triggered
-// when at most A cons-sized units of consing happens or when at most
-// B units of space is used for vectors (where vectors include bignums and
-// boxed floats). This is intended to be used to trigger garbage collection
-// with rather fine control over when it happens to help with debugging
-// storage management issues.
-
-uint64_t force_cons=0, force_vec = 0;
-
-LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
-{
-#ifdef BOOTSTRAP
-    if (force_cons != 0 || force_vec != 0)
-        trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\n",
-            force_cons, force_vec);
-// If you pass a non-fixnum then that leaves the trigger-point unchanged.
-    if (is_fixnum(a)) force_cons = (uint64_t)sixty_four_bits(a);
-    if (is_fixnum(b)) force_vec = (uint64_t)sixty_four_bits(b);
-#else
-    aerror("gc-forcer only available with bootstrapreduce");
-#endif
-    return onevalue(nil);
-}
-
-LispObject Lgc_forcer1(LispObject env, LispObject a)
-{   return Lgc_forcer(env, a, a);
-}
-
-
-
-
-#ifdef CONSERVATIVE
-
 // Provide the kernel of the allocation code...
 
+#ifdef CONSERVATIVE
 
 // This is an updated and fuller explanation of memory layout on each
 // page. A page starts with a header and teo bitmaps and then its data
@@ -1058,13 +1378,13 @@ uintptr_t xor_chain;
 // that designing this arrangement was stressful and went through several
 // iterations and much uncertainty!
 
-static void allocate_next_page(bool for_gc, size_t n, int tag, int type);
+static void allocate_next_page(), gc_allocate_next_page();
 
 inline Header make_padding_header(size_t n)
 {   return TAG_HDR_IMMED+TYPE_PADDER+(n<<(Tw+7));
 }
 
-static void get_2_words_past_pin(bool for_gc)
+static void get_2_words_past_pin()
 {   if (vheaptop == heapstart)
     {
 // Vector and 2-word items have just collided, well ALMOST because the vector
@@ -1081,7 +1401,7 @@ static void get_2_words_past_pin(bool for_gc)
 // would be but comment it out as unnecessary. This is just a 1-word padder.
 //--        clear_header_bit(vfringe, active_page);
         }
-        allocate_next_page(for_gc, sizeof(Cons_Cell), TAG_CONS, 0);
+        allocate_next_page();
 // After allocating a new page (and sometimes that will involve garbage
 // collection) there will always be room to set aside memory for a CONS.
 // That is because the garbage collector must never set a new active page
@@ -1109,10 +1429,9 @@ static void get_2_words_past_pin(bool for_gc)
         if (SIXTY_FOUR_BIT && fringe == vfringe+CELL)
         {   *(Header *)vfringe = make_padding_header(CELL);
             vfringe += CELL;
-            allocate_next_page(for_gc, sizeof(Cons_Cell), TAG_CONS, 0);
+            allocate_next_page();
         }
-        else if (fringe == vfringe)
-            allocate_next_page(for_gc, sizeof(Cons_Cell), TAG_CONS, 0);
+        else if (fringe == vfringe) allocate_next_page();
 // Now I know that there is space for a 2-word item, either because there
 // was genuine space in the region or because allocate_next_page will have
 // left me in good shape.
@@ -1133,24 +1452,15 @@ static void get_2_words_past_pin(bool for_gc)
 // the allocation of 2 consecutive words of memory until the current active
 // block is full or until pinned data within it is reached.
 
-static uintptr_t padders = 0;
-static uintptr_t *padders_tail = &padders;
-
-inline LispObject get_2_words(bool for_gc)
-{   if (for_gc && padders != 0)
-    {
-// Here if there are any padder blocks left over by previous vector
-// allocations I will use parts of them up.
-// *** not implemented yet ***
-    }
-  
+inline LispObject get_2_words()
+{
 // If there is a free doubleword immediately available then use it. I very
 // much hope that this will be the situation almost all of the time.
 // This is "inline" because it is fairly short and it should represent
 // by a large margin the most common case encountered when performing CONS
 // operations.
     fringe -= 2*CELL;
-    if (fringe < heaplimit) get_2_words_past_pin(for_gc);
+    if (fringe < heaplimit) get_2_words_past_pin();
 // There is an additional condiction that I am arranging will not need any
 // code here by that does need commenting on. Within a page the first word
 // of any object must be tagged in the "object start" bitmap. This bitmap
@@ -1168,21 +1478,13 @@ inline LispObject get_2_words(bool for_gc)
     return fringe;
 }
 
-static void get_n_bytes_past_pin(bool for_gc, size_t n, int tag, int type)
+static void get_n_bytes_past_pin()
 {
 // The vector I want to allocate will not fit at the next consecutive
 // address. So to keep the heap tidy I will insert a padder record
 // there.
     if (vfringe != vheaplimit)
     {   *(Header *)vfringe = make_padding_header(vheaplimit - vfringe);
-// If I am within the garbage collector I will collect a chain of all
-// the padders that I create. This will be  built in historical order.
-// While garbage collecting I may allocate from this "spare" space.
-        if (for_gc && (vheaplimit - vfringe) != CELL)
-        {    *padders_tail = vfringe;
-             padders_tail = &((uintptr_t *)vfringe)[1];
-             *padders_tail = 0;
-        }
         clear_header_bits(vfringe, vheaplimit - vfringe, active_page);
     }
 // If 2-word and vector regions are one and the same that means that
@@ -1191,7 +1493,7 @@ static void get_n_bytes_past_pin(bool for_gc, size_t n, int tag, int type)
 // uninterrupted block of free memory for my vector, but if it does not
 // then this function will just get called again.
     if (vheaptop == heapstart)
-    {   allocate_next_page(for_gc, n, tag, type);
+    {   allocate_next_page();
         return;
     }
 // Now I am in the situation where there was some pinned data that blocked
@@ -1210,7 +1512,7 @@ static void get_n_bytes_past_pin(bool for_gc, size_t n, int tag, int type)
 // is setting and clearing bitmap information for the identification of
 // object start addresses.
 
-inline LispObject get_n_bytes(size_t n, bool for_gc, int tag, int type)
+inline LispObject get_n_bytes(size_t n)
 {
 // I may at some stage arrange that I always call this function asking for
 // a multiple of 8 bytes, but for now and as a matter of caution I will
@@ -1224,8 +1526,7 @@ inline LispObject get_n_bytes(size_t n, bool for_gc, int tag, int type)
 // as the next limit. If not then put in a padder and move beyond the pinned
 // items. It may be necessary to do this several times if there are pinned
 // items with shortish free gaps between them, hence the WHILE loop.
-    while (vfringe + n > vheaplimit)
-        get_n_bytes_past_pin(for_gc, n, tag, type);
+    while (vfringe + n > vheaplimit) get_n_bytes_past_pin();
 // Now I have a gap that is big enough. Hoorah!
     LispObject r = vfringe;
     vfringe += n;
@@ -1285,6 +1586,90 @@ inline LispObject borrow_n_bytes(size_t n)
 // I do not set (or clear) header bits for borrowed vectors. That is because
 // they should never participate in garbage collection, so the issues of
 // ambiguous references to them do not arise.
+    return r;
+}
+
+// Now I have versions of the allocation code that are used while I am in
+// the garbage collector evacuating data from the old into the new space.
+// I am making this a (modified) copy of the normal allocator for two reasons.
+// The first is that for speed reasons I do not want ANY stray tests adding
+// overhead to the normal allocator. The second is that this GC version may
+// try harder to avoid introducing fragmentation, and that makes it
+// deviate noticably from the simpler regular-use code.
+
+static void gc_get_2_words_past_pin()
+{   if (vheaptop == heapstart)
+    {
+        if (SIXTY_FOUR_BIT && fringe == vfringe-CELL)
+        {   *(Header *)vfringe = make_padding_header(CELL);
+        }
+        gc_allocate_next_page();
+        return;
+    }
+    uintptr_t w = heaplimit;
+    heaplimit = heapstart ^ xor_chain;
+    heapstart = w;
+    fringe = w - len;
+    if (vheaptop == heapstart)
+    {
+        heaplimit = vfringe;
+        if (SIXTY_FOUR_BIT && fringe == vfringe+CELL)
+        {   *(Header *)vfringe = make_padding_header(CELL);
+            vfringe += CELL;
+            gc_allocate_next_page();
+        }
+        else if (fringe == vfringe) gc_allocate_next_page();
+        return;
+    }
+    len = ((uintptr_t *)heaplimit)[0];
+    xor_chain = ((uintptr_t *)heaplimit)[1];
+}
+
+inline LispObject gc_get_2_words()
+{
+    fringe -= 2*CELL;
+    if (fringe < heaplimit) gc_get_2_words_past_pin();
+    return fringe;
+}
+
+static uintptr_t padders = 0;
+static uintptr_t *padders_tail = &padders;
+
+static void gc_get_n_bytes_past_pin()
+{
+    if (vfringe != vheaplimit)
+    {   *(Header *)vfringe = make_padding_header(vheaplimit - vfringe);
+// I will collect a chain of all the padders that I create. This will be
+// built in historical order. 
+        if ((vheaplimit - vfringe) != CELL)
+        {    *padders_tail = vfringe;
+             padders_tail = &((uintptr_t *)vfringe)[1];
+             *padders_tail = 0;
+        }
+        clear_header_bits(vfringe, vheaplimit - vfringe, active_page);
+    }
+    if (vheaptop == heapstart)
+    {   gc_allocate_next_page();
+        return;
+    }
+    vfringe = vheaptop;
+    vheaptop = vheapstart ^ vxor_chain;
+    vlen = ((uintptr_t *)vheaptop)[0];
+    vxor_chain = ((uintptr_t *)vheaptop)[1];
+    vheaplimit = vheaptop - vlen;
+    vheapstart = vfringe;
+}
+
+inline LispObject gc_get_n_bytes(size_t n)
+{
+    n = doubleword_align_up(n);
+    if (vheaptop == heapstart) vheaplimit = fringe;
+    while (vfringe + n > vheaplimit) gc_get_n_bytes_past_pin();
+    LispObject r = vfringe;
+    vfringe += n;
+    set_header_bit(r, active_page);
+    clear_header_bits(r+8, n-8, active_page);
+    if (vheaptop == heapstart) heaplimit = vfringe;
     return r;
 }
 
@@ -1358,7 +1743,7 @@ void set_next_active_page()
     free_pages_count--;
 }
 
-static void allocate_next_page(bool for_gc, size_t size, int tag, int type)
+static void allocate_next_page()
 {   printf("allocate_next_page\n");
     fflush(stdout);
 // Here I should often do a minor garbage collection in a generational
@@ -1368,70 +1753,6 @@ static void allocate_next_page(bool for_gc, size_t size, int tag, int type)
 // grab another page from the pool.
     if (active_pages_count > free_pages_count-1)
     {   printf("Probably need to garbage collect\n");
-        char msg[40];
-// I go to a whole load of trouble here to tell the user what sort of
-// vector request provoked this garbage collection.  I wonder if the user
-// really cares - but I do very much when I am chasing after GC bugs!
-        switch (tag)
-        {   case TAG_CONS:
-                sprintf(msg, "cons");
-                break;
-            case TAG_SYMBOL:
-                sprintf(msg, "symbol header");
-                break;
-            case TAG_NUMBERS:
-                switch (type)
-                {   case TYPE_BIGNUM:
-                        sprintf(msg, "bignum(%" PRIuPTR ")",
-                                     (uintptr_t)size);
-                        break;
-                    default:
-                        sprintf(msg, "numbers(%x,%ld)",
-                                     type, (uintptr_t)size);
-                        break;
-                }
-                break;
-            case TAG_VECTOR:
-                switch (type)
-                {
-                    case TYPE_STRING_1:
-                    case TYPE_STRING_2:
-                    case TYPE_STRING_3:
-                    case TYPE_STRING_4:
-                        sprintf(msg, "string(%" PRIuPTR ")",
-                                     (uintptr_t)size);
-                        break;
-                    case TYPE_BPS_1:
-                    case TYPE_BPS_2:
-                    case TYPE_BPS_3:
-                    case TYPE_BPS_4:
-                        sprintf(msg, "BPS(%" PRIuPTR ")",
-                                     (uintptr_t)size);
-                        break;
-                    case TYPE_SIMPLE_VEC:
-                        sprintf(msg, "simple vector(%" PRIuPTR ")",
-                                     (uintptr_t)size);
-                        break;
-                    case TYPE_HASH:
-                        sprintf(msg, "hash table(%" PRIuPTR ")",
-                                     (uintptr_t)size);
-                        break;
-                    default:
-                        sprintf(msg, "vector(%x,%" PRIuPTR ")",
-                                     type, (uintptr_t)size);
-                        break;
-                }
-                break;
-            case TAG_BOXFLOAT:
-                sprintf(msg, "float(%" PRIuPTR ")",
-                             (uintptr_t)size);
-                break;
-            default:
-                sprintf(msg, "get_basic_vector(%x,%" PRIuPTR ")",
-                             tag, (uintptr_t)size);
-                break;
-        }
-        reclaim(msg);
         my_abort();
     }
     set_next_active_page();
@@ -1439,6 +1760,21 @@ static void allocate_next_page(bool for_gc, size_t size, int tag, int type)
 
 void gc_prepare_new_half_space()
 {    
+}
+
+static void gc_allocate_next_page()
+{   printf("GC allocate_next_page\n");
+    fflush(stdout);
+// This is called from within the garbage collector, so it will expect that
+// there is available space. Hypothetically if it happened that the active
+// space was all well packed and the free memory was subject to an undue
+// number of pinned items and fragmentation one might run out here - that
+// would be a fatal situation.
+    if (free_pages_count == 0)
+    {   printf("Fatal error: memory exhausted\n");
+        my_abort();
+    }
+    set_next_active_page();
 }
 
 page_header *free_pages_for_borrowing;
@@ -1585,18 +1921,39 @@ void *allocate_segment(size_t n)
     return r;
 }
 
+// gc-forcer(a, b) should arrange that a garbage collection is triggered
+// when at most A cons-sized units of consing happens or when at most
+// B units of space is used for vectors (where vectors include bignums and
+// boxed floats). This is intended to be used to trigger garbage collection
+// with rather fine control over when it happens to help with debugging
+// storage management issues.
+
+bool next_gc_is_hard = false;
+uint64_t force_cons=0, force_vec = 0;
+
+LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
+{   if (force_cons != 0 || force_vec != 0)
+        trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\n",
+            force_cons, force_vec);
+// If you pass a non-fixnum then that leaves the trigger-point unchanged.
+    if (is_fixnum(a)) force_cons = (uint64_t)sixty_four_bits(a);
+    if (is_fixnum(b)) force_vec = (uint64_t)sixty_four_bits(b);
+    return onevalue(nil);
+}
+
+LispObject Lgc_forcer1(LispObject env, LispObject a)
+{   return Lgc_forcer(env, a, a);
+}
+
 LispObject cons(LispObject a, LispObject b)
-{   LispObject r = get_2_words(false) + TAG_CONS;
+{   LispObject r = get_2_words() + TAG_CONS;
     qcar(r) = a;
     qcdr(r) = b;
     return r;
 }
 
 // With the conservative collector I maybe do not need to avoid garbage
-// collection on any particular individual uses of cons(). And I may want to
-// avoid the opportunity to do so by allocating right up until pages are
-// full. The "without GC" idea was implemented by leaving a margin of safety
-// by way of free space so that a FEW conses could always be done.
+// collection on any particular individual uses of cons().
 
 LispObject cons_no_gc(LispObject a, LispObject b)
 {   return cons(a, b);
@@ -1607,20 +1964,18 @@ LispObject cons_gc_test(LispObject p)
 }
 
 LispObject ncons(LispObject a)
-{   LispObject r = get_2_words(false) + TAG_CONS;
+{   LispObject r = get_2_words() + TAG_CONS;
     qcar(r) = a;
     qcdr(r) = nil;
     return r;
 }
 
 // Here I can wonder if there is a good way to save overhead by allocating
-// both cells as one operation... I rather believe that with the inline
-// version of get_2_words that what I have here may be about as good as it
-// can get. But review this for micro-optimization at a later stage!
+// both cells as one operation...
 
 LispObject list2(LispObject a, LispObject b)
-{   LispObject r1 = get_2_words(false) + TAG_CONS;
-    LispObject r2 = get_2_words(false) + TAG_CONS;
+{   LispObject r1 = get_2_words() + TAG_CONS;
+    LispObject r2 = get_2_words() + TAG_CONS;
     qcar(r1) = a;
     qcar(r2) = b;
     qcdr(r1) = r2;
@@ -1629,8 +1984,8 @@ LispObject list2(LispObject a, LispObject b)
 }
 
 LispObject list2star(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get_2_words(false) + TAG_CONS;
-    LispObject r2 = get_2_words(false) + TAG_CONS;
+{   LispObject r1 = get_2_words() + TAG_CONS;
+    LispObject r2 = get_2_words() + TAG_CONS;
     qcar(r1) = a;
     qcar(r2) = b;
     qcdr(r1) = r2;
@@ -1639,8 +1994,8 @@ LispObject list2star(LispObject a, LispObject b, LispObject c)
 }
 
 LispObject list2starrev(LispObject c, LispObject b, LispObject a)
-{   LispObject r1 = get_2_words(false) + TAG_CONS;
-    LispObject r2 = get_2_words(false) + TAG_CONS;
+{   LispObject r1 = get_2_words() + TAG_CONS;
+    LispObject r2 = get_2_words() + TAG_CONS;
     qcar(r1) = a;
     qcar(r2) = b;
     qcdr(r1) = r2;
@@ -1649,9 +2004,9 @@ LispObject list2starrev(LispObject c, LispObject b, LispObject a)
 }
 
 LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
-{   LispObject r1 = get_2_words(false) + TAG_CONS;
-    LispObject r2 = get_2_words(false) + TAG_CONS;
-    LispObject r3 = get_2_words(false) + TAG_CONS;
+{   LispObject r1 = get_2_words() + TAG_CONS;
+    LispObject r2 = get_2_words() + TAG_CONS;
+    LispObject r3 = get_2_words() + TAG_CONS;
     qcar(r1) = a;
     qcar(r2) = b;
     qcar(r3) = c;
@@ -1662,10 +2017,10 @@ LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
 }
 
 LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
-{   LispObject r1 = get_2_words(false) + TAG_CONS;
-    LispObject r2 = get_2_words(false) + TAG_CONS;
-    LispObject r3 = get_2_words(false) + TAG_CONS;
-    LispObject r4 = get_2_words(false) + TAG_CONS;
+{   LispObject r1 = get_2_words() + TAG_CONS;
+    LispObject r2 = get_2_words() + TAG_CONS;
+    LispObject r3 = get_2_words() + TAG_CONS;
+    LispObject r4 = get_2_words() + TAG_CONS;
     qcar(r1) = a;
     qcar(r2) = b;
     qcar(r3) = c;
@@ -1680,8 +2035,8 @@ LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
 
 
 LispObject acons(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get_2_words(false) + TAG_CONS;
-    LispObject r2 = get_2_words(false) + TAG_CONS;
+{   LispObject r1 = get_2_words() + TAG_CONS;
+    LispObject r2 = get_2_words() + TAG_CONS;
     qcar(r1) = r2;
     qcar(r2) = a;
     qcdr(r1) = c;
@@ -1694,9 +2049,9 @@ LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
 }
 
 LispObject list3(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get_2_words(false) + TAG_CONS;
-    LispObject r2 = get_2_words(false) + TAG_CONS;
-    LispObject r3 = get_2_words(false) + TAG_CONS;
+{   LispObject r1 = get_2_words() + TAG_CONS;
+    LispObject r2 = get_2_words() + TAG_CONS;
+    LispObject r3 = get_2_words() + TAG_CONS;
     qcar(r1) = a;
     qcar(r2) = b;
     qcar(r3) = c;
@@ -1707,9 +2062,9 @@ LispObject list3(LispObject a, LispObject b, LispObject c)
 }
 
 LispObject list3rev(LispObject c, LispObject b, LispObject a)
-{   LispObject r1 = get_2_words(false) + TAG_CONS;
-    LispObject r2 = get_2_words(false) + TAG_CONS;
-    LispObject r3 = get_2_words(false) + TAG_CONS;
+{   LispObject r1 = get_2_words() + TAG_CONS;
+    LispObject r2 = get_2_words() + TAG_CONS;
+    LispObject r3 = get_2_words() + TAG_CONS;
     qcar(r1) = a;
     qcar(r2) = b;
     qcar(r3) = c;
@@ -1720,14 +2075,14 @@ LispObject list3rev(LispObject c, LispObject b, LispObject a)
 }
 
 LispObject Lcons(LispObject, LispObject a, LispObject b)
-{   LispObject r1 = get_2_words(false) + TAG_CONS;
+{   LispObject r1 = get_2_words() + TAG_CONS;
     qcar(r1) = a;
     qcdr(r1) = b;
     return onevalue(r1);
 }
 
 LispObject Lxcons(LispObject, LispObject a, LispObject b)
-{   LispObject r1 = get_2_words(false) + TAG_CONS;
+{   LispObject r1 = get_2_words() + TAG_CONS;
     qcar(r1) = b;
     qcdr(r1) = a;
     return onevalue(r1);
@@ -1738,7 +2093,7 @@ LispObject Lnilfn(LispObject)
 }
 
 LispObject Lncons(LispObject env, LispObject a)
-{   LispObject r1 = get_2_words(false) + TAG_CONS;
+{   LispObject r1 = get_2_words() + TAG_CONS;
     qcar(r1) = a;
     qcdr(r1) = nil;
     return onevalue(r1);
@@ -1760,13 +2115,74 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // 32-bit or 64-bit representation. However it would be hard to unwind
 // that now!]
 //
+//@@    for (;;)
     {   size_t alloc_size = (size_t)doubleword_align_up(size);
-// Basic vectors must be smaller then the CSL page size. The error here is
-// really a system rather than a user one.
+// Basic vectors must be smaller then the CSL page size.
         if (alloc_size > (CSL_PAGE_SIZE - 32))
             aerror1("request for basic vector too big",
                     fixnum_of_int(alloc_size/CELL-1));
-        LispObject r = get_n_bytes(alloc_size, false, tag, type);
+//@@        if (++reclaim_trigger_count == reclaim_trigger_target ||
+//@@            alloc_size > free || vec_forced(alloc_size/CELL))
+//@@        {   char msg[40];
+// I go to a whole load of trouble here to tell the user what sort of
+// vector request provoked this garbage collection.  I wonder if the user
+// really cares - but I do very much when I am chasing after GC bugs!
+//@@            switch (tag)
+//@@            {   case TAG_SYMBOL:
+//@@                    sprintf(msg, "symbol header");
+//@@                    break;
+//@@                case TAG_NUMBERS:
+//@@                    switch (type)
+//@@                    {   case TYPE_BIGNUM:
+//@@                            sprintf(msg, "bignum(%ld)", (long)size);
+//@@                            break;
+//@@                        default:
+//@@                            sprintf(msg, "numbers(%lx,%ld)", (long)type, (long)size);
+//@@                            break;
+//@@                    }
+//@@                    break;
+//@@                case TAG_VECTOR:
+//@@                    switch (type)
+//@@                    {
+//@@                        case TYPE_STRING_1:
+//@@                        case TYPE_STRING_2:
+//@@                        case TYPE_STRING_3:
+//@@                        case TYPE_STRING_4:
+//@@                            sprintf(msg, "string(%ld)", (long)size);
+//@@                            break;
+//@@                        case TYPE_BPS_1:
+//@@                        case TYPE_BPS_2:
+//@@                        case TYPE_BPS_3:
+//@@                        case TYPE_BPS_4:
+//@@                            sprintf(msg, "BPS(%ld)", (long)size);
+//@@                            break;
+//@@                        case TYPE_SIMPLE_VEC:
+//@@                            sprintf(msg, "simple vector(%ld)", (long)size);
+//@@                            break;
+//@@                        case TYPE_HASH:
+//@@                            sprintf(msg, "hash table(%ld)", (long)size);
+//@@                            break;
+//@@                        default:
+//@@                            sprintf(msg, "vector(%lx,%ld)", (long)type, (long)size);
+//@@                            break;
+//@@                    }
+//@@                    break;
+//@@                case TAG_BOXFLOAT:
+//@@                    sprintf(msg, "float(%ld)", (long)size);
+//@@                    break;
+//@@                default:
+//@@                    sprintf(msg, "get_basic_vector(%lx,%ld)", (long)tag, (long)size);
+//@@                    break;
+//@@            }
+//@@            reclaim(nil, msg, GC_VEC, alloc_size);
+// Note the CONTINUE here so that I go and repeat the test. Consider the
+// case where I have a page almost full but then garbage collection recovers
+// a lot of space but still leaves the final used page almost full... I
+// need the garbage collector to take care with its final argument to be
+// certain that the loop here terminates!
+//@@            continue;
+//@@        }
+        LispObject r = get_n_bytes(alloc_size);
         *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
 //
 // DANGER: the vector allocated here is left uninitialised at this stage.
@@ -1806,6 +2222,21 @@ LispObject reduce_basic_vector_size(LispObject v, size_t len)
 // way. At present this scheme is only ever used while rehashing hash
 // tables.
 //
+// This is implemented by saving the state of the current active page,
+// starting allocation afresh in a new page, arranging that allocating more
+// than kalf the available pages will not trigger a garbage collection, and
+// in an ephemeral world arranging that filling each page just leads to
+// allocation of a new one rather than a minor collection. Then the perfectly
+// regular version of the allocation functions (eg get_n_bytes and hence
+// get_basic_vector and get_vector) will allocate in these new temporary
+// pages. At the end of "borrowing" the pages so allocated need to be
+// returned to the pool of available pages. The messiest issue about that
+// is that the internal maps showing where there are pinned items must be
+// recreated. For this to be possible I am going to insist that where there
+// are pinned blocks in the middle of pages that the bitmap entries that show
+// where they are get retained. At one time I had thought I might tidy up the
+// maps of pinned locations at the end of garbage collection - to support
+// borrowing I have to do it at the start.
 
 
 void prepare_for_borrowing()
@@ -1880,6 +2311,21 @@ LispObject borrow_vector(int tag, int type, size_t n)
 // otherwise wasted padder space pretty effectively. If it does not then I
 // may need to use a first-fit strategy for vector allocation.
 
+// Here are the allocation functions implementing the above.
+
+
+inline LispObject packed_get_2_words()
+{
+// No use of padder space yet!
+    return gc_get_2_words();
+}
+
+inline LispObject packed_get_n_bytes(size_t n)
+{
+// No use of padder space yet!
+    return gc_get_n_bytes(n);
+}
+
 void major_garbage_collect()
 {
 // (1) Clear pinned map for R and S.
@@ -1915,8 +2361,8 @@ void major_garbage_collect()
 
 uintptr_t *C_stackbase;
 
-extern void middle_reclaim(const char *msg);
-extern void inner_reclaim(const char *msg, uintptr_t *sp);
+extern void middle_reclaim();
+extern void inner_reclaim(uintptr_t *sp);
 
 // The next section of code represents an attempt to coax "reasonable"
 // compilers into arranging that all registers that had been in use when
@@ -1931,217 +2377,55 @@ extern void inner_reclaim(const char *msg, uintptr_t *sp);
 // which I hope and expect dumps a copy of all useful machine registers into
 // the given jmp_buf. Again this is not guaranteed!
 // The use of volatile_variable is a further attempt to prevent any
-// clever compiler from observing that all that I do is frivolous and
+// clever compiler frm observing that all that I do is frivolous and
 // then discarding it.
 
 volatile int volatile_variable = 12345;
 
-// Actually life is a little complicated here. At times CSL wants to
-// have the computational thread get in sync with the GUI one. It can also
-// want to apply timeouts to some executed code or limits to the amount of
-// memory allocated by a part of a calculation. The basic mechanism it
-// uses for all this involves setting the stack limit register so that when
-// stackcheck() is invoked (and I must arrange that that happens rather
-// frequently) it will appear that a stack overflow has arisen
-// next attempt at storage allocation is made the garbage collectore is
-// entered, but this entry may not reflect really running out of memory,
-// it can be just there to provide the opportunity to respond to an event.
-// In effect this is using CONS and stack-overflow checking as ways of
-// polling to see if an event has been triggered. When the garbage collector
-// is called in this mode it just handles the event (I may refer to this as
-// a "tick") and resets the relevant limit registers.
-// When there is genuine need for garbage collection I will sometimes need
-// to display a message to the user (or update the GUI) showing what has
-// happened.
-//
-// So we have a function async_interrupt that can be called at ANY TIME. It
-// is triggered when certain menu items are selected in the GUI or based on
-// a regular sequence of clock interrupts. Because it is asynchronous all it
-// can do it to set some variables, which the main-line code must then
-// check by polling.
-
-
-void reclaim(const char *msg)
-{   clock_t t0, t1, t2;
-    size_t vheap_need = 0;
-// If the trigger is reached I will force a full GC. But only if I
-// am allowed to!
-    if (reclaim_trigger_count == reclaim_trigger_target &&
-        garbage_collection_permitted)
-        stg_class = GC_USER_HARD;
-    stop_after_gc = false;
-#if defined WIN32 && !defined __CYGWIN__
-    _kbhit(); // Fairly harmless anyway, but is here to let ^c get noticed
-//    printf("(*)"); fflush(stdout);  // while I debug!
-#endif // WIN32
-    push_clock(); t0 = base_time;
-// There are parts of the code in setup/restart where perhaps things are not
-// yet in a consistent state and so any attempt at garbage collection could
-// cause chaos. So during them I set a flag that I test here! Since this
-// should never be triggered I am happy to leave it in state where the only
-// sane way to respond to it is to run under a debugger and set breakpoints.
-    if (!garbage_collection_permitted)
-    {   fprintf(stderr,
-                "\n+++ Garbage collection attempt when not permitted\n");
-        fflush(stderr);
-        my_exit(EXIT_FAILURE);    // totally drastic...
-    }
-
-    push(p);
-
-    gc_number++;
-    if (!valid_as_fixnum(gc_number)) gc_number = 0; // wrap round on 32-bit
-                                                    // machines if too big.
-    qvalue(gcknt_symbol) = fixnum_of_int(gc_number);
-
-#ifdef WITH_GUI
-// If I have a window system I tell it the current time every so often
-// just to keep things cheery...
-    {   long int t = (long int)(100.0 * consolidated_time[0]);
-        long int gct = (long int)(100.0 * gc_time);
-        report_time(t, gct);
-        time_now = (int)consolidated_time[0];
-        if (verbos_flag & 1 || force_verbos)
-        {   freshline_trace();
-            trace_printf(
-                "+++ Garbage collection %" PRId64
-                " (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
-                gc_number, why, t/100, t%100, gct/100, gct%100);
-        }
-    }
-#else // !WITH_GUI
-    if (verbos_flag & 1 || force_verbos)
-    {   long int t = (long int)(100.0 * consolidated_time[0]);
-        long int gct = (long int)(100.0 * gc_time);
-        time_now = (int)consolidated_time[0];
-        if ((time_limit >= 0 && time_now > time_limit) ||
-            (io_limit >= 0 && io_now > io_limit))
-            resource_exceeded();
-        freshline_trace();
-        trace_printf(
-            "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
-            (long)gc_number, why, t/100, t%100, gct/100, gct%100);
-    }
-#endif // !WITH_GUI
-    switch (pages_count)
-    {
-    case 0: allocate_more_memory(); // ...and drop through...
-    case 1: allocate_more_memory();
-    }
-// If despite trying allocate_more_memory() I can not find a new pages to
-// form that start of the new half-space I will have to give up.
-    if (pages_count < 2)
-    {   report_at_end();
-        term_printf("\n+++ Run out of memory\n");
-        ensure_screen();
-        my_exit(EXIT_FAILURE);
-    }
-// If things crash really badly maybe I would rather have my output up
-// to date.
-    ensure_screen();
-    if (spool_file != NULL) fflush(spool_file);
-    if (gc_number == reclaim_trap_count)
-    {   reclaim_trap_count = gc_number - 1;
-        trace_printf("\nReclaim trap count reached...\n");
-        aerror("reclaim-trap-count");
-    }
-    if (reclaim_stack_limit != 0 &&
-        (uintptr_t)&t0 + reclaim_stack_limit < (uintptr_t)C_stackbase)
-    {   reclaim_stack_limit = 0;
-        trace_printf("\nReclaim stack limit reached...\n");
-        aerror("reclaim-stack-limit");
-    }
-
-    t2 = t1 = t0;   // Time is not split down in this case
-    if (reclaim_trigger_target != 0)
-        trace_printf("+++ GC trigger = %" PRId64 "\n", reclaim_trigger_count);
-    real_reclaim(sp);
-
-    gc_time += pop_clock();
-    t2 = base_time;
-
-    if ((verbos_flag & 5) == 5)
-// (verbos 4) gets the system to tell me how long each phase of GC took,
-// but (verbos 1) must be ORd in too.
-    {   trace_printf("Copy %ld ms\n",
-                     (long int)(1000.0 *
-                                (double)(t2-t0)/(double)CLOCKS_PER_SEC));
-    }
-// (verbos 5) causes a display breaking down how space is used
-    if ((verbos_flag & 5) == 5)
-    {   trace_printf(
-            "cons_cells=%" PRIdPTR ", symbol_heads=%" PRIdPTR ", strings=%" PRIdPTR ", user_vectors=%" PRIdPTR "\n",
-            cons_cells, symbol_heads, strings, user_vectors-litvecs-getvecs);
-        trace_printf(
-            "bignums=%" PRIdPTR ", floats=%" PRIdPTR ", bytestreams=%" PRIdPTR ", other=%" PRIdPTR ", litvecs=%d\n",
-            big_numbers, box_floats, bytestreams, other_mem, litvecs);
-        trace_printf("getvecs=%" PRIdPTR " C-stacks=%" PRIdPTR "K Lisp-stack=%" PRIdPTR "K\n",
-                     getvecs, (((char *)C_stackbase-(char *)&why)+1023)/1024,
-                     (intptr_t)((stack-stackbase)+1023)/1024);
-    }
-    pop(p);
-
-    grab_more_memory(heap_pages_count + vheap_pages_count);
-    report_at_end();
-    if (stop_after_gc) Lstop1(nil, fixnum_of_int(0));
-    if ((space_limit >= 0 && space_now > space_limit) ||
-        (time_limit >= 0 && time_now > time_limit) ||
-        (io_limit >= 0 && io_now > io_limit))
-        resource_exceeded();
-    prev_consolidated = consolidated_time[0];
-    use_gchook(lisp_true);
-
-
-void reclaim(const char *msg)
+void reclaim(int line)
 {
 // This function is not officially portable in any way.
 //
 // The purpose of this function is to force any even partially
 // reasonable C compiler into putting all registers that contain
 // values from the caller onto the stack. It assumes that there
-// could not be more than 16 "callee saves" registers, that the
-// "register" qualifier in the declaraion here will cause a1-a16 to
+// could not be more than 12 "callee saves" registers, that the
+// "register" qualifier in the declaraion here will cause a1-a12 to
 // take precedence when allocating same, and that the volatile
 // qualifier on the variable that is repeatedly referenced is there
 // to try to tell the compiler that it may not make any assumptions
-// (eg that a1-a16 might not all have the same value), and the use
+// (eg that a1-a12 might not all have the same value), and the use
 // of them again after the call to inner_reclaim() should force
 // each of those values to be saved across that call. The work done
 // is of course a waste (but assigning back to a volatile variable
 // may force it to be done!) but is modest in the large scheme of
 // things. On most machines I can think of there are a lot fewer
-// than 16 callee-save registers and so this is overkill! Note that
-// mips and aarch64 seem to have 10 callee-save registers, but sparc
-// has 16 (hence the arrangement here).
-    int a1 = volatile_variable;
+// than 12 callee-save registers and so this is overkill!
+    register int a1 = volatile_variable;
 // The declarations here go one at a time to stress the sequential nature
 // of the references to volatile_variable.
-    int a2 = volatile_variable;
-    int a3 = volatile_variable;
-    int a4 = volatile_variable;
-    int a5 = volatile_variable;
-    int a6 = volatile_variable;
-    int a7 = volatile_variable;
-    int a8 = volatile_variable;
-    int a9 = volatile_variable;
-    int a10 = volatile_variable;
-    int a11 = volatile_variable;
-    int a12 = volatile_variable;
-    int a13 = volatile_variable;
-    int a14 = volatile_variable;
-    int a15 = volatile_variable;
-    int a16 = volatile_variable;
+    register int a2 = volatile_variable;
+    register int a3 = volatile_variable;
+    register int a4 = volatile_variable;
+    register int a5 = volatile_variable;
+    register int a6 = volatile_variable;
+    register int a7 = volatile_variable;
+    register int a8 = volatile_variable;
+    register int a9 = volatile_variable;
+    register int a10 = volatile_variable;
+    register int a11 = volatile_variable;
+    register int a12 = volatile_variable;
 // Even with a heavily optimising compiler the above ought to generate
-// 16 loads from the volatile_variable because in principle the values so
+// 12 loads from the volatile_variable because in principle the values so
 // loaded could all be different.
     jmp_buf jb;
     if (setjmp(jb) != 0) volatile_variable++;
 // setjmp is expected to save all registers in jb.
     for (int i=0; i<1000000; i++)
-    {   middle_reclaim(msg);
+    {   middle_reclaim();
 // The loop is so that a compiler can believe that there is a chance that
 // everything will be executed up to a million times, and that might encourage
-// it to try quite hard to store the values of a1-a16 in registers (thus
+// it to try quite hard to store the values of a1-a12 in registers (thus
 // flushing any values from its caller to stack). But in fact the code will
 // return after calling middle_reclaim() without doing anything else that
 // might be costly. So my expectation is that the function here will consume
@@ -2164,29 +2448,19 @@ void reclaim(const char *msg)
         volatile_variable += a10;
         volatile_variable += a11;
         volatile_variable += a12;
-        volatile_variable += a13;
-        volatile_variable += a14;
-        volatile_variable += a15;
-        volatile_variable += a16;
-// The code above references each of a1 to a16 and combines their
+// The code above references each of a1 to a12 and combines their
 // values with volatile_variable in a way intended to mean that they must
 // all be saved across the call to middle_reclaim(). The code is written
 // line by line to arrange that there are sequence points between each
 // access to volatile_variable, and in the compiler's imagination some other
 // part of the full world might inspect the value stored there at any of
 // those points, so there should be no legitimate scope for any optimization
-// that would avoid having all the 16 potentially distinct value in a1-a16
-// safely kept available. These are then also all inside a loop that could
-// look as if it might be executed 1000000 times, and that ought to encourage
-// a compiler to allocate registers for as many of these as it can. However
-// the test "if (volatile_var == volatile_var) return;" will in reality
-// arrange that this mess is not executed, but the "volatile" should mean that
-// the compiler can not predict that!
-
+// that would avoid having all the 12 potentially distinct value in a1-a12
+// safely kept available.
     }
 }
 
-void middle_reclaim(const char *msg)
+void middle_reclaim()
 {
 // This function is here to have a stack frame (containing w) that will
 // lie between that of reclaim and inner_reclaim. The stupid-looking test
@@ -2198,9 +2472,9 @@ void middle_reclaim(const char *msg)
     uintptr_t w = 0;
     if (volatile_variable != volatile_variable)
     {   inner_reclaim(NULL);  // never executed!
-        middle_reclaim(msg);     // never executed! But looks recursive.
+        middle_reclaim();     // never executed! But looks recursive.
     }
-    inner_reclaim((msg, uintptr_t *)((intptr_t)&w & -sizeof(LispObject)));
+    inner_reclaim((uintptr_t *)((intptr_t)&w & -sizeof(LispObject)));
 }
 
 // It gives me a certain amount of pause when I wonder what types the
@@ -2259,18 +2533,8 @@ inline LispObject find_object_start(uintptr_t v, page_header *p)
     }
 }
 
-// inner_reclaim() has all the mess associated with special cases where
-// what looks like a garbage collection is triggered by forcing some limit
-// registers to odd values - eg so that a "tick" can be processed to
-// mediate communication with a GUI, or so that timeouts or cons-counter-like
-// limits can be imposed. It also prints messages related to garbage
-// collector progress. 
 
-LispObject inner_reclaim(const char *msg, uintptr_t *sp)
-{
-}
-
-void real_reclaim(uintptr_t *sp)
+void inner_reclaim(uintptr_t *sp)
 {
 // (1) Clear pinned map for R and S.
 //     [Well I am at least for now going to suppose that that had been
@@ -2368,7 +2632,6 @@ void init_heap_segments(double store_size)
 
 // There are other bits of memory that I will grab manually for now...
     nilsegment = (LispObject *)aligned_malloc(NIL_SEGMENT_SIZE+16);
-    nilsegment = (LispObject *)malloc(NIL_SEGMENT_SIZE+16);
 #ifdef COMMON
     nil = (LispObject)((uintptr_t)nilsegment + TAG_CONS + 8);
 #else
@@ -2401,7 +2664,7 @@ void drop_heap_segments(void)
 
 bool allocate_more_memory()
 {   if ((init_flags & INIT_EXPANDABLE) == 0) return false;
-    void *page = (void *)malloc((size_t)CSL_PAGE_SIZE);
+    void *page = (void *)aligned_malloc((size_t)CSL_PAGE_SIZE);
     if (page == NULL)
     {   init_flags &= ~INIT_EXPANDABLE;
         return false;
@@ -2508,7 +2771,11 @@ LispObject Lgc0(LispObject env)
 
 LispObject Lgc(LispObject env, LispObject a)
 {
-    return reclaim("user request", 0);
+// If GC is called with a non-nil argument the garbage collection
+// will be a full one - otherwise it will be soft and may do hardly
+// anything.
+    return reclaim(nil, "user request",
+                   a != nil ? GC_USER_HARD : GC_USER_SOFT, 0);
 }
 
 LispObject Lverbos(LispObject env, LispObject a)
@@ -2526,7 +2793,13 @@ LispObject Lverbos(LispObject env, LispObject a)
     return onevalue(fixnum_of_int(old_code));
 }
 
-static bool stop_after_gc = false;
+bool volatile already_in_gc;
+bool volatile interrupt_pending;
+LispObject volatile saveheaplimit;
+LispObject volatile savevheaplimit;
+LispObject * volatile savestacklimit;
+
+static int stop_after_gc = 0;
 
 static size_t trailing_heap_pages_count,
               trailing_vheap_pages_count;
@@ -2547,7 +2820,7 @@ static void copy_one_object(LispObject *p)
         {   LispObject w = qcar(a);
             if (is_forward(w)) *p = w - TAG_FORWARD + TAG_CONS;
             else
-            {   fr = get_2_words(true) + TAG_CONS;
+            {   fr = packed_get_2_words() + TAG_CONS;
                 cons_cells += 2*CELL;
                 qcar(fr) = w;
                 qcdr(fr) = qcdr(a);
@@ -2617,8 +2890,7 @@ static void copy_one_object(LispObject *p)
                         other_mem += len; break;
                 }
             }
-// In this case tag and type information will not be needed.
-            uintptr_t vfr = get_n_bytes(len, true, 0, 0);
+            uintptr_t vfr = packed_get_n_bytes(len);
             *p = (LispObject)(vfr + tag);
             *(LispObject *)a = (LispObject)(vfr + TAG_FORWARD);
             *(Header *)vfr = h;
@@ -2790,6 +3062,58 @@ static void copy(LispObject *p)
     }
 }
 
+static bool reset_limit_registers(size_t vheap_need, bool stack_flag)
+// returns true if after resetting the limit registers there was
+// enough space left for me to proceed. Return false on failure, ie
+// need for a more genuine GC.
+{   void *p;
+    bool full = false;
+// I wonder about the next test - memory would only really be full
+// if there was enough LIVE data to fill all the available free pages,
+// but what is tested here is based on the possibility that all the
+// active pages are totally full. I scale up the vector page counts by
+// a factor of 1.5 because fragmentation might behave differently in the
+// old and new spaces so if there are some large vectors they may leave
+// nasty gaps at the end of a page.
+//
+    size_t len = (char *)vheaplimit - (char *)vfringe;
+// If I get here during system start-up I will try to give myself some
+// more memory. I expect that will usually be possible!
+    if (!garbage_collection_permitted)
+    {   if (fringe <= heaplimit && pages_count == 0)
+            full = !allocate_more_memory();
+        if (vheap_need > len && pages_count == 0)
+        {   if (!allocate_more_memory()) full = true;
+        }
+    }
+    else full = (pages_count <=
+        heap_pages_count + (3*vheap_pages_count + 1)/2);
+    if (fringe <= heaplimit)
+    {   if (full) return false;
+        p = pages[--pages_count];
+        space_now++;
+        zero_out(p);
+        heap_pages[heap_pages_count++] = p;
+        heaplimit = (intptr_t)p;
+        fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
+        heaplimit = (LispObject)((char *)heaplimit + SPARE);
+    }
+    if (vheap_need > len)
+    {   char *vf, *vh;
+        if (full) return false;
+        p = pages[--pages_count];
+        space_now++;
+        zero_out(p);
+        vheap_pages[vheap_pages_count++] = p;
+        vf = (char *)p + 8;
+        vfringe = (LispObject)vf;
+        vh = vf + (CSL_PAGE_SIZE - 16);
+        vheaplimit = (LispObject)vh;
+    }
+    if (stack_flag) return (stack < stacklimit);
+    else return true;
+}
+
 bool force_verbos = false;
 
 static void report_at_end()
@@ -2798,19 +3122,25 @@ static void report_at_end()
     double fn = (double)n*(CSL_PAGE_SIZE/(1024.0*1024.0));
     double fn1 = (double)n1*(CSL_PAGE_SIZE/(1024.0*1024.0));
     double z = (100.0*n)/n1;
-#ifdef WITH_GUI
-    report_space(gc_number, z, fn1);
-#endif // WITH_GUI
+#ifdef WINDOW_SYSTEM
+    {   report_space(gc_number, z, fn1);
+        if (verbos_flag & 1 || force_verbos) trace_printf(
+                "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
+                fn, fn1, z);
+    }
+#else // WINDOW_SYSTEM
     if (verbos_flag & 1 || force_verbos)
     {   trace_printf(
             "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
             fn, fn1, z);
     }
-    qvalue(used_space) = fixnum_of_int((intptr_t)(1024.0*fn));
-    qvalue(avail_space) = fixnum_of_int((intptr_t)(1024.0*fn1));
+#endif // WINDOW_SYSTEM
+// This reports in Kbytes, and does not overflow until over 100 Gbytes
+    qvalue(used_space) = fixnum_of_int((int)(1024.0*fn));
+    qvalue(avail_space) = fixnum_of_int((int)(1024.0*fn1));
 }
 
-void use_gchook(LispObject arg)
+LispObject use_gchook(LispObject p, LispObject arg)
 {   LispObject g = gchook;
     if (symbolp(g) && g != unset_var)
     {   g = qvalue(g);
@@ -2828,9 +3158,12 @@ void use_gchook(LispObject arg)
                     reclaim_trigger_target = target;
                 }
             } RAII_trapcount;
+            push(p);
             Lapply1(nil, g, arg);  // Call the hook
+            pop(p);
         }
     }
+    return onevalue(p);
 }
 
 static double prev_consolidated = 0.0;
@@ -2919,7 +3252,36 @@ static void real_garbage_collector()
     new_vheap_pages_count = 0;
 }
 
-#endif // CONSERVATIVE
+LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
+{   uint64_t t0, t1, t2;
+    size_t vheap_need = 0;
+// If the trigger is reached I will force a full GC. But only if I
+// am allowed to!
+    if (reclaim_trigger_count == reclaim_trigger_target &&
+        garbage_collection_permitted)
+        stg_class = GC_USER_HARD;
+    stop_after_gc = 0;
+    if (stg_class == GC_VEC || stg_class == GC_BPS) vheap_need = size;
+    already_in_gc = true;
+#if defined WIN32 && !defined __CYGWIN__
+    _kbhit(); // Fairly harmless anyway, but is here to let ^c get noticed
+//    printf("(*)"); fflush(stdout);  // while I debug!
+#endif // WIN32
+    t0 = read_clock();
+    if (!next_gc_is_hard &&
+        stg_class != GC_USER_HARD &&
+        reset_limit_registers(vheap_need, true))
+    {   already_in_gc = false;
+        if (space_limit >= 0 && space_now > space_limit)
+            resource_exceeded();
+        return p;
+    }
+    if (stack >= stacklimit)
+    {   if (stacklimit != stackbase)
+        {   stacklimit = &stacklimit[50];  // Allow a bit of slack
+            error(0, err_stack_overflow);
+        }
+    }
 
 // There are parts of the code in setup/restart where perhaps things are not
 // yet in a consistent state and so any attempt at garbage collection could
@@ -3020,16 +3382,9 @@ static void real_garbage_collector()
         trace_printf("+++ GC trigger = %" PRId64 "\n", reclaim_trigger_count);
     real_garbage_collector();
 
-    gc_time += pop_clock();
-    t2 = base_time;
-
-    if ((verbos_flag & 5) == 5)
-// (verbos 4) gets the system to tell me how long each phase of GC took,
-// but (verbos 1) must be ORd in too.
-    {   trace_printf("Copy %ld ms\n",
-                     (long int)(1000.0 *
-                                (double)(t2-t0)/(double)CLOCKS_PER_SEC));
-    }
+    t1 = read_clock();
+    gc_time += t1 - t0;
+    base_time += t1 - t0;
 // (verbos 5) causes a display breaking down how space is used
     if ((verbos_flag & 5) == 5)
     {   trace_printf(
@@ -3059,7 +3414,6 @@ static void real_garbage_collector()
     if (interrupt_pending)
     {   interrupt_pending = false;
         already_in_gc = false;
-        tick_on_gc_exit = false;
         return interrupted(p);
     }
     already_in_gc = false;
@@ -3766,4 +4120,3 @@ uintptr_t *C_stackbase;
 #endif // !CONSERVATIVE
 
 // end of allocate.cpp
-

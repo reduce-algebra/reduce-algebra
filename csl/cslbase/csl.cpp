@@ -952,11 +952,6 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
 #endif
 
 // See comments in lispthrow.h for an explanation of this.
-//#undef global_jb
-//thread_local jmp_buf *global_jb;
-//jmp_buf **get_global_jb_addr()
-//{   return &global_jb;
-//}
 jmp_buf *global_jb;
 
 [[noreturn]] void global_longjmp()
@@ -2842,6 +2837,146 @@ void respond_to_stack_event()
 // with the precise collector perhaps?
         interrupted();
     }
+}
+
+#ifdef HAVE_SIGACTION
+static void low_level_signal_handler(int signo, siginfo_t *t, void *v);
+#else // !HAVE_SIGACTION
+static void low_level_signal_handler(int signo);
+#endif // !HAVE_SIGACTION
+
+void set_up_signal_handlers()
+{
+//
+#ifdef USE_SIGALTSTACK
+// If I get a SIGSEGV that is caused by a stack overflow then I am in
+// a world of pain because the regular stack does not have space to run my
+// exception handler. So where I can I will arrange that the exception
+// handler runs in its own small stack. This may itself lead to pain,
+// but perhaps less?
+    signal_stack.ss_sp = (void *)signal_stack_block;
+    signal_stack.ss_size = SIGSTKSZ;
+    signal_stack.ss_flags = 0;
+    sigaltstack(&signal_stack, (stack_t *)0);
+#endif
+#ifdef HAVE_SIGACTION
+    struct sigaction sa;
+    sa.sa_sigaction = low_level_signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART | SA_SIGINFO; //???@@@ | SA_ONSTACK | SA_NODEFER;
+// (a) restart system calls after signal (if possible),
+// (b) use handler that gets more information,
+// (c) use alternative stack for the handler,
+// (d) leave the exception unmasked while the handler is active. This
+//     will be vital if then handler "exits" using longjmp, because as
+//     far as the exception system is concerned that leaves us within the
+//     handler. But after the  exit is caught by setjmp I want the
+//     exception to remain trapped.
+    if (sigaction(SIGSEGV, &sa, NULL) == -1)
+        /* I can not thing of anything useful to do if I fail here! */;
+#ifdef SIGBUS
+    if (sigaction(SIGBUS, &sa, NULL) == -1)
+        /* I can not thing of anything useful to do if I fail here! */;
+#endif
+#ifdef SIGILL
+    if (sigaction(SIGILL, &sa, NULL) == -1)
+        /* I can not thing of anything useful to do if I fail here! */;
+#endif
+    if (sigaction(SIGFPE, &sa, NULL) == -1)
+        /* I can not thing of anything useful to do if I fail here! */;
+#else // !HAVE_SIGACTION
+#ifndef WIN32
+#error All platforms other than Windows are expected to support sigaction.
+#endif // !WIN32
+    signal(SIGSEGV, low_level_signal_handler);
+#ifdef SIGBUS
+    signal(SIGBUS, low_level_signal_handler);
+#endif
+#ifdef SIGILL
+    signal(SIGILL, low_level_signal_handler);
+#endif
+    signal(SIGFPE, low_level_signal_handler);
+#endif // !HAVE_SIGACTION
+}
+
+static volatile thread_local char signal_msg[32];
+
+static volatile char *int2str(volatile char *s, int n)
+{   unsigned int n1;
+// Even though I really only expect this to be called with small positive
+// arguments I will code it so it should support ANY integer value, including
+// the most negative one.
+    if (n >= 0) n1 = (unsigned int)n;
+    {   *s++ = '-';
+        n1 = -(unsigned int)n;
+    }
+    if (n1 >= 10)
+    {   s = int2str(s, n1/10);
+        n1 = n1 % 10;
+    }
+    *s++ = '0' + n1;
+    return s;
+}
+
+#ifdef HAVE_SIGACTION
+static void low_level_signal_handler(int signo, siginfo_t *si, void *v)
+#else // !HAVE_SIGACTION
+static void low_level_signal_handler(int signo)
+#endif // !HAVE_SIGACTION
+{
+// There are really very restrictive rules about what I can do in a
+// signal handler and remain safe. For a start I should only reference
+// variables that are of type atomic_t (or its friends) and that are
+// volatile, and there are fairly few system functions that are
+// "async signal safe" and generally permitted. However I am going to
+// stray well beyond the rules here! Well in most cases I will view this
+// as acceptable, because in most cases these low level signals will only
+// arise in case of a system-level bug, and so ANY recovery or diagnostic
+// I can produce will be better than nothing, and if things get confused
+// or crash again then that is not much worse than the exception having
+// arisen in the first case!
+// I will create a message string (which I should put in thread local memory)
+    if (miscflags & HEADLINE_FLAG)
+    {   switch (signo)
+        {   default:
+                {   volatile char *p = signal_msg;
+                    const char *m1 = "Signal (signo=";
+                    while (*m1) *p++ = *m1++;
+                    p = int2str(p, signo);
+                    *p++ = ')';
+                    *p = 0;
+                }
+                errorset_msg = signal_msg;
+                break;
+#ifdef SIGFPE
+            case SIGFPE:
+                errorset_msg = "Arithmetic exception";
+                break;
+#endif
+#ifdef SIGSEGV
+            case SIGSEGV:
+                errorset_msg = "Memory access violation";
+                break;
+#endif
+#ifdef SIGBUS
+            case SIGBUS:
+                errorset_msg = "Bus error";
+                break;
+#endif
+#ifdef SIGILL
+            case SIGILL:
+                errorset_msg = "Illegal instruction";
+                break;
+#endif
+        }
+    }
+// I am NOT ALLOWED TO USE THROW to exit from a signal handler in C++. I
+// can at best try use of longjmp, and that is not really legal
+// In particular this has the malign consequence that destructors
+// associated with stack frames passed through will not be activated. And
+// I use destructors in a RAII style to tidy up bindings at times, so I
+// hope I never do a really do longjmp, because that would bypass things!
+    global_longjmp();
 }
 
 static void cslaction(void)

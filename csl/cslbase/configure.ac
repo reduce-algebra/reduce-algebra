@@ -628,7 +628,7 @@ ARCHITECTURE="$foxdir"
 AC_MSG_CHECKING(for conservative)
 AC_ARG_ENABLE(conservative,
   AC_HELP_STRING([--enable-conservative],
-                 [garbage collect option]),
+                 [garbage collect option that is under development]),
   [],
   [enable_conservative="no"])
 AC_MSG_RESULT([$enable_conservative])
@@ -1165,8 +1165,7 @@ AC_MSG_RESULT([$enable_static])
 # drop back to "-O0 -g".
 # Now in 2016 I am moving back to -O3 for production use, but will remain
 # with a very conservative -O0 for debugging builds. Please note that these
-# settings are applied if the compiler is detected as gcc. Also note that
-# I may try to disable optimisations that exploit the strict aliasing rules.
+# settings are applied if the compiler is detected as gcc.
 
 LOWOPT="-O0"
 if test "x$HIGHOPT" = "x"
@@ -1741,6 +1740,7 @@ AM_CONDITIONAL(fox,test "x$with_fox" != "xno")
 AM_CONDITIONAL(wx,test "x$with_wx" != "xno")
 AM_CONDITIONAL(gui,test "x$with_fox" != "xno" || test "x$with_wx" != "xno")
 AM_CONDITIONAL(experiment,test "x$enable_test" = "xyes")
+AM_CONDITIONAL(conservative,test "x$enable_conservative" = "xyes")
 AM_CONDITIONAL(arithlib,test "x$with_arithlib" = "xyes")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")

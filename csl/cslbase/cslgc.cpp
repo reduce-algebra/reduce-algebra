@@ -37,13 +37,6 @@
 
 #include "headers.h"
 
-#ifndef CONSERVATIVE
-// AT least for now I comment ALL of this file out if I am experimenting
-// with the conservative version of the GC, and I have copied all the code in
-// it into the file allocate.cpp. When I have that version stable I will
-// transfer garbage collection stuff back. That means that the version here
-// will never need to be conditional on CONSERVATIVE.
-
 #ifdef WIN32
 #include <conio.h>
 #endif
@@ -743,7 +736,5 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
     pop(p);
     return p;
 }
-
-#endif // !CONSERVATIVE
 
 // end of file cslgc.cpp

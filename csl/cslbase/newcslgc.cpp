@@ -1,10 +1,8 @@
-// version.h                               Copyright (C) 1990-2018 Codemist
+// File cslgc.cpp                         Copyright (c) Codemist, 1990-2018
 
-#ifndef header_version_h
-#define header_version_h 1
-
-// $Id$
-
+//
+// Garbage collection.
+//
 
 /**************************************************************************
  * Copyright (C) 2018, Codemist.                         A C Norman       *
@@ -35,12 +33,9 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// Rather than having a simple version I will cause my script
-// (scripts/commit.sh) that is used to update the subversion repository to
-// update the revision number here.
+// $Id$
 
-#define REVISION 5036
+#include "headers.h"
 
-#endif // header_version_h
 
-// end of version.h
+// end of file cslgc.cpp

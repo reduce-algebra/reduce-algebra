@@ -42,14 +42,6 @@
 #include "config.h"
 #endif
 
-// On a temporary basis the "experiment" I am working on is a conservative
-// garbage collector. I want some of the conditionalization to be on the
-// symbol CONSERVATIVE so I arrange to force that to be defined in relevant
-// situations.
-
-#if defined EXPERIMENT && !defined CONSERVATIVE
-#define CONSERVATIVE 1
-#endif
 
 // There will be an hierarchy of degrees of generality in support for
 // user interfaces. If EMBEDDED is defined then there will be no attempt
@@ -225,6 +217,7 @@ inline double CSLpow(double x, double y)
 #include "cslread.h"
 #include "inthash.h"
 #include "lispthrow.h"
+#include "thread_local.h"
 #include "version.h"
 
 namespace FX {

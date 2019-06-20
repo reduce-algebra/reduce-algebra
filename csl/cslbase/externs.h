@@ -291,16 +291,15 @@ extern uintptr_t vheaplimit;
 extern uintptr_t vlen;
 extern uintptr_t vxor_chain;
 
-
-extern uintptr_t stacklimit;
-#else
+extern LispObject *stacklimit;
+#else // !CONSERVATIVE
 extern LispObject fringe, next_fringe;
 extern LispObject heaplimit;
 extern LispObject vfringe, next_vfringe;
 extern LispObject vheaplimit;
 
 extern LispObject *stacklimit;
-#endif
+#endif // !CONSERVATIVE
 
 extern volatile std::atomic<uintptr_t> event_flag;
 

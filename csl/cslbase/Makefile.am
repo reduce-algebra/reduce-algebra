@@ -295,14 +295,20 @@ else !arithlib
 arith_sources =
 endif !arithlib
 
+if conservative
+gc_sources = newcslgc.cpp newallocate.cpp 
+else !conservative
+gc_sources = cslgc.cpp allocate.cpp 
+endif !conservative
+
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
 		arith11.cpp arith12.cpp arith13.cpp arith14.cpp isprime.cpp \
-                allocate.cpp bytes1.cpp \
 		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
 		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp \
-		$(arith_sources)
+		csl.cpp fasl.cpp preserve.cpp bytes1.cpp \
+		$(gc_sources) $(arith_sources)
 
 # Thie little rule is because from time to time I really want to see the
 # expanded version of a C++ file (ie after C++ macroexpansion has taken place).
@@ -328,10 +334,6 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 %.s:	%.cpp
 	echo CXX -S $<
 	@$(AM_V_CXX)$(CXXCOMPILE) -S -o $@ $<
-
-demo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
-
-undemo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
 
 # If I am building under FOX then the main parts of material from
 # fwin.cpp and termed.cpp get picked up from the FOX library.
@@ -482,15 +484,15 @@ generated_lisp =                  $(gensrc)/u01.lsp \
 		$(gensrc)/u58.lsp $(gensrc)/u59.lsp \
 		$(gensrc)/u60.lsp
 
-csl_SOURCES = $(core_sources) $(undemo_sources) $(fwin_sources) \
+csl_SOURCES = $(core_sources) $(fwin_sources) \
 		stubs.cpp
 
 flatcsl_SOURCES = flatcsl.cpp
 
-bootstrapreduce_SOURCES = $(core_sources) $(undemo_sources) $(fwin_sources) \
+bootstrapreduce_SOURCES = $(core_sources) $(fwin_sources) \
 		stubs.cpp
 
-reduce_SOURCES = $(core_sources) $(demo_sources) $(fwin_sources) \
+reduce_SOURCES = $(core_sources) $(fwin_sources) \
 		$(generated_sources)
 
 fwindemo_SOURCES=fwindemo.cpp $(fwin_sources)

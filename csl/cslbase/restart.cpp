@@ -89,13 +89,8 @@ extern int load_count, load_limit;
 #include "machineid.cpp"
 
 LispObject nil;
-#ifdef CONSERVATIVE
-uintptr_t stackbase;
-uintptr_t stacklimit;
-#else
 LispObject *stackbase;
 LispObject *stacklimit;
-#endif
 
 LispObject *nilsegment;
 LispObject *stacksegment;
@@ -2520,13 +2515,8 @@ void setup(int restart_flag, double store_size)
     }
     else for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
 
-#ifdef CONSERVATIVE
-    stacklimit = ~(uintptr_t)0xff &
-        (uintptr_t)&stack[stack_segsize*CSL_PAGE_SIZE/4-200];
-#else
     stacklimit = (LispObject *) (~(uintptr_t)0xff &
         (uintptr_t)&stack[stack_segsize*CSL_PAGE_SIZE/4-200]);
-#endif
     // allow some slop at end
     if ((restart_flag & 1) != 0) warm_setup();
     else cold_setup();

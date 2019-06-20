@@ -1,4 +1,4 @@
-// sysfwin.cpp                             Copyright (C) 1989-2019 Codemist    
+// sysfwin.cpp                             Copyright (C) 1989-2019 Codemist
 
 //
 // System-specific code for use with the "fwin" window interface code.
@@ -978,6 +978,27 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
     }
     return tempname;
 }
+
+#if defined __CYGWIN__ || defined __MINGW32__
+
+uint32_t myTlsAlloc()
+{   return TlsAlloc();
+}
+
+void myTlsFree(uint32_t h)
+{   (void)TlsFree(h);
+}
+
+void *myTlsGetValue(uint32_t h)
+{   return TlsGetValue(h);
+}
+
+void myTlsSetValue(uint32_t h, void *v)
+{   TlsSetValue(h, v);
+}
+
+#endif // __CYGWIN__ || defined __MINGW32__
+
 
 // The following functions are best described as delicate, and they are only
 // present for debugging purposes. It is not clear to me how much performance
