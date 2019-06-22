@@ -416,6 +416,7 @@
 // it should not cause cconfusion.
 
 #define INLINE_VAR inline
+#define HAVE_INLINE_VARS 1
 #else
 #define INLINE_VAR static
 #endif
@@ -481,26 +482,29 @@ namespace arithlib_implementation
 // one of if. It also sets its argument to a reference to a const char *
 // pointer that will be used for transmitting the location information.
 
+#ifdef HAVE_INLINE_VARS
+inline std::mutex my_diagnostic_mutex;
+inline static const char *my_diagnostic_location;
+#endif // HAVE_INLINE_VARS
+
 inline std::mutex &diagnostic_mutex(const char ***where)
 {
+#ifndef HAVE_INLINE_VARS
 // C++11 guarantees that even if this header is included from many
 // compilation units there will be a single unique mutex here. I guarantees
 // that the mutex will have been constructed (ie initialized) by the time
-// an execution path flows past its definition.
-// HOWEVER this idiom - ie defining static variables within functions - may
-// not be anything like as nice as I had hoped because it seems that the
-// mechanization of it at least on some platforms uses synchronization
-// primitives and extra complication to project agains a case where two
-// threads simultaneously made first cslls to the function, and to avoid
-// disaster if the function calls itself recursively. So this may cost a lot
-// more than a mere simple static "have you been initialized" flag being
-// tested! In this case where I am concerned with diagnostics I do not mind
-// a lot about performance so will leave this in. Elsewhere I may need to
-// avoid it.
-    static std::mutex m;
-    static const char *location;
-    *where = &location;
-    return m;
+// an execution path flows past its definition. However there can be
+// overhead since the C++ run-time system may protect itself from risk of
+// multiple threads triggering initialization at the same time. In doing so
+// it may be that the initialization involved not just a simple boolean flag
+// but some synchronization primitives. If we have C++17 then inline
+// variable declarations achieve pretty well just what I want without this
+// mess, so I will use it.
+    static std::mutex my_diagnostic_mutex;
+    static const char *my_diagnostic_location;
+#endif // !HAVE_INLINE_VARS
+    *where = &my_disgnostic_location;
+    return my_diagnostic_mutex;
 }
 
 [[noreturn]] inline void abort1(const char *msg)
@@ -605,7 +609,11 @@ inline void assert1(bool ok, const char *why, const char *location)
 inline void logprintf(const char *fmt, ...)
 {
 // I use a fixed name for the log file. This is another respect in which
-// this has to be seen as code only suitable for temporary use.
+// this has to be seen as code only suitable for temporary use. I use static
+// variables that are local to this function so that even if the header is
+// included from multiple source files there will not be multiple-definition
+// clashes, and since this is just for diagnostics I am not worried about
+// any costs that this imposes.
     static FILE *logfile = NULL;
     const char **where;
     std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
@@ -774,9 +782,16 @@ public:
 // Just one slot-number is needed for my entire program - the same value is
 // used by every thread.
 
+#ifdef HAVE_INLINE_VARS
+inline TLS_slot_container my_TLS_slot_container;
+#endif // HAVE_INLINE_VARS 
+
 inline int get_my_TEB_slot()
-{   static TLS_slot_container w;
-    return w.mine;
+{
+#ifndef HAVE_INLINE_VARS
+    static TLS_slot_container my_TLS_slot_container;
+#endif // !HAVE_INLINE_VARS 
+    return my_TLS_slot_container.mine;
 }
 
 #ifdef CAUTIOUS
@@ -1141,7 +1156,7 @@ inline void pop(const uint64_t *&p)
 // set of variables that can be used to divert memory allocation, and hence
 // each compilation unit that includes this header is liable to need to reset
 // them all.
-// I view tha ability to replace the allocation functions as somewhat
+// I view the ability to replace the allocation functions as somewhat
 // specialist and to be used by people who will have the skill to modify this
 // code as necessary, so this slight oddity does not worry me.
 
@@ -1458,13 +1473,24 @@ public:
 
 };
 
+#ifdef HAVE_INLINE_VARS 
+#ifdef ARITHLIB_THREAD_LOCAL
+inline thread_local Freechains the_freechains;
+#else // !ARITHLIB_THREAD_LOCAL
+inline Freechains the_freechains;
+#endif // !ARITHLIB_THREAD_LOCAL
+#endif // HAVE_INLINE_VARS 
+
+
 inline Freechains &get_freechains()
 {
+#ifndef HAVE_INLINE_VARS
 #ifdef ARITHLIB_THREAD_LOCAL
     thread_local Freechains the_freechains;
-#else
+#else // !RITHLIB_THREAD_LOCAL
     static Freechains the_freechains;
-#endif
+#endif // !ARITHLIB_THREAD_LOCAL
+#endif // !HAVE_INLINE_VARS
     return the_freechains;
 }
 
@@ -2030,7 +2056,8 @@ inline intptr_t copy_if_no_garbage_collector(intptr_t pp)
 // methods called "op" within it deal with the various cases via overloading.
 
 class Plus
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2040,7 +2067,8 @@ class Plus
 inline intptr_t bigplus_small(intptr_t, int64_t);
 
 class Difference
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2048,7 +2076,8 @@ class Difference
 };
 
 class RevDifference
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2056,7 +2085,8 @@ class RevDifference
 };
 
 class Times
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2064,7 +2094,8 @@ class Times
 };
 
 class Quotient
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2072,7 +2103,8 @@ class Quotient
 };
 
 class Remainder
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2080,7 +2112,8 @@ class Remainder
 };
 
 class Divide
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2092,7 +2125,8 @@ class Divide
 };
 
 class Gcd
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2100,7 +2134,8 @@ class Gcd
 };
 
 class Lcm
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2108,7 +2143,8 @@ class Lcm
 };
 
 class Logand
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2116,7 +2152,8 @@ class Logand
 };
 
 class Logor
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2124,7 +2161,8 @@ class Logor
 };
 
 class Logxor
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2132,7 +2170,8 @@ class Logxor
 };
 
 class Logeqv
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2140,37 +2179,43 @@ class Logeqv
 };
 
 class Zerop
-{   public:
+{
+public:
     static bool op(int64_t);
     static bool op(uint64_t *);
 };
 
 class Onep
-{   public:
+{
+public:
     static bool op(int64_t);
     static bool op(uint64_t *);
 };
 
 class Minusp
-{   public:
+{
+public:
     static bool op(int64_t);
     static bool op(uint64_t *);
 };
 
 class Evenp
-{   public:
+{
+public:
     static bool op(int64_t);
     static bool op(uint64_t *);
 };
 
 class Oddp
-{   public:
+{
+public:
     static bool op(int64_t);
     static bool op(uint64_t *);
 };
 
 class Eqn
-{   public:
+{
+public:
     static bool op(int64_t, int64_t);
     static bool op(int64_t, uint64_t *);
     static bool op(uint64_t *, int64_t);
@@ -2194,7 +2239,8 @@ class Eqn
 };
 
 class Neqn
-{   public:
+{
+public:
     static bool op(int64_t, int64_t);
     static bool op(int64_t, uint64_t *);
     static bool op(uint64_t *, int64_t);
@@ -2218,7 +2264,8 @@ class Neqn
 };
 
 class Geq
-{   public:
+{
+public:
     static bool op(int64_t, int64_t);
     static bool op(int64_t, uint64_t *);
     static bool op(uint64_t *, int64_t);
@@ -2243,7 +2290,8 @@ class Geq
 };
 
 class Greaterp
-{   public:
+{
+public:
     static bool op(int64_t, int64_t);
     static bool op(int64_t, uint64_t *);
     static bool op(uint64_t *, int64_t);
@@ -2265,7 +2313,8 @@ class Greaterp
 };
 
 class Leq
-{   public:
+{
+public:
     static bool op(int64_t, int64_t);
     static bool op(int64_t, uint64_t *);
     static bool op(uint64_t *, int64_t);
@@ -2287,7 +2336,8 @@ class Leq
 };
 
 class Lessp
-{   public:
+{
+public:
     static bool op(int64_t, int64_t);
     static bool op(int64_t, uint64_t *);
     static bool op(uint64_t *, int64_t);
@@ -2309,49 +2359,57 @@ class Lessp
 };
 
 class Add1
-{   public:
+{
+public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
 
 class Sub1
-{   public:
+{
+public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
 
 class Minus
-{   public:
+{
+public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
 
 class Abs
-{   public:
+{
+public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
 
 class Square
-{   public:
+{
+public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
 
 class Isqrt
-{   public:
+{
+public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
 
 class Lognot
-{   public:
+{
+public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
 
 class Pow
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(uint64_t *, int64_t);
     static intptr_t op(int64_t, uint64_t *);
@@ -2361,7 +2419,8 @@ class Pow
 };
 
 class LeftShift
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(uint64_t *, int64_t);
     static intptr_t op(int64_t, uint64_t *);
@@ -2369,7 +2428,8 @@ class LeftShift
 };
 
 class RightShift
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(uint64_t *, int64_t);
     static intptr_t op(int64_t, uint64_t *);
@@ -2377,43 +2437,50 @@ class RightShift
 };
 
 class IntegerLength
-{   public:
+{
+public:
     static size_t op(int64_t);
     static size_t op(uint64_t *);
 };
 
 class Low_bit
-{   public:
+{
+public:
     static size_t op(int64_t);
     static size_t op(uint64_t *);
 };
 
 class Logbitp
-{   public:
+{
+public:
     static bool op(int64_t, size_t);
     static bool op(uint64_t *, size_t);
 };
 
 class Logcount
-{   public:
+{
+public:
     static size_t op(int64_t);
     static size_t op(uint64_t *);
 };
 
 class Float
-{   public:
+{
+public:
     static float op(int64_t);
     static float op(uint64_t *);
 };
 
 class Double
-{   public:
+{
+public:
     static double op(int64_t);
     static double op(uint64_t *);
 };
 
 class Frexp
-{   public:
+{
+public:
     static double op(int64_t, int64_t &x);
     static double op(uint64_t *, int64_t &x);
 };
@@ -2421,13 +2488,15 @@ class Frexp
 #ifdef softfloat_h
 
 class Float128
-{   public:
+{
+public:
     static float128_t op(int64_t);
     static float128_t op(uint64_t *);
 };
 
 class Frexp128
-{   public:
+{
+public:
     static float128_t op(int64_t, int64_t &x);
     static float128_t op(uint64_t *, int64_t &x);
 };
@@ -2435,7 +2504,8 @@ class Frexp128
 #endif // softfloat_h
 
 class ModularPlus
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2443,7 +2513,8 @@ class ModularPlus
 };
 
 class ModularDifference
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2451,7 +2522,8 @@ class ModularDifference
 };
 
 class ModularTimes
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2459,7 +2531,8 @@ class ModularTimes
 };
 
 class ModularExpt
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2467,7 +2540,8 @@ class ModularExpt
 };
 
 class ModularQuotient
-{   public:
+{
+public:
     static intptr_t op(int64_t, int64_t);
     static intptr_t op(int64_t, uint64_t *);
     static intptr_t op(uint64_t *, int64_t);
@@ -2475,25 +2549,29 @@ class ModularQuotient
 };
 
 class ModularMinus
-{   public:
+{
+public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
 
 class ModularReciprocal
-{   public:
+{
+public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
 
 class ModularNumber
-{   public:
+{
+public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
 
 class SetModulus
-{   public:
+{
+public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
@@ -2961,12 +3039,8 @@ inline float128_t float128_bignum(const Bignum &x)
 #endif // softfloat_h
 
 //=========================================================================
-//=========================================================================
 // display() will show the internal representation of a bignum as a
 // sequence of hex values. This is obviously useful while debugging!
-// I make this inline solely because that gets rid of warnings about an
-// unused static function!
-//=========================================================================
 //=========================================================================
 
 inline void display(const char *label, const uint64_t *a, size_t lena)
@@ -3617,6 +3691,10 @@ inline int read_u3(const uint64_t *v, size_t n, size_t i)
 
 inline std::mt19937_64 &ref_mersenne_twister()
 {   std::random_device basic_randomness;
+// Yes the static procedure-local variables here may carry some
+// overhead as the system considers whether it wants to initialize them, but
+// the overall cost here is already probably high as I accumulate entropy
+// and so I am not going to worry.
     static uint64_t thread_local threadid =
         (uint64_t)(std::hash<std::thread::id>()(std::this_thread::get_id()));
     static uint64_t seed_component_1 = (uint64_t)basic_randomness();
@@ -4675,7 +4753,7 @@ inline double Frexp::op(int64_t a, int64_t &x)
 // conversions that I do are ones that will be exact, and I will perform
 // rounding in IEEE style myself.
 // First I will see if the value is small enough that I can work directly.
-    static const int64_t range = ((int64_t)1)<<53;
+    const int64_t range = ((int64_t)1)<<53;
     if (a >= -range && a <= range) return (double)a;
 // I will now drop down to a sign and magnitude representation
     bool sign = a < 0;
@@ -5493,8 +5571,7 @@ inline bool Eqn::op(float a, uint64_t *b)
 }
 
 inline bool Eqn::op(int64_t a, double b)
-{
-    static const int64_t range = ((int64_t)1)<<53;
+{   const int64_t range = ((int64_t)1)<<53;
     if (a >= -range && a <= range) return (double)a == b;
 // The value on the next line is a floating point representation of 2^63,
 // so any floating value at least that large is bigger than any int64_t value.
@@ -5652,8 +5729,7 @@ inline bool Neqn::op(float a, uint64_t *b)
 }
 
 inline bool Neqn::op(int64_t a, double b)
-{
-    static const int64_t range = ((int64_t)1)<<53;
+{   const int64_t range = ((int64_t)1)<<53;
     if (a >= -range && a <= range) return (double)a != b;
 // The value on the next line is a floating point representation of 2^63,
 // so any floating value at least that large is bigger than any int64_t value.
@@ -5790,7 +5866,7 @@ inline bool Greaterp::op(int64_t a, double b)
 {
 // If the integer is small enough it can be converted to a double
 // without any rounding, so then I can do the comparison easily.
-    static const int64_t range = ((int64_t)1)<<53;
+    const int64_t range = ((int64_t)1)<<53;
     if (a >= -range && a <= range) return (double)a > b;
 // If the floating point value is >= 2^63 or is less < -2^63 it is beyond
 // the range of int64_t, so the result is easy. This situation includes
@@ -6022,7 +6098,7 @@ inline bool Geq::op(float a, uint64_t *b)
 }
 
 inline bool Geq::op(int64_t a, double b)
-{   static const int64_t range = ((int64_t)1)<<53;
+{   const int64_t range = ((int64_t)1)<<53;
     if (a >= -range && a <= range) return (double)a >= b;
     if (b >= 9223372036854775808.0) return false;
     else if (b < -9223372036854775808.0) return true;
@@ -6102,7 +6178,7 @@ inline bool Lessp::op(float a, uint64_t *b)
 }
 
 inline bool Lessp::op(int64_t a, double b)
-{   static const int64_t range = ((int64_t)1)<<53;
+{   const int64_t range = ((int64_t)1)<<53;
     if (a >= -range && a <= range) return (double)a < b;
     if (b >= 9223372036854775808.0) return true;
     else if (b < -9223372036854775808.0) return false;
@@ -6184,7 +6260,7 @@ inline bool Leq::op(float a, uint64_t *b)
 }
 
 inline bool Leq::op(int64_t a, double b)
-{   static const int64_t range = ((int64_t)1)<<53;
+{   const int64_t range = ((int64_t)1)<<53;
     if (a >= -range && a <= range) return (double)a <= b;
     if (b >= 9223372036854775808.0) return true;
     else if (b < -9223372036854775808.0) return false;
@@ -7484,7 +7560,7 @@ inline void classical_multiply_and_add(uint64_t a,
 
 #if !defined K && !defined K_DEFINED
 // I provide a default here but can override it at compile time
-static constexpr size_t K=18;
+static const size_t K=18;
 #define K_DEFINED 1
 #endif
 
@@ -7502,7 +7578,7 @@ static size_t KARATSUBA_CUTOFF = K;
 // that a good value here might be of the order of 100. For the old CSL
 // version I used the number 120. Well for now I will use 3*KARATSUBA_CUTOFF
 
-static constexpr size_t K1=3*K;
+static const size_t K1=3*K;
 #define K1_DEFINED 1
 #endif
 
