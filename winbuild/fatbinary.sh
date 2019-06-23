@@ -16,6 +16,7 @@ case ${1:-2} in
   ;;
 esac
 
+rm -rf cslbuild
 mkdir -p cslbuild
 
 cp $ver/csl/reduce.img cslbuild/reduce.img
@@ -23,13 +24,6 @@ cp $ver/csl/bootstrapreduce.img cslbuild/bootstrapreduce.img
 cp $ver/csl/csl.img cslbuild/csl.img
 cp -r $ver/csl/reduce.fonts cslbuild/reduce.fonts
 cp -r $ver/csl/reduce.resources cslbuild/reduce.resources
-
-# Create the utility program that will compress executables and
-# tag the commpressed data onto the end of an existing file. I will
-# build thus using i686-w64-mingw32-gcc since then the executable should
-# run on all possible platforms.
-
-i686-w64-mingw32-gcc addresources.c -static -lz -oaddresources.exe
 
 # I will need two helper programs that have been built so as to run
 # under cygwin32 and cygwin64. Here I build them...
@@ -85,29 +79,33 @@ else
   debugflag=
 fi
 
-i686-w64-mingw32-gcc -DFAT64 $debugflag -O3 stub.c \
+i686-w64-mingw32-gcc -DFAT64 -DNAME=red $debugflag -O3 newstub.c \
 	--static -lz -o cslbuild/reduce.exe
 i686-w64-mingw32-strip cslbuild/reduce.exe
+
+mkdir cslbuild/reduce.dir
 
 # Now I create the real version of a "reduce.exe" that will be launchable
 # from a console (either Windows or 32 or 64-bit cygwin) by packing
 # stuff on the end of the stub.
 
-./addresources cslbuild/reduce.exe \
-	cygwin32-isatty.exe \
-	cygwin64-isatty.exe \
-	cslwin32/csl/reduce.com \
-	cslwin64/csl/reduce.com \
-	cslcyg32/csl/reduce.exe \
-	cslcyg64/csl/reduce.exe
+cp	cygwin32-isatty.exe      cslbuild/reduce.dir/isatty32.exe
+cp	cygwin64-isatty.exe      cslbuild/reduce.dir/isatty64.exe
+cp	cslwin32/csl/reduce.com  cslbuild/reduce.dir/redwin32.exe
+cp	cslwin64/csl/reduce.com  cslbuild/reduce.dir/redwin64.exe
+cp	cslcyg32/csl/reduce.exe  cslbuild/reduce.dir/redcyg32.exe
+cp	cslcyg64/csl/reduce.exe  cslbuild/reduce.dir/redcyg64.exe
 
 # Now a rather similar process except that it will be linked as a windows
 # not a console binary. As such it will not be useful in a cygwin world,
 # but it will be the correct thing to double click on.
 
-i686-w64-mingw32-gcc -DFATWIN $debugflag -O3 stub.c \
+i686-w64-mingw32-gcc -DFATWIN -DNAME=wred $debugflag -O3 newstub.c \
 	-Wl,--subsystem,windows --static -lz -o cslbuild/winreduce.exe
 i686-w64-mingw32-strip cslbuild/winreduce.exe
+
+cp	cslwin32/csl/reduce.exe  cslbuild/reduce.dir/wredwin32.exe
+cp	cslwin64/csl/reduce.exe  cslbuild/reduce.dir/wredwin64.exe
 
 # Add the relevant things to this... Observe that actually the only thing
 # it has to do that is at all clever is to decide whether it is running
@@ -115,27 +113,20 @@ i686-w64-mingw32-strip cslbuild/winreduce.exe
 # to install a 32 or 64-bit binary, but this way a single binary will be
 # good for everybody.
 
-./addresources cslbuild/winreduce.exe \
-	cslwin32/csl/reduce.exe \
-	cslwin64/csl/reduce.exe
-
-i686-w64-mingw32-gcc -DFAT64 $debugflag -O3 stub.c \
+i686-w64-mingw32-gcc -DFAT64 -DNAME=boot $debugflag -O3 newstub.c \
 	--static -lz -o cslbuild/bootstrapreduce.exe
 i686-w64-mingw32-strip cslbuild/bootstrapreduce.exe
 
-# Also the real version of a "bootstrapreduce.exe" that will be launchable
-# from a console (either Windows or 32 or 64-bit cygwin) by packing
-# stuff on the end of the stub.
+# Also the real version of a "bootstrapreduce.exe"
 
-./addresources cslbuild/bootstrapreduce.exe \
-	cygwin32-isatty.exe \
-	cygwin64-isatty.exe \
-	cslwin32/csl/bootstrapreduce.exe \
-	cslwin64/csl/bootstrapreduce.exe \
-	cslcyg32/csl/bootstrapreduce.exe \
-	cslcyg64/csl/bootstrapreduce.exe
+cp	cygwin32-isatty.exe              cslbuild/reduce.dir/isatty32.exe
+cp	cygwin64-isatty.exe              cslbuild/reduce.dir/isatty64.exe
+cp	cslwin32/csl/bootstrapreduce.exe cslbuild/reduce.dir/bootwin32.exe
+cp	cslwin64/csl/bootstrapreduce.exe cslbuild/reduce.dir/bootwin64.exe
+cp	cslcyg32/csl/bootstrapreduce.exe cslbuild/reduce.dir/bootcyg32.exe
+cp	cslcyg64/csl/bootstrapreduce.exe cslbuild/reduce.dir/bootcyg64.exe
 
-i686-w64-mingw32-gcc -DFAT64 $debugflag -O3 stub.c \
+i686-w64-mingw32-gcc -DFAT64 -DNAME=csl $debugflag -O3 newstub.c \
 	--static -lz -o cslbuild/csl.exe
 i686-w64-mingw32-strip cslbuild/csl.exe
 
@@ -143,35 +134,27 @@ i686-w64-mingw32-strip cslbuild/csl.exe
 # from a console (either Windows or 32 or 64-bit cygwin) by packing
 # stuff on the end of the stub.
 
-./addresources cslbuild/csl.exe \
-	cygwin32-isatty.exe \
-	cygwin64-isatty.exe \
-	cslwin32/csl/csl.com \
-	cslwin64/csl/csl.com \
-	cslcyg32/csl/csl.exe \
-	cslcyg64/csl/csl.exe
+cp	cygwin32-isatty.exe  cslbuild/reduce.dir/isatty32.exe
+cp	cygwin64-isatty.exe  cslbuild/reduce.dir/isatty64.exe
+cp	cslwin32/csl/csl.com cslbuild/reduce.dir/cslwin32.exe
+cp	cslwin64/csl/csl.com cslbuild/reduce.dir/cslwin64.exe
+cp	cslcyg32/csl/csl.exe cslbuild/reduce.dir/cslcyg32.exe
+cp	cslcyg64/csl/csl.exe cslbuild/reduce.dir/cslcyg64.exe
 
 # Now a rather similar process except that it will be linked as a windows
 # not a console binary. As such it will not be useful in a cygwin world,
 # but it will be the correct thing to double click on.
 
-i686-w64-mingw32-gcc -DFATWIN $debugflag -O3 stub.c \
+i686-w64-mingw32-gcc -DFATWIN -DNAME=wcsl $debugflag -O3 newstub.c \
 	-Wl,--subsystem,windows --static -lz -o cslbuild/wincsl.exe
 i686-w64-mingw32-strip cslbuild/wincsl.exe
 
-# Add the relevant things to this... Observe that actually the only thing
-# it has to do that is at all clever is to decide whether it is running
-# on a 32 or 64-bit machine. Yes you could make the installer decide whether
-# to install a 32 or 64-bit binary, but this way a single binary will be
-# good for everybody.
-
-./addresources cslbuild/wincsl.exe \
-	cslwin32/csl/csl.exe \
-	cslwin64/csl/csl.exe
+cp	cslwin32/csl/csl.exe cslbuild/reduce.dir/wcslwin32.exe
+cp	cslwin64/csl/csl.exe cslbuild/reduce.dir/wcslwin64.exe
 
 # Inspect the files created.
 
-ls -lh cslbuild
+ls -lhR cslbuild
 
 # Tidy up the the helper apps
 
