@@ -731,6 +731,15 @@ static const size_t spareBytes = 2*bytesForMap;
 // where there may be trouble. But what matters most to me will be x86,
 // x86_64 and both 32 and 64-bit ARM when using g++ or clang, and those will
 // get checked the first time I compile this code on each.
+//
+// Note that the C++ standard explictly says that there is no guarantee that
+// the sizes of atomic specializations match those of the underlying raw
+// types, but that implementations are encouraged to make that the situation
+// where they can.
+// Well std::atomic_flag is guaranteed lock-free and to my mind that would
+// suggest it had no need for extra memory and I might hope it was thus
+// of size 1, but this is not guaranteed either. So my code is not guaranteed
+// portable! What an amazing situation (ha ha).
 
 static_assert(sizeof(std::atomic<uint8_t>) == 1,
               "Atomics bytes are too large");
@@ -773,7 +782,7 @@ union alignas(pageSize) Page
 // dirty segments, and in that case processing the entire page reduces to
 // checking this simple flag. Otherwise I need to scan the entire dirty[]
 // array.
-        bool dirtypage;
+        std::atomic<bool> dirtypage;
 // During garbage collection I need a map showing where each object on a
 // page starts. This boolean is set when that map is set up and available
 // for use. Because the map shares space with the "dirty[]" map it will
@@ -838,6 +847,27 @@ union alignas(pageSize) Page
         LispObject data[(pageSize - spareBytes)/sizeof(LispObject)];
     };
 };
+
+// First I will give code that implements the write-barrier. It is passed
+// the address of a valid Lisp location - that can be one of &qcar(x),
+// &qcdr(x) or &elt(v, n). It records the fact that an update has
+// been made to memory in that region by setting a byte in dirty[]. Because
+// the address it is given will always be a VALID address of some location
+// in the Lisp heap it can easily find the relevant page...
+
+void write_barrier(LispObject *p)
+{   uintptr_t a = reinterpret_cast<uintptr_t>(p);
+ // round down to 8M boundary
+    Page *x = reinterpret_cast<Page *>(a & -UINT64_C(0x800000));
+// I mark the page as a whole as containing some regions that are dirty...
+    p->dirtypage.store(true);
+// and then use the offset within the page to mark a 32-byte region as
+// dirty. The map used here is std::atomic<uint8_t>
+    uintptr_t offset = a & 0x7fffffU;
+    p->dirty[offset/32].store(1);
+}
+
+
 
 std::atomic<uintptr_t> fringe;
 std::atomic<uintptr_t> limit;

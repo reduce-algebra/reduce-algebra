@@ -138,20 +138,18 @@ static LispObject or_fn(LispObject args, LispObject env)
 // Common Lisp really thinks of PROG as a combination of LET, BLOCK and
 // TAGBODY.
 
-static LispObject prog_fn(LispObject args, LispObject env)
-{   if (!consp(args) || !consp(qcdr(args))) return onevalue(nil);
-    stackcheck(args, env);
+static LispObject prog_fn(LispObject iargs, LispObject ienv)
+{   if (!consp(iargs) || !consp(qcdr(iargs))) return onevalue(nil);
+    stackcheck(iargs, ienv);
     STACK_SANITY;
-    push(nil, args, env);
-#define env    stack[0]
-#define args   stack[-1]
-#define my_tag stack[-2]
-//
+    push(nil, iargs, ienv);
+    LispObject &env    = stack[0];
+    LispObject &args   = stack[-1];
+    LispObject &my_tag = stack[-2];
 // I need to augment the (lexical) environment with a null block
 // tag so that (return ..) will work as required. See block_fn for
 // further elaboration since (block ..) is the main way of introducing
 // new block tags.
-//
     my_tag = cons(fixnum_of_int(0), nil);
     env = cons(my_tag, env);
     try
@@ -181,9 +179,6 @@ static LispObject prog_fn(LispObject args, LispObject env)
     popv(3);  // I get here if using let_fn_1 to process the body of the
               // PROG just returned without doing a (RETURN ...).
     return onevalue(nil);
-#undef env
-#undef args
-#undef my_tag
 }
 
 LispObject progn_fn(LispObject args, LispObject env)
@@ -468,7 +463,10 @@ static LispObject setq_fn(LispObject args, LispObject env)
                 w = qcar(p);
                 if (qcar(w) == var)
                 {   if (qcdr(w) == work_symbol) qvalue(var) = val;
-                    else qcdr(w) = val;
+                    else
+                    {   qcdr(w) = val;
+                        write_barrier(&qcdr(w));
+                    }
                     break;
                 }
                 p = qcdr(p);
@@ -724,14 +722,12 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
         rl = cons_no_gc((&mv_2)[i-2], rl);
     rl = cons_gc_test(rl);
     push(rl);
-#define env  stack[-1]
-#define args stack[-2]
-    while (is_cons(args = qcdr(args)) && args!=nil)
-    {   LispObject w = qcar(args);
-        (void)eval(w, env);
+    LispObject &xenv = stack[-1];
+    LispObject &xargs = stack[-2];
+    while (is_cons(xargs = qcdr(xargs)) && xargs!=nil)
+    {   LispObject w = qcar(xargs);
+        (void)eval(w, xenv);
     }
-#undef env
-#undef args
     pop(rl);
     popv(2);
     for (i = 2; i<=nargs; i++)

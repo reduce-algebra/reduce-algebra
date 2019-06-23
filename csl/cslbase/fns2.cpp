@@ -2101,6 +2101,7 @@ LispObject Lnreverse(LispObject env, LispObject a)
     {   LispObject c = a;
         a = qcdr(a);
         qcdr(c) = b;
+        write_barrier(&qcdr(c));
         b = c;
     }
     return onevalue(b);
@@ -2111,6 +2112,7 @@ LispObject Lnreverse2(LispObject env, LispObject a, LispObject b)
     {   LispObject c = a;
         a = qcdr(a);
         qcdr(c) = b;
+        write_barrier(&qcdr(c));
         b = c;
     }
     return onevalue(b);
@@ -2124,6 +2126,7 @@ LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
     {   LispObject c = a;
         a = qcdr(a);
         qcdr(c) = b;
+        write_barrier(&qcdr(c));
         b = c;
     }
     return onevalue(b);
@@ -2137,6 +2140,7 @@ LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b, LispObject c)
     {   LispObject d = a;
         a = qcdr(a);
         qcdr(d) = b;
+        write_barrier(&qcdr(d));
         b = d;
     }
     return onevalue(b);
@@ -2157,6 +2161,7 @@ LispObject Lnreverse0(LispObject env, LispObject a)
     {   LispObject c = a;
         a = qcdr(a);
         qcdr(c) = b;
+        write_barrier(&qcdr(c));
         b = c;
     }
     return onevalue(b);
@@ -2613,11 +2618,20 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
     {   LispObject next = qcdr(c);
         if (!consp(next))
         {   qcdr(c) = b;
+            write_barrier(&qcdr(c));
             return onevalue(a);
         }
         else c = next;
     }
 }
+
+// If the versions of SUBST and friends as implemented here work by
+// (temporarily) overwriting their input then they are probably not
+// suitable for use in a multi-thread version of this system. So
+// all the complication here will need to be revisited. Oh dear. Well
+// when I have a conservative garbage collection at least the replacement
+// code will not have to include the messy mapping of names onto stack
+// locations!
 
 //
 // All the comments that follow are the signature of me needing to think
@@ -2735,6 +2749,12 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
     stackcheck(a, b, c);
     push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
     push(a, b, c);
+// Perhaps I could replace the use of "#define" here with code like
+//    LispObject &c = stack[0];
+//    LispObject &b = stack[-1];
+//    etc.
+// which would perhaps be cleaner.
+//
 #define c   stack[0]
 #define b   stack[-1]
 #define a   stack[-2]
@@ -2751,6 +2771,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
             while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = cc;
+                write_barrier(&qcdr(r));
                 cc = r;
                 r = w;
             }
@@ -2773,6 +2794,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
             while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = c;
+                write_barrier(&qcdr(r));
                 c = r;
                 r = w;
             });
@@ -2783,6 +2805,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
         if (w == qcar(c))
         {   w = qcdr(c);
             qcdr(c) = r;
+            write_barrier(&qcdr(c));
             r = c;
             c = w;
             continue;
@@ -2793,6 +2816,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
             while (r != TAG_FIXNUM)
             {   ww = qcdr(r);
                 qcdr(r) = cc;
+                write_barrier(&qcdr(r));
                 cc = r;
                 r = ww;
             }
@@ -2823,6 +2847,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
         while (r != TAG_FIXNUM)
         {   w = qcdr(r);
             qcdr(r) = c;
+            write_barrier(&qcdr(r));
             c = r;
             r = w;
         }
@@ -2833,6 +2858,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
         while (rx != TAG_FIXNUM)
         {   w = qcdr(rx);
             qcdr(rx) = c;
+            write_barrier(&qcdr(rx));
             c = rx;
             rx = w;
         }
@@ -2870,6 +2896,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
             while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = cc;
+                write_barrier(&qcdr(r));
                 cc = r;
                 r = w;
             }
@@ -2895,6 +2922,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
             while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = c;
+                write_barrier(&qcdr(r));
                 c = r;
                 r = w;
             });
@@ -2905,6 +2933,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
         if (w == qcar(c))
         {   w = qcdr(c);
             qcdr(c) = r;
+            write_barrier(&qcdr(c));
             r = c;
             c = w;
             continue;
@@ -2915,6 +2944,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
             while (r != TAG_FIXNUM)
             {   ww = qcdr(r);
                 qcdr(r) = cc;
+                write_barrier(&qcdr(r));
                 cc = r;
                 r = ww;
             }
@@ -2945,6 +2975,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
         while (r != TAG_FIXNUM)
         {   w = qcdr(r);
             qcdr(r) = c;
+            write_barrier(&qcdr(r));
             c = r;
             r = w;
         }
@@ -2955,6 +2986,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
         while (rx != TAG_FIXNUM)
         {   w = qcdr(rx);
             qcdr(rx) = c;
+            write_barrier(&qcdr(rx));
             c = rx;
             rx = w;
         }
@@ -2994,6 +3026,7 @@ LispObject subla(LispObject a, LispObject c)
             while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = cc;
+                write_barrier(&qcdr(r));
                 cc = r;
                 r = w;
             }
@@ -3017,6 +3050,7 @@ LispObject subla(LispObject a, LispObject c)
             while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = c;
+                write_barrier(&qcdr(r));
                 c = r;
                 r = w;
             });
@@ -3027,6 +3061,7 @@ LispObject subla(LispObject a, LispObject c)
         if (w == qcar(c))
         {   w = qcdr(c);
             qcdr(c) = r;
+            write_barrier(&qcdr(c));
             r = c;
             c = w;
             continue;
@@ -3037,6 +3072,7 @@ LispObject subla(LispObject a, LispObject c)
             while (r != TAG_FIXNUM)
             {   ww = qcdr(r);
                 qcdr(r) = cc;
+                write_barrier(&qcdr(r));
                 cc = r;
                 r = ww;
             }
@@ -3066,6 +3102,7 @@ LispObject subla(LispObject a, LispObject c)
         while (r != TAG_FIXNUM)
         {   w = qcdr(r);
             qcdr(r) = c;
+            write_barrier(&qcdr(r));
             c = r;
             r = w;
         }
@@ -3076,6 +3113,7 @@ LispObject subla(LispObject a, LispObject c)
         while (rx != TAG_FIXNUM)
         {   w = qcdr(rx);
             qcdr(rx) = c;
+            write_barrier(&qcdr(rx));
             c = rx;
             rx = w;
         }
@@ -3121,6 +3159,7 @@ LispObject sublis(LispObject a, LispObject c)
             while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = cc;
+                write_barrier(&qcdr(r));
                 cc = r;
                 r = w;
             }
@@ -3147,6 +3186,7 @@ LispObject sublis(LispObject a, LispObject c)
             while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = c;
+                write_barrier(&qcdr(r));
                 c = r;
                 r = w;
             });
@@ -3157,6 +3197,7 @@ LispObject sublis(LispObject a, LispObject c)
         if (w == qcar(c))
         {   w = qcdr(c);
             qcdr(c) = r;
+            write_barrier(&qcdr(c));
             r = c;
             c = w;
             continue;
@@ -3167,6 +3208,7 @@ LispObject sublis(LispObject a, LispObject c)
             while (r != TAG_FIXNUM)
             {   ww = qcdr(r);
                 qcdr(r) = cc;
+                write_barrier(&qcdr(r));
                 cc = r;
                 r = ww;
             }
@@ -3196,6 +3238,7 @@ LispObject sublis(LispObject a, LispObject c)
         while (r != TAG_FIXNUM)
         {   w = qcdr(r);
             qcdr(r) = c;
+            write_barrier(&qcdr(r));
             c = r;
             r = w;
         }
@@ -3206,6 +3249,7 @@ LispObject sublis(LispObject a, LispObject c)
         while (rx != TAG_FIXNUM)
         {   w = qcdr(rx);
             qcdr(rx) = c;
+            write_barrier(&qcdr(rx));
             c = rx;
             rx = w;
         }

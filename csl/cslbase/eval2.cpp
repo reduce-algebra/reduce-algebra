@@ -202,23 +202,21 @@ static LispObject and_fn(LispObject args, LispObject env)
 //}
 //
 
-static LispObject block_fn(LispObject args, LispObject env)
+static LispObject block_fn(LispObject iargs, LispObject ienv)
 {   LispObject p;
     STACK_SANITY;
-    if (!consp(args)) return onevalue(nil);
-    stackcheck(args, env);
-    push(qcar(args),          // my_tag
-          qcdr(args),          // args
-          env);
-#define env    stack[0]
-#define args   stack[-1]
-#define my_tag stack[-2]
-//
+    if (!consp(iargs)) return onevalue(nil);
+    stackcheck(iargs, ienv);
+    push(qcar(iargs),          // my_tag
+          qcdr(iargs),          // args
+          ienv);
+    LispObject &env = stack[0];
+    LispObject &args = stack[-1];
+    LispObject &my_tag = stack[-2];
 // I need to augment the (lexical) environment with the name of my
 // tag in such a way that return-from can throw out to exactly the
 // correct matching level.  This is done by pushing (0 . tag) onto
 // the environment - the 0 marks this as a block name.
-//
     my_tag = cons(fixnum_of_int(0), my_tag);
     env = cons(my_tag, env);
     p = nil;
@@ -247,9 +245,6 @@ static LispObject block_fn(LispObject args, LispObject env)
     }
     popv(3);
     return p;
-#undef env
-#undef args
-#undef my_tag
 }
 
 static LispObject catch_fn(LispObject args, LispObject env)
@@ -271,6 +266,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
     {   pop(tag);
         catch_tags = qcdr(tag);
         qcar(tag) = tag;
+        write_barrier(&qcar(tag));
         qcdr(tag) = nil;        // Invalidate the catch frame
         if (exit_tag == tag) return nvalues(exit_value, exit_count);
         else throw;
@@ -279,12 +275,14 @@ static LispObject catch_fn(LispObject args, LispObject env)
     {   pop(tag);
         catch_tags = qcdr(tag);
         qcar(tag) = tag;
+        write_barrier(&qcar(tag));
         qcdr(tag) = nil;        // Invalidate the catch frame
         throw;
     }
     pop(tag);
     catch_tags = qcdr(tag);
     qcar(tag) = tag;
+    write_barrier(&qcar(tag));
     qcdr(tag) = nil;            // Invalidate the catch frame
     return v;
 }
@@ -435,6 +433,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
         LispObject old = qvalue(v);
         qvalue(v) = z;
         qcdr(w) = old;
+        write_barrier(&qcdr(w));
     }
 // The above has instated bindings. Subject to not getting asynchronous
 // interruptions once I start to bind any I bind all.
@@ -755,7 +754,10 @@ static LispObject labels_fn(LispObject args, LispObject env)
 // permit mutual recursion between them all.
 //
     for (d=env; d!=my_env; d=qcdr(d))
-        qcar(qcdr(qcar(qcar(d)))) = env;
+    {   LispObject w = qcdr(qcar(qcar(d)));
+        qcar(w) = env;
+        write_barrier(&qcar(w));
+    }
     return let_fn_1(nil, qcdr(args), env, BODY_LET);
 }
 
@@ -765,26 +767,25 @@ static LispObject let_fn(LispObject args, LispObject env)
     return let_fn_1(qcar(args), qcdr(args), env, BODY_LET);
 }
 
-static LispObject letstar_fn(LispObject args, LispObject env)
+static LispObject letstar_fn(LispObject args, LispObject ienv)
 //
 // This will have to look for (declare (special ...)), unless
 // I am in CSL mode.
 //
 {   if (!consp(args)) return onevalue(nil);
     STACK_SANITY;
-    stackcheck(args, env);
-    push(qcar(args), qcdr(args), env);
-    push5(nil, nil,                // p, q
-          env, nil, nil);          // env1, specenv, local_decs
-#define local_decs stack[0]
-#define specenv    stack[-1]
-#define env1       stack[-2]
-#define p          stack[-3]
-#define q          stack[-4]
-#define env        stack[-5]
-#define body       stack[-6]
-#define bvl        stack[-7]
-#define Return(v)  { popv(8); return (v); }
+    stackcheck(args, ienv);
+    push(qcar(args), qcdr(args), ienv);
+    push5(nil, nil,                 // p, q
+          ienv, nil, nil);          // env1, specenv, local_decs
+    LispObject &local_decs = stack[0];
+    LispObject &specenv    = stack[-1];
+    LispObject &env1       = stack[-2];
+    LispObject &p          = stack[-3];
+    LispObject &q          = stack[-4];
+    LispObject &env        = stack[-5];
+    LispObject &body       = stack[-6];
+    LispObject &bvl        = stack[-7];
     for (;;)
     {   if (!consp(body)) break;
         p = macroexpand(qcar(body), env);
@@ -865,7 +866,8 @@ static LispObject letstar_fn(LispObject args, LispObject env)
             qvalue(v) = z;
         }
         {   LispObject bodyx = body;
-            Return(bodyx);
+            popv(8);
+            return bodyx;
         }
     }
     catch (LispException &e)
@@ -876,15 +878,6 @@ static LispObject letstar_fn(LispObject args, LispObject env)
         popv(8);
         throw;
     }
-#undef local_decs
-#undef specenv
-#undef env1
-#undef p
-#undef q
-#undef env
-#undef body
-#undef bvl
-#undef Return
 }
 
 // In many ways I think it is astonishing how few special forms there are.

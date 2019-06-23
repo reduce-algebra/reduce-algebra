@@ -253,6 +253,7 @@ LispObject Lputv(LispObject, LispObject v, LispObject n, LispObject x)
 // in particular larger then the size of the vector.
     if (n1 >= hl) aerror1("putv index range", n);
     elt(v, n1) = x;
+    write_barrier(&elt(v, n1));
     return onevalue(x);
 }
 
@@ -853,6 +854,7 @@ static LispObject Lputvec(LispObject, LispObject v, LispObject n, LispObject x)
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("putvec index range", n);
     elt(v, n1) = x;
+    write_barrier(&elt(v, n1));
     return onevalue(x);
 }
 
@@ -1167,6 +1169,7 @@ LispObject Laset_4up(LispObject env, int nargs, ...)
                 n1 = int_of_fixnum(n);
                 if (n1 >= hl) aerror1("aset index range", n);
                 elt(v, n1) = x;
+                write_barrier(&elt(v, n1));
                 return onevalue(x);
             }
             else if (is_string_header(h))
@@ -1209,6 +1212,7 @@ LispObject Laset_4up(LispObject env, int nargs, ...)
     {   x = va_arg(a, LispObject);
         va_end(a);
         elt(v, 2) = x;
+        write_barrier(&elt(v, 2));
         return onevalue(x);
     }
     n1 = int_of_fixnum(n);
@@ -1234,6 +1238,7 @@ LispObject Laset_4up(LispObject env, int nargs, ...)
     {   hl = (length_of_header(h) - CELL)/CELL;
         if (n1 >= hl) aerror("aset index range");
         elt(v, n1) = x;
+        write_barrier(&elt(v, n1));
         return onevalue(x);
     }
     if (type_of_header(h) == TYPE_STRUCTURE)
@@ -1243,6 +1248,7 @@ LispObject Laset_4up(LispObject env, int nargs, ...)
         n2 = n1 % 8192;
         n1 = n1 / 8192;
         elt(elt(v, n1+1), n2) = x;
+        write_barrier(&elt(elt(v, n1+1), n2));
         return onevalue(x);
     }
     else if (is_string_header(h))
@@ -1300,6 +1306,7 @@ static LispObject Lsetelt(LispObject env, LispObject v, LispObject n, LispObject
     {   hl = (length_of_header(h) - CELL)/CELL;
         if (n1 >= hl) aerror1("setelt index range", n);
         elt(v, n1) = x;
+        write_barrier(&elt(v, n1));
         return onevalue(x);
     }
     else if (is_string_header(h))
@@ -1335,6 +1342,7 @@ static LispObject Lsetelt(LispObject env, LispObject v, LispObject n, LispObject
     {   hl = (length_of_header(h) - CELL)/CELL;
         if (n1 >= hl) aerror("setelt index range");
         elt(v, n1) = x;
+        write_barrier(&elt(v, n1));
         return onevalue(x);
     }
     else if (type_of_header(h) == TYPE_STRUCTURE)
@@ -1344,6 +1352,7 @@ static LispObject Lsetelt(LispObject env, LispObject v, LispObject n, LispObject
         n2 = n1 % 8192;
         n1 = n1 / 8192;
         elt(elt(v, n1+1), n2) = x;
+        write_barrier(&elt(elt(v, n1+1), n2));
         return onevalue(x);
     }
     else if (is_string_header(h))
@@ -1576,10 +1585,14 @@ LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
     r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(n+1));
     pop(a4up, a3, a2, a1);
     elt(r, 0) = a1;
+    write_barrier(&elt(r, 0));
     elt(r, 1) = a2;
+    write_barrier(&elt(r, 1));
     elt(r, 2) = a3;
+    write_barrier(&elt(r, 2));
     for (size_t i=3; i<n; i++)
     {   elt(r, i) = qcar(a4up);
+        write_barrier(&elt(r, i));
         a4up = qcdr(a4up);
     }
     return onevalue(r);
@@ -1594,6 +1607,7 @@ LispObject Lvector_1(LispObject env, LispObject a)
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 2*CELL);
     pop(a);
     elt(r, 0) = a;
+    write_barrier(&elt(r, 0));
     return onevalue(r);
 }
 
@@ -1602,7 +1616,9 @@ LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 3*CELL);
     pop(b, a);
     elt(r, 0) = a;
+    write_barrier(&elt(r, 0));
     elt(r, 1) = b;
+    write_barrier(&elt(r, 1));
     return onevalue(r);
 }
 
@@ -1611,8 +1627,11 @@ LispObject Lvector_3(LispObject env, LispObject a, LispObject b, LispObject c)
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 4*CELL);
     pop(c, b, a);
     elt(r, 0) = a;
+    write_barrier(&elt(r, 0));
     elt(r, 1) = b;
+    write_barrier(&elt(r, 1));
     elt(r, 2) = c;
+    write_barrier(&elt(r, 2));
     return onevalue(r);
 }
 
@@ -1847,8 +1866,9 @@ LispObject vector_subseq(LispObject sequence, size_t start, size_t end)
         //
         copy = get_vector_init(CELL+seq_length*CELL,nil);
         for (i=start; i < end; ++i)
-           elt(copy,i-start) = elt(sequence,i);
-
+        {  elt(copy,i-start) = elt(sequence,i);
+           write_barrier(&elt(copy,i-start));
+        }
         return onevalue(copy);
     }
     else if (is_string_header(h))

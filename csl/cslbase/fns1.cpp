@@ -521,6 +521,7 @@ LispObject Lrplaca(LispObject,
                    LispObject a, LispObject b)
 {   if (!consp(a)) error(1, err_bad_rplac, a);
     qcar(a) = b;
+    write_barrier(&qcar(b));
     return onevalue(a);
 }
 
@@ -532,6 +533,7 @@ LispObject Lrplacd(LispObject,
                    LispObject a, LispObject b)
 {   if (!consp(a)) error(1, err_bad_rplac, a);
     qcdr(a) = b;
+    write_barrier(&qcdr(b));
     return onevalue(a);
 }
 

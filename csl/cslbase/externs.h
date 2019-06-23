@@ -1,4 +1,4 @@
-// externs.h                               Copyright (C) Codemist 1989-2018
+// externs.h                               Copyright (C) Codemist 1989-2019
 
 //
 //   Main batch of extern declarations.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -75,6 +75,13 @@ extern char *big_chunk_start, *big_chunk_end;
 extern uintptr_t *C_stackbase, C_stacklimit;
 
 extern LispObject multiplication_buffer;
+
+#ifdef CONSERVATIVE
+extern void write_barrier(LispObject *p);
+#else // !CONSERVATIVE
+inline void write_barrier(LispObject *p)
+{}
+#endif // !CONSERVATIVE
 
 // An "my_assert" scheme that lets me write in my own code to print the
 // diagnostics.

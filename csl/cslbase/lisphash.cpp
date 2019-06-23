@@ -331,11 +331,14 @@ LispObject Lmkhash_3(LispObject env, LispObject size, LispObject flavour, LispOb
     LispObject v = get_basic_vector_init(6*CELL, nil);
     pop(v2, v1);
     basic_elt(v, HASH_FLAVOUR) = flavour;         // comparison method
+    write_barrier(&basic_elt(v, HASH_FLAVOUR));
     basic_elt(v, HASH_COUNT) = fixnum_of_int(0);  // current number of items stored.
     int shift = 64 - bits;
     basic_elt(v, HASH_SHIFT) = fixnum_of_int(shift);  // 64-log2(table size)
     basic_elt(v, HASH_KEYS) = v1;                 // key table.
+    write_barrier(&basic_elt(v, HASH_KEYS));
     basic_elt(v, HASH_VALUES) = v2;               // value table.
+    write_barrier(&basic_elt(v, HASH_VALUES));
     vechdr(v) ^= (TYPE_SIMPLE_VEC ^ TYPE_HASH);
     return onevalue(v);
 }
@@ -367,11 +370,14 @@ LispObject Lmkhashset(LispObject env, LispObject flavour)
     LispObject v = get_basic_vector_init(6*CELL, nil);
     pop(v1);
     basic_elt(v, HASH_FLAVOUR) = flavour;         // comparison method
+    write_barrier(&basic_elt(v, HASH_FLAVOUR));
     basic_elt(v, HASH_COUNT) = fixnum_of_int(0);  // current number of items stored.
     int shift = 64 - bits;
     basic_elt(v, HASH_SHIFT) = fixnum_of_int(shift);  // 64-log2(table size)
     basic_elt(v, HASH_KEYS) = v1;                 // key table.
+    write_barrier(&basic_elt(v, HASH_KEYS));
     basic_elt(v, HASH_VALUES) = nil;              // value table.
+    write_barrier(&basic_elt(v, HASH_VALUES));
     vechdr(v) ^= (TYPE_SIMPLE_VEC ^ TYPE_HASH);
     return onevalue(v);
 }
@@ -907,7 +913,11 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab, LispObject 
         {   LispObject k = elt(oldkeys, i);
             size_t j = hash_where_to_insert(k);
             ht(j) = k;
-            if (v_table != nil) htv(j) = elt(oldvals, i);
+            write_barrier(&ht(j));
+            if (v_table != nil)
+            {   htv(j) = elt(oldvals, i);
+                write_barrier(&htv(j));
+            }
         }
     }
     else set_hash_operations(tab);
@@ -1064,7 +1074,9 @@ LispObject Lput_hash(LispObject env,
             LispObject oldkeys = basic_elt(tab, HASH_KEYS);
             LispObject oldvals = basic_elt(tab, HASH_VALUES);
             basic_elt(tab, HASH_KEYS) = h_table = newkeys;
+            write_barrier(&basic_elt(tab, HASH_KEYS));
             basic_elt(tab, HASH_VALUES) = v_table = newvals;
+            write_barrier(&basic_elt(tab, HASH_VALUES));
             basic_elt(tab, HASH_SHIFT) = fixnum_of_int(h_shift);
             basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
             for (size_t i=0; i<h_table_size; i++)
@@ -1073,7 +1085,11 @@ LispObject Lput_hash(LispObject env,
                 if (k != SPID_HASHEMPTY && k != SPID_HASHTOMB)
                 {   size_t j = hash_where_to_insert(k);
                     ht(j) = k;
-                    if (v_table != nil) htv(j) = elt(oldvals, i);
+                    write_barrier(&ht(j));
+                    if (v_table != nil)
+                    {   htv(j) = elt(oldvals, i);
+                        write_barrier(&htv(j));
+                    }
                     basic_elt(tab, HASH_COUNT) += 0x10;
                 }
             }
@@ -1110,7 +1126,9 @@ LispObject Lput_hash(LispObject env,
                 if (v_table != nil)
                     v_table = reduce_vector_size(v_table, CELL*(load+1));
                 basic_elt(tab, HASH_KEYS) = h_table;
+                write_barrier(&basic_elt(tab, HASH_KEYS));
                 basic_elt(tab, HASH_VALUES) = v_table;
+                write_barrier(&basic_elt(tab, HASH_VALUES));
             }
             for (size_t i=0; i<h_table_size; i++)
             {   ht(i) = SPID_HASHEMPTY;
@@ -1121,7 +1139,11 @@ LispObject Lput_hash(LispObject env,
             {   LispObject k = elt(oldkeys, i);
                 size_t j = hash_where_to_insert(k);
                 ht(j) = k;
-                if (v_table != nil) htv(j) = elt(oldvals, i);
+                write_barrier(&ht(j));
+                if (v_table != nil)
+                {   htv(j) = elt(oldvals, i);
+                    write_barrier(&htv(j));
+                }
                 basic_elt(tab, HASH_COUNT) += 0x10;
             }
         }
@@ -1133,7 +1155,11 @@ LispObject Lput_hash(LispObject env,
     if (k1 == SPID_HASHEMPTY)
         basic_elt(tab, HASH_COUNT) += 0x10; // Increment count.
     ht(pos) = key;
-    if (v_table != nil) htv(pos) = val;
+    write_barrier(&ht(pos));
+    if (v_table != nil)
+    {   htv(pos) = val;
+        write_barrier(&htv(pos));
+    }
     return onevalue(val);
 }
 
@@ -1159,7 +1185,9 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
         if (v_table != nil)
             v_table = reduce_vector_size(v_table, CELL*(size+1));
         basic_elt(tab, HASH_KEYS) = h_table;
+        write_barrier(&basic_elt(tab, HASH_KEYS));
         basic_elt(tab, HASH_VALUES) = v_table;
+        write_barrier(&basic_elt(tab, HASH_VALUES));
         basic_elt(tab, HASH_SHIFT) = fixnum_of_int(64-4);
     }
     LispObject keys = basic_elt(tab, HASH_KEYS);

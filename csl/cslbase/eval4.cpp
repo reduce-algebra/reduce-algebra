@@ -236,6 +236,7 @@ LispObject nreverse2(LispObject a, LispObject b)
     {   LispObject c = a;
         a = qcdr(a);
         qcdr(c) = b;
+        write_barrier(&qcdr(c));
         b = c;
     }
     return b;

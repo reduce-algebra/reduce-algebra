@@ -49,6 +49,7 @@ LispObject nreverse(LispObject a)
     {   LispObject c = a;
         a = qcdr(a);
         qcdr(c) = b;
+        write_barrier(&qcdr(c));
         b = c;
     }
     return b;
@@ -395,6 +396,9 @@ static LispObject key_lookup(LispObject keyname, LispObject args)
 #define stack_used  15
 // Wow - that looks like a lot of state to be kept on the stack!
 
+// This function is not free-standing - it can intteract with its caller
+// via some of the stack-addresses names show above. Ugh.
+
 inline void instate_binding(LispObject var, LispObject val,
         LispObject local_decs1)
 {   Header h;
@@ -433,6 +437,8 @@ inline void instate_binding(LispObject var, LispObject val,
     }
 }
 
+// arglist is in fact a value on the Lisp stack.
+
 inline LispObject next_arg()
 {   LispObject r = qcar(arglist);
     arglist = qcdr(arglist);
@@ -466,6 +472,13 @@ LispObject apply_lambda(LispObject def, LispObject args,
     if (!consp(def)) return onevalue(nil);    // Should never happen
     stackcheck(def, args, env1, name1);
     w1 = qcar(def);
+//
+// The next fragment is horrible but is here because at present I have a
+// precise garbage collector and all the values set up here (and established
+// via #define above) need to act as list-bases. The exact number and ordering
+// of PUSH operations here must exactly match the #define statements given
+//  earlier.
+//
     push(args);                         // arglist
     push(w1,                           // bvl
           qcdr(def),                    // body
@@ -777,7 +790,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
     return def;
 }
 
-// Get rid of the stack reference short names.
+// Get rid of the stack reference short names. Whew.
 
 #undef w
 #undef p
