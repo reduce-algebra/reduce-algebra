@@ -725,9 +725,11 @@ static const size_t qwordsForMap = bytesForMap/8;
 static const size_t spareBytes = 2*bytesForMap;
 
 // I make some assumptions about the variations on std::atomic<> that I
-// use, but then use static_assert to confirm them or to cause CSL to
-// fail to compile. I believe that my assumptions have a good chance of being
-// satisfied on almost all machines, even though I can imagine architectures
+// use, but then would like to use static_assert to confirm them or to
+// cause CSL to fail to compile. However the test has to be dynamic, so I can
+// at best cause things to fail at system startup. Boo Hiss!
+// I believe that my assumptions have a good chance of being satisfied
+// on almost all machines, even though I can imagine architectures
 // where there may be trouble. But what matters most to me will be x86,
 // x86_64 and both 32 and 64-bit ARM when using g++ or clang, and those will
 // get checked the first time I compile this code on each.
@@ -741,19 +743,33 @@ static const size_t spareBytes = 2*bytesForMap;
 // of size 1, but this is not guaranteed either. So my code is not guaranteed
 // portable! What an amazing situation (ha ha).
 
-static_assert(sizeof(std::atomic<uint8_t>) == 1,
-              "Atomics bytes are too large");
-static assert(std::atomic<uint8_t>().is_lock_free(),
-              "Atomic<uint8_t> not lock-free");
-static assert(std::atomic<uintptr_t>().is_lock_free(),
-              "Atomic<uintptr_t> not lock-free");
+class MakeAssertions
+{
+public:
+    MakeAssertions()
+    {   if (sizeof(std::atomic<uint8_t>) != 1)
+        {   std::cout << "Atomics bytes are too large" << std::endl;
+            std::abort();
+        }
+        if (!std::atomic<uint8_t>().is_lock_free())
+        {   std::cout << "Atomic<uint8_t> not lock-free" << std::endl;
+            std::abort();
+        }
+        if (!std::atomic<uintptr_t>().is_lock_free())
+        {   std::cout << "Atomic<uintptr_t> not lock-free" << std::endl;
+            std::abort();
+        }
+    }
+};
+
+static MakeAssertions test_for_lockfree;
 
 // I am going to require Pages to be aligned at nice neat boundaries
 // because then if I have an arbitrary address within one I will be able to
 // find the page header using a simple AND operation.
 
 union alignas(pageSize) Page
-{   struct
+{   struct PageHeader
     {
 // Pages can be chained through this field, so e.g. there will be a
 // chain of all the pages that are not currently full but that (may)
@@ -768,7 +784,7 @@ union alignas(pageSize) Page
 // fringe and limit values are saved in it so that if an ambiguous
 // pointer refers into the page but indicates an address beyond the fringe
 // it can be ignored.
-        uintpt_t fringe;
+        uintptr_t fringe;
 // To follow on from the above, when a page has been evacuated by the
 // garbage collector fresh values of fringe and limit can be set into it.
 // When the page is selected as a new Nursery these values can be transferred
@@ -789,7 +805,7 @@ union alignas(pageSize) Page
 // be invalidated whenever the mutator runs, and so the information will
 // have to be regenerated at the start of each garbage collection.
         bool onstarts_present;
-    };
+    } pageHeader;
 // Here I need to explain the bit and byte-maps I use and when I use them,
 // and in particular how uses could conflict.
 // To cope with the generational nature of the GC I have a software
@@ -823,8 +839,8 @@ union alignas(pageSize) Page
 // will need to end up setting up pinned bits within all regions where
 // currently live data exists. While setting up those pinned bits I will need
 // object-start information.
-    struct
-    {   union
+    struct PageBody
+    {   union PageBitmaps
         {
 // Whenever I process an ambiguous pointer I need to identify the
 // start address of the object (if any!) that it refers to an address
@@ -839,13 +855,13 @@ union alignas(pageSize) Page
 // where I need to be.
             std::atomic<uint8_t> dirty[2*bytesForMap];
             uint64_t qwordsDirty[2*qwordsForMap];
-            struct
+            struct Maps
             {   uint64_t objstart[qwordsForMap];
                 uint64_t pinned[qwordsForMap];
-            }
-        }
+            } maps;
+        } pageBitmaps;
         LispObject data[(pageSize - spareBytes)/sizeof(LispObject)];
-    };
+    } pageBody;
 };
 
 // First I will give code that implements the write-barrier. It is passed
@@ -860,17 +876,17 @@ void write_barrier(LispObject *p)
  // round down to 8M boundary
     Page *x = reinterpret_cast<Page *>(a & -UINT64_C(0x800000));
 // I mark the page as a whole as containing some regions that are dirty...
-    p->dirtypage.store(true);
+    x->pageHeader.dirtypage.store(true);
 // and then use the offset within the page to mark a 32-byte region as
 // dirty. The map used here is std::atomic<uint8_t>
     uintptr_t offset = a & 0x7fffffU;
-    p->dirty[offset/32].store(1);
+    x->pageBody.pageBitmaps.dirty[offset/32].store(1);
 }
 
 
 
-std::atomic<uintptr_t> fringe;
-std::atomic<uintptr_t> limit;
+std::atomic<uintptr_t> Afringe;
+std::atomic<uintptr_t> Alimit;
 
 // Sometimes when I have a pointer to a page I will be thinking of it as
 // just that single place, while at other times I will be viewing that as
@@ -984,23 +1000,24 @@ bool inScavengablePage(uintptr_t p)
 // notes the start-point of objects. This function does that for one page.
 
 void recordObjectStarts(Page *x)
-{   memset(x->objstart, 0, sizeof(x->objstart));
-    LispObject *p = &x->data;
+{   memset(x->pageBody.pageBitmaps.maps.objstart, 0,
+           sizeof(x->pageBody.pageBitmaps.maps.objstart));
+    LispObject *p = x->pageBody.data;
 // @@ The version I have here does not yet allow fror the fact that the
 // data region within the page will have some pinned objects in and they
 // will all need object start tags set - and that fringe may be the
 // current level of allocation but the way that interacts with interleaved
 // pinned items is not really considered.
-    while (reinterpret_cast<uintptr_t>(p) < x->fringe)
+    while (reinterpret_cast<uintptr_t>(p) < x->pageHeader.fringe)
     {   size_t os = (reinterpret_cast<uintptr_t>(p) -
                      reinterpret_cast<uintptr_t>(x))/8;
-        x->objstart[os/64] |= UINT64_C(1)<<(os%64);
+        x->pageBody.pageBitmaps.maps.objstart[os/64] |= UINT64_C(1)<<(os%64);
         LispObject v = *p;
         if (!is_odds(v)) p += 2;
-        else if (is_symbol_header(v)) p += symmhdr_length/sizeof(LispObject);
+        else if (is_symbol_header(v)) p += symhdr_length/sizeof(LispObject);
         else p += doubleword_align_up(length_of_header(v))/sizeof(LispObject);
     }
-    x->onstarts_present = true;
+    x->pageHeader.onstarts_present = true;
 }
 
 #ifdef __GNUC__
@@ -1044,8 +1061,8 @@ inline int nlz(uint64_t x)
 uintptr_t findObjectStart(uintptr_t p, Page *x)
 {
 // First check if p is actually within the (active) data region in the page.
-    if (p < reinterpret_cast<uintptr_t>(&x->data) ||
-        p >= reinterpret_cast<uintptr_t>x->fringe) return 0;
+    if (p < reinterpret_cast<uintptr_t>(x->pageBody.data) ||
+        p >= reinterpret_cast<uintptr_t>(x->pageHeader.fringe)) return 0;
 // Now, and I have NOT done this yet, I shoule cope with the case where p
 // points within an item that had been pinned within page x by an earlier
 // GC.
@@ -1059,12 +1076,13 @@ uintptr_t findObjectStart(uintptr_t p, Page *x)
 // pointer p is just to the start of an object with at most a tag value
 // added. My division by 8 a few lines above disarded those low bits, so
 // I will see if what I end up with is in fact a proper object start.
-    if ((x->objstart[word] & (UINT64_C(1)<<bit)) != 0)
+    if ((x->pageBody.pageBitmaps.maps.objstart[word] & (UINT64_C(1)<<bit)) != 0)
         return p & -(uintptr_t)8;
 // The next case I will consider is if the object header is fairly close
 // to p, and the word in the bitmap that covers p includes mention of it.
     if (bit != 0)
-    {   uint64_t v = (UINT64_C(1)<<bit - 1) & x->objstart[word];
+    {   uint64_t v = ((UINT64_C(1)<<bit) - 1) &
+                     x->pageBody.pageBitmaps.maps.objstart[word];
 // Now v records any headers just before p.
         if (v != 0)
         {   int n = 63-nlz(v);
@@ -1084,7 +1102,7 @@ uintptr_t findObjectStart(uintptr_t p, Page *x)
 // (specifically VECTOR_CHUNK_BYTES), and this sets the worst case distance
 // that it can ever be necessary to scan to find an object start.
     word--;
-    while (x->objstart[word] == 0) word--;
+    while (x->pageBody.pageBitmaps.maps.objstart[word] == 0) word--;
 // The loop must terminate because any page either has no data in it at all,
 // and in that case an ambiguous pointer will be detected as invalid because
 // it addresses above fringe, or it will have at least one item in it,
@@ -1094,7 +1112,7 @@ uintptr_t findObjectStart(uintptr_t p, Page *x)
 // very first item in the page has that status. Anyway when I find a nonzero
 // entry in the map the top bit it identifies the highest-addressed object
 // start, and that is what I want.
-    int n = 63-nlz(x->objstart[word]);
+    int n = 63-nlz(x->pageBody.pageBitmaps.maps.objstart[word]);
     return reinterpret_cast<uintptr_t>(x) + 8*(word*64 + n);
 }
 
@@ -1106,11 +1124,11 @@ uintptr_t findObjectStart(uintptr_t p, Page *x)
 void setPinnedMajor(uintptr_t p)
 {   Page *x = findPage(p);
     if (x == NULL) return;
-    if (!x->onstarts_present) recordObjectStarts(x);
+    if (!x->pageHeader.onstarts_present) recordObjectStarts(x);
     uintptr_t os = findObjectStart(p, x);
-    if (os == NULL) return;
+    if (os == 0) return;
     os = (os - reinterpret_cast<uintptr_t>(scavengablePage))/8;
-    scavengablePage->pinned[os/64] |= UINT64_C(1)<<(os%64);
+    scavengablePage->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
 }
 
 // At the start of a minor garbage collection it it is necessary to call
@@ -1119,7 +1137,7 @@ void setPinnedMajor(uintptr_t p)
 // conditionally on each case where a pointer (seems to) refer to that region.
 
 void recordObjectStartsMinor()
-{   recordObjectStarts(scavengable);
+{   recordObjectStarts(scavengablePage);
 }
 
 // Set a pinned bit for an address if it lies within the single scavengable
@@ -1132,25 +1150,26 @@ void setPinnedMinor(uintptr_t p)
 // Find the object within the page that it is within, or return NULL if none.
 // This will always return a value that is an address aligned zero mod 8.
     uintptr_t os = findObjectStart(p, scavengablePage);
-    if (os == NULL) return;
+    if (os == 0) return;
 // Now I set a bit in the pinned map.
     os = (os - reinterpret_cast<uintptr_t>(scavengablePage))/8;
-    scavengablePage->pinned[os/64] |= UINT64_C(1)<<(os%64);
+    scavengablePage->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
 }
 
 // Just to provide a level of abstraction I provide a function that clears
-the pinned map in a page. At the start of a minor collection this should
+// the pinned map in a page. At the start of a minor collection this should
 // be called on the scavengable region. Before a major collection on all
 // pages.
 
-clearPinnedMap(Page *x)
-{   memset(x->pinned_bitmap, 0, sizeof(x->pinned_bitmap));
+void clearPinnedMap(Page *x)
+{   memset(x->pageBody.pageBitmaps.maps.pinned, 0,
+           sizeof(x->pageBody.pageBitmaps.maps.pinned));
 }
 
 //@@@@@@@@@@@@
 
 
-A page starts with a header and one or two bitmaps and then its
+// A page starts with a header and one or two bitmaps and then its
 // data region. I will just discuss the data region here.
 // The data region may be disrupted with some pinned items within in, and
 // those pinned items must be worked around during allocation. Each clump on

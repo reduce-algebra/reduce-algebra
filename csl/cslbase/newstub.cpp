@@ -1,24 +1,14 @@
-// stub.cpp                                       Copyright A C Norman 2014
+// newstub.cpp                                    Copyright A C Norman 2019
 //
 
-// The object of this code is to have several binaries embedded in it and
-// it picks one, copies it to disc on a temporary file and from there
-// it can execute it. It decides which to use based on whether it finds
-// that the system being run on is 64-bit capable and whether it ought to
-// use a cygwin version to interact with a cygwin console using unix-style
-// calls to set raw mode and ncurses to move around the screen. It also
-// takes a view as to when it should use a cygwin version so that although
-// it is running on windows it can use an X11 display: it may do that
-// if it finds the environment variable DISPLAY set or it discovers that it
-// is being run on a windows host that is being accessed over ssh. When these
-// special cases do not apply it will run a native windows version,
-//
-// An accompanying program "addresource.c" is used to add extra bodies
-// of code to a compiled version of this.
+// The object of this code is to be able to launch one of several binaries
+// that are places in a directory adjacent to it. The one it picks
+// should suit the context within which this program is run - 32 or 64 bit,
+// Cygwin or native Windows.
 
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2019, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -51,8 +41,8 @@
 
 // This should be compiled with one of the following symbols predefined:
 //   FAT32    isatty32 w32 cyg32
-//   FAT64    isatty32 isatty64 w32 w64 cyg32 cyg64
-//   FATGUIDEMO  as FAT64 for now, but should only launch in gui mode
+//   FAT64    isatty64 w64 cyg64
+//   FAT3264  isatty32 isatty64 w32 w64 cyg32 cyg64
 //   FATWIN   win32 win64
 
 
@@ -69,97 +59,12 @@
 #include <zlib.h>
 
 
-//
-// The compression parts of this code are modelled on.......
-//
-// zpipe.c: example of proper use of zlib's inflate() and deflate()
-// Not copyrighted -- provided to the public domain
-// Version 1.4  11 December 2005  Mark Adler
-//
-
-// Using a large buffer for decompression is expected to speed things
-// up, so here I use 256 Kbytes.
-
-#define CHUNK 0x40000
-
-//
-// Decompress from file source to file dest until stream ends or EOF.
-// inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be
-// allocated for processing, Z_DATA_ERROR if the deflate data is
-// invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
-// the version of the library linked do not match, or Z_ERRNO if there
-// is an error reading or writing the files.
-//
-
-int inf(FILE *source, FILE *dest, int length)
-{
-    int ret;
-    unsigned have;
-    z_stream strm;
-    unsigned char in[CHUNK];
-    unsigned char out[CHUNK];
-
-    // allocate inflate state
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    strm.avail_in = 0;
-    strm.next_in = Z_NULL;
-    ret = inflateInit(&strm);
-    if (ret != Z_OK)
-        return ret;
-
-    // decompress until deflate stream ends or end of file or given
-    // number of bytes have been written.
-    do {
-        strm.avail_in = fread(in, 1, CHUNK, source);
-        if (ferror(source))
-        {   (void)inflateEnd(&strm);
-            return Z_ERRNO;
-        }
-        if (strm.avail_in == 0) break;
-        strm.next_in = in;
-
-        // run inflate() on input until output buffer not full
-        do
-        {   strm.avail_out = CHUNK;
-            strm.next_out = out;
-            ret = inflate(&strm, Z_NO_FLUSH);
-            assert(ret != Z_STREAM_ERROR);  // state not clobbered
-            switch (ret)
-            {
-            case Z_NEED_DICT:
-                ret = Z_DATA_ERROR;     // and fall through
-            case Z_DATA_ERROR:
-            case Z_MEM_ERROR:
-                (void)inflateEnd(&strm);
-                return ret;
-            }
-            have = CHUNK - strm.avail_out;
-            if (have > length) have = length;
-            if (fwrite(out, 1, have, dest) != have || ferror(dest))
-            {   (void)inflateEnd(&strm);
-                return Z_ERRNO;
-            }
-            length -= have;
-            if (length == 0) break;
-        } while (strm.avail_out == 0);
-
-        // done when inflate() says it's done
-    } while ((length != 0) && (ret != Z_STREAM_END));
-
-    // clean up and return 
-    (void)inflateEnd(&strm);
-    return ret == (Z_STREAM_END && length == 0) ? Z_OK : Z_DATA_ERROR;
-}
-
-
 #if defined FAT32
 
 // A fat 32 bit binary can be run under either native windows or
 // 32-bit cygwin. Since it is a linked as a console mode application
 // it is not suitable for launching by double-clicking. This is
-// going to be usefully smaller than the FAT64 binary, but whether the
+// going to be usefully smaller than the FAT3264 binary, but whether the
 // space saving makes the extra complication of having this one available
 // is yet to be determined!
 
@@ -168,7 +73,21 @@ int inf(FILE *source, FILE *dest, int length)
 #define MODULE_WIN32       1
 #define MODULE_CYG32       2
 
-#elif defined FAT64 || defined FATGUIDEMO
+#elif defined FAT64
+
+// A fat 64 bit binary can be run under either native windows or
+// 64-bit cygwin. Since it is a linked as a console mode application
+// it is not suitable for launching by double-clicking. This is
+// going to be usefully smaller than the FAT3264 binary, but whether the
+// space saving makes the extra complication of having this one available
+// is yet to be determined!
+
+#define NUMBER_OF_MODULES  3
+#define MODULE_ISATTY64    0
+#define MODULE_WIN64       1
+#define MODULE_CYG64       2
+
+#elif defined FAT3264
 
 // A fat 64 bit binary is the full works, supporting either 32 or 64-bit
 // usage either under native windows or either 32 or 64-bit cygwin, To
@@ -186,7 +105,7 @@ int inf(FILE *source, FILE *dest, int length)
 #elif defined FATWIN
 
 // A fat windows binary is linked as a windows application and as such
-// is not useful for launching from a console - but it is good for
+// is not useful for launching from a console or cygwin - but it is good for
 // double-clicking on. The version here will take advantage of 64-bit
 // windows if run in that context.
 
@@ -279,118 +198,19 @@ int RunResource(int index, int forcegui, const char *modulename)
     printf("my name is %s\n", pPath);
     fflush(stdout);
 #endif
-    src = fopen(pPath, "rb");
-    if (src == NULL) return ERROR_UNABLE_TO_OPEN_SELF;
-    fseek(src, -16*(NUMBER_OF_MODULES+1), SEEK_END);
-// The way I put "resources" in a file puts a header word before
-// a table and a trailer word after it. These form some sort of
-// signature to confirm that the file is in a good state. If either
-// is not found I exit.
-    if ((hdr = read8(src)) != 0x1234567887654321LL)
-        return ERROR_BAD_LEADER;
-    for (i=0; i<NUMBER_OF_MODULES; i++)
-    {   address[i] = read8(src);
-        length[i] = read8(src);
-#ifdef DEBUG_SHOW_MODULES
-        printf("Module %d at %" PRIx64 " has length %"
-               PRId64 " = %#" PRIx64 "\n",
-               i, address[i], length[i], length[i]);
-        fflush(stdout);
-#endif
-    }
-    if ((hdr = read8(src)) != 0x8765432112345678LL)
-        return ERROR_BAD_TRAILER;
-// Now I want a temporary file that I can put the unpacked executable
-// into. Note that GetTempPath() will not guarantee that the directory
-// it points me to is writable! In case of trouble I fall back to creating
-// the temporary files that I need in whatever is the current directory.
-//
-// One thing that concerns me here is the possibility that some antivirus
-// programs might object to attempts to launch executables out of a
-// temporary directory... sufficiently agressive behaviour of that kind
-// could cause real misery to me here. I have McAfee running on my
-// Windows machine and seem to be OK...
-//
-    DWORD path = GetTempPath(sizeof(pPath), pPath);
-    if (path ==0 || path > sizeof(pPath)-14)
-        strcpy(pPath, ".\\"); // Try to use currect directory
-// Now pPath holds a directory, with a "\" character at the end...
-//
-// I can not use most of the functions I would like to to create the
-// file name because most do not allow me to specify a suffix, and I
-// would like the name to be "something.exe". So I do it all myself.
-    DWORD myid = GetProcessId(GetCurrentProcess());
-    SYSTEMTIME t0;
-    GetSystemTime(&t0);
-// Here I create a number that depends on the date and time of day as
-// well as on my process number. Using this in the generated file name
-// can not guarantee to avoid clashes. but it will at least help.
-    int k = (t0.wMilliseconds + 1000*t0.wSecond) +
-            314159*(int)time(NULL) +
-            2718281*(int)myid;
-    char *fname = pPath + strlen(pPath);
-// I will try ten times in the temporary directory found above, and if
-// all those attempts fail I will try another 10 times in the current
-// directory. If all those fail I will give up.
-    int tries = 0;
-    for (;;k=69069*k+1, tries++)
-    {   if (tries == 10)
-        {   strcpy(pPath, ".\\");
-            fname = pPath + strlen(pPath);
-        }
-        else if (tries == 20) return ERROR_NO_TEMP_FILE;
-// The file-name I create is in the form "Txxxxxxx.exe" with 7 hex digits
-// in place of the "x" characters. If my first attempt fails I will
-// make my next probe increases the hex constant in the spirit of a 32-bit
-// linear congruential pseudo-random sequence in the expectation that that
-// would tend to reduce clustering. That really ought not to matter!
-        sprintf(fname, "T%.7x.exe", k & 0xfffffff);
-// This use of CreateFile arranges that the file opened is guaranteed
-// to be new. This is just what I want.
-        HANDLE h = CreateFile(
-            pPath,                 // name
-            GENERIC_WRITE,         // access
-            0,                     // shared
-            NULL,                  // security attributes
-            CREATE_NEW,            // creation disposition
-            FILE_ATTRIBUTE_NORMAL, // flags & attributes
-            NULL);                 // template file
-        if (h == INVALID_HANDLE_VALUE) continue;
-// I want to write to the file using a C style FILE object so I convert
-// from a Windows handle to one of those - in two steps.
-        int ch = _open_osfhandle((intptr_t)h, 0);
-        if (ch == -1)
-        {   CloseHandle(h);
-            DeleteFile(pPath);
-            continue;
-        }
-        dest = fdopen(ch, "wb");
-        if (dest == NULL)
-        {   close(ch);
-            DeleteFile(pPath);
-            continue;
-        }
-        break;
-    }
+    char *lastsep = strrchr(pPath, '\\');
+    sprintf(lastsep, "\\reduce.dir\\%s", modulename);
 #ifdef DEBUG
-    printf("File will be <%s>\n", pPath);
+    printf("Code to run %s\n", pPath);
+    fflush(stdout);
 #endif
-    fseek(src, address[index], SEEK_SET);
-// Decompress the relevant resource into the new file.
-    inf(src, dest, length[index]);
-    fclose(src);
-    fclose(dest);
-    chmod(pPath, 0755); // Make executable
-
     const char *cmd = GetCommandLine();
     char *cmd1 = (char *)malloc(strlen(cmd) + 12);
     if (cmd1 == NULL)
     {   printf("No memory for new command line\n"); fflush(stdout);
-        DeleteFile(pPath);
         return ERROR_NO_MEMORY;
     }
     strcpy(cmd1, cmd);
-//
 // Now a rather horrible mess. I will have several versions of Reduce
 // created here
 //     reduce.exe       the general one
@@ -406,7 +226,6 @@ int RunResource(int index, int forcegui, const char *modulename)
 // name of the file that the application was actually launches from since
 // the latter is the weird temporary file I just created.
 // [Hmm - the naming conventions here need review...]
-//
     if (forcegui) strcat(cmd1, " --gui");
 
     STARTUPINFO peStartUpInformation;
@@ -439,7 +258,6 @@ int RunResource(int index, int forcegui, const char *modulename)
         fflush(stdout);
         CloseHandle(peProcessInformation.hProcess);
         CloseHandle(peProcessInformation.hThread);
-        DeleteFile(pPath);
         return rc;
     }
     else
@@ -460,7 +278,6 @@ int RunResource(int index, int forcegui, const char *modulename)
         printf("CreateProcess failed (%d): %s\n", dw, lpMsgBuf);
         fflush(stdout);
 #endif
-        DeleteFile(pPath);
         return ERROR_CREATEPROCESS;
     }
 }
@@ -509,9 +326,9 @@ void dllcheck(const char **table)
     }
 }
 
+
 int main(int argc, char* argv[])
 {
-//
 // The logic here starts by collecting information as to whether I am being
 // run in a context where things have access to a console.
 // This will NOT be the case if the code is run from mintty (the current
@@ -630,15 +447,17 @@ int main(int argc, char* argv[])
 // windows binaries.
 //
         int rc = -1;
-#if defined FAT64 || defined FATGUIDEMO
+#if defined FAT64 || defined FAT3264
         if (wow64) rc = RunResource(MODULE_ISATTY64, 0, "isatty64");
 #endif // FAT64
+#ifndef FAT64
         if (rc != 0)
         {   rc = RunResource(MODULE_ISATTY32, 0, "isatty32");
-#if defined FAT64 || defined FATGUIDEMO
+#if defined FAT3264
             if (rc == 0) cygwin32 = 1;
-#endif // FAT64
+#endif // FAT3264
         }
+#endif // FAT64
 // If one of stdin or stdout is not connected to a cygwin console there is
 // no point in trying to use cygwin at all. That is unless the user is
 // explicitly forcing things. If the user specified "--cygwin" and does
@@ -687,19 +506,23 @@ int main(int argc, char* argv[])
 //
     switch ((wow64<<4) | possibly_under_cygwin)
     {
+#ifndef FAT64
     case 0x00:
         return RunResource(MODULE_WIN32, forcegui, "win32");
+#endif
 #ifndef FAT32
     case 0x10:
         return RunResource(MODULE_WIN64, forcegui, "win64");
 #endif
 #ifndef FATWIN
+#ifndef FAT64
     case 0x01:
         rc = RunResource(MODULE_CYG32, forcegui, "cyg32");
         if (rc != 0)
         {   dllcheck(dll32);
         }
         return rc;
+#endif
 #ifndef FAT32
     case 0x11:
         rc = RunResource(MODULE_CYG64, forcegui, "cyg64");
@@ -714,4 +537,4 @@ int main(int argc, char* argv[])
     }
 }
 
-// End of stub.cpp
+// End of newstub.cpp
