@@ -147,10 +147,10 @@ Name: "{group}\CSL Reduce"; Filename: "{app}\lib\csl\winreduce.exe"; WorkingDir:
 Name: "{group}\CSL Bootstrap Reduce"; Filename: "{app}\lib\csl\bootstrapreduce.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: csl
 Name: "{group}\CSL Lisp system"; Filename: "{app}\lib\csl\wincsl.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: csl
 Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{app}\lib\psl\psl\bpslw.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: psl32 psl64
-Name: "{group}\Reduce Manual (PDF version)"; Filename: "{app}\lib\csl\reduce.doc\manual.pdf ; Components: common
-Name: "{group}\Reduce Manual (HTML version)"; Filename: "{app}\lib\csl\reduce.doc\manual.html ; Components: common
-Name: "{group}\Reduce Symbolic Mode Primer"; Filename: "{app}\doc\primer.pdf ; Components: common
-Name: "{group}\Standard Lisp Report"; Filename: "{app}\doc\sl.pdf ; Components: common
+Name: "{group}\Reduce Manual (PDF version)"; Filename: "{app}\lib\csl\reduce.doc\manual.pdf" ; Components: common
+Name: "{group}\Reduce Manual (HTML version)"; Filename: "{app}\lib\csl\reduce.doc\manual.html" ; Components: common
+Name: "{group}\Reduce Symbolic Mode Primer"; Filename: "{app}\doc\primer.pdf" ; Components: common
+Name: "{group}\Standard Lisp Report"; Filename: "{app}\doc\sl.pdf" ; Components: common
 
 
 [Run]
