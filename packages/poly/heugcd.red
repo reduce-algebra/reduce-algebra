@@ -53,14 +53,21 @@ global '(!!ee);
 
 % ****************** Various polynomial utilities **********************
 
-symbolic inline procedure univariatep p; univariatep1(p,mvar p);
+% The following two procedures are defined differently in primfac.red.
+% Those below overwrite the latter now that this file has been moved
+% into poly and added to the end of the poly create!-package list.
+% Those below break roots.tst and groebner.tst, so I have commented
+% them out for now, which fixes roots and groebner (but might break
+% heugcd!).  FJW, 26/06/2019.
 
-symbolic procedure univariatep1(p,v);
-% checks that p is univariate in v;
-   if atom p then t
-   else if mvar p neq v then nil
-   else if atom lc p then univariatep1(red p,v)
-   else nil;
+% symbolic inline procedure univariatep p; univariatep1(p,mvar p);
+
+% symbolic procedure univariatep1(p,v);
+% % checks that p is univariate in v;
+%    if atom p then t
+%    else if mvar p neq v then nil
+%    else if atom lc p then univariatep1(red p,v)
+%    else nil;
 
 symbolic procedure htc p;
    if atom p then p
@@ -336,7 +343,7 @@ loop:
    value:=next!-even!-value value;
    k:=k+1;
    if k < 10 then goto loop;
-   
+
    if !*ezgcd then
      rederr "heu-gcd failed -- EZGCD ON"
    else <<
