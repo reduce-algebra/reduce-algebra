@@ -28,10 +28,9 @@ module frames;
 
 global '(basisforml!* basisvectorl!* keepl!* naturalframe2coframe
          dbaseform2base2form dimex!* indxl!* naturalvector2framevector
-         metricd!* metricu!* coord!* cursym!* detm!*
-         commutator!-of!-framevectors);
+         coord!* cursym!* detm!* commutator!-of!-framevectors);
 
-fluid '(alglist!* indl kord!* subfg!*);   % indl needed by Common Lisp.
+fluid '(metricd!* metricu!* alglist!* indl kord!* subfg!*); % indl needed by Common Lisp.
 
 symbolic procedure coframestat;
    begin scalar framel,metric;
@@ -93,7 +92,7 @@ symbolic procedure cofram(u,v);
   end;
 
 symbolic procedure coframe1 u;
-   begin scalar osubfg,scoord,v,y,w;
+   begin scalar osubfg,scoord,v,y,w,metricu!*,metricd!*;
      osubfg := subfg!*;
      subfg!* := nil;
      v := for each j in u collect

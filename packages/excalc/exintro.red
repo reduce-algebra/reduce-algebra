@@ -26,11 +26,11 @@ module exintro;
 %
 
 
-fluid '(depl!*);
+fluid '(depl!* metricd!* metricu!*);
 
 global '(dimex!* lftshft!* detm!* basisforml!* sgn!* wedgemtch!*
          bndeq!* basisvectorl!* indxl!* nosuml!* !*nosum coord!*
-         keepl!* metricd!* metricu!* !*product!-rule);
+         keepl!* !*product!-rule);
 
 % Some initialiations.
 

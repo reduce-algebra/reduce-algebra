@@ -27,13 +27,13 @@ module indices;
 
 
 fluid '(!*exp !*msg !*nat !*sub2 alglist!* fancy!-pos!* fancy!-line!*
-        frasc!* subfg!*);
+        frasc!* subfg!* metricd!* metricu!*);
 
 global '(mcond!*);
 
 global '(basisforml!* basisvectorl!* keepl!* naturalframe2coframe
          dbaseform2base2form dimex!* indxl!* naturalvector2framevector
-         metricd!* metricu!* coord!* cursym!* detm!* !*nosum
+         coord!* cursym!* detm!* !*nosum
          nosuml!* commutator!-of!-framevectors);
 
 symbolic procedure indexeval(u,v);

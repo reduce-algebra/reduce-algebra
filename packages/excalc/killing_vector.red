@@ -25,7 +25,9 @@ module killingvec;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-global '(basisforml!* basisvectorl!* metricd!* naturalvector2framevector);
+fluid '(metricd!*);
+
+global '(basisforml!* basisvectorl!* naturalvector2framevector);
 
 symbolic procedure killing_vector kname;
    % Sets up the pde's for a Killing vector.
