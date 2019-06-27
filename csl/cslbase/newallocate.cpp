@@ -5,6 +5,43 @@
 // or a run and significant aspects of garbage collection.
 //
 
+
+// Development game-plan for this stuff - showing the steps or stages
+// to go through:
+// (1) Work towards being able to allocate vectors and lists and
+//     set up an initial large chunk of memory. Hope that the code in
+//     restart.cpp for a cost start can be got working again.
+// (2) Test a bit of execution that can happen eithout garbage collection.
+//     I rather hope that PRESERVE will then "just work", and that will
+//     let me build a csl.img
+// (3) Arrange that every garbage collection will be a major one and
+//     re-work the allocation and re-allocation of memory blocks for that.
+//     By keeping the code with precise list-bases for everything that
+//     matters the ambiguous pointers should never be the only reason
+//     for saving any data - they just pin things and hance mess up memory
+//     layout. Get that version of GC working. Note that write barriers
+//     may collect information but it is never used!
+// (4) Make some collections minor ones, thus needing to cope with the
+//     consequences of the write barrier.
+// (5) Put in explicit test cases for data that is only preserved via an
+//     ambiguous list-base.
+// (6) Thread-synchronization for GC entry.
+// (7) Thread-local support for fluid bindings, and simple code in the Lisp
+//     for creating threads, even though almost everything is not thread-safe.
+// (8) [in various orders] get rid of push/pop stuff if the main code in
+//     favour of just letting conservative memory management cope. And
+//     migrate more status to thread-local and/or protect it with critical
+//     regions.
+// (9) Fix ccomp.red and bytes2.cpp regarding new treatment of fluids and
+//     for thread safety.
+// (10)Protection of blocking calls so that GC can still happen.
+
+
+// Well by the time I have got started at all on that list the issue of
+// the exact sequence towards the end will become clearer! Really it is the
+// first 3 that are my initial plan.
+
+
 /**************************************************************************
  * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
@@ -406,50 +443,6 @@ LispObject rplaca2(LispObject a, LispObject b)
 // Take the block that was scavengable and identify all the pinned
 // regions within it. Built a sort of free-list showing the blocks that
 // are actually free and re-classify the region as Free.
-
-extern std::atomic<LispObject *> fringe;
-extern std::atomic<LispObject *> limit;
-
-extern std::atomic<LispObject *> vfringe;
-extern std::atomic<LispObject *> vlimit;
-
-std::mutex gc_mutex;
-extern LispObject *gc_and_allocate(LispObject *r, size_t n);
-extern void gc_elsewhere();
-
-LispObject cons(LispObject a, LispObject b)
-{   LispObject *result = fringe.fetch_add(2);
-    if (fringe.load() >= limit.load())
-        result = gc_and_allocate(result, 2);
-    result[0] = a;
-    result[1] = b;
-    return TAG_CONS+reinterpret_cast<LispObject>(result);
-}
-
-// In the fullness of time I will need to arrange for both vectors
-// containing Lisp object-references and ones that hold raw binary data:
-// for now I will not deal with that!
-
-LispObject getvec(size_t n)
-{   LispObject *result = fringe.fetch_add(n);
-    if (fringe.load() >= limit.load())
-        result = gc_and_allocate(result, n);
-    result[0] = TAG_HDR_IMMED + (n<<4); // size packed into header word
-// Only the header word is filled in here.
-    return TAG_VECTOR+reinterpret_cast<LispObject>(result);
-}
-
-// It will be important to call this frequently because when one thread
-// observes that it needs to garbage collect all other threads must be
-// paused. Any other that calls cons() or getvec() will pause there, but
-// code in a loop that did not allocate memory could cause an unbounded
-// delay unless this is called such that the loop can be interrupred.
-// Extra steps will be needed when library calls that might block are
-// made, but details of that belong elsewhere.
-
-void poll()
-{   if (fringe.load() >= limit.load()) gc_elsewhere();
-}
 
 
 #endif // 0
@@ -883,7 +876,10 @@ void write_barrier(LispObject *p)
     x->pageBody.pageBitmaps.dirty[offset/32].store(1);
 }
 
-
+// I make the fringe and limit pointers uintptr_t types because that
+// way I can be certain how arithmetic baheves. I will need to cast to
+// pointer types when I want to read or write the memory that they address.
+// Obviously!
 
 std::atomic<uintptr_t> Afringe;
 std::atomic<uintptr_t> Alimit;
@@ -1166,6 +1162,300 @@ void clearPinnedMap(Page *x)
            sizeof(x->pageBody.pageBitmaps.maps.pinned));
 }
 
+std::mutex gc_mutex;
+extern LispObject *gc_and_allocate(uintptr_t r, size_t n);
+extern void gc_from_poll();
+
+LispObject get_n_bytes(size_t n)
+{   size_t n1 = doubleword_align_up(n);
+    uintptr_t result = Afringe.fetch_add(n1);
+    if (Afringe.load() >= Alimit.load())
+        result = gc_and_allocate(result, n);
+    return reinterpret_cast<LispObject>(result);
+}
+
+// It will be important to call this frequently because when one thread
+// observes that it needs to garbage collect all other threads must be
+// paused. Any other that calls cons() or getvec() will pause there, but
+// code in a loop that did not allocate memory could cause an unbounded
+// delay unless this is called such that the loop can be interrupred.
+// Extra steps will be needed when library calls that might block are
+// made, but details of that belong elsewhere.
+
+void poll()
+{   if (Afringe.load() >= Alimit.load()) gc_from_poll();
+}
+
+
+LispObject cons(LispObject a, LispObject b)
+{   LispObject r = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+    qcar(r) = a;
+    qcdr(r) = b;
+    return r;
+}
+
+// With the conservative collector I maybe do not need to avoid garbage
+// collection on any particular individual uses of cons().
+
+LispObject cons_no_gc(LispObject a, LispObject b)
+{   return cons(a, b);
+}
+
+LispObject cons_gc_test(LispObject p)
+{   return p;
+}
+
+LispObject ncons(LispObject a)
+{   LispObject r = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+    qcar(r) = a;
+    qcdr(r) = nil;
+    return r;
+}
+
+// Here I can wonder if there is a good way to save overhead by allocating
+// both cells as one operation...
+
+LispObject list2(LispObject a, LispObject b)
+{   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+    LispObject r2 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+    qcar(r1) = a;
+    qcar(r2) = b;
+    qcdr(r1) = r2;
+    qcdr(r2) = nil;
+    return r1;
+}
+
+LispObject list2star(LispObject a, LispObject b, LispObject c)
+{   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
+    LispObject r2 = r1 + 2*sizeof(LispObject);
+    qcar(r1) = a;
+    qcar(r2) = b;
+    qcdr(r1) = r2;
+    qcdr(r2) = c;
+    return r1;
+}
+
+LispObject list2starrev(LispObject c, LispObject b, LispObject a)
+{   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
+    LispObject r2 = r1 + 2*sizeof(LispObject);
+    qcar(r1) = a;
+    qcar(r2) = b;
+    qcdr(r1) = r2;
+    qcdr(r2) = c;
+    return r1;
+}
+
+LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
+{   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
+    LispObject r2 = r1 + 2*sizeof(LispObject);
+    LispObject r3 = r2 + 2*sizeof(LispObject);
+    qcar(r1) = a;
+    qcar(r2) = b;
+    qcar(r3) = c;
+    qcdr(r1) = r2;
+    qcdr(r2) = r3;
+    qcdr(r3) = d;
+    return r1;
+}
+
+LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
+{   LispObject r1 = get_n_bytes(8*sizeof(LispObject)) + TAG_CONS;
+    LispObject r2 = r1 + 2*sizeof(LispObject);
+    LispObject r3 = r2 + 2*sizeof(LispObject);
+    LispObject r4 = r3 + 2*sizeof(LispObject);
+    qcar(r1) = a;
+    qcar(r2) = b;
+    qcar(r3) = c;
+    qcar(r4) = d;
+    qcdr(r1) = r2;
+    qcdr(r2) = r3;
+    qcdr(r3) = r4;
+    qcdr(r4) = nil;
+    return r1;
+}
+
+
+
+LispObject acons(LispObject a, LispObject b, LispObject c)
+{   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
+    LispObject r2 = r1 + 2*sizeof(LispObject);
+    qcar(r1) = r2;
+    qcar(r2) = a;
+    qcdr(r1) = c;
+    qcdr(r2) = b;
+    return r1;
+}
+
+LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
+{   return acons(a, b, c);
+}
+
+LispObject list3(LispObject a, LispObject b, LispObject c)
+{   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
+    LispObject r2 = r1 + 2*sizeof(LispObject);
+    LispObject r3 = r2 + 2*sizeof(LispObject);
+    qcar(r1) = a;
+    qcar(r2) = b;
+    qcar(r3) = c;
+    qcdr(r1) = r2;
+    qcdr(r2) = r3;
+    qcdr(r3) = nil;
+    return r1;
+}
+
+LispObject list3rev(LispObject c, LispObject b, LispObject a)
+{   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
+    LispObject r2 = r1 + 2*sizeof(LispObject);
+    LispObject r3 = r2 + 2*sizeof(LispObject);
+    qcar(r1) = a;
+    qcar(r2) = b;
+    qcar(r3) = c;
+    qcdr(r1) = r2;
+    qcdr(r2) = r3;
+    qcdr(r3) = nil;
+    return r1;
+}
+
+LispObject Lcons(LispObject, LispObject a, LispObject b)
+{   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+    qcar(r1) = a;
+    qcdr(r1) = b;
+    return onevalue(r1);
+}
+
+LispObject Lxcons(LispObject, LispObject a, LispObject b)
+{   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+    qcar(r1) = b;
+    qcdr(r1) = a;
+    return onevalue(r1);
+}
+
+LispObject Lnilfn(LispObject)
+{   return onevalue(nil);
+}
+
+LispObject Lncons(LispObject env, LispObject a)
+{   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+    qcar(r1) = a;
+    qcdr(r1) = nil;
+    return onevalue(r1);
+}
+
+LispObject get_symbol(bool gensymp)
+{   return get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+}
+
+LispObject get_basic_vector(int tag, int type, size_t size)
+{
+// tag is the value (e.g. TAG_VECTOR) that will go in the low order
+// 3 bits of the pointer result.
+// type is the code (e.g. TYPE_STRING) that gets packed, together with
+// the size, into a header word.
+// size is measured in bytes and must allow space for the header word.
+// [Note that this last issue - size including the header - was probably
+// a mistake since the header size depends on whether I am using a
+// 32-bit or 64-bit representation. However it would be hard to unwind
+// that now!]
+//
+//@@    for (;;)
+    {   size_t alloc_size = (size_t)doubleword_align_up(size);
+// Basic vectors must be smaller then the CSL page size.
+        if (alloc_size > (CSL_PAGE_SIZE - 32))
+            aerror1("request for basic vector too big",
+                    fixnum_of_int(alloc_size/CELL-1));
+//@@        if (++reclaim_trigger_count == reclaim_trigger_target ||
+//@@            alloc_size > free || vec_forced(alloc_size/CELL))
+//@@        {   char msg[40];
+// I go to a whole load of trouble here to tell the user what sort of
+// vector request provoked this garbage collection.  I wonder if the user
+// really cares - but I do very much when I am chasing after GC bugs!
+//@@            switch (tag)
+//@@            {   case TAG_SYMBOL:
+//@@                    sprintf(msg, "symbol header");
+//@@                    break;
+//@@                case TAG_NUMBERS:
+//@@                    switch (type)
+//@@                    {   case TYPE_BIGNUM:
+//@@                            sprintf(msg, "bignum(%ld)", (long)size);
+//@@                            break;
+//@@                        default:
+//@@                            sprintf(msg, "numbers(%lx,%ld)", (long)type, (long)size);
+//@@                            break;
+//@@                    }
+//@@                    break;
+//@@                case TAG_VECTOR:
+//@@                    switch (type)
+//@@                    {
+//@@                        case TYPE_STRING_1:
+//@@                        case TYPE_STRING_2:
+//@@                        case TYPE_STRING_3:
+//@@                        case TYPE_STRING_4:
+//@@                            sprintf(msg, "string(%ld)", (long)size);
+//@@                            break;
+//@@                        case TYPE_BPS_1:
+//@@                        case TYPE_BPS_2:
+//@@                        case TYPE_BPS_3:
+//@@                        case TYPE_BPS_4:
+//@@                            sprintf(msg, "BPS(%ld)", (long)size);
+//@@                            break;
+//@@                        case TYPE_SIMPLE_VEC:
+//@@                            sprintf(msg, "simple vector(%ld)", (long)size);
+//@@                            break;
+//@@                        case TYPE_HASH:
+//@@                            sprintf(msg, "hash table(%ld)", (long)size);
+//@@                            break;
+//@@                        default:
+//@@                            sprintf(msg, "vector(%lx,%ld)", (long)type, (long)size);
+//@@                            break;
+//@@                    }
+//@@                    break;
+//@@                case TAG_BOXFLOAT:
+//@@                    sprintf(msg, "float(%ld)", (long)size);
+//@@                    break;
+//@@                default:
+//@@                    sprintf(msg, "get_basic_vector(%lx,%ld)", (long)tag, (long)size);
+//@@                    break;
+//@@            }
+//@@            reclaim(nil, msg, GC_VEC, alloc_size);
+// Note the CONTINUE here so that I go and repeat the test. Consider the
+// case where I have a page almost full but then garbage collection recovers
+// a lot of space but still leaves the final used page almost full... I
+// need the garbage collector to take care with its final argument to be
+// certain that the loop here terminates!
+//@@            continue;
+//@@        }
+        LispObject r = get_n_bytes(alloc_size);
+        *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+//
+// DANGER: the vector allocated here is left uninitialised at this stage.
+// This is OK if the vector will contain binary information, but if it
+// will hold any LispObjects it needs safe values put in PDQ.
+//
+// All vectors are allocated so as to be 8-byte aligned. On a 64-bit system
+// a vector that will not end up being a multiple of 8 bytes long naturally
+// gets padded out. Here I arrange to zero out any such padder word. This
+// should not be very important since nobody should ever try to use that
+// word. When the garbage collector copies material around it transcribes
+// the whole vector (including the padder), but it should never try to trace
+// through it. By tidying this up here can feel that I do not have any
+// need to worry about it elsewhere.
+        if (!SIXTY_FOUR_BIT && alloc_size != size)
+            *(LispObject *)(r+alloc_size-CELL) = 0;
+        return (LispObject)(r + tag);
+    }
+}
+
+// This takes a vector (which can be one represented using an INDEXVEC)
+// and reduces its size to a total value len. It returns the shorter
+// vector. Only used on simple vectors.
+
+LispObject reduce_basic_vector_size(LispObject v, size_t len)
+{   vechdr(v) = TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED;
+    return v;
+}
+
+
+
 //@@@@@@@@@@@@
 
 
@@ -1278,165 +1568,6 @@ inline Header make_padding_header(size_t n)
 {   return TAG_HDR_IMMED+TYPE_PADDER+(n<<(Tw+7));
 }
 
-static void get_2_words_past_pin()
-{   if (vheaptop == heapstart)
-    {
-// Vector and 2-word items have just collided, well ALMOST because the vector
-// allocation may have used an odd number of words. To leave everything
-// tidy in case I need to do a linear scan (eg as part of a generational
-// collector) I fill in the 1-word gap with a nice padder. This issue can
-// never arise on a 32-bit platform because there a CONS cell is 8 bytes wide
-// and all vectors are allocated as a multiple of 8 bytes.
-        if (SIXTY_FOUR_BIT && fringe == vfringe-CELL)
-        {   *(Header *)vfringe = make_padding_header(CELL);
-// Logically I want this padder not to be accepted by the conservative
-// collector as the start of a real object, so I want its "object start" bit
-// to be clear. Ha ha that will already be the case. So I show what the code
-// would be but comment it out as unnecessary. This is just a 1-word padder.
-//--        clear_header_bit(vfringe, active_page);
-        }
-        allocate_next_page();
-// After allocating a new page (and sometimes that will involve garbage
-// collection) there will always be room to set aside memory for a CONS.
-// That is because the garbage collector must never set a new active page
-// that is totally full. A page could hypothetically be totally full if
-// every address within it was pinned, but that would be a really unusual
-// pathological situation!
-        return;
-    }
-    uintptr_t w = heaplimit;
-    heaplimit = heapstart ^ xor_chain;
-    heapstart = w;
-    fringe = w - len;
-// Now I may just have moved down onto the segment within which vector
-// allocation is taking place...
-    if (vheaptop == heapstart)
-    {
-// When vector and 2-word regions coalesce I will not subsequently have any
-// more movement across pinned areas, and so I do not need heaplimit as a
-// pointer to the base of the region.
-        heaplimit = vfringe;
-// It might be that the segment was in fact already totally full of vectors,
-// in which case I must garbage collect. I need to allow for the possibility
-// that vectors had filled all bar one word of the chunk. This can only
-// arise on a 64-bit platform.
-        if (SIXTY_FOUR_BIT && fringe == vfringe+CELL)
-        {   *(Header *)vfringe = make_padding_header(CELL);
-            vfringe += CELL;
-            allocate_next_page();
-        }
-        else if (fringe == vfringe) allocate_next_page();
-// Now I know that there is space for a 2-word item, either because there
-// was genuine space in the region or because allocate_next_page will have
-// left me in good shape.
-        return;
-    }
-// Here I have moved to a new region which is not totally full, so I can
-// just allocate within it, but I need to set some of my magic variables.
-// One reason to read these values here is so that all the space in the
-// segment becomes available for allocation... I do not need to worry about
-// the mutator overwriting anthing with it.
-    len = ((uintptr_t *)heaplimit)[0];
-    xor_chain = ((uintptr_t *)heaplimit)[1];
-}
-
-// get_2_words() is the core of CONS and can also be used for allocating the
-// space needed for a double-precision float on a 64-bit machine. The aim is
-// therefore to make the common case in it as fast as feasible. This is
-// the allocation of 2 consecutive words of memory until the current active
-// block is full or until pinned data within it is reached.
-
-inline LispObject get_2_words()
-{
-// If there is a free doubleword immediately available then use it. I very
-// much hope that this will be the situation almost all of the time.
-// This is "inline" because it is fairly short and it should represent
-// by a large margin the most common case encountered when performing CONS
-// operations.
-    fringe -= 2*CELL;
-    if (fringe < heaplimit) get_2_words_past_pin();
-// There is an additional condiction that I am arranging will not need any
-// code here by that does need commenting on. Within a page the first word
-// of any object must be tagged in the "object start" bitmap. This bitmap
-// covers the page at a resolution of 8 bytes. On a 64-bit machine a full
-// cons cell is 16 bytes long, so its first word (the CAR field) needs tagging
-// but the second does not. Well when I set up an empty page I will ensure
-// that in this case the bitmap starts off with every other word tagged.
-// On a 32-bit machine the initial state has to show every 64-bit word
-// tagged, and this will be taken as marking the 32-bit part that falls as an
-// even address.
-// I should further note that object start bits must be correctly set for
-// any items in pinned regions, but that if one has padding items (sometimes
-// needed to help with alignment) their headers will not be tagged. That is
-// so that ambiguous pointers to them will not keep them alive.
-    return fringe;
-}
-
-static void get_n_bytes_past_pin()
-{
-// The vector I want to allocate will not fit at the next consecutive
-// address. So to keep the heap tidy I will insert a padder record
-// there.
-    if (vfringe != vheaplimit)
-    {   *(Header *)vfringe = make_padding_header(vheaplimit - vfringe);
-        clear_header_bits(vfringe, vheaplimit - vfringe, active_page);
-    }
-// If 2-word and vector regions are one and the same that means that
-// there is not enough space in the current page, so I need to allocate
-// a new one. There is no guarantee that it will have a large enough
-// uninterrupted block of free memory for my vector, but if it does not
-// then this function will just get called again.
-    if (vheaptop == heapstart)
-    {   allocate_next_page();
-        return;
-    }
-// Now I am in the situation where there was some pinned data that blocked
-// the allocation I wanted to do. I skip to be beyond it.
-    vfringe = vheaptop;
-    vheaptop = vheapstart ^ vxor_chain;
-    vlen = ((uintptr_t *)vheaptop)[0];
-    vxor_chain = ((uintptr_t *)vheaptop)[1];
-    vheaplimit = vheaptop - vlen;
-    vheapstart = vfringe;
-}
-
-// The great majority of allocations are liable to be for CONS or for
-// double floats, so modest extra burden when larger (or indeed smaller)
-// vectors are allocated can be tolerated. The most obvious excess cost here
-// is setting and clearing bitmap information for the identification of
-// object start addresses.
-
-inline LispObject get_n_bytes(size_t n)
-{
-// I may at some stage arrange that I always call this function asking for
-// a multiple of 8 bytes, but for now and as a matter of caution I will
-// round up.
-    n = doubleword_align_up(n);
-// If 2-word and vector items are allocated in the same chunk I must
-// not allocate on to of the 2-word items. So in that case I will reset
-// vheaplimit.
-    if (vheaptop == heapstart) vheaplimit = fringe;
-// Now check if there is enough space for the vector in the area up as far
-// as the next limit. If not then put in a padder and move beyond the pinned
-// items. It may be necessary to do this several times if there are pinned
-// items with shortish free gaps between them, hence the WHILE loop.
-    while (vfringe + n > vheaplimit) get_n_bytes_past_pin();
-// Now I have a gap that is big enough. Hoorah!
-    LispObject r = vfringe;
-    vfringe += n;
-// For vectors the bitmap that will record where objects start must be
-// updated. The expensive-looking part of this is clearing all the
-// bits associated with the interior of the new vector, but I hope that
-// a careful implemention of clear_header_bits can do this using word-
-// at-a-time operations on the bitmap and hence be respectably fast.
-    set_header_bit(r, active_page);
-    clear_header_bits(r+8, n-8, active_page);
-// Now if 2-word and vector allocations could possibly collide soon set
-// the limit register for 2-word allocation to prevent disaster.
-    if (vheaptop == heapstart) heaplimit = vfringe;
-    return r;
-}
-
 // For borrowing I only ever allocate vectors, never CONS cells, and there
 // can never be a garbage collection while borrowed space is active,
 // and so I do not need to mess with object header flag bits etc, or
@@ -1483,89 +1614,6 @@ inline LispObject borrow_n_bytes(size_t n)
     return r;
 }
 
-// Now I have versions of the allocation code that are used while I am in
-// the garbage collector evacuating data from the old into the new space.
-// I am making this a (modified) copy of the normal allocator for two reasons.
-// The first is that for speed reasons I do not want ANY stray tests adding
-// overhead to the normal allocator. The second is that this GC version may
-// try harder to avoid introducing fragmentation, and that makes it
-// deviate noticably from the simpler regular-use code.
-
-static void gc_get_2_words_past_pin()
-{   if (vheaptop == heapstart)
-    {
-        if (SIXTY_FOUR_BIT && fringe == vfringe-CELL)
-        {   *(Header *)vfringe = make_padding_header(CELL);
-        }
-        gc_allocate_next_page();
-        return;
-    }
-    uintptr_t w = heaplimit;
-    heaplimit = heapstart ^ xor_chain;
-    heapstart = w;
-    fringe = w - len;
-    if (vheaptop == heapstart)
-    {
-        heaplimit = vfringe;
-        if (SIXTY_FOUR_BIT && fringe == vfringe+CELL)
-        {   *(Header *)vfringe = make_padding_header(CELL);
-            vfringe += CELL;
-            gc_allocate_next_page();
-        }
-        else if (fringe == vfringe) gc_allocate_next_page();
-        return;
-    }
-    len = ((uintptr_t *)heaplimit)[0];
-    xor_chain = ((uintptr_t *)heaplimit)[1];
-}
-
-inline LispObject gc_get_2_words()
-{
-    fringe -= 2*CELL;
-    if (fringe < heaplimit) gc_get_2_words_past_pin();
-    return fringe;
-}
-
-static uintptr_t padders = 0;
-static uintptr_t *padders_tail = &padders;
-
-static void gc_get_n_bytes_past_pin()
-{
-    if (vfringe != vheaplimit)
-    {   *(Header *)vfringe = make_padding_header(vheaplimit - vfringe);
-// I will collect a chain of all the padders that I create. This will be
-// built in historical order. 
-        if ((vheaplimit - vfringe) != CELL)
-        {    *padders_tail = vfringe;
-             padders_tail = &((uintptr_t *)vfringe)[1];
-             *padders_tail = 0;
-        }
-        clear_header_bits(vfringe, vheaplimit - vfringe, active_page);
-    }
-    if (vheaptop == heapstart)
-    {   gc_allocate_next_page();
-        return;
-    }
-    vfringe = vheaptop;
-    vheaptop = vheapstart ^ vxor_chain;
-    vlen = ((uintptr_t *)vheaptop)[0];
-    vxor_chain = ((uintptr_t *)vheaptop)[1];
-    vheaplimit = vheaptop - vlen;
-    vheapstart = vfringe;
-}
-
-inline LispObject gc_get_n_bytes(size_t n)
-{
-    n = doubleword_align_up(n);
-    if (vheaptop == heapstart) vheaplimit = fringe;
-    while (vfringe + n > vheaplimit) gc_get_n_bytes_past_pin();
-    LispObject r = vfringe;
-    vfringe += n;
-    set_header_bit(r, active_page);
-    clear_header_bits(r+8, n-8, active_page);
-    if (vheaptop == heapstart) heaplimit = vfringe;
-    return r;
-}
 
 // This code sets up an empty page - it is ONLY intended for use at the
 // start of a run when there can not be any pinned items present anywhere.
@@ -1839,273 +1887,6 @@ LispObject Lgc_forcer1(LispObject env, LispObject a)
 {   return Lgc_forcer(env, a, a);
 }
 
-LispObject cons(LispObject a, LispObject b)
-{   LispObject r = get_2_words() + TAG_CONS;
-    qcar(r) = a;
-    qcdr(r) = b;
-    return r;
-}
-
-// With the conservative collector I maybe do not need to avoid garbage
-// collection on any particular individual uses of cons().
-
-LispObject cons_no_gc(LispObject a, LispObject b)
-{   return cons(a, b);
-}
-
-LispObject cons_gc_test(LispObject p)
-{   return p;
-}
-
-LispObject ncons(LispObject a)
-{   LispObject r = get_2_words() + TAG_CONS;
-    qcar(r) = a;
-    qcdr(r) = nil;
-    return r;
-}
-
-// Here I can wonder if there is a good way to save overhead by allocating
-// both cells as one operation...
-
-LispObject list2(LispObject a, LispObject b)
-{   LispObject r1 = get_2_words() + TAG_CONS;
-    LispObject r2 = get_2_words() + TAG_CONS;
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcdr(r1) = r2;
-    qcdr(r2) = nil;
-    return r1;
-}
-
-LispObject list2star(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get_2_words() + TAG_CONS;
-    LispObject r2 = get_2_words() + TAG_CONS;
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcdr(r1) = r2;
-    qcdr(r2) = c;
-    return r1;
-}
-
-LispObject list2starrev(LispObject c, LispObject b, LispObject a)
-{   LispObject r1 = get_2_words() + TAG_CONS;
-    LispObject r2 = get_2_words() + TAG_CONS;
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcdr(r1) = r2;
-    qcdr(r2) = c;
-    return r1;
-}
-
-LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
-{   LispObject r1 = get_2_words() + TAG_CONS;
-    LispObject r2 = get_2_words() + TAG_CONS;
-    LispObject r3 = get_2_words() + TAG_CONS;
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcar(r3) = c;
-    qcdr(r1) = r2;
-    qcdr(r2) = r3;
-    qcdr(r3) = d;
-    return r1;
-}
-
-LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
-{   LispObject r1 = get_2_words() + TAG_CONS;
-    LispObject r2 = get_2_words() + TAG_CONS;
-    LispObject r3 = get_2_words() + TAG_CONS;
-    LispObject r4 = get_2_words() + TAG_CONS;
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcar(r3) = c;
-    qcar(r4) = d;
-    qcdr(r1) = r2;
-    qcdr(r2) = r3;
-    qcdr(r3) = r4;
-    qcdr(r4) = nil;
-    return r1;
-}
-
-
-
-LispObject acons(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get_2_words() + TAG_CONS;
-    LispObject r2 = get_2_words() + TAG_CONS;
-    qcar(r1) = r2;
-    qcar(r2) = a;
-    qcdr(r1) = c;
-    qcdr(r2) = b;
-    return r1;
-}
-
-LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
-{   return acons(a, b, c);
-}
-
-LispObject list3(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get_2_words() + TAG_CONS;
-    LispObject r2 = get_2_words() + TAG_CONS;
-    LispObject r3 = get_2_words() + TAG_CONS;
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcar(r3) = c;
-    qcdr(r1) = r2;
-    qcdr(r2) = r3;
-    qcdr(r3) = nil;
-    return r1;
-}
-
-LispObject list3rev(LispObject c, LispObject b, LispObject a)
-{   LispObject r1 = get_2_words() + TAG_CONS;
-    LispObject r2 = get_2_words() + TAG_CONS;
-    LispObject r3 = get_2_words() + TAG_CONS;
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcar(r3) = c;
-    qcdr(r1) = r2;
-    qcdr(r2) = r3;
-    qcdr(r3) = nil;
-    return r1;
-}
-
-LispObject Lcons(LispObject, LispObject a, LispObject b)
-{   LispObject r1 = get_2_words() + TAG_CONS;
-    qcar(r1) = a;
-    qcdr(r1) = b;
-    return onevalue(r1);
-}
-
-LispObject Lxcons(LispObject, LispObject a, LispObject b)
-{   LispObject r1 = get_2_words() + TAG_CONS;
-    qcar(r1) = b;
-    qcdr(r1) = a;
-    return onevalue(r1);
-}
-
-LispObject Lnilfn(LispObject)
-{   return onevalue(nil);
-}
-
-LispObject Lncons(LispObject env, LispObject a)
-{   LispObject r1 = get_2_words() + TAG_CONS;
-    qcar(r1) = a;
-    qcdr(r1) = nil;
-    return onevalue(r1);
-}
-
-LispObject get_symbol(bool gensymp)
-{   return get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
-}
-
-LispObject get_basic_vector(int tag, int type, size_t size)
-{
-// tag is the value (e.g. TAG_VECTOR) that will go in the low order
-// 3 bits of the pointer result.
-// type is the code (e.g. TYPE_STRING) that gets packed, together with
-// the size, into a header word.
-// size is measured in bytes and must allow space for the header word.
-// [Note that this last issue - size including the header - was probably
-// a mistake since the header size depends on whether I am using a
-// 32-bit or 64-bit representation. However it would be hard to unwind
-// that now!]
-//
-//@@    for (;;)
-    {   size_t alloc_size = (size_t)doubleword_align_up(size);
-// Basic vectors must be smaller then the CSL page size.
-        if (alloc_size > (CSL_PAGE_SIZE - 32))
-            aerror1("request for basic vector too big",
-                    fixnum_of_int(alloc_size/CELL-1));
-//@@        if (++reclaim_trigger_count == reclaim_trigger_target ||
-//@@            alloc_size > free || vec_forced(alloc_size/CELL))
-//@@        {   char msg[40];
-// I go to a whole load of trouble here to tell the user what sort of
-// vector request provoked this garbage collection.  I wonder if the user
-// really cares - but I do very much when I am chasing after GC bugs!
-//@@            switch (tag)
-//@@            {   case TAG_SYMBOL:
-//@@                    sprintf(msg, "symbol header");
-//@@                    break;
-//@@                case TAG_NUMBERS:
-//@@                    switch (type)
-//@@                    {   case TYPE_BIGNUM:
-//@@                            sprintf(msg, "bignum(%ld)", (long)size);
-//@@                            break;
-//@@                        default:
-//@@                            sprintf(msg, "numbers(%lx,%ld)", (long)type, (long)size);
-//@@                            break;
-//@@                    }
-//@@                    break;
-//@@                case TAG_VECTOR:
-//@@                    switch (type)
-//@@                    {
-//@@                        case TYPE_STRING_1:
-//@@                        case TYPE_STRING_2:
-//@@                        case TYPE_STRING_3:
-//@@                        case TYPE_STRING_4:
-//@@                            sprintf(msg, "string(%ld)", (long)size);
-//@@                            break;
-//@@                        case TYPE_BPS_1:
-//@@                        case TYPE_BPS_2:
-//@@                        case TYPE_BPS_3:
-//@@                        case TYPE_BPS_4:
-//@@                            sprintf(msg, "BPS(%ld)", (long)size);
-//@@                            break;
-//@@                        case TYPE_SIMPLE_VEC:
-//@@                            sprintf(msg, "simple vector(%ld)", (long)size);
-//@@                            break;
-//@@                        case TYPE_HASH:
-//@@                            sprintf(msg, "hash table(%ld)", (long)size);
-//@@                            break;
-//@@                        default:
-//@@                            sprintf(msg, "vector(%lx,%ld)", (long)type, (long)size);
-//@@                            break;
-//@@                    }
-//@@                    break;
-//@@                case TAG_BOXFLOAT:
-//@@                    sprintf(msg, "float(%ld)", (long)size);
-//@@                    break;
-//@@                default:
-//@@                    sprintf(msg, "get_basic_vector(%lx,%ld)", (long)tag, (long)size);
-//@@                    break;
-//@@            }
-//@@            reclaim(nil, msg, GC_VEC, alloc_size);
-// Note the CONTINUE here so that I go and repeat the test. Consider the
-// case where I have a page almost full but then garbage collection recovers
-// a lot of space but still leaves the final used page almost full... I
-// need the garbage collector to take care with its final argument to be
-// certain that the loop here terminates!
-//@@            continue;
-//@@        }
-        LispObject r = get_n_bytes(alloc_size);
-        *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
-//
-// DANGER: the vector allocated here is left uninitialised at this stage.
-// This is OK if the vector will contain binary information, but if it
-// will hold any LispObjects it needs safe values put in PDQ.
-//
-// All vectors are allocated so as to be 8-byte aligned. On a 64-bit system
-// a vector that will not end up being a multiple of 8 bytes long naturally
-// gets padded out. Here I arrange to zero out any such padder word. This
-// should not be very important since nobody should ever try to use that
-// word. When the garbage collector copies material around it transcribes
-// the whole vector (including the padder), but it should never try to trace
-// through it. By tidying this up here can feel that I do not have any
-// need to worry about it elsewhere.
-        if (!SIXTY_FOUR_BIT && alloc_size != size)
-            *(LispObject *)(r+alloc_size-CELL) = 0;
-        return (LispObject)(r + tag);
-    }
-}
-
-// This takes a vector (which can be one represented using an INDEXVEC)
-// and reduces its size to a total value len. It returns the shorter
-// vector. Only used on simple vectors.
-
-LispObject reduce_basic_vector_size(LispObject v, size_t len)
-{   vechdr(v) = TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED;
-    return v;
-}
-
 // The next functions (eg borrow_vector) are called just like the
 // functions that allocate new vectors, but they use space in the part
 // of memory space not at present in use by the garbage collector. If a
@@ -2265,16 +2046,18 @@ extern void inner_reclaim(uintptr_t *sp);
 // sort of thing that fully guaranteed portable code can achieve! I apply
 // two ideas. The first is to have a function that is liable to want to
 // keep a dozen value in its registers - and to do that it is liable to
-// flush calee-save ones to the stack. I use the "register" qualifier
-// to try to advise the compiler to do what I want, but modern compilers
-// probably ignore me, so may not. As a secoondary attempt I use setjmp()
-// which I hope and expect dumps a copy of all useful machine registers into
-// the given jmp_buf. Again this is not guaranteed!
+// flush callee-save ones to the stack. I used to use the "register"
+// qualifier to try to advise the compiler to do what I want, but modern
+// compilers may now reject that. So I just use lots of registers and hope.
+// As a secoondary attempt I use setjmp() which I hope and expect dumps
+// a copy of all useful machine registers into the given jmp_buf. Again
+// this is not guaranteed, but it is at least plausible!
 // The use of volatile_variable is a further attempt to prevent any
 // clever compiler frm observing that all that I do is frivolous and
-// then discarding it.
+// then discarding it. These days I use std::atomic rather than the volatile
+// qualifier since I believe that volatile will soon be deprecated!
 
-volatile int volatile_variable = 12345;
+std::atomic<int> int volatile_variable = 12345;
 
 void reclaim(int line)
 {
@@ -2295,23 +2078,24 @@ void reclaim(int line)
 // may force it to be done!) but is modest in the large scheme of
 // things. On most machines I can think of there are a lot fewer
 // than 12 callee-save registers and so this is overkill!
-    register int a1 = volatile_variable;
+    int a1 = volatile_variable;
 // The declarations here go one at a time to stress the sequential nature
 // of the references to volatile_variable.
-    register int a2 = volatile_variable;
-    register int a3 = volatile_variable;
-    register int a4 = volatile_variable;
-    register int a5 = volatile_variable;
-    register int a6 = volatile_variable;
-    register int a7 = volatile_variable;
-    register int a8 = volatile_variable;
-    register int a9 = volatile_variable;
-    register int a10 = volatile_variable;
-    register int a11 = volatile_variable;
-    register int a12 = volatile_variable;
+    int a2 = volatile_variable;
+    int a3 = volatile_variable;
+    int a4 = volatile_variable;
+    int a5 = volatile_variable;
+    int a6 = volatile_variable;
+    int a7 = volatile_variable;
+    int a8 = volatile_variable;
+    int a9 = volatile_variable;
+    int a10 = volatile_variable;
+    int a11 = volatile_variable;
+    int a12 = volatile_variable;
 // Even with a heavily optimising compiler the above ought to generate
 // 12 loads from the volatile_variable because in principle the values so
-// loaded could all be different.
+// loaded could all be different. Now is 12 enough? Well on the machines I
+// know about it is plenty!
     jmp_buf jb;
     if (setjmp(jb) != 0) volatile_variable++;
 // setjmp is expected to save all registers in jb.
@@ -2325,11 +2109,21 @@ void reclaim(int line)
 // might be costly. So my expectation is that the function here will consume
 // some space in program memory but will represent really rather a small
 // burden on CPU time.
+//
+// On the next line I believe that because volatile_var is an std::atomic<int>
+// the compiler must assume that the two references might yield different
+// values. I would rather like to instruct the compiler to assume that
+// the values will almost always differ, because if it guesses that mostly
+// they will match it may optimize on the basis of the loop not
+// getting traversed a lot.
         if (volatile_variable == volatile_variable) return;
 // The longjmp here will never be taken, but the compiler is not allowed to
 // assume that! Therefore it must keep jb on alive on the stack during the
 // call to middle_reclaim().
         if (volatile_variable != volatile_variable) longjmp(jb, 1);
+// This now references a1-a12, which could all hold unrelated values so
+// all need to be stored independently. I am hoping that many are kept in
+// registers!
         volatile_variable += a1;
         volatile_variable += a2;
         volatile_variable += a3;
@@ -2354,6 +2148,9 @@ void reclaim(int line)
     }
 }
 
+#ifdef __GNUC__
+[[gnu::noinline]]
+#endif // __GNUC__
 void middle_reclaim()
 {
 // This function is here to have a stack frame (containing w) that will

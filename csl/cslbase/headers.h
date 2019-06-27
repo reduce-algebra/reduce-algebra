@@ -208,7 +208,11 @@ inline double CSLpow(double x, double y)
 #include "tags.h"
 #include "cslerror.h"
 #include "externs.h"
+#ifdef CONSERVATIVE
+#include "newallocate.h"
+#else
 #include "allocate.h"
+#endif
 #include "syscsl.h"
 #include "arith.h"
 #include "entries.h"
