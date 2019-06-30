@@ -1163,31 +1163,92 @@ void clearPinnedMap(Page *x)
 }
 
 std::mutex gc_mutex;
-extern LispObject *gc_and_allocate(uintptr_t r, size_t n);
-extern void gc_from_poll();
+extern uintptr_t gc_and_allocate(uintptr_t r, size_t n);
 
-LispObject get_n_bytes(size_t n)
+inline LispObject get_n_bytes(size_t n)
 {   size_t n1 = doubleword_align_up(n);
+// The next two lines will need lengthy discussion if only so I understand
+// what I need to do after them.
+    uintptr_t limit = Alimit.load();
     uintptr_t result = Afringe.fetch_add(n1);
-    if (Afringe.load() >= Alimit.load())
+// The above updated Afringe in an atomic manner, so that if multiple
+// threads perform this operation concurrently each will get a result
+// corresponding to a distinct chunk of memory. The worry at this stage
+// is that Afringe and Alimit might be changed by some other thread after
+// Alimit was loaded. Well if the other thread takes its simple path
+// all will be well, because all that can happen is that the other thread
+// increments Afringe so the space that gets allocated here is at a higher
+// address. The messy situation would be if the other thread called
+// gc_and_allocate() and that led to Afringe being set to be within a
+// different page that happened to be at an address lower than the current
+// one. Then the value of result would be based on that that new fringe
+// but an old limit...
+// However all is not totally lost! If ANY thread sets fringe>=limit then
+// until fringe and thread are reset all other threads will come to the
+// "need to GC" state, and none will complete a successful allocation.
+// However all threads can reset fringe, incrementing it by almost arbitrarily
+// large amounts before before the threads synchronize! 
+    if (result+n1 >= limit)
         result = gc_and_allocate(result, n);
-    return reinterpret_cast<LispObject>(result);
+    return static_cast<LispObject>(result);
 }
 
-// It will be important to call this frequently because when one thread
+// It will be important to poll frequently because when one thread
 // observes that it needs to garbage collect all other threads must be
 // paused. Any other that calls cons() or getvec() will pause there, but
 // code in a loop that did not allocate memory could cause an unbounded
-// delay unless this is called such that the loop can be interrupred.
+// delay unless this is called such that the loop can be interrupted.
 // Extra steps will be needed when library calls that might block are
 // made, but details of that belong elsewhere.
 
 void poll()
-{   if (Afringe.load() >= Alimit.load()) gc_from_poll();
+{   if (Afringe.load() >= Alimit.load()) (void)gc_and_allocate(0, 0);
+}
+
+// Here we will have:
+//    fringe a pointer to where one would next try to allocate;
+//    limit an address such that only memory below it may be allocated;
+//    r the start of a block that allocation had attempted at;
+//    n the size of the block being allocated;
+//    fringe >= limit.
+// Several threads can be allocating at about the same time, so one will
+// be the first to use fetch_add() in a way that makes fringe >= limit.
+// But then others can follow on and increment fringe further, but all but
+// the first such will deliver r >= limit, and unless recovery action
+// resets fringe and/or limit for them to soon all will call gc_and_allocate().
+// Well this is an issue, because if gc_and_allocate running in some thread
+// can reset things such that fringe < limit before a different thread tests
+// for that we can have a memory overflow event undetected.
+// As a special case this may be called with r = n = 0 as a way for a
+// thread not actually needing memory at the moment to synchronize.
+
+// Now a HORRID feature of the scheme I have here is that I need to keep
+// track of how many threads exist and how many are currently running. A
+// thread will contribute to the count in "active_threads" if its is in a
+// state where it will poll or allocate memory soon.
+
+std::atomic<int> active_threads;
+std::atomic<bool> gc_complete;
+std::mutex mutex_for_gc;
+std::condition_variable cv_for_gc;
+
+uintptr_t gc_and_allocate(uintptr_t r, size_t n)
+{   int a = (active_threads -= 1);
+    if (a == 0)
+    {   gc_complete.store(false);
+// Do the stuff.
+        std::lock_guard<std::mutex>(mutex_for_gc);
+        gc_complete.store(true);
+        cv_for_gc.notify_all();
+    }
+    else
+    {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+        cv_for_gc.wait(lock, []{ return gc_complete.load(); });
+    }
 }
 
 
-LispObject cons(LispObject a, LispObject b)
+inline LispObject cons(LispObject a, LispObject b)
 {   LispObject r = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
     qcar(r) = a;
     qcdr(r) = b;
@@ -1197,15 +1258,15 @@ LispObject cons(LispObject a, LispObject b)
 // With the conservative collector I maybe do not need to avoid garbage
 // collection on any particular individual uses of cons().
 
-LispObject cons_no_gc(LispObject a, LispObject b)
+inline LispObject cons_no_gc(LispObject a, LispObject b)
 {   return cons(a, b);
 }
 
-LispObject cons_gc_test(LispObject p)
+inline LispObject cons_gc_test(LispObject p)
 {   return p;
 }
 
-LispObject ncons(LispObject a)
+inline LispObject ncons(LispObject a)
 {   LispObject r = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
     qcar(r) = a;
     qcdr(r) = nil;
@@ -1215,7 +1276,7 @@ LispObject ncons(LispObject a)
 // Here I can wonder if there is a good way to save overhead by allocating
 // both cells as one operation...
 
-LispObject list2(LispObject a, LispObject b)
+inline LispObject list2(LispObject a, LispObject b)
 {   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
     qcar(r1) = a;
@@ -1225,7 +1286,7 @@ LispObject list2(LispObject a, LispObject b)
     return r1;
 }
 
-LispObject list2star(LispObject a, LispObject b, LispObject c)
+inline LispObject list2star(LispObject a, LispObject b, LispObject c)
 {   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
     qcar(r1) = a;
@@ -1235,7 +1296,7 @@ LispObject list2star(LispObject a, LispObject b, LispObject c)
     return r1;
 }
 
-LispObject list2starrev(LispObject c, LispObject b, LispObject a)
+inline LispObject list2starrev(LispObject c, LispObject b, LispObject a)
 {   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
     qcar(r1) = a;
@@ -1245,7 +1306,7 @@ LispObject list2starrev(LispObject c, LispObject b, LispObject a)
     return r1;
 }
 
-LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
+inline LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
 {   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
     LispObject r3 = r2 + 2*sizeof(LispObject);
@@ -1258,7 +1319,7 @@ LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
     return r1;
 }
 
-LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
+inline LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
 {   LispObject r1 = get_n_bytes(8*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
     LispObject r3 = r2 + 2*sizeof(LispObject);
@@ -1276,7 +1337,7 @@ LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
 
 
 
-LispObject acons(LispObject a, LispObject b, LispObject c)
+inline LispObject acons(LispObject a, LispObject b, LispObject c)
 {   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
     qcar(r1) = r2;
@@ -1286,11 +1347,11 @@ LispObject acons(LispObject a, LispObject b, LispObject c)
     return r1;
 }
 
-LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
+inline LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
 {   return acons(a, b, c);
 }
 
-LispObject list3(LispObject a, LispObject b, LispObject c)
+inline LispObject list3(LispObject a, LispObject b, LispObject c)
 {   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
     LispObject r3 = r2 + 2*sizeof(LispObject);
@@ -1303,7 +1364,7 @@ LispObject list3(LispObject a, LispObject b, LispObject c)
     return r1;
 }
 
-LispObject list3rev(LispObject c, LispObject b, LispObject a)
+inline LispObject list3rev(LispObject c, LispObject b, LispObject a)
 {   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
     LispObject r3 = r2 + 2*sizeof(LispObject);
@@ -1316,25 +1377,25 @@ LispObject list3rev(LispObject c, LispObject b, LispObject a)
     return r1;
 }
 
-LispObject Lcons(LispObject, LispObject a, LispObject b)
+inline LispObject Lcons(LispObject, LispObject a, LispObject b)
 {   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
     qcar(r1) = a;
     qcdr(r1) = b;
     return onevalue(r1);
 }
 
-LispObject Lxcons(LispObject, LispObject a, LispObject b)
+inline LispObject Lxcons(LispObject, LispObject a, LispObject b)
 {   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
     qcar(r1) = b;
     qcdr(r1) = a;
     return onevalue(r1);
 }
 
-LispObject Lnilfn(LispObject)
+inline LispObject Lnilfn(LispObject)
 {   return onevalue(nil);
 }
 
-LispObject Lncons(LispObject env, LispObject a)
+inline LispObject Lncons(LispObject env, LispObject a)
 {   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
     qcar(r1) = a;
     qcdr(r1) = nil;
@@ -1357,75 +1418,13 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // 32-bit or 64-bit representation. However it would be hard to unwind
 // that now!]
 //
-//@@    for (;;)
-    {   size_t alloc_size = (size_t)doubleword_align_up(size);
+    size_t alloc_size = (size_t)doubleword_align_up(size);
 // Basic vectors must be smaller then the CSL page size.
-        if (alloc_size > (CSL_PAGE_SIZE - 32))
-            aerror1("request for basic vector too big",
-                    fixnum_of_int(alloc_size/CELL-1));
-//@@        if (++reclaim_trigger_count == reclaim_trigger_target ||
-//@@            alloc_size > free || vec_forced(alloc_size/CELL))
-//@@        {   char msg[40];
-// I go to a whole load of trouble here to tell the user what sort of
-// vector request provoked this garbage collection.  I wonder if the user
-// really cares - but I do very much when I am chasing after GC bugs!
-//@@            switch (tag)
-//@@            {   case TAG_SYMBOL:
-//@@                    sprintf(msg, "symbol header");
-//@@                    break;
-//@@                case TAG_NUMBERS:
-//@@                    switch (type)
-//@@                    {   case TYPE_BIGNUM:
-//@@                            sprintf(msg, "bignum(%ld)", (long)size);
-//@@                            break;
-//@@                        default:
-//@@                            sprintf(msg, "numbers(%lx,%ld)", (long)type, (long)size);
-//@@                            break;
-//@@                    }
-//@@                    break;
-//@@                case TAG_VECTOR:
-//@@                    switch (type)
-//@@                    {
-//@@                        case TYPE_STRING_1:
-//@@                        case TYPE_STRING_2:
-//@@                        case TYPE_STRING_3:
-//@@                        case TYPE_STRING_4:
-//@@                            sprintf(msg, "string(%ld)", (long)size);
-//@@                            break;
-//@@                        case TYPE_BPS_1:
-//@@                        case TYPE_BPS_2:
-//@@                        case TYPE_BPS_3:
-//@@                        case TYPE_BPS_4:
-//@@                            sprintf(msg, "BPS(%ld)", (long)size);
-//@@                            break;
-//@@                        case TYPE_SIMPLE_VEC:
-//@@                            sprintf(msg, "simple vector(%ld)", (long)size);
-//@@                            break;
-//@@                        case TYPE_HASH:
-//@@                            sprintf(msg, "hash table(%ld)", (long)size);
-//@@                            break;
-//@@                        default:
-//@@                            sprintf(msg, "vector(%lx,%ld)", (long)type, (long)size);
-//@@                            break;
-//@@                    }
-//@@                    break;
-//@@                case TAG_BOXFLOAT:
-//@@                    sprintf(msg, "float(%ld)", (long)size);
-//@@                    break;
-//@@                default:
-//@@                    sprintf(msg, "get_basic_vector(%lx,%ld)", (long)tag, (long)size);
-//@@                    break;
-//@@            }
-//@@            reclaim(nil, msg, GC_VEC, alloc_size);
-// Note the CONTINUE here so that I go and repeat the test. Consider the
-// case where I have a page almost full but then garbage collection recovers
-// a lot of space but still leaves the final used page almost full... I
-// need the garbage collector to take care with its final argument to be
-// certain that the loop here terminates!
-//@@            continue;
-//@@        }
-        LispObject r = get_n_bytes(alloc_size);
-        *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+    if (alloc_size > (CSL_PAGE_SIZE - 32))
+        aerror1("request for basic vector too big",
+                fixnum_of_int(alloc_size/CELL-1));
+    LispObject r = get_n_bytes(alloc_size);
+    *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
 //
 // DANGER: the vector allocated here is left uninitialised at this stage.
 // This is OK if the vector will contain binary information, but if it
@@ -1439,422 +1438,194 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // the whole vector (including the padder), but it should never try to trace
 // through it. By tidying this up here can feel that I do not have any
 // need to worry about it elsewhere.
-        if (!SIXTY_FOUR_BIT && alloc_size != size)
-            *(LispObject *)(r+alloc_size-CELL) = 0;
-        return (LispObject)(r + tag);
-    }
+    if (!SIXTY_FOUR_BIT && alloc_size != size)
+        *(LispObject *)(r+alloc_size-CELL) = 0;
+    return (LispObject)(r + tag);
+}
+
+inline Header make_padding_header(size_t n)   // size is in bytes
+{   return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_PADDER;
 }
 
 // This takes a vector (which can be one represented using an INDEXVEC)
 // and reduces its size to a total value len. It returns the shorter
-// vector. Only used on simple vectors.
+// vector. Only used on simple vectors. This is ONLY used when a hash table
+// finds that the number of items in it has decreased dramatically and it
+// wants to shrink. For big tables the index vector will decrease in size
+// but each sub-vector stored in it will remain as it is. For smaller tables
+// it can be the table itself that shrinks. When a vector shrinks I should
+// put a padder in the vacated space so that it will still be possible to
+// do linear scans of memory.
 
 LispObject reduce_basic_vector_size(LispObject v, size_t len)
-{   vechdr(v) = TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED;
+{   size_t oldlen = doubleword_align_up(length_of_header(vechdr(v)));
+    vechdr(v) = TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED;
+    len = doubleword_align_up(len);
+    if (len != oldlen) vechdr(v + len) = make_padding_header(oldlen-len);
     return v;
 }
 
+// As well as shrinking vectors the hash table code can want to "borrow"
+// space by allocating vectors (never lists) from the half of memory that
+// the copying garbage collector is not keeping live data in at present.
+// The protocol I have is that it goes
+//      prepare_for_borrowing();
+//      ... get_vector() ... get_vector() ...
+// and it MUST be coded so that it can not trigger garbage collection while
+// the "borrowed" vectors are in use. It does not have any specific way of
+// indicating when the space is no longer needed, save that a subsequent
+// call to prepare_for_borrowing() must not happen while borrowed space is
+// still needed. The key use for this is when a hash table needs to be
+// re-hashed - the code borrows space and copies the existing table contents
+// into it. It then re-hashes everything back into the existing vector.
+// Doing things that way really simplifies the hash table code, and avoids
+// having the temporary space anything other than rather temporary and
+// transient. However the scheme is not very thread-friendly! My current
+// plan is that only one thread may be re-hashing (and hence borrowing) at
+// once, and while that is happening any other thread that needs to trigger
+// garbage collection will have to wait. I am putting in stubs of code here
+// but the code to borrow memory will in fact be very similar to that used
+// during garbage collection to allocate space in the new half-space when
+// a vector needs to be evacuated to there.
 
+// Perhaps I could invent and then use an alternative protocol so that each
+// thread could do its own borrowing without messy clashes. Perhaps the main
+// issue there is recovering memory when a thread has finished. To think
+// about how vital that might be I would need to consider whether hash tables
+// might need rehashing multiple times between garbage collections - if the
+// answer is "no" then each hash table could have its own associated
+// borrowed shadow ... that starts to sound sensible to me! I will get a LOT
+// more of this code working before I worry about that detail.
 
-//@@@@@@@@@@@@
-
-
-// A page starts with a header and one or two bitmaps and then its
-// data region. I will just discuss the data region here.
-// The data region may be disrupted with some pinned items within in, and
-// those pinned items must be worked around during allocation. Each clump on
-// pinned items will be padded (if necessary) so that the clump is an even
-// number of cells long. If a clump lines within the data region it will
-// be followed by two information words.
-
-// vheapstart is the first address of the current free chunk of memory
-// within which vectors will be allocated.
-uintptr_t vheapstart;
-
-// vfringe is the first address beyond vectors that have been allocated
-// from vheapstart upwards.  So if a new vector is allocated (in a simple way)
-// its existing value will be returned and it will be incremented to point
-// beyond the newly allocated object.
-uintptr_t vfringe;
-
-// vheaplimit is the first address that must NOT be included in any new
-// allocation. It will typically point to the start of a pinned region
-// that represents the end of the current free vector chunk, and if there
-// are no pinned regions it will point to the vect end of the page.
-uintptr_t vheaplimit;
-
-
-// vheaptop is the address above any pinned block that is at the end of
-// the current vector allocation region. vheaptop-vheaplimit == vlen
-// in easy circumstances, but by having these two variables separate I
-// am free to alter vheaplimit any time I feel that I need to.
-uintptr_t vheaptop;
-
-// vlen is the length of the pinned block (if any) that lies just beyond
-// the end of this allocation region.
-uintptr_t vlen;
-
-// vxor_chain is used to chain pinned regions together using the trick
-// where if you have three addresses in a list that you want to be
-// two-way linked you store the XOR of the first and last address in the
-// middle location.
-uintptr_t vxor_chain;
-
-// Similar information is kept for the part of the page used to hold
-// 2 word items:
-
-// heapstart is the high address associated with this chunk. This points
-// to the address above any pinned block that sits above this chunk.
-uintptr_t heapstart;
-
-// fringe points to the last 2-word item allocated, or just beyond the
-// chunk if none has been allocated yet.
-uintptr_t fringe;
-
-// heaplimit is such that the test (heaplimit <= fringe) shows when allocation
-// will be instantly valid. Thus it points to a free doubleword. In some
-// cases this will be the first address after a pinned block that preceeds
-// the chunk. But if the vector chunk and the cons chunk are the same
-// then (heaplimit==vfringe). If this situation is true at the start of
-// allocation of a vector it will be maintained at the end, so this
-// test can always be applied to see if vector and 2-word allocations are
-// at any risk of collision.
-uintptr_t heaplimit;
-
-// len is analagous to vlen, and gives the length of a pinned regsion at
-// and address just below this chunk.
-uintptr_t len;
-
-// xor_chain is the same sort of value as vxor_chain, and helps chain
-// pinned regions in a two-way style.
-uintptr_t xor_chain;
-
-// whenever there is a pinned region within a page (and recall that pinned
-// blocks will be aligned at even addresses and will have even length), the
-// two words immediately after the pinned material hold (len) and (xor_chain)
-// information, where the (xor_chain) value is the exclusive or of the
-// addresses of previous and following pinned regions, or to be more precise
-// the exclusive or of the addresses of the (len) fields that follow these
-// blocks.
-
-// Here is a diagram showing the vector part of the heap...
-//
-//     vheapstart               vheaplimit      vheaptop
-//         |                        |              |
-//        ...  usable space       | XXXXXXXXXXXX | len | xor | ...
-//                   |             (pinned stuff)
-//                vfringe
-//   len: length of the XXXX pinnedd region.
-//   xor: exclusive OR of vheapstart and the LEN field of the next
-//        region up beyond the ones shown.
-
-
-// When (heaplimit==vfringe) the situation has resolved to a state where
-// there are no further pinned regions to worry about, and then when either
-// fringe meets heaplimit or vfringe meets vheaplimit the entire page will
-// be considered full. This situation naturally gets set up when a vector
-// allocation moves past a pinned regsion. When a 2-word allocation moves
-// part a pinned regsion it will need to reset heaplimit to the low address
-// in the next chunk down, but then if (heaplimit==vheapstart) it will need
-// to reset it to be vfringe.
-
-// The fact that there are ten variable involved gives a clue to the fact
-// that designing this arrangement was stressful and went through several
-// iterations and much uncertainty!
-
-static void allocate_next_page(), gc_allocate_next_page();
-
-inline Header make_padding_header(size_t n)
-{   return TAG_HDR_IMMED+TYPE_PADDER+(n<<(Tw+7));
+void prepare_for_borrowing()
+{   my_abort();
 }
 
-// For borrowing I only ever allocate vectors, never CONS cells, and there
-// can never be a garbage collection while borrowed space is active,
-// and so I do not need to mess with object header flag bits etc, or
-// with the issue of pages of memory being split between CONS and vector
-// regions. This all really simplifies matters.
+// It would be a fatal error if there was not space for the borrow!
 
-static uintptr_t borrowing_vfringe, borrowing_vheaptop, borrowing_vlen,
-                 borrowing_vxor_chain, borrowing_vheaplimit,
-                 borrowing_vheapstart, borrowing_heapstart;
+LispObject borrow_n_bytes(size_t n)
+{   my_abort();
+}
 
-static void allocate_next_borrowed_page();
+LispObject borrow_basic_vector(int tag, int type, size_t size)
+{   size_t alloc_size = (size_t)doubleword_align_up(size);
+    if (alloc_size > (CSL_PAGE_SIZE - 32))
+        aerror1("request for basic vector too big",
+                fixnum_of_int(alloc_size/CELL-1));
+    LispObject r = borrow_n_bytes(alloc_size);
+    *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+    if (!SIXTY_FOUR_BIT && alloc_size != size)
+        *(LispObject *)(r+alloc_size-CELL) = 0;
+    return (LispObject)(r + tag);
+}
 
-static void borrow_n_bytes_past_pin()
-{   if (borrowing_vheaptop == borrowing_heapstart)
-    {   allocate_next_borrowed_page();
-        return;
+LispObject borrow_vector(int tag, int type, size_t n)
+{   if (n-CELL > VECTOR_CHUNK_BYTES)
+    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+        size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
+        if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
+        LispObject v =
+            borrow_basic_vector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
+        for (size_t i=0; i<chunks; i++)
+        {   size_t k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
+            basic_elt(v, i) = borrow_basic_vector(tag, type, k+CELL);
+        }
+        return v;
     }
-// Now I am in the situation where there was some pinned data that blocked
-// the allocation I wanted to do. I skip to be beyond it.
-    borrowing_vfringe = borrowing_vheaptop;
-    borrowing_vheaptop = borrowing_vheapstart ^ borrowing_vxor_chain;
-    borrowing_vlen = ((uintptr_t *)borrowing_vheaptop)[0];
-    borrowing_vxor_chain = ((uintptr_t *)borrowing_vheaptop)[1];
-    borrowing_vheaplimit = borrowing_vheaptop - vlen;
-    borrowing_vheapstart = borrowing_vfringe;
-// I will avoid overwriting the LEN and XOR data. This means that I do not
-// use all the potentially available space, but it also means that I do not
-// need to perform any reconstruction of free-space maps when I abandon
-// the borrowed space.
-    borrowing_vfringe += 2*sizeof(uintptr_t);
+    else return borrow_basic_vector(tag, type, n);
 }
-
-inline LispObject borrow_n_bytes(size_t n)
-{   n = doubleword_align_up(n);
-    if (borrowing_vheaptop == borrowing_heapstart)
-        borrowing_vheaplimit = borrowing_vheapstart;
-    while (borrowing_vfringe + n > borrowing_vheaplimit)
-        borrow_n_bytes_past_pin();
-    LispObject r = borrowing_vfringe;
-    borrowing_vfringe += n;
-// I do not set (or clear) header bits for borrowed vectors. That is because
-// they should never participate in garbage collection, so the issues of
-// ambiguous references to them do not arise.
-    return r;
-}
-
 
 // This code sets up an empty page - it is ONLY intended for use at the
 // start of a run when there can not be any pinned items present anywhere.
 // I put the code here adjacent to the code that allocates from pages so
 // that the setup and use can be compared.
 
-static void set_up_empty_page(page_header *p)
-{   p->vheapstart = p->vfringe = (uintptr_t)&(p->data[0]);
-    p->vheaptop = p->vheaplimit = (uintptr_t)p + CSL_PAGE_SIZE;
-    p->len = p->vxor_chain = 0;
-    p->heaplimit = p->vfringe;
-    p->heapstart = p->fringe = p->vheaplimit;
-    p->xor_chain = p->len = 0;
-    memset(p->objstart,
-        SIXTY_FOUR_BIT ? 0x55 : 0xff,
-        PAGE_BITMAP_SIZE);
-    memset(p->pinned_bitmap, 0, PAGE_BITMAP_SIZE);
+
+static void set_up_empty_page(Page *p)
+{   p->pageHeader.fringe = reinterpret_cast<uintptr_t>(&p->pageBody.data);
+    p->pageHeader.limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
+    p->pageHeader.dirtypage.store(false);
+    p->pageHeader.onstarts_present = false;
+// I would like to be able to set the dirty bitmap all zero other than by
+// using the store() method one byte at a time. It is also possible that
+// when I first allocate a page that page will not be put in the stable
+// region of the heap so its dirty map will not be inspected - and if that is
+// the case this initialization loop is not actually needed. I will put it
+// in for now to be tidy!
+    for (size_t i=0; i<2*bytesForMap; i++)
+        p->pageBody.pageBitmaps.dirty[i].store(0);
 }
 
-void set_variables_from_page(page_header *p)
+void set_variables_from_page(Page *p)
 {
 // Set the variable that are used when allocating within the active page.
-    vheapstart = p->vheapstart;
-    vfringe    = p->vfringe;
-    vheaplimit = p->vheaplimit;
-    vlen       = p->vlen;
-    vheaptop   = p->vheaptop;
-    vxor_chain = p->vxor_chain;
-    heapstart  = p->heapstart;
-    fringe     = p->fringe;
-    heaplimit  = p->heaplimit;
-    len        = p->len;
-    xor_chain  = p->xor_chain;
+    Afringe = p->pageHeader.fringe;
+    Alimit = p->pageHeader.limit;
 }
 
-void save_variables_to_page(page_header *p)
+void save_variables_to_page(Page *p)
 {
 // Dump global variable values back into a page header.
-    p->vheapstart   = vheapstart;
-    p->vfringe      = vfringe;   
-    p->vheaplimit   = vheaplimit;
-    p->vlen         = vlen;      
-    p->vheaptop     = vheaptop;  
-    p->vxor_chain   = vxor_chain;
-    p->heapstart    = heapstart; 
-    p->fringe       = fringe;    
-    p->heaplimit    = heaplimit; 
-    p->len          = len;       
-    p->xor_chain    = xor_chain; 
+    p->pageHeader.fringe = Afringe;
+    p->pageHeader.limit  = Alimit;
 }
 
-void set_next_active_page()
-{   printf("set_next_active_page\n");
-    if (previous_active_page != NULL)
-    {   previous_active_page->page_chain = used_pages;
-        used_pages = previous_active_page;
-    }
-    previous_active_page = active_page;
-// Set a new active_page from the chain of free_pages. If that chain is
-// empty we are in trouble!
-    active_page = free_pages;
-    free_pages = free_pages->page_chain;
-    active_page->page_type = 0;
-    active_page->page_chain = 0;
-    set_variables_from_page(active_page);
-    printf("Use page at %p: fringe = %p, heaplimit = %p\n",
-        active_page, (void *)fringe, (void *)heaplimit);
-    active_pages_count++;
-    free_pages_count--;
-}
-
-static void allocate_next_page()
-{   printf("allocate_next_page\n");
-    fflush(stdout);
-// Here I should often do a minor garbage collection in a generational
-// sense. When I have the heap close to half full I should perform
-// a full garbage collection.
-// But until I have a generational collector in place I mostly just
-// grab another page from the pool.
-    if (active_pages_count > free_pages_count-1)
-    {   printf("Probably need to garbage collect\n");
-        my_abort();
-    }
-    set_next_active_page();
-}
-
-void gc_prepare_new_half_space()
-{    
-}
-
-static void gc_allocate_next_page()
-{   printf("GC allocate_next_page\n");
-    fflush(stdout);
-// This is called from within the garbage collector, so it will expect that
-// there is available space. Hypothetically if it happened that the active
-// space was all well packed and the free memory was subject to an undue
-// number of pinned items and fragmentation one might run out here - that
-// would be a fatal situation.
-    if (free_pages_count == 0)
-    {   printf("Fatal error: memory exhausted\n");
-        my_abort();
-    }
-    set_next_active_page();
-}
-
-page_header *free_pages_for_borrowing;
-
-void allocate_next_borrowed_page()
-{   
-// Borrow a page. If there are none available we are in trouble!
-    page_header *p = free_pages_for_borrowing;
-    if (p == NULL)
-    {   fprintf(stderr, "Run out of space during borrowing\n");
-        my_abort();
-    }
-    free_pages_for_borrowing = free_pages_for_borrowing->page_chain;
-// Set the variable that are used when allocating within the active page.
-    borrowing_vheapstart = p->vheapstart;
-    borrowing_vfringe    = p->vfringe;
-    borrowing_vheaplimit = p->vheaplimit;
-    borrowing_vlen       = p->vlen;
-    borrowing_vheaptop   = p->vheaptop;
-    borrowing_vxor_chain = p->vxor_chain;
-    borrowing_heapstart  = p->heapstart;
-// I only allocate vectors in borrowed space, so the variables listed
-// in the commented out lines here are not needed.
-//@ borrowing_fringe     = p->fringe;
-//@ borrowing_heaplimit  = p->heaplimit;
-//@ borrowing_len        = p->len;
-//@ borrowing_xor_chain  = p->xor_chain;
-}
-
-
-
-// This code allocates a segment by asking the operating system. On
-// Windows it uses VirtualAlloc() and on other systems mmap().  It arranges
-// that heap_segment[] gets updates and that bitmaps for "dirty" pages are
-// established.  The collection of segments must be stored in heap_segments[]
+// This code allocates a segment by asking the operating system.
+// It must return a block that is aligned to sizeof(Page).
+// The collection of segments must be stored in heap_segments[]
 // such that their addresses are in ascending order, and in consequence of
 // that allocating a new segment may shuffle existing ones in the tables.
 // So the index of a segment in the tables may not be viewed as permenant.
 
-void *allocate_segment(size_t n)
+Page *allocate_segment(size_t n)
 {
 // I will round up the size to allocate so it is a multiple of the
-// system page size. Well I expect that in any sensible calls to
-// this function that requested size will already be nicely rounded,
-// but this is cheap and adds to safety.
-    n = (n + page_size - 1) & -page_size;
-    size_t map_size = n/page_size; // number of bits of map needed
-// Round up map_size to be a multiple of sizeof(unit64_t)
-    map_size = (map_size + sizeof(uint64_t) - 1) / sizeof(uint64_t);
-// Where possible I allocate map space within the small bitmap block, working
-// down from the top. I leave map_ptr NULL if this is not possible, otherwise
-// it identified the location within the block;
-    size_t extra = 0;
-    uint64_t *map_ptr_1, *map_ptr_2;
-    if (map_size >= (size_t)((char *)heap_small_bitmaps_1_ptr -
-                             (char *)heap_small_bitmaps_1))
-    {   map_ptr_1 = map_ptr_2 = NULL;
-// The map will need to go at the end of the newly allocated block... I
-// sort out how much space that will use.
-        extra = (2*map_size*sizeof(uint64_t) + page_size - 1) & -page_size;
-    }
-    else
-    {   map_ptr_1 = (uint64_t *)((char *)heap_small_bitmaps_1_ptr - map_size);
-        map_ptr_2 = (uint64_t *)((char *)heap_small_bitmaps_2_ptr - map_size);
-    }
-#ifdef WIN32
-// This will allocate a block that is aligned at least at a page boundary
-// well it will tends to be aligned even more than just that). The memory
-// will be readable and writable, but has the Windows special attribute
-// WRITE_WATCH that means that I can enquire about pages that have been
-// written to. This does almost all of the work I need for my write barrier.
-    void *r = VirtualAlloc(NULL, n+extra,
-                           MEM_RESERVE|MEM_COMMIT|MEM_WRITE_WATCH,
-                           PAGE_READWRITE);
-    bool failed = (r == NULL);
-#else // !WIN32
-// On Linux, BSD, Macintosh, Unix etc I will use mmap. If MAP_ANONYMOUS
-// is defined I will use it, in the fall-back case I will open /dev/zero
-// every time. Well in the context I am imagining here I will at most
-// call this function 32 times during a run, so that is not too bad.
-// Observe that I map the memory read-only so that when anybody tries to
-// write to it they get e SIGSEGV (or SIGBUS on some systems!). The
-// handler for that will update the magic bitmap. In each case the new
-// block of memory is initializer to zero - in particular this means that
-// if the bitmap for it lies within it that will be zero.
-#ifdef MAP_ANONYMOUS
-    void *r = mmap(0, n+extra,
-                   PROT_READ|PROT_WRITE,
-                   MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-    bool failed = (r == MAP_FAILED);
-#else // !MAP_ANONYMOUS
-    int fd = open("/dev/zero", O_RDWR);
-    void *r = mmap(0, n+extra,
-                   PROT_READ|PROT_WRITE,
-                   MAP_PRIVATE, fd, 0);
-    bool failed = (r == MAP_FAILED);
-    close(fd);
-#endif // !MAP_ANONYMOUS
-#endif // !WIN32
-    if (failed) return NULL;
-    if (map_ptr_1 != NULL) heap_small_bitmaps_1_ptr = map_ptr_1;
-    else map_ptr_1 = (uint64_t*)((char *)r + n);
+// page size. Note that this will be quite a large value!
+    n = (n + pageSize - 1) & -pageSize;
+    Page *r;
+    void *rbase;
+// If I have C++17 I can rely on alignment constraints and just allocate
+// using new[]
+#ifdef __cpp_aligned_new
+    r = new Page[n/pageSize];
+    my_assert(r != NULL);
+    rbase = _static_cast<void *>(r);
+#else // !__cpp_aligned_new
+// On older platforms I need to allocate extra memory and then use std::align
+// to get the address within the bigger block that I want.
+// In this case I will need to preserve the base of the full block because
+// that will be what I will be able to free at the end.
+    size_t N = n + pageSize - 1;
+    rbase = static_cast<void *>(new char[N]);
+    my_assert(rbase != NULL);
+    void *work = rbase;
+    work = std::align(pageSize, n, work, N);
+    my_assert(work != NULL);
+    r = static_cast<Page *>(work);
+#endif // !__cpp_aligned_new
     heap_segment[heap_segment_count] = r;
-    heap_dirty_pages_bitmap_1[heap_segment_count] = map_ptr_1;
-    if (map_ptr_2 != NULL) heap_small_bitmaps_2_ptr = map_ptr_2;
-    else map_ptr_2 = (uint64_t*)((char *)r + n + extra/2);
-    heap_dirty_pages_bitmap_2[heap_segment_count] = map_ptr_2;
-// Note that the recorded size here does not include any appended bitmap.
+    heap_segment_base[heap_segment_count] = rbase;
     heap_segment_size[heap_segment_count] = n;
-    heap_segment_total_size[heap_segment_count] = n + extra;
     heap_segment_count++;
 // Now I need to arrange that the segments are sorted in the tables
 // that record them.
     for (size_t i=heap_segment_count-1; i!=0; i--)
     {   int j = i-1;
         void *h1 = heap_segment[i], *h2 = heap_segment[j];
-        if ((uintptr_t)h2 < (uintptr_t)h1) break; // Ordering is OK
+        if (reinterpret_case<uintptr_t>(h2) < reinterpret_case<uintptr_t>(h1))
+            break; // Ordering is OK
 // The segment must sink a place in the tables.
-        heap_segment[i] = h2; heap_segment[j] = h1;
-        h1 = heap_dirty_pages_bitmap_1[i]; h2 = heap_dirty_pages_bitmap_1[j];
-        heap_dirty_pages_bitmap_1[i] = (uint64_t *)h2;
-        heap_dirty_pages_bitmap_1[j] = (uint64_t *)h1;
-        h1 = heap_dirty_pages_bitmap_2[i]; h2 = heap_dirty_pages_bitmap_2[j];
-        heap_dirty_pages_bitmap_2[i] = (uint64_t *)h2;
-        heap_dirty_pages_bitmap_2[j] = (uint64_t *)h1;
-        size_t w = heap_segment_size[i];
-        heap_segment_size[i] = heap_segment_size[j];
-        heap_segment_size[j] = w;
+        std::swap(heap_segment[i], heap_segment[j]);
+        std::swap(heap_segment_base[i], heap_segment_base[j]);
+        std::swap(heap_segment_size[i], heap_segment_size[j]);
     }
 // r now refers to a new segment of size n, I want to structure it into
 // pages.
     free_pages_count = active_pages_count = 0;
     for (size_t k=0; k<n; k+=CSL_PAGE_SIZE)
-    {   page_header *p = (page_header *)((char *)r + k);
-// I do not even know if I really need a page_type field!
-        p->page_type = 0; // ????
+    {   Page *p = reinterpret_cast<Page *>(reinterpret_cast<char *>(r) + k);
 // Keep a chain of all the pages.
-        p->page_chain = free_pages;
+        p->pageHeader.chain = free_pages;
         free_pages = p;
         set_up_empty_page(p);
         free_pages_count++;
@@ -1913,44 +1684,6 @@ LispObject Lgc_forcer1(LispObject env, LispObject a)
 // maps of pinned locations at the end of garbage collection - to support
 // borrowing I have to do it at the start.
 
-
-void prepare_for_borrowing()
-{   free_pages_for_borrowing = free_pages;
-    allocate_next_borrowed_page();
-}
-
-LispObject borrow_basic_vector(int tag, int type, size_t size)
-{   size_t alloc_size = (size_t)doubleword_align_up(size);
-    if (alloc_size > (CSL_PAGE_SIZE - 32))
-        aerror1("request for basic vector too big",
-                fixnum_of_int(alloc_size/CELL-1));
-    LispObject r = borrow_n_bytes(alloc_size);
-    *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
-    if (!SIXTY_FOUR_BIT && alloc_size != size)
-        *(LispObject *)(r+alloc_size-CELL) = 0;
-    return (LispObject)(r + tag);
-}
-
-// This code is significantly simplified as compared with get_vector for
-// at least two reasons. Firstly while borrowing I will NEVER garbage collect,
-// and so I do not need to initialize the vector to safe values. Secondly
-// I will not use the vector-cache scheme that the full version uses.
-
-LispObject borrow_vector(int tag, int type, size_t n)
-{   if (n-CELL > VECTOR_CHUNK_BYTES)
-    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
-        size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
-        if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
-        LispObject v =
-            borrow_basic_vector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
-        for (size_t i=0; i<chunks; i++)
-        {   size_t k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
-            basic_elt(v, i) = borrow_basic_vector(tag, type, k+CELL);
-        }
-        return v;
-    }
-    else return borrow_basic_vector(tag, type, n);
-}
 
 
 

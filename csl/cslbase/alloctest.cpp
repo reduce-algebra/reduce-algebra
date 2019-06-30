@@ -1,13 +1,14 @@
-// version.h                               Copyright (C) 1990-2018 Codemist
+// alloctest.cpp                                Copyright (C) 2019 Codemist
 
-#ifndef header_version_h
-#define header_version_h 1
+// This is going to be so I can have a simple test harness for
+// newalloc.cpp and its friends.
+
 
 // $Id$
 
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,12 +36,12 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// Rather than having a simple version I will cause my script
-// (scripts/commit.sh) that is used to update the subversion repository to
-// update the revision number here.
+#include "config.h"
+#include "headers.h"
 
-#define REVISION 5047
+int main(int argc, char *argv[])
+{   printf("alloctest starting\n");
 
-#endif // header_version_h
+}
 
-// end of version.h
+// end of alloctest.cpp

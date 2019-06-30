@@ -1,4 +1,4 @@
-## process this file with automake to create Makefile.in
+## process this file with automake to create Makefile.
 
 ## and then use autoconf to create ./configure. Finally run that
 ## to build your usable Makefile (probably in another directory)
@@ -61,6 +61,9 @@ csl_CPPFLAGS    = $(TRACE)
 # This is just for flatcsl where the program is all compiled as a single
 # compilation unit, so "spurious" warnings are especially bulky.
 flatcsl_CPPFLAGS = $(TRACE) -Wno-unused-function
+if conservative
+alloctest_CPPFLAGS = $(TRACE)
+endif conservative
 
 bootstrapreduce_CPPFLAGS = $(TRACE) -DBOOTSTRAP=1 -DREDUCE_PROMPTS=1
 
@@ -95,6 +98,7 @@ plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
 plain_zlibdemo = zlibdemo
 plain_gctest = gctest
+plain_alloctest = alloctest
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
 plain_flatcsl = csl.unnecessary.except.on.windows
@@ -115,6 +119,7 @@ plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_dyndemo = dyndemo.unnecessary.except.on.windows
 plain_zlibdemo = zlibdemo.unnecessary.except.on.windows
 plain_gctest = gctest.unnecessary.except.on.windows
+plain_alloctest = gctest.unnecessary.except.on.windows
 endif !exeext
 
 .PHONY: $(plain_csl)
@@ -136,6 +141,7 @@ endif !exeext
 .PHONY: $(plain_dyndemo)
 .PHONY: $(plain_zlibdemo)
 .PHONY: $(plain_gctest)
+.PHONY: $(plain_alloctest)
 
 .PHONY:	bootstraprecompile
 .PHONY:	recompile
@@ -208,6 +214,9 @@ AM_CPPFLAGS     += $(MY_CPPFLAGS)
 reduce_CPPFLAGS += $(MY_CPPFLAGS)
 bootstrapreduce_CPPFLAGS += $(MY_CPPFLAGS)
 csl_CPPFLAGS    += $(MY_CPPFLAGS)
+if conservative
+alloctest_CPPFLAGS += $(MY_CPPFLAGS)
+endif conservative
 # For at least a while I will NOT warn about unused (static) functions, because
 # I have rather a lot of that that are to do with support for short floats.
 flatcsl_CPPFLAGS    += $(MY_CPPFLAGS)
@@ -276,6 +285,9 @@ noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
 	dyndemo$(EXEEXT) zlibdemo$(EXEEXT) $(wxdemotarget)
+if conservative
+check_PROGRAMS += alloctest$(EXEEXT)
+endif
 endif !mac_framework
 
 if mac_framework
@@ -297,6 +309,7 @@ endif !arithlib
 
 if conservative
 gc_sources = newcslgc.cpp newallocate.cpp 
+alloctest_SOURCES = alloctest.cpp $(gc_sources)
 else !conservative
 gc_sources = cslgc.cpp allocate.cpp 
 endif !conservative
@@ -484,16 +497,13 @@ generated_lisp =                  $(gensrc)/u01.lsp \
 		$(gensrc)/u58.lsp $(gensrc)/u59.lsp \
 		$(gensrc)/u60.lsp
 
-csl_SOURCES = $(core_sources) $(fwin_sources) \
-		stubs.cpp
+csl_SOURCES = $(core_sources) $(fwin_sources) stubs.cpp
 
 flatcsl_SOURCES = flatcsl.cpp
 
-bootstrapreduce_SOURCES = $(core_sources) $(fwin_sources) \
-		stubs.cpp
+bootstrapreduce_SOURCES = $(core_sources) $(fwin_sources) stubs.cpp
 
-reduce_SOURCES = $(core_sources) $(fwin_sources) \
-		$(generated_sources)
+reduce_SOURCES = $(core_sources) $(fwin_sources) $(generated_sources)
 
 fwindemo_SOURCES=fwindemo.cpp $(fwin_sources)
 if wx
@@ -616,6 +626,10 @@ remake-zlibdemo-source:	$(cslbase)/preserve.cpp
 	unifdef -x2 -DZLIB_DEMO < $(cslbase)/preserve.cpp > $(cslbase)/zlibdemo.cpp
 
 
+if conservative
+alloctest_LDADD =
+alloctest_DEPENDENCIES =
+endif conservative
 
 if windows
 
@@ -700,10 +714,8 @@ not-under-cygwin.exe:	$(cslbase)/not-under-cygwin.cpp
 	i686-w64-mingw32-strip not-under-cygwin.exe
 
 # These used to have things like local-cslexe.def as dependencies...
-csl_DEPENDENCIES = fwin-csl.$(OBJEXT) \
-		$(FONTDEP) $(WXC)
-flatcsl_DEPENDENCIES = fwin-csl.$(OBJEXT) \
-		$(FONTDEP) $(WXC)
+csl_DEPENDENCIES = fwin-csl.$(OBJEXT) $(FONTDEP) $(WXC)
+flatcsl_DEPENDENCIES = fwin-csl.$(OBJEXT) $(FONTDEP) $(WXC)
 bootstrapreduce_DEPENDENCIES = fwin-csl.$(OBJEXT) $(FONTDEP) \
 		reduce.doc/index.html $(AWKFILES) $(GP) $(WXC)
 reduce_DEPENDENCIES = $(reduceres) \
@@ -824,6 +836,9 @@ reduce_CPPFLAGS += $(CRINC)
 bootstrapreduce_CPPFLAGS += $(CRINC)
 csl_CPPFLAGS    += $(CRINC)
 flatcsl_CPPFLAGS    += $(CRINC)
+if conservative
+alloctest_CPPFLAGS += $(CRINC)
+endif conservative
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and crlibm building will get
@@ -834,11 +849,17 @@ csl_LDADD += ../lib/libcrlibm.a
 flatcsl_LDADD += ../lib/libcrlibm.a
 bootstrapreduce_LDADD += ../lib/libcrlibm.a
 reduce_LDADD += ../lib/libcrlibm.a
+if conservative
+alloctest_LDADD += ../lib/libcrlibm.a
+endif conservative
 
 csl_DEPENDENCIES += $(CRLIBMDEPS)
 flatcsl_DEPENDENCIES += $(CRLIBMDEPS)
 bootstrapreduce_DEPENDENCIES += $(CRLIBMDEPS)
 reduce_DEPENDENCIES += $(CRLIBMDEPS)
+if conservative
+alloctest_DEPENDENCIES += $(CRLIBMDEPS)
+endif conservative
 
 $(CRLIBMDEPS):	$(USE_CORRECT_CYGWIN)
 	printf "About to build crlibm for %s\n" `pwd`
@@ -860,6 +881,9 @@ reduce_CPPFLAGS += $(FFINC)
 bootstrapreduce_CPPFLAGS += $(FFINC)
 csl_CPPFLAGS    += $(FFINC)
 flatcsl_CPPFLAGS    += $(FFINC)
+if conservative
+alloctest_CPPFLAGS    += $(FFINC)
+endif
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and libffi building will get
@@ -870,11 +894,17 @@ csl_LDADD += ../lib/libffi.a
 flatcsl_LDADD += ../lib/libffi.a
 bootstrapreduce_LDADD += ../lib/libffi.a
 reduce_LDADD += ../lib/libffi.a
+if conservative
+alloctest_LDADD += ../lib/libffi.a
+endif conservative
 
 csl_DEPENDENCIES += $(LIBFFIDEPS)
 flatcsl_DEPENDENCIES += $(LIBFFIDEPS)
 bootstrapreduce_DEPENDENCIES += $(LIBFFIDEPS)
 reduce_DEPENDENCIES += $(LIBFFIDEPS)
+if conservative
+alloctest_DEPENDENCIES += $(LIBFFIDEPS)
+endif conservative
 
 $(LIBFFIDEPS):	$(USE_CORRECT_CYGWIN)
 	printf "About to build libffi for %s\n" `pwd`
@@ -890,6 +920,9 @@ reduce_CPPFLAGS += $(SOFTFLOATINC)
 bootstrapreduce_CPPFLAGS += $(SOFTFLOATINC)
 csl_CPPFLAGS    += $(SOFTFLOATINC)
 flatcsl_CPPFLAGS    += $(SOFTFLOATINC)
+if conservative
+alloctest_CPPFLAGS    += $(SOFTFLOATINC)
+endif conservative
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and softfloat building will get
@@ -900,10 +933,16 @@ csl_LDADD += ../lib/libsoftfloat.a
 flatcsl_LDADD += ../lib/libsoftfloat.a
 bootstrapreduce_LDADD += ../lib/libsoftfloat.a
 reduce_LDADD += ../lib/libsoftfloat.a
+if conservative
+alloctest_LDADD    += ../lib/libsoftfloat.a
+endif conservative
 
 csl_DEPENDENCIES += $(SOFTFLOATDEPS)
 bootstrapreduce_DEPENDENCIES += $(SOFTFLOATDEPS)
 reduce_DEPENDENCIES += $(SOFTFLOATDEPS)
+if conservative
+alloctest_DEPENDENCIES    += $(SOFTFLOATDEPS)
+endif conservative
 
 $(SOFTFLOATDEPS):	$(USE_CORRECT_CYGWIN)
 	printf "About to build softfloat for %s\n" `pwd`
@@ -1280,6 +1319,10 @@ if mac_framework
 endif mac_framework
 
 endif !wx
+
+alloctest$(EXEEXT): $(alloctest_OBJECTS) $(alloctest_DEPENDENCIES)
+	-$(RM) -f alloctest$(EXEEXT)
+	$(CXXLINKTO) $(DEST)alloctest$(EXEEXT) $(alloctest_OBJECTS) $(alloctest_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
 			$(WXDEPS) $(generated_lisp) $(WINHELPERS)
@@ -1684,6 +1727,12 @@ $(plain_dyndemo):	dyndemo.exe
 
 $(plain_zlibdemo):	zlibdemo.exe
 	echo "$(MAKE) zlibdemo.exe is preferred"
+
+$(plain_gctest):	gctest.exe
+	echo "$(MAKE) gctest.exe is preferred"
+
+$(plain_alloctest):	alloctest.exe
+	echo "$(MAKE) alloctest.exe is preferred"
 
 endif exeext
 
