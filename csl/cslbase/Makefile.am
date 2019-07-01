@@ -309,7 +309,7 @@ endif !arithlib
 
 if conservative
 gc_sources = newcslgc.cpp newallocate.cpp 
-alloctest_SOURCES = alloctest.cpp $(gc_sources)
+alloctest_SOURCES = alloctest.cpp sysfwin.cpp $(gc_sources)
 else !conservative
 gc_sources = cslgc.cpp allocate.cpp 
 endif !conservative

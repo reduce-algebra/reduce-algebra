@@ -39,6 +39,92 @@
 #include "config.h"
 #include "headers.h"
 
+// I will need to provide definitions of a number of things that the main
+// parts of CSL use, even if I will not actually make use of them here.
+
+void fwin_report_left(const char *s)
+{}
+
+void fwin_report_right(const char *s)
+{}
+
+int window_heading;
+
+void fwin_ensure_screen()
+{
+}
+
+void ensure_screen()
+{
+}
+
+volatile std::atomic<uintptr_t> event_flag;
+
+int fwin_getchar()
+{   return EOF;
+}
+
+LispObject make_undefined_symbol(const char *name)
+{   return nil;
+}
+
+LispObject get_pname(LispObject a)
+{   return a;
+}
+
+LispObject nil, lisp_true, unset_var;
+LispObject *nilsegment, *stacksegment, *stack, *stackbase, *stacklimit;
+uintptr_t *C_stackbase, C_stacklimit;
+
+[[noreturn]] void fatal_error(int code, ...)
+{   my_abort();
+}
+void trace_printf(const char *fmt, ...)
+{
+}
+
+void global_longjmp()
+{   my_abort();
+}
+
+void respond_to_stack_event()
+{
+}
+
+int init_flags;
+double maxStoreSize;
+unsigned int exit_count;
+intptr_t miscflags;
+
+const char *programDir;
+const char *programName;
+const char *standard_directory;
+
+LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1] = {0};
+
+uint32_t Crand()
+{   return 0;
+}
+
+bool file_exists(char*, char const*, unsigned long, char*)
+{   return false;
+}
+
+const volatile char *errorset_msg;
+
+[[noreturn]] void aerror(const char *msg)
+{   my_abort();
+}
+
+[[noreturn]] void aerror1(const char *msg, LispObject a)
+{   my_abort();
+}
+
+int64_t sixty_four_bits(LispObject a)
+{   return 0;
+}
+
+
 int main(int argc, char *argv[])
 {   printf("alloctest starting\n");
 

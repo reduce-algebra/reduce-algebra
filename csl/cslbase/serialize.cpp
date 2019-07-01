@@ -466,15 +466,6 @@ static inthash repeat_hash;
 LispObject *repeat_heap = NULL;
 size_t repeat_heap_size = 0, repeat_count = 0;
 
-// This tiny function exists just so that I can set a breakpoint on it.
-
-[[noreturn]] void my_abort()
-{   fflush(stdout);
-    fflush(stderr);
-    ensure_screen();
-    abort();
-}
-
 void reader_setup_repeats(size_t n)
 {   if (repeat_heap_size != 0 ||
         repeat_heap != NULL)

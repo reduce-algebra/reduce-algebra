@@ -503,7 +503,7 @@ inline std::mutex &diagnostic_mutex(const char ***where)
     static std::mutex my_diagnostic_mutex;
     static const char *my_diagnostic_location;
 #endif // !HAVE_INLINE_VARS
-    *where = &my_disgnostic_location;
+    *where = &my_diagnostic_location;
     return my_diagnostic_mutex;
 }
 

@@ -466,9 +466,9 @@ LispObject rplaca2(LispObject a, LispObject b)
 // build a version so that I can test it incrementally.
 
 void **pages, **heap_pages, **vheap_pages;
-size_t pages_count, heap_pages_count, vheap_pages_count;
+size_t pagesCount, heap_pagesCount, vheap_pagesCount;
 void **new_pages, **new_heap_pages, **new_vheap_pages;
-size_t new_pages_count, new_heap_pages_count, new_vheap_pages_count;
+size_t new_pagesCount, new_heap_pagesCount, new_vheap_pagesCount;
 
 void *allocate_page(const char *why)
 {   printf("allocate_page called\n");
@@ -525,7 +525,7 @@ void set_up_signal_handlers()
     sigaltstack(&signal_stack, (stack_t *)0);
 #endif
     for (int i=0; i<32; i++)
-        heap_segment[i] = reinterpret_cast<void *>(UINTPTR_MAX);
+        heapSegment[i] = reinterpret_cast<void *>(UINTPTR_MAX);
 #ifdef HAVE_SIGACTION
     struct sigaction sa;
     sa.sa_sigaction = low_level_signal_handler;
@@ -891,33 +891,35 @@ std::atomic<uintptr_t> Alimit;
 
 typedef Page PageList;
 
-Page *nurseryPage;       // where allocation is happening
-Page *pendingPage;
-Page *scavengablePage;
-PageList *stablePages;
-PageList *mostlyFreePages;
-PageList *freePages;
+Page *nurseryPage = NULL;       // where allocation is happening
+Page *pendingPage = NULL;
+Page *scavengablePage = NULL;
+PageList *stablePages = NULL;
+PageList *mostlyFreePages = NULL;
+PageList *freePages = NULL;
+size_t freePagesCount = 0;
+
 
 // For up to 32 segments I have...
-//   heap_segment_count   number of allocated segments
-//   heap_segment[i]      base address of a segment of memory
-//   heap_segment_size[i] size of useful part of that segment, in bytes
-//   heap_segment_total_size[i] total size
+//   heapSegmentCount   number of allocated segments
+//   heapSegment[i]      base address of a segment of memory
+//   heapSegmentSize[i] size of useful part of that segment, in bytes
+//   heapSegmentTotalSize[i] total size
 // I will keep the segments in my table sorted so that a binary search
 // can identify which one is relevant rather easily.
 
-void *heap_segment[32];
-size_t heap_segment_size[32];
-size_t heap_segment_total_size[32];
-size_t heap_segment_count = 0;
+void *heapSegment[32];
+void *heapSegmentBase[32];
+size_t heapSegmentSize[32];
+size_t heapSegmentCount = 0;
 
-// find_heap_segment() can be given an arbitrary bit-pattern and
+// find_heapSegment() can be given an arbitrary bit-pattern and
 // if that could represent a pointer into one of the segments it returns
 // the index into the table of segments associated with it, or -1 if the
 // bit-pattern could not be interpreted as a pointer to within the
 // memory I have allocated.
 
-extern int find_heap_segment(uintptr_t p);
+extern int find_heapSegment(uintptr_t p);
 
 // Given a value I want to see if it could be a pointer into one of the
 // allocated segments. Because there are only 32 of them and if I keep my
@@ -927,39 +929,39 @@ extern int find_heap_segment(uintptr_t p);
 // generated code.
 
 inline int find_segment2(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heap_segment[n+1])) return n;
+{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+1])) return n;
     else return n+1;
 }
 
 inline int find_segment4(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heap_segment[n+2]))
+{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+2]))
         return find_segment2(p, n);
     else return find_segment2(p, n+2);
 }
 
 inline int find_segment8(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heap_segment[n+4]))
+{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+4]))
         return find_segment4(p, n);
     else return find_segment4(p, n+4);
 }
 
 inline int find_segment16(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heap_segment[n+8]))
+{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+8]))
         return find_segment8(p, n);
     else return find_segment8(p, n+8);
 }
 
 inline int find_segment32(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heap_segment[n+16]))
+{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+16]))
         return find_segment8(p, n);
     else return find_segment16(p, n+16);
 }
 
-int find_heap_segment(uintptr_t p)
+int find_heapSegment(uintptr_t p)
 {   int n = find_segment32(p, 0);
-    if (p < reinterpret_cast<uintptr_t>(heap_segment[n]) ||
-        p >= reinterpret_cast<uintptr_t>(heap_segment[n]) +
-             heap_segment_size[n]) return -1;
+    if (p < reinterpret_cast<uintptr_t>(heapSegment[n]) ||
+        p >= reinterpret_cast<uintptr_t>(heapSegment[n]) +
+             heapSegmentSize[n]) return -1;
     return n;
 }
 
@@ -967,7 +969,7 @@ int find_heap_segment(uintptr_t p)
 // if there is not one
 
 Page *findPage(uintptr_t p)
-{   int n = find_heap_segment(p);
+{   int n = find_heapSegment(p);
     if (n < 0) return NULL;
     return reinterpret_cast<Page *>(p & -pageSize);
 }
@@ -1224,20 +1226,20 @@ void poll()
 
 // Now a HORRID feature of the scheme I have here is that I need to keep
 // track of how many threads exist and how many are currently running. A
-// thread will contribute to the count in "active_threads" if its is in a
+// thread will contribute to the count in "activeThreads" if its is in a
 // state where it will poll or allocate memory soon.
 
-std::atomic<int> active_threads;
+std::atomic<int> activeThreads;
 std::atomic<bool> gc_complete;
 std::mutex mutex_for_gc;
 std::condition_variable cv_for_gc;
 
 uintptr_t gc_and_allocate(uintptr_t r, size_t n)
-{   int a = (active_threads -= 1);
+{   int a = (activeThreads -= 1);
     if (a == 0)
     {   gc_complete.store(false);
 // Do the stuff.
-        std::lock_guard<std::mutex>(mutex_for_gc);
+        std::lock_guard<std::mutex> guard(mutex_for_gc);
         gc_complete.store(true);
         cv_for_gc.notify_all();
     }
@@ -1245,6 +1247,7 @@ uintptr_t gc_and_allocate(uintptr_t r, size_t n)
     {   std::unique_lock<std::mutex> lock(mutex_for_gc);
         cv_for_gc.wait(lock, []{ return gc_complete.load(); });
     }
+    return 0000000;
 }
 
 
@@ -1418,12 +1421,12 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // 32-bit or 64-bit representation. However it would be hard to unwind
 // that now!]
 //
-    size_t alloc_size = (size_t)doubleword_align_up(size);
+    size_t allocSize = (size_t)doubleword_align_up(size);
 // Basic vectors must be smaller then the CSL page size.
-    if (alloc_size > (CSL_PAGE_SIZE - 32))
+    if (allocSize > (CSL_PAGE_SIZE - 32))
         aerror1("request for basic vector too big",
-                fixnum_of_int(alloc_size/CELL-1));
-    LispObject r = get_n_bytes(alloc_size);
+                fixnum_of_int(allocSize/CELL-1));
+    LispObject r = get_n_bytes(allocSize);
     *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
 //
 // DANGER: the vector allocated here is left uninitialised at this stage.
@@ -1438,8 +1441,8 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // the whole vector (including the padder), but it should never try to trace
 // through it. By tidying this up here can feel that I do not have any
 // need to worry about it elsewhere.
-    if (!SIXTY_FOUR_BIT && alloc_size != size)
-        *(LispObject *)(r+alloc_size-CELL) = 0;
+    if (!SIXTY_FOUR_BIT && allocSize != size)
+        *(LispObject *)(r+allocSize-CELL) = 0;
     return (LispObject)(r + tag);
 }
 
@@ -1508,26 +1511,26 @@ LispObject borrow_n_bytes(size_t n)
 }
 
 LispObject borrow_basic_vector(int tag, int type, size_t size)
-{   size_t alloc_size = (size_t)doubleword_align_up(size);
-    if (alloc_size > (CSL_PAGE_SIZE - 32))
+{   size_t allocSize = (size_t)doubleword_align_up(size);
+    if (allocSize > (CSL_PAGE_SIZE - 32))
         aerror1("request for basic vector too big",
-                fixnum_of_int(alloc_size/CELL-1));
-    LispObject r = borrow_n_bytes(alloc_size);
+                fixnum_of_int(allocSize/CELL-1));
+    LispObject r = borrow_n_bytes(allocSize);
     *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
-    if (!SIXTY_FOUR_BIT && alloc_size != size)
-        *(LispObject *)(r+alloc_size-CELL) = 0;
+    if (!SIXTY_FOUR_BIT && allocSize != size)
+        *(LispObject *)(r+allocSize-CELL) = 0;
     return (LispObject)(r + tag);
 }
 
 LispObject borrow_vector(int tag, int type, size_t n)
 {   if (n-CELL > VECTOR_CHUNK_BYTES)
     {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
-        size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
-        if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
+        size_t lastSize = (n - CELL) % VECTOR_CHUNK_BYTES;
+        if (lastSize == 0) lastSize = VECTOR_CHUNK_BYTES;
         LispObject v =
             borrow_basic_vector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
         for (size_t i=0; i<chunks; i++)
-        {   size_t k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
+        {   size_t k = i==chunks-1 ? lastSize : VECTOR_CHUNK_BYTES;
             basic_elt(v, i) = borrow_basic_vector(tag, type, k+CELL);
         }
         return v;
@@ -1572,12 +1575,12 @@ void save_variables_to_page(Page *p)
 
 // This code allocates a segment by asking the operating system.
 // It must return a block that is aligned to sizeof(Page).
-// The collection of segments must be stored in heap_segments[]
+// The collection of segments must be stored in heapSegments[]
 // such that their addresses are in ascending order, and in consequence of
 // that allocating a new segment may shuffle existing ones in the tables.
 // So the index of a segment in the tables may not be viewed as permenant.
 
-Page *allocate_segment(size_t n)
+void *allocate_segment(size_t n)
 {
 // I will round up the size to allocate so it is a multiple of the
 // page size. Note that this will be quite a large value!
@@ -1589,7 +1592,7 @@ Page *allocate_segment(size_t n)
 #ifdef __cpp_aligned_new
     r = new Page[n/pageSize];
     my_assert(r != NULL);
-    rbase = _static_cast<void *>(r);
+    rbase = static_cast<void *>(r);
 #else // !__cpp_aligned_new
 // On older platforms I need to allocate extra memory and then use std::align
 // to get the address within the bigger block that I want.
@@ -1603,35 +1606,35 @@ Page *allocate_segment(size_t n)
     my_assert(work != NULL);
     r = static_cast<Page *>(work);
 #endif // !__cpp_aligned_new
-    heap_segment[heap_segment_count] = r;
-    heap_segment_base[heap_segment_count] = rbase;
-    heap_segment_size[heap_segment_count] = n;
-    heap_segment_count++;
+    heapSegment[heapSegmentCount] = r;
+    heapSegmentBase[heapSegmentCount] = rbase;
+    heapSegmentSize[heapSegmentCount] = n;
+    heapSegmentCount++;
 // Now I need to arrange that the segments are sorted in the tables
 // that record them.
-    for (size_t i=heap_segment_count-1; i!=0; i--)
+    for (size_t i=heapSegmentCount-1; i!=0; i--)
     {   int j = i-1;
-        void *h1 = heap_segment[i], *h2 = heap_segment[j];
-        if (reinterpret_case<uintptr_t>(h2) < reinterpret_case<uintptr_t>(h1))
+        void *h1 = heapSegment[i], *h2 = heapSegment[j];
+        if (reinterpret_cast<uintptr_t>(h2) < reinterpret_cast<uintptr_t>(h1))
             break; // Ordering is OK
 // The segment must sink a place in the tables.
-        std::swap(heap_segment[i], heap_segment[j]);
-        std::swap(heap_segment_base[i], heap_segment_base[j]);
-        std::swap(heap_segment_size[i], heap_segment_size[j]);
+        std::swap(heapSegment[i], heapSegment[j]);
+        std::swap(heapSegmentBase[i], heapSegmentBase[j]);
+        std::swap(heapSegmentSize[i], heapSegmentSize[j]);
     }
 // r now refers to a new segment of size n, I want to structure it into
 // pages.
-    free_pages_count = active_pages_count = 0;
+    freePagesCount = 0;
     for (size_t k=0; k<n; k+=CSL_PAGE_SIZE)
     {   Page *p = reinterpret_cast<Page *>(reinterpret_cast<char *>(r) + k);
 // Keep a chain of all the pages.
-        p->pageHeader.chain = free_pages;
-        free_pages = p;
+        p->pageHeader.chain = freePages;
+        freePages = p;
         set_up_empty_page(p);
-        free_pages_count++;
+        freePagesCount++;
     }
-    printf("%" PRIu64 " pages available\n", (uint64_t)free_pages_count);
-    return r;
+    printf("%" PRIu64 " pages available\n", (uint64_t)freePagesCount);
+    return static_cast<void *>(r);
 }
 
 // gc-forcer(a, b) should arrange that a garbage collection is triggered
@@ -1658,117 +1661,6 @@ LispObject Lgc_forcer1(LispObject env, LispObject a)
 {   return Lgc_forcer(env, a, a);
 }
 
-// The next functions (eg borrow_vector) are called just like the
-// functions that allocate new vectors, but they use space in the part
-// of memory space not at present in use by the garbage collector. If a
-// copying garbage collection triggered "right now" were to be able to
-// succeed there must be enough reserved space to make this possible provided
-// I only borrow space sufficient to make copies of existing live data.
-// One must NEVER garbage collect while space has been borrowed in this
-// way. At present this scheme is only ever used while rehashing hash
-// tables.
-//
-// This is implemented by saving the state of the current active page,
-// starting allocation afresh in a new page, arranging that allocating more
-// than kalf the available pages will not trigger a garbage collection, and
-// in an ephemeral world arranging that filling each page just leads to
-// allocation of a new one rather than a minor collection. Then the perfectly
-// regular version of the allocation functions (eg get_n_bytes and hence
-// get_basic_vector and get_vector) will allocate in these new temporary
-// pages. At the end of "borrowing" the pages so allocated need to be
-// returned to the pool of available pages. The messiest issue about that
-// is that the internal maps showing where there are pinned items must be
-// recreated. For this to be possible I am going to insist that where there
-// are pinned blocks in the middle of pages that the bitmap entries that show
-// where they are get retained. At one time I had thought I might tidy up the
-// maps of pinned locations at the end of garbage collection - to support
-// borrowing I have to do it at the start.
-
-
-
-
-// Now I want to think about the implementation of the copying garbage
-// collector. For that I will want to allocate copies of material in
-// what might be called the "new space". Well in fact it is nothing very
-// special in terms of half-spaces, it is just pages of memory not currently
-// occupied. So the allocation can be just the usual version, save that
-// it must arrange that it never triggers a further garbage collection even
-// though it is using up memory pages right up to te wire.
-// There is a potential for fragmentation, especially in the presence of
-// pinned items. As a result the allocator will sometimes insert a padder
-// vector so that memory can be scanned linearly in a neat way.
-// I will chain those padder vectors together keeping them in sequential
-// order. When I need to allocate I will sometimes take space from this
-// padder chain.
-// If I find space within a padder chunk I will use the memory at
-// its low address and adjust things so that the padder shrinks upwards.
-// There will be two circumstanmces when I remove a padder block from the
-// chain of spare space: one is when allocation from within it reduces its
-// size to just 1 word or fills it up completely. The other is when the
-// linear scan part of the GC reaches it. The idea behind the second of those
-// conditions is that I will need to visit all evacuated data so that I
-// either deal with forwarding addresses associated with it or do further
-// evacuation. Doing that in a single linear pass over the new heap is the
-// sanest strategy.
-// My current thought (but note that my ideas in this respect have been
-// wavering rather a lot!) is that I will allocate vector blocks in a
-// really simple way, but for allocating new CONS cells I will fill in parts
-// of padder blocks in preference to allocating genuinly new memory. My
-// expectation is that in most Lisp use-cases the number of CONS cells will
-// greatly exceed the number of vectors and that this strategy will fill up
-// otherwise wasted padder space pretty effectively. If it does not then I
-// may need to use a first-fit strategy for vector allocation.
-
-// Here are the allocation functions implementing the above.
-
-
-inline LispObject packed_get_2_words()
-{
-// No use of padder space yet!
-    return gc_get_2_words();
-}
-
-inline LispObject packed_get_n_bytes(size_t n)
-{
-// No use of padder space yet!
-    return gc_get_n_bytes(n);
-}
-
-void major_garbage_collect()
-{
-// (1) Clear pinned map for R and S.
-
-
-// (2) Scan ambiguous bases, marking items referred to in R or S as pinned.
-//     Build a table of the pinned items first using the pinned-table and if
-//     that overflows building a linked list in pages from F.
-//     If there had been a list of pinned items left in S by the previous
-//     collection then scan down it clearing any pinned bits on its entries,
-//     because that data is now not needed.
-
-
-// (3) Scan unambiguous bases and pointers out of C relocating anything except
-//     references into C or to things that are pinned. This copies material to
-//     new pages in F.
-
-
-// (4) Scan the new material in F much as step (4) in the minor case.
-
-
-// (5) Using information about pinned data in the table and any overflow list
-//     build up freespace tables/maps/chains in all the blocks from S.
-// (6) Swap interpretation of S and F, and allocate a new empty block for R
-//     (which in step 7 of the minor GC will then instantly become the new C).
-// (7) Consider dirty bits. What is needed is to mark any segment of memory
-//     containing a reference to C as dirty, and all others as clean. I rather
-//     hope to be able to build up that information as part of steps (3) and
-//     (4) since they already need to test for references into C.
-
-}
-
-
-uintptr_t *C_stackbase;
-
 extern void middle_reclaim();
 extern void inner_reclaim(uintptr_t *sp);
 
@@ -1790,7 +1682,7 @@ extern void inner_reclaim(uintptr_t *sp);
 // then discarding it. These days I use std::atomic rather than the volatile
 // qualifier since I believe that volatile will soon be deprecated!
 
-std::atomic<int> int volatile_variable = 12345;
+std::atomic<int> volatile_variable = 12345;
 
 void reclaim(int line)
 {
@@ -1901,126 +1793,8 @@ void middle_reclaim()
     inner_reclaim((uintptr_t *)((intptr_t)&w & -sizeof(LispObject)));
 }
 
-// It gives me a certain amount of pause when I wonder what types the
-// arguments to some of these functions should have. Here I have an
-// "ambiguous pointer" v, and I will pass that as a uintptr_t, but if I
-// find that it can be interpreted as a reference within the body of a
-// valid Lisp Object I will return a tagged pointer if the form of a
-// LispObject. I will return zero if the address passed is not satisfactory.
-
-inline LispObject find_object_start(uintptr_t v, page_header *p)
-{
-// v is expected to be double-CELL aligned on entry, and what is returned
-// will be a proper tagged object.
-// I will code this CRUDELY to start with.
-    uintptr_t v1 = v;
-// I will scan downwards in memory until I find a doubleword that is
-// marked as being the start of an object. If the page is not empty then
-// there will always be an object present at its start, and so this
-// loop will terminate. If the page was empty then the putative pointer
-// into it would have been rejected. So the loop here is safe.
-// At present I have coded this scanning down one unit at a time, but I
-// will be able to scan down through the bitmap up to 64 steps per go by
-// using word-at-a-time operations and probably a "find first set bit"
-// operation. That would speed this up in an interesting manner.
-    v1 &= -(uintptr_t)(2*CELL);
-    while (!is_header_address((Header *)v1, p)) v1 -= 2*CELL;
-    Header h = *(Header *)v1;
-// Now the item referenced is one of the following:
-//  A CONS, with a non-header value in h
-//  A padder vector.
-//  A symbol
-//  A genuine vector
-    if (is_symbol_header_full_test(h))
-    {   if (v1 > v+symhdr_length) return 0;
-        return (LispObject)(TAG_SYMBOL+v);
-    }
-    else if (is_vector_header_full_test(h))
-    {
-// This requires that a pointer to be within the active data region of a
-// vector to be accepted, except that for bit-vectors, byte and halfword
-// vectors pointers within the final 32-bit word of useful data will
-// be treated as pointing "within" the vector. I also deem the pointer
-// invalid if it is to within a padder object.
-        if (v1 > v+length_of_header(h) ||
-            type_of_header(h) == TYPE_PADDER) return 0;
-
-// Both vectors and those numeric types that are stored with a header
-// will be returned as with TAG_VECTOR here. So for instance double-floats
-// and bignums are returned with dodgy tags, but for the purposes here that
-// really does not matter!
-        return (LispObject)(TAG_VECTOR+v);
-    }
-    else
-    {   if (v1 > v+2*CELL) return 0;
-        return (LispObject)(TAG_CONS+v);
-    }
-}
-
-
 void inner_reclaim(uintptr_t *sp)
 {
-// (1) Clear pinned map for R and S.
-//     [Well I am at least for now going to suppose that that had been
-//     done as part of the final stage of the previous garbage collection,
-//     so I do not have anything to do here.]
-// (2) Scan ambiguous bases, marking items referred to in R or S as pinned.
-//     Build a table of the pinned items first using the pinned-table and if
-//     that overflows building a linked list in pages from F.
-//     If there had been a list of pinned items left in S by the previous
-//     collection then scan down it clearing any pinned bits on its entries,
-//     because that data is now not needed.
-    for (uintptr_t *s=sp; s<C_stackbase; s++)
-    {   uintptr_t v = *s;   // Possibly a valid pointer!
-        int h = find_heap_segment((uintptr_t)v);
-        if (h < 0) continue;
-// Here the ambiguous pointer at least lies within one of the regions of
-// memory that I had set aside for the heap.
-        void *seg = heap_segment[h];
-// Now I know which memory segment the potential pointer was within. The
-// segment was divided up into pages each of size CSL_PAGE_SIZE so I can now
-// sort out which of those is involved.
-        uintptr_t off = (char *)v - (char *)seg;
-        uintptr_t pagenum = off/CSL_PAGE_SIZE;
-        page_header *p = (page_header *)((char *)seg + CSL_PAGE_SIZE*pagenum);
-// Now p points to the start of a page that the pointer seems to address.
-// References into the "current" page will not be treated as cause for
-// pinning. That is because I expect that there will be quite a few references
-// into that page on the stack and that would lead to many pinned items.
-//
-        if (p == active_page) continue;
-// Reject it if the "pointer" is into the page header...
-        if ((char *)v < (char *)&p->data) continue;
-// ... and also if it is beyond all live data in the page.
-        if ((char *)v >= (char *)p->fringe) continue;
-// Now my potential pointer is to within a region that holds live data. If it
-// points within a Lisp value then find a tagged pointer to that as a more
-// or less valid LispObject.
-        v = find_object_start(v, p);
-// In unusual cases the pointer might not actually point within valid data.
-// This can only arise if there are gaps in the data.
-        if (v == 0) continue;
-// Now v is a sort of honest reference to an item that must be pinned.
-
-// <PIN IT HERE>
-
-    }
-// (3) Scan unambiguous bases and pointers out of C relocating anything except
-//     references into C or to things that are pinned. This copies material to
-//     new pages in F.
-// (4) Scan the new material in F much as step (4) in the minor case.
-// (5) Using information about pinned data in the table and any overflow list
-//     build up freespace tables/maps/chains in all the blocks from S.
-// (6) Swap interpretation of S and F, and allocate a new empty block for R
-//     (which in step 7 of the minor GC will then instantly become the new C).
-// (7) Consider dirty bits. What is needed is to mark any segment of memory
-//     containing a reference to C as dirty, and all others as clean. I rather
-//     hope to be able to build up that information as part of steps (3) and
-//     (4) since they already need to test for references into C.
-
-
-
-
 }
 
 void garbage_collect()
@@ -2028,59 +1802,49 @@ void garbage_collect()
     abort();
 }
 
-void init_heap_segments(double store_size)
+void *nilsegmentBase, *stacksegmentBase;
+
+void init_heapSegments(double storeSize)
 //
 // This function just makes nil and the pool of page-frames available.
 // The store-size is passed in units of Kilobyte, and as a double not
 // an integer so that overflow is not an issue.
 //
-{   get_page_size();
+{
 // I will make the default initial store size around 64M on a 64-bit
 // machine and 512M on a 64-bit system. If the user specified a "-K" option
 // they can override this, and also the system will tend to allocate more
 // space (if it can) when its memory starts to get full.
-    size_t free_space = (SIXTY_FOUR_BIT ? 512 : 64)*1024*1024;
-    size_t request = (size_t)store_size;
-    if (request != 0) free_space = 1024*request;
-// Now free_space is the amount I want to allocate. I will explicitly
+    size_t freeSpace = (SIXTY_FOUR_BIT ? 512 : 64)*1024*1024;
+    size_t request = (size_t)storeSize;
+    if (request != 0) freeSpace = 1024*request;
+// Now freeSpace is the amount I want to allocate. I will explicitly
 // set the variables that are associated with tracking memory allocation
 // to keep everything as clear as I can.
-    heap_segment_count = 0;
-    heap_small_bitmaps_1_ptr = &heap_small_bitmaps_1[SMALL_BITMAP_SIZE];
-    heap_small_bitmaps_2_ptr = &heap_small_bitmaps_2[SMALL_BITMAP_SIZE];
-    spin_lock.clear(); //"spin_lock=ATOMIC_FLAG_INIT;" only for initialization.
-    free_pages = used_pages = active_page = previous_active_page = NULL;
-    printf("Allocate %" PRIu64 " Kbytes\n", (uint64_t)free_space/1024);
-    allocate_segment(free_space);
-    set_next_active_page();
+    heapSegmentCount = 0;
+    freePages = NULL;
+    printf("Allocate %" PRIu64 " Kbytes\n", (uint64_t)freeSpace/1024);
+    allocate_segment(freeSpace);
 
 // There are other bits of memory that I will grab manually for now...
     nilsegment = (LispObject *)aligned_malloc(NIL_SEGMENT_SIZE+16);
+    nilsegmentBase = nilsegment;
 #ifdef COMMON
     nil = (LispObject)((uintptr_t)nilsegment + TAG_CONS + 8);
 #else
     nil = (LispObject)((uintptr_t)nilsegment + TAG_SYMBOL);
 #endif
-    stacksegment = (LispObject *)alligned_malloc(CSL_PAGE_SIZE);
+    stacksegment = (LispObject *)aligned_malloc(CSL_PAGE_SIZE);
+    stacksegmentBase = stacksegment;
     if (stacksegment == NULL) fatal_error(err_no_store);
     stackbase = (LispObject *)stacksegment;
 }
 
-void drop_heap_segments(void)
-{   for (size_t i=0; i<heap_segment_count; i++)
-    {   void *p = heap_segment[i];
-#ifdef WIN32
-        if (VirtualFree(p, heap_segment_total_size[i], MEM_RELEASE) == 0)
-        {   // Failed to release the memory. Ignore the error!!!
-        }
-#else
-        if (munmap(p, heap_segment_total_size[i]) != 0)
-        {   // Failed to release the memory. Ignore the error!!!
-        }
-#endif
-    }
-    aligned_free(nilsegment);
-    aligned_free(stacksegment);
+void drop_heapSegments(void)
+{   for (size_t i=0; i<heapSegmentCount; i++)
+        delete [] static_cast<Page *>(heapSegmentBase[i]);
+    delete [] nilsegmentBase;
+    delete [] stacksegmentBase;
 }
 
 // This allocates another page of memory if that is allowed and if it is
@@ -2094,10 +1858,12 @@ bool allocate_more_memory()
         return false;
     }
     else
-    {   pages[pages_count++] = page;
+    {   pages[pagesCount++] = page;
         return true;
     }
 }
+
+extern double maxStoreSize;
 
 void grab_more_memory(size_t npages)
 {
@@ -2115,17 +1881,17 @@ void grab_more_memory(size_t npages)
 // On systems where it is possible to measure the amount of available
 // real memory more sophisticated calculations may be possible.
     if (init_flags & INIT_EXPANDABLE)
-    {   size_t ideal = ok_to_grab_memory(heap_pages_count + vheap_pages_count);
+    {   size_t ideal = ok_to_grab_memory(heap_pagesCount + vheap_pagesCount);
         size_t more;
         if (ideal > MAX_PAGES) ideal = MAX_PAGES;
-        if (max_store_size != 0.0)
-        {   double page_limit = max_store_size*1024*1024/(double)CSL_PAGE_SIZE;
+        if (maxStoreSize != 0.0)
+        {   double pageLimit = maxStoreSize*1024*1024/(double)CSL_PAGE_SIZE;
 // Limit memory to (about) the amount the user indicated with --max-mem
-            size_t plim = (size_t)page_limit;
+            size_t plim = (size_t)pageLimit;
             if (ideal > plim) ideal = plim;
         }
-        if (ideal > pages_count)
-        {   more = ideal - pages_count;
+        if (ideal > pagesCount)
+        {   more = ideal - pagesCount;
             while (more > 0)
             {   if (!allocate_more_memory()) break;
                 more--;
@@ -2134,8 +1900,6 @@ void grab_more_memory(size_t npages)
     }
 }
 
-
-// @@@@@
 
 #ifdef WIN32
 #include <conio.h>
@@ -2159,8 +1923,10 @@ LispObject Lgc(LispObject env, LispObject a)
 // If GC is called with a non-nil argument the garbage collection
 // will be a full one - otherwise it will be soft and may do hardly
 // anything.
+#if 0
     return reclaim(nil, "user request",
                    a != nil ? GC_USER_HARD : GC_USER_SOFT, 0);
+#endif
 }
 
 LispObject Lverbos(LispObject env, LispObject a)
@@ -2186,373 +1952,7 @@ LispObject * volatile savestacklimit;
 
 static int stop_after_gc = 0;
 
-static size_t trailing_heap_pages_count,
-              trailing_vheap_pages_count;
-
-// copy_one_object() takes the address of a location that contains a
-// LispObject. If that LispObject is immediate data it leaves it alone.
-// Otherwise it must be a reference to an object in memory. If that object
-// is being visited for the first time a copy is made of it
-
-static void copy_one_object(LispObject *p)
-{   LispObject a = *p;
-    LispObject fr;
-// "nil" is never relocated and it is referenced often enough that making it
-// a special case here seems reasonable.
-    if (a == nil) return;
-    else if (is_immed_or_cons(a))
-    {   if (is_cons(a))
-        {   LispObject w = qcar(a);
-            if (is_forward(w)) *p = w - TAG_FORWARD + TAG_CONS;
-            else
-            {   fr = packed_get_2_words() + TAG_CONS;
-                cons_cells += 2*CELL;
-                qcar(fr) = w;
-                qcdr(fr) = qcdr(a);
-                *p = w = (LispObject)fr;
-                qcar(a) = w + TAG_FORWARD;
-            }
-        }
-    }
-    else                    // Here I have a symbol or vector
-    {   int tag = ((int)a) & TAG_BITS;
-        a = (LispObject)((char *)a - tag);
-        Header h = *(Header *)a;
-        size_t len;
-// If the symbol/number/vector has already been copied then its header
-// word contains a forwarding address. Re-tag it.
-        if (is_forward(h)) *p = h - TAG_FORWARD + tag;
-        else
-        {   if (tag == TAG_SYMBOL)
-            {   len = symhdr_length;
-                symbol_heads += symhdr_length;
-            }
-            else
-            {
-// length_of_header gives me the length in bytes, including the length
-// of the header word and of any padding. Hmmm bit-vectors, byte-vectors
-// (eg strings) and halfword vectors have a bit of a fudge in the way that
-// their length is encoded, and so I will need to review that and confirm
-// that all is safe! Yes - if you go length_of_header() on a string (or one
-// of the other cases where tha actual data is short) then the result you
-// get is the length in bytes of the data padded out to be a multiple of 4
-// bytes long.
-                len = doubleword_align_up(length_of_header(h));
-                my_assert(len >= CELL,
-                    [&]{ trace_printf("\nlen = %" PRIx64 " < CELL\n", len);
-                         for (int i=-30; i<=30; i++)
-                         { LispObject q = ((LispObject *)a)[i];
-                           trace_printf("%3d: %" PRIx64, i, q);
-                           if (is_odds(q) && is_header(q))
-                              trace_printf(" len=%" PRId64, length_of_header(q));
-                           trace_printf("\n");
-                         }
-                       });
-// When the garbage collector copies a hash table it changes the type from
-// HASH to HASHX. That signals that the table may now be in need of re-hashing.
-// That re-hashing is not actually done until or unless somebody makes use
-// of the table, and when it is complete the table is reset to type HASH.
-                if (type_of_header(h) == TYPE_HASH)
-                    h = h ^ (TYPE_HASH ^ TYPE_HASHX);
-// Collect some statistics about the amounts of space consumed by various
-// sorts of data.
-                switch (type_of_header(h))
-                {
-                    case TYPE_STRING_1:
-                    case TYPE_STRING_2:
-                    case TYPE_STRING_3:
-                    case TYPE_STRING_4:
-                        strings += len; break;
-                    case TYPE_BIGNUM:
-                        big_numbers += len; break;
-                    case TYPE_SINGLE_FLOAT:
-                    case TYPE_LONG_FLOAT:
-                    case TYPE_DOUBLE_FLOAT:
-                        box_floats += len; break;
-                    case TYPE_SIMPLE_VEC:
-                        user_vectors += len; break;
-                    default:
-                        other_mem += len; break;
-                }
-            }
-            uintptr_t vfr = packed_get_n_bytes(len);
-            *p = (LispObject)(vfr + tag);
-            *(LispObject *)a = (LispObject)(vfr + TAG_FORWARD);
-            *(Header *)vfr = h;
-// I copy EVERYTHING from the old vector to the new one. By using memcpy
-// I can do so with no worry about strict aliasing or the exact type of
-// data present. So this will copy across any padder words.
-            memcpy((char *)vfr+CELL, (char *)a+CELL, len-CELL);
-        }
-    }
-}
-
-static void copy(LispObject *p)
-// This copies the object pointed at by p from the old to the new semi-space,
-// and returns a copy to the pointer.  If scans the copied material to copy
-// all relevent sub-structures to the new semi-space.
-{   void *p1;
-// I will need to scan the material that has been evacuated so as to
-// update its contents. I have not got that side of things implemented yet!
-#define CONT           0
-#define DONE_CAR      -1
-#define DONE_VALUE    -2
-#define DONE_ENV      -3
-#define DONE_PNAME    -4
-#define DONE_PLIST    -5
-#define DONE_FASTGETS -6
-    int next = CONT;
-    char *tr=NULL;
-// The code here is a simulation of multiple procedure calls to the
-// code that copies a single object.  What might otherwise have been
-// a "return address" in the calls is handled by the variable "next" which
-// takes positive values while copying vectors, and negative ones in
-// the more common cases. I use "for (;;)" blocks a lot so that I can
-// use "break" and "continue" to leap around in the code - maybe I
-// would do better to be honest and use regular labels and "goto"
-// statements.
-    for (;;)
-    {
-// Copy one object, pointed at by p, from the old semi-space into the new
-// one.
-        copy_one_object(p);
-// Now I have copied one object - the next thing to do is to scan to see
-// if any further items are in the new space, and if so I will copy
-// their offspring.
-        for (;;)
-        {   switch (next)
-            {   case CONT:
-                    if (tr_fr != fr)
-                    {   tr_fr = tr_fr - sizeof(Cons_Cell);
-                        if (qcar(tr_fr) == SPID_GCMARK)
-                        {   char *w;
-                            p1 = new_heap_pages[trailing_heap_pages_count++];
-                            w = (char *)p1;
-                            tr_fr = w + (CSL_PAGE_SIZE - sizeof(Cons_Cell));
-                        }
-                        next = DONE_CAR;
-                        p = &qcar(tr_fr);
-                        break;              // Takes me to the outer loop
-                    }
-                    else if (tr_vfr != vfr)
-                    {   Header h;
-                        h = *(Header *)tr_vfr;
-                        if (h == 0)
-                        {   char *w;
-// The next word in the vector heap being a zero where a header was expected
-// marks the end of data in this page of heap, so I will move on to the next
-// one.
-                            p1 = new_vheap_pages[trailing_vheap_pages_count++];
-                            w = (char *)p1;
-                            tr_vfr = w + 8;
-                            h = *(Header *)tr_vfr;
-                        }
-                        if (is_symbol_header(h))
-                        {   next = DONE_VALUE;
-                            p = &(((Symbol_Head *)tr_vfr)->value);
-                            break;
-                        }
-                        else
-                        {   size_t len = length_of_header(h);
-                            tr = tr_vfr;
-                            tr_vfr = tr_vfr + doubleword_align_up(len);
-                            if (len == CELL)
-                            {
-// Empty vectors should be treated as if they contained binary, because they
-// certainly do not contain any pointers.
-                                continue;
-                            }
-                            switch (type_of_header(h))
-                            {   case TYPE_SINGLE_FLOAT:
-                                case TYPE_LONG_FLOAT:
-                                case TYPE_DOUBLE_FLOAT:
-                                case TYPE_BIGNUM:
-                                    continue;
-                                case TYPE_MIXED1: case TYPE_MIXED2:
-                                case TYPE_MIXED3: case TYPE_STREAM:
-                                    next = 2*CELL;
-                                    break;
-// There is a slight delight here. The test "vector_holds_binary" is only
-// applicable if the header to be checked is a header of a genuine vector,
-// ie something that would have TAG_VECTOR in the pointer to it. But here
-// various numeric data types also live in the vector heap, so I need to
-// separate them out explicitly. The switch block here does slightly more than
-// it actually HAS to, since the vector_holds_binary test would happen to
-// deal with several of the numeric types "by accident", but I feel that
-// the security of listing them as separate cases is more important than the
-// minor speed-up that might come from exploiting such marginal behaviour.
-                                default:
-                                    if (vector_holds_binary(h)) continue;
-                                    // drop through on simple vectors, hash
-                                    // tables etc etc. In general anything
-                                    // that contains Lisp pointers.
-                                case TYPE_RATNUM:
-                                case TYPE_COMPLEX_NUM:
-// Here I have a vector containing Lisp pointers. len gives its length
-// including its header, so the final active data is at tr+len-CELL.
-// I want to set next to indicate the offset of the item to be processed
-// after I have dealt with that one, and that is len-2*CELL. Note that if
-// the vector only held one pointer then len would have been just 2*CELL
-// and this would ends up as zero - the correct value to indicate the
-// end of processing a vector.
-                                    next = len - 2*CELL;
-                                    break;
-                            }
-                            p = (LispObject *)(tr + next + CELL);
-                            break;
-                        }
-                    }
-                    else
-                    {   fringe = (LispObject)fr;
-                        vfringe = (LispObject)vfr;
-                        return;        // Final exit when all has been copied
-                    }
-                case DONE_CAR:
-                    next = CONT;
-                    p = &qcdr(tr_fr);
-                    break;
-                case DONE_VALUE:
-                    next = DONE_ENV;
-                    p = &(((Symbol_Head *)tr_vfr)->env);
-                    break;
-                case DONE_ENV:
-                    next = DONE_FASTGETS;
-                    p = &(((Symbol_Head *)tr_vfr)->fastgets);
-                    break;
-                case DONE_FASTGETS:
-                    next = DONE_PNAME;
-                    p = &(((Symbol_Head *)tr_vfr)->pname);
-                    break;
-                case DONE_PNAME:
-                    next = DONE_PLIST;
-                    p = &(((Symbol_Head *)tr_vfr)->plist);
-                    break;
-                case DONE_PLIST:
-                    next = CONT;
-                    p = &(((Symbol_Head *)tr_vfr)->package);
-                    tr_vfr = tr_vfr + symhdr_length;
-                    break;
-                default:
-// This will be the case when next is positive, in which case it is an
-// offser from tr into a vector. It gets decreased as one goes and
-// eventually ends up at zero (which is otherwise known as CONT) at
-// which stage the vector has been fully processed and the next item
-// to be scanned will be identified.
-                    p = (LispObject *)(tr + next);
-                    next -= CELL;
-                    break;
-            }
-            break;
-        }
-    }
-}
-
-static bool reset_limit_registers(size_t vheap_need, bool stack_flag)
-// returns true if after resetting the limit registers there was
-// enough space left for me to proceed. Return false on failure, ie
-// need for a more genuine GC.
-{   void *p;
-    bool full = false;
-// I wonder about the next test - memory would only really be full
-// if there was enough LIVE data to fill all the available free pages,
-// but what is tested here is based on the possibility that all the
-// active pages are totally full. I scale up the vector page counts by
-// a factor of 1.5 because fragmentation might behave differently in the
-// old and new spaces so if there are some large vectors they may leave
-// nasty gaps at the end of a page.
-//
-    size_t len = (char *)vheaplimit - (char *)vfringe;
-// If I get here during system start-up I will try to give myself some
-// more memory. I expect that will usually be possible!
-    if (!garbage_collection_permitted)
-    {   if (fringe <= heaplimit && pages_count == 0)
-            full = !allocate_more_memory();
-        if (vheap_need > len && pages_count == 0)
-        {   if (!allocate_more_memory()) full = true;
-        }
-    }
-    else full = (pages_count <=
-        heap_pages_count + (3*vheap_pages_count + 1)/2);
-    if (fringe <= heaplimit)
-    {   if (full) return false;
-        p = pages[--pages_count];
-        space_now++;
-        zero_out(p);
-        heap_pages[heap_pages_count++] = p;
-        heaplimit = (intptr_t)p;
-        fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
-        heaplimit = (LispObject)((char *)heaplimit + SPARE);
-    }
-    if (vheap_need > len)
-    {   char *vf, *vh;
-        if (full) return false;
-        p = pages[--pages_count];
-        space_now++;
-        zero_out(p);
-        vheap_pages[vheap_pages_count++] = p;
-        vf = (char *)p + 8;
-        vfringe = (LispObject)vf;
-        vh = vf + (CSL_PAGE_SIZE - 16);
-        vheaplimit = (LispObject)vh;
-    }
-    if (stack_flag) return (stack < stacklimit);
-    else return true;
-}
-
 bool force_verbos = false;
-
-static void report_at_end()
-{   int n = heap_pages_count + vheap_pages_count;
-    int n1 = n + pages_count;
-    double fn = (double)n*(CSL_PAGE_SIZE/(1024.0*1024.0));
-    double fn1 = (double)n1*(CSL_PAGE_SIZE/(1024.0*1024.0));
-    double z = (100.0*n)/n1;
-#ifdef WINDOW_SYSTEM
-    {   report_space(gc_number, z, fn1);
-        if (verbos_flag & 1 || force_verbos) trace_printf(
-                "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
-                fn, fn1, z);
-    }
-#else // WINDOW_SYSTEM
-    if (verbos_flag & 1 || force_verbos)
-    {   trace_printf(
-            "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
-            fn, fn1, z);
-    }
-#endif // WINDOW_SYSTEM
-// This reports in Kbytes, and does not overflow until over 100 Gbytes
-    qvalue(used_space) = fixnum_of_int((int)(1024.0*fn));
-    qvalue(avail_space) = fixnum_of_int((int)(1024.0*fn1));
-}
-
-LispObject use_gchook(LispObject p, LispObject arg)
-{   LispObject g = gchook;
-    if (symbolp(g) && g != unset_var)
-    {   g = qvalue(g);
-        if (symbolp(g) && g != unset_var && g != nil)
-        {   class save_trapcount
-            {   uint64_t count, target;
-                public:
-                save_trapcount()
-                {   count = reclaim_trigger_count;
-                    target = reclaim_trigger_target;
-                    reclaim_trigger_target = 0;
-                }
-                ~save_trapcount()
-                {   reclaim_trigger_count = count;
-                    reclaim_trigger_target = target;
-                }
-            } RAII_trapcount;
-            push(p);
-            Lapply1(nil, g, arg);  // Call the hook
-            pop(p);
-        }
-    }
-    return onevalue(p);
-}
-
-static double prev_consolidated = 0.0;
-static int prev_consolidated_set = 1;
 
 bool garbage_collection_permitted = false;
 
@@ -2563,256 +1963,10 @@ static void real_garbage_collector()
     for (int i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
         free_vectors[i] = 0;
 
-    cons_cells = symbol_heads = strings = user_vectors =
-            big_numbers = box_floats = bytestreams = other_mem =
-                                           litvecs = getvecs = 0;
-
-// Set up the new half-space initially empty.
-    new_heap_pages_count = 0;
-    new_vheap_pages_count = 0;
-    trailing_heap_pages_count = 1;
-    trailing_vheap_pages_count = 1;
-    assert(pages_count >= 2); // for the new half-space
-    void *pp = pages[--pages_count];
-    char *vf, *vl;
-// A first page of (cons-)heap
-    zero_out(pp);
-    new_heap_pages[new_heap_pages_count++] = pp;
-    heaplimit = (intptr_t)pp;
-    vl = (char *)heaplimit;
-    fringe = (LispObject)(vl + CSL_PAGE_SIZE);
-    heaplimit = (LispObject)(vl + SPARE);
-// A first page of vector heap.
-    pp = pages[--pages_count];
-    zero_out(pp);
-    new_vheap_pages[new_vheap_pages_count++] = pp;
-    vf = (char *)pp + 8;
-    vfringe = (LispObject)vf;
-    vl = vf + (CSL_PAGE_SIZE - 16);
-    vheaplimit = (LispObject)vl;
-// I should remind you, gentle reader, that the value cell
-// and env cells of nil will always contain nil, which does not move,
-// and so I do not need to copy them here provided that NIL itself
-// never moves.
-    copy(&(qplist(nil)));
-    copy(&(qpname(nil)));
-    copy(&(qfastgets(nil)));
-    copy(&(qpackage(nil)));
-// I dislike the special treatment of current_package that follows. Maybe
-// I should arrange something totally different for copying the package
-// structure...
-    for (LispObject **p = list_bases; *p!=NULL; p++) copy(*p);
-    for (LispObject *sp=stack; sp>(LispObject *)stackbase; sp--) copy(sp);
-// When running the deserialization code I keep references to multiply-
-// used items in repeat_heap, and if garbage collection occurs they must be
-// updated.
-    if (repeat_heap != NULL)
-    {   for (size_t i=1; i<=repeat_count; i++)
-            copy(&repeat_heap[i]);
-    }
-// Throw away the old semi-space - it is now junk.
-    while (heap_pages_count!=0)
-    {   void *spare = heap_pages[--heap_pages_count];
-// I will fill the old space with explicit rubbish in the hope that that
-// will generate failures as promptly as possible if it somehow gets
-// referenced...
-        memset(spare, 0x55, (size_t)CSL_PAGE_SIZE);
-        pages[pages_count++] = spare;
-    }
-    while (vheap_pages_count!=0)
-    {   void *spare = vheap_pages[--vheap_pages_count];
-        memset(spare, 0xaa, (size_t)CSL_PAGE_SIZE);
-        pages[pages_count++] = spare;
-    }
-// Flip the descriptors for the old and new semi-spaces.
-    void **w = heap_pages;
-    heap_pages = new_heap_pages;
-    new_heap_pages = w;
-    w = vheap_pages;
-    vheap_pages = new_vheap_pages;
-    new_vheap_pages = w;
-    heap_pages_count = new_heap_pages_count;
-    new_heap_pages_count = 0;
-    vheap_pages_count = new_vheap_pages_count;
-    new_vheap_pages_count = 0;
 }
 
 LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
-{   uint64_t t0, t1, t2;
-    size_t vheap_need = 0;
-// If the trigger is reached I will force a full GC. But only if I
-// am allowed to!
-    if (reclaim_trigger_count == reclaim_trigger_target &&
-        garbage_collection_permitted)
-        stg_class = GC_USER_HARD;
-    stop_after_gc = 0;
-    if (stg_class == GC_VEC || stg_class == GC_BPS) vheap_need = size;
-    already_in_gc = true;
-#if defined WIN32 && !defined __CYGWIN__
-    _kbhit(); // Fairly harmless anyway, but is here to let ^c get noticed
-//    printf("(*)"); fflush(stdout);  // while I debug!
-#endif // WIN32
-    t0 = read_clock();
-    if (!next_gc_is_hard &&
-        stg_class != GC_USER_HARD &&
-        reset_limit_registers(vheap_need, true))
-    {   already_in_gc = false;
-        if (space_limit >= 0 && space_now > space_limit)
-            resource_exceeded();
-        return p;
-    }
-    if (stack >= stacklimit)
-    {   if (stacklimit != stackbase)
-        {   stacklimit = &stacklimit[50];  // Allow a bit of slack
-            error(0, err_stack_overflow);
-        }
-    }
-
-// There are parts of the code in setup/restart where perhaps things are not
-// yet in a consistent state and so any attempt at garbage collection could
-// cause chaos. So during them I set a flag that I test here! Since this
-// should never be triggered I am happy to leave it in state where the only
-// sane way to respond to it is to run under a debugger and set breakpoints.
-    if (!garbage_collection_permitted)
-    {   fprintf(stderr,
-                "\n+++ Garbage collection attempt when not permitted\n");
-        fflush(stderr);
-        my_exit(EXIT_FAILURE);    // totally drastic...
-    }
-
-    push(p);
-
-    gc_number++;
-    next_gc_is_hard = false;
-    if (!valid_as_fixnum(gc_number)) gc_number = 0; // wrap round on 32-bit
-                                                    // machines if too big.
-    qvalue(gcknt_symbol) = fixnum_of_int(gc_number);
-
-#ifdef WINDOW_SYSTEM
-// If I have a window system I tell it the current time every so often
-// just to keep things cheery...
-    {   long int t = (long int)(100.0 * consolidated_time[0]);
-        long int gct = (long int)(100.0 * gc_time);
-// @@@@
-// I guess that I want garbage collection messages, if any, to
-// be sent to stderr rather than whatever output stream happens to
-// be selected at the time of the garbage collection?
-// At present messages go to the normal output stream, which only makes
-// sense if GC messages are almost always disabled - maybe that will
-// be the case!
-#ifndef EMBEDDED
-        report_time(t, gct);
-#endif
-        time_now = (int)consolidated_time[0];
-        if (verbos_flag & 1 || force_verbos)
-        {   freshline_trace();
-            trace_printf(
-                "+++ Garbage collection %" PRId64
-                " (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
-                gc_number, why, t/100, t%100, gct/100, gct%100);
-        }
-    }
-#else // WINDOW_SYSTEM
-    if (verbos_flag & 1 || force_verbos)
-    {   long int t = (long int)(100.0 * consolidated_time[0]);
-        long int gct = (long int)(100.0 * gc_time);
-// @@@@
-// I guess that I want garbage collection messages, if any, to
-// be sent to stderr rather than whatever output stream happens to
-// be selected at the time of the garbage collection?
-// At present messages go to the normal output stream, which only makes
-// sense if GC messages are almost always disabled - maybe that will
-// be the case!
-        time_now = (int)consolidated_time[0];
-        if ((time_limit >= 0 && time_now > time_limit) ||
-            (io_limit >= 0 && io_now > io_limit))
-            resource_exceeded();
-        freshline_trace();
-        trace_printf(
-            "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
-            (long)gc_number, why, t/100, t%100, gct/100, gct%100);
-    }
-#endif // WINDOW_SYSTEM
-    switch (pages_count)
-    {
-    case 0: allocate_more_memory(); // ...and drop through...
-    case 1: allocate_more_memory();
-    }
-// If despite trying allocate_more_memory() I can not find a new pages to
-// form that start of the new half-space I will have to give up.
-    if (pages_count < 2)
-    {   report_at_end();
-        term_printf("\n+++ Run out of memory\n");
-        ensure_screen();
-        my_exit(EXIT_FAILURE);
-    }
-// If things crash really badly maybe I would rather have my output up
-// to date.
-    ensure_screen();
-    if (spool_file != NULL) fflush(spool_file);
-    if (gc_number == reclaim_trap_count)
-    {   reclaim_trap_count = gc_number - 1;
-        trace_printf("\nReclaim trap count reached...\n");
-        aerror("reclaim-trap-count");
-    }
-    if (reclaim_stack_limit != 0 &&
-        (uintptr_t)&t0 + reclaim_stack_limit < (uintptr_t)C_stackbase)
-    {   reclaim_stack_limit = 0;
-        trace_printf("\nReclaim stack limit reached...\n");
-        aerror("reclaim-stack-limit");
-    }
-
-    t2 = t1 = t0;   // Time is not split down in this case
-    if (reclaim_trigger_target != 0)
-        trace_printf("+++ GC trigger = %" PRId64 "\n", reclaim_trigger_count);
-    real_garbage_collector();
-
-    t1 = read_clock();
-    gc_time += t1 - t0;
-    base_time += t1 - t0;
-// (verbos 5) causes a display breaking down how space is used
-    if ((verbos_flag & 5) == 5)
-    {   trace_printf(
-            "cons_cells=%" PRIdPTR ", symbol_heads=%" PRIdPTR ", strings=%" PRIdPTR ", user_vectors=%" PRIdPTR "\n",
-            cons_cells, symbol_heads, strings, user_vectors-litvecs-getvecs);
-        trace_printf(
-            "bignums=%" PRIdPTR ", floats=%" PRIdPTR ", bytestreams=%" PRIdPTR ", other=%" PRIdPTR ", litvecs=%d\n",
-            big_numbers, box_floats, bytestreams, other_mem, litvecs);
-        trace_printf("getvecs=%" PRIdPTR " C-stacks=%" PRIdPTR "K Lisp-stack=%" PRIdPTR "K\n",
-                     getvecs, (((char *)C_stackbase-(char *)&why)+1023)/1024,
-                     (intptr_t)((stack-stackbase)+1023)/1024);
-    }
-    pop(p);
-
-    grab_more_memory(heap_pages_count + vheap_pages_count);
-
-    if (!reset_limit_registers(vheap_need, false))
-    {   if (stack < stacklimit || stacklimit != stackbase)
-        {   report_at_end();
-            term_printf("\n+++ Run out of memory\n");
-            ensure_screen();
-            my_exit(EXIT_FAILURE);    // totally drastic...
-        }
-    }
-    report_at_end();
-    if (stop_after_gc) Lstop1(nil, fixnum_of_int(0));
-    if (interrupt_pending)
-    {   interrupt_pending = false;
-        already_in_gc = false;
-        return interrupted(p);
-    }
-    already_in_gc = false;
-    if ((space_limit >= 0 && space_now > space_limit) ||
-        (time_limit >= 0 && time_now > time_limit) ||
-        (io_limit >= 0 && io_now > io_limit))
-        resource_exceeded();
-    prev_consolidated = consolidated_time[0];
-    return use_gchook(p, lisp_true);
+{
 }
-
-
-uintptr_t *C_stackbase;
-
-
 
 // end of newallocate.cpp

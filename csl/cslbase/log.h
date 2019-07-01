@@ -69,6 +69,10 @@ inline void my_assert(bool ok, F&& action)
     if (!ok) { action(); my_abort(); }
 }
 
+inline void my_assert(bool ok)
+{   if (!ok) my_abort();
+}
+
 #if defined __OPTIMIZE__ || !defined __GNUC__
 
 // These provide very concise ways of putting tracking markers in the

@@ -83,11 +83,21 @@ inline void write_barrier(LispObject *p)
 {}
 #endif // !CONSERVATIVE
 
+// This tiny function exists just so that I can set a breakpoint on it.
+
+extern void ensure_screen();
+
+[[noreturn]] inline void my_abort()
+{   fflush(stdout);
+    fflush(stderr);
+    ensure_screen();
+    abort();
+}
+
+extern void trace_printf(const char *fmt, ...);
+
 // An "my_assert" scheme that lets me write in my own code to print the
 // diagnostics.
-
-[[noreturn]] extern void my_abort();
-extern void trace_printf(const char *fmt, ...);
 
 template <typename F>
 inline void my_assert(bool ok, F&& action)
@@ -98,6 +108,15 @@ inline void my_assert(bool ok, F&& action)
 // where the "..." is an arbitrary sequence of actions to be taken
 // if the assertion fails.
     if (!ok) { action(); my_abort(); }
+#endif //NDEBUG
+}
+
+inline void my_assert(bool ok)
+{
+#ifndef NDEBUG
+// Use this as in
+//     my_assert(predicate);
+    if (!ok) my_abort();
 #endif //NDEBUG
 }
 

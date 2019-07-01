@@ -35,38 +35,38 @@
 #ifndef header_newallocate_h
 #define header_newallocate_h 1
 
-// alloc_segment grabs a chunk of memory of the given size, which must
+// allocSegment grabs a chunk of memory of the given size, which must
 // be a multiple of CSL_PAGE_SIZE. The memory block is recorded in a table
 // that can hold up to 32 segments.
 
 extern void set_up_signal_handlers();
-extern void *allocate_segment(size_t);
+extern void *allocateSegment(size_t);
 
-// These arrays record information about allocated segments. heap_segment[i]
-// is the base address of a segment. (heap_segment_count keeps track of
-// how many have been allocated). and heap_segment_size[i] records the
+// These arrays record information about allocated segments. heapSegment[i]
+// is the base address of a segment. (heapSegmentCount keeps track of
+// how many have been allocated). and heapSegmentSize[i] records the
 // amount of user data in it.
 
-extern size_t heap_segment_count;
-extern void *heap_segment[32];
-extern size_t heap_segment_size[32];
+extern size_t heapSegmentCount;
+extern void *heapSegment[32];
+extern void *heapSegmentBase[32];
+extern size_t heapSegmentSize[32];
 
-extern size_t free_pages_count, active_pages_count;
+extern size_t freePagesCount, activePagesCount;
 
-// Given an arbitrary bit-pattern the find_heap_segment() function tests
+// Given an arbitrary bit-pattern the findHeapSegment() function tests
 // if it could be an address within one of the allocated segments, and if so
-// it returns the index into heap_segments[] that is relevant. If it is not
+// it returns the index into heapSegments[] that is relevant. If it is not
 // a valid address the value -1 is returned.
 
-int find_heap_segment(uintptr_t p);
+int findHeapSegment(uintptr_t p);
 
 // Low level functions for allocating objects.
 
 // Entry to a garbage collector.
 
-extern void garbage_collect();
+extern void garbageCollect();
 
 #endif // header_newallocate_h
 
 // end of newallocate.h
-
