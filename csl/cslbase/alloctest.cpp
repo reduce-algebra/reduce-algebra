@@ -38,6 +38,7 @@
 
 #include "config.h"
 #include "headers.h"
+#include "arithlib.hpp"
 
 // I will need to provide definitions of a number of things that the main
 // parts of CSL use, even if I will not actually make use of them here.
@@ -124,10 +125,89 @@ int64_t sixty_four_bits(LispObject a)
 {   return 0;
 }
 
+//=======================================================================
+// Everything above this is just so that I can compile my code.
+
+std::mutex print_mutex;
+
+LispObject zcons(LispObject a, LispObject b)
+{   char *r = new char[2*sizeof(LispObject)];
+    LispObject r1 = TAG_CONS + reinterpret_cast<LispObject>(r);
+    qcar(r1) = a;
+    qcdr(r1) = b;
+    return r1;
+}
+
+thread_local uint64_t treehash;
+
+LispObject make_n_tree1(int n)
+{   if (n == 0)
+    {   uint64_t r = arithlib_implementation::mersenne_twister();
+        r &= UINT64_C(0x0000ffffffffffff);
+        treehash = 1234567*treehash + r;
+        treehash -= (treehash >> 32);
+        return fixnum_of_int(r);
+    }
+    int n1 = (n-1)/2;
+    LispObject left = make_n_tree1(n1);
+    if ((arithlib_implementation::mersenne_twister() % 1000) == 0)
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    LispObject right = make_n_tree1(n-n1-1);
+    return zcons(left, right);
+}
+
+LispObject make_n_tree(int n)
+{   treehash = 0;
+    LispObject r = make_n_tree1(n);
+    std::lock_guard<std::mutex> lock(print_mutex);
+    printf("Tree hash for tree of size %d = %" PRIx64 "\n", n, treehash);
+    return r;
+}
+
+int treesize1(LispObject a)
+{   if (is_fixnum(a))
+    {   uint64_t r = int_of_fixnum(a);
+        treehash = 1234567*treehash + r;
+        treehash -= (treehash >> 32);
+        return 0;
+    }
+    if (!is_cons(a)) my_abort();
+    int left = treesize1(qcar(a));
+    int right = treesize1(qcdr(a));
+    return left+right+1;
+}
+
+void treesize(LispObject a)
+{   treehash = 0;
+    int n = treesize1(a);
+    std::lock_guard<std::mutex> lock(print_mutex);
+    printf("Tree hash for tree of size %d = %" PRIx64 "\n", n, treehash);
+}
+
+int thread_function(int id)
+{   int size = 3;
+    LispObject a = fixnum_of_int(0), b = fixnum_of_int(0);
+    {   std::lock_guard<std::mutex> lock(print_mutex);
+        printf("Starting thread %d\n", id);
+    }
+    while (size < 1000)
+    {   a = b;
+        b = make_n_tree(arithlib_implementation::mersenne_twister() % size);
+        treesize(a);
+        treesize(b);
+        size = size + size/2;
+    }
+    return 0;
+}
 
 int main(int argc, char *argv[])
 {   printf("alloctest starting\n");
-
+    std::thread t1(thread_function, 1);
+    std::thread t2(thread_function, 2);
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    t1.join();
+    t2.join();
+    return 0;
 }
 
 // end of alloctest.cpp
