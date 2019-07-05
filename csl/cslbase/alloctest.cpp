@@ -153,14 +153,12 @@ LispObject make_n_tree1(int n)
     if ((arithlib_implementation::mersenne_twister() % 1000) == 0)
         std::this_thread::sleep_for(std::chrono::seconds(1));
     LispObject right = make_n_tree1(n-n1-1);
-    return zcons(left, right);
+    return cons(left, right);
 }
 
 LispObject make_n_tree(int n)
 {   treehash = 0;
     LispObject r = make_n_tree1(n);
-    std::lock_guard<std::mutex> lock(print_mutex);
-    printf("Tree hash for tree of size %d = %" PRIx64 "\n", n, treehash);
     return r;
 }
 
@@ -177,34 +175,62 @@ int treesize1(LispObject a)
     return left+right+1;
 }
 
-void treesize(LispObject a)
+void treesize(LispObject a, int expected_size, uint64_t expected_hash)
 {   treehash = 0;
     int n = treesize1(a);
-    std::lock_guard<std::mutex> lock(print_mutex);
-    printf("Tree hash for tree of size %d = %" PRIx64 "\n", n, treehash);
+    my_assert(n == expected_size);
+    my_assert(treehash == expected_hash);
 }
+
+// Threads are created using this function, and its argument cen be passed
+// to identify the activity with a thread number.
 
 int thread_function(int id)
 {   int size = 3;
     LispObject a = fixnum_of_int(0), b = fixnum_of_int(0);
     {   std::lock_guard<std::mutex> lock(print_mutex);
         printf("Starting thread %d\n", id);
+        fflush(stdout);
     }
-    while (size < 1000)
+    int sizeA = 0, sizeB = 0;
+    uint64_t checkA = 0, checkB = 0;
+    while (size < 20)
     {   a = b;
-        b = make_n_tree(arithlib_implementation::mersenne_twister() % size);
-        treesize(a);
-        treesize(b);
-        size = size + size/2;
+        sizeA = sizeB;
+        checkA = checkB;
+        sizeB = arithlib_implementation::mersenne_twister() % size;
+        {   std::lock_guard<std::mutex> lock(print_mutex);
+            printf("Thread %d, next size will be %d [%d]\n", id, sizeB, size);
+            fflush(stdout);
+        }
+        b = make_n_tree(sizeB);
+        {   std::lock_guard<std::mutex> lock(print_mutex);
+            printf("Thread %d, tree made\n", id);
+            fflush(stdout);
+        }
+        checkB = treehash;
+        treesize(a, sizeA, checkA);
+        treesize(b, sizeB, checkB);
+        size = size + (size+9)/10;
     }
     return 0;
 }
 
 int main(int argc, char *argv[])
 {   printf("alloctest starting\n");
+    fflush(stdout);
+    heapSegmentCount = 0;
+    freePages = NULL;
+    freePagesCount = activePagesCount = 0;
+    initHeapSegments(64.0*1024.0);
+    nurseryPage = freePages;
+    freePages = freePages->pageHeader.chain;
+    set_variables_from_page(nurseryPage);
     std::thread t1(thread_function, 1);
     std::thread t2(thread_function, 2);
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    thread_function(0);
+// all threads are done. I will run the mutatuor task in this the main
+// thread as well as the subsidiary ones just in case that makes a difference.
     t1.join();
     t2.join();
     return 0;

@@ -221,6 +221,7 @@ inline double CSLpow(double x, double y)
 #include "cslread.h"
 #include "inthash.h"
 #include "lispthrow.h"
+#include "log.h"
 #include "thread_local.h"
 #include "version.h"
 

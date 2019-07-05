@@ -92,8 +92,8 @@ LispObject nil;
 LispObject *stackbase;
 LispObject *stacklimit;
 
-LispObject *nilsegment;
-LispObject *stacksegment;
+LispObject *nilsegment, *nilsegmentbase;
+LispObject *stacksegment, *stacksegmentbase;
 int32_t stack_segsize = 1;
 
 char *exit_charvec = NULL;

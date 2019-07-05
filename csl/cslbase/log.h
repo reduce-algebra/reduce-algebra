@@ -38,7 +38,6 @@
 #ifndef header_log_h
 #define header_log_h 1
 
-
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -144,7 +143,7 @@ inline void printlog(const char *s, ...)
 
 extern const char *programDir;
 
-inline void printlog(const char *s, ...)
+inline void logprintf(const char *s, ...)
 {   static FILE *logfile = NULL;
     va_list x;
     if (logfile == NULL)

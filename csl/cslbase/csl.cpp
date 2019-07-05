@@ -2557,16 +2557,33 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // here despite the full system not being loaded. I use references to the
 // nil-segment and cons().
 //
-
-        nilsegment = (LispObject *)aligned_malloc(NIL_SEGMENT_SIZE);
-        if (nilsegment == NULL) abort();
+#ifdef __cpp_aligned_new
+        nilsegment = nilsegmentbase =
+            reinterpret_cast<LispObject *>(
+                aligned_alloc(16, NIL_SEGMENT_SIZE));
+#else
+        nilsegment =
+            reinterpret_cast<LispObject *>(malloc(NIL_SEGMENT_SIZE+32));
+        nilsegment = static_cast<LispObject *>(
+            doubleword_align_up(static_cast<uintptr_t>(nilsegment_base)));
+#endif
+        if (nilsegmentbase == NULL) abort();
 #ifdef COMMON
         nil = doubleword_align_up((LispObject)nilsegment) + TAG_CONS + 8;
 #else
         nil = doubleword_align_up((LispObject)nilsegment) + TAG_SYMBOL;
 #endif
         pages_count = heap_pages_count = vheap_pages_count = 0;
-        stacksegment = (LispObject *)aligned_malloc(CSL_PAGE_SIZE);
+#ifdef __cpp_aligned_new
+        stacksegment = stacksegmentbase =
+            reinterpret_cast<LispObject *>(
+                aligned_alloc(16, CSL_PAGE_SIZE));
+#else
+        stacksegment =
+            reinterpret_cast<LispObject *>(malloc(CSL_PAGE_SIZE+32));
+        stacksegment = static_cast<LispObject *>(
+            doubleword_align_up(static_cast<uintptr_t>(stacksegment_base)));
+#endif
         if (stacksegment == NULL) abort();
         heaplimit = doubleword_align_up((LispObject)stacksegment);
         fringe = heaplimit + CSL_PAGE_SIZE - 16;

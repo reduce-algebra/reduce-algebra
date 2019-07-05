@@ -401,7 +401,7 @@ inline void aligned_free(void *p)
 }
 #else // MAXALING4
 
-// IN the hugely more common case where malloc does align things to at least
+// In the hugely more common case where malloc does align things to at least
 // 8 byte boundaries I can use malloc() and free() directly.
 
 inline void *aligned_malloc(size_t n)

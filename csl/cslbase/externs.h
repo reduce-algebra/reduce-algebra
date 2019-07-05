@@ -64,6 +64,7 @@ extern size_t new_heap_pages_count, new_vheap_pages_count;
 
 extern LispObject *list_bases[];
 extern LispObject *nilsegment, *stacksegment;
+extern LispObject *nilsegmentbase, *stacksegmentbase;
 extern LispObject *stackbase;
 extern int32_t stack_segsize;  // measured in units of one CSL page
 extern double max_store_size;
@@ -85,94 +86,6 @@ inline void write_barrier(LispObject *p)
 
 // This tiny function exists just so that I can set a breakpoint on it.
 
-extern void ensure_screen();
-
-[[noreturn]] inline void my_abort()
-{   fflush(stdout);
-    fflush(stderr);
-    ensure_screen();
-    abort();
-}
-
-extern void trace_printf(const char *fmt, ...);
-
-// An "my_assert" scheme that lets me write in my own code to print the
-// diagnostics.
-
-template <typename F>
-inline void my_assert(bool ok, F&& action)
-{
-#ifndef NDEBUG
-// Use this as in
-//     my_assert(predicate, [&]{...});
-// where the "..." is an arbitrary sequence of actions to be taken
-// if the assertion fails.
-    if (!ok) { action(); my_abort(); }
-#endif //NDEBUG
-}
-
-inline void my_assert(bool ok)
-{
-#ifndef NDEBUG
-// Use this as in
-//     my_assert(predicate);
-    if (!ok) my_abort();
-#endif //NDEBUG
-}
-
-//
-// I have a bunch of macros that I use for desparation-mode debugging,
-// and in particular when I have bugs that wriggle back into their lairs
-// when I try running under "gdb" or whatever. These print dull messages
-// to stderr. The "do..while" idiom is to keep C syntax safe with regard to
-// semicolons.
-//
-
-#define D do { \
-          const char *_f_ = strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          fprintf(stderr, "Line %d File %s\n", __LINE__, _f_); \
-          fflush(stderr); \
-          } while (0)
-
-#define DS(s) do { \
-          const char *_f_ = strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          fprintf(stderr, "Line %d File %s: %s\n", __LINE__, _f_, (s)); \
-          fflush(stderr); \
-          } while (0)
-
-#define DX(s) do { \
-          const char *_f_ = strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          fprintf(stderr, "Line %d File %s: %llx\n", __LINE__, _f_, \
-                          (long long unsigned)(s)); \
-          fflush(stderr); \
-          } while (0)
-
-#define DF(f,...) do { \
-          const char *_f_ = strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          fprintf(stderr, "Line %d File %s: ", __LINE__, _f_); \
-          fprintf(stderr, f, __VA_ARGS__); \
-          fprintf(stderr, "\n"); \
-          fflush(stderr); \
-          } while (0)
-
-#define DF(f,...) do { \
-          const char *_f_ = strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          fprintf(stderr, "Line %d File %s: ", __LINE__, _f_); \
-          fprintf(stderr, f, __VA_ARGS__); \
-          fprintf(stderr, "\n"); \
-          fflush(stderr); \
-          } while (0)
-
 extern std::mutex debug_lock;
 extern const char *debug_file;
 extern int debug_line;
@@ -182,7 +95,7 @@ extern void DebugTrace(int i);
 extern void DebugTrace(const char *msg);
 extern void DebugTrace(const char *fmt, int i);
 
-// This is a macro that sets some global variables bacause I want Tr()
+// This is a macro that sets some global variables because I want Tr()
 // without arguments to be valid, and until C++2a it seems impossible to
 // combine __VA_ARGS__ with anything else because of fussiness about commas.
 

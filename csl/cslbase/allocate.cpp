@@ -182,8 +182,8 @@ void drop_heap_segments(void)
 {   abandon(pages,           pages_count);
     abandon(heap_pages,      heap_pages_count);
     abandon(vheap_pages,     vheap_pages_count);
-    if (!is_in_big_chunk(stacksegment)) aligned_free(stacksegment);
-    aligned_free(nilsegment);
+    if (!is_in_big_chunk(stacksegment)) free(stacksegmentbase);
+    free(nilsegmentbase);
 }
 
 // This allocates another page of memory if that is allowed and if it is
