@@ -33,9 +33,16 @@ fluid '(!*break
         !*forcecompile
    	    !*int
         !*loadall
-        !*writingfaslfile);
+        !*writingfaslfile
+        lispsystem!*);
 
-global '(loaded!-modules!*);
+global '(loaded!-modules!* fasl!-dir!* fasl!-ext!*);
+
+if 'sbcl memq lispsystem!* then <<
+   fasl!-dir!* := "fasl.sbcl/";  fasl!-ext!* := ".fasl"
+>> else if 'clisp memq lispsystem!* then <<
+   fasl!-dir!* := "fasl.clisp/";  fasl!-ext!* := ".fas"
+>> else error(0, "Unrecognised Common Lisp implementation when setting fasl directory.");
 
 symbolic procedure olderfaslp(u,v);
    % Return t if file u does not exist or is older than file v.
@@ -58,7 +65,7 @@ new_inline_definitions := nil;
 % For now put it in the fasl directory.
 
 symbolic procedure inline_defs_file();
-   "fasl/inline-defs.dat";
+   concat2(fasl!-dir!*, "inline-defs.dat");
 
 symbolic procedure load_saved_inlines();
   begin
@@ -159,13 +166,6 @@ symbolic procedure package!-remake2(u,v);
       new_inline_definitions := nil;
       update!-fasl2(u,v);
       evload list u;
-	  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	  if u eq 'ibalp then
-		 for each v in
-			'(!A !B !C !D !E !F !G !H !I !J !K !L !M
-			   !N !O !P !Q !R !S !T !U !V !W !X !Y !Z) do
-				  remprop(v,'stat);
-	  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       loaded!-modules!* := union(loaded!-modules!*, list u);
       y := get(u,'package);
       if y then y := cdr y;
@@ -177,7 +177,7 @@ symbolic procedure update!-fasl2(u,v);
    % Update fasl file for module u in directory packages/v or current
    % directory if v is nil.
    begin scalar y,z;
- 	  y := concat2("fasl/", concat2(mkfil u, ".fasl"));
+ 	  y := concat(fasl!-dir!*, mkfil u, fasl!-ext!*);
       z := module2!-to!-file(u,v);
       if olderfaslp(y,z) or !*forcecompile
         then <<terpri();
@@ -205,7 +205,7 @@ symbolic procedure upd!-fasl1(u,v,w);
       u := mkfil u;
       lprim list("Compiling",u,"...");
       terpri();
-	  lispeval list('faslout, concat2("fasl/",u));
+	  lispeval list('faslout, concat2(fasl!-dir!*, u));
       infile v;
       lispeval '(faslend)
    end;
@@ -216,7 +216,7 @@ symbolic procedure module2!-to!-file(u,v);
    % Also defined in build.red!
    <<
    	  u := concat2(mkfil u, ".red");
-   	  if v then concat2("$reduce/packages/", concat2(mkfil v, concat2("/", u)))
+   	  if v then concat("$reduce/packages/", mkfil v, "/", u)
 	  else u
    >>;
 

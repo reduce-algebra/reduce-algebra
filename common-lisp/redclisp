@@ -1,0 +1,4 @@
+#!/bin/bash
+# Start the Cygwin or Linux CLISP REDUCE image
+cl=$(realpath $(dirname $0)) # common-lisp directory
+clisp -M $cl/fasl.clisp/reduce.mem

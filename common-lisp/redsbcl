@@ -1,0 +1,4 @@
+#!/bin/bash
+# Start the Linux SBCL REDUCE image
+cl=$(realpath $(dirname $0)) # common-lisp directory
+sbcl --noinform --core $cl/fasl.sbcl/reduce.img

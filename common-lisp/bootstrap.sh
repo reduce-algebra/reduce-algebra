@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # Build a bootstrap version of REDUCE on Common Lisp.
 # Based on "psl/bootstrap.sh".
@@ -28,25 +28,34 @@ else
     exit
 fi
 
-if [ ! "$reduce" ]; then export reduce=.; fi
+if [ ! -v reduce ]; then
+    if [ -e './packages' ]; then export reduce=.
+    elif [ -e '../packages' ]; then export reduce=..
+    else echo 'Error: cannot find packages directory.  Please set $reduce.'; exit
+    fi
+fi
 
-mkdir -p log                 # -p avoids complaint if directory exists
-mkdir -p fasl
+mkdir -p log.$lisp           # -p avoids complaint if directory exists
+mkdir -p fasl.$lisp
 
 if [ "sl-on-cl.lisp" -nt "sl-on-cl.$faslext" ]
 then
 echo +++++ Compiling sl-on-cl
-$runlisp << XXX &> log/sl-on-cl.blg
+$runlisp << XXX &> log.$lisp/sl-on-cl.blg
 (or (compile-file "sl-on-cl") (exit #+SBCL :code 1))
 XXX
 fi || { echo '***** Compilation failed'; exit; }
 
 echo +++++ Building bootstrap REDUCE
 
-time $runlisp << XXX &> log/bootstrap.blg
-(declaim (optimize speed))
-
+time $runlisp << XXX &> log.$lisp/bootstrap.blg
 (load "sl-on-cl")
+#-DEBUG (declaim (optimize speed))
+#+DEBUG (declaim (optimize debug safety))
+#+SBCL (declaim (sb-ext:muffle-conditions sb-ext:compiler-note style-warning))
+#+CLISP (setq custom:*suppress-check-redefinition* t
+              custom:*compile-warnings* nil)
+
 (standard-lisp)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,7 +75,9 @@ time $runlisp << XXX &> log/bootstrap.blg
 % away (i.e. discard) uses of fluid variables that are needed later in
 % the build process!
 
-(load "boot.sl")
+(cond ((filep "boot.sl") (load "boot.sl"))
+      ((filep "../psl/boot.sl") (load "../psl/boot.sl"))
+      (t (error 0 "Cannot find boot file.") (exit 1)))
 
 $if_clisp (setq !*comp t)  % It's faster in some lisps if we compile.
 
@@ -101,18 +112,13 @@ rds(xxx := open("build.red",'input));
 (initreduce)
 (setq date!* (date))
 (setq version!* "Bootstrap REDUCE")
-
-% SBCL (see SBCL User Manual / Stopping SBCL / Saving a Core Image):
-% save!-lisp!-and!-die("fasl/bootstrap", !:executable, t, !:toplevel, (lambda () (standard-lisp) (begin)))
-% For better debugging...
-$if_sbcl (save!-lisp!-and!-die "fasl/bootstrap.img")
-$if_clisp (saveinitmem "fasl/bootstrap.mem")
+(save!-reduce!-image "bootstrap")
 
 XXX
 
 echo +++++ Bootstrap REDUCE built
 
 echo 'Possible errors:'
-grep --ignore-case '\*\*\*\*\*\|\<error\>' log/bootstrap.blg
+grep --ignore-case '\*\*\*\*\*\|\<error\>' log.$lisp/bootstrap.blg
 
 echo $'\a'

@@ -3,7 +3,6 @@ module gnuintfc; % REDUCE-gnuplot interface.
 % Authors:  Anthony C. Hearn, Herbert Melenk, Arthur C. Norman.
 % Modified by FJW for REDUCE on Common Lisp.
 % The standard version is "packages/plot/gnuintfc.red".
-% Includes some code from "packages/support/psl.red".
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Redistribution and use in source and binary forms, with or without           %
@@ -28,15 +27,9 @@ module gnuintfc; % REDUCE-gnuplot interface.
 % POSSIBILITY OF SUCH DAMAGE.                                                  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-fluid '(dirchar!*);
-
-global '(tempdir!*);
-
 % This file complements the (notionally) generic file "gnuplot.red" to
 % provide system-specific interfaces between REDUCE and the gnuplot
 % application.
-
-fluid '(plotstyle!*);
 
 global '(
    !*plotinterrupts % list of error codes caused by interrupts (ctl-C)
@@ -91,56 +84,49 @@ gnuplot_select_terminal!* :=
 
 symbolic procedure initialize_gnuplot();
    <<
-#if (member 'cygwin lispsystem!*)       % *** Cygwin on MS Windows ***
+#if (memq 'unix lispsystem!*)           % *** Linux or Cygwin ***
 
-   gnuplot_select_terminal!* := "dumb"; % ***** TEMPORARY *****
-
-   if system "type gnuplot &> /dev/null" = 0 then <<
-      % *** Prefer Cygwin gnuplot if available ***
+   if system "type gnuplot > /dev/null" = 0 then <<
+      % *** On Cygwin, prefer Cygwin gnuplot if available ***
       % Assume gnuplot is in PATH.
-
-   !*plotpause := "mouse close";
-   plottmp!* := "/tmp/";
-   plotdta!* := for i:= 1:10 collect
-      bldmsg("%wplotdt%w", plottmp!*, i); % scratch data files
-   plotcleanup!* :=                       % delete data files
-      concat("rm ", plottmp!*, "plotdt*");
-   if !*plotusepipe then <<             % default as set above
-      plotcommand!* := "gnuplot";
-      plotcleanup!* := {plotcleanup!*}; % must be a list
-   >> else <<
-      plotcmds!* := concat(plottmp!*, "plotcmds");
-      plotcommand!* := concat("gnuplot ", plotcmds!*);
-      plotcleanup!* :=                  % also delete command file
-         {concat(plotcleanup!*, " ", plotcmds!*)};
-   >>;
-
-   % Select header lines for setting the appropriate GNUPLOT terminal
-   % type if force_gnuplot_term is set on:
-   if null plotheader!* then
-      if null !*force_gnuplot_term then plotheader!* := ""
-      else << if null x then
-         if getenv "DISPLAY" then x := nil . gnuplot_select_terminal!*
-         else x := '(nil . "dumb");
-      if string!-length cdr x < 20
-      then plotheader!* := bldmsg("set term %w", cdr x)
-      else plotheader!* := cdr x;
-      >>
-         where x =
-            assoc(getenv "TERM",
-               ("xterm" . gnuplot_select_terminal!*) .
+      !*plotpause := "mouse close";
+      plottmp!* := "/tmp/";
+      plotdta!* := for i:= 1:10 collect
+         bldmsg("%wplotdt%w", plottmp!*, i); % scratch data files
+      plotcleanup!* :=                       % delete data files
+         concat("rm ", plottmp!*, "plotdt*");
+      if !*plotusepipe then <<             % default as set above
+         plotcommand!* := "gnuplot";
+         plotcleanup!* := {plotcleanup!*}; % must be a list
+      >> else <<
+         plotcmds!* := concat(plottmp!*, "plotcmds");
+         plotcommand!* := concat("gnuplot ", plotcmds!*);
+         plotcleanup!* :=                  % also delete command file
+            {concat(plotcleanup!*, " ", plotcmds!*)};
+      >>;
+      % Select header lines for setting the appropriate GNUPLOT terminal
+      % type if force_gnuplot_term is set on:
+      if null plotheader!* then
+         if null !*force_gnuplot_term then plotheader!* := ""
+         else << if null x then
+            if getenv "DISPLAY" then x := nil . gnuplot_select_terminal!*
+            else x := '(nil . "dumb");
+         if string!-length cdr x < 20
+         then plotheader!* := bldmsg("set term %w", cdr x)
+         else plotheader!* := cdr x;
+         >>
+            where x =
+               assoc(getenv "TERM",
                   ("xterm-color" . gnuplot_select_terminal!*) .
-                     '(
-                        %% You may want to extend or modify the terminal list above
-                        ("sun-cmd" . "x11")
+                     '(("sun-cmd" . "x11")
                         ("sun" . "x11")
                         ("hpterm" . "x11")
                         ("vt52"  . "tek40xx")
                         ("vt100" . "tek40xx")
-                        ("vt102" . "tek40xx")
-                           ));
-
-   >> else if system "cmd /c start /wait wgnuplot.exe -V" = 0 then <<
+                        ("vt102" . "tek40xx")));
+   >>
+   #if (memq 'cygwin lispsystem!*)
+   else if system "cmd /c start /wait wgnuplot.exe -V" = 0 then <<
       % *** Fall back to Cygwin running native MS Windows gnuplot ***
 
       !*plotpause := "mouse close";
@@ -158,12 +144,12 @@ symbolic procedure initialize_gnuplot();
          plotcleanup!* :=                  % also delete command file
             {concat(plotcleanup!*, " '", plotcmds!*, "'")};
       >>;
-
       plotheader!* := "";
+   >>
+   #endif
+;
 
-   >>;
-
-#elif (memq 'win32 lispsystem!*)        % *** MS Windows ***
+#elif (memq 'win32 lispsystem!*)        % *** native MS Windows ***
 
    plottmp!* := concat(getenv "TMP", "\");
    !*plotpause := "mouse close";
@@ -187,30 +173,6 @@ symbolic procedure initialize_gnuplot();
    !*plotinterrupts := '(10002);
    % end of definition of initialize_gnuplot();
    >>;
-
-% Find path to gnuplot executable on Unix
-% =======================================
-
-symbolic procedure find!-gnuplot;
-   find!-gnuplot!-aux getenv("GNUPLOT") or "gnuplot";
-
-symbolic procedure find!-gnuplot!-aux path;
-  % On Unix, build full pathname for gnuplot executable.
-  if null path then nil else <<
-     if idp path then path := id2string path;
-
-     % Remove trailing directory separator if present:
-     begin scalar p;
-        if cadr (p := reversip explode path) eq dirchar!* then
-           path := '!" . compress reversip cddr p;
-     end;
-
-     % Build path:
-     path := bldmsg("%w%w%w", path, dirchar!*, "gnuplot");
-
-     % Check existence and return:
-     if filep path then path
-  >>;
 
 endmodule;
 
