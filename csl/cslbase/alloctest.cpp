@@ -185,8 +185,12 @@ void treesize(LispObject a, int expected_size, uint64_t expected_hash)
 // Threads are created using this function, and its argument cen be passed
 // to identify the activity with a thread number.
 
+thread_local int thread_id;
+
 int thread_function(int id)
-{   int size = 3;
+{   thread_id = id;
+    stack_bases[id] = reinterpret_cast<void *>(&id);
+    int size = 3;
     LispObject a = fixnum_of_int(0), b = fixnum_of_int(0);
     {   std::lock_guard<std::mutex> lock(print_mutex);
         printf("Starting thread %d\n", id);
@@ -194,7 +198,7 @@ int thread_function(int id)
     }
     int sizeA = 0, sizeB = 0;
     uint64_t checkA = 0, checkB = 0;
-    while (size < 20)
+    while (size < 400)
     {   a = b;
         sizeA = sizeB;
         checkA = checkB;
@@ -219,6 +223,10 @@ int thread_function(int id)
 int main(int argc, char *argv[])
 {   printf("alloctest starting\n");
     fflush(stdout);
+    for (int i=0; i<max_threads; i++)
+    {   stack_bases[i] = NULL;
+        stack_fringes[i] = NULL;
+    }
     heapSegmentCount = 0;
     freePages = NULL;
     freePagesCount = activePagesCount = 0;
@@ -226,6 +234,12 @@ int main(int argc, char *argv[])
     nurseryPage = freePages;
     freePages = freePages->pageHeader.chain;
     set_variables_from_page(nurseryPage);
+// If I leave the opage empty to start with I will have to do rather a lot of
+// work before it is full enough to trigger GC, so here I will just do a bulk
+// allocation that uses up all but a little bit of the space.
+    get_n_bytes(pageSize - spareBytes - 1000);
+// Each thread MUST be given a (distinct) thraed_id in the range from 0
+/// to max_threads-1.
     std::thread t1(thread_function, 1);
     std::thread t2(thread_function, 2);
     thread_function(0);
@@ -233,6 +247,8 @@ int main(int argc, char *argv[])
 // thread as well as the subsidiary ones just in case that makes a difference.
     t1.join();
     t2.join();
+    printf("Memory left = %" PRId64 "\n",
+        (int64_t)(Alimit.load() - Afringe.load()));
     return 0;
 }
 

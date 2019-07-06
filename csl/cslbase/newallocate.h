@@ -35,6 +35,8 @@
 #ifndef header_newallocate_h
 #define header_newallocate_h 1
 
+#include <csetjmp>
+
 // allocSegment grabs a chunk of memory of the given size, which must
 // be a multiple of CSL_PAGE_SIZE. The memory block is recorded in a table
 // that can hold up to 32 segments.
@@ -475,8 +477,6 @@ inline LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
     return r1;
 }
 
-
-
 inline LispObject acons(LispObject a, LispObject b, LispObject c)
 {   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
@@ -541,6 +541,57 @@ inline LispObject Lncons(LispObject env, LispObject a)
     qcdr(r1) = nil;
     return onevalue(r1);
 }
+
+// The following can be used as in
+//   with_clean_stack([&]{ ... });
+// where the "..." represents some actions. Its job is to arrange that
+// the C stack has all local values on (in particular that nothing is
+// referenced solely via machine registers) and that a stack_top variable
+// is set so that the garbage collector can do its job properly.
+
+static const int max_threads = 16;
+extern thread_local int thread_id;
+extern void *stack_bases[max_threads];
+extern void *stack_fringes[max_threads];
+
+// The following code makes a whole slew of assumptions about how the
+// compiler and system library will treat it! I will explain what I hope
+// will happen, but a sufficiently clever compiler could without doubt
+// defeat me.
+
+// A C++ system is liable to have some "callee save" registers and keep the
+// values of some variable in them. A conservative garbage collector needs
+// to access their values. I EXPECT that setjmp will dump copies of all
+// such registers (at least!) into the jmp_buff, thus ensuring that a copy of
+// all the data is present on the stack. Well here the jmp_buff is not
+// referenced again or elsewhere, so maybe a compiler could consider it
+// unused and just remove the call to setjmp. To discourage that I have
+// buffer_pointer referring to the jmp_buff, and then at least potentially
+// (as far as the compiler can tell) in some other compilation uint there
+// might be code reachable from action() that does a longjmp() via it.
+// I alse want the jmp_buff to have been allocate on the stack at a lower
+// address than any other values currently in use. The "noinline" qualifier
+// as provided by gcc is intended to help to enforce that by arranging that
+// with_clean_stack() has its own stack frame with almost nothing except
+// action() and the jmp_buff in it. If values used within action() end up
+// on the stack above buffer that should not be a problem.
+//
+// There can be at most max_threads threads in play, and each must have
+// the thread-local value thread_id set.
+
+extern jmp_buf *buffer_pointer;
+
+template <typename F>
+#ifdef __GNUC__
+[[gnu::noinline]]
+#endif // __GNUC__
+inline void with_clean_stack(F &&action)
+{   std::jmp_buf buffer;
+    buffer_pointer = buffer;
+    static_cast<void>(setjmp(buffer));
+    stack_fringes[thread_id] = reinterpret_cast<void *>(buffer);
+    action();
+};
 
 // Low level functions for allocating objects.
 

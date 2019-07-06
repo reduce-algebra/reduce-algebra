@@ -654,8 +654,15 @@ LispObject Lgc_forcer1(LispObject env, LispObject a)
 {   return Lgc_forcer(env, a, a);
 }
 
+std::jmp_buf *buffer_pointer;
+
+void *stack_fringes[max_threads];
+void *stack_bases[max_threads];
+
 uintptr_t gc_and_allocate(uintptr_t r, size_t n)
-{   int a = (activeThreads -= 1);
+{   my_assert(false, [&]{ printf("\nGC needed\n"); });
+    // until I have coded more here!
+    int a = (activeThreads -= 1);
     if (a == 0)
     {   gc_complete.store(false);
 // Do the stuff.
