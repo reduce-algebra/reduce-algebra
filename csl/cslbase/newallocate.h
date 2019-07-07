@@ -385,6 +385,7 @@ inline void poll()
 // state where it will poll or allocate memory soon.
 
 extern std::atomic<int> activeThreads;
+extern int threadcount;
 extern std::atomic<bool> gc_complete;
 extern std::mutex mutex_for_gc;
 extern std::condition_variable cv_for_gc;
@@ -550,9 +551,11 @@ inline LispObject Lncons(LispObject env, LispObject a)
 // is set so that the garbage collector can do its job properly.
 
 static const int max_threads = 16;
-extern thread_local int thread_id;
-extern void *stack_bases[max_threads];
-extern void *stack_fringes[max_threads];
+extern std::atomic<void *> stack_bases[max_threads];
+extern std::atomic<void *> stack_fringes[max_threads];
+extern std::atomic<size_t> request_sizes[max_threads];
+extern std::atomic<std::atomic<uintptr_t> *> request_locations[max_threads];
+
 
 // The following code makes a whole slew of assumptions about how the
 // compiler and system library will treat it! I will explain what I hope
@@ -585,12 +588,12 @@ template <typename F>
 #ifdef __GNUC__
 [[gnu::noinline]]
 #endif // __GNUC__
-inline void with_clean_stack(F &&action)
+inline auto with_clean_stack(F &&action)
 {   std::jmp_buf buffer;
-    buffer_pointer = buffer;
+    buffer_pointer = &buffer;
     static_cast<void>(setjmp(buffer));
-    stack_fringes[thread_id] = reinterpret_cast<void *>(buffer);
-    action();
+    stack_fringes[thread_id].store(reinterpret_cast<void *>(buffer));
+    return action();
 };
 
 // Low level functions for allocating objects.
@@ -608,3 +611,60 @@ void allocate_segment(size_t n);
 #endif // header_newallocate_h
 
 // end of newallocate.h
+
+
+
+#if 0
+
+
+Here I will start to code my stop-the-world stuff:
+
+===========
+
+int activeThreads = THREAD_COUNT, idleThreads = 0;
+bool gc_started = false;
+bool gc_ended = true;
+cv start_cv, finished_cv, all_idle;
+mutex gc_entry;
+
+===========
+
+if (--activeThreads == 0) master_for_gc()
+else idle_during_gc();
+
+===========
+
+idle_during_gc()
+{   start_cv.wait([]{ return gc_started; });
+    if (++activeThreads == THREAD_COUNT) all_idle.notify_one();
+    finished_cv.wait([]{ return gc_finished; });
+}
+
+===========
+
+master_for_gc()
+{   gc_finished = false;
+    gc_started = true;
+    start_cv.notify_all();
+    DO STUFF;
+    all_idle.wait(activeThreads == THREAD_COUNT);
+    gc_started = false;
+    gc_finished = true;
+    finished_cv.notify_all();
+}
+
+===========
+
+potentially_blocking()
+{   THREAD_COUNT--;
+    if (--active_threads == 0) master_for_gc();
+    DO WHATEVER MIGHT BLOCK;
+    THREAD_COUNT++;
+    ++active_thread_count;
+}
+
+===========
+
+#endif
+
+

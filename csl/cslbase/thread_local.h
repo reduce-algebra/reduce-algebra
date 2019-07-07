@@ -52,6 +52,7 @@ extern void tls_store(void *v);
 class ThreadLocals
 {
 public:
+    int thread_id;
     size_t Xboffo_size;
     size_t Xboffop;
     char *Xboffo;
@@ -61,7 +62,7 @@ public:
     LispObject *fluid_values[1]; // will in fact be much longer
 
 #if defined __CYGWIN__ || defined __MINGW32__
-// On MIcrosoft platforms the construction of this object causes its
+// On Microsoft platforms the construction of this object causes its
 // address to be stored in an offset relative to a segment register. The
 // offset concerned gets allocated by the time tls_store makes use of it.
     ThreadLocals()
@@ -108,12 +109,13 @@ inline ThreadLocals *myThreadLocals()
 // with multiply defined items. By making the declarations here static
 // I should avoid that.
 
-static size_t &Xboffo_size = myThreadLocals()->Xboffo_size;
-static size_t &Xboffop = myThreadLocals()->Xboffop;
-static char *&Xboffo = myThreadLocals()->Xboffo;
-static size_t &fluid_values_size = myThreadLocals()->fluid_values_size;
-static size_t &fluid_values_count = myThreadLocals()->fluid_values_count;
-static LispObject *(&fluid_values)[1] = myThreadLocals()->fluid_values;
+#define thread_id          (myThreadLocals()->thread_id)
+#define Xboffo_size        (myThreadLocals()->Xboffo_size)
+#define Xboffop            (myThreadLocals()->Xboffop)
+#define Xboffo             (myThreadLocals()->Xboffo)
+#define fluid_values_size  (myThreadLocals()->fluid_values_size)
+#define fluid_values_count (myThreadLocals()->fluid_values_count)
+#define fluid_values       (myThreadLocals()->fluid_values)
 
 
 // Timings I collected for very tight loops accessing thread-local

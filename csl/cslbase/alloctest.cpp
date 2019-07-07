@@ -185,11 +185,15 @@ void treesize(LispObject a, int expected_size, uint64_t expected_hash)
 // Threads are created using this function, and its argument cen be passed
 // to identify the activity with a thread number.
 
-thread_local int thread_id;
-
 int thread_function(int id)
 {   thread_id = id;
-    stack_bases[id] = reinterpret_cast<void *>(&id);
+// The next 2 lines may need to be in a critical region? And/or
+// threadcount might need to be atomic. And the issue of creating
+// a new thread while another is involve din garbage collection might be
+// a hideous mess.
+    activeThreads.fetch_add(1);
+    threadcount++;
+    stack_bases[id].store(reinterpret_cast<void *>(&id));
     int size = 3;
     LispObject a = fixnum_of_int(0), b = fixnum_of_int(0);
     {   std::lock_guard<std::mutex> lock(print_mutex);

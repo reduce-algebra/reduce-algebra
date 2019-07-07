@@ -206,6 +206,7 @@ inline double CSLpow(double x, double y)
 
 #include "int128_t.h"
 #include "tags.h"
+#include "thread_local.h"
 #include "cslerror.h"
 #include "externs.h"
 #ifdef CONSERVATIVE
@@ -222,7 +223,6 @@ inline double CSLpow(double x, double y)
 #include "inthash.h"
 #include "lispthrow.h"
 #include "log.h"
-#include "thread_local.h"
 #include "version.h"
 
 namespace FX {

@@ -113,9 +113,10 @@ size_t pagesCount;
 size_t activePagesCount;
 
 std::atomic<int> activeThreads;
-std::atomic<bool> gc_complete;
+int threadcount = 0;
+bool gc_started = false, gc_finished = false;
 std::mutex mutex_for_gc;
-std::condition_variable cv_for_gc;
+std::condition_variable cv_for_gc_idling, cv_for_gc_busy;
 
 
 // All the heap memory I use here will be allocated within (up to) 32
@@ -656,174 +657,172 @@ LispObject Lgc_forcer1(LispObject env, LispObject a)
 
 std::jmp_buf *buffer_pointer;
 
-void *stack_fringes[max_threads];
-void *stack_bases[max_threads];
+// The following need to be atomic because they get updates by one thread
+// and read by another. Without the std::atomic stuff the update could
+// remain in a local cache of the writer thread and not reach the one that
+// tries to read the information. Hmm that may not be the case if there are
+// uses of mutexes and condition variables along the way, since those may
+// activate suitable fences. However making these atomic will not be terribly
+// costly!
+
+std::atomic<void *> stack_bases[max_threads];
+std::atomic<void *> stack_fringes[max_threads];
+std::atomic<size_t> request_sizes[max_threads];
+std::atomic<std::atomic<uintptr_t> *> request_locations[max_threads];
+
+void master_gc_work()
+{   std::printf("Hello, this is the master_GC\n");
+// set space in via request_sizes[] etc. Note that especially if I am
+// dealing with fragmented heap-space because of pinned items left over by
+// the conservative collector I may actually end up doing two or even more
+// garbage collections here before I can satisfy all the pending memory
+// requests. On a second or subsequent GC I must allow for the newly-
+// allocated blocks that are here.
+    fflush(stdout);
+    my_abort(); // give up for now
+}
+
+// I have multiple threads, and when a GC is needed they need to synchronize.
+// My plan is that one thread is selected as the key one, with that
+// being the last one to decrement an "activeThreads" counter. By virtue
+// of being last there the thread knows that all the other threads are
+// quiescent. All the others first wait on a condition variable until the
+// key one releases it, and then wait on a second condition variable until
+// that too is released.
+// The two variables are to let the underpinning variables get set up.
+// So outside GC-time a variable "gc_started" will be false, and all
+// non-key threads can go
+//      {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+//          gc_start_cv.wait(lock, []{ return gc_started; });
+//      }
+// followed immediately  by
+//      activeThreads++;
+//      {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+//          gc_end_cv.wait(lock, []{ return gc_finished; });
+//      }
+// The key thread on the other hand can go
+//      gc_finished = false;
+// MUST ensure that gc_finished will be seen as false by all other threads
+// before gc_started is seen as true, because otherwise spurious wake-ups
+// on gc_start_cv and gc_end_cv could let one of the other threads run
+// through improperly.
+//      {   std::lock_guard<std::mutex> lock(mutex_for_gc);
+//          gc_started = true;
+//      }
+//      gc_start_cv.notify_all();
+// At this point the key thread can perform garbage collection. It can not
+// tell if the other threads are still waiting to respond to the gc_start
+// notification or if they have gone on to wait for gc_finished! So to let
+// it know the subsidiary threads each increment activeThreads when they
+// have passed the first hurdle, and the one that brings that up to maximum
+// can notify yet another condition variable. At the end of GC the key thread
+// can wait on that CV until the thread count is high enough, and then it
+// can afford to clear gc_started and set gc_finished and finally notify
+// all other threads. Ught this feels heavy-handed and messy!
+
+void master_gc_thread()
+{
+// When I get here I know that actveThreads==0 and that all other threads
+// have just decremented that variable and are ready to wait on gc_started.
+// Before I release them from that I will ensure that gc_finished is false so
+// that they do not get over-enthusiastic!
+    {   std::lock_guard<std::mutex> guard(mutex_for_gc);
+        gc_finished = false;
+        gc_started = true;
+    }
+    cv_for_gc_idling.notify_all();
+// Now while the other threads chew on that I can perform some garbage
+// collection and fill in results via request_locations[] based on
+// request_sizes[].
+    master_gc_work();
+// Now I need to be confident that the other threads have all accessed
+// gc_started. When they have they will increment activeThreads and when the
+// last one does that it will notify me.
+    {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+        cv_for_gc_busy.wait(lock,
+            []{ return activeThreads.load() == threadcount-1; });
+    }
+// OK, so now I know that all the other threads are ready to wait on
+// gc_finished, so I ensure that useful variables are set ready for next
+// time and release all the threads that have been idling.
+    {   std::lock_guard<std::mutex> guard(mutex_for_gc);
+        gc_started = false;
+        activeThreads.fetch_add(1);
+        gc_finished = true;
+        cv_for_gc_idling.notify_all();
+    }
+}
+
+void idle_during_gc()
+{
+// If I am a thread that will not myself perform garbage collection I need
+// to wait for the one that does. This needs to be done in two phases. During
+// the first I know that I have decremented activeThreads and determined that
+// I was the last, but I can not be certain that all other threads have done
+// that. I wait until gc_started gets set, and that happens when some thread
+// has found itself to be the last one. And so by construction that means that
+// all other threads will be able to reach here when they get a time-slice.
+// It will then of course be important that gc_started had been false before
+// that and that it then remains true until there is confirmation that each
+// idle thread has passed this gateway.
+    {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+        cv_for_gc_idling.wait(lock, []{ return gc_started; });
+    }
+// To record that threads have paused they can then increment activeThreads
+// again. When one of them increments it to the value threadcount-1 I will
+// know that all the idle threads have got here, and I nofify the master GC
+// thread.
+    bool inform = false;
+    {   std::lock_guard<std::mutex> guard(mutex_for_gc);
+        if (activeThreads.fetch_add(1) == threadcount-2) inform = true;
+    }
+    if (inform) cv_for_gc_busy.notify_one();
+// Once the master thread has been notified as above it can go forward and
+// in due course notify gc_finished. Before it does that it must ensure that
+// it has filled in results for everybody, incremented activeTHreads to
+// reflect that it is busy again and made certain that gc_started is false
+// again so that everything is tidily ready for next time.
+    {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+        cv_for_gc_idling.wait(lock, []{ return gc_finished; });
+    }
+}
+
+// Here I have just attempted to allocate n bytes but the attempt failed
+// because it left fringe>=limit. I must synchronmize with all other
+// threads and one of the threads (it may not be me!) must garbage collect.
+// When they synchronize with me here the other threads will also have tried
+// an allocation, but the largest request any is allowed to make is
+// VECTOR_CHUNK_BYTES (at present 1 megabyte). If all the max_threads do
+// this they can have caused fringe to overshoot by about an amount
+// max_threads*VECTOR_CHUNK_BYTES and if that caused uintptr_t arithmetic to
+// overflow and wrap round then there could be big trouble. So when I
+// allocate chunks of memory I ought to ensure that none has an end-address
+// that close to UINTPTR_MAX! I think that on all realistic systems that is
+// a problem that will not actually arise.
+//
+// I must arrange that memory close to where the failed allocation arose is
+// left tidy. I will put in a padder item if needbe just to be cautious. And
+// I must arrange that whether I am the thread that does GO or one of the
+// others that I return a valid allocation address.
 
 uintptr_t gc_and_allocate(uintptr_t r, size_t n)
-{   my_assert(false, [&]{ printf("\nGC needed\n"); });
-    // until I have coded more here!
-    int a = (activeThreads -= 1);
-    if (a == 0)
-    {   gc_complete.store(false);
-// Do the stuff.
-        std::lock_guard<std::mutex> guard(mutex_for_gc);
-        gc_complete.store(true);
-        cv_for_gc.notify_all();
-    }
-    else
-    {   std::unique_lock<std::mutex> lock(mutex_for_gc);
-        cv_for_gc.wait(lock, []{ return gc_complete.load(); });
-    }
-    return 0000000;
-}
-
-extern void middle_reclaim();
-extern void inner_reclaim(uintptr_t *sp);
-
-// The next section of code represents an attempt to coax "reasonable"
-// compilers into arranging that all registers that had been in use when
-// reclaim() is called end up somewhere on the stack by the time that
-// inner_reclaim() is entered. It is pretty clear that this is not the
-// sort of thing that fully guaranteed portable code can achieve! I apply
-// two ideas. The first is to have a function that is liable to want to
-// keep a dozen value in its registers - and to do that it is liable to
-// flush callee-save ones to the stack. I used to use the "register"
-// qualifier to try to advise the compiler to do what I want, but modern
-// compilers may now reject that. So I just use lots of registers and hope.
-// As a secondary attempt I use setjmp() which I hope and expect dumps
-// a copy of all useful machine registers into the given jmp_buf. Again
-// this is not guaranteed, but it is at least plausible!
-// The use of volatile_variable is a further attempt to prevent any
-// clever compiler frm observing that all that I do is frivolous and
-// then discarding it.
-
-volatile int volatile_variable = 12345,
-             volatile_variable1 = 54321;
-
-void reclaim(int line)
-{
-// This function is not officially portable in any way.
-//
-// The purpose of this function is to force any even partially
-// reasonable C compiler into putting all registers that contain
-// values from the caller onto the stack. It assumes that there
-// could not be more than 12 "callee saves" registers, that the
-// heavy (looking) use of a1-a1 will get them to take precedence
-// when allocating same. The volatile qualifier on the variable that
-// is repeatedly referenced is there to tell the compiler that it may
-// not make any assumptions about its value remaining constant (so that
-// a1-a12 might not all have the same value), and the use of a1-a12
-// again after the call to inner_reclaim() should force each of those
-// values to be saved across that call. The work done
-// is of course a waste (but assigning back to a volatile variable
-// may force it to be done!) but is modest in the large scheme of
-// things. On most machines I can think of there are a lot fewer
-// than 12 callee-save registers and so this is overkill! Here I am just
-// intent on getting the compiler to generate code that treats
-// volatile_variable tidily, and I do not in fact care at all about
-// interaction between threads. 
-    int a1 = volatile_variable;
-// The declarations here go one at a time to stress the sequential nature
-// of the references to volatile_variable.
-    int a2 = volatile_variable;
-    int a3 = volatile_variable;
-    int a4 = volatile_variable;
-    int a5 = volatile_variable;
-    int a6 = volatile_variable;
-    int a7 = volatile_variable;
-    int a8 = volatile_variable;
-    int a9 = volatile_variable;
-    int a10 = volatile_variable;
-    int a11 = volatile_variable;
-    int a12 = volatile_variable;
-// Even with a heavily optimising compiler the above ought to generate
-// 12 loads from the volatile_variable because in principle the values so
-// loaded could all be different. Now is 12 enough? Well on the machines I
-// know about it is plenty!
-    jmp_buf jb;
-    if (setjmp(jb) != 0) volatile_variable++;
-// setjmp is expected to save all registers in jb.
-    for (int i=0; i<1000000; i++)
-    {   middle_reclaim();
-// The loop is so that a compiler can believe that there is a chance that
-// everything will be executed up to a million times, and that might encourage
-// it to try quite hard to store the values of a1-a12 in registers (thus
-// flushing any values from its caller to stack). But in fact the code will
-// return after calling middle_reclaim() without doing anything else that
-// might be costly. So my expectation is that the function here will consume
-// some space in program memory but will represent really rather a small
-// burden on CPU time.
-//
-// On the next line I believe that because volatile_var is an std::atomic<int>
-// the compiler must assume that the two references might yield different
-// values. I would rather like to instruct the compiler to assume that
-// the values will almost always differ, because if it guesses that mostly
-// they will match it may optimize on the basis of the loop not
-// getting traversed a lot.
-        if (volatile_variable == volatile_variable) return;
-// The longjmp here will never be taken, but the compiler is not allowed to
-// assume that! Therefore it must keep jb on alive on the stack during the
-// call to middle_reclaim().
-        if (volatile_variable != volatile_variable) longjmp(jb, 1);
-// This now references a1-a12, which could all hold unrelated values so
-// all need to be stored independently. I am hoping that many are kept in
-// registers!
-        volatile_variable1 += a1;
-        volatile_variable1 += a2;
-        volatile_variable1 += a3;
-        volatile_variable1 += a4;
-        volatile_variable1 += a5;
-        volatile_variable1 += a6;
-        volatile_variable1 += a7;
-        volatile_variable1 += a8;
-        volatile_variable1 += a9;
-        volatile_variable1 += a10;
-        volatile_variable1 += a11;
-        volatile_variable1 += a12;
-// The code above references each of a1 to a12 and combines their
-// values with volatile_variable1 in a way intended to mean that they must
-// all be saved across the call to middle_reclaim(). The code is written
-// line by line to arrange that there are sequence points between each
-// access to volatile_variable1, and in the compiler's imagination some other
-// part of the full world might inspect the value stored there at any of
-// those points, so there should be no legitimate scope for any optimization
-// that would avoid having all the 12 potentially distinct value in a1-a12
-// safely kept available. I use a separate variable to update because
-// otherwise if there were multiple threads that could cause an update to
-// volatile_variable between loads of it and cause one of my comparisons
-// to give a result other than the one I want. So in reality here I only
-// ever read from volatile_variable and only ever do read-modify-writes to
-// volatile_variable2, but I never test its value. 
-    }
-}
-
-#ifdef __GNUC__
-[[gnu::noinline]]
-#endif // __GNUC__
-void middle_reclaim()
-{
-// This function is here to have a stack frame (containing w) that will
-// lie between that of reclaim and inner_reclaim. The stupid-looking test
-// on volatile_variable is intended to persuade clever compilers that they
-// should not compile this procedure in-line or consolidate its stack
-// frame with either its caller or callee by making it appear that it
-// could be recursive. The address of the top of the stack is passed onwards,
-// adjusted so as to be alined as for a LispObject.
-    uintptr_t w = 0;
-    if (volatile_variable != volatile_variable)
-    {   inner_reclaim(NULL);  // never executed!
-        middle_reclaim();     // never executed! But looks recursive.
-    }
-    inner_reclaim((uintptr_t *)((intptr_t)&w & -sizeof(LispObject)));
-}
-
-void inner_reclaim(uintptr_t *sp)
-{
-}
-
-void garbage_collect()
-{   printf("NOT IMPLEMENTED YET\n");
-    abort();
+{   return with_clean_stack([&]
+    {   std::atomic<uintptr_t>rr;
+        rr.store(r);
+// The use of std::atomic for rr is so that it can be updated by one
+// thread and then read by another.
+        request_locations[thread_id].store(&rr);
+        request_sizes[thread_id].store(n);
+// The next line will count down the number of threads that have entered
+// this synchronization block. The last one to do so can serve as the
+// thread that performs garbage collection, the other will just need to wait.
+        int a = activeThreads.fetch_sub(1);
+        if (a == 1) master_gc_thread();
+        else idle_during_gc();
+// The thread that performs garbage collection must perform allocation on
+// behalf of every thread.
+        return rr.load();
+    });
 }
 
 LispObject *nilSegmentBase, *stackSegmentBase;
