@@ -2564,8 +2564,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #else
         nilsegment =
             reinterpret_cast<LispObject *>(malloc(NIL_SEGMENT_SIZE+32));
-        nilsegment = static_cast<LispObject *>(
-            doubleword_align_up(static_cast<uintptr_t>(nilsegment_base)));
+        nilsegment = reinterpret_cast<LispObject *>(
+            doubleword_align_up(reinterpret_cast<uintptr_t>(nilsegmentbase)));
 #endif
         if (nilsegmentbase == NULL) abort();
 #ifdef COMMON
@@ -2581,8 +2581,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #else
         stacksegment =
             reinterpret_cast<LispObject *>(malloc(CSL_PAGE_SIZE+32));
-        stacksegment = static_cast<LispObject *>(
-            doubleword_align_up(static_cast<uintptr_t>(stacksegment_base)));
+        stacksegment = reinterpret_cast<LispObject *>(
+            doubleword_align_up(reinterpret_cast<uintptr_t>(stacksegmentbase)));
 #endif
         if (stacksegment == NULL) abort();
         heaplimit = doubleword_align_up((LispObject)stacksegment);
