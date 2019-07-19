@@ -33,7 +33,7 @@ ls -lh csl*/csl/bootstrapreduce.exe csl*/csl/bootstrapreduce.img
 rm -rf cslbuild
 mkdir -p cslbuild
 
-./fatbinary.sh
+./fatbinary.sh 3
 
 # I want a program that can establish cygwin symlinks but that is a regular
 # Windows program. This is for calling from an installer.
