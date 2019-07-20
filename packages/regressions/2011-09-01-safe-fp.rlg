@@ -239,35 +239,35 @@ safe-fp-quot incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: 4.45015e-296                         1d_1a94_a200_0000_B-981
 new: 2.24712e+295                       11_9799_812d_ea11_B982
-ref: nil                                1d_1a94_a200_0000_B-981
+ref: nil                                nil
 
 
 safe-fp-quot incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: -4.45015e-296                        -1d_1a94_a200_0000_B-981
 new: -2.24712e+295                      -11_9799_812d_ea11_B982
-ref: nil                                -1d_1a94_a200_0000_B-981
+ref: nil                                nil
 
 
 safe-fp-quot incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: 4.45015e-296                         1d_1a94_a200_0000_B-981
 new: 2.24712e+295                       11_9799_812d_ea11_B982
-ref: nil                                1d_1a94_a200_0000_B-981
+ref: nil                                nil
 
 
 safe-fp-quot incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: -4.45015e-296                        -1d_1a94_a200_0000_B-981
 new: -2.24712e+295                      -11_9799_812d_ea11_B982
-ref: nil                                -1d_1a94_a200_0000_B-981
+ref: nil                                nil
 
 
 safe-fp-plus incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: 2.24712e+307                         10_0000_0000_0000_B1022
 new: 2.24712e+307                       10_0000_0000_0000_B1022
-ref: nil                                10_0000_0000_0000_B1022
+ref: nil                                nil
 
 
 safe-fp-quot incorrect
@@ -288,7 +288,7 @@ safe-fp-plus incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: 2.24712e+307                         10_0000_0000_0000_B1022
 new: 2.24712e+307                       10_0000_0000_0000_B1022
-ref: nil                                10_0000_0000_0000_B1022
+ref: nil                                nil
 
 
 safe-fp-quot incorrect
@@ -309,35 +309,35 @@ safe-fp-quot incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: 3.96114e-296                         19_e7e0_24a4_ee94_B-981
 new: 2.52452e+295                       13_c391_aa12_e0e2_B982
-ref: nil                                19_e7e0_24a4_ee94_B-981
+ref: nil                                nil
 
 
 safe-fp-quot incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: -3.96114e-296                        -19_e7e0_24a4_ee94_B-981
 new: -2.52452e+295                      -13_c391_aa12_e0e2_B982
-ref: nil                                -19_e7e0_24a4_ee94_B-981
+ref: nil                                nil
 
 
 safe-fp-quot incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: 4.99952e-296                         10_592d_6928_0000_B-980
 new: 2.00019e+295                       1f_5172_1293_117a_B981
-ref: nil                                10_592d_6928_0000_B-980
+ref: nil                                nil
 
 
 safe-fp-quot incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: -4.99952e-296                        -10_592d_6928_0000_B-980
 new: -2.00019e+295                      -1f_5172_1293_117a_B981
-ref: nil                                -10_592d_6928_0000_B-980
+ref: nil                                nil
 
 
 safe-fp-plus incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: 2.52452e+307                         11_f9a6_b50b_0f28_B1022
 new: 2.52452e+307                       11_f9a6_b50b_0f28_B1022
-ref: nil                                11_f9a6_b50b_0f28_B1022
+ref: nil                                nil
 
 
 safe-fp-quot incorrect
@@ -358,21 +358,21 @@ safe-fp-quot incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: 3.52588e-296                         17_0f22_3a63_c0dd_B-981
 new: 2.83618e+295                       16_342c_3c44_2242_B982
-ref: nil                                17_0f22_3a63_c0dd_B-981
+ref: nil                                nil
 
 
 safe-fp-quot incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: -3.52588e-296                        -17_0f22_3a63_c0dd_B-981
 new: -2.83618e+295                      -16_342c_3c44_2242_B982
-ref: nil                                -17_0f22_3a63_c0dd_B-981
+ref: nil                                nil
 
 
 safe-fp-quot incorrect
 x: 1.0                                  10_0000_0000_0000_B1
 y: 5.61671e-296                         12_5dd6_68a2_4001_B-980
 new: 1.7804e+295                        1b_e073_6466_9b36_B981
-ref: nil                                12_5dd6_68a2_4001_B-980
+ref: nil                                nil
 
 
 nil

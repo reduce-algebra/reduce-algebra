@@ -110,7 +110,7 @@ for each x in ll do
             prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
             prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
             prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
-            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
+            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 a2;
             terpri();
             badcase() >>;
         a1 := safe!-fp!-times(x, y);
@@ -121,7 +121,7 @@ for each x in ll do
             prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
             prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
             prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
-            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
+            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 a2;
             terpri();
             badcase() >>;
         a1 := safe!-fp!-quot(x, y);
@@ -132,7 +132,7 @@ for each x in ll do
             prin2 "x: "; prin2 x; tab_to 40; prin2t hexfloat1 x;
             prin2 "y: "; prin2 y; tab_to 40; prin2t hexfloat1 y;
             prin2 "new: "; prin2 a1; tab_to 40; prin2t hexfloat1 a1;
-            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 y;
+            prin2 "ref: "; prin2 a2; tab_to 40; prin2t hexfloat1 a2;
             terpri();
             badcase() >> >> >>;
 
