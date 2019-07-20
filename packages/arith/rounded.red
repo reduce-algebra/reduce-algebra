@@ -656,9 +656,8 @@ symbolic procedure safe!-fp!-times(u, v);
 % Here u is large but v is not... so similar arguments apply.
       if (u1/!!two511)*v1 >= !!two513 then return nil >>
     else <<
-% Finally both u and v are less than 2^511 so overflow is not possible,
-% but underflow is a risk
-      if u1*v1 < !!minnorm and u neq 0.0 and v neq 0.0 then return nil >>;
+% Finally both u and v are greater than or equal to 2^511 so overflow is possible.
+      if (u1/!!two511)*(v1/!!two511) >= 4.0 then return nil >>;
     return u*v
   end;
 
@@ -669,7 +668,7 @@ symbolic procedure safe!-fp!-quot(u, v);
     scalar u1, v1;
     if !*nonegzerotimes and u = 0.0 then return 0.0;
     if u < 0.0 then u1 := -u else u1 := u;
-    if v < 0.0 then v1 := -v else v1 := u;
+    if v < 0.0 then v1 := -v else v1 := v;
 % I now have the absolute values of the operands.
     if u1 < !!two511 then
       if v1 > 1.0/!!two511 then <<
@@ -684,7 +683,7 @@ symbolic procedure safe!-fp!-quot(u, v);
       if (u1/!!two511)/v1 >= !!two513 then return nil >>
     else <<
 % Finally u is big and v is tiny...
-      if u1/v1 < !!minnorm and u neq 0.0 then return nil >>;
+      if (u1/!!two511)/(v1*!!two511) >= 4.0 then return nil >>;
     return u/v;
   end;
     
