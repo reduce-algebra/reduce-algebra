@@ -877,9 +877,8 @@ symbolic procedure radf(u,n);
 %                                                    else mvar u),
                     else check!-radf!-sign(!*p2f(mvar u .** pdeg car y),
                                            !*p2f(
-                            (if !*precise and evenp n then {'abs,mvar u}
-                              else mvar u)
-                                                  .** car x),
+                             if !*precise and evenp n then mksp({'abs, sfchk mvar u}, car x)
+                              else mvar u .** car x),
                                            n),
                     ipart);
             if cdr x neq 0
