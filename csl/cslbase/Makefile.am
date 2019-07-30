@@ -336,7 +336,7 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 
 %.cxx:	%.cpp
 	echo CXX -E $<
-	@printf "$(HOST) "
+	@printf "$(BUILTFOR) "
 	$(AM_V_CXX)$(CXXCOMPILE) -E -o $@ $<
 	astyle -n $@
 	sed -e '/^#/ s:#:// #:' < $@ > $@.tmp
@@ -347,7 +347,7 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 
 %.s:	%.cpp
 	@echo CXX -S $<
-	@printf "$(HOST) "
+	@printf "$(BUILTFOR) "
 	$(AM_V_CXX)$(CXXCOMPILE) -S -o $@ $<
 
 # If I am building under FOX then the main parts of material from
@@ -823,7 +823,7 @@ endif !fox
 # that does not cause me to record it in the CHANGED file.
 
 $(FOXDEPS):	$(csl)/fox/CHANGED $(USE_CORRECT_CYGWIN)
-	printf "About to build FOX for %s\n" `pwd`
+	@printf "About to build FOX for %s\n" `pwd`
 	$(TRACE)@cd ../fox && $(USE_CORRECT_CYGWIN) $(MAKE) install
 
 
@@ -864,7 +864,7 @@ alloctest_DEPENDENCIES += $(CRLIBMDEPS)
 endif conservative
 
 $(CRLIBMDEPS):	$(USE_CORRECT_CYGWIN)
-	printf "About to build crlibm for %s\n" `pwd`
+	@printf "About to build crlibm for %s\n" `pwd`
 	$(TRACE)@cd ../crlibm && \
 		$(USE_CORRECT_CYGWIN) $(MAKE) install
 
@@ -909,7 +909,7 @@ alloctest_DEPENDENCIES += $(LIBFFIDEPS)
 endif conservative
 
 $(LIBFFIDEPS):	$(USE_CORRECT_CYGWIN)
-	printf "About to build libffi for %s\n" `pwd`
+	@printf "About to build libffi for %s\n" `pwd`
 	$(TRACE)@cd ../libffi && \
 		$(USE_CORRECT_CYGWIN) $(MAKE) install
 
@@ -947,7 +947,7 @@ alloctest_DEPENDENCIES    += $(SOFTFLOATDEPS)
 endif conservative
 
 $(SOFTFLOATDEPS):	$(USE_CORRECT_CYGWIN)
-	printf "About to build softfloat for %s\n" `pwd`
+	@printf "About to build softfloat for %s\n" `pwd`
 	$(TRACE)@cd ../softfloat && \
 		$(USE_CORRECT_CYGWIN) $(MAKE) install
 
@@ -1207,7 +1207,7 @@ $(csl)/wxWidgets/wxWidgets_revision:	\
 WXDEPS=../bin/wx-config
 
 ../bin/wx-config:	$(csl)/wxWidgets/wxWidgets_revision $(USE_CORRECT_CYGWIN)
-	printf "About to build wxWidgets for %s\n" `pwd`
+	@printf "About to build wxWidgets for %s\n" `pwd`
 	$(TRACE)@cd ../wxWidgets && \
 		$(USE_CORRECT_CYGWIN) $(MAKE) install
 
@@ -1297,11 +1297,11 @@ else !gui
 endif !gui
 if !cygwin
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
+	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) csl.exe; fi
 	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
+	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) csl.exe; fi
 	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 endif !cygwin
@@ -1345,11 +1345,11 @@ else !gui
 endif !gui
 if !cygwin
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
+	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) flatcsl.exe; fi
 	if test -x $(with_cygbuild)/csl/flatcsl.exe; then $(CP) $(with_cygbuild)/csl/flatcsl.exe cygwin-flatcsl.exe; fi
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
+	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) flatcsl.exe; fi
 	if test -x $(with_cygbuild64)/csl/flatcsl.exe; then $(CP) $(with_cygbuild64)/csl/flatcsl.exe cygwin64-flatcsl.exe; fi
 endif !cygwin
@@ -1399,11 +1399,11 @@ else !gui
 endif !gui
 if !cygwin
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
+	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) reduce.exe; fi
 	if test -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
 	if test "x$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
+	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) reduce.exe; fi
 	if test -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
 endif !cygwin
@@ -1459,11 +1459,11 @@ if windows
 	$(CP) $(cslbase)/bootstrapreduce .
 if !cygwin
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
+	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) bootstrapreduce.exe; fi
 	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
+	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) bootstrapreduce.exe; fi
 	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 endif !cygwin
@@ -1497,11 +1497,11 @@ else !gui
 endif !gui
 if !cygwin
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
+	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) fwindemo.exe; fi
 	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
+	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) fwindemo.exe; fi
 	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
 endif !cygwin
@@ -2681,7 +2681,7 @@ $(reduce)/bin/rfcsl$(EXEEXT): \
 		$(generic)/newfront/redsig.c \
 		$(generic)/newfront/redstrings.c \
 		$(USE_CORRECT_CYGWIN)
-	printf "About to build redfront for %s\n" `pwd`; \
+	@printf "About to build redfront for %s\n" `pwd`; \
 	cd ../redfront && $(USE_CORRECT_CYGWIN) $(MAKE)
 
 endif redfront
@@ -2800,6 +2800,6 @@ endif !cygwin
 install-data-local:
 	echo " "
 
-am__v_CXX_0 = @echo "[$(HOST)] CXX   " $@; 
+am__v_CXX_0 = @echo "[$(BUILTFOR)] CXX   " $@; 
 
 # end of Makefile

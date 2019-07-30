@@ -65,6 +65,7 @@ procedure pterpri;
       pbuf := reversip !*pprinbuf!*;
       for each c in !*outchanl!* do
          <<wrs c;
+           linelength 300;
            for each a in pbuf do
               if gentranlang!* eq 'fortran then fprin2 a else prin2 a;
          terpri()>>;
