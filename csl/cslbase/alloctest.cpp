@@ -151,7 +151,9 @@ LispObject make_n_tree1(int n)
     int n1 = (n-1)/2;
     LispObject left = make_n_tree1(n1);
     if ((arithlib_implementation::mersenne_twister() % 1000) == 0)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    {   may_block([&]{
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            });
     LispObject right = make_n_tree1(n-n1-1);
     return cons(left, right);
 }
@@ -189,7 +191,7 @@ int thread_function(int id)
 {   thread_id = id;
 // The next 2 lines may need to be in a critical region? And/or
 // threadcount might need to be atomic. And the issue of creating
-// a new thread while another is involve din garbage collection might be
+// a new thread while another is involved in garbage collection might be
 // a hideous mess.
     activeThreads.fetch_add(1);
     threadcount++;

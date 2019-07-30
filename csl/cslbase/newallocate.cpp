@@ -112,6 +112,79 @@
 size_t pagesCount;
 size_t activePagesCount;
 
+// Ha ha potentially clever idea. Have activetheads an atomic<int32_t> and use
+// the bottom 10 bits for the number of threads that are busy and the next
+// 10 bits for the number potentially busy and finally 10 bits for the total
+// number of threads in play. That way I can eg subtract (1<<10)+1 when a
+// thread temporarily removes itself from the pool because it
+// may be about to block! Etc etc. The second idea is that there is potential
+// misert about needing to get every thread to exit when STOP is called. Well
+// maybe I can avoid using mutexes at all as places that code can block and
+// instead use condition variables with a condition of the form
+// (<sensible-condition> || need_to_exit) and then when the barrier is passed
+// I immediately check need_to_exit and tidy up a bit more. To make that work
+// I suspect I will need a table of every muxex/condition variable anywhere
+// so that when I set need_tO-exit I can notify all of them!
+// Well for muxexes and condition variables visible at the Lisp level I will
+// need underlying C++ ones which will sort of need garbage collection but
+// must never move. I think that the best bet is to have a vector pool of
+// synchronization objects with the Lisp objects that encapsulate them holding
+// an integer index that will need to be treated as a weak pointer to
+// keep the object "alive". Whe not alive the object is just available for
+// re-use... That is all going to be a bit messy.
+
+// Another though to be left as comments here until I implement it and comment
+// it where the code ends up:
+// The copying GC can probably be coded so as to use multiple threads to do the
+// copying! I have bits of that sketched in my mind, butil until I can sit down
+// quietly with a full sized keyboard and code some of it things are a bit
+// uncertain.
+// A though is that when I am about to evactuate the item it address p I
+// start with a = atomic_store(p, TAG_FORWARD) where tht returns the
+// previous value at p. Then if that was TAG_FORWARD I will know that
+// somebody else had been evacuating that location - I just re-try in a busy-
+// waiting style. If what was there was a forwarding address then I do an
+// (atomic) store to put it back. Otherwise I have the original contents and
+// I have marked the word with TAG_FORWARD so that no other thread will mess
+// with it (much). As quickly as I can I work out where the data will need
+// to end up. This is going to be an atomic_add operation on the fringe of
+// the new heap. Then I can store a proper forwarding address in place.
+// I HOPE that it will be rare that two threads try to evacuate the same
+// location at once, so the spin-wait will be uncommon, and I hope that
+// working out where something moves to will be quick so that when it does
+// happen it will not need to run for long.
+// I can batch the identification of locations to evacuate so I can use a
+// mutex to protect that code that grabs them, and that will be ok provided
+// identifting locations is (much) cheaper than actually altering stuff.
+
+// BEWARE:
+//   consider the imlemention of v = cons(a,b) where v is some value that may
+// be shared across threads. Eg rplacd(V, cons(a, b)) is almost certainly
+// going to count. The natural implementation will be along the lines
+//    w = allocat1();
+//    w[0] = a;
+//    w[1] = b;
+//    v = w;
+// but as a first issue the compiler might use v in place of the temporary w,
+// and then we have
+//    v = allocate();
+//    some other thread accesses uninitialized car v here!
+//    v[0] = a; v[1] = b;
+// Things are even worse because with the code written in vanilla form the CPU
+// may re-order all the memory writes, again leaving v referencing a chunk of
+// memory not fully initialized. The two issues must be dealt with using one
+// of two ideas. Synchronization primitives such as mutexes could be used to
+// enclose the operation as a critical region, and potential accesses would
+// do likewise. The performance and ugliness costs are horrendous! Or memory
+// fences can be used. So that shows I will need to study thread-fence methods
+// and all the options that provide. Note that without a fence after the update
+// of v it could be that the chance made would reside locally so that other
+// threads would not see it, so a fence may be needed to "publish" it.
+// Making almost every value std::atomic<T> might also do the job, but that
+// would then imply fences everywhere and could hurt performance and it would
+// also be horribly ponderous and clumsy.
+// 
+
 std::atomic<int> activeThreads;
 int threadcount = 0;
 bool gc_started = false, gc_finished = false;
@@ -654,6 +727,40 @@ LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
 LispObject Lgc_forcer1(LispObject env, LispObject a)
 {   return Lgc_forcer(env, a, a);
 }
+// When a thread exhausts memory (to be more specific, when it fills up
+// the nursery page) it must arrange that all but one threads are stopped
+// with information about their stacks visible somewhere central and all
+// their active values on the stack rather than in machine registers.
+// Then garbage collection car occur - or sometimes in simplet cases just
+// the allocation of a fresh nursery page.
+// To organize this threads need to be suspended. The following are the
+// techiques that could potentially apply:
+// (1) Busy-waiting on a suitable atomic flag. Hmm busy waiting is generally
+//     not a good strategy except for very short periods.
+// (2) Arranging that the thread receives a signal that takes it into
+//     a signal handler that sleeps, in such a manner that it can be woken
+//     from the sleep by a further notification. Well the rules about
+//     proper portable use of signals and their handler make this hard to
+//     arrange ina way that can be counted on across architectures, and I
+//     do not really want to get down to that level of grungy detail and
+//     verify it on Windows and with various Linux releases.
+// (3) A thread can wait when it attempts to claim a semaphore, so for
+//     each thread to be paused each will have to claim its own particular
+//     semaphore. There are then two follow-on challenges - one is to
+//     detect when every thread has become inactive and hence garbage
+//     collection can proceed. The second arises when the threads release
+//     their semaphores - somebody else must then lock them all with certainty
+//     that that has happened before anybody runs out of memory again. There
+//     are potential race conditions there and so further synchronization
+//     steps are required. I think that this means that the associated
+//     complexity means that the apparent simplicity of each thread "just
+//     needing to lock a mutex" is apparent rather then real.
+// (4) Somewhat in the style of (3) I can use condition variables, and
+//     all the threads that are to pause can wait on the same condition
+//     variable with a notify_all() operation releasing then all. This is
+//     what I have tried to code here and it still feels messier than I
+//     would have liked. But this section of comments is to suggest what else
+//     I considered and how I ended up with this plan.
 
 std::jmp_buf *buffer_pointer;
 
@@ -852,7 +959,7 @@ void initHeapSegments(double storeSize)
 
 // There are other bits of memory that I will grab manually for now...
 // and at present csl.cpp ALSO sets them up... @@@@
-#ifdef __cpp_aligned_new
+#if defined __cpp_aligned_new && defined HAVE_ALIGNED_ALLOC
     nilSegment = nilSegmentBase =
         reinterpret_cast<LispObject *>(
             aligned_alloc(16, NIL_SEGMENT_SIZE));
@@ -864,7 +971,7 @@ void initHeapSegments(double storeSize)
 #endif
     if (nilSegment == NULL) fatal_error(err_no_store);
     nil = (LispObject)((uintptr_t)nilSegment + TAG_SYMBOL);
-#ifdef __cpp_aligned_new
+#if defined __cpp_aligned_new&& defined HAVE_ALIGNED_ALLOC
     stackSegment = stackSegmentBase =
         reinterpret_cast<LispObject *>(
             aligned_alloc(16, CSL_PAGE_SIZE));
@@ -891,7 +998,7 @@ void drop_heapSegments(void)
 bool allocate_more_memory()
 {   return false;
 //  if ((init_flags & INIT_EXPANDABLE) == 0) return false;
-//  void *page = (void *)aligned_malloc((size_t)CSL_PAGE_SIZE);
+//  void *page = (void *)aligned_alloc((size_t)CSL_PAGE_SIZE);
 //  if (page == NULL)
 //  {   init_flags &= ~INIT_EXPANDABLE;
 //      return false;

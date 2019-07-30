@@ -1,4 +1,5 @@
-//  arith03.cpp                           Copyright (C) 1990-2017 Codemist
+//  arith03.cpp                           Copyright (C) 1990-2019 Codemist
+
 
 //
 // Arithmetic functions.
@@ -7,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1175,7 +1176,7 @@ static LispObject quotff(LispObject a, LispObject b)
 }
 
 LispObject quot2(LispObject a, LispObject b)
-#ifdef EXPERIMENT
+#ifdef DEBUG
 {   validate_number("Arg1 for quot", a, a, b);
     validate_number("Arg2 for quot", b, a, b);
     extern LispObject quot2a(LispObject a, LispObject b);    
@@ -1385,7 +1386,7 @@ LispObject quot2a(LispObject a, LispObject b)
 }
 
 LispObject quotrem2(LispObject a, LispObject b)
-#ifdef EXPERIMENT
+#ifdef DEBUG
 {   validate_number("Arg1 for quotrem", a, a, b);
     validate_number("Arg2 for quotrem", b, a, b);
     extern LispObject quotrem2a(LispObject a, LispObject b);    
@@ -1610,7 +1611,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
  */
 
 LispObject CLquot2(LispObject a, LispObject b)
-#ifdef EXPERIMENT
+#ifdef DEBUG
 {   validate_number("Arg1 for CLquot", a, a, b);
     validate_number("Arg2 for CLquot", b, a, b);
     extern LispObject CLquot2a(LispObject a, LispObject b);    

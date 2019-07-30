@@ -39,6 +39,8 @@ sudo apt-get -y install libltdl-dev
 # Sort of similarly ssh may be either ssh or openssh...
 sudo apt-get -y install openssh
 sudo apt-get -y install ssh
+sudo apt-get -y install time
+sudo apt-get -y install dvipng
 sudo apt-get -y install linux-generic \
  polyml rpm ssh subversion tex4ht texinfo texlive-latex-base \
  texlive-fonts-extra texlive-fonts-recommended texlive-latex-recommended \

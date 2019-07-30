@@ -2557,7 +2557,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // here despite the full system not being loaded. I use references to the
 // nil-segment and cons().
 //
-#ifdef __cpp_aligned_new
+#if defined __cpp_aligned_new && defined HAVE_ALIGNED_ALLOC
         nilsegment = nilsegmentbase =
             reinterpret_cast<LispObject *>(
                 aligned_alloc(16, NIL_SEGMENT_SIZE));
@@ -2574,7 +2574,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         nil = doubleword_align_up((LispObject)nilsegment) + TAG_SYMBOL;
 #endif
         pages_count = heap_pages_count = vheap_pages_count = 0;
-#ifdef __cpp_aligned_new
+#if defined __cpp_aligned_new && HAVE_ALIGNED_ALLOC
         stacksegment = stacksegmentbase =
             reinterpret_cast<LispObject *>(
                 aligned_alloc(16, CSL_PAGE_SIZE));

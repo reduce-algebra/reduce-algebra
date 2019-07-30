@@ -863,6 +863,9 @@ then
   AC_DEFINE([MAXALIGN4], [1], [alignof(max_align_t)==4])
 fi
 
+AC_CHECK_FUNCS([aligned_alloc])
+
+
 # I have alternative ways of doing things on Windows and Macintosh, but
 # for systems that use gcc (and I am perhaps most thinking of Linux here)
 # I want the flag "-rdynamic" enabled (if possible) so that dynamic modules

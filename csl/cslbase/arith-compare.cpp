@@ -775,12 +775,19 @@ bool Neqn::op(LFlt a, LispObject b)
 
 // fixnum != fixnum
 
+// There is a sort of C++ type misery here. intval() returns an intptr_t
+// value and that may be either a 32 or 64-bit integer. Many of the
+// low level primitives here want a 64-bit integer as input, but automatic
+// conversion does not make the adaptations I desire - hence a load of
+// ugly casts. This is probably a signal that I got the type signatures in
+// my code wrong, but I am not about to alter it now.
+
 bool Neqn::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Neqn::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::Neqn::op((int64_t)a.intval(), (int64_t)b.intval());
 }
 // bignum != fixnum
 bool Neqn::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::Neqn::op(a, b.intval());
+{   return arithlib_lowlevel::Neqn::op(a, (int64_t)b.intval());
 }
 // rational != fixnum
 bool Neqn::op(Rat a, Fixnum b)
@@ -1105,11 +1112,11 @@ bool Greaterp::op(LFlt a, LispObject b)
 // fixnum > fixnum
 
 bool Greaterp::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::Greaterp::op((int64_t)a.intval(), (int64_t)b.intval());
 }
 // bignum > fixnum
 bool Greaterp::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op(a, b.intval());
+{   return arithlib_lowlevel::Greaterp::op(a, (int64_t)b.intval());
 }
 // rational > fixnum
 bool Greaterp::op(Rat a, Fixnum b)
@@ -1130,11 +1137,11 @@ bool Greaterp::op(Flt a, Fixnum b)
 }
 // double float > fixnum
 bool Greaterp::op(double a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op(a, b.intval());
+{   return arithlib_lowlevel::Greaterp::op(a, (int64_t)b.intval());
 }
 // long float > fixnum
 bool Greaterp::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op(a.floatval(), b.intval());
+{   return arithlib_lowlevel::Greaterp::op(a.floatval(), (int64_t)b.intval());
 }
 // fixnum > bignum
 bool Greaterp::op(Fixnum a, uint64_t *b)
@@ -1436,11 +1443,11 @@ bool Geq::op(LFlt a, LispObject b)
 // fixnum >= fixnum
 
 bool Geq::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Geq::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::Geq::op((int64_t)a.intval(), (int64_t)b.intval());
 }
 // bignum >= fixnum
 bool Geq::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::Geq::op(a, b.intval());
+{   return arithlib_lowlevel::Geq::op(a, (int64_t)b.intval());
 }
 // rational >= fixnum
 bool Geq::op(Rat a, Fixnum b)
@@ -1453,19 +1460,19 @@ bool Geq::op(Cpx a, Fixnum b)
 }
 // short float >= fixnum
 bool Geq::op(SFlt a, Fixnum b)
-{   return arithlib_lowlevel::Geq::op((double)a.floatval(), b.intval());
+{   return arithlib_lowlevel::Geq::op((double)a.floatval(), (int64_t)b.intval());
 }
 // single float >= fixnum
 bool Geq::op(Flt a, Fixnum b)
-{   return arithlib_lowlevel::Geq::op((double)a.floatval(), b.intval());
+{   return arithlib_lowlevel::Geq::op((double)a.floatval(), (int64_t)b.intval());
 }
 // double float >= fixnum
 bool Geq::op(double a, Fixnum b)
-{   return arithlib_lowlevel::Geq::op(a, b.intval());
+{   return arithlib_lowlevel::Geq::op(a, (int64_t)b.intval());
 }
 // long float >= fixnum
 bool Geq::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Geq::op(a.floatval(), b.intval());
+{   return arithlib_lowlevel::Geq::op(a.floatval(), (int64_t)b.intval());
 }
 // fixnum >= bignum
 bool Geq::op(Fixnum a, uint64_t *b)
@@ -1768,11 +1775,11 @@ bool Lessp::op(LFlt a, LispObject b)
 // fixnum < fixnum
 
 bool Lessp::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Lessp::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::Lessp::op((int64_t)a.intval(), (int64_t)b.intval());
 }
 // bignum < fixnum
 bool Lessp::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::Lessp::op(a, b.intval());
+{   return arithlib_lowlevel::Lessp::op(a, (int64_t)b.intval());
 }
 // rational < fixnum
 bool Lessp::op(Rat a, Fixnum b)
@@ -1785,19 +1792,19 @@ bool Lessp::op(Cpx a, Fixnum b)
 }
 // short float < fixnum
 bool Lessp::op(SFlt a, Fixnum b)
-{   return arithlib_lowlevel::Lessp::op((double)a.floatval(), b.intval());
+{   return arithlib_lowlevel::Lessp::op((double)a.floatval(), (int64_t)b.intval());
 }
 // single float < fixnum
 bool Lessp::op(Flt a, Fixnum b)
-{   return arithlib_lowlevel::Lessp::op((double)a.floatval(), b.intval());
+{   return arithlib_lowlevel::Lessp::op((double)a.floatval(), (int64_t)b.intval());
 }
 // double float < fixnum
 bool Lessp::op(double a, Fixnum b)
-{   return arithlib_lowlevel::Lessp::op(a, b.intval());
+{   return arithlib_lowlevel::Lessp::op(a, (int64_t)b.intval());
 }
 // long float < fixnum
 bool Lessp::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Lessp::op(a.floatval(), b.intval());
+{   return arithlib_lowlevel::Lessp::op(a.floatval(), (int64_t)b.intval());
 }
 // fixnum < bignum
 bool Lessp::op(Fixnum a, uint64_t *b)
@@ -2099,11 +2106,11 @@ bool Leq::op(LFlt a, LispObject b)
 // fixnum <= fixnum
 
 bool Leq::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Leq::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::Leq::op((int64_t)a.intval(), (int64_t)b.intval());
 }
 // bignum <= fixnum
 bool Leq::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::Leq::op(a, b.intval());
+{   return arithlib_lowlevel::Leq::op(a, (int64_t)b.intval());
 }
 // rational <= fixnum
 bool Leq::op(Rat a, Fixnum b)
@@ -2116,19 +2123,19 @@ bool Leq::op(Cpx a, Fixnum b)
 }
 // short float <= fixnum
 bool Leq::op(SFlt a, Fixnum b)
-{   return arithlib_lowlevel::Leq::op((double)a.floatval(), b.intval());
+{   return arithlib_lowlevel::Leq::op((double)a.floatval(), (int64_t)b.intval());
 }
 // single float <= fixnum
 bool Leq::op(Flt a, Fixnum b)
-{   return arithlib_lowlevel::Leq::op((double)a.floatval(), b.intval());
+{   return arithlib_lowlevel::Leq::op((double)a.floatval(), (int64_t)b.intval());
 }
 // double float <= fixnum
 bool Leq::op(double a, Fixnum b)
-{   return arithlib_lowlevel::Leq::op(a, b.intval());
+{   return arithlib_lowlevel::Leq::op(a, (int64_t)b.intval());
 }
 // long float <= fixnum
 bool Leq::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Leq::op(a.floatval(), b.intval());
+{   return arithlib_lowlevel::Leq::op(a.floatval(), (int64_t)b.intval());
 }
 // fixnum <= bignum
 bool Leq::op(Fixnum a, uint64_t *b)

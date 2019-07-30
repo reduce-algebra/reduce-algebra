@@ -294,18 +294,15 @@ LispObject Linorm(LispObject env, LispObject a, LispObject k)
     if (bits <= kk) kk = rbottom;      // no rounding wanted
     else if (was_fixnum)
     {   intptr_t bit;
-//
 // If the input was a fixnum and I need to decrease its precision
 // I will do it in-line here, mainly so that the bignum code that comes
 // later will not have to worry so much about the possibility of having
 // any fixnums around.
-//
         kk = rtop - kk;
         bit = ((intptr_t)1) << (kk - 1);
         top = int_of_fixnum(a);
         if (top < 0)
         {   top = -top;
-//
 // It is almost the case that for negative values I should round if the
 // bit I want to test is a zero (rather than a 1), but this is not true when
 // the bit involved is the least significant set bit in the word.  So to
@@ -313,7 +310,6 @@ LispObject Linorm(LispObject env, LispObject a, LispObject k)
 // single precision numbers.  I also do the shifting right on the positive
 // value to avoid problems with the bits that get shifted off, and with
 // computers where right shifts are logical rather than arithmetic.
-//
             if ((top & bit) != 0) top += bit;
             top = top >> kk;
             top = -top;
@@ -322,10 +318,8 @@ LispObject Linorm(LispObject env, LispObject a, LispObject k)
         {   if ((top & bit) != 0) top += bit;
             top = top >> kk;
         }
-//
 // All the shifts I do here move only zero bits off the bottom of the
 // word, and so there are no issues about +ve vs -ve numbers to bother me.
-//
         while ((top & 0xf) == 0)
         {   top = top/16;
             kk += 4;
@@ -339,14 +333,12 @@ LispObject Linorm(LispObject env, LispObject a, LispObject k)
     }
     else
     {   size_t wk, bk;
-//
 // Here my input was a bignum and I have established that I not only need
 // to shift it right but that I will need to lose some non-zero digits from
 // the right hand end. To cope with this I need to decide whether it will
 // round up or down, and then perform the appropriate shifts, including a
 // post-normalisation to ensure that the mantissa of the number as returned
 // is odd.
-//
         kk = rtop - kk;
         if (rbottom == kk-1) round_up = true;
         else

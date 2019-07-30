@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     int i;
     CREATEMUTEX;
     CREATELOGMUTEX;
-    logprintf("Test code starting\n");
+    printlog("Test code starting\n");
 // I set up some test data to be inserted into the hash table. Just to
 // provide something that can be used as an illustration I will use the
 // Fibonacci sequence, with values truncated to their low 32 bits..

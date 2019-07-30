@@ -1,4 +1,4 @@
-//  arith05.cpp                            Copyright (C) 1990-2017 Codemist    
+//  arith05.cpp                            Copyright (C) 1990-2019 Codemist    
 
 //
 // Arithmetic functions.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -61,7 +61,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
                            active_stream);
     unsigned int column =
         other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
-#ifdef NEED_TO_CHECK_BIGNUM_FORMAT
+#ifdef DEBUG
 // The next few lines are to help me track down bugs...
     {   int32_t d1 = bignum_digits(u)[(len-4)/4];
         if (!SIXTY_FOUR_BIT && len == 4)
@@ -73,8 +73,8 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         else if (SIXTY_FOUR_BIT && len == 4)
             printf("[%.8lx should be a fixnum]", (long)bignum_digits(u)[0]);
         if (SIXTY_FOUR_BIT && len == 8)
-        {   int64_t v = bignum_digits64(u, 1)<<31 +
-                        bignum_digits(u)[0]);
+        {   int64_t v = (bignum_digits64(u, 1)<<31) +
+                        bignum_digits(u)[0];
             if (valid_as_fixnum(v))
                 printf("[%.8lx should be fixnum]", (long)d1);
             if (signed_overflow(bignum_digits(u)[1]))

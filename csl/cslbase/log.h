@@ -143,7 +143,7 @@ inline void printlog(const char *s, ...)
 
 extern const char *programDir;
 
-inline void logprintf(const char *s, ...)
+inline void printlog(const char *s, ...)
 {   static FILE *logfile = NULL;
     va_list x;
     if (logfile == NULL)

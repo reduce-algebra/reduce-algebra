@@ -175,7 +175,7 @@ extern char *getcwd(char *s, size_t n);
 
 static FILE *logfile = NULL;
 
-static void logprintf(const char *fmt, ...)
+static void printlog(const char *fmt, ...)
 {
     va_list a;
     if (logfile == NULL) logfile = fopen("wxdvi.log", "w");
@@ -313,7 +313,7 @@ int main(int argc, const char *argv[])
 // where it crashes on Windows if build in "release" mode. To try to debug
 // in a case like that I add explicit print statements as follows...
 #if DEBUG
-    logprintf("Starting wxdvi program\n");
+    printlog("Starting wxdvi program\n");
 #endif
 // Find where I am invoked from before doing anything else
     find_program_directory(argv[0]);
@@ -330,7 +330,7 @@ int main(int argc, const char *argv[])
     }
 #endif
 #if DEBUG
-    logprintf("usegui=%d\n", usegui);
+    printlog("usegui=%d\n", usegui);
 #endif
     if (usegui)
     {
@@ -369,7 +369,7 @@ int main(int argc, const char *argv[])
 #endif
         wxDISABLE_DEBUG_SUPPORT();
 #if DEBUG
-    logprintf("calling wxEntry\n");
+    printlog("calling wxEntry\n");
 #endif
 
         return wxEntry(argc, (char **)argv);
@@ -584,7 +584,7 @@ int32_t dviPanel::s4()
 void dviPanel::DefFont(int k)
 {
 #if 1
-    logprintf("Define Font %d at offset %d\n", k, (int)(stringInput - dviData));
+    printlog("Define Font %d at offset %d\n", k, (int)(stringInput - dviData));
 #endif
     char fontname[LONGEST_LEGAL_FILENAME];
     int32_t checksum = s4();
@@ -597,11 +597,11 @@ void dviPanel::DefFont(int k)
     int namelen = *stringInput++;
     int m;
     if (k >= MAX_FONTS)
-    {   logprintf("This code can only cope with MAX_FONTS distinct fonts\n");
+    {   printlog("This code can only cope with MAX_FONTS distinct fonts\n");
         return;
     }
     if (arealen != 0)
-    {   logprintf("Fonts with an area specification are not supported\n");
+    {   printlog("Fonts with an area specification are not supported\n");
         return;
     }
     for (int i=0; i<namelen; i++) fontname[i] = *stringInput++;
@@ -611,20 +611,20 @@ void dviPanel::DefFont(int k)
     else if (strncmp(fontname, "cmsy", 4) == 0) m = 2;
     else if (strncmp(fontname, "cmex", 4) == 0) m = 3;
     else
-    {   logprintf("Unknown font %s\n", fontname);
+    {   printlog("Unknown font %s\n", fontname);
         m = 0;
     }
     if (graphicsFontValid[k]) return;
 #if 1
-    logprintf("checksum = %.8x\n", checksum);
-    logprintf("size = %d %g\n", size, (double)size/65536.0);
-    logprintf("%s\n", fontname);
+    printlog("checksum = %.8x\n", checksum);
+    printlog("size = %d %g\n", size, (double)size/65536.0);
+    printlog("%s\n", fontname);
 #endif
     font_width *p = cm_font_width;
     while (p->name != NULL &&
            strcmp(p->name, fontname) != 0) p++;
     if (p->name == NULL)
-    {   logprintf("Fonts not found in the private font-set I support\n");
+    {   printlog("Fonts not found in the private font-set I support\n");
         return;
     }
 // I find that cmmi7 and cmmi10 (and probably others) give me a complaint
@@ -638,19 +638,19 @@ void dviPanel::DefFont(int k)
 // files (or copies their fonts and metrics into where my main lot live)
 // all oddities might go away.
     if (p->checksum != checksum)
-    {   logprintf("Font checksum issue %#o vs %#o for %s\n",
+    {   printlog("Font checksum issue %#o vs %#o for %s\n",
                checksum, p->checksum, fontname);
 // Continue in a spirit of optimism!
     }
     if (p->designsize != designsize)
-    {   logprintf("Font designsize issue %x vs %x for %s\n",
+    {   printlog("Font designsize issue %x vs %x for %s\n",
                designsize, p->designsize, fontname);
 // Continue in a spirit of optimism!
     }
-    logprintf("Designsize = %.4g\n", (double)designsize/1048576.0);
+    printlog("Designsize = %.4g\n", (double)designsize/1048576.0);
 // Everything come from STIXMath!!!!
     graphicsFont[k] = gc->CreateFont(designsize/1048576.0, "cslSTIXMath");
-    logprintf("font = %p\n", graphicsFont[k]);
+    printlog("font = %p\n", graphicsFont[k]);
     graphicsFontValid[k] = true;
     graphicsFontMapping[k] = m;
     fontWidth[k] = p;
@@ -658,11 +658,11 @@ void dviPanel::DefFont(int k)
 
 void dviPanel::SelectFont(int n)
 {   if (n >= MAX_FONTS)
-    {   logprintf("This code can only cope with MAX_FONTS distinct fonts\n");
+    {   printlog("This code can only cope with MAX_FONTS distinct fonts\n");
         return;
     }
     if (!graphicsFontValid[n])
-    {   logprintf("font %d seems not to be set\n", n);
+    {   printlog("font %d seems not to be set\n", n);
         return;
     }
     gc->SetFont(graphicsFont[n]);
@@ -711,7 +711,7 @@ static int rendered = 0;
 void dviPanel::SetChar(int32_t c)
 {
 #if 1
-    logprintf("SetChar%d [%c] %d %d\n", (int)c,
+    printlog("SetChar%d [%c] %d %d\n", (int)c,
         (c <  0x20 || c >= 0x7f ? ' ' : (int)c),
         (int)h, (int)v);
 #endif
@@ -733,9 +733,9 @@ void dviPanel::SetChar(int32_t c)
     wxString s(&ccc[0]);
     double width, height, descent, xleading;
     gc->GetTextExtent(s, &width, &height, &descent, &xleading);
-    logprintf("About to call DrawText...");
+    printlog("About to call DrawText...");
     gc->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
-    logprintf("OK\n");
+    printlog("OK\n");
 // Now I must increase h by the width (in scaled points) of the character
 // I just set. This is not dependent at all on the way I map DVI internal
 // coordinates to screen ones.
@@ -753,7 +753,7 @@ void dviPanel::SetChar(int32_t c)
 // what wxWidgets thinks. So I convert the TeX width to pixels.
     double twp = (double)(1024*1024)*(double)texwidth/
                  (72.0*65536.0*1000.0);
-    logprintf("TeX says %#.6g wxWidgets says %.6g (%.6g)\n",
+    printlog("TeX says %#.6g wxWidgets says %.6g (%.6g)\n",
         twp, (double)width, twp/(double)width);
 #endif
 }
@@ -762,7 +762,7 @@ void dviPanel::PutChar(int32_t c)
 {
 #ifdef DEBUG
     if (!rendered)
-    logprintf("Put (%.2f,%.2f) char %.2x (%c)\n",
+    printlog("Put (%.2f,%.2f) char %.2x (%c)\n",
         (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
             c < 0x20 || c > 0x7f ? ' ' :  (int)c);
 #endif
@@ -780,7 +780,7 @@ void dviPanel::PutChar(int32_t c)
                         (double)(1<<24));
     double twp = (double)96*(double)texwidth/
                  (72.0*65536.0*1000.0);
-    logprintf("TeX says %#.4g wxWidgets says %d (%.3g)\n",
+    printlog("TeX says %#.4g wxWidgets says %d (%.3g)\n",
         twp, width, twp/(double)width);
 #endif
 }
@@ -788,7 +788,7 @@ void dviPanel::PutChar(int32_t c)
 void dviPanel::SetRule(int height, int width)
 {
 #if 0
-    logprintf("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
+    printlog("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
                                         height, (double)height/65537.0);
 #endif
 // The curious re-scaling here is so that the border of the rectangle does not
@@ -1015,7 +1015,7 @@ void dviPanel::RenderDVI()
         case 247: // pre
                 i = *stringInput++;
                 if (i != 2)
-                {   logprintf("illegal DVI version %d\n", i);
+                {   printlog("illegal DVI version %d\n", i);
                     break;
                 }
                 (void)s4();    // ignore num
@@ -1038,19 +1038,19 @@ void dviPanel::RenderDVI()
         case 249: // post_post
                 (void)s4();
                 (void)*stringInput++;
-                if (*stringInput++ != 223) logprintf("Malformed DVI file\n");
+                if (*stringInput++ != 223) printlog("Malformed DVI file\n");
                 break;
 
         // 250-255 undefined
         default:
-                logprintf("Unknown/undefined opcode %.2x\n", c);
+                printlog("Unknown/undefined opcode %.2x\n", c);
                 break;
             }
             break;
         }
     }
 #if 0
-    logprintf("end of file\n");
+    printlog("end of file\n");
 #endif
     rendered = 1;
 }
@@ -1066,25 +1066,25 @@ bool dviApp::OnInit()
     char **myargv = (char **)argv;
 
 #if DEBUG
-    logprintf("in dviApp::OnInit\n");
+    printlog("in dviApp::OnInit\n");
 #endif
     add_custom_fonts();
 #if DEBUG
-    logprintf("fonts added\n");
+    printlog("fonts added\n");
 #endif
 
     const char *dvifilename = NULL;
     if (argc > 1) dvifilename = myargv[1];
 
 #if DEBUG
-    logprintf("dvifilename=%s\n",
+    printlog("dvifilename=%s\n",
               dvifilename == NULL ? "<null>" : dvifilename);
 #endif
 
     dviFrame *frame = new dviFrame(dvifilename);
     frame->Show(true);
 #if DEBUG
-    logprintf("OnInint complete\n");
+    printlog("OnInint complete\n");
 #endif
     return true;
 }
@@ -1097,13 +1097,13 @@ dviFrame::dviFrame(const char *dvifilename)
 // It is not clear to me what I should do if there are several displays,
 // and if there are none I am probably in a mess!
     if (numDisplays != 1)
-    {   logprintf("There seem to be %d displays\n", numDisplays);
+    {   printlog("There seem to be %d displays\n", numDisplays);
     }
     wxDisplay d0(0);                         // just look st display 0
     wxRect screenArea(d0.GetClientArea());   // omitting task bar
     screenWidth = screenArea.GetWidth();
     screenHeight = screenArea.GetHeight();
-    logprintf("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
+    printlog("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
 // I will want to end up saving screen size (and even position) between runs
 // of this program.
     int width = 1280;      // default size.
@@ -1113,12 +1113,12 @@ dviFrame::dviFrame(const char *dvifilename)
     if (10*width > 9*screenWidth)
     {   height = height*9*screenWidth/(10*width);
         width = 9*screenWidth/10;
-        logprintf("reset to %d by %d to fix width\n", width, height);
+        printlog("reset to %d by %d to fix width\n", width, height);
     }
     if (10*height > 9 * screenHeight)
     {   width = width*9*screenHeight/(10*height);
         height = 9*screenHeight/10;
-        logprintf("reset to %d by %d to fix height\n", width, height);
+        printlog("reset to %d by %d to fix height\n", width, height);
     }
     panel = new dviPanel(this, dvifilename);
     SetMinClientSize(wxSize(400, 100));
@@ -1146,7 +1146,7 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
     {   stringInput = NULL;
         f = fopen(dvifilename, "rb");
         if (f == NULL)
-        {   logprintf("File \"%s\" not found\n", dvifilename);
+        {   printlog("File \"%s\" not found\n", dvifilename);
             exit(1);
         }
         fseek(f, (off_t)0, SEEK_END);
@@ -1208,8 +1208,8 @@ void dviPanel::OnChar(wxKeyEvent &event)
     const char *msg = "OnChar", *raw = "";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw ";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
+    if (0x20 < c && c < 0x7f) printlog("%s%s %x (%c)\n", msg, raw, c, c);
+    else printlog("%s%s %x\n", msg, raw, c);
 }
 
 void dviPanel::OnKeyDown(wxKeyEvent &event)
@@ -1217,8 +1217,8 @@ void dviPanel::OnKeyDown(wxKeyEvent &event)
     const char *msg = "OnKeyDown", *raw = "";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
+    if (0x20 < c && c < 0x7f) printlog("%s%s %x (%c)\n", msg, raw, c, c);
+    else printlog("%s%s %x\n", msg, raw, c);
     event.Skip();
 }
 
@@ -1227,14 +1227,14 @@ void dviPanel::OnKeyUp(wxKeyEvent &event)
     const char *msg = "OnKeyUp", *raw = "";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
+    if (0x20 < c && c < 0x7f) printlog("%s%s %x (%c)\n", msg, raw, c, c);
+    else printlog("%s%s %x\n", msg, raw, c);
     event.Skip();
 }
 
 void dviPanel::OnMouse(wxMouseEvent &event)
 {
-    logprintf("Mouse event\n");
+    printlog("Mouse event\n");
     event.Skip();
 //  Refresh();     // forces redraw of everything
 }
@@ -1243,20 +1243,20 @@ void dviPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC mydc(this);
     gc = wxGraphicsContext::Create(mydc);
-    logprintf("OnPaint: graphicsContext created at %p\n", gc);
+    printlog("OnPaint: graphicsContext created at %p\n", gc);
     if (gc == NULL) return;
 // The next could probably be done merely by setting a background colour
     wxColour c1(230, 200, 255);
     wxBrush b1(c1);
-    logprintf("colour and brush made\n");
+    printlog("colour and brush made\n");
     gc->SetBrush(b1);
-    logprintf("setbrush done\n");
+    printlog("setbrush done\n");
     wxSize window(mydc.GetSize());
-    logprintf("Window is %d by %d\n", window.GetWidth(), window.GetHeight());
+    printlog("Window is %d by %d\n", window.GetWidth(), window.GetHeight());
     gc->DrawRectangle(0.0, 0.0,
                       (double)window.GetWidth(),
                       (double)window.GetHeight());
-    logprintf("background drawn\n");
+    printlog("background drawn\n");
 
 #if defined WIN32 && 0
 // The Windows default behaviour fails to antialias some of the cmex10
@@ -1270,7 +1270,7 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     Gdiplus::Graphics *g = (Gdiplus::Graphics *)gc->GetNativeContext();
     g->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
 #endif
-    logprintf("Need to create fixed pitch font\n");
+    printlog("Need to create fixed pitch font\n");
 // The graphicsFixedPitch font will be for a line spacing of exactly 10
 // pixels. This is of course TINY, but I will scale it as relevant.
     graphicsFixedPitch = gc->CreateFont(10.0, wxT("CMU Typewriter Text"));
@@ -1278,15 +1278,15 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     gc->SetFont(graphicsFixedPitch);
     gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
     em = dwidth;
-    logprintf("(D)em=%#.3g\n", em);
-    logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
+    printlog("(D)em=%#.3g\n", em);
+    printlog("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
         dheight-ddepth-dleading, dheight, dleading);
 
     double screenWidth = (double)window.GetWidth();
     double lineWidth = 80.0*em;
     double scale = screenWidth/lineWidth;
     gc->Scale(scale, scale);
-    logprintf("Scale now %.6g\n", scale);
+    printlog("Scale now %.6g\n", scale);
 
 // Sort of for fun I put a row of 80 characters at the top of the screen
 // so I can show how fixed pitch stuff might end up being rendered.
@@ -1299,7 +1299,7 @@ void dviPanel::OnPaint(wxPaintEvent &event)
 // I will mark all the fonts I might have created as invalid now
 // that the context they were set up for is being left.
     for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
-    logprintf("About to delete gc\n");
+    printlog("About to delete gc\n");
     delete gc;
     gc = NULL; // just to be tidy!
     return;

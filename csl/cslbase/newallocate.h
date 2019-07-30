@@ -584,6 +584,32 @@ extern std::atomic<std::atomic<uintptr_t> *> request_locations[max_threads];
 
 extern jmp_buf *buffer_pointer;
 
+// Usage:
+//   may_block([&]{
+//      ... ... ... });
+// This is to be used if the contents "..." etc do not do any Lisp memory
+// allocation but might block. Ie there could be use of a synchronization
+// primitive involving a muxex or a comdition variable, or there may be
+// a read-request from some source that might not be instently ready (such
+// as the keyboard or a network connection or pipe). The reason this is needed
+// is that other threads may need to garbage collect, and that involves
+// getting every thread into synchronization - one that is blocked will not
+// be able to participate actively in that! Yes another plausible user-case
+// is the code performing a "sleep" operation.kx 
+
+template <typename F>
+#ifdef __GNUC__
+[[gnu::noinline]]
+#endif // __GNUC__
+inline auto may_block(F &&action)
+{   std::jmp_buf buffer;
+    buffer_pointer = &buffer;
+    static_cast<void>(setjmp(buffer));
+    stack_fringes[thread_id].store(reinterpret_cast<void *>(buffer));
+// Hmm - what do I do here.
+    return action();
+};
+
 template <typename F>
 #ifdef __GNUC__
 [[gnu::noinline]]

@@ -561,12 +561,12 @@ LispObject Expt::op(LFlt a, LispObject b)
 
 // fixnum ** fixnum
 LispObject Expt::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Pow::op(a.intval(), b.intval());
+{   return arithlib_lowlevel::Pow::op(a.intval(), (int64_t)b.intval());
 }
 
 // bignum ** fixnum
 LispObject Expt::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::Pow::op(a, b.intval());
+{   return arithlib_lowlevel::Pow::op(a, (int64_t)b.intval());
 }
 template <typename T>
 LispObject generic_expt(T a, int64_t n)

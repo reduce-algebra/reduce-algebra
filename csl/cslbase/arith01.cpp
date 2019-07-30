@@ -1,4 +1,4 @@
-// arith01.cpp                             Copyright (C) 1990-2018 Codemist
+// arith01.cpp                             Copyright (C) 1990-2019 Codemist
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -660,7 +660,7 @@ intptr_t double_to_3_digits(double d, int32_t &a2, uint32_t &a1, uint32_t &a0)
     }
 // I now shift the 3-digit value left by r bits. It will not overflow.
     if (r != 0)
-    {   a2 = (int32_t)(((uint32_t)a2<<r) | a1>>(31-r));
+    {   a2 = ((uint32_t)a2<<r) | a1>>(31-r);
         a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
         a0 = (a0<<r) & 0x7fffffffU;
     }
@@ -1318,8 +1318,11 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
         bignum_digits(c)[i] = s & 0x7fffffff;
         s1 = s1 + top_bit(s);
     }
-    s1 = ADD32(s1, bignum_digits(a2)[i]);
-    if (!signed_overflow(s1))         // did it overflow?
+    s1 = (int32_t)ADD32(s1, bignum_digits(a2)[i]);
+// A trap I fell into here is that ADD32 returns an unsigned result and when
+// that expands to an uniptr_t on a 64-bit machine it gets zero bits stuck
+// on the front. Then when I compare against -1 it says "no".
+    if (!signed_overflow((int32_t)s1))         // did it overflow?
     {
 // Here the most significant digit did not produce an overflow, but maybe
 // what we actually had was some cancellation and the MSD is now zero
@@ -1938,7 +1941,7 @@ arith_dispatch_2(inline, LispObject, plus)
 
 LispObject plus2(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifdef DEBUG
     validate_number("Arg1 for plus", a, a, b);
     validate_number("Arg2 for plus", b, a, b);
     LispObject r = plus(a, b);
@@ -2396,7 +2399,7 @@ arith_dispatch_2(inline, LispObject, difference)
 
 LispObject difference2(LispObject a, LispObject b)
 {
-#ifdef EXPERIMENT
+#ifdef DEBUG
     validate_number("Arg1 for difference", a, a, b);
     validate_number("Arg2 for difference", b, a, b);
     LispObject r = difference(a, b);

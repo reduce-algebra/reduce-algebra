@@ -1,4 +1,4 @@
-//  arith02.cpp                            Copyright (C) 1990-2017 Codemist
+//  arith02.cpp                            Copyright (C) 1990-2019 Codemist
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1334,7 +1334,7 @@ inline LispObject timesff(LispObject a, LispObject b)
 // multiplication.
 //
 
-#ifdef TEST_BIGNUM
+#ifdef DEBUG_TIMES
 
 //
 // If I have suspicions about the behaviour of the arithmetic code I can
@@ -1381,7 +1381,7 @@ LispObject times2(LispObject a, LispObject b)
 #endif
 
 LispObject times2(LispObject a, LispObject b)
-#ifdef TEST_BIGNUM
+#ifdef DEBUG
 {   validate_number("Arg1 for times", a, a, b);
     validate_number("Arg2 for times", b, a, b);
     extern LispObject times2a(LispObject a, LispObject b);    

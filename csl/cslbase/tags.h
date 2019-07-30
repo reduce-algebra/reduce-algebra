@@ -854,8 +854,7 @@ inline bool is_short_float(LispObject v)
 }
 
 inline bool is_single_float(LispObject v)
-{   if (SIXTY_FOUR_BIT && is_sfloat(v) && (v & XTAG_FLOAT32) != 0)
-        return true;
+{   if (SIXTY_FOUR_BIT && is_sfloat(v) && (v & XTAG_FLOAT32) != 0) return true;
     return is_bfloat(v) && type_of_header(flthdr(v)) == TYPE_SINGLE_FLOAT;
 }
 

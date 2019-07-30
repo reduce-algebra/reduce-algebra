@@ -1,11 +1,11 @@
-// eval2.cpp                               Copyright (C) 1989-2017 Codemist
+// eval2.cpp                               Copyright (C) 1989-2019 Codemist
 
 //
 // Interpreter (part 2).  apply & some special forms
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -444,6 +444,8 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
     }
     bodyx = body;
     Return(bodyx);
+}
+
 #undef local_decs
 #undef specenv
 #undef env1
@@ -453,7 +455,6 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 #undef body
 #undef bvl
 #undef Return
-}
 
 static LispObject compiler_let_fn(LispObject args, LispObject env)
 {   if (!consp(args)) return onevalue(nil);
@@ -780,7 +781,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
           ienv, nil, nil);          // env1, specenv, local_decs
     LispObject &local_decs = stack[0];
     LispObject &specenv    = stack[-1];
-    LispObject &env1       = stack[-2];
+    LispObject &env1       = stack[-2];  // Unused it seems!
     LispObject &p          = stack[-3];
     LispObject &q          = stack[-4];
     LispObject &env        = stack[-5];

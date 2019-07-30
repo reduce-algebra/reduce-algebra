@@ -1277,7 +1277,7 @@ symbolic procedure c!:print_exit_condition1(why, where_to, next);
                c!:printf("        LispObject %s = %v;\n", g, a);
                args := g . args >>
             else args := a . args;
-          c!:printf("        fn = basic_elt(env, %s); %<// %c\n",
+          c!:printf("        LispObject fn = basic_elt(env, %s); %<// %c\n",
                     c!:find_literal cadar why, cadar why);
           if nargs = 0 then c!:printf("        return (*qfn0(fn))(fn")
           else if nargs = 1 then c!:printf("        return (*qfn1(fn))(fn")
@@ -1666,7 +1666,7 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
     else begin
        scalar nargs;
        nargs := length r2;
-       c!:printf("    fn = basic_elt(env, %s); %<// %c\n",
+       c!:printf("    {   LispObject fn = basic_elt(env, %s); %<// %c\n",
               c!:find_literal car r3, car r3);
        if nargs = 0 then c!:printf("    %v = (*qfn0(fn))(fn", r1)
        else if nargs = 1 then c!:printf("    %v = (*qfn1(fn))(fn", r1)
@@ -1674,7 +1674,7 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
        else if nargs = 3 then c!:printf("    %v = (*qfn3(fn))(fn", r1)
        else c!:printf("    %v = (*qfn4up(fn))(fn", r1);
        for each a in r2 do c!:printf(", %v", a);
-       c!:printf(");\n") end;
+       c!:printf(");\n    }\n") end;
     if boolfn then c!:printf("    %v = %v ? lisp_true : nil;\n", r1, r1);
   end;
 
@@ -1832,8 +1832,6 @@ flag('(call qputv rplaca rplacd fluidbind
        fluidunbind), 'c!:side_effect);
 
 
-fluid '(fn_used);
-
 symbolic procedure c!:live_variable_analysis c!:all_blocks;
   begin
     scalar changed, z;
@@ -1854,7 +1852,7 @@ symbolic procedure c!:live_variable_analysis c!:all_blocks;
 %               not (cadar w = c!:current_procedure) and
                 not get(cadar w, 'c!:direct_entrypoint) and
                 not get(cadar w, 'c!:c_entrypoint) then <<
-                    fn_used := t; live := union('(env), live) >> >>;
+                    live := union('(env), live) >> >>;
           for each s in get(b, 'c!:contents) do
             begin % backwards over contents
               scalar op, r1, r2, r3;
@@ -1872,9 +1870,6 @@ symbolic procedure c!:live_variable_analysis c!:all_blocks;
               if flagp(op, 'c!:read_r3) then live := union(live, list r3);
               if op = 'call then <<
                  does_call := t;
-                 if not get(car r3, 'c!:direct_entrypoint) and
-%                   not eqcar(r3, c!:current_procedure) and
-                    not get(car r3, 'c!:c_entrypoint) then fn_used := t;
 % c!:no_gc is used to indicate that the function concerned can never
 % trigger garbage collection and so lisp values are safe across the call.
 % These functions are however allowed to throw errors or exceptions.
@@ -2165,7 +2160,7 @@ symbolic procedure c!:flatten b;
 symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
                                           env, argch, args, varargs);
   begin
-    scalar w, n, locs, stacks, fn_used;
+    scalar w, n, locs, stacks;
     printc "#if 0 // Start of trace output";
     c!:all_blocks := c!:flatten reverse c!:all_blocks;
 %
@@ -2226,9 +2221,6 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
       c!:printf("    LispObject %s", car locs);
       for each v in cdr locs do c!:printf(", %s", v);
       c!:printf ";\n" >>;
-% If there is a general function call anywhere in the generated code I will
-% use a variable called "fn", so declare that here too.
-    if fn_used then c!:printf "    LispObject fn;\n";
 % If I wanted the stack fully popped even in throw and error cases I could
 % activate this:
 %   if stacks or reloadenv then

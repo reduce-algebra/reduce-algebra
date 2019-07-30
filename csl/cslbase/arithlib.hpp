@@ -753,106 +753,7 @@ namespace arithlib_implementation
 
 #endif // __CYGWIN__ || __MINGW32__
 
-#ifdef ON_WINDOWS
-
-#include <intrin.h>    // Provides code to read relative to FS or GS
-#include <windows.h>
-
-// This class exists so that its constructor and destructor can manage
-// allocation of a slot in the Windows vector of thread local values.
-
-class TLS_slot_container
-{
-public:
-    int mine;
-    TLS_slot_container()
-    {   mine = TlsAlloc();
-    }
-    ~TLS_slot_container()
-    {   TlsFree(mine);
-    }
-};
-
-// On or before the first call of this the constructor for the
-// TLS_slot_container will be activated and that will allocate a slot.
-// These days I expect the C compiler to turn the implementation of this
-// into little more that a load from a static location in memory. It may
-// also have a test to see if the call is a first one so it can in that
-// case do the initialization.
-// Just one slot-number is needed for my entire program - the same value is
-// used by every thread.
-
-#ifdef HAVE_INLINE_VARS
-inline TLS_slot_container my_TLS_slot_container;
-#endif // HAVE_INLINE_VARS 
-
-inline int get_my_TEB_slot()
-{
-#ifndef HAVE_INLINE_VARS
-    static TLS_slot_container my_TLS_slot_container;
-#endif // !HAVE_INLINE_VARS 
-    return my_TLS_slot_container.mine;
-}
-
-#ifdef CAUTIOUS
-// The CAUTIOUS option uses the Microsoft API to access thread-local slots,
-// and so should be robust against potential changes in Windows.
-
-inline void *tls_load()
-{   return (void *)TlsGetValue(get_my_TEB_slot());
-}
-
-inline void *tls_store(void *v)
-{   return TlsSetValue(get_my_TEB_slot(), v);
-}
-
-#else // CAUTIOUS
-// The version is intended and expected to behave exactly like the version
-// that calls the Microsoft-provided functions, except (1) it does not
-// do even basic sanity checks on the slot-number saved via get_my_TAB_slot()
-// and (b) it can expand into inline code that then runs faster that the
-// official version even if it does just the same thing.
-
-#ifdef ON_WINDOWS_32
-// I abstract away 32 vs 64-bit Windows issues here. The offsets used are from
-// www.geoffchappell.com/studies/windows/win32/ntdll/structs/teb/index.htm
-// which has repeated comments about the long term stability of the memory
-// layout involved.
-#define read_via_segment_register  __readfsdword
-#define write_via_segment_register __writefsdword
-#define basic_TLS_offset           0xe10
-#define extended_TLS_offset        0xf94
-#else
-#define read_via_segment_register  __readgsqword
-#define write_via_segment_register __writegsqword
-#define basic_TLS_offset           0x1480
-#define extended_TLS_offset        0x1780
-#endif // Windows 32 vs 64 bit
-
-inline void *extended_tls_load()
-{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
-    return a[get_my_TEB_slot() - 64];
-}
-
-inline void extended_tls_store(void *v)
-{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
-    a[get_my_TEB_slot() - 64] = v;
-}
-
-inline void *tls_load()
-{   if (get_my_TEB_slot() >= 64) return extended_tls_load();
-    else return (void *)read_via_segment_register(
-        basic_TLS_offset + sizeof(uintptr_t)*get_my_TEB_slot());
-}
-
-inline void tls_store(void *v)
-{   if (get_my_TEB_slot() >= 64) return extended_tls_store(v);
-    else write_via_segment_register(
-        basic_TLS_offset + sizeof(uintptr_t)*get_my_TEB_slot(), (uintptr_t)v);
-}
-
-#endif // CAUTIOUS
-#endif // ON_WINDOWS
+#include "thread_local.h"    // Provides code to read relative to FS or GS
 
 // [Almost] every value that this library keeps as thread-local will live
 // within this class. I will access it via get_thread_locals().
@@ -2857,11 +2758,11 @@ public:
 #else
         char *s;
 #endif
-        if ((fg & std::ios_base::hex) != 0)
+        if (((unsigned int)fg & std::ios_base::hex) != 0U)
             s = bignum_to_string_hex(a.val);
-        else if ((fg & std::ios_base::oct) != 0)
+        else if (((unsigned int)fg & std::ios_base::oct) != 0U)
             s = bignum_to_string_octal(a.val);
-        else if ((fg & std::ios_base::dec) != 0)
+        else if (((unsigned int)fg & std::ios_base::dec) != 0U)
             s = bignum_to_string(a.val);
         else if (radix::is_binary_output(out))
             s = bignum_to_string_binary(a.val);
@@ -10298,7 +10199,7 @@ inline intptr_t ModularPlus::op(int64_t a, uint64_t *b)
     if (modulus_size != modulus_big) aerror1("bad arg for modular-plus",
                                              vector_to_handle(b));
     intptr_t r = Plus::op(a, b);
-    if (Geq::op(r, large_modulus()))
+    if (op_dispatch1<Geq,bool>(r, large_modulus()))
     {   intptr_t r1 = op_dispatch1<Difference,intptr_t>(r, large_modulus());
         abandon(r);
         return r1;
@@ -10314,7 +10215,7 @@ inline intptr_t ModularPlus::op(uint64_t *a, uint64_t *b)
 {   if (modulus_size != modulus_big) aerror1("bad arg for modular-plus",
                                              vector_to_handle(a));
     intptr_t r = Plus::op(a, b);
-    if (Geq::op(r, large_modulus()))
+    if (op_dispatch1<Geq, bool>(r, large_modulus()))
     {   intptr_t r1 = op_dispatch1<Difference,intptr_t>(r, large_modulus());
         abandon(r);
         return r1;

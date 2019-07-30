@@ -118,7 +118,7 @@ static int options = 5;  // default to using my own scaling
 
 static FILE *logFile = NULL;
 
-static int logprintf(const char *fmt, ...)
+static int printlog(const char *fmt, ...)
 {   va_list a;
     int r = 0;
     if (logFile == NULL) logFile = fopen("wxshowmath.log", "w");
@@ -409,7 +409,7 @@ showmathFrame::showmathFrame(const char *showmathFilename)
 // It is not clear to me what I should do if there are several displays,
 // and if there are none I am probably in a mess!
     if (numDisplays != 1)
-    {   logprintf("There seem to be %d displays\n", numDisplays);
+    {   printlog("There seem to be %d displays\n", numDisplays);
     }
     wxDisplay d0(0);                         // just look at display 0
     wxRect screenArea(d0.GetClientArea());   // omitting task bar
@@ -519,7 +519,7 @@ void farey(int p1, int q1, int p2, int q2, int maxQ)
                 Q = bestQ;
             }
         }
-        logprintf("at maxQ = %d see err = %d at cw=%d, Q=%d\n",
+        printlog("at maxQ = %d see err = %d at cw=%d, Q=%d\n",
             m, worstErr, WW, Q);
         clientWidth = cw;
     }
@@ -567,7 +567,7 @@ static int32_t convert_font_name(char *dest, char *src)
     else
 #endif
     r |= (F_Regular<<16);
-    logprintf("Gives %s with flags %x\n", dest, r); fflush(stdout);
+    printlog("Gives %s with flags %x\n", dest, r); fflush(stdout);
     return r;
 }
 
@@ -588,14 +588,14 @@ static void allow_for_utf16(wchar_t *ccc, int cp)
     {   cp = (cp - 0x10000) & 0xfffff;
         ccc[0] = 0xd800 + (cp >> 10);
         ccc[1] = 0xdc00 + (cp & 0x3ff);
-        logprintf("Char mapped to %x %x\n", ccc[0], ccc[1]);
+        printlog("Char mapped to %x %x\n", ccc[0], ccc[1]);
         ccc[2] = 0;
     }
 }
 
 void showmathFrame::RepaintBuffer()
 {
-    logprintf("RepaintBuffer called\n");
+    printlog("RepaintBuffer called\n");
 // Now that I know how big by client window will be I can work out how
 // much of the big bitmap I will use.
     bestP = 7;
@@ -616,7 +616,7 @@ void showmathFrame::RepaintBuffer()
         bigTileSize = r*bestP;
         smallTileSize = r*bestQ;
     }
-    logprintf("Small tiles are %d square, with %d*%d covering window\n",
+    printlog("Small tiles are %d square, with %d*%d covering window\n",
         smallTileSize,
         (clientWidth+smallTileSize-1)/smallTileSize,
         (clientHeight+smallTileSize-1)/smallTileSize);
@@ -656,7 +656,7 @@ void showmathFrame::RepaintBuffer()
         charLinespace = height + xleading;
         break;
     }
-    logprintf("Now 80 chars should have with %d in bigBitmap (cf %d)\n",
+    printlog("Now 80 chars should have with %d in bigBitmap (cf %d)\n",
               80*charWidth, usedWidth);
 
 
@@ -673,7 +673,7 @@ void showmathFrame::RepaintBuffer()
         bigDC->SetFont(tf1);
         bigDC->GetTextExtent(wxString((wchar_t)'X'),
                             &width, &height, &depth, &leading);
-        logprintf("%d %d [%d]\n", height, depth, height-depth);
+        printlog("%d %d [%d]\n", height, depth, height-depth);
         if ((height - depth + 5)/10 == chardepth_WIN32[F_BoldItalic])
         {   chardepth = chardepth_WIN32;
             break;
@@ -683,7 +683,7 @@ void showmathFrame::RepaintBuffer()
         bigDC->SetFont(tf1);
         bigDC->GetTextExtent(wxString((wchar_t)'X'),
                              &width, &height, &depth, &leading);
-        logprintf("%d %d [%d]\n", height, depth, height-depth);
+        printlog("%d %d [%d]\n", height, depth, height-depth);
         if ((height - depth + 5)/10 == chardepth_X11[F_odokai])
         {   chardepth = chardepth_X11;
             break;
@@ -692,12 +692,12 @@ void showmathFrame::RepaintBuffer()
         bigDC->SetFont(tf1);
         bigDC->GetTextExtent(wxString((wchar_t)unicode_INTEGRAL),
                              &width, &height, &depth, &leading);
-        logprintf("%d %d [%d]\n", height, depth, height-depth);
+        printlog("%d %d [%d]\n", height, depth, height-depth);
         if ((height - depth + 5)/10 == chardepth_OSX[F_Math])
         {   chardepth = chardepth_OSX;
             break;
         }
-        logprintf("\n+++ Character positioning not recognized\n");
+        printlog("\n+++ Character positioning not recognized\n");
         chardepth = chardepth_X11;
         break;
     }
@@ -724,15 +724,15 @@ void showmathFrame::RepaintBuffer()
     wxFont regular(wxFontInfo(pointSize).FaceName(wxT("cslSTIX")));
     bigDC->SetFont(regular);
     bigDC->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
-    logprintf("%d %d %d %d regular\n", width, height, descent, xleading);
+    printlog("%d %d %d %d regular\n", width, height, descent, xleading);
     int regularBaseline = height - descent;
-    logprintf("regular baseline = %d\n", regularBaseline);
+    printlog("regular baseline = %d\n", regularBaseline);
 
     bigDC->SetFont(*mathFont);
     bigDC->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
-    logprintf("%d %d %d %d math\n", width, height, descent, xleading);
+    printlog("%d %d %d %d math\n", width, height, descent, xleading);
     int mathBaseline = height - descent;
-    logprintf("math baseline = %d\n", mathBaseline);
+    printlog("math baseline = %d\n", mathBaseline);
 
 // cslSTIXMath puts the glyphs used to build up big delimiters in a
 // private use area. It expects the code to use maths tables to discover
@@ -745,13 +745,13 @@ void showmathFrame::RepaintBuffer()
 #define stix_LEFT_CURLY_BRACKET_LOWER_HOOK    0x10821e
 
     lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_UPPER_HOOK);
-    logprintf("upper hook   %d %d\n", c_lly, c_ury);
+    printlog("upper hook   %d %d\n", c_lly, c_ury);
     lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
-    logprintf("middle piece %d %d\n", c_lly, c_ury);
+    printlog("middle piece %d %d\n", c_lly, c_ury);
     lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_LOWER_HOOK);
-    logprintf("lower hook   %d %d\n", c_lly, c_ury);
+    printlog("lower hook   %d %d\n", c_lly, c_ury);
     lookupchar(F_Math, stix_CURLY_BRACKET_EXTENSION);
-    logprintf("extension    %d %d\n", c_lly, c_ury);
+    printlog("extension    %d %d\n", c_lly, c_ury);
 
     double s = (double)pointSize/10.0;
 #define H (10.0)
@@ -759,7 +759,7 @@ void showmathFrame::RepaintBuffer()
 #define YY 100.0
     {   wchar_t ccc[4];
         allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_UPPER_HOOK);
-        logprintf("Character %#x %#x\n", ccc[0], ccc[1]);
+        printlog("Character %#x %#x\n", ccc[0], ccc[1]);
         bigDC->DrawText(wxString(ccc), s*XX, s*(YY-H)-mathBaseline);
         allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
         bigDC->DrawText(wxString(ccc), s*XX, s*YY-mathBaseline);
@@ -778,7 +778,7 @@ void showmathFrame::RepaintBuffer()
         s*(XX+100.0), s*(YY+100.0)-regularBaseline);
 // Now I will try a row of text.Or some material provided on an input file.
     const char *in = panel->showmathData;
-    logprintf("About to process data:\n\"%.70s\"... ...\n\n", in);
+    printlog("About to process data:\n\"%.70s\"... ...\n\n", in);
     do
     {   int x, y, n, cp, size;
         char name[100], name1[64];
@@ -792,7 +792,7 @@ void showmathFrame::RepaintBuffer()
                 if (n < 99) name[n++] = *in++;
                 else in++;
             name[n] = 0;
-            logprintf("%s\n", name);
+            printlog("%s\n", name);
             if (*in == '\n') in++;
             continue;
         }
@@ -802,26 +802,26 @@ void showmathFrame::RepaintBuffer()
                  n < MAX_FONTS)
         {   int flags = convert_font_name(name1, name);
             int col;
-            logprintf("font[%d] = \"%s\" size %d\n", n, name1, size);
+            printlog("font[%d] = \"%s\" size %d\n", n, name1, size);
             Font[n] =
                new wxFont(wxFontInfo((pointSize*size*5)/144).FaceName(name1));
             bigDC->SetFont(*Font[n]);
             bigDC->GetTextExtent(wxString((wchar_t)'('), &width, &height, &descent, &xleading);
-            logprintf("( %s/%d: %d %d [%d]\n",
+            printlog("( %s/%d: %d %d [%d]\n",
                       name1, size, height, descent, height-descent);
-            col = logprintf("    %d,", (int)((height - descent)/10.0 + 0.5));
-            while (col++ < 20) logprintf(" ");
-            logprintf("// %s\n", name);
+            col = printlog("    %d,", (int)((height - descent)/10.0 + 0.5));
+            while (col++ < 20) printlog(" ");
+            printlog("// %s\n", name);
             Baseline[n] =   // This still needs review!
                 size * chardepth[(flags >> 16) & 0x1f] / 1000.0;
-            logprintf("from table baseline offset = %.6g\n", Baseline[n]);
+            printlog("from table baseline offset = %.6g\n", Baseline[n]);
         }
         else if (sscanf(in, "put %d %d %d 0x%x;", &n, &x, &y, &cp) == 4 ||
                  sscanf(in, "put %d %d %d %d;", &n, &x, &y, &cp) == 4)
         {
 // put fontnum xpos ypos codepoint;  dump character onto screen
 // note x & y in units of 1/1000 point.
-//          logprintf("Font %d (%d,%d) char %d = %#x\n", n, x, y, cp, cp);
+//          printlog("Font %d (%d,%d) char %d = %#x\n", n, x, y, cp, cp);
             bigDC->SetFont(*Font[n]);
             wchar_t ccc[4];
 // For the benefit of Windows I need to represent code points in other
@@ -831,7 +831,7 @@ void showmathFrame::RepaintBuffer()
             bigDC->DrawText(wxString(ccc),
                          (s*x)/2400, s*150 + (400-y)/2400); //-graphicsBaseline[n]);
         }
-        else logprintf("\nLine <%.32s> unrecognised\n", in);
+        else printlog("\nLine <%.32s> unrecognised\n", in);
         in = strchr(in, ';');
         if (in != NULL) in++;
     }
@@ -925,7 +925,7 @@ showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathFilename
     {   int i;
         f = fopen(showmathFilename,"r");
         if (f == NULL)
-        {   logprintf("File \"%s\" not found\n", showmathFilename);
+        {   printlog("File \"%s\" not found\n", showmathFilename);
             exit(1);
         }
         fseek(f, (off_t)0, SEEK_END);
@@ -982,16 +982,16 @@ void showmathFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 void showmathFrame::OnSize(wxSizeEvent &WXUNUSED(event))
 {   wxSize clientSize(GetClientSize());
     int w = clientSize.GetWidth(), h = clientSize.GetHeight();
-    if (clientWidth == w) logprintf("Width has not changed\n");
-    if (clientHeight == h) logprintf("Height has not changed\n");
+    if (clientWidth == w) printlog("Width has not changed\n");
+    if (clientHeight == h) printlog("Height has not changed\n");
 //  if (clientWidth == w && clientHeight == h) return;
     clientWidth = w;
     clientHeight = h;
-    logprintf("New window size %d*%d\n", clientWidth, clientHeight);
+    printlog("New window size %d*%d\n", clientWidth, clientHeight);
     panel->SetSize(clientWidth, clientHeight);
-    logprintf("About to repaint\n");
+    printlog("About to repaint\n");
     RepaintBuffer();
-    logprintf("Completed repaint\n");
+    printlog("Completed repaint\n");
     Refresh();
 }
 
@@ -1001,8 +1001,8 @@ void showmathPanel::OnChar(wxKeyEvent &event)
     const char *msg ="OnChar", *raw ="";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw ="Raw";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
+    if (0x20 < c && c < 0x7f) printlog("%s%s %x (%c)\n", msg, raw, c, c);
+    else printlog("%s%s %x\n", msg, raw, c);
 }
 
 void showmathPanel::OnKeyDown(wxKeyEvent &event)
@@ -1011,8 +1011,8 @@ void showmathPanel::OnKeyDown(wxKeyEvent &event)
     const char *msg ="OnKeyDown", *raw ="";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw ="Raw";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
+    if (0x20 < c && c < 0x7f) printlog("%s%s %x (%c)\n", msg, raw, c, c);
+    else printlog("%s%s %x\n", msg, raw, c);
     event.Skip();
 }
 
@@ -1022,29 +1022,29 @@ void showmathPanel::OnKeyUp(wxKeyEvent &event)
     const char *msg ="OnKeyUp", *raw ="";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw ="Raw";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
+    if (0x20 < c && c < 0x7f) printlog("%s%s %x (%c)\n", msg, raw, c, c);
+    else printlog("%s%s %x\n", msg, raw, c);
     event.Skip();
 }
 
 void showmathPanel::OnMouse(wxMouseEvent &event)
 {
 // Log but take no action.
-    logprintf("Mouse event\n");
+    printlog("Mouse event\n");
     event.Skip();
 // Here I use a mouse event to force a re-draw.
     Refresh();     // forces redraw of everything
 }
 
 void showmathPanel::OnPaint(wxPaintEvent &event)
-{   logprintf("OnPaint called\n");
+{   printlog("OnPaint called\n");
     wxPaintDC mydc(this);
 //    mydc.SetBackground(*wxWHITE_BRUSH);
 //@ The fillowing few lines would make sense if the window I was working
 //@ with here was a scrolled one... which in the fullness of time it will be!
 //@    int vbX, vbY;
 //@    GetViewStart(&vbX, &vbY);
-//@    logprintf("top left of client is at %d %d\n", vbX, vbY);
+//@    printlog("top left of client is at %d %d\n", vbX, vbY);
     wxRegionIterator upd(GetUpdateRegion());
     if (!upd) return; // no update regiions reported!
 // Rather than re-painting the whole screen I should cover just the
@@ -1057,7 +1057,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
         int vW = vX + upd.GetW();
         int vH = vY + upd.GetH();
 // I set a bit in tileMap for each tile that will actually need painting.
-        logprintf("Need to repaint %d %d %d %d\n", vX, vY, vW, vH);
+        printlog("Need to repaint %d %d %d %d\n", vX, vY, vW, vH);
         for (int y=vY/smallTileSize;
              y<=(vH+smallTileSize-1)/smallTileSize;
              y++)
@@ -1066,7 +1066,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
                  x++)
             {
 #ifdef SHOW_WHICH_TILES_WILL_BE_REDRAWN
-                logprintf("tile at %d %d to be redrawn\n",
+                printlog("tile at %d %d to be redrawn\n",
                     x*smallTileSize, y*smallTileSize);
 #endif
                 tileMap[y] |= ((uint64_t)1)<<x;
@@ -1087,9 +1087,9 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     int tileCount = 0;
     typedef wxPixelData<wxBitmap, wxNativePixelFormat> PixelData;
     PixelData bigData(*bigBitmap);
-    if (!bigData) logprintf("Creation of bigData failed\n");
+    if (!bigData) printlog("Creation of bigData failed\n");
     PixelData smallData(*smallTile);
-    if (!smallData) logprintf("Creation of smallData failed\n");
+    if (!smallData) printlog("Creation of smallData failed\n");
     PixelData::Iterator pBig(bigData);
     PixelData::Iterator pSmall(smallData);
     for (int tileY=0; tileY<clientHeight; tileY+=smallTileSize)
@@ -1180,7 +1180,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
         }
         mydc.DrawBitmap(*smallTile, tileX, tileY);
     }
-    logprintf("Scale %d tiles from bitmap to screen in %" PRId64 "\n",
+    printlog("Scale %d tiles from bitmap to screen in %" PRId64 "\n",
         tileCount, (int64_t)sw.Time());
 
 

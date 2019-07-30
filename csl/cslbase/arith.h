@@ -485,6 +485,11 @@ inline LispObject make_lisp_unsigned128(uint128_t n)
     else return make_lisp_unsigned128_fn(n);
 }
 
+inline void validate_number(LispObject n)
+{
+
+}
+
 extern double float_of_integer(LispObject a);
 extern LispObject add1(LispObject p);
 extern LispObject sub1(LispObject p);
