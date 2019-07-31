@@ -206,5 +206,8 @@ May 2019. A lot more changes to terminal handling and ^C processing. My latest
 June 2019. A fix related to the judgment as to whether we are running "reduce"
       or "something else" in as much as that has an impact on how history
       is collected.
+
+July 2019. On the Mac try a bit harder to find a font that will exist, and
+      also in the FOX code consolidate which logging functions I use.
       
 <end of CHANGED>

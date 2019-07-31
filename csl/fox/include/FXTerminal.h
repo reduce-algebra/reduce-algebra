@@ -474,7 +474,53 @@ extern FXTerminal *text;
 #ifdef __APPLE__
 // As of April 2016 it seems that Menlo is probably a better
 // default font to use on a Macintosh than Courier...
-#define DEFAULT_FONT_NAME "Menlo"
+//#define DEFAULT_FONT_NAME "Menlo"
+
+// July 2019: a user does not have Menlo on their machine. So here is some
+// horrid code to try a range of options in the hope of selecting something! 
+
+#define DEFAULT_FONT_NAME get_mac_default_font()
+
+
+inline const char *get_mac_default_font()
+{   static char mac_default_font[40] = "";
+    if (mac_default_font[0] == 0)
+// This is now a list of the fixed pitch fonts installed on my mid 2014
+// Macbook. I hope that at least one of these will be available for use
+// on both older and newer platforms.
+    {   static const char *possible_fonts[] =
+        {   "/System/Library/Fonts/Menlo.ttc",
+            "/System/Library/Fonts/Monaco.dfont",
+            "/Library/Fonts/Courier New.ttf",
+            "/System/Library/Fonts/Courier.dfont",
+            "/Library/Fonts/Andale Mono.ttf"
+        };
+        bool found = false;
+        for (int i=0; i<sizeof(possible_fonts)/sizeof(possible_fonts[0]); i++)
+        {   FILE *f = fopen(possible_fonts[i], "rb");
+            if (f == NULL)
+            {   printlog("%s not found\n", possible_fonts[i]);
+                continue;
+            }
+            fclose(f);
+            if (found)
+                printlog("%s found but will not be used\n", possible_fonts[i]);
+            else
+            {   strcpy(mac_default_font, 1+strrchr(possible_fonts[i], '/'));
+                *strrchr(mac_default_font, '.') = 0;
+                printlog("Will try with font %s\n", mac_default_font);
+                found = true;
+            }
+        }
+        if (!found)
+        {   printlog("Will fall back to Menlo\n");
+            strcpy(mac_default_font, "Menlo");
+        }
+    }
+    printlog("font to use is %s\n", mac_default_font);
+    return mac_default_font;
+}
+
 #else
 #define DEFAULT_FONT_NAME "courier"
 #endif
