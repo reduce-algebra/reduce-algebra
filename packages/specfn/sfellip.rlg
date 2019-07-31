@@ -1,0 +1,255 @@
+
+
+load_package specfn;
+
+
+
+% test of facilities sfellip.red and sfellipi.red
+% Author: Alan Barnes   (Alan.Barnes45678@gmail.com) July 2019
+
+% periodic properties and quarter period shifts
+
+jacobisn(u+2*elliptick(k),k);
+
+
+ - sn(u,k)
+
+jacobisn(u+2*i*elliptick!'(k),k);
+
+
+sn(u,k)
+
+jacobisn(u+elliptick(k),k);
+
+
+cd(u,k)
+
+jacobisn(u+i*elliptick!'(k),k);
+
+
+ ns(u,k)
+---------
+    k
+
+
+jacobizeta(u+2*elliptick(k),k);
+
+
+Z(u,k)
+
+elliptice(u+14*elliptick(k),k);
+
+
+14*E(k) + E(u,k)
+
+
+% derivatives and consistency checks
+
+df(jacobicn(u,k),u);
+
+
+ - dn(u,k)*sn(u,k)
+
+df(jacobisn(u,k)^2+jacobicn(u,k)^2,u);
+
+
+0
+
+
+df(jacobidn(u,k),k);
+
+
+                                         2
+ sn(u,k)*k*( - E(u,k)*cn(u,k) - cn(u,k)*k *u + cn(u,k)*u + dn(u,k)*sn(u,k))
+----------------------------------------------------------------------------
+                                    2
+                                   k  - 1
+
+df(k^2*jacobisn(u,k)^2+jacobidn(u,k)^2,k);
+
+
+          2              2  2          2    2
+ 2*sn(u,k) *k*( - cn(u,k) *k  + dn(u,k)  + k  - 1)
+---------------------------------------------------
+                       2
+                      k  - 1
+
+% vanishes by Pythagorean identity for dn and cn
+
+df(elliptice(u,k),u);
+
+
+       2
+dn(u,k)
+
+df(elliptice(u,k),k);
+
+
+                  2                                    2  2            2
+ k*(E(u,k)*cn(u,k)  - cn(u,k)*dn(u,k)*sn(u,k) - sn(u,k) *k *u + sn(u,k) *u)
+----------------------------------------------------------------------------
+                                    2
+                                   k  - 1
+
+
+df(elliptick(k),k);
+
+
+                 2
+  - E(k) - K(k)*k  + K(k)
+--------------------------
+            2
+        k*(k  - 1)
+
+df(elliptice(k),k);
+
+
+ E(k) - K(k)
+-------------
+      k
+
+
+% numerical evaluation and consistency checks
+on rounded;
+
+
+
+% complete elliptic integrals of 1st kind
+K := elliptick(0.4);
+
+
+k := 1.63999986586
+
+K!' := elliptick!'(0.4);
+
+
+k' := 2.35926355475
+
+
+% complete elliptic integrals of 2nd kind
+EE := elliptice(0.4);
+
+
+ee := 1.50594161236
+
+EE!' := elliptice!'(0.4);
+
+
+ee' := 1.15065562978
+
+
+% Jacobi Zeta function
+u := 0.6;
+
+
+u := 0.6
+
+Z:= jacobizeta(u, 0.4);
+
+
+z := 0.0384326240009
+
+E2 := elliptice(u, 0.4);
+
+
+e2 := 0.589386917488
+
+
+% checks
+EE - elliptice(K, 0.4);
+
+
+0
+
+
+EE * K!' + EE!' * K - K * K!' - pi/2;
+
+
+0
+
+
+Z - E2 + EE*u/K;
+
+
+0
+
+
+% Jacobi functions
+m := 0.8;
+
+
+m := 0.8
+
+
+s := jacobisn(u,m);
+
+
+s := 0.546968794688
+
+c :=  jacobicn(u,m);
+
+
+c := 0.837152995358
+
+d :=  jacobidn(u,m);
+
+
+d := 0.899181899333
+
+s^2+c^2;
+
+
+1
+
+d^2+m^2*s^2;
+
+
+1
+
+
+
+u := 1/2+i/3;
+
+
+u := 0.333333333333*i + 0.5
+
+s := jacobisn(u,m);
+
+
+s := 0.277063460865*i + 0.505246491282
+
+c :=  jacobicn(u,m);
+
+
+c :=  - 0.152311999241*i + 0.91906968697
+
+d :=  jacobidn(u,m);
+
+
+d :=  - 0.0947148006035*i + 0.945898824328
+
+s^2+c^2;
+
+
+1
+
+d^2+m^2*s^2;
+
+
+1
+
+
+% Nome
+nome(0.4);
+
+
+0.0108953620102
+
+nome(0.99);
+
+
+0.22819021013
+
+
+shut "sfellip.rlg";
+

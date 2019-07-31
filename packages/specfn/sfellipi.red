@@ -117,14 +117,23 @@ procedure k_function(m);
 %EllipticK definition
 %====================
 
+operator nome;
+
 elliptickrules :=
 
 {
-        elliptick(~m)   => k_function(m)   when lisp !*rounded
-                                                 and numberp m,
+        elliptick(~m)   => k_function(m)
+	       when lisp !*rounded and numberp m,
 
-        elliptick!'(~m) => k_function(sqrt(1-m^2)) when lisp !*rounded
-                                                 and numberp m
+        elliptick!'(~m) => k_function(sqrt(1-m^2))
+	       when lisp !*rounded and numberp m,
+
+        nome(0) => 0,
+
+        nome(1) => 1,
+
+        nome(~m) => exp(-pi*elliptick!'(m)/elliptick(m))
+	       when lisp !*rounded and numberp m
 }$
 let elliptickrules;
 
