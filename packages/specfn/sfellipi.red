@@ -26,7 +26,7 @@ module sfellipi;  % Procedures and Rules for Elliptic Integrals.
 %
 
 
-algebraic <<
+algebraic;
 
 %######################################################################
 %DESCENDING LANDEN TRANSFORMATION
@@ -67,7 +67,7 @@ procedure f_function(phi,m);
    begin scalar alpha, bothlists, a0toan, a1toan, p0topn, phi_n, y,
                 elptf;
 
-        alpha  := asin(sqrt(m));
+        alpha  := asin(m);
         bothlists := landentrans(phi,alpha);
         a0toan := part(bothlists,2);
         a1toan := rest(a0toan);
@@ -98,7 +98,7 @@ ellipticfrules :=
         ellipticf(~phi,~m)  => num_elliptic(f_function,phi,m)
                               when lisp !*rounded and numberp phi
                               and numberp m
-};
+}$
 let ellipticfrules;
 
 %######################################################################
@@ -108,7 +108,7 @@ procedure k_function(m);
 
    begin scalar agm, an;
 
-        agm := agm_function(1,sqrt(1-m),sqrt(m));
+        agm := agm_function(1,sqrt(1-m^2),m);
         an  := part(agm,2);
         return (pi / (2*an));
    end;
@@ -123,22 +123,25 @@ elliptickrules :=
         elliptick(~m)   => k_function(m)   when lisp !*rounded
                                                  and numberp m,
 
-        elliptick!'(~m) => k_function(1-m) when lisp !*rounded
+        elliptick!'(~m) => k_function(sqrt(1-m^2)) when lisp !*rounded
                                                  and numberp m
-};
+}$
 let elliptickrules;
 
-%######################################################################
-%VALUE OF EllipticE(phi,m)
+% ######################################################################
+% VALUE OF EllipticE(phi,m)
 
 procedure e_function(phi,m);
+  d_function(num_jacobiam(phi, m), m);
+
+procedure d_function(phi, m);
 
    begin scalar f, n, alpha, bothlists, a0toan, p0topn, a1toan, p1topn,
                 sinalist, sinplist, b, s, blist, c, allz, w, z, allx,
                 h, x, elpte;
 
         f := f_function(phi,m);
-        alpha := asin(sqrt(m));
+        alpha := asin(m);
 
         bothlists := landentrans(phi,alpha);
         a0toan := part(bothlists, 2);
@@ -177,11 +180,48 @@ procedure e_function(phi,m);
         return elpte;
    end;
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%EllipticE(phi,m) definition
-%====================
+% EllipticD(phi, m) definition     Legendre's form of elliptic integral
+% ============================     of the second kind.
 
-operator elliptice;
+operator ellipticd;
+
+jacobidrules :=
+{
+        ellipticd(0,~m)     => 0,
+        ellipticd(~phi,0)   => phi,
+        ellipticd(i*~phi,0) => i*phi,
+        ellipticd(~phi,1)   => sin(phi),
+        ellipticd(i*~phi,1) => i*sinh(phi),
+        ellipticd(-~phi,~m) => -ellipticd(phi,m),
+        ellipticd(~phi,-~m) =>  ellipticd(phi,m),
+
+% ************************************************
+% derivative rules 
+        df(ellipticd(~phi,~m),~phi) => sqrt(1-m^2*sin(phi)^2),
+
+%        df(ellipticd(~phi,~m),~m)   =>
+%            m*(jacobisn(phi,m)*jacobicn(phi,m)*jacobidn(phi,m)
+%               - elliptice(phi,m)*jacobicn(phi,m)^2) / (1-m^2)
+%            - m*phi*jacobisn(phi,m)^2,
+
+ellipticd(~phi,~m) => num_elliptic(d_function,phi,m)
+                              when lisp !*rounded and numberp phi
+                              and numberp m
+}$
+
+let jacobidrules;
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%EllipticE(phi,m) definition  Jacobi's form of the elliptic integral
+%===========================   of the second kind.
+% There was some original confusion between Jacobi's form of the standard
+% elliptic integral of the 2nd kind E(u,k) and Legendre's form D(phi,k)
+% where  D(am(u,k), k) = E(u, k)
+% In particular e_function(u, k) originally calculated D(u,k).
+% The e_function has been renamed as d_function and the e_function redefined.
+% Separate rules have been added for E(u,k) and D(u,k).
+
+% operator elliptice;  % already defined in sfellip.red
 
 jacobierules :=
 
@@ -189,25 +229,78 @@ jacobierules :=
         elliptice(0,~m)     => 0,
         elliptice(~phi,0)   => phi,
         elliptice(i*~phi,0) => i*phi,
-        elliptice(~phi,1)   => sin(phi),
-        elliptice(i*~phi,1) => i*sinh phi,
+        elliptice(~phi,1)   => tanh(phi),
+        elliptice(i*~phi,1) => i*tan phi,
         elliptice(-~phi,~m) => -elliptice(phi,m),
         elliptice(~phi,-~m) =>  elliptice(phi,m),
+	elliptice(elliptick(~m), ~m) => elliptice(m),
 
+% complete elliptic integrals
+        elliptice(0)     => pi/2,
+        elliptice(1)     => 1,
+	elliptick(0)     => pi/2,
+	elliptick!'(1)   => pi/2,
+        elliptice!'(0)   => 1,	
+        elliptice!'(1)   => pi/2,
+	
+% quasi-periodicity
+
+   elliptice((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
+      (begin scalar shift, arg;
+         shift := fix repart(k/d);
+         if not evenp shift then shift := shift-1;
+	 arg := w/d + ((k/d)-shift)*elliptick(m);
+         return elliptice(arg, m) + shift*elliptice(m);
+      end)
+      when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
+
+    elliptice((~~w + ~~k*elliptick!'(~m))/~~d, ~m) =>
+      (begin scalar shift, arg;
+         shift := fix impart(k/d);
+	 if not evenp shift then shift := shift-1;
+	 arg := w/d + ((k/d)-i*shift)*elliptick!'(m);
+         return elliptice(arg, m) + shift*i*(elliptick!'(m) - elliptice!'(m));
+      end)
+      when ((ratnump(ip) and abs(ip) >= 2) where ip => impart(k/d)),
+
+% quasi-addition
+
+       elliptice((~u+~v)/~~d,~m) => elliptice(u/d,m) + elliptice(v/d,m)
+         - m^2*jacobisn(u/d,m)*jacobisn(v/d,m)*jacobisn((u+v)/d,m),
+
+       elliptice(2*~u,~m) =>
+          2*elliptice(u,m) - m^2*jacobisn(u,m)^2*jacobisn(2*u,m),
+	  
+% derivative rules 
         df(elliptice(~phi,~m),~phi) => jacobidn(phi,m)^2,
+	
         df(elliptice(~phi,~m),~m)   =>
+            m*(jacobisn(phi,m)*jacobicn(phi,m)*jacobidn(phi,m)
+               - elliptice(phi,m)*jacobicn(phi,m)^2) / (1-m^2)
+            - m*phi*jacobisn(phi,m)^2,
 
-               m * (jacobisn(phi,m) * jacobicn(phi,m) * jacobidn(phi,m)
-                     -  elliptice(phi,m) * jacobicn(phi,m)^2) / (1-m^2)
-                     -  m * phi * jacobisn(phi,m)^2,
+        df(elliptice(~m),~m) => (elliptice(m)-elliptick(m))/m,
+
+        df(elliptick(~m),~m) =>
+	         (elliptice(m)/(1-m^2)-elliptick(m))/m,
+
+        df(elliptice!'(~m),~m) => m*(elliptick!'(m) - elliptice!'(m))/(1-m^2),
+
+        df(elliptick!'(~m),~m) =>
+	         (m*elliptick!'(m)-elliptice(m)/m)/(1-m^2),
+
+% numerical evaluation
 
         elliptice(~phi,~m) => num_elliptic(e_function,phi,m)
                               when lisp !*rounded and numberp phi
                               and numberp m,
 
-        elliptice(~m) => num_elliptic(e_function,pi/2,m)
+        elliptice(~m) => num_elliptic(d_function,pi/2,m)
+                         when lisp !*rounded and numberp m,
+
+        elliptice!'(~m) => num_elliptic(d_function,pi/2,sqrt(1-m^2))
                          when lisp !*rounded and numberp m
-};
+}$
 let jacobierules;
 
 %######################################################################
@@ -225,7 +318,7 @@ procedure num_theta(a,u,m);
         new := 100;                     % To initiate loop
         all := 0;
         z := (pi*u)/(2*elliptick(m));
-        q := exp(-pi*elliptick(1-m)/elliptick(m));
+        q := exp(-pi*elliptick(1-m^2)/elliptick(m));
 
         while new > 10^(-(symbolic !:prec!:)) do
           << new := if a =1 then
@@ -243,131 +336,134 @@ procedure num_theta(a,u,m);
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Theta Functions
 
-operator elliptictheta;
-
+operator elliptictheta1;
+operator elliptictheta2;
+operator elliptictheta3;
+operator elliptictheta4;
 
 ellipticthetarules :=
 {
 %Theta1rules
 %-----------
-        elliptictheta(1,~u,~m) =>
+        elliptictheta1(~u,~m) =>
                  num_elliptic(num_theta,1,u,m) when lisp !*rounded
                                   and numberp u and numberp m,
 
-        elliptictheta(1,-~u,~m) => -elliptictheta(1,u,m),
+        elliptictheta1(-~u,~m) => -elliptictheta1(u,m),
 
-        elliptictheta(1,~u+elliptick(~m),~m) =>  elliptictheta(2,u,m),
+        elliptictheta1(~u+elliptick(~m),~m) =>  elliptictheta2(u,m),
 
-        elliptictheta(1,~u+(2*elliptick(~m)),~m) =>
-                                                -elliptictheta(1,u,m),
+        elliptictheta1(~u+(2*elliptick(~m)),~m) =>
+                                                -elliptictheta1(u,m),
 
-        elliptictheta(1,~u+i*elliptick!'(~m),~m) =>
+        elliptictheta1(~u+i*elliptick!'(~m),~m) =>
                          i*(exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
-                                                *elliptictheta(4,u,m),
+                                                *elliptictheta4(u,m),
 
-        elliptictheta(1,~u+2*i*elliptick!'(~m),~m) =>
+        elliptictheta1(~u+2*i*elliptick!'(~m),~m) =>
                                   -(exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
-                                                *elliptictheta(1,u,m),
+                                                *elliptictheta1(u,m),
 
-        elliptictheta(1,~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
+        elliptictheta1(~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
                            (exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
-                                                *elliptictheta(3,u,m),
+                                                *elliptictheta3(u,m),
 
-        elliptictheta(1,~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
+        elliptictheta1(~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
                                    (exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
-                                                *elliptictheta(1,u,m),
+                                                *elliptictheta1(u,m),
 
 %Theta2rules
 %-----------
-        elliptictheta(2,~u,~m) =>
+        elliptictheta2(~u,~m) =>
                  num_elliptic(num_theta,2,u,m) when lisp !*rounded
                                   and numberp u and numberp m,
 
-        elliptictheta(2,-~u,~m) =>  elliptictheta(2,u,m),
+        elliptictheta2(-~u,~m) =>  elliptictheta2(u,m),
 
-        elliptictheta(2,~u+elliptick(~m),~m) => -elliptictheta(1,u,m),
+        elliptictheta2(~u+elliptick(~m),~m) => -elliptictheta1(u,m),
 
-        elliptictheta(2,~u+(2*elliptick(~m)),~m) =>
-                                                -elliptictheta(2,u,m),
+        elliptictheta2(~u+(2*elliptick(~m)),~m) =>
+                                                -elliptictheta2(u,m),
 
-        elliptictheta(2,~u+i*elliptick!'(~m),~m) =>
+        elliptictheta2(~u+i*elliptick!'(~m),~m) =>
                            (exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
-                                                *elliptictheta(3,u,m),
+                                                *elliptictheta3(u,m),
 
-        elliptictheta(2,~u+2*i*elliptick!'(~m),~m) =>
+        elliptictheta2(~u+2*i*elliptick!'(~m),~m) =>
                                    (exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
-                                                *elliptictheta(2,u,m),
+                                                *elliptictheta2(u,m),
 
-        elliptictheta(2,~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
+        elliptictheta2(~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
                         -i*(exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
-                                                *elliptictheta(4,u,m),
+                                                *elliptictheta4(u,m),
 
-        elliptictheta(2,~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
+        elliptictheta2(~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
                                   -(exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
-                                                *elliptictheta(2,u,m),
+                                                *elliptictheta2(u,m),
 
 %Theta3rules
 %-----------
-        elliptictheta(3,~u,~m) =>
+        elliptictheta3(~u,~m) =>
                  num_elliptic(num_theta,3,u,m) when lisp !*rounded
                                   and numberp u and numberp m,
 
-        elliptictheta(3,-~u,~m) =>  elliptictheta(3,u,m),
+        elliptictheta3(-~u,~m) =>  elliptictheta3(u,m),
 
-        elliptictheta(3,~u+elliptick(~m),~m) =>  elliptictheta(4,u,m),
+        elliptictheta3(~u+elliptick(~m),~m) =>  elliptictheta4(u,m),
 
-        elliptictheta(3,~u+(2*elliptick(~m)),~m) =>
-                                                 elliptictheta(3,u,m),
+        elliptictheta3(~u+(2*elliptick(~m)),~m) =>
+                                                 elliptictheta3(u,m),
 
-        elliptictheta(3,~u+i*elliptick!'(~m),~m) =>
+        elliptictheta3(~u+i*elliptick!'(~m),~m) =>
                            (exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
-                                                *elliptictheta(2,u,m),
-        elliptictheta(3,~u+2*i*elliptick!'(~m),~m) =>
+                                                *elliptictheta2(u,m),
+        elliptictheta3(~u+2*i*elliptick!'(~m),~m) =>
                                    (exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
-                                                *elliptictheta(3,u,m),
+                                                *elliptictheta3(u,m),
 
-        elliptictheta(3,~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
+        elliptictheta3(~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
                          i*(exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
-                                                *elliptictheta(1,u,m),
+                                                *elliptictheta1(u,m),
 
-        elliptictheta(3,~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
+        elliptictheta3(~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
                                    (exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
-                                                *elliptictheta(3,u,m),
+                                                *elliptictheta3(u,m),
 
 %Theta4rules
 %-----------
-        elliptictheta(4,~u,~m) =>
+        elliptictheta4(~u,~m) =>
                  num_elliptic(num_theta,4,u,m) when lisp !*rounded
                                   and numberp u and numberp m,
 
-        elliptictheta(4,-~u,~m) =>  elliptictheta(4,u,m),
+        elliptictheta4(-~u,~m) =>  elliptictheta4(u,m),
 
-        elliptictheta(4,~u+elliptick(~m),~m) =>  elliptictheta(3,u,m),
+        elliptictheta4(~u+elliptick(~m),~m) =>  elliptictheta3(u,m),
 
-        elliptictheta(4,~u+(2*elliptick(~m)),~m)=>elliptictheta(4,u,m),
+        elliptictheta4(~u+(2*elliptick(~m)),~m)=>elliptictheta4(u,m),
 
-        elliptictheta(4,~u+i*elliptick!'(~m),~m) =>
+        elliptictheta4(~u+i*elliptick!'(~m),~m) =>
                          i*(exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
-                                                *elliptictheta(1,u,m),
-        elliptictheta(4,~u+2*i*elliptick!'(~m),~m) =>
+                                                *elliptictheta1(u,m),
+        elliptictheta4(~u+2*i*elliptick!'(~m),~m) =>
                                   -(exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
-                                                *elliptictheta(4,u,m),
+                                                *elliptictheta4(u,m),
 
-        elliptictheta(4,~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
+        elliptictheta4(~u+elliptick(~m)+i*elliptick!'(~m),~m) =>
                            (exp(-i*pi*0.5*u/elliptick(m)))*(nome_q^(-1/2))
-                                                *elliptictheta(2,u,m),
+                                                *elliptictheta2(u,m),
 
-        elliptictheta(4,~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
+        elliptictheta4(~u+2*elliptick(~m)+2*i*elliptick!'(~m),~m) =>
                                   -(exp(-i*pi*u/elliptick(m)))*(nome_q^-1)
-                                                *elliptictheta(4,u,m),
+                                                *elliptictheta4(u,m)
 %Error
 %-----
-        elliptictheta(~a,~u,~m) =>
+%        elliptictheta(~a,~u,~m) =>
+%
+%            printerr ("In EllipticTheta(a,u,m);   a = 1,2,3 or 4.")
+%                         when numberp a
+%                                         and not(fixp a and a<5 and a>0)
 
-            printerr ("In EllipticTheta(a,u,m);   a = 1,2,3 or 4.")
-                         when numberp a
-                                    and not(fixp a and a<5 and a>0)
-};
+}$
 let ellipticthetarules;
 
 %######################################################################
@@ -378,8 +474,8 @@ procedure jacobizeta!:numeric(u,m);
 
    begin scalar phi_list, clist, l, j, z, cn, phi_n;
 
-        phi_list := phi_function(1,sqrt(1-m),sqrt(m),u);
-        clist := part(agm_function(1,sqrt(1-m),sqrt(m)),5);
+        phi_list := phi_function(1,sqrt(1-m^2),m,u);
+        clist := part(agm_function(1,sqrt(1-m^2),m),5);
         l := length(phi_list);
         j := 1;
         z := 0;
@@ -406,13 +502,38 @@ jacobizetarules :=
         jacobizeta(~u,0)     => 0,
         jacobizeta(~u,1)     => tanh(u),
         jacobizeta(-~u,~m)   => -jacobizeta(u,m),
-        jacobizeta(~u+~v,~m) => jacobizeta(u,m) + jacobizeta(v,m) -
-                                (m*jacobisn(u,m)*jacobisn(v,m)
-                                                 *jacobisn(u+v,m)),
+        jacobizeta(~u,-~m)   => jacobizeta(u, m),
+        jacobizeta(0,~m)     => 0,
+	jacobizeta(elliptick(~m), ~m) => 0,
+
+% periodicity
+
+    jacobizeta((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
+      (begin scalar shift, arg, r, s;
+         shift := fix repart(k/d);
+         if not evenp shift then shift := shift-1;
+	 arg := w/d + ((k/d)-shift)*elliptick(m);
+         return jacobizeta(arg, m);
+      end)
+      when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
+
+% quasi-periodicity
+    jacobizeta((~~w + ~~k*elliptick!'(~m))/~~d, ~m) =>
+      (begin scalar shift, arg;
+         shift := fix impart(k/d);
+	 if not evenp shift then shift := shift-1;
+	 arg := w/d + ((k/d)-i*shift)*elliptick!'(m);
+         return jacobizeta(arg, m) - i*pi*shift/(2*elliptick(m));
+      end)
+      when ((ratnump(ip) and abs(ip) >= 2) where ip => impart(k/d)),
+      
+        jacobizeta((~u+~v)/~~d,~m) => jacobizeta(u/d,m) + jacobizeta(v/d,m)
+	   - m^2*jacobisn(u/d,m)*jacobisn(v/d,m)*jacobisn((u+v)/d,m),
+        jacobizeta(2*~u,~m) =>
+             2*jacobizeta(u,m) - m^2*jacobisn(u,m)^2*jacobisn(2*u,m),
 
         jacobizeta(~u+2*elliptick(~m),m) => jacobizeta(u,m),
-        jacobizeta(elliptick(~m) - ~u,m) =>
-                                        -jacobizeta(elliptick(m)+u,m),
+        jacobizeta(elliptick(~m) -~u,m) => -jacobizeta(elliptick(m)+u,m),
 
 %       JacobiZeta(~u,~m) => JacobiZeta(u - EllipticK(m),m) -
 %                            m * Jacobisn(u - EllipticK(m),m)
@@ -421,10 +542,10 @@ jacobizetarules :=
         jacobizeta(~u,~m) => num_elliptic(jacobizeta!:numeric,u,m)
                              when lisp !*rounded and numberp u
                              and numberp m
-};
+}$
 let jacobizetarules;
 %######################################################################
->>;
+
 endmodule;
 end;
 
