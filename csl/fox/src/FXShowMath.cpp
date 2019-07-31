@@ -92,30 +92,6 @@ extern bool file_readable(char *a, const char *b, size_t n);
 
 #include "fwin.h"
 
-#ifndef DEBUG
-
-#define LOG(...)
-
-#else
-
-#include <stdarg.h>
-
-static FILE *showmath_logfile = NULL;
-
-static void write_log(const char *s, ...)
-{   va_list x;
-    if (showmath_logfile == NULL) showmath_logfile = fopen("showmath.log", "w");
-    if (showmath_logfile == NULL) showmath_logfile = fopen("/tmp/showmath.log", "w");
-    va_start(x, s);
-    vfprintf(showmath_logfile, s, x);
-    va_end(x);
-}
-
-#define LOG(...) \
-    do { write_log("%d: ", __LINE__); write_log(__VA_ARGS__); } while (0)
-
-#endif
-
 
 namespace FX {
 
@@ -945,7 +921,7 @@ static const char *loadPrivateFonts(FXApp *appl, FXWindow *w)
         if (fff == NULL) return "failed to allocate space";
         sprintf(fff, "%s/" toString(fontsdir) "/%s.pfb",
                 programDir, fontNames[i].name);
-        LOG("Font file to add: %s\n", fff);
+        printlog("Font file to add: %s\n", fff);
 // For Xft I will insist that ALL the fonts that I try to add have
 // readable font file and are accepted by AppFontAdd, otherwise I will
 // suppose that Xft is not usable.
@@ -4562,18 +4538,18 @@ default:
 
 int setupShowMath(FXApp *app, int mainSize, FXWindow *w)
 {
-    LOG("start setupShowMath\n");
+    printlog("start setupShowMath\n");
     setupMemoryPool();
-    LOG("memory pool set up - now rehash table\n");
+    printlog("memory pool set up - now rehash table\n");
     rehashKeywordTable();            // names in the table of TeX keywords
-    LOG("Try to load private fonts\n");
+    printlog("Try to load private fonts\n");
     const char *message = loadPrivateFonts(app, w);
     if (message != NULL)
     {   printf("Failed to set up fonts: %s\n", message);
-        LOG("Failed to set up fonts: %s\n", message);
+        printlog("Failed to set up fonts: %s\n", message);
         exit(1);
     }
-    LOG("now change font sizes\n");
+    printlog("now change font sizes\n");
     return changeMathFontSize(app, mainSize);
 }
 
