@@ -309,24 +309,57 @@ inline bool car_legal(LispObject p)
 {   return is_cons(p);
 }
 
+// I have many uses of std::atomic<T> here. The intent of these is to
+// arrange that the heap is treated as made up of atomic data - certainly as
+// far as all the LispObject and other sharable or mutable values in it are
+// concerned. With g++ on a pc the effect on code quality of doing this is
+// that reads from memory are not changed at all, but writes to memory
+// either use an atomic exchange instruction or are followed by a memory
+// fence. There do not seem to be any worse costs than this. The result of
+// this change is that when and if I manage to move to a threaded version
+// of CSL that memory updates will propagate from one thread to another in a
+// manner that more or less reflects a naive expectation. Without it a
+// RPLACx operation performed on one CPU could have the update remaining
+// in a cache associated with that CPU and so not being visible to other
+// threads even if later writes by the same thread did get flushed across
+// caches - and that could lead to subtle and unpleasant (and probably
+// really hard to diagnose) consequences!
+// Well at present I do not have threads, so this is something of a
+// conceit, but it is also putting down a marker about future intents.
+
 typedef struct Cons_Cell_
-{   LispObject car;
-    LispObject cdr;
+{   std::atomic<LispObject> car;
+    std::atomic<LispObject> cdr;
 } Cons_Cell;
 
-inline LispObject& qcar(LispObject p)
+inline std::atomic<LispObject>& qcar(LispObject p)
 {   return ((Cons_Cell *)p)->car;
 }
 
-inline LispObject& qcdr(LispObject p)
+inline std::atomic<LispObject>& qcdr(LispObject p)
 {   return ((Cons_Cell *)p)->cdr;
 }
 
-inline LispObject& qcar(char * p)
+// The above definitions let qcar and and qcdr return lvalues so that you
+// can assign into them, and the std::atomic<T> arrangement means that such
+// assignments will support multi-thread and multi-CPU configurations.
+// When used as an rvalue C++ will usually just extract the LispObject from
+// within the std::atomic wrapper, so usage is straightforward. However a use
+// such as "qcar(x) = qcar(y);" then shows up as an assignment of one atomic
+// object to another and that is a "deleted function", ie not supported by
+// C++. What one needs is for the atomic wrapper to the right of the
+// assignment to be removed. I will do they here by having variations of the
+// car/cdr functions that just return rvalues and I will then need to
+// write "qcar(x) = vcar(y);".
+// The other thing I could have done would be to make the cremoved of the
+// std::atomic even more viaible by going "qcar(x) = (LispObject)qcar(y);",
+// but that seend clumsier and perhaps less safe.
+
+inline LispObject vcar(LispObject p)
 {   return ((Cons_Cell *)p)->car;
 }
 
-inline LispObject& qcdr(char * p)
+inline LispObject vcdr(LispObject p)
 {   return ((Cons_Cell *)p)->cdr;
 }
 
@@ -541,8 +574,8 @@ inline bool vector_holds_binary(Header h)
 #define SPID_NOPROP     (TAG_SPID+(0x0b<<(Tw+4)))  // fastget entry is empty
 #define SPID_LIBRARY    (TAG_SPID+(0x0c<<(Tw+4)))  // + 0xnnn00000 offset
 
-static Header& vechdr(LispObject v)
-{   return *(Header *)((char *)(v) - TAG_VECTOR);
+static std::atomic<Header>& vechdr(LispObject v)
+{   return *(std::atomic<Header> *)((char *)(v) - TAG_VECTOR);
 }
 
 inline unsigned int type_of_header(Header h)
@@ -770,8 +803,8 @@ inline bool vector_f128(Header h)
 {   return ((0x80400000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
-inline LispObject& basic_elt(LispObject v, size_t n)
-{   return *(LispObject *)((char *)v +
+inline std::atomic<LispObject>& basic_elt(LispObject v, size_t n)
+{   return *(std::atomic<LispObject> *)((char *)v +
                            (CELL-TAG_VECTOR) +
                            (n*sizeof(LispObject)));
 }
@@ -839,12 +872,12 @@ inline bool vector_f128(LispObject n)
 #define TYPE_NEW_BIGNUM     ( 0x7d <<Tw)  // Temporary provision!
 #define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
 
-inline Header& numhdr(LispObject v)
-{   return *(Header *)((char *)(v) - TAG_NUMBERS);
+inline std::atomic<Header>& numhdr(LispObject v)
+{   return *(std::atomic<Header> *)((char *)(v) - TAG_NUMBERS);
 }
 
-inline Header& flthdr(LispObject v)
-{   return *(Header *)((char *)(v) - TAG_BOXFLOAT);
+inline std::atomic<Header>& flthdr(LispObject v)
+{   return *(std::atomic<Header> *)((char *)(v) - TAG_BOXFLOAT);
 }
 
 inline bool is_short_float(LispObject v)
@@ -940,22 +973,22 @@ inline bool is_bitvec(LispObject n)
     else  return is_bitvec_header(vechdr(basic_elt(n, 0)));
 }
 
-inline char& basic_celt(LispObject v, size_t n)
-{   return *((char *)(v) + (CELL-TAG_VECTOR) + n);
+inline std::atomic<char>& basic_celt(LispObject v, size_t n)
+{   return *((std::atomic<char> *)(v) + (CELL-TAG_VECTOR) + n);
 }
 
-inline unsigned char& basic_ucelt(LispObject v, size_t n)
-{   return *((unsigned char *)v + (CELL-TAG_VECTOR) + n);
+inline std::atomic<unsigned char>& basic_ucelt(LispObject v, size_t n)
+{   return *((std::atomic<unsigned char> *)v + (CELL-TAG_VECTOR) + n);
 }
 
-inline signed char& basic_scelt(LispObject v, size_t n)
-{   return *((signed char *)v + (CELL-TAG_VECTOR) + n);
+inline std::atomic<signed char>& basic_scelt(LispObject v, size_t n)
+{   return *((std::atomic<signed char> *)v + (CELL-TAG_VECTOR) + n);
 }
 
 #define BPS_DATA_OFFSET (CELL-TAG_VECTOR)
 
-inline unsigned char* data_of_bps(LispObject v)
-{   return (unsigned char *)v + BPS_DATA_OFFSET;
+inline std::atomic<unsigned char>* data_of_bps(LispObject v)
+{   return (std::atomic<unsigned char> *)v + BPS_DATA_OFFSET;
 }
 
 
@@ -973,8 +1006,8 @@ inline unsigned char* data_of_bps(LispObject v)
 // structures in terms of their raw representation and so any issues of
 // large vs basic vectors does not apply.
 
-inline LispObject& vselt(LispObject v, size_t n)
-{   return *(LispObject *)(((intptr_t)v & ~((intptr_t)TAG_BITS)) +
+inline std::atomic<LispObject>& vselt(LispObject v, size_t n)
+{   return *(std::atomic<LispObject> *)(((intptr_t)v & ~((intptr_t)TAG_BITS)) +
                             ((1 + n)*sizeof(LispObject)));
 }
 
@@ -988,14 +1021,14 @@ inline LispObject& vselt(LispObject v, size_t n)
 // ARM did not support 16-bit usage at all well. However these days I intend
 // to expect that int16_t will exist and will be something I can rely on.
 //
-inline int16_t& basic_helt(LispObject v, size_t n)
-{   return *(int16_t *)((char *)v +
+inline std::atomic<int16_t>& basic_helt(LispObject v, size_t n)
+{   return *(std::atomic<int16_t> *)((char *)v +
                         (CELL-TAG_VECTOR) +
                         n*sizeof(int16_t));
 }
 
-inline intptr_t& basic_ielt(LispObject v, size_t n)
-{   return  *(intptr_t *)((char *)v +
+inline std::atomic<intptr_t>& basic_ielt(LispObject v, size_t n)
+{   return  *(std::atomic<intptr_t> *)((char *)v +
                          (CELL-TAG_VECTOR) +
                          n*sizeof(intptr_t));
 }
@@ -1004,20 +1037,20 @@ inline intptr_t& basic_ielt(LispObject v, size_t n)
 // Even on a 64-bit machine I will support packed arrays of 32-bit
 // ints or short-floats.
 //
-inline int32_t& basic_ielt32(LispObject v, size_t n)
-{   return *(int32_t *)((char *)v +
+inline std::atomic<int32_t>& basic_ielt32(LispObject v, size_t n)
+{   return *(std::atomic<int32_t> *)((char *)v +
                         (CELL-TAG_VECTOR) +
                         n*sizeof(int32_t));
 }
 
-inline float& basic_felt(LispObject v, size_t n)
-{   return *(float *)((char *)v +
+inline std::atomic<float>& basic_felt(LispObject v, size_t n)
+{   return *(std::atomic<float> *)((char *)v +
                       (CELL-TAG_VECTOR) +
                       n*sizeof(float));
 }
 
-inline double& basic_delt(LispObject v, size_t n)
-{   return *(double *)((char *)v +
+inline std::atomic<double>& basic_delt(LispObject v, size_t n)
+{   return *(std::atomic<double> *)((char *)v +
                        (8-TAG_VECTOR) +
                        n*sizeof(double));
 }
@@ -1191,55 +1224,55 @@ inline void discard_vector(LispObject v)
 // I should probably consider using a template to generate the code
 // here.
 
-inline LispObject& elt(LispObject v, size_t n)
+inline std::atomic<LispObject>& elt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_elt(v, n);
     return basic_elt(basic_elt(v, n/(VECTOR_CHUNK_BYTES/CELL)),
                      n%(VECTOR_CHUNK_BYTES/CELL));
 }
 
-inline char& celt(LispObject v, size_t n)
+inline std::atomic<char>& celt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_celt(v, n);
     return basic_celt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
                       n%VECTOR_CHUNK_BYTES);
 }
 
-inline unsigned char& ucelt(LispObject v, size_t n)
+inline std::atomic<unsigned char>& ucelt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_ucelt(v, n);
     return basic_ucelt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
                        n%VECTOR_CHUNK_BYTES);
 }
 
-inline signed char& scelt(LispObject v, size_t n)
+inline std::atomic<signed char>& scelt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_scelt(v, n);
     return basic_scelt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
                        n%VECTOR_CHUNK_BYTES);
 }
 
-inline int16_t& helt(LispObject v, size_t n)
+inline std::atomic<int16_t>& helt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_helt(v, n);
     return basic_helt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(int16_t))),
                       n%(VECTOR_CHUNK_BYTES/sizeof(int16_t)));
 }
 
-inline intptr_t& ielt(LispObject v, size_t n)
+inline std::atomic<intptr_t>& ielt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_ielt(v, n);
     return basic_ielt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(intptr_t))),
                       n%(VECTOR_CHUNK_BYTES/sizeof(intptr_t)));
 }
 
-inline int32_t& ielt32(LispObject v, size_t n)
+inline std::atomic<int32_t>& ielt32(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_ielt32(v, n);
     return basic_ielt32(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(int32_t))),
                         n%(VECTOR_CHUNK_BYTES/sizeof(int32_t)));
 }
 
-inline float& felt(LispObject v, size_t n)
+inline std::atomic<float>& felt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_felt(v, n);
     return basic_felt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(float))),
                       n%(VECTOR_CHUNK_BYTES/sizeof(float)));
 }
 
-inline double& delt(LispObject v, size_t n)
+inline std::atomic<double>& delt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_delt(v, n);
     return basic_delt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(double))),
                       n%(VECTOR_CHUNK_BYTES/sizeof(double)));
@@ -1412,83 +1445,103 @@ typedef struct Bytecoded_Function_Object_
 // macro) to stress that I view the store layout as fixed, and because
 // offsetof is badly supported by some C compilers I have come across.
 //
-inline Header& qheader(LispObject p)
-{   return *(Header *)((char *)p + (0*CELL-TAG_SYMBOL));
+inline std::atomic<Header>& qheader(LispObject p)
+{   return *(std::atomic<Header> *)((char *)p + (0*CELL-TAG_SYMBOL));
 }
 
-inline LispObject& qvalue(LispObject p)
-{   return *(LispObject *)((char *)p + (1*CELL-TAG_SYMBOL));
+inline std::atomic<LispObject>& qvalue(LispObject p)
+{   return *(std::atomic<LispObject> *)((char *)p + (1*CELL-TAG_SYMBOL));
 }
 
-inline LispObject& qenv(LispObject p)
-{   return *(LispObject *)((char *)p + (2*CELL-TAG_SYMBOL));
+inline std::atomic<LispObject>& qenv(LispObject p)
+{   return *(std::atomic<LispObject> *)((char *)p + (2*CELL-TAG_SYMBOL));
 }
 
-inline LispObject& qplist(LispObject p)
-{   return *(LispObject *)((char *)p + (3*CELL-TAG_SYMBOL));
+inline std::atomic<LispObject>& qplist(LispObject p)
+{   return *(std::atomic<LispObject> *)((char *)p + (3*CELL-TAG_SYMBOL));
 }
 
-inline LispObject& qfastgets(LispObject p)
-{   return *(LispObject *)((char *)p + (4*CELL-TAG_SYMBOL));
+inline std::atomic<LispObject>& qfastgets(LispObject p)
+{   return *(std::atomic<LispObject> *)((char *)p + (4*CELL-TAG_SYMBOL));
 }
 
-inline LispObject& qpackage(LispObject p)
-{   return *(LispObject *)((char *)p + (5*CELL-TAG_SYMBOL));
+inline std::atomic<LispObject>& qpackage(LispObject p)
+{   return *(std::atomic<LispObject> *)((char *)p + (5*CELL-TAG_SYMBOL));
 }
 
-inline LispObject& qpname(LispObject p)
-{   return *(LispObject *)((char *)p + (6*CELL-TAG_SYMBOL));
+inline std::atomic<LispObject>& qpname(LispObject p)
+{   return *(std::atomic<LispObject> *)((char *)p + (6*CELL-TAG_SYMBOL));
 }
 
 // The ifn() selector gives access to the qfn() cell, but treating its
 // contents as (intptr_t).
 //
-inline intptr_t& ifn0(LispObject p)
-{   return *(intptr_t *)((char *)p + (7*CELL-TAG_SYMBOL));
+inline std::atomic<intptr_t>& ifn0(LispObject p)
+{   return *(std::atomic<intptr_t> *)((char *)p + (7*CELL-TAG_SYMBOL));
 }
 
-inline intptr_t& ifn1(LispObject p)
-{   return *(intptr_t *)((char *)p + (8*CELL-TAG_SYMBOL));
+inline std::atomic<intptr_t>& ifn1(LispObject p)
+{   return *(std::atomic<intptr_t> *)((char *)p + (8*CELL-TAG_SYMBOL));
 }
 
-inline intptr_t& ifn2(LispObject p)
-{   return *(intptr_t *)((char *)p + (9*CELL-TAG_SYMBOL));
+inline std::atomic<intptr_t>& ifn2(LispObject p)
+{   return *(std::atomic<intptr_t> *)((char *)p + (9*CELL-TAG_SYMBOL));
 }
 
-inline intptr_t& ifn3(LispObject p)
-{   return *(intptr_t *)((char *)p + (10*CELL-TAG_SYMBOL));
+inline std::atomic<intptr_t>& ifn3(LispObject p)
+{   return *(std::atomic<intptr_t> *)((char *)p + (10*CELL-TAG_SYMBOL));
 }
 
-inline intptr_t& ifn4up(LispObject p)
-{   return *(intptr_t *)((char *)p + (11*CELL-TAG_SYMBOL));
+inline std::atomic<intptr_t>& ifn4up(LispObject p)
+{   return *(std::atomic<intptr_t> *)((char *)p + (11*CELL-TAG_SYMBOL));
 }
 
-inline intptr_t& ifnunused(LispObject p)
-{   return *(intptr_t *)((char *)p + (12*CELL-TAG_SYMBOL));
+inline std::atomic<intptr_t>& ifnunused(LispObject p)
+{   return *(std::atomic<intptr_t> *)((char *)p + (12*CELL-TAG_SYMBOL));
 }
 
-inline intptr_t& ifnn(LispObject p)
-{   return *(intptr_t *)((char *)p + (13*CELL-TAG_SYMBOL));
+inline std::atomic<intptr_t>& ifnn(LispObject p)
+{   return *(std::atomic<intptr_t> *)((char *)p + (13*CELL-TAG_SYMBOL));
 }
 
-inline no_args*& qfn0(LispObject p)
-{   return *(no_args **)((char *)p + (7*CELL-TAG_SYMBOL));
+inline std::atomic<no_args*>& qfn0(LispObject p)
+{   return *(std::atomic<no_args *>*)((char *)p + (7*CELL-TAG_SYMBOL));
 }
 
-inline one_arg*& qfn1(LispObject p)
-{   return *(one_arg **)((char *)p + (8*CELL-TAG_SYMBOL));
+inline std::atomic<one_arg*>& qfn1(LispObject p)
+{   return *(std::atomic<one_arg *>*)((char *)p + (8*CELL-TAG_SYMBOL));
 }
 
-inline two_args*& qfn2(LispObject p)
-{   return *(two_args **)((char *)p + (9*CELL-TAG_SYMBOL));
+inline std::atomic<two_args*>& qfn2(LispObject p)
+{   return *(std::atomic<two_args *>*)((char *)p + (9*CELL-TAG_SYMBOL));
 }
 
-inline three_args*& qfn3(LispObject p)
-{   return *(three_args **)((char *)p + (10*CELL-TAG_SYMBOL));
+inline std::atomic<three_args*>& qfn3(LispObject p)
+{   return *(std::atomic<three_args *>*)((char *)p + (10*CELL-TAG_SYMBOL));
 }
 
-inline fourup_args*& qfn4up(LispObject p)
-{   return *(fourup_args **)((char *)p + (11*CELL-TAG_SYMBOL));
+inline std::atomic<fourup_args*>& qfn4up(LispObject p)
+{   return *(std::atomic<fourup_args *>*)((char *)p + (11*CELL-TAG_SYMBOL));
+}
+
+inline no_args *vfn0(LispObject p)
+{   return *(std::atomic<no_args *>*)((char *)p + (7*CELL-TAG_SYMBOL));
+}
+
+inline one_arg *vfn1(LispObject p)
+{   return *(std::atomic<one_arg *>*)((char *)p + (8*CELL-TAG_SYMBOL));
+}
+
+inline two_args *vfn2(LispObject p)
+{   return *(std::atomic<two_args *>*)((char *)p + (9*CELL-TAG_SYMBOL));
+}
+
+inline three_args *vfn3(LispObject p)
+{   return *(std::atomic<three_args *>*)((char *)p + (10*CELL-TAG_SYMBOL));
+}
+
+inline fourup_args *vfn4up(LispObject p)
+{   return *(std::atomic<fourup_args *>*)((char *)p + (11*CELL-TAG_SYMBOL));
 }
 
 [[noreturn]] extern void aerror1(const char *s, LispObject a);
@@ -1520,8 +1573,8 @@ inline void a4a5a6(const char *name, LispObject a4up,
     a6 = qcar(a4up);
 }
 
-inline uint64_t& qcount(LispObject p)
-{   return *(uint64_t *)((char *)p + (12*CELL-TAG_SYMBOL));
+inline std::atomic<uint64_t>& qcount(LispObject p)
+{   return *(std::atomic<uint64_t> *)((char *)p + (12*CELL-TAG_SYMBOL));
 }
 
 #ifndef HAVE_SOFTFLOAT
@@ -1565,14 +1618,18 @@ inline size_t bignum_length(LispObject b)
 {   return length_of_header(numhdr(b));
 }
 
-inline uint32_t* bignum_digits(LispObject b)
+inline std::atomic<uint32_t>* bignum_digits(LispObject b)
+{   return (std::atomic<uint32_t> *)((char *)b  + (CELL-TAG_NUMBERS));
+}
+
+inline uint32_t* vbignum_digits(LispObject b)
 {   return (uint32_t *)((char *)b  + (CELL-TAG_NUMBERS));
 }
 
 // For work on bignums when I have a 64-bit machine I frequently need the
 // top word of a bignum as a 64-bit (signed) value...
 inline int64_t bignum_digits64(LispObject b, size_t n)
-{   return (int64_t)((int32_t *)((char *)b+(CELL-TAG_NUMBERS)))[n];
+{   return (int64_t)((std::atomic<int32_t> *)((char *)b+(CELL-TAG_NUMBERS)))[n];
 }
 
 
@@ -1589,8 +1646,8 @@ inline Header make_new_bighdr(size_t n)
 {   return TAG_HDR_IMMED+TYPE_NEW_BIGNUM+(n<<(Tw+8));
 }
 
-inline uint64_t* new_bignum_digits(LispObject b)
-{   return (uint64_t *)((char *)b  + (8-TAG_NUMBERS));
+inline std::atomic<uint64_t>* new_bignum_digits(LispObject b)
+{   return (std::atomic<uint64_t> *)((char *)b  + (8-TAG_NUMBERS));
 }
 
 // pack_hdrlength takes a length in 32-bit words (including the size of
@@ -1606,50 +1663,50 @@ inline uint64_t* new_bignum_digits(LispObject b)
 //@#define pack_hdrlengthhwords(n) ((1+(intptr_t)(n))<<(Tw+4))
 
 typedef struct Rational_Number_
-{   Header header;
-    LispObject num;
-    LispObject den;
+{   std::atomic<Header> header;
+    std::atomic<LispObject> num;
+    std::atomic<LispObject> den;
 } Rational_Number;
 
-inline LispObject& numerator(LispObject r)
+inline std::atomic<LispObject>& numerator(LispObject r)
 {   return ((Rational_Number *)((char *)r-TAG_NUMBERS))->num;
 }
 
-inline LispObject& denominator(LispObject r)
+inline std::atomic<LispObject>& denominator(LispObject r)
 {   return ((Rational_Number *)((char *)r-TAG_NUMBERS))->den;
 }
 
 typedef struct Complex_Number_
-{   Header header;
-    LispObject real;
-    LispObject imag;
+{   std::atomic<Header> header;
+    std::atomic<LispObject> real;
+    std::atomic<LispObject> imag;
 } Complex_Number;
 
-inline LispObject& real_part(LispObject r)
+inline std::atomic<LispObject>& real_part(LispObject r)
 {   return ((Complex_Number *)((char *)r-TAG_NUMBERS))->real;
 }
 
-inline LispObject& imag_part(LispObject r)
+inline std::atomic<LispObject>& imag_part(LispObject r)
 {   return ((Complex_Number *)((char *)r-TAG_NUMBERS))->imag;
 }
 typedef struct Single_Float_
-{   Header header;
+{   std::atomic<Header> header;
     union float_or_int
-    {   float f;
-        float32_t f32;
-        int32_t i;
+    {   std::atomic<float> f;
+        std::atomic<float32_t> f32;
+        std::atomic<int32_t> i;
     } f;
 } Single_Float;
 
-inline float& single_float_val(LispObject v)
+inline std::atomic<float>& single_float_val(LispObject v)
 {   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.f;
 }
 
-inline float32_t& float32_t_val(LispObject v)
+inline std::atomic<float32_t>& float32_t_val(LispObject v)
 {   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.f32;
 }
 
-inline int32_t& intfloat32_t_val(LispObject v)
+inline std::atomic<int32_t>& intfloat32_t_val(LispObject v)
 {   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.i;
 }
 
@@ -1675,42 +1732,42 @@ inline int32_t& intfloat32_t_val(LispObject v)
 //
 
 typedef union _Double_union
-{   double f;
-    uint32_t i[2];
-    uint64_t i64;
-    float64_t f64;
+{   std::atomic<double> f;
+    std::atomic<uint32_t> i[2];
+    std::atomic<uint64_t> i64;
+    std::atomic<float64_t> f64;
 
 } Double_union;
 
 #define SIZEOF_DOUBLE_FLOAT     16
-inline double *double_float_addr(LispObject v)
-{   return (double *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::atomic<double> *double_float_addr(LispObject v)
+{   return (std::atomic<double> *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
 // on 32-bit machines there has to be a padding work in a double_float,
 // and this lets me clear it out.
-inline int32_t& double_float_pad(LispObject v)
-{   return *(int32_t *)((char *)v + (4-TAG_BOXFLOAT));
+inline std::atomic<int32_t>& double_float_pad(LispObject v)
+{   return *(std::atomic<int32_t> *)((char *)v + (4-TAG_BOXFLOAT));
 }
 
-inline double& double_float_val(LispObject v)
-{   return *(double *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::atomic<double>& double_float_val(LispObject v)
+{   return *(std::atomic<double> *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-inline float64_t& float64_t_val(LispObject v)
-{   return *(float64_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::atomic<float64_t>& float64_t_val(LispObject v)
+{   return *(std::atomic<float64_t> *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-inline int64_t& intfloat64_t_val(LispObject v)
-{   return *(int64_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::atomic<int64_t>& intfloat64_t_val(LispObject v)
+{   return *(std::atomic<int64_t> *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-inline int32_t& intfloat64_t_val_hi(LispObject v)
-{   return *(int32_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::atomic<int32_t>& intfloat64_t_val_hi(LispObject v)
+{   return *(std::atomic<int32_t> *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-inline int32_t& intfloat64_t_val_lo(LispObject v)
-{   return *(int32_t *)((char *)v + (12-TAG_BOXFLOAT));
+inline std::atomic<int32_t>& intfloat64_t_val_lo(LispObject v)
+{   return *(std::atomic<int32_t> *)((char *)v + (12-TAG_BOXFLOAT));
 }
 
 //
@@ -1739,46 +1796,60 @@ inline int32_t& intfloat64_t_val_lo(LispObject v)
 //  } Long_Float;
 //
 
+// The std::atomic<float128_t> type will be 16 bytes long and many
+// architectures will provide native 8-byte atomic access instructions
+// but not longer ones - the compiler will probably (ha ha - this is what it
+// does on 64-bit cygwin!) generate library calls to eg __atomic_load_16 etc
+// and may need -latomic.
+// There are two view I could take. One would be that 128-bit floats will
+// already be slow so overhead in atomic updates will not matter much (and
+// note that normal access will almost vertainly NOT be atomic). So I grit
+// my teeth and link in libatomic. The other would be to believe that writing
+// these values only occurs in a few places and really only while creating
+// fresh boxed numbers, so if I manually put a fence after non-atomic writes
+// but before any other thread might see the new value I will be OK. Well
+// there are garbage collection moments to deal with too.
+
 #ifdef HAVE_SOFTFLOAT
 #define SIZEOF_LONG_FLOAT       24
-inline float128_t *long_float_addr(LispObject v)
-{   return (float128_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::atomic<float128_t> *long_float_addr(LispObject v)
+{   return (std::atomic<float128_t> *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-inline int32_t& long_float_pad(LispObject v)
-{   return *(int32_t *)((char *)v + (4-TAG_BOXFLOAT));
+inline std::atomic<int32_t>& long_float_pad(LispObject v)
+{   return *(std::atomic<int32_t> *)((char *)v + (4-TAG_BOXFLOAT));
 }
 
-inline float128_t& long_float_val(LispObject v)
-{   return *(float128_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::atomic<float128_t>& long_float_val(LispObject v)
+{   return *(std::atomic<float128_t> *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-inline float128_t& float128_t_val(LispObject v)
-{   return *(float128_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::atomic<float128_t>& float128_t_val(LispObject v)
+{   return *(std::atomic<float128_t> *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-inline int64_t& intfloat128_t_val0(LispObject v)
-{   return *(int64_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::atomic<int64_t>& intfloat128_t_val0(LispObject v)
+{   return *(std::atomic<int64_t> *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-inline int64_t& intfloat128_t_val1(LispObject v)
-{   return *(int64_t *)((char *)v + (16-TAG_BOXFLOAT));
+inline std::atomic<int64_t>& intfloat128_t_val1(LispObject v)
+{   return *(std::atomic<int64_t> *)((char *)v + (16-TAG_BOXFLOAT));
 }
 
-inline int32_t& intfloat128_t_val32_0(LispObject v)
-{   return *(int32_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::atomic<int32_t>& intfloat128_t_val32_0(LispObject v)
+{   return *(std::atomic<int32_t> *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
-inline int32_t& intfloat128_t_val32_1(LispObject v)
-{   return *(int32_t *)((char *)v + (12-TAG_BOXFLOAT));
+inline std::atomic<int32_t>& intfloat128_t_val32_1(LispObject v)
+{   return *(std::atomic<int32_t> *)((char *)v + (12-TAG_BOXFLOAT));
 }
 
-inline int32_t& intfloat128_t_val32_2(LispObject v)
-{   return *(int32_t *)((char *)v + (16-TAG_BOXFLOAT));
+inline std::atomic<int32_t>& intfloat128_t_val32_2(LispObject v)
+{   return *(std::atomic<int32_t> *)((char *)v + (16-TAG_BOXFLOAT));
 }
 
-inline int32_t& intfloat128_t_val32_3(LispObject v)
-{   return *(int32_t *)((char *)v + (20-TAG_BOXFLOAT));
+inline std::atomic<int32_t>& intfloat128_t_val32_3(LispObject v)
+{   return *(std::atomic<int32_t> *)((char *)v + (20-TAG_BOXFLOAT));
 }
 #endif // HAVE_SOFTFLOAT
 

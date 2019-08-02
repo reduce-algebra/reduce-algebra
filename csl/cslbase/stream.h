@@ -154,35 +154,88 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 #define STREAM_SIZE           (14*CELL)
 #define BUFFERED_STREAM_SIZE  (STREAM_SIZE+STREAM_BUFFER_SIZE)
 
-#define stream_type(v)        elt(v, 0)
-#define stream_write_data(v)  elt(v, 1)
-#define stream_read_data(v)   elt(v, 2)
-#define stream_file(v)        ((FILE *)elt(v, 3))
-#define stream_write_fn(v)    ((character_stream_writer *)elt(v, 4))
-#define stream_write_other(v) ((other_stream_op *)elt(v,5))
-#define stream_line_length(v) elt(v, 6)
-#define stream_byte_pos(v)    elt(v, 7)
-#define stream_char_pos(v)    elt(v, 8)
-#define stream_read_fn(v)     ((character_stream_reader *)elt(v, 9))
-#define stream_read_other(v)  ((other_stream_op *)elt(v,10))
-#define stream_pushed_char(v) elt(v, 11)
-#define stream_spare(v)       elt(v, 12)
+inline std::atomic<LispObject> &stream_type(LispObject v)
+{   return elt(v, 0);
+}
+inline std::atomic<LispObject> &stream_write_data(LispObject v)
+{   return elt(v, 1);
+}
+inline std::atomic<LispObject> &stream_read_data(LispObject v)
+{   return elt(v, 2);
+}
+inline std::atomic<FILE *> &stream_file(LispObject v)
+{   return (std::atomic<FILE *>&)elt(v, 3);
+}
+inline std::atomic<character_stream_writer *> &stream_write_fn(LispObject v)
+{   return (std::atomic<character_stream_writer *>&)elt(v, 4);
+}
+inline std::atomic<other_stream_op *> &stream_write_other(LispObject v)
+{   return (std::atomic<other_stream_op *>&)elt(v,5);
+}
+inline std::atomic<LispObject> &stream_line_length(LispObject v)
+{   return elt(v, 6);
+}
+inline std::atomic<LispObject> &stream_byte_pos(LispObject v)
+{   return elt(v, 7);
+}
+inline std::atomic<LispObject> &stream_char_pos(LispObject v)
+{   return elt(v, 8);
+}
+inline std::atomic<character_stream_reader *> &stream_read_fn(LispObject v)
+{   return (std::atomic<character_stream_reader *>&)elt(v, 9);
+}
+inline std::atomic<other_stream_op *> &stream_read_other(LispObject v)
+{   return (std::atomic<other_stream_op *>&)elt(v,10);
+}
+inline std::atomic<LispObject> &stream_pushed_char(LispObject v)
+{   return elt(v, 11);
+}
+inline std::atomic<LispObject> &stream_spare(LispObject v)
+{   return elt(v, 12);
+}
 
-#define set_stream_file(v, x)           (elt(v, 3) = (LispObject)(x))
-#define set_stream_write_fn(v, x)       (elt(v, 4) = (LispObject)(x))
-#define set_stream_write_other(v, x)    (elt(v, 5) = (LispObject)(x))
-#define set_stream_read_fn(v, x)        (elt(v, 9) = (LispObject)(x))
-#define set_stream_read_other(v, x)     (elt(v, 10) = (LispObject)(x))
+inline LispObject set_stream_file(LispObject v, FILE *x)
+{   return (elt(v, 3) = (LispObject)x);
+}
+inline LispObject set_stream_write_fn(LispObject v, character_stream_writer *x)
+{   return (elt(v, 4) = (LispObject)x);
+}
+inline LispObject set_stream_write_other(LispObject v, other_stream_op *x)
+{   return (elt(v, 5) = (LispObject)x);
+}
+inline LispObject set_stream_read_fn(LispObject v, character_stream_reader *x)
+{   return (elt(v, 9) = (LispObject)x);
+}
+inline LispObject set_stream_read_other(LispObject v, other_stream_op *x)
+{   return (elt(v, 10) = (LispObject)x);
+}
 
 #define STREAM_HEADER (TAG_HDR_IMMED + TYPE_STREAM + (STREAM_SIZE<<(Tw+5)))
 #define STREAM_FLAG_PIPE       1
 
-#define is_stream(v)      (is_vector(v) && vechdr(v) == STREAM_HEADER)
+inline bool is_stream(LispObject v)
+{   return (is_vector(v) && vechdr(v) == STREAM_HEADER);
+}
 
-#define putc_stream(c, f)          (stream_write_fn(f)((c) & 0xff, (f)))
-#define getc_stream(f)             (stream_read_fn(f)(f))
-#define other_write_action(c, f)   (stream_write_other(f)((c), (f)))
-#define other_read_action(c, f)    (stream_read_other(f)((c), (f)))
+inline int putc_stream(int c, LispObject f)
+{   character_stream_writer *fn = stream_write_fn(f);
+    return (*fn)(c & 0xff, f);
+}
+
+inline int getc_stream(LispObject f)
+{   character_stream_reader *fn = stream_read_fn(f);
+    return (*fn)(f);
+}
+
+inline int32_t other_write_action(int32_t c, LispObject f)
+{   other_stream_op *fn = stream_write_other(f);
+    return (*fn)(c, f);
+}
+
+inline int32_t other_read_action(int32_t c, LispObject f)
+{   other_stream_op *fn = stream_read_other(f);
+    return (*fn)(c, f);
+}
 
 //
 // For other_write_action if the top four bits of the operand select an

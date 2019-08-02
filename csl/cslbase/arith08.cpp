@@ -315,7 +315,7 @@ LispObject decode_long_float(LispObject a)
         f128M_set_exponent(&d, 0x3fff);
     }
     LispObject sign = make_boxfloat128(f128_1);
-    if (neg) f128M_negate(long_float_addr(sign));
+    if (neg) f128M_negate((float128_t *)long_float_addr(sign));
     push(sign);
     a = make_boxfloat128(d);
     pop(sign);
@@ -389,7 +389,7 @@ static LispObject Lfp_infinite(LispObject env, LispObject a)
             {
 #ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
-                    if (f128M_infinite(&long_float_val(a)))
+                    if (f128M_infinite((float128_t *)&long_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
@@ -425,7 +425,7 @@ static LispObject Lfp_nan(LispObject env, LispObject a)
                     return onevalue(nil);
 #ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
-                    if (f128M_nan(&long_float_val(a)))
+                    if (f128M_nan((float128_t *)&long_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
@@ -452,7 +452,7 @@ static LispObject Lfp_finite(LispObject env, LispObject a)
             {
 #ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
-                    if (f128M_finite(&long_float_val(a)))
+                    if (f128M_finite((float128_t *)&long_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
@@ -492,14 +492,14 @@ static LispObject Lfp_subnorm(LispObject env, LispObject a)
                     }
 #ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
-                    if (f128M_subnorm(&long_float_val(a)))
+                    if (f128M_subnorm((float128_t *)&long_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
                 case TYPE_DOUBLE_FLOAT:
                     if (double_float_val(a) == 0.0) return onevalue(nil);
                     {   Double_union ff;
-                        ff.f = double_float_val(a);
+                        ff.f = (double)double_float_val(a);
                         if (ff.f == 0.0) return onevalue(nil);
                         uint64_t x = ff.i64 & UINT64_C(0x7ff0000000000000);
                         return onevalue(x == 0 ? lisp_true : nil);
@@ -537,7 +537,7 @@ static LispObject Lfp_signbit(LispObject env, LispObject a)
 #endif
 #ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
-                    return onevalue(f128M_negative(&long_float_val(a)) ?
+                    return onevalue(f128M_negative((float128_t *)&long_float_val(a)) ?
                                     lisp_true : nil);
 #endif // HAVE_SOFTFLOAT
                 case TYPE_DOUBLE_FLOAT:
@@ -545,7 +545,7 @@ static LispObject Lfp_signbit(LispObject env, LispObject a)
                     return onevalue(signbit(double_float_val(a)) ? lisp_true : nil);
 #else
                     {   Double_union ff;
-                        ff.f = double_float_val(a);
+                        ff.f = (double)double_float_val(a);
                         return onevalue((int64_t)ff.i64 < 0 ? lisp_true : nil);
                     }
 #endif
@@ -850,7 +850,7 @@ static LispObject Lscale_float(LispObject env, LispObject a, LispObject b)
 // double precision version.
 
 static LispObject lisp_fix_sub128(LispObject a, int roundmode)
-{   float128_t *d = long_float_addr(a);
+{   float128_t *d = (float128_t *)long_float_addr(a);
     if (f128M_nan(d)) aerror("NaN in fix");
     if (f128M_infinite(d)) aerror("infinity in fix");
     int x = f128M_exponent(d);

@@ -416,6 +416,9 @@ fi
 # being able to run everywhere. Specifically I will want that toolchain
 # installed even if you specify --without-w32.
 
+
+
+
 with_w32="yes"
 with_w64="yes"
 with_c32="yes"
@@ -440,6 +443,20 @@ AC_ARG_WITH(c64,
   AC_HELP_STRING([--with-c64], [Build 64-bit Cygwin version]),
   []
   [with_c64="default"])
+
+# As of July 2019 I will only build the 32-bit variants if "--with-win32bit"
+# is specified.
+
+AC_ARG_WITH(win32bit,
+  AC_HELP_STRING([--with-win32bit], [Build 32-bit Windows version alongside 64]),
+  []
+  [with_win32bit="no"])
+
+if test "x$with_32_bit" = "xno"
+then
+  with_w32="no"
+  with_c32="no"
+fi
 
 uname_m=`uname -m`
 uname_s=`uname -s`
@@ -470,9 +487,15 @@ then
 # cygwin installations. When run it generates output "32", "64" or "32 64"
 # depending on which variants it finds.
 
+if test "x$with_win32bit" = "xno"
+then
+CYGAVAIL="64"
+else
+
 i686-w64-mingw32-g++ -O3 $srcdir/csl/cslbase/other-cygwin.cpp -static -o ./other-cygwin
 i686-w64-mingw32-strip ./other-cygwin
 CYGAVAIL=`./other-cygwin`
+fi
 
 case $CYGAVAIL in
 *32*)
@@ -501,7 +524,7 @@ esac
   fi
 # If 32-bit cygwin is available then by default build for it. If it is
 # not then refuse to even if the user asked for it.
-  if test "$cyg32_available" = "yes"
+  if test "$cyg32_available" = "yes" &&  ! test "x$with_win32bit" != "no"
   then
     if test "$with_c32" = "default"
     then
@@ -738,7 +761,8 @@ AC_ARG_WITH(smallpage,
 # Note that on Windows under cygwin i686-w64-mingw32 and x86_64-w64-mingw32
 # compilers MUST be installed, and there should be a 32-bit
 # cygwin installation in c:\cygwin and a 64-bit one in c:\cygwin64.
-#
+# Well as of July 2019 I will insist on x86_64-w32-mingw32 and often drop
+# i686*
 
 # Now I want to know if the current directory is the same as $srcdir. At
 # one stage I checked that by looking to see if $srcdir was ".". That was OK
@@ -782,7 +806,7 @@ then
   *windows | *cygwin)
 # building PSL on Windows - need to decide whether to build for 32 or 64bit.
 # Hah - I use "--with-m32" for selection of a PSL 32-bit option.
-# Do not select 32bit when I am in a 32-bit shell running on a 64-bit operating
+# Do not select win32bit when I am in a 32-bit shell running on a 64-bit operating
 # system.
     if test "$uname_m" = "i686" -a "$wow" != "yes" ||
        test "x$with_m32" = "xyes"
@@ -1627,6 +1651,7 @@ AC_MSG_NOTICE([All sub-packages have had their configure script launched])
 
 ###############################################################################
 
+AM_CONDITIONAL(win32bit, test "x$with_win32bit" != "xno")
 AM_CONDITIONAL(csl, test "x$with_csl" != "xno")
 AM_CONDITIONAL(psl, test "x$with_psl" != "xno")
 AM_CONDITIONAL(cslpsl, test "x$with_csl" != "xno" && test "x$with_psl" != "xno")

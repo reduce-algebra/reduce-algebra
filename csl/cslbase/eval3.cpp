@@ -277,7 +277,7 @@ public:
     {   stack = save;
         while (specenv != nil)
         {   LispObject p = qcar(specenv);
-            qvalue(qcar(p)) = qcdr(p);
+            qvalue(qcar(p)) = vcdr(p);
             specenv = qcdr(specenv);
         }
         popv(4);
@@ -770,7 +770,7 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
         {   bv = *sp--;
             while (bv != nil)
             {   LispObject w = qcar(bv);
-                qvalue(qcar(w)) = qcdr(w);
+                qvalue(qcar(w)) = vcdr(w);
                 bv = qcdr(bv);
             }
         }

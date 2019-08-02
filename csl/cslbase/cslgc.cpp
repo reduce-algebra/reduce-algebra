@@ -129,7 +129,7 @@ static void copy(LispObject *p)
                     if (fr <= (char *)heaplimit - SPARE + 32)
                     {   char *hl = (char *)heaplimit;
                         void *p;
-                        qcar(fr) = SPID_GCMARK;
+                        qcar((LispObject)fr) = SPID_GCMARK;
                         if (pages_count == 0) allocate_more_memory();
                         if (pages_count == 0)
                         {   term_printf("\n+++ Run out of memory\n");
@@ -144,8 +144,8 @@ static void copy(LispObject *p)
                         fr = hl + CSL_PAGE_SIZE - sizeof(Cons_Cell);
                         heaplimit = (LispObject)(hl + SPARE);
                     }
-                    qcar(fr) = w;
-                    qcdr(fr) = qcdr(a);
+                    qcar((LispObject)fr) = w;
+                    qcdr((LispObject)fr) = vcdr(a);
                     *p = w = (LispObject)(fr + TAG_CONS);
                     qcar(a) = w + TAG_FORWARD;
                     break;
@@ -215,7 +215,7 @@ static void copy(LispObject *p)
 // len indicates the length of the block of memory that must now be
 // allocated...
                     if (len > free)
-                    {   qcar(vfr) = 0;          // sentinel value
+                    {   qcar((LispObject)vfr) = 0;          // sentinel value
                         if (pages_count == 0) allocate_more_memory();
                         if (pages_count == 0)
                         {   term_printf("\n+++ Run out of memory\n");
@@ -251,14 +251,14 @@ static void copy(LispObject *p)
             {   case CONT:
                     if (tr_fr != fr)
                     {   tr_fr = tr_fr - sizeof(Cons_Cell);
-                        if (qcar(tr_fr) == SPID_GCMARK)
+                        if (qcar((LispObject)tr_fr) == SPID_GCMARK)
                         {   char *w;
                             p1 = new_heap_pages[trailing_heap_pages_count++];
                             w = (char *)p1;
                             tr_fr = w + (CSL_PAGE_SIZE - sizeof(Cons_Cell));
                         }
                         next = DONE_CAR;
-                        p = &qcar(tr_fr);
+                        p = (LispObject *)&qcar((LispObject)tr_fr);
                         break;              // Takes me to the outer loop
                     }
                     else if (tr_vfr != vfr)
@@ -276,7 +276,7 @@ static void copy(LispObject *p)
                         }
                         if (is_symbol_header(h))
                         {   next = DONE_VALUE;
-                            p = &(((Symbol_Head *)tr_vfr)->value);
+                            p = (LispObject *)&(((Symbol_Head *)tr_vfr)->value);
                             break;
                         }
                         else
@@ -336,27 +336,27 @@ static void copy(LispObject *p)
                     }
                 case DONE_CAR:
                     next = CONT;
-                    p = &qcdr(tr_fr);
+                    p = (LispObject *)&qcdr((LispObject)tr_fr);
                     break;
                 case DONE_VALUE:
                     next = DONE_ENV;
-                    p = &(((Symbol_Head *)tr_vfr)->env);
+                    p = (LispObject *)&(((Symbol_Head *)tr_vfr)->env);
                     break;
                 case DONE_ENV:
                     next = DONE_FASTGETS;
-                    p = &(((Symbol_Head *)tr_vfr)->fastgets);
+                    p = (LispObject *)&(((Symbol_Head *)tr_vfr)->fastgets);
                     break;
                 case DONE_FASTGETS:
                     next = DONE_PNAME;
-                    p = &(((Symbol_Head *)tr_vfr)->pname);
+                    p = (LispObject *)&(((Symbol_Head *)tr_vfr)->pname);
                     break;
                 case DONE_PNAME:
                     next = DONE_PLIST;
-                    p = &(((Symbol_Head *)tr_vfr)->plist);
+                    p = (LispObject *)&(((Symbol_Head *)tr_vfr)->plist);
                     break;
                 case DONE_PLIST:
                     next = CONT;
-                    p = &(((Symbol_Head *)tr_vfr)->package);
+                    p = (LispObject *)&(((Symbol_Head *)tr_vfr)->package);
                     tr_vfr = tr_vfr + symhdr_length;
                     break;
                 default:
@@ -509,10 +509,10 @@ static void real_garbage_collector()
 // and env cells of nil will always contain nil, which does not move,
 // and so I do not need to copy them here provided that NIL itself
 // never moves.
-    copy(&(qplist(nil)));
-    copy(&(qpname(nil)));
-    copy(&(qfastgets(nil)));
-    copy(&(qpackage(nil)));
+    copy((LispObject *)&(qplist(nil)));
+    copy((LispObject *)&(qpname(nil)));
+    copy((LispObject *)&(qfastgets(nil)));
+    copy((LispObject *)&(qpackage(nil)));
 // I dislike the special treatment of current_package that follows. Maybe
 // I should arrange something totally different for copying the package
 // structure...

@@ -1450,7 +1450,8 @@ LispObject Lmd5(LispObject env, LispObject a)
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
         for (i=CELL; i<len; i+=4)
-        {   sprintf((char *)md, "%.8x", bignum_digits(a)[(i-CELL)/4]);
+        {   sprintf((char *)md, "%.8x",
+                    (uint32_t)bignum_digits(a)[(i-CELL)/4]);
             CSL_MD5_Update(md, 8);
         }
     }
@@ -1621,7 +1622,8 @@ LispObject Lmd60(LispObject env, LispObject a)
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
         for (i=CELL; i<len; i+=4)
-        {   sprintf((char *)md, "%.8x", bignum_digits(a)[(i-CELL)/4]);
+        {   sprintf((char *)md, "%.8x",
+                (uint32_t)bignum_digits(a)[(i-CELL)/4]);
             CSL_MD5_Update(md, 8);
         }
     }

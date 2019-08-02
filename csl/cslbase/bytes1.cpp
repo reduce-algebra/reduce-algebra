@@ -193,8 +193,8 @@ LispObject get(LispObject a, LispObject b, LispObject c)
 // migrate it up to the front so that next time will be faster
 //
         if (qcar(w) == b)   // found - do move to top operation.
-        {   qcdr(prev) = qcdr(pl);
-            qcdr(pl) = qplist(a);
+        {   qcdr(prev) = vcdr(pl);
+            qcdr(pl) = (LispObject)qplist(a);
             qplist(a) = pl;
 #ifdef RECORD_GET
             push(w);
@@ -371,8 +371,8 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
 // migrate it up to the front so that next time will be faster
 //
         if (qcar(w) == b)
-        {   qcdr(prev) = qcdr(pl);
-            qcdr(pl) = qplist(a);
+        {   qcdr(prev) = vcdr(pl);
+            qcdr(pl) = (LispObject)qplist(a);
             qplist(a) = pl;
 #ifdef RECORD_GET
             push(w);
@@ -482,8 +482,8 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
 // migrate it up to the front so that next time will be faster
 //
         if (qcar(w) == b)
-        {   qcdr(prev) = qcdr(pl);
-            qcdr(pl) = qplist(a);
+        {   qcdr(prev) = vcdr(pl);
+            qcdr(pl) = (LispObject)qplist(a);
             qplist(a) = pl;
 #ifdef RECORD_GET
             record_get(b, true);
@@ -594,8 +594,8 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
 // migrate it up to the front so that next time will be faster
 //
         if (qcar(w) == b)
-        {   qcdr(prev) = qcdr(pl);
-            qcdr(pl) = qplist(a);
+        {   qcdr(prev) = vcdr(pl);
+            qcdr(pl) = (LispObject)qplist(a);
             qplist(a) = pl;
 #ifdef RECORD_GET
             record_get(b, true);
@@ -883,7 +883,9 @@ inline void do_freerstr()
     while (n>CELL)
     {   LispObject v = *(LispObject *)((intptr_t)bv + n - (CELL + TAG_VECTOR));
         n -= CELL;
-        pop(qvalue(v));
+        LispObject v1;
+        pop(v1);
+        qvalue(v) = v1;
     }
 }
 
@@ -925,7 +927,7 @@ inline void do_pvrestore()
     pop(w);                 // this list ((var . old-value) ...)
     while (w != nil)
     {   LispObject q = qcar(w);
-        qvalue(qcar(q)) = qcdr(q);
+        qvalue(qcar(q)) = vcdr(q);
         w = qcdr(w);
     }
 }

@@ -1413,18 +1413,18 @@ down:
                 case SER_L_A:
                     GC_PROTECT(prev = cons(fixnum_of_int(0), nil));
                     if (c & 1) reader_repeat_new(prev);
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     pbase = prev;
-                    p = &qcar(pbase);
+                    p = (LispObject *)&qcar(pbase);
                     goto down;
 
                 case SER_L_a_S:
                 case SER_L_A_S:
                     GC_PROTECT(prev = cons(b, fixnum_of_int(0)));
                     if (c & 1) reader_repeat_new(prev);
-                    *p = b = prev;
+                    *(std::atomic<LispObject>*)p = b = prev;
                     pbase = b;
-                    p = &qcdr(b);
+                    p = (LispObject *)&qcdr(b);
                     goto down;
 
                 case SER_L_aa:
@@ -1438,9 +1438,9 @@ down:
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(qcdr(prev));
                     qcar(prev) = b;
-                    b = *p = prev;
+                    b = *(std::atomic<LispObject>*)p = prev;
                     pbase = qcdr(b);
-                    p = &qcar(pbase);
+                    p = (LispObject *)&qcar(pbase);
                     goto down;
 
                 case SER_L_aa_S:
@@ -1453,11 +1453,11 @@ down:
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(qcdr(prev));
                     qcar(prev) = b;
-                    b = *p = prev;
+                    b = *(std::atomic<LispObject>*)p = prev;
                     pbase = qcdr(b);
                     qcar(pbase) = b;
                     b = pbase;
-                    p = &qcdr(pbase);
+                    p = (LispObject *)&qcdr(pbase);
                     goto down;
 
                 case SER_L_aaa:
@@ -1473,12 +1473,12 @@ down:
                     if (c & 2) reader_repeat_new(qcdr(prev));
                     if (c & 4) reader_repeat_new(qcdr(qcdr(prev)));
                     qcar(prev) = b;
-                    b = *p = prev;
+                    b = *(std::atomic<LispObject>*)p = prev;
                     pbase = qcdr(b);
                     qcar(pbase) = b;
                     b = pbase;
                     pbase = qcdr(b);
-                    p = &qcar(pbase);
+                    p = (LispObject *)&qcar(pbase);
                     goto down;
 
                 case SER_L_aaa_S:
@@ -1494,14 +1494,14 @@ down:
                     if (c & 2) reader_repeat_new(qcdr(prev));
                     if (c & 4) reader_repeat_new(qcdr(qcdr(prev)));
                     qcar(prev) = b;
-                    b = *p = prev;
+                    b = *(std::atomic<LispObject>*)p = prev;
                     pbase = qcdr(b);
                     qcar(pbase) = b;
                     b = pbase;
                     pbase = qcdr(b);
                     qcar(pbase) = b;
                     b = pbase;
-                    p = &qcdr(pbase);
+                    p = (LispObject *)&qcdr(pbase);
                     goto down;
 
                 case SER_L_aaaa:
@@ -1511,7 +1511,7 @@ down:
 // can be shared.
                     if (c & 1) reader_repeat_new(prev);
                     qcar(prev) = b;
-                    b = *p = prev;
+                    b = *(std::atomic<LispObject>*)p = prev;
                     pbase = qcdr(b);
                     qcar(pbase) = b;
                     b = pbase;
@@ -1519,7 +1519,7 @@ down:
                     qcar(pbase) = b;
                     b = pbase;
                     pbase = qcdr(pbase);
-                    p = &qcar(pbase);
+                    p = (LispObject *)&qcar(pbase);
                     goto down;
 
                 case SER_L_aaaa_S:
@@ -1527,7 +1527,7 @@ down:
                     GC_PROTECT(prev = list4(nil, nil, nil, nil));
                     if (c & 1) reader_repeat_new(prev);
                     qcar(prev) = b;
-                    b = *p = prev;
+                    b = *(std::atomic<LispObject>*)p = prev;
                     pbase = qcdr(b);
                     qcar(pbase) = b;
                     b = pbase;
@@ -1537,7 +1537,7 @@ down:
                     pbase = qcdr(pbase);
                     qcar(pbase) = b;
                     b = pbase;
-                    p = &qcdr(pbase);
+                    p = (LispObject *)&qcdr(pbase);
                     goto down;
 
                 case SER_BIGBACKREF:
@@ -1558,7 +1558,7 @@ down:
 // and so on using 7 bits per byte... up until I have used 8 bytes.
 // If one is needed beyond that it can be a final 8-bit value.
 // This allows for up to 2^64 back-references.
-                    *p = reader_repeat_old(1 + 64 + read_u64());
+                    *(std::atomic<LispObject>*)p = reader_repeat_old(1 + 64 + read_u64());
                     goto up;
 
                 case SER_DUP:
@@ -1592,7 +1592,7 @@ down:
 // they needed to be bignums. Since they are immutable objects I do not
 // believe that should cause any trouble.
                     GC_PROTECT(prev = make_lisp_unsigned64(repeat_arg));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     goto up;
 
                 case SER_NEGFIXNUM:
@@ -1609,7 +1609,7 @@ down:
                         repeat_arg_ready = true;
                     }
                     GC_PROTECT(prev = make_lisp_integer64(repeat_arg));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     goto up;
 
                 case SER_DUPRAWSYMBOL:
@@ -1624,7 +1624,7 @@ down:
                     assert(opcode_repeats == 0);
                     GC_PROTECT(prev =
                         get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length));
-                    *p = w = prev;
+                    *(std::atomic<LispObject>*)p = w = prev;
                     if (c == SER_DUPRAWSYMBOL) reader_repeat_new(prev);
 // Note that the vector as created will have its LENGTH encoded in the
 // header, but for symbols that is incorrect so I need to re-write the
@@ -1650,7 +1650,7 @@ down:
                     GC_PROTECT(prev = cons(fixnum_of_int(PNAME_INDEX), s));
                     s = prev;
                     prev = pbase = b;
-                    p = &qpname(b);
+                    p = (LispObject *)&qpname(b);
                     goto down;
 
 
@@ -1687,7 +1687,7 @@ down:
                             GC_PROTECT(prev = Lgensym1(nil, prev));
                         }
                         else GC_PROTECT(prev = iintern(boffo, (int32_t)boffop, CP, 0));
-                        *p = prev;
+                        *(std::atomic<LispObject>*)p = prev;
                         if (c == SER_DUPSYMBOL || c == SER_DUPGENSYM)
                             reader_repeat_new(prev);
                         goto up;
@@ -1703,7 +1703,7 @@ down:
 // a 32-bit single float
                     assert(opcode_repeats == 0);
                     GC_PROTECT(prev = make_boxfloat(read_f32(), TYPE_SINGLE_FLOAT));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     goto up;
 
                 case SER_FLOAT64:
@@ -1714,7 +1714,7 @@ down:
 // But at present I think that will be an uncommon case with Reduce and so
 // I will give priority to other cases.
                     GC_PROTECT(prev = make_boxfloat(read_f64(), TYPE_DOUBLE_FLOAT));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     goto up;
 
 #ifdef HAVE_SOFTFLOAT
@@ -1723,7 +1723,7 @@ down:
                     assert(opcode_repeats == 0);
                     GC_PROTECT(prev = make_boxfloat(0.0, TYPE_LONG_FLOAT));
                     long_float_val(prev) = read_f128();
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     goto up;
 #endif // HAVE_SOFTFLOAT
 
@@ -1748,7 +1748,7 @@ down:
                     {   repeat_arg = read_u64();
                         repeat_arg_ready = true;
                     }
-                    prev = *p = ((LispObject)repeat_arg<<(Tw+2)) | TAG_HDR_IMMED;
+                    prev = *(std::atomic<LispObject>*)p = ((LispObject)repeat_arg<<(Tw+2)) | TAG_HDR_IMMED;
                     goto up;
 
                 case SER_BITVEC:
@@ -1757,8 +1757,8 @@ down:
                     {   size_t len = CELL + (w + 7)/8; // length in bytes
                         GC_PROTECT(prev =
                             get_basic_vector(TAG_VECTOR, bitvechdr_(w), len));
-                        *p = prev;
-                        char *x = &basic_celt(prev, 0);
+                        *(std::atomic<LispObject>*)p = prev;
+                        char *x = (char *)&basic_celt(prev, 0);
                         for (size_t i=0; i<(size_t)w; i++)
                             *x++ = read_data_byte();
                         while (((intptr_t)x & 7) != 0) *x++ = 0;
@@ -1773,7 +1773,7 @@ down:
                     opcode_repeats++;
                     c = SER_NIL;
                 case SER_NIL:
-                    prev = *p = nil;
+                    prev = *(std::atomic<LispObject>*)p = nil;
                     goto up;
 
                 case SER_END:
@@ -1822,7 +1822,7 @@ down:
 // allows for the header word as well.
                 size_t n = read_u64();
                 GC_PROTECT(prev = get_basic_vector(tag, type, CELL*(n+1)));
-                w = *p = prev;
+                w = *(std::atomic<LispObject>*)p = prev;
 // Note that the "vector" just created may be tagged with TAG_NUMBERS
 // rather than TAG_VECTOR, so I use the access macro "vselt" rather than
 // "elt" - and that survives whichever case I am in.
@@ -1844,7 +1844,7 @@ down:
 // then I must NOT set up back-pointers and the "s-stack" in quite the usual
 // manner...
                 if (n == 0)
-                {   p = &vselt(w, 0);
+                {   p = (LispObject *)&vselt(w, 0);
                     goto down;
                 }
                 vselt(w, 0) = b;
@@ -1852,7 +1852,7 @@ down:
                 GC_PROTECT(prev = cons(fixnum_of_int(n), s));
                 s = prev;
                 prev = pbase = b;
-                p = &vselt(b, n);
+                p = (LispObject *)&vselt(b, n);
             }
             goto down;
 
@@ -1861,19 +1861,19 @@ down:
 // repeat-runs of "SER_BACKREF0 <1>" to reference the top item in the
 // repeat heap. The efford involved in supporting SER_REPEAT to compress
 // such sequences is minimal here, so I do so.
-            *p = reader_repeat_old(1 + (c & 0x1f));
+            *(std::atomic<LispObject>*)p = reader_repeat_old(1 + (c & 0x1f));
             goto up;
 
         case SER_BACKREF1:
 // I do not view repeated instances of BACKREF1 as significant, but it is
 // so cheap to support that I will.
-            *p = reader_repeat_old(1 + 32 + (c & 0x1f));
+            *(std::atomic<LispObject>*)p = reader_repeat_old(1 + 32 + (c & 0x1f));
             goto up;
 
         case SER_FIXNUM:
             repeat_arg = c & 0x1f;
             if ((c & 0x10) != 0) repeat_arg |= (uint64_t)~0xf; // sign extend
-            *p = fixnum_of_int((int64_t)repeat_arg);
+            *(std::atomic<LispObject>*)p = fixnum_of_int((int64_t)repeat_arg);
             goto up;
 
         case SER_STRING:
@@ -1885,8 +1885,8 @@ down:
             assert(opcode_repeats == 0);
             w = (c & 0x1f) + 1;
             GC_PROTECT(prev = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
-            *p = prev;
-            {   char *x = &basic_celt(prev, 0);
+            *(std::atomic<LispObject>*)p = prev;
+            {   char *x = (char *)&basic_celt(prev, 0);
                 for (size_t i=0; i<(size_t)w; i++) *x++ = read_string_byte();
 // Fill in end of the memory block with zero bytes so it is properly tidy.
 // This is needed so that comaprisons between strings and hash value
@@ -1917,7 +1917,7 @@ down:
                                                    TAG_VECTOR;
                 if (vector_i8(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+w));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     unsigned char *x = (unsigned char *)start_contents(prev);
                     if (is_string_header(type))
                         for (size_t i=0; i<(size_t)w; i++)
@@ -1928,7 +1928,7 @@ down:
                 }
                 else if (vector_i32(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+4*w));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     uint32_t *x = (uint32_t *)start_contents(prev);
 // 32-bit integers are transmitted most significant byte first.
                     for (size_t i=0; i<(size_t)w; i++)
@@ -1941,7 +1941,7 @@ down:
                 }
                 else if (vector_f64(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+8*w));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     double *x = (double *)start_contents64(prev);
 // There has to be a padder word in these objects on a 32-bit machine so
 // that the data is 64-bit aligned. Clean it up.
@@ -1950,7 +1950,7 @@ down:
                 }
                 else if (vector_i16(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+2*w));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     uint16_t *x = (uint16_t *)start_contents(prev);
                     for (size_t i=0; i<(size_t)w; i++)
                     {   uint32_t q = read_data_byte() & 0xff;
@@ -1960,7 +1960,7 @@ down:
                 }
                 else if (vector_i64(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+8*w));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     uint64_t *x = (uint64_t *)start_contents64(prev);
                     if (!SIXTY_FOUR_BIT) *(int32_t *)start_contents(prev) = 0;
                     for (size_t i=0; i<(size_t)w; i++)
@@ -1976,7 +1976,7 @@ down:
                 }
                 else if (vector_f32(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+4*w));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     float *x = (float *)start_contents(prev);
                     for (size_t i=0; i<(size_t)w; i++) *x++ = read_f32();
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
@@ -1984,14 +1984,14 @@ down:
 #ifdef HAVE_SOFTFLOAT
                 else if (vector_f128(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
                     my_abort();
                 }
 #endif // HAVE_SOFTFLOAT
                 else if (vector_i128(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
-                    *p = prev;
+                    *(std::atomic<LispObject>*)p = prev;
                     fprintf(stderr, "128-bit floats not supported (yet?)\n");
                     my_abort();
                 }
@@ -2024,7 +2024,7 @@ up:
 // just need to go and deal with the CAR.
     if (consp(b))
     {   pbase = b;
-        p = &qcar(b);
+        p = (LispObject *)&qcar(b);
         b = qcar(b);
         goto down;
     }
@@ -2056,7 +2056,7 @@ up:
 // (including hash tables, structures, records, objects...) or a symbol.
 // In the case of a symbol the index n selects as between qvalue, pname and
 // the other fields making up a symbol.
-        p = &vselt(w, 0);
+        p = (LispObject *)&vselt(w, 0);
         b = vselt(w, 0);
 // I could and possibly should push the released cell from s onto a local
 // freelist and use that where I do a CONS if possible...
@@ -2067,7 +2067,7 @@ up:
     }
     qcar(s) = fixnum_of_int(n); // write back decreased index
     pbase = b;
-    p = &vselt(b, n);
+    p = (LispObject *)&vselt(b, n);
     goto down;
 }
 
@@ -2793,11 +2793,11 @@ down:
 // will be 1 byte long in easy cases but can cope with 2^64 possibilities in
 // all if necessary.
             write_u64(((uint64_t)qheader(p))>>(Tw+4));
-            write_function((void *)(qfn0(p)));
-            write_function((void *)(qfn1(p)));
-            write_function((void *)(qfn2(p)));
-            write_function((void *)(qfn3(p)));
-            write_function((void *)(qfn4up(p)));
+            write_function((void *)(no_args *)(qfn0(p)));
+            write_function((void *)(one_arg *)(qfn1(p)));
+            write_function((void *)(two_args *)(qfn2(p)));
+            write_function((void *)(three_args *)(qfn3(p)));
+            write_function((void *)(fourup_args *)(qfn4up(p)));
             write_u64(qcount(p));
             w = p;
             p = qpname(p);
@@ -3370,12 +3370,16 @@ static LispObject load_module(LispObject env, LispObject file,
 // This is some tidy-up activity that I must always do at the end of
 // reading (or trying to read) something.
             repeat_heap = NULL;
-            pop(CP);
+            LispObject p;
+            pop(p);
+            CP = p;
             inf_finish();
             IcloseInput();
             if (from_stream)
-            {   pop(qvalue(echo_symbol));
-                pop(qvalue(standard_input));
+            {   pop(p);
+                qvalue(echo_symbol) = p;
+                pop(p);
+                qvalue(standard_input) = p;
             }
             uint64_t delta = read_clock() - t0b;
             gc_time += delta;
@@ -4234,7 +4238,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
                             LispObject pn = qpname(x);
                             size_t npn = length_of_byteheader(vechdr(pn)) - CELL;
                             if (npn >= 40) npn = 39;
-                            strncpy(buff[buffp].name, &basic_celt(pn, 0), npn);
+                            strncpy(buff[buffp].name, (const char *)&basic_celt(pn, 0), npn);
                             buff[buffp].name[npn] = 0; 
                             buffp++;
                         }

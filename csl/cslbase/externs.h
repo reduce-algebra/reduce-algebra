@@ -78,9 +78,9 @@ extern uintptr_t *C_stackbase, C_stacklimit;
 extern LispObject multiplication_buffer;
 
 #ifdef CONSERVATIVE
-extern void write_barrier(LispObject *p);
+extern void write_barrier(std::atomic<LispObject> *p);
 #else // !CONSERVATIVE
-inline void write_barrier(LispObject *p)
+inline void write_barrier(std::atomic<LispObject> *p)
 {}
 #endif // !CONSERVATIVE
 
@@ -148,7 +148,7 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 
 #define debug_record(data) debug_record_raw(data, __FILE__, __LINE__)
 #define debug_record_int(s, n) debug_record_int_raw(s, n, __FILE__, __LINE__)
-#define debug_record_string(s) debug_record(&celt(s, 0))
+#define debug_record_string(s) debug_record((const char *)&celt(s, 0))
 #define debug_record_symbol(x) debug_record_string(qpname(x))
 #define debug_show_trail(data) debug_show_trail_raw(data, __FILE__, __LINE__)
 

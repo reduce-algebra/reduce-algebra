@@ -67,7 +67,8 @@ LispObject validate_number(const char *s, LispObject a,
     if (!is_numbers(a) || !is_bignum(a)) return a;
     la = (length_of_header(numhdr(a))-CELL-4)/4;
     if (la < 0)
-    {   trace_printf("%s: number with no digits (%.8x)\n", s, numhdr(a));
+    {   trace_printf("%s: number with no digits (%.16" PRIx16 ")\n",
+                     s, (uint64_t)numhdr(a));
         prin_to_trace(b), trace_printf("\n");
         prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
@@ -437,7 +438,7 @@ LispObject make_boxfloat128(float128_t a)
     if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
     long_float_val(r) = a;
     if (trap_floating_overflow &&
-        floating_edge_case128(&long_float_val(r)))
+        floating_edge_case128((float128_t *)&long_float_val(r)))
         aerror("exception with long float");
     return r;
 }
@@ -1379,7 +1380,7 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
     a2 = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
     pop(c);
     for (size_t i=0; i<len-1; i++)
-        bignum_digits(a2)[i] = bignum_digits(c)[i];
+        bignum_digits(a2)[i] = vbignum_digits(c)[i];
 //
 // I move the top digit across by hand since if the number is negative
 // I must lose its top bit
@@ -1440,7 +1441,7 @@ inline LispObject plus_i_d(LispObject a1, LispObject a2)
 inline LispObject plus_i_l(LispObject a1, LispObject a2)
 {   float128_t x, z;
     i64_to_f128M((int64_t)int_of_fixnum(a1), &x);
-    f128M_add(&x, long_float_addr(a2), &z);
+    f128M_add(&x, (float128_t *)long_float_addr(a2), &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1662,7 +1663,7 @@ inline LispObject plus_b_d(LispObject a1, LispObject a2)
 inline LispObject plus_b_l(LispObject a1, LispObject a2)
 {   float128_t x, z;
     x = float128_of_number(a1);
-    f128M_add(&x, long_float_addr(a2), &z);
+    f128M_add(&x, (float128_t *)long_float_addr(a2), &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1817,7 +1818,7 @@ inline LispObject plus_s_l(LispObject a1, LispObject a2)
     Double_union xf;
     xf.f = value_of_immediate_float(a1);
     f64_to_f128M(xf.f64, &x);
-    f128M_add(&x, long_float_addr(a2), &z);
+    f128M_add(&x, (float128_t *)long_float_addr(a2), &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1858,7 +1859,7 @@ inline LispObject plus_f_l(LispObject a1, LispObject a2)
     Double_union xf;
     xf.f = single_float_val(a1);
     f64_to_f128M(xf.f64, &x);
-    f128M_add(&x, long_float_addr(a2), &z);
+    f128M_add(&x, (float128_t *)long_float_addr(a2), &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1896,9 +1897,9 @@ inline LispObject plus_d_d(LispObject a1, LispObject a2)
 inline LispObject plus_d_l(LispObject a1, LispObject a2)
 {   float128_t x, z;
     Double_union xf;
-    xf.f = double_float_val(a1);
+    xf.f = (double)double_float_val(a1);
     f64_to_f128M(xf.f64, &x);
-    f128M_add(&x, long_float_addr(a2), &z);
+    f128M_add(&x, (float128_t *)long_float_addr(a2), &z);
     return make_boxfloat128(z);
 }
 
@@ -1932,7 +1933,8 @@ inline LispObject plus_l_d(LispObject a1, LispObject a2)
 
 inline LispObject plus_l_l(LispObject a1, LispObject a2)
 {   float128_t z;
-    f128M_add(long_float_addr(a1), long_float_addr(a2), &z);
+    f128M_add((float128_t *)long_float_addr(a1),
+              (float128_t *)long_float_addr(a2), &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -2337,14 +2339,14 @@ inline LispObject difference_d_l(LispObject a1, LispObject a2)
 inline LispObject difference_l_i(LispObject a1, LispObject a2)
 {   float128_t x, z;
     i64_to_f128M((int64_t)int_of_fixnum(a2), &x);
-    f128M_sub(long_float_addr(a1), &x, &z);
+    f128M_sub((float128_t *)long_float_addr(a1), &x, &z);
     return make_boxfloat128(z);
 }
 
 inline LispObject difference_l_b(LispObject a1, LispObject a2)
 {   float128_t x, z;
     x = float128_of_number(a2);
-    f128M_sub(long_float_addr(a2), &x, &z);
+    f128M_sub((float128_t *)long_float_addr(a2), &x, &z);
     return make_boxfloat128(z);
 }
 

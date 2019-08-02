@@ -500,7 +500,7 @@ static LispObject deleqip(LispObject a, LispObject l)
     r = l;
     while (w = l, (l = qcdr(l)) != nil)
     {   if (qcar(l) == a)
-        {   qcdr(w) = qcdr(l);
+        {   qcdr(w) = vcdr(l);
             return r;
         }
     }
@@ -618,7 +618,7 @@ LispObject Lsymbol_set_definition(LispObject env,
             aerror1("symbol-set-definition", b);
         qheader(a) = qheader(a) & ~SYM_MACRO;
         {   set_fns(a, qfn0(b), qfn1(b), qfn2(b), qfn3(b), qfn4up(b));
-            qenv(a) = qenv(b);
+            qenv(a) = (LispObject)qenv(b);
 //
 // In order that checkpoint files can be made there is some very
 // ugly fooling around here for functions that are defined in the C coded
@@ -692,7 +692,7 @@ LispObject Lsymbol_set_definition(LispObject env,
                     break;
             }
         }
-        qenv(a) = qcdr(b);
+        qenv(a) = vcdr(b);
     }
     else if (qcar(b) == lambda)
     {   LispObject bvl = qcar(qcdr(b));
@@ -700,12 +700,12 @@ LispObject Lsymbol_set_definition(LispObject env,
         while (consp(bvl)) nargs++, bvl = qcdr(bvl);
         qheader(a) = qheader(a) & ~SYM_MACRO;
         set_fns(a, interpreted_0, interpreted_1, interpreted_2, interpreted_3, interpreted_4up);
-        qenv(a) = qcdr(b);
+        qenv(a) = vcdr(b);
         if (qvalue(comp_symbol) != nil &&
-            qfn1(compiler_symbol) != undefined_1)
+            vfn1(compiler_symbol) != undefined_1)
         {   push(a);
             a = ncons(a);
-            (qfn1(compiler_symbol))(compiler_symbol, a);
+            (*vfn1(compiler_symbol))(compiler_symbol, a);
             pop(a);
         }
     }
@@ -715,7 +715,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         while (consp(bvl)) nargs++, bvl = qcdr(bvl);
         qheader(a) = qheader(a) & ~SYM_MACRO;
         set_fns(a, funarged_0, funarged_1, funarged_2, funarged_3, funarged_4up);
-        qenv(a) = qcdr(b);
+        qenv(a) = vcdr(b);
     }
     else aerror1("symbol-set-definition", b);
     return onevalue(b);
@@ -780,9 +780,9 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
         aerror1("set-autoload", a);
-    if (!(qfn0(a) == undefined_0 && qfn1(a) == undefined_1 &&
-          qfn2(a) == undefined_2 && qfn3(a) == undefined_3 &&
-          qfn4up(a) == undefined_4up)) return onevalue(nil);
+    if (!(vfn0(a) == undefined_0 && vfn1(a) == undefined_1 &&
+          vfn2(a) == undefined_2 && vfn3(a) == undefined_3 &&
+          vfn4up(a) == undefined_4up)) return onevalue(nil);
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
     push(a, b);
@@ -936,7 +936,7 @@ LispObject get_pname(LispObject a)
 // the "numeric" suffix. The code I have here would allow for up to 10^13
 // distinct gensyms, and after that it wraps round. Well on a 32-bit
 // system it counts up to 2^32 and wraps there.
-        sprintf(genname, "%.*s", (int)len, &celt(name, 0));
+        sprintf(genname, "%.*s", (int)len, (const char *)&celt(name, 0));
         p = genname+len;
         if (gensym_ser <= 9999) sprintf(p, "%.4d", (int)gensym_ser);
         else if (gensym_ser <= 9999999)
@@ -1140,7 +1140,7 @@ static LispObject Lcheckpoint(LispObject env,
     term_printf("\nThe system will be preserved on file \"%s\"\n", filename);
     if (failed) aerror("checkpoint");
     if (is_vector(banner) && is_string(banner))
-    {   msg = &celt(banner, 0);
+    {   msg = (char *)&celt(banner, 0);
         len = length_of_byteheader(vechdr(banner)) - CELL;
     }
 //

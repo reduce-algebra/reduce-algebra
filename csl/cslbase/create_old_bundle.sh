@@ -19,6 +19,7 @@ IC=${3:-fwin}
 SetFile -t APPL $1
 mkdir -p $1.app/Contents
 mkdir -p $1.app/Contents/MacOS
+rm       $1.app/Contents/MacOS/*.log
 mkdir -p $1.app/Contents/MacOS/reduce.fonts
 mkdir -p $1.app/Contents/MacOS/reduce.doc
 mkdir -p $1.app/Contents/Resources

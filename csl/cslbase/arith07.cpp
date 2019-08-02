@@ -52,7 +52,7 @@ LispObject copyb(LispObject a)
     pop(a);
     len = (len-CELL)/4;
     for (i=0; i<len; i++)
-        bignum_digits(b)[i] = bignum_digits(a)[i];
+        bignum_digits(b)[i] = vbignum_digits(a)[i];
     return b;
 }
 

@@ -54,22 +54,22 @@
 //
 
 #ifdef HAVE_GETC_UNLOCKED
-#define GETC(x) getc_unlocked((x))
+#define GETC(x) getc_unlocked((FILE *)(x))
 #else
 #ifdef HAVE__GETC_NOLOCK
-#define GETC(x) _getc_nolock((x))
+#define GETC(x) _getc_nolock((FILE *)(x))
 #else
-#define GETC(x) getc((x))
+#define GETC(x) getc((FILE *)(x))
 #endif
 #endif
 
 #ifdef HAVE_PUTC_UNLOCKED
-#define PUTC(x, y) putc_unlocked((x), (y))
+#define PUTC(x, y) putc_unlocked((x), (FILE *)(y))
 #else
 #ifdef HAVE__PUTC_NOLOCK
-#define PUTC(x, y) _putc_nolock((x), (y))
+#define PUTC(x, y) _putc_nolock((x), (FILE *)(y))
 #else
-#define PUTC(x, y) putc((x), (y))
+#define PUTC(x, y) putc((x), (FILE *)(y))
 #endif
 #endif
 
@@ -863,7 +863,7 @@ const char *get_string_data(LispObject name, const char *why, size_t &len)
     else if (!is_vector(name)) aerror1(why, name);
     else if (!is_string_header(h = vechdr(name))) aerror1(why, name);
     len = length_of_byteheader(h) - CELL;
-    return &celt(name, 0);
+    return (const char *)&celt(name, 0);
 }
 
 static LispObject Lfiledate(LispObject env, LispObject name)
@@ -1542,7 +1542,7 @@ LispObject Lrename_file(LispObject env, LispObject from, LispObject to)
     push(from);
     to_w = get_string_data(to, "rename-file", to_len);
     pop(from);
-    from_w = &celt(from, 0);
+    from_w = (const char *)&celt(from, 0);
     if (to_len >= sizeof(to_name)) to_len = sizeof(to_name);
 
     to_len = rename_file(from_name, from_w, (size_t)from_len,
@@ -2405,7 +2405,7 @@ restart:
                 case TYPE_SP:
                     pop(u);
                     sprintf(my_buff, "#<closure: %p>",
-                            (void *)elt(u, 0));
+                            (void *)(LispObject)elt(u, 0));
                     goto print_my_buff;
 
 #if 0
@@ -2599,7 +2599,7 @@ restart:
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
                     putc_stream('8', active_stream); putc_stream('(', active_stream);
                     for (k=0; k<len; k++)
-                    {   sprintf(my_buff, "%d", scelt(stack[0], k));
+                    {   sprintf(my_buff, "%d", (int)scelt(stack[0], k));
                         prin_buf(my_buff, k != 0);
                     }
                     outprefix(false, 1);
@@ -2613,7 +2613,7 @@ restart:
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
                     putc_stream('1', active_stream); putc_stream('6', active_stream); putc_stream('(', active_stream);
                     for (k=0; k<len; k++)
-                    {   sprintf(my_buff, "%d", helt(stack[0], k));
+                    {   sprintf(my_buff, "%d", (int)helt(stack[0], k));
                         prin_buf(my_buff, k != 0);
                     }
                     outprefix(false, 1);
@@ -3113,12 +3113,12 @@ restart:
                     else if (escaped_printing & escape_hex)
                     {   uint32_t *p = (uint32_t *)&single_float_val(u);
                         sprintf(my_buff, "{%.8" PRIx32 ":%#.8g}",
-                            p[0], single_float_val(u));
+                            p[0], (double)single_float_val(u));
                     }
                     else if (escaped_printing & escape_octal)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
                         sprintf(my_buff, "{%.11" PRIo32 ":%#.8g}",
-                                p[0], single_float_val(u));
+                                p[0], (double)single_float_val(u));
                     }
                     else fp_sprint(my_buff,
                         (double)single_float_val(u), print_precision, 'f');
@@ -3138,18 +3138,18 @@ restart:
                         sprintf(my_buff,
                             "{%.8" PRIx32 "/%.8" PRIx32 ":%#.15g}",
 #ifdef LITTLEENDIAN
-                            p[1], p[0], double_float_val(u));
+                            p[1], p[0], (double)double_float_val(u));
 #else
-                            p[0], p[1], double_float_val(u));
+                            p[0], p[1], (double)double_float_val(u));
 #endif
                     }
                     else if (escaped_printing & escape_octal)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
                         sprintf(my_buff, "{%.11" PRIo32 "/%.11" PRIo32 ":%#.8g}",
 #ifdef LITTLEENDIAN
-                            p[1], p[0], double_float_val(u));
+                            p[1], p[0], (double)double_float_val(u));
 #else
-                            p[0], p[1], double_float_val(u));
+                            p[0], p[1], (double)double_float_val(u));
 #endif
                     }
                     else fp_sprint(my_buff, double_float_val(u),
@@ -3181,7 +3181,7 @@ restart:
                         o += sprintf(o, "/%.8" PRIx32, p[3]);
 #endif
                         *o++ = ':';
-                        o += f128M_sprint_G(o, 0, 34, &long_float_val(u));
+                        o += f128M_sprint_G(o, 0, 34, (float128_t *)&long_float_val(u));
                         *o++ = '}';
                         *o = 0;
                     }
@@ -3200,7 +3200,7 @@ restart:
                         o += sprintf(o, "/%.11" PRIo32, p[3]);
 #endif
                         *o++ = ':';
-                        o += f128M_sprint_G(o, 0, 34, &long_float_val(u));
+                        o += f128M_sprint_G(o, 0, 34, (float128_t *)&long_float_val(u));
                         *o++ = '}';
                         *o = 0;
                     }
@@ -3397,7 +3397,7 @@ void loop_print_error(LispObject o)
 {   LispObject w = qvalue(standard_output);
     push(w);
     if (is_stream(qvalue(error_output)))
-        qvalue(standard_output) = qvalue(error_output);
+        qvalue(standard_output) = (LispObject)qvalue(error_output);
     loop_print_stdout(o);
     pop(w);
     qvalue(standard_output) = w;
@@ -3414,7 +3414,7 @@ void loop_print_trace(LispObject o)
     LispObject w = qvalue(standard_output);
     push(w);
     if (is_stream(qvalue(trace_output)))
-        qvalue(standard_output) = qvalue(trace_output);
+        qvalue(standard_output) = (LispObject)qvalue(trace_output);
     loop_print_stdout(o);
     pop(w);
     qvalue(standard_output) = w;
@@ -3430,7 +3430,7 @@ void loop_print_debug(LispObject o)
 {   LispObject w = qvalue(standard_output);
     push(w);
     if (is_stream(qvalue(debug_io)))
-        qvalue(standard_output) = qvalue(debug_io);
+        qvalue(standard_output) = (LispObject)qvalue(debug_io);
     loop_print_stdout(o);
     pop(w);
     qvalue(standard_output) = w;
@@ -3440,7 +3440,7 @@ void loop_print_query(LispObject o)
 {   LispObject w = qvalue(standard_output);
     push(w);
     if (is_stream(qvalue(query_io)))
-        qvalue(standard_output) = qvalue(query_io);
+        qvalue(standard_output) = (LispObject)qvalue(query_io);
     loop_print_stdout(o);
     pop(w);
     qvalue(standard_output) = w;
@@ -3450,7 +3450,7 @@ void loop_print_terminal(LispObject o)
 {   LispObject w = qvalue(standard_output);
     push(w);
     if (is_stream(qvalue(terminal_io)))
-        qvalue(standard_output) = qvalue(terminal_io);
+        qvalue(standard_output) = (LispObject)qvalue(terminal_io);
     loop_print_stdout(o);
     pop(w);
     qvalue(standard_output) = w;
@@ -3479,7 +3479,7 @@ LispObject prinraw(LispObject u)
     if (is_numbers(u) && type_of_header(h = numhdr(u)) == TYPE_BIGNUM)
     {   len = length_of_header(h);
         for (i=CELL; i<len; i+=4)
-        {   sprintf(b, "%.8x ", bignum_digits(u)[(i-CELL)/4]);
+        {   sprintf(b, "%.8x ", (uint32_t)bignum_digits(u)[(i-CELL)/4]);
             for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
         }
     }
@@ -4080,17 +4080,17 @@ LispObject Ldebug_print(LispObject env, LispObject a)
     h = vechdr(a);
     if (!is_string_header(h)) return Lprint(env, a);
     len = length_of_byteheader(h) - CELL;
-    p = &celt(a, 0);
+    p = (const char *)&celt(a, 0);
     for (i=0; i<len; i++)
     {   push(a);
         putc_stream(p[i], stream);
         pop(a);
-        p = &celt(a, 0);
+        p = (const char  *)&celt(a, 0);
     }
     push(a);
     putc_stream(':', stream);
     pop(a);
-    p = &celt(a, 0);
+    p = (const char *)&celt(a, 0);
     for (; i<doubleword_align_up(len+CELL)-CELL; i++)
     {   int c = p[i] & 0xff;
         push(a);
@@ -4104,7 +4104,7 @@ LispObject Ldebug_print(LispObject env, LispObject a)
         }
         putc_stream(c, stream);
         pop(a);
-        p = &celt(a, 0);
+        p = (const char *)&celt(a, 0);
     }
     putc_stream('\n', stream);
     return onevalue(nil);
@@ -4734,8 +4734,8 @@ int char_from_socket(LispObject stream)
 //
         if (sb_start != sb_end) ch = ucelt(w, sb_start++);
         else
-        {   ch = recv((SOCKET)(intptr_t)stream_file(stream),
-                      &celt(w, 4), SOCKET_BUFFER_SIZE, 0);
+        {   ch = recv((SOCKET)(intptr_t)(FILE *)stream_file(stream),
+                      (char *)&celt(w, 4), SOCKET_BUFFER_SIZE, 0);
             if (ch == 0) return EOF;
             if (ch == SOCKET_ERROR)
             {   err_printf("socket read error (%s)\n",
@@ -4766,7 +4766,8 @@ int32_t read_action_socket(int32_t op, LispObject f)
                 if (stream_file(f) == NULL) op = 0;
                 else
 #ifdef SOCKETS
-                    op = closesocket((SOCKET)(intptr_t)stream_file(f));
+                    op = closesocket(
+                        (SOCKET)(intptr_t)(FILE *)stream_file(f));
 #else
                     op = 0;
 #endif

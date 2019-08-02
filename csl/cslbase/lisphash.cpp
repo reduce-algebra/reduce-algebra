@@ -132,11 +132,11 @@ inline bool COMPARE(LispObject k1, LispObject k2)
 
 // I will give myself accessors to the keys and values.
 
-inline LispObject& ht(size_t n)
+inline std::atomic<LispObject>& ht(size_t n)
 {   return elt(h_table, n);
 }
 
-inline LispObject& htv(size_t n)
+inline std::atomic<LispObject>& htv(size_t n)
 {   return elt(v_table, n);
 }
 
@@ -436,7 +436,7 @@ static uint64_t hash_byte_vector(uint64_t r, LispObject key)
 // it works byte by byte.
     UPDATE(r, (uint64_t)vechdr(key));
     size_t n = length_of_byteheader(vechdr(key))-CELL;
-    unsigned char *p = &basic_ucelt(key, 0);
+    unsigned char *p = (unsigned char *)&basic_ucelt(key, 0);
     for (size_t i=0; i<n; i++) UPDATE32(r, *p++);
     return r;
 }
@@ -495,7 +495,7 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
 #ifdef HAVE_SOFTFLOAT
             case TYPE_LONG_FLOAT:
                 UPDATE32(r, (uint64_t)h);
-                if (f128M_zero(long_float_addr(key)))
+                if (f128M_zero((float128_t *)long_float_addr(key)))
                 {   UPDATE(r, 0);
                     UPDATE(r, 0);
                 }
@@ -732,7 +732,7 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
 // Here I must compute a case-insensitive hash value. Ugh this means I work
 // character by character and so slow things down.
                         r = hash_eq(r, (LispObject)h);
-                        data = &ucelt(key, 0);
+                        data = (unsigned char *)&ucelt(key, 0);
                         len = length_of_byteheader(h) - CELL;
                         while (len != 0)
                         {   int c = *data++;
@@ -903,7 +903,7 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab, LispObject 
             {   elt(oldkeys, load) = k;
                 ht(i) = SPID_HASHEMPTY;
                 if (v_table != nil)
-                {   elt(oldvals, load) = htv(i);
+                {   elt(oldvals, load) = (LispObject)htv(i);
                     htv(i) = SPID_HASHEMPTY;
                 }
                 load++;
@@ -915,7 +915,7 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab, LispObject 
             ht(j) = k;
             write_barrier(&ht(j));
             if (v_table != nil)
-            {   htv(j) = elt(oldvals, i);
+            {   htv(j) = (LispObject)elt(oldvals, i);
                 write_barrier(&htv(j));
             }
         }
@@ -1087,7 +1087,7 @@ LispObject Lput_hash(LispObject env,
                     ht(j) = k;
                     write_barrier(&ht(j));
                     if (v_table != nil)
-                    {   htv(j) = elt(oldvals, i);
+                    {   htv(j) = (LispObject)elt(oldvals, i);
                         write_barrier(&htv(j));
                     }
                     basic_elt(tab, HASH_COUNT) += 0x10;
@@ -1112,7 +1112,7 @@ LispObject Lput_hash(LispObject env,
             {   LispObject k = ht(i);
                 if (k != SPID_HASHEMPTY && k != SPID_HASHTOMB)
                 {   elt(oldkeys, load) = k;
-                    if (v_table != nil) elt(oldvals, load) = htv(i);
+                    if (v_table != nil) elt(oldvals, load) = (LispObject)htv(i);
                     load++;
                 }
             }
@@ -1141,7 +1141,7 @@ LispObject Lput_hash(LispObject env,
                 ht(j) = k;
                 write_barrier(&ht(j));
                 if (v_table != nil)
-                {   htv(j) = elt(oldvals, i);
+                {   htv(j) = (LispObject)elt(oldvals, i);
                     write_barrier(&htv(j));
                 }
                 basic_elt(tab, HASH_COUNT) += 0x10;
@@ -1295,20 +1295,20 @@ void simple_print1(LispObject x)
         x = qpname(x);
         len = length_of_byteheader(vechdr(x)) - CELL;
         simple_lineend(len);
-        fprintf(stderr, "%.*s", (int)len, &celt(x, 0));
+        fprintf(stderr, "%.*s", (int)len, (const char *)&celt(x, 0));
     }
     else if (is_vector(x))
     {   size_t i, len;
         if (is_string(x))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
             simple_lineend(len+2);
-            fprintf(stderr, "\"%.*s\"", (int)len, &celt(x, 0));
+            fprintf(stderr, "\"%.*s\"", (int)len, (const char *)&celt(x, 0));
             return;
         }
         else if (vector_holds_binary(vechdr(x)) &&
                  vector_i8(vechdr(x)))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
-            fprintf(stderr, "<Header is %" PRIxPTR ">", vechdr(x));
+            fprintf(stderr, "<Header is %" PRIxPTR ">", (uintptr_t)vechdr(x));
             simple_lineend(2*len+3);
             fprintf(stderr, "#8[");
             for (size_t i=0; i<len; i++)

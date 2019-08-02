@@ -589,8 +589,11 @@ LispObject gcd(LispObject a, LispObject b)
 #ifdef DEBUG_GCD_CODE
                 trace_printf("lena = %d lenb = %d\n", lena, lenb);
 #endif
-                new_lena = huge_gcd(&bignum_digits(a)[0], lena,
-                                    &bignum_digits(b)[0], lenb);
+// Here and in a bunch of places I am hoping that the fact that std::atomic<T>
+// has standard layout will mean that casting a pointer to one to a (T*) will
+// be OK. Well I sort of know it might not be!
+                new_lena = huge_gcd((uint32_t *)&bignum_digits(a)[0], lena,
+                                    (uint32_t *)&bignum_digits(b)[0], lenb);
 //
 // The result handed back (new_lena here) contains not only the revised
 // length of a, but also a flag bit (handed back in its sign bit) to

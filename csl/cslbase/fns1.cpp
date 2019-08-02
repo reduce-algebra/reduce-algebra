@@ -1472,12 +1472,12 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
         b = Lgensym0(nil, a, "#code");
 #endif
         pop(a);
-        qfn0(b) = qfn0(a);
-        qfn1(b) = qfn1(a);
-        qfn2(b) = qfn2(a);
-        qfn3(b) = qfn3(a);
-        qfn4up(b) = qfn4up(a);
-        qenv(b) = qenv(a);
+        qfn0(b) = (no_args *)qfn0(a);
+        qfn1(b) = (one_arg *)qfn1(a);
+        qfn2(b) = (two_args *)qfn2(a);
+        qfn3(b) = (three_args *)qfn3(a);
+        qfn4up(b) = (fourup_args *)qfn4up(a);
+        qenv(b) = (LispObject)qenv(a);
 #ifdef COMMON
 // in Common Lisp mode gensyms that are "unprinted" are not special
         qheader(b) ^= (SYM_ANY_GENSYM | SYM_CODEPTR);
@@ -1942,12 +1942,12 @@ LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
             if (is_numbers(a) && is_bignum(a))
             {   size_t len = (length_of_header(numhdr(a))-CELL)/4;
                 for (size_t i=len; i>0; i--)
-                    trace_printf("%.8x ", bignum_digits(a)[i-1]);
+                    trace_printf("%.8x ", (uint32_t)bignum_digits(a)[i-1]);
             }
             if (is_numbers(a) && is_new_bignum(a))
             {   size_t len = (length_of_header(numhdr(a))-8)/8;
                 for (size_t i=len; i>0; i--)
-                    trace_printf("%.8x ", new_bignum_digits(a)[i-1]);
+                    trace_printf("%.8x ", (uint64_t)new_bignum_digits(a)[i-1]);
             }
             else if (is_fixnum(a))
                 trace_printf("#%cFIX:%" PRIx64, ((intptr_t)a>=0 ? 'p' : 'n'),
@@ -1964,7 +1964,7 @@ LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
             if (is_numbers(a) && is_bignum(a))
             {   size_t len = (length_of_header(numhdr(a))-CELL)/4;
                 for (size_t i=len; i>0; i--)
-                    trace_printf("%.8x ", bignum_digits(a)[i-1]);
+                    trace_printf("%.8x ", (uint32_t)bignum_digits(a)[i-1]);
             }
             trace_printf("\n");
         }

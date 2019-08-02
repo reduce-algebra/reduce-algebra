@@ -618,7 +618,7 @@ LispObject rational(LispObject a)
         case TAG_BOXFLOAT+TAG_XBIT:
 #ifdef HAVE_SOFTFLOAT
             if (type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
-                return rationalf128(long_float_addr(a));
+                return rationalf128((float128_t *)long_float_addr(a));
             else
 #endif // HAVE_SOFTFLOAT
             return rationalf(float_of_number(a));
@@ -655,7 +655,7 @@ LispObject rationalize(LispObject a)
                     return rationalizef(double_float_val(a), 53);
 #ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
-                    return rationalizef128(long_float_addr(a));
+                    return rationalizef128((float128_t *)long_float_addr(a));
 #endif // HAVE_SOFTFLOAT
             }
         default:
@@ -806,7 +806,7 @@ inline bool lessp_i_d(LispObject a, LispObject b)
 inline bool lessp_i_l(LispObject a, LispObject b)
 {   float128_t aa;
     i64_to_f128M((int64_t)int_of_fixnum(a), &aa);
-    return f128M_lt(&aa, long_float_addr(b));
+    return f128M_lt(&aa, (float128_t *)long_float_addr(b));
 }
 #endif // HAVE_SOFTFLOAT
 
@@ -826,7 +826,7 @@ inline bool lessp_d_i(LispObject a, LispObject b)
 inline bool lessp_l_i(LispObject a, LispObject b)
 {   float128_t bb;
     i64_to_f128M((int64_t)int_of_fixnum(b), &bb);
-    return f128M_lt(long_float_addr(a), &bb);
+    return f128M_lt((float128_t *)long_float_addr(a), &bb);
 }
 #endif // HAVE_SOFTFLOAT
 
@@ -1097,7 +1097,7 @@ inline bool lessp_d_b(LispObject a, LispObject b)
 
 #ifdef HAVE_SOFTFLOAT
 inline bool lessp_b_l(LispObject a, LispObject b)
-{   return lessp_b_rawl(a, long_float_addr(b));
+{   return lessp_b_rawl(a, (float128_t *)long_float_addr(b));
 }
 #endif // HAVE_SOFTFLOAT
 
@@ -1283,11 +1283,11 @@ inline bool lessp_l_c(LispObject a, LispObject b)
 }
 
 inline bool lessp_l_b(LispObject a, LispObject b)
-{   return lessp_rawl_b(long_float_addr(a), b);
+{   return lessp_rawl_b((float128_t *)long_float_addr(a), b);
 }
 
 inline bool lessp_l_r(LispObject a, LispObject b)
-{   return lessp_rawl_r(long_float_addr(a), b);
+{   return lessp_rawl_r((float128_t *)long_float_addr(a), b);
 }
 
 inline bool lessp_l_s(LispObject a, LispObject b)
@@ -1295,7 +1295,7 @@ inline bool lessp_l_s(LispObject a, LispObject b)
     d.f = value_of_immediate_float(b);
     float128_t bb;
     f64_to_f128M(d.f64, &bb);
-    return f128M_lt(long_float_addr(a), &bb);
+    return f128M_lt((float128_t *)long_float_addr(a), &bb);
 }
 
 inline bool lessp_l_f(LispObject a, LispObject b)
@@ -1303,23 +1303,23 @@ inline bool lessp_l_f(LispObject a, LispObject b)
     d.f = single_float_val(b);
     float128_t bb;
     f64_to_f128M(d.f64, &bb);
-    return f128M_lt(long_float_addr(a), &bb);
+    return f128M_lt((float128_t *)long_float_addr(a), &bb);
 }
 
 inline bool lessp_l_d(LispObject a, LispObject b)
 {   Double_union d;
-    d.f = double_float_val(b);
+    d.f = (double)double_float_val(b);
     float128_t bb;
     f64_to_f128M(d.f64, &bb);
-    return f128M_lt(long_float_addr(a), &bb);
+    return f128M_lt((float128_t *)long_float_addr(a), &bb);
 }
 
 inline bool lessp_l_l(LispObject a, LispObject b)
-{   return f128M_lt(long_float_addr(a), long_float_addr(b));
+{   return f128M_lt((float128_t *)long_float_addr(a), (float128_t *)long_float_addr(b));
 }
 
 inline bool lessp_r_l(LispObject a, LispObject b)
-{   return lessp_r_rawl(a, long_float_addr(b));
+{   return lessp_r_rawl(a, (float128_t *)long_float_addr(b));
 }
 
 inline bool lessp_s_l(LispObject a, LispObject b)
@@ -1327,7 +1327,7 @@ inline bool lessp_s_l(LispObject a, LispObject b)
     d.f = value_of_immediate_float(a);
     float128_t aa;
     f64_to_f128M(d.f64, &aa);
-    return f128M_lt(&aa, long_float_addr(b));
+    return f128M_lt(&aa, (float128_t *)long_float_addr(b));
 }
 
 inline bool lessp_f_l(LispObject a, LispObject b)
@@ -1335,15 +1335,15 @@ inline bool lessp_f_l(LispObject a, LispObject b)
     d.f = single_float_val(a);
     float128_t aa;
     f64_to_f128M(d.f64, &aa);
-    return f128M_lt(&aa, long_float_addr(b));
+    return f128M_lt(&aa, (float128_t *)long_float_addr(b));
 }
 
 inline bool lessp_d_l(LispObject a, LispObject b)
 {   Double_union d;
-    d.f = double_float_val(a);
+    d.f = (double)double_float_val(a);
     float128_t aa;
     f64_to_f128M(d.f64, &aa);
-    return f128M_lt(&aa, long_float_addr(b));
+    return f128M_lt(&aa, (float128_t *)long_float_addr(b));
 }
 #endif // HAVE_SOFTFLOAT
 
@@ -1397,7 +1397,7 @@ inline bool geq_i_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline bool geq_i_l(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a2))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a2))) return false;
     return !lessp_i_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1438,7 +1438,7 @@ inline bool geq_b_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline bool geq_b_l(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a2))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a2))) return false;
     return !lessp_b_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1479,7 +1479,7 @@ inline bool geq_r_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline bool geq_r_l(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a2))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a2))) return false;
     return !lessp_r_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1520,7 +1520,7 @@ inline bool geq_c_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline bool geq_c_l(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a2))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a2))) return false;
     return !lessp_c_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1565,7 +1565,7 @@ inline bool geq_s_d(LispObject a1, LispObject a2)
 inline bool geq_s_l(LispObject a1, LispObject a2)
 {   double a1d = value_of_immediate_float(a1);
     if (a1d != a1d) return false;
-    if (f128M_nan(long_float_addr(a2))) return false;
+    if (f128M_nan((float128_t *)long_float_addr(a2))) return false;
     return !lessp_s_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1610,7 +1610,7 @@ inline bool geq_f_d(LispObject a1, LispObject a2)
 inline bool geq_f_l(LispObject a1, LispObject a2)
 {   double a1d = single_float_val(a1);
     if (a1d != a1d) return false;
-    if (f128M_nan(long_float_addr(a2))) return false;
+    if (f128M_nan((float128_t *)long_float_addr(a2))) return false;
     return !lessp_f_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1655,54 +1655,54 @@ inline bool geq_d_d(LispObject a1, LispObject a2)
 inline bool geq_d_l(LispObject a1, LispObject a2)
 {   double a1d = double_float_val(a1);
     if (a1d != a1d) return false;
-    if (f128M_nan(long_float_addr(a2))) return false;
+    if (f128M_nan((float128_t *)long_float_addr(a2))) return false;
     return !lessp_d_l(a1, a2);
 }
 
 inline bool geq_l_i(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a1))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a1))) return false;
     return !lessp_l_i(a1, a2);
 }
 
 inline bool geq_l_b(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a1))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a1))) return false;
     return !lessp_l_b(a1, a2);
 }
 
 inline bool geq_l_r(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a1))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a1))) return false;
     return !lessp_l_r(a1, a2);
 }
 
 inline bool geq_l_c(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a1))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a1))) return false;
     return !lessp_l_c(a1, a2);
 }
 
 inline bool geq_l_s(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a1))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a1))) return false;
     double a2d = value_of_immediate_float(a2);
     if (a2d != a2d) return false;
     return !lessp_l_s(a1, a2);
 }
 
 inline bool geq_l_f(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a1))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a1))) return false;
     double a2d = single_float_val(a2);
     if (a2d != a2d) return false;
     return !lessp_l_f(a1, a2);
 }
 
 inline bool geq_l_d(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a1))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a1))) return false;
     double a2d = double_float_val(a2);
     if (a2d != a2d) return false;
     return !lessp_l_d(a1, a2);
 }
 
 inline bool geq_l_l(LispObject a1, LispObject a2)
-{   if (f128M_nan(long_float_addr(a1))) return false;
-    if (f128M_nan(long_float_addr(a2))) return false;
+{   if (f128M_nan((float128_t *)long_float_addr(a1))) return false;
+    if (f128M_nan((float128_t *)long_float_addr(a2))) return false;
     return !lessp_l_l(a1, a2);
 }
 #endif // HAVE_SOFTFLOAT

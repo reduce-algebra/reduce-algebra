@@ -1021,7 +1021,10 @@ static void lisp_main(void)
                     return_code = EXIT_SUCCESS;
                     if (is_vector(exit_value) &&
                         is_string(exit_value))
-                    {   msg = &celt(exit_value, 0);
+// celt returns a vector of atomic characters but here I need to treat that
+// as just plain characters. Casting away the std<<atomic> stuff is liable
+// to be evil (eg wrt strict aliasing rules)!
+                    {   msg = (const char *)&celt(exit_value, 0);
                         len = (int)(length_of_byteheader(vechdr(exit_value)) - CELL);
                     }
                     push(codevec, litvec);
@@ -1037,7 +1040,7 @@ static void lisp_main(void)
                     return_code = EXIT_SUCCESS;
                     if (is_vector(exit_value) &&
                         is_string(exit_value))
-                    {   msg = &celt(exit_value, 0);
+                    {   msg = (const char *)&celt(exit_value, 0);
                         len = (int)(length_of_byteheader(vechdr(exit_value)) - CELL);
                     }
                     push(litvec, codevec);
@@ -3431,7 +3434,8 @@ int PROC_make_function_call(const char *name, int n)
 int PROC_save(int n)
 {   if (n < 0 || n > 99) return 1; // index out of range
     if (procstack == nil) return 2; // Nothing available to save
-    elt(procmem, n) = qcar(procstack);
+// On the next line I want to copy the LispObject not any atomic thing!
+    elt(procmem, n) = (LispObject)qcar(procstack);
     procstack = qcdr(procstack);
     return 0;
 }
@@ -3692,7 +3696,7 @@ const char *PROC_symbol_name(PROC_handle p)
     w = qpname(w);
     n = length_of_byteheader(vechdr(w)) - CELL;
     if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
-    strncpy(PROC_name, &celt(w, 0), n);
+    strncpy(PROC_name, (const char *)&celt(w, 0), n);
     PROC_name[n] = 0;
     return &PROC_name[0];
 }
@@ -3706,21 +3710,22 @@ const char *PROC_string_data(PROC_handle p)
 // of dealing with big numbers, so in due course I will need to fix it!
 //
     if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
-    strncpy(PROC_name, &celt(w, 0), n);
+    strncpy(PROC_name, (const char *)&celt(w, 0), n);
     PROC_name[n] = 0;
     return &PROC_name[0];
 }
 
 //
-// First and rest allow list traversal.
+// First and rest allow list traversal. The two-levels of cast are to
+// dispose of std::atomic<> stuff.
 //
 
 PROC_handle PROC_first(PROC_handle p)
-{   return (PROC_handle)qcar((LispObject)p);
+{   return (PROC_handle)(LispObject)qcar((LispObject)p);
 }
 
 PROC_handle PROC_rest(PROC_handle p)
-{   return (PROC_handle)qcdr((LispObject)p);
+{   return (PROC_handle)(LispObject)qcdr((LispObject)p);
 }
 
 // End of csl.cpp

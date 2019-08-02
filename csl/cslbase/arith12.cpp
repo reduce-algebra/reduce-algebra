@@ -49,7 +49,7 @@ LispObject Lfrexp(LispObject env, LispObject a)
     if (is_long_float(a))
     {   float128_t d;
         int x;
-        f128M_frexp(long_float_addr(a), &d, &x);
+        f128M_frexp((float128_t *)long_float_addr(a), &d, &x);
         return cons(fixnum_of_int(x), make_boxfloat128(d));
     }
     else if (is_single_float(a))
@@ -675,7 +675,7 @@ static LispObject Lfp_eval(LispObject env, LispObject code,
         args = qcdr(args);
     }
     n = 0;
-    p = &ucelt(code, 0);
+    p = (unsigned char *)&ucelt(code, 0);
     for (;;)
     {   int op = *p++;
 //

@@ -67,6 +67,19 @@ AC_ARG_WITH(cygwin32,
   [],
   [with_cygwin32="no"])
 
+AC_MSG_CHECKING(for win32bit)
+AC_ARG_WITH(win32bit,
+  AC_HELP_STRING([--with-win32bit],
+                 [Build 32-bit Windows version alongside 64]),
+  [],
+  [with_win32bit="no"])
+AC_MSG_RESULT([$with_win32bit])
+
+if test "x$with_win32bit" = "xno"
+then
+  with_cygwin32="no"
+fi
+
 # If the "--with-cygwin32" flag was passed and I am at present running under
 # a 64-bit cygwin shell then I will insist on changing gear so that I run
 # using a 32-bit cygwin shell.
@@ -834,6 +847,68 @@ then
 else
     AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
 fi
+
+# Some platforms need "-latomic" to support std::atomic<T> where sizeof(T)
+# exceeds 8.
+
+AC_LINK_IFELSE([
+  AC_LANG_PROGRAM([[#include <atomic>
+                     typedef struct _c16 { char c[16]; } c16;
+                     typedef std::atomic<c16> a16;
+                   ]],
+                   [[ c16 v16 = {1};
+                      a16 av16;
+                      av16 = v16;
+                   v16 = av16;
+                  ]])],
+  [AC_MSG_NOTICE([std::atomic<T> width 16 available])],
+  [maybe_need_libatomic="yes"])
+
+if test "x$maybe_need_libatomic" = "xyes"
+then
+  LIBS="$LIBS -latomic"
+  AC_LINK_IFELSE([
+    AC_LANG_PROGRAM([[#include <atomic>
+                       typedef struct _c16 { char c[16]; } c16;
+                       typedef std::atomic<c16> a16;
+                     ]],
+                     [[ c16 v16 = {1};
+                        a16 av16;
+                        av16 = v16;
+                     v16 = av16;
+                    ]])],
+    [AC_MSG_NOTICE([std::atomic<T> width 16 OK with -libatomic])],
+    [AC_MSG_ERROR([std::atomic<T> with sizeof(T)=16 fails])])
+fi
+
+
+OLIBS="$LIBS"
+LIBS="$OLIBS -lncurses"
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([#include <ncurses.h>
+     #include <term.h>
+     int main()
+     {  (void)tgetent(NULL, "xterm");
+        return 0;
+     } ])],
+  [AC_MSG_NOTICE([tgetent found in ncurses])],
+  [AC_MSG_NOTICE([tgetent NOT found in ncurses])
+   LIBS="$OLIBS -lcurses"
+   AC_LINK_IFELSE(
+     [AC_LANG_SOURCE([#include <curses.h>
+        #include <term.h>
+        int main()
+        {  (void)tgetent(NULL, "xterm");
+           return 0;
+        } ])],
+     [AC_MSG_NOTICE([tgetent found in curses])],
+     [AC_MSG_NOTICE([tgetent NOT found in curses])
+      LIBS="$OLIBS"
+      LDFLAGS="$LDFLAGS -L/usr/local/lib"
+      AC_SEARCH_LIBS([tgetent], [ncurses curses])
+     ])
+  ])
+
 
 # The sad news is that some 32-bit systems only set maxalign to 4, so for
 # instance even double precision floats can be aligned only that well. A
@@ -1733,6 +1808,7 @@ AM_CONDITIONAL(x86,test "x$x86" = "xyes")
 AM_CONDITIONAL(windows,test "x$windows_build" = "xyes")
 AM_CONDITIONAL(win64,test "x$win64" = "xyes")
 AM_CONDITIONAL(cygwin,test "x$cygwin_build" = "xyes")
+AM_CONDITIONAL(win32bit, test "x$with_win32bit" != "xno")
 AM_CONDITIONAL(cyg32,test "x$cyg32" = "xyes")
 AM_CONDITIONAL(cyg64,test "x$cyg64" = "xyes")
 AM_CONDITIONAL(darwin,test "x$darwin_build" = "xyes")

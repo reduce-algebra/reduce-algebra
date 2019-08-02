@@ -183,7 +183,7 @@ static LispObject timesib(LispObject a, LispObject b)
         bignum_digits(c)[i] = carry;
     }
     else
-    {   for (i=0; i<lenb; i++) bignum_digits(c)[i] = bignum_digits(b)[i];
+    {   for (i=0; i<lenb; i++) bignum_digits(c)[i] = vbignum_digits(b)[i];
     }
 //
 // Now c is a copy of b (negated if necessary) and I just want to
@@ -243,7 +243,7 @@ extend_by_one_word:
     a = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*lenb);
     pop(c);
     for (i=0; i<lenb; i++)
-        bignum_digits(a)[i] = bignum_digits(c)[i];
+        bignum_digits(a)[i] = vbignum_digits(c)[i];
     bignum_digits(a)[i] = aa;
     bignum_digits(a)[i+1] = 0;  // the padder word
     return a;
@@ -296,7 +296,7 @@ static LispObject timesif(LispObject a, LispObject b)
         case TYPE_LONG_FLOAT:
         {   float128_t x, z;
             i64_to_f128M(int_of_fixnum(a), &x);
-            f128M_mul(&x, long_float_addr(b), &z);
+            f128M_mul(&x, (float128_t *)long_float_addr(b), &z);
             return make_boxfloat128(z);
         }
 #endif // HAVE_SOFTFLOAT
@@ -334,7 +334,7 @@ static LispObject timessf(LispObject a, LispObject b)
         case TYPE_LONG_FLOAT:
             {   float128_t x, z;
                 x = float128_of_number(a);
-                f128M_mul(&x, long_float_addr(b), &z);
+                f128M_mul(&x, (float128_t *)long_float_addr(b), &z);
                 return make_boxfloat128(z);
             }
 #endif // HAVE_SOFTFLOAT
@@ -1096,10 +1096,10 @@ static LispObject timesbb(LispObject a, LispObject b)
     }
     pop(b, a);
     d = multiplication_buffer;
-    {   uint32_t *da = &bignum_digits(a)[0],
-                 *db = &bignum_digits(b)[0],
-                 *dc = &bignum_digits(c)[0],
-                 *dd = &bignum_digits(d)[0];
+    {   uint32_t *da = (uint32_t *)&bignum_digits(a)[0],
+                 *db = (uint32_t *)&bignum_digits(b)[0],
+                 *dc = (uint32_t *)&bignum_digits(c)[0],
+                 *dd = (uint32_t *)&bignum_digits(d)[0];
         long_times(dc, da, db, dd, lena, lenb, lenc);
     }
 //

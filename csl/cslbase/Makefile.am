@@ -1,5 +1,6 @@
 ## process this file with automake to create Makefile.
 
+
 ## and then use autoconf to create ./configure. Finally run that
 ## to build your usable Makefile (probably in another directory)
 
@@ -31,17 +32,21 @@ TRACE =
 # The next few lines represent a hideous hack so that I can have a GNU make
 # conditional that will be processed when make is finally invoked. It is
 # here so that if you try to build a 32-bit cygwin version of everything but
-# you happen to be runinning using a 64-bit cygwin shell things get sorted
+# you happen to be running using a 64-bit cygwin shell things get sorted
 # out - and similarly for building a 64-bit system from a 32-bit shell.
 # The mess is because I need to put in GNU make conditionals and not have
 # automake mess with them too much: the extra substitutions avoid tokens
 # here getting interpreted by automake.
 
+if win32bit
 ifeq ($(shell uname -m),$(CYGWIN_FLAVOUR))
 USE_CORRECT_CYGWIN@EQUALS@
 @ELSEWORD@
 USE_CORRECT_CYGWIN@EQUALS@$(LOCALCYG)
 @ENDIFWORD@
+else !win32bit
+USE_CORRECT_CYGWIN=
+endif !win32bit
 
 AM_CPPFLAGS = $(TRACE)
 AM_LDFLAGS  = $(TRACE)
@@ -178,6 +183,7 @@ CYGSRC = $(cslbase)
 endif !cygpath
 CYGREDUCE = $(CYGSRC)/../..
 
+if win32bit
 if cygwin
 EXE=
 
@@ -200,6 +206,7 @@ cyg32.exe:	$(cslbase)/other-cygwin.cpp
 cyg64.exe:	$(cslbase)/other-cygwin.cpp
 	i686-w64-mingw32-g++ -O3 -DFORCE64 $(cslbase)/other-cygwin.cpp -static -o cyg64
 	i686-w64-mingw32-strip cyg64
+endif win32bit
 
 if wx
 FWIN = wxfwin.h
@@ -702,18 +709,32 @@ reduce_LDADD = $(reduceres) $(FOX_LIBS)
 if cygwin
 WINHELPERS=
 else !cygwin
+if win32bit
 WINHELPERS= cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
+else !win32bit
+WINHELPERS= cygwin64-isatty.exe not-under-cygwin.exe
+endif !win32bit
 endif !cygwin
 
+if win32bit
 cygwin-isatty.exe:	$(cslbase)/cygwin-isatty.cpp $(absolute_cyg32)
 	$(absolute_cyg32) g++ -O3 $(cslbase)/cygwin-isatty.cpp -o cygwin-isatty.exe
 
 cygwin64-isatty.exe:	$(cslbase)/cygwin-isatty.cpp $(absolute_cyg64)
 	$(absolute_cyg64) g++ -O3 $(cslbase)/cygwin-isatty.cpp -o cygwin64-isatty.exe
+else
+cygwin64-isatty.exe:	$(cslbase)/cygwin-isatty.cpp
+	g++ -O3 $(cslbase)/cygwin-isatty.cpp -o cygwin64-isatty.exe
+endif
 
 not-under-cygwin.exe:	$(cslbase)/not-under-cygwin.cpp
+if win32bit
 	i686-w64-mingw32-g++ -O3 $(cslbase)/not-under-cygwin.cpp -static -o not-under-cygwin.exe
 	i686-w64-mingw32-strip not-under-cygwin.exe
+else !win32bit
+	x86_64-w64-mingw32-g++ -O3 $(cslbase)/not-under-cygwin.cpp -static -o not-under-cygwin.exe
+	x86_64-w64-mingw32-strip not-under-cygwin.exe
+endif !win32bit
 
 # These used to have things like local-cslexe.def as dependencies...
 csl_DEPENDENCIES = fwin-csl.$(OBJEXT) $(FONTDEP) $(WXC)
@@ -1296,10 +1317,12 @@ else !gui
 	$(CP) $(cslbase)/csl-nogui .
 endif !gui
 if !cygwin
+if win32bit
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) csl.exe; fi
 	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
+endif win32bit
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) csl.exe; fi
@@ -1344,10 +1367,12 @@ else !gui
 	$(CP) $(cslbase)/csl-nogui .
 endif !gui
 if !cygwin
+if win32bit
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) flatcsl.exe; fi
 	if test -x $(with_cygbuild)/csl/flatcsl.exe; then $(CP) $(with_cygbuild)/csl/flatcsl.exe cygwin-flatcsl.exe; fi
+endif
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) flatcsl.exe; fi
@@ -1398,10 +1423,12 @@ else !gui
 	$(CP) $(cslbase)/reduce-nogui .
 endif !gui
 if !cygwin
+if win32bit
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) reduce.exe; fi
 	if test -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
+endif
 	if test "x$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) reduce.exe; fi
@@ -1458,10 +1485,12 @@ if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 	$(CP) $(cslbase)/bootstrapreduce .
 if !cygwin
+if win32bit
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) bootstrapreduce.exe; fi
 	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
+endif
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) bootstrapreduce.exe; fi
@@ -1496,10 +1525,12 @@ else !gui
 	$(CP) $(cslbase)/fwindemo-nogui .
 endif !gui
 if !cygwin
+if win32bit
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) fwindemo.exe; fi
 	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
+endif win32bit
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) fwindemo.exe; fi
@@ -1843,9 +1874,17 @@ endif !gui
 
 local_image_files = bootstrapreduce.img noinlines.img
 
+if win32bit
 win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
+	cygwin64-reduce cygwin64-csl \
 	not-under-cygwin.exe cygwin-isatty.exe cygwin64-isatty.exe csl \
 	reduce fwindemo
+else !win32bit
+win_specials = \
+	cygwin64-reduce cygwin64-csl \
+	not-under-cygwin.exe cygwin64-isatty.exe csl \
+	reduce fwindemo
+endif !win32bit
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 	$(image_files) $(local_image_files) $(win_specials) \

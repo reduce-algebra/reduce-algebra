@@ -650,7 +650,7 @@ inline LispObject short_numerator(LispObject a, size_t lena,
 inline size_t copy_unsigned(LispObject r, LispObject a, size_t lena)
 {   if (bignum_digits(a)[lena] == 0) lena--;
     for (size_t i=0; i<=lena; i++)
-       bignum_digits(r)[i] = bignum_digits(a)[i];
+       bignum_digits(r)[i] = vbignum_digits(a)[i];
     return lena;
 }
 
@@ -891,7 +891,7 @@ inline LispObject pack_up_result(LispObject a, size_t lena)
     pop(a);
 //  trace_printf("lena = %d  r = %p\n", (int)lena, (void *)r);
     for (size_t i=0; i<=lena; i++)
-        bignum_digits(r)[i] = bignum_digits(a)[i];
+        bignum_digits(r)[i] = vbignum_digits(a)[i];
     if ((SIXTY_FOUR_BIT && (lena & 1) == 0) ||
         (!SIXTY_FOUR_BIT && (lena & 1) != 0)) bignum_digits(r)[lena+1] = 0;
     return r;    

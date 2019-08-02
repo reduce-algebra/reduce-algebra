@@ -48,22 +48,22 @@
 //
 
 #ifdef HAVE_GETC_UNLOCKED
-#define GETC(x) getc_unlocked((x))
+#define GETC(x) getc_unlocked((FILE *)(x))
 #else
 #ifdef HAVE__GETC_NOLOCK
-#define GETC(x) _getc_nolock((x))
+#define GETC(x) _getc_nolock((FILE *)(x))
 #else
-#define GETC(x) getc((x))
+#define GETC(x) getc((FILE *)(x))
 #endif
 #endif
 
 #ifdef HAVE_PUTC_UNLOCKED
-#define PUTC(x, y) putc_unlocked((x), (y))
+#define PUTC(x, y) putc_unlocked((x), (FILE *)(y))
 #else
 #ifdef HAVE__PUTC_NOLOCK
-#define PUTC(x, y) _putc_nolock((x), (y))
+#define PUTC(x, y) _putc_nolock((x), (FILE *)(y))
 #else
-#define PUTC(x, y) putc((x), (y))
+#define PUTC(x, y) putc((x), (FILE *)(y))
 #endif
 #endif
 
@@ -110,12 +110,12 @@ void validate_string_fn(LispObject s, const char *file, int line)
                 size_t i;
                 if (strrchr(file, '/') != NULL) file = strrchr(file, '/')+1;
                 fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
-                fprintf(stderr, "Header = %" PRIxPTR "\n", vechdr(s));
+                fprintf(stderr, "Header = %" PRIxPTR "\n", (uintptr_t)vechdr(s));
                 fprintf(stderr, "length = %d bytelength = %d\n",
                     (int)length_of_header(vechdr(s)),
                     (int)length_of_byteheader(vechdr(s)));
                 fprintf(stderr, "messed at len:%d len1:%d [%x]\n",
-                        (int)len, (int)len1, celt(s, len-CELL));
+                        (int)len, (int)len1, (int)celt(s, len-CELL));
                 for (i=0; i<len1; i++)
                 {   fprintf(stderr, "%3d %p: %.2x   (%c)\n", (int)i, p, *p, *p);
                     p++;
@@ -515,7 +515,8 @@ LispObject intern(size_t len, bool escaped)
 #ifdef COMMON
             if (!escaped && boffo_char(0) == ':')
             {   size_t i = 0;
-                for (i = 0; i<boffop; i++) boffo_char(i) = boffo_char(i+1);
+                for (i = 0; i<boffop; i++)
+                    boffo_char(i) = (char)boffo_char(i+1);
                 boffop--;
                 return iintern(boffo, boffop, qvalue(keyword_package), 0);
             }
@@ -534,7 +535,7 @@ LispObject intern(size_t len, bool escaped)
 //
             if (boffo_char(0) == '+')
             {   for (size_t i = 0; i<boffop; i++)
-                    boffo_char(i) = boffo_char(i+1);
+                    boffo_char(i) = (char)boffo_char(i+1);
                 boffop--;
             }
             {   LispObject v = fixnum_of_int(0);
@@ -748,7 +749,7 @@ start_again:
                 term_printf(
                     "+++ Built-in \"%s\" clashes with image file: => \"~%s\"\n",
                     &boffo_char(0), &boffo_char(0));
-            while (l >= 0) boffo_char(l+1) = boffo_char(l), l--;
+            while (l >= 0) boffo_char(l+1) = (char)boffo_char(l), l--;
             boffo_char(0) = '~';
             first_try = false;
             goto start_again;
@@ -1564,7 +1565,7 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
         else
 #endif
             qvalue(s) = unset_var;
-        qpname(s) = qpname(nil);    // At this stage the pname is a dummy
+        qpname(s) = (LispObject)qpname(nil); // At this stage pname is a dummy
         qplist(s) = nil;
         qfastgets(s) = nil;
         qpackage(s) = p;
@@ -1754,7 +1755,7 @@ LispObject ndelete(LispObject a, LispObject l)
     {   LispObject z1 = l, z2 = qcdr(l);
         while (consp(z2))
         {   if (a == qcar(z2))
-            {   qcdr(z1) = qcdr(z2);
+            {   qcdr(z1) = vcdr(z2);
                 return l;
             }
             else
@@ -2187,7 +2188,7 @@ static LispObject list_to_vector(LispObject l)
     pop(l);
     len = 0;
     while (consp(l))
-    {   elt(p, len) = qcar(l);
+    {   elt(p, len) = vcar(l);
         len++;
         l = qcdr(l);
     }
@@ -3262,7 +3263,7 @@ int char_from_list(LispObject f)
                 io_now++;
             }
             ch = qcar(stream_read_data(f));
-            stream_read_data(f) = qcdr(stream_read_data(f));
+            stream_read_data(f) = vcdr(stream_read_data(f));
         }
 //
 // here I tend towards generosity - a symbol stands for the first character
@@ -3288,7 +3289,7 @@ int char_from_list(LispObject f)
 int char_from_vector(LispObject f)
 {   LispObject ch = stream_pushed_char(f);
     if (ch == NOT_CHAR)
-    {   unsigned char *v = (unsigned char *)stream_file(f);
+    {   unsigned char *v = (unsigned char *)(FILE *)stream_file(f);
         if (v == NULL) ch = EOF;
         else
         {   if (++kilo >= 1024)

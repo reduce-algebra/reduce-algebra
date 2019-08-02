@@ -80,24 +80,24 @@ LispObject apply(LispObject fn, LispObject args,
             push(fn); // I may need the function name when tracing
                       // displays a result.
             if (args == nil)
-                 def = (*qfn0(fn))(def);
+                 def = (*vfn0(fn))(def);
             else
             {   LispObject a1 = qcar(args);
                 args = qcdr(args);
                 if (args == nil)
-                    def = (*qfn1(fn))(def, a1);
+                    def = (*vfn1(fn))(def, a1);
                 else
                 {   LispObject a2 = qcar(args);
                     args = qcdr(args);
                     if (args == nil)
-                        def = (*qfn2(fn))(def, a1, a2);
+                        def = (*vfn2(fn))(def, a1, a2);
                     else
                     {   LispObject a3 = qcar(args);
                         args = qcdr(args);
                         if (args == nil)
-                            def = (*qfn3(fn))(def, a1, a2, a3);
+                            def = (*vfn3(fn))(def, a1, a2, a3);
                         else
-                            def = (*qfn4up(fn))(def, a1, a2, a3, args);
+                            def = (*vfn4up(fn))(def, a1, a2, a3, args);
                     }
                 }
             }
@@ -315,7 +315,7 @@ public:
     {   stack = save;
         for (LispObject p1 = specenv; p1 != nil; p1 = qcdr(p1))
         {   LispObject w = qcar(p1);
-            qvalue(qcar(w)) = qcdr(w);
+            qvalue(qcar(w)) = vcdr(w);
         }
     }
 };
@@ -531,7 +531,7 @@ static LispObject defun_fn(LispObject args, LispObject)
             }
             qheader(fname) = qheader(fname) & ~SYM_MACRO;
             if ((qheader(fname) & SYM_C_DEF) != 0) lose_C_def(fname);
-            if (qfn1(fname) != undefined_1)
+            if (vfn1(fname) != undefined_1)
             {   if (qvalue(redef_msg) != nil)
                 {   debug_printf("\n+++ ");
                     loop_print_debug(fname);
@@ -548,10 +548,10 @@ static LispObject defun_fn(LispObject args, LispObject)
             qenv(fname) = args;         // Sort of notional lambda present
             set_fns(fname, interpreted_0, interpreted_1, interpreted_2, interpreted_3, interpreted_4up);
             if (qvalue(comp_symbol) != nil &&
-                qfn1(compiler_symbol) != undefined_1)
+                vfn1(compiler_symbol) != undefined_1)
             {   push(fname);
                 args = ncons(fname);
-                (qfn1(compiler_symbol))(compiler_symbol, args);
+                (*vfn1(compiler_symbol))(compiler_symbol, args);
                 pop(fname);
             }
             return onevalue(fname);
@@ -594,7 +594,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
 //
             if ((qheader(fname) & SYM_SPECIAL_FORM) == 0)
             {   qheader(fname) &= ~SYM_C_DEF;
-                if (qfn1(fname) != undefined_1 &&
+                if (vfn1(fname) != undefined_1 &&
                     qvalue(redef_msg) != nil)
                 {   debug_printf("\n+++ ");
                     loop_print_debug(fname);
@@ -604,7 +604,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
             }
             qenv(fname) = args;         // Sort of notional lambda present
             if (qvalue(comp_symbol) != nil &&
-                qfn1(compiler_symbol) != undefined_1)
+                vfn1(compiler_symbol) != undefined_1)
             {   LispObject t1, t2;
                 push(fname);
                 if (!(consp(args) &&
@@ -615,7 +615,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
                        equal(t1, t2))))
                 {   fname = stack[0];
                     args = ncons(fname);
-                    (qfn1(compiler_symbol))(compiler_symbol, args);
+                    (*vfn1(compiler_symbol))(compiler_symbol, args);
                 }
                 pop(fname);
             }

@@ -217,7 +217,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
     len = len/4;
     len1 = (len1-CELL)/4;
     if (((int32_t)bignum_digits(u)[len-1]) >= 0)
-        for (i=0; i<len; i++) bignum_digits(w)[i] = bignum_digits(u)[i];
+        for (i=0; i<len; i++) bignum_digits(w)[i] = vbignum_digits(u)[i];
     else
     {   int32_t carry = -1;
         sign = true;

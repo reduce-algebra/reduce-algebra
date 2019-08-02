@@ -426,7 +426,7 @@ LispObject simplify_string(LispObject s)
     h1 = basic_elt(s, 3);
     h = int_of_fixnum(h1);               // Displace adjustment
     s = basic_elt(s, 2);
-    for (i=0; i<n; i++) celt(w, i) = celt(s, i+h);
+    for (i=0; i<n; i++) celt(w, i) = (char)celt(s, i+h);
     return onevalue(w);
 }
 
@@ -802,7 +802,7 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
     push(a);
     v = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(a);
-    for(n=0; consp(a); a = qcdr(a), n++) elt(v, n) = qcar(a);
+    for(n=0; consp(a); a = qcdr(a), n++) elt(v, n) = vcar(a);
     return onevalue(v);
 }
 
@@ -1591,7 +1591,7 @@ LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
     elt(r, 2) = a3;
     write_barrier(&elt(r, 2));
     for (size_t i=3; i<n; i++)
-    {   elt(r, i) = qcar(a4up);
+    {   elt(r, i) = vcar(a4up);
         write_barrier(&elt(r, i));
         a4up = qcdr(a4up);
     }
@@ -1866,7 +1866,7 @@ LispObject vector_subseq(LispObject sequence, size_t start, size_t end)
         //
         copy = get_vector_init(CELL+seq_length*CELL,nil);
         for (i=start; i < end; ++i)
-        {  elt(copy,i-start) = elt(sequence,i);
+        {  elt(copy,i-start) = (LispObject)elt(sequence,i);
            write_barrier(&elt(copy,i-start));
         }
         return onevalue(copy);

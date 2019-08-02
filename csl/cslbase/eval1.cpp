@@ -202,8 +202,8 @@ restart:
             debug_record_symbol(fn);
             if (h & SYM_SPECIAL_FORM)
             {   STACK_SANITY1(u);
-                assert(qfn1(fn) != NULL);
-                return (qfn1(fn))(args, env);
+                assert(vfn1(fn) != NULL);
+                return (*vfn1(fn))(args, env);
             }
             else if (h & SYM_MACRO)
             {   STACK_SANITY;
@@ -238,7 +238,7 @@ restart:
 // things rather directly.
         LispObject eargs = nil;
         if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        {   if (args == nil) return (*qfn0(fn))(fn);
+        {   if (args == nil) return (*vfn0(fn))(fn);
             LispObject a1 = qcar(args);
             push(fn, args, env);
             on_backtrace(
@@ -250,7 +250,7 @@ restart:
                 });
             pop(env, args, fn);
             args = qcdr(args);
-            if (args == nil) return (*qfn1(fn))(fn, a1);
+            if (args == nil) return (*vfn1(fn))(fn, a1);
             LispObject a2 = qcar(args);
             push(fn, args, env, a1);
             on_backtrace(
@@ -262,7 +262,7 @@ restart:
                 });
             pop(a1, env, args, fn);
             args = qcdr(args);
-            if (args == nil) return (*qfn2(fn))(fn, a1, a2);
+            if (args == nil) return (*vfn2(fn))(fn, a1, a2);
             LispObject a3 = qcar(args);
             push5(fn, args, env, a1, a2);
             on_backtrace(
@@ -274,7 +274,7 @@ restart:
                 });
             pop5(a2, a1, env, args, fn);
             args = qcdr(args);
-            if (args == nil) return (*qfn3(fn))(fn, a1, a2, a3);
+            if (args == nil) return (*vfn3(fn))(fn, a1, a2, a3);
             push(fn, env, args);
             eargs = list3(a3, a2, a1);
             pop(args, env, fn);
@@ -767,7 +767,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
             def = progn_fn(body, env);
             while (specenv != nil)
             {   LispObject bv = qcar(specenv);
-                qvalue(qcar(bv)) = qcdr(bv);
+                qvalue(qcar(bv)) = vcdr(bv);
                 specenv = qcdr(specenv);
             }
         }
@@ -778,7 +778,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
 // that have been made.
         while (specenv != nil)
         {   LispObject bv = qcar(specenv);
-            qvalue(qcar(bv)) = qcdr(bv);
+            qvalue(qcar(bv)) = vcdr(bv);
             specenv = qcdr(specenv);
         }
         throw;
@@ -885,13 +885,13 @@ LispObject Lapply_3(LispObject env, LispObject fn, LispObject a1, LispObject a2)
 
 LispObject Lapply0(LispObject env, LispObject fn)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (qfn0(fn))(fn);
+        return (*vfn0(fn))(fn);
     return Lapply_2(env, fn, nil);
 }
 
 LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (qfn1(fn))(fn, a1);
+        return (*vfn1(fn))(fn, a1);
     push(env, fn);
     a1 = ncons(a1);
     pop(fn, env);
@@ -901,7 +901,7 @@ LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
 LispObject Lapply2(LispObject env, LispObject fn,
         LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (qfn2(fn))(fn, a1, a2);
+        return (*vfn2(fn))(fn, a1, a2);
     push(env, fn);
     a1 = list2(a1, a2);
     pop(fn, env);
@@ -912,7 +912,7 @@ LispObject Lapply3(LispObject env, LispObject fn,
         LispObject a1, LispObject a2, LispObject a3up)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
     {   LispObject a3 = arg4("apply3", a3up);
-        return (qfn3(fn))(fn, a1, a2, a3);
+        return (*vfn3(fn))(fn, a1, a2, a3);
     }
     LispObject a3 = arg4("apply3", a3up);
     push(env, fn);
@@ -927,13 +927,13 @@ LispObject Lapply3(LispObject env, LispObject fn,
 
 LispObject Lfuncall_1(LispObject env, LispObject fn)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (qfn0(fn))(fn);
+        return (*vfn0(fn))(fn);
     return Lapply_2(env, fn, nil);
 }
 
 LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (qfn1(fn))(fn, a1);
+        return (*vfn1(fn))(fn, a1);
     push(env, fn);
     a1 = ncons(a1);
     pop(fn, env);
@@ -943,7 +943,7 @@ LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
 LispObject Lfuncall_3(LispObject env, LispObject fn,
         LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (qfn2(fn))(fn, a1, a2);
+        return (*vfn2(fn))(fn, a1, a2);
     push(env, fn);
     a1 = list2(a1, a2);
     pop(fn, env);
@@ -953,8 +953,8 @@ LispObject Lfuncall_3(LispObject env, LispObject fn,
 LispObject Lfuncall_4up(LispObject env, LispObject fn,
         LispObject a1, LispObject a2, LispObject a3up)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-    {   if (qcdr(a3up) == nil) return (qfn3(fn))(fn, a1, a2, qcar(a3up));
-        else return (qfn4up(fn))(fn, a1, a2, qcar(a3up), qcdr(a3up));
+    {   if (qcdr(a3up) == nil) return (*vfn3(fn))(fn, a1, a2, qcar(a3up));
+        else return (*vfn4up(fn))(fn, a1, a2, qcar(a3up), qcdr(a3up));
     }
     push(env, fn);
     a1 = list2star(a1, a2, a3up);
@@ -1255,7 +1255,7 @@ LispObject autoload_0(LispObject fname)
     fname = qenv(fname);
     push(qcar(fname));
     set_fns(qcar(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
-    qenv(qcar(fname)) = qcar(fname);
+    qenv(qcar(fname)) = vcar(fname);
     fname = qcdr(fname);
     while (consp(fname))
     {   push(qcdr(fname));
@@ -1271,7 +1271,7 @@ LispObject autoload_1(LispObject fname, LispObject a1)
     fname = qenv(fname);
     push(qcar(fname), a1);
     set_fns(qcar(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
-    qenv(qcar(fname)) = qcar(fname);
+    qenv(qcar(fname)) = vcar(fname);
     fname = qcdr(fname);
     while (consp(fname))
     {   push(qcdr(fname));
@@ -1289,7 +1289,7 @@ LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
     fname = qenv(fname);
     push(qcar(fname), a1, a2);
     set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
-    qenv(qcar(fname)) = qcar(fname);
+    qenv(qcar(fname)) = vcar(fname);
     fname = qcdr(fname);
     while (consp(fname))
     {   push(qcdr(fname));
@@ -1307,7 +1307,7 @@ LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2, LispObject
     fname = qenv(fname);
     push(qcar(fname), a1, a2, a3);
     set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
-    qenv(qcar(fname)) = qcar(fname);
+    qenv(qcar(fname)) = vcar(fname);
     fname = qcdr(fname);
     while (consp(fname))
     {   push(qcdr(fname));
@@ -1326,7 +1326,7 @@ LispObject autoload_4up(LispObject fname, LispObject a1, LispObject a2,
     fname = qenv(fname);
     push5(fname, a1, a2, a3, a4up);
     set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
-    qenv(qcar(fname)) = qcar(fname);
+    qenv(qcar(fname)) = vcar(fname);
     fname = qcdr(fname);
     while (consp(fname))
     {   push(qcdr(fname));
@@ -1377,61 +1377,61 @@ LispObject undefined_4up(LispObject fname,
 LispObject f0_as_0(LispObject env)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfn0(env))(env);
+    return (*vfn0(env))(env);
 }
 
 LispObject f1_as_0(LispObject env, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfn0(env))(env);
+    return (*vfn0(env))(env);
 }
 
 LispObject f2_as_0(LispObject env, LispObject, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfn0(env))(env);
+    return (*vfn0(env))(env);
 }
 
 LispObject f3_as_0(LispObject env, LispObject, LispObject, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfn0(env))(env);
+    return (*vfn0(env))(env);
 }
 
 LispObject f1_as_1(LispObject env, LispObject a)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfn1(env))(env, a);
+    return (*vfn1(env))(env, a);
 }
 
 LispObject f2_as_1(LispObject env, LispObject a, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfn1(env))(env, a);
+    return (*vfn1(env))(env, a);
 }
 
 LispObject f3_as_1(LispObject env, LispObject a1, LispObject, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfn1(env))(env, a1);
+    return (*vfn1(env))(env, a1);
 }
 
 LispObject f2_as_2(LispObject env, LispObject a, LispObject b)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfn2(env))(env, a, b);
+    return (*vfn2(env))(env, a, b);
 }
 
 LispObject f3_as_2(LispObject env, LispObject a1, LispObject a2, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfn2(env))(env, a1, a2);
+    return (*vfn2(env))(env, a1, a2);
 }
 
 LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfn3(env))(env, a1, a2, a3);
+    return (*vfn3(env))(env, a1, a2, a3);
 }
 
 // The next function is EXPERIMENTAL and is only available if there is

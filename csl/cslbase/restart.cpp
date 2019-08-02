@@ -433,7 +433,7 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
     c1 = int_of_fixnum(lc1);
     c2 = int_of_fixnum(lc2);
     c3 = int_of_fixnum(lc3);
-    sname = &celt(name, 0);
+    sname = (const char *)&celt(name, 0);
     len = length_of_byteheader(vechdr(name)) - CELL;
 
     p = NULL;
@@ -1058,12 +1058,12 @@ static void cold_setup()
     qpackage(nil) = qvalue(nil);    // For sake of restart code
     all_packages = ncons(qvalue(nil));
 #else
-    qpackage(nil) = qvalue(nil);
+    qpackage(nil) = (LispObject)qvalue(nil);
 #endif
 
-    packhdr_(CP) = TYPE_STRUCTURE + (packhdr_(CP) & ~header_mask);
+    packhdr_((LispObject)CP) = TYPE_STRUCTURE + (packhdr_((LispObject)CP) & ~header_mask);
 #ifdef COMMON
-    packname_(CP) = make_string("LISP");
+    packname_((LispObject)CP) = make_string("LISP");
 #endif
 //
 // The size chosen here is only an initial size - the hash table in a package
@@ -1073,25 +1073,25 @@ static void cold_setup()
 // table to have the same number of entries regardless of whether I am on
 // a 32 or 64-bit machine to make cross-loading of images possible.
 //
-    packint_(CP) = get_basic_vector_init(CELL*(1+INIT_OBVECI_SIZE), fixnum_of_int(0));
-    packflags_(CP) = fixnum_of_int(++package_bits);
+    packint_((LispObject)CP) = get_basic_vector_init(CELL*(1+INIT_OBVECI_SIZE), fixnum_of_int(0));
+    packflags_((LispObject)CP) = fixnum_of_int(++package_bits);
 #ifdef COMMON
 //
 // Common Lisp also has "external" symbols to allow for...
 //
-    packnint_(CP) = fixnum_of_int(0);
-    packext_(CP) = get_basic_vector_init(CELL*(1+INIT_OBVECX_SIZE), fixnum_of_int(0));
-    packnext_(CP) = fixnum_of_int(1); // Allow for nil
+    packnint_((LispObject)CP) = fixnum_of_int(0);
+    packext_((LispObject)CP) = get_basic_vector_init(CELL*(1+INIT_OBVECX_SIZE), fixnum_of_int(0));
+    packnext_((LispObject)CP) = fixnum_of_int(1); // Allow for nil
     {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
                            (INIT_OBVECX_SIZE - 1));
-        elt(packext_(CP), i) = nil;
+        elt(packext_((LispObject)CP), i) = nil;
     }
 #else
-    packnint_(CP) = fixnum_of_int(1); // Allow for nil
+    packnint_((LispObject)CP) = fixnum_of_int(1); // Allow for nil
 // Place NIL into the table.
     {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
                             (INIT_OBVECI_SIZE - 1));
-        elt(packint_(CP), i) = nil;
+        elt(packint_((LispObject)CP), i) = nil;
     }
 #endif
     gensym_ser = 1;
@@ -1120,9 +1120,11 @@ static void cold_setup()
 //
     current_package          = make_undefined_symbol("*package*");
     qheader(current_package)|= SYM_SPECIAL_VAR;
-    lisp_package = qvalue(current_package)  = qpackage(nil);
+    lisp_package             = qpackage(nil);
+    qvalue(current_package)  = lisp_package;
     qvalue(nil)              = nil;          // Whew!
-    qpackage(nil) = qpackage(current_package) = lisp_package;
+    qpackage(nil) = lisp_package;
+    qpackage(current_package) = lisp_package;
 
     B_reg = nil;                             // safe for GC
     unset_var                = make_undefined_symbol("~indefinite-value~");
@@ -1149,7 +1151,7 @@ static void cold_setup()
     work_symbol         = make_undefined_symbol("~magic-internal-symbol~");
     Lunintern(nil, work_symbol);
     package_symbol      = make_undefined_symbol("package");
-    packid_(CP)         = package_symbol;
+    packid_((LispObject)CP)         = package_symbol;
 
     macroexpand_hook    = make_undefined_symbol("*macroexpand-hook*");
     qheader(macroexpand_hook) |= SYM_SPECIAL_VAR;
@@ -1877,10 +1879,10 @@ void set_up_variables(int restart_flag)
                 sprintf(about_box_title, "About %.*s",
                         (n > 31-(int)strlen("About ") ?
                          31-(int)strlen("About ") : n),
-                        &celt(w1, 0));
+                        (const char *)&celt(w1, 0));
                 sprintf(about_box_description, "%.*s",
                         (n > 31 ? 31 : n),
-                        &celt(w1, 0));
+                        (const char *)&celt(w1, 0));
 //
 // The provision here is that if variables called "author!*" and
 // "author2!*" exist with strings as values then those values will
@@ -1893,7 +1895,7 @@ void set_up_variables(int restart_flag)
                     is_string_header(vechdr(w1)))
                 {   n = length_of_byteheader(vechdr(w1))-CELL;
                     sprintf(about_box_rights_1, "%.*s",
-                            n > 31 ? 31 : n, &celt(w1, 0));
+                            n > 31 ? 31 : n, (const char *)&celt(w1, 0));
                 }
                 else strcpy(about_box_rights_1, "A C Hearn/RAND");
                 w1 = qvalue(make_undefined_symbol("author2*"));
@@ -1901,7 +1903,7 @@ void set_up_variables(int restart_flag)
                     is_string_header(vechdr(w1)))
                 {   n = length_of_byteheader(vechdr(w1))-CELL;
                     sprintf(about_box_rights_2, "%.*s",
-                            n > 31 ? 31 : n, &celt(w1, 0));
+                            n > 31 ? 31 : n, (const char *)&celt(w1, 0));
                 }
                 else strcpy(about_box_rights_2, "Codemist    ");
             }
@@ -2301,7 +2303,7 @@ void set_up_variables(int restart_flag)
                     !is_string_header(vechdr(w3))) break;
                 n1 = length_of_byteheader(vechdr(w3))-CELL;
                 if (n1 > 60) break;
-                sprintf(sname, "*%.*s", n1, &celt(w3, 0));
+                sprintf(sname, "*%.*s", n1, (const char *)&celt(w3, 0));
                 w4 = make_undefined_symbol(sname);
                 v = (char *)malloc(n1+2);
                 if (v == NULL) break;
@@ -2350,7 +2352,7 @@ void review_switch_settings()
         if (!is_vector(s) || !is_string_header(vechdr(s))) continue;
         n1 = length_of_byteheader(vechdr(s))-CELL;
         if (n1 > 60) continue;
-        sprintf(sname, "*%.*s", n1, &celt(s, 0));
+        sprintf(sname, "*%.*s", n1, (const char *)&celt(s, 0));
         for (p=switches; *p!=NULL; p+=2)
         {   if (strcmp(1+*p, &sname[1]) == 0) break;
         }
@@ -2384,7 +2386,7 @@ void review_switch_settings()
         if (!is_vector(s) || !is_string_header(s)) continue;
         n1 = length_of_byteheader(vechdr(s))-CELL;
         if (n1 > 60) continue;
-        sprintf(sname, "%.*s", n1, &celt(s, 0));
+        sprintf(sname, "%.*s", n1, (const char *)&celt(s, 0));
         for (p=loadable_packages; *p!=NULL; p+=2)
         {   if (strcmp(1+*p, sname) == 0) break;
         }
