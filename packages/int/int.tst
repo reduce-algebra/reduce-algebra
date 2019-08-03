@@ -498,9 +498,28 @@ testint(exp(x*ze+x/2)*sin(pi*ze)**4*x**4,ze);
 
 testint(erf(x),x);
 
-% So why not this one?
+COMMENT So why not this one?
+
+Solved by adding a rule for the pattern matcher;
 
 testint(erf(x+a),x);
+
+COMMENT Three integrals added Sep. 2018, after improvements to the integrator;
+
+testint(atan(1/(1-x^2)),x);
+
+COMMENT The following integral can be done with extra substitution heuristics for exp;
+
+testint((1-e^x)^(1/2)/((2*e^x)-(e^(-x))-1),x);
+
+COMMENT The third one can be done easily using the substitution z=sin(x), but it currently fails;
+
+%testint((sin(x)-sin(2*x))/(2*cos(x)+((cos(x))^(1/2))),x);
+ 
+COMMENT Results are better if sin(2*x) is rewriten first;
+
+testint((sin(x)-2*sin(x)*cos(x))/(2*cos(x)+((cos(x))^(1/2))),x);
+
 
 COMMENT here is an example of using the integrator with pattern
 	matching;
