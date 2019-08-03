@@ -205,9 +205,30 @@ i3-i4;
 int(e^(1/x^3)*sqrt(x-2),x);
 
 
-        3
-     1/x
-int(e    *sqrt(x - 2),x)
+           3                         3                         3
+        1/x               5       1/x               4       1/x               2
+(2*(35*e    *sqrt(x - 2)*x  - 70*e    *sqrt(x - 2)*x  - 70*e    *sqrt(x - 2)*x
+
+              3                        3
+           1/x                      1/x
+     + 56*e    *sqrt(x - 2)*x - 24*e    *sqrt(x - 2)
+
+                    3                                   3
+                 1/x                                 1/x
+                e    *sqrt(x - 2)      4            e    *sqrt(x - 2)      4
+     + 144*int(-------------------,x)*x  - 408*int(-------------------,x)*x
+                     9      8                            8      7
+                    x  - 2*x                            x  - 2*x
+
+                    3                                  3
+                 1/x                                1/x
+                e    *sqrt(x - 2)      4           e    *sqrt(x - 2)      4
+     + 588*int(-------------------,x)*x  - 18*int(-------------------,x)*x ))/(
+                     7      6                           6      5
+                    x  - 2*x                           x  - 2*x
+
+        4
+   105*x )
 
 
 on combinelogs;
@@ -217,9 +238,30 @@ on combinelogs;
 int(e^(1/x^3)*sqrt(x-2),x);
 
 
-        3
-     1/x
-int(e    *sqrt(x - 2),x)
+           3                         3                         3
+        1/x               5       1/x               4       1/x               2
+(2*(35*e    *sqrt(x - 2)*x  - 70*e    *sqrt(x - 2)*x  - 70*e    *sqrt(x - 2)*x
+
+              3                        3
+           1/x                      1/x
+     + 56*e    *sqrt(x - 2)*x - 24*e    *sqrt(x - 2)
+
+                    3                                   3
+                 1/x                                 1/x
+                e    *sqrt(x - 2)      4            e    *sqrt(x - 2)      4
+     + 144*int(-------------------,x)*x  - 408*int(-------------------,x)*x
+                     9      8                            8      7
+                    x  - 2*x                            x  - 2*x
+
+                    3                                  3
+                 1/x                                1/x
+                e    *sqrt(x - 2)      4           e    *sqrt(x - 2)      4
+     + 588*int(-------------------,x)*x  - 18*int(-------------------,x)*x ))/(
+                     7      6                           6      5
+                    x  - 2*x                           x  - 2*x
+
+        4
+   105*x )
 
 
 off combinelogs;
@@ -457,10 +499,10 @@ df(ws,x);
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 1499 ms  plus GC time: 31 ms
+Tested on x86_64-unknown-ubuntu16.04 CSL
+Time (counter 1): 2210 ms  plus GC time: 80 ms
 
-End of Lisp run after 1.49+0.07 seconds
-real 1.74
-user 0.03
-sys 0.03
+End of Lisp run after 2.26+0.08 seconds
+real 2.53
+user 2.42
+sys 0.05
