@@ -315,7 +315,7 @@ public:
     {   stack = save;
         for (LispObject p1 = specenv; p1 != nil; p1 = qcdr(p1))
         {   LispObject w = qcar(p1);
-            qvalue(qcar(w)) = vcdr(w);
+            setvalue(qcar(w), vcdr(w));
         }
     }
 };
@@ -431,7 +431,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
     for (p = specenv; p != nil; p = qcdr(p))
     {   LispObject w = qcar(p), v = qcar(w), z = qcdr(w);
         LispObject old = qvalue(v);
-        qvalue(v) = z;
+        setvalue(v, z);
         qcdr(w) = old;
         write_barrier(&qcdr(w));
     }
@@ -834,7 +834,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
                 {   p = z;
                     z = acons(q, qvalue(q), specenv);
                     specenv = z;
-                    qvalue(q) = p;
+                    setvalue(q, p);
                 }
                 else
                 {   for (p = local_decs; p!=nil; p = qcdr(p))
@@ -845,7 +845,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
                         specenv = w;
                         w = acons(q, work_symbol, env);
                         env = w;
-                        qvalue(q) = z;
+                        setvalue(q, z);
                         goto bound;
                     }
                     q = acons(q, z, env);
@@ -864,7 +864,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
         body = progn_fn(body, env);
         for (bvl = specenv; bvl != nil; bvl = qcdr(bvl))
         {   LispObject w = qcar(bvl), v = qcar(w), z = qcdr(w);
-            qvalue(v) = z;
+            setvalue(v, z);
         }
         {   LispObject bodyx = body;
             popv(8);
@@ -874,7 +874,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
     catch (LispException &e)
     {   for (bvl = specenv; bvl != nil; bvl = qcdr(bvl))
         {   LispObject w = qcar(bvl), v = qcar(w), z = qcdr(w);
-            qvalue(v) = z;
+            setvalue(v, z);
         }
         popv(8);
         throw;

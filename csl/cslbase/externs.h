@@ -79,8 +79,11 @@ extern LispObject multiplication_buffer;
 
 #ifdef CONSERVATIVE
 extern void write_barrier(std::atomic<LispObject> *p);
+extern void write_barrier(LispObject *p);
 #else // !CONSERVATIVE
 inline void write_barrier(std::atomic<LispObject> *p)
+{}
+inline void write_barrier(LispObject *p)
 {}
 #endif // !CONSERVATIVE
 

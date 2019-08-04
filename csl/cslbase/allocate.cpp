@@ -266,10 +266,23 @@ LispObject Lgc_forcer1(LispObject env, LispObject a)
 {   return Lgc_forcer(env, a, a);
 }
 
+// All this stuff with setcar and setcdr is bacause while a new bit of
+// structure is being created no other thread can possibly have access
+// to the new data, and so the ordering of memory transactions can be
+// "relaxed". So setcar/set
+
 LispObject cons(LispObject a, LispObject b)
 {   LispObject r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
-    qcar(r) = a;
-    qcdr(r) = b;
+    setcar(r, a);
+
+// The one line change here can have a DRAMATIC impact on overall performance!
+// Well changing the line above from "qcar(r) = 1;" to "setcar(r,a);" which
+// uses relaxed memory order make a big difference, and then removing the
+// memory fence from setting the CDR helps even more.
+
+//    qcdr(r) = b;
+    setcdr(r, b);
+    std::atomic_thread_fence(std::memory_order_release);
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
         (char *)r <= (char *)heaplimit || cons_forced(1))
@@ -280,7 +293,7 @@ LispObject cons(LispObject a, LispObject b)
 
 LispObject cons_no_gc(LispObject a, LispObject b)
 {   LispObject r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
-    qcar(r) = a;
+    setcar(r, a);
     qcdr(r) = b;
     fringe = r;
     return (LispObject)((char *)r + TAG_CONS);
@@ -297,7 +310,7 @@ LispObject cons_gc_test(LispObject p)
 
 LispObject ncons(LispObject a)
 {   LispObject r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
-    qcar(r) = a;
+    setcar(r, a);
     qcdr(r) = nil;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -311,9 +324,9 @@ LispObject list2(LispObject a, LispObject b)
 {
 // Note that building two cons cells at once saves some overhead here
     LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
-    qcar(r) = a;
-    qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r+sizeof(Cons_Cell))) = b;
+    setcar(r, a);
+    setcdr(r, (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r+sizeof(Cons_Cell)), b);
     qcdr((LispObject)((char *)r+sizeof(Cons_Cell))) = nil;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -325,9 +338,9 @@ LispObject list2(LispObject a, LispObject b)
 
 LispObject list2star(LispObject a, LispObject b, LispObject c)
 {   LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
-    qcar(r) = a;
-    qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r+sizeof(Cons_Cell))) = b;
+    setcar(r, a);
+    setcdr(r,  (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r+sizeof(Cons_Cell)), b);
     qcdr((LispObject)((char *)r+sizeof(Cons_Cell))) = c;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -339,9 +352,9 @@ LispObject list2star(LispObject a, LispObject b, LispObject c)
 
 LispObject list2starrev(LispObject c, LispObject b, LispObject a)
 {   LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
-    qcar(r) = a;
-    qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r+sizeof(Cons_Cell))) = b;
+    setcar(r, a);
+    setcdr(r, (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r+sizeof(Cons_Cell)), b);
     qcdr((LispObject)((char *)r+sizeof(Cons_Cell))) = c;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -353,12 +366,12 @@ LispObject list2starrev(LispObject c, LispObject b, LispObject a)
 
 LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
 {   LispObject r = (LispObject)((char *)fringe - 3*sizeof(Cons_Cell));
-    qcar(r) = a;
-    qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r+sizeof(Cons_Cell))) = b;
-    qcdr((LispObject)((char *)r+sizeof(Cons_Cell))) =
-        (LispObject)((char *)r + 2*sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r+2*sizeof(Cons_Cell))) = c;
+    setcar(r, a);
+    setcdr(r, (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r+sizeof(Cons_Cell)), b);
+    setcdr((LispObject)((char *)r+sizeof(Cons_Cell)),
+        (LispObject)((char *)r + 2*sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r+2*sizeof(Cons_Cell)), c);
     qcdr((LispObject)((char *)r+2*sizeof(Cons_Cell))) = d;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -370,15 +383,15 @@ LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
 
 LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
 {   LispObject r = (LispObject)((char *)fringe - 4*sizeof(Cons_Cell));
-    qcar(r) = a;
-    qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r+sizeof(Cons_Cell))) = b;
-    qcdr((LispObject)((char *)r+sizeof(Cons_Cell))) =
-        (LispObject)((char *)r + 2*sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r+2*sizeof(Cons_Cell))) = c;
-    qcdr((LispObject)((char *)r+2*sizeof(Cons_Cell))) =
-        (LispObject)((char *)r + 3*sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r +3*sizeof(Cons_Cell))) = d;
+    setcar(r, a);
+    setcdr(r, (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r+sizeof(Cons_Cell)), b);
+    setcdr((LispObject)((char *)r+sizeof(Cons_Cell)),
+        (LispObject)((char *)r + 2*sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r+2*sizeof(Cons_Cell)), c);
+    setcdr((LispObject)((char *)r+2*sizeof(Cons_Cell)),
+        (LispObject)((char *)r + 3*sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r +3*sizeof(Cons_Cell)), d);
     qcdr((LispObject)((char *)r + 3*sizeof(Cons_Cell))) = nil;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -392,9 +405,9 @@ LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
 
 LispObject acons(LispObject a, LispObject b, LispObject c)
 {   LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
-    qcar(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
-    qcdr(r) = c;
-    qcar((LispObject)((char *)r+sizeof(Cons_Cell))) = a;
+    setcar(r, (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS));
+    setcdr(r, c);
+    setcar((LispObject)((char *)r+sizeof(Cons_Cell)), a);
     qcdr((LispObject)((char *)r+sizeof(Cons_Cell))) = b;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -406,9 +419,9 @@ LispObject acons(LispObject a, LispObject b, LispObject c)
 
 LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
 {   LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
-    qcar(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
-    qcdr(r) = c;
-    qcar((LispObject)((char *)r+sizeof(Cons_Cell))) = a;
+    setcar(r, (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS));
+    setcdr(r, c);
+    setcar((LispObject)((char *)r+sizeof(Cons_Cell)), a);
     qcdr((LispObject)((char *)r+sizeof(Cons_Cell))) = b;
     fringe = r;
     return (LispObject)((char *)r + TAG_CONS);
@@ -416,12 +429,12 @@ LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
 
 LispObject list3(LispObject a, LispObject b, LispObject c)
 {   LispObject r = (LispObject)((char *)fringe - 3*sizeof(Cons_Cell));
-    qcar(r) = a;
-    qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r+sizeof(Cons_Cell))) = b;
-    qcdr((LispObject)((char *)r+sizeof(Cons_Cell))) =
-        (LispObject)((char *)r + 2*sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r+2*sizeof(Cons_Cell))) = c;
+    setcar(r, a);
+    setcdr(r, (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r+sizeof(Cons_Cell)), b);
+    setcdr((LispObject)((char *)r+sizeof(Cons_Cell)),
+        (LispObject)((char *)r + 2*sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r+2*sizeof(Cons_Cell)), c);
     qcdr((LispObject)((char *)r+2*sizeof(Cons_Cell))) = nil;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -433,12 +446,12 @@ LispObject list3(LispObject a, LispObject b, LispObject c)
 
 LispObject list3rev(LispObject c, LispObject b, LispObject a)
 {   LispObject r = (LispObject)((char *)fringe - 3*sizeof(Cons_Cell));
-    qcar(r) = a;
-    qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r+sizeof(Cons_Cell))) = b;
-    qcdr((LispObject)((char *)r+sizeof(Cons_Cell))) =
-        (LispObject)((char *)r + 2*sizeof(Cons_Cell) + TAG_CONS);
-    qcar((LispObject)((char *)r+2*sizeof(Cons_Cell))) = c;
+    setcar(r, a);
+    setcdr(r, (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r+sizeof(Cons_Cell)), b);
+    setcdr((LispObject)((char *)r+sizeof(Cons_Cell)),
+        (LispObject)((char *)r + 2*sizeof(Cons_Cell) + TAG_CONS));
+    setcar((LispObject)((char *)r+2*sizeof(Cons_Cell)), c);
     qcdr((LispObject)((char *)r+2*sizeof(Cons_Cell))) = nil;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -451,7 +464,7 @@ LispObject list3rev(LispObject c, LispObject b, LispObject a)
 LispObject Lcons(LispObject, LispObject a, LispObject b)
 {   LispObject r;
     r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
-    qcar(r) = a;
+    setcar(r, a);
     qcdr(r) = b;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -464,7 +477,7 @@ LispObject Lcons(LispObject, LispObject a, LispObject b)
 LispObject Lxcons(LispObject, LispObject a, LispObject b)
 {   LispObject r;
     r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
-    qcar(r) = b;
+    setcar(r, b);
     qcdr(r) = a;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -481,7 +494,7 @@ LispObject Lnilfn(LispObject)
 LispObject Lncons(LispObject env, LispObject a)
 {   LispObject r;
     r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
-    qcar(r) = a;
+    setcar(r, a);
     qcdr(r) = nil;
     fringe = r;
     if (++reclaim_trigger_count == reclaim_trigger_target ||

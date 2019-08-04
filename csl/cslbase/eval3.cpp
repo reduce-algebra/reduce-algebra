@@ -277,7 +277,7 @@ public:
     {   stack = save;
         while (specenv != nil)
         {   LispObject p = qcar(specenv);
-            qvalue(qcar(p)) = vcdr(p);
+            setvalue(qcar(p), vcdr(p));
             specenv = qcdr(specenv);
         }
         popv(4);
@@ -321,7 +321,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
 // If I were to take the error exit here then some variables would have
 // been set to their new values and some not. That would be a mess!
 //
-        qvalue(v) = w;
+        setvalue(v, w);
         specenv = cons(w1, specenv);
     }
     {   RAIIunbind_progv_specials unbind_progv_variables;
@@ -441,7 +441,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
         }
         if ((qheader(var) & SYM_KEYWORD_VAR) == SYM_SPECIAL_VAR ||
             (qheader(var) & SYM_KEYWORD_VAR) == SYM_GLOBAL_VAR)
-            qvalue(var) = val;
+            setvalue(var, val);
         else
         {   LispObject p = env, w;   // Here it seems to be a local variable,
                                      // or it could be locally FLUID.
@@ -457,12 +457,12 @@ static LispObject setq_fn(LispObject args, LispObject env)
                     debug_printf(" proclaimed SPECIAL by SETQ\n");
                     pop(var, env, args);
 #endif
-                    qvalue(var) = val;
+                    setvalue(var, val);
                     break;
                 }
                 w = qcar(p);
                 if (qcar(w) == var)
-                {   if (qcdr(w) == work_symbol) qvalue(var) = val;
+                {   if (qcdr(w) == work_symbol) setvalue(var, val);
                     else
                     {   qcdr(w) = val;
                         write_barrier(&qcdr(w));
@@ -681,7 +681,7 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
 //  (e) exit_reason    what it says.
 //
         xt = qvalue(trap_time);
-        qvalue(trap_time) = nil; // No timeouts in recovery code
+        setvalue(trap_time, nil); // No timeouts in recovery code
         push(xt);
         xv = exit_value;
         xt = exit_tag;
@@ -708,7 +708,7 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
         exit_count = xc;
         exit_reason = xr;
         pop(xt);
-        qvalue(trap_time) = xt;
+        setvalue(trap_time, xt);
         throw;                   // reinstate the exception
     }
     pop(env, args);
@@ -763,14 +763,14 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
             {   LispObject v = *(LispObject *)(
                                    (intptr_t)bv + n - (CELL + TAG_VECTOR));
                 n -= CELL;
-                qvalue(v) = *sp--;
+                setvalue(v, *sp--);
             }
         }
         else if (w == (LispObject)SPID_PVBIND)
         {   bv = *sp--;
             while (bv != nil)
             {   LispObject w = qcar(bv);
-                qvalue(qcar(w)) = vcdr(w);
+                setvalue(qcar(w), vcdr(w));
                 bv = qcdr(bv);
             }
         }
@@ -1127,7 +1127,7 @@ static LispObject resource_limit7(LispObject env,
                      fixnum_of_int(r1),
                      fixnum_of_int(r2),
                      fixnum_of_int(r3));
-        qvalue(resources) = form;
+        setvalue(resources, form);
 // Here I had a resource limit trap
         return onevalue(nil);
     }
@@ -1142,7 +1142,7 @@ static LispObject resource_limit7(LispObject env,
                  fixnum_of_int(r2),
                  fixnum_of_int(r3));
     pop(r);
-    qvalue(resources) = form;
+    setvalue(resources, form);
     return onevalue(r);
 }
 

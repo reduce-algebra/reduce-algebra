@@ -294,7 +294,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     print_traceset(current_byte, A_reg);
                     pop(A_reg);
                 }
-                qvalue(basic_elt(litvec, next_byte)) = A_reg;  // store into special var
+                setvalue(basic_elt(litvec, next_byte), A_reg);  // store into special var
                 continue;
 
             case OP_STOREFREE1:
@@ -303,7 +303,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     print_traceset(1, A_reg);
                     pop(A_reg);
                 }
-                qvalue(basic_elt(litvec, 1)) = A_reg;
+                setvalue(basic_elt(litvec, 1), A_reg);
                 continue;
 
             case OP_STOREFREE2:
@@ -312,7 +312,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     print_traceset(2, A_reg);
                     pop(A_reg);
                 }
-                qvalue(basic_elt(litvec, 2)) = A_reg;
+                setvalue(basic_elt(litvec, 2), A_reg);
                 continue;
 
             case OP_STOREFREE3:
@@ -321,7 +321,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     print_traceset(3, A_reg);
                     pop(A_reg);
                 }
-                qvalue(basic_elt(litvec, 3)) = A_reg;
+                setvalue(basic_elt(litvec, 3), A_reg);
                 continue;
 
             case OP_PUSHNILS:
@@ -1770,7 +1770,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                             print_traceset(fname, A_reg);
                             pop(A_reg);
                         }
-                        qvalue(basic_elt(litvec, fname)) = A_reg;  // store into special var
+                        setvalue(basic_elt(litvec, fname), A_reg);  // store into special var
                         continue;
 // Now tailcalls.
                     case 8: goto jcall0;

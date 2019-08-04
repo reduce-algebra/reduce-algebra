@@ -59,4 +59,6 @@ sudo dnf -y install texlive-collection-fontsrecommended
 sudo dnf -y install texlive-collection-latex
 sudo dnf -y install texlive-collection-latexextra
 
+sudo dnf -y install libatomic
+
 exit 0

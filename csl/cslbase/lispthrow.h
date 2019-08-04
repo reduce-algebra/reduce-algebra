@@ -491,7 +491,8 @@ public:
         debug_printf(" restored-val="); prin_to_debug(savestack[val_loc]);
         debug_printf("\n");
 #endif
-        qvalue(elt(savestack[env_loc], name_loc)) = savestack[val_loc];
+        setvalue(elt(savestack[env_loc], name_loc), savestack[val_loc]);
+// atomic????
     }
 };
 

@@ -1,4 +1,4 @@
-// tags.h                                  Copyright (C) Codemist 1990-2018
+// tags.h                                  Copyright (C) Codemist 1990-2019
 
 //
 //   Data-structure and tag bit definitions, also common C macros
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -332,6 +332,7 @@ typedef struct Cons_Cell_
     std::atomic<LispObject> cdr;
 } Cons_Cell;
 
+
 inline std::atomic<LispObject>& qcar(LispObject p)
 {   return ((Cons_Cell *)p)->car;
 }
@@ -361,6 +362,14 @@ inline LispObject vcar(LispObject p)
 
 inline LispObject vcdr(LispObject p)
 {   return ((Cons_Cell *)p)->cdr;
+}
+
+inline void setcar(LispObject p, LispObject q)
+{   ((Cons_Cell *)p)->car.store(q, std::memory_order_relaxed);
+}
+
+inline void setcdr(LispObject p, LispObject q)
+{   ((Cons_Cell *)p)->cdr.store(q, std::memory_order_relaxed);
 }
 
 typedef LispObject Special_Form(LispObject, LispObject);
@@ -1071,7 +1080,7 @@ inline std::atomic<double>& basic_delt(LispObject v, size_t n)
 // machine will have around 0.5 million sub-vectors, each of size a megabyte.
 // that is 2^39 bytes, and so if this is used to store LispObjects there can
 // be up to 2^36 of them. That is 64G cells, consuming 512GBytes of memory.
-// At present (2018) that seems an acceptable limit. If at some stage (!) it
+// At present (2019) that seems an acceptable limit. If at some stage (!) it
 // became essential to go yet further the natural thing would be to increase
 // the basic memory allocation block size from 4 Mbytes upwards, and each
 // doubling of that could allow me to increase the largest vector size by
@@ -1451,6 +1460,11 @@ inline std::atomic<Header>& qheader(LispObject p)
 
 inline std::atomic<LispObject>& qvalue(LispObject p)
 {   return *(std::atomic<LispObject> *)((char *)p + (1*CELL-TAG_SYMBOL));
+}
+
+inline void setvalue(LispObject p, LispObject q)
+{   std::atomic<LispObject>& v = qvalue(p);
+    v.store(q, std::memory_order_relaxed);   
 }
 
 inline std::atomic<LispObject>& qenv(LispObject p)

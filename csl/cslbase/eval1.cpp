@@ -414,7 +414,7 @@ inline void instate_binding(LispObject var, LispObject val,
 // but it would not be valid to use push and pop because the name "specenv"
 // expands to a rerefence relative to the top of the stack.
         specenv = acons_no_gc(var, qvalue(var), specenv);
-        qvalue(var) = val;
+        setvalue(var, val);
         cons_gc_test(nil);
     }
     else
@@ -427,7 +427,7 @@ inline void instate_binding(LispObject var, LispObject val,
             {   qcar(w) = fixnum_of_int(0); // decl is used up
                 env = acons(var, work_symbol, env);
                 specenv = acons_no_gc(var, qvalue(var), specenv);
-                qvalue(var) = val;
+                setvalue(var, val);
                 cons_gc_test(nil);
                 return;
             }
@@ -767,7 +767,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
             def = progn_fn(body, env);
             while (specenv != nil)
             {   LispObject bv = qcar(specenv);
-                qvalue(qcar(bv)) = vcdr(bv);
+                setvalue(qcar(bv), vcdr(bv));
                 specenv = qcdr(specenv);
             }
         }
@@ -778,7 +778,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
 // that have been made.
         while (specenv != nil)
         {   LispObject bv = qcar(specenv);
-            qvalue(qcar(bv)) = vcdr(bv);
+            setvalue(qcar(bv), vcdr(bv));
             specenv = qcdr(specenv);
         }
         throw;

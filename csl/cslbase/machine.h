@@ -129,6 +129,18 @@
 #define __STDC_FORMAT_MACROS 1
 #endif
 
+// Here is some more exploitation of C++17 when it is available.
+
+#ifndef __has_cpp_attribute
+#define __has_cpp_attribute(name) 0
+#endif
+
+#if __has_cpp_attribute(maybe_unused)
+#define MAYBE_UNUSED [[maybe_unused]]
+#else
+#define MAYBE_UNUSED
+#endif
+
 // At some stage I might wish to move to "#include <cstdio>" etc however
 // that would put things in the std: namespace, and the killer for me is
 // that with g++ I can then not find putc_unlocked and getc_unlocked. Well

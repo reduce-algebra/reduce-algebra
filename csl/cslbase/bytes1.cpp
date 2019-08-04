@@ -885,8 +885,9 @@ inline void do_freerstr()
         n -= CELL;
         LispObject v1;
         pop(v1);
-        qvalue(v) = v1;
+        setvalue(v, v1);
     }
+// possibly need a FENCE here?
 }
 
 inline void poll_jump_back(LispObject& A_reg)
