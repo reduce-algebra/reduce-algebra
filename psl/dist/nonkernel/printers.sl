@@ -348,11 +348,13 @@
 		     (setq n (wplus2 n 1))
 		     (setq itm (cdr itm)))
 		   (cond ((pairp itm)
-			  (checklinefit 4 channel 'channelwritestring
-			   " ..."))
+                          (channelwriteblankoreol channel)
+			  (checklinefit 3 channel 'channelwritestring
+			   "..."))
 			 (itm
-			  (checklinefit 2 channel 'channelwritestring
-			   " .")
+                          (channelwriteblankoreol channel)
+			  (checklinefit 1 channel 'channelwritestring
+			   ".")
 			  (channelwriteblankoreol channel)
 			  (recursivechannelprin2 channel itm level))))
 	    (checklinefit 3 channel 'channelwritestring "..."))
@@ -375,11 +377,13 @@
 		     (setq n (wplus2 n 1))
 		     (setq itm (cdr itm)))
 		   (cond ((pairp itm)
-			  (checklinefit 4 channel 'channelwritestring
-			   " ..."))
+                          (channelwriteblankoreol channel)
+			  (checklinefit 3 channel 'channelwritestring
+			   "..."))
 			 (itm
-			  (checklinefit 2 channel 'channelwritestring
-			   " .")
+                          (channelwriteblankoreol channel)
+			  (checklinefit 1 channel 'channelwritestring
+			   ".")
 			  (channelwriteblankoreol channel)
 			  (recursivechannelprin1 channel itm level))))
 	    (checklinefit 3 channel 'channelwritestring "..."))
