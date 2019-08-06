@@ -418,7 +418,7 @@ symbolic procedure limsort(ex,x);
    begin scalar zros,infs,nrms,q,s;
       for each c in ex do
          << q := numr(s := simp!* limit00(simp!* c,x));
-            if domainp q then << if not !:zerop q then nrms := q . nrms
+            if domainp q then << if not !:zerop q then nrms := prepd q . nrms
                                   else zros := c . zros >>
              else if mvar q memq '(failed infinity) then infs := c.infs
              else nrms := (prepsq s) . nrms >>;
