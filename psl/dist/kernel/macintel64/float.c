@@ -49,6 +49,19 @@
 #include <fenv.h>
 #include <stdio.h>
 
+#ifdef USE_CRLIBM
+#include "crlibm.h"
+
+#define sin     sin_rn
+#define cos     cos_rn
+#define tan     tan_rn
+#define asin    asin_rn
+#define acos    acos_rn
+#define atan    atan_rn
+#define exp     exp_rn
+#define log     log_rn
+
+#endif
 
 
 /* Tag( uxfloat )
@@ -187,7 +200,7 @@ uxwritefloat(buf, flt, convstr)
   /* Make sure that there is a trailing .0
    */
   dot = rindex(temps, '.');
-  if (dot == '\0')
+  if (dot == NULL)
     {
     /* Check to see if the number is in scientific notation. If so, we need
      *  add the .0 into the middle of the string, just before the e.
