@@ -1,11 +1,11 @@
-// cslread.cpp                             Copyright (C) 1990-2018 Codemist
+// cslread.cpp                             Copyright (C) 1990-2019 Codemist
 
 //
 // Reading and symbol-table support.
 //
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1164,8 +1164,10 @@ static int ordpl(LispObject u, LispObject v)
     }
 }
 
-#define flagged_noncom(v) \
-    ((fv = qfastgets(v)) != nil && elt(fv, 0) != SPID_NOPROP)
+bool flagged_noncom(LispObject v)
+{   LispObject fv = qfastgets(v);
+    return fv != nil && (LispObject)elt(fv, 0) != SPID_NOPROP;
+}
 
 static int orderp(LispObject u, LispObject v)
 {   for (;;)
@@ -1206,7 +1208,6 @@ static int orderp(LispObject u, LispObject v)
         else if (!consp(v)) return -1;
         else
         {   LispObject cu = car(u), cv = car(v);
-            LispObject fv;    // used by flagged_noncom
             int w;
             push(u, v);
 //          stackcheck();
@@ -2019,7 +2020,7 @@ LispObject Lrds(LispObject env, LispObject a)
     if (a == nil) a = qvalue(terminal_io);
     if (a == old) return onevalue(old);
     else if (!is_stream(a)) aerror1("rds", a);
-    else if (stream_read_fn(a) == char_from_illegal)
+    else if ((character_stream_reader *)stream_read_fn(a) == char_from_illegal)
         aerror("rds"); // closed stream or output stream
     setvalue(standard_input, a);
     return onevalue(old);
@@ -3035,7 +3036,7 @@ int32_t read_action_file(int32_t op, LispObject f)
     else if (op <= 0x10ffff) return (stream_pushed_char(f) = op);
     else switch (op)
         {   case READ_CLOSE:
-                if (stream_file(f) == NULL) op = 0;
+                if ((FILE *)stream_file(f) == NULL) op = 0;
                 else op = fclose(stream_file(f));
                 set_stream_read_fn(f, char_from_illegal);
                 set_stream_read_other(f, read_action_illegal);

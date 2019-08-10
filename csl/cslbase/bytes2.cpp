@@ -113,7 +113,9 @@
 // bytecode but was called just under 2 million times. The overheads of
 // starting up the bytecode interpreter nake that an invalid judgement,
 // and the "+30" here is intended to counterbalance it.
-    qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
+    qcount(basic_elt(litvec, 0)) =
+        (uint64_t)qcount(basic_elt(litvec, 0)) +
+        (profile_count_mode ? 1 : 30);
 #endif
 //
     A_reg = nil;
@@ -192,7 +194,9 @@ next_opcode:   // This label is so that I can restart what I am doing
     for (;;)
     {
 #ifndef NO_BYTECOUNT
-        if (!profile_count_mode) qcount(basic_elt(litvec, 0)) += 1;
+        if (!profile_count_mode)
+            qcount(basic_elt(litvec, 0)) =
+                (uint64_t)qcount(basic_elt(litvec, 0)) + 1;
         total++;
         frequencies[((unsigned char *)codevec)[ppc]]++;
 #endif
@@ -1015,49 +1019,49 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_JUMPLIT1EQ:
                 xppc = ppc;
                 ppc++;
-                if (basic_elt(litvec, 1) == A_reg) short_jump(ppc, xppc);
+                if ((LispObject)basic_elt(litvec, 1) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT1NE:
                 xppc = ppc;
                 ppc++;
-                if (basic_elt(litvec, 1) != A_reg) short_jump(ppc, xppc);
+                if ((LispObject)basic_elt(litvec, 1) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT2EQ:
                 xppc = ppc;
                 ppc++;
-                if (basic_elt(litvec, 2) == A_reg) short_jump(ppc, xppc);
+                if ((LispObject)basic_elt(litvec, 2) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT2NE:
                 xppc = ppc;
                 ppc++;
-                if (basic_elt(litvec, 2) != A_reg) short_jump(ppc, xppc);
+                if ((LispObject)basic_elt(litvec, 2) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT3EQ:
                 xppc = ppc;
                 ppc++;
-                if (basic_elt(litvec, 3) == A_reg) short_jump(ppc, xppc);
+                if ((LispObject)basic_elt(litvec, 3) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT3NE:
                 xppc = ppc;
                 ppc++;
-                if (basic_elt(litvec, 3) != A_reg) short_jump(ppc, xppc);
+                if ((LispObject)basic_elt(litvec, 3) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT4EQ:
                 xppc = ppc;
                 ppc++;
-                if (basic_elt(litvec, 4) == A_reg) short_jump(ppc, xppc);
+                if ((LispObject)basic_elt(litvec, 4) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT4NE:
                 xppc = ppc;
                 ppc++;
-                if (basic_elt(litvec, 4) != A_reg) short_jump(ppc, xppc);
+                if ((LispObject)basic_elt(litvec, 4) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREENIL:
@@ -1078,14 +1082,14 @@ next_opcode:   // This label is so that I can restart what I am doing
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (basic_elt(litvec, w) == A_reg) short_jump(ppc, xppc);
+                if ((LispObject)basic_elt(litvec, w) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLITNE:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (basic_elt(litvec, w) != A_reg) short_jump(ppc, xppc);
+                if ((LispObject)basic_elt(litvec, w) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPB1NIL:
@@ -1125,7 +1129,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (car_legal(A_reg) &&
-                    basic_elt(litvec, w) == car(A_reg)) short_jump(ppc, xppc);
+                    (LispObject)basic_elt(litvec, w) == car(A_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPNEQCAR:
@@ -1133,7 +1137,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (!car_legal(A_reg) ||
-                    basic_elt(litvec, w) != car(A_reg)) short_jump(ppc, xppc);
+                    (LispObject)basic_elt(litvec, w) != car(A_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFLAGP:
@@ -1550,7 +1554,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                     stack = entry_stack;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
+                    qcount(basic_elt(litvec, 0)) =
+                        (uint64_t)qcount(basic_elt(litvec, 0)) +
+                        (profile_count_mode ? 1 : 30);
 #endif
                     continue;
                 }
@@ -1595,7 +1601,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                     push(A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
+                    qcount(basic_elt(litvec, 0)) =
+                        (uint64_t)qcount(basic_elt(litvec, 0)) +
+                        (profile_count_mode ? 1 : 30);
 #endif
                     continue;
                 }
@@ -1641,7 +1649,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                     push(B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
+                    qcount(basic_elt(litvec, 0)) =
+                        (uint64_t)qcount(basic_elt(litvec, 0)) +
+                        (profile_count_mode ? 1 : 30);
 #endif
                     continue;
                 }
@@ -1686,7 +1696,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                     push(r2, B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
+                    qcount(basic_elt(litvec, 0)) =
+                        (uint64_t)qcount(basic_elt(litvec, 0)) +
+                        (profile_count_mode ? 1 : 30);
 #endif
                     continue;
                 }

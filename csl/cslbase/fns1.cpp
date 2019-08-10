@@ -692,7 +692,7 @@ bool complex_stringp(LispObject a)
 // Note that the cheery Common Lisp Committee decided the abolish the
 // separate type 'string-char, so the test here is maybe dubious...
 //
-    else if (elt(a, 0) != string_char_sym) return false;
+    else if ((LispObject)elt(a, 0) != string_char_sym) return false;
     w = elt(a, 1);
     if (!consp(w) || consp(cdr(w))) return false;
     else return true;
@@ -723,7 +723,7 @@ bool stringp(LispObject a)
 //
 // Beware abolition of 'string-char
 //
-    else if (elt(a, 0) != string_char_sym) return false;
+    else if ((LispObject)elt(a, 0) != string_char_sym) return false;
     w = elt(a, 1);
     if (!consp(w) || consp(cdr(w))) return false;
     else return true;

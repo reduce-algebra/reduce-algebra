@@ -1043,7 +1043,8 @@ LispObject Lput_hash(LispObject env,
     if (needs_rehashing)
     {   size_t load = 0;
         for (size_t i=0; i<h_table_size; i++)
-            if (ht(i) != SPID_HASHEMPTY && ht(i) != SPID_HASHTOMB) load++;
+            if ((LispObject)ht(i) != SPID_HASHEMPTY &&
+                (LispObject)ht(i) != SPID_HASHTOMB) load++;
 #ifdef PROFILE
         printf("Inserting with load=%d count=%d size=%d\n",
                (int)load, (int)count, (int)h_table_size);
@@ -1090,7 +1091,7 @@ LispObject Lput_hash(LispObject env,
                     {   htv(j) = (LispObject)elt(oldvals, i);
                         write_barrier(&htv(j));
                     }
-                    basic_elt(tab, HASH_COUNT) += 0x10;
+                    basic_elt(tab, HASH_COUNT) = (LispObject)basic_elt(tab, HASH_COUNT) + 0x10;
                 }
             }
 // Here I can recycle the old space. This is not going to be very important
@@ -1144,7 +1145,7 @@ LispObject Lput_hash(LispObject env,
                 {   htv(j) = (LispObject)elt(oldvals, i);
                     write_barrier(&htv(j));
                 }
-                basic_elt(tab, HASH_COUNT) += 0x10;
+                basic_elt(tab, HASH_COUNT) = (LispObject)basic_elt(tab, HASH_COUNT) + 0x10;
             }
         }
     }
@@ -1153,7 +1154,7 @@ LispObject Lput_hash(LispObject env,
 // If I insert where a tombstone value had been I do not increment the
 // occupancy count, since the tombstone is counted as an occupier.
     if (k1 == SPID_HASHEMPTY)
-        basic_elt(tab, HASH_COUNT) += 0x10; // Increment count.
+        basic_elt(tab, HASH_COUNT) = (LispObject)basic_elt(tab, HASH_COUNT) + 0x10; // Increment count.
     ht(pos) = key;
     write_barrier(&ht(pos));
     if (v_table != nil)

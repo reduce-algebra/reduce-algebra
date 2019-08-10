@@ -287,7 +287,7 @@ int32_t write_action_file(int32_t op, LispObject f)
 {   int32_t w;
     switch (op & 0xf0000000)
     {   case WRITE_CLOSE:
-            if (stream_file(f) == NULL) op = 0;
+            if ((FILE *)stream_file(f) == NULL) op = 0;
             else op = fclose(stream_file(f));
             set_stream_write_fn(f, char_to_illegal);
             set_stream_write_other(f, write_action_illegal);
@@ -779,7 +779,7 @@ int char_to_file(int c, LispObject stream)
     if (c == '\n' || c == '\f')
         stream_char_pos(stream) = stream_byte_pos(stream) = 0;
     else if (c == '\t')
-    {   stream_char_pos(stream) = (stream_char_pos(stream) + 8) & ~7;
+    {   stream_char_pos(stream) = ((int)stream_char_pos(stream) + 8) & ~7;
         stream_byte_pos(stream)++;
     }
     else if ((c & 0xc0) == 0x80) stream_byte_pos(stream)++;
@@ -865,7 +865,7 @@ int char_to_pipeout(int c, LispObject stream)
         stream_byte_pos(stream) = stream_char_pos(stream) = 0;
     else if (c == '\t')
     {   stream_byte_pos(stream)++;
-        stream_char_pos(stream) = (stream_char_pos(stream) + 8) & ~7;
+        stream_char_pos(stream) = ((int)stream_char_pos(stream) + 8) & ~7;
     }
     else if ((c & 0xc0) == 0x80) stream_byte_pos(stream)++;
     else
@@ -897,7 +897,7 @@ int32_t read_action_pipe(int32_t op, LispObject f)
     else if (op <= 0xffff) return (stream_pushed_char(f) = op);
     else switch (op)
         {   case READ_CLOSE:
-                if (stream_file(f) == NULL) op = 0;
+                if ((FILE *)stream_file(f) == NULL) op = 0;
                 else my_pclose(stream_file(f));
                 set_stream_read_fn(f, char_from_illegal);
                 set_stream_read_other(f, read_action_illegal);
@@ -1291,7 +1291,7 @@ LispObject Lwrs(LispObject env, LispObject a)
     if (a == nil) a = qvalue(terminal_io);
     if (a == old) return onevalue(old);
     else if (!is_stream(a)) aerror1("wrs", a);
-    else if (stream_write_fn(a) == char_to_illegal)
+    else if ((character_stream_writer *)stream_write_fn(a) == char_to_illegal)
 #ifdef COMMON
         a = qvalue(terminal_io);
 #else
@@ -1374,9 +1374,9 @@ LispObject Lmath_display(LispObject env, LispObject a)
 // mode). I do NOT allow for broadcast streams. I then check if the current
 // output stream would end up executing char_to_terminal to write a character.
 //
-        while (stream_write_fn(std) == char_to_synonym)
+        while ((character_stream_writer *)stream_write_fn(std) == char_to_synonym)
             std = stream_write_data(std);
-        if (stream_write_fn(std) != char_to_terminal) return onevalue(nil);
+        if ((character_stream_writer *)stream_write_fn(std) != char_to_terminal) return onevalue(nil);
 //
 // Now I believe I am attached to a screen that can display maths.
 //
@@ -4474,8 +4474,8 @@ static LispObject Lbinary_open_input(LispObject env, LispObject name)
 
 static LispObject Lbinary_select_input(LispObject env, LispObject a)
 {   if (!is_stream(a) ||
-        stream_file(a) == NULL ||
-        stream_write_fn(a) != 0)
+        (FILE *)stream_file(a) == NULL ||
+        (character_stream_writer *)stream_write_fn(a) != 0)
         aerror1("binary-select-input", a); // closed file or output file
 
     binary_infile = stream_file(a);
@@ -4829,7 +4829,7 @@ int32_t read_action_socket(int32_t op, LispObject f)
     else if (op <= 0xff) return (stream_pushed_char(f) = op);
     else switch (op)
         {   case READ_CLOSE:
-                if (stream_file(f) == NULL) op = 0;
+                if ((FILE *)stream_file(f) == NULL) op = 0;
                 else
 #ifdef SOCKETS
                     op = closesocket(

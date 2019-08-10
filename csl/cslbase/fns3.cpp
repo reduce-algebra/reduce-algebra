@@ -1547,7 +1547,7 @@ static LispObject Lstring(LispObject env, LispObject a)
 //
 // Beware abolition of 'string-char
 //
-    else if (elt(a, 0) != string_char_sym) aerror1("string", a);
+    else if ((LispObject)elt(a, 0) != string_char_sym) aerror1("string", a);
     w = elt(a, 1);
     if (!consp(w) || consp(cdr(w))) aerror1("string", a);
     else return onevalue(a);

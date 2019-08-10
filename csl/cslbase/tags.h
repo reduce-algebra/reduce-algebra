@@ -338,6 +338,11 @@ inline bool car_legal(LispObject p)
 // it has been created, so by inserting a memory fence in the creation
 // code (eg when I write in the object header?) all will be well.
 
+// There are some uglinesses here. So for instance a comparison between
+// a std::atomic<int> and an int (using ++ or !=) is liable to be reported
+// as ambigious, and so in a dozen cases where that (or addition) happens
+// I have put in explicit casts to unpack from the atomic value.
+
 typedef struct Cons_Cell_
 {   std::atomic<LispObject> car;
     std::atomic<LispObject> cdr;

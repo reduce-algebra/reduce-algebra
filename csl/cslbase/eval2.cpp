@@ -505,7 +505,7 @@ LispObject declare_fn(LispObject, LispObject)
 
 
 #define flagged_lose(v) \
-    ((fv = qfastgets(v)) != nil && elt(fv, 1) != SPID_NOPROP)
+    ((fv = qfastgets(v)) != nil && (LispObject)elt(fv, 1) != SPID_NOPROP)
 
 static LispObject defun_fn(LispObject args, LispObject)
 {

@@ -4071,7 +4071,7 @@ static bool interesting(LispObject x)
 {   LispObject ff;
     if ((ff = qfastgets(x)) != nil)
     {   for (int i=0; i<fastget_size; i++)
-            if (basic_elt(ff, i) != SPID_NOPROP) return true;
+            if ((LispObject)basic_elt(ff, i) != SPID_NOPROP) return true;
     }
     return (qfn1(x) != undefined_1 ||
             qplist(x) != nil ||
@@ -4183,7 +4183,7 @@ static bool clear_counts(LispObject x)
 }
 
 static bool non_zero_count(LispObject x)
-{   return (qcount(x) != 0);
+{   return ((uint64_t)qcount(x) != 0);
 }
 
 LispObject Lmapstore(LispObject env, LispObject a)
