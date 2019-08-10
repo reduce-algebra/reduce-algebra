@@ -71,8 +71,8 @@ void record_get(LispObject tag, bool found)
         Lput_hash(nil, 3, tag, get_counts, w);
         pop(w);
     }
-    if (found) qcar(w) += 0x10;
-    else qcdr(w) += 0x10;
+    if (found) car(w) += 0x10;
+    else cdr(w) += 0x10;
 #endif
 }
 
@@ -148,17 +148,17 @@ LispObject get(LispObject a, LispObject b, LispObject c)
 #endif
         return onevalue(c);
     }
-    w = qcar(pl);
-    if (qcar(w) == b)    // found at first position on the list
+    w = car(pl);
+    if (car(w) == b)    // found at first position on the list
     {
 #ifdef RECORD_GET
         push(w);
         record_get(b, true);
         pop(w);
 #endif
-        return onevalue(qcdr(w));
+        return onevalue(cdr(w));
     }
-    pl = qcdr(pl);
+    pl = cdr(pl);
     if (pl == nil)
     {
 #ifdef RECORD_GET
@@ -166,18 +166,18 @@ LispObject get(LispObject a, LispObject b, LispObject c)
 #endif
         return onevalue(c);
     }
-    w = qcar(pl);
-    if (qcar(w) == b)    // found at second position on the list
+    w = car(pl);
+    if (car(w) == b)    // found at second position on the list
     {
 #ifdef RECORD_GET
         push(w);
         record_get(b, true);
         pop(w);
 #endif
-        return onevalue(qcdr(w));
+        return onevalue(cdr(w));
     }
     prev = pl;
-    pl = qcdr(pl);
+    pl = cdr(pl);
     if (pl == prev) aerror("looped up plist in get");
     if (pl == nil)
     {
@@ -187,24 +187,26 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         return onevalue(c);
     }
     for (;;)
-    {   w = qcar(pl);
+    {   w = car(pl);
 //
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
 //
-        if (qcar(w) == b)   // found - do move to top operation.
-        {   qcdr(prev) = vcdr(pl);
-            qcdr(pl) = (LispObject)qplist(a);
-            qplist(a) = pl;
+        if (car(w) == b)   // found - do move to top operation.
+        {   setcdr(prev, cdr(pl));
+            write_barrier(cdraddr(prev));
+            setcdr(pl, qplist(a));
+            write_barrier(cdraddr(pl));
+            setplist(a, pl);
 #ifdef RECORD_GET
             push(w);
             record_get(b, true);
             pop(w);
 #endif
-            return onevalue(qcdr(w));
+            return onevalue(cdr(w));
         }
         prev = pl;
-        pl = qcdr(pl);
+        pl = cdr(pl);
         if (pl == prev) aerror("looped up plist in get");
         if (pl == nil)
         {
@@ -226,25 +228,26 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
         {   push(a, b, c);
             pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
             pop(c, b, a);
-            qfastgets(a) = pl;
+            setfastgets(a, pl);
         }
         elt(pl, n-1) = c;
         return c;            // NB the property is NOT on the plist
     }
     pl = qplist(a);
     while (pl != nil)
-    {   LispObject w = qcar(pl);
-        if (qcar(w) == b)
-        {   qcdr(w) = c;
+    {   LispObject w = car(pl);
+        if (car(w) == b)
+        {   setcdr(w, c);
+            write_barrier(cdraddr(w));
             return c;
         }
-        else pl = qcdr(pl);
+        else pl = cdr(pl);
     }
     stackcheck(a, b, c);
     push(a, c);
     b = acons(b, c, qplist(a));
     pop(c, a);
-    qplist(a) = b;
+    setplist(a, b);
     return c;
 }
 
@@ -260,15 +263,18 @@ static LispObject remprop(LispObject a, LispObject b)
     prevp = nil;
     pl = qplist(a);
     while (pl != nil)
-    {   LispObject w = qcar(pl);
-        if (qcar(w) == b)
-        {   pl = qcdr(pl);
-            if (prevp == nil) qplist(a) = pl;
-            else qcdr(prevp) = pl;
-            return qcdr(w);
+    {   LispObject w = car(pl);
+        if (car(w) == b)
+        {   pl = cdr(pl);
+            if (prevp == nil) setplist(a, pl);
+            else
+            {   setcdr(prevp, pl);
+                write_barrier(cdraddr(prevp));
+            }
+            return cdr(w);
         }
         prevp = pl;
-        pl = qcdr(prevp);
+        pl = cdr(prevp);
         if (pl == prevp) aerror("looped up plist in remprop");
     }
     return nil;
@@ -326,17 +332,17 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
 #endif
         return onevalue(nil);
     }
-    w = qcar(pl);
-    if (qcar(w) == b)
+    w = car(pl);
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         push(w);
         record_get(b, true);
         pop(w);
 #endif
-        return onevalue(qcdr(w));
+        return onevalue(cdr(w));
     }
-    pl = qcdr(pl);
+    pl = cdr(pl);
     if (pl == nil)
     {
 #ifdef RECORD_GET
@@ -344,18 +350,18 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
 #endif
         return onevalue(nil);
     }
-    w = qcar(pl);
-    if (qcar(w) == b)
+    w = car(pl);
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         push(w);
         record_get(b, true);
         pop(w);
 #endif
-        return onevalue(qcdr(w));
+        return onevalue(cdr(w));
     }
     prev = pl;
-    pl = qcdr(pl);
+    pl = cdr(pl);
     if (pl == prev) aerror("looped up plist in Lget");
     if (pl == nil)
     {
@@ -365,24 +371,26 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         return onevalue(nil);
     }
     for (;;)
-    {   w = qcar(pl);
+    {   w = car(pl);
 //
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
 //
-        if (qcar(w) == b)
-        {   qcdr(prev) = vcdr(pl);
-            qcdr(pl) = (LispObject)qplist(a);
-            qplist(a) = pl;
+        if (car(w) == b)
+        {   setcdr(prev, cdr(pl));
+            write_barrier(cdraddr(prev));
+            setcdr(pl, qplist(a));
+            write_barrier(cdraddr(pl));
+            setplist(a, pl);
 #ifdef RECORD_GET
             push(w);
             record_get(b, true);
             pop(w);
 #endif
-            return onevalue(qcdr(w));
+            return onevalue(cdr(w));
         }
         prev = pl;
-        pl = qcdr(pl);
+        pl = cdr(pl);
         if (pl == prev) aerror("looped up plist in Lget");
         if (pl == nil)
         {
@@ -441,15 +449,15 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
 #endif
         return onevalue(nil);
     }
-    w = qcar(pl);
-    if (qcar(w) == b)
+    w = car(pl);
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
 #endif
         return onevalue(lisp_true);
     }
-    pl = qcdr(pl);
+    pl = cdr(pl);
     if (pl == nil)
     {
 #ifdef RECORD_GET
@@ -457,8 +465,8 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
 #endif
         return onevalue(nil);
     }
-    w = qcar(pl);
-    if (qcar(w) == b)
+    w = car(pl);
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
@@ -466,7 +474,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         return onevalue(lisp_true);
     }
     prev = pl;
-    pl = qcdr(pl);
+    pl = cdr(pl);
     if (pl == prev) aerror("looped up plist in Lflagp");
     if (pl == nil)
     {
@@ -476,22 +484,24 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         return onevalue(nil);
     }
     for (;;)
-    {   w = qcar(pl);
+    {   w = car(pl);
 //
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
 //
-        if (qcar(w) == b)
-        {   qcdr(prev) = vcdr(pl);
-            qcdr(pl) = (LispObject)qplist(a);
-            qplist(a) = pl;
+        if (car(w) == b)
+        {   setcdr(prev, cdr(pl));
+            write_barrier(cdraddr(prev));
+            setcdr(pl, qplist(a));
+            write_barrier(cdraddr(pl));
+            setplist(a, pl);
 #ifdef RECORD_GET
             record_get(b, true);
 #endif
             return onevalue(lisp_true);
         }
         prev = pl;
-        pl = qcdr(pl);
+        pl = cdr(pl);
         if (pl == prev) aerror("looped up plist in Lflagp");
         if (pl == nil)
         {
@@ -515,7 +525,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
 #endif
             return onevalue(nil);
         }
-        a = qcar(a);
+        a = car(a);
         if (!symbolp(a))
         {
 #ifdef RECORD_GET
@@ -553,15 +563,15 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
 #endif
         return onevalue(nil);
     }
-    w = qcar(pl);
-    if (qcar(w) == b)
+    w = car(pl);
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
 #endif
         return onevalue(lisp_true);
     }
-    pl = qcdr(pl);
+    pl = cdr(pl);
     if (pl == nil)
     {
 #ifdef RECORD_GET
@@ -569,8 +579,8 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
 #endif
         return onevalue(nil);
     }
-    w = qcar(pl);
-    if (qcar(w) == b)
+    w = car(pl);
+    if (car(w) == b)
     {
 #ifdef RECORD_GET
         record_get(b, true);
@@ -578,7 +588,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         return onevalue(lisp_true);
     }
     prev = pl;
-    pl = qcdr(pl);
+    pl = cdr(pl);
     if (pl == prev) aerror("looped up plist in flagpcar");
     if (pl == nil)
     {
@@ -588,22 +598,24 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         return onevalue(nil);
     }
     for (;;)
-    {   w = qcar(pl);
+    {   w = car(pl);
 //
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
 //
-        if (qcar(w) == b)
-        {   qcdr(prev) = vcdr(pl);
-            qcdr(pl) = (LispObject)qplist(a);
-            qplist(a) = pl;
+        if (car(w) == b)
+        {   setcdr(prev, cdr(pl));
+            write_barrier(cdraddr(prev));
+            setcdr(pl, qplist(a));
+            write_barrier(cdraddr(pl));
+            setplist(a, pl);
 #ifdef RECORD_GET
             record_get(b, true);
 #endif
             return onevalue(lisp_true);
         }
         prev = pl;
-        pl = qcdr(pl);
+        pl = cdr(pl);
         if (pl == prev) aerror("looped up plist in flagpcar");
         if (pl == nil)
         {
@@ -619,8 +631,8 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
 {   int n = 0;
     if (symbolp(b)) n = header_fastget(qheader(b));
     while (consp(a))
-    {   LispObject v = qcar(a), pl;
-        a = qcdr(a);
+    {   LispObject v = car(a), pl;
+        a = cdr(a);
         if (!symbolp(v)) continue;
 //
 // I store FLAGS just as if they were PROPERTIES that have the value
@@ -633,7 +645,7 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
             {   push(v, b);
                 pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
                 pop(b, v);
-                qfastgets(v) = pl;
+                setfastgets(v, pl);
             }
             elt(pl, n-1) = lisp_true;
             continue;
@@ -641,17 +653,18 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
         push(a, b);
         pl = qplist(v);
         while (pl != nil)
-        {   LispObject w = qcar(pl);
-            if (qcar(w) == b)
-            {   qcdr(w) = lisp_true;
+        {   LispObject w = car(pl);
+            if (car(w) == b)
+            {   setcdr(w, lisp_true);
+                write_barrier(cdraddr(w));
                 goto already_flagged;
             }
-            else pl = qcdr(pl);
+            else pl = cdr(pl);
         }
         push(v);
         b = acons(b, lisp_true, qplist(v));
         pop(v);
-        qplist(v) = b;
+        setplist(v, b);
     already_flagged:
         pop(b, a);
     }
@@ -662,8 +675,8 @@ LispObject Lremflag(LispObject env, LispObject a, LispObject b)
 {   int n = 0;
     if (symbolp(b)) n = header_fastget(qheader(b));
     while (consp(a))
-    {   LispObject pl, prevp, v = qcar(a);
-        a = qcdr(a);
+    {   LispObject pl, prevp, v = car(a);
+        a = cdr(a);
         if (!symbolp(v)) continue;
         if (n)
         {   pl = qfastgets(v);
@@ -673,15 +686,18 @@ LispObject Lremflag(LispObject env, LispObject a, LispObject b)
         prevp = nil;
         pl = qplist(v);
         while (pl != nil)
-        {   LispObject w = qcar(pl);
-            if (qcar(w) == b)
-            {   pl = qcdr(pl);
-                if (prevp == nil) qplist(v) = pl;
-                else qcdr(prevp) = pl;
+        {   LispObject w = car(pl);
+            if (car(w) == b)
+            {   pl = cdr(pl);
+                if (prevp == nil) setplist(v, pl);
+                else
+                {   setcdr(prevp, pl);
+                    write_barrier(cdraddr(prevp));
+                }
                 break;
             }
             prevp = pl;
-            pl = qcdr(prevp);
+            pl = cdr(prevp);
             if (pl == prevp) aerror("looped up plist in remflag");
         }
     }
@@ -701,8 +717,8 @@ LispObject Lplist(LispObject env, LispObject a)
 #ifdef COMMON
     LispObject r1 = nil;
     while (r != nil)
-    {   r1 = list2star(qcar(qcar(r)), qcdr(qcar(r)), r1);
-        r = qcdr(r);
+    {   r1 = list2star(car(car(r)), cdr(car(r)), r1);
+        r = cdr(r);
     }
     r = r1;
 #endif
@@ -779,8 +795,8 @@ LispObject Lbytecounts_0(LispObject env)
         int32_t yes, no;
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
-        if (consp(val)) yes = int_of_fixnum(qcar(val)),
-                            no  = int_of_fixnum(qcdr(val));
+        if (consp(val)) yes = int_of_fixnum(car(val)),
+                            no  = int_of_fixnum(cdr(val));
         tot += (double)(yes+2*no);
     }
     tot /= 100.0;
@@ -789,8 +805,8 @@ LispObject Lbytecounts_0(LispObject env)
         int32_t yes, no;
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
-        if (consp(val)) yes = int_of_fixnum(qcar(val)),
-                            no  = int_of_fixnum(qcdr(val));
+        if (consp(val)) yes = int_of_fixnum(car(val)),
+                            no  = int_of_fixnum(cdr(val));
         stdout_printf("%7.2f %10d %10d  ", (double)(yes+2*no)/tot, yes+no, no);
         loop_print_stdout(key);
         stdout_printf("\n");
@@ -824,8 +840,8 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
         int32_t yes, no;
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
-        if (consp(val)) yes = int_of_fixnum(qcar(val)),
-                            no  = int_of_fixnum(qcdr(val));
+        if (consp(val)) yes = int_of_fixnum(car(val)),
+                            no  = int_of_fixnum(cdr(val));
         tot += (double)(yes+2*no);
     }
     tot /= 100.0;
@@ -835,8 +851,8 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
         int32_t yes, no;
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
-        if (consp(val)) yes = int_of_fixnum(qcar(val)),
-                            no  = int_of_fixnum(qcdr(val));
+        if (consp(val)) yes = int_of_fixnum(car(val)),
+                            no  = int_of_fixnum(cdr(val));
         stdout_printf("(%7.2f ", (double)(yes+2*no)/tot);
         loop_print_stdout(key);
         stdout_printf(")\n");
@@ -865,7 +881,7 @@ inline void do_freebind(LispObject bvec)
     for (k=CELL; k<n; k+=CELL)
     {   LispObject v = *(LispObject *)((intptr_t)bvec + k - TAG_VECTOR);
         push(qvalue(v));
-        qvalue(v) = nil;
+        setvalue(v, nil);
     }
 //
 // SPID_FBIND is a value that can NEVER occur elsewhere in the Lisp system,
@@ -901,8 +917,8 @@ inline void do_pvbind(LispObject vals, LispObject vars)
          SPID_PVBIND, // Flags up status of the above.
          vars, vals);
     while (consp(vars))
-    {   var = qcar(vars);
-        vars = qcdr(vars);
+    {   var = car(vars);
+        vars = cdr(vars);
         if (!symbolp(var) || var == nil) continue;
         push(vars);
         var = acons(var, qvalue(var), stack[-4]);
@@ -914,11 +930,11 @@ inline void do_pvbind(LispObject vals, LispObject vars)
 // at least of the variables will have their previous value saved, and
 // unwinding code will restore them - even if they have not yet been changed.
     while (consp(vars))
-    {   if (consp(vals)) val = qcar(vals), vals = qcdr(vals);
+    {   if (consp(vals)) val = car(vals), vals = cdr(vals);
         else val = unset_var;
-        var = qcar(vars);
-        if (symbolp(var) && var != nil) qvalue(var) = val;
-        vars = qcdr(vars);
+        var = car(vars);
+        if (symbolp(var) && var != nil) setvalue(var, val);
+        vars = cdr(vars);
     }
 }
 
@@ -927,9 +943,9 @@ inline void do_pvrestore()
     popv(1);                // the SPID_PVBIND
     pop(w);                 // this list ((var . old-value) ...)
     while (w != nil)
-    {   LispObject q = qcar(w);
-        qvalue(qcar(q)) = vcdr(q);
-        w = qcdr(w);
+    {   LispObject q = car(w);
+        setvalue(car(q), cdr(q));
+        w = cdr(w);
     }
 }
 
@@ -1078,9 +1094,9 @@ LispObject traced_call4up(LispObject from, fourup_args *f4up,
     push(stack[0]);
     for (int i=4; stack[0]!=nil; i++)
     {   trace_printf("Arg%d: ", i);
-        loop_print_trace(qcar(stack[0]));
+        loop_print_trace(car(stack[0]));
         trace_printf("\n");
-        stack[0] = qcdr(stack[0]);
+        stack[0] = cdr(stack[0]);
     }
     popv(1);
     pop(a4up, a3, a2, a1);
@@ -1221,7 +1237,7 @@ public:
     save_call_stack()
     {}
     ~save_call_stack()
-    {   call_stack = qcdr(call_stack);
+    {   call_stack = cdr(call_stack);
     }
 };
 
@@ -1243,16 +1259,16 @@ LispObject bytestream_interpret(size_t ppc, LispObject lit,
     int len = 0;
     call_stack = cons_no_gc(lit, call_stack);
     save_call_stack RAII;
-    for (w = call_stack; w != nil; w = qcdr(w)) len++;
+    for (w = call_stack; w != nil; w = cdr(w)) len++;
     if (len > maxnest+(maxnest/2)+1)
     {   maxnest = len;
         trace_printf("\n+++++ bytecode nesting depth %d observed\n", maxnest);
         w = call_stack;
         while (w != nil)
         {   *++stack = w;
-            prin_to_trace(qcar(w)); // should be a symbol
+            prin_to_trace(car(w)); // should be a symbol
             w = *stack--;
-            w = qcdr(w);
+            w = cdr(w);
             trace_printf("\n");
         }
     }

@@ -1,14 +1,7 @@
 
 % u17.lsp           Machine generated Lisp
 
-(c!:install "u17" 40044 4461160 9897516)
-
-(c!:install 'vbcgcd '(vbcgcd (1 . 1) vbcsize gcdf!*) 
-15164924111555833188)
-
-(c!:install 'removeindices '(removeindices "u= " " x= "
-"invalid arguments to removeindices" trwrite !*physopp isanindex idlistp
-areallindices rederr2) 1411264797663108431)
+(c!:install "u17" 35248 8068667 7220859)
 
 (c!:install 'xread1 '(xread1 commentlist!* cursym!* !*lpar!* !*rpar!*
 !*reduce4 type decstat !$eol!$ nxtsym!* !( !*eoldelimp times
@@ -99,10 +92,6 @@ printout attributesml indent!* multi_elem) 11829697404901466361)
 (c!:install 'inshisto '(inshisto codmat maxvar codhisto headhisto min) 
 11848284699196277464)
 
-(c!:install 'onoff '(onoff "switch" rlisp "not defined as switch" !*
-!*switchcheck simpfg progn !*raise typerr rerror list2string lispeval) 
-13463635152938795463)
-
 (c!:install 'bcquot '(bcquot !*grmod!* !*vdpinteger quotientx bcfi
 bcint2op quotfx quotsq) 10560766879555860784)
 
@@ -136,6 +125,21 @@ rl_ordatp !*rlsisocx cl_sordp rl_smmkatl lto_insert sort cl_flip)
 
 (c!:install 'sf2ss '(sf2ss searchpl qsort sq2sspl lx2xx) 
 12717373165686143115)
+
+(c!:install 'ibalp_initwl '(ibalp_initwl setcar) 13150529795419341680)
+
+(c!:install 'variablesir '(variablesir char (!/ o m b v a r) omvir lex) 
+2307334160926180555)
+
+(c!:install '!*pf2wedgepf '(!*pf2wedgepf nreverse wedgefax) 
+458561407058774177)
+
+(c!:install 'deleteall '(deleteall) 8011811616758810551)
+
+(c!:install 'cstimes '(cstimes times) 13052923761714089834)
+
+(c!:install 'simprepart '(simprepart !*factor simp!* repartsq) 
+15241199411347169298)
 
 
 % End of generated Lisp code

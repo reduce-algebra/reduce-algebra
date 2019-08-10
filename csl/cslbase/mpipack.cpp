@@ -211,12 +211,12 @@ static void pack_cell(LispObject a)
     // clutter the stack with unnecessary variables, so I don't
     // define it in CSL mode.
     //
-    if (consp(a)) pack_open(), pack_cell(qcar(a)), pack_list(qcdr(a));
+    if (consp(a)) pack_open(), pack_cell(car(a)), pack_list(cdr(a));
     else pack_space(), pack_atom(a);
 }
 
 static void pack_list(LispObject a)
-{   if (consp(a)) pack_comma(), pack_cell(qcar(a)), pack_list(qcdr(a));
+{   if (consp(a)) pack_comma(), pack_cell(car(a)), pack_list(cdr(a));
     else if (a == nil) pack_close();
     else pack_dot(), pack_atom(a);
 }

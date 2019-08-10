@@ -64,6 +64,18 @@ panamint)
     MODE=local
   }
 
+  hosts_win32() {
+    MODE=local
+  }
+
+  hosts_win64() {
+    MODE=local
+  }
+
+  hosts_winboth() {
+    MODE=local
+  }
+
   hosts_linux32() {
 # Using a virtual machine. I make the VM use Ubuntu 12.04 (which has,
 # at the time of writing this, recently gone beyond support) in the hope
@@ -85,6 +97,23 @@ panamint)
 # arbitrary directy and then run the "build-them.sh" script included in it.
 #
 # If you build on a more modern Linux release you may not need all that!
+
+  hosts_windows() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Ubuntu32"
+  }
+
+  hosts_win32() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Ubuntu32"
+  }
+
+  hosts_win64() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Ubuntu32"
+  }
+
+  hosts_winboth() {
     MODE=virtual
     VM="REDUCE-pkg-factory-Ubuntu32"
   }
@@ -98,7 +127,7 @@ panamint)
 # As before, use a remote machine. If I had DNS set up in a more
 # elaborate way it would become more obvious that this host is "rpi3-32".
     MODE=ssh
-    HOST=192.168.1.179
+    HOST=192.168.1.21
   }
   ;;
 
@@ -119,6 +148,21 @@ gauguin)
 # REDUCE-pkg-factory-windows runs Windows 10 and has the cygwin environment
 # set up so that I can build on it. The VM runs an ssh server and this script
 # sets up port forwarding in virtualbox so that it can be accessed.
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Windows"
+  }
+
+  hosts_win32() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Windows"
+  }
+
+  hosts_win64() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Windows"
+  }
+
+  hosts_winboth() {
     MODE=virtual
     VM="REDUCE-pkg-factory-Windows"
   }
@@ -144,7 +188,7 @@ gauguin)
 # the gateway and HOST2 the system used for the build.
     MODE=ssh+ssh
     HOST1=codemist.dynu.com
-    HOST2=192.168.1.179
+    HOST2=192.168.1.21
 # OR MODE=ssh
 #    HOST=acn1a.trin.private.cam.ac.uk
 # if I had that machine set up for Reduce building...
@@ -167,6 +211,21 @@ math-smreduce.mat.brocku.ca)
   }
 
   hosts_windows() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Windows"
+  }
+
+  hosts_win32() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Windows"
+  }
+
+  hosts_win64() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Windows"
+  }
+
+  hosts_winboth() {
     MODE=virtual
     VM="REDUCE-pkg-factory-Windows"
   }
@@ -198,6 +257,21 @@ rpi3-32)
 
   hosts_windows() {
 # From the private network I can access panamint using its private address.
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+  hosts_win32() {
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+  hosts_win64() {
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+  hosts_winboth() {
     MODE=ssh
     HOST=192.168.1.10
   }
@@ -234,6 +308,21 @@ OlderMacBook | acn1macbook)
 
   hosts_windows() {
 # From the private network I can access panamint using its private address.
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+  hosts_win32() {
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+  hosts_win64() {
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+  hosts_winboth() {
     MODE=ssh
     HOST=192.168.1.10
   }

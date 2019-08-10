@@ -160,8 +160,8 @@ union alignas(pageSize) Page
 };
 
 // First I will give code that implements the write-barrier. It is passed
-// the address of a valid Lisp location - that can be one of &qcar(x),
-// &qcdr(x) or &elt(v, n). It records the fact that an update has
+// the address of a valid Lisp location - that can be one of &car(x),
+// &cdr(x) or &elt(v, n). It records the fact that an update has
 // been made to memory in that region by setting a byte in dirty[]. Because
 // the address it is given will always be a VALID address of some location
 // in the Lisp heap it can easily find the relevant page...
@@ -393,8 +393,8 @@ extern std::condition_variable cv_for_gc;
 
 inline LispObject cons(LispObject a, LispObject b)
 {   LispObject r = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    qcar(r) = a;
-    qcdr(r) = b;
+    setcar(r, a);
+    setcdr(r, b);
     return r;
 }
 
@@ -411,8 +411,8 @@ inline LispObject cons_gc_test(LispObject p)
 
 inline LispObject ncons(LispObject a)
 {   LispObject r = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    qcar(r) = a;
-    qcdr(r) = nil;
+    setcar(r,  a);
+    setcdr(r,  nil);
     return r;
 }
 
@@ -422,30 +422,30 @@ inline LispObject ncons(LispObject a)
 inline LispObject list2(LispObject a, LispObject b)
 {   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcdr(r1) = r2;
-    qcdr(r2) = nil;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcdr(r1, r2);
+    setcdr(r2, nil);
     return r1;
 }
 
 inline LispObject list2star(LispObject a, LispObject b, LispObject c)
 {   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcdr(r1) = r2;
-    qcdr(r2) = c;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcdr(r1, r2);
+    setcdr(r2, c);
     return r1;
 }
 
 inline LispObject list2starrev(LispObject c, LispObject b, LispObject a)
 {   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcdr(r1) = r2;
-    qcdr(r2) = c;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcdr(r1, r2);
+    setcdr(r2, c);
     return r1;
 }
 
@@ -453,12 +453,12 @@ inline LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject
 {   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
     LispObject r3 = r2 + 2*sizeof(LispObject);
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcar(r3) = c;
-    qcdr(r1) = r2;
-    qcdr(r2) = r3;
-    qcdr(r3) = d;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcar(r3, c);
+    setcdr(r1, r2);
+    setcdr(r2, r3);
+    setcdr(r3, d);
     return r1;
 }
 
@@ -467,24 +467,24 @@ inline LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
     LispObject r2 = r1 + 2*sizeof(LispObject);
     LispObject r3 = r2 + 2*sizeof(LispObject);
     LispObject r4 = r3 + 2*sizeof(LispObject);
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcar(r3) = c;
-    qcar(r4) = d;
-    qcdr(r1) = r2;
-    qcdr(r2) = r3;
-    qcdr(r3) = r4;
-    qcdr(r4) = nil;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcar(r3, c);
+    setcar(r4, d);
+    setcdr(r1, r2);
+    setcdr(r2, r3);
+    setcdr(r3, r4);
+    setcdr(r4, nil);
     return r1;
 }
 
 inline LispObject acons(LispObject a, LispObject b, LispObject c)
 {   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
-    qcar(r1) = r2;
-    qcar(r2) = a;
-    qcdr(r1) = c;
-    qcdr(r2) = b;
+    setcar(r1, r2);
+    setcar(r2, a);
+    setcdr(r1, c);
+    setcdr(r2, b);
     return r1;
 }
 
@@ -496,12 +496,12 @@ inline LispObject list3(LispObject a, LispObject b, LispObject c)
 {   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
     LispObject r3 = r2 + 2*sizeof(LispObject);
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcar(r3) = c;
-    qcdr(r1) = r2;
-    qcdr(r2) = r3;
-    qcdr(r3) = nil;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcar(r3, c);
+    setcdr(r1, r2);
+    setcdr(r2, r3);
+    setcdr(r3, nil);
     return r1;
 }
 
@@ -509,26 +509,26 @@ inline LispObject list3rev(LispObject c, LispObject b, LispObject a)
 {   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
     LispObject r3 = r2 + 2*sizeof(LispObject);
-    qcar(r1) = a;
-    qcar(r2) = b;
-    qcar(r3) = c;
-    qcdr(r1) = r2;
-    qcdr(r2) = r3;
-    qcdr(r3) = nil;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcar(r3, c);
+    setcdr(r1, r2);
+    setcdr(r2, r3);
+    setcdr(r3, nil);
     return r1;
 }
 
 inline LispObject Lcons(LispObject, LispObject a, LispObject b)
 {   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    qcar(r1) = a;
-    qcdr(r1) = b;
+    setcar(r1, a);
+    setcdr(r1, b);
     return onevalue(r1);
 }
 
 inline LispObject Lxcons(LispObject, LispObject a, LispObject b)
 {   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    qcar(r1) = b;
-    qcdr(r1) = a;
+    setcar(r1, b);
+    setcdr(r1, a);
     return onevalue(r1);
 }
 
@@ -538,8 +538,8 @@ inline LispObject Lnilfn(LispObject)
 
 inline LispObject Lncons(LispObject env, LispObject a)
 {   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    qcar(r1) = a;
-    qcdr(r1) = nil;
+    setcar(r1, a);
+    setcdr(r1, nil);
     return onevalue(r1);
 }
 
@@ -655,8 +655,8 @@ mutex gc_entry;
 
 ===========
 
-if (--activeThreads == 0) master_for_gc()
-else idle_during_gc();
+//if (--activeThreads == 0) master_for_gc()
+//else idle_during_gc();
 
 ===========
 
@@ -672,7 +672,7 @@ master_for_gc()
 {   gc_finished = false;
     gc_started = true;
     start_cv.notify_all();
-    DO STUFF;
+    //DO STUFF;
     all_idle.wait(activeThreads == THREAD_COUNT);
     gc_started = false;
     gc_finished = true;
@@ -682,10 +682,10 @@ master_for_gc()
 ===========
 
 potentially_blocking()
-{   THREAD_COUNT--;
+{   //THREAD_COUNT--;
     if (--active_threads == 0) master_for_gc();
-    DO WHATEVER MIGHT BLOCK;
-    THREAD_COUNT++;
+    //DO WHATEVER MIGHT BLOCK;
+    //THREAD_COUNT++;
     ++active_thread_count;
 }
 

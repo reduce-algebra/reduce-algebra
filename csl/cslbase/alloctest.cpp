@@ -133,8 +133,8 @@ std::mutex print_mutex;
 LispObject zcons(LispObject a, LispObject b)
 {   char *r = new char[2*sizeof(LispObject)];
     LispObject r1 = TAG_CONS + reinterpret_cast<LispObject>(r);
-    qcar(r1) = a;
-    qcdr(r1) = b;
+    car(r1) = a;
+    cdr(r1) = b;
     return r1;
 }
 
@@ -172,8 +172,8 @@ int treesize1(LispObject a)
         return 0;
     }
     if (!is_cons(a)) my_abort();
-    int left = treesize1(qcar(a));
-    int right = treesize1(qcdr(a));
+    int left = treesize1(car(a));
+    int right = treesize1(cdr(a));
     return left+right+1;
 }
 

@@ -1343,12 +1343,12 @@ symbolic procedure c!:pldrglob(op, r1, r2, r3);
 put('ldrglob, 'c!:opcode_printer, function c!:pldrglob);
 
 symbolic procedure c!:pstrglob(op, r1, r2, r3);
-   c!:printf("    qvalue(basic_elt(env, %s)) = %v; %<// %c\n", r3, r1, r2);
+   c!:printf("    setvalue(basic_elt(env, %s), %v); %<// %c\n", r3, r1, r2);
 
 put('strglob, 'c!:opcode_printer, function c!:pstrglob);
 
 symbolic procedure c!:pnilglob(op, r1, r2, r3);
-   c!:printf("    qvalue(basic_elt(env, %s)) = nil; %<// %c\n", r3, r2);
+   c!:printf("    setvalue(basic_elt(env, %s), nil); %<// %c\n", r3, r2);
 
 put('nilglob, 'c!:opcode_printer, function c!:pnilglob);
 flag('(nilglob), 'c!:uses_nil);
@@ -1406,7 +1406,7 @@ symbolic procedure c!:pcar(op, r1, r2, r3);
     if not !*unsafecar then
         c!:printf("    if (!car_legal(%v)) %v = carerror(%v); else\n",
                   r3, r1, r3);
-    c!:printf("    %v = qcar(%v);\n", r1, r3)
+    c!:printf("    %v = car(%v);\n", r1, r3)
   end;
 
 put('car, 'c!:opcode_printer, function c!:pcar);
@@ -1424,7 +1424,7 @@ put('cdr, 'c!:opcode_printer, function c!:pcdr);
 % These are explicitly non-checking versions!
 
 symbolic procedure c!:pqcar(op, r1, r2, r3);
-    c!:printf("    %v = qcar(%v);\n", r1, r3);
+    c!:printf("    %v = car(%v);\n", r1, r3);
 
 put('qcar, 'c!:opcode_printer, function c!:pqcar);
 
@@ -1592,14 +1592,14 @@ put('qputv, 'c!:opcode_printer, function c!:pqputv);
 symbolic procedure c!:prplaca(op, r1, r2, r3);
  <<
   c!:printf("    if (!car_legal(%v)) rplaca_fails(%v);\n", r2, r2);
-  c!:printf("    qcar(%v) = %v;\n", r2, r3) >>;
+  c!:printf("    setcar(%v, %v);\n", r2, r3) >>;
 
 put('rplaca, 'c!:opcode_printer, function c!:prplaca);
 
 symbolic procedure c!:prplacd(op, r1, r2, r3);
  <<
   c!:printf("    if (!car_legal(%v)) rplacd_fails(%v);\n", r2, r2);
-  c!:printf("    qcdr(%v) = %v;\n", r2, r3) >>;
+  c!:printf("    setcdr(%v, %v);\n", r2, r3) >>;
 
 put('rplacd, 'c!:opcode_printer, function c!:prplacd);
 
@@ -2237,7 +2237,7 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
       c!:printf(";\n");
       for each v in cdddr args do <<
         c!:printf("    if (_a4up_ == nil)\n        aerror1(\qnot enough arguments provided\q, basic_elt(env, 0));\n");
-        c!:printf("    %s = qcar(_a4up_); _a4up_ = qcdr(_a4up_);\n", v) >>;
+        c!:printf("    %s = car(_a4up_); _a4up_ = cdr(_a4up_);\n", v) >>;
       c!:printf("    if (_a4up_ != nil)\n        aerror1(\qtoo many arguments provided\q, basic_elt(env, 0));\n") >>;
 % There is some silly code enclosed in #ifdef stuff that is useful
 % while debugging, maybe.

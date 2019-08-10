@@ -382,7 +382,7 @@ LispObject quotbn(LispObject a, int32_t n)
     }
     if (lenc != lenx) // space to discard?
         *(Header *)&bignum_digits(a)[lenc] = make_bighdr(lenx-lenc);
-    numhdr(a) = make_bighdr(lena+1+CELL/4);
+    setnumhdr(a,  make_bighdr(lena+1+CELL/4));
     return a;
 }
 

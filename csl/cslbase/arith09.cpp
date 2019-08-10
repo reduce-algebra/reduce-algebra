@@ -650,7 +650,7 @@ LispObject gcd(LispObject a, LispObject b)
 #ifdef DEBUG_GCD_CODE
                     trace_printf("lena = %d\n", lena);
 #endif
-                    numhdr(a) = make_bighdr(new_lena+CELL/4+1);
+                    setnumhdr(a, make_bighdr(new_lena+CELL/4+1));
                     if (SIXTY_FOUR_BIT)
                     {   lena |= 1;
                         new_lena |= 1;
@@ -1004,7 +1004,7 @@ LispObject shrink_bignum(LispObject a, size_t lena)
 // Here I had allocated too much space, so I have to trim it off and
 // put a dummy vector in to pad out the heap.
 //
-    numhdr(a) -= pack_hdrlength(olen-lena);
+    setnumhdr(a, numhdr(a) - pack_hdrlength(olen-lena));
     msd = bignum_digits(a)[lena];
     if ((msd & 0x40000000) != 0) bignum_digits(a)[lena] = msd | ~0x7fffffff;
     if ((lena & 1) != 0) bignum_digits(a)[++lena] = 0;

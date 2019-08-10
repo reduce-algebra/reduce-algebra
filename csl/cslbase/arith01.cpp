@@ -1025,8 +1025,8 @@ LispObject make_complex(LispObject r, LispObject i)
 // are OK.
 //
     pop(i, r);
-    real_part(v) = r;
-    imag_part(v) = i;
+    setreal_part(v, r);
+    setimag_part(v, i);
     return v;
 }
 
@@ -1039,8 +1039,8 @@ LispObject make_ratio(LispObject p, LispObject q)
     push(p, q);
     v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
     pop(q, p);
-    numerator(v) = p;
-    denominator(v) = q;
+    setnumerator(v, p);
+    setdenominator(v, q);
     return v;
 }
 
@@ -1331,7 +1331,7 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
         if ((s1 == 0 && (bignum_digits(c)[i-1] & 0x40000000) == 0) ||
             (s1 == -1 && (bignum_digits(c)[i-1] & 0x40000000) != 0))
         {   // shrink the number
-            numhdr(c) -= pack_hdrlength(1L);
+            setnumhdr(c, numhdr(c) - pack_hdrlength(1L));
             if (s1 == -1) bignum_digits(c)[i-1] |= 0x80000000;
 // Now sometimes the shrinkage will leave a padding word, sometimes it
 // will really allow me to save space. As a jolly joke with a 64-bit
@@ -1373,7 +1373,7 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
         (!SIXTY_FOUR_BIT && ((i & 1) == 1)))
     {   bignum_digits(c)[i++] = clear_top_bit(s1);
         bignum_digits(c)[i] = top_bit_set(s1) ? -1 : 0;
-        numhdr(c) += pack_hdrlength(1L);
+        setnumhdr(c, numhdr(c) + pack_hdrlength(1L));
         return c;
     }
     push(c);
@@ -1474,7 +1474,7 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
     }
     else
 // .. whereas sometimes I have a spare word already available.
-    {   numhdr(a) += pack_hdrlength(1L);
+    {   setnumhdr(a, numhdr(a) + pack_hdrlength(1L));
         len = (len-CELL)/4;
         bignum_digits(a)[len-1] = clear_top_bit(bignum_digits(a)[len-1]);
         bignum_digits(a)[len] = top_bit_set(msd) ? -1 : 0;
@@ -1570,11 +1570,11 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
 // fix up its header-word.
             if ((SIXTY_FOUR_BIT && (j == i-1) && ((i & 1) != 0)) ||
                 (!SIXTY_FOUR_BIT && (j == i-1) && ((i & 1) == 0)))
-            {   numhdr(c) -= pack_hdrlength(1L);
+            {   setnumhdr(c, numhdr(c) - pack_hdrlength(1L));
                 return c;
             }
 // A more complicated truncation case.
-            numhdr(c) -= pack_hdrlength(i - j);
+            setnumhdr(c, numhdr(c) - pack_hdrlength(i - j));
             if (SIXTY_FOUR_BIT)
             {   i = (i+2) & ~1;
                 j = (j+2) & ~1;     // Round up to odd index
@@ -1611,10 +1611,10 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
                 (!SIXTY_FOUR_BIT && (j == i-1) && ((i & 1) == 0)))
             {   bignum_digits(c)[i] = 0;
                 bignum_digits(c)[i-1] |= ~0x7fffffff;
-                numhdr(c) -= pack_hdrlength(1);
+                setnumhdr(c, numhdr(c) - pack_hdrlength(1));
                 return c;
             }
-            numhdr(c) -= pack_hdrlength(i - j);
+            setnumhdr(c, numhdr(c) - pack_hdrlength(i - j));
             bignum_digits(c)[j+1] = 0;
             bignum_digits(c)[j] |= ~0x7fffffff;
             if (SIXTY_FOUR_BIT)

@@ -115,7 +115,7 @@ static void copy(LispObject *p)
             else if (is_immed_or_cons(a))
             {   if (is_cons(a))
                 {   LispObject w;
-                    w = qcar(a);
+                    w = car(a);
                     if (is_forward(w))
                     {   *p = w - TAG_FORWARD + TAG_CONS;
                         break;
@@ -129,7 +129,7 @@ static void copy(LispObject *p)
                     if (fr <= (char *)heaplimit - SPARE + 32)
                     {   char *hl = (char *)heaplimit;
                         void *p;
-                        qcar((LispObject)fr) = SPID_GCMARK;
+                        setcar((LispObject)fr, SPID_GCMARK);
                         if (pages_count == 0) allocate_more_memory();
                         if (pages_count == 0)
                         {   term_printf("\n+++ Run out of memory\n");
@@ -144,10 +144,10 @@ static void copy(LispObject *p)
                         fr = hl + CSL_PAGE_SIZE - sizeof(Cons_Cell);
                         heaplimit = (LispObject)(hl + SPARE);
                     }
-                    qcar((LispObject)fr) = w;
-                    qcdr((LispObject)fr) = vcdr(a);
+                    setcar((LispObject)fr, w);
+                    setcdr((LispObject)fr, cdr(a));
                     *p = w = (LispObject)(fr + TAG_CONS);
-                    qcar(a) = w + TAG_FORWARD;
+                    setcar(a, w + TAG_FORWARD);
                     break;
                 }   // end of treatment of CONS
                 else break;        // Immediate data drops out here
@@ -166,7 +166,8 @@ static void copy(LispObject *p)
                     break;
                 }
                 if (tag == TAG_SYMBOL)
-                    len = symhdr_length, symbol_heads += symhdr_length;
+                {   len = symhdr_length, symbol_heads += symhdr_length;
+                }
                 else
                 {
 // length_of_header gives me the length in bytes, including the length
@@ -215,7 +216,7 @@ static void copy(LispObject *p)
 // len indicates the length of the block of memory that must now be
 // allocated...
                     if (len > free)
-                    {   qcar((LispObject)vfr) = 0;          // sentinel value
+                    {   setcar((LispObject)vfr, 0);          // sentinel value
                         if (pages_count == 0) allocate_more_memory();
                         if (pages_count == 0)
                         {   term_printf("\n+++ Run out of memory\n");
@@ -251,14 +252,19 @@ static void copy(LispObject *p)
             {   case CONT:
                     if (tr_fr != fr)
                     {   tr_fr = tr_fr - sizeof(Cons_Cell);
-                        if (qcar((LispObject)tr_fr) == SPID_GCMARK)
+                        if (car((LispObject)tr_fr) == SPID_GCMARK)
                         {   char *w;
                             p1 = new_heap_pages[trailing_heap_pages_count++];
                             w = (char *)p1;
                             tr_fr = w + (CSL_PAGE_SIZE - sizeof(Cons_Cell));
                         }
                         next = DONE_CAR;
-                        p = (LispObject *)&qcar((LispObject)tr_fr);
+// Here I just cast away knowledge of any std::atomic<T> wrappr. This will
+// be in break of strict aliasing rules at the very least, and it assumes
+// that the memory layouts of std::atomic<T> and T agree. I will be
+// reworking the garbage collector for thread support soon so I am not
+// going to worry instantly about this!
+                        p = (LispObject *)vcaraddr((LispObject)tr_fr);
                         break;              // Takes me to the outer loop
                     }
                     else if (tr_vfr != vfr)
@@ -336,27 +342,27 @@ static void copy(LispObject *p)
                     }
                 case DONE_CAR:
                     next = CONT;
-                    p = (LispObject *)&qcdr((LispObject)tr_fr);
+                    p = (LispObject *)vcdraddr((LispObject)tr_fr);
                     break;
                 case DONE_VALUE:
                     next = DONE_ENV;
-                    p = (LispObject *)&(((Symbol_Head *)tr_vfr)->env);
+                    p = (LispObject *)envaddr(TAG_SYMBOL+(LispObject)tr_vfr);
                     break;
                 case DONE_ENV:
                     next = DONE_FASTGETS;
-                    p = (LispObject *)&(((Symbol_Head *)tr_vfr)->fastgets);
+                    p = (LispObject *)fastgetsaddr(TAG_SYMBOL+(LispObject)tr_vfr);
                     break;
                 case DONE_FASTGETS:
                     next = DONE_PNAME;
-                    p = (LispObject *)&(((Symbol_Head *)tr_vfr)->pname);
+                    p = (LispObject *)pnameaddr(TAG_SYMBOL+(LispObject)tr_vfr);
                     break;
                 case DONE_PNAME:
                     next = DONE_PLIST;
-                    p = (LispObject *)&(((Symbol_Head *)tr_vfr)->plist);
+                    p = (LispObject *)plistaddr(TAG_SYMBOL+(LispObject)tr_vfr);
                     break;
                 case DONE_PLIST:
                     next = CONT;
-                    p = (LispObject *)&(((Symbol_Head *)tr_vfr)->package);
+                    p = (LispObject *)packageaddr(TAG_SYMBOL+(LispObject)tr_vfr);
                     tr_vfr = tr_vfr + symhdr_length;
                     break;
                 default:
@@ -442,8 +448,8 @@ static void report_at_end()
             fn, fn1, z);
     }
 // This reports in Kbytes, and does not overflow until over 100 Gbytes
-    qvalue(used_space) = fixnum_of_int((int)(1024.0*fn));
-    qvalue(avail_space) = fixnum_of_int((int)(1024.0*fn1));
+    setvalue(used_space, fixnum_of_int((int)(1024.0*fn)));
+    setvalue(avail_space, fixnum_of_int((int)(1024.0*fn1)));
 }
 
 void use_gchook(LispObject arg)
@@ -509,10 +515,10 @@ static void real_garbage_collector()
 // and env cells of nil will always contain nil, which does not move,
 // and so I do not need to copy them here provided that NIL itself
 // never moves.
-    copy((LispObject *)&(qplist(nil)));
-    copy((LispObject *)&(qpname(nil)));
-    copy((LispObject *)&(qfastgets(nil)));
-    copy((LispObject *)&(qpackage(nil)));
+    copy((LispObject *)plistaddr(nil));
+    copy((LispObject *)pnameaddr(nil));
+    copy((LispObject *)fastgetsaddr(nil));
+    copy((LispObject *)packageaddr(nil));
 // I dislike the special treatment of current_package that follows. Maybe
 // I should arrange something totally different for copying the package
 // structure...
@@ -612,7 +618,7 @@ void reclaim(const char *why, int stg_class)
     gc_number++;
     if (!valid_as_fixnum(gc_number)) gc_number = 0; // wrap round on 32-bit
                                                     // machines if too big.
-    qvalue(gcknt_symbol) = fixnum_of_int(gc_number);
+    setvalue(gcknt_symbol, fixnum_of_int(gc_number));
 
 #ifdef WITH_GUI
 // If I have a window system I tell it the current time every so often

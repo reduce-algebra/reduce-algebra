@@ -741,6 +741,9 @@ extern FILE        *open_file(char *filename, const char *original_name,
 extern LispObject  plus2(LispObject a, LispObject b);
 extern void        preserve(const char *msg, size_t len);
 extern LispObject prin(LispObject u);
+extern void debugprint(LispObject a, int depth=10);
+extern void debugprint(const char *s, LispObject a);
+extern void debugprint(const char *s);
 extern const char *get_string_data(LispObject a, const char *why, size_t &len);
 extern void prin_to_stdout(LispObject u);
 extern void prin_to_terminal(LispObject u);

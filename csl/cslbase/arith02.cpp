@@ -233,7 +233,7 @@ extend_by_one_word:
 // Here there was a padder word that I can expand into.
 //
     {   bignum_digits(c)[lenb] = aa;
-        numhdr(c) += pack_hdrlength(1);
+        setnumhdr(c, numhdr(c) + pack_hdrlength(1));
         return c;
     }
 //
@@ -1128,14 +1128,14 @@ static LispObject timesbb(LispObject a, LispObject b)
                     *(Header *)&bignum_digits(c)[newlenc+1] =
                         make_bighdr(lenc-newlenc-1);
                 lenc = newlenc;
-                numhdr(c) = make_bighdr(lenc+CELL/4);
+                setnumhdr(c, make_bighdr(lenc+CELL/4));
             }
         }
         else if (lenc != newlenc)    // i.e. I padded out somewhat
         {   *(Header *)&bignum_digits(c)[newlenc] =
                 make_bighdr(lenc-newlenc);
             lenc = newlenc;
-            numhdr(c) = make_bighdr(lenc+CELL/4);
+            setnumhdr(c, make_bighdr(lenc+CELL/4));
         }
     }
 //
@@ -1192,7 +1192,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // easily, and other times it involves forging a short bit of dummy data
 // to fill in a gap that gets left in the heap.
 //
-    numhdr(c) -= pack_hdrlength(1);
+    setnumhdr(c, numhdr(c) - pack_hdrlength(1));
     if ((SIXTY_FOUR_BIT && ((lenc & 1) == 0)) ||
         (!SIXTY_FOUR_BIT && ((lenc & 1) != 0)))
         bignum_digits(c)[lenc-1] = 0; // tidy up
@@ -1202,7 +1202,7 @@ chop2:
 //
 // Trim two words from the number c
 //
-    numhdr(c) -= pack_hdrlength(2);
+    setnumhdr(c, numhdr(c) - pack_hdrlength(2));
     lenc -= 2;
     bignum_digits(c)[lenc] = 0;
     if (SIXTY_FOUR_BIT) lenc = (lenc + 1) & ~1;

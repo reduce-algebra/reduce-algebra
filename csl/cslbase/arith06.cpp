@@ -419,8 +419,8 @@ static LispObject Lplus_4up(LispObject env, LispObject a1, LispObject a2,
     else a1 = plus2(a1, a3);
     pop(a4up);
     while (a4up != nil)
-    {   LispObject an = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   LispObject an = car(a4up);
+        a4up = cdr(a4up);
         if (is_fixnum(a1) &&
             is_fixnum(an) &&
             intptr_valid_as_fixnum(c = int_of_fixnum(a1) + int_of_fixnum(an)))
@@ -442,8 +442,8 @@ static LispObject Ldifference_4up(LispObject env, LispObject a1, LispObject a2,
     a1 = difference2(a1, a3);
     pop(a4up);
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         push(a4up);
         a1 = difference2(a1, a2);
         pop(a4up);
@@ -459,8 +459,8 @@ static LispObject Ltimes_4up(LispObject env, LispObject a1, LispObject a2,
     a1 = times2(a1, a3);
     pop(a4up);
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         push(a4up);
         a1 = times2(a1, a2);
         pop(a4up);
@@ -495,8 +495,8 @@ LispObject LCLquotient_4up(LispObject env,
     a1 = CLquot2(a1, a3);
     pop(a4up);
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         push(a4up);
         a1 = CLquot2(a1, a2);
         pop(a4up);
@@ -531,8 +531,8 @@ LispObject Lquotient_4up(LispObject env,
     a1 = quot2(a1, a3);
     pop(a4up);
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         push(a4up);
         a1 = quot2(a1, a2);
         pop(a4up);
@@ -648,8 +648,8 @@ static LispObject Lbool_4up(LispObject env, LispObject a1, LispObject a2,
     a1 = (*boolop_array[what])(a1, a3);
     pop(a4up);
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         push(a4up);
         a1 = (*boolop_array[what])(a1, a2);
         pop(a4up);
@@ -721,14 +721,14 @@ LispObject Leqn_4up(LispObject env,
     pop(a1);
     a4up = stack[0];
     while (a4up != nil)
-    {   a2 = qcar(a4up);
+    {   a2 = car(a4up);
         if (!SL_numeq2(a1, a2))
         {   popv(1);
             return false;
         }
         a4up = stack[0];
-        a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+        a1 = car(a4up);
+        a4up = cdr(a4up);
         stack[0] = a4up;
     }
     popv(1);
@@ -771,14 +771,14 @@ LispObject Lcl_equals_sign_4up(LispObject env,
     pop(a1);
     a4up = stack[0];
     while (a4up != nil)
-    {   a2 = qcar(a4up);
+    {   a2 = car(a4up);
         if (!numeq2(a1, a2))
         {   popv(1);
             return false;
         }
         a4up = stack[0];
-        a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+        a1 = car(a4up);
+        a4up = cdr(a4up);
         stack[0] = a4up;
     }
     popv(1);
@@ -821,14 +821,14 @@ LispObject Llessp_4up(LispObject env,
     pop(a1);
     a4up = stack[0];
     while (a4up != nil)
-    {   a2 = qcar(a4up);
+    {   a2 = car(a4up);
         if (!lessp2(a1, a2))
         {   popv(1);
             return false;
         }
         a4up = stack[0];
-        a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+        a1 = car(a4up);
+        a4up = cdr(a4up);
         stack[0] = a4up;
     }
     popv(1);
@@ -870,14 +870,14 @@ LispObject Lgreaterp_4up(LispObject env,
     pop(a1);
     a4up = stack[0];
     while (a4up != nil)
-    {   a2 = qcar(a4up);
+    {   a2 = car(a4up);
         if (!lessp2(a2, a1))
         {   popv(1);
             return false;
         }
         a4up = stack[0];
-        a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+        a1 = car(a4up);
+        a4up = cdr(a4up);
         stack[0] = a4up;
     }
     popv(1);
@@ -922,19 +922,19 @@ static LispObject Lnum_neq_4up(LispObject env, LispObject a1, LispObject a2,
         return onevalue(nil);
     }
     while (stack[-3] != nil)
-    {   if (numeq2(stack[0], qcar(stack[-3])))  // a1=a4up
+    {   if (numeq2(stack[0], car(stack[-3])))  // a1=a4up
         {   popv(4);
             return onevalue(nil);
         }
-        if (numeq2(stack[-1], qcar(stack[-3])))  // a2=a4up
+        if (numeq2(stack[-1], car(stack[-3])))  // a2=a4up
         {   popv(4);
             return onevalue(nil);
         }
-        if (numeq2(stack[-2], qcar(stack[-3])))  // a3=a4up
+        if (numeq2(stack[-2], car(stack[-3])))  // a3=a4up
         {   popv(4);
             return onevalue(nil);
         }
-        stack[-3] = qcdr(stack[-3]);
+        stack[-3] = cdr(stack[-3]);
     }
     popv(4);
     return onevalue(lisp_true);
@@ -977,14 +977,14 @@ LispObject Lgeq_4up(LispObject env,
     pop(a1);
     a4up = stack[0];
     while (a4up != nil)
-    {   a2 = qcar(a4up);
+    {   a2 = car(a4up);
         if (!lesseq2(a2, a1))
         {   popv(1);
             return false;
         }
         a4up = stack[0];
-        a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+        a1 = car(a4up);
+        a4up = cdr(a4up);
         stack[0] = a4up;
     }
     popv(1);
@@ -1027,14 +1027,14 @@ LispObject Lleq_4up(LispObject env,
     pop(a1);
     a4up = stack[0];
     while (a4up != nil)
-    {   a2 = qcar(a4up);
+    {   a2 = car(a4up);
         if (!lesseq2(a1, a2))
         {   popv(1);
             return false;
         }
         a4up = stack[0];
-        a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+        a1 = car(a4up);
+        a4up = cdr(a4up);
         stack[0] = a4up;
     }
     popv(1);
@@ -1105,8 +1105,8 @@ LispObject Lmax_4up(LispObject env, LispObject a1, LispObject a2,
     if (lessp2(a3, a1)) a1 = a3;
     pop(a4up);
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         push(a4up);
         if (lessp2(a2, a1)) a1 = a2;
         pop(a4up);
@@ -1122,8 +1122,8 @@ LispObject Lmin_4up(LispObject env, LispObject a1, LispObject a2,
     if (greaterp2(a3, a1)) a1 = a3;
     pop(a4up);
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         push(a4up);
         if (greaterp2(a2, a1)) a1 = a2;
         pop(a4up);

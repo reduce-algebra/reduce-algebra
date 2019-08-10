@@ -1,7 +1,7 @@
 
 % u16.lsp           Machine generated Lisp
 
-(c!:install "u16" 157223 2989184 898255)
+(c!:install "u16" 180182 9053055 335970)
 
 (c!:install 'powers3 '(powers3) 3323641930007482181)
 
@@ -121,10 +121,6 @@ qqe_nytidp qqe_qopaddp qqe_qoptailp) 11050168470374905022)
 (c!:install 'ibalp_redclause '(ibalp_redclause ibalp_vmember) 
 614149274002913780)
 
-(c!:install 'omsir '(omsir name atts cd (v e c t o r) (vectorml linalg1)
-mmleq!* special_cases!* special_cases2!* valid_om!* find apply encodeir)
- 6246809899696274779)
-
 (c!:install 'evallessp '(evallessp evalgreaterp) 1093636265455228741)
 
 (c!:install 'greaterp!: '(greaterp!: !:bprec!: normbf ashift) 
@@ -176,6 +172,13 @@ mkempspmat rederr reval nth letmtr3) 12477874448771780044)
 
 (c!:install 'modminusp!: '(modminusp!: !*balanced_mod current!-modulus) 
 16263133944667833744)
+
+(c!:install 'vbcgcd '(vbcgcd (1 . 1) vbcsize gcdf!*) 
+15164924111555833188)
+
+(c!:install 'removeindices '(removeindices "u= " " x= "
+"invalid arguments to removeindices" trwrite !*physopp isanindex idlistp
+areallindices rederr2) 1411264797663108431)
 
 
 % End of generated Lisp code

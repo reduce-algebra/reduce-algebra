@@ -81,7 +81,7 @@ LispObject Lmkevect(LispObject env, LispObject n)
     n1 = (1+int_of_fixnum(n))*CELL;
 // For now I will restrict the size here.
     n = get_basic_vector_init(n1+CELL, nil);
-    vechdr(n) ^= (TYPE_SIMPLE_VEC ^ TYPE_STRUCTURE);
+    setvechdr(n, vechdr(n) ^ (TYPE_SIMPLE_VEC ^ TYPE_STRUCTURE));
     return onevalue(n);
 }
 
@@ -100,7 +100,7 @@ LispObject Lmkxvect(LispObject env, LispObject n)
     if (n1 < 3*CELL) aerror1("mkxvect", n);
 // size-limited.
     n = get_basic_vector_init(n1+CELL, nil);
-    vechdr(n) ^= (TYPE_SIMPLE_VEC ^ TYPE_MIXED1);
+    setvechdr(n, vechdr(n) ^ (TYPE_SIMPLE_VEC ^ TYPE_MIXED1));
     return onevalue(n);
 }
 
@@ -410,7 +410,7 @@ LispObject simplify_string(LispObject s)
     if (h1 != string_char_sym) aerror("simplify-string");
     h1 = basic_elt(s, 1);                         // Dimension list
     if (!consp(h1)) aerror("simplify-string");
-    n = int_of_fixnum(qcar(h1));            // Look at size involved
+    n = int_of_fixnum(car(h1));            // Look at size involved
     h1 = basic_elt(s, 5);                         // Fill pointer
     if (is_fixnum(h1)) n = int_of_fixnum(h1);
     stackcheck(s);
@@ -798,11 +798,11 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
 // returns a Lisp integer result. So here I just write out a simple in-line
 // version.
 //
-    for (v=a; consp(v); v = qcdr(v)) n += CELL;
+    for (v=a; consp(v); v = cdr(v)) n += CELL;
     push(a);
     v = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(a);
-    for(n=0; consp(a); a = qcdr(a), n++) elt(v, n) = vcar(a);
+    for(n=0; consp(a); a = cdr(a), n++) elt(v, n) = car(a);
     return onevalue(v);
 }
 
@@ -943,16 +943,16 @@ LispObject Laref(LispObject env, int nargs, ...)
         return onevalue(elt(v, 2));
     }
     n1 = int_of_fixnum(n);
-    w = qcdr(w);
+    w = cdr(w);
     while (nargs > 2 && w != nil)
     {   n = va_arg(a, LispObject);
         if (!is_fixnum(n))
         {   va_end(a);
             aerror1("aref", n);
         }
-        n1 = n1*int_of_fixnum(qcar(w)) + int_of_fixnum(n);
+        n1 = n1*int_of_fixnum(car(w)) + int_of_fixnum(n);
         nargs--;
-        w = qcdr(w);
+        w = cdr(w);
     }
     va_end(a);
     if (nargs > 2 || w != nil)
@@ -1049,10 +1049,10 @@ LispObject Lelt(LispObject env, LispObject v, LispObject n)
     {   w = v;
         while (consp(w) && n1>0)
         {   n1--;
-            w = qcdr(w);
+            w = cdr(w);
         }
         if (!consp(w)) aerror1("elt", v);
-        return onevalue(qcar(w));
+        return onevalue(car(w));
     }
     h = vechdr(v);
     if (type_of_header(h) == TYPE_SIMPLE_VEC ||
@@ -1076,7 +1076,7 @@ LispObject Lelt(LispObject env, LispObject v, LispObject n)
     }
     if (type_of_header(h) != TYPE_ARRAY) aerror1("elt", v);
     w = elt(v, 1);   // The list of dimensions - must be 1 dim here
-    w = qcdr(w);
+    w = cdr(w);
     if (w != nil) aerror1("elt", v);
     n1 += int_of_fixnum(elt(v, 3));  // displaced-index-offset
     v = elt(v, 2);
@@ -1216,16 +1216,16 @@ LispObject Laset_4up(LispObject env, int nargs, ...)
         return onevalue(x);
     }
     n1 = int_of_fixnum(n);
-    w = qcdr(w);
+    w = cdr(w);
     while (nargs > 3 && w != nil)
     {   n = va_arg(a, LispObject);
         if (!is_fixnum(n))
         {   va_end(a);
             aerror1("aset", n);
         }
-        n1 = n1*int_of_fixnum(qcar(w)) + int_of_fixnum(n);
+        n1 = n1*int_of_fixnum(car(w)) + int_of_fixnum(n);
         nargs--;
-        w = qcdr(w);
+        w = cdr(w);
     }
     x = va_arg(a, LispObject);
     va_end(a);
@@ -1294,10 +1294,11 @@ static LispObject Lsetelt(LispObject env, LispObject v, LispObject n, LispObject
     {   w = v;
         while (consp(w) && n1>0)
         {   n1--;
-            w = qcdr(w);
+            w = cdr(w);
         }
         if (!consp(w)) aerror1("setelt", v);
-        qcar(w) = x;
+        setcar(w, x);
+        write_barrier(caraddr(w));
         return onevalue(x);
     }
     h = vechdr(v);
@@ -1333,7 +1334,7 @@ static LispObject Lsetelt(LispObject env, LispObject v, LispObject n, LispObject
     }
     if (type_of_header(h) != TYPE_ARRAY) aerror1("setelt", v);
     w = elt(v, 1);   // The list of dimensions - must be 1 dim here
-    w = qcdr(w);
+    w = cdr(w);
     if (w != nil) aerror1("setelt", v);
     n1 += int_of_fixnum(elt(v, 3));  // displaced-index-offset
     v = elt(v, 2);
@@ -1398,7 +1399,7 @@ LispObject Lvectorp(LispObject env, LispObject a)
         is_bitvec_header(h)) return onevalue(lisp_true);
     if (tt == TYPE_ARRAY)
     {   a = elt(a, 1);   // List of dimensions
-        if (consp(a) && !consp(qcdr(a))) return onevalue(lisp_true);
+        if (consp(a) && !consp(cdr(a))) return onevalue(lisp_true);
     }
     return onevalue(nil);
 }
@@ -1548,7 +1549,7 @@ static LispObject Lstring(LispObject env, LispObject a)
 //
     else if (elt(a, 0) != string_char_sym) aerror1("string", a);
     w = elt(a, 1);
-    if (!consp(w) || consp(qcdr(w))) aerror1("string", a);
+    if (!consp(w) || consp(cdr(w))) aerror1("string", a);
     else return onevalue(a);
 }
 
@@ -1580,7 +1581,7 @@ LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
 {   LispObject r = nil;
     size_t n = 3;
-    for (LispObject x=a4up; x!=nil; x=qcdr(x)) n++;
+    for (LispObject x=a4up; x!=nil; x=cdr(x)) n++;
     push(a1, a2, a3, a4up);
     r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(n+1));
     pop(a4up, a3, a2, a1);
@@ -1591,9 +1592,9 @@ LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
     elt(r, 2) = a3;
     write_barrier(&elt(r, 2));
     for (size_t i=3; i<n; i++)
-    {   elt(r, i) = vcar(a4up);
+    {   elt(r, i) = car(a4up);
         write_barrier(&elt(r, i));
-        a4up = qcdr(a4up);
+        a4up = cdr(a4up);
     }
     return onevalue(r);
 }
@@ -1649,7 +1650,7 @@ static LispObject Lshrink_vector(LispObject env,
 // These days my garbage collector (and other code) never relies on
 // such scans, so I simplify the code here.
     size_t adjustment = n1 - n2;  // number of bytes to shrink by    
-    vechdr(v) = vechdr(v) - pack_hdrlength(adjustment/4);
+    setvechdr(v, vechdr(v) - pack_hdrlength(adjustment/4));
     return onevalue(v);
 }
 
@@ -1818,7 +1819,7 @@ LispObject list_subseq(LispObject sequence, size_t start, size_t end)
 // Find start of subsequence
     while (consp(seq) && pntr > 0)
     {   pntr--;
-        seq = qcdr(seq);
+        seq = cdr(seq);
     }
     if (!consp(seq)) aerror1("subseq",sequence);
 
@@ -1828,12 +1829,15 @@ LispObject list_subseq(LispObject sequence, size_t start, size_t end)
     push(sequence);
     while (consp(seq) && pntr < seq_length)
     {   push(seq,copy,last);
-        newv = Lcons(nil,qcar(seq),nil);
+        newv = Lcons(nil,car(seq),nil);
         pop(last,copy,seq);
         if (pntr == 0) copy = newv;
-        else qcdr(last) = newv;
+        else
+        {   setcdr(last, newv);
+            write_barrier(cdraddr(last));
+        }
         last = newv;
-        seq = qcdr(seq);
+        seq = cdr(seq);
         pntr++;
     }
     pop(sequence);
@@ -1919,7 +1923,7 @@ LispObject vector_subseq(LispObject sequence, size_t start, size_t end)
     }
     else if (type_of_header(h) == TYPE_ARRAY)
     {   // elt(sequence, 1) is the list of dimensions - only handle 1-d case
-        if (qcdr(elt(sequence, 1)) != nil)
+        if (cdr(elt(sequence, 1)) != nil)
             aerror1("vector-subseq*",sequence);
         i = int_of_fixnum(elt(sequence, 3));  // displaced-index-offset
         return vector_subseq(elt(sequence,2),start+i,end+i);

@@ -460,8 +460,8 @@ static LispObject utf8_decode(int c1, int c2, int c3, int c4)
 
 LispObject Lutf8_decode_4up(LispObject env, LispObject a, LispObject b,
         LispObject c, LispObject d)
-{   if (qcdr(d) != nil) aerror("utf8-decode");
-    d = qcar(d);
+{   if (cdr(d) != nil) aerror("utf8-decode");
+    d = car(d);
     if (!is_fixnum(a)) aerror1("utf8-decode", a);
     if (!is_fixnum(b)) aerror1("utf8-decode", b);
     if (!is_fixnum(c)) aerror1("utf8-decode", c);
@@ -489,17 +489,17 @@ LispObject Lutf8_decode_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lutf8_decode_1(LispObject env, LispObject a)
 {   if (car_legal(a))  // I allow for a list of ints too
-    {   LispObject b=qcdr(a);
-        a = qcar(a);
+    {   LispObject b=cdr(a);
+        a = car(a);
         if (car_legal(b))
-        {   LispObject c = qcdr(b);
-            b = qcar(b);
+        {   LispObject c = cdr(b);
+            b = car(b);
             if (car_legal(c))
-            {   LispObject d = qcdr(c);
-                c = qcar(c);
+            {   LispObject d = cdr(c);
+                c = car(c);
                 if (car_legal(d))
-                {   if (car_legal(qcdr(d)))
-                        aerror1("utf8-decode", qcdr(d));
+                {   if (car_legal(cdr(d)))
+                        aerror1("utf8-decode", cdr(d));
                     else return Lutf8_decode_4up(nil, a, b, c, d);
                 }
                 else return Lutf8_decode_3(nil, a, b, c);
@@ -598,8 +598,8 @@ static LispObject Lchar_eqn_4up(LispObject env, LispObject a1, LispObject a2,
     chartest(a3);
     if (a2 != a3) return onevalue(nil);
     while (a4up != nil)
-    {   a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a1 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a1);
         if (a3 != a1) return onevalue(nil);
         a3 = a1;
@@ -639,8 +639,8 @@ static LispObject Lchar_lessp_4up(LispObject env, LispObject a1, LispObject a2,
     chartest(a3);
     if (a2 >= a3) return onevalue(nil);
     while (a4up != nil)
-    {   a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a1 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a1);
         if (a3 >= a1) return onevalue(nil);
         a3 = a1;
@@ -681,8 +681,8 @@ static LispObject Lchar_greaterp_4up(LispObject env, LispObject a1, LispObject a
     chartest(a3);
     if (a2 <= a3) return onevalue(nil);
     while (a4up != nil)
-    {   a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a1 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a1);
         if (a3 <= a1) return onevalue(nil);
         a3 = a1;
@@ -723,13 +723,13 @@ static LispObject Lchar_neq_4up(LispObject env, LispObject a1, LispObject a2,
     chartest(a3);
     if (a1 == a3 || a2 == a3) return onevalue(nil);
     while (a4up != nil)
-    {   LispObject a4 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   LispObject a4 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a4);
         if (a1 == a4 || a2 == a4 || a3 == a4) return onevalue(nil);
-        for (LispObject a5up=a4up; a5up!=nil; a5up=qcdr(a5up))
-        {   LispObject a5 = qcar(a5up);
-            a5up = qcdr(a5up);
+        for (LispObject a5up=a4up; a5up!=nil; a5up=cdr(a5up))
+        {   LispObject a5 = car(a5up);
+            a5up = cdr(a5up);
             chartest(a5);
             if (a4 == a5) return onevalue(nil);
         }
@@ -770,8 +770,8 @@ static LispObject Lchar_geq_4up(LispObject env, LispObject a1, LispObject a2,
     chartest(a3);
     if (a2 < a3) return onevalue(nil);
     while (a4up != nil)
-    {   a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a1 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a1);
         if (a3 < a1) return onevalue(nil);
         a3 = a1;
@@ -812,8 +812,8 @@ static LispObject Lchar_leq_4up(LispObject env, LispObject a1, LispObject a2,
     chartest(a3);
     if (a2 > a3) return onevalue(nil);
     while (a4up != nil)
-    {   a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a1 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a1);
         if (a3 > a1) return onevalue(nil);
         a3 = a1;
@@ -874,8 +874,8 @@ static LispObject Lcharacter_eqn_4up(LispObject env, LispObject a1, LispObject a
     a3 = casefold(a3);
     if (a2 != a3) return onevalue(nil);
     while (a4up != nil)
-    {   a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a1 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a1);
         a1 = casefold(a1);
         if (a3 != a1) return onevalue(nil);
@@ -923,8 +923,8 @@ static LispObject Lcharacter_lessp_4up(LispObject env, LispObject a1, LispObject
     a3 = casefold(a3);
     if (a2 >= a3) return onevalue(nil);
     while (a4up != nil)
-    {   a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a1 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a1);
         a1 = casefold(a1);
         if (a3 >= a1) return onevalue(nil);
@@ -973,8 +973,8 @@ static LispObject Lcharacter_greaterp_4up(LispObject env, LispObject a1, LispObj
     a3 = casefold(a3);
     if (a2 <= a3) return onevalue(nil);
     while (a4up != nil)
-    {   a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a1 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a1);
         a1 = casefold(a1);
         if (a3 <= a1) return onevalue(nil);
@@ -1022,14 +1022,14 @@ static LispObject Lcharacter_neq_4up(LispObject env, LispObject a1, LispObject a
     a3 = casefold(a3);
     if (a1 == a3 || a2 == a3) return onevalue(nil);
     while (a4up != nil)
-    {   LispObject a4 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   LispObject a4 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a4);
         a4 = casefold(a4);
         if (a1 == a4 || a2 == a4 || a3 == a4) return onevalue(nil);
-        for (LispObject a5up=a4up; a5up!=nil; a5up=qcdr(a5up))
-        {   LispObject a5 = qcar(a5up);
-            a5up = qcdr(a5up);
+        for (LispObject a5up=a4up; a5up!=nil; a5up=cdr(a5up))
+        {   LispObject a5 = car(a5up);
+            a5up = cdr(a5up);
             chartest(a5);
             a5 = casefold(a5);
             if (a4 == a5) return onevalue(nil);
@@ -1077,8 +1077,8 @@ static LispObject Lcharacter_geq_4up(LispObject env, LispObject a1, LispObject a
     a3 = casefold(a3);
     if (a2 < a3) return onevalue(nil);
     while (a4up != nil)
-    {   a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a1 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a1);
         a1 = casefold(a1);
         if (a3 < a1) return onevalue(nil);
@@ -1126,8 +1126,8 @@ static LispObject Lcharacter_leq_4up(LispObject env, LispObject a1, LispObject a
     a3 = casefold(a3);
     if (a2 > a3) return onevalue(nil);
     while (a4up != nil)
-    {   a1 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a1 = car(a4up);
+        a4up = cdr(a4up);
         chartest(a1);
         a1 = casefold(a1);
         if (a3 > a1) return onevalue(nil);
@@ -1196,8 +1196,8 @@ static LispObject get_char_vec(LispObject v, int32_t *high, int32_t *offset)
     h = vechdr(v);
     if (type_of_header(h) != TYPE_ARRAY) return nil;
     w = elt(v, 1);   // The list of dimensions
-    if (w == nil || qcdr(w) != nil) return nil;
-    *high = int_of_fixnum(qcar(w));
+    if (w == nil || cdr(w) != nil) return nil;
+    *high = int_of_fixnum(car(w));
     *offset = int_of_fixnum(elt(v, 3));
     v = elt(v, 2);
     h = vechdr(v);

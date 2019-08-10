@@ -3660,12 +3660,12 @@ reloadenv)))
 (put (quote ldrglob) (quote c!:opcode_printer) (function c!:pldrglob))
 
 (de c!:pstrglob (op r1 r2 r3) (c!:printf 
-"    qvalue(basic_elt(env, %s)) = %v; %<// %c\n" r3 r1 r2))
+"    setvalue(basic_elt(env, %s), %v); %<// %c\n" r3 r1 r2))
 
 (put (quote strglob) (quote c!:opcode_printer) (function c!:pstrglob))
 
 (de c!:pnilglob (op r1 r2 r3) (c!:printf 
-"    qvalue(basic_elt(env, %s)) = nil; %<// %c\n" r3 r2))
+"    setvalue(basic_elt(env, %s), nil); %<// %c\n" r3 r2))
 
 (put (quote nilglob) (quote c!:opcode_printer) (function c!:pnilglob))
 
@@ -3719,7 +3719,7 @@ r1 r1) (c!:printf "#endif\n")))
 
 (de c!:pcar (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (c!:printf 
 "    if (!car_legal(%v)) %v = carerror(%v); else\n" r3 r1 r3))) (c!:printf 
-"    %v = qcar(%v);\n" r1 r3)))
+"    %v = car(%v);\n" r1 r3)))
 
 (put (quote car) (quote c!:opcode_printer) (function c!:pcar))
 
@@ -3729,7 +3729,7 @@ r1 r1) (c!:printf "#endif\n")))
 
 (put (quote cdr) (quote c!:opcode_printer) (function c!:pcdr))
 
-(de c!:pqcar (op r1 r2 r3) (c!:printf "    %v = qcar(%v);\n" r1 r3))
+(de c!:pqcar (op r1 r2 r3) (c!:printf "    %v = car(%v);\n" r1 r3))
 
 (put (quote qcar) (quote c!:opcode_printer) (function c!:pqcar))
 
@@ -3885,13 +3885,13 @@ r3))
 
 (de c!:prplaca (op r1 r2 r3) (progn (c!:printf 
 "    if (!car_legal(%v)) rplaca_fails(%v);\n" r2 r2) (c!:printf 
-"    qcar(%v) = %v;\n" r2 r3)))
+"    setcar(%v, %v);\n" r2 r3)))
 
 (put (quote rplaca) (quote c!:opcode_printer) (function c!:prplaca))
 
 (de c!:prplacd (op r1 r2 r3) (progn (c!:printf 
 "    if (!car_legal(%v)) rplacd_fails(%v);\n" r2 r2) (c!:printf 
-"    qcdr(%v) = %v;\n" r2 r3)))
+"    setcdr(%v, %v);\n" r2 r3)))
 
 (put (quote rplacd) (quote c!:opcode_printer) (function c!:prplacd))
 
@@ -4260,7 +4260,7 @@ go lab1347)) (c!:printf ";\n") (prog (var1350) (setq var1350 (cdddr args))
 lab1349 (cond ((null var1350) (return nil))) (prog (v) (setq v (car var1350))
 (progn (c!:printf 
 "    if (_a4up_ == nil)\n        aerror1(\qnot enough arguments provided\q, basic_elt(env, 0));\n"
-) (c!:printf "    %s = qcar(_a4up_); _a4up_ = qcdr(_a4up_);\n" v))) (setq 
+) (c!:printf "    %s = car(_a4up_); _a4up_ = cdr(_a4up_);\n" v))) (setq 
 var1350 (cdr var1350)) (go lab1349)) (c!:printf 
 "    if (_a4up_ != nil)\n        aerror1(\qtoo many arguments provided\q, basic_elt(env, 0));\n"
 )))) (c!:printf "#ifdef CHECK_STACK\n") (c!:printf "    if_check_stack;\n") (

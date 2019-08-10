@@ -462,8 +462,8 @@ static LispObject Lilogand_4up(LispObject env, LispObject a1, LispObject a2,
          aerror3("ilogand", a2, a2, a3);
     a1 = a1 & a2 & a3;
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         if (!is_fixnum(a2)) aerror1("ilogand", a2);
         a1 = a1 & a2;
     }
@@ -476,8 +476,8 @@ static LispObject Lilogor_4up(LispObject env, LispObject a1, LispObject a2,
          aerror3("ilogor", a2, a2, a3);
     a1 = a1 | a2 | a3;
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         if (!is_fixnum(a2)) aerror1("ilogor", a2);
         a1 = a1 | a2;
     }
@@ -490,8 +490,8 @@ static LispObject Lilogxor_4up(LispObject env, LispObject a1, LispObject a2,
          aerror3("ilogxor", a2, a2, a3);
     a1 = a1 ^ a2 ^ a3;
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         if (!is_fixnum(a2)) aerror1("ilogxor", a2);
         a1 = a1 ^ a2;
     }
@@ -545,8 +545,8 @@ static LispObject Liplus_4up(LispObject, LispObject a1, LispObject a2,
         aerror3("iplus", a1, a2, a3);
     a1 = (intptr_t)a1 + (intptr_t)a2 - 2*TAG_FIXNUM + (intptr_t)a3;
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         if (!is_fixnum(a2)) aerror1("iplus", a2);
         a1 = a1 + (intptr_t)a2 - TAG_FIXNUM;
     }
@@ -620,8 +620,8 @@ static LispObject Litimes_4up(LispObject env, LispObject a1, LispObject a2,
         aerror3("iplus", a1, a2, a3);
     intptr_t r = int_of_fixnum(a1) * int_of_fixnum(a2) * int_of_fixnum(a3);
     while (a4up != nil)
-    {   a2 = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
         if (!is_fixnum(a2)) aerror1("itimes", a2);
         r = r * int_of_fixnum(a2);
     }
@@ -671,8 +671,8 @@ static LispObject Lfp_eval(LispObject env, LispObject code,
     unsigned char *p;
     if (!is_vector(code)) aerror("fp-evaluate");
     while (consp(args))
-    {   fp_args[n++] = float_of_number(qcar(args));
-        args = qcdr(args);
+    {   fp_args[n++] = float_of_number(car(args));
+        args = cdr(args);
     }
     n = 0;
     p = (unsigned char *)&ucelt(code, 0);

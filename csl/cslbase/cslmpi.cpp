@@ -100,8 +100,8 @@ static LispObject Lmpi_send(LispObject env, LispObject message, LispObject dest,
 
     get_fix_arg(dest, fun_name);
     get_fix_arg(tag, fun_name);
-    if (qcdr(comm) != nil) aerror("too many args for mpi-send");
-    comm = qcar(comm);
+    if (cdr(comm) != nil) aerror("too many args for mpi-send");
+    comm = car(comm);
     get_fix_arg(comm, fun_name);
 
     pack_object(message);
@@ -165,16 +165,16 @@ static LispObject Lmpi_sendrecv(LispObject, LispObject s_mess, LispObject dest,
 
     get_fix_arg(dest, fun_name);
     get_fix_arg(s_tag, fun_name);
-    source = qcar(a4up);
-    a4up = qcdr(a4up);
+    source = car(a4up);
+    a4up = cdr(a4up);
     get_fix_arg(source);
     if (a4up == nil) aerror("not enough arguments for mpi_sendrecv");
-    r_tag = qcar(a4up);
-    a4up = qcdr(a4up);
+    r_tag = car(a4up);
+    a4up = cdr(a4up);
     get_fix_arg(r_tag);
     if (a4up == nil) aerror("not enough arguments for mpi_sendrecv");
-    com = qcar(a4up);
-    a4up = qcdr(a4up);
+    com = car(a4up);
+    a4up = cdr(a4up);
     get_fix_arg(comm);
     if (a4up != nil) aerror("too many arguments for mpi_sendrecv");
 
@@ -211,8 +211,8 @@ static LispObject Lmpi_isend(LispObject, LispObject message, LispObject dest,
 
     get_fix_arg(dest, fun_name);
     get_fix_arg(tag, fun_name);
-    if (qcdr(comm) != nil) aerror("too many args for mpi_isend");
-    comm = qcar(comm);
+    if (cdr(comm) != nil) aerror("too many args for mpi_isend");
+    comm = car(comm);
     get_fix_arg(comm, fun_name);
 
     pack_object(message);

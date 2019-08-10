@@ -1,7 +1,7 @@
 
 % u07.lsp           Machine generated Lisp
 
-(c!:install "u07" 86565 7831386 3364022)
+(c!:install "u07" 103995 8424777 6738716)
 
 (c!:install 'gperm '(gperm gperm0 pkp) 6978857666060417365)
 
@@ -138,9 +138,6 @@ all bex ball) 16317418177497158700)
 (c!:install 'ibalp_calcmom '(ibalp_calcmom) 12531742832238813395)
 
 (c!:install 'multi_elem '(multi_elem expression) 15754855898525001441)
-
-(c!:install 'rationalizei '(rationalizei i kord!* (i . 1) reordsq to
-reorder multf negf) 15635161085173060111)
 
 (c!:install 'nextarg '(nextarg symm s!-nextarg o!-nextarg) 
 16482704159804204717)

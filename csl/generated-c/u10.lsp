@@ -1,7 +1,7 @@
 
 % u10.lsp           Machine generated Lisp
 
-(c!:install "u10" 120181 2581563 9048161)
+(c!:install "u10" 141899 3490953 9662779)
 
 (c!:install 'take!-realpart '(take!-realpart repartf multsq) 
 9070378222395813219)
@@ -47,9 +47,6 @@ headhisto initwght redcodmat inshisto) 11730998601544262957)
 7102534019139876260)
 
 (c!:install 'lprim '(lprim !*msg "***" lpriw) 7798764165975688666)
-
-(c!:install 'errorset2 '(errorset2 !*protfg errorset) 
-1992682039791703289)
 
 (c!:install 'maprint '(maprint p!*!* physoppri minus "(" ")" failed
 orig!* posn!* obrkp!* !*comma!* physopp vec!-maprin prin2!* inprint) 

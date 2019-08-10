@@ -1,7 +1,7 @@
 
 % u03.lsp           Machine generated Lisp
 
-(c!:install "u03" 92290 8144100 4711121)
+(c!:install "u03" 155384 7897811 3062262)
 
 (c!:install 'times!-in!-vector '(times!-in!-vector) 4779664854939156595)
 
@@ -152,9 +152,6 @@ getrtype) 15939234473122355531)
 (c!:install 'pkp '(pkp !*ppacked diglist!* !0 dssoc) 3262876245839786418
 )
 
-(c!:install 'noncomp1 '(noncomp1 !*sq taylor!* noncomfp noncomlistp) 
-3370027673075772195)
-
 (c!:install 'plus!-mod!-p '(plus!-mod!-p !*n2f ordop) 
 11495117821214418486)
 
@@ -181,9 +178,6 @@ yetunknowntype getrtype1 eval physopp!* getrtype2) 17463766755553874190)
 (c!:install 'subs2!* '(subs2!* !*sub2 subs2) 8913029558719780175)
 
 (c!:install 'evsum '(evsum) 11202217146848191637)
-
-(c!:install 'errorset!* '(errorset!* !*backtrace errorset) 
-18439447723326379536)
 
 (c!:install 'fs!:timesterm '(fs!:timesterm fs!:timestermterm fs!:plus) 
 4213227144414903097)

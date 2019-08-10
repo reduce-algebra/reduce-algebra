@@ -1,22 +1,7 @@
 
 % u18.lsp           Machine generated Lisp
 
-(c!:install "u18" 67203 2550329 6567707)
-
-(c!:install 'ibalp_initwl '(ibalp_initwl setcar) 13150529795419341680)
-
-(c!:install 'variablesir '(variablesir char (!/ o m b v a r) omvir lex) 
-2307334160926180555)
-
-(c!:install '!*pf2wedgepf '(!*pf2wedgepf nreverse wedgefax) 
-458561407058774177)
-
-(c!:install 'deleteall '(deleteall) 8011811616758810551)
-
-(c!:install 'cstimes '(cstimes times) 13052923761714089834)
-
-(c!:install 'simprepart '(simprepart !*factor simp!* repartsq) 
-15241199411347169298)
+(c!:install "u18" 62049 7141115 3376320)
 
 (c!:install 'command '(command errmsg!* loopdelimslist!* !*demo ifl!*
 !*slin !*reduce4 lreadfn!* crchar!* !$eol!$ !*struct !*pret (in out shut
@@ -116,10 +101,6 @@ putobject terminalp) 7966353812840996655)
 
 (c!:install 'moduntag '(moduntag !:mod!: nreverse) 12941555493178756383)
 
-(c!:install 'mksq '(mksq subfg!* wtl!* k!* !*nosubs used!* asymplis!*
-powlis!* (expt sqrt) !*sub2 mksqsubfn !*resubs fkern getpower multsq
-aconc simpcar exptsq) 2078308568221352553)
-
 (c!:install 'rrdls '(rrdls ttype!* !) !. " " nxtsym!*
 "Invalid S-expression" rread1 ptoken symerr) 13495039264772142997)
 
@@ -145,6 +126,35 @@ terpri!* ir2om) 10393749499664844907)
 general!-times!-mod!-p) 12454319538062397665)
 
 (c!:install 'ordexn '(ordexn ordop) 11796463192895462512)
+
+(c!:install '!:expt '(!:expt poly "0/0 formed" expt rerror fieldp
+mkratnum !:recip) 1906246832538517278)
+
+(c!:install 'lex_start_line_comment '(lex_start_line_comment !%
+lexer_style!* !# !/ land yypeek) 16879018531008787476)
+
+(c!:install 'rl_atl '(rl_atl rl_atl!* apply) 6673392338047636236)
+
+(c!:install 'ibalp_process!-var '(ibalp_process!-var !! setcar) 
+18440587624209677374)
+
+(c!:install 'exptpri '(exptpri !*utf8 !*list !*nat !*fort failed expt
+!*eraise inbrackets indexprin !*ratpri quotient minus spare!* orig!*
+posn!* "(" ")" utf8_exptpri layout!-formula indexpower negnumberchk
+terpri!* prin2!* putpline oprin update!-pline) 1764904720989000181)
+
+(c!:install 'om2mml '(om2mml "Intermediate representation:" om2ir
+terpri!* ir2mml) 10011268629939126471)
+
+(c!:install 'floatprop '(floatprop !:rd!:) 9827860526588982079)
+
+(c!:install '!*wedgepf2pf '(!*wedgepf2pf nreverse mkuwedge) 
+5371658738046325164)
+
+(c!:install 'delete!-dups '(delete!-dups nreverse) 12574236897102092115)
+
+(c!:install 'inttovec '(inttovec inttovec!-solve inttovec1) 
+13972934414845309666)
 
 
 % End of generated Lisp code

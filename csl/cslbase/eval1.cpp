@@ -47,9 +47,9 @@ LispObject nreverse(LispObject a)
 {   LispObject b = nil;
     while (consp(a))
     {   LispObject c = a;
-        a = qcdr(a);
-        qcdr(c) = b;
-        write_barrier(&qcdr(c));
+        a = cdr(a);
+        setcdr(c,  b);
+        write_barrier(cdraddr(c));
         b = c;
     }
     return b;
@@ -101,9 +101,9 @@ restart:
 // "deep binding".
         else
         {   while (env != nil)
-            {   LispObject p = qcar(env);
-                if (qcar(p) == u)
-                {   LispObject v =qcdr(p);
+            {   LispObject p = car(env);
+                if (car(p) == u)
+                {   LispObject v =cdr(p);
 // If a variable is lexically bound to the value work_symbol that means
 // that the symbol has been (lexically) declared to be special, so its
 // value cell should be inspected.
@@ -115,7 +115,7 @@ restart:
                     }
                     return onevalue(v);
                 }
-                env = qcdr(env);
+                env = cdr(env);
             }
 // If a symbol has not been declared FLUID or GLOBAL and is not lovally
 // bound then if I was feeling really cautious I would raise an error
@@ -146,21 +146,21 @@ restart:
 // be checked is if fn is lexically bound.
         LispObject fn, args;
         stackcheck(u, env);
-        fn = qcar(u);
-        args = qcdr(u);
+        fn = car(u);
+        args = cdr(u);
 // Local function bindings must be looked for first. Well Standard Lisp
 // does not have local function bindings, but Common Lisp does - hence the
 // extra "fun" here.
         {   LispObject p;
             if (is_symbol(fn)) // can only be a local function if atomic.
-            for (p=env; p!=nil; p=qcdr(p))
-            {   LispObject w = qcar(p);
+            for (p=env; p!=nil; p=cdr(p))
+            {   LispObject w = car(p);
 // The form (<list> . sym) is used in an environment to indicate a local
 // binding of a function, either as a regular function or as a macro
 // (i.e. flet or macrolet).  The structure of the list distinguishes
 // between these two cases.
-                if (qcdr(w) == fn && is_cons(w = qcar(w)) && w!=nil)
-                {   p = qcar(w);
+                if (cdr(w) == fn && is_cons(w = car(w)) && w!=nil)
+                {   p = car(w);
 // p will now be (funarg env bvl ...body...) for a simple local
 // function definition, or (bvl ...body...) with the bvl non-atomic
 // for a local macro introduced using MACROLET.
@@ -202,8 +202,8 @@ restart:
             debug_record_symbol(fn);
             if (h & SYM_SPECIAL_FORM)
             {   STACK_SANITY1(u);
-                assert(vfn1(fn) != NULL);
-                return (*vfn1(fn))(args, env);
+                assert(qfn1(fn) != NULL);
+                return (*qfn1(fn))(args, env);
             }
             else if (h & SYM_MACRO)
             {   STACK_SANITY;
@@ -238,43 +238,43 @@ restart:
 // things rather directly.
         LispObject eargs = nil;
         if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        {   if (args == nil) return (*vfn0(fn))(fn);
-            LispObject a1 = qcar(args);
+        {   if (args == nil) return (*qfn0(fn))(fn);
+            LispObject a1 = car(args);
             push(fn, args, env);
             on_backtrace(
                 a1 = eval(a1, env),
                 pop(env, args, fn);
                 if (SHOW_ARGS)
                 {   err_printf("\nEvaluating: ");
-                    loop_print_error(qcar(args));
+                    loop_print_error(car(args));
                 });
             pop(env, args, fn);
-            args = qcdr(args);
-            if (args == nil) return (*vfn1(fn))(fn, a1);
-            LispObject a2 = qcar(args);
+            args = cdr(args);
+            if (args == nil) return (*qfn1(fn))(fn, a1);
+            LispObject a2 = car(args);
             push(fn, args, env, a1);
             on_backtrace(
                 a2 = eval(a2, env),
                 pop(a1, env, args, fn);
                 if (SHOW_ARGS)
                 {   err_printf("\nEvaluating: ");
-                    loop_print_error(qcar(args));
+                    loop_print_error(car(args));
                 });
             pop(a1, env, args, fn);
-            args = qcdr(args);
-            if (args == nil) return (*vfn2(fn))(fn, a1, a2);
-            LispObject a3 = qcar(args);
+            args = cdr(args);
+            if (args == nil) return (*qfn2(fn))(fn, a1, a2);
+            LispObject a3 = car(args);
             push5(fn, args, env, a1, a2);
             on_backtrace(
                 a3 = eval(a3, env),
                 pop5(a2, a1, env, args, fn);
                 if (SHOW_ARGS)
                 {   err_printf("\nEvaluating: ");
-                    loop_print_error(qcar(args));
+                    loop_print_error(car(args));
                 });
             pop5(a2, a1, env, args, fn);
-            args = qcdr(args);
-            if (args == nil) return (*vfn3(fn))(fn, a1, a2, a3);
+            args = cdr(args);
+            if (args == nil) return (*qfn3(fn))(fn, a1, a2, a3);
             push(fn, env, args);
             eargs = list3(a3, a2, a1);
             pop(args, env, fn);
@@ -285,19 +285,19 @@ restart:
             while (consp(args))
             {   LispObject w;
                 push(fn, args, env, eargs);
-                w = qcar(args);
+                w = car(args);
                 on_backtrace(
                     w = eval(w, env),
                     // Now the error handler
                     pop(eargs, env, args, fn);
                     if (SHOW_ARGS)
                     {   err_printf("\nEvaluating: ");
-                        loop_print_error(qcar(args));
+                        loop_print_error(car(args));
                     });
                 pop(eargs);
                 eargs = cons(w, eargs);
                 pop(env, args, fn);
-                args = qcdr(args);
+                args = cdr(args);
             }
             eargs = nreverse(eargs);
 // I pass the environment down to apply() because it will be used if the
@@ -316,16 +316,16 @@ static bool check_no_unwanted_keys(LispObject restarg, LispObject ok_keys)
 // verify that there were no unwanted keys in the actual arg list
 {   bool odd_key_found = false;
     while (restarg!=nil)
-    {   LispObject k = qcar(restarg);
+    {   LispObject k = car(restarg);
         LispObject w;
-        for (w=ok_keys; w!=nil; w=qcdr(w))
-            if (k == qcar(w)) goto is_ok;
+        for (w=ok_keys; w!=nil; w=cdr(w))
+            if (k == car(w)) goto is_ok;
         odd_key_found = true;
     is_ok:
-        restarg = qcdr(restarg);
+        restarg = cdr(restarg);
         if (restarg==nil) return true;  // odd length list
-        if (k == allow_key_key && qcar(restarg) != nil) return false; // OK
-        restarg = qcdr(restarg);
+        if (k == allow_key_key && car(restarg) != nil) return false; // OK
+        restarg = cdr(restarg);
     }
     return odd_key_found;
 }
@@ -334,12 +334,12 @@ static bool check_keyargs_even(LispObject restarg)
 // check that list is even length with alternate items symbols in
 // the keyword package. Return true in BAD case.
 {   while (restarg!=nil)
-    {   LispObject q = qcar(restarg);
+    {   LispObject q = car(restarg);
         if (!is_symbol(q) || qpackage(q) != qvalue(keyword_package))
             return true;
-        restarg = qcdr(restarg);
+        restarg = cdr(restarg);
         if (restarg==nil) return true;      // Odd length is wrong
-        restarg = qcdr(restarg);
+        restarg = cdr(restarg);
     }
     return false;                           // OK
 }
@@ -364,10 +364,10 @@ static LispObject keywordify(LispObject v)
 
 static LispObject key_lookup(LispObject keyname, LispObject args)
 {   while (args!=nil)
-    {   LispObject next = qcdr(args);
+    {   LispObject next = cdr(args);
         if (next==nil) return nil;
-        if (qcar(args) == keyname) return next;
-        else args = qcdr(next);
+        if (car(args) == keyname) return next;
+        else args = cdr(next);
     }
     return nil;
 }
@@ -422,9 +422,9 @@ inline void instate_binding(LispObject var, LispObject val,
 // If something is not globally special it may still have been locally
 // declared special, so I scan the environment. I clobber local declarations
 // when I use them so that they do not get applied multiple times.
-        for (w = local_decs1; w!=nil; w = qcdr(w))
-        {   if (qcar(w) == var)
-            {   qcar(w) = fixnum_of_int(0); // decl is used up
+        for (w = local_decs1; w!=nil; w = cdr(w))
+        {   if (car(w) == var)
+            {   setcar(w, fixnum_of_int(0)); // decl is used up
                 env = acons(var, work_symbol, env);
                 specenv = acons_no_gc(var, qvalue(var), specenv);
                 setvalue(var, val);
@@ -440,8 +440,8 @@ inline void instate_binding(LispObject var, LispObject val,
 // arglist is in fact a value on the Lisp stack.
 
 inline LispObject next_arg()
-{   LispObject r = qcar(arglist);
-    arglist = qcdr(arglist);
+{   LispObject r = car(arglist);
+    arglist = cdr(arglist);
     return r;
 }
 
@@ -467,11 +467,11 @@ LispObject apply_lambda(LispObject def, LispObject args,
 
     int opt_rest_state = STATE_NULL;
     int args_left = 0;
-    for (LispObject u=args; u!=nil; u=qcdr(u)) args_left++;
+    for (LispObject u=args; u!=nil; u=cdr(u)) args_left++;
     LispObject w1;
     if (!consp(def)) return onevalue(nil);    // Should never happen
     stackcheck(def, args, env1, name1);
-    w1 = qcar(def);
+    w1 = car(def);
 //
 // The next fragment is horrible but is here because at present I have a
 // precise garbage collector and all the values set up here (and established
@@ -481,7 +481,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
 //
     push(args);                         // arglist
     push(w1,                           // bvl
-          qcdr(def),                    // body
+          cdr(def),                    // body
           env1, name1);
     push5(nil, nil,                     // local_decs, ok_keys
           nil, nil, nil);               // restarg, specenv, val1
@@ -495,14 +495,14 @@ LispObject apply_lambda(LispObject def, LispObject args,
 // a DECLARE expression, but versions of the Common Lisp specification later
 // than the one I originally looked at say that DECLARE may only appear
 // directly and manifestly, so I can avoid that extra step.
-        p = qcar(body);
-        body = qcdr(body);
+        p = car(body);
+        body = cdr(body);
         if (!consp(p))
         {   if (stringp(p) && consp(body)) continue; // string is comment here.
             body = cons(p, body);  // other atoms get stuck back on body.
             break;
         }
-        if (qcar(p) != declare_symbol)
+        if (car(p) != declare_symbol)
         {   body = cons(p, body);  // something other than a "declare".
             break;
         }
@@ -510,13 +510,13 @@ LispObject apply_lambda(LispObject def, LispObject args,
 //   ("string" "string" (declare ...) ...)
 // and I have discarded the strings and here p is the part that starts
 // with the symbol DECLARE.
-        for (v = qcdr(p); consp(v); v = qcdr(v))
-        {   v1 = qcar(v);
+        for (v = cdr(p); consp(v); v = cdr(v))
+        {   v1 = car(v);
 // scan looking for (SPECIAL ...)
-            if (!consp(v1) || qcar(v1) != special_symbol) continue;
+            if (!consp(v1) || car(v1) != special_symbol) continue;
             // here v1 says (special ...)
-            for (v1=qcdr(v1); consp(v1); v1 = qcdr(v1))
-                local_decs = cons(qcar(v1), local_decs);
+            for (v1=cdr(v1); consp(v1); v1 = cdr(v1))
+                local_decs = cons(car(v1), local_decs);
         }
 // I keep going so that several DECLARE expressions one after the other will
 // be supported. Note that the way I have coded this allows strings interleaved
@@ -527,8 +527,8 @@ LispObject apply_lambda(LispObject def, LispObject args,
     LispObject *stacksave = stack;
     try
     {   START_SETJMP_BLOCK;
-        for (p = bvl; consp(p); p=qcdr(p))
-        {   v = qcar(p);
+        for (p = bvl; consp(p); p=cdr(p))
+        {   v = car(p);
             v1 = nil;
             arg = nil;
             val1 = nil;
@@ -587,15 +587,15 @@ LispObject apply_lambda(LispObject def, LispObject args,
                     }
                     v1 = nil;
                     if (!consp(v)) break;       // Simple case
-                    {   w = qcdr(v);
-                        v = qcar(v);
+                    {   w = cdr(v);
+                        v = car(v);
                         if (!consp(w)) break;   // (var)
                         if (val1 == nil)        // use the init form
-                        {   arg = qcar(w);
+                        {   arg = car(w);
                             arg = eval(arg, env);
                         }
-                        w = qcdr(w);
-                        if (consp(w)) v1 = qcar(w); // suppliedp name
+                        w = cdr(w);
+                        if (consp(w)) v1 = car(w); // suppliedp name
                         break;
                     }
 
@@ -666,38 +666,38 @@ LispObject apply_lambda(LispObject def, LispObject args,
                             keyname = keywordify(v);
                         }
                         else
-                        {   w = qcdr(v);
-                            v = qcar(v);
+                        {   w = cdr(v);
+                            v = car(v);
                             if (!consp(v))
                             {   if (!is_symbol(v) || v==nil || v==lisp_true)
                                     error(1, err_bad_bvl, v);
                                 keyname = keywordify(v);
                             }
                             else
-                            {   keyname = qcar(v);
+                            {   keyname = car(v);
                                 if (!is_symbol(keyname) || v==nil || v ==lisp_true)
                                     error(1, err_bad_bvl, v);
                                 keyname = keywordify(keyname);
-                                v = qcdr(v);
-                                if (consp(v)) v = qcar(v);
+                                v = cdr(v);
+                                if (consp(v)) v = car(v);
                                 else error(1, err_bad_bvl, v);
                             }
                         }
                         ok_keys = cons(keyname, ok_keys);
-                        arg = key_lookup(qcar(ok_keys), restarg);
+                        arg = key_lookup(car(ok_keys), restarg);
                         if (arg == nil) val1 = nil;
                         else
-                        {   arg = qcar(arg);
+                        {   arg = car(arg);
                             val1 = lisp_true;
                         }
                         v1 = nil;
                         if (!consp(w)) break;   // (var)
                         if (val1 == nil)        // use the init form
-                        {   arg = qcar(w);
+                        {   arg = car(w);
                             arg = eval(arg, env);
                         }
-                        w = qcdr(w);
-                        if (consp(w)) v1 = qcar(w); // suppliedp name
+                        w = cdr(w);
+                        if (consp(w)) v1 = car(w); // suppliedp name
                         break;
                     }
 
@@ -715,10 +715,10 @@ LispObject apply_lambda(LispObject def, LispObject args,
                         v == key_key || v == allow_other_keys ||
                         v == aux_key) error(1, err_bad_bvl, v);
                     if (consp(v))
-                    {   w = qcdr(v);
-                        v = qcar(v);
+                    {   w = cdr(v);
+                        v = car(v);
                         if (consp(w))
-                        {   arg = qcar(w);
+                        {   arg = car(w);
                             arg = eval(arg, env);
                         }
                     }
@@ -733,8 +733,8 @@ LispObject apply_lambda(LispObject def, LispObject args,
 // As well as local special declarations that have applied to bindings here
 // there can be some that apply just to variable references within the body.
         while (local_decs!=nil)
-        {   LispObject q = qcar(local_decs);
-            local_decs=qcdr(local_decs);
+        {   LispObject q = car(local_decs);
+            local_decs=cdr(local_decs);
             if (!is_symbol(q)) continue;
             env = acons(q, work_symbol, env);
         }
@@ -766,9 +766,9 @@ LispObject apply_lambda(LispObject def, LispObject args,
         {   exit_count = 1;
             def = progn_fn(body, env);
             while (specenv != nil)
-            {   LispObject bv = qcar(specenv);
-                setvalue(qcar(bv), vcdr(bv));
-                specenv = qcdr(specenv);
+            {   LispObject bv = car(specenv);
+                setvalue(car(bv), cdr(bv));
+                specenv = cdr(specenv);
             }
         }
     }
@@ -777,9 +777,9 @@ LispObject apply_lambda(LispObject def, LispObject args,
 // On any exception raised above I will need to restore any fluid bindings
 // that have been made.
         while (specenv != nil)
-        {   LispObject bv = qcar(specenv);
-            setvalue(qcar(bv), vcdr(bv));
-            specenv = qcdr(specenv);
+        {   LispObject bv = car(specenv);
+            setvalue(car(bv), cdr(bv));
+            specenv = cdr(specenv);
         }
         throw;
     }
@@ -820,8 +820,8 @@ LispObject Levlis(LispObject env, LispObject a)
     stackcheck(a);
     r = nil;
     while (consp(a))
-    {   push(qcdr(a), r);
-        a = qcar(a);
+    {   push(cdr(a), r);
+        a = car(a);
         a = eval(a, nil);
         pop(r);
         r = cons(a, r);
@@ -847,7 +847,7 @@ LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
 //   (APPLY fn a1 a2 (a3 a4 a5up))
 // where a5up will be a list (a5 a6 ...).
     a3up = Lreverse(nil, a3up);
-    a3up = nreverse2(qcdr(a3up), qcar(a3up));
+    a3up = nreverse2(cdr(a3up), car(a3up));
 // I have just flattened out the final argument.
     push(fn);
     a1 = list2star(a1, a2, a3up);
@@ -885,13 +885,13 @@ LispObject Lapply_3(LispObject env, LispObject fn, LispObject a1, LispObject a2)
 
 LispObject Lapply0(LispObject env, LispObject fn)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (*vfn0(fn))(fn);
+        return (*qfn0(fn))(fn);
     return Lapply_2(env, fn, nil);
 }
 
 LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (*vfn1(fn))(fn, a1);
+        return (*qfn1(fn))(fn, a1);
     push(env, fn);
     a1 = ncons(a1);
     pop(fn, env);
@@ -901,7 +901,7 @@ LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
 LispObject Lapply2(LispObject env, LispObject fn,
         LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (*vfn2(fn))(fn, a1, a2);
+        return (*qfn2(fn))(fn, a1, a2);
     push(env, fn);
     a1 = list2(a1, a2);
     pop(fn, env);
@@ -912,7 +912,7 @@ LispObject Lapply3(LispObject env, LispObject fn,
         LispObject a1, LispObject a2, LispObject a3up)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
     {   LispObject a3 = arg4("apply3", a3up);
-        return (*vfn3(fn))(fn, a1, a2, a3);
+        return (*qfn3(fn))(fn, a1, a2, a3);
     }
     LispObject a3 = arg4("apply3", a3up);
     push(env, fn);
@@ -927,13 +927,13 @@ LispObject Lapply3(LispObject env, LispObject fn,
 
 LispObject Lfuncall_1(LispObject env, LispObject fn)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (*vfn0(fn))(fn);
+        return (*qfn0(fn))(fn);
     return Lapply_2(env, fn, nil);
 }
 
 LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (*vfn1(fn))(fn, a1);
+        return (*qfn1(fn))(fn, a1);
     push(env, fn);
     a1 = ncons(a1);
     pop(fn, env);
@@ -943,7 +943,7 @@ LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
 LispObject Lfuncall_3(LispObject env, LispObject fn,
         LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        return (*vfn2(fn))(fn, a1, a2);
+        return (*qfn2(fn))(fn, a1, a2);
     push(env, fn);
     a1 = list2(a1, a2);
     pop(fn, env);
@@ -953,8 +953,8 @@ LispObject Lfuncall_3(LispObject env, LispObject fn,
 LispObject Lfuncall_4up(LispObject env, LispObject fn,
         LispObject a1, LispObject a2, LispObject a3up)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-    {   if (qcdr(a3up) == nil) return (*vfn3(fn))(fn, a1, a2, qcar(a3up));
-        else return (*vfn4up(fn))(fn, a1, a2, qcar(a3up), qcdr(a3up));
+    {   if (cdr(a3up) == nil) return (*qfn3(fn))(fn, a1, a2, car(a3up));
+        else return (*qfn4up(fn))(fn, a1, a2, car(a3up), cdr(a3up));
     }
     push(env, fn);
     a1 = list2star(a1, a2, a3up);
@@ -987,8 +987,8 @@ LispObject Lvalues_4up(LispObject env, LispObject a1, LispObject a2,
     int n = 3;
     for (int i=4; i<=50; i++)
     {   if (a4up == nil) break;
-        workbase[i] = qcar(a4up);
-        a4up = qcdr(a4up);
+        workbase[i] = car(a4up);
+        a4up = cdr(a4up);
         n++;
     }
     return nvalues(a1, n);
@@ -1025,23 +1025,23 @@ LispObject mv_call_fn(LispObject args, LispObject env)
     if (!consp(args)) return nil;       // (multiple-value-call) => nil
     stackcheck(args, env);
     push(args, env);
-    LispObject fn = qcar(args);
+    LispObject fn = car(args);
     fn = eval(fn, env);
     pop(env, args);
-    args = qcdr(args);
+    args = cdr(args);
     push(fn);
     LispObject xargs = nil;             // for list of eventual args
     while (consp(args))
     {   LispObject r1;
         push(args, env, xargs);
-        r1 = qcar(args);
+        r1 = car(args);
         exit_count = 1;
         r1  = eval(r1, env);
         if (exit_count != 0) stack[0] = cons(r1, stack[0]);
         for (unsigned int i=2; i<=exit_count; i++)
             stack[0] = cons((&work_0)[i], stack[0]);
         pop(xargs, env, args);
-        args = qcdr(args);
+        args = cdr(args);
     }
     return apply(fn, xargs, env, mv_call_symbol);
 }
@@ -1099,7 +1099,7 @@ LispObject funarged_0(LispObject def)
     save_current_function saver(def);
     stackcheck(def);
     def = qenv(def);
-    return apply_lambda(qcdr(def), nil, qcar(def), qcdr(def));
+    return apply_lambda(cdr(def), nil, car(def), cdr(def));
 }
 
 LispObject funarged_1(LispObject def, LispObject a1)
@@ -1110,7 +1110,7 @@ LispObject funarged_1(LispObject def, LispObject a1)
     push(def);
     a1 = ncons(a1);
     pop(def);
-    return apply_lambda(qcdr(def), a1, qcar(def), qcdr(def));
+    return apply_lambda(cdr(def), a1, car(def), cdr(def));
 }
 
 LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
@@ -1121,7 +1121,7 @@ LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
     push(def);
     a1 = list2(a1, a2);
     pop(def);
-    return apply_lambda(qcdr(def), a1, qcar(def), qcdr(def));
+    return apply_lambda(cdr(def), a1, car(def), cdr(def));
 }
 
 LispObject funarged_3(LispObject def, LispObject a1, LispObject a2, LispObject a3)
@@ -1132,7 +1132,7 @@ LispObject funarged_3(LispObject def, LispObject a1, LispObject a2, LispObject a
     push(def);
     a1 = list3(a1, a2, a3);
     pop(def);
-    return apply_lambda(qcdr(def), a1, qcar(def), qcdr(def));
+    return apply_lambda(cdr(def), a1, car(def), cdr(def));
 }
 
 LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
@@ -1144,7 +1144,7 @@ LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
     stackcheck(a1, a2, a3, a4up);
     a1 = list3star(a1, a2, a3, a4up);
     pop(def);
-    return apply_lambda(qcdr(def), a1, qcar(def), qcdr(def));
+    return apply_lambda(cdr(def), a1, car(def), cdr(def));
 }
 
 static LispObject macroexpand_1(LispObject form, LispObject env)
@@ -1155,13 +1155,13 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
     stackcheck(form, env);
     done = nil;
     if (consp(form))
-    {   f = qcar(form);
+    {   f = car(form);
 // look for local macro definitions
         {   LispObject p;
-            for (p=env; p!=nil; p=qcdr(p))
-            {   LispObject w = qcar(p);
-                if (qcdr(w) == f && is_cons(w = qcar(w)) && w!=nil)
-                {   p = qcar(w);
+            for (p=env; p!=nil; p=cdr(p))
+            {   LispObject w = car(p);
+                if (cdr(w) == f && is_cons(w = car(w)) && w!=nil)
+                {   p = car(w);
                     if (p == funarg) // ordinary function
                     {   mv_2 = nil;
                         return nvalues(form, 2);
@@ -1253,13 +1253,13 @@ LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
 LispObject autoload_0(LispObject fname)
 {   STACK_SANITY;
     fname = qenv(fname);
-    push(qcar(fname));
-    set_fns(qcar(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
-    qenv(qcar(fname)) = vcar(fname);
-    fname = qcdr(fname);
+    push(car(fname));
+    set_fns(car(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    setenv(car(fname), car(fname));
+    fname = cdr(fname);
     while (consp(fname))
-    {   push(qcdr(fname));
-        Lload_module(nil, qcar(fname));
+    {   push(cdr(fname));
+        Lload_module(nil, car(fname));
         pop(fname);
     }
     pop(fname);
@@ -1269,13 +1269,13 @@ LispObject autoload_0(LispObject fname)
 LispObject autoload_1(LispObject fname, LispObject a1)
 {   STACK_SANITY;
     fname = qenv(fname);
-    push(qcar(fname), a1);
-    set_fns(qcar(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
-    qenv(qcar(fname)) = vcar(fname);
-    fname = qcdr(fname);
+    push(car(fname), a1);
+    set_fns(car(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    setenv(car(fname), car(fname));
+    fname = cdr(fname);
     while (consp(fname))
-    {   push(qcdr(fname));
-        Lload_module(nil, qcar(fname));
+    {   push(cdr(fname));
+        Lload_module(nil, car(fname));
         pop(fname);
     }
     pop(a1);
@@ -1287,13 +1287,13 @@ LispObject autoload_1(LispObject fname, LispObject a1)
 LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     fname = qenv(fname);
-    push(qcar(fname), a1, a2);
-    set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
-    qenv(qcar(fname)) = vcar(fname);
-    fname = qcdr(fname);
+    push(car(fname), a1, a2);
+    set_fns(car(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    setenv(car(fname), car(fname));
+    fname = cdr(fname);
     while (consp(fname))
-    {   push(qcdr(fname));
-        Lload_module(nil, qcar(fname));
+    {   push(cdr(fname));
+        Lload_module(nil, car(fname));
         pop(fname);
     }
     pop(a2, a1);
@@ -1305,13 +1305,13 @@ LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
 LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2, LispObject a3)
 {   STACK_SANITY;
     fname = qenv(fname);
-    push(qcar(fname), a1, a2, a3);
-    set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
-    qenv(qcar(fname)) = vcar(fname);
-    fname = qcdr(fname);
+    push(car(fname), a1, a2, a3);
+    set_fns(car(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    setenv(car(fname), car(fname));
+    fname = cdr(fname);
     while (consp(fname))
-    {   push(qcdr(fname));
-        Lload_module(nil, qcar(fname));
+    {   push(cdr(fname));
+        Lload_module(nil, car(fname));
         pop(fname);
     }
     pop(a3, a2, a1);
@@ -1325,12 +1325,12 @@ LispObject autoload_4up(LispObject fname, LispObject a1, LispObject a2,
 {   STACK_SANITY;
     fname = qenv(fname);
     push5(fname, a1, a2, a3, a4up);
-    set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
-    qenv(qcar(fname)) = vcar(fname);
-    fname = qcdr(fname);
+    set_fns(car(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    setenv(car(fname), car(fname));
+    fname = cdr(fname);
     while (consp(fname))
-    {   push(qcdr(fname));
-        Lload_module(nil, qcar(fname));
+    {   push(cdr(fname));
+        Lload_module(nil, car(fname));
         pop(fname);
     }
     pop(a4up, a3, a2, a1);
@@ -1377,61 +1377,61 @@ LispObject undefined_4up(LispObject fname,
 LispObject f0_as_0(LispObject env)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*vfn0(env))(env);
+    return (*qfn0(env))(env);
 }
 
 LispObject f1_as_0(LispObject env, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*vfn0(env))(env);
+    return (*qfn0(env))(env);
 }
 
 LispObject f2_as_0(LispObject env, LispObject, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*vfn0(env))(env);
+    return (*qfn0(env))(env);
 }
 
 LispObject f3_as_0(LispObject env, LispObject, LispObject, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*vfn0(env))(env);
+    return (*qfn0(env))(env);
 }
 
 LispObject f1_as_1(LispObject env, LispObject a)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*vfn1(env))(env, a);
+    return (*qfn1(env))(env, a);
 }
 
 LispObject f2_as_1(LispObject env, LispObject a, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*vfn1(env))(env, a);
+    return (*qfn1(env))(env, a);
 }
 
 LispObject f3_as_1(LispObject env, LispObject a1, LispObject, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*vfn1(env))(env, a1);
+    return (*qfn1(env))(env, a1);
 }
 
 LispObject f2_as_2(LispObject env, LispObject a, LispObject b)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*vfn2(env))(env, a, b);
+    return (*qfn2(env))(env, a, b);
 }
 
 LispObject f3_as_2(LispObject env, LispObject a1, LispObject a2, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*vfn2(env))(env, a1, a2);
+    return (*qfn2(env))(env, a1, a2);
 }
 
 LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*vfn3(env))(env, a1, a2, a3);
+    return (*qfn3(env))(env, a1, a2, a3);
 }
 
 // The next function is EXPERIMENTAL and is only available if there is

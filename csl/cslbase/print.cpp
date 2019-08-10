@@ -46,6 +46,74 @@
 #include "sockhdr.h"
 #endif
 
+void debugprint(const char *s, LispObject a)
+{   printf("%s", s);
+    debugprint(a);
+}
+
+void debugprint(const char *s)
+{   printf("%s", s);
+    fflush(stdout);
+}
+
+void debugprint1(LispObject a, int depth)
+{   if (depth < 0)
+    {   printf("...");
+    }
+    else if (a==nil)
+    {   printf("nil");
+    }
+    else if (is_fixnum(a))
+    {   printf("%" PRId64, (int64_t)int_of_fixnum(a));
+    }
+    else if (is_cons(a))
+    {   const char *sep = "(";
+        while (is_cons(a) && depth > 0)
+        {   depth--;
+            printf(sep);
+            debugprint1(car(a), depth-1);
+            a = cdr(a);
+            sep = " ";
+        }
+        if (a != nil)
+        {   if (depth > 0)
+            {   printf(" . ");
+                debugprint1(a, depth-1);
+            }
+        }
+        printf(")");
+    }
+    else if (is_symbol(a))
+    {   LispObject pn = qpname(a);
+        if (is_string(pn))
+        {   unsigned int len = (unsigned int)length_of_byteheader(vechdr(pn));
+            if (CELL<len && len < 64) printf("%.*s", (int)(len-CELL), &celt(pn, 0));
+            else printf("<symbol with pname hdr %p>", (void *)vechdr(pn));
+        }
+        else printf("<symbol with odd pname>");
+    }
+    else if (is_vector(a) && type_of_vector(a) == TYPE_SIMPLE_VEC)
+    {   size_t len = cells_in_vector(a);
+        const char *sep = "[";
+        for (size_t i=0; i<len; i++)
+        {   printf(sep);
+            debugprint1(elt(a, i), depth-1);
+            sep = " ";
+        }
+        printf("]");
+    }
+    else
+    {   printf("@%p@", (void *)a);
+    }
+}
+
+void debugprint(LispObject a, int depth)
+{   printf("%p: ", (void *)a);
+    debugprint1(a, depth);
+    printf("\n");
+    fflush(stdout);
+}
+
 //
 // At present CSL is single threaded - at least as regards file IO - and
 // using the unlocked versions of putc and getc can be a MAJOR saving.
@@ -603,8 +671,8 @@ LispObject Lget_output_stream_string(LispObject env, LispObject a)
 // /* The list can now contain big characters that need to re-expand to
 // utf-8 form here.
 //
-        celt(a, n) = int_of_fixnum(qcar(w));
-        w = qcdr(w);
+        celt(a, n) = int_of_fixnum(car(w));
+        w = cdr(w);
     }
     return a;
 }
@@ -739,8 +807,8 @@ int char_to_broadcast(int c, LispObject f)
 {   LispObject l = stream_write_data(f);
     int r = 0;
     while (consp(l))
-    {   f = qcar(l);
-        l = qcdr(l);
+    {   f = car(l);
+        l = cdr(l);
         if (!is_symbol(f)) continue;
         f = qvalue(f);
         if (!is_stream(f)) continue;
@@ -770,8 +838,8 @@ int32_t write_action_broadcast(int32_t c, LispObject f)
 {   int r = 0, r1;
     LispObject l = stream_write_data(f), f1;
     while (consp(l))
-    {   f1 = qcar(l);
-        l = qcdr(l);
+    {   f1 = car(l);
+        l = cdr(l);
         if (!is_symbol(f1)) continue;
         f1 = qvalue(f1);
         if (!is_stream(f1)) continue;
@@ -1229,7 +1297,7 @@ LispObject Lwrs(LispObject env, LispObject a)
 #else
         aerror("wrs (closed or input file)"); // closed file or input file
 #endif
-    qvalue(standard_output) = a;
+    setvalue(standard_output, a);
     return onevalue(old);
 }
 
@@ -1242,9 +1310,9 @@ LispObject Lclose(LispObject env, LispObject a)
         a == lisp_terminal_io) return onevalue(nil);
     else if (!is_stream(a)) aerror1("close", a);
     if (a == qvalue(standard_input))
-        qvalue(standard_input) = lisp_terminal_io;
+        setvalue(standard_input, lisp_terminal_io);
     else if (a == qvalue(standard_output))
-        qvalue(standard_output) = lisp_terminal_io;
+        setvalue(standard_output, lisp_terminal_io);
     other_read_action(READ_CLOSE, a);
     other_write_action(WRITE_CLOSE, a);
 #ifdef COMMON
@@ -1900,15 +1968,15 @@ restart:
             push(u);
             outprefix(blankp, 1);
             putc_stream('(', active_stream);
-            internal_prin(qcar(stack[0]), 0);
+            internal_prin(car(stack[0]), 0);
             w = stack[0];
-            while (is_cons(w = qcdr(w)) && w != 0)
+            while (is_cons(w = cdr(w)) && w != 0)
             {
 #ifdef COMMON
                 if (w == nil) break;    // Again BEWARE the tag code of NIL
 #endif
                 stack[0] = w;
-                internal_prin(qcar(w), 1);
+                internal_prin(car(w), 1);
                 w = stack[0];
             }
             if (w != nil)
@@ -2477,9 +2545,9 @@ restart:
 // I suppose that really I need to deal with non-simple bitvectors too.
 // And generally get Common Lisp style array printing "right".
 //
-                    if (consp(dims) && !consp(qcdr(dims)) &&
+                    if (consp(dims) && !consp(cdr(dims)) &&
                         elt(stack[0], 0) == string_char_sym)
-                    {   len = int_of_fixnum(qcar(dims));
+                    {   len = int_of_fixnum(car(dims));
                         dims = elt(stack[0], 5);   // Fill pointer
                         if (is_fixnum(dims)) len = int_of_fixnum(dims);
                         stack[0] = elt(stack[0], 2);
@@ -2710,7 +2778,7 @@ restart:
             {   if ((qheader(u) & (SYM_CODEPTR+SYM_ANY_GENSYM)) == SYM_ANY_GENSYM)
                 {   LispObject al = stream_write_data(active_stream);
                     while (al != nil &&
-                           qcar(qcar(al)) != u) al = qcdr(al);
+                           car(car(al)) != u) al = cdr(al);
                     pop(u);
                     if (al == nil)
                     {   al = acons(u, fixnum_of_int(local_gensym_count),
@@ -2718,7 +2786,7 @@ restart:
                         local_gensym_count++;
                         stream_write_data(active_stream) = al;
                     }
-                    al = qcdr(qcar(al));
+                    al = cdr(car(al));
                     sprintf(my_buff, "#G%lx", (long)int_of_fixnum(al));
                     break;
                 }
@@ -3397,10 +3465,10 @@ void loop_print_error(LispObject o)
 {   LispObject w = qvalue(standard_output);
     push(w);
     if (is_stream(qvalue(error_output)))
-        qvalue(standard_output) = (LispObject)qvalue(error_output);
+        setvalue(standard_output, qvalue(error_output));
     loop_print_stdout(o);
     pop(w);
-    qvalue(standard_output) = w;
+    setvalue(standard_output, w);
 #ifdef COMMON
 //
 // This is to help me debug in the face of low level system crashes
@@ -3414,14 +3482,12 @@ void loop_print_trace(LispObject o)
     LispObject w = qvalue(standard_output);
     push(w);
     if (is_stream(qvalue(trace_output)))
-        qvalue(standard_output) = (LispObject)qvalue(trace_output);
+        setvalue(standard_output, qvalue(trace_output));
     loop_print_stdout(o);
     pop(w);
-    qvalue(standard_output) = w;
+    setvalue(standard_output, w);
 #ifdef COMMON
-//
 // This is to help me debug in the face of low level system crashes
-//
     if (spool_file) fflush(spool_file);
 #endif
 }
@@ -3430,30 +3496,30 @@ void loop_print_debug(LispObject o)
 {   LispObject w = qvalue(standard_output);
     push(w);
     if (is_stream(qvalue(debug_io)))
-        qvalue(standard_output) = (LispObject)qvalue(debug_io);
+        setvalue(standard_output, qvalue(debug_io));
     loop_print_stdout(o);
     pop(w);
-    qvalue(standard_output) = w;
+    setvalue(standard_output, w);
 }
 
 void loop_print_query(LispObject o)
 {   LispObject w = qvalue(standard_output);
     push(w);
     if (is_stream(qvalue(query_io)))
-        qvalue(standard_output) = (LispObject)qvalue(query_io);
+        setvalue(standard_output, qvalue(query_io));
     loop_print_stdout(o);
     pop(w);
-    qvalue(standard_output) = w;
+    setvalue(standard_output, w);
 }
 
 void loop_print_terminal(LispObject o)
 {   LispObject w = qvalue(standard_output);
     push(w);
     if (is_stream(qvalue(terminal_io)))
-        qvalue(standard_output) = (LispObject)qvalue(terminal_io);
+        setvalue(standard_output, qvalue(terminal_io));
     loop_print_stdout(o);
     pop(w);
-    qvalue(standard_output) = w;
+    setvalue(standard_output, w);
 }
 
 LispObject prinraw(LispObject u)
@@ -3862,8 +3928,8 @@ static void internal_check(LispObject original_a, LispObject a, int depth, uint6
             original_a, path);
         *(char *)(-1) = 0;
     }
-    internal_check(original_a, qcar(a), depth+1, path<<1);
-    internal_check(original_a, qcdr(a), depth+1, (path<<1)+1);
+    internal_check(original_a, car(a), depth+1, path<<1);
+    internal_check(original_a, cdr(a), depth+1, (path<<1)+1);
 }
 
 LispObject Lcheck_list(LispObject env, LispObject a)

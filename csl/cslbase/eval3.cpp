@@ -50,10 +50,10 @@ static LispObject macrolet_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
     stackcheck(args, env);
-    d = qcar(args);     // The bunch of definitions
+    d = car(args);     // The bunch of definitions
     while (consp(d))
-    {   LispObject w = qcar(d);     // w = (name bvl ...)
-        if (consp(w) && consp(qcdr(w)))
+    {   LispObject w = car(d);     // w = (name bvl ...)
+        if (consp(w) && consp(cdr(w)))
         {
 //
 // Here I need to call (expand-definer <form> nil) to map
@@ -69,16 +69,16 @@ static LispObject macrolet_fn(LispObject args, LispObject env)
 // OR  (progn XXX (~~defmacro name bvl ...))
 //     where XXX is exactly one form.
 //
-            if (qcar(w) == progn_symbol)
-                w = qcar(qcdr(qcdr(w)));
-            w = qcdr(w);
-            w = cons(qcdr(w), qcar(w));
+            if (car(w) == progn_symbol)
+                w = car(cdr(cdr(w)));
+            w = cdr(w);
+            w = cons(cdr(w), car(w));
             pop(env, args);
             env = cons(w, env);
         }
-        d = qcdr(d);
+        d = cdr(d);
     }
-    return let_fn_1(nil, qcdr(args), env, BODY_LET);
+    return let_fn_1(nil, cdr(args), env, BODY_LET);
 }
 
 static LispObject mv_prog1_fn(LispObject args, LispObject env)
@@ -88,7 +88,7 @@ static LispObject mv_prog1_fn(LispObject args, LispObject env)
     if (!consp(args)) return onevalue(nil);
     stackcheck(args, env);
     push(args, env);
-    r = qcar(args);
+    r = car(args);
     r = eval(r, env);
     pop(env, args);
     rl = nil;
@@ -102,17 +102,17 @@ static LispObject mv_prog1_fn(LispObject args, LispObject env)
         rl = cons_no_gc((&mv_2)[i-2], rl);
     rl = cons_gc_test(rl);
     push(rl);
-    while (is_cons(args = qcdr(args)) && args!=nil)
+    while (is_cons(args = cdr(args)) && args!=nil)
     {   LispObject w;
         push(args, env);
-        w = qcar(args);
+        w = car(args);
         eval(w, env);
         pop(env, args);
     }
     pop(rl);
     for (i = 2; i<=nargs; i++)
-    {   (&mv_2)[i-2] = qcar(rl);
-        rl = qcdr(rl);
+    {   (&mv_2)[i-2] = car(rl);
+        rl = cdr(rl);
     }
     pop(r);
     return nvalues(r, nargs);
@@ -124,8 +124,8 @@ static LispObject or_fn(LispObject args, LispObject env)
     stackcheck(args, env);
     STACK_SANITY;
     for (;;)
-    {   LispObject v = qcar(args);
-        args = qcdr(args);
+    {   LispObject v = car(args);
+        args = cdr(args);
         if (!consp(args)) return eval(v, env);
         push(args, env);
         v = eval(v, env);
@@ -139,7 +139,7 @@ static LispObject or_fn(LispObject args, LispObject env)
 // TAGBODY.
 
 static LispObject prog_fn(LispObject iargs, LispObject ienv)
-{   if (!consp(iargs) || !consp(qcdr(iargs))) return onevalue(nil);
+{   if (!consp(iargs) || !consp(cdr(iargs))) return onevalue(nil);
     stackcheck(iargs, ienv);
     STACK_SANITY;
     push(nil, iargs, ienv);
@@ -154,10 +154,10 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
     env = cons(my_tag, env);
     try
     {   START_TRY_BLOCK;
-        let_fn_1(qcar(args), qcdr(args), env, BODY_PROG);
+        let_fn_1(car(args), cdr(args), env, BODY_PROG);
     }
     catch (LispReturnFrom &e)
-    {   qcar(my_tag) = fixnum_of_int(2);    // Invalidate
+    {   setcar(my_tag, fixnum_of_int(2));    // Invalidate
         if (exit_tag == my_tag)
         {   popv(3);
             return exit_value;  // exit_count already OK here
@@ -188,8 +188,8 @@ LispObject progn_fn(LispObject args, LispObject env)
     stackcheck(args, env);
     f = nil;
     for (;;)
-    {   f = qcar(args);
-        args = qcdr(args);
+    {   f = car(args);
+        args = cdr(args);
         if (!consp(args)) break;
         push(args, env, f);
         on_backtrace(
@@ -216,15 +216,15 @@ static LispObject prog1_fn(LispObject args, LispObject env)
     if (!consp(args)) return onevalue(nil); // (prog1) -> nil
     stackcheck(args, env);
     push(args, env);
-    f = qcar(args);
+    f = car(args);
     f = eval(f, env);              // first arg
     pop(env, args);
     push(f);
     for (;;)
-    {   args = qcdr(args);
+    {   args = cdr(args);
         if (!consp(args)) break;
         push(args, env);
-        {   LispObject w = qcar(args);
+        {   LispObject w = car(args);
             (void)eval(w, env);
         }
         pop(env, args);
@@ -239,21 +239,21 @@ static LispObject prog2_fn(LispObject args, LispObject env)
     if (!consp(args)) return onevalue(nil); // (prog2) -> nil
     stackcheck(args, env);
     push(args, env);
-    args = qcar(args);
+    args = car(args);
     (void)eval(args, env);                    // discard first arg
     pop(env, args);
-    args = qcdr(args);
+    args = cdr(args);
     if (!consp(args)) return onevalue(nil); // (prog2 x) -> nil
     push(args, env);
-    f = qcar(args);
+    f = car(args);
     f = eval(f, env);                       // second arg
     pop(env, args);
     push(f);
     for (;;)
-    {   args = qcdr(args);
+    {   args = cdr(args);
         if (!consp(args)) break;
         push(args, env);
-        args = qcar(args);
+        args = car(args);
         (void)eval(args, env);
         pop(env, args);
     }
@@ -276,9 +276,9 @@ public:
     ~RAIIunbind_progv_specials()
     {   stack = save;
         while (specenv != nil)
-        {   LispObject p = qcar(specenv);
-            setvalue(qcar(p), vcdr(p));
-            specenv = qcdr(specenv);
+        {   LispObject p = car(specenv);
+            setvalue(car(p), cdr(p));
+            specenv = cdr(specenv);
         }
         popv(4);
     }
@@ -290,8 +290,8 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
     if (!consp(args_x)) return onevalue(nil);
     stackcheck(args_x, env_x);
     syms_x = vals_x = specenv_x = nil;
-    syms_x = qcar(args_x);
-    args_x = qcdr(args_x);
+    syms_x = car(args_x);
+    args_x = cdr(args_x);
     push5(args_x, env_x, syms_x, vals_x, specenv_x);
 
     syms = eval(syms, env);
@@ -299,22 +299,22 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
     {   popv(5);
         return nil;
     }
-    w = qcar(args);
-    args = qcdr(args);
+    w = car(args);
+    args = cdr(args);
     vals = eval(w, env);
     if (!consp(args))
     {   popv(5);
         return nil;
     }
     while (consp(syms))
-    {   LispObject v = qcar(syms);
+    {   LispObject v = car(syms);
         LispObject w1;
         if (consp(vals))
-        {   w = qcar(vals);
-            vals = qcdr(vals);
+        {   w = car(vals);
+            vals = cdr(vals);
         }
         else w = unset_var;
-        syms = qcdr(syms);
+        syms = cdr(syms);
         if (!is_symbol(v) || v==nil || v==lisp_true) continue;
         w1 = cons(v, qvalue(v));
 //
@@ -337,7 +337,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
 }
 
 LispObject quote_fn(LispObject args, LispObject)
-{   if (consp(args) && qcdr(args) == nil) return onevalue(qcar(args));
+{   if (consp(args) && cdr(args) == nil) return onevalue(car(args));
     aerror("quote");
 }
 
@@ -349,10 +349,10 @@ static LispObject return_fn(LispObject args, LispObject env)
     STACK_SANITY;
     LispObject p;
     stackcheck(args, env);
-    for(p=env; consp(p); p=qcdr(p))
-    {   LispObject w = qcar(p);
+    for(p=env; consp(p); p=cdr(p))
+    {   LispObject w = car(p);
         if (!consp(w)) continue;
-        if (qcar(w) == fixnum_of_int(0) && qcdr(w) == nil)
+        if (car(w) == fixnum_of_int(0) && cdr(w) == nil)
         {   p = w;
             goto tag_found;
         }
@@ -361,7 +361,7 @@ static LispObject return_fn(LispObject args, LispObject env)
 tag_found:
     if (consp(args))
     {   push(p);
-        p = qcar(args);
+        p = car(args);
         env = eval(p, env);
         pop(p);
         exit_value = env;
@@ -381,13 +381,13 @@ static LispObject return_from_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) tag = nil;
     else
-    {   tag = qcar(args);
-        args = qcdr(args);
+    {   tag = car(args);
+        args = cdr(args);
     }
-    for(p=env; consp(p); p=qcdr(p))
-    {   LispObject w = qcar(p);
+    for(p=env; consp(p); p=cdr(p))
+    {   LispObject w = car(p);
         if (!consp(w)) continue;
-        if (qcar(w) == fixnum_of_int(0) && qcdr(w) == tag)
+        if (car(w) == fixnum_of_int(0) && cdr(w) == tag)
         {   p = w;
             goto tag_found;
         }
@@ -396,7 +396,7 @@ static LispObject return_from_fn(LispObject args, LispObject env)
 tag_found:
     if (consp(args))
     {   push(p);
-        p = qcar(args);
+        p = car(args);
         env = eval(p, env);
         pop(p);
         exit_value = env;
@@ -415,17 +415,17 @@ static LispObject setq_fn(LispObject args, LispObject env)
     STACK_SANITY;
     stackcheck(args, env);
     while (consp(args))
-    {   var = qcar(args);
+    {   var = car(args);
         if (!is_symbol(var) || var == nil || var == lisp_true ||
             (qheader(var) & SYM_KEYWORD_VAR) == SYM_KEYWORD_VAR)
             aerror1("setq (bad variable)", var);
-        args = qcdr(args);
+        args = cdr(args);
         if (consp(args))
         {   push(args, env, var);
-            val = qcar(args);
+            val = car(args);
             val = eval(val, env);
             pop(var, env, args);
-            args = qcdr(args);
+            args = cdr(args);
         }
         else val = nil;
         if ((qheader(current_function) & SYM_TRACESET) != 0)
@@ -447,7 +447,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
                                      // or it could be locally FLUID.
             for (;;)
             {   if (!consp(p))
-                {   qheader(var) |= SYM_SPECIAL_VAR;
+                {   setheader(var, qheader(var) | SYM_SPECIAL_VAR);
 #ifdef SOME_TIME_LATER
 // If I display this message - which could be viewed as a proper error report -
 // it leds to multiple failures in the Reduce regressions where scripting
@@ -460,16 +460,16 @@ static LispObject setq_fn(LispObject args, LispObject env)
                     setvalue(var, val);
                     break;
                 }
-                w = qcar(p);
-                if (qcar(w) == var)
-                {   if (qcdr(w) == work_symbol) setvalue(var, val);
+                w = car(p);
+                if (car(w) == var)
+                {   if (cdr(w) == work_symbol) setvalue(var, val);
                     else
-                    {   qcdr(w) = val;
-                        write_barrier(&qcdr(w));
+                    {   setcdr(w, val);
+                        write_barrier(cdraddr(w));
                     }
                     break;
                 }
-                p = qcdr(p);
+                p = cdr(p);
             }
         }
     }
@@ -488,8 +488,8 @@ LispObject tagbody_fn(LispObject args, LispObject env)
     stackcheck(args, env);
     STACK_SANITY;
     push(env, args);
-    for (p=args; consp(p); p=qcdr(p))
-    {   LispObject w = qcar(p);
+    for (p=args; consp(p); p=cdr(p))
+    {   LispObject w = car(p);
         if (!consp(w))
         {   LispObject w1;
             push(p, env);
@@ -510,8 +510,8 @@ LispObject tagbody_fn(LispObject args, LispObject env)
 // (go xx) sets exit_tag to xx, which is then noticed next time tagbody
 // is about to do anything.
 //
-    for (p=args; consp(p); p = qcdr(p))
-    {   f = qcar(p);
+    for (p=args; consp(p); p = cdr(p))
+    {   f = car(p);
         if (!is_cons(f)) continue; // Do not evaluate labels
         push(p, env, f);
         try
@@ -526,11 +526,11 @@ LispObject tagbody_fn(LispObject args, LispObject env)
 // that the destination label was bound as a label. That was so that I could
 // give a decent diagnostic if it was not. The scan here is to see if it is
 // a label in THIS level of a tagbody... and if not I will hand it upwards.
-            for (p=env; p!=my_env; p=qcdr(p)) // scan label bindings
-            {   LispObject w = qcar(p);
+            for (p=env; p!=my_env; p=cdr(p)) // scan label bindings
+            {   LispObject w = car(p);
                 if (w != exit_tag) continue;
 // Now I have found the label I needed to jump to. Hoorah.
-                p = qcdr(w);
+                p = cdr(w);
                 break;
             }
             if (p != my_env) continue; // take the GOTO
@@ -538,8 +538,8 @@ LispObject tagbody_fn(LispObject args, LispObject env)
 // not present in this block. Tidy up the label bindings to be very
 // certain nobody can re-use them.
             while (env != my_env)
-            {   qcar(qcar(env)) = fixnum_of_int(2);
-                env = qcdr(env);
+            {   setcar(car(env), fixnum_of_int(2));
+                env = cdr(env);
             }
 // Because this is a sort of error I will display a message. It was for
 // the benefit of this code that I had stacked f, the expression that
@@ -569,8 +569,8 @@ LispObject tagbody_fn(LispObject args, LispObject env)
 // return nil.
     pop(my_env);
     while (env != my_env)
-    {   qcar(qcar(env)) = fixnum_of_int(2);
-        env = qcdr(env);
+    {   setcar(car(env), fixnum_of_int(2));
+        env = cdr(env);
     }
     return onevalue(nil);
 }
@@ -580,9 +580,9 @@ static LispObject the_fn(LispObject args, LispObject env)
 // in effect an identity function for the present
 //
 {   if (!consp(args)) return onevalue(nil);
-    args = qcdr(args);
+    args = cdr(args);
     if (!consp(args)) return onevalue(nil);
-    args = qcar(args);
+    args = car(args);
     return eval(args, env);
 }
 
@@ -597,18 +597,18 @@ static LispObject throw_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) aerror("throw");
     stackcheck(args, env);
-    tag = qcar(args);
-    args = qcdr(args);
+    tag = car(args);
+    args = cdr(args);
     push(args, env);
     tag = eval(tag, env);
     pop(env, args);
-    for (p = catch_tags; p!=nil; p=qcdr(p))
-        if (tag == qcar(p)) goto tag_found;
+    for (p = catch_tags; p!=nil; p=cdr(p))
+        if (tag == car(p)) goto tag_found;
     aerror("throw: tag not found");
 tag_found:
     if (consp(args))
     {   push(p);
-        tag = qcar(args);
+        tag = car(args);
         tag = eval(tag, env);
         pop(p);
         exit_value = tag;
@@ -625,8 +625,8 @@ tag_found:
 void Lthrow_one_value(LispObject env, LispObject tag, LispObject val)
 {   LispObject p;
     STACK_SANITY;
-    for (p = catch_tags; p!=nil; p=qcdr(p))
-        if (tag == qcar(p)) goto tag_found;
+    for (p = catch_tags; p!=nil; p=cdr(p))
+        if (tag == car(p)) goto tag_found;
     aerror("throw: tag not found");
 tag_found:
     exit_value = val;
@@ -646,11 +646,11 @@ static LispObject unless_fn(LispObject args, LispObject env)
     if (!consp(args)) return onevalue(nil);
     stackcheck(args, env);
     push(args, env);
-    w = qcar(args);
+    w = car(args);
     w = eval(w, env);
     pop(env, args);
     if (w != nil) return onevalue(nil);
-    else return progn_fn(qcdr(args), env);
+    else return progn_fn(cdr(args), env);
 }
 
 static LispObject unwind_protect_fn(LispObject args, LispObject env)
@@ -660,7 +660,7 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
     if (!consp(args)) return onevalue(nil);
     stackcheck(args, env);
     push(args, env);
-    r = qcar(args);
+    r = car(args);
     try
     {   START_TRY_BLOCK;
         r = eval(r, env);
@@ -692,16 +692,16 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
             rl = cons_no_gc((&mv_2)[i-2], rl);
         rl = cons_gc_test(rl);
         push(rl);
-        while (is_cons(args = qcdr(args)) && args!=nil)
-        {   LispObject w = qcar(args);
+        while (is_cons(args = cdr(args)) && args!=nil)
+        {   LispObject w = car(args);
             push(args, env);
             (void)eval(w, env);
             pop(env, args);
         }
         pop(rl, xt, xv);
         for (i = 2; i<=xc; i++)
-        {   (&mv_2)[i-2] = qcar(rl);
-            rl = qcdr(rl);
+        {   (&mv_2)[i-2] = car(rl);
+            rl = cdr(rl);
         }
         exit_value = xv;
         exit_tag   = xt;
@@ -724,15 +724,15 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
     push(rl);
     LispObject &xenv = stack[-1];
     LispObject &xargs = stack[-2];
-    while (is_cons(xargs = qcdr(xargs)) && xargs!=nil)
-    {   LispObject w = qcar(xargs);
+    while (is_cons(xargs = cdr(xargs)) && xargs!=nil)
+    {   LispObject w = car(xargs);
         (void)eval(w, xenv);
     }
     pop(rl);
     popv(2);
     for (i = 2; i<=nargs; i++)
-    {   (&mv_2)[i-2] = qcar(rl);
-        rl = qcdr(rl);
+    {   (&mv_2)[i-2] = car(rl);
+        rl = cdr(rl);
     }
     return nvalues(r, nargs);
 }
@@ -769,9 +769,9 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
         else if (w == (LispObject)SPID_PVBIND)
         {   bv = *sp--;
             while (bv != nil)
-            {   LispObject w = qcar(bv);
-                setvalue(qcar(w), vcdr(w));
-                bv = qcdr(bv);
+            {   LispObject w = car(bv);
+                setvalue(car(w), cdr(w));
+                bv = cdr(bv);
             }
         }
     }
@@ -1154,16 +1154,16 @@ LispObject Lresource_limit_4up(LispObject env, LispObject form, LispObject ltime
     if (!is_fixnum(lspace)) lspace = fixnum_of_int(-1);
     lio = lerrors = Csk = Lsk = fixnum_of_int(-1);
     if (a4up != nil)
-    {   lio = qcar(a4up);
-        a4up = qcdr(a4up);
+    {   lio = car(a4up);
+        a4up = cdr(a4up);
         if (a4up != nil)
-        {   lerrors = qcar(a4up);
-            a4up = qcdr(a4up);
+        {   lerrors = car(a4up);
+            a4up = cdr(a4up);
             if (a4up != nil)
-            {   Csk = qcar(a4up);
-                a4up = qcdr(a4up);
+            {   Csk = car(a4up);
+                a4up = cdr(a4up);
                 if (a4up != nil)
-                {   Lsk = qcar(a4up);
+                {   Lsk = car(a4up);
                 }
             }
         }
@@ -1196,11 +1196,11 @@ static LispObject when_fn(LispObject args, LispObject env)
     if (!consp(args)) return onevalue(nil);
     stackcheck(args, env);
     push(args, env);
-    w = qcar(args);
+    w = car(args);
     w = eval(w, env);
     pop(env, args);
     if (w == nil) return onevalue(nil);
-    else return progn_fn(qcdr(args), env);
+    else return progn_fn(cdr(args), env);
 }
 
 void bad_specialfn_0(LispObject env)

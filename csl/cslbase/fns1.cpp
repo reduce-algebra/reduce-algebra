@@ -90,7 +90,7 @@ LispObject integerp(LispObject p)
 
 LispObject Lcar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 //
@@ -105,7 +105,7 @@ LispObject Lcar(LispObject, LispObject a)
 
 LispObject Lcar_star(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(a);
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [cdr] \item [{\ttfamily cdr} {\itshape expr}] \index{{\ttfamily cdr} {\itshape expr}} ~\newline
@@ -114,7 +114,7 @@ LispObject Lcar_star(LispObject, LispObject a)
 
 LispObject Lcdr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [caar] \item [{\ttfamily caar \ldots cddddr} {\itshape expr}] \index{{\ttfamily caar \ldots cddddr} {\itshape expr}} ~\newline
@@ -128,9 +128,9 @@ LispObject Lcdr(LispObject, LispObject a)
 
 LispObject Lcaar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [cadr] \item [{\ttfamily  cadr} {\itshape expr}] \index{{\ttfamily  cadr} {\itshape expr}} ~\newline
@@ -139,9 +139,9 @@ LispObject Lcaar(LispObject, LispObject a)
 
 LispObject Lcadr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [cdar] \item[{\ttfamily cdar} {\itshape expr}] \index{{\ttfamily cdar} {\itshape expr}} ~\newline
@@ -150,9 +150,9 @@ LispObject Lcadr(LispObject, LispObject a)
 
 LispObject Lcdar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [cddr] \item[{\ttfamily cddr} {\itshape expr}] \index{{\ttfamily cddr} {\itshape expr}} ~\newline
@@ -161,9 +161,9 @@ LispObject Lcdar(LispObject, LispObject a)
 
 LispObject Lcddr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [caaar] \item[{\ttfamily caaar} {\itshape expr}] \index{{\ttfamily caaar} {\itshape expr}} ~\newline
@@ -172,11 +172,11 @@ LispObject Lcddr(LispObject, LispObject a)
 
 LispObject Lcaaar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [caadr] \item[{\ttfamily caadr} {\itshape expr}] \index{{\ttfamily caadr} {\itshape expr}} ~\newline
@@ -185,11 +185,11 @@ LispObject Lcaaar(LispObject, LispObject a)
 
 LispObject Lcaadr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [cadar] \item[{\ttfamily cadar} {\itshape expr}] \index{{\ttfamily cadar} {\itshape expr}} ~\newline
@@ -198,11 +198,11 @@ LispObject Lcaadr(LispObject, LispObject a)
 
 LispObject Lcadar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [caddr] \item[{\ttfamily caddr} {\itshape expr}] \index{{\ttfamily caddr} {\itshape expr}} ~\newline
@@ -211,11 +211,11 @@ LispObject Lcadar(LispObject, LispObject a)
 
 LispObject Lcaddr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [cdaar] \item[{\ttfamily cdaar} {\itshape expr}] \index{{\ttfamily cdaar} {\itshape expr}} ~\newline
@@ -224,11 +224,11 @@ LispObject Lcaddr(LispObject, LispObject a)
 
 LispObject Lcdaar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [cdadr] \item[{\ttfamily cdadr} {\itshape expr}] \index{{\ttfamily cdadr} {\itshape expr}} ~\newline
@@ -237,11 +237,11 @@ LispObject Lcdaar(LispObject, LispObject a)
 
 LispObject Lcdadr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [cddar] \item[{\ttfamily cddar} {\itshape expr}] \index{{\ttfamily cddar} {\itshape expr}} ~\newline
@@ -250,11 +250,11 @@ LispObject Lcdadr(LispObject, LispObject a)
 
 LispObject Lcddar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [cdddr] \item[{\ttfamily cdddr} {\itshape expr}] \index{{\ttfamily cdddr} {\itshape expr}} ~\newline
@@ -263,11 +263,11 @@ LispObject Lcddar(LispObject, LispObject a)
 
 LispObject Lcdddr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [caaaar] \item[{\ttfamily caaaar} {\itshape expr}] \index{{\ttfamily caaaar} {\itshape expr}} ~\newline
@@ -276,13 +276,13 @@ LispObject Lcdddr(LispObject, LispObject a)
 
 LispObject Lcaaaar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [caaadr] \item[{\ttfamily caaadr} {\itshape expr}] \index{{\ttfamily caaadr} {\itshape expr}} ~\newline
@@ -291,13 +291,13 @@ LispObject Lcaaaar(LispObject, LispObject a)
 
 LispObject Lcaaadr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [caadar] \item[{\ttfamily caadar} {\itshape expr}] \index{{\ttfamily caadar} {\itshape expr}} ~\newline
@@ -306,13 +306,13 @@ LispObject Lcaaadr(LispObject, LispObject a)
 
 LispObject Lcaadar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [caaddr] \item[{\ttfamily caaddr} {\itshape expr}] \index{{\ttfamily caaddr} {\itshape expr}} ~\newline
@@ -321,13 +321,13 @@ LispObject Lcaadar(LispObject, LispObject a)
 
 LispObject Lcaaddr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [cadaar] \item[{\ttfamily cadaar} {\itshape expr}] \index{{\ttfamily cadaar} {\itshape expr}} ~\newline
@@ -336,13 +336,13 @@ LispObject Lcaaddr(LispObject, LispObject a)
 
 LispObject Lcadaar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [cadadr] \item[{\ttfamily cadadr} {\itshape expr}] \index{{\ttfamily cadadr} {\itshape expr}} ~\newline
@@ -351,13 +351,13 @@ LispObject Lcadaar(LispObject, LispObject a)
 
 LispObject Lcadadr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [caddar] \item[{\ttfamily caddar} {\itshape expr}] \index{{\ttfamily caddar} {\itshape expr}} ~\newline
@@ -366,13 +366,13 @@ LispObject Lcadadr(LispObject, LispObject a)
 
 LispObject Lcaddar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [cadddr] \item[{\ttfamily cadddr} {\itshape expr}] \index{{\ttfamily cadddr} {\itshape expr}} ~\newline
@@ -381,13 +381,13 @@ LispObject Lcaddar(LispObject, LispObject a)
 
 LispObject Lcadddr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 /*! fns [cdaaar] \item[{\ttfamily cdaaar} {\itshape expr}] \index{{\ttfamily cdaaar} {\itshape expr}} ~\newline
@@ -396,13 +396,13 @@ LispObject Lcadddr(LispObject, LispObject a)
 
 LispObject Lcdaaar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [cdaadr] \item[{\ttfamily cdaadr} {\itshape expr}] \index{{\ttfamily cdaadr} {\itshape expr}} ~\newline
@@ -411,13 +411,13 @@ LispObject Lcdaaar(LispObject, LispObject a)
 
 LispObject Lcdaadr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [cdadar] \item[{\ttfamily cdadar} {\itshape expr}] \index{{\ttfamily cdadar} {\itshape expr}} ~\newline
@@ -426,13 +426,13 @@ LispObject Lcdaadr(LispObject, LispObject a)
 
 LispObject Lcdadar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [cdaddr] \item[{\ttfamily cdaddr} {\itshape expr}] \index{{\ttfamily cdaddr} {\itshape expr}} ~\newline
@@ -441,13 +441,13 @@ LispObject Lcdadar(LispObject, LispObject a)
 
 LispObject Lcdaddr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [cddaar] \item[{\ttfamily cddaar} {\itshape expr}] \index{{\ttfamily cddaar} {\itshape expr}} ~\newline
@@ -456,13 +456,13 @@ LispObject Lcdaddr(LispObject, LispObject a)
 
 LispObject Lcddaar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [cddadr] \item[{\ttfamily cddadr} {\itshape expr}] \index{{\ttfamily cddadr} {\itshape expr}} ~\newline
@@ -471,13 +471,13 @@ LispObject Lcddaar(LispObject, LispObject a)
 
 LispObject Lcddadr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [cdddar] \item[{\ttfamily cdddar} {\itshape expr}] \index{{\ttfamily cdddar} {\itshape expr}} ~\newline
@@ -486,13 +486,13 @@ LispObject Lcddadr(LispObject, LispObject a)
 
 LispObject Lcdddar(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(carerror(a));
-    else a = qcar(a);
+    else a = car(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [cddddr] \item[{\ttfamily cddddr} {\itshape expr}] \index{{\ttfamily cddddr} {\itshape expr}} ~\newline
@@ -501,13 +501,13 @@ LispObject Lcdddar(LispObject, LispObject a)
 
 LispObject Lcddddr(LispObject, LispObject a)
 {   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else a = qcdr(a);
+    else a = cdr(a);
     if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 /*! fns [rplaca] \item[{\ttfamily rplaca} {\itshape expr}] \index{{\ttfamily rplaca} {\itshape expr}} ~\newline
@@ -520,8 +520,8 @@ LispObject Lcddddr(LispObject, LispObject a)
 LispObject Lrplaca(LispObject,
                    LispObject a, LispObject b)
 {   if (!consp(a)) error(1, err_bad_rplac, a);
-    qcar(a) = b;
-    write_barrier(&qcar(b));
+    setcar(a, b);
+    write_barrier(caraddr(a));
     return onevalue(a);
 }
 
@@ -532,8 +532,8 @@ LispObject Lrplaca(LispObject,
 LispObject Lrplacd(LispObject,
                    LispObject a, LispObject b)
 {   if (!consp(a)) error(1, err_bad_rplac, a);
-    qcdr(a) = b;
-    write_barrier(&qcdr(b));
+    setcdr(a, b);
+    write_barrier(cdraddr(a));
     return onevalue(a);
 }
 
@@ -694,7 +694,7 @@ bool complex_stringp(LispObject a)
 //
     else if (elt(a, 0) != string_char_sym) return false;
     w = elt(a, 1);
-    if (!consp(w) || consp(qcdr(w))) return false;
+    if (!consp(w) || consp(cdr(w))) return false;
     else return true;
 }
 
@@ -725,7 +725,7 @@ bool stringp(LispObject a)
 //
     else if (elt(a, 0) != string_char_sym) return false;
     w = elt(a, 1);
-    if (!consp(w) || consp(qcdr(w))) return false;
+    if (!consp(w) || consp(cdr(w))) return false;
     else return true;
 }
 
@@ -816,7 +816,7 @@ static LispObject Lcomplex_arrayp(LispObject env, LispObject a)
 
 static LispObject Lconvert_to_array(LispObject env, LispObject a)
 {   if (!(is_basic_vector(a))) return onevalue(nil);
-    vechdr(a) = TYPE_ARRAY + (vechdr(a) & ~header_mask);
+    setvechdr(a, TYPE_ARRAY + (vechdr(a) & ~header_mask));
     return onevalue(a);
 }
 
@@ -831,7 +831,7 @@ static LispObject Lstructp(LispObject env, LispObject a)
 
 static LispObject Lconvert_to_struct(LispObject env, LispObject a)
 {   if (!(is_basic_vector(a))) return onevalue(nil);
-    vechdr(a) = TYPE_STRUCTURE + (vechdr(a) & ~header_mask);
+    setvechdr(a, TYPE_STRUCTURE + (vechdr(a) & ~header_mask));
     return onevalue(a);
 }
 
@@ -866,14 +866,14 @@ LispObject Llist_3rev(LispObject env, LispObject a, LispObject b, LispObject c)
 }
 
 LispObject Llist_3star(LispObject, LispObject a, LispObject b, LispObject c, LispObject a4up)
-{   if (qcdr(a4up) != nil) aerror("too many arrguments for list3*");
-    LispObject d = qcar(a4up);
+{   if (cdr(a4up) != nil) aerror("too many arrguments for list3*");
+    LispObject d = car(a4up);
     return onevalue(list3star(a,b,c,d));
 }
 
 LispObject Llist_4(LispObject env, LispObject a, LispObject b, LispObject c, LispObject a4up)
-{   if (qcdr(a4up) != nil) aerror("too many arguments for list4");
-    LispObject d = qcar(a4up);
+{   if (cdr(a4up) != nil) aerror("too many arguments for list4");
+    LispObject d = car(a4up);
     return onevalue(list4(a,b,c,d));
 }
 
@@ -887,16 +887,18 @@ LispObject Lliststar_4up(LispObject env, LispObject a, LispObject b,
         LispObject c, LispObject a4up)
 {   LispObject r= nil, w;
     while (a4up != nil)
-    {   w = qcdr(a4up);
-        qcdr(a4up) = r;
+    {   w = cdr(a4up);
+        setcdr(a4up, r);
+        write_barrier(cdraddr(a4up));
         r = a4up;
         a4up = w;
     }
-    a4up = qcar(r);
-    r = qcdr(r);
+    a4up = car(r);
+    r = cdr(r);
     while (r != nil)
-    {   w = qcdr(r);
-        qcdr(r) = a4up;
+    {   w = cdr(r);
+        setcdr(r, a4up);
+        write_barrier(cdraddr(r));
         a4up = r;
         r = w;
     }
@@ -907,15 +909,16 @@ LispObject Lpair(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil;
     while (consp(a) && consp(b))
     {   push(a, b);
-        r = acons(qcar(a), qcar(b), r);
+        r = acons(car(a), car(b), r);
         pop(b, a);
-        a = qcdr(a);
-        b = qcdr(b);
+        a = cdr(a);
+        b = cdr(b);
     }
     a = nil;
     while (r != nil)
-    {   b = qcdr(r);
-        qcdr(r) = a;
+    {   b = cdr(r);
+        setcdr(r, a);
+        write_barrier(cdraddr(r));
         a = r;
         r = b;
     }
@@ -930,15 +933,15 @@ static size_t membercount(LispObject a, LispObject b)
 {   size_t r = 0;
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
-        {   if (a == qcar(b)) r++;
-            b = qcdr(b);
+        {   if (a == car(b)) r++;
+            b = cdr(b);
         }
         return r;
     }
     while (consp(b))
-    {   LispObject cb = qcar(b);
+    {   LispObject cb = car(b);
         if (equal(a, cb)) r++;
-        b = qcdr(b);
+        b = cdr(b);
     }
     return r;
 }
@@ -955,35 +958,36 @@ LispObject Lintersect(LispObject env, LispObject a, LispObject b)
     push(b);
     while (consp(a))
     {   push(a, r);
-        w = Lmember(nil, qcar(a), stack[-2]);
+        w = Lmember(nil, car(a), stack[-2]);
 // Here I ignore any item in a that is not also in b
         if (w != nil)
-        {   size_t n1 = membercount(qcar(stack[-1]), stack[0]);
+        {   size_t n1 = membercount(car(stack[-1]), stack[0]);
 //
 // Here I want to arrange that items only appear in the result list multiple
 // times if they occur multiple times in BOTH the input lists.
 //
             if (n1 != 0)
-            {   size_t n2 = membercount(qcar(stack[-1]), stack[-2]);
+            {   size_t n2 = membercount(car(stack[-1]), stack[-2]);
                 if (n2 > n1) n1 = 0;
             }
             if (n1 == 0)
             {   pop(r);
                 a = stack[0];
-                r = cons(qcar(a), r);
+                r = cons(car(a), r);
                 pop(a);
             }
             else pop(r, a);
         }
         else pop(r, a);
-        a = qcdr(a);
+        a = cdr(a);
     }
     popv(1);
     a = nil;
     while (consp(r))
     {   b = r;
-        r = qcdr(r);
-        qcdr(b) = a;
+        r = cdr(r);
+        setcdr(b, a);
+        write_barrier(cdraddr(b));
         a = b;
     }
     return onevalue(a);
@@ -1004,8 +1008,8 @@ public:
         LispObject b;
         pop(b);
         while (consp(b))
-        {   qheader(qcar(b)) &= ~(Header)SYM_TAGGED;
-            b = qcdr(b);
+        {   setheader(car(b), qheader(car(b)) & ~(Header)SYM_TAGGED);
+            b = cdr(b);
         }
     }
 };
@@ -1014,29 +1018,30 @@ LispObject Lintersect_symlist(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil, w;
 // First tag all the symbols in the list b. Any items that are not
 // symbols just get ignored.
-    for (w = b; consp(w); w = qcdr(w))
-    {   LispObject x = qcar(w);
-        if (is_symbol(x)) qheader(x) |= SYM_TAGGED;
+    for (w = b; consp(w); w = cdr(w))
+    {   LispObject x = car(w);
+        if (is_symbol(x)) setheader(x, qheader(x) | SYM_TAGGED);
     }
 // Now for each item in a push it onto a result list (r) if it a
 // symbol that is tagged, i.e. if it was present in b.
     {   tidy_intersect RAII;
         while (consp(a))
-        {   LispObject x = qcar(a);
+        {   LispObject x = car(a);
             if (is_symbol(x) && (qheader(x) & SYM_TAGGED))
             {   push(a);
                 r = cons(x, r);
                 pop(a);
             }
-            a = qcdr(a);
+            a = cdr(a);
         }
     }
 // The above built up the result in reversed order, so I fix that here.
     a = nil;
     while (consp(r))
     {   b = r;
-        r = qcdr(r);
-        qcdr(b) = a;
+        r = cdr(r);
+        setcdr(b, a);
+        write_barrier(cdraddr(b));
         a = b;
     }
     return onevalue(a);
@@ -1053,13 +1058,13 @@ LispObject Lunion(LispObject env, LispObject a, LispObject b)
 {   while (consp(a))
     {   LispObject c;
         push(a, b);
-        c = Lmember(nil, qcar(a), b);
+        c = Lmember(nil, car(a), b);
         pop(b);
         if (c == nil)
-        {   b = cons(qcar(stack[0]), b);
+        {   b = cons(car(stack[0]), b);
         }
         pop(a);
-        a = qcdr(a);
+        a = cdr(a);
     }
     return onevalue(b);
 }
@@ -1077,8 +1082,8 @@ public:
     {   stack = save;
         LispObject a = stack[0];
         while (consp(a))
-        {   qheader(qcar(a)) &= ~(Header)SYM_TAGGED;
-            a = qcdr(a);
+        {   setheader(car(a), qheader(car(a)) & ~(Header)SYM_TAGGED);
+            a = cdr(a);
         }
     }
 };
@@ -1087,22 +1092,22 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil, w;
 // First tag all the symbols in the list b. Any items that are not
 // symbols just ignored.
-    for (w = b; consp(w); w = qcdr(w))
-    {   LispObject x = qcar(w);
-        if (is_symbol(x)) qheader(x) |= SYM_TAGGED;
+    for (w = b; consp(w); w = cdr(w))
+    {   LispObject x = car(w);
+        if (is_symbol(x)) setheader(x, qheader(x) | SYM_TAGGED);
     }
 // Now for each item in a push it onto a result list (r) if it a
 // symbol that is NOT tagged, i.e. if it was not present in b.
     push(b);
     {   tidy_union RAII;
         while (consp(a))
-        {   LispObject x = qcar(a);
+        {   LispObject x = car(a);
             if (is_symbol(x) && (qheader(x) & SYM_TAGGED) == 0)
             {   push(a);
                 r = cons(x, r);
                 pop(a);
             }
-            a = qcdr(a);
+            a = cdr(a);
         }
     }
 // What I now have is a reversed list of new items in r, and the existing
@@ -1111,8 +1116,9 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
     a = b;
     while (consp(r))
     {   b = r;
-        r = qcdr(r);
-        qcdr(b) = a;
+        r = cdr(r);
+        setcdr(b, a);
+        write_barrier(cdraddr(b));
         a = b;
     }
     return onevalue(a);
@@ -1205,8 +1211,8 @@ LispObject Lunwind(LispObject env)
     if (errors_limit >= 0 && errors_now > errors_limit)
         resource_exceeded();
 #ifdef COMMON
-    LispObject a1 = qcar(args);
-    args = qcdr(args);
+    LispObject a1 = car(args);
+    args = cdr(args);
 // I will use FORMAT to handle error messages provided the first arg
 // to error had been a string and also provided (for bootstrapping) that
 // the function FORMAT seems to be defined.
@@ -1220,13 +1226,13 @@ LispObject Lunwind(LispObject env)
     exit_value = fixnum_of_int(0);       // "Error number"  in CL world
 #else
     if (miscflags & HEADLINE_FLAG)
-    {   push(args, qcdr(args));
+    {   push(args, cdr(args));
         err_printf("\n+++ error: ");
-        loop_print_error(qcar(stack[-1]));
+        loop_print_error(car(stack[-1]));
         while (is_cons(stack[0]))
         {   err_printf(" ");
-            loop_print_error(qcar(stack[0]));
-            stack[0] = qcdr(stack[0]);
+            loop_print_error(car(stack[0]));
+            stack[0] = cdr(stack[0]);
         }
         err_printf("\n");
         popv(1);
@@ -1236,9 +1242,9 @@ LispObject Lunwind(LispObject env)
 //     +++ error n A B C
 // and emsg!* gets set to A, while an errorset that catches this will get n.
     LispObject msg = nil;
-    if (is_cons(qcdr(args))) msg = qcar(qcdr(args));
-    qvalue(emsg_star) = msg;         // "Error message" in SL world
-    exit_value = qcar(args);         // "Error number"  in SL world
+    if (is_cons(cdr(args))) msg = car(cdr(args));
+    setvalue(emsg_star, msg);         // "Error message" in SL world
+    exit_value = car(args);         // "Error number"  in SL world
 #endif
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
@@ -1302,7 +1308,7 @@ LispObject Lmake_special(LispObject, LispObject a)
     if ((qheader(a) & SYM_GLOBAL_VAR) != 0)
         aerror1(
             "Variable is global or keyword so can not become fluid", a);
-    qheader(a) |= SYM_SPECIAL_VAR;
+    setheader(a, qheader(a) | SYM_SPECIAL_VAR);
     return onevalue(a);
 }
 
@@ -1311,7 +1317,7 @@ LispObject Lmake_global(LispObject, LispObject a)
     if ((qheader(a) & SYM_SPECIAL_VAR) != 0)
         aerror1(
             "Variable is fluid or keyword so can not become global", a);
-    qheader(a) |= SYM_GLOBAL_VAR;
+    setheader(a, qheader(a) | SYM_GLOBAL_VAR);
     return onevalue(a);
 }
 
@@ -1320,8 +1326,8 @@ LispObject Lmake_keyword(LispObject, LispObject a)
     if ((qheader(a) & (SYM_GLOBAL_VAR | SYM_SPECIAL_VAR)) != 0)
         aerror1(
             "Variable is fluid or global so can not become keyword", a);
-    qheader(a) |= (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
-    qvalue(a) = a;   // value is itself.
+    setheader(a, qheader(a) | (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
+    setvalue(a, a);   // value is itself.
     return onevalue(a);
 }
 
@@ -1330,19 +1336,19 @@ LispObject Lmake_keyword(LispObject, LispObject a)
 
 LispObject Lunmake_special(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    qheader(a) &= ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
+    setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
     return onevalue(a);
 }
 
 LispObject Lunmake_global(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    qheader(a) &= ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
+    setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
     return onevalue(a);
 }
 
 LispObject Lunmake_keyword(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    qheader(a) &= ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
+    setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
     return onevalue(a);
 }
 
@@ -1399,13 +1405,13 @@ LispObject Lsymbol_value(LispObject, LispObject a)
 
 LispObject Lset(LispObject env, LispObject a, LispObject b)
 {   if (!symbolp(a) || a == nil || a == lisp_true) aerror("set");
-    qvalue(a) = b;
+    setvalue(a, b);
     return onevalue(b);
 }
 
 LispObject Lmakeunbound(LispObject env, LispObject a)
 {   if (!symbolp(a) || a == nil || a == lisp_true) aerror("makeunbound");
-    qvalue(a) = unset_var;
+    setvalue(a, unset_var);
     return onevalue(a);
 }
 
@@ -1443,11 +1449,11 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
 // can find it on the property list - in that case I will re-use it.
 //
         while (b != nil)
-        {   LispObject c = qcar(b);
+        {   LispObject c = car(b);
             if ((qheader(c) & (SYM_C_DEF | SYM_CODEPTR)) ==
                 (SYM_CODEPTR | (qheader(a) & SYM_C_DEF)))
                 return onevalue(c);
-            b = qcdr(b);
+            b = cdr(b);
         }
         push(a);
 //
@@ -1477,19 +1483,19 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
         qfn2(b) = (two_args *)qfn2(a);
         qfn3(b) = (three_args *)qfn3(a);
         qfn4up(b) = (fourup_args *)qfn4up(a);
-        qenv(b) = (LispObject)qenv(a);
+        setenv(b, qenv(a));
 #ifdef COMMON
 // in Common Lisp mode gensyms that are "unprinted" are not special
-        qheader(b) ^= (SYM_ANY_GENSYM | SYM_CODEPTR);
+        setheader(b, qheader(b) ^ (SYM_ANY_GENSYM | SYM_CODEPTR));
 #else
-        qheader(b) ^= (SYM_UNPRINTED_GENSYM | SYM_ANY_GENSYM | SYM_CODEPTR);
+        setheader(b, qheader(b) ^ (SYM_UNPRINTED_GENSYM | SYM_ANY_GENSYM | SYM_CODEPTR));
 #endif
         if ((qheader(a) & SYM_C_DEF) != 0)
         {   LispObject c, w;
             c = get(a, unset_var, nil);
             if (c == nil) c = a;
             push(a, b, c);
-            qheader(b) |= SYM_C_DEF;
+            setheader(b, qheader(b) | SYM_C_DEF);
             putprop(b, unset_var, c);
             c = stack[0]; b = stack[-1];
             w = get(c, work_symbol, nil);
@@ -1575,7 +1581,7 @@ static LispObject gvector(int tag, int type, size_t size)
         {   free_vectors[i] = basic_elt(r, 0);
             basic_elt(r, 0) = nil; // Just to be tidy!
 // reset type field
-            vechdr(r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+            setvechdr(r, type + (size << (Tw+5)) + TAG_HDR_IMMED);
 // I am going to claim that this is a recycled vector, and if I am on a 32-bit
 // system and it had a padder word at the end to bring its size up to a
 // multiple of 8 bytes then that word was tidily zeroed out when I first
@@ -1653,7 +1659,7 @@ LispObject reduce_vector_size(LispObject v, size_t len)
     if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
     len = CELL*(chunks+1);
 // Shorten the index vector...
-    vechdr(v) = TYPE_INDEXVEC + (len << (Tw+5)) + TAG_HDR_IMMED;
+    setvechdr(v, TYPE_INDEXVEC + (len << (Tw+5)) + TAG_HDR_IMMED);
 // ... and truncate what is now the last chunk.
     reduce_basic_vector_size(basic_elt(v, chunks-1), last_size+CELL);
     return v;
@@ -2284,12 +2290,12 @@ LispObject callf_n(LispObject fun, LispObject args)
     LispObject currenttype = nil;
     unsigned int nargs = 0;
     while (args != nil)
-    {   LispObject a = qcar(args);
-        args = qcdr(args);
+    {   LispObject a = car(args);
+        args = cdr(args);
 // Perhaps the next argument is (type . value)...
         if (is_cons(a))
         {   if (nargs >= MAX_ARGCOUNT) aerror("call-foreign-function");
-            dumparg(nargs++, qcar(a), qcdr(a));
+            dumparg(nargs++, car(a), cdr(a));
             currenttype = nil;
         }
 // Perhaps the next argument is just a type name. I should never have two
@@ -2496,8 +2502,8 @@ setup_type const funcs1_setup[] =
     {"cdddar",                  G0W1, Lcdddar, G2W1, G3W1, G4W1},
     {"cddddr",                  G0W1, Lcddddr, G2W1, G3W1, G4W1},
 
-    {"qcar",                    G0W1, Lcar, G2W1, G3W1, G4W1},
-    {"qcdr",                    G0W1, Lcdr, G2W1, G3W1, G4W1},
+    {"car",                    G0W1, Lcar, G2W1, G3W1, G4W1},
+    {"cdr",                    G0W1, Lcdr, G2W1, G3W1, G4W1},
     {"qcaar",                   G0W1, Lcaar, G2W1, G3W1, G4W1},
     {"qcadr",                   G0W1, Lcadr, G2W1, G3W1, G4W1},
     {"qcdar",                   G0W1, Lcdar, G2W1, G3W1, G4W1},

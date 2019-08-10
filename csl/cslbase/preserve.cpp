@@ -1351,7 +1351,7 @@ void Ilist(void)
 {   LispObject il = qvalue(input_libraries), w;
     LispObject ol = qvalue(output_library);
     while (consp(il))
-    {   w = qcar(il); il = qcdr(il);
+    {   w = car(il); il = cdr(il);
         if (!is_library(w)) continue;
         if (w == ol) ol = nil;
         list_one_library(w, false);
@@ -1439,7 +1439,7 @@ LispObject Llibrary_members0(LispObject env)
 {   LispObject il = qvalue(input_libraries), w;
     LispObject ol = qvalue(output_library);
     while (consp(il))
-    {   w = qcar(il); il = qcdr(il);
+    {   w = car(il); il = cdr(il);
         if (!is_library(w)) continue;
         return Llibrary_members(nil, w);
     }
@@ -1459,7 +1459,7 @@ bool Imodulep(const char *name, size_t len, char *datestamp, size_t *size,
     while (consp(il))
     {   int j;
         directory *d;
-        LispObject oo = qcar(il); il = qcdr(il);
+        LispObject oo = car(il); il = cdr(il);
         if (!is_library(oo)) continue;
         i = library_number(oo);
         d = fasl_files[i];
@@ -1562,7 +1562,7 @@ bool Iopen(const char *name, size_t len, int forinput, char *expanded_name)
         LispObject il = qvalue(input_libraries);
         while (consp(il))
         {   bool bad;
-            LispObject oo = qcar(il); il = qcdr(il);
+            LispObject oo = car(il); il = cdr(il);
             if (!is_library(oo)) continue;
             i = library_number(oo);
             bad = open_input(fasl_files[i], name, len, 0);
@@ -1654,7 +1654,7 @@ bool Iopen_banner(int code)
     {   LispObject il = qvalue(input_libraries);
         while (consp(il))
         {   bool bad;
-            LispObject oo = qcar(il); il = qcdr(il);
+            LispObject oo = car(il); il = cdr(il);
             if (!is_library(oo)) continue;
             bad = open_input(fasl_files[library_number(oo)],
                              NULL, BANNER_CODE, 0);
@@ -1762,8 +1762,8 @@ bool Icopy(const char *name, size_t len)
 //
 // Search for a suitable input module to copy...
 //
-    for (il=qvalue(input_libraries); consp(il); il = qcdr(il))
-    {   oo = qcar(il);
+    for (il=qvalue(input_libraries); consp(il); il = cdr(il))
+    {   oo = car(il);
         if (!is_library(oo)) continue;
         i = library_number(oo);
         id = fasl_files[i];

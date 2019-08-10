@@ -101,8 +101,8 @@
 #endif
 #endif
     lit = qenv(lit);
-    codevec = qcar(lit);
-    litvec = qcdr(lit);
+    codevec = car(lit);
+    litvec = cdr(lit);
 #ifndef NO_BYTECOUNT
 // Attribute 30-bytecode overhead to entry sequence. This is a pretty
 // arbitrary number, but the idea is that when I am profiling I want to
@@ -230,7 +230,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[0];
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
-                if (callstack != nil) callstack = qcdr(callstack);
+                if (callstack != nil) callstack = cdr(callstack);
 #endif
 
 #ifdef DEBUG
@@ -243,7 +243,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-1];
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
-                if (callstack != nil) callstack = qcdr(callstack);
+                if (callstack != nil) callstack = cdr(callstack);
 #endif
 #ifdef DEBUG
                 global_jb = jbsave;
@@ -255,7 +255,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-2];
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
-                if (callstack != nil) callstack = qcdr(callstack);
+                if (callstack != nil) callstack = cdr(callstack);
 #endif
 #ifdef DEBUG
                 global_jb = jbsave;
@@ -265,7 +265,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_NILEXIT:
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
-                if (callstack != nil) callstack = qcdr(callstack);
+                if (callstack != nil) callstack = cdr(callstack);
 #endif
 #ifdef DEBUG
                 global_jb = jbsave;
@@ -656,7 +656,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_EQCAR:
-                if (car_legal(B_reg) && A_reg == qcar(B_reg)) A_reg = lisp_true;
+                if (car_legal(B_reg) && A_reg == car(B_reg)) A_reg = lisp_true;
                 else A_reg = nil;
                 continue;
 
@@ -702,42 +702,42 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CDRLOC0:
                 B_reg = A_reg;
                 A_reg = stack[-0];
-                if (car_legal(A_reg)) A_reg = qcdr(A_reg);
+                if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else A_reg = cdrerror(A_reg);
                 continue;
 
             case OP_CDRLOC1:
                 B_reg = A_reg;
                 A_reg = stack[-1];
-                if (car_legal(A_reg)) A_reg = qcdr(A_reg);
+                if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else A_reg = cdrerror(A_reg);
                 continue;
 
             case OP_CDRLOC2:
                 B_reg = A_reg;
                 A_reg = stack[-2];
-                if (car_legal(A_reg)) A_reg = qcdr(A_reg);
+                if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else A_reg = cdrerror(A_reg);
                 continue;
 
             case OP_CDRLOC3:
                 B_reg = A_reg;
                 A_reg = stack[-3];
-                if (car_legal(A_reg)) A_reg = qcdr(A_reg);
+                if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else A_reg = cdrerror(A_reg);
                 continue;
 
             case OP_CDRLOC4:
                 B_reg = A_reg;
                 A_reg = stack[-4];
-                if (car_legal(A_reg)) A_reg = qcdr(A_reg);
+                if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else A_reg = cdrerror(A_reg);
                 continue;
 
             case OP_CDRLOC5:
                 B_reg = A_reg;
                 A_reg = stack[-5];
-                if (car_legal(A_reg)) A_reg = qcdr(A_reg);
+                if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else A_reg = cdrerror(A_reg);
                 continue;
 
@@ -763,30 +763,30 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_CAAR:
             caar:
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 continue;
 
             case OP_CADR:
-                if (car_legal(A_reg)) A_reg = qcdr(A_reg);
+                if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else A_reg = cdrerror(A_reg);
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 continue;
 
             case OP_CDAR:
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
-                if (car_legal(A_reg)) A_reg = qcdr(A_reg);
+                if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else A_reg = cdrerror(A_reg);
                 continue;
 
             case OP_CDDR:
-                if (car_legal(A_reg)) A_reg = qcdr(A_reg);
+                if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else A_reg = cdrerror(A_reg);
-                if (car_legal(A_reg)) A_reg = qcdr(A_reg);
+                if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else A_reg = cdrerror(A_reg);
                 continue;
 
@@ -1125,7 +1125,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (car_legal(A_reg) &&
-                    basic_elt(litvec, w) == qcar(A_reg)) short_jump(ppc, xppc);
+                    basic_elt(litvec, w) == car(A_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPNEQCAR:
@@ -1133,7 +1133,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (!car_legal(A_reg) ||
-                    basic_elt(litvec, w) != qcar(A_reg)) short_jump(ppc, xppc);
+                    basic_elt(litvec, w) != car(A_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFLAGP:
@@ -1385,8 +1385,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_UNCATCH:
                 popv(1); pop(r1); popv(1);
-                catch_tags = qcdr(r1);
-                qcar(r1) = r1; qcdr(r1) = nil;
+                catch_tags = cdr(r1);
+                setcar(r1,  r1); setcdr(r1, nil);
                 continue;
 
             case OP_PROTECT:
@@ -1397,8 +1397,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // an error.
 //
                 popv(1); pop(r1); popv(1);
-                catch_tags = qcdr(r1);
-                qcar(r1) = r1; qcdr(r1) = nil;
+                catch_tags = cdr(r1);
+                setcar(r1, r1); setcdr(r1, nil);
                 A_reg = Lmv_list(nil, A_reg);
                 push(nil, fixnum_of_int(UNWIND_NULL), A_reg);
                 continue;
@@ -1416,12 +1416,12 @@ next_opcode:   // This label is so that I can restart what I am doing
                 B_reg = A_reg;
                 A_reg = nil;
                 if (consp(B_reg))
-                {   A_reg = qcar(B_reg);
-                    B_reg = qcdr(B_reg);
+                {   A_reg = car(B_reg);
+                    B_reg = cdr(B_reg);
                     exit_count++;
                     while (consp(B_reg))
-                    {   (&mv_1)[exit_count++] = qcar(B_reg);
-                        B_reg = qcdr(B_reg);
+                    {   (&mv_1)[exit_count++] = car(B_reg);
+                        B_reg = cdr(B_reg);
                     }
                 }
                 exit_value = A_reg;
@@ -1449,8 +1449,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_THROW:
                 pop(r1);       // the tag to throw to
-                for (r2 = catch_tags; r2!=nil; r2=qcdr(r2))
-                    if (r1 == qcar(r2)) break;
+                for (r2 = catch_tags; r2!=nil; r2=cdr(r2))
+                    if (r1 == car(r2)) break;
                 if (r2==nil) aerror1("throw: tag not found", r1);
                 exit_tag = r2;
                 exit_value = A_reg;
@@ -1539,8 +1539,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (f0 == bytecoded_0 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
-                    codevec = qcar(lit);
-                    litvec = qcdr(lit);
+                    codevec = car(lit);
+                    litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
@@ -1556,7 +1556,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
-                if (callstack != nil) callstack = qcdr(callstack);
+                if (callstack != nil) callstack = cdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                 else A_reg = f0(r1);
@@ -1583,8 +1583,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (f1 == bytecoded_1 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
-                    codevec = qcar(lit);
-                    litvec = qcdr(lit);
+                    codevec = car(lit);
+                    litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
@@ -1601,7 +1601,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
-                if (callstack != nil) callstack = qcdr(callstack);
+                if (callstack != nil) callstack = cdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
@@ -1629,8 +1629,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (f2 == bytecoded_2 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
-                    codevec = qcar(lit);
-                    litvec = qcdr(lit);
+                    codevec = car(lit);
+                    litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
@@ -1647,7 +1647,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
-                if (callstack != nil) callstack = qcdr(callstack);
+                if (callstack != nil) callstack = cdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
@@ -1674,8 +1674,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (f3 == bytecoded_3 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
-                    codevec = qcar(lit);
-                    litvec = qcdr(lit);
+                    codevec = car(lit);
+                    litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
@@ -1692,7 +1692,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
-                if (callstack != nil) callstack = qcdr(callstack);
+                if (callstack != nil) callstack = cdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
                 else A_reg = f3(r1, r2, B_reg, A_reg);
@@ -1722,7 +1722,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
-                if (callstack != nil) callstack = qcdr(callstack);
+                if (callstack != nil) callstack = cdr(callstack);
 #endif
 #ifdef DEBUG
                 global_jb = jbsave;
@@ -2074,7 +2074,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_CAR:
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2082,7 +2082,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC0:
                 B_reg = A_reg;
                 A_reg = stack[-0];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2090,7 +2090,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC1:
                 B_reg = A_reg;
                 A_reg = stack[-1];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2098,7 +2098,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC2:
                 B_reg = A_reg;
                 A_reg = stack[-2];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2106,7 +2106,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC3:
                 B_reg = A_reg;
                 A_reg = stack[-3];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2114,7 +2114,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC4:
                 B_reg = A_reg;
                 A_reg = stack[-4];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2122,7 +2122,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC5:
                 B_reg = A_reg;
                 A_reg = stack[-5];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2130,7 +2130,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC6:
                 B_reg = A_reg;
                 A_reg = stack[-6];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2138,7 +2138,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC7:
                 B_reg = A_reg;
                 A_reg = stack[-7];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2146,7 +2146,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC8:
                 B_reg = A_reg;
                 A_reg = stack[-8];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2154,7 +2154,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC9:
                 B_reg = A_reg;
                 A_reg = stack[-9];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2162,7 +2162,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC10:
                 B_reg = A_reg;
                 A_reg = stack[-10];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2170,13 +2170,13 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CARLOC11:
                 B_reg = A_reg;
                 A_reg = stack[-11];
-                if (car_legal(A_reg)) A_reg = qcar(A_reg);
+                if (car_legal(A_reg)) A_reg = car(A_reg);
                 else A_reg = carerror(A_reg);
                 assert(A_reg != 0);
                 continue;
 
             case OP_CDR:
-                if (car_legal(A_reg)) A_reg = qcdr(A_reg);
+                if (car_legal(A_reg)) A_reg = cdr(A_reg);
                 else A_reg = cdrerror(A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2357,7 +2357,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 //
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
-                if (callstack != nil) callstack = qcdr(callstack);
+                if (callstack != nil) callstack = cdr(callstack);
 #endif
 #ifdef DEBUG
                 global_jb = jbsave;
@@ -2480,7 +2480,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // If the tag matches exit_tag then I must reset pc based on offset (r2)
 // and continue. NB need to restore A_reg from exit_value.
             w = int_of_fixnum(r2);
-            if (qcar(r1) == SPID_PROTECT)
+            if (car(r1) == SPID_PROTECT)
             {   // This is an UNWIND catcher
                 push(exit_tag, fixnum_of_int(exit_reason));
                 A_reg = Lmv_list(nil, exit_value);

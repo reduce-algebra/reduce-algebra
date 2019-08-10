@@ -1036,10 +1036,10 @@ LispObject om_putSymbol(LispObject env, LispObject ldev, LispObject val)
         aerror("om_putSymbol");
 
     // Get the cd and name properties (checking that they are set).
-    cdObj = qcar(val);
+    cdObj = car(val);
     if (cdObj == nil)
         aerror("om_putSymbol: The cd property was not set");
-    nameObj = qcar(qcdr(val));
+    nameObj = car(cdr(val));
     if (nameObj == nil)
         aerror("om_putSymbol: The name property was not set");
 

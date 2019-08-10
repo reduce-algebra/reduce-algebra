@@ -668,8 +668,8 @@ int f128M_print_G(int width, int prec, float128_t *p)
 #ifdef UNUSED_IDFPLUS
 
 static LispObject idfplus(LispObject a, LispObject b)
-{   LispObject ai = qcar(a), ax = qcar(qcdr(a)), asgn = qcar(qcdr(qcdr(a)));
-    LispObject bi = qcar(b), bx = qcar(qcdr(b)), bsgn = qcar(qcdr(qcdr(b)));
+{   LispObject ai = car(a), ax = car(cdr(a)), asgn = car(cdr(cdr(a)));
+    LispObject bi = car(b), bx = car(cdr(b)), bsgn = car(cdr(cdr(b)));
     if (ax < bx)
     {   bi = times2(bi, make_power_of_two(int_of_fixnum(bx) - int_of_fixnum(ax)));
         bx = ax;

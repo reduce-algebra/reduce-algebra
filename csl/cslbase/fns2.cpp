@@ -304,7 +304,7 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
     f4up = qfn4up(a);
     r = qenv(a);
     if (!consp(r)) return onevalue(nil);
-    r = qcar(r);
+    r = car(r);
     if (!is_bps(r)) return onevalue(nil);
     b = (unsigned char *)data_of_bps(r);
     if (f0 == bytecoded_0 ||
@@ -376,7 +376,7 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
     f4up = qfn4up(a);
     r = qenv(a);
     if (!consp(r)) return onevalue(nil);
-    r = qcar(r);
+    r = car(r);
     if (!is_bps(r)) return onevalue(nil);
     if (f0 == bytecoded_0) val = 0;
     else if (f1 == bytecoded_1) val = 1;
@@ -420,7 +420,7 @@ LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b)
 {   if (!is_symbol(a)) aerror1("symbol-set-env", a);
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
-    qenv(a) = b;
+    setenv(a, b);
     return onevalue(b);
 }
 
@@ -439,8 +439,8 @@ LispObject Lsymbol_protect(LispObject env, LispObject a, LispObject b)
 {   Header h;
     if (!is_symbol(a)) return onevalue(nil);
     h = qheader(a);
-    if (b == nil) qheader(a) = h & ~(SYM_CODEPTR | SYM_C_DEF);
-    else qheader(a) = h | SYM_CODEPTR | SYM_C_DEF;
+    if (b == nil) setheader(a, h & ~(SYM_CODEPTR | SYM_C_DEF));
+    else setheader(a, h | SYM_CODEPTR | SYM_C_DEF);
     h &= (SYM_CODEPTR | SYM_C_DEF);
     return onevalue(Lispify_predicate(h == (SYM_CODEPTR | SYM_C_DEF)));
 }
@@ -481,7 +481,7 @@ LispObject Lsymbol_make_fastget(LispObject env, LispObject a, LispObject n)
         if (p != 0) elt(fastget_names, p-1) = SPID_NOPROP;
         q = (n1 + 1) & 0x3f;
         h = (h & ~SYM_FASTGET_MASK) | (q << SYM_FASTGET_SHIFT);
-        qheader(a) = h;
+        setheader(a, h);
         if (q != 0) elt(fastget_names, q-1) = a;
     }
     if (p == 0) return onevalue(nil);
@@ -496,11 +496,12 @@ static LispObject deleqip(LispObject a, LispObject l)
 //
 {   LispObject w, r;
     if (l == nil) return nil;
-    if (qcar(l) == a) return qcdr(l);
+    if (car(l) == a) return cdr(l);
     r = l;
-    while (w = l, (l = qcdr(l)) != nil)
-    {   if (qcar(l) == a)
-        {   qcdr(w) = vcdr(l);
+    while (w = l, (l = cdr(l)) != nil)
+    {   if (car(l) == a)
+        {   setcdr(w, cdr(l));
+            write_barrier(cdraddr(w));
             return r;
         }
     }
@@ -514,7 +515,7 @@ void lose_C_def(LispObject a)
 //
     LispObject b = get(a, unset_var, nil), c;
     Lremprop(nil, a, unset_var);
-    qheader(a) &= ~SYM_C_DEF;
+    setheader(a, qheader(a) & ~SYM_C_DEF);
     c = get(b, work_symbol, nil);
     c = deleqip(a, c);
     if (c == nil) Lremprop(nil, b, work_symbol);
@@ -564,7 +565,7 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
             push(a);
             env = get(a, funarg, nil);
             pop(a);
-            qenv(a) = env;
+            setenv(a, env);
             return onevalue(a);
         }
     }
@@ -601,7 +602,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         aerror1("symbol-set-definition", a);
     }
     set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up); // Tidy up first
-    qenv(a) = a;
+    setenv(a, a);
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
     if (b == nil) return onevalue(b); // set defn to nil to undefine
     else if (symbolp(b))
@@ -616,9 +617,9 @@ LispObject Lsymbol_set_definition(LispObject env,
 //
         if ((qheader(b) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0)
             aerror1("symbol-set-definition", b);
-        qheader(a) = qheader(a) & ~SYM_MACRO;
+        setheader(a, qheader(a) & ~SYM_MACRO);
         {   set_fns(a, qfn0(b), qfn1(b), qfn2(b), qfn3(b), qfn4up(b));
-            qenv(a) = (LispObject)qenv(b);
+            setenv(a, qenv(b));
 //
 // In order that checkpoint files can be made there is some very
 // ugly fooling around here for functions that are defined in the C coded
@@ -638,8 +639,8 @@ LispObject Lsymbol_set_definition(LispObject env,
         }
     }
     else if (!consp(b)) aerror1("symbol-set-definition", b);
-    else if (is_fixnum(qcar(b)))
-    {   int32_t nargs = (int32_t)int_of_fixnum(qcar(b)),
+    else if (is_fixnum(car(b)))
+    {   int32_t nargs = (int32_t)int_of_fixnum(car(b)),
                 nopts, flagbits, ntail;
         nopts = nargs >> 8;
         flagbits = nopts >> 8;
@@ -660,7 +661,7 @@ LispObject Lsymbol_set_definition(LispObject env,
                 case 101: set_fns(a, G0W1, f1_as_1, G2W1, G3W1, G4W1); break;
                 case 000: set_fns(a, f0_as_0, G1W0, G2W0, G3W0, G4W0); break;
             }
-            b = qcdr(b);
+            b = cdr(b);
         }
         else if (flagbits != 0 || nopts != 0)
         {   switch(flagbits)
@@ -677,7 +678,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         }
         else
         {   if (nargs > 4) nargs = 4;
-            qheader(a) = qheader(a) & ~SYM_MACRO;
+            setheader(a, qheader(a) & ~SYM_MACRO);
             switch (nargs)
             {   case 0:   set_fns(a, bytecoded_0, G1W0, G2W0, G3W0, G4W0);
                     break;
@@ -692,30 +693,30 @@ LispObject Lsymbol_set_definition(LispObject env,
                     break;
             }
         }
-        qenv(a) = vcdr(b);
+        setenv(a, cdr(b));
     }
-    else if (qcar(b) == lambda)
-    {   LispObject bvl = qcar(qcdr(b));
+    else if (car(b) == lambda)
+    {   LispObject bvl = car(cdr(b));
         int nargs = 0;
-        while (consp(bvl)) nargs++, bvl = qcdr(bvl);
-        qheader(a) = qheader(a) & ~SYM_MACRO;
+        while (consp(bvl)) nargs++, bvl = cdr(bvl);
+        setheader(a, qheader(a) & ~SYM_MACRO);
         set_fns(a, interpreted_0, interpreted_1, interpreted_2, interpreted_3, interpreted_4up);
-        qenv(a) = vcdr(b);
+        setenv(a, cdr(b));
         if (qvalue(comp_symbol) != nil &&
-            vfn1(compiler_symbol) != undefined_1)
+            qfn1(compiler_symbol) != undefined_1)
         {   push(a);
             a = ncons(a);
-            (*vfn1(compiler_symbol))(compiler_symbol, a);
+            (*qfn1(compiler_symbol))(compiler_symbol, a);
             pop(a);
         }
     }
-    else if (qcar(b) == funarg)
-    {   LispObject bvl = qcar(qcdr(b));
+    else if (car(b) == funarg)
+    {   LispObject bvl = car(cdr(b));
         int nargs = 0;
-        while (consp(bvl)) nargs++, bvl = qcdr(bvl);
-        qheader(a) = qheader(a) & ~SYM_MACRO;
+        while (consp(bvl)) nargs++, bvl = cdr(bvl);
+        setheader(a, qheader(a) & ~SYM_MACRO);
         set_fns(a, funarged_0, funarged_1, funarged_2, funarged_3, funarged_4up);
-        qenv(a) = vcdr(b);
+        setenv(a, cdr(b));
     }
     else aerror1("symbol-set-definition", b);
     return onevalue(b);
@@ -754,10 +755,10 @@ LispObject Lremd(LispObject env, LispObject a)
 // I treat an explicit use of remd as a redefinition, and ensure that
 // restarting a preserved image will not put the definition back.
 //
-    qheader(a) = qheader(a) & ~SYM_MACRO;
+    setheader(a, qheader(a) & ~SYM_MACRO);
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
     set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
-    qenv(a) = a;
+    setenv(a, a);
     return onevalue(res);
 }
 
@@ -780,9 +781,9 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
         aerror1("set-autoload", a);
-    if (!(vfn0(a) == undefined_0 && vfn1(a) == undefined_1 &&
-          vfn2(a) == undefined_2 && vfn3(a) == undefined_3 &&
-          vfn4up(a) == undefined_4up)) return onevalue(nil);
+    if (!(qfn0(a) == undefined_0 && qfn1(a) == undefined_1 &&
+          qfn2(a) == undefined_2 && qfn3(a) == undefined_3 &&
+          qfn4up(a) == undefined_4up)) return onevalue(nil);
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
     push(a, b);
@@ -794,10 +795,10 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
 // restarting a preserved image will not put the definition back.  Note that
 // I will not allow autoloadable macros...
 //
-    qheader(a) = qheader(a) & ~SYM_MACRO;
+    setheader(a, qheader(a) & ~SYM_MACRO);
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
     set_fns(a, autoload_0, autoload_1, autoload_2, autoload_3, autoload_4up);
-    qenv(a) = res;
+    setenv(a, res);
     return onevalue(res);
 }
 
@@ -826,8 +827,8 @@ LispObject Ltrace(LispObject env, LispObject a)
         w = a;
     }
     while (consp(w))
-    {   LispObject s = qcar(w);
-        w = qcdr(w);
+    {   LispObject s = car(w);
+        w = cdr(w);
         if (symbolp(s))
         {   one_arg *f1 = qfn1(s);
             if (f1 == undefined_1)
@@ -841,7 +842,7 @@ LispObject Ltrace(LispObject env, LispObject a)
                 debug_printf(" not yet defined, was this a mistake?\n");
                 continue;
             }
-            qheader(s) |= SYM_TRACED;
+            setheader(s, qheader(s) | SYM_TRACED);
             trace_builtin(s, true);
         }
     }
@@ -857,10 +858,10 @@ LispObject Luntrace(LispObject env, LispObject a)
         w = a;
     }
     while (consp(w))
-    {   LispObject s = qcar(w);
-        w = qcdr(w);
+    {   LispObject s = car(w);
+        w = cdr(w);
         if (symbolp(s))
-        {   qheader(s) &= ~SYM_TRACED & ~SYM_TRACESET;
+        {   setheader(s, qheader(s) & ~SYM_TRACED & ~SYM_TRACESET);
             trace_builtin(s, false);
         }
     }
@@ -876,9 +877,9 @@ LispObject Ltraceset(LispObject env, LispObject a)
         w = a;
     }
     while (consp(w))
-    {   LispObject s = qcar(w);
-        w = qcdr(w);
-        if (symbolp(s)) qheader(s) |= SYM_TRACESET | SYM_TRACED;
+    {   LispObject s = car(w);
+        w = cdr(w);
+        if (symbolp(s)) setheader(s, qheader(s) | SYM_TRACESET | SYM_TRACED);
     }
     return onevalue(a);
 }
@@ -890,9 +891,9 @@ LispObject Luntraceset(LispObject env, LispObject a)
         w = a;
     }
     while (consp(w))
-    {   LispObject s = qcar(w);
-        w = qcdr(w);
-        if (symbolp(s)) qheader(s) &= ~SYM_TRACESET;
+    {   LispObject s = car(w);
+        w = cdr(w);
+        if (symbolp(s)) setheader(s, qheader(s) & ~SYM_TRACESET);
     }
     return onevalue(a);
 }
@@ -958,8 +959,8 @@ LispObject get_pname(LispObject a)
         push(a);
         name = make_string(genname);
         pop(a);
-        qpname(a) = name;
-        qheader(a) &= ~SYM_UNPRINTED_GENSYM;
+        setpname(a, name);
+        setheader(a, qheader(a) & ~SYM_UNPRINTED_GENSYM);
     }
 #endif
     return name;
@@ -1028,18 +1029,18 @@ static LispObject Lrestart_lisp2(LispObject env,
         b1 = b = Lexploden(nil, b);
         pop(a);
         while (b1 != nil)
-        {   int ch = int_of_fixnum(qcar(b1));
+        {   int ch = int_of_fixnum(car(b1));
             n++;            // number of chars of arg
             if (ch > 0x7f) n++; // extra byte
             if (ch > 0x7ff) n++;
             if (ch > 0xffff) n++; // Now have enough bytes for utf8
-            b1 = qcdr(b1);
+            b1 = cdr(b1);
         }
         v = (char *)malloc(n+1);
         if (v == NULL) aerror("space exhausted in restart-csl");
         n = 0;
         while (b != nil)
-        {   int ch = int_of_fixnum(qcar(b));
+        {   int ch = int_of_fixnum(car(b));
             if (ch <= 0x7f) v[n++] = ch;
             else if (ch < 0x7ff)
             {   v[n++] = 0xc0 | ((ch >> 6) & 0x1f);
@@ -1056,7 +1057,7 @@ static LispObject Lrestart_lisp2(LispObject env,
                 v[n++] = 0x80 | ((ch >> 6) & 0x3f);
                 v[n++] = 0x80 | (ch & 0x3f);
             }
-            b = qcdr(b);
+            b = cdr(b);
         }
         v[n] = 0;
     }
@@ -1427,10 +1428,10 @@ bool cl_equal_fn(LispObject a, LispObject b)
         if (ta == TAG_CONS && a != nil)
         {   if (!consp(b) || b == nil) return false;
             else
-            {   LispObject ca = qcar(a), cb = qcar(b);
+            {   LispObject ca = car(a), cb = car(b);
                 if (ca == cb)
-                {   a = qcdr(a);
-                    b = qcdr(b);
+                {   a = cdr(a);
+                    b = cdr(b);
                     if (a == b) return true;
                     continue;
                 }
@@ -1444,10 +1445,10 @@ bool cl_equal_fn(LispObject a, LispObject b)
                     if (tca == TAG_CONS && ca != nil)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
-                        {   LispObject cca = qcar(ca), ccb = qcar(cb);
+                        {   LispObject cca = car(ca), ccb = car(cb);
                             if (cca == ccb)
-                            {   ca = qcdr(ca);
-                                cb = qcdr(cb);
+                            {   ca = cdr(ca);
+                                cb = cdr(cb);
                                 if (ca == cb) break;
                                 continue;
                             }
@@ -1456,8 +1457,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
 // ((x ...) ...) ((y ...) ...)
 //
                             if (!cl_equal(cca, ccb)) return false;
-                            ca = qcdr(ca);
-                            cb = qcdr(cb);
+                            ca = cdr(ca);
+                            cb = cdr(cb);
                             if (ca == cb) break;
                             continue;
                         }
@@ -1511,8 +1512,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
                         }
                     break;  // out of the for (;;) loop
                 }
-                a = qcdr(a);
-                b = qcdr(b);
+                a = cdr(a);
+                b = cdr(b);
                 if (a == b) return true;
                 continue;
             }
@@ -1675,10 +1676,10 @@ bool equal_fn(LispObject a, LispObject b)
         if (ta == TAG_CONS && a != nil)
         {   if (!consp(b) || b == nil) return false;
             else
-            {   LispObject ca = qcar(a), cb = qcar(b);
+            {   LispObject ca = car(a), cb = car(b);
                 if (ca == cb)
-                {   a = qcdr(a);
-                    b = qcdr(b);
+                {   a = cdr(a);
+                    b = cdr(b);
                     if (a == b) return true;
                     continue;
                 }
@@ -1692,10 +1693,10 @@ bool equal_fn(LispObject a, LispObject b)
                     if (tca == TAG_CONS && ca != nil)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
-                        {   LispObject cca = qcar(ca), ccb = qcar(cb);
+                        {   LispObject cca = car(ca), ccb = car(cb);
                             if (cca == ccb)
-                            {   ca = qcdr(ca);
-                                cb = qcdr(cb);
+                            {   ca = cdr(ca);
+                                cb = cdr(cb);
                                 if (ca == cb) break;
                                 continue;
                             }
@@ -1704,8 +1705,8 @@ bool equal_fn(LispObject a, LispObject b)
 // ((x ...) ...) ((y ...) ...)
 //
                             if (!equal(cca, ccb)) return false;
-                            ca = qcdr(ca);
-                            cb = qcdr(cb);
+                            ca = cdr(ca);
+                            cb = cdr(cb);
                             if (ca == cb) break;
                             continue;
                         }
@@ -1759,8 +1760,8 @@ bool equal_fn(LispObject a, LispObject b)
                         }
                     break;  // out of the for (;;) loop
                 }
-                a = qcdr(a);
-                b = qcdr(b);
+                a = cdr(a);
+                b = cdr(b);
                 if (a == b) return true;
                 continue;
             }
@@ -1880,10 +1881,10 @@ bool equalp(LispObject a, LispObject b)
         if (ta == TAG_CONS && a != nil)
         {   if (!consp(b) || b == nil) return false;
             else
-            {   LispObject ca = qcar(a), cb = qcar(b);
+            {   LispObject ca = car(a), cb = car(b);
                 if (ca == cb)
-                {   a = qcdr(a);
-                    b = qcdr(b);
+                {   a = cdr(a);
+                    b = cdr(b);
                     if (a == b) return true;
                     continue;
                 }
@@ -1897,10 +1898,10 @@ bool equalp(LispObject a, LispObject b)
                     if (tca == TAG_CONS && ca != nil)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
-                        {   LispObject cca = qcar(ca), ccb = qcar(cb);
+                        {   LispObject cca = car(ca), ccb = car(cb);
                             if (cca == ccb)
-                            {   ca = qcdr(ca);
-                                cb = qcdr(cb);
+                            {   ca = cdr(ca);
+                                cb = cdr(cb);
                                 if (ca == cb) break;
                                 continue;
                             }
@@ -1909,8 +1910,8 @@ bool equalp(LispObject a, LispObject b)
 // ((x ...) ...) ((y ...) ...)
 //
                             if (!equalp(cca, ccb)) return false;
-                            ca = qcdr(ca);
-                            cb = qcdr(cb);
+                            ca = cdr(ca);
+                            cb = cdr(cb);
                             if (ca == cb) break;
                             continue;
                         }
@@ -1965,8 +1966,8 @@ bool equalp(LispObject a, LispObject b)
                         }
                     break;  // out of the for (;;) loop
                 }
-                a = qcdr(a);
-                b = qcdr(b);
+                a = cdr(a);
+                b = cdr(b);
                 if (a == b) return true;
                 continue;
             }
@@ -2031,13 +2032,13 @@ LispObject Leql(LispObject env,
 
 LispObject Leqcar(LispObject env, LispObject a, LispObject b)
 {   if (!consp(a)) return onevalue(nil);
-    a = qcar(a);
+    a = car(a);
     return onevalue(Lispify_predicate(eqcheck(a, b)));
 }
 
 LispObject Lequalcar(LispObject env, LispObject a, LispObject b)
 {   if (!consp(a)) return onevalue(nil);
-    a = qcar(a);
+    a = car(a);
     if (a == b) return lisp_true;
     else return onevalue(Lispify_predicate(equal(a, b)));
 }
@@ -2099,9 +2100,9 @@ LispObject Lnreverse(LispObject env, LispObject a)
     }
     while (consp(a))
     {   LispObject c = a;
-        a = qcdr(a);
-        qcdr(c) = b;
-        write_barrier(&qcdr(c));
+        a = cdr(a);
+        setcdr(c, b);
+        write_barrier(cdraddr(c));
         b = c;
     }
     return onevalue(b);
@@ -2110,9 +2111,9 @@ LispObject Lnreverse(LispObject env, LispObject a)
 LispObject Lnreverse2(LispObject env, LispObject a, LispObject b)
 {   while (consp(a))
     {   LispObject c = a;
-        a = qcdr(a);
-        qcdr(c) = b;
-        write_barrier(&qcdr(c));
+        a = cdr(a);
+        setcdr(c, b);
+        write_barrier(cdraddr(c));
         b = c;
     }
     return onevalue(b);
@@ -2124,9 +2125,9 @@ LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
     pop(a);
     while (consp(a))
     {   LispObject c = a;
-        a = qcdr(a);
-        qcdr(c) = b;
-        write_barrier(&qcdr(c));
+        a = cdr(a);
+        setcdr(c, b);
+        write_barrier(cdraddr(c));
         b = c;
     }
     return onevalue(b);
@@ -2138,9 +2139,9 @@ LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b, LispObject c)
     pop(a);
     while (consp(a))
     {   LispObject d = a;
-        a = qcdr(a);
-        qcdr(d) = b;
-        write_barrier(&qcdr(d));
+        a = cdr(a);
+        setcdr(d, b);
+        write_barrier(cdraddr(d));
         b = d;
     }
     return onevalue(b);
@@ -2155,13 +2156,13 @@ LispObject Lnreverse0(LispObject env, LispObject a)
 {   LispObject b = nil;
     if (!consp(a)) return onevalue(a);
     b = a;
-    a = qcdr(a);
-    qcdr(b) = nil;
+    a = cdr(a);
+    setcdr(b, nil);
     while (consp(a))
     {   LispObject c = a;
-        a = qcdr(a);
-        qcdr(c) = b;
-        write_barrier(&qcdr(c));
+        a = cdr(a);
+        setcdr(c, b);
+        write_barrier(cdraddr(c));
         b = c;
     }
     return onevalue(b);
@@ -2173,9 +2174,9 @@ LispObject Lreverse(LispObject env, LispObject a)
     r = nil;
     while (consp(a))
     {   push(a);
-        r = cons(qcar(a), r);
+        r = cons(car(a), r);
         pop(a);
-        a = qcdr(a);
+        a = cdr(a);
     }
     return onevalue(r);
 }
@@ -2201,22 +2202,22 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
 #endif
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
-        {   LispObject c = qcar(b);
+        {   LispObject c = car(b);
 #ifdef DEBUG_ASSOC
             assoc_length++;
             if (assoc_length > 100*assoc_calls) aerror("average search for assoc");
             if (++this_assoc > assoc_max) assoc_max = this_assoc;
 //!!        if (assoc_max > 1000) aerror("length for assoc");
 #endif
-            if (consp(c) && a == qcar(c)) return onevalue(c);
-            b = qcdr(b);
+            if (consp(c) && a == car(c)) return onevalue(c);
+            b = cdr(b);
         }
         return onevalue(nil);
     }
     while (consp(b))
-    {   LispObject c = qcar(b);
+    {   LispObject c = car(b);
         if (consp(c))
-        {   LispObject cc = qcar(c);
+        {   LispObject cc = car(c);
 #ifdef DEBUG_ASSOC
             assoc_length++;
             if (++this_assoc > assoc_max) assoc_max = this_assoc;
@@ -2238,7 +2239,7 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
             }
 #endif
         }
-        b = qcdr(b);
+        b = cdr(b);
 #ifdef TRACED_EQUAL
         pos++;
 #endif
@@ -2259,34 +2260,34 @@ LispObject Latsoc(LispObject env, LispObject a, LispObject b)
 //
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
-        {   LispObject c = qcar(b);
-            if (consp(c) && a == qcar(c)) return onevalue(c);
-            b = qcdr(b);
+        {   LispObject c = car(b);
+            if (consp(c) && a == car(c)) return onevalue(c);
+            b = cdr(b);
         }
         return onevalue(nil);
     }
 #endif
     while (consp(b))
-    {   LispObject c = qcar(b);
+    {   LispObject c = car(b);
 //
 // As for memq I unroll the loop a little...
 // eql() can neither fail nor call the garbage collector, so I do
 // not need to stack things here.
 //
-        if (consp(c) && eqcheck(a, qcar(c))) return onevalue(c);
-        b = qcdr(b);
+        if (consp(c) && eqcheck(a, car(c))) return onevalue(c);
+        b = cdr(b);
         if (!consp(b)) return onevalue(nil);
-        c = qcar(b);
-        if (consp(c) && eqcheck(a, qcar(c))) return onevalue(c);
-        b = qcdr(b);
+        c = car(b);
+        if (consp(c) && eqcheck(a, car(c))) return onevalue(c);
+        b = cdr(b);
         if (!consp(b)) return onevalue(nil);
-        c = qcar(b);
-        if (consp(c) && eqcheck(a, qcar(c))) return onevalue(c);
-        b = qcdr(b);
+        c = car(b);
+        if (consp(c) && eqcheck(a, car(c))) return onevalue(c);
+        b = cdr(b);
         if (!consp(b)) return onevalue(nil);
-        c = qcar(b);
-        if (consp(c) && eqcheck(a, qcar(c))) return onevalue(c);
-        b = qcdr(b);
+        c = car(b);
+        if (consp(c) && eqcheck(a, car(c))) return onevalue(c);
+        b = cdr(b);
     }
     return onevalue(nil);
 }
@@ -2294,28 +2295,28 @@ LispObject Latsoc(LispObject env, LispObject a, LispObject b)
 LispObject Lmember(LispObject env, LispObject a, LispObject b)
 {   if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
-        {   if (a == qcar(b)) return onevalue(b);
-            b = qcdr(b);
+        {   if (a == car(b)) return onevalue(b);
+            b = cdr(b);
             if (!consp(b)) return onevalue(nil);
-            if (a == qcar(b)) return onevalue(b);
-            b = qcdr(b);
+            if (a == car(b)) return onevalue(b);
+            b = cdr(b);
             if (!consp(b)) return onevalue(nil);
-            if (a == qcar(b)) return onevalue(b);
-            b = qcdr(b);
+            if (a == car(b)) return onevalue(b);
+            b = cdr(b);
             if (!consp(b)) return onevalue(nil);
-            if (a == qcar(b)) return onevalue(b);
-            b = qcdr(b);
+            if (a == car(b)) return onevalue(b);
+            b = cdr(b);
         }
         return onevalue(nil);
     }
     while (consp(b))
-    {   LispObject cb = qcar(b);
+    {   LispObject cb = car(b);
 #ifdef COMMON
         if (cl_equal(a, cb)) return onevalue(b);
 #else
         if (equal(a, cb)) return onevalue(b);
 #endif
-        b = qcdr(b);
+        b = cdr(b);
     }
     return onevalue(nil);
 }
@@ -2331,8 +2332,8 @@ LispObject Lmemq(LispObject env, LispObject a, LispObject b)
 //
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
-        {   if (a == qcar(b)) return onevalue(b);
-            b = qcdr(b);
+        {   if (a == car(b)) return onevalue(b);
+            b = cdr(b);
         }
         return onevalue(nil);
     }
@@ -2343,17 +2344,17 @@ LispObject Lmemq(LispObject env, LispObject a, LispObject b)
 // I have unrolled this loop a bit because I found that in one of the
 // Reduce tests it was a serious hot-spot.
 //
-        if (eqcheck(a, qcar(b))) return onevalue(b);
-        b = qcdr(b);
+        if (eqcheck(a, car(b))) return onevalue(b);
+        b = cdr(b);
         if (!consp(b)) return onevalue(nil);
-        if (eqcheck(a, qcar(b))) return onevalue(b);
-        b = qcdr(b);
+        if (eqcheck(a, car(b))) return onevalue(b);
+        b = cdr(b);
         if (!consp(b)) return onevalue(nil);
-        if (eqcheck(a, qcar(b))) return onevalue(b);
-        b = qcdr(b);
+        if (eqcheck(a, car(b))) return onevalue(b);
+        b = cdr(b);
         if (!consp(b)) return onevalue(nil);
-        if (eqcheck(a, qcar(b))) return onevalue(b);
-        b = qcdr(b);
+        if (eqcheck(a, car(b))) return onevalue(b);
+        b = cdr(b);
     }
     return onevalue(nil);
 }
@@ -2368,10 +2369,10 @@ static bool smemq(LispObject a, LispObject b)
 // the problem is closer to being that it can never call the GC.
 //
     while (consp(b))
-    {   LispObject w = qcar(b);
+    {   LispObject w = car(b);
         if (w == quote_symbol) return false;
         else if (smemq(a, w)) return true;
-        else b = qcdr(b);
+        else b = cdr(b);
     }
     return (a == b);
 }
@@ -2391,8 +2392,8 @@ LispObject Lsmemq(LispObject env, LispObject a, LispObject b)
 
 static bool containedeq(LispObject env, LispObject x, LispObject y)
 {   while (consp(y))
-    {   if (containedeq(nil, x, qcar(y))) return true;
-        y = qcdr(y);
+    {   if (containedeq(nil, x, car(y))) return true;
+        y = cdr(y);
     }
     return (x == y);
 }
@@ -2400,8 +2401,8 @@ static bool containedeq(LispObject env, LispObject x, LispObject y)
 static bool containedequal(LispObject env, LispObject x, LispObject y)
 {   while (consp(y))
     {   if (equal(x, y)) return true;
-        if (containedequal(nil, x, qcar(y))) return true;
-        y = qcdr(y);
+        if (containedequal(nil, x, car(y))) return true;
+        y = cdr(y);
     }
     return equal(x, y);
 }
@@ -2416,14 +2417,14 @@ static LispObject Lcontained(LispObject env, LispObject x, LispObject y)
 LispObject Llast(LispObject env, LispObject a)
 {   LispObject b;
     if (!consp(a)) aerror1("last", a);
-    while (b = qcdr(a), consp(b)) a = b;
-    return onevalue(qcar(a));
+    while (b = cdr(a), consp(b)) a = b;
+    return onevalue(car(a));
 }
 
 LispObject Llastpair(LispObject env, LispObject a)
 {   LispObject b;
     if (!consp(a)) return onevalue(a); // aerror1("lastpair", a);
-    while (b = qcdr(a), consp(b)) a = b;
+    while (b = cdr(a), consp(b)) a = b;
     return onevalue(a);
 }
 
@@ -2441,19 +2442,19 @@ LispObject Llength(LispObject env, LispObject a)
 // this to see if it was useful or counterproductive!
 //
         for (;;)
-        {   a = qcdr(a);
+        {   a = cdr(a);
             if (!consp(a)) break;
-            a = qcdr(a);
+            a = cdr(a);
             if (!consp(a))
             {   n += 1;
                 break;
             }
-            a = qcdr(a);
+            a = cdr(a);
             if (!consp(a))
             {   n += 2;
                 break;
             }
-            a = qcdr(a);
+            a = cdr(a);
             if (!consp(a))
             {   n += 3;
                 break;
@@ -2476,7 +2477,7 @@ LispObject Llength(LispObject env, LispObject a)
         if (type_of_header(h) == TYPE_ARRAY)
         {   LispObject dims = elt(a, 1);
             LispObject fillp = elt(a, 5);
-            if (consp(dims) && !consp(qcdr(dims))) dims = qcar(dims);
+            if (consp(dims) && !consp(cdr(dims))) dims = car(dims);
             else aerror1("length", a);  // Not one-dimensional
             if (is_fixnum(fillp)) dims = fillp;
             return onevalue(dims);
@@ -2499,14 +2500,15 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
     push(b);
     stackcheck(a, r);
     while (consp(a))
-    {   push(qcdr(a));
-        r = cons(qcar(a), r);
+    {   push(cdr(a));
+        r = cons(car(a), r);
         pop(a);
     }
     pop(b);
     while (r != nil)
-    {   a = qcdr(r);
-        qcdr(r) = b;
+    {   a = cdr(r);
+        setcdr(r, b);
+        write_barrier(cdraddr(r));
         b = r;
         r = a;
     }
@@ -2526,11 +2528,11 @@ LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
 // Note that the list of arguments from a4 upwards will be freshly consed
 // and so I am entitled to overwrite it as I go.
     a4up = nreverse(a4up);
-    LispObject r = qcar(a4up);
-    a4up = qcdr(a4up);
+    LispObject r = car(a4up);
+    a4up = cdr(a4up);
     while (a4up != nil)
-    {   LispObject w = qcar(a4up);
-        push(qcdr(a4up));
+    {   LispObject w = car(a4up);
+        push(cdr(a4up));
         r = Lappend_2(nil, w, r);
         pop(a4up);
     }
@@ -2548,37 +2550,38 @@ LispObject Ldelete(LispObject env, LispObject a, LispObject b)
     r = nil;
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
-        {   LispObject q = qcar(b);
+        {   LispObject q = car(b);
             if (q == stack[-1])
-            {   b = qcdr(b);
+            {   b = cdr(b);
                 break;
             }
-            stack[0] = qcdr(b);
-            r = cons(qcar(b), r);
+            stack[0] = cdr(b);
+            r = cons(car(b), r);
             b = stack[0];
         }
     }
     else
     {   while (consp(b))
-        {   LispObject q = qcar(b);
+        {   LispObject q = car(b);
 #ifdef COMMON
             if (cl_equal(q, a))
 #else
             if (equal(q, a))
 #endif
-            {   b = qcdr(b);
+            {   b = cdr(b);
                 break;
             }
-            stack[0] = qcdr(b);
-            r = cons(qcar(b), r);
+            stack[0] = cdr(b);
+            r = cons(car(b), r);
             b = stack[0];
             a = stack[-1];
         }
     }
     popv(2);
     while (r != nil)
-    {   LispObject w = qcdr(r);
-        qcdr(r) = b;
+    {   LispObject w = cdr(r);
+        setcdr(r, b);
+        write_barrier(cdraddr(r));
         b = r;
         r = w;
     }
@@ -2591,19 +2594,20 @@ LispObject Ldeleq(LispObject env, LispObject a, LispObject b)
     push(a, b);
     r = nil;
     while (consp(b))
-    {   LispObject q = qcar(b);
+    {   LispObject q = car(b);
         if (q == stack[-1])
-        {   b = qcdr(b);
+        {   b = cdr(b);
             break;
         }
-        stack[0] = qcdr(b);
-        r = cons(qcar(b), r);
+        stack[0] = cdr(b);
+        r = cons(car(b), r);
         b = stack[0];
     }
     popv(2);
     while (r != nil)
-    {   LispObject w = qcdr(r);
-        qcdr(r) = b;
+    {   LispObject w = cdr(r);
+        setcdr(r, b);
+        write_barrier(cdraddr(r));
         b = r;
         r = w;
     }
@@ -2615,10 +2619,10 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
     if (!consp(a)) return onevalue(b);
     c = a;
     for (;;)
-    {   LispObject next = qcdr(c);
+    {   LispObject next = cdr(c);
         if (!consp(next))
-        {   qcdr(c) = b;
-            write_barrier(&qcdr(c));
+        {   setcdr(c, b);
+            write_barrier(cdraddr(c));
             return onevalue(a);
         }
         else c = next;
@@ -2769,18 +2773,18 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 //
             LispObject cc = c;
             while (r != TAG_FIXNUM)
-            {   w = qcdr(r);
-                qcdr(r) = cc;
-                write_barrier(&qcdr(r));
+            {   w = cdr(r);
+                setcdr(r, cc);
+                write_barrier(cdraddr(r));
                 cc = r;
                 r = w;
             }
 // The input data is now restored
             r = cc;
             while (r != c)
-            {   w = cons(qcar(r), rx);
+            {   w = cons(car(r), rx);
                 rx = w;
-                r = qcdr(r);
+                r = cdr(r);
             }
             c = a;
             r = TAG_FIXNUM;
@@ -2789,12 +2793,12 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
         if (!consp(c)) break;
 // Recurse in CAR direction
         on_backtrace(
-            w = substq(a, b, qcar(c)),
+            w = substq(a, b, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-            {   w = qcdr(r);
-                qcdr(r) = c;
-                write_barrier(&qcdr(r));
+            {   w = cdr(r);
+                setcdr(r, c);
+                write_barrier(cdraddr(r));
                 c = r;
                 r = w;
             });
@@ -2802,10 +2806,10 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
 //
-        if (w == qcar(c))
-        {   w = qcdr(c);
-            qcdr(c) = r;
-            write_barrier(&qcdr(c));
+        if (w == car(c))
+        {   w = cdr(c);
+            setcdr(c, r);
+            write_barrier(cdraddr(c));
             r = c;
             c = w;
             continue;
@@ -2814,25 +2818,25 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
         else
         {   LispObject cc = c, ww;
             while (r != TAG_FIXNUM)
-            {   ww = qcdr(r);
-                qcdr(r) = cc;
-                write_barrier(&qcdr(r));
+            {   ww = cdr(r);
+                setcdr(r, cc);
+                write_barrier(cdraddr(r));
                 cc = r;
                 r = ww;
             }
 // The input data is now restored
             r = cc;
             while (r != c)
-            {   LispObject u = qcar(r), v = rx;
+            {   LispObject u = car(r), v = rx;
                 push(w);
                 ww = cons(u, v);
                 pop(w);
                 rx = ww;
-                r = qcdr(r);
+                r = cdr(r);
             }
             w = cons(w, rx);
             rx = w;
-            c = qcdr(c);
+            c = cdr(c);
             r = TAG_FIXNUM;
         }
     }
@@ -2845,9 +2849,9 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
     {   LispObject r, rx;
         pop(r, rx);
         while (r != TAG_FIXNUM)
-        {   w = qcdr(r);
-            qcdr(r) = c;
-            write_barrier(&qcdr(r));
+        {   w = cdr(r);
+            setcdr(r, c);
+            write_barrier(cdraddr(r));
             c = r;
             r = w;
         }
@@ -2856,9 +2860,9 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 // because EQUAL had failed on me I can give up now.
 //
         while (rx != TAG_FIXNUM)
-        {   w = qcdr(rx);
-            qcdr(rx) = c;
-            write_barrier(&qcdr(rx));
+        {   w = cdr(rx);
+            setcdr(rx, c);
+            write_barrier(cdraddr(rx));
             c = rx;
             rx = w;
         }
@@ -2894,18 +2898,18 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 //
             LispObject cc = c;
             while (r != TAG_FIXNUM)
-            {   w = qcdr(r);
-                qcdr(r) = cc;
-                write_barrier(&qcdr(r));
+            {   w = cdr(r);
+                setcdr(r, cc);
+                write_barrier(cdraddr(r));
                 cc = r;
                 r = w;
             }
 // The input data is now restored
             r = cc;
             while (r != c)
-            {   w = cons(qcar(r), rx);
+            {   w = cons(car(r), rx);
                 rx = w;
-                r = qcdr(r);
+                r = cdr(r);
             }
             c = a;
             r = TAG_FIXNUM;
@@ -2917,12 +2921,12 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
         if (!consp(c)) break;
 // Recurse in CAR direction
         on_backtrace(
-            w = subst(a, b, qcar(c)),
+            w = subst(a, b, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-            {   w = qcdr(r);
-                qcdr(r) = c;
-                write_barrier(&qcdr(r));
+            {   w = cdr(r);
+                setcdr(r, c);
+                write_barrier(cdraddr(r));
                 c = r;
                 r = w;
             });
@@ -2930,10 +2934,10 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
 //
-        if (w == qcar(c))
-        {   w = qcdr(c);
-            qcdr(c) = r;
-            write_barrier(&qcdr(c));
+        if (w == car(c))
+        {   w = cdr(c);
+            setcdr(c, r);
+            write_barrier(cdraddr(c));
             r = c;
             c = w;
             continue;
@@ -2942,25 +2946,25 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
         else
         {   LispObject cc = c, ww;
             while (r != TAG_FIXNUM)
-            {   ww = qcdr(r);
-                qcdr(r) = cc;
-                write_barrier(&qcdr(r));
+            {   ww = cdr(r);
+                setcdr(r, cc);
+                write_barrier(cdraddr(r));
                 cc = r;
                 r = ww;
             }
 // The input data is now restored
             r = cc;
             while (r != c)
-            {   LispObject u = qcar(r), v = rx;
+            {   LispObject u = car(r), v = rx;
                 push(w);
                 ww = cons(u, v);
                 pop(w);
                 rx = ww;
-                r = qcdr(r);
+                r = cdr(r);
             }
             w = cons(w, rx);
             rx = w;
-            c = qcdr(c);
+            c = cdr(c);
             r = TAG_FIXNUM;
         }
     }
@@ -2973,9 +2977,9 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
     {   LispObject r, rx;
         pop(r, rx);
         while (r != TAG_FIXNUM)
-        {   w = qcdr(r);
-            qcdr(r) = c;
-            write_barrier(&qcdr(r));
+        {   w = cdr(r);
+            setcdr(r, c);
+            write_barrier(cdraddr(r));
             c = r;
             r = w;
         }
@@ -2984,9 +2988,9 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 // because EQUAL had failed on me I can give up now.
 //
         while (rx != TAG_FIXNUM)
-        {   w = qcdr(rx);
-            qcdr(rx) = c;
-            write_barrier(&qcdr(rx));
+        {   w = cdr(rx);
+            setcdr(rx, c);
+            write_barrier(cdraddr(rx));
             c = rx;
             rx = w;
         }
@@ -3008,13 +3012,13 @@ LispObject subla(LispObject a, LispObject c)
     {   LispObject tt = a;
         bool found = false;
         while (consp(tt))
-        {   LispObject tta = qcar(tt);
-            if (consp(tta) && c == qcar(tta))
-            {   tt = qcdr(tta);
+        {   LispObject tta = car(tt);
+            if (consp(tta) && c == car(tta))
+            {   tt = cdr(tta);
                 found = true;
                 break;
             }
-            tt = qcdr(tt);
+            tt = cdr(tt);
         }
         if (found)
         {   if (c == tt) break; // substitute by leaving unchanged
@@ -3024,9 +3028,9 @@ LispObject subla(LispObject a, LispObject c)
 //
             LispObject cc = c;
             while (r != TAG_FIXNUM)
-            {   w = qcdr(r);
-                qcdr(r) = cc;
-                write_barrier(&qcdr(r));
+            {   w = cdr(r);
+                setcdr(r, cc);
+                write_barrier(cdraddr(r));
                 cc = r;
                 r = w;
             }
@@ -3034,9 +3038,9 @@ LispObject subla(LispObject a, LispObject c)
             a = tt;
             r = cc;
             while (r != c)
-            {   w = cons(qcar(r), rx);
+            {   w = cons(car(r), rx);
                 rx = w;
-                r = qcdr(r);
+                r = cdr(r);
             }
             c = a;
             r = TAG_FIXNUM;
@@ -3045,12 +3049,12 @@ LispObject subla(LispObject a, LispObject c)
         if (!consp(c)) break;
 // Recurse in CAR direction
         on_backtrace(
-            w = subla(a, qcar(c)),
+            w = subla(a, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-            {   w = qcdr(r);
-                qcdr(r) = c;
-                write_barrier(&qcdr(r));
+            {   w = cdr(r);
+                setcdr(r, c);
+                write_barrier(cdraddr(r));
                 c = r;
                 r = w;
             });
@@ -3058,10 +3062,10 @@ LispObject subla(LispObject a, LispObject c)
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
 //
-        if (w == qcar(c))
-        {   w = qcdr(c);
-            qcdr(c) = r;
-            write_barrier(&qcdr(c));
+        if (w == car(c))
+        {   w = cdr(c);
+            setcdr(c, r);
+            write_barrier(cdraddr(c));
             r = c;
             c = w;
             continue;
@@ -3070,25 +3074,25 @@ LispObject subla(LispObject a, LispObject c)
         else
         {   LispObject cc = c, ww;
             while (r != TAG_FIXNUM)
-            {   ww = qcdr(r);
-                qcdr(r) = cc;
-                write_barrier(&qcdr(r));
+            {   ww = cdr(r);
+                setcdr(r, cc);
+                write_barrier(cdraddr(r));
                 cc = r;
                 r = ww;
             }
 // The input data is now restored
             r = cc;
             while (r != c)
-            {   LispObject u = qcar(r), v = rx;
+            {   LispObject u = car(r), v = rx;
                 push(w);
                 ww = cons(u, v);
                 pop(w);
                 rx = ww;
-                r = qcdr(r);
+                r = cdr(r);
             }
             w = cons(w, rx);
             rx = w;
-            c = qcdr(c);
+            c = cdr(c);
             r = TAG_FIXNUM;
         }
     }
@@ -3100,9 +3104,9 @@ LispObject subla(LispObject a, LispObject c)
     {   LispObject r, rx;
         pop(r, rx);
         while (r != TAG_FIXNUM)
-        {   w = qcdr(r);
-            qcdr(r) = c;
-            write_barrier(&qcdr(r));
+        {   w = cdr(r);
+            setcdr(r, c);
+            write_barrier(cdraddr(r));
             c = r;
             r = w;
         }
@@ -3111,9 +3115,9 @@ LispObject subla(LispObject a, LispObject c)
 // because EQUAL had failed on me I can give up now.
 //
         while (rx != TAG_FIXNUM)
-        {   w = qcdr(rx);
-            qcdr(rx) = c;
-            write_barrier(&qcdr(rx));
+        {   w = cdr(rx);
+            setcdr(rx, c);
+            write_barrier(cdraddr(rx));
             c = rx;
             rx = w;
         }
@@ -3135,17 +3139,17 @@ LispObject sublis(LispObject a, LispObject c)
     {   LispObject tt = a;
         bool found = false;
         while (consp(tt))
-        {   LispObject tta = qcar(tt);
+        {   LispObject tta = car(tt);
 #ifdef COMMON
-            if (consp(tta) && cl_equal(c, qcar(tta)))
+            if (consp(tta) && cl_equal(c, car(tta)))
 #else
-            if (consp(tta) && equal(c, qcar(tta)))
+            if (consp(tta) && equal(c, car(tta)))
 #endif
-            {   tt = qcdr(tta);
+            {   tt = cdr(tta);
                 found = true;
                 break;
             }
-            tt = qcdr(tt);
+            tt = cdr(tt);
         }
         if (found)
         {
@@ -3157,9 +3161,9 @@ LispObject sublis(LispObject a, LispObject c)
 //
             LispObject cc = c;
             while (r != TAG_FIXNUM)
-            {   w = qcdr(r);
-                qcdr(r) = cc;
-                write_barrier(&qcdr(r));
+            {   w = cdr(r);
+                setcdr(r, cc);
+                write_barrier(cdraddr(r));
                 cc = r;
                 r = w;
             }
@@ -3167,9 +3171,9 @@ LispObject sublis(LispObject a, LispObject c)
             a = tt;
             r = cc;
             while (r != c)
-            {   w = cons(qcar(r), rx);
+            {   w = cons(car(r), rx);
                 rx = w;
-                r = qcdr(r);
+                r = cdr(r);
             }
             c = a;
             r = TAG_FIXNUM;
@@ -3181,12 +3185,12 @@ LispObject sublis(LispObject a, LispObject c)
         if (!consp(c)) break;
 // Recurse in CAR direction
         on_backtrace(
-            w = sublis(a, qcar(c)),
+            w = sublis(a, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-            {   w = qcdr(r);
-                qcdr(r) = c;
-                write_barrier(&qcdr(r));
+            {   w = cdr(r);
+                setcdr(r, c);
+                write_barrier(cdraddr(r));
                 c = r;
                 r = w;
             });
@@ -3194,10 +3198,10 @@ LispObject sublis(LispObject a, LispObject c)
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
 //
-        if (w == qcar(c))
-        {   w = qcdr(c);
-            qcdr(c) = r;
-            write_barrier(&qcdr(c));
+        if (w == car(c))
+        {   w = cdr(c);
+            setcdr(c, r);
+            write_barrier(cdraddr(c));
             r = c;
             c = w;
             continue;
@@ -3206,25 +3210,25 @@ LispObject sublis(LispObject a, LispObject c)
         else
         {   LispObject cc = c, ww;
             while (r != TAG_FIXNUM)
-            {   ww = qcdr(r);
-                qcdr(r) = cc;
-                write_barrier(&qcdr(r));
+            {   ww = cdr(r);
+                setcdr(r, cc);
+                write_barrier(cdraddr(r));
                 cc = r;
                 r = ww;
             }
 // The input data is now restored
             r = cc;
             while (r != c)
-            {   LispObject u = qcar(r), v = rx;
+            {   LispObject u = car(r), v = rx;
                 push(w);
                 ww = cons(u, v);
                 pop(w);
                 rx = ww;
-                r = qcdr(r);
+                r = cdr(r);
             }
             w = cons(w, rx);
             rx = w;
-            c = qcdr(c);
+            c = cdr(c);
             r = TAG_FIXNUM;
         }
     }
@@ -3236,9 +3240,9 @@ LispObject sublis(LispObject a, LispObject c)
     {   LispObject r, rx;
         pop(r, rx);
         while (r != TAG_FIXNUM)
-        {   w = qcdr(r);
-            qcdr(r) = c;
-            write_barrier(&qcdr(r));
+        {   w = cdr(r);
+            setcdr(r, c);
+            write_barrier(cdraddr(r));
             c = r;
             r = w;
         }
@@ -3247,9 +3251,9 @@ LispObject sublis(LispObject a, LispObject c)
 // because EQUAL had failed on me I can give up now.
 //
         while (rx != TAG_FIXNUM)
-        {   w = qcdr(rx);
-            qcdr(rx) = c;
-            write_barrier(&qcdr(rx));
+        {   w = cdr(rx);
+            setcdr(rx, c);
+            write_barrier(cdraddr(rx));
             c = rx;
             rx = w;
         }

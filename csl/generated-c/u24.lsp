@@ -1,78 +1,7 @@
 
 % u24.lsp           Machine generated Lisp
 
-(c!:install "u24" 111863 3221711 3180535)
-
-(c!:install 'opmtchrevop '(opmtchrevop !*val cons opmtch revlis) 
-13637205868658300566)
-
-(c!:install 'rl_eqnrhskernels '(rl_eqnrhskernels rl_eqnrhskernels!*
-apply) 6620829222149597660)
-
-(c!:install 'pasf_smwcpknowl '(pasf_smwcpknowl !*rlsusi cl_susicpknowl
-cl_smcpknowl) 5549258679422128435)
-
-(c!:install 'bvarml '(bvarml "<bvar>" "</bvar>" printout indent!*
-expression degreeml) 3283176515209679123)
-
-(c!:install 'band_matrix '(band_matrix
-"Error in band_matrix(second argument): should be an integer." list
-"Error in band_matrix(first argument): should be single value or list."
-"Error in band matrix(first argument): number of elements must be odd."
-quotient
-"Error in band_matrix: too many elements. Band matrix is overflowing."
-rederr reval mkmatrix nth setmat) 16171003517197563785)
-
-(c!:install 'rd!:zerop!: '(rd!:zerop!: ft!:zerop round!* bfzerop!:) 
-12671832289279500242)
-
-(c!:install 'groedeletip '(groedeletip setcdr) 16361312757688004926)
-
-(c!:install 'impartf '(impartf i kord!* cmpxfn reorder int!-equiv!-chk
-addf multf) 6890187095049936448)
-
-(c!:install 'formcond1 '(formcond1 nreverse formbool formc) 
-7968214462921130653)
-
-(c!:install 'red_totalred '(red_totalred red_topred red_tailred) 
-3900870141701127444)
-
-(c!:install 'ilog2 '(ilog2 terrlst) 14882263704089128087)
-
-(c!:install 'gcd!-in!-vector '(gcd!-in!-vector
-"GCD with zero not allowed" errorf remainder!-in!-vector) 
-9536082400961573796)
-
-(c!:install 'lalr_prin_production '(lalr_prin_production " -> "
-lalr_prin_symbol lalr_prin_rhs) 1726331608870260106)
-
-(c!:install 'defineargs '(defineargs name calledby hasarg instdof) 
-18221869149588598285)
-
-(c!:install 'ofsf_ignshift '(ofsf_ignshift !*rlpos (equal neq) ignore
-odd sfto_reorder) 4450930137153555454)
-
-(c!:install 'tripleisprolongedby '(tripleisprolongedby) 
-16701626957021610102)
-
-(c!:install 'ofsf_smupdknowl '(ofsf_smupdknowl and false ofsf_negateat
-ofsf_at2ir ofsf_sminsert setcdr) 17253290331117133432)
-
-(c!:install 'cl_smsimpl!-junct1 '(cl_smsimpl!-junct1 !*rlsiidem true
-false or and not impl repl equiv ex all bex ball cl_simpl1 cl_atfp
-cl_flip rl_smupdknowl cl_smsimpl!-junct2) 5937380600637357641)
-
-(c!:install 'pasf_vf '(pasf_vf true false (cong ncong) pasf_evalatp) 
-18406771852544693406)
-
-(c!:install 'bc_fd '(bc_fd) 17852619050421096071)
-
-(c!:install 'diff!-k!-times!-mod!-p '(diff!-k!-times!-mod!-p
-binomial!-coefft!-mod!-p times!-mod!-p mksp) 3948337365085810727)
-
-(c!:install 'om2ir '(om2ir (safe_atts char ch atts count temp space
-temp2) space count ch temp2 char (o m o b j) "<omobj>" (!/ o m o b j)
-"</omobj>" fluid list2string lex omobj errorml) 9072379775066504802)
+(c!:install "u24" 152584 2923277 1243073)
 
 (c!:install 'mkmatrix '(mkmatrix mat) 13518421484045359134)
 
@@ -130,6 +59,76 @@ subs2q rationalizef multf gcdchk) 618899159186762670)
 14570535399614019817)
 
 (c!:install 'flatindl '(flatindl) 3390827990497104525)
+
+(c!:install 'physopsimp '(physopsimp !*sq tensdimen antisymmetric minus
+isanindex isavarindex physopsm!* prepsqxx opmtch!* scalopp tensopp nth
+pnth ordn repeats permp vecopp listp putanewindex!*) 
+17378261404484775512)
+
+(c!:install 'ev!-denom2 '(ev!-denom2 ev!-edgeloop) 10469132586978593068)
+
+(c!:install 'comblog '(comblog domainlist!* plus times log nreverse
+simp!* clogsq prepsq!*) 2258708424463560692)
+
+(c!:install 'copy!-tree '(copy!-tree) 12578162027246836564)
+
+(c!:install 'safe!-modrecip '(safe!-modrecip !*msg !*protfg !:mod!:
+general!-modular!-reciprocal erfg!* errorset errorp) 
+14808290800131132436)
+
+(c!:install 'setk_super_vectorfield '(setk_super_vectorfield ext
+variables "SETK_SUPER_VECTORFIELD:" "not a valid variable for" let2
+msgpri) 16746388325699725758)
+
+(c!:install 'lalr_construct_fn '(lalr_construct_fn g lambda !*pwrds expr
+lalr_make_arglist putd) 12504191962287692232)
+
+(c!:install 'ctx_new '(ctx_new ctx) 16190024625074221445)
+
+(c!:install 'wupseudodivide '(wupseudodivide setkorder reorder
+wuconstantp gcdf!* quotf multf exptf qremf) 18397524205360628269)
+
+(c!:install 'evaluatecoeffts '(evaluatecoeffts indexlist valuecoefft
+!*multf addf) 5406277702025676168)
+
+(c!:install 'distribute!.multiplicity '(distribute!.multiplicity) 
+499274864297745022)
+
+(c!:install 'vdp_getprop '(vdp_getprop vdp_plist) 10290374778868375321)
+
+(c!:install 'dip_condense '(dip_condense) 7708418469248712677)
+
+(c!:install 'mml2ir '(mml2ir mmlatts space count ch temp2 char (m a t h)
+"<math>" (!/ m a t h) "</math>" list2string lex mathml errorml) 
+4937673495003303041)
+
+(c!:install 'quoteequation '(quoteequation equation) 
+13869360566276034417)
+
+(c!:install 'gvarlis1 '(gvarlis1 gvar1 union) 15887984567229666111)
+
+(c!:install 'freeoff '(freeoff sfp ndepends) 8924154528667918378)
+
+(c!:install 'pfordp '(pfordp termordp) 8068693215543952127)
+
+(c!:install 'prinlatom '(prinlatom font accent name "}" prin2la
+testchar1) 6843894542313904978)
+
+(c!:install 'ordop2 '(ordop2 kord!* ordp) 1870441096632376356)
+
+(c!:install 'edges_parents '(edges_parents edge_new_parents) 
+7989857538043128579)
+
+(c!:install 'merge '(merge) 11618120737974801924)
+
+(c!:install '!*di2q0 '(!*di2q0 varlist!* ordering lex ljet pair multsq
+addsq) 15148302668535177444)
+
+(c!:install 'dv_skel2factor1 '(dv_skel2factor1 !~dv !~dva minus listp) 
+12834239992638262862)
+
+(c!:install 'setdiff_according_to '(setdiff_according_to) 
+14663809450833689541)
 
 
 % End of generated Lisp code

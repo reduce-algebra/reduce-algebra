@@ -71,8 +71,8 @@ static LispObject Nplus(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Plus::op(Plus::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Plus::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Plus::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -98,8 +98,8 @@ static LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
                                          LispObject a3, LispObject a4plus)
 {   LispObject w = Times::op(Times::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Times::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Times::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -129,8 +129,8 @@ static LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Gcdn::op(Gcdn::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Gcdn::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Gcdn::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -156,8 +156,8 @@ static LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Lcmn::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Lcmn::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -321,9 +321,9 @@ static LispObject Ngreaterp(LispObject env, LispObject a1, LispObject a2,
     if (!Greaterp::op(a2, a3)) return onevalue(nil);
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Greaterp::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+    {   if (Greaterp::op(a2, a3 = car(a4plus))) return onevalue(nil);
         a2 = a3;
-        a4plus = qcdr(a4plus);
+        a4plus = cdr(a4plus);
     }
     return onevalue(lisp_true);
 }
@@ -343,9 +343,9 @@ static LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
     if (!Geq::op(a2, a3)) return onevalue(nil);
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Geq::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+    {   if (Geq::op(a2, a3 = car(a4plus))) return onevalue(nil);
         a2 = a3;
-        a4plus = qcdr(a4plus);
+        a4plus = cdr(a4plus);
     }
     return onevalue(lisp_true);
 }
@@ -365,9 +365,9 @@ static LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
     if (!Lessp::op(a2, a3)) return onevalue(nil);
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Lessp::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+    {   if (Lessp::op(a2, a3 = car(a4plus))) return onevalue(nil);
         a2 = a3;
-        a4plus = qcdr(a4plus);
+        a4plus = cdr(a4plus);
     }
     return onevalue(lisp_true);
 }
@@ -387,9 +387,9 @@ static LispObject Nleq(LispObject env, LispObject a1, LispObject a2,
     if (!Leq::op(a2, a3)) return onevalue(nil);
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Leq::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+    {   if (Leq::op(a2, a3 = car(a4plus))) return onevalue(nil);
         a2 = a3;
-        a4plus = qcdr(a4plus);
+        a4plus = cdr(a4plus);
     }
     return onevalue(lisp_true);
 }
@@ -409,9 +409,9 @@ static LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2,
     if (!Eqn::op(a2, a3)) return onevalue(nil);
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Eqn::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+    {   if (Eqn::op(a2, a3 = car(a4plus))) return onevalue(nil);
         a2 = a3;
-        a4plus = qcdr(a4plus);
+        a4plus = cdr(a4plus);
     }
     return onevalue(lisp_true);
 }
@@ -431,9 +431,9 @@ static LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
     if (!CLEqn::op(a2, a3)) return onevalue(nil);
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (CLEqn::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+    {   if (CLEqn::op(a2, a3 = car(a4plus))) return onevalue(nil);
         a2 = a3;
-        a4plus = qcdr(a4plus);
+        a4plus = cdr(a4plus);
     }
     return onevalue(lisp_true);
 }
@@ -457,17 +457,17 @@ static LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
 {   if (!Neqn::op(a1, a2)) return onevalue(nil);
     if (!Neqn::op(a2, a3)) return onevalue(nil);
     if (!Neqn::op(a1, a3)) return onevalue(nil);
-    for (LispObject w=a4plus; is_cons(w); w=qcdr(w))
-    {   LispObject a = qcar(w);
+    for (LispObject w=a4plus; is_cons(w); w=cdr(w))
+    {   LispObject a = car(w);
         if (!Neqn::op(a1, a)) return onevalue(nil); 
         if (!Neqn::op(a2, a)) return onevalue(nil); 
         if (!Neqn::op(a3, a)) return onevalue(nil);
     }
     a2 = a3;
-    for (;is_cons(a4plus); a4plus=qcdr(a4plus))
-    {   LispObject a = qcar(a4plus);
-        for (LispObject  w = qcdr(a4plus); is_cons(w); w = qcdr(w))
-        {   if (!Neqn::op(a, qcar(w))) return onevalue(nil);
+    for (;is_cons(a4plus); a4plus=cdr(a4plus))
+    {   LispObject a = car(a4plus);
+        for (LispObject  w = cdr(a4plus); is_cons(w); w = cdr(w))
+        {   if (!Neqn::op(a, car(w))) return onevalue(nil);
         }
     }
     return onevalue(lisp_true);
@@ -494,8 +494,8 @@ static LispObject Nlogand(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Logand::op(Logand::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Logand::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Logand::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -521,8 +521,8 @@ static LispObject Nlogor(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Logor::op(Logor::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Logor::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Logor::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -548,8 +548,8 @@ static LispObject Nlogxor(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Logxor::op(Logxor::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Logxor::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Logxor::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -575,8 +575,8 @@ static LispObject Nlogeqv(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Logeqv::op(Logeqv::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Logeqv::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Logeqv::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -614,8 +614,8 @@ static LispObject Nmodular_plus(LispObject env, LispObject a1, LispObject a2,
                                                 LispObject a3, LispObject a4plus)
 {   LispObject w = ModularPlus::op(ModularPlus::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = ModularPlus::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = ModularPlus::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -641,8 +641,8 @@ static LispObject Nmodular_times(LispObject env, LispObject a1, LispObject a2,
                                                  LispObject a3, LispObject a4plus)
 {   LispObject w = ModularTimes::op(ModularTimes::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = ModularTimes::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = ModularTimes::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -703,8 +703,8 @@ static LispObject Niplus(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Plus::op(Plus::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Plus::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Plus::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -730,8 +730,8 @@ static LispObject Nitimes(LispObject env, LispObject a1, LispObject a2,
                                          LispObject a3, LispObject a4plus)
 {   LispObject w = Times::op(Times::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Times::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Times::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -761,8 +761,8 @@ static LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Gcdn::op(Gcdn::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Gcdn::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Gcdn::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -788,8 +788,8 @@ static LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Lcmn::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Lcmn::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -869,9 +869,9 @@ static LispObject Nigreaterp(LispObject env, LispObject a1, LispObject a2,
     if (!Greaterp::op(a2, a3)) return onevalue(nil);
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Greaterp::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+    {   if (Greaterp::op(a2, a3 = car(a4plus))) return onevalue(nil);
         a2 = a3;
-        a4plus = qcdr(a4plus);
+        a4plus = cdr(a4plus);
     }
     return onevalue(lisp_true);
 }
@@ -891,9 +891,9 @@ static LispObject Nigeq(LispObject env, LispObject a1, LispObject a2,
     if (!Geq::op(a2, a3)) return onevalue(nil);
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Geq::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+    {   if (Geq::op(a2, a3 = car(a4plus))) return onevalue(nil);
         a2 = a3;
-        a4plus = qcdr(a4plus);
+        a4plus = cdr(a4plus);
     }
     return onevalue(lisp_true);
 }
@@ -913,9 +913,9 @@ static LispObject Nilessp(LispObject env, LispObject a1, LispObject a2,
     if (!Lessp::op(a2, a3)) return onevalue(nil);
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Lessp::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+    {   if (Lessp::op(a2, a3 = car(a4plus))) return onevalue(nil);
         a2 = a3;
-        a4plus = qcdr(a4plus);
+        a4plus = cdr(a4plus);
     }
     return onevalue(lisp_true);
 }
@@ -935,9 +935,9 @@ static LispObject Nileq(LispObject env, LispObject a1, LispObject a2,
     if (!Leq::op(a2, a3)) return onevalue(nil);
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Leq::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+    {   if (Leq::op(a2, a3 = car(a4plus))) return onevalue(nil);
         a2 = a3;
-        a4plus = qcdr(a4plus);
+        a4plus = cdr(a4plus);
     }
     return onevalue(lisp_true);
 }
@@ -957,9 +957,9 @@ static LispObject Nieqn_a(LispObject env, LispObject a1, LispObject a2,
     if (!Eqn::op(a2, a3)) return onevalue(nil);
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Eqn::op(a2, a3 = qcar(a4plus))) return onevalue(nil);
+    {   if (Eqn::op(a2, a3 = car(a4plus))) return onevalue(nil);
         a2 = a3;
-        a4plus = qcdr(a4plus);
+        a4plus = cdr(a4plus);
     }
     return onevalue(lisp_true);
 }
@@ -983,17 +983,17 @@ static LispObject Nineqn(LispObject env, LispObject a1, LispObject a2,
 {   if (!Neqn::op(a1, a2)) return onevalue(nil);
     if (!Neqn::op(a2, a3)) return onevalue(nil);
     if (!Neqn::op(a1, a3)) return onevalue(nil);
-    for (LispObject w=a4plus; is_cons(w); w=qcdr(w))
-    {   LispObject a = qcar(w);
+    for (LispObject w=a4plus; is_cons(w); w=cdr(w))
+    {   LispObject a = car(w);
         if (!Neqn::op(a1, a)) return onevalue(nil); 
         if (!Neqn::op(a2, a)) return onevalue(nil); 
         if (!Neqn::op(a3, a)) return onevalue(nil);
     }
     a2 = a3;
-    for (;is_cons(a4plus); a4plus=qcdr(a4plus))
-    {   LispObject a = qcar(a4plus);
-        for (LispObject  w = qcdr(a4plus); is_cons(w); w = qcdr(w))
-        {   if (!Neqn::op(a, qcar(w))) return onevalue(nil);
+    for (;is_cons(a4plus); a4plus=cdr(a4plus))
+    {   LispObject a = car(a4plus);
+        for (LispObject  w = cdr(a4plus); is_cons(w); w = cdr(w))
+        {   if (!Neqn::op(a, car(w))) return onevalue(nil);
         }
     }
     return onevalue(lisp_true);
@@ -1020,8 +1020,8 @@ static LispObject Nilogand(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Logand::op(Logand::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Logand::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Logand::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -1047,8 +1047,8 @@ static LispObject Nilogor(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Logor::op(Logor::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Logor::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Logor::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -1074,8 +1074,8 @@ static LispObject Nilogxor(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Logxor::op(Logxor::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Logxor::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Logxor::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }
@@ -1101,8 +1101,8 @@ static LispObject Nilogeqv(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3, LispObject a4plus)
 {   LispObject w = Logeqv::op(Logeqv::op(a1, a2), a3);
     while (is_cons(a4plus))
-    {   w = Logeqv::op(w, qcar(a4plus));
-        a4plus = qcdr(a4plus);
+    {   w = Logeqv::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
     }
     return onevalue(w);
 }

@@ -951,7 +951,10 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
 
 #endif
 
-// See comments in lispthrow.h for an explanation of this.
+// See comments in lispthrow.h for an explanation of this. And note that
+// any threaded system will need to worry a LOT about this! Maybe global_jb
+// can be thread_local?
+
 jmp_buf *global_jb;
 
 [[noreturn]] void global_longjmp()
@@ -1108,10 +1111,10 @@ static void lisp_main(void)
                         if (exit_value != lisp_true)
                         {   LispObject modname = nil;
                             if (is_cons(exit_value))
-                            {   modname = qcar(exit_value);
-                                exit_value = qcdr(exit_value);
+                            {   modname = car(exit_value);
+                                exit_value = cdr(exit_value);
                                 if (is_cons(exit_value))
-                                    exit_value = qcar(exit_value);
+                                    exit_value = car(exit_value);
                             }
                             if (symbolp(modname) && modname != nil)
                             {   modname = get_pname(modname);
@@ -2596,11 +2599,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // I have now fudged up enough simulation of a Lisp heap that maybe I can
 // build the library search-list.
 //
-        qheader(input_libraries)  |= SYM_SPECIAL_FORM;
-        qvalue(input_libraries) = nil;
+        setheader(input_libraries, qheader(input_libraries) | SYM_SPECIAL_FORM);
+        setvalue(input_libraries, nil);
         for (i=number_of_fasl_paths-1; i>=0; i--)
-            qvalue(input_libraries) = cons(SPID_LIBRARY + (((int32_t)i)<<20),
-                                           qvalue(input_libraries));
+            setvalue(input_libraries, cons(SPID_LIBRARY + (((int32_t)i)<<20),
+                                           qvalue(input_libraries)));
 
         if (Imodulep(module_enquiry, strlen(module_enquiry),
                      datestamp, &size, fullname))
@@ -3413,8 +3416,8 @@ int PROC_make_function_call(const char *name, int n)
     if_error(
         while (n > 0)
         {   if (procstack == nil) return 1; // Not enough args available
-            w = cons(qcar(procstack), w);
-            procstack = qcdr(procstack);
+            w = cons(car(procstack), w);
+            procstack = cdr(procstack);
             n--;
         }
         push(w);
@@ -3435,8 +3438,8 @@ int PROC_save(int n)
 {   if (n < 0 || n > 99) return 1; // index out of range
     if (procstack == nil) return 2; // Nothing available to save
 // On the next line I want to copy the LispObject not any atomic thing!
-    elt(procmem, n) = (LispObject)qcar(procstack);
-    procstack = qcdr(procstack);
+    elt(procmem, n) = (LispObject)car(procstack);
+    procstack = cdr(procstack);
     return 0;
 }
 
@@ -3465,7 +3468,7 @@ int PROC_dup()
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // no item to duplicate
-    w = qcar(procstack);
+    w = car(procstack);
     if_error(w = cons(w, procstack),
         return 2)  // Failed to push onto stack
     procstack = w;
@@ -3474,7 +3477,7 @@ int PROC_dup()
 
 int PROC_pop()
 {   if (procstack == nil) return 1; // stack is empty
-    procstack = qcdr(procstack);
+    procstack = cdr(procstack);
     return 0;
 }
 
@@ -3492,12 +3495,12 @@ int PROC_simplify()
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = make_undefined_symbol("simp");
-        w = Lapply1(nil, w, qcar(procstack));
+        w = Lapply1(nil, w, car(procstack));
         push(w);
         w1 = make_undefined_symbol("mk*sq");
         pop(w);
         w = Lapply1(nil, w1, w);
-        qcar(procstack) = w,
+        setcar(procstack, w),
         // error exit case
         return 1);
     return 0;
@@ -3512,8 +3515,8 @@ int PROC_simplify()
 
 static void PROC_standardise_gensyms(LispObject w)
 {   if (consp(w))
-    {   push(qcdr(w));
-        PROC_standardise_gensyms(qcar(w));
+    {   push(cdr(w));
+        PROC_standardise_gensyms(car(w));
         pop(w);
         PROC_standardise_gensyms(w);
         return;
@@ -3531,19 +3534,19 @@ int PROC_lisp_eval()
     C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
     if_error(
-        w = eval(qcar(procstack), nil);
+        w = eval(car(procstack), nil);
         push(w);
         PROC_standardise_gensyms(w);
         pop(w),
         return 1);
-    qcar(procstack) = w;
+    setcar(procstack, w);
     return 0;
 }
 
 static LispObject PROC_standardise_printed_form(LispObject w)
 {   if (consp(w))
-    {   push(qcdr(w));
-        LispObject w1 = PROC_standardise_printed_form(qcar(w));
+    {   push(cdr(w));
+        LispObject w1 = PROC_standardise_printed_form(car(w));
         pop(w);
         push(w1);
         w =  PROC_standardise_printed_form(w);
@@ -3584,7 +3587,7 @@ int PROC_make_printable()
 //
     if_error(
         w = make_undefined_symbol("simp");
-        w = Lapply1(nil, w, qcar(procstack));
+        w = Lapply1(nil, w, car(procstack));
         push(w);
         w1 = make_undefined_symbol("prepsq");
         pop(w);
@@ -3596,7 +3599,7 @@ int PROC_make_printable()
 //
         w = PROC_standardise_printed_form(w),
         return 1);
-    qcar(procstack) = w;
+    setcar(procstack, w);
     return 0;
 }
 
@@ -3604,8 +3607,8 @@ PROC_handle PROC_get_value()
 {   LispObject w;
     if (procstack == nil) w = fixnum_of_int(0);
     else
-    {   w = qcar(procstack);
-        procstack = qcdr(procstack);
+    {   w = car(procstack);
+        procstack = cdr(procstack);
     }
     return (PROC_handle)w;
 }
@@ -3614,8 +3617,8 @@ PROC_handle PROC_get_raw_value()
 {   LispObject w;
     if (procstack == nil) w = nil;
     else
-    {   w = qcar(procstack);
-        procstack = qcdr(procstack);
+    {   w = car(procstack);
+        procstack = cdr(procstack);
     }
     return (PROC_handle)w;
 }
@@ -3721,11 +3724,11 @@ const char *PROC_string_data(PROC_handle p)
 //
 
 PROC_handle PROC_first(PROC_handle p)
-{   return (PROC_handle)(LispObject)qcar((LispObject)p);
+{   return (PROC_handle)(LispObject)car((LispObject)p);
 }
 
 PROC_handle PROC_rest(PROC_handle p)
-{   return (PROC_handle)(LispObject)qcdr((LispObject)p);
+{   return (PROC_handle)(LispObject)cdr((LispObject)p);
 }
 
 // End of csl.cpp

@@ -525,9 +525,9 @@ inline Header make_padding_header(size_t n)   // size is in bytes
 
 LispObject reduce_basic_vector_size(LispObject v, size_t len)
 {   size_t oldlen = doubleword_align_up(length_of_header(vechdr(v)));
-    vechdr(v) = TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED;
+    setvechdr(v, TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED);
     len = doubleword_align_up(len);
-    if (len != oldlen) vechdr(v + len) = make_padding_header(oldlen-len);
+    if (len != oldlen) setvechdr(v + len, make_padding_header(oldlen-len));
     return v;
 }
 
@@ -967,7 +967,7 @@ void initHeapSegments(double storeSize)
     nilSegment =
        reinterpret_cast<LispObject *>(malloc(NIL_SEGMENT_SIZE+32));
     nilSegment = static_cast<LispObject *>(
-        doubleword_align_up(static_cast<uintptr_t>(nilSegment_base)));
+        doubleword_align_up(static_cast<uintptr_t>(nilSegmentBase)));
 #endif
     if (nilSegment == NULL) fatal_error(err_no_store);
     nil = (LispObject)((uintptr_t)nilSegment + TAG_SYMBOL);
@@ -979,7 +979,7 @@ void initHeapSegments(double storeSize)
     stackSegment =
         reinterpret_cast<LispObject *>(malloc(CSL_PAGE_SIZE+32));
     stackSegment = static_cast<LispObject *>(
-        doubleword_align_up(static_cast<uintptr_t>(stackSegment_base)));
+        doubleword_align_up(static_cast<uintptr_t>(stackSegmentBase)));
 #endif
     if (stackSegment == NULL) fatal_error(err_no_store);
     stackBase = (LispObject *)stackSegment;

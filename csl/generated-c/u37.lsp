@@ -1,191 +1,155 @@
 
 % u37.lsp           Machine generated Lisp
 
-(c!:install "u37" 181691 2285163 7970875)
+(c!:install "u37" 116857 671485 6538860)
 
-(c!:install 'maxfrom1 '(maxfrom1 nth max) 2038400951185798313)
+(c!:install 'sqprint '(sqprint !*prin!# orig!* !*nat posn!* !*pri wtl!*
+" / " sqhorner!* prepsq!* prepreform maprin xprinf prin2!* xprinf2) 
+181925929491622368)
 
-(c!:install 'get!-denom!-l '(get!-denom!-l lcmn) 1688803098278549094)
+(c!:install 'set_parser '(set_parser parser_action_table reduction_fn
+reduction_rhs_n reduction_lhs parser_goto_table nonterminal_codes
+terminal_codes lex_restore_context) 1610539588129598405)
 
-(c!:install 'talp_maxd '(talp_maxd rl_atl talp_arg2l talp_td talp_arg2r)
- 12517072239011711715)
+(c!:install 'orddf '(orddf "Orddf = case" "Orddf v longer than u"
+"Orddf u longer than v" interr exptcompare) 10175549868695206343)
 
-(c!:install 'symbolsom '(symbolsom name valid_om!* diff condition
-"<condition> tag not supported in MathML" "<OMA>" int defint
-"<OMS cd=""" """ name=""" """/>" lambda "</OMA>" errorml printout
-indent!* objectom lambdaom) 16932333532394267659)
+(c!:install 'sfto_b!:ordexp '(sfto_b!:ordexp) 17719563479385124546)
 
-(c!:install 'exdff0 '(exdff0 multsqpf exdfp0 multpfsq addpf) 
-13966361513958058173)
+(c!:install 'groebinvokecritm '(groebinvokecritm mcount!*
+buchvevdivides!? groedeletip) 590440005261952739)
 
-(c!:install 'gftimes '(gftimes gfftimes gbftimes) 5154146903667630288)
+(c!:install 'bflessp '(bflessp grpbf) 6727009590002545733)
 
-(c!:install 'r2findindex1 '(r2findindex1 "index not found" rederr) 
-89207632565066563)
+(c!:install 'intrdsortin '(intrdsortin nreverse !:difference !:minusp) 
+12946241828873678541)
 
-(c!:install 'collectphysops_reversed '(collectphysops_reversed physopp
-collectindices removeindices) 11260692883010774105)
+(c!:install 'calc_den_tar '(calc_den_tar denlist constimes) 
+2091616914098872757)
 
-(c!:install 'contr2 '(contr2 contr nreverse split!-road) 
-18339366017502773054)
+(c!:install 'no!-side!-effectp '(no!-side!-effectp quote nosideeffects
+no!-side!-effect!-listp) 8966344571412724319)
 
-(c!:install 'fs!:make!-nullangle '(fs!:make!-nullangle) 
-12989559702858593445)
+(c!:install 'getavalue '(getavalue) 9120817111259796697)
 
-(c!:install 'clean_numid '(clean_numid nreverse !*id2num) 
-6328967194023589078)
+(c!:install 'atom_compare '(atom_compare) 14638703734338634116)
 
-(c!:install 'split!-further '(split!-further number!-needed
-work!-vector1 dwork1 work!-vector2 dwork2 copy!-vector gcd!-in!-vector
-quotfail!-in!-vector) 9811635046772757884)
+(c!:install 'makeqn!-maybe '(makeqn!-maybe equal) 10780296787096721220)
 
-(c!:install 'valuecoefft '(valuecoefft "Valuecoefft - no value" interr) 
-11085630856475024248)
+(c!:install 'lalr_expand_grammar '(lalr_expand_grammar pending_rules!*
+lalr_check_grammar expand_rule) 3272494871112121132)
 
-(c!:install 'rl_convertarg '(rl_convertarg rl_conversionfunction apply) 
-16762408709431988432)
+(c!:install 'janettreenodebuild '(janettreenodebuild
+monomgetvariabledegree setcdr) 2912401590804738272)
 
-(c!:install 'sfto_b!:extadd '(sfto_b!:extadd nreverse addf
-sfto_b!:ordexp) 14555970045207833266)
+(c!:install 'even_action_term '(even_action_term multf even_action_pow
+even_action_sf addsq) 3380478610553922700)
 
-(c!:install 'setrd '(setrd atts (type) set retattributes stats_getargs) 
-12239785899950230790)
+(c!:install 'ofsf_qesubqat '(ofsf_qesubqat !*rlqesubf !*rlqelocal equal
+neq geq ofsf_varlat prepsq subf ofsf_subf ofsf_qesubqat!-local
+ofsf_surep sfto_pdecf multf) 10452000760203204783)
 
-(c!:install 'degreef '(degreef max) 9999072322222969174)
+(c!:install 'sq_member '(sq_member sf_member) 383677299105792360)
 
-(c!:install 'sc_mkmatrix '(sc_mkmatrix sc_simp sc_iputv) 
-6937630376715149540)
+(c!:install 'testord '(testord) 2601262472684569069)
 
-(c!:install 'realvaluedp '(realvaluedp realvalued alwaysrealvalued
-condrealvalued !:rd!: realvaluedlist apply) 9695925525330607171)
+(c!:install 'my!+nullsq!+p '(my!+nullsq!+p) 13231798978309316526)
 
-(c!:install 'innprodpex '(innprodpex innprodp2 negf) 1676869073879482307
+(c!:install 'rl_surep '(rl_surep rl_surep!* apply) 1119419072422884408)
+
+(c!:install 'minusrd '(minusrd mathml lex) 8109520012474094012)
+
+(c!:install 'rewrite '(rewrite findrow letmtr3) 16768568789508608917)
+
+(c!:install 'all_defined_vertex '(all_defined_vertex al1_defined_vertex)
+ 7230922704161179724)
+
+(c!:install 'lf!=zero '(lf!=zero) 4076842374495190263)
+
+(c!:install 'num_signsort '(num_signsort lambda_ygm6np4pcqv31
+ad_signsort) 9981247964616828867)
+
+(c!:install 'lambda_ygm6np4pcqv31 '(lambda_ygm6np4pcqv31) 
+15088082726560262194)
+
+(c!:install 'assoc2 '(assoc2) 15546565872355360023)
+
+(c!:install 'lalr_lr0_initial_itemset '(lalr_lr0_initial_itemset !S!' !.
+lalr_productions lalr_lr0_closure) 4845558967770285634)
+
+(c!:install 'get!-term!-n '(get!-term!-n no) 10406661540333900762)
+
+(c!:install 'cl_atnum '(cl_atnum or and not impl repl equiv ex all bex
+ball true false rl_external apply) 16613845702167105898)
+
+(c!:install 'tayfkern '(tayfkern !*tayinternal!* taylor!* (taylor!*)
+kprops!* klist ordad union) 12384334866080713467)
+
+(c!:install 'mri_opn '(mri_opn mri_op) 2036384330803727972)
+
+(c!:install 'factor!-prim!-f '(factor!-prim!-f ncmp!* dmode!*
+sqfrfactorfn !*factor factorfn lnc !:recip multd sqfrf
+factor!-prim!-sqfree!-f fac!-merge) 8991535671753454553)
+
+(c!:install 'dip_sum '(dip_sum dip_evlmon ev_comp iequal dip_lbc
+dip_moncomp dip_mred bc_sum setcdr) 3983088786451406200)
+
+(c!:install 'ofsf_optsplitterm '(ofsf_optsplitterm "ofsf_optsplitterm:"
+"has degree" "in" sfto_reorder degr rederr reorder) 18140749730664133842
 )
 
-(c!:install 'dp_from_ei '(dp_from_ei cali_bc_fi mo_from_ei dp_term) 
-1551402700809790358)
+(c!:install 'determinantrd '(determinantrd mathml lex) 
+13299823222255331775)
 
-(c!:install 'lalr_print_first_information '(lalr_print_first_information
-"=== FIRST sets for each nonterminal ===" nonterminals ":" lalr_first
-" " lalr_prin_symbol) 4398663868268776971)
+(c!:install 'greatertype '(greatertype optlang!* fortran conversion eval
+typerror) 14283713471881068885)
 
-(c!:install 'ofsf_sippsubst1 '(ofsf_sippsubst1 ofsf_siatsubf) 
-8204819944402773185)
+(c!:install 'vdpmember '(vdpmember vdpequal) 8126623404930661228)
 
-(c!:install 'rl_bnfsimpl '(rl_bnfsimpl rl_bnfsimpl!* apply) 
-12102889295070448289)
+(c!:install 'vdpcleanup '(vdpcleanup dipevlist!*) 9726310706373385971)
 
-(c!:install 'bvarom '(bvarom bvar objectom) 200324488163534067)
+(c!:install 'weak_xreduce1 '(weak_xreduce1 !*trxmod "   " first wedge
+" +" last xval xdiv mknwedge wedgepf quotsq negsq multpfsq addpf subs2pf
+writepri preppf) 10067255446068332118)
 
-(c!:install 's!-nextarg '(s!-nextarg !*udebug comb i upb (null!-fn)
-acontract op mcontract null!-fn expand identity uprint initcomb getcomb
-mval) 937573037739323696)
+(c!:install 'calc_coeffmap_ '(calc_coeffmap_ times calc_map_ calc_coeff)
+ 3656005963211299502)
 
-(c!:install 'wedgef '(wedgef hodge dimex!* d noxpnd lftshft!* dim!<deg
-deg!*form deg!*farg mkuniquewedge1 hodgepf mkunarywedge wedgepf2 negf
-addf multf mksgnsq multpfsq mkwedge smemqlp dwedge exdfk negsq addpf) 
-2346008126061763515)
+(c!:install 'lpos '(lpos) 392504631650382707)
 
-(c!:install 'apply_e '(apply_e
-"randpoly expons function must return an integer" apply rederr) 
-11501076928014919792)
+(c!:install 'lalr_make_compressed_goto_table '(
+lalr_make_compressed_goto_table nonterminals !S!' lalr_nonterminal_code
+!*lalr_verbose lalr_make_compressed_goto_column
+lalr_print_compressed_goto_table) 16494174393177441415)
 
-(c!:install 'diff_vertex '(diff_vertex !_0edge nreverse) 
-13748214954855354062)
+(c!:install 'aex_psrem '(aex_psrem aex_fvarl aex_0 aex_ex aex_lc aex_sgn
+sfto_psrem kernels aex_ctx ctx_union ctx_filter aex_mk aex_mklcnt) 
+4904291359702063744)
 
-(c!:install 'assert_kernelp '(assert_kernelp exlist!*) 
-15597765434816421582)
+(c!:install 'setqinsertlist '(setqinsertlist fluidbibasissetq
+monomcompare) 7255240212151745159)
 
-(c!:install 'evalgreaterp '(evalgreaterp difference "number" simp!*
-minusf negsq mk!*sq typerr !:minusp) 12669567216885518850)
-
-(c!:install 'rootextractf '(rootextractf sqrt expt quotient multd
-simpexpt multf addf to) 13444072459892712479)
-
-(c!:install 'make!-image '(make!-image m!-image!-variable
-evaluate!-in!-order !*n2f) 4739506351694943003)
-
-(c!:install 'giplus!: '(giplus!: mkgi) 12497355129620666169)
-
-(c!:install 'ext_mult '(ext_mult ext merge_lists !*a2k to) 
-9547799705883413000)
-
-(c!:install 'multivariatep '(multivariatep) 6455206724317581613)
-
-(c!:install 'rl_transform '(rl_transform rl_transform!* apply) 
-4830843859496009028)
-
-(c!:install 'internal!-factorf '(internal!-factorf current!-modulus
-m!-image!-variable !*kernreverse kernord setkorder reorder minusf negf
-comfac comfac!-to!-poly quotf1 factorize!-primitive!-polynomial
-distribute!.multiplicity fctrf1 to fac!-merge) 16295624143771728723)
-
-(c!:install 'ioto_smaprinbuf '(ioto_smaprinbuf !! rlsmaprinbuf!*) 
-18419973655955222314)
-
-(c!:install 'containerom '(containerom name "<OMA>" vectorml vector
-valid_om!* set multiset multiset1 "vector" "<OMS cd=""" """ name="""
-"""/>" "</OMA>" printout indent!* multiom) 13983074625164896069)
-
-(c!:install 'contposp '(contposp) 8182456738789676309)
-
-(c!:install 'mkexdf '(mkexdf d opmtch partitop mkupf) 
-4388880663920067806)
-
-(c!:install 'gbfplus '(gbfplus plubf) 12825317034124909812)
-
-(c!:install 'z!-roads '(z!-roads) 9627785030673955102)
-
-(c!:install 'msolve!-psys1 '(msolve!-psys1 subf moduntag
-general!-reduce!-mod!-p msolve!-poly) 5325365900206753023)
-
-(c!:install 'ratlessp '(ratlessp ratdif) 885470824671184428)
-
-(c!:install 'reduce!-eival!-powers '(reduce!-eival!-powers
-reduce!-eival!-powers1) 17145472828341619245)
-
-(c!:install 'ra_u '(ra_u ra_iv riv_u) 2540618869296221511)
-
-(c!:install 'lastcar '(lastcar) 9426693423145988947)
-
-(c!:install 'settcollectnonmultiprolongations '(
-settcollectnonmultiprolongations fluidbibasissett
-fluidbibasissinglevariablemonomialss monomgetfirstmultivar
-tripleisprolongedby polynommultiplybymonom triplesetprolongedby
-createtriplewithancestor triplesetprolongset sortedtriplelistinsert) 
-11180923753170602520)
-
-(c!:install 'processpartitie1list1 '(processpartitie1list1
-processpartitie1) 8905402871218447299)
-
-(c!:install 'mk!+outer!+list '(mk!+outer!+list list) 1120975289848745138
+(c!:install 'cl_bvarl '(cl_bvarl ordp cl_bvarl1 sort) 208407522678842217
 )
 
-(c!:install 'repr_n '(repr_n "repr_n : invalid REPR structure" rederr) 
-9234101115622280862)
+(c!:install 'omattrir '(omattrir (!/ o m a t t r) csymbol cn ci lex
+omatpir omobj checktag) 15199935747480460102)
 
-(c!:install 'dip_f2dip2 '(dip_f2dip2 dip_vars!* ev_insert dip_f2dip1
-bc_pmon bc_prod) 16425107332824954865)
+(c!:install 'sptransmat '(sptransmat spm matlength aeval mkempspmat
+letmtr3) 11078188207137486602)
 
-(c!:install 'setfuncsnaryrd '(setfuncsnaryrd multiset mmlatts mathml) 
-11760292879859386480)
+(c!:install 'mkupf '(mkupf mksq sfp partitsq!*) 350955710441535672)
 
-(c!:install 'multerm '(multerm !*multsq mulpower multdfconst) 
-12104691084579091829)
+(c!:install 'toolongassignp '(toolongassignp toolongexpp) 
+4118697004373164395)
 
-(c!:install 'look_for_substitute '(look_for_substitute !*nointsubst
-look_for_exponential look_for_rational look_for_quad) 
-2772953829009675549)
+(c!:install 'simppartdf '(simppartdf partitpartdf !*pf2sq) 
+18226010435382712502)
 
-(c!:install 'evalnumberp '(evalnumberp !*sq numbertag aeval) 
-16980738746779213824)
+(c!:install 's_world_names '(s_world_names) 15003719730143642310)
 
-(c!:install '!:!:quotient '(!:!:quotient i2rd!* !:quotient) 
-15132540149930532904)
-
-(c!:install 'listeval0 '(listeval0 simpcount!* simplimit!* rlisp
-"Simplification recursion too deep" array rerror eval getrtype getelv) 
-16941628648368689335)
+(c!:install 'dfp!-sub '(dfp!-sub generic_function list dfp listsub reval
+pair dfp!-sub1) 7670772426438171903)
 
 
 % End of generated Lisp code

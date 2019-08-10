@@ -112,12 +112,12 @@ static LispObject Lbyte(LispObject env, LispObject a, LispObject b)
 
 static LispObject Lbyte_position(LispObject env, LispObject a)
 {   if (!consp(a)) aerror1("byte-position", a);
-    else return onevalue(qcdr(a));
+    else return onevalue(cdr(a));
 }
 
 static LispObject Lbyte_size(LispObject env, LispObject a)
 {   if (!consp(a)) aerror1("byte-size", a);
-    else return onevalue(qcar(a));
+    else return onevalue(car(a));
 }
 
 static LispObject Lcomplex_2(LispObject env, LispObject a, LispObject b)
@@ -214,8 +214,8 @@ LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
     a1 = gcd(a1, a3);
     while (stack[0] != nil)
     {   a2 = stack[0];
-        a3 = qcar(a2);
-        stack[0] = qcdr(a2);
+        a3 = car(a2);
+        stack[0] = cdr(a2);
         a1 = gcd(a1, a3);
     }
     popv(1);
@@ -265,8 +265,8 @@ LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
     a1 = lcm(a1, a3);
     while (stack[0] != nil)
     {   a2 = stack[0];
-        a3 = qcar(a2);
-        stack[0] = qcdr(a2);
+        a3 = car(a2);
+        stack[0] = cdr(a2);
         a1 = lcm(a1, a3);
     }
     popv(1);
