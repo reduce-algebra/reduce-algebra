@@ -1,4 +1,4 @@
-#! /bin/bash -v
+#! /bin/bash -v 
 
 # Configure and build CSL version from scratch. This takes arguments
 # that indicate the version of Reduce to be built and whether it is

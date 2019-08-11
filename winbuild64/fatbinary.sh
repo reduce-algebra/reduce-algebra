@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/sh -v
 
 # Assemble some of the built files & directories  I will want, putting them
 # in the current directory where I can see them.
