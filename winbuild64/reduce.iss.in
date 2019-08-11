@@ -58,7 +58,6 @@ Name: "custom"; Description: "{cm:CustomInstallation}"; Flags: iscustom
 Name: "common"; Description: "{cm:ReduceCommon}"; Types: full cslonly pslonly custom; Flags: fixed
 Name: "common\source"; Description: "{cm:ReduceSrc}"; Types: full custom
 Name: "csl"; Description: "{cm:ReduceCSL}"; Types: full cslonly custom
-Name: "psl32"; Description: "{cm:ReducePSL}"; Types: full pslonly custom; Check: not Is64BitInstallMode
 Name: "psl64"; Description: "{cm:ReducePSL}"; Types: full pslonly custom; Check: Is64BitInstallMode
 
 
@@ -108,37 +107,29 @@ Source: "@here@\bootstrapreduce.bat"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\bootstrapreduce.sh"; DestDir: "{app}\bin\"; DestName: "redcsl"; Components: csl;
 Source: "@here@\csl.bat"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\csl.sh"; DestDir: "{app}\bin\"; DestName: "redcsl"; Components: csl;
-Source: "@here@\cslcyg32\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\cslcyg64\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; DestName: "rfcslcyg64.exe"; Components: csl;
-Source: "@here@\cslcyg32\redfront\rfcslwin.exe"; DestDir: "{app}\bin\"; DestName: "rfcsl.com"; Components: csl;
 
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\csl\"; Components: csl;
-Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\psl\"; Components: psl32 psl64;
+Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\psl\"; Components: psl64;
 
 
 
 ;psl
-Source: "@here@\C\pslbuild\i686-pc-windows\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: psl32
-Source: "@here@\C\pslbuild\i686-pc-windows\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: psl32
-Source: "@here@\C\pslbuild\i686-pc-windows\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: psl32; Flags: skipifsourcedoesntexist
-Source: "@here@\redpsl.sh"; DestDir: "{app}\bin\"; DestName: "redpsl"; Components: psl32;
-Source: "@here@\cslcyg32\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; Components: psl32 psl64;
-Source: "@here@\cslcyg32\redfront\rfpslwin.exe"; DestDir: "{app}\bin\"; DestName: "rfpsl.com"; Components: psl32 psl64;
+Source: "@here@\cslcyg32\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; Components: psl64;
+Source: "@here@\cslcyg32\redfront\rfpslwin.exe"; DestDir: "{app}\bin\"; DestName: "rfpsl.com"; Components: psl64;
 
 Source: "@here@\C\pslbuild\x86_64-pc-windows\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: psl64
 Source: "@here@\C\pslbuild\x86_64-pc-windows\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: psl64
 Source: "@here@\C\pslbuild\x86_64-pc-windows\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: psl64
 
 Source: "@here@\reduce64.img"; DestDir: "{app}\lib\psl\red\"; DestName: "reduce.img"; Components: psl64
-Source: "@here@\reduce.img"; DestDir: "{app}\lib\psl\red\"; DestName: "reduce.img"; Components: psl32
-Source: "@here@\redpsl.bat"; DestDir: "{app}\bin\"; Components: psl32 psl64; Check: not Is64BitInstallMode
-;;;Source: "@here@\redpslw.bat"; DestDir: "{app}\bin\"; Components: psl32
+Source: "@here@\redpsl.bat"; DestDir: "{app}\bin\"; Components: psl64; Check: not Is64BitInstallMode
 Source: "@here@\redpsl64.bat"; DestName: "redpsl.bat"; DestDir: "{app}\bin\"; Components: psl64
 ;;;Source: "@here@\redpsl64w.bat"; DestName: "redpslw.bat"; DestDir: "{app}\bin\"; Components: psl64
 Source: "@here@\redpsl64.sh"; DestDir: "{app}\bin\"; DestName: "redpsl"; Components: psl64;
-Source: "@here@\cslcyg64\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; Destname: "rfpslcyg64.exe"; Components: psl32 psl64;
+Source: "@here@\cslcyg64\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; Destname: "rfpslcyg64.exe"; Components: psl64;
 
-Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\psl\"; Components: psl32 psl64;
+Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\psl\"; Components: psl64;
 
 
 [Icons]
@@ -146,7 +137,7 @@ Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\psl\"; Component
 Name: "{group}\CSL Reduce"; Filename: "{app}\lib\csl\winreduce.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: csl
 Name: "{group}\CSL Bootstrap Reduce"; Filename: "{app}\lib\csl\bootstrapreduce.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: csl
 Name: "{group}\CSL Lisp system"; Filename: "{app}\lib\csl\wincsl.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: csl
-Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{app}\lib\psl\psl\bpslw.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: psl32 psl64
+Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{app}\lib\psl\psl\bpslw.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: psl64
 Name: "{group}\Reduce Manual (PDF version)"; Filename: "{app}\lib\csl\reduce.doc\manual.pdf" ; Components: common
 Name: "{group}\Reduce Manual (HTML version)"; Filename: "{app}\lib\csl\reduce.doc\manual.html" ; Components: common
 Name: "{group}\Reduce Symbolic Mode Primer"; Filename: "{app}\doc\primer.pdf" ; Components: common
@@ -159,8 +150,8 @@ Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks fo
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\lib\csl\bootstrapreduce.exe"" bootstrapreduce"; Flags: runhidden; Components: csl
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\lib\csl\csl.exe"" csl"; Flags: runhidden; Components: csl
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\bin\rfcsl.exe"" ""{app}\bin\rfcslcyg64.exe"" rfcsl"; Flags: runhidden; Components: csl
-Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\bin\redpsl"" redpsl"; Flags: runhidden; Components: psl32 psl64
-Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\bin\rfpsl.exe"" ""{app}\bin\rfpslcyg64.exe"" rfpsl"; Flags: runhidden; Components: psl32 psl64
+Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\bin\redpsl"" redpsl"; Flags: runhidden; Components: psl64
+Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\bin\rfpsl.exe"" ""{app}\bin\rfpslcyg64.exe"" rfpsl"; Flags: runhidden; Components: psl64
 
 
 [UninstallRun]
@@ -168,8 +159,8 @@ Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "redcsl"; Flags: 
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "bootstrapreduce"; Flags: runhidden; Components: csl
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "csl"; Flags: runhidden; Components: csl
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "rfcsl"; Flags: runhidden; Components: csl
-Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Parameters: "redpsl"; Flags: runhidden; Components: psl32 psl64
-Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Parameters: "rfpsl"; Flags: runhidden; Components: psl32 psl64
+Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Parameters: "redpsl"; Flags: runhidden; Components: psl64
+Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Parameters: "rfpsl"; Flags: runhidden; Components: psl64
 
 
 [Code]
