@@ -3,53 +3,26 @@
 # Assemble some of the built files & directories  I will want, putting them
 # in the current directory where I can see them.
 
-case ${1:-2} in
-1 | 3)
-  ver=cslwin64
-  ;;
-2)
-  ver=cslwin32
-  ;;
-*)
-  echo argument $1 invalid: should be 1, 2 or 3
-  exit 1
-  ;;
-esac
+ver=cslwin64
 
 rm -rf cslbuild
 mkdir -p cslbuild
+mkdir -p cslbuild/reduce.resources
+mkdir -p cslbuild/reduce.fonts
 
 cp $ver/csl/reduce.img cslbuild/reduce.img
 cp $ver/csl/bootstrapreduce.img cslbuild/bootstrapreduce.img
 cp $ver/csl/csl.img cslbuild/csl.img
-cp -r $ver/csl/reduce.fonts cslbuild/reduce.fonts
-cp -r $ver/csl/reduce.resources cslbuild/reduce.resources
+cp -r $ver/csl/reduce.fonts/* cslbuild/reduce.fonts
+cp -r $ver/csl/reduce.resources/* cslbuild/reduce.resources
 
 # I will need two helper programs that have been built so as to run
-# under cygwin32 and cygwin64. Here I build them...
+# under cygwin. Here I build them...
 # The code tries to launch these to determine whether cygwin is active, and
 # if it is whether stdin and stdout are linked directly to a cygwin console.
 
-case `uname -m` in
-i686)
-  gcc -O2 cygwin-isatty.c -o cygwin32-isatty.exe
-  strip cygwin32-isatty.exe
-
-  x86_64-pc-cygwin-gcc -O2 cygwin-isatty.c -o cygwin64-isatty.exe
-  x86_64-pc-cygwin-strip cygwin64-isatty.exe
-  ;;
-x86_64)
-  i686-pc-cygwin-gcc -O2 cygwin-isatty.c -o cygwin32-isatty.exe
-  i686-pc-cygwin-strip cygwin32-isatty.exe
-
-  gcc -O2 cygwin-isatty.c -o cygwin64-isatty.exe
-  strip cygwin64-isatty.exe
-  ;;
-*)
-  echo unknown architecture `uname -n`
-  exit 1
-  ;;
-esac
+gcc -O2 cygwin-isatty.c -o cygwin64-isatty.exe
+strip cygwin64-isatty.exe
 
 # stub.c is a stub program that tests the environment it is launched from
 # and chains to a suitable version of the code... But I want the stub to
@@ -57,37 +30,11 @@ esac
 # installed so I will first sort out just which DLLs the reduce binaries
 # rely on.
 
-case `uname -m`
-in
-i686)
-  objdump -p cslcyg32/csl/reduce.exe | grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$#\",#' | sort > dll32.c
-  x86_64-pc-cygwin-objdump -p cslcyg64/csl/reduce.exe | grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$#\",#' | sort > dll64.c
-  ;;
-x86_64)
-  i686-pc-cygwin-objdump -p cslcyg32/csl/reduce.exe | grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$#\",#' | sort > dll32.c
-  objdump -p cslcyg64/csl/reduce.exe | grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$#\",#' | sort > dll64.c
-  ;;
-*)
-  echo Unknown machine `uname -m`
-  ;;
-esac
-
-if test "x$2" = "xDEBUG"
-then
-  debugflag="-DDEBUG=1"
-else
-  debugflag=
-fi
+objdump -p cslcyg64/csl/reduce.exe | grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$#\",#' | sort > dll64.c
 
 i686-w64-mingw32-gcc -DFAT64 -DNAME=red $debugflag -O3 newstub.c \
 	--static -lz -o cslbuild/reduce.exe
 i686-w64-mingw32-strip cslbuild/reduce.exe
-
-mkdir cslbuild/reduce.resources
-
-# Now I create the real version of a "reduce.exe" that will be launchable
-# from a console (either Windows or 32 or 64-bit cygwin) by packing
-# stuff on the end of the stub.
 
 cp	cygwin64-isatty.exe      cslbuild/reduce.resources/isatty64.exe
 cp	cslwin64/csl/reduce.com  cslbuild/reduce.resources/redwin64.exe
@@ -103,17 +50,9 @@ i686-w64-mingw32-strip cslbuild/winreduce.exe
 
 cp	cslwin64/csl/reduce.exe  cslbuild/reduce.resources/wredwin64.exe
 
-# Add the relevant things to this... Observe that actually the only thing
-# it has to do that is at all clever is to decide whether it is running
-# on a 32 or 64-bit machine. Yes you could make the installer decide whether
-# to install a 32 or 64-bit binary, but this way a single binary will be
-# good for everybody.
-
 i686-w64-mingw32-gcc -DFAT64 -DNAME=boot $debugflag -O3 newstub.c \
 	--static -lz -o cslbuild/bootstrapreduce.exe
 i686-w64-mingw32-strip cslbuild/bootstrapreduce.exe
-
-# Also the real version of a "bootstrapreduce.exe"
 
 cp	cygwin64-isatty.exe              cslbuild/reduce.resources/isatty64.exe
 cp	cslwin64/csl/bootstrapreduce.exe cslbuild/reduce.resources/bootwin64.exe
@@ -122,10 +61,6 @@ cp	cslcyg64/csl/bootstrapreduce.exe cslbuild/reduce.resources/bootcyg64.exe
 i686-w64-mingw32-gcc -DFAT64 -DNAME=csl $debugflag -O3 newstub.c \
 	--static -lz -o cslbuild/csl.exe
 i686-w64-mingw32-strip cslbuild/csl.exe
-
-# Finally create the real version of a "csl.exe" that will be launchable
-# from a console (either Windows or 32 or 64-bit cygwin) by packing
-# stuff on the end of the stub.
 
 cp	cygwin64-isatty.exe  cslbuild/reduce.resources/isatty64.exe
 cp	cslwin64/csl/csl.com cslbuild/reduce.resources/cslwin64.exe
@@ -147,6 +82,6 @@ ls -lhR cslbuild
 
 # Tidy up the the helper apps
 
-rm cygwin32-isatty.exe cygwin64-isatty.exe
+rm cygwin64-isatty.exe
 
 echo all versions built
