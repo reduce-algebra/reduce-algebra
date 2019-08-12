@@ -180,7 +180,9 @@
      (*move (fluid sigaddr*) (reg 1))
      (*link codeaddressp expr 1)
      % jump to function exit when not called from within lisp code
-     (!*jumpeq (label done) (reg 1) (quote nil))
+     (!*jumpnoteq (label in-lisp) (reg 1) (quote nil))
+     (pop (reg 1))
+     (!*jump done)
     in-lisp
      (*link *freset expr 0)
      (*link initializeinterrupts expr 0) % MK
