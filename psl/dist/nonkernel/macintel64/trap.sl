@@ -240,14 +240,14 @@
        (*exit 0)))
 
 %% Error subtypes for arithmetic exception
-(define-constant FPE_INTDIV 1)
-(define-constant FPE_INTOVF 2)
-(define-constant FPE_FLTDIV 3)
-(define-constant FPE_FLTOVF 4)
-(define-constant FPE_FLTUND 5)
-(define-constant FPE_FLTRES 6)
-(define-constant FPE_FLTINV 7)
-(define-constant FPE_FLTSUB 8)
+(define-constant FPE_FLTDIV 1)
+(define-constant FPE_FLTOVF 2)
+(define-constant FPE_FLTUND 3)
+(define-constant FPE_FLTRES 4)
+(define-constant FPE_FLTINV 5)
+(define-constant FPE_FLTSUB 6)
+(define-constant FPE_INTDIV 7)
+(define-constant FPE_INTOVF 8)
 
 %% convert arithmetic error subtype to error message
 (de get-fpe-errmsg (n)
