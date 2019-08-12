@@ -43,7 +43,10 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber* sigaddr* arith-exception-type*))
+(fluid '(errornumber* sigaddr* arith-exception-type* stack-pointer*
+                      on-altstack*      % variable to indicate that we are on an alternate signal stack
+                      mcontext*         % address of machine context for restoring lisp registers
+                      ))
 
 (compiletime
  (progn
@@ -67,7 +70,9 @@
      (*lbl (label ,handler))
      % rdx has address of ucontext structure
      (*move (memory (reg rdx) 48) (reg rax))	% address of machine context
+     (*move (reg rax) (fluid mcontext*))        % save it
      (*move (memory (reg rax) 144) (fluid sigaddr*))   % instruction pointer at fault
+     (*move (memory (reg rax) 72) (fluid stack-pointer*))   % stack pointer at fault
      (*move (reg 2) (fluid ebxsave!*))		% save rbx (callee-saved)
      (*move (wconst ,signumber) (reg 1))
      (*move (reg 1)(fluid errornumber*))
@@ -148,10 +153,21 @@
      %(*wplus2 (reg st) 320)                % Pop signal-handling frame
      % (*link build-trap-message expr 2)     % This leaves its result in reg
                                            % 1, so the new message is
-     (push (reg 1))
      (push (reg NIL))			   % r15 is called-saved
+     (push (reg r14)) 
+     (push (reg r13))
+     (push (reg r12))
+     (push (reg r11))                      
+     (push (reg r10))                      
+     (push (reg 1))
      (*move 128 (reg NIL))
      (*mkitem (reg NIL) id-tag)            % make sure (reg nil) contains nil
+     (*move (fluid mcontext*) (reg 1))
+     (*move (memory (reg rax) 128) (reg r14)) % bndstklowerbound
+     (*move (memory (reg rax) 120) (reg r13)) % bndstkupperbound
+     (*move (memory (reg rax) 112) (reg r12)) % bndstkptr
+     (*move (memory (reg rax) 104) (reg r11)) % heaptrapbound
+     (*move (memory (reg rax) 96) (reg r10)) % heaplast
      % if this is a terminal interrupt (errornumber* = 2) or
      % SIGPIPE (errornumber* = 13), we check
      % whether it occured within lisp code. If not, just return.
@@ -163,24 +179,42 @@
     check-not-in-lisp
      (*move (fluid sigaddr*) (reg 1))
      (*link codeaddressp expr 1)
-     (!*jumpnoteq (label in-lisp) (reg 1) (quote nil))
-     (*move (fluid ebxsave!*) (reg 2))		% restore called-saved registers
-     (pop (reg NIL))
-     (pop (reg 1))
-     (ret)
+     % jump to function exit when not called from within lisp code
+     (!*jumpeq (label done) (reg 1) (quote nil))
     in-lisp
      (*link *freset expr 0)
      (*link initializeinterrupts expr 0) % MK
-     (pop (reg 2))			% remove last frame from stack, contains (reg NIL)
-     (pop (reg 2))
      (*move (fluid errornumber*) (reg 1))
+     (*move (reg nil) (fluid on-altstack*))
      (*wplus2 (reg 1)(wconst 10000))
+     (pop (reg 2))
+     % if the error number = 11 (segmentation violation, 
+     %  set on-altstack* to t and try to check for stack overflow
+     (*jumpnoteq (label nostackoverflow) (fluid errornumber*) 11)
+     (*move (quote t) (fluid on-altstack*))
+     % if rsp + 1024 >= faultaddr* >= rsp - 1024, assume a stack overflow
+     (*move (fluid faultaddr*) (reg 3))
+     (subq 1024 (reg 3))
+     (*jumpwgreaterp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
+     (addq 2048 (reg 3))
+     (*jumpwlessp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
+     (*move (quote "Stack overflow") (reg 2))
+    nostackoverflow
      % if the error number = 8 (arithmetic exception), pass the subtype in register 3
      (*move (wconst 0) (reg 3))
-     (*jumpnoteq (label done) (fluid errornumber*) 8)
+     (*jumpnoteq (label error-call) (fluid errornumber*) 8)
      (*move (fluid arith-exception-type*) (reg 3))
+    error-call
+     (*call error-trap) 
     done
-     (*jcall error-trap) 
+     (*move (fluid ebxsave!*) (reg 2))          % restore called-saved registers
+     (pop (reg r10))
+     (pop (reg r11))
+     (pop (reg r12))
+     (pop (reg r13))
+     (pop (reg r14))
+     (pop (reg NIL))
+     (ret)
      ))
 
 (lap '((*entry *freset expr 0)
