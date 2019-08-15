@@ -53,7 +53,7 @@ operator Lerch_phi, polylog, zeta;
 let { 
    Lerch_phi(~z,~s,1) => polylog(s,z)/z,
    Lerch_phi(1,~s,1) => zeta(s),
-   Lerch_phi(1,s,a) => (2^s-1)*zeta(s) when a=1/2,
+   Lerch_phi(1,~s,1/2) => (2^s-1)*zeta(s),
    Lerch_phi(~z,0,~a) => 1/(1-z),
    Lerch_phi(-1,2,1/2) => 4*Catalan,
    df(Lerch_phi(~z,~s,~a),~a) => s * Lerch_phi(z,s,a),
