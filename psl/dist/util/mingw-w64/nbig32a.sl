@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PU:NBIG30a.SL 
+% File:         PU:NBIG32a.SL 
 % Description:  Vector based BIGNUM package with INUM operations 
 % Author:       M. L. Griss & B Morrison 
 % Created:      25 June 1982 
@@ -37,6 +37,8 @@
 %
 % Revisions:
 %
+% 16-August-2019 (Rainer Schöpf)
+%   added biglogcount
 % 30-June-1993 (Herbert Melenk)
 %   changed bigit length to full word size
 % 20-June-1989 (Winfried Neun) 
@@ -957,7 +959,9 @@ error
 (if_system 32 (progn
 
 (ds ieeezerop(u)
-   (and (weq (floathiword u) 0)
+    % ieee zero may have the sign bit set to indicate -0.0,
+    % so shift the leftmost bit off the machine word before comparing with 0
+   (and (weq (wshift (floathiword u) 1) 0)
         (weq (floatloword u) 0)))
 
 (ds
@@ -977,7 +981,11 @@ error
 
 (progn  % if_system 64
 
-(ds ieeezerop(u) (weq (floathiword u) 0))
+(ds ieeezerop(u)
+    % ieee zero may have the sign bit set to indicate -0.0,
+    % so shift the leftmost bit off the machine word before comparing with 0
+    (or (weq (wshift (floathiword u) 1) 0)))
+
 %(ds ieeemant (f) (wand (floathiword f) 16#fffffffffffff))
 (ds ieeemant (f) (wshift (wshift (floathiword f) 12) -12))
 
@@ -1001,6 +1009,8 @@ error
     (t(prog (m e)
        (setq m (ieeemant x))
        (setq e (ieeeexpt x))
+       (when (eq e 1024)
+          (stderror (list "Non-finite float in fix:" x)))
        (when (neq e (minus 16#3ff))
           (setq m (lor m ieee-hidden-bit*)))
        (when (eq (ieeesign x) 1)
@@ -1361,6 +1371,13 @@ error
     (biglshift (int2big u) v)))
 
 (copyd 'lsh 'lshift)
+
+(de biglogcount (v)
+  (if (bminusp v) (setq v (badd1 v)))
+  (let ((s 0) (l (bbsize v)))
+    (vfor (from i 1 l 1) (do (setq s (+w (wlogcount (igetv v i)) s))))
+    s)
+)
 
 (de biggreaterp (u v) (checkifreallybigornil (bgreaterp u v)))
 (de biglessp (u v) (checkifreallybigornil (blessp u v)))
