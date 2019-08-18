@@ -1,13 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PU:NBIG30a.SL 
+% File:         PU:NBIG32a.SL 
 % Description:  Vector based BIGNUM package with INUM operations 
 % Author:       M. L. Griss & B Morrison 
 % Created:      25 June 1982 
 % Modified:     
 % Mode:         Lisp 
 % Package:      Utilities 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -37,6 +37,8 @@
 %
 % Revisions:
 %
+% 16-August-2019 (Rainer Schöpf)
+%   added biglogcount
 % 30-June-1993 (Herbert Melenk)
 %   changed bigit length to full word size
 % 20-June-1989 (Winfried Neun) 
@@ -1063,6 +1065,8 @@ error
 
 
 (de bchannelprin2 (channel v1)
+%  (if (not (eq channel 4))
+%    (checklinefit (flatsize2 v1) channel 'bchannelprin2 v1))
   ((lambda (v2 myobase i ob sn)
      (while (not (izerop i))
        (progn (iputv v2 i (igetv v1 i)) (setq i (isub1 i))))
@@ -1114,7 +1118,7 @@ error
     (channelwritechar channel (igetv digl d2))
     (return (channelwritechar channel (igetv digl d1)))))
  
-% divide the bignum v1 (of length l1) by 100000, except the quotient is
+% divide the bignum v1 (of length l1) by 1000000, except the quotient is
 % accumulated in the same place, the remainder, of course, ripples
 % down to the bottom.  Because the argument is modified there is no need
 % to CONS up a result, but simply return the remainder.
@@ -1360,6 +1364,13 @@ error
     (biglshift (int2big u) v)))
 
 (copyd 'lsh 'lshift)
+
+(de biglogcount (v)
+  (if (bminusp v) (setq v (badd1 v)))
+  (let ((s 0) (l (bbsize v)))
+    (vfor (from i 1 l 1) (do (setq s (+w (wlogcount (igetv v i)) s))))
+    s)
+)
 
 (de biggreaterp (u v) (checkifreallybigornil (bgreaterp u v)))
 (de biglessp (u v) (checkifreallybigornil (blessp u v)))

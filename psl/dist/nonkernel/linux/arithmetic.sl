@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXNK:arithmetic.sl  for i386
+% File:         PXNK:arithmetic.sl  for i386 (Linux)
 % Description:  Generic arithmetic routines for PSL (New model, less hairy)
 % Author:       Eric Benson and Martin Griss 
 % Created:      9 August 1982 
@@ -494,6 +494,34 @@
 )
 )
 (de lsh(x y) (lshift x y))
+
+(de logcount (x)
+    (case (wand (wplus2 (tag x) 1) 31)
+          ((0) (wlogcount (wnot x)))   % negint
+          ((1) (wlogcount x))          % posint
+          ((2) (progn                  % fixnum
+                  (setq x (fixval (fixinf x)))
+                  (if (wlessp x 0) (wlogcount (wnot x))
+                    (wlogcount x))))
+          ((3)   (biglogcount x))      % bignum
+          (nil   (continuableerror 99 "Non-integer argument to logcount" (list (mkquote x))))
+))
+
+(de wlogcount (x)
+  (if (eq x 0) 0                   % optimization
+    (let ((c (wconst 16#55555555)))
+      (setq x (wdifference x (wand (wshift x -1) c)))
+      (setq c (wconst 16#33333333))
+      (setq x (wplus2 (wand (wshift x -2) c) (wand x c)))
+      (setq c (wconst 16#0f0f0f0f))
+      (setq x (wand (wplus2 x (wshift x -4)) c))
+      (setq c (wconst 16#01010101))
+      (setq x (wtimes2 x c))
+      (setq x (wshift x -24))
+      % reuse c in this way to make sure that nothing is left on the stack
+      % that can be interpreted as a lisp object by the garbage collector.
+      (setq c 16#3f)
+      (wand x c))))
 
 (defarith1entry add1 iadd1 (lambda (x)
                                    (floatplus2 x '1.0)) bigadd1)
