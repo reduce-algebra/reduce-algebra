@@ -48,59 +48,31 @@ algebraic;
 %Mean.
 
 procedure agm_function(a0,b0,c0);
+begin scalar n, an, bn, cn, alist, clist, tol;
+     tol := 10.0^-(symbolic !:prec!:);
+     cn    := 20; % To initiate while loop below.
+     alist := {a0}$
+     clist := {c0}$
 
-   begin scalar an, bn, cn, an!-1, bn!-1, alist, blist, clist;
+     while abs(cn) > tol do <<
+         an := (a0 + b0)/2;
+         bn := sqrt(a0*b0);
+         cn := (a0 - b0)/2;
 
-     %Initial values.
+         alist := an.alist;
+         clist := cn.clist;
+         % Note no need to accumulate bn's
 
-        an!-1 := a0;
-        bn!-1 := b0;
-        cn    := 20; %To initiate while loop below.
+         a0 := an;
+         b0 := bn
+      >>;
 
-     %Put initial values at end of list.
+     n := length(alist) - 1;
 
-        alist := {a0}$
-        blist := {b0}$
-        clist := {c0}$
+     return {n, alist, clist};
 
-     %Loop to generate lists of aN,bN and cN starting with the Nth
-     %value and ending with the initial value.
+end;
 
-     %When the absolute value of cN reaches a value smaller than that
-     %of the required precision the loop exits. The value of aN=bN=AGM.
-
-        while abs(cn) > 10^(-(symbolic !:prec!:)) do
-
-           << %Calculations for the process of the AGM
-
-                an := (an!-1 + bn!-1) / 2;
-                bn := sqrt(an!-1 * bn!-1);
-                cn := (an!-1 - bn!-1) / 2;
-
-             %Adding the next term to each of the lists.
-
-                alist := an.alist;
-                blist := bn.blist;
-                clist := cn.clist;
-
-             %Resetting the values in order to execute the next loop.
-
-                an!-1 := an;
-                bn!-1 := bn
-           >>;
-
-     %N is the number of terms in each list (excluding the initial
-     % values) used to calculate the AGM.
-
-        n := length(alist) - 1;
-
-     %The following list contains all the items required in the
-     %calculation of other procedures which use the AGM
-     %ie. {N, AGM, {aN to a0},{bN to b0},{cN to c0}}
-
-        return list(n ,an, alist, blist, clist)
-
-   end;
 %######################################################################
 %CALCULATING PHI
 %               N
@@ -120,35 +92,27 @@ procedure agm_function(a0,b0,c0);
 
 
 procedure phi_function(a0,b0,c0,u);
+begin scalar agm, alist, clist, n, an, cn, phi_n, phi_list;
 
-   begin scalar alist, clist,n,a_n,an,cn,i, phi_n, phi_n!-1, phi_list;
+    agm   := agm_function(a0,b0,c0);
+    alist := second agm;
+    clist := third agm;
+    n :=  first agm;
+    an :=  first alist; 
+    phi_n := (2^n)*an*u;
+    phi_list := {phi_n};
 
-        agm   := agm_function(a0,b0,c0);
-        alist := part(agm,3);              % aN to a0
-        clist := part(agm,5);              % cN to c0
-        n := part(agm,1);
-        a_n := part(alist,1);              % Value of the AGM.
-        phi_n := (2^n)*a_n*u;
-        phi_list := {phi_n}$
-        i := 1;
+    while rest alist neq {} do <<
+        an := first alist;
+        cn := first clist;
 
-        while i < length(alist) do
-
-           <<
-                an := part(alist,i);
-                cn := part(clist,i);
-
-                phi_n!-1 := (asin((cn/an)*sin(phi_n)) + phi_n) / 2;
-                phi_list := phi_n!-1.phi_list;
-                phi_n := phi_n!-1;
-                i := i+1
-           >>;
-
-     %Returns {phi_0 to phi_N}.
-
-        return phi_list;
-
-   end;
+        phi_n := (asin(cn/an*sin phi_n) + phi_n) / 2;
+        phi_list := phi_n.phi_list;
+        alist := rest alist;
+	clist := rest clist;
+    >>;
+    return phi_list;
+end;
 
 %######################################################################
 %JACOBI FUNCTIONS
@@ -156,8 +120,8 @@ procedure phi_function(a0,b0,c0,u);
 %Increases the precision used to evaluate algebraic arguments.
 
 symbolic procedure  num_jacobi (u);
-% check that length u >= 3 !
- if length u < 3 then
+% check that length u >= 2 !
+ if length u < 2 then
          rederr "illegal call to num_jacobi" else
    begin scalar oldprec,res;
      oldprec := precision 0;
@@ -178,7 +142,7 @@ put('num_elliptic, 'psopfn, 'num_jacobi);
 %This computes the Amplitude of u.
 
 procedure num_jacobiam(u,m);
-     part(phi_function(1,sqrt(1-m^2),m,u),1);
+     first phi_function(1,sqrt(1-m^2),m,u);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -210,10 +174,8 @@ let jacobiamrules;
 
 
 procedure num_jacobisn(u,m);
-   begin scalar phi0;
-        phi0 := part(phi_function(1,sqrt(1-m^2),m,u),1);
-        return sin(phi0)
-   end;
+    sin first phi_function(1,sqrt(1-m^2),m,u);
+
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobisn definition
@@ -305,10 +267,8 @@ let jacobisnrules;
 %used. It evaluates the value of Jacobicn numerically.
 
 procedure num_jacobicn(u,m);
-   begin scalar phi0;
-        phi0 := part(phi_function(1,sqrt(1-m^2),m,u),1);
-        return cos(phi0)
-   end;
+    cos first phi_function(1,sqrt(1-m^2),m,u);
+ 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobicn definition
 %===================
@@ -406,20 +366,21 @@ let jacobicnrules;
 procedure num_jacobidn(u,m);
    begin scalar phi, phi0,  phi1, denom;
         phi  := phi_function(1,sqrt(1-m^2),m,u);
-        phi0 := part(phi,1);
-        phi1 := part(phi,2);
+        phi0 := first phi;
+        phi1 := second phi;
         denom := cos(phi1 - phi0);
 
-        if denom < 10^(-(symbolic !:prec!:)) then  return otherdn(u,m)
+        if denom < 10.0^(-(symbolic !:prec!:)) then  return otherdn(u,m)
         else return cos(phi0)/denom;
    end;
 
 procedure otherdn(u,m);
    begin scalar mu, approx, v;
-        mu := (1-sqrt(1-m^2)) / (1+sqrt(1-m^2));
-        u  := u/(1+mu);
-	approx := (1 - (mu * sin u)^2/2)^2;
-        return (approx - 1+mu)/(1+mu - approx);
+        m := sqrt(1-m^2);
+        m := (1-m)/(1+m);
+        u  := u/(1+m);
+	approx := (1 - (m * sin u)^2/2)^2;
+        return (approx - 1+m)/(1+m - approx);
    end;
 
 
@@ -513,11 +474,11 @@ let jacobidnrules;
 procedure num_jacobicd(u,m);
    begin scalar phi, phi0,  phi1, dendn;
         phi  := phi_function(1,sqrt(1-m^2),m,u);
-        phi0 := part(phi,1);
-        phi1 := part(phi,2);
+        phi0 := first phi;
+        phi1 := second phi;
         dendn := cos(phi1 - phi0);
 
-        if dendn < 10^(-(symbolic !:prec!:)) then
+        if dendn < 10.0^(-(symbolic !:prec!:)) then
 	   return cos(phi0)/otherdn(u,m)
         else return dendn;
    end;
@@ -611,11 +572,11 @@ let jacobicdrules;
 procedure num_jacobisd(u,m);
    begin scalar phi, phi0,  phi1, denom, jdn;
         phi  := phi_function(1,sqrt(1-m^2),m,u);
-        phi0 := part(phi,1);
-        phi1 := part(phi,2);
+        phi0 := first phi;
+        phi1 := second phi;
         denom := cos(phi1 - phi0);
 
-        if denom < 10^(-(symbolic !:prec!:)) then  jdn := otherdn(u,m)
+        if denom < 10.0^(-(symbolic !:prec!:)) then  jdn := otherdn(u,m)
         else jdn := cos(phi0)/denom;
 	return sin(phi0)/jdn;
    end;
@@ -977,10 +938,7 @@ let jacobincrules;
 %used. It evaluates the value of Jacobisc numerically.
 
 procedure num_jacobisc(u,m);
-   begin scalar phi0;
-        phi0 := part(phi_function(1,sqrt(1-m^2),m,u),1);
-        return tan(phi0)
-   end;
+    tan first phi_function(1,sqrt(1-m^2),m,u);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobisc definition
@@ -1245,10 +1203,7 @@ let jacobidsrules;
 %used. It evaluates the value of Jacobics numerically.
 
 procedure num_jacobics(u,m);
-   begin scalar phi0;
-        phi0 := part(phi_function(1,sqrt(1-m^2),m,u),1);
-        return cot(phi0)
-   end;
+    cot first phi_function(1,sqrt(1-m^2),m,u);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobics definition
@@ -1352,10 +1307,10 @@ put('elliptick, 'fancy!-functionsymbol, '!K);
 put('elliptick!', 'fancy!-functionsymbol, '!K!');
 put('elliptice!', 'fancy!-functionsymbol, '!E!');
 
-put('elliptictheta1, 'fancy!-functionsymbol,"\theta_1");
-put('elliptictheta2, 'fancy!-functionsymbol,"\theta_2");
-put('elliptictheta3, 'fancy!-functionsymbol,"\theta_3");
-put('elliptictheta4, 'fancy!-functionsymbol,"\theta_4");
+put('elliptictheta1, 'fancy!-functionsymbol,"\vartheta_1");
+put('elliptictheta2, 'fancy!-functionsymbol,"\vartheta_2");
+put('elliptictheta3, 'fancy!-functionsymbol,"\vartheta_3");
+put('elliptictheta4, 'fancy!-functionsymbol,"\vartheta_4");
 put('elliptictheta1, 'fancy!-symbol!-length, 4);
 put('elliptictheta2, 'fancy!-symbol!-length, 4);
 put('elliptictheta3, 'fancy!-symbol!-length, 4);
@@ -1368,6 +1323,8 @@ do << put(x, 'fancy!-prifn, 'fancy!-jac);
       put(x, 'fancy!-symbol!-length, 4);
       put(x, 'prifn, 'plain!-jac)
    >>;
+
+% put('elliptictau, 'fancy!-functionsymbol, "\tau");
 
 put('ellipticd, 'fancy!-prifn, 'fancy!-jac);
 put('elliptice, 'fancy!-prifn, 'fancy!-jac);
@@ -1414,13 +1371,15 @@ put('elliptictheta1, 'plain!-functionsymbol, 'theta1);
 put('elliptictheta2, 'plain!-functionsymbol, 'theta2);
 put('elliptictheta3, 'plain!-functionsymbol, 'theta3);
 put('elliptictheta4, 'plain!-functionsymbol, 'theta4);
+% put('elliptictau, 'plain!-functionsymbol, 'tau);
 
-put('elliptictheta1, 'prifn, 'plain!-theta);
-put('elliptictheta2, 'prifn, 'plain!-theta);
-put('elliptictheta3, 'prifn, 'plain!-theta);
-put('elliptictheta4, 'prifn, 'plain!-theta);
+put('elliptictheta1, 'prifn, 'plain!-symbol);
+put('elliptictheta2, 'prifn, 'plain!-symbol);
+put('elliptictheta3, 'prifn, 'plain!-symbol);
+put('elliptictheta4, 'prifn, 'plain!-symbol);
+% put('elliptictau, 'prifn, 'plain!-symbol);
 
-symbolic procedure plain!-theta(u);
+symbolic procedure plain!-symbol(u);
     maprin(get(car u,'plain!-functionsymbol) . cdr u);
 
 endmodule;
