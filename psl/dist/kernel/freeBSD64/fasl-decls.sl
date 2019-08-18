@@ -72,6 +72,7 @@
 % local ID's.
 
 (define-constant first-local-id-number 2048)
+(define-constant first-extraargument-number 8150)
 
 (ds local-id-number? (u)
   (wgeq u first-local-id-number)
@@ -82,11 +83,11 @@
 %
 
 (ds extraargumentp (u)
-  (wgeq u 8150)
+  (wgeq u first-extraargument-number)
   )
 
 (ds makeextraargument (u)
-  (wdifference u (wplus2 8150 (wplus2 maxrealregs 1)))
+  (wdifference u (wplus2 first-extraargument-number (wplus2 maxrealregs 1)))
   )
 
 (define-constant bittable-entries-per-word 32)
