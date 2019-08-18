@@ -37,6 +37,8 @@
 %
 % Revisions:
 %
+% 17-August-2019 (Rainer Schöpf)
+%   added biglogcount
 % 30-June-1993 (Herbert Melenk)
 %   changed bigit length to full word size
 % 20-June-1989 (Winfried Neun) 
@@ -607,7 +609,7 @@ error
   % V1 is a BigNum, C a fixnum.                                            
   % Assume C positive, ignore sign(V1)                                     
   % also assume V1 neq 0.                                                  
-  (cond ((and (izerop c)(izerop cc)) (return (gtpos 0)))
+  (cond ((and (izerop c)(izerop cc)) (gtpos 0))
 	(t % Only used from BHardDivide, BReadAdd.                          
 	   (prog (j l1 v3 carry)
 		 (setq l1 (bbsize v1))
@@ -1184,8 +1186,8 @@ error
 
 (de bsmalladd (v c)
   %V big, C fix.                                                           
-  (cond ((izerop c) (return v))
-	((bzerop v) (return (int2big c)))
+  (cond ((izerop c) v)
+	((bzerop v) (int2big c))
 	((bbminusp v) (bminus (bsmalldiff (bminus v) c)))
 	((iminusp c) (bsmalldiff v (iminus c)))
 	(t (prog (v1 l1)
@@ -1344,6 +1346,13 @@ error
     (biglshift (int2big u) v)))
 
 (copyd 'lsh 'lshift)
+
+(de biglogcount (v)
+  (if (bminusp v) (setq v (badd1 v)))
+  (let ((s 0) (l (bbsize v)))
+    (vfor (from i 1 l 1) (do (setq s (+w (wlogcount (igetv v i)) s))))
+    s)
+)
 
 (de biggreaterp (u v) (checkifreallybigornil (bgreaterp u v)))
 (de biglessp (u v) (checkifreallybigornil (blessp u v)))

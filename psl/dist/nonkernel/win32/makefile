@@ -43,7 +43,7 @@
 MACHINE = winnt
 PROOT   = $(PSL)
 
-PSL     = $(PROOT)
+PSL     = $(PROOT)/dist
 PSYS    = $(PROOT)/bin
 PK      = $(PSL)/kernel
 PXK     = $(PK)/$(MACHINE)
@@ -56,10 +56,10 @@ PU      = $(PSL)/util
 PXU     = $(PU)/$(MACHINE)
 PDIST   = $(PSL)/distrib
 PXDIST  = $(PDIST)/$(MACHINE)
-PL      = $(PSL)/lap
+PL      = $(PSL)/lap/$(MACHINE)
 
 PXNKFILES= \
-	$(PNKL)/dumplisp.b  $(PNKL)/static-gc.b $(PNKL)/funct-prims.b \
+	$(PNKL)/dumplisp.b  $(PNKL)/static-gc.b $(PNKL)/funct-prims.b $(PNKL)/ieee-decls.b \
 	$(PNKL)/io-data.b $(PNKL)/lap.b $(PNKL)/load-psl.b \
 	$(PNKL)/backtrace.b $(PNKL)/equal.b $(PNKL)/386-ext.b \
 	$(PNKL)/arithmetic.b $(PNKL)/putd-getd.b \
@@ -89,6 +89,9 @@ $(PNKL)/backtrace.b: $(PXNK)/backtrace.sl
 
 $(PNKL)/eval-apply.b: $(PXNK)/eval-apply.sl
 	$(PDIST)/mkpnknt $(PXNK) eval-apply
+
+$(PNKL)/ieee-decls.b: $(PXNK)/ieee-decls.sl  $(PL)/if-system.b
+	$(PDIST)/make-pnk-lap $(PXNK) ieee-decls
 
 $(PNKL)/io-data.b: $(PXNK)/io-data.sl $(PNKL)/io-decls.b $(PL)/sys-macros.b
 	$(PDIST)/mkpnknt $(PXNK) io-data

@@ -1,13 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXNK:arithmetic.sl  for SUN386 /387
+% File:         PXNK:arithmetic.sl  for i386 (win32)
 % Description:  Generic arithmetic routines for PSL (New model, less hairy)
 % Author:       Eric Benson and Martin Griss 
 % Created:      9 August 1982 
 % Modified:     06-Oct-87 (Robert Kessler)
 % Mode:         Lisp 
-% Status:       Open Source: BSD License
 % Package:      Utilities 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -95,8 +95,8 @@
 % A BINARY operation (BIN x y) is done as:                                 
 %  Procedure BIN(x,y);                                                     
 %    If BetaP x and BetaP y                                                
-%       then <<x:=WBIN(x,y);                                               
-%              if IntRangeP x then x else Sys2Int x>>                      
+%	then <<x:=WBIN(x,y);                                               
+%	       if IntRangeP x then x else Sys2Int x>>                      
 %     else BIN!-HARD(x,y);                                                 
 % A BINARY predicate (BINP x y) is done as:                                
 %  Procedure BINP(x,y);                                                    
@@ -106,13 +106,13 @@
 % In others, BetaP(y) may be too weak (eg, Lshift and Expt)                
 % Note: Loading NBIG0 is supposed to define (or redefine)                  
 %       the functions:                                                     
-%               BetaP                                                      
+%		BetaP                                                      
 %               Beta2P                                                     
 %               BetaRangeP                                                 
-%               Sys2Big                                                    
-%               FloatFromBignum                                            
-%               Sys2Int                                                    
-%               FloatFix                                                   
+%		Sys2Big                                                    
+%		FloatFromBignum                                            
+%		Sys2Int                                                    
+%		FloatFix                                                   
 % Removed IsInum and INTP in favor of BetaP                                
 %                                                                          
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -123,15 +123,19 @@
   (mapc '(*wfix)
       (function (lambda (x) (remprop x 'opencode)))))
 
-(fluid '(arithargloc staticfloatloc))
+
+(fluid '(arithargloc staticfloatloc fpstatusloc* fp-except-mode*))
 
 (loadtime
   (progn % Allocate Physical Space                                         
-	 (setq arithargloc (gtwarray 2))
-	 (wputv arithargloc 0 0)
-	 (wputv arithargloc 1 0)
-	 (setq staticfloatloc (gtwarray 3))
+         (setq arithargloc (gtwarray 2))
+         (wputv arithargloc 0 0)
+         (wputv arithargloc 1 0)
+         (setq staticfloatloc (gtwarray 3))
+         (setq fpstatusloc* (gtwarray 1))
+         (setq fp-except-mode* 1)
 	 nil))
+
 
 (de betap (x)
   % Test tagged number is in Beta Range when BIGNUM loaded                 
@@ -154,223 +158,223 @@
 (de sys2big (w)
   % Out of safe range, convert to BIGN                                     
   (continuableerror 99 
-		    "Sys2Big cant convert Word to BIGNUM, no BIGNUM's loaded"
-		    (sys2int w)))
+                    "Sys2Big cant convert Word to BIGNUM, no BIGNUM's loaded"
+                    (sys2int w)))
 
 (compiletime
   (progn %flag('(Coerce2 FloatPlus2 FloatDifference FloatTimes2            
-	 %       FloatQuotient FloatGreaterP FloatLessP IntFloat           
-	 %       NonInteger2Error NonNumber1Error  NonNumber2Error         
-	 %), 'NotYetInternalFunction);                                     
-	 (de namegen (name part)
-	   % Generate Nice specific name from Generic name                 
-	   (intern (concat (id2string name) (id2string part))))
-	 (ds nextarg nil % Just substitute in the context of U              
-	     (progn (setq u (cdr u))
-		    (car u)))
-	 (ds prologue nil % Common Prologue                                 
-	     (progn (setq generic (nextarg))
-		    (setq wgen (nextarg))
-		    (setq fgen (nextarg))
-		    (setq bgen (nextarg))
-		    (setq hardgen (namegen generic '!-hardcase))
-		    (flag1 hardgen 'notyetinternalfunction)
-		    nil))
-	 (dm defarith2entry (u)
-	   (prog (generic wgen fgen bgen hardgen)
-		 (prologue)
-		 (return (subla 
-			  (pair '(generic wgen fgen bgen hardgen) 
-			   (list generic wgen fgen bgen hardgen))
-			  '(progn (de generic (x y)
-				    (cond ((beta2p x y) 
-					   (progn (setq x (wgen x y))
-						  (cond ((intp x) x)
-							(t (sys2int x)))))
-					  (t (hardgen x y))))
-				  (de hardgen (x y)
-				    (case (coerce2 x y 'generic) 
-				     ((posint-tag)
-				      (sys2int 
-				       (wgen (wgetv arithargloc 0) 
-					(wgetv arithargloc 1))))
-				     %/ Beware of Overflow, WGEN maybe should test args
-									   
-				     %/ Coerce2 is supposed to check this case
-									   
-				     ((floatnum-tag) 
-				      (fgen (wgetv arithargloc 0) 
-				       (wgetv arithargloc 1)))
-				     ((bignum-tag) 
-				      (bgen (wgetv arithargloc 0) 
-				       (wgetv arithargloc 1)))))
-				  nil)))))
-	 (dm defarithpred2entry (u)
-	   (prog (generic wgen fgen bgen hardgen)
-		 (prologue)
-		 (return (subla 
-			  (pair '(generic wgen fgen bgen hardgen) 
-			   (list generic wgen fgen bgen hardgen))
-			  '(progn (de generic (x y)
-				    (cond ((beta2p x y) (wgen x y))
-					  (t (hardgen x y))))
-				  (de hardgen (x y)
-				    (case (coerce2 x y 'generic) 
-				     ((posint-tag) 
-				      (wgen (wgetv arithargloc 0) 
-				       (wgetv arithargloc 1)))
-				     %/ Assumes Preds are safe against Overflow
-									   
-				     ((floatnum-tag) 
-				      (fgen (wgetv arithargloc 0) 
-				       (wgetv arithargloc 1)))
-				     ((bignum-tag) 
-				      (bgen (wgetv arithargloc 0) 
-				       (wgetv arithargloc 1)))))
-				  nil)))))
-	 (dm defint2entry (u)
-	   (prog (generic wgen fgen bgen hardgen)
-		 (prologue)
-		 (return (subla 
-			  (pair '(generic wgen bgen hardgen) 
-			   (list generic wgen bgen hardgen))
-			  '(progn (de generic (x y)
-				    (cond ((beta2p x y) 
-					   (progn (setq x (wgen x y))
-						  (cond ((intp x) x)
-							(t (sys2int x)))))
-					  (t (hardgen x y))))
-				  (de hardgen (x y)
-				    (case (coerce2 x y 'generic) 
-				     ((posint-tag) 
-				      (sys2int 
-				       (wgen (wgetv arithargloc 0) 
-					(wgetv arithargloc 1))))
-				     ((floatnum-tag) 
-				      (noninteger2error x y 'generic))
-				     ((bignum-tag) 
-				      (bgen (wgetv arithargloc 0) 
-				       (wgetv arithargloc 1)))))
-				  nil)))))
-	 (dm defarith1entry (u)
-	   (prog (generic wgen fgen bgen hardgen)
-		 (prologue)
-		 (return (subla 
-			  (pair '(generic wgen fgen bgen hardgen) 
-			   (list generic wgen fgen bgen hardgen))
-			  '(progn (de generic (x)
-				    (cond ((betap x) 
-					   (progn (setq x (wgen x))
-						  (cond ((intp x) x)
-							(t (sys2int x)))))
-					  (t (hardgen x))))
-				  (de hardgen (x)
-				    (case (coerce1 x 'generic) 
-				     ((posint-tag) 
-				      (sys2int (wgen (wgetv arithargloc 0))))
-				     ((floatnum-tag)
+         %       FloatQuotient FloatGreaterP FloatLessP IntFloat           
+         %       NonInteger2Error NonNumber1Error  NonNumber2Error         
+         %), 'NotYetInternalFunction);                                     
+         (de namegen (name part)
+           % Generate Nice specific name from Generic name                 
+           (intern (concat (id2string name) (id2string part))))
+         (ds nextarg nil % Just substitute in the context of U              
+             (progn (setq u (cdr u))
+                    (car u)))
+         (ds prologue nil % Common Prologue                                 
+             (progn (setq generic (nextarg))
+                    (setq wgen (nextarg))
+                    (setq fgen (nextarg))
+                    (setq bgen (nextarg))
+                    (setq hardgen (namegen generic '!-hardcase))
+                    (flag1 hardgen 'notyetinternalfunction)
+                    nil))
+         (dm defarith2entry (u)
+           (prog (generic wgen fgen bgen hardgen)
+                 (prologue)
+                 (return (subla 
+                          (pair '(generic wgen fgen bgen hardgen) 
+                           (list generic wgen fgen bgen hardgen))
+                          '(progn (de generic (x y)
+                                    (cond ((beta2p x y) 
+                                           (progn (setq x (wgen x y))
+                                                  (cond ((intp x) x)
+                                                        (t (sys2int x)))))
+                                          (t (hardgen x y))))
+                                  (de hardgen (x y)
+                                    (case (coerce2 x y 'generic) 
+                                     ((posint-tag)
+                                      (sys2int 
+                                       (wgen (wgetv arithargloc 0) 
+                                        (wgetv arithargloc 1))))
+                                     %/ Beware of Overflow, WGEN maybe should test args
+                                                                           
+                                     %/ Coerce2 is supposed to check this case
+                                                                           
+                                     ((floatnum-tag) 
+                                      (fgen (wgetv arithargloc 0) 
+                                       (wgetv arithargloc 1)))
+                                     ((bignum-tag) 
+                                      (bgen (wgetv arithargloc 0) 
+                                       (wgetv arithargloc 1)))))
+                                  nil)))))
+         (dm defarithpred2entry (u)
+           (prog (generic wgen fgen bgen hardgen)
+                 (prologue)
+                 (return (subla 
+                          (pair '(generic wgen fgen bgen hardgen) 
+                           (list generic wgen fgen bgen hardgen))
+                          '(progn (de generic (x y)
+                                    (cond ((beta2p x y) (wgen x y))
+                                          (t (hardgen x y))))
+                                  (de hardgen (x y)
+                                    (case (coerce2 x y 'generic) 
+                                     ((posint-tag) 
+                                      (wgen (wgetv arithargloc 0) 
+                                       (wgetv arithargloc 1)))
+                                     %/ Assumes Preds are safe against Overflow
+                                                                           
+                                     ((floatnum-tag) 
+                                      (fgen (wgetv arithargloc 0) 
+                                       (wgetv arithargloc 1)))
+                                     ((bignum-tag) 
+                                      (bgen (wgetv arithargloc 0) 
+                                       (wgetv arithargloc 1)))))
+                                  nil)))))
+         (dm defint2entry (u)
+           (prog (generic wgen fgen bgen hardgen)
+                 (prologue)
+                 (return (subla 
+                          (pair '(generic wgen bgen hardgen) 
+                           (list generic wgen bgen hardgen))
+                          '(progn (de generic (x y)
+                                    (cond ((beta2p x y) 
+                                           (progn (setq x (wgen x y))
+                                                  (cond ((intp x) x)
+                                                        (t (sys2int x)))))
+                                          (t (hardgen x y))))
+                                  (de hardgen (x y)
+                                    (case (coerce2 x y 'generic) 
+                                     ((posint-tag) 
+                                      (sys2int 
+                                       (wgen (wgetv arithargloc 0) 
+                                        (wgetv arithargloc 1))))
+                                     ((floatnum-tag) 
+                                      (noninteger2error x y 'generic))
+                                     ((bignum-tag) 
+                                      (bgen (wgetv arithargloc 0) 
+                                       (wgetv arithargloc 1)))))
+                                  nil)))))
+         (dm defarith1entry (u)
+           (prog (generic wgen fgen bgen hardgen)
+                 (prologue)
+                 (return (subla 
+                          (pair '(generic wgen fgen bgen hardgen) 
+                           (list generic wgen fgen bgen hardgen))
+                          '(progn (de generic (x)
+                                    (cond ((betap x) 
+                                           (progn (setq x (wgen x))
+                                                  (cond ((intp x) x)
+                                                        (t (sys2int x)))))
+                                          (t (hardgen x))))
+                                  (de hardgen (x)
+                                    (case (coerce1 x 'generic) 
+                                     ((posint-tag) 
+                                      (sys2int (wgen (wgetv arithargloc 0))))
+                                     ((floatnum-tag)
 				      (fgen (wgetv arithargloc 0))) 
-				     ((bignum-tag)
+                                     ((bignum-tag)
 				      (bgen (wgetv arithargloc 0))) 
-				     (nil (nonnumber1error x 'generic))))
-				  nil)))))
-	 (dm defarithpred1entry (u)
-	   (prog (generic wgen fgen bgen hardgen)
-		 (prologue)
-		 (return (subla 
-			  (pair '(generic wgen fgen bgen hardgen) 
-			   (list generic wgen fgen bgen hardgen))
-			  '(progn (de generic (x)
-				    (cond ((betap x) (wgen x))
-					  (t (hardgen x))))
-				  (de hardgen (x)
-				    (case (coerce1 x 'generic) 
-				     ((posint-tag)
+                                     (nil (nonnumber1error x 'generic))))
+                                  nil)))))
+         (dm defarithpred1entry (u)
+           (prog (generic wgen fgen bgen hardgen)
+                 (prologue)
+                 (return (subla 
+                          (pair '(generic wgen fgen bgen hardgen) 
+                           (list generic wgen fgen bgen hardgen))
+                          '(progn (de generic (x)
+                                    (cond ((betap x) (wgen x))
+                                          (t (hardgen x))))
+                                  (de hardgen (x)
+                                    (case (coerce1 x 'generic) 
+                                     ((posint-tag)
 				      (wgen (wgetv arithargloc 0))) 
-				     ((floatnum-tag)
+                                     ((floatnum-tag)
 				      (fgen (wgetv arithargloc 0))) 
-				     ((bignum-tag)
+                                     ((bignum-tag)
 				      (bgen (wgetv arithargloc 0))) 
-				     (nil nil)))
-				  nil)))))
-	 (ds deffloatentry (name prim) 
-	     (de name (x y)
-	       (prog (f)
-		     (setq f (gtfltn))
-		     (prim (floatbase f) (floatbase (fltinf x)) 
-		      (floatbase (fltinf y)))
-		     (return (mkfltn f)))))
-	 nil))
+                                     (nil nil)))
+                                  nil)))))
+         (ds deffloatentry (name prim) 
+             (de name (x y)
+               (prog (f)
+                     (setq f (gtfltn))
+                     (prim (floatbase f) (floatbase (fltinf x)) 
+                      (floatbase (fltinf y)))
+                     (return (mkfltn f)))))
+         nil))
 
 % The support procedures for coercing types                                
 (de coerce1 (x f)
   % Returns type tag of coerced X type and sets ArithArg[0] to be coerced X
   % Beware of ADD1/SUB1 cases, maybe can optimize later                    
   (prog (t1)
-	(setq t1 (tag x))
-	(case t1 ((negint-tag) (setq t1 posint-tag)) 
-	      ((fixnum-tag) 
-	       (progn (setq t1 posint-tag)
-		      (setq x (fixval (fixinf x))))))
-	(when (and (weq t1 posint-tag) (not (betarangep x)))
-	  (setq t1 bignum-tag)
-	  (setq x (sys2big x)))
-	(wputv arithargloc 0 x)
-	(return t1)))
+        (setq t1 (tag x))
+        (case t1 ((negint-tag) (setq t1 posint-tag)) 
+              ((fixnum-tag) 
+               (progn (setq t1 posint-tag)
+                      (setq x (fixval (fixinf x))))))
+        (when (and (weq t1 posint-tag) (not (betarangep x)))
+          (setq t1 bignum-tag)
+          (setq x (sys2big x)))
+        (wputv arithargloc 0 x)
+        (return t1)))
 
 (de coerce2 (x y f)
   % Returns type tag of strongest type and sets ArithArg[0] to be coerced X
   % and ArithArg[1] to coerced Y.                                          
   (prog (t1 t2 p c)
-	(setq t1 (tag x))
-	(case t1
+        (setq t1 (tag x))
+        (case t1
 	  ((negint-tag) (setq t1 posint-tag)) 
 	  ((fixnum-tag) 
 	   (progn (setq t1 posint-tag)
 		  (setq x (fixval (fixinf x))))))
-	(when (and (weq t1 posint-tag) (not (betarangep x)))
-	  (setq t1 bignum-tag)
-	  (setq x (sys2big x)))
-	(setq t2 (tag y))
-	(case t2
+        (when (and (weq t1 posint-tag) (not (betarangep x)))
+          (setq t1 bignum-tag)
+          (setq x (sys2big x)))
+        (setq t2 (tag y))
+        (case t2
 	  ((negint-tag) (setq t2 posint-tag)) 
 	  ((fixnum-tag) 
 	   (progn (setq t2 posint-tag)
 		  (setq y (fixval (fixinf y))))))
-	(when (and (weq t2 posint-tag) (not (betarangep y)))
-	  (setq t2 bignum-tag)
-	  (setq y (sys2big y)))
-	%% Verify that we have some kind of number, otherwise we signal
+        (when (and (weq t2 posint-tag) (not (betarangep y)))
+          (setq t2 bignum-tag)
+          (setq y (sys2big y)))
+        %% Verify that we have some kind of number, otherwise we signal
 	%% an error.
-	(cond ((or (wgreaterp t1 floatnum-tag) (wgreaterp t2 floatnum-tag))
+        (cond ((or (wgreaterp t1 floatnum-tag) (wgreaterp t2 floatnum-tag))
 	       (return (nonnumber2error x y f))))
-	(setf (wgetv arithargloc 0) x)
-	(setf (wgetv arithargloc 1) y)
-	(when (weq t1 t2)
-	  (return t1))
-	% no coercion to be done                                           
-	(cond ((wlessp t1 t2) % coerce first arg to second                  
-	       (progn (setq p (loc (wgetv arithargloc 0)))
-		      % P points to first (to be coerced)                  
-		      (setq c t2)
-		      % swap T1 and T2                                     
-		      (setq t2 t1)
-		      (setq t1 c)))
-	      (t (setq p (loc (wgetv arithargloc 1)))))
-	% P points to second                                               
-	(when (wgreaterp t1 floatnum-tag)
-	  (return (nonnumber2error x y f)))
-	% Here, since no 2 arg Arith Preds that accept 1 number, one not   
-	(case t1 
-	      ((floatnum-tag) 
-	       (case t2 
-		     ((posint-tag) 
-		      (setf (getmem p) (staticintfloat (getmem p))))
-		     ((bignum-tag) 
-		      (setf (getmem p) (floatfrombignum (getmem p))))))
-	      ((bignum-tag) (setf (getmem p) (sys2big (getmem p)))))
-	% @P must be SYSint                                                
-	(return t1)))
+        (setf (wgetv arithargloc 0) x)
+        (setf (wgetv arithargloc 1) y)
+        (when (weq t1 t2)
+          (return t1))
+        % no coercion to be done                                           
+        (cond ((wlessp t1 t2) % coerce first arg to second                  
+               (progn (setq p (loc (wgetv arithargloc 0)))
+                      % P points to first (to be coerced)                  
+                      (setq c t2)
+                      % swap T1 and T2                                     
+                      (setq t2 t1)
+                      (setq t1 c)))
+              (t (setq p (loc (wgetv arithargloc 1)))))
+        % P points to second                                               
+        (when (wgreaterp t1 floatnum-tag)
+          (return (nonnumber2error x y f)))
+        % Here, since no 2 arg Arith Preds that accept 1 number, one not   
+        (case t1 
+              ((floatnum-tag) 
+               (case t2 
+                     ((posint-tag) 
+                      (setf (getmem p) (staticintfloat (getmem p))))
+                     ((bignum-tag) 
+                      (setf (getmem p) (floatfrombignum (getmem p))))))
+              ((bignum-tag) (setf (getmem p) (sys2big (getmem p)))))
+        % @P must be SYSint                                                
+        (return t1)))
 
 (de staticintfloat (x)
   (!*wfloat (loc (wgetv staticfloatloc 1)) x)
@@ -378,15 +382,15 @@
 
 (de noninteger2error (x y f)
   (continuableerror 99 "Non-integer argument in arithmetic" 
-		    (list f (mkquote x) (mkquote y))))
+                    (list f (mkquote x) (mkquote y))))
 
 (de nonnumber1error (x f)
   (continuableerror 99 "Non-numeric argument in arithmetic" 
-		    (list f (mkquote x))))
+                    (list f (mkquote x))))
 
 (de nonnumber2error (x y f)
   (continuableerror 99 "Non-numeric argument in arithmetic" 
-		    (list f (mkquote x) (mkquote y))))
+                    (list f (mkquote x) (mkquote y))))
 
 % Now generate the entries for each operator                               
 (defarith2entry plus2 wplus2 floatplus2 bigplus2)
@@ -454,43 +458,72 @@
 
 (de lsh(x y) (lshift x y))
 
+(de logcount (x)
+    (case (wand (wplus2 (tag x) 1) 31)
+          ((0) (wlogcount (wnot x)))   % negint
+          ((1) (wlogcount x))          % posint
+          ((2) (progn                  % fixnum
+                  (setq x (fixval (fixinf x)))
+                  (if (wlessp x 0) (wlogcount (wnot x))
+                    (wlogcount x))))
+          ((3)   (biglogcount x))      % bignum
+          (nil   (continuableerror 99 "Non-integer argument to logcount" (list (mkquote x))))
+))
+
+(de wlogcount (x)
+  (if (eq x 0) 0                   % optimization
+    (let ((c (wconst 16#55555555)))
+      (setq x (wdifference x (wand (wshift x -1) c)))
+      (setq c (wconst 16#33333333))
+      (setq x (wplus2 (wand (wshift x -2) c) (wand x c)))
+      (setq c (wconst 16#0f0f0f0f))
+      (setq x (wand (wplus2 x (wshift x -4)) c))
+      (setq c (wconst 16#01010101))
+      (setq x (wtimes2 x c))
+      (setq x (wshift x -24))
+      % reuse c in this way to make sure that nothing is left on the stack
+      % that can be interpreted as a lisp object by the garbage collector.
+      (setq c 16#3f)
+      (wand x c))))
+
 (defarith1entry add1 iadd1 (lambda (x)
-				   (floatplus2 x '1.0)) bigadd1)
+                                   (floatplus2 x '1.0)) bigadd1)
 
 (defarith1entry sub1 isub1 (lambda (x)
-				   (floatdifference x '1.0)) bigsub1)
+                                   (floatdifference x '1.0)) bigsub1)
 
 (defarith1entry minus iminus 
 		(lambda (x)
 			(floatdifference '0.00000E+000 x)) bigminus)
 
 (defarith1entry fix (lambda (x)
-			    x) floatfix (lambda (x)
-						x))
+                            x) floatfix (lambda (x)
+                                                x))
 
 (de floatfix (x)
   (sys2int (!*wfix (floatbase (fltinf x)))))
 
 (de float (x)
   (case (tag x) ((posint-tag negint-tag) (intfloat x)) 
-	((fixnum-tag) (intfloat (fixval (fixinf x)))) 
-	((floatnum-tag) x) ((bignum-tag) (floatfrombignum x)) 
-	(nil (nonnumber1error x 'float))))
+        ((fixnum-tag) (intfloat (fixval (fixinf x)))) 
+        ((floatnum-tag) x)
+	((bignum-tag) (floatfrombignum x)) 
+        (nil (nonnumber1error x 'float))))
 
 (de intfloat (x)
   (prog (f)
-	(setq f (gtfltn))
-	(!*wfloat (floatbase f) x)
-	(return (mkfltn f))))
+        (setq f (gtfltn))
+        (!*wfloat (floatbase f) x)
+        (return (mkfltn f))))
 
 (defarithpred1entry minusp iminusp 
-		    (lambda (x)
-			    (floatlessp x '0.00000E+000)) bigminusp)
+                    (lambda (x)
+                            (floatlessp x '0.00000E+000)) bigminusp)
 
 (defarithpred1entry zerop izerop floatzerop returnnil)
 
 (defarithpred1entry onep ionep (lambda (x)
-				       (equal x '1.0)) returnnil)
+                                       (equal x '1.0)) returnnil)
 
 (de floatzerop (x) (and  (eq 0 (wshift (wshift (wgetv (inf x) 1) 1) -1))
 			 (eq 0 (wgetv (inf x) 2))))
