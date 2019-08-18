@@ -74,7 +74,7 @@ $(PL)/c2l.o: $(PXU)/c2l.c
 	as c2ltemp.s -o $(PL)/c2l.o
 	rm -f c2ltemp.s
 
-$(PL)/fc-indirect.b: $(PXU)/fc-indir.sl
+$(PL)/fc-indirect.b: $(PXU)/fc-indirect.sl
 	$(PDIST)/make-lap $(PXU) fc-indirect
 
 $(PL)/get-options.b: $(PXU)/get-options.sl

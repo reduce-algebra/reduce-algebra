@@ -7,7 +7,7 @@
 # Modified:
 # Mode:         Text
 # Package:      
-# Status:
+# Status:       Open Source: BSD License
 #
 # (c) Copyright 1982, University of Utah
 # %
