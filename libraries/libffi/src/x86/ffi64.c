@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
-   ffi64.c - Copyright (c) 2013  The Written Word, Inc.
-             Copyright (c) 2011  Anthony Green
+   ffi64.c - Copyright (c) 2011, 2018  Anthony Green
+             Copyright (c) 2013  The Written Word, Inc.
              Copyright (c) 2008, 2010  Red Hat, Inc.
              Copyright (c) 2002, 2007  Bo Thorsen <bo@suse.de>
 
@@ -282,7 +282,7 @@ classify_argument (ffi_type *type, enum x86_64_reg_class classes[],
 
 	    /* The X86_64_SSEUP_CLASS should be always preceded by
 	       X86_64_SSE_CLASS or X86_64_SSEUP_CLASS.  */
-	    if (classes[i] == X86_64_SSEUP_CLASS
+	    if (i > 1 && classes[i] == X86_64_SSEUP_CLASS
 		&& classes[i - 1] != X86_64_SSE_CLASS
 		&& classes[i - 1] != X86_64_SSEUP_CLASS)
 	      {
@@ -293,7 +293,7 @@ classify_argument (ffi_type *type, enum x86_64_reg_class classes[],
 
 	    /*  If X86_64_X87UP_CLASS isn't preceded by X86_64_X87_CLASS,
 		everything should be passed in memory.  */
-	    if (classes[i] == X86_64_X87UP_CLASS
+	    if (i > 1 && classes[i] == X86_64_X87UP_CLASS
 		&& (classes[i - 1] != X86_64_X87_CLASS))
 	      {
 		/* The first one should never be X86_64_X87UP_CLASS.  */
@@ -394,7 +394,7 @@ extern ffi_status
 ffi_prep_cif_machdep_efi64(ffi_cif *cif);
 #endif
 
-ffi_status
+ffi_status FFI_HIDDEN
 ffi_prep_cif_machdep (ffi_cif *cif)
 {
   int gprcount, ssecount, i, avn, ngpr, nsse;
@@ -404,7 +404,7 @@ ffi_prep_cif_machdep (ffi_cif *cif)
   ffi_type *rtype;
 
 #ifndef __ILP32__
-  if (cif->abi == FFI_EFI64)
+  if (cif->abi == FFI_EFI64 || cif->abi == FFI_GNUW64)
     return ffi_prep_cif_machdep_efi64(cif);
 #endif
   if (cif->abi != FFI_UNIX64)
@@ -677,8 +677,11 @@ void
 ffi_call (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
 #ifndef __ILP32__
-  if (cif->abi == FFI_EFI64)
-    return ffi_call_efi64(cif, fn, rvalue, avalue);
+  if (cif->abi == FFI_EFI64 || cif->abi == FFI_GNUW64)
+    {
+      ffi_call_efi64(cif, fn, rvalue, avalue);
+      return;
+    }
 #endif
   ffi_call_int (cif, fn, rvalue, avalue, NULL);
 }
@@ -694,8 +697,11 @@ ffi_call_go (ffi_cif *cif, void (*fn)(void), void *rvalue,
 	     void **avalue, void *closure)
 {
 #ifndef __ILP32__
-  if (cif->abi == FFI_EFI64)
-    ffi_call_go_efi64(cif, fn, rvalue, avalue, closure);
+  if (cif->abi == FFI_EFI64 || cif->abi == FFI_GNUW64)
+    {
+      ffi_call_go_efi64(cif, fn, rvalue, avalue, closure);
+      return;
+    }
 #endif
   ffi_call_int (cif, fn, rvalue, avalue, closure);
 }
@@ -732,7 +738,7 @@ ffi_prep_closure_loc (ffi_closure* closure,
   char *tramp = closure->tramp;
 
 #ifndef __ILP32__
-  if (cif->abi == FFI_EFI64)
+  if (cif->abi == FFI_EFI64 || cif->abi == FFI_GNUW64)
     return ffi_prep_closure_loc_efi64(closure, cif, fun, user_data, codeloc);
 #endif
   if (cif->abi != FFI_UNIX64)
@@ -860,7 +866,7 @@ ffi_prep_go_closure (ffi_go_closure* closure, ffi_cif* cif,
 		     void (*fun)(ffi_cif*, void*, void**, void*))
 {
 #ifndef __ILP32__
-  if (cif->abi == FFI_EFI64)
+  if (cif->abi == FFI_EFI64 || cif->abi == FFI_GNUW64)
     return ffi_prep_go_closure_efi64(closure, cif, fun);
 #endif
   if (cif->abi != FFI_UNIX64)

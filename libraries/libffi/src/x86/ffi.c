@@ -29,7 +29,7 @@
    DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
-#ifndef __x86_64__
+#if defined(__i386__) || defined(_M_IX86)
 #include <ffi.h>
 #include <ffi_common.h>
 #include <stdint.h>
@@ -177,7 +177,12 @@ ffi_prep_cif_machdep(ffi_cif *cif)
       bytes = FFI_ALIGN (bytes, t->alignment);
       bytes += FFI_ALIGN (t->size, FFI_SIZEOF_ARG);
     }
+#if defined(_MSC_VER) && defined(_M_IX86)
+  // stack is not 16-bit aligned on Windows
+  cif->bytes = bytes;
+#else
   cif->bytes = FFI_ALIGN (bytes, 16);
+#endif
 
   return FFI_OK;
 }
@@ -345,6 +350,15 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue,
 	  size_t za = FFI_ALIGN (z, FFI_SIZEOF_ARG);
 	  size_t align = FFI_SIZEOF_ARG;
 
+	  /* Issue 434: For thiscall and fastcall, if the paramter passed
+	     as 64-bit integer or struct, all following integer paramters
+	     will be passed on stack.  */
+	  if ((cabi == FFI_THISCALL || cabi == FFI_FASTCALL)
+	      && (t == FFI_TYPE_SINT64
+		  || t == FFI_TYPE_UINT64
+		  || t == FFI_TYPE_STRUCT))
+	    narg_reg = 2;
+
 	  /* Alignment rules for arguments are quite complex.  Vectors and
 	     structures with 16 byte alignment get it.  Note that long double
 	     on Darwin does have 16 byte alignment, and does not get this
@@ -475,6 +489,15 @@ ffi_closure_inner (struct closure_frame *frame, char *stack)
 	  if (t == FFI_TYPE_STRUCT && ty->alignment >= 16)
 	    align = 16;
 
+	  /* Issue 434: For thiscall and fastcall, if the paramter passed
+	     as 64-bit integer or struct, all following integer paramters
+	     will be passed on stack.  */
+	  if ((cabi == FFI_THISCALL || cabi == FFI_FASTCALL)
+	      && (t == FFI_TYPE_SINT64
+		  || t == FFI_TYPE_UINT64
+		  || t == FFI_TYPE_STRUCT))
+	    narg_reg = 2;
+
 	  if (dir < 0)
 	    {
 	      /* ??? These reverse argument ABIs are probably too old
@@ -527,6 +550,7 @@ ffi_prep_closure_loc (ffi_closure* closure,
     case FFI_REGISTER:
       dest = ffi_closure_REGISTER;
       op = 0x68;  /* pushl imm */
+      break;
     default:
       return FFI_BAD_ABI;
     }
@@ -732,4 +756,4 @@ ffi_raw_call(ffi_cif *cif, void (*fn)(void), void *rvalue, ffi_raw *avalue)
   ffi_call_i386 (frame, stack);
 }
 #endif /* !FFI_NO_RAW_API */
-#endif /* !__x86_64__ */
+#endif /* __i386__ */

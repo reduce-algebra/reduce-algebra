@@ -34,6 +34,82 @@
 #include <ffi.h>
 #include <ffi_common.h>
 
+#ifdef __NetBSD__
+#include <sys/param.h>
+#endif
+
+#if __NetBSD_Version__ - 0 >= 799007200
+/* NetBSD with PROT_MPROTECT */
+#include <sys/mman.h>
+
+#include <stddef.h>
+#include <unistd.h>
+
+static const size_t overhead =
+  (sizeof(max_align_t) > sizeof(void *) + sizeof(size_t)) ?
+    sizeof(max_align_t)
+    : sizeof(void *) + sizeof(size_t);
+
+#define ADD_TO_POINTER(p, d) ((void *)((uintptr_t)(p) + (d)))
+
+void *
+ffi_closure_alloc (size_t size, void **code)
+{
+  static size_t page_size;
+  size_t rounded_size;
+  void *codeseg, *dataseg;
+  int prot;
+
+  /* Expect that PAX mprotect is active and a separate code mapping is necessary. */
+  if (!code)
+    return NULL;
+
+  /* Obtain system page size. */
+  if (!page_size)
+    page_size = sysconf(_SC_PAGESIZE);
+
+  /* Round allocation size up to the next page, keeping in mind the size field and pointer to code map. */
+  rounded_size = (size + overhead + page_size - 1) & ~(page_size - 1);
+
+  /* Primary mapping is RW, but request permission to switch to PROT_EXEC later. */
+  prot = PROT_READ | PROT_WRITE | PROT_MPROTECT(PROT_EXEC);
+  dataseg = mmap(NULL, rounded_size, prot, MAP_ANON | MAP_PRIVATE, -1, 0);
+  if (dataseg == MAP_FAILED)
+    return NULL;
+
+  /* Create secondary mapping and switch it to RX. */
+  codeseg = mremap(dataseg, rounded_size, NULL, rounded_size, MAP_REMAPDUP);
+  if (codeseg == MAP_FAILED) {
+    munmap(dataseg, rounded_size);
+    return NULL;
+  }
+  if (mprotect(codeseg, rounded_size, PROT_READ | PROT_EXEC) == -1) {
+    munmap(codeseg, rounded_size);
+    munmap(dataseg, rounded_size);
+    return NULL;
+  }
+
+  /* Remember allocation size and location of the secondary mapping for ffi_closure_free. */
+  memcpy(dataseg, &rounded_size, sizeof(rounded_size));
+  memcpy(ADD_TO_POINTER(dataseg, sizeof(size_t)), &codeseg, sizeof(void *));
+  *code = ADD_TO_POINTER(codeseg, overhead);
+  return ADD_TO_POINTER(dataseg, overhead);
+}
+
+void
+ffi_closure_free (void *ptr)
+{
+  void *codeseg, *dataseg;
+  size_t rounded_size;
+
+  dataseg = ADD_TO_POINTER(ptr, -overhead);
+  memcpy(&rounded_size, dataseg, sizeof(rounded_size));
+  memcpy(&codeseg, ADD_TO_POINTER(dataseg, sizeof(size_t)), sizeof(void *));
+  munmap(dataseg, rounded_size);
+  munmap(codeseg, rounded_size);
+}
+#else /* !NetBSD with PROT_MPROTECT */
+
 #if !FFI_MMAP_EXEC_WRIT && !FFI_EXEC_TRAMPOLINE_TABLE
 # if __linux__ && !defined(__ANDROID__)
 /* This macro indicates it may be forbidden to map anonymous memory
@@ -46,7 +122,7 @@
 #  define FFI_MMAP_EXEC_WRIT 1
 #  define HAVE_MNTENT 1
 # endif
-# if defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)
+# if defined(X86_WIN32) || defined(X86_WIN64) || defined(_M_ARM64) || defined(__OS2__)
 /* Windows systems may have Data Execution Protection (DEP) enabled, 
    which requires the use of VirtualMalloc/VirtualFree to alloc/free
    executable memory. */
@@ -96,7 +172,7 @@ struct ffi_trampoline_table
 
 struct ffi_trampoline_table_entry
 {
-  void *(*trampoline) ();
+  void *(*trampoline) (void);
   ffi_trampoline_table_entry *next;
 };
 
@@ -309,7 +385,7 @@ ffi_closure_free (void *ptr)
 #endif
 #include <string.h>
 #include <stdio.h>
-#if !defined(X86_WIN32) && !defined(X86_WIN64)
+#if !defined(X86_WIN32) && !defined(X86_WIN64) && !defined(_M_ARM64)
 #ifdef HAVE_MNTENT
 #include <mntent.h>
 #endif /* HAVE_MNTENT */
@@ -435,7 +511,7 @@ static int dlmalloc_trim(size_t) MAYBE_UNUSED;
 static size_t dlmalloc_usable_size(void*) MAYBE_UNUSED;
 static void dlmalloc_stats(void) MAYBE_UNUSED;
 
-#if !(defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)) || defined (__CYGWIN__) || defined(__INTERIX)
+#if !(defined(X86_WIN32) || defined(X86_WIN64) || defined(_M_ARM64) || defined(__OS2__)) || defined (__CYGWIN__) || defined(__INTERIX)
 /* Use these for mmap and munmap within dlmalloc.c.  */
 static void *dlmmap(void *, size_t, int, int, int, off_t);
 static int dlmunmap(void *, size_t);
@@ -449,7 +525,7 @@ static int dlmunmap(void *, size_t);
 #undef mmap
 #undef munmap
 
-#if !(defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)) || defined (__CYGWIN__) || defined(__INTERIX)
+#if !(defined(X86_WIN32) || defined(X86_WIN64) || defined(_M_ARM64) || defined(__OS2__)) || defined (__CYGWIN__) || defined(__INTERIX)
 
 /* A mutex used to synchronize access to *exec* variables in this file.  */
 static pthread_mutex_t open_temp_exec_file_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -647,6 +723,36 @@ open_temp_exec_file (void)
   return fd;
 }
 
+/* We need to allocate space in a file that will be backing a writable
+   mapping.  Several problems exist with the usual approaches:
+   - fallocate() is Linux-only
+   - posix_fallocate() is not available on all platforms
+   - ftruncate() does not allocate space on filesystems with sparse files
+   Failure to allocate the space will cause SIGBUS to be thrown when
+   the mapping is subsequently written to.  */
+static int
+allocate_space (int fd, off_t offset, off_t len)
+{
+  static size_t page_size;
+
+  /* Obtain system page size. */
+  if (!page_size)
+    page_size = sysconf(_SC_PAGESIZE);
+
+  unsigned char buf[page_size];
+  memset (buf, 0, page_size);
+
+  while (len > 0)
+    {
+      off_t to_write = (len < page_size) ? len : page_size;
+      if (write (fd, buf, to_write) < to_write)
+        return -1;
+      len -= to_write;
+    }
+
+  return 0;
+}
+
 /* Map in a chunk of memory from the temporary exec file into separate
    locations in the virtual memory address space, one writable and one
    executable.  Returns the address of the writable portion, after
@@ -668,7 +774,7 @@ dlmmap_locked (void *start, size_t length, int prot, int flags, off_t offset)
 
   offset = execsize;
 
-  if (ftruncate (execfd, offset + length))
+  if (allocate_space (execfd, offset, length))
     return MFAIL;
 
   flags &= ~(MAP_PRIVATE | MAP_ANONYMOUS);
@@ -790,7 +896,7 @@ segment_holding_code (mstate m, char* addr)
 }
 #endif
 
-#endif /* !(defined(X86_WIN32) || defined(X86_WIN64) || defined(__OS2__)) || defined (__CYGWIN__) || defined(__INTERIX) */
+#endif /* !(defined(X86_WIN32) || defined(X86_WIN64) || defined(_M_ARM64) || defined(__OS2__)) || defined (__CYGWIN__) || defined(__INTERIX) */
 
 /* Allocate a chunk of memory with the given size.  Returns a pointer
    to the writable address, and sets *CODE to the executable
@@ -813,6 +919,13 @@ ffi_closure_alloc (size_t size, void **code)
     }
 
   return ptr;
+}
+
+void *
+ffi_data_to_code_pointer (void *data)
+{
+  msegmentptr seg = segment_holding (gm, data);
+  return add_segment_exec_offset (data, seg);
 }
 
 /* Release a chunk of memory allocated with ffi_closure_alloc.  If
@@ -854,5 +967,13 @@ ffi_closure_free (void *ptr)
   free (ptr);
 }
 
+void *
+ffi_data_to_code_pointer (void *data)
+{
+  return data;
+}
+
 # endif /* ! FFI_MMAP_EXEC_WRIT */
 #endif /* FFI_CLOSURES */
+
+#endif /* NetBSD with PROT_MPROTECT */

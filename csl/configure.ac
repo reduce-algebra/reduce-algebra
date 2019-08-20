@@ -567,7 +567,7 @@ then
   fi
   if test "x$xft_found" != "xyes"
   then
-    AC_MSG_ERROR([On non-Windows platforms the Xft library development files are required])
+    AC_MSG_NOTICE([On non-Windows platforms the Xft library development files are required])
   fi
 fi
 

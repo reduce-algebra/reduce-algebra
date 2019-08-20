@@ -64,7 +64,7 @@
 #endif
 
 /* MinGW kludge.  */
-#ifdef _WIN64
+#if defined(_WIN64) | defined(_WIN32)
 #define PRIdLL "I64d"
 #define PRIuLL "I64u"
 #else
@@ -124,11 +124,13 @@
 
 /* MSVC kludge.  */
 #if defined _MSC_VER
+#if !defined(__cplusplus) || defined(__STDC_FORMAT_MACROS)
 #define PRIuPTR "lu"
 #define PRIu8 "u"
 #define PRId8 "d"
 #define PRIu64 "I64u"
 #define PRId64 "I64d"
+#endif
 #endif
 
 #ifndef PRIuPTR

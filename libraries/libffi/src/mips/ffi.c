@@ -29,6 +29,7 @@
 #include <ffi.h>
 #include <ffi_common.h>
 
+#include <stdint.h>
 #include <stdlib.h>
 
 #ifdef __GNUC__
@@ -322,9 +323,10 @@ calc_n32_return_struct_flags(int soft_float, ffi_type *arg)
 #endif
 
 /* Perform machine dependent cif processing */
-ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
+static ffi_status ffi_prep_cif_machdep_int(ffi_cif *cif, unsigned nfixedargs)
 {
   cif->flags = 0;
+  cif->mips_nfixedargs = nfixedargs;
 
 #ifdef FFI_MIPS_O32
   /* Set the flags necessary for O32 processing.  FFI_O32_SOFT_FLOAT
@@ -333,7 +335,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 
   if (cif->rtype->type != FFI_TYPE_STRUCT && cif->abi == FFI_O32)
     {
-      if (cif->nargs > 0)
+      if (cif->nargs > 0 && cif->nargs == nfixedargs)
 	{
 	  switch ((cif->arg_types)[0]->type)
 	    {
@@ -450,7 +452,9 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     while (count-- > 0 && arg_reg < 8)
       {
 	type = (cif->arg_types)[index]->type;
-	if (soft_float)
+
+	// Pass variadic arguments in integer registers even if they're floats
+	if (soft_float || index >= nfixedargs)
 	  {
 	    switch (type)
 	      {
@@ -476,7 +480,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
             /* Align it.  */
             arg_reg = FFI_ALIGN(arg_reg, 2);
             /* Treat it as two adjacent doubles.  */
-	    if (soft_float) 
+	    if (soft_float || index >= nfixedargs)
 	      {
 		arg_reg += 2;
 	      }
@@ -493,7 +497,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 
 	  case FFI_TYPE_STRUCT:
             loc = arg_reg * FFI_SIZEOF_ARG;
-	    cif->flags += calc_n32_struct_flags(soft_float,
+	    cif->flags += calc_n32_struct_flags(soft_float || index >= nfixedargs,
 						(cif->arg_types)[index],
 						&loc, &arg_reg);
 	    break;
@@ -576,6 +580,18 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 #endif
   
   return FFI_OK;
+}
+
+ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
+{
+    return ffi_prep_cif_machdep_int(cif, cif->nargs);
+}
+
+ffi_status ffi_prep_cif_machdep_var(ffi_cif *cif,
+                                    unsigned nfixedargs,
+                                    unsigned ntotalargs MAYBE_UNUSED)
+{
+    return ffi_prep_cif_machdep_int(cif, nfixedargs);
 }
 
 /* Low level routine for calling O32 functions */
@@ -715,7 +731,11 @@ ffi_prep_closure_loc (ffi_closure *closure,
   /* lui  $12,high(codeloc) */
   tramp[2] = 0x3c0c0000 | ((unsigned)codeloc >> 16);
   /* jr   $25          */
+#if !defined(__mips_isa_rev) || (__mips_isa_rev<6)
   tramp[3] = 0x03200008;
+#else
+  tramp[3] = 0x03200009;
+#endif
   /* ori  $12,low(codeloc)  */
   tramp[4] = 0x358c0000 | ((unsigned)codeloc & 0xffff);
 #else
@@ -743,7 +763,11 @@ ffi_prep_closure_loc (ffi_closure *closure,
   /* ori  $25,low(fn)  */
   tramp[10] = 0x37390000 | ((unsigned long)fn  & 0xffff);
   /* jr   $25          */
+#if !defined(__mips_isa_rev) || (__mips_isa_rev<6)
   tramp[11] = 0x03200008;
+#else
+  tramp[11] = 0x03200009;
+#endif
   /* ori  $12,low(codeloc)  */
   tramp[12] = 0x358c0000 | ((unsigned long)codeloc & 0xffff);
 
@@ -793,13 +817,14 @@ ffi_closure_mips_inner_O32 (ffi_cif *cif,
   avalue = alloca (cif->nargs * sizeof (ffi_arg));
   avaluep = alloca (cif->nargs * sizeof (ffi_arg));
 
-  seen_int = (cif->abi == FFI_O32_SOFT_FLOAT);
+  seen_int = (cif->abi == FFI_O32_SOFT_FLOAT) || (cif->mips_nfixedargs != cif->nargs);
   argn = 0;
 
   if ((cif->flags >> (FFI_FLAG_BITS * 2)) == FFI_TYPE_STRUCT)
     {
-      rvalue = (void *)(UINT32)ar[0];
+      rvalue = (void *)(uintptr_t)ar[0];
       argn = 1;
+      seen_int = 1;
     }
 
   i = 0;
@@ -808,6 +833,8 @@ ffi_closure_mips_inner_O32 (ffi_cif *cif,
 
   while (i < avn)
     {
+      if (arg_types[i]->alignment == 8 && (argn & 0x1))
+        argn++;
       if (i < 2 && !seen_int &&
 	  (arg_types[i]->type == FFI_TYPE_FLOAT ||
 	   arg_types[i]->type == FFI_TYPE_DOUBLE ||
@@ -822,8 +849,6 @@ ffi_closure_mips_inner_O32 (ffi_cif *cif,
 	}
       else
 	{
-	  if (arg_types[i]->alignment == 8 && (argn & 0x1))
-	    argn++;
 	  switch (arg_types[i]->type)
 	    {
 	      case FFI_TYPE_SINT8:
@@ -973,8 +998,8 @@ ffi_closure_mips_inner_N32 (ffi_cif *cif,
 	  || arg_types[i]->type == FFI_TYPE_DOUBLE
 	  || arg_types[i]->type == FFI_TYPE_LONGDOUBLE)
         {
-          argp = (argn >= 8 || soft_float) ? ar + argn : fpr + argn;
-          if ((arg_types[i]->type == FFI_TYPE_LONGDOUBLE) && ((unsigned)argp & (arg_types[i]->alignment-1)))
+          argp = (argn >= 8 || i >= cif->mips_nfixedargs || soft_float) ? ar + argn : fpr + argn;
+          if ((arg_types[i]->type == FFI_TYPE_LONGDOUBLE) && ((uintptr_t)argp & (arg_types[i]->alignment-1)))
             {
               argp=(ffi_arg*)FFI_ALIGN(argp,arg_types[i]->alignment);
               argn++;
@@ -1042,7 +1067,7 @@ ffi_closure_mips_inner_N32 (ffi_cif *cif,
                      it was passed in registers.  */
                   avaluep[i] = alloca(arg_types[i]->size);
                   copy_struct_N32(avaluep[i], 0, cif->abi, arg_types[i],
-                                  argn, 0, ar, fpr, soft_float);
+                                  argn, 0, ar, fpr, i >= cif->mips_nfixedargs || soft_float);
 
                   break;
                 }

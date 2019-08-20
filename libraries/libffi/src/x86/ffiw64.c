@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
-   ffiw64.c - Copyright (c) 2014 Red Hat, Inc.
+   ffiw64.c - Copyright (c) 2018 Anthony Green
+              Copyright (c) 2014 Red Hat, Inc.
 
    x86 win64 Foreign Function Interface
 
@@ -24,6 +25,7 @@
    DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
+#if defined(__x86_64__) || defined(_M_AMD64)
 #include <ffi.h>
 #include <ffi_common.h>
 #include <stdlib.h>
@@ -32,7 +34,7 @@
 #ifdef X86_WIN64
 #define EFI64(name) name
 #else
-#define EFI64(name) name##_efi64
+#define EFI64(name) FFI_HIDDEN name##_efi64
 #endif
 
 struct win64_call_frame
@@ -47,13 +49,19 @@ struct win64_call_frame
 extern void ffi_call_win64 (void *stack, struct win64_call_frame *,
 			    void *closure) FFI_HIDDEN;
 
-ffi_status
+ffi_status FFI_HIDDEN
 EFI64(ffi_prep_cif_machdep)(ffi_cif *cif)
 {
   int flags, n;
 
-  if (cif->abi != FFI_WIN64)
-    return FFI_BAD_ABI;
+  switch (cif->abi)
+    {
+    case FFI_WIN64:
+    case FFI_GNUW64:
+      break;
+    default:
+      return FFI_BAD_ABI;
+    }
 
   flags = cif->rtype->type;
   switch (flags)
@@ -61,7 +69,9 @@ EFI64(ffi_prep_cif_machdep)(ffi_cif *cif)
     default:
       break;
     case FFI_TYPE_LONGDOUBLE:
-      flags = FFI_TYPE_STRUCT;
+      /* GCC returns long double values by reference, like a struct */
+      if (cif->abi == FFI_GNUW64)
+	flags = FFI_TYPE_STRUCT;
       break;
     case FFI_TYPE_COMPLEX:
       flags = FFI_TYPE_STRUCT;
@@ -106,7 +116,7 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue,
   size_t rsize;
   struct win64_call_frame *frame;
 
-  FFI_ASSERT(cif->abi == FFI_WIN64);
+  FFI_ASSERT(cif->abi == FFI_GNUW64 || cif->abi == FFI_WIN64);
 
   flags = cif->flags;
   rsize = 0;
@@ -196,8 +206,14 @@ EFI64(ffi_prep_closure_loc)(ffi_closure* closure,
   };
   char *tramp = closure->tramp;
 
-  if (cif->abi != FFI_WIN64)
-    return FFI_BAD_ABI;
+  switch (cif->abi)
+    {
+    case FFI_WIN64:
+    case FFI_GNUW64:
+      break;
+    default:
+      return FFI_BAD_ABI;
+    }
 
   memcpy (tramp, trampoline, sizeof(trampoline));
   *(UINT64 *)(tramp + 16) = (uintptr_t)ffi_closure_win64;
@@ -213,8 +229,14 @@ ffi_status
 EFI64(ffi_prep_go_closure)(ffi_go_closure* closure, ffi_cif* cif,
 		     void (*fun)(ffi_cif*, void*, void**, void*))
 {
-  if (cif->abi != FFI_WIN64)
-    return FFI_BAD_ABI;
+  switch (cif->abi)
+    {
+    case FFI_WIN64:
+    case FFI_GNUW64:
+      break;
+    default:
+      return FFI_BAD_ABI;
+    }
 
   closure->tramp = ffi_go_closure_win64;
   closure->cif = cif;
@@ -285,3 +307,5 @@ ffi_closure_win64_inner(ffi_cif *cif,
   fun (cif, rvalue, avalue, user_data);
   return flags;
 }
+
+#endif /* __x86_64__ */

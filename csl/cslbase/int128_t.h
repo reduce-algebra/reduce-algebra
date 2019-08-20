@@ -91,10 +91,10 @@ inline int128_t ASR128(int128_t a, int n)
 #else // SIGNED_SHIFTS_ARE_ARITHMETIC
 
 inline int128_t ASR128(int128_t a, int n)
-{   if (n<0 || n>=sizeof(uint128_t)) n = 0;
+{   if (n<0 || n>=(int)sizeof(uint128_t)) n = 0;
     uint128_t r = ((uint128_t)a) >> n;
     uint128_t signbit = ((uint128_t)a) >> (8*sizeof(uint128_t)-1);
-    if (n != 0) r |= ((-signbit) << (8*sizeof(uint128_t) - n);
+    if (n != 0) r |= ((-signbit) << (8*sizeof(uint128_t) - n));
     return (int128_t)r;
 }
 
