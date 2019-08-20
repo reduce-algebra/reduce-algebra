@@ -1,6 +1,5 @@
 module brsltnt_bmap.red;
 
-%%%%%%%%%%%%%%% THERE IS STILL A SIGN PROBLEM !!!!!!!!!!!!!!!!!!!!!!!! ???????
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -55,7 +54,6 @@ symbolic procedure bb!:bezout_resultant(u, v, w);
      n := ldeg v - ldeg u;
      if n < 0 then return multd((-1)**(ldeg u*ldeg v),
                                 bb!:bezout_resultant(v, u, w));
-     ep := 1;
      nm := ldeg v;
      uh := lc u;
      vh := lc v;
@@ -117,21 +115,21 @@ symbolic procedure !*sf2exbb(u, v);
     else if degr(u, v) = 0 then 1 .* u .+ nil
     else lshift(1, ldeg u) .* lc u .+ !*sf2exbb(red u, v);
 
-symbolic procedure bb!:extmult(u, v);
-   % u is a 1-form, v an arbitray form.
+symbolic procedure bb!:extmult_ (u, v);
+   % u is a 1-form, v an arbitrary form.
    begin scalar eptr, r, res, v0, x, y, z;
      r := nil . nil;
      res := nil . nil;
      a0: rplacd(r, nil);
          eptr := r;
          v0 := v;
-        x := lpow u;
+         x := lpow u;
      a: y := lpow v0;
-        if logand(x, y) = 0 
-           then <<z := if oddp logcount logand(y, sub1 x) 
-                          then negf lc u else lc u;
+        if land(x, y) = 0 
+           then <<z := if evenp logcount land(y, sub1 x) 
+                          then lc u else negf lc u;
                   z := multf(z, lc v0);
-                  eptr := cdr rplacd(eptr, logor(x, y) .* z .+ nil)>>;
+                  eptr := cdr rplacd(eptr, lor(x, y) .* z .+ nil)>>;
         if v0 := red v0 then go to a;
         bb!:extaddip(res, cdr r); 
         if u := red u then go to a0;
@@ -158,6 +156,66 @@ symbolic procedure bb!:extaddip(u, v);
         go to a
    end;
 
+symbolic procedure bb!:extmult(u, v);
+   % u is a 1-form, v an arbitrary form.
+   % rf is a finger to the position where we have to start to accumulate.
+   begin scalar lc1, res, rf, rrp, rp, x, y, z;
+     res := rp := nil . nil;
+     x := lpow u;
+     lc1 := lc u;
+
+     for each q on v do
+       if land(x, y := lpow q) = 0
+          then rp := cdr rplacd(rp, lor(x, y) .* 
+                                    multf(if evenp logcount land(y, sub1 x) 
+                                             then lc1 else negf lc1, lc q)
+                                    .+ nil);
+
+     rf := if land(x, lpow v) = 0 then cdr res else res;
+
+     for each p on red u do
+        <<x := lpow p;
+          lc1 := lc p;
+          rp := rf;
+          if land(x, y := lpow v) = 0 then
+             begin
+               z := multf(if evenp logcount land(y, sub1 x) 
+                             then lc1 else negf lc1, lc v);
+               a: rrp := red rp;
+                  if null rrp 
+                     then rp := red rplacd(rp, lor(x, y) .* z .+ nil)
+                   else if lor(x, y) = lpow rrp
+                     then if z := addf(lc rrp, z)
+                             then <<rplacd(lt rrp, z); rp := rrp>>
+                           else rplacd(rp, red rrp)
+                   else if bb!:ordexp(lor(x, y), lpow rrp)
+                     then rp := rplaca(rplacd(rrp, lt rrp . red rrp),
+                                       lor(x, y) .* z)
+                   else <<rp := rrp; go to a>>;
+             end;
+
+          rf := rp;
+
+          for each q on red v do
+             if land(x, y := lpow q) = 0 then
+                begin
+                  z := multf(if evenp logcount land(y, sub1 x) 
+                                then lc1 else negf lc1, lc q);
+                  a: rrp := red rp;
+                     if null rrp 
+                        then rp := red rplacd(rp, lor(x, y) .* z .+ nil)
+                      else if lor(x, y) = lpow rrp
+                        then if z := addf(lc rrp, z)
+                                then <<rplacd(lt rrp, z); rp := rrp>>
+                              else rplacd(rp, red rrp)
+                      else if bb!:ordexp(lor(x, y), lpow rrp)
+                        then rp := rplaca(rplacd(rrp, lt rrp . red rrp),
+                                          lor(x, y) .* z)
+                      else <<rp := rrp; go to a>>;
+                end>>;
+     return cdr res
+    end;
+ 
 symbolic procedure bb!:comfac u;
    begin scalar !*ezgcd,x;
      !*ezgcd := t;
@@ -174,14 +232,14 @@ symbolic procedure bb!:cquot(u,v);
 
 symbolic procedure bb!:ctrialdiv(u,v); 
    begin
-     while u and quotf1(u, v) do u := red u;
-     return if null u then t else nil
+     while u and quotf1(lc u, v) do u := red u;
+     return null u
    end;
 
 symbolic procedure bb!:try_previous_factors(u, v);
    begin scalar b;
      a: if b := bb!:ctrialdiv(u, caar v) 
-           then for each x on u do rplacd(lt x, quotf1(lc x, v));
+           then for each x on u do rplacd(lt x, quotf1(lc x, caar v));
         if null b then if v := cdr v then go to a else return;
         rplacd(car v, cdar v + 1);
         go to a;
@@ -190,8 +248,8 @@ symbolic procedure bb!:try_previous_factors(u, v);
 symbolic procedure bb!:fac!-merge(u, v);
    begin scalar x;
      x := if !*bezout_try_fac then fctrf u else {1, u . 1};
-      return if null cdr v then multf(car x, car v) . cdr x
-              else multf(car x, car v) . bb!:fac!-merge2(cdr x, cdr v)
+     return if null cdr v then multf(car x, car v) . cdr x
+             else multf(car x, car v) . bb!:fac!-merge2(cdr x, cdr v)
    end;
 
 symbolic procedure bb!:fac!-merge2(u, v);
