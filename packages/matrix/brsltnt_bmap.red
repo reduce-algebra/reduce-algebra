@@ -36,7 +36,7 @@ module brsltnt_bmap.red;
 % iii) Calculating the sign for multiplying a 1-form base to an arbitray base 
 % form is accomplished by logcount.
 
-fluid '(!*bezout_try_fac);
+fluid '(!*bezout_try_fac !*bezout_try_gcd);
 
 inline procedure bb!:ordexp(u, v); u > v;
 
@@ -62,7 +62,7 @@ symbolic procedure bb!:bezout_resultant(u, v, w);
      cuh := uh;
      cvh := vh;
      cxf := '(1);
-     if (cx := gcdf!*(uh, vh)) neq 1 
+     if !*bezout_try_gcd and ((cx := gcdf!*(uh, vh)) neq 1) 
         then <<cxf := bb!:fac!-merge(cx, cxf);
                uh := quotf1(uh, cx);
                vh := quotf1(vh, cx)>>;
@@ -72,16 +72,18 @@ symbolic procedure bb!:bezout_resultant(u, v, w);
      for j := (nm - 1) step -1 until (n + 1) do
         <<if degr(ut, w) = j then
              <<uh := addf(lc ut, multf(!*k2f w, uh));
-               if null(cuh = 1 or cvh = 1) then cuh := gcdf!*(lc ut, cuh);
+               if !*bezout_try_gcd and null(cuh = 1 or cvh = 1) 
+                  then cuh := gcdf!*(lc ut, cuh);
                ut := red ut>>
            else uh := multf(!*k2f w, uh);
           if degr(vt, w) = j then
              <<vh := addf(lc vt, multf(!*k2f w, vh));
-               if null(cuh = 1 or cvh = 1) then cvh := gcdf!*(lc vt, cvh);
+               if !*bezout_try_gcd and null(cuh = 1 or cvh = 1) 
+                  then cvh := gcdf!*(lc vt, cvh);
                vt := red vt>>
            else vh := multf(!*k2f w, vh);
 
-          if (cx := gcdf!*(cuh, cvh)) neq 1 
+          if !*bezout_try_gcd and ((cx := gcdf!*(cuh, cvh)) neq 1)
              then <<cxf := bb!:fac!-merge(cx, cxf);
                     uh := quotf1(uh, cx);
                     vh := quotf1(vh, cx)>>;
@@ -270,7 +272,8 @@ symbolic procedure bb!:fac!-merge2(u, v);
 
 symbolic procedure bb!:normalize(u, v);
    begin scalar cx;
-     if (cx := bb!:comfac u) = 1 then return v;
+     if null !*bezout_try_gcd or ((cx := bb!:comfac u) = 1) 
+        then return v;
      v := bb!:fac!-merge(cx, v);
      bb!:cquot(u, cx);
      return v
