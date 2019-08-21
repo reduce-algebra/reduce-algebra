@@ -322,29 +322,25 @@ inline int nlz(uint64_t x)
 extern std::mutex gc_mutex;
 extern uintptr_t gc_and_allocate(uintptr_t r, size_t n);
 
+// Note that I use4 memory_order_relaxed with the atomic loads here. This
+// means that I can have one thread performing the load in an apparently
+// odd order relative to the increment. However in this code Alimit will
+// not change except during garbage collection, and when garbage collection
+// all threads will synchronize - so at that point I will need to ensure that
+// if the thread that actually performs garbage collection updates Alimit
+// (eg to point into a new region of memory) that all threads will know to
+// re-load Alimit. I think that ll this can be done within the code for
+// gc_and_allocate.
+
 inline LispObject get_n_bytes(size_t n)
 {   size_t n1 = doubleword_align_up(n);
 // The next two lines will need lengthy discussion if only so I understand
 // what I need to do after them.
-    uintptr_t limit = Alimit.load();
-    uintptr_t result = Afringe.fetch_add(n1);
+    uintptr_t limit = Alimit.load(std::memory_order_relaxed);
+    uintptr_t result = Afringe.fetch_add(n1, std::memory_order_relaxed);
 // The above updated Afringe in an atomic manner, so that if multiple
 // threads perform this operation concurrently each will get a result
-// corresponding to a distinct chunk of memory. The worry at this stage
-// is that Afringe and Alimit might be changed by some other thread after
-// Alimit was loaded. Well if the other thread takes its simple path
-// all will be well, because all that can happen is that the other thread
-// increments Afringe so the space that gets allocated here is at a higher
-// address. The messy situation would be if the other thread called
-// gc_and_allocate() and that led to Afringe being set to be within a
-// different page that happened to be at an address lower than the current
-// one. Then the value of result would be based on that that new fringe
-// but an old limit...
-// However all is not totally lost! If ANY thread sets fringe>=limit then
-// until fringe and thread are reset all other threads will come to the
-// "need to GC" state, and none will complete a successful allocation.
-// However all threads can reset fringe, incrementing it by almost arbitrarily
-// large amounts before before the threads synchronize! 
+// corresponding to a distinct chunk of memory.
     if (result+n1 >= limit)
         result = gc_and_allocate(result, n);
     return static_cast<LispObject>(result);

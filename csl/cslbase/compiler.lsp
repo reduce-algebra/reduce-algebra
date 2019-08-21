@@ -3725,7 +3725,7 @@ r1 r1) (c!:printf "#endif\n")))
 
 (de c!:pcdr (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (c!:printf 
 "    if (!car_legal(%v)) %v = cdrerror(%v); else\n" r3 r1 r3))) (c!:printf 
-"    %v = qcdr(%v);\n" r1 r3)))
+"    %v = cdr(%v);\n" r1 r3)))
 
 (put (quote cdr) (quote c!:opcode_printer) (function c!:pcdr))
 
@@ -3733,7 +3733,7 @@ r1 r1) (c!:printf "#endif\n")))
 
 (put (quote qcar) (quote c!:opcode_printer) (function c!:pqcar))
 
-(de c!:pqcdr (op r1 r2 r3) (c!:printf "    %v = qcdr(%v);\n" r1 r3))
+(de c!:pqcdr (op r1 r2 r3) (c!:printf "    %v = cdr(%v);\n" r1 r3))
 
 (put (quote qcdr) (quote c!:opcode_printer) (function c!:pqcdr))
 

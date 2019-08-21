@@ -7,6 +7,10 @@
 # supports just a 32-bit but I could adapt this to support 64-bit
 # in the future when a suitable host emerges.
 #
+# The default as of July 2019 is
+#     win64 linux64 macintosh
+# so 32-bit variants are not included by default.
+#
 # Each snapshot needs to be built on a computer of the relevant type.
 # This can either be the current local host, a remote host that is
 # accessible using ssh (possibly via a gateway machine) or a virtual
@@ -22,7 +26,7 @@
 # any extra interaction.
 #
 #                                                       ACN February 2018
-
+#                                                           July 2019
 
 
 
@@ -41,6 +45,7 @@ case $@ in
   printf "linux64 and rpi.\n"
   printf "The two Linux variants refer to ones hosted on i686 and x86_64,\n"
   printf "and 'rpi' is a Raspberry Pi running raspbian.\n"
+  printf "[July 2019] rpi64 is an experiment re 64-bit Raspberry Pi\n"
   printf "If no machines are listed the script will attempt to build a\n"
   printf "fairly full set. The results will end up in a snapshots directory in\n"
   printf "theReduce tree. The hosts used during the build can be adapted to\n"
@@ -277,6 +282,7 @@ build() {
     linux32 | \
     linux64 | \
     rpi     | \
+    rpi64   | \
     macintosh)
       full="no"
       ;;
@@ -293,7 +299,7 @@ build() {
 #
   if test "$full" = "yes"
   then
-    ARGS="macintosh win64 linux32 linux64 rpi $*"
+    ARGS="macintosh win64 linux64 $*"
   else
 # Here (and in general through this script) I am going to assume that
 # file-paths, machine-name and script arguments do not contain embedded
@@ -316,6 +322,7 @@ build() {
     linux32 | \
     linux64 | \
     rpi     | \
+    rpi64   | \
     macintosh)
       add_target "$a"
       ;;
@@ -326,6 +333,7 @@ build() {
     -linux32 | \
     -linux64 | \
     -rpi     | \
+    -rpi64   | \
     -macintosh)
       remove_target "${a#-}"
       ;;
@@ -432,6 +440,13 @@ build_linux64() {
 }
 
 build_rpi() {
+  machine_rpi
+  build_debian rpi
+}
+
+build_rpi64() {
+# Just the same as for 32-bit Raspberry pi but it will need a different
+# host.
   machine_rpi
   build_debian rpi
 }
@@ -596,6 +611,21 @@ machine_rpi() {
     case `uname -n` in
     *)
       printf "Do not know how to access a Raspberry Pi from `uname -n`\n"
+      MODE=none
+      ;;
+    esac
+  fi
+}
+
+
+machine_rpi64() {
+  MODE="none"
+  hosts_rpi64 2> /dev/null
+  if test "$MODE" = "none"
+  then
+    case `uname -n` in
+    *)
+      printf "Do not know how to access a 64-bit Raspberry Pi from `uname -n`\n"
       MODE=none
       ;;
     esac

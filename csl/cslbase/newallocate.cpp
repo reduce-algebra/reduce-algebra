@@ -112,13 +112,13 @@
 size_t pagesCount;
 size_t activePagesCount;
 
-// Ha ha potentially clever idea. Have activetheads an atomic<int32_t> and use
+// Ha ha potentially clever idea. Have activeTheads an atomic<uint32_t> and use
 // the bottom 10 bits for the number of threads that are busy and the next
 // 10 bits for the number potentially busy and finally 10 bits for the total
 // number of threads in play. That way I can eg subtract (1<<10)+1 when a
 // thread temporarily removes itself from the pool because it
 // may be about to block! Etc etc. The second idea is that there is potential
-// misert about needing to get every thread to exit when STOP is called. Well
+// misery about needing to get every thread to exit when STOP is called. Well
 // maybe I can avoid using mutexes at all as places that code can block and
 // instead use condition variables with a condition of the form
 // (<sensible-condition> || need_to_exit) and then when the barrier is passed
@@ -185,8 +185,12 @@ size_t activePagesCount;
 // also be horribly ponderous and clumsy.
 // 
 
-std::atomic<int> activeThreads;
-int threadcount = 0;
+std::atomic<uint32_t> activeThreads;
+
+//  0x00 : total_threads : lisp_threads : still_busy_threads
+
+
+
 bool gc_started = false, gc_finished = false;
 std::mutex mutex_for_gc;
 std::condition_variable cv_for_gc_idling, cv_for_gc_busy;
@@ -847,14 +851,16 @@ void master_gc_thread()
 // last one does that it will notify me.
     {   std::unique_lock<std::mutex> lock(mutex_for_gc);
         cv_for_gc_busy.wait(lock,
-            []{ return activeThreads.load() == threadcount-1; });
+            []{   uint32_t n = activeThreads.load(std::memory_order_relaxed);
+                  return (n & 0xff) == ((n>>8) & 0xff) - 1;
+              });
     }
 // OK, so now I know that all the other threads are ready to wait on
 // gc_finished, so I ensure that useful variables are set ready for next
 // time and release all the threads that have been idling.
     {   std::lock_guard<std::mutex> guard(mutex_for_gc);
         gc_started = false;
-        activeThreads.fetch_add(1);
+        activeThreads.fetch_add(0x0000001);
         gc_finished = true;
         cv_for_gc_idling.notify_all();
     }
@@ -881,7 +887,8 @@ void idle_during_gc()
 // thread.
     bool inform = false;
     {   std::lock_guard<std::mutex> guard(mutex_for_gc);
-        if (activeThreads.fetch_add(1) == threadcount-2) inform = true;
+        uint32_t n = activeThreads.fetch_add(0x000001);
+        if ((n & 0xff) == ((n>>8) & 0xff) - 2) inform = true;
     }
     if (inform) cv_for_gc_busy.notify_one();
 // Once the master thread has been notified as above it can go forward and
@@ -923,8 +930,8 @@ uintptr_t gc_and_allocate(uintptr_t r, size_t n)
 // The next line will count down the number of threads that have entered
 // this synchronization block. The last one to do so can serve as the
 // thread that performs garbage collection, the other will just need to wait.
-        int a = activeThreads.fetch_sub(1);
-        if (a == 1) master_gc_thread();
+        int32_t a = activeThreads.fetch_sub(1);
+        if ((a & 0xff) == 1) master_gc_thread();
         else idle_during_gc();
 // The thread that performs garbage collection must perform allocation on
 // behalf of every thread.

@@ -6,7 +6,7 @@ The machine names shown are in general the ones reported by "uname -n".
 --------------------------------------------------------------------------
 # $HOME/.snapshots
 
-# A C Norman, 2018
+# A C Norman, 2019
 
 # This file customises the Reduce snapshot builder by indicating private
 # or local machines that can be used for building snapshots. For each
@@ -129,6 +129,13 @@ panamint)
     MODE=ssh
     HOST=192.168.1.21
   }
+
+  hosts_rpi64() {
+# As before, use a remote machine. If I had DNS set up in a more
+# elaborate way it would become more obvious that this host is "rpi-64".
+    MODE=ssh
+    HOST=192.168.1.22
+  }
   ;;
 
 #######################################################################
@@ -193,6 +200,15 @@ gauguin)
 #    HOST=acn1a.trin.private.cam.ac.uk
 # if I had that machine set up for Reduce building...
   }
+
+  hosts_rpi64() {
+    MODE=ssh+ssh
+    HOST1=codemist.dynu.com
+    HOST2=192.168.1.22
+# OR MODE=ssh
+#    HOST=acn1a.trin.private.cam.ac.uk
+# if I had that machine set up for Reduce building...
+  }
   ;;
 
 #######################################################################
@@ -246,6 +262,10 @@ hosts_linux64() {
 # is not acceptable to bash, so I put in a return statement.
     return 0
   }
+
+  hosts_rpi64() {
+    return 0
+  }
   ;;
 
 #######################################################################
@@ -294,6 +314,10 @@ hosts_linux64() {
 hosts_rpi() {
 # As before, use the machine directly.
     MODE=local
+  }
+
+hosts_rpi64() {
+    return 0
   }
   ;;
 
@@ -347,6 +371,10 @@ OlderMacBook | acn1macbook)
 # elaborate way it would become more obvious that this host is "rpi3-32".
     MODE=ssh
     HOST=192.168.1.179
+  }
+
+  hosts_rpi() {
+    return 0
   }
   ;;
 

@@ -320,23 +320,39 @@ inline bool car_legal(LispObject p)
 // is strongly desirable in any multi-thread world, but apart from the
 // special case of float128_t it will happen anyway on all reasonable
 // computers.
-// The second involves potential re-ordering of memort reads and writes
+// The second involves potential re-ordering of memory reads and writes
 // either by software or by hardware. There are a range of options with
 // "relaxed" essentially not applying any constraints. For lock-free multi-
-// thread work the issues there really matter, but are "delicate".
+// thread work the issues there really matter, but are "delicate". I am
+// looking ahead to a multi-processing world, but trying to delay working
+// out exactly what I need to do until later!
 //
-// What I do now is I store LispObject values in the heap in the form
+// What I do is I store LispObject values in the heap in the form
 // std::atomic<LispObject> and provide pairs of accessor/mutator functions,
 // eg CAR and SETCAR. These both have optional extra arguments that can
-// specify a memory ordering requirement. Note thatg going beyond "relaxed"
-// can sometimes have substantial cost implications (more so than I had
-// been expecting!). Similarly for object headers. Other binary data in
-// heap space (floats, character strings) does not have std::atomic<>
-// protection, and so for proper use across threads a little care may
-// sometimes be called for. The reasoning behind that dessign decision is
-// that the binary data is generally never updated once the object containing
-// it has been created, so by inserting a memory fence in the creation
-// code (eg when I write in the object header?) all will be well.
+// specify a memory ordering requirement. I make the default setting
+// std::memory_order_relaxed, which I believe does not apply any extra
+// constraints, and so where that is used I will need mutexes or memory fences
+// when multiple threads access the same value.
+
+// Note that going beyond "relaxed" can sometimes have substantial cost
+// implications (more so than I had been expecting!).
+
+// I will protect the CAR and CDR field of every CONS cell this way,
+// the header word of every symbol or vector-like object, and the
+// value, env, pname, plist, fastgets and count fields with symbols.
+// I do NOT protect the function-pointers within symbols.
+// For vectors that contain pointers to other lisp objects I use
+// atomic<T>, while for binary data (floating point numbers, character
+// strings and so on) I do not.
+
+// The reasoning here is that there will be times when multiple threads
+// might all access the same list, vector or symbol and potentially update
+// it. In particular I hope in due course to use several threads for
+// garbage collection and that will involve some lock-free traversal
+// of data. But binary data within Lisp objects will (generally) be read-
+// only once it has been created, and so the worst issues of inter-thread
+// synchronization will not arise.
 
 // There are some uglinesses here. So for instance a comparison between
 // a std::atomic<int> and an int (using ++ or !=) is liable to be reported
@@ -349,21 +365,8 @@ typedef struct Cons_Cell_
 } Cons_Cell;
 
 
-// For a WHILE I will keep these old names around - eg they are
-// wanted by u*.cpp
-
 extern bool valid_address(void *pointer);
 [[noreturn]] extern void my_abort();
-
-inline std::atomic<LispObject>& qcar(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
-    return ((Cons_Cell *)p)->car;
-}
-
-inline std::atomic<LispObject>& qcdr(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
-    return ((Cons_Cell *)p)->cdr;
-}
 
 // Going forward I may want to be able to control where I have memory
 // fences and what sort get used, so these access functions have (optional)
@@ -402,7 +405,7 @@ inline std::atomic<LispObject> *cdraddr(LispObject p)
 
 // At present (boo hiss) the serialization code and the garbage collector
 // both expect to run with no other thread active, and they are coded using
-// simple non-atomic data. These two return addressed on the carc and cdr
+// simple non-atomic data. These two return addressed on the car and cdr
 // fields in a cons cell expecting atomic and non-atomic layouts to match.
 
 inline LispObject *vcaraddr(LispObject p)

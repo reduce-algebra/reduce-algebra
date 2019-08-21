@@ -585,6 +585,10 @@ static LispObject Nlognot(LispObject env, LispObject a1)
 {   return onevalue(Lognot::op(a1));
 }
 
+static LispObject Nlogcount(LispObject env, LispObject a1)
+{   return onevalue(Logcount::op(a1));
+}
+
 static LispObject Nleftshift(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(LeftShift::op(a1, a2));
 }
@@ -1215,6 +1219,7 @@ setup_type const arith_setup[] =
     {"newlogxor",            Nlogxor,            Nlogxor,            Nlogxor,            Nlogxor,            Nlogxor},
     {"newlogeqv",            Nlogeqv,            Nlogeqv,            Nlogeqv,            Nlogeqv,            Nlogeqv},
     {"newlognot",            G0W1,               Nlognot,            G2W1,               G3W1,               G4W1},
+    {"newlogcount",          G0W1,               Nlogcount,          G2W1,               G3W1,               G4W1},
     {"newlshift",            G0W2,               G1W2,               Nleftshift,         G3W1,               G4W1},
     {"newash",               G0W2,               G1W2,               Nleftshift,         G3W1,               G4W1},
     {"newrshift",            G0W2,               G1W2,               Nrightshift,        G3W1,               G4W1},
@@ -1259,6 +1264,7 @@ setup_type const arith_setup[] =
     {"newilogxor",           Nilogxor,           Nilogxor,           Nilogxor,           Nilogxor,           Nilogxor},
     {"newilogeqv",           Nilogeqv,           Nilogeqv,           Nilogeqv,           Nilogeqv,           Nilogeqv},
     {"newilognot",           G0W1,               Nilognot,           G2W1,               G3W1,               G4W1},
+    {"newilogcount",         G0W1,               Nilogcount,         G2W1,               G3W1,               G4W1},
     {"newilshift",           G0W2,               G1W2,               Nileftshift,        G3W1,               G4W1},
     {"newirshift",           G0W2,               G1W2,               Nirightshift,       G3W1,               G4W1},
     {NULL,                   0, 0, 0, 0, 0}

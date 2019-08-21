@@ -190,6 +190,16 @@ LispObject Lognot::op(uint64_t *a)
 {   return arithlib_lowlevel::Lognot::op(a);
 }
 
+LispObject Logcount::op(LispObject a)
+{   return number_dispatcher::iunary<LispObject,Logcount>("logcount", a);
+}
+LispObject Logcount::op(Fixnum a)
+{   return arithlib_lowlevel::Logcount::op(a.intval());
+}
+LispObject Logcount::op(uint64_t *a)
+{   return arithlib_lowlevel::Logcount::op(a);
+}
+
 LispObject LeftShift::op(LispObject a, LispObject b)
 {   return number_dispatcher::ibinary<LispObject,LeftShift>("lshift", a, b);
 }

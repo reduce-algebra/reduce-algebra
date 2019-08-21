@@ -417,8 +417,6 @@ fi
 # installed even if you specify --without-w32.
 
 
-
-
 with_w32="yes"
 with_w64="yes"
 with_c32="yes"
@@ -426,33 +424,40 @@ with_c64="yes"
 
 AC_ARG_WITH(w32,
   AC_HELP_STRING([--with-w32], [Build 32-bit Windows version]),
-  []
+  [],
   [with_w32="yes"])
 
 AC_ARG_WITH(w64,
   AC_HELP_STRING([--with-w64], [Build 64-bit Windows version]),
-  []
+  [],
   [with_w64="yes"])
 
 AC_ARG_WITH(c32,
   AC_HELP_STRING([--with-c32], [Build 32-bit Cygwin version]),
-  []
+  [],
   [with_c32="default"])
+
+AC_MSG_NOTICE(with_c32 = $with_c32)
 
 AC_ARG_WITH(c64,
   AC_HELP_STRING([--with-c64], [Build 64-bit Cygwin version]),
-  []
+  [],
   [with_c64="default"])
 
 # As of July 2019 I will only build the 32-bit variants if "--with-win32bit"
 # is specified.
 
+AC_MSG_NOTICE([check for win32bit])
+
 AC_ARG_WITH(win32bit,
   AC_HELP_STRING([--with-win32bit], [Build 32-bit Windows version alongside 64]),
-  []
+  [],
   [with_win32bit="no"])
 
-if test "x$with_32_bit" = "xno"
+
+AC_MSG_NOTICE([with_win32bit = $with_win32bit])
+
+if test "x$with_win32bit" = "xno"
 then
   with_w32="no"
   with_c32="no"
@@ -487,32 +492,32 @@ then
 # cygwin installations. When run it generates output "32", "64" or "32 64"
 # depending on which variants it finds.
 
-if test "x$with_win32bit" = "xno"
-then
-CYGAVAIL="64"
-else
+  if test "x$with_win32bit" = "xno"
+  then
+    CYGAVAIL="64"
+  else
+    i686-w64-mingw32-g++ -O3 $srcdir/csl/cslbase/other-cygwin.cpp -static -o ./other-cygwin
+    i686-w64-mingw32-strip ./other-cygwin
+    CYGAVAIL=`./other-cygwin`
+  fi
 
-i686-w64-mingw32-g++ -O3 $srcdir/csl/cslbase/other-cygwin.cpp -static -o ./other-cygwin
-i686-w64-mingw32-strip ./other-cygwin
-CYGAVAIL=`./other-cygwin`
-fi
+  case $CYGAVAIL in
+  *32*)
+    cyg32_available="yes"
+    ;;
+  *)
+    cyg32_available="no"
+    ;;
+  esac
+  case $CYGAVAIL in
+  *64*)
+    cyg64_available="yes"
+    ;;
+  *)
+    cyg64_available="no"
+    ;;
+  esac
 
-case $CYGAVAIL in
-*32*)
-  cyg32_available="yes"
-  ;;
-*)
-  cyg32_available="no"
-  ;;
-esac
-case $CYGAVAIL in
-*64*)
-  cyg64_available="yes"
-  ;;
-*)
-  cyg64_available="no"
-  ;;
-esac
 # If I am either running under 64-bit cygwin or are on 32-bit cygwin but on
 # a 64-bit operating system I might be able to build 64-bit cygwin stuff.
   if test "$uname_m" = "x86_64" ||
@@ -522,9 +527,12 @@ esac
   else
     sixtyfour_feasible="no"
   fi
+
+  AC_MSG_NOTICE(cyg32_available = $cyg32_available)
+
 # If 32-bit cygwin is available then by default build for it. If it is
 # not then refuse to even if the user asked for it.
-  if test "$cyg32_available" = "yes" &&  ! test "x$with_win32bit" != "no"
+  if test "$cyg32_available" = "yes" && test "x$with_win32bit" != "no"
   then
     if test "$with_c32" = "default"
     then
@@ -537,6 +545,8 @@ esac
     fi
     with_c32="no"
   fi
+
+AC_MSG_NOTICE(with_c32 = $with_c32)
 
   if test "$sixtyfour_feasible" = "yes" && test "$cyg64_available" = "yes"
   then

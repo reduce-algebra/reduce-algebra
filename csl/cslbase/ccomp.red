@@ -1416,7 +1416,7 @@ symbolic procedure c!:pcdr(op, r1, r2, r3);
     if not !*unsafecar then
         c!:printf("    if (!car_legal(%v)) %v = cdrerror(%v); else\n",
                   r3, r1, r3);
-    c!:printf("    %v = qcdr(%v);\n", r1, r3)
+    c!:printf("    %v = cdr(%v);\n", r1, r3)
   end;
 
 put('cdr, 'c!:opcode_printer, function c!:pcdr);
@@ -1429,7 +1429,7 @@ symbolic procedure c!:pqcar(op, r1, r2, r3);
 put('qcar, 'c!:opcode_printer, function c!:pqcar);
 
 symbolic procedure c!:pqcdr(op, r1, r2, r3);
-    c!:printf("    %v = qcdr(%v);\n", r1, r3);
+    c!:printf("    %v = cdr(%v);\n", r1, r3);
 
 put('qcdr, 'c!:opcode_printer, function c!:pqcdr);
 

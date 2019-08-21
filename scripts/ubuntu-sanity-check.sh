@@ -36,18 +36,36 @@ sudo apt-get -y install alien astyle autoconf ccache devscripts \
 sudo apt-get -y install libtool
 sudo apt-get -y install libtool-bin
 sudo apt-get -y install libltdl-dev
-# Sort of similarly ssh may be either ssh or openssh...
+# Sort of similarly ssh may be either ssh or openssh... so some of these
+# requests are liable to moan.
 sudo apt-get -y install openssh
 sudo apt-get -y install ssh
 sudo apt-get -y install time
 sudo apt-get -y install dvipng
-sudo apt-get -y install linux-generic \
- polyml rpm ssh subversion tex4ht texinfo texlive-latex-base \
- texlive-fonts-extra texlive-fonts-recommended texlive-latex-recommended \
- texlive-latex-extra xorg-dev devscripts fakeroot alien rsync
+sudo apt-get -y install linux-generic
+sudo apt-get -y install polyml
+sudo apt-get -y install rpm
+sudo apt-get -y install ssh
+sudo apt-get -y install subversion
+sudo apt-get -y install texinfo
+sudo apt-get -y install texlive-latex-base
+sudo apt-get -y install texlive-fonts-extra
+sudo apt-get -y install texlive-fonts-recommended
+sudo apt-get -y install texlive-latex-recommended
+sudo apt-get -y install texlive-latex-extra
+sudo apt-get -y install texlive-plain-generic
+sudo apt-get -y install tex4ht
+sudo apt-get -y install xorg-dev
+sudo apt-get -y install devscripts
+sudo apt-get -y install fakeroot
+sudo apt-get -y install alien
+sudo apt-get -y install rsync
+
 # These last few will not be useful on non-Ubuntu platforms I suspect!
-sudo apt-get -y install ubuntu-desktop ubuntu-minimal \
- ubuntu-restricted-addons ubuntu-standard 
+sudo apt-get -y install ubuntu-desktop
+sudo apt-get -y install ubuntu-minimal
+sudo apt-get -y install ubuntu-restricted-addons
+sudo apt-get -y install ubuntu-standard 
 
 # CSL now depends on C++-11, and versions of g++ prior to 4.9 (at least)
 # have enough support to seen plausible but enough missing deatures to cause

@@ -1319,12 +1319,12 @@ endif !gui
 if !cygwin
 if win32bit
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
+	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) csl.exe; fi
 	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
 endif win32bit
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
+	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) csl.exe; fi
 	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 endif !cygwin
@@ -1369,12 +1369,12 @@ endif !gui
 if !cygwin
 if win32bit
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
+	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) flatcsl.exe; fi
 	if test -x $(with_cygbuild)/csl/flatcsl.exe; then $(CP) $(with_cygbuild)/csl/flatcsl.exe cygwin-flatcsl.exe; fi
 endif
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
+	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) flatcsl.exe; fi
 	if test -x $(with_cygbuild64)/csl/flatcsl.exe; then $(CP) $(with_cygbuild64)/csl/flatcsl.exe cygwin64-flatcsl.exe; fi
 endif !cygwin
@@ -1425,12 +1425,12 @@ endif !gui
 if !cygwin
 if win32bit
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
+	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) reduce.exe; fi
 	if test -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
 endif
 	if test "x$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
+	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) reduce.exe; fi
 	if test -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
 endif !cygwin
@@ -1487,12 +1487,12 @@ if windows
 if !cygwin
 if win32bit
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
+	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) bootstrapreduce.exe; fi
 	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
 endif
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
+	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) bootstrapreduce.exe; fi
 	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 endif !cygwin
@@ -1527,12 +1527,12 @@ endif !gui
 if !cygwin
 if win32bit
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	@printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
+	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) fwindemo.exe; fi
 	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
 endif win32bit
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
-	@printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
+	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) fwindemo.exe; fi
 	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
 endif !cygwin

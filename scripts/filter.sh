@@ -26,6 +26,7 @@ do
   *--with*-fox* | \
   *--with*-wx* | \
   *--with-cyg* | \
+  *--with*-win32bit* | \
   *--with-csl* | \
   *--with-psl* | \
   *--with-build* | \
