@@ -38,6 +38,7 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<ul>
 	<li><a href="http://www.mathpiper.org/">MathPiper</a></li>
 	<li><a href="http://polybori.sourceforge.net/">PolyBoRi</a> &ndash; Polynomials over Boolean Rings</li>
+	<li><a href="https://download.cnet.com/SymbMath/3000-2053_4-10002619.html">SymbMath</a>, which has evolved into the <a href="http://math.drhuang.com/science/mathematics/software/">Math Handbook Calculator</a></li>
 	</ul>
 END_OF_MAIN_CONTENT
 );

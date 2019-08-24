@@ -48,7 +48,7 @@ Directory structure:
     |       Files written by the web server (maybe)
     +---configs
     +---templates
-	|       Template files for the web pages.
+    |       Template files for the web pages.
     |       
     \---templates_c
             Files written by the web server
