@@ -1013,12 +1013,12 @@ static void cold_setup()
     void *p = allocate_page("vheap cold setup");
     vheap_pages[vheap_pages_count++] = p;
     vfringe = (LispObject)(8 + (char *)doubleword_align_up((intptr_t)p));
-    vheaplimit = (LispObject)((char *)vfringe + (CSL_PAGE_SIZE - 16));
+    vheaplimit = (LispObject)(vfringe + (CSL_PAGE_SIZE - 16));
 
     p = heap_pages[heap_pages_count++] = allocate_page("heap cold setup");
     heaplimit = (intptr_t)p;
-    fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
-    heaplimit = (LispObject)((char *)heaplimit + SPARE);
+    fringe = (LispObject)(heaplimit + CSL_PAGE_SIZE);
+    heaplimit = (LispObject)(heaplimit + SPARE);
 #endif // CONSERVATIVE
     miscflags = 3;
     setplist(nil, nil);

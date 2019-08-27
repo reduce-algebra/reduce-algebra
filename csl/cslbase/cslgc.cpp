@@ -85,7 +85,7 @@ static void copy(LispObject *p)
 // This copies the object pointed at by p from the old to the new semi-space,
 // and returns a copy to the pointer.  If scans the copied material to copy
 // all relevent sub-structures to the new semi-space.
-{   char *fr = (char *)fringe, *vfr = (char *)vfringe;
+{   char *fr = (char *)(uintptr_t)fringe, *vfr = (char *)(uintptr_t)vfringe;
     char *tr_fr = fr, *tr_vfr = vfr;
     void *p1;
 #define CONT           0
@@ -126,8 +126,8 @@ static void copy(LispObject *p)
 // words (size SPARE bytes) so that I can afford to do several cons operations
 // between tests.  Here I do careful tests on every step, and so I can
 // sail much closer to the wind wrt filling up space.
-                    if (fr <= (char *)heaplimit - SPARE + 32)
-                    {   char *hl = (char *)heaplimit;
+                    if (fr <= (char *)(uintptr_t)heaplimit - SPARE + 32)
+                    {   char *hl = (char *)(uintptr_t)heaplimit;
                         void *p;
                         setcar((LispObject)fr, SPID_GCMARK);
                         if (pages_count == 0) allocate_more_memory();
@@ -140,7 +140,7 @@ static void copy(LispObject *p)
                         zero_out(p);
                         new_heap_pages[new_heap_pages_count++] = p;
                         heaplimit = (intptr_t)p;
-                        hl = (char *)heaplimit;
+                        hl = (char *)(uintptr_t)heaplimit;
                         fr = hl + CSL_PAGE_SIZE - sizeof(Cons_Cell);
                         heaplimit = (LispObject)(hl + SPARE);
                     }
@@ -211,7 +211,7 @@ static void copy(LispObject *p)
                     }
                 }
                 for (;;)
-                {   char *vl = (char *)vheaplimit;
+                {   char *vl = (char *)(uintptr_t)vheaplimit;
                     size_t free = (size_t)(vl - vfr);
 // len indicates the length of the block of memory that must now be
 // allocated...
@@ -414,8 +414,8 @@ static bool reset_limit_registers()
         zero_out(p);
         heap_pages[heap_pages_count++] = p;
         heaplimit = (intptr_t)p;
-        fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
-        heaplimit = (LispObject)((char *)heaplimit + SPARE);
+        fringe = (LispObject)((char *)(uintptr_t)heaplimit + CSL_PAGE_SIZE);
+        heaplimit = (LispObject)((char *)(uintptr_t)heaplimit + SPARE);
     }
     else
     {   char *vf, *vh;
@@ -500,7 +500,7 @@ static void real_garbage_collector()
     zero_out(pp);
     new_heap_pages[new_heap_pages_count++] = pp;
     heaplimit = (intptr_t)pp;
-    vl = (char *)heaplimit;
+    vl = (char *)(uintptr_t)heaplimit;
     fringe = (LispObject)(vl + CSL_PAGE_SIZE);
     heaplimit = (LispObject)(vl + SPARE);
 // A first page of vector heap.
@@ -582,8 +582,8 @@ void reclaim(const char *why, int stg_class)
             zero_out(p);
             heap_pages[heap_pages_count++] = p;
             heaplimit = (intptr_t)p;
-            fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
-            heaplimit = (LispObject)((char *)heaplimit + SPARE);
+            fringe = (LispObject)((char *)(uintptr_t)heaplimit + CSL_PAGE_SIZE);
+            heaplimit = (LispObject)((char *)(uintptr_t)heaplimit + SPARE);
             return;
         case GC_VEC: case GC_BPS:
             p = pages[--pages_count];

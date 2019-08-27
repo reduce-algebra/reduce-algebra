@@ -3724,12 +3724,12 @@ void warm_setup()
 #ifndef CONSERVATIVE
     p = vheap_pages[vheap_pages_count++] = allocate_page("vheap warm setup");
     vfringe = (LispObject)(8 + (char *)doubleword_align_up((intptr_t)p));
-    vheaplimit = (LispObject)((char *)vfringe + (CSL_PAGE_SIZE - 16));
+    vheaplimit = (LispObject)(vfringe + (CSL_PAGE_SIZE - 16));
 
     p = heap_pages[heap_pages_count++] = allocate_page("heap warm setup");
     heaplimit = (intptr_t)p;
-    fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
-    heaplimit = (LispObject)((char *)heaplimit + SPARE);
+    fringe = (LispObject)(heaplimit + CSL_PAGE_SIZE);
+    heaplimit = (LispObject)(heaplimit + SPARE);
 #endif
 
     set_up_function_tables();

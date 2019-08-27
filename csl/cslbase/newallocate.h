@@ -178,13 +178,62 @@ inline void write_barrier(LispObject *p)
     x->pageBody.pageBitmaps.dirty[offset/32].store(1);
 }
 
-// I make the fringe and limit pointers uintptr_t types because that
-// way I can be certain how arithmetic baheves. I will need to cast to
-// pointer types when I want to read or write the memory that they address.
-// Obviously!
+// I will have variables fringe and heaplimit that are thread_local.
+// On Cygwin and Mingw32 I use the Microsoft low-level API directly
+// because the version provided via C++ has severe overheads (at the time
+// or writing this - August 2019). The classes ForFringe and ForLimit
+// are there so that while in the rest of the source code use of variables
+// fringe and heaplimit looks natural, at run-time access to them both
+// gets diverted so as to use the platform-specific scheme for thread-local
+// and so that heaplimit is a std::atomic<T> item.
 
-extern std::atomic<uintptr_t> Afringe;
-extern std::atomic<uintptr_t> Alimit;
+#if defined WIN32 || defined __CYGWIN__
+
+const inline int fringe_slot = TlsAlloc();
+const inline int heaplimit_slot = TlsAlloc();
+inline thread_local std::atomic<uintptr_t> real_heaplimit;
+
+class ForFringe
+{
+public:
+    operator uintptr_t()
+    {   return (uintptr_t)TlsGetValue(fringe_slot);
+    };
+    ForFringe& operator= (const uintptr_t a)
+    {    TlsSetValue(fringe_slot, (void *)a);
+         return *this;
+    };
+    ForFringe& operator+= (const size_t a)
+    {    uintptr_t v = (uintptr_t)TlsGetValue(fringe_slot) + a;
+         TlsSetValue(fringe_slot, (void *)v);
+         return *this;
+    };
+};
+
+class ForHeapLimit
+{
+public:
+    operator uintptr_t()
+    {   return *(std::atomic<uintptr_t> *)TlsGetValue(heaplimit_slot);
+    };
+    ForHeapLimit& operator= (const uintptr_t a)
+    {    TlsSetValue(heaplimit_slot, (void *)a);
+         return *this;
+    };
+    ForHeapLimit()
+    {   TlsSetValue(heaplimit_slot, (void *)&real_heaplimit);
+    };
+};
+
+inline ForFringe fringe;
+inline ForHeapLimit heaplimit;
+
+#else
+
+inline thread_local uintptr_t fringe;
+inline thread_local uintptr_t heaplimit;
+
+#endif
 
 extern Page *nurseryPage;       // where allocation is happening
 extern Page *pendingPage;

@@ -42,7 +42,7 @@ case $@ in
   printf "Usage: $0 machine1 machine2 ...\n"
   printf "where the supported 'machines' are\n"
   printf "    windows (win32, win64, winboth), macintosh, linux32,\n"
-  printf "linux64 and rpi.\n"
+  printf "linux64 and rpi, rpi64.\n"
   printf "The two Linux variants refer to ones hosted on i686 and x86_64,\n"
   printf "and 'rpi' is a Raspberry Pi running raspbian.\n"
   printf "[July 2019] rpi64 is an experiment re 64-bit Raspberry Pi\n"
@@ -53,6 +53,8 @@ case $@ in
   printf "provides a prototype for such a file and some explanation of what\n"
   printf "needs to be present.\n"
   printf "An option --rc=FILE uses that file in place of $HOME/.snapshots\n"
+  printf "The default as of July 2019 is\n"
+  printf "     win64 linux64 macintosh\n"
   exit
   ;;
 esac
@@ -257,6 +259,9 @@ build() {
     *arm*)
       local="rpi"
       ;;
+    *aarch64*)
+      local="rpi64"
+      ;;
     *)
       printf "Unsupported Linux variant (`uname -m`)\n"
       exit 1
@@ -447,8 +452,8 @@ build_rpi() {
 build_rpi64() {
 # Just the same as for 32-bit Raspberry pi but it will need a different
 # host.
-  machine_rpi
-  build_debian rpi
+  machine_rpi64
+  build_debian rpi64
 }
 
 build_debian() {

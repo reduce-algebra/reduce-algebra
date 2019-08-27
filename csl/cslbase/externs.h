@@ -223,23 +223,14 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 
 #ifdef CONSERVATIVE
 extern uintptr_t heapstart;
-extern uintptr_t fringe;
-extern uintptr_t heaplimit;
 extern uintptr_t len;
 extern uintptr_t xor_chain;
 extern uintptr_t vheapstart;
-extern uintptr_t vfringe;
-extern uintptr_t vheaplimit;
 extern uintptr_t vlen;
 extern uintptr_t vxor_chain;
 
 extern LispObject *stacklimit;
 #else // !CONSERVATIVE
-extern LispObject fringe, next_fringe;
-extern LispObject heaplimit;
-extern LispObject vfringe, next_vfringe;
-extern LispObject vheaplimit;
-
 extern LispObject *stacklimit;
 #endif // !CONSERVATIVE
 
