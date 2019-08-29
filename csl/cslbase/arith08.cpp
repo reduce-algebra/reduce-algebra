@@ -790,6 +790,7 @@ static LispObject Llogbitp(LispObject env, LispObject a1, LispObject a2)
 }
 
 
+#ifndef NLZ_DEFINED
 #ifdef __GNUC__
 
 // Note that __GNUC__ also gets defined by clang on the Macintosh, so
@@ -800,10 +801,6 @@ static LispObject Llogbitp(LispObject env, LispObject a1, LispObject a2)
 
 inline int nlz(uint64_t x)
 {   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
-}
-
-inline int popcount(uint64_t x)
-{   return __builtin_popcountll(x);
 }
 
 #else // __GNUC__
@@ -819,6 +816,17 @@ inline int nlz(uint64_t x)
     return n;
 }
 
+#endif // __GNUC__
+#endif // NLZ_DEFINED
+
+#ifndef POPCOUNT_DEFINED
+#ifdef __GNUC__
+
+inline int popcount(uint64_t x)
+{   return __builtin_popcountll(x);
+}
+
+#else // __GNUC__
 
 inline int popcount(uint64_t x)
 {   x = (x & 0x5555555555555555U) + (x >> 1 & 0x5555555555555555U);
@@ -830,6 +838,7 @@ inline int popcount(uint64_t x)
 }
 
 #endif // __GNUC__
+#endif // POPCOUNT_DEFINED
 
 static LispObject Llogcount(LispObject env, LispObject a)
 {   if (is_fixnum(a))

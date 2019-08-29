@@ -2508,6 +2508,7 @@ void setup(int restart_flag, double store_size)
 
     if (init_flags & INIT_QUIET) Lverbos(nil, fixnum_of_int(1));
     if (init_flags & INIT_VERBOSE) Lverbos(nil, fixnum_of_int(3));
+#ifndef CONSERVATIVE
 //
 // Here I grab more memory (if I am allowed to) until the proportion of the
 // heap active at the end of garbage collection is less than 1/2.  If the
@@ -2528,6 +2529,7 @@ void setup(int restart_flag, double store_size)
             else pages[pages_count++] = page;
         }
     }
+#endif
     {   int32_t w = 0;
 //
 // The total store allocated is that used plus that free, including the

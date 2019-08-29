@@ -249,6 +249,7 @@ LispObject Lsystem(LispObject env, LispObject a)
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
         aerror1("system", a);
     size_t len = length_of_byteheader(h) - CELL;
+    if (len+1 > sizeof(parmname)) aerror1("argument too long", a);
     memcpy(parmname, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
     parmname[len] = 0;
     ensure_screen();

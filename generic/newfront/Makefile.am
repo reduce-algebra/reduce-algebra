@@ -13,7 +13,7 @@ else
 progs = rfpsl rfcsl rfboot
 endif
 
-# This little bit of trickers is intended to arrange that if you go
+# This little bit of trickery is intended to arrange that if you go
 # just "make" it will build all the executables and copy them into the
 # trunk/bin directory. This depends on the location within the Reduce
 # tree that the sources for redfront live. This is also somewhere where I

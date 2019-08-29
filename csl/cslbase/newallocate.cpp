@@ -135,10 +135,12 @@ size_t activePagesCount;
 
 // Another though to be left as comments here until I implement it and comment
 // it where the code ends up:
-// The copying GC can probably be coded so as to use multiple threads to do the
-// copying! I have bits of that sketched in my mind, butil until I can sit down
-// quietly with a full sized keyboard and code some of it things are a bit
-// uncertain.
+// The copying GC can probably be coded so as to use multiple threads to do
+// the copying! I have bits of that sketched in my mind, util until I can sit
+// down quietly with a full sized keyboard and code some of it things are a
+// bit uncertain. In particular there will be issues about the cost of
+// the test-and-set operations I would need to use to keep threads from
+// entanglement.
 // A though is that when I am about to evactuate the item it address p I
 // start with a = atomic_store(p, TAG_FORWARD) where tht returns the
 // previous value at p. Then if that was TAG_FORWARD I will know that
@@ -161,7 +163,7 @@ size_t activePagesCount;
 //   consider the imlemention of v = cons(a,b) where v is some value that may
 // be shared across threads. Eg rplacd(V, cons(a, b)) is almost certainly
 // going to count. The natural implementation will be along the lines
-//    w = allocat1();
+//    w = allocate();
 //    w[0] = a;
 //    w[1] = b;
 //    v = w;
@@ -185,6 +187,8 @@ size_t activePagesCount;
 // also be horribly ponderous and clumsy.
 // 
 
+
+uintptr_t *C_stackbase;   // base of the main thread
 std::atomic<uint32_t> activeThreads;
 
 //  0x00 : total_threads : lisp_threads : still_busy_threads
@@ -272,9 +276,6 @@ std::condition_variable cv_for_gc_idling, cv_for_gc_busy;
 // In my first sketch here I have not put in all the data I expect to need
 // to put into the header - eg I will need more to let me allocate around
 // pinned items.
-
-std::atomic<uintptr_t> Afringe;
-std::atomic<uintptr_t> Alimit;
 
 Page *nurseryPage;       // where allocation is happening
 Page *pendingPage;
@@ -614,7 +615,7 @@ static_assert(spareBytes/64 > offsetof(Page, pageHeader.endOfHeader));
 
 void set_up_empty_page(Page *p)
 {   p->pageHeader.fringe = reinterpret_cast<uintptr_t>(&p->pageBody.data);
-    p->pageHeader.limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
+    p->pageHeader.heaplimit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
     p->pageHeader.dirtypage.store(false);
     p->pageHeader.onstarts_present = false;
 // I would like to be able to set the dirty bitmap all zero other than by
@@ -635,15 +636,15 @@ void set_up_empty_page(Page *p)
 void set_variables_from_page(Page *p)
 {
 // Set the variable that are used when allocating within the active page.
-    Afringe = p->pageHeader.fringe;
-    Alimit = p->pageHeader.limit;
+    fringe = p->pageHeader.fringe;
+    heaplimit = p->pageHeader.heaplimit;
 }
 
 void save_variables_to_page(Page *p)
 {
 // Dump global variable values back into a page header.
-    p->pageHeader.fringe = Afringe;
-    p->pageHeader.limit  = Alimit;
+    p->pageHeader.fringe = fringe;
+    p->pageHeader.heaplimit  = heaplimit;
 }
 
 // This code allocates a segment by asking the operating system.
@@ -708,6 +709,23 @@ void allocate_segment(size_t n)
     printf("%" PRIu64 " pages available\n", (uint64_t)freePagesCount);
 }
 
+size_t pages_count = 0;
+size_t heap_pages_count = 0;
+size_t vheap_pages_count = 0;
+bool garbage_collection_permitted = true;
+bool force_verbos = false;
+
+double maxStoreSize = 0.0;
+
+void init_heap_segments(double d)
+{   std::cout << "init_heap_segments " << d << std::endl;
+    my_abort();
+}
+
+void drop_heap_segments()
+{   my_abort();
+}
+
 // gc-forcer(a, b) should arrange that a garbage collection is triggered
 // when at most A cons-sized units of consing happens or when at most
 // B units of space is used for vectors (where vectors include bignums and
@@ -731,6 +749,7 @@ LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
 LispObject Lgc_forcer1(LispObject env, LispObject a)
 {   return Lgc_forcer(env, a, a);
 }
+
 // When a thread exhausts memory (to be more specific, when it fills up
 // the nursery page) it must arrange that all but one threads are stopped
 // with information about their stacks visible somewhere central and all
@@ -767,6 +786,30 @@ LispObject Lgc_forcer1(LispObject env, LispObject a)
 //     I considered and how I ended up with this plan.
 
 std::jmp_buf *buffer_pointer;
+
+// Each thread will need a thread_number and I need to be able to allocate
+// and release such identifying numbers. I will allow for up to 64 threads.
+
+std::mutex threadStartingMutex;
+// threadMap will have a zero bit in places that correspond to thread
+// numbers that are allocated.
+
+uint64_t threadMap = -1;
+
+int findSpareThreadNumber()
+{   myassert(threadMap != 0); // I need at least one spare.
+    int n = nlz(threadMap);
+// Now n is 0 if the top bit is set, 1 for the next etc down to 63 when
+// the least bit is the only one set.
+    threadMap &= ~((uint64_t)1 << (63-n));
+    return n;
+}
+
+void releaseThreadNumber(int n)
+{   myassertt(0<=n && n <=63);
+    threadMap |= ((uint64_t)1 << (63-n));
+}
+
 
 // The following need to be atomic because they get updates by one thread
 // and read by another. Without the std::atomic stuff the update could
@@ -1123,163 +1166,5 @@ LispObject *volatile savestacklimit;
 // {   return p;
 // }
 
-
-// I put the signal handler code in this file at a stage when I was
-// considering a write-barrier implemented using write-protected memory
-// pages. I think I have now come to believe that the operating system
-// overheads involved in memory-access exception handling would make that
-// even more expensive that the scheme I now have that is entirely in
-// software.
-
-#ifdef USE_SIGALTSTACK
-
-static unsigned char signal_stack_block[SIGSTKSZ];
-stack_t signal_stack;
-
-#endif
-
-#ifdef HAVE_SIGACTION
-static void low_level_signal_handler(int signo, siginfo_t *t, void *v);
-#else // !HAVE_SIGACTION
-static void low_level_signal_handler(int signo);
-#endif // !HAVE_SIGACTION
-
-void set_up_signal_handlers()
-{
-//
-#ifdef USE_SIGALTSTACK
-// If I get a SIGSEGV that is caused by a stack overflow then I am in
-// a world of pain because the regular stack does not have space to run my
-// exception handler. So where I can I will arrange that the exception
-// handler runs in its own small stack. This may itself lead to pain,
-// but perhaps less?
-    signal_stack.ss_sp = (void *)signal_stack_block;
-    signal_stack.ss_size = SIGSTKSZ;
-    signal_stack.ss_flags = 0;
-    sigaltstack(&signal_stack, (stack_t *)0);
-#endif
-    for (int i=0; i<32; i++)
-        heapSegment[i] = reinterpret_cast<void *>(UINTPTR_MAX);
-#ifdef HAVE_SIGACTION
-    struct sigaction sa;
-    sa.sa_sigaction = low_level_signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART | SA_SIGINFO; //???@@@ | SA_ONSTACK | SA_NODEFER;
-// (a) restart system calls after signal (if possible),
-// (b) use handler that gets more information,
-// (c) use alternative stack for the handler,
-// (d) leave the exception unmasked while the handler is active. This
-//     will be vital if then handler "exits" using longjmp, because as
-//     far as the exception system is concerned that leaves us within the
-//     handler. But after the  exit is caught by setjmp I want the
-//     exception to remain trapped.
-    if (sigaction(SIGSEGV, &sa, NULL) == -1) {}
-        /* I can not thing of anything useful to do if I fail here! */
-#ifdef SIGBUS
-    if (sigaction(SIGBUS, &sa, NULL) == -1) {}
-        /* I can not thing of anything useful to do if I fail here! */
-#endif
-#ifdef SIGILL
-    if (sigaction(SIGILL, &sa, NULL) == -1) {}
-        /* I can not thing of anything useful to do if I fail here! */
-#endif
-    if (sigaction(SIGFPE, &sa, NULL) == -1) {}
-        /* I can not thing of anything useful to do if I fail here! */
-#else // !HAVE_SIGACTION
-#ifndef WIN32
-#error All platforms other than Windows are expected to support sigaction.
-#endif // !WIN32
-    signal(SIGSEGV, low_level_signal_handler);
-#ifdef SIGBUS
-    signal(SIGBUS, low_level_signal_handler);
-#endif
-#ifdef SIGILL
-    signal(SIGILL, low_level_signal_handler);
-#endif
-    signal(SIGFPE, low_level_signal_handler);
-#endif // !HAVE_SIGACTION
-}
-
-// Elsewhere I worry about thread_local performance but here in the code that
-// recovers after an exception I am not worried about that.
-
-static volatile thread_local char signal_msg[32];
-
-static volatile char *int2str(volatile char *s, int n)
-{   unsigned int n1;
-// Even though I really only expect this to be called with small positive
-// arguments I will code it so it should support ANY integer value, including
-// the most negative one.
-    if (n >= 0) n1 = (unsigned int)n;
-    {   *s++ = '-';
-        n1 = -(unsigned int)n;
-    }
-    if (n1 >= 10)
-    {   s = int2str(s, n1/10);
-        n1 = n1 % 10;
-    }
-    *s++ = '0' + n1;
-    return s;
-}
-
-#ifdef HAVE_SIGACTION
-static void low_level_signal_handler(int signo, siginfo_t *si, void *v)
-#else // !HAVE_SIGACTION
-static void low_level_signal_handler(int signo)
-#endif // !HAVE_SIGACTION
-{
-// There are really very restrictive rules about what I can do in a
-// signal handler and remain safe. For a start I should only reference
-// variables that are of type atomic_t (or its friends) and that are
-// volatile, and there are fairly few system functions that are
-// "async signal safe" and generally permitted. However I am going to
-// stray well beyond the rules here! Well in most cases I will view this
-// as acceptable, because in most cases these low level signals will only
-// arise in case of a system-level bug, and so ANY recovery or diagnostic
-// I can produce will be better than nothing, and if things get confused
-// or crash again then that is not much worse than the exception having
-// arisen in the first case!
-    if (miscflags & HEADLINE_FLAG)
-    {   switch (signo)
-        {   default:
-                {   volatile char *p = signal_msg; // NB thread-local memory
-                    const char *m1 = "Signal (signo=";
-                    while (*m1) *p++ = *m1++;
-                    p = int2str(p, signo);
-                    *p++ = ')';
-                    *p = 0;
-                }
-                errorset_msg = signal_msg;
-                break;
-#ifdef SIGFPE
-            case SIGFPE:
-                errorset_msg = "Arithmetic exception";
-                break;
-#endif
-#ifdef SIGSEGV
-            case SIGSEGV:
-                errorset_msg = "Memory access violation";
-                break;
-#endif
-#ifdef SIGBUS
-            case SIGBUS:
-                errorset_msg = "Bus error";
-                break;
-#endif
-#ifdef SIGILL
-            case SIGILL:
-                errorset_msg = "Illegal instruction";
-                break;
-#endif
-        }
-    }
-// I am NOT ALLOWED TO USE THROW to exit from a signal handler in C++. I
-// can at best try use of longjmp, and that is not really legal
-// This has the malign consequence that destructors
-// associated with stack frames passed through will not be activated. And
-// I use destructors in a RAII style to tidy up bindings at times, so I
-// hope I never do a really long longjmp, because that would bypass things!
-    global_longjmp();
-}
 
 // end of newallocate.cpp

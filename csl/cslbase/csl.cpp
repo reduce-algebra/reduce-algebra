@@ -1272,10 +1272,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 //
 // I make "sp" volatile - it is a variable I declare here but then only use by
 // taking its address to get a pointer into the current stack-frame. When it
-// is volatile my compiler will not be entitles to moan about the lack of
+// is volatile my compiler will not be entitled to moan about the lack of
 // assignment to it and will not be entitled to optimise it out of existance
 // or otherwise do things that run against my intent! But then to put its
-// address iun C_stackbase I need to cast away the volatile qualifier.
+// address in C_stackbase I need to cast away the volatile qualifier.
 //
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;

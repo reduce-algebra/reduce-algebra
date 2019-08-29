@@ -69,23 +69,23 @@ union alignas(pageSize) Page
 // chain of all the pages that are not currently full but that (may)
 // have pinned live data within them.
         union Page *chain;
-// When a page is the Nursery or the I keep fringe and limit pointers
+// When a page is the Nursery or the I keep fringe and heaplimit pointers
 // showing how the next allocation must happen. There will be further
 // variables related to mapping pinned items within the page where it
 // is necessary to allocate around them. When a page ceases being the
 // Nursery it may still have some free space at its end (for instance
 // when it overflowed due to an attempt to allocate a vector). So the
-// fringe and limit values are saved in it so that if an ambiguous
+// fringe and heaplimit values are saved in it so that if an ambiguous
 // pointer refers into the page but indicates an address beyond the fringe
 // it can be ignored.
         uintptr_t fringe;
 // To follow on from the above, when a page has been evacuated by the
-// garbage collector fresh values of fringe and limit can be set into it.
+// garbage collector fresh values of fringe and heaplimit can be set into it.
 // When the page is selected as a new Nursery these values can be transferred
 // into the global locations.
 // Neither of these fields is used other than during garbage collection and
 // so neither needs a std::atomic<> wrapping.
-        uintptr_t limit;
+        uintptr_t heaplimit;
 // I use a software write-barrier that sets bytes in the dirty[] array
 // when something is referenced. There are then times when I need to
 // process every dirty region. Well I hope that many pages will not have any
@@ -178,6 +178,10 @@ inline void write_barrier(LispObject *p)
     x->pageBody.pageBitmaps.dirty[offset/32].store(1);
 }
 
+inline void write_barrier(std::atomic<LispObject> *p)
+{   write_barrier((LispObject *)p);
+}
+
 // I will have variables fringe and heaplimit that are thread_local.
 // On Cygwin and Mingw32 I use the Microsoft low-level API directly
 // because the version provided via C++ has severe overheads (at the time
@@ -187,10 +191,27 @@ inline void write_barrier(LispObject *p)
 // gets diverted so as to use the platform-specific scheme for thread-local
 // and so that heaplimit is a std::atomic<T> item.
 
+// At the start I will implement other thread-local values using direct C++
+// rather than this, but I can optimise more later on when I know what
+// matters most.
+
 #if defined WIN32 || defined __CYGWIN__
 
-const inline int fringe_slot = TlsAlloc();
-const inline int heaplimit_slot = TlsAlloc();
+// If I go "#include <windows.h>" (well the bit I actually need seems to be
+// processthreadsapi.h) that tends to define all sorts of things that can
+// clash with my own code. So here I put in explicit declarations for the
+// thread-local support functions I use, trying rather hard to match just
+// what Windows will use.
+
+extern "C"
+{
+extern __declspec(dllimport) uint32_t TlsAlloc();
+extern __declspec(dllimport) void *TlsGetValue(uint32_t);
+extern __declspec(dllimport) int TlsSetValue(uint32_t, void *);
+};
+
+const inline uint32_t fringe_slot = TlsAlloc();
+const inline uint32_t heaplimit_slot = TlsAlloc();
 inline thread_local std::atomic<uintptr_t> real_heaplimit;
 
 class ForFringe
@@ -217,7 +238,11 @@ public:
     {   return *(std::atomic<uintptr_t> *)TlsGetValue(heaplimit_slot);
     };
     ForHeapLimit& operator= (const uintptr_t a)
-    {    TlsSetValue(heaplimit_slot, (void *)a);
+    {    *(std::atomic<uintptr_t> *)TlsGetValue(heaplimit_slot) = a;
+         return *this;
+    };
+    ForHeapLimit& operator+= (const uintptr_t a)
+    {    ((std::atomic<uintptr_t> *)TlsGetValue(heaplimit_slot))->fetch_add(a);
          return *this;
     };
     ForHeapLimit()
@@ -367,32 +392,24 @@ inline int nlz(uint64_t x)
 }
 
 #endif // __GNUC__
+#define NLZ_DEFINED 1
 
 extern std::mutex gc_mutex;
 extern uintptr_t gc_and_allocate(uintptr_t r, size_t n);
 
-// Note that I use4 memory_order_relaxed with the atomic loads here. This
-// means that I can have one thread performing the load in an apparently
-// odd order relative to the increment. However in this code Alimit will
-// not change except during garbage collection, and when garbage collection
-// all threads will synchronize - so at that point I will need to ensure that
-// if the thread that actually performs garbage collection updates Alimit
-// (eg to point into a new region of memory) that all threads will know to
-// re-load Alimit. I think that ll this can be done within the code for
-// gc_and_allocate.
+// This is the core part of CONS and also of the code that allocates
+// bignums, strings and vectors.
 
 inline LispObject get_n_bytes(size_t n)
-{   size_t n1 = doubleword_align_up(n);
-// The next two lines will need lengthy discussion if only so I understand
-// what I need to do after them.
-    uintptr_t limit = Alimit.load(std::memory_order_relaxed);
-    uintptr_t result = Afringe.fetch_add(n1, std::memory_order_relaxed);
-// The above updated Afringe in an atomic manner, so that if multiple
-// threads perform this operation concurrently each will get a result
-// corresponding to a distinct chunk of memory.
-    if (result+n1 >= limit)
-        result = gc_and_allocate(result, n);
-    return static_cast<LispObject>(result);
+{   n = doubleword_align_up(n);
+    uintptr_t r = fringe;
+    fringe += n;
+// fringe is thread-local. heaplimit is both thread-local and atomic, and
+// so if other threads alter heaplimit that fact will be noticed here. In
+// particular if another thread sets heaplimit to zero then the gc_and_allocate()
+// recovery code will be triggered on the next allocation attempt.
+    if (fringe >= (uintptr_t)heaplimit) r = gc_and_allocate(r, n);
+    return static_cast<LispObject>(r);
 }
 
 // It will be important to poll frequently because when one thread
@@ -404,7 +421,7 @@ inline LispObject get_n_bytes(size_t n)
 // made, but details of that belong elsewhere.
 
 inline void poll()
-{   if (Afringe.load() >= Alimit.load()) (void)gc_and_allocate(0, 0);
+{   if (fringe >= (uintptr_t)heaplimit) (void)gc_and_allocate(0, 0);
 }
 
 // Here we will have:
@@ -412,25 +429,20 @@ inline void poll()
 //    limit an address such that only memory below it may be allocated;
 //    r the start of a block that allocation had attempted at;
 //    n the size of the block being allocated;
-//    fringe >= limit.
+//    fringe >= heaplimit.
 // Several threads can be allocating at about the same time, so one will
-// be the first to use fetch_add() in a way that makes fringe >= limit.
+// be the first to use fetch_add() in a way that makes fringe >= heaplimit.
 // But then others can follow on and increment fringe further, but all but
-// the first such will deliver r >= limit, and unless recovery action
-// resets fringe and/or limit for them to soon all will call gc_and_allocate().
+// the first such will deliver r >= heaplimit, and unless recovery action
+// resets fringe and/or heaplimit for them to soon all will call gc_and_allocate().
 // Well this is an issue, because if gc_and_allocate running in some thread
-// can reset things such that fringe < limit before a different thread tests
+// can reset things such that fringe < heaplimit before a different thread tests
 // for that we can have a memory overflow event undetected.
 // As a special case this may be called with r = n = 0 as a way for a
 // thread not actually needing memory at the moment to synchronize.
 
-// Now a HORRID feature of the scheme I have here is that I need to keep
-// track of how many threads exist and how many are currently running. A
-// thread will contribute to the count in "activeThreads" if its is in a
-// state where it will poll or allocate memory soon.
 
-extern std::atomic<int> activeThreads;
-extern int threadcount;
+extern std::atomic<int32_t> threadCount;
 extern std::atomic<bool> gc_complete;
 extern std::mutex mutex_for_gc;
 extern std::condition_variable cv_for_gc;
@@ -465,8 +477,8 @@ inline LispObject ncons(LispObject a)
 // both cells as one operation...
 
 inline LispObject list2(LispObject a, LispObject b)
-{   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    LispObject r2 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+{   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
+    LispObject r2 = r1 + 2*sizeof(LispObject);
     setcar(r1, a);
     setcar(r2, b);
     setcdr(r1, r2);
@@ -497,7 +509,7 @@ inline LispObject list2starrev(LispObject c, LispObject b, LispObject a)
 inline LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
 {   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
-    LispObject r3 = r2 + 2*sizeof(LispObject);
+    LispObject r3 = r1 + 4*sizeof(LispObject);
     setcar(r1, a);
     setcar(r2, b);
     setcar(r3, c);
@@ -510,8 +522,8 @@ inline LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject
 inline LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
 {   LispObject r1 = get_n_bytes(8*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
-    LispObject r3 = r2 + 2*sizeof(LispObject);
-    LispObject r4 = r3 + 2*sizeof(LispObject);
+    LispObject r3 = r1 + 4*sizeof(LispObject);
+    LispObject r4 = r1 + 6*sizeof(LispObject);
     setcar(r1, a);
     setcar(r2, b);
     setcar(r3, c);
@@ -540,7 +552,7 @@ inline LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
 inline LispObject list3(LispObject a, LispObject b, LispObject c)
 {   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
-    LispObject r3 = r2 + 2*sizeof(LispObject);
+    LispObject r3 = r1 + 4*sizeof(LispObject);
     setcar(r1, a);
     setcar(r2, b);
     setcar(r3, c);
@@ -553,7 +565,7 @@ inline LispObject list3(LispObject a, LispObject b, LispObject c)
 inline LispObject list3rev(LispObject c, LispObject b, LispObject a)
 {   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
     LispObject r2 = r1 + 2*sizeof(LispObject);
-    LispObject r3 = r2 + 2*sizeof(LispObject);
+    LispObject r3 = r1 + 4*sizeof(LispObject);
     setcar(r1, a);
     setcar(r2, b);
     setcar(r3, c);

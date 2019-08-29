@@ -18,7 +18,7 @@
 //     particular the way an atomic increment operation is used.
 //
 // (2) Use
-//     thread_local ConsCeell *fringe;
+//     thread_local ConsCell *fringe;
 //     ConsCell *allocate_cons_cell()
 //     {   ConsCell *r = fringe++;
 //         ..
@@ -28,7 +28,7 @@
 //     allocation regions. The second is that in (1) once memory is
 //     exhausted every thread naturally ends up entering the garbage
 //     collector. With (2) finding a good scheme to synchronize all threads
-//     involvex extra work.
+//     involves extra work.
 //
 // The test here is because I found quite substantial performance issues.
 // I have cut the code down to just the "fringe++" kernel. I have then tried
@@ -46,6 +46,93 @@
 // overhead can be essentially removed, but at the cost of using separate
 // code in that case.
 
+// Here are some sample results, with explanation and commentary:
+//
+// Test on CYGWIN
+// simple        100%   234 centiseconds
+// atomic inc R  501%
+// atomic inc    503%
+// fakelocal     181%
+// winlocal      180%
+// MS fakelocal  472%
+// MS winlocal   520%
+// thread local  5317%
+//
+// That was with 64-bit Cygwin running on Windows 10. The "simple" case
+// provides a baseline and uses unadorned C++ variables, so no thread_local
+// and not atomic. It would not be suitable for use in a multi-threaded
+// context. All other times are normalized to it, which is why it is shown
+// at "100%". The timing after that is an absolute timing and makes it
+// possible to get some idea about the relative speeds of the computers
+// used in the test run.  The two "atomic inc" cases use a std::atomic
+// fetch_add operation. One used "relaxed" memoy order, the other
+// sequentially consistent. On all the platforms this shows that code that
+// says fringe.fetch_add(n) is significantly slower than having just
+// fringe+=n. On Windows platforms I collect 5 variants on use of thread-local
+// storage for the fringe register. The line just labelled "thread local"
+// uses "thread_local uintptr_t fringe;" in a straightforward way. Observe
+// that on Cygwin/Mingw32 g++ makes that very slow. Inspecting the generated
+// code reveals calls to "emutls". However Linux on x86_64 shows minimal
+// overhead for this option, while the Mac and aarch64 show some noticable
+// pain. I have fakelocal/winlocal and MS variants of those two. The MS
+// versions use the official Microsoft access functions TlsGetValue and
+// TlsSetValue. The others replace those calls with my own verions that can
+// be expanded inline. "fakelocal" just uses the special code for thread
+// local storage for fringe and limit and so while it could allocate within
+// its own nursery heap it does not have provision for synchronizations
+// with other threads. "winlocal" expands on that by reading the limit value
+// with an ACQUIRE atomic operation so that other threads could change it and
+// the allocating one would then notice.
+//
+// Test on MINGW
+// simple        100%   281 centiseconds
+// atomic inc R  416%
+// atomic inc    416%
+// fakelocal     150%
+// winlocal      150%
+// MS fakelocal  399%
+// MS winlocal   433%
+// thread local  1952%
+//
+// x86_64-w64-mingw32-g++ on Windows 10 shows timings that are interestingly
+// different in detail but that probably lead to the same conclusions.
+//
+// Test on LINUX64
+// simple        100%   374 centiseconds
+// atomic inc R  328%
+// atomic inc    328%
+// thread local  99%
+//
+// 64-bit Ubuntu was run on a different computer so it is not at all
+// amazing that the actual run time for the simple test is different. Having
+// a CPU that is slower in absolute terms may explain the slightly lower
+// overhead associated with the atomic increments. The thread_local time
+// shows good performance!
+//
+// Test on MAC
+// simple        100%   366 centiseconds
+// atomic inc R  438%
+// atomic inc    434%
+// thread local  283%
+//
+// A 2014 Macbook still shows that the atomic increment is painfully
+// expensive.
+//
+// Test on RPI64
+// simple        100%   982 centiseconds
+// atomic inc R  615%
+// atomic inc    531%
+// thread local  315%
+// thread localR 121%
+// A Raspberry Pi 4 running 64-bit Manjaro Linux shows absolute times
+// for the test that are amazingly good. Nota that the time reported as
+// "thread local" uses an atomic load to access the limit value (with
+// an ACQUIRE memory ordering specified". Thhis is compiled using an
+// LDAR instruction where otherwise an LDR might have been. This is what
+// is mostly responsible for the slowdown, because using memory_order_relaxed
+// (which is not consistent with using limit for inter-thread communication)
+// drops the cost substantially.
+
 
 
 #include <iostream>
@@ -55,6 +142,9 @@
 #include <ctime>
 
 #ifdef __CYGWIN__
+// <windows.h> tends to clash with various cygwin headers, so I
+// rename "select" to avoid one of the ones that caused most grief. It
+// it just as well I do not want to use that function here!
 #define select xxxselect
 #include <windows.h>
 #endif
@@ -144,7 +234,7 @@ inline void *read_via_segment_register(uint32_t n)
     asm volatile
     (   "movl %%fs:(%1), %0"
         : "=r" (r)
-        : "r" (n)
+        : "ri" (n)
         :
     );
     return r;
@@ -153,7 +243,7 @@ inline void write_via_segment_register(uint32_t n, void *v)
 {   asm volatile
     (   "movl %0, %%fs:(%1)"
         :
-        : "r" (v), "r" (n)
+        : "ri" (v), "r" (n)
         :
     );
 }
@@ -233,6 +323,30 @@ inline void store_general(GeneralTLVars *v)
 {   tls_store(myTEBSlots.generalSlot, (void *)v);
 }
 
+inline uintptr_t MS_load_fringe()
+{   return (uintptr_t)TlsGetValue(myTEBSlots.fringeSlot);
+}
+
+inline void MS_store_fringe(uintptr_t v)
+{   TlsSetValue(myTEBSlots.fringeSlot, (void *)v);
+}
+
+inline uintptr_t MS_load_limit()
+{   return (uintptr_t)TlsGetValue(myTEBSlots.limitSlot);
+}
+
+inline void MS_store_limit(uintptr_t v)
+{   TlsSetValue(myTEBSlots.limitSlot, (void *)v);
+}
+
+inline GeneralTLVars *MS_load_general()
+{   return (GeneralTLVars *)TlsGetValue(myTEBSlots.generalSlot);
+}
+
+inline void MS_store_general(GeneralTLVars *v)
+{   TlsSetValue(myTEBSlots.generalSlot, (void *)v);
+}
+
 class SetUpGeneralVars
 {
 public:
@@ -250,51 +364,38 @@ public:
 
 /*inline thread_local*/ SetUpGeneralVars setUpGeneralVars;
 
-#else
+#else // ON_WINDOWS
+
+inline void store_fringe(uintptr_t w)
+{
+}
+
+inline void store_limit(uintptr_t w)
+{
+}
 
 inline void tls_store(int32_t slot, void *v)
 {
 }
 
-thread_local std::atomic<uintptr_t> Tlimit;
-thread_local GeneralTLVars generalVars;
-
-inline uintptr_t load_fringe()
-{   return fringe;
-}
-
-inline void store_fringe(uintptr_t v)
-{   fringe = v;
-}
-
-inline uintptr_t load_limit()
-{   return limit;
-}
-
-inline void store_limit(uintptr_t v)
-{   limit = v;
-}
+thread_local GeneralTLVars generalTLVars;
 
 inline GeneralTLVars *load_general()
-{   return &generalVars;
+{   return &generalTLVars;
+}
+
+inline GeneralTLVars *MS_load_general()
+{   return &generalTLVars;
 }
 
 #endif // ON_WINDOWS
 
-inline int32_t &TLvar1()
-{   return load_general()->TLvar1;
-}
-
-inline double &TLvar2()
-{   return load_general()->TLvar2;
-}
-
-inline void * &TLvar3()
-{   return load_general()->TLvar3;
-}
-
 inline std::atomic<uintptr_t> &TLlimit()
 {   return load_general()->limit;
+} 
+
+inline std::atomic<uintptr_t> &MS_TLlimit()
+{   return MS_load_general()->limit;
 } 
 
 std::atomic<uintptr_t> Afringe;
@@ -302,7 +403,8 @@ uintptr_t fringe;
 thread_local uintptr_t Tfringe;
 
 std::atomic<uintptr_t> Alimit;
-uintptr_t limit;
+volatile uintptr_t limit;     // so that compiler does not optimize
+                              // out accesses.
 thread_local std::atomic<uintptr_t> Tlimit;
 
 [[gnu::noinline]] LispObject garbage_collect(uintptr_t fringe, size_t n)
@@ -314,30 +416,38 @@ thread_local std::atomic<uintptr_t> Tlimit;
 // This "simple" version is to provide a baseline measurement of what
 // one might achieve if threads were not an issue.
 
+// I make the test for the need for garbage collection "==" rather than
+// ">" or "<" because all I want there is a test that will cause the
+// limit register to be checked but that will then always fail.
+
 [[gnu::noinline]] LispObject simple_get_n_bytes(size_t n)
 {   uintptr_t result = (fringe -= n);
-    if (fringe < limit) result = garbage_collect(result, n);
+    if (fringe == limit) result = garbage_collect(result, n);
     return static_cast<LispObject>(result);
 }
 
 // Now a version based on having a single heap region and using an
-// atomic fetch_add.
+// atomic fetch_add. On Intel/AMD the specification of memory_order_relaxed
+// will not make a difference, but on systems with other memory models it
+// might. I believe that Alpha was the most dramatic case. PPC also had
+// extra need for memory barriers, and ARMV7 has some. I have not yet
+// understood the impact on ARMV8.
 
 [[gnu::noinline]] LispObject relaxed_get_n_bytes(size_t n)
 {   uintptr_t result = Afringe.fetch_sub(n, std::memory_order_relaxed);
-    if (result-n < Alimit.load(std::memory_order_acquire))
+    if (result-n == Alimit.load(std::memory_order_acquire))
         result = garbage_collect(result, n);
     return static_cast<LispObject>(result-n);
 }
 
 // As above but expressing the increment using "-=" and letting the
 // default memory order discipline apply. This allocates downwards in
-// memory rather than upwards.
+// memory rather than upwards. This where using "==" as my test for
+// the end of the heap region is a help.
 
 [[gnu::noinline]] LispObject default_get_n_bytes(size_t n)
 {   uintptr_t result = (Afringe -= n);
-// The next line really needs "<=" not "<".
-    if (result < Alimit.load(std::memory_order_acquire))
+    if (result == Alimit.load(std::memory_order_acquire))
         result = garbage_collect(result, n);
     return static_cast<LispObject>(result);
 }
@@ -347,10 +457,12 @@ thread_local std::atomic<uintptr_t> Tlimit;
 // in each. Tlimit needs to be atomic so that other threads can force
 // a GC here by setting it.
 
+#ifdef ON_WINDOWS
+
 [[gnu::noinline]] LispObject fakelocal_get_n_bytes(size_t n)
 {   uintptr_t result = load_fringe() - n;
     store_fringe(result);
-    if (result < load_limit())
+    if (result == load_limit())
         result = garbage_collect(result, n);
     return static_cast<LispObject>(result);
 }
@@ -358,14 +470,39 @@ thread_local std::atomic<uintptr_t> Tlimit;
 [[gnu::noinline]] LispObject winlocal_get_n_bytes(size_t n)
 {   uintptr_t result = load_fringe() - n;
     store_fringe(result);
-    if (result < TLlimit().load(std::memory_order_acquire))
+    if (result == TLlimit().load(std::memory_order_acquire))
         result = garbage_collect(result, n);
     return static_cast<LispObject>(result);
 }
 
+[[gnu::noinline]] LispObject MS_fakelocal_get_n_bytes(size_t n)
+{   uintptr_t result = MS_load_fringe() - n;
+    MS_store_fringe(result);
+    if (result == MS_load_limit())
+        result = garbage_collect(result, n);
+    return static_cast<LispObject>(result);
+}
+
+[[gnu::noinline]] LispObject MS_winlocal_get_n_bytes(size_t n)
+{   uintptr_t result = MS_load_fringe() - n;
+    MS_store_fringe(result);
+    if (result == MS_TLlimit().load(std::memory_order_acquire))
+        result = garbage_collect(result, n);
+    return static_cast<LispObject>(result);
+}
+
+#endif // ON_WINDOWS
+
 [[gnu::noinline]] LispObject threadlocal_get_n_bytes(size_t n)
 {   uintptr_t result = (Tfringe -= n);
-    if (Tfringe < Tlimit.load(std::memory_order_acquire))
+    if (Tfringe == Tlimit.load(std::memory_order_acquire))
+        result = garbage_collect(result, n);
+    return static_cast<LispObject>(result);
+}
+
+[[gnu::noinline]] LispObject relaxed_threadlocal_get_n_bytes(size_t n)
+{   uintptr_t result = (Tfringe -= n);
+    if (Tfringe == Tlimit.load(std::memory_order_relaxed))
         result = garbage_collect(result, n);
     return static_cast<LispObject>(result);
 }
@@ -405,12 +542,18 @@ int main(int argc, char *argv[])
 {   if (argc>1) std::cout << "Test on " << argv[1] << std::endl;
     first = true;
     basetime = 0;
-    time1("simple     ", simple_get_n_bytes);
-    time1("relaxed    ", relaxed_get_n_bytes);
-    time1("default    ", default_get_n_bytes);
-    time1("fakelocal  ", fakelocal_get_n_bytes);
-    time1("winlocal   ", winlocal_get_n_bytes);
-    time1("threadlocal", threadlocal_get_n_bytes);
+    time1("simple       ", simple_get_n_bytes);
+    time1("atomic inc R ", relaxed_get_n_bytes);
+    time1("atomic inc   ", default_get_n_bytes);
+#ifdef ON_WINDOWS
+    time1("fakelocal    ", fakelocal_get_n_bytes);
+    time1("winlocal     ", winlocal_get_n_bytes);
+    time1("MS fakelocal ", MS_fakelocal_get_n_bytes);
+    time1("MS winlocal  ", MS_winlocal_get_n_bytes);
+#endif
+    time1("thread local ", threadlocal_get_n_bytes);
+    time1("thread localR", relaxed_threadlocal_get_n_bytes);
     return 0;
 }
 
+// end of constime.cpp
