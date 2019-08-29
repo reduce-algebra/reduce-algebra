@@ -696,11 +696,11 @@ END_OF_BIBLIO_SECTION
 	<dt id="Ganzha:99">[Ganzha:99] Victor&nbsp;G. Ganzha and Evgenii&nbsp;V. Vorozhtsov.</dt>
 	<dd><a href="http://dx.doi.org/10.1006/jsco.1999.0289">Application of computer algebra systems for stability analysis of difference schemes on curvilinear grids</a>. <em>Journal of Symbolic Computation</em> <strong>28</strong> no. 3, pages 401-433, 1999.</dd>
 	<dt id="Garavaglia:80">[Garavaglia:80] T.&nbsp;Garavaglia.</dt>
-	<dd><a href="http://dx.doi.org/10.1007/BF02730158">A covariant formulation for polarized electron (muon) scattering on spin-zero and polarized spin-\frac12 targets</a>. <em>Il Nuovo Cimento A</em> <strong>56</strong> no. 2, pages 121-128, March 1980.</dd>
+	<dd><a href="http://dx.doi.org/10.1007/BF02730158">A covariant formulation for polarized electron (muon) scattering on spin-zero and polarized spin-&frac12; targets</a>. <em>Il Nuovo Cimento A</em> <strong>56</strong> no. 2, pages 121-128, March 1980.</dd>
 	<dt id="Garavaglia:84">[Garavaglia:84] Theodore Garavaglia.</dt>
 	<dd><a href="http://link.aps.org/doi/10.1103/PhysRevD.29.387">Dirac- and Majorana-neutrino-mass effects in neutrino-electron elastic scattering</a>. <em>Physical Review D (Particles and Fields)</em> <strong>29</strong> no. 3, pages 387-392, February 1984.</dd>
 	<dt id="Garavaglia">[Garavaglia] Theodore Garavaglia.</dt>
-	<dd><a href="http://dx.doi.org/10.1007/BF02080690">Polarized electron scattering on spin zero and polarized spin-1/2 targets: Deep inelastic scattering, elastic electron-muon scattering, and elastic electron-nucleon scattering</a>. <em>International Journal of Theoretical Physics</em> <strong>23</strong> no. 3, pages 251-294, 1984.</dd>
+	<dd><a href="http://dx.doi.org/10.1007/BF02080690">Polarized electron scattering on spin zero and polarized spin-&frac12; targets: Deep inelastic scattering, elastic electron-muon scattering, and elastic electron-nucleon scattering</a>. <em>International Journal of Theoretical Physics</em> <strong>23</strong> no. 3, pages 251-294, 1984.</dd>
 	<dt id="Garcia:86">[Garcia:86] Arnaldo Garcia and Paulo Viana.</dt>
 	<dd>Weierstrass points on certain non-classical curves. <em>Arch. Math.</em> <strong>46</strong>, pages 315-322, 1986.</dd>
 	<dt id="Garrad:86">[Garrad:86] A.&nbsp;D. Garrad and D.&nbsp;C. Quarton.</dt>
@@ -1153,9 +1153,9 @@ END_OF_BIBLIO_SECTION
 	<dt id="Kaneko:89">[Kaneko:89] Toshiaki Kaneko and Setsuya Kawabata.</dt>
 	<dd><a href="http://dx.doi.org/10.1016/0010-4655(89)90073-8">A preprocessor for Fortran source code produced by REDUCE</a>. <em>Computer Physics Communications</em> <strong>55</strong> no. 2, pages 141-147, September 1989.</dd>
 	<dt id="Kang:05a">[Kang:05a] Daekyoung Kang, Jong-Wan Lee, Jungil Lee, Taewon Kim, and Pyungwon Ko.</dt>
-	<dd><a href="http://arxiv.org/abs/hep-ph/0412381">Color-evaporation-model calculation of e<sup>+</sup>e<sup>-</sup>\rightarrowj/&#968;+c<span style="text-decoration: overline;">c</span>+x at s=10.6 gev</a>. <em>Physical Review D (Particles and Fields)</em> <strong>71</strong> no. 9, page 094019, May 2005.</dd>
+	<dd><a href="http://arxiv.org/abs/hep-ph/0412381">Color-evaporation-model calculation of e<sup>+</sup>e<sup>-</sup>&rarr;j/&#968;+c<span style="text-decoration: overline;">c</span>+x at s=10.6 gev</a>. <em>Physical Review D (Particles and Fields)</em> <strong>71</strong> no. 9, page 094019, May 2005.</dd>
 	<dt id="Kang:05">[Kang:05] Daekyoung Kang, Jong-Wan Lee, Jungil Lee, Taewon Kim, and Pyungwon Ko.</dt>
-	<dd><a href="http://arxiv.org/abs/hep-ph/0412224">Inclusive production of four charm hadrons in e+e- annihilation at B factories</a>. <em>Physical Review D (Particles and Fields)</em> <strong>71</strong> no. 7, page 071501, Apr 2005.</dd>
+	<dd><a href="http://arxiv.org/abs/hep-ph/0412224">Inclusive production of four charm hadrons in e<sup>+</sup>e<sup>-</sup> annihilation at B factories</a>. <em>Physical Review D (Particles and Fields)</em> <strong>71</strong> no. 7, page 071501, Apr 2005.</dd>
 	<dt id="Kaplan:05">[Kaplan:05] Michael Kaplan.</dt>
 	<dd><em>Computeralgebra</em>. Springer, 2005.</dd>
 	<dt id="Kaps:85">[Kaps:85] P.&nbsp;Kaps, S.&nbsp;W.&nbsp;H. Poon, and T.&nbsp;D. Bui.</dt>
@@ -1257,7 +1257,7 @@ END_OF_BIBLIO_SECTION
 	<dd>Understanding and improving content markup for the web: from the perspectives of formal linguistics, algebraic logics, and cognitive science. In: <em>ISIC/CIRA/ISAS '98 Joint Conference on the Science and Technology of Intelligent Systems</em>, 1998.</dd>
 	<dt id="Koike:92">[Koike:92] F.&nbsp;Koike.</dt>
 	<dd><a href="http://dx.doi.org/10.1016/0010-4655(92)90147-Q">Explicit formulae of angular momentum coupling coefficients</a>. <em>Computer Physics Communications</em> <strong>72</strong>, pages 154-164, November 1992.</dd>
-	<dt id="Kolar:90">[Kolar:90] M.&nbsp;Kol&aacute;\ur and M.&nbsp;K. Ali.</dt>
+	<dt id="Kolar:90">[Kolar:90] M.&nbsp;Kol&aacute;&rcaron; and M.&nbsp;K. Ali.</dt>
 	<dd><a href="http://link.aps.org/doi/10.1103/PhysRevA.42.7112">Trace maps associated with general two-letter substitution rules</a>. <em>Phys. Rev. A</em>
 		<strong>42</strong> no. 12, pages 7112-7124, December 1990.</dd>
 	<dt id="Koelbig:81b">[Koelbig:81b] K.&nbsp;S. K&ouml;lbig.</dt>
@@ -1354,7 +1354,7 @@ END_OF_BIBLIO_SECTION
 	<dd>Non-symmetric creep buckling of circular cylindrical shells in axial compression. In: <em>Proc. Intern. Symp. in Creep Effect in Structures, Gotenburg, Sweden</em>, August 1970.</dd>
 	<dt id="Levi:71">[Levi:71] I.&nbsp;M. Levi.</dt>
 	<dd>Symbolic algebra by computer - applications to structural mechanics. In: <em>AIAA/ASME 12th Structures, Structural Dynamics and Materials Conference, Anaheim, California</em>, April 1971.</dd>
-	<dt id="Lichard:07">[Lichard:07] Peter Lichard and Josef Jur&aacute;\vn.</dt>
+	<dt id="Lichard:07">[Lichard:07] Peter Lichard and Josef Jur&aacute;&ncaron;.</dt>
 	<dd><a href="http://arxiv.org/pdf/hep-ph/0601234v2">Electron-positron annihilation into four charged pions and the a<sub>1</sub> &#961; &#960; lagrangian</a>. <em>Physical Review D (Particles and Fields)</em> <strong>76</strong> no. 9, page 094030, 2007.</dd>
 	<dt id="Liebermann:75">[Liebermann:75] R.&nbsp;Liebermann.</dt>
 	<dd><a href="http://dx.doi.org/10.1016/0021-9991(78)90152-3">Traces of high energy processes in strong magnetic fields</a>. <em>Journal of Computational Physics</em> <strong>29</strong> no. 2, November 1975.</dd>
