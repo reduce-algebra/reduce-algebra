@@ -187,7 +187,7 @@ put('mod,'psopfn,'evalmod);
 symbolic procedure evalmod u;
   begin scalar dm,cp,m,mm,w,!*rounded,!*modular;
     if !*complex then
-      <<cp:=t; setdmode('complex,nil); !*complex:=nil>>;
+      <<cp:=t; setdmode('complex,nil); !*complex:=nil>> where !*msg=nil;
     if (dm:=get(dmode!*,'dname)) then setdmode(dm,nil);
     % We need to evaluate the first term before setting any modulus.
     % e.g., a := -8/7; (num a) mod 7;
@@ -199,7 +199,7 @@ symbolic procedure evalmod u;
     apply1('setmod,{mm});
     if dm neq 'modular then
      <<setdmode('modular,nil); if dm then setdmode(dm,t)>>;
-    if cp then <<setdmode('complex,t); !*complex :=t>>;
+    if cp then <<setdmode('complex,t); !*complex :=t>> where !*msg=nil;
     return w;
   end;
 

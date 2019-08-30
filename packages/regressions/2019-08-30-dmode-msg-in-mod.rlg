@@ -1,0 +1,25 @@
+% when using the mod operator when dmode complex-rounded is in effect,
+% confusing messages appeared:
+% *** Domain mode complex-rounded changed to rounded 
+% *** Domain mode rounded changed to complex-rounded
+
+on rounded,complex;
+
+
+*** Domain mode rounded changed to complex-rounded 
+
+
+x := 3;
+
+
+x := 3
+
+
+x mod 4;
+
+
+3
+
+
+end;
+
