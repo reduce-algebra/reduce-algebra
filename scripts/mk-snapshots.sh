@@ -203,6 +203,9 @@ hostname() {
   windows | win32 | win64 | winboth)
     echo "windows"
     ;;
+  altwin64)
+    echo "altwindows"
+    ;;
   *)
     echo "$1"
     ;;
@@ -283,6 +286,7 @@ build() {
     windows | \
     win32   | \
     win64   | \
+    altwin64 | \
     winboth | \
     linux32 | \
     linux64 | \
@@ -323,6 +327,7 @@ build() {
     windows | \
     win32   | \
     win64   | \
+    altwin64 | \
     winboth | \
     linux32 | \
     linux64 | \
@@ -334,6 +339,7 @@ build() {
     -windows | \
     -win32   | \
     -win64   | \
+    -altwin64 | \
     -winboth | \
     -linux32 | \
     -linux64 | \
@@ -402,6 +408,23 @@ build_win32() {
 
 build_win64() {
   machine_windows
+  if test "$MODE" = "none"
+  then
+    printf "Unable to build Windows snapshot here\n"
+    return 0
+  fi
+  start_remote_host
+  copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
+  copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
+  execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
+  stop_remote_host
+}
+
+build_altwin64() {
+  machine_altwindows
   if test "$MODE" = "none"
   then
     printf "Unable to build Windows snapshot here\n"
@@ -548,6 +571,27 @@ machine_macintosh() {
 machine_windows() {
   MODE="none"
   hosts_windows 2> /dev/null
+  if test "$MODE" = "none"
+  then
+    case `uname -n` in
+    math-smreduce)
+      MODE=virtual
+      VM="REDUCE-pkg-factory-Windows"
+      REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
+      REDUCE_BUILD="/Volumes/DATA/reduce-build"
+      SNAPSHOTS="/Volumes/DATA/snapshots"
+      ;;
+    *)
+      printf "Do not know how to access a Windows machine from `uname -n`\n"
+      MODE=none
+      ;;
+    esac
+  fi
+}
+
+machine_altwindows() {
+  MODE="none"
+  hosts_altwindows 2> /dev/null
   if test "$MODE" = "none"
   then
     case `uname -n` in
@@ -844,7 +888,7 @@ execute_in_dir() {
   if test "$TARGET" = "windows"
   then
 # For execution on Windows I seem to need this and if I do not add it then
-# remote executaion of i686-w64-mingw32-gcc seems to get confused as to
+# remote execution of i686-w64-mingw32-gcc seems to get confused as to
 # whether assembly of the generated code should be done in 32 or 64-bit mode.
     cmd="export PATH=/usr/bin:\$PATH; $cmd"
   fi
@@ -857,27 +901,27 @@ execute_in_dir() {
     cd $HERE
     ;;
   ssh)
-    printf "ssh $USER@$HOST \"cd $dir; $cmd\"\n"
-    ssh $USER@$HOST "cd $dir; $cmd"
+    printf "ssh $USER@$HOST \"export PATH=/usr/bin:\$PATH; cd $dir; $cmd\"\n"
+    ssh $USER@$HOST "export PATH=/usr/bin:\$PATH; cd $dir; $cmd"
     ;;
   virtual)
-    printf "ssh -p $PORT $SSHOPTS $USER@localhost \"cd $dir; $cmd\"\n"
-    ssh -p $PORT $SSHOPTS $USER@localhost "cd $dir; $cmd"
+    printf "ssh -p $PORT $SSHOPTS $USER@localhost \"export PATH=/usr/bin:\$PATH; cd $dir; $cmd\"\n"
+    ssh -p $PORT $SSHOPTS $USER@localhost "export PATH=/usr/bin:\$PATH; cd $dir; $cmd"
     ;;
   ssh+ssh)
 # I had trouble getting the quotation correct here, so now I build up
 # the command that is to be executed step by step. Note that within $cmd there
 # can be the sequence "PATH=xxx:$PATH" and the expansion of "$PATH" has to
 # be delayed so it is performed on the final server.
-    cmd="cd $dir; $cmd"
+    cmd="export PATH=/usr/bin:\$PATH; cd $dir; $cmd"
 # Now create a command that will execute stuff on the final system.
     cmd="ssh $SSHOPTS $USER@$HOST2 '$cmd'"
     printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
     ssh $SSHOPTS $USER@$HOST1 "$cmd"
     ;;
   ssh+virtual)
-    printf "ssh -p $PORT $SSHOPTS $USER@$HOST \"cd $dir; $cmd\"\n"
-    ssh -p $PORT $SSHOPTS $USER@$HOST "cd $dir; $cmd"
+    printf "ssh -p $PORT $SSHOPTS $USER@$HOST \"export PATH=/usr/bin:\$PATH; cd $dir; $cmd\"\n"
+    ssh -p $PORT $SSHOPTS $USER@$HOST "export PATH=/usr/bin:\$PATH; cd $dir; $cmd"
     ;;
   *)
     printf "Unknown mode: $MODE\n"
@@ -962,7 +1006,7 @@ stop_remote_host() {
     then
       case $TARGET
       in
-      *windows*)
+      *win*)
         execute_in_dir "$REDUCE_BUILD" "\$WINDIR/SysWOW64/shutdown /s /t 1"
         ;;
       *)
