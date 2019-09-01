@@ -48,8 +48,13 @@
 #include <sys/mman.h>
 #endif // !WIN32
 
-//uintptr_t fringe, heaplimit;
-//uintptr_t vfringe, vheaplimit;
+#if !defined THREAD_LOCAL && !defined WINDOWS_THREAD && !defined ATOMIC
+uintptr_t fringe;
+uintptr_t heaplimit;
+uintptr_t vfringe;
+uintptr_t vheaplimit;
+#endif
+
 uintptr_t *C_stackbase;
 
 

@@ -193,10 +193,10 @@ inline std::atomic<uintptr_t> vheaplimit;
 
 #else
 
-inline uintptr_t fringe;
-inline uintptr_t heaplimit;
-inline uintptr_t vfringe;
-inline uintptr_t vheaplimit;
+extern uintptr_t fringe;
+extern uintptr_t heaplimit;
+extern uintptr_t vfringe;
+extern uintptr_t vheaplimit;
 
 #endif
 
