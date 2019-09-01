@@ -191,9 +191,6 @@ inline void write_barrier(std::atomic<LispObject> *p)
 // gets diverted so as to use the platform-specific scheme for thread-local
 // and so that heaplimit is a std::atomic<T> item.
 
-// At the start I will implement other thread-local values using direct C++
-// rather than this, but I can optimise more later on when I know what
-// matters most.
 
 #if defined WIN32 || defined __CYGWIN__
 
@@ -206,27 +203,147 @@ inline void write_barrier(std::atomic<LispObject> *p)
 extern "C"
 {
 extern __declspec(dllimport) uint32_t TlsAlloc();
+};
+
+// For now I will use inline variables, which become available with
+// C++17. This will not be good for general use since even slightly
+// "not the latest" versions of C++ compilers do not support it. In
+// particular Ubuntu LTS 16.04 (expiry date April 2021) comes with a
+// version of gcc too old for that. However it may be that I am not ready
+// to deploy this until June 2021, in which case all will be well!!!!
+
+const inline uint63_t threadid_slot = TlsAlloc();
+const inline uint32_t fringe_slot = TlsAlloc();
+const inline uint32_t heaplimit_slot = TlsAlloc();
+inline thread_local std::atomic<uintptr_t> real_heaplimit;
+
+#ifdef CAUTIOUS
+
+// This version uses the official Windows API for accessing thread-local
+// values.
+
+extern "C"
+{
 extern __declspec(dllimport) void *TlsGetValue(uint32_t);
 extern __declspec(dllimport) int TlsSetValue(uint32_t, void *);
 };
 
-const inline uint32_t fringe_slot = TlsAlloc();
-const inline uint32_t heaplimit_slot = TlsAlloc();
-inline thread_local std::atomic<uintptr_t> real_heaplimit;
+inline void *tls_load(uint32_t n)
+{   return TlsGetValue(n);
+}
+
+inline void tls_store(uint32_t n, void *v)
+{   TlsSetValue(n, v);
+}
+
+#else // CAUTIOUS
+
+// This version uses inline functions including a tiny amount of assembly
+// code and should match the behaviour of the Microsoft version. It goes
+// beyond anything that Windows guaranteed, but is believed tto be using
+// information that so many others rely on that it is not liable to
+// change.
+
+#if __SIZEOF_POINTER == 4
+
+// On 32-bit Windows the FS segment register provides access to the TEB,
+// while on a 64-bit system it would be GS with some different offsets.
+
+inline void *read_via_segment_register(uint32_t n)
+{   void *r;
+    asm volatile
+    (   "movl %%fs:(%1), %0"
+        : "=r" (r)
+        : "ri" (n)
+        :
+    );
+    return r;
+}
+
+inline void write_via_segment_register(uint32_t n, void *v)
+{   asm volatile
+    (   "movl %0, %%fs:(%1)"
+        :
+        : "ri" (v), "r" (n)
+        :
+    );
+}
+
+const uint32_t basic_TLS_offset    = 0xe10;
+const uint32_t extended_TLS_offset = 0xf94;
+
+#else // 32 vs 64-bit
+
+inline void *read_via_segment_register(uint32_t n)
+{   void *r;
+    asm volatile
+    (   "movq %%gs:(%1), %0"
+        : "=r" (r)
+        : "mri" (n)
+        :
+    );
+    return r;
+}
+
+inline void write_via_segment_register(uint32_t n, void *v)
+{   asm volatile
+    (   "movq %0, %%gs:(%1)"
+        :
+        : "mri" (v), "r" (n)
+        :
+    );
+}
+
+const uint32_t basic_TLS_offset    = 0x1480;
+const uint32_t extended_TLS_offset = 0x1780;
+
+#endif // 32 vs 64-bit
+
+inline void *tls_load(int32_t slot)
+{   if (slot >= 64)
+    {   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+        return a[slot - 64];
+    }
+    else return (void *)read_via_segment_register(
+        basic_TLS_offset + sizeof(void *)*slot);
+}
+
+inline void tls_store(int32_t slot, void *v)
+{   if (slot >= 64)
+    {   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+        a[slot - 64] = v;
+    }
+    else write_via_segment_register(
+        basic_TLS_offset + sizeof(void *)*slot, v);
+}
+
+#endif // CAUTIOUS
+
+class ForThreadId
+{
+public:
+    operator unsigned int()
+    {   return (unsigned int)tls_Load(threadId_slot);
+    };
+    ForFringe& operator= (const unsigned int a)
+    {    tls_store(threadId_slot, (void *)(uintptr_t)a);
+         return *this;
+    };
+};
 
 class ForFringe
 {
 public:
     operator uintptr_t()
-    {   return (uintptr_t)TlsGetValue(fringe_slot);
+    {   return (uintptr_t)tls_Load(fringe_slot);
     };
     ForFringe& operator= (const uintptr_t a)
-    {    TlsSetValue(fringe_slot, (void *)a);
+    {    tls_store(fringe_slot, (void *)a);
          return *this;
     };
     ForFringe& operator+= (const size_t a)
-    {    uintptr_t v = (uintptr_t)TlsGetValue(fringe_slot) + a;
-         TlsSetValue(fringe_slot, (void *)v);
+    {    uintptr_t v = (uintptr_t)tls_Load(fringe_slot) + a;
+         tls_store(fringe_slot, (void *)v);
          return *this;
     };
 };
@@ -235,21 +352,22 @@ class ForHeapLimit
 {
 public:
     operator uintptr_t()
-    {   return *(std::atomic<uintptr_t> *)TlsGetValue(heaplimit_slot);
+    {   return *(std::atomic<uintptr_t> *)tls_Load(heaplimit_slot);
     };
     ForHeapLimit& operator= (const uintptr_t a)
-    {    *(std::atomic<uintptr_t> *)TlsGetValue(heaplimit_slot) = a;
+    {    *(std::atomic<uintptr_t> *)tls_Load(heaplimit_slot) = a;
          return *this;
     };
     ForHeapLimit& operator+= (const uintptr_t a)
-    {    ((std::atomic<uintptr_t> *)TlsGetValue(heaplimit_slot))->fetch_add(a);
+    {    ((std::atomic<uintptr_t> *)tls_Load(heaplimit_slot))->fetch_add(a);
          return *this;
     };
     ForHeapLimit()
-    {   TlsSetValue(heaplimit_slot, (void *)&real_heaplimit);
+    {   tls_store(heaplimit_slot, (void *)&real_heaplimit);
     };
 };
 
+inline ForThreadId threadId;
 inline ForFringe fringe;
 inline ForHeapLimit heaplimit;
 
@@ -397,6 +515,73 @@ inline int nlz(uint64_t x)
 extern std::mutex gc_mutex;
 extern uintptr_t gc_and_allocate(uintptr_t r, size_t n);
 
+// I am going to explain what I do regarding synchronization for garbage
+// collection several times in different places, writing and re-writing
+// until I feel I have things straight!
+//
+// Each thread will have a separate region within which it allocates. It
+// will have thread-local variables fringe and heaplimit. To allocate
+// a block of N bytes it records the existing value of fringe and then
+// increments fringe by N. If that yields a value >= heaplimit then there
+// is not enough space at present, and garbage collection is called for.
+// The garbage collection call will only return when it has been able to
+// allocate the required memory, and it will (at least in general) reset
+// both fringe and heaplimit.
+//
+// When garbage collection is needed all threads have to be halted. To
+// arrange this any thread that concludes it needs GC will set the heaplimit
+// information for ALL threads to zero. Well to be a little more careful,
+// if it finds that its own heaplimit is zero it knows that that has already
+// been done, however given that several threads can be in this situation
+// at once I think the sane choices are either (a) put the zero-ing out
+// loop in a critical region or (b) accept that each thread will have its
+// heaplimit set to zero multiple times. Probably the former is going to
+// be cheaper and probably neither will have cost big enough to matter in the
+// context of garbage collection.
+// Since it is expected that every (active) Lisp thread will perform CONS
+// operations rather frequently every thread is expected to participate
+// soon. Obviously allocating strings, vectors or big-numbers will also get
+// fringe compared against heaplimit. Explicit checks to serve as polling
+// operations can be placed on backward jumps and other places of plausible
+// interest. Special handling will be needed for system calls that might
+// block: threads obeying thos emust not be counted as "active".
+//
+// To make it possible to zero out every heaplimit there will be a reference
+// to each thread's heaplimit in an array indexed by thread-number.
+//
+// An atomic variable records the number of active threads. As a thread
+// enters garbage collection it decrements this using an atomic fetch_sub().
+// Eventually one thread (which might not be the one that initially called
+// for GC) will set the count to zero. It will act as a master GC thread and
+// all the other threads will need to idle while it works.
+//
+// When a thread discovers that it is the master it knows that all the other
+// threads have done everything that gets done before the decrement operation.
+// It can thefore use all the information that threads have deposited and
+// do the main work of garbage collection. The information it can thus have
+// can be
+//    stack base and top for every thread.
+//    base and size of the block currently being allocated and that
+//      ran beyond the thread's heaplimit.
+//    when a heaplimit is set to zero its old non-zero value can be recorded
+//      through use of a test-and-set style atomic access (or if the loop
+//      that sets the heaplimits to zero is within a critical region).
+// The master thread will be able to update heaplimit directly. It can leave
+// values that the other threads can copy into their own fringe and result
+// locations.
+// When a master thread has completed its work it can set a variable
+// gc_complete and notify all the others.
+//
+// A non-master thread will wait for gc_complete. When that is seen it can
+// increment active_threads. One thread will increment so as to reach the
+// maximum value of that count - it can then set gc_complete to false and
+// notify everybody.
+// All threads, master or not, end by waiting for !gc_complete. That should
+// leave every thread ready to continue work and puts things such that the
+// next time garbage collection is called for everything is set up as
+// required.
+// 
+
 // This is the core part of CONS and also of the code that allocates
 // bignums, strings and vectors.
 
@@ -406,9 +591,11 @@ inline LispObject get_n_bytes(size_t n)
     fringe += n;
 // fringe is thread-local. heaplimit is both thread-local and atomic, and
 // so if other threads alter heaplimit that fact will be noticed here. In
-// particular if another thread sets heaplimit to zero then the gc_and_allocate()
-// recovery code will be triggered on the next allocation attempt.
-    if (fringe >= (uintptr_t)heaplimit) r = gc_and_allocate(r, n);
+// particular if another thread sets heaplimit to zero then the
+// gc_and_allocate() recovery code will be triggered on the next
+// allocation attempt.
+    if (fringe >= (uintptr_t)heaplimit)
+        r = gc_and_allocate(r, n, fringe, heaplimit);
     return static_cast<LispObject>(r);
 }
 
@@ -421,7 +608,8 @@ inline LispObject get_n_bytes(size_t n)
 // made, but details of that belong elsewhere.
 
 inline void poll()
-{   if (fringe >= (uintptr_t)heaplimit) (void)gc_and_allocate(0, 0);
+{   if (fringe >= (uintptr_t)heaplimit)
+        (void)gc_and_allocate(0, 0, fringe, heaplimit);
 }
 
 // Here we will have:
@@ -442,10 +630,13 @@ inline void poll()
 // thread not actually needing memory at the moment to synchronize.
 
 
-extern std::atomic<int32_t> threadCount;
-extern std::atomic<bool> gc_complete;
+extern std::atomic<uint32_t> threadCount;
 extern std::mutex mutex_for_gc;
-extern std::condition_variable cv_for_gc;
+extern std::atomic<bool> gc_started;
+extern std::condition_variable cv_for_gc_started;
+extern std::condition_variable cv_for_gc_busy;
+extern std::atomic<bool> gc_complete;
+extern std::condition_variable cv_for_gc_complete;
 
 
 inline LispObject cons(LispObject a, LispObject b)
@@ -607,11 +798,14 @@ inline LispObject Lncons(LispObject env, LispObject a)
 // referenced solely via machine registers) and that a stack_top variable
 // is set so that the garbage collector can do its job properly.
 
-static const int max_threads = 16;
-extern std::atomic<void *> stack_bases[max_threads];
-extern std::atomic<void *> stack_fringes[max_threads];
-extern std::atomic<size_t> request_sizes[max_threads];
-extern std::atomic<std::atomic<uintptr_t> *> request_locations[max_threads];
+static const int maxThreads = 64;
+extern std::atomic<uintptr_t> stack_bases[maxThreads];
+extern std::atomic<uintptr_t> stack_fringes[maxThreads];
+extern std::atomic<uintptr_t> heap_fringe[maxThreads];
+extern std::atomic<uintptr_t> *heap_heaplimit_addr[maxThreads];
+extern std::atomic<uintptr_t> heap_heaplimit[maxThreads];
+extern std::atomic<uintptr_t> request_values[maxThreads];
+extern std::atomic<size_t> request_sizes[maxThreads];
 
 
 // The following code makes a whole slew of assumptions about how the
@@ -636,8 +830,8 @@ extern std::atomic<std::atomic<uintptr_t> *> request_locations[max_threads];
 // action() and the jmp_buff in it. If values used within action() end up
 // on the stack above buffer that should not be a problem.
 //
-// There can be at most max_threads threads in play, and each must have
-// the thread-local value thread_id set.
+// There can be at most maxThreads threads in play, and each must have
+// the thread-local value threadId set.
 
 extern jmp_buf *buffer_pointer;
 
@@ -661,8 +855,9 @@ template <typename F>
 inline auto may_block(F &&action)
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
+// ASSUME that setjmp dumps all the machine registers into the jmp_buf.
     static_cast<void>(setjmp(buffer));
-    stack_fringes[thread_id].store(reinterpret_cast<void *>(buffer));
+    stack_fringes[threadId].store(reinterpret_cast<void *>(buffer));
 // Hmm - what do I do here.
     return action();
 };
@@ -675,7 +870,7 @@ inline auto with_clean_stack(F &&action)
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
     static_cast<void>(setjmp(buffer));
-    stack_fringes[thread_id].store(reinterpret_cast<void *>(buffer));
+    stack_fringes[threadId].store(reinterpret_cast<void *>(buffer));
     return action();
 };
 

@@ -881,11 +881,11 @@ void master_gc_thread()
 // Before I release them from that I will ensure that gc_finished is false so
 // that they do not get over-enthusiastic!
     {   std::lock_guard<std::mutex> guard(mutex_for_gc);
-        gc_finished = false;
+        gc_complete = false;
         gc_started = true;
     }
     cv_for_gc_idling.notify_all();
-// Now while the other threads chew on that I can perform some garbage
+// Now while the other threads are idle I can perform some garbage
 // collection and fill in results via request_locations[] based on
 // request_sizes[].
     master_gc_work();
@@ -893,8 +893,11 @@ void master_gc_thread()
 // gc_started. When they have they will increment activeThreads and when the
 // last one does that it will notify me.
     {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+// Note that if my entire system had only one thread then the condition
+// tested here would always be true and the computation would not pause at
+// all.
         cv_for_gc_busy.wait(lock,
-            []{   uint32_t n = activeThreads.load(std::memory_order_relaxed);
+            []{   uint32_t n = activeThreads.load();
                   return (n & 0xff) == ((n>>8) & 0xff) - 1;
               });
     }
@@ -904,9 +907,9 @@ void master_gc_thread()
     {   std::lock_guard<std::mutex> guard(mutex_for_gc);
         gc_started = false;
         activeThreads.fetch_add(0x0000001);
-        gc_finished = true;
-        cv_for_gc_idling.notify_all();
+        gc_complete = true;
     }
+    cv_for_gc_complete.notify_all();
 }
 
 void idle_during_gc()
@@ -914,15 +917,18 @@ void idle_during_gc()
 // If I am a thread that will not myself perform garbage collection I need
 // to wait for the one that does. This needs to be done in two phases. During
 // the first I know that I have decremented activeThreads and determined that
-// I was the last, but I can not be certain that all other threads have done
-// that. I wait until gc_started gets set, and that happens when some thread
-// has found itself to be the last one. And so by construction that means that
-// all other threads will be able to reach here when they get a time-slice.
-// It will then of course be important that gc_started had been false before
-// that and that it then remains true until there is confirmation that each
-// idle thread has passed this gateway.
+// I was not the last, but I can not be certain that all other threads have
+// done that. I wait until gc_started gets set, and that happens when some
+// thread has found itself to be the last one. And so by construction that
+// means that all other threads will have reached here.
+//
+// I need every idle thread to be woken up here. So when the master GC thread
+// starts  it can set gc_started and notify everybody through the condition
+// variable. It can not know how long each will take to notice that so it
+// must not clear gc_started until it has had positive confirmation that
+// all the idle threads have responded.
     {   std::unique_lock<std::mutex> lock(mutex_for_gc);
-        cv_for_gc_idling.wait(lock, []{ return gc_started; });
+        cv_for_gc_idling.started(lock, []{ return gc_started; });
     }
 // To record that threads have paused they can then increment activeThreads
 // again. When one of them increments it to the value threadcount-1 I will
@@ -935,12 +941,12 @@ void idle_during_gc()
     }
     if (inform) cv_for_gc_busy.notify_one();
 // Once the master thread has been notified as above it can go forward and
-// in due course notify gc_finished. Before it does that it must ensure that
+// in due course notify gc_complete. Before it does that it must ensure that
 // it has filled in results for everybody, incremented activeTHreads to
 // reflect that it is busy again and made certain that gc_started is false
 // again so that everything is tidily ready for next time.
     {   std::unique_lock<std::mutex> lock(mutex_for_gc);
-        cv_for_gc_idling.wait(lock, []{ return gc_finished; });
+        cv_for_gc_complete.wait(lock, []{ return gc_complete; });
     }
 }
 
@@ -963,22 +969,59 @@ void idle_during_gc()
 // others that I return a valid allocation address.
 
 uintptr_t gc_and_allocate(uintptr_t r, size_t n)
-{   return with_clean_stack([&]
-    {   std::atomic<uintptr_t>rr;
-        rr.store(r);
-// The use of std::atomic for rr is so that it can be updated by one
-// thread and then read by another.
-        request_locations[thread_id].store(&rr);
-        request_sizes[thread_id].store(n);
+{
+// Every thread that comes here will need to record the value of its
+// stack pointer so that the thread that ends up performing garbage
+// collection can identify the regions of stack it must scan. For that to
+// be proper the code must not be hiding values in register variables. The
+// function "with_clean_stack()" tries to arrange that, so that when the
+// body of code is executed stack_fringes[] has that information nicely
+// set up. 
+    return with_clean_stack([&]
+    {
+// The GC thread will need to do the allocation. To do this it need to know
+// where this request failed and how much space had been requested, so I put
+// those bits of information in atomic thread-indexed memory. That willl
+// allow the GC to update request_values[] to be the address of a sucessful
+// allocation.
+        request_values[threadId] = r;
+        request_sizes[threadId].store(n);
 // The next line will count down the number of threads that have entered
 // this synchronization block. The last one to do so can serve as the
 // thread that performs garbage collection, the other will just need to wait.
+// The fetch_sub() operation here may cost much more than simple access to
+// a variable, but I am in context were I am anbout to do things costing a
+// lot more than that.
         int32_t a = activeThreads.fetch_sub(1);
-        if ((a & 0xff) == 1) master_gc_thread();
-        else idle_during_gc();
-// The thread that performs garbage collection must perform allocation on
-// behalf of every thread.
-        return rr.load();
+// The low byte of activeThreads counts the number of Lisp threads properly
+// busy in the mutator. When fetch_add() a value > 1 it means thatat least
+// one other thread has not jey joined in with this synchronozation. It will
+// be that last thread that actually performs the GC, so the current one
+// has nothing to do - it must just sit and wait! When the final thread
+// performs the fetch_add() it will know that every other thread is now
+// quiescent and it can perform as the master garbage collection thread.
+        if ((a & 0xff) > 1) idle_during_gc();
+        else master_gc_thread();
+// I must arrange that threads continue after idling only when the master
+// thread has completed its work. And when that has happened request_values[]
+// should have been filled in with valid allocation results for everybody.
+// In the disaster case that memory is utterly full I will need to escape
+// via a "throw" operation, but that is probably an unrecoverable situation.
+// At the end the GC can have updated the fringe and heaplimit values for
+// each thread, so I need to put its updates in the correct place.
+//
+// The garbage collector did not need to know the value of fringe or heaplimit
+// that the thread had at the start - well r will have been the value
+// of fringe before the fetch_add() that overflowed heaplimit. And heaplimit
+// was very possibly zero because some other thread had forced that so as to
+// trigger a GC pause. But before returning I must set both the values
+// that the GC tells me. Now there is a potential delicacy here in that
+// just after this GC completed but before this thread wakes up and notices
+// one of the other threads may waks up and do enough allocation to try
+// to trigger a further GC.
+        fringe = heap_fringe[threadId];
+        heaplimit = heap_heaplimit[threadIs];
+        return request_values[threadId];
     });
 }
 
