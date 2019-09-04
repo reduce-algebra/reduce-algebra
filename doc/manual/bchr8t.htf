@@ -1,0 +1,259 @@
+bchr8t 0 255
+'&#x0300;' ''  grave           0 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'&#x0301;' ''  acute           1 % bchr8t.htf                 2009-05-06 %
+'&#x0302;' ''  circumflex      2 % Copyright (C) 2004--2009 Eitan M. Gurari %
+'&#x0303;' ''  breve           3 %                                                                    %
+'&#x0308;' ''  diaeresis       4 % This work may be distributed and/or modified under the conditions  %
+'&#x030B;' ''  double acute    5 % of the LaTeX Project Public License, either version 1.3 of this    %
+'&#x030A;' ''  ring above      6 % license or (at your option) any later version. The latest version  %
+'&#x030C;' ''  tilde           7 % of this license is in http://www.latex-project.org/lppl.txt and    %
+'&#x0306;' ''  dieresis        8 % version 1.3 or later is part of all distributions of LaTeX version %
+'&#x0304;' ''  overbar         9 % 2003/12/01 or later.                                               %
+'&#x0307;' ''                 10 %  This work has the LPPL maintenance status "maintained". This      %
+'&#x0327;' ''                 11 % Current Maintainer of this work is Eitan M. Gurari.                %
+'&#x0328;' ''                 12 %                                                                    %
+'&#x0326;' ''                 13 % If you modify this file your your adding a note of                 %
+'&#x2039;' '' < guillement    14 % your own after this copyright note will be appreciated.            %
+'&#x203A;' ''                 15 %                                                                    %
+'&#x201C;' ''                 16 %                                          gurari@cse.ohio-state.edu %
+'&#x201D;' ''                 17 %                              http://www.cse.ohio-state.edu/~gurari %
+'&#x201E;' ''                 18 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'&#x00AB;' ''                 19 
+'&#x00BB;' ''                 20
+'&#x2013;' ''                 21
+'&#x2014;' ''                 22
+'' ''                         23
+'&#x25FE;' ''                 24
+'&#x0131;' '' dotlessi        25
+'&#x25AE;' ''                 26
+'&#xFB00;' ''  &fflig;        27
+'&#xFB01;' ''  &filig;        28
+'&#xFB02;' ''  &fllig;        29
+'&#xFB03;' ''  &ffilig;       30
+'&#xFB04;' ''  &ffllig;       31
+'&#x2423;' ''  visible space  32
+'!' ''                        33
+'&#x0022;' '' double quote    34
+'#' ''                        35
+'$' ''                        36
+'%' ''                        37
+'&#x0026;' ''  ampersand      38
+'&#x2019;' ''                 39
+'&#x0028;' ''                 40
+'&#x0029;' ''                 41
+'*' ''                 42
+'+' ''                 43
+',' ''                 44
+'-' ''                 45
+'.' ''                 46
+'/' ''                 47
+'0' ''                 48
+'1' ''                 49
+'2' ''                 50
+'3' ''                 51
+'4' ''                 52
+'5' ''                 53
+'6' ''                 54
+'7' ''                 55
+'8' ''                 56
+'9' ''                 57
+':' ''                 58
+';' ''                 59
+'&#x003C;' ''          60
+'=' ''                 61
+'&#x003E;' ''          62
+'?' ''                 63
+'@' ''                 64
+'A' ''                 65
+'B' ''                 66
+'C' ''                 67
+'D' ''                 68
+'E' ''                 69
+'F' ''                 70
+'G' ''                 71
+'H' ''                 72
+'I' ''                 73
+'J' ''                 74
+'K' ''                 75
+'L' ''                 76
+'M' ''                 77
+'N' ''                 78
+'O' ''                 79
+'P' ''                 80
+'Q' ''                 81
+'R' ''                 82
+'S' ''                 83
+'T' ''                 84
+'U' ''                 85
+'V' ''                 86
+'W' ''                 87
+'X' ''                 88
+'Y' ''                 89
+'Z' ''                 90
+'&#x005B;' ''                 91
+'&#x005C;' ''          92
+'&#x005D;' ''                 93
+'&#x005E;' ''          94
+'_' ''                 95
+'&#x2018;' ''          96
+'a' ''                 97
+'b' ''                 98
+'c' ''                 99
+'d' ''                100
+'e' ''                101
+'f' ''                102
+'g' ''                103
+'h' ''                104
+'i' ''                105
+'j' ''                106
+'k' ''                107
+'l' ''                108
+'m' ''                109
+'n' ''                110
+'o' ''                111
+'p' ''                112
+'q' ''                113
+'r' ''                114
+'s' ''                115
+'t' ''                116
+'u' ''                117
+'v' ''                118
+'w' ''                119
+'x' ''                120
+'y' ''                121
+'z' ''                122
+'&#x007B;' ''                123
+'|' ''                124
+'&#x007D;' ''                125
+'~' ''                126
+'&#x0331;' ''         127
+'&#x0102;' '' Abreve  128
+'&#x0104;' '' Aogonek 129
+'&#x0106;' '' Cacute  130
+'&#x010C;' '' Ccaron  131
+'&#x010E;' '' Dcaron  132
+'&#x011A;' '' Ecaron  133
+'&#x0118;' '' Eogonek 134
+'&#x011E;' '' Gbreve  135
+'&#x0139;' '' Lacute  136
+'&#x013D;' '' Lcaron  137
+'&#x0141;' '' Lslash  138
+'&#x00AB;' '' Nacute  139
+'&#x0147;' '' Ncaron  140
+'&#x25FE;' ''         141
+'&#x0150;' '' Ohungarumlaut  142
+'&#x0154;' '' Racute  143
+'&#x0158;' '' Rcaron  144
+'&#x015A;' '' Sacute  145
+'&#x0160;' '' Scaron  146
+'&#x0218;' '' Scommaaccent  147
+'&#x0164;' '' Tcaron        148
+'&#x021A;' '' Tcommaaccent  149
+'&#x0170;' '' Uhungarumlaut 150
+'&#x016E;' '' Uring         151
+'&#x0178;' '' Ydieresis     152
+'&#x0179;' '' Zacute        153
+'&#x017E;' '' Zcaron        154
+'&#x017B;' '' Zdotaccent    155
+'&#x0132;' '' IJ            156
+'&#x0130;' '' Idotaccent    157
+'&#x0111;' '' dcroat        158
+'&#x2A40;' '' section       159
+'&#x0103;' '' abreve   160
+'&#x0105;' '' aogonek  161
+'&#x0107;' '' cacute   162
+'&#x010D;' '' ccaron   163
+'&#x010F;' '' dcaron   164
+'&#x011B;' '' ecaron   165
+'&#x0118;' '' eogonek  166
+'&#x012E;' '' gbreve   167
+'&#x013A;' '' lacute   168
+'&#x013E;' '' lcaron   169
+'&#x0142;' '' lslash   170
+'&#x0144;' '' nacute   171
+'&#x0148;' '' ncaron   172
+'&#x25FE;' ''          173
+'&#x0151;' '' ohungarumlaut   174
+'&#x0155;' '' racute          175
+'&#x0159;' '' rcaron          176
+'&#x015B;' '' sacute          177
+'&#x0160;' '' scaron          178
+'&#x0219;' '' scommaaccent    179
+'&#x0165;' '' tcaron          180
+'&#x021B;' '' tcommaaccent    181
+'&#x0171;' '' uhungarumlaut   182
+'&#x016F;' '' uring           183
+'&#x00FF;' '' ydieresis       184
+'&#x017A;' '' zacute          185
+'&#x017E;' '' zcaron          186
+'&#x017C;' '' zdotaccent      187
+'&#x0133;' '' ij              188
+'&#x00A1;' '' exclamdown      189
+'&#x00BF;' '' questiondown    190
+'&#x00A3;' '' sterling        191
+'&#x00C0;' '' Agrave       192
+'&#x00C1;' '' Aacute       193
+'&#x00C2;' '' Acircumflex  194
+'&#x00C3;' '' Atilde       195
+'&#x00C4;' '' Adieresis    196
+'&#x00E5;' '' Aring        197
+'&#x00C6;' '' AE           198
+'&#x00C7;' '' Ccedilla     199
+'&#x00C8;' '' Egrave       200
+'&#x00E9;' '' Eacute       201
+'&#x00CA;' '' Ecircumflex  202
+'&#x00CB;' '' Edieresis    203
+'&#x00CC;' '' Igrave       204
+'&#x00CD;' '' Iacute       205
+'&#x00CE;' '' Icircumflex  206
+'&#x00AF;' '' Idieresis    207
+'&#x00D0;' '' Eth          208
+'&#x0143;' '' Ntilde       209
+'&#x00D2;' '' Ograve       210
+'&#x00D3;' '' Oacute       211
+'&#x00D4;' '' Ocircumflex  212
+'&#x00D5;' '' Otilde       213
+'&#x00D6;' '' Odieresis    214
+'&#x00D7;' '' multiply     215
+'&#x00D8;' '' Oslash       216
+'&#x00D9;' '' Ugrave       217
+'&#x00DA;' '' Uacute       218
+'&#x00DB;' '' Ucircumflex  219
+'&#x00DC;' '' Udieresis    220
+'&#x00DD;' '' Yacute       221
+'&#x00DE;' '' Thorn        222
+'&#x00DF;' '' germandbls   223
+'&#x00E0;' '' agrave       224
+'&#x00E1;' '' aacute       225
+'&#x00E2;' '' acircumflex  226
+'&#x00E3;' '' atilde       227
+'&#x00E4;' '' adieresis    228
+'&#x00E5;' '' aring        229
+'&#x00E6;' '' ae           230
+'&#x00E7;' '' ccedilla     231
+'&#x00E8;' '' egrave       232
+'&#x00E9;' '' eacute       233
+'&#x00CA;' '' ecircumflex  234
+'&#x00EB;' '' edieresis    235
+'&#x00EC;' '' igrave       236
+'&#x00ED;' '' iacute       237
+'&#x00EE;' '' icircumflex  238
+'&#x00EF;' '' idieresis    239
+'&#x00F0;' '' eth          240
+'&#x00F1;' '' ntilde       241
+'&#x00F2;' '' ograve       242
+'&#x00F3;' '' oacute       243
+'&#x00F4;' '' ocircumflex  244
+'&#x00F5;' '' otilde       255
+'&#x00F6;' '' odieresis    246
+'&#x00F7;' '' divide       247
+'&#x00F8;' '' oslash       248
+'&#x00F9;' '' ugrave       249
+'&#x00FA;' '' uacute       250
+'&#x00FB;' '' ucircumflex  251
+'&#x00FC;' '' udieresis    252
+'&#x00FD;' '' yacute       253
+'&#x00FE;' '' thorn        254
+'&#x00DF;' '' beta         255
+bchr8t 0 255
+
