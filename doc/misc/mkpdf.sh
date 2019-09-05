@@ -5,6 +5,7 @@ JOBNAME=$1
 MAXRUNS=6
 SUCCESS=0
 RUNS=0
+NEED_BIBTEX=0
 
 # Remove .ind file, could be left over from tex4ht run
 rm -f ${JOBNAME}.ind
