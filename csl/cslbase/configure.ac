@@ -538,6 +538,7 @@ case $host in
   AC_MSG_NOTICE([Assuming a Unix-like environment, including Linux])
   AC_MSG_NOTICE([host=$host, target=$target])
   AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
+  linux_build="yes"
   if test "x$target" = "x"
   then
     xtarget="$host"
@@ -908,6 +909,21 @@ AC_LINK_IFELSE(
       AC_SEARCH_LIBS([tgetent], [ncurses curses])
      ])
   ])
+
+if test "x$linux_build" = "x"
+then
+# This is done on ALL Linux (etc) hosts, and that is potentially dodgy.
+# So let me explain what it is about. If one builds on Ubuntu without this
+# then libtinfo (used by ncurses) is linked dynamically. If you take the
+# resulting binary to a Fedora machine it works OK but you get an annoying
+# warning about whether the library has a proper version number. This hack
+# will link in libtinfo statically and ought to avoid that ugly warning at
+# a rather modest increase in the size of the shipped binary.
+  if test -f /usr/lib/*/libtinfo.a
+  then
+    LIBS="-l:libtinfo.a $LIBS"
+  fi
+fi
 
 
 # The sad news is that some 32-bit systems only set maxalign to 4, so for

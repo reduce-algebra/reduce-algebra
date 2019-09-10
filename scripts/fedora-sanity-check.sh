@@ -52,6 +52,9 @@ sudo dnf -y install polyml
 
 sudo dnf -y install redhat-lsb-core
 
+sudo dnf -y install bc
+sudo dnf -y install dc
+
 # The following pull in a lot of subpackages. Maybe we should be more selective.
 
 sudo dnf -y install texlive-collection-fontsextra

@@ -9,36 +9,37 @@
 # Fedora would have, initially assuming that package names would be the
 # same.
 
-yum -y install valgrind
+yum -y install subversion
+yum -y install git
+yum -y install autoconf
 yum -y install automake
+yum -y install libtool
+yum -y install make
 yum -y install pkgconfig
+yum -y install gcc
 yum -y install gcc-c++
 yum -y install binutils
-yum -y install indent
-yum -y install make
+yum -y install glibc-devel
+yum -y install libatomic
 yum -y install elfutils
-yum -y install gdb
-yum -y install ltrace
 yum -y install flex
-yum -y install gcc
-yum -y install autoconf
 yum -y install bison
-yum -y install cscope
-yum -y install strace
 yum -y install byacc
+yum -y install cscope
 yum -y install oprofile
 yum -y install ctags
-yum -y install glibc-devel
-yum -y install libtool
-yum -y install patchutils
 yum -y install systemtap
-yum -y install diffstat
 yum -y install doxygen
-yum -y install git
 yum -y install gettext
-yum -y install subversion
-yum -y install highlight
 yum -y install patch
+yum -y install patchutils
+yum -y install diffstat
+yum -y install indent
+yum -y install highlight
+yum -y install gdb
+yum -y install valgrind
+yum -y install ltrace
+yum -y install strace
 
 sudo yum -y install openssh
 sudo yum -y install vim

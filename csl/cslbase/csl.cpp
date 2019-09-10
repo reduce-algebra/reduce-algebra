@@ -3012,6 +3012,9 @@ static void cslaction(void)
 {
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
+#ifdef CONSERVATIVE
+    ThreadStartup set_thread_local_variables;
+#endif
     errorset_msg = NULL;
     try
     {   START_SETJMP_BLOCK;

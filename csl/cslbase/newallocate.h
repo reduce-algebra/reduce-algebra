@@ -191,6 +191,8 @@ inline void write_barrier(std::atomic<LispObject> *p)
 // gets diverted so as to use the platform-specific scheme for thread-local
 // and so that heaplimit is a std::atomic<T> item.
 
+// The code here needs to supercede "thread_local.h" which was a previous
+// attempt I had to achieve the same sort of thing.
 
 #if defined WIN32 || defined __CYGWIN__
 
@@ -212,10 +214,9 @@ extern __declspec(dllimport) uint32_t TlsAlloc();
 // version of gcc too old for that. However it may be that I am not ready
 // to deploy this until June 2021, in which case all will be well!!!!
 
-const inline uint63_t threadid_slot = TlsAlloc();
-const inline uint32_t fringe_slot = TlsAlloc();
-const inline uint32_t heaplimit_slot = TlsAlloc();
-inline thread_local std::atomic<uintptr_t> real_heaplimit;
+extern uint32_t threadId_slot;
+extern uint32_t fringe_slot;
+extern uint32_t heaplimit_slot;
 
 #ifdef CAUTIOUS
 
@@ -249,7 +250,7 @@ inline void tls_store(uint32_t n, void *v)
 // On 32-bit Windows the FS segment register provides access to the TEB,
 // while on a 64-bit system it would be GS with some different offsets.
 
-inline void *read_via_segment_register(uint32_t n)
+inline void *read_thread_local_value(uint32_t n)
 {   void *r;
     asm volatile
     (   "movl %%fs:(%1), %0"
@@ -260,7 +261,7 @@ inline void *read_via_segment_register(uint32_t n)
     return r;
 }
 
-inline void write_via_segment_register(uint32_t n, void *v)
+inline void write_thread_local_value(uint32_t n, void *v)
 {   asm volatile
     (   "movl %0, %%fs:(%1)"
         :
@@ -269,52 +270,52 @@ inline void write_via_segment_register(uint32_t n, void *v)
     );
 }
 
-const uint32_t basic_TLS_offset    = 0xe10;
-const uint32_t extended_TLS_offset = 0xf94;
+const uint32_t basic_TLS_slot    = 0xe10;
+const uint32_t extended_TLS_slot = 0xf94;
 
 #else // 32 vs 64-bit
 
-inline void *read_via_segment_register(uint32_t n)
+inline void *read_thread_local_value(uint32_t n)
 {   void *r;
     asm volatile
     (   "movq %%gs:(%1), %0"
         : "=r" (r)
-        : "mri" (n)
+        : "ri" (n)
         :
     );
     return r;
 }
 
-inline void write_via_segment_register(uint32_t n, void *v)
+inline void write_thread_local_value(uint32_t n, void *v)
 {   asm volatile
     (   "movq %0, %%gs:(%1)"
         :
-        : "mri" (v), "r" (n)
+        : "ri" (v), "r" (n)
         :
     );
 }
 
-const uint32_t basic_TLS_offset    = 0x1480;
-const uint32_t extended_TLS_offset = 0x1780;
+const uint32_t basic_TLS_slot    = 0x1480;
+const uint32_t extended_TLS_slot = 0x1780;
 
 #endif // 32 vs 64-bit
 
 inline void *tls_load(int32_t slot)
 {   if (slot >= 64)
-    {   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+    {   void **a = (void **)read_thread_local_value(extended_TLS_slot);
         return a[slot - 64];
     }
-    else return (void *)read_via_segment_register(
-        basic_TLS_offset + sizeof(void *)*slot);
+    else return (void *)read_thread_local_value(
+        basic_TLS_slot + sizeof(void *)*slot);
 }
 
 inline void tls_store(int32_t slot, void *v)
 {   if (slot >= 64)
-    {   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+    {   void **a = (void **)read_thread_local_value(extended_TLS_slot);
         a[slot - 64] = v;
     }
-    else write_via_segment_register(
-        basic_TLS_offset + sizeof(void *)*slot, v);
+    else write_thread_local_value(
+        basic_TLS_slot + sizeof(void *)*slot, v);
 }
 
 #endif // CAUTIOUS
@@ -323,9 +324,9 @@ class ForThreadId
 {
 public:
     operator unsigned int()
-    {   return (unsigned int)tls_Load(threadId_slot);
+    {   return (unsigned int)(intptr_t)tls_load(threadId_slot);
     };
-    ForFringe& operator= (const unsigned int a)
+    ForThreadId& operator= (const unsigned int a)
     {    tls_store(threadId_slot, (void *)(uintptr_t)a);
          return *this;
     };
@@ -335,14 +336,14 @@ class ForFringe
 {
 public:
     operator uintptr_t()
-    {   return (uintptr_t)tls_Load(fringe_slot);
+    {   return (uintptr_t)tls_load(fringe_slot);
     };
     ForFringe& operator= (const uintptr_t a)
     {    tls_store(fringe_slot, (void *)a);
          return *this;
     };
     ForFringe& operator+= (const size_t a)
-    {    uintptr_t v = (uintptr_t)tls_Load(fringe_slot) + a;
+    {    uintptr_t v = (uintptr_t)tls_load(fringe_slot) + a;
          tls_store(fringe_slot, (void *)v);
          return *this;
     };
@@ -352,14 +353,14 @@ class ForHeapLimit
 {
 public:
     operator uintptr_t()
-    {   return *(std::atomic<uintptr_t> *)tls_Load(heaplimit_slot);
+    {   return *(std::atomic<uintptr_t> *)tls_load(heaplimit_slot);
     };
     ForHeapLimit& operator= (const uintptr_t a)
-    {    *(std::atomic<uintptr_t> *)tls_Load(heaplimit_slot) = a;
+    {    *(std::atomic<uintptr_t> *)tls_load(heaplimit_slot) = a;
          return *this;
     };
     ForHeapLimit& operator+= (const uintptr_t a)
-    {    ((std::atomic<uintptr_t> *)tls_Load(heaplimit_slot))->fetch_add(a);
+    {    ((std::atomic<uintptr_t> *)tls_load(heaplimit_slot))->fetch_add(a);
          return *this;
     };
     ForHeapLimit()
@@ -377,6 +378,13 @@ inline thread_local uintptr_t fringe;
 inline thread_local uintptr_t heaplimit;
 
 #endif
+
+class ThreadStartup
+{
+public:
+    ThreadStartup();
+    ~ThreadStartup();
+};
 
 extern Page *nurseryPage;       // where allocation is happening
 extern Page *pendingPage;
@@ -595,7 +603,7 @@ inline LispObject get_n_bytes(size_t n)
 // gc_and_allocate() recovery code will be triggered on the next
 // allocation attempt.
     if (fringe >= (uintptr_t)heaplimit)
-        r = gc_and_allocate(r, n, fringe, heaplimit);
+        r = gc_and_allocate(r, n);
     return static_cast<LispObject>(r);
 }
 
@@ -609,7 +617,7 @@ inline LispObject get_n_bytes(size_t n)
 
 inline void poll()
 {   if (fringe >= (uintptr_t)heaplimit)
-        (void)gc_and_allocate(0, 0, fringe, heaplimit);
+        (void)gc_and_allocate(0, 0);
 }
 
 // Here we will have:
@@ -802,10 +810,9 @@ static const int maxThreads = 64;
 extern std::atomic<uintptr_t> stack_bases[maxThreads];
 extern std::atomic<uintptr_t> stack_fringes[maxThreads];
 extern std::atomic<uintptr_t> heap_fringe[maxThreads];
-extern std::atomic<uintptr_t> *heap_heaplimit_addr[maxThreads];
 extern std::atomic<uintptr_t> heap_heaplimit[maxThreads];
 extern std::atomic<uintptr_t> request_values[maxThreads];
-extern std::atomic<size_t> request_sizes[maxThreads];
+extern std::atomic<size_t>    request_sizes[maxThreads];
 
 
 // The following code makes a whole slew of assumptions about how the
@@ -857,7 +864,7 @@ inline auto may_block(F &&action)
     buffer_pointer = &buffer;
 // ASSUME that setjmp dumps all the machine registers into the jmp_buf.
     static_cast<void>(setjmp(buffer));
-    stack_fringes[threadId].store(reinterpret_cast<void *>(buffer));
+    stack_fringes[threadId] = reinterpret_cast<uintptr_t>(buffer);
 // Hmm - what do I do here.
     return action();
 };
@@ -870,7 +877,7 @@ inline auto with_clean_stack(F &&action)
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
     static_cast<void>(setjmp(buffer));
-    stack_fringes[threadId].store(reinterpret_cast<void *>(buffer));
+    stack_fringes[threadId] = reinterpret_cast<uintptr_t>(buffer);
     return action();
 };
 
@@ -944,5 +951,4 @@ potentially_blocking()
 ===========
 
 #endif
-
 

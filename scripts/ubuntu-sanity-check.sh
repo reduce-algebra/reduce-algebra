@@ -46,6 +46,8 @@ sudo apt-get -y install linux-generic
 sudo apt-get -y install polyml
 sudo apt-get -y install rpm
 sudo apt-get -y install ssh
+sudo apt-get -y install bc
+sudo apt-get -y install dc
 sudo apt-get -y install subversion
 sudo apt-get -y install texinfo
 sudo apt-get -y install texlive-latex-base
@@ -62,10 +64,10 @@ sudo apt-get -y install alien
 sudo apt-get -y install rsync
 
 # These last few will not be useful on non-Ubuntu platforms I suspect!
-sudo apt-get -y install ubuntu-desktop
-sudo apt-get -y install ubuntu-minimal
-sudo apt-get -y install ubuntu-restricted-addons
-sudo apt-get -y install ubuntu-standard 
+# sudo apt-get -y install ubuntu-desktop
+# sudo apt-get -y install ubuntu-minimal
+# sudo apt-get -y install ubuntu-restricted-addons
+# sudo apt-get -y install ubuntu-standard 
 
 # CSL now depends on C++-11, and versions of g++ prior to 4.9 (at least)
 # have enough support to seen plausible but enough missing deatures to cause

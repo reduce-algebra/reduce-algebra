@@ -195,11 +195,6 @@ std::atomic<uint32_t> activeThreads;
 
 
 
-bool gc_started = false, gc_finished = false;
-std::mutex mutex_for_gc;
-std::condition_variable cv_for_gc_idling, cv_for_gc_busy;
-
-
 // All the heap memory I use here will be allocated within (up to) 32
 // segments that are grabbed using "new" etc...
 // Each segment of memory will start aligned at a multiple of CSL_PAGE_SIZE
@@ -796,19 +791,53 @@ std::mutex threadStartingMutex;
 
 uint64_t threadMap = -1;
 
+uint64_t threadBit(int n)
+{   return (uint64_t)1 << (63-n);
+}
+
 int findSpareThreadNumber()
-{   myassert(threadMap != 0); // I need at least one spare.
+{   my_assert(threadMap != 0); // I need at least one spare.
     int n = nlz(threadMap);
 // Now n is 0 if the top bit is set, 1 for the next etc down to 63 when
 // the least bit is the only one set.
-    threadMap &= ~((uint64_t)1 << (63-n));
+    threadMap &= ~threadBit(n);
     return n;
 }
 
 void releaseThreadNumber(int n)
-{   myassertt(0<=n && n <=63);
-    threadMap |= ((uint64_t)1 << (63-n));
+{   my_assert(0<=n && n <=63);
+    threadMap |= threadBit(n);
 }
+
+// I will want to place an instance of this class as the first
+// item declared in the main function of every thread.
+// Its job is to initialize some thread-local variables and then,
+// as necessary, tidy up as the thread terminates.
+// For the main thread I would have liked it if I could just create
+// a static instance and know that the initializer would be invoked early,
+// however there are not a 
+
+statuc bool slots_allocated = false;
+uint32_t threadId_slot;
+uint32_t fringe_slot;
+uint32_t heaplimit_slot;
+
+
+ThreadStartup::ThreadStartup()
+{   std::cout << "ThreadStartup" << std::endl;
+    std::lock_guard<std::mutex> lock(mutex_for_gc);
+    if (!slots_allocated)
+    {   threadId_slot = TlsAlloc();
+        fringe_slot = TlsAlloc();
+        heaplimit_slot = TlsAlloc();
+        slots_allocated = true;
+    }
+}
+
+ThreadStartup::~ThreadStartup()
+{   std::cout << "~ThreadStartup" << std::endl;
+}
+
 
 
 // The following need to be atomic because they get updates by one thread
@@ -819,10 +848,12 @@ void releaseThreadNumber(int n)
 // activate suitable fences. However making these atomic will not be terribly
 // costly!
 
-std::atomic<void *> stack_bases[max_threads];
-std::atomic<void *> stack_fringes[max_threads];
-std::atomic<size_t> request_sizes[max_threads];
-std::atomic<std::atomic<uintptr_t> *> request_locations[max_threads];
+std::atomic<uintptr_t> stack_bases[maxThreads];
+std::atomic<uintptr_t> stack_fringes[maxThreads];
+std::atomic<uintptr_t> heap_fringe[maxThreads];
+std::atomic<uintptr_t> heap_heaplimit[maxThreads];
+std::atomic<uintptr_t> request_values`[maxThreads];
+std::atomic<size_t>    request_sizes[maxThreads];
 
 void master_gc_work()
 {   std::printf("Hello, this is the master_GC\n");
@@ -955,9 +986,9 @@ void idle_during_gc()
 // threads and one of the threads (it may not be me!) must garbage collect.
 // When they synchronize with me here the other threads will also have tried
 // an allocation, but the largest request any is allowed to make is
-// VECTOR_CHUNK_BYTES (at present 1 megabyte). If all the max_threads do
+// VECTOR_CHUNK_BYTES (at present 1 megabyte). If all the maxThreads do
 // this they can have caused fringe to overshoot by about an amount
-// max_threads*VECTOR_CHUNK_BYTES and if that caused uintptr_t arithmetic to
+// maxThreads*VECTOR_CHUNK_BYTES and if that caused uintptr_t arithmetic to
 // overflow and wrap round then there could be big trouble. So when I
 // allocate chunks of memory I ought to ensure that none has an end-address
 // that close to UINTPTR_MAX! I think that on all realistic systems that is
