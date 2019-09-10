@@ -151,10 +151,11 @@ elliptictheta1(6*pi+7*i*log q, q);
 elliptictheta1(z+5*pi/2+3*i*log q, q);
 
 
- theta2(z,q)
--------------
-   6*i*z  9
-  e     *q
+  6*i*z
+ e     *theta2(z,q)
+--------------------
+          9
+         q
 
 elliptictheta2(6*pi+7*i*log q, q);
 
@@ -178,18 +179,20 @@ elliptictheta4(6*pi+7/2*i*log q, q);
 elliptictheta4(z+6*pi+7/2*i*log q, q);
 
 
-  - theta1(z,q)*i
-------------------
-   1/4  7*i*z  9
-  q   *e     *q
+  7*i*z
+ e     *theta1(z,q)*i
+----------------------
+        1/4  12
+       q   *q
 
 elliptictheta4(z+6*pi+7*i*log q, q);
 
 
-  - theta4(z,q)
-----------------
-   14*i*z  49
-  e      *q
+     14*i*z
+  - e      *theta4(z,q)
+------------------------
+           49
+          q
 
 elliptictheta3(7*pi/2+3/2*i*log q, q);
 
@@ -199,10 +202,11 @@ elliptictheta3(7*pi/2+3/2*i*log q, q);
 elliptictheta3(z+7*pi/2+3/2*i*log q, q);
 
 
-  - theta1(z,q)*i
-------------------
-   1/4  3*i*z
-  q   *e     *q
+  3*i*z
+ e     *theta1(z,q)*i
+----------------------
+        1/4  2
+       q   *q
 
 
 elliptictheta1(-z,q);

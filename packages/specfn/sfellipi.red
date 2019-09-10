@@ -371,20 +371,31 @@ let jacobizetarules;
 % for values of q for which abs q is near to 1. 
 % For values of |q| near to 1 Jacobi's transformation can be used to
 % produce a smaller value of the nome and so increase the rate of convergence.
-% It is advantageous to first ensure that the nome has a positive real part.
 % This works well for real q, but for complex values the situation is less
 % clear: the value returned often differs from the 'correct' value by a factor
 % which is a fourth root of unity.  The 'correct' values being the ones obtained
 % from the defining series expansions and taking the principal value of q^(1/4) 
 % in the expressions for theta1 and theta2 which are thus are multi-valued.
+% It is advantageous to first ensure that the nome has a positive real part.
 % How to choose the 'correct' branch for complex q is currently being
 % investigated.
 
 % Somewhat arbitrarily Jacobi's transformation is used 
-% whenever |q|>0.75  This seems to produce reasonable behaviour subject to
+% whenever |q| >= 0.7 when the nome is real and whenever |q| >= 0.9 otherwise.
+% This seems to produce reasonable behaviour subject to
 % the proviso above.
-% However, for purely real values of the nome q faster convergence could be
-% obtained by using the Jacobi transformation when |q|> 0.5 or 0.4 (say).
+
+procedure shift!-arg(z,q);
+% shift the argument down into the base period parallelogram
+begin scalar quasip, rpq, numhqp, numhrp;
+  quasip := -log q;
+  rpq := repart quasip;
+  numhqp := fix(2*impart(z)/rpq);  % number of half quasi-periods used
+  z := z - i*numhqp*quasip/2;
+  numhrp := fix(2*repart(z)/pi);   % number of half real periods used
+  z := z - numhrp*pi/2;
+  return {z, numhrp, numhqp};
+end;
 
 procedure n_theta1(z, q);
 begin scalar n, pow, term, total, tol;
@@ -402,21 +413,56 @@ begin scalar n, pow, term, total, tol;
     return 2*sqrt(sqrt q)*total;
 end;    
 
+
 procedure num_theta1(z,q);
    if abs(q) >= 1.0 then
       rederr "num_theta1: the nome q (2nd arg) must satisfy |q| < 1"
-   else if abs(q) < 0.7 then n_theta1(z,q)
-   else begin scalar x, y;
-       if repart q < 0 then <<
-          if impart q < 0 then x := -1 else x := 1;
-          return exp(i*x*pi/4)*num_theta1(z, -q);
-       >>;
-
+   else if repart q < 0 then
+      (begin scalar x;
+          if impart q < 0  then x := -1 else x := 1;
+          return (1+i*x)*num_theta1(z, -q)/sqrt 2;
+      end)
+   else if abs(q) < 0.7 or (abs(q) < 0.9 and impart(q) neq 0) then
+       num1_theta1(z,q) 
+   else begin scalar x, m;
        % Use Jacobi transformation theta1(i*x*z, q')
-       y := log q;
-       x := -pi/y;   % x = -i*tau'
-       return -i*sqrt(x)*exp(z^2/y)*n_theta1(i*x*z, exp(-pi*x));
-   end; 
+       x := -pi/log q;   % x = -i*tau'
+       m := -i*sqrt x*exp(-x*z^2/pi);
+       return m*num1_theta1(i*x*z, exp(-pi*x));
+   end;
+
+procedure num1_theta1(z, q);
+begin scalar shiftvalues, nr, nq, m;
+   shiftvalues := shift!-arg(z,q);
+   z:= first shiftvalues;
+   nr := second shiftvalues;
+   nq := third shiftvalues;
+
+   nr := nr mod 4;
+   if nr = 2 or nr=3 then m :=-1 else m := 1;
+   if evenp nr then 
+      if evenp nq then <<
+         nq := nq/2;
+         m := m*(-1)^nq*exp(-2*i*nq*z)/q^(nq^2);
+         return m*n_theta1(z, q);
+      >> 
+      else <<
+          nq := (nq-1)/2;
+          m := m*(-1)^nq*i*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
+          return m*n_theta4(z,q);
+       >>
+    else
+       if evenp nq then <<
+          nq := nq/2;
+          m := m*exp(-2*i*nq*z)/q^(nq^2);
+          return m*n_theta2(z, q);
+       >>
+       else <<
+          nq := (nq-1)/2;
+          m := m*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
+          return m*n_theta3(z, q);
+       >>;
+end;
 
 procedure n_theta2(z,q);
 begin scalar n, pow, term, total, tol;
@@ -435,45 +481,114 @@ end;
 procedure num_theta2(z,q);
    if abs(q) >= 1.0 then
       rederr "num_theta2: the nome q (2nd arg) must satisfy |q| < 1"
-   else if abs(q) < 0.75 then n_theta2(z, q)
-   else begin scalar x, y;
-       if repart q < 0 then <<
-          if impart q < 0 then x := -1 else x := 1;
-          return exp(i*x*pi/4)*num_theta2(z, -q);
-       >>;
-
+   else if repart q < 0 then
+      (begin scalar x;
+          if impart q < 0  then x := -1 else x := 1;
+          return (1+i*x)*num_theta2(z, -q)/sqrt 2;
+      end)
+   else if abs(q) < 0.7 or (abs(q) < 0.9 and impart(q) neq 0) then
+       num1_theta2(z,q)
+   else begin scalar x, m;
        % Use Jacobi transformation theta4(i*x*z, q')
-       y := log q;
-       x := -pi/y;   % x = -i*tau'
-       return sqrt(x)*exp(z^2/y)*n_theta4(i*x*z, exp(-pi*x));
-   end; 
+       x := -pi/log q;   % x = -i*tau'
+       m := sqrt x*exp(-x*z^2/pi);
+       return m*num1_theta4(i*x*z, exp(-pi*x));
+   end;
 
-procedure n_theta3(z,q);
-begin scalar n, pow, term, total, tol;
-    tol := 10.0^-(symbolic !:prec!:);
-    total := 0;
-    n := 1;
-    
-    repeat <<
-       pow := q^(n*n);
-       term := pow*cos(2*n*z);
-       total := total + term;
-       n := n+1;
-    >> until max(abs(pow),abs(term)) < abs(total)*tol;
-    return 1 + 2*total;
+
+procedure num1_theta2(z,q);
+begin scalar shiftvalues, nr, nq, m;
+   shiftvalues := shift!-arg(z,q);
+   z:= first shiftvalues;
+   nr := second shiftvalues;
+   nq := third shiftvalues;
+
+   nr := nr mod 4;
+   if nr = 2 or nr=3 then m :=-1 else m := 1;
+   if evenp nr then
+      if evenp nq then <<
+         nq := nq/2;
+         m := m*exp(-2*i*nq*z)/q^(nq^2);
+         return m*n_theta2(z, q);
+      >>
+      else <<
+         nq := (nq-1)/2;
+         m := m*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
+         return m*n_theta3(z,q);
+      >>
+   else
+      if evenp nq then <<
+         nq := nq/2;
+         m := m*(-1)^nq*exp(-2*i*nq*z)/q^(nq^2);
+	 return -m*n_theta1(z, q);
+      >>
+      else <<
+         nq := (nq-1)/2;
+         m := m*(-1)^nq*i*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
+         return -m*n_theta4(z, q);
+      >>;
 end;
+
+procedure n_theta3(z, q);
+begin scalar n, pow, term, total, tol;
+   tol := 10.0^-(symbolic !:prec!:);
+   total := 0;
+   n := 1;
+
+   repeat <<
+      pow := q^(n*n);
+      term := pow*cos(2*n*z);
+      total := total + term;
+      n := n+1;
+   >> until max(abs(pow),abs(term)) < abs(total)*tol;
+   return 1 + 2*total;
+end;
+
 
 procedure num_theta3(z,q);
    if abs(q) >= 1.0 then
       rederr "num_theta3: the nome q (2nd arg) must satisfy |q| < 1"
-   else if abs(q) < 0.75 then n_theta3(z, q)
    else if repart q < 0 then num_theta4(z, -q)
-   else begin scalar x, y;
-      % Use Jacobi transformation  theta3(i*x*z, q')
-      y := log q;
-      x := -pi/y;   % x = -i*tau'
-      return sqrt(x)*exp(z^2/y)*n_theta3(i*x*z, exp(-pi*x));
+   else if abs(q) < 0.7 or (abs(q) < 0.9 and impart(q) neq 0) then
+      num1_theta3(z, q)
+   else begin scalar x, m;
+      % Use Jacobi transformation theta3(i*x*z, q')
+      x := -pi/log q;   % x = -i*tau'
+      m := sqrt x*exp(-x*z^2/pi);
+      return m*num1_theta3(i*x*z, exp(-pi*x));
    end;
+
+
+procedure num1_theta3(z,q);
+begin scalar shiftvalues, nr, nq, m;
+   shiftvalues := shift!-arg(z,q);
+   z:= first shiftvalues;
+   nr := second shiftvalues;
+   nq := third shiftvalues;
+
+   if evenp nr then
+      if evenp nq then <<
+         nq := nq/2;
+         m := exp(-2*i*nq*z)/q^(nq^2);
+         return m*n_theta3(z, q);
+      >>
+      else <<
+         nq := (nq-1)/2;
+         m := exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
+	 return m*n_theta2(z,q);
+       >>
+    else
+       if evenp nq then <<
+          nq := nq/2;
+          m := (-1)^nq*exp(-2*i*nq*z)/q^(nq^2);
+          return m*n_theta4(z, q);
+       >>
+       else <<
+          nq := (nq-1)/2;
+          m := (-1)^nq*i*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
+          return m*n_theta1(z, q);
+       >>;
+end;
 
 procedure n_theta4(z, q);
 begin scalar n, pow, term, total, tol;
@@ -493,14 +608,46 @@ end;
 procedure num_theta4(z,q);
    if abs(q) >= 1.0 then
       rederr "num_theta4: the nome q (2nd arg) must satisfy |q| < 1"
-   else if abs(q) < 0.75 then n_theta4(z, q)
    else if repart q < 0 then num_theta3(z, -q)
-   else begin scalar x, y;
-      % Use Jacobi transformation  theta2(i*x*z, q')
-      y := log q;
-      x := -pi/y;   % x = -i*tau'
-      return sqrt(x)*exp(z^2/y)*n_theta2(i*x*z, exp(-pi*x));
+   else if abs(q) < 0.7 or (abs(q) < 0.9 and impart(q) neq 0) then
+      num1_theta4(z, q)
+   else begin scalar x, m;
+      % Use Jacobi transformation theta2(i*x*z, q')
+      x := -pi/log q;   % x = -i*tau'
+      m := sqrt x*exp(-x*z^2/pi);
+      return m*num1_theta2(i*x*z, exp(-pi*x));
    end;
+
+procedure num1_theta4(z, q);
+begin scalar shiftvalues, nr, nq, m;
+   shiftvalues := shift!-arg(z,q);
+   z:= first shiftvalues;
+   nr := second shiftvalues;
+   nq := third shiftvalues;
+
+   if evenp nr then
+      if evenp nq then <<
+         nq := nq/2;
+         m := (-1)^nq*exp(-2*i*nq*z)/q^(nq^2);
+         return m*n_theta4(z, q);
+      >>
+      else <<
+         nq := (nq-1)/2;
+         m := (-1)^nq*i*exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
+         return m*n_theta1(z,q);
+      >>
+   else
+      if evenp nq then <<
+	 nq := nq/2;
+	 m := exp(-2*i*nq*z)/q^(nq^2);
+         return m*n_theta3(z, q);
+      >>
+      else <<
+         nq := (nq-1)/2;
+	 m := exp(-(2*nq+1)*i*z)/q^(nq^2+nq+1/4);
+	 return m*n_theta2(z, q);
+      >>;
+end;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -517,7 +664,7 @@ ellipticthetarules :=
 {
   
 %Theta1rules
-%-----------
+
    elliptictheta1(-~u,~m) => -elliptictheta1(u,m),
 
    elliptictheta1(0,~m) => 0,
@@ -526,7 +673,15 @@ ellipticthetarules :=
 
    elliptictheta1(~u, -~m) => exp(i*sign(m)*pi/4)*elliptictheta1(u, m)
                 when impart(m) = 0,
- 
+		
+%   the following is quite general but messy
+%   elliptictheta1(~u, -~m) =>
+%       (begin scalar s;
+%	    s := (sign(repart m)-sign(repart m)^2+1)
+%	           * (sign(impart m)-sign(impart m)^2+1);
+%            return (1+s*i)*elliptictheta1(u, m)/sqrt 2;
+%        end),
+
 % generalised shift rules added by A Barnes
 % periodicity:
    elliptictheta1((~~w + ~~k*pi)/~~d, ~m) =>
@@ -549,12 +704,12 @@ ellipticthetarules :=
 	  arg := w/d + ((k/d)-i*n/2)*log m;
 	  if evenp n then <<
 	     n := n/2;
-	     f := (-1)^n*exp(-2*i*n*arg)/m^(n^2);
+	     f := (-1)^n*exp(2*i*n*arg)/m^(n^2);
              return f*elliptictheta1(arg, m);
 	  >>
 	  else <<
 	     n := (n-1)/2;
-	     f := (-1)^n*i*exp(-(2*n+1)*i*arg)/m^(n^2+1/4);
+	     f := (-1)^(n+1)*i*exp((2*n+1)*i*arg)/m^(n^2+n+1/4);
 	     return f*elliptictheta4(arg,m);
 	  >>;
       end)
@@ -570,7 +725,14 @@ ellipticthetarules :=
    elliptictheta2(~u, 0) => 0,
    
    elliptictheta2(~u, -~m) => exp(i*sign(m)*pi/4)*elliptictheta2(u, m)
-                when impart(m) = 0,
+                                  when impart m=0,
+
+%   elliptictheta2(~u, -~m) =>
+%        (begin scalar s;
+%	    s := (sign(repart m)-sign(repart m)^2+1)
+%	           * (sign(impart m)-sign(impart m)^2+1);
+%            return (1+s*i)*elliptictheta2(u, m)/sqrt 2;
+%         end),
 
 % periodicity:
    elliptictheta2((~~w + ~~k*pi)/~~d, ~m) =>
@@ -593,13 +755,13 @@ ellipticthetarules :=
 	  arg := w/d + ((k/d)-i*n/2)*log m;
 	  if evenp n then <<
 	     n := n/2;
-	     f := exp(-2*i*n*arg)/m^(n^2);
+	     f := exp(2*i*n*arg)/m^(n^2);
              return f*elliptictheta2(arg, m);
 	  >>
 	  else <<
 	     n := (n-1)/2;
-	     f := exp(-(2*n+1)*i*arg)/m^(n^2+1/4);
-	     return f*elliptictheta2(arg,m);
+	     f := exp((2*n+1)*i*arg)/m^(n^2+n+1/4);
+	     return f*elliptictheta3(arg,m);
 	  >>;
       end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => 2*impart(k/d)),
@@ -635,12 +797,12 @@ ellipticthetarules :=
 	  arg := w/d + ((k/d)-i*n/2)*log m;
 	  if evenp n then <<
 	     n := n/2;
-	     f := exp(-2*i*n*arg)/m^(n^2);
+	     f := exp(2*i*n*arg)/m^(n^2);
              return f*elliptictheta3(arg, m);
 	  >>
 	  else <<
 	     n := (n-1)/2;
-	     f := exp(-(2*n+1)*i*arg)/m^(n^2+1/4);
+	     f := exp((2*n+1)*i*arg)/m^(n^2+n+1/4);
 	     return f*elliptictheta2(arg,m);
 	  >>;
       end)
@@ -677,12 +839,12 @@ ellipticthetarules :=
 	  arg := w/d + ((k/d)-i*n/2)*log m;
 	  if evenp n then <<
 	     n := n/2;
-	     f := (-1)^n*exp(-2*i*n*arg)/m^(n^2);
+	     f := (-1)^n*exp(2*i*n*arg)/m^(n^2);
              return f*elliptictheta4(arg, m);
 	  >>
 	  else <<
 	     n := (n-1)/2;
-	     f := (-1)^n*i*exp(-(2*n+1)*i*arg)/m^(n^2+1/4);
+	     f := (-1)^(n+1)*i*exp((2*n+1)*i*arg)/m^(n^2+n+1/4);
 	     return f*elliptictheta1(arg,m);
 	  >>;
       end)
