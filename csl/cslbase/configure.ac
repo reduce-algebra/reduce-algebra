@@ -910,7 +910,7 @@ AC_LINK_IFELSE(
      ])
   ])
 
-if test "x$linux_build" = "x"
+if test "x$linux_build" = "xyes"
 then
 # This is done on ALL Linux (etc) hosts, and that is potentially dodgy.
 # So let me explain what it is about. If one builds on Ubuntu without this
