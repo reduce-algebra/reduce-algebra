@@ -49,6 +49,7 @@ AC_CANONICAL_HOST
 AC_PROG_CC
 
 on_windows="no"
+on_linux="no"
 # Note that the native windows version will have WIN32 defined and
 # __CYGWIN__ not defined.
 
@@ -68,6 +69,14 @@ AS_IF([test "$EXEEXT" = .exe],
    fi,
    AC_DEFINE(USE_PIPES,0,[Define to 1 for using pipes instead if sockets]))
    COMEXT=""])
+
+if test "x$on_windows" != "yes"
+then
+  if test -f /usr/lib/*/libtinfo.a
+  then
+    on_linux="yes"
+  fi
+fi
 
 # Checks for libraries.
 
@@ -112,6 +121,7 @@ fi
 
 AM_CONDITIONAL(DEBUG,   test "x$debug" = "xyes")
 AM_CONDITIONAL(WINDOWS, test "x$on_windows" = "xyes")
+AM_CONDITIONAL(LINUX,   test "x$on_linux" = "xyes")
 
 # The previous version of this configuration file provided a range of extra
 # configuration options that made it possible to selectively disable parts

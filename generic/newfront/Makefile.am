@@ -63,9 +63,15 @@ rfcsl_CPPFLAGS = -DCSL=1 -I../include
 rfboot_CPPFLAGS = -DBOOT=1 -I../include
 rfpsl_CPPFLAGS = -DPSL=1 -I../include
 
+if LINUX
+rfcsl_LDADD = -l:libtinfo.a ../lib/libedit.a -lncurses
+rfboot_LDADD = -l:libtinfo.a ../lib/libedit.a -lncurses
+rfpsl_LDADD = -l:libtinfo.a ../lib/libedit.a -lncurses
+else !LINUX
 rfcsl_LDADD = ../lib/libedit.a -lncurses
 rfboot_LDADD = ../lib/libedit.a -lncurses
 rfpsl_LDADD = ../lib/libedit.a -lncurses
+endif !LINUX
 
 rfcsl_DEPENDENCIES = ../lib/libedit.a
 rfboot_DEPENDENCIES = ../lib/libedit.a
