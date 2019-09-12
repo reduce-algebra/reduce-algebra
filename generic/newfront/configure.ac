@@ -70,7 +70,7 @@ AS_IF([test "$EXEEXT" = .exe],
    AC_DEFINE(USE_PIPES,0,[Define to 1 for using pipes instead if sockets]))
    COMEXT=""])
 
-if test "x$on_windows" != "yes"
+if test "x$on_windows" != "xyes"
 then
   if test -f /usr/lib/*/libtinfo.a
   then
