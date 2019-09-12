@@ -6,7 +6,7 @@ SNAPSHOT=$(SNAPSHOTDATE)
 else
 SNAPSHOT=$(REVISION)
 endif
-MACHINE=$(shell uname -m)
+MACHINE=$(shell PATH=/usr/local/bin:$$PATH && uname -m)
 NOW=$(shell LANG=C date "+%a, %d %b %Y %T %z")
 CHANGELOG=reduce/debian/changelog
 BUILDTOPDIR=C
@@ -40,8 +40,11 @@ reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages tarpackages
 
 debpackages:
 	cd reduce ; \
-	debuild --set-envvar BUILDTOPDIR=$(realpath $(BUILDTOPDIR)) \
-	    --preserve-envvar=DH_OPTIONS -b -us -uc
+	debuild \
+            --set-envvar BUILDTOPDIR=$(realpath $(BUILDTOPDIR)) \
+	    --preserve-envvar=DH_OPTIONS \
+            --prepend-path=/usr/local/bin \
+            -b -us -uc
 
 rpmpackages:
 	for f in reduce-*_$(SNAPSHOT)_*.deb ; \

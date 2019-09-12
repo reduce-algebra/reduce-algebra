@@ -3,10 +3,78 @@ names and addreses used here are relevant to me, but not to anybody else,
 so you will need to adapt it to your own needs before using it.
 The machine names shown are in general the ones reported by "uname -n".
 
+This looks dauntingly long, but is in fact rather simple. It is a table
+indicating that if you are at present on a macgine called X and you want to
+build a snapshot for a playform Y how you should go about it. Its structure
+is then
+
+case `uname -n`
+X1)
+  hosts_Y1() {
+    *OPTIONS*
+  }
+  hosts_Y2() {
+    *OPTIONS*
+  }
+  ...
+  ;;
+X2)
+  hosts_Y1() {
+    ...
+  ;;
+*)
+  <case of unknown current machine, so fail here>
+  ;;
+esac
+
+The OPTIONS will be one of the following very short recipes
+
+(1)   MODE=LOCAL
+The target is the same architecture as the current machine, so just use
+it in a simple direct manner.
+
+(2)   MODE=ssh; HOST=remote.machine.name
+Use ssh (which must have been set up with passwordless public key
+authentication) so that the build is done on the specified remote machine,
+which is liable to be one that has as its architecture the one toi be built
+for.
+
+(3)  MODE=ssh+ssh; HOST1=gateway.machine.name; HOST2=remote.machine.name
+Much like just "ssh" but uses the first machine as a gatway through which
+the one you will use can be reached.
+
+(4)   MODE=virtual; VM=machine-name
+Oracle VirtualBox must be installed on the current machine, and it must have
+a development-ready VM called machine-name installed. This machine must
+support passwordless ssh access from the current world.
+
+(5)   MODE=ssh+virtual; HOST=remote.machine; VM=virtual.on.remote
+Access a remote machine using SSH and then run virtualbox on it!
+
+(6)   MODE=ds64
+This is a "trick" scheme for use with a Raspberry Pi 4. The machine runs
+32-bit Raspbian but on a 64-bit kernel, and then using systemd and nspawn
+it hosts a 64-bit instance of Debian. A command on it "ds64-run" allows
+one to cause command issues to be relayed to the containerized 64-bit world.
+Setting the Raspberry Pi up to support this involves a certain amount of
+trickery at present. Eg a couple of the commends used to launch 64-bit
+processed are tagged using "chmod +s" and a script /usr/local/bin/uname
+adjusts the reported machine character in 32-bit mode so that having a 64-bit
+kernel does not lead to confusion!
+
+(7)   MODE=ssh+ds64; HOST=remote.raspberry.pi
+As one might by now expect.
+
+The sample here is the one that I am using as of mid-September 2019 and
+shows something of the range of computers I have tried to support and the
+ways in which they link together - in the process including instances of
+each of the above. A minimal script that just ran on a single host and
+that only supported a few targets would of course be a lot shorter.
+
 --------------------------------------------------------------------------
 # $HOME/.snapshots
 
-# A C Norman, 2019
+# A C Norman, 2018
 
 # This file customises the Reduce snapshot builder by indicating private
 # or local machines that can be used for building snapshots. For each
@@ -19,7 +87,8 @@ The machine names shown are in general the ones reported by "uname -n".
 
 # It can use this to override the snapshot building regime for macintosh,
 # windows, linux32 (ie i686), linux64 (ie x86_64) and rpi (ie a Raspberry Pi
-# running 32-bit Raspbian). It does not need to override all of these.
+# running 32-bit Raspbian) and rpi64 (commentary later).
+# It does not need to override all of these.
 # So a very simple file content would be if a Windows machine was available
 # as a server, but otherwise default behaviour was wanted. In that case this
 # file might contain just
@@ -57,23 +126,17 @@ panamint)
 
   hosts_windows() {
 # panamint is a Windows computer.
-# A windows host muct have both 32- and 64-bit versions of cygwin installed,
+# A windows host must have both 32- and 64-bit versions of cygwin installed,
 # and run from each of those two environments the necessary set of cygwin
 # build tools can be sorted out using scripts/cygwin-sanity-check.sh. In
 # addition to that the inno setup tool must be installed.
     MODE=local
   }
 
-  hosts_win32() {
-    MODE=local
-  }
-
-  hosts_win64() {
-    MODE=local
-  }
-
-  hosts_winboth() {
-    MODE=local
+  hosts_altwindows() {
+# panamint is a Windows computer, but here I force use of a VM...
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Windows"
   }
 
   hosts_linux32() {
@@ -97,23 +160,6 @@ panamint)
 # arbitrary directy and then run the "build-them.sh" script included in it.
 #
 # If you build on a more modern Linux release you may not need all that!
-
-  hosts_windows() {
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu32"
-  }
-
-  hosts_win32() {
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu32"
-  }
-
-  hosts_win64() {
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu32"
-  }
-
-  hosts_winboth() {
     MODE=virtual
     VM="REDUCE-pkg-factory-Ubuntu32"
   }
@@ -126,15 +172,14 @@ panamint)
   hosts_rpi() {
 # As before, use a remote machine. If I had DNS set up in a more
 # elaborate way it would become more obvious that this host is "rpi3-32".
+# For JUST NOW this is just a 32-bit Raspberry Pi world.
     MODE=ssh
-    HOST=192.168.1.21
+    HOST=192.168.1.20
   }
 
   hosts_rpi64() {
-# As before, use a remote machine. If I had DNS set up in a more
-# elaborate way it would become more obvious that this host is "rpi-64".
-    MODE=ssh
-    HOST=192.168.1.22
+    MODE=ssh+ds64
+    HOST=192.168.1.20
   }
   ;;
 
@@ -160,16 +205,28 @@ gauguin)
   }
 
   hosts_win32() {
+# On this machine I have virtualbox set up so that a VM called
+# REDUCE-pkg-factory-windows runs Windows 10 and has the cygwin environment
+# set up so that I can build on it. The VM runs an ssh server and this script
+# sets up port forwarding in virtualbox so that it can be accessed.
     MODE=virtual
     VM="REDUCE-pkg-factory-Windows"
   }
 
   hosts_win64() {
+# On this machine I have virtualbox set up so that a VM called
+# REDUCE-pkg-factory-windows runs Windows 10 and has the cygwin environment
+# set up so that I can build on it. The VM runs an ssh server and this script
+# sets up port forwarding in virtualbox so that it can be accessed.
     MODE=virtual
     VM="REDUCE-pkg-factory-Windows"
   }
 
   hosts_winboth() {
+# On this machine I have virtualbox set up so that a VM called
+# REDUCE-pkg-factory-windows runs Windows 10 and has the cygwin environment
+# set up so that I can build on it. The VM runs an ssh server and this script
+# sets up port forwarding in virtualbox so that it can be accessed.
     MODE=virtual
     VM="REDUCE-pkg-factory-Windows"
   }
@@ -195,19 +252,16 @@ gauguin)
 # the gateway and HOST2 the system used for the build.
     MODE=ssh+ssh
     HOST1=codemist.dynu.com
-    HOST2=192.168.1.21
+    HOST2=192.168.1.20
 # OR MODE=ssh
 #    HOST=acn1a.trin.private.cam.ac.uk
 # if I had that machine set up for Reduce building...
   }
 
   hosts_rpi64() {
-    MODE=ssh+ssh
+    MODE=ssh+ssh+ds64
     HOST1=codemist.dynu.com
-    HOST2=192.168.1.22
-# OR MODE=ssh
-#    HOST=acn1a.trin.private.cam.ac.uk
-# if I had that machine set up for Reduce building...
+    HOST2=192.168.1.20
   }
   ;;
 
@@ -282,16 +336,19 @@ rpi3-32)
   }
 
   hosts_win32() {
+# From the private network I can access panamint using its private address.
     MODE=ssh
     HOST=192.168.1.10
   }
 
   hosts_win64() {
+# From the private network I can access panamint using its private address.
     MODE=ssh
     HOST=192.168.1.10
   }
 
   hosts_winboth() {
+# From the private network I can access panamint using its private address.
     MODE=ssh
     HOST=192.168.1.10
   }
@@ -312,12 +369,68 @@ hosts_linux64() {
   }
 
 hosts_rpi() {
-# As before, use the machine directly.
+# Use the machine directly.
     MODE=local
   }
 
 hosts_rpi64() {
-    return 0
+    MODE=ssh+ds64
+    HOST=192.168.1.20
+  }
+  ;;
+
+acn1-rpi4)
+  hosts_macintosh() {
+    MODE=ssh
+    HOST=192.168.1.8
+  }
+
+  hosts_windows() {
+# From the private network I can access panamint using its private address.
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+  hosts_win32() {
+# From the private network I can access panamint using its private address.
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+  hosts_win64() {
+# From the private network I can access panamint using its private address.
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+  hosts_winboth() {
+# From the private network I can access panamint using its private address.
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+hosts_linux32() {
+# In this case virtualbox will be run on the host 192.168.1.10 so access
+# to it is somewhat at arm's length.
+    MODE=ssh+virtual
+    HOST=192.168.1.10
+    VM="REDUCE-pkg-factory-Ubuntu32"
+  }
+
+hosts_linux64() {
+# As before, a virtual machine running on a remote system.
+    MODE=ssh+virtual
+    HOST=192.168.1.10
+    VM="REDUCE-pkg-factory-Ubuntu"
+  }
+
+hosts_rpi() {
+# Use the machine directly.
+    MODE=local
+  }
+
+hosts_rpi64() {
+    MODE=ds64
   }
   ;;
 
@@ -337,16 +450,19 @@ OlderMacBook | acn1macbook)
   }
 
   hosts_win32() {
+# From the private network I can access panamint using its private address.
     MODE=ssh
     HOST=192.168.1.10
   }
 
   hosts_win64() {
+# From the private network I can access panamint using its private address.
     MODE=ssh
     HOST=192.168.1.10
   }
 
   hosts_winboth() {
+# From the private network I can access panamint using its private address.
     MODE=ssh
     HOST=192.168.1.10
   }
@@ -370,11 +486,12 @@ OlderMacBook | acn1macbook)
 # As before, use a remote machine. If I had DNS set up in a more
 # elaborate way it would become more obvious that this host is "rpi3-32".
     MODE=ssh
-    HOST=192.168.1.179
+    HOST=192.168.1.20
   }
 
-  hosts_rpi() {
-    return 0
+  hosts_rpi64() {
+    MODE=ssh+ds64
+    HOST=192.168.1.20
   }
   ;;
 

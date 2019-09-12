@@ -19,6 +19,15 @@
 # in the user's home directory, and a file called dot-snapshots here
 # gives a prototype for that.
 #
+# The "ds64" options here are a speciality for use on a Raspberry pi 4.
+# I can have one set up with a 64-bit kernel and a 32-bit raspbian
+# userland, but then a systemd/nspawn wrapper around a 64-bit Debian
+# system with a script /usr/local/bin/ds64-run that can cause commands to be
+# executed in the 64-bit world. The logged in user's filespace is shared
+# between 32 and 64-bit environments and so when I want to move files
+# to and fro I can just access the 32-bit schemes. This is a bit of an
+# experiment as of September 2019!
+#
 # Each host used during the build must have been set up with a comprehensive
 # set of build tools and development libraries, and where it is to be
 # accessed over ssh it must use public key authentication so that the current
@@ -27,10 +36,9 @@
 #
 #                                                       ACN February 2018
 #                                                           July 2019
+#                                                           September 2019
 
 
-
-#! /bin/sh
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
@@ -841,12 +849,12 @@ copy_files() {
   fi
   printf "Mode = $MODE: copy from $src to $dest\n"
   case $MODE in
-  local)
+  local | ds64)
     cd $HERE
     printf "rsync $RSO $src $dest\n"
     rsync $RSO $src $dest
     ;;
-  ssh)
+  ssh | ssh+ds64)
 # For direct ssh access I will expect that the remote machine has been
 # accessed before and that host key confirmation etc has been performed.
     printf "rsync $RSO $src $USER@$HOST:$dest\n"
@@ -856,7 +864,7 @@ copy_files() {
     printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" $src $USER@localhost:$dest\n"
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" $src $USER@localhost:$dest
     ;;
-  ssh+ssh)
+  ssh+ssh | ssh+ssh+ds64)
     printf "rsync $RSO -e \"ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS\" $src $USER@$HOST2:$dest\n"
     rsync $RSO -e "ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS" $src $USER@$HOST2:$dest
     ;;
@@ -879,6 +887,10 @@ execute_in_dir() {
   fi
   dir="$1"
   cmd="$2"
+# I somewhat regularize the path under which the command will be run. This
+# is vital on the Raspberry Pi setup that I have where I place a variant
+# on the "uname" command in /usr/local/bin and need that to get picked up.
+  cmd="export PATH=/usr/local/bin:/usr/bin:\$PATH; $cmd"
   if test "$TARGET" = "macintosh"
   then
 # For execution on the Macintosh I need to ensure that I have macports stuff
@@ -900,9 +912,19 @@ execute_in_dir() {
     eval "cd $dir; $cmd"
     cd $HERE
     ;;
+  ds64)
+    cd $HERE
+    printf "eval \"cd $dir; ds64-run $cmd\"\n"
+    eval "cd $dir; ds64-run $cmd"
+    cd $HERE
+    ;;
   ssh)
     printf "ssh $USER@$HOST \"export PATH=/usr/bin:\$PATH; cd $dir; $cmd\"\n"
     ssh $USER@$HOST "export PATH=/usr/bin:\$PATH; cd $dir; $cmd"
+    ;;
+  ssh+ds64)
+    printf "ssh $USER@$HOST \"export PATH=/usr/bin:\$PATH; cd $dir; ds64-run $cmd\"\n"
+    ssh $USER@$HOST "export PATH=/usr/bin:\$PATH; cd $dir; ds64-run $cmd"
     ;;
   virtual)
     printf "ssh -p $PORT $SSHOPTS $USER@localhost \"export PATH=/usr/bin:\$PATH; cd $dir; $cmd\"\n"
@@ -914,6 +936,13 @@ execute_in_dir() {
 # can be the sequence "PATH=xxx:$PATH" and the expansion of "$PATH" has to
 # be delayed so it is performed on the final server.
     cmd="export PATH=/usr/bin:\$PATH; cd $dir; $cmd"
+# Now create a command that will execute stuff on the final system.
+    cmd="ssh $SSHOPTS $USER@$HOST2 '$cmd'"
+    printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
+    ssh $SSHOPTS $USER@$HOST1 "$cmd"
+    ;;
+  ssh+ssh+ds64)
+    cmd="export PATH=/usr/bin:\$PATH; cd $dir; ds64-run $cmd"
 # Now create a command that will execute stuff on the final system.
     cmd="ssh $SSHOPTS $USER@$HOST2 '$cmd'"
     printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
@@ -966,12 +995,12 @@ fetch_files() {
   fi
   printf "Mode = $MODE: copy $src to $dest\n"
   case $MODE in
-  local)
+  local | ds64)
     cd $HERE
     printf "eval \"rsync $RSO $src $dest\"\n"
     eval "rsync $RSO $src $dest"
     ;;
-  ssh)
+  ssh | ssh+ds64)
     printf "rsync $RSO \"$USER@$HOST:$src\" $dest\n"
     rsync $RSO "$USER@$HOST:$src" $dest
     ;;
@@ -979,7 +1008,7 @@ fetch_files() {
     printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" \"$USER@localhost:$src\" $dest\n"
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" "$USER@localhost:$src" $dest
     ;;
-  ssh+ssh)
+  ssh+ssh | ssh+ssh+ds64)
     printf "rsync $RSO -e \"ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS\" \"$USER@$HOST2:$src\" $dest\n"
     rsync $RSO -e "ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS" "$USER@$HOST2:$src" $dest
     ;;
@@ -1066,4 +1095,4 @@ cd $HERE
 
 exit 0
 
-# end of testsnaps.sh
+# end of mk-snapshots.sh
