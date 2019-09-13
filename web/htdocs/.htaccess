@@ -7,9 +7,12 @@
 # http://reduce-algebra.sourceforge.net/manual/manual-pdf.html
 
 Redirect "/docs" "/reduce38-docs"
-Redirect "/documentation.htm" "/documentation.php"
 Redirect "/grg32.htm" "/grg32/grg32.php"
 Redirect "/manual/manual-pdf.html" "/manual/manual.html"
+
+# Redirect "/documentation.htm" "/documentation.php"
+# Redirect "/license.htm" "/license.php"
+RedirectMatch "/(.*)\.htm" "/$1.php"
 
 Options +Indexes
 

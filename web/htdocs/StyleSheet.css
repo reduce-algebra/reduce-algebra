@@ -23,14 +23,6 @@ header > img { /* icon */
     left: 6px;
 }
 
-header + p { /* subheader */
-    color: #009;
-    text-align: center;
-    font-size: 21px;
-    font-weight: bold;
-    margin: 0;
-}
-
 h1 {
     color: #009;
     text-align: center;

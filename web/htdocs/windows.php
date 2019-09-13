@@ -146,6 +146,6 @@ int(ws,x);</pre>
 END_OF_MAIN_CONTENT
 );
 
-$smarty->display('secondary.tpl');
+$smarty->display('main.tpl');
 
 ?>
