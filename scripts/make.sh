@@ -177,9 +177,9 @@ do
     fi
     if test "$sequential" = "yes"
     then
-      $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
+      $MAKE $flags $args MYFLAGS="$flags" 
     else
-      $MAKE $flags $args MYFLAGS="$flags" --no-print-directory &
+      $MAKE $flags $args MYFLAGS="$flags" &
       procids="$procids $!"
     fi
     cd "$h"
