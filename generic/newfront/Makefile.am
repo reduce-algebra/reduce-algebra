@@ -64,9 +64,27 @@ rfboot_CPPFLAGS = -DBOOT=1 -I../include
 rfpsl_CPPFLAGS = -DPSL=1 -I../include
 
 if LINUX
-rfcsl_LDADD = -l:libtinfo.a ../lib/libedit.a -lncurses
-rfboot_LDADD = -l:libtinfo.a ../lib/libedit.a -lncurses
-rfpsl_LDADD = -l:libtinfo.a ../lib/libedit.a -lncurses
+# What I have here is a horrid hack that carried maintenance pains for the
+# future. It links in all the object files that go to make up libedit. This
+# done because if I go via libedit.a in a sane way I seem to pick up a
+# demand for a copy of libtinfo where Fedora and Ubuntu disagree about
+# absence or presence of version numbers. Doing things this way lets me
+# link in libtinfo statically (using "-l:") and perhaps avoids the misery.
+
+L = ../libedit/src
+
+LIBEDIT =	$(L)/chared.o $(L)/chartype.o $(L)/common.o $(L)/eln.o \
+                $(L)/el.o $(L)/emacs.o $(L)/fcns.o $(L)/fgetln.o \
+                $(L)/filecomplete.o $(L)/help.o $(L)/hist.o $(L)/historyn.o \
+                $(L)/history.o $(L)/keymacro.o $(L)/map.o $(L)/parse.o \
+                $(L)/prompt.o $(L)/readline.o $(L)/read.o $(L)/refresh.o \
+                $(L)/search.o $(L)/sig.o $(L)/strlcat.o $(L)/strlcpy.o \
+                $(L)/terminal.o $(L)/tokenizern.o $(L)/tokenizer.o $(L)/tty.o \
+                $(L)/unvis.o $(L)/vi.o $(L)/vis.o $(L)/wcsdup.o
+
+rfcsl_LDADD = -l:libtinfo.a $(LIBEDIT) -lncurses
+rfboot_LDADD = -l:libtinfo.a $(LIBEDIT) -lncurses
+rfpsl_LDADD = -l:libtinfo.a $(LIBEDIT) -lncurses
 else !LINUX
 rfcsl_LDADD = ../lib/libedit.a -lncurses
 rfboot_LDADD = ../lib/libedit.a -lncurses
