@@ -1,4 +1,4 @@
-<!-- Index page for https://reduce-algebra.sourceforge.io/, http://reduce-algebra.com, etc. -->
+<!-- Index page for https://reduce-algebra.sourceforge.io, http://reduce-algebra.com, etc. -->
 
 <?php
 

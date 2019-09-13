@@ -2,13 +2,14 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta name="Description" content="The REDUCE Computer Algebra System" />
-    <meta name="Keywords" content="Open Source, Software, Development, Developers, Projects, Downloads, SF.net, SourceForge, BSD License, Science/Research, OS Portable (Source code to work with many OS platforms), Mathematics, Lisp, REDUCE, reduce-algebra, computer algebra system, CAS" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="The REDUCE Computer Algebra System" />
+    <meta name="keywords" content="Open Source, Software, Development, Developers, Projects, Downloads, SF.net, SourceForge, BSD License, Science/Research, OS Portable (Source code to work with many OS platforms), Mathematics, Lisp, REDUCE, reduce-algebra, computer algebra system, CAS" />
     {block name=title}
     <title>{$page_title|default: "REDUCE $header_title"}</title>
     {/block}
+    <link rel="canonical" href="https://reduce-algebra.sourceforge.io{$SCRIPT_NAME}" />
     <link rel="icon" type="image/png" href="/images/icon.png" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -20,7 +21,7 @@
   <body>
     <div class="container-fluid">
       {block name=header}
-      <header><img src="/images/icon.png" class="d-none d-md-block" />
+      <header><img src="/images/icon.png" class="d-none d-md-block" alt=""/>
         REDUCE
       </header>
       {/block}

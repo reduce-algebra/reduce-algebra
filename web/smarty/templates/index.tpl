@@ -31,12 +31,6 @@
 </style>
 {/block}
 
-{block name=header}
-<header><img src="images/icon.png" class="d-none d-md-block" />
-  REDUCE
-</header>
-{/block}
-
 {$main_class = 'col-md-6 col-xl-6'}
 
 {block name=RSS}
@@ -44,10 +38,10 @@
   <h2 style="text-align:center; font-size:medium;">SourceForge RSS feeds</h2>
   <div class="row">
     <div class="col-sm col-md-12">
-      <iframe src="displayRSSfeed.php?https://sourceforge.net/p/reduce-algebra/activity/feed?source=project_activity">Please use a browser that supports the HTML iframe element.</iframe>
+      <iframe src="displayRSSfeed.php?https://sourceforge.net/p/reduce-algebra/activity/feed?source=project_activity"></iframe>
     </div>
     <div class="col-sm col-md-12">
-      <iframe src="displayRSSfeed.php?https://sourceforge.net/p/reduce-algebra/news/feed.rss">Please use a browser that supports the HTML iframe element.</iframe>
+      <iframe src="displayRSSfeed.php?https://sourceforge.net/p/reduce-algebra/news/feed.rss"></iframe>
     </div>
   </div>
   <p style="text-align:center; font-size:small;">RSS feed display courtesy of <a href="http://simplepie.org/">SimplePie</a></p>
