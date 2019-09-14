@@ -100,7 +100,7 @@ endif
 	cd $(REDFRONTSRCDIR) ; autoreconf -f -i -v
 	cd $(REDFRONTBUILDDIR) ; ../configure
 	mkdir -p $(LIBEDITBUILDDIR)
-	cd $(LIBEDITBUILDDIR) ; autoreconf -f -i -v; $(LIBEDITSRCDIR)/configure --prefix=$(REDFRONTSRCDIR)
+	cd $(LIBEDITBUILDDIR) ; autoreconf -f -i -v; $(LIBEDITSRCDIR)/configure --prefix=$(REDFRONTSRCDIR) --enable-widec
 	touch configure-stamp
 
 
