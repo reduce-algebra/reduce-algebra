@@ -884,6 +884,13 @@ terminal_set(EditLine *el, const char *term)
 
 	i = tgetent(el->el_terminal.t_cap, term);
 
+// ACN hack to demote xterm-256color to xterm if the former is not recognized.
+// This will at least be better than falling back to a dumb terminal. The
+// motivation here is when a library is built on Ubuntu but used on Fedora...
+// and the issue addressed here arises!
+        if (i <= 0 && strncmp(term, "xterm", 5) == 0)
+		i = tgetent(el->el_terminal.t_cap, "xterm");
+ 
 	if (i <= 0) {
 		if (i == -1)
 			(void) fprintf(el->el_errfile,
