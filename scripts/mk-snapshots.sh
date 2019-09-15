@@ -887,6 +887,13 @@ execute_in_dir() {
   fi
   dir="$1"
   cmd="$2"
+#
+# In the code here I need to think jolly carefully about quoting, because
+# I pass the command that is to be executed through multiple levels of
+# shell etc. When I start "cmd" will be a single string that is a single
+# command or sequence of commands. It may have spaces in it and could include
+# semicolons so that in fact it consists of several separate commands.
+#
 # I somewhat regularize the path under which the command will be run. This
 # is vital on the Raspberry Pi setup that I have where I place a variant
 # on the "uname" command in /usr/local/bin and need that to get picked up.
@@ -914,43 +921,33 @@ execute_in_dir() {
     ;;
   ds64)
     cd $HERE
-    printf "eval \"cd $dir; ds64-run $cmd\"\n"
-    eval "cd $dir; ds64-run $cmd"
+    printf "eval \"cd $dir; ds64-run \\\"$cmd\\\"\"\n"
+    eval "cd $dir; ds64-run \"$cmd\""
     cd $HERE
     ;;
   ssh)
-    printf "ssh $USER@$HOST \"export PATH=/usr/bin:\$PATH; cd $dir; $cmd\"\n"
-    ssh $USER@$HOST "export PATH=/usr/bin:\$PATH; cd $dir; $cmd"
+    printf "ssh $USER@$HOST \"export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd\"\n"
+    ssh $USER@$HOST "export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd"
     ;;
   ssh+ds64)
-    printf "ssh $USER@$HOST \"export PATH=/usr/bin:\$PATH; cd $dir; ds64-run $cmd\"\n"
-    ssh $USER@$HOST "export PATH=/usr/bin:\$PATH; cd $dir; ds64-run $cmd"
+    printf "ssh $USER@$HOST \"export PATH=/usr/bin:\$PATH; cd $dir; ds64-run \\\"$cmd\\\"\"\n"
+    ssh $USER@$HOST "export PATH=/usr/bin:\$PATH; cd $dir; ds64-run \"$cmd\""
     ;;
   virtual)
-    printf "ssh -p $PORT $SSHOPTS $USER@localhost \"export PATH=/usr/bin:\$PATH; cd $dir; $cmd\"\n"
-    ssh -p $PORT $SSHOPTS $USER@localhost "export PATH=/usr/bin:\$PATH; cd $dir; $cmd"
+    printf "ssh -p $PORT $SSHOPTS $USER@localhost \"export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd\"\n"
+    ssh -p $PORT $SSHOPTS $USER@localhost "export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd"
     ;;
   ssh+ssh)
-# I had trouble getting the quotation correct here, so now I build up
-# the command that is to be executed step by step. Note that within $cmd there
-# can be the sequence "PATH=xxx:$PATH" and the expansion of "$PATH" has to
-# be delayed so it is performed on the final server.
-    cmd="export PATH=/usr/bin:\$PATH; cd $dir; $cmd"
-# Now create a command that will execute stuff on the final system.
-    cmd="ssh $SSHOPTS $USER@$HOST2 '$cmd'"
-    printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
-    ssh $SSHOPTS $USER@$HOST1 "$cmd"
+#    printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
+    ssh $SSHOPTS $USER@$HOST1 "ssh $USER@$HOST2 \"export PATH=/usr/bin:\$PATH; cd $dir; $cmd\""
     ;;
   ssh+ssh+ds64)
-    cmd="export PATH=/usr/bin:\$PATH; cd $dir; ds64-run $cmd"
-# Now create a command that will execute stuff on the final system.
-    cmd="ssh $SSHOPTS $USER@$HOST2 '$cmd'"
-    printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
-    ssh $SSHOPTS $USER@$HOST1 "$cmd"
+#    printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
+    ssh $SSHOPTS $USER@$HOST1 "export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; ssh $USER@$HOST2 \"export PATH=/usr/bin:\\\$PATH; cd $dir; ds64-run \\\"$cmd\\\"\""
     ;;
   ssh+virtual)
-    printf "ssh -p $PORT $SSHOPTS $USER@$HOST \"export PATH=/usr/bin:\$PATH; cd $dir; $cmd\"\n"
-    ssh -p $PORT $SSHOPTS $USER@$HOST "export PATH=/usr/bin:\$PATH; cd $dir; $cmd"
+    printf "ssh -p $PORT $SSHOPTS $USER@$HOST \"export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd\"\n"
+    ssh -p $PORT $SSHOPTS $USER@$HOST "export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd"
     ;;
   *)
     printf "Unknown mode: $MODE\n"
