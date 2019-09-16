@@ -22,7 +22,3 @@
   {/foreach}
 </div>
 {/block}
-
-{block name=javascript}
-{include file='bootstrap-js.tpl'}
-{/block}

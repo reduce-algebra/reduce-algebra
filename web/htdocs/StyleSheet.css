@@ -2,30 +2,22 @@
     background-color: #eef;
 }
 
-header {
-    position: relative; /* for absolute positioning of icon img element (below) */
-    background-image: /*url(images/icon.png),*/ url(images/header.gif);
+header span.mx-auto {
+    background-image: url(images/header.gif);
     background-repeat: no-repeat;
-    background-position: /*56px center,*/ center;
-    height: 60px;
-    line-height: 60px;
-    font-family: Arial, Helvetica, sans-serif; /* for correct alignment with the background image */
+    background-position: center;
+    display: inline-block;
+    width: 600px;
+    text-align: center;
+    font-family: Georgia, 'Times New Roman', 'Lucida Bright', serif;
     font-size: 40px;
     font-weight: bold;
-    text-align: center;
-    margin: 0.4em auto;
     color: #0F0;
 }
 
-header > img { /* icon */
-    position: absolute;
-    top: 6px;
-    left: 6px;
-}
-
 h1 {
-    color: #009;
     text-align: center;
+    color: #009;
 }
 
 footer {

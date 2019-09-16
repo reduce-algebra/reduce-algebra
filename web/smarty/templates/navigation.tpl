@@ -1,5 +1,5 @@
 ﻿{* Smarty *}
-<nav id="navmenu" class="col-md-3 col-xl-2">
+<nav id="navmenu" class="col-md-3 col-xl-2 d-md-block collapse">
   <div class="sticky-top">
     <ul>
       {* navMenuItem is defined in /../php/Smarty/plugins/function.navMenuItem.php *}
@@ -13,7 +13,7 @@
       {navMenuItem href='/packages.php' label='External Packages' title='External packages that use REDUCE'}
       {navMenuItem href='/helpwanted.php' label='Help Wanted!' title='Join the REDUCE developer community!'}
       {navMenuItem href='/bibliography.php' label='Bibliography' title='Publications that reference REDUCE'}
-      {navMenuItem href='/about.php' label='History and Contributors' title='History and contributors'}
+      {navMenuItem href='/about.php' label='About REDUCE' title='History and contributors'}
       {navMenuItem href='/projects.php' label='Related Projects' title='Projects related to REDUCE'}
     </ul>
 

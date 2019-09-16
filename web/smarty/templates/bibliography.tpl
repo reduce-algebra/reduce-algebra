@@ -20,7 +20,6 @@
 {/block}
 
 {block name=javascript}
-{include file='bootstrap-js.tpl'}
 <script>
   // Set initial state of tablist.
   $("#TabbedHeader > a:first-child").addClass("active").attr("aria-selected", "true");
