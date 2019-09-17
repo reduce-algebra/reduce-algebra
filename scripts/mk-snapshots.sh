@@ -26,7 +26,9 @@
 # executed in the 64-bit world. The logged in user's filespace is shared
 # between 32 and 64-bit environments and so when I want to move files
 # to and fro I can just access the 32-bit schemes. This is a bit of an
-# experiment as of September 2019!
+# experiment as of September 2019! However it might in the future be useful
+# for other cases where builing can be done given an interesting prefix to
+# commands.
 #
 # Each host used during the build must have been set up with a comprehensive
 # set of build tools and development libraries, and where it is to be
@@ -48,9 +50,10 @@ case $@ in
 *help*)
   printf "$0: This script is for making snapshots of Reduce\n"
   printf "Usage: $0 machine1 machine2 ...\n"
+  printf "   or  %0 --test machine1 ...\n"
   printf "where the supported 'machines' are\n"
   printf "    windows (win32, win64, winboth), macintosh, linux32,\n"
-  printf "linux64 and rpi, rpi64.\n"
+  printf "linux64 and rpi (or rpi32), rpi64.\n"
   printf "The two Linux variants refer to ones hosted on i686 and x86_64,\n"
   printf "and 'rpi' is a Raspberry Pi running raspbian.\n"
   printf "[July 2019] rpi64 is an experiment re 64-bit Raspberry Pi\n"
@@ -66,8 +69,6 @@ case $@ in
   exit
   ;;
 esac
-
-printf ">>>>>>>>>>>>>>>>>>>> HERE=$HERE\n"
 
 # There are a collection of issues that one needs to be aware of here...
 # The various remote machines must provide the current user with ssh access
@@ -202,7 +203,6 @@ prepare() {
 # REVISION will be the subversion revision of the copy that I will make the
 # snapshot of, written in the form "svnNNNN".
   fi
-  
 }
 
 hostname() {
@@ -299,6 +299,7 @@ build() {
     linux32 | \
     linux64 | \
     rpi     | \
+    rpi32   | \
     rpi64   | \
     macintosh)
       full="no"
@@ -340,6 +341,7 @@ build() {
     linux32 | \
     linux64 | \
     rpi     | \
+    rpi32   | \
     rpi64   | \
     macintosh)
       add_target "$a"
@@ -352,6 +354,7 @@ build() {
     -linux32 | \
     -linux64 | \
     -rpi     | \
+    -rpi32   | \
     -rpi64   | \
     -macintosh)
       remove_target "${a#-}"
@@ -375,7 +378,6 @@ build() {
 # target architecture.
     eval "build_$TARGET"
   done
-
 }
 
 build_windows() {
@@ -388,15 +390,16 @@ build_windows() {
   start_remote_host
   copy_files "$REDUCE_DISTRIBUTION/winbuild/"    "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
-  execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   stop_remote_host
 }
 
 build_win32() {
   printf "\n+++ Only building a 32-bit Windows snapshot is not supported\n"
+  printf "Please use win64 or winboth\n"
   exit 1
   machine_windows
   if test "$MODE" = "none"
@@ -407,10 +410,10 @@ build_win32() {
   start_remote_host
   copy_files "$REDUCE_DISTRIBUTION/winbuild/"    "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
-  execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "$REDUCE_BUILD"                 "make REVISION=$REVISION"
-  fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  fetch_files    "windows" "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   stop_remote_host
 }
 
@@ -424,9 +427,9 @@ build_win64() {
   start_remote_host
   copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
-  execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
   stop_remote_host
 }
@@ -441,9 +444,9 @@ build_altwin64() {
   start_remote_host
   copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
-  execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
   stop_remote_host
 }
@@ -458,9 +461,9 @@ build_winboth() {
   start_remote_host
   copy_files "$REDUCE_DISTRIBUTION/winbuild/"    "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
-  execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   stop_remote_host
 }
@@ -475,9 +478,13 @@ build_linux64() {
   build_debian linux64
 }
 
-build_rpi() {
-  machine_rpi
+build_rpi32() {
+  machine_rpi32
   build_debian rpi
+}
+
+build_rpi() {
+  build_rpi32
 }
 
 build_rpi64() {
@@ -497,9 +504,9 @@ build_debian() {
   start_remote_host
   copy_files "$REDUCE_DISTRIBUTION/debianbuild/" "$REDUCE_BUILD/"   "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
-  execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  execute_in_dir "linux" "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "linux" "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "linux" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
   fetch_files    "$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
   stop_remote_host
 }
@@ -514,10 +521,10 @@ build_macintosh() {
   start_remote_host
   copy_files "$REDUCE_DISTRIBUTION/macbuild/" "$REDUCE_BUILD/"   "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"          "$REDUCE_BUILD/C/"
-  execute_in_dir "$REDUCE_BUILD/C"            "./autogen.sh"
-  execute_in_dir "$REDUCE_BUILD"              "make REVISION=$REVISION source-archive"
-  execute_in_dir "$REDUCE_BUILD"              "touch C.stamp"
-  execute_in_dir "$REDUCE_BUILD"              "make REVISION=$REVISION"
+  execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "./autogen.sh"
+  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION source-archive"
+  execute_in_dir "macintosh" "$REDUCE_BUILD"              "touch C.stamp"
+  execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION"
   fetch_files    "$REDUCE_BUILD/*.{dmg,bz2}"  "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
   stop_remote_host
 }
@@ -660,7 +667,7 @@ machine_linux64() {
   fi
 }
 
-machine_rpi() {
+machine_rpi32() {
   MODE="none"
   hosts_rpi 2> /dev/null
   if test "$MODE" = "none"
@@ -674,6 +681,9 @@ machine_rpi() {
   fi
 }
 
+machine_rpi() {
+  machine_rpi32
+}
 
 machine_rpi64() {
   MODE="none"
@@ -688,7 +698,6 @@ machine_rpi64() {
     esac
   fi
 }
-
 
 # Now I have the recipes that can be used to transfer files or execute
 # commands. Each tests MODE to see what to do.
@@ -865,8 +874,8 @@ copy_files() {
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" $src $USER@localhost:$dest
     ;;
   ssh+ssh | ssh+ssh+ds64)
-    printf "rsync $RSO -e \"ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS\" $src $USER@$HOST2:$dest\n"
-    rsync $RSO -e "ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS" $src $USER@$HOST2:$dest
+    printf "rsync $RSO -e \"ssh -t -A $SSHOPTS $USER@$HOST1 ssh $SSHOPTS\" $src $USER@$HOST2:$dest\n"
+    rsync $RSO -e "ssh -t -A $SSHOPTS $USER@$HOST1 ssh $SSHOPTS" $src $USER@$HOST2:$dest
     ;;
   ssh+virtual)
     printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" $src $USER@$HOST:$dest\n"
@@ -885,33 +894,22 @@ execute_in_dir() {
     printf "Internal error\n"
     exit 1
   fi
-  dir="$1"
-  cmd="$2"
-#
-# In the code here I need to think jolly carefully about quoting, because
-# I pass the command that is to be executed through multiple levels of
-# shell etc. When I start "cmd" will be a single string that is a single
-# command or sequence of commands. It may have spaces in it and could include
-# semicolons so that in fact it consists of several separate commands.
-#
-# I somewhat regularize the path under which the command will be run. This
-# is vital on the Raspberry Pi setup that I have where I place a variant
-# on the "uname" command in /usr/local/bin and need that to get picked up.
-  cmd="export PATH=/usr/local/bin:/usr/bin:\$PATH; $cmd"
-  if test "$TARGET" = "macintosh"
-  then
-# For execution on the Macintosh I need to ensure that I have macports stuff
-# on my PATH.
+  machine="$1"
+  dir="$2"
+  cmd="$3"
+  printf "raw cmd = %s\n" "$cmd"
+  case "$machine" in
+  *macintosh*)
     cmd="export PATH=/opt/local/bin:\$PATH; $cmd"
-  fi
-  if test "$TARGET" = "windows"
-  then
-# For execution on Windows I seem to need this and if I do not add it then
-# remote execution of i686-w64-mingw32-gcc seems to get confused as to
-# whether assembly of the generated code should be done in 32 or 64-bit mode.
-    cmd="export PATH=/usr/bin:\$PATH; $cmd"
-  fi
-  printf "Mode = $MODE: execute $cmd in directory $dir\n"
+    ;;
+  *linux* | *rpi*)
+    cmd="export PATH=/usr/local/bin:\$PATH; $cmd"
+    ;;
+  esac
+  printf "Adjusted command = %s\n" "$cmd"
+  printf "+++ Mode = %s\n" "$MODE"
+  printf "Execute %s\n" "$cmd"
+  printf "+++ in directory %s\n" "$dir"
   case $MODE in
   local)
     cd $HERE
@@ -921,29 +919,38 @@ execute_in_dir() {
     ;;
   ds64)
     cd $HERE
-    printf "eval \"cd $dir; ds64-run \\\"$cmd\\\"\"\n"
-    eval "cd $dir; ds64-run \"$cmd\""
+    printf "raw cmd 1 = %s\n" "$cmd"
+    cmd="ds64-run `echo \$cmd | sed 's/[^a-zA-Z0-9]/\\\&/g'`"
+    printf "adjusted cmd 1 = %s\n" "$cmd"
+    printf "eval \"cd $dir; $cmd\"\n"
+    eval "cd $dir; $cmd"
     cd $HERE
     ;;
   ssh)
-    printf "ssh $USER@$HOST \"export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd\"\n"
-    ssh $USER@$HOST "export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd"
+    cmd=export\ PATH=/usr/local/bin:/usr/bin:/bin:\\\$PATH\;\ cd\ $dir\;\ $cmd
+    cmd=`echo \$cmd | sed 's/[^a-zA-Z0-9]/\\\&/g'`
+    printf "\nssh $USER@$HOST eval $cmd\n"
+    ssh $USER@$HOST "eval $cmd"
     ;;
   ssh+ds64)
-    printf "ssh $USER@$HOST \"export PATH=/usr/bin:\$PATH; cd $dir; ds64-run \\\"$cmd\\\"\"\n"
-    ssh $USER@$HOST "export PATH=/usr/bin:\$PATH; cd $dir; ds64-run \"$cmd\""
+    cmd=export\ PATH=/usr/local/bin:/usr/bin:/bin:\\\$PATH\;\ cd\ $dir\;\ $cmd
+    cmd=`echo \$cmd | sed 's/[^a-zA-Z0-9]/\\\&/g'`
+    printf "\nssh $USER@$HOST /usr/local/bin/ds64-run $cmd\n"
+    ssh $USER@$HOST "/usr/local/bin/ds64-run $cmd"
     ;;
   virtual)
     printf "ssh -p $PORT $SSHOPTS $USER@localhost \"export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd\"\n"
     ssh -p $PORT $SSHOPTS $USER@localhost "export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd"
     ;;
   ssh+ssh)
-#    printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
-    ssh $SSHOPTS $USER@$HOST1 "ssh $USER@$HOST2 \"export PATH=/usr/bin:\$PATH; cd $dir; $cmd\""
+    printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
+    echo SSH+SSH case [$cmd]
+    ssh -t -A $SSHOPTS $USER@$HOST1 "echo $USER@$HOST2 \"export PATH=/usr/bin:\\\"\"\\\$PATH\"\\\"; cd $dir; \\\"$cmd\\\"\""
+    ssh -t -A $SSHOPTS $USER@$HOST1 "ssh  $USER@$HOST2 \"export PATH=/usr/bin:\\\"\"\\\$PATH\"\\\"; cd $dir; \\\"$cmd\\\"\""
     ;;
   ssh+ssh+ds64)
-#    printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
-    ssh $SSHOPTS $USER@$HOST1 "export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; ssh $USER@$HOST2 \"export PATH=/usr/bin:\\\$PATH; cd $dir; ds64-run \\\"$cmd\\\"\""
+    printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
+    ssh -t -A $SSHOPTS $USER@$HOST1 "export PATH=/usr/local/bin:/usr/bin:\"\$PATH\"; cd $dir; ssh $USER@$HOST2 \"export PATH=/usr/bin:\\\$PATH; cd $dir; ds64-run \\\"$cmd\\\"\""
     ;;
   ssh+virtual)
     printf "ssh -p $PORT $SSHOPTS $USER@$HOST \"export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd\"\n"
@@ -1007,7 +1014,7 @@ fetch_files() {
     ;;
   ssh+ssh | ssh+ssh+ds64)
     printf "rsync $RSO -e \"ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS\" \"$USER@$HOST2:$src\" $dest\n"
-    rsync $RSO -e "ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS" "$USER@$HOST2:$src" $dest
+    rsync $RSO -e "ssh -t -A $SSHOPTS $USER@$HOST1 ssh $SSHOPTS" "$USER@$HOST2:$src" $dest
     ;;
   ssh+virtual)
     printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" \"$USER@$HOST:$src\" $dest\n"
@@ -1033,10 +1040,13 @@ stop_remote_host() {
       case $TARGET
       in
       *win*)
-        execute_in_dir "$REDUCE_BUILD" "\$WINDIR/SysWOW64/shutdown /s /t 1"
+        execute_in_dir "windows" "$REDUCE_BUILD" "\$WINDIR/SysWOW64/shutdown /s /t 1"
+        ;;
+      *macintosh*)
+        execute_in_dir "macintosh" "$REDUCE_BUILD" "sudo /sbin/shutdown -h now"
         ;;
       *)
-        execute_in_dir "$REDUCE_BUILD" "sudo /sbin/shutdown -h now"
+        execute_in_dir "linux" "$REDUCE_BUILD" "sudo /sbin/shutdown -h now"
         ;;
       esac
     fi
@@ -1084,11 +1094,51 @@ stop_remote_host() {
 #########################################################################
 # Now do the work.
 
-cd $HERE
-prepare
-cd $HERE
-build "$@"
-cd $HERE
+# I allow either "-test" or "--test"
+if test "$1" = "-test" ||
+   test "$1" = "--test"
+then
+  printf "\n\n+++ Test machine access +++ \n\n"
+  shift
+# --test can be followeed by a list of machined to test on -if none are used
+# the code tests everything.
+  if test "$*" = ""
+  then
+    MCS="rpi32 rpi64 linux32 linux64 macintosh windows"
+  else
+    MCS="$*"
+  fi
+  printf "Test for $MCS\n\n"
+#  cd $HERE
+#  prepare
+  cd $HERE
+# This is going to try each of the intended targets
+  for m in $MCS
+  do
+    machine_$m
+# If a target is not supported from this host do not try it.
+    if test "$MODE" != "none"
+    then
+      start_remote_host
+# I try to display `pwd` which should be /usr/bin, then
+# `uname -a` to confirm the type of machine being used,
+# `file /bin/ls` will confirm the userland architecture.
+      execute_in_dir "$m" "/usr/bin" \
+        "printf \"\\n\\n\\nTest on machine type $m\\n\";
+         printf \"dir = \`pwd\`\\n\"; \
+         printf \"path = \`echo \\\$PATH\`\\n\"; \
+         printf \"uname = \`uname -a\`\\n\"; \
+         printf \"file type of /bin/ls = \`file /bin/ls\`\\n\\n\\n\""
+      stop_remote_host
+    fi
+  done
+else
+  cd $HERE
+  prepare
+  cd $HERE
+  build "$@"
+  cd $HERE
+fi
 
 exit 0
 
