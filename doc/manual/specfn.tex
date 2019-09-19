@@ -29,15 +29,17 @@
 \index{Spherical and Solid Harmonics} \ttindex{SphericalHarmonicY}
 \ttindex{SolidHarmonicY}
 \index{Jacobi Elliptic Functions and Integrals}
-\ttindex{Jacobiamplitude} \ttindex{Jacobisn} \ttindex{Jacobidn}
-\ttindex{Jacobicn} \ttindex{EllipticF} \ttindex{EllipticE}
-\ttindex{EllipticTheta} \ttindex{JacobiZeta}
+\ttindex{Jacobiam} \ttindex{Jacobisn} \ttindex{Jacobidn}
+\ttindex{Jacobicn} 
+\ttindex{EllipticF}  \ttindex{EllipticK} \ttindex{EllipticE}  \ttindex{EllipticD}
+ \ttindex{JacobiZeta} 
+\ttindex{EllipticTheta1} \ttindex{EllipticTheta2} \ttindex{EllipticTheta3} \ttindex{EllipticTheta4}
 \index{Airy functions} \ttindex{Airy\_Ai} \ttindex{Airy\_Bi}
 \ttindex{Airy\_Aiprime} \ttindex{Airy\_Biprime}
 \index{3j and 6j symbols} \index{Clebsch Gordan coefficients}
 \ttindex{ThreejSymbol} \ttindex{SixjSymbol} \ttindex{Clebsch\_Gordan}
 
-The packae SPECFN is designed to provide algebraic and numeric manipulations of
+The package SPECFN is designed to provide algebraic and numeric manipulations of
 several common special functions, namely:
 
 \begin{itemize}
@@ -71,6 +73,7 @@ several common special functions, namely:
 \item Lambert's $\omega$ function;
 \item (Jacobi's) Elliptic Functions;
 \item Elliptic Integrals;
+\item (Jacobi's) Theta Functions
 \item 3j and 6j symbols , Clebsch-Gordan coefficients;
 \item and some well-known constants.
 \end{itemize}
@@ -558,42 +561,56 @@ For $m < 0$ one has:-
 
 \subsection{Jacobi's Elliptic Functions}
 
+The implementation of the functions in this and the next two subsections have, in 2019,
+been substantially revised by Alan Barnes. This is to bring the
+notation more into line with standard (British) texts such as Whittaker
+\& Watson \cite{Whittaker:69} and Lawden \cite{Lawden:89} and also to correct
+a number of errors and omissions. These changes and additions will be itemised in the relevant
+sections below.
+
 The following functions have been implemented:
 
 \begin{itemize}
-\item The Twelve Jacobi Functions
+\item The 12 Jacobi Functions
+\item Jacobi's Amplitude Function
 \item Arithmetic Geometric Mean
 \item Descending Landen Transformation
 \end{itemize}
-
-\subsubsection{Jacobi Functions}
-
+\subsubsection{Jacobi Elliptic Functions}
 The following Jacobi functions are available:-
 
 \begin{itemize}
-\item Jacobisn(u,m)
-\item Jacobidn(u,m)
-\item Jacobicn(u,m)
-\item Jacobicd(u,m)
-\item Jacobisd(u,m)
-\item Jacobind(u,m)
-\item Jacobidc(u,m)
-\item Jacobinc(u,m)
-\item Jacobisc(u,m)
-\item Jacobins(u,m)
-\item Jacobids(u,m)
-\item Jacobics(u,m)
+\item jacobisn(u,k)
+\item jacobidn(u,k)
+\item jacobicn(u,k)
+\item jacobicd(u,k)
+\item jacobisd(u,k)
+\item jacobind(u,k)
+\item jacobidc(u,k)
+\item jacobinc(u,k)
+\item jacobisc(u,k)
+\item jacobins(u,k)
+\item jacobids(u,k)
+\item jacobics(u,k)
 \end{itemize}
+These differ somewhat from the originals implemented by Lisa Temme in that
+the second argument is now the modulus (usually denoted by $k$ in most texts
+rather than its square $m$).
 
-They will be evaluated numerically if the \sw{rounded} switch is used.
+Extended rule lists are provided for differentiation of these functions with
+respect to either argument, to implement the standard addition formulae,
+argument shifts by multiples of the two quarter-periods $K$ and $iK'$ and
+finally Jacobi's transformation for a purely imaginary first argument.
 
-\subsubsection{Amplitude}
+When their arguments are purely numerical, these functions  will be evaluated
+numerically if the \sw{rounded} switch is used. For
+complex arguments it is also better if the \sw{complex} switch is on.
 
+\subsubsection{Jacobi Amplitude Function}
 The amplitude of u can be evaluated using the 
-\f{JacobiAmplitude(u,m)} command.
+\f{jacobiam(u,k)} command.
 
 \subsubsection{Arithmetic Geometric Mean}
-
 A procedure to evaluate the AGM of initial values \(a_0,b_0,c_0\) 
 exists as \\
 \texttt{AGM\_function(\(a_0,b_0,c_0\))} and will return \\
@@ -605,9 +622,11 @@ desired acuracy. \\
 To determine the Elliptic Integrals K($m$), E($m$) we use initial values
 \(a_0 = 1\); \(b_0 = \sqrt{1-m}\) ; \(c_0 = \sqrt{m}\).
 
+This procedure and the following one are primarily intended for use in the
+numerical evaluation of the various elliptic functions and integrals rather
+than for direct use by users.
 
 \subsubsection{Descending Landen Transformation}
-
 The procedure to evaluate the Descending Landen Transformation of 
 phi and alpha uses the following equations:
 \begin{align*}
@@ -622,42 +641,84 @@ $\{\{\phi_0, \ldots ,\phi_n\},\{\alpha_0, \ldots ,\alpha_n\}\}$.
 The following functions have been implemented:
 
 \begin{itemize}
-\item Elliptic Integrals of the First Kind
-\item Elliptic Integrals of the Second Kind
+\item Complete \& Incomplete Elliptic Integrals of the First Kind
+\item Complete \& Incomplete Elliptic Integrals of the Second Kind
 %\item Ellpitic Integrals of the Third Kind
-\item Jacobi $\theta$ Functions
-\item Jacobi $\zeta$ Function
+\item Jacobi's Zeta Function
 \end{itemize}
+
+These again differ somewhat from the originals implemented by Lisa Temme
+as the second argument is now the modulus $k$ rather that its square.
+Also in the original implementation  there was some confusion between
+Legendre's form and Jacobi's form of the incomplete elliptic integrals of
+the second kind; $E(u,k)$ denoted the first in numerical
+evaluations and the second in the derivative formulae for the Jacobi
+elliptic functions with respect to their second argument.
+This confusion was perhaps understandable
+as in the literature some authors use the notation $\mathrm{E}(u, k)$ for
+the Legendre form and others for Jacobi's form.
+
+To avoid any possible confusion, following Lawden \cite{Lawden:89}, the notation
+$\mathrm{D}(\phi, k)$ will be used for the Legendre form.
+
+A number of rule lists have been provided to implement, where appropriate,
+derivatives of these functions, addition rules and periodicity and
+quasi-periodicity properties and to provide simplifications for special values
+of the arguments.
 
 \subsubsection{Elliptic F}
 
-The Elliptic F function can be used as \f{EllipticF($\phi$,m)} and 
-will return the value of the {\underline {Elliptic Integral of the 
-First Kind}}.
+The Elliptic F function can be used as \f{EllipticF(phi,k)} and 
+will return the value of the \emph{Incomplete Elliptic Integral of the 
+First Kind}:
+$$\mathrm{F}(\phi, k)=\int_0^\phi(1-k^2 \sin^2 \theta)^{-1/2} \mathrm{d}\theta.$$
 
 \subsubsection{Elliptic K}
 
-The Elliptic K function can be used as \f{EllipticK(m)} and will 
-return the value of the {\underline {Complete Elliptic Integral of the
-First Kind}}, K. It is often used in the calculation of other elliptic
-functions
+The Elliptic K function can be used as \f{EllipticK(k)} and will 
+return the value of the \emph{Complete Elliptic Integral of the
+First Kind}:
+$$\mathrm{K}(k)=\int_0^{\pi/2}(1-k^2 \sin^2 \theta)^{-1/2}\mathrm{d}\theta.$$
+This is one of the quarter periods of the Jacobi elliptic
+functions and is often used in the calculation of other elliptic
+functions.
 
 \subsubsection{Elliptic K$'$}
 
-The Elliptic K$'$ function can be used as \f{EllipticK!$'$(m)} and will 
-return the value K($1-m$).
+The Elliptic K$'$ function can be used as \f{EllipticK!$'$(k)} and will 
+return the value $\mathrm{K}(k')=\mathrm{K}(\sqrt{1-k^2})$. $i\mathrm{K}'(k)$ is
+the other quarter-period of the Jacobi elliptic functions.
+
+\subsubsection{Elliptic D}
+
+The Elliptic D function takes two arguments.
+It is called as \f{EllipticD(phi,k)}
+and will return the value of Legendre's form of
+the \emph{Incomplete Elliptic Integral of the Second Kind}:
+$$\mathrm{D}(\phi, k)=\int_0^\phi (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.$$
 
 \subsubsection{Elliptic E}
 
-The Elliptic E function comes with two different numbers of arguments:
+The Elliptic E function comes with either one or two arguments;
+used with two arguments as \f{EllipticE(u,k)}
+it will return the value of Jacobi's form of
+the \emph{Incomplete Elliptic Integral of the Second Kind}:
+$$\mathrm{E}(u, k)=\int_0^u \mathrm{dn}^2 (v, k) \mathrm{d}v.$$
+The relationship between the two forms of incomplete elliptic integrals can
+be expressed as
+$$\mathrm{E}(u, k) = \mathrm{D}(\mathrm{am}(u), k).$$
 
-It can be used with two arguments as \f{EllipticE($\phi$,m)}
-and will return the value
-of the {\underline {Elliptic Integral of the Second Kind}}.
+When called with one argument \f{EllipticE(k)} will return the value of the
+\emph{Complete Elliptic Integral of the Second Kind}:
+$$\mathrm{E}(k)=\mathrm{E}(\mathrm{K}(k), k)
+=\int_0^{\mathrm{K}(k)} \mathrm{dn}^2(v, k)  \mathrm{d}v$$
+or equivalently
+$$\mathrm{E}(k)=\mathrm{D}(\pi/2, k) =
+\int_0^{\pi/2} (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.$$
+\subsubsection{Elliptic E$'$}
 
-The Elliptic E function can also be used as \f{EllipticE(m)} and 
-will return the value of the {\underline {Complete Elliptic Integral 
-of the Second Kind}}, E.
+The Elliptic E$'$ function can be used as \f{EllipticE!$'$(k)} and will 
+return the value $\mathrm{E}(k') = \mathrm{E}(\sqrt{1-k^2})$.
 
 %\subsection{Ellpitic $\Pi$}
 %
@@ -665,18 +726,102 @@ of the Second Kind}}, E.
 %will return the value of the {\underline {Elliptic Integral of the 
 %Third Kind}}.
 %
-\subsubsection{Elliptic $\Theta$ Functions}
 
-This can be used as \f{EllipticTheta(a,u,m)}, where $a$ is the index 
-for the theta functions ($a = 1,2,3$ or $4$) and will return $H$; 
-$H_1$; $\Theta_1$; $\Theta$. (Also denoted in some texts as 
-$\vartheta_1$; $\vartheta_2$; $\vartheta_3$; $\vartheta_4$.)
+\subsubsection{Jacobi's Zeta Function}
 
-\subsubsection{Jacobi's Zeta Function Z }
+This can be called as \f{JacobiZeta(u,k)} and refers to Jacobi's (elliptic)
+Zeta function $\mathrm{Z}(u,k)$ whereas the operator \f{Zeta} will invoke
+Riemann's $\zeta$ function.
 
-This can be used as \f{JacobiZeta(u,m)} and will return 
-Jacobi Zeta. Note: the operator \f{Zeta} will invoke Riemann's
-$\zeta$ function.
+\subsection{Elliptic Theta Functions}
+
+These theta functions differ from those originally defined by Lisa Temme
+in a number of respects.
+Firstly four separate functions of two arguments are defined
+\begin{itemize}
+\item \f{elliptictheta1(u,q)} $\qquad \vartheta_1(u, q)$
+\item \f{elliptictheta2(u,q)} $\qquad \vartheta_2(u, q)$
+\item \f{elliptictheta3(u,q)} $\qquad \vartheta_3(u, q)$
+\item \f{ellipticthetas(u,q)} $\qquad \vartheta_4(u, q)$
+\end{itemize}
+rather than a single function with three arguments (with the first argument
+taking integer values in the range 1 to 4).
+Secondly the periods are $2\pi, 2\pi, \pi$ and $\pi$ respectively 
+(NOT 4K, 4K, 2K and 2K).
+Thirdly the second argument is the nome $q$ where $|q| < 1$ and hence
+the quasi-period is $-i\log q$.
+
+\f{elliptictheta1} and \f{elliptictheta2} are consequently multi-valued
+owing to the appearance of $q^{1/4}$ in their defining expansions.
+\f{elliptictheta3} and \f{elliptictheta4} are, however, single-valued
+functions of $q$.
+
+Regarded as functions of the 'parameter' (usually denoted by $\tau$ where
+$q = \exp(i\pi\tau)$), \f{elliptictheta1} and \f{elliptictheta2} are
+single-valued functions of $\tau$. 
+
+Recall that in order that $|q| < 1$, the
+imaginary part of $\tau$ must be positive. Note also
+ in this case $q^{1/4}$ is interpreted as $\exp(i\pi\tau/4)$ rather than
+the principal value of $q^{1/4}$. Thus $\tau, 2+\tau, 4+\tau$ and $6+\tau$
+produce four different values of both \f{elliptictheta1} and \f{elliptictheta2}
+although they all produce the same nome $q$.
+
+Utilising the periodicity and quasi-periodicity of the theta functions
+some generalised shift rules are implemented to shift their first argument
+into the base period parallelogram with vertices
+$$(\pi/2, \pi\tau/2),\quad (-\pi/2, \pi\tau/2),\quad (-\pi/2, -\pi\tau/2),
+\quad (\pi/2, -\pi\tau/2).$$
+Together with the relation $\vartheta_1(0,q)=0$, these shift rules serve to
+simplify all four theta functions to zero when appropriate.
+
+When the switch \sw{rounded} is on and the arguments are purely numerical,
+the theta functions are evaluated numerically. For complex numerical arguments
+the switch \sw{complex} \emph{must} also be on.
+
+The numerical code always returns the principal value of 
+\f{elliptictheta1} and \f{elliptictheta2} (that is the one obtained by
+taking the principal value of $q^{1/4}$).
+Thus the negative real-axis of $q$ is a branch cut with the cut line
+regarded as belonging to the second rather than the third quadrant.
+
+The series for the theta functions are fairly rapidly convergent 
+due to the quadratic growth of the exponents of $q$ -- except 
+for values of $q$ for which $|q|$ is near to 1.  In such cases the direct algorithm 
+would suffer from slow convergence and rounding errors.
+For such values of $|q|$, Jacobi's transformation $\tau'=-1/\tau$ can be
+used to produce a smaller value of the nome and so increase the rate of
+convergence.  When $\Re q < 0$, the Jacobi transformation is preceded by the modular transformation $\tau' = 1+\tau$, which has the effect  of multiplying $q$ by -1, so that 
+the new nome has a non-negative real part. 
+
+This works very well for real values of $q$, but for complex
+values the gains are somewhat smaller.
+For a nome $q$ whose modulus is near to 1, the Jacobi transformation produces a nome 
+$q'$ for which $|q'|  \approx  |q|^{\alpha^2}$ where $\alpha =\pi/|\arg(q)| \geq 2$.
+Thus the worst case occurs for values of the nome $q$ near to $\pm i$ where 
+$\alpha \approx 2$.
+
+\subsubsection{Some Numerical Utility Functions}
+
+Five utility functions are provided:
+\begin{itemize}
+\item \f{nome2mod(q)}
+\item \f{nome2mod!$'$(q)}
+\item \f{nome2!K(q)}
+\item \f{nome2!K!$'$(q)}
+\item \f{nome(k)}
+\end{itemize}
+
+These are only operative when the switch \sw{rounded} is on and their
+argument is numerical. The first pair relate the nome $q$ of the theta
+functions with the moduli $k$ and $k'=\sqrt{1-k^2}$ of the associated Jacobi
+elliptic functions.
+
+The second pair return the quarter-periods K and K$'$ respectively of
+the Jacobi elliptic functions associated with the nome $q$.
+
+Finally, \f{nome(k)} returns the nome $q$ associated with the modulus $k$ of
+a Jacobi elliptic function and is essentially the inverse of \f{nome2mod}.
 
 \subsection{Lambert's W function}
 
@@ -779,25 +924,30 @@ $\left( {j_1m_1j_2m_2 | j_1j_2j_3 - m_3} \right)$ &
 \f{Clebsch\_Gordan(\{j1,m1\},\{j2,m2\},\{j3,m3\})}\\[1mm]
 $\displaystyle\left\{ {j_1 \atop l_1} {j_2 \atop l_2}
  {j_3 \atop l_3} \right\}$  & \f{SixJSymbol(\{j1,j2,j3\},\{l1,l2,l3\})}\\[12pt]
-$sn(u|m)$ & \f{Jacobisn(u,m)}\\
-$dn(u|m)$ & \f{Jacobidn(u,m)}\\
-$cn(u|m)$ & \f{Jacobicn(u,m)}\\
-$cd(u|m)$ & \f{Jacobicd(u,m)}\\
-$sd(u|m)$ & \f{Jacobisd(u,m)}\\
-$nd(u|m)$ & \f{Jacobind(u,m)}\\
-$dc(u|m)$ & \f{Jacobidc(u,m)}\\
-$nc(u|m)$ & \f{Jacobinc(u,m)}\\
-$sc(u|m)$ & \f{Jacobisc(u,m)}\\
-$ns(u|m)$ & \f{Jacobins(u,m)}\\
-$ds(u|m)$ & \f{Jacobids(u,m)}\\
-$cs(u|m)$ & \f{Jacobics(u,m)}\\
-$F(\phi|m)$ & \f{EllipticF(phi,m)}\\
-$K(m)$ & \f{EllipticK(m)}\\
-$E(\phi|m) or E(m)$ & \f{EllipticE(phi,m) or EllipticE(m)}\\
-$H(u|m), H_1(u|m), \Theta_1(u|m), \Theta(u|m)$ & \f{EllipticTheta(a,u,m)}\\
-$\theta_1(u|m), \theta_2(u|m), \theta_3(u|m), \theta_4(u|m)$
-   & \f{EllipticTheta(a,u,m)}\\
-$Z(u|m)$ & \f{Zeta\_function(u,m)}\\[12pt]
+$sn(u,k)$ & \f{jacobisn(u,k)}\\
+$dn(u,k)$ & \f{jacobidn(u,k)}\\
+$cn(u,k)$ & \f{jacobicn(u,k)}\\
+$cd(u,k)$ & \f{jacobicd(u,k)}\\
+$sd(u,k)$ & \f{jacobisd(u,k)}\\
+$nd(u,k)$ & \f{jacobind(u,k)}\\
+$dc(u,k)$ & \f{jacobidc(u,k)}\\
+$nc(u,k)$ & \f{jacobinc(u,k)}\\
+$sc(u,k)$ & \f{jacobisc(u,k)}\\
+$ns(u,k)$ & \f{jacobins(u,k)}\\
+$ds(u,k)$ & \f{jacobids(u,k)}\\
+$cs(u,k)$ & \f{jacobics(u,k)}\\
+$am(u,k)$ & \f{jacobiam(u,k)}\\
+$F(\phi,k)$ & \f{ellipticF(phi,k)}\\
+$K(k)$ & \f{ellipticK(k)}\\
+$K'(k)$ & \f{ellipticK!'(k)}\\
+$D(\phi,k)$ & \f{ellipticD(phi,k)}\\
+$E(u,k) or E(k)$ & \f{ellipticE(u,k) or ellipticE(k)}\\
+$E'(k)$ & \f{ellipticE!'(k)}\\
+$Z(u,k)$ & \f{jacobizeta(u,k)}\\
+$\vartheta_1(u,q)$ & \f{elliptictheta1(u,q)}\\
+$\vartheta_2(u,q)$ & \f{elliptictheta2(u,q)}\\
+$\vartheta_3(u,q)$ & \f{elliptictheta3(u,q)}\\
+$\vartheta_4(u,q)$ & \f{elliptictheta4(u,q)}\\
 Lambert $\omega(z)$ & \f{Lambert\_W(z)} \\[12pt]
 Constant & REDUCE name \\\\
 Euler's $\gamma$ constant & \f{Euler\_gamma}\\
@@ -879,6 +1029,16 @@ Wolfram Koepf.
 Landolt-Boernstein.
 \newblock {\em Zahlenwerte und Funktionen aus Naturwissenschaften und Technik}.
 \newblock Springer, 1968.
+
+\bibitem{Lawden:89}
+Derek F.~Lawden.
+\newblock {\em Elliptic Functions and Applications}.
+\newblock Springer-Verlag, 1989.
+
+\bibitem{Whittaker:69}
+E.T.~Whittaker \& G.N.~Watson.
+\newblock {\em A Course in Modern Analysis}.
+\newblock Cambridge University Press, 1969.
 
 \bibitem{Corless:92}
 D.E.G.~Hare R.M.~Corless, G.H.~Gonnet and D.J. Jeffrey.
