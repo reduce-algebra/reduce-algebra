@@ -12,7 +12,8 @@ Redirect "/manual/manual-pdf.html" "/manual/manual.html"
 
 # Redirect "/documentation.htm" "/documentation.php"
 # Redirect "/license.htm" "/license.php"
-RedirectMatch "/(.*)\.htm" "/$1.php"
+# Must *not* match .html here!
+RedirectMatch "/(.*)\.htm$" "/$1.php"
 
 Options +Indexes
 
