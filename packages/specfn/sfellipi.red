@@ -363,27 +363,44 @@ let jacobizetarules;
 % (NOT 4K, 4K, 2K and 2K).
 % Also the second argument is the nome q where |q| < 1 and hence
 % the quasi-period is -i*log q (NB for q real log q < 0).
+% theta1 and theta2 are consequently multi-valued owing to the appearance
+% of q^(1/4) in their defining expansions.
+% The numerical code always returns the principal value of theta1 and theta2
+% that is the one obtained by taking the principal value of q^(1/4).
+% Thus the negative real-axis of q is a branch cut with the cut line
+% regarded as belonging to the second rather than the third quadrant.
+%
+% Regarded as functions of the 'parameter' (usually denoted by tau where
+% q = exp(i*pi*tau)), theta1 and theta2 are single-valued functions of tau.
+% Note in this case q^(1/4) is interpreted as exp(i*pi*tau/4) rather than
+% the principal value of q^(1/4). Thus tau and 2+tau, 4+tau and 6+tau produce
+% four different values of both theta1 and theta2 although they produce the
+% same nome q.
+%
 % Again we are following the conventions of DF Lawden:
-% Elliptic Functions & Applications, Springer,1989
-
+% Elliptic Functions & Applications, Springer, 1989
+%
 % The series for the theta functions are fairly rapidly convergent 
 % due to the quadratic growth of the exponents of q except 
-% for values of q for which abs q is near to 1. 
-% For values of |q| near to 1 Jacobi's transformation can be used to
-% produce a smaller value of the nome and so increase the rate of convergence.
-% This works well for real q, but for complex values the situation is less
-% clear: the value returned often differs from the 'correct' value by a factor
-% which is a fourth root of unity.  The 'correct' values being the ones obtained
-% from the defining series expansions and taking the principal value of q^(1/4) 
-% in the expressions for theta1 and theta2 which are thus are multi-valued.
-% It is advantageous to first ensure that the nome has a positive real part.
-% How to choose the 'correct' branch for complex q is currently being
-% investigated.
+% for values of q for which |q| is near to 1.
+% In such cases the direct algorithm 
+% would suffer from slow convergence and rounding errors.
+% For such values of |q| Jacobi's transformation (tau'=-1/tau) can
+% be used to produce a smaller value of the nome and so
+% increase the rate of convergence.
+% When repart(q) < 0 the Jacobi transformation is preceded by the
+% modular transformation tau' = 1+tau, which has the effect  of multiplying
+% q by -1, so that the new nome has a non-negative real part.
+%
+% This works very well for real values of q, but for complex values the
+% gains are somewhat smaller.
+% For nomes whose modulus is near to 1 the Jacobi transformation produces
+% a nome q' for which |q'| ~ |q|^(alpha^2) where alpha = pi/|arg(q)| >= 2.
+% Thus the worst case occurs for values of the nome q near to +i or -i
+% where alpha ~ 2$.
 
 % Somewhat arbitrarily Jacobi's transformation is used 
-% whenever |q| >= 0.7 when the nome is real and whenever |q| >= 0.9 otherwise.
-% This seems to produce reasonable behaviour subject to
-% the proviso above.
+% whenever |q| >= 0.8. This seems to produce reasonable behaviour.
 
 procedure shift!-arg(z,q);
 % shift the argument down into the base period parallelogram
@@ -413,22 +430,29 @@ begin scalar n, pow, term, total, tol;
     return 2*sqrt(sqrt q)*total;
 end;    
 
-
 procedure num_theta1(z,q);
    if abs(q) >= 1.0 then
       rederr "num_theta1: the nome q (2nd arg) must satisfy |q| < 1"
    else if repart q < 0 then
+      % apply the modular transformation tau' = 1+tau (so that q' = -q)
       (begin scalar x;
           if impart q < 0  then x := -1 else x := 1;
           return (1+i*x)*num_theta1(z, -q)/sqrt 2;
       end)
-   else if abs(q) < 0.7 or (abs(q) < 0.9 and impart(q) neq 0) then
+   else if abs(q) < 0.8  then
        num1_theta1(z,q) 
-   else begin scalar x, m;
-       % Use Jacobi transformation theta1(i*x*z, q')
-       x := -pi/log q;   % x = -i*tau'
-       m := -i*sqrt x*exp(-x*z^2/pi);
-       return m*num1_theta1(i*x*z, exp(-pi*x));
+   else begin scalar x, m, l, a1, a2, q1;
+      % Use Jacobi transformation theta1(i*x*z, q')
+      l := log q;
+      % calculate the 4th root of unity required to correct the 
+      % result of the Jacobi transformation to the principal  value 
+      a1 := -pi^2*impart(l)/(repart(l)^2+impart(l)^2);
+      x := -pi/l;   % x = -i*tau'
+      q1 := exp(-pi*x);
+      a2 := arg q1;
+      m := exp(i*(a1-a2)/4);
+      m := -i*m*sqrt x*exp(-x*z^2/pi);
+      return m*num1_theta1(i*x*z, q1);
    end;
 
 procedure num1_theta1(z, q);
@@ -482,11 +506,12 @@ procedure num_theta2(z,q);
    if abs(q) >= 1.0 then
       rederr "num_theta2: the nome q (2nd arg) must satisfy |q| < 1"
    else if repart q < 0 then
+      % apply the modular transformation tau' = 1+tau (so that q' = -q)
       (begin scalar x;
           if impart q < 0  then x := -1 else x := 1;
           return (1+i*x)*num_theta2(z, -q)/sqrt 2;
       end)
-   else if abs(q) < 0.7 or (abs(q) < 0.9 and impart(q) neq 0) then
+   else if abs(q) < 0.8 then
        num1_theta2(z,q)
    else begin scalar x, m;
        % Use Jacobi transformation theta4(i*x*z, q')
@@ -548,8 +573,10 @@ end;
 procedure num_theta3(z,q);
    if abs(q) >= 1.0 then
       rederr "num_theta3: the nome q (2nd arg) must satisfy |q| < 1"
-   else if repart q < 0 then num_theta4(z, -q)
-   else if abs(q) < 0.7 or (abs(q) < 0.9 and impart(q) neq 0) then
+   else if repart q < 0 then
+      % apply the modular transformation tau' = 1+tau (so that q' = -q)
+      num_theta4(z, -q)
+   else if abs(q) < 0.8 then
       num1_theta3(z, q)
    else begin scalar x, m;
       % Use Jacobi transformation theta3(i*x*z, q')
@@ -608,14 +635,23 @@ end;
 procedure num_theta4(z,q);
    if abs(q) >= 1.0 then
       rederr "num_theta4: the nome q (2nd arg) must satisfy |q| < 1"
-   else if repart q < 0 then num_theta3(z, -q)
-   else if abs(q) < 0.7 or (abs(q) < 0.9 and impart(q) neq 0) then
+   else if repart q < 0 then
+      % apply the modular transformation tau' = 1+tau (so that q' = -q)
+      num_theta3(z, -q)
+   else if abs(q) < 0.8 then
       num1_theta4(z, q)
-   else begin scalar x, m;
+   else begin scalar x, m, l, a1, a2, q1;
       % Use Jacobi transformation theta2(i*x*z, q')
-      x := -pi/log q;   % x = -i*tau'
-      m := sqrt x*exp(-x*z^2/pi);
-      return m*num1_theta2(i*x*z, exp(-pi*x));
+      l := log q;
+      % calculate the 4th root of unity required to correct the 
+      % result of the Jacobi transformation to the principal  value 
+      a1 := -pi^2*impart(l)/(repart(l)^2+impart(l)^2);
+      x := -pi/l;   % x = -i*tau'
+      q1 := exp(-pi*x);
+      a2 := arg q1;
+      m := exp(i*(a1-a2)/4);  
+      m := m*sqrt x*exp(-x*z^2/pi);
+      return m*num1_theta2(i*x*z, q1);
    end;
 
 procedure num1_theta4(z, q);
@@ -671,10 +707,12 @@ ellipticthetarules :=
 
    elliptictheta1(~u, 0) => 0,
 
+%  This rule implements the modular transformation tau'=1+tau (so q'=-q)
+%  for real nomes only
    elliptictheta1(~u, -~m) => exp(i*sign(m)*pi/4)*elliptictheta1(u, m)
                 when impart(m) = 0,
 		
-%   the following is quite general but messy
+%   The following version of the rule is quite general but messy
 %   elliptictheta1(~u, -~m) =>
 %       (begin scalar s;
 %	    s := (sign(repart m)-sign(repart m)^2+1)
@@ -724,9 +762,12 @@ ellipticthetarules :=
 
    elliptictheta2(~u, 0) => 0,
    
+%  This rule implements the modular transformation tau'=1+tau (so q'=-q)
+%  for real nomes only
    elliptictheta2(~u, -~m) => exp(i*sign(m)*pi/4)*elliptictheta2(u, m)
                                   when impart m=0,
 
+%   The following version of the rule is quite general but messy
 %   elliptictheta2(~u, -~m) =>
 %        (begin scalar s;
 %	    s := (sign(repart m)-sign(repart m)^2+1)
@@ -776,6 +817,7 @@ ellipticthetarules :=
 
    elliptictheta3(~u, 0) => 1,
    
+%  This rule implements the modular transformation tau'=1+tau (so q'=-q)
    elliptictheta3(~u, -~m) => elliptictheta4(u, m),
 
 % periodicity:
@@ -818,6 +860,7 @@ ellipticthetarules :=
 
    elliptictheta4(~u, 0) => 1,
    
+%  This rule implements the modular transformation tau'=1+tau (so q'=-q)
    elliptictheta4(~u, -~m) => elliptictheta3(u, m),
 
 % periodicity:
