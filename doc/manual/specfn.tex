@@ -671,14 +671,14 @@ of the arguments.
 The Elliptic F function can be used as \f{EllipticF(phi,k)} and 
 will return the value of the \emph{Incomplete Elliptic Integral of the 
 First Kind}:
-$$\mathrm{F}(\phi, k)=\int_0^\phi(1-k^2 \sin^2 \theta)^{-1/2} \mathrm{d}\theta.$$
+\[\mathrm{F}(\phi, k)=\int_0^\phi(1-k^2 \sin^2 \theta)^{-1/2} \mathrm{d}\theta.\]
 
 \subsubsection{Elliptic K}
 
 The Elliptic K function can be used as \f{EllipticK(k)} and will 
 return the value of the \emph{Complete Elliptic Integral of the
 First Kind}:
-$$\mathrm{K}(k)=\int_0^{\pi/2}(1-k^2 \sin^2 \theta)^{-1/2}\mathrm{d}\theta.$$
+\[\mathrm{K}(k)=\int_0^{\pi/2}(1-k^2 \sin^2 \theta)^{-1/2}\mathrm{d}\theta.\]
 This is one of the quarter periods of the Jacobi elliptic
 functions and is often used in the calculation of other elliptic
 functions.
@@ -695,7 +695,7 @@ The Elliptic D function takes two arguments.
 It is called as \f{EllipticD(phi,k)}
 and will return the value of Legendre's form of
 the \emph{Incomplete Elliptic Integral of the Second Kind}:
-$$\mathrm{D}(\phi, k)=\int_0^\phi (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.$$
+\[\mathrm{D}(\phi, k)=\int_0^\phi (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.\]
 
 \subsubsection{Elliptic E}
 
@@ -703,18 +703,18 @@ The Elliptic E function comes with either one or two arguments;
 used with two arguments as \f{EllipticE(u,k)}
 it will return the value of Jacobi's form of
 the \emph{Incomplete Elliptic Integral of the Second Kind}:
-$$\mathrm{E}(u, k)=\int_0^u \mathrm{dn}^2 (v, k) \mathrm{d}v.$$
+\[\mathrm{E}(u, k)=\int_0^u \mathrm{dn}^2 (v, k) \mathrm{d}v.\]
 The relationship between the two forms of incomplete elliptic integrals can
 be expressed as
-$$\mathrm{E}(u, k) = \mathrm{D}(\mathrm{am}(u), k).$$
+\[\mathrm{E}(u, k) = \mathrm{D}(\mathrm{am}(u), k).\]
 
 When called with one argument \f{EllipticE(k)} will return the value of the
 \emph{Complete Elliptic Integral of the Second Kind}:
-$$\mathrm{E}(k)=\mathrm{E}(\mathrm{K}(k), k)
-=\int_0^{\mathrm{K}(k)} \mathrm{dn}^2(v, k)  \mathrm{d}v$$
+\[\mathrm{E}(k)=\mathrm{E}(\mathrm{K}(k), k)
+=\int_0^{\mathrm{K}(k)} \mathrm{dn}^2(v, k)  \mathrm{d}v\]
 or equivalently
-$$\mathrm{E}(k)=\mathrm{D}(\pi/2, k) =
-\int_0^{\pi/2} (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.$$
+\[\mathrm{E}(k)=\mathrm{D}(\pi/2, k) =
+\int_0^{\pi/2} (\sqrt{1-k^2 \sin^2 \theta} \mathrm{d}\theta.\]
 \subsubsection{Elliptic E$'$}
 
 The Elliptic E$'$ function can be used as \f{EllipticE!$'$(k)} and will 
@@ -770,8 +770,8 @@ although they all produce the same nome $q$.
 Utilising the periodicity and quasi-periodicity of the theta functions
 some generalised shift rules are implemented to shift their first argument
 into the base period parallelogram with vertices
-$$(\pi/2, \pi\tau/2),\quad (-\pi/2, \pi\tau/2),\quad (-\pi/2, -\pi\tau/2),
-\quad (\pi/2, -\pi\tau/2).$$
+\[(\pi/2, \pi\tau/2),\quad (-\pi/2, \pi\tau/2),\quad (-\pi/2, -\pi\tau/2),
+\quad (\pi/2, -\pi\tau/2).\]
 Together with the relation $\vartheta_1(0,q)=0$, these shift rules serve to
 simplify all four theta functions to zero when appropriate.
 
