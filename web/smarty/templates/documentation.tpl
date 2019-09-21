@@ -29,16 +29,12 @@
              $("#contrib > span.chapterToc").contents().first().remove()
              $("#contrib > span.sectionToc").each(function() {
                  var $this = $(this)
-                 // Replace numbering of packages with space:
+                 // Replace numbering of package with space:
                  $this.contents().first().replaceWith("&emsp;&emsp;")
-                 // Embolden the package name (before colon) and
-                 // convert iso-8859-1 o-umlaut to &ouml;.  (The
-                 // latter should not be necessary because o-umlaut is
-                 // the same code point in ISO-8859-1 as in UTF-8!)
+                 // Embolden the package name (before colon):
                  $this.find("a").html(function(n, current){
                      var ind = current.search(":");
-                     return "<b>" + current.substring(0, ind) + "</b>" +
-                         current.substring(ind).replace("ö", "&ouml;")
+                     return "<b>" + current.substring(0, ind) + "</b>" + current.substring(ind)
                  })
              })
          })
