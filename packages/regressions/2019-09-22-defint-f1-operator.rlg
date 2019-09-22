@@ -1,0 +1,21 @@
+
+2*x;
+
+
+2*x
+
+
+for all x saveas f1(x);
+
+
+*** f1 declared operator 
+
+
+int(f1(x),x,2,-2);
+
+
+0
+ 
+
+end;
+

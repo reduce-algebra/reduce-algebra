@@ -50,24 +50,24 @@ begin scalar ff1,ff2,alpha,var,chosen_num,coef,temp,const,result;
         alpha := caddr u;
         var := cadddr u;
 
-        if car ff1 = 'f31 or car ff1 = 'f32 then
-                << put('f1,'g,spec_log(ff1)); mellincoef :=1>>
+        if car ff1 = 'defint!:opf31 or car ff1 = 'defint!:opf32 then
+                << put('defint!:opf1,'g,spec_log(ff1)); mellincoef :=1>>
         else
         << chosen_num := cadr ff1;
-           put('f1,'g,getv(mellin!-transforms!*,chosen_num));
+           put('defint!:opf1,'g,getv(mellin!-transforms!*,chosen_num));
            coef := getv(mellin!-coefficients!*,chosen_num);
            if coef then mellincoef:= coef else mellincoef :=1>>;
 
-        if car ff2 = 'f31 or car ff2 = 'f32 then
-           put('f2,'g,spec_log(ff2))
+        if car ff2 = 'defint!:opf31 or car ff2 = 'defint!:opf32 then
+           put('defint!:opf2,'g,spec_log(ff2))
         else
         << chosen_num := cadr ff2;
-           put('f2,'g,getv(mellin!-transforms!*,chosen_num));
+           put('defint!:opf2,'g,getv(mellin!-transforms!*,chosen_num));
            coef := getv(mellin!-coefficients!*,chosen_num);
            if coef then mellincoef:= coef * mellincoef >>;
 
-        temp :=  simp list('intgg,'f1 . cddr ff1,
-                                                        'f2 . cddr ff2,alpha,var);
+        temp :=  simp list('intgg,'defint!:opf1 . cddr ff1,
+                                                        'defint!:opf2 . cddr ff2,alpha,var);
 
         temp := prepsq temp;
 
@@ -87,7 +87,7 @@ begin scalar n,num,denom,mellin;
   num := for i:= 0 :n collect 1;
   denom := for i:= 0 :n collect 0;
 
-  if car ls = 'f31 then
+  if car ls = 'defint!:opf31 then
     mellin := {{}, {n+1,0,n+1,n+1},num,denom, (-1)^n*factorial(n),'x}
    else mellin := {{}, {0,n+1,n+1,n+1},num,denom, factorial(n),'x};
 return mellin;

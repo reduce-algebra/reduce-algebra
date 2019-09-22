@@ -30,8 +30,8 @@ module definta;
 
 transform_lst := '();
 
-algebraic operator f1$
-algebraic operator f2$
+algebraic operator defint!:opf1$
+algebraic operator defint!:opf2$
 
 fluid '(mellincoef);
 
@@ -150,16 +150,16 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
    
  uu1:= cadr u1; uu1:= prepsq cadr(algebraic uu1);
  uu2:= cadr u2; uu2:= prepsq cadr(algebraic uu2);
- u1:=if null cddr u1 then list('f1, uu1) else 'f1 . uu1 . cddr u1;
- u2:=if null cddr u2 then list('f2, uu2) else 'f2 . uu2 . cddr u2;
+ u1:=if null cddr u1 then list('defint!:opf1, uu1) else 'defint!:opf1 . uu1 . cddr u1;
+ u2:=if null cddr u2 then list('defint!:opf2, uu2) else 'defint!:opf2 . uu2 . cddr u2;
 
 
 % Cases for the integration of a single Meijer G-function
- if get('f1,'g)='(1 . 1) and get('f2,'g) = '(1 . 1) then
+ if get('defint!:opf1,'g)='(1 . 1) and get('defint!:opf2,'g) = '(1 . 1) then
 
          return simp 'unknown
 
- else if get('f1,'g)='(1 . 1) then
+ else if get('defint!:opf1,'g)='(1 . 1) then
 
 % Obtain the appropriate Meijer G-function
 
@@ -232,7 +232,7 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
     >>
 
- else if get('f2,'g)='(1 . 1) then
+ else if get('defint!:opf2,'g)='(1 . 1) then
 
 % Obtain the appropriate Meijer G-function
 
@@ -1851,8 +1851,8 @@ return reval 't>>;
 end;
 
 symbolic procedure bastab(u,v);
- if u eq 'f1 then subpar(get('f1,'g),v) else
- if u eq 'f2 then subpar(get('f2,'g),v)$
+ if u eq 'defint!:opf1 then subpar(get('defint!:opf1,'g),v) else
+ if u eq 'defint!:opf2 then subpar(get('defint!:opf2,'g),v)$
 
 symbolic procedure subpar(u,v);
 if null v then list(cadr u,caddr u, cadddr u,car cddddr u,

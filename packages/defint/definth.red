@@ -100,11 +100,11 @@ if chosen_num = 0 then << coef := caddr ff1;
                           return simp reval
                                 algebraic(coef*y**(alpha+1)/(alpha+1))>>
 else
-<< put('f1,'g,getv(mellin!-transforms!*,chosen_num));
+<< put('defint!:opf1,'g,getv(mellin!-transforms!*,chosen_num));
    coef := getv(mellin!-coefficients!*,chosen_num);
    if coef then mellincoef:= coef else mellincoef :=1;
 
-   return  simp list('new_mei,'f1 . cddr ff1,alpha,y,var)>>;
+   return  simp list('new_mei,'defint!:opf1 . cddr ff1,alpha,y,var)>>;
 end$
 
 put('new_mei,'simpfn,'new_meijer)$
