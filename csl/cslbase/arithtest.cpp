@@ -496,7 +496,7 @@ int main(int argc, char *argv[])
         a = fudge_distribution_bignum(a, (int)r & 0xf);
         r = (r >> 4)%800;
         Bignum c1 = a << r;
-        Bignum p = pow(Bignum(2), (int)r);
+        Bignum p = pow(Bignum(2), (int64_t)r);
         Bignum c2 = a * p;
         Bignum c3 = a >> r;
         Bignum w = a & ~(p-1_Z);

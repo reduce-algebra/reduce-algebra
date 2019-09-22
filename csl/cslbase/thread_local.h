@@ -46,6 +46,8 @@ extern void *tls_load();
 extern void tls_store(void *v);
 #endif // __CYGWIN__ || __MINGW32__
 
+#ifdef CSL
+
 // All values that are to be thread-local are collected and kept within
 // a single class object.
 
@@ -117,6 +119,7 @@ inline ThreadLocals *myThreadLocals()
 #define fluid_values_count (myThreadLocals()->fluid_values_count)
 #define fluid_values       (myThreadLocals()->fluid_values)
 
+#endif // CSL
 
 // Timings I collected for very tight loops accessing thread-local
 // values in various ways were as follows (on Windows 10):

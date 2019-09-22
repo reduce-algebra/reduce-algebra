@@ -438,6 +438,7 @@
 #include <cstring>
 #include <cstdint>
 #include <cmath>
+#include <cfloat>
 #include <cctype>
 #include <cinttypes>
 #include <cstdlib>
@@ -858,7 +859,7 @@ inline int &example()
 //  wait 2    unlock 0
 //  wait 3    unlock 1
 // Observe that I can use (n^2) to map between the mutex number in the first
-// and second columns here. That couting is what send_count and
+// and second columns here. That counting is what send_count and
 // receive_count are doing. 
 
 
@@ -866,6 +867,7 @@ inline int &example()
 class Worker_data
 {
 public:
+    std::atomic<bool> ready;
     std::mutex mutex[4];
     bool quit_flag;
     const uint64_t *a;
@@ -875,12 +877,14 @@ public:
     uint64_t *c;
     uint64_t *w;
 
-// When I construct an intance of Worker data I set its quit_flag to
+// When I construct an instance of Worker data I set its quit_flag to
 // false and lock two of the mutexes. That sets things up so that when
 // it is passed to a new worker thread that thread behaves in the way I
 // want it to.
     Worker_data()
-    {   quit_flag = false;
+    {   ready = false;
+        quit_flag = false;
+// The next two must be locked by the main thread.
         mutex[0].lock();
         mutex[1].lock();
     }
@@ -908,6 +912,13 @@ public:
     Driver_data()
     {   w_0 = std::thread(worker_thread, &wd_0),
         w_1 = std::thread(worker_thread, &wd_1);
+// I busy-wait until the two threads have both claimed the mutexes that they
+// need to own at the start! Without this the main thread may post a
+// multiplication, so its part of the work and try to check that the worker
+// has finished (by claiming one of these mutexes) before the worker thread
+// has got started up and has claimed them.
+        while (!wd_0.ready.load() && !wd_1.ready.load())
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
 
 // When the Driver_data object is to be destroyed it must arrange to
@@ -928,7 +939,7 @@ public:
 // you can do your own thing in parallel with the two workers picking up
 // the tasks that they had been given. When you are ready you call
 // wait_for_workers() which does what one might imagine, and the workers
-// are expecte dto have left their results in the Worker_data object so
+// are expected to have left their results in the Worker_data object so
 // you can find it.
 
     void release_workers()
@@ -2404,6 +2415,8 @@ public:
 
 #endif // softfloat_h
 
+#ifdef CSL
+
 class ModularPlus
 {
 public:
@@ -2476,6 +2489,8 @@ public:
     static intptr_t op(int64_t);
     static intptr_t op(uint64_t *);
 };
+
+#endif // CSL
 
 inline string_handle bignum_to_string(intptr_t aa);
 inline string_handle bignum_to_string_hex(intptr_t aa);
@@ -3596,13 +3611,13 @@ inline std::mt19937_64 &ref_mersenne_twister()
 // overhead as the system considers whether it wants to initialize them, but
 // the overall cost here is already probably high as I accumulate entropy
 // and so I am not going to worry.
-    static uint64_t thread_local threadid =
+    thread_local uint64_t threadid =
         (uint64_t)(std::hash<std::thread::id>()(std::this_thread::get_id()));
     static uint64_t seed_component_1 = (uint64_t)basic_randomness();
     static uint64_t seed_component_2 = (uint64_t)basic_randomness();
     static uint64_t seed_component_3 = (uint64_t)basic_randomness();
-    static thread_local uint64_t time_now = (uint64_t)std::time(NULL);
-    static thread_local uint64_t chrono_now = (uint64_t)
+    thread_local uint64_t time_now = (uint64_t)std::time(NULL);
+    thread_local uint64_t chrono_now = (uint64_t)
         (std::chrono::high_resolution_clock::now().time_since_epoch().count());
 // In my first draft of this library I had made the random seed directly
 // from uint64_t values. However when testing on a Raspberry Pi that
@@ -3611,7 +3626,7 @@ inline std::mt19937_64 &ref_mersenne_twister()
 // the seed sequence using 32-bit values avoids that issue, and since this
 // is only done during initialization it is not time-critical.
 //
-    static thread_local std::seed_seq random_seed{
+    thread_local std::seed_seq random_seed{
         (uint32_t)threadid,
         (uint32_t)seed_component_1,
         (uint32_t)seed_component_2,
@@ -3628,7 +3643,7 @@ inline std::mt19937_64 &ref_mersenne_twister()
         (uint32_t)(((uint64_t)(uintptr_t)&seed_component_1)>>32)
         };
 
-    static thread_local std::mt19937_64 inner_mersenne_twister(random_seed);
+    thread_local std::mt19937_64 inner_mersenne_twister(random_seed);
 // mersenne_twister() now generates 64-bit unsigned integers.
     return inner_mersenne_twister;
 }
@@ -4574,7 +4589,7 @@ inline float Float::op(int64_t a)
 // only be a 0.5ulp case if all the bits below the top 24 are zero, and
 // for that to happen certainly the low 20 bits must all be zero...
     if (lo != 0) mid |= 1; 
-    else return cast_to_float((double)hi + (double)mid);
+    return cast_to_float((double)hi + (double)mid);
 }
 
 inline float Float::op(uint64_t *a)
@@ -7588,6 +7603,7 @@ inline void karatsuba(const uint64_t *a, size_t lena,
 inline void worker_thread(Worker_data *wd)
 {   wd->mutex[2].lock();
     wd->mutex[3].lock();
+    wd->ready = true;
     int receive_count = 0;
     for (;;)
     {   wd->mutex[receive_count].lock();
@@ -10103,6 +10119,9 @@ inline intptr_t Lcm::op(int64_t a, int64_t b)
     else return unsigned_int_to_bignum(-(uint64_t)MIN_FIXNUM);
 }
 
+#ifdef CSL
+// Support for calculations modulo some integer value...
+
 // While initially developing this bit of code I will assume C++17 and I
 // will not have the code thread-safe. Both of those issues can be
 // addressed later!
@@ -10377,6 +10396,7 @@ inline intptr_t ModularReciprocal::op(uint64_t *a)
 {   return general_modular_reciprocal(vector_to_handle(a));
 }
 
+#endif // CSL
 
 } // end of namespace arithlib_implementation
 
@@ -10451,6 +10471,7 @@ using arithlib_implementation::Logcount;
 using arithlib_implementation::Float;
 using arithlib_implementation::Double;
 using arithlib_implementation::Frexp;
+#ifdef CSL
 using arithlib_implementation::ModularPlus;
 using arithlib_implementation::ModularDifference;
 using arithlib_implementation::ModularTimes;
@@ -10460,6 +10481,7 @@ using arithlib_implementation::ModularMinus;
 using arithlib_implementation::ModularReciprocal;
 using arithlib_implementation::ModularNumber;
 using arithlib_implementation::SetModulus;
+#endif // CSL
 
 using arithlib_implementation::bignum_to_string;
 using arithlib_implementation::bignum_to_string_length;
