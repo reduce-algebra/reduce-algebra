@@ -51,6 +51,9 @@ symbolic procedure simpdint u;
       result := simpdint1 u;
       << if dmod then onoff(dmod,t);
          if cflag then onoff('complex,t)>> where !*msg := nil;
+	 % if rounded or complex mode was switched off during integration,
+	 %  resimplification of the result is needed after restoring the domain mode
+	 if dmod or cflag then result := resimp result;
       	 return result;
    end;
 
