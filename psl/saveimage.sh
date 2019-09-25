@@ -61,14 +61,14 @@ then
 
   if test -z "$3"
   then
-    topdir="$here"
+    topdir="$builddir"
   else
     topdir="$3"
   fi
 
   bhere="$builddir"
 
-  logdir=$here/log
+  logdir=$bhere/log
   logfile=reduce.blg
   #logfile=saveimage.blg
 
