@@ -6,7 +6,7 @@ This package is an implementation of a new algorithm proposed by D.J. Jeffrey an
  Consider the following problem:
      \begin{displaymath} \int \frac{3}{5-4\cos(x)}\,dx  \end{displaymath} 
 
-\small{REDUCE} \normalsize computes an anti derivative to the given function using the Weirstrass substitution $u=tan(\frac{x}{2})$, and then the Risch algorithm is used, returning: 
+{\REDUCE} \normalsize computes an anti derivative to the given function using the Weirstrass substitution $u=tan(\frac{x}{2})$, and then the Risch algorithm is used, returning: 
     \begin{displaymath} \frac{2\arctan(3\tan(\frac{x}{2}))}{3}, \end{displaymath}
 which is discontinuous at all odd multiples of $\pi$. Yet our original function is continuous everywhere on the real line, and so by the Fundamental Theorem of Calculus, any anti-derivative should also be everywhere continuous. The problem arises from the substitution used to transform the given trigonometric function to a rational function: often, the substituted function is discontinuous, and spurious discontinuities are introduced as a result. \\
 Jeffery and Richs' algorithm returns the following to the given problem:
@@ -139,12 +139,5 @@ cannot integrate after subs
 means that \small{REDUCE} \normalsize has tried all four of the Weierstra\ss \hspace{1 mm} substitutions, and the system's standard integrator is unable to integrate after the substitution has been completed.
 
 \subsection{Bugs, comments, suggestions}
-This program was written whilst the author was a placement student at ZIB Berlin. Please refer all suggestions, comments or bugs therefore to Winfried Neun, Symbolik, ZIB, Takustrasse 7, D- 14195 Berlin Dahlem, Germany (e-mail neun@zib.de).
-
-\begin{thebibliography}{99999}
-
-\bibitem[Jeff]{Jeff} Jeffery, D.J. and Rich, A.D.
-{\it The Evaluation of Trigonometric Integrals avoiding Spurious Discontinuities
-}, ACM Trans. Math Software 20, 1, 1994, pages 124--135, DOI: 10.1145/174603.174409.
-
-\end{thebibliography}
+This program was written whilst the author was a placement student at ZIB Berlin.
+% Please refer all suggestions, comments or bugs therefore to Winfried Neun, Symbolik, ZIB, Takustrasse 7, D- 14195 Berlin Dahlem, Germany (e-mail neun@zib.de).

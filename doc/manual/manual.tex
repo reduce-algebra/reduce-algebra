@@ -1,5 +1,4 @@
 % This is an alternative source for the REDUCE Manual.
-% Normally mkman and mkman2 are used.
 
 \documentclass[11pt,a4paper]{book}
 
@@ -11,14 +10,14 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
-\usepackage{chapterbib}
+%\usepackage{chapterbib}
 \usepackage{graphicx}
 \usepackage{xspace}
 \usepackage{caption}
 
 \makeatletter
 
-\let\include=\cb@include
+%\let\include=\cb@include
 
 \let\oldtheindex=\theindex
 \def\theindex{\oldtheindex
@@ -26,6 +25,26 @@
    \addtocontents{toc}{\protect\contentsline{chapter}{Index}{\thepage}{Index1}}%
 %   \addcontentsline{toc}{chapter}{Index}%
 }
+
+\renewenvironment{thebibliography}[1]
+     {\chapter{\bibname}%
+      \@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}%
+      \list{\@biblabel{\@arabic\c@enumiv}}%
+           {\settowidth\labelwidth{\@biblabel{#1}}%
+            \leftmargin\labelwidth
+            \advance\leftmargin\labelsep
+            \@openbib@code
+            \usecounter{enumiv}%
+            \let\p@enumiv\@empty
+            \renewcommand\theenumiv{\@arabic\c@enumiv}}%
+      \sloppy
+      \clubpenalty4000
+      \@clubpenalty \clubpenalty
+      \widowpenalty4000%
+      \sfcode`\.\@m}
+     {\def\@noitemerr
+       {\@latex@warning{Empty `thebibliography' environment}}%
+      \endlist}
 
 \@ifundefined{Configure}
  {\def\Includegraphics[#1]#2{\includegraphics[#1]{#2.pdf}}}
@@ -40,9 +59,9 @@
 \makeatother
 
 \let\subsubsubsection\paragraph
-\let\savedsectionbib\sectionbib
+%\let\savedsectionbib\sectionbib
 
-\sectionbib{\subsection*}{subsection}
+%\sectionbib{\subsection*}{subsection}
 
 %\usepackage{cmbright}
 %\usepackage{charter}
@@ -54,7 +73,7 @@
   linkcolor=blue,urlcolor=blue,
   bookmarksnumbered=true,
   pdftitle={REDUCE User's Manual, Free Version \today},
-  pdfauthor={\textcopyright Anthony C. Hearn and Rainer Schöpf},
+  pdfauthor={\textcopyright Anthony C. Hearn and Rainer SchÃ¶pf},
   pdfdisplaydoctitle=true,
 }
 

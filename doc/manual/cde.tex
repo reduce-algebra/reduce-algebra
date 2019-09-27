@@ -127,7 +127,7 @@ M.V. Pavlov for many interesting discussions.
 \label{cdesec:jet-space-even}
 
 The mathematical theory for jets of even (\emph{ie} standard) variables and
-total derivatives can be found in \cite{Many,Olv}.
+total derivatives can be found in \cite{Many,Olv2nd}.
 
 Let us consider the space $\mathbb{R}^n\times\mathbb{R}^m$, with coordinates
 $(x^\lambda,u^i)$, $1\leq \lambda\leq n$, $1\leq i\leq m$. We say $x^\lambda$
@@ -464,12 +464,12 @@ defines a differential equation yields a differential operator in total
 derivatives. This operator can be restricted to the differential equation,
 which may be regarded as a differential constraint; the kernel of the
 restricted operator is the space of all symmetries (including higher or
-generalized symmetries) \cite{Many,Olv}.
+generalized symmetries) \cite{Many,Olv2nd}.
 
 The formal adjoint of the linearization operator yields by restriction to the
 corresponding differential equation a differential operator whose kernel
 contains all characteristic vectors or generating functions of conservation
-laws \cite{Many,Olv}.
+laws \cite{Many,Olv2nd}.
 
 Such operators are examples of $\mathcal{C}$-differential operators. The (still
 incomplete) \REDUCE implementation of the calculus of
@@ -550,7 +550,7 @@ This is the operator
   \sum_{\sigma, i}\pd{F^k}{u^i_\sigma}D_\sigma\varphi^i,
 \end{displaymath}
 where $\varkappa = \{ \varphi \colon J^r(n,m) \to \R^m \}$ is the space of
-\emph{generalized vector fields on jets} \cite{Many,Olv}.
+\emph{generalized vector fields on jets} \cite{Many,Olv2nd}.
 
 Linearization can be extended to an operation that, starting from a
 $k$-$\mathcal{C}$-differential operator, generates a
@@ -861,7 +861,7 @@ total derivatives which are restricted by \cde to the PDE.
 \label{cdesec:higher-symmetries-1}
 
 In this section we show the computation of (some) higher \cite{Many} (or
-generalized, \cite{Olv}) symmetries of Burgers'equation $B=u_t-u_{xx}+2uu_x=0$.
+generalized, \cite{Olv2nd}) symmetries of Burgers'equation $B=u_t-u_{xx}+2uu_x=0$.
 
 We provide two ways to solve the equations for higher symmetries. The first
 possibility is to use dimensional analysis. The idea is that one can use the
@@ -1247,7 +1247,7 @@ differential equations in \cite{KerstenKrasilshchikVerbovetskyVitolo:HSGP}.
 Here we will find local Hamiltonian operators for the KdV equation
 $u_t=u_{xxx}+uu_x$. A necessary condition for an operator to be Hamiltonian is
 that it sends generating functions (or characteristics, according with
-\cite{Olv}) of conservation laws to higher (or generalized) symmetries.
+\cite{Olv2nd}) of conservation laws to higher (or generalized) symmetries.
 As it is proved in \cite{KKV}, this amounts at solving $\bar
 \ell_{KdV}(\mathtt{phi})=0$ over the equation
 \begin{displaymath}
@@ -2246,119 +2246,3 @@ package \texttt{assist} for manipulating algebraic lists. Its features were:
 \cde 1.0 has never ben included in the official \REDUCE distribution, and it is
 still available at \cite{gdeq}.
 
-\begin{thebibliography}{99}
-
-\bibitem{gdeq} Geometry of Differential Equations web site:
-  \url{http://gdeq.org}.
-\bibitem{Many} \textsc{A. V. Bocharov, V. N. Chetverikov, S. V.  Duzhin, N.  G.
-    Khor{\cprime}kova, I. S.  Krasil{\cprime}shchik, A.  V.  Samokhin, Yu.\ N.
-    Torkhov, A. M. Verbovetsky and A. M.  Vinogradov}: Symmetries and
-  Conservation Laws for Differential Equations of Mathematical Physics, I.  S.
-  Krasil{\cprime}shchik and A. M.  Vinogradov eds., Translations of Math.
-  Monographs \textbf{182}, Amer.\ Math.\ Soc. (1999).
-\bibitem{BH10} \textsc{D. Baldwin, W. Hereman}, \emph{A symbolic algorithm
-    for computing recursion operators of nonlinear partial differential
-    equations}, International Journal of Computer Mathematics, vol. 87 (5),
-  pp. 1094-1119 (2010).
-\bibitem{Dub} \textsc{B.A. Dubrovin}, \newblock Geometry of 2D topological
-field theories, Lecture Notes in Math. 1620, Springer-Verlag (1996) 120--348.
-\bibitem{DN} \textsc{B.A. Dubrovin and S.P. Novikov}, \newblock Hamiltonian
-  formalism of one-dimensional systems of hydrodynamic type and the
-  Bogolyubov-Whitham averaging method, Soviet Math. Dokl. \textbf{27} No. 3
-  (1983) 665--669.
-\bibitem{DN2} \textsc{B.A. Dubrovin and S.P. Novikov}, Poisson brackets of
-  hydrodynamic type, Soviet Math. Dokl. {\bf 30} No. 3 (1984), 651--2654.
-\bibitem{FN} \textsc{E.V. Ferapontov, C.A.P. Galvao, O. Mokhov, Y. Nutku},
-  Bi-Hamiltonian structure of equations of associativity in 2-d
-  topological field theory, Comm. Math. Phys. \textbf{186 }(1997) 649-669.
-\bibitem{fpv} \textsc{E.V. Ferapontov, M.V. Pavlov, R.F. Vitolo},
-\emph{Projective-geometric aspects of homogeneous third-order Hamiltonian
-operators}, J. Geom.\ Phys.\ \textbf{85} (2014) 16-28, DOI:
-10.1016/j.geomphys.2014.05.027.
-\bibitem{fpv2} \textsc{E.V. Ferapontov, M.V. Pavlov, R.F. Vitolo},
-\emph{Towards the classification of homogeneous third-order Hamiltonian
-  operators}, \url{http://arxiv.org/abs/1508.02752}
-\bibitem{getz} \emph{E. Getzler}, A Darboux theorem for Hamiltonian
-operators in the formal calculus of variations, Duke J. Math. \textbf{111}
-(2002), 535-560.
-\bibitem{IVV}\textsc{S. Igonin, A. Verbovetsky, R. Vitolo:}
-  \emph{Variational Multivectors and Brackets in the Geometry of Jet Spaces}, V
-  Int. Conf. on on Symmetry in Nonlinear Mathematical Physics, Kyiv 2003; Part
-  3 of Volume 50 of Proceedings of Institute of Mathematics of NAS of Ukraine,
-  Editors A.G.  Nikitin, V.M. Boyko, R.O. Popovych and I.A. Yehorchenko (2004),
-  1335--1342; \url{http://www.imath.kiev.ua/~snmp2003/Proceedings/vitolo.pdf}.
-\bibitem{KKV} \textsc{P.H.M. Kersten, I.S. Krasil'shchik, A.M. Verbovetsky,}
-  \emph{Hamiltonian operators and $\ell^*$-covering}, Journal of Geometry and
-  Physics \textbf{50} (2004), 273--302.
-\bibitem{KKV2} \textsc{P.H.M. Kersten, I.S. Krasil'shchik, A.M. Verbovetsky,}
-  \emph{A geometric study of the dispersionless Boussinesq equation}, Acta
-  Appl.\ Math. \textbf{90} (2006), 143--178.
-\bibitem{KerstenKrasilshchikVerbovetskyVitolo:HSGP} \textsc{P.~Kersten,
-  I.~Krasil{\cprime}shchik, A.~Verbovetsky, and R.~Vitolo}, \emph{Hamiltonian
-    structures for general {PDE}s}, Differential equations: Geometry,
-  Symmetries and Integrability. The Abel Symposium 2008 (B.~Kruglikov,
-  V.~V. Lychagin, and E.~Straume, eds.), Springer-Verlag, 2009, pp.~187--198,
-  \eprint{0812.4895}.
-\bibitem{KrVe-JGP-2011} \textsc{I.~Krasil{\cprime}shchik and A.~Verbovetsky},
-  \emph{Geometry of jet spaces and integrable systems}, J.\ Geom.\
-  Phys. (2011) doi:10.1016/j.geomphys.2010.10.012, \url{arXiv:1002.0077}.
-\bibitem{KKV-SPT-2011} \textsc{I.~Krasil{\cprime}shchik, A.~Verbovetsky,
-    R. Vitolo},  \emph{A unified approach to computation of integrable
-    structures}, Acta Appl.\ Math.\ (2012).
-\bibitem{KVV-book} \textsc{I.~Krasil{\cprime}shchik, A.~Verbovetsky,
-    R. Vitolo},  \emph{The symbolic computation of integrability structures for
-    partial differential equations}, book, to appear in the Springer series
-``Texts and monographs in symbolic computations'' (2017).
-\bibitem{Kupershmidt:KP} \textsc{B. Kuperschmidt}:
-  \emph{Geometric Hamiltonian forms for the
-    Kadomtsev--Petviashvili and Zabolotskaya--Khokhlov equations}, in Geometry
-  in Partial Differential Equations, A. Prastaro, Th.M. Rassias eds., World
-  Scientific (1994), 155--172.
-\bibitem{Mar} \textsc{M. Marvan}, \emph{Sufficient set of integrability
-    conditions of an orthonomic system}.  Foundations of Computational
-    Mathematics \textbf{9} (2009), 651--674.
-\bibitem{NeyziNutkuSheftel:JPA:2005} \textsc{F. Neyzi, Y. Nutku, and
-      M.B. Sheftel}, \emph{Multi-Hamiltonian structure of Plebanski's second
-      heavenly equation} J. Phys.\ A: Math.\ Gen.\ \textbf{38} (2005),
-    8473. \eprint{nlin/0505030v2}.
-\bibitem{inside} \textsc{A.C. Norman, R. Vitolo}, \emph{Inside Reduce}, part
-    of the official \REDUCE documentation included in the source code, see
-    below.
-\bibitem{nucci1} \textsc{M.C. Nucci}, \emph{Interactive REDUCE
-      programs for calculating classical, non-classical, and approximate
-      symmetries of differential equations}, in Computational and Applied
-    Mathematics II. Differential Equations, W.F. Ames, and P.J. Van der Houwen,
-    Eds., Elsevier, Amsterdam (1992) pp. 345--350.
-\bibitem{nucci2} \textsc{M.C. Nucci}, \emph{Interactive REDUCE programs for
-    calculating Lie point, non-classical, Lie-B\"{a}cklund, and approximate
-    symmetries of differential equations: manual and floppy disk}, in
-CRC Handbook of Lie Group Analysis of Differential Equations. Vol. 3
-N.H. Ibragimov, Ed., CRC Press, Boca Raton (1996) pp. 415--481.
-\bibitem{relie} \textsc{F. Oliveri}, \textsc{ReLie}, \REDUCE software and user
-  guide, \url{http://mat521.unime.it/oliveri/}.
-\bibitem{Olv} \textsc{P. Olver}, Applications of Lie Groups to Partial
-  Differential Equations, 2nd ed, GTM Springer, 1992.
-\bibitem{pv} \textsc{M.V. Pavlov, R.F. Vitolo}: \emph{On the bi-Hamiltonian
-    geometry of the WDVV equations}, \texttt{http://arxiv.org/abs/1409.7647}
-\bibitem{sv} \textsc{G. Saccomandi, R. Vitolo}: \emph{On the Mathematical
-    and Geometrical Structure of the Determining Equations for Shear Waves in
-    Nonlinear Isotropic Incompressible Elastodynamics}, J. Math.\ Phys.\
-  \textbf{55} (2014), 081502.
-\bibitem{wolfcl} \textsc{T. Wolf}, \emph{A comparison of four approaches to the
-    calculation of conservation laws}, Euro.\ Jnl of Applied Mathematics 13
-  part 2 (2002) 129-152.
-\bibitem{wolfsy} \textsc{T. Wolf}, \emph{APPLYSYM - a package for the
-    application of Lie-symmetries}, software distributed together with the
-  computer algebra system REDUCE, (1995).
-\bibitem{wbde} \textsc{T. Wolf, A. Brand}, \emph{Investigating DEs with CRACK
-    and Related Programs}, SIGSAM Bulletin, Special Issue, (June 1995), p 1-8.
-\bibitem{wolfsy0} \textsc{T. Wolf}, \emph{An efficiency improved program LIEPDE
-    for determining Lie-symmetries of PDEs}, Proc.of Modern Group Analysis:
-  advanced analytical and computational methods in mathematical physics,
-  Catania, Italy Oct.1992, Kluwer Acad.Publ. (1993) 377-385.
-\bibitem{crack} \textsc{T. Wolf, A. Brand}: CRACK, user guide, examples and
-    documentation \url{http://lie.math.brocku.ca/Crack_demo.html}. For
-    applications, see also the publications of T. Wolf.
-\end{thebibliography}
-
-%\end{document}
