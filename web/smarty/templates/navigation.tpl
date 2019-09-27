@@ -15,6 +15,7 @@
       {navMenuItem href='/bibliography.php' label='Bibliography' title='Publications that reference REDUCE'}
       {navMenuItem href='/about.php' label='About REDUCE' title='History and contributors'}
       {navMenuItem href='/projects.php' label='Related Projects' title='Projects related to REDUCE'}
+      {navMenuItem href='/search.php' label='Search' title='Search the REDUCE web site'}
     </ul>
 
     <a href="https://sourceforge.net/p/reduce-algebra/" rel="nofollow">
