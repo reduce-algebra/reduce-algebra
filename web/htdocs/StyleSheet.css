@@ -15,6 +15,18 @@ header span.mx-auto {
     color: #0F0;
 }
 
+#top-search-button {
+    border-color: #000099;
+    background-color: #000099;
+    font-size: 0px;
+    padding: 6px 27px;
+    margin-left: 16px;
+}
+
+#top-search-button svg {
+    fill: #FFFFFF;
+}
+
 h1 {
     text-align: center;
     color: #009;
