@@ -182,202 +182,6 @@ inline void write_barrier(std::atomic<LispObject> *p)
 {   write_barrier((LispObject *)p);
 }
 
-// I will have variables fringe and heaplimit that are thread_local.
-// On Cygwin and Mingw32 I use the Microsoft low-level API directly
-// because the version provided via C++ has severe overheads (at the time
-// or writing this - August 2019). The classes ForFringe and ForLimit
-// are there so that while in the rest of the source code use of variables
-// fringe and heaplimit looks natural, at run-time access to them both
-// gets diverted so as to use the platform-specific scheme for thread-local
-// and so that heaplimit is a std::atomic<T> item.
-
-// The code here needs to supercede "thread_local.h" which was a previous
-// attempt I had to achieve the same sort of thing.
-
-#if defined WIN32 || defined __CYGWIN__
-
-// If I go "#include <windows.h>" (well the bit I actually need seems to be
-// processthreadsapi.h) that tends to define all sorts of things that can
-// clash with my own code. So here I put in explicit declarations for the
-// thread-local support functions I use, trying rather hard to match just
-// what Windows will use.
-
-extern "C"
-{
-extern __declspec(dllimport) uint32_t TlsAlloc();
-};
-
-// For now I will use inline variables, which become available with
-// C++17. This will not be good for general use since even slightly
-// "not the latest" versions of C++ compilers do not support it. In
-// particular Ubuntu LTS 16.04 (expiry date April 2021) comes with a
-// version of gcc too old for that. However it may be that I am not ready
-// to deploy this until June 2021, in which case all will be well!!!!
-
-extern uint32_t threadId_slot;
-extern uint32_t fringe_slot;
-extern uint32_t heaplimit_slot;
-
-#ifdef CAUTIOUS
-
-// This version uses the official Windows API for accessing thread-local
-// values.
-
-extern "C"
-{
-extern __declspec(dllimport) void *TlsGetValue(uint32_t);
-extern __declspec(dllimport) int TlsSetValue(uint32_t, void *);
-};
-
-inline void *tls_load(uint32_t n)
-{   return TlsGetValue(n);
-}
-
-inline void tls_store(uint32_t n, void *v)
-{   TlsSetValue(n, v);
-}
-
-#else // CAUTIOUS
-
-// This version uses inline functions including a tiny amount of assembly
-// code and should match the behaviour of the Microsoft version. It goes
-// beyond anything that Windows guaranteed, but is believed tto be using
-// information that so many others rely on that it is not liable to
-// change.
-
-#if __SIZEOF_POINTER == 4
-
-// On 32-bit Windows the FS segment register provides access to the TEB,
-// while on a 64-bit system it would be GS with some different offsets.
-
-inline void *read_thread_local_value(uint32_t n)
-{   void *r;
-    asm volatile
-    (   "movl %%fs:(%1), %0"
-        : "=r" (r)
-        : "ri" (n)
-        :
-    );
-    return r;
-}
-
-inline void write_thread_local_value(uint32_t n, void *v)
-{   asm volatile
-    (   "movl %0, %%fs:(%1)"
-        :
-        : "ri" (v), "r" (n)
-        :
-    );
-}
-
-const uint32_t basic_TLS_slot    = 0xe10;
-const uint32_t extended_TLS_slot = 0xf94;
-
-#else // 32 vs 64-bit
-
-inline void *read_thread_local_value(uint32_t n)
-{   void *r;
-    asm volatile
-    (   "movq %%gs:(%1), %0"
-        : "=r" (r)
-        : "ri" (n)
-        :
-    );
-    return r;
-}
-
-inline void write_thread_local_value(uint32_t n, void *v)
-{   asm volatile
-    (   "movq %0, %%gs:(%1)"
-        :
-        : "ri" (v), "r" (n)
-        :
-    );
-}
-
-const uint32_t basic_TLS_slot    = 0x1480;
-const uint32_t extended_TLS_slot = 0x1780;
-
-#endif // 32 vs 64-bit
-
-inline void *tls_load(int32_t slot)
-{   if (slot >= 64)
-    {   void **a = (void **)read_thread_local_value(extended_TLS_slot);
-        return a[slot - 64];
-    }
-    else return (void *)read_thread_local_value(
-        basic_TLS_slot + sizeof(void *)*slot);
-}
-
-inline void tls_store(int32_t slot, void *v)
-{   if (slot >= 64)
-    {   void **a = (void **)read_thread_local_value(extended_TLS_slot);
-        a[slot - 64] = v;
-    }
-    else write_thread_local_value(
-        basic_TLS_slot + sizeof(void *)*slot, v);
-}
-
-#endif // CAUTIOUS
-
-class ForThreadId
-{
-public:
-    operator unsigned int()
-    {   return (unsigned int)(intptr_t)tls_load(threadId_slot);
-    };
-    ForThreadId& operator= (const unsigned int a)
-    {    tls_store(threadId_slot, (void *)(uintptr_t)a);
-         return *this;
-    };
-};
-
-class ForFringe
-{
-public:
-    operator uintptr_t()
-    {   return (uintptr_t)tls_load(fringe_slot);
-    };
-    ForFringe& operator= (const uintptr_t a)
-    {    tls_store(fringe_slot, (void *)a);
-         return *this;
-    };
-    ForFringe& operator+= (const size_t a)
-    {    uintptr_t v = (uintptr_t)tls_load(fringe_slot) + a;
-         tls_store(fringe_slot, (void *)v);
-         return *this;
-    };
-};
-
-class ForHeapLimit
-{
-public:
-    operator uintptr_t()
-    {   return *(std::atomic<uintptr_t> *)tls_load(heaplimit_slot);
-    };
-    ForHeapLimit& operator= (const uintptr_t a)
-    {    *(std::atomic<uintptr_t> *)tls_load(heaplimit_slot) = a;
-         return *this;
-    };
-    ForHeapLimit& operator+= (const uintptr_t a)
-    {    ((std::atomic<uintptr_t> *)tls_load(heaplimit_slot))->fetch_add(a);
-         return *this;
-    };
-    ForHeapLimit()
-    {   tls_store(heaplimit_slot, (void *)&real_heaplimit);
-    };
-};
-
-inline ForThreadId threadId;
-inline ForFringe fringe;
-inline ForHeapLimit heaplimit;
-
-#else
-
-inline thread_local uintptr_t fringe;
-inline thread_local uintptr_t heaplimit;
-
-#endif
 
 class ThreadStartup
 {
@@ -520,90 +324,83 @@ inline int nlz(uint64_t x)
 #endif // __GNUC__
 #define NLZ_DEFINED 1
 
-extern std::mutex gc_mutex;
-extern uintptr_t gc_and_allocate(uintptr_t r, size_t n);
+static const int maxThreads = 64;
 
-// I am going to explain what I do regarding synchronization for garbage
-// collection several times in different places, writing and re-writing
-// until I feel I have things straight!
-//
-// Each thread will have a separate region within which it allocates. It
-// will have thread-local variables fringe and heaplimit. To allocate
-// a block of N bytes it records the existing value of fringe and then
-// increments fringe by N. If that yields a value >= heaplimit then there
-// is not enough space at present, and garbage collection is called for.
-// The garbage collection call will only return when it has been able to
-// allocate the required memory, and it will (at least in general) reset
-// both fringe and heaplimit.
-//
-// When garbage collection is needed all threads have to be halted. To
-// arrange this any thread that concludes it needs GC will set the heaplimit
-// information for ALL threads to zero. Well to be a little more careful,
-// if it finds that its own heaplimit is zero it knows that that has already
-// been done, however given that several threads can be in this situation
-// at once I think the sane choices are either (a) put the zero-ing out
-// loop in a critical region or (b) accept that each thread will have its
-// heaplimit set to zero multiple times. Probably the former is going to
-// be cheaper and probably neither will have cost big enough to matter in the
-// context of garbage collection.
-// Since it is expected that every (active) Lisp thread will perform CONS
-// operations rather frequently every thread is expected to participate
-// soon. Obviously allocating strings, vectors or big-numbers will also get
-// fringe compared against heaplimit. Explicit checks to serve as polling
-// operations can be placed on backward jumps and other places of plausible
-// interest. Special handling will be needed for system calls that might
-// block: threads obeying thos emust not be counted as "active".
-//
-// To make it possible to zero out every heaplimit there will be a reference
-// to each thread's heaplimit in an array indexed by thread-number.
-//
-// An atomic variable records the number of active threads. As a thread
-// enters garbage collection it decrements this using an atomic fetch_sub().
-// Eventually one thread (which might not be the one that initially called
-// for GC) will set the count to zero. It will act as a master GC thread and
-// all the other threads will need to idle while it works.
-//
-// When a thread discovers that it is the master it knows that all the other
-// threads have done everything that gets done before the decrement operation.
-// It can thefore use all the information that threads have deposited and
-// do the main work of garbage collection. The information it can thus have
-// can be
-//    stack base and top for every thread.
-//    base and size of the block currently being allocated and that
-//      ran beyond the thread's heaplimit.
-//    when a heaplimit is set to zero its old non-zero value can be recorded
-//      through use of a test-and-set style atomic access (or if the loop
-//      that sets the heaplimits to zero is within a critical region).
-// The master thread will be able to update heaplimit directly. It can leave
-// values that the other threads can copy into their own fringe and result
-// locations.
-// When a master thread has completed its work it can set a variable
-// gc_complete and notify all the others.
-//
-// A non-master thread will wait for gc_complete. When that is seen it can
-// increment active_threads. One thread will increment so as to reach the
-// maximum value of that count - it can then set gc_complete to false and
-// notify everybody.
-// All threads, master or not, end by waiting for !gc_complete. That should
-// leave every thread ready to continue work and puts things such that the
-// next time garbage collection is called for everything is set up as
-// required.
-// 
+extern std::atomic<uintptr_t> stack_bases[maxThreads];
+extern std::atomic<uintptr_t> stack_fringes[maxThreads];
+
+extern std::atomic<uintptr_t> request_values[maxThreads];
+extern std::atomic<size_t>    request_sizes[maxThreads];
+
+extern std::mutex gc_mutex;
+
+extern uintptr_t gc_trigger_and_allocate(uintptr_t r, size_t n);
+extern uintptr_t gc_participate_and_allocate(uintptr_t r, size_t n);
+
+static ThreadLocal<uintptr_t> threadId;
+static ThreadLocal<uintptr_t> fringe;
+extern std::atomic<uintptr_t> limit[maxThreads];
+extern std::atomic<uintptr_t> gFringe;
+extern uintptr_t gLimit;
+
+
 
 // This is the core part of CONS and also of the code that allocates
 // bignums, strings and vectors.
 
 inline LispObject get_n_bytes(size_t n)
 {   n = doubleword_align_up(n);
+// I have a thread-local variable fringe and limit[threadId] is in effect
+// thread-local. These delimit a region of size CHUNK within which allocation
+// can be especially cheap. limit[threadId] is atomic and that indicates that
+// other threads may access it. In particular another thread can set it to
+// zero to cause this thread to synchronize with others to participate in
+// garbage collection.
     uintptr_t r = fringe;
+    uintptr_t w = limit[threadId].load();
     fringe += n;
-// fringe is thread-local. heaplimit is both thread-local and atomic, and
-// so if other threads alter heaplimit that fact will be noticed here. In
-// particular if another thread sets heaplimit to zero then the
-// gc_and_allocate() recovery code will be triggered on the next
-// allocation attempt.
-    if (fringe >= (uintptr_t)heaplimit)
-        r = gc_and_allocate(r, n);
+// The simple case completes here. If CHUNK is around 16K then only 1 cons
+// in 1000 will take the longer route.
+    if (fringe <= w) return static_cast<LispObject>(r);
+// iIf the limit was zero that means that some other thread has in initiated
+// and this one must synchronize and participate.
+    if (w == 0) return gc_participate_and_allocate(r, n);
+// When an item will not fit into the current chunk I insert a padder so
+// that any waste space is neatly filled.
+    size_t gap = w - r;
+// The first word of every item in the heap will be of an atomic type
+// so that threaded code can parse the heap safely.
+    if (gap != 0) ((std::atomic<uintptr_t> *)r)->store(padder_header(size);
+// I now need to allocate a new chunk. gFringe and gLimit delimit a region
+// within of size PAGE (perhaps 8 Mbytes) and I will start by allocating
+// chunks sequentially within that page. By making gFringe atomic I can so
+// this in a lock-free manner.
+// I will make my next chunk big enough for the current allocation request
+// with CHUNK left over after that. This ensures that even big vector
+// requests can be satisfied.
+    r = gFringe.fetch_add(CHUNK+n);
+// Be aware that other threads might be doing (atomic) increments on gFringe
+// at the same time that this one does. They will each reserve separate
+// new chunks, but some of these may fall in memory well above gLimit.
+// I am going to assume (ha ha) that even if the maximum number of threads
+// each increment gFringe by the largest possible amount the it will not
+// suffer arithmetic overflow.
+    fringe = r + n;
+    uint64_t newLimit = fringe + CHUNK;
+// Possibly the allocation of the new chunk ran beyond the current page
+// and that will be cause to consider triggering garbage collection. If the
+// chunk size is 16K and the page size 8M it will take 512 chunk allocations
+// before a page is filled. If for now I suppose that having 16 threads all
+// allocating cons cells furiously is an extreme case then that will mean
+// that each thread gets through 32 chunks before the extra (probably severe)
+// costs of page allocation arise. 
+    if (newLimit > gLimit) return gc_trigger_and_allocate(r, n);
+// now my allocation of a new chunk has been successful. I wish to write
+// back limit[threadId] but it is possible that in the meanwhile somebody
+// set that to zero, so I need to be a bit careful. Specifically I will
+// only write back the new limit if the old one was still in force.
+    bool ok = limit[threadId].compare_exchange_strong(w, newLimit);
+    if (!ok) gc_participate_and_allocate(newLimit, 0);
     return static_cast<LispObject>(r);
 }
 
@@ -616,8 +413,8 @@ inline LispObject get_n_bytes(size_t n)
 // made, but details of that belong elsewhere.
 
 inline void poll()
-{   if (fringe >= (uintptr_t)heaplimit)
-        (void)gc_and_allocate(0, 0);
+{   if (fringe > limit[threadId].load())
+        (void)gc_participate_and_allocate(0, 0);
 }
 
 // Here we will have:
@@ -805,14 +602,6 @@ inline LispObject Lncons(LispObject env, LispObject a)
 // the C stack has all local values on (in particular that nothing is
 // referenced solely via machine registers) and that a stack_top variable
 // is set so that the garbage collector can do its job properly.
-
-static const int maxThreads = 64;
-extern std::atomic<uintptr_t> stack_bases[maxThreads];
-extern std::atomic<uintptr_t> stack_fringes[maxThreads];
-extern std::atomic<uintptr_t> heap_fringe[maxThreads];
-extern std::atomic<uintptr_t> heap_heaplimit[maxThreads];
-extern std::atomic<uintptr_t> request_values[maxThreads];
-extern std::atomic<size_t>    request_sizes[maxThreads];
 
 
 // The following code makes a whole slew of assumptions about how the

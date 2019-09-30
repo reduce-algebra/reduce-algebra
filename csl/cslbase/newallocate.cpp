@@ -1,4 +1,5 @@
-// newallocate.cpp                         Copyright (C) 1989-2019 Codemist
+threadstart
+u
 
 //
 // Code to deal with storage allocation, both grabbing memory at the start
@@ -795,7 +796,7 @@ uint64_t threadBit(int n)
 {   return (uint64_t)1 << (63-n);
 }
 
-int findSpareThreadNumber()
+int allocateThreadNumber()
 {   my_assert(threadMap != 0); // I need at least one spare.
     int n = nlz(threadMap);
 // Now n is 0 if the top bit is set, 1 for the next etc down to 63 when
@@ -809,51 +810,47 @@ void releaseThreadNumber(int n)
     threadMap |= threadBit(n);
 }
 
-// I will want to place an instance of this class as the first
-// item declared in the main function of every thread.
-// Its job is to initialize some thread-local variables and then,
-// as necessary, tidy up as the thread terminates.
-// For the main thread I would have liked it if I could just create
-// a static instance and know that the initializer would be invoked early,
-// however there are not a 
-
-statuc bool slots_allocated = false;
-uint32_t threadId_slot;
-uint32_t fringe_slot;
-uint32_t heaplimit_slot;
-
+static ThreadLocal<uintptr_t> threadId;
 
 ThreadStartup::ThreadStartup()
 {   std::cout << "ThreadStartup" << std::endl;
     std::lock_guard<std::mutex> lock(mutex_for_gc);
-    if (!slots_allocated)
-    {   threadId_slot = TlsAlloc();
-        fringe_slot = TlsAlloc();
-        heaplimit_slot = TlsAlloc();
-        slots_allocated = true;
-    }
+    threadId = allocateThreadNumber();
 }
 
 ThreadStartup::~ThreadStartup()
 {   std::cout << "~ThreadStartup" << std::endl;
+    std::lock_guard<std::mutex> lock(mutex_for_gc);
+    releaseThreadNumber(threadId);
 }
-
-
-
-// The following need to be atomic because they get updates by one thread
-// and read by another. Without the std::atomic stuff the update could
-// remain in a local cache of the writer thread and not reach the one that
-// tries to read the information. Hmm that may not be the case if there are
-// uses of mutexes and condition variables along the way, since those may
-// activate suitable fences. However making these atomic will not be terribly
-// costly!
 
 std::atomic<uintptr_t> stack_bases[maxThreads];
 std::atomic<uintptr_t> stack_fringes[maxThreads];
-std::atomic<uintptr_t> heap_fringe[maxThreads];
-std::atomic<uintptr_t> heap_heaplimit[maxThreads];
-std::atomic<uintptr_t> request_values`[maxThreads];
+
+std::atomic<uintptr_t> request_values[maxThreads];
 std::atomic<size_t>    request_sizes[maxThreads];
+
+std::mutex gc_mutex;
+
+std::atomic<uintptr_t> limit[maxThreads];
+std::atomic<uintptr_t> gFringe;
+uintptr_t gLimit;
+
+// There are two cases where I may get to code that is pr esent here. One
+// is when an allocation attempt fills up an 8 Mbyte page. In that case
+// a generational scheme needs to do a minor garbage collection, treating
+// the full page as having been used as a nursery. In the non-generational
+// scheme it just needs to allocate a new big page, or run a full collection
+// if that is not possible.
+//
+// When one thread reaches this state (or indeed if several do so
+// simultaneously) it will be necessary to cause all other threads to
+// synchronize and participate in memory rearrangement. When it does that
+// it will need to put a padder in to fill out its current small chunk.
+
+uintptr_t gc_trigger_and_allocate(uintptr_t r, size_t n);
+uintptr_t gc_participate_and_allocate(uintptr_t r, size_t n);
+
 
 void master_gc_work()
 {   std::printf("Hello, this is the master_GC\n");

@@ -731,70 +731,629 @@ namespace std
     }
 }
 
-namespace arithlib_implementation
-{
+// #include "thread_local.h"
 
-// Cygwin and mingw32 both seem to use "emutls" to support the C++11
-// keyword "thread_local". This can have significant adverse performance
-// consequences. So as to improve performance on those platforms while
-// still remaining thread-safe I will use the Microsoft scheme for
-// thread-local store when relevant. I have an optimisation beyond that by
-// providing my own versions of the Microsoft functions that actually
-// access thread-local data, and by doing so I can get much of the code
-// inlined.
+// I include the contents of the file "thread_local.h" so that this
+// arithlib.h stuff ends up as a single header file. The coding here
+// arranges that is "thread_local.h" is also included otherwise either
+// before or after this there will be no problem, but I will need
+// to remember to refresh what I have here any time I update that file.
+
+// thread_local.h                                 Copyright A C Norman 2019
+
+#ifndef header_thread_local_h
+#define header_thread_local_h 1
+
+/**************************************************************************
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
+ *                                                                        *
+ * Redistribution and use in source and binary forms, with or without     *
+ * modification, are permitted provided that the following conditions are *
+ * met:                                                                   *
+ *                                                                        *
+ *     * Redistributions of source code must retain the relevant          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer.                                                      *
+ *     * Redistributions in binary form must reproduce the above          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer in the documentation and/or other materials provided  *
+ *       with the distribution.                                           *
+ *                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+ * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+ * DAMAGE.                                                                *
+ *************************************************************************/
+
+// $Id: thread_local.h 5143 2019-09-22 15:07:16Z arthurcnorman $
+
+
+// There are time when I want to write
+//    inline thread_local T name = value;
+// where the use of the "inline" qualifier is so that I can put this in
+// a header file (including the case of a header-only library). The
+// "thread_local" is just there for what it normally means.
 //
+// I have two problems with this. The first is that inline variables are
+// only available from C++17 onwards and I still wish to support compilers
+// that are not that up to date. The second is that fine-grain use of items
+// declared thread_local leads to severe overheads under Cygwin and Mingw32.
+// However on those platforms there is a Microsoft-specific scheme for
+// thread-local support that has respectable performance, but which is
+// limited to storing values as "void ".
+//
+// The code here is to abstract over my responses to all this. I provide
+// two templates, used as follows:
+//      static ThreadLocal<int *> name;
+//   or static ThreadLocalRef<std::atomic<int>> name;
+// where the first case is for use if the type parameter is convertible to
+// and from void* and the second for more general cases.
+// The second then defined (name) as something whose type is a pointer to
+// the indicated type. The expected use is then that one goes something
+// along the lines of (name->load()) [or some other use of "->"]. This
+// visible level of indirection is because C++ allows for overloading of
+// "->" but not ".".
+//
+// Note that even when used in a header file (which is where you should
+// generaly use this, because I do not provide an "extern" varient) and
+// expecting that the variable defined will be shared across all compilation
+// units you should use a "static" definition! That is because the template
+// expands to a wrapper that can and should be static but that arranges to
+// reference the thread-local value that is really wanted.
+
+// All this mess would not be needed if I only ever used compilers that
+// supported C++17 and also if I only ever ran on platforms where use
+// of the C++ thread_local keyword had at worst minimal overhead! 
+
+
+// The challenge is to make encapsulated things behave (almost) as
+// if they were simple variables. The trick that I use has three parts
+// the first is of the form
+//      inline T& getvar()
+//      {   thread_local T var;
+//          return var;
+//      }
+// where this arranges that even if the above occurs via multiple inclusions
+// of header files that only one instance per thread of (var) arises. And
+// getvar() returns a reference value to it. That copes with the desire to
+// have what is in effect an inline variable, but at this stage suffers
+// because every reference to it needs to go "getvar()" rather than "var".
+//
+// The second trick (mostly) overcomes that!
+//      class wrapper
+//      {
+//      public:
+//          operator T() { return getvar(); }
+//          wrapper& operator=(T value)
+//          {   getvar() = value;
+//              return *this;
+//          }
+//      }
+//      static wrapper name;
+// Now name is declared static and so it can be defined in multiple
+// compilation units, but the wrapper class has no data members and so
+// an instance of it does not consume a lot of space. If you take (name)
+// and use it where it will be cast to type T then the method that uses
+// getvar() is activated, while assignments to it are also intercepted
+// and dealt with nicely. There are cases where explicit casts of the
+// form (T)name may be required to make this happen, but very often usage
+// can be as if name was a simple variable. And a sufficiently good
+// compiler will render the function and method invocations inline
+// leading to hardly any overhead. Well the key overhead will be in
+// the function getvar() which may in principle want to do initialization
+// work for var the first time it is called, and so may use a hidden
+// "bool firstTime" flag to control that and so test that flag on all
+// subsequent calls. An update to use of C++17 will remove that (typically
+// rather modest) cost.
+//
+// The third thing that goes on is that on Microsoft platforms I use the
+// API involving TlsAlloc, TlsSetValue and TlsGetvalue to cope with
+// thread-locality - however for extra performance I provide inline
+// assembly-code functions to replace TlsGetValue and TlsSetValue, so my
+// version avoids the overhead of procedure calls when thread-local values
+// are referenced.
+
+#include <cinttypes>
+#include <mutex>
+
+// First define some utility functions for the Microsoft case...
 
 #if defined __CYGWIN__ || defined __MINGW32__
 
-#define ON_WINDOWS 1
+#define USE_MICROSOFT_API 1
 
-#if __SIZEOF_POINTER__ == 4
-#define ON_WINDOWS_32 1
-#endif
+// If I go "#include <windows.h>" (well the bit I actually need seems to be
+// processthreadsapi.h) that tends to define all sorts of things that can
+// clash with my own code. So here I put in explicit declarations for the
+// thread-local support functions I use, trying rather hard to match just
+// what Windows will use.
 
-#endif // __CYGWIN__ || __MINGW32__
-
-#include "thread_local.h"    // Provides code to read relative to FS or GS
-
-// [Almost] every value that this library keeps as thread-local will live
-// within this class. I will access it via get_thread_locals().
-
-class arithlib_thread_locals
+extern "C"
 {
-public:
-    int example;
-#ifdef ON_WINDOWS
-// When I create my (thread local) instance of this class I will register
-// it by putting its address in the Microsoft Thread Local slot that I will
-// be using.
-    arithlib_thread_locals()
-    {   tls_store(this);
-    }
+// TlsAlloc() allocates a small integer that acts as a handle for a
+// fresh thread-local. Once such a handle has been allocated TlsSetValue and
+// TlsGetValue can save and load void * values from a location that it
+// refers to. This location will in fact by found relative to either the FS
+// or GS segment register. When the handle is no longer required it will be
+// proper to cell TlsFree to release it. One can certainly not allocate more
+// than 1088 handles (this value is 64+1024, and access via the first 64
+// handles will be slightly cheaper than via the remaining 1024). If a
+// value that you want to be thread-local can not be stored in a void * using
+// TlsSetValue then it is necessary to allocate space elsewhere and set the
+// Microsoft slot to point to it.
+
+
+#ifdef __LP64__
+typedef unsigned int tls_handle;
+#else
+typedef unsigned long tls_handle;
 #endif
+
+extern __declspec(dllimport) tls_handle TlsAlloc();
+extern __declspec(dllimport) int TlsFree(tls_handle);
+// I will use my own replacements for the next two. But I include
+// declarations here for reference.
+extern __declspec(dllimport) void *TlsGetValue(tls_handle);
+extern __declspec(dllimport) int TlsSetValue(tls_handle, void *);
 };
 
-inline arithlib_thread_locals *get_thread_locals()
-{   thread_local arithlib_thread_locals w;
-// On many platforms I just return the address of the thread-local object
-// shown above. But on Windows as I created that object it registered itself
-// with the Microsoft thread local mechanism and I arrange to retrieve it
-// that way.
-#ifdef ON_WINDOWS
-    return (arithlib_thread_locals *)tls_load();
+// The code here is intended and expected to behave exactly like a version
+// that calls the Microsoft-provided functions, except (1) it does not
+// do even basic sanity checks on the slot-number that is passed
+// and (b) it can expand into inline code that then runs faster that the
+// official version even if it does just the same thing.
+
+// I abstract away 32 vs 64-bit Windows issues here. The offsets used are from
+// www.geoffchappell.com/studies/windows/win32/ntdll/structs/teb/index.htm
+// which has repeated comments about the long term stability of the memory
+// layout involved.
+
+// The basic concept is that Microsoft keep a segment register (FS on 32-bit
+// systems and GS on 64) pointing to a thread-specific block of memory.
+// Within that block there is a 64-bit region for user thread-locals and
+// then a pointer to a larger block that provides and extended number
+// of user thread-locals. TlsAlloc() allocates a "thread slot number" and
+// if that is less than 64 it refers to a word in the first block, otherwise
+// in the extended region.
+
+#if __SIZEOF_POINTER__ == 4
+#define MOVE_INSTRUCTION "movl"
+#define SEGMENT_REGISTER "%%fs"
+#define basic_TLS_offset           0xe10
+#define extended_TLS_offset        0xf94
+#else // Windows 32 vs 64 bit
+#define MOVE_INSTRUCTION "movq"
+#define SEGMENT_REGISTER "%%gs"
+#define basic_TLS_offset           0x1480
+#define extended_TLS_offset        0x1780
+#endif // Windows 32 vs 64 bit
+
+inline void *read_via_segment_register(tls_handle n)
+{   void *r;
+    asm volatile
+    (   MOVE_INSTRUCTION "  " SEGMENT_REGISTER ":(%1), %0"
+        : "=r" (r)
+        : "r" (n)
+        :
+    );
+    return r;
+}
+
+inline void write_via_segment_register(tls_handle n, void *v)
+{   asm volatile
+    (   MOVE_INSTRUCTION " %0, " SEGMENT_REGISTER ":(%1)"
+        :
+        : "r" (v), "r" (n)
+        :
+    );
+}
+
+inline void *extended_tls_load(tls_handle teb_slot)
+{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+    return a[teb_slot - 64];
+}
+
+inline void extended_tls_store(tls_handle teb_slot, void *v)
+{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+    a[teb_slot - 64] = v;
+}
+
+inline void *tls_load(tls_handle teb_slot)
+{   if (teb_slot >= 64) return extended_tls_load(teb_slot);
+    else return (void *)read_via_segment_register(
+        basic_TLS_offset + sizeof(void *)*teb_slot);
+}
+
+inline void tls_store(tls_handle teb_slot, void *v)
+{   if (teb_slot >= 64) return extended_tls_store(teb_slot, v);
+    else write_via_segment_register(
+        basic_TLS_offset + sizeof(void *)*teb_slot, v);
+}
+
+#endif // Microsoft case
+
+
+// Usage:   static ThreadLocal<T> var;
+//    acts rather like
+//          inline thread_local T var;
+//    or
+//          static ThreadLocal<T> var(init);
+//    for
+//          inline thread_local T var = init;
+// subject to a constraint that casting between T and void * must be valid.
+
+template <typename T>
+class ThreadLocal
+{
+    inline bool& initialized()
+    {   static bool flag;
+        return flag;
+    }
+    inline std::mutex& mutex()
+    {   static std::mutex m;
+        return m;
+    }
+#ifdef USE_MICROSOFT_API
+#ifdef __cpp_inline_variables
+// I need a single (ie not thread_local and not per-compilation-unit)
+// variable slotNumber to record the number in Microsoft's thread block.
+    static inline tls_handle slotNumber;
+    inline tls_handle& getSlotNumber()
+    {   return slotNumber;
+    }
 #else
-    return &w;
+    inline tls_handle& getSlotNumber()
+    {   static tls_handle slotNumber;
+        return slotNumber;
+    }
 #endif
+// Simple thread-local values that can be case to and from (void *) are
+// then stored directly in the Microsoft table.
+    inline T getter()
+    {   return (T)tls_load(getSlotNumber());
+    }
+    inline void setter(T value)
+    {   tls_store(getSlotNumber(), (void *)value);
+    }
+#else // !Microsoft
+// In the non-Microsoft case I want just an "inline thread_local" variable,
+// but prior to C++17 I have to provide that via trickery.
+#ifdef __cpp_inline_variables
+    static inline thread_local T data;
+    inline T& getData()
+    {   return data;
+    }
+#else
+    inline T& getData()
+    {   thread_local T data;
+        return data;
+    }
+#endif
+    inline T getter()
+    {   return getData();
+    }
+    inline void setter(T value)
+    {   getData() = value;
+    }
+#endif // !Microsoft
+
+public:
+// Although there will be only one instance (per thread!) of the
+// thread-local value that this class encapsulates there can be many
+// instances of the class itself. There are no non-static fields in the
+// class and so an instance should not use up much (if any) space.
+// To be fully cautious I guard initialization with a mutex and with a
+// flag that ensures that it is done just once.
+    ThreadLocal()
+    {   std::lock_guard<std::mutex> lock(mutex());
+        if (!initialized())
+        {   initialized() = true;
+#ifdef USE_MICROSOFT_API
+            getSlotNumber() = TlsAlloc();
+#endif
+        }
+    }
+    ThreadLocal(T init)
+    {   std::lock_guard<std::mutex> lock(mutex());
+        if (!initialized())
+        {   initialized() = true;
+#ifdef USE_MICROSOFT_API
+            getSlotNumber() = TlsAlloc();
+#endif
+            setter(init);
+        }
+    }
+    ~ThreadLocal()
+    {   std::lock_guard<std::mutex> lock(mutex());
+        if (initialized())
+        {   initialized() = false;
+#ifdef USE_MICROSOFT_API
+            TlsFree(getSlotNumber());
+#endif
+        }
+    }
+    operator T() { return getter(); }
+    ThreadLocal& operator=(T val)
+    {   setter(val);
+        return *this;
+    }
+    ThreadLocal& operator+=(uintptr_t val)
+    {   setter(getter() + val);
+        return *this;
+    }
+    ThreadLocal& operator-=(uintptr_t val)
+    {   setter(getter() - val);
+        return *this;
+    }                                                 
+};
+
+// The version above can store thread_local values that can be converted
+// to void *. This next one will support other types. In the Microsoft
+// case it has to do that by first storing a thread_local instance
+// So
+//     static ThreadLocalRef<T> var;
+// behaves rather like
+//     inline thread_local T actual_var;
+//     inline thread_local T* var = &actual_var;
+// and this will perhaps most often be used when T is a class type, say with
+// fields a, b and c, and then
+//       var->a
+// etc can be used to access those fields. The indirection involved is
+// necessary in the Microsoft mapping and so is imposed in every case so
+// that usage is uniform.
+
+template <typename T>
+class ThreadLocalRef
+{
+    inline bool& initialized()
+    {   static bool flag;
+        return flag;
+    }
+    inline std::mutex& mutex()
+    {   static std::mutex m;
+        return m;
+    }
+#ifdef USE_MICROSOFT_API
+#ifdef __cpp_inline_variables
+// I need a single (ie not thread_local and not per-compilation-unit)
+// variable slotNumber to record the number in Microsoft's thread block.
+    static inline tls_handle slotNumber;
+    inline tls_handle& getSlotNumber()
+    {   return slotNumber;
+    }
+#else
+    inline tls_handle& getSlotNumber()
+    {   static tls_handle slotNumber;
+        return slotNumber;
+    }
+#endif
+// Non-simple items have a pointer to them stored in the TLS slot, and
+// for this to happen there has to be an item to point to.
+#ifdef __cpp_inline_variables
+    static inline thread_local T data;
+    inline T* getData()
+    {   return &data;
+    }
+#else
+    inline T* getData()
+    {   thread_local T data;
+        return &data;
+    }
+#endif
+    inline T* getter()
+    {   return (T*)tls_load(getSlotNumber());
+    }
+    inline void setter(T value)
+    {   *(T*)tls_load(getSlotNumber()) = value;
+    }
+#else // !Microsoft
+// In the non-Microsoft case I want just an "inline thread_local" variable,
+// but prior to C++17 I have to provide that via trickery.
+#ifdef __cpp_inline_variables
+    static inline thread_local T data;
+    inline T* getData()
+    {   return &data;
+    }
+#else
+    inline T* getData()
+    {   thread_local T data;
+        return &data;
+    }
+#endif
+    inline T* getter()
+    {   return getData();
+    }
+    inline void setter(T value)
+    {   *getData() = value;
+    }
+#endif // !Microsoft
+
+public:
+    ThreadLocalRef()
+    {   std::lock_guard<std::mutex> lock(mutex());
+        if (!initialized())
+        {   initialized() = true;
+#ifdef USE_MICROSOFT_API
+            getSlotNumber() = TlsAlloc();
+            tls_store(getSlotNumber(), (void *)getData());
+#endif
+        }
+    }
+    ~ThreadLocalRef()
+    {   std::lock_guard<std::mutex> lock(mutex());
+        if (initialized())
+        {   initialized() = false;
+#ifdef USE_MICROSOFT_API
+            TlsFree(getSlotNumber());
+#endif
+        }
+    }
+    operator T*() { return getter(); }
+    
+    ThreadLocalRef& operator=(T val)
+    {   setter(val);
+        return *this;
+    }
+    T* operator->() { return getter(); }
+};
+
+// Now having set that bit of mechanism up I will provide something along
+// the same line JUST for supporting inline variables.
+// Thus
+//     static Inline<T> var;
+// may be used where if one was certain that the C++ compiler used was
+// modern enough it would have been more natural to write just
+//     inline T var;
+// As with Thread_local one can set an initial value as in
+//     static Inline<T> var(init);
+
+
+template <typename T>
+class Inline
+{
+    inline bool& initialized()
+    {   static bool flag;
+        return flag;
+    }
+    inline std::mutex& mutex()
+    {   static std::mutex m;
+        return m;
+    }
+#ifdef __cpp_inline_variables
+    static inline T data;
+    inline T& getData()
+    {   return data;
+    }
+#else
+    inline T& getData()
+    {   static T data;
+        return data;
+    }
+#endif
+    inline T getter()
+    {   return getData();
+    }
+    inline void setter(T value)
+    {   getData() = value;
+    }
+
+public:
+    Inline()
+    {
+    }
+    Inline(T init)
+    {   std::lock_guard<std::mutex> lock(mutex());
+        if (!initialized())
+        {   initialized() = true;
+            setter(init);
+        }
+    }
+    operator T() { return getter(); }
+    Inline& operator=(T val)
+    {   setter(val);
+        return *this;
+    }
+    Inline& operator+=(uintptr_t val)
+    {   setter(getter() + val);
+        return *this;
+    }
+    Inline& operator-=(uintptr_t val)
+    {   setter(getter() - val);
+        return *this;
+    }                                                 
+};
+
+// This is for inline variables where the type is a class.
+
+template <typename T>
+class InlineRef
+{
+    inline bool& initialized()
+    {   static bool flag;
+        return flag;
+    }
+    inline std::mutex& mutex()
+    {   static std::mutex m;
+        return m;
+    }
+#ifdef __cpp_inline_variables
+    static inline thread_local T data;
+    inline T* getData()
+    {   return &data;
+    }
+#else
+    inline T* getData()
+    {   thread_local T data;
+        return &data;
+    }
+#endif
+    inline T* getter()
+    {   return getData();
+    }
+    inline void setter(T value)
+    {   *getData() = value;
+    }
+
+public:
+    operator T*() { return getter(); }
+    
+    InlineRef& operator=(T val)
+    {   setter(val);
+        return *this;
+    }
+    T* operator->() { return getter(); }
+};
+
+#ifdef SMALL_TEST
+
+// Some test code
+
+#include <iostream>
+#include <atomic>
+
+// Despite these being set up as "static" the thread-local variables
+// that they establish will be shared across all compilation units that
+// include this definition.
+
+static ThreadLocal<intptr_t> x(1);
+static ThreadLocalRef<std::atomic<intptr_t>> y;
+
+int main(int argc, char *argv[])
+{
+    std::cout << x << std::endl;
+    x = 3;
+    std::cout << x << std::endl;
+    x += 4;
+    std::cout << x << std::endl;
+    x = x + 4;
+    std::cout << x << std::endl;
+
+    y->store(17);
+    std::cout << y->load() << std::endl;
+    std::cout << y << std::endl;
+// If y had been just std::atomic<intptr_t> I could have gone
+//        intptr_t val = y;
+//     or std::cout << ((intptr_t)y) << std::endl;
+// but, with the wrapping, I need to use ->load() or things get confused.
+    return 0;
 }
 
-// Now for each value that in a simple world would be just "example" I will
-// at present write "example()"...
-inline int &example()
-{   return get_thread_locals()->example;
-}
+#endif // SMALL_TEST
 
-// HOWEVER I can use references to give simple name alises to the items
-// concerned, as in
-//    int &example = get_thread_locals()->example;
+#endif // header_thread_local_h
+
+// end of thread_local.h
+
+namespace arithlib_implementation
+{
 
 // When I get to big-integer multiplication I will use two worker threads
 // so that elapsed times for really large multiplications are reduced
@@ -959,10 +1518,7 @@ public:
 // exactly one copy gets made for each top-level thread that calls this,
 // ie that uses a huge multiplication.
 
-inline Driver_data &get_driver_data()
-{   thread_local Driver_data data;
-    return data;
-}
+static ThreadLocalRef<Driver_data> driver_data;
 
 // Declare a number of functions that might usefully be used elsewhere. If
 // I declare them "inline" then it will be OK even if I include this header
@@ -1254,9 +1810,20 @@ inline unsigned int log_next_power_of_2(size_t n);
 #error Only one thread-support policy can be selected.
 #endif
 
-class Freechains;
+#ifdef ARITHLIB_MUTEX
+std::mutex& freechain_mutex()
+{   static std::mutex m;
+    return m;
+}
+#endif
 
-inline Freechains &get_freechains();
+typedef uint64_t *freechain_table_type[64];
+
+#ifdef ARITHLIB_THREAD_LOCAL
+static ThreadLocalRef<freechain_table_type> freechain_table;
+#else
+static InlineRef<freechain_table_type> freechain_table;
+#endif
 
 class Freechains
 {
@@ -1269,19 +1836,14 @@ private:
     std::ios_base::Init force_iostreams_initialization;
 
 public:
-#ifdef ARITHLIB_MUTEX
-    std::mutex freechain_mutex;
-#endif
-    uint64_t *freechain_table[64];
-
     Freechains()
-    {   for (int i=0; i<64; i++) freechain_table[i] = NULL;
+    {   for (int i=0; i<64; i++) (*freechain_table)[i] = NULL;
     }
 
     ~Freechains()
     {   if (debug_arith) std::cout << "Destructor being called" << std::endl;
         for (size_t i=0; i<64; i++)
-        {   uint64_t *f = freechain_table[i];
+        {   uint64_t *f = (*freechain_table)[i];
             if (debug_arith)
 // Report how many entries there are in the freechain.
             {   size_t n = 0;
@@ -1303,7 +1865,7 @@ public:
                 delete [] f;
                 f = (uint64_t *)w;
             }
-            freechain_table[i] = NULL;
+            (*freechain_table)[i] = NULL;
         }
     }
 
@@ -1325,15 +1887,14 @@ public:
         assert(n<=(((size_t)1)<<bits) && n>0);
         uint64_t *r;
 #if defined ARITHLIB_THREAD_LOCAL || ARITHLIB_NO_THREADS
-        r = get_freechains().freechain_table[bits];
+        r = (*freechain_table)[bits];
         if (r != NULL)
-            get_freechains().freechain_table[bits] = (uint64_t *)r[1];
+            (*freechain_table)[bits] = (uint64_t *)r[1];
 #elif defined ARITHLIB_MUTEX
-        {   std::lock_guard<std::mutex>
-                lock(get_freechains().freechain_mutex);
-            r = get_freechains().freechain_table[bits];
+        {   std::lock_guard<std::mutex> lock(freechain_mutex());
+            r = (*freechain_table)[bits];
             if (r != NULL)
-                get_freechains().freechain_table[bits] = (uint64_t *)r[1];
+                (*freechain_table)[bits] = (uint64_t *)r[1];
         }
 #else
 #error Internal inconsistency in arithlib.hpp: memory allocation strategy.
@@ -1373,42 +1934,27 @@ public:
 // going to lose information here on any platform I can consider.
         if (debug_arith) p[0] = -(uint64_t)1;
 #ifdef ARITHLIB_ATOMIC
-        lockfree_push(p, get_freechains().freechain_table, bits);
+        lockfree_push(p, *freechain_table, bits);
 #else
 #ifdef ARITHLIB_MUTEX
-        std::lock_guard<std::mutex> lock(get_freechains().freechain_mutex);
+        std::lock_guard<std::mutex> lock(freechain_mutex());
 #endif
-        p[1] = (uint64_t)get_freechains().freechain_table[bits];
-        get_freechains().freechain_table[bits] = p;
+        p[1] = (uint64_t)(*freechain_table)[bits];
+        (*freechain_table)[bits] = p;
 #endif
     }
 
 };
 
-#ifdef HAVE_INLINE_VARS 
 #ifdef ARITHLIB_THREAD_LOCAL
-inline thread_local Freechains the_freechains;
-#else // !ARITHLIB_THREAD_LOCAL
-inline Freechains the_freechains;
-#endif // !ARITHLIB_THREAD_LOCAL
-#endif // HAVE_INLINE_VARS 
-
-
-inline Freechains &get_freechains()
-{
-#ifndef HAVE_INLINE_VARS
-#ifdef ARITHLIB_THREAD_LOCAL
-    thread_local Freechains the_freechains;
-#else // !RITHLIB_THREAD_LOCAL
-    static Freechains the_freechains;
-#endif // !ARITHLIB_THREAD_LOCAL
-#endif // !HAVE_INLINE_VARS
-    return the_freechains;
-}
+static ThreadLocalPtr<Freechains> freechains;
+#else
+static InlineRef<Freechains> freechains;
+#endif
 
 inline uint64_t *reserve(size_t n)
 {   assert(n>0);
-    return &(get_freechains().allocate(n+1))[1];
+    return &(freechains->allocate(n+1))[1];
 }
 
 inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
@@ -1420,7 +1966,7 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
 #endif
     if (final == 1 && fits_into_fixnum((int64_t)p[0]))
     {   intptr_t r = int_to_handle((int64_t)p[0]);
-        get_freechains().abandon(&p[-1]);
+        freechains->abandon(&p[-1]);
         return r;
     }
 // I compare the final size with the capacity and if it is a LOT smaller
@@ -1431,10 +1977,10 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
     size_t capacity = ((size_t)1)<<bits;
     if (capacity > 4*final)
     {   uint64_t *w =
-            get_freechains().allocate(
+            freechains->allocate(
                 ((size_t)1)<<log_next_power_of_2(final+1));
         memcpy(&w[1], p, final*sizeof(uint64_t));
-        get_freechains().abandon(&p[-1]);
+        freechains->abandon(&p[-1]);
         p = &w[1];
     }
     ((uint32_t *)(&p[-1]))[1] = final;
@@ -1487,13 +2033,13 @@ inline bool fits_into_fixnum(int64_t a)
 }
 
 inline void abandon(uint64_t *p)
-{   get_freechains().abandon(&p[-1]);
+{   freechains->abandon(&p[-1]);
 }
 
 inline void abandon(intptr_t p)
 {   if (!stored_as_fixnum(p) && p!=0)
     {   uint64_t *pp = vector_of_handle(p);
-        get_freechains().abandon(&pp[-1]);
+        freechains->abandon(&pp[-1]);
     }
 }
 
@@ -5039,8 +5585,10 @@ inline size_t predict_size_in_bytes(const uint64_t *a, size_t lena)
 inline size_t bignum_to_string_length(uint64_t *a, size_t lena)
 {   if (lena == 1)
     {   int64_t v = a[0];
+// Note that the negative numbers checked against are 1 digit shorter so as
+// to allow space for the "-" sign.
         if (v <= 9999999 && v >= -999999) return 7;
-        else if (v < 999999999999999 && v >= -99999999999999) return 15;
+        else if (v <= 999999999999999 && v >= -99999999999999) return 15;
         else return 23;
     }
     else return predict_size_in_bytes(a, lena);
@@ -5198,7 +5746,7 @@ inline string_handle bignum_to_string(uint64_t *a, size_t lena,
     char *s = reserve_string(len);
     pop(a);
     size_t final_len = bignum_to_string(s, len, a, lena, as_unsigned);
-    return confirm_size_string(s, final_len, len);
+    return confirm_size_string(s, len, final_len);
 }
 
 inline string_handle bignum_to_string(intptr_t aa)
@@ -7631,31 +8179,30 @@ inline void top_level_karatsuba(const uint64_t *a, size_t lena,
 // I start by arranging that the two threads that can do things in parallel
 // can get access to data from here and that I will be able to retrieve
 // results. And that the worker threads have workspace to make use of.
-    Driver_data &dd = get_driver_data();
-    dd.wd_0.a = a;
-    dd.wd_0.lena = n;
-    dd.wd_0.b = b;
-    dd.wd_0.lenb = n;
-    dd.wd_0.c = w0;
-    dd.wd_0.w = w0+2*n;
+    driver_data->wd_0.a = a;
+    driver_data->wd_0.lena = n;
+    driver_data->wd_0.b = b;
+    driver_data->wd_0.lenb = n;
+    driver_data->wd_0.c = w0;
+    driver_data->wd_0.w = w0+2*n;
 
-    dd.wd_1.a = a+n;
-    dd.wd_1.lena = lena-n;
-    dd.wd_1.b = b+n;
-    dd.wd_1.lenb = lenb-n;
-    dd.wd_1.c = w1;
-    dd.wd_1.w = w1+2*n;
+    driver_data->wd_1.a = a+n;
+    driver_data->wd_1.lena = lena-n;
+    driver_data->wd_1.b = b+n;
+    driver_data->wd_1.lenb = lenb-n;
+    driver_data->wd_1.c = w1;
+    driver_data->wd_1.w = w1+2*n;
 
 // Now trigger the two threads to do some work for me. One will be forming
 // alo*blo while the other computes ahi*bhi . 
-    dd.release_workers();
+    driver_data->release_workers();
 // Now I will work on either |ahi-alo|*|bhi-blo|
 // lena-n and lenb-n will each be either n or n-1.
     bool signs_differ = absdiff(a, n, a+n, lena-n, w) !=
                         absdiff(b, n, b+n, lenb-n, w+n);
     small_or_big_multiply(w, n, w+n, n, c+n, w+2*n);     // (a1-a0)*(b0-b1)
 // That has the product of differences written into the middle of c.
-    dd.wait_for_workers();
+    driver_data->wait_for_workers();
     if (signs_differ)
     {
 // Here I have

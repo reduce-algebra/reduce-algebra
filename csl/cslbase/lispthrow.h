@@ -36,40 +36,6 @@
 #ifndef __lispthrow_h
 #define __lispthrow_h 1
 
-// In C++ I ought to be able to have "extern thread_local" values where the
-// variable is defined in one compilation unit but refereed to from others.
-// However some versions of gcc from (at least) 2016 to 2018 give linker
-// errors "undefined reference to `TLS init function ..." in this case. That
-// is a wide enought range of gcc configurations that I need to do something!
-// So here I have what can only reasonably be described as a HACK that adds
-// an extra level of indirection. By removing the "#define" lines here this
-// hack can be removed rather easily. Something like this may be required for
-// all other extern thread_local variables! Yuk.
-// I rather hope that with the "const" pointer that the C++ compiler will
-// turn this into almost as good code as it would have been before.
-// Furthermore within the compilation unit that happens to define the
-// thread_local variable I undo the "#define" and refer to the variable
-// directly thereby avoiding the extra indirection.
-
-// BUT: "Oh dear" these changes led to an order of magnitude slowdown for
-// REDUCE, and so I am removing them. I will need to be rather careful before
-// I put more thread_local usage back. But one reason for hope here is that
-// when I have a conservative garbage collector I will not need the separate
-// Lisp stack that is at issue here!
-
-// Later (April 2019). Access to thread_local values has low overhead on
-// Linux and on Windows while compiling using msvc. On the Macintosh using
-// clang it is modest. However at the time of writing there are severe costs
-// on either Cygwin or compiling for native Windows using the mingw32
-// compilers. This seems to be because in the favourable cases the C++
-// system uses an x86 segment register, while with Cygwin and mingw a
-// nasty system call is made each time. On the Raspberry pi and on the
-// Macintosh there is an intermediate effect.
-// Exactly what happens may be senitive to the exact release of compiler
-// used etc, and so the report here should not be viewed as behaviour
-// guaranteed for the future! But merely declaring a few variables to be
-// thread_local can sometimes have dramatic consequences!
-
 
 //extern thread_local LispObject *stack;
 extern LispObject *stack;
@@ -85,8 +51,6 @@ extern  jmp_buf *global_jb;
 //static thread_local jmp_buf **const global_jb_addr = get_global_jb_addr();
 //#define stack (*stack_addr)
 //#define global_jb (*global_jb_addr)
-
-// End of thread_local hack.
 
 inline void push(LispObject a)
 {   *++stack = a;
