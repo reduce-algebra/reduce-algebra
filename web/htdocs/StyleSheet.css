@@ -2,17 +2,39 @@
     background-color: #eef;
 }
 
+/* REDUCE in header with responsive background.  For bootstrap
+   breakpoints see https://getbootstrap.com/docs/4.3/layout/overview/
+*/
+
 header span.mx-auto {
-    background-image: url(images/header.gif);
-    background-repeat: no-repeat;
-    background-position: center;
     display: inline-block;
-    width: 600px;
     text-align: center;
     font-family: Georgia, 'Times New Roman', 'Lucida Bright', serif;
     font-size: 40px;
     font-weight: bold;
     color: #0F0;
+}
+
+@media (min-width: 768px) {  /* bootstrap breakpoint md = 768px */
+    header span.mx-auto {
+        background-image: url(images/header.gif);
+        background-repeat: no-repeat;
+        background-position: center;
+        width: 600px;
+    }
+}
+
+@media (max-width: 767.98px) {  /* as used by bootstrap */
+    header span.mx-auto {
+        background-color: #000099;
+        line-height: 1.0;
+        height: 40px;
+        min-width: 200px;
+        /* 1 vw = 1% of viewport width */
+        /* 78.125vw = 600px when viewport width = 768px */
+        /* 55.56vw = 200px when viewport width = 360px */
+        width: 60vw;  /* 60% of viewport width */
+    }
 }
 
 #top-search-button {
