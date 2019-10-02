@@ -20,7 +20,7 @@ $smarty->assign('header_title', 'Obtaining REDUCE');
 $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 <p>
 	The REDUCE computer algebra system is released free-of-charge under a modified BSD <a href="license.php">license</a> and can be obtained in <a href="versions.php">two main versions</a> from <a href="https://sourceforge.net/p/reduce-algebra/" rel="nofollow">
-	<img class="sflogo" alt="Download REDUCE" src="https://sourceforge.net/sflogo.php?type=10&group_id=248416"></a>.
+	<img class="sflogo" alt="SourceForge" src="https://sourceforge.net/sflogo.php?type=10&group_id=248416"></a>.
 	There are also <a href="independent.php">independent distributions</a> available for some platforms not explicitly supported by the REDUCE developers.
 	This page explains how to download, install and run REDUCE on the most widely-used platforms.
 	
@@ -28,7 +28,7 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 <h2>The easy way to obtain REDUCE</h2>
 <p>
 	This is to download and install a pre-packaged REDUCE distribution that contains all the necessary binary files as well as documentation (and the main REDUCE source code). We currently distribute REDUCE in this way primarily for Microsoft Windows, Apple MacOS and some versions of GNU/Linux. This approach should work well if you use a supported platform and don't need the very latest updates. Simply click on the <a href="https://sourceforge.net/p/reduce-algebra/" rel="nofollow">
-	<img class="sflogo" alt="Download REDUCE" src="https://sourceforge.net/sflogo.php?type=10&group_id=248416"></a> logo to visit the project page and then, towards the top of the page, you should see a large green button containing the word Download with a filename below it. SourceForge uses heuristics to pick a recent distribution file with an appropriate extension for your platform automatically (although it might get it wrong, especially for GNU/Linux).
+	<img class="sflogo" alt="SourceForge" src="https://sourceforge.net/sflogo.php?type=10&group_id=248416"></a> logo to visit the project page and then, towards the top of the page, you should see a large green button containing the word Download with a filename below it. SourceForge uses heuristics to pick a recent distribution file with an appropriate extension for your platform automatically (although it might get it wrong, especially for GNU/Linux).
 </p>
 <p>
 	Note that we do not provide any automatic update facility; to update REDUCE just install it again. This is probably a good idea every year or so, or if you have encountered errors (and especially if you believe they have been fixed).
@@ -37,7 +37,7 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 <h3>Using Microsoft Windows and Apple MacOS</h3>
 <p>
 	The <a href="https://sourceforge.net/p/reduce-algebra/" rel="nofollow">
-	<img class="sflogo" alt="Download REDUCE" src="https://sourceforge.net/sflogo.php?type=10&group_id=248416"></a> Download button should include a filename of the form:
+	<img class="sflogo" alt="SourceForge" src="https://sourceforge.net/sflogo.php?type=10&group_id=248416"></a> Download button should include a filename of the form:
 	
 </p>
 <ul>
@@ -53,7 +53,7 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 <h3>Using GNU/Linux</h3>
 <p>
 	The <a href="https://sourceforge.net/p/reduce-algebra/" rel="nofollow">
-	<img class="sflogo" alt="Download REDUCE" src="https://sourceforge.net/sflogo.php?type=10&group_id=248416"></a> Download button should include a filename of the form:
+	<img class="sflogo" alt="SourceForge" src="https://sourceforge.net/sflogo.php?type=10&group_id=248416"></a> Download button should include a filename of the form:
 </p>
 <ul>
 	<li><code>reduce-complete_<em>yyyy-mm-dd_arch</em>.deb</code> on Debian-based Linux (e.g. Ubuntu)</li>

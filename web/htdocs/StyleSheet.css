@@ -13,27 +13,24 @@ header span.mx-auto {
     font-size: 40px;
     font-weight: bold;
     color: #0F0;
+    max-width: 600px;           /* width of background image */
+    width: 60vw;                /* 60% of viewport width */
+    min-width: 200px;           /* width of text */
 }
 
-@media (min-width: 768px) {  /* bootstrap breakpoint md = 768px */
+@media (min-width: 500px) {     /* bootstrap breakpoint sm = 576px */
     header span.mx-auto {
-        background-image: url(images/header.gif);
+        background-image: url(/images/header.gif);
         background-repeat: no-repeat;
-        background-position: center;
-        width: 600px;
+        background-position: left;
     }
 }
 
-@media (max-width: 767.98px) {  /* as used by bootstrap */
+@media (max-width: 499.98px) {  /* as used by bootstrap */
     header span.mx-auto {
         background-color: #000099;
         line-height: 1.0;
         height: 40px;
-        min-width: 200px;
-        /* 1 vw = 1% of viewport width */
-        /* 78.125vw = 600px when viewport width = 768px */
-        /* 55.56vw = 200px when viewport width = 360px */
-        width: 60vw;  /* 60% of viewport width */
     }
 }
 
