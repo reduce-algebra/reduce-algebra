@@ -1,0 +1,39 @@
+
+Comment Problem reported on the reduce-algebra-developers mailing list by René Grognard:
+
+The input 
+ 
+ a := mat((a11,a12),(a21,a22))
+
+does not produce output in fancy mode. After the next statement, the output is printed.
+
+$
+
+
+#if (and (not (member 'tmprint loaded!-packages!*)) (not (getd 'linelength!-orig)))
+%#if (not (member 'tmprint loaded!-packages!*))
+load_package tmprint$
+
+
+linelength 5000$
+
+
+#endif
+
+on fancy;
+
+
+
+a := mat((a11,a12),(a21,a22));
+
+latex:\black$\displaystyle  \left(\begin{matrix}a_{11}&a_{12}\\a_{21}&a_{22}\end{matrix}\right)$
+
+x := y;
+
+latex:\black$\displaystyle  x\mathrm{:=}y$
+
+off fancy;
+
+
+end;
+

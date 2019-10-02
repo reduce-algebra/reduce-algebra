@@ -498,7 +498,8 @@ symbolic procedure fancy!-output(mode,l);
             assgnpri(l,nil,nil) where outputhandler!* = nil >>;
          most_recent_fancy := l . most_recent_fancy;
 #endif
-         fancy!-assgnpri l >>
+         fancy!-assgnpri l;
+         fancy!-flush() >>
       else <<
 #if (memq 'csl lispsystem!*)
          if getd 'math!-display and

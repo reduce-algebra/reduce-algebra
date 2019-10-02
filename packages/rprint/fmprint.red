@@ -236,7 +236,7 @@ symbolic procedure fancy!-output(mode,l);
      else
    <<set!-fancymode t;
      if mode = 'maprin then fancy!-maprin0 l
-     else if mode = 'assgnpri then fancy!-assgnpri l
+     else if mode = 'assgnpri then << fancy!-assgnpri l; fancy!-flush() >>
      else
      fancy!-flush();
     >>;
