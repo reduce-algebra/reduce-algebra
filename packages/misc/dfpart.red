@@ -148,12 +148,12 @@ dfp_rules:={
          dfp(f,append(q,{part(generic_arguments f,i)}))
              *df(part(actual_arguments f,i),x),
 
-    dfp(~f+~g,~q) => dfp(f,q) + dfp(f,q),
+    % typo corrected by Alan Barnes Oct 2019
+    dfp(~f+~g,~q) => dfp(f,q) + dfp(g,q),
 
     dfp(-~f,~q) => -dfp(f,q),
 
-       % recursive unrolling
-
+    % recursive unrolling
     dfp(~f,~q) => dfp(dfp(f,{first q}),rest q) when
         arglength q neq -1 and part(q,0)=list and
         length q>1 and dfp!-rule!-found(dfp(f,{first q}),f),

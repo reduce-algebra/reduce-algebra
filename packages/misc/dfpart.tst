@@ -10,6 +10,20 @@ df(f(x,y),x,2);
 df(dfp(f(x,y),x),x);
 df(dfp(f(x,x**3),x),x);
 
+generic_function g(x),h(x);
+% partial derivatives should now coincide with total derivatives
+% for functions of one variable.
+
+dfp(g()+h(),{x});
+df(g()+h(),x);
+dfp(g()*h(),{x,x});
+df(g()*h(),x,x);
+% but not in this case
+dfp(g(1)/h(1),{x,x});
+df(g(1)/h(1),x,x);
+% however ...
+sub(x=1, df(g()/h(),x,x));
+
 % using a generic fucntion with commutative derivatives
 generic_function u(x,y);
 dfp_commute u(x,y);

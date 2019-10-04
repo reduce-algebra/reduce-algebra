@@ -896,83 +896,20 @@ ellipticthetarules :=
    elliptictheta4(~u,~m) => num_elliptic(num_theta4,u,m)
         when lisp !*rounded and numberp u and numberp m,
 
-   nome2mod(~m) => num_elliptic(num_mod, m)
-        when lisp !*rounded and numberp m,
-	
-   nome2mod!'(~m) => num_elliptic(num_mod!', m)
-        when lisp !*rounded and numberp m,
-	
-   nome2!K(~m) => num_elliptic(num_ellipK, m)
-        when lisp !*rounded and numberp m,
+   % Below for numerical evaluation it is much better to use theta
+   % functions evaluated at zero rather than direct series summations
+   % as modular transformations can be used to speed up convergence
+   % when |q| is near to one.
 
-   nome2!K!'(~m) => num_elliptic(num_ellipK!', m)
-        when lisp !*rounded and numberp m
+   nome2mod(~q) => (elliptictheta2(0,q)/elliptictheta3(0,q))^2,
+	
+   nome2mod!'(~q) =>  (elliptictheta4(0,q)/elliptictheta3(0,q))^2,
+ 
+   nome2!K(~q) => pi*elliptictheta3(0,q)^2/2,
+
+   nome2!K!'(~q) => -log q*elliptictheta3(0,q)^2/2
 }$
 let ellipticthetarules;
-
-procedure num_mod(q);
-   if abs(q) >= 1.0 then
-      rederr "num_mod: the nome q must satisfy |q| < 1"
-   else begin scalar n, pow, total1, total2, res, res0, tol;
-       tol := 10.0^-(symbolic !:prec!:);
-       total1 := 1.0;
-       total2 := 1.0;
-       res := 1.0;
-       n := 1;
-
-       repeat <<
-             res0 := res;
-             pow := q^(n*n);
-             total2 := total2 + 2.0*pow;
-	     total1 := total1 + pow*q^n;
-	     res := (total1/total2)^2;
-             n := n+1;
-          >> until  abs(res-res0) < abs(res)*tol;
-       return 4.0*sqrt(q)*res;
-   end;
-
-procedure num_mod!'(q);
-   if abs(q) >= 1.0 then
-      rederr "num_mod': the nome q must satisfy |q| < 1"
-   else begin scalar n, pow, total1, total2, res, res0, tol;
-       tol := 10.0^-(symbolic !:prec!:);
-       total1 := 1.0;
-       total2 := 1.0;
-       res := 1.0;
-       n := 1;
-       
-       repeat <<
-             res0 := res;
-             pow := 2.0*q^(n*n);
-             total2 := total2 + pow;
-	     total1 := total1 + (-1)^n*pow;
-	     res := (total1/total2)^2;
-             n := n+1;
-          >> until  abs(res-res0) < abs(res)*tol;
-       return res;
-   end;
-
-procedure num_ellip1(q);
-   if abs(q) >= 1.0 then
-      rederr "num_ellipK: the nome q must satisfy |q| < 1"
-   else begin scalar n, pow, total, tol;
-       tol := 10.0^-(symbolic !:prec!:);
-       total := 1.0;
-       n := 1;
-
-       repeat <<
-             pow := 2.0*q^(n*n);
-             total := total + pow;
-             n := n+1;
-          >> until  abs(pow) < abs(total)*tol;
-       return total^2/2.0;
-   end;
-
-procedure num_ellipK(q);
-  pi*num_ellip1(q);
-  
-procedure num_ellipK!'(q);
-  -log(q)*num_ellip1(q);
   
 endmodule;
 end;

@@ -66,6 +66,64 @@ f  (x,x ) + 3*f  (x,x )*x
  xx            xy
 
 
+generic_function g(x),h(x);
+
+
+% partial derivatives should now coincide with total derivatives
+% for functions of one variable.
+
+dfp(g()+h(),{x});
+
+
+g  + h
+ x    x
+
+df(g()+h(),x);
+
+
+g (x) + h (x)
+ x       x
+
+dfp(g()*h(),{x,x});
+
+
+g  *h() + 2*g *h  + h  *g()
+ xx          x  x    xx
+
+df(g()*h(),x,x);
+
+
+g  (x)*h() + 2*g (x)*h (x) + h  (x)*g()
+ xx             x     x       xx
+
+% but not in this case
+dfp(g(1)/h(1),{x,x});
+
+
+            2                                                  2
+ g  (1)*h(1)  - 2*g (1)*h (1)*h(1) - h  (1)*g(1)*h(1) + 2*h (1) *g(1)
+  xx               x     x            xx                   x
+----------------------------------------------------------------------
+                                    3
+                                h(1)
+
+df(g(1)/h(1),x,x);
+
+
+0
+
+% however ...
+sub(x=1, df(g()/h(),x,x));
+
+
+            2                                                  2
+ g  (1)*h(1)  - 2*g (1)*h (1)*h(1) - h  (1)*g(1)*h(1) + 2*h (1) *g(1)
+  xx               x     x            xx                   x
+----------------------------------------------------------------------
+                                    3
+                                h(1)
+
+
 % using a generic fucntion with commutative derivatives
 generic_function u(x,y);
 
@@ -559,11 +617,3 @@ sys := {6*(w(3) + w(2) + w(1) - 1),
 
 
 end;
-
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 31 ms
-
-End of Lisp run after 0.03+0.04 seconds
-real 0.24
-user 0.01
-sys 0.04
