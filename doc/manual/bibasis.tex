@@ -3,18 +3,18 @@
 \subsection{Introduction}
 
 Involutive polynomial bases are redundant Gr\"obner bases of special structure with some additional useful features in comparison 
-with reduced Gr\"obner bases~\cite{GB'98}. Apart from numerous applications of involutive bases~\cite{Seiler'10} the 
-involutive algorithms~\cite{Gerdt'05} provide an efficient method for computing reduced Gr\"obner bases. A reduced Gr\"obner basis 
+with reduced Gr\"obner bases~\cite{Gerdt:98}. Apart from numerous applications of involutive bases~\cite{Seiler:2010} the 
+involutive algorithms~\cite{Gerdt:2005} provide an efficient method for computing reduced Gr\"obner bases. A reduced Gr\"obner basis 
 is a well-determined subset of an involutive basis and can be easily extracted from the latter without any extra reductions. 
 All this takes place not only in rings of commutative polynomials but also in Boolean rings.
 
 Boolean Gr\"obner basis already have already revealed their value and usability in  practice. The first impressive demonstration
 of practicability of Boolean Gr\"obner bases was breaking the first HFE (Hidden Fields Equations) challenge in the public
-key cryptography done in~\cite{Faugere'03} by computing a Boolean Gr\"obner basis for the system of quadratic
+key cryptography done in~\cite{Faugere:2003} by computing a Boolean Gr\"obner basis for the system of quadratic
 polynomials in 80 variables. Since that time the Boolean Gr\"obner bases application area has widen drastically and nowadays there 
 is also a number of quite successful examples of using Gr\"obner bases for solving SAT problems.
 
-During our research we had developed~\cite{ISSAC'08, PaCS'08, PCA'09} Boolean involutive algorithms based on Janet and Pommaret 
+During our research we had developed~\cite{Gerdt:2008, Gerdt:2008a, Gerdt:2010} Boolean involutive algorithms based on Janet and Pommaret 
 divisions and applied them to computation of Boolean Gr\"obner bases. Our implementation of both divisions has experimentally 
 demonstrated computational superiority of the Pommaret division implementation. This package BIBASIS is the result
 of our thorough research in the field of Boolean Gr\"obner bases. BIBASIS implements the involutive algorithm based on Pommaret 
@@ -46,7 +46,7 @@ zero Boolean function 0.
 
 \subsection{Pommaret Involutive Algorithm}
 
-Detailed description of involutive algorithm can found in~\cite{Gerdt'05}. Here we note that result of both
+Detailed description of involutive algorithm can found in~\cite{Gerdt:2005}. Here we note that result of both
 involutive and Buhberger's algorithms depend on chosen monomial ordering. At that the ordering must be
 admissible, i.e.
 $$
@@ -67,7 +67,7 @@ That the reason why one cannot apply the Buhberger's algorithm directly in a Boo
 $\mathbb{F}_2[\mathbf{X}]$ and {\em the field binomials} $x_1^2+x_1,\ldots,x_n^2+x_n$.
 
 The involutive algorithm based on Janet division has the same disadvantage unlike the Pommaret division algorithm as shown 
-in~\cite{ISSAC'08}. The Pommaret division  algorithm can be applied directly in a Boolean ring and admits effective data 
+in~\cite{Gerdt:2008}. The Pommaret division  algorithm can be applied directly in a Boolean ring and admits effective data 
 structures for monomial representation.
 
 \subsection{BIBASIS Package}

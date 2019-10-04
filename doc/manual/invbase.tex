@@ -2,7 +2,7 @@
 \subsection{Introduction}
 Involutive bases are a new tool for solving problems in connection with
 multivariate polynomials, such as solving systems of polynomial equations
-and analyzing polynomial ideals, see \cite{Lille}. An involutive basis of
+and analyzing polynomial ideals, see \cite{ZharkovBlinkov:93}. An involutive basis of
 polynomial ideal is nothing but a special form of a redundant Gr\"obner
 basis. The construction of involutive bases reduces the problem of solving
 polynomial systems to simple linear algebra.\\
@@ -10,9 +10,9 @@ The INVBASE package
 \footnote{The REDUCE implementation has been supported by
 the Konrad-Zuse-Zentrum Berlin}
 calculates involutive bases of polynomial ideals
-using an algorithm described in \cite{Lille}
+using an algorithm described in \cite{ZharkovBlinkov:93}
 which may be considered as an alternative to
-the well-known Buchberger algorithm \cite{Buch}.
+the well-known Buchberger algorithm \cite{Buchberger:85}.
 The package can be used over
 a variety of different coefficient domains, and for different variable
 and term orderings.\\
@@ -22,7 +22,7 @@ as well as for positive-dimensional ideals in generic form. However,
 the algorithm does not terminate for ``sparse'' positive-dimensional systems.
 In order to stop the process we use the maximum degree
 bound for the Gr\"obner bases of generic ideals in the total-degree
-term ordering established in \cite{Laz}.
+term ordering established in \cite{Lazard:83}.
 In this case, it is reasonable
 to call the GROEBNER package with the answer of INVBASE as input
 information in order to compute the reduced Gr\"obner basis under the
@@ -121,7 +121,7 @@ h :=\{& &3976*x + 37104*z^6 - 600*z^5 + 2111*z^4 +  \\
      75*z^3 - 342*z^2 + 266*z - 60 \quad \}
 \end{eqnarray*}
 In the case of ``sparse'' positive-dimensioned system
-when the involutive basis in the sense of \cite{Lille} does not exist,
+when the involutive basis in the sense of \cite{ZharkovBlinkov:93} does not exist,
 you get the error message $$ *****\> MAXIMUM \> DEGREE \> BOUND \>
 EXCEEDED $$ The resulting list of polynomials which is not an involutive
 basis is stored in the share variable INVTEMPBASIS. In this case

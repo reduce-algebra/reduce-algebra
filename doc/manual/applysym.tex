@@ -18,7 +18,7 @@ transformations of ODEs / PDEs and is applied if similarity
 and symmetry variables have been found.
 The program \texttt{APPLYSYM} is used in connection with the program
 \texttt{LIEPDE} for formulating and solving the conditions for point- and
-contact symmetries which is described in \cite{LIEPDE}.
+contact symmetries which is described in \cite{Wolf:93}.
 The actual problem solving is done in all these programs through a call
 to the package \texttt{CRACK} for solving overdetermined PDE-systems.
 
@@ -28,12 +28,12 @@ The investigation of infinitesimal symmetries of differential equations
 (DEs) with computer algebra programs attrackted considerable attention
 over the last years. Corresponding programs are available in all
 major computer algebra systems. In a review article by W.\ Hereman
-\cite{WHer} about 200 references are given, many of them describing related
+\cite{Hereman:95} about 200 references are given, many of them describing related
 software.
 
 One reason for the popularity of the symmetry method
 is the fact that Sophus Lie's method
-\cite{lie1},\cite{lie2} is the most widely
+\cite{Lie:1880,Lie:1967} is the most widely
 used method for computing exact solutions of non-linear DEs. Another reason is
 that the first step in this
 method, the formulation of the determining equation for the generators
@@ -43,7 +43,7 @@ variables. Also, the formulation of the conditions is a straight forward
 task involving only differentiations and basic algebra - an ideal task for
 computer algebra systems. Less straight forward is the automatic solution
 of the symmetry conditions which is the strength of the program \texttt{LIEPDE}
-(for a comparison with another program see \cite{LIEPDE}).
+(for a comparison with another program see \cite{Wolf:93}).
 
 The novelty described in this paper are programs aiming at
 the final third step: Applying symmetries for
@@ -85,7 +85,7 @@ must be forminvariant against infinitesimal transformations
 in first order of $\varepsilon.$ To transform the equations (\ref{PDEs})
 by (\ref{tran}), derivatives of $y^\alpha$ must be transformed, i.e. the part
 linear in $\varepsilon$ must be determined. The corresponding formulas are
-(see e.g. \cite{Olv}, \cite{Step})
+(see e.g. \cite{Olver:89,Stephani:89})
 \begin{eqnarray}
 \tilde{y}^\alpha_{j_1\ldots j_k} & = &
 y^\alpha_{j_1\ldots j_k} + \varepsilon
@@ -119,12 +119,12 @@ For point symmetries, $\xi^i, \eta^\alpha$ are functions of $x^j,
 y^\beta$ and for contact symmetries they depend on $x^j, y^\beta$ and
 $y^\beta_k.$ We restrict ourself to point symmetries as those are the only
 ones that can be applied by the current version of the program \texttt{APPLYSYM}
-(see below). For literature about generalized symmetries see \cite{WHer}.
+(see below). For literature about generalized symmetries see \cite{Hereman:95}.
 
 Though the formulation of the symmetry conditions (\ref{sbed1}),
 (\ref{sbed2}), (\ref{recur})
 is straightforward and handled in principle by all related
-programs \cite{WHer}, the computational effort to formulate
+programs \cite{Hereman:95}, the computational effort to formulate
 the conditions (\ref{sbed1}) may cause problems if
 the number of $x^i$ and $y^\alpha$ is high.  This can
 partially be avoided if at first only a few conditions are formulated
@@ -132,9 +132,9 @@ and solved such that the remaining ones are much shorter and quicker to
 formulate.
 
 A first step in this direction is to investigate one PDE $H_A = 0$
-after another, as done in \cite{Cham}.  Two methods to partition the
+after another, as done in \cite{Champagne:91}.  Two methods to partition the
 conditions for a single PDE are described by Bocharov/Bronstein
-\cite{Alex} and Stephani \cite{Step}.
+\cite{Bocharov:89} and Stephani \cite{Stephani:89}.
 
 In the first method only those terms of the symmetry condition
 $X H_A = 0$ are calculated which contain 
@@ -180,7 +180,7 @@ so far.
 Still algorithms are used successfully to simplify the PDE-system by
 calculating
 its standard normal form and by integrating exact PDEs
-if they turn up in this simplification process \cite{LIEPDE}.
+if they turn up in this simplification process \cite{Wolf:93}.
 One problem in this respect, for example,
 concerns the optimization of the symbiosis of both algorithms. By that we
 mean the ranking of priorities between integrating, adding integrability
@@ -197,7 +197,7 @@ solution to formulate and solve the next subset of conditions as
 described in the previous subsection. Also, \texttt{LIEPDE} can work on
 DEs that contain parametric constants and parametric functions. An
 ansatz for the symmetry generators can be formulated. For more details
-see \cite{LIEPDE} or \cite{WoBra}.
+see \cite{Wolf:93} or \cite{Brand:92}.
 
 The procedure \texttt{LIEPDE} is called through \\
 \texttt{LIEPDE(\textit{problem,symtype,flist,inequ}); } \\
@@ -998,7 +998,7 @@ equation
 \[ 0 = F\left(\frac{x+y}{e^z},e^z(x-y)\right) \]
 defines the general solution for $z$. \\
 {\em Example 3:}\\
-For the linear inhomogeneous PDE (3.8) from \cite{KamkePDE}
+For the linear inhomogeneous PDE (3.8) from \cite{Kamke:Vol2}
 \[ 0 = x w,_x + (y+z)(w,_y - w,_z), \;\;\;\;\mbox{for}\;\;\;\;w=w(x,y,z)\]
 \texttt{QUASILINPDE} returns the result 
 that for an arbitrary function $F,$ the equation

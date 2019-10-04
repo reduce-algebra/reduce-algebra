@@ -80,12 +80,12 @@ several common special functions, namely:
 
 All algorithms whose sources are uncredited are culled from series or
 expressions found in the Dover Handbook of Mathematical
-Functions\cite{Abramowitz:72}.
+Functions\cite{AbramowitzStegun:72}.
 
 There is a nice collection of plot calls for special functions
 in the file \texttt{specplot.tst} in the subfolder \texttt{plot} of the packages folder.
 These examples will reproduce a number of well-known pictures from
-\cite{Abramowitz:72}.
+\cite{AbramowitzStegun:72}.
 
 \subsection{Simplification and Approximation}
 
@@ -318,7 +318,7 @@ trivial relationship with the Bernoulli numbers; and for other arguments the
 approach is either (for larger arguments) to take the first few primes in
 the standard over-all-primes expansion, and then continue with the defining
 series with natural numbers not divisible by these primes, or (for smaller
-arguments) to use a fast-converging series obtained from \cite{Bender:78}.
+arguments) to use a fast-converging series obtained from \cite{BenderOrszag:78}.
 
 There are no rules for differentiation or integration of $\zeta$.
 
@@ -374,7 +374,7 @@ This package also provides some support for other functions, in the form
 of algebraic simplifications:
 \begin{itemize}
 \item The Beta function, a variation upon the $\Gamma$
-function\cite{Abramowitz:72}, with the binary operator \f{Beta};
+function\cite{AbramowitzStegun:72}, with the binary operator \f{Beta};
 \item The Struve \textbf{H} and \textbf{L} functions, through the binary
 operators \f{StruveH} and \f{StruveL}, for which manipulations are
 provided to handle special cases, simplify to more readily handled
@@ -458,7 +458,7 @@ and Euler and Bernoulli Polynomials.
 The names of the \REDUCE\  operator are built by adding a P
 to the name
 of the polynomials, e.g. \f{EulerP} implements the Euler polynomials.
-Most definitions are equivalent to \cite{Abramowitz:72}, except
+Most definitions are equivalent to \cite{AbramowitzStegun:72}, except
 for the ternary (associated) Legendre Polynomials.
 
 \begin{verbatim}
@@ -564,7 +564,7 @@ For $m < 0$ one has:-
 The implementation of the functions in this and the next two subsections have, in 2019,
 been substantially revised by Alan Barnes. This is to bring the
 notation more into line with standard (British) texts such as Whittaker
-\& Watson \cite{Whittaker:69} and Lawden \cite{Lawden:89} and also to correct
+\& Watson \cite{WhittakerWatson:69} and Lawden \cite{Lawden:89} and also to correct
 a number of errors and omissions. These changes and additions will be itemised in the relevant
 sections below.
 
@@ -827,13 +827,13 @@ a Jacobi elliptic function and is essentially the inverse of \f{nome2mod}.
 
 Lambert's W function is the inverse of the function  $w*e^w$.
 Therefore it is an important contribution for the solve package.
-The function is studied extensively in \cite{Corless:92}.  
+The function is studied extensively in \cite{HareCorless:92}.  
 The current implementation will compute the principal branch in
 ROUNDED mode only.
 
 \subsection{3j symbols and Clebsch-Gordan Coefficients}
 The operators \f{ThreeJSymbol}, \f{Clebsch\_Gordan} are defined like 
-in \cite{Landolt:68} or \cite{Edmonds:57}. ThreeJSymbol expects as arguments
+in \cite{LandoltBoernstein:68} or \cite{Edmonds:57}. ThreeJSymbol expects as arguments
 three lists of values \{$j_i,m_i$\}, e.g.
 
 \begin{verbatim}
@@ -843,7 +843,7 @@ Clebsch_Gordan({2,0},{2,0},{2,0});
 
 \subsection{6j symbols }
 The operator \f{SixJSymbol} is defined like
-in \cite{Landolt:68} or \cite{Edmonds:57}.
+in \cite{LandoltBoernstein:68} or \cite{Edmonds:57}.
 SixJSymbol expects two lists of values \{$j_1,j_2,j_3$\} and
  \{$l_1,l_2,l_3$\} as arguments, e.g.
 
@@ -854,7 +854,7 @@ SixJSymbol({7,6,3},{2,4,6});
 In the current implementation of the SixJSymbol, there is only a limited
 reasoning about the minima and maxima of the summation using
 the INEQ package, such that in most
-cases the special 6j-symbols (see e.g. \cite{Landolt:68})
+cases the special 6j-symbols (see e.g. \cite{LandoltBoernstein:68})
 will not be found.
 
 

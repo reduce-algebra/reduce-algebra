@@ -2,10 +2,10 @@
 \subsection{Description}
 
 The method of Gr{\"o}bner bases in commutative polynomial rings introduced by
-Buchberger (e.g.~\cite{Buchberger}) is a well-known and very important tool
+Buchberger (e.g.~\cite{Buchberger:85}) is a well-known and very important tool
 in polynomial ideal theory, for example in solving the ideal membership
 problem. XIDEAL extends the method to exterior algebras using
-algorithms from \cite{HT} and \cite{Apel}.
+algorithms from \cite{HartleyTuckey:93} and \cite{Apel:92}.
 
 There are two main departures from the commutative polynomial case. First,
 owing to the non-commutative product in exterior algebras, ideals are no
@@ -14,7 +14,7 @@ left and right ideals. Secondly, because there are zero divisors, confluent
 reduction relations are no longer sufficient to solve the ideal membership
 problem: a unique normal form for every polynomial does not guarantee that
 all elements in the ideal reduce to zero. This leads to two possible
-definitions of Gr{\"o}bner bases as pointed out by Stokes \cite{Stokes}.
+definitions of Gr{\"o}bner bases as pointed out by Stokes \cite{Stokes:90}.
 
 XIDEAL constructs Gr{\"o}bner bases for solving the left ideal membership
 problem: Gr{\"o}bner left ideal bases or GLIBs. For graded ideals, where each
@@ -25,7 +25,7 @@ identical. In this case, XIDEAL is able to save time by truncating the
 Gr{\"o}bner basis at some maximum degree if desired.
 
 XIDEAL uses the exterior calculus package EXCALC of E.~Schr{\"u}fer
-\cite{EXCALC} to provide the exterior algebra definitions. EXCALC is loaded
+\cite{Schruefer:85} to provide the exterior algebra definitions. EXCALC is loaded
 automatically with XIDEAL.
 % The basis 1-forms for the exterior algebra
 % are automatically extracted from the input. Consequently, each expression

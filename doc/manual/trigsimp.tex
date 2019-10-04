@@ -79,7 +79,7 @@ trigsimp(sin(x)*cos(y), combine);
             2
 \end{verbatim}
 With \texttt{compact}, the \REDUCE{} operator \texttt{compact}
-\cite{hearns} is applied to \texttt{f}.  This often leads to a simple
+\cite{Hearn:COMPACT} is applied to \texttt{f}.  This often leads to a simple
 form, but in contrast to \texttt{expand} one does not get a normal
 form. For example:
 \begin{verbatim}
@@ -207,7 +207,7 @@ trigfactorize(sin(x), x/2);
 {{2,1},{sin(---),1},{cos(---),1}}
              2            2
 \end{verbatim}
-If the polynomial is not coordinated or balanced \cite{art}, the
+If the polynomial is not coordinated or balanced \cite{Roach:Talk}, the
 output will equal the input.  In this case, changing the value for
 \texttt{x} can help to find a factorization, e.g.
 \begin{verbatim}
@@ -248,7 +248,7 @@ trigfactorize(1+cos(x), x/2);
 The operator \texttt{triggcd} is essentially an application of the
 algorithm behind \texttt{trigfactorize}.  With its help the user can
 find the greatest common divisor of two trigonometric or hyperbolic
-polynomials.  It uses the method described in \cite{art}.  The syntax
+polynomials.  It uses the method described in \cite{Roach:Talk}.  The syntax
 is \texttt{triggcd(p,q,x)}, where \texttt{p} and \texttt{q} are the
 trigonometric polynomials and \texttt{x} is the argument to use.  For
 example:

@@ -13,7 +13,7 @@ of the Gosper algorithm.}
 and Zeilberger algorithms for indefinite, and definite summation of
 hypergeometric terms, respectively. Further, extensions of these algorithms
 given by the first author are covered. An expression $a_k$ is called a 
-{\sl hypergeometric term} (or {\sl closed form}),
+\textsl{hypergeometric term} (or \textsl{closed form}),
 if $a_{k}/a_{k-1}$ is a rational function with respect to $k$.
 Typical hypergeometric terms are ratios of products of powers, factorials, 
 $\Gamma$ function terms, binomial coefficients, and shifted factorials 
@@ -26,15 +26,15 @@ that are rational-linear in their arguments.
 
 \subsection{Gosper Algorithm}
 
-The Gosper algorithm \cite{Gos} is a {\sl decision procedure}, that
+The Gosper algorithm \cite{Gosper:78} is a \textsl{decision procedure}, that
 decides by algebraic calculations whether or not a given hypergeometric term
 $a_k$ has a hypergeometric term antidifference $g_k$, i.\ e.\ 
 $g_{k}-g_{k-1}=a_k$ with rational $g_k/g_{k-1}$, 
 and returns $g_k$ if the procedure is successful, in which
-case we call $a_k$ {\sl Gosper-summable}. Otherwise
-{\sl no hypergeometric term antidifference exists}. Therefore
+case we call $a_k$ \textsl{Gosper-summable}. Otherwise
+\textsl{no hypergeometric term antidifference exists}. Therefore
 if the Gosper algorithm does not return a closed form solution,
-it has {\sl proved} that no such solution exists, an information
+it has \textsl{proved} that no such solution exists, an information
 that may be quite useful and important. 
 The Gosper algorithm is the discrete analogue of the Risch algorithm
 for integration in terms of elementary functions.
@@ -45,7 +45,7 @@ denoted by
 g_k=\sum\nolimits_k a_k
 \;.
 \]
-Finding $g_k$ given $a_k$ is called {\sl indefinite summation}.
+Finding $g_k$ given $a_k$ is called \textsl{indefinite summation}.
 The antidifference operator $\Sigma$ is the inverse of the downward 
 difference operator $\nabla a_k=a_{k}-a_{k-1}$. There is an analogous
 summation theory corresponding to the upward difference operator 
@@ -79,11 +79,11 @@ computer used.
 
 \subsection{Zeilberger Algorithm}
 
-The (fast) Zeilberger algorithm \cite{Zei2}--\cite{Zei3}
-deals with the {\sl definite summation} of 
+The (fast) Zeilberger algorithm \cite{Zeilberger:90}--\cite{Zeilberger:91}
+deals with the \textsl{definite summation} of 
 hypergeometric terms. Zeilberger's paradigm is to find (and return)
 a linear homogeneous recurrence equation with polynomial coefficients
-(called {\sl holonomic equation}) for an {\sl infinite sum}
+(called \textsl{holonomic equation}) for an \textsl{infinite sum}
 \[
 s(n)=\sum_{k=-\infty}^{\infty} f(n,k)
 \;,
@@ -112,7 +112,7 @@ this information can be used for identification purposes:
 Any other expression satisfying the same recurrence equation, and the same
 initial values, represents the same function.
 
-Note that a {\sl definite sum} $\sum\limits_{k=m_1}^{m_2} f(n,k)$ is an
+Note that a \textsl{definite sum} $\sum\limits_{k=m_1}^{m_2} f(n,k)$ is an
 infinite sum if $f(n,k)=0$ for $k<m_1$ and $k>m_2$.
 This is often the case, an example of which is the sum (\ref{eq:nchoosek})
 considered above, for which the hypergeometric recurrence equation
@@ -126,9 +126,9 @@ not the case, the situation is much more difficult, and it is therefore
 quite remarkable and non-obvious
 that Zeilberger's method is just a clever application of Gosper's algorithm.
 
-Our implementation is mainly based on \cite{Koornwinder} and \cite{Koepf}. 
-More examples can be found in \cite{PS}, \cite{Strehl2}, \cite{Wil1},
-and \cite{Wilf} many of which are contained in the test file 
+Our implementation is mainly based on \cite{Koornwinder:93} and \cite{Koepf:94b}. 
+More examples can be found in \cite{PauleSchorn:95}, \cite{Strehl:93}, \cite{Wilf:90},
+and \cite{Wilf:93} many of which are contained in the test file 
 {\tt zeilberg.tst}.
 
 \subsection{\REDUCE{} operator {\tt GOSPER}}
@@ -168,7 +168,7 @@ Example:
  2   *factorial(k + 1)*factorial(k)
 \end{verbatim}
 }\noindent
-This solves a problem given in SIAM Review (\cite{SR}, Problem 94--2) 
+This solves a problem given in SIAM Review (\cite{OverhauserKim:94}, Problem 94--2) 
 where it was asked to determine the infinite sum
 \[
 S=\lim_{n\rightarrow\infty} S_n
@@ -234,7 +234,7 @@ for the fact that $H_k$ does not possess a closed form evaluation:
 \end{verbatim}
 }\noindent
 The following code gives the solution to a summation problem proposed in 
-Gosper's original paper \cite{Gos}. Let
+Gosper's original paper \cite{Gosper:78}. Let
 \[
 f_k=\prod_{j=1}^k (a+b\,j+c\,j^2)
 \quad\quad\mbox{and}\quad\quad
@@ -288,19 +288,19 @@ and for analogous expressions of higher degree polynomials.
 \subsection{\REDUCE{} operator {\tt EXTENDED\_GOSPER}}
 \ttindex{EXTENDED\_GOSPER}
 The {\tt extended\_gosper} operator is an implementation of an extended
-version of Gosper's algorithm given by Koepf \cite{Koepf}.
+version of Gosper's algorithm given by Koepf \cite{Koepf:94b}.
 \begin{itemize}
 \item
 {\tt extended\_gosper(a,k)} determines an antidifference $g_k$ of $a_k$
 whenever there is a number $m$ such that $h_{k}-h_{k-m}=a_k$, and $h_k$ is an
-{\sl $m$-fold hypergeometric term}, i.\ e.
+\textsl{$m$-fold hypergeometric term}, i.\ e.
 \[
 h_{k}/h_{k-m}\quad\mbox{is a rational function with respect to $k$.}
 \]
 If it does not return a solution, then such a solution does not exist.
 \item
 {\tt extended\_gosper(a,k,m)} 
-determines an {\sl $m$-fold antidifference} $h_k$ of $a_k$,
+determines an \textsl{$m$-fold antidifference} $h_k$ of $a_k$,
 i.\ e.\ $h_{k}-h_{k-m}=a_k$, if it is an $m$-fold hypergeometric term.
 \end{itemize}
 Examples:
@@ -357,10 +357,10 @@ A simple example deals with Equation (\ref{eq:nchoosek})%
 2*sum(n - 1) - sum(n)
 \end{verbatim}
 }\noindent
-The whole {\sl hypergeometric database} of the {\sl
-Vandermonde, Gau{\ss}, Kummer, Saalsch\"utz, Dixon, Clausen} and {\sl Dougall
-identities} (see \cite{Wilf}), and many more identities (see e.\ g.\
-\cite{Koepf}), can be obtained using {\tt sumrecursion}. 
+The whole \textsl{hypergeometric database} of the {\sl
+Vandermonde, Gau{\ss}, Kummer, Saalsch\"utz, Dixon, Clausen} and \textsl{Dougall
+identities} (see \cite{Wilf:93}), and many more identities (see e.\ g.\
+\cite{Koepf:94b}), can be obtained using {\tt sumrecursion}. 
 As examples, we consider the difficult cases of Clausen and Dougall:%
 
 {\small
@@ -484,12 +484,12 @@ and finally check the initial conditions:
 
 The {\tt extended\_sumrecursion} operator is an implementation 
 of an extension of the (fast) Zeilberger algorithm given by Koepf
-\cite{Koepf}.
+\cite{Koepf:94b}.
 \begin{itemize}
 \item
 {\tt extended\_sumrecursion(f,k,n,m,l)} determines a holonomic recurrence 
 equation for ${\tt sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)$ 
-with respect to $n$ if $f(n,k)$ is an {\sl $(m,l)$-fold hypergeometric term} 
+with respect to $n$ if $f(n,k)$ is an \textsl{$(m,l)$-fold hypergeometric term} 
 with respect to $(n,k)$, i.\ e.\
 \[
 \frac{F(n,k)}{F(n-m,k)}
@@ -541,14 +541,14 @@ sum(n - 2) - sum(n)
 \end{verbatim}
 }\noindent
 In the last example, the progam chooses $m=2$, and $l=1$ to derive the
-resulting recurrence equation (see \cite{Koepf}, Table 3, (1.3)).
+resulting recurrence equation (see \cite{Koepf:94b}, Table 3, (1.3)).
 
 
 \subsection{\REDUCE{} operator {\tt HYPERRECURSION}}
 \ttindex{HYPERRECURSION}\ttindex{HYPERTERM}
 
 Sums to which the Zeilberger algorithm applies, in general are
-special cases of the {\sl generalized hypergeometric function}
+special cases of the \textsl{generalized hypergeometric function}
 \[
 _{p}F_{q}\left.\left(\begin{array}{cccc}
 a_{1},&a_{2},&\cdots,&a_{p}\\
@@ -644,7 +644,7 @@ in connection with hypergeometric terms.
 The operator {\tt sumrecursion} can also be used to 
 obtain three-term recurrence equations for systems of orthogonal polynomials
 with the aid of known hypergeometric representations. By
-(\cite{NSU}, (2.7.11a)), the discrete Krawtchouk polynomials $k_n^{(p)}(x,N)$
+(\cite{NikiforovUvarovSuslov:91}, (2.7.11a)), the discrete Krawtchouk polynomials $k_n^{(p)}(x,N)$
 have the hypergeometric representation
 \[
 k_n^{(p)}(x,N)=
@@ -715,7 +715,7 @@ is the list of upper parameters, and
 is the list of lower parameters depending on $n$. The result is given as a 
 hypergeometric term with respect to $n$.  
 
-If the result is a list of length $m$, we call it $m$-{\sl fold symmetric},
+If the result is a list of length $m$, we call it $m$-\textsl{fold symmetric},
 which is to be interpreted as follows:
 Its $j^{th}$ part is the solution valid for all $n$ of the form $n=mk+j-1
 \;(k\in\mathbb{N}_0)$.
@@ -723,7 +723,7 @@ In particular, if the resulting list contains two terms, then
 the first part is the solution for even $n$, and the second part is the 
 solution for odd $n$.
 \end{itemize}
-Examples \cite{Koepf}:
+Examples \cite{Koepf:94b}:
 
 {\small
 \begin{verbatim}
@@ -782,7 +782,7 @@ Here are some $m$-fold symmetric results:
  0}
 \end{verbatim}
 }\noindent
-These results correspond to the formulas (compare \cite{Koepf})
+These results correspond to the formulas (compare \cite{Koepf:94b})
 \[
 _3 F_2\left.
 \!\!
@@ -973,7 +973,7 @@ If you set
 48: on zb_trace;
 \end{verbatim}
 }\noindent
-tracing is enabled, and you get intermediate results, see \cite{Koepf}. 
+tracing is enabled, and you get intermediate results, see \cite{Koepf:94b}. 
 
 Example for the Gosper algorithm:
 
@@ -1123,7 +1123,7 @@ corresponding to the representation
 g_k=\frac{q_{k+1}}{p_k}\,f_k\,a_k
 \;,
 \]
-see \cite{Gos}. Examples:
+see \cite{Gosper:78}. Examples:
 
 {\small
 \begin{verbatim}
@@ -1163,7 +1163,7 @@ see \cite{Gos}. Examples:
 If a {\tt sumrecursion} command is issued, and if the Zeilberger
 algorithm is successful, then the variable 
 {\tt zeilberger\_representation} is set to the final Gosper
-representation used, see \cite{Koornwinder}.
+representation used, see \cite{Koornwinder:93}.
 \end{itemize}
 
 \subsection{Messages}

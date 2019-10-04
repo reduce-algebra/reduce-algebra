@@ -1,6 +1,6 @@
 
 \subsection{Introduction}
-This package is an implementation of a new algorithm proposed by D.J. Jeffrey and A.D. Rich ~\cite{Jeff} to remove "spurious" discontinuities from integrals. Their paper focuses on the Weirstrass substitution, $u=\tan(x/2)$, currently used in conjunction with the Risch algorithm in most computer algebra systems to evaluate trigonometric integrals. Expressions obtained using this substitution sometimes contain discontinuities, which limit the domain over which the expression is correct. The algorithm presented finds a better expression, in the sense that it is continous on wider intervals whilst still being an anti derivative of the integrand.
+This package is an implementation of a new algorithm proposed by D.J. Jeffrey and A.D. Rich ~\cite{JeffreyRich:94} to remove "spurious" discontinuities from integrals. Their paper focuses on the Weirstrass substitution, $u=\tan(x/2)$, currently used in conjunction with the Risch algorithm in most computer algebra systems to evaluate trigonometric integrals. Expressions obtained using this substitution sometimes contain discontinuities, which limit the domain over which the expression is correct. The algorithm presented finds a better expression, in the sense that it is continous on wider intervals whilst still being an anti derivative of the integrand.
 
 \subsubsection{Example}
  Consider the following problem:

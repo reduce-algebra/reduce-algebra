@@ -45,7 +45,7 @@
   Netherlands.
 
   The package is part of the official \REDUCE distribution at Sourceforge
-  \cite{red}, but it is also distributed on the Geometry of Differential
+  \cite{Reduce:Obtaining}, but it is also distributed on the Geometry of Differential
   Equations web site \url{http://gdeq.org} (GDEQ for short).
 
   We start from an installation guide for Linux and Windows. Then we focus on
@@ -53,9 +53,9 @@
   laws, Hamiltonian and recursion operators for polynomial differential
   equations. All programs discussed here are shipped together with this manual
   and can be found at the GDEQ website. The mathematical theory on which
-  computations are based can be found in refs.~\cite{Many,KKV}.
+  computations are based can be found in refs.~\cite{Krasilshchik:99,KerstenKrasilshchikVerboretsky:2004}.
 
-  \textbf{NOTE:} The new \REDUCE package CDE \cite{Vit}, also distributed on
+  \textbf{NOTE:} The new \REDUCE package CDE \cite{Vitolo:CDE}, also distributed on
   \url{http://gdeq.org}, simplifies the use of \cdiff and extends its
   capabilities. Interested users may read the manual of CDE where the same
   computations described here for \cdiff are done in a simpler way, and further
@@ -75,17 +75,17 @@ Initially, the development of the \cdiff packages was started by Gragert and
 Kersten for symmetry computations in DEs, then they have been partly rewritten
 and extended by Roelofs and Post. The \cdiff packages consist of 3 program
 files plus a utility file; only the main three files are documented
-\cite{svec,integ,tools}. The \cdiff packages, as well as a copy of the
+\cite{Roelofs:92,Roelofs:92a,Post:96}. The \cdiff packages, as well as a copy of the
 documentation (including this manual) and several example programs, can be
-found both at Sourceforge in the sources of \REDUCE \cite{red} and in the
+found both at Sourceforge in the sources of \REDUCE \cite{Reduce:Obtaining} and in the
 Geometry of Differential Equations (GDEQ for short) web site \cite{gdeq}. The
 name of the packages, \cdiff, comes from the fact that the package is aimed at
 defining differential operators in total derivatives and do computations
 involving them.  Such operators are called \emph{$\mathcal{C}$-differential
-  operators} (see \cite{Many}).
+  operators} (see \cite{Krasilshchik:99}).
 
 The main motivation for writing this manual was that \REDUCE 3.8 recently became
-free software, and can be downloaded here \cite{red}. For this reason, we are
+free software, and can be downloaded here \cite{Reduce:Obtaining}. For this reason, we are
 able to make our computations accessible to a wider public, also thanks to the
 inclusion of \cdiff in the official \REDUCE distribution. The readers are
 warmly invited to send questions, comments, etc., both on the computations and
@@ -140,7 +140,7 @@ official \REDUCE distribution and can be also downloaded at the GDEQ website
   "program.red";} at the \REDUCE prompt, as explained above.
 
 \textbf{Remark.} The mathematical theories on which the computations are based
-can be found in \cite{Many,KKV}.
+can be found in \cite{Krasilshchik:99,KerstenKrasilshchikVerboretsky:2004}.
 
 \subsubsection{Higher symmetries}\label{sec:higher-symmetries}
 
@@ -273,7 +273,7 @@ We now give the equation in the form one of the derivatives equated to a
 right-hand side expression. The left-hand side derivative is called
 \emph{principal}, and the remaining derivatives are called
 \emph{parametric}\footnote{This terminology dates back to Riquier, see
-  \cite{Mar}}.  For scalar
+  \cite{Marvan:2009}}.  For scalar
 evolutionary equations with two independent variables internal variables are of
 the type $(t,x,u,u_x,u_{xx},\ldots)$.
 \begin{verbatim}
@@ -458,7 +458,7 @@ In this section we will find (some) local conservation laws for the KdV
 equation $F=u_t-u_{xxx}+uu_x=0$. Concretely, we have to find non-trivial $1$-forms
 $f=f_xdx+f_tdt$ on $F=0$ such that $\bar d f=0$ on $F=0$. ``Triviality'' of
 conservation laws is a delicate matter, for which we invite the reader to have
-a look in \cite{Many}.
+a look in \cite{Krasilshchik:99}.
 
 The files containing this example is \texttt{KdV\_loc-cl\_1.red,
   KdV\_loc-cl\_2.red} and the corresponding results files.
@@ -564,7 +564,7 @@ $u_t=u_{xxx}+uu_x$. Concretely, we have to solve $\bar
 \end{displaymath}
 or, in geometric terminology, find the shadows of symmetries on the
 $\ell^*$-covering of the KdV equation. The reference paper for this type of
-computations is \cite{KKV}.
+computations is \cite{KerstenKrasilshchikVerboretsky:2004}.
 
 The file containing this example is \texttt{KdV\_Ham\_1.red}.
 
@@ -714,7 +714,7 @@ constant, \texttt{c(4)} and \texttt{c(3)}.
 In this section we will show an experimental way to find nonlocal Hamiltonian
 operators for the KdV equation. The word `experimental' comes from the lack of
 a consistent mathematical theory. The result of the computation (without the
-details below) has been published in \cite{KKV}.
+details below) has been published in \cite{KerstenKrasilshchikVerboretsky:2004}.
 
 We have to solve equations of the type \texttt{ddx(ft)-ddt(fx)} as
 in~\ref{sec:local-cons-laws}. The main difference is that we will attempt a
@@ -1060,7 +1060,7 @@ phi1 := (c(3)*(2*ext(9)*sig + ext(6)*v + 2*ext(5)*u
 phi2 := (c(3)*(2*ext(6) + ext(5)*v + ext(3)*v1))/2$
 \end{verbatim}
 There is one more higher local Hamiltonian operator, and a whole hierarchy of
-nonlocal Hamiltonian operators~\cite{KKV}.
+nonlocal Hamiltonian operators~\cite{KerstenKrasilshchikVerboretsky:2004}.
 
 
 \subsubsection{Explosion of denominators and how to avoid it}

@@ -44,10 +44,10 @@ differential equations: higher symmetries, conservation laws, Hamiltonian
 operators and their Schouten bracket, recursion operators. All programs
 discussed here are shipped together with the \cde sources, inside the \REDUCE
 sources. The mathematical theory on which
-computations are based can be found in refs.~\cite{Many,KKV}. We invite the
+computations are based can be found in refs.~\cite{Krasilshchik:99,KerstenKrasilshchikVerboretsky:2004}. We invite the
 interested reader to have a look at the website \cite{gdeq} which contains
-useful reseources in the above mathematical area. A book on integrable systems
-and \cde is currently being written \cite{KVV-book} with more examples and
+useful resources in the above mathematical area. There is also a book on integrable systems
+and \cde \cite{KrasilshchikVerbovetskyVitolo:2017} with more examples and
 more detailed explanations about the mathematical part.
 
 \subsection{Introduction: why \cde?}
@@ -56,7 +56,7 @@ more detailed explanations about the mathematical part.
 \cde is a \REDUCE package for differential-geometric computations for DEs. The
 package aims at defining differential operators in total derivatives and
 computing with them. Such operators are called \emph{$\mathcal{C}$-differential
-  operators} (see \cite{Many}).
+  operators} (see \cite{Krasilshchik:99}).
 
 \cde depends on the \REDUCE package \cdiff for constructing total
 derivatives. \cdiff was developed by Gragert and Kersten for symmetry
@@ -64,15 +64,15 @@ computations in DEs, and later extended by Roelofs and Post.
 
 There are many software packages that can compute symmetries and conservation
 laws; many of them run on Mathematica or Maple. Those who run on \REDUCE were
-written by M.C. Nucci \cite{nucci1,nucci2}, F. Oliveri (\textsc{ReLie},
-\cite{relie}), F. Schwartz (SPDE, \REDUCE official distribution) T. Wolf
-(APPLYSYM and CONLAW in the official \REDUCE\ distribution,
-\cite{wolfcl,wolfsy,wbde,wolfsy0}).
+written by M.~C.~Nucci \cite{Nucci:92,Nucci:96}, F.~Oliveri (\textsc{ReLie},
+\cite{Oliveri:ReLie}), F.~Schwartz (SPDE, \ref{package:SPDE}), T.~Wolf
+(APPLYSYM (\ref{package:APPLYSYM}) and CONLAW in the official \REDUCE\ distribution,
+\cite{Wolf:99d,Wolf:APPLYSYM,Brand:95,Brand:92}).
 
 The development of \cde started from the idea that a computer algebra tool
 for the investigation of integrability-related structures of PDEs still does
 not exist in the public domain. We are only aware of a Mathematica package that
-may find recursion operators under quite restrictive hypotheses \cite{BH10}.
+may find recursion operators under quite restrictive hypotheses \cite{BaldwinHereman:2010}.
 
 \cde is especially designed for computations of integrability-related
 structures (such as Hamiltonian, symplectic and recursion operators) for
@@ -91,7 +91,7 @@ The current version of \cde, 2.0, has the following features:
   differential equations whose solutions are Hamiltonian, symplectic or
   recursion operators. Such equations may be solved by different techniques;
   one of the possibilities is to use CRACK, a \REDUCE package for solving
-  overdetermined systems of PDEs \cite{crack}.
+  overdetermined systems of PDEs \cite{WolfBrand:CRACK}.
 \item \cde can compute linearization (or Fr\'echet derivatives) of vector
   functions and adjoints of differential operators.
 \item \cde is able to compute Schouten brackets between multivectors. This can
@@ -100,7 +100,7 @@ The current version of \cde, 2.0, has the following features:
 \end{enumerate}
 
 At the moment the papers
-\cite{fpv,fpv2,KerstenKrasilshchikVerbovetskyVitolo:HSGP,KKV-SPT-2011,pv,sv}
+\cite{Ferapontov:2014,Ferapontov:2016,KerstenKrasilshchikVerbovetskyVitolo:HSGP,KrasilshchikVerbovetskyVitolo:SPT:2012,PavlovVitolo:2015,SaccomandiVitolo:2014}
 have been written using \cde, and more research by \cde on integrable systems
 is in progress.
 
@@ -114,7 +114,7 @@ interest in the Geometry of Differential Equations. When I started writing \cde
 I was substantially helped by A.C. Norman in understanding many features of
 Reduce which were deeply hidden in the source code and not well
 documented. This also led to writing a manual of Reduce's internals for
-programmers \cite{inside}. Moreover, I'd like to thank the developers of the
+programmers \cite{NormanVitolo:InsideReduce}. Moreover, I'd like to thank the developers of the
 \REDUCE mailing list for their prompt replies with solutions to my problems.
 On the mathematical side, I would like to thank J.S. Krasil'shchik and
 A.M. Verbovetsky for constant support and stimulating discussions which led me
@@ -127,7 +127,7 @@ M.V. Pavlov for many interesting discussions.
 \label{cdesec:jet-space-even}
 
 The mathematical theory for jets of even (\emph{ie} standard) variables and
-total derivatives can be found in \cite{Many,Olv2nd}.
+total derivatives can be found in \cite{Krasilshchik:99,Olver:93}.
 
 Let us consider the space $\mathbb{R}^n\times\mathbb{R}^m$, with coordinates
 $(x^\lambda,u^i)$, $1\leq \lambda\leq n$, $1\leq i\leq m$. We say $x^\lambda$
@@ -281,7 +281,7 @@ expand_td();
 
 \ttindextype{ODD\_VAR}{global variable (CDE)}
 \cde can also compute on jets of supermanifolds. The theory can be found in
-\cite{IVV,KKV,KrVe-JGP-2011}. The input can be organized as follows:
+\cite{IgoninVerbovetskyVitolo:2004,KerstenKrasilshchikVerboretsky:2004,KrasilshchikVerbovetsky:JGP:2011}. The input can be organized as follows:
 \begin{verbatim}
 indep_var:={x,t}$
 dep_var:={u,v}$
@@ -336,7 +336,7 @@ We now give the equation in the form of one or more derivatives equated to
 right-hand side expressions. The left-hand side derivatives are called
 \emph{principal}, and the remaining derivatives are called
 \emph{parametric}\footnote{This terminology dates back to Riquier, see
-  \cite{Mar}}. Parametric coordinates are coordinates on the equation manifold
+  \cite{Marvan:2009}}. Parametric coordinates are coordinates on the equation manifold
 and its differential consequences, and principal coordinates are determined
 by the differential equation and its differential consequences.  For scalar
 evolutionary equations with two independent variables parametric derivatives
@@ -464,12 +464,12 @@ defines a differential equation yields a differential operator in total
 derivatives. This operator can be restricted to the differential equation,
 which may be regarded as a differential constraint; the kernel of the
 restricted operator is the space of all symmetries (including higher or
-generalized symmetries) \cite{Many,Olv2nd}.
+generalized symmetries) \cite{Krasilshchik:99,Olver:93}.
 
 The formal adjoint of the linearization operator yields by restriction to the
 corresponding differential equation a differential operator whose kernel
 contains all characteristic vectors or generating functions of conservation
-laws \cite{Many,Olv2nd}.
+laws \cite{Krasilshchik:99,Olver:93}.
 
 Such operators are examples of $\mathcal{C}$-differential operators. The (still
 incomplete) \REDUCE implementation of the calculus of
@@ -550,7 +550,7 @@ This is the operator
   \sum_{\sigma, i}\pd{F^k}{u^i_\sigma}D_\sigma\varphi^i,
 \end{displaymath}
 where $\varkappa = \{ \varphi \colon J^r(n,m) \to \R^m \}$ is the space of
-\emph{generalized vector fields on jets} \cite{Many,Olv2nd}.
+\emph{generalized vector fields on jets} \cite{Krasilshchik:99,Olver:93}.
 
 Linearization can be extended to an operation that, starting from a
 $k$-$\mathcal{C}$-differential operator, generates a
@@ -598,13 +598,13 @@ This operation can be generalized to
 \cdiffops with $h$ arguments.
 
 There is another important operation between \cdiffops with $h$ arguments: the
-\emph{Schouten bracket} \cite{Many}. We will discuss it in next Subsection, in
-the context of another formalism, where it takes an easier form \cite{KKV}.
+\emph{Schouten bracket} \cite{Krasilshchik:99}. We will discuss it in next Subsection, in
+the context of another formalism, where it takes an easier form \cite{KerstenKrasilshchikVerboretsky:2004}.
 
 \subsection[C-differential operators as superfunctions]{$\mathcal{C}$-differential operators as superfunctions}
 \label{cdesec:mathc-diff-oper-odd}
 
-In the papers \cite{IVV,KKV} (and independently in \cite{getz}) a scheme for
+In the papers \cite{IgoninVerbovetskyVitolo:2004,KerstenKrasilshchikVerboretsky:2004} (and independently in \cite{Getzler:2002}) a scheme for
 dealing with (skew-adjoint) variational multivectors was devised. The idea was
 that operators of the type \eqref{eq:7} could be represented by homogeneous
 vector superfunctions on a supermanifold, where odd coordinates $q^i_\sigma$
@@ -646,7 +646,7 @@ where
   function.
 \end{itemize}
 The above parameters of the operator \texttt{opname} are stored in the property
-list\footnote{The property list is a lisp concept, see \cite{inside} for
+list\footnote{The property list is a lisp concept, see \cite{NormanVitolo:InsideReduce} for
   details.} of the identifier \texttt{opname}. This means that if one would
 like to know how many arguments has the operator \texttt{opname} the answer
 will be the output of the command
@@ -676,7 +676,7 @@ properties, and conversely.
 \label{cdesec:schouten-bracket}
 
 We are interested in the operation of Schouten bracket between
-\emph{variational multivectors} \cite{IVV}. These are differential operators
+\emph{variational multivectors} \cite{IgoninVerbovetskyVitolo:2004}. These are differential operators
 with $h$ arguments in $\varkappa$ with values in densities, and whose image is
 defined up to total divergencies:
 \begin{multline}
@@ -686,7 +686,7 @@ defined up to total divergencies:
   \{J^r(n,m) \to \lambda^nT^*\mathbb{R^n}\}/
   \bar{d}(\{J^r(n,m) \to \lambda^{n-1} T^*\mathbb{R^n}\})
 \end{multline}
-It is known \cite{getz,KKV} that the Schouten bracket between two variational
+It is known \cite{Getzler:2002,KerstenKrasilshchikVerboretsky:2004} that the Schouten bracket between two variational
 multivectors $A_1$, $A_2$ can be computed in terms of their corresponding
 superfunction by the formula
 \begin{equation}\label{eq:11}
@@ -710,7 +710,7 @@ produces a $(h+k-1)$-vector, or a \cdiffop with $h+k-1$ arguments. If we would
 like to check that this multivector is indeed a total divergence, we should
 apply the Euler operator, and check that it is zero. This procedure is
 considerably simpler than the analogue formula with operators (see for example
-\cite{KKV}). All this is computed by \cde:\ttindextype{SCHOUTEN\_BRACKET}{operator (CDE)}
+\cite{KerstenKrasilshchikVerboretsky:2004}). All this is computed by \cde:\ttindextype{SCHOUTEN\_BRACKET}{operator (CDE)}
 
 \begin{verbatim}
 schouten_bracket(biv1,biv2,tv12),
@@ -727,7 +727,7 @@ Currently, \cde supports linearization of a vector function, or a \cdiffop with
 $0$ arguments. The computation is performed in odd coordinates.
 
 Suppose that we would like to linearize the vector function that defines the
-(dispersionless) Boussinesq equation \cite{KKV2}:
+(dispersionless) Boussinesq equation \cite{KerstenKrasilshchikVerboretsky:2006}:
 \begin{equation}
   \label{cdeeq:1}
   \left\{
@@ -860,8 +860,8 @@ total derivatives which are restricted by \cde to the PDE.
 \subsection{Higher symmetries}\label{cdesec:higher-symmetries}
 \label{cdesec:higher-symmetries-1}
 
-In this section we show the computation of (some) higher \cite{Many} (or
-generalized, \cite{Olv2nd}) symmetries of Burgers'equation $B=u_t-u_{xx}+2uu_x=0$.
+In this section we show the computation of (some) higher \cite{Krasilshchik:99} (or
+generalized, \cite{Olver:93}) symmetries of Burgers'equation $B=u_t-u_{xx}+2uu_x=0$.
 
 We provide two ways to solve the equations for higher symmetries. The first
 possibility is to use dimensional analysis. The idea is that one can use the
@@ -1096,9 +1096,9 @@ this yields Galilean boosts.
 \subsection{Solving the problem using CRACK}
 
 \crack is a PDE solver which is devoted mostly to the solution of
-overdetermined PDE systems \cite{wbde,crack}. Several mathematical problems
+overdetermined PDE systems \cite{Brand:95,WolfBrand:CRACK}. Several mathematical problems
 have been solved by the help of \crack, like finding symmetries
-\cite{wolfsy,wolfsy0} and conservation laws \cite{wolfcl}. The aim of \cde is
+\cite{Wolf:APPLYSYM,Brand:92} and conservation laws \cite{Wolf:99d}. The aim of \cde is
 to provide a tool for computations with total derivatives, but it can be used
 to compute symmetries too. In this subsection we show how to interface \cde
 with \crack in order to find higher (or generalized) symmetries for the
@@ -1173,7 +1173,7 @@ In this section we will find (some) local conservation laws for the KdV
 equation $F=u_t-u_{xxx}+uu_x=0$. Concretely, we have to find non-trivial
 $1$-forms $f=f_xdx+f_tdt$ on $F=0$ such that $\bar d f=0$ on
 $F=0$. ``Triviality'' of conservation laws is a delicate matter, for which we
-invite the reader to have a look in \cite{Many}.
+invite the reader to have a look in \cite{Krasilshchik:99}.
 
 The files containing this example are \texttt{kdv\_lcl1,kdv\_lcl2}
 and the corresponding results and debug files.
@@ -1238,7 +1238,7 @@ Korteweg--de Vries, Boussinesq and Kadomtsev--Petviashvili equations. It is
 interesting to note that we will adopt the same computational scheme for all
 equations, even if the latter is not in evolutionary form and it has more than
 two independent variables. This comes from a new mathematical theory which
-started in \cite{KKV} for evolution equations and was later extended to general
+started in \cite{KerstenKrasilshchikVerboretsky:2004} for evolution equations and was later extended to general
 differential equations in \cite{KerstenKrasilshchikVerbovetskyVitolo:HSGP}.
 
 \subsection{Korteweg--de Vries equation}
@@ -1247,8 +1247,8 @@ differential equations in \cite{KerstenKrasilshchikVerbovetskyVitolo:HSGP}.
 Here we will find local Hamiltonian operators for the KdV equation
 $u_t=u_{xxx}+uu_x$. A necessary condition for an operator to be Hamiltonian is
 that it sends generating functions (or characteristics, according with
-\cite{Olv2nd}) of conservation laws to higher (or generalized) symmetries.
-As it is proved in \cite{KKV}, this amounts at solving $\bar
+\cite{Olver:93}) of conservation laws to higher (or generalized) symmetries.
+As it is proved in \cite{KerstenKrasilshchikVerboretsky:2004}, this amounts at solving $\bar
 \ell_{KdV}(\mathtt{phi})=0$ over the equation
 \begin{displaymath}
   \left\{\begin{array}{l}
@@ -1469,7 +1469,7 @@ phi2_odd := (2*c(31)*p*u_x + 2*c(31)*p*v*v_x
  + 4*c(16)*q_x + 2*c(10)*p_x)/2$
 \end{verbatim}
 \end{small}
-There is a whole hierarchy of nonlocal Hamiltonian operators~\cite{KKV}.
+There is a whole hierarchy of nonlocal Hamiltonian operators~\cite{KerstenKrasilshchikVerboretsky:2004}.
 
 
 \subsection{Kadomtsev--Petviashvili equation}
@@ -1514,7 +1514,7 @@ phi := c(13)*p_2x$
 As far as we know there are no further local Hamiltonian operators.
 
 \textbf{Remark}: the above Hamiltonian operator is already known in an
-evolutionary presentation of the KP equation \cite{Kupershmidt:KP}. Our
+evolutionary presentation of the KP equation \cite{Kuperschmidt:94}. Our
 mathematical theory of Hamiltonian operators for general differential equations
 \cite{KerstenKrasilshchikVerbovetskyVitolo:HSGP} allows us to formulate and
 solve the problem for any presentation of the KP equation. Change of coordinate
@@ -1637,13 +1637,13 @@ the result are well-known lists of zeros.
 This subsection refers to the the example file \texttt{wdvv\_biham1.red}.
 The simplest nontrivial case of the WDVV equations is the third-order
 Monge--Amp\`ere equation, $f_{ttt} = f_{xxt}^2 - f_{xxx}f_{xtt}$
-\cite{Dub}. This PDE can be transformed into hydrodynamic form,
+\cite{Dubrovin:96}. This PDE can be transformed into hydrodynamic form,
 \begin{equation*}
   % \label{eq:8}
   a_t=b_x,\quad b_t=c_x,\quad c_t=(b^2-ac)_x,
 \end{equation*}
 via the change of variables $a=f_{xxx}$, $b=f_{xxt}$, $c=f_{xtt}$. This system
-possesses two Hamiltonian formulations \cite{FN}:
+possesses two Hamiltonian formulations \cite{Ferapontov:97}:
 \begin{equation*}
   \begin{pmatrix}
     a \\ b \\ c
@@ -1681,7 +1681,8 @@ with the nonlocal Hamiltonian
   H_2=-\int\left(  \frac{1}{2}a\left({\ddx{}}^{-1}b\right)^2 + {\ddx{}}^{-1}b
   {\ddx{}}^{-1}c\right)dx.
 \end{displaymath}
-Both operators are of Dubrovin--Novikov type \cite{DN,DN2}. This means that the
+Both operators are of Dubrovin--Novikov type \cite{DubrovinNovikov:83,DubrovinNovikov:84}. 
+This means that the
 operators are homogeneous with respect to the grading $|D_x|=1$. It follows
 that the operators are form-invariant under point transformations of the
 dependent variables, $u^i=u^i(\tilde u^j)$. Here and in what follows we will
@@ -1704,7 +1705,7 @@ The operator $A_2$ has the general structure
 \end{equation}
 where the inverse $g_{2\,ij}$ of the leading term transforms as a covariant
 pseudo-Riemannian metric. From now on we drop the subscript $2$ for the metric
-of $A_2$. It was proved in \cite{fpv} that, if we set
+of $A_2$. It was proved in \cite{Ferapontov:2014} that, if we set
 $c_{ijk}=g_{iq}g_{jp}c_{k}^{pq}$, then
 \begin{displaymath}
   c_{ijk}=\frac{1}{3}(g_{ik,j}-g_{ij,k})
@@ -1714,7 +1715,7 @@ and the metric fulfills the following identity:
   g_{mk,n}+g_{kn,m}+g_{mn,k}=0.
   \label{Killing}
 \end{equation}
-This means that the metric is a Monge metric \cite{fpv}. In particular, its
+This means that the metric is a Monge metric \cite{Ferapontov:2014}. In particular, its
 coefficients are quadratic in the variables $u^i$.
 It is easy to input the two operators in \cde. Let us start by $A_1$: we may
 define its entries one by one as follows
@@ -1839,7 +1840,7 @@ schouten_bracket(biv2,biv2,sb22);
 Needless to say, the result of the last three command is a list of zeroes.
 
 We observe that the same software can be used to prove the bi-Hamiltonianity of
-a $6$-component WDVV system \cite{pv}.
+a $6$-component WDVV system \cite{PavlovVitolo:2015}.
 
 \subsection{Schouten bracket of multidimensional operators}
 \label{cdesec:mult-oper}
@@ -1963,7 +1964,7 @@ nonzero and \texttt{sb13(1)} is again zero.
 \medskip
 
 More formulae are currently being implemented in the system, like symplecticity
-and Nijenhuis condition for recursion operators \cite{KKV2}. Interested readers
+and Nijenhuis condition for recursion operators \cite{KerstenKrasilshchikVerboretsky:2006}. Interested readers
 are warmly invited to contact R. Vitolo for questions/feature requests.
 
 
@@ -1980,7 +1981,7 @@ In any case we will achieve the results by means of a covering of the cotangent
 covering.  Indeed, it can be proved that there is a $1-1$ correspondence
 between (higher) symmetries of the initial equation and conservation laws on
 the cotangent covering. Such conservation laws provide new potential variables,
-hence a covering (see \cite{Many} for theoretical details on coverings).
+hence a covering (see \cite{Krasilshchik:99} for theoretical details on coverings).
 
 In Section~\ref{cdesec:plebanski-equation} we will also discuss a procedure for
 finding conservation laws from their generating functions that is of
@@ -1992,7 +1993,7 @@ independent interest.
 
 Here we will compute some nonlocal Hamiltonian operators for the KdV
 equation. The result of the computation (without the details below) has been
-published in \cite{KKV}.
+published in \cite{KerstenKrasilshchikVerboretsky:2004}.
 
 We have to solve equations of the type \texttt{ddx(ct)-ddt(cx)} as
 in~\ref{cdesec:local-cons-laws}. The main difference is that we will attempt a
@@ -2006,7 +2007,7 @@ whose components are linear in the $p$'s.  This computation can be found in the
 file \texttt{kdv\_nlcl1} and related results and debug files.
 
 The conservation laws that we are looking for are in $1-1$ correspondence with
-symmetries of the initial equation \cite{KKV}. We will look for conservatoin
+symmetries of the initial equation \cite{KerstenKrasilshchikVerboretsky:2004}. We will look for conservatoin
 laws which correspond to Galilean boost, $x$-translation, $t$-translation at
 the same time.  In the case of 2 independent variables and 1 dependent
 variable, one could prove that one component of such conservation laws can
@@ -2084,14 +2085,14 @@ phi := (c(5)*(4*p*u*u_x + 3*p*u_3x + 18*p_2x*u_x
  + 12*p_x*u_2x - r2*u_x))/4$
 \end{verbatim}
 Higher non-local Hamiltonian operators could also be found
-\cite{KKV}. The CRACK approach also holds for non-local computations.
+\cite{KerstenKrasilshchikVerboretsky:2004}. The CRACK approach also holds for non-local computations.
 
 
 \subsection{Non-local recursion operator for the
   Korteweg--de Vries equation}
 \label{cdesec:korteweg-de-vries-2}
 
-Following the ideas in \cite{KKV}, a differential operator that sends
+Following the ideas in \cite{KerstenKrasilshchikVerboretsky:2004}, a differential operator that sends
 symmetries into symmetries can be found as a shadow of symmetry on the
 $\ell$-covering of the KdV equation, with the further condition that the
 shadows must be linear in the covering $q$-variables. The tangent covering of
@@ -2107,7 +2108,7 @@ $\bar\ell_{KdV}$ means that the linearization of the KdV equation is lifted
 over the tangent covering.
 
 The file containing this example is \texttt{kdv\_ro1.red}. The example closely
-follows the computational scheme presented in \cite{KKV-SPT-2011}.
+follows the computational scheme presented in \cite{KrasilshchikVerbovetskyVitolo:SPT:2012}.
 
 Usually, recursion operators are non-local: operators of the
 form $D_x^{-1}$ appear in their expression. Geometrically we interpret this

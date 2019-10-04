@@ -8,7 +8,7 @@
 \ODESolve{1+} is an experimental project to update and enhance the
 ordinary differential equation (ODE) solver (\odesolve{}) that has
 been distributed as a standard component of \REDUCE{}
-\cite{Hearn-manual,MacCallum-doc,MacCallum-ISSAC} for about 10 years.
+\cite{Hearn:91,MacCallum:ODESOLVE,MacCallum:88} for about 10 years.
 \ODESolve{1+} is intended to provide a strict superset of the
 facilities provided by \odesolve{}.  This document describes a
 substantial re-implementation of previous versions of \ODESolve{1+}
@@ -17,15 +17,15 @@ version is targeted at \REDUCE~3.7 or later, and will not run in
 earlier versions.  This project is being conducted partly under the
 auspices of the European CATHODE project \cite{CATHODE}.  Various test
 files, including three versions based on a published review of ODE
-solvers \cite{Zimmermann}, are included in the \ODESolve{1+}
-distribution.  For further background see \cite{FJW1}, which describes
-version 1.03.  See also \cite{FJW2}.
+solvers \cite{PostelZimmermann:96}, are included in the \ODESolve{1+}
+distribution.  For further background see \cite{Wright:97}, which describes
+version 1.03.  See also \cite{Wright:99}.
 
 \ODESolve{1+} is intended to implement some solution techniques itself
-(i.e.\ most of the simple and well known techniques \cite{Zwillinger})
+(i.e.\ most of the simple and well known techniques \cite{Zwillinger:92})
 and to provide an automatic interface to other more sophisticated
-solvers, such as PSODE \cite{Man,Man-MacCallum,Prelle-Singer} and
-CRACK \cite{CRACK-doc}, to handle cases where simple techniques fail.
+solvers, such as PSODE \cite{Man:94a,Man:97,PrelleSinger:83} and
+CRACK \cite{Brand:92}, to handle cases where simple techniques fail.
 It is also intended to provide a unified interface to other special
 solvers, such as Laplace transforms, series solutions and numerical
 methods, under user request.  Although none of these extensions is

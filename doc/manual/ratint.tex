@@ -1,7 +1,7 @@
 
 \subsection{Rational Integration}
 
-This package implements the Horowitz/ Rothstein/ Trager algorithms ~\cite{Ged92} for the integration of rational functions in \REDUCE. We work within a field $K$ of characteristic $0$ and functions $p,q \in K[x]$. $K$ is normally the field $Q$ of rational numbers, but not always. These procedures return $\int \frac{p}{q} dx.$
+This package implements the Horowitz/ Rothstein/ Trager algorithms ~\cite{Geddes:92} for the integration of rational functions in \REDUCE. We work within a field $K$ of characteristic $0$ and functions $p,q \in K[x]$. $K$ is normally the field $Q$ of rational numbers, but not always. These procedures return $\int \frac{p}{q} dx.$
  The aim is to be able to integrate any function of the form $p/q$ in $x$, where $p$ and $q$ are polynomials in the field $Q$. The algorithms used avoid algebraic number extensions wherever possible, and in general, express the integral using the minimal algebraic extension field. 
 
 \subsubsection{Syntax of $ratint$}
@@ -244,7 +244,7 @@ If exp is free of $log\_sum$ terms, then $exp$ itself is returned. If $exp$ cont
 
 \end{verbatim}
 \subsubsection{LogtoAtan function}
-The user could then combine these to form a more elegant answer, using the switch combinelogs if one so wished. Another option is to convert complex logarithms to real arctangents ~\cite{Bron97}, which is recommended if definite integration is the goal. This is implemented in \REDUCE via a function $convert\_log$, which has the following syntax:
+The user could then combine these to form a more elegant answer, using the switch combinelogs if one so wished. Another option is to convert complex logarithms to real arctangents ~\cite{Bronstein:97}, which is recommended if definite integration is the goal. This is implemented in \REDUCE via a function $convert\_log$, which has the following syntax:
 \begin{center} \textbf{convert\_log(exp)}, \end{center}
 where $exp$ is any log\_sum expression.\\[\baselineskip]
 %
@@ -301,7 +301,7 @@ logtoAtan(-x,1,x);
 \subsection{Hermite's method}
 The package also implements Hermite's method to reduce the integral into its polynomial and logarithmic parts, but occasionally, \REDUCE returns the incorrect answer when this algorithm is used. This is due to the REDUCE operator pf, which performs a complete partial fraction expansion when given a rational function as input. Work is presently being done to give the pf operator a facility which tells it that the input is already factored. This would then enable REDUCE to perform a partial fraction decomposition with respect to a square free denominator, which may not necessarily be fully factored over Q. 
 \newline
-For a complete explanation of this and the other algorithms used in this package, including the theoretical justification and proofs, please consult ~\cite{Ged92}.
+For a complete explanation of this and the other algorithms used in this package, including the theoretical justification and proofs, please consult ~\cite{Geddes:92}.
 
 \subsection{Tracing the $ratint$ program}
 The package includes a facility to trace in some detail the inner workings of the $ratint$ program. Messages are given at the key stages of the algorithm, together with the results obtained. These messages are displayed when the switch $traceratint$ is on, which is done in \REDUCE with the command 

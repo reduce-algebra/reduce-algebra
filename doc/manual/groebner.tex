@@ -15,7 +15,7 @@ coefficient domains, and for different variable and term orderings.
 The current version of the package uses parts of a previous
 version, written by  R. Gebauer, A.C. Hearn, H. Kredel and H. M.
 M\"oller. The algorithms implemented in the current version are
-documented in \cite{Faugere:89}, \cite{Gebauer:88},
+documented in \cite{Faugere:93}, \cite{Gebauer:88},
 \cite{Kredel:88a} and \cite{Giovini:91}.
 The operator $saturation$ has been implemented in July 2000 (Herbert Melenk).
 
@@ -416,7 +416,7 @@ $gindependent$\_$sets$. It is set $off$ during the processing even if
 it is set $on$ before. Its state is saved during the processing.
 
 The ``Kredel-Weispfenning" algorithm is used (see \cite{Kredel:88a},
-extended to general ordering in \cite{BeWei:93}.
+extended to general ordering in \cite{Becker:93}.
 
 \subsubsection{Conversion of a Gr\"obner Basis}
 
@@ -453,7 +453,7 @@ A warning occurs if the ideal is not zero dimensional.
 
 $glexconvert$ is an implementation of the FLGM algorithm by
 \linebreak[4] {\sc Faug{\`e}re}, {\sc Gianni}, {\sc Lazard} and {\sc
-Mora} \cite{Faugere:89}. Often, the calculation of a Gr\"obner basis
+Mora} \cite{Faugere:93}. Often, the calculation of a Gr\"obner basis
 with a graded ordering and subsequent conversion to {\it lex} is
 faster than a direct {\it lex} calculation. Additionally, $glexconvert$
 can be used to transform a {\it lex} basis into one with different
@@ -502,7 +502,7 @@ system a $graduated$ basis of the given variable sequence to a $lex$ one
 of the same sequence. The job is done by computing a sequence
 of Gr\"obner bases of correspondig monomial ideals, lifting the original
 system each time. The algorithm has been described (more generally) by
-\cite{AGK:961},\cite{AGK:962},\cite{AG:98} and \cite{CKM:97}.
+\cite{AmrheinGloorKuechlin:96a},\cite{AmrheinGloorKuechlin:96b},\cite{AmrheinGloor:98} and \cite{Collart:97}.
 $groebner\_walk$ should be only called, if the direct calculation of a
 $lex$ Gr\"obner base does not work. The computation of $groebner\_walk$
 includes some overhead (e. g. the computation divides polynomials).
@@ -1218,7 +1218,7 @@ of the intermediate $s$--polynomials:
 where $d1$ is a non--negative integer and $d2$ is an integer
 $>$ $d1$ or ``infinity". A pair of polynomials is considered
 only if the grade of the lcm of their head terms is between
-$d1$ and $d2$. See \cite{BeWei:93} for the mathematical background.
+$d1$ and $d2$. See \cite{Becker:93} for the mathematical background.
 For the term orders {\it graded} or {\it weighted} the (first) weight
 vector is used for the grade computation. Otherwise the total
 degree of a term is used.

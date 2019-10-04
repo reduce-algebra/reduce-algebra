@@ -52,7 +52,7 @@ free modules with generators represented as rows of a matrix.
 
 Moreover CALI contains facilities for local computations, using a
 modern implementation of Mora's standard basis algorithm, see
-\cite{MPT} and \cite{tcah}, that works for arbitrary term orders.
+\cite{MoraPfisterTraverso:92} and \cite{Graebe:94}, that works for arbitrary term orders.
 The full analogy between modules over the local ring \linebreak[1]
 $k[x_v:v\in H]_{\mathbf{m}}$ and homogeneous (in fact H-local) modules
 over $k[x_v:v\in H]$ is reflected through the switch
@@ -61,14 +61,14 @@ Turn it on (Gr\"obner basis, the default) or off (local
 standard basis) to choose appropriate algorithms
 automatically. In v.\ 2.2 we present an unified approach to both
 cases, using reduction with bounded ecart for non Noetherian term
-orders, see \cite{ala} for details. This allows to have a common
+orders, see \cite{Graebe:95a} for details. This allows to have a common
 driver for the Gr\"obner algorithm in both cases.
 
 CALI extends also the restricted term order facilities of the {\tt
 groebner} package, defining term orders by degree vector lists, and 
 the rigid implementation of the sugar idea, by a more flexible
 \ind{ecart} vector, in particular useful for local computations, see
-\cite{tcah}. 
+\cite{Graebe:94}. 
 \medskip
 
 The package was designed mainly as a symbolic mode programming
@@ -134,8 +134,8 @@ Below we will use freely without further explanation the notions
 common for text books and papers about constructive commutative
 algebra, assuming the reader to be familiar with the corresponding
 ideas and concepts. For further references see e.g.\ the text books
-\cite{BKW}, \cite{CLO} and \cite{Mishra} or the survey papers
-\cite{B1}, \cite{B2} and \cite{Ro}. 
+\cite{Becker:93}, \cite{Cox:92} and \cite{Mishra:93} or the survey papers
+\cite{Buchberger:85}, \cite{Buchberger:88} and \cite{Robbiano:89}. 
 
 \subsubsection{Description of the Documents Distributed with CALI}
 
@@ -326,7 +326,7 @@ local standard bases. Essential changes concern the following topics:
 \item The CALI modules \ind{red} and \ind{groeb} were rewritten and
 the \ind{module mora} was removed. This is  
 due to new theoretical insight into standard bases theory as
-e.g.\ described in \cite{tcah} or \cite{ala}. The Gr\"obner basis algorithm
+e.g.\ described in \cite{Graebe:94} or \cite{Graebe:95a}. The Gr\"obner basis algorithm
 is reorganized as a Gr\"obner driver with simplifier and base lists, that
 involves different versions of polynomial reduction according to the
 setting via \ind{gbtestversion}. It applies now to
@@ -335,11 +335,11 @@ both noetherian and non noetherian term orders in a unified way.
 The switches \ttindexswitch[CALI]{binomial} and  \ttindexswitch[CALI]{lazy} were removed.
 
 \item The Gr\"obner factorizer was thoroughly revised, extended along the
-lines explained in \cite{fgb}, and collected into a separate
+lines explained in \cite{Graebe:94a}, and collected into a separate
 \ind{module groebf}. It now allows a list of constraints also in
 algebraic mode. Two versions of an \ind{extended Gr\"obner factorizer}
 produce \ind{triangular systems}, 
-i.e.\ a decomposition into quasi prime components, see \cite{efgb},
+i.e.\ a decomposition into quasi prime components, see \cite{Graebe:95b},
 that are well suited for further (numerical) evaluation. There is also
 a version of the Gr\"obner factorizer that allows a list of problems as
 input. This is especially useful, if a system is splitted with respect
@@ -352,10 +352,10 @@ the computation of \ind{triangular systems}. The corresponding module
 modules in the \ind{module odim}.
 
 \item A new \ind{module lf} implements the \ind{dual bases} approach
-as described in \cite{MMM}. On this basis there are new
+as described in \cite{Marinari:91}. On this basis there are new
 implementations of \ind{affine\_points} and \ind{proj\_points}, that
 are significantly faster than the old ones. The linear algebra
-\ind{change of term orders} \cite{FGLM} is available, too. There are
+\ind{change of term orders} \cite{Faugere:93} is available, too. There are
 two versions, one with precomputed \ind{border basis}, the other with
 conventional normal forms.  
 
@@ -396,7 +396,7 @@ cali.chg} for details).
 term order on the \textbf{reversely} ordered variables. This is consistent
 with other computer algebra systems (e.g.\ SINGULAR or
 AXIOM)\footnote{But different to the currently distibuted \texttt{groebner} package in REDUCE. Note that the computations in
-\cite{fgb} were done \emph{before} these changes.} and implies the same
+\cite{Graebe:94a} were done \emph{before} these changes.} and implies the same
 order on the variables for deglex and degrevlex term orders (this was
 the main reason to change the definition).  
 
@@ -419,9 +419,9 @@ embedded\footnote{That there must be a bug was pointed out to me by
 Shimoyama Takeshi who compared different p.d.\ implementations. The
 bug is due to an incorrect test for embedded primes: A (superfluous)
 primary component may contain none of the isolated primary components,
-but their intersection! Note that neither \cite{GTZ} nor \cite{BKW}
+but their intersection! Note that neither \cite{Gianni:88} nor \cite{Becker:93}
 comment on that. Details of the implementation will appear in
-\cite{primary}.}. During that remake I incorporated also the Gr\"obner
+\cite{Graebe:97}.}. During that remake I incorporated also the Gr\"obner
 factorizer to compute isolated primes. Since REDUCE has no
 multivariate \emph{modular} factorizer, the switch \ind{factorprimes}
 may be turned off to switch to the former algorithm.
@@ -509,7 +509,7 @@ or
 \exists\ j\ \forall\ i>j\ :\ a_i=b_i\quad\mbox{and}\quad a_j>b_j\
 \mbox{(revlex.)}\]
 
-Every term order can be represented in such a way, see \cite{MR88}.
+Every term order can be represented in such a way, see \cite{Mora:88}.
 
 During the ring setting the term order will be checked to be
 Noetherian (i.e.\ to fulfill the descending chain condition) provided
@@ -596,7 +596,7 @@ basis computation with the sugar strategy) or for termination (local
 standard bases). If the input is homogeneous the ecart vector should
 reflect this homogeneity rather than the first degree vector to
 obtain the best possible performance. For a discussion of local
-computations with encoupled ecart vector see \cite{tcah}. In general
+computations with encoupled ecart vector see \cite{Graebe:94}. In general
 the ecart vector is recommended to be chosen in such a way that the
 input examples become close to be homogeneous. \emph{Homogenizations}
 and \ind{Hilbert series} are computed with respect to this ecart
@@ -624,7 +624,7 @@ following widely accepted conventions.
 With respect to a fixed basis $\{e_1,\ldots ,e_c\}$ one can define
 module term orders on $S^c$, Gr\"obner bases of submodules of $S^c$ etc.
 They generalize the corresponding notions for ideal bases. See
-\cite{E} or \cite{MM} for a detailed introduction to this area of
+\cite{Eisenbud:95} or \cite{MoellerMora:86} for a detailed introduction to this area of
 computational commutative algebra. This allows to define joint
 facilities for both ideals and submodules of free modules. Moreover
 computing syzygies the latter come in in a natural way.
@@ -850,7 +850,7 @@ representation. May slow down the computation drastically.
 \calipbx{on: Use the pure lexicographic term order and \ind{zerosolve}
 during reduction to dimension zero in the \ind{extended Gr\"obner
 factorizer}. This is a single, but possibly hard task compared to the
-degrevlex invocation of \ind{zerosolve1}. See \cite{efgb} for a
+degrevlex invocation of \ind{zerosolve1}. See \cite{Graebe:95b} for a
 discussion of different zero dimensional solver strategies. 
 (Default: off)} 
 
@@ -979,7 +979,7 @@ ring. All computations are executed "denominator free" over the
 corresponding quotient field, i.e.\ gcd's are canceled out without 
 request. To avoid this set the \ind{switch bcsimp} off.\footnote{This
 induces a rapid base coefficient's growth and doesn't yield \textbf{Z}-Gr\"obner 
-bases in the sense of \cite{GTZ} since the S-pair criteria are
+bases in the sense of \cite{Gianni:88} since the S-pair criteria are
 different.} In the given implementation we use the s.f. procedure {\em
 qremf} for effective divisibility test. We had some trouble with it
 under \emph{on factor}. 
@@ -1108,7 +1108,7 @@ pair
 \[(<monomial>\ .\ <base\ coefficient>).\] 
 The \ind{ecart} of a polynomial (vector) $f=\sum{t_i}$ with (module)
 terms $t_i$ is defined as \[max(ec(t_i))-ec(lt(t_i)),\] see
-\cite{tcah}. Here $ec(t_i)$ denotes the ecart of the term $t_i$, i.e.\
+\cite{Graebe:94}. Here $ec(t_i)$ denotes the ecart of the term $t_i$, i.e.\
 the scalar product of the exponent vector of $t_i$ (including the
 monomial weight of the module generator) with the ecart vector of the
 current base ring.
@@ -1126,7 +1126,7 @@ Two advanced procedures use ideal theory ingredients:
 \calipbx{returns a dpoly list $\{q,r,z\}$ such that $z\cdot g = q\cdot f +
 r$ and $z$ is a dpoly unit (i.e.\ a scalar for Noetherian term
 orders). For non Noetherian term orders the necessary modifications
-are described in \cite{ala}. 
+are described in \cite{Graebe:95a}. 
 
 $g, f$ and $r$ belong to the same free module or ideal.
 }
@@ -1265,8 +1265,8 @@ CALI and the way they are implemented and may be accessed
 
 For v.\ 2.2 we completely revised the implementation of normal form
 algorithms due to the insight obtained from our investigations of
-normal form procedures for local term orders in \cite{ala} and
-\cite{tcah}. It allows a common handling of Noetherian and non
+normal form procedures for local term orders in \cite{Graebe:95a} and
+\cite{Graebe:94}. It allows a common handling of Noetherian and non
 Noetherian term orders already on this level thus making superfluous
 the former duplication of reduction procedures in the modules {\em
 red} and \emph{mora} as in v.\ 2.1.
@@ -1454,7 +1454,7 @@ orders this is (almost) Mora's first version for the tangent cone (the
 default). 
         
 \item Total reduction with global simplifier list. For local term
-orders this is (almost) Mora's SimpStBasis, see \cite{MPT}.
+orders this is (almost) Mora's SimpStBasis, see \cite{MoraPfisterTraverso:92}.
 
 \item Total reduction with bounded ecart. 
 \end{enumerate} 
@@ -1465,7 +1465,7 @@ expensive to be reduced. It is not yet well understood, whether this
 idea is of practical importance. 
 
 \ind{groeb\_lazystbasis} calls the lazy standard basis driver instead,
-that implements Mora's lazy algorithm, see \cite{MPT}. As
+that implements Mora's lazy algorithm, see \cite{MoraPfisterTraverso:92}. As
 \ind{groeb\_homstbasis}, the computation of Gr\"obner and standard bases via
 homogenization (Lazard's approach), it is not fully integrated into
 the algebraic interface. Use
@@ -1485,7 +1485,7 @@ on large examples indicate, that both approaches are in fact
 independent. 
 \medskip
 
-The pair list management uses the sugar strategy, see \cite{GMNRT},
+The pair list management uses the sugar strategy, see \cite{Giovini:91},
 with respect to the current ecart vector. If the input is homogeneous
 and the ecart vector reflects this homogeneity then pairs are sorted
 by ascending degree. Hence no superfluous base 
@@ -1541,12 +1541,12 @@ and side conditions $C_\alpha$ such that
 \end{quote}
 The \ind{module groebf} and the \ind{module triang} contain algorithms
 related to that problem, triangular systems, and their generalizations
-as described in \cite{fgb} and \cite{efgb}. V. 2.2 thus heavily
+as described in \cite{Graebe:94a} and \cite{Graebe:95b}. V. 2.2 thus heavily
 extends the algorithmic possibilities that were implemented in former
 releases of CALI. 
 
 Note that, different to v.\ 2.1, we work with constraint \emph{lists}.
-\begin{quote}
+\begin{quote}0
 \verb|groebfactor!*(bas,con)|\ttindex{groebfactor"!*}
 
 \calipbx{returns for the dpmat ideal $bas$ and the constraint list $con$
@@ -1582,7 +1582,7 @@ of the underlying ideal. They should be preferred, since they are more
 simple but contain all information about the (quasi) prime component
 that they represent. The complete Gr\"obner basis of the corresponding
 component can be obtained by an easy stable quotient computation, see
-\cite{efgb}. We refer to the same paper for the definition of
+\cite{Graebe:95b}. We refer to the same paper for the definition of
 \ind{triangular systems} in positive dimension, that is consistent
 with our approach. 
 \begin{quote}
@@ -1614,7 +1614,7 @@ triangular systems in prefix form. If \ind{lexefgb} is \texttt{off} (the
 default), the zero dimensional term order is degrevlex and
 \ind{zerosolve1!*}, the ``slow turn to lex'' is involved, for \texttt{on
 lexefgb} the pure lexicographic term order and \ind{zerosolve!*},
-M\"ollers original approach, see \cite{Moeller}, are used. Note that
+M\"ollers original approach, see \cite{Moeller:93}, are used. Note that
 for this term order we need only a single Gr\"obner basis computation at
 this level.
 
@@ -1625,7 +1625,7 @@ Gr\"obner factorizer.
 \subsubsection{Basic Operations on Ideals and Modules}
 
 Gr\"obner and local standard bases are the heart of several basic
-algorithms in ideal theory, see e.g.\ \cite[6.2.]{BKW}. CALI offers
+algorithms in ideal theory, see e.g.\ \cite[6.2.]{Becker:93}. CALI offers
 the following facilities:
 \begin{quote}
 \verb|submodulep!*(m,n)|\ttindex{submodulep"!*}
@@ -1650,7 +1650,7 @@ modules in an unique way. Hence \emph{idealintersect!*} has been
 removed in v.\ 2.1.}
 
 \calipbx{computes the intersection of the dpmats in the dpmat list $l$
-along \cite[6.20]{BKW}.}
+along \cite[6.20]{Becker:93}.}
 \end{quote}
 
 CALI offers several quotient algorithms. They rest on the computation
@@ -1664,8 +1664,8 @@ the \ind{ideal quotient} $M : (f) = \{w\in S^c\ |\ fw\in M\}$, and
 the \ind{stable quotient} $M : (f)^\infty = \{w\in S^c\ |\ \exists\,
 n\, :\, f^nw\in M\}$.
 \end{quote}
-CALI uses the elimination approach \cite[4.4.]{CLO} and
-\cite[6.38]{BKW} for their computation:
+CALI uses the elimination approach \cite[4.4.]{Cox:92} and
+\cite[6.38]{Becker:93} for their computation:
 \begin{quote}
 \verb|matquot!*(M,f)|\ttindex{matquot"!*}
 
@@ -1683,7 +1683,7 @@ CALI uses the elimination approach \cite[4.4.]{CLO} and
 q\cdot f + r$ with a dpoly unit $z$.\ ($g, f$ and $r$ must belong to
 the same free module). This is done uniformly for noetherian and
 local term orders with an extended normal form algorithm as described
-in \cite{ala}.}
+in \cite{Graebe:95a}.}
 \end{quote}
 \medskip
 
@@ -1692,8 +1692,8 @@ module (both embedded in a common free module $S^c$), the quotient of
 a module by an ideal, and the stable quotient of a module by an
 ideal. Algorithms for their computation can be obtained from the
 corresponding algorithms for a single element as divisor either by
-the generic element method \cite{E} or as an intersection 
-\cite[6.31]{BKW}. CALI offers both approaches (X=1 or 2 below) at
+the generic element method \cite{Eisenbud:95} or as an intersection 
+\cite[6.31]{Becker:93}. CALI offers both approaches (X=1 or 2 below) at
 the symbolic level, but for true quotients only the latter one is 
 integrated into the algebraic mode interface.
 \begin{quote}
@@ -1723,25 +1723,25 @@ method).}
 
 Monomial ideals occur as ideals of leading terms of (ideal's) Gr\"obner
 bases and also as components of leading term modules of submodules of
-free modules, see \cite{rois}, and reflect some properties of the
+free modules, see \cite{Graebe:93a}, and reflect some properties of the
 original ideal/module. Several parameters of the original ideal or
 module may be read off from it as e.g.\ dimension and Hilbert series.  
 
 The \ind{module moid} contains the corresponding algorithms on
 monomial ideals. Monomial ideals are lists of monomials, kept sorted
-by descending lexicographic order as proposed in \cite{BS}. 
+by descending lexicographic order as proposed in \cite{BayerStillman:92}. 
 
 \begin{quote}
 \verb|moid_primes u| \ttindex{moid\_primes}
 
 \calipbx{returns the minimal primes (as a list of lists of variable
 names) of the monomial ideal $u$ using an adaption of the algorithm,
-proposed in \cite{BS} for the computation of the codimension.}
+proposed in \cite{BayerStillman:92} for the computation of the codimension.}
 
 \verb|indepvarsets!* m| \ttindex{indepvarsets"!*} 
 
 \calipbx{returns (based on \emph{moid\_primes}) the list of strongly
-independent sets of $m$, see \cite{KW} and \cite{rois} for
+independent sets of $m$, see \cite{Kredel:88a} and \cite{Graebe:93a} for
 definitions.}
 
 \verb|dim!* m| \ttindex{dim"!*}
@@ -1765,11 +1765,11 @@ will be correct if $m$ is (radically) unmixed. Since it is
 significantly faster than the general dimension
 algorithm\footnotemark, it should 
 be used, if all maximal independent sets are known to be of equal
-cardinality (as e.g.\ for prime or unmixed ideals, see \cite{rois}).}
+cardinality (as e.g.\ for prime or unmixed ideals, see \cite{Graebe:93a}).}
 \footnotetext{This algorithm is of linear time as opposed to the
 problem to determine the dimension of an arbitrary monomial ideal,
 that is known to be NP-hard in the number of variables, see
-\cite{BS}.} 
+\cite{BayerStillman:92}.} 
 \end{quote}
 
 \subsubsection{Hilbert Series}
@@ -1798,8 +1798,8 @@ procedure with a single weight vector, the ecart vector of the current
 ring.   
 
 The Hilbert series numerator $Q(t)$ is computed using (the obvious
-generalizations to the weighted case of) the algorithms in \cite{BS}
-and \cite{BCRT}. Experiments suggest that the former is better for few
+generalizations to the weighted case of) the algorithms in \cite{BayerStillman:92}
+and \cite{Bigatti:93}. Experiments suggest that the former is better for few
 generators of high degree whereas the latter has to be preferred for
 many generators of low degree. Choose the version with
 \ind{hftestversion} $n$, $n=1,\,2$. Bayer/Stillman's approach ($n=1$)
@@ -1880,7 +1880,7 @@ provided $m$ is a Gr\"obner basis.}
 
 \verb|odim_borderbasis m| \ttindex{odim\_borderbasis}
 
-\calipbx{that returns a border basis, see \cite{MMM}, of the
+\calipbx{that returns a border basis, see \cite{Marinari:91}, of the
 zero dimensional dpmat $m$ as a  list of base elements.}
 
 \verb|odim_parameter m| \ttindex{odim\_parameter}
@@ -1894,26 +1894,26 @@ is zero dimensional.}
 \calipbx{that returns an univariate polynomial (of smallest possible
 degree if $m$ is a gbasis) in the variable $a$, that belongs to the
 zero dimensional dpmat ideal $m$, using Buchberger's approach 
-\cite{B1}.} 
+\cite{Buchberger:85}.} 
 \end{quote}
 
 \subsubsection{Primary Decomposition and Related Algorithms}
 
 The algorithms of the \ind{module prime} implement the ideas of
-\cite{GTZ} with modifications along \cite{Kr} and their natural
-generalizations to modules as e.g.\ explained in \cite{Ru}. Version
+\cite{Gianni:88} with modifications along \cite{Kredel:87} and their natural
+generalizations to modules as e.g.\ explained in \cite{Rutman:92}. Version
 2.2.1 fixes a serious bug detecting superfluous embedded primary
 components, see section \ref{221}, and contains now a second primary
 decomposition algorithm, based on ideal separation, as standard. For a
 discussion about embedded primes and the ideal separation approach,
-see \cite{primary}. 
+see \cite{Graebe:97}. 
 
 
 CALI contains also algorithms for the computation of the unmixed part
 of a given module and the unmixed radical of a given ideal (along the
 same lines). We followed the stepwise recursion decreasing dimension
-in each step by 1 as proposed in (the final version of) \cite{GTZ}
-rather than the ``one step'' method described in \cite{BKW} since
+in each step by 1 as proposed in (the final version of) \cite{Gianni:88}
+rather than the ``one step'' method described in \cite{Becker:93} since
 handling leading coefficients, i.e.\ standard forms, depending on
 several variables is a quite hard job for
 REDUCE\footnote{\ind{prime!=decompose2} implements this strategy in
@@ -1928,9 +1928,9 @@ squarefree decomposition of univariate polynomials.}
 
 \verb|zeroprimes!* m| \ttindex{zeroprimes"!*}
 
-\calipbx{computes as in \cite{GTZ} the list of prime ideals of $Ann\ F/M$
+\calipbx{computes as in \cite{Gianni:88} the list of prime ideals of $Ann\ F/M$
 if $m$ is zero dimensional, using the (sparse) general position
-argument from \cite{KW}.}
+argument from \cite{Kredel:88a}.}
 
 \verb|zeroprimarydecomposition!* m| \ttindex{zeroprimarydecomposition"!*}
 
@@ -1942,7 +1942,7 @@ and second entry the corresponding associated prime ideal.}
 \verb|isprime!* m| \ttindex{isprime"!*}
 
 \calipbx{a (one step) primality test for ideals, extracted from
-\cite{GTZ}.} 
+\cite{Gianni:88}.} 
 
 \verb|isolatedprimes!* m| \ttindex{isolatedprimes"!*}
 
@@ -1951,7 +1951,7 @@ and second entry the corresponding associated prime ideal.}
 \verb|radical!* m| \ttindex{radical"!*}
 
 \calipbx{computes the radical of the dpmat ideal $m$, reducing as in
-\cite{GTZ} to the zero dimensional case.}
+\cite{Gianni:88} to the zero dimensional case.}
 
 \verb|easyprimarydecomposition!* m| \ttindex{easyprimarydecomposition"!*}
 
@@ -1963,7 +1963,7 @@ isolated prime ideals of $Ann\ F/M$. It returns a list of pairs as in
 \verb|primarydecomposition!* m| \ttindex{primarydecomposition"!*}
 
 \calipbx{computes the primary components of the dpmat $m$ along the lines
-of \cite{GTZ}. It returns a list of two-element lists as in {\em
+of \cite{Gianni:88}. It returns a list of two-element lists as in {\em
 zeroprimarydecomposition!*}.} 
 
 \verb|unmixedradical!* m| \ttindex{unmixedradical"!*}
@@ -1995,7 +1995,7 @@ r_2=\phi_2(s),\ldots \}$ in algebraic prefix form, i.e.\ looks like
 The central tool for several applications is the computation of the
 preimage $\phi^{-1}(I)\subset R$ of an ideal $I\subset S$ either
 under a polynomial map $\phi$ or its closure in $R$ under a rational
-map $\phi$, see \cite[7.69 and 7.71]{BKW}.
+map $\phi$, see \cite[7.69 and 7.71]{Becker:93}.
 \begin{quote}
 \verb|preimage!*(m,map)| \ttindex{preimage"!*}
 
@@ -2098,7 +2098,7 @@ to unmixed ideals.)}
 \verb|varopt!* m| \ttindex{varopt"!*}
 
 \calipbx{finds a heuristically optimal variable order by the approach in
-\cite{BGK} and returns the corresponding list of variables.} 
+\cite{Boege:86} and returns the corresponding list of variables.} 
 \end{quote}
 
 
@@ -2106,7 +2106,7 @@ to unmixed ideals.)}
 
 
 For the general ideas underlying the dual bases approach see e.g.\
-\cite{MMM}. This paper explains, that constructive problems from very
+\cite{Marinari:91}. This paper explains, that constructive problems from very
 different areas of commutative algebra can be formulated in a unified
 way as the computation of a basis for the intersection of the kernels
 of a finite number of linear functionals generating a dual
@@ -2143,7 +2143,7 @@ the driver and the calling routine.
 \ind{dualhbases} realizes the same idea for (homogeneous) ideals and
 modules of (projective) dimension zero. It produces zerodimensional
 ``slices'' with ascending degree until it reaches a supremum supplied
-by the user, see \cite{MMM} for details.
+by the user, see \cite{Marinari:91} for details.
 \medskip
 
 Applications concern affine and projective defining ideals of a finite 
@@ -2154,7 +2154,7 @@ old stuff is available as \ind{affine\_points1!*} and
 \ind{proj\_points1!*}.} and two versions (with and without precomputed
 border basis) of term order  
 changes for zerodimensional ideals and modules as first described in
-\cite{FGLM}.  
+\cite{Faugere:93}.  
 \begin{quote}
 \verb|affine_points!* m| \ttindex{affine\_points"!*}
 
@@ -2408,8 +2408,8 @@ S^c$ by the ideal $m2$.}
 \verb|indepvarsets gb| \ttindex{indepvarsets}
 
 \calipbx{returns the list of strongly independent sets of $gb$ with
-respect to the current term order, see \cite{KW} for a definition in
-the case of ideals and \cite{rois} for submodules of free modules.}
+respect to the current term order, see \cite{Kredel:88a} for a definition in
+the case of ideals and \cite{Graebe:93a} for submodules of free modules.}
 
 \verb|initmat(m,<file name>| \ttindex{initmat}
 
@@ -2437,7 +2437,7 @@ isolated primes of $Ann\ S^c/M$.}
 \verb|lazystbasis m| \ttindex{lazystbasis}
 
 \calipbx{computes the standard basis of $m$ by the lazy algorithm, see
-e.g.\ \cite{MPT}.} 
+e.g.\ \cite{MoraPfisterTraverso:92}.} 
 
 \verb|listgroebfactor in| \ttindex{listgroebfactor}
 
@@ -2643,7 +2643,7 @@ must be a degree order.}
 
 \verb|varopt m| \ttindex{varopt}
 
-\calipbx{finds a heuristically optimal variable order, see \cite{BGK}. 
+\calipbx{finds a heuristically optimal variable order, see \cite{Boege:86}. 
 \[\tt vars:=varopt\ m;\ setring(vars,\{\},lex);\ setideal(m,m);\]
 changes to the lexicographic term order with heuristically best
 performance for a lexicographic Gr\"obner basis computation.}
@@ -2672,10 +2672,9 @@ $m$ as a list of $\{component, associated\ prime\}$ pairs.}
 
 \calipbx{Returns for a zerodimensional ideal a list of triangular systems
 that cover $Z(m)$. \texttt{Zerosolve} needs a pure lex.\ term order for
-the ``fast'' turn to lex.\ as described in \cite{Moeller}, {\tt
-Zerosolve1} is the ``slow'' turn to lex.\ as described in \cite{efgb},
-and \texttt{Zerosolve2} incorporated the FGLM term order change into {\tt
-Zerosolve1}.} 
+the ``fast'' turn to lex.\ as described in \cite{Moeller:93}, \texttt{Zerosolve1}
+is the ``slow'' turn to lex.\ as described in \cite{Graebe:95b},
+and \texttt{Zerosolve2} incorporated the FGLM term order change into \texttt{Zerosolve1}.} 
 \end{quote}
 \pagebreak
 

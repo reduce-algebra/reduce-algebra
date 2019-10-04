@@ -71,7 +71,7 @@ We use {\em formulas} over the language of ordered rings as guards.
 This provides powerful tools for heuristically reducing the
 combinatorial explosion of cases: equivalent, redundant, tautological,
 and contradictive cases can be detected by {\em
-simplification}~\cite{DolzmannSturm:95} and {\em quantifier
+simplification}~\cite{Dolzmann:97b} and {\em quantifier
 elimination}~\cite{Tarski:48,Collins:75,Weispfenning:88,LoosWeispfenning:93,Weispfenning:96,Weispfenning:94}.
 In certain situations, we will allow the formulas also to contain
 extra functions such as $\sqrt{\cdot}$ or $|\cdot|$. Then we take care
@@ -92,9 +92,9 @@ during the computation of {\em comprehensive Gr\"obner bases}
 \cite{Weispfenning:92}.
 
 The algorithms described in this paper are implemented in the 
-\textsc{reduce} package \textsc{guardian}. It is based on the 
-\textsc{reduce}~\cite{HearnFitch:95,Melenk:95} package 
-\textsc{redlog}~\cite{DolzmannSturm:96,DolzmannSturm:96a} implementing a
+\REDUCE package \textsc{guardian}. It is based on the 
+\REDUCE~\cite{Hearn:91,Melenk:95} package 
+\textsc{redlog}~\cite{DolzmannSturm:97a,Dolzmann:96a} implementing a
 formula data type with corresponding algorithms, in particular
 including simplification and quantifier elimination.
 % Both \textsc{guardian} and \textsc{redlog} are available on the {\sc
@@ -485,7 +485,7 @@ over the language of ordered rings.
 
 It is not relevant, which simplifier and which quantifier elimination
 procedure is actually used. We use the formula simplifier described
-in~\cite{DolzmannSturm:95}. Our quantifier elimination uses test point
+in~\cite{Dolzmann:97b}. Our quantifier elimination uses test point
 methods developed by
 Weispfenning~\cite{Weispfenning:88,LoosWeispfenning:93,Weispfenning:96}.
 It is restricted to formulas obeying certain degree restrictions
@@ -763,7 +763,7 @@ conjunctions in the \textsc{dnf}.
 guarded expression. Note that it includes {\em contraction of cases}.
 \end{enumerate}
 According to experiences with similar ideas in the ``Gr\"obner
-simplifier'' described in~\cite{DolzmannSturm:95}, this should work
+simplifier'' described in~\cite{Dolzmann:97b}, this should work
 well.
 %
 \subsubsection{Background theory}\label{background}
@@ -785,7 +785,7 @@ be actually used.
 Technically, denote by $\Phi$ the (conjunctive) background theory. For
 the {\em simplification of the guards}, we can make use of the fact
 that our simplifier is designed to simplify wrt.~a theory,
-cf.~\cite{DolzmannSturm:95}. For proving that some guard $\gamma$ is
+cf.~\cite{Dolzmann:97b}. For proving that some guard $\gamma$ is
 {\em tautological}, we try to prove
 $$\underline{\forall}(\Phi\longrightarrow\gamma)$$ instead of
 $\underline{\forall}\gamma$. Similarly, for proving that $\gamma$ is

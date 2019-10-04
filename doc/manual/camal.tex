@@ -21,15 +21,15 @@ algebra systems and special purpose one.  Here we investigate how far
 the improvements in software and more predominantly hardware have
 enabled the general systems to perform as well as the earlier special
 ones.  It is similar in some respects to the Possion program for
-MACSYMA \cite{Fateman} which was written in response to a similar
+MACSYMA \cite{Fateman:74a} which was written in response to a similar
 challenge.
 
 The particular subject for investigation is the Fourier series
 manipulator which had its origins in the Cambridge University
 Institute for Theoretical Astronomy, and later became the F subsystem
-of CAMAL \cite{Barton67b,CAMALF}.  In the late 1960s this system was
-used for both the Delaunay Lunar Theory \cite{Delaunay,Barton67a} and
-the Hill Lunar Theory \cite{Bourne}, as well as other related
+of CAMAL \cite{Barton67b,CAMALF:83}.  In the late 1960s this system was
+used for both the Delaunay Lunar Theory \cite{Delaunay:1860,Barton67a} and
+the Hill Lunar Theory \cite{Bourne:72}, as well as other related
 calculations.  Its particular area of application had a number of
 peculiar operations on which the general speed depended.  These are
 outlined below in the section describing how CAMAL worked.  There have
@@ -85,7 +85,7 @@ term $\sin(u-2v+w-3x)$ would be represented as
 or
     [ NULL, "1"|0x1, 1:-2:1:-3, 0:0:0:0 ]
 \end{verbatim}
-where {\tt "1"} is a pointer to the representation of the polynomial
+where \texttt{"1"} is a pointer to the representation of the polynomial
 1.  In all this representation of the term took 48 bytes.  As the
 complexity of a term increased the store requirements to no grow much;
 the expression $(7/4) a e^3 f^5 \cos(u-2v+3w-4x+5y+6z)$ also takes 48
@@ -96,12 +96,12 @@ noted that $\cos(0)$ is a valid and necessary representation.
 The polynomial part was similarly represented, as a chain of terms
 with packed exponents for a fixed number of variables.  There is no
 particular significance in this except that the terms were held in
-{\em increasing} total order, rather than the decreasing order which
+\emph{increasing} total order, rather than the decreasing order which
 is normal in general purpose systems.  This had a number of important
 effects on the efficiency of polynomial multiplication in the presence
 of a truncation to a certain order.  We will return to this point
 later.  Full details of the representation can be found in
-\cite{LectureNotes}.
+\cite{Fitch:LN75}.
 
 The space administration system was based on explicit return rather
 than garbage collection.  This meant that the system was sometimes
@@ -153,7 +153,7 @@ the differentiation and integration of the polynomial coefficients.
 \subsubsection{Harmonic Substitution}
 
 An operation which is of great importance in Fourier operations is the
-{\em harmonic substitution}.  This is the substitution of the sum of
+\emph{harmonic substitution}.  This is the substitution of the sum of
 some angles and a general expression for an angle.  In order to
 preserve the format, the mechanism uses the translations
 \begin{eqnarray*}
@@ -171,7 +171,7 @@ its expansion:
                  &             & \sin(\theta) \{A - A^3/3! + A^5/5! \ldots\} \\
 \end{eqnarray*}
 If a truncation is set for large powers of the polynomial variables
-then the series will terminate.  In CAMAL the {\tt HSUB} operation
+then the series will terminate.  In CAMAL the \texttt{HSUB} operation
 took five arguments; the original expression, the angle for which
 there is a substitution, the new angular part, the expression part
 ($A$ in the above), and the number of terms required.
@@ -232,7 +232,7 @@ length 6 or 4;
 Version1:  [ BalanceBits, Coeff, Function, Angles, LeftTree, RightTree ]
 Version2:  [ Coeff, Function, Angles, Next ]
 \end{verbatim}
-where the {\tt Angles} field is a vector of length 8, for the
+where the \texttt{Angles} field is a vector of length 8, for the
 multipliers.  It was decided to forego packing as for portability we
 do not know how many to pack into a small integer.  The tree system
 used is AVL, which needs 2 bits to maintain balance information, but
@@ -297,7 +297,7 @@ parts.
 
 The Fourier expressions need to co-exist with the normal REDUCE syntax
 and semantics.  The prototype version does this by (ab)using the
-module method, based in part on the TPS code \cite{Barnes}.  Of course
+module method, based in part on the TPS code \cite{Padget90}.  Of course
 Fourier series are not constant, and so are not really domain
 elements.  However by asserting that Fourier series form a ring of
 constants REDUCE can arrange to direct basic operations to the Fourier
@@ -310,15 +310,15 @@ functions, and creating canonical forms.
 
 \subsubsection{User Interface}
 
-The creation of {\tt HDIFF} and {\tt HINT} functions for
+The creation of \texttt{HDIFF} and \texttt{HINT} functions for
 differentiation disguises this.  An unsatisfactory aspect of the
-interface is that the tokens {\tt SIN} and {\tt COS} are already in
+interface is that the tokens \texttt{SIN} and \texttt{COS} are already in
 use.  The prototype uses the operator form
 \begin{verbatim}
         fourier sin(u)
 \end{verbatim}
 to introduce harmonically represented sine functions.  An alternative of
-using the tokens {\tt F\_SIN} and {\tt F\_COS} is also available.  
+using the tokens \texttt{F\_SIN} and \texttt{F\_COS} is also available.  
 
 It is necessary to declare the names of the angles, which is achieved
 with the declaration 
@@ -409,7 +409,7 @@ system.   This is the calculation we use for comparisons.
 
 \subsubsection{Mathematical Background}
 
-The full calculation is described in detail in \cite{Brown}, but a
+The full calculation is described in detail in \cite{Brown:1896}, but a
 brief description is given here for completeness, and to grasp the
 extent of the calculation.
 
@@ -454,7 +454,7 @@ The Lunar Disturbing function was calculated by a direct coding of the
 previous sections' mathematics.  The program was taken from Barton
 and Fitch \cite{Barton72} with just small changes to generalise it for
 any order, and to make it acceptable for Reduce3.4.  The Fourier
-program followed the same pattern, but obviously used the {\tt HSUB}
+program followed the same pattern, but obviously used the \texttt{HSUB}
 operation as appropriate and the harmonic integration.  It is very
 similar to the CAMAL program in \cite{Barton72}.   
 
@@ -503,7 +503,7 @@ narrowing.
 It is disappointing that the ratio is not better, nor the absolute
 time less.  It is worth noting in this context that Jefferys claimed
 that the sixth order DDF took 30s on a CDC6600 with TRIGMAN in 1970
-\cite{Jefferys}, and Barton and Fitch took about 1s for the second
+\cite{Jefferys:70}, and Barton and Fitch took about 1s for the second
 order DDF on TITAN with CAMAL \cite{Barton72}.  A closer look at the
 relative times for individual sections of the program shows that the
 substitution case of replacing a polynomial variable by a Fourier

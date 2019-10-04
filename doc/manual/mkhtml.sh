@@ -25,6 +25,8 @@ sed -e 's/^\(\\indexentry{[^@]*\)\\textbar/\1"|/' \
 
 makeindex -o ${JOBNAME}.ind ${JOBNAME}.4dx
 
+bibtex ${JOBNAME}
+
 mk4ht htlatex ${JOBNAME} ${CONFIG},${SECTIONINGDEPTH}
 
 LC_CTYPE=C sed -e 's#https://reduce-_algebra\.sourceforge\.io/#https://reduce-algebra.sourceforge.io/#' ${JOBNAME}.html >index.html
