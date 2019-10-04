@@ -1,5 +1,5 @@
 ﻿body {
-    background-color: #eef;
+    background-color: #EEF;
 }
 
 /* REDUCE in header with responsive background.  For bootstrap
@@ -28,22 +28,21 @@ header span.mx-auto {
 
 @media (max-width: 499.98px) {  /* as used by bootstrap */
     header span.mx-auto {
-        background-color: #000099;
+        background-color: #009;
         line-height: 1.0;
         height: 40px;
     }
 }
 
 #top-search-button {
-    border-color: #000099;
-    background-color: #000099;
+    background-color: #009;
     font-size: 0px;
     padding: 6px 27px;
     margin-left: 16px;
 }
 
 #top-search-button svg {
-    fill: #FFFFFF;
+    fill: #FFF;
 }
 
 h1 {
@@ -69,7 +68,7 @@ a img {
 }
 
 ul {
-    list-style-image: url(images/pixbul1.gif)
+    list-style-image: url(/images/pixbul1.gif);
 }
 
 /* Navigation panel */
@@ -90,32 +89,30 @@ ul {
     list-style-type: none;
     list-style-image: none;
     margin-bottom: 1em;
-    background-color: #CCF;
     text-align: center;
+    background-color: #CCF;
+    background-repeat: no-repeat;
+    /* line-height = 1.5, hence scaling factor below: */
+    --line-height: 1.5;
+    background-position: calc(var(--line-height) * 0.25em);
+    background-size: calc(var(--line-height) * 0.5em) 50%;
 }
 
 #navmenu ul > li.selected {
-    padding-right: 1.2em;
-    padding-left: 0.2em;
-    border-left: 1em solid #009;
+    background-image: linear-gradient(#009,#009);
 }
 
+#navmenu ul > li:not(.selected):hover, #navmenu ul > li:not(.selected):focus {
+    background-image: linear-gradient(#66C,#66C);
+}
+
+/* Make the whole li element, not just the text, act as a link. */
 #navmenu ul > li > a {
-    text-decoration: none;
-    color: black;
     display: block;
-    padding-right: 1.2em;
-    padding-left: 0.2em;
-    border-left: 1em solid #CCF;
-    transition: 0.5s 0.1s;
-    /* Better to transition the opacity? */
 }
 
-#navmenu ul > li > a:hover, #navmenu ul > li > a:focus {
-    border-left-color: #66C;
-}
-
-#navmenu ul li a:active, #navmenu ul li a:link, #navmenu ul li a:visited {
+#navmenu a, #navmenu a:active, #navmenu a:link, #navmenu a:visited {
+    text-decoration: none;
     color: black;
 }
 
@@ -129,11 +126,6 @@ ul {
     font-weight: bold;
     text-align: center;
     background-color: white;
-}
-
-#navmenu a:active, #navmenu a:link, #navmenu a:visited {
-    text-decoration: none;
-    color: black;
 }
 
 #google_translate_element {

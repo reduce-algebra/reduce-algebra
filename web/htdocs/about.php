@@ -17,7 +17,7 @@ $smarty->assign('header_title', 'History and Contributors');
 $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 <h2>A brief history of REDUCE</h2>
 <p>
-  <img src="images/140px-Hearn.jpg" alt="Tony Hearn" height="180px" width="140px" />In 2008, Tony Hearn, who is the main and original author of this software, wrote:
+  <img src="images/140px-Hearn.jpg" alt="Tony Hearn" height="180" width="140" />In 2008, Tony Hearn, who is the main and original author of this software, wrote:
 </p>
 <blockquote>In 1963, I began work on a software system that would in time evolve into REDUCE. By 1968, copies had been made available to various researchers throughout the world. Forty years later, there is still an active community of users. In order to encourage further development, I have decided to make the software freely available under a <a href="license.php">modified BSD license</a>.</blockquote>
 <p>The Open Source version of the REDUCE algebra system was registered on SourceForge.net on Dec 18, 2008.</p>

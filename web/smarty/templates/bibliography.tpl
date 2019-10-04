@@ -13,7 +13,9 @@
 <div class="tab-content" id="TabbedContent">
   {foreach $biblio as $alpha => $section}
   <div class="tab-pane fade" id="{$alpha}" role="tabpanel" aria-labelledby="{$alpha}-tab">
-    {$section}
+    <dl>
+      {$section}
+    </dl>
   </div>
   {/foreach}
 </div>
