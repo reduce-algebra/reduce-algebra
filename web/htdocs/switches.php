@@ -6,9 +6,23 @@ $smarty = new Smarty_REDUCE();
 $smarty->assign('header_title', 'Switch Summary');
 
 $smarty->assign('preambleA', <<< END_OF_PREAMBLE
-	<p>These are switches available within REDUCE via the commands <code>ON</code> and <code>OFF</code>, not switches in the sense of command-line start-up options.  The switches are sorted alphabetically by name.  A <a href="#undocumented">summary of some undocumented switches</a> follows the summary of documented switches.</p>
-	<h2>Documented switch summary</h2>
-	<p>This is a summary of the switches documented in the <strong>REDUCE User's Manual</strong> <small>[ <a href="/manual/manual.html">HTML</a> | <a href="manual/manual.pdf">PDF</a> ]</small>; more information and context can be found by searching the <a href="/manual/manual.pdf">PDF version of the manual</a>.</p>
+<p>
+  These are switches available within REDUCE via the
+  commands <code>ON</code> and <code>OFF</code>, not switches in the
+  sense of command-line start-up options.  The switches are sorted
+  alphabetically by name.  A <a href="#undocumented">summary of some
+  undocumented switches</a> follows the summary of documented
+  switches.
+</p>
+<h2>Documented switch summary</h2>
+<p>
+  This is a summary of the switches documented in the <strong>REDUCE
+    User&apos;s
+    Manual</strong> <small>[ <a href="/manual/manual.html">HTML</a>
+    | <a href="manual/manual.pdf">PDF</a> ]</small>; more information
+    and context can be found by searching
+    the <a href="/manual/manual.pdf">PDF version of the manual</a>.
+</p>
 END_OF_PREAMBLE
 );
 
@@ -20,7 +34,7 @@ $smarty->assign('switchesA', array(
 	array('ALLFAC', 'ON', 'Output', 'When on, REDUCE searches a whole expression, or any sub-expression enclosed in parentheses, for simple multiplicative factors and displays them outside the parentheses.'),
 	array('ALLOWDFINT', 'OFF', 'DF', 'When on, DF applies “differentiation under the integral sign”, i.e. <code>DF(INT(Y, X), V)</code> &rarr; <code>INT(DF(Y, V), X)</code> <em>if this results in a simplification</em>.'),
 	array('ANTICOM', 'OFF', '*', 'When on, REDUCE uses only anti-commutators to commute non-commuting variables.'),
-	array('ARBVARS', 'ON', 'SOLVE', 'When off, SOLVE does not introduce new indeterminate kernels (i.e. <code>ARBCOMPLEX(<em>j</em>)</code> or <code>ARBINT(<em>j</em>)</code>).'),
+	array('ARBVARS', 'ON', 'SOLVE', 'When off, SOLVE does not introduce new indeterminate kernels (i.e. <code>ARBCOMPLEX(<em>j</em>)</code>) into the solution of an under-determined multivariate system.'),
 	array('ASSERT', 'OFF', 'ASSERT', 'When on, REDUCE checks assertions at translation time.'),
 	array('ASSERTBREAK', 'OFF', 'ASSERT', 'When on, not only are warnings issued for assertion violations but the computation is interrupted with a corresponding error.'),
 	array('ASSERTSTATISTICS', 'ON', 'ASSERT', 'When on, enables the statistical counting of procedure calls and assertion violations.'),
@@ -160,8 +174,15 @@ $smarty->assign('switchesA', array(
 )); // array('', '', '', ''),
 
 $smarty->assign('preambleB', <<< END_OF_PREAMBLE
-	<h2 id="undocumented">Undocumented switch summary</h2>
-	<p>This is an attempt to summarize some of the switches that are not documented in the <strong>REDUCE User's Manual</strong>, either because they are not intended for direct user access or because they are specific to the underlying Lisp system (PSL or CSL).  Beware that details are more likely to be wrong than for the documented switches!</p>
+<h2 id="undocumented">Undocumented switch summary</h2>
+  <p>
+    This is an attempt to summarize some of the switches that are not
+    documented in the <strong>REDUCE User's Manual</strong>, either
+    because they are not intended for direct user access or because
+    they are specific to the underlying Lisp system (PSL or CSL).
+    Beware that details are more likely to be wrong than for the
+    documented switches!
+  </p>
 END_OF_PREAMBLE
 );
 
