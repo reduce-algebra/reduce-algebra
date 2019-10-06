@@ -80,6 +80,17 @@ symbolic procedure generic_function u;
        then typerr(fc, "generic function");
     l := length cdr fc;
     algebraic clear fcn;
+
+    % 3 remflags added by A Barnes.
+    remflag(list fcn, 'even);
+    remflag(list fcn, 'odd);
+    remflag(list fcn, 'nonzero);
+    % Currently the derivative of an odd function is assumed odd
+    % and that of an even function even!
+    % We need new properties so that the derivative
+    % of an odd function is recognised as even and vice-versa;
+    % or possibly changes to simpiden to cater for generic functions
+    
     apply('depend,list fc);
     apply('operator,list list fcn) where !*mode='algebraic;
     pars := for i:=1:l collect {'!~,gensym()};
@@ -148,12 +159,12 @@ dfp_rules:={
          dfp(f,append(q,{part(generic_arguments f,i)}))
              *df(part(actual_arguments f,i),x),
 
-    % typo corrected by Alan Barnes Oct 2019
     dfp(~f+~g,~q) => dfp(f,q) + dfp(g,q),
 
     dfp(-~f,~q) => -dfp(f,q),
 
-    % recursive unrolling
+       % recursive unrolling
+
     dfp(~f,~q) => dfp(dfp(f,{first q}),rest q) when
         arglength q neq -1 and part(q,0)=list and
         length q>1 and dfp!-rule!-found(dfp(f,{first q}),f),
