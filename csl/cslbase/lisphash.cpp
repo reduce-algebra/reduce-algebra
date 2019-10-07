@@ -1,7 +1,7 @@
-// lisphash.cpp                                            A C Norman, 2017
+// lisphash.cpp                                            A C Norman, 2019
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -159,7 +159,7 @@ static bool hash_compare_equalp(LispObject key, LispObject hashentry);
 static bool hash_compare_symtab(LispObject key, LispObject hashentry);
 
 static void set_hash_operations(LispObject tab)
-{   switch (basic_elt(tab, HASH_FLAVOUR))
+{   switch ((LispObject)basic_elt(tab, HASH_FLAVOUR))
     {   default:
         case FIXNUM_OF_INT(HASH_AS_EQ):
             hash_function = hash_eq;

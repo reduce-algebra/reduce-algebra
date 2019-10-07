@@ -959,6 +959,8 @@ jmp_buf *global_jb;
 
 [[noreturn]] void global_longjmp()
 {   longjmp(*global_jb, 1);
+    abort(); // longjmp should never return, but some C++ compilers
+             // do not know that!
 }
 
 bool stop_on_error = false;

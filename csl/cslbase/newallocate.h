@@ -334,16 +334,47 @@ extern std::atomic<size_t>    request_sizes[maxThreads];
 
 extern std::mutex gc_mutex;
 
-extern uintptr_t gc_trigger_and_allocate(uintptr_t r, size_t n);
-extern uintptr_t gc_participate_and_allocate(uintptr_t r, size_t n);
-
 static ThreadLocal<uintptr_t> threadId;
 static ThreadLocal<uintptr_t> fringe;
 extern std::atomic<uintptr_t> limit[maxThreads];
+extern uintptr_t limit_bis[maxThreads];
 extern std::atomic<uintptr_t> gFringe;
 extern uintptr_t gLimit;
 
+// With the scheme I have here when an 8 Mbyte page gets full all of it
+// will be scheduled for evacuation (ie garbage collection). In the extreme
+// case that I had 64 active threads but only one was performing allocation
+// that would leave 63 chunks within the page essentially empty - that is
+// about 1 Mbyte. Is (1/8) of the page is not used. That is not a disaster!
+// In the more plausible case of say 8 threads the overhead decreases to a
+// level where I really stop worrying.
+// Well if needbe I could try being clever and allocating each thread chunks
+// whose size was sensitive to their history of allocation, so that
+// threads that were almost always dormant or which hardly did any allocation
+// got much smaller chunks. At the very very least to do anything like that
+// now would be premature!
 
+// When I need to trigger or participate in a garbage collection I
+// call difficult_n_bytes() with an argument that is the amount of memory I
+// am wanting to allocate. That is allowed to be zero (for instance when
+// I am just polling). When it returns my fringe and limit_bis[threadId]
+// must be such that I can allocate the specified amount of memory without
+// need for any more tests. limit[threadId] will be OK shortly before
+// the return from difficult_n_bytes() but could be set to zero almost
+// instantly.
+
+extern void difficult_n_bytes(uintptr_t n);
+
+inline Header make_padding_header(size_t n)   // size is in bytes
+{   return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_PADDER;
+}
+
+// I will want to treat the first word of every object as atomic, so this
+// takes an address and casts it suitably.
+
+std::atomic<uintptr_t>& firstWord(uintptr_t a)
+{   return ((std::atomic<uintptr_t> *)a)[0];
+}
 
 // This is the core part of CONS and also of the code that allocates
 // bignums, strings and vectors.
@@ -362,15 +393,14 @@ inline LispObject get_n_bytes(size_t n)
 // The simple case completes here. If CHUNK is around 16K then only 1 cons
 // in 1000 will take the longer route.
     if (fringe <= w) return static_cast<LispObject>(r);
-// iIf the limit was zero that means that some other thread has in initiated
-// and this one must synchronize and participate.
-    if (w == 0) return gc_participate_and_allocate(r, n);
-// When an item will not fit into the current chunk I insert a padder so
-// that any waste space is neatly filled.
-    size_t gap = w - r;
-// The first word of every item in the heap will be of an atomic type
-// so that threaded code can parse the heap safely.
-    if (gap != 0) ((std::atomic<uintptr_t> *)r)->store(padder_header(size);
+// There are two possibilities here. One is that the new block I need to
+// allocate really will not fit in the current chunk, and the other is that
+// some other thread had set limit[] to zero to force this one to join in
+// with garbage collection. In the latter case I may in fact be able to make
+// this allocation simply.
+    if (w != 0)
+    {   size_t gap = w - r;
+        if (gap != 0) firstWord(r)->store(make_padding_header(size);
 // I now need to allocate a new chunk. gFringe and gLimit delimit a region
 // within of size PAGE (perhaps 8 Mbytes) and I will start by allocating
 // chunks sequentially within that page. By making gFringe atomic I can so
@@ -378,15 +408,15 @@ inline LispObject get_n_bytes(size_t n)
 // I will make my next chunk big enough for the current allocation request
 // with CHUNK left over after that. This ensures that even big vector
 // requests can be satisfied.
-    r = gFringe.fetch_add(CHUNK+n);
+        r = gFringe.fetch_add(CHUNK+n);
 // Be aware that other threads might be doing (atomic) increments on gFringe
 // at the same time that this one does. They will each reserve separate
 // new chunks, but some of these may fall in memory well above gLimit.
 // I am going to assume (ha ha) that even if the maximum number of threads
 // each increment gFringe by the largest possible amount the it will not
 // suffer arithmetic overflow.
-    fringe = r + n;
-    uint64_t newLimit = fringe + CHUNK;
+        fringe = r + n;
+        uint64_t newLimit = fringe + CHUNK;
 // Possibly the allocation of the new chunk ran beyond the current page
 // and that will be cause to consider triggering garbage collection. If the
 // chunk size is 16K and the page size 8M it will take 512 chunk allocations
@@ -394,15 +424,95 @@ inline LispObject get_n_bytes(size_t n)
 // allocating cons cells furiously is an extreme case then that will mean
 // that each thread gets through 32 chunks before the extra (probably severe)
 // costs of page allocation arise. 
-    if (newLimit > gLimit) return gc_trigger_and_allocate(r, n);
+        if (newLimit <= gLimit)
+        {
 // now my allocation of a new chunk has been successful. I wish to write
 // back limit[threadId] but it is possible that in the meanwhile somebody
 // set that to zero, so I need to be a bit careful. Specifically I will
 // only write back the new limit if the old one was still in force.
-    bool ok = limit[threadId].compare_exchange_strong(w, newLimit);
-    if (!ok) gc_participate_and_allocate(newLimit, 0);
+//
+// Here I have (successfully) allocated a new chunk, and I have set my
+// fringe to point within it. Because limit[threadId] can be arbitrarily
+// clobbered by others I will only update it if it has not changed since
+// I loaded it earlier. If it has changed it will have been set to zero
+// and I must participate in a GC.
+            limit_bis[threadId] = newLimit;
+            bool ok = limit[threadId].compare_exchange_strong(w, newLimit);
+            if (ok) return static_cast<LispObject>(r);
+        }
+    }
+    else
+    {
+// Here I am about to be forced to participate in garbage collection,
+// typically for the benefit of some other thread. I will check if I can in
+// fact allocate within my own chunk first.
+        uintptr_t w1 = fringe_bis[threadIs];
+        if (fringe <= w1)
+        {
+// Yes I can! What this means is that apart from limit begin zero I
+// have achieved my allocation, with r pointing at the new memory. But
+// fringe was reset so I need to treat that rather like a polling
+// operation. I will plant a header in the newly allocated block of
+// memory so that the garbage collector does not find itself inspecting
+// uininitialized storage.
+            firstWord(r)->store(make_padding_header(limit_bis[threadId] - r);
+            difficult_n_bytes(0);
+            return static_cast<LispObject>(r);
+        }
+    }
+// Here I can not complete the work with this inline function because
+// either I have run out of space for a new chunk or because some
+// other thread had done that and had set my limit register to zero
+// to tell me. I set fringe back to the value that it had on entry, so the
+// situation when I call difficult_n_bytes() is just as if it had been
+// called directly from the main program save that gFringe may have been
+// incremented - possibly beyond gLimit.
+    fringe -= n;
+    difficult_n_bytes(n);
+    r = fringe;
+    fringe += n;
     return static_cast<LispObject>(r);
 }
+
+// I am now going to write that out again but without the comments
+// so that it is east to see how much or how little work is involved
+// in each of the cases:
+
+//  inline LispObject get_n_bytes(size_t n)
+//  {   n = doubleword_align_up(n);
+//      uintptr_t r = fringe;
+//      uintptr_t w = limit[threadId].load();
+//      fringe += n;
+//      if (fringe <= w) return static_cast<LispObject>(r);
+//      // -----
+//      if (w != 0)
+//      {   size_t gap = w - r;
+//          if (gap != 0) firstWord(r)->store(make_padding_header(size);
+//          r = gFringe.fetch_add(CHUNK+n);
+//          fringe = r + n;
+//          uint64_t newLimit = fringe + CHUNK;
+//          if (newLimit <= gLimit)
+//          {   limit_bis[threadId] = newLimit;
+//              bool ok = limit[threadId].compare_exchange_strong(w, newLimit);
+//              if (ok) return static_cast<LispObject>(r);
+//          }
+//      }
+//      else
+//      {   uintptr_t w1 = fringe_bis[threadIs];
+//          if (fringe <= w1)
+//          {   firstWord(r)->store(make_padding_header(limit_bis[threadId] - r);
+//              difficult_n_bytes(0);
+//              return static_cast<LispObject>(r);
+//          }
+//      }
+//      // -----
+//      fringe -= n;
+//      difficult_n_bytes(n);
+//      r = fringe;
+//      fringe += n;
+//      return static_cast<LispObject>(r);
+//  }
+
 
 // It will be important to poll frequently because when one thread
 // observes that it needs to garbage collect all other threads must be
@@ -414,7 +524,7 @@ inline LispObject get_n_bytes(size_t n)
 
 inline void poll()
 {   if (fringe > limit[threadId].load())
-        (void)gc_participate_and_allocate(0, 0);
+        difficult_n_bytes(0);
 }
 
 // Here we will have:

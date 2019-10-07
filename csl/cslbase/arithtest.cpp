@@ -40,7 +40,15 @@
 
 #include <iostream>
 #include <iomanip>
-#include <ctime>
+#include <chrono>
+
+#if defined __CYGWIN__ || defined __MINGW32__
+// One thing I want to check is that declarations and definitions that I
+// have made in my library do not clash with ones in <windows.h>. So
+// even though I do not need anything from it I will include it here!
+
+//#include <windows.h>
+#endif
 
 using namespace arithlib;
 
@@ -149,9 +157,13 @@ int main(int argc, char *argv[])
     reseed(seed);
 
     int maxbits, ntries;
-    clock_t clk;
-    int64_t clong;
-    double timing;
+    std::chrono::high_resolution_clock::time_point clk, clk2;
+    std::chrono::duration<double, std::micro> elapsed;
+    std::chrono::nanoseconds timing;
+    clk2 = std::chrono::high_resolution_clock::now();    
+    elapsed = clk2 - clk;
+    timing =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
 
     const int MILLION = 1000000;
 
@@ -180,8 +192,8 @@ int main(int argc, char *argv[])
 
         size_t size[table_size];
         size_t testcount[table_size];
-        double mine[table_size];
-        double gmp[table_size];
+        std::chrono::nanoseconds mine[table_size];
+        std::chrono::nanoseconds gmp[table_size];
 
         uint64_t my_check = 1;
         uint64_t gmp_check = 1;
@@ -201,7 +213,7 @@ int main(int argc, char *argv[])
                 {   a[i] = mersenne_twister();
                     b[i] = mersenne_twister();
                 }
-                clock_t cl0 = clock();
+                clk = std::chrono::high_resolution_clock::now();
 // When using Karatsuba the cost of a multiplication is expected to
 // grow as n^1.585, and so to arrange that I tke roughly the same
 // absolute time on each number-length I perform my tests a number of
@@ -283,8 +295,10 @@ int main(int argc, char *argv[])
                     for (size_t i=0; i<lenb; i++)
                         b[i] = MULT*b[i] + ADD;
                 }
-                clock_t cl1 = clock();
-                double t = (cl1-cl0)/(double)CLOCKS_PER_SEC;
+                clk2 = std::chrono::high_resolution_clock::now();    
+                elapsed = clk2 - clk;
+                timing =
+                    std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
 // I store details of this test run in an array for display later on.
                 size[trial] = lena;
                 testcount[trial] = 500*tests;
@@ -294,11 +308,11 @@ int main(int argc, char *argv[])
                     std::cout << ".";
                     break;
                 case 1:
-                    mine[trial] = t;
+                    mine[trial] = timing;
                     std::cout << ":";
                     break;
                 case 2:
-                    gmp[trial] = t;
+                    gmp[trial] = timing;
                     std::cout << "|";
                     break;
                 }
@@ -317,7 +331,7 @@ int main(int argc, char *argv[])
         std::cout << std::hex << "my checksum:  " << my_check << std::endl;
         std::cout             << "gmp checksum: " << gmp_check << std::endl;
         std::cout << std::dec;
-        std::cout << "Times are reported in microseconds per multiplication"
+        std::cout << "Times are reported in seconds per multiplication"
                   << std::endl;
         std::cout << std::setw(10) << "length"
                   << std::setw(10) << "my time"
@@ -325,14 +339,14 @@ int main(int argc, char *argv[])
                   << std::setw(10) << "  ratio mine/gmp"
                   << std::fixed << std::setprecision(3)
                    << std::endl;
-// In the following table times are reported in microseconds per
+// In the following table times are reported in seconds per
 // multiplication. The ratio is > 1.0 when my code is slower than gmp.
         for (size_t i=0; i<table_size; i++)
         {   if (size[i] == 0) break;
             std::cout << std::setw(10) << size[i]
-                      << std::setw(10) << (1.0e6*mine[i]/testcount[i])
-                      << std::setw(10) << (1.0e6*gmp[i]/testcount[i])
-                      << std::setw(10) << (mine[i]/gmp[i])
+                      << std::setw(10) << (1.0e-3*(double)mine[i].count()/testcount[i])
+                      << std::setw(10) << (1.0e-3*(double)gmp[i].count()/testcount[i])
+                      << std::setw(10) << ((double)mine[i].count()/gmp[i].count())
                       << std::endl;
         }
     }
@@ -411,24 +425,10 @@ int main(int argc, char *argv[])
     ntries = 50*MILLION;
 
     std::cout << "Start of bitwise operation testing" << std::endl;
-    clk = clock(); clong = 0;
+    clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {
-// On some 32-bit systems clock_t is a 32-bit type and CLOCKS_PER_SEC
-// is 1000000. The consequence is that clock readings overflow after about
-// half an hour of CPU time. The tests here can reasonably be configured
-// such that on a slow machine this limit may be exceeded. To work around
-// that I unload from clock() into an int64_t value every million times
-// round my loop. On a sufficiently slow system this would not cure the
-// problem, but in realistic cases it will and the overhead of the test
-// here and the extra work every 2^20 iterations is not liable to be severe. 
-        if ((i & 0xfffff) == 0)
-        {   clock_t now = clock();
-            clong += now - clk;
-            clk = now;
-        }
-        Bignum a = random_upto_bits_bignum(maxbits);
+    {   Bignum a = random_upto_bits_bignum(maxbits);
         Bignum b = random_upto_bits_bignum(maxbits);
         uint64_t r = mersenne_twister();
         a = fudge_distribution_bignum(a, (int)r & 0xf);
@@ -464,9 +464,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    timing = (clong + clock() - clk)/(double)CLOCKS_PER_SEC;
+    clk2 = std::chrono::high_resolution_clock::now();    
+    elapsed = clk2 - clk;
+    timing =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "Bitwise operation tests completed in "
-              << timing << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << std::endl;
 
 #endif // TEST_BITWISE
 
@@ -483,15 +486,10 @@ int main(int argc, char *argv[])
     ntries = 50*MILLION;
 
     std::cout << "Start of shift testing" << std::endl;
-    clk = clock(); clong = 0;
+    clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {   if ((i & 0xfffff) == 0)
-        {   clock_t now = clock();
-            clong += now - clk;
-            clk = now;
-        }
-        Bignum a = random_upto_bits_bignum(maxbits);
+    {   Bignum a = random_upto_bits_bignum(maxbits);
         uint64_t r = mersenne_twister();
         a = fudge_distribution_bignum(a, (int)r & 0xf);
         r = (r >> 4)%800;
@@ -521,9 +519,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    timing = (clong + clock() - clk)/(double)CLOCKS_PER_SEC;
+    clk2 = std::chrono::high_resolution_clock::now();    
+    elapsed = clk2 - clk;
+    timing =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "Shift tests completed in "
-              << timing << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << std::endl;
 
 #endif // TEST_SHIFTS
 
@@ -541,15 +542,10 @@ int main(int argc, char *argv[])
     ntries = 50*MILLION;
 
     std::cout << "Start of Plus and Times testing" << std::endl;
-    clk = clock(); clong = 0;
+    clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {   if ((i & 0xfffff) == 0)
-        {   clock_t now = clock();
-            clong += now - clk;
-            clk = now;
-        }
-        Bignum a = random_upto_bits_bignum(maxbits);
+    {   Bignum a = random_upto_bits_bignum(maxbits);
         Bignum b = random_upto_bits_bignum(maxbits);
         uint64_t r = mersenne_twister();
         a = fudge_distribution_bignum(a, (int)r & 0xf);
@@ -577,9 +573,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    timing = (clong + clock() - clk)/(double)CLOCKS_PER_SEC;
+    clk2 = std::chrono::high_resolution_clock::now();    
+    elapsed = clk2 - clk;
+    timing =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "Plus and Times tests completed in "
-              << timing << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << std::endl;
 
 #endif // TEST_PLUS_AND_TIMES
 
@@ -597,15 +596,10 @@ int main(int argc, char *argv[])
     ntries = 50*MILLION;
 
     std::cout << "Start of division testing" << std::endl;
-    clk = clock(); clong = 0;
+    clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {   if ((i & 0xfffff) == 0)
-        {   clock_t now = clock();
-            clong += now - clk;
-            clk = now;
-        }
-        Bignum divisor, remainder, quotient;
+    {   Bignum divisor, remainder, quotient;
         do
         {   divisor = random_upto_bits_bignum(maxbits) + 1;
             remainder = uniform_upto_bignum(divisor);
@@ -650,9 +644,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    timing = (clong + clock() - clk)/(double)CLOCKS_PER_SEC;
+    clk2 = std::chrono::high_resolution_clock::now();    
+    elapsed = clk2 - clk;
+    timing =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "Division tests completed in "
-              << timing << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << std::endl;
 
 #endif // TEST_DIVISION
 
@@ -665,15 +662,10 @@ int main(int argc, char *argv[])
     ntries = 20*MILLION;
 
     std::cout << "Start of GCD testing" << std::endl;
-    clk = clock(); clong = 0;
+    clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {   if ((i & 0xfffff) == 0)
-        {   clock_t now = clock();
-            clong += now - clk;
-            clk = now;
-        }
-        Bignum a, b, g;
+    {   Bignum a, b, g;
         do
         {   a = random_upto_bits_bignum(maxbits);
             b = random_upto_bits_bignum(maxbits);
@@ -708,9 +700,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    timing = (clong + clock() - clk)/(double)CLOCKS_PER_SEC;
+    clk2 = std::chrono::high_resolution_clock::now();    
+    elapsed = clk2 - clk;
+    timing =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "GCD tests completed in "
-              << timing << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << std::endl;
 
 #endif // TEST_GCD
 
@@ -724,15 +719,10 @@ int main(int argc, char *argv[])
     ntries = 50*MILLION;
 
     std::cout << "Start of isqrt testing" << std::endl;
-    clk = clock();
+    clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {   if ((i & 0xfffff) == 0)
-        {   clock_t now = clock();
-            clong += now - clk;
-            clk = now;
-        }
-        Bignum a, b;
+    {   Bignum a, b;
         a = random_upto_bits_bignum(maxbits);
         uint64_t r = mersenne_twister();
         a = fudge_distribution_bignum(a, (int)r & 7);
@@ -750,9 +740,13 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    timing = (clong + clock() - clk)/(double)CLOCKS_PER_SEC;
+    clk2 = std::chrono::high_resolution_clock::now();    
+    elapsed = clk2 - clk;
+    timing =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
+
     std::cout << "Isqrt tests completed in "
-              << timing << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << std::endl;
 
 #endif // TEST_ISQRT
 
@@ -775,15 +769,10 @@ int main(int argc, char *argv[])
     volatile double fp_forcer;
 
     std::cout << "Start of float testing" << std::endl;
-    clk = clock(); clong = 0;
+    clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {   if ((i & 0xfffff) == 0)
-        {   clock_t now = clock();
-            clong += now - clk;
-            clk = now;
-        }
-        Bignum a, b;
+    {   Bignum a, b;
         a = random_upto_bits_bignum(maxbits);
         uint64_t r = mersenne_twister();
         a = fudge_distribution_bignum(a, (int)r & 15);
@@ -833,9 +822,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    timing = (clong + clock() - clk)/(double)CLOCKS_PER_SEC;
+    clk2 = std::chrono::high_resolution_clock::now();    
+    elapsed = clk2 - clk;
+    timing =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "Float tests completed in "
-              << timing << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << std::endl;
 
 #endif // TEST_FLOAT
 

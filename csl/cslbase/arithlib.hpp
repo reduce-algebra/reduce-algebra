@@ -868,42 +868,7 @@ namespace std
 
 #if defined __CYGWIN__ || defined __MINGW32__
 
-#define USE_MICROSOFT_API 1
-
-// If I go "#include <windows.h>" (well the bit I actually need seems to be
-// processthreadsapi.h) that tends to define all sorts of things that can
-// clash with my own code. So here I put in explicit declarations for the
-// thread-local support functions I use, trying rather hard to match just
-// what Windows will use.
-
-extern "C"
-{
-// TlsAlloc() allocates a small integer that acts as a handle for a
-// fresh thread-local. Once such a handle has been allocated TlsSetValue and
-// TlsGetValue can save and load void * values from a location that it
-// refers to. This location will in fact by found relative to either the FS
-// or GS segment register. When the handle is no longer required it will be
-// proper to cell TlsFree to release it. One can certainly not allocate more
-// than 1088 handles (this value is 64+1024, and access via the first 64
-// handles will be slightly cheaper than via the remaining 1024). If a
-// value that you want to be thread-local can not be stored in a void * using
-// TlsSetValue then it is necessary to allocate space elsewhere and set the
-// Microsoft slot to point to it.
-
-
-#ifdef __LP64__
-typedef unsigned int tls_handle;
-#else
-typedef unsigned long tls_handle;
-#endif
-
-extern __declspec(dllimport) tls_handle TlsAlloc();
-extern __declspec(dllimport) int TlsFree(tls_handle);
-// I will use my own replacements for the next two. But I include
-// declarations here for reference.
-extern __declspec(dllimport) void *TlsGetValue(tls_handle);
-extern __declspec(dllimport) int TlsSetValue(tls_handle, void *);
-};
+#include <windows.h>
 
 // The code here is intended and expected to behave exactly like a version
 // that calls the Microsoft-provided functions, except (1) it does not
@@ -936,7 +901,7 @@ extern __declspec(dllimport) int TlsSetValue(tls_handle, void *);
 #define extended_TLS_offset        0x1780
 #endif // Windows 32 vs 64 bit
 
-inline void *read_via_segment_register(tls_handle n)
+inline void *read_via_segment_register(DWORD n)
 {   void *r;
     asm volatile
     (   MOVE_INSTRUCTION "  " SEGMENT_REGISTER ":(%1), %0"
@@ -947,7 +912,7 @@ inline void *read_via_segment_register(tls_handle n)
     return r;
 }
 
-inline void write_via_segment_register(tls_handle n, void *v)
+inline void write_via_segment_register(DWORD n, void *v)
 {   asm volatile
     (   MOVE_INSTRUCTION " %0, " SEGMENT_REGISTER ":(%1)"
         :
@@ -956,27 +921,29 @@ inline void write_via_segment_register(tls_handle n, void *v)
     );
 }
 
-inline void *extended_tls_load(tls_handle teb_slot)
+inline void *extended_tls_load(DWORD teb_slot)
 {   void **a = (void **)read_via_segment_register(extended_TLS_offset);
     return a[teb_slot - 64];
 }
 
-inline void extended_tls_store(tls_handle teb_slot, void *v)
+inline void extended_tls_store(DWORD teb_slot, void *v)
 {   void **a = (void **)read_via_segment_register(extended_TLS_offset);
     a[teb_slot - 64] = v;
 }
 
-inline void *tls_load(tls_handle teb_slot)
+inline void *tls_load(DWORD teb_slot)
 {   if (teb_slot >= 64) return extended_tls_load(teb_slot);
     else return (void *)read_via_segment_register(
         basic_TLS_offset + sizeof(void *)*teb_slot);
 }
 
-inline void tls_store(tls_handle teb_slot, void *v)
+inline void tls_store(DWORD teb_slot, void *v)
 {   if (teb_slot >= 64) return extended_tls_store(teb_slot, v);
     else write_via_segment_register(
         basic_TLS_offset + sizeof(void *)*teb_slot, v);
 }
+
+#define USE_MICROSOFT_API 1
 
 #endif // Microsoft case
 
@@ -1005,13 +972,13 @@ class ThreadLocal
 #ifdef __cpp_inline_variables
 // I need a single (ie not thread_local and not per-compilation-unit)
 // variable slotNumber to record the number in Microsoft's thread block.
-    static inline tls_handle slotNumber;
-    inline tls_handle& getSlotNumber()
+    static inline DWORD slotNumber;
+    inline DWORD& getSlotNumber()
     {   return slotNumber;
     }
 #else
-    inline tls_handle& getSlotNumber()
-    {   static tls_handle slotNumber;
+    inline DWORD& getSlotNumber()
+    {   static DWORD slotNumber;
         return slotNumber;
     }
 #endif
@@ -1125,13 +1092,13 @@ class ThreadLocalRef
 #ifdef __cpp_inline_variables
 // I need a single (ie not thread_local and not per-compilation-unit)
 // variable slotNumber to record the number in Microsoft's thread block.
-    static inline tls_handle slotNumber;
-    inline tls_handle& getSlotNumber()
+    static inline DWORD slotNumber;
+    inline DWORD& getSlotNumber()
     {   return slotNumber;
     }
 #else
-    inline tls_handle& getSlotNumber()
-    {   static tls_handle slotNumber;
+    inline DWORD& getSlotNumber()
+    {   static DWORD slotNumber;
         return slotNumber;
     }
 #endif
@@ -1421,13 +1388,24 @@ namespace arithlib_implementation
 // and second columns here. That counting is what send_count and
 // receive_count are doing. 
 
+// In a nice world I would use just the C++ std::mutex scheme for
+// synchronization, however here I am performance critical and to save
+// a bit when performing medium-sized multiplications I will use the
+// Microsoft version of mutexes directly on that platform.
 
+#if defined __CYGWIN__ || defined __MINGW32__
+#define USE_MICROSOFT_MUTEX 1
+#endif // __CYGWIN__ or __MINGW32__
 
 class Worker_data
 {
 public:
     std::atomic<bool> ready;
+#ifdef USE_MICROSOFT_MUTEX
+    void *mutex[4];
+#else
     std::mutex mutex[4];
+#endif
     bool quit_flag;
     const uint64_t *a;
     size_t lena;
@@ -1443,10 +1421,25 @@ public:
     Worker_data()
     {   ready = false;
         quit_flag = false;
+#ifdef USE_MICROSOFT_MUTEX
+        mutex[0] = CreateMutexA(NULL, 1, NULL);
+        mutex[1] = CreateMutexA(NULL, 1, NULL);
+        mutex[2] = CreateMutexA(NULL, 0, NULL);
+        mutex[3] = CreateMutexA(NULL, 0, NULL);
+#else
 // The next two must be locked by the main thread.
         mutex[0].lock();
         mutex[1].lock();
+#endif
     }
+#ifdef USE_MICROSOFT_MUTEX
+    ~Worker_data()
+    {   CloseHandle(mutex[0]);
+        CloseHandle(mutex[1]);
+        CloseHandle(mutex[2]);
+        CloseHandle(mutex[3]);
+    }
+#endif
 };
 
 inline void worker_thread(Worker_data *w);
@@ -1475,7 +1468,8 @@ public:
 // need to own at the start! Without this the main thread may post a
 // multiplication, so its part of the work and try to check that the worker
 // has finished (by claiming one of these mutexes) before the worker thread
-// has got started up and has claimed them.
+// has got started up and has claimed them. This feels clumsy, but it only
+// happens at system-startup.
         while (!wd_0.ready.load() && !wd_1.ready.load())
             std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
@@ -1502,13 +1496,25 @@ public:
 // you can find it.
 
     void release_workers()
-    {   wd_0.mutex[send_count].unlock();
+    {
+#ifdef USE_MICROSOFT_MUTEX
+        ReleaseMutex(wd_0.mutex[send_count]);
+        ReleaseMutex(wd_1.mutex[send_count]);
+#else
+        wd_0.mutex[send_count].unlock();
         wd_1.mutex[send_count].unlock();
+#endif
     }
 
     void wait_for_workers()
-    {   wd_0.mutex[send_count^2].lock();
+    {
+#ifdef USE_MICROSOFT_MUTEX
+        WaitForSingleObject(wd_0.mutex[send_count^2], 0xffffffff);
+        WaitForSingleObject(wd_1.mutex[send_count^2], 0xffffffff);
+#else
+        wd_0.mutex[send_count^2].lock();
         wd_1.mutex[send_count^2].lock();
+#endif
         send_count = (send_count+1)&3;
     }
 
@@ -8038,11 +8044,9 @@ static size_t KARATSUBA_CUTOFF = K;
 #endif
 
 #if !defined K1 && !defined K1_DEFINED
-// I provide a default here but can override it at compile time. I suspect
-// that a good value here might be of the order of 100. For the old CSL
-// version I used the number 120. Well for now I will use 3*KARATSUBA_CUTOFF
+// I provide a default here but can override it at compile time.
 
-static const size_t K1=3*K;
+static const size_t K1=170;
 #define K1_DEFINED 1
 #endif
 
@@ -8149,18 +8153,33 @@ inline void karatsuba(const uint64_t *a, size_t lena,
 // processes requests until a "quit" request is sent to it.
 
 inline void worker_thread(Worker_data *wd)
-{   wd->mutex[2].lock();
+{
+#ifdef USE_MICROSOFT_MUTEX
+    WaitForSingleObject(wd->mutex[2], 0xffffffff);
+    WaitForSingleObject(wd->mutex[3], 0xffffffff);
+#else
+    wd->mutex[2].lock();
     wd->mutex[3].lock();
+#endif
     wd->ready = true;
     int receive_count = 0;
     for (;;)
-    {   wd->mutex[receive_count].lock();
+    {
+#ifdef USE_MICROSOFT_MUTEX
+        WaitForSingleObject(wd->mutex[receive_count], 0xffffffff);
+#else
+        wd->mutex[receive_count].lock();
+#endif
         if (wd->quit_flag) return;
 // This is where I do some work!
         small_or_big_multiply(wd->a, wd->lena,
                               wd->b, wd->lenb,
                               wd->c, wd->w);
+#ifdef USE_MICROSOFT_MUTEX
+        ReleaseMutex(wd->mutex[receive_count^2]);
+#else
         wd->mutex[receive_count^2].unlock();
+#endif
         receive_count = (receive_count + 1) & 3;
     }
 }

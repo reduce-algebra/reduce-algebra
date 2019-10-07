@@ -46,13 +46,16 @@
 
 LispObject Lfrexp(LispObject env, LispObject a)
 {
+#ifdef HAVE_SOFTFLOAT
     if (is_long_float(a))
     {   float128_t d;
         int x;
         f128M_frexp((float128_t *)long_float_addr(a), &d, &x);
         return cons(fixnum_of_int(x), make_boxfloat128(d));
     }
-    else if (is_single_float(a))
+    else
+#endif // HAVE_SOFTFLOAT
+    if (is_single_float(a))
     {   int x;
         float d = std::frexp(single_float_val(a), &x);
         return cons(fixnum_of_int(x), pack_single_float(d));

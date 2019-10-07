@@ -510,10 +510,6 @@ LispObject get_basic_vector(int tag, int type, size_t size)
     return (LispObject)(r + tag);
 }
 
-inline Header make_padding_header(size_t n)   // size is in bytes
-{   return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_PADDER;
-}
-
 // This takes a vector (which can be one represented using an INDEXVEC)
 // and reduces its size to a total value len. It returns the shorter
 // vector. Only used on simple vectors. This is ONLY used when a hash table
@@ -833,10 +829,14 @@ std::atomic<size_t>    request_sizes[maxThreads];
 std::mutex gc_mutex;
 
 std::atomic<uintptr_t> limit[maxThreads];
+intptr_t fringe_bis[maxThreads];
+intptr_t limit_bis[maxThreads];
+std::atomic<uintptr_t> request_values[maxThreads];
+std::atomic<size_t>    request_sizes[maxThreads];
 std::atomic<uintptr_t> gFringe;
 uintptr_t gLimit;
 
-// There are two cases where I may get to code that is pr esent here. One
+// There are two cases where I may get to code that is present here. One
 // is when an allocation attempt fills up an 8 Mbyte page. In that case
 // a generational scheme needs to do a minor garbage collection, treating
 // the full page as having been used as a nursery. In the non-generational
