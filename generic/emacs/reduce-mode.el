@@ -1961,14 +1961,14 @@ passing on any prefix argument (in raw form)."
 ;;; I should tidy up the following a bit at some point. For now I have made an
 ;;; effort to isolate this not to disturb others. TS
 (defconst reduce-asserted-arg-types-rule ;; TS
-  (list (concat "[(,]\\s-*"
+  (list (concat "[\(,]\\s-*"
                 "\\("
                 "[^: \"]+" ; should be reduce-identifier-regexp but this did not work
                 ;;       reduce-identifier-regexp
                 "\\)"
                 "\\s-*:\\s-*"
                 "\\("
-                "[^), \"]+" ; should be reduce-identifier-regexp but this did not work
+                "[^=\), \"]+" ; should be reduce-identifier-regexp but this did not work
                 ;;       reduce-identifier-regexp
                 "\\)")
         '(2 font-lock-type-face t)))
@@ -1976,7 +1976,7 @@ passing on any prefix argument (in raw form)."
 (defconst reduce-asserted-return-type-rule ;; TS
   (list (concat ")\\s-*:\\s-*"
                 "\\("
-                "[^ ;$]+" ; should be reduce-identifier-regexp but this did not work
+                "[^= ;$]+" ; should be reduce-identifier-regexp but this did not work
                 "\\)")
         '(1 font-lock-type-face t)))
 
