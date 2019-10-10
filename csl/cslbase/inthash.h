@@ -1,4 +1,4 @@
-// inthash.h                                      Copyright A C Norman 2017
+// inthash.h                                      Copyright A C Norman 2019
 
 // The code here provides an implementation of hash tables that use
 // integer keys (uintptr_t) and can optionally associate similar width
@@ -36,7 +36,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

@@ -1,4 +1,4 @@
-// "fwin.h"                                           2003-2018, A C Norman
+// "fwin.h"                                           2003-2019, A C Norman
 //
 // This defines the public interface supported by the "fwin" window
 // interface.
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

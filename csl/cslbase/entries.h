@@ -1,8 +1,8 @@
-// entries.h                               Copyright (C) Codemist 1991-2018
+// entries.h                               Copyright (C) Codemist 1991-2019
 
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

@@ -1,4 +1,4 @@
-// Testing memory protection to spot write operations  (A C Norman, 2018)
+// Testing memory protection to spot write operations  (A C Norman, 2019)
 
 // The BSD license as used elsewhere with CSL applies to this code.
 

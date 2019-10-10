@@ -1,7 +1,7 @@
 #ifndef ZLIB_DEMO
-// preserve.cpp                           Copyright (C) Codemist, 1990-2017
+// preserve.cpp                           Copyright (C) Codemist, 1990-2019
 #else
-// zlibdemo.cpp                           Copyright (C) Codemist, 1990-2017
+// zlibdemo.cpp                           Copyright (C) Codemist, 1990-2019
 #endif
 
 // The file preserve.cpp can be preprocessed to generate zlibdemo.cpp,
@@ -9,7 +9,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

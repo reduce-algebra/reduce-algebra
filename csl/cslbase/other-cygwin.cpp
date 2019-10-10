@@ -1,4 +1,4 @@
-// other-cygwin.cpp                     Copyright (C) A C Norman  2014-2018
+// other-cygwin.cpp                     Copyright (C) A C Norman  2014-2019
 
 //
 // This program is to be run from a DOS command prompt or any cygwin
@@ -35,7 +35,7 @@
 // identified.
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

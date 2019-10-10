@@ -2,6 +2,9 @@
 # be exported and which should not. I will include some patterns here
 # that relate to both Unix and DOS filenames (eg .o and .obj).
 
+# The "xport" utility is one that I had and used many years ago, and is
+# now thoroughtly obsolete - I will remove this file soon.
+
 # note that a URL can be like
 #   scp://user@host=port:path
 

@@ -1,4 +1,4 @@
-// stream.h                              Copyright (C) Codemist, 1995-2017
+// stream.h                              Copyright (C) Codemist, 1995-2019
 
 //
 // Header defining the structure of stream objects in CSL, and also
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

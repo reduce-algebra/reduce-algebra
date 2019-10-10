@@ -206,7 +206,7 @@
 #include <errno.h>
 #include <assert.h>
 
-// As of May 2018 I will rely in C++11 for random number and thread support...
+// As from May 2018 I will use C++11 for random number and thread support...
 
 #include <random>
 #include <thread>

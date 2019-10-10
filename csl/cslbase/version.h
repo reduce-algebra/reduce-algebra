@@ -1,4 +1,4 @@
-// version.h                               Copyright (C) 1990-2018 Codemist
+// version.h                               Copyright (C) 1990-2019 Codemist
 
 #ifndef header_version_h
 #define header_version_h 1
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2018, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -39,7 +39,7 @@
 // (scripts/commit.sh) that is used to update the subversion repository to
 // update the revision number here.
 
-#define REVISION 5157
+#define REVISION 5165
 
 #endif // header_version_h
 

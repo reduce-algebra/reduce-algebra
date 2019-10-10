@@ -1,4 +1,4 @@
-% "ccomp.red"                                Copyright 1991-2017,  Codemist
+% "ccomp.red"                                Copyright 1991-2019,  Codemist
 %
 % Compiler that turns Lisp code into C++ in a way that fits in
 % with the conventions used with CSL.
@@ -7,7 +7,7 @@
 
 
 %%
-%% Copyright (C) 2017, following the master REDUCE source files.          *
+%% Copyright (C) 2019, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *

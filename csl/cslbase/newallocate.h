@@ -363,10 +363,14 @@ extern uintptr_t gLimit;
 // the return from difficult_n_bytes() but could be set to zero almost
 // instantly.
 
-extern void difficult_n_bytes(uintptr_t n);
+extern uintptr_t difficult_n_bytes(uintptr_t r, size_t n);
 
 inline Header make_padding_header(size_t n)   // size is in bytes
 {   return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_PADDER;
+}
+
+inline Header make_vecbin_header(size_t n)   // size is in bytes
+{   return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_VEC32;
 }
 
 // I will want to treat the first word of every object as atomic, so this
@@ -378,6 +382,8 @@ std::atomic<uintptr_t>& firstWord(uintptr_t a)
 
 // This is the core part of CONS and also of the code that allocates
 // bignums, strings and vectors.
+
+static const size_t CHUNK=16384;
 
 inline LispObject get_n_bytes(size_t n)
 {   n = doubleword_align_up(n);
@@ -400,7 +406,7 @@ inline LispObject get_n_bytes(size_t n)
 // this allocation simply.
     if (w != 0)
     {   size_t gap = w - r;
-        if (gap != 0) firstWord(r)->store(make_padding_header(size);
+        if (gap != 0) firstWord(r).store(make_padding_header(gap));
 // I now need to allocate a new chunk. gFringe and gLimit delimit a region
 // within of size PAGE (perhaps 8 Mbytes) and I will start by allocating
 // chunks sequentially within that page. By making gFringe atomic I can so
@@ -446,7 +452,7 @@ inline LispObject get_n_bytes(size_t n)
 // Here I am about to be forced to participate in garbage collection,
 // typically for the benefit of some other thread. I will check if I can in
 // fact allocate within my own chunk first.
-        uintptr_t w1 = fringe_bis[threadIs];
+        uintptr_t w1 = limit_bis[threadId];
         if (fringe <= w1)
         {
 // Yes I can! What this means is that apart from limit begin zero I
@@ -455,9 +461,14 @@ inline LispObject get_n_bytes(size_t n)
 // operation. I will plant a header in the newly allocated block of
 // memory so that the garbage collector does not find itself inspecting
 // uininitialized storage.
-            firstWord(r)->store(make_padding_header(limit_bis[threadId] - r);
-            difficult_n_bytes(0);
+            firstWord(r).store(make_vecbin_header(limit_bis[threadId] - r));
+// I need the pointer r to be treated as live across any garbage collection
+// that happens within difficult_n_bytes, so I pass a tagged copy of
+// it there and untage again when the result is returned.
+// ?? volatile LispObject rr = static_cast<LispObject>(r + TAG_VECTOR);
+            r = difficult_n_bytes(r+TAG_VECTOR, 0) - TAG_VECTOR;
             return static_cast<LispObject>(r);
+// ?? return rr - TAG_VECTOR;
         }
     }
 // Here I can not complete the work with this inline function because
@@ -468,7 +479,7 @@ inline LispObject get_n_bytes(size_t n)
 // called directly from the main program save that gFringe may have been
 // incremented - possibly beyond gLimit.
     fringe -= n;
-    difficult_n_bytes(n);
+    difficult_n_bytes(nil, n);
     r = fringe;
     fringe += n;
     return static_cast<LispObject>(r);
@@ -487,7 +498,7 @@ inline LispObject get_n_bytes(size_t n)
 //      // -----
 //      if (w != 0)
 //      {   size_t gap = w - r;
-//          if (gap != 0) firstWord(r)->store(make_padding_header(size);
+//          if (gap != 0) firstWord(r)->store(make_padding_header(gap);
 //          r = gFringe.fetch_add(CHUNK+n);
 //          fringe = r + n;
 //          uint64_t newLimit = fringe + CHUNK;
@@ -498,16 +509,16 @@ inline LispObject get_n_bytes(size_t n)
 //          }
 //      }
 //      else
-//      {   uintptr_t w1 = fringe_bis[threadIs];
+//      {   uintptr_t w1 = limit_bis[threadId];
 //          if (fringe <= w1)
-//          {   firstWord(r)->store(make_padding_header(limit_bis[threadId] - r);
-//              difficult_n_bytes(0);
+//          {   firstWord(r)->store(make_vecbin_header(limit_bis[threadId] - r);
+//              r = difficult_n_bytes(r+TAG_VECTOR, 0) - TAG_VECTOR;
 //              return static_cast<LispObject>(r);
 //          }
 //      }
 //      // -----
 //      fringe -= n;
-//      difficult_n_bytes(n);
+//      difficult_n_bytes(nil, n);
 //      r = fringe;
 //      fringe += n;
 //      return static_cast<LispObject>(r);
@@ -524,7 +535,7 @@ inline LispObject get_n_bytes(size_t n)
 
 inline void poll()
 {   if (fringe > limit[threadId].load())
-        difficult_n_bytes(0);
+        difficult_n_bytes(nil, 0);
 }
 
 // Here we will have:
