@@ -65,31 +65,32 @@ rlistat '(sudim sptt)$
 
 %--------------- Set simpFunction for QG and G3 operators -------------
 
-symbolic procedure simpqg u$ simpcv(u,'qg)$
-symbolic procedure simpg3 u$ simpcv(u,'g3)$
+%symbolic procedure simpqg u$ simpcv(u,'qg)$
+%symbolic procedure simpg3 u$ simpcv(u,'g3)$
 
-put('qg,'simpfn,'simpqg)$
-put('g3,'simpfn,'simpg3)$
+put('qg,'simpfn,'simpcv)$
+put('g3,'simpfn,'simpcv)$
+flag('(qg g3),'full);
 
-symbolic procedure simpcv(u,x)$
+symbolic procedure simpcv u$
   %--------------------------------------------------------------------
   % u is a kernel.
   % Add to mul!* simpCGraph function.
   % return u (s.q.)
   %--------------------------------------------------------------------
-  if length u neq 3 then
-    cerror list("Invalid number of edges in vertex",u)
+  if length u neq 4 then
+    cerror {"Invalid number of edges in vertex",u}
   else << if not ('simpcgraph memq mul!*) then
             mul!* := aconc!*(mul!*,'simpcgraph)$
-          !*k2q(x . u)
+          !*k2q u
        >>$
 
 symbolic procedure simpcgraph u$
   %--------------------------------------------------------------------
   % u is a s.q..
-  % Simplified u and return one (s.q.).
+  % Simplifies u and returns one (s.q.).
   %--------------------------------------------------------------------
-  if null numr u or numberp numr u or red numr u then u
+  if null numr u or domainp numr u then u
   else begin
          SU_order := simp list('!*sq,SU_order,nil)$
          n!*!*2!-1 := addsq(multsq(SU_order,SU_order),('-1 ./ 1))$
@@ -101,23 +102,23 @@ symbolic procedure simpcgraph1(u,v,w)$
   %--------------------------------------------------------------------
   % u is a s.f..
   % Seperate u on two part:
-  %   1) v is a list of QG and G3 oerators$
+  %   1) v is a list of QG and G3 operators$
   %   2) w is other (s.f.).
-  % Return <color factorof v>*w  (s.q.).
+  % Return <color factor of v>*w  (s.q.).
   %--------------------------------------------------------------------
-  if numberp u or red u then
-    if v then multsq(color0 v,multf(u,w) ./ 1) else multf(u,w) ./ 1
-  else if null atom mvar u and car mvar u eq 'qg then
+  if domainp u then
+    (if null v then coef else multsq(color0 v,coef)) where coef:=!*f2q multf(u,w)
+  else if not null red u then
+       addsq(simpcgraph1(!*t2f lt u,v,w),simpcgraph1(red u,v,w)) 
+  else if sfp mvar u then %cerror{"SFP",prepf mvar u}
+       simpcgraph1((!*q2f simp prepf u where !*factor=nil,!*exp=t),v,w)
+  else if eqcar(mvar u,'qg) then
          if ldeg u = 1 then simpcgraph1(lc u,mvar u . v,w)
-         else cerror list("Vertex",list('!*sq,u ./ 1,t)
-                         ,"can not be multiply by itself."
-                         )
-  else if null atom mvar u and car mvar u eq 'g3 then
+         else cerror {"Vertex",mvar u,"cannot be multiplied by itself."}
+  else if eqcar(mvar u,'g3) then
          if ldeg u = 1 then simpcgraph1(lc u,mvar u . v,w)
          else if ldeg u = 2 then simpcgraph1(lc u,mvar u . mvar u . v,w)
-         else cerror list("Vertex",list('!*sq,u ./ 1,t),
-                      "can not be multiplied by itself more then twice."
-                         )
+         else cerror {"Vertex",mvar u,"cannot be multiplied by itself more then twice."}
   else simpcgraph1(lc u,v,multf(!*p2f lpow u,w))$
 
 %----------------------------------------------------------------------
