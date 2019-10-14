@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomSearchEngine id="oxb7ffjizr2" creator="016704250287712503695" language="en" encoding="UTF-8" autocompletions="true">
+  <Title>Reduce-algebra.sourceforge.io</Title>
+  <Description>Search the REDUCE web site</Description>
+  <Context>
+    <BackgroundLabels>
+      <Label name="_cse_oxb7ffjizr2" mode="FILTER"/>
+      <Label name="_cse_exclude_oxb7ffjizr2" mode="ELIMINATE"/>
+    </BackgroundLabels>
+    <Synonyms>
+      <synonymentry word="Grobner">
+        <synonym>Groebner</synonym>
+        <synonym> Gröbner</synonym>
+      </synonymentry>
+      <synonymentry word="Groebner">
+        <synonym>Gröbner</synonym>
+        <synonym> Grobner</synonym>
+      </synonymentry>
+      <synonymentry word="Gröbner">
+        <synonym>Groebner</synonym>
+        <synonym> Grobner</synonym>
+      </synonymentry>
+    </Synonyms>
+  </Context>
+  <LookAndFeel element_layout="1" theme="7" custom_theme="true" url_length="full" element_branding="show" enable_cse_thumbnail="false" promotion_url_length="full" font="2">
+    <Logo/>
+    <Colors background="#EEEEFF" border="#EEEEFF"/>
+    <Promotions/>
+    <SearchControls input_border_color="#000000" button_border_color="#000099" button_background_color="#000099"/>
+    <Results/>
+  </LookAndFeel>
+  <ImageSearchSettings enable="false"/>
+  <autocomplete_settings/>
+  <sort_by_keys label="Relevance" key=""/>
+  <sort_by_keys label="Date" key="date"/>
+</CustomSearchEngine>

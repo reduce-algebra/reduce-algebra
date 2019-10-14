@@ -1,7 +1,7 @@
 Files for the REDUCE web site
 =============================
 
-Francis Wright, September 2019
+Francis Wright, October 2019
 
 The REDUCE web site can be accessed using the URLs [https://reduce-algebra.sourceforge.io/](https://reduce-algebra.sourceforge.io/), [http://reduce-algebra.com](http://reduce-algebra.com), etc.
 
@@ -46,6 +46,11 @@ Style and JavaScript files
 The web site uses two style files, which are loaded in the head section of the file `smarty/templates/main.tpl`.  These are the Bootstrap style file, which is loaded from a remote server, and the local style file `htdocs/StyleSheet.css`.
 
 The web site uses several JavaScript libraries, which are loaded from remote servers at the bottom of the template files (in `smarty/templates`) for pages that need them, followed sometimes by a very small amount of local code.  The Bibliography, Support and Tutorial pages use the jQuery, Popper and Bootstrap JavaScript libraries (see [https://getbootstrap.com/](https://getbootstrap.com/)), which are included from the file `bootstrap-js.tpl` in the JavaScript section at the bottom of the appropriate template files.  The Bootstrap CSS and JS files are at version 4.3.1 and the jQuery and Popper libraries are at the versions recommended for use with this version of Bootstrap.  The Tutorial page also uses the [MathJax](https://www.mathjax.org/) JavaScript library and it uses the latest version automatically.
+
+Search
+------
+
+The search facility uses a [Google Custom Search Engine](https://cse.google.com/cse/) (CSE) based in my private Google account.  The `search` directory in this directory, namely `trunk/web/search`, in the Subversion repository contains two files, `annotations.xml` and `cse.xml` that specify respectively what Goolge calls the CSE annotations and the CSE context.  (They are **not** required on the web server.)  These two files show how the custom search is configured: the annotations are a list of included and excluded web sites; the context is the look and feel (i.e. layout and styling).  This information may be useful if the search facility needs to be moved to a new Google account, and it should be possible to upload the two files to configure a new custom search, although they might need some editing first.
 
 Local development and testing
 -----------------------------
