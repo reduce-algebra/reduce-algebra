@@ -104,7 +104,6 @@
 ;; (message "Loading reduce-mode")  ; TEMPORARY!
 
 (eval-when-compile                      ; keep compiler happy!
-  (require 'font-lock)
   (require 'timer))
 
 ;; Customizable user options:
@@ -138,7 +137,6 @@ key map, i.e. it is a good place to put keybindings."
 E.g. `turn-on-font-lock' to turn on font-lock mode locally.
 It can be used to customize buffer-local features of REDUCE mode."
   :type 'hook
-  :options '(turn-on-font-lock)
   :group 'reduce)
 
 ;; Interface:
@@ -381,10 +379,10 @@ Text highlighting is supported via the command `font-lock-mode', and
 the style of highlighting may be controlled by setting
 `font-lock-maximum-decoration' to one of:
 
-  1, nil : basic keyword highlighting -- the default;
-  2      : algebraic-mode highlighting;
-  3      : symbolic-mode highlighting;
-  4, t   : full highlighting -- of almost everything!
+  0, nil : basic keyword highlighting -- the default;
+  1      : algebraic-mode highlighting;
+  2      : symbolic-mode highlighting;
+  3, t   : full highlighting -- of almost everything!
 
 Highlighting may also be controlled using the REDUCE menu.
 
@@ -413,6 +411,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
                                         ; instead!
           reduce-font-lock-syntactic-keywords)
          ))
+  (reduce-font-lock-level)              ; for font-lock menu
   (setq font-lock-multiline t)          ; for comment statements
   ;; Additional support for comment statements:
   (add-to-list 'font-lock-extend-region-functions
@@ -1927,11 +1926,11 @@ passing on any prefix argument (in raw form)."
 (defconst reduce-keyword-regexp
   (mapconcat 'identity
              (list
-              "begin" "return" "end\\(?:module\\)?"
+              "begin" "return" "module" "end\\(?:module\\)?"
               "if" "then" "else"
               "while" "do" "repeat" "until"
               "collect" "join" "conc" "sum" "product"
-              "for\\(?:\\s *\\(?:all\\|each\\)\\)?" "step"
+              "for\\(?:\\s-*\\(?:all\\|each\\)\\)?" "step"
               "in" "on" "off" "write"
               "let" "clearrules"
               "clear" "pause"
@@ -2013,99 +2012,39 @@ passing on any prefix argument (in raw form)."
   "Rules specifying how to highlight preprocessor #-directives.")
 
 (defconst reduce-font-lock-keywords-0
-  (append (list
-           ;; Main keywords:
-           (list (concat
-                  ;; Ignore quoted keywords and composite identifiers:
-                  ;; "\\(^[^!_']?\\|[^!][^!_']\\)"
-                  "\\(^[^!_'#]?\\|[^!#][^!_'#]\\)"
-                  "\\<\\(\\(" reduce-keyword-regexp "\\)"
-                  ;; Handle consecutive keywords:
-                  "\\(\\s +\\(" reduce-keyword-regexp "\\)\\)*"
-                  "\\)\\>"
-                  ;; Ignore composite identifiers:
-                  ;; "[^!_]"
-                  "[^!_#]"
-                  )
-                 '(2 font-lock-keyword-face))
-           ;; Group delimiters and references:
-           '("<<\\|>>\\|\\<\\(module\\|go\\(\\s *to\\)?\\)\\>"
-             . font-lock-keyword-face)
-           ;; Procedure declarations:
-           (list (concat "\\(^\\|ic\\|macro\\|expr\\|asserted\\|inline\\)\\s *\\<\\(procedure\\)\\s +"
-                         "\\(" reduce-identifier-regexp "\\)" "\\s *(?")
-                 '(2 font-lock-keyword-face)
-                 ;; '(2 font-lock-function-name-face t) ; highlights within comments
-                 '(3 font-lock-function-name-face)
-                 )
-           '("\\(declare\\)\\s +\\([^:]*\\)"
-             (1 font-lock-keyword-face)
-             (2 font-lock-function-name-face))
-           '("declare\\s +[^(]*(\\([^)]*\\)"
-             (1 font-lock-type-face))
-           ;; Type declarations:
-           ;; '("[^!][^_]\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
-           '("\\(?:^\\|[^_]\\)\\<\\(algebraic\\|symbolic\\|lisp\\|operator\\|scalar\\|integer\\|real\\|linear\\)\\>[^!_]"
-             (1 font-lock-type-face))
-           reduce-font-lock-asserted-type-rule)
-          reduce-font-lock-assert-declare/struct-rules
-          reduce-font-lock-preprocessor-rules)
+  `("reduce-font-lock-keywords-0"      ; TEMPORARY label for debugging
+    (reduce-font-lock-match-comment-statement
+     . (1 font-lock-comment-face t))
+
+    ;; Main keywords:
+    (,(concat
+       ;; Ignore !keyword, _keyword, 'keyword, #keyword:
+       "\\(?:^\\|[^!_'#]\\)"
+       "\\<\\(" reduce-keyword-regexp "\\)\\>"
+       ;; Ignore composite identifiers:
+       "[^!_#]")
+     (1 font-lock-keyword-face)
+     ;; Handle consecutive keywords:
+     (,(concat "\\<\\(" reduce-keyword-regexp "\\)\\>[^!_#]")
+      nil nil (1 font-lock-keyword-face)))
+
+    ;; Group delimiters and references:
+    "<<\\|>>\\|\\<\\go\\(?:\\s-*to\\)?\\>"
+    ;; ????? Handle goto label and label : specially?
+
+    ;; Procedure declarations:
+    (,(concat "\\<\\(procedure\\)\\s-+"
+              "\\(" reduce-identifier-regexp "\\)")
+     (1 font-lock-keyword-face)
+     (2 font-lock-function-name-face))
+    
+    ;; Type declarations:
+    ("\\(?:^\\|[^_]\\)\\<\\(algebraic\\|symbolic\\|lisp\\|operator\\|scalar\\|integer\\|real\\|linear\\)\\>[^!_]"
+     (1 font-lock-type-face))
+    ,reduce-font-lock-asserted-type-rule
+    ,@reduce-font-lock-assert-declare/struct-rules
+    ,@reduce-font-lock-preprocessor-rules)
   "Default minimal REDUCE fontification rules.")
-
-(defvar font-lock-beg)
-(defvar font-lock-end)
-
-;; Comment statements.  Being normally multi-line, they require the
-;; support of the function
-;; `reduce-font-lock-extend-region-for-comment-statement'.
-
-(defun reduce-font-lock-match-comment-statement (limit)
-  "Search for a comment statement between point and LIMIT.
-If successful, return non-nil and set the match data to describe
-the match; otherwise return nil."
-  ;; Fontification will call this function repeatedly with the same
-  ;; limit, and with point where the previous invocation left it,
-  ;; until it fails.  On failure, there is no need to reset point in
-  ;; any particular way.
-  (when
-      (search-forward-regexp "\\(comment\\>[^;$]*[;$]\\)" limit t)
-    ;; If successful, check that "comment" is preceded by beginning of
-    ;; buffer or a terminator, possibly with white space and/or %
-    ;; comments in between:
-    (save-excursion
-      (goto-char (match-beginning 0))
-      (save-match-data
-        (looking-back "\\(?:\\`\\|[;$]\\)\
-\\(?:\\s-*\\(?:%.*\\)?\n\\)*\\s-*" nil)))))
-
-(defun reduce-font-lock-extend-region-for-comment-statement ()
-  "Extend font-lock region if necessary to include all of any
-comment statements that it intersects, and if so return non-nil.
-This function is prepended to `font-lock-extend-region-functions'."
-  (let (new-beg new-end)
-    (goto-char font-lock-beg)
-    ;; Is font-lock-beg within a comment?
-    (save-excursion
-      (if (and (re-search-backward "\\(comment\\)\\|\\([;$]\\)" nil t)
-               (match-beginning 1))
-          (setq new-beg (point))))
-    (when (or new-beg
-              ;; Or does a comment start in the font-lock region?
-              (search-forward "comment" font-lock-end t))
-      ;; If either of the above then...
-      (search-forward-regexp "[;$]" nil 1) ; if un-terminated move to EOB
-      ;; Do multiple comments start in the font-lock region?
-      (while (and (< (point) font-lock-end)
-                  (search-forward "comment" font-lock-end t))
-        (search-forward-regexp "[;$]" nil 1)) ; if un-terminated move to EOB
-      (if (> (point) font-lock-end)
-          (setq new-end (point))))
-    ;; Temporary message for testing:
-    ;; (message "reduce-font-lock-extend-region-for-comment-statement: %s --> %s, %s --> %s"
-    ;;       font-lock-beg new-beg font-lock-end new-end)
-    ;; Return non-nil if font-lock region adjusted:
-    (or (if new-beg (setq font-lock-beg new-beg))
-        (if new-end (setq font-lock-end new-end)))))
 
 (defconst reduce-font-lock-keywords-basic
   (list
@@ -2266,68 +2205,111 @@ This function is prepended to `font-lock-extend-region-functions'."
   "Full maximal REDUCE fontification sub-rules.")
 
 (defconst reduce-font-lock-keywords-1
-  (append reduce-font-lock-keywords-basic
-          reduce-font-lock-keywords-algebraic)
+  `("reduce-font-lock-keywords-1"       ; TEMPORARY label for debugging
+    ,@reduce-font-lock-keywords-basic
+    ,@reduce-font-lock-keywords-algebraic)
   "Standard algebraic-mode REDUCE fontification rules.")
 
 (defconst reduce-font-lock-keywords-2
-  (append reduce-font-lock-keywords-basic
-          reduce-font-lock-keywords-symbolic)
+  `("reduce-font-lock-keywords-2"       ; TEMPORARY label for debugging
+    ,@reduce-font-lock-keywords-basic
+    ,@reduce-font-lock-keywords-symbolic)
   "Standard symbolic-mode REDUCE fontification rules.")
 
 (defconst reduce-font-lock-keywords-3
-  (append reduce-font-lock-keywords-basic
-          reduce-font-lock-keywords-algebraic
-          reduce-font-lock-keywords-symbolic
-          reduce-font-lock-keywords-full)
+  `("reduce-font-lock-keywords-3"      ; TEMPORARY label for debugging
+    ,@reduce-font-lock-keywords-basic
+    ,@reduce-font-lock-keywords-algebraic
+    ,@reduce-font-lock-keywords-symbolic
+    ,@reduce-font-lock-keywords-full)
   "Full REDUCE fontification rules.")
 
-;; Provide a REDUCE font-lock menu, based on font-lock-menu.el by
-;; Simon Marshall <simon@gnu.ai.mit.edu>.
+;; Support functions for comment statements.  Being normally
+;; multi-line, they require the support of the function
+;; `reduce-font-lock-extend-region-for-comment-statement'.
 
-;; The following is a temporary hack to make things work. It appears
-;; that font-locking is correctly initialized only if
-;; `reduce-font-lock-level' is initialized with with the maximum value
-;; 4. If you try a value of three in the following line, you will find
-;; this as the chosen value in the menu but still see maximum
-;; decoration. Switching then works fine though. I thus had the idea to
-;; run at the end of this file, right before executing the hook,
-;; something like the following:
-;;
-;; (let ((tmp reduce-font-lock-level))
-;;   (reduce-font-lock-change 4)
-;;   (reduce-font-lock-change tmp))
-;;
-;; This, however, produces errors at loading, which indiciate that
-;; things are more complicated, and I do not completely understand the
-;; situation so far. Note that the problems do not origin from my
-;; generalization to alists of the initialization code for
-;; `reduce-font-lock-level' -  at least I hope so! TS
+(defun reduce-font-lock-match-comment-statement (limit)
+  "Search for a comment statement between point and LIMIT.
+If successful, return non-nil and set the match data to describe
+the match; otherwise return nil."
+  ;; Fontification will call this function repeatedly with the same
+  ;; limit, and with point where the previous invocation left it,
+  ;; until it fails.  On failure, there is no need to reset point in
+  ;; any particular way.
+  (when
+      (search-forward-regexp "\\(\\<comment\\>[^;$]*\\)[;$]" limit t)
+    ;; If successful, check that "comment" is preceded by beginning of
+    ;; buffer or a terminator, possibly with white space and/or %
+    ;; comments in between:
+    (save-excursion
+      (goto-char (match-beginning 0))
+      (save-match-data
+        (looking-back "\\(?:\\`\\|[;$]\\)\
+\\(?:\\s-*\\(?:%.*\\)?\n\\)*\\s-*" nil)))))
 
-(set (make-local-variable 'font-lock-maximum-decoration) 4)
+(defvar font-lock-beg)
+(defvar font-lock-end)
 
-;; Considerably modified the following procedure to cover also the case
-;; that `font-lock-maximum-decoration' is an alist. TS
+(defun reduce-font-lock-extend-region-for-comment-statement ()
+  "Extend font-lock region if necessary to include all of any
+comment statements that it intersects, and if so return non-nil.
+This function is prepended to `font-lock-extend-region-functions'."
+  (let (new-beg new-end)
+    (goto-char font-lock-beg)
+    ;; Is font-lock-beg within a comment?
+    (save-excursion
+      (if (and (re-search-backward "\\(comment\\)\\|\\([;$]\\)" nil t)
+               (match-beginning 1))
+          (setq new-beg (point))))
+    (when (or new-beg
+              ;; Or does a comment start in the font-lock region?
+              (search-forward "comment" font-lock-end t))
+      ;; If either of the above then...
+      (search-forward-regexp "[;$]" nil 1) ; if un-terminated move to EOB
+      ;; Do multiple comments start in the font-lock region?
+      (while (and (< (point) font-lock-end)
+                  (search-forward "comment" font-lock-end t))
+        (search-forward-regexp "[;$]" nil 1)) ; if un-terminated move to EOB
+      (if (> (point) font-lock-end)
+          (setq new-end (point))))
+    ;; Temporary message for testing:
+    ;; (message "reduce-font-lock-extend-region-for-comment-statement: %s --> %s, %s --> %s"
+    ;;       font-lock-beg new-beg font-lock-end new-end)
+    ;; Return non-nil if font-lock region adjusted:
+    (or (if new-beg (setq font-lock-beg new-beg))
+        (if new-end (setq font-lock-end new-end)))))
 
-(defvar reduce-font-lock-level
-  ;; boundp in case font-lock not loaded
-  (if (boundp 'font-lock-maximum-decoration)
-      (let ((max (length reduce-font-lock-keywords))
-            (dec font-lock-maximum-decoration)
-            w)
-        (if (listp dec)
-            (setq dec (if (or (setq w (assoc 'reduce-mode dec))
-                              (setq w (assoc t dec)))
-                          (cdr w)
-                        nil)))
-        (if dec
-            (if (numberp dec)
-                (cond ((< dec 1) 1)
-                      ((> dec max) max)
-                      (t dec))
-              max)                      ; t = maximum
-          1))
-    1))                                 ; nil = minimum
+;; Provide a REDUCE font-lock menu, based originally on
+;; font-lock-menu.el by Simon Marshall <simon@gnu.ai.mit.edu>.
+
+(defconst reduce-font-lock-level-max
+  (1- (length reduce-font-lock-keywords))
+  "Maximum REDUCE font-lock level.")
+
+(defvar reduce-font-lock-level)
+
+(defun reduce-font-lock-level ()
+  "Establish the buffer-local variable `reduce-font-lock-level'.
+It is used only to control the font-lock menu and is set for each
+new buffer from the value of `font-lock-maximum-decoration',
+which must be done in `reduce-mode'."
+  (set (make-local-variable 'reduce-font-lock-level)
+       ;; The value of `font-lock-maximum-decoration' may be an alist,
+       ;; non-negative integer, t (meaning max) or nil (meaning 0).
+       (let (level)
+         (if (consp font-lock-maximum-decoration) ; alist
+             (if (setq level (or (assoc 'reduce-mode font-lock-maximum-decoration)
+                                 (assoc t font-lock-maximum-decoration)))
+                 (setq level (cdr level)))
+           (setq level font-lock-maximum-decoration)) ; not alist
+         ;; level = integer, t or nil
+         (cond ((numberp level)
+                (cond ((< level 0) 0)
+                      ((> level reduce-font-lock-level-max)
+                       reduce-font-lock-level-max)
+                      (t level)))
+               ((eq level t) reduce-font-lock-level-max) ; t means max
+               (t 0)))))                                 ; nil means 0
 
 (defconst reduce-font-lock-submenu
   '("Syntax Highlighting"
@@ -2335,14 +2317,14 @@ This function is prepended to `font-lock-extend-region-functions'."
      :style toggle :selected font-lock-mode :active t]
     ["Highlight Buffer" font-lock-fontify-buffer t]
     ;; ["Toggle `!' Syntax" reduce-font-lock-toggle-escape t]
-    ["Maximum (4)" (reduce-font-lock-change 4)
-     :style radio :selected (eq reduce-font-lock-level 4) :active t]
-    ["Symbolic (3)" (reduce-font-lock-change 3)
+    ["Maximum (3)" (reduce-font-lock-change 3)
      :style radio :selected (eq reduce-font-lock-level 3) :active t]
-    ["Algebraic (2)" (reduce-font-lock-change 2)
+    ["Symbolic (2)" (reduce-font-lock-change 2)
      :style radio :selected (eq reduce-font-lock-level 2) :active t]
-    ["Minimum (1)" (reduce-font-lock-change 1)
-     :style radio :selected (eq reduce-font-lock-level 1) :active t]))
+    ["Algebraic (1)" (reduce-font-lock-change 1)
+     :style radio :selected (eq reduce-font-lock-level 1) :active t]
+    ["Minimum (0)" (reduce-font-lock-change 0)
+     :style radio :selected (eq reduce-font-lock-level 0) :active t]))
 
 (easy-menu-define                       ; (symbol maps doc menu)
   reduce-fontification-submenu
@@ -2358,24 +2340,34 @@ This function is prepended to `font-lock-extend-region-functions'."
   '("minimum" "algebraic" "symbolic" "maximum"))
 
 (defun reduce-font-lock-change (level)
-  "Turn on REDUCE Font Lock mode using specified keywords."
-  (interactive)
-  (require 'font-lock)
-  (let ((name (nth (1- level) reduce-font-lock-level-names))
-        (keywords (eval (nth (1- level) (car font-lock-defaults)))))
-    ;; `font-lock-defaults' is used in order to support both
-    ;; reduce-mode and reduce-run with the same code!
-    (setq keywords (font-lock-compile-keywords keywords)) ; Emacs 20 only!
-    (if (and font-lock-mode (equal font-lock-keywords keywords))
+  "Re-fontify at the specified LEVEL."
+  ;; Do messages need to be saved in the messages buffer?
+  ;; If interactive then needs to be more robust.
+  ;; (interactive)
+  (let ((name (nth level reduce-font-lock-level-names)))
+    (if (eq reduce-font-lock-level level)
         (message "REDUCE Font Lock decoration unchanged (level %d : %s)."
                  level name)
-      (font-lock-mode 0)
-      (font-lock-set-defaults)
-      (setq font-lock-keywords keywords)
-      (font-lock-mode 1)
+      (let ((font-lock-maximum-decoration level))
+        (font-lock-refresh-defaults))
       (setq reduce-font-lock-level level)
       (message "REDUCE Font Lock decoration set to level %d : %s."
                level name))))
+;; (let ((name (nth (1- level) reduce-font-lock-level-names))
+;;       (keywords (eval (nth (1- level) (car font-lock-defaults)))))
+;;   ;; `font-lock-defaults' is used in order to support both
+;;   ;; reduce-mode and reduce-run with the same code!
+;;   (setq keywords (font-lock-compile-keywords keywords)) ; Emacs 20 only!
+;;   (if (and font-lock-mode (equal font-lock-keywords keywords))
+;;       (message "REDUCE Font Lock decoration unchanged (level %d : %s)."
+;;                level name)
+;;     (font-lock-mode 0)
+;;     (font-lock-set-defaults)
+;;     (setq font-lock-keywords keywords)
+;;     (font-lock-mode 1)
+;;     (setq reduce-font-lock-level level)
+;;     (message "REDUCE Font Lock decoration set to level %d : %s."
+;;              level name))))
 
 (defun reduce-font-lock-toggle-escape (&optional arg)
   "Toggle `!' escape syntax for REDUCE Font Lock mode (only) and re-fontify.
