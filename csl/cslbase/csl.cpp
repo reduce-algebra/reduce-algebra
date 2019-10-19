@@ -2593,10 +2593,15 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             doubleword_align_up(reinterpret_cast<uintptr_t>(stacksegmentbase)));
 #endif
         if (stacksegment == NULL) abort();
+#ifdef CONSERVATIVE
+        input_libraries = initial_heap_setup(stacksegment);
+#else
         heaplimit = doubleword_align_up((LispObject)stacksegment);
         fringe = heaplimit + CSL_PAGE_SIZE - 16;
+// This is not a proper symbol structure - it just has a value cell! 
         input_libraries = heaplimit + 16 + TAG_SYMBOL;
         heaplimit += 64;
+#endif
 //
 // I have now fudged up enough simulation of a Lisp heap that maybe I can
 // build the library search-list.

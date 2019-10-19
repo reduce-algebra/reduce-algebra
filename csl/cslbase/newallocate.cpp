@@ -1,6 +1,3 @@
-threadstart
-u
-
 //
 // Code to deal with storage allocation, both grabbing memory at the start
 // or a run and significant aspects of garbage collection.
@@ -524,7 +521,7 @@ LispObject reduce_basic_vector_size(LispObject v, size_t len)
 {   size_t oldlen = doubleword_align_up(length_of_header(vechdr(v)));
     setvechdr(v, TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED);
     len = doubleword_align_up(len);
-    if (len != oldlen) setvechdr(v + len, make_padding_header(oldlen-len));
+    if (len != oldlen) setvechdr(v + len, makePaddingHeader(oldlen-len));
     return v;
 }
 
@@ -629,14 +626,14 @@ void set_variables_from_page(Page *p)
 {
 // Set the variable that are used when allocating within the active page.
     fringe = p->pageHeader.fringe;
-    heaplimit = p->pageHeader.heaplimit;
+    limit[threadId] = limitBis[threadId] = p->pageHeader.heaplimit;
 }
 
 void save_variables_to_page(Page *p)
 {
 // Dump global variable values back into a page header.
     p->pageHeader.fringe = fringe;
-    p->pageHeader.heaplimit  = heaplimit;
+    p->pageHeader.heaplimit  = limitBis[threadId];
 }
 
 // This code allocates a segment by asking the operating system.
@@ -806,8 +803,6 @@ void releaseThreadNumber(int n)
     threadMap |= threadBit(n);
 }
 
-static ThreadLocal<uintptr_t> threadId;
-
 ThreadStartup::ThreadStartup()
 {   std::cout << "ThreadStartup" << std::endl;
     std::lock_guard<std::mutex> lock(mutex_for_gc);
@@ -820,242 +815,14 @@ ThreadStartup::~ThreadStartup()
     releaseThreadNumber(threadId);
 }
 
-std::atomic<uintptr_t> stack_bases[maxThreads];
-std::atomic<uintptr_t> stack_fringes[maxThreads];
-
-std::atomic<uintptr_t> request_values[maxThreads];
-std::atomic<size_t>    request_sizes[maxThreads];
-
-std::mutex gc_mutex;
-
-std::atomic<uintptr_t> limit[maxThreads];
-intptr_t fringe_bis[maxThreads];
-intptr_t limit_bis[maxThreads];
-std::atomic<uintptr_t> request_values[maxThreads];
-std::atomic<size_t>    request_sizes[maxThreads];
-std::atomic<uintptr_t> gFringe;
-uintptr_t gLimit;
-
-// There are two cases where I may get to code that is present here. One
-// is when an allocation attempt fills up an 8 Mbyte page. In that case
-// a generational scheme needs to do a minor garbage collection, treating
-// the full page as having been used as a nursery. In the non-generational
-// scheme it just needs to allocate a new big page, or run a full collection
-// if that is not possible.
-//
-// When one thread reaches this state (or indeed if several do so
-// simultaneously) it will be necessary to cause all other threads to
-// synchronize and participate in memory rearrangement. When it does that
-// it will need to put a padder in to fill out its current small chunk.
-
-uintptr_t gc_trigger_and_allocate(uintptr_t r, size_t n);
-uintptr_t gc_participate_and_allocate(uintptr_t r, size_t n);
-
-
-void master_gc_work()
-{   std::printf("Hello, this is the master_GC\n");
-// set space in via request_sizes[] etc. Note that especially if I am
-// dealing with fragmented heap-space because of pinned items left over by
-// the conservative collector I may actually end up doing two or even more
-// garbage collections here before I can satisfy all the pending memory
-// requests. On a second or subsequent GC I must allow for the newly-
-// allocated blocks that are here.
-    fflush(stdout);
-    my_abort(); // give up for now
-}
-
-// I have multiple threads, and when a GC is needed they need to synchronize.
-// My plan is that one thread is selected as the key one, with that
-// being the last one to decrement an "activeThreads" counter. By virtue
-// of being last there the thread knows that all the other threads are
-// quiescent. All the others first wait on a condition variable until the
-// key one releases it, and then wait on a second condition variable until
-// that too is released.
-// The two variables are to let the underpinning variables get set up.
-// So outside GC-time a variable "gc_started" will be false, and all
-// non-key threads can go
-//      {   std::unique_lock<std::mutex> lock(mutex_for_gc);
-//          gc_start_cv.wait(lock, []{ return gc_started; });
-//      }
-// followed immediately  by
-//      activeThreads++;
-//      {   std::unique_lock<std::mutex> lock(mutex_for_gc);
-//          gc_end_cv.wait(lock, []{ return gc_finished; });
-//      }
-// The key thread on the other hand can go
-//      gc_finished = false;
-// MUST ensure that gc_finished will be seen as false by all other threads
-// before gc_started is seen as true, because otherwise spurious wake-ups
-// on gc_start_cv and gc_end_cv could let one of the other threads run
-// through improperly.
-//      {   std::lock_guard<std::mutex> lock(mutex_for_gc);
-//          gc_started = true;
-//      }
-//      gc_start_cv.notify_all();
-// At this point the key thread can perform garbage collection. It can not
-// tell if the other threads are still waiting to respond to the gc_start
-// notification or if they have gone on to wait for gc_finished! So to let
-// it know the subsidiary threads each increment activeThreads when they
-// have passed the first hurdle, and the one that brings that up to maximum
-// can notify yet another condition variable. At the end of GC the key thread
-// can wait on that CV until the thread count is high enough, and then it
-// can afford to clear gc_started and set gc_finished and finally notify
-// all other threads. Ught this feels heavy-handed and messy!
-
-void master_gc_thread()
-{
-// When I get here I know that actveThreads==0 and that all other threads
-// have just decremented that variable and are ready to wait on gc_started.
-// Before I release them from that I will ensure that gc_finished is false so
-// that they do not get over-enthusiastic!
-    {   std::lock_guard<std::mutex> guard(mutex_for_gc);
-        gc_complete = false;
-        gc_started = true;
-    }
-    cv_for_gc_idling.notify_all();
-// Now while the other threads are idle I can perform some garbage
-// collection and fill in results via request_locations[] based on
-// request_sizes[].
-    master_gc_work();
-// Now I need to be confident that the other threads have all accessed
-// gc_started. When they have they will increment activeThreads and when the
-// last one does that it will notify me.
-    {   std::unique_lock<std::mutex> lock(mutex_for_gc);
-// Note that if my entire system had only one thread then the condition
-// tested here would always be true and the computation would not pause at
-// all.
-        cv_for_gc_busy.wait(lock,
-            []{   uint32_t n = activeThreads.load();
-                  return (n & 0xff) == ((n>>8) & 0xff) - 1;
-              });
-    }
-// OK, so now I know that all the other threads are ready to wait on
-// gc_finished, so I ensure that useful variables are set ready for next
-// time and release all the threads that have been idling.
-    {   std::lock_guard<std::mutex> guard(mutex_for_gc);
-        gc_started = false;
-        activeThreads.fetch_add(0x0000001);
-        gc_complete = true;
-    }
-    cv_for_gc_complete.notify_all();
-}
-
-void idle_during_gc()
-{
-// If I am a thread that will not myself perform garbage collection I need
-// to wait for the one that does. This needs to be done in two phases. During
-// the first I know that I have decremented activeThreads and determined that
-// I was not the last, but I can not be certain that all other threads have
-// done that. I wait until gc_started gets set, and that happens when some
-// thread has found itself to be the last one. And so by construction that
-// means that all other threads will have reached here.
-//
-// I need every idle thread to be woken up here. So when the master GC thread
-// starts  it can set gc_started and notify everybody through the condition
-// variable. It can not know how long each will take to notice that so it
-// must not clear gc_started until it has had positive confirmation that
-// all the idle threads have responded.
-    {   std::unique_lock<std::mutex> lock(mutex_for_gc);
-        cv_for_gc_idling.started(lock, []{ return gc_started; });
-    }
-// To record that threads have paused they can then increment activeThreads
-// again. When one of them increments it to the value threadcount-1 I will
-// know that all the idle threads have got here, and I nofify the master GC
-// thread.
-    bool inform = false;
-    {   std::lock_guard<std::mutex> guard(mutex_for_gc);
-        uint32_t n = activeThreads.fetch_add(0x000001);
-        if ((n & 0xff) == ((n>>8) & 0xff) - 2) inform = true;
-    }
-    if (inform) cv_for_gc_busy.notify_one();
-// Once the master thread has been notified as above it can go forward and
-// in due course notify gc_complete. Before it does that it must ensure that
-// it has filled in results for everybody, incremented activeTHreads to
-// reflect that it is busy again and made certain that gc_started is false
-// again so that everything is tidily ready for next time.
-    {   std::unique_lock<std::mutex> lock(mutex_for_gc);
-        cv_for_gc_complete.wait(lock, []{ return gc_complete; });
-    }
-}
-
-// Here I have just attempted to allocate n bytes but the attempt failed
-// because it left fringe>=limit. I must synchronmize with all other
-// threads and one of the threads (it may not be me!) must garbage collect.
-// When they synchronize with me here the other threads will also have tried
-// an allocation, but the largest request any is allowed to make is
-// VECTOR_CHUNK_BYTES (at present 1 megabyte). If all the maxThreads do
-// this they can have caused fringe to overshoot by about an amount
-// maxThreads*VECTOR_CHUNK_BYTES and if that caused uintptr_t arithmetic to
-// overflow and wrap round then there could be big trouble. So when I
-// allocate chunks of memory I ought to ensure that none has an end-address
-// that close to UINTPTR_MAX! I think that on all realistic systems that is
-// a problem that will not actually arise.
-//
-// I must arrange that memory close to where the failed allocation arose is
-// left tidy. I will put in a padder item if needbe just to be cautious. And
-// I must arrange that whether I am the thread that does GO or one of the
-// others that I return a valid allocation address.
-
-uintptr_t gc_and_allocate(uintptr_t r, size_t n)
-{
-// Every thread that comes here will need to record the value of its
-// stack pointer so that the thread that ends up performing garbage
-// collection can identify the regions of stack it must scan. For that to
-// be proper the code must not be hiding values in register variables. The
-// function "with_clean_stack()" tries to arrange that, so that when the
-// body of code is executed stack_fringes[] has that information nicely
-// set up. 
-    return with_clean_stack([&]
-    {
-// The GC thread will need to do the allocation. To do this it need to know
-// where this request failed and how much space had been requested, so I put
-// those bits of information in atomic thread-indexed memory. That willl
-// allow the GC to update request_values[] to be the address of a sucessful
-// allocation.
-        request_values[threadId] = r;
-        request_sizes[threadId].store(n);
-// The next line will count down the number of threads that have entered
-// this synchronization block. The last one to do so can serve as the
-// thread that performs garbage collection, the other will just need to wait.
-// The fetch_sub() operation here may cost much more than simple access to
-// a variable, but I am in context were I am anbout to do things costing a
-// lot more than that.
-        int32_t a = activeThreads.fetch_sub(1);
-// The low byte of activeThreads counts the number of Lisp threads properly
-// busy in the mutator. When fetch_add() a value > 1 it means thatat least
-// one other thread has not jey joined in with this synchronozation. It will
-// be that last thread that actually performs the GC, so the current one
-// has nothing to do - it must just sit and wait! When the final thread
-// performs the fetch_add() it will know that every other thread is now
-// quiescent and it can perform as the master garbage collection thread.
-        if ((a & 0xff) > 1) idle_during_gc();
-        else master_gc_thread();
-// I must arrange that threads continue after idling only when the master
-// thread has completed its work. And when that has happened request_values[]
-// should have been filled in with valid allocation results for everybody.
-// In the disaster case that memory is utterly full I will need to escape
-// via a "throw" operation, but that is probably an unrecoverable situation.
-// At the end the GC can have updated the fringe and heaplimit values for
-// each thread, so I need to put its updates in the correct place.
-//
-// The garbage collector did not need to know the value of fringe or heaplimit
-// that the thread had at the start - well r will have been the value
-// of fringe before the fetch_add() that overflowed heaplimit. And heaplimit
-// was very possibly zero because some other thread had forced that so as to
-// trigger a GC pause. But before returning I must set both the values
-// that the GC tells me. Now there is a potential delicacy here in that
-// just after this GC completed but before this thread wakes up and notices
-// one of the other threads may waks up and do enough allocation to try
-// to trigger a further GC.
-        fringe = heap_fringe[threadId];
-        heaplimit = heap_heaplimit[threadIs];
-        return request_values[threadId];
-    });
-}
-
 LispObject *nilSegmentBase, *stackSegmentBase;
 LispObject *nilSegment, *stackSegment;
 LispObject *stackBase;
+
+LispObject initial_heap_setup(LispObject *stacksegment)
+{   my_abort();  // Until I know what this has to do!
+    return 0;
+}
 
 void initHeapSegments(double storeSize)
 //
@@ -1168,6 +935,27 @@ void grab_more_memory(size_t npages)
     }
 }
 
+std::atomic<uintptr_t> stack_bases[maxThreads];
+std::atomic<uintptr_t> stack_fringes[maxThreads];
+extern std::atomic<uint32_t> threadCount;
+std::mutex mutex_for_gc;
+bool gc_started;
+std::condition_variable cv_for_gc_idling;
+std::condition_variable cv_for_gc_busy;
+bool gc_complete;
+std::condition_variable cv_for_gc_complete;
+std::mutex gc_mutex;
+//static ThreadLocal<uintptr_t> threadId;
+//static ThreadLocal<uintptr_t> fringe;
+std::atomic<uintptr_t> limit[maxThreads];
+uintptr_t              limitBis[maxThreads];
+uintptr_t              fringeBis[maxThreads];
+size_t                 request[maxThreads];
+LispObject             result[maxThreads];
+size_t                 gIncrement[maxThreads];
+std::atomic<uintptr_t> gFringe;
+uintptr_t              gLimit;
+uintptr_t              gNext;
 
 #ifdef WIN32
 #include <conio.h>
