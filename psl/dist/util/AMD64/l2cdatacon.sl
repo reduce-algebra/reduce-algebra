@@ -5,7 +5,6 @@
 % Created:      Summer 1985
 % Package:
 % Status:       Open Source: BSD License
-% RCS $Header: $
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -30,6 +29,7 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 % Usage: These are macros because we do not want to incur a function

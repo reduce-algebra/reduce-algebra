@@ -83,7 +83,7 @@ $(PL)/fc-indirect.b: $(PXU)/fc-indirect.sl
 $(PL)/get-options.b: $(PXU)/get-options.sl
 	$(PDIST)/make-lap $(PXU) get-options
 
-$(PL)/l2cdatacon.b: $(PXU)/l2cdatac.sl
+$(PL)/l2cdatacon.b: $(PXU)/l2cdatacon.sl
 	$(PDIST)/make-lap $(PXU) l2cdatacon
 
 $(PL)/helferlein.b: $(PXU)/helferlein.sl $(PL)/inum.b

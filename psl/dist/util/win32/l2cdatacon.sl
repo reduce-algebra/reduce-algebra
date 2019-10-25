@@ -3,9 +3,8 @@
 % Description:  Macros to Convert data types between Lisp and C.
 % Author:       Harold Carr (borrowing from Russ Fish)
 % Created:      Summer 1985
-% Status:       Open Source: BSD License
 % Package:
-% RCS $Header: $
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -30,6 +29,7 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 % Usage: These are macros because we do not want to incur a function
