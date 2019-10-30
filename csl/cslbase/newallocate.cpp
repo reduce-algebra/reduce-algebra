@@ -83,27 +83,173 @@
 // support multiple mutator threads. I am NOT intending either to run
 // garbage collection concurrently with the mutator (so the GC is a "stop
 // the world" one, although most garbage collections should be "minor" ones
-// and hence not too disruptive). I am also not at present planning on having
-// garbage collection use more than one thread to do its work, although that
-// might be seriously easier to retrofit later then having the GC and the
-// mutator concurrent.
+// and hence not too disruptive). I have thought about using multiple threads
+// during garbage collection but will not attempt that in a first version -
+// and preliminary measurements of the overhead of atomic exchange
+// instructions on current computers make me suspect it may not be sensible.
 
-// In previous sketches relating to this I was considering using memory
-// protection and thus exceptions to implement a write barrier that is needed
-// to make the collector ephemeral/generational. My thoughts are now moving
-// to accepting that having the operating system handle exceptions is liable
-// to be unpleasantly expensive and that a software scheme can in fact have
-// almost modest overhead.
 
 // The design here has to mingle plans for global storage allocation,
 // the CONS operation as well as operations involving Lisp atoms, the
 // way that Lisp threads can access the values of variables, synchronization
 // matters and so on. In general it seems that almost all aspects from the
-// lowest to the most global level interact. So some of what I have here
-// are my CURRENT notes on how I think I will make it all work. The code
-// in this file is at present generall the OLD code and much of it will be
-// thrown away and replaced!
+// lowest to the most global level interact.
 
+// So here is an overview. Well I fear I may have written bits of this already
+// in several places, but writing it out helps me to plan. All of the numeric
+// values given here are indicative rather than guaanteed final.
+
+// Memory is grabbed from the operating system in large chunks, with a few
+// hundred megabytes for the first chunk and larger ones potentially sized
+// in geometric progression, so that with a maximum of 16 chunks I can end up
+// with as much memort as can ever be useful. The limit on the total number
+// of chunks used as so that given a value that might be a pointer it will
+// be possible to identify the chunk it might point within using a small
+// number of comparison operations. The mega-chunk allocation is such that the
+// system can start with fairly sane amounts of memory but expand on need.
+//
+// Each chunk is divided into 8Mbyte pages. At any one moment one page will
+// be "Current", a second will be "Previous", some others will be "Busy" and
+// the rest "Free". All mutator allocation happens within the Current page.
+// When that becomes full live data is evacuated from the Previous page into
+// Busy memory and what was Current becomes Previous. The old Previous page
+// becomes Free and a Free page is chosen to be the new Current. Note this
+// might be done by swapping the sense of Current and Previous, but if I
+// did that then if those two pages get severly fragmented that that situation
+// would persist, so I will want to arrange that pages get moved to be
+// extensions to the Busy pool from time to time. Which will tend to happen
+// naturally but may need forcing in pathological case!
+//
+// Because garbage collection is conservative there can be ambiguous pointers
+// that refer into Previous. Data at the locations so addressed must not be
+// moved: I will refer to it as "pinned". The Current and each Free page may
+// have some pinned items present. When a page becomes Current it will have
+// three pointers - gFringe, gLimit and gNext. gFringe identifies the first
+// point at which data could be allocated, gLimit points either one beyond
+// the end of the page or to the start address of the next pinned block.
+// If there is a pinned block then gNext points just beyond it, and the first
+// two words of the free region after that contain new values for gLimit and
+// gNext. If gLimit points to the end of the whole page then gNext will be
+// zero.
+// In Previous and Busy each page will be kept full by placement of padder
+// pseudo-objects anywhere where there could be gaps: that is so that it is
+// possible to perform a sequential scan of the page with each item within
+// it identifiable by inspection of its first (header) word. A challenge to
+// nots is that this means that only valid objects may be pinned, so that
+// sequential scans of a page can traverse past them without trouble.
+//
+// Allocation within Current is by incrementing gFringe and if necessary
+// skipping on to gNext. By making gFringe std::atomic this allocation can be
+// thread-safe.
+//
+// Within a page allocation (via gFringe) allocated 16Kbyte chunks to each
+// thread. The thread holds variable fringe and limit to allow it to perform
+// simple sequential allocation within the chunk with low overhead. During
+// garbage collection it is necessary to access and update fringe and limit
+// values for every thread, and to support that I have data such as the
+// array fringeBis[] that is indexed by a thread-number. Especially when
+// garbage collection is being triggered data can be moved from the simple
+// (albeit thread-local) variable into this array. Because each thread has
+// its own chunk most allocation within a chunk doe snot involve any locks.
+// When a chunk overflows a fresh one needs to be allocated. If the request
+// that triggered this was for n bytes of memory that the next chunk that is
+// grabbed is of size 16K+n so that 16Kbytes are left available after the
+// potentiallt large allocation. As regards space use the worst case for this
+// is if there are many sequential requests each needing just over 16Kbytes
+// apiece. In that case around 50% of memory in Current end up unused. This
+// space will remain unused in Previous, but when data is evacuated to Busy
+// it will be packed properly closely, so across the whole system the worst
+// possible "waste" that way will be 8Mbytes. Of course most allocations will
+// be of much smaller objects and so I am not worried in this area.
+//
+// The trigger for garbage collection is when at least one thread attempts
+// an allocation and moved gFringe on beyond gLimit. As a C pedant I ough to
+// worry if that led to a pointer beyond the range of the mega-chunk that
+// had been grabbed from the OS, or (worse) if it led to overflow in address
+// arithmetic. If I was super-cautious I would leave the top of each huge
+// chunk as unused buffer against just such concerns. The amount I would
+// need to reserve would be VECTOR_CHUNK_BYTES (2Mb) times the maximum number
+// of threads (64), and that may be way more that I am happy with! So just
+// for now I will duck that concern. But I will want the higgest-addressed
+// huge chunk to end at least 128M before the end of memory address space!
+//
+// When a thread (or several threads) overflows a page it must trigger garbage
+// collection. In the process it must synchronize with all the other threads.
+// To achieve that it sets the limit value in every (active) thread to zero.
+// The consequence will be that when the thread next tried to allocate memory
+// it will get the initial impression that its chunk was full and can go into
+// a more elaborate path which detects that actual situation. There are two
+// cases when a memory allocation request might not arise promptly. One is
+// code loops that do not allocate memory: each of those must contain a
+// polling request which will be implemented as a request for zero bytes of
+// memory - which in term will merely amount to a comparison between fringe
+// and limit. The other would be when the thread was perfroming some operation
+// that could or did block. That will obviously include when it uses range of
+// synchronization primitives. In such case before blocking it must remove
+// itself from the pool of active threads, and it can reinstate itself later.
+//
+// As garbage collection starts each thread must record its stack pointer and
+// ensure that all pointer-objects that it is using are recorded on the
+// stack (as well as potentially being in machine registers). The (C++) stack
+// will then be scanned with all values on it treated as potential or
+// ambiguous pointers.
+//
+// Given a potential pointer the system must be able to determine if it in
+// fact points within a properly allocated object. This process starts by
+// checking which mega-chunk is involved. From that information simple
+// arithmetic can identify a page. Pointers that are into the header sections
+// of a page or beyond its gLimit are certainly not references to live
+// objects. I will then use a bitmap associated with the relevant page to
+// let me identify that start of any object that the potential pointer lies
+// within. If this object is a padder the pointer was invalid.
+// Setting up the bitmaps is achieved by a linear scan of the page. This is
+// a reason for using padders so that the page as a whole is linearly
+// consistent. During a minor GC the only page that needs a bitmap is Previous.
+// During a major GC bitmaps can be created when one first observes a
+// potential pointer into the page. My expectation is that the vast majority
+// of (valid) potential pointers will be into Current, with the next higher
+// number into Previous. That is because fairly recently allocated objects
+// are most likely to have references to them on the stack. For older material
+// I think I expect a tendancy for clustering and with a large memory
+// configuration only a small fraction of the total number of pages will
+// be involved. So with lazy creation of the bitmaps it is likely that
+// the cost of bitmap creation will not be excessive. Searching a bitmap
+// is most expensive if a potential pointer refers to a high address in a
+// very large object. It is not yet clear whether there is any merit in
+// trying to take special action to speed up treatment of that case.
+//
+// A consequence of using a generational system is that I need to be able
+// to respond to updates to old data that lead to references to new data.
+// When I perform a major GC I will be scavanging everything and so no special
+// treatment is called for, but to support minor GCs I will arrange that any
+// use of RPLACD, RPLACD or PUTV (or derived operations such as PUTHASH, PUT
+// and NCONC) set a mark indicating a region of memory that must be treated
+// as roots. I make the map of dirty regions out of bytes, arguming that
+// updating a byte to atomically set it non-zero is likely to be cheaper than
+// the read-modify-write of an atomic bit update. I also expect that many
+// pages (at least when one is performing a large calculation) will not have
+// any dirty data, so each page has a flag marking whether any segment of it
+// has been updated. The dirty regions may not align neatly with object starts
+// and finishes, and so when I mark from them I will treat the pointers that
+// they contain as ambiguous. This will tend to lead to more pinned items
+// within Pending. Thus use of imperative features such as RPLACx carry two
+// costs - one the work of the write barrier as they execute and the second
+// some extra pinning and hence memory inflexibility withing Previous.
+// It may be worth noting that the issue of pinned items will not arise
+// when an updated reference is to Busy data, but that dirty marks can only
+// trivially be cancelled during a full GC, and that dirty bits can be needed
+// on pages that are Free apart from the fact that they contain some pinned
+// items. So for some purposes I will want to partition unused pages into
+// Free and MostlyFree!
+// When I scan a dirty region it will be cheap to check if any of the
+// pages that potential-pointers within it are either Current, Pending or
+// MostlyFree. If there are no such pointers then the dirty bit can be cleared
+// even though one is just within a minor GC. If MostlyFree pages are given
+// priority for use to extend the Busy region as data is evacuated from
+// Previous then there will be some tendancy for dirty markers to become
+// cancellable. It may made sense to monitor the number of dirty regions
+// and if it gets really excessive to trigger a major GC, but that is an
+// informal idea at present and will probably not be very useful!
 
 
 
@@ -266,17 +412,17 @@ std::atomic<uint32_t> activeThreads;
 // header will overlap the beginning of the objstart[] bitmap, but because
 // objects only reside in the data[] part the first couple of kilobytes
 // of objstart[] will never be used.
-// In my first sketch here I have not put in all the data I expect to need
-// to put into the header - eg I will need more to let me allocate around
-// pinned items.
 
-Page *nurseryPage;       // where allocation is happening
-Page *pendingPage;
-Page *scavengablePage;
-Page *stablePages;
-Page *mostlyFreePages;
-Page *freePages;
-size_t freePagesCount;
+Page *currentPage;       // Where allocation is happening. The "nursery".
+Page *previousPage;      // A page that was recently the current one.
+Page *busyPages;         // Chained list of pages that contain live data.
+Page *mostlyFreePages;   // Chained list of pages that the GC has mostly
+                         // cleared but that have some pinned data left in
+                         // them.
+Page *freePages;         // Chained list of pages that are not currenty in
+                         // use and that contain no useful information.
+
+size_t busyPagesCount, mostlyFreePagesCount, freePagesCount;
 
 void *heapSegment[32];
 void *heapSegmentBase[32];
@@ -417,7 +563,7 @@ uintptr_t findObjectStart(uintptr_t p, Page *x)
 }
 
 // Here we have a function to call during a major garbage collection. It is
-// given an (ambiguous) pointer. If necessary it established an objectt-start
+// given an (ambiguous) pointer. If necessary it established an object-start
 // map for the page that addresses, and then it marks as pinned the object
 // referenced.
 
@@ -427,8 +573,8 @@ void setPinnedMajor(uintptr_t p)
     if (!x->pageHeader.onstarts_present) recordObjectStarts(x);
     uintptr_t os = findObjectStart(p, x);
     if (os == 0) return;
-    os = (os - reinterpret_cast<uintptr_t>(scavengablePage))/8;
-    scavengablePage->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
+    os = (os - reinterpret_cast<uintptr_t>(previousPage))/8;
+    previousPage->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
 }
 
 // At the start of a minor garbage collection it it is necessary to call
@@ -437,7 +583,7 @@ void setPinnedMajor(uintptr_t p)
 // conditionally on each case where a pointer (seems to) refer to that region.
 
 void recordObjectStartsMinor()
-{   recordObjectStarts(scavengablePage);
+{   recordObjectStarts(previousPage);
 }
 
 // Set a pinned bit for an address if it lies within the single scavengable
@@ -446,14 +592,14 @@ void recordObjectStartsMinor()
 void setPinnedMinor(uintptr_t p)
 {
 // If the address is not in the scavengable page I can ignore it.
-    if (!inScavengablePage(p)) return;
+    if (!inPreviousPage(p)) return;
 // Find the object within the page that it is within, or return NULL if none.
 // This will always return a value that is an address aligned zero mod 8.
-    uintptr_t os = findObjectStart(p, scavengablePage);
+    uintptr_t os = findObjectStart(p, previousPage);
     if (os == 0) return;
 // Now I set a bit in the pinned map.
-    os = (os - reinterpret_cast<uintptr_t>(scavengablePage))/8;
-    scavengablePage->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
+    os = (os - reinterpret_cast<uintptr_t>(previousPage))/8;
+    previousPage->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
 }
 
 // Just to provide a level of abstraction I provide a function that clears

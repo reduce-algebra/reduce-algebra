@@ -71,6 +71,155 @@ extern double max_store_size;
 
 extern bool restartp;
 
+// This version of the directory structure can cope with up to 2047
+// modules in any single library. It can also cope with a directory
+// being mapped onto an operating-system directory rather than my own
+// sub-structure packed within a file.
+
+#define IMAGE_FORMAT_VERSION       '5'
+
+#define DIRECTORY_SIZE              8    // Initial directory size
+
+typedef struct _directory_header
+{   char C, S, L, version;  // Identification: spells CSL or CCL.
+    unsigned char dirext,   // Extra bits for dirused, dirsize, this is
+                            // so that in effect dirsize & dirused can be
+                            // 12 bits wide.
+                  dirsize,  // Number of directory entries provided.
+                  dirused,  // Number currently in use.
+                  updated;  // In need of compaction & other flags.
+    char eof[4];            // fseek/ftell location of end of file.
+                            // Does this assume no fiules > 4G?
+} directory_header;
+
+typedef struct _directory_entry
+{   char data[44];
+//
+//  char newline;                * Makes file easier to read as a text file! *
+//  char name[12];               * blank padded to 12 characters             *
+//                               * but with special rules for root image etc *
+//  char date[24];
+//  char position[4];            * Machine byte-order insensitive format     *
+//  char size[3];                * Ditto                                     *
+//
+} directory_entry;
+
+//
+// I use these macros rather than just the structure definition shown above
+// so that the behaviour of the code is not sensitive to attempts by a C
+// compiler to align things for me.  Think C 5.0 on the Macintosh (and
+// probably many other C compilers) put padder bytes in the original
+// structure to give word-alignment.
+//
+#define D_newline     data[0]
+#define D_name        data[1]
+#define D_space       data[12]
+#define D_date        data[13]
+#define D_position    data[37]
+#define D_size        data[41]
+
+#define name_size     12
+#define date_size     24
+
+//
+// The limit set here to the length of the name of a directory should only
+// have an effect on cosmetics not functionality.
+//
+#define DIRNAME_LENGTH  256
+#define NEWLINE_CHAR    0x0a
+
+//
+// The D_newline location in a directory originally held a newline,
+// because doing so resulted in image files being a little bit easier
+// to interpret when looked at with a simple text editor. But then
+// it turned out that the C value `\n' was not the same on all computers,
+// and so I used a literal hex value 0x0a instead, expecting it to
+// be the same as '\n' on "most" systems.
+//
+
+typedef struct directory
+{   directory_header h;
+    FILE *f;
+    const char *full_filename;    // NULL unless native directory
+// It is unexpectedly and unpleasantly the case that the "filename"
+// field here must be the last one before the array of directory
+// entries. This is because in the case where an image file is
+// left pending at startup the structure is extended, overlapping where the
+// directory entries will end up, to hold a full-length file name not merely
+// one truncated to DIRNAME_LENGTH. I do not use a std::string here because
+// I use a naive process of writing the bytes of a directory to disc when
+// I create an image file, and I can not have any reasonable expectations on
+// what std::string would look like.
+    char filename[DIRNAME_LENGTH];
+    directory_entry d[1];   // Will usually have many more entries
+} directory;
+
+#ifdef COMMON
+#  define MIDDLE_INITIAL   'C'
+#else
+#  define MIDDLE_INITIAL   'S'
+#endif
+
+inline int get_dirused(directory &d)
+{   return d.h.dirused + ((d.h.dirext & 0x0f)<<8);
+}
+
+inline int get_dirsize(directory &d)
+{   return d.h.dirsize + ((d.h.dirext & 0xf0)<<4);
+}
+
+//
+// Flags for the UPDATED field
+//
+
+#define D_WRITE_OK  1
+#define D_UPDATED   2
+#define D_COMPACT   4
+#define D_PENDING   8
+
+class stringBool
+{
+public:
+    std::string key;
+    bool flag;
+    stringBool(std::string k, bool f)
+    {   key = k;
+        flag = f;
+    }
+};
+
+class stringBoolString
+{
+public:
+    std::string key;
+    bool flag;
+    std::string data;
+    stringBoolString(std::string k, bool f, std::string d)
+    {   key = k;
+        flag = f;
+        data = d;
+    }
+};
+
+class faslFileRecord
+{
+public:
+    bool inUse;
+    std::string name;
+    directory *dir;
+    bool isOutput;
+    faslFileRecord(std::string n, bool o)
+    {   inUse = true;
+        name = n;
+        dir = NULL;
+        isOutput = o;
+    }
+};
+
+extern std::vector<stringBoolString> symbolsToDefine;
+extern std::vector<stringBoolString> stringsToDefine;
+extern std::vector<faslFileRecord> fasl_files; 
+
 extern char *big_chunk_start, *big_chunk_end;
 
 extern uintptr_t *C_stackbase, C_stacklimit;
@@ -392,13 +541,6 @@ extern int procstackp;
 
 extern bool garbage_collection_permitted;
 
-#define MAX_INPUT_FILES         40  // limit on command-line length
-#define MAX_SYMBOLS_TO_DEFINE   40
-#define MAX_FASL_PATHS          20
-
-extern const char *files_to_read[MAX_INPUT_FILES],
-       *symbols_to_define[MAX_SYMBOLS_TO_DEFINE],
-       *fasl_paths[MAX_FASL_PATHS];
 extern int csl_argc;
 extern const char **csl_argv;
 extern bool fasl_output_file;
@@ -431,16 +573,12 @@ extern void flush_socket();
 
 extern void report_file(const char *s);
 
-extern bool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
 extern int errorset_min, errorset_max;
 
 extern bool force_verbos, force_echo, force_backtrace;
 extern bool stop_on_error;
 extern uint64_t force_cons, force_vec;
 
-extern size_t number_of_input_files,
-       number_of_symbols_to_define,
-       number_of_fasl_paths;
 extern int init_flags;
 
 extern const char *standard_directory;
@@ -501,7 +639,7 @@ inline bool vec_forced(size_t n)
 
 extern int tty_count;
 extern FILE *spool_file;
-extern char spool_file_name[32];
+extern char spool_file_name[128];
 
 //
 // If there is no more than 100 bytes of data then I will deem
@@ -574,6 +712,8 @@ extern bool Iopen_from_stdin(), Iopen_to_stdout();
 extern bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour);
 extern bool Iwriterootp(char *expanded);
 extern bool Iopen_banner(int code);
+extern bool Imodulep1(int i, const char *name, size_t len, char *datestamp,
+                     size_t *size, char *expanded_name);
 extern bool Imodulep(const char *name, size_t len, char *datestamp,
                      size_t *size, char *expanded_name);
 extern char *trim_module_name(char *name, size_t *lenp);

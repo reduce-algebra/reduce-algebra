@@ -511,7 +511,6 @@ FILE *binary_read_file;
 #endif
 FILE *binary_write_file;
 static long int read_bytes_remaining, write_bytes_written;
-directory *fasl_files[MAX_FASL_PATHS];
 
 static directory *make_empty_directory(const char *name)
 //
@@ -719,7 +718,7 @@ directory *open_pds(const char *name, int mode)
 // version info.
 //
         version_moan(hdr.h.version) ||
-        get_dirused(hdr.h) > get_dirsize(hdr.h) ||
+        get_dirused(hdr) > get_dirsize(hdr) ||
         bits32(hdr.h.eof) < (int32_t)sizeof(directory_header))
     {
 //
@@ -753,7 +752,7 @@ directory *open_pds(const char *name, int mode)
         return d;
     }
     hdr.h.updated = write_OK ? D_WRITE_OK : 0;
-    n = get_dirsize(hdr.h);
+    n = get_dirsize(hdr);
     d = (directory *)
         malloc(sizeof(directory)+(n-1)*sizeof(directory_entry));
     if (d == NULL) return &empty_directory;
@@ -824,11 +823,12 @@ void Iinit(void)
     read_bytes_remaining = write_bytes_written = 0;
     any_output_request = false;
     strcpy(would_be_output_directory, "<unknown>");
-    for (i=0; i<number_of_fasl_paths; i++)
-    {   if (0x40000000+i == output_directory)
-            fasl_files[i] = open_pds(fasl_paths[i], PDS_PENDING);
+    for (i=0; i<fasl_files.size(); i++)
+    {   if (!fasl_files[i].inUse) continue;
+        else if (0x40000000+i == output_directory)
+            fasl_files[i].dir = open_pds(fasl_files[i].name.c_str(), PDS_PENDING);
         else
-            fasl_files[i] = open_pds(fasl_paths[i],
+            fasl_files[i].dir = open_pds(fasl_files[i].name.c_str(),
                                      i == output_directory ? PDS_OUTPUT :
                                      PDS_INPUT);
     }
@@ -981,7 +981,7 @@ static bool open_input(directory *d, const char *name, size_t len,
 // pointed at the start of a long name it is OK to search in steps of 1
 // here.
 //
-    for (i=0; i<get_dirused(d->h); i++)
+    for (i=0; i<get_dirused(*d); i++)
     {   if (samename(name, d, i, len) &&
             &d->d[i] != current_output_entry)
         {
@@ -1033,7 +1033,7 @@ static int for_qsort(void const *aa, void const *bb)
 }
 
 static void sort_directory(directory *d)
-{   qsort((void *)d->d, (size_t)get_dirused(d->h),
+{   qsort((void *)d->d, (size_t)get_dirused(*d),
           sizeof(directory_entry), for_qsort);
 }
 
@@ -1046,7 +1046,7 @@ static directory *enlarge_directory(int current_size)
 // to exist, so I do not need to check for that here.
 //
     int dirno = library_number(qvalue(output_library));
-    directory *d1 = fasl_files[dirno];
+    directory *d1 = fasl_files[dirno].dir;
     if (n > current_size+20) n = current_size+20;
     for (;;)
     {   directory_entry *first;
@@ -1098,7 +1098,7 @@ static directory *enlarge_directory(int current_size)
     d1->h.dirext = (unsigned char)((d1->h.dirext & 0x0f) + ((n>>4) & 0xf0));
     d1->h.updated |= D_COMPACT | D_UPDATED;
     while (n>current_size) clear_entry(&d1->d[--n]);
-    fasl_files[dirno] = d1;
+    fasl_files[dirno].dir = d1;
     return d1;
 }
 
@@ -1119,7 +1119,7 @@ bool open_output(const char *name, size_t len)
 #endif
     nativedir = false;
     if (!is_library(oo)) return true;
-    d = fasl_files[library_number(oo)];
+    d = fasl_files[library_number(oo)].dir;
     if (d == NULL) return true;  // closed handle, I guess
     if ((d->h.updated & D_WRITE_OK) == 0) return true;
 //
@@ -1157,7 +1157,7 @@ bool open_output(const char *name, size_t len)
 // not critical. Again note it is OK to scan in steps of 1 despite the
 // fact that long-names are stored split across consecutive directory slots.
 //
-    for (i=0; i<get_dirused(d->h); i++)
+    for (i=0; i<get_dirused(*d); i++)
     {   if (samename(name, d, i, len))
         {   current_output_entry = &d->d[i];
             d->h.updated |= D_COMPACT | D_UPDATED;
@@ -1209,7 +1209,7 @@ bool open_output(const char *name, size_t len)
     else if (len <= 11+11+24) n = 2;
     else if (len <= 11+11+11+24+24) n = 3;
     else return true;  // Name longer than 81 chars not supported, sorry
-    while (i+n > (int)get_dirsize(d->h))
+    while (i+n > (int)get_dirsize(*d))
     {   d = enlarge_directory(i);
         current_output_directory = d;
         if (d == NULL) return true;
@@ -1253,7 +1253,7 @@ bool open_output(const char *name, size_t len)
     if (t == (time_t)(-1)) ct = "** *** not dated *** ** ";
     else ct = ctime(&t);
     strncpy(&d->d[i].D_date, ct, date_size);
-    set_dirused(&d->h, get_dirused(d->h)+n);
+    set_dirused(&d->h, get_dirused(*d)+n);
     binary_write_file = d->f;
     write_bytes_written = 0;
     d->h.updated |= D_UPDATED;
@@ -1302,14 +1302,14 @@ static void list_one_native(const char *name, int why, long int size)
 
 static void list_one_library(LispObject oo, bool out_only)
 {   int j;
-    directory *d = fasl_files[library_number(oo)];
+    directory *d = fasl_files[library_number(oo)].dir;
     if (d->full_filename != NULL)
     {   trace_printf("Directory %s\n", d->full_filename);
         scan_directory(d->full_filename, list_one_native);
         return;
     }
     trace_printf("\nFile %s (dirsize %ld  length %ld",
-                 d->filename, (long)get_dirsize(d->h), (long)bits32(d->h.eof));
+                 d->filename, (long)get_dirsize(*d), (long)bits32(d->h.eof));
     j = d->h.updated;
     if (j != 0) trace_printf(",");
     if (j & D_WRITE_OK) trace_printf(" Writable");
@@ -1322,7 +1322,7 @@ static void list_one_library(LispObject oo, bool out_only)
 // The format string used here will need adjustment if you ever change the
 // number of characters used to store names or dates.
 //
-    for (j=0; j<get_dirused(d->h); j++)
+    for (j=0; j<get_dirused(*d); j++)
     {   int n = 0;
         if (d->d[j].D_space & 0x80)
         {   trace_printf("    %.11s", &d->d[j].D_name);
@@ -1382,7 +1382,7 @@ static void collect_modules(const char *name, int why, long int size)
 
 LispObject Llibrary_members(LispObject env, LispObject oo)
 {   int i, j, k;
-    directory *d = fasl_files[library_number(oo)];
+    directory *d = fasl_files[library_number(oo)].dir;
     LispObject v, r = nil;
     char *p;
     if (d->full_filename != NULL)
@@ -1390,7 +1390,7 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
         scan_directory(d->full_filename, collect_modules);
         return onevalue(mods);
     }
-    for (j=0; j<get_dirused(d->h); j++)
+    for (j=0; j<get_dirused(*d); j++)
     {   int n = 0;
         p = (char *)&celt(boffo, 0);
         k = 0;
@@ -1447,6 +1447,52 @@ LispObject Llibrary_members0(LispObject env)
     else return onevalue(nil);
 }
 
+bool Imodulep1(int i, const char *name, size_t len, char *datestamp, size_t *size,
+                 char *expanded_name)
+// Hands back information about whether the given module exists in the
+// image file with index i.
+{   directory *d = fasl_files[i].dir;
+    if (d == NULL) return true;
+    if (d->full_filename != NULL)
+    {   char nn[LONGEST_LEGAL_FILENAME];
+        struct stat statbuff;
+        memset(nn, 0, sizeof(nn));
+        fasl_file_name(nn, d, name, len);
+        if (stat(nn, &statbuff) != 0) return true;   // file not present
+        strcpy(expanded_name, nn);
+        strcpy(datestamp, ctime(&(statbuff.st_mtime)));
+//
+// Note that FASL modules here will surely never even start to get towards
+// the size-limits of a 32-bit integer!
+//
+        *size = (int32_t)statbuff.st_size;
+        return false;
+    }
+    for (int j=0; j<get_dirused(*d); j++)
+    {   if (samename(name, d, j, len))
+        {   const char *n = fasl_files[i].dir->filename;
+            const char *p1 = "(", *p2 = ")";
+            if (d->full_filename != NULL)
+            {
+#ifdef WIN32
+                p1 = "\\";
+#else
+                p1 = "/";
+#endif
+                p2 = "";
+            }
+            memcpy(datestamp, &d->d[j].D_date, date_size);
+            *size = bits24(&d->d[j].D_size);
+            if (name == NULL) sprintf(expanded_name,
+                                          "%s%sInitialImage%s", n, p1, p2);
+            else sprintf(expanded_name,
+                             "%s%s%.*s%s", n, p1, (int)len, name, p2);
+            return false;
+        }
+    }
+    return true;
+}
+
 bool Imodulep(const char *name, size_t len, char *datestamp, size_t *size,
                  char *expanded_name)
 //
@@ -1454,53 +1500,11 @@ bool Imodulep(const char *name, size_t len, char *datestamp, size_t *size,
 // if it does when it was written.  Code should be very similar to
 // that in Iopen.
 //
-{   int i;
-    LispObject il = qvalue(input_libraries);
-    while (consp(il))
-    {   int j;
-        directory *d;
-        LispObject oo = car(il); il = cdr(il);
+{   for (LispObject il = qvalue(input_libraries); consp(il); il=cdr(il))
+    {   LispObject oo = car(il);
         if (!is_library(oo)) continue;
-        i = library_number(oo);
-        d = fasl_files[i];
-        if (d == NULL) continue;
-        if (d->full_filename != NULL)
-        {   char nn[LONGEST_LEGAL_FILENAME];
-            struct stat statbuff;
-            memset(nn, 0, sizeof(nn));
-            fasl_file_name(nn, d, name, len);
-            if (stat(nn, &statbuff) != 0) continue;   // file not present
-            strcpy(expanded_name, nn);
-            strcpy(datestamp, ctime(&(statbuff.st_mtime)));
-//
-// Note that FASL modules here will surely never even start to get towards
-// the size-limits of a 32-bit integer!
-//
-            *size = (int32_t)statbuff.st_size;
+        if (!Imodulep1(library_number(oo), name, len, datestamp, size, expanded_name))
             return false;
-        }
-        for (j=0; j<get_dirused(d->h); j++)
-        {   if (samename(name, d, j, len))
-            {   const char *n = fasl_files[i]->filename;
-                const char *p1 = "(", *p2 = ")";
-                if (d->full_filename != NULL)
-                {
-#ifdef WIN32
-                    p1 = "\\";
-#else
-                    p1 = "/";
-#endif
-                    p2 = "";
-                }
-                memcpy(datestamp, &d->d[j].D_date, date_size);
-                *size = bits24(&d->d[j].D_size);
-                if (name == NULL) sprintf(expanded_name,
-                                              "%s%sInitialImage%s", n, p1, p2);
-                else sprintf(expanded_name,
-                                 "%s%s%.*s%s", n, p1, (int)len, name, p2);
-                return false;
-            }
-        }
     }
     return true;
 }
@@ -1518,17 +1522,17 @@ bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour)
 {   const char *n;
     size_t i;
     if (hard == 0) hard = IMAGE_CODE;
-    for (i=0; i<number_of_fasl_paths; i++)
-    {
-        bool bad = open_input(fasl_files[i], NULL, hard, 0);
+    for (i=0; i<fasl_files.size(); i++)
+    {   if (!fasl_files[i].inUse) continue;
+        bool bad = open_input(fasl_files[i].dir, NULL, hard, 0);
 //
 // The name that I return (for possible display in error messages) will be
 // either that of the file that was opened, or one relating to the last
 // entry in the search path.
 //
-        n = fasl_files[i]->filename;
+        n = fasl_files[i].dir->filename;
 
-        if (hard == IMAGE_CODE) rootDirectory = fasl_files[i];
+        if (hard == IMAGE_CODE) rootDirectory = fasl_files[i].dir;
 
         if (expanded_name != NULL)
         {   if (hard == IMAGE_CODE)
@@ -1565,16 +1569,16 @@ bool Iopen(const char *name, size_t len, int forinput, char *expanded_name)
             LispObject oo = car(il); il = cdr(il);
             if (!is_library(oo)) continue;
             i = library_number(oo);
-            bad = open_input(fasl_files[i], name, len, 0);
+            bad = open_input(fasl_files[i].dir, name, len, 0);
 //
 // The name that I return (for possible display in error messages) will be
 // either that of the file that was opened, or one relating to the last
 // entry in the search path.
 //
-            n = fasl_files[i]->filename;
+            n = fasl_files[i].dir->filename;
             if (expanded_name != NULL)
             {   const char *p1 = "(", *p2 = ")";
-                if (fasl_files[i]->full_filename != NULL)
+                if (fasl_files[i].dir->full_filename != NULL)
                 {
 #ifdef WIN32
                     p1 = "\\";
@@ -1600,7 +1604,7 @@ bool Iopen(const char *name, size_t len, int forinput, char *expanded_name)
         LispObject oo = qvalue(output_library);
         directory *d;
         if (!is_library(oo)) return true;
-        d = fasl_files[library_number(oo)];
+        d = fasl_files[library_number(oo)].dir;
         if (d->full_filename != NULL)
         {
 #ifdef WIN32
@@ -1631,7 +1635,7 @@ bool Iwriterootp(char *expanded_name)
     }
     sprintf(expanded_name, "%s(InitialImage)", would_be_output_directory);
     if (!is_library(oo)) return true;
-    d = fasl_files[library_number(oo)];
+    d = fasl_files[library_number(oo)].dir;
     if (d == NULL) return true;  // closed handle, I guess
 //
 // At present for native directories the WRITE_OK flag is left set without
@@ -1656,7 +1660,7 @@ bool Iopen_banner(int code)
         {   bool bad;
             LispObject oo = car(il); il = cdr(il);
             if (!is_library(oo)) continue;
-            bad = open_input(fasl_files[library_number(oo)],
+            bad = open_input(fasl_files[library_number(oo)].dir,
                              NULL, BANNER_CODE, 0);
             if (!bad) return false;
         }
@@ -1694,7 +1698,7 @@ bool Idelete(const char *name, size_t len)
     directory *d;
     LispObject oo = qvalue(output_library);
     if (!is_library(oo)) return true;
-    d = fasl_files[library_number(oo)];
+    d = fasl_files[library_number(oo)].dir;
     if (d == NULL ||
         (d->h.updated && D_WRITE_OK) == 0 ||
         Istatus != I_INACTIVE) return true;
@@ -1704,11 +1708,11 @@ bool Idelete(const char *name, size_t len)
         fasl_file_name(nn, d, name, len);
         return (remove(nn) != 0);
     }
-    for (i=0; i<get_dirused(d->h); i++)
+    for (i=0; i<get_dirused(*d); i++)
     {   if ((nrec = samename(name, d, i, len)) != 0)
         {   int j;
-            set_dirused(&d->h, get_dirused(d->h)-nrec);
-            for (j=i; j<get_dirused(d->h); j++)
+            set_dirused(&d->h, get_dirused(*d)-nrec);
+            for (j=i; j<get_dirused(*d); j++)
                 d->d[j] = d->d[j+nrec];
 //
 // I tidy up the now-unused entry - in some sense this is a redundant
@@ -1745,7 +1749,7 @@ bool Icopy(const char *name, size_t len)
     directory *d, *id;
     LispObject il, oo = qvalue(output_library);
     if (!is_library(oo)) return true;
-    d = fasl_files[library_number(oo)];
+    d = fasl_files[library_number(oo)].dir;
 //
 // Only valid if there is an output file and nothing else is going on.
 //
@@ -1766,10 +1770,10 @@ bool Icopy(const char *name, size_t len)
     {   oo = car(il);
         if (!is_library(oo)) continue;
         i = library_number(oo);
-        id = fasl_files[i];
+        id = fasl_files[i].dir;
 // Not updated for native dirs yet
         if (id->full_filename != NULL) continue;
-        for (ii=0; ii<get_dirused(id->h); ii++)
+        for (ii=0; ii<get_dirused(*id); ii++)
             if (samename(name, id, ii, len)) goto found;
     }
     return true;     // Module to copy not found
@@ -1781,7 +1785,7 @@ found:
 //
 // Now scan output directory to see where to put result
 //
-    for (i=0; i<get_dirused(d->h); i++)
+    for (i=0; i<get_dirused(*d); i++)
 // Not updated for native dirs yet
         if (samename(name, d, i, len))
         {   d->h.updated |= D_UPDATED | D_COMPACT;
@@ -1806,7 +1810,7 @@ found:
     else if (len <= 11+11+24) n = 2;
     else if (len <= 11+11+11+24+24) n = 3;
     else return true;  // Name longer than 81 chars not supported, sorry
-    while (i+n > (int)get_dirsize(d->h))
+    while (i+n > (int)get_dirsize(*d))
     {   d = enlarge_directory(i);
         current_output_directory = d;
         if (d == NULL) return true;
@@ -1846,7 +1850,7 @@ found:
 #undef next_char_of_name
         }
     }
-    set_dirused(&d->h, get_dirused(d->h)+n);
+    set_dirused(&d->h, get_dirused(*d)+n);
 ofound:
     memcpy(&d->d[i].D_date, &id->d[ii].D_date, date_size);
     trace_printf("\nCopy %.*s from %s to %s\n",
@@ -1927,8 +1931,8 @@ bool IcloseOutput()
     fseek(d->f, 0, SEEK_SET);
     if (fwrite(&d->h, sizeof(directory_header), 1, d->f) != 1) r = true;
     if (fwrite(&d->d[0], sizeof(directory_entry),
-               (size_t)get_dirsize(d->h), d->f) !=
-        (size_t)get_dirsize(d->h)) r = true;
+               (size_t)get_dirsize(*d), d->f) !=
+        (size_t)get_dirsize(*d)) r = true;
     if (fflush(d->f) != 0) r = true;
     d->h.updated &= ~D_UPDATED;
     current_output_entry = NULL;
@@ -1936,15 +1940,15 @@ bool IcloseOutput()
 }
 
 bool finished_with(int j)
-{   directory *d = fasl_files[j];
-    fasl_files[j] = NULL;
-//
+{   directory *d = fasl_files[j].dir;
+    fasl_files[j].dir = NULL;
 // If the library concerned had been opened using (open-library ...) then
 // the name stored in fasl_paths[] would have been allocated using malloc(),
 // and just discarding it as here will represent a space-leak. Just for now
 // I am going to accept that as an unimportant detail.
-//
-    fasl_paths[j] = NULL;
+    fasl_files[j].name = "";
+    fasl_files[j].inUse = false;
+    fasl_files[j].isOutput = false;
     if (d == NULL) return false;
     if (d->h.updated & D_COMPACT)
     {   int i;
@@ -1953,8 +1957,8 @@ bool finished_with(int j)
         d->h.updated |= D_UPDATED;
         sort_directory(d);
         hwm = sizeof(directory_header) +
-              get_dirsize(d->h)*(long int)sizeof(directory_entry);
-        for (i=0; i<get_dirused(d->h); i++)
+              get_dirsize(*d)*(long int)sizeof(directory_entry);
+        for (i=0; i<get_dirused(*d); i++)
         {   long int pos = bits32(&d->d[i].D_position);
             if (pos != hwm)
             {   char *b = 16 + (char *)stack;
@@ -2005,8 +2009,8 @@ bool finished_with(int j)
         fseek(d->f, 0, SEEK_SET);
         if (fwrite(&d->h, sizeof(directory_header), 1, d->f) != 1) return true;
         if (fwrite(&d->d[0], sizeof(directory_entry),
-                   (size_t)get_dirsize(d->h), d->f) !=
-            (size_t)get_dirsize(d->h)) return true;
+                   (size_t)get_dirsize(*d), d->f) !=
+            (size_t)get_dirsize(*d)) return true;
         if (fflush(d->f) != 0) return true;
     }
     if (d->h.updated & D_PENDING) return false;
@@ -2028,8 +2032,10 @@ bool Ifinished(void)
 //
     size_t j;
     bool failed = false;
-    for (j=0; j<number_of_fasl_paths; j++)
-        if (finished_with(j)) failed = true;
+    for (j=0; j<fasl_files.size(); j++)
+    {   if (!fasl_files[j].inUse) continue;
+        else if (finished_with(j)) failed = true;
+    }
     return failed;
 }
 

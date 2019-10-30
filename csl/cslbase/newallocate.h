@@ -110,7 +110,7 @@ union alignas(pageSize) Page
 // the update occured. The RPLACx etc operations are always precise - ie they
 // will update a valid live Lisp object, and so I do not need to validate
 // the address concerned. But this means that any time the mutator is active
-// entried in the dirty[] map can get set. I use a map made out of
+// entries in the dirty[] map can get set. I use a map made out of
 // std::atomic<uint8_t> rather than a bitmap to keep the overhead in the
 // write barrier as low as I can while also keeping it thread-safe.
 //
@@ -191,14 +191,15 @@ public:
     ~ThreadStartup();
 };
 
-extern Page *nurseryPage;       // where allocation is happening
-extern Page *pendingPage;
-extern Page *scavengablePage;
-extern Page *stablePages;
+extern Page *currentPage;       // where allocation is happening
+extern Page *previousPage;
+extern Page *busyPages;
 extern Page *mostlyFreePages;
 extern Page *freePages;
+
+extern size_t busyPagesCount;
+extern size_t mostlyFreePagesCount;
 extern size_t freePagesCount;
-extern size_t activePagesCount;
 
 
 // For up to 32 segments I have...
@@ -277,20 +278,14 @@ inline Page *findPage(uintptr_t p)
 
 // I can do cheaper tests if I only concerned with one of the special pages.
 
-inline bool inNurseryPage(uintptr_t p)
-{   uintptr_t n = reinterpret_cast<uintptr_t>(nurseryPage);
+inline bool inCurrentPage(uintptr_t p)
+{   uintptr_t n = reinterpret_cast<uintptr_t>(currentPage);
     return (p >= n &&
             p < (n + pageSize));
 }
 
-inline bool inPendingPage(uintptr_t p)
-{   uintptr_t n = reinterpret_cast<uintptr_t>(pendingPage);
-    return (p >= n &&
-            p < (n + pageSize));
-}
-
-inline bool inScavengablePage(uintptr_t p)
-{   uintptr_t n = reinterpret_cast<uintptr_t>(scavengablePage);
+inline bool inPreviousPage(uintptr_t p)
+{   uintptr_t n = reinterpret_cast<uintptr_t>(previousPage);
     return (p >= n &&
             p < (n + pageSize));
 }
@@ -855,7 +850,7 @@ inline void waitWhileAnotherThreadGarbageCollects()
 // threads and one of the threads (it may not be me!) must garbage collect.
 // When they synchronize with me here the other threads will also have tried
 // an allocation, but the largest request any is allowed to make is
-// VECTOR_CHUNK_BYTES (at present 1 megabyte). If all the maxThreads do
+// VECTOR_CHUNK_BYTES (at present 2 megabyte). If all the maxThreads do
 // this they can have caused fringe to overshoot by about an amount
 // maxThreads*VECTOR_CHUNK_BYTES and if that caused uintptr_t arithmetic to
 // overflow and wrap round then there could be big trouble. So when I

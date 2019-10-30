@@ -224,6 +224,8 @@ inline double CSLpow(double x, double y)
 #include "lispthrow.h"
 #include "log.h"
 #include "version.h"
+#include "cxx_shims.h"
+
 
 namespace FX {
 }

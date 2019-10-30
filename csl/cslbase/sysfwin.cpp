@@ -358,44 +358,38 @@ void my_pclose(FILE *stream)
 
 char *look_in_lisp_variable(char *o, int prefix)
 {   LispObject var;
-//
 // I will start by tagging a '$' (or whatever) on in front of the
 // parameter name.
-//
     o[0] = (char)prefix;
     var = make_undefined_symbol(o);
-//
 // make_undefined_symbol() could fail either if we had utterly run out
 // of memory or if somebody generated an interrupt (eg ^C) around now. Ugh.
 //
 // If the variable $name was undefined then I use an empty replacement
 // text for it. Otherwise I need to look harder at its value.
-//
     if (qvalue(var) == unset_var) return o;
     else
     {   intptr_t len;
         var = qvalue(var);
-//
 // Mostly I expect that the value will be a string or symbol.
-//
 #ifdef COMMON
         if (complex_stringp(var)) var = simplify_string(var);
 #endif // COMMON
         if (symbolp(var)) var = get_pname(var);
         else if (!is_vector(var) || !is_string(var)) return NULL;
         len = length_of_byteheader(vechdr(var)) - CELL;
-//
 // Copy the characters from the string or from the name of the variable
 // into the file-name buffer. There could at present be a crash here
 // if the expansion was very very long and overflowed my buffer. Tough
 // luck for now - people doing that (maybe) get what they (maybe) deserve.
-//
         memcpy(o, (char *)var + (CELL - TAG_VECTOR), (size_t)len);
         o = o + len;
         return o;
     }
 }
 
+
+// What follows can be replaced by stuff from the C++ chrono:: package.
 
 #if defined HAVE_CLOCK_GETTIME && defined HAVE_DECL_CLOCK_THREAD_CPUTIME_ID
 

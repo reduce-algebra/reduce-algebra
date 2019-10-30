@@ -358,7 +358,7 @@ LispObject Lwritable_libraryp(LispObject env, LispObject file)
     directory *d;
     if ((file & 0xffff) != SPID_LIBRARY) return onevalue(nil);
     i = (file >> 20) & 0xfff;
-    d = fasl_files[i];
+    d = fasl_files[i].dir;
     i = d->h.updated;
     return onevalue(Lispify_predicate(i & D_WRITE_OK));
 }

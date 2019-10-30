@@ -142,7 +142,7 @@ void debugprint(LispObject a, int depth)
 #endif
 
 FILE *spool_file = NULL;
-char spool_file_name[32];
+char spool_file_name[128];
 
 int32_t terminal_column = 0;
 
@@ -2151,7 +2151,7 @@ restart:
 // to 124 characters. This is somewhat arbitrary (but MUST relate to the
 // size of my_buff), but will tend to keep output more compact.
 //
-                        sprintf(my_buff, "#{%.124s}", fasl_paths[u]);
+                        sprintf(my_buff, "#{%.124s}", fasl_files[u].name.c_str());
                         break;
                     default:           sprintf(my_buff, "SPID_%lx",
                                                (long)((u >> 8) & 0x00ffffff));
@@ -4575,6 +4575,8 @@ static LispObject Lbinary_close_input(LispObject env)
 // or used in the variables input-libraries or output-library.
 //
 
+std::vector<faslFileRecord> fasl_files;
+
 static LispObject Lopen_library(LispObject env, LispObject file,
                                 LispObject dirn)
 {   char filename[LONGEST_LEGAL_FILENAME];
@@ -4587,26 +4589,31 @@ static LispObject Lopen_library(LispObject env, LispObject file,
     if (len >= sizeof(filename)) len = sizeof(filename)-1;
     memcpy(filename, w, len);
     filename[len] = 0;
-    for (i=0; i<number_of_fasl_paths; i++)
-    {   if (fasl_files[i] == NULL) goto found;
+// If one of the libraries I had opened earlier has now been closed there
+// may be an empty slot in fasl_files[], and so I will scan and look for
+// that and if I find such then I will use it.
+    for (i=0; i<fasl_files.size(); i++)
+    {   if (!fasl_files[i].inUse) goto found;
     }
-    if (number_of_fasl_paths>=MAX_FASL_PATHS-1)
-        aerror("open-library (too many open libraries)");
-    number_of_fasl_paths++;
+// If not I append a new slot on the end of the std::vector. By using
+// std::vector I can at least pretend that there is no limit to the number of
+// libraries that I can have open at once.
+    fasl_files.push_back(faslFileRecord("", !forinput));
+    i = fasl_files.size()-1;
 found:
-    fasl_files[i] = open_pds(filename, forinput ? PDS_INPUT : PDS_OUTPUT);
-//
+    fasl_files[i].inUse = true;
 // Allocating space using malloc() here is dodgy, because the matching
 // place in close-library does not do a corresponding free() operation.
 // For now I will accept that space leak.
-//
     w1 = (char *)malloc(strlen(filename)+1);
     if (w1 == NULL) w = "Unknown file";
     else
     {   strcpy(w1, filename);
         w = w1;
     }
-    fasl_paths[i] = w;
+    fasl_files[i].name = w;
+    fasl_files[i].dir = open_pds(filename, forinput ? PDS_INPUT : PDS_OUTPUT);
+    fasl_files[i].isOutput = !forinput;
     return onevalue(SPID_LIBRARY + (((int32_t)i)<<20));
 }
 
@@ -4623,7 +4630,7 @@ static LispObject Lclose_library(LispObject env, LispObject lib)
 static LispObject Llibrary_name(LispObject env, LispObject lib)
 {   LispObject a;
     if (!is_library(lib)) aerror1("library-name", lib);
-    a = make_string(fasl_paths[library_number(lib)]);
+    a = make_string(fasl_files[library_number(lib)].name.c_str());
     return onevalue(a);
 }
 

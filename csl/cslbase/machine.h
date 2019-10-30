@@ -141,11 +141,6 @@
 #define MAYBE_UNUSED
 #endif
 
-// At some stage I might wish to move to "#include <cstdio>" etc however
-// that would put things in the std: namespace, and the killer for me is
-// that with g++ I can then not find putc_unlocked and getc_unlocked. Well
-// I bet that I can if I try a bit harder...
-
 #ifdef WIN32
 // The aim here is to avoid use of the Microsoft versions of printf and
 // friends and (hence) allow g++ to parse and check format strings reliably.
@@ -176,43 +171,50 @@
 
 #endif //WIN32
 
-// I should possibly migrate to use of <iostream> rather than <stdio.h>,
-// but doing so will involve changes across rather a latge swathe of the
-// code! But I will make the iostream stuff available...
+// I now include eg <cstdio> rather than <stdio.h>. The consequence is that
+// all the names that are declared are certain to be present in the std::
+// namespace. They MIGHT be present in the global namespace too, but there is
+// no guarantee of that.
+
+// The consequence is that I ought to go "using std::fopen;" and things like
+// that wherever I use a C library function, or as an alternative write the
+// calls as std::fopen(...) instead of just fopen(...). At present it is not
+// clear how I can police my adherence to this requirement!
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstddef>
+#include <cmath>
+#include <cfloat>
+#include <cstdint>
+#include <cinttypes>
+#include <climits>
+#include <cstring>
+#include <cctype>
+#include <cwctype>
+#include <ctime>
+#include <cstdarg>
+#include <csetjmp>
+#include <csignal>
+#include <cerrno>
+
+// Now the C++ facilities that I use...
+
 #include <iostream>
-// I might also migrate from using <stdio.h> to using <cstdio> and face up to
-// any namespace issues that are caused that way... But not today.
-#include <stdio.h>
-// Similarly I should probably go either "#include <cstdlib>" or just
-// "#include <stdlib>" and in general migrate to be "more C++ than C"
-// with regard to all libraries. Maybe the main issue there will be that
-// I will need to fuss about namespaces at least a bit. That could be sensible
-// anyway!
-#include <stdlib.h>
-#include <stddef.h>
-#include <math.h>
-#include <float.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <string.h>
-#include <ctype.h>
-#include <wctype.h>
-#include <time.h>
-#include <stdarg.h>
-#include <setjmp.h>
-#include <signal.h>
 #include <exception>
-#include <errno.h>
-#include <assert.h>
-
-// As from May 2018 I will use C++11 for random number and thread support...
-
+#include <cassert>
+#include <map>
+#include <unordered_map>
+#include <vector>
+#include <iostream>
+#include <string>
+#include <algorithm>
 #include <random>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
+#include <functional>
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>

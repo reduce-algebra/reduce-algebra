@@ -1477,9 +1477,11 @@ void set_up_variables(int restart_flag)
     input_libraries = make_undefined_symbol("input-libraries");
     setheader(input_libraries, qheader(input_libraries) | SYM_SPECIAL_VAR);
     setvalue(input_libraries, nil);
-    for (i=number_of_fasl_paths; i!=0; i--)
-        setvalue(input_libraries, cons(SPID_LIBRARY + (((int32_t)(i-1))<<20),
-                                       qvalue(input_libraries)));
+    for (i=fasl_files.size(); i!=0; i--)
+        if (fasl_files[i-1].inUse)
+            setvalue(input_libraries,
+                     cons(SPID_LIBRARY + (((int32_t)(i-1))<<20),
+                          qvalue(input_libraries)));
     output_library = make_undefined_symbol("output-library");
     setvalue(output_library, (output_directory & 0x80000000u) != 0 ? nil :
                               SPID_LIBRARY + (((int32_t)output_directory)<<20));
@@ -2157,61 +2159,27 @@ void set_up_variables(int restart_flag)
     }
 #endif
 
-//
-// I can not handle boffo overflow very well here, but I do really hope that
-// symbols spelt out on the command line will always be fairly short.
-//
-    for (i=0; i<number_of_symbols_to_define; i++)
-    {   bool undef = undefine_this_one[i];
-        const char *s = symbols_to_define[i];
+// I can now predefine symbols in two ways:
+//     -D name=val
+//     --D name=val
+// The first of these matches old behaviour and the value assigned to name
+// is always a string. The second can turn it into a symbol, number etc.
+    for (auto ss : symbolsToDefine)
+    {   bool undef = !ss.flag;
+        const char *s = ss.key.c_str();
         if (undef)
         {   LispObject n = make_undefined_symbol(s);
             setvalue(n, unset_var);
         }
         else
-        {   char buffer[256];
-            char *p = buffer;
-            int c;
-            LispObject n, v;
-            while ((c = *s++) != 0 && c != '=') *p++ = (char)c;
-            *p = 0;
-            n = make_undefined_symbol(buffer);
+        {   LispObject n = make_undefined_symbol(s);
             push(n);
-            if (c == 0) v = lisp_true;
+            s = ss.data.c_str();
+// If you go "--D xxx" then treat it as "--D xxx=t".
+            LispObject v;
+            if (strlen(s) == 0) v = lisp_true;
             else
-            {
-//
-// I have been having a big difficulty here, caused by the inconsistent and
-// awkward behaviours of various shells and "make" utilities. In a tidy
-// and simple world I might like a command-line option -Dxx=yyy to allow
-// arbitrary text for yyy terminating it at the next whitespace. Then yyy
-// could be processed by the Lisp reader so that numbers, symbols, strings
-// etc could be specified. However I find that things I often want to
-// use involve characters such as "\" and ":" (as components of file-names
-// on some machines), and sometimes "make" treats these as terminators, or
-// wants to do something magic with "\".  If I put things within quote marks
-// then sometimes the quotes get passed through to Lisp and sometimes not.
-// This is all a BIG misery in a multi-platform situation!  As a fresh
-// attempt to inject sanity I will always convert yyy to a Lisp string. If
-// it is specified with leading and trailing '"' marks I will strip them. Thus
-// both -Dxxx=yyy and -Dxxx="yyy" will leave the variable xxx set to the
-// string "yyy". Then as a Lisp user I can parse the string if I need to
-// interpret it as something else.
-//
-#ifndef PASS_PREDEFINES_THROUGH_READER
-                if (*s == '"')   // Convert "yyy" to just yyy
-                {   char s1[256];
-                    strncpy(s1, s+1, sizeof(s1));
-                    s1[sizeof(s1)-1] = 0; // force termination
-                    p = s1;
-                    while (*p != 0) p++;
-                    if (*--p == '"') *p = 0;
-                    v = make_string(s1);
-                }
-                else
-#endif
-                v = make_string(s);
-#ifdef PASS_PREDEFINES_THROUGH_READER
+            {   v = make_string(s);
                 v = Lexplodec(nil, v);
                 v = Lcompress(nil, v);
 //
@@ -2221,8 +2189,26 @@ void set_up_variables(int restart_flag)
 // so symbols, numbers and even s-expressions can be parsed.  If the
 // parsing fails I (silently) treat the value as just NIL.
 //
-#endif
             }
+            pop(n);
+            setheader(n, qheader(n) | SYM_SPECIAL_VAR);
+            setvalue(n, v);
+        }
+    }
+    for (auto ss : stringsToDefine)
+    {   bool undef = !ss.flag;
+        const char *s = ss.key.c_str();
+        if (undef)
+        {   LispObject n = make_undefined_symbol(s);
+            setvalue(n, unset_var);
+        }
+        else
+        {   LispObject n = make_undefined_symbol(s);
+            push(n);
+            s = ss.data.c_str();
+            LispObject v;
+            if (strlen(s) == 0) v = lisp_true;
+            else v = make_string(s);
             pop(n);
             setheader(n, qheader(n) | SYM_SPECIAL_VAR);
             setvalue(n, v);
