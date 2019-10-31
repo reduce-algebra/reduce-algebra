@@ -1504,18 +1504,18 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 static void write_result(LispObject env, LispObject r, char *shared)
 {
 // This converts an arbitrary result into a string so I can pass it back.
-    int32_t i, len, ok = 1;
+    std::int32_t i, len, ok = 1;
 // Cyclic and re-entrant structures could lead to failure here, and
 // uninterned symbols (eg gensyms) will not be coped with very well. But
 // SIMPLE data types should all be safe.
     if_error(r = Lexplode(nil, r),
              // Error handler
-             strcpy(shared, "Failed");
-             exit(2));
+             std::strcpy(shared, "Failed");
+             std::exit(2));
     if_error(r = Llist_to_string(nil, r),
              // Error handler
-             strcpy(shared, "Failed");
-             exit(3));
+             std::strcpy(shared, "Failed");
+             std::exit(3));
     len = length_of_byteheader(vechdr(r)) - CELL;
 // If the displayed form ou the output was too long I just truncate it
 // at present. A more agressive attitude would be to count that as a form
@@ -1536,7 +1536,7 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 // Create an identifier for a private shared segment of memory of size
 // 2*PARSIZE. This will be used for passing a result from the sub-task
 // to the main one. Give up if such a segment can not be allocated.
-    int status, segid = shmget(IPC_PRIVATE, (size_t)(2*PARSIZE),
+    int status, segid = shmget(IPC_PRIVATE, (std::size_t)(2*PARSIZE),
                                IPC_CREAT | S_IRUSR | S_IWUSR);
     char *shared, *w;
     int overflow;
@@ -1565,14 +1565,14 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
         LispObject r1;
         if_error(r1 = Lapply2(nil, a, b, nil),
 // If the evaluation failed I will exit indicating a failure.
-                 strcpy(shared, "Failed");
-                 exit(1));
+                 std::strcpy(shared, "Failed");
+                 std::exit(1));
 // Write result from first task into the first half of the shared memory block.
         write_result(nil, r1, shared);
 // Exiting from the sub-task would in fact detach from the shared data
 // segment, but I do the detaching explictly to feel tidy.
         shmdt(shared);
-        exit(0);
+        std::exit(0);
     }
     else
     {
@@ -1591,11 +1591,11 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
             LispObject r2;
             if_error(r2 = Lapply2(nil, a, b, lisp_true),
                      // Error handler
-                     strcpy(shared, "Failed");
-                     exit(1));
+                     std::strcpy(shared, "Failed");
+                     std::exit(1));
             write_result(nil, r2, shared+PARSIZE);
             shmdt(shared);
-            exit(0);
+            std::exit(0);
         }
         else
         {

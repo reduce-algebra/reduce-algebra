@@ -91,8 +91,8 @@ void append_command(char *s)
 {   char *p = command;
     while (*p != 0 && p < &command[LONGEST_COMMAND]) p++;
     if (p > &command[LONGEST_COMMAND-16])
-    {   fprintf(stderr, "\n+++ Command line too long\n");
-        exit(1);
+    {   std::fprintf(stderr, "\n+++ Command line too long\n");
+        std::exit(1);
     }
     *p++ = '\\';
     *p++ = '\"';
@@ -103,8 +103,8 @@ void append_command(char *s)
         if (c == '\"' || c == '\\') *p++ = '\\';
         *p++ = c;
         if (p > &command[LONGEST_COMMAND-16])
-        {   fprintf(stderr, "\n+++ Command line too long\n");
-            exit(1);
+        {   std::fprintf(stderr, "\n+++ Command line too long\n");
+            std::exit(1);
         }
     }
     *p++ = '\\';
@@ -227,38 +227,38 @@ bool find_cygwin(bool sixty_four)
                 p[1] != '?' ||
                 p[2] != '?' ||
                 p[3] != '\\' ||
-                !isalpha(p[4]) ||
+                !std::isalpha(p[4]) ||
                 p[5] != ':' ||
                 p[6] != '\\' ||
-                strlen(p) > 200) continue;
+                std::strlen(p) > 200) continue;
             char path1[256], path2[256];
-            sprintf(path1, "%s\\bin\\cygwin1.dll", p+4);
-            sprintf(path2, "%s\\bin\\bash.exe", p+4);
-            FILE *f1 = fopen(path1, "rb");
-            FILE *f2 = fopen(path2, "rb");
+            std::sprintf(path1, "%s\\bin\\cygwin1.dll", p+4);
+            std::sprintf(path2, "%s\\bin\\bash.exe", p+4);
+            std::FILE *f1 = std::fopen(path1, "rb");
+            std::FILE *f2 = std::fopen(path2, "rb");
 // If the file does not exist or is not readable then this is not a good
 // candidate.
             if (f1 == NULL)
-            {   if (f2 != NULL) fclose(f2);
+            {   if (f2 != NULL) std::fclose(f2);
                 continue;
             }
             if (f2 == NULL)
-            {   fclose(f1);
+            {   std::fclose(f1);
                 continue;
             }
             IMAGE_DOS_HEADER dos_header1, dos_header2;
-            if (fread(&dos_header1, sizeof(dos_header1), 1, f1) == 1 &&
+            if (std::fread(&dos_header1, sizeof(dos_header1), 1, f1) == 1 &&
                 dos_header1.e_magic == IMAGE_DOS_SIGNATURE &&
-                fread(&dos_header2, sizeof(dos_header2), 1, f2) == 1 &&
+                std::fread(&dos_header2, sizeof(dos_header2), 1, f2) == 1 &&
                 dos_header2.e_magic == IMAGE_DOS_SIGNATURE)
             {   LONG next1 = dos_header1.e_lfanew,
                      next2 = dos_header2.e_lfanew;
                 IMAGE_NT_HEADERS nt_headers1, nt_headers2;
-                if (fseek(f1, next1, SEEK_SET) == 0 &&
-                    fread(&nt_headers1, sizeof(nt_headers1), 1, f1) == 1 &&
+                if (std::fseek(f1, next1, SEEK_SET) == 0 &&
+                    std::fread(&nt_headers1, sizeof(nt_headers1), 1, f1) == 1 &&
                     nt_headers1.Signature == IMAGE_NT_SIGNATURE &&
-                    fseek(f2, next2, SEEK_SET) == 0 &&
-                    fread(&nt_headers2, sizeof(nt_headers2), 1, f2) == 1 &&
+                    std::fseek(f2, next2, SEEK_SET) == 0 &&
+                    std::fread(&nt_headers2, sizeof(nt_headers2), 1, f2) == 1 &&
                     nt_headers2.Signature == IMAGE_NT_SIGNATURE)
                 {
 // The machine type is expected to be either IMAGE_FILE_MACHINE_I386 for
@@ -283,13 +283,13 @@ bool find_cygwin(bool sixty_four)
 // I prefer (eg) C:\cygwin to D:\cygwin and both of those to C:\old\cygwin.
                     if (ok &&
                         (cygwin_root[0] == 0 ||
-                         (strlen(p+4) <= strlen(cygwin_root) &&
-                          strcmp(p+4, cygwin_root) < 0)))
-                          strcpy(cygwin_root, p+4);
+                         (std::strlen(p+4) <= std::strlen(cygwin_root) &&
+                          std::strcmp(p+4, cygwin_root) < 0)))
+                          std::strcpy(cygwin_root, p+4);
                 }
             }
-            fclose(f1);
-            fclose(f2);
+            std::fclose(f1);
+            std::fclose(f2);
         }
         delete [] data;
     }
@@ -304,7 +304,7 @@ int main(int argc, char *argv[])
         bool c64 = find_cygwin(true);
 // In general I will be expecting that this program is called from a cygwin
 // shell...
-        printf("%s\n",
+        std::printf("%s\n",
             !c32 && !c64 ? "No cygwin installation at all found!\n" :
             !c32 && c64  ? "64" :
             c32 && !c64  ? "32" :
@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
     run64 = false;
     DWORD parent;
     if (!GetParentProcessId(&parent))
-    {   printf("Parent process not found\n");
+    {   std::printf("Parent process not found\n");
         return 1;
     }
     HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION|
@@ -323,7 +323,7 @@ int main(int argc, char *argv[])
                            parent);
     BOOL b;
     if (IsWow64Process(h, &b) == 0)
-    {   printf("isWow64Process() failed\n");
+    {   std::printf("isWow64Process() failed\n");
         return 1;
     }
     if (b) run64 = true;
@@ -336,14 +336,14 @@ int main(int argc, char *argv[])
                 break;
             case PROCESSOR_ARCHITECTURE_INTEL:
 #ifndef FORCE32
-                printf("You seem to be running 32-bit operating system\n");
-                printf("This utility can not work. Exiting\n");
+                std::printf("You seem to be running 32-bit operating system\n");
+                std::printf("This utility can not work. Exiting\n");
                 return 1;
 #else
                 break;
 #endif
             default:
-                printf("Unknown platform: exiting.\n");
+                std::printf("Unknown platform: exiting.\n");
                 return 1;
         }
     }
@@ -363,7 +363,7 @@ int main(int argc, char *argv[])
 // so I will check what versions are available.
 
     if (!find_cygwin(run64))
-    {   printf("No %d bit version of cygwin found. Sorry\n",
+    {   std::printf("No %d bit version of cygwin found. Sorry\n",
                run64 ? 64 : 32);
         return 1;
     }
@@ -373,8 +373,8 @@ int main(int argc, char *argv[])
     const char *user;
     char newenv[1024];
     int dirsize, i, rc;
-    memset((void *)&startup, 0, sizeof(startup));
-    memset((void *)&process, 0, sizeof(process));
+    std::memset((void *)&startup, 0, sizeof(startup));
+    std::memset((void *)&process, 0, sizeof(process));
     startup.cb = sizeof(startup);
 // Passing STD_OUTPUT etc down seems to behave well when I am under mintty
 // or an xterm, but if I am running in a Windows console (eg as in the
@@ -425,54 +425,54 @@ int main(int argc, char *argv[])
 // the environment and current directory as for Cygwin. So I say just "bash"
 // at the front not "/bin/bash" because the command-name needs to be a
 // Windows version.
-        sprintf(command, "bash -c \"");
+        std::sprintf(command, "bash -c \"");
         for (i=1; i<argc; i++)
         {   append_command(argv[i]);
-            if (i != argc-1) strcat(command, " ");
+            if (i != argc-1) std::strcat(command, " ");
         }
-        strcat(command, "\"");
+        std::strcat(command, "\"");
     }
     else
     {// Under cygwin the shell variable USER gives the effective user name. A
 // second variable USERNAME holds the name of the user that Windows believes
 // is active: eg when I am linked in over ssh that may be "cyg_server".
 // If I fail to read USER I will default to the name "unknown".
-        user = getenv("USER");
+        user = std::getenv("USER");
         if (user == NULL) user = "unknown";
-        memset(newenv, 0, sizeof(newenv));
+        std::memset(newenv, 0, sizeof(newenv));
 // I need a variant on cygwin_root converted from x:\... to /cygdrive/x/...
-        sprintf(cygwinized_root, "/cygdrive/%c%s",
+        std::sprintf(cygwinized_root, "/cygdrive/%c%s",
              cygwin_root[0], &cygwin_root[2]);
         for (char *p=cygwinized_root; *p!=0; p++)
             if (*p == '\\') *p = '/';
-        sprintf(newenv, "OTHER=yes%cUSER=%s%cPATH=%s/bin%c",
+        std::sprintf(newenv, "OTHER=yes%cUSER=%s%cPATH=%s/bin%c",
             0, user, 0, cygwinized_root, 0);
         pnewenv = newenv;
 
-        sprintf(newdir, "%s\\bin", cygwin_root);
+        std::sprintf(newdir, "%s\\bin", cygwin_root);
         pnewdir = newdir;
 
         dirsize = GetCurrentDirectory(0, NULL);
-        current = (char *)malloc(dirsize+4);
+        current = (char *)std::malloc(dirsize+4);
         rc = GetCurrentDirectory(dirsize, current);
         if (rc > dirsize)
-        {   printf("Getting directory failed\n");
+        {   std::printf("Getting directory failed\n");
             return 1;
         }
         for (i=0; i<dirsize; i++)
             if (current[i] == '\\') current[i] = '/';
 
-        sprintf(command,
+        std::sprintf(command,
                 "%s\\%s\\cmd /s /d /c %s\\bin\\bash --login -c \\\"cd ",
-            getenv("WINDIR"), run64 ? "sysnative" : "system32",
+            std::getenv("WINDIR"), run64 ? "sysnative" : "system32",
             cygwin_root);
         append_command(current);
-        strcat(command, " ; ");
+        std::strcat(command, " ; ");
         for (i=1; i<argc; i++)
         {   append_command(argv[i]);
-            if (i != argc-1) strcat(command, " ");
+            if (i != argc-1) std::strcat(command, " ");
         }
-        strcat(command, "\"");
+        std::strcat(command, "\"");
     }
     rc = CreateProcess(
              NULL,                       // ApplicationName
@@ -498,11 +498,11 @@ int main(int argc, char *argv[])
             0,
             NULL);
         if (msg != NULL)
-        {   fprintf(stderr, "%s\n", msg);
+        {   std::fprintf(stderr, "%s\n", msg);
             LocalFree(msg);
             msg = NULL;
         }
-        else fprintf(stderr, "Process creation failed\n");
+        else std::fprintf(stderr, "Process creation failed\n");
         return 1;
     }
     WaitForSingleObject(process.hThread, INFINITE);

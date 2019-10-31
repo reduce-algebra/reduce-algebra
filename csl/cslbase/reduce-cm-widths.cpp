@@ -68,31 +68,31 @@
 
 
 
-static FILE *out = NULL;
+static std::FILE *out = NULL;
 
-static int32_t read4(FILE *f)
-{   int32_t r = getc(f) & 0xff;
-    r = (r << 8) | (getc(f) & 0xff);
-    r = (r << 8) | (getc(f) & 0xff);
-    r = (r << 8) | (getc(f) & 0xff);
+static std::int32_t read4(std::FILE *f)
+{   std::int32_t r = std::getc(f) & 0xff;
+    r = (r << 8) | (std::getc(f) & 0xff);
+    r = (r << 8) | (std::getc(f) & 0xff);
+    r = (r << 8) | (std::getc(f) & 0xff);
     return r;
 }
 
 static int process(char *d, char *s, int final)
 {   char line[1024];
     int i;
-    int32_t checksum, designsize, w;
+    std::int32_t checksum, designsize, w;
     int lenhdr, bc, ec, lenwidths;
-    int32_t finfo[65536], lentab[256];
-    FILE *f;
+    std::int32_t finfo[65536], lentab[256];
+    std::FILE *f;
     int c;
     int headershown = 0;
     double designpoints;
-    sprintf(line, "%s/%s", FONT_PATH, s);
-    f = fopen(line, "r");
+    std::sprintf(line, "%s/%s", FONT_PATH, s);
+    f = std::fopen(line, "r");
     if (f == NULL)
-    {   fprintf(stderr, "Failed to read \"%s\"\n", line);
-        exit(1);
+    {   std::fprintf(stderr, "Failed to read \"%s\"\n", line);
+        std::exit(1);
     }
     w = read4(f);
     lenhdr = (w & 0xffff);
@@ -115,14 +115,14 @@ static int process(char *d, char *s, int final)
     {   lentab[i] = read4(f);
 #if 0
 // Display the width table while I debug/test this
-        fprintf(out, "%% %d: %d = %o = %f\n",
+        std::fprintf(out, "%% %d: %d = %o = %f\n",
                 i, lentab[i], lentab[i], (double)lentab[i]/(double)(1<<20));
 #endif
     }
-    fclose(f);
-    fprintf(out, "    %% name checksum design-size (millipoints)\n");
-    fprintf(out, "    list(\"%s\", %d, %d, list!-to!-vector '(\n    ",
-            d, checksum, (int)((10000LL*(int64_t)designsize+512LL*1024LL)/(1024LL*1024LL)));
+    std::fclose(f);
+    std::fprintf(out, "    %% name checksum design-size (millipoints)\n");
+    std::fprintf(out, "    list(\"%s\", %d, %d, list!-to!-vector '(\n    ",
+            d, checksum, (int)((10000LL*(std::int64_t)designsize+512LL*1024LL)/(1024LL*1024LL)));
 // The TeX fonts only use the first 128 character positions and so I will
 // not bother with recording widths for the range 128-255.
     for (c=0; c<127; c++)
@@ -130,32 +130,32 @@ static int process(char *d, char *s, int final)
         if (c>=bc && c<=ec)
             w = lentab[(finfo[c] >> 24) & 0xff];
         w = (int)((10000.0*(double)w)/(1024.0*1024.0));
-        fprintf(out, "%7d ", w);
-        if ((c % 8) == 7) fprintf(out, "\n    ");
+        std::fprintf(out, "%7d ", w);
+        if ((c % 8) == 7) std::fprintf(out, "\n    ");
     }
     w = 0;
     if (127>=bc && 127<=ec)
         w = lentab[(finfo[127] >> 24) & 0xff];
     w = (int)((10000.0*(double)w)/(1024.0*1024.0));
-    fprintf(out, "%7d))", w);
-    if (!final) fprintf(out, ",");
-    fprintf(out, "\n");
+    std::fprintf(out, "%7d))", w);
+    if (!final) std::fprintf(out, ",");
+    std::fprintf(out, "\n");
 }
 
 int main(int argc, char *argv[])
-{   FILE *note;
+{   std::FILE *note;
     int ch;
-    out = fopen("cmfont-widths.red", "w");
+    out = std::fopen("cmfont-widths.red", "w");
     if (out == NULL)
-    {   printf("Failed to open cmfont-widths.red\n");
+    {   std::printf("Failed to open cmfont-widths.red\n");
         return 1;
     }
-    fprintf(out, "%% cmfont-widths.red\n");
-    fprintf(out, "%% Widths for characters in Computer Modern Fonts\n\n");
-    fprintf(out, "%% extracted from %s\n\n", FONT_PATH);
-    fprintf(out, "%% Widths here are given in units of 1/10000 point\n\n");
-    fprintf(out, "fluid '(cm!-widths!*);\n\n");
-    fprintf(out, "cm!-widths!* := list(\n");
+    std::fprintf(out, "%% cmfont-widths.red\n");
+    std::fprintf(out, "%% Widths for characters in Computer Modern Fonts\n\n");
+    std::fprintf(out, "%% extracted from %s\n\n", FONT_PATH);
+    std::fprintf(out, "%% Widths here are given in units of 1/10000 point\n\n");
+    std::fprintf(out, "fluid '(cm!-widths!*);\n\n");
+    std::fprintf(out, "cm!-widths!* := list(\n");
 //
 // There are fonts that actually interest me... Well to be more precise
 // they are the BaKoMa free truetype fonts, and at present I extract
@@ -304,10 +304,10 @@ int main(int argc, char *argv[])
 //  process("msbm8",              "msbm8.tfm", 0);
 //  process("msbm9",              "msbm9.tfm", 0);
 
-    fprintf(out, "    );\n\n\n", 0);
-    fprintf(out, "%% End of cmfont-widths.red\n");
-    fclose(out);
-    printf("File \"cmfont-widths.red\" created\n");
+    std::fprintf(out, "    );\n\n\n", 0);
+    std::fprintf(out, "%% End of cmfont-widths.red\n");
+    std::fclose(out);
+    std::printf("File \"cmfont-widths.red\" created\n");
     return 0;
 }
 

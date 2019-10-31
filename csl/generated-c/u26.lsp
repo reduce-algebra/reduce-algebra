@@ -1,10 +1,7 @@
 
 % u26.lsp           Machine generated Lisp
 
-(c!:install "u26" 79784 4385704 6884472)
-
-(c!:install 'offexpchk '(offexpchk !*really_off_exp frlis!*
-freevarinexptchk mkprod canprod) 8276034125479486993)
+(c!:install "u26" 82903 8165892 9624493)
 
 (c!:install 'talp_telp '(talp_telp talp_invp talp_fargl) 
 17432041448933105265)

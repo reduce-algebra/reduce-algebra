@@ -350,7 +350,7 @@ LispObject Ldecode_float(LispObject env, LispObject a)
 // Ha ha ha - I detect -0.0 here.
     if (d < 0.0 || (d == 0.0 && 1.0/d < 0)) d = -d, neg = -1.0;
     if (d == 0.0) x = 0;
-    else d = frexp(d, &x);
+    else d = std::frexp(d, &x);
     if (is_sfloat(a)) sign = pack_immediate_float(neg, a);
     else sign = make_boxfloat(neg, type_of_header(flthdr(a)));
     push(sign);
@@ -477,7 +477,7 @@ static LispObject Lfp_subnorm(LispObject env, LispObject a)
             {   Float_union ff;
                 ff.f = value_of_immediate_float(a);
                 if (ff.f == 0.0) return onevalue(nil);
-                return onevalue(((uint32_t)ff.i & 0x7f800000U) == 0 ?
+                return onevalue(((std::uint32_t)ff.i & 0x7f800000U) == 0 ?
                     lisp_true : nil);
             }
         case TAG_BOXFLOAT:
@@ -487,7 +487,7 @@ static LispObject Lfp_subnorm(LispObject env, LispObject a)
                     {   Float_union ff;
                         ff.f = single_float_val(a);
                         if (ff.f == 0.0) return onevalue(nil);
-                        return onevalue(((uint32_t)ff.i & 0x7f800000U) == 0 ?
+                        return onevalue(((std::uint32_t)ff.i & 0x7f800000U) == 0 ?
                             lisp_true : nil);
                     }
 #ifdef HAVE_SOFTFLOAT
@@ -501,7 +501,7 @@ static LispObject Lfp_subnorm(LispObject env, LispObject a)
                     {   Double_union ff;
                         ff.f = (double)double_float_val(a);
                         if (ff.f == 0.0) return onevalue(nil);
-                        uint64_t x = ff.i64 & UINT64_C(0x7ff0000000000000);
+                        std::uint64_t x = ff.i64 & UINT64_C(0x7ff0000000000000);
                         return onevalue(x == 0 ? lisp_true : nil);
                     }
             }
@@ -521,18 +521,18 @@ static LispObject Lfp_signbit(LispObject env, LispObject a)
     switch ((int)a & XTAG_BITS)
     {
         case XTAG_SFLOAT:
-            if ((intptr_t)a < 0) return onevalue(lisp_true);
+            if ((std::intptr_t)a < 0) return onevalue(lisp_true);
             else return onevalue(nil);
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
 #ifdef HAVE_SIGNBIT
-                    return onevalue(signbit(single_float_val(a)) ? lisp_true : nil);
+                    return onevalue(std::signbit(single_float_val(a)) ? lisp_true : nil);
 #else
                     {   Float_union ff;
                         ff.f = single_float_val(a);
-                        return onevalue((int32_t)ff.i < 0 ? lisp_true : nil);
+                        return onevalue((std::int32_t)ff.i < 0 ? lisp_true : nil);
                     }
 #endif
 #ifdef HAVE_SOFTFLOAT
@@ -542,11 +542,11 @@ static LispObject Lfp_signbit(LispObject env, LispObject a)
 #endif // HAVE_SOFTFLOAT
                 case TYPE_DOUBLE_FLOAT:
 #ifdef HAVE_SIGNBIT
-                    return onevalue(signbit(double_float_val(a)) ? lisp_true : nil);
+                    return onevalue(std::signbit(double_float_val(a)) ? lisp_true : nil);
 #else
                     {   Double_union ff;
                         ff.f = (double)double_float_val(a);
-                        return onevalue((int64_t)ff.i64 < 0 ? lisp_true : nil);
+                        return onevalue((std::int64_t)ff.i64 < 0 ? lisp_true : nil);
                     }
 #endif
             }
@@ -688,9 +688,9 @@ LispObject integer_decode_long_float(LispObject a)
     {   f128M_negate(&d);
         neg = true;
     }
-    int32_t d4;
-    uint32_t d3, d2, d1, d0;
-    intptr_t x = 31*float128_to_5_digits(&d, d4, d3, d2, d1, d0);
+    std::int32_t d4;
+    std::uint32_t d3, d2, d1, d0;
+    std::intptr_t x = 31*float128_to_5_digits(&d, d4, d3, d2, d1, d0);
     a = make_n5_word_bignum(d4, d3, d2, d1, d0, 0);
 #ifdef COMMON
     {   mv_2 = fixnum_of_int(x);
@@ -732,9 +732,9 @@ LispObject Linteger_decode_float(LispObject env, LispObject a)
     {   d = -d;
         neg = true;
     }
-    int32_t d2;
-    uint32_t d1, d0;
-    intptr_t x = 31*double_to_3_digits(d, d2, d1, d0);
+    std::int32_t d2;
+    std::uint32_t d1, d0;
+    std::intptr_t x = 31*double_to_3_digits(d, d2, d1, d0);
     a = make_three_word_bignum(d2, d1, d0);
 #ifdef COMMON
     {   mv_2 = fixnum_of_int(x);
@@ -749,16 +749,16 @@ LispObject Linteger_decode_float(LispObject env, LispObject a)
 
 static LispObject Linteger_length(LispObject env, LispObject a)
 {   if (is_fixnum(a))
-    {   intptr_t n = int_of_fixnum(a);
+    {   std::intptr_t n = int_of_fixnum(a);
         if (n < 0) n = -n-1;
         if (n == 0) return onevalue(fixnum_of_int(0));
 // Now n is strictly positive.
         int r = 0;
         if (SIXTY_FOUR_BIT &&
-            n >= (intptr_t)INT64_C(0x100000000))
-            r += 32, n = (intptr_t)((int64_t)n >> 32);
+            n >= (std::intptr_t)INT64_C(0x100000000))
+            r += 32, n = (std::intptr_t)((std::int64_t)n >> 32);
 #ifdef HAVE___BUILTIN_CLZ
-        return onevalue(fixnum_of_int(r + 32 - __builtin_clz((uint32_t)n)));
+        return onevalue(fixnum_of_int(r + 32 - __builtin_clz((std::uint32_t)n)));
 #else
         if (n >= 0x10000) r += 16, n >>= 16;
         if (n >= 0x100)   r += 8,  n >>= 8;
@@ -771,19 +771,19 @@ static LispObject Linteger_length(LispObject env, LispObject a)
 }
 
 static LispObject Llogbitp(LispObject env, LispObject a1, LispObject a2)
-{   if (!is_fixnum(a1) || (intptr_t)a1 < 0)
+{   if (!is_fixnum(a1) || (std::intptr_t)a1 < 0)
         aerror1("logbitp", a1);
-    uintptr_t n = int_of_fixnum(a1);
+    std::uintptr_t n = int_of_fixnum(a1);
     if (is_fixnum(a2))
-    {   intptr_t v = int_of_fixnum(a2);
+    {   std::intptr_t v = int_of_fixnum(a2);
         if (n < 8*sizeof(v)) return Lispify_predicate(((v>>n)&1) != 0);
         else return Lispify_predicate(v < 0);
     }
     else if (is_numbers(a2) && is_bignum(a2))
-    {   size_t len = (length_of_header(numhdr(a2)) - CELL)/4;
-        size_t word = n / 31;
+    {   std::size_t len = (length_of_header(numhdr(a2)) - CELL)/4;
+        std::size_t word = n / 31;
         if (word > len)
-            return Lispify_predicate(((int32_t)bignum_digits(a2)[len-1]) < 0);
+            return Lispify_predicate(((std::int32_t)bignum_digits(a2)[len-1]) < 0);
         return Lispify_predicate((bignum_digits(a2)[word] & (1<<(n%31))) != 0);
     }
     else aerror1("logbitp", a2);
@@ -799,13 +799,13 @@ static LispObject Llogbitp(LispObject env, LispObject a1, LispObject a2)
 
 // Count the leading zeros in a 64-bit word.
 
-inline int nlz(uint64_t x)
+inline int nlz(std::uint64_t x)
 {   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
 }
 
 #else // __GNUC__
 
-inline int nlz(uint64_t x)
+inline int nlz(std::uint64_t x)
 {   int n = 0;
     if (x <= 0x00000000FFFFFFFFU) {n = n +32; x = x <<32;}
     if (x <= 0x0000FFFFFFFFFFFFU) {n = n +16; x = x <<16;}
@@ -822,13 +822,13 @@ inline int nlz(uint64_t x)
 #ifndef POPCOUNT_DEFINED
 #ifdef __GNUC__
 
-inline int popcount(uint64_t x)
+inline int popcount(std::uint64_t x)
 {   return __builtin_popcountll(x);
 }
 
 #else // __GNUC__
 
-inline int popcount(uint64_t x)
+inline int popcount(std::uint64_t x)
 {   x = (x & 0x5555555555555555U) + (x >> 1 & 0x5555555555555555U);
     x = (x & 0x3333333333333333U) + (x >> 2 & 0x3333333333333333U);
     x = x + (x >> 4) & 0x0f0f0f0f0f0f0f0fU;
@@ -842,19 +842,19 @@ inline int popcount(uint64_t x)
 
 static LispObject Llogcount(LispObject env, LispObject a)
 {   if (is_fixnum(a))
-    {   intptr_t n = int_of_fixnum(a);
+    {   std::intptr_t n = int_of_fixnum(a);
         if (a >= 0) return onevalue(fixnum_of_int(popcount(n)));
         else return onevalue(fixnum_of_int(popcount(~n)));
     }
     else if (is_bignum(a))
-    {   size_t len = (length_of_header(numhdr(a)) - CELL)/4;
+    {   std::size_t len = (length_of_header(numhdr(a)) - CELL)/4;
         int n = 0;
-        if ((int32_t)bignum_digits(a)[len-1] < 0)
-        {   for (size_t i=0; i<len; i++)
+        if ((std::int32_t)bignum_digits(a)[len-1] < 0)
+        {   for (std::size_t i=0; i<len; i++)
                 n += popcount(~bignum_digits(a)[i]);
         }
         else
-        {   for (size_t i=0; i<len; i++)
+        {   for (std::size_t i=0; i<len; i++)
                 n += popcount(bignum_digits(a)[i]);
         }
         return onevalue(fixnum_of_int(n));
@@ -871,7 +871,7 @@ static LispObject Lmask_field(LispObject env, LispObject a1, LispObject a2)
 }
 
 #ifdef HAVE_SOFTFLOAT
-static LispObject scale_float128(LispObject a, intptr_t x)
+static LispObject scale_float128(LispObject a, std::intptr_t x)
 {   float128_t d = long_float_val(a);
     if (f128M_nan(&d)) return a;
     if (x >= 0x40000) x = 0x40000;
@@ -899,7 +899,7 @@ static LispObject scale_float128(LispObject a, intptr_t x)
 
 static LispObject Lscale_float(LispObject env, LispObject a, LispObject b)
 {   if (!is_fixnum(b)) aerror("scale-float");
-    intptr_t x = int_of_fixnum(b);
+    std::intptr_t x = int_of_fixnum(b);
 #ifdef HAVE_SOFTFLOAT
     if (is_bfloat(a) && type_of_header(a) == TYPE_LONG_FLOAT)
        return scale_float128(a, x);
@@ -907,7 +907,7 @@ static LispObject Lscale_float(LispObject env, LispObject a, LispObject b)
     double d = float_of_number(a);
     if (x >= 4096) x = 4096;
     else if (x <= -4096) x = -4096;
-    d = ldexp(d, (int)x);
+    d = std::ldexp(d, (int)x);
 // Overflows etc handled by make_boxfloat.
     if (is_sfloat(a)) return onevalue(pack_immediate_float(d, a));
     else if (!is_bfloat(a)) aerror1("bad arg for scale-float",  a);
@@ -927,16 +927,16 @@ static LispObject lisp_fix_sub128(LispObject a, int roundmode)
 // a long float could have a value of (say) INT64_MAX+0.75, and then the
 // conversion would overflow and hence fail.
     if (x < 62)
-    {   int64_t n = f128M_to_i64(d, roundmode, false);
+    {   std::int64_t n = f128M_to_i64(d, roundmode, false);
 // Here the softfloat library does rounding for me. Hoorah!
         return make_lisp_integer64(n);
     }        
 // Now I know that the result will be at least a 62-bit integer, which means
 // it will be at least a 3-word bignum.
 // I may sometimes still need to worry about rounding.
-    int32_t d4;
-    uint32_t d3, d2, d1, d0;
-    intptr_t x1 = float128_to_5_digits(d, d4, d3, d2, d1, d0);
+    std::int32_t d4;
+    std::uint32_t d3, d2, d1, d0;
+    std::intptr_t x1 = float128_to_5_digits(d, d4, d3, d2, d1, d0);
     switch (x1)
     {
     case -2:
@@ -1033,7 +1033,7 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
 // I will take a cheaper path if d is such that I can cast it to a 64-bit
 // integer without that causing (integer) overflow.
     if (d >= (double)INT64_MIN && d < -(double)INT64_MIN)
-    {   int64_t n = (int64_t)d;
+    {   std::int64_t n = (std::int64_t)d;
 // Here the absolute value of d was strictly smaller than 2^63 and it
 // was truncated towards zero in the conversion to an integer, so n
 // is a value that would fit in a 64-bit integer. Fixing the rounding mode
@@ -1053,9 +1053,9 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
 // been derived from a float that had an exact integer value so there will
 // not have been any rounding and will not need to be any on the return trip.
                 f = d - (double)n;
-                if (f > 0.5) n = (uint64_t)n + 1;
+                if (f > 0.5) n = (std::uint64_t)n + 1;
                 else if (f < -0.5) n--;
-                else if (f == 0.5) n = ((uint64_t)n+1) & ~1;
+                else if (f == 0.5) n = ((std::uint64_t)n+1) & ~1;
                 else if (f == -0.5) n = n & ~1;
 // If the original value of n was MAX_INT64 and I rounded up then I
 // could have overflowed here, so in the case where that could arise
@@ -1069,7 +1069,7 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
                 break;
             case FIX_CEILING:
                 f = d - (double)n;
-                if (f > 0.0) n = (uint64_t)n + 1;
+                if (f > 0.0) n = (std::uint64_t)n + 1;
                 if (d < 0.0) return make_lisp_integer64(n);
                 else return make_lisp_unsigned64(n);
         }
@@ -1079,9 +1079,9 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
 // the input as that large then since a double precision float only has 56
 // bits for its mantissa I know now that I will not need to do any rounding,
 // and so all the complication regarding the rounding mode does not apply.
-    int32_t d2;
-    uint32_t d1, d0;
-    intptr_t x = double_to_3_digits(d, d2, d1, d0);
+    std::int32_t d2;
+    std::uint32_t d1, d0;
+    std::intptr_t x = double_to_3_digits(d, d2, d1, d0);
     return make_n_word_bignum(d2, d1, d0, x);
 }
 

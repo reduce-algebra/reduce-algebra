@@ -68,7 +68,7 @@
 // other lines will be ignored
 //
 
-static FILE *out = NULL;
+static std::FILE *out = NULL;
 
 static int process(char *d, char *s)
 {   char line[1000], junk[1000], name[1000];
@@ -80,38 +80,38 @@ static int process(char *d, char *s)
     int ascender=-1, descender=-1, xheight=-1, capheight=-1;
     int maxleftbearing = 0, maxrightbearing = 0i, maxwidth = 0;
     int charNo, charWidth;
-    FILE *f;
+    std::FILE *f;
     int c, p, n;
     int headershown = 0;
-    sprintf(line, "%s/%s", FONT_PATH, s);
-    f = fopen(line, "r");
+    std::sprintf(line, "%s/%s", FONT_PATH, s);
+    f = std::fopen(line, "r");
     if (f == NULL)
-    {   fprintf(stderr, "Failed to read \"%s\"\n", line);
-        exit(1);
+    {   std::fprintf(stderr, "Failed to read \"%s\"\n", line);
+        std::exit(1);
     }
     name[0] = 0;
     for (c=0; c<256; c++) charwidth[c] = -1;
     for (;;)
     {   p = 0;
-        for (c=getc(f); c!='\n' && c!=EOF; c=getc(f))
+        for (c=std::getc(f); c!='\n' && c!=EOF; c=std::getc(f))
         {   if (p < sizeof(line)-2) line[p++] = c;
         }
         line[p] = 0;
         charNo = charWidth = -1;
-        if (sscanf(line, "FontName %s", name) == 1);
-        else if (sscanf(line, "IsFixedPitch fals%s", junk) == 1)
+        if (std::sscanf(line, "FontName %s", name) == 1);
+        else if (std::sscanf(line, "IsFixedPitch fals%s", junk) == 1)
             isFixed = 0;
-        else if (sscanf(line, "IsFixedPitch tru%s", junk) == 1)
+        else if (std::sscanf(line, "IsFixedPitch tru%s", junk) == 1)
             isFixed = 1;
-        else if (sscanf(line, "Comment%s", junk) == 1);
-        else if (sscanf(line, "KPX%s", junk) == 1);
-        else if (sscanf(line, "FontBBox %d %d %d %d",
+        else if (std::sscanf(line, "Comment%s", junk) == 1);
+        else if (std::sscanf(line, "KPX%s", junk) == 1);
+        else if (std::sscanf(line, "FontBBox %d %d %d %d",
                         &bb1, &bb2, &bb3, &bb4) == 4);
-        else if (sscanf(line, "CapHeight %d", &capheight) == 1);
-        else if (sscanf(line, "XHeight %d", &xheight) == 1);
-        else if (sscanf(line, "Ascender %d", &ascender) == 1);
-        else if (sscanf(line, "Descender %d", &descender) == 1);
-        else if (sscanf(line, "C %d ; WX %lf ; N %*s ; B %lf %lf %lf %lf %s",
+        else if (std::sscanf(line, "CapHeight %d", &capheight) == 1);
+        else if (std::sscanf(line, "XHeight %d", &xheight) == 1);
+        else if (std::sscanf(line, "Ascender %d", &ascender) == 1);
+        else if (std::sscanf(line, "Descender %d", &descender) == 1);
+        else if (std::sscanf(line, "C %d ; WX %lf ; N %*s ; B %lf %lf %lf %lf %s",
                         &charNo, &dw,
                         &dc1, &dc2, &dc3, &dc4, junk) == 7)
         {   if (charNo >= 0 && charNo < 256 &&
@@ -134,56 +134,56 @@ static int process(char *d, char *s)
                 }
             }
         }
-        else if (sscanf(line, "Comment%s", junk) == 1);
-        else if (sscanf(line, "EndKern%s", junk) == 1);
-        else if (sscanf(line, "EndFont%s", junk) == 1);
-        else if (sscanf(line, "StartFont%s", junk) == 1);
-        else if (sscanf(line, "Encoding%s", junk) == 1);
-        else if (sscanf(line, "Weight%s", junk) == 1);
-        else if (sscanf(line, "Italic%s", junk) == 1);
-        else if (sscanf(line, "Notice%s", junk) == 1);
-        else if (sscanf(line, "EndChar%s", junk) == 1);
-        else if (sscanf(line, "StartChar%s", junk) == 1);
-        else if (sscanf(line, "Family%s", junk) == 1);
-        else if (sscanf(line, "FullName%s", junk) == 1);
-        else if (sscanf(line, "StartKern%s", junk) == 1);
-        else if (sscanf(line, "Version%s", junk) == 1);
-        else if (sscanf(line, "KPX%s", junk) == 1);
-        else printf("  Unparsed \"%s\"\n", line);
+        else if (std::sscanf(line, "Comment%s", junk) == 1);
+        else if (std::sscanf(line, "EndKern%s", junk) == 1);
+        else if (std::sscanf(line, "EndFont%s", junk) == 1);
+        else if (std::sscanf(line, "StartFont%s", junk) == 1);
+        else if (std::sscanf(line, "Encoding%s", junk) == 1);
+        else if (std::sscanf(line, "Weight%s", junk) == 1);
+        else if (std::sscanf(line, "Italic%s", junk) == 1);
+        else if (std::sscanf(line, "Notice%s", junk) == 1);
+        else if (std::sscanf(line, "EndChar%s", junk) == 1);
+        else if (std::sscanf(line, "StartChar%s", junk) == 1);
+        else if (std::sscanf(line, "Family%s", junk) == 1);
+        else if (std::sscanf(line, "FullName%s", junk) == 1);
+        else if (std::sscanf(line, "StartKern%s", junk) == 1);
+        else if (std::sscanf(line, "Version%s", junk) == 1);
+        else if (std::sscanf(line, "KPX%s", junk) == 1);
+        else std::printf("  Unparsed \"%s\"\n", line);
         if (c == EOF) break;
     }
-    fclose(f);
+    std::fclose(f);
     if (name[0] == 0) return;  // no font name
-    fprintf(out, "{\"%s\", %d, %d, %d, %d, %d, %d, %d, %d, {\n",
+    std::fprintf(out, "{\"%s\", %d, %d, %d, %d, %d, %d, %d, %d, {\n",
             name, isFixed, maxwidth, maxleftbearing, maxrightbearing,
             capheight, xheight, ascender, descender);
     for (c=0; c<255; c++)
-    {   fprintf(out, "%6d,", charwidth[c]);
-        if ((c % 8) == 7) fprintf(out, "\n");
+    {   std::fprintf(out, "%6d,", charwidth[c]);
+        if ((c % 8) == 7) std::fprintf(out, "\n");
     }
-    fprintf(out, "%6d }},\n", charwidth[255]);
+    std::fprintf(out, "%6d }},\n", charwidth[255]);
 }
 
 int main(int argc, char *argv[])
-{   FILE *note;
+{   std::FILE *note;
     int ch;
-    out = fopen("cmfont-info.cpp", "w");
+    out = std::fopen("cmfont-info.cpp", "w");
     if (out == NULL)
-    {   printf("Failed to open cmfont-info.cpp\n");
+    {   std::printf("Failed to open cmfont-info.cpp\n");
         return 1;
     }
-    fprintf(out, "/*\n * cmfont-info.cpp\n");
-    fprintf(out, " * Font metrics for Type1 Computer Modern Fonts\n *\n");
-    fprintf(out, " * extracted from %s\n *\n", FONT_PATH);
-    fprintf(out, " */\n");
-    fprintf(out, "\n\n\n");
-    fprintf(out, "typedef struct font_info {\n");
-    fprintf(out, "   char *name;\n");
-    fprintf(out, "   short int isfixed, fontwidth, maxleftbearing, maxrightbearing;\n");
-    fprintf(out, "   short int capheight, xheight, ascent, descent;\n");
-    fprintf(out, "   short int charwidth[256];\n");
-    fprintf(out, "} font_info;\n\n");
-    fprintf(out, "static font_info cm_font_widths[] = {\n");
+    std::fprintf(out, "/*\n * cmfont-info.cpp\n");
+    std::fprintf(out, " * Font metrics for Type1 Computer Modern Fonts\n *\n");
+    std::fprintf(out, " * extracted from %s\n *\n", FONT_PATH);
+    std::fprintf(out, " */\n");
+    std::fprintf(out, "\n\n\n");
+    std::fprintf(out, "typedef struct font_info {\n");
+    std::fprintf(out, "   char *name;\n");
+    std::fprintf(out, "   short int isfixed, fontwidth, maxleftbearing, maxrightbearing;\n");
+    std::fprintf(out, "   short int capheight, xheight, ascent, descent;\n");
+    std::fprintf(out, "   short int charwidth[256];\n");
+    std::fprintf(out, "} font_info;\n\n");
+    std::fprintf(out, "static font_info cm_font_widths[] = {\n");
 //
 // There are fonts that actually interest me...
 //
@@ -210,10 +210,10 @@ int main(int argc, char *argv[])
     process("cmsy10",   "cmsy10.afm");
     process("cmex10",   "cmex10.afm");
 
-    fprintf(out, "{(char *)0, 0,0,0,0,0,0,0,0, {0}}};\n\n\n");
-    fprintf(out, "/* End of cmfont-info.cpp */\n");
-    fclose(out);
-    printf("File \"cmfont-info.cpp\" created\n");
+    std::fprintf(out, "{(char *)0, 0,0,0,0,0,0,0,0, {0}}};\n\n\n");
+    std::fprintf(out, "/* End of cmfont-info.cpp */\n");
+    std::fclose(out);
+    std::printf("File \"cmfont-info.cpp\" created\n");
     return 0;
 }
 

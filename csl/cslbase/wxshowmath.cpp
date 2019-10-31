@@ -85,7 +85,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else
-extern char *getcwd(char *s, size_t n);
+extern char *getcwd(char *s, std::size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -116,16 +116,16 @@ static wxStopWatch sw;
 
 static int options = 5;  // default to using my own scaling
 
-static FILE *logFile = NULL;
+static std::FILE *logFile = NULL;
 
 static int printlog(const char *fmt, ...)
-{   va_list a;
+{   std::va_list a;
     int r = 0;
-    if (logFile == NULL) logFile = fopen("wxshowmath.log", "w");
+    if (logFile == NULL) logFile = std::fopen("wxshowmath.log", "w");
     if (logFile != NULL)
     {   va_start(a, fmt);
-        r = vfprintf(logFile, fmt, a);
-        fflush(logFile);
+        r = std::vfprintf(logFile, fmt, a);
+        std::fflush(logFile);
         va_end(a);
     }
 #ifndef MACINTOSH
@@ -133,9 +133,9 @@ static int printlog(const char *fmt, ...)
 // attached to my program, and in that case it will be convenient to sent the
 // trace output there as well as to a file.
     va_start(a, fmt);
-    r = vprintf(fmt, a);
+    r = std::vprintf(fmt, a);
     va_end(a);
-    fflush(stdout);
+    std::fflush(stdout);
 #endif
     return r;
 }
@@ -299,15 +299,15 @@ int main(int argc, char *argv[])
 // The next fragment is not very useful in THIS program but stands in for
 // behaviour I want in more complicated cases.
     for (int i=1; i<argc; i++)
-    {   if (strncmp(argv[i], "-w", 2) == 0) usegui = 0;
-        if (strncmp(argv[i], "-x", 2) == 0) options = atoi(argv[i]+2);
+    {   if (std::strncmp(argv[i], "-w", 2) == 0) usegui = 0;
+        if (std::strncmp(argv[i], "-x", 2) == 0) options = std::atoi(argv[i]+2);
     }
 #if !defined WIN32 && !defined MACINTOSH
 // Under X11 I will demote to being a console mode application if DISPLAY
 // is not set. This is not a perfect test but it will spot the simple
 // cases. Eg I could look at stdin & stdout and check if it looks as if
 // they are pipes of they have been redirected...
-    {   const char *s = getenv("DISPLAY");
+    {   const char *s = std::getenv("DISPLAY");
         if (s==NULL || *s == 0) usegui = 0;
     }
 #endif
@@ -320,21 +320,21 @@ int main(int argc, char *argv[])
 // makes resources (eg fonts) that are within the bundle available and
 // it also seems to cause things to terminate more neatly.
         char xname[LONGEST_LEGAL_FILENAME];
-        sprintf(xname,"%s.app", programName);
-        if (strstr(fullProgramName, xname) == NULL)
+        std::sprintf(xname,"%s.app", programName);
+        if (std::strstr(fullProgramName, xname) == NULL)
         {
 // Here the binary I launched was not located as
 //      ...foo.app../.../foo
 // so I will view it is NOT being from an application bundle. I will
 // re-launch it so it is! This may be a bit of a hacky way to decide!
             struct stat buf;
-            sprintf(xname,"%s.app", fullProgramName);
+            std::sprintf(xname,"%s.app", fullProgramName);
             if (stat(xname, &buf) == 0 &&
                 (buf.st_mode & S_IFDIR) != 0)
             {
 // Well foo.app exists and is a directory, so I will try to use it
                 const char **nargs =
-                    (const char **)malloc(sizeof(char *)*(argc+3));
+                    (const char **)std::malloc(sizeof(char *)*(argc+3));
                 nargs[0] ="/usr/bin/open";
                 nargs[1] = xname;
                 nargs[2] ="--args";
@@ -360,12 +360,12 @@ int main(int argc, char *argv[])
 // The following is a bit silly but is here to prove that I can launch this
 // code in console mode if I wish to. In this case it is not very useful!
 //
-    printf("This program has been launched asking for use in a console\n");
-    printf("type a line of text please\n");
+    std::printf("This program has been launched asking for use in a console\n");
+    std::printf("type a line of text please\n");
     int c;
-    while ((c = getchar()) != '\n' && c != EOF) putchar(c);
-    putchar('\n');
-    printf("Exiting from demonstration of console mode use!\n");
+    while ((c = std::getchar()) != '\n' && c != EOF) std::putchar(c);
+    std::putchar('\n');
+    std::printf("Exiting from demonstration of console mode use!\n");
     return 0;
 }
 
@@ -388,9 +388,9 @@ bool showmathApp::OnInit()
 #ifdef WIN32
     static char tidyFilename[LONGEST_LEGAL_FILENAME];
     if (showmathFilename != NULL &&
-        strncmp(showmathFilename, "/cygdrive/", 10) == 0 &&
+        std::strncmp(showmathFilename, "/cygdrive/", 10) == 0 &&
         showmathFilename[11] == '/')
-    {   sprintf(tidyFilename, "%c:%s",
+    {   std::sprintf(tidyFilename, "%c:%s",
                 showmathFilename[10], showmathFilename+11);
         showmathFilename = tidyFilename;
     }
@@ -530,12 +530,12 @@ void farey(int p1, int q1, int p2, int q2, int maxQ)
 // area up to 7680x7680, which is ridiculously large by the standards of
 // the year in which this code is being written. 
 
-static uint64_t tileMap[64];
+static std::uint64_t tileMap[64];
 
 #define maxSmallTileSize 120
 #define maxBigTileSize (4*maxSmallTileSize)
 
-static int32_t convert_font_name(char *dest, char *src)
+static std::int32_t convert_font_name(char *dest, char *src)
 {
 // The font name passed should be one of
 //    cmuntt
@@ -546,15 +546,15 @@ static int32_t convert_font_name(char *dest, char *src)
 //    <anything else>-Italic
 //    <anything else>-BoldItalic
 //
-    int32_t r = wxFONTFLAG_DEFAULT;
-    if (strcmp(src, "cmuntt") == 0) strcpy(dest, "CMU Typewriter Text");
-    else if (strcmp(src, "odokai") == 0) strcpy(dest, "AR PL New Kai");
-    else if (strcmp(src, "Math") == 0) strcpy(dest, "cslSTIXMath");
-    else sprintf(dest, "cslSTIX");
+    std::int32_t r = wxFONTFLAG_DEFAULT;
+    if (std::strcmp(src, "cmuntt") == 0) std::strcpy(dest, "CMU Typewriter Text");
+    else if (std::strcmp(src, "odokai") == 0) std::strcpy(dest, "AR PL New Kai");
+    else if (std::strcmp(src, "Math") == 0) std::strcpy(dest, "cslSTIXMath");
+    else std::sprintf(dest, "cslSTIX");
 // Here if the font name is suffixed as "-Bold" or "-Italic" or "-BoldItalic"
-    if (strcmp(dest, "CMU Typewriter Text") == 0) r |= (F_cmuntt<<16);
-    else if (strcmp(dest, "AR PL New Kai") == 0) r |= (F_odokai<<16);
-    else if (strcmp(dest, "cslSTIXMath") == 0) r |= (F_Math<<16);
+    if (std::strcmp(dest, "CMU Typewriter Text") == 0) r |= (F_cmuntt<<16);
+    else if (std::strcmp(dest, "AR PL New Kai") == 0) r |= (F_odokai<<16);
+    else if (std::strcmp(dest, "cslSTIXMath") == 0) r |= (F_Math<<16);
 // I have not thought through and implemented support for bold and italic
 // options here...
 #ifdef PENDING_BOLD_AND_ITALIC
@@ -567,7 +567,7 @@ static int32_t convert_font_name(char *dest, char *src)
     else
 #endif
     r |= (F_Regular<<16);
-    printlog("Gives %s with flags %x\n", dest, r); fflush(stdout);
+    printlog("Gives %s with flags %x\n", dest, r); std::fflush(stdout);
     return r;
 }
 
@@ -782,7 +782,7 @@ void showmathFrame::RepaintBuffer()
     do
     {   int x, y, n, cp, size;
         char name[100], name1[64];
-        while (isspace(*in)) in++;
+        while (std::isspace(*in)) in++;
         if (*in == 0) break;
         if (*in == '#' || *in == '%')
 // # ...     comments extend to the end of the line
@@ -796,7 +796,7 @@ void showmathFrame::RepaintBuffer()
             if (*in == '\n') in++;
             continue;
         }
-        else if (sscanf(in, "deffont %d %60s %d;", &n, name, &size) == 3 &&
+        else if (std::sscanf(in, "deffont %d %60s %d;", &n, name, &size) == 3 &&
 // deffont number name size;   define font with given number
                  0 <= n &&
                  n < MAX_FONTS)
@@ -816,8 +816,8 @@ void showmathFrame::RepaintBuffer()
                 size * chardepth[(flags >> 16) & 0x1f] / 1000.0;
             printlog("from table baseline offset = %.6g\n", Baseline[n]);
         }
-        else if (sscanf(in, "put %d %d %d 0x%x;", &n, &x, &y, &cp) == 4 ||
-                 sscanf(in, "put %d %d %d %d;", &n, &x, &y, &cp) == 4)
+        else if (std::sscanf(in, "put %d %d %d 0x%x;", &n, &x, &y, &cp) == 4 ||
+                 std::sscanf(in, "put %d %d %d %d;", &n, &x, &y, &cp) == 4)
         {
 // put fontnum xpos ypos codepoint;  dump character onto screen
 // note x & y in units of 1/1000 point.
@@ -832,7 +832,7 @@ void showmathFrame::RepaintBuffer()
                          (s*x)/2400, s*150 + (400-y)/2400); //-graphicsBaseline[n]);
         }
         else printlog("\nLine <%.32s> unrecognised\n", in);
-        in = strchr(in, ';');
+        in = std::strchr(in, ';');
         if (in != NULL) in++;
     }
     while (in != NULL);
@@ -919,22 +919,22 @@ showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathFilename
               wxDefaultSize, 0L,"showmathPanel")
 {
 // I will read in any data once here and put it in a character buffer.
-    FILE *f = NULL;
+    std::FILE *f = NULL;
     if (showmathFilename == NULL) showmathData = default_data;
     else
     {   int i;
-        f = fopen(showmathFilename,"r");
+        f = std::fopen(showmathFilename,"r");
         if (f == NULL)
         {   printlog("File \"%s\" not found\n", showmathFilename);
-            exit(1);
+            std::exit(1);
         }
-        fseek(f, (off_t)0, SEEK_END);
-        off_t len = ftell(f);
-        showmathData = (char *)malloc(4+(size_t)len);
-        fseek(f, (off_t)0, SEEK_SET);
-        for (i=0; i<len; i++) showmathData[i] = getc(f);
+        std::fseek(f, (off_t)0, SEEK_END);
+        off_t len = std::ftell(f);
+        showmathData = (char *)std::malloc(4+(std::size_t)len);
+        std::fseek(f, (off_t)0, SEEK_SET);
+        for (i=0; i<len; i++) showmathData[i] = std::getc(f);
         showmathData[i] = 0;
-        fclose(f);
+        std::fclose(f);
     }
     for (int i=0; i<MAX_FONTS; i++)
     {   FontValid[i] = false;
@@ -951,7 +951,7 @@ void showmathFrame::OnClose(wxCloseEvent &WXUNUSED(event))
 // utterly killing the process does what I need!
     TerminateProcess(GetCurrentProcess(), 1);
 #else
-    exit(0);    // I want the whole application to terminate here!
+    std::exit(0);    // I want the whole application to terminate here!
 #endif
 }
 
@@ -960,7 +960,7 @@ void showmathFrame::OnExit(wxCommandEvent &WXUNUSED(event))
 #ifdef WIN32
     TerminateProcess(GetCurrentProcess(), 1);
 #else
-    exit(0);    // I want the whole application to terminate here!
+    std::exit(0);    // I want the whole application to terminate here!
 #endif
 }
 
@@ -1069,18 +1069,18 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
                 printlog("tile at %d %d to be redrawn\n",
                     x*smallTileSize, y*smallTileSize);
 #endif
-                tileMap[y] |= ((uint64_t)1)<<x;
+                tileMap[y] |= ((std::uint64_t)1)<<x;
             }
         upd++;
     }
 #ifdef DISPLAY_TILE_BITMAP
     for (int y=0; y<64; y++)
-    {   uint64_t v = tileMap[y];
+    {   std::uint64_t v = tileMap[y];
         for (int x=0; x<64; x++)
-        {   putchar('0' + (int)(v & 1));
+        {   std::putchar('0' + (int)(v & 1));
             v = v >> 1;
         }
-        putchar('\n');
+        std::putchar('\n');
     }
 #endif
     sw.Start(0);
@@ -1095,7 +1095,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     for (int tileY=0; tileY<clientHeight; tileY+=smallTileSize)
     for (int tileX=0; tileX<clientWidth;  tileX+=smallTileSize)
     {   if ((tileMap[tileY/smallTileSize] &
-             (((uint64_t)1)<<(tileX/smallTileSize))) == 0) continue;
+             (((std::uint64_t)1)<<(tileX/smallTileSize))) == 0) continue;
         tileCount++;
         pBig.MoveTo(bigData, (bigTileSize*tileX)/smallTileSize,
                              (bigTileSize*tileY)/smallTileSize);
@@ -1181,7 +1181,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
         mydc.DrawBitmap(*smallTile, tileX, tileY);
     }
     printlog("Scale %d tiles from bitmap to screen in %" PRId64 "\n",
-        tileCount, (int64_t)sw.Time());
+        tileCount, (std::int64_t)sw.Time());
 
 
 }

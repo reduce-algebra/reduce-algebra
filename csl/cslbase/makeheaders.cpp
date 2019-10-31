@@ -41,9 +41,9 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 
 //
 // The conversion here needs to do some minimal lexical analysis of the code
@@ -78,26 +78,26 @@
 //     d:/...path/leaf
 //
 
-static FILE *myfopen(const char *name, const char *mode)
+static std::FILE *myfopen(const char *name, const char *mode)
 {   char newname[256];
-    if (strncmp(name, "/cygdrive/", 10) != 0)
-        return fopen(name, mode);
+    if (std::strncmp(name, "/cygdrive/", 10) != 0)
+        return std::fopen(name, mode);
     newname[0] = name[10];
     newname[1] = ':';
-    strcpy(&newname[2], &name[11]);
-    return fopen(newname, mode);
+    std::strcpy(&newname[2], &name[11]);
+    return std::fopen(newname, mode);
 }
 
-static int get_without_cr(FILE *f)
+static int get_without_cr(std::FILE *f)
 {
 // This mess is here in case an input file has carriage returns in.
 // An isolated CR is turned into '\n', while the sequence turns into
 // a single '\n'. Other more complicated sequences of CR and LF may end up
 // delivering multiple newlines to downstream.
-    int c = getc(f);
+    int c = std::getc(f);
     if (c == '\r')
-    {   int c1 = getc(f);
-        if (c1 != '\n') ungetc(c1, f);
+    {   int c1 = std::getc(f);
+        if (c1 != '\n') std::ungetc(c1, f);
         c = '\n';
     }
     return c;
@@ -105,13 +105,13 @@ static int get_without_cr(FILE *f)
 
 int main(int argc, const char *argv[])
 {   int i;
-    printf("const char *config_header[] =\n{\n    \"");
+    std::printf("const char *config_header[] =\n{\n    \"");
     for (i=1; i<argc; i++)
-    {   FILE *f = myfopen(argv[i], "r");
+    {   std::FILE *f = myfopen(argv[i], "r");
         int ch = '\n', state = BASE, linechars = 0;
         if (f == NULL)
-        {   fprintf(stderr, "unable to read \"%s\"\n", argv[i]);
-            exit(1);
+        {   std::fprintf(stderr, "unable to read \"%s\"\n", argv[i]);
+            std::exit(1);
         }
         for (;;)
         {
@@ -143,7 +143,7 @@ int main(int argc, const char *argv[])
                     break;
                 }
                 else if (ch == '\n')
-                {   if (linechars != 0) printf("\",\n    \"");
+                {   if (linechars != 0) std::printf("\",\n    \"");
                     linechars = 0;
                     continue;
                 }
@@ -159,22 +159,22 @@ int main(int argc, const char *argv[])
                 }
                 else if (ch == '\"')
                 {   state = STRING;
-                    printf("/");
+                    std::printf("/");
                     linechars++;
                     break;
                 }
                 else if (ch == '\'')
                 {   state = CHAR;
-                    printf("/");
+                    std::printf("/");
                     linechars++;
                     break;
                 }
                 else if (ch == '\n')
-                {   printf("/\",\n    \"");
+                {   std::printf("/\",\n    \"");
                     continue;
                 }
                 else
-                {   printf("/");
+                {   std::printf("/");
                     state = BASE;
                     break;
                 }
@@ -182,7 +182,7 @@ int main(int argc, const char *argv[])
                 if (ch != '\n' && ch != EOF) continue;
                 state = BASE;
                 if (ch == '\n')
-                {   if (linechars != 0) printf("\",\n    \"");
+                {   if (linechars != 0) std::printf("\",\n    \"");
                     linechars = 0;
                     continue;
                 }
@@ -212,20 +212,20 @@ int main(int argc, const char *argv[])
             }
             linechars++;
             if (ch == '\n')
-            {   putchar('\\');
-                putchar('n');
+            {   std::putchar('\\');
+                std::putchar('n');
                 continue;
             }
-            if (ch == '\"' || ch == '\'' || ch == '\\') putchar('\\');
-            putchar(ch);
+            if (ch == '\"' || ch == '\'' || ch == '\\') std::putchar('\\');
+            std::putchar(ch);
             continue;
         }
-        fclose(f);
+        std::fclose(f);
         if (i == 1)
-        {   printf("\",\n    NULL\n};\n\nconst char *csl_headers[] =\n{\n    \"");
+        {   std::printf("\",\n    NULL\n};\n\nconst char *csl_headers[] =\n{\n    \"");
         }
     }
-    printf("\",\n    NULL\n};\n\n// end of machineid.cpp\n\n");
+    std::printf("\",\n    NULL\n};\n\n// end of machineid.cpp\n\n");
     return 0;
 }
 

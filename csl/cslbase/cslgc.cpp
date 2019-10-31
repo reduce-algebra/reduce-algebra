@@ -41,12 +41,12 @@
 #include <conio.h>
 #endif
 
-int64_t gc_number = 0;
-int64_t reclaim_trap_count = -1;
-uintptr_t reclaim_stack_limit = 0;
-uint64_t reclaim_trigger_count = 0, reclaim_trigger_target = 0;
+std::int64_t gc_number = 0;
+std::int64_t reclaim_trap_count = -1;
+std::uintptr_t reclaim_stack_limit = 0;
+std::uint64_t reclaim_trigger_count = 0, reclaim_trigger_target = 0;
 
-static intptr_t cons_cells, symbol_heads, strings, user_vectors,
+static std::intptr_t cons_cells, symbol_heads, strings, user_vectors,
        big_numbers, box_floats, bytestreams, other_mem,
        litvecs, getvecs;
 
@@ -78,14 +78,14 @@ LispObject Lverbos(LispObject env, LispObject a)
 
 static int stop_after_gc = 0;
 
-static size_t trailing_heap_pages_count,
+static std::size_t trailing_heap_pages_count,
               trailing_vheap_pages_count;
 
 static void copy(LispObject *p)
 // This copies the object pointed at by p from the old to the new semi-space,
 // and returns a copy to the pointer.  If scans the copied material to copy
 // all relevent sub-structures to the new semi-space.
-{   char *fr = (char *)(uintptr_t)fringe, *vfr = (char *)(uintptr_t)vfringe;
+{   char *fr = (char *)(std::uintptr_t)fringe, *vfr = (char *)(std::uintptr_t)vfringe;
     char *tr_fr = fr, *tr_vfr = vfr;
     void *p1;
 #define CONT           0
@@ -126,8 +126,8 @@ static void copy(LispObject *p)
 // words (size SPARE bytes) so that I can afford to do several cons operations
 // between tests.  Here I do careful tests on every step, and so I can
 // sail much closer to the wind wrt filling up space.
-                    if (fr <= (char *)(uintptr_t)heaplimit - SPARE + 32)
-                    {   char *hl = (char *)(uintptr_t)heaplimit;
+                    if (fr <= (char *)(std::uintptr_t)heaplimit - SPARE + 32)
+                    {   char *hl = (char *)(std::uintptr_t)heaplimit;
                         void *p;
                         setcar((LispObject)fr, SPID_GCMARK);
                         if (pages_count == 0) allocate_more_memory();
@@ -139,8 +139,8 @@ static void copy(LispObject *p)
                         p = pages[--pages_count];
                         zero_out(p);
                         new_heap_pages[new_heap_pages_count++] = p;
-                        heaplimit = (intptr_t)p;
-                        hl = (char *)(uintptr_t)heaplimit;
+                        heaplimit = (std::intptr_t)p;
+                        hl = (char *)(std::uintptr_t)heaplimit;
                         fr = hl + CSL_PAGE_SIZE - sizeof(Cons_Cell);
                         heaplimit = (LispObject)(hl + SPARE);
                     }
@@ -155,7 +155,7 @@ static void copy(LispObject *p)
             else                    // Here I have a symbol or vector
             {   Header h;
                 int tag;
-                size_t len;
+                std::size_t len;
                 tag = ((int)a) & TAG_BITS;
                 a = (LispObject)((char *)a - tag);
                 h = *(Header *)a;
@@ -211,11 +211,11 @@ static void copy(LispObject *p)
                     }
                 }
                 for (;;)
-                {   char *vl = (char *)(uintptr_t)vheaplimit;
-                    size_t free = (size_t)(vl - vfr);
+                {   char *vl = (char *)(std::uintptr_t)vheaplimit;
+                    std::size_t freespace = (std::size_t)(vl - vfr);
 // len indicates the length of the block of memory that must now be
 // allocated...
-                    if (len > free)
+                    if (len > freespace)
                     {   setcar((LispObject)vfr, 0);          // sentinel value
                         if (pages_count == 0) allocate_more_memory();
                         if (pages_count == 0)
@@ -237,7 +237,7 @@ static void copy(LispObject *p)
 // I copy EVERYTHING from the old vector to the new one. By using memcpy
 // I can do so with no worry about strict aliasing or the exact type of
 // data present. So this will copy across any padder words.
-                    memcpy((char *)vfr+CELL, (char *)a+CELL, len-CELL);
+                    std::memcpy((char *)vfr+CELL, (char *)a+CELL, len-CELL);
                     vfr += len;
                     break;
                 }
@@ -286,7 +286,7 @@ static void copy(LispObject *p)
                             break;
                         }
                         else
-                        {   size_t len = length_of_header(h);
+                        {   std::size_t len = length_of_header(h);
                             tr = tr_vfr;
                             tr_vfr = tr_vfr + doubleword_align_up(len);
                             if (len == CELL)
@@ -413,9 +413,9 @@ static bool reset_limit_registers()
         space_now++;
         zero_out(p);
         heap_pages[heap_pages_count++] = p;
-        heaplimit = (intptr_t)p;
-        fringe = (LispObject)((char *)(uintptr_t)heaplimit + CSL_PAGE_SIZE);
-        heaplimit = (LispObject)((char *)(uintptr_t)heaplimit + SPARE);
+        heaplimit = (std::intptr_t)p;
+        fringe = (LispObject)((char *)(std::uintptr_t)heaplimit + CSL_PAGE_SIZE);
+        heaplimit = (LispObject)((char *)(std::uintptr_t)heaplimit + SPARE);
     }
     else
     {   char *vf, *vh;
@@ -458,7 +458,7 @@ void use_gchook(LispObject arg)
     {   g = qvalue(g);
         if (symbolp(g) && g != unset_var && g != nil)
         {   class save_trapcount
-            {   uint64_t count, target;
+            {   std::uint64_t count, target;
                 public:
                 save_trapcount()
                 {   count = reclaim_trigger_count;
@@ -499,8 +499,8 @@ static void real_garbage_collector()
 // A first page of (cons-)heap
     zero_out(pp);
     new_heap_pages[new_heap_pages_count++] = pp;
-    heaplimit = (intptr_t)pp;
-    vl = (char *)(uintptr_t)heaplimit;
+    heaplimit = (std::intptr_t)pp;
+    vl = (char *)(std::uintptr_t)heaplimit;
     fringe = (LispObject)(vl + CSL_PAGE_SIZE);
     heaplimit = (LispObject)(vl + SPARE);
 // A first page of vector heap.
@@ -528,7 +528,7 @@ static void real_garbage_collector()
 // used items in repeat_heap, and if garbage collection occurs they must be
 // updated.
     if (repeat_heap != NULL)
-    {   for (size_t i=1; i<=repeat_count; i++)
+    {   for (std::size_t i=1; i<=repeat_count; i++)
             copy(&repeat_heap[i]);
     }
 // Throw away the old semi-space - it is now junk.
@@ -537,12 +537,12 @@ static void real_garbage_collector()
 // I will fill the old space with explicit rubbish in the hope that that
 // will generate failures as promptly as possible if it somehow gets
 // referenced...
-        memset(spare, 0x55, (size_t)CSL_PAGE_SIZE);
+        std::memset(spare, 0x55, (std::size_t)CSL_PAGE_SIZE);
         pages[pages_count++] = spare;
     }
     while (vheap_pages_count!=0)
     {   void *spare = vheap_pages[--vheap_pages_count];
-        memset(spare, 0xaa, (size_t)CSL_PAGE_SIZE);
+        std::memset(spare, 0xaa, (std::size_t)CSL_PAGE_SIZE);
         pages[pages_count++] = spare;
     }
 // Flip the descriptors for the old and new semi-spaces.
@@ -581,9 +581,9 @@ void reclaim(const char *why, int stg_class)
             space_now++;
             zero_out(p);
             heap_pages[heap_pages_count++] = p;
-            heaplimit = (intptr_t)p;
-            fringe = (LispObject)((char *)(uintptr_t)heaplimit + CSL_PAGE_SIZE);
-            heaplimit = (LispObject)((char *)(uintptr_t)heaplimit + SPARE);
+            heaplimit = (std::intptr_t)p;
+            fringe = (LispObject)((char *)(std::uintptr_t)heaplimit + CSL_PAGE_SIZE);
+            heaplimit = (LispObject)((char *)(std::uintptr_t)heaplimit + SPARE);
             return;
         case GC_VEC: case GC_BPS:
             p = pages[--pages_count];
@@ -600,7 +600,7 @@ void reclaim(const char *why, int stg_class)
             break;
         }
     }
-    uint64_t t0;
+    std::uint64_t t0;
     stop_after_gc = 0;
     t0 = read_clock();
 // There are parts of the code in setup/restart where perhaps things are not
@@ -609,9 +609,9 @@ void reclaim(const char *why, int stg_class)
 // should never be triggered I am happy to leave it in state where the only
 // sane way to respond to it is to run under a debugger and set breakpoints.
     if (!garbage_collection_permitted)
-    {   fprintf(stderr,
+    {   std::fprintf(stderr,
                 "\n+++ Garbage collection attempt when not permitted\n");
-        fflush(stderr);
+        std::fflush(stderr);
         my_exit(EXIT_FAILURE);    // totally drastic...
     }
 
@@ -683,14 +683,14 @@ void reclaim(const char *why, int stg_class)
 // If things crash really badly maybe I would rather have my output up
 // to date.
     ensure_screen();
-    if (spool_file != NULL) fflush(spool_file);
+    if (spool_file != NULL) std::fflush(spool_file);
     if (gc_number == reclaim_trap_count)
     {   reclaim_trap_count = gc_number - 1;
         trace_printf("\nReclaim trap count reached...\n");
         aerror("reclaim-trap-count");
     }
     if (reclaim_stack_limit != 0 &&
-        (uintptr_t)&t0 + reclaim_stack_limit < (uintptr_t)C_stackbase)
+        (std::uintptr_t)&t0 + reclaim_stack_limit < (std::uintptr_t)C_stackbase)
     {   reclaim_stack_limit = 0;
         trace_printf("\nReclaim stack limit reached...\n");
         aerror("reclaim-stack-limit");
@@ -702,7 +702,7 @@ void reclaim(const char *why, int stg_class)
 // Now do the REAL work!
     real_garbage_collector();
 
-    uint64_t t1 = read_clock();
+    std::uint64_t t1 = read_clock();
     gc_time += t1 - t0;
     base_time += t1 - t0;
 // (verbos 5) causes a display breaking down how space is used
@@ -715,7 +715,7 @@ void reclaim(const char *why, int stg_class)
             big_numbers, box_floats, bytestreams, other_mem, litvecs);
         trace_printf("getvecs=%" PRIdPTR " C-stacks=%" PRIdPTR "K Lisp-stack=%" PRIdPTR "K\n",
                      getvecs, (((char *)C_stackbase-(char *)&why)+1023)/1024,
-                     (intptr_t)((stack-stackbase)+1023)/1024);
+                     (std::intptr_t)((stack-stackbase)+1023)/1024);
     }
 
     grab_more_memory(heap_pages_count + vheap_pages_count);
@@ -736,7 +736,7 @@ void reclaim(const char *why, int stg_class)
     use_gchook(lisp_true);
 }
 
-LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
+LispObject reclaim(LispObject p, const char *why, int stg_class, std::size_t size)
 {   push(p);
     reclaim(why, stg_class);
     pop(p);

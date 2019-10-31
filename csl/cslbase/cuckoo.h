@@ -86,9 +86,9 @@ extern pthread_cond_t  cond;
 
 #define CREATELOGMUTEX     // Nothing
 #define LOCKLOGMUTEX       if (pthread_mutex_lock(&logmutex) != 0) \
-                           { fprintf(stderr, "locking failed\n"); exit(1); }
+                           { std::fprintf(stderr, "locking failed\n"); std::exit(1); }
 #define UNLOCKLOGMUTEX     if (pthread_mutex_unlock(&logmutex) != 0) \
-                           { fprintf(stderr, "locking failed\n"); exit(1); }
+                           { std::fprintf(stderr, "locking failed\n"); std::exit(1); }
 
 
 #endif
@@ -135,14 +135,14 @@ extern pthread_cond_t  cond;
 // retrieve the key stored there, which will be zero if the entry
 // is not in use.
 
-typedef uint32_t cuckoo_get_key(void *p);
+typedef std::uint32_t cuckoo_get_key(void *p);
 
 // set_key takes a pointer into the hash table and a key value to
 // record there. It does not do anything to the rest of the entry - it only
 // updates the key field. Note that key values must never be 0 since that
 // value is used to mark and empty slot in the hash table.
 
-typedef void     cuckoo_set_key(void *p, uint32_t key);
+typedef void     cuckoo_set_key(void *p, std::uint32_t key);
 
 // I can (optionally) pass a function of this type to the code that creates
 // a table. It gets handed a key. If it returns CUCKOO_VITAL the table will
@@ -173,7 +173,7 @@ typedef void     cuckoo_set_key(void *p, uint32_t key);
 #define CUCKOO_IMPORTANT 1
 #define CUCKOO_VITAL     2
 
-typedef int      cuckoo_importance(uint32_t key);
+typedef int      cuckoo_importance(std::uint32_t key);
 
 // Now the generic function for retrieving information from a hash table.
 // It is passed a key and a table. It then needs a load more arguments that
@@ -232,20 +232,20 @@ typedef int      cuckoo_importance(uint32_t key);
 // small) table had been set up with everything IMPORTANT then the
 // third probe can be removed.
 
-static cuckoo_inline uint32_t cuckoo_lookup(
-    uint32_t key,             // integer key to look up
+static cuckoo_inline std::uint32_t cuckoo_lookup(
+    std::uint32_t key,             // integer key to look up
     void *table,              // base of the hash table
-    size_t hash_item_size,    // size of each item in the table,
+    std::size_t hash_item_size,    // size of each item in the table,
     // must be <= MAX_CUCKOO_ITEM_SIZE
-    uint32_t table_size,      // number of entries in the hash table
+    std::uint32_t table_size,      // number of entries in the hash table
     cuckoo_get_key *get_key,  // function to retrieve keys from table
-    uint32_t modulus2,        // used to give a secondary hash function
-    uint32_t offset2)         // used to give a secondary hash function
+    std::uint32_t modulus2,        // used to give a secondary hash function
+    std::uint32_t offset2)         // used to give a secondary hash function
 {
 // My initial hash value is merely the key reduced modulo the size of
 // the table.
-    uint32_t hash1 = key % table_size;
-    uint32_t hash2;
+    std::uint32_t hash1 = key % table_size;
+    std::uint32_t hash2;
     if (cuckoo_key(hash1) == key) return hash1;
 // I have a secondary hash function that will not map onto the whole
 // of the table - it uses a second smaller modulus and an offset. The
@@ -261,7 +261,7 @@ static cuckoo_inline uint32_t cuckoo_lookup(
     hash1 = (hash1 + hash2) % table_size;
     if (cuckoo_key(hash1) == key) return hash1;
 // If the key is not found in any of those three locations I just return -1.
-    return (uint32_t)(-1);
+    return (std::uint32_t)(-1);
 }
 
 // The function cuckoo_insert inserts a single item into a table and returns
@@ -282,17 +282,17 @@ static cuckoo_inline uint32_t cuckoo_lookup(
 
 extern char cuckoo_pending_item[];
 
-extern uint32_t cuckoo_insert(
-    uint32_t key,             // integer key to look up
+extern std::uint32_t cuckoo_insert(
+    std::uint32_t key,             // integer key to look up
     cuckoo_importance *importance, // how important are various keys?
     void *table,              // base of the hash table
-    size_t hash_item_size,    // size of each item in the table,
+    std::size_t hash_item_size,    // size of each item in the table,
     // must be <= MAX_CUCKOO_ITEM_SIZE
-    uint32_t table_size,      // number of entries in the hash table
+    std::uint32_t table_size,      // number of entries in the hash table
     cuckoo_get_key *get_key,  // function to retrieve keys from table
     cuckoo_set_key *set_key,  // function to set a key in the table
-    uint32_t modulus2,        // used to give a secondary hash function
-    uint32_t offset2);        // used to give a secondary hash function
+    std::uint32_t modulus2,        // used to give a secondary hash function
+    std::uint32_t offset2);        // used to give a secondary hash function
 
 // Some functions return a "cuckoo_parameters" value. This gives the
 // size of the hash table in use, values for modulus2 and offset2 (ie
@@ -310,9 +310,9 @@ extern uint32_t cuckoo_insert(
 // failure to set up the table.
 
 typedef struct __cuckoo_parameters
-{   uint32_t table_size;
-    uint32_t modulus2;
-    uint32_t offset2;
+{   std::uint32_t table_size;
+    std::uint32_t modulus2;
+    std::uint32_t offset2;
     double   merit;
 } cuckoo_parameters;
 
@@ -359,7 +359,7 @@ typedef struct __cuckoo_parameters
 
 
 extern cuckoo_parameters cuckoo_optimise(
-    uint32_t *items,               // table of keys
+    std::uint32_t *items,               // table of keys
     int item_count,                // number of keys
     cuckoo_importance *importance, // importance judgement on keys
     void *table,                   // hash table to create
@@ -410,7 +410,7 @@ extern cuckoo_parameters cuckoo_optimise(
 // better is available.
 
 extern cuckoo_parameters cuckoo_binary_optimise(
-    uint32_t *items,               // table of keys
+    std::uint32_t *items,               // table of keys
     int item_count,                // number of keys
     cuckoo_importance *importance, // importance judgement on keys
     void *table,                   // hash table to create
@@ -430,20 +430,20 @@ extern cuckoo_parameters cuckoo_binary_optimise(
 // the extra overhead of the getter and setter functions is avoided.
 
 extern double hungarian_insert_all(
-    uint32_t *items,
+    std::uint32_t *items,
     int item_count,
     cuckoo_importance *importance,
-    uint32_t *table,
+    std::uint32_t *table,
     int table_size,
-    uint32_t modulus2,
-    uint32_t offset2,
+    std::uint32_t modulus2,
+    std::uint32_t offset2,
     double target_merit);
 
 // For a given table size try all values of modulus2 and offset2 and
 // return information about the best assignment found.
 
 extern cuckoo_parameters hungarian_try_all_hash_functions(
-    uint32_t *keys,
+    std::uint32_t *keys,
     int keycount,
     cuckoo_importance *importance,
     void *hash,

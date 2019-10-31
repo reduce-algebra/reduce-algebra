@@ -90,13 +90,13 @@ char *memory;
 std::atomic_flag memory_used[(MAX_MEMORY+MAX_PAGE_SIZE+MIN_PAGE_SIZE-1)/
                              MIN_PAGE_SIZE];
 
-static size_t page_size;
+static std::size_t page_size;
 
 
 inline void fail(const char *msg)
 {
-    printf("%s", msg);
-    exit(EXIT_FAILURE);
+    std::printf("%s", msg);
+    std::exit(EXIT_FAILURE);
 }
 
 #ifndef WIN32
@@ -127,7 +127,7 @@ typedef int action_handler(int, const siginfo_t *, void *);
 //      does use it can never be activated while it is being used, and the
 //      masking done here should achieve that.
 
-inline int safe_mprotect(void *a, size_t n, int m)
+inline int safe_mprotect(void *a, std::size_t n, int m)
 {   sigset_t ss, ssold;
     sigemptyset(&ss);
     sigaddset(&ss, SIGSEGV);
@@ -150,16 +150,16 @@ int main(int argc, char *argv[])
 // The page size gives the granularity at which memory protection can be
 // applied, and hence the granularity of information that WRITE_WATCH uses
 // when reporting "dirty pages".
-    printf("Windows page size = %" PRIx64 "\n",
-        (uint64_t)si.dwPageSize);
+    std::printf("Windows page size = %" PRIx64 "\n",
+        (std::uint64_t)si.dwPageSize);
 // The allocation granularity is to do with aligment for memory block
 // allocation. Since and If I pass a NULL as the first argument to
 // VirtualAlloc I do not need to do anything about this, but the
 // returned memory will end up alligned as per this value.
-    printf("Windows allocation granularity = %" PRIx64 "\n",
-        (uint64_t)si.dwAllocationGranularity);
-    printf("About to VirtualAlloc\n");
-    fflush(stdout);
+    std::printf("Windows allocation granularity = %" PRIx64 "\n",
+        (std::uint64_t)si.dwAllocationGranularity);
+    std::printf("About to VirtualAlloc\n");
+    std::fflush(stdout);
     memory = (char *)VirtualAlloc(
         NULL,                    // system selects address
         MAX_MEMORY,              // size to allocate
@@ -170,18 +170,18 @@ int main(int argc, char *argv[])
                                  // allocate reserved pages
         PAGE_READWRITE);         // Read and Write access
     if (memory == NULL) fail("Unable to allocate memory\n");
-    printf("VirtualAlloc = %p\n", memory);
+    std::printf("VirtualAlloc = %p\n", memory);
 #else // !WIN32
-    raw_memory = (char *)malloc(MAX_MEMORY+MAX_PAGE_SIZE);
+    raw_memory = (char *)std::malloc(MAX_MEMORY+MAX_PAGE_SIZE);
     if (raw_memory == NULL) fail("Unable to allocate memory\n");
-    memory = (char *)((-(uintptr_t)MAX_PAGE_SIZE) &
-                      (MAX_PAGE_SIZE - 1 + (uintptr_t)&raw_memory[0]));
+    memory = (char *)((-(std::uintptr_t)MAX_PAGE_SIZE) &
+                      (MAX_PAGE_SIZE - 1 + (std::uintptr_t)&raw_memory[0]));
 #endif // !WIN32
-    printf("Start of memory block:  %#" PRIx64 "\n", (uint64_t)memory);
+    std::printf("Start of memory block:  %#" PRIx64 "\n", (std::uint64_t)memory);
 
-    for (size_t i=0; i<(MAX_MEMORY+MAX_PAGE_SIZE)/MIN_PAGE_SIZE; i++)
+    for (std::size_t i=0; i<(MAX_MEMORY+MAX_PAGE_SIZE)/MIN_PAGE_SIZE; i++)
         memory_used[i].clear();
-    printf("size of atomic_flag = %.1f\n",
+    std::printf("size of atomic_flag = %.1f\n",
         sizeof(memory_used)/(double)((MAX_MEMORY+MAX_PAGE_SIZE)/MIN_PAGE_SIZE));
 
 #ifndef WIN32
@@ -209,8 +209,8 @@ int main(int argc, char *argv[])
 #else
     page_size = sysconf(_SC_PAGE_SIZE);
 #endif
-    if (page_size == (size_t)(-1)) fail("unable to get page size\n");
-    printf("page_size = %d = %#x\n", (int)page_size, (int)page_size);
+    if (page_size == (std::size_t)(-1)) fail("unable to get page size\n");
+    std::printf("page_size = %d = %#x\n", (int)page_size, (int)page_size);
     if (page_size < MIN_PAGE_SIZE ||
         page_size > MAX_PAGE_SIZE)
         fail("page_size is unacceptable here\n");
@@ -236,14 +236,14 @@ int main(int argc, char *argv[])
     for (char *p = memory ; p<memory+6*page_size ; p+=STEP)
     {   *p = 'a';
 #ifdef WIN32
-        printf("Probe at %" PRIx64 "\n", (uint64_t)(p - memory));
+        std::printf("Probe at %" PRIx64 "\n", (std::uint64_t)(p - memory));
 #else // !WIN32
-        printf("#");
+        std::printf("#");
 #endif // !WIN32
-        fflush(stdout);
+        std::fflush(stdout);
     }
 
-    printf("\nLoop completed\n");
+    std::printf("\nLoop completed\n");
 
 // Check that I have successfully written data everywhere I tried to.
     for (char *p = memory ; p<memory+6*page_size ; p+=STEP)
@@ -260,23 +260,23 @@ int main(int argc, char *argv[])
             changedpages,
             &nchangedpages,
             &granularity) != 0) fail("GetWriteWatch failed\n");
-    printf("Number of changed pages = %" PRIu64 "\n", (uint64_t)nchangedpages);
-    printf("Granularity = %" PRIu64 "\n", (uint64_t)granularity);
+    std::printf("Number of changed pages = %" PRIu64 "\n", (std::uint64_t)nchangedpages);
+    std::printf("Granularity = %" PRIu64 "\n", (std::uint64_t)granularity);
     for (unsigned int i=0; i<nchangedpages; i++)
-        printf("%u: %" PRIx64 "\n", i, (uint64_t)changedpages[i]);
+        std::printf("%u: %" PRIx64 "\n", i, (std::uint64_t)changedpages[i]);
 #else // !WIN32
-    for (size_t i=0; i<MAX_MEMORY/page_size; i++)
+    for (std::size_t i=0; i<MAX_MEMORY/page_size; i++)
     {
 // A side effect of checking the value of memory_used is that I set it!
         if (memory_used[i].test_and_set())
-        {   printf("Page %u was used\n", (unsigned int)i);
+        {   std::printf("Page %u was used\n", (unsigned int)i);
         }
         memory_used[i].clear();  // leave the map tidy.
     }
 #endif // !WIN32
 
-    printf("End of demonstration/test\n");
-    exit(EXIT_SUCCESS);
+    std::printf("End of demonstration/test\n");
+    std::exit(EXIT_SUCCESS);
 }
 
 #ifndef WIN32
@@ -285,35 +285,35 @@ int main(int argc, char *argv[])
 // I can generate messages from within the handler using write.
 
 static void safe_print0(const char *msg)
-{   if (write(0, msg, strlen(msg)) < 0)
+{   if (write(0, msg, std::strlen(msg)) < 0)
         fail("write to stdout failed\n");
 }
 
-static void safe_print1(const char *msg1, uint64_t x, const char *msg2)
-{   if (write(0, msg1, strlen(msg1)) < 0)
+static void safe_print1(const char *msg1, std::uint64_t x, const char *msg2)
+{   if (write(0, msg1, std::strlen(msg1)) < 0)
         fail("write to stdout failed\n");
     for (int i=0; i<16; i++)
     {   if (write(0,
             (const char *)"0123456789abcdef"+((x>>(60-4*i)) & 0xf), 1) < 0)
             fail("write to stdout failed\n");
     }
-    if (write(0, msg2, strlen(msg2)) < 0)
+    if (write(0, msg2, std::strlen(msg2)) < 0)
         fail("write to stdout failed\n");
 }
 
 static void handler(int sig, siginfo_t *si, void *unused)
 {   int errsav = errno;
-    uintptr_t addr = (uintptr_t)si->si_addr;
+    std::uintptr_t addr = (std::uintptr_t)si->si_addr;
     safe_print1("\nGot exception at address: 0x", addr, "\n");
     safe_print0(".. try to reinstate write access...\n");
-    addr = addr & -(uintptr_t)page_size;
+    addr = addr & -(std::uintptr_t)page_size;
     safe_print1("page to make RW at 0x", addr, "\n");
 // Well in the code here the only thing I do to a memory_used location is
 // setting it, and I rather suspect that using an explicitly carefully
 // atomic type and a test-and-set operation is not needed - ie I could
 // probably just use and array of bools.
-    if (addr >= (uintptr_t)memory &&
-        addr < (uintptr_t)memory + MAX_MEMORY)
+    if (addr >= (std::uintptr_t)memory &&
+        addr < (std::uintptr_t)memory + MAX_MEMORY)
     {
 // mprotect is NOT in the list of async-signal-safe functions and so I
 // may only use it here if I guarantee that this handler will not be activated
@@ -321,7 +321,7 @@ static void handler(int sig, siginfo_t *si, void *unused)
 // that I make!
         if (mprotect((void *)addr, page_size, PROT_READ | PROT_WRITE) == -1)
             fail("unable to restart R/W status to memory page");
-        memory_used[(addr - (uintptr_t)memory)/page_size].test_and_set();
+        memory_used[(addr - (std::uintptr_t)memory)/page_size].test_and_set();
     }
     else fail("SIGSEGV or SIGBUS outside expected address range\n");
     safe_print0("Resume test:\n");

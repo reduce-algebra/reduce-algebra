@@ -107,7 +107,7 @@ static LispObject Lmpi_send(LispObject env, LispObject message, LispObject dest,
     pack_object(message);
     MPI_Send(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
              dest, tag, comm);
-    free(mpi_pack_buffer);
+    std::free(mpi_pack_buffer);
     return onevalue(nil);
 }
 
@@ -121,7 +121,7 @@ static LispObject Lmpi_recv(LispObject, LispObject source,
 
     MPI_Status status;
     LispObject Lstatus;
-    va_list a;
+    std::va_list a;
 
     get_fix_arg(source, fun_name);
     get_fix_arg(tag, fun_name);
@@ -129,7 +129,7 @@ static LispObject Lmpi_recv(LispObject, LispObject source,
 
     MPI_Probe(source, tag, comm, &status);
     MPI_Get_count(&status, MPI_PACKED, &mpi_pack_size);
-    mpi_pack_buffer = (char*)malloc(mpi_pack_size);
+    mpi_pack_buffer = (char*)std::malloc(mpi_pack_size);
 
     MPI_Recv(mpi_pack_buffer, mpi_pack_size, MPI_PACKED,
              source, tag, comm, &status);
@@ -138,7 +138,7 @@ static LispObject Lmpi_recv(LispObject, LispObject source,
     // stick them in a list and return them as the 2nd value
     //
     push(unpack_object());
-    free(mpi_pack_buffer);
+    std::free(mpi_pack_buffer);
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                     fixnum_of_int(status.MPI_TAG),
                     fixnum_of_int(status.MPI_ERROR));
@@ -183,7 +183,7 @@ static LispObject Lmpi_sendrecv(LispObject, LispObject s_mess, LispObject dest,
                  dest, s_tag,
                  r_buffer, 1024, MPI_PACKED,
                  source, r_tag, comm, &status);
-    free(mpi_pack_buffer);
+    std::free(mpi_pack_buffer);
     mpi_pack_buffer = r_buffer;
     push(unpack_object());
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
@@ -254,7 +254,7 @@ static LispObject Lmpi_irecv(LispObject, LispObject aource, LispObject tag, Lisp
     get_fix_arg(comm, fun_name);
 
     elt(request,1) = 0; // There is no buffer yet
-    elt(request,0) = (int)malloc(sizeof(struct dummy_request));
+    elt(request,0) = (int)std::malloc(sizeof(struct dummy_request));
     ((struct dummy_request*)elt(request,0))->source = source;
     ((struct dummy_request*)elt(request,0))->tag = tag;
     ((struct dummy_request*)elt(request,0))->comm = comm;
@@ -278,12 +278,12 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
         mpi_pack_buffer = (void*)elt(request,1);
         MPI_Wait( (MPI_Request*)&elt(request,0), &status);
         if (status.MPI_ERROR == MPI_UNDEFINED)        // i.e. send request
-        {   free(mpi_pack_buffer);
+        {   std::free(mpi_pack_buffer);
             return onevalue(nil);
         }
         else     // old-style receive
         {   push(unpack_object());
-            free(mpi_pack_buffer);
+            std::free(mpi_pack_buffer);
             Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                             fixnum_of_int(status.MPI_TAG),
                             fixnum_of_int(status.MPI_ERROR));
@@ -295,9 +295,9 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
                 tag = ((struct dummy_request*)elt(request,0))->tag,
                 comm = ((struct dummy_request*)elt(request,0))->comm;
         MPI_Probe(source, tag, comm, &status);
-        free((struct dummy_request*)elt(request,0));
+        std::free((struct dummy_request*)elt(request,0));
         MPI_Get_count(&status, MPI_PACKED, &mpi_pack_size);
-        mpi_pack_buffer = (char*)malloc(mpi_pack_size);
+        mpi_pack_buffer = (char*)std::malloc(mpi_pack_size);
 
         MPI_Recv(mpi_pack_buffer, mpi_pack_size, MPI_PACKED,
                  source, tag, comm, &status);
@@ -306,7 +306,7 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
         // stick them in a list and return them as the 2nd value
         //
         push(unpack_object());
-        free(mpi_pack_buffer);
+        std::free(mpi_pack_buffer);
         Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                         fixnum_of_int(status.MPI_TAG),
                         fixnum_of_int(status.MPI_ERROR));
@@ -334,12 +334,12 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
         MPI_Test( (MPI_Request*)&elt(request,0), &flag, &status);
         if (!flag) return onevalue(nil);
         if (status.MPI_ERROR == MPI_UNDEFINED)        // send request
-        {   free(mpi_pack_buffer);
+        {   std::free(mpi_pack_buffer);
             return onevalue(Lispify_predicate(YES));
         }
         else    // old-style receive
         {   push(unpack_object());
-            free(mpi_pack_buffer);
+            std::free(mpi_pack_buffer);
             Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                             fixnum_of_int(status.MPI_TAG),
                             fixnum_of_int(status.MPI_ERROR));
@@ -355,9 +355,9 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
 
         if (!flag) return onevalue(nil);
 
-        free((struct dummy_request*)elt(request,0));
+        std::free((struct dummy_request*)elt(request,0));
         MPI_Get_count(&status, MPI_PACKED, &mpi_pack_size);
-        mpi_pack_buffer = (char*)malloc(mpi_pack_size);
+        mpi_pack_buffer = (char*)std::malloc(mpi_pack_size);
 
         MPI_Recv(mpi_pack_buffer, mpi_pack_size, MPI_PACKED,
                  source, tag, comm, &status);
@@ -366,7 +366,7 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
         // stick them in a list and return them as the 2nd value
         //
         push(unpack_object());
-        free(mpi_pack_buffer);
+        std::free(mpi_pack_buffer);
         Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                         fixnum_of_int(status.MPI_TAG),
                         fixnum_of_int(status.MPI_ERROR));
@@ -451,14 +451,14 @@ static LispObject Lmpi_bcast(LispObject, LispObject message, LispObject root, Li
     {   pack_object(message);
         MPI_Bcast(&mpi_pack_position, 1, MPI_LONG, root, comm);
         MPI_Bcast(mpi_pack_buffer, mpi_pack_position, MPI_PACKED, root, comm);
-        free(mpi_pack_buffer);
+        std::free(mpi_pack_buffer);
     }
     else
     {   MPI_Bcast(&mpi_pack_size, 1, MPI_LONG, root, comm);
-        mpi_pack_buffer = (char*)malloc(mpi_pack_size);
+        mpi_pack_buffer = (char*)std::malloc(mpi_pack_size);
         MPI_Bcast(mpi_pack_buffer, mpi_pack_size, MPI_PACKED, root, comm);
         message = unpack_object();
-        free(mpi_pack_buffer);
+        std::free(mpi_pack_buffer);
     }
     return onevalue(message);
 }
@@ -484,8 +484,8 @@ static LispObject Lmpi_gather(LispObject, LispObject message, LispObject root,
         char *recvbuffer;
 
         MPI_Comm_size(comm,&commsize);
-        recvcounts = (int*)calloc(commsize, sizeof(int));
-        displs = (int*)calloc(commsize+1, sizeof(int));
+        recvcounts = (int*)std::calloc(commsize, sizeof(int));
+        displs = (int*)std::calloc(commsize+1, sizeof(int));
         MPI_Gather(&mpi_pack_position, 1, MPI_LONG,
                    recvcounts, 1, MPI_LONG, root, comm);
 
@@ -493,11 +493,11 @@ static LispObject Lmpi_gather(LispObject, LispObject message, LispObject root,
         for (count = 0; count < commsize; ++count)
             displs[count+1] = displs[count] + recvcounts[count];
 
-        recvbuffer = (char*)malloc(displs[commsize]);
+        recvbuffer = (char*)std::malloc(displs[commsize]);
 
         MPI_Gatherv(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
                     recvbuffer, recvcounts, displs, MPI_PACKED, root, comm);
-        free(mpi_pack_buffer);
+        std::free(mpi_pack_buffer);
 
         message = Lmkvect(nil, fixnum_of_int(commsize-1));
         for (count = 0; count < commsize; ++count)
@@ -505,13 +505,13 @@ static LispObject Lmpi_gather(LispObject, LispObject message, LispObject root,
             mpi_pack_size = recvcounts[count];
             elt(message, count) = unpack_object();
         }
-        free(recvbuffer); free(recvcounts); free(displs);
+        std::free(recvbuffer); std::free(recvcounts); std::free(displs);
     }
     else
     {   MPI_Gather(&mpi_pack_position, 1, MPI_LONG, 0, 0, MPI_LONG, root, comm);
         MPI_Gatherv(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
                     0,0,0,MPI_PACKED, root, comm);
-        free(mpi_pack_buffer);
+        std::free(mpi_pack_buffer);
         message = nil;
     }
     return onevalue(message);
@@ -527,7 +527,7 @@ static LispObject Lmpi_scatter(LispObject, LispObject messages, LispObject root,
 
     LispObject message;
     int rank;
-    va_list a;
+    std::va_list a;
 
     get_fix_arg(root, fun_name);
     get_fix_arg(comm, fun_name);
@@ -538,8 +538,8 @@ static LispObject Lmpi_scatter(LispObject, LispObject messages, LispObject root,
         char* recvbuffer;
 
         MPI_Comm_size(comm,&commsize);
-        sendcounts = (int*)calloc(commsize, sizeof(int));
-        displs = (int*)calloc(commsize+1, sizeof(int));
+        sendcounts = (int*)std::calloc(commsize, sizeof(int));
+        displs = (int*)std::calloc(commsize+1, sizeof(int));
         displs[0] = 0;
 
         // Call private functions in mpi_packing for consecutive packs
@@ -560,22 +560,22 @@ static LispObject Lmpi_scatter(LispObject, LispObject messages, LispObject root,
         }
         check_buffer = default_check_buffer;
         MPI_Scatter(sendcounts, 1, MPI_LONG, &recvcount, 1, MPI_LONG, root, comm);
-        recvbuffer = (char*)malloc(recvcount);
+        recvbuffer = (char*)std::malloc(recvcount);
         MPI_Scatterv(mpi_buffer_bottom, sendcounts, displs, MPI_PACKED,
                      recvbuffer, recvcount, MPI_PACKED, root, comm);
-        free(recvbuffer);
-        free(sendcounts);
-        free(displs);
-        free(mpi_buffer_bottom);
+        std::free(recvbuffer);
+        std::free(sendcounts);
+        std::free(displs);
+        std::free(mpi_buffer_bottom);
         message = elt(messages, root);
     }
     else
     {   MPI_Scatter(0,0,MPI_LONG,&mpi_pack_size,1,MPI_LONG,root,comm);
-        mpi_pack_buffer = (char*)malloc(mpi_pack_size);
+        mpi_pack_buffer = (char*)std::malloc(mpi_pack_size);
         MPI_Scatterv(0,0,0,MPI_PACKED,
                      mpi_pack_buffer,mpi_pack_size,MPI_PACKED,root,comm);
         message = unpack_object();
-        free(mpi_pack_buffer);
+        std::free(mpi_pack_buffer);
     }
     return onevalue(message);
 }
@@ -599,19 +599,19 @@ static LispObject Lmpi_allgather(LispObject,
     pack_object(message);
 
     MPI_Comm_size(comm,&commsize);
-    recvcounts = (int*)calloc(commsize, sizeof(int));
-    displs = (int*)calloc(commsize+1, sizeof(int));
+    recvcounts = (int*)std::calloc(commsize, sizeof(int));
+    displs = (int*)std::calloc(commsize+1, sizeof(int));
     MPI_Allgather(&mpi_pack_position, 1, MPI_LONG, recvcounts, 1, MPI_LONG, comm);
 
     displs[0] = 0;
     for (count = 0; count < commsize; ++count)
         displs[count+1] = displs[count] + recvcounts[count];
 
-    recvbuffer = (char*)malloc(displs[commsize]);
+    recvbuffer = (char*)std::malloc(displs[commsize]);
 
     MPI_Allgatherv(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
                    recvbuffer, recvcounts, displs, MPI_PACKED, comm);
-    free(mpi_pack_buffer); free(recvcounts); free(displs);
+    std::free(mpi_pack_buffer); std::free(recvcounts); std::free(displs);
 
     message = Lmkvect(nil, fixnum_of_int(commsize-1));
     for (count = 0; count < commsize; ++count)
@@ -619,7 +619,7 @@ static LispObject Lmpi_allgather(LispObject,
         mpi_pack_size = recvcounts[count];
         elt(message, count) = unpack_object();
     }
-    free(recvbuffer);
+    std::free(recvbuffer);
     return onevalue(message);
 }
 
@@ -640,10 +640,10 @@ static LispObject Lmpi_alltoall(LispObject,
     comm = int_of_fixnum(Lcomm);
 
     MPI_Comm_size(comm,&commsize);
-    sendcounts = (int*)calloc(commsize, sizeof(int));
-    recvcounts = (int*)calloc(commsize, sizeof(int));
-    sdispls = (int*)calloc(commsize+1, sizeof(int));
-    rdispls = (int*)calloc(commsize+1, sizeof(int));
+    sendcounts = (int*)std::calloc(commsize, sizeof(int));
+    recvcounts = (int*)std::calloc(commsize, sizeof(int));
+    sdispls = (int*)std::calloc(commsize+1, sizeof(int));
+    rdispls = (int*)std::calloc(commsize+1, sizeof(int));
 
     // Call private functions in mpi_packing for consecutive packs
     check_buffer = scatter_check_buffer;
@@ -671,12 +671,12 @@ static LispObject Lmpi_alltoall(LispObject,
     for (count = 0; count < commsize; ++count)
         rdispls[count+1] = rdispls[count] + recvcounts[count];
 
-    recvbuffer = (char*)malloc(rdispls[commsize]);
+    recvbuffer = (char*)std::malloc(rdispls[commsize]);
 
     MPI_Alltoallv(mpi_buffer_bottom, sendcounts, sdispls, MPI_PACKED,
                   recvbuffer, recvcounts, rdispls, MPI_PACKED, comm);
 
-    free(mpi_buffer_bottom); free(sendcounts); free(sdispls);
+    std::free(mpi_buffer_bottom); std::free(sendcounts); std::free(sdispls);
 
     rmessages = Lmkvect(nil, fixnum_of_int(commsize-1));
     for (count = 0; count < commsize; ++count)
@@ -684,7 +684,7 @@ static LispObject Lmpi_alltoall(LispObject,
         mpi_pack_size = recvcounts[count];
         elt(rmessages, count) = unpack_object();
     }
-    free(recvbuffer); free(recvcounts); free(rdispls);
+    std::free(recvbuffer); std::free(recvcounts); std::free(rdispls);
     return onevalue(rmessages);
 }
 

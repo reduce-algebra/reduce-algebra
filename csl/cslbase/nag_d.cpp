@@ -36,23 +36,23 @@
 
 
 LispObject Ld01ajf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw;
     double a, b, epsabs, epsrel, result, abserr, *w;
-    int32_t  ifail, lw, *iw, liw;
+    std::int32_t  ifail, lw, *iw, liw;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
     typedef void (__stdcall *PD01AJF) (double __stdcall (*fst) (double *),
                                        double *, double *, double *, double *, double *, double *,
-                                       double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                       double *, std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
     HINSTANCE hLib;
     PD01AJF d01ajf_proc;
 #else
     extern void __stdcall D01AJF(double __stdcall (*fst) (double *), double *,
                                  double *, double *, double *, double *, double *, double *,
-                                 int32_t *, int32_t *, int32_t *, int32_t *);
+                                 std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -105,8 +105,8 @@ LispObject Ld01ajf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)malloc(lw*sizeof(double));
-    iw = (int32_t *)malloc(liw*sizeof(int));
+    w = (double *)std::malloc(lw*sizeof(double));
+    iw = (std::int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
     push(La,Lb,Lepsabs,Lepsrel);
@@ -154,30 +154,30 @@ LispObject Ld01ajf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    free (w);
-    free (iw);
+    std::free (w);
+    std::free (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 
 LispObject Ld01akf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw;
     double a, b, epsabs, epsrel, result, abserr, *w;
-    int32_t  ifail, lw, *iw, liw;
+    std::int32_t  ifail, lw, *iw, liw;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
     typedef void (__stdcall *PD01AKF) (double __stdcall (*fst) (double *),
                                        double *, double *, double *, double *, double *, double *,
-                                       double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                       double *, std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
     HINSTANCE hLib;
     PD01AKF d01akf_proc;
 #else
     extern void __stdcall D01AKF(double __stdcall (*fst) (double *), double *,
                                  double *, double *, double *, double *, double *, double *,
-                                 int32_t *, int32_t *, int32_t *, int32_t *);
+                                 std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -230,8 +230,8 @@ LispObject Ld01akf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)malloc(lw*sizeof(double));
-    iw = (int32_t *)malloc(liw*sizeof(int));
+    w = (double *)std::malloc(lw*sizeof(double));
+    iw = (std::int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -275,31 +275,31 @@ LispObject Ld01akf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    free (w);
-    free (iw);
+    std::free (w);
+    std::free (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 
 #if 1
 LispObject Ld01alf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw, Lnpts, Lpoints;
     double a, b, epsabs, epsrel, result, abserr, *w, *points;
-    int32_t  ifail, lw, *iw, liw, npts;
+    std::int32_t  ifail, lw, *iw, liw, npts;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
     typedef void (__stdcall *PD01ALF) (double __stdcall (*fst) (double *),
-                                       double *, double *, int32_t *, double *, double *, double *,
-                                       double *, double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                       double *, double *, std::int32_t *, double *, double *, double *,
+                                       double *, double *, double *, std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
     HINSTANCE hLib;
     PD01ALF d01alf_proc;
 #else
     extern void __stdcall D01ALF(double __stdcall (*fst) (double *), double *,
-                                 double *, int32_t *, double *, double *, double *, double *,
-                                 double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                 double *, std::int32_t *, double *, double *, double *, double *,
+                                 double *, double *, std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -333,7 +333,7 @@ LispObject Ld01alf(LispObject env, int nargs, ...)
     pop(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop(Lpoints,Lnpts,Lb,La);
     // ndim = (length_of_header(vechdr(Lpoints)) - 4)/4;
-    points = (double *)malloc(npts*sizeof(double));
+    points = (double *)std::malloc(npts*sizeof(double));
     push(La,Lb,Lnpts,Lpoints,Lepsabs);
     push(Lepsrel,Llw,Lliw,Lifail);
     mkFortranVectorDouble(points, Lpoints, npts);
@@ -366,8 +366,8 @@ LispObject Ld01alf(LispObject env, int nargs, ...)
     pop(Lpoints,Lnpts,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)malloc(lw*sizeof(double));
-    iw = (int32_t *)malloc(liw*sizeof(int));
+    w = (double *)std::malloc(lw*sizeof(double));
+    iw = (std::int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -411,9 +411,9 @@ LispObject Ld01alf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    free (points);
-    free (w);
-    free (iw);
+    std::free (points);
+    std::free (w);
+    std::free (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -425,23 +425,23 @@ LispObject Ld01alf(LispObject env, int nargs, ...)
 
 #if 1
 LispObject Ld01amf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr, Lw, Liw,
                Lbound, Linf;
     double epsabs, epsrel, result, abserr, *w, bound;
-    int32_t  ifail, lw, *iw, liw, inf;
+    std::int32_t  ifail, lw, *iw, liw, inf;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
     typedef void (__stdcall *PD01AMF) (double __stdcall (*fst) (double *),
-                                       double *, int32_t *, double *, double *, double *, double *,
-                                       double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                       double *, std::int32_t *, double *, double *, double *, double *,
+                                       double *, std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
     HINSTANCE hLib;
     PD01AMF d01amf_proc;
 #else
     extern void __stdcall D01AMF(double __stdcall (*fst) (double *), double *,
-                                 int32_t *, double *, double *, double *, double *, double *, int32_t *,
-                                 int32_t *, int32_t *, int32_t *);
+                                 std::int32_t *, double *, double *, double *, double *, double *, std::int32_t *,
+                                 std::int32_t *, std::int32_t *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -494,8 +494,8 @@ LispObject Ld01amf(LispObject env, int nargs, ...)
     pop(Lepsabs,Linf,Lbound);
 
     // Setup workspace arrays etc.
-    w = (double *)malloc(lw*sizeof(double));
-    iw = (int32_t *)malloc(liw*sizeof(int));
+    w = (double *)std::malloc(lw*sizeof(double));
+    iw = (std::int32_t *)std::malloc(liw*sizeof(int));
 
     push(Lbound,Linf,Lepsabs,Lepsrel);
     push(Llw,Lliw,Lifail);
@@ -544,8 +544,8 @@ LispObject Ld01amf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    free (w);
-    free (iw);
+    std::free (w);
+    std::free (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -557,23 +557,23 @@ LispObject Ld01amf(LispObject env, int nargs, ...)
 
 #if 1
 LispObject Ld01anf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw, Lomega, Lkey;
     double a, b, epsabs, epsrel, result, abserr, *w, omega;
-    int32_t  ifail, lw, *iw, liw, key;
+    std::int32_t  ifail, lw, *iw, liw, key;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
     typedef void (__stdcall *PD01ANF) (double __stdcall (*fst) (double *),
-                                       double *, double *, double *, int32_t *, double *, double *,
-                                       double *, double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                       double *, double *, double *, std::int32_t *, double *, double *,
+                                       double *, double *, double *, std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
     HINSTANCE hLib;
     PD01ANF d01anf_proc;
 #else
     extern void __stdcall D01ANF(double __stdcall (*fst) (double *), double *,
-                                 double *, double *, int32_t *, double *, double *, double *,
-                                 double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                 double *, double *, std::int32_t *, double *, double *, double *,
+                                 double *, double *, std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -638,8 +638,8 @@ LispObject Ld01anf(LispObject env, int nargs, ...)
     pop(Lkey,Lomega,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)malloc(lw*sizeof(double));
-    iw = (int32_t *)malloc(liw*sizeof(int));
+    w = (double *)std::malloc(lw*sizeof(double));
+    iw = (std::int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -683,8 +683,8 @@ LispObject Ld01anf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    free (w);
-    free (iw);
+    std::free (w);
+    std::free (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -696,24 +696,24 @@ LispObject Ld01anf(LispObject env, int nargs, ...)
 
 #if 1
 LispObject Ld01apf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw, Lalfa, Lbeta, Lkey;
     double a, b, epsabs, epsrel, result, abserr, *w, alfa, beta;
-    int32_t  ifail, lw, *iw, liw, key;
+    std::int32_t  ifail, lw, *iw, liw, key;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
     typedef void (__stdcall *PD01APF) (double __stdcall (*fst) (double *),
-                                       double *, double *, double *, double *, int32_t *, double *,
-                                       double *, double *, double *, double *, int32_t *, int32_t *, int32_t *,
-                                       int32_t *);
+                                       double *, double *, double *, double *, std::int32_t *, double *,
+                                       double *, double *, double *, double *, std::int32_t *, std::int32_t *, std::int32_t *,
+                                       std::int32_t *);
     HINSTANCE hLib;
     PD01APF d01apf_proc;
 #else
     extern void __stdcall D01APF(double __stdcall (*fst) (double *), double *,
-                                 double *, double *, double *, int32_t *, double *, double *,
-                                 double *, double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                 double *, double *, double *, std::int32_t *, double *, double *,
+                                 double *, double *, double *, std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -784,8 +784,8 @@ LispObject Ld01apf(LispObject env, int nargs, ...)
     pop(Lkey,Lbeta,Lalfa,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)malloc(lw*sizeof(double));
-    iw = (int32_t *)malloc(liw*sizeof(int));
+    w = (double *)std::malloc(lw*sizeof(double));
+    iw = (std::int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -829,8 +829,8 @@ LispObject Ld01apf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    free (w);
-    free (iw);
+    std::free (w);
+    std::free (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -842,23 +842,23 @@ LispObject Ld01apf(LispObject env, int nargs, ...)
 
 #if 1
 LispObject Ld01aqf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw, Lc;
     double a, b, epsabs, epsrel, result, abserr, *w, c;
-    int32_t  ifail, lw, *iw, liw;
+    std::int32_t  ifail, lw, *iw, liw;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
     typedef void (__stdcall *PD01AQF) (double __stdcall (*fst) (double *),
                                        double *, double *, double *, double *, double *, double *,
-                                       double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                       double *, double *, std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
     HINSTANCE hLib;
     PD01AQF d01aqf_proc;
 #else
     extern void __stdcall D01AQF(double __stdcall (*fst) (double *), double *,
                                  double *, double *, double *, double *, double *, double *,
-                                 double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                 double *, std::int32_t *, std::int32_t *, std::int32_t *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -917,8 +917,8 @@ LispObject Ld01aqf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lc,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)malloc(lw*sizeof(double));
-    iw = (int32_t *)malloc(liw*sizeof(int));
+    w = (double *)std::malloc(lw*sizeof(double));
+    iw = (std::int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -962,8 +962,8 @@ LispObject Ld01aqf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Liw,Lw,Labserr,Lresult);
 
-    free (w);
-    free (iw);
+    std::free (w);
+    std::free (iw);
 
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
@@ -975,25 +975,25 @@ LispObject Ld01aqf(LispObject env, int nargs, ...)
 
 #if 1
 LispObject Ld01asf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject La, Lepsabs, Llw, Lliw, Lifail, Lresult, Labserr, Liw, Lomega,
                Lkey, Llimlst, Llst, Lerlst, Lrslst, Lierlst;
     double a, epsabs, result, abserr, *w, omega, *erlst, *rslst;
-    int32_t  ifail, lw, *iw, liw, key, limlst, lst, *ierlst;
+    std::int32_t  ifail, lw, *iw, liw, key, limlst, lst, *ierlst;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
     typedef void (__stdcall *PD01ASF) (double __stdcall (*fst) (double *),
-                                       double *, double *, int32_t *, double *, double *, double *, int32_t *,
-                                       int32_t *, double *, double *, int32_t *, double *, int32_t *, int32_t *,
-                                       int32_t *, int32_t *);
+                                       double *, double *, std::int32_t *, double *, double *, double *, std::int32_t *,
+                                       std::int32_t *, double *, double *, std::int32_t *, double *, std::int32_t *, std::int32_t *,
+                                       std::int32_t *, std::int32_t *);
     HINSTANCE hLib;
     PD01ASF d01asf_proc;
 #else
     extern void __stdcall D01ASF(double __stdcall (*fst) (double *), double *,
-                                 double *, int32_t *, double *, double *, double *, int32_t *, int32_t *,
-                                 double *, double *, int32_t *, double *, int32_t *, int32_t *, int32_t *,
-                                 int32_t *);
+                                 double *, std::int32_t *, double *, double *, double *, std::int32_t *, std::int32_t *,
+                                 double *, double *, std::int32_t *, double *, std::int32_t *, std::int32_t *, std::int32_t *,
+                                 std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1052,11 +1052,11 @@ LispObject Ld01asf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lkey,Lomega,La);
 
     // Setup workspace arrays etc.
-    erlst = (double *)malloc(limlst*sizeof(double));
-    rslst = (double *)malloc(limlst*sizeof(double));
-    ierlst = (int32_t *)malloc(limlst*sizeof(int));
-    w = (double *)malloc(lw*sizeof(double));
-    iw = (int32_t *)malloc(liw*sizeof(int));
+    erlst = (double *)std::malloc(limlst*sizeof(double));
+    rslst = (double *)std::malloc(limlst*sizeof(double));
+    ierlst = (std::int32_t *)std::malloc(limlst*sizeof(int));
+    w = (double *)std::malloc(lw*sizeof(double));
+    iw = (std::int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1113,11 +1113,11 @@ LispObject Ld01asf(LispObject env, int nargs, ...)
     pop(Llst,Liw,Lifail,Lerlst);
     pop(Labserr,Lresult,Lierlst);
 
-    free (erlst);
-    free (rslst);
-    free (ierlst);
-    free (w);
-    free (iw);
+    std::free (erlst);
+    std::free (rslst);
+    std::free (ierlst);
+    std::free (w);
+    std::free (iw);
 
     return Llist(nil,8,Lierlst,Lresult,Labserr,Lerlst,Lifail,Liw,Llst,Lrslst);
 }
@@ -1129,19 +1129,19 @@ LispObject Ld01asf(LispObject env, int nargs, ...)
 
 #if 1
 LispObject Ld01bbf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject La, Lb, Litype, Ln, Lgtype, Lifail, Lweight, Labscis;
     double a, b, *weight, *abscis;
-    int32_t  ifail, itype, n, gtype;
+    std::int32_t  ifail, itype, n, gtype;
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PAD01BB) (double *, double *, int32_t *, int32_t *,
-                                       double *, double *, int32_t *, int32_t *);
+    typedef void (__stdcall *PAD01BB) (double *, double *, std::int32_t *, std::int32_t *,
+                                       double *, double *, std::int32_t *, std::int32_t *);
     HINSTANCE hLib;
     PAD01BB ad01bb_proc;
 #else
-    extern void __stdcall AD01BB(double *, double *, int32_t *, int32_t *,
-                                 double *, double *, int32_t *, int32_t *);
+    extern void __stdcall AD01BB(double *, double *, std::int32_t *, std::int32_t *,
+                                 double *, double *, std::int32_t *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1190,8 +1190,8 @@ LispObject Ld01bbf(LispObject env, int nargs, ...)
     push(Ln,Lgtype,Lifail);
 
     /* Setup workspace arrays etc. */  // return value arrays in this case
-    weight = (double *)malloc(n*sizeof(double));
-    abscis = (double *)malloc(n*sizeof(double));
+    weight = (double *)std::malloc(n*sizeof(double));
+    abscis = (double *)std::malloc(n*sizeof(double));
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1229,8 +1229,8 @@ LispObject Ld01bbf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Labscis,Lweight);
 
-    free (weight);
-    free (abscis);
+    std::free (weight);
+    std::free (abscis);
 
     return Llist(nil,3,Lweight,Labscis,Lifail);
 }
@@ -1241,23 +1241,23 @@ LispObject Ld01bbf(LispObject env, int nargs, ...)
 
 #if 1
 LispObject Ld01fcf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject La, Lb, Lndim, Leps, Lminpts, Lmaxpts, Lifail, Lfinval, Lacc,
                Llenwrk;
     double *a, *b, eps, finval, acc, *wrkstr;
-    int32_t  ifail, ndim, minpts, maxpts, lenwrk;
-    extern double __stdcall asp4(int32_t *, double *);
+    std::int32_t  ifail, ndim, minpts, maxpts, lenwrk;
+    extern double __stdcall asp4(std::int32_t *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01FCF) (int32_t *, double *, double *, int32_t *,
-                                       int32_t *, double __stdcall (*functn) (int32_t *, double *), double *,
-                                       double *, int32_t *, double *, double *, int32_t *);
+    typedef void (__stdcall *PD01FCF) (std::int32_t *, double *, double *, std::int32_t *,
+                                       std::int32_t *, double __stdcall (*functn) (std::int32_t *, double *), double *,
+                                       double *, std::int32_t *, double *, double *, std::int32_t *);
     HINSTANCE hLib;
     PD01FCF d01fcf_proc;
 #else
-    extern void __stdcall D01FCF(int32_t *, double *, double *, int32_t *, int32_t *,
-                                 double __stdcall (*functn) (int32_t *, double *), double *, double *,
-                                 int32_t *, double *, double *, int32_t *);
+    extern void __stdcall D01FCF(std::int32_t *, double *, double *, std::int32_t *, std::int32_t *,
+                                 double __stdcall (*functn) (std::int32_t *, double *), double *, double *,
+                                 std::int32_t *, double *, double *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1279,13 +1279,13 @@ LispObject Ld01fcf(LispObject env, int nargs, ...)
     ndim = thirty_two_bits(Lndim);
     pop(Lifail,Lminpts,Llenwrk,Leps);
     pop(Lmaxpts,Lb,La,Lndim);
-    a = (double *) malloc (ndim * sizeof(double));
+    a = (double *) std::malloc (ndim * sizeof(double));
     push(Lndim,La,Lb,Lmaxpts);
     push(Leps,Llenwrk,Lminpts,Lifail);
     mkFortranVectorDouble(a, La, ndim);
     pop(Lifail,Lminpts,Llenwrk,Leps);
     pop(Lmaxpts,Lb,La,Lndim);
-    b = (double *) malloc (ndim * sizeof(double));
+    b = (double *) std::malloc (ndim * sizeof(double));
     push(Lndim,La,Lb,Lmaxpts);
     push(Leps,Llenwrk,Lminpts,Lifail);
     mkFortranVectorDouble(b, Lb, ndim);
@@ -1318,7 +1318,7 @@ LispObject Ld01fcf(LispObject env, int nargs, ...)
     pop(Lmaxpts,Lb,La,Lndim);
 
     // Setup workspace arrays etc.
-    wrkstr = (double *)malloc(lenwrk*sizeof(double));
+    wrkstr = (double *)std::malloc(lenwrk*sizeof(double));
 
     push(Lndim,La,Lb,Lmaxpts);
     push(Leps,Llenwrk,Lminpts,Lifail);
@@ -1363,9 +1363,9 @@ LispObject Ld01fcf(LispObject env, int nargs, ...)
     Lacc = make_boxfloat(acc,TYPE_DOUBLE_FLOAT);
     pop(Lifail,Lminpts,Lfinval);
 
-    free (a);
-    free (b);
-    free (wrkstr);
+    std::free (a);
+    std::free (b);
+    std::free (wrkstr);
 
     return Llist(nil,4,Lfinval,Lminpts,Lifail,Lacc);
 }
@@ -1376,19 +1376,19 @@ LispObject Ld01fcf(LispObject env, int nargs, ...)
 
 #if 1
 LispObject Ld01gaf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject Lx, Ly, Ln, Lans, Ler, Lifail;
     double *x, *y, ans, er;
-    int32_t ifail, n;
+    std::int32_t ifail, n;
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01GAF) (double *, double *, int32_t *, double *,
-                                       double *, int32_t *);
+    typedef void (__stdcall *PD01GAF) (double *, double *, std::int32_t *, double *,
+                                       double *, std::int32_t *);
     HINSTANCE hLib;
     PD01GAF d01gaf_proc;
 #else
-    extern void __stdcall D01GAF(double *, double *, int32_t *, double *,
-                                 double *, int32_t *);
+    extern void __stdcall D01GAF(double *, double *, std::int32_t *, double *,
+                                 double *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1404,11 +1404,11 @@ LispObject Ld01gaf(LispObject env, int nargs, ...)
     push(Lx,Ly,Ln,Lifail);
     n = thirty_two_bits(Ln);
     pop(Lifail,Ln,Ly,Lx);
-    x = (double *) malloc (n * sizeof(double));
+    x = (double *) std::malloc (n * sizeof(double));
     push(Lx,Ly,Ln,Lifail);
     mkFortranVectorDouble(x, Lx, n);
     pop(Lifail,Ln,Ly,Lx);
-    y = (double *) malloc (n * sizeof(double));
+    y = (double *) std::malloc (n * sizeof(double));
     push(Lx,Ly,Ln,Lifail);
     mkFortranVectorDouble(y, Ly, n);
     pop(Lifail,Ln,Ly,Lx);
@@ -1452,8 +1452,8 @@ LispObject Ld01gaf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Ler,Lans);
 
-    free (x);
-    free (y);
+    std::free (x);
+    std::free (y);
 
     return Llist(nil,3,Lans,Ler,Lifail);
 }
@@ -1464,23 +1464,23 @@ LispObject Ld01gaf(LispObject env, int nargs, ...)
 
 #if 1
 LispObject Ld01gbf(LispObject env, int nargs, ...)
-{   va_list args;
+{   std::va_list args;
     LispObject La, Lb, Lndim, Leps, Lmincls, Lmaxcls, Lifail, Lfinval, Lacc,
                Llenwrk, Lwrkstr;
     double *a, *b, eps, finval, acc, *wrkstr;
-    int32_t  ifail, ndim, mincls, maxcls, lenwrk;
-    extern double __stdcall asp4(int32_t *, double *);
+    std::int32_t  ifail, ndim, mincls, maxcls, lenwrk;
+    extern double __stdcall asp4(std::int32_t *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01GBF) (int32_t *, double *, double *, int32_t *,
-                                       int32_t *, double __stdcall (*functn) (int32_t *, double *), double *,
-                                       double *, int32_t *, double *, double *, int32_t *);
+    typedef void (__stdcall *PD01GBF) (std::int32_t *, double *, double *, std::int32_t *,
+                                       std::int32_t *, double __stdcall (*functn) (std::int32_t *, double *), double *,
+                                       double *, std::int32_t *, double *, double *, std::int32_t *);
     HINSTANCE hLib;
     PD01GBF d01gbf_proc;
 #else
-    extern void __stdcall D01GBF(int32_t *, double *, double *, int32_t *, int32_t *,
-                                 double __stdcall (*functn) (int32_t *, double *), double *, double *,
-                                 int32_t *, double *, double *, int32_t *);
+    extern void __stdcall D01GBF(std::int32_t *, double *, double *, std::int32_t *, std::int32_t *,
+                                 double __stdcall (*functn) (std::int32_t *, double *), double *, double *,
+                                 std::int32_t *, double *, double *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1503,13 +1503,13 @@ LispObject Ld01gbf(LispObject env, int nargs, ...)
     ndim = thirty_two_bits(Lndim);
     pop(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop(Lmaxcls,Lb,La,Lndim);
-    a = (double *) malloc (ndim * sizeof(double));
+    a = (double *) std::malloc (ndim * sizeof(double));
     push(Lndim,La,Lb,Lmaxcls,Leps);
     push(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(a, La, ndim);
     pop(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop(Lmaxcls,Lb,La,Lndim);
-    b = (double *) malloc (ndim * sizeof(double));
+    b = (double *) std::malloc (ndim * sizeof(double));
     push(Lndim,La,Lb,Lmaxcls,Leps);
     push(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(b, Lb, ndim);
@@ -1535,7 +1535,7 @@ LispObject Ld01gbf(LispObject env, int nargs, ...)
     mincls = thirty_two_bits(Lmincls);
     pop(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop(Lmaxcls,Lb,La,Lndim);
-    wrkstr = (double *) malloc (lenwrk * sizeof(double));
+    wrkstr = (double *) std::malloc (lenwrk * sizeof(double));
     push(Lndim,La,Lb,Lmaxcls,Leps);
     push(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(wrkstr, Lwrkstr, lenwrk);
@@ -1593,9 +1593,9 @@ LispObject Ld01gbf(LispObject env, int nargs, ...)
     Lacc = make_boxfloat(acc,TYPE_DOUBLE_FLOAT);
     pop(Lwrkstr,Lifail,Lmincls,Lfinval);
 
-    free (a);
-    free (b);
-    free (wrkstr);
+    std::free (a);
+    std::free (b);
+    std::free (wrkstr);
 
     return Llist(nil,5,Lfinval,Lmincls,Lifail,Lwrkstr,Lacc);
 }
@@ -1606,25 +1606,25 @@ LispObject Ld01gbf(LispObject env, int nargs, ...)
 
 LispObject Ld02bbf(LispObject env, int nargs, ...)
 #if 0
-{   va_list args;
+{   std::va_list args;
     LispObject Lx, Lxend, Lm, Ln, Ly, Ltol, Lirelab, Lresult, Lifail;
     double x, xend, *y, tol, *w, *result;
-    int32_t  ifail, m, n, irelab;
+    std::int32_t  ifail, m, n, irelab;
     extern void __stdcall asp7(double *, double *, double *);
     extern void __stdcall asp8(double *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PXD02BB) (double *, double *, int32_t *, int32_t *,
-                                       double *, double *, int32_t *, double *,
+    typedef void (__stdcall *PXD02BB) (double *, double *, std::int32_t *, std::int32_t *,
+                                       double *, double *, std::int32_t *, double *,
                                        void __stdcall (*fcn) (double *, double *, double *),
-                                       void __stdcall (*out) (double *, double *), double *, int32_t *);
+                                       void __stdcall (*out) (double *, double *), double *, std::int32_t *);
     HINSTANCE hLib;
     PXD02BB xd02bb_proc;
 #else
-    extern void __stdcall XD02BB(double *, double *, int32_t *, int32_t *,
-                                 double *, double *, int32_t *, double *,
+    extern void __stdcall XD02BB(double *, double *, std::int32_t *, std::int32_t *,
+                                 double *, double *, std::int32_t *, double *,
                                  void __stdcall (*fcn) (double *, double *, double *),
-                                 void __stdcall (*out) (double *, double *), double *, int32_t *);
+                                 void __stdcall (*out) (double *, double *), double *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1666,7 +1666,7 @@ LispObject Ld02bbf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ltol,Ly,Lx);
     pop(Lirelab,Ln,Lm,Lxend);
-    y = (double *) malloc (n * sizeof(double));
+    y = (double *) std::malloc (n * sizeof(double));
     push(Lxend,Lm,Ln,Lirelab);
     push(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -1684,8 +1684,8 @@ LispObject Ld02bbf(LispObject env, int nargs, ...)
     pop(Lirelab,Ln,Lm,Lxend);
 
     // Setup workspace arrays etc.
-    w = (double *)malloc(n*7*sizeof(double));
-    result = (double *)malloc(m*n*sizeof(double));
+    w = (double *)std::malloc(n*7*sizeof(double));
+    result = (double *)std::malloc(m*n*sizeof(double));
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1729,9 +1729,9 @@ LispObject Ld02bbf(LispObject env, int nargs, ...)
     Ltol = make_boxfloat(tol,TYPE_DOUBLE_FLOAT);
     pop(Lifail,Lresult,Ly,Lx);
 
-    free (y);
-    free (w);
-    free (result);
+    std::free (y);
+    std::free (w);
+    std::free (result);
 
     return Llist(nil,5,Lx,Ly,Lresult,Lifail,Ltol);
 }
@@ -1742,25 +1742,25 @@ LispObject Ld02bbf(LispObject env, int nargs, ...)
 
 LispObject Ld02bhf(LispObject env, int nargs, ...)
 #if 0
-{   va_list args;
+{   std::va_list args;
     LispObject Lx, Lxend, Ln, Ly, Ltol, Lirelab, Lhmax, Lifail;
     double x, xend, *y, tol, *w, hmax;
-    int32_t  ifail, n, irelab;
+    std::int32_t  ifail, n, irelab;
     extern void __stdcall asp7(double *, double *, double *);
     extern double __stdcall asp9(double *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD02BHF) (double *, double *, int32_t *, int32_t *,
-                                       double *, double *, int32_t *, double *,
+    typedef void (__stdcall *PD02BHF) (double *, double *, std::int32_t *, std::int32_t *,
+                                       double *, double *, std::int32_t *, double *,
                                        void __stdcall (*fcn) (double *, double *, double *),
-                                       double __stdcall (*g) (double *, double *), double *, int32_t *);
+                                       double __stdcall (*g) (double *, double *), double *, std::int32_t *);
     HINSTANCE hLib;
     PD02BHF d02bhf_proc;
 #else
-    extern void __stdcall D02BHF(double *, double *, int32_t *, int32_t *,
-                                 double *, double *, int32_t *, double *,
+    extern void __stdcall D02BHF(double *, double *, std::int32_t *, std::int32_t *,
+                                 double *, double *, std::int32_t *, double *,
                                  void __stdcall (*fcn) (double *, double *, double *),
-                                 double __stdcall (*g) (double *, double *), double *, int32_t *);
+                                 double __stdcall (*g) (double *, double *), double *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1802,7 +1802,7 @@ LispObject Ld02bhf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ltol,Ly,Lx);
     pop(Lhmax,Lirelab,Ln,Lxend);
-    y = (double *) malloc (n * sizeof(double));
+    y = (double *) std::malloc (n * sizeof(double));
     push(Lxend,Ln,Lirelab,Lhmax);
     push(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -1822,7 +1822,7 @@ LispObject Ld02bhf(LispObject env, int nargs, ...)
     push(Lx,Ly,Ltol,Lifail);
 
     // Setup workspace arrays etc.
-    w = (double *)malloc(n*7*sizeof(double));
+    w = (double *)std::malloc(n*7*sizeof(double));
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1862,8 +1862,8 @@ LispObject Ld02bhf(LispObject env, int nargs, ...)
     Ltol = make_boxfloat(tol,TYPE_DOUBLE_FLOAT);
     pop(Lifail,Ly,Lx);
 
-    free (y);
-    free (w);
+    std::free (y);
+    std::free (w);
 
     return Llist(nil,4,Lx,Ly,Lifail,Ltol);
 }
@@ -1875,10 +1875,10 @@ LispObject Ld02bhf(LispObject env, int nargs, ...)
 LispObject Ld02cjf(LispObject env, int nargs, ...)
 #if 0
 {   // FIXME: strings
-    va_list args;
+    std::va_list args;
     LispObject Lx, Lxend, Lm, Ln, Ly, Ltol, Lrelabs, Lresult, Lifail;
     double x, xend, *y, tol, *w, *result;
-    int32_t  ifail, m, n;
+    std::int32_t  ifail, m, n;
     fstring1 relabs;
     char srelabs[2];
     extern void __stdcall asp7(double *, double *, double *);
@@ -1886,19 +1886,19 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
     extern double __stdcall asp9(double *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PXD02CJ) (double *, double *, int32_t *, int32_t *,
+    typedef void (__stdcall *PXD02CJ) (double *, double *, std::int32_t *, std::int32_t *,
                                        double *, void __stdcall (*fcn) (double *, double *, double *),
                                        double *, fstring1, double *,
                                        void __stdcall (*out) (double *, double *),
-                                       double __stdcall (*g) (double *, double *), double *, int32_t *);
+                                       double __stdcall (*g) (double *, double *), double *, std::int32_t *);
     HINSTANCE hLib;
     PXD02CJ xd02cj_proc;
 #else
-    extern void __stdcall XD02CJ(double *, double *, int32_t *, int32_t *,
+    extern void __stdcall XD02CJ(double *, double *, std::int32_t *, std::int32_t *,
                                  double *, void __stdcall (*fcn) (double *, double *, double *),
                                  double *, fstring1, double *,
                                  void __stdcall (*out) (double *, double *),
-                                 double __stdcall (*g) (double *, double *), double *, int32_t *);
+                                 double __stdcall (*g) (double *, double *), double *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1948,7 +1948,7 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ly,Lx,Lrelabs);
     pop(Ltol,Ln,Lm,Lxend);
-    y = (double *) malloc (n * sizeof(double));
+    y = (double *) std::malloc (n * sizeof(double));
     push(Lxend,Lm,Ln,Ltol);
     push(Lrelabs,Lx,Ly,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -1963,8 +1963,8 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
     relabs.len = 1;
 
     // Setup workspace arrays etc.
-    w = (double *)malloc((28+21*n)*sizeof(double));
-    result = (double *)malloc(m*n*sizeof(double));
+    w = (double *)std::malloc((28+21*n)*sizeof(double));
+    result = (double *)std::malloc(m*n*sizeof(double));
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2005,9 +2005,9 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
     Lifail = int2ccl(ifail);
     pop(Lresult,Ly,Lx);
 
-    free (y);
-    free (w);
-    free (result);
+    std::free (y);
+    std::free (w);
+    std::free (result);
 
     return Llist(nil,4,Lx,Ly,Lresult,Lifail);
 }
@@ -2019,10 +2019,10 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
 LispObject Ld02ejf(LispObject env, int nargs, ...)
 #if 0
 {   // FIXME: strings
-    va_list args;
+    std::va_list args;
     LispObject Lx, Lxend, Lm, Ln, Ly, Ltol, Lrelabs, Lresult, Lifail, Liw;
     double x, xend, *y, tol, *w, *result;
-    int32_t  ifail, m, n, iw;
+    std::int32_t  ifail, m, n, iw;
     fstring1 relabs;
     char srelabs[2];
     extern void __stdcall asp7(double *, double *, double *);
@@ -2031,22 +2031,22 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
     extern void __stdcall asp31(double *, double *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PXD02EJ) (double *, double *, int32_t *, int32_t *,
+    typedef void (__stdcall *PXD02EJ) (double *, double *, std::int32_t *, std::int32_t *,
                                        double *, void __stdcall (*fcn) (double *, double *, double *),
                                        void __stdcall (*pederv) (double *, double *, double *), double *,
                                        fstring1, void __stdcall (*out) (double *, double *),
-                                       double __stdcall (*g) (double *, double *), double *, int32_t *,
-                                       double *, int32_t *);
+                                       double __stdcall (*g) (double *, double *), double *, std::int32_t *,
+                                       double *, std::int32_t *);
 
     HINSTANCE hLib;
     PXD02EJ xd02ej_proc;
 #else
-    extern void __stdcall XD02EJ(double *, double *, int32_t *, int32_t *,
+    extern void __stdcall XD02EJ(double *, double *, std::int32_t *, std::int32_t *,
                                  double *, void __stdcall (*fcn) (double *, double *, double *),
                                  void __stdcall (*pederv) (double *, double *, double *), double *,
                                  fstring1, void __stdcall (*out) (double *, double *),
-                                 double __stdcall (*g) (double *, double *), double *, int32_t *,
-                                 double *, int32_t *);
+                                 double __stdcall (*g) (double *, double *), double *, std::int32_t *,
+                                 double *, std::int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -2097,7 +2097,7 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ltol,Ly,Lx,Liw);
     pop(Lrelabs,Ln,Lm,Lxend);
-    y = (double *) malloc (n * sizeof(double));
+    y = (double *) std::malloc (n * sizeof(double));
     push(Lxend,Lm,Ln,Lrelabs,Liw);
     push(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -2119,8 +2119,8 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
     relabs.len = 1;
 
     // Setup workspace arrays etc.
-    w = (double *)malloc(iw*sizeof(double));
-    result = (double *)malloc(m*n*sizeof(double));
+    w = (double *)std::malloc(iw*sizeof(double));
+    result = (double *)std::malloc(m*n*sizeof(double));
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2164,9 +2164,9 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
     Ltol = make_boxfloat(tol,TYPE_DOUBLE_FLOAT);
     pop(Lifail,Lresult,Ly,Lx);
 
-    free (y);
-    free (w);
-    free (result);
+    std::free (y);
+    std::free (w);
+    std::free (result);
 
     return Llist(nil,5,Lx,Ly,Lresult,Lifail,Ltol);
 }

@@ -149,7 +149,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else
-extern char *getcwd(char *s, size_t n);
+extern char *getcwd(char *s, std::size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -240,11 +240,11 @@ int main(int argc, const char *argv[])
 // Find where I am invoked from before doing anything else
     find_program_directory(argv[0]);
     for (i=1; i<argc; i++)
-    {   if (strncmp(argv[i], "-w", 2) == 0) usegui = 0;
-        else if (strcmp(argv[1], "--help") == 0)
+    {   if (std::strncmp(argv[i], "-w", 2) == 0) usegui = 0;
+        else if (std::strcmp(argv[1], "--help") == 0)
         {
-            printf("wxfontdemo \"font name\"\n");
-            exit(0);
+            std::printf("wxfontdemo \"font name\"\n");
+            std::exit(0);
         }
     }
 #if !defined WIN32 && !defined MACINTOSH
@@ -252,7 +252,7 @@ int main(int argc, const char *argv[])
 // is not set. This is not a perfect test but it will spot the simple
 // cases. Eg I could look at stdin & stdout and check if it looks as if
 // they are pipes of they have been redirected...
-    {   const char *s = getenv("DISPLAY");
+    {   const char *s = std::getenv("DISPLAY");
         if (s==NULL || *s == 0) usegui = 0;
     }
 #endif
@@ -265,21 +265,21 @@ int main(int argc, const char *argv[])
 // makes resources (eg fonts) that are within the bundle available and
 // it also seems to cause things to terminate more neatly.
         char xname[LONGEST_LEGAL_FILENAME];
-        sprintf(xname, "%s.app", programName);
-        if (strstr(fullProgramName, xname) == NULL)
+        std::sprintf(xname, "%s.app", programName);
+        if (std::strstr(fullProgramName, xname) == NULL)
         {
 // Here the binary I launched was not located as
 //      ...foo.app../.../foo
 // so I will view it is NOT being from an application bundle. I will
 // re-launch it so it is! This may be a bit of a hacky way to decide!
             struct stat buf;
-            sprintf(xname, "%s.app", fullProgramName);
+            std::sprintf(xname, "%s.app", fullProgramName);
             if (stat(xname, &buf) == 0 &&
                 (buf.st_mode & S_IFDIR) != 0)
             {
 // Well foo.app exists and is a directory, so I will try to use it
                 const char **nargs =
-                    (const char **)malloc(sizeof(char *)*(argc+3));
+                    (const char **)std::malloc(sizeof(char *)*(argc+3));
                 int i;
                 nargs[0] = "/usr/bin/open";
                 nargs[1] = xname;
@@ -293,15 +293,15 @@ int main(int argc, const char *argv[])
         }
 #endif
         add_custom_fonts();
-        printf("Custom fonts should now be available\n");
+        std::printf("Custom fonts should now be available\n");
         wxDISABLE_DEBUG_SUPPORT();
         return wxEntry(argc, (char **)argv);
     }
-    printf("This program has been launched asking for use in a console\n");
-    printf("type a line of text please\n");
-    while ((i = getchar()) != '\n' && i != EOF) putchar(i);
-    putchar('\n');
-    printf("Exiting from demonstration of console mode use!\n");
+    std::printf("This program has been launched asking for use in a console\n");
+    std::printf("type a line of text please\n");
+    while ((i = std::getchar()) != '\n' && i != EOF) std::putchar(i);
+    std::putchar('\n');
+    std::printf("Exiting from demonstration of console mode use!\n");
     return 0;
 }
 
@@ -320,12 +320,12 @@ bool fontApp::OnInit()
     int size = 48;           // a default size.
     for (int i=1; i<argc; i++)
     {
-        printf("Arg%d: %s\n", i, myargv[i]);
-        if (strcmp(myargv[i], "--regular") == 0) regular = 1;
-        if (strcmp(myargv[i], "--bold") == 0) bold = 1;
-        if (strcmp(myargv[i], "--italic") == 0) italic = 1;
+        std::printf("Arg%d: %s\n", i, myargv[i]);
+        if (std::strcmp(myargv[i], "--regular") == 0) regular = 1;
+        if (std::strcmp(myargv[i], "--bold") == 0) bold = 1;
+        if (std::strcmp(myargv[i], "--italic") == 0) italic = 1;
         else if (myargv[i][0] == '-')
-        {   if (sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
+        {   if (std::sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
         }
         else font = myargv[i];
     }
@@ -333,10 +333,10 @@ bool fontApp::OnInit()
 // to the directory that this application was launched from. So the first
 // think to do is to identify that location. I then print the information I
 // recover so I can debug things. I have already set up programName etc
-    printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
+    std::printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
 
-    printf("Try for font \"%s\" at size=%d\n", font, size);
-    fflush(stdout);
+    std::printf("Try for font \"%s\" at size=%d\n", font, size);
+    std::fflush(stdout);
 
     fontFrame *frame = new fontFrame(font, size);
     frame->Show(true);
@@ -385,7 +385,7 @@ void fontFrame::OnClose(wxCloseEvent &WXUNUSED(event))
 // worry about incompletely written-out files.
     TerminateProcess(GetCurrentProcess(), 1);
 #else
-    exit(0);    // I want the whole application to terminate here!
+    std::exit(0);    // I want the whole application to terminate here!
 #endif
 }
 
@@ -395,7 +395,7 @@ void fontFrame::OnExit(wxCommandEvent &WXUNUSED(event))
 #ifdef WIN32
     TerminateProcess(GetCurrentProcess(), 1);
 #else
-    exit(0);    // I want the whole application to terminate here!
+    std::exit(0);    // I want the whole application to terminate here!
 #endif
 }
 
@@ -421,7 +421,7 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
 {
     wxChar c = event.GetUnicodeKey();
     int n = -1;
-    printf("Char event %#x (%c)\n", c, c); fflush(stdout);
+    std::printf("Char event %#x (%c)\n", c, c); std::fflush(stdout);
     event.Skip();
     if ('0' <= c && c <= '9') n = c - '0';
     else if ('a' <= c && c <= 'f') n = c - 'a' + 10;
@@ -434,7 +434,7 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
 #ifdef WIN32
         TerminateProcess(GetCurrentProcess(), 1);
 #else
-        exit(0);
+        std::exit(0);
 #endif
 
     case 'x':
@@ -478,7 +478,7 @@ void fontPanel::OnMouse(wxMouseEvent &event)
     wxPoint where(event.GetLogicalPosition(dc));
     if (where.y > 200) page++;
     else page--;
-    printf("Mouse event. Page now %d\n", page); fflush(stdout);
+    std::printf("Mouse event. Page now %d\n", page); std::fflush(stdout);
     event.Skip();
     Refresh();
 }
@@ -487,12 +487,12 @@ void fontPanel::OnMouse(wxMouseEvent &event)
 int find_fontnum(const char *s)
 {
     return -1; // Ignore tables of available chars for now...
-    if (strcmp(s, "CMU Typewriter Text") == 0) return F_cmuntt;
-    if (strcmp(s, "odokai") == 0) return F_odokai;
+    if (std::strcmp(s, "CMU Typewriter Text") == 0) return F_cmuntt;
+    if (std::strcmp(s, "odokai") == 0) return F_odokai;
 // Note that Bold and Italic are picked up by options --bold and --italic
 // not through the font name.
-    if (strcmp(s, "STIX") == 0) return F_Regular;
-    if (strcmp(s, "STIXMath") == 0) return F_Math;
+    if (std::strcmp(s, "STIX") == 0) return F_Regular;
+    if (std::strcmp(s, "STIXMath") == 0) return F_Math;
     return -1;
 }
 
@@ -500,7 +500,7 @@ static int once = 0;
 
 void fontPanel::OnPaint(wxPaintEvent &event)
 {
-printf("OnPaint invoked\n");
+std::printf("OnPaint invoked\n");
     wxPaintDC dc(this);
     wxColour c1(230, 200, 255);
     wxColour c2(100, 220, 120);
@@ -516,10 +516,10 @@ printf("OnPaint invoked\n");
         }
     }
     if (once == 0)
-    {   printf("fontname = %s\n", fontname);
+    {   std::printf("fontname = %s\n", fontname);
         if (wxFontEnumerator::IsValidFacename(fontname))
-            printf("Face name is valid\n");
-        else printf("Invalid face name - font not found\n");
+            std::printf("Face name is valid\n");
+        else std::printf("Invalid face name - font not found\n");
     }
     wxFontInfo ffi(30);
     ffi.FaceName(fontname);
@@ -533,23 +533,23 @@ printf("OnPaint invoked\n");
         wxPrintf("Face name = %s\n", ff.GetFaceName());
         wxPrintf("Native name = %s\n", ff.GetNativeFontInfoDesc());
         wxPrintf("Friendly name = %s\n", ff.GetNativeFontInfoUserDesc());
-        fflush(stdout);
+        std::fflush(stdout);
     }
     int fontnum = find_fontnum(fontname);
-    if (fontnum >= 0) printf("Map of available codepoints found\n");
-    else printf("No map of valid codepoints\n");
+    if (fontnum >= 0) std::printf("Map of available codepoints found\n");
+    else std::printf("No map of valid codepoints\n");
 // Draw row and column labels
     wxFont labels(wxFontInfo(9));
     dc.SetFont(labels);
     for (int i=0; i<32; i++)
     {   char word[12];
-        sprintf(word, "%02x", i);
+        std::sprintf(word, "%02x", i);
         dc.DrawText(word, (((double)CELLWIDTH)*(i+1)) + CELLWIDTH/2.2,
             (double)CELLHEIGHT/10.0);
     }
     for (int i=0; i<8; i++)
     {   char word[12];
-        sprintf(word, "%5x", 32*i + 0x80*page);
+        std::sprintf(word, "%5x", 32*i + 0x80*page);
         dc.DrawText(word, CELLWIDTH/10.0,
             (double)CELLHEIGHT*(i+1) + CELLHEIGHT/2.5);
     }
@@ -568,13 +568,13 @@ printf("OnPaint invoked\n");
             double ww, hh, dd, el;
             gc->GetTextExtent(s, &ww, &hh, &dd, &el);
             if (ww != 0.0 && hh != 0.0)
-            {   printf("%#x %.1f*%.1f; ", i, ww, hh);
+            {   std::printf("%#x %.1f*%.1f; ", i, ww, hh);
                 howmany++;
             }
         }
-        if (howmany == 0) printf("No glyphs found");
-        printf("\n");
-        fflush(stdout);
+        if (howmany == 0) std::printf("No glyphs found");
+        std::printf("\n");
+        std::fflush(stdout);
     }
 #endif
 

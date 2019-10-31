@@ -59,7 +59,7 @@
 
 int main(int argc, char *argv[])
 {
-    printf("FOX library not detected and so this demo is unavailable\n");
+    std::printf("FOX library not detected and so this demo is unavailable\n");
     return 0;
 }
 
@@ -168,7 +168,7 @@ FontWindow::~FontWindow()
 // I find that attempts to unload windows fonts take me into a world
 // of pain, so I leave them to be automatically discarded when the
 // application closes. This is really rather grungy!
-    printf("Could destroy the window here\n");
+    std::printf("Could destroy the window here\n");
 }
 
 void FontWindow::create()
@@ -290,10 +290,10 @@ static int CALLBACK fontEnumProc1(
     LPARAM lParam)              // application-defined data
 {
 // avoid duplicated reports
-    if (strcmp(lpelfe->lfFaceName, faceName) == 0) return 1;
-    strcpy(faceName, lpelfe->lfFaceName);
-    printf("Font \"%s\" is available\n", lpelfe->lfFaceName);
-    fflush(stdout);
+    if (std::strcmp(lpelfe->lfFaceName, faceName) == 0) return 1;
+    std::strcpy(faceName, lpelfe->lfFaceName);
+    std::printf("Font \"%s\" is available\n", lpelfe->lfFaceName);
+    std::fflush(stdout);
     return 1;
 }
 
@@ -308,12 +308,12 @@ int main(int argc,char *argv[])
         fontname = argv[i];
 #ifdef WIN32
     if (argc <= 1 ||
-        (strcmp(fontname, "cmr10") != 0 &&
-         strcmp(fontname, "cmmi10") != 0 &&
-         strcmp(fontname, "cmsy10") != 0 &&
-         strcmp(fontname, "cmex10") != 0))
-    {   printf("Usage: fontdemo [fontname]\n");
-        printf("The fontname should be cmr10, cmmi10, cmsy10 or cmex10\n");
+        (std::strcmp(fontname, "cmr10") != 0 &&
+         std::strcmp(fontname, "cmmi10") != 0 &&
+         std::strcmp(fontname, "cmsy10") != 0 &&
+         std::strcmp(fontname, "cmex10") != 0))
+    {   std::printf("Usage: fontdemo [fontname]\n");
+        std::printf("The fontname should be cmr10, cmmi10, cmsy10 or cmex10\n");
         return 1;
     }
 #else
@@ -322,18 +322,18 @@ int main(int argc,char *argv[])
 // names.
     if (argc <= 1 ||
 #if 0
-        (strcmp(fontname, "csl-reduce-cmr10") != 0 &&
-         strcmp(fontname, "csl-reduce-cmmi10") != 0 &&
-         strcmp(fontname, "csl-reduce-cmsy10") != 0 &&
-         strcmp(fontname, "csl-reduce-cmex10") != 0) &&
+        (std::strcmp(fontname, "csl-reduce-cmr10") != 0 &&
+         std::strcmp(fontname, "csl-reduce-cmmi10") != 0 &&
+         std::strcmp(fontname, "csl-reduce-cmsy10") != 0 &&
+         std::strcmp(fontname, "csl-reduce-cmex10") != 0) &&
 #endif
          0)
-    {   printf("Usage: fontdemo [fontname]\n");
-        printf("The fontname should be csl-reduce-cmr10, csl-reduce-cmmi10, csl-reduce-cmsy10 or csl-reduce-cmex10\n");
+    {   std::printf("Usage: fontdemo [fontname]\n");
+        std::printf("The fontname should be csl-reduce-cmr10, csl-reduce-cmmi10, csl-reduce-cmsy10 or csl-reduce-cmex10\n");
         return 1;
     }
 #endif
-    printf("Will display \"%s\"\n", fontname);
+    std::printf("Will display \"%s\"\n", fontname);
 
     FXApp application("Font","FontDemo");
     appl = &application;
@@ -354,19 +354,19 @@ int main(int argc,char *argv[])
 // are already installed. If they are then there is no merit in installing
 // them for myself.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   memset((void *)&lf, 0, sizeof(lf));
-        strcpy(lf.lfFaceName, fontNames[i].name);
+    {   std::memset((void *)&lf, 0, sizeof(lf));
+        std::strcpy(lf.lfFaceName, fontNames[i].name);
         lf.lfCharSet = DEFAULT_CHARSET;
         lf.lfPitchAndFamily = 0;
         fontNeeded = 1;
         fontNames[i].path = NULL;
         EnumFontFamiliesEx(hDC, &lf, fontEnumProc, 0, 0);
         if (!fontNeeded) continue;
-        char *nn = new char [strlen(programDir) +
-                             strlen(toString(fontsdir)) + 16];
-        strcpy(nn, programDir);
-        strcat(nn, "\\" toString(fontsdir) "\\");
-        strcat(nn, fontNames[i].name); strcat(nn, ".ttf");
+        char *nn = new char [std::strlen(programDir) +
+                             std::strlen(toString(fontsdir)) + 16];
+        std::strcpy(nn, programDir);
+        std::strcat(nn, "\\" toString(fontsdir) "\\");
+        std::strcat(nn, fontNames[i].name); std::strcat(nn, ".ttf");
         fontNames[i].path = nn;
     }
 // Now, for each font that was NOT already available I need to go
@@ -376,12 +376,12 @@ int main(int argc,char *argv[])
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   if (fontNames[i].path == NULL) continue;
         if (AddFontResourceExA(fontNames[i].path, PRIVATE_FONT, 0) == 0)
-        {   printf("Failed to add font %s\n", fontNames[i].path);
-            fflush(stdout);
+        {   std::printf("Failed to add font %s\n", fontNames[i].path);
+            std::fflush(stdout);
         }
         newFontAdded = 1;
-        printf("AddFontResource %s\n", fontNames[i].path);
-        fflush(stdout);
+        std::printf("AddFontResource %s\n", fontNames[i].path);
+        std::fflush(stdout);
     }
 
     if (newFontAdded)
@@ -390,21 +390,21 @@ int main(int argc,char *argv[])
     }
 
 // Now list all the fonts that are available...
-    memset((void *)&lf, 0, sizeof(lf));
+    std::memset((void *)&lf, 0, sizeof(lf));
     lf.lfFaceName[0] = '\0';
     lf.lfCharSet = DEFAULT_CHARSET;
     lf.lfPitchAndFamily = 0;
-    printf("About to list all fonts that are now available\n");
-    fflush(stdout);
+    std::printf("About to list all fonts that are now available\n");
+    std::fflush(stdout);
     EnumFontFamiliesEx(hDC, &lf, fontEnumProc1, 0, 0);
-    printf("Listing complete\n");
-    fflush(stdout);
+    std::printf("Listing complete\n");
+    std::fflush(stdout);
     DeleteDC(hDC);
 
     FXFontDesc fd;
-    memset(&fd, 0, sizeof(fd));
-    strcpy(fd.face, fontname);
-    printf("Will try to view %s\n", fontname);
+    std::memset(&fd, 0, sizeof(fd));
+    std::strcpy(fd.face, fontname);
+    std::printf("Will try to view %s\n", fontname);
     fd.size = 240;               // NB size is in DECIPOINTS here
     fd.weight = 0;
     fd.slant = 0;
@@ -412,7 +412,7 @@ int main(int argc,char *argv[])
     fd.encoding = FONTENCODING_DEFAULT;
     fd.flags = 0;
     ff = new FXFont(appl, fd);
-    if (ff == NULL) printf("Font could not be created\n");
+    if (ff == NULL) std::printf("Font could not be created\n");
     else ff->create();
 
 #else // WIN32
@@ -426,8 +426,8 @@ int main(int argc,char *argv[])
 
 // I will add exactly and only the fonts that I will be using.
     char fff[256];
-    for (size_t i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
-    {   sprintf(fff,
+    for (std::size_t i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
+    {   std::sprintf(fff,
             "%s/" toString(fontsdir) "/%s.pfb",
             programDir, fontNames[i].name);
         FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
@@ -446,7 +446,7 @@ int main(int argc,char *argv[])
                       XFT_OUTLINE, XFT_SCALABLE, XFT_RGBA,
                       XFT_SCALE, XFT_RENDER, XFT_MINSPACE,
                       NULL);
-    printf("fontset has %d distinct fonts out of %d total\n",
+    std::printf("fontset has %d distinct fonts out of %d total\n",
            fs->nfont, fs->sfont);
     char buffer[200];
 // Having obtained all the fonts I will print out all the information about
@@ -461,7 +461,7 @@ int main(int argc,char *argv[])
 //    weight
     if (fs->nfont == 0)
     {   XftFontSetDestroy(fs);
-        printf("Desired font not found\n");
+        std::printf("Desired font not found\n");
         return 1;
     }
 // Note that an XftPattern is just an Fcpattern, so either set of functions
@@ -471,9 +471,9 @@ int main(int argc,char *argv[])
     {   ftPattern = fs->fonts[k];
 // NameUnparse converts the name to something printable
         XftNameUnparse(ftPattern, buffer, sizeof(buffer));
-        printf("%s\n", buffer); fflush(stdout);
+        std::printf("%s\n", buffer); std::fflush(stdout);
 // FcPatternPrint displays info over several lines - valuable for debugging!
-        FcPatternPrint(ftPattern); printf("\n"); fflush(stdout);
+        FcPatternPrint(ftPattern); std::printf("\n"); std::fflush(stdout);
     }
 
     ftVisual = DefaultVisual(dpy, screen);

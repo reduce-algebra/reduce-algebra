@@ -124,38 +124,38 @@ static void stripcomments(char *p)
 }
 
 int main(int argc, char *argv[])
-{   FILE *in, *out;
+{   std::FILE *in, *out;
     int i, c;
     char outname[256];
     if (argc != 2)
-    {   fprintf(stderr, "Usage: tagifs xxx.cpp\n");
+    {   std::fprintf(stderr, "Usage: tagifs xxx.cpp\n");
         return 1;
     }
     for (i=0; i<MAXDEPTH; i++)
-    {   pending[i] = (char *)malloc(MAXLINE); // should check for failure!
+    {   pending[i] = (char *)std::malloc(MAXLINE); // should check for failure!
         elseseen[i] = 0;
     }
-    in = fopen(argv[1], "r");
+    in = std::fopen(argv[1], "r");
     if (in == NULL)
-    {   fprintf(stderr, "Failed to access \"%s\"\n", argv[1]);
+    {   std::fprintf(stderr, "Failed to access \"%s\"\n", argv[1]);
         return 1;
     }
-    sprintf(outname, "%s.new", argv[1]);
-    out = fopen(outname, "w");
+    std::sprintf(outname, "%s.new", argv[1]);
+    out = std::fopen(outname, "w");
     if (out == NULL)
-    {   fprintf(stderr, "Failed to access \"%s\"\n", outname);
-        fclose(in);
+    {   std::fprintf(stderr, "Failed to access \"%s\"\n", outname);
+        std::fclose(in);
         return 1;
     }
     depth = 0;
     for (;;)
     {   i = 0;
-        while ((c = getc(in)) != EOF && c != '\n' && c != '\r')
+        while ((c = std::getc(in)) != EOF && c != '\n' && c != '\r')
         {   curline[i++] = c;
         }
         curline[i] = 0;
         if (i == 0 && c == EOF) break;
-        if (strncmp(curline, "#if", 3) == 0) // #if OR #ifdef
+        if (std::strncmp(curline, "#if", 3) == 0) // #if OR #ifdef
         {   int j;
             i = 3;
 // After "#ifdef XXX" I will have "XXX" as my tag
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
 //
             while (curline[i] != 0 && curline[i] != ' ') i++;
             while (curline[i] == ' ') i++;
-            strcpy(pending[depth], &curline[i]);
+            std::strcpy(pending[depth], &curline[i]);
 // I now rather want to remove comments from the pending material.
 // In particular there is a case that could have pathalogical consequences:
 //   #if defined XXX // Comment with */ in it.
@@ -172,25 +172,25 @@ int main(int argc, char *argv[])
             elseseen[depth] = (curline[3] == 'n') ? 1 : 0;
             depth++;
         }
-        else if (strncmp(curline, "#else", 5) == 0)
+        else if (std::strncmp(curline, "#else", 5) == 0)
         {   i = 5;
             while (curline[i] != 0 && curline[i] != ' ') i++;
-            if (depth == 0) sprintf(&curline[i], " /* ERROR */");
+            if (depth == 0) std::sprintf(&curline[i], " /* ERROR */");
             else
-            {   sprintf(&curline[i], " /* %s */", pending[depth-1]);
+            {   std::sprintf(&curline[i], " /* %s */", pending[depth-1]);
                 elseseen[depth-1] =
                     elseseen[depth-1] == 0 ? 3 :
                     elseseen[depth-1] == 1 ? 2 : 4;
             }
         }
-        else if (strncmp(curline, "#endif", 6) == 0)
+        else if (std::strncmp(curline, "#endif", 6) == 0)
         {   i = 6;
             while (curline[i] != 0 && curline[i] != ' ') i++;
-            if (depth == 0) sprintf(&curline[i], " /* ERROR */");
-            else sprintf(&curline[i], " /* %s */", pending[depth-1]);
+            if (depth == 0) std::sprintf(&curline[i], " /* ERROR */");
+            else std::sprintf(&curline[i], " /* %s */", pending[depth-1]);
             depth--;
         }
-        i = fprintf(out, "%s", curline);
+        i = std::fprintf(out, "%s", curline);
 // I had better not tag a comment on to the end of a line that itself ends
 // in a backslash since line continuation happens before comment-removal
 // when C++ source code is being processed. There should be very few places
@@ -204,29 +204,29 @@ int main(int argc, char *argv[])
 // can end up with a /*XXX*/ comment after "part3". I do not believe that
 // this can ever hurt.
         if (depth != 0 && curline[0] != '#' &&
-            curline[0] != 0 && curline[strlen(curline)-1] != '\\')
+            curline[0] != 0 && curline[std::strlen(curline)-1] != '\\')
         {   int j;
             while (i < 72 || (i%8) != 0)
-            {   putc(' ', out);
+            {   std::putc(' ', out);
                 i++;
             }
-            fprintf(out, "/*");
+            std::fprintf(out, "/*");
             for (j=0; j<depth; j++)
-            {   if (j != 0) putc(',', out);
+            {   if (j != 0) std::putc(',', out);
 // The "?" will mark places where an improper extra #else has bene present.
-                if (elseseen[j] == 4) putc('?', out);
-                else if ((elseseen[j] & 1) != 0) putc('!', out);
-                fprintf(out, "%s", pending[j]);
+                if (elseseen[j] == 4) std::putc('?', out);
+                else if ((elseseen[j] & 1) != 0) std::putc('!', out);
+                std::fprintf(out, "%s", pending[j]);
             }
-            fprintf(out, "*/");
+            std::fprintf(out, "*/");
         }
-        fprintf(out, "\n");
+        std::fprintf(out, "\n");
         if (c == EOF) break;
     }
-    fclose(in);
-    fclose(out);
+    std::fclose(in);
+    std::fclose(out);
     while (depth != 0)
-    {   fprintf(stderr, "ERROR: \"%s\" not closed\n", pending[depth]);
+    {   std::fprintf(stderr, "ERROR: \"%s\" not closed\n", pending[depth]);
         depth--;
     }
     return 0;

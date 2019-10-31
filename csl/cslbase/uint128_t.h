@@ -41,7 +41,7 @@ to do a general rewrite of this class.
 
 class uint128_t{
     private:
-        uint64_t UPPER, LOWER;
+        std::uint64_t UPPER, LOWER;
 
     public:
         // Constructors
@@ -78,16 +78,16 @@ class uint128_t{
 
         // Typecast Operators
         operator bool() const;
-        operator uint8_t() const;
-        operator uint16_t() const;
-        operator uint32_t() const;
-        operator uint64_t() const;
+        operator std::uint8_t() const;
+        operator std::uint16_t() const;
+        operator std::uint32_t() const;
+        operator std::uint64_t() const;
 
         // Bitwise Operators
         uint128_t operator&(const uint128_t & rhs) const;
 
         template <typename T> uint128_t operator&(const T & rhs) const{
-            return uint128_t(0, LOWER & (uint64_t) rhs);
+            return uint128_t(0, LOWER & (std::uint64_t) rhs);
         }
 
         uint128_t & operator&=(const uint128_t & rhs);
@@ -101,26 +101,26 @@ class uint128_t{
         uint128_t operator|(const uint128_t & rhs) const;
 
         template <typename T> uint128_t operator|(const T & rhs) const{
-            return uint128_t(UPPER, LOWER | (uint64_t) rhs);
+            return uint128_t(UPPER, LOWER | (std::uint64_t) rhs);
         }
 
         uint128_t & operator|=(const uint128_t & rhs);
 
         template <typename T> uint128_t & operator|=(const T & rhs){
-            LOWER |= (uint64_t) rhs;
+            LOWER |= (std::uint64_t) rhs;
             return *this;
         }
 
         uint128_t operator^(const uint128_t & rhs) const;
 
         template <typename T> uint128_t operator^(const T & rhs) const{
-            return uint128_t(UPPER, LOWER ^ (uint64_t) rhs);
+            return uint128_t(UPPER, LOWER ^ (std::uint64_t) rhs);
         }
 
         uint128_t & operator^=(const uint128_t & rhs);
 
         template <typename T> uint128_t & operator^=(const T & rhs){
-            LOWER ^= (uint64_t) rhs;
+            LOWER ^= (std::uint64_t) rhs;
             return *this;
         }
 
@@ -170,25 +170,25 @@ class uint128_t{
         bool operator==(const uint128_t & rhs) const;
 
         template <typename T> bool operator==(const T & rhs) const{
-            return (!UPPER && (LOWER == (uint64_t) rhs));
+            return (!UPPER && (LOWER == (std::uint64_t) rhs));
         }
 
         bool operator!=(const uint128_t & rhs) const;
 
         template <typename T> bool operator!=(const T & rhs) const{
-            return (UPPER | (LOWER != (uint64_t) rhs));
+            return (UPPER | (LOWER != (std::uint64_t) rhs));
         }
 
         bool operator>(const uint128_t & rhs) const;
 
         template <typename T> bool operator>(const T & rhs) const{
-            return (UPPER || (LOWER > (uint64_t) rhs));
+            return (UPPER || (LOWER > (std::uint64_t) rhs));
         }
 
         bool operator<(const uint128_t & rhs) const;
 
         template <typename T> bool operator<(const T & rhs) const{
-            return (!UPPER)?(LOWER < (uint64_t) rhs):false;
+            return (!UPPER)?(LOWER < (std::uint64_t) rhs):false;
         }
 
         bool operator>=(const uint128_t & rhs) const;
@@ -207,7 +207,7 @@ class uint128_t{
         uint128_t operator+(const uint128_t & rhs) const;
 
         template <typename T> uint128_t operator+(const T & rhs) const{
-            return uint128_t(UPPER + ((LOWER + (uint64_t) rhs) < LOWER), LOWER + (uint64_t) rhs);
+            return uint128_t(UPPER + ((LOWER + (std::uint64_t) rhs) < LOWER), LOWER + (std::uint64_t) rhs);
         }
 
         uint128_t & operator+=(const uint128_t & rhs);
@@ -221,7 +221,7 @@ class uint128_t{
         uint128_t operator-(const uint128_t & rhs) const;
 
         template <typename T> uint128_t operator-(const T & rhs) const{
-            return uint128_t((uint64_t) (UPPER - ((LOWER - rhs) > LOWER)), (uint64_t) (LOWER - rhs));
+            return uint128_t((std::uint64_t) (UPPER - ((LOWER - rhs) > LOWER)), (std::uint64_t) (LOWER - rhs));
         }
 
         uint128_t & operator-=(const uint128_t & rhs);
@@ -289,14 +289,14 @@ class uint128_t{
         uint128_t operator-() const;
 
         // Get private values
-        const uint64_t & upper() const;
-        const uint64_t & lower() const;
+        const std::uint64_t & upper() const;
+        const std::uint64_t & lower() const;
 
         // Get bitsize of value
-        uint8_t bits() const;
+        std::uint8_t bits() const;
 
         // Get string representation of value
-        std::string str(uint8_t base = 10, const unsigned int & len = 0) const;
+        std::string str(std::uint8_t base = 10, const unsigned int & len = 0) const;
 };
 
 // Give uint128_t type traits
@@ -340,28 +340,28 @@ template <typename T> T & operator^=(T & lhs, const uint128_t & rhs){
 
 // Bitshift operators
 uint128_t operator<<(const bool     & lhs, const uint128_t & rhs);
-uint128_t operator<<(const uint8_t  & lhs, const uint128_t & rhs);
-uint128_t operator<<(const uint16_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const uint32_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const uint64_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const int8_t   & lhs, const uint128_t & rhs);
-uint128_t operator<<(const int16_t  & lhs, const uint128_t & rhs);
-uint128_t operator<<(const int32_t  & lhs, const uint128_t & rhs);
-uint128_t operator<<(const int64_t  & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint8_t  & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint16_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint32_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint64_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int8_t   & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int16_t  & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int32_t  & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int64_t  & lhs, const uint128_t & rhs);
 
 template <typename T> T & operator<<=(T & lhs, const uint128_t & rhs){
     return lhs = static_cast <T> (uint128_t(lhs) << rhs);
 }
 
 uint128_t operator>>(const bool     & lhs, const uint128_t & rhs);
-uint128_t operator>>(const uint8_t  & lhs, const uint128_t & rhs);
-uint128_t operator>>(const uint16_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const uint32_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const uint64_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const int8_t   & lhs, const uint128_t & rhs);
-uint128_t operator>>(const int16_t  & lhs, const uint128_t & rhs);
-uint128_t operator>>(const int32_t  & lhs, const uint128_t & rhs);
-uint128_t operator>>(const int64_t  & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint8_t  & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint16_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint32_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint64_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int8_t   & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int16_t  & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int32_t  & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int64_t  & lhs, const uint128_t & rhs);
 
 template <typename T> T & operator>>=(T & lhs, const uint128_t & rhs){
     return lhs = static_cast <T> (uint128_t(lhs) >> rhs);
@@ -369,36 +369,36 @@ template <typename T> T & operator>>=(T & lhs, const uint128_t & rhs){
 
 // Comparison Operators
 template <typename T> bool operator==(const T & lhs, const uint128_t & rhs){
-    return (!rhs.upper() && ((uint64_t) lhs == rhs.lower()));
+    return (!rhs.upper() && ((std::uint64_t) lhs == rhs.lower()));
 }
 
 template <typename T> bool operator!=(const T & lhs, const uint128_t & rhs){
-    return (rhs.upper() | ((uint64_t) lhs != rhs.lower()));
+    return (rhs.upper() | ((std::uint64_t) lhs != rhs.lower()));
 }
 
 template <typename T> bool operator>(const T & lhs, const uint128_t & rhs){
-    return (!rhs.upper()) && ((uint64_t) lhs > rhs.lower());
+    return (!rhs.upper()) && ((std::uint64_t) lhs > rhs.lower());
 }
 
 template <typename T> bool operator<(const T & lhs, const uint128_t & rhs){
     if (rhs.upper()){
         return true;
     }
-    return ((uint64_t) lhs < rhs.lower());
+    return ((std::uint64_t) lhs < rhs.lower());
 }
 
 template <typename T> bool operator>=(const T & lhs, const uint128_t & rhs){
     if (rhs.upper()){
         return false;
     }
-    return ((uint64_t) lhs >= rhs.lower());
+    return ((std::uint64_t) lhs >= rhs.lower());
 }
 
 template <typename T> bool operator<=(const T & lhs, const uint128_t & rhs){
     if (rhs.upper()){
         return true;
     }
-    return ((uint64_t) lhs <= rhs.lower());
+    return ((std::uint64_t) lhs <= rhs.lower());
 }
 
 // Arithmetic Operators

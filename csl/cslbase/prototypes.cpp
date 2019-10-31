@@ -36,7 +36,7 @@ prototypes:	prototypes.cpp
 
 // C++ does not support dymamic free variables (in lambda expressions) and
 // so I make the source file static.
-static FILE *srcfile;
+static std::FILE *srcfile;
 
 int main(int argc, char *argv[])
 {   if (argc == 1)
@@ -52,13 +52,13 @@ int main(int argc, char *argv[])
 // I aupport the crudent imaginable scheme to indicate where the files
 // will be found. "-I dirname" can preceed the list of files. Only one
 // directory may be given.
-        if (strcmp(arg, "-I") == 0 && k<argc-2)
+        if (std::strcmp(arg, "-I") == 0 && k<argc-2)
         {   searchdir = argv[++k];
             continue;
         }
         char source[1000];
-        if (searchdir==NULL) strcpy(source, arg);
-        else sprintf(source, "%s/%s", searchdir, arg);
+        if (searchdir==NULL) std::strcpy(source, arg);
+        else std::sprintf(source, "%s/%s", searchdir, arg);
         CXIndex index = clang_createIndex(0, 0);
         CXTranslationUnit unit = clang_parseTranslationUnit(
                                      index,      // Index
@@ -69,10 +69,10 @@ int main(int argc, char *argv[])
                                      0,          // count of unsaved files
                                      CXTranslationUnit_None); // options
 // Then get the source file ready for reading.
-        srcfile = fopen(source, "r");
+        srcfile = std::fopen(source, "r");
         if (unit == nullptr || srcfile == NULL)
         {   cerr << "Unable to parse translation unit. Quitting." << endl;
-            exit(1);
+            std::exit(1);
         }
 // I will traverse the Abstract Parse Tree that libclang has created.
         CXCursor cursor = clang_getTranslationUnitCursor(unit);
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
                     clang_getFileLocation(start, &file, &line, &column, &foffset);
 // The offset lets me seek in the source file to fine the start of the
 // function declaration.
-                    fseek(srcfile, foffset, SEEK_SET);
+                    std::fseek(srcfile, foffset, SEEK_SET);
 // I will impose a fixed limit to the size of declarations that I am
 // willing to extract.
 #define DEFSIZE 4000
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 // and me a better version (or just publish it on their own site and tell
 // me about it) that would be very nice!
                     for (int i=0; i<DEFSIZE; i++)
-                    {   int c = getc(srcfile);
+                    {   int c = std::getc(srcfile);
                         if (c == '(') p++;
                         else if (c == ')') p--;
                         def[n++] = c;
@@ -137,14 +137,14 @@ int main(int argc, char *argv[])
 // characters "static " would be inadequate in the face of presence of
 // names that had that string as a suffix! Again proper use of libclang
 // could resolve this!
-                    if (strstr(def, "static ") == NULL)
+                    if (std::strstr(def, "static ") == NULL)
                         cout << "extern " << def << "\n";
                 }
             }
             return CXChildVisit_Recurse;
         },
         nullptr);
-        fclose(srcfile);
+        std::fclose(srcfile);
         clang_disposeTranslationUnit(unit);
         clang_disposeIndex(index);
     }

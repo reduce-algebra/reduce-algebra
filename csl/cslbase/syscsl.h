@@ -56,7 +56,7 @@ extern const char *find_image_directory(int argc, const char *argv[]);
 // process_file_name expands the old name into filename.
 //
 
-extern void process_file_name(char *filename, const char *old, size_t n);
+extern void process_file_name(char *filename, const char *old, std::size_t n);
 
 //
 // open_file accepts a vector of characters (old) and looks at the first
@@ -74,15 +74,15 @@ extern void process_file_name(char *filename, const char *old, size_t n);
 // create any necessary directories on the way to it...
 //
 
-extern FILE *open_file(char *filename, const char *old, size_t n,
-                       const char *mode, FILE *old_file);
+extern std::FILE *open_file(char *filename, const char *old, std::size_t n,
+                       const char *mode, std::FILE *old_file);
 
 //
 // find if a file exists, and if it does return (as 24 chars) the
 // change time for it.  See open_file re args.
 //
 
-extern bool file_exists(char *filename, const char *old, size_t n, char *tt);
+extern bool file_exists(char *filename, const char *old, std::size_t n, char *tt);
 
 //
 // The interfaces to create_directory and delete_file are similar
@@ -93,14 +93,14 @@ extern bool file_exists(char *filename, const char *old, size_t n, char *tt);
 // match...
 //
 
-extern int create_directory(char *filename, const char *old, size_t n);
+extern int create_directory(char *filename, const char *old, std::size_t n);
 
-extern int delete_file(char *filename, const char *old, size_t n);
+extern int delete_file(char *filename, const char *old, std::size_t n);
 
-extern int delete_wildcard(char *filename, const char *old, size_t n);
+extern int delete_wildcard(char *filename, const char *old, std::size_t n);
 
-extern int rename_file(char *from_name, const char *from_old, size_t from_size,
-                           char *to_name, const char *to_old, size_t to_size);
+extern int rename_file(char *from_name, const char *from_old, std::size_t from_size,
+                           char *to_name, const char *to_old, std::size_t to_size);
 
 //
 // The interfaces to file_readable and file_writable are also similar
@@ -111,18 +111,18 @@ extern int rename_file(char *from_name, const char *from_old, size_t from_size,
 // directoryp tests whether its argument is a directory.
 //
 
-extern bool file_readable(char *filename, const char *old, size_t n);
+extern bool file_readable(char *filename, const char *old, std::size_t n);
 
-extern bool file_writeable(char *filename, const char *old, size_t n);
+extern bool file_writeable(char *filename, const char *old, std::size_t n);
 
-extern bool file_executable(char *filename, const char *old, size_t n);
+extern bool file_executable(char *filename, const char *old, std::size_t n);
 
-extern bool directoryp(char *filename, const char *old, size_t n);
+extern bool directoryp(char *filename, const char *old, std::size_t n);
 
 //
 // file_length returns the length of its argument (a file) in bytes.
 //
-extern int64_t file_length(char *filename, const char *old, size_t n);
+extern std::int64_t file_length(char *filename, const char *old, std::size_t n);
 
 //
 // current_directory() places the name of the current directory in the buffer
@@ -135,9 +135,9 @@ extern int current_directory(char *name, int len);
 // The next three are much-like the same... On some operating systems
 // they will be pretty meaningless!
 //
-extern int get_current_directory(char *name, size_t len);
-extern int get_home_directory(char *name, size_t len);
-extern int get_users_home_directory(char *name, size_t len);
+extern int get_current_directory(char *name, std::size_t len);
+extern int get_home_directory(char *name, std::size_t len);
+extern int get_users_home_directory(char *name, std::size_t len);
 
 //
 // Just for Reduce, find_gnuplot fills in the command to launch gnuplot
@@ -148,7 +148,7 @@ extern int get_users_home_directory(char *name, size_t len);
 extern int find_gnuplot(char *name);
 
 // returns NULL for OK or an error string
-extern char *change_directory(char *filename, const char *old, size_t n);
+extern char *change_directory(char *filename, const char *old, std::size_t n);
 
 //
 // get_truename attempts to get a canonical name for a file or directory.
@@ -166,7 +166,7 @@ extern char *change_directory(char *filename, const char *old, size_t n);
 // It normally returns the "true name" but return NULL in error cases
 // and in that case leave filename an error string.
 //
-extern char *get_truename(char *filename, const char *old, size_t n);
+extern char *get_truename(char *filename, const char *old, std::size_t n);
 
 #ifdef NAG_VERSION
 
@@ -178,7 +178,7 @@ extern char *get_truename(char *filename, const char *old, size_t n);
 //
 
 extern int list_directory_members(char *filename, const char *old, char **filelist[],
-                                  size_t n);
+                                  std::size_t n);
 
 #else // !NAG_VERSION
 
@@ -190,14 +190,14 @@ extern int list_directory_members(char *filename, const char *old, char **fileli
 typedef void directory_callback(const char *, int, long int);
 
 extern void list_directory_members(char *filename, const char *old,
-                                   size_t n, directory_callback *fn);
+                                   std::size_t n, directory_callback *fn);
 
 #endif // !NAG_VERSION
 
 //
 // (f) is an open file - truncate it at position (where).
 //
-extern int truncate_file(FILE *f, long int where);
+extern int truncate_file(std::FILE *f, long int where);
 
 //
 // If I am to process directories I need a set of routines that will
@@ -276,16 +276,16 @@ extern int my_system(const char *s);
 // my_popen() and my_pclose() are intended to be just like the Unix
 // popen() and pclose functions.
 //
-extern FILE *my_popen(const char *command_name, const char *direction);
-extern void my_pclose(FILE *stream);
+extern std::FILE *my_popen(const char *command_name, const char *direction);
+extern void my_pclose(std::FILE *stream);
 
 //
 // For some systems I send characters to a pipe (possibly
 // only used to support the gnuplot package) through a separate
 // special function as documented here.
 //
-extern int my_pipe_putc(int c, FILE *f);
-extern int my_pipe_flush(FILE *f);
+extern int my_pipe_putc(int c, std::FILE *f);
+extern int my_pipe_flush(std::FILE *f);
 
 //
 // batchp() should return true if stdin is NOT from an interactive
@@ -297,7 +297,7 @@ extern int batchp(void);
 // Ideally I will want the clock to report "user time" to me rather than
 // "elapsed time", since that will make recording benchmark info easier.
 //
-extern uint64_t read_clock(void);
+extern std::uint64_t read_clock(void);
 
 #ifdef SHOW_COUNTS_AVAILABLE
 //
@@ -313,11 +313,11 @@ extern void write_profile(const char *filename);
 
 #endif // SHOW_COUNTS_AVAILABLE
 
-extern uint32_t Imultiply(uint32_t *rlow, uint32_t a,
-                          uint32_t b, uint32_t c);
-extern uint32_t Idivide(uint32_t *qp, uint32_t a,
-                        uint32_t b, uint32_t c);
-extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
+extern std::uint32_t Imultiply(std::uint32_t *rlow, std::uint32_t a,
+                          std::uint32_t b, std::uint32_t c);
+extern std::uint32_t Idivide(std::uint32_t *qp, std::uint32_t a,
+                        std::uint32_t b, std::uint32_t c);
+extern std::uint32_t Idiv10_9(std::uint32_t *qp, std::uint32_t a, std::uint32_t b);
 
 //
 // When the garbage collector observes that memory is tight it can attempt
@@ -326,7 +326,7 @@ extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
 // is expected to return an indication of how many more might be worth
 // allocating. See the code in gc.c for details of usage.
 //
-extern int32_t ok_to_grab_memory(int32_t current_pages);
+extern std::int32_t ok_to_grab_memory(std::int32_t current_pages);
 
 //
 // The following returns the number of processor cores that may be available.
@@ -351,7 +351,7 @@ extern void flush_screen(void);
 // I may want to redirect stdout to a file, in which case the following
 // is the handle that I will use.  See "--" decoding in csl.c
 //
-extern FILE *alternative_stdout;
+extern std::FILE *alternative_stdout;
 //
 // Ditto reading from stdin.  Reads chars into buffer, returns count.
 //
@@ -364,8 +364,8 @@ extern int terminal_eof_seen;
 // The next two call-backs tell the window manager how much time has
 // been spent and how many garbage collections have been done.
 //
-extern void report_time(int32_t t, int32_t gct);
-extern void report_space(uint64_t gccount, double percent, double mbytes);
+extern void report_time(std::int32_t t, std::int32_t gct);
+extern void report_space(std::uint64_t gccount, double percent, double mbytes);
 //
 // pause_for_user() gets called right at the end to give a chance for the
 // system to delay before closing the main output window.
@@ -381,7 +381,7 @@ extern void pause_for_user(void);
 // left and only detected when dereferenced.
 
 extern bool valid_address(void *p);
-extern bool valid_address(uintptr_t p);
+extern bool valid_address(std::uintptr_t p);
 
 #endif // header_syscsl_h
 

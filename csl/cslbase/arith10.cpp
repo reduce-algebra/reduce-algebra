@@ -88,7 +88,7 @@ static double arg_reduce(double a, int *quadrant)
     static double c2 = 1121027177.0/1073741824.0/1073741824.0/16.0;
     static double c3 = 2.91273205609335616e-20;
     double w = a / 1.5707963267948966;
-    int32_t n = (int)(w < 0.0 ? w - 0.5 : w + 0.5);
+    std::int32_t n = (int)(w < 0.0 ? w - 0.5 : w + 0.5);
 //
 // OK - now n should be the nearest integer to a/(pi/2) so
 // (a - n) should be at most (about) pi/4 in absolute value.
@@ -209,7 +209,7 @@ static Complex CSLcsin(Complex z)
 // compute sinh and cosh as just +/- exp(|y|)/2
 //
     double s = my_sin(x), c = my_cos(x);
-    double absy = fabs(y);
+    double absy = std::fabs(y);
     if (absy <= 50.0)
     {   double sh = CSLsinh(y), ch = CSLcosh(y);
         z.real = s * ch;
@@ -219,9 +219,9 @@ static Complex CSLcsin(Complex z)
     else
     {   double w;
         int n = _reduced_exp(absy, &w) - 1;
-        z.real = ldexp(s*w, n);
-        if (y < 0.0) z.imag = ldexp(-c*w, n);
-        else z.imag = ldexp(c*w, n);
+        z.real = std::ldexp(s*w, n);
+        if (y < 0.0) z.imag = std::ldexp(-c*w, n);
+        else z.imag = std::ldexp(c*w, n);
         return z;
     }
 }
@@ -241,23 +241,23 @@ static Complex CSLcsqrt(Complex z)
     if (y == 0.0)
     {   if (x < 0.0)
         {   z.real = 0.0;
-            z.imag = sqrt(-x);
+            z.imag = std::sqrt(-x);
         }
         else
-        {   z.real = sqrt(x);
+        {   z.real = std::sqrt(x);
             z.imag = 0.0;
         }
         return z;           // Pure real arguments are easy
     }
-    (void)frexp(y, &n);
+    (void)std::frexp(y, &n);
 // Exact value returned by frexp not critical
     if (x != 0.0)
     {   int n1;
-        (void)frexp(x, &n1);
+        (void)std::frexp(x, &n1);
         if (n1 > n) n = n1;
     }
     n &= ~1;                // ensure it is even
-    scale = ldexp(1.0, n);
+    scale = std::ldexp(1.0, n);
     x = x / scale;
     y = y / scale; // Now max(|x|, |y|) is in [0.5, 1)
 //
@@ -295,8 +295,8 @@ static Complex CSLcsqrt(Complex z)
         vy = (vy + qy)*0.5;
     }
     n = n/2;
-    z.real = ldexp(vx, n);
-    z.imag = ldexp(vy, n);
+    z.real = std::ldexp(vx, n);
+    z.imag = std::ldexp(vy, n);
     return z;
 }
 
@@ -309,7 +309,7 @@ static Complex CSLctan(Complex z)
 //
 // tan(x + iy) = (tan(x) + i tanh(y))/(1 - i tan(x)*tanh(y))
 //
-    double t = CSLtan(x), th = tanh(y);
+    double t = CSLtan(x), th = std::tanh(y);
     double t2 = t*t, th2 = th*th;
     // many risks of premature overflow here
     double d = 1.0 + t2*th2;
@@ -350,29 +350,29 @@ static Complex Cdiv_z(Complex p, Complex q)
         if (a == 0.0)
         {   if (b == 0.0) return p;         // (0.0, 0.0)/z
 // Exact results from frexp unimportant
-            else (void)frexp(b, &n1);
+            else (void)std::frexp(b, &n1);
         }
-        else if (b == 0.0) (void)frexp(a, &n1);
+        else if (b == 0.0) (void)std::frexp(a, &n1);
         else
-        {   (void)frexp(a, &n1);
-            (void)frexp(b, &n2);
+        {   (void)std::frexp(a, &n1);
+            (void)std::frexp(b, &n2);
             if (n2>n1) n1 = n2;
         }
         n = n1;
-        scalep = ldexp(1.0, n1);        // scale numerator
+        scalep = std::ldexp(1.0, n1);        // scale numerator
         a = a / scalep;
         b = b / scalep;
 // At this stage I know that the denominator has nonzero real & imag parts
-        (void)frexp(c, &n1);
-        (void)frexp(d, &n2);
+        (void)std::frexp(c, &n1);
+        (void)std::frexp(d, &n2);
         if (n2>n1) n1 = n2;
         n = n - n1;
-        scaleq = ldexp(1.0, n1);        // scale denominator
+        scaleq = std::ldexp(1.0, n1);        // scale denominator
         c = c / scaleq;
         d = d / scaleq;
         w = c*c + d*d;  // no overflow
-        r.real = ldexp((a*c + b*d)/w, n);   // rescale final result
-        r.imag = ldexp((b*c - a*d)/w, n);
+        r.real = std::ldexp((a*c + b*d)/w, n);   // rescale final result
+        r.imag = std::ldexp((b*c - a*d)/w, n);
         return r;
     }
 }
@@ -389,7 +389,7 @@ static LispObject make_complex_float(Complex v, LispObject a)
 //
 // Note that regardless of their input type the elementary functions deliver
 // at most double precision results.
-{   int32_t type;
+{   std::int32_t type;
     LispObject a1, a2;
     a = real_part(a);
     if (is_sfloat(a))
@@ -421,12 +421,12 @@ static double iln(double x)
 static double rsqrt(double x)
 {   if (!(x == x)) return x;   // Ie a NaN
     else if (x < 0.0) return 0.0;
-    else return sqrt(x);
+    else return std::sqrt(x);
 }
 
 static double isqrt(double x)
 {   if (!(x == x)) return x;   // Ie a NaN
-    if (x < 0.0) return sqrt(-x);
+    if (x < 0.0) return std::sqrt(-x);
     else return 0.0;
 }
 
@@ -443,11 +443,11 @@ static double iasin(double x)
     else if (x < 0.0) x = -x, sign = true;
     else sign = false;
     if (x < 2.0)
-    {   x += sqrt(x*x - 1.0);
+    {   x += std::sqrt(x*x - 1.0);
         x = CSLlog(x);             // /* serious inaccuracy here
     }
     else if (x < 1.0e9)
-    {   x += sqrt(x*x - 1.0);
+    {   x += std::sqrt(x*x - 1.0);
         x = CSLlog(x);
     }
     else x = CSL_log_2 + CSLlog(x);
@@ -467,11 +467,11 @@ static double iacos(double x)
     else if (1.0 < x) sign = false;
     else return 0.0;
     if (x < 2.0)
-    {   x += sqrt(x*x - 1.0);
+    {   x += std::sqrt(x*x - 1.0);
         x = CSLlog(x);             // /* serious inaccuracy here
     }
     else if (x < 1.0e9)
-    {   x += sqrt(x*x - 1.0);
+    {   x += std::sqrt(x*x - 1.0);
         x = CSLlog(x);
     }
     else x = CSL_log_2 + CSLlog(x);
@@ -488,7 +488,7 @@ static double CSLasinh(double x)
         x = x*(1 - xx*((1.0/6.0) - (3.0/40.0)*xx));
     }
     else if (x < 1.0e9)
-    {   x += sqrt(1.0 + x*x);
+    {   x += std::sqrt(1.0 + x*x);
         x = CSLlog(x);
     }
     else x = CSLlog(x) + CSL_log_2;
@@ -526,10 +526,10 @@ static double racosh(double x)
 // range x=0 to 0.5
 //
         for (i=1; i<=11; i++) r = x*r + acosh_coeffs[i];
-        x = sqrt(x)*r;
+        x = std::sqrt(x)*r;
     }
     else if (x < 1.0e9)
-    {   x += sqrt((x - 1.0)*(x + 1.0));
+    {   x += std::sqrt((x - 1.0)*(x + 1.0));
         x = CSLlog(x);
     }
     else x = CSLlog(x) + CSL_log_2;
@@ -703,7 +703,7 @@ static double rcbrt(double a)
     double b;
     if (a == 0.0) return 0.0;
     else if (a < 0.0) a = -a, neg = 1;
-    b = frexp(a, &xx);  // end-conditions unimportant
+    b = std::frexp(a, &xx);  // end-conditions unimportant
     x = xx;
 //
 // b is now in the range 0.5 to 1.  The next line produces an
@@ -715,7 +715,7 @@ static double rcbrt(double a)
     {   x--;
         b *= 1.26;
     }
-    b = ldexp(b, x/3);
+    b = std::ldexp(b, x/3);
 //
 // Experiment shows that there are values of the input variable
 // that lead to the last of the following iterations making a
@@ -751,7 +751,7 @@ static double arg_reduce_degrees(double a, int *quadrant)
 // relevant quadant.  Returns arg converted to radians.
 //
 {   double w = a / 90.0;
-    int32_t n = (int)w;
+    std::int32_t n = (int)w;
     w = a - 90.0*n;
     while (w < -45.0)
     {   n--;
@@ -816,7 +816,7 @@ static double rcotd(double a)
 
 static double rcoth(double a)
 {   if (a == 0.0) return HUGE_VAL;
-    else return 1.0/tanh(a);
+    else return 1.0/std::tanh(a);
 }
 
 static double rcsc(double a)
@@ -861,7 +861,7 @@ static double ilog10(double a)
 static double rlog2(double a)
 {   if (a > 0.0)
     {   int x;
-        a = frexp(a, &x);
+        a = std::frexp(a, &x);
         return CSLlog(a)/CSL_log2 + (double)x;
     }
     else return 0.0;
@@ -1216,7 +1216,7 @@ static trigfn_record const trig_functions[] =
     {rsqrt,  isqrt,  CSLcsqrt,  "sqrt"},  // sqrt   42 square root
     {CSLtan, NULL,   CSLctan,   "tan"},   // tan    43 tangent, rads
     {rtand,  NULL,   CSLctand,  "tand"},  // tand   44 tangent, degs
-    {tanh,   NULL,   CSLctanh,  "tanh"},  // tanh   45 hyperbolic tangent
+    {std::tanh,   NULL,   CSLctanh,  "tanh"},  // tanh   45 hyperbolic tangent
     {rlog2,  ilog2,  CSLclog2,  "log2"}   // log2   46 log to base 2
 };
 
@@ -1227,11 +1227,11 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 //
 {   double d;
 #ifndef COMMON
-    int32_t restype = TYPE_DOUBLE_FLOAT;
+    std::int32_t restype = TYPE_DOUBLE_FLOAT;
 #else
 // single floats seem to me to be a bad idea! But they are the default
 // for Common Lisp. Boo Hiss.
-    int32_t restype = TYPE_SINGLE_FLOAT;
+    std::int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
     if (which_one > 46) aerror("trigfn internal error");
     switch ((int)a & TAG_BITS)
@@ -1244,7 +1244,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             else d = (double)int_of_fixnum(a);
             break;
         case TAG_NUMBERS:
-        {   int32_t ha = type_of_header(numhdr(a));
+        {   std::int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                 case TYPE_RATNUM:
@@ -1304,7 +1304,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 //
             const char *name = trig_functions[which_one].name;
             char errbuff[64];
-            sprintf(errbuff, "Arg for %s out of range", name);
+            std::sprintf(errbuff, "Arg for %s out of range", name);
             aerror1(errbuff, a);
 #endif
             rp = make_boxfloat(c1r, restype);
@@ -1314,21 +1314,21 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
     }
 }
 
-static LispObject makenum(LispObject a, int32_t n)
+static LispObject makenum(LispObject a, std::int32_t n)
 // Make the value n, but type-consistent with the object a.  Usually
 // used with n=0 or n=1
 {
 #ifndef COMMON
-    int32_t restype = TYPE_DOUBLE_FLOAT;
+    std::int32_t restype = TYPE_DOUBLE_FLOAT;
 #else
-    int32_t restype = TYPE_SINGLE_FLOAT;
+    std::int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             if (is_sfloat(a)) return pack_immediate_float((double)n, a);
             else return fixnum_of_int(n);
         case TAG_NUMBERS:
-        {   int32_t ha = type_of_header(numhdr(a));
+        {   std::int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                 case TYPE_RATNUM:
@@ -1357,7 +1357,7 @@ static LispObject makenum(LispObject a, int32_t n)
     }
 }
 
-static LispObject CSLpowi(LispObject a, uint32_t n)
+static LispObject CSLpowi(LispObject a, std::uint32_t n)
 //
 // Raise a to the power n by repeated multiplication. The name is CSLpowi
 // rather than just powi because some miserable C compilers come with an
@@ -1412,7 +1412,7 @@ static LispObject Lhypot(LispObject env, LispObject a, LispObject b)
 // A worry I have is that the multiplication on the following line can
 // overflow, blowing me out of the water.
 //
-        r = v * sqrt(1.0 + r*r);
+        r = v * std::sqrt(1.0 + r*r);
     }
     a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
     return onevalue(a);
@@ -1420,7 +1420,7 @@ static LispObject Lhypot(LispObject env, LispObject a, LispObject b)
 
 LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 {   double d, e;
-    int32_t restype, n;
+    std::int32_t restype, n;
     LispObject w;
     Complex c1, c2, c3;
 //
@@ -1482,14 +1482,14 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
     if (is_fixnum(b))   // bignum exponents would yield silly values!
     {   n = int_of_fixnum(b);
         if (n < 0)
-        {   a = CSLpowi(a, (uint32_t)(-n));
+        {   a = CSLpowi(a, (std::uint32_t)(-n));
 #ifdef COMMON
             a = CLquot2(fixnum_of_int(1), a);
 #else
             a = quot2(fixnum_of_int(1), a);
 #endif
         }
-        else a = CSLpowi(a, (uint32_t)n);
+        else a = CSLpowi(a, (std::uint32_t)n);
         return onevalue(a);
     }
     if (is_numbers(a) && is_complex(a)) w = real_part(a);
@@ -1562,7 +1562,7 @@ static LispObject Lisqrt(LispObject, LispObject a)
             d = (double)int_of_fixnum(a);
             break;
         case TAG_NUMBERS:
-        {   int32_t ha = type_of_header(numhdr(a));
+        {   std::int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                     d = float_of_number(a);
@@ -1575,9 +1575,9 @@ static LispObject Lisqrt(LispObject, LispObject a)
         default:
             aerror1("bad arg for isqrt",  a);
     }
-    d = sqrt(d);
+    d = std::sqrt(d);
 // /* This is not anything like good enough yet
-    return onevalue(fixnum_of_int((int32_t)d));
+    return onevalue(fixnum_of_int((std::int32_t)d));
 }
 #endif
 
@@ -1593,7 +1593,7 @@ LispObject Labsval(LispObject env, LispObject a)
 //      case XTAG_SFLOAT:
             break;
         case TAG_NUMBERS:
-        {   int32_t ha = type_of_header(numhdr(a));
+        {   std::int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                 case TYPE_RATNUM:

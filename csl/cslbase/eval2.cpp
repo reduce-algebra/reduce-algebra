@@ -123,11 +123,11 @@ LispObject apply(LispObject fn, LispObject args,
             push(fn);
             char name_of_caller[32];
             from = qpname(from);
-            size_t len = length_of_byteheader(vechdr(from)) - CELL;
+            std::size_t len = length_of_byteheader(vechdr(from)) - CELL;
             if (len >= sizeof(name_of_caller)) len = sizeof(name_of_caller)-1;
-            memcpy(name_of_caller, &celt(from, 0), len);
+            std::memcpy(name_of_caller, &celt(from, 0), len);
             name_of_caller[len] = 0;
-            sprintf(message, "Bad function called from %s: ",
+            std::sprintf(message, "Bad function called from %s: ",
                     name_of_caller);
             aerror1(message, fn);
         }
@@ -158,11 +158,11 @@ LispObject apply(LispObject fn, LispObject args,
     char message[64];
     char name_of_caller[32];
     from = qpname(from);
-    size_t len = length_of_byteheader(vechdr(from)) - CELL;
+    std::size_t len = length_of_byteheader(vechdr(from)) - CELL;
     if (len >= sizeof(name_of_caller)) len = sizeof(name_of_caller)-1;
-    memcpy(name_of_caller, &celt(from, 0), len);
+    std::memcpy(name_of_caller, &celt(from, 0), len);
     name_of_caller[len] = 0;
-    sprintf(message, "Bad function called from %s: ",
+    std::sprintf(message, "Bad function called from %s: ",
             name_of_caller);
     aerror1(message, fn);
 }

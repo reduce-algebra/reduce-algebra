@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     int gcsbi = GetConsoleScreenBufferInfo(h1, &csbi);
     int dashdash = 0, i;
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--") == 0)
+    {   if (std::strcmp(argv[i], "--") == 0)
         {   dashdash = 1;
             break;
         }

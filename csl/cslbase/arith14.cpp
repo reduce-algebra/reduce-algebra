@@ -110,13 +110,13 @@ void f128M_ldexp(float128_t *p, int x)
 // not lead to a sub-norm and then using a multiply to scale it down.
     if (x <= 0)
     {   p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-            ((uint64_t)(x+4096) << 48);
+            ((std::uint64_t)(x+4096) << 48);
         float128_t w1;
         f128M_div(p, &f128_N1, &w1);
         *p = w1;
     }
     else p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-        ((uint64_t)x << 48);
+        ((std::uint64_t)x << 48);
 }
 
 void f128M_frexp(float128_t *p, float128_t *r, int *x)
@@ -137,7 +137,7 @@ void f128M_frexp(float128_t *p, float128_t *r, int *x)
     }
     else *r = *p;
     r->v[HIPART] = (r->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-        ((uint64_t)0x3ffe << 48);
+        ((std::uint64_t)0x3ffe << 48);
     *x = px - 0x3ffe;
 }    
 
@@ -184,7 +184,7 @@ void f256M_add(const float256_t *x, const float256_t *y, float256_t *z)
 }
 
 static void f128X_print(const float128_t *v)
-{   printf("%.16" PRIx64 " %.16" PRIx64, v->v[HIPART], v->v[LOPART]);
+{   std::printf("%.16" PRIx64 " %.16" PRIx64, v->v[HIPART], v->v[LOPART]);
 }
 
 // This helper function splits a 113-bit float X into two parts H & L each
@@ -385,14 +385,14 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
 // consolidate all of it into the 128-bit top half.
     float128_t v;
     f128M_add(&w2.hi, &w2.lo, &v);
-    uint64_t d = f128M_to_ui64(&v, softfloat_round_min, false);
-    s += sprintf(s, "%.17" PRIu64, d);
+    std::uint64_t d = f128M_to_ui64(&v, softfloat_round_min, false);
+    s += std::sprintf(s, "%.17" PRIu64, d);
     float128_t w3, w4;
     i64_to_f128M(-d, &w3);
     f128M_add(&v, &w3, &w4);
     f128M_mul(&w4, &f128_10_17, &v);
     d = f128M_to_ui64(&v, softfloat_round_near_even, false);
-    s += sprintf(s, "%.17" PRIu64, d);
+    s += std::sprintf(s, "%.17" PRIu64, d);
     *pdecexp = decexp + 17;
     return result;
 }
@@ -401,8 +401,8 @@ void f128M_print(float128_t *p)
 {   char s[36];
     int decexp;
     bool neg = f128M_sprint(s, p, &decexp);
-    if (!isdigit(s[0])) printf("%s%s\n", neg ? "-" : "", s);
-    else printf("%s%c.%sL%d\n", neg ? "-" : "", s[0], &s[1], decexp);
+    if (!std::isdigit(s[0])) std::printf("%s%s\n", neg ? "-" : "", s);
+    else std::printf("%s%c.%sL%d\n", neg ? "-" : "", s[0], &s[1], decexp);
 }
 
 // This rounds the number in the buffer to have ndigits in all.
@@ -466,7 +466,7 @@ static char *pad_by(char *r, int n)
 //
 
 static char *pad_by_zero(char *r, int n)
-{   if (n >= 14) r += sprintf(r, "00000{%d}00000", n-10);
+{   if (n >= 14) r += std::sprintf(r, "00000{%d}00000", n-10);
     else while (n-- > 0) *r++ = '0';
     *r = 0;
     return r;
@@ -483,26 +483,26 @@ int f128M_sprint_E(char *r, int width, int prec, float128_t *p)
     if (prec < 1) prec = 1;
     else if (prec > 9999) prec = 9999;
     if (sign) width--;
-    if (!isdigit(s[0]))
-    {   r = pad_by(r, width-strlen(s));
+    if (!std::isdigit(s[0]))
+    {   r = pad_by(r, width-std::strlen(s));
         if (sign) *r++ = '-';
-        strcpy(r, s);
-        return (r - original_r) + strlen(r);
+        std::strcpy(r, s);
+        return (r - original_r) + std::strlen(r);
     }
     else
     {   char ebuf[8];
         if (round_at(s, prec+1)) decexp++;
 // I format the exponent so I can see how many characters that uses.
-        width -= sprintf(ebuf, "e%02d", decexp);
+        width -= std::sprintf(ebuf, "e%02d", decexp);
         r = pad_by(r, width - prec - 1);
         if (sign) *r++ = '-';
         if (prec >= 34)
-        {   r += sprintf(r, "%c.%.33s", s[0], &s[1]);
+        {   r += std::sprintf(r, "%c.%.33s", s[0], &s[1]);
             r = pad_by_zero(r, prec-33);
-            strcpy(r, ebuf);
-            r += strlen(r);
+            std::strcpy(r, ebuf);
+            r += std::strlen(r);
         }
-        else r += sprintf(r, "%c.%.*s%s", s[0], prec-1, &s[1], ebuf);
+        else r += std::sprintf(r, "%c.%.*s%s", s[0], prec-1, &s[1], ebuf);
     }
 // The longest possible output here will be along the lines of
 //  -1.123456789012345678901234567890123000{NNNN}000e-NNNN
@@ -515,7 +515,7 @@ int f128M_print_E(int width, int prec, float128_t *p)
 {   char buffer[64];
     int r = 0;
     while (width > 63)
-    {   putchar(' ');
+    {   std::putchar(' ');
         r++;
         width--;
     }
@@ -525,7 +525,7 @@ int f128M_print_E(int width, int prec, float128_t *p)
 // avoided by having f128M_sprint arrange to insert {NNNN} in place of
 // long strings of zeros...
     r += f128M_sprint_E(buffer, width, prec, p);
-    fputs(buffer, stdout);
+    std::fputs(buffer, stdout);
     return r;
 }
 
@@ -541,11 +541,11 @@ int f128M_sprint_F(char *r, int width, int prec, float128_t *p)
     if (sign) width--;
 // Infinities and NaNs are displayed with scant regard to the requested
 // precision, but they do honour the width request.
-    if (!isdigit(s[0]))
-    {   r = pad_by(r, width-strlen(s));
+    if (!std::isdigit(s[0]))
+    {   r = pad_by(r, width-std::strlen(s));
         if (sign) *r++ = '-';
-        strcpy(r, s);
-        return (r - original_r) + strlen(r);
+        std::strcpy(r, s);
+        return (r - original_r) + std::strlen(r);
     }
 // The "F" print format is basically abominable in that it can lead to
 // absurdly long output. There are three bad cases
@@ -584,7 +584,7 @@ int f128M_sprint_F(char *r, int width, int prec, float128_t *p)
     if (round_at(s, decexp+prec+1)) decexp++;
     if (decexp >= 34)
     {   if (sign) *r++ = '-';
-        r += sprintf(r, "%.34s", s);
+        r += std::sprintf(r, "%.34s", s);
         r = pad_by_zero(r, decexp-33);
         *r++ = '.';
         r = pad_by_zero(r, prec);
@@ -593,24 +593,24 @@ int f128M_sprint_F(char *r, int width, int prec, float128_t *p)
     {   int fdig = 33-decexp;
         if (fdig > prec) fdig = prec;
         if (sign) *r++ = '-';
-        r += sprintf(r, "%.*s.%.*s",
+        r += std::sprintf(r, "%.*s.%.*s",
             decexp+1, s, fdig, &s[decexp+1]);
         r = pad_by_zero(r, prec-fdig);
     }
     else if (prec+decexp+1 <= 34)
     {   if (sign) *r++ = '-';
-        r += sprintf(r, "0.");
+        r += std::sprintf(r, "0.");
         int pp = -decexp-1;
         if (pp > prec) pp = prec;
         r = pad_by_zero(r, pp);
         if (prec+decexp+1 > 0)
-            r += sprintf(r, "%.*s", prec+decexp+1, s);
+            r += std::sprintf(r, "%.*s", prec+decexp+1, s);
     }
     else
     {   if (sign) *r++ = '-';
-        r += sprintf(r, "0.");
+        r += std::sprintf(r, "0.");
         r = pad_by_zero(r, -decexp-1);
-        r += sprintf(r, "%.34s", s);
+        r += std::sprintf(r, "%.34s", s);
         r = pad_by_zero(r, prec+decexp-33);
     }
     return r - original_r;
@@ -620,12 +620,12 @@ int f128M_print_F(int width, int prec, float128_t *p)
 {   char buffer[64];
     int r = 0;
     while (width > 63)
-    {   putchar(' ');
+    {   std::putchar(' ');
         r++;
         width--;
     }
     r += f128M_sprint_F(buffer, width, prec, p);
-    fputs(buffer, stdout);
+    std::fputs(buffer, stdout);
     return r;
 }
 
@@ -654,12 +654,12 @@ int f128M_print_G(int width, int prec, float128_t *p)
 {   char buffer[64];
     int r = 0;
     while (width > 63)
-    {   putchar(' ');
+    {   std::putchar(' ');
         r++;
         width--;
     }
     r += f128M_sprint_G(buffer, width, prec, p);
-    fputs(buffer, stdout);
+    std::fputs(buffer, stdout);
     return r;
 }
 
@@ -694,7 +694,7 @@ static LispObject idfplus(LispObject a, LispObject b)
 float128_t atof128(const char *s)
 {   int x = 0;
     bool sign = false, seen = false, dotseen = false;
-    uint64_t z[3];
+    std::uint64_t z[3];
     int nz = 0, n = 0;
     z[0] = z[1] = z[2] = 0;
     if (*s == '+') s++;
@@ -714,7 +714,7 @@ float128_t atof128(const char *s)
             continue;
         }
         seen = true;
-        if (!isdigit(c)) break; // probably exponent marker.
+        if (!std::isdigit(c)) break; // probably exponent marker.
         if (nz < 3) z[nz] = 10*z[nz] + (c - '0');
         if (!dotseen) x++;
         if (++n == 16)
@@ -748,7 +748,7 @@ float128_t atof128(const char *s)
         s++;
 // atoi() would allow whitespace after the exponent signifier and before
 // the exponent itself.
-        x += atoi(s);
+        x += std::atoi(s);
     default:
         break;
     }

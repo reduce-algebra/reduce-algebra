@@ -95,16 +95,16 @@ static char reduce_image[LONGEST_LEGAL_FILENAME];
 static char memory_control[LONGEST_LEGAL_FILENAME];
 
 int fwin_main(int argc, const char **argv)
-{   int i = strlen(programDir), j;
+{   int i = std::strlen(programDir), j;
     for (j=0; j<3; j++)
     {   i--;
         while (i > 0 && (programDir[i] != '/' && programDir[i] != '\\')) i--;
     }
-    sprintf(bpsl_binary, "%.*s%cpslbuild%c%s%cpsl%cbpsl%s",
+    std::sprintf(bpsl_binary, "%.*s%cpslbuild%c%s%cpsl%cbpsl%s",
             i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR, EXEEXT);
-    sprintf(reduce_image, "%.*s%cpslbuild%c%s%cred%creduce.img",
+    std::sprintf(reduce_image, "%.*s%cpslbuild%c%s%cred%creduce.img",
             i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
-    sprintf(memory_control, "%.*s%cpslbuild%c%s%cpsl%c64",
+    std::sprintf(memory_control, "%.*s%cpslbuild%c%s%cpsl%c64",
             i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
     FWIN_LOG("bin: %s\n", bpsl_binary);
     FWIN_LOG("img: %s\n", reduce_image);
@@ -124,8 +124,8 @@ int fwin_main(int argc, const char **argv)
 // If the user gave an explicit memory option that should override the
 // default I set up here.
         if (stat(memory_control, &file_info) == 0) // file "64" was present
-            strcpy(memory_control, "2000");
-        else strcpy(memory_control, "16000000");
+            std::strcpy(memory_control, "2000");
+        else std::strcpy(memory_control, "16000000");
     }
 
 #ifdef WIN32
@@ -174,14 +174,14 @@ int fwin_main(int argc, const char **argv)
 // With Windows I will always create the sub-process via a command line
 // and it will split that up into individual arguments when it is ready to.
 //
-    char *cmdLine = (char *)malloc(strlen(bpsl_binary) +
-                                   strlen(reduce_image) +
-                                   strlen(memory_control) + 16);
+    char *cmdLine = (char *)std::malloc(std::strlen(bpsl_binary) +
+                                   std::strlen(reduce_image) +
+                                   std::strlen(memory_control) + 16);
     if (cmdLine  == NULL)
     {   fwin_printf("failed to allocate space for command line\n");
         fwin_exit(EXIT_FAILURE);
     }
-    sprintf(cmdLine, "\"%s\" -td %s -f \"%s\"",
+    std::sprintf(cmdLine, "\"%s\" -td %s -f \"%s\"",
             bpsl_binary, memory_control, reduce_image);
     PROCESS_INFORMATION piProcInfo;
     STARTUPINFO siStartInfo;
@@ -247,7 +247,7 @@ int fwin_main(int argc, const char **argv)
         fwin_exit(EXIT_FAILURE);
     }
     else if (reduceProcessId == 0)      // Child process
-    {   char **nargv = (char **)malloc(6*sizeof(char *));
+    {   char **nargv = (char **)std::malloc(6*sizeof(char *));
         setsid();
 // Re-plumb the pipes to link to stdin & stdout.
         close(MeToReduce[1]);
@@ -287,7 +287,7 @@ int fwin_main(int argc, const char **argv)
 #ifdef WIN32
     DWORD n;
     const char *loader = "load_package redfront,utf8$\n";
-    if (WriteFile(g_hChildStd_IN_Wr, loader, strlen(loader), &n, NULL) == 0)
+    if (WriteFile(g_hChildStd_IN_Wr, loader, std::strlen(loader), &n, NULL) == 0)
     {   fwin_printf("Unable to send to child process\n");
         fwin_exit(EXIT_FAILURE);
     }
@@ -340,7 +340,7 @@ int fwin_main(int argc, const char **argv)
 // Note that this initial command to load the UTF8 package will have
 // a prompt before it, but that will be a plain undecorated prompt
 // that will not be noticed as anything special by the code here.
-    write(MeToReduce[1], loader, strlen(loader));
+    write(MeToReduce[1], loader, std::strlen(loader));
 
 #define BUFSIZE 256
     for (;;)
@@ -408,23 +408,23 @@ int main(int argc, const char *argv[])
 
 
 void print_usage(char name[])
-{   fprintf(stderr,
+{   std::fprintf(stderr,
             "usage: %s [-bhuvV] [[-m] NUMBER[kKmM]]\n",name);
 }
 
 void print_help(char name[])
 {
 
-    fprintf(stderr,"A REDUCE frontend using fwin\n\n");
+    std::fprintf(stderr,"A REDUCE frontend using fwin\n\n");
 
     print_usage(name);
 
-    fprintf(stderr,"       -h\t\tthis help message\n");
-    fprintf(stderr,"       -m NUMBER [kKmM]\tmemory allocation in Bytes [KB|MB]\n");
-    fprintf(stderr,"       -v, -V\t\tverbose\n\n");
+    std::fprintf(stderr,"       -h\t\tthis help message\n");
+    std::fprintf(stderr,"       -m NUMBER [kKmM]\tmemory allocation in Bytes [KB|MB]\n");
+    std::fprintf(stderr,"       -v, -V\t\tverbose\n\n");
 
-    fprintf(stderr,"Examples: %s -v\n",name);
-    fprintf(stderr,"          %s -m 96m.\n\n",name);
+    std::fprintf(stderr,"Examples: %s -v\n",name);
+    std::fprintf(stderr,"          %s -m 96m.\n\n",name);
 }
 
 // This code installs handlers for a whole pile of signals, most of which
@@ -433,7 +433,7 @@ void print_help(char name[])
 void sig_killChild(void)
 {
 #ifdef SIGCHLD
-    signal(SIGCHLD,SIG_IGN);
+    std::signal(SIGCHLD,SIG_IGN);
 #endif
 #if 0
     kill(reduceProcessId,SIGTERM);
@@ -455,9 +455,9 @@ void sig_sigGen(int arg)
 #ifdef SIGTERM
         case SIGTERM:
 #endif
-            exit(0);
+            std::exit(0);
         default:
-            exit(EXIT_FAILURE);
+            std::exit(EXIT_FAILURE);
     }
 }
 
@@ -466,17 +466,17 @@ void sig_skipUntilString(int handle,const char string[])
     int len;
     int i;
 
-    len = strlen(string);
-    buffer = (char *)malloc(len * sizeof(char) + 1);
+    len = std::strlen(string);
+    buffer = (char *)std::malloc(len * sizeof(char) + 1);
     read(handle,buffer,len);
 
-    while (strcmp(buffer,string) != 0)
+    while (std::strcmp(buffer,string) != 0)
     {   FWIN_LOG("sig_skipUntilString(): buffer=|%s|\n",buffer);
         for (i=0; i < len-1; i++)
             buffer[i] = buffer[i+1];
         read(handle,buffer+len-1,1);
     }
-    free(buffer);
+    std::free(buffer);
 }
 
 void sig_sigChld(int arg)
@@ -484,7 +484,7 @@ void sig_sigChld(int arg)
 //  if (verbose) {
 //    printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
 //  }
-    exit(0);
+    std::exit(0);
 }
 
 void sig_sigTstp(int arg)
@@ -498,68 +498,68 @@ void sig_sigTstp(int arg)
 void sig_installHandlers(void)
 {
 #ifdef SIGQUIT
-    signal(SIGQUIT,sig_sigGen);
+    std::signal(SIGQUIT,sig_sigGen);
 #endif
 #ifdef SIGHUP
-    signal(SIGHUP,sig_sigGen);
+    std::signal(SIGHUP,sig_sigGen);
 #endif
 #ifdef SIGINT
-    signal(SIGINT, sig_sigGen);
+    std::signal(SIGINT, sig_sigGen);
 #endif
 #ifdef SIGILL
-    signal(SIGILL,sig_sigGen);
+    std::signal(SIGILL,sig_sigGen);
 #endif
 #ifdef SIGTSTP
-    signal(SIGTSTP,sig_sigTstp);
+    std::signal(SIGTSTP,sig_sigTstp);
 #endif
 #ifdef SIGBUS
-    signal(SIGBUS,sig_sigGen);
+    std::signal(SIGBUS,sig_sigGen);
 #endif
 #ifdef SIGSEGV
-    signal(SIGSEGV,sig_sigGen);
+    std::signal(SIGSEGV,sig_sigGen);
 #endif
 #ifdef SIGPIPE
-    signal(SIGPIPE,sig_sigGen);
+    std::signal(SIGPIPE,sig_sigGen);
 #endif
 #ifdef SIGCHLD
-    signal(SIGCHLD,sig_sigChld);
+    std::signal(SIGCHLD,sig_sigChld);
 #endif
 #ifdef SIGTERM
-    signal(SIGTERM,sig_sigGen);
+    std::signal(SIGTERM,sig_sigGen);
 #endif
 }
 
 void sig_removeHandlers(void)
 {
 #ifdef SIGQUIT
-    signal(SIGQUIT,SIG_DFL);
+    std::signal(SIGQUIT,SIG_DFL);
 #endif
 #ifdef SIGHUP
-    signal(SIGHUP,SIG_DFL);
+    std::signal(SIGHUP,SIG_DFL);
 #endif
 #ifdef SIGINT
-    signal(SIGINT,SIG_DFL);
+    std::signal(SIGINT,SIG_DFL);
 #endif
 #ifdef SIGILL
-    signal(SIGILL,SIG_DFL);
+    std::signal(SIGILL,SIG_DFL);
 #endif
 #ifdef SIGTSTP
-    signal(SIGTSTP,SIG_DFL);
+    std::signal(SIGTSTP,SIG_DFL);
 #endif
 #ifdef SIGBUS
-    signal(SIGBUS,SIG_DFL);
+    std::signal(SIGBUS,SIG_DFL);
 #endif
 #ifdef SIGSEGV
-    signal(SIGSEGV,SIG_DFL);
+    std::signal(SIGSEGV,SIG_DFL);
 #endif
 #ifdef SIGPIPE
-    signal(SIGPIPE,SIG_DFL);
+    std::signal(SIGPIPE,SIG_DFL);
 #endif
 #ifdef SIGCHLD
-    signal(SIGCHLD,SIG_DFL);
+    std::signal(SIGCHLD,SIG_DFL);
 #endif
 #ifdef SIGTERM
-    signal(SIGTERM,SIG_DFL);
+    std::signal(SIGTERM,SIG_DFL);
 #endif
 }
 

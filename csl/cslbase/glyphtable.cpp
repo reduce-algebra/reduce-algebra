@@ -115,71 +115,71 @@
 #include <stdint.h>
 
 int main(int argc, char *argv[])
-{   FILE *in, *out;
+{   std::FILE *in, *out;
     char outname[80];
     char inputline[256];
     int z, i, n;
     char *p;
-    uint32_t map[65536/32];
-    out = fopen("coverage.cpp", "w");
-    fprintf(out, "/* coverage.cpp                                 Copyright A C Norman 2015 */\n");
-    fprintf(out, "\n");
-    fprintf(out, "\n");
-    fprintf(out, "/*\n");
-    fprintf(out, " * Because this file contains information derived from fonts that are\n");
-    fprintf(out, " * licensed under the LaTeX Project Public License it needs to adhere\n");
-    fprintf(out, " * to the obligations set by that. The way in which information here is\n");
-    fprintf(out, " * \"derived\" is that there are bitmaps showing which glyphs are present\n");
-    fprintf(out, " * in various of the Latin Modern fonts. This was gathered by using\n");
-    fprintf(out, " * a perl script to drive fontforge to extract a list of glyph codes\n");
-    fprintf(out, " * and then packing the information as shown here. Thus the information here\n");
-    fprintf(out, " * is not in any sense a replacement for any component of an existing\n");
-    fprintf(out, " * iplementation of TeX. The original form of the files containing the\n");
-    fprintf(out, " * fonts used are available via the sunversion repository associated\n");
-    fprintf(out, " * with the project at reduce-algebra.sf.net, are are in the directory\n");
-    fprintf(out, " * [trunk]/csl/support-packages. Various copies of README files, detailed\n");
-    fprintf(out, " * license information and the like are also in the Reduce source file-set\n");
-    fprintf(out, " * in csl/cslbase/wxfonts and in a binary version of the system in\n");
-    fprintf(out, " * a directory called reduce.wxfonts (Windows and Linux) and within the\n");
-    fprintf(out, " * Application Folder where fonts live for Macintosh.\n");
-    fprintf(out, " */\n");
-    fprintf(out, "\n/*\n");
-    fprintf(out, " * Apart from the LaTeX Project Public License obligations, which you should\n");
-    fprintf(out, " * check carefully, this file may be used as if under the BSD License applied\n");
-    fprintf(out, " * elsewhere in the Reduce project.\n");
-    fprintf(out, " */\n\n");
-    fprintf(out, "/* $Id$ */\n");
-    fprintf(out, "\n#include <stdint.h>\n\n");
-    fprintf(out, "typedef struct _fontmap\n");
-    fprintf(out, "{\n");
-    fprintf(out, "    const char *name;\n");
-    fprintf(out, "    uint32_t map[65536/32]; /* 2048 words */\n");
-    fprintf(out, "} fontmap;\n");
-    fprintf(out, "\n");
-    fprintf(out, "fontmap coverage[] =\n");
-    fprintf(out, "{\n");
+    std::uint32_t map[65536/32];
+    out = std::fopen("coverage.cpp", "w");
+    std::fprintf(out, "/* coverage.cpp                                 Copyright A C Norman 2015 */\n");
+    std::fprintf(out, "\n");
+    std::fprintf(out, "\n");
+    std::fprintf(out, "/*\n");
+    std::fprintf(out, " * Because this file contains information derived from fonts that are\n");
+    std::fprintf(out, " * licensed under the LaTeX Project Public License it needs to adhere\n");
+    std::fprintf(out, " * to the obligations set by that. The way in which information here is\n");
+    std::fprintf(out, " * \"derived\" is that there are bitmaps showing which glyphs are present\n");
+    std::fprintf(out, " * in various of the Latin Modern fonts. This was gathered by using\n");
+    std::fprintf(out, " * a perl script to drive fontforge to extract a list of glyph codes\n");
+    std::fprintf(out, " * and then packing the information as shown here. Thus the information here\n");
+    std::fprintf(out, " * is not in any sense a replacement for any component of an existing\n");
+    std::fprintf(out, " * iplementation of TeX. The original form of the files containing the\n");
+    std::fprintf(out, " * fonts used are available via the sunversion repository associated\n");
+    std::fprintf(out, " * with the project at reduce-algebra.sf.net, are are in the directory\n");
+    std::fprintf(out, " * [trunk]/csl/support-packages. Various copies of README files, detailed\n");
+    std::fprintf(out, " * license information and the like are also in the Reduce source file-set\n");
+    std::fprintf(out, " * in csl/cslbase/wxfonts and in a binary version of the system in\n");
+    std::fprintf(out, " * a directory called reduce.wxfonts (Windows and Linux) and within the\n");
+    std::fprintf(out, " * Application Folder where fonts live for Macintosh.\n");
+    std::fprintf(out, " */\n");
+    std::fprintf(out, "\n/*\n");
+    std::fprintf(out, " * Apart from the LaTeX Project Public License obligations, which you should\n");
+    std::fprintf(out, " * check carefully, this file may be used as if under the BSD License applied\n");
+    std::fprintf(out, " * elsewhere in the Reduce project.\n");
+    std::fprintf(out, " */\n\n");
+    std::fprintf(out, "/* $Id$ */\n");
+    std::fprintf(out, "\n#include <stdint.h>\n\n");
+    std::fprintf(out, "typedef struct _fontmap\n");
+    std::fprintf(out, "{\n");
+    std::fprintf(out, "    const char *name;\n");
+    std::fprintf(out, "    uint32_t map[65536/32]; /* 2048 words */\n");
+    std::fprintf(out, "} fontmap;\n");
+    std::fprintf(out, "\n");
+    std::fprintf(out, "fontmap coverage[] =\n");
+    std::fprintf(out, "{\n");
     for (z=1; z<argc; z++)
     {   const char *fontname = argv[z];
         int charcount = 0;
         int warnings = 0;
-        memset(map, 0, sizeof(map));
-        strcpy(outname, fontname);
-        p = strchr(outname, '.');
+        std::memset(map, 0, sizeof(map));
+        std::strcpy(outname, fontname);
+        p = std::strchr(outname, '.');
         *p = 0;
-        fprintf(out, "  {\"%s\", {", strchr(outname, '/')+1);
-        in = fopen(fontname, "r");
+        std::fprintf(out, "  {\"%s\", {", std::strchr(outname, '/')+1);
+        in = std::fopen(fontname, "r");
         for (;;)
         {   int c;
             for (n=0; n<sizeof(inputline)-1; n++)
-            {   c = getc(in);
+            {   c = std::getc(in);
                 if (c == '\n' || c == EOF) break;
                 inputline[n] = c;
             }
             inputline[n] = 0;
-            if (n != 0 && sscanf(inputline, "%d", &n) == 1)
+            if (n != 0 && std::sscanf(inputline, "%d", &n) == 1)
             {   if (n > 0xffff)
                 {   if (warnings++ < 10)
-                        printf("code over 0xffff present and ignored\n");
+                        std::printf("code over 0xffff present and ignored\n");
                     continue;
                 }
                 map[n/32] |= 1U<<(n%32);
@@ -187,21 +187,21 @@ int main(int argc, char *argv[])
             }
             if (c == EOF) break;
         }
-        printf("Font %s had %d characters\n", outname, charcount);
+        std::printf("Font %s had %d characters\n", outname, charcount);
 #define WORDS (0x10000/32)
         for (i=0; i<WORDS; i++)
         {   if ((i % 6) == 0)
-                fprintf(out, "\n   ");
-            fprintf(out, " 0x%.8x", map[i]);
-            if (i != (WORDS-1)) fprintf(out, ",");
+                std::fprintf(out, "\n   ");
+            std::fprintf(out, " 0x%.8x", map[i]);
+            if (i != (WORDS-1)) std::fprintf(out, ",");
         }
-        fprintf(out, "}}");
-        if (z != argc-1) fprintf(out, ",");
-        fprintf(out, "\n");
-        fclose(in);
+        std::fprintf(out, "}}");
+        if (z != argc-1) std::fprintf(out, ",");
+        std::fprintf(out, "\n");
+        std::fclose(in);
     }
-    fprintf(out, "};\n\n/* End of coverage.cpp */\n");
-    fclose(out);
+    std::fprintf(out, "};\n\n/* End of coverage.cpp */\n");
+    std::fclose(out);
 }
 
 // End of glyphtable.cpp

@@ -56,8 +56,6 @@
 #endif
 #ifdef WIN32
 #define __USE_MINGW_ANSI_STDIO 1
-#endif
-#ifdef WIN32
 #include <winsock.h>
 #include <windows.h>
 #else 
@@ -79,30 +77,37 @@
 # define INADDR_NONE 0xffffffff
 #endif
 #endif 
+#include <cstdio>
+#include <cstdlib>
+#include <cstddef>
+#include <cmath>
+#include <cfloat>
+#include <cstdint>
+#include <cinttypes>
+#include <climits>
+#include <cstring>
+#include <cctype>
+#include <cwctype>
+#include <ctime>
+#include <cstdarg>
+#include <csetjmp>
+#include <csignal>
+#include <cerrno>
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <math.h>
-#include <float.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <string.h>
-#include <ctype.h>
-#include <wctype.h>
-#include <time.h>
-#include <stdarg.h>
-#include <setjmp.h>
-#include <signal.h>
 #include <exception>
-#include <errno.h>
-#include <assert.h>
+#include <cassert>
+#include <map>
+#include <unordered_map>
+#include <vector>
+#include <iostream>
+#include <string>
+#include <algorithm>
 #include <random>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
+#include <functional>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
@@ -156,40 +161,40 @@ extern "C"
 # endif
 #endif
 #ifdef SIGNED_SHIFTS_ARE_ARITHMETIC
-inline int32_t ASR(int32_t a, int n)
-{ if (n<0 || n>=8*(int)sizeof(int32_t)) n=0;
+inline std::int32_t ASR(std::int32_t a, int n)
+{ if (n<0 || n>=8*(int)sizeof(std::int32_t)) n=0;
  return a >> n;
 }
-inline int64_t ASR(int64_t a, int n)
-{ if (n<0 || n>=8*(int)sizeof(int64_t)) n=0;
+inline std::int64_t ASR(std::int64_t a, int n)
+{ if (n<0 || n>=8*(int)sizeof(std::int64_t)) n=0;
  return a >> n;
 }
 #else 
-inline int32_t ASR(int32_t a, int n)
-{ if (n<0 || n>=8*(int)sizeof(int32_t)) n=0;
- uint32_t r = ((uint32_t)a) >> n;
- uint32_t signbit = ((uint32_t)a) >> (8*sizeof(uint32_t)-1);
- if (n != 0) r |= ((-signbit) << (8*sizeof(uint32_t) - n));
- return (int32_t)r;
+inline std::int32_t ASR(std::int32_t a, int n)
+{ if (n<0 || n>=8*(int)sizeof(std::int32_t)) n=0;
+ std::uint32_t r = ((std::uint32_t)a) >> n;
+ std::uint32_t std::signbit = ((std::uint32_t)a) >> (8*sizeof(std::uint32_t)-1);
+ if (n != 0) r |= ((-std::signbit) << (8*sizeof(std::uint32_t) - n));
+ return (std::int32_t)r;
 }
-inline int64_t ASR(int64_t a, int n)
-{ if (n<0 || n>=8*(int)sizeof(int64_t)) n=0;
- uint64_t r = ((uint64_t)a) >> n;
- uint64_t signbit = ((uint64_t)a) >> (8*sizeof(uint64_t)-1);
- if (n != 0) r |= ((-signbit) << (8*sizeof(uint64_t) - n));
- return (int64_t)r;
+inline std::int64_t ASR(std::int64_t a, int n)
+{ if (n<0 || n>=8*(int)sizeof(std::int64_t)) n=0;
+ std::uint64_t r = ((std::uint64_t)a) >> n;
+ std::uint64_t std::signbit = ((std::uint64_t)a) >> (8*sizeof(std::uint64_t)-1);
+ if (n != 0) r |= ((-std::signbit) << (8*sizeof(std::uint64_t) - n));
+ return (std::int64_t)r;
 }
 #endif 
-inline int32_t ASL(int32_t a, int n)
-{ if (n < 0 || n>=8*(int)sizeof(uint32_t)) n = 0;
- return (int32_t)(((uint32_t)a) << n);
+inline std::int32_t ASL(std::int32_t a, int n)
+{ if (n < 0 || n>=8*(int)sizeof(std::uint32_t)) n = 0;
+ return (std::int32_t)(((std::uint32_t)a) << n);
 }
-inline int64_t ASL(int64_t a, int n)
-{ if (n < 0 || n>=8*(int)sizeof(uint64_t)) n = 0;
- return (int64_t)(((uint64_t)a) << n);
+inline std::int64_t ASL(std::int64_t a, int n)
+{ if (n < 0 || n>=8*(int)sizeof(std::uint64_t)) n = 0;
+ return (std::int64_t)(((std::uint64_t)a) << n);
 }
-inline uint64_t ASL(uint64_t a, int n)
-{ if (n < 0 || n>=8*(int)sizeof(uint64_t)) n = 0;
+inline std::uint64_t ASL(std::uint64_t a, int n)
+{ if (n < 0 || n>=8*(int)sizeof(std::uint64_t)) n = 0;
  return a << n;
 }
 #ifdef HAVE_UINT128_T
@@ -209,32 +214,32 @@ typedef __int128 int128_t;
 #error Seem to have unsigned 128-bit type but not a signed one!
 #endif
 #ifdef MAXALING4
-inline void *aligned_malloc(size_t n)
-{ void *p = (void *)malloc(n + 32);
+inline void *aligned_malloc(std::size_t n)
+{ void *p = (void *)std::malloc(n + 32);
  if (p == NULL) return p;
- void *r = (void *)((((uintptr_t)p + 15) & -(uint64_t)16) + 16);
- (void *)((uintptr_t)r - 16) = p;
+ void *r = (void *)((((std::uintptr_t)p + 15) & -(std::uint64_t)16) + 16);
+ (void *)((std::uintptr_t)r - 16) = p;
  return r;
 }
 inline void aligned_free(void *p)
 { if (p == NULL) return;
- free(*(void *)((uintptr_t)p - 16));
+ std::free(*(void *)((std::uintptr_t)p - 16));
 }
 #else 
-inline void *aligned_malloc(size_t n)
-{ return (void *)malloc(n);
+inline void *aligned_malloc(std::size_t n)
+{ return (void *)std::malloc(n);
 }
 inline void aligned_free(void *p)
-{ free(p);
+{ std::free(p);
 }
 #endif 
 #endif 
 #ifndef header_fwin_h
 #define header_fwin_h 1
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <signal.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstdlib>
+#include <csignal>
 #ifdef DEBUG
 extern void fwin_write_log(const char *s, ...);
 #define FWIN_LOG(...) fwin_write_log(__VA_ARGS__)
@@ -257,7 +262,7 @@ extern void fwin_putchar(int c);
 extern void fwin_puts(const char *s);
 extern void fwin_showmath(const char *s);
 extern void fwin_printf(const char *fmt, ...);
-extern void fwin_vfprintf(const char *fmt, va_list a);
+extern void fwin_vfprintf(const char *fmt, std::va_list a);
 extern int fwin_linelength;
 extern void fwin_ensure_screen(void);
 extern int fwin_getchar(void);
@@ -314,7 +319,7 @@ extern void put_fileinfo(date_and_type *p, const char *name);
 extern int windowed;
 extern int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main);
 extern bool fwin_use_xft;
-extern bool directoryp(char *f, const char *o, size_t n);
+extern bool directoryp(char *f, const char *o, std::size_t n);
 extern bool using_termed;
 extern int fwin_plain_getchar();
 extern bool texmacs_mode;
@@ -325,16 +330,16 @@ extern void sigint_handler(int signo);
 #endif 
 extern int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main);
 extern char fwin_prompt_string[MAX_PROMPT_LENGTH];
-extern int get_current_directory(char *s, size_t n);
-extern bool file_readable(char *filename, const char *old, size_t n);
-extern bool file_writeable(char *filename, const char *old, size_t n);
-extern bool file_executable(char *filename, const char *old, size_t n);
-extern int rename_file(char *from_name, const char *from_old, size_t from_size,
- char *to_name, const char *to_old, size_t to_size);
-extern int get_home_directory(char *b, size_t len);
-extern int get_users_home_directory(char *b, size_t len);
+extern int get_current_directory(char *s, std::size_t n);
+extern bool file_readable(char *filename, const char *old, std::size_t n);
+extern bool file_writeable(char *filename, const char *old, std::size_t n);
+extern bool file_executable(char *filename, const char *old, std::size_t n);
+extern int rename_file(char *from_name, const char *from_old, std::size_t from_size,
+ char *to_name, const char *to_old, std::size_t to_size);
+extern int get_home_directory(char *b, std::size_t len);
+extern int get_users_home_directory(char *b, std::size_t len);
 extern int my_system(const char *s);
-extern int truncate_file(FILE *f, long int where);
+extern int truncate_file(std::FILE *f, long int where);
 #endif 
 #ifndef header_int128_t_h
 #define header_int128_t_h 1
@@ -342,13 +347,13 @@ extern int truncate_file(FILE *f, long int where);
 inline uint128_t uint128(int128_t v)
 { return (uint128_t)v;
 }
-inline uint128_t uint128(uint64_t v)
+inline uint128_t uint128(std::uint64_t v)
 { return (uint128_t)v;
 }
-inline uint128_t uint128(int64_t v)
+inline uint128_t uint128(std::int64_t v)
 { return (uint128_t)v;
 }
-inline int128_t int128(int64_t v)
+inline int128_t int128(std::int64_t v)
 { return (int128_t)v;
 }
 inline bool greaterp128(int128_t a, int128_t b)
@@ -374,15 +379,15 @@ inline int128_t ASR128(int128_t a, int n)
 }
 #else 
 inline int128_t ASR128(int128_t a, int n)
-{ if (n<0 || n>=sizeof(uint128_t)) n = 0;
+{ if (n<0 || n>=(int)sizeof(uint128_t)) n = 0;
  uint128_t r = ((uint128_t)a) >> n;
- uint128_t signbit = ((uint128_t)a) >> (8*sizeof(uint128_t)-1);
- if (n != 0) r |= ((-signbit) << (8*sizeof(uint128_t) - n);
+ uint128_t std::signbit = ((uint128_t)a) >> (8*sizeof(uint128_t)-1);
+ if (n != 0) r |= ((-std::signbit) << (8*sizeof(uint128_t) - n));
  return (int128_t)r;
 }
 #endif 
-inline int64_t NARROW128(int128_t a)
-{ return (int64_t)a;
+inline std::int64_t NARROW128(int128_t a)
+{ return (std::int64_t)a;
 }
 inline void divrem128(int128_t a, int128_t b,
  int128_t &q, int128_t &r)
@@ -396,18 +401,18 @@ inline uint128_t uint128(int128_t v)
 { uint128_t r = v;
  return r;
 }
-inline uint128_t uint128(int64_t v)
-{ uint128_t r = (uint64_t)v;
+inline uint128_t uint128(std::int64_t v)
+{ uint128_t r = (std::uint64_t)v;
  return r;
 }
-inline uint128_t uint128(uint64_t v)
+inline uint128_t uint128(std::uint64_t v)
 { uint128_t r = v;
  return r;
 }
-inline int128_t int128(int64_t v)
-{ int128_t r = (uint64_t)v;
+inline int128_t int128(std::int64_t v)
+{ int128_t r = (std::uint64_t)v;
  if (v < 0)
- { int128_t w = -(uint64_t)1;
+ { int128_t w = -(std::uint64_t)1;
  w = w <<64;
  r = r | w;
  }
@@ -443,26 +448,26 @@ inline int128_t ASL128(const int128_t & a, int n)
 }
 inline int128_t ASR128(const int128_t & a, int n)
 { if (n >= 128) return (a < 0 ? -1 : 0);
- if (n < 64) return int128_t(ASR((int64_t)a.upper(), n),
+ if (n < 64) return int128_t(ASR((std::int64_t)a.upper(), n),
  (a.upper()<<(64-n)) | (a.lower()>>n));
- else if (n == 64) return int128_t(-(int64_t)(a.upper()<0),
+ else if (n == 64) return int128_t(-(std::int64_t)(a.upper()<0),
  a.upper());
- else if (n < 64) return int128_t(ASR((int64_t)a.upper(), n),
+ else if (n < 64) return int128_t(ASR((std::int64_t)a.upper(), n),
  (a.upper()<<(64-n)) | (a.lower()>>n));
- else return int128_t(-(int64_t)(a.upper()<0),
- ASR(((int64_t)a.upper()), n-64));
+ else return int128_t(-(std::int64_t)(a.upper()<0),
+ ASR(((std::int64_t)a.upper()), n-64));
 }
-inline int64_t NARROW128(const int128_t & a)
-{ return (int64_t)a.lower();
+inline std::int64_t NARROW128(const int128_t & a)
+{ return (std::int64_t)a.lower();
 }
 inline void divrem128(const int128_t & a, const int128_t & b,
  int128_t & q, int128_t & r)
-{ if ((int64_t)a.upper() < 0)
- { if ((int64_t)b.upper() < 0) q = (-a)/(-b);
+{ if ((std::int64_t)a.upper() < 0)
+ { if ((std::int64_t)b.upper() < 0) q = (-a)/(-b);
  else q = -((-a)/b);
  }
  else
- { if ((int64_t)b.upper() < 0) q = -(a/(-b));
+ { if ((std::int64_t)b.upper() < 0) q = -(a/(-b));
  else q = a/b;
  }
  r = a - q*b;
@@ -471,7 +476,7 @@ inline void divrem128(const int128_t & a, const int128_t & b,
 #endif 
 #ifndef header_tags_h
 #define header_tags_h 1
-typedef intptr_t LispObject;
+typedef std::intptr_t LispObject;
 extern LispObject nil;
 #define SIXTY_FOUR_BIT (sizeof(intptr_t) == 8)
 inline void CSL_IGNORE(LispObject x)
@@ -525,35 +530,35 @@ inline bool is_immed_cons_sym(LispObject p)
 inline bool need_more_than_eq(LispObject p)
 { return ((0x63 >> (p & TAG_BITS)) & 1) != 0;
 }
-inline constexpr LispObject fixnum_of_int(intptr_t x)
-{ return (LispObject)((((uintptr_t)x)<<4) + TAG_FIXNUM);
+inline constexpr LispObject fixnum_of_int(std::intptr_t x)
+{ return (LispObject)((((std::uintptr_t)x)<<4) + TAG_FIXNUM);
 }
 #define FIXNUM_OF_INT(n) (16*(n)+TAG_FIXNUM)
-inline constexpr intptr_t int_of_fixnum(LispObject x)
-{ return ((intptr_t)x & ~(intptr_t)15)/16;
+inline constexpr std::intptr_t int_of_fixnum(LispObject x)
+{ return ((std::intptr_t)x & ~(std::intptr_t)15)/16;
 }
-inline bool valid_as_fixnum(int32_t x)
+inline bool valid_as_fixnum(std::int32_t x)
 { if (SIXTY_FOUR_BIT) return true;
  else return int_of_fixnum(fixnum_of_int(x)) == x;
 }
-inline bool valid_as_fixnum(int64_t x)
+inline bool valid_as_fixnum(std::int64_t x)
 { return int_of_fixnum(fixnum_of_int(x)) == x;
 }
 inline bool valid_as_fixnum(int128_t x)
 { return int_of_fixnum(fixnum_of_int(NARROW128(x))) == x;
 }
-inline bool intptr_valid_as_fixnum(intptr_t x)
+inline bool intptr_valid_as_fixnum(std::intptr_t x)
 { return int_of_fixnum(fixnum_of_int(x)) == x;
 }
-inline bool valid_as_fixnum(uint32_t x)
+inline bool valid_as_fixnum(std::uint32_t x)
 { if (SIXTY_FOUR_BIT) return true;
- else return x < (((uintptr_t)1) << 28);
+ else return x < (((std::uintptr_t)1) << 28);
 }
-inline bool valid_as_fixnum(uint64_t x)
-{ return x < (((uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
+inline bool valid_as_fixnum(std::uint64_t x)
+{ return x < (((std::uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
 }
 inline bool uint128_valid_as_fixnum(uint128_t x)
-{ return x < (((uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
+{ return x < (((std::uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
 }
 #define MOST_POSITIVE_FIXVAL (((intptr_t)1 << (8*sizeof(LispObject)-5)) - 1)
 #define MOST_NEGATIVE_FIXVAL (-((intptr_t)1 << (8*sizeof(LispObject)-5)))
@@ -598,14 +603,6 @@ typedef struct Cons_Cell_
 } Cons_Cell;
 extern bool valid_address(void *pointer);
 [[noreturn]] extern void my_abort();
-inline std::atomic<LispObject>& qcar(LispObject p)
-{ 
- return ((Cons_Cell *)p)->car;
-}
-inline std::atomic<LispObject>& qcdr(LispObject p)
-{ 
- return ((Cons_Cell *)p)->cdr;
-}
 inline LispObject car(LispObject p, std::memory_order mo=std::memory_order_relaxed)
 { 
  return ((Cons_Cell *)p)->car.load(mo);
@@ -645,7 +642,7 @@ typedef LispObject two_args(LispObject, LispObject, LispObject);
 typedef LispObject three_args(LispObject, LispObject, LispObject, LispObject);
 typedef LispObject fourup_args(LispObject, LispObject, LispObject,
  LispObject, LispObject);
-typedef uintptr_t Header;
+typedef std::uintptr_t Header;
 #define Tw (3)
 #define header_mask (0x7f<<Tw)
 #define TYPE_BITVEC_1 ( 0x02 <<Tw) 
@@ -751,19 +748,19 @@ inline void setvechdr(LispObject v, Header h, std::memory_order mo=std::memory_o
 inline unsigned int type_of_header(Header h)
 { return ((unsigned int)h) & header_mask;
 }
-inline size_t length_of_header(Header h)
-{ return (((size_t)h) >> (Tw+7)) << 2;
+inline std::size_t length_of_header(Header h)
+{ return (((std::size_t)h) >> (Tw+7)) << 2;
 }
-inline size_t length_of_bitheader(Header h)
-{ return (((size_t)h) >> (Tw+2)) - 31;
+inline std::size_t length_of_bitheader(Header h)
+{ return (((std::size_t)h) >> (Tw+2)) - 31;
 }
-inline size_t length_of_byteheader(Header h)
-{ return (((size_t)h) >> (Tw+5)) - 3;
+inline std::size_t length_of_byteheader(Header h)
+{ return (((std::size_t)h) >> (Tw+5)) - 3;
 }
-inline size_t length_of_hwordheader(Header h)
-{ return (((size_t)h) >> (Tw+6)) - 1;
+inline std::size_t length_of_hwordheader(Header h)
+{ return (((std::size_t)h) >> (Tw+6)) - 1;
 }
-inline Header bitvechdr_(size_t n)
+inline Header bitvechdr_(std::size_t n)
 { return TYPE_BITVEC_1 + (((n+31)&31)<<(Tw+2));
 }
 #define TYPE_SYMBOL 0x00000000 
@@ -835,7 +832,7 @@ inline bool vector_f64(Header h)
 inline bool vector_f128(Header h)
 { return ((0x80400000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
-inline std::atomic<LispObject>& basic_elt(LispObject v, size_t n)
+inline std::atomic<LispObject>& basic_elt(LispObject v, std::size_t n)
 { return *(std::atomic<LispObject> *)((char *)v +
  (CELL-TAG_VECTOR) +
  (n*sizeof(LispObject)));
@@ -961,54 +958,54 @@ inline bool is_bitvec(LispObject n)
 { if (is_basic_vector(n)) return is_bitvec_header(vechdr(n));
  else return is_bitvec_header(vechdr(basic_elt(n, 0)));
 }
-inline char& basic_celt(LispObject v, size_t n)
+inline char& basic_celt(LispObject v, std::size_t n)
 { return *((char *)(v) + (CELL-TAG_VECTOR) + n);
 }
-inline unsigned char& basic_ucelt(LispObject v, size_t n)
+inline unsigned char& basic_ucelt(LispObject v, std::size_t n)
 { return *((unsigned char *)v + (CELL-TAG_VECTOR) + n);
 }
-inline signed char& basic_scelt(LispObject v, size_t n)
+inline signed char& basic_scelt(LispObject v, std::size_t n)
 { return *((signed char *)v + (CELL-TAG_VECTOR) + n);
 }
 #define BPS_DATA_OFFSET (CELL-TAG_VECTOR)
 inline unsigned char* data_of_bps(LispObject v)
 { return (unsigned char *)v + BPS_DATA_OFFSET;
 }
-inline LispObject& vselt(LispObject v, size_t n)
-{ return *(LispObject *)(((intptr_t)v & ~((intptr_t)TAG_BITS)) +
+inline LispObject& vselt(LispObject v, std::size_t n)
+{ return *(LispObject *)(((std::intptr_t)v & ~((std::intptr_t)TAG_BITS)) +
  ((1 + n)*sizeof(LispObject)));
 }
-inline int16_t& basic_helt(LispObject v, size_t n)
-{ return *(int16_t *)((char *)v +
+inline std::int16_t& basic_helt(LispObject v, std::size_t n)
+{ return *(std::int16_t *)((char *)v +
  (CELL-TAG_VECTOR) +
- n*sizeof(int16_t));
+ n*sizeof(std::int16_t));
 }
-inline intptr_t& basic_ielt(LispObject v, size_t n)
-{ return *(intptr_t *)((char *)v +
+inline std::intptr_t& basic_ielt(LispObject v, std::size_t n)
+{ return *(std::intptr_t *)((char *)v +
  (CELL-TAG_VECTOR) +
- n*sizeof(intptr_t));
+ n*sizeof(std::intptr_t));
 }
-inline int32_t& basic_ielt32(LispObject v, size_t n)
-{ return *(int32_t *)((char *)v +
+inline std::int32_t& basic_ielt32(LispObject v, std::size_t n)
+{ return *(std::int32_t *)((char *)v +
  (CELL-TAG_VECTOR) +
- n*sizeof(int32_t));
+ n*sizeof(std::int32_t));
 }
-inline float& basic_felt(LispObject v, size_t n)
+inline float& basic_felt(LispObject v, std::size_t n)
 { return *(float *)((char *)v +
  (CELL-TAG_VECTOR) +
  n*sizeof(float));
 }
-inline double& basic_delt(LispObject v, size_t n)
+inline double& basic_delt(LispObject v, std::size_t n)
 { return *(double *)((char *)v +
  (8-TAG_VECTOR) +
  n*sizeof(double));
 }
 #define LOG2_VECTOR_CHUNK_BYTES (PAGE_BITS-2)
 #define VECTOR_CHUNK_BYTES ((size_t)(((size_t)1)<<LOG2_VECTOR_CHUNK_BYTES))
-inline bool is_power_of_two(uint64_t n)
+inline bool is_power_of_two(std::uint64_t n)
 { return (n == (n & (-n)));
 }
-inline int intlog2(uint64_t n)
+inline int intlog2(std::uint64_t n)
 {
  static const unsigned char intlog2_table[] =
  {
@@ -1028,31 +1025,31 @@ inline int type_of_vector(LispObject v)
 { if (is_basic_vector(v)) return type_of_header(vechdr(v));
  else return type_of_header(vechdr(basic_elt(v, 0)));
 }
-inline size_t bytes_in_bytevector(LispObject v)
+inline std::size_t bytes_in_bytevector(LispObject v)
 { if (is_basic_vector(v)) return length_of_byteheader(vechdr(v)) - CELL;
- size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
+ std::size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
  return VECTOR_CHUNK_BYTES*(n-1) +
  length_of_byteheader(vechdr(basic_elt(v, n-1))) - CELL;
 }
-inline size_t hwords_in_hwordvector(LispObject v)
+inline std::size_t hwords_in_hwordvector(LispObject v)
 { if (is_basic_vector(v)) return length_of_hwordheader(vechdr(v)) - (CELL/2);
- size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
+ std::size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
  return (VECTOR_CHUNK_BYTES/2)*(n-1) +
  length_of_hwordheader(vechdr(basic_elt(v, n-1))) - (CELL/2);
 }
-inline size_t bits_in_bitvector(LispObject v)
+inline std::size_t bits_in_bitvector(LispObject v)
 { if (is_basic_vector(v)) return length_of_bitheader(vechdr(v)) - 8*CELL;
- size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
+ std::size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
  return (8*VECTOR_CHUNK_BYTES)*(n-1) +
  length_of_bitheader(vechdr(basic_elt(v, n-1))) - 8*CELL;
 }
-inline size_t bytes_in_vector(LispObject v)
+inline std::size_t bytes_in_vector(LispObject v)
 { if (is_basic_vector(v)) return length_of_header(vechdr(v)) - CELL;
- size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
+ std::size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
  return VECTOR_CHUNK_BYTES*(n-1) +
  length_of_header(vechdr(basic_elt(v, n-1))) - CELL;
 }
-inline size_t cells_in_vector(LispObject v)
+inline std::size_t cells_in_vector(LispObject v)
 { return bytes_in_vector(v)/CELL;
 }
 inline bool vector_holds_binary(LispObject v)
@@ -1061,8 +1058,8 @@ inline bool vector_holds_binary(LispObject v)
 }
 extern LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1];
 inline void discard_basic_vector(LispObject v)
-{ size_t size = length_of_header(vechdr(v));
- size_t n = size/CELL - 1;
+{ std::size_t size = length_of_header(vechdr(v));
+ std::size_t n = size/CELL - 1;
  if (is_power_of_two(n)) 
  { int i = intlog2(n); 
  if (i <= LOG2_VECTOR_CHUNK_BYTES)
@@ -1070,7 +1067,7 @@ inline void discard_basic_vector(LispObject v)
  setvechdr(v,TYPE_SIMPLE_VEC +
  (size << (Tw+5)) +
  TAG_HDR_IMMED);
- v = (v & ~(uintptr_t)TAG_BITS) | TAG_VECTOR;
+ v = (v & ~(std::uintptr_t)TAG_BITS) | TAG_VECTOR;
  free_vectors[i] = v;
  }
  }
@@ -1078,53 +1075,53 @@ inline void discard_basic_vector(LispObject v)
 inline void discard_vector(LispObject v)
 { if (is_basic_vector(v)) discard_basic_vector(v);
  else
- { size_t n1 = length_of_header(vechdr(v))/CELL - 1;
- for (size_t i=0; i<n1; i++)
+ { std::size_t n1 = length_of_header(vechdr(v))/CELL - 1;
+ for (std::size_t i=0; i<n1; i++)
  discard_basic_vector(basic_elt(v, i));
  discard_basic_vector(v);
  }
 }
-inline std::atomic<LispObject>& elt(LispObject v, size_t n)
+inline std::atomic<LispObject>& elt(LispObject v, std::size_t n)
 { if (is_basic_vector(v)) return basic_elt(v, n);
  return basic_elt(basic_elt(v, n/(VECTOR_CHUNK_BYTES/CELL)),
  n%(VECTOR_CHUNK_BYTES/CELL));
 }
-inline char& celt(LispObject v, size_t n)
+inline char& celt(LispObject v, std::size_t n)
 { if (is_basic_vector(v)) return basic_celt(v, n);
  return basic_celt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
  n%VECTOR_CHUNK_BYTES);
 }
-inline unsigned char& ucelt(LispObject v, size_t n)
+inline unsigned char& ucelt(LispObject v, std::size_t n)
 { if (is_basic_vector(v)) return basic_ucelt(v, n);
  return basic_ucelt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
  n%VECTOR_CHUNK_BYTES);
 }
-inline signed char& scelt(LispObject v, size_t n)
+inline signed char& scelt(LispObject v, std::size_t n)
 { if (is_basic_vector(v)) return basic_scelt(v, n);
  return basic_scelt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
  n%VECTOR_CHUNK_BYTES);
 }
-inline int16_t& helt(LispObject v, size_t n)
+inline std::int16_t& helt(LispObject v, std::size_t n)
 { if (is_basic_vector(v)) return basic_helt(v, n);
- return basic_helt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(int16_t))),
- n%(VECTOR_CHUNK_BYTES/sizeof(int16_t)));
+ return basic_helt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(std::int16_t))),
+ n%(VECTOR_CHUNK_BYTES/sizeof(std::int16_t)));
 }
-inline intptr_t& ielt(LispObject v, size_t n)
+inline std::intptr_t& ielt(LispObject v, std::size_t n)
 { if (is_basic_vector(v)) return basic_ielt(v, n);
- return basic_ielt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(intptr_t))),
- n%(VECTOR_CHUNK_BYTES/sizeof(intptr_t)));
+ return basic_ielt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(std::intptr_t))),
+ n%(VECTOR_CHUNK_BYTES/sizeof(std::intptr_t)));
 }
-inline int32_t& ielt32(LispObject v, size_t n)
+inline std::int32_t& ielt32(LispObject v, std::size_t n)
 { if (is_basic_vector(v)) return basic_ielt32(v, n);
- return basic_ielt32(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(int32_t))),
- n%(VECTOR_CHUNK_BYTES/sizeof(int32_t)));
+ return basic_ielt32(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(std::int32_t))),
+ n%(VECTOR_CHUNK_BYTES/sizeof(std::int32_t)));
 }
-inline float& felt(LispObject v, size_t n)
+inline float& felt(LispObject v, std::size_t n)
 { if (is_basic_vector(v)) return basic_felt(v, n);
  return basic_felt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(float))),
  n%(VECTOR_CHUNK_BYTES/sizeof(float)));
 }
-inline double& delt(LispObject v, size_t n)
+inline double& delt(LispObject v, std::size_t n)
 { if (is_basic_vector(v)) return basic_delt(v, n);
  return basic_delt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(double))),
  n%(VECTOR_CHUNK_BYTES/sizeof(double)));
@@ -1145,21 +1142,21 @@ inline unsigned int library_number(LispObject x)
 { return (x >> 20) & 0xfff;
 }
 inline int font_of_char(LispObject n)
-{ return ((int32_t)n >> (21+4+Tw)) & 0xf;
+{ return ((std::int32_t)n >> (21+4+Tw)) & 0xf;
 }
 inline int bits_of_char(LispObject n)
 { return 0;
 }
 inline unsigned int code_of_char(LispObject n)
-{ return ((uint32_t)(n) >> (4+Tw)) & 0x001fffff;
+{ return ((std::uint32_t)(n) >> (4+Tw)) & 0x001fffff;
 }
 inline LispObject pack_char(int font, unsigned int code)
-{ return (LispObject)((((uint32_t)(font)) << (21+4+Tw)) |
- (((uint32_t)(code)) << (4+Tw)) | TAG_CHAR);
+{ return (LispObject)((((std::uint32_t)(font)) << (21+4+Tw)) |
+ (((std::uint32_t)(code)) << (4+Tw)) | TAG_CHAR);
 }
 #define CHAR_EOF pack_char(0, 0x0010ffff)
-typedef int32_t junk; 
-typedef intptr_t junkxx; 
+typedef std::int32_t junk; 
+typedef std::intptr_t junkxx; 
 typedef struct Symbol_Head_
 {
  Header header; 
@@ -1169,12 +1166,12 @@ typedef struct Symbol_Head_
  LispObject fastgets; 
  LispObject package; 
  LispObject pname; 
- intptr_t function0; 
- intptr_t function1; 
- intptr_t function2; 
- intptr_t function3; 
- intptr_t function4up;
- uint64_t count; 
+ std::intptr_t function0; 
+ std::intptr_t function1; 
+ std::intptr_t function2; 
+ std::intptr_t function3; 
+ std::intptr_t function4up;
+ std::uint64_t count; 
 } Symbol_Head;
 #ifdef FUTURE_IDEA
 typedef struct Symbol_Head_
@@ -1185,27 +1182,27 @@ typedef struct Symbol_Head_
  LispObject pname; 
  LispObject package; 
  LispObject function; 
- uintptr_t count; 
+ std::uintptr_t count; 
 } Symbol_Head;
 typedef struct Function_Object_
 { Header header; 
  LispObject env; 
- intptr_t function0; 
- intptr_t function1; 
- intptr_t function2; 
- intptr_t function3; 
- intptr_t function4up;
- uintptr_t count; 
+ std::intptr_t function0; 
+ std::intptr_t function1; 
+ std::intptr_t function2; 
+ std::intptr_t function3; 
+ std::intptr_t function4up;
+ std::uintptr_t count; 
 } Function_Object;
 typedef struct Bytecoded_Function_Object_
 { Header header; 
  LispObject env; 
- intptr_t function0; 
- intptr_t function1; 
- intptr_t function2; 
- intptr_t function3; 
- intptr_t function4up;
- uintptr_t count; 
+ std::intptr_t function0; 
+ std::intptr_t function1; 
+ std::intptr_t function2; 
+ std::intptr_t function3; 
+ std::intptr_t function4up;
+ std::uintptr_t count; 
  unsigned char bytecodes[]; 
 } Bytecoded_Function_Object;
 #endif 
@@ -1270,26 +1267,26 @@ inline void setpackage(LispObject p, LispObject q, std::memory_order mo=std::mem
 inline void setpname(LispObject p, LispObject q, std::memory_order mo=std::memory_order_relaxed)
 { ((std::atomic<LispObject> *)((char *)p + (6*CELL-TAG_SYMBOL)))->store(q, mo);
 }
-inline intptr_t& ifn0(LispObject p)
-{ return *(intptr_t *)((char *)p + (7*CELL-TAG_SYMBOL));
+inline std::intptr_t& ifn0(LispObject p)
+{ return *(std::intptr_t *)((char *)p + (7*CELL-TAG_SYMBOL));
 }
-inline intptr_t& ifn1(LispObject p)
-{ return *(intptr_t *)((char *)p + (8*CELL-TAG_SYMBOL));
+inline std::intptr_t& ifn1(LispObject p)
+{ return *(std::intptr_t *)((char *)p + (8*CELL-TAG_SYMBOL));
 }
-inline intptr_t& ifn2(LispObject p)
-{ return *(intptr_t *)((char *)p + (9*CELL-TAG_SYMBOL));
+inline std::intptr_t& ifn2(LispObject p)
+{ return *(std::intptr_t *)((char *)p + (9*CELL-TAG_SYMBOL));
 }
-inline intptr_t& ifn3(LispObject p)
-{ return *(intptr_t *)((char *)p + (10*CELL-TAG_SYMBOL));
+inline std::intptr_t& ifn3(LispObject p)
+{ return *(std::intptr_t *)((char *)p + (10*CELL-TAG_SYMBOL));
 }
-inline intptr_t& ifn4up(LispObject p)
-{ return *(intptr_t *)((char *)p + (11*CELL-TAG_SYMBOL));
+inline std::intptr_t& ifn4up(LispObject p)
+{ return *(std::intptr_t *)((char *)p + (11*CELL-TAG_SYMBOL));
 }
-inline intptr_t& ifnunused(LispObject p)
-{ return *(intptr_t *)((char *)p + (12*CELL-TAG_SYMBOL));
+inline std::intptr_t& ifnunused(LispObject p)
+{ return *(std::intptr_t *)((char *)p + (12*CELL-TAG_SYMBOL));
 }
-inline intptr_t& ifnn(LispObject p)
-{ return *(intptr_t *)((char *)p + (13*CELL-TAG_SYMBOL));
+inline std::intptr_t& ifnn(LispObject p)
+{ return *(std::intptr_t *)((char *)p + (13*CELL-TAG_SYMBOL));
 }
 inline no_args*& qfn0(LispObject p)
 { return *((no_args **)((char *)p + (7*CELL-TAG_SYMBOL)));
@@ -1328,50 +1325,50 @@ inline void a4a5a6(const char *name, LispObject a4up,
  if (a4up==nil || cdr(a4up) != nil) aerror1(name, a4up); 
  a6 = car(a4up);
 }
-inline std::atomic<uint64_t>& qcount(LispObject p)
-{ return *(std::atomic<uint64_t> *)((char *)p + (12*CELL-TAG_SYMBOL));
+inline std::atomic<std::uint64_t>& qcount(LispObject p)
+{ return *(std::atomic<std::uint64_t> *)((char *)p + (12*CELL-TAG_SYMBOL));
 }
 #ifndef HAVE_SOFTFLOAT
 typedef struct _float32_t
-{ uint32_t v;
+{ std::uint32_t v;
 } float32_t;
 typedef struct _float64_t
-{ uint64_t v;
+{ std::uint64_t v;
 } float64_t;
 #endif
 typedef union _Float_union
 { float f;
- uint32_t i;
+ std::uint32_t i;
  float32_t f32;
 } Float_union;
 inline LispObject low32(LispObject a)
-{ return (LispObject)(uint32_t)a;
+{ return (LispObject)(std::uint32_t)a;
 }
 typedef struct Big_Number_
 {
  Header h;
- uint32_t d[1]; 
+ std::uint32_t d[1]; 
 } Big_Number;
-inline size_t bignum_length(LispObject b)
+inline std::size_t bignum_length(LispObject b)
 { return length_of_header(numhdr(b));
 }
-inline uint32_t* bignum_digits(LispObject b)
-{ return (uint32_t *)((char *)b + (CELL-TAG_NUMBERS));
+inline std::uint32_t* bignum_digits(LispObject b)
+{ return (std::uint32_t *)((char *)b + (CELL-TAG_NUMBERS));
 }
-inline uint32_t* vbignum_digits(LispObject b)
-{ return (uint32_t *)((char *)b + (CELL-TAG_NUMBERS));
+inline std::uint32_t* vbignum_digits(LispObject b)
+{ return (std::uint32_t *)((char *)b + (CELL-TAG_NUMBERS));
 }
-inline int64_t bignum_digits64(LispObject b, size_t n)
-{ return (int64_t)((int32_t *)((char *)b+(CELL-TAG_NUMBERS)))[n];
+inline std::int64_t bignum_digits64(LispObject b, std::size_t n)
+{ return (std::int64_t)((std::int32_t *)((char *)b+(CELL-TAG_NUMBERS)))[n];
 }
-inline Header make_bighdr(size_t n)
+inline Header make_bighdr(std::size_t n)
 { return TAG_HDR_IMMED+TYPE_BIGNUM+(n<<(Tw+7));
 }
-inline Header make_new_bighdr(size_t n)
+inline Header make_new_bighdr(std::size_t n)
 { return TAG_HDR_IMMED+TYPE_NEW_BIGNUM+(n<<(Tw+8));
 }
-inline uint64_t* new_bignum_digits(LispObject b)
-{ return (uint64_t *)((char *)b + (8-TAG_NUMBERS));
+inline std::uint64_t* new_bignum_digits(LispObject b)
+{ return (std::uint64_t *)((char *)b + (8-TAG_NUMBERS));
 }
 #define pack_hdrlength(n) (((intptr_t)(n))<<(Tw+7))
 typedef struct Rational_Number_
@@ -1413,7 +1410,7 @@ typedef struct Single_Float_
  union float_or_int
  { float f;
  float32_t f32;
- int32_t i;
+ std::int32_t i;
  } f;
 } Single_Float;
 inline float& single_float_val(LispObject v)
@@ -1422,21 +1419,21 @@ inline float& single_float_val(LispObject v)
 inline float32_t& float32_t_val(LispObject v)
 { return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.f32;
 }
-inline int32_t& intfloat32_t_val(LispObject v)
+inline std::int32_t& intfloat32_t_val(LispObject v)
 { return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.i;
 }
 typedef union _Double_union
 { double f;
- uint32_t i[2];
- uint64_t i64;
+ std::uint32_t i[2];
+ std::uint64_t i64;
  float64_t f64;
 } Double_union;
 #define SIZEOF_DOUBLE_FLOAT 16
 inline double *double_float_addr(LispObject v)
 { return (double *)((char *)v + (8-TAG_BOXFLOAT));
 }
-inline int32_t& double_float_pad(LispObject v)
-{ return *(int32_t *)((char *)v + (4-TAG_BOXFLOAT));
+inline std::int32_t& double_float_pad(LispObject v)
+{ return *(std::int32_t *)((char *)v + (4-TAG_BOXFLOAT));
 }
 inline double& double_float_val(LispObject v)
 { return *(double *)((char *)v + (8-TAG_BOXFLOAT));
@@ -1444,22 +1441,22 @@ inline double& double_float_val(LispObject v)
 inline float64_t& float64_t_val(LispObject v)
 { return *(float64_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
-inline int64_t& intfloat64_t_val(LispObject v)
-{ return *(int64_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::int64_t& intfloat64_t_val(LispObject v)
+{ return *(std::int64_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
-inline int32_t& intfloat64_t_val_hi(LispObject v)
-{ return *(int32_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::int32_t& intfloat64_t_val_hi(LispObject v)
+{ return *(std::int32_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
-inline int32_t& intfloat64_t_val_lo(LispObject v)
-{ return *(int32_t *)((char *)v + (12-TAG_BOXFLOAT));
+inline std::int32_t& intfloat64_t_val_lo(LispObject v)
+{ return *(std::int32_t *)((char *)v + (12-TAG_BOXFLOAT));
 }
 #ifdef HAVE_SOFTFLOAT
 #define SIZEOF_LONG_FLOAT 24
 inline float128_t *long_float_addr(LispObject v)
 { return (float128_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
-inline int32_t& long_float_pad(LispObject v)
-{ return *(int32_t *)((char *)v + (4-TAG_BOXFLOAT));
+inline std::int32_t& long_float_pad(LispObject v)
+{ return *(std::int32_t *)((char *)v + (4-TAG_BOXFLOAT));
 }
 inline float128_t& long_float_val(LispObject v)
 { return *(float128_t *)((char *)v + (8-TAG_BOXFLOAT));
@@ -1467,44 +1464,44 @@ inline float128_t& long_float_val(LispObject v)
 inline float128_t& float128_t_val(LispObject v)
 { return *(float128_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
-inline int64_t& intfloat128_t_val0(LispObject v)
-{ return *(int64_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::int64_t& intfloat128_t_val0(LispObject v)
+{ return *(std::int64_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
-inline int64_t& intfloat128_t_val1(LispObject v)
-{ return *(int64_t *)((char *)v + (16-TAG_BOXFLOAT));
+inline std::int64_t& intfloat128_t_val1(LispObject v)
+{ return *(std::int64_t *)((char *)v + (16-TAG_BOXFLOAT));
 }
-inline int32_t& intfloat128_t_val32_0(LispObject v)
-{ return *(int32_t *)((char *)v + (8-TAG_BOXFLOAT));
+inline std::int32_t& intfloat128_t_val32_0(LispObject v)
+{ return *(std::int32_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
-inline int32_t& intfloat128_t_val32_1(LispObject v)
-{ return *(int32_t *)((char *)v + (12-TAG_BOXFLOAT));
+inline std::int32_t& intfloat128_t_val32_1(LispObject v)
+{ return *(std::int32_t *)((char *)v + (12-TAG_BOXFLOAT));
 }
-inline int32_t& intfloat128_t_val32_2(LispObject v)
-{ return *(int32_t *)((char *)v + (16-TAG_BOXFLOAT));
+inline std::int32_t& intfloat128_t_val32_2(LispObject v)
+{ return *(std::int32_t *)((char *)v + (16-TAG_BOXFLOAT));
 }
-inline int32_t& intfloat128_t_val32_3(LispObject v)
-{ return *(int32_t *)((char *)v + (20-TAG_BOXFLOAT));
+inline std::int32_t& intfloat128_t_val32_3(LispObject v)
+{ return *(std::int32_t *)((char *)v + (20-TAG_BOXFLOAT));
 }
 #endif 
-inline uintptr_t word_align_up(uintptr_t n)
-{ return (LispObject)((n + 3) & (-(uintptr_t)4U));
+inline std::uintptr_t word_align_up(std::uintptr_t n)
+{ return (LispObject)((n + 3) & (-(std::uintptr_t)4U));
 }
-inline uintptr_t doubleword_align_up(uintptr_t n)
-{ return (uintptr_t)((n + 7) & (-(uintptr_t)8U));
+inline std::uintptr_t doubleword_align_up(std::uintptr_t n)
+{ return (std::uintptr_t)((n + 7) & (-(std::uintptr_t)8U));
 }
 inline LispObject doubleword_align_up(LispObject n)
-{ return (LispObject)(((uintptr_t)n + 7) & (-(uintptr_t)8U));
+{ return (LispObject)(((std::uintptr_t)n + 7) & (-(std::uintptr_t)8U));
 }
-inline uintptr_t doubleword_align_down(uintptr_t n)
-{ return (uintptr_t)((intptr_t)n & (-(uintptr_t)8U));
+inline std::uintptr_t doubleword_align_down(std::uintptr_t n)
+{ return (std::uintptr_t)((std::intptr_t)n & (-(std::uintptr_t)8U));
 }
-inline uintptr_t object_align_up(uintptr_t n)
-{ return (uintptr_t)((n + sizeof(LispObject) - 1) &
- (-(uintptr_t)sizeof(LispObject)));
+inline std::uintptr_t object_align_up(std::uintptr_t n)
+{ return (std::uintptr_t)((n + sizeof(LispObject) - 1) &
+ (-(std::uintptr_t)sizeof(LispObject)));
 }
-inline uintptr_t object_2_align_up(uintptr_t n)
-{ return (uintptr_t)((n + 2*sizeof(LispObject) - 1) &
- (-(uintptr_t)2*sizeof(LispObject)));
+inline std::uintptr_t object_2_align_up(std::uintptr_t n)
+{ return (std::uintptr_t)((n + 2*sizeof(LispObject) - 1) &
+ (-(std::uintptr_t)2*sizeof(LispObject)));
 }
 #define UNWIND_NULL 0x0 
 #define UNWIND_GO 0x1 
@@ -1723,22 +1720,109 @@ static const char *error_message_table[] =
 #define header_externs_h 1
 #ifdef USE_MPI
 #include "mpi.h"
-extern int32_t mpi_rank,mpi_size;
+extern std::int32_t mpi_rank,mpi_size;
 #endif
 extern void **pages, **heap_pages, **vheap_pages;
 extern void **new_heap_pages, **new_vheap_pages;
 extern void *allocate_page(const char *why);
-extern size_t pages_count, heap_pages_count, vheap_pages_count;
-extern size_t new_heap_pages_count, new_vheap_pages_count;
+extern std::size_t pages_count, heap_pages_count, vheap_pages_count;
+extern std::size_t new_heap_pages_count, new_vheap_pages_count;
 extern LispObject *list_bases[];
 extern LispObject *nilsegment, *stacksegment;
 extern LispObject *nilsegmentbase, *stacksegmentbase;
 extern LispObject *stackbase;
-extern int32_t stack_segsize; 
+extern std::int32_t stack_segsize; 
 extern double max_store_size;
 extern bool restartp;
+#define IMAGE_FORMAT_VERSION '5'
+#define DIRECTORY_SIZE 8 
+typedef struct _directory_header
+{ char C, S, L, version; 
+ unsigned char dirext, 
+ 
+ 
+ dirsize, 
+ dirused, 
+ updated; 
+ char eof[4]; 
+ 
+} directory_header;
+typedef struct _directory_entry
+{ char data[44];
+} directory_entry;
+#define D_newline data[0]
+#define D_name data[1]
+#define D_space data[12]
+#define D_date data[13]
+#define D_position data[37]
+#define D_size data[41]
+#define name_size 12
+#define date_size 24
+#define DIRNAME_LENGTH 256
+#define NEWLINE_CHAR 0x0a
+typedef struct directory
+{ directory_header h;
+ std::FILE *f;
+ const char *full_filename; 
+ char filename[DIRNAME_LENGTH];
+ directory_entry d[1]; 
+} directory;
+#ifdef COMMON
+# define MIDDLE_INITIAL 'C'
+#else
+# define MIDDLE_INITIAL 'S'
+#endif
+inline int get_dirused(directory &d)
+{ return d.h.dirused + ((d.h.dirext & 0x0f)<<8);
+}
+inline int get_dirsize(directory &d)
+{ return d.h.dirsize + ((d.h.dirext & 0xf0)<<4);
+}
+#define D_WRITE_OK 1
+#define D_UPDATED 2
+#define D_COMPACT 4
+#define D_PENDING 8
+class stringBool
+{
+public:
+ std::string key;
+ bool flag;
+ stringBool(std::string k, bool f)
+ { key = k;
+ flag = f;
+ }
+};
+class stringBoolString
+{
+public:
+ std::string key;
+ bool flag;
+ std::string data;
+ stringBoolString(std::string k, bool f, std::string d)
+ { key = k;
+ flag = f;
+ data = d;
+ }
+};
+class faslFileRecord
+{
+public:
+ bool inUse;
+ std::string name;
+ directory *dir;
+ bool isOutput;
+ faslFileRecord(std::string n, bool o)
+ { inUse = true;
+ name = n;
+ dir = NULL;
+ isOutput = o;
+ }
+};
+extern std::vector<stringBoolString> symbolsToDefine;
+extern std::vector<stringBoolString> stringsToDefine;
+extern std::vector<faslFileRecord> fasl_files; 
 extern char *big_chunk_start, *big_chunk_end;
-extern uintptr_t *C_stackbase, C_stacklimit;
+extern std::uintptr_t *C_stackbase, C_stacklimit;
 extern LispObject multiplication_buffer;
 #ifdef CONSERVATIVE
 extern void write_barrier(std::atomic<LispObject> *p);
@@ -1781,7 +1865,7 @@ inline void if_check_stack()
 #else
 inline void if_check_stack()
 { const char *_p_ = (const char *)&_p_; \
- if ((uintptr_t)_p_ < C_stacklimit) aerror("stack overflow"); \
+ if ((std::uintptr_t)_p_ < C_stacklimit) aerror("stack overflow"); \
 }
 #endif
 #ifdef DEBUG
@@ -1798,7 +1882,7 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 #define debug_record_symbol(x) debug_record_string(qpname(x))
 #define debug_show_trail(data) debug_show_trail_raw(data, __FILE__, __LINE__)
 #define debug_assert(x) \
- if (!(x)) { debug_show_trail("Assertion failed"); exit(7); }
+ if (!(x)) { debug_show_trail("Assertion failed"); std::exit(7); }
 #else
 #define debug_record(data)
 #define debug_record_int(s, n)
@@ -1814,31 +1898,23 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
  sizeof(LispObject) + 32)
 #define SPARE 512
 #ifdef CONSERVATIVE
-extern uintptr_t heapstart;
-extern uintptr_t fringe;
-extern uintptr_t heaplimit;
-extern uintptr_t len;
-extern uintptr_t xor_chain;
-extern uintptr_t vheapstart;
-extern uintptr_t vfringe;
-extern uintptr_t vheaplimit;
-extern uintptr_t vlen;
-extern uintptr_t vxor_chain;
+extern std::uintptr_t heapstart;
+extern std::uintptr_t len;
+extern std::uintptr_t xor_chain;
+extern std::uintptr_t vheapstart;
+extern std::uintptr_t vlen;
+extern std::uintptr_t vxor_chain;
 extern LispObject *stacklimit;
 #else 
-extern LispObject fringe, next_fringe;
-extern LispObject heaplimit;
-extern LispObject vfringe, next_vfringe;
-extern LispObject vheaplimit;
 extern LispObject *stacklimit;
 #endif 
-extern volatile std::atomic<uintptr_t> event_flag;
-extern intptr_t nwork;
+extern volatile std::atomic<std::uintptr_t> event_flag;
+extern std::intptr_t nwork;
 extern unsigned int exit_count;
-extern uint64_t gensym_ser;
-extern intptr_t print_precision, miscflags;
-extern intptr_t current_modulus, fastget_size, package_bits;
-extern intptr_t modulus_is_large;
+extern std::uint64_t gensym_ser;
+extern std::intptr_t print_precision, miscflags;
+extern std::intptr_t current_modulus, fastget_size, package_bits;
+extern std::intptr_t modulus_is_large;
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern LispObject quote_symbol, function_symbol, comma_symbol;
 extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
@@ -1965,30 +2041,24 @@ extern void copy_out_of_nilseg();
 extern void rehash_this_table(LispObject v);
 extern void simple_print(LispObject x);
 extern void simple_msg(const char *s, LispObject x);
-extern uint64_t hash_equal(LispObject key);
+extern std::uint64_t hash_equal(LispObject key);
 extern char *exit_charvec;
-extern intptr_t exit_reason;
+extern std::intptr_t exit_reason;
 extern int procstackp;
 extern bool garbage_collection_permitted;
-#define MAX_INPUT_FILES 40 
-#define MAX_SYMBOLS_TO_DEFINE 40
-#define MAX_FASL_PATHS 20
-extern const char *files_to_read[MAX_INPUT_FILES],
- *symbols_to_define[MAX_SYMBOLS_TO_DEFINE],
- *fasl_paths[MAX_FASL_PATHS];
 extern int csl_argc;
 extern const char **csl_argv;
 extern bool fasl_output_file;
-extern size_t output_directory;
+extern std::size_t output_directory;
 extern LispObject *repeat_heap;
-extern size_t repeat_count;
+extern std::size_t repeat_count;
 #ifdef BUILTIN_IMAGE
 const unsigned char *binary_read_filep;
 #else
-extern FILE *binary_read_file;
+extern std::FILE *binary_read_file;
 #endif
-extern FILE *binary_write_file;
-extern size_t boffop;
+extern std::FILE *binary_write_file;
+extern std::size_t boffop;
 extern void packcharacter(int c);
 extern void packbyte(int c);
 #define boffo_char(i) ucelt(boffo, i)
@@ -2000,30 +2070,26 @@ extern bool sockets_ready;
 extern void flush_socket();
 #endif
 extern void report_file(const char *s);
-extern bool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
 extern int errorset_min, errorset_max;
 extern bool force_verbos, force_echo, force_backtrace;
 extern bool stop_on_error;
-extern uint64_t force_cons, force_vec;
-extern size_t number_of_input_files,
- number_of_symbols_to_define,
- number_of_fasl_paths;
+extern std::uint64_t force_cons, force_vec;
 extern int init_flags;
 extern const char *standard_directory;
-extern int64_t gc_number;
-extern int64_t reclaim_trap_count;
-extern uintptr_t reclaim_stack_limit;
-extern uint64_t reclaim_trigger_count, reclaim_trigger_target;
+extern std::int64_t gc_number;
+extern std::int64_t reclaim_trap_count;
+extern std::uintptr_t reclaim_stack_limit;
+extern std::uint64_t reclaim_trigger_count, reclaim_trigger_target;
 #ifdef CONSERVATIVE
 extern void reclaim(const char *why);
 #else
 extern LispObject reclaim(LispObject value_to_return, const char *why,
- int stg_class, size_t size);
+ int stg_class, std::size_t size);
 #endif
 extern void use_gchook(LispObject arg);
-extern uint64_t force_cons, force_vec;
+extern std::uint64_t force_cons, force_vec;
 extern bool next_gc_is_hard;
-inline bool cons_forced(size_t n)
+inline bool cons_forced(std::size_t n)
 {
 #ifdef DEBUG
  if (force_cons == 0) return false;
@@ -2036,7 +2102,7 @@ inline bool cons_forced(size_t n)
 #endif
  return false;
 }
-inline bool vec_forced(size_t n)
+inline bool vec_forced(std::size_t n)
 {
 #ifdef DEBUG
  if (force_vec == 0) return false;
@@ -2054,8 +2120,8 @@ inline bool vec_forced(size_t n)
 #define INIT_EXPANDABLE 4
 #define Lispify_predicate(p) ((p) ? lisp_true : nil)
 extern int tty_count;
-extern FILE *spool_file;
-extern char spool_file_name[32];
+extern std::FILE *spool_file;
+extern char spool_file_name[128];
 #define CODESIZE 0x1000
 typedef struct _entry_point0
 { no_args *p;
@@ -2095,44 +2161,46 @@ extern LispObject char_to_id(int ch);
 extern void Iinit();
 extern void IreInit();
 extern void Ilist();
-extern bool open_output(const char *s, size_t len);
+extern bool open_output(const char *s, std::size_t len);
 #define IMAGE_CODE ((size_t)(-1000))
 #define HELP_CODE ((size_t)(-1001))
 #define BANNER_CODE ((size_t)(-1002))
 #define IOPEN_OUT 0
 #define IOPEN_IN 1
-extern bool Iopen(const char *name, size_t len, int dirn, char *expanded_name);
+extern bool Iopen(const char *name, std::size_t len, int dirn, char *expanded_name);
 extern bool Iopen_from_stdin(), Iopen_to_stdout();
-extern bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour);
+extern bool IopenRoot(char *expanded_name, std::size_t hard, int sixtyfour);
 extern bool Iwriterootp(char *expanded);
 extern bool Iopen_banner(int code);
-extern bool Imodulep(const char *name, size_t len, char *datestamp,
- size_t *size, char *expanded_name);
-extern char *trim_module_name(char *name, size_t *lenp);
-extern bool Icopy(const char *name, size_t len);
-extern bool Idelete(const char *name, size_t len);
+extern bool Imodulep1(int i, const char *name, std::size_t len, char *datestamp,
+ std::size_t *size, char *expanded_name);
+extern bool Imodulep(const char *name, std::size_t len, char *datestamp,
+ std::size_t *size, char *expanded_name);
+extern char *trim_module_name(char *name, std::size_t *lenp);
+extern bool Icopy(const char *name, std::size_t len);
+extern bool Idelete(const char *name, std::size_t len);
 extern bool IcloseInput();
 extern bool IcloseOutput();
 extern bool Ifinished();
 extern int Igetc();
-extern bool Iread(void *buff, size_t size);
+extern bool Iread(void *buff, std::size_t size);
 extern bool Iputc(int ch);
-extern bool Iwrite(const void *buff, size_t size);
+extern bool Iwrite(const void *buff, std::size_t size);
 extern bool def_init();
 extern bool inf_init();
 extern bool def_finish();
 extern bool inf_finish();
 extern int Zgetc();
-extern bool Zread(void *buff, size_t size);
+extern bool Zread(void *buff, std::size_t size);
 extern bool Zputc(int ch);
-extern bool Zwrite(const void *buff, size_t size);
+extern bool Zwrite(const void *buff, std::size_t size);
 extern long int Ioutsize();
 extern const char *CSLtmpdir();
-extern const char *CSLtmpnam(const char *suffix, size_t suffixlen);
+extern const char *CSLtmpnam(const char *suffix, std::size_t suffixlen);
 extern int Cmkdir(const char *s);
 extern char *look_in_lisp_variable(char *o, int prefix);
 extern void CSL_MD5_Init();
-extern void CSL_MD5_Update(const unsigned char *data, size_t len);
+extern void CSL_MD5_Update(const unsigned char *data, std::size_t len);
 extern void CSL_MD5_Final(unsigned char *md);
 extern bool CSL_MD5_busy;
 extern unsigned char *CSL_MD5(unsigned char *data, int n, unsigned char *md);
@@ -2140,9 +2208,9 @@ extern void checksum(LispObject a);
 extern void ensure_screen();
 extern int window_heading;
 [[noreturn]] extern void my_exit(int n);
-extern uint64_t base_time;
+extern std::uint64_t base_time;
 extern std::chrono::high_resolution_clock::time_point base_walltime;
-extern uint64_t gc_time;
+extern std::uint64_t gc_time;
 extern bool trap_floating_overflow;
 extern const volatile char *errorset_msg;
 extern int errorset_code;
@@ -2153,15 +2221,15 @@ extern int escaped_printing;
 void set_up_signal_handlers();
 extern int async_interrupt(int a);
 extern void record_get(LispObject tag, bool found);
-extern bool isprime(uint64_t);
+extern bool isprime(std::uint64_t);
 extern void set_up_functions(int restartp);
 extern void get_user_files_checksum(unsigned char *);
 extern LispObject acons(LispObject a, LispObject b, LispObject c);
 extern LispObject ash(LispObject a, LispObject b);
-extern LispObject bytestream_interpret(size_t ppc, LispObject lit,
+extern LispObject bytestream_interpret(std::size_t ppc, LispObject lit,
  LispObject *entry_stack);
 extern bool complex_stringp(LispObject a);
-extern LispObject copy_string(LispObject a, size_t n);
+extern LispObject copy_string(LispObject a, std::size_t n);
 extern void freshline_trace();
 extern void freshline_debug();
 extern LispObject cons(LispObject a, LispObject b);
@@ -2170,9 +2238,9 @@ extern LispObject acons_no_gc(LispObject a, LispObject b, LispObject c);
 extern LispObject cons_gc_test(LispObject a);
 extern void convert_fp_rep(void *p, int old_rep, int new_rep, int type);
 extern LispObject eval(LispObject u, LispObject env);
-extern uint32_t Crand();
+extern std::uint32_t Crand();
 extern LispObject Cremainder(LispObject a, LispObject b);
-extern void Csrand(uint32_t a);
+extern void Csrand(std::uint32_t a);
 extern void discard(LispObject a);
 extern bool eql_fn(LispObject a, LispObject b);
 extern bool cl_equal_fn(LispObject a, LispObject b);
@@ -2193,20 +2261,20 @@ extern void drop_heap_segments();
 extern LispObject gcd(LispObject a, LispObject b);
 extern LispObject get_pname(LispObject a);
 extern LispObject get(LispObject a, LispObject b, LispObject c=nil);
-extern LispObject get_basic_vector(int tag, int type, size_t length);
-extern LispObject get_basic_vector_init(size_t n, LispObject v);
-extern LispObject reduce_basic_vector_size(LispObject v, size_t len);
-extern LispObject get_vector(int tag, int type, size_t length);
-extern LispObject get_vector_init(size_t n, LispObject v);
-extern LispObject reduce_vector_size(LispObject n, size_t length);
+extern LispObject get_basic_vector(int tag, int type, std::size_t length);
+extern LispObject get_basic_vector_init(std::size_t n, LispObject v);
+extern LispObject reduce_basic_vector_size(LispObject v, std::size_t len);
+extern LispObject get_vector(int tag, int type, std::size_t length);
+extern LispObject get_vector_init(std::size_t n, LispObject v);
+extern LispObject reduce_vector_size(LispObject n, std::size_t length);
 extern void prepare_for_borrowing();
 inline void zero_out(void *p)
-{ char *p1 = (char *)doubleword_align_up((uintptr_t)p);
- memset(p1, 0, CSL_PAGE_SIZE);
+{ char *p1 = (char *)doubleword_align_up((std::uintptr_t)p);
+ std::memset(p1, 0, CSL_PAGE_SIZE);
 }
-extern LispObject borrow_basic_vector(int tag, int type, size_t length);
-extern LispObject borrow_vector(int tag, int type, size_t length);
-extern uint64_t hash_lisp_string(LispObject s);
+extern LispObject borrow_basic_vector(int tag, int type, std::size_t length);
+extern LispObject borrow_vector(int tag, int type, std::size_t length);
+extern std::uint64_t hash_lisp_string(LispObject s);
 extern void lose_C_def(LispObject a);
 extern bool geq2(LispObject a, LispObject b);
 extern bool greaterp2(LispObject a, LispObject b);
@@ -2225,7 +2293,7 @@ extern LispObject lognot(LispObject a);
 extern LispObject macroexpand(LispObject form, LispObject env);
 extern LispObject make_package(LispObject name);
 extern LispObject make_string(const char *b);
-extern LispObject make_nstring(const char *b, size_t n);
+extern LispObject make_nstring(const char *b, std::size_t n);
 extern LispObject make_undefined_symbol(const char *s);
 extern LispObject make_symbol(char const *s, int restartp,
  no_args *f0, one_arg *f1, two_args *f2,
@@ -2241,15 +2309,15 @@ extern LispObject ndelete(LispObject a, LispObject b);
 extern LispObject negate(LispObject a);
 extern LispObject nreverse(LispObject a);
 extern LispObject nreverse2(LispObject a, LispObject b);
-extern FILE *open_file(char *filename, const char *original_name,
- size_t n, const char *dirn, FILE *old_file);
+extern std::FILE *open_file(char *filename, const char *original_name,
+ std::size_t n, const char *dirn, std::FILE *old_file);
 extern LispObject plus2(LispObject a, LispObject b);
-extern void preserve(const char *msg, size_t len);
+extern void preserve(const char *msg, std::size_t len);
 extern LispObject prin(LispObject u);
 extern void debugprint(LispObject a, int depth=10);
 extern void debugprint(const char *s, LispObject a);
 extern void debugprint(const char *s);
-extern const char *get_string_data(LispObject a, const char *why, size_t &len);
+extern const char *get_string_data(LispObject a, const char *why, std::size_t &len);
 extern void prin_to_stdout(LispObject u);
 extern void prin_to_terminal(LispObject u);
 extern void prin_to_debug(LispObject u);
@@ -2282,7 +2350,7 @@ extern void read_eval_print(int noisy);
 extern void set_fns(LispObject sym, no_args *f0, one_arg *f1,
  two_args *f2, three_args *f3, fourup_args *f4up);
 extern void init_heap_segments(double size);
-extern void grab_more_memory(size_t npages);
+extern void grab_more_memory(std::size_t npages);
 extern bool allocate_more_memory();
 extern void setup(int restartp, double storesize);
 extern void set_up_variables(int restart_flag);
@@ -2291,11 +2359,11 @@ extern void write_everything();
 extern LispObject simplify_string(LispObject s);
 extern bool stringp(LispObject a);
 extern LispObject times2(LispObject a, LispObject b);
-extern int32_t thirty_two_bits(LispObject a);
-extern uint32_t thirty_two_bits_unsigned(LispObject a);
-extern int64_t sixty_four_bits(LispObject a);
-extern uint64_t sixty_four_bits_unsigned(LispObject a);
-extern uint64_t crc64(uint64_t crc, const void *buf, size_t size);
+extern std::int32_t thirty_two_bits(LispObject a);
+extern std::uint32_t thirty_two_bits_unsigned(LispObject a);
+extern std::int64_t sixty_four_bits(LispObject a);
+extern std::uint64_t sixty_four_bits_unsigned(LispObject a);
+extern std::uint64_t crc64(std::uint64_t crc, const void *buf, std::size_t size);
 #ifdef DEBUG
 extern void validate_string_fn(LispObject a, const char *f, int l);
 #define validate_string(a) validate_string_fn(a, __FILE__, __LINE__)
@@ -2358,8 +2426,8 @@ typedef struct setup_type_1
  two_args *two;
  three_args *three;
  fourup_args *fourup;
- uint32_t c1;
- uint32_t c2;
+ std::uint32_t c1;
+ std::uint32_t c2;
 } setup_type_1;
 extern setup_type const
  arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
@@ -2405,13 +2473,13 @@ extern LispObject progn_fn(LispObject args, LispObject env);
 extern LispObject quote_fn(LispObject args, LispObject env);
 extern LispObject tagbody_fn(LispObject args, LispObject env);
 [[noreturn]] extern void resource_exceeded();
-extern int64_t time_base, space_base, io_base, errors_base;
-extern int64_t time_now, space_now, io_now, errors_now;
-extern int64_t time_limit, space_limit, io_limit, errors_limit;
+extern std::int64_t time_base, space_base, io_base, errors_base;
+extern std::int64_t time_now, space_now, io_now, errors_now;
+extern std::int64_t time_limit, space_limit, io_limit, errors_limit;
 extern bool symbol_protect_flag, warn_about_protected_symbols;
 #ifdef HASH_STATISTICS
-extern uint64_t Nhget, Nhgetp, Nhput1, Nhputp1, Nhput2, Nhputp2, Nhputtmp;
-extern uint64_t Noget, Nogetp, Noput, Noputp, Noputtmp;
+extern std::uint64_t Nhget, Nhgetp, Nhput1, Nhputp1, Nhput2, Nhputp2, Nhputtmp;
+extern std::uint64_t Noget, Nogetp, Noput, Noputp, Noputtmp;
 #endif
 #endif 
 #ifndef header_arith_h
@@ -2446,17 +2514,17 @@ extern unsigned char msd_table[256], lsd_table[256];
 #define set_top_bit(n) ((int32_t)((uint32_t)(n) | (uint32_t)0x80000000U))
 #define clear_top_bit(n) ((int32_t)((uint32_t)(n) & 0x7fffffff))
 #define signed_overflow(n) \
- top_bit_set((uint32_t)(n) ^ ((uint32_t)(n) << 1))
+ top_bit_set((std::uint32_t)(n) ^ ((std::uint32_t)(n) << 1))
 #define ADD32(a, b) ((uint32_t)(a) + (uint32_t)(b))
 #define signed29_in_64(n) \
- (((int64_t)(((uint64_t)(n) & 0x1fffffffU) << 35) / ((int64_t)1 << 35)) == \
- (int64_t)(n))
+ (((std::int64_t)(((std::uint64_t)(n) & 0x1fffffffU) << 35) / ((std::int64_t)1 << 35)) == \
+ (std::int64_t)(n))
 #define signed31_in_64(n) \
- (((int64_t)(((uint64_t)(n) & 0x7fffffffU) << 33) / ((int64_t)1 << 33)) == \
- (int64_t)(n))
+ (((std::int64_t)(((std::uint64_t)(n) & 0x7fffffffU) << 33) / ((std::int64_t)1 << 33)) == \
+ (std::int64_t)(n))
 #define signed31_in_ptr(n) \
- (((intptr_t)(((uintptr_t)(n)&0x7fffffffU) << (8*sizeof(intptr_t) - 31)) / \
- ((intptr_t)1 << (8*sizeof(intptr_t) - 31))) == (intptr_t)(n))
+ (((std::intptr_t)(((std::uintptr_t)(n)&0x7fffffffU) << (8*sizeof(std::intptr_t) - 31)) / \
+ ((std::intptr_t)1 << (8*sizeof(std::intptr_t) - 31))) == (std::intptr_t)(n))
 #ifdef HAVE_SOFTFLOAT
 #define FIX_TRUNCATE softfloat_round_minMag
 #define FIX_ROUND softfloat_round_near_even
@@ -2476,33 +2544,33 @@ inline bool floating_edge_case(double r)
 inline void floating_clear_flags()
 {}
 #define Dmultiply(hi, lo, a, b, c) \
- do { uint64_t r64 = (uint64_t)(a) * (uint64_t)(b) + \
- (uint32_t)(c); \
- (lo) = 0x7fffffffu & (uint32_t)r64; \
- (hi) = (uint32_t)(r64 >> 31); } while (0)
+ do { std::uint64_t r64 = (std::uint64_t)(a) * (std::uint64_t)(b) + \
+ (std::uint32_t)(c); \
+ (lo) = 0x7fffffffu & (std::uint32_t)r64; \
+ (hi) = (std::uint32_t)(r64 >> 31); } while (0)
 #define Ddivide(r, q, a, b, c) \
- do { uint64_t r64 = (((uint64_t)(a)) << 31) | (uint64_t)(b); \
- uint64_t c64 = (uint64_t)(uint32_t)(c); \
- q = (uint32_t)(r64 / c64); \
- r = (uint32_t)(r64 % c64); } while (0)
+ do { std::uint64_t r64 = (((std::uint64_t)(a)) << 31) | (std::uint64_t)(b); \
+ std::uint64_t c64 = (std::uint64_t)(std::uint32_t)(c); \
+ q = (std::uint32_t)(r64 / c64); \
+ r = (std::uint32_t)(r64 % c64); } while (0)
 #define Ddiv10_9(r, q, a, b) Ddivide(r, q, a, b, 1000000000u)
 #define Ddivideq(q, a, b, c) \
- do { uint64_t r64 = (((uint64_t)(a)) << 31) | (uint64_t)(b); \
- uint64_t c64 = (uint64_t)(uint32_t)(c); \
- q = (uint32_t)(r64 / c64); } while (0)
+ do { std::uint64_t r64 = (((std::uint64_t)(a)) << 31) | (std::uint64_t)(b); \
+ std::uint64_t c64 = (std::uint64_t)(std::uint32_t)(c); \
+ q = (std::uint32_t)(r64 / c64); } while (0)
 #define Ddiv10_9q(r, q, a, b) Ddivideq(q, a, b, 1000000000u)
 #define Ddivider(r, a, b, c) \
- do { uint64_t r64 = (((uint64_t)(a)) << 31) | (uint64_t)(b); \
- uint64_t c64 = (uint64_t)(uint32_t)(c); \
- r = (uint32_t)(r64 % c64); } while (0)
+ do { std::uint64_t r64 = (((std::uint64_t)(a)) << 31) | (std::uint64_t)(b); \
+ std::uint64_t c64 = (std::uint64_t)(std::uint32_t)(c); \
+ r = (std::uint32_t)(r64 % c64); } while (0)
 #define Ddiv10_9r(r, q, a, b) Ddivider(r, a, b, 1000000000u)
 #define fixnum_minusp(a) ((intptr_t)(a) < 0)
 #define bignum_minusp(a) \
- ((int32_t)bignum_digits(a)[((bignum_length(a)-CELL)/4)-1]<0)
+ ((std::int32_t)bignum_digits(a)[((bignum_length(a)-CELL)/4)-1]<0)
 inline double value_of_immediate_float(LispObject a)
 { Float_union aa;
- if (SIXTY_FOUR_BIT) aa.i = (int32_t)((uint64_t)a>>32);
- else aa.i = (int32_t)(a - XTAG_SFLOAT);
+ if (SIXTY_FOUR_BIT) aa.i = (std::int32_t)((std::uint64_t)a>>32);
+ else aa.i = (std::int32_t)(a - XTAG_SFLOAT);
  return aa.f;
 }
 extern LispObject make_boxfloat(double a, int type=TYPE_DOUBLE_FLOAT);
@@ -2519,7 +2587,7 @@ inline LispObject pack_short_float(double d)
  }
  aa.i &= ~0xf;
  if (SIXTY_FOUR_BIT)
- return (LispObject)(((uint64_t)aa.i) << 32) + XTAG_SFLOAT;
+ return (LispObject)(((std::uint64_t)aa.i) << 32) + XTAG_SFLOAT;
  else return aa.i + XTAG_SFLOAT;
 }
 inline LispObject pack_single_float(double d)
@@ -2531,7 +2599,7 @@ inline LispObject pack_single_float(double d)
  { floating_clear_flags();
  aerror("exception with single float");
  }
- return (LispObject)((uint64_t)aa.i << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
+ return (LispObject)((std::uint64_t)aa.i << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
  }
  else
  { LispObject r = get_basic_vector(TAG_BOXFLOAT,
@@ -2558,33 +2626,33 @@ inline LispObject pack_immediate_float(double d,
  }
  if (SIXTY_FOUR_BIT)
  { if (((l1 | l2) & XTAG_FLOAT32) == 0) aa.i &= ~0xf;
- return (LispObject)(((uint64_t)aa.i) << 32) + XTAG_SFLOAT +
+ return (LispObject)(((std::uint64_t)aa.i) << 32) + XTAG_SFLOAT +
  ((l1 | l2) & XTAG_FLOAT32);
  }
  aa.i &= ~0xf;
  return aa.i + XTAG_SFLOAT;
 }
-inline bool eq_i64d(int64_t a, double b)
+inline bool eq_i64d(std::int64_t a, double b)
 {
  if (b != (double)a) return false;
- if (b == (double)((uint64_t)1<<63)) return false;
- return a == (int64_t)b;
+ if (b == (double)((std::uint64_t)1<<63)) return false;
+ return a == (std::int64_t)b;
 }
-inline bool lessp_i64d(int64_t a, double b)
+inline bool lessp_i64d(std::int64_t a, double b)
 {
- if (a <= ((int64_t)1<<53) &&
- a >= -((int64_t)1<<53)) return (double)a < b;
- if (!(b >= -(double)((uint64_t)1<<63))) return false;
- if (!(b < (double)((uint64_t)1<<63))) return true;
- return a < (int64_t)b;
+ if (a <= ((std::int64_t)1<<53) &&
+ a >= -((std::int64_t)1<<53)) return (double)a < b;
+ if (!(b >= -(double)((std::uint64_t)1<<63))) return false;
+ if (!(b < (double)((std::uint64_t)1<<63))) return true;
+ return a < (std::int64_t)b;
 }
-inline bool lessp_di64(double a, int64_t b)
+inline bool lessp_di64(double a, std::int64_t b)
 {
- if (b <= ((int64_t)1<<53) &&
- b >= -((int64_t)1<<53)) return a < (double)b;
- if (!(a < (double)((uint64_t)1<<63))) return false;
- if (!(a >= -(double)((uint64_t)1<<63))) return true;
- return (int64_t)a < b;
+ if (b <= ((std::int64_t)1<<53) &&
+ b >= -((std::int64_t)1<<53)) return a < (double)b;
+ if (!(a < (double)((std::uint64_t)1<<63))) return false;
+ if (!(a >= -(double)((std::uint64_t)1<<63))) return true;
+ return (std::int64_t)a < b;
 }
 extern LispObject negateb(LispObject);
 extern LispObject copyb(LispObject);
@@ -2594,20 +2662,20 @@ extern LispObject difference2(LispObject a, LispObject b);
 extern LispObject times2(LispObject a, LispObject b);
 extern LispObject quot2(LispObject a, LispObject b);
 extern LispObject CLquot2(LispObject a, LispObject b);
-extern LispObject quotbn(LispObject a, int32_t n);
-extern LispObject quotbn1(LispObject a, int32_t n);
+extern LispObject quotbn(LispObject a, std::int32_t n);
+extern LispObject quotbn1(LispObject a, std::int32_t n);
 #define QUOTBB_QUOTIENT_NEEDED 1
 #define QUOTBB_REMAINDER_NEEDED 2
 extern LispObject quotbb(LispObject a, LispObject b, int needs);
 extern LispObject Cremainder(LispObject a, LispObject b);
 extern LispObject rembi(LispObject a, LispObject b);
 extern LispObject rembb(LispObject a, LispObject b);
-extern LispObject shrink_bignum(LispObject a, size_t lena);
+extern LispObject shrink_bignum(LispObject a, std::size_t lena);
 extern LispObject modulus(LispObject a, LispObject b);
 extern LispObject rational(LispObject a);
 extern LispObject rationalize(LispObject a);
 extern LispObject lcm(LispObject a, LispObject b);
-extern LispObject lengthen_by_one_bit(LispObject a, int32_t msd);
+extern LispObject lengthen_by_one_bit(LispObject a, std::int32_t msd);
 extern bool numeq2(LispObject a, LispObject b);
 extern bool SL_numeq2(LispObject a, LispObject b);
 extern bool zerop(LispObject a);
@@ -2618,47 +2686,47 @@ extern LispObject integer_decode_long_float(LispObject a);
 extern LispObject Linteger_decode_float(LispObject env, LispObject a);
 extern LispObject validate_number(const char *s, LispObject a,
  LispObject b, LispObject c);
-extern LispObject make_fake_bignum(intptr_t n);
-extern LispObject make_one_word_bignum(int32_t n);
-extern LispObject make_two_word_bignum(int32_t a, uint32_t b);
-extern LispObject make_three_word_bignum(int32_t a, uint32_t b, uint32_t c);
-extern LispObject make_four_word_bignum(int32_t a, uint32_t b,
- uint32_t c, uint32_t d);
-extern LispObject make_five_word_bignum(int32_t a, uint32_t b,
- uint32_t c, uint32_t d, uint32_t e);
-extern LispObject make_n_word_bignum(int32_t a2, uint32_t a1,
- uint32_t a0, size_t n);
-extern LispObject make_n4_word_bignum(int32_t a3, uint32_t a2,
- uint32_t a1, uint32_t a0, size_t n);
-extern LispObject make_n5_word_bignum(int32_t a4, uint32_t a3,
- uint32_t a2, uint32_t a1,
- uint32_t a0, size_t n);
-extern LispObject make_power_of_two(size_t n);
-extern LispObject make_lisp_integer32_fn(int32_t n);
-inline LispObject make_lisp_integer32(int32_t n)
-{ if (SIXTY_FOUR_BIT || valid_as_fixnum(n)) return fixnum_of_int((intptr_t)n);
+extern LispObject make_fake_bignum(std::intptr_t n);
+extern LispObject make_one_word_bignum(std::int32_t n);
+extern LispObject make_two_word_bignum(std::int32_t a, std::uint32_t b);
+extern LispObject make_three_word_bignum(std::int32_t a, std::uint32_t b, std::uint32_t c);
+extern LispObject make_four_word_bignum(std::int32_t a, std::uint32_t b,
+ std::uint32_t c, std::uint32_t d);
+extern LispObject make_five_word_bignum(std::int32_t a, std::uint32_t b,
+ std::uint32_t c, std::uint32_t d, std::uint32_t e);
+extern LispObject make_n_word_bignum(std::int32_t a2, std::uint32_t a1,
+ std::uint32_t a0, std::size_t n);
+extern LispObject make_n4_word_bignum(std::int32_t a3, std::uint32_t a2,
+ std::uint32_t a1, std::uint32_t a0, std::size_t n);
+extern LispObject make_n5_word_bignum(std::int32_t a4, std::uint32_t a3,
+ std::uint32_t a2, std::uint32_t a1,
+ std::uint32_t a0, std::size_t n);
+extern LispObject make_power_of_two(std::size_t n);
+extern LispObject make_lisp_integer32_fn(std::int32_t n);
+inline LispObject make_lisp_integer32(std::int32_t n)
+{ if (SIXTY_FOUR_BIT || valid_as_fixnum(n)) return fixnum_of_int((std::intptr_t)n);
  else return make_lisp_integer32_fn(n);
 }
-extern LispObject make_lisp_integer64_fn(int64_t n);
-inline LispObject make_lisp_integer64(int64_t n)
-{ if (valid_as_fixnum(n)) return fixnum_of_int((intptr_t)n);
+extern LispObject make_lisp_integer64_fn(std::int64_t n);
+inline LispObject make_lisp_integer64(std::int64_t n)
+{ if (valid_as_fixnum(n)) return fixnum_of_int((std::intptr_t)n);
  else return make_lisp_integer64_fn(n);
 }
-extern LispObject make_lisp_unsigned64_fn(uint64_t n);
-inline LispObject make_lisp_unsigned64(uint64_t n)
-{ if (n < ((uint64_t)1)<<(8*sizeof(intptr_t)-5))
- return fixnum_of_int((intptr_t)n);
+extern LispObject make_lisp_unsigned64_fn(std::uint64_t n);
+inline LispObject make_lisp_unsigned64(std::uint64_t n)
+{ if (n < ((std::uint64_t)1)<<(8*sizeof(std::intptr_t)-5))
+ return fixnum_of_int((std::intptr_t)n);
  else return make_lisp_unsigned64_fn(n);
 }
-extern LispObject make_lisp_integerptr_fn(intptr_t n);
-inline LispObject make_lisp_integerptr(intptr_t n)
+extern LispObject make_lisp_integerptr_fn(std::intptr_t n);
+inline LispObject make_lisp_integerptr(std::intptr_t n)
 { if (intptr_valid_as_fixnum(n)) return fixnum_of_int(n);
  else return make_lisp_integerptr_fn(n);
 }
-extern LispObject make_lisp_unsignedptr_fn(uintptr_t n);
-inline LispObject make_lisp_unsignedptr(uintptr_t n)
-{ if (n < ((uintptr_t)1)<<(8*sizeof(intptr_t)-5))
- return fixnum_of_int((intptr_t)n);
+extern LispObject make_lisp_unsignedptr_fn(std::uintptr_t n);
+inline LispObject make_lisp_unsignedptr(std::uintptr_t n)
+{ if (n < ((std::uintptr_t)1)<<(8*sizeof(std::intptr_t)-5))
+ return fixnum_of_int((std::intptr_t)n);
  else return make_lisp_unsignedptr_fn(n);
 }
 extern LispObject make_lisp_integer128_fn(int128_t n);
@@ -2669,7 +2737,7 @@ inline LispObject make_lisp_integer128(int128_t n)
 extern LispObject make_lisp_unsigned128_fn(uint128_t n);
 inline LispObject make_lisp_unsigned128(uint128_t n)
 { if (uint128_valid_as_fixnum(n))
- return fixnum_of_int((uint64_t)NARROW128(n));
+ return fixnum_of_int((std::uint64_t)NARROW128(n));
  else return make_lisp_unsigned128_fn(n);
 }
 inline void validate_number(LispObject n)
@@ -2720,7 +2788,7 @@ extern std::condition_variable cv_kara_ready,
 extern unsigned int kara_ready;
 extern int kara_done;
 #endif
-extern size_t kparallel, karatsuba_parallel;
+extern std::size_t kparallel, karatsuba_parallel;
 #ifndef KARATSUBA_PARALLEL_CUTOFF
 # define KARATSUBA_PARALLEL_CUTOFF 120
 #endif
@@ -2780,14 +2848,14 @@ inline bool f128M_nan(const float128_t *p)
 }
 inline bool f128M_negative(const float128_t *x)
 { if (f128M_nan(x)) return false;
- return ((int64_t)x->v[HIPART]) < 0;
+ return ((std::int64_t)x->v[HIPART]) < 0;
 }
 inline int f128M_exponent(const float128_t *p)
 { return ((p->v[HIPART] >> 48) & 0x7fff) - 0x3fff;
 }
 inline void f128M_set_exponent(float128_t *p, int n)
 { p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
- (((uint64_t)n + 0x3fff) << 48);
+ (((std::uint64_t)n + 0x3fff) << 48);
 }
 inline void f128M_negate(float128_t *x)
 { x->v[HIPART] ^= UINT64_C(0x8000000000000000);
@@ -2796,16 +2864,16 @@ inline bool floating_edge_case128(float128_t *r)
 { return f128M_infinite(r) || f128M_nan(r);
 }
 #endif 
-extern int double_to_binary(double d, int64_t &m);
+extern int double_to_binary(double d, std::int64_t &m);
 #ifdef HAVE_SOFTFLOAT
 extern int float128_to_binary(const float128_t *d,
- int64_t &mhi, uint64_t &mlo);
+ std::int64_t &mhi, std::uint64_t &mlo);
 #endif 
-extern intptr_t double_to_3_digits(double d,
- int32_t &a2, uint32_t &a1, uint32_t &a0);
+extern std::intptr_t double_to_3_digits(double d,
+ std::int32_t &a2, std::uint32_t &a1, std::uint32_t &a0);
 #ifdef HAVE_SOFTFLOAT
-extern intptr_t float128_to_5_digits(float128_t *d,
- int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0);
+extern std::intptr_t float128_to_5_digits(float128_t *d,
+ std::int32_t &a4, std::uint32_t &a3, std::uint32_t &a2, std::uint32_t &a1, std::uint32_t &a0);
 extern float128_t f128_0, 
  f128_half, 
  f128_mhalf, 
@@ -3694,7 +3762,7 @@ extern LispObject undefined_4up(LispObject env,
 #ifndef __lispthrow_h
 #define __lispthrow_h 1
 extern LispObject *stack;
-extern jmp_buf *global_jb;
+extern std::jmp_buf *global_jb;
 inline void push(LispObject a)
 { *++stack = a;
 }
@@ -3842,13 +3910,13 @@ extern volatile int unwind_pending;
 extern void respond_to_stack_event();
 inline void stackcheck0()
 { if_check_stack(); 
- if (((uintptr_t)stack | event_flag.load()) >=
- (uintptr_t)stacklimit) respond_to_stack_event();
+ if (((std::uintptr_t)stack | event_flag.load()) >=
+ (std::uintptr_t)stacklimit) respond_to_stack_event();
 }
 inline void stackcheck1(LispObject& a1) 
 { if_check_stack(); 
- if (((uintptr_t)stack | event_flag.load()) >=
- (uintptr_t)stacklimit)
+ if (((std::uintptr_t)stack | event_flag.load()) >=
+ (std::uintptr_t)stacklimit)
  { push(a1);
  respond_to_stack_event();
  pop(a1);
@@ -3856,8 +3924,8 @@ inline void stackcheck1(LispObject& a1)
 }
 inline void stackcheck2(LispObject& a1, LispObject& a2) 
 { if_check_stack(); 
- if (((uintptr_t)stack | event_flag.load()) >=
- (uintptr_t)stacklimit)
+ if (((std::uintptr_t)stack | event_flag.load()) >=
+ (std::uintptr_t)stacklimit)
  { push(a1, a2);
  respond_to_stack_event();
  pop(a2, a1);
@@ -3865,8 +3933,8 @@ inline void stackcheck2(LispObject& a1, LispObject& a2)
 }
 inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3) 
 { if_check_stack(); 
- if (((uintptr_t)stack | event_flag.load()) >=
- (uintptr_t)stacklimit)
+ if (((std::uintptr_t)stack | event_flag.load()) >=
+ (std::uintptr_t)stacklimit)
  { push(a1, a2, a3);
  respond_to_stack_event();
  pop(a3, a2, a1);
@@ -3874,8 +3942,8 @@ inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)
 }
 inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObject& a4) 
 { if_check_stack(); 
- if (((uintptr_t)stack | event_flag.load()) >=
- (uintptr_t)stacklimit)
+ if (((std::uintptr_t)stack | event_flag.load()) >=
+ (std::uintptr_t)stacklimit)
  { push(a1, a2, a3, a4);
  respond_to_stack_event();
  pop(a4, a3, a2, a1);
@@ -3883,13 +3951,13 @@ inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObje
 }
 inline void stackcheck()
 { if_check_stack(); 
- if (((uintptr_t)stack | event_flag.load()) >=
- (uintptr_t)stacklimit) respond_to_stack_event();
+ if (((std::uintptr_t)stack | event_flag.load()) >=
+ (std::uintptr_t)stacklimit) respond_to_stack_event();
 }
 inline void stackcheck(LispObject& a1) 
 { if_check_stack(); 
- if (((uintptr_t)stack | event_flag.load()) >=
- (uintptr_t)stacklimit)
+ if (((std::uintptr_t)stack | event_flag.load()) >=
+ (std::uintptr_t)stacklimit)
  { push(a1);
  respond_to_stack_event();
  pop(a1);
@@ -3897,8 +3965,8 @@ inline void stackcheck(LispObject& a1)
 }
 inline void stackcheck(LispObject& a1, LispObject& a2) 
 { if_check_stack(); 
- if (((uintptr_t)stack | event_flag.load()) >=
- (uintptr_t)stacklimit)
+ if (((std::uintptr_t)stack | event_flag.load()) >=
+ (std::uintptr_t)stacklimit)
  { push(a1, a2);
  respond_to_stack_event();
  pop(a2, a1);
@@ -3906,8 +3974,8 @@ inline void stackcheck(LispObject& a1, LispObject& a2)
 }
 inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3) 
 { if_check_stack(); 
- if (((uintptr_t)stack | event_flag.load()) >=
- (uintptr_t)stacklimit)
+ if (((std::uintptr_t)stack | event_flag.load()) >=
+ (std::uintptr_t)stacklimit)
  { push(a1, a2, a3);
  respond_to_stack_event();
  pop(a3, a2, a1);
@@ -3916,8 +3984,8 @@ inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)
 inline void stackcheck(LispObject& a1, LispObject& a2,
  LispObject& a3, LispObject& a4) 
 { if_check_stack(); 
- if (((uintptr_t)stack | event_flag.load()) >=
- (uintptr_t)stacklimit)
+ if (((std::uintptr_t)stack | event_flag.load()) >=
+ (std::uintptr_t)stacklimit)
  { push(a1, a2, a3, a4);
  respond_to_stack_event();
  pop(a4, a3, a2, a1);
@@ -3936,7 +4004,7 @@ inline void respond_to_fringe_event(LispObject &r, const char *msg)
  return;
  }
 #endif 
- uintptr_t f = event_flag.load();
+ std::uintptr_t f = event_flag.load();
  while (!event_flag.compare_exchange_weak(f, 0)) {}
  if (f == 0)
  {
@@ -4093,7 +4161,7 @@ public:
  }
 };
 inline const char *tidy_filename(const char *a)
-{ const char *b = strrchr(a, '/');
+{ const char *b = std::strrchr(a, '/');
  return (b == NULL ? a : b+1);
 }
 #ifdef DEBUG
@@ -4124,7 +4192,7 @@ public:
 #ifndef SAVE_STACK_AND_JB_DEFINED
 class RAIIsave_stack_and_jb
 { LispObject *saveStack;
- jmp_buf *jbsave;
+ std::jmp_buf *jbsave;
 public:
  RAIIsave_stack_and_jb()
  { jbsave = global_jb; 
@@ -4147,7 +4215,7 @@ public:
  }
 };
 #define START_SETJMP_BLOCK \
- jmp_buf jb; \
+ std::jmp_buf jb; \
  RAIIsave_stack_and_jb save_stack_Object; \
  switch (setjmp(jb)) \
  { default: \
@@ -4432,10 +4500,10 @@ static LispObject CC_buildKnullKvector(LispObject env,
     stack[-5] = v_40;
 v_11:
     v_40 = stack[-4];
-    v_41 = (LispObject)((intptr_t)(v_40) - 0x10);
+    v_41 = (LispObject)((std::intptr_t)(v_40) - 0x10);
     v_40 = stack[-5];
-    v_40 = (LispObject)(intptr_t)((intptr_t)v_41 - (intptr_t)v_40 + TAG_FIXNUM);
-    v_40 = ((intptr_t)(v_40) < 0 ? lisp_true : nil);
+    v_40 = (LispObject)(std::intptr_t)((std::intptr_t)v_41 - (std::intptr_t)v_40 + TAG_FIXNUM);
+    v_40 = ((std::intptr_t)(v_40) < 0 ? lisp_true : nil);
     if (v_40 == nil) goto v_16;
     goto v_10;
 v_16:
@@ -4451,7 +4519,7 @@ v_16:
     v_40 = Lputv(nil, stack[-1], stack[0], v_40);
     env = stack[-6];
     v_40 = stack[-5];
-    v_40 = (LispObject)((intptr_t)(v_40) + 0x10);
+    v_40 = (LispObject)((std::intptr_t)(v_40) + 0x10);
     stack[-5] = v_40;
     goto v_11;
 v_10:
@@ -4546,7 +4614,7 @@ v_33:
     v_94 = Lgetv(nil, v_95, v_94);
     env = stack[-6];
     if (!car_legal(v_94)) v_94 = cdrerror(v_94); else
-    v_94 = qcdr(v_94);
+    v_94 = cdr(v_94);
     stack[-3] = v_94;
     v_94 = stack[-2];
     v_94 = Lprin(nil, v_94);
@@ -4579,7 +4647,7 @@ v_58:
     env = stack[-6];
     v_94 = stack[0];
     if (!car_legal(v_94)) v_94 = cdrerror(v_94); else
-    v_94 = qcdr(v_94);
+    v_94 = cdr(v_94);
     {   LispObject fn = basic_elt(env, 8); // lalr_prin_action
     v_94 = (*qfn1(fn))(fn, v_94);
     }
@@ -4588,7 +4656,7 @@ v_58:
     env = stack[-6];
     v_94 = stack[-1];
     if (!car_legal(v_94)) v_94 = cdrerror(v_94); else
-    v_94 = qcdr(v_94);
+    v_94 = cdr(v_94);
     stack[-1] = v_94;
     goto v_53;
 v_52:
@@ -4668,7 +4736,7 @@ static LispObject CC_simpexpt11(LispObject env,
 v_12:
     v_78 = stack[-2];
     if (!car_legal(v_78)) v_78 = cdrerror(v_78); else
-    v_78 = qcdr(v_78);
+    v_78 = cdr(v_78);
     if (!consp(v_78)) goto v_26;
     else goto v_27;
 v_26:
@@ -4677,7 +4745,7 @@ v_26:
 v_27:
     v_78 = stack[-2];
     if (!car_legal(v_78)) v_78 = cdrerror(v_78); else
-    v_78 = qcdr(v_78);
+    v_78 = cdr(v_78);
     if (!car_legal(v_78)) v_78 = carerror(v_78); else
     v_78 = car(v_78);
     v_78 = (consp(v_78) ? nil : lisp_true);
@@ -4693,7 +4761,7 @@ v_23:
     v_79 = car(v_78);
     v_78 = stack[-2];
     if (!car_legal(v_78)) v_78 = cdrerror(v_78); else
-    v_78 = qcdr(v_78);
+    v_78 = cdr(v_78);
     {   LispObject fn = basic_elt(env, 3); // qremf
     v_78 = (*qfn2(fn))(fn, v_79, v_78);
     }
@@ -4709,7 +4777,7 @@ v_42:
 v_43:
     v_78 = stack[-4];
     if (!car_legal(v_78)) v_78 = cdrerror(v_78); else
-    v_78 = qcdr(v_78);
+    v_78 = cdr(v_78);
     goto v_41;
     v_78 = nil;
 v_41:
@@ -4740,10 +4808,10 @@ v_19:
     env = stack[-5];
     v_78 = stack[-4];
     if (!car_legal(v_78)) v_79 = cdrerror(v_78); else
-    v_79 = qcdr(v_78);
+    v_79 = cdr(v_78);
     v_78 = stack[-2];
     if (!car_legal(v_78)) v_78 = cdrerror(v_78); else
-    v_78 = qcdr(v_78);
+    v_78 = cdr(v_78);
     v_79 = cons(v_79, v_78);
     env = stack[-5];
     v_78 = stack[-1];
@@ -4811,7 +4879,7 @@ v_7:
     }
     v_38 = v_36;
     if (!car_legal(v_36)) v_37 = cdrerror(v_36); else
-    v_37 = qcdr(v_36);
+    v_37 = cdr(v_36);
     v_36 = (LispObject)16+TAG_FIXNUM; // 1
     if (v_37 == v_36) goto v_25;
     else goto v_22;
@@ -5020,13 +5088,13 @@ static LispObject CC_psTputv(LispObject env,
 v_8:
     v_40 = v_42;
     if (!car_legal(v_40)) v_40 = cdrerror(v_40); else
-    v_40 = qcdr(v_40);
+    v_40 = cdr(v_40);
     if (symbolp(v_40)) goto v_15;
     else goto v_16;
 v_15:
     v_40 = v_42;
     if (!car_legal(v_40)) v_40 = cdrerror(v_40); else
-    v_40 = qcdr(v_40);
+    v_40 = cdr(v_40);
     {   LispObject fn = basic_elt(env, 4); // eval
     v_42 = (*qfn1(fn))(fn, v_40);
     }
@@ -5036,7 +5104,7 @@ v_15:
 v_16:
     v_40 = v_42;
     if (!car_legal(v_40)) v_42 = cdrerror(v_40); else
-    v_42 = qcdr(v_40);
+    v_42 = cdr(v_40);
     v_41 = stack[-1];
     v_40 = stack[0];
         return Lputv(nil, v_42, v_41, v_40);
@@ -5273,7 +5341,7 @@ v_9:
     stack[-4] = v_70;
     v_70 = qvalue(basic_elt(env, 4)); // curfun!*
     if (!car_legal(v_70)) v_70 = cdrerror(v_70); else
-    v_70 = qcdr(v_70);
+    v_70 = cdr(v_70);
     setvalue(basic_elt(env, 4), v_70); // curfun!*
     goto v_19;
 v_21:
@@ -5290,11 +5358,11 @@ v_21:
     v_70 = Lexplode(nil, v_70);
     env = stack[-5];
     if (!car_legal(v_70)) v_70 = cdrerror(v_70); else
-    v_70 = qcdr(v_70);
+    v_70 = cdr(v_70);
     v_70 = Lnreverse(nil, v_70);
     env = stack[-5];
     if (!car_legal(v_70)) v_70 = cdrerror(v_70); else
-    v_70 = qcdr(v_70);
+    v_70 = cdr(v_70);
     v_70 = Lnreverse(nil, v_70);
     env = stack[-5];
     stack[-2] = v_70;
@@ -5314,12 +5382,12 @@ v_19:
     if (v_70 == nil) goto v_52;
     v_70 = qvalue(basic_elt(env, 1)); // cloc!*
     if (!car_legal(v_70)) v_70 = cdrerror(v_70); else
-    v_70 = qcdr(v_70);
+    v_70 = cdr(v_70);
     if (v_70 == nil) goto v_52;
     v_71 = stack[-4];
     v_70 = qvalue(basic_elt(env, 1)); // cloc!*
     if (!car_legal(v_70)) v_70 = cdrerror(v_70); else
-    v_70 = qcdr(v_70);
+    v_70 = cdr(v_70);
     v_70 = cons(v_71, v_70);
     env = stack[-5];
     goto v_50;
@@ -5467,7 +5535,7 @@ v_40:
     if (v_189 == nil) goto v_38;
     v_189 = stack[0];
     if (!car_legal(v_189)) v_189 = cdrerror(v_189); else
-    v_189 = qcdr(v_189);
+    v_189 = cdr(v_189);
     stack[-4] = v_189;
     v_189 = stack[-4];
     if (v_189 == nil) goto v_100;
@@ -5491,7 +5559,7 @@ v_101:
 v_95:
     v_189 = stack[-4];
     if (!car_legal(v_189)) v_189 = cdrerror(v_189); else
-    v_189 = qcdr(v_189);
+    v_189 = cdr(v_189);
     stack[-4] = v_189;
     v_189 = stack[-4];
     if (v_189 == nil) goto v_115;
@@ -5515,7 +5583,7 @@ v_116:
     setcdr(stack[0], v_189);
     v_189 = stack[-1];
     if (!car_legal(v_189)) v_189 = cdrerror(v_189); else
-    v_189 = qcdr(v_189);
+    v_189 = cdr(v_189);
     stack[-1] = v_189;
     goto v_95;
 v_94:
@@ -5542,9 +5610,9 @@ v_136:
     if (v_189 == nil) goto v_134;
     v_189 = stack[0];
     if (!car_legal(v_189)) v_189 = cdrerror(v_189); else
-    v_189 = qcdr(v_189);
+    v_189 = cdr(v_189);
     if (!car_legal(v_189)) v_189 = cdrerror(v_189); else
-    v_189 = qcdr(v_189);
+    v_189 = cdr(v_189);
     if (!car_legal(v_189)) v_190 = carerror(v_189); else
     v_190 = car(v_189);
     v_189 = stack[-3];
@@ -5569,9 +5637,9 @@ v_158:
     if (v_189 == nil) goto v_156;
     v_189 = stack[0];
     if (!car_legal(v_189)) v_189 = cdrerror(v_189); else
-    v_189 = qcdr(v_189);
+    v_189 = cdr(v_189);
     if (!car_legal(v_189)) v_189 = cdrerror(v_189); else
-    v_189 = qcdr(v_189);
+    v_189 = cdr(v_189);
     if (!car_legal(v_189)) v_190 = carerror(v_189); else
     v_190 = car(v_189);
     v_189 = stack[-3];
@@ -5579,11 +5647,11 @@ v_158:
     env = stack[-5];
     v_189 = stack[0];
     if (!car_legal(v_189)) v_189 = cdrerror(v_189); else
-    v_189 = qcdr(v_189);
+    v_189 = cdr(v_189);
     if (!car_legal(v_189)) v_189 = cdrerror(v_189); else
-    v_189 = qcdr(v_189);
+    v_189 = cdr(v_189);
     if (!car_legal(v_189)) v_189 = cdrerror(v_189); else
-    v_189 = qcdr(v_189);
+    v_189 = cdr(v_189);
     if (!car_legal(v_189)) v_190 = carerror(v_189); else
     v_190 = car(v_189);
     v_189 = stack[-3];
@@ -5740,7 +5808,7 @@ v_40:
     if (!car_legal(v_170)) v_170 = carerror(v_170); else
     v_170 = car(v_170);
     if (!car_legal(v_170)) v_170 = cdrerror(v_170); else
-    v_170 = qcdr(v_170);
+    v_170 = cdr(v_170);
     v_171 = stack[-2];
     if (!car_legal(v_171)) v_171 = carerror(v_171); else
     v_171 = car(v_171);
@@ -5774,7 +5842,7 @@ v_63:
     }
     env = stack[-5];
     if (!car_legal(v_170)) v_170 = cdrerror(v_170); else
-    v_170 = qcdr(v_170);
+    v_170 = cdr(v_170);
     v_170 = CC_quotof(basic_elt(env, 0), stack[-1], v_170);
     env = stack[-5];
     v_170 = cons(stack[0], v_170);
@@ -5803,17 +5871,17 @@ v_38:
 v_92:
     v_170 = stack[0];
     if (!car_legal(v_170)) v_171 = cdrerror(v_170); else
-    v_171 = qcdr(v_170);
+    v_171 = cdr(v_170);
     v_170 = stack[-4];
     if (!car_legal(v_170)) v_170 = cdrerror(v_170); else
-    v_170 = qcdr(v_170);
+    v_170 = cdr(v_170);
     stack[-1] = difference2(v_171, v_170);
     env = stack[-5];
     v_170 = stack[-3];
     if (!car_legal(v_170)) v_170 = carerror(v_170); else
     v_170 = car(v_170);
     if (!car_legal(v_170)) stack[0] = cdrerror(v_170); else
-    stack[0] = qcdr(v_170);
+    stack[0] = cdr(v_170);
     v_171 = stack[-2];
     v_170 = basic_elt(env, 2); // lcx
     {   LispObject fn = basic_elt(env, 5); // carx
@@ -5821,12 +5889,12 @@ v_92:
     }
     env = stack[-5];
     if (!car_legal(v_170)) v_170 = cdrerror(v_170); else
-    v_170 = qcdr(v_170);
+    v_170 = cdr(v_170);
     stack[0] = CC_quotof(basic_elt(env, 0), stack[0], v_170);
     env = stack[-5];
     v_170 = stack[-3];
     if (!car_legal(v_170)) v_171 = cdrerror(v_170); else
-    v_171 = qcdr(v_170);
+    v_171 = cdr(v_170);
     v_170 = stack[-2];
     v_170 = CC_quotof(basic_elt(env, 0), v_171, v_170);
     env = stack[-5];
@@ -5874,13 +5942,13 @@ v_93:
     if (!car_legal(v_170)) v_170 = carerror(v_170); else
     v_170 = car(v_170);
     if (!car_legal(v_170)) v_171 = cdrerror(v_170); else
-    v_171 = qcdr(v_170);
+    v_171 = cdr(v_170);
     v_170 = stack[-2];
     stack[0] = CC_quotof(basic_elt(env, 0), v_171, v_170);
     env = stack[-5];
     v_170 = stack[-3];
     if (!car_legal(v_170)) v_171 = cdrerror(v_170); else
-    v_171 = qcdr(v_170);
+    v_171 = cdr(v_170);
     v_170 = stack[-2];
     v_170 = CC_quotof(basic_elt(env, 0), v_171, v_170);
     {
@@ -5894,7 +5962,7 @@ v_137:
     stack[0] = car(v_170);
     v_170 = stack[-4];
     if (!car_legal(v_170)) v_170 = cdrerror(v_170); else
-    v_170 = qcdr(v_170);
+    v_170 = cdr(v_170);
     v_170 = negate(v_170);
     env = stack[-5];
     {   LispObject fn = basic_elt(env, 4); // mksp
@@ -5909,7 +5977,7 @@ v_137:
     }
     env = stack[-5];
     if (!car_legal(v_170)) v_170 = cdrerror(v_170); else
-    v_170 = qcdr(v_170);
+    v_170 = cdr(v_170);
     v_170 = CC_quotof(basic_elt(env, 0), stack[-1], v_170);
     env = stack[-5];
     v_170 = cons(stack[0], v_170);
@@ -6090,7 +6158,7 @@ v_11:
     if (v_25 == nil) goto v_15;
     v_25 = stack[-1];
     if (!car_legal(v_25)) v_25 = cdrerror(v_25); else
-    v_25 = qcdr(v_25);
+    v_25 = cdr(v_25);
     stack[-1] = v_25;
     goto v_7;
 v_15:
@@ -6152,7 +6220,7 @@ v_11:
 v_15:
     v_25 = stack[0];
     if (!car_legal(v_25)) v_25 = cdrerror(v_25); else
-    v_25 = qcdr(v_25);
+    v_25 = cdr(v_25);
     stack[0] = v_25;
     goto v_7;
     v_25 = nil;
@@ -6269,7 +6337,7 @@ static LispObject CC_subs3t(LispObject env,
     stack[0] = car(v_297);
     v_297 = stack[-4];
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     if (!consp(v_297)) goto v_27;
     else goto v_28;
 v_27:
@@ -6278,7 +6346,7 @@ v_27:
 v_28:
     v_297 = stack[-4];
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     if (!car_legal(v_297)) v_297 = carerror(v_297); else
     v_297 = car(v_297);
     v_297 = (consp(v_297) ? nil : lisp_true);
@@ -6320,7 +6388,7 @@ v_49:
 v_50:
     v_297 = stack[-4];
     if (!car_legal(v_297)) v_299 = cdrerror(v_297); else
-    v_299 = qcdr(v_297);
+    v_299 = cdr(v_297);
     v_298 = stack[-3];
     v_297 = nil;
     {   LispObject fn = basic_elt(env, 7); // subs3f1
@@ -6357,13 +6425,13 @@ v_13:
     if (!car_legal(v_297)) v_297 = carerror(v_297); else
     v_297 = car(v_297);
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     stack[-3] = v_297;
     v_297 = stack[-3];
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     if (!car_legal(v_297)) v_297 = carerror(v_297); else
     v_297 = car(v_297);
     if (!car_legal(v_297)) v_297 = carerror(v_297); else
@@ -6373,7 +6441,7 @@ v_13:
     setvalue(basic_elt(env, 1), v_297); // mchfg!*
     v_297 = stack[-4];
     if (!car_legal(v_297)) v_299 = cdrerror(v_297); else
-    v_299 = qcdr(v_297);
+    v_299 = cdr(v_297);
     v_298 = qvalue(basic_elt(env, 2)); // !*match
     v_297 = nil;
     {   LispObject fn = basic_elt(env, 7); // subs3f1
@@ -6408,10 +6476,10 @@ v_95:
     if (!car_legal(v_297)) v_297 = carerror(v_297); else
     v_297 = car(v_297);
     if (!car_legal(v_297)) v_298 = cdrerror(v_297); else
-    v_298 = qcdr(v_297);
+    v_298 = cdr(v_297);
     v_297 = stack[-1];
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     v_297 = difference2(v_298, v_297);
     env = stack[-6];
     {   LispObject fn = basic_elt(env, 9); // to
@@ -6449,11 +6517,11 @@ v_14:
     stack[-2] = v_297;
     v_297 = stack[-3];
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     if (!car_legal(v_297)) v_297 = carerror(v_297); else
     v_297 = car(v_297);
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     stack[-3] = v_297;
     v_297 = stack[-3];
     if (v_297 == nil) goto v_133;
@@ -6590,14 +6658,14 @@ v_218:
     if (!car_legal(v_297)) v_297 = carerror(v_297); else
     v_297 = car(v_297);
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     goto v_217;
 v_219:
     v_297 = stack[-3];
     if (!car_legal(v_297)) v_297 = carerror(v_297); else
     v_297 = car(v_297);
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     v_297 = negate(v_297);
     env = stack[-6];
     goto v_217;
@@ -6619,7 +6687,7 @@ v_217:
     stack[-1] = v_297;
     v_297 = stack[-3];
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     stack[-3] = v_297;
     goto v_15;
 v_16:
@@ -6633,7 +6701,7 @@ v_235:
     v_298 = stack[-1];
     v_297 = stack[-2];
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     {   LispObject fn = basic_elt(env, 17); // multf
     v_297 = (*qfn2(fn))(fn, v_298, v_297);
     }
@@ -6651,7 +6719,7 @@ v_236:
     }
     v_297 = stack[-2];
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     return cons(v_298, v_297);
     v_297 = nil;
     goto v_11;
@@ -6688,12 +6756,12 @@ v_257:
 v_255:
     v_297 = stack[-1];
     if (!car_legal(v_297)) v_298 = cdrerror(v_297); else
-    v_298 = qcdr(v_297);
+    v_298 = cdr(v_297);
     v_297 = stack[-4];
     if (!car_legal(v_297)) v_297 = carerror(v_297); else
     v_297 = car(v_297);
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     if (equal(v_298, v_297)) goto v_274;
     v_297 = stack[-4];
     if (!car_legal(v_297)) v_297 = carerror(v_297); else
@@ -6704,10 +6772,10 @@ v_255:
     if (!car_legal(v_297)) v_297 = carerror(v_297); else
     v_297 = car(v_297);
     if (!car_legal(v_297)) v_298 = cdrerror(v_297); else
-    v_298 = qcdr(v_297);
+    v_298 = cdr(v_297);
     v_297 = stack[-1];
     if (!car_legal(v_297)) v_297 = cdrerror(v_297); else
-    v_297 = qcdr(v_297);
+    v_297 = cdr(v_297);
     v_297 = difference2(v_298, v_297);
     env = stack[-6];
     {   LispObject fn = basic_elt(env, 9); // to
@@ -6782,7 +6850,7 @@ v_1:
     if (v_35 == nil) goto v_15;
     v_35 = stack[0];
     if (!car_legal(v_35)) v_35 = cdrerror(v_35); else
-    v_35 = qcdr(v_35);
+    v_35 = cdr(v_35);
     if (!car_legal(v_35)) v_35 = carerror(v_35); else
     v_35 = car(v_35);
     stack[0] = v_35;
@@ -6849,7 +6917,7 @@ v_8:
     if (!car_legal(v_77)) v_77 = carerror(v_77); else
     v_77 = car(v_77);
     if (!car_legal(v_77)) v_77 = cdrerror(v_77); else
-    v_77 = qcdr(v_77);
+    v_77 = cdr(v_77);
     {   LispObject fn = basic_elt(env, 2); // mod!#
     v_77 = (*qfn1(fn))(fn, v_77);
     }
@@ -6861,11 +6929,11 @@ v_8:
     if (!car_legal(v_77)) v_77 = carerror(v_77); else
     v_77 = car(v_77);
     if (!car_legal(v_77)) v_77 = cdrerror(v_77); else
-    v_77 = qcdr(v_77);
+    v_77 = cdr(v_77);
     v_78 = v_77;
     v_77 = stack[-2];
     if (!car_legal(v_77)) v_77 = cdrerror(v_77); else
-    v_77 = qcdr(v_77);
+    v_77 = cdr(v_77);
     stack[-2] = v_77;
 v_30:
     v_77 = stack[-2];
@@ -6882,7 +6950,7 @@ v_34:
     if (!car_legal(v_77)) v_77 = carerror(v_77); else
     v_77 = car(v_77);
     if (!car_legal(v_77)) v_77 = cdrerror(v_77); else
-    v_77 = qcdr(v_77);
+    v_77 = cdr(v_77);
     v_77 = difference2(v_78, v_77);
     env = stack[-4];
     {   LispObject fn = basic_elt(env, 3); // general!-modular!-expt
@@ -6898,7 +6966,7 @@ v_34:
     if (!car_legal(v_77)) v_77 = carerror(v_77); else
     v_77 = car(v_77);
     if (!car_legal(v_77)) v_77 = cdrerror(v_77); else
-    v_77 = qcdr(v_77);
+    v_77 = cdr(v_77);
     {   LispObject fn = basic_elt(env, 2); // mod!#
     v_77 = (*qfn1(fn))(fn, v_77);
     }
@@ -6914,11 +6982,11 @@ v_34:
     if (!car_legal(v_77)) v_77 = carerror(v_77); else
     v_77 = car(v_77);
     if (!car_legal(v_77)) v_77 = cdrerror(v_77); else
-    v_77 = qcdr(v_77);
+    v_77 = cdr(v_77);
     v_78 = v_77;
     v_77 = stack[-2];
     if (!car_legal(v_77)) v_77 = cdrerror(v_77); else
-    v_77 = qcdr(v_77);
+    v_77 = cdr(v_77);
     stack[-2] = v_77;
     goto v_30;
 v_29:
@@ -7006,7 +7074,7 @@ v_8:
 v_15:
     v_24 = stack[-1];
     if (!car_legal(v_24)) v_25 = cdrerror(v_24); else
-    v_25 = qcdr(v_24);
+    v_25 = cdr(v_24);
     v_24 = stack[0];
     stack[-1] = v_25;
     stack[0] = v_24;
@@ -7109,7 +7177,7 @@ v_32:
     setcdr(stack[-1], v_49);
     v_49 = stack[-2];
     if (!car_legal(v_49)) v_49 = cdrerror(v_49); else
-    v_49 = qcdr(v_49);
+    v_49 = cdr(v_49);
     stack[-2] = v_49;
     goto v_9;
 v_8:
@@ -7185,7 +7253,7 @@ v_28:
 v_26:
     v_49 = stack[0];
     if (!car_legal(v_49)) v_49 = cdrerror(v_49); else
-    v_49 = qcdr(v_49);
+    v_49 = cdr(v_49);
     stack[0] = v_49;
     goto v_14;
 v_13:
@@ -7252,7 +7320,7 @@ v_19:
     env = stack[-3];
     v_36 = stack[-1];
     if (!car_legal(v_36)) v_36 = cdrerror(v_36); else
-    v_36 = qcdr(v_36);
+    v_36 = cdr(v_36);
     stack[-1] = v_36;
     v_36 = stack[0];
     v_36 = add1(v_36);
@@ -7454,7 +7522,7 @@ v_8:
     stack[-4] = v_45;
     v_45 = v_47;
     if (!car_legal(v_45)) v_45 = cdrerror(v_45); else
-    v_45 = qcdr(v_45);
+    v_45 = cdr(v_45);
     stack[-3] = v_45;
     v_45 = v_46;
     if (!car_legal(v_45)) v_45 = carerror(v_45); else
@@ -7462,7 +7530,7 @@ v_8:
     stack[-2] = v_45;
     v_45 = v_46;
     if (!car_legal(v_45)) v_45 = cdrerror(v_45); else
-    v_45 = qcdr(v_45);
+    v_45 = cdr(v_45);
     stack[-1] = v_45;
     v_46 = stack[-4];
     v_45 = stack[-2];
@@ -7542,7 +7610,7 @@ v_6:
 v_7:
     v_24 = v_25;
     if (!car_legal(v_24)) v_24 = cdrerror(v_24); else
-    v_24 = qcdr(v_24);
+    v_24 = cdr(v_24);
     if (v_24 == nil) goto v_10;
     else goto v_11;
 v_10:
@@ -7556,7 +7624,7 @@ v_11:
     stack[0] = car(v_24);
     v_24 = v_25;
     if (!car_legal(v_24)) v_24 = cdrerror(v_24); else
-    v_24 = qcdr(v_24);
+    v_24 = cdr(v_24);
     v_24 = CC_Tdmpluslst(basic_elt(env, 0), v_24);
     env = stack[-1];
     {
@@ -7734,7 +7802,7 @@ static LispObject CC_ra_zerop(LispObject env,
     v_8 = (*qfn1(fn))(fn, v_8);
     }
     if (!car_legal(v_8)) v_8 = cdrerror(v_8); else
-    v_8 = qcdr(v_8);
+    v_8 = cdr(v_8);
     v_8 = (v_8 == nil ? lisp_true : nil);
     return onevalue(v_8);
 }
@@ -7813,7 +7881,7 @@ static LispObject CC_ofsf_at2ir(LispObject env,
     stack[-4] = v_60;
     v_60 = v_61;
     if (!car_legal(v_60)) v_60 = cdrerror(v_60); else
-    v_60 = qcdr(v_60);
+    v_60 = cdr(v_60);
     if (!car_legal(v_60)) v_60 = carerror(v_60); else
     v_60 = car(v_60);
     stack[-2] = v_60;
@@ -7838,7 +7906,7 @@ v_24:
 v_22:
     v_60 = stack[0];
     if (!car_legal(v_60)) v_60 = cdrerror(v_60); else
-    v_60 = qcdr(v_60);
+    v_60 = cdr(v_60);
     stack[0] = v_60;
     goto v_18;
 v_17:
@@ -7950,7 +8018,7 @@ v_21:
     v_31 = stack[-1];
     v_30 = stack[0];
     if (!car_legal(v_30)) v_30 = cdrerror(v_30); else
-    v_30 = qcdr(v_30);
+    v_30 = cdr(v_30);
     stack[-1] = v_31;
     stack[0] = v_30;
     goto v_1;
@@ -8029,7 +8097,7 @@ v_30:
     if (v_71 == nil) goto v_28;
     v_71 = v_73;
     if (!car_legal(v_71)) v_71 = cdrerror(v_71); else
-    v_71 = qcdr(v_71);
+    v_71 = cdr(v_71);
     if (v_71 == nil) goto v_46;
     v_71 = lisp_true;
     stack[-1] = v_71;
@@ -8055,7 +8123,7 @@ v_28:
 v_55:
     v_71 = v_73;
     if (!car_legal(v_71)) v_72 = cdrerror(v_71); else
-    v_72 = qcdr(v_71);
+    v_72 = cdr(v_71);
     v_71 = stack[-5];
     v_71 = cons(v_72, v_71);
     env = stack[-6];
@@ -8065,7 +8133,7 @@ v_56:
 v_26:
     v_71 = stack[0];
     if (!car_legal(v_71)) v_71 = cdrerror(v_71); else
-    v_71 = qcdr(v_71);
+    v_71 = cdr(v_71);
     stack[0] = v_71;
     goto v_14;
 v_13:
@@ -8289,19 +8357,19 @@ static LispObject CC_vdpvevlcomp(LispObject env,
     v_17 = v_2;
 // end of prologue
     if (!car_legal(v_17)) v_17 = cdrerror(v_17); else
-    v_17 = qcdr(v_17);
+    v_17 = cdr(v_17);
     if (!car_legal(v_17)) v_17 = cdrerror(v_17); else
-    v_17 = qcdr(v_17);
+    v_17 = cdr(v_17);
     if (!car_legal(v_17)) v_17 = cdrerror(v_17); else
-    v_17 = qcdr(v_17);
+    v_17 = cdr(v_17);
     if (!car_legal(v_17)) v_17 = carerror(v_17); else
     v_17 = car(v_17);
     if (!car_legal(v_16)) v_16 = cdrerror(v_16); else
-    v_16 = qcdr(v_16);
+    v_16 = cdr(v_16);
     if (!car_legal(v_16)) v_16 = cdrerror(v_16); else
-    v_16 = qcdr(v_16);
+    v_16 = cdr(v_16);
     if (!car_legal(v_16)) v_16 = cdrerror(v_16); else
-    v_16 = qcdr(v_16);
+    v_16 = cdr(v_16);
     if (!car_legal(v_16)) v_16 = carerror(v_16); else
     v_16 = car(v_16);
     {
@@ -8533,7 +8601,7 @@ v_1:
     stack[-4] = v_110;
     v_110 = stack[-1];
     if (!car_legal(v_110)) v_110 = cdrerror(v_110); else
-    v_110 = qcdr(v_110);
+    v_110 = cdr(v_110);
     stack[-1] = v_110;
     v_110 = stack[-1];
     if (v_110 == nil) goto v_16;
@@ -8541,7 +8609,7 @@ v_1:
 v_16:
     v_110 = stack[0];
     if (!car_legal(v_110)) v_110 = cdrerror(v_110); else
-    v_110 = qcdr(v_110);
+    v_110 = cdr(v_110);
     if (v_110 == nil) goto v_21;
     else goto v_22;
 v_21:
@@ -8597,7 +8665,7 @@ v_54:
 v_49:
     v_110 = stack[-3];
     if (!car_legal(v_110)) v_110 = cdrerror(v_110); else
-    v_110 = qcdr(v_110);
+    v_110 = cdr(v_110);
     stack[-3] = v_110;
     v_110 = stack[-3];
     if (v_110 == nil) goto v_68;
@@ -8621,7 +8689,7 @@ v_69:
     setcdr(stack[0], v_110);
     v_110 = stack[-1];
     if (!car_legal(v_110)) v_110 = cdrerror(v_110); else
-    v_110 = qcdr(v_110);
+    v_110 = cdr(v_110);
     stack[-1] = v_110;
     goto v_49;
 v_48:
@@ -8704,7 +8772,7 @@ static LispObject CC_redMhidelt(LispObject env,
     env = stack[-4];
     v_19 = stack[-3];
     if (!car_legal(v_19)) stack[0] = cdrerror(v_19); else
-    stack[0] = qcdr(v_19);
+    stack[0] = cdr(v_19);
     v_19 = stack[-2];
     {   LispObject fn = basic_elt(env, 3); // bas_rep
     stack[-2] = (*qfn1(fn))(fn, v_19);
@@ -8781,7 +8849,7 @@ v_11:
 v_24:
     v_36 = v_38;
     if (!car_legal(v_36)) v_36 = cdrerror(v_36); else
-    v_36 = qcdr(v_36);
+    v_36 = cdr(v_36);
     v_38 = v_36;
     goto v_7;
 v_25:
@@ -8830,7 +8898,7 @@ static LispObject CC_gf2crT(LispObject env,
     env = stack[-3];
     v_12 = stack[-1];
     if (!car_legal(v_12)) v_12 = cdrerror(v_12); else
-    v_12 = qcdr(v_12);
+    v_12 = cdr(v_12);
     {   LispObject fn = basic_elt(env, 2); // striptag
     v_12 = (*qfn1(fn))(fn, v_12);
     }
@@ -8898,7 +8966,7 @@ v_16:
     stack[-5] = v_107;
     v_107 = stack[-4];
     if (!car_legal(v_107)) v_107 = cdrerror(v_107); else
-    v_107 = qcdr(v_107);
+    v_107 = cdr(v_107);
     if (v_107 == nil) goto v_35;
     v_107 = stack[-4];
     if (!car_legal(v_107)) v_107 = carerror(v_107); else
@@ -8911,7 +8979,7 @@ v_35:
 v_33:
     v_107 = stack[-3];
     if (!car_legal(v_107)) v_107 = cdrerror(v_107); else
-    v_107 = qcdr(v_107);
+    v_107 = cdr(v_107);
     stack[-3] = v_107;
     goto v_11;
 v_12:
@@ -8932,11 +9000,11 @@ v_49:
     if (!car_legal(v_107)) v_107 = carerror(v_107); else
     v_107 = car(v_107);
     if (!car_legal(v_107)) v_107 = cdrerror(v_107); else
-    v_107 = qcdr(v_107);
+    v_107 = cdr(v_107);
     stack[-3] = v_107;
     v_107 = stack[-5];
     if (!car_legal(v_107)) v_107 = cdrerror(v_107); else
-    v_107 = qcdr(v_107);
+    v_107 = cdr(v_107);
     stack[-5] = v_107;
     v_107 = stack[-4];
     if (!car_legal(v_107)) v_107 = carerror(v_107); else
@@ -8961,12 +9029,12 @@ v_49:
     if (!car_legal(v_107)) v_107 = carerror(v_107); else
     v_107 = car(v_107);
     if (!car_legal(v_107)) v_108 = cdrerror(v_107); else
-    v_108 = qcdr(v_107);
+    v_108 = cdr(v_107);
     v_107 = stack[-3];
     if (!car_legal(v_107)) v_107 = carerror(v_107); else
     v_107 = car(v_107);
     if (!car_legal(v_107)) v_107 = cdrerror(v_107); else
-    v_107 = qcdr(v_107);
+    v_107 = cdr(v_107);
     {   LispObject fn = basic_elt(env, 2); // c!:subs2multf
     v_107 = (*qfn2(fn))(fn, v_108, v_107);
     }
@@ -8987,11 +9055,11 @@ v_83:
 v_81:
     v_107 = stack[-1];
     if (!car_legal(v_107)) stack[-2] = cdrerror(v_107); else
-    stack[-2] = qcdr(v_107);
+    stack[-2] = cdr(v_107);
     stack[-1] = v_108;
     v_107 = stack[-4];
     if (!car_legal(v_107)) v_108 = cdrerror(v_107); else
-    v_108 = qcdr(v_107);
+    v_108 = cdr(v_107);
     v_107 = stack[-3];
     v_107 = CC_extmult(basic_elt(env, 0), v_108, v_107);
     env = stack[-6];
@@ -9006,7 +9074,7 @@ v_81:
 v_71:
     v_107 = stack[-4];
     if (!car_legal(v_107)) v_108 = cdrerror(v_107); else
-    v_108 = qcdr(v_107);
+    v_108 = cdr(v_107);
     v_107 = stack[-3];
     v_108 = CC_extmult(basic_elt(env, 0), v_108, v_107);
     env = stack[-6];
@@ -9135,7 +9203,7 @@ v_48:
 v_46:
     v_172 = stack[-1];
     if (!car_legal(v_172)) v_172 = cdrerror(v_172); else
-    v_172 = qcdr(v_172);
+    v_172 = cdr(v_172);
     stack[-1] = v_172;
     goto v_30;
 v_29:
@@ -9272,7 +9340,7 @@ v_158:
 v_156:
     v_172 = stack[-3];
     if (!car_legal(v_172)) v_172 = cdrerror(v_172); else
-    v_172 = qcdr(v_172);
+    v_172 = cdr(v_172);
     stack[-3] = v_172;
     goto v_97;
 v_96:
@@ -9318,7 +9386,7 @@ static LispObject CC_monomcomparedeglex(LispObject env,
     v_95 = (LispObject)0+TAG_FIXNUM; // 0
     v_95 = Lgetv(nil, v_96, v_95);
     env = stack[-4];
-    if (((intptr_t)(stack[-3])) > ((intptr_t)(v_95))) goto v_14;
+    if (((std::intptr_t)(stack[-3])) > ((std::intptr_t)(v_95))) goto v_14;
     else goto v_15;
 v_14:
     v_95 = (LispObject)16+TAG_FIXNUM; // 1
@@ -9333,7 +9401,7 @@ v_15:
     v_95 = (LispObject)0+TAG_FIXNUM; // 0
     v_95 = Lgetv(nil, v_96, v_95);
     env = stack[-4];
-    if (((intptr_t)(stack[-3])) < ((intptr_t)(v_95))) goto v_23;
+    if (((std::intptr_t)(stack[-3])) < ((std::intptr_t)(v_95))) goto v_23;
     else goto v_24;
 v_23:
     v_95 = (LispObject)-16+TAG_FIXNUM; // -1
@@ -9350,7 +9418,7 @@ v_24:
     v_95 = Lreverse(nil, v_95);
     env = stack[-4];
     if (!car_legal(v_95)) v_95 = cdrerror(v_95); else
-    v_95 = qcdr(v_95);
+    v_95 = cdr(v_95);
     stack[-3] = v_95;
     stack[0] = nil;
     v_96 = stack[-2];
@@ -9362,7 +9430,7 @@ v_24:
     v_95 = Lreverse(nil, v_95);
     env = stack[-4];
     if (!car_legal(v_95)) v_95 = cdrerror(v_95); else
-    v_95 = qcdr(v_95);
+    v_95 = cdr(v_95);
     stack[0] = v_95;
 v_50:
     v_95 = stack[-3];
@@ -9415,11 +9483,11 @@ v_65:
 v_76:
     v_95 = stack[-3];
     if (!car_legal(v_95)) v_95 = cdrerror(v_95); else
-    v_95 = qcdr(v_95);
+    v_95 = cdr(v_95);
     stack[-3] = v_95;
     v_95 = stack[0];
     if (!car_legal(v_95)) v_95 = cdrerror(v_95); else
-    v_95 = qcdr(v_95);
+    v_95 = cdr(v_95);
     stack[0] = v_95;
     goto v_63;
 v_63:
@@ -9433,80 +9501,85 @@ v_13:
 
 
 
-// Code for simpcv
+// Code for offexpchk
 
-static LispObject CC_simpcv(LispObject env,
-                         LispObject v_2, LispObject v_3)
+static LispObject CC_offexpchk(LispObject env,
+                         LispObject v_2)
 {
     env = qenv(env);
 #if 0 // Start of trace output
 #endif // End of trace output
-    LispObject v_38, v_39;
+    LispObject v_32;
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
     if (++reclaim_trigger_count == reclaim_trigger_target ||
         stack >= stacklimit)
     {
-        push(v_2,v_3);
+        push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
-        pop(v_3,v_2);
+        pop(v_2);
     }
     push(env);
 // space for vars preserved across procedure calls
     push2(nil, nil);
     stack_popper stack_popper_var(3);
 // copy arguments values to proper place
-    stack[0] = v_3;
-    stack[-1] = v_2;
+    stack[0] = v_2;
 // end of prologue
-    v_38 = stack[-1];
-    v_39 = Llength(nil, v_38);
+    v_32 = qvalue(basic_elt(env, 1)); // !*really_off_exp
+    if (v_32 == nil) goto v_8;
+    else goto v_6;
+v_8:
+    v_32 = qvalue(basic_elt(env, 2)); // frlis!*
+    if (v_32 == nil) goto v_11;
+    v_32 = stack[0];
+    if (!car_legal(v_32)) v_32 = carerror(v_32); else
+    v_32 = car(v_32);
+    {   LispObject fn = basic_elt(env, 3); // freevarinexptchk
+    v_32 = (*qfn1(fn))(fn, v_32);
+    }
     env = stack[-2];
-    v_38 = (LispObject)48+TAG_FIXNUM; // 3
-    if (v_39 == v_38) goto v_8;
-    v_39 = basic_elt(env, 1); // "Invalid number of edges in vertex"
-    v_38 = stack[-1];
-    v_38 = list2(v_39, v_38);
+    if (v_32 == nil) goto v_11;
+    goto v_6;
+v_11:
+    v_32 = stack[0];
+    if (!car_legal(v_32)) v_32 = cdrerror(v_32); else
+    v_32 = cdr(v_32);
+    {   LispObject fn = basic_elt(env, 3); // freevarinexptchk
+    v_32 = (*qfn1(fn))(fn, v_32);
+    }
+    env = stack[-2];
+    if (v_32 == nil) goto v_18;
+    else goto v_6;
+v_18:
+    goto v_7;
+v_6:
+    v_32 = stack[0];
+    goto v_5;
+v_7:
+    v_32 = stack[0];
+    if (!car_legal(v_32)) v_32 = carerror(v_32); else
+    v_32 = car(v_32);
+    {   LispObject fn = basic_elt(env, 4); // mkprod
+    stack[-1] = (*qfn1(fn))(fn, v_32);
+    }
+    env = stack[-2];
+    v_32 = stack[0];
+    if (!car_legal(v_32)) v_32 = cdrerror(v_32); else
+    v_32 = cdr(v_32);
+    {   LispObject fn = basic_elt(env, 4); // mkprod
+    v_32 = (*qfn1(fn))(fn, v_32);
+    }
     env = stack[-2];
     {
-        LispObject fn = basic_elt(env, 4); // cerror
-        return (*qfn1(fn))(fn, v_38);
+        LispObject v_35 = stack[-1];
+        LispObject fn = basic_elt(env, 5); // canprod
+        return (*qfn2(fn))(fn, v_35, v_32);
     }
-v_8:
-    v_39 = basic_elt(env, 2); // simpcgraph
-    v_38 = qvalue(basic_elt(env, 3)); // mul!*
-    v_38 = Lmemq(nil, v_39, v_38);
-    if (v_38 == nil) goto v_20;
-    else goto v_21;
-v_20:
-    v_39 = qvalue(basic_elt(env, 3)); // mul!*
-    v_38 = basic_elt(env, 2); // simpcgraph
-    {   LispObject fn = basic_elt(env, 5); // aconc!*
-    v_38 = (*qfn2(fn))(fn, v_39, v_38);
-    }
-    env = stack[-2];
-    setvalue(basic_elt(env, 3), v_38); // mul!*
-    goto v_19;
-v_21:
-v_19:
-    v_39 = stack[0];
-    v_38 = stack[-1];
-    v_39 = cons(v_39, v_38);
-    env = stack[-2];
-    v_38 = (LispObject)16+TAG_FIXNUM; // 1
-    {   LispObject fn = basic_elt(env, 6); // to
-    v_39 = (*qfn2(fn))(fn, v_39, v_38);
-    }
-    env = stack[-2];
-    v_38 = (LispObject)16+TAG_FIXNUM; // 1
-    v_38 = cons(v_39, v_38);
-    env = stack[-2];
-    v_39 = ncons(v_38);
-    v_38 = (LispObject)16+TAG_FIXNUM; // 1
-    return cons(v_39, v_38);
-    v_38 = nil;
-    return onevalue(v_38);
+    v_32 = nil;
+v_5:
+    return onevalue(v_32);
 }
 
 
@@ -9566,8 +9639,8 @@ setup_type const u25_setup[] =
     {"extmult",                 G0W2,     G1W2,     CC_extmult,G3W2,    G4W2},
     {"outrefend",               G0W1,     CC_outrefend,G2W1,  G3W1,     G4W1},
     {"monomcomparedeglex",      G0W2,     G1W2,     CC_monomcomparedeglex,G3W2,G4W2},
-    {"simpcv",                  G0W2,     G1W2,     CC_simpcv,G3W2,     G4W2},
-    {NULL, (no_args *)"u25", (one_arg *)"51979 4802499 5490695",
+    {"offexpchk",               G0W1,     CC_offexpchk,G2W1,  G3W1,     G4W1},
+    {NULL, (no_args *)"u25", (one_arg *)"177057 7340346 5190000",
         NULL, NULL, NULL}
 };
 

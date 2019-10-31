@@ -62,49 +62,49 @@ int main(int argc, char *argv[])
     int status;
     pid1 = fork();
     if (pid1 < 0)
-    {   printf("Fork 1 failed\n");
+    {   std::printf("Fork 1 failed\n");
     }
     else if (pid1 == 0)
     {   // TASK 1
-        printf("Task 1 starting\n");
+        std::printf("Task 1 starting\n");
         worry(argc+5);
-        printf("Task 1 has had %d seconds\n", argc+5);
-        exit(0);
+        std::printf("Task 1 has had %d seconds\n", argc+5);
+        std::exit(0);
     }
     else
-    {   printf("Task 1 has pid %d\n", pid1);
+    {   std::printf("Task 1 has pid %d\n", pid1);
         pid2 = fork();
         if (pid2 < 0)
-        {   printf("Fork 2 failed\n");
+        {   std::printf("Fork 2 failed\n");
             kill(pid1, SIGKILL);
             waitpid(pid1, &status, 0);
-            printf("Task 1 killed\n");
+            std::printf("Task 1 killed\n");
         }
         else if (pid2 == 0)
         {   // TASK 2
-            printf("Task 2 starting\n");
+            std::printf("Task 2 starting\n");
             worry(7);
-            printf("Task 2 has had 7 seconds\n");
-            exit(0);
+            std::printf("Task 2 has had 7 seconds\n");
+            std::exit(0);
         }
         else
-        {   printf("Task 2 has pid %d\n", pid2);
+        {   std::printf("Task 2 has pid %d\n", pid2);
             pidx = wait(&status);
-            printf("First signal was from task %d\n", pidx);
+            std::printf("First signal was from task %d\n", pidx);
             if (!WIFEXITED(status))
-            {   printf("Task did not exit cleanly\n");
+            {   std::printf("Task did not exit cleanly\n");
                 kill(pid1, SIGKILL);
                 kill(pid2, SIGKILL);
                 waitpid(pid1, &status, 0);
                 waitpid(pid2, &status, 0);
-                printf("Both tasks now dead\n");
+                std::printf("Both tasks now dead\n");
             }
             pidy = pidx == pid1 ? pid2 : pid1;
             kill(pidy, SIGKILL);
             waitpid(pidy, &status, 0);
-            printf("Other task (%d) now dead\n", pidy);
+            std::printf("Other task (%d) now dead\n", pidy);
         }
     }
-    printf("All done\n");
+    std::printf("All done\n");
     return 0;
 }

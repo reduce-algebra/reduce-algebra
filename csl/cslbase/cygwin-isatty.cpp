@@ -89,14 +89,14 @@ int main(int argc, char *argv[])
 // when invoking this code I can go "2>/dev/null" without upsetting anything.
 //
     int n = isatty(0) && isatty(1);
-    const char *display = getenv("DISPLAY");
-    const char *ssh_host = getenv("SSH_HOST");
+    const char *display = std::getenv("DISPLAY");
+    const char *ssh_host = std::getenv("SSH_HOST");
     int nogui = 0;
     int i;
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--nogui") == 0 ||
-            strcmp(argv[i], "-w") == 0 ||
-            strcmp(argv[i], "-w-") == 0)
+    {   if (std::strcmp(argv[i], "--nogui") == 0 ||
+            std::strcmp(argv[i], "-w") == 0 ||
+            std::strcmp(argv[i], "-w-") == 0)
         {   nogui = 1;
             break;
         }

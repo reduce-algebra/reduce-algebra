@@ -754,17 +754,17 @@ extern bool profile_count_mode;
 
 #include "opnames.cpp"
 
-static uint64_t total = 0, frequencies[256];
+static std::uint64_t total = 0, frequencies[256];
 
 #endif
 
 LispObject Lbytecounts_0(LispObject env)
 {
 #if !defined NO_BYTECOUNT || defined RECORD_GET
-    int32_t i;
+    std::int32_t i;
 #endif
 #ifdef RECORD_GET
-    int32_t size;
+    std::int32_t size;
     LispObject v;
     double tot;
 #endif
@@ -792,7 +792,7 @@ LispObject Lbytecounts_0(LispObject env)
     tot = 0.0;
     for (i=1; i<size; i+=2)
     {   LispObject key = elt(v, i), val = elt(v, i+1);
-        int32_t yes, no;
+        std::int32_t yes, no;
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(car(val)),
@@ -802,7 +802,7 @@ LispObject Lbytecounts_0(LispObject env)
     tot /= 100.0;
     for (i=1; i<size; i+=2)
     {   LispObject key = elt(v, i), val = elt(v, i+1);
-        int32_t yes, no;
+        std::int32_t yes, no;
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(car(val)),
@@ -821,7 +821,7 @@ LispObject Lbytecounts_0(LispObject env)
 LispObject Lbytecounts_1(LispObject env, LispObject a)
 {
 #ifdef RECORD_GET
-    int32_t i, size;
+    std::int32_t i, size;
     LispObject v;
     double tot;
 #endif
@@ -837,7 +837,7 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
     tot = 0.0;
     for (i=1; i<size; i+=2)
     {   LispObject key = elt(v, i), val = elt(v, i+1);
-        int32_t yes, no;
+        std::int32_t yes, no;
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(car(val)),
@@ -848,7 +848,7 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
     stdout_printf("\n(\n");
     for (i=1; i<size; i+=2)
     {   LispObject key = elt(v, i), val = elt(v, i+1);
-        int32_t yes, no;
+        std::int32_t yes, no;
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(car(val)),
@@ -876,10 +876,10 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
 LispObject *stack;
 
 inline void do_freebind(LispObject bvec)
-{   int32_t n, k;
+{   std::int32_t n, k;
     n = length_of_header(vechdr(bvec));
     for (k=CELL; k<n; k+=CELL)
-    {   LispObject v = *(LispObject *)((intptr_t)bvec + k - TAG_VECTOR);
+    {   LispObject v = *(LispObject *)((std::intptr_t)bvec + k - TAG_VECTOR);
         push(qvalue(v));
         setvalue(v, nil);
     }
@@ -892,12 +892,12 @@ inline void do_freebind(LispObject bvec)
 
 inline void do_freerstr()
 {   LispObject bv;
-    size_t n;
+    std::size_t n;
     popv(1);
     pop(bv);
     n = length_of_header(vechdr(bv));
     while (n>CELL)
-    {   LispObject v = *(LispObject *)((intptr_t)bv + n - (CELL + TAG_VECTOR));
+    {   LispObject v = *(LispObject *)((std::intptr_t)bv + n - (CELL + TAG_VECTOR));
         n -= CELL;
         LispObject v1;
         pop(v1);
@@ -907,8 +907,8 @@ inline void do_freerstr()
 }
 
 inline void poll_jump_back(LispObject& A_reg)
-{   if ((uintptr_t)stack >=
-        ((uintptr_t)stacklimit | event_flag.load())) respond_to_stack_event();
+{   if ((std::uintptr_t)stack >=
+        ((std::uintptr_t)stacklimit | event_flag.load())) respond_to_stack_event();
 }
 
 inline void do_pvbind(LispObject vals, LispObject vars)
@@ -1156,10 +1156,10 @@ void rplacd_fails(LispObject a)
 char *native_stack = NULL, *native_stack_base = NULL;
 #endif
 
-inline void short_jump(size_t& ppc, size_t xppc)
+inline void short_jump(std::size_t& ppc, std::size_t xppc)
 {
 #ifdef LABEL_RESOLUTION_DEBUGGING
-    size_t oldppc = ppc;
+    std::size_t oldppc = ppc;
 #endif
     ppc = ppc + ((unsigned char *)codevec)[xppc];
 // The extra test here was useful at a time I was worried about label
@@ -1178,10 +1178,10 @@ inline void short_jump(size_t& ppc, size_t xppc)
 #endif
 }
 
-inline void short_jump_back(size_t& ppc, size_t xppc, LispObject& A_reg)
+inline void short_jump_back(std::size_t& ppc, std::size_t xppc, LispObject& A_reg)
 {
 #ifdef LABEL_RESOLUTION_DEBUGGING
-    size_t oldppc = ppc;
+    std::size_t oldppc = ppc;
 #endif
     ppc = ppc - ((unsigned char *)codevec)[xppc];
 // To allow for interruption I will poll on every backwards jump
@@ -1195,10 +1195,10 @@ inline void short_jump_back(size_t& ppc, size_t xppc, LispObject& A_reg)
 #endif
 }
 
-inline void long_jump(unsigned int w, size_t& ppc, size_t xppc)
+inline void long_jump(unsigned int w, std::size_t& ppc, std::size_t xppc)
 {
 #ifdef LABEL_RESOLUTION_DEBUGGING
-    size_t oldppc = ppc;
+    std::size_t oldppc = ppc;
 #endif
     ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[xppc]);
 #ifdef LABEL_RESOLUTION_DEBUGGING
@@ -1210,10 +1210,10 @@ inline void long_jump(unsigned int w, size_t& ppc, size_t xppc)
 #endif
 }
 
-inline void long_jump_back(unsigned int w, size_t& ppc, size_t xppc, LispObject& A_reg)
+inline void long_jump_back(unsigned int w, std::size_t& ppc, std::size_t xppc, LispObject& A_reg)
 {
 #ifdef LABEL_RESOLUTION_DEBUGGING
-    size_t oldppc = ppc;
+    std::size_t oldppc = ppc;
 #endif
     ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
     poll_jump_back(A_reg);
@@ -1226,7 +1226,7 @@ inline void long_jump_back(unsigned int w, size_t& ppc, size_t xppc, LispObject&
 #endif
 }
 
-extern LispObject bytestream_interpret1(size_t ppc, LispObject lit,
+extern LispObject bytestream_interpret1(std::size_t ppc, LispObject lit,
                                         LispObject *entry_stack);
 #ifdef CHECK_STACK
 static int maxnest = 0;
@@ -1243,7 +1243,7 @@ public:
 
 #endif
 
-LispObject bytestream_interpret(size_t ppc, LispObject lit,
+LispObject bytestream_interpret(std::size_t ppc, LispObject lit,
                                 LispObject *entry_stack)
 #ifdef CHECK_STACK
 {
@@ -1277,7 +1277,7 @@ LispObject bytestream_interpret(size_t ppc, LispObject lit,
     return w;
 }
 
-LispObject bytestream_interpret1(size_t ppc, LispObject lit,
+LispObject bytestream_interpret1(std::size_t ppc, LispObject lit,
                                  LispObject *entry_stack)
 #endif // CHECK_STACK
 {

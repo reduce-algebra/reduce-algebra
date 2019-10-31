@@ -94,7 +94,7 @@
 // This processes one or more 64-byte data blocks, but does NOT update
 // the bit counters.  There are no alignment requirements.
 //
-static const void *body(MD5_CTX *ctx, const void *data, size_t size)
+static const void *body(MD5_CTX *ctx, const void *data, std::size_t size)
 {   const unsigned char *ptr;
     MD5_u32plus a, b, c, d;
     MD5_u32plus saved_a, saved_b, saved_c, saved_d;
@@ -211,9 +211,9 @@ void MD5_Init(MD5_CTX *ctx)
     ctx->hi = 0;
 }
 
-void MD5_Update(MD5_CTX *ctx, const void *data, size_t size)
+void MD5_Update(MD5_CTX *ctx, const void *data, std::size_t size)
 {   MD5_u32plus saved_lo;
-    size_t used, available;
+    std::size_t used, available;
 
     saved_lo = ctx->lo;
     if ((ctx->lo = (saved_lo + size) & 0x1fffffff) < saved_lo)
@@ -226,11 +226,11 @@ void MD5_Update(MD5_CTX *ctx, const void *data, size_t size)
     {   available = 64 - used;
 
         if (size < available)
-        {   memcpy(&ctx->buffer[used], data, size);
+        {   std::memcpy(&ctx->buffer[used], data, size);
             return;
         }
 
-        memcpy(&ctx->buffer[used], data, available);
+        std::memcpy(&ctx->buffer[used], data, available);
         data = (const unsigned char *)data + available;
         size -= available;
         body(ctx, ctx->buffer, 64);
@@ -241,11 +241,11 @@ void MD5_Update(MD5_CTX *ctx, const void *data, size_t size)
         size &= 0x3f;
     }
 
-    memcpy(ctx->buffer, data, size);
+    std::memcpy(ctx->buffer, data, size);
 }
 
 void MD5_Final(unsigned char *result, MD5_CTX *ctx)
-{   size_t used, available;
+{   std::size_t used, available;
 
     used = ctx->lo & 0x3f;
 
@@ -254,13 +254,13 @@ void MD5_Final(unsigned char *result, MD5_CTX *ctx)
     available = 64 - used;
 
     if (available < 8)
-    {   memset(&ctx->buffer[used], 0, available);
+    {   std::memset(&ctx->buffer[used], 0, available);
         body(ctx, ctx->buffer, 64);
         used = 0;
         available = 64;
     }
 
-    memset(&ctx->buffer[used], 0, available - 8);
+    std::memset(&ctx->buffer[used], 0, available - 8);
 
     ctx->lo <<= 3;
     ctx->buffer[56] = ctx->lo;
@@ -291,7 +291,7 @@ void MD5_Final(unsigned char *result, MD5_CTX *ctx)
     result[14] = ctx->d >> 16;
     result[15] = ctx->d >> 24;
 
-    memset(ctx, 0, sizeof(*ctx));
+    std::memset(ctx, 0, sizeof(*ctx));
 }
 
 #endif

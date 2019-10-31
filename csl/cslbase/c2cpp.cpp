@@ -42,7 +42,7 @@
 #include <string.h>
 #include <ctype.h>
 
-FILE *src, *dest;
+std::FILE *src, *dest;
 
 // I will be lazy and assume all lines are short.
 // Note that "wc -L files | sort | tail" will show the length of the longest
@@ -84,7 +84,7 @@ int put_comment(int i, int ch2)
     j = j-2;
     if (j < 0)
     {   int p;
-        for (p=strlen(line2); p>=0; p--)
+        for (p=std::strlen(line2); p>=0; p--)
             line2[p-j] = line2[p];
         p = -j;
         j = 0;
@@ -99,7 +99,7 @@ int process_simple_block_comment()
     for (i=0; i<n2; i++)
         if (line2[i] == '*' && line2[i+1] == '/') break;
     for (j=i+2; j<n2; j++)
-        if (!isspace(line2[j])) break;
+        if (!std::isspace(line2[j])) break;
     if (i < n2 && j < n2)
     {
 // This is the messy case
@@ -120,7 +120,7 @@ int process_simple_block_comment()
         i = put_comment(10000, '/');
         in_block_comment = 0;
         context = CONTEXT_NONE;
-        return strlen(line2);
+        return std::strlen(line2);
     }
     else
     {
@@ -130,7 +130,7 @@ int process_simple_block_comment()
         if (line2[opening_block_comment+1] == '*')
             line2[opening_block_comment+1] = ' ';
         put_comment(10000, '/');
-        return strlen(line2);
+        return std::strlen(line2);
     }
 }
 
@@ -147,10 +147,10 @@ int process_box_block_comment()
 }
 
 void dumpline(char *s, const char *t)
-{   int i = strlen(s)-1;
+{   int i = std::strlen(s)-1;
 // Discard trailing whitespace
-    while (i>=0 && isspace(s[i])) s[i--] = 0;
-    fprintf(dest, "%s\n", s);
+    while (i>=0 && std::isspace(s[i])) s[i--] = 0;
+    std::fprintf(dest, "%s\n", s);
 // During initial tetsing I will dump the type information too...
 //  fprintf(dest, "%s\n", t);
 }
@@ -159,11 +159,11 @@ void readline()
 {   int i, j, scanfrom=0;
     if (n1 >= 0) dumpline(line1, type1);
     n1 = n2;
-    memcpy(line1, line2, sizeof(line1));
-    memcpy(type1, type2, sizeof(type1));
+    std::memcpy(line1, line2, sizeof(line1));
+    std::memcpy(type1, type2, sizeof(type1));
     n2 = 0;
     line2[0] = type2[0] = 0;
-    while ((ch = getc(src)) != '\n' && ch != EOF)
+    while ((ch = std::getc(src)) != '\n' && ch != EOF)
     {   type2[n2] = 0;
         line2[n2++] = ch;
     }
@@ -230,8 +230,8 @@ void readline()
                     break;
                 }
                 if (c == '/' && c1 == '*')
-                {   printf("\"/*\" sequence found within comment\n");
-                    printf("%s\n", line2);
+                {   std::printf("\"/*\" sequence found within comment\n");
+                    std::printf("%s\n", line2);
                 }
                 if (c == '*' && star_count >= 0) star_count++;
                 else if (star_count < 4) star_count = -1;
@@ -303,7 +303,7 @@ void readline()
             if (star_count >= 4) break;
             line2[opening_block_comment+1] = '/'; // Turn (/*) into (//)
             line2[closing_block_comment] = 0;     // discard (*/)
-            while (isspace(line2[--closing_block_comment]))
+            while (std::isspace(line2[--closing_block_comment]))
                 line2[closing_block_comment] = 0; // lose trailing white space
             context = CONTEXT_NONE;
             break;
@@ -368,17 +368,17 @@ int main(int argc, char *argv[])
 {   char *srcfile = argv[1];  // eg file.c
     char destfile[100];
     if (argc < 1)
-    {   printf("c2cpp file.c [file.cpp]\n");
+    {   std::printf("c2cpp file.c [file.cpp]\n");
         return 0;
     }
-    if (argc < 2) sprintf(destfile, "%spp", srcfile);
-    else strcpy(destfile, argv[2]);
-    printf("Convert from %s to %s\n", srcfile, destfile);
-    src = fopen(srcfile, "r");
-    dest = fopen(destfile, "w");
+    if (argc < 2) std::sprintf(destfile, "%spp", srcfile);
+    else std::strcpy(destfile, argv[2]);
+    std::printf("Convert from %s to %s\n", srcfile, destfile);
+    src = std::fopen(srcfile, "r");
+    dest = std::fopen(destfile, "w");
     if (src != NULL && dest != NULL) convert();
-    if (src != NULL) fclose(src);
-    if (dest != NULL) fclose(dest);
+    if (src != NULL) std::fclose(src);
+    if (dest != NULL) std::fclose(dest);
     return 0;
 }
 

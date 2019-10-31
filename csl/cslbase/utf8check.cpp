@@ -81,13 +81,13 @@ int encode(char *s, int c)
 int main(int argc, char *argv[])
 {   int c1, c2, c3, n1, n2, n3, status, flag;
     char s1[8], s2[8], s3[8];
-    printf("  base     upper    lower\n");
+    std::printf("  base     upper    lower\n");
     for (c1 = 0; c1<=0xffff; c1++)
     {
 // Skip the surrogate range
         if (0xd800 <= c1 && c1 <= 0xdfff) continue;
-        c2 = towupper(c1);
-        c3 = towlower(c1);
+        c2 = std::towupper(c1);
+        c3 = std::towlower(c1);
         n1 = encode(s1, c1);
         n2 = encode(s2, c2);
         n3 = encode(s3, c3);
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
         }
         status = (n1 == n2 && n1 == n3); // are utf-8 lengths unchanged?
         if (status && flag) continue;
-        printf("%#.4x(%d) %#.4x(%d) %#.4x(%d) %s  %s %s %s\n",
+        std::printf("%#.4x(%d) %#.4x(%d) %#.4x(%d) %s  %s %s %s\n",
                c1, n1, c2, n2, c3, n3, (status ? "OK " : "bad"), s1, s2, s3);
     }
     return 0;

@@ -135,25 +135,25 @@ static char time_string[40], space_string[32];
 // are called periodically - ideally so that the user gets to see things
 // chance roughtly once per second.
 
-void report_time(int32_t t, int32_t gct)
+void report_time(std::int32_t t, std::int32_t gct)
 {
 #ifndef EMBEDDED
-    sprintf(time_string, "%ld.%.2ld+%ld.%.2ld secs  ",
+    std::sprintf(time_string, "%ld.%.2ld+%ld.%.2ld secs  ",
             t/100L, t%100L, gct/100L, gct%100L);
     if ((window_heading & 1) == 0) fwin_report_left(time_string);
 #endif
 }
 
-void report_space(uint64_t n, double percent, double mbytes)
+void report_space(std::uint64_t n, double percent, double mbytes)
 {
 #ifndef EMBEDDED
     if (mbytes > 9500.0)
-        sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %dG",
+        std::sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %dG",
             n, percent, (int)((mbytes+500.0)/1000.0));
     else if (mbytes > 700.0)
-        sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %.1fG",
+        std::sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %.1fG",
             n, percent, mbytes/1000.0);
-    else sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %dM",
+    else std::sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %dM",
         n, percent, (int)(mbytes + 0.5));
     if ((window_heading & 4) == 0) fwin_report_right(space_string);
 #endif
@@ -202,14 +202,14 @@ void kill_gnuplot()
 BOOL CALLBACK find_text(HWND h, LPARAM)
 {   char buffer[24];
     GetClassName(h, buffer, 20);
-    if (strcmp(buffer, "wgnuplot_text") != 0) return TRUE;
+    if (std::strcmp(buffer, "wgnuplot_text") != 0) return TRUE;
     gnuplot_handle = h;
     return FALSE;
 }
 
 #endif
 
-FILE *my_popen(const char *command, const char *direction)
+std::FILE *my_popen(const char *command, const char *direction)
 {
 //
 // Here I have something that might count as an ugliness. If I am on
@@ -237,7 +237,7 @@ FILE *my_popen(const char *command, const char *direction)
 // present I will take the view that anybody who finds themselves hurt because
 // of that has only themselves to blame.
 //
-    if (strstr(command, "wgnuplot.exe") != NULL)
+    if (std::strstr(command, "wgnuplot.exe") != NULL)
     {   HWND parent = 0;
 //
 // Win32 would rather I used the following long-winded version, which provides
@@ -246,8 +246,8 @@ FILE *my_popen(const char *command, const char *direction)
         STARTUPINFO startup;
         PROCESS_INFORMATION process;
         char c1[LONGEST_LEGAL_FILENAME];
-        clock_t t0, t1;
-        memset(&startup, 0, sizeof(STARTUPINFO));
+        std::clock_t t0, t1;
+        std::memset(&startup, 0, sizeof(STARTUPINFO));
         startup.cb = sizeof(startup);
         startup.lpReserved = NULL;
         startup.lpDesktop = NULL;
@@ -256,20 +256,20 @@ FILE *my_popen(const char *command, const char *direction)
         startup.wShowWindow = SW_SHOWMINIMIZED;
         startup.cbReserved2 = 0;
         startup.lpReserved2 = NULL;
-        strncpy(c1, command, sizeof(c1));
+        std::strncpy(c1, command, sizeof(c1));
         c1[sizeof(c1)-1] = 0;
         if (!CreateProcess(NULL, c1, NULL, NULL, FALSE,
                            0, NULL, NULL, &startup, &process)) return 0;
         gnuplot_process = process.hProcess;
-        atexit(kill_gnuplot);
+        std::atexit(kill_gnuplot);
         gnuplot_handle = 0;
-        t0 = clock();
+        t0 = std::clock();
         for (i=0; i<25; i++)  // Give it 5 seconds to appear
         {   parent = FindWindow((LPSTR)"wgnuplot_parent",
                                 (LPSTR)"gnuplot");
             if (parent != 0) break;
             t0 += CLOCKS_PER_SEC/5;
-            while ((t1 = clock()) < t0) ; // a busy-wait here
+            while ((t1 = std::clock()) < t0) ; // a busy-wait here
             t0 = t1;
         }
         if (parent != 0)
@@ -277,11 +277,11 @@ FILE *my_popen(const char *command, const char *direction)
             {   EnumChildWindows(parent, find_text, 0);
                 if (gnuplot_handle != 0) break;
                 t0 += CLOCKS_PER_SEC/5;
-                while ((t1 = clock()) < t0) ; // busy-wait
+                while ((t1 = std::clock()) < t0) ; // busy-wait
                 t0 = t1;
             }
         }
-        return (FILE *)-1;  // special handle for the gnuplot pipe
+        return (std::FILE *)-1;  // special handle for the gnuplot pipe
     }
 #ifdef __CYGWIN__
     return popen(command, direction);
@@ -301,15 +301,15 @@ FILE *my_popen(const char *command, const char *direction)
 // I know that these days I am asked to use sigaction rather than signal, but
 // even on recent Linux variants that seems only just available...
 //
-    signal(SIGPIPE, SIG_IGN);
+    std::signal(SIGPIPE, SIG_IGN);
     return popen(command, direction);
 #endif
 }
 
-int my_pipe_putc(int c, FILE *f)
+int my_pipe_putc(int c, std::FILE *f)
 {
 #ifdef WIN32
-    if (f == (FILE *)(-1))
+    if (f == (std::FILE *)(-1))
     {   if (gnuplot_handle == 0) return EOF;
         if (c == '\n') c = '\r';
         SendMessage(gnuplot_handle, WM_CHAR, c, 1L);
@@ -320,18 +320,18 @@ int my_pipe_putc(int c, FILE *f)
         return PUTC(c, f);
 }
 
-int my_pipe_flush(FILE *f)
+int my_pipe_flush(std::FILE *f)
 {
 #ifdef WIN32
-    if (f == (FILE *)(-1)) return 0;
+    if (f == (std::FILE *)(-1)) return 0;
 #endif
-    return fflush(f);
+    return std::fflush(f);
 }
 
-void my_pclose(FILE *stream)
+void my_pclose(std::FILE *stream)
 {
 #ifdef WIN32
-    if (stream == (FILE *)(-1))
+    if (stream == (std::FILE *)(-1))
     {   SendMessage(gnuplot_handle, WM_CHAR, 'q', 1L);
         SendMessage(gnuplot_handle, WM_CHAR, 'u', 1L);
         SendMessage(gnuplot_handle, WM_CHAR, 'i', 1L);
@@ -369,7 +369,7 @@ char *look_in_lisp_variable(char *o, int prefix)
 // text for it. Otherwise I need to look harder at its value.
     if (qvalue(var) == unset_var) return o;
     else
-    {   intptr_t len;
+    {   std::intptr_t len;
         var = qvalue(var);
 // Mostly I expect that the value will be a string or symbol.
 #ifdef COMMON
@@ -382,7 +382,7 @@ char *look_in_lisp_variable(char *o, int prefix)
 // into the file-name buffer. There could at present be a crash here
 // if the expansion was very very long and overflowed my buffer. Tough
 // luck for now - people doing that (maybe) get what they (maybe) deserve.
-        memcpy(o, (char *)var + (CELL - TAG_VECTOR), (size_t)len);
+        std::memcpy(o, (char *)var + (CELL - TAG_VECTOR), (std::size_t)len);
         o = o + len;
         return o;
     }
@@ -397,11 +397,11 @@ char *look_in_lisp_variable(char *o, int prefix)
 // a value expressed in microseconds, but of course there is no guarantee that
 // I will have anything like that as my actual granularity!
 
-uint64_t read_clock_microseconds(void)
-{   struct timespec tt;
+std::uint64_t read_clock_microseconds(void)
+{   struct std::timespec tt;
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tt);
     double w1 = (double)tt.tv_sec + (double)tt.tv_nsec/1000000000.0;
-    return (uint64_t)(1000000.0*w1);
+    return (std::uint64_t)(1000000.0*w1);
 }
 
 
@@ -412,20 +412,20 @@ uint64_t read_clock_microseconds(void)
 
 double unix_ticks = 0.0;
 
-uint64_t read_clock(void)
+std::uint64_t read_clock(void)
 {   struct tms tmsbuf;
     times(&tmsbuf);
-    clock_t w1 = tmsbuf.tms_utime;   // User time in UNIX_TIMES ticks
+    std::clock_t w1 = tmsbuf.tms_utime;   // User time in UNIX_TIMES ticks
 #ifdef HAVE_UNISTD_H
     if (unix_ticks == 0.0) unix_ticks = (double)sysconf(_SC_CLK_TCK);
 #endif
     if (unix_ticks == 0.0) unix_ticks = 100.0;
-    return (uint64_t)((1000000.0/unix_ticks) * (double)w1);
+    return (std::uint64_t)((1000000.0/unix_ticks) * (double)w1);
 }
 
 #elif defined WIN32
 
-uint64_t read_clock()
+std::uint64_t read_clock()
 {   FILETIME t0, t1, t2, t3;
     if (GetProcessTimes(GetCurrentProcess(), &t0, &t1, &t2, &t3) == 0)
         return 0;
@@ -435,7 +435,7 @@ uint64_t read_clock()
 // type that I can use.
    ul.LowPart = t3.dwLowDateTime;
    ul.HighPart = t3.dwHighDateTime;
-   uint64_t n = ul.QuadPart;
+   std::uint64_t n = ul.QuadPart;
 // Times are returned in units of 100ns, so I divide by 10 to get
 // microseconds.
    return n/10;
@@ -446,8 +446,8 @@ uint64_t read_clock()
 // In cases where clock_t is a 32-bit data type this fallback version
 // will wraps round after around 20 minutes of CPU time!
 
-uint64_t read_clock()
-{   return (uint64_t)((1000000.0/CLOCKS_PER_SEC)*(double)clock());
+std::uint64_t read_clock()
+{   return (std::uint64_t)((1000000.0/CLOCKS_PER_SEC)*(double)std::clock());
 }
 
 #endif
@@ -490,7 +490,7 @@ const char *find_image_directory(int argc, const char *argv[])
     int n;
     char *w;
     char xname[LONGEST_LEGAL_FILENAME];
-    memset(xname, 0, sizeof(xname));
+    std::memset(xname, 0, sizeof(xname));
 #ifdef MACINTOSH
 //
 // There is a special oddity on the Macintosh (with the wxWidgets version
@@ -506,14 +506,14 @@ const char *find_image_directory(int argc, const char *argv[])
 // tests here that are intended to detect the above cases and do special
 // things! My tests will be based on file names and paths.
 //
-    sprintf(xname, "/%s.app/Contents/MacOS", programName);
-    n = strlen(programDir) - strlen(xname);
-    if (n>=0 && strcmp(programDir+n, xname) == 0)
+    std::sprintf(xname, "/%s.app/Contents/MacOS", programName);
+    n = std::strlen(programDir) - std::strlen(xname);
+    if (n>=0 && std::strcmp(programDir+n, xname) == 0)
     {   // Seem to be being executed from within application bundle.
 // This dates from when I thought I would put the image in merely Contents not
 // in Contents/MacOS.
-        sprintf(xname, "%.*s/%s.img",
-            (int)strlen(programDir), programDir, programName);
+        std::sprintf(xname, "%.*s/%s.img",
+            (int)std::strlen(programDir), programDir, programName);
     }
     else
     {   struct stat buf;
@@ -523,13 +523,13 @@ const char *find_image_directory(int argc, const char *argv[])
 // such bundle I will put the image file in the location I would have used
 // with Windows of X11.
 //
-        sprintf(xname, "%s/%s.app/Contents/MacOS", programDir, programName);
+        std::sprintf(xname, "%s/%s.app/Contents/MacOS", programDir, programName);
         if (stat(xname, &buf) == 0 &&
             (buf.st_mode & S_IFDIR) != 0)
-        {   sprintf(xname, "%s/%s.app/Contents/MacOS/%s.img",
+        {   std::sprintf(xname, "%s/%s.app/Contents/MacOS/%s.img",
                 programDir, programName, programName);
         }
-        else sprintf(xname, "%s/%s.img", programDir, programName);
+        else std::sprintf(xname, "%s/%s.img", programDir, programName);
 
     }
 #else
@@ -552,23 +552,23 @@ const char *find_image_directory(int argc, const char *argv[])
 // all present, and for immediate purposes I want them all to be treated as
 // if merely called "reduce".
 //
-        if (strncmp(pn, "cygwin-", 7) == 0) pn += 7;
-        else if (strncmp(pn, "cygwin64-", 9) == 0) pn += 9;
+        if (std::strncmp(pn, "cygwin-", 7) == 0) pn += 7;
+        else if (std::strncmp(pn, "cygwin64-", 9) == 0) pn += 9;
 #endif // WIN32
         for (;;)
         {   i = j = 0;
             if (*bin == '/') while (bin[++i] != 0 && bin[i] != '/');
             if (*data == '/') while (data[++j] != 0 && data[j] != '/');
-            if (i != 0 && i == j && strncmp(bin, data, i) == 0)
+            if (i != 0 && i == j && std::strncmp(bin, data, i) == 0)
             {   bin += i;
                 data += i;
             }
             else break;
         }
-        i = strlen(bin);
-        j = strlen(programDir);
-        if (strcmp(programDir+j-i, bin) == 0)
-        {   sprintf(xname, "%.*s%s/%s.img", j-i, programDir, data, pn);
+        i = std::strlen(bin);
+        j = std::strlen(programDir);
+        if (std::strcmp(programDir+j-i, bin) == 0)
+        {   std::sprintf(xname, "%.*s%s/%s.img", j-i, programDir, data, pn);
         }
 
 //
@@ -580,13 +580,13 @@ const char *find_image_directory(int argc, const char *argv[])
 // writable are of disc.
 //
         if (stat(xname, &buf) != 0)
-            sprintf(xname, "%s/%s.img", programDir, pn);
+            std::sprintf(xname, "%s/%s.img", programDir, pn);
     }
 #endif
-    n = strlen(xname)+1;
-    w = (char *)malloc(n);
-    if (w == NULL) abort();
-    strcpy(w, xname);
+    n = std::strlen(xname)+1;
+    w = (char *)std::malloc(n);
+    if (w == NULL) std::abort();
+    std::strcpy(w, xname);
     return w;
 }
 
@@ -634,30 +634,30 @@ int executable_file(const char *name)
 }
 
 int find_gnuplot(char *name)
-{   const char *w = getenv("GNUPLOT");
-    size_t len;
-    if (w != NULL && (len = strlen(w)) > 0)
+{   const char *w = std::getenv("GNUPLOT");
+    std::size_t len;
+    if (w != NULL && (len = std::strlen(w)) > 0)
     {   if (w[len-1] == '/' ||
             w[len-1] == '\\') len--;
-        sprintf(name, "%.*s%c%s", (int)len, w, DIRCHAR, GPNAME);
+        std::sprintf(name, "%.*s%c%s", (int)len, w, DIRCHAR, GPNAME);
         if (executable_file(name)) return 1;
     }
-    strcpy(name, programDir);
-    len = strlen(name);
+    std::strcpy(name, programDir);
+    len = std::strlen(name);
     while (len-- > 0 &&
            name[len] != '/' &&
            name[len] != '\\');
     if (len != 0)
-    {   strcpy(&name[len+1], GPNAME);
+    {   std::strcpy(&name[len+1], GPNAME);
         if (executable_file(name)) return 1;
     }
-    strcpy(name, standard_directory);
-    len = strlen(name);
+    std::strcpy(name, standard_directory);
+    len = std::strlen(name);
     while (len-- > 0 &&
            name[len] != '/' &&
            name[len] != '\\');
     if (len != 0)
-    {   strcpy(&name[len+1], GPNAME);
+    {   std::strcpy(&name[len+1], GPNAME);
         if (executable_file(name)) return 1;
     }
 #ifdef __CYGWIN__
@@ -666,10 +666,10 @@ int find_gnuplot(char *name)
 // exists then I will try for an X11 usage of gnuplot. That should be
 // the "natural" case!
 //
-    w = getenv("DISPLAY");
+    w = std::getenv("DISPLAY");
     if (w!=NULL && *w!=0 &&
         executable_file("/usr/bin/gnuplot.exe"))
-    {   strcpy(name, "/usr/bin/gnuplot.exe");
+    {   std::strcpy(name, "/usr/bin/gnuplot.exe");
         return 1;
     }
 //
@@ -713,10 +713,10 @@ int find_gnuplot(char *name)
 // numeric "magic offsets" and the use of sprintf followed by patching
 // up after the terminating null from that, but it is at least concise.
 //
-                ll = strlen(name);
+                ll = std::strlen(name);
                 for (i=ll; i>=0; i--)
                     name[i+9] = name[i]=='\\' ? '/' : name[i];
-                sprintf(name, "/cygdrive/%c", name[0]);
+                std::sprintf(name, "/cygdrive/%c", name[0]);
                 name[11] = '/';
                 return 1;
             }
@@ -754,7 +754,7 @@ int find_gnuplot(char *name)
 // resort just hand back "wgnuplot.exe" as a string and hope it is on a PATH.
 //
 #endif
-    strcpy(name, GPNAME);
+    std::strcpy(name, GPNAME);
     return 1;
 }
 
@@ -762,7 +762,7 @@ int find_gnuplot(char *name)
 // The following function controls memory allocation policy
 //
 
-int32_t ok_to_grab_memory(int32_t current)
+std::int32_t ok_to_grab_memory(std::int32_t current)
 {   return 3*current + 2;
 }
 
@@ -810,7 +810,7 @@ int number_of_processors()
 
 int number_of_processors()
 {   int n;
-    size_t len=4;
+    std::size_t len=4;
     if (sysctlbyname("hw.ncpu", &n, &len, NULL, 0) != 0) return 1;
     return n;
 }
@@ -829,7 +829,7 @@ int number_of_processors()
 {   cpu_set_t cs;
     int n, len;
     unsigned char *p = (unsigned char *)&cs;
-    memset(p, 0, sizeof(cs));
+    std::memset(p, 0, sizeof(cs));
 //
 // The library calls to sched_getaffinity have changed several times with
 // various releases of glibc, and so I use the raw syscall. This has the
@@ -894,16 +894,16 @@ const char *CSLtmpdir()
 #endif
 }
 
-const char *CSLtmpnam(const char *suffix, size_t suffixlen)
-{   time_t t0 = time(NULL);
-    clock_t c0 = clock();
+const char *CSLtmpnam(const char *suffix, std::size_t suffixlen)
+{   std::time_t t0 = std::time(NULL);
+    std::clock_t c0 = std::clock();
     unsigned long taskid;
     char fname[LONGEST_LEGAL_FILENAME];
     char tt[32];
     char *s;
 #ifdef WIN32
     DWORD len;
-    memset(fname, 0, sizeof(fname));
+    std::memset(fname, 0, sizeof(fname));
     len = GetTempPath(LONGEST_LEGAL_FILENAME, tempname);
     if (len <= 0) return NULL;
 //
@@ -916,8 +916,8 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
     taskid = (unsigned long)GetCurrentThreadId()*169 +
              (unsigned long)GetCurrentProcessId();
 #else
-    memset(fname, 0, sizeof(fname));
-    strcpy(tempname, "/tmp/");
+    std::memset(fname, 0, sizeof(fname));
+    std::strcpy(tempname, "/tmp/");
     taskid = (unsigned long)getpid()*169 + (unsigned long)getuid();
 #endif
     taskid = 169*taskid + (unsigned long)t0;
@@ -943,7 +943,7 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
 // random number generator I have elsewhere in this code, and do that in
 // such a way that I can generate 8 characters of file-name.
 //
-        s = tempname + strlen(tempname);
+        s = tempname + std::strlen(tempname);
         for (i=0; i<7; i++)
         {   int d = (int)(n % 36);
             n = n / 36;
@@ -956,7 +956,7 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
         if (n < 10) *s++ = '0' + (int)n;
         else *s++ = 'a' + (int)(n - 10);
         if (suffix != NULL)
-        {   sprintf(s, ".%.*s", (int)suffixlen, suffix);
+        {   std::sprintf(s, ".%.*s", (int)suffixlen, suffix);
         }
         else *s = 0;
 //
@@ -964,7 +964,7 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
 // try again. I will count of the "random" sequence from Crand to propose
 // an alternative name for me.
 //
-        if (file_exists(fname, tempname, strlen(tempname), tt))
+        if (file_exists(fname, tempname, std::strlen(tempname), tt))
         {   taskid ^= n;
             continue;
         }
@@ -975,19 +975,19 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
 
 #if defined __CYGWIN__ || defined __MINGW32__
 
-uint32_t myTlsAlloc()
+std::uint32_t myTlsAlloc()
 {   return TlsAlloc();
 }
 
-void myTlsFree(uint32_t h)
+void myTlsFree(std::uint32_t h)
 {   (void)TlsFree(h);
 }
 
-void *myTlsGetValue(uint32_t h)
+void *myTlsGetValue(std::uint32_t h)
 {   return TlsGetValue(h);
 }
 
-void myTlsSetValue(uint32_t h, void *v)
+void myTlsSetValue(std::uint32_t h, void *v)
 {   TlsSetValue(h, v);
 }
 
@@ -1019,13 +1019,13 @@ void myTlsSetValue(uint32_t h, void *v)
 #include <unistd.h>
 #include <fcntl.h>
 
-static FILE *file_handle;
+static std::FILE *file_handle;
 static int fd_handle;
 static bool file_handle_set = false;
 
 bool valid_address(void *pointer)
 {   if (!file_handle_set)
-    {   if ((file_handle = tmpfile()) == NULL) return false;
+    {   if ((file_handle = std::tmpfile()) == NULL) return false;
         fd_handle = fileno(file_handle);
         file_handle_set = true;   // I will open the fd just once.
     }
@@ -1057,7 +1057,7 @@ bool valid_address(void *pointer)
 
 #endif
 
-bool valid_address(uintptr_t pointer)  // an overload to accept integer types
+bool valid_address(std::uintptr_t pointer)  // an overload to accept integer types
 {   return valid_address((void *)pointer);
 }
 

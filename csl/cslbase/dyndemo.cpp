@@ -70,47 +70,47 @@ int main(int argc, char *argv[])
 {   onearg *b = NULL;
 #ifdef WIN32
     HMODULE a = LoadLibrary(".\\dynmodule.dll");
-    printf("Dynamic loading of test code for Windows\na = %p\n", (void *)a);
-    fflush(stdout);
+    std::printf("Dynamic loading of test code for Windows\na = %p\n", (void *)a);
+    std::fflush(stdout);
     if (a == 0)
     {   DWORD err = GetLastError();
         char errbuf[80];
-        printf("Error code %ld = %lx\n", (long)err, (long)err);
+        std::printf("Error code %ld = %lx\n", (long)err, (long)err);
         err = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
                             FORMAT_MESSAGE_IGNORE_INSERTS,
                             NULL, err, 0, errbuf, 80, NULL);
-        if (err != 0) printf("%s", errbuf);
+        if (err != 0) std::printf("%s", errbuf);
         return 0;
     }
     b = (onearg *)GetProcAddress(a, "callme");
 #else
     void *a;
-    printf("Dynamic loading test code for *ix, BSD, MacOSX etc\n");
-    fflush(stdout);
+    std::printf("Dynamic loading test code for *ix, BSD, MacOSX etc\n");
+    std::fflush(stdout);
     a = dlopen("./dynmodule.so", RTLD_NOW | RTLD_GLOBAL);
-    printf("Result of call to dlopen is in 'a'\n");
-    printf("a = %p\n", a);
-    fflush(stdout);
+    std::printf("Result of call to dlopen is in 'a'\n");
+    std::printf("a = %p\n", a);
+    std::fflush(stdout);
     if (a == NULL)
-    {   printf("Err = <%s>\n", dlerror()); fflush(stdout);
+    {   std::printf("Err = <%s>\n", dlerror()); std::fflush(stdout);
         return 0;
     }
     b = (onearg *)dlsym(a, "callme");
 #endif
-    printf("The 'callme' entrypoint should now be in b\n");
-    printf("b = %p\n", b);
-    fflush(stdout);
+    std::printf("The 'callme' entrypoint should now be in b\n");
+    std::printf("b = %p\n", b);
+    std::fflush(stdout);
     if (b == NULL) return 0;
-    printf("variable as printed from base = %.8x @ %p\n",
+    std::printf("variable as printed from base = %.8x @ %p\n",
            variable_in_base, &variable_in_base);
-    printf("function as printed from base = %p\n",
+    std::printf("function as printed from base = %p\n",
            function_in_base);
 //
 // The next 2 lines are expected to display the same numeric value.
 //
-    printf("b(7) = %x\n", ((onearg *)b)(7));
-    printf("clone(7) = %x\n", clone(7));
-    fflush(stdout);
+    std::printf("b(7) = %x\n", ((onearg *)b)(7));
+    std::printf("clone(7) = %x\n", clone(7));
+    std::fflush(stdout);
 #ifdef WIN32
     FreeLibrary(a);
 #else

@@ -160,46 +160,46 @@ using std::log10;
 using std::pow;
 
 inline double CSLsin(double x)
-{   return sin(x);
+{   return std::sin(x);
 }
 inline double CSLcos(double x)
-{   return cos(x);
+{   return std::cos(x);
 }
 inline double CSLtan(double x)
-{   return tan(x);
+{   return std::tan(x);
 }
 inline double CSLsinh(double x)
-{   return sinh(x);
+{   return std::sinh(x);
 }
 inline double CSLcosh(double x)
-{   return cosh(x);
+{   return std::cosh(x);
 }
 inline double CSLasin(double x)
-{   return asin(x);
+{   return std::asin(x);
 }
 inline double CSLacos(double x)
-{   return acos(x);
+{   return std::acos(x);
 }
 inline double CSLatan(double x)
-{   return atan(x);
+{   return std::atan(x);
 }
 inline double CSLexp(double x)
-{   return exp(x);
+{   return std::exp(x);
 }
 inline double CSLexp2(double x)
-{   return exp2(x);
+{   return std::exp2(x);
 }
 inline double CSLlog(double x)
-{   return log(x);
+{   return std::log(x);
 }
 inline double CSLlog2(double x)
-{   return log2(x);
+{   return std::log2(x);
 }
 inline double CSLlog10(double x)
-{   return log10(x);
+{   return std::log10(x);
 }
 inline double CSLpow(double x, double y)
-{   return pow(x, x);
+{   return std::pow(x, x);
 }
 
 #endif // HAVE_CRLIBM

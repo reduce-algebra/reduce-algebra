@@ -140,7 +140,7 @@ inline void *tls_load()
 {   return (void *)TlsGetValue(get_my_TEB_slot());
 }
 
-uintptr_t tls_store(void *v)
+std::uintptr_t tls_store(void *v)
 {   return TlsSetValue(get_my_TEB_slot(), v);
 }
 
@@ -186,7 +186,7 @@ inline void *tls_load()
 inline void tls_store(void *v)
 {   if (get_my_TEB_slot() >= 64) return extended_tls_store(v);
     else write_via_segment_register(
-        basic_TLS_offset + sizeof(void *)*get_my_TEB_slot(), (intptr_t)v);
+        basic_TLS_offset + sizeof(void *)*get_my_TEB_slot(), (std::intptr_t)v);
 }
 
 #endif // CAUTIOUS
@@ -229,10 +229,10 @@ inline void tls_store(void *v)
 
 void timeit(const char *name, void (*fn)(), int *var)
 {   std::cout << "Address of my workspace is " << var << std::endl;
-    clock_t c0 = clock();
+    std::clock_t c0 = std::clock();
     var[5] = 0;
     for (unsigned int i=0; i<0x40000000; i++) (*fn)();
-    clock_t c1 = clock();
+    std::clock_t c1 = std::clock();
     std::cout << "incremented value = " << var[5] << "  ";
     std::cout << std::setw(25) << name << "  "
               << std::fixed << std::setprecision(2)

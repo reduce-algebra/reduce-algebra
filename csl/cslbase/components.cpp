@@ -103,7 +103,7 @@ static HANDLE thread[MAX_CPU_COUNT];
 
 #define CREATETHREAD_FAILED(i, p) \
     (thread[i] = CreateThread(NULL, 0, &p, \
-        (void *)(intptr_t)i, 0, NULL)) == NULL
+        (void *)(std::intptr_t)i, 0, NULL)) == NULL
 // On Windows I will use a time-limited wait for my first worker
 // thread to terminate as my "sleep" operation - that means that as soon
 // as that thread terminates I wake up... and I should find the
@@ -141,7 +141,7 @@ static int number_of_processors()
 #else // sysconf option to check CPU count
 
 static int number_of_processors()
-{   printf("_SC_NPROCESSORS_CONF not defined\n");
+{   std::printf("_SC_NPROCESSORS_CONF not defined\n");
     return 1;
 }
 
@@ -154,9 +154,9 @@ static int number_of_processors()
 static pthread_t thread[MAX_CPU_COUNT];
 
 #define CREATETHREAD_FAILED(i, p) \
-    pthread_create(&thread[i], NULL, &p, (void *)(intptr_t)i)
+    pthread_create(&thread[i], NULL, &p, (void *)(std::intptr_t)i)
 #define SLEEP \
-    {   struct timespec ts; \
+    {   struct std::timespec ts; \
         clock_gettime(CLOCK_REALTIME, &ts); \
         ts.tv_sec += 5; \
         pthread_cond_timedwait(&cond, &condmutex, &ts); \
@@ -172,17 +172,17 @@ static pthread_t thread[MAX_CPU_COUNT];
 #define DEBUG (0)
 
 void printlog(const char *s, ...)
-{   va_list a;
+{   std::va_list a;
     LOCKLOGMUTEX;
     va_start(a, s);
 #ifndef SEQUENTIAL
-    fprintf(stdout, "{%d:", threadnumber);
+    std::fprintf(stdout, "{%d:", threadnumber);
 #endif
-    vfprintf(stdout, s, a);
+    std::vfprintf(stdout, s, a);
 #ifndef SEQUENTIAL
-    fprintf(stdout, ":%d}", threadnumber);
+    std::fprintf(stdout, ":%d}", threadnumber);
 #endif
-    fflush(stdout);
+    std::fflush(stdout);
     va_end(a);
     UNLOCKLOGMUTEX;
 }
@@ -248,7 +248,7 @@ static __thread int vu_edges[3*LARGEST_MATCHING];
 
 
 int find_any_assignment(
-    uint32_t *items,
+    std::uint32_t *items,
     int item_count,
     cuckoo_importance *importance,
     void *table,
@@ -256,8 +256,8 @@ int find_any_assignment(
     int table_size,
     cuckoo_get_key *get_key,
     cuckoo_set_key *set_key,
-    uint32_t modulus2,
-    uint32_t offset2,
+    std::uint32_t modulus2,
+    std::uint32_t offset2,
     int noisy)
 {   int i, j, k, l, Qin, Qout;
     int ucount, vcount, uchain;
@@ -276,10 +276,10 @@ int find_any_assignment(
         v_used[i] = -1;
     }
     for (i=0; i<item_count; i++)
-    {   uint32_t key = items[i];
-        uint32_t h1 = key % table_size;
-        uint32_t h2 = key % modulus2 + offset2;
-        uint32_t h3 = (h1 + h2) % table_size;
+    {   std::uint32_t key = items[i];
+        std::uint32_t h1 = key % table_size;
+        std::uint32_t h2 = key % modulus2 + offset2;
+        std::uint32_t h3 = (h1 + h2) % table_size;
         int imp = (*importance)(key);
 // Get rid of double edges... if an entry in the table is "-1" that
 // means "no edge here".
@@ -411,7 +411,7 @@ int find_any_assignment(
                 uchain = u_used[uchain];
                 if (i++ > ucount)
                 {   printlog("uchain too long\n");
-                    exit(1);
+                    std::exit(1);
                 }
             }
             if (maxMatching() != ucount) return 0;
@@ -429,24 +429,24 @@ int find_any_assignment(
 // fact not be used!
 
 double cuckoo_merit(
-    uint32_t *items,
+    std::uint32_t *items,
     int item_count,
     cuckoo_importance *importance,
     void *table,
     int hash_item_size,
     int table_size,
     cuckoo_get_key *get_key,
-    uint32_t modulus2,
-    uint32_t offset2)
+    std::uint32_t modulus2,
+    std::uint32_t offset2)
 {   int i;
     int nvital = 0;
     int nimportant = 0, nimp1 = 0, nimp2 = 0;
     int nstandard = 0, nstand1 = 0, nstand2 = 0, nstand3 = 0;
     for (i=0; i<item_count; i++)
-    {   uint32_t key = items[i];
-        uint32_t h1 = key % table_size;
-        uint32_t h2 = key % modulus2 + offset2;
-        uint32_t h3 = (h1 + h2) % table_size;
+    {   std::uint32_t key = items[i];
+        std::uint32_t h1 = key % table_size;
+        std::uint32_t h2 = key % modulus2 + offset2;
+        std::uint32_t h3 = (h1 + h2) % table_size;
         int imp = (*importance)(key);
         switch (imp)
     {       default:
@@ -465,7 +465,7 @@ double cuckoo_merit(
                 }
                 else
                 {   printlog("Failed to find item %d (%u/%x)\n", i, key, key);
-                    exit(1);
+                    std::exit(1);
                 }
             case CUCKOO_IMPORTANT:
                 nimportant++;
@@ -479,7 +479,7 @@ double cuckoo_merit(
                 }
                 else
                 {   printlog("Failed to find item %d (%u/%x)\n", i, key, key);
-                    exit(1);
+                    std::exit(1);
                 }
             case CUCKOO_VITAL:
                 nvital++;
@@ -487,7 +487,7 @@ double cuckoo_merit(
                     break;
                 else
                 {   printlog("Failed to find item %d (%u/%x)\n", i, key, key);
-                    exit(1);
+                    std::exit(1);
                 }
         }
     }
@@ -533,19 +533,19 @@ double cuckoo_merit(
 static __thread int **adjacency_matrix = NULL;
 
 double find_best_assignment(
-    uint32_t *items,
+    std::uint32_t *items,
     int item_count,
     cuckoo_importance *importance,
-    uint32_t *table,
+    std::uint32_t *table,
     int table_size,
-    uint32_t modulus2,
-    uint32_t offset2)
+    std::uint32_t modulus2,
+    std::uint32_t offset2)
 {   int i, j;
     int *mem;
     hungarian_problem_t p;
     printlog("starting find_best_assignment %d %d\n", item_count, table_size);
     printlog("m2=%d o2=%d\n", modulus2, offset2);
-    adjacency_matrix = (int **)malloc(
+    adjacency_matrix = (int **)std::malloc(
                            table_size*sizeof(int *) + table_size*item_count*sizeof(int) + 8);
     hungarian_test_alloc(adjacency_matrix);
     mem = (int *)&adjacency_matrix[table_size];
@@ -558,10 +558,10 @@ double find_best_assignment(
             adjacency_matrix[i][j] = 0x00010000;
     }
     for (i=0; i<item_count; i++)
-    {   uint32_t key = items[i];
-        uint32_t h1 = key % table_size;
-        uint32_t h2 = key % modulus2 + offset2;
-        uint32_t h3 = (h1 + h2) % table_size;
+    {   std::uint32_t key = items[i];
+        std::uint32_t h1 = key % table_size;
+        std::uint32_t h2 = key % modulus2 + offset2;
+        std::uint32_t h3 = (h1 + h2) % table_size;
         int imp = (*importance)(key);
 // I have thought a bit about the weights I use here, but to a large extent
 // they are a bit of an arbitrary choice.
@@ -594,10 +594,10 @@ double find_best_assignment(
     int nimportant = 0, nimportant1 = 0, nimportant2 = 0;
     int nstandard = 0, nstandard1 = 0, nstandard2 = 0, nstandard3 = 0;
     for (i=0; i<item_count; i++)
-    {   uint32_t key = items[i];
-        uint32_t h1 = key % table_size;
-        uint32_t h2 = key % modulus2 + offset2;
-        uint32_t h3 = (h1 + h2) % table_size;
+    {   std::uint32_t key = items[i];
+        std::uint32_t h1 = key % table_size;
+        std::uint32_t h2 = key % modulus2 + offset2;
+        std::uint32_t h3 = (h1 + h2) % table_size;
         int imp = (*importance)(key);
         switch (imp)
         {   case CUCKOO_VITAL:
@@ -608,7 +608,7 @@ double find_best_assignment(
                 }
                 else
                 {   hungarian_free(&p);
-                    free(adjacency_matrix);
+                    std::free(adjacency_matrix);
                     return -1.0;
                 }
             case CUCKOO_IMPORTANT:
@@ -626,7 +626,7 @@ double find_best_assignment(
                 }
                 else
                 {   hungarian_free(&p);
-                    free(adjacency_matrix);
+                    std::free(adjacency_matrix);
                     return -1.0;
                 }
             case CUCKOO_STANDARD:
@@ -650,7 +650,7 @@ double find_best_assignment(
                 }
                 else
                 {   hungarian_free(&p);
-                    free(adjacency_matrix);
+                    std::free(adjacency_matrix);
                     return -1.0;
                 }
         }
@@ -686,16 +686,16 @@ double find_best_assignment(
     }
 #endif
     hungarian_free(&p);
-    free(adjacency_matrix);
+    std::free(adjacency_matrix);
     return merit;
 }
 
-uint32_t int32_get_key(void *p)
-{   return *(uint32_t *)p;
+std::uint32_t int32_get_key(void *p)
+{   return *(std::uint32_t *)p;
 }
 
-void int32_set_key(void *p, uint32_t v)
-{   *(uint32_t *)p = v;
+void int32_set_key(void *p, std::uint32_t v)
+{   *(std::uint32_t *)p = v;
 }
 
 // To perform a parallel search I need to be able to distribute cases
@@ -703,8 +703,8 @@ void int32_set_key(void *p, uint32_t v)
 // of a value for modulus2 and one for offset2.
 
 typedef struct __mod_and_off
-{   uint32_t modulus2;
-    uint32_t offset2;
+{   std::uint32_t modulus2;
+    std::uint32_t offset2;
     int noisy;
 } mod_and_off;
 
@@ -712,15 +712,15 @@ typedef struct __mod_and_off
 // I have some data that is common to all the threads....
 
 static int       shared_use_hungarian;
-static uint32_t *shared_keys;
+static std::uint32_t *shared_keys;
 static int       shared_key_count;
-static uint32_t *shared_table;
+static std::uint32_t *shared_table;
 static int       shared_table_size;
 static cuckoo_importance *shared_importance;
-static uint32_t  shared_modulus2;
-static uint32_t  shared_offset2;
-static uint32_t  best_modulus2;
-static uint32_t  best_offset2;
+static std::uint32_t  shared_modulus2;
+static std::uint32_t  shared_offset2;
+static std::uint32_t  best_modulus2;
+static std::uint32_t  best_offset2;
 static double    best_merit;
 static int       tries;
 static int       successes;
@@ -765,8 +765,8 @@ static int thread_finished;
 
 THREAD_RESULT_T hungarian_thread(void *arg)
 {   mod_and_off mo;
-    uint32_t *table = (uint32_t *)calloc(shared_table_size, sizeof(uint32_t));
-    threadnumber = (int)(intptr_t)arg;
+    std::uint32_t *table = (std::uint32_t *)std::calloc(shared_table_size, sizeof(std::uint32_t));
+    threadnumber = (int)(std::intptr_t)arg;
 //  printlog("Thread %d starting\n", threadnumber);
     while ((mo = hungarian_next_case()).modulus2 != 0)
     {   double merit;
@@ -778,7 +778,7 @@ THREAD_RESULT_T hungarian_thread(void *arg)
                 shared_key_count,
                 shared_importance,
                 table,
-                sizeof(uint32_t),
+                sizeof(std::uint32_t),
                 shared_table_size,
                 int32_get_key,
                 int32_set_key,
@@ -828,7 +828,7 @@ THREAD_RESULT_T hungarian_thread(void *arg)
             }
         }
     }
-    free(table);
+    std::free(table);
     printlog("Thread finishing\n");
     LOCKMUTEX;
     printlog("Thread finishing\n");
@@ -864,7 +864,7 @@ THREAD_RESULT_T hungarian_thread(void *arg)
 //
 
 cuckoo_parameters try_all_hash_functions(
-    uint32_t *keys,
+    std::uint32_t *keys,
     int key_count,
     cuckoo_importance *importance,
     void *hash,
@@ -874,8 +874,8 @@ cuckoo_parameters try_all_hash_functions(
     int use_hungarian)
 {   int cpu_count, i;
     cuckoo_parameters r;
-    uint32_t *table = (uint32_t *)calloc(hashsize, sizeof(uint32_t));
-    uint64_t memsize;
+    std::uint32_t *table = (std::uint32_t *)std::calloc(hashsize, sizeof(std::uint32_t));
+    std::uint64_t memsize;
     hungarian_test_alloc(table);
     shared_use_hungarian = use_hungarian;
     shared_keys = keys;
@@ -896,7 +896,7 @@ cuckoo_parameters try_all_hash_functions(
 
     cpu_count = number_of_processors();
     printlog("About to try to read memory size\n");
-    memsize = (uint64_t)getMemorySize();
+    memsize = (std::uint64_t)getMemorySize();
     printlog("Have %.2fGiB memory\n", (double)memsize/(1024.0*1024.0*1024.0));
 #ifdef SEQUENTIAL
     cpu_count = 1;
@@ -910,8 +910,8 @@ cuckoo_parameters try_all_hash_functions(
     thread_finished = 0;
     for (i=0; i<cpu_count; i++)
     {   if (CREATETHREAD_FAILED(i, hungarian_thread))
-        {   fprintf(stderr, "Unable to create thread\n");
-            exit(1);
+        {   std::fprintf(stderr, "Unable to create thread\n");
+            std::exit(1);
         }
     }
 //  printlog("All threads created\n");
@@ -938,8 +938,8 @@ cuckoo_parameters try_all_hash_functions(
     for (i=0; i<cpu_count-1; i++)
     {   // printlog("Try to join with %d\n", i);
         if (JOINTHREAD_FAILED(i))
-        {   fprintf(stderr, "Unable to join thread\n");
-            exit(1);
+        {   std::fprintf(stderr, "Unable to join thread\n");
+            std::exit(1);
         }
         // printlog("Join with %d OK\n", i);
     }
@@ -947,10 +947,10 @@ cuckoo_parameters try_all_hash_functions(
     printlog("finished: final result is %d : %d   %.4f\n",
               best_modulus2, best_offset2, best_merit);
     if (successes == 0) // Failure!
-    {   r.table_size = (uint32_t)(-1);
+    {   r.table_size = (std::uint32_t)(-1);
         r.modulus2 = r.offset2 = 4;
         r.merit = 4.0;
-        free(table);
+        std::free(table);
         return r;
     }
     printlog("%d assignments for %d tries (%.3f%%)\n",
@@ -962,7 +962,7 @@ cuckoo_parameters try_all_hash_functions(
     if (use_hungarian)
         for (i=0; i<r.table_size; i++)
             (*set_key)(hash_item_size*i+(char *)hash, shared_table[i]);
-    free(table);
+    std::free(table);
     return r;
 }
 
@@ -981,7 +981,7 @@ cuckoo_parameters try_all_hash_functions(
 //
 static cuckoo_parameters cuckoo_simple_search(
     int myid,
-    uint32_t *items,
+    std::uint32_t *items,
     int item_count,
     cuckoo_importance *importance,
     void *table,
@@ -990,9 +990,9 @@ static cuckoo_parameters cuckoo_simple_search(
     int max_table_size,
     cuckoo_get_key *get_key,
     cuckoo_set_key *set_key)
-{   cuckoo_parameters r = {(uint32_t)(-1), 0, 0, 4.0};
+{   cuckoo_parameters r = {(std::uint32_t)(-1), 0, 0, 4.0};
     int i, probe_count;
-    uint32_t table_size, modulus2, offset2;
+    std::uint32_t table_size, modulus2, offset2;
     for (table_size = initial_table_size; table_size<max_table_size; table_size++)
     {   printlog("Trial with table_size = %d\n", table_size);
         r = try_all_hash_functions(
@@ -1004,7 +1004,7 @@ static cuckoo_parameters cuckoo_simple_search(
                 table_size,
                 set_key,
                 0);        // Merely check if there is an allocation
-        if (r.table_size != (uint32_t)(-1))
+        if (r.table_size != (std::uint32_t)(-1))
         {   printlog("Success for %d items and table_size %d (%.2f%%)\n",
                       item_count, r.table_size, (100.0*item_count)/table_size);
             printlog("modulus2 = %d, offset2 = %d\n", r.modulus2, r.offset2);
@@ -1031,7 +1031,7 @@ static cuckoo_parameters cuckoo_simple_search(
 
 
 cuckoo_parameters cuckoo_binary_optimise(
-    uint32_t *items,
+    std::uint32_t *items,
     int item_count,
     cuckoo_importance *importance,
     void *table,
@@ -1043,7 +1043,7 @@ cuckoo_parameters cuckoo_binary_optimise(
     double merit_target)
 {   cuckoo_parameters r, rhi;
     if (min_table_size >= max_table_size)
-    {   r.table_size = (uint32_t)(-1);
+    {   r.table_size = (std::uint32_t)(-1);
         r.modulus2 = r.offset2 = 3;
         r.merit = 3.0;
         return r;
@@ -1062,8 +1062,8 @@ cuckoo_parameters cuckoo_binary_optimise(
                 min_table_size,
                 set_key,
                 0);        // Merely check if there is an allocation
-        if (r.table_size != (uint32_t)(-1))
-        {   r.table_size = (uint32_t)(-1);
+        if (r.table_size != (std::uint32_t)(-1))
+        {   r.table_size = (std::uint32_t)(-1);
             printlog("Minimum size passed to binary search is too large\n");
             r.modulus2 = r.offset2 = 0;
             r.merit = 4.0;
@@ -1082,7 +1082,7 @@ cuckoo_parameters cuckoo_binary_optimise(
               set_key,
               0);        // Merely check if there is an allocation
     printlog("rhi: %d %d %d\n", rhi.table_size, rhi.modulus2, rhi.offset2);
-    if (rhi.table_size == (uint32_t)(-1))
+    if (rhi.table_size == (std::uint32_t)(-1))
     {   printlog("Failed to fit into largest table size\n");
         return r;
     }
@@ -1097,7 +1097,7 @@ cuckoo_parameters cuckoo_binary_optimise(
                 mid,
                 set_key,
                 0);        // Merely check if there is an allocation
-        if (r.table_size == (uint32_t)(-1)) min_table_size = mid;
+        if (r.table_size == (std::uint32_t)(-1)) min_table_size = mid;
         else
         {   max_table_size = mid;
             rhi = r;

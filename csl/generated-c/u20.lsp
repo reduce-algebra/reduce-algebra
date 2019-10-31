@@ -1,7 +1,7 @@
 
 % u20.lsp           Machine generated Lisp
 
-(c!:install "u20" 108109 7187176 2248960)
+(c!:install "u20" 106523 1929813 1596311)
 
 (c!:install 'evalequal '(evalequal difference getrtype reval) 
 9329211343958556356)
@@ -105,8 +105,6 @@ lalr_prin_symbol) 14916345468253414621)
 
 (c!:install 'cl_nnf '(cl_nnf cl_nnf1) 8829395629140112282)
 
-(c!:install 'simpqg '(simpqg qg simpcv) 7904410273408591343)
-
 (c!:install 'mkprod '(mkprod !*exp !*sub2 !*mcd !*sqfree !*factor !*gcd
 !*group kernlp subs2 ckrn quotf expnd multf fctrf mksp!* tmsf) 
 5396723553033127465)
@@ -177,6 +175,9 @@ print_with_margin_sub) 6076479413304500728)
 
 (c!:install 'ofsf_varlat '(ofsf_varlat !*rlbrkcxk kernels lto_lpvarl
 lastpair) 832260251403056635)
+
+(c!:install 'mk!+unit!+mat '(mk!+unit!+mat gen!+can!+bas) 
+14051174035683025759)
 
 
 % End of generated Lisp code

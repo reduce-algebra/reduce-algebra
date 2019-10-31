@@ -45,17 +45,17 @@
 #include <assert.h>
 
 
-FILE *src, *dest;
+std::FILE *src, *dest;
 
 static int Igetc()
-{   return getc(src);
+{   return std::getc(src);
 }
 
 static bool Iputc(int ch)
-{   return (putc(ch, dest) == EOF);
+{   return (std::putc(ch, dest) == EOF);
 }
 
-bool Iread(void *buff, size_t size)
+bool Iread(void *buff, std::size_t size)
 // Reads (size) bytes into the indicated buffer.  Returns true if
 // if fails to read the expected number of bytes.
 {
@@ -69,12 +69,12 @@ bool Iread(void *buff, size_t size)
     return false;
 }
 
-bool Iwrite(const void *buff, size_t size)
+bool Iwrite(const void *buff, std::size_t size)
 //
 // Writes (size) bytes from the given buffer, returning true if trouble.
 //
 {   const unsigned char *p = (const unsigned char *)buff;
-    for (size_t i=0; i<size; i++)
+    for (std::size_t i=0; i<size; i++)
         if (Iputc(p[i])) return true;
     return false;
 }
@@ -172,7 +172,7 @@ bool def_finish()
         int rc;
         if ((rc = deflate(&strm, Z_FINISH)) != Z_OK &&
              rc != Z_STREAM_END) return true;
-        size_t n = CHUNK - strm.avail_out;
+        std::size_t n = CHUNK - strm.avail_out;
         if (n != 0)
         {   if (Iputc(n >> 8)) return true;
             if (Iputc(n)) return true;
@@ -191,13 +191,13 @@ bool def_finish()
     return false;
 }
 
-bool Zwrite(const void *b, size_t n)
+bool Zwrite(const void *b, std::size_t n)
 {   const char *c = (const char *)b;
     while (n-- != 0) if (Zputc(*c++)) return true;
     return false;
 }
 
-static size_t n_out;
+static std::size_t n_out;
 static unsigned char *p_out;
 static int z_eof;
 
@@ -287,7 +287,7 @@ int Zgetc()
     }
 }
 
-bool Zread(void *b, size_t n)
+bool Zread(void *b, std::size_t n)
 {   char *c = (char *)b;
     while (n-- != 0)
     {   int n = Zgetc();
@@ -311,38 +311,38 @@ int main(int argc, char **argv)
 // OR   zlibdemo -d compressed-src dest
 //
     if (argc < 3 ||
-        (argc == 3 && strcmp(argv[1] , "-d") == 0) ||
-        (argc == 4 && strcmp(argv[1], "-d") != 0) ||
+        (argc == 3 && std::strcmp(argv[1] , "-d") == 0) ||
+        (argc == 4 && std::strcmp(argv[1], "-d") != 0) ||
         argc > 4)
-    {   fputs("Usage: zlibdemo [-d] source dest\n", stderr);
+    {   std::fputs("Usage: zlibdemo [-d] source dest\n", stderr);
         return 1;
     }
 
     if (argc == 3)
-    {   src = strcmp(argv[1], "-") == 0 ? stdin : fopen(argv[1], "r");
+    {   src = std::strcmp(argv[1], "-") == 0 ? stdin : std::fopen(argv[1], "r");
         assert(src != NULL);
-        dest = fopen(argv[2], "wb");
+        dest = std::fopen(argv[2], "wb");
         assert(dest != NULL);
         def_init();
         int ch;
-        while ((ch = getc(src)) != EOF) Zputc(ch);
+        while ((ch = std::getc(src)) != EOF) Zputc(ch);
         def_finish();
-        fclose(src);
-        fclose(dest);
+        std::fclose(src);
+        std::fclose(dest);
         return 0;
      }
 
     else
-    {   src = fopen(argv[2], "rb");
+    {   src = std::fopen(argv[2], "rb");
         assert(src != NULL);
-        dest = strcmp(argv[3], "-") == 0 ? stdout : fopen(argv[3], "w");
+        dest = std::strcmp(argv[3], "-") == 0 ? stdout : std::fopen(argv[3], "w");
         assert(dest != NULL);
         inf_init();
         int ch;
-        while ((ch = Zgetc()) != -1) putc(ch, dest);
+        while ((ch = Zgetc()) != -1) std::putc(ch, dest);
         inf_finish();
-        fclose(src);
-        fclose(dest);
+        std::fclose(src);
+        std::fclose(dest);
         return 0;
     }
 }

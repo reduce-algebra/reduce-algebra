@@ -45,8 +45,8 @@
     three_args *f3;
     fourup_args *f4up;
     unsigned int fname, w;
-    int32_t n, k;
-    size_t xppc;
+    std::int32_t n, k;
+    std::size_t xppc;
 //
 // I declare all the other variables I need here up at the top of the function
 // since at least on some C compilers putting the declarations more locally
@@ -64,10 +64,10 @@
 // I have decided to accept the cost at all times so that full tracing
 // facilities are always available.
     LispObject ffpname = qpname(lit);
-    size_t fflength = (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+    std::size_t fflength = (std::size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
     char ffname[32];
     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-    memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
+    std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
     ffname[fflength] = 0;
     debug_record((const char *)ffname);
 //
@@ -114,7 +114,7 @@
 // starting up the bytecode interpreter nake that an invalid judgement,
 // and the "+30" here is intended to counterbalance it.
     qcount(basic_elt(litvec, 0)) =
-        (uint64_t)qcount(basic_elt(litvec, 0)) +
+        (std::uint64_t)qcount(basic_elt(litvec, 0)) +
         (profile_count_mode ? 1 : 30);
 #endif
 //
@@ -135,14 +135,14 @@
 #endif
 #else // CHECK_STACK
     {   char *p = (char *)&p;
-        if ((uintptr_t)p < C_stacklimit)
+        if ((std::uintptr_t)p < C_stacklimit)
         {   err_printf("\n+++ stack overflow\n");
             aerror("stack_overflow");
         }
     }
 #endif // CHECK_STACK
 #ifdef DEBUG
-    jmp_buf *jbsave;
+    std::jmp_buf *jbsave;
 #endif
 
 next_opcode:   // This label is so that I can restart what I am doing
@@ -172,7 +172,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // I will also convert signals into exceptions, so that utter disasters
 // in things that I call can be at least partially recovered from
     jbsave = global_jb;
-    jmp_buf jb;
+    std::jmp_buf jb;
     switch (setjmp(jb))
     {   default:
         case 1: exit_reason = UNWIND_SIGNAL;
@@ -196,7 +196,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
         if (!profile_count_mode)
             qcount(basic_elt(litvec, 0)) =
-                (uint64_t)qcount(basic_elt(litvec, 0)) + 1;
+                (std::uint64_t)qcount(basic_elt(litvec, 0)) + 1;
         total++;
         frequencies[((unsigned char *)codevec)[ppc]]++;
 #endif
@@ -470,7 +470,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_PLUS2:
                 if (is_fixnum(A_reg) && is_fixnum(B_reg))
-                {   intptr_t nn = int_of_fixnum(A_reg) + int_of_fixnum(B_reg);
+                {   std::intptr_t nn = int_of_fixnum(A_reg) + int_of_fixnum(B_reg);
                     A_reg = make_lisp_integerptr(nn);
                     continue;
                 }
@@ -493,7 +493,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_DIFFERENCE:
                 if (is_fixnum(A_reg) && is_fixnum(B_reg))
-                {   intptr_t nn = int_of_fixnum(B_reg) - int_of_fixnum(A_reg);
+                {   std::intptr_t nn = int_of_fixnum(B_reg) - int_of_fixnum(A_reg);
                     A_reg = make_lisp_integerptr(nn);
                     continue;
                 }
@@ -1547,15 +1547,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
-                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+                        (std::size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
+                    std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     qcount(basic_elt(litvec, 0)) =
-                        (uint64_t)qcount(basic_elt(litvec, 0)) +
+                        (std::uint64_t)qcount(basic_elt(litvec, 0)) +
                         (profile_count_mode ? 1 : 30);
 #endif
                     continue;
@@ -1593,16 +1593,16 @@ next_opcode:   // This label is so that I can restart what I am doing
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
-                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+                        (std::size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
+                    std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
                     push(A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     qcount(basic_elt(litvec, 0)) =
-                        (uint64_t)qcount(basic_elt(litvec, 0)) +
+                        (std::uint64_t)qcount(basic_elt(litvec, 0)) +
                         (profile_count_mode ? 1 : 30);
 #endif
                     continue;
@@ -1641,16 +1641,16 @@ next_opcode:   // This label is so that I can restart what I am doing
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
-                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+                        (std::size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
+                    std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
                     push(B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     qcount(basic_elt(litvec, 0)) =
-                        (uint64_t)qcount(basic_elt(litvec, 0)) +
+                        (std::uint64_t)qcount(basic_elt(litvec, 0)) +
                         (profile_count_mode ? 1 : 30);
 #endif
                     continue;
@@ -1688,16 +1688,16 @@ next_opcode:   // This label is so that I can restart what I am doing
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
-                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+                        (std::size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
+                    std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
                     push(r2, B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     qcount(basic_elt(litvec, 0)) =
-                        (uint64_t)qcount(basic_elt(litvec, 0)) +
+                        (std::uint64_t)qcount(basic_elt(litvec, 0)) +
                         (profile_count_mode ? 1 : 30);
 #endif
                     continue;

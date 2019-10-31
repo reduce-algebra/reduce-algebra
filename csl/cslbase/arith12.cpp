@@ -79,7 +79,7 @@ LispObject Lfrexp(LispObject env, LispObject a)
 // modulus that could fit in a fixnum.
 
 LispObject Lmodular_difference(LispObject env, LispObject a, LispObject b)
-{   intptr_t r;
+{   std::intptr_t r;
     if (!modulus_is_large)
     {   if (!is_fixnum(a)) aerror1("modular-difference", a);
         if (!is_fixnum(b)) aerror1("modular-difference", b);
@@ -95,7 +95,7 @@ LispObject Lmodular_minus(LispObject env, LispObject a)
 {   if (!modulus_is_large)
     {   if (!is_fixnum(a)) aerror1("modular-minus", a);
         if (a != fixnum_of_int(0))
-        {   intptr_t r = current_modulus - int_of_fixnum(a);
+        {   std::intptr_t r = current_modulus - int_of_fixnum(a);
             a = fixnum_of_int(r);
         }
         return onevalue(a);
@@ -105,7 +105,7 @@ LispObject Lmodular_minus(LispObject env, LispObject a)
 }
 
 LispObject Lmodular_number(LispObject env, LispObject a)
-{   intptr_t r;
+{   std::intptr_t r;
     if (!modulus_is_large)
     {   a = Cremainder(a, fixnum_of_int(current_modulus));
         r = int_of_fixnum(a);
@@ -116,7 +116,7 @@ LispObject Lmodular_number(LispObject env, LispObject a)
 }
 
 LispObject Lmodular_plus(LispObject env, LispObject a, LispObject b)
-{   intptr_t r;
+{   std::intptr_t r;
     if (!modulus_is_large)
     {   if (!is_fixnum(a)) aerror1("modular-plus", a);
         if (!is_fixnum(b)) aerror1("modular-plus", b);
@@ -171,7 +171,7 @@ LispObject large_modular_reciprocal(LispObject n, bool safe)
 }
 
 LispObject Lmodular_reciprocal(LispObject, LispObject n)
-{   intptr_t a, b, x, y;
+{   std::intptr_t a, b, x, y;
     if (modulus_is_large) return large_modular_reciprocal(n, false);
 // If the modulus is "small" I can do all this using native integer
 // arithmetic.
@@ -183,7 +183,7 @@ LispObject Lmodular_reciprocal(LispObject, LispObject n)
     if (b == 0) aerror1("modular-reciprocal", n);
     if (b < 0) b = current_modulus - ((-b)%current_modulus);
     while (b != 1)
-    {   intptr_t w, t;
+    {   std::intptr_t w, t;
         if (b == 0)
             aerror2("non-prime modulus in modular-reciprocal",
                            fixnum_of_int(current_modulus), n);
@@ -200,7 +200,7 @@ LispObject Lmodular_reciprocal(LispObject, LispObject n)
 }
 
 LispObject Lsafe_modular_reciprocal(LispObject env, LispObject n)
-{   intptr_t a, b, x, y;
+{   std::intptr_t a, b, x, y;
     if (modulus_is_large) return large_modular_reciprocal(n, true);
     if (!is_fixnum(n)) aerror1("modular-reciprocal", n);
     a = current_modulus;
@@ -210,7 +210,7 @@ LispObject Lsafe_modular_reciprocal(LispObject env, LispObject n)
     if (b == 0) return onevalue(nil);
     if (b < 0) b = current_modulus - ((-b)%current_modulus);
     while (b != 1)
-    {   intptr_t w, t;
+    {   std::intptr_t w, t;
         if (b == 0) return onevalue(nil);
         w = a / b;
         t = b;
@@ -226,37 +226,37 @@ LispObject Lsafe_modular_reciprocal(LispObject env, LispObject n)
 
 LispObject Lmodular_times(LispObject env, LispObject a, LispObject b)
 {
-    uintptr_t cm;
-    intptr_t aa, bb;
+    std::uintptr_t cm;
+    std::intptr_t aa, bb;
     if (!modulus_is_large)
     {   if (!is_fixnum(a)) aerror1("modular-times", a);
         if (!is_fixnum(b)) aerror1("modular-times", b);
-        cm = (uintptr_t)current_modulus;
+        cm = (std::uintptr_t)current_modulus;
         aa = int_of_fixnum(a);
         bb = int_of_fixnum(b);
 // If I am on a 32-bit machine and the modulus is at worst 16 bits I can use
 // 32-bit arithmetic to complete the job.
         if (!SIXTY_FOUR_BIT && cm <= 0xffffU)
-        {   uint32_t r = ((uint32_t)aa * (uint32_t)bb) % (uint32_t)cm;
-            return onevalue(fixnum_of_int((intptr_t)r));
+        {   std::uint32_t r = ((std::uint32_t)aa * (std::uint32_t)bb) % (std::uint32_t)cm;
+            return onevalue(fixnum_of_int((std::intptr_t)r));
         }
 // On a 32 or 64-bit machine if the modulus is at worst 32 bits I can do
 // a 64-bit (unsigned) multiplication and remainder step.
         else if (cm <= 0xffffffffU)
-        {   uint64_t r = ((uint64_t)aa*(uint64_t)bb) % (uint64_t)cm;
+        {   std::uint64_t r = ((std::uint64_t)aa*(std::uint64_t)bb) % (std::uint64_t)cm;
 // Because I am in a state where modulus_is_large is not set I know that the
 // modulus fits in a fixnum, hence the result will. So even though all value
 // that are of type uint64_t might not be valid as fixnums the one I have
 // here will be.
-            return onevalue(fixnum_of_int((intptr_t)r));
+            return onevalue(fixnum_of_int((std::intptr_t)r));
         }
 // Now my modulus is over 32-bits...
 // Using an int128_t bit type I can use it and the code is really neat!
 // On some platforms this goes via C++ templates and operator overloading
 // into a software implementation of 128-bit integer arithmetic!
         else
-        {   int64_t r = NARROW128(((int128_t)aa*(int128_t)bb) % (int128_t)cm);
-            return onevalue(fixnum_of_int((intptr_t)r));
+        {   std::int64_t r = NARROW128(((int128_t)aa*(int128_t)bb) % (int128_t)cm);
+            return onevalue(fixnum_of_int((std::intptr_t)r));
         }
     }
     a = times2(a, b);
@@ -299,15 +299,15 @@ LispObject large_modular_expt(LispObject a, int x)
     return onevalue(r);
 }
 
-inline intptr_t muldivptr(uintptr_t a, uintptr_t b, uintptr_t c)
+inline std::intptr_t muldivptr(std::uintptr_t a, std::uintptr_t b, std::uintptr_t c)
 {   if (!SIXTY_FOUR_BIT || c <= 0xffffffffU)
-        return ((uint64_t)a*(uint64_t)b)%(uintptr_t)c;
-    else return (intptr_t)NARROW128((uint128((uint64_t)a)*
-                                     uint128((uint64_t)a))%(uintptr_t)c);
+        return ((std::uint64_t)a*(std::uint64_t)b)%(std::uintptr_t)c;
+    else return (std::intptr_t)NARROW128((uint128((std::uint64_t)a)*
+                                     uint128((std::uint64_t)a))%(std::uintptr_t)c);
 }
 
 LispObject Lmodular_expt(LispObject env, LispObject a, LispObject b)
-{   intptr_t x, r, p;
+{   std::intptr_t x, r, p;
     x = int_of_fixnum(b);
     if (x == 0) return onevalue(fixnum_of_int(1));
     if (modulus_is_large) return large_modular_expt(a, x);
@@ -318,15 +318,15 @@ LispObject Lmodular_expt(LispObject env, LispObject a, LispObject b)
 // muldivptr takes unsigned arguments but that should be OK because any
 // valid modulus and any valid modular number will be positive.
     while ((x & 1) == 0)
-    {   p = muldivptr((uintptr_t)p, (uintptr_t)p, (uintptr_t)current_modulus);
+    {   p = muldivptr((std::uintptr_t)p, (std::uintptr_t)p, (std::uintptr_t)current_modulus);
         x = x/2;
     }
     r = p;
     while (x != 1)
-    {   p = muldivptr((uintptr_t)p, (uintptr_t)p, (uintptr_t)current_modulus);
+    {   p = muldivptr((std::uintptr_t)p, (std::uintptr_t)p, (std::uintptr_t)current_modulus);
         x = x/2;
         if ((x & 1) != 0)
-        {   r = muldivptr((uintptr_t)r, (uintptr_t)p, (uintptr_t)current_modulus);
+        {   r = muldivptr((std::uintptr_t)r, (std::uintptr_t)p, (std::uintptr_t)current_modulus);
         }
     }
     return onevalue(fixnum_of_int(r));
@@ -349,7 +349,7 @@ LispObject Lset_small_modulus(LispObject env, LispObject a)
         large_modulus = a;
         return old;
     }
-    if ((intptr_t)a < 0 || a == fixnum_of_int(0))
+    if ((std::intptr_t)a < 0 || a == fixnum_of_int(0))
         aerror1("set!-small!-modulus", a);
     modulus_is_large = 0;
     large_modulus = nil; // Should not be referenced.
@@ -359,12 +359,12 @@ LispObject Lset_small_modulus(LispObject env, LispObject a)
 
 LispObject Liadd1(LispObject, LispObject a)
 {   if (!is_fixnum(a)) aerror1("iadd1", a);
-    return onevalue((LispObject)((intptr_t)a + 0x10));
+    return onevalue((LispObject)((std::intptr_t)a + 0x10));
 }
 
 LispObject Lidifference_2(LispObject, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("idifference", a, b);
-    return onevalue((LispObject)((intptr_t)a - (intptr_t)b + TAG_FIXNUM));
+    return onevalue((LispObject)((std::intptr_t)a - (std::intptr_t)b + TAG_FIXNUM));
 }
 
 //
@@ -375,7 +375,7 @@ LispObject Lidifference_2(LispObject, LispObject a, LispObject b)
 //
 
 LispObject Lxdifference(LispObject env, LispObject a, LispObject b)
-{   int32_t r;
+{   std::int32_t r;
     if (!is_fixnum(a) || !is_fixnum(b)) return onevalue(nil);
     r = int_of_fixnum(a) - int_of_fixnum(b);
     if (r < -0x08000000 || r > 0x07ffffff) return onevalue(nil);
@@ -514,11 +514,11 @@ LispObject Limax_2(LispObject, LispObject a, LispObject b)
 
 LispObject Liminus(LispObject, LispObject a)
 {   if (!is_fixnum(a)) aerror1("iminus", a);
-    return onevalue((LispObject)(2*TAG_FIXNUM - (intptr_t)a));
+    return onevalue((LispObject)(2*TAG_FIXNUM - (std::intptr_t)a));
 }
 
 LispObject Liminusp(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate((intptr_t)a < (intptr_t)fixnum_of_int(0)));
+{   return onevalue(Lispify_predicate((std::intptr_t)a < (std::intptr_t)fixnum_of_int(0)));
 }
 
 LispObject Liplus_0(LispObject)
@@ -531,33 +531,33 @@ LispObject Liplus_1(LispObject, LispObject a1)
 
 LispObject Liplus_2(LispObject, LispObject a1, LispObject a2)
 {   if (!is_fixnum(a1) || !is_fixnum(a2)) aerror2("iplus2", a1, a2);
-    return onevalue((LispObject)((intptr_t)a1 + (intptr_t)a2 - TAG_FIXNUM));
+    return onevalue((LispObject)((std::intptr_t)a1 + (std::intptr_t)a2 - TAG_FIXNUM));
 }
 
 LispObject Liplus_3(LispObject, LispObject a1, LispObject a2, LispObject a3)
 {   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
         aerror3("iplus", a1, a2, a3);
-    return onevalue((LispObject)((intptr_t)a1 +
-                                 (intptr_t)a2 - 2*TAG_FIXNUM +
-                                 (intptr_t)a3));
+    return onevalue((LispObject)((std::intptr_t)a1 +
+                                 (std::intptr_t)a2 - 2*TAG_FIXNUM +
+                                 (std::intptr_t)a3));
 }
 
 static LispObject Liplus_4up(LispObject, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
 {   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
         aerror3("iplus", a1, a2, a3);
-    a1 = (intptr_t)a1 + (intptr_t)a2 - 2*TAG_FIXNUM + (intptr_t)a3;
+    a1 = (std::intptr_t)a1 + (std::intptr_t)a2 - 2*TAG_FIXNUM + (std::intptr_t)a3;
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
         if (!is_fixnum(a2)) aerror1("iplus", a2);
-        a1 = a1 + (intptr_t)a2 - TAG_FIXNUM;
+        a1 = a1 + (std::intptr_t)a2 - TAG_FIXNUM;
     }
     return onevalue(a1);
 }
 
 LispObject Liquotient_2(LispObject, LispObject a, LispObject b)
-{   intptr_t aa, bb, c;
+{   std::intptr_t aa, bb, c;
     if (!is_fixnum(a) || !is_fixnum(b) ||
         b == fixnum_of_int(0)) aerror2("iquotient", a, b);
 // C does not define the exact behaviour of /, % on -ve args
@@ -572,7 +572,7 @@ LispObject Liquotient_2(LispObject, LispObject a, LispObject b)
 }
 
 LispObject Liremainder_2(LispObject, LispObject a, LispObject b)
-{   intptr_t aa, bb, c;
+{   std::intptr_t aa, bb, c;
     if (!is_fixnum(a) || !is_fixnum(b) ||
         b == fixnum_of_int(0)) aerror2("iremainder", a, b);
 // C does not define the exact behaviour of /, % on -ve args
@@ -593,7 +593,7 @@ LispObject Lirightshift(LispObject, LispObject a, LispObject b)
 
 LispObject Lisub1(LispObject, LispObject a)
 {   if (!is_fixnum(a)) aerror1("isub1", a);
-    return onevalue((LispObject)((intptr_t)a - 0x10));
+    return onevalue((LispObject)((std::intptr_t)a - 0x10));
 }
 
 LispObject Litimes_0(LispObject)
@@ -621,7 +621,7 @@ static LispObject Litimes_4up(LispObject env, LispObject a1, LispObject a2,
                 LispObject a3, LispObject a4up)
 {   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
         aerror3("iplus", a1, a2, a3);
-    intptr_t r = int_of_fixnum(a1) * int_of_fixnum(a2) * int_of_fixnum(a3);
+    std::intptr_t r = int_of_fixnum(a1) * int_of_fixnum(a2) * int_of_fixnum(a3);
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
@@ -632,11 +632,11 @@ static LispObject Litimes_4up(LispObject env, LispObject a1, LispObject a2,
 }
 
 LispObject Lionep(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate((intptr_t)a == (intptr_t)fixnum_of_int(1)));
+{   return onevalue(Lispify_predicate((std::intptr_t)a == (std::intptr_t)fixnum_of_int(1)));
 }
 
 LispObject Lizerop(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate((intptr_t)a == (intptr_t)fixnum_of_int(0)));
+{   return onevalue(Lispify_predicate((std::intptr_t)a == (std::intptr_t)fixnum_of_int(0)));
 }
 
 #ifdef FP_EVALUATE
@@ -722,22 +722,22 @@ static LispObject Lfp_eval(LispObject env, LispObject code,
                 fp_stack[n] *= w;
                 continue;
             case FP_SIN:
-                fp_stack[n] = sin(fp_stack[n]);
+                fp_stack[n] = std::sin(fp_stack[n]);
                 continue;
             case FP_COS:
-                fp_stack[n] = cos(fp_stack[n]);
+                fp_stack[n] = std::cos(fp_stack[n]);
                 continue;
             case FP_TAN:
-                fp_stack[n] = tan(fp_stack[n]);
+                fp_stack[n] = std::tan(fp_stack[n]);
                 continue;
             case FP_EXP:
-                fp_stack[n] = exp(fp_stack[n]);
+                fp_stack[n] = std::exp(fp_stack[n]);
                 continue;
             case FP_LOG:
-                fp_stack[n] = log(fp_stack[n]);
+                fp_stack[n] = std::log(fp_stack[n]);
                 continue;
             case FP_SQRT:
-                fp_stack[n] = sqrt(fp_stack[n]);
+                fp_stack[n] = std::sqrt(fp_stack[n]);
                 continue;
         }
     }

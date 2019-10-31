@@ -63,48 +63,48 @@ static void adjustuninames(char *linebuffer)
     {   if (p[0] == 'u' &&
             p[1] == 'n' &&
             p[2] == 'i' &&
-            isxdigit(p[3]) &&
-            isxdigit(p[4]) &&
-            isxdigit(p[5]) &&
-            isxdigit(p[6]) &&
-            !isxdigit(p[7]) &&
-            sscanf(p, "uni%x", &code) == 1 &&
+            std::isxdigit(p[3]) &&
+            std::isxdigit(p[4]) &&
+            std::isxdigit(p[5]) &&
+            std::isxdigit(p[6]) &&
+            !std::isxdigit(p[7]) &&
+            std::sscanf(p, "uni%x", &code) == 1 &&
             (r = uniname(code)) != NULL)
-        {   strcpy(q, r);
+        {   std::strcpy(q, r);
             p += 7;
-            q += strlen(r);
+            q += std::strlen(r);
         }
         else *q++ = *p++;
     }
     *q = 0;
-    strcpy(linebuffer, newlinebuffer);
+    std::strcpy(linebuffer, newlinebuffer);
 }
 
 int main(int argc, char *argv[])
-{   exit(0);
-    FILE *src = fopen("mathtables.tmp", "r");
-    FILE *dest = fopen("metrics/cslSTIXMath.tables", "w");
+{   std::exit(0);
+    std::FILE *src = std::fopen("mathtables.tmp", "r");
+    std::FILE *dest = std::fopen("metrics/cslSTIXMath.tables", "w");
     // No check for errors here!
     char linebuffer[2000];            // Fixed buffer with no overflow checks!
 
     for (;;)
     {   int c, i = 0;
-        while ((c = getc(src)) != EOF && c != '\n')
+        while ((c = std::getc(src)) != EOF && c != '\n')
             linebuffer[i++] = c;
         linebuffer[i] = 0;
         if (i == 0 && c == EOF) break;
         adjustuninames(linebuffer);
-        if (strncmp(linebuffer, "C -1 ; ", 7) == 0)
+        if (std::strncmp(linebuffer, "C -1 ; ", 7) == 0)
         {   int width, code;
-            if (sscanf(linebuffer, "C -1 ; WX %d ; N u%x ;",
+            if (std::sscanf(linebuffer, "C -1 ; WX %d ; N u%x ;",
                        &width, &code) == 2)
             {   char *p = linebuffer + 10;
                 while (*p != ';') p++;
                 p++;
                 while (*p == ' ') p++;
                 if (*p != 'N')
-                {   printf("Formatting failure\n");
-                    exit(1);
+                {   std::printf("Formatting failure\n");
+                    std::exit(1);
                 }
                 p++;
                 while (*p == ' ') p++;
@@ -125,14 +125,14 @@ int main(int argc, char *argv[])
                         r = movedname[code-0x108000];
                     else r = p;
                 }
-                fprintf(dest, "C %d ; WX %d ; N %s ;%s\n",
+                std::fprintf(dest, "C %d ; WX %d ; N %s ;%s\n",
                         code, width, r, q+1);
             }
         }
-        else fprintf(dest, "%s\n", linebuffer);
+        else std::fprintf(dest, "%s\n", linebuffer);
     }
-    fclose(src);
-    fclose(dest);
+    std::fclose(src);
+    std::fclose(dest);
     return 0;
 }
 

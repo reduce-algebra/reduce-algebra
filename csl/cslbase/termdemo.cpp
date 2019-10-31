@@ -209,17 +209,17 @@
 int main(int argc, char *argv[])
 {   bool wait = 0;
     for (int i=1; i<argc; i++)
-        if (strcmp(argv[i], "-w") == 0) wait = 1;
+        if (std::strcmp(argv[i], "-w") == 0) wait = 1;
     if (wait)
-    {   printf("Termdemo: PID = %d, now waiting for 15 seconds\n", getpid());
-        printf("in case you wish to attach a debugger session\n");
-        fflush(stdout);
+    {   std::printf("Termdemo: PID = %d, now waiting for 15 seconds\n", getpid());
+        std::printf("in case you wish to attach a debugger session\n");
+        std::fflush(stdout);
         sleep(15);
-        printf("OK - now continuing... \n");
+        std::printf("OK - now continuing... \n");
     }
-    printf("Termdemo\n");
-    printf("Type in 10 lines. Include a semicolon to mark a line as\n");
-    printf("complete. It then gets stored as history for access via cursor keys.\n");
+    std::printf("Termdemo\n");
+    std::printf("Type in 10 lines. Include a semicolon to mark a line as\n");
+    std::printf("complete. It then gets stored as history for access via cursor keys.\n");
     int i;
     int oldpnumber = 0, pnumber = 1;
     const char *colours = NULL;
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
         if (a[0] == '-' && a[1] == 'b') colours = &a[2];
     }
     i = term_setup(argv[0], colours);
-    atexit(term_close);
+    std::atexit(term_close);
 
 // On at least some non-Windows platforms console output will be in RAW mode
 // where '\n' is interpreted as line feed and causes the cursor to move
@@ -250,31 +250,31 @@ int main(int argc, char *argv[])
 // input line. I only reset it if it has changed, so if you enter several
 // lines without semicolons then they all get the same prompt.
         if (pnumber != oldpnumber)
-        {   sprintf(prompt, "IN%d: ", pnumber);
+        {   std::sprintf(prompt, "IN%d: ", pnumber);
             term_setprompt(prompt);
             oldpnumber = pnumber;
         }
         d = term_getline();
         if (d == NULL)
-        {   printf("EOF detected" EOL);
+        {   std::printf("EOF detected" EOL);
             break;
         }
         else
-        {   if (strchr(d, ';') != NULL) pnumber++;
-            printf("Input line was <");
+        {   if (std::strchr(d, ';') != NULL) pnumber++;
+            std::printf("Input line was <");
             while (*d != 0)
             {   int ch = *d++ & 0xff;
 // In the echo of the input line I make unprintable characters visible. This
 // is liable to mean that end-of-line shows up as "^J".
-                if (ch < 0x20) printf("^%c", ch | 0x40);
-                else if (ch < 0x7f) putchar(ch);
-                else printf("[%.2x]", ch);
+                if (ch < 0x20) std::printf("^%c", ch | 0x40);
+                else if (ch < 0x7f) std::putchar(ch);
+                else std::printf("[%.2x]", ch);
             }
-            printf(">" EOL);
+            std::printf(">" EOL);
         }
     }
-    printf("End of demonstration" EOL);
-    fflush(stdout);
+    std::printf("End of demonstration" EOL);
+    std::fflush(stdout);
     return 0;
 }
 

@@ -131,7 +131,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else
-extern char *getcwd(char *s, size_t n);
+extern char *getcwd(char *s, std::size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -173,16 +173,16 @@ extern char *getcwd(char *s, size_t n);
 #include "cm-to-unicode.cpp"
 
 
-static FILE *logfile = NULL;
+static std::FILE *logfile = NULL;
 
 static void printlog(const char *fmt, ...)
 {
-    va_list a;
-    if (logfile == NULL) logfile = fopen("wxdvi.log", "w");
+    std::va_list a;
+    if (logfile == NULL) logfile = std::fopen("wxdvi.log", "w");
     if (logfile != NULL)
     {   va_start(a, fmt);
-        vfprintf(logfile, fmt, a);
-        fflush(logfile);
+        std::vfprintf(logfile, fmt, a);
+        std::fflush(logfile);
         va_end(a);
     }
 #ifndef MACINTOSH
@@ -190,9 +190,9 @@ static void printlog(const char *fmt, ...)
 // attached to my program, and in that case it will be convenient to sent the
 // trace output there as well as to a file.
     va_start(a, fmt);
-    vprintf(fmt, a);
+    std::vprintf(fmt, a);
     va_end(a);
-    fflush(stdout);
+    std::fflush(stdout);
 #endif
 }
 
@@ -243,9 +243,9 @@ private:
     double DVItoScreen(int n);  // map coordinates
     double DVItoScreenUP(int n);// ditto but used for rule widths
 
-    int32_t h, v, w, x, y, z;// working values used in DVI decoding
+    std::int32_t h, v, w, x, y, z;// working values used in DVI decoding
 
-    int32_t C[10], p;        // set by start of a page and not used!
+    std::int32_t C[10], p;        // set by start of a page and not used!
 
 // dvi files can call for an essentially unlimited number of distinct
 // fonts - where one "font" here is not just to do with shape but also with
@@ -264,7 +264,7 @@ private:
 // the greatest stack depth that will be used. I just give myself a fixed
 // quota for now.
 #define MAX_STACK 100
-    int32_t stack[6*MAX_STACK];
+    std::int32_t stack[6*MAX_STACK];
     int stackp;
 
     DECLARE_EVENT_TABLE()
@@ -318,14 +318,14 @@ int main(int argc, const char *argv[])
 // Find where I am invoked from before doing anything else
     find_program_directory(argv[0]);
     for (i=1; i<argc; i++)
-    {   if (strncmp(argv[i], "-w", 2) == 0) usegui = 0;
+    {   if (std::strncmp(argv[i], "-w", 2) == 0) usegui = 0;
     }
 #if !defined WIN32 && !defined MACINTOSH
 // Under X11 I will demote to being a console mode application if DISPLAY
 // is not set. This is not a perfect test but it will spot the simple
 // cases. Eg I could look at stdin & stdout and check if it looks as if
 // they are pipes of they have been redirected...
-    {   const char *s = getenv("DISPLAY");
+    {   const char *s = std::getenv("DISPLAY");
         if (s==NULL || *s == 0) usegui = 0;
     }
 #endif
@@ -341,20 +341,20 @@ int main(int argc, const char *argv[])
 // makes resources (eg fonts) that are within the bundle available and
 // it also seems to cause things to terminate more neatly.
         char xname[LONGEST_LEGAL_FILENAME];
-        sprintf(xname, "%s.app", programName);
-        if (strstr(fullProgramName, xname) == NULL)
+        std::sprintf(xname, "%s.app", programName);
+        if (std::strstr(fullProgramName, xname) == NULL)
         {
 // Here the binary I launched was not located as
 //      ...foo.app../.../foo
 // so I will view it is NOT being from an application bundle. I will
 // re-launch it so it is! This may be a bit of a hacky way to decide!
             struct stat buf;
-            sprintf(xname, "%s.app", fullProgramName);
+            std::sprintf(xname, "%s.app", fullProgramName);
             if (stat(xname, &buf) == 0 &&
                 (buf.st_mode & S_IFDIR) != 0)
             {
 // Well foo.app exists and is a directory, so I will try to use it
-                const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
+                const char **nargs = (const char **)std::malloc(sizeof(char *)*(argc+3));
                 int i;
                 nargs[0] = "/usr/bin/open";
                 nargs[1] = xname;
@@ -378,11 +378,11 @@ int main(int argc, const char *argv[])
 // The following is a bit silly but is here to prove that I can launch this
 // code in console mode if I wish to. In this case it is not very useful!
 //
-    printf("This program has been launched asking for use in a console\n");
-    printf("type a line of text please\n");
-    while ((i = getchar()) != '\n' && i != EOF) putchar(i);
-    putchar('\n');
-    printf("Exiting from demonstration of console mode use!\n");
+    std::printf("This program has been launched asking for use in a console\n");
+    std::printf("type a line of text please\n");
+    while ((i = std::getchar()) != '\n' && i != EOF) std::putchar(i);
+    std::putchar('\n');
+    std::printf("Exiting from demonstration of console mode use!\n");
     return 0;
 }
 
@@ -515,49 +515,49 @@ unsigned char mathDvi[] =
 // variants being either signed or unsigned. All are arranged in big-endian
 // style, as defined by the DVI format.
 
-int32_t dviPanel::u2()
+std::int32_t dviPanel::u2()
 {
-    int32_t c1 = *stringInput++;
-    int32_t c2 = *stringInput++;
+    std::int32_t c1 = *stringInput++;
+    std::int32_t c2 = *stringInput++;
     return (c1 << 8) | c2;
 }
 
-int32_t dviPanel::u3()
+std::int32_t dviPanel::u3()
 {
-    int32_t c1 = *stringInput++;
-    int32_t c2 = *stringInput++;
-    int32_t c3 = *stringInput++;
+    std::int32_t c1 = *stringInput++;
+    std::int32_t c2 = *stringInput++;
+    std::int32_t c3 = *stringInput++;
     return (c1 << 16) | (c2 << 8) | c3;
 }
 
-int32_t dviPanel::s1()
+std::int32_t dviPanel::s1()
 {
-    return (int32_t)(int8_t)(*stringInput++);
+    return (std::int32_t)(std::int8_t)(*stringInput++);
 }
 
-int32_t dviPanel::s2()
+std::int32_t dviPanel::s2()
 {
-    int32_t c1 = *stringInput++;
-    int32_t c2 = *stringInput++;
-    return (int32_t)(int16_t)((c1 << 8) | c2);
+    std::int32_t c1 = *stringInput++;
+    std::int32_t c2 = *stringInput++;
+    return (std::int32_t)(std::int16_t)((c1 << 8) | c2);
 }
 
-int32_t dviPanel::s3()
+std::int32_t dviPanel::s3()
 {
-    int32_t c1 = *stringInput++;
-    int32_t c2 = *stringInput++;
-    int32_t c3 = *stringInput++;
-    int32_t r = (c1 << 16) | (c2 << 8) | c3;
+    std::int32_t c1 = *stringInput++;
+    std::int32_t c2 = *stringInput++;
+    std::int32_t c3 = *stringInput++;
+    std::int32_t r = (c1 << 16) | (c2 << 8) | c3;
     if ((r & 0x00800000) != 0) r |= 0xff000000;
-    return (int32_t)r;
+    return (std::int32_t)r;
 }
 
-int32_t dviPanel::s4()
+std::int32_t dviPanel::s4()
 {
-    int32_t c1 = *stringInput++;
-    int32_t c2 = *stringInput++;
-    int32_t c3 = *stringInput++;
-    int32_t c4 = *stringInput++;
+    std::int32_t c1 = *stringInput++;
+    std::int32_t c2 = *stringInput++;
+    std::int32_t c3 = *stringInput++;
+    std::int32_t c4 = *stringInput++;
     return (c1 << 24) | (c2 << 16) |
            (c3 << 8) | c4;
 }
@@ -587,12 +587,12 @@ void dviPanel::DefFont(int k)
     printlog("Define Font %d at offset %d\n", k, (int)(stringInput - dviData));
 #endif
     char fontname[LONGEST_LEGAL_FILENAME];
-    int32_t checksum = s4();
-    int32_t size = s4();
+    std::int32_t checksum = s4();
+    std::int32_t size = s4();
 // The designsize in a .dvi file is given in units of points/2^16 while
 // in .tfm data it is in units of points/2^20, so I adjust here so that the
 // two sources of information should match.
-    int32_t designsize = s4() << 4;
+    std::int32_t designsize = s4() << 4;
     int arealen = *stringInput++;
     int namelen = *stringInput++;
     int m;
@@ -606,10 +606,10 @@ void dviPanel::DefFont(int k)
     }
     for (int i=0; i<namelen; i++) fontname[i] = *stringInput++;
     fontname[namelen] = 0;
-    if (strncmp(fontname, "cmr", 3) == 0) m = 0;
-    else if (strncmp(fontname, "cmmi", 4) == 0) m = 1;
-    else if (strncmp(fontname, "cmsy", 4) == 0) m = 2;
-    else if (strncmp(fontname, "cmex", 4) == 0) m = 3;
+    if (std::strncmp(fontname, "cmr", 3) == 0) m = 0;
+    else if (std::strncmp(fontname, "cmmi", 4) == 0) m = 1;
+    else if (std::strncmp(fontname, "cmsy", 4) == 0) m = 2;
+    else if (std::strncmp(fontname, "cmex", 4) == 0) m = 3;
     else
     {   printlog("Unknown font %s\n", fontname);
         m = 0;
@@ -622,7 +622,7 @@ void dviPanel::DefFont(int k)
 #endif
     font_width *p = cm_font_width;
     while (p->name != NULL &&
-           strcmp(p->name, fontname) != 0) p++;
+           std::strcmp(p->name, fontname) != 0) p++;
     if (p->name == NULL)
     {   printlog("Fonts not found in the private font-set I support\n");
         return;
@@ -708,7 +708,7 @@ double dviPanel::DVItoScreenUP(int n)
 
 static int rendered = 0;
 
-void dviPanel::SetChar(int32_t c)
+void dviPanel::SetChar(std::int32_t c)
 {
 #if 1
     printlog("SetChar%d [%c] %d %d\n", (int)c,
@@ -739,13 +739,13 @@ void dviPanel::SetChar(int32_t c)
 // Now I must increase h by the width (in scaled points) of the character
 // I just set. This is not dependent at all on the way I map DVI internal
 // coordinates to screen ones.
-    int32_t ww = currentFontWidth->charwidth[c & 0x7f];
-    int32_t design = currentFontWidth->designsize;
+    std::int32_t ww = currentFontWidth->charwidth[c & 0x7f];
+    std::int32_t design = currentFontWidth->designsize;
 // ww is now the width as extracted from the .tfm file, and that applies
 // to the glyph if it is set at its standard size. So adjust for all of
 // that and end up in TeX coordinate units.
-    int32_t texwidth =
-        (int32_t)(0.5 + (double)design*(double)ww/
+    std::int32_t texwidth =
+        (std::int32_t)(0.5 + (double)design*(double)ww/
                         (double)(1<<24));
     h += texwidth;
 #if 0
@@ -758,7 +758,7 @@ void dviPanel::SetChar(int32_t c)
 #endif
 }
 
-void dviPanel::PutChar(int32_t c)
+void dviPanel::PutChar(std::int32_t c)
 {
 #ifdef DEBUG
     if (!rendered)
@@ -773,10 +773,10 @@ void dviPanel::PutChar(int32_t c)
 #if 0
 // Now I want to compare the width that TeX thinks the character has with
 // what wxWidgets thinks. So I convert the TeX width to pixels.
-    int32_t ww = currentFontWidth->charwidth[c & 0x7f];
-    int32_t design = currentFontWidth->designsize;
-    int32_t texwidth =
-        (int32_t)(0.5 + (double)design*(double)ww/
+    std::int32_t ww = currentFontWidth->charwidth[c & 0x7f];
+    std::int32_t design = currentFontWidth->designsize;
+    std::int32_t texwidth =
+        (std::int32_t)(0.5 + (double)design*(double)ww/
                         (double)(1<<24));
     double twp = (double)96*(double)texwidth/
                  (72.0*65536.0*1000.0);
@@ -809,7 +809,7 @@ void dviPanel::RenderDVI()
 // This always starts afresh at the start of the DVI data, which has been
 // put in an array for me.
     stringInput = dviData;
-    int32_t a, b, c, i, k;
+    std::int32_t a, b, c, i, k;
     for (;;)
     {   c = *stringInput++;
         if (c <= 127)
@@ -1140,21 +1140,21 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
                  wxDefaultSize, 0L, "dviPanel")
 {
 // I will read the DVI data once here.
-    FILE *f = NULL;
+    std::FILE *f = NULL;
     if (dvifilename == NULL) dviData = mathDvi;
     else
     {   stringInput = NULL;
-        f = fopen(dvifilename, "rb");
+        f = std::fopen(dvifilename, "rb");
         if (f == NULL)
         {   printlog("File \"%s\" not found\n", dvifilename);
-            exit(1);
+            std::exit(1);
         }
-        fseek(f, (off_t)0, SEEK_END);
-        off_t len = ftell(f);
-        dviData = (unsigned char *)malloc((size_t)len);
-        fseek(f, (off_t)0, SEEK_SET);
-        for (int i=0; i<len; i++) dviData[i] = getc(f);
-        fclose(f);
+        std::fseek(f, (off_t)0, SEEK_END);
+        off_t len = std::ftell(f);
+        dviData = (unsigned char *)std::malloc((std::size_t)len);
+        std::fseek(f, (off_t)0, SEEK_SET);
+        for (int i=0; i<len; i++) dviData[i] = std::getc(f);
+        std::fclose(f);
     }
     for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
     fixedPitchValid = false;
@@ -1169,7 +1169,7 @@ void dviFrame::OnClose(wxCloseEvent &WXUNUSED(event))
 // re-launching.
     TerminateProcess(GetCurrentProcess(), 1);
 #else
-    exit(0);    // I want the whole application to terminate here!
+    std::exit(0);    // I want the whole application to terminate here!
 #endif
 }
 
@@ -1179,7 +1179,7 @@ void dviFrame::OnExit(wxCommandEvent &WXUNUSED(event))
 #ifdef WIN32
     TerminateProcess(GetCurrentProcess(), 1);
 #else
-    exit(0);    // I want the whole application to terminate here!
+    std::exit(0);    // I want the whole application to terminate here!
 #endif
 }
 

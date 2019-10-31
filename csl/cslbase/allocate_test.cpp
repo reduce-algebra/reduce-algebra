@@ -47,26 +47,26 @@
 #include "headers.h"
 
 void global_longjmp()
-{   printf("\nglobal_longjmp called\n");
-    fflush(stdout);
-    abort();
+{   std::printf("\nglobal_longjmp called\n");
+    std::fflush(stdout);
+    std::abort();
 }
 
 void term_printf(const char *fm, ...)
-{   abort();
+{   std::abort();
 }
 
 LispObject **get_stack_addr()
 {   return NULL;
 }
 
-jmp_buf **get_global_jb_addr()
+std::jmp_buf **get_global_jb_addr()
 {   return NULL;
 }
 
 const volatile char *errorset_msg;
 
-intptr_t miscflags;
+std::intptr_t miscflags;
 
 
 void garbage_collect()
@@ -74,7 +74,7 @@ void garbage_collect()
 }
 
 void my_abort()
-{   abort();
+{   std::abort();
 }
 
 //
@@ -92,7 +92,7 @@ static std::seed_seq initial_random_seed
     {hopefully_random(),
      (unsigned int)
          std::hash<std::thread::id>()(std::this_thread::get_id()),
-     (unsigned int)time(NULL),
+     (unsigned int)std::time(NULL),
      (unsigned int)
          std::chrono::high_resolution_clock::now().time_since_epoch().count()
     };
@@ -103,39 +103,39 @@ static std::mt19937 mersenne_twister(initial_random_seed);
 
 int main(int argc, char *argv[])
 {
-    printf("Allocate test code\n");
+    std::printf("Allocate test code\n");
     get_page_size();
-    printf("page_size = %x\n", (int)page_size);
+    std::printf("page_size = %x\n", (int)page_size);
     set_up_signal_handlers();
     LispObject *m1 = (LispObject *)allocate_segment(4*1024*1024);
     LispObject *m2 = (LispObject *)allocate_segment(4*1024*1024);
-    printf("segments at %p %p\n", m1, m2);
+    std::printf("segments at %p %p\n", m1, m2);
     for (int i=0; i<heap_segment_count; i++)
-    {   printf("%d) %p %" PRIx64 "  %p\n", i,
+    {   std::printf("%d) %p %" PRIx64 "  %p\n", i,
             heap_segment[i],
-            (uint64_t)heap_segment_size[i],
+            (std::uint64_t)heap_segment_size[i],
             heap_dirty_pages_bitmap[i]);
     }
     clear_bitmap(0);
     clear_bitmap(1);
     for (int i=0; i<20; i++)
-    {   uintptr_t b = (uintptr_t)heap_segment[0];
-        uintptr_t n = ((uintptr_t)mersenne_twister()) % heap_segment_size[0];
-        printf("Access at offset %.10" PRIx64 " = %d\n",
-               (uint64_t)n, (int)(n/page_size));
+    {   std::uintptr_t b = (std::uintptr_t)heap_segment[0];
+        std::uintptr_t n = ((std::uintptr_t)mersenne_twister()) % heap_segment_size[0];
+        std::printf("Access at offset %.10" PRIx64 " = %d\n",
+               (std::uint64_t)n, (int)(n/page_size));
         *(char *)(b + n) = 1;
     }
     refresh_bitmap(0);
-    uint64_t *w = heap_dirty_pages_bitmap[0];
-    size_t nb = heap_segment_size[0]/page_size/64;
-    for (size_t i=0; i<nb; i++)
-    {   uint64_t k = w[i];
+    std::uint64_t *w = heap_dirty_pages_bitmap[0];
+    std::size_t nb = heap_segment_size[0]/page_size/64;
+    for (std::size_t i=0; i<nb; i++)
+    {   std::uint64_t k = w[i];
         for (int j=0; j<64; j++)
-        {   putchar('0' + (int)(k & 1));
+        {   std::putchar('0' + (int)(k & 1));
             k = k >> 1;
         }
     }
-    printf("\n");
+    std::printf("\n");
     return 0;
 }
 

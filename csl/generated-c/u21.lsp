@@ -1,10 +1,7 @@
 
 % u21.lsp           Machine generated Lisp
 
-(c!:install "u21" 85042 7909480 6945860)
-
-(c!:install 'mk!+unit!+mat '(mk!+unit!+mat gen!+can!+bas) 
-14051174035683025759)
+(c!:install "u21" 170760 883979 5439493)
 
 (c!:install 'quotofd '(quotofd nreverse quotodd) 6958130723683420292)
 
@@ -210,6 +207,8 @@ multf addf) 14224353227990139716)
 
 (c!:install 'mkfortterpri '(mkfortterpri fortterpri) 
 11375405539389178281)
+
+(c!:install 'trwrite '(trwrite "**in procedure: ") 2614111771358147492)
 
 
 % End of generated Lisp code

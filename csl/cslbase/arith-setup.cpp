@@ -1148,7 +1148,7 @@ static LispObject Nmodf(LispObject env, LispObject a1)
             df = std::modf(double_float_val(a1), &di);
             return cons(make_boxfloat(di), make_boxfloat(df));
         case TYPE_LONG_FLOAT:
-            lf = arithlib_lowlevel::modf(long_float_val(a1), li);
+            lf = arithlib_lowlevel::std::modf(long_float_val(a1), li);
             return cons(make_boxfloat128(li), make_boxfloat128(lf));
         }
     }

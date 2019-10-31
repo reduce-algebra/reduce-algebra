@@ -269,7 +269,7 @@ static LispObject byteopt(LispObject def, LispObject a1, LispObject a2,
     wantopts = ((unsigned char *)data_of_bps(r))[1];
     if (nargs < wantargs || (!restp && nargs > wantargs+wantopts))
         error(2, err_wrong_no_args, def,
-                     fixnum_of_int((int32_t)nargs));
+                     fixnum_of_int((std::int32_t)nargs));
 // Now to make life easier for myself I will collect ALL the arguments as
 // a list. I will keep that in a4up, which in some sense now becomes "a1up".
     switch (nargs)

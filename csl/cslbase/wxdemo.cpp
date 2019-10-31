@@ -300,7 +300,7 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 // original.
     wxPrintf("Letter 'X' in GraphicsContext w=%.2f h=%.2f d=%.2f l=%.2f\n",
            dwidth, dheight, ddepth, dleading);
-    fflush(stdout);
+    std::fflush(stdout);
 
     dc.SetPen(*wxRED_PEN);
     dc.DrawLine(0, HEIGHT/3, WIDTH, HEIGHT/3);
@@ -372,7 +372,7 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 // this is what this code is for. 
     dc.GetTextExtent(msg, &w, &h, &d, &xl);
     wxPrintf("Width of text when scaled = %.2f*%d = %.2f\n", SCALE, w, w*SCALE);
-    fflush(stdout);
+    std::fflush(stdout);
     dc.DrawText(msg, ((int)(WIDTH/SCALE) - w)/2,
                      (int)((2*HEIGHT)/(3*SCALE)) - (h-d));
     dc.SetUserScale(1.0, 1.0);

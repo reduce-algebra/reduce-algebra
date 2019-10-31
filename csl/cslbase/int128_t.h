@@ -48,15 +48,15 @@ inline uint128_t uint128(int128_t v)
 {   return (uint128_t)v;
 }
 
-inline uint128_t uint128(uint64_t v)
+inline uint128_t uint128(std::uint64_t v)
 {   return (uint128_t)v;
 }
 
-inline uint128_t uint128(int64_t v)
+inline uint128_t uint128(std::int64_t v)
 {   return (uint128_t)v;
 }
 
-inline int128_t int128(int64_t v)
+inline int128_t int128(std::int64_t v)
 {   return (int128_t)v;
 }
 
@@ -93,15 +93,15 @@ inline int128_t ASR128(int128_t a, int n)
 inline int128_t ASR128(int128_t a, int n)
 {   if (n<0 || n>=(int)sizeof(uint128_t)) n = 0;
     uint128_t r = ((uint128_t)a) >> n;
-    uint128_t signbit = ((uint128_t)a) >> (8*sizeof(uint128_t)-1);
-    if (n != 0) r |= ((-signbit) << (8*sizeof(uint128_t) - n));
+    uint128_t std::signbit = ((uint128_t)a) >> (8*sizeof(uint128_t)-1);
+    if (n != 0) r |= ((-std::signbit) << (8*sizeof(uint128_t) - n));
     return (int128_t)r;
 }
 
 #endif // SIGNED_SHIFTS_ARE_ARITHMETIC
 
-inline int64_t NARROW128(int128_t a)
-{   return (int64_t)a;
+inline std::int64_t NARROW128(int128_t a)
+{   return (std::int64_t)a;
 }
 
 inline void divrem128(int128_t a, int128_t b,
@@ -125,12 +125,12 @@ inline uint128_t uint128(int128_t v)
     return r;
 }
 
-inline uint128_t uint128(int64_t v)
-{   uint128_t r = (uint64_t)v;
+inline uint128_t uint128(std::int64_t v)
+{   uint128_t r = (std::uint64_t)v;
     return r;
 }
 
-inline uint128_t uint128(uint64_t v)
+inline uint128_t uint128(std::uint64_t v)
 {   uint128_t r = v;
     return r;
 }
@@ -139,10 +139,10 @@ inline uint128_t uint128(uint64_t v)
 // this achieves what I need! Getting values into the top 64-bits is not
 // as easy as I might have hoped!
 
-inline int128_t int128(int64_t v)
-{   int128_t r = (uint64_t)v;
+inline int128_t int128(std::int64_t v)
+{   int128_t r = (std::uint64_t)v;
     if (v < 0)
-    {   int128_t w = -(uint64_t)1;
+    {   int128_t w = -(std::uint64_t)1;
         w = w <<64;
         r = r | w;
     }
@@ -190,18 +190,18 @@ inline int128_t ASL128(const int128_t & a, int n)
 
 inline int128_t ASR128(const int128_t & a, int n)
 {   if (n >= 128) return (a < 0 ? -1 : 0);
-    if (n < 64) return int128_t(ASR((int64_t)a.upper(), n),
+    if (n < 64) return int128_t(ASR((std::int64_t)a.upper(), n),
                                 (a.upper()<<(64-n)) | (a.lower()>>n));
-    else if (n == 64) return int128_t(-(int64_t)(a.upper()<0),
+    else if (n == 64) return int128_t(-(std::int64_t)(a.upper()<0),
                                       a.upper());
-    else if (n < 64) return int128_t(ASR((int64_t)a.upper(), n),
+    else if (n < 64) return int128_t(ASR((std::int64_t)a.upper(), n),
                                      (a.upper()<<(64-n)) | (a.lower()>>n));
-    else return int128_t(-(int64_t)(a.upper()<0),
-                         ASR(((int64_t)a.upper()), n-64));
+    else return int128_t(-(std::int64_t)(a.upper()<0),
+                         ASR(((std::int64_t)a.upper()), n-64));
 }
 
-inline int64_t NARROW128(const int128_t & a)
-{   return (int64_t)a.lower();
+inline std::int64_t NARROW128(const int128_t & a)
+{   return (std::int64_t)a.lower();
 }
 
 // Produce quotient and remainder for signed values. I can take the
@@ -210,12 +210,12 @@ inline int64_t NARROW128(const int128_t & a)
 
 inline void divrem128(const int128_t & a, const int128_t & b,
                              int128_t & q, int128_t & r)
-{   if ((int64_t)a.upper() < 0)
-    {   if ((int64_t)b.upper() < 0) q = (-a)/(-b);
+{   if ((std::int64_t)a.upper() < 0)
+    {   if ((std::int64_t)b.upper() < 0) q = (-a)/(-b);
         else q = -((-a)/b);
     }
     else
-    {   if ((int64_t)b.upper() < 0) q = -(a/(-b));
+    {   if ((std::int64_t)b.upper() < 0) q = -(a/(-b));
         else q = a/b;
     }
     r = a - q*b;

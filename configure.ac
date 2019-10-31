@@ -34,8 +34,17 @@ then
   d="${a#${b}}"
   c=`cygpath $b`
   abssrcdir="$c$d"
+  case "$abssrcdir" in
+  /cygdrive*)
+    short=`echo $abssrcdir | sed 's+^/cygdrive++'`
+    long=`readlink -f "$short"`
+    if test "$long" = "$abssrcdir"
+    then
+      abssrcdir="$short"
+    fi
+    ;;
+  esac
 fi
-
 
 AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 

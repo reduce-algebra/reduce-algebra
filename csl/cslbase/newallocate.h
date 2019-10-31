@@ -42,7 +42,7 @@
 // that can hold up to 32 segments.
 
 extern void set_up_signal_handlers();
-extern void *allocateSegment(size_t);
+extern void *allocateSegment(std::size_t);
 extern LispObject initial_heap_setup(LispObject *stacksegment);
 
 // Here is a layout for an 8 Mbyte page, specifying the various
@@ -54,10 +54,10 @@ extern LispObject initial_heap_setup(LispObject *stacksegment);
 // to put into the header - eg I will need more to let me allocate around
 // pinned items.
 
-static const size_t pageSize = 8*1024*1024; // Use 8 Mbyte pages
-static const size_t bytesForMap = pageSize/64;
-static const size_t qwordsForMap = bytesForMap/8;
-static const size_t spareBytes = 2*bytesForMap;
+static const std::size_t pageSize = 8*1024*1024; // Use 8 Mbyte pages
+static const std::size_t bytesForMap = pageSize/64;
+static const std::size_t qwordsForMap = bytesForMap/8;
+static const std::size_t spareBytes = 2*bytesForMap;
 
 // I am going to require Pages to be aligned at nice neat boundaries
 // because then if I have an arbitrary address within one I will be able to
@@ -79,14 +79,14 @@ union alignas(pageSize) Page
 // fringe and heaplimit values are saved in it so that if an ambiguous
 // pointer refers into the page but indicates an address beyond the fringe
 // it can be ignored.
-        uintptr_t fringe;
+        std::uintptr_t fringe;
 // To follow on from the above, when a page has been evacuated by the
 // garbage collector fresh values of fringe and heaplimit can be set into it.
 // When the page is selected as a new Nursery these values can be transferred
 // into the global locations.
 // Neither of these fields is used other than during garbage collection and
 // so neither needs a std::atomic<> wrapping.
-        uintptr_t heaplimit;
+        std::uintptr_t heaplimit;
 // I use a software write-barrier that sets bytes in the dirty[] array
 // when something is referenced. There are then times when I need to
 // process every dirty region. Well I hope that many pages will not have any
@@ -149,11 +149,11 @@ union alignas(pageSize) Page
 // 16K quadwords in the bitmap, and I can skip zero words rapidly and
 // easily and then use "find-first-bit" operations when I get close to
 // where I need to be.
-            std::atomic<uint8_t> dirty[2*bytesForMap];
-            uint64_t qwordsDirty[2*qwordsForMap];
+            std::atomic<std::uint8_t> dirty[2*bytesForMap];
+            std::uint64_t qwordsDirty[2*qwordsForMap];
             struct Maps
-            {   uint64_t objstart[qwordsForMap];
-                uint64_t pinned[qwordsForMap];
+            {   std::uint64_t objstart[qwordsForMap];
+                std::uint64_t pinned[qwordsForMap];
             } maps;
         } pageBitmaps;
         LispObject data[(pageSize - spareBytes)/sizeof(LispObject)];
@@ -168,14 +168,14 @@ union alignas(pageSize) Page
 // in the Lisp heap it can easily find the relevant page...
 
 inline void write_barrier(LispObject *p)
-{   uintptr_t a = reinterpret_cast<uintptr_t>(p);
+{   std::uintptr_t a = reinterpret_cast<std::uintptr_t>(p);
  // round down to 8M boundary
     Page *x = reinterpret_cast<Page *>(a & -UINT64_C(0x800000));
 // I mark the page as a whole as containing some regions that are dirty...
     x->pageHeader.dirtypage.store(true);
 // and then use the offset within the page to mark a 32-byte region as
 // dirty. The map used here is std::atomic<uint8_t>
-    uintptr_t offset = a & 0x7fffffU;
+    std::uintptr_t offset = a & 0x7fffffU;
     x->pageBody.pageBitmaps.dirty[offset/32].store(1);
 }
 
@@ -197,9 +197,9 @@ extern Page *busyPages;
 extern Page *mostlyFreePages;
 extern Page *freePages;
 
-extern size_t busyPagesCount;
-extern size_t mostlyFreePagesCount;
-extern size_t freePagesCount;
+extern std::size_t busyPagesCount;
+extern std::size_t mostlyFreePagesCount;
+extern std::size_t freePagesCount;
 
 
 // For up to 32 segments I have...
@@ -212,8 +212,8 @@ extern size_t freePagesCount;
 
 extern void *heapSegment[32];
 extern void *heapSegmentBase[32];
-extern size_t heapSegmentSize[32];
-extern size_t heapSegmentCount;
+extern std::size_t heapSegmentSize[32];
+extern std::size_t heapSegmentCount;
 
 void initHeapSegments(double n);
 
@@ -230,39 +230,39 @@ void initHeapSegments(double n);
 // functions here expected to expand into a direct search tree in the
 // generated code.
 
-inline int find_segment2(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+1])) return n;
+inline int find_segment2(std::uintptr_t p, int n)
+{   if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n+1])) return n;
     else return n+1;
 }
 
-inline int find_segment4(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+2]))
+inline int find_segment4(std::uintptr_t p, int n)
+{   if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n+2]))
         return find_segment2(p, n);
     else return find_segment2(p, n+2);
 }
 
-inline int find_segment8(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+4]))
+inline int find_segment8(std::uintptr_t p, int n)
+{   if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n+4]))
         return find_segment4(p, n);
     else return find_segment4(p, n+4);
 }
 
-inline int find_segment16(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+8]))
+inline int find_segment16(std::uintptr_t p, int n)
+{   if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n+8]))
         return find_segment8(p, n);
     else return find_segment8(p, n+8);
 }
 
-inline int find_segment32(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+16]))
+inline int find_segment32(std::uintptr_t p, int n)
+{   if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n+16]))
         return find_segment8(p, n);
     else return find_segment16(p, n+16);
 }
 
-inline int find_heapSegment(uintptr_t p)
+inline int find_heapSegment(std::uintptr_t p)
 {   int n = find_segment32(p, 0);
-    if (p < reinterpret_cast<uintptr_t>(heapSegment[n]) ||
-        p >= reinterpret_cast<uintptr_t>(heapSegment[n]) +
+    if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n]) ||
+        p >= reinterpret_cast<std::uintptr_t>(heapSegment[n]) +
              heapSegmentSize[n]) return -1;
     return n;
 }
@@ -270,7 +270,7 @@ inline int find_heapSegment(uintptr_t p)
 // This finds a page that a potential pointer p is within, or returns NULL
 // if there is not one
 
-inline Page *findPage(uintptr_t p)
+inline Page *findPage(std::uintptr_t p)
 {   int n = find_heapSegment(p);
     if (n < 0) return NULL;
     return reinterpret_cast<Page *>(p & -pageSize);
@@ -278,14 +278,14 @@ inline Page *findPage(uintptr_t p)
 
 // I can do cheaper tests if I only concerned with one of the special pages.
 
-inline bool inCurrentPage(uintptr_t p)
-{   uintptr_t n = reinterpret_cast<uintptr_t>(currentPage);
+inline bool inCurrentPage(std::uintptr_t p)
+{   std::uintptr_t n = reinterpret_cast<std::uintptr_t>(currentPage);
     return (p >= n &&
             p < (n + pageSize));
 }
 
-inline bool inPreviousPage(uintptr_t p)
-{   uintptr_t n = reinterpret_cast<uintptr_t>(previousPage);
+inline bool inPreviousPage(std::uintptr_t p)
+{   std::uintptr_t n = reinterpret_cast<std::uintptr_t>(previousPage);
     return (p >= n &&
             p < (n + pageSize));
 }
@@ -300,13 +300,13 @@ inline bool inPreviousPage(uintptr_t p)
 
 // Count the leading zeros in a 64-bit word.
 
-inline int nlz(uint64_t x)
+inline int nlz(std::uint64_t x)
 {   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
 }
 
 #else // __GNUC__
 
-inline int nlz(uint64_t x)
+inline int nlz(std::uint64_t x)
 {   int n = 0;
     if (x <= 0x00000000FFFFFFFFU) {n = n +32; x = x <<32;}
     if (x <= 0x0000FFFFFFFFFFFFU) {n = n +16; x = x <<16;}
@@ -323,17 +323,17 @@ inline int nlz(uint64_t x)
 static const unsigned int maxThreads = 64;
 
 extern std::mutex gc_mutex;
-static ThreadLocal<uintptr_t> threadId;
-static ThreadLocal<uintptr_t> fringe;
-extern std::atomic<uintptr_t> limit[maxThreads];
-extern uintptr_t              limitBis[maxThreads];
-extern uintptr_t              fringeBis[maxThreads];
-extern size_t                 request[maxThreads];
+static ThreadLocal<std::uintptr_t> threadId;
+static ThreadLocal<std::uintptr_t> fringe;
+extern std::atomic<std::uintptr_t> limit[maxThreads];
+extern std::uintptr_t              limitBis[maxThreads];
+extern std::uintptr_t              fringeBis[maxThreads];
+extern std::size_t                 request[maxThreads];
 extern LispObject             result[maxThreads];
-extern size_t                 gIncrement[maxThreads];
-extern std::atomic<uintptr_t> gFringe;
-extern uintptr_t              gLimit;
-extern uintptr_t              gNext;
+extern std::size_t                 gIncrement[maxThreads];
+extern std::atomic<std::uintptr_t> gFringe;
+extern std::uintptr_t              gLimit;
+extern std::uintptr_t              gNext;
 
 // With the scheme I have here when an 8 Mbyte page gets full all of it
 // will be scheduled for evacuation (ie garbage collection). In the extreme
@@ -397,29 +397,29 @@ extern uintptr_t              gNext;
 // requests. In such a case at least one will be dealt with, but a further
 // garbage collection activity will be run to find space for the rest.
 
-extern uintptr_t difficult_n_bytes();
+extern std::uintptr_t difficult_n_bytes();
 
-inline Header makePaddingHeader(size_t n)   // size is in bytes
+inline Header makePaddingHeader(std::size_t n)   // size is in bytes
 {   return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_PADDER;
 }
 
-inline Header makeVectorHeader(size_t n)   // size is in bytes
+inline Header makeVectorHeader(std::size_t n)   // size is in bytes
 {   return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_VEC32;
 }
 
 // I will want to treat the first word of every object as atomic, so this
 // takes an address and casts it suitably.
 
-inline std::atomic<uintptr_t>& firstWord(uintptr_t a)
-{   return ((std::atomic<uintptr_t> *)a)[0];
+inline std::atomic<std::uintptr_t>& firstWord(std::uintptr_t a)
+{   return ((std::atomic<std::uintptr_t> *)a)[0];
 }
 
 // This is the core part of CONS and also of the code that allocates
 // bignums, strings and vectors.
 
-static const size_t CHUNK=16384;
+static const std::size_t CHUNK=16384;
 
-inline LispObject get_n_bytes(size_t n)
+inline LispObject get_n_bytes(std::size_t n)
 {   n = doubleword_align_up(n);
 // I have a thread-local variable fringe and limit[threadId] is in effect
 // thread-local. These delimit a region of size CHUNK within which allocation
@@ -427,8 +427,8 @@ inline LispObject get_n_bytes(size_t n)
 // other threads may access it. In particular another thread can set it to
 // zero to cause this thread to synchronize with others to participate in
 // garbage collection.
-    uintptr_t r = fringe;
-    uintptr_t w = limit[threadId].load();
+    std::uintptr_t r = fringe;
+    std::uintptr_t w = limit[threadId].load();
     fringe += n;
 // The simple case completes here. If CHUNK is around 16K then only 1 cons
 // in 1000 will take the longer route.
@@ -439,7 +439,7 @@ inline LispObject get_n_bytes(size_t n)
 // with garbage collection. In the latter case I may in fact be able to make
 // this allocation simply by grabbing a fresh chunk.
     if (w != 0)
-    {   size_t gap = w - r;
+    {   std::size_t gap = w - r;
         if (gap != 0) firstWord(r).store(makePaddingHeader(gap));
 // I now need to allocate a new chunk. gFringe and gLimit delimit a region
 // within of size PAGE (perhaps 8 Mbytes) and I will start by allocating
@@ -455,9 +455,9 @@ inline LispObject get_n_bytes(size_t n)
 // I am going to assume (ha ha) that even if the maximum number of threads
 // each increment gFringe by the largest possible amount the it will not
 // suffer arithmetic overflow.
-        uintptr_t oldFringe = fringe - n;
+        std::uintptr_t oldFringe = fringe - n;
         fringe = r + n;
-        uint64_t newLimit = fringe + CHUNK;
+        std::uint64_t newLimit = fringe + CHUNK;
 // Possibly the allocation of the new chunk ran beyond the current page
 // and that will be cause to consider triggering garbage collection. If the
 // chunk size is 16K and the page size 8M it will take 512 chunk allocations
@@ -488,7 +488,7 @@ inline LispObject get_n_bytes(size_t n)
     {
 // Here I am about to be forced to participate in garbage collection,
 // typically for the benefit of some other thread.
-        size_t gap = limitBis[threadId] - r;
+        std::size_t gap = limitBis[threadId] - r;
         if (gap != 0) firstWord(r).store(makePaddingHeader(gap));
         gIncrement[threadId] = 0;
         fringe = r;
@@ -514,12 +514,12 @@ inline LispObject get_n_bytes(size_t n)
 // made, but details of that belong elsewhere.
 
 inline void poll()
-{   uintptr_t w;
+{   std::uintptr_t w;
     if (fringe > (w = limit[threadId].load()))
     {
 // Here I need to set everything up just as if I had been making an
 // allocation request for zero bytes.
-        size_t gap = w - fringe;
+        std::size_t gap = w - fringe;
         if (gap != 0) firstWord(fringe).store(makePaddingHeader(gap));
         fringeBis[threadId] = fringe;
         request[threadId] = 0;
@@ -561,7 +561,7 @@ inline void poll()
 // There can be at most maxThreads threads in play, and each must have
 // the thread-local value threadId set.
 
-extern jmp_buf *buffer_pointer;
+extern std::jmp_buf *buffer_pointer;
 
 // Usage:
 //   may_block([&]{
@@ -576,8 +576,8 @@ extern jmp_buf *buffer_pointer;
 // be able to participate actively in that! Yes another plausible user-case
 // is the code performing a "sleep" operation.kx 
 
-extern std::atomic<uintptr_t> stack_bases[maxThreads];
-extern std::atomic<uintptr_t> stack_fringes[maxThreads];
+extern std::atomic<std::uintptr_t> stack_bases[maxThreads];
+extern std::atomic<std::uintptr_t> stack_fringes[maxThreads];
 
 template <typename F>
 #ifdef __GNUC__
@@ -588,14 +588,14 @@ inline void may_block(F &&action)
     buffer_pointer = &buffer;
 // ASSUME that setjmp dumps all the machine registers into the jmp_buf.
     if (setjmp(buffer) == 0)
-    {   stack_fringes[threadId] = reinterpret_cast<uintptr_t>(buffer);
+    {   stack_fringes[threadId] = reinterpret_cast<std::uintptr_t>(buffer);
 // I will need to do more here to decrement the count of threads that
 // the system knows to be potentially involved in memory allocation.
         action();
 // ... and fix it up again here, possibly with a RAII style object.
 // This use of longjmp is intended to help guarantee that the buffer
 // and its contents are kept intact across the call to action().
-        longjmp(buffer, 1);
+        std::longjmp(buffer, 1);
     }
 };
 
@@ -607,15 +607,15 @@ inline void withRecordedStack(F &&action)
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
     if (setjmp(buffer) == 0)
-    {   stack_fringes[threadId] = reinterpret_cast<uintptr_t>(buffer);
+    {   stack_fringes[threadId] = reinterpret_cast<std::uintptr_t>(buffer);
         action();
-        longjmp(buffer, 1);
+        std::longjmp(buffer, 1);
     }
 };
 
 
 
-extern std::atomic<uint32_t> threadCount;
+extern std::atomic<std::uint32_t> threadCount;
 extern std::mutex mutex_for_gc;
 extern bool gc_started;
 extern std::condition_variable cv_for_gc_idling;
@@ -629,7 +629,7 @@ extern std::condition_variable cv_for_gc_complete;
 // in a way that feels delicate enough that having them in separate files
 // would increase the risk of confusion.
 
-extern std::atomic<uint32_t> activeThreads;
+extern std::atomic<std::uint32_t> activeThreads;
 //  0x00 : total_threads : lisp_threads : still_busy_threads
 
 
@@ -641,7 +641,7 @@ inline void performGarbageCollection()
 // garbage collections here before I can satisfy all the pending memory
 // requests. On a second or subsequent GC I must allow for the newly-
 // allocated blocks that are here.
-    fflush(stdout);
+    std::fflush(stdout);
     my_abort(); // give up for now
 }
 
@@ -698,7 +698,7 @@ inline void garbageCollectOnBehalfOfAll()
 // collection and fill in results via result[] based on request[].
 // I will also put gFringe back to the value it had before any thread
 // had done anthing with it.
-    size_t inc = 0;
+    std::size_t inc = 0;
     for (unsigned int i=0; i<maxThreads; i++)
     {   result[i] = nil;
         inc += gIncrement[i];
@@ -726,10 +726,10 @@ inline void garbageCollectOnBehalfOfAll()
         unsigned int tryFrom = 0;
         bool success = true;
         for (unsigned int i=0; i<maxThreads; i++)
-        {   size_t n;
+        {   std::size_t n;
             if ((n = request[i]) != 0)
             {   if (tryFrom < maxThreads)
-                {   size_t gap = limitBis[tryFrom] - fringeBis[tryFrom];
+                {   std::size_t gap = limitBis[tryFrom] - fringeBis[tryFrom];
                     if (n <= gap) // can allocate here
                     {   result[i] = fringeBis[tryFrom] + TAG_VECTOR;
 // If I have filled in result[i] I can set request[i] to zero so that any
@@ -750,7 +750,7 @@ inline void garbageCollectOnBehalfOfAll()
 // Note that all this requires the fringeBis[] and limitBis[] values to
 // have been set up for all potential threads, not just for the ones that
 // actually exist!
-                    if (n <= 2*sizeof(uintptr_t))
+                    if (n <= 2*sizeof(std::uintptr_t))
                     {   tryFrom++;
                         i--;
                         continue;
@@ -768,15 +768,15 @@ inline void garbageCollectOnBehalfOfAll()
 // A yet worse case - the request did not fit in the space up to gLimit.
 // However this may be purely because of pinned items getting in the way
 // so I will skip the next pinned item (supposing there is one) and re-try.
-                size_t gap = gLimit - gFringe;
+                std::size_t gap = gLimit - gFringe;
                 if (gap != 0) firstWord(gFringe).store(makePaddingHeader(gap));
                 if (gNext == 0)
                 {   success = false;
                     break;
                 }
                 gFringe = gNext;
-                gLimit = ((uintptr_t *)gFringe.load())[0];
-                gNext = ((uintptr_t *)gFringe.load())[1];
+                gLimit = ((std::uintptr_t *)gFringe.load())[0];
+                gNext = ((std::uintptr_t *)gFringe.load())[1];
                 i--;
                 continue;
             }
@@ -791,7 +791,7 @@ inline void garbageCollectOnBehalfOfAll()
 // tested here would always be true and the computation would not pause at
 // all.
         cv_for_gc_busy.wait(lock,
-            []{   uint32_t n = activeThreads.load();
+            []{   std::uint32_t n = activeThreads.load();
                   return (n & 0xff) == ((n>>8) & 0xff) - 1;
               });
     }
@@ -830,7 +830,7 @@ inline void waitWhileAnotherThreadGarbageCollects()
 // thread.
     bool inform = false;
     {   std::lock_guard<std::mutex> guard(mutex_for_gc);
-        uint32_t n = activeThreads.fetch_add(0x000001);
+        std::uint32_t n = activeThreads.fetch_add(0x000001);
         if ((n & 0xff) == ((n>>8) & 0xff) - 2) inform = true;
     }
     if (inform) cv_for_gc_busy.notify_one();
@@ -858,7 +858,7 @@ inline void waitWhileAnotherThreadGarbageCollects()
 // that close to UINTPTR_MAX! I think that on all realistic systems that is
 // a problem that will not actually arise.
 //
-inline uintptr_t difficult_n_bytes()
+inline std::uintptr_t difficult_n_bytes()
 {
 // Every thread that comes here will need to record the value of its
 // stack pointer so that the thread that ends up performing garbage
@@ -875,7 +875,7 @@ inline uintptr_t difficult_n_bytes()
 // The fetch_sub() operation here may cost much more than simple access to
 // a variable, but I am in context were I am about to do things costing a
 // lot more than that.
-        int32_t a = activeThreads.fetch_sub(0x000001);
+        std::int32_t a = activeThreads.fetch_sub(0x000001);
 // The low byte of activeThreads counts the number of Lisp threads properly
 // busy in the mutator. When it returns a value > 1 it means that at least
 // one other thread has not yet joined in with this synchronization. It will
@@ -1059,7 +1059,7 @@ extern void save_variables_to_page(Page *p);
 
 extern void garbageCollect();
 
-void allocate_segment(size_t n);
+void allocate_segment(std::size_t n);
 
 #endif // header_newallocate_h
 

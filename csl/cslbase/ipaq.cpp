@@ -251,7 +251,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
                            FALSE);
     }
     LOGFONT f;
-    memset(&f, 0, sizeof(f));
+    std::memset(&f, 0, sizeof(f));
     f.lfHeight = 16;
     f.lfWidth = 8;
     f.lfQuality = CLEARTYPE_COMPAT_QUALITY;
@@ -517,7 +517,7 @@ case WM_COMMAND:
 case WM_CREATE:
         g_hwndCB = CreateRpCommandBar(hWnd);
         // Initialize the shell activate info structure
-        memset(&s_sai, 0, sizeof(s_sai));
+        std::memset(&s_sai, 0, sizeof(s_sai));
         s_sai.cbSize = sizeof(s_sai);
         return 0;
 case WM_PAINT:
@@ -581,7 +581,7 @@ default:
 HWND CreateRpCommandBar(HWND hwnd)
 {
     SHMENUBARINFO mbi;
-    memset(&mbi, 0, sizeof(SHMENUBARINFO));
+    std::memset(&mbi, 0, sizeof(SHMENUBARINFO));
     mbi.cbSize     = sizeof(SHMENUBARINFO);
     mbi.hwndParent = hwnd;
     mbi.nToolBarId = IDM_MENU;
@@ -621,7 +621,7 @@ void ce_getline()
 {
     PostMessage(g_hWnd, WM_REQUESTINPUT, 0, 0);
     WaitForSingleObject(mutex1, INFINITE);
-    memcpy(workerLine, inputLine, inputN);
+    std::memcpy(workerLine, inputLine, inputN);
     workerN = inputN;
     workerP = 0;
     HANDLE w = mutex1;

@@ -70,7 +70,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else
-extern char *getcwd(char *s, size_t n);
+extern char *getcwd(char *s, std::size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -139,7 +139,7 @@ extern char *getcwd(char *s, size_t n);
 // if debugging you might want to ensure that such a directory exists!
 //
 
-static FILE *fwin_logfile = NULL;
+static std::FILE *fwin_logfile = NULL;
 
 #define LOGFILE_NAME "fwin-debug.log"
 
@@ -156,16 +156,16 @@ void fwin_write_log(const char *s, ...)
 // lighter weight than messing with a further critical section here.
 //
     int create = (fwin_logfile == NULL);
-    va_list x;
+    std::va_list x;
 //
 // Note that I create this file in "a" (append) mode so that previous
 // information there is not lost.
 //
     if (create)
     {   char logfile_name[LONGEST_LEGAL_FILENAME];
-        memset(logfile_name, 0, sizeof(logfile_name));
-        if (strcmp(programDir, ".") == 0)
-            sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
+        std::memset(logfile_name, 0, sizeof(logfile_name));
+        if (std::strcmp(programDir, ".") == 0)
+            std::sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
 #ifdef MACINTOSH
 //
 // If the executable I am running exists as
@@ -173,31 +173,31 @@ void fwin_write_log(const char *s, ...)
 // then I will place the log file adjacant to the .app directory rather
 // than in the MacOS directory next to the actual raw executable.
 //
-        else if (sprintf(logfile_name, "%s.app/Contents/MacOS", programName),
-                 strlen(programDir) >= strlen(logfile_name) &&
-                 strcmp(programDir+strlen(programDir)-strlen(logfile_name),
+        else if (std::sprintf(logfile_name, "%s.app/Contents/MacOS", programName),
+                 std::strlen(programDir) >= std::strlen(logfile_name) &&
+                 std::strcmp(programDir+std::strlen(programDir)-std::strlen(logfile_name),
                         logfile_name) == 0)
-        {   sprintf(logfile_name, "%.*s/%s",
-                    (int)(strlen(programDir)-strlen(programName)-19),
+        {   std::sprintf(logfile_name, "%.*s/%s",
+                    (int)(std::strlen(programDir)-std::strlen(programName)-19),
                     programDir, LOGFILE_NAME);
         }
 #endif
-        else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
-        fwin_logfile = fopen(logfile_name, "a");
+        else std::sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
+        fwin_logfile = std::fopen(logfile_name, "a");
     }
     if (fwin_logfile == NULL) return; // the file can not be used
     if (create)
-    {   time_t tt = time(NULL);
-        struct tm *tt1 = localtime(&tt);
-        fprintf(fwin_logfile, "Log segment starting: %s\n", asctime(tt1));
+    {   std::time_t tt = std::time(NULL);
+        struct std::tm *tt1 = std::localtime(&tt);
+        std::fprintf(fwin_logfile, "Log segment starting: %s\n", std::asctime(tt1));
     }
     va_start(x, s);
-    vfprintf(fwin_logfile, s, x);
+    std::vfprintf(fwin_logfile, s, x);
     va_end(x);
     va_start(x, s);
-    vfprintf(stderr, s, x);
+    std::vfprintf(stderr, s, x);
     va_end(x);
-    fflush(fwin_logfile);
+    std::fflush(fwin_logfile);
 }
 
 #endif
@@ -247,15 +247,15 @@ int lenAsUtf8(const wchar_t *s)
 typedef char Uchar;
 
 void unicodeToUtf8(char *dest, const char *src)
-{   strcpy(dest, src);
+{   std::strcpy(dest, src);
 }
 
 void utf8ToUnicode(char *dest, const char *src)
-{   strcpy(dest, src);
+{   std::strcpy(dest, src);
 }
 
 int lenAsUtf8(const char *s)
-{   return strlen(s) + 1;
+{   return std::strlen(s) + 1;
 }
 
 #endif
@@ -328,12 +328,12 @@ void add_custom_fonts()
 // not let you use custom fonts with a wxGraphicsContext.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        sprintf(nn, "%s\\%s\\%s",
+        std::sprintf(nn, "%s\\%s\\%s",
                     programDir, toString(fontsdir), fontNames[i]);
 //      printf("Adding %s\n", nn); fflush(stdout);
         if (AddFontResourceExA(nn, FR_PRIVATE, 0) == 0)
-        {   printf("AddFontResource failed\n");
-            fflush(stdout);
+        {   std::printf("AddFontResource failed\n");
+            std::fflush(stdout);
         }
     }
     PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
@@ -342,7 +342,7 @@ void add_custom_fonts()
 // gives full support for private fonts.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        sprintf(nn, "%s\\%s\\%s",
+        std::sprintf(nn, "%s\\%s\\%s",
                     programDir, toString(fontsdir), fontNames[i]);
         FWIN_LOG("Adding %s\n", nn);
         wxString nnn(nn);
@@ -364,12 +364,12 @@ void add_custom_fonts()
     if (config == NULL) config = FcConfigCreate();
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        sprintf(nn, "%s/%s/%s",
+        std::sprintf(nn, "%s/%s/%s",
                     programDir, toString(fontsdir), fontNames[i]);
 //      printf("Adding %s\n", nn); fflush(stdout);
         if (!FcConfigAppFontAddFile(config, (const FcChar8 *)nn))
-        {   printf("FcConfigAppFontAddFile failed for %s\n", nn);
-            fflush(stdout);
+        {   std::printf("FcConfigAppFontAddFile failed for %s\n", nn);
+            std::fflush(stdout);
         }
     }
     FcConfigSetCurrent(config);
@@ -385,13 +385,13 @@ void display_font_information()
 {
     wxArrayString flist(wxFontEnumerator::GetFacenames(wxFONTENCODING_SYSTEM));
     int nfonts;
-    printf("There are %d fonts\n", nfonts=(int)flist.GetCount());
-    fflush(stdout);
+    std::printf("There are %d fonts\n", nfonts=(int)flist.GetCount());
+    std::fflush(stdout);
     for (int i=0; i<nfonts; i++)
-        printf("%d) <%s>\n", i, (const char *)flist[i].mb_str());
-    fflush(stdout);
-    printf("End of debug output\n");
-    fflush(stdout);
+        std::printf("%d) <%s>\n", i, (const char *)flist[i].mb_str());
+    std::fflush(stdout);
+    std::printf("End of debug output\n");
+    std::fflush(stdout);
 }
 
 int windowed = 0;
@@ -411,13 +411,13 @@ void consoleWait()
 // put in a delay here.
 //
     int i = 5;
-    clock_t c0;
+    std::clock_t c0;
     while (i > 0)
     {   char title[30];
-        sprintf(title, "Exiting after %d seconds", i);
+        std::sprintf(title, "Exiting after %d seconds", i);
         SetConsoleTitleA(title);
-        c0 = clock() + CLOCKS_PER_SEC;
-        while (clock() < c0);
+        c0 = std::clock() + CLOCKS_PER_SEC;
+        while (std::clock() < c0);
         i--;
     }
 }
@@ -469,12 +469,12 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // binary, or if it is on a Macintosh not associated with a console.
 //
     if (argc == 0)
-    {   fprintf(stderr,
+    {   std::fprintf(stderr,
                 "argc == 0. You tried to launch the code in a funny way?\n");
         return 1;
     }
     if (find_program_directory(argv[0]))
-    {   fprintf(stderr, "Unable to identify program name and directory\n");
+    {   std::fprintf(stderr, "Unable to identify program name and directory\n");
         return 1;
     }
     texmacs_mode = 0;
@@ -484,14 +484,14 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // more arguments - they may be used by the program that is to be run.
 //
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--args") == 0) break;
+    {   if (std::strcmp(argv[i], "--args") == 0) break;
 //
 // The "--my-path" option may be useful for debugging, but probably does
 // not mak emuch sense otherwise!
 //
-        else if (strcmp(argv[i], "--my-path") == 0)
-        {   printf("%s\n", programDir);
-            exit(0);
+        else if (std::strcmp(argv[i], "--my-path") == 0)
+        {   std::printf("%s\n", programDir);
+            std::exit(0);
         }
     }
 
@@ -677,7 +677,7 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // string.
 //
     disp = my_getenv("DISPLAY");
-    if (disp == NULL || strchr(disp, ':')==NULL)
+    if (disp == NULL || std::strchr(disp, ':')==NULL)
     {   FWIN_LOG("DISPLAY not set for an X11 version\n");
         windowed = 0;
     }
@@ -699,9 +699,9 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 //        because it is being invoked via a pipe from TeXmacs,
 //
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--args") == 0) break;
-        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
-        else if (strncmp(argv[i], "-w", 2) == 0)
+    {   if (std::strcmp(argv[i], "--args") == 0) break;
+        if (std::strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
+        else if (std::strncmp(argv[i], "-w", 2) == 0)
         {   if (argv[i][2] == '+') windowed = 1;
             else if (argv[i][2] == '.') windowed = -1;
             else windowed = 0;
@@ -711,11 +711,11 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // Note well that I detect just "--" as an entire argument here, so that
 // extended options "--option" do not interfere.
 //
-        else if ((strcmp(argv[i], "--") == 0
+        else if ((std::strcmp(argv[i], "--") == 0
 #if 0
 // The "-f" option to provide a socket-service is withdrawn
-                  || strcmp(argv[i], "-f") == 0
-                  || strcmp(argv[i], "-F") == 0
+                  || std::strcmp(argv[i], "-f") == 0
+                  || std::strcmp(argv[i], "-F") == 0
 #endif
                  ) &&
                  windowed != 0) windowed = -1;
@@ -750,9 +750,9 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
             else
             {
 #ifdef __CYGWIN__
-                freopen("/dev/conin", "r+", stdin);
-                freopen("/dev/conout", "w+", stdout);
-                freopen("/dev/conout", "w+", stderr);
+                std::freopen("/dev/conin", "r+", stdin);
+                std::freopen("/dev/conout", "w+", stdout);
+                std::freopen("/dev/conout", "w+", stderr);
 #else
 //
 // I try rather hard here to leave things properly connected to
@@ -760,9 +760,9 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // GENERIC_READ_ACCESS.
 //
                 HANDLE h;
-                freopen("CONIN$", "r+", stdin);
-                freopen("CONOUT$", "w+", stdout);
-                freopen("CONOUT$", "w+", stderr);
+                std::freopen("CONIN$", "r+", stdin);
+                std::freopen("CONOUT$", "w+", stdout);
+                std::freopen("CONOUT$", "w+", stderr);
                 SetStdHandle(STD_INPUT_HANDLE,
                              CreateFileA("CONIN$",
                                         GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL,
@@ -774,7 +774,7 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
                 SetStdHandle(STD_ERROR_HANDLE, h);
 #endif
 // I will also pause for 5 seconds at the end...
-                atexit(consoleWait);
+                std::atexit(consoleWait);
             }
         }
     }
@@ -792,8 +792,8 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 //
     colour_spec = "-";
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--args") == 0) break;
-        if (strncmp(argv[i], "-b", 2) == 0)
+    {   if (std::strcmp(argv[i], "--args") == 0) break;
+        if (std::strncmp(argv[i], "-b", 2) == 0)
         {   colour_spec = argv[i]+2;
             break;
         }
@@ -817,13 +817,13 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // I will try to re-launch it so it is.
 //
         struct stat buf;
-        memset(xname, 0, sizeof(xname));
-        sprintf(xname, "%s.app", fullProgramName);
+        std::memset(xname, 0, sizeof(xname));
+        std::sprintf(xname, "%s.app", fullProgramName);
         if (stat(xname, &buf) == 0 &&
             (buf.st_mode & S_IFDIR) != 0)
         {
 // Well foo.app exists and is a directory, so I will try to use it
-            const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
+            const char **nargs = (const char **)std::malloc(sizeof(char *)*(argc+3));
             int i;
             FWIN_LOG("About to restart Mac from an application bundle\n");
 #ifdef DEBUG
@@ -832,7 +832,7 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // find that the log file is open and hence not accessible.
 //
             if (fwin_logfile != NULL)
-            {   fclose(fwin_logfile);
+            {   std::fclose(fwin_logfile);
                 fwin_logfile = NULL;
             }
 #endif
@@ -848,9 +848,9 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // execv should NEVER return, but if it does I might like to at least
 // attempt to display a report including the error code.
 //
-            fprintf(stderr,
+            std::fprintf(stderr,
                     "Returned from execv with error code %d\n", errno);
-            exit(1);
+            std::exit(1);
         }
     }
 #endif
@@ -902,11 +902,11 @@ int plain_worker(int argc, const char *argv[], fwin_entrypoint *main)
     if (!texmacs_mode && direct_to_terminal(argc, argv))
     {   input_history_init();
         term_setup(argv[0], colour_spec);
-        atexit(term_close);
+        std::atexit(term_close);
         using_termed = true;
     }
     else using_termed = false;
-    strcpy(fwin_prompt_string, "> ");
+    std::strcpy(fwin_prompt_string, "> ");
     r = (*main)(argc, argv);
     input_history_end();
     term_close();
@@ -928,17 +928,17 @@ int fwin_plain_getchar()
         {   term_setprompt(fwin_prompt_string);
             current_line = term_getline();
             if (current_line == NULL) return EOF;  // failed or EOF
-            chars_left = strlen(current_line);
+            chars_left = std::strlen(current_line);
         }
     }
     else if (chars_left == 0)
     {   if (prompt_needed)
-        {   printf("%s", fwin_prompt_string);
+        {   std::printf("%s", fwin_prompt_string);
             prompt_needed = 0;
         }
-        fflush(stdout);
+        std::fflush(stdout);
         for (chars_left=0; chars_left<INPUT_BUFFER_SIZE;)
-        {   int c = getchar();
+        {   int c = std::getchar();
             if (c == EOF) c = (0x1f & 'D');
             input_buffer[chars_left++] = c;
             if (c == '\n' || c == (0x1f & 'D'))
@@ -955,7 +955,7 @@ int fwin_plain_getchar()
     return ch;
 }
 
-int get_current_directory(char *s, size_t n)
+int get_current_directory(char *s, std::size_t n)
 {   if (getcwd(s, n) == 0)
     {   switch(errno)
         {   case ERANGE: return -2; // negative return value flags an error.
@@ -963,7 +963,7 @@ int get_current_directory(char *s, size_t n)
             default:     return -4;
         }
     }
-    else return strlen(s);
+    else return std::strlen(s);
 }
 
 //
@@ -1016,20 +1016,20 @@ int find_program_directory(const char *argv0)
     }
     unicodeToUtf8(forFullProgramName, a0);
     fullProgramName = forFullProgramName;
-    len = (int)wcslen(a0);
+    len = (int)std::wcslen(a0);
 //
 // If the current program is called c:\aaa\xxx.exe, then the directory
 // is just c:\aaa and the simplified program name is just xxx
 //
     if (len > 4 &&
         a0[len-4] == '.' &&
-        ((towlower(a0[len-3]) == 'e' &&
-          towlower(a0[len-2]) == 'x' &&
-          towlower(a0[len-1]) == 'e') ||
-         (towlower(a0[len-3]) == 'c' &&
-          towlower(a0[len-2]) == 'o' &&
-          towlower(a0[len-1]) == 'm')))
-    {   programNameDotCom = (towlower(a0[len-3]) == 'c');
+        ((std::towlower(a0[len-3]) == 'e' &&
+          std::towlower(a0[len-2]) == 'x' &&
+          std::towlower(a0[len-1]) == 'e') ||
+         (std::towlower(a0[len-3]) == 'c' &&
+          std::towlower(a0[len-2]) == 'o' &&
+          std::towlower(a0[len-1]) == 'm')))
+    {   programNameDotCom = (std::towlower(a0[len-3]) == 'c');
         len -= 4;
     }
     for (npgm=0; npgm<len; npgm++)
@@ -1099,7 +1099,7 @@ int find_program_directory(const char *argv0)
     const char *w;
     char *w1;
     int n, n1;
-    memset(pgmname, 0, sizeof(pgmname));
+    std::memset(pgmname, 0, sizeof(pgmname));
 //
 // If the main reduce executable is has a full path-name /xxx/yyy/zzz then
 // I will use /xxx/yyy as its directory To find this I need to find the full
@@ -1140,12 +1140,12 @@ int find_program_directory(const char *argv0)
             if (argv0[0] == '.' && argv0[1] == '/') argv0 += 2;
             n = get_current_directory(pgmname, sizeof(pgmname));
             if (n < 0) return 1;    // fail! 1=current directory failure
-            if (n + strlen(argv0) + 2 >= sizeof(pgmname) ||
+            if (n + std::strlen(argv0) + 2 >= sizeof(pgmname) ||
                 pgmname[0] == 0)
                 return 2; // Current dir unavailable or full name too long
             else
             {   pgmname[n] = '/';
-                strcpy(&pgmname[n+1], argv0);
+                std::strcpy(&pgmname[n+1], argv0);
                 fullProgramName = pgmname;
             }
         }
@@ -1174,7 +1174,7 @@ int find_program_directory(const char *argv0)
                     n = 0;
                     while (*path != 0 && *path != ':')
                     {   pgmname[n++] = *path++;
-                        if (n > (int)(sizeof(pgmname)-3-strlen(argv0)))
+                        if (n > (int)(sizeof(pgmname)-3-std::strlen(argv0)))
                             return 3; // fail! 3=$PATH element overlong
                     }
 // Here I have separated off the next segment of my $PATH and put it at
@@ -1182,7 +1182,7 @@ int find_program_directory(const char *argv0)
 // exit abruptly if the entry on $PATH is itself too big for my buffer.
 //
                     pgmname[n++] = '/';
-                    strcpy(&pgmname[n], argv0);
+                    std::strcpy(&pgmname[n], argv0);
 // see if the file whose name I have just built up exists at all.
                     if (stat(pgmname, &buf) == -1) continue;
                     hisuid = buf.st_uid;
@@ -1209,13 +1209,13 @@ int find_program_directory(const char *argv0)
 //
             if (pgmname[0] != '/')
             {   char temp[LONGEST_LEGAL_FILENAME];
-                memset(temp, 0, sizeof(temp));
-                strcpy(temp, pgmname);
+                std::memset(temp, 0, sizeof(temp));
+                std::strcpy(temp, pgmname);
                 n = get_current_directory(pgmname, sizeof(pgmname));
                 if (n < 0) return 1;    // fail! 1=current directory failure
-                if ((n + strlen(temp) + 1) >= sizeof(pgmname)) return 9;
+                if ((n + std::strlen(temp) + 1) >= sizeof(pgmname)) return 9;
                 pgmname[n++] = '/';
-                strcpy(&pgmname[n], temp);
+                std::strcpy(&pgmname[n], temp);
             }
             fullProgramName = pgmname;
         }
@@ -1226,22 +1226,22 @@ int find_program_directory(const char *argv0)
 //
     {   struct stat buf;
         char temp[LONGEST_LEGAL_FILENAME];
-        memset(temp, 0, sizeof(temp));
+        std::memset(temp, 0, sizeof(temp));
         if (lstat(fullProgramName, &buf) != -1 &&
             S_ISLNK(buf.st_mode) &&
             (n1 = readlink(fullProgramName,
                            temp, sizeof(temp)-1)) > 0)
         {   temp[n1] = 0;
-            strcpy(pgmname, temp);
+            std::strcpy(pgmname, temp);
             fullProgramName = pgmname;
         }
     }
 // Now fullProgramName is set up, but may refer to an array that
 // is stack allocated. I need to make it proper!
 //
-    w1 = (char *)malloc(1+strlen(fullProgramName));
+    w1 = (char *)std::malloc(1+std::strlen(fullProgramName));
     if (w1 == NULL) return 5;           // 5 = malloc fails
-    strcpy(w1, fullProgramName);
+    std::strcpy(w1, fullProgramName);
     fullProgramName = w1;
 #ifdef RAW_CYGWIN
 //
@@ -1252,15 +1252,15 @@ int find_program_directory(const char *argv0)
 // living in a Windows world (and I have not investigated whether I can
 // build wxWidgets in that case anyway).
 //
-    if (strlen(w1) > 4)
-    {   w1 += strlen(w1) - 4;
+    if (std::strlen(w1) > 4)
+    {   w1 += std::strlen(w1) - 4;
         if (w1[0] == '.' &&
-            ((tolower((unsigned char)w1[1]) == 'e' &&
-              tolower((unsigned char)w1[2]) == 'x' &&
-              tolower((unsigned char)w1[3]) == 'e') ||
-             (tolower((unsigned char)w1[1]) == 'c' &&
-              tolower((unsigned char)w1[2]) == 'o' &&
-              tolower((unsigned char)w1[3]) == 'm'))) w1[0] = 0;
+            ((std::tolower((unsigned char)w1[1]) == 'e' &&
+              std::tolower((unsigned char)w1[2]) == 'x' &&
+              std::tolower((unsigned char)w1[3]) == 'e') ||
+             (std::tolower((unsigned char)w1[1]) == 'c' &&
+              std::tolower((unsigned char)w1[2]) == 'o' &&
+              std::tolower((unsigned char)w1[3]) == 'm'))) w1[0] = 0;
     }
 #endif
 // OK now I have the full name, which is of the form
@@ -1268,21 +1268,21 @@ int find_program_directory(const char *argv0)
 // and I need to split it at the final "/" (and by now I very fully expect
 // there to be at least one "/".
 //
-    for (n=strlen(fullProgramName)-1; n>=0; n--)
+    for (n=std::strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               // 6 = no "/" in full file path
-    w1 = (char *)malloc(1+n);
+    w1 = (char *)std::malloc(1+n);
     if (w1 == NULL) return 7;           // 7 = malloc fails
-    strncpy(w1, fullProgramName, n);
+    std::strncpy(w1, fullProgramName, n);
     w1[n] = 0;
 // Note that if the executable was "/foo" then programDir will end up as ""
 // so that programDir + "/" + programName works out properly.
 //
     programDir = w1;
-    n1 = strlen(fullProgramName) - n;
-    w1 = (char *)malloc(n1);
+    n1 = std::strlen(fullProgramName) - n;
+    w1 = (char *)std::malloc(n1);
     if (w1 == NULL) return 8;           // 8 = malloc fails
-    strncpy(w1, fullProgramName+n+1, n1-1);
+    std::strncpy(w1, fullProgramName+n+1, n1-1);
     w1[n1-1] = 0;
     programName = w1;
     return 0;                          // whew!
@@ -1309,8 +1309,8 @@ int find_program_directory(const char *argv0)
 #endif
 #endif
 
-extern int get_home_directory(char *b, size_t len);
-extern int get_users_home_directory(char *b, size_t len);
+extern int get_home_directory(char *b, std::size_t len);
+extern int get_users_home_directory(char *b, std::size_t len);
 
 static lookup_function *look_in_variable = NULL;
 
@@ -1318,7 +1318,7 @@ void fwin_set_lookup(lookup_function *f)
 {   look_in_variable = f;
 }
 
-void process_file_name(char *filename, const char *old, size_t n)
+void process_file_name(char *filename, const char *old, std::size_t n)
 //
 // This procedure maps filenames by expanding some environment
 // variables.  It is very thoroughly system specific, which is why it
@@ -1397,11 +1397,11 @@ void process_file_name(char *filename, const char *old, size_t n)
 //
         if (o == filename)  // '~' on its own
         {   get_home_directory(filename, LONGEST_LEGAL_FILENAME);
-            o = filename + strlen(filename);
+            o = filename + std::strlen(filename);
         }
         else
         {   get_users_home_directory(filename, LONGEST_LEGAL_FILENAME);
-            o = filename + strlen(filename);
+            o = filename + std::strlen(filename);
         }
     }
 //
@@ -1447,14 +1447,14 @@ void process_file_name(char *filename, const char *old, size_t n)
                 }
             }
             *p = 0;
-            i = strlen(o) + 2;
+            i = std::strlen(o) + 2;
             while (i-- != 0) o[i] = o[i-1];
             if (look_in_variable != NULL &&
                 (p = (*look_in_variable)(o, '@')) != NULL &&
                 p != o) o = p;
             else if ((w = my_getenv(o+1)) != NULL)   // Shell variable?
-            {   strcpy(o, w);
-                o = o + strlen(o);
+            {   std::strcpy(o, w);
+                o = o + std::strlen(o);
             }
             else if (look_in_variable != NULL &&
                      (p = (*look_in_variable)(o, '$')) != NULL)
@@ -1484,7 +1484,7 @@ void process_file_name(char *filename, const char *old, size_t n)
 // onto    x:\        (that is a backslash)
 //
 
-    if (strncmp(filename, "/cygdrive/", 10) == 0 &&
+    if (std::strncmp(filename, "/cygdrive/", 10) == 0 &&
         filename[11] == '/')
     {   char *p = filename+2, *tail = filename+11;
         filename[0] = filename[10];
@@ -1508,7 +1508,7 @@ void process_file_name(char *filename, const char *old, size_t n)
 // for a trailing slash, being careful to respect directories with names
 // like "\" and "a:\".
 //
-        j = strlen(filename);
+        j = std::strlen(filename);
         if (j > 0 && j != 1 && !(j == 3 && *(filename+1) == ':'))
         {   if ( (*(tail - 1) == '\\')) *(tail - 1) = 0;
         }
@@ -1528,7 +1528,7 @@ void process_file_name(char *filename, const char *old, size_t n)
     {   char alias[LONGEST_LEGAL_FILENAME];
         FSRef ref;
         Boolean is_folder, is_alias;
-        memset(alias, 0, sizeof(alias));
+        std::memset(alias, 0, sizeof(alias));
 //
 // This works by converting from a path to an FSRef object, which is the Mac
 // internal handle. It can then resolve the alias. I use the option that
@@ -1542,7 +1542,7 @@ void process_file_name(char *filename, const char *old, size_t n)
             FSResolveAliasFile(&ref, TRUE, &is_folder, &is_alias) == noErr &&
             is_alias &&
             FSRefMakePath(&ref, (UInt8 *)alias, (UInt32)sizeof(alias)) == noErr)
-        {   strcpy(filename, alias);
+        {   std::strcpy(filename, alias);
         }
     }
 #endif // MAC stuff
@@ -1615,10 +1615,10 @@ int Cmkdir(const char *name)
     return CreateDirectoryA(name, &s);
 }
 
-int truncate_file(FILE *f, long int where)
-{   if (fflush(f) != 0) return 1;
+int truncate_file(std::FILE *f, long int where)
+{   if (std::fflush(f) != 0) return 1;
 #ifdef __CYGWIN__
-    if (fflush(f) != 0) return 1;
+    if (std::fflush(f) != 0) return 1;
     return ftruncate(fileno(f), where);  // Returns zero if success
 #else
     return chsize(fileno(f), where);    // Returns zero if success
@@ -1653,13 +1653,13 @@ void set_filedate(char *name, unsigned long int datestamp,
 void put_fileinfo(date_and_type *p, char *name)
 {   unsigned long int datestamp, filetype;
     struct stat file_info;
-    struct tm *st;
+    struct std::tm *st;
 //
 // Read file parameters...  Maybe I should use a Windows-style not a Unix-style
 // call here?
 //
     stat(name, &file_info);
-    st = localtime(&(file_info.st_mtime));
+    st = std::localtime(&(file_info.st_mtime));
     datestamp = pack_date(st->tm_year, st->tm_mon, st->tm_mday,
                           st->tm_hour, st->tm_min, st->tm_sec);
     filetype = 0xfff;
@@ -1677,8 +1677,8 @@ void put_fileinfo(date_and_type *p, char *name)
 // extern ftruncate(int, int);
 //
 
-int truncate_file(FILE *f, long int where)
-{   if (fflush(f) != 0) return 1;
+int truncate_file(std::FILE *f, long int where)
+{   if (std::fflush(f) != 0) return 1;
     return ftruncate(fileno(f), where);  // Returns zero if success
 }
 
@@ -1703,16 +1703,16 @@ void set_filedate(char *name, unsigned long int datestamp,
                   unsigned long int filetype)
 {
 #ifdef UTIME_TIME_T
-    time_t tt[2];
+    std::time_t tt[2];
 #else
     struct utimbuf tt;
 #endif
-    time_t t0;
-    struct tm st;
+    std::time_t t0;
+    struct std::tm st;
     unpack_date(datestamp, &st.tm_year, &st.tm_mon, &st.tm_mday,
                 &st.tm_hour, &st.tm_min, &st.tm_sec);
     st.tm_isdst = -1;
-    t0 = mktime(&st);
+    t0 = std::mktime(&st);
 #ifdef UTIME_TIME_T
     tt[0] = tt[1] = t0;
 #else
@@ -1724,12 +1724,12 @@ void set_filedate(char *name, unsigned long int datestamp,
 void put_fileinfo(date_and_type *p, char *name)
 {   unsigned long int datestamp, filetype;
     struct stat file_info;
-    struct tm *st;
+    struct std::tm *st;
 //
 // Read file parameters...
 //
     stat(name, &file_info);
-    st = localtime(&(file_info.st_mtime));
+    st = std::localtime(&(file_info.st_mtime));
     datestamp = pack_date(st->tm_year, st->tm_mon, st->tm_mday,
                           st->tm_hour, st->tm_min, st->tm_sec);
     filetype = 0xfff;  // should get access status here?
@@ -1809,7 +1809,7 @@ static int n_found_files = 0, max_found_files = 0;
 static int more_files(void)
 {   if (n_found_files > max_found_files - 5)
     {   WIN32_FIND_DATAA *fnew = (WIN32_FIND_DATAA *)
-                                realloc((void *)found_files,
+                                std::realloc((void *)found_files,
                                         sizeof(WIN32_FIND_DATAA)*
                                         (max_found_files + TABLE_INCREMENT));
         if (fnew == NULL) return 1;  // failure flag
@@ -1822,7 +1822,7 @@ static int more_files(void)
 int alphasort_files(const void *a, const void *b)
 {   const WIN32_FIND_DATAA *fa = (const WIN32_FIND_DATAA *)a,
                           *fb = (const WIN32_FIND_DATAA *)b;
-    return strncmp(fb->cFileName, fa->cFileName, sizeof(fa->cFileName));
+    return std::strncmp(fb->cFileName, fa->cFileName, sizeof(fa->cFileName));
 }
 
 static void exall(int namelength,
@@ -1833,7 +1833,7 @@ static void exall(int namelength,
 //
 {
 #ifdef EMBEDDED
-    printf("exall function called - but not implemented here\n");
+    std::printf("exall function called - but not implemented here\n");
     return; // Dummy version here
 #else
     WIN32_FIND_DATAA found;
@@ -1846,7 +1846,7 @@ static void exall(int namelength,
         if (!FindNextFileA(hSearch, &found)) break;
     }
     FindClose(hSearch);
-    qsort((void *)&found_files[first],
+    std::qsort((void *)&found_files[first],
           n_found_files-first,
           sizeof(WIN32_FIND_DATAA),
           alphasort_files);
@@ -1865,7 +1865,7 @@ static void exall(int namelength,
 // archives to other systems.  So I do the same on NT.
 //
         while ((c = *p++) != 0)
-        {   if (!hostcase) if (isupper(c)) c = tolower(c);
+        {   if (!hostcase) if (std::isupper(c)) c = std::tolower(c);
             filename[namelength++] = (char)c;
         }
         filename[namelength] = 0;
@@ -1879,7 +1879,7 @@ static void exall(int namelength,
             {   proc(filename, SCAN_STARTDIR, 0);
                 if (!recursive_scan) continue;
 
-                strcpy(&filename[namelength], "\\*.*");
+                std::strcpy(&filename[namelength], "\\*.*");
 //
 // Append "\*.*" to the directory-name and try again, thereby scanning
 // its contents.
@@ -1899,34 +1899,34 @@ static void exall(int namelength,
 void scan_directory(const char *dir,
                     void (*proc)(const char *name, int why, long int size))
 {   recursive_scan = 1;
-    if (dir==NULL || strcmp(dir,".")==0)
+    if (dir==NULL || std::strcmp(dir,".")==0)
     {   dir = "*.*";
         scan_leafstart = 0;
     }
-    else scan_leafstart = strlen(dir)+1;
-    strcpy(filename, dir);
-    exall(strlen(filename), proc);
+    else scan_leafstart = std::strlen(dir)+1;
+    std::strcpy(filename, dir);
+    exall(std::strlen(filename), proc);
 }
 
 void scan_files(const char *dir,
                 void (*proc)(const char *name, int why, long int size))
 {   recursive_scan = 0;
-    if (dir==NULL || strcmp(dir,".")==0)
-    {   strcpy(filename, "*.*");
+    if (dir==NULL || std::strcmp(dir,".")==0)
+    {   std::strcpy(filename, "*.*");
         scan_leafstart = 0;
     }
     else
-    {   scan_leafstart = strlen(dir);
-        strcpy(filename, dir);
+    {   scan_leafstart = std::strlen(dir);
+        std::strcpy(filename, dir);
         if (filename[scan_leafstart-1] == '\\')
         {   // Root directory
-            strcpy(filename+scan_leafstart, "*.*");
+            std::strcpy(filename+scan_leafstart, "*.*");
             --scan_leafstart;
         }
-        else strcpy(filename+scan_leafstart, "\\*.*");
+        else std::strcpy(filename+scan_leafstart, "\\*.*");
         scan_leafstart++;
     }
-    exall(strlen(filename), proc);
+    exall(std::strlen(filename), proc);
 }
 
 #else  // WIN32
@@ -1950,7 +1950,7 @@ int n_found_files = 0, max_found_files = 0;
 static int more_files(void)
 {   if (n_found_files > max_found_files - 5)
     {   char **fnew = (char **)
-                      realloc((void *)found_files,
+                      std::realloc((void *)found_files,
                               sizeof(char *) *
                               (max_found_files + TABLE_INCREMENT));
         if (fnew == NULL) return 1;  // failure flag
@@ -1963,7 +1963,7 @@ static int more_files(void)
 int alphasort_files(const void *a, const void *b)
 {   const char *fa = *(const char **)a,
                     *fb = *(const char **)b;
-    return strcmp(fb, fa);
+    return std::strcmp(fb, fa);
 }
 
 static void scan_file(int namelength,
@@ -1973,7 +1973,7 @@ static void exall(int namelength,
                   void (*proc)(const char *name, int why, long int size))
 {
 #ifdef EMBEDDED
-    printf("exall function called - but not implemented here\n");
+    std::printf("exall function called - but not implemented here\n");
     return; // Dummy version here
 #else
     DIR *d;
@@ -1993,18 +1993,18 @@ static void exall(int namelength,
 // readdir hands back both "." and ".." but I had better not recurse
 // into either!
 //
-            if (strcmp(leafname, ".") == 0 ||
-                strcmp(leafname, "..") == 0) continue;
+            if (std::strcmp(leafname, ".") == 0 ||
+                std::strcmp(leafname, "..") == 0) continue;
             if (more_files()) break;
-            copyname = (char *)malloc(1+strlen(leafname));
+            copyname = (char *)std::malloc(1+std::strlen(leafname));
             if (copyname == NULL) break;
-            strcpy(copyname, leafname);
+            std::strcpy(copyname, leafname);
             found_files[n_found_files++] = copyname;
         }
         closedir(d);
     }
 
-    qsort((void *)&found_files[first],
+    std::qsort((void *)&found_files[first],
           n_found_files-first,
           sizeof(char *),
           alphasort_files);
@@ -2015,7 +2015,7 @@ static void exall(int namelength,
         int c;
         namelength = rootlen+1;
         while ((c = *p++) != 0) filename[namelength++] = (char)c;
-        free((void *)found_files[n_found_files]);
+        std::free((void *)found_files[n_found_files]);
         filename[namelength] = 0;
         scan_file(namelength, proc);
     }
@@ -2059,37 +2059,37 @@ static void scan_file(int namelength,
 void scan_directory(const char *dir,
                     void (*proc)(const char *name, int why, long int size))
 {   recursive_scan = 1;
-    if (dir==NULL || strcmp(dir, ".")==0) dir = ".";
-    scan_leafstart = strlen(dir)+1;
-    strcpy(filename, dir);
+    if (dir==NULL || std::strcmp(dir, ".")==0) dir = ".";
+    scan_leafstart = std::strlen(dir)+1;
+    std::strcpy(filename, dir);
     scan_file(scan_leafstart-1, proc);
 }
 
 void scan_files(const char *dir,
                 void (*proc)(const char *name, int why, long int size))
 {   recursive_scan = 0;
-    if (dir==NULL || strcmp(dir, ".")==0) dir = ".";
-    scan_leafstart = strlen(dir)+1;
-    strcpy(filename, dir);
+    if (dir==NULL || std::strcmp(dir, ".")==0) dir = ".";
+    scan_leafstart = std::strlen(dir)+1;
+    std::strcpy(filename, dir);
     exall(scan_leafstart-1, proc);
 }
 
 #endif // WIN32
 
 
-FILE *open_file(char *filename, const char *old, size_t n,
-                const char *mode, FILE *old_file)
+std::FILE *open_file(char *filename, const char *old, std::size_t n,
+                const char *mode, std::FILE *old_file)
 {
 //
 // mode is something like "r" or "w" or "rb", as needed by fopen(),
 // and old_file is NULL normally, but can be a (FILE *) to indicate
 // the use of freopen rather than fopen.
 //
-    FILE *ff;
+    std::FILE *ff;
     process_file_name(filename, old, n);
     if (*filename == 0) return NULL;
-    if (old_file == NULL) ff = fopen(filename, mode);
-    else ff = freopen(filename, mode, old_file);
+    if (old_file == NULL) ff = std::fopen(filename, mode);
+    else ff = std::freopen(filename, mode, old_file);
 //
 // In suitable cases when the first attempt to open the file fails I
 // will try creating any necessary directories and then try again.
@@ -2105,8 +2105,8 @@ FILE *open_file(char *filename, const char *old, size_t n,
             }
             p++;
         }
-        if (old_file == NULL) ff = fopen(filename, mode);
-        else ff = freopen(filename, mode, old_file);
+        if (old_file == NULL) ff = std::fopen(filename, mode);
+        else ff = std::freopen(filename, mode, old_file);
     }
     return ff;
 }
@@ -2114,10 +2114,10 @@ FILE *open_file(char *filename, const char *old, size_t n,
 
 static char err_buf[LONGEST_LEGAL_FILENAME+100];
 
-char *change_directory(char *filename, const char *old, size_t n)
+char *change_directory(char *filename, const char *old, std::size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0)
-    {   sprintf(err_buf, "Filename \"%s\" invalid.", old);
+    {   std::sprintf(err_buf, "Filename \"%s\" invalid.", old);
         return err_buf;
     }
     if (chdir(filename))
@@ -2139,13 +2139,13 @@ char *change_directory(char *filename, const char *old, size_t n)
                 msg = "Cannot change directory to %s.";
                 break;
         }
-        sprintf(err_buf, msg, filename);
+        std::sprintf(err_buf, msg, filename);
         return err_buf;
     }
     else return NULL;
 }
 
-int create_directory(char *filename, const char *old, size_t n)
+int create_directory(char *filename, const char *old, std::size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0) return 1;
     return Cmkdir(filename);
@@ -2155,7 +2155,7 @@ static void remove_files(const char *name, int dirp, long int size)
 // Remove a file, or a directory and all its contents
 {   switch (dirp)
     {   case 0:               // SCAN_FILE
-            remove(name);
+            std::remove(name);
             return;
         case 2:               // SCAN_ENDDIR
             rmdir(name);
@@ -2165,7 +2165,7 @@ static void remove_files(const char *name, int dirp, long int size)
     }
 }
 
-int delete_file(char *filename, const char *old, size_t n)
+int delete_file(char *filename, const char *old, std::size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0) return 0;
     //
@@ -2177,7 +2177,7 @@ int delete_file(char *filename, const char *old, size_t n)
     return 0;
 }
 
-int delete_wildcard(char *filename, const char *old, size_t n)
+int delete_wildcard(char *filename, const char *old, std::size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0) return 0;
     {
@@ -2194,7 +2194,7 @@ int delete_wildcard(char *filename, const char *old, size_t n)
         }
 #else
         glob_t gg;
-        size_t i;
+        std::size_t i;
         int rc = glob(filename, GLOB_NOSORT, NULL, &gg);
         if (rc == 0)
         {   for (i=0; i<gg.gl_pathc; i++)
@@ -2206,18 +2206,18 @@ int delete_wildcard(char *filename, const char *old, size_t n)
     return 0;
 }
 
-int64_t file_length(char *filename, const char *old, size_t n)
+std::int64_t file_length(char *filename, const char *old, std::size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return 0;
     if (stat(filename,&buf) == -1) return -1;
-    return (int64_t)(buf.st_size);
+    return (std::int64_t)(buf.st_size);
 }
 
 #ifdef NAG_VERSION
 
 int list_directory_members(char *filename, const char *old, char **filelist[],
-                           size_t n)
+                           std::size_t n)
 {   struct dirent **namelist;
     int number_of_entries, i;
     char **files;
@@ -2234,14 +2234,14 @@ int list_directory_members(char *filename, const char *old, char **filelist[],
     //
     if (number_of_entries == -1) return -1;
 
-    files=(char **)malloc(number_of_entries*sizeof(char *));
+    files=(char **)std::malloc(number_of_entries*sizeof(char *));
 
     for (i=0; i<number_of_entries; ++i)
     {   files[i] = strdup(namelist[i]->d_name);
-        free(namelist[i]);
+        std::free(namelist[i]);
     }
 
-    free(namelist);
+    std::free(namelist);
 
     *filelist = files;
 
@@ -2266,7 +2266,7 @@ int list_directory_members(char *filename, const char *old, char **filelist[],
 
 
 void list_directory_members(char *filename, const char *old,
-                            size_t n,
+                            std::size_t n,
                             void (*fn)(const char *name, int why, long int size))
 {   process_file_name(filename, old, n);
     scan_files(filename, fn);
@@ -2275,7 +2275,7 @@ void list_directory_members(char *filename, const char *old,
 #endif
 
 
-int file_exists(char *filename, const char *old, size_t n, char *tt)
+int file_exists(char *filename, const char *old, std::size_t n, char *tt)
 //
 // This returns YES if the file exists, and as a side-effect copies a
 // textual form of the last-changed-time of the file into the buffer tt.
@@ -2284,11 +2284,11 @@ int file_exists(char *filename, const char *old, size_t n, char *tt)
     process_file_name(filename, old, n);
     if (*filename == 0) return 0;
     if (stat(filename, &statbuff) != 0) return 0;
-    strcpy(tt, ctime(&(statbuff.st_mtime)));
+    std::strcpy(tt, std::ctime(&(statbuff.st_mtime)));
     return 1;
 }
 
-bool directoryp(char *filename, const char *old, size_t n)
+bool directoryp(char *filename, const char *old, std::size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return false;
@@ -2296,52 +2296,52 @@ bool directoryp(char *filename, const char *old, size_t n)
     return ((buf.st_mode & S_IFMT) == S_IFDIR);
 }
 
-char *get_truename(char *filename, const char *old, size_t n)
+char *get_truename(char *filename, const char *old, std::size_t n)
 {   struct stat buf;
     char *temp, *fn, *dir;
     char pwd[LONGEST_LEGAL_FILENAME];
-    memset(pwd, 0, sizeof(pwd));
+    std::memset(pwd, 0, sizeof(pwd));
 
     process_file_name(filename, old, n);
     if (*filename == 0)
-    {   strcpy(filename, "truename");
+    {   std::strcpy(filename, "truename");
         return NULL;
     }
 
     // Find out whether we have a file or a directory
     if (stat(filename,&buf) == -1)
-    {   strcpy(filename, "truename: cannot stat file");
+    {   std::strcpy(filename, "truename: cannot stat file");
         return NULL;
     }
 
     // Store current directory
     if (get_current_directory(pwd, LONGEST_LEGAL_FILENAME) < 0)
-    {   strcpy(filename, "truename: cannot get current working directory");
+    {   std::strcpy(filename, "truename: cannot get current working directory");
         return NULL;
     }
 
     if ((buf.st_mode & S_IFMT) == S_IFDIR)
     {   // We have a directory
-        char *dir = (char*)malloc(LONGEST_LEGAL_FILENAME);
+        char *dir = (char*)std::malloc(LONGEST_LEGAL_FILENAME);
         if (chdir(filename) != 0)
-        {   strcpy(filename, "truename: cannot change directory");
+        {   std::strcpy(filename, "truename: cannot change directory");
             return NULL;
         }
         if (getcwd(dir,LONGEST_LEGAL_FILENAME) == NULL)
-        {   strcpy(filename, "truename: cannot get current working directory");
+        {   std::strcpy(filename, "truename: cannot get current working directory");
             return NULL;
         }
 
         if (chdir(pwd) != 0)
-        {   strcpy(filename, "truename: cannot change directory");
+        {   std::strcpy(filename, "truename: cannot change directory");
             return NULL;
         }
 //
 // Axiom-specific hack: truename preserves '/' at the end of
 // a path
 //
-        if (old[n-1] == '/' && dir[strlen(dir)-1] != '/')
-        {   n = strlen(dir);
+        if (old[n-1] == '/' && dir[std::strlen(dir)-1] != '/')
+        {   n = std::strlen(dir);
             dir[n]   = '/';
             dir[n+1] = '\0';
         }
@@ -2349,48 +2349,48 @@ char *get_truename(char *filename, const char *old, size_t n)
     }
     else
     {   // Assume we have some kind of file
-        temp = strrchr(filename,'/');
+        temp = std::strrchr(filename,'/');
         if (temp)
         {   // Found a directory component
             char theDir[LONGEST_LEGAL_FILENAME];
-            memset(theDir, 0, sizeof(theDir));
-            fn   = (char *)malloc(1+strlen(temp));
-            strcpy(fn, temp);
+            std::memset(theDir, 0, sizeof(theDir));
+            fn   = (char *)std::malloc(1+std::strlen(temp));
+            std::strcpy(fn, temp);
             *temp = '\0';
             // fn is now "/file" and filename is the directory
 
             if (chdir(filename) != 0)
-            {   strcpy(filename, "truename: cannot change directory");
+            {   std::strcpy(filename, "truename: cannot change directory");
                 return NULL;
             }
             if (get_current_directory(theDir, LONGEST_LEGAL_FILENAME) < 0)
-            {   strcpy(filename, "truename: cannot get current working directory");
+            {   std::strcpy(filename, "truename: cannot get current working directory");
                 return NULL;
             }
             temp = theDir;
             if (chdir(pwd) != 0)
-            {   strcpy(filename, "truename: cannot change directory");
+            {   std::strcpy(filename, "truename: cannot change directory");
                 return NULL;
             }
-            dir = (char *)malloc((strlen(temp) + strlen(fn) + 1)*sizeof(char));
+            dir = (char *)std::malloc((std::strlen(temp) + std::strlen(fn) + 1)*sizeof(char));
             if (dir == NULL)
-            {   strcpy(filename, "truename: run out of memory");
+            {   std::strcpy(filename, "truename: run out of memory");
                 return NULL;
             }
-            strcpy(dir, temp);
-            strcat(dir, fn);
-            free(fn);
+            std::strcpy(dir, temp);
+            std::strcat(dir, fn);
+            std::free(fn);
             return dir;
         }
         else
-        {   dir = (char *)malloc((strlen(pwd) + strlen(filename) + 2)*sizeof(char));
+        {   dir = (char *)std::malloc((std::strlen(pwd) + std::strlen(filename) + 2)*sizeof(char));
             if (dir == NULL)
-            {   strcpy(filename, "truename: run out of memory");
+            {   std::strcpy(filename, "truename: run out of memory");
                 return NULL;
             }
-            strcpy(dir, pwd);
-            strcat(dir, "/");
-            strcat(dir, filename);
+            std::strcpy(dir, pwd);
+            std::strcat(dir, "/");
+            std::strcat(dir, filename);
             return dir;
         }
     }
@@ -2403,7 +2403,7 @@ char *get_truename(char *filename, const char *old, size_t n)
 // I do here will hold the fort for now.
 //
 
-bool file_readable(char *filename, const char *old, size_t n)
+bool file_readable(char *filename, const char *old, std::size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return false;
@@ -2422,7 +2422,7 @@ bool file_readable(char *filename, const char *old, size_t n)
 }
 
 
-bool file_writeable(char *filename, const char *old, size_t n)
+bool file_writeable(char *filename, const char *old, std::size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return false;
@@ -2436,7 +2436,7 @@ bool file_writeable(char *filename, const char *old, size_t n)
 }
 
 
-bool file_executable(char *filename, const char *old, size_t n)
+bool file_executable(char *filename, const char *old, std::size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return false;
@@ -2450,12 +2450,12 @@ bool file_executable(char *filename, const char *old, size_t n)
 }
 
 
-int rename_file(char *from_name, const char *from_old, size_t from_size,
-                char *to_name, const char *to_old, size_t to_size)
+int rename_file(char *from_name, const char *from_old, std::size_t from_size,
+                char *to_name, const char *to_old, std::size_t to_size)
 {   process_file_name(from_name, from_old, from_size);
     process_file_name(to_name, to_old, to_size);
     if (*from_name == 0 || *to_name == 0) return 0;
-    return rename(from_name,to_name);
+    return std::rename(from_name,to_name);
 }
 
 //
@@ -2471,18 +2471,18 @@ const char *my_getenv(const char *s)
     char uppercasename[LONGEST_LEGAL_FILENAME];
     char *p = uppercasename;
     int c;
-    memset(uppercasename, 0, sizeof(uppercasename));
-    while ((c = *s++) != 0) *p++ = toupper(c);
+    std::memset(uppercasename, 0, sizeof(uppercasename));
+    while ((c = *s++) != 0) *p++ = std::toupper(c);
     *p = 0;
-    return getenv(uppercasename);
+    return std::getenv(uppercasename);
 #else
-    return getenv(s);
+    return std::getenv(s);
 #endif
 }
 
 
 int my_system(const char *s)
-{   return system(s);
+{   return std::system(s);
 }
 
 #define DO_NOT_USE_GETUID 1   // For MinGW
@@ -2496,11 +2496,11 @@ int my_system(const char *s)
 
 #include <pwd.h>
 
-int get_home_directory(char *b, size_t len)
+int get_home_directory(char *b, std::size_t len)
 {   int i;
     struct passwd *pw = getpwuid(getuid());
-    strcpy(b, pw->pw_dir);
-    i = strlen(b);
+    std::strcpy(b, pw->pw_dir);
+    i = std::strlen(b);
 // Here the directory handed back has "/" forced in as its final character
     if ( b[i-1] != '/')
     {   b[i++] = '/';
@@ -2509,19 +2509,19 @@ int get_home_directory(char *b, size_t len)
     return i;
 }
 
-int get_users_home_directory(char *b, size_t len)
+int get_users_home_directory(char *b, std::size_t len)
 {   struct passwd *pw = getpwnam(b);
-    if (pw != NULL) strcpy(b, pw->pw_dir);
-    else strcpy(b, ".");    // use current directory if getpwnam() fails
-    return strlen(b);
+    if (pw != NULL) std::strcpy(b, pw->pw_dir);
+    else std::strcpy(b, ".");    // use current directory if getpwnam() fails
+    return std::strlen(b);
 }
 
 #else // USE_GETUID
 
-int get_home_directory(char *b, size_t len)
+int get_home_directory(char *b, std::size_t len)
 {   int i;
-    strcpy(b, getenv("HOME"));  // Probably works with most shells
-    i = strlen(b);
+    std::strcpy(b, std::getenv("HOME"));  // Probably works with most shells
+    i = std::strlen(b);
     if ( b[i-1] != '/')
     {   b[i++] = '/';
         b[i] = 0;
@@ -2529,8 +2529,8 @@ int get_home_directory(char *b, size_t len)
     return i;
 }
 
-int get_users_home_directory(char *b, size_t len)
-{   strcpy(b, ".");    // use current directory if getpwnam() no available
+int get_users_home_directory(char *b, std::size_t len)
+{   std::strcpy(b, ".");    // use current directory if getpwnam() no available
     return 1;
 }
 
@@ -2544,7 +2544,7 @@ int rmdir(const char *s)
 {   return 0;
 }
 
-char *getcwd(char *s, size_t n)
+char *getcwd(char *s, std::size_t n)
 {   return ".";
 }
 
@@ -2584,15 +2584,15 @@ int mkdir(const char *d, mode_t m)
 {
 }
 
-FILE *popen(const char *s, const char *d)
+std::FILE *popen(const char *s, const char *d)
 {   return NULL;
 }
 
-int pclose(FILE *f)
+int pclose(std::FILE *f)
 {   return 0;
 }
 
-int readlink(const char *name, char *b, size_t n)
+int readlink(const char *name, char *b, std::size_t n)
 {   return 0;
 }
 

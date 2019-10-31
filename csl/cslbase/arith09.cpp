@@ -47,8 +47,8 @@ static LispObject absb(LispObject a)
 //
 // take absolute value of a bignum
 //
-{   size_t len = (bignum_length(a)-CELL)/4;
-    if ((int32_t)bignum_digits(a)[len-1] < 0) return negateb(a);
+{   std::size_t len = (bignum_length(a)-CELL)/4;
+    if ((std::int32_t)bignum_digits(a)[len-1] < 0) return negateb(a);
     else return a;
 }
 
@@ -56,9 +56,9 @@ static LispObject absb(LispObject a)
 // The next two functions help with bignum GCDs
 //
 
-static void next_gcd_step(uint32_t a0, uint32_t a1,
-                          uint32_t b0, uint32_t b1,
-                          int32_t *axp, int32_t *ayp, int32_t *bxp, int32_t*byp)
+static void next_gcd_step(std::uint32_t a0, std::uint32_t a1,
+                          std::uint32_t b0, std::uint32_t b1,
+                          std::int32_t *axp, std::int32_t *ayp, std::int32_t *bxp, std::int32_t*byp)
 //
 // This function takes the two leading digits (a0,a1) and (b0,b1) of
 // a pair of numbers A and B and performs an extended GCD process to
@@ -74,9 +74,9 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
 // bx and by will be returned as ((1, 0), (0, 1)).  Note that through the
 // body of this code axy and bxy hold ax+ay and bx+by
 //
-{   int32_t ax = 1, axy = 1,
+{   std::int32_t ax = 1, axy = 1,
                 bx = 0, bxy = 1;
-    uint32_t q;
+    std::uint32_t q;
     int n = 0;
 //
 // I will keep A and B as double-precision values with a view to getting
@@ -89,7 +89,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
     term_printf("a0=%.8x a1=%.8x b0=%.8x b1=%.8x\n", a0, a1, b0, b1);
 #endif
     b1++;
-    if ((int32_t)b1 < 0)
+    if ((std::int32_t)b1 < 0)
     {   b0++;
         b1 = 0;  // carry if necessary
     }
@@ -101,13 +101,13 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
 //
     if ((int)b0 >= 0)
     {   for (;;)
-        {   uint32_t c0, c1;
+        {   std::uint32_t c0, c1;
 //
 // If A/B would overflow I break.  This includes the special case where B
 // has reduced to zero.  I compute q = (a0,a1)/(b0,b1)
 //
             if (b0 == 0)
-            {   uint32_t qt;
+            {   std::uint32_t qt;
                 if (a0 >= b1) break; // Overflow exit
                 Ddivide(a1, qt, a0, a1, b1);
                 a0 = 0;              // Leave the remainder in A
@@ -120,7 +120,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
 // bit of division code, but for small quotients the number of loops executed
 // will be small.  This naturally leaves the remainder in A.
 //
-            {   uint32_t qt = 1;
+            {   std::uint32_t qt = 1;
                 q = 0;
 //
 // This code uses B (it shifts it left a few bits to start with) but at the
@@ -129,7 +129,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
                 while (b0 < a0)     // Shift B left until >= A
                 {   b0 = b0 << 1;
                     b1 = b1 << 1;
-                    if ((int32_t)b1 < 0)
+                    if ((std::int32_t)b1 < 0)
                     {   b0++;
                         b1 &= 0x7fffffff;
                     }
@@ -141,7 +141,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
                     {   q |= qt;
                         a0 -= b0;
                         a1 -= b1;
-                        if ((int32_t)a1 < 0)
+                        if ((std::int32_t)a1 < 0)
                         {   a0--;
                             a1 &= 0x7fffffff;
                         }
@@ -162,7 +162,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
 // to exit before updating ax, bx, axy and bxy. Things are arranged so that
 // all values remain positive at this stage.
 //
-            {   uint32_t cx, cxy;
+            {   std::uint32_t cx, cxy;
                 Dmultiply(cx, cxy, bxy, q, axy);
                 if (cx != 0) break;
 //
@@ -180,12 +180,12 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
 // so that the partial quotients I compute always tend to be underestimates.
 //
             a1 = a1 - axy;
-            if ((int32_t)a1 < 0)
+            if ((std::int32_t)a1 < 0)
             {   a1 &= 0x7fffffff;
                 a0--;
             }
             b1 = b1 + bxy;
-            if ((int32_t)b1 < 0)
+            if ((std::int32_t)b1 < 0)
             {   b1 &= 0x7fffffff;
                 b0++;
             }
@@ -193,7 +193,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
                 (b0 == a0 && b1 >= a1)) break;
         }
     }    // This is the end of the block testing the initial quotient
-    {   int32_t ay = axy - ax,
+    {   std::int32_t ay = axy - ax,
                     by = bxy - bx;
 //
 // Use of this route would involve computing A*x+B*y and C*x+D*y,
@@ -223,7 +223,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
     }
 }
 
-static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
+static std::size_t huge_gcd(std::uint32_t *a, std::size_t lena, std::uint32_t *b, std::size_t lenb)
 //
 // A and B are vectors of unsigned integers, representing numbers with
 // radix 2^31.  lena and lenb indicate how many digits are present. The
@@ -236,7 +236,7 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
 // When this returns the bignums that A and B refer to will have been
 // reduced until B has a single 31-bit digit. 
 //
-{   uint32_t a0, a1, a2, b0, b1;
+{   std::uint32_t a0, a1, a2, b0, b1;
     bool flipped = false;
 //
 // The next two lines adjust for an oddity in my bignum representation - the
@@ -246,7 +246,7 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
     if (a[lena] == 0) lena--;
     if (b[lenb] == 0) lenb--;
 #ifdef DEBUG_GCD_CODE
-    {   size_t i;
+    {   std::size_t i;
         term_printf("a:");
         for (i=0; i<=lena; i++) term_printf(" %.8x", a[i]);
         term_printf("\n");
@@ -256,8 +256,8 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
     }
 #endif
     for (;;)
-    {   uint32_t q;
-        size_t lenr;
+    {   std::uint32_t q;
+        std::size_t lenr;
 //
 // I will perform reductions until the smaller of my two bignums has been
 // reduced to a single-precision value.  After that the tidying up to
@@ -268,8 +268,8 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
 // into one - the clever part of this entire program.
 //
         if (lena < lenb)
-        {   uint32_t *c = a;
-            size_t lenc = lena;
+        {   std::uint32_t *c = a;
+            std::size_t lenc = lena;
             a = b; lena = lenb;
             b = c; lenb = lenc;
             flipped = !flipped;
@@ -289,13 +289,13 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
                 break;
             }
             if (a[lenb] < b[lenb])
-            {   uint32_t *c = a;    // NB do not swop lena, lenb here
+            {   std::uint32_t *c = a;    // NB do not swop lena, lenb here
                 a = b;              // since lenb has been used as scratch
                 b = c;              // and both numbers are lena long
                 flipped = !flipped;
             }
 #ifdef DEBUG_GCD_CODE
-            {   size_t i;
+            {   std::size_t i;
                 term_printf("a:");
                 for (i=0; i<=lena; i++) term_printf(" %.8x", a[i]);
                 term_printf("\n");
@@ -376,7 +376,7 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
             else q = a1, lenr--;
         }
         else
-        {   uint32_t qtemp;
+        {   std::uint32_t qtemp;
             b1++;         // To achieve rounding down of q
             if (a0 != 0 || a1 >= b1) Ddivideq(qtemp, a0, a1, b1);
 //
@@ -402,13 +402,13 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
 #ifdef DEBUG_GCD_CODE
         term_printf("q = %.8x\n", q);
 #endif
-        {   uint32_t carry = 0, carry1 = 1;
-            size_t i, j;
+        {   std::uint32_t carry = 0, carry1 = 1;
+            std::size_t i, j;
             for (i=0, j=lenr-lenb; i<=lenb; i++, j++)
-            {   uint32_t mlow, w;
+            {   std::uint32_t mlow, w;
                 Dmultiply(carry, mlow, b[i], q, carry);
-                w = a[j] + (uint32_t)clear_top_bit(~mlow) + carry1;
-                if ((int32_t)w < 0)
+                w = a[j] + (std::uint32_t)clear_top_bit(~mlow) + carry1;
+                if ((std::int32_t)w < 0)
                 {   w = clear_top_bit(w);
                     carry1 = 1;
                 }
@@ -421,16 +421,16 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
         continue;
 
     lehmer:
-        {   int32_t ax, ay, bx, by;
-            size_t i;
-            {   int32_t axt, ayt, bxt, byt;
-                uint32_t b00 = b0;
+        {   std::int32_t ax, ay, bx, by;
+            std::size_t i;
+            {   std::int32_t axt, ayt, bxt, byt;
+                std::uint32_t b00 = b0;
 // If the numbers have 3 digits available and if the leading digits are
 // small I do some (minor) normalisation by shifting up by 16 bits.  This
 // should increase the number of steps that can be taken at once (slightly).
 // These days I could probably improve the code here using uint64_t, but
 // right now I do not want to disrupt it!
-                if (a0 < (int32_t)0x8000U && lena > 2)
+                if (a0 < (std::int32_t)0x8000U && lena > 2)
                 {   a0 = (a0 << 16) | (a1 >> 15);
                     a1 = ((a1 << 16) | (a[lena-2] >> 15)) & 0x7fffffff;
                     b00 = (b00 << 16) | (b1 >> 15);
@@ -449,7 +449,7 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
 // and I swop the rows to ensure that this is so.
 //
             if (ax < 0 || by < 0)
-            {   int32_t cx = ax, cy = ay;
+            {   std::int32_t cx = ax, cy = ay;
                 ax = bx; ay = by;
                 bx = cx; by = cy;
             }
@@ -462,7 +462,7 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
 // a and b are just about the same length, and provided that I use b0
 // for the leading digit of b I can treat both as having length lena
 //
-            {   uint32_t carryax = 0, carryay = 0,
+            {   std::uint32_t carryax = 0, carryay = 0,
                          carrybx = 0, carryby = 0,
                          borrowa = 1, borrowb = 1,
                          aix, aiy, bix, biy, aa, bb;
@@ -471,8 +471,8 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
                     Dmultiply(carryay, aiy, b[i], ay, carryay);
                     Dmultiply(carrybx, bix, a[i], bx, carrybx);
                     Dmultiply(carryby, biy, b[i], by, carryby);
-                    aa = aix + (uint32_t)clear_top_bit(~aiy) + borrowa;
-                    bb = biy + (uint32_t)clear_top_bit(~bix) + borrowb;
+                    aa = aix + (std::uint32_t)clear_top_bit(~aiy) + borrowa;
+                    bb = biy + (std::uint32_t)clear_top_bit(~bix) + borrowb;
                     borrowa = aa >> 31;
                     borrowb = bb >> 31;
                     a[i] = clear_top_bit(aa);
@@ -486,8 +486,8 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
                 Dmultiply(carryay, aiy, b0, ay, carryay);
                 Dmultiply(carrybx, bix, a[lena], bx, carrybx);
                 Dmultiply(carryby, biy, b0, by, carryby);
-                aa = aix + (uint32_t)clear_top_bit(~aiy) + borrowa;
-                bb = biy + (uint32_t)clear_top_bit(~bix) + borrowb;
+                aa = aix + (std::uint32_t)clear_top_bit(~aiy) + borrowa;
+                bb = biy + (std::uint32_t)clear_top_bit(~bix) + borrowb;
                 borrowa = aa >> 31;
                 borrowb = bb >> 31;
                 aa = clear_top_bit(aa);
@@ -527,7 +527,7 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
 }
 
 LispObject gcd(LispObject a, LispObject b)
-{   intptr_t p, q;
+{   std::intptr_t p, q;
     if (is_fixnum(a))
     {   if (!is_fixnum(b))
         {   if (is_numbers(b) && is_bignum(b))
@@ -575,8 +575,8 @@ LispObject gcd(LispObject a, LispObject b)
 // give a fixnum - but that can not occur here. Thus I know that I still
 // have two bignums to worry about!
 //
-            {   size_t lena, lenb, new_lena;
-                uint32_t b0;
+            {   std::size_t lena, lenb, new_lena;
+                std::uint32_t b0;
 //
 // I apply two ideas here.  The first is to perform all my arithmetic
 // in-place, since I have ensured that the numbers I am working with are
@@ -592,8 +592,8 @@ LispObject gcd(LispObject a, LispObject b)
 // Here and in a bunch of places I am hoping that the fact that std::atomic<T>
 // has standard layout will mean that casting a pointer to one to a (T*) will
 // be OK. Well I sort of know it might not be!
-                new_lena = huge_gcd((uint32_t *)&bignum_digits(a)[0], lena,
-                                    (uint32_t *)&bignum_digits(b)[0], lenb);
+                new_lena = huge_gcd((std::uint32_t *)&bignum_digits(a)[0], lena,
+                                    (std::uint32_t *)&bignum_digits(b)[0], lenb);
 //
 // The result handed back (new_lena here) contains not only the revised
 // length of a, but also a flag bit (handed back in its sign bit) to
@@ -617,9 +617,9 @@ LispObject gcd(LispObject a, LispObject b)
 //
                 b0 = bignum_digits(b)[0];
 #ifdef DEBUG_GCD_CODE
-                printf("b0 = %d = %x\n", b0, b0);
+                std::printf("b0 = %d = %x\n", b0, b0);
 #endif
-                int32_t a0 = bignum_digits(a)[new_lena];
+                std::int32_t a0 = bignum_digits(a)[new_lena];
                 if (b0 == 0)
                 {
 // It could be that A is now so short it ought to be returned as a fixnum.
@@ -629,7 +629,7 @@ LispObject gcd(LispObject a, LispObject b)
                             return fixnum_of_int(a0);
                     }
                     else if (SIXTY_FOUR_BIT && new_lena == 1)
-                    {   int64_t a64 = (bignum_digits64(a, 1)<<31) |
+                    {   std::int64_t a64 = (bignum_digits64(a, 1)<<31) |
                                       bignum_digits(a)[0];
                         if (valid_as_fixnum(a64)) return fixnum_of_int(a64);
                     }
@@ -656,8 +656,8 @@ LispObject gcd(LispObject a, LispObject b)
                         new_lena |= 1;
                     }
                     else
-                    {   lena = (lena + 1) & ~(size_t)1;
-                        new_lena = (new_lena + 1) & ~(size_t)1;
+                    {   lena = (lena + 1) & ~(std::size_t)1;
+                        new_lena = (new_lena + 1) & ~(std::size_t)1;
                     }
                     if (new_lena != lena)
                         *(Header *)&bignum_digits(a)[new_lena+1] =
@@ -680,7 +680,7 @@ LispObject gcd(LispObject a, LispObject b)
                                 bignum_digits(a)[--new_lena], p);
                 }
                 if (p < q)
-                {   int32_t r = p;
+                {   std::int32_t r = p;
                     p = q;
                     q = r;
                 }
@@ -751,7 +751,7 @@ gcd_using_machine_arithmetic:
 // when the result is of the form #b01xx...
 // And because of the issue of 28 vs 60-bit fixnums the situation here
 // is even worse!
-    return make_lisp_integer64((int64_t)p);
+    return make_lisp_integer64((std::int64_t)p);
 }
 
 LispObject lcm(LispObject a, LispObject b)
@@ -783,7 +783,7 @@ LispObject lognot(LispObject a)
 // a bignum.  For bignums I implement ~a as -(a+1).
 //
     if (is_fixnum(a))
-        return (LispObject)((uintptr_t)a ^ ~(uintptr_t)XTAG_BITS);
+        return (LispObject)((std::uintptr_t)a ^ ~(std::uintptr_t)XTAG_BITS);
     else if (is_numbers(a) && is_bignum(a))
     {   a = plus2(a, fixnum_of_int(1));
         return negate(a);
@@ -797,12 +797,12 @@ LispObject ash(LispObject a, LispObject b)
 // are arithmetic, i.e. as if 2s-complement values are used with negative
 // values having an infinite number of leading '1' bits.
 //
-{   intptr_t bb;
+{   std::intptr_t bb;
     if (!is_fixnum(b)) aerror2("bad arg for lshift", a, b);
     bb = int_of_fixnum(b);
     if (bb == 0) return a;        // Shifting by zero has no effect
     if (is_fixnum(a))
-    {   intptr_t aa = int_of_fixnum(a);
+    {   std::intptr_t aa = int_of_fixnum(a);
         if (aa == 0) return a;    // Shifting zero leaves it unaltered
         if (bb < 0)
         {   bb = -bb;
@@ -814,24 +814,24 @@ LispObject ash(LispObject a, LispObject b)
 //
             if (SIXTY_FOUR_BIT && bb > 62) bb = 62;
             else if (!SIXTY_FOUR_BIT && bb > 30) bb = 30;
-            aa = ASR((int64_t)aa, bb);
+            aa = ASR((std::int64_t)aa, bb);
             return fixnum_of_int(aa);
         }
         else if (SIXTY_FOUR_BIT && bb < 64)
-        {   int64_t lo = aa << bb;  // low 64-bits of result
-            int64_t hi = ASR((int64_t)aa, 64-bb);
-            uint32_t d0 = (uint32_t)(lo & 0x7fffffff);
-            uint32_t d1 = (uint32_t)((lo>>31) & 0x7fffffff);
-            uint32_t d2 = (uint32_t)((lo>>62) & 0x3) |
-                          (uint32_t)((hi<<2) & 0x7ffffffc);
-            int32_t  d3 = (int32_t)(hi>>29);
+        {   std::int64_t lo = aa << bb;  // low 64-bits of result
+            std::int64_t hi = ASR((std::int64_t)aa, 64-bb);
+            std::uint32_t d0 = (std::uint32_t)(lo & 0x7fffffff);
+            std::uint32_t d1 = (std::uint32_t)((lo>>31) & 0x7fffffff);
+            std::uint32_t d2 = (std::uint32_t)((lo>>62) & 0x3) |
+                          (std::uint32_t)((hi<<2) & 0x7ffffffc);
+            std::int32_t  d3 = (std::int32_t)(hi>>29);
 // (d3 .. d0) is now a 4-word 2s complement shifted value. It may have
 // leading (-1) or (0) digits...
             if (d3==0 && d2==0)
-                return make_lisp_integer64((int64_t)d1<<31 | d0);
-            else if (d3==-1 && (int32_t)d2==0x7fffffff)
+                return make_lisp_integer64((std::int64_t)d1<<31 | d0);
+            else if (d3==-1 && (std::int32_t)d2==0x7fffffff)
                 return make_lisp_integer64(
-                    ((int64_t)(int32_t)(d1|0x80000000))<<31 | d0);
+                    ((std::int64_t)(std::int32_t)(d1|0x80000000))<<31 | d0);
 // Now I have at least a 3-word bignum
             else if (d3 == 0 && (d2 & 0x40000000) == 0)
                 return make_three_word_bignum(d2, d1, d0);
@@ -842,7 +842,7 @@ LispObject ash(LispObject a, LispObject b)
 // On a 32-bit machine a fixnum is at worst 28 bits and I can afford to shift
 // left up to 36 bits and still have a result valid as a 64-bit integer.
         else if (!SIXTY_FOUR_BIT && bb <= 36)
-            return make_lisp_integer64((int64_t)aa << bb);
+            return make_lisp_integer64((std::int64_t)aa << bb);
         else
         {
 //
@@ -867,13 +867,13 @@ LispObject ash(LispObject a, LispObject b)
 // Bignum case here
 //
     if (bb > 0)
-    {   size_t lena = (bignum_length(a)-CELL)/4 - 1;
-        size_t words = bb / 31;    // words to shift left by
-        int32_t bits = bb % 31;     // bits to shift left by
-        int32_t msd = bignum_digits(a)[lena];
-        int32_t d0 = ASR(msd, (31 - bits));
-        int32_t d1 = clear_top_bit(((uint32_t)msd) << bits);
-        size_t i, lenc = lena + words;
+    {   std::size_t lena = (bignum_length(a)-CELL)/4 - 1;
+        std::size_t words = bb / 31;    // words to shift left by
+        std::int32_t bits = bb % 31;     // bits to shift left by
+        std::int32_t msd = bignum_digits(a)[lena];
+        std::int32_t d0 = ASR(msd, (31 - bits));
+        std::int32_t d1 = clear_top_bit(((std::uint32_t)msd) << bits);
+        std::size_t i, lenc = lena + words;
         bool longer = false;
         LispObject c;
         if (!((d0 == 0 && (d1 & 0x40000000) == 0) ||
@@ -900,8 +900,8 @@ LispObject ash(LispObject a, LispObject b)
 // logical vs arithmetic shifts to bother me.
 //
             bignum_digits(c)[words + i] =
-                ((uint32_t)d0 >> (31 - bits)) |
-                clear_top_bit(((uint32_t)d1) << bits);
+                ((std::uint32_t)d0 >> (31 - bits)) |
+                clear_top_bit(((std::uint32_t)d1) << bits);
             d0 = d1;
         }
         if (longer) bignum_digits(c)[words+i] = ASR(d0, (31 - bits));
@@ -913,15 +913,15 @@ LispObject ash(LispObject a, LispObject b)
 // Here for bignum right-shifts. This may sometimes collapse things to give
 // a fixnum result.
 //
-    {   size_t lena = (bignum_length(a)-CELL)/4 - 1;
-        size_t words = (-bb) / 31;    // words to shift right by
-        int32_t bits = (-bb) % 31;     // bits to shift right by
-        int32_t msd = bignum_digits(a)[lena];
-        int32_t d0 = ASR(msd, bits);
-        int32_t d1 = clear_top_bit(((uint32_t)msd) << (31 - bits));
+    {   std::size_t lena = (bignum_length(a)-CELL)/4 - 1;
+        std::size_t words = (-bb) / 31;    // words to shift right by
+        std::int32_t bits = (-bb) % 31;     // bits to shift right by
+        std::int32_t msd = bignum_digits(a)[lena];
+        std::int32_t d0 = ASR(msd, bits);
+        std::int32_t d1 = clear_top_bit(((std::uint32_t)msd) << (31 - bits));
 // Maybe at this stage I can tell that the result will be zero (or -1).
         if (words > lena) return fixnum_of_int(msd < 0 ? -1 : 0);
-        size_t i, lenc = lena - words;
+        std::size_t i, lenc = lena - words;
         bool shorter = false;
         LispObject c;
         if (bits != 0 &&
@@ -944,7 +944,7 @@ LispObject ash(LispObject a, LispObject b)
         for (i=0; i<lenc; i++)
         {   d1 = bignum_digits(a)[words+i+1];
             bignum_digits(c)[i] =
-                ((uint32_t)d0 >> bits) | clear_top_bit(((uint32_t)d1) << (31 - bits));
+                ((std::uint32_t)d0 >> bits) | clear_top_bit(((std::uint32_t)d1) << (31 - bits));
             d0 = d1;
         }
         d1 = shorter ? msd : (msd < 0 ? -1 : 0);
@@ -954,7 +954,7 @@ LispObject ash(LispObject a, LispObject b)
 // Now I see if the result ought to be represented as a fixnum.
 //
         if (SIXTY_FOUR_BIT && lenc == 1)
-        {   int64_t v = bignum_digits64(c,1)<<31 | bignum_digits(c)[0];
+        {   std::int64_t v = bignum_digits64(c,1)<<31 | bignum_digits(c)[0];
             if (valid_as_fixnum(v)) return fixnum_of_int(v);
         }
         else if (lenc == 0)
@@ -972,9 +972,9 @@ LispObject ash(LispObject a, LispObject b)
 // zero digits. Adjust until the value returned will be a valid Lisp
 // number - bignum or fixnum as relevant.
 
-LispObject shrink_bignum(LispObject a, size_t lena)
-{   int32_t msd = bignum_digits(a)[lena];
-    size_t olen = lena;
+LispObject shrink_bignum(LispObject a, std::size_t lena)
+{   std::int32_t msd = bignum_digits(a)[lena];
+    std::size_t olen = lena;
     if (msd == 0)
     {   while (lena > 0)
         {   lena--;
@@ -996,7 +996,7 @@ LispObject shrink_bignum(LispObject a, size_t lena)
     {   if (valid_as_fixnum(msd)) return fixnum_of_int(msd);
     }
     if (SIXTY_FOUR_BIT && lena == 1)
-    {   int64_t v = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+    {   std::int64_t v = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
         if (valid_as_fixnum(v)) return fixnum_of_int(v);
     }
     if (lena == olen) return a;
@@ -1016,13 +1016,13 @@ LispObject shrink_bignum(LispObject a, size_t lena)
 }
 
 static LispObject logiorbb(LispObject a, LispObject b)
-{   size_t lena, lenb, i;
-    int32_t msd;
+{   std::size_t lena, lenb, i;
+    std::int32_t msd;
     lena = (bignum_length(a)-CELL)/4 - 1;
     lenb = (bignum_length(b)-CELL)/4 - 1;
     if (lena > lenb)
     {   LispObject c = a;
-        size_t lenc = lena;
+        std::size_t lenc = lena;
         a = b; lena = lenb;
         b = c; lenb = lenc;
     }
@@ -1049,10 +1049,10 @@ static LispObject logiorib(LispObject a, LispObject b)
 {
 // if you LOGOR with a negative fixnum you will get a fixnum result. You
 // only need inspect the low one or two digits of a bignum.
-    if ((intptr_t)a < 0)
-    {   intptr_t v;
-        if (!SIXTY_FOUR_BIT) v = (int32_t)bignum_digits(b)[0];
-        else v = (intptr_t)(bignum_digits64(b,1)<<31) | bignum_digits(b)[0];
+    if ((std::intptr_t)a < 0)
+    {   std::intptr_t v;
+        if (!SIXTY_FOUR_BIT) v = (std::int32_t)bignum_digits(b)[0];
+        else v = (std::intptr_t)(bignum_digits64(b,1)<<31) | bignum_digits(b)[0];
         return fixnum_of_int(int_of_fixnum(a) | v);
     }
     return logiorbb(make_fake_bignum(int_of_fixnum(a)), b);
@@ -1060,7 +1060,7 @@ static LispObject logiorib(LispObject a, LispObject b)
 
 LispObject logior2(LispObject a, LispObject b)
 {   if (is_fixnum(a))
-    {   if (is_fixnum(b)) return (LispObject)((intptr_t)a | (intptr_t)b);
+    {   if (is_fixnum(b)) return (LispObject)((std::intptr_t)a | (std::intptr_t)b);
         else if (is_numbers(b) && is_bignum(b)) return logiorib(a, b);
         else aerror2("bad arg for logior", a, b);
     }
@@ -1073,13 +1073,13 @@ LispObject logior2(LispObject a, LispObject b)
 }
 
 static LispObject logxorbb(LispObject a, LispObject b)
-{   size_t lena, lenb, i;
-    uint32_t w;
+{   std::size_t lena, lenb, i;
+    std::uint32_t w;
     lena = (bignum_length(a)-CELL)/4 - 1;
     lenb = (bignum_length(b)-CELL)/4 - 1;
     if (lena > lenb)
     {   LispObject c = a;
-        int32_t lenc = lena;
+        std::int32_t lenc = lena;
         a = b; lena = lenb;
         b = c; lenb = lenc;
     }
@@ -1108,7 +1108,7 @@ static LispObject logxorib(LispObject a, LispObject b)
 LispObject logxor2(LispObject a, LispObject b)
 {   if (is_fixnum(a))
     {   if (is_fixnum(b))
-            return (LispObject)(((uintptr_t)a ^ (uintptr_t)b) + TAG_FIXNUM);
+            return (LispObject)(((std::uintptr_t)a ^ (std::uintptr_t)b) + TAG_FIXNUM);
         else if (is_numbers(b) && is_bignum(b)) return logxorib(a, b);
         else aerror2("bad arg for logxor", a, b);
     }
@@ -1123,8 +1123,8 @@ LispObject logxor2(LispObject a, LispObject b)
 LispObject logeqv2(LispObject a, LispObject b)
 {   if (is_fixnum(a))
     {   if (is_fixnum(b))
-            return (LispObject)((intptr_t)a ^ (intptr_t)b ^
-                                (intptr_t)fixnum_of_int(-1));
+            return (LispObject)((std::intptr_t)a ^ (std::intptr_t)b ^
+                                (std::intptr_t)fixnum_of_int(-1));
         else if (is_numbers(b) && is_bignum(b))
             return logxorbb(make_fake_bignum(~int_of_fixnum(a)), b);
         else aerror2("bad arg for logeqv", a, b);
@@ -1144,13 +1144,13 @@ LispObject logeqv2(LispObject a, LispObject b)
 }
 
 static LispObject logandbb(LispObject a, LispObject b)
-{   size_t lena, lenb, i;
-    int32_t msd;
+{   std::size_t lena, lenb, i;
+    std::int32_t msd;
     lena = (bignum_length(a)-CELL)/4 - 1;
     lenb = (bignum_length(b)-CELL)/4 - 1;
     if (lena > lenb)
     {   LispObject c = a;
-        size_t lenc = lena;
+        std::size_t lenc = lena;
         a = b; lena = lenb;
         b = c; lenb = lenc;
     }
@@ -1179,10 +1179,10 @@ static LispObject logandib(LispObject a, LispObject b)
 // a positive fixnum. In the 32-bit case it will only need to use the
 // bottom word of the bignum, while in the 64-bit case it may use two
 // words.
-    if ((intptr_t)a >= 0)
-    {   intptr_t v;
-        if (!SIXTY_FOUR_BIT) v = (int32_t)bignum_digits(b)[0];
-        else v = (intptr_t)(bignum_digits64(b,1)<<31) | bignum_digits(b)[0];
+    if ((std::intptr_t)a >= 0)
+    {   std::intptr_t v;
+        if (!SIXTY_FOUR_BIT) v = (std::int32_t)bignum_digits(b)[0];
+        else v = (std::intptr_t)(bignum_digits64(b,1)<<31) | bignum_digits(b)[0];
         return fixnum_of_int(int_of_fixnum(a) & v);
     }
     return logandbb(make_fake_bignum(int_of_fixnum(a)), b);
@@ -1190,7 +1190,7 @@ static LispObject logandib(LispObject a, LispObject b)
 
 LispObject logand2(LispObject a, LispObject b)
 {   if (is_fixnum(a))
-    {   if (is_fixnum(b)) return (LispObject)((intptr_t)a & (intptr_t)b);
+    {   if (is_fixnum(b)) return (LispObject)((std::intptr_t)a & (std::intptr_t)b);
         else if (is_numbers(b) && is_bignum(b)) return logandib(a, b);
         else aerror2("bad arg for logand", a, b);
     }

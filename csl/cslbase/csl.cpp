@@ -145,7 +145,7 @@ bool symbol_protect_flag = true;
 bool warn_about_protected_symbols = false;
 
 #ifdef USE_MPI
-int32_t mpi_rank,mpi_size;
+std::int32_t mpi_rank,mpi_size;
 #endif
 
 /*****************************************************************************/
@@ -170,15 +170,15 @@ volatile char stack_contents_temp = 0;
 #define C_STACK_ALLOCATION 1000000
 
 static int spset = 0;
-static intptr_t spbase = 0, spmin;
+static std::intptr_t spbase = 0, spmin;
 
-static uintptr_t stack_depth[C_STACK_ALLOCATION];
+static std::uintptr_t stack_depth[C_STACK_ALLOCATION];
 static int stack_line[C_STACK_ALLOCATION];
 static const char *stack_file[C_STACK_ALLOCATION];
-static uintptr_t c_stack_ptr = 0;
+static std::uintptr_t c_stack_ptr = 0;
 
 int check_stack(const char *file, int line)
-{   uintptr_t temp = (intptr_t)&temp;
+{   std::uintptr_t temp = (std::intptr_t)&temp;
     char *file1;
     int first = 1;
     if (!spset)
@@ -195,7 +195,7 @@ int check_stack(const char *file, int line)
             c_stack_ptr--;
     stack_depth[c_stack_ptr] = temp;
     stack_line[c_stack_ptr] = line;
-    file1 = strrchr(file, '/');
+    file1 = std::strrchr(file, '/');
     stack_file[c_stack_ptr] = (file1 == NULL ? file : file1+1);
     if (temp < spmin-250)  // Only check at granularity of 250 bytes
     {   int i, j=0;
@@ -212,7 +212,7 @@ int check_stack(const char *file, int line)
         term_printf("\n");
         spmin = temp;
         if (temp < spbase-C_STACK_ALLOCATION ||
-            temp < (uintptr_t)C_stacklimit) return 1;
+            temp < (std::uintptr_t)C_stacklimit) return 1;
     }
     return 0;
 }
@@ -292,7 +292,7 @@ void DebugTrace(const char *fmt, int i)
 // number of actual args here is well within any limits that I ought to
 // impose.
 //
-{   va_list a;
+{   std::va_list a;
     int i;
     LispObject w1;
     LispObject *w = (LispObject *)&work_1;
@@ -334,7 +334,7 @@ void DebugTrace(const char *fmt, int i)
 [[noreturn]] void cerror(int nargs, int code1, int code2, ...)
 // nargs indicated the number of EXTRA args after code1 & code2.
 {   LispObject w1;
-    va_list a;
+    std::va_list a;
     int i;
     LispObject *w = (LispObject *)&work_1;
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
@@ -389,7 +389,7 @@ void interrupted()
         ensure_screen();
         push(prompt_thing);
         prompt_thing = nil;  // switch off the regular prompts
-        strncpy(save_prompt, fwin_prompt_string, sizeof(save_prompt));
+        std::strncpy(save_prompt, fwin_prompt_string, sizeof(save_prompt));
         save_prompt[sizeof(save_prompt)-1] = 0;
 // Well I will want this to run a break-loop, but doing what I once did will
 // at least give me something to test!
@@ -562,14 +562,14 @@ void interrupted()
 [[noreturn]] static void wrong(int given, int wanted, LispObject env)
 {   char msg[64];
     if (wanted == 4)
-        sprintf(msg,
+        std::sprintf(msg,
             "Function called with %d args where more then three wanted",
             given);
     else if (given == 4)
-        sprintf(msg,
+        std::sprintf(msg,
             "Function called with more than three args where %d wanted",
             wanted);
-    else sprintf(msg, "Function called with %d args where %d wanted",
+    else std::sprintf(msg, "Function called with %d args where %d wanted",
                       given, wanted);
     if ((miscflags & HEADLINE_FLAG))
     {   err_printf("\nCalling ");
@@ -582,8 +582,8 @@ void interrupted()
 [[noreturn]] static void wrong(int given, LispObject env)
 {   char msg[64];
     if (given == 4)
-        sprintf(msg, "Function called incorrectly with more than 3 args");
-    else sprintf(msg, "Function called incorrectly with %d args", given);
+        std::sprintf(msg, "Function called incorrectly with more than 3 args");
+    else std::sprintf(msg, "Function called incorrectly with %d args", given);
     if ((miscflags & HEADLINE_FLAG))
     {   err_printf("\nCalling ");
         loop_print_error(env);
@@ -762,13 +762,13 @@ void report_file(const char *s)
 // Here I find the final component of the path - ie the bit following the
 // last "/" or "\" present if there is one of those.
 //
-    if ((s1 = strrchr(s, '/')) != NULL) s1++;
-    else if ((s1 = strrchr(s, '\\')) != NULL) s1++;
+    if ((s1 = std::strrchr(s, '/')) != NULL) s1++;
+    else if ((s1 = std::strrchr(s, '\\')) != NULL) s1++;
     else s1 = s;
-    if (strcmp(s1, "inline-defs.dat") == 0) return;
+    if (std::strcmp(s1, "inline-defs.dat") == 0) return;
     if (dependency_count >= dependency_capacity)
     {   dependency_capacity = 2*dependency_capacity + 40;
-        dependency_map = (char **)realloc(dependency_map,
+        dependency_map = (char **)std::realloc(dependency_map,
                                           dependency_capacity*sizeof(char *));
         if (dependency_map == NULL)
         {   dependency_capacity = dependency_count = 0;
@@ -776,29 +776,29 @@ void report_file(const char *s)
         }
     }
     for (i=0; i<dependency_count; i++)
-    {   if (strcmp(s, dependency_map[i]) == 0) return; // already recorded
+    {   if (std::strcmp(s, dependency_map[i]) == 0) return; // already recorded
     }
-    c = (char *)malloc(strlen(s) + 1);
+    c = (char *)std::malloc(std::strlen(s) + 1);
     if (c == NULL) return;
-    strcpy(c, s);
+    std::strcpy(c, s);
     dependency_map[dependency_count++] = c;
 }
 
 static int alphorder(const void *a, const void *b)
 {   char *aa = *(char **)a;
     char *bb = *(char **)b;
-    return strcmp(aa, bb);
+    return std::strcmp(aa, bb);
 }
 
 static void report_dependencies()
-{   FILE *f;
+{   std::FILE *f;
     int i, c;
     const char *p;
     if (dependency_file == NULL) return;
-    f = fopen(dependency_file, "w");
+    f = std::fopen(dependency_file, "w");
     if (f == NULL) return;
-    p = strrchr(dependency_file, '.');
-    std::fprintf(f, "%.*sdep = \\\n", (int)(p==NULL ? strlen(dependency_file) :
+    p = std::strrchr(dependency_file, '.');
+    std::fprintf(f, "%.*sdep = \\\n", (int)(p==NULL ? std::strlen(dependency_file) :
                                        (p - dependency_file)),
             dependency_file);
     std::qsort(dependency_map, dependency_count,
@@ -816,11 +816,11 @@ static void report_dependencies()
         if (p[0] != 0 &&
             p[1] == ':' &&
             (p[2] == '/' || p[2] == '\\'))
-        {   std::fprintf(f, "/cygdrive/%c", (char)tolower((unsigned char)p[0]));
+        {   std::fprintf(f, "/cygdrive/%c", (char)std::tolower((unsigned char)p[0]));
             p+=2;
         }
         while ((c = *p++) != 0)
-        {   if (c == ' ') putc('\\', f); // for spaces in file-name
+        {   if (c == ' ') std::putc('\\', f); // for spaces in file-name
             std::putc(c == '\\' ? '/' : c, f);
         }
         if (i < dependency_count-1)
@@ -912,24 +912,24 @@ int debug_trail_line[32] =
 int debug_trailp = 0;
 
 void debug_record_raw(const char *data, const char *file, int line)
-{   const char *f1 = strrchr(file, '/');
+{   const char *f1 = std::strrchr(file, '/');
     if (f1 != NULL) f1++;
     else f1 = file;
     if (data != NULL)
-    {   strncpy(debug_trail[debug_trailp], data, 32);
-        strncpy(debug_trail_file[debug_trailp], f1, 32);
+    {   std::strncpy(debug_trail[debug_trailp], data, 32);
+        std::strncpy(debug_trail_file[debug_trailp], f1, 32);
         debug_trail_line[debug_trailp] = line;
         debug_trailp = (debug_trailp+1)%32;
     }
 }
 
 void debug_record_int_raw(const char *data, int n, const char *file, int line)
-{   const char *f1 = strrchr(file, '/');
+{   const char *f1 = std::strrchr(file, '/');
     if (f1 != NULL) f1++;
     else f1 = file;
     if (data != NULL)
-    {   sprintf(debug_trail[debug_trailp], "%s%d", data, n);
-        strncpy(debug_trail_file[debug_trailp], f1, 32);
+    {   std::sprintf(debug_trail[debug_trailp], "%s%d", data, n);
+        std::strncpy(debug_trail_file[debug_trailp], f1, 32);
         debug_trail_line[debug_trailp] = line;
         debug_trailp = (debug_trailp+1)%32;
     }
@@ -937,18 +937,18 @@ void debug_record_int_raw(const char *data, int n, const char *file, int line)
 
 void debug_show_trail_raw(const char *msg, const char *file, int line)
 {   int i;
-    const char *f1 = strrchr(file, '/');
+    const char *f1 = std::strrchr(file, '/');
     if (f1 == NULL) f1 = "?";
     else f1++;
-    printf("\n+++++ Debug trail %s\n", msg);
+    std::printf("\n+++++ Debug trail %s\n", msg);
     for (i=0; i<32; i++)
     {   if (debug_trail[debug_trailp][0] == 0) continue;
-        printf("%d: %.32s at %.32s:%d\n", i, debug_trail[debug_trailp],
+        std::printf("%d: %.32s at %.32s:%d\n", i, debug_trail[debug_trailp],
                debug_trail_file[debug_trailp], debug_trail_line[debug_trailp]);
         debug_trailp = (debug_trailp+1)%32;
     }
-    printf("Current at %s:%d", f1, line);
-    fflush(stdout);
+    std::printf("Current at %s:%d", f1, line);
+    std::fflush(stdout);
 }
 
 #endif
@@ -957,11 +957,11 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
 // any threaded system will need to worry a LOT about this! Maybe global_jb
 // can be thread_local?
 
-jmp_buf *global_jb;
+std::jmp_buf *global_jb;
 
 [[noreturn]] void global_longjmp()
-{   longjmp(*global_jb, 1);
-    abort(); // longjmp should never return, but some C++ compilers
+{   std::longjmp(*global_jb, 1);
+    std::abort(); // longjmp should never return, but some C++ compilers
              // do not know that!
 }
 
@@ -971,7 +971,7 @@ static void lisp_main(void)
 {
 #ifdef HAVE_CRLIBM
     crlibstatus = crlibm_init();
-    atexit(tidy_up_crlibm);
+    std::atexit(tidy_up_crlibm);
 #endif
     trap_floating_overflow = true;
     tty_count = 0;
@@ -997,7 +997,7 @@ static void lisp_main(void)
                     catch (LispException &e) // all sorts of Lisp issues!
                     {   a = nil;
                     }
-                    free(exit_charvec);
+                    std::free(exit_charvec);
                     exit_charvec = NULL;
                     apply(supervisor, ncons(a), nil, current_function = startup_symbol);
                 }
@@ -1041,7 +1041,7 @@ static void lisp_main(void)
                 else if (exit_tag == fixnum_of_int(3)) // "preserve & restart"
                 {   const char *msg = "";
                     int len = 0;
-                    int32_t fd = stream_pushed_char(lisp_terminal_io);
+                    std::int32_t fd = stream_pushed_char(lisp_terminal_io);
                     Lrds(nil, nil);
                     Lwrs(nil, nil);
                     return_code = EXIT_SUCCESS;
@@ -1058,7 +1058,7 @@ static void lisp_main(void)
 // put things back as if all memory is totally empty.
 // NOT DONE in the conservative case yet. @@@@@
 #else
-                    for (size_t i=0; i<pages_count; i++)
+                    for (std::size_t i=0; i<pages_count; i++)
                     {   char *w = (char *)pages[i];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             continue;
@@ -1093,7 +1093,7 @@ static void lisp_main(void)
                     continue;
                 }
                 else                                   // "restart"
-                {   int32_t fd = stream_pushed_char(lisp_terminal_io);
+                {   std::int32_t fd = stream_pushed_char(lisp_terminal_io);
                     char new_module[64], new_fn[64]; // Limited name length
                     int cold_start;
                     cold_start = (exit_value == nil);
@@ -1123,21 +1123,21 @@ static void lisp_main(void)
                             if (symbolp(modname) && modname != nil)
                             {   modname = get_pname(modname);
                                 Header h = vechdr(modname);
-                                int32_t len = length_of_byteheader(h) - CELL;
+                                std::int32_t len = length_of_byteheader(h) - CELL;
                                 if (len > 63) len = 63;
-                                memcpy(new_module,
+                                std::memcpy(new_module,
                                        (char *)modname + (CELL - TAG_VECTOR),
-                                       (size_t)len);
+                                       (std::size_t)len);
                                 new_module[len] = 0;
                             }
                             if (symbolp(exit_value) && exit_value != nil)
                             {   exit_value = get_pname(exit_value);
                                 Header h = vechdr(exit_value);
-                                int32_t len = length_of_byteheader(h) - CELL;
+                                std::int32_t len = length_of_byteheader(h) - CELL;
                                 if (len > 63) len = 63;
-                                memcpy(new_fn,
+                                std::memcpy(new_fn,
                                        (char *)exit_value + (CELL - TAG_VECTOR),
-                                       (size_t)len);
+                                       (std::size_t)len);
                                 new_fn[len] = 0;
                             }
                         }
@@ -1148,7 +1148,7 @@ static void lisp_main(void)
 //
 // This puts all recorded heap pages back in the main pool.
 //
-                    for (size_t i=0; i<pages_count; i++)
+                    for (std::size_t i=0; i<pages_count; i++)
                     {   char *w = (char *)pages[i];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             continue;
@@ -1223,14 +1223,14 @@ std::vector<stringBool> fasl_paths;
 std::vector<stringBoolString> symbolsToDefine;
 std::vector<stringBoolString> stringsToDefine;
 
-size_t output_directory;
+std::size_t output_directory;
 character_reader *procedural_input;
 character_writer *procedural_output;
 
 int init_flags = 0;
 
 #ifdef WITH_GUI
-FILE *alternative_stdout = NULL;
+std::FILE *alternative_stdout = NULL;
 #endif // WITH_GUI
 
 //
@@ -1256,7 +1256,7 @@ const char **csl_argv;
 
 bool restartp;
 
-uintptr_t C_stacklimit = 0;
+std::uintptr_t C_stacklimit = 0;
 double max_store_size = 0.0;
 
 #ifndef HAVE_CILK
@@ -1394,15 +1394,15 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // or otherwise do things that run against my intent! But then to put its
 // address in C_stackbase I need to cast away the volatile qualifier.
 //
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     C_stacklimit = 0;
     max_store_size = 0.0;
     karatsuba_parallel = 0x7fffffff;
 
 #ifdef EMBEDDED
 // This provides a fixed limit in the embedded build
-    C_stacklimit = (uintptr_t)C_stackbase - 2*1024*1024 + 0x10000;
+    C_stacklimit = (std::uintptr_t)C_stackbase - 2*1024*1024 + 0x10000;
 #else // EMBEDDED
 #ifdef WIN32
     {   HMODULE h = GetModuleHandle(NULL); // For current executable
@@ -1410,8 +1410,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         {   IMAGE_DOS_HEADER *dh = (IMAGE_DOS_HEADER*)h;
             IMAGE_NT_HEADERS *NTh =
                 (IMAGE_NT_HEADERS*)((BYTE*)dh + dh->e_lfanew);
-            int64_t stackLimit =
-                (int64_t)NTh->OptionalHeader.SizeOfStackReserve;
+            std::int64_t stackLimit =
+                (std::int64_t)NTh->OptionalHeader.SizeOfStackReserve;
 //
 // If the limit recovered above is under 200K I will pretend it is
 // just plain wrong and increase it to that. The effect may be that I
@@ -1422,7 +1422,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // I also assume that any figure over 20 Mbytes is a mess so ignore it
             if (stackLimit <= 20*1024*1024)
             {   // I try to give myself 64K spare...
-                C_stacklimit = (uintptr_t)C_stackbase - stackLimit + 0x10000;
+                C_stacklimit = (std::uintptr_t)C_stackbase - stackLimit + 0x10000;
             }
         }
     }
@@ -1430,7 +1430,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #ifdef HAVE_SYS_RESOURCE_H
     {   struct rlimit r;
         if (getrlimit(RLIMIT_STACK, &r) == 0)
-        {   int64_t stackLimit = (int64_t)r.rlim_cur;
+        {   std::int64_t stackLimit = (std::int64_t)r.rlim_cur;
 //
 // If the user has used ulimit to remove all stack limits I will
 // nevertheless apply one at 20 Mbytes. That is SO much higher than any
@@ -1440,24 +1440,24 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // getrlimit so I will treat them as failure.
 //
 #if HAVE_DECL_RLIM_SAVED_MAX
-            if (stackLimit == (int64_t)RLIM_SAVED_MAX &&
+            if (stackLimit == (std::int64_t)RLIM_SAVED_MAX &&
                 RLIM_SAVED_MAX != RLIM_INFINITY)
             {   /* do nothing */
             }
             else
 #endif
 #if HAVE_DECL_RLIM_SAVED_CUR
-                if (stackLimit == (int64_t)RLIM_SAVED_CUR &&
+                if (stackLimit == (std::int64_t)RLIM_SAVED_CUR &&
                     RLIM_SAVED_CUR != RLIM_INFINITY)
                 {   /* do nothing */
                 }
                 else
 #endif
-                    if (stackLimit == (int64_t)RLIM_INFINITY)
+                    if (stackLimit == (std::int64_t)RLIM_INFINITY)
                         stackLimit = 20*1024*1024;
 // I view values under 200K as silly and ignore them!
             if (stackLimit >= 200*1024)
-            {   C_stacklimit = (uintptr_t)C_stackbase - stackLimit + 0x10000;
+            {   C_stacklimit = (std::uintptr_t)C_stackbase - stackLimit + 0x10000;
             }
         }
     }
@@ -1465,7 +1465,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif // WIN32
 // If I can not read a value then I will set a limit at 4 Mbytes...
     if (C_stacklimit == 0)
-    {   C_stacklimit = (uintptr_t)C_stackbase - 4*1024*1024 + 0x10000;
+    {   C_stacklimit = (std::uintptr_t)C_stackbase - 4*1024*1024 + 0x10000;
     }
 #endif // EMBEDDED
 
@@ -1538,8 +1538,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              return;
          }
          char filename[LONGEST_LEGAL_FILENAME];
-         FILE *f;
-         memset(filename, 0, sizeof(filename));
+         std::FILE *f;
+         std::memset(filename, 0, sizeof(filename));
 #ifdef WITH_GUI
          f = open_file(filename, val.c_str(), val.length(), "w", NULL);
          if (f == NULL)
@@ -2282,26 +2282,26 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "         specified try \"logfile.log\".",
      [&](std::string key, bool hasVal, std::string val)
      {   char filename[LONGEST_LEGAL_FILENAME];
-         memset(filename, 0, sizeof(filename));
+         std::memset(filename, 0, sizeof(filename));
          const char *w = val.c_str();
          if (std::strlen(w) == 0) w = "logfile.log";
-         spool_file = open_file(filename, w, strlen(w), "w", NULL);
+         spool_file = open_file(filename, w, std::strlen(w), "w", NULL);
          if (spool_file == NULL)
          {   fwin_restore();
              term_printf("Unable to write to \"%s\"\n", filename);
          }
          else
-         {   time_t t0 = time(NULL);
-             strncpy(spool_file_name, filename, 128);
+         {   std::time_t t0 = std::time(NULL);
+             std::strncpy(spool_file_name, filename, 128);
              spool_file_name[127] = 0;
 #ifdef COMMON
-             fprintf(spool_file,
+             std::fprintf(spool_file,
                      "Starts dribbling to %s (%.24s).\n",
-                     spool_file_name, ctime(&t0));
+                     spool_file_name, std::ctime(&t0));
 #else
-             fprintf(spool_file,
+             std::fprintf(spool_file,
                      "+++ Transcript to %s started at %.24s +++\n",
-                     spool_file_name, ctime(&t0));
+                     spool_file_name, std::ctime(&t0));
 #endif
          }
      }
@@ -2574,14 +2574,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 //
         if (standard_directory[0] == '.' &&
             (standard_directory[1] == '/' ||
-             standard_directory[1] == '\\')) strcpy(cur, standard_directory);
+             standard_directory[1] == '\\')) std::strcpy(cur, standard_directory);
         else get_current_directory(cur, sizeof(cur));
-        p += strlen(p);
+        p += std::strlen(p);
         while (p != standard_directory &&
                *--p != '/' &&
                *p != '\\') /* nothing */;
-        if (strncmp(standard_directory, cur, p-standard_directory) != 0)
-            p1 = (char *)malloc(strlen(p));
+        if (std::strncmp(standard_directory, cur, p-standard_directory) != 0)
+            p1 = (char *)std::malloc(std::strlen(p));
         else p1 = NULL;
 // If output_directory has the 0x40000000 bit set then the directory
 // involved is one that should be opened now if it exists, but if
@@ -2589,10 +2589,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         output_directory = 0x40000000 + 0;
         if (p == standard_directory || p1 == NULL)
         {   fasl_files.push_back(faslFileRecord(standard_directory, true));
-            if (p1 != NULL) free(p1);
+            if (p1 != NULL) std::free(p1);
         }
         else
-        {   strcpy(p1, p+1);
+        {   std::strcpy(p1, p+1);
             fasl_files.push_back(faslFileRecord(p1, true));
             fasl_files.push_back(faslFileRecord(standard_directory, false));
         }
@@ -2602,9 +2602,9 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
     if (module_enquiry != "")
     {   char datestamp[32], fullname[LONGEST_LEGAL_FILENAME];
-        size_t size;
+        std::size_t size;
         bool success = false;
-        for (size_t i=0; i<fasl_files.size(); i++)
+        for (std::size_t i=0; i<fasl_files.size(); i++)
         {   if (fasl_files[i].inUse)
             {   if (!Imodulep1(i, module_enquiry.c_str(),
                                module_enquiry.size(),
@@ -2615,12 +2615,12 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             }
         }
         if (!success)
-        {   strcpy(datestamp, "unknown");
+        {   std::strcpy(datestamp, "unknown");
             size = 0;
-            strcpy(fullname, module_enquiry.c_str());
+            std::strcpy(fullname, module_enquiry.c_str());
         }
         term_printf("%.24s   size=%" PRIuPTR " file=%s\n",
-                    datestamp, (uintptr_t)size, fullname);
+                    datestamp, (std::uintptr_t)size, fullname);
         init_flags &= ~INIT_VERBOSE;
         fwin_pause_at_end = false;
         my_exit(0);
@@ -2680,7 +2680,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // default will be to put it in an unpredictable (well hard to predict!)
 // state
 //
-    Csrand((uint32_t)initial_random_seed);
+    Csrand((std::uint32_t)initial_random_seed);
 
 //?        uint64_t t0 = read_clock();
 //?        gc_time += t0;
@@ -2729,7 +2729,7 @@ static void start_threads()
         kara_thread[i].detach();
     }
 #endif
-    atexit(quit_threads);
+    std::atexit(quit_threads);
 }
 
 
@@ -2760,20 +2760,20 @@ static void start_threads()
 // system can report "events" or "requests" back to the code here. Having
 // a couple in hand for any future thread-supporting system seems a good idea.
 
-volatile std::atomic<uintptr_t> event_flag(0);
+volatile std::atomic<std::uintptr_t> event_flag(0);
 
 // The following function can be called from a signal handler. It just
 // sets a volatile atomic variable, because basically that is the only
 // think it can do and remain "safe".
 
-const intptr_t RECEIVE_TICK       = 0x01;
-const intptr_t RECEIVE_INTERRUPT  = 0x02;
-const intptr_t RECEIVE_BACKTRACE  = 0x04;
-const intptr_t RECEIVE_QUIT       = 0x08;
-const intptr_t RECEIVE_BREAK_LOOP = 0x10;
+const std::intptr_t RECEIVE_TICK       = 0x01;
+const std::intptr_t RECEIVE_INTERRUPT  = 0x02;
+const std::intptr_t RECEIVE_BACKTRACE  = 0x04;
+const std::intptr_t RECEIVE_QUIT       = 0x08;
+const std::intptr_t RECEIVE_BREAK_LOOP = 0x10;
 
 int async_interrupt(int type)
-{   uintptr_t newval;
+{   std::uintptr_t newval;
     switch (type)
     {
         default:
@@ -2806,12 +2806,12 @@ int async_interrupt(int type)
 // C++ could have been implemented with std::atomic<uintptr_t> as a type
 // that is not lock-free - eg perhaps on a machine where the bus size
 // is less than the size of an address?
-    uintptr_t oldval = event_flag.fetch_or(newval);
+    std::uintptr_t oldval = event_flag.fetch_or(newval);
     return (int)oldval & 0xff;
 }
 
 void respond_to_stack_event()
-{   uintptr_t f = event_flag.fetch_and(0);
+{   std::uintptr_t f = event_flag.fetch_and(0);
     if (f == 0) aerror("stack overflow");
 // Each of the messages that I might be sent comes in a separate bit, so
 // here I have to test each bit. I will test the bits in some sort of
@@ -2820,7 +2820,7 @@ void respond_to_stack_event()
     if ((f&RECEIVE_TICK) != 0)
     {   //fwin_acknowledge_tick();
 #if !defined EMBEDDED && !defined WITHOUT_GUI
-        uintptr_t tt = read_clock() - base_time;
+        std::uintptr_t tt = read_clock() - base_time;
         long int t = (long int)(tt/10000);
         long int gct = gc_time/100000;
         report_time(t, gct);
@@ -2902,14 +2902,14 @@ void set_up_signal_handlers()
 #ifndef WIN32
 #error All platforms other than Windows are expected to support sigaction.
 #endif // !WIN32
-    signal(SIGSEGV, low_level_signal_handler);
+    std::signal(SIGSEGV, low_level_signal_handler);
 #ifdef SIGBUS
-    signal(SIGBUS, low_level_signal_handler);
+    std::signal(SIGBUS, low_level_signal_handler);
 #endif
 #ifdef SIGILL
-    signal(SIGILL, low_level_signal_handler);
+    std::signal(SIGILL, low_level_signal_handler);
 #endif
-    signal(SIGFPE, low_level_signal_handler);
+    std::signal(SIGFPE, low_level_signal_handler);
 #endif // !HAVE_SIGACTION
 }
 
@@ -3001,8 +3001,8 @@ static void cslaction(void)
 // to provide a network service on some socket.
 //
 {
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
 #ifdef CONSERVATIVE
     ThreadStartup set_thread_local_variables;
 #endif
@@ -3016,9 +3016,9 @@ static void cslaction(void)
 #endif // WITH_GUI
         if (simpleArgs.empty()) lisp_main();
         else
-        {   size_t i;
+        {   std::size_t i;
             for (i=0; i<simpleArgs.size(); i++)
-            {   if (strcmp(simpleArgs[i].c_str(), "-") == 0)
+            {   if (std::strcmp(simpleArgs[i].c_str(), "-") == 0)
                 {   non_terminal_input = NULL;
 #ifdef WITH_GUI
                     terminal_eof_seen = 0;
@@ -3027,10 +3027,10 @@ static void cslaction(void)
                 }
                 else
                 {   char filename[LONGEST_LEGAL_FILENAME];
-                    FILE *f;
-                    memset(filename, 0, sizeof(filename));
+                    std::FILE *f;
+                    std::memset(filename, 0, sizeof(filename));
                     f = open_file(filename, simpleArgs[i].c_str(),
-                                  strlen(simpleArgs[i].c_str()), "r", NULL);
+                                  std::strlen(simpleArgs[i].c_str()), "r", NULL);
                     if (f == NULL)
                         err_printf("\n+++ Could not read file \"%s\"\n",
                                    simpleArgs[i].c_str());
@@ -3041,7 +3041,7 @@ static void cslaction(void)
                         report_file(filename);
                         non_terminal_input = f;
                         lisp_main();
-                        fclose(f);
+                        std::fclose(f);
                     }
                 }
             }
@@ -3061,8 +3061,8 @@ static void cslaction(void)
 
 int cslfinish(character_writer *w)
 {
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     procedural_output = w;
     if (Ifinished())
         term_printf("\n+++ Errors on checkpoint-image file\n");
@@ -3070,8 +3070,8 @@ int cslfinish(character_writer *w)
     dump_equals();
 #endif
     if (init_flags & INIT_VERBOSE)
-    {   uint64_t t = (read_clock() - base_time)/10000;  // centisecond units
-        uint64_t gct = gc_time/10000;
+    {   std::uint64_t t = (read_clock() - base_time)/10000;  // centisecond units
+        std::uint64_t gct = gc_time/10000;
 #ifdef HASH_STATISTICS
         term_printf("oblist: found: %" PRIu64 " probes: %" PRIu64 " (%.2f)\n"
                     "        added: %" PRIu64 " probes: %" PRIu64 " (%.2f)\n",
@@ -3092,12 +3092,12 @@ int cslfinish(character_writer *w)
     if (spool_file != NULL)
     {
 #ifdef COMMON
-        fprintf(spool_file, "\nFinished dribbling to %s.\n", spool_file_name);
+        std::fprintf(spool_file, "\nFinished dribbling to %s.\n", spool_file_name);
 #else
-        fprintf(spool_file, "\n+++ Transcript closed at end of run +++\n");
+        std::fprintf(spool_file, "\n+++ Transcript closed at end of run +++\n");
 #endif
 #ifndef DEBUG
-        fclose(spool_file);
+        std::fclose(spool_file);
         spool_file = NULL;
 #endif
     }
@@ -3110,8 +3110,8 @@ int execute_lisp_function(const char *fname,
                           character_reader *r,
                           character_writer *w)
 {   LispObject ff;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if_error(ff = make_undefined_symbol(fname),
              return 1);  // Failed to make the symbol
     procedural_input = r;
@@ -3180,10 +3180,10 @@ static void iput(int c)
 [[noreturn]] static int submain(int argc, const char *argv[])
 {   cslstart(argc, argv, NULL);
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
-    strcpy(ibuff, "(print '(a b c d))");
+    std::strcpy(ibuff, "(print '(a b c d))");
     start_threads();
     execute_lisp_function("oem-supervisor", iget, iput);
-    printf("Buffered output is <%s>\n", obuff);
+    std::printf("Buffered output is <%s>\n", obuff);
 #else
     start_threads(); // For Parallel Karatsuba
     set_keyboard_callbacks(async_interrupt);
@@ -3212,7 +3212,7 @@ int ENTRYPOINT(int argc, const char *argv[])
 {   int res;
 #ifdef EMBEDDED
     if ((res = find_program_directory(argv[0])) != 0)
-    {   fprintf(stderr, "Unable to identify program name and directory (%d)\n", res);
+    {   std::fprintf(stderr, "Unable to identify program name and directory (%d)\n", res);
         return 1;
     }
 #endif
@@ -3220,11 +3220,11 @@ int ENTRYPOINT(int argc, const char *argv[])
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
-    printf("I am mpi instance %d of %d.\n", mpi_rank+1, mpi_size);
+    std::printf("I am mpi instance %d of %d.\n", mpi_rank+1, mpi_size);
 #endif
 
-    strcpy(about_box_title, "About CSL");
-    strcpy(about_box_description, "Codemist Standard Lisp");
+    std::strcpy(about_box_title, "About CSL");
+    std::strcpy(about_box_description, "Codemist Standard Lisp");
     try
     {   START_SETJMP_BLOCK;
         res = submain(argc, argv);
@@ -3264,8 +3264,8 @@ int PROC_set_callbacks(character_reader *r,
 
 int PROC_load_package(const char *name)
 {   LispObject w = nil, w1 = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("load-package");
              push(w1);
              w = make_undefined_symbol(name);
@@ -3278,8 +3278,8 @@ int PROC_load_package(const char *name)
 
 int PROC_set_switch(const char *name, int val)
 {   LispObject w = nil, w1 = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("onoff");
              push(w1);
              w = make_undefined_symbol(name);
@@ -3313,8 +3313,8 @@ int PROC_clear_stack()
 
 int PROC_push_symbol(const char *name)
 {   LispObject w = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if_error(w = make_undefined_symbol(name);
              w = cons(w, procstack),
         return 1);
@@ -3329,8 +3329,8 @@ int PROC_push_symbol(const char *name)
 
 int PROC_push_string(const char *data)
 {   LispObject w = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if_error(w = make_string(data);
              w = cons(w, procstack),
         return 2);  // Failed to push onto stack
@@ -3349,10 +3349,10 @@ int PROC_push_string(const char *data)
 // 28-bit fixnum.
 //
 
-int PROC_push_small_integer(int32_t n)
+int PROC_push_small_integer(std::int32_t n)
 {   LispObject w = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if_error(w = make_lisp_integer32(n);
              w = cons(w, procstack),
         return 1);
@@ -3363,8 +3363,8 @@ int PROC_push_small_integer(int32_t n)
 int PROC_push_big_integer(const char *n)
 {   LispObject w = nil;
     int len = 0;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
 // Here I need to parse a C string to obtain a Lisp number.
     boffop = 0;
     if_error(
@@ -3381,8 +3381,8 @@ int PROC_push_big_integer(const char *n)
 
 int PROC_push_floating(double n)
 {   LispObject w = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
 // Here I have to construct a Lisp (boxed) float
     if_error(w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
              w = cons(w, procstack),
@@ -3403,8 +3403,8 @@ int PROC_push_floating(double n)
 
 int PROC_make_function_call(const char *name, int n)
 {   LispObject w = nil, w1 = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if_error(
         while (n > 0)
         {   if (procstack == nil) return 1; // Not enough args available
@@ -3441,8 +3441,8 @@ int PROC_save(int n)
 
 int PROC_load(int n)
 {   LispObject w = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if (n < 0 || n > 99) return 1; // index out of range
     w = elt(procmem, n);
     if_error(w = cons(w, procstack),
@@ -3457,8 +3457,8 @@ int PROC_load(int n)
 
 int PROC_dup()
 {   LispObject w = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if (procstack == nil) return 1; // no item to duplicate
     w = car(procstack);
     if_error(w = cons(w, procstack),
@@ -3482,8 +3482,8 @@ int PROC_pop()
 
 int PROC_simplify()
 {   LispObject w = nil, w1 = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = make_undefined_symbol("simp");
@@ -3522,8 +3522,8 @@ static void PROC_standardise_gensyms(LispObject w)
 int PROC_lisp_eval()
 {   save_current_function saver(eval_symbol);
     LispObject w = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = eval(car(procstack), nil);
@@ -3571,8 +3571,8 @@ static LispObject PROC_standardise_printed_form(LispObject w)
 
 int PROC_make_printable()
 {   LispObject w = nil, w1 = nil;
-    volatile uintptr_t sp;
-    C_stackbase = (uintptr_t *)&sp;
+    volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
 //
 // I want to use "simp" again so that I can then use prepsq!
@@ -3665,8 +3665,8 @@ int PROC_symbol(PROC_handle p)
 // Given that it is a small integer return the integer value
 //
 
-int32_t PROC_integer_value(PROC_handle p)
-{   return (int32_t)int_of_fixnum((LispObject)p);
+std::int32_t PROC_integer_value(PROC_handle p)
+{   return (std::int32_t)int_of_fixnum((LispObject)p);
 }
 
 double PROC_floating_value(PROC_handle p)
@@ -3687,25 +3687,25 @@ static char PROC_name[256];
 
 const char *PROC_symbol_name(PROC_handle p)
 {   LispObject w = (LispObject)p;
-    intptr_t n;
+    std::intptr_t n;
     w = qpname(w);
     n = length_of_byteheader(vechdr(w)) - CELL;
-    if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
-    strncpy(PROC_name, (const char *)&celt(w, 0), n);
+    if (n > (std::intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
+    std::strncpy(PROC_name, (const char *)&celt(w, 0), n);
     PROC_name[n] = 0;
     return &PROC_name[0];
 }
 
 const char *PROC_string_data(PROC_handle p)
 {   LispObject w = (LispObject)p;
-    intptr_t n;
+    std::intptr_t n;
     n = length_of_byteheader(vechdr(w)) - CELL;
 //
 // NOTE that I truncate long strings here. Boo Hiss! This may make a mess
 // of dealing with big numbers, so in due course I will need to fix it!
 //
-    if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
-    strncpy(PROC_name, (const char *)&celt(w, 0), n);
+    if (n > (std::intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
+    std::strncpy(PROC_name, (const char *)&celt(w, 0), n);
     PROC_name[n] = 0;
     return &PROC_name[0];
 }

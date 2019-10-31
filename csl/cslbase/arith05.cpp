@@ -41,19 +41,19 @@
 
 
 
-uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
+std::uint32_t Idiv10_9(std::uint32_t *qp, std::uint32_t high, std::uint32_t low)
 //
 // Same behaviour as Idivide(qp, high, low, 1000000000U).
 // Used for printing only - i.e. only in this file
 //
-{   uint64_t p = ((uint64_t)high << 31) | (uint64_t)low;
-    *qp = (uint32_t)(p / (uint64_t)1000000000U);
-    return (uint32_t)(p % (uint64_t)1000000000U);
+{   std::uint64_t p = ((std::uint64_t)high << 31) | (std::uint64_t)low;
+    *qp = (std::uint32_t)(p / (std::uint64_t)1000000000U);
+    return (std::uint32_t)(p % (std::uint64_t)1000000000U);
 }
 
 void print_bignum(LispObject u, bool blankp, int nobreak)
-{   size_t len = length_of_header(numhdr(u))-CELL;
-    size_t i, len1;
+{   std::size_t len = length_of_header(numhdr(u))-CELL;
+    std::size_t i, len1;
     LispObject w;
     char my_buff[24];    // Big enough for 2-word bignum value
     unsigned int line_length =
@@ -63,29 +63,29 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
 #ifdef DEBUG
 // The next few lines are to help me track down bugs...
-    {   int32_t d1 = bignum_digits(u)[(len-4)/4];
+    {   std::int32_t d1 = bignum_digits(u)[(len-4)/4];
         if (!SIXTY_FOUR_BIT && len == 4)
         {   if (valid_as_fixnum(d1))
-                printf("[%.8lx should be fixnum]", (long)d1);
+                std::printf("[%.8lx should be fixnum]", (long)d1);
             if (signed_overflow(d1))
-                printf("[%.8lx needs 2 words]", (long)d1);
+                std::printf("[%.8lx needs 2 words]", (long)d1);
         }
         else if (SIXTY_FOUR_BIT && len == 4)
-            printf("[%.8lx should be a fixnum]", (long)bignum_digits(u)[0]);
+            std::printf("[%.8lx should be a fixnum]", (long)bignum_digits(u)[0]);
         if (SIXTY_FOUR_BIT && len == 8)
-        {   int64_t v = (bignum_digits64(u, 1)<<31) +
+        {   std::int64_t v = (bignum_digits64(u, 1)<<31) +
                         bignum_digits(u)[0];
             if (valid_as_fixnum(v))
-                printf("[%.8lx should be fixnum]", (long)d1);
+                std::printf("[%.8lx should be fixnum]", (long)d1);
             if (signed_overflow(bignum_digits(u)[1]))
-                printf("[%.8lx:%.8lx needs 3 words]",
+                std::printf("[%.8lx:%.8lx needs 3 words]",
                     (long)d1, (long)bignum_digits(u)[0]);
         }
         else
-        {   int32_t d0 = bignum_digits(u)[(len-8)/4];
-            if (signed_overflow(d1)) printf("[needs more words]");
-            else if (d1 == 0 && (d0 & 0x40000000) == 0) printf("[shrink]");
-            else if (d1 == -1 &&(d0 & 0x40000000) != 0) printf("[shrink]");
+        {   std::int32_t d0 = bignum_digits(u)[(len-8)/4];
+            if (signed_overflow(d1)) std::printf("[needs more words]");
+            else if (d1 == 0 && (d0 & 0x40000000) == 0) std::printf("[shrink]");
+            else if (d1 == -1 &&(d0 & 0x40000000) != 0) std::printf("[shrink]");
         }
     }
 // end of temp code
@@ -97,8 +97,8 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
 // and so I will leave it alone for now...
     switch (len)
     {   case 4:         // one word bignum - especially easy!
-        {   int32_t dig0 = bignum_digits(u)[0];
-            uint32_t dig = dig0;
+        {   std::int32_t dig0 = bignum_digits(u)[0];
+            std::uint32_t dig = dig0;
             int i = 0;
             if (dig0 < 0) dig = -dig0;
 //
@@ -107,7 +107,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
 // than I need, and thus I expect it to be somewhat more costly.
 //
             do
-            {   int32_t nxt = dig % 10;
+            {   std::int32_t nxt = dig % 10;
                 dig = dig / 10;
                 my_buff[i++] = (char)(nxt + '0');
             }
@@ -128,18 +128,18 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         {
 // I could (and probably should) re-work this to use int64_t... but I have
 // other priorities for now!
-            uint32_t d0 = bignum_digits(u)[0], d1 = bignum_digits(u)[1];
-            uint32_t d0high, d0low, w;
-            uint32_t p0, p1, p2;
+            std::uint32_t d0 = bignum_digits(u)[0], d1 = bignum_digits(u)[1];
+            std::uint32_t d0high, d0low, w;
+            std::uint32_t p0, p1, p2;
             bool negativep = false;
             int i, j;
-            if (((int32_t)d1) < 0)
+            if (((std::int32_t)d1) < 0)
             {   negativep = true;
-                d0 = clear_top_bit(-(uint32_t)d0);
-                if (d0 == 0) d1 = -(uint32_t)d1;
+                d0 = clear_top_bit(-(std::uint32_t)d0);
+                if (d0 == 0) d1 = -(std::uint32_t)d1;
                 else d1 = ~d1;
             }
-            d0high = ((uint32_t)d0)>>16;
+            d0high = ((std::uint32_t)d0)>>16;
             d0low = d0 - (d0high << 16);
 // Adjust for the fact that I packed just 31 bits into each word..
             if ((d1 & 1) != 0) d0high |= 0x8000U;
@@ -209,17 +209,17 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
 // of about 1.037, so the 10% expansion I allow for in len1 above should
 // keep me safe.
 //
-    len1 = (size_t)doubleword_align_up((uintptr_t)len1);
+    len1 = (std::size_t)doubleword_align_up((std::uintptr_t)len1);
     w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len1);
     pop(u);
     bool sign = false;
-    size_t len2;
+    std::size_t len2;
     len = len/4;
     len1 = (len1-CELL)/4;
-    if (((int32_t)bignum_digits(u)[len-1]) >= 0)
+    if (((std::int32_t)bignum_digits(u)[len-1]) >= 0)
         for (i=0; i<len; i++) bignum_digits(w)[i] = vbignum_digits(u)[i];
     else
-    {   int32_t carry = -1;
+    {   std::int32_t carry = -1;
         sign = true;
         for (i=0; i<len; i++)
         // negate the number so I am working with a +ve value
@@ -230,13 +230,13 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
     }
     len2 = len1;
     while (len > 1)
-    {   int32_t k;
-        int32_t carry = 0;
+    {   std::int32_t k;
+        std::int32_t carry = 0;
 // This stack-check is so that I can respond to interrupts while I am part
 // way through printing a bignum. In particular it will make it possible for
 // the printing to be interrupted.
-        if ((uintptr_t)stack >=
-            ((uintptr_t)stacklimit | event_flag.load()))
+        if ((std::uintptr_t)stack >=
+            ((std::uintptr_t)stacklimit | event_flag.load()))
             respond_to_stack_event();
         // divide by 10^9 to obtain remainder
         for (k=len-1; k>=0; k--)
@@ -246,14 +246,14 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         bignum_digits(w)[--len2] = carry; // 9 digits in decimal format
     }
     push(w);
-    {   uint32_t dig;
+    {   std::uint32_t dig;
         int i;
-        size_t len;
+        std::size_t len;
         if (bignum_digits(w)[0] == 0) dig = bignum_digits(w)[len2++];
         else dig = bignum_digits(w)[0];
         i = 0;
         do
-        {   int32_t nxt = dig % 10;
+        {   std::int32_t nxt = dig % 10;
             dig = dig / 10;
             my_buff[i++] = (char)(nxt + '0');
         }
@@ -272,18 +272,18 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
     }
     pop(w);
     while (len2 < len1)
-    {   uint32_t dig = bignum_digits(w)[len2++];
+    {   std::uint32_t dig = bignum_digits(w)[len2++];
         int i;
         push(w);
         for (i=8; i>=0; i--)
-        {   int32_t nxt = dig % 10;
+        {   std::int32_t nxt = dig % 10;
             dig = dig / 10;
             my_buff[i] = (char)(nxt + '0');
         }
         for (i=0; i<=8; i++) putc_stream(my_buff[i], active_stream);
         pop(w);
-        if ((uintptr_t)stack >=
-            ((uintptr_t)stacklimit | event_flag.load()))
+        if ((std::uintptr_t)stack >=
+            ((std::uintptr_t)stacklimit | event_flag.load()))
             respond_to_stack_event();
     }
 }
@@ -305,9 +305,9 @@ void print_bighexoctbin(LispObject u, int radix, int width,
 // for instance. So at present some C compilers will give me a warning about
 // width being ignored - they are RIGHT!
 //
-{   size_t n = (bignum_length(u)-CELL-4)/4;
-    uint32_t a=0, b=0;
-    size_t len = 31*(n+1);
+{   std::size_t n = (bignum_length(u)-CELL-4)/4;
+    std::uint32_t a=0, b=0;
+    std::size_t len = 31*(n+1);
     int flag = 0, bits;
     bool sign = false, started = false;
     unsigned int line_length =
@@ -337,7 +337,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
 // me how many digits remain to be printed.
 //
     push(u);
-    if ((int32_t)bignum_digits(u)[n] < 0)
+    if ((std::int32_t)bignum_digits(u)[n] < 0)
     {   sign = true;
         len+=2;    // Allow extra length for sign marker and initial f/7/1
         if (radix == 16) flag = 0xf;
@@ -346,7 +346,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
 //
 // Set the buffer b to have a few '1' bits at its top.
 //
-        if (bits != 0) b = ((int32_t)-1) << (32-bits);
+        if (bits != 0) b = ((std::int32_t)-1) << (32-bits);
     }
 //
 // I kill leading zeros - and since this is a real bignum there MUST be

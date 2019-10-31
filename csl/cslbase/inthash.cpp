@@ -46,14 +46,14 @@
 
 void hash_init(inthash *h, int bits)
 {   assert(bits > 3 && bits < 30);
-    h->size = ((size_t)1) << bits;
+    h->size = ((std::size_t)1) << bits;
     h->count = 0;
-    h->keys = (uintptr_t *)malloc(h->size*sizeof(uintptr_t));
-    if (h->keys == NULL) abort(); // not enough memory
+    h->keys = (std::uintptr_t *)std::malloc(h->size*sizeof(std::uintptr_t));
+    if (h->keys == NULL) std::abort(); // not enough memory
     assert(h->keys != NULL);
-    for (size_t i=0; i<h->size; i++) h->keys[i] = 0;
+    for (std::size_t i=0; i<h->size; i++) h->keys[i] = 0;
     h->values = NULL;
-    h->shift = 8*sizeof(uintptr_t) - bits + 2;
+    h->shift = 8*sizeof(std::uintptr_t) - bits + 2;
 // The following initial value for mult1 fits in 64-bits, and is a prime
 // that is roughly 0.618034*2^64. Furthermore if you are on a 32-bit
 // system so that uintptr_t is narrowed the value ends up as around
@@ -66,13 +66,13 @@ void hash_init(inthash *h, int bits)
 // at least early versions of that did not allow long literals without
 // explicit "LL" suffixes. Howver 4.3.0 seens to support UINT64_C() as a
 // macro that allows one to write 64-bit integer literals, so I use that here.
-    h->mult1 = (uintptr_t)UINT64_C(0x9e3779b99e3779bd);
+    h->mult1 = (std::uintptr_t)UINT64_C(0x9e3779b99e3779bd);
 // The initial value for the second multiplier is somewhat similarly
 // similarly derived from 0.381966 (the square of (sqrt 5-1)/2) except that
 // the top half of the 64-bit value has been arbitrarily offset by about
 // 0x6543 (not a very special number) so that the top and bottom 32-bits
 // are more distinct.
-    h->mult2 = (uintptr_t)UINT64_C(0x61c8eb8961c8865f);
+    h->mult2 = (std::uintptr_t)UINT64_C(0x61c8eb8961c8865f);
 #ifdef CHECK_INTHASH
     h->chain = NULL;
 #endif
@@ -82,10 +82,10 @@ void hash_init(inthash *h, int bits)
 // that this does is to free the big vectors. It sets the various other
 // fields to dummy values just in a spirit of tidying up.
 void hash_finalize(inthash *h)
-{   free(h->keys);
+{   std::free(h->keys);
     h->keys = NULL;
     if (h->values != NULL)
-    {   free(h->values);
+    {   std::free(h->values);
         h->values = NULL;
     }
     h->size = h->count = 0;
@@ -104,17 +104,17 @@ void hash_finalize(inthash *h)
 // on call hash_init_values then lookup on existing keys will return 0.
 
 void hash_init_values(inthash *h)
-{   h->values = (uintptr_t *)malloc(h->size*sizeof(uintptr_t));
-    if (h->values == NULL) abort(); // not enough memory
+{   h->values = (std::uintptr_t *)std::malloc(h->size*sizeof(std::uintptr_t));
+    if (h->values == NULL) std::abort(); // not enough memory
     assert(h->values != NULL);
-    for (size_t i=0; i<h->size; i++) h->values[i] = 0;
+    for (std::size_t i=0; i<h->size; i++) h->values[i] = 0;
 }
 
 // accessor and mutator functions for the values associated with a
 // hash entry at offset hx. I try to make these "kind" in the case that
 // the values part of the table has not yet been allocated.
 
-uintptr_t hash_get_value(inthash *h, size_t hx)
+std::uintptr_t hash_get_value(inthash *h, std::size_t hx)
 {   assert(hx < h->size);
     if (h->values == NULL)
     {
@@ -136,7 +136,7 @@ uintptr_t hash_get_value(inthash *h, size_t hx)
     }
 }
 
-void hash_set_value(inthash *h, size_t hx, uintptr_t v)
+void hash_set_value(inthash *h, std::size_t hx, std::uintptr_t v)
 {   assert(hx < h->size);
     if (h->values == NULL) hash_init_values(h);
     h->values[hx] = v;
@@ -155,45 +155,45 @@ static int validate_count = 0;
 void hash_validate(inthash *h)
 {   if ((++validate_count % 587) != 0) return; // Only check every so often
                                                // because checking is expensive
-    for (size_t i = 0; i<h->size; i++)
-    {   uintptr_t k = h->keys[i];
+    for (std::size_t i = 0; i<h->size; i++)
+    {   std::uintptr_t k = h->keys[i];
         if (k == 0) continue;
 #ifdef CHECK_INTHASH
         hash_alist *p = h->chain;
         while (p != NULL && p->key != k) p = p->next;
         assert(p != NULL);
 #endif
-        size_t hx = ((h->mult1*k)>>h->shift)*4;
+        std::size_t hx = ((h->mult1*k)>>h->shift)*4;
         assert(hx < h->size);
-        size_t hx2 = 2 + ((h->mult2*k)>>h->shift)*4;
+        std::size_t hx2 = 2 + ((h->mult2*k)>>h->shift)*4;
         assert(hx2 < h->size);
-        uintptr_t k1 = h->keys[hx];
-        uintptr_t k2 = h->keys[hx+1];
-        uintptr_t k3 = h->keys[hx2];
-        uintptr_t k4 = h->keys[hx2+1];
+        std::uintptr_t k1 = h->keys[hx];
+        std::uintptr_t k2 = h->keys[hx+1];
+        std::uintptr_t k3 = h->keys[hx2];
+        std::uintptr_t k4 = h->keys[hx2+1];
         if (hx != i && k1 == k)
-        {   printf("key duplicated..\n");
+        {   std::printf("key duplicated..\n");
             my_abort();
         }
         if (hx+1 != i && k2 == k)
-        {   printf("key duplicated..\n");
+        {   std::printf("key duplicated..\n");
             my_abort();
         }
         if (hx2 != i && k3 == k)
-        {   printf("key duplicated..\n");
+        {   std::printf("key duplicated..\n");
             my_abort();
         }
         if (hx2+1 != i && k4 == k)
-        {   printf("key duplicated..\n");
+        {   std::printf("key duplicated..\n");
             my_abort();
         }
     }
 #ifdef CHECK_INTHASH
     for (hash_alist *p=h->chain; p!=NULL; p=p->next)
-    {   uintptr_t k = p->key;
-        for (size_t i=0; i<h->size; i++)
+    {   std::uintptr_t k = p->key;
+        for (std::size_t i=0; i<h->size; i++)
             if (h->keys[i] == k) goto found;
-        printf("Key that was in alist not in table\n");
+        std::printf("Key that was in alist not in table\n");
         my_abort();
     found:
         continue;
@@ -224,7 +224,7 @@ void hash_validate(inthash *h)
 // 2 had been checked.... and this thought is part of the motive for
 // implementing the table the way that I have.
 
-size_t hash_lookup(inthash *h, uintptr_t k)
+std::size_t hash_lookup(inthash *h, std::uintptr_t k)
 {
     assert(k != 0);
 #ifdef VALIDATE
@@ -234,7 +234,7 @@ size_t hash_lookup(inthash *h, uintptr_t k)
     hash_alist *p = h->chain;
     while (p != NULL && p->key != k) p = p->next;
 #endif
-    size_t hx = ((h->mult1*k)>>h->shift)*4;
+    std::size_t hx = ((h->mult1*k)>>h->shift)*4;
     assert(hx < h->size);
     if (h->keys[hx] == k)
     {
@@ -250,7 +250,7 @@ size_t hash_lookup(inthash *h, uintptr_t k)
 #endif
         return hx+1;
     }
-    size_t hx2 = 2 + ((h->mult2*k)>>h->shift)*4;
+    std::size_t hx2 = 2 + ((h->mult2*k)>>h->shift)*4;
     assert(hx2 < h->size);
     if (h->keys[hx2] == k)
     {
@@ -269,7 +269,7 @@ size_t hash_lookup(inthash *h, uintptr_t k)
 #ifdef CHECK_INTHASH
     assert(p == NULL);
 #endif
-    return (size_t)(-1);
+    return (std::size_t)(-1);
 }
 
 
@@ -279,9 +279,9 @@ size_t hash_lookup(inthash *h, uintptr_t k)
 // is amazingly easy! Just find where the item is and empty out the
 // table entry.
 
-bool hash_delete(inthash *h, uintptr_t k)
-{   size_t hx = hash_lookup(h, k);
-    if (hx == (size_t)(-1)) return false; // not present
+bool hash_delete(inthash *h, std::uintptr_t k)
+{   std::size_t hx = hash_lookup(h, k);
+    if (hx == (std::size_t)(-1)) return false; // not present
 #ifdef CHECK_INTHASH
 // I am not implementing delete on the chained storage scheme which is only
 // present to help me debug. Well I COULD...
@@ -310,9 +310,9 @@ bool hash_delete(inthash *h, uintptr_t k)
 
 static int multiplier_change = 0,
            size_double = 0;
-static size_t size_multiplier_change = 0,
+static std::size_t size_multiplier_change = 0,
               count_multiplier_change = 0;
-static size_t size_size_double = 0,
+static std::size_t size_size_double = 0,
               count_size_double = 0;
 
 static void hash_change_multiplier(inthash *h)
@@ -322,8 +322,8 @@ static void hash_change_multiplier(inthash *h)
 // The change made here uses a linear congruential generator such that
 // if size_t is a 64-bit type the period is 2^64. On a 32-bit machine the
 // sequence will clearly be less respectable but it should have period 2^32.
-    h->mult2 = ((size_t)UINT64_C(2862933555777941757))*h->mult2 +
-               (size_t)UINT64_C(3037000493);
+    h->mult2 = ((std::size_t)UINT64_C(2862933555777941757))*h->mult2 +
+               (std::size_t)UINT64_C(3037000493);
 }
 
 static void hash_double_size(inthash *h)
@@ -334,22 +334,22 @@ static void hash_double_size(inthash *h)
 // will now not be in the right place. I reset the second multiplier
 // back to its default value since this value has not failed with this
 // larger table.
-    uintptr_t *hh = (uintptr_t *)realloc(h->keys, 2*h->size*sizeof(uintptr_t));
-    if (hh == NULL) abort(); // not enough memory
+    std::uintptr_t *hh = (std::uintptr_t *)std::realloc(h->keys, 2*h->size*sizeof(std::uintptr_t));
+    if (hh == NULL) std::abort(); // not enough memory
     assert(hh != NULL);
-    for (size_t i=h->size; i<2*h->size; i++) hh[i] = 0;
+    for (std::size_t i=h->size; i<2*h->size; i++) hh[i] = 0;
     h->keys = hh;
     if (h->values != NULL)
-    {   uintptr_t *vv =
-            (uintptr_t *)realloc(h->values, 2*h->size*sizeof(uintptr_t));
-        if (vv == NULL) abort(); // not enough memory
+    {   std::uintptr_t *vv =
+            (std::uintptr_t *)std::realloc(h->values, 2*h->size*sizeof(std::uintptr_t));
+        if (vv == NULL) std::abort(); // not enough memory
         assert(vv != NULL);
-        for (size_t i=h->size; i<2*h->size; i++) vv[i] = 0;
+        for (std::size_t i=h->size; i<2*h->size; i++) vv[i] = 0;
         h->values = vv;
     }
     h->size *= 2;
     h->shift--;
-    h->mult2 = (uintptr_t)UINT64_C(0x61c8eb8961c8865f);
+    h->mult2 = (std::uintptr_t)UINT64_C(0x61c8eb8961c8865f);
 }
 
 // When the table needs rehashing I can just remove items one at a time and
@@ -359,8 +359,8 @@ static void hash_double_size(inthash *h)
 // ensure that all the data is still in it, but a further recovery step will
 // be called for. I expect that to be a very rare occurrence.
 
-static bool hash_reinsert(inthash *h, uintptr_t k, uintptr_t v,
-                          uintptr_t &k1, uintptr_t &v1)
+static bool hash_reinsert(inthash *h, std::uintptr_t k, std::uintptr_t v,
+                          std::uintptr_t &k1, std::uintptr_t &v1)
 {
     assert(k != 0);
 // I will allow myself 100 probes while trying to insert. There is nothing
@@ -370,10 +370,10 @@ static bool hash_reinsert(inthash *h, uintptr_t k, uintptr_t v,
 // On even tries I use hash function 1, while on odd ones I use hash function
 // number 2.
     for (int tries=0; tries<100; tries++)
-    {   size_t hx = (tries&1)==0 ? ((h->mult1*k)>>h->shift)*4 :
+    {   std::size_t hx = (tries&1)==0 ? ((h->mult1*k)>>h->shift)*4 :
                     2 + ((h->mult2*k)>>h->shift)*4;
         assert(hx < h->size);
-        uintptr_t kx = h->keys[hx];
+        std::uintptr_t kx = h->keys[hx];
         if (kx == 0)
         {   h->keys[hx] = k;
             if (h->values != NULL) h->values[hx] = v;
@@ -381,13 +381,13 @@ static bool hash_reinsert(inthash *h, uintptr_t k, uintptr_t v,
         }
 // Here the first choice location is busy, so shuffle things to make space.
         assert(hx+1 < h->size);
-        uintptr_t k2 = h->keys[hx+1];
+        std::uintptr_t k2 = h->keys[hx+1];
         h->keys[hx] = k;
         h->keys[hx+1] = kx;
         k = k2;
         if (h->values != NULL)
-        {   uintptr_t vx = h->values[hx];
-            uintptr_t vx2 = h->values[hx+1];
+        {   std::uintptr_t vx = h->values[hx];
+            std::uintptr_t vx2 = h->values[hx+1];
             h->values[hx] = v;
             h->values[hx+1] = vx;
             v = vx2;
@@ -408,11 +408,11 @@ static bool hash_reinsert(inthash *h, uintptr_t k, uintptr_t v,
 // recovery is needed.
 
 static bool hash_rehash(inthash *h)
-{   for (size_t i=0; i<h->size; i++)
-    {   uintptr_t k = h->keys[i]; // the key I am moving
+{   for (std::size_t i=0; i<h->size; i++)
+    {   std::uintptr_t k = h->keys[i]; // the key I am moving
         if (k == 0) continue;
-        uintptr_t v = h->values==NULL ? 0 : h->values[i]; // value
-        uintptr_t k1, v1;
+        std::uintptr_t v = h->values==NULL ? 0 : h->values[i]; // value
+        std::uintptr_t k1, v1;
         h->keys[i] = 0;           // empty the slot
         if (hash_reinsert(h, k, v, k1, v1)) continue;
 // hash_reinsert failed, and it will have left the item that it had been
@@ -437,7 +437,7 @@ static bool hash_rehash(inthash *h)
 // The function that inserts into a table returns the location where the
 // item was placed, much like hash_lookup.
 
-size_t hash_insert(inthash *h, uintptr_t key)
+std::size_t hash_insert(inthash *h, std::uintptr_t key)
 {
     assert(key != 0);
 #ifdef VALIDATE
@@ -450,8 +450,8 @@ size_t hash_insert(inthash *h, uintptr_t key)
 // I will start by reproducing the lookup code. This means that if you try
 // to insert something and it is already present nothing will change and you
 // just get handed back the index of where the existing entry is.
-    uintptr_t k = key;
-    size_t hxx = ((h->mult1*k)>>h->shift)*4;
+    std::uintptr_t k = key;
+    std::size_t hxx = ((h->mult1*k)>>h->shift)*4;
     assert(hxx < h->size);
     if (h->keys[hxx] == k)
     {
@@ -467,7 +467,7 @@ size_t hash_insert(inthash *h, uintptr_t key)
 #endif
         return hxx+1;
     }
-    size_t hx2 = 2 + ((h->mult2*k)>>h->shift)*4;
+    std::size_t hx2 = 2 + ((h->mult2*k)>>h->shift)*4;
     assert(hx2 < h->size);
     if (h->keys[hx2] == k)
     {
@@ -487,7 +487,7 @@ size_t hash_insert(inthash *h, uintptr_t key)
     h->count++;
 #ifdef CHECK_INTHASH
     assert(p == NULL);
-    p = (hash_alist *)malloc(sizeof(hash_alist));
+    p = (hash_alist *)std::malloc(sizeof(hash_alist));
     assert(p != NULL);
     p->key = k;
     p->value = 0;
@@ -497,17 +497,17 @@ size_t hash_insert(inthash *h, uintptr_t key)
 // Even though I will not specify a value to go with the key I need to
 // act a bit as if I was, because the shuffling of data to make room for
 // the new key needs to preserve existing stored values.
-    uintptr_t v = 0;
+    std::uintptr_t v = 0;
 // The code to insert is modelled on the code to re-insert, but wrapped in
 // loop that organises recovery after any failure.
 // As before the threshold of 100 probes before declaring failure is
 // arbitrary and should not be very important for performance.
     for (;;)
     {   for (int tries=0; tries<100; tries++)
-        {   size_t hx = (tries&1)==0 ? ((h->mult1*k)>>h->shift)*4 :
+        {   std::size_t hx = (tries&1)==0 ? ((h->mult1*k)>>h->shift)*4 :
                         2 + ((h->mult2*k)>>h->shift)*4;
             assert(hx < h->size);
-            uintptr_t kx = h->keys[hx];
+            std::uintptr_t kx = h->keys[hx];
             if (kx == 0)
             {   h->keys[hx] = k;
                 if (h->values != NULL) h->values[hx] = v;
@@ -515,13 +515,13 @@ size_t hash_insert(inthash *h, uintptr_t key)
             }
 // Here the first choice location is busy, so shuffle things to make space.
             assert(hx+1 < h->size);
-            uintptr_t k2 = h->keys[hx+1];
+            std::uintptr_t k2 = h->keys[hx+1];
             h->keys[hx] = k;
             h->keys[hx+1] = kx;
             k = k2;
             if (h->values != NULL)
-            {   uintptr_t vx = h->values[hx];
-                uintptr_t vx2 = h->values[hx+1];
+            {   std::uintptr_t vx = h->values[hx];
+                std::uintptr_t vx2 = h->values[hx+1];
                 h->values[hx] = v;
                 h->values[hx+1] = vx;
                 v = vx2;
@@ -594,20 +594,20 @@ done:
 #define TESTBITS 8
 #endif
 
-static uintptr_t data[TESTSIZE];
+static std::uintptr_t data[TESTSIZE];
 
 int main(int argc, char *argv[])
-{   clock_t c0 = clock();
+{   std::clock_t c0 = std::clock();
 #ifdef DETERMINISTIC
-    printf("Deterministic seeded with %d\n", DETERMINISTIC);
-    srand(DETERMINISTIC);
+    std::printf("Deterministic seeded with %d\n", DETERMINISTIC);
+    std::srand(DETERMINISTIC);
 #else
-    srand(time(NULL));
+    std::srand(std::time(NULL));
 #endif
     for (int i=0; i<TESTSIZE; i++)
-    {   intptr_t n;
+    {   std::intptr_t n;
     retry:
-        n = 1 + (rand() % 100);
+        n = 1 + (std::rand() % 100);
 #ifdef EXPENSIVE
 // A painfully expensive extra loop to ensure that there are no
 // duplicate keys.
@@ -615,18 +615,18 @@ int main(int argc, char *argv[])
             if (n == data[j]) goto retry;
 #endif // EXPENSIVE
         data[i] = n;
-        printf("data[%d] = %d\n", i, (int)n);
+        std::printf("data[%d] = %d\n", i, (int)n);
     }
-    printf("Random data set up in %.1f seconds\n",
-           (double)(clock()-c0)/CLOCKS_PER_SEC);
+    std::printf("Random data set up in %.1f seconds\n",
+           (double)(std::clock()-c0)/CLOCKS_PER_SEC);
 
     inthash h;
-    c0 = clock();
+    c0 = std::clock();
 // Fill in data TESTCOUNT-1 times...
     for (int tries=0; tries<TESTCOUNT-1; tries++)
     {   hash_init(&h, TESTBITS);
         for (int i=0; i<TESTSIZE; i++)
-        {   size_t hx = hash_insert(&h, data[i]);
+        {   std::size_t hx = hash_insert(&h, data[i]);
             hash_set_value(&h, hx, 0x54321*data[i]);
         }
         hash_finalize(&h);
@@ -635,54 +635,54 @@ int main(int argc, char *argv[])
 // read access.
     hash_init(&h, TESTBITS);
     for (int i=0; i<TESTSIZE; i++)
-    {   size_t hx = hash_insert(&h, data[i]);
+    {   std::size_t hx = hash_insert(&h, data[i]);
         if (h.keys[hx] != data[i])
-        {   printf("Insert returned a bad value %d\n", (int)hx);
+        {   std::printf("Insert returned a bad value %d\n", (int)hx);
             for (int i=0; i<h.size; i++)
-            {   printf("%d   %6lld  %6lld\n", i,
+            {   std::printf("%d   %6lld  %6lld\n", i,
                     (long long int)h.keys[i], (long long int)h.values[i]);
             }
-            exit(1);
+            std::exit(1);
         }
         hash_set_value(&h, hx, data[i]);
     }
-    printf("Hash table created in %.3f microseconds/call\n",
-           1.0e6*(double)(clock()-c0)/CLOCKS_PER_SEC/TESTSIZE/TESTCOUNT);
+    std::printf("Hash table created in %.3f microseconds/call\n",
+           1.0e6*(double)(std::clock()-c0)/CLOCKS_PER_SEC/TESTSIZE/TESTCOUNT);
     if (h.count != TESTSIZE)
-        printf("hash table says it now has %d items in it\n", (int)h.count);
-    printf("h.size = %d\n", (int)h.size);
+        std::printf("hash table says it now has %d items in it\n", (int)h.count);
+    std::printf("h.size = %d\n", (int)h.size);
     for (int i=0; i<h.size; i++)
-    {   printf("%d   %6lld  %6lld\n", i, (long long int)h.keys[i], (long long int)h.values[i]);
+    {   std::printf("%d   %6lld  %6lld\n", i, (long long int)h.keys[i], (long long int)h.values[i]);
     }
-    c0 = clock();
+    c0 = std::clock();
     for (int tries=0; tries<TESTCOUNT; tries++)
         for (int i=0; i<TESTSIZE; i++)
-        {   size_t hx;
+        {   std::size_t hx;
             long long int r;
-            if ((hx = hash_lookup(&h, data[i])) == (size_t)(-1))
-                printf("Item number %d not found in table\n", i);
+            if ((hx = hash_lookup(&h, data[i])) == (std::size_t)(-1))
+                std::printf("Item number %d not found in table\n", i);
             if ((r = hash_get_value(&h, hx)) != data[i])
-            {   printf("%llx at position %lld\n", (long long int)data[i], (long long int)hx);
-                printf("Got %llx should be %llx\n", r, (long long int)0x54321*data[i]);
-                exit(1);
+            {   std::printf("%llx at position %lld\n", (long long int)data[i], (long long int)hx);
+                std::printf("Got %llx should be %llx\n", r, (long long int)0x54321*data[i]);
+                std::exit(1);
             }
         }
-    printf("Hash table lookup in %.3f microseconds/call\n",
-           1.0e6*(double)(clock()-c0)/CLOCKS_PER_SEC/TESTSIZE/TESTCOUNT);
-    printf("Average %.2f multiplier changes per %d inserts\n",
+    std::printf("Hash table lookup in %.3f microseconds/call\n",
+           1.0e6*(double)(std::clock()-c0)/CLOCKS_PER_SEC/TESTSIZE/TESTCOUNT);
+    std::printf("Average %.2f multiplier changes per %d inserts\n",
            (double)multiplier_change/TESTCOUNT, TESTSIZE);
     if (multiplier_change != 0)
-    {   printf("Average occupancy = %.3f at change point\n",
+    {   std::printf("Average occupancy = %.3f at change point\n",
                (double)count_multiplier_change/(double)size_multiplier_change);
     }
-    printf("Average %.2f size doublings per %d inserts\n",
+    std::printf("Average %.2f size doublings per %d inserts\n",
            (double)size_double/TESTCOUNT, TESTSIZE);
-    printf("Final table size = %d occupancy = %.3f%%\n",
+    std::printf("Final table size = %d occupancy = %.3f%%\n",
            (int)h.size, 100.0*(double)h.count/(double)h.size);
-    printf("Average occupancy = %.2f%% at doubling point\n",
+    std::printf("Average occupancy = %.2f%% at doubling point\n",
            100.0*(double)count_size_double/(double)size_size_double);
     hash_finalize(&h);
-    printf("End of tests\n");
+    std::printf("End of tests\n");
     return 0;
 }
 

@@ -54,10 +54,10 @@
 #ifndef header_fwin_h
 #define header_fwin_h 1
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <signal.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstdlib>
+#include <csignal>
 
 //
 // Logging support, only enabled in debug mode.
@@ -190,7 +190,7 @@ extern void fwin_puts(const char *s);
 extern void fwin_showmath(const char *s);
 
 extern void fwin_printf(const char *fmt, ...);
-extern void fwin_vfprintf(const char *fmt, va_list a);
+extern void fwin_vfprintf(const char *fmt, std::va_list a);
 
 //
 // fwin_linelength holds the number of normal-sized (ie the basic
@@ -460,7 +460,7 @@ extern int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_m
 
 extern bool fwin_use_xft;
 
-extern bool directoryp(char *f, const char *o, size_t n);
+extern bool directoryp(char *f, const char *o, std::size_t n);
 
 extern bool using_termed;
 
@@ -477,16 +477,16 @@ extern void sigint_handler(int signo);
 extern int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main);
 extern char fwin_prompt_string[MAX_PROMPT_LENGTH];
 
-extern int get_current_directory(char *s, size_t n);
-extern bool file_readable(char *filename, const char *old, size_t n);
-extern bool file_writeable(char *filename, const char *old, size_t n);
-extern bool file_executable(char *filename, const char *old, size_t n);
-extern int rename_file(char *from_name, const char *from_old, size_t from_size,
-                char *to_name, const char *to_old, size_t to_size);
-extern int get_home_directory(char *b, size_t len);
-extern int get_users_home_directory(char *b, size_t len);
+extern int get_current_directory(char *s, std::size_t n);
+extern bool file_readable(char *filename, const char *old, std::size_t n);
+extern bool file_writeable(char *filename, const char *old, std::size_t n);
+extern bool file_executable(char *filename, const char *old, std::size_t n);
+extern int rename_file(char *from_name, const char *from_old, std::size_t from_size,
+                char *to_name, const char *to_old, std::size_t to_size);
+extern int get_home_directory(char *b, std::size_t len);
+extern int get_users_home_directory(char *b, std::size_t len);
 extern int my_system(const char *s);
-extern int truncate_file(FILE *f, long int where);
+extern int truncate_file(std::FILE *f, long int where);
 
 
 #endif // header_fwin_h

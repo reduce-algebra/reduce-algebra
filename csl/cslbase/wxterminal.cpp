@@ -95,7 +95,7 @@ static Display *dpy;
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else
-extern char *getcwd(char *s, size_t n);
+extern char *getcwd(char *s, std::size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -131,7 +131,7 @@ static int returncode = 0;
 
 // See cmtt_coverage lower down in this code
 
-extern uint32_t cmtt_coverage[];
+extern std::uint32_t cmtt_coverage[];
 
 #define CMTT_AVAIL(ch)    \
     ((ch) <= 0xffff &&    \
@@ -403,13 +403,13 @@ public:
     int inputBufferP;
     unsigned char *inputBuffer;
     int awaiting;
-    uint32_t unicodePrompt[MAX_PROMPT_LENGTH];
+    std::uint32_t unicodePrompt[MAX_PROMPT_LENGTH];
     int unicodePromptLength;
     int promptEnd;
 
     int recently_flushed;
 
-    FILE *logfile;
+    std::FILE *logfile;
 
 // I make these two public because the surrounding fwinFrame touches them.
     bool firstPaint;
@@ -444,7 +444,7 @@ private:
 // character stored. Ie it is zero if the buffer is empty.
 // caretPos is between zero and textEnd (inclusive) and denotes a position
 // between two characters where insertion might happen.
-    uint32_t *textBuffer;
+    std::uint32_t *textBuffer;
 // Only the bottom 21 bits are genuine character data...
 #define TXT(n) (textBuffer[n] & 0x001fffff)
     int textBufferSize;
@@ -461,7 +461,7 @@ private:
     wxCaret *caret;
     int caretPos;
     void repositionCaret(int w=0, int r=0, int c=0);
-    int32_t locateChar(int p, int w=0, int r=0, int c=0);
+    std::int32_t locateChar(int p, int w=0, int r=0, int c=0);
 // The result handed back by locateChar is a packed (row,column) pair.
 // It indicates the location the character would start on the screen apart
 // from any line-wrap it might trigger.
@@ -486,23 +486,23 @@ private:
 #define FLAG_TIP     2
 
 #define TYPEAHEAD_SIZE 100
-    uint32_t ahead_buffer[TYPEAHEAD_SIZE];
+    std::uint32_t ahead_buffer[TYPEAHEAD_SIZE];
     int type_in, type_out;
 
-    void type_ahead(uint32_t c);
+    void type_ahead(std::uint32_t c);
     int searchFlags;
 #define SEARCH_LENGTH    (searchFlags & 0xff)
 #define SEARCH_FORWARD   0x100
 #define SEARCH_BACKWARD  0x200
-    uint32_t searchString[256];
+    std::uint32_t searchString[256];
     int searchStack[256];
     int startMatch;
 
     void beep();
-    void insertChar(uint32_t ch);
+    void insertChar(std::uint32_t ch);
     void insertString(wxString s);
-    void insertChars(uint32_t *s, int len);
-    void replaceChars(uint32_t *s, int len);
+    void insertChars(std::uint32_t *s, int len);
+    void replaceChars(std::uint32_t *s, int len);
     void deleteChars(int len);
     void insertNewline();
     void deleteForwards(int n);
@@ -567,7 +567,7 @@ private:
     void interrupt();
     void displayBacktrace();
 
-    int unpackUTF8chars(uint32_t *u, const char *s, int n);
+    int unpackUTF8chars(std::uint32_t *u, const char *s, int n);
 
     int MapChar(int c);      // map from TeX character code to BaKoMa+ one
 
@@ -767,7 +767,7 @@ void fwinText::OnWorkerFinished(wxThreadEvent& event)
     FWIN_LOG("worker thread terminated\n");
 // In which case quit!
     Destroy();
-    exit(returncode);
+    std::exit(returncode);
 }
 
 
@@ -781,7 +781,7 @@ wxThread::ExitCode fwinWorker::Entry()
              rc, pause_on_exit);
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, WORKER_FINISHED);
     wxQueueEvent(panel, event);
-    return (wxThread::ExitCode)(intptr_t)rc;
+    return (wxThread::ExitCode)(std::intptr_t)rc;
 }
 
 int get_current_directory(char *s, int n)
@@ -794,7 +794,7 @@ int get_current_directory(char *s, int n)
     default:     return -4;
         }
     }
-    else return strlen(s);
+    else return std::strlen(s);
 }
 
 // Some characters map onto double-width symbols from the CJK fonts, while
@@ -818,7 +818,7 @@ int get_current_directory(char *s, int n)
 // using a jiffy Java program, and at present related to the 0.6.3a version
 // of the font concerned.
 
-uint32_t cmtt_coverage[2048] = {
+std::uint32_t cmtt_coverage[2048] = {
     0x00640000, 0xffffffff, 0xffffffff, 0xfffffffe,
     0x00000000, 0xffffffff, 0xffffffff, 0xffffffff,
     0xffffffff, 0xcdfcfc66, 0x79bffcff, 0xfcffcfff,
@@ -1537,7 +1537,7 @@ fwinText::fwinText(fwinFrame *parent)
 // generous to me. The plan is that the buffer will automatically expand
 // as needed.
     textBufferSize = 40000;
-    textBuffer = (uint32_t *)malloc(textBufferSize*sizeof(uint32_t));
+    textBuffer = (std::uint32_t *)std::malloc(textBufferSize*sizeof(std::uint32_t));
     textEnd = 0;
     searchFlags = 0;
     caret = NULL;
@@ -1554,7 +1554,7 @@ fwinText::fwinText(fwinFrame *parent)
     use_buffer1 = 1;
 
     inputBufferSize = INITIAL_INPUT_BUFFER_SIZE;
-    inputBuffer = (unsigned char *)malloc(inputBufferSize);
+    inputBuffer = (unsigned char *)std::malloc(inputBufferSize);
     inputBufferP = inputBufferLen = 0;
     awaiting = 0;
     unicodePrompt[0] = '>' | 0x02000000;
@@ -1670,9 +1670,9 @@ void fwinText::capitalize()
     if (we > ws + 63) we = ws + 63;
     extractText(wordbuffer, ws, we-ws);
     int i;
-    wordbuffer[0] = toupper(wordbuffer[0]);
+    wordbuffer[0] = std::toupper(wordbuffer[0]);
     for (i=1; i<we-ws; i++)
-        wordbuffer[i] = tolower(wordbuffer[i]);
+        wordbuffer[i] = std::tolower(wordbuffer[i]);
     replaceStyledText(ws, we-ws, wordbuffer, we-ws, STYLE_INPUT);
     setCaretPos(cp);
     makePositionVisible(cp);
@@ -1826,7 +1826,7 @@ void fwinText::lowerCase()
     extractText(wordbuffer, ws, we-ws);
     int i;
     for (i=0; i<we-ws; i++)
-        wordbuffer[i] = tolower(wordbuffer[i]);
+        wordbuffer[i] = std::tolower(wordbuffer[i]);
     replaceStyledText(ws, we-ws, wordbuffer, we-ws, STYLE_INPUT);
     setCaretPos(cp);
     makePositionVisible(cp);
@@ -2046,7 +2046,7 @@ void fwinText::upperCase()
     extractText(wordbuffer, ws, we-ws);
     int i;
     for (i=0; i<we-ws; i++)
-        wordbuffer[i] = toupper(wordbuffer[i]);
+        wordbuffer[i] = std::toupper(wordbuffer[i]);
     replaceStyledText(ws, we-ws, wordbuffer, we-ws, STYLE_INPUT);
     setCaretPos(cp);
     makePositionVisible(cp);
@@ -2157,7 +2157,7 @@ void fwinText::insertNewline()
         FWIN_LOG("Move char %x (%c) to posn %d in inputBuffer\n", c, c, n);
         if (n > inputBufferSize - 5)
         {   inputBufferSize = (4*inputBufferSize)/3;
-            inputBuffer = (unsigned char *)realloc(inputBuffer, inputBufferSize);
+            inputBuffer = (unsigned char *)std::realloc(inputBuffer, inputBufferSize);
         }
         n += utf_encode(&inputBuffer[n], c);
     }
@@ -2181,7 +2181,7 @@ void fwinText::insertNewline()
 }
 
 
-int32_t fwinText::locateChar(int p, int w, int r, int c)
+std::int32_t fwinText::locateChar(int p, int w, int r, int c)
 {
 // Normally call as locateChar(p, 0, 0, 0) but the final 3
 // args are to allow resumption after a previous call.
@@ -2207,7 +2207,7 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
 // arrange an index that lets me skip lines or rows fast.
     if (w == -1) w = 0;
     while (w != p)
-    {   uint32_t ch = TXT(w);
+    {   std::uint32_t ch = TXT(w);
         int wide = double_width(ch);
 // The characters processed within this loop are all BEFORE the one I am
 // interested in, and so I process tabs, newlines and line-wrap.
@@ -2236,22 +2236,22 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
     return PACK(r, c);
 }
 
-void fwinText::insertChar(uint32_t ch)
+void fwinText::insertChar(std::uint32_t ch)
 {
     insertChars(&ch, 1);
 }
 
 void fwinText::insertString(wxString s)
 {
-    size_t n = s.Len();
+    std::size_t n = s.Len();
 // insertString has a LIMITED capability as regarsd the string length.
 // it is probably onnly really intended for debugging use.
     if (n > 100)
     {   FWIN_LOG("Truncating in insertString\n");
         n = 100;
     }
-    uint32_t b[100];
-    for (size_t i=0; i<n; i++) b[i] = s.GetChar(i);
+    std::uint32_t b[100];
+    for (std::size_t i=0; i<n; i++) b[i] = s.GetChar(i);
     insertChars(b, (int)n);
 }
 
@@ -2265,16 +2265,16 @@ void fwinText::insertString(wxString s)
 // both insert and replace will move the caret to a position after the
 // new material.
 
-void fwinText::insertChars(uint32_t *pch, int n)
+void fwinText::insertChars(std::uint32_t *pch, int n)
 {
-    int32_t loc1 = locateChar(caretPos);
+    std::int32_t loc1 = locateChar(caretPos);
     int r1 = ROW(loc1), c1 = COL(loc1);
 // I find the location of the end of the line that the character I am
 // about to insert will be on.
     int lineEnd = caretPos;
     while (lineEnd < textEnd && TXT(lineEnd) != '\n')
         lineEnd++;
-    int32_t loc2 = locateChar(lineEnd, caretPos, r1, c1);
+    std::int32_t loc2 = locateChar(lineEnd, caretPos, r1, c1);
     int r2 = ROW(loc2);
     int p = textEnd+n;
     if (p >= textBufferSize) enlargeTextBuffer();
@@ -2292,7 +2292,7 @@ void fwinText::insertChars(uint32_t *pch, int n)
     for (int i=0; i<n; i++) textBuffer[caretPos+i] = pch[i];
 // After inserting the character I look to find where the end of the
 // line that it is on has moved to.
-    int32_t loc3 = locateChar(lineEnd+n, caretPos, r1, c1);
+    std::int32_t loc3 = locateChar(lineEnd+n, caretPos, r1, c1);
     int r3 = ROW(loc3), c3 = COL(loc3);;
     caretPos += n;
     textEnd += n;
@@ -2331,19 +2331,19 @@ void fwinText::insertChars(uint32_t *pch, int n)
     }
 }
 
-void fwinText::replaceChars(uint32_t *pch, int n)
+void fwinText::replaceChars(std::uint32_t *pch, int n)
 {
 }
 
 void fwinText::deleteChars(int n)
 {
-    int32_t loc1 = locateChar(caretPos);
+    std::int32_t loc1 = locateChar(caretPos);
     int r1 = ROW(loc1), c1 = COL(loc1);
     int eol = caretPos+n;
 // Find the line-end just beyond all the deleted characters.
 // to the end of the line that the caret is on fall.
     while (eol < textEnd && TXT(eol) != '\n') eol++;
-    int32_t loc2 = locateChar(eol, caretPos, r1, c1);
+    std::int32_t loc2 = locateChar(eol, caretPos, r1, c1);
     int r2 = ROW(loc2), c2 = COL(loc2);
     int w = caretPos;
     while (w <= textEnd-n)
@@ -2352,7 +2352,7 @@ void fwinText::deleteChars(int n)
     }
     textEnd -= n;
     eol -= n;
-    int32_t loc3 = locateChar(eol, caretPos, r1, c1);
+    std::int32_t loc3 = locateChar(eol, caretPos, r1, c1);
     int r3 = ROW(loc3);
 // Apply scroll adjustment. Since I never scroll horizontally the x coordinate
 // is not an issue.
@@ -2389,7 +2389,7 @@ void fwinText::deleteChars(int n)
 
 void fwinText::makePositionVisible(int p)
 {
-    int32_t loc = locateChar(p);
+    std::int32_t loc = locateChar(p);
     int r = ROW(loc);
     int x, y;
     CalcScrolledPosition(0, r*rowHeight, &x, &y);
@@ -2429,7 +2429,7 @@ void fwinText::unicodeInput()
 // table of character names that are recognised - it is set of entity
 // names from HTML.
     wchar_t buffer[64];
-    uint32_t replacement[16];
+    std::uint32_t replacement[16];
     if (caretPos == 0)
     {   beep();
         return;
@@ -2480,7 +2480,7 @@ void fwinText::ctrlXcommand()
     int i = 0;
     const char *s;
     insertString("\n");
-    uint32_t buffer[100];
+    std::uint32_t buffer[100];
     while ((s = p->name) != NULL)
     {   int j = 0;
         char h[8];
@@ -2492,7 +2492,7 @@ void fwinText::ctrlXcommand()
         while (j < 8) buffer[i++] = ' ', j++;
         buffer[i++] = p->code | 0x01000000;
         buffer[i++] = ' ';
-        sprintf(h, "%.4x", p->code);
+        std::sprintf(h, "%.4x", p->code);
         buffer[i++] = h[0];
         buffer[i++] = h[1];
         buffer[i++] = h[2];
@@ -2589,7 +2589,7 @@ void fwinText::copyWordPrev()
 
 
 
-void fwinText::type_ahead(uint32_t c)
+void fwinText::type_ahead(std::uint32_t c)
 {
 #ifdef RECONSTRUCTED
 #endif
@@ -2705,7 +2705,7 @@ void fwinFrame::CloseAction()
     }
 // Now I can close myself down too.
     Destroy();
-    exit(0);
+    std::exit(0);
 }
 
 void fwinFrame::OnClose(wxCloseEvent &event)
@@ -2754,8 +2754,8 @@ void fwinText::enlargeTextBuffer()
 {
     textBufferSize *= 2;
     textBuffer =
-        (uint32_t *)realloc(textBuffer, textBufferSize*sizeof(uint32_t));
-    if (textBuffer == NULL) exit(1); // Abrupt collapse on no memory.
+        (std::uint32_t *)std::realloc(textBuffer, textBufferSize*sizeof(std::uint32_t));
+    if (textBuffer == NULL) std::exit(1); // Abrupt collapse on no memory.
 }
 
 // Now I have handlers for the menu items used here...
@@ -3010,9 +3010,9 @@ void fwinText::OnHelpHelp()
 
 void fwinText::OnKeyDown(wxKeyEvent &event)
 {
-    uint32_t c = event.GetUnicodeKey();
-    uint32_t r = event.GetKeyCode();
-    uint32_t m = event.GetModifiers();
+    std::uint32_t c = event.GetUnicodeKey();
+    std::uint32_t r = event.GetKeyCode();
+    std::uint32_t m = event.GetModifiers();
 //-    FWIN_LOG("SHIFT=%x ALT=%x META=%x CONTROL=%x\n",
 //-       wxMOD_SHIFT, wxMOD_ALT, wxMOD_META, wxMOD_CONTROL);
 //-    FWIN_LOG("KeyDown raw:%x unicode:%x modifiers:%x\n", r, c, m);
@@ -3058,8 +3058,8 @@ void fwinText::OnKeyDown(wxKeyEvent &event)
 
 void fwinText::OnChar(wxKeyEvent &event)
 {
-    uint32_t c = event.GetUnicodeKey();
-    uint32_t r = event.GetKeyCode();
+    std::uint32_t c = event.GetUnicodeKey();
+    std::uint32_t r = event.GetKeyCode();
     int m = event.GetModifiers(); // wxMOD_ALT, wxMOD_SHIFT, wxMOD_CMD
                                   // Also ALTGR, META, WIN, CONTROL that
                                   // I will not use.
@@ -3878,23 +3878,23 @@ void fwinText::historyEnd()
 {
     int i;
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
-    {   if (input_history[i] != NULL) free(input_history[i]);
+    {   if (input_history[i] != NULL) std::free(input_history[i]);
     }
 }
 
 void fwinText::historyAdd(unsigned char *s, int n)
 {
 /* Make a copy of the input string... */
-    size_t size = sizeof(char)*(n + 1);
-    unsigned char *scopy = (unsigned char *)malloc(size);
+    std::size_t size = sizeof(char)*(n + 1);
+    unsigned char *scopy = (unsigned char *)std::malloc(size);
     int p = historyNextEntry % INPUT_HISTORY_SIZE;
 /* If malloc returns NULL I just store an empty history entry. */
-    if (scopy != NULL) memcpy(scopy, s, size);
+    if (scopy != NULL) std::memcpy(scopy, s, size);
 /*
  * I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
  * entries.
  */
-    if (input_history[p] != NULL) free(input_history[p]);
+    if (input_history[p] != NULL) std::free(input_history[p]);
     input_history[p] = scopy;
     historyNextEntry++;
     if (scopy != NULL)
@@ -3935,7 +3935,7 @@ void fwinText::OnSetFocus(wxFocusEvent &event)
 
 void fwinText::repositionCaret(int w, int r, int c)
 {
-    int32_t caretCell = locateChar(caretPos, w, r, c);
+    std::int32_t caretCell = locateChar(caretPos, w, r, c);
     if (caretCell < 0) while (caret->IsVisible()) caret->Hide();
     else
     {   int r = ROW(caretCell), c = COL(caretCell);
@@ -3971,13 +3971,13 @@ void fwinText::OnToScreen(wxThreadEvent& event)
     insertString(text);
 }
 
-int fwinText::unpackUTF8chars(uint32_t *u, const char *s, int ends)
+int fwinText::unpackUTF8chars(std::uint32_t *u, const char *s, int ends)
 {
     int k = 0;
     int n = 0, state = 0;
-    uint32_t uc = 0;    // Unicode char that is being reconstructed.
+    std::uint32_t uc = 0;    // Unicode char that is being reconstructed.
     while (k != ends)
-    {   uint32_t c = s[k] & 0xff;
+    {   std::uint32_t c = s[k] & 0xff;
         k++;
         switch (state)
         {
@@ -4021,7 +4021,7 @@ void fwinText::OnSetPrompt(wxThreadEvent& event)
     FWIN_LOG("OnSetPrompt %s\n", fwin_prompt_string);
     unicodePromptLength = unpackUTF8chars(&unicodePrompt[0],
                                           &fwin_prompt_string[0],
-                                          strlen(fwin_prompt_string));
+                                          std::strlen(fwin_prompt_string));
     for (int i=0; i<unicodePromptLength; i++)
         unicodePrompt[i] |= 0x02000000;   // force prompt into BLUE
     writing.Post();
@@ -4074,7 +4074,7 @@ void fwinText::OnFlushBuffer2(wxThreadEvent& event)
 void fwinText::OnFlushBuffer(const char *fwin_buffer)
 {
     recently_flushed = 0;
-    uint32_t wideBuffer[FWIN_BUFFER_SIZE];
+    std::uint32_t wideBuffer[FWIN_BUFFER_SIZE];
     int n = unpackUTF8chars(&wideBuffer[0], fwin_buffer, fwin_out);
     insertChars(&wideBuffer[0], n);
     int p = textEnd;
@@ -4150,10 +4150,10 @@ void fwinText::SetupFonts(wxDC &dc)
         fixedCJK->SetPointSize(1000);
         font_width *p = cm_font_width;
         while (p->name != NULL &&
-               strcmp(p->name, "cmtt10") != 0) p++;
+               std::strcmp(p->name, "cmtt10") != 0) p++;
         if (p->name == NULL)
         {   FWIN_LOG("Oops - font data not found\n");
-            exit(1);
+            std::exit(1);
         }
         wxCoord width, height, depth, leading;
         dc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
@@ -4251,7 +4251,7 @@ int fwinText::SkipTextRow(int p)
 {
     int col = 0;
     while (p < textEnd)
-    {   uint32_t ch = TXT(p++);
+    {   std::uint32_t ch = TXT(p++);
         if (ch == '\n') return p;
 // a TAB can take you exactly up to column 80 but never over it. But a wide
 // character in column 79 could trigger a wrap.
@@ -4272,8 +4272,8 @@ int fwinText::DrawTextRow(wxDC &dc, int y, int p)
 {
     int col = 0;
     while (p < textEnd)
-    {   uint32_t ch = textBuffer[p++];
-        uint32_t flags = ch & ~0x001fffff;
+    {   std::uint32_t ch = textBuffer[p++];
+        std::uint32_t flags = ch & ~0x001fffff;
         ch &= 0x001fffff;
         if (ch == '\n') return p;
 // a TAB can take you exactly up to column 80 but never over it. But a wide
@@ -4417,7 +4417,7 @@ void fwin_exit(int return_code)
     {   returncode = return_code;
         panel->frame->worker->DoExit();
     }
-    else exit(return_code);
+    else std::exit(return_code);
 }
 
 void fwin_abrupt_exit()
@@ -4429,7 +4429,7 @@ void fwin_abrupt_exit()
     {   returncode = 0;
         panel->frame->worker->DoExit();
     }
-    else exit(0);
+    else std::exit(0);
 }
 
 
@@ -4472,7 +4472,7 @@ static void flush_line_buffer()
 {
     if (line_buffer_p != 0)
     {   line_buffer[line_buffer_p] = 0;
-        fputs(line_buffer, stdout);
+        std::fputs(line_buffer, stdout);
         line_buffer_p = 0;
     }
 }
@@ -4488,7 +4488,7 @@ void fwin_putchar(int c)
             flush_line_buffer();
         line_buffer[line_buffer_p++] = c;
 #else
-        putchar(c);
+        std::putchar(c);
 #endif
         return;
     }
@@ -4502,8 +4502,8 @@ void fwin_putchar(int c)
         panel->fwin_buffer1[in] = c;
     else panel->fwin_buffer2[in] = c;
     panel->fwin_in = in+1;
-    FILE *f = panel->logfile;
-    if (f != NULL) putc(c, f);
+    std::FILE *f = panel->logfile;
+    if (f != NULL) std::putc(c, f);
 }
 
 void fwin_putcode(int c)
@@ -4540,11 +4540,11 @@ void fwin_puts(const char *s)
 #ifdef RAW_CYGWIN
         while (*s != 0) fwin_putchar(*s++);
 #else
-        puts(s);
+        std::puts(s);
 #endif
         return;
     }
-    int len = strlen(s);
+    int len = std::strlen(s);
     FWIN_LOG("fwin_puts(\"%s\")\n", s);
     char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
     int in = panel->fwin_in;
@@ -4574,9 +4574,9 @@ void fwin_puts(const char *s)
 // only using UTF-8 up as far as being able to cope with 21-bit codes.
             while ((s[n] & 0xc0) == 0x80) n--;
         }
-        memcpy(&b[panel->fwin_in], s, n);
-        FILE *f = panel->logfile;
-        if (f != NULL) fwrite(s, 1, n, f);
+        std::memcpy(&b[panel->fwin_in], s, n);
+        std::FILE *f = panel->logfile;
+        if (f != NULL) std::fwrite(s, 1, n, f);
         panel->fwin_in += n;
         s += n;
         len -= n;
@@ -4586,7 +4586,7 @@ void fwin_puts(const char *s)
 
 void fwin_printf(const char *fmt, ...)
 {
-    va_list a;
+    std::va_list a;
     va_start(a, fmt);
     if (!windowed)
     {
@@ -4596,10 +4596,10 @@ void fwin_printf(const char *fmt, ...)
 #ifdef RAW_CYGWIN
 // NOT reconstructed yet: in the raw cygwin you may get line-ends that
 // are mere LF where I possibly really wanted CR-LF combinations.
-        vfprintf(stdout, fmt, a);
+        std::vfprintf(stdout, fmt, a);
         va_end(a);
 #else
-        vfprintf(stdout, fmt, a);
+        std::vfprintf(stdout, fmt, a);
         va_end(a);
 #endif
         return;
@@ -4611,23 +4611,23 @@ void fwin_printf(const char *fmt, ...)
     char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
     int in = panel->fwin_in;
 #ifdef HAVE_VSNPRINTF
-    vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
+    std::vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
 #else
 // In this case I have no protection againt buffer overflow. However I
 // now really expect most C/C++ implementations to provide vsnprintf.
-    vsprintf(&b[in], fmt, a);
+    std::vsprintf(&b[in], fmt, a);
 #endif
 // Cautious about portability and old libraries, and aware of values that
 // vsnprintf may return when the data does not fit, I ignore the values
 // of the above functions and adjust the data pointers by hand.
-    int n = strlen(&b[in]);
-    FILE *f = panel->logfile;
-    if (f != NULL) fwrite(&b[in], 1, n, f);
+    int n = std::strlen(&b[in]);
+    std::FILE *f = panel->logfile;
+    if (f != NULL) std::fwrite(&b[in], 1, n, f);
     panel->fwin_in = in + n;
     va_end(a);
 }
 
-void fwin_vfprintf(const char *fmt, va_list a)
+void fwin_vfprintf(const char *fmt, std::va_list a)
 {
     if (!windowed)
     {
@@ -4639,9 +4639,9 @@ void fwin_vfprintf(const char *fmt, va_list a)
 // to be terribly useful (since that will represent and X11 GUI running on
 // Windows rather than the native one) so I do not treat this as high
 // priority.
-        vfprintf(stdout, fmt, a);
+        std::vfprintf(stdout, fmt, a);
 #else
-        vfprintf(stdout, fmt, a);
+        std::vfprintf(stdout, fmt, a);
 #endif
         return;
     }
@@ -4652,13 +4652,13 @@ void fwin_vfprintf(const char *fmt, va_list a)
     char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
     int in = panel->fwin_in;
 #ifdef HAVE_VSNPRINTF
-    vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
+    std::vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
 #else
-    vsprintf(&b[in], fmt, a);
+    std::vsprintf(&b[in], fmt, a);
 #endif
-    int n = strlen(&b[in]);
-    FILE *f = panel->logfile;
-    if (f != NULL) fwrite(&b[in], 1, n, f);
+    int n = std::strlen(&b[in]);
+    std::FILE *f = panel->logfile;
+    if (f != NULL) std::fwrite(&b[in], 1, n, f);
     panel->fwin_in += n;
 }
 
@@ -4678,7 +4678,7 @@ void fwin_ensure_screen()
 #ifdef WIN32
         flush_line_buffer();
 #endif
-        fflush(stdout);
+        std::fflush(stdout);
         return;
     }
     if (panel->fwin_in == 0) return;
@@ -4751,11 +4751,11 @@ int fwin_getchar()
 // entered starting with the text "load_package" (possibly with some
 // whitespace first) I make a callback to review_switch_settings fairly
 // soon.
-    while (n>0 && isspace(*p))
+    while (n>0 && std::isspace(*p))
     {   n--;
         p++;
     }
-    if (n>12 && strncmp((const char *)p, (const char *)"load_package", 12) == 0)
+    if (n>12 && std::strncmp((const char *)p, (const char *)"load_package", 12) == 0)
         update_next_time = 1;
     int ch = panel->inputBuffer[panel->inputBufferP++];
 // Note that a Ctrl-D as the VERY FIRST character in the buffer is treated
@@ -4768,7 +4768,7 @@ int fwin_getchar()
 
 void fwin_set_prompt(const char *s)
 {
-    strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
+    std::strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
     fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
     if (!windowed) return;
     panel->writing.Wait();
@@ -4815,16 +4815,16 @@ static void rewrite_title_bar()
 {
 // Just at present this does not cope with cases where the width of the window
 // has been changed...
-    int ll = strlen(left_stuff),
-        lm = strlen(mid_stuff),
-        lr = strlen(right_stuff);
+    int ll = std::strlen(left_stuff),
+        lm = std::strlen(mid_stuff),
+        lr = std::strlen(right_stuff);
     int i, j;
     for (i=0; i<80; i++) full_title[i] = SPACER_CHAR;
-    strncpy(full_title, left_stuff, ll);
-    j = 80 - strlen(right_stuff);
-    strncpy(&full_title[j], right_stuff, lr);
+    std::strncpy(full_title, left_stuff, ll);
+    j = 80 - std::strlen(right_stuff);
+    std::strncpy(&full_title[j], right_stuff, lr);
     j = 40-(lm/2);
-    strncpy(&full_title[j], mid_stuff, lm);
+    std::strncpy(&full_title[j], mid_stuff, lm);
     full_title[80] = 0;
 #ifdef RECONSTRUCTED
     wake_up_terminal(FXTerminal::REFRESH_TITLE);
@@ -4850,7 +4850,7 @@ void fwin_acknowledge_tick()
 void fwin_report_left(const char *msg)
 {
     if (!windowed) return;
-    strncpy(left_stuff, msg, 31);
+    std::strncpy(left_stuff, msg, 31);
     left_stuff[31] = 0;
 #ifdef RECONSTRUCTED
     rewrite_title_bar();
@@ -4860,7 +4860,7 @@ void fwin_report_left(const char *msg)
 void fwin_report_mid(const char *msg)
 {
     if (!windowed) return;
-    strncpy(mid_stuff, msg, 31);
+    std::strncpy(mid_stuff, msg, 31);
     mid_stuff[31] = 0;
 #ifdef RECONSTRUCTED
     rewrite_title_bar();
@@ -4870,7 +4870,7 @@ void fwin_report_mid(const char *msg)
 void fwin_report_right(const char *msg)
 {
     if (!windowed) return;
-    strncpy(right_stuff, msg, 31);
+    std::strncpy(right_stuff, msg, 31);
     right_stuff[31] = 0;
 #ifdef RECONSTRUCTED
     rewrite_title_bar();
@@ -4881,8 +4881,8 @@ void fwin_set_help_file(const char *key, const char *path)
 {
     if (!windowed) return;
 #ifdef RECONSTRUCTED
-    printf("fwin_set_help_file called\n");
-    fflush(stdout);
+    std::printf("fwin_set_help_file called\n");
+    std::fflush(stdout);
 #endif
 }
 

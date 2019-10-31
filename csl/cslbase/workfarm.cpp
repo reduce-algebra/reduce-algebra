@@ -117,7 +117,7 @@ static int number_of_processors()
 #else // sysconf option to check CPU count
 
 static int number_of_processors()
-{   printf("_SC_NPROCESSORS_CONF not defined\n");
+{   std::printf("_SC_NPROCESSORS_CONF not defined\n");
     return 1;
 }
 
@@ -148,8 +148,8 @@ int get_next_instance()
 void set_result_if_better(int n, int r)
 {   LOCKMUTEX;
     if (r > result2)
-    {   printf("New record of %d : %d found\n", n, r);
-        fflush(stdout);
+    {   std::printf("New record of %d : %d found\n", n, r);
+        std::fflush(stdout);
         result1 = n;
         result2 = r;
     }
@@ -184,12 +184,12 @@ THREADRESULT_T threadwork(void *arg)
 }
 
 THREADRESULT_T threadnowork(void *arg)
-{   char *w = (char *)malloc(10000);
+{   char *w = (char *)std::malloc(10000);
     if (w == NULL)
-    {   printf("Disaster\n");
-        exit(1);
+    {   std::printf("Disaster\n");
+        std::exit(1);
     }
-    free(w);
+    std::free(w);
     return THREADRESULT;
 }
 
@@ -197,42 +197,42 @@ THREADRESULT_T threadnowork(void *arg)
 int main(int argc, char *argv[])
 {   int i;
     int cpu_count = number_of_processors();
-    printf("I seem to have %d processors\n", cpu_count);
+    std::printf("I seem to have %d processors\n", cpu_count);
     if (cpu_count > MAX_CPU_COUNT) cpu_count = MAX_CPU_COUNT;
 
     for (i=0; i<1000000; i++)
-    {   if (i % 100000 == 0) printf("i = %d\n", i), fflush(stdout);
+    {   if (i % 100000 == 0) std::printf("i = %d\n", i), std::fflush(stdout);
         if (CREATETHREAD_FAILED(1, threadnowork))
-        {   printf("Failed to create at %d\n", i);
-            exit(1);
+        {   std::printf("Failed to create at %d\n", i);
+            std::exit(1);
         }
         if (JOINTHREAD_FAILED(1))
-        {   printf("Failed to join at %d\n", i);
-            exit(1);
+        {   std::printf("Failed to join at %d\n", i);
+            std::exit(1);
         }
     }
 
     counter = 1;
     result1 = result2 = 0;
     if (CREATEMUTEX_FAILED)
-    {   fprintf(stderr, "Unable to create mutex\n");
-        exit(1);
+    {   std::fprintf(stderr, "Unable to create mutex\n");
+        std::exit(1);
     }
     for (i=0; i<cpu_count-1; i++)
     {   if (CREATETHREAD_FAILED(i, threadwork))
-        {   fprintf(stderr, "Unable to create thread\n");
-            exit(1);
+        {   std::fprintf(stderr, "Unable to create thread\n");
+            std::exit(1);
         }
     }
     threadwork(NULL);   // do some work even in the main thread
     for (i=0; i<cpu_count-1; i++)
     {   if (JOINTHREAD_FAILED(i))
-        {   fprintf(stderr, "Unable to join thread\n");
-            exit(1);
+        {   std::fprintf(stderr, "Unable to join thread\n");
+            std::exit(1);
         }
     }
     DESTROYMUTEX;
-    printf("finished: final result is %d : %d\n", result1, result2);
+    std::printf("finished: final result is %d : %d\n", result1, result2);
     return 0;
 }
 

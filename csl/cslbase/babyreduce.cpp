@@ -67,8 +67,8 @@ static int iget(void)
 }
 
 static int iput(int c)
-{   putchar(c);
-    fflush(stdout);
+{   std::putchar(c);
+    std::fflush(stdout);
     return 0;
 }
 
@@ -88,11 +88,11 @@ static int submain(int argc, char *argv[])
 int main(int argc, char *argv[])
 {   int res;
     if (find_program_directory(argv[0]))
-    {   fprintf(stderr, "Unable to identify program name and directory\n");
+    {   std::fprintf(stderr, "Unable to identify program name and directory\n");
         return 1;
     }
     term_setup(argv[0], NULL);
-    atexit(term_close);
+    std::atexit(term_close);
     try
     {   res = submain(argc, argv);
     }

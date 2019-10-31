@@ -161,7 +161,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else
-extern char *getcwd(char *s, size_t n);
+extern char *getcwd(char *s, std::size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -238,7 +238,7 @@ END_EVENT_TABLE()
 
 int page, regular, bold, italic;
 
-int get_current_directory(char *s, size_t n)
+int get_current_directory(char *s, std::size_t n)
 {
     if (getcwd(s, n) == 0)
     {   switch(errno)
@@ -248,7 +248,7 @@ int get_current_directory(char *s, size_t n)
     default:     return -4;
         }
     }
-    else return strlen(s);
+    else return std::strlen(s);
 }
 
 //
@@ -285,11 +285,11 @@ const char *my_getenv(const char *s)
     char uppercasename[LONGEST_LEGAL_FILENAME];
     char *p = uppercasename;
     int c;
-    while ((c = *s++) != 0) *p++ = toupper(c);
+    while ((c = *s++) != 0) *p++ = std::toupper(c);
     *p = 0;
-    return getenv(uppercasename);
+    return std::getenv(uppercasename);
 #else
-    return getenv(s);
+    return std::getenv(s);
 #endif
 }
 
@@ -309,7 +309,7 @@ int find_program_directory(const char *argv0)
 // from the Windows APIs.
     char execname[LONGEST_LEGAL_FILENAME];
     GetModuleFileNameA(NULL, execname, LONGEST_LEGAL_FILENAME-2);
-    strcpy(this_executable, execname);
+    std::strcpy(this_executable, execname);
     argv0 = this_executable;
     programNameDotCom = 0;
     if (argv0[0] == 0)      // should never happen - name is empty string!
@@ -320,18 +320,18 @@ int find_program_directory(const char *argv0)
     }
 
     fullProgramName = argv0;
-    len = strlen(argv0);
+    len = std::strlen(argv0);
 // If the current program is called c:\aaa\xxx.exe, then the directory
 // is just c:\aaa and the simplified program name is just xxx
     if (len > 4 &&
         argv0[len-4] == '.' &&
-        ((tolower(argv0[len-3]) == 'e' &&
-          tolower(argv0[len-2]) == 'x' &&
-          tolower(argv0[len-1]) == 'e') ||
-         (tolower(argv0[len-3]) == 'c' &&
-          tolower(argv0[len-2]) == 'o' &&
-          tolower(argv0[len-1]) == 'm')))
-    {   programNameDotCom = (tolower(argv0[len-3]) == 'c');
+        ((std::tolower(argv0[len-3]) == 'e' &&
+          std::tolower(argv0[len-2]) == 'x' &&
+          std::tolower(argv0[len-1]) == 'e') ||
+         (std::tolower(argv0[len-3]) == 'c' &&
+          std::tolower(argv0[len-2]) == 'o' &&
+          std::tolower(argv0[len-1]) == 'm')))
+    {   programNameDotCom = (std::tolower(argv0[len-3]) == 'c');
         len -= 4;
     }
     for (npgm=0; npgm<len; npgm++)
@@ -341,13 +341,13 @@ int find_program_directory(const char *argv0)
     ndir = len - npgm - 1;
     if (ndir < 0) programDir = ".";  // none really visible
     else
-    {   if ((w = (char *)malloc(ndir+1)) == NULL) return 1;
-        strncpy(w, argv0, ndir);
+    {   if ((w = (char *)std::malloc(ndir+1)) == NULL) return 1;
+        std::strncpy(w, argv0, ndir);
         w[ndir] = 0;
         programDir = w;
     }
-    if ((w = (char *)malloc(npgm+1)) == NULL) return 1;
-    strncpy(w, argv0 + len - npgm, npgm);
+    if ((w = (char *)std::malloc(npgm+1)) == NULL) return 1;
+    std::strncpy(w, argv0 + len - npgm, npgm);
     w[npgm] = 0;
     programName = w;
     return 0;
@@ -440,12 +440,12 @@ int find_program_directory(const char *argv0)
             if (argv0[0] == '.' && argv0[1] == '/') argv0 += 2;
             n = get_current_directory(pgmname, sizeof(pgmname));
             if (n < 0) return 1;    // fail! 1=current directory failure
-            if (n + strlen(argv0) + 2 >= sizeof(pgmname) ||
+            if (n + std::strlen(argv0) + 2 >= sizeof(pgmname) ||
                 pgmname[0] == 0)
                 return 2; // Current dir unavailable or full name too long
             else
             {   pgmname[n] = '/';
-                strcpy(&pgmname[n+1], argv0);
+                std::strcpy(&pgmname[n+1], argv0);
                 fullProgramName = pgmname;
             }
         }
@@ -474,7 +474,7 @@ int find_program_directory(const char *argv0)
                     n = 0;
                     while (*path != 0 && *path != ':')
                     {   pgmname[n++] = *path++;
-                        if (n > (int)(sizeof(pgmname)-3-strlen(argv0)))
+                        if (n > (int)(sizeof(pgmname)-3-std::strlen(argv0)))
                             return 3; // fail! 3=$PATH element overlong
                     }
 // Here I have separated off the next segment of my $PATH and put it at
@@ -482,7 +482,7 @@ int find_program_directory(const char *argv0)
 // exit abruptly if the entry on $PATH is itself too big for my buffer.
 //
                     pgmname[n++] = '/';
-                    strcpy(&pgmname[n], argv0);
+                    std::strcpy(&pgmname[n], argv0);
 // see if the file whose name I have just built up exists at all.
                     if (stat(pgmname, &buf) == -1) continue;
                     hisuid = buf.st_uid;
@@ -509,12 +509,12 @@ int find_program_directory(const char *argv0)
 //
             if (pgmname[0] != '/')
             {   char temp[LONGEST_LEGAL_FILENAME];
-                strcpy(temp, pgmname);
+                std::strcpy(temp, pgmname);
                 n = get_current_directory(pgmname, sizeof(pgmname));
                 if (n < 0) return 1;    // fail! 1=current directory failure
-                if ((n + strlen(temp) + 1) >= sizeof(pgmname)) return 9;
+                if ((n + std::strlen(temp) + 1) >= sizeof(pgmname)) return 9;
                 pgmname[n++] = '/';
-                strcpy(&pgmname[n], temp);
+                std::strcpy(&pgmname[n], temp);
             }
             fullProgramName = pgmname;
         }
@@ -530,16 +530,16 @@ int find_program_directory(const char *argv0)
             (n1 = readlink(fullProgramName,
                            temp, sizeof(temp)-1)) > 0)
         {   temp[n1] = 0;
-            strcpy(pgmname, temp);
+            std::strcpy(pgmname, temp);
             fullProgramName = pgmname;
         }
     }
 // Now fullProgramName is set up, but may refer to an array that
 // is stack allocated. I need to make it proper!
 //
-    w = (char *)malloc(1+strlen(fullProgramName));
+    w = (char *)std::malloc(1+std::strlen(fullProgramName));
     if (w == NULL) return 5;           // 5 = malloc fails
-    strcpy(w, fullProgramName);
+    std::strcpy(w, fullProgramName);
     fullProgramName = w;
 #ifdef __CYGWIN__
 //
@@ -548,15 +548,15 @@ int find_program_directory(const char *argv0)
 // cygwin build has a somewhat schitzo view as to whether it is a Windows
 // or a Unix-like system.
 //
-    if (strlen(w) > 4)
-    {   w += strlen(w) - 4;
+    if (std::strlen(w) > 4)
+    {   w += std::strlen(w) - 4;
         if (w[0] == '.' &&
-            ((tolower(w[1]) == 'e' &&
-              tolower(w[2]) == 'x' &&
-              tolower(w[3]) == 'e') ||
-             (tolower(w[1]) == 'c' &&
-              tolower(w[2]) == 'o' &&
-              tolower(w[3]) == 'm'))) w[0] = 0;
+            ((std::tolower(w[1]) == 'e' &&
+              std::tolower(w[2]) == 'x' &&
+              std::tolower(w[3]) == 'e') ||
+             (std::tolower(w[1]) == 'c' &&
+              std::tolower(w[2]) == 'o' &&
+              std::tolower(w[3]) == 'm'))) w[0] = 0;
     }
 #endif
 // OK now I have the full name, which is of the form
@@ -564,21 +564,21 @@ int find_program_directory(const char *argv0)
 // and I need to split it at the final "/" (and by now I very fully expect
 // there to be at least one "/".
 //
-    for (n=strlen(fullProgramName)-1; n>=0; n--)
+    for (n=std::strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               // 6 = no "/" in full file path
-    w = (char *)malloc(1+n);
+    w = (char *)std::malloc(1+n);
     if (w == NULL) return 7;           // 7 = malloc fails
-    strncpy(w, fullProgramName, n);
+    std::strncpy(w, fullProgramName, n);
     w[n] = 0;
 // Note that if the executable was "/foo" then programDir will end up as ""
 // so that programDir + "/" + programName works out properly.
 //
     programDir = w;
-    n1 = strlen(fullProgramName) - n;
-    w = (char *)malloc(n1);
+    n1 = std::strlen(fullProgramName) - n;
+    w = (char *)std::malloc(n1);
     if (w == NULL) return 8;           // 8 = malloc fails
-    strncpy(w, fullProgramName+n+1, n1-1);
+    std::strncpy(w, fullProgramName+n+1, n1-1);
     w[n1-1] = 0;
     programName = w;
     return 0;                          // whew!
@@ -595,11 +595,11 @@ int main(int argc, const char *argv[])
 // Find where I am invoked from before doing anything else
     find_program_directory(argv[0]);
     for (i=1; i<argc; i++)
-    {   if (strncmp(argv[i], "-w", 2) == 0) usegui = 0;
-        else if (strcmp(argv[1], "--help") == 0)
+    {   if (std::strncmp(argv[i], "-w", 2) == 0) usegui = 0;
+        else if (std::strcmp(argv[1], "--help") == 0)
         {
-            printf("wxfontdemo \"font name\"\n");
-            exit(0);   
+            std::printf("wxfontdemo \"font name\"\n");
+            std::exit(0);   
         }
     }
 #if !defined WIN32 && !defined MACINTOSH
@@ -620,21 +620,21 @@ int main(int argc, const char *argv[])
 // makes resources (eg fonts) that are within the bundle available and
 // it also seems to cause things to terminate more neatly.
         char xname[LONGEST_LEGAL_FILENAME];
-        sprintf(xname, "%s.app", programName);
-        if (strstr(fullProgramName, xname) == NULL)
+        std::sprintf(xname, "%s.app", programName);
+        if (std::strstr(fullProgramName, xname) == NULL)
         {
 // Here the binary I launched was not located as
 //      ...foo.app../.../foo
 // so I will view it is NOT being from an application bundle. I will
 // re-launch it so it is! This may be a bit of a hacky way to decide!
             struct stat buf;
-            sprintf(xname, "%s.app", fullProgramName);
+            std::sprintf(xname, "%s.app", fullProgramName);
             if (stat(xname, &buf) == 0 &&
                 (buf.st_mode & S_IFDIR) != 0)
             {
 // Well foo.app exists and is a directory, so I will try to use it
                 const char **nargs =
-                    (const char **)malloc(sizeof(char *)*(argc+3));
+                    (const char **)std::malloc(sizeof(char *)*(argc+3));
                 int i;
                 nargs[0] = "/usr/bin/open";
                 nargs[1] = xname;
@@ -652,11 +652,11 @@ int main(int argc, const char *argv[])
         wxDISABLE_DEBUG_SUPPORT();
         return wxEntry(argc, (char **)argv);
     }
-    printf("This program has been launched asking for use in a console\n");
-    printf("type a line of text please\n");
-    while ((i = getchar()) != '\n' && i != EOF) putchar(i);
-    putchar('\n');
-    printf("Exiting from demonstration of console mode use!\n");
+    std::printf("This program has been launched asking for use in a console\n");
+    std::printf("type a line of text please\n");
+    while ((i = std::getchar()) != '\n' && i != EOF) std::putchar(i);
+    std::putchar('\n');
+    std::printf("Exiting from demonstration of console mode use!\n");
     return 0;
 }
 
@@ -703,19 +703,19 @@ void add_custom_fonts()
 // and so I do not need to take run-time action to make them available.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        sprintf(nn, "%s/%s/%s",
+        std::sprintf(nn, "%s/%s/%s",
                     programDir, toString(fontsdir), fontNames[i]);
-        printf("Adding %s: ", nn); fflush(stdout);
+        std::printf("Adding %s: ", nn); std::fflush(stdout);
         wxString widename(nn);
         if (wxFont::AddPrivateFont(widename))
-            printf(" OK\n");
-        else printf("Failed\n");
+            std::printf(" OK\n");
+        else std::printf("Failed\n");
     }
-    printf("About to activate\n"); fflush(stdout);
+    std::printf("About to activate\n"); std::fflush(stdout);
     if (wxFont::ActivatePrivateFonts())
-        printf("Activated OK\n");
-    else printf("Activation failed\n");
-    fflush(stdout);
+        std::printf("Activated OK\n");
+    else std::printf("Activation failed\n");
+    std::fflush(stdout);
 #endif // MACINTOSH
 }
 
@@ -724,13 +724,13 @@ void display_font_information()
 {
     wxArrayString flist(wxFontEnumerator::GetFacenames(wxFONTENCODING_SYSTEM));
     int nfonts;
-    printf("There are %d fonts\n", nfonts=(int)flist.GetCount());
-    fflush(stdout);
+    std::printf("There are %d fonts\n", nfonts=(int)flist.GetCount());
+    std::fflush(stdout);
     for (int i=0; i<nfonts; i++)
-        printf("%d) <%s>\n", i, (const char *)flist[i].mb_str());
-    fflush(stdout);
-    printf("End of debug output\n");
-    fflush(stdout);
+        std::printf("%d) <%s>\n", i, (const char *)flist[i].mb_str());
+    std::fflush(stdout);
+    std::printf("End of debug output\n");
+    std::fflush(stdout);
 }
 
 bool fontApp::OnInit()
@@ -745,12 +745,12 @@ bool fontApp::OnInit()
     int size = 48;           // a default size.
     for (int i=1; i<argc; i++)
     {
-        printf("Arg%d: %s\n", i, myargv[i]);
-        if (strcmp(myargv[i], "--regular") == 0) regular = 1;
-        if (strcmp(myargv[i], "--bold") == 0) bold = 1;
-        if (strcmp(myargv[i], "--italic") == 0) italic = 1;
+        std::printf("Arg%d: %s\n", i, myargv[i]);
+        if (std::strcmp(myargv[i], "--regular") == 0) regular = 1;
+        if (std::strcmp(myargv[i], "--bold") == 0) bold = 1;
+        if (std::strcmp(myargv[i], "--italic") == 0) italic = 1;
         else if (myargv[i][0] == '-')
-        {   if (sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
+        {   if (std::sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
         }
         else font = myargv[i];
     }
@@ -758,10 +758,10 @@ bool fontApp::OnInit()
 // to the directory that this application was launched from. So the first
 // think to do is to identify that location. I then print the information I
 // recover so I can debug things. I have already set up programName etc
-    printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
+    std::printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
 
-    printf("Try for font \"%s\" at size=%d\n", font, size);
-    fflush(stdout);
+    std::printf("Try for font \"%s\" at size=%d\n", font, size);
+    std::fflush(stdout);
 
     fontFrame *frame = new fontFrame(font, size);
     frame->Show(true);
@@ -809,7 +809,7 @@ void fontFrame::OnClose(wxCloseEvent &WXUNUSED(event))
 // worry about incompletely written-out files.
     TerminateProcess(GetCurrentProcess(), 1);
 #else
-    exit(0);    // I want the whole application to terminate here!
+    std::exit(0);    // I want the whole application to terminate here!
 #endif
 }
 
@@ -819,7 +819,7 @@ void fontFrame::OnExit(wxCommandEvent &WXUNUSED(event))
 #ifdef WIN32
     TerminateProcess(GetCurrentProcess(), 1);
 #else
-    exit(0);    // I want the whole application to terminate here!
+    std::exit(0);    // I want the whole application to terminate here!
 #endif
 }
 
@@ -845,7 +845,7 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
 {
     wxChar c = event.GetUnicodeKey();
     int n = -1;
-    printf("Char event %#x (%c)\n", c, c); fflush(stdout);
+    std::printf("Char event %#x (%c)\n", c, c); std::fflush(stdout);
     event.Skip();
     if ('0' <= c && c <= '9') n = c - '0';
     else if ('a' <= c && c <= 'f') n = c - 'a' + 10;
@@ -858,7 +858,7 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
 #ifdef WIN32
         TerminateProcess(GetCurrentProcess(), 1);
 #else
-        exit(0);
+        std::exit(0);
 #endif
     case 'x':
     case 'X':
@@ -901,7 +901,7 @@ void fontPanel::OnMouse(wxMouseEvent &event)
     wxPoint where(event.GetLogicalPosition(dc));
     if (where.y > 200) page++;
     else page--;
-    printf("Mouse event. Page now %d\n", page); fflush(stdout);
+    std::printf("Mouse event. Page now %d\n", page); std::fflush(stdout);
     event.Skip();
     Refresh();
 }
@@ -909,12 +909,12 @@ void fontPanel::OnMouse(wxMouseEvent &event)
 // The following function will catalogue the fonts I expect to allow
 int find_fontnum(const char *s)
 {
-    if (strcmp(s, "CMU Typewriter Text") == 0) return F_cmuntt;
-    if (strcmp(s, "odokai") == 0) return F_odokai;
+    if (std::strcmp(s, "CMU Typewriter Text") == 0) return F_cmuntt;
+    if (std::strcmp(s, "odokai") == 0) return F_odokai;
 // Note that Bold and Italic are picked up by options --bold and --italic
 // not through the font name.
-    if (strcmp(s, "STIX") == 0) return F_Regular;
-    if (strcmp(s, "STIXMath") == 0) return F_Math;
+    if (std::strcmp(s, "STIX") == 0) return F_Regular;
+    if (std::strcmp(s, "STIXMath") == 0) return F_Math;
     return -1;
 }
 
@@ -922,7 +922,7 @@ static int once = 0;
 
 void fontPanel::OnPaint(wxPaintEvent &event)
 {
-printf("OnPaint invoked\n");
+std::printf("OnPaint invoked\n");
     wxPaintDC dc(this);
     wxGraphicsContext *gc = wxGraphicsContext::Create(dc);
     if (gc)
@@ -941,10 +941,10 @@ printf("OnPaint invoked\n");
             }
         }
         if (once == 0)
-        {   printf("fontname = %s\n", fontname);
+        {   std::printf("fontname = %s\n", fontname);
             if (wxFontEnumerator::IsValidFacename(fontname))
-                printf("Face name is valid\n");
-            else printf("Invalid face name - font not found\n");
+                std::printf("Face name is valid\n");
+            else std::printf("Invalid face name - font not found\n");
         }
         wxFontInfo ffi(10);
         ffi.FaceName(fontname);
@@ -958,25 +958,25 @@ printf("OnPaint invoked\n");
             wxPrintf("Face name = %s\n", ff.GetFaceName());
             wxPrintf("Native name = %s\n", ff.GetNativeFontInfoDesc());
             wxPrintf("Friendly name = %s\n", ff.GetNativeFontInfoUserDesc());
-            fflush(stdout);
+            std::fflush(stdout);
         }
         wxGraphicsFont gff = gc->CreateFont(ff, *wxRED);
         int fontnum = find_fontnum(fontname);
-        if (fontnum >= 0) printf("Map of available codepoints found\n");
-        else printf("No map of valid codepoints\n");
+        if (fontnum >= 0) std::printf("Map of available codepoints found\n");
+        else std::printf("No map of valid codepoints\n");
 // Draw row and column labels
         wxFont labels(wxFontInfo(3));
         wxGraphicsFont glabels = gc->CreateFont(labels, *wxBLACK);
         gc->SetFont(glabels);
         for (int i=0; i<32; i++)
         {   char word[12];
-            sprintf(word, "%02x", i);
+            std::sprintf(word, "%02x", i);
             gc->DrawText(word, (((double)CELLWIDTH)*(i+1)) + CELLWIDTH/2.2,
                 (double)CELLHEIGHT/10.0);
         }
         for (int i=0; i<8; i++)
         {   char word[12];
-            sprintf(word, "%5x", 32*i + 0x80*page);
+            std::sprintf(word, "%5x", 32*i + 0x80*page);
             gc->DrawText(word, CELLWIDTH/10.0,
                 (double)CELLHEIGHT*(i+1) + CELLHEIGHT/2.5);
         }
@@ -996,13 +996,13 @@ printf("OnPaint invoked\n");
                 double ww, hh, dd, el;
                 gc->GetTextExtent(s, &ww, &hh, &dd, &el);
                 if (ww != 0.0 && hh != 0.0)
-                {   printf("%#x %.1f*%.1f; ", i, ww, hh);
+                {   std::printf("%#x %.1f*%.1f; ", i, ww, hh);
                     howmany++;
                 }
             }
-            if (howmany == 0) printf("No glyphs found");
-            printf("\n");
-            fflush(stdout);
+            if (howmany == 0) std::printf("No glyphs found");
+            std::printf("\n");
+            std::fflush(stdout);
         }
 // I will need font size information in order to position characters
 // neatly.
@@ -1058,7 +1058,7 @@ printf("OnPaint invoked\n");
         }
         delete gc;
     }
-    else printf("gc=NULL\n");
+    else std::printf("gc=NULL\n");
     return;
 }
 

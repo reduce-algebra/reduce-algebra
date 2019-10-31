@@ -113,17 +113,17 @@
 #include <assert.h>
 
 
-FILE *src, *dest;
+std::FILE *src, *dest;
 
 static int Igetc()
-{   return getc(src);
+{   return std::getc(src);
 }
 
 static bool Iputc(int ch)
-{   return (putc(ch, dest) == EOF);
+{   return (std::putc(ch, dest) == EOF);
 }
 
-bool Iread(void *buff, size_t size)
+bool Iread(void *buff, std::size_t size)
 // Reads (size) bytes into the indicated buffer.  Returns true if
 // if fails to read the expected number of bytes.
 {
@@ -137,12 +137,12 @@ bool Iread(void *buff, size_t size)
     return false;
 }
 
-bool Iwrite(const void *buff, size_t size)
+bool Iwrite(const void *buff, std::size_t size)
 //
 // Writes (size) bytes from the given buffer, returning true if trouble.
 //
 {   const unsigned char *p = (const unsigned char *)buff;
-    for (size_t i=0; i<size; i++)
+    for (std::size_t i=0; i<size; i++)
         if (Iputc(p[i])) return true;
     return false;
 }
@@ -241,7 +241,7 @@ bool def_finish()
         int rc;
         if ((rc = deflate(&strm, Z_FINISH)) != Z_OK &&
              rc != Z_STREAM_END) return true;
-        size_t n = CHUNK - strm.avail_out;
+        std::size_t n = CHUNK - strm.avail_out;
         if (n != 0)
         {   if (Iputc(n >> 8)) return true;
             if (Iputc(n)) return true;
@@ -260,13 +260,13 @@ bool def_finish()
     return false;
 }
 
-bool Zwrite(const void *b, size_t n)
+bool Zwrite(const void *b, std::size_t n)
 {   const char *c = (const char *)b;
     while (n-- != 0) if (Zputc(*c++)) return true;
     return false;
 }
 
-static size_t n_out;
+static std::size_t n_out;
 static unsigned char *p_out;
 static int z_eof;
 
@@ -356,7 +356,7 @@ int Zgetc()
     }
 }
 
-bool Zread(void *b, size_t n)
+bool Zread(void *b, std::size_t n)
 {   char *c = (char *)b;
     while (n-- != 0)
     {   int n = Zgetc();
@@ -381,38 +381,38 @@ int main(int argc, char **argv)
 // OR   zlibdemo -d compressed-src dest
 //
     if (argc < 3 ||
-        (argc == 3 && strcmp(argv[1] , "-d") == 0) ||
-        (argc == 4 && strcmp(argv[1], "-d") != 0) ||
+        (argc == 3 && std::strcmp(argv[1] , "-d") == 0) ||
+        (argc == 4 && std::strcmp(argv[1], "-d") != 0) ||
         argc > 4)
-    {   fputs("Usage: zlibdemo [-d] source dest\n", stderr);
+    {   std::fputs("Usage: zlibdemo [-d] source dest\n", stderr);
         return 1;
     }
 
     if (argc == 3)
-    {   src = strcmp(argv[1], "-") == 0 ? stdin : fopen(argv[1], "r");
+    {   src = std::strcmp(argv[1], "-") == 0 ? stdin : std::fopen(argv[1], "r");
         assert(src != NULL);
-        dest = fopen(argv[2], "wb");
+        dest = std::fopen(argv[2], "wb");
         assert(dest != NULL);
         def_init();
         int ch;
-        while ((ch = getc(src)) != EOF) Zputc(ch);
+        while ((ch = std::getc(src)) != EOF) Zputc(ch);
         def_finish();
-        fclose(src);
-        fclose(dest);
+        std::fclose(src);
+        std::fclose(dest);
         return 0;
      }
 
     else
-    {   src = fopen(argv[2], "rb");
+    {   src = std::fopen(argv[2], "rb");
         assert(src != NULL);
-        dest = strcmp(argv[3], "-") == 0 ? stdout : fopen(argv[3], "w");
+        dest = std::strcmp(argv[3], "-") == 0 ? stdout : std::fopen(argv[3], "w");
         assert(dest != NULL);
         inf_init();
         int ch;
-        while ((ch = Zgetc()) != -1) putc(ch, dest);
+        while ((ch = Zgetc()) != -1) std::putc(ch, dest);
         inf_finish();
-        fclose(src);
-        fclose(dest);
+        std::fclose(src);
+        std::fclose(dest);
         return 0;
     }
 }
@@ -465,27 +465,27 @@ static directory empty_directory =
 // be easily visible.
 //
 
-static int32_t bits32(char *v)
-{   int32_t r = v[3] & 0xff;
+static std::int32_t bits32(char *v)
+{   std::int32_t r = v[3] & 0xff;
     r = (r << 8) | (v[2] & 0xff);
     r = (r << 8) | (v[1] & 0xff);
     return (r << 8) | (v[0] & 0xff);
 }
 
-static int32_t bits24(char *v)
-{   int32_t r = v[2] & 0xff;
+static std::int32_t bits24(char *v)
+{   std::int32_t r = v[2] & 0xff;
     r = (r << 8) | (v[1] & 0xff);
     return (r << 8) | (v[0] & 0xff);
 }
 
-static void setbits32(char *v, int32_t r)
+static void setbits32(char *v, std::int32_t r)
 {   *v++ = (char)r;
     *v++ = (char)(r >> 8);
     *v++ = (char)(r >> 16);
     *v   = (char)(r >> 24);
 }
 
-static void setbits24(char *v, int32_t r)
+static void setbits24(char *v, std::int32_t r)
 {   *v++ = (char)r;
     *v++ = (char)(r >> 8);
     *v   = (char)(r >> 16);
@@ -507,9 +507,9 @@ static int Istatus = I_INACTIVE;
 #ifdef BUILTIN_IMAGE
 const unsigned char *binary_read_filep;
 #else
-FILE *binary_read_file;
+std::FILE *binary_read_file;
 #endif
-FILE *binary_write_file;
+std::FILE *binary_write_file;
 static long int read_bytes_remaining, write_bytes_written;
 
 static directory *make_empty_directory(const char *name)
@@ -518,7 +518,7 @@ static directory *make_empty_directory(const char *name)
 // name of the file that I had tried to open.
 //
 {   directory *d;
-    d = (directory *) malloc(sizeof(directory) - sizeof(directory_entry));
+    d = (directory *) std::malloc(sizeof(directory) - sizeof(directory_entry));
     if (d == NULL) return &empty_directory;
     d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
     d->h.version = IMAGE_FORMAT_VERSION;
@@ -528,16 +528,16 @@ static directory *make_empty_directory(const char *name)
     d->h.updated = 0;   // NB read-only
     d->f = NULL;
     d->full_filename = NULL;
-    strncpy(d->filename, name, DIRNAME_LENGTH);
+    std::strncpy(d->filename, name, DIRNAME_LENGTH);
     d->filename[DIRNAME_LENGTH-1] = 0;
-    memset(d->h.eof, 0, 4);
+    std::memset(d->h.eof, 0, 4);
     return d;
 }
 
 static directory *make_pending_directory(const char *name, int pds)
 {   directory *d;
     int n = sizeof(directory) + (DIRECTORY_SIZE-1)*sizeof(directory_entry);
-    int l = strlen(name) + 1 -
+    int l = std::strlen(name) + 1 -
             DIRNAME_LENGTH -
             DIRECTORY_SIZE*sizeof(directory_entry);
 //
@@ -548,7 +548,7 @@ static directory *make_pending_directory(const char *name, int pds)
 // overflowed here.
 //
     if (l > 0) n += l;
-    d = (directory *)malloc(n);
+    d = (directory *)std::malloc(n);
     if (d == NULL) return &empty_directory;
     d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
     d->h.version = IMAGE_FORMAT_VERSION;
@@ -558,21 +558,21 @@ static directory *make_pending_directory(const char *name, int pds)
     d->h.updated = D_PENDING | D_WRITE_OK;
     // Well I HOPE that writing will be OK
     d->f = NULL;
-    strcpy(d->filename, name);  // guaranteed enough space here
+    std::strcpy(d->filename, name);  // guaranteed enough space here
     if (pds) d->full_filename = NULL;
     else
-    {   char *s = (char *)malloc(strlen(name)+1);
+    {   char *s = (char *)std::malloc(std::strlen(name)+1);
 // Ought to check for NULL here
-        strcpy(s, name);
+        std::strcpy(s, name);
         d->full_filename = s;
     }
-    memset(d->h.eof, 0, 4);
+    std::memset(d->h.eof, 0, 4);
     return d;
 }
 
 static directory *make_native_directory(const char *shortname, const char *fullname, int ro)
 {   directory *d;
-    d = (directory *)malloc(sizeof(directory) - sizeof(directory_entry));
+    d = (directory *)std::malloc(sizeof(directory) - sizeof(directory_entry));
     if (d == NULL) return &empty_directory;
     d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
     d->h.version = IMAGE_FORMAT_VERSION;
@@ -581,25 +581,25 @@ static directory *make_native_directory(const char *shortname, const char *fulln
     d->h.dirext = (DIRECTORY_SIZE >> 4) & 0xf0;
     d->h.updated = ro ? 0 : D_WRITE_OK;
     d->f = NULL;
-    strncpy(d->filename, shortname, sizeof(d->filename));
+    std::strncpy(d->filename, shortname, sizeof(d->filename));
     d->filename[DIRNAME_LENGTH-1] = 0;
-    {   char *s = (char *)malloc(strlen(fullname)+1);
+    {   char *s = (char *)std::malloc(std::strlen(fullname)+1);
 // Ought to check for NULL here
-        strcpy(s, fullname);
+        std::strcpy(s, fullname);
         d->full_filename = s;
     }
-    memset(d->h.eof, 0, 4);
+    std::memset(d->h.eof, 0, 4);
     return d;
 }
 
 static void clear_entry(directory_entry *d)
 {   d->D_newline = NEWLINE_CHAR;
-    memset(&d->D_name, ' ', name_size);
-    memcpy(&d->D_name, "<Unused>", 8);
-    memset(&d->D_date, ' ', date_size);
+    std::memset(&d->D_name, ' ', name_size);
+    std::memcpy(&d->D_name, "<Unused>", 8);
+    std::memset(&d->D_date, ' ', date_size);
     (&d->D_date)[0] = '-';
-    memset(&d->D_position, 0, 4);
-    memset(&d->D_size, 0, 3);
+    std::memset(&d->D_position, 0, 4);
+    std::memset(&d->D_size, 0, 3);
 }
 
 static bool version_moan(int v)
@@ -609,8 +609,8 @@ static bool version_moan(int v)
 }
 
 #ifdef BUILTIN_IMAGE
-static int builtinread(void *b, size_t s, size_t n)
-{   size_t i;
+static int builtinread(void *b, std::size_t s, std::size_t n)
+{   std::size_t i;
     unsigned char *w = (unsigned char *)b;
     for (i=0; i<n*s; i++)
         *w++ = *binary_read_filep++;
@@ -635,14 +635,14 @@ directory *open_pds(const char *name, int mode)
     directory hdr, *d;
     bool write_OK = false, fileExists, nameDir, fileDir;
     struct stat buf;
-    FILE *f;
+    std::FILE *f;
     int l, i, n;
-    memset(expanded, 0, sizeof(expanded));
-    l = strlen(name);
+    std::memset(expanded, 0, sizeof(expanded));
+    l = std::strlen(name);
     nameDir = (name[l-1] == '/') || (name[l-1] == '\\');
     f = NULL;
     process_file_name(expanded, name, l);
-    i = strlen(expanded) - 1;
+    i = std::strlen(expanded) - 1;
     if (expanded[i] == '/' ||
         expanded[i] == '\\') expanded[i] = 0; // Trim any final "/"
     fileExists = fileDir = false;
@@ -658,7 +658,7 @@ directory *open_pds(const char *name, int mode)
         return make_empty_directory(expanded);
     if (mode != PDS_INPUT)
     {   any_output_request = true;
-        strncpy(would_be_output_directory, expanded, DIRNAME_LENGTH-1);
+        std::strncpy(would_be_output_directory, expanded, DIRNAME_LENGTH-1);
         if (fileExists && fileDir)
             return make_native_directory(name, expanded, 0);
         else if (nameDir && mode == PDS_PENDING)
@@ -667,15 +667,15 @@ directory *open_pds(const char *name, int mode)
         {   Cmkdir(expanded);
             return make_native_directory(name, expanded, 0);
         }
-        else if (fileExists) f = fopen(expanded, "r+b");
+        else if (fileExists) f = std::fopen(expanded, "r+b");
         else f = NULL;
         if (f != NULL) write_OK = true;
         else if (mode == PDS_PENDING)
-        {   f = fopen(expanded, "rb");
+        {   f = std::fopen(expanded, "rb");
             if (f == NULL) return make_pending_directory(expanded, !nameDir);
         }
         else
-        {   f = fopen(expanded, "w+b");
+        {   f = std::fopen(expanded, "w+b");
             if (f != NULL) write_OK = true;
         }
     }
@@ -686,7 +686,7 @@ directory *open_pds(const char *name, int mode)
     if (f == NULL)
     {   if (!fileExists) return make_empty_directory(expanded);
         if (fileDir) return make_native_directory(name, expanded, 1);
-        f = fopen(expanded, "rb");
+        f = std::fopen(expanded, "rb");
     }
 //
 // If the file does not exist I will just hand back a directory that shows
@@ -694,13 +694,13 @@ directory *open_pds(const char *name, int mode)
 // think of.  Maybe I should warn the user?
 //
     if (f == NULL) return make_empty_directory(expanded);
-    fseek(f, 0, SEEK_SET);     // Ensure I am at start of the file
+    std::fseek(f, 0, SEEK_SET);     // Ensure I am at start of the file
 #endif
     hdr.h.C = hdr.h.S = hdr.h.L = 0;
 #ifdef BUILTIN_IMAGE
     if (builtinread(&hdr.h, sizeof(directory_header), 1) != 1 ||
 #else
-    if (fread(&hdr.h, sizeof(directory_header), 1, f) != 1 ||
+    if (std::fread(&hdr.h, sizeof(directory_header), 1, f) != 1 ||
 #endif
         hdr.h.C != 'C' ||
         hdr.h.S != MIDDLE_INITIAL ||
@@ -719,7 +719,7 @@ directory *open_pds(const char *name, int mode)
 //
         version_moan(hdr.h.version) ||
         get_dirused(hdr) > get_dirsize(hdr) ||
-        bits32(hdr.h.eof) < (int32_t)sizeof(directory_header))
+        bits32(hdr.h.eof) < (std::int32_t)sizeof(directory_header))
     {
 //
 // Here I did not find a satisfactory header to the directory.  If I wanted
@@ -728,10 +728,10 @@ directory *open_pds(const char *name, int mode)
 //
         if (!write_OK) return make_empty_directory(expanded);
 // This next bit is never used in the BUILTIN_DIRECTOT case
-        fseek(f, 0, SEEK_SET);
+        std::fseek(f, 0, SEEK_SET);
         n = DIRECTORY_SIZE;      // Size for a directory
         d = (directory *)
-            malloc(sizeof(directory)+(n-1)*sizeof(directory_entry));
+            std::malloc(sizeof(directory)+(n-1)*sizeof(directory_entry));
         if (d == NULL) return &empty_directory;
         d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
         d->h.version = IMAGE_FORMAT_VERSION;
@@ -741,33 +741,33 @@ directory *open_pds(const char *name, int mode)
         d->h.updated = D_WRITE_OK | D_UPDATED;
         d->full_filename = NULL;  // A PDS not a native dircetory
         for (i=0; i<n; i++) clear_entry(&d->d[i]);
-        if (fwrite(&d->h, sizeof(directory_header), 1, f) != 1)
+        if (std::fwrite(&d->h, sizeof(directory_header), 1, f) != 1)
             return make_empty_directory(expanded);
-        if (fwrite(&d->d[0], sizeof(directory_entry), (size_t)n, f) != (size_t)n)
+        if (std::fwrite(&d->d[0], sizeof(directory_entry), (std::size_t)n, f) != (std::size_t)n)
             return make_empty_directory(expanded);
         d->f = f;
-        strncpy(d->filename, expanded, DIRNAME_LENGTH);
+        std::strncpy(d->filename, expanded, DIRNAME_LENGTH);
         d->filename[DIRNAME_LENGTH-1] = 0;
-        setbits32(d->h.eof, (int32_t)ftell(f));
+        setbits32(d->h.eof, (std::int32_t)std::ftell(f));
         return d;
     }
     hdr.h.updated = write_OK ? D_WRITE_OK : 0;
     n = get_dirsize(hdr);
     d = (directory *)
-        malloc(sizeof(directory)+(n-1)*sizeof(directory_entry));
+        std::malloc(sizeof(directory)+(n-1)*sizeof(directory_entry));
     if (d == NULL) return &empty_directory;
-    memcpy(&d->h, &hdr.h, sizeof(directory_header));
+    std::memcpy(&d->h, &hdr.h, sizeof(directory_header));
 #ifdef BUILTIN_IMAGE
-    if (builtinread(&d->d[0], sizeof(directory_entry), (size_t)n) != (size_t)n)
+    if (builtinread(&d->d[0], sizeof(directory_entry), (std::size_t)n) != (std::size_t)n)
 #else
-    if (fread(&d->d[0], sizeof(directory_entry), (size_t)n, f) != (size_t)n)
+    if (std::fread(&d->d[0], sizeof(directory_entry), (std::size_t)n, f) != (std::size_t)n)
 #endif
         return make_empty_directory(expanded);
 //
 // Here the directory seemed OK
 //
     d->f = f;
-    strncpy(d->filename, expanded, DIRNAME_LENGTH);
+    std::strncpy(d->filename, expanded, DIRNAME_LENGTH);
     d->filename[DIRNAME_LENGTH-1] = 0;
     d->full_filename = NULL;
 //
@@ -779,15 +779,15 @@ directory *open_pds(const char *name, int mode)
 }
 
 static int unpending(directory *d)
-{   FILE *f;
-    int32_t i, n;
+{   std::FILE *f;
+    std::int32_t i, n;
     if (d->full_filename != NULL)
     {   Cmkdir(d->full_filename);
         d->h.updated &= ~D_PENDING;
         d->h.updated |= D_WRITE_OK;  // suppose directories always updatable
         return false;
     }
-    f = fopen(d->filename, "w+b");
+    f = std::fopen(d->filename, "w+b");
     if (f == NULL) return true;
     d->f = f;
     d->filename[DIRNAME_LENGTH-1] = 0;  // truncate the name now
@@ -801,16 +801,16 @@ static int unpending(directory *d)
 //
     d->h.updated = D_WRITE_OK | D_UPDATED;
     for (i=0; i<n; i++) clear_entry(&d->d[i]);
-    if (fwrite(&d->h, sizeof(directory_header), 1, f) != 1)
+    if (std::fwrite(&d->h, sizeof(directory_header), 1, f) != 1)
         return true;
-    if (fwrite(&d->d[0], sizeof(directory_entry), (size_t)n, f) != (size_t)n)
+    if (std::fwrite(&d->d[0], sizeof(directory_entry), (std::size_t)n, f) != (std::size_t)n)
         return true;
-    setbits32(d->h.eof, (int32_t)ftell(f));
+    setbits32(d->h.eof, (std::int32_t)std::ftell(f));
     return false;
 }
 
 void Iinit(void)
-{   size_t i;
+{   std::size_t i;
     Istatus = I_INACTIVE;
     current_input_directory = NULL;
     current_output_entry = NULL;
@@ -822,7 +822,7 @@ void Iinit(void)
 #endif
     read_bytes_remaining = write_bytes_written = 0;
     any_output_request = false;
-    strcpy(would_be_output_directory, "<unknown>");
+    std::strcpy(would_be_output_directory, "<unknown>");
     for (i=0; i<fasl_files.size(); i++)
     {   if (!fasl_files[i].inUse) continue;
         else if (0x40000000+i == output_directory)
@@ -867,26 +867,26 @@ void Iinit(void)
 // return is the number of entries involved.
 //
 
-static int samename(const char *n1, directory *d, int j, size_t len)
+static int samename(const char *n1, directory *d, int j, std::size_t len)
 //
 // Compare the given names, given that n1 is of length len and n2 is
 // blank-padded to exactly name_size characters. The special cases
 // with n1 NULL allow len to encode what I am looking for.
 //
 {   const char *n2 = &d->d[j].D_name;
-    size_t i, n, recs;
+    std::size_t i, n, recs;
     if (len == IMAGE_CODE)
-        return (memcmp(n2, "InitialImage", 12) == 0);
+        return (std::memcmp(n2, "InitialImage", 12) == 0);
     if (len == HELP_CODE)
-        return (memcmp(n2, "HelpDataFile", 12) == 0);
+        return (std::memcmp(n2, "HelpDataFile", 12) == 0);
     if (len == BANNER_CODE)
-        return (memcmp(n2, "Start-Banner", 12) == 0);
-    if ((intptr_t)len < 0)   // Hard code has never been fully supported
+        return (std::memcmp(n2, "Start-Banner", 12) == 0);
+    if ((std::intptr_t)len < 0)   // Hard code has never been fully supported
                              // and the use of "negative length codes" for
                              // using it is dodgy!
     {   char hard[16];
-        sprintf(hard, "HardCode<%.2x>", (int)((-len) & 0xff));
-        return (memcmp(n2, hard, 12) == 0);
+        std::sprintf(hard, "HardCode<%.2x>", (int)((-len) & 0xff));
+        return (std::memcmp(n2, hard, 12) == 0);
     }
     if ((n2[11] & 0xff) > 0x80) return 0;
     n = 0;
@@ -909,31 +909,31 @@ static int samename(const char *n1, directory *d, int j, size_t len)
     else return recs;
 }
 
-static void fasl_file_name(char *nn, directory *d, const char *name, size_t len)
-{   size_t np;
-    strcpy(nn, d->full_filename);
-    np = strlen(nn);
+static void fasl_file_name(char *nn, directory *d, const char *name, std::size_t len)
+{   std::size_t np;
+    std::strcpy(nn, d->full_filename);
+    np = std::strlen(nn);
 #ifdef WIN32
     nn[np++] = '\\';
 #else
     nn[np++] = '/';
 #endif
     if (name == NULL)
-    {   if (len == IMAGE_CODE) strcpy(&nn[np], "InitialImage");
-        else if (len == HELP_CODE) strcpy(&nn[np], "HelpDataFile");
-        else if (len == BANNER_CODE) strcpy(&nn[np], "Start-Banner");
-        else if ((intptr_t)len < 0) sprintf(&nn[np], "HardCode-%.2x",
+    {   if (len == IMAGE_CODE) std::strcpy(&nn[np], "InitialImage");
+        else if (len == HELP_CODE) std::strcpy(&nn[np], "HelpDataFile");
+        else if (len == BANNER_CODE) std::strcpy(&nn[np], "Start-Banner");
+        else if ((std::intptr_t)len < 0) std::sprintf(&nn[np], "HardCode-%.2x",
                                             (int)((-len) & 0xff));
     }
     else
-    {   memcpy(&nn[np], name, len);
-        strcpy(&nn[np+len], ".fasl");
+    {   std::memcpy(&nn[np], name, len);
+        std::strcpy(&nn[np+len], ".fasl");
     }
 }
 
 
-static bool open_input(directory *d, const char *name, size_t len,
-                          size_t offset)
+static bool open_input(directory *d, const char *name, std::size_t len,
+                          std::size_t offset)
 //
 // Set up binary_read_file to access the given module, returning true
 // if it was not found in the given directory. I used to pass the
@@ -947,20 +947,20 @@ static bool open_input(directory *d, const char *name, size_t len,
     nativedir = false;
     if (d->full_filename != NULL) // native directory mode
     {   char nn[LONGEST_LEGAL_FILENAME];
-        memset(nn, 0, sizeof(nn));
+        std::memset(nn, 0, sizeof(nn));
         fasl_file_name(nn, d, name, len);
 #ifdef BUILTIN_IMAGE
         binary_read_filep = reduce_image;
         read_bytes_remaining = REDUCE_IMAGE_SIZE;
 #else
-        if ((binary_read_file = fopen(nn, "rb")) == NULL) return true;
-        fseek(binary_read_file, 0L, SEEK_END);
-        read_bytes_remaining = ftell(binary_read_file);
+        if ((binary_read_file = std::fopen(nn, "rb")) == NULL) return true;
+        std::fseek(binary_read_file, 0L, SEEK_END);
+        read_bytes_remaining = std::ftell(binary_read_file);
 #endif
 #ifdef BUILTIN_IMAGE
         binary_read_filep = reduce_image + offset;
 #else
-        fseek(binary_read_file, (long)offset, SEEK_SET);
+        std::fseek(binary_read_file, (long)offset, SEEK_SET);
 #endif
         Istatus = I_READING;
         nativedir = true;
@@ -993,7 +993,7 @@ static bool open_input(directory *d, const char *name, size_t len,
 #else
             binary_read_file = d->f;
             read_bytes_remaining = bits24(&d->d[i].D_size);
-            i = fseek(binary_read_file,
+            i = std::fseek(binary_read_file,
                       bits32(&d->d[i].D_position)+offset, SEEK_SET);
 #endif
             if (i == 0)     // If fseek succeeded  it returned zero
@@ -1033,7 +1033,7 @@ static int for_qsort(void const *aa, void const *bb)
 }
 
 static void sort_directory(directory *d)
-{   qsort((void *)d->d, (size_t)get_dirused(*d),
+{   std::qsort((void *)d->d, (std::size_t)get_dirused(*d),
           sizeof(directory_entry), for_qsort);
 }
 
@@ -1050,10 +1050,10 @@ static directory *enlarge_directory(int current_size)
     if (n > current_size+20) n = current_size+20;
     for (;;)
     {   directory_entry *first;
-        FILE *f;
+        std::FILE *f;
         char buffer[512];  // I hope this is not done too often, since this
                            // is not a very big buffer size for the copy.
-        int32_t firstpos, firstlen, newfirst, eofpos;
+        std::int32_t firstpos, firstlen, newfirst, eofpos;
         sort_directory(d1);
         first = &d1->d[0];
         firstpos = bits32(&first->D_position);
@@ -1065,20 +1065,20 @@ static directory *enlarge_directory(int current_size)
         firstlen = bits24(&first->D_size);
         newfirst = eofpos = bits32(d1->h.eof);
         f = d1->f;
-        while (firstlen >= (int32_t)sizeof(buffer))
-        {   fseek(f, firstpos, SEEK_SET);
-            if (fread(buffer, sizeof(buffer), 1, f) != 1) return NULL;
-            fseek(f, eofpos, SEEK_SET);
-            if (fwrite(buffer, sizeof(buffer), 1, f) != 1) return NULL;
+        while (firstlen >= (std::int32_t)sizeof(buffer))
+        {   std::fseek(f, firstpos, SEEK_SET);
+            if (std::fread(buffer, sizeof(buffer), 1, f) != 1) return NULL;
+            std::fseek(f, eofpos, SEEK_SET);
+            if (std::fwrite(buffer, sizeof(buffer), 1, f) != 1) return NULL;
             firstlen -= sizeof(buffer);
             firstpos += sizeof(buffer);
             eofpos += sizeof(buffer);
         }
         if (firstlen != 0)
-        {   fseek(f, firstpos, SEEK_SET);
-            if (fread(buffer, firstlen, 1, f) != 1) return NULL;
-            fseek(f, eofpos, SEEK_SET);
-            if (fwrite(buffer, firstlen, 1, f) != 1) return NULL;
+        {   std::fseek(f, firstpos, SEEK_SET);
+            if (std::fread(buffer, firstlen, 1, f) != 1) return NULL;
+            std::fseek(f, eofpos, SEEK_SET);
+            if (std::fwrite(buffer, firstlen, 1, f) != 1) return NULL;
             eofpos += firstlen;
         }
         setbits32(&first->D_position, newfirst);
@@ -1091,8 +1091,8 @@ static directory *enlarge_directory(int current_size)
         }
         setbits32(d1->h.eof, eofpos);
     }
-    fseek(d1->f, newpos, SEEK_SET);
-    d1 = (directory *)realloc((void *)d1, newsize);
+    std::fseek(d1->f, newpos, SEEK_SET);
+    d1 = (directory *)std::realloc((void *)d1, newsize);
     if (d1 == NULL) return NULL;
     d1->h.dirsize = (unsigned char)(n & 0xff);
     d1->h.dirext = (unsigned char)((d1->h.dirext & 0x0f) + ((n>>4) & 0xf0));
@@ -1102,7 +1102,7 @@ static directory *enlarge_directory(int current_size)
     return d1;
 }
 
-bool open_output(const char *name, size_t len)
+bool open_output(const char *name, std::size_t len)
 //
 // Set up binary_write_file to access the given module, returning true
 // if anything went wrong. Remember name==NULL for initial image & help
@@ -1112,7 +1112,7 @@ bool open_output(const char *name, size_t len)
     const char *ct;
     char hard[16];
     directory *d;
-    time_t t = time(NULL);
+    std::time_t t = std::time(NULL);
     LispObject oo = qvalue(output_library);
 #ifdef BUILTIN_IMAGE
     return true;
@@ -1142,9 +1142,9 @@ bool open_output(const char *name, size_t len)
     current_output_directory = d;
     if (d->full_filename != NULL) // native directory mode
     {   char nn[LONGEST_LEGAL_FILENAME];
-        memset(nn, 0, sizeof(nn));
+        std::memset(nn, 0, sizeof(nn));
         fasl_file_name(nn, d, name, len);
-        if ((binary_write_file = fopen(nn, "wb")) == NULL) return true;
+        if ((binary_write_file = std::fopen(nn, "wb")) == NULL) return true;
         write_bytes_written = 0;
         Istatus = I_WRITING;
         nativedir = true;
@@ -1161,27 +1161,27 @@ bool open_output(const char *name, size_t len)
     {   if (samename(name, d, i, len))
         {   current_output_entry = &d->d[i];
             d->h.updated |= D_COMPACT | D_UPDATED;
-            if (t == (time_t)(-1)) ct = "not dated";
-            else ct = ctime(&t);
+            if (t == (std::time_t)(-1)) ct = "not dated";
+            else ct = std::ctime(&t);
 //
 // Note that I treat the result handed back by ctime() as delicate, in that
 // I do not do any library calls between calling ctime and copying the
 // string it returns to somewhere that is under my own control.
 //
-            strncpy(&d->d[i].D_date, ct, date_size);
+            std::strncpy(&d->d[i].D_date, ct, date_size);
             binary_write_file = d->f;
             write_bytes_written = 0;
-            memcpy(&d->d[i].D_position, d->h.eof, 4);
+            std::memcpy(&d->d[i].D_position, d->h.eof, 4);
 // For long names I must put the location in each record
             if (d->d[i].D_space & 0x80)
             {   j = 0;
                 do
                 {   j++;
-                    memcpy(&d->d[i+j].D_position, d->h.eof, 4);
+                    std::memcpy(&d->d[i+j].D_position, d->h.eof, 4);
                 }
                 while ((d->d[i+j].D_space & 0xff) != 0xff);
             }
-            i = fseek(binary_write_file, bits32(d->h.eof), SEEK_SET);
+            i = std::fseek(binary_write_file, bits32(d->h.eof), SEEK_SET);
             if (i == 0) Istatus = I_WRITING;
             else current_output_directory = NULL;
             if (name == NULL && len == IMAGE_CODE)
@@ -1201,8 +1201,8 @@ bool open_output(const char *name, size_t len)
     }
     else if (len == HELP_CODE) name = "HelpDataFile", len = IMAGE_CODE, n = 1;
     else if (len == BANNER_CODE) name = "Start-Banner", len = IMAGE_CODE, n = 1;
-    else if ((intptr_t)len < 0)
-    {   sprintf(hard, "HardCode<%.2x>", (int)((-len) & 0xff));
+    else if ((std::intptr_t)len < 0)
+    {   std::sprintf(hard, "HardCode<%.2x>", (int)((-len) & 0xff));
         name = hard, len = IMAGE_CODE, n = 1;
     }
     else if (len <= 11) n = 1;
@@ -1217,23 +1217,23 @@ bool open_output(const char *name, size_t len)
     current_output_entry = &d->d[i];
     if (len == IMAGE_CODE)
     {   d->d[i].D_newline = NEWLINE_CHAR;
-        memcpy(&d->d[i].D_name, name, 12);
-        memset(&d->d[i].D_date, ' ', date_size);
-        memset(&d->d[i].D_size, 0, 3);
-        memcpy(&d->d[i].D_position, d->h.eof, 4);
+        std::memcpy(&d->d[i].D_name, name, 12);
+        std::memset(&d->d[i].D_date, ' ', date_size);
+        std::memset(&d->d[i].D_size, 0, 3);
+        std::memcpy(&d->d[i].D_position, d->h.eof, 4);
     }
     else
-    {   size_t np;
+    {   std::size_t np;
         const char *p;
 //
 // First I will clear all the relevant fields to blanks.
 //
         for (j=0; j<n; j++)
         {   d->d[i+j].D_newline = '\n';
-            memset(&d->d[i+j].D_name, ' ', name_size);
-            memset(&d->d[i+j].D_date, ' ', date_size);
-            memset(&d->d[i+j].D_size, 0, 3);
-            memcpy(&d->d[i+j].D_position, d->h.eof, 4);
+            std::memset(&d->d[i+j].D_name, ' ', name_size);
+            std::memset(&d->d[i+j].D_date, ' ', date_size);
+            std::memset(&d->d[i+j].D_size, 0, 3);
+            std::memcpy(&d->d[i+j].D_position, d->h.eof, 4);
         }
 #define next_char_of_name (np++ >= len ? ' ' : *p++)
         np = 0;
@@ -1250,14 +1250,14 @@ bool open_output(const char *name, size_t len)
 #undef next_char_of_name
         }
     }
-    if (t == (time_t)(-1)) ct = "** *** not dated *** ** ";
-    else ct = ctime(&t);
-    strncpy(&d->d[i].D_date, ct, date_size);
+    if (t == (std::time_t)(-1)) ct = "** *** not dated *** ** ";
+    else ct = std::ctime(&t);
+    std::strncpy(&d->d[i].D_date, ct, date_size);
     set_dirused(&d->h, get_dirused(*d)+n);
     binary_write_file = d->f;
     write_bytes_written = 0;
     d->h.updated |= D_UPDATED;
-    i = fseek(binary_write_file, bits32(d->h.eof), SEEK_SET);
+    i = std::fseek(binary_write_file, bits32(d->h.eof), SEEK_SET);
     if (i == 0)
     {   Istatus = I_WRITING;
         return false;
@@ -1284,18 +1284,18 @@ static void list_one_native(const char *name, int why, long int size)
 // a directory separator character within the name.
 //
     while (*name != '/' && *name != '\\') name--;
-    strncpy(shortname, name+1, sizeof(shortname)-1);
+    std::strncpy(shortname, name+1, sizeof(shortname)-1);
     shortname[sizeof(shortname)-1] = 0;
     p = shortname;
-    while (*p != 0 && strcmp(p, ".fasl") != 0) p++;
+    while (*p != 0 && std::strcmp(p, ".fasl") != 0) p++;
     *p = 0;
-    if (strlen(shortname) > 12) trace_printf(
+    if (std::strlen(shortname) > 12) trace_printf(
             "    %s\n                  %-24.24s    size: %ld\n",
-            shortname, ctime(&(statbuff.st_mtime)),
+            shortname, std::ctime(&(statbuff.st_mtime)),
             size);
     else trace_printf(
             "    %-12.12s  %-24.24s    size: %ld\n",
-            shortname, ctime(&(statbuff.st_mtime)),
+            shortname, std::ctime(&(statbuff.st_mtime)),
             size);
 }
 
@@ -1374,7 +1374,7 @@ static void collect_modules(const char *name, int why, long int size)
     {   *p++ = *name++;
         k++;
     }
-    if (strcmp(name, ".fasl") != 0) return;
+    if (std::strcmp(name, ".fasl") != 0) return;
     v = iintern(boffo, k, lisp_package, 0);
     pop(mods);
     mods = cons(v, mods);
@@ -1410,10 +1410,10 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
             j += n;
         }
         else
-        {   if (memcmp(&d->d[j].D_name, "InitialImage", 12) == 0 ||
-                memcmp(&d->d[j].D_name, "HelpDataFile", 12) == 0 ||
-                memcmp(&d->d[j].D_name, "Start-Banner", 12) == 0 ||
-                (memcmp(&d->d[j].D_name, "HardCode<", 9) == 0 &&
+        {   if (std::memcmp(&d->d[j].D_name, "InitialImage", 12) == 0 ||
+                std::memcmp(&d->d[j].D_name, "HelpDataFile", 12) == 0 ||
+                std::memcmp(&d->d[j].D_name, "Start-Banner", 12) == 0 ||
+                (std::memcmp(&d->d[j].D_name, "HardCode<", 9) == 0 &&
                  (&d->d[j].D_name)[11] == '>'))
                 continue;  // not user modules
             for (i=0; i<12; i++)
@@ -1447,7 +1447,7 @@ LispObject Llibrary_members0(LispObject env)
     else return onevalue(nil);
 }
 
-bool Imodulep1(int i, const char *name, size_t len, char *datestamp, size_t *size,
+bool Imodulep1(int i, const char *name, std::size_t len, char *datestamp, std::size_t *size,
                  char *expanded_name)
 // Hands back information about whether the given module exists in the
 // image file with index i.
@@ -1456,16 +1456,16 @@ bool Imodulep1(int i, const char *name, size_t len, char *datestamp, size_t *siz
     if (d->full_filename != NULL)
     {   char nn[LONGEST_LEGAL_FILENAME];
         struct stat statbuff;
-        memset(nn, 0, sizeof(nn));
+        std::memset(nn, 0, sizeof(nn));
         fasl_file_name(nn, d, name, len);
         if (stat(nn, &statbuff) != 0) return true;   // file not present
-        strcpy(expanded_name, nn);
-        strcpy(datestamp, ctime(&(statbuff.st_mtime)));
+        std::strcpy(expanded_name, nn);
+        std::strcpy(datestamp, std::ctime(&(statbuff.st_mtime)));
 //
 // Note that FASL modules here will surely never even start to get towards
 // the size-limits of a 32-bit integer!
 //
-        *size = (int32_t)statbuff.st_size;
+        *size = (std::int32_t)statbuff.st_size;
         return false;
     }
     for (int j=0; j<get_dirused(*d); j++)
@@ -1481,11 +1481,11 @@ bool Imodulep1(int i, const char *name, size_t len, char *datestamp, size_t *siz
 #endif
                 p2 = "";
             }
-            memcpy(datestamp, &d->d[j].D_date, date_size);
+            std::memcpy(datestamp, &d->d[j].D_date, date_size);
             *size = bits24(&d->d[j].D_size);
-            if (name == NULL) sprintf(expanded_name,
+            if (name == NULL) std::sprintf(expanded_name,
                                           "%s%sInitialImage%s", n, p1, p2);
-            else sprintf(expanded_name,
+            else std::sprintf(expanded_name,
                              "%s%s%.*s%s", n, p1, (int)len, name, p2);
             return false;
         }
@@ -1493,7 +1493,7 @@ bool Imodulep1(int i, const char *name, size_t len, char *datestamp, size_t *siz
     return true;
 }
 
-bool Imodulep(const char *name, size_t len, char *datestamp, size_t *size,
+bool Imodulep(const char *name, std::size_t len, char *datestamp, std::size_t *size,
                  char *expanded_name)
 //
 // Hands back information about whether the given module exists, and
@@ -1511,7 +1511,7 @@ bool Imodulep(const char *name, size_t len, char *datestamp, size_t *size,
 
 directory *rootDirectory = NULL;
 
-bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour)
+bool IopenRoot(char *expanded_name, std::size_t hard, int sixtyfour)
 //
 // Opens the "InitialImage" file so that it can be loaded. Note that
 // when I am about to do this I do not have a valid heap image loaded, and
@@ -1520,7 +1520,7 @@ bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour)
 // command line (or by default).
 //
 {   const char *n;
-    size_t i;
+    std::size_t i;
     if (hard == 0) hard = IMAGE_CODE;
     for (i=0; i<fasl_files.size(); i++)
     {   if (!fasl_files[i].inUse) continue;
@@ -1536,11 +1536,11 @@ bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour)
 
         if (expanded_name != NULL)
         {   if (hard == IMAGE_CODE)
-            {   sprintf(expanded_name, "%s(InitialImage)", n);
+            {   std::sprintf(expanded_name, "%s(InitialImage)", n);
             }
             else if (hard == BANNER_CODE)
-                sprintf(expanded_name, "%s(InitialImage)", n);
-            else sprintf(expanded_name, "%s(HardCode<%.2x>)",
+                std::sprintf(expanded_name, "%s(InitialImage)", n);
+            else std::sprintf(expanded_name, "%s(HardCode<%.2x>)",
                              n, (int)((-hard) & 0xff));
         }
         if (!bad) return false;
@@ -1548,7 +1548,7 @@ bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour)
     return true;
 }
 
-bool Iopen(const char *name, size_t len, int forinput, char *expanded_name)
+bool Iopen(const char *name, std::size_t len, int forinput, char *expanded_name)
 //
 // Make file with the given name available through this package of
 // routines.  (name) is a pointer to a string (len characters valid) that
@@ -1587,7 +1587,7 @@ bool Iopen(const char *name, size_t len, int forinput, char *expanded_name)
 #endif
                     p2 = "";
                 }
-                sprintf(expanded_name, "%s%s%.*s%s", n, p1, (int)len, name, p2);
+                std::sprintf(expanded_name, "%s%s%.*s%s", n, p1, (int)len, name, p2);
             }
             if (!bad) return false;
         }
@@ -1595,7 +1595,7 @@ bool Iopen(const char *name, size_t len, int forinput, char *expanded_name)
     }
     if (!any_output_request)
     {   if (expanded_name != NULL)
-            strcpy(expanded_name, "<no output file specified>");
+            std::strcpy(expanded_name, "<no output file specified>");
         return true;
     }
     n = would_be_output_directory;
@@ -1615,8 +1615,8 @@ bool Iopen(const char *name, size_t len, int forinput, char *expanded_name)
             p2 = "";
         }
         if (len == IMAGE_CODE)
-            sprintf(expanded_name, "%s%sInitialImage%s", p1, n, p2);
-        else sprintf(expanded_name, "%s%s%.*s%s", n, p1, (int)len, name, p2);
+            std::sprintf(expanded_name, "%s%sInitialImage%s", p1, n, p2);
+        else std::sprintf(expanded_name, "%s%s%.*s%s", n, p1, (int)len, name, p2);
     }
     return open_output(name, len);
 }
@@ -1630,10 +1630,10 @@ bool Iwriterootp(char *expanded_name)
 {   directory *d;
     LispObject oo = qvalue(output_library);
     if (!any_output_request)
-    {   strcpy(expanded_name, "<no output file specified>");
+    {   std::strcpy(expanded_name, "<no output file specified>");
         return true;
     }
-    sprintf(expanded_name, "%s(InitialImage)", would_be_output_directory);
+    std::sprintf(expanded_name, "%s(InitialImage)", would_be_output_directory);
     if (!is_library(oo)) return true;
     d = fasl_files[library_number(oo)].dir;
     if (d == NULL) return true;  // closed handle, I guess
@@ -1693,7 +1693,7 @@ bool Iopen_to_stdout(void)
     return false;
 }
 
-bool Idelete(const char *name, size_t len)
+bool Idelete(const char *name, std::size_t len)
 {   int i, nrec;
     directory *d;
     LispObject oo = qvalue(output_library);
@@ -1704,9 +1704,9 @@ bool Idelete(const char *name, size_t len)
         Istatus != I_INACTIVE) return true;
     if (d->full_filename != NULL)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        memset(nn, 0, sizeof(nn));
+        std::memset(nn, 0, sizeof(nn));
         fasl_file_name(nn, d, name, len);
-        return (remove(nn) != 0);
+        return (std::remove(nn) != 0);
     }
     for (i=0; i<get_dirused(*d); i++)
     {   if ((nrec = samename(name, d, i, len)) != 0)
@@ -1720,9 +1720,9 @@ bool Idelete(const char *name, size_t len)
 // help avoid confusion and ease debugging.
 //
             while (nrec-- != 0)
-            {   memset(&d->d[j].D_name, ' ', name_size);
-                memcpy(&d->d[j].D_name, "<Unused>", 8);
-                memset(&d->d[j].D_date, ' ', date_size);
+            {   std::memset(&d->d[j].D_name, ' ', name_size);
+                std::memcpy(&d->d[j].D_name, "<Unused>", 8);
+                std::memset(&d->d[j].D_date, ' ', date_size);
                 (&d->d[j].D_date)[0] = '-';
                 setbits32(&d->d[j].D_position, 0);
                 setbits24(&d->d[j].D_size, 0);
@@ -1735,7 +1735,7 @@ bool Idelete(const char *name, size_t len)
     return true;
 }
 
-bool Icopy(const char *name, size_t len)
+bool Icopy(const char *name, std::size_t len)
 //
 // Find the named module in one of the input files, and if the place that
 // it is found is not already the output file copy it to the output. These days
@@ -1802,8 +1802,8 @@ found:
         name = "HelpDataFile", len = IMAGE_CODE, n = 1;
     else if (len == BANNER_CODE)
         name = "Start-Banner", len = IMAGE_CODE, n = 1;
-    else if ((intptr_t)len < 0)
-    {   sprintf(hard, "HardCode<%.2x>", (int)((-len) & 0xff));
+    else if ((std::intptr_t)len < 0)
+    {   std::sprintf(hard, "HardCode<%.2x>", (int)((-len) & 0xff));
         name = hard, len = IMAGE_CODE, n = 1;
     }
     else if (len <= 11) n = 1;
@@ -1818,23 +1818,23 @@ found:
     current_output_entry = &d->d[i];
     if (len == IMAGE_CODE)
     {   d->d[i].D_newline = NEWLINE_CHAR;
-        memcpy(&d->d[i].D_name, name, 12);
-        memset(&d->d[i].D_date, ' ', date_size);
-        memset(&d->d[i].D_size, 0, 3);
-        memcpy(&d->d[i].D_position, d->h.eof, 4);
+        std::memcpy(&d->d[i].D_name, name, 12);
+        std::memset(&d->d[i].D_date, ' ', date_size);
+        std::memset(&d->d[i].D_size, 0, 3);
+        std::memcpy(&d->d[i].D_position, d->h.eof, 4);
     }
     else
-    {   size_t np;
+    {   std::size_t np;
         const char *p;
 //
 // First I will clear all the relevant fields to blanks.
 //
         for (j=0; j<n; j++)
         {   d->d[i+j].D_newline = '\n';
-            memset(&d->d[i+j].D_name, ' ', name_size);
-            memset(&d->d[i+j].D_date, ' ', date_size);
-            memset(&d->d[i+j].D_size, 0, 3);
-            memcpy(&d->d[i+j].D_position, d->h.eof, 4);
+            std::memset(&d->d[i+j].D_name, ' ', name_size);
+            std::memset(&d->d[i+j].D_date, ' ', date_size);
+            std::memset(&d->d[i+j].D_size, 0, 3);
+            std::memcpy(&d->d[i+j].D_position, d->h.eof, 4);
         }
 #define next_char_of_name (np++ >= len ? ' ' : *p++)
         np = 0;
@@ -1852,15 +1852,15 @@ found:
     }
     set_dirused(&d->h, get_dirused(*d)+n);
 ofound:
-    memcpy(&d->d[i].D_date, &id->d[ii].D_date, date_size);
+    std::memcpy(&d->d[i].D_date, &id->d[ii].D_date, date_size);
     trace_printf("\nCopy %.*s from %s to %s\n",
                  len, name, id->filename, d->filename);
-    memcpy(&d->d[i].D_position, d->h.eof, 4);
+    std::memcpy(&d->d[i].D_position, d->h.eof, 4);
     if (d->d[i].D_space & 0x80)
     {   n = 0;
         do
         {   n++;
-            memcpy(&d->d[i+n].D_position, d->h.eof, 4);
+            std::memcpy(&d->d[i+n].D_position, d->h.eof, 4);
         }
         while ((d->d[i+n].D_space & 0xff) != 0xff);
     }
@@ -1868,21 +1868,21 @@ ofound:
 // I provisionally set the size to zero so that if something goes wrong
 // I will still have a tolerably sensible image file.
 //
-    memset(&d->d[i].D_size, 0, 3);
+    std::memset(&d->d[i].D_size, 0, 3);
     d->h.updated |= D_UPDATED;
-    if (fseek(d->f, bits32(&d->d[i].D_position), SEEK_SET) != 0 ||
-        fseek(id->f, bits32(&id->d[ii].D_position), SEEK_SET) != 0) return true;
+    if (std::fseek(d->f, bits32(&d->d[i].D_position), SEEK_SET) != 0 ||
+        std::fseek(id->f, bits32(&id->d[ii].D_position), SEEK_SET) != 0) return true;
     l = bits24(&id->d[ii].D_size);
     for (k=0; k<l; k++)
-    {   int c = getc(id->f);
+    {   int c = std::getc(id->f);
         if (c == EOF) return true;
-        putc(c, d->f);
+        std::putc(c, d->f);
     }
     read_bytes_remaining = 0;
     read_bytes_remaining = save;
-    if (fflush(d->f) != 0) return true;
-    setbits24(&d->d[i].D_size, (int32_t)l);
-    setbits32(d->h.eof, (int32_t)ftell(d->f));
+    if (std::fflush(d->f) != 0) return true;
+    setbits24(&d->d[i].D_size, (std::int32_t)l);
+    setbits32(d->h.eof, (std::int32_t)std::ftell(d->f));
     return false;
 }
 
@@ -1894,7 +1894,7 @@ bool IcloseInput()
 {   Istatus = I_INACTIVE;
 #ifndef BUILTIN_IMAGE
     if (nativedir)
-    {   if (fclose(binary_read_file) != 0) return true;
+    {   if (std::fclose(binary_read_file) != 0) return true;
     }
 #endif
     return false;
@@ -1916,24 +1916,24 @@ bool IcloseOutput()
     Istatus = I_INACTIVE;
     current_output_directory = NULL;
     if (d->full_filename != NULL)
-    {   r = (fclose(binary_write_file) != 0);
+    {   r = (std::fclose(binary_write_file) != 0);
         binary_write_file = NULL;
         return r;
     }
-    setbits24(&current_output_entry->D_size, (int32_t)write_bytes_written);
-    r = fflush(d->f);
-    setbits32(d->h.eof, (int32_t)ftell(d->f));
+    setbits24(&current_output_entry->D_size, (std::int32_t)write_bytes_written);
+    r = std::fflush(d->f);
+    setbits32(d->h.eof, (std::int32_t)std::ftell(d->f));
 //
 // I bring the directory at the start of the output file up to date at this
 // stage - the effect is that if things crash somehow I have a better
 // chance of resuming from where disaster hit.
 //
-    fseek(d->f, 0, SEEK_SET);
-    if (fwrite(&d->h, sizeof(directory_header), 1, d->f) != 1) r = true;
-    if (fwrite(&d->d[0], sizeof(directory_entry),
-               (size_t)get_dirsize(*d), d->f) !=
-        (size_t)get_dirsize(*d)) r = true;
-    if (fflush(d->f) != 0) r = true;
+    std::fseek(d->f, 0, SEEK_SET);
+    if (std::fwrite(&d->h, sizeof(directory_header), 1, d->f) != 1) r = true;
+    if (std::fwrite(&d->d[0], sizeof(directory_entry),
+               (std::size_t)get_dirsize(*d), d->f) !=
+        (std::size_t)get_dirsize(*d)) r = true;
+    if (std::fflush(d->f) != 0) r = true;
     d->h.updated &= ~D_UPDATED;
     current_output_entry = NULL;
     return r;
@@ -1966,10 +1966,10 @@ bool finished_with(int j)
                 long int len = bits24(&d->d[i].D_size);
                 long int newpos = hwm;
                 while (len != 0)
-                {   size_t n =
-                        (size_t)((CSL_PAGE_SIZE - 64 -
+                {   std::size_t n =
+                        (std::size_t)((CSL_PAGE_SIZE - 64 -
                                   ((char *)stack - (char *)stackbase)) &
-                                 (~(int32_t)0xff));
+                                 (~(std::int32_t)0xff));
 //
 // I only perform compression of the file when I am in the process of stopping,
 // and in that case the Lisp stack is not in use, so I use if as a buffer.
@@ -1985,36 +1985,36 @@ bool finished_with(int j)
 // is really no (Lisp) stack free I use a 64 byte local buffer.
 //
                     if (n == 0) b = small_buffer, n = sizeof(small_buffer);
-                    if (len < (long int)n) n = (size_t)len;
-                    fseek(d->f, pos, SEEK_SET);
-                    fread(b, 1, n, d->f);
-                    pos = ftell(d->f);
-                    fseek(d->f, newpos, SEEK_SET);
-                    fwrite(b, 1, n, d->f);
-                    newpos = ftell(d->f);
+                    if (len < (long int)n) n = (std::size_t)len;
+                    std::fseek(d->f, pos, SEEK_SET);
+                    std::fread(b, 1, n, d->f);
+                    pos = std::ftell(d->f);
+                    std::fseek(d->f, newpos, SEEK_SET);
+                    std::fwrite(b, 1, n, d->f);
+                    newpos = std::ftell(d->f);
                     len -= n;
                 }
-                setbits32(&d->d[i].D_position, (int32_t)hwm);
+                setbits32(&d->d[i].D_position, (std::int32_t)hwm);
             }
             hwm += bits24(&d->d[i].D_size) + 4L;
         }
-        fflush(d->f);
+        std::fflush(d->f);
         if (hwm != bits32(d->h.eof))
         {   truncate_file(d->f, hwm);
-            setbits32(d->h.eof, (int32_t)hwm);
+            setbits32(d->h.eof, (std::int32_t)hwm);
         }
     }
     if (d->h.updated & D_UPDATED)
-    {   if (d->f == NULL || fflush(d->f) != 0) return true;
-        fseek(d->f, 0, SEEK_SET);
-        if (fwrite(&d->h, sizeof(directory_header), 1, d->f) != 1) return true;
-        if (fwrite(&d->d[0], sizeof(directory_entry),
-                   (size_t)get_dirsize(*d), d->f) !=
-            (size_t)get_dirsize(*d)) return true;
-        if (fflush(d->f) != 0) return true;
+    {   if (d->f == NULL || std::fflush(d->f) != 0) return true;
+        std::fseek(d->f, 0, SEEK_SET);
+        if (std::fwrite(&d->h, sizeof(directory_header), 1, d->f) != 1) return true;
+        if (std::fwrite(&d->d[0], sizeof(directory_entry),
+                   (std::size_t)get_dirsize(*d), d->f) !=
+            (std::size_t)get_dirsize(*d)) return true;
+        if (std::fflush(d->f) != 0) return true;
     }
     if (d->h.updated & D_PENDING) return false;
-    else if (d->f != NULL && fclose(d->f) != 0) return true;
+    else if (d->f != NULL && std::fclose(d->f) != 0) return true;
     else return false;
 }
 
@@ -2030,7 +2030,7 @@ bool Ifinished(void)
 // Actually only output files are a real issue here. And then only
 // the ones that are flagged as needing compaction.
 //
-    size_t j;
+    std::size_t j;
     bool failed = false;
     for (j=0; j<fasl_files.size(); j++)
     {   if (!fasl_files[j].inUse) continue;
@@ -2066,14 +2066,14 @@ int Igetc(void)
         if (binary_read_filep - reduce_image == REDUCE_IMAGE_SIZE) c = -1;
         else c = *binary_read_filep++;
 #else
-        c = getc(binary_read_file);
+        c = std::getc(binary_read_file);
 #endif
     }
     if (c == EOF) return c;
     return (c & 0xff);
 }
 
-bool Iread(void *buff, size_t size)
+bool Iread(void *buff, std::size_t size)
 // Reads (size) bytes into the indicated buffer.  Returns true if
 // if fails to read the expected number of bytes.
 {
@@ -2104,22 +2104,22 @@ bool Iputc(int ch)
 {   write_bytes_written++;
     if (fasl_stream != nil && fasl_stream != SPID_NIL)
         putc_stream(ch, fasl_stream);
-    else if (putc(ch, binary_write_file) == EOF) return true;
+    else if (std::putc(ch, binary_write_file) == EOF) return true;
     return false;
 }
 
-bool Iwrite(const void *buff, size_t size)
+bool Iwrite(const void *buff, std::size_t size)
 //
 // Writes (size) bytes from the given buffer, returning true if trouble.
 //
 {   const unsigned char *p = (const unsigned char *)buff;
-    for (size_t i=0; i<size; i++)
+    for (std::size_t i=0; i<size; i++)
         if (Iputc(p[i])) return true;
     return false;
 }
 
-void preserve(const char *banner, size_t len)
-{   int32_t i;
+void preserve(const char *banner, std::size_t len)
+{   std::int32_t i;
     if (Iopen(NULL, 0, IOPEN_OUT, NULL))
     {   err_printf("+++ PRESERVE failed to open image file\n");
         return;
@@ -2134,13 +2134,13 @@ void preserve(const char *banner, size_t len)
         codevec = litvec = B_reg = faslvec = faslgensyms = nil;
     Lmapstore(nil, fixnum_of_int(4)); // Reset all counts to zero.
     {   char msg[128];
-        time_t t0 = time(0);
+        std::time_t t0 = std::time(0);
         for (i=0; i<128; i++) msg[i] = ' ';
         if (len > 60) len = 60; // truncate if necessary
         if (len == 0 || banner[0] == 0) msg[0] = 0;
-        else sprintf(msg, "%.*s", (int)len, banner);
+        else std::sprintf(msg, "%.*s", (int)len, banner);
 // 26 bytes starting from byte 64 shows the time of the dump
-        sprintf(msg+64, "%.25s\n", ctime(&t0));
+        std::sprintf(msg+64, "%.25s\n", std::ctime(&t0));
 // 16 bytes starting at byte 90 are for a checksum of the u01.c etc checks
         get_user_files_checksum((unsigned char *)&msg[90]);
 // 106 to 109 free at present but available if checksum goes to 160 bits

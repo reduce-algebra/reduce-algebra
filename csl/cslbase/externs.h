@@ -49,7 +49,7 @@
 
 #ifdef USE_MPI
 #include "mpi.h"
-extern int32_t mpi_rank,mpi_size;
+extern std::int32_t mpi_rank,mpi_size;
 #endif
 
 extern void **pages, **heap_pages, **vheap_pages;
@@ -58,15 +58,15 @@ extern void **new_heap_pages, **new_vheap_pages;
 
 extern void *allocate_page(const char *why);
 
-extern size_t pages_count, heap_pages_count, vheap_pages_count;
+extern std::size_t pages_count, heap_pages_count, vheap_pages_count;
 
-extern size_t new_heap_pages_count, new_vheap_pages_count;
+extern std::size_t new_heap_pages_count, new_vheap_pages_count;
 
 extern LispObject *list_bases[];
 extern LispObject *nilsegment, *stacksegment;
 extern LispObject *nilsegmentbase, *stacksegmentbase;
 extern LispObject *stackbase;
-extern int32_t stack_segsize;  // measured in units of one CSL page
+extern std::int32_t stack_segsize;  // measured in units of one CSL page
 extern double max_store_size;
 
 extern bool restartp;
@@ -139,7 +139,7 @@ typedef struct _directory_entry
 
 typedef struct directory
 {   directory_header h;
-    FILE *f;
+    std::FILE *f;
     const char *full_filename;    // NULL unless native directory
 // It is unexpectedly and unpleasantly the case that the "filename"
 // field here must be the last one before the array of directory
@@ -222,7 +222,7 @@ extern std::vector<faslFileRecord> fasl_files;
 
 extern char *big_chunk_start, *big_chunk_end;
 
-extern uintptr_t *C_stackbase, C_stacklimit;
+extern std::uintptr_t *C_stackbase, C_stacklimit;
 
 extern LispObject multiplication_buffer;
 
@@ -280,7 +280,7 @@ inline void if_check_stack()
 #else
 inline void if_check_stack()
 {   const char *_p_ = (const char *)&_p_; \
-    if ((uintptr_t)_p_ < C_stacklimit) aerror("stack overflow"); \
+    if ((std::uintptr_t)_p_ < C_stacklimit) aerror("stack overflow"); \
 }
 #endif
 
@@ -305,7 +305,7 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 #define debug_show_trail(data) debug_show_trail_raw(data, __FILE__, __LINE__)
 
 #define debug_assert(x) \
-  if (!(x)) { debug_show_trail("Assertion failed"); exit(7); }
+  if (!(x)) { debug_show_trail("Assertion failed"); std::exit(7); }
 
 #else
 
@@ -371,27 +371,27 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 
 
 #ifdef CONSERVATIVE
-extern uintptr_t heapstart;
-extern uintptr_t len;
-extern uintptr_t xor_chain;
-extern uintptr_t vheapstart;
-extern uintptr_t vlen;
-extern uintptr_t vxor_chain;
+extern std::uintptr_t heapstart;
+extern std::uintptr_t len;
+extern std::uintptr_t xor_chain;
+extern std::uintptr_t vheapstart;
+extern std::uintptr_t vlen;
+extern std::uintptr_t vxor_chain;
 
 extern LispObject *stacklimit;
 #else // !CONSERVATIVE
 extern LispObject *stacklimit;
 #endif // !CONSERVATIVE
 
-extern volatile std::atomic<uintptr_t> event_flag;
+extern volatile std::atomic<std::uintptr_t> event_flag;
 
-extern intptr_t nwork;
+extern std::intptr_t nwork;
 
 extern unsigned int exit_count;
-extern uint64_t gensym_ser;
-extern intptr_t print_precision, miscflags;
-extern intptr_t current_modulus, fastget_size, package_bits;
-extern intptr_t modulus_is_large;
+extern std::uint64_t gensym_ser;
+extern std::intptr_t print_precision, miscflags;
+extern std::intptr_t current_modulus, fastget_size, package_bits;
+extern std::intptr_t modulus_is_large;
 
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern LispObject quote_symbol, function_symbol, comma_symbol;
@@ -527,7 +527,7 @@ extern void copy_out_of_nilseg();
 extern void rehash_this_table(LispObject v);
 extern void simple_print(LispObject x);
 extern void simple_msg(const char *s, LispObject x);
-extern uint64_t hash_equal(LispObject key);
+extern std::uint64_t hash_equal(LispObject key);
 
 extern char *exit_charvec;
 
@@ -535,7 +535,7 @@ extern char *exit_charvec;
 // There is no reason to preserve this across restarts etc so making it a
 // simple C variable makes it easier for me to initialise it early.
 //
-extern intptr_t exit_reason;
+extern std::intptr_t exit_reason;
 
 extern int procstackp;
 
@@ -544,20 +544,20 @@ extern bool garbage_collection_permitted;
 extern int csl_argc;
 extern const char **csl_argv;
 extern bool fasl_output_file;
-extern size_t output_directory;
+extern std::size_t output_directory;
 
 extern LispObject *repeat_heap;
-extern size_t repeat_count;
+extern std::size_t repeat_count;
 
 #ifdef BUILTIN_IMAGE
 const unsigned char *binary_read_filep;
 #else
-extern FILE *binary_read_file;
+extern std::FILE *binary_read_file;
 #endif
 
-extern FILE *binary_write_file;
+extern std::FILE *binary_write_file;
 
-extern size_t boffop;
+extern std::size_t boffop;
 extern void packcharacter(int c);
 extern void packbyte(int c);
 #define boffo_char(i) ucelt(boffo, i)
@@ -577,29 +577,29 @@ extern int errorset_min, errorset_max;
 
 extern bool force_verbos, force_echo, force_backtrace;
 extern bool stop_on_error;
-extern uint64_t force_cons, force_vec;
+extern std::uint64_t force_cons, force_vec;
 
 extern int init_flags;
 
 extern const char *standard_directory;
 
-extern int64_t gc_number;
-extern int64_t reclaim_trap_count;
-extern uintptr_t reclaim_stack_limit;
-extern uint64_t reclaim_trigger_count, reclaim_trigger_target;
+extern std::int64_t gc_number;
+extern std::int64_t reclaim_trap_count;
+extern std::uintptr_t reclaim_stack_limit;
+extern std::uint64_t reclaim_trigger_count, reclaim_trigger_target;
 
 #ifdef CONSERVATIVE
 extern void reclaim(const char *why);
 #else
 extern LispObject reclaim(LispObject value_to_return, const char *why,
-                          int stg_class, size_t size);
+                          int stg_class, std::size_t size);
 #endif
 extern void use_gchook(LispObject arg);
 
-extern uint64_t force_cons, force_vec;
+extern std::uint64_t force_cons, force_vec;
 extern bool next_gc_is_hard;
 
-inline bool cons_forced(size_t n)
+inline bool cons_forced(std::size_t n)
 {
 #ifdef DEBUG
     if (force_cons == 0) return false;
@@ -613,7 +613,7 @@ inline bool cons_forced(size_t n)
     return false;
 }
 
-inline bool vec_forced(size_t n)
+inline bool vec_forced(std::size_t n)
 {
 #ifdef DEBUG
     if (force_vec == 0) return false;
@@ -638,7 +638,7 @@ inline bool vec_forced(size_t n)
 //
 
 extern int tty_count;
-extern FILE *spool_file;
+extern std::FILE *spool_file;
 extern char spool_file_name[128];
 
 //
@@ -698,7 +698,7 @@ extern LispObject char_to_id(int ch);
 extern void Iinit();
 extern void IreInit();
 extern void Ilist();
-extern bool open_output(const char *s, size_t len);
+extern bool open_output(const char *s, std::size_t len);
 
 #define IMAGE_CODE  ((size_t)(-1000))
 #define HELP_CODE   ((size_t)(-1001))
@@ -707,41 +707,41 @@ extern bool open_output(const char *s, size_t len);
 #define IOPEN_OUT       0
 #define IOPEN_IN        1
 
-extern bool Iopen(const char *name, size_t len, int dirn, char *expanded_name);
+extern bool Iopen(const char *name, std::size_t len, int dirn, char *expanded_name);
 extern bool Iopen_from_stdin(), Iopen_to_stdout();
-extern bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour);
+extern bool IopenRoot(char *expanded_name, std::size_t hard, int sixtyfour);
 extern bool Iwriterootp(char *expanded);
 extern bool Iopen_banner(int code);
-extern bool Imodulep1(int i, const char *name, size_t len, char *datestamp,
-                     size_t *size, char *expanded_name);
-extern bool Imodulep(const char *name, size_t len, char *datestamp,
-                     size_t *size, char *expanded_name);
-extern char *trim_module_name(char *name, size_t *lenp);
-extern bool Icopy(const char *name, size_t len);
-extern bool Idelete(const char *name, size_t len);
+extern bool Imodulep1(int i, const char *name, std::size_t len, char *datestamp,
+                     std::size_t *size, char *expanded_name);
+extern bool Imodulep(const char *name, std::size_t len, char *datestamp,
+                     std::size_t *size, char *expanded_name);
+extern char *trim_module_name(char *name, std::size_t *lenp);
+extern bool Icopy(const char *name, std::size_t len);
+extern bool Idelete(const char *name, std::size_t len);
 extern bool IcloseInput();
 extern bool IcloseOutput();
 extern bool Ifinished();
 extern int  Igetc();
-extern bool Iread(void *buff, size_t size);
+extern bool Iread(void *buff, std::size_t size);
 extern bool Iputc(int ch);
-extern bool Iwrite(const void *buff, size_t size);
+extern bool Iwrite(const void *buff, std::size_t size);
 extern bool def_init();
 extern bool inf_init();
 extern bool def_finish();
 extern bool inf_finish();
 extern int  Zgetc();
-extern bool Zread(void *buff, size_t size);
+extern bool Zread(void *buff, std::size_t size);
 extern bool Zputc(int ch);
-extern bool Zwrite(const void *buff, size_t size);
+extern bool Zwrite(const void *buff, std::size_t size);
 extern long int Ioutsize();
 extern const char *CSLtmpdir();
-extern const char *CSLtmpnam(const char *suffix, size_t suffixlen);
+extern const char *CSLtmpnam(const char *suffix, std::size_t suffixlen);
 extern int Cmkdir(const char *s);
 extern char *look_in_lisp_variable(char *o, int prefix);
 
 extern void CSL_MD5_Init();
-extern void CSL_MD5_Update(const unsigned char *data, size_t len);
+extern void CSL_MD5_Update(const unsigned char *data, std::size_t len);
 extern void CSL_MD5_Final(unsigned char *md);
 extern bool CSL_MD5_busy;
 extern unsigned char *CSL_MD5(unsigned char *data, int n, unsigned char *md);
@@ -751,9 +751,9 @@ extern void ensure_screen();
 extern int window_heading;
 [[noreturn]] extern void my_exit(int n);
 
-extern uint64_t base_time;
+extern std::uint64_t base_time;
 extern std::chrono::high_resolution_clock::time_point base_walltime;
-extern uint64_t gc_time;
+extern std::uint64_t gc_time;
 extern bool trap_floating_overflow;
 extern const volatile char *errorset_msg;
 extern int errorset_code;
@@ -779,15 +779,15 @@ extern void record_get(LispObject tag, bool found);
 // building CSL as a DLL for some while and so I expect that any attempt to
 // do so would call for careful review of linkage styles etc!
 
-extern bool        isprime(uint64_t);
+extern bool        isprime(std::uint64_t);
 extern void        set_up_functions(int restartp);
 extern void        get_user_files_checksum(unsigned char *);
 extern LispObject acons(LispObject a, LispObject b, LispObject c);
 extern LispObject ash(LispObject a, LispObject b);
-extern LispObject bytestream_interpret(size_t ppc, LispObject lit,
+extern LispObject bytestream_interpret(std::size_t ppc, LispObject lit,
                                        LispObject *entry_stack);
 extern bool     complex_stringp(LispObject a);
-extern LispObject  copy_string(LispObject a, size_t n);
+extern LispObject  copy_string(LispObject a, std::size_t n);
 extern void        freshline_trace();
 extern void        freshline_debug();
 extern LispObject cons(LispObject a, LispObject b);
@@ -796,9 +796,9 @@ extern LispObject acons_no_gc(LispObject a, LispObject b, LispObject c);
 extern LispObject cons_gc_test(LispObject a);
 extern void       convert_fp_rep(void *p, int old_rep, int new_rep, int type);
 extern LispObject eval(LispObject u, LispObject env);
-extern uint32_t   Crand();
+extern std::uint32_t   Crand();
 extern LispObject Cremainder(LispObject a, LispObject b);
-extern void        Csrand(uint32_t a);
+extern void        Csrand(std::uint32_t a);
 extern void        discard(LispObject a);
 extern bool eql_fn(LispObject a, LispObject b);
 extern bool cl_equal_fn(LispObject a, LispObject b);
@@ -819,20 +819,20 @@ extern void        drop_heap_segments();
 extern LispObject gcd(LispObject a, LispObject b);
 extern LispObject get_pname(LispObject a);
 extern LispObject get(LispObject a, LispObject b, LispObject c=nil);
-extern LispObject get_basic_vector(int tag, int type, size_t length);
-extern LispObject get_basic_vector_init(size_t n, LispObject v);
-extern LispObject reduce_basic_vector_size(LispObject v, size_t len);
-extern LispObject get_vector(int tag, int type, size_t length);
-extern LispObject get_vector_init(size_t n, LispObject v);
-extern LispObject reduce_vector_size(LispObject n, size_t length);
+extern LispObject get_basic_vector(int tag, int type, std::size_t length);
+extern LispObject get_basic_vector_init(std::size_t n, LispObject v);
+extern LispObject reduce_basic_vector_size(LispObject v, std::size_t len);
+extern LispObject get_vector(int tag, int type, std::size_t length);
+extern LispObject get_vector_init(std::size_t n, LispObject v);
+extern LispObject reduce_vector_size(LispObject n, std::size_t length);
 extern void       prepare_for_borrowing();
 inline void zero_out(void *p)
-{   char *p1 = (char *)doubleword_align_up((uintptr_t)p);
-    memset(p1, 0, CSL_PAGE_SIZE);
+{   char *p1 = (char *)doubleword_align_up((std::uintptr_t)p);
+    std::memset(p1, 0, CSL_PAGE_SIZE);
 }
-extern LispObject borrow_basic_vector(int tag, int type, size_t length);
-extern LispObject borrow_vector(int tag, int type, size_t length);
-extern uint64_t   hash_lisp_string(LispObject s);
+extern LispObject borrow_basic_vector(int tag, int type, std::size_t length);
+extern LispObject borrow_vector(int tag, int type, std::size_t length);
+extern std::uint64_t   hash_lisp_string(LispObject s);
 extern void lose_C_def(LispObject a);
 extern bool       geq2(LispObject a, LispObject b);
 extern bool       greaterp2(LispObject a, LispObject b);
@@ -851,7 +851,7 @@ extern LispObject lognot(LispObject a);
 extern LispObject macroexpand(LispObject form, LispObject env);
 extern LispObject make_package(LispObject name);
 extern LispObject make_string(const char *b);
-extern LispObject make_nstring(const char *b, size_t n);
+extern LispObject make_nstring(const char *b, std::size_t n);
 extern LispObject make_undefined_symbol(const char *s);
 extern LispObject make_symbol(char const *s, int restartp,
                               no_args *f0, one_arg *f1, two_args *f2,
@@ -867,15 +867,15 @@ extern LispObject  ndelete(LispObject a, LispObject b);
 extern LispObject  negate(LispObject a);
 extern LispObject  nreverse(LispObject a);
 extern LispObject  nreverse2(LispObject a, LispObject b);
-extern FILE        *open_file(char *filename, const char *original_name,
-                              size_t n, const char *dirn, FILE *old_file);
+extern std::FILE        *open_file(char *filename, const char *original_name,
+                              std::size_t n, const char *dirn, std::FILE *old_file);
 extern LispObject  plus2(LispObject a, LispObject b);
-extern void        preserve(const char *msg, size_t len);
+extern void        preserve(const char *msg, std::size_t len);
 extern LispObject prin(LispObject u);
 extern void debugprint(LispObject a, int depth=10);
 extern void debugprint(const char *s, LispObject a);
 extern void debugprint(const char *s);
-extern const char *get_string_data(LispObject a, const char *why, size_t &len);
+extern const char *get_string_data(LispObject a, const char *why, std::size_t &len);
 extern void prin_to_stdout(LispObject u);
 extern void prin_to_terminal(LispObject u);
 extern void prin_to_debug(LispObject u);
@@ -908,7 +908,7 @@ extern void        read_eval_print(int noisy);
 extern void        set_fns(LispObject sym, no_args *f0, one_arg *f1,
                            two_args *f2, three_args *f3, fourup_args *f4up);
 extern void        init_heap_segments(double size);
-extern void        grab_more_memory(size_t npages);
+extern void        grab_more_memory(std::size_t npages);
 extern bool        allocate_more_memory();
 extern void        setup(int restartp, double storesize);
 extern void        set_up_variables(int restart_flag);
@@ -917,12 +917,12 @@ extern void        write_everything();
 extern LispObject  simplify_string(LispObject s);
 extern bool        stringp(LispObject a);
 extern LispObject  times2(LispObject a, LispObject b);
-extern int32_t     thirty_two_bits(LispObject a);
-extern uint32_t    thirty_two_bits_unsigned(LispObject a);
-extern int64_t     sixty_four_bits(LispObject a);
-extern uint64_t    sixty_four_bits_unsigned(LispObject a);
+extern std::int32_t     thirty_two_bits(LispObject a);
+extern std::uint32_t    thirty_two_bits_unsigned(LispObject a);
+extern std::int64_t     sixty_four_bits(LispObject a);
+extern std::uint64_t    sixty_four_bits_unsigned(LispObject a);
 
-extern uint64_t    crc64(uint64_t crc, const void *buf, size_t size);
+extern std::uint64_t    crc64(std::uint64_t crc, const void *buf, std::size_t size);
 
 #ifdef DEBUG
 extern void validate_string_fn(LispObject a, const char *f, int l);
@@ -1014,8 +1014,8 @@ typedef struct setup_type_1
     two_args *two;
     three_args *three;
     fourup_args *fourup;
-    uint32_t c1;
-    uint32_t c2;
+    std::uint32_t c1;
+    std::uint32_t c2;
 } setup_type_1;
 
 extern setup_type const
@@ -1072,9 +1072,9 @@ extern LispObject tagbody_fn(LispObject args, LispObject env);
 // file.
 //
 [[noreturn]] extern void resource_exceeded();
-extern int64_t time_base,  space_base,  io_base,  errors_base;
-extern int64_t time_now,   space_now,   io_now,   errors_now;
-extern int64_t time_limit, space_limit, io_limit, errors_limit;
+extern std::int64_t time_base,  space_base,  io_base,  errors_base;
+extern std::int64_t time_now,   space_now,   io_now,   errors_now;
+extern std::int64_t time_limit, space_limit, io_limit, errors_limit;
 
 //
 // Flags used to toggle the protection or otherwise of symbols, and
@@ -1083,8 +1083,8 @@ extern int64_t time_limit, space_limit, io_limit, errors_limit;
 extern bool symbol_protect_flag, warn_about_protected_symbols;
 
 #ifdef HASH_STATISTICS
-extern uint64_t Nhget, Nhgetp, Nhput1, Nhputp1, Nhput2, Nhputp2, Nhputtmp;
-extern uint64_t Noget, Nogetp, Noput, Noputp, Noputtmp;
+extern std::uint64_t Nhget, Nhgetp, Nhput1, Nhputp1, Nhput2, Nhputp2, Nhputtmp;
+extern std::uint64_t Noget, Nogetp, Noput, Noputp, Noputtmp;
 #endif
 
 #endif // header_externs_h

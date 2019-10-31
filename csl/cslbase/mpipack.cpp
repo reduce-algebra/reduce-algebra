@@ -82,7 +82,7 @@ static int mpi_pack_position = 0;
 static void default_check_buffer(int n)
 {   if (mpi_pack_size - mpi_pack_position < n)
     {   mpi_pack_size += MPI_BUFFER_BLOCK;
-        mpi_pack_buffer = (char*)realloc( mpi_pack_buffer, mpi_pack_size);
+        mpi_pack_buffer = (char*)std::realloc( mpi_pack_buffer, mpi_pack_size);
         if (mpi_pack_buffer == 0) aerror0("Not enough memory for MPI buffer.");
     }
 }
@@ -94,7 +94,7 @@ static void scatter_check_buffer(int n)
                           mpi_pack_position ) < n)
     {   mpi_real_size += MPI_BUFFER_BLOCK;
         mpi_pack_size += MPI_BUFFER_BLOCK;
-        mpi_buffer_bottom = (char*)realloc( mpi_buffer_bottom, mpi_real_size);
+        mpi_buffer_bottom = (char*)std::realloc( mpi_buffer_bottom, mpi_real_size);
         if (mpi_buffer_bottom == 0) aerror0("Not enough memory for MPI buffer.");
         mpi_pack_buffer = mpi_buffer_bottom + mpi_pack_offset;
     }

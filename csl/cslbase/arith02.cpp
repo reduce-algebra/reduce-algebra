@@ -74,7 +74,7 @@
 // convenient documentation of what the function needs to do.
 //
 
-inline uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b, uint32_t c)
+inline std::uint32_t Imultiply(std::uint32_t *rlow, std::uint32_t a, std::uint32_t b, std::uint32_t c)
 //
 //          (result, *rlow) = a*b + c     as 62-bit product
 //
@@ -89,9 +89,9 @@ inline uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b, uint32_t c)
 //
 {
 // NB the value r could be int64_t or uint64_t - it does not matter
-    uint64_t r = (uint64_t)a*(uint64_t)b + (uint64_t)c;
-    *rlow = (uint32_t)(r & 0x7fffffff);
-    return (uint32_t)(r >> 31);
+    std::uint64_t r = (std::uint64_t)a*(std::uint64_t)b + (std::uint64_t)c;
+    *rlow = (std::uint32_t)(r & 0x7fffffff);
+    return (std::uint32_t)(r >> 31);
 }
 
 inline LispObject timesii(LispObject a, LispObject b)
@@ -99,8 +99,8 @@ inline LispObject timesii(LispObject a, LispObject b)
 // multiplying two fixnums together is much messier than adding them,
 // mainly because the result can easily be a bignum
 //
-{   int64_t aa = (int64_t)int_of_fixnum(a),
-            bb = (int64_t)int_of_fixnum(b);
+{   std::int64_t aa = (std::int64_t)int_of_fixnum(a),
+            bb = (std::int64_t)int_of_fixnum(b);
 // If I am on a 32-bit system then fixnums are only 28 bits wide so using
 // int64_t multiplication can never overflow.
     if (!SIXTY_FOUR_BIT) return make_lisp_integer64(aa*bb);
@@ -133,14 +133,14 @@ static LispObject timesbb(LispObject a, LispObject b);
 
 static LispObject timesib(LispObject a, LispObject b)
 {   if (SIXTY_FOUR_BIT)
-    {   intptr_t aa = int_of_fixnum(a);
+    {   std::intptr_t aa = int_of_fixnum(a);
         if (!signed31_in_ptr(aa))  // See if a is too big for the easy code
             return timesbb(make_fake_bignum(aa), b);
 // Here a is just a 31-bit signed value.
     }
-    int32_t aa = (int32_t)int_of_fixnum(a);
-    size_t lenb, i;
-    uint32_t carry, ms_dig, w;
+    std::int32_t aa = (std::int32_t)int_of_fixnum(a);
+    std::size_t lenb, i;
+    std::uint32_t carry, ms_dig, w;
     LispObject c;
 //
 // I will split off the (easy) cases of the fixnum being -1, 0 or 1.
@@ -204,17 +204,17 @@ static LispObject timesib(LispObject a, LispObject b)
 //
     for (i=0; i<lenb-1; i++)
         Dmultiply(carry, bignum_digits(c)[i], bignum_digits(c)[i],
-                  (uint32_t)aa, carry);
+                  (std::uint32_t)aa, carry);
     ms_dig = bignum_digits(c)[i];
-    Dmultiply(carry, w, clear_top_bit(ms_dig), (uint32_t)aa, carry);
+    Dmultiply(carry, w, clear_top_bit(ms_dig), (std::uint32_t)aa, carry);
 //
 // After forming the product to (lenb) digits I need to see if there
 // is any overflow. Calculate what the next digit would be, sign
 // extending into the 0x80000000 bit as necessary.
 //
     if ((carry & 0x40000000) != 0) carry = set_top_bit(carry);
-    if (((int32_t)ms_dig) < 0) carry -= aa;
-    aa = (int32_t)carry;
+    if (((std::int32_t)ms_dig) < 0) carry -= aa;
+    aa = (std::int32_t)carry;
     if (aa == -1 && (w & 0x40000000) != 0)
     {   bignum_digits(c)[i] = set_top_bit(w);
         return c;
@@ -358,11 +358,11 @@ static LispObject timessf(LispObject a, LispObject b)
 //
 
 
-static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
-                       uint32_t *d, size_t lena, size_t lenb, size_t lenc);
+static void long_times(std::uint32_t *c, std::uint32_t *a, std::uint32_t *b,
+                       std::uint32_t *d, std::size_t lena, std::size_t lenb, std::size_t lenc);
 
-static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
-                        uint32_t *d, size_t lena, size_t lenb, size_t lenc)
+static void long_times1(std::uint32_t *c, std::uint32_t *a, std::uint32_t *b,
+                        std::uint32_t *d, std::size_t lena, std::size_t lenb, std::size_t lenc)
 //
 // Here both a and b are big, with lena <= lenb.  Split each into two chunks
 // of size (lenc/4), say (a1,a2) and (b1,b2), and compute each of
@@ -377,11 +377,11 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 // all zero) I do things in a more straightforward way.  I require that on
 // entry to this code lenc<4 < lenb <= lenc/2.
 //
-{   size_t h = lenc/4;   // lenc must have been made even enough...
-    size_t lena1 = lena < h ? 0 : lena - h;
-    size_t lenb1 = lenb - h;
-    uint32_t carrya, carryb;
-    size_t i;
+{   std::size_t h = lenc/4;   // lenc must have been made even enough...
+    std::size_t lena1 = lena < h ? 0 : lena - h;
+    std::size_t lenb1 = lenb - h;
+    std::uint32_t carrya, carryb;
+    std::size_t i;
 //
 // if the top half of (a) would be all zero I go through a separate path,
 // doing just two subsidiary multiplications.
@@ -393,12 +393,12 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
         for (i=0; i<h; i++) c[i] = d[i];
         carrya = 0;
         for (; i<2*h; i++)
-        {   uint32_t w = c[i] + d[i] + carrya;
+        {   std::uint32_t w = c[i] + d[i] + carrya;
             c[i] = clear_top_bit(w);
             carrya = w >> 31;
         }
         for (; carrya!=0; i++)
-        {   uint32_t w = c[i] + 1;
+        {   std::uint32_t w = c[i] + 1;
             c[i] = clear_top_bit(w);
             carrya = w >> 31;
         }
@@ -409,14 +409,14 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 //
     carrya = 0;
     for (i=0; i<h; i++)
-    {   uint32_t w = a[i] + carrya;
+    {   std::uint32_t w = a[i] + carrya;
         if (i < lena1) w += a[h+i];
         d[i] = clear_top_bit(w);
         carrya = w >> 31;
     }
     carryb = 0;
     for (i=0; i<h; i++)
-    {   uint32_t w = b[i] + carryb;
+    {   std::uint32_t w = b[i] + carryb;
         if (i < lenb1) w += b[h+i];
         d[h+i] = clear_top_bit(w);
         carryb = w >> 31;
@@ -430,7 +430,7 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
     if (carrya != 0)
     {   carrya = 0;
         for (i=0; i<h; i++)
-        {   uint32_t w = c[2*h+i] + d[h+i] + carrya;
+        {   std::uint32_t w = c[2*h+i] + d[h+i] + carrya;
             c[2*h+i] = clear_top_bit(w);
             carrya = w >> 31;
         }
@@ -438,7 +438,7 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
     if (carryb != 0)
     {   carryb = 0;
         for (i=0; i<h; i++)
-        {   uint32_t w = c[2*h+i] + d[i] + carryb;
+        {   std::uint32_t w = c[2*h+i] + d[i] + carryb;
             c[2*h+i] = clear_top_bit(w);
             carryb = w >> 31;
         }
@@ -456,18 +456,18 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
     long_times(d, a+h, b+h, c, lena-h, lenb-h, 2*h);
     carrya = 0;
     for (i=0; i<2*h; i++)
-    {   uint32_t w = c[2*h+i] + d[i] + carrya;
+    {   std::uint32_t w = c[2*h+i] + d[i] + carrya;
         c[2*h+i] = clear_top_bit(w);
         carrya = w >> 31;
     }
     carrya = 0;
     for (i=0; i<2*h; i++)
-    {   uint32_t w = c[h+i] - d[i] - carrya;
+    {   std::uint32_t w = c[h+i] - d[i] - carrya;
         c[h+i] = clear_top_bit(w);
         carrya = w >> 31;
     }
     for (; carrya!=0 && i<3*h; i++)
-    {   uint32_t w = c[h+i] - 1;
+    {   std::uint32_t w = c[h+i] - 1;
         c[h+i] = clear_top_bit(w);
         carrya = w >> 31;
     }
@@ -478,23 +478,23 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
     for (i=0; i<h; i++) c[i] = d[i];
     carrya = 0;
     for (; i<2*h; i++)
-    {   uint32_t w = c[i] + d[i] + carrya;
+    {   std::uint32_t w = c[i] + d[i] + carrya;
         c[i] = clear_top_bit(w);
         carrya = w >> 31;
     }
     for (; carrya!=0 && i<4*h; i++)
-    {   uint32_t w = c[i] + 1;
+    {   std::uint32_t w = c[i] + 1;
         c[i] = clear_top_bit(w);
         carrya = w >> 31;
     }
     carrya = 0;
     for (i=0; i<2*h; i++)
-    {   uint32_t w = c[h+i] - d[i] - carrya;
+    {   std::uint32_t w = c[h+i] - d[i] - carrya;
         c[h+i] = clear_top_bit(w);
         carrya = w >> 31;
     }
     for (; carrya!=0 && i<3*h; i++)
-    {   uint32_t w = c[h+i] - 1;
+    {   std::uint32_t w = c[h+i] - 1;
         c[h+i] = clear_top_bit(w);
         carrya = w >> 31;
     }
@@ -606,11 +606,11 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 //   DONE!
 //
 
-static uint32_t *kara_0_c, *kara_0_a, *kara_0_b, *kara_0_d;
-static uint32_t kara_0_lena, kara_0_lenb, kara_0_lenc;
+static std::uint32_t *kara_0_c, *kara_0_a, *kara_0_b, *kara_0_d;
+static std::uint32_t kara_0_lena, kara_0_lenb, kara_0_lenc;
 
-static uint32_t *kara_1_c, *kara_1_a, *kara_1_b, *kara_1_d;
-static uint32_t kara_1_lena, kara_1_lenb, kara_1_lenc;
+static std::uint32_t *kara_1_c, *kara_1_a, *kara_1_b, *kara_1_d;
+static std::uint32_t kara_1_lena, kara_1_lenb, kara_1_lenc;
 
 #ifndef WITH_CILK
 
@@ -644,8 +644,8 @@ void kara_worker(int my_id)
 
 #endif // ! WITH_CILK
 
-static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
-                         uint32_t *d, size_t lena, size_t lenb, size_t lenc)
+static void long_times1p(std::uint32_t *c, std::uint32_t *a, std::uint32_t *b,
+                         std::uint32_t *d, std::size_t lena, std::size_t lenb, std::size_t lenc)
 //
 // Here both a and b are big, with lena <= lenb.  Split each into two chunks
 // of size (lenc/4), say (a1,a2) and (b1,b2), and compute each of
@@ -660,11 +660,11 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 // all zero) I do things in a more straightforward way.  I require that on
 // entry to this code lenc<4 < lenb <= lenc/2.
 //
-{   size_t h = lenc/4;   // lenc must have been made even enough...
-    size_t lena1 = lena < h ? 0 : lena - h;
-    size_t lenb1 = lenb - h;
-    uint32_t carry, asumcarry, bsumcarry, carryc, carryc1, carryc2;
-    size_t i;
+{   std::size_t h = lenc/4;   // lenc must have been made even enough...
+    std::size_t lena1 = lena < h ? 0 : lena - h;
+    std::size_t lenb1 = lenb - h;
+    std::uint32_t carry, asumcarry, bsumcarry, carryc, carryc1, carryc2;
+    std::size_t i;
 //
 // if the top half of a would be all zero I go through a separate path,
 // doing just two subsidiary multiplications. Note that if I do that I
@@ -706,12 +706,12 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         for (i=0; i<h; i++) c[i] = d[i];
         carry = 0;
         for (; i<2*h; i++)
-        {   uint32_t w = c[i] + d[i] + carry;
+        {   std::uint32_t w = c[i] + d[i] + carry;
             c[i] = clear_top_bit(w);
             carry = w >> 31;
         }
         for (; carry!=0 && i<lenc; i++)
-        {   uint32_t w = c[i] + 1;
+        {   std::uint32_t w = c[i] + 1;
             c[i] = clear_top_bit(w);
             carry = w >> 31;
         }
@@ -772,14 +772,14 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 //
     asumcarry = 0;
     for (i=0; i<h; i++)
-    {   uint32_t w = a[i] + asumcarry;
+    {   std::uint32_t w = a[i] + asumcarry;
         if (i < lena1) w += a[h+i];
         d[3*h+i] = clear_top_bit(w);
         asumcarry = w >> 31;
     }
     bsumcarry = 0;
     for (i=0; i<h; i++)
-    {   uint32_t w = b[i] + bsumcarry;
+    {   std::uint32_t w = b[i] + bsumcarry;
         if (i < lenb1) w += b[h+i];
         d[4*h+i] = clear_top_bit(w);
         bsumcarry = w >> 31;
@@ -789,7 +789,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 //
 // Now I wish to re-sync with the two sub-tasks...
 //
-    fflush(stdout);
+    std::fflush(stdout);
 #ifndef WITH_CILK
     {   std::unique_lock<std::mutex> lk(kara_mutex);
         while (kara_done != 2) cv_kara_done.wait(lk);
@@ -807,7 +807,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 //
     carryc1 = 0;
     for (i=0; i<2*h; i++)
-    {   uint32_t w = c[h+i] - c[2*h+i] - carryc1;
+    {   std::uint32_t w = c[h+i] - c[2*h+i] - carryc1;
         c[h+i] = clear_top_bit(w);
         carryc1 = w >> 31;
     }
@@ -816,12 +816,12 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 //
     carryc2 = 0;
     for (i=0; i<h; i++)
-    {   uint32_t w = c[h+i] - c[i] - carryc2;
+    {   std::uint32_t w = c[h+i] - c[i] - carryc2;
         c[h+i] = clear_top_bit(w);
         carryc2 = w >> 31;
     }
     for (; i<2*h; i++)
-    {   uint32_t w = c[h+i] - d[i-h] - carryc2;
+    {   std::uint32_t w = c[h+i] - d[i-h] - carryc2;
         c[h+i] = clear_top_bit(w);
         carryc2 = w >> 31;
     }
@@ -839,7 +839,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     if (asumcarry != 0)
     {   carry = 0;
         for (i=0; i<h; i++)
-        {   uint32_t w = c[2*h+i] + d[4*h+i] + carry;
+        {   std::uint32_t w = c[2*h+i] + d[4*h+i] + carry;
             c[2*h+i] = clear_top_bit(w);
             carry = w >> 31;
         }
@@ -848,7 +848,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     if (bsumcarry != 0)
     {   carry = 0;
         for (i=0; i<h; i++)
-        {   uint32_t w = c[2*h+i] + d[3*h+i] + carry;
+        {   std::uint32_t w = c[2*h+i] + d[3*h+i] + carry;
             c[2*h+i] = clear_top_bit(w);
             carry = w >> 31;
         }
@@ -859,7 +859,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 //
     carry = 0;
     for (i=0; i<2*h; i++)
-    {   uint32_t w = c[h+i] + d[5*h+i] + carry;
+    {   std::uint32_t w = c[h+i] + d[5*h+i] + carry;
         c[h+i] = clear_top_bit(w);
         carry = w >> 31;
     }
@@ -868,7 +868,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 //
     carry += carryc;
     for (; i<3*h && carry!=0; i++)
-    {   uint32_t w = c[h+i] + carry;
+    {   std::uint32_t w = c[h+i] + carry;
         c[h+i] = clear_top_bit(w);
         carry = w >> 31;
     }
@@ -877,17 +877,17 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 //
 }
 
-static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
-                        size_t lena, size_t lenb, size_t lenc)
+static void long_times2(std::uint32_t *c, std::uint32_t *a, std::uint32_t *b,
+                        std::size_t lena, std::size_t lenb, std::size_t lenc)
 //
 // This case is standard old fashioned long multiplication.  Dump the
 // result into c.
 //
-{   size_t i;
+{   std::size_t i;
     for (i=0; i<lenc; i++) c[i] = 0;
     for (i=0; i<lena; i++)
-    {   uint32_t carry = 0, da = a[i];
-        size_t j;
+    {   std::uint32_t carry = 0, da = a[i];
+        std::size_t j;
 //
 // When I multiply by (for instance) a high power of 2 there will
 // be plenty of zero digits in the number being worked with, and
@@ -895,7 +895,7 @@ static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
 //
         if (da != 0)
         {   for (j=0; j<lenb; j++)
-            {   size_t k = i + j;
+            {   std::size_t k = i + j;
                 Dmultiply(carry, c[k], da, b[j],
 // NB the addition here is OK and fits into a 32-bit unsigned result
                           carry + c[k]);
@@ -905,10 +905,10 @@ static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
     }
 }
 
-size_t kparallel, karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
+std::size_t kparallel, karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
 
-static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
-                       uint32_t *d, size_t lena, size_t lenb, size_t lenc)
+static void long_times(std::uint32_t *c, std::uint32_t *a, std::uint32_t *b,
+                       std::uint32_t *d, std::size_t lena, std::size_t lenb, std::size_t lenc)
 //
 // This decides if a multiplication is big enough to benefit from
 // decomposition a la Karatsuba.
@@ -918,13 +918,13 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
 // the way to lenc, with padding 0s if necessary.
 //
 {   if (lenb < lena)
-    {   uint32_t *t1;
-        size_t t2;
+    {   std::uint32_t *t1;
+        std::size_t t2;
         t1 = a; a = b; b = t1;
         t2 = lena; lena = lenb; lenb = t2;
     }
     if (4*lenb <= lenc) // In this case I should shrink lenc a bit..
-    {   size_t newlenc = (lenb+1)/2;
+    {   std::size_t newlenc = (lenb+1)/2;
         int k = 0;
         while (newlenc > KARATSUBA_CUTOFF)
         {   newlenc = (newlenc + 1)/2;
@@ -938,7 +938,7 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
         while (lenc > newlenc) c[--lenc] = 0;
     }
     if (lena > karatsuba_parallel)
-    {   size_t save = karatsuba_parallel;
+    {   std::size_t save = karatsuba_parallel;
 //
 // I will only allow a single level of the recursion to use threads, and I
 // achieve that by temporarily resetting the cut-off here...
@@ -959,7 +959,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 //
 {   int sign = 1;
     LispObject c, d;
-    size_t lena, lenb, lenc, i;
+    std::size_t lena, lenb, lenc, i;
     lena = (bignum_length(a) - CELL)/4;
     lenb = (bignum_length(b) - CELL)/4;
     if (!SIXTY_FOUR_BIT && lena == 1 && lenb == 1)
@@ -974,16 +974,16 @@ static LispObject timesbb(LispObject a, LispObject b)
 // value that could have aspired to be a 1-word bignum would in fact have
 // ended up as a fixnum.
 //
-    {   int32_t va = (int32_t)bignum_digits(a)[0],
-                vb = (int32_t)bignum_digits(b)[0], vc;
-        uint32_t vclow;
+    {   std::int32_t va = (std::int32_t)bignum_digits(a)[0],
+                vb = (std::int32_t)bignum_digits(b)[0], vc;
+        std::uint32_t vclow;
         if (va < 0)
         {   if (vb < 0) Dmultiply(vc, vclow, -va, -vb, 0);
             else
             {   Dmultiply(vc, vclow, -va, vb, 0);
                 if (vclow == 0) vc = -vc;
                 else
-                {   vclow = clear_top_bit(-(int32_t)vclow);
+                {   vclow = clear_top_bit(-(std::int32_t)vclow);
                     vc = ~vc;
                 }
             }
@@ -992,7 +992,7 @@ static LispObject timesbb(LispObject a, LispObject b)
         {   Dmultiply(vc, vclow, va, -vb, 0);
             if (vclow == 0) vc = -vc;
             else
-            {   vclow = clear_top_bit(-(int32_t)vclow);
+            {   vclow = clear_top_bit(-(std::int32_t)vclow);
                 vc = ~vc;
             }
         }
@@ -1006,7 +1006,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // could do the whole long multiplication on the twos complement values,
 // however this makes life simpler there for me!
 //
-    if (((int32_t)bignum_digits(a)[lena-1]) < 0)
+    if (((std::int32_t)bignum_digits(a)[lena-1]) < 0)
     {   sign = -sign;
         push(b);
 //
@@ -1021,7 +1021,7 @@ static LispObject timesbb(LispObject a, LispObject b)
         pop(b);
         lena = (bignum_length(a) - CELL)/4;
     }
-    if (((int32_t)bignum_digits(b)[lenb-1]) < 0)
+    if (((std::int32_t)bignum_digits(b)[lenb-1]) < 0)
     {   sign = -sign;
         push(a);
         // see above comments about negateb
@@ -1046,7 +1046,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // being related to the size of the numbers being handled.
 //
     if (lena > KARATSUBA_CUTOFF)
-    {   size_t lend;
+    {   std::size_t lend;
         int k = 0;
 //
 // I pad lenc up to have a suitably large power of 2 as a factor so
@@ -1096,10 +1096,10 @@ static LispObject timesbb(LispObject a, LispObject b)
     }
     pop(b, a);
     d = multiplication_buffer;
-    {   uint32_t *da = (uint32_t *)&bignum_digits(a)[0],
-                 *db = (uint32_t *)&bignum_digits(b)[0],
-                 *dc = (uint32_t *)&bignum_digits(c)[0],
-                 *dd = (uint32_t *)&bignum_digits(d)[0];
+    {   std::uint32_t *da = (std::uint32_t *)&bignum_digits(a)[0],
+                 *db = (std::uint32_t *)&bignum_digits(b)[0],
+                 *dc = (std::uint32_t *)&bignum_digits(c)[0],
+                 *dd = (std::uint32_t *)&bignum_digits(d)[0];
         long_times(dc, da, db, dd, lena, lenb, lenc);
     }
 //
@@ -1113,7 +1113,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // that was allocated, lena+lenb is a much better guess of how much data
 // is active in it.
 //
-    {   size_t newlenc = lena + lenb;
+    {   std::size_t newlenc = lena + lenb;
 //
 // I tidy up by putting a zero in any padding word above the top of the
 // active data, and by inserting a header in space that gets trimmed off
@@ -1143,7 +1143,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // its length just lena+lenb, even if it had been padded out earlier.
 //
     if (sign < 0)
-    {   uint32_t carry = 0x80000000U;
+    {   std::uint32_t carry = 0x80000000U;
         for (i=0; i<lenc-1; i++)
         {   carry = ADD32(clear_top_bit(~bignum_digits(c)[i]), top_bit(carry));
             bignum_digits(c)[i] = clear_top_bit(carry);
@@ -1177,7 +1177,7 @@ static LispObject timesbb(LispObject a, LispObject b)
         // Drop through to truncate by 1 and sometimes that is easy
     }
     else
-    {   uint32_t w = bignum_digits(c)[lenc-1];
+    {   std::uint32_t w = bignum_digits(c)[lenc-1];
         if (w != 0) return c; // no truncation
         w = bignum_digits(c)[lenc-2];
         if ((w & 0x40000000) != 0) return c;

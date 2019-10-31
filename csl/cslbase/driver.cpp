@@ -68,32 +68,32 @@ static void display(PROC_handle p)
 {   int ch;
     if (PROC_atom(p))
     {   if (PROC_null(p))
-        {   printf("<null>");
+        {   std::printf("<null>");
         }
         else if (PROC_symbol(p))
-        {   printf("%s", PROC_symbol_name(p));
+        {   std::printf("%s", PROC_symbol_name(p));
         }
         else if (PROC_string(p))
-        {   printf("\"%s\"", PROC_string_data(p));
+        {   std::printf("\"%s\"", PROC_string_data(p));
         }
         else if (PROC_fixnum(p))
-        {   printf("%d", PROC_integer_value(p));
+        {   std::printf("%d", PROC_integer_value(p));
         }
-        else printf("<Unknown:%p>", p);
+        else std::printf("<Unknown:%p>", p);
         return;
     }
     ch = '(';
     while (!PROC_atom(p))
-    {   putchar(ch);
+    {   std::putchar(ch);
         ch = ' ';
         display(PROC_first(p));
         p = PROC_rest(p);
     }
     if (!PROC_null(p))
-    {   printf(" . ");
+    {   std::printf(" . ");
         display(p);
     }
-    putchar(')');
+    std::putchar(')');
     return;
 }
 
@@ -185,9 +185,9 @@ static int submain(int argc, char *argv[])
     const char *nargv[5];
     int rc;
 
-    printf("Start of demo of embedded driver\n");
+    std::printf("Start of demo of embedded driver\n");
 
-    sprintf(imageName, "%s/reduce.img", programDir);
+    std::sprintf(imageName, "%s/reduce.img", programDir);
     nargv[0] = argv[0];
     nargv[1] = "-i";
     nargv[2] = imageName;
@@ -195,20 +195,20 @@ static int submain(int argc, char *argv[])
     nargv[4] = NULL;
     obufp = 0;
     cslstart(4, nargv, iput);
-    printf("\nBuffered output is <%s>\n\n", obuff);
+    std::printf("\nBuffered output is <%s>\n\n", obuff);
 
-    strcpy(ibuff, "(print '(a b c d))");
+    std::strcpy(ibuff, "(print '(a b c d))");
     execute_lisp_function("oem-supervisor", iget, iput);
-    printf("\nBuffered output is <%s>\n\n", obuff);
+    std::printf("\nBuffered output is <%s>\n\n", obuff);
 
     ibufp = obufp = 0;
     ibuff[0] = 0;
     PROC_set_callbacks(iget, iput);
 
-    if ((rc = testcase()) != 0) printf("\n+++ Return code = %d\n", rc);
+    if ((rc = testcase()) != 0) std::printf("\n+++ Return code = %d\n", rc);
 
     rc = cslfinish(iput);
-    printf("\nBuffered output is <%s>\n\n", obuff);
+    std::printf("\nBuffered output is <%s>\n\n", obuff);
 
     my_exit(rc);   // does a throw
     return 0;
@@ -218,7 +218,7 @@ static int submain(int argc, char *argv[])
 int main(int argc, char *argv[])
 {   volatile int res;
     if (find_program_directory(argv[0]))
-    {   fprintf(stderr, "Unable to identify program name and directory\n");
+    {   std::fprintf(stderr, "Unable to identify program name and directory\n");
         return 1;
     }
     try
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
     catch (int r)
     {   res = r;
     }
-    printf("Return code = %d\n", res);
+    std::printf("Return code = %d\n", res);
     return res;
 }
 

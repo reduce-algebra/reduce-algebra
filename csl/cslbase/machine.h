@@ -311,32 +311,32 @@ extern "C"
 // "undefined" in that the optimiser has to preserve whetever semantics the
 // implementation settled on!
 
-inline int32_t ASR(int32_t a, int n)
-{   if (n<0 || n>=8*(int)sizeof(int32_t)) n=0;
+inline std::int32_t ASR(std::int32_t a, int n)
+{   if (n<0 || n>=8*(int)sizeof(std::int32_t)) n=0;
     return a >> n;
 }
 
-inline int64_t ASR(int64_t a, int n)
-{   if (n<0 || n>=8*(int)sizeof(int64_t)) n=0;
+inline std::int64_t ASR(std::int64_t a, int n)
+{   if (n<0 || n>=8*(int)sizeof(std::int64_t)) n=0;
     return a >> n;
 }
 
 #else // SIGNED_SHIFTS_ARE_ARITHMETIC
 
-inline int32_t ASR(int32_t a, int n)
-{   if (n<0 || n>=8*(int)sizeof(int32_t)) n=0;
-    uint32_t r = ((uint32_t)a) >> n;
-    uint32_t signbit = ((uint32_t)a) >> (8*sizeof(uint32_t)-1);
-    if (n != 0) r |= ((-signbit) << (8*sizeof(uint32_t) - n));
-    return (int32_t)r;
+inline std::int32_t ASR(std::int32_t a, int n)
+{   if (n<0 || n>=8*(int)sizeof(std::int32_t)) n=0;
+    std::uint32_t r = ((std::uint32_t)a) >> n;
+    std::uint32_t std::signbit = ((std::uint32_t)a) >> (8*sizeof(std::uint32_t)-1);
+    if (n != 0) r |= ((-std::signbit) << (8*sizeof(std::uint32_t) - n));
+    return (std::int32_t)r;
 }
 
-inline int64_t ASR(int64_t a, int n)
-{   if (n<0 || n>=8*(int)sizeof(int64_t)) n=0;
-    uint64_t r = ((uint64_t)a) >> n;
-    uint64_t signbit = ((uint64_t)a) >> (8*sizeof(uint64_t)-1);
-    if (n != 0) r |= ((-signbit) << (8*sizeof(uint64_t) - n));
-    return (int64_t)r;
+inline std::int64_t ASR(std::int64_t a, int n)
+{   if (n<0 || n>=8*(int)sizeof(std::int64_t)) n=0;
+    std::uint64_t r = ((std::uint64_t)a) >> n;
+    std::uint64_t std::signbit = ((std::uint64_t)a) >> (8*sizeof(std::uint64_t)-1);
+    if (n != 0) r |= ((-std::signbit) << (8*sizeof(std::uint64_t) - n));
+    return (std::int64_t)r;
 }
 
 #endif // SIGNED_SHIFTS_ARE_ARITHMETIC
@@ -347,18 +347,18 @@ inline int64_t ASR(int64_t a, int n)
 // I need to work in an unsigned type. Rather than messing with templates
 // again I will have versions for each possible width that I might use.
 
-inline int32_t ASL(int32_t a, int n)
-{   if (n < 0 || n>=8*(int)sizeof(uint32_t)) n = 0;
-    return (int32_t)(((uint32_t)a) << n);
+inline std::int32_t ASL(std::int32_t a, int n)
+{   if (n < 0 || n>=8*(int)sizeof(std::uint32_t)) n = 0;
+    return (std::int32_t)(((std::uint32_t)a) << n);
 }
 
-inline int64_t ASL(int64_t a, int n)
-{   if (n < 0 || n>=8*(int)sizeof(uint64_t)) n = 0;
-    return (int64_t)(((uint64_t)a) << n);
+inline std::int64_t ASL(std::int64_t a, int n)
+{   if (n < 0 || n>=8*(int)sizeof(std::uint64_t)) n = 0;
+    return (std::int64_t)(((std::uint64_t)a) << n);
 }
 
-inline uint64_t ASL(uint64_t a, int n)
-{   if (n < 0 || n>=8*(int)sizeof(uint64_t)) n = 0;
+inline std::uint64_t ASL(std::uint64_t a, int n)
+{   if (n < 0 || n>=8*(int)sizeof(std::uint64_t)) n = 0;
     return a << n;
 }
 
@@ -395,11 +395,11 @@ typedef __int128 int128_t;
 // up all the space, but I do not mind) pointing at the original start of
 // the block.
 
-inline void *aligned_malloc(size_t n)
-{   void *p = (void *)malloc(n + 32);
+inline void *aligned_malloc(std::size_t n)
+{   void *p = (void *)std::malloc(n + 32);
     if (p == NULL) return p;
-    void *r = (void *)((((uintptr_t)p + 15) & -(uint64_t)16) + 16);
-    (void *)((uintptr_t)r - 16) = p;
+    void *r = (void *)((((std::uintptr_t)p + 15) & -(std::uint64_t)16) + 16);
+    (void *)((std::uintptr_t)r - 16) = p;
     return r;
 }
 
@@ -408,19 +408,19 @@ inline void *aligned_malloc(size_t n)
 
 inline void aligned_free(void *p)
 {   if (p == NULL) return;
-    free(*(void *)((uintptr_t)p - 16));
+    std::free(*(void *)((std::uintptr_t)p - 16));
 }
 #else // MAXALING4
 
 // In the hugely more common case where malloc does align things to at least
 // 8 byte boundaries I can use malloc() and free() directly.
 
-inline void *aligned_malloc(size_t n)
-{   return (void *)malloc(n);
+inline void *aligned_malloc(std::size_t n)
+{   return (void *)std::malloc(n);
 }
 
 inline void aligned_free(void *p)
-{   free(p);
+{   std::free(p);
 }
 
 #endif // MAXALING4

@@ -81,7 +81,7 @@ bool evenfloat(double d)
 {   int x;
     d = std::frexp(d, &x);
     d = std::ldexp(d, 53);
-    int64_t i = (int64_t)d;
+    std::int64_t i = (std::int64_t)d;
     return (i&1) == 0;
 }
 
@@ -91,10 +91,10 @@ bool evenfloat(double d)
 // ones that my more complicated code produce. Note that this does signed
 // multiplication and it trims its output to "proper" length.
 
-inline void referencemultiply(const uint64_t *a, size_t lena,
-                             const uint64_t *b, size_t lenb,
-                             uint64_t *c, size_t &lenc)
-{   for (size_t i=0; i<lena+lenb; i++) c[i] = 0;
+inline void referencemultiply(const std::uint64_t *a, std::size_t lena,
+                             const std::uint64_t *b, std::size_t lenb,
+                             std::uint64_t *c, std::size_t &lenc)
+{   for (std::size_t i=0; i<lena+lenb; i++) c[i] = 0;
 // If a and/or be are negative then I can treat their true values as
 //    a = sa + va      b = sb + vb
 // where sa and sb and the signs - represented here as 0 for a positive
@@ -108,10 +108,10 @@ inline void referencemultiply(const uint64_t *a, size_t lena,
 // If sa and/or sb is non-zero it is just the negative of a power of 2^64,
 // and so I can correct the unsigned product into a signed one by (sometimes)
 // subtracting a shifted version of a or b from it.
-    for (size_t i=0; i<lena; i++)
-    {   uint64_t hi = 0;
-        for (size_t j=0; j<lenb; j++)
-        {   uint64_t lo;
+    for (std::size_t i=0; i<lena; i++)
+    {   std::uint64_t hi = 0;
+        for (std::size_t j=0; j<lenb; j++)
+        {   std::uint64_t lo;
 // The largest possible value if (hi,lo) here is (0xffffffffffffffff, 0)
 // which arises if a[1], b[i] and prev_hi are all at their maximum. That
 // means that in all other cases (and in particular unless lo==0) hi ends
@@ -123,14 +123,14 @@ inline void referencemultiply(const uint64_t *a, size_t lena,
         c[i+lenb] = hi;
     }
     if (arithlib_implementation::negative(a[lena-1]))
-    {   uint64_t carry = 1;
-        for (size_t i=0; i<lenb; i++)
+    {   std::uint64_t carry = 1;
+        for (std::size_t i=0; i<lenb; i++)
             carry = arithlib_implementation::add_with_carry(
                 c[i+lena], ~b[i], carry, c[i+lena]);
     }
     if (arithlib_implementation::negative(b[lenb-1]))
-    {   uint64_t carry = 1;
-        for (size_t i=0; i<lena; i++)
+    {   std::uint64_t carry = 1;
+        for (std::size_t i=0; i<lena; i++)
             carry = arithlib_implementation::add_with_carry(
                 c[i+lenb], ~a[i], carry, c[i+lenb]);
     }
@@ -150,8 +150,8 @@ int main(int argc, char *argv[])
 // and so it will behave deterministically. This is really useful if an
 // error is detected.
 
-    uint64_t seed;
-    if (argc > 1) seed = atoi(argv[1]);
+    std::uint64_t seed;
+    if (argc > 1) seed = std::atoi(argv[1]);
     else seed = mersenne_twister() & 0xffff;
     std::cout << "seed = " << seed << std::endl;
     reseed(seed);
@@ -168,8 +168,8 @@ int main(int argc, char *argv[])
     const int MILLION = 1000000;
 
 // The following are parameters for a plausible linear congruential generator.
-    const uint64_t MULT = 6364136223846793005U;
-    const uint64_t ADD  = 1442695040888963407U;
+    const std::uint64_t MULT = 6364136223846793005U;
+    const std::uint64_t ADD  = 1442695040888963407U;
 
 
 #ifdef TUNE_KARATSUBA
@@ -182,26 +182,26 @@ int main(int argc, char *argv[])
 
 #ifdef COMPARE_GMP
 
-    {   const size_t table_size = 300;
+    {   const std::size_t table_size = 300;
 
         const int N = 30;
         const int LEN = 1600;
  
-        uint64_t a[2000], b[2000], c[5000], c1[5000];
-        size_t lena, lenb, lenc1;
+        std::uint64_t a[2000], b[2000], c[5000], c1[5000];
+        std::size_t lena, lenb, lenc1;
 
-        size_t size[table_size];
-        size_t testcount[table_size];
+        std::size_t size[table_size];
+        std::size_t testcount[table_size];
         std::chrono::nanoseconds mine[table_size];
         std::chrono::nanoseconds gmp[table_size];
 
-        uint64_t my_check = 1;
-        uint64_t gmp_check = 1;
+        std::uint64_t my_check = 1;
+        std::uint64_t gmp_check = 1;
 
         for (int method=0; method<3; method++)
         {   reseed(seed);
             lena = 1;
-            for (size_t trial=0; trial<table_size; trial++)
+            for (std::size_t trial=0; trial<table_size; trial++)
             {   lena = (21*lena+19)/20;
                 size[trial] = 0;
                 if (lena >= LEN) break;
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
 // I start by filling my input vectors with random data. I set the same
 // seed before trying my code and before trying gmp so that each get the
 // same set of test cases.
-                for (size_t i=0; i<lena; i++)
+                for (std::size_t i=0; i<lena; i++)
                 {   a[i] = mersenne_twister();
                     b[i] = mersenne_twister();
                 }
@@ -218,8 +218,8 @@ int main(int argc, char *argv[])
 // grow as n^1.585, and so to arrange that I tke roughly the same
 // absolute time on each number-length I perform my tests a number of
 // times scaled inversely by that.
-                size_t tests = 2+(10000*N)/(int)std::pow((double)lena, 1.585);
-                for (size_t n = 0; n<tests; n++)
+                std::size_t tests = 2+(10000*N)/(int)std::pow((double)lena, 1.585);
+                for (std::size_t n = 0; n<tests; n++)
                 {
 // The gpm function mpn_mul multiplies unsigned integers, while my
 // bigmultiply is at a slightly higher level and deals with signed values.
@@ -248,11 +248,11 @@ int main(int argc, char *argv[])
                         c[lena+lenb-1] = 0;
                         mpn_mul((mp_ptr)c,
                                 (mp_srcptr)a,
-                                sizeof(uint64_t)/sizeof(mp_limb_t)*lena,
+                                sizeof(std::uint64_t)/sizeof(mp_limb_t)*lena,
                                 (mp_srcptr)b,
-                                sizeof(uint64_t)/sizeof(mp_limb_t)*lenb);
+                                sizeof(std::uint64_t)/sizeof(mp_limb_t)*lenb);
                         ok = true;
-                        for (size_t i=0; i<lena+lenb; i++)
+                        for (std::size_t i=0; i<lena+lenb; i++)
                         {   if (c[i] != c1[i])
                             {   ok = false;
                                 std::cout << "Failed at " << std::dec
@@ -264,25 +264,25 @@ int main(int argc, char *argv[])
                             display("b  ", b, lenb);
                             display("me ", c1, lenc1);
                             display("gmp", c, lena+lenb);
-                            abort();
+                            std::abort();
                         }
                         break;
                     case 1:
-                        for (size_t m=0; m<500; m++)
+                        for (std::size_t m=0; m<500; m++)
                             arithlib_implementation::bigmultiply(
                                 a, lena, b, lenb, c1, lenc1);
 // By accumulating a sort of checksum on all the products that I compute
 // I will be able to reassure myself that the output from gmp and from my
 // own code agrees.
-                        for (size_t i=0; i<lena+lenb; i++)
+                        for (std::size_t i=0; i<lena+lenb; i++)
                             my_check = my_check*MULT + c1[i];
                         break;
                     case 2:
-                        for (size_t m=0; m<500; m++)
+                        for (std::size_t m=0; m<500; m++)
                             mpn_mul((mp_ptr)c,
                                     (mp_srcptr)a, lena,
                                     (mp_srcptr)b, lenb);
-                        for (size_t i=0; i<lena+lenb; i++)
+                        for (std::size_t i=0; i<lena+lenb; i++)
                             gmp_check = gmp_check*MULT + c[i];
                         break;
                     }
@@ -290,9 +290,9 @@ int main(int argc, char *argv[])
 // so that for any length inputs I am doing test multiplications of a
 // range of varied cases. This is so that stray special cases are less liable
 // to corrupt my results.
-                    for (size_t i=0; i<lena; i++)
+                    for (std::size_t i=0; i<lena; i++)
                         a[i] = MULT*a[i] + ADD;
-                    for (size_t i=0; i<lenb; i++)
+                    for (std::size_t i=0; i<lenb; i++)
                         b[i] = MULT*b[i] + ADD;
                 }
                 clk2 = std::chrono::high_resolution_clock::now();    
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
                    << std::endl;
 // In the following table times are reported in seconds per
 // multiplication. The ratio is > 1.0 when my code is slower than gmp.
-        for (size_t i=0; i<table_size; i++)
+        for (std::size_t i=0; i<table_size; i++)
         {   if (size[i] == 0) break;
             std::cout << std::setw(10) << size[i]
                       << std::setw(10) << (1.0e-3*(double)mine[i].count()/testcount[i])
@@ -396,7 +396,7 @@ int main(int argc, char *argv[])
     std::cout << "Print some random numbers in decimal and hex" << std::endl;
     for (int i=1; i<=ntries; i++)
     {   Bignum a = random_upto_bits_bignum(maxbits);
-        uint64_t r = mersenne_twister();
+        std::uint64_t r = mersenne_twister();
         Bignum b = fudge_distribution_bignum(a, (int)r & 0xf);
 //      std::cout << a << std::endl;
         std::cout << b << " "
@@ -430,7 +430,7 @@ int main(int argc, char *argv[])
     for (int i=1; i<=ntries; i++)
     {   Bignum a = random_upto_bits_bignum(maxbits);
         Bignum b = random_upto_bits_bignum(maxbits);
-        uint64_t r = mersenne_twister();
+        std::uint64_t r = mersenne_twister();
         a = fudge_distribution_bignum(a, (int)r & 0xf);
         b = fudge_distribution_bignum(b, (int)(r>>4) & 0xf);
         Bignum c1 = ~(a & b);
@@ -460,7 +460,7 @@ int main(int argc, char *argv[])
         display("bnota", bnota);
         std::cout << "c4 a&~b|b&~a "  << c4 << std::endl;
         std::cout << "Failed " << std::dec << std::endl;
-        abort();
+        std::abort();
         return 1;
     }
 
@@ -490,11 +490,11 @@ int main(int argc, char *argv[])
 
     for (int i=1; i<=ntries; i++)
     {   Bignum a = random_upto_bits_bignum(maxbits);
-        uint64_t r = mersenne_twister();
+        std::uint64_t r = mersenne_twister();
         a = fudge_distribution_bignum(a, (int)r & 0xf);
         r = (r >> 4)%800;
         Bignum c1 = a << r;
-        Bignum p = pow(Bignum(2), (int64_t)r);
+        Bignum p = std::pow(Bignum(2), (std::int64_t)r);
         Bignum c2 = a * p;
         Bignum c3 = a >> r;
         Bignum w = a & ~(p-1_Z);
@@ -515,7 +515,7 @@ int main(int argc, char *argv[])
         std::cout << "c4 a/2^r     " << c4 << std::endl;
         display("c4", c4);
         std::cout << "Failed " << std::dec << std::endl;
-        abort();
+        std::abort();
         return 1;
     }
 
@@ -547,7 +547,7 @@ int main(int argc, char *argv[])
     for (int i=1; i<=ntries; i++)
     {   Bignum a = random_upto_bits_bignum(maxbits);
         Bignum b = random_upto_bits_bignum(maxbits);
-        uint64_t r = mersenne_twister();
+        std::uint64_t r = mersenne_twister();
         a = fudge_distribution_bignum(a, (int)r & 0xf);
         b = fudge_distribution_bignum(b, (int)(r>>4) & 0xf);
         Bignum c1 = (a + b)*(a - b);
@@ -569,7 +569,7 @@ int main(int argc, char *argv[])
         std::cout << "square(-a)  = " << square(-a) << std::endl;
         std::cout << "square(-b)  = " << square(-b) << std::endl;
         std::cout << "Failed" << std::endl;
-        abort();
+        std::abort();
         return 1;
     }
 
@@ -599,14 +599,14 @@ int main(int argc, char *argv[])
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {   Bignum divisor, remainder, quotient;
+    {   Bignum divisor, std::remainder, quotient;
         do
         {   divisor = random_upto_bits_bignum(maxbits) + 1;
-            remainder = uniform_upto_bignum(divisor);
+            std::remainder = uniform_upto_bignum(divisor);
             quotient = random_upto_bits_bignum(maxbits);
-            uint64_t rr = mersenne_twister();
+            std::uint64_t rr = mersenne_twister();
             divisor = fudge_distribution_bignum(divisor, (int)(rr & 0xf));
-            remainder = fudge_distribution_bignum(remainder, (int)((rr>>4) & 0xf));
+            std::remainder = fudge_distribution_bignum(std::remainder, (int)((rr>>4) & 0xf));
             quotient = fudge_distribution_bignum(quotient, (int)((rr>>8) & 0xf));
 // While I still want my strange distribution of numbers for testing, I
 // need the sign of my target remainder to be proper, so I will generate
@@ -615,32 +615,32 @@ int main(int argc, char *argv[])
 // invalid in magnitude... so I need to discard those cases too. It is
 // plausible that this means I will discard around 75% of the sets of random
 // numberfs that I initially generate.
-        } while (((quotient ^ remainder ^ divisor) < Bignum(0)) ||
-                 (abs(remainder) >= abs(divisor))); 
+        } while (((quotient ^ std::remainder ^ divisor) < Bignum(0)) ||
+                 (std::abs(std::remainder) >= std::abs(divisor))); 
 
-        Bignum dividend = quotient*divisor + remainder;
+        Bignum dividend = quotient*divisor + std::remainder;
         Bignum q1 = dividend / divisor;
         Bignum r1 = 999999;
 // If the quotient is incorrect I will not compute the remainder.
         if (q1 == quotient)
         {   r1 = dividend % divisor;
-            if (r1 == remainder) continue;
+            if (r1 == std::remainder) continue;
         }
         std::cout << "FAILED on test " << i << std::endl;
         std::cout << "divisor   " << divisor << std::endl;
-        std::cout << "remainder " << remainder << std::endl;
+        std::cout << "remainder " << std::remainder << std::endl;
         std::cout << "quotient  " << quotient << std::endl;
         std::cout << "dividend  " << dividend << std::endl;
         std::cout << "q1        " << q1 << std::endl;
         std::cout << "r1        " << r1 << std::endl;
         display("dividend ", dividend);
         display("divisor  ", divisor);
-        display("remainder", remainder);
+        display("remainder", std::remainder);
         display("quotient ", quotient);
         display("q1       ", q1);
         display("r1       ", r1);
         std::cout << "Failed " << std::endl;
-        abort();
+        std::abort();
         return 1;
     }
 
@@ -670,7 +670,7 @@ int main(int argc, char *argv[])
         {   a = random_upto_bits_bignum(maxbits);
             b = random_upto_bits_bignum(maxbits);
             g = random_upto_bits_bignum(maxbits);
-            uint64_t rr = mersenne_twister();
+            std::uint64_t rr = mersenne_twister();
             a = fudge_distribution_bignum(a, (int)(rr & 0xf));
             b = fudge_distribution_bignum(b, (int)((rr>>4) & 0xf));
             g = fudge_distribution_bignum(g, (int)((rr>>8) & 0xf));
@@ -685,7 +685,7 @@ int main(int argc, char *argv[])
 //        display("A", A);
 //        display("B", B);
         Bignum g2 = gcd(A, B);
-        if (g2 == g1*abs(g) &&
+        if (g2 == g1*std::abs(g) &&
             A%g2 == 0 &&
             B%g2 == 0) continue;
         std::cout << "FAILED on test " << i << std::endl;
@@ -696,7 +696,7 @@ int main(int argc, char *argv[])
         std::cout << "B  " << B << std::endl;
         std::cout << "g1 " << g1 << std::endl;
         std::cout << "g2 " << g2 << std::endl;
-        abort("Failed");
+        std::abort("Failed");
         return 1;
     }
 
@@ -724,7 +724,7 @@ int main(int argc, char *argv[])
     for (int i=1; i<=ntries; i++)
     {   Bignum a, b;
         a = random_upto_bits_bignum(maxbits);
-        uint64_t r = mersenne_twister();
+        std::uint64_t r = mersenne_twister();
         a = fudge_distribution_bignum(a, (int)r & 7);
         b = isqrt(a);
         if (square(b) <= a && square(b+1) > a) continue;
@@ -736,7 +736,7 @@ int main(int argc, char *argv[])
         display("a", a);
         display("b", b);
         std::cout << "Failed " << std::endl;
-        abort();
+        std::abort();
         return 1;
     }
 
@@ -774,7 +774,7 @@ int main(int argc, char *argv[])
     for (int i=1; i<=ntries; i++)
     {   Bignum a, b;
         a = random_upto_bits_bignum(maxbits);
-        uint64_t r = mersenne_twister();
+        std::uint64_t r = mersenne_twister();
         a = fudge_distribution_bignum(a, (int)r & 15);
 
         double d = double_bignum(a);
@@ -796,12 +796,12 @@ int main(int argc, char *argv[])
         Bignum errminus = a-nminus;
     
         if (nplus != n && nminus != n)
-        {   if (abs(err) < abs(errplus) &&
-                abs(err) < abs(errminus)) continue;
-            if (abs(err) == abs(errplus) &&
-                abs(err) < abs(errminus) && evenfloat(d)) continue;
-            if (abs(err) < abs(errplus) &&
-                abs(err) == abs(errminus) && evenfloat(d)) continue;
+        {   if (std::abs(err) < std::abs(errplus) &&
+                std::abs(err) < std::abs(errminus)) continue;
+            if (std::abs(err) == std::abs(errplus) &&
+                std::abs(err) < std::abs(errminus) && evenfloat(d)) continue;
+            if (std::abs(err) < std::abs(errplus) &&
+                std::abs(err) == std::abs(errminus) && evenfloat(d)) continue;
         }
 
         std::cout << "FAILED on test " << i << std::endl;
@@ -818,7 +818,7 @@ int main(int argc, char *argv[])
         display("a", a);
         display("n", n);
         std::cout << "Failed " << std::endl;
-        abort();
+        std::abort();
         return 1;
     }
 

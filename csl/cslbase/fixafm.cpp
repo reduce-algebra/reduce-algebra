@@ -67,21 +67,21 @@ static void adjustuninames(char *linebuffer)
     {   if (p[0] == 'u' &&
             p[1] == 'n' &&
             p[2] == 'i' &&
-            isxdigit(p[3]) &&
-            isxdigit(p[4]) &&
-            isxdigit(p[5]) &&
-            isxdigit(p[6]) &&
-            !isxdigit(p[7]) &&
-            sscanf(p, "uni%x", &code) == 1 &&
+            std::isxdigit(p[3]) &&
+            std::isxdigit(p[4]) &&
+            std::isxdigit(p[5]) &&
+            std::isxdigit(p[6]) &&
+            !std::isxdigit(p[7]) &&
+            std::sscanf(p, "uni%x", &code) == 1 &&
             (r = uniname(code)) != NULL)
-        {   strcpy(q, r);
+        {   std::strcpy(q, r);
             p += 7;
-            q += strlen(r);
+            q += std::strlen(r);
         }
         else *q++ = *p++;
     }
     *q = 0;
-    strcpy(linebuffer, newlinebuffer);
+    std::strcpy(linebuffer, newlinebuffer);
 }
 
 int main(int argc, char *argv[])
@@ -90,17 +90,17 @@ int main(int argc, char *argv[])
     int minlly = 1000000, maxlly = -1000000;
     int minurx = 1000000, maxurx = -1000000;
     int minury = 1000000, maxury = -1000000;
-    FILE *src = fopen(argv[1], "r");
-    FILE *dest = fopen(argv[2], "w"); // No check for errors here!
+    std::FILE *src = std::fopen(argv[1], "r");
+    std::FILE *dest = std::fopen(argv[2], "w"); // No check for errors here!
     char linebuffer[2000];            // Fixed buffer with no overflow checks!
-    if (strstr(argv[1], "STIX") != NULL) isSTIX = 1;
+    if (std::strstr(argv[1], "STIX") != NULL) isSTIX = 1;
     if (isSTIX)
     {   int private_area = 0;
         char name[MAXNEWNAME];
         nmoved = 0;
         for (;;)
         {   int c, i = 0, width;
-            while ((c = getc(src)) != EOF && c != '\n')
+            while ((c = std::getc(src)) != EOF && c != '\n')
                 linebuffer[i++] = c;
             linebuffer[i] = 0;
             if (i == 0 && c == EOF) break;
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 // For the STIX fonts that I am using the glyph that fontforge displays as
 // if it had been at U+110000 is named ".notdef". Here I collect the
 // names that have been provided for all those out-of-range glyphs.
-            if (sscanf(linebuffer, "C -1 ; WX %d ; N ",
+            if (std::sscanf(linebuffer, "C -1 ; WX %d ; N ",
                        &width) == 1)
             {   char *p = linebuffer + 9;
                 if (width > maxwidth) maxwidth = width;
@@ -118,25 +118,25 @@ int main(int argc, char *argv[])
                 p = p + 4;
                 while (*p != ' ') name[j++] = *p++;
                 name[j] = 0;
-                if (strcmp(name, ".notdef") == 0) private_area = 1;
+                if (std::strcmp(name, ".notdef") == 0) private_area = 1;
                 if (private_area)
-                {   strcpy(movedname[nmoved], name);
+                {   std::strcpy(movedname[nmoved], name);
                     movedwidth[nmoved] = width;
                     nmoved++;
                 }
             }
         }
-        fseek(src, (off_t)0, SEEK_SET);
+        std::fseek(src, (off_t)0, SEEK_SET);
     }
 
     for (;;)
     {   int c, i = 0, cc, ww, llx, lly, urx, ury;
         char name[MAXNEWNAME];
-        while ((c = getc(src)) != EOF && c != '\n')
+        while ((c = std::getc(src)) != EOF && c != '\n')
             linebuffer[i++] = c;
         linebuffer[i] = 0;
         if (i == 0 && c == EOF) break;
-        if (sscanf(linebuffer, "C %d ; WX %d ; N %s ; B %d %d %d %d ;",
+        if (std::sscanf(linebuffer, "C %d ; WX %d ; N %s ; B %d %d %d %d ;",
                    &cc, &ww, name, &llx, &lly, &urx, &ury) == 7)
         {   if (ww > maxwidth) maxwidth = ww;
             if (ww < minwidth) minwidth = ww;
@@ -150,17 +150,17 @@ int main(int argc, char *argv[])
             if (ury < minury) minury = ury;
         }
         adjustuninames(linebuffer);
-        if (strncmp(linebuffer, "C -1 ; ", 7) == 0)
+        if (std::strncmp(linebuffer, "C -1 ; ", 7) == 0)
         {   int width, code;
-            if (sscanf(linebuffer, "C -1 ; WX %d ; N u%x ;",
+            if (std::sscanf(linebuffer, "C -1 ; WX %d ; N u%x ;",
                        &width, &code) == 2)
             {   char *p = linebuffer + 10;
                 while (*p != ';') p++;
                 p++;
                 while (*p == ' ') p++;
                 if (*p != 'N')
-                {   printf("Formatting failure\n");
-                    exit(1);
+                {   std::printf("Formatting failure\n");
+                    std::exit(1);
                 }
                 p++;
                 while (*p == ' ') p++;
@@ -181,19 +181,19 @@ int main(int argc, char *argv[])
                         r = movedname[code-0x108000];
                     else r = p;
                 }
-                fprintf(dest, "C %d ; WX %d ; N %s ;%s\n",
+                std::fprintf(dest, "C %d ; WX %d ; N %s ;%s\n",
                         code, width, r, q+1);
             }
         }
-        else fprintf(dest, "%s\n", linebuffer);
+        else std::fprintf(dest, "%s\n", linebuffer);
     }
-    fclose(src);
-    fclose(dest);
-    printf("Width range %d .. %d\n", minwidth, maxwidth);
-    printf("LLX range   %d .. %d\n", minllx, maxllx);
-    printf("LLY range   %d .. %d\n", minlly, maxlly);
-    printf("URX range   %d .. %d\n", minurx, maxurx);
-    printf("URY range   %d .. %d\n", minury, maxury);
+    std::fclose(src);
+    std::fclose(dest);
+    std::printf("Width range %d .. %d\n", minwidth, maxwidth);
+    std::printf("LLX range   %d .. %d\n", minllx, maxllx);
+    std::printf("LLY range   %d .. %d\n", minlly, maxlly);
+    std::printf("URX range   %d .. %d\n", minurx, maxurx);
+    std::printf("URY range   %d .. %d\n", minury, maxury);
     return 0;
 }
 

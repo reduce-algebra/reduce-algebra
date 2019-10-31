@@ -42,7 +42,7 @@
 
 // Here are the items to be hashed... Dummy data for now!
 
-uint32_t items[] =
+std::uint32_t items[] =
 {
 #ifdef FULL
     0x0194d8,    0x003c97,    0x0064f0,    0x0194db,    0x0194dc,
@@ -249,20 +249,20 @@ uint32_t items[] =
 };
 
 
-static uint32_t cuckoo_inline get_key(void *p)
-{   return (*(uintptr_t *)p) & 0x0007ffff;
+static std::uint32_t cuckoo_inline get_key(void *p)
+{   return (*(std::uintptr_t *)p) & 0x0007ffff;
 }
 
-static void cuckoo_inline set_key(void *p, uint32_t v)
-{   *(uint32_t *)p = (v & 0x0007ffff) | (*(uint32_t *)p & 0xfff80000);
+static void cuckoo_inline set_key(void *p, std::uint32_t v)
+{   *(std::uint32_t *)p = (v & 0x0007ffff) | (*(std::uint32_t *)p & 0xfff80000);
 }
 
 // Here I make my largest possible table size such that it would only
 // end up with 50% occupancy. This should be hideously pessimistic.
 
-uint32_t table[2*sizeof(items)/sizeof(items[0])];
+std::uint32_t table[2*sizeof(items)/sizeof(items[0])];
 
-static int cuckoo_inline importance(uint32_t key)
+static int cuckoo_inline importance(std::uint32_t key)
 {   if (key <= 0x40) return CUCKOO_VITAL;
     else if (key <= 0x4000 || key >= 0x010000 ) return CUCKOO_IMPORTANT;
     else return CUCKOO_STANDARD;
@@ -284,16 +284,16 @@ int main(int argc, char *argv[])
                               set_key,
                               1);
     if (r.table_size == -1)
-    {   printf("Failed. Extra info = %d\n", r.modulus2);
+    {   std::printf("Failed. Extra info = %d\n", r.modulus2);
         return 1;
     }
-    printf("For %d items the table is %d long (%.2f%% full)\n",
+    std::printf("For %d items the table is %d long (%.2f%% full)\n",
            (int)(sizeof(items)/sizeof(items[0])),
            r.table_size,
            (100.0*sizeof(items))/(r.table_size*sizeof(items[0])));
-    printf("modulus2 = %d offset2 = %d\n", r.modulus2, r.offset2);
+    std::printf("modulus2 = %d offset2 = %d\n", r.modulus2, r.offset2);
     for (i=0; i<r.table_size; i++)
-        printf("%5d: %.8x\n", i, table[i]);
+        std::printf("%5d: %.8x\n", i, table[i]);
     return 0;
 }
 

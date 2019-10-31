@@ -343,11 +343,11 @@ public:
     {   setter(val);
         return *this;
     }
-    ThreadLocal& operator+=(uintptr_t val)
+    ThreadLocal& operator+=(std::uintptr_t val)
     {   setter(getter() + val);
         return *this;
     }
-    ThreadLocal& operator-=(uintptr_t val)
+    ThreadLocal& operator-=(std::uintptr_t val)
     {   setter(getter() - val);
         return *this;
     }                                                 
@@ -519,11 +519,11 @@ public:
     {   setter(val);
         return *this;
     }
-    Inline& operator+=(uintptr_t val)
+    Inline& operator+=(std::uintptr_t val)
     {   setter(getter() + val);
         return *this;
     }
-    Inline& operator-=(uintptr_t val)
+    Inline& operator-=(std::uintptr_t val)
     {   setter(getter() - val);
         return *this;
     }                                                 
@@ -581,8 +581,8 @@ public:
 // that they establish will be shared across all compilation units that
 // include this definition.
 
-static ThreadLocal<intptr_t> x(1);
-static ThreadLocalRef<std::atomic<intptr_t>> y;
+static ThreadLocal<std::intptr_t> x(1);
+static ThreadLocalRef<std::atomic<std::intptr_t>> y;
 
 int main(int argc, char *argv[])
 {

@@ -253,8 +253,8 @@
 
 
 
-size_t pagesCount;
-size_t activePagesCount;
+std::size_t pagesCount;
+std::size_t activePagesCount;
 
 // Ha ha potentially clever idea. Have activeTheads an atomic<uint32_t> and use
 // the bottom 10 bits for the number of threads that are busy and the next
@@ -332,8 +332,8 @@ size_t activePagesCount;
 // 
 
 
-uintptr_t *C_stackbase;   // base of the main thread
-std::atomic<uint32_t> activeThreads;
+std::uintptr_t *C_stackbase;   // base of the main thread
+std::atomic<std::uint32_t> activeThreads;
 
 //  0x00 : total_threads : lisp_threads : still_busy_threads
 
@@ -422,12 +422,12 @@ Page *mostlyFreePages;   // Chained list of pages that the GC has mostly
 Page *freePages;         // Chained list of pages that are not currenty in
                          // use and that contain no useful information.
 
-size_t busyPagesCount, mostlyFreePagesCount, freePagesCount;
+std::size_t busyPagesCount, mostlyFreePagesCount, freePagesCount;
 
 void *heapSegment[32];
 void *heapSegmentBase[32];
-size_t heapSegmentSize[32];
-size_t heapSegmentCount;
+std::size_t heapSegmentSize[32];
+std::size_t heapSegmentCount;
 
 
 
@@ -454,15 +454,15 @@ class MakeAssertions
 {
 public:
     MakeAssertions()
-    {   if (sizeof(std::atomic<uint8_t>) != 1)
+    {   if (sizeof(std::atomic<std::uint8_t>) != 1)
         {   std::cout << "Atomics bytes are too large" << std::endl;
             std::abort();
         }
-        if (!std::atomic<uint8_t>().is_lock_free())
+        if (!std::atomic<std::uint8_t>().is_lock_free())
         {   std::cout << "Atomic<uint8_t> not lock-free" << std::endl;
             std::abort();
         }
-        if (!std::atomic<uintptr_t>().is_lock_free())
+        if (!std::atomic<std::uintptr_t>().is_lock_free())
         {   std::cout << "Atomic<uintptr_t> not lock-free" << std::endl;
             std::abort();
         }
@@ -475,7 +475,7 @@ static MakeAssertions test_for_lockfree;
 // notes the start-point of objects. This function does that for one page.
 
 void recordObjectStarts(Page *x)
-{   memset(x->pageBody.pageBitmaps.maps.objstart, 0,
+{   std::memset(x->pageBody.pageBitmaps.maps.objstart, 0,
            sizeof(x->pageBody.pageBitmaps.maps.objstart));
     LispObject *p = x->pageBody.data;
 // @@ The version I have here does not yet allow fror the fact that the
@@ -483,9 +483,9 @@ void recordObjectStarts(Page *x)
 // will all need object start tags set - and that fringe may be the
 // current level of allocation but the way that interacts with interleaved
 // pinned items is not really considered.
-    while (reinterpret_cast<uintptr_t>(p) < x->pageHeader.fringe)
-    {   size_t os = (reinterpret_cast<uintptr_t>(p) -
-                     reinterpret_cast<uintptr_t>(x))/8;
+    while (reinterpret_cast<std::uintptr_t>(p) < x->pageHeader.fringe)
+    {   std::size_t os = (reinterpret_cast<std::uintptr_t>(p) -
+                     reinterpret_cast<std::uintptr_t>(x))/8;
         x->pageBody.pageBitmaps.maps.objstart[os/64] |= UINT64_C(1)<<(os%64);
         LispObject v = *p;
         if (!is_odds(v)) p += 2;
@@ -504,36 +504,36 @@ void recordObjectStarts(Page *x)
 // address lies within. This is perhaps the part of dealing with ambiguous
 // pointers that I view as having required most thought!
 
-uintptr_t findObjectStart(uintptr_t p, Page *x)
+std::uintptr_t findObjectStart(std::uintptr_t p, Page *x)
 {
 // First check if p is actually within the (active) data region in the page.
-    if (p < reinterpret_cast<uintptr_t>(x->pageBody.data) ||
-        p >= reinterpret_cast<uintptr_t>(x->pageHeader.fringe)) return 0;
+    if (p < reinterpret_cast<std::uintptr_t>(x->pageBody.data) ||
+        p >= reinterpret_cast<std::uintptr_t>(x->pageHeader.fringe)) return 0;
 // Now, and I have NOT done this yet, I shoule cope with the case where p
 // points within an item that had been pinned within page x by an earlier
 // GC.
 //  @@ unfinished work here
 // Next search for the nearest object start at a lower address than p,
 // using the objectstart bitmap to help.
-    size_t os = (p - reinterpret_cast<uintptr_t>(x))/8;
-    size_t word = os/64;
+    std::size_t os = (p - reinterpret_cast<std::uintptr_t>(x))/8;
+    std::size_t word = os/64;
     int bit = os%64;
 // I am going to expect that an especially common case will be when the
 // pointer p is just to the start of an object with at most a tag value
 // added. My division by 8 a few lines above disarded those low bits, so
 // I will see if what I end up with is in fact a proper object start.
     if ((x->pageBody.pageBitmaps.maps.objstart[word] & (UINT64_C(1)<<bit)) != 0)
-        return p & -(uintptr_t)8;
+        return p & -(std::uintptr_t)8;
 // The next case I will consider is if the object header is fairly close
 // to p, and the word in the bitmap that covers p includes mention of it.
     if (bit != 0)
-    {   uint64_t v = ((UINT64_C(1)<<bit) - 1) &
+    {   std::uint64_t v = ((UINT64_C(1)<<bit) - 1) &
                      x->pageBody.pageBitmaps.maps.objstart[word];
 // Now v records any headers just before p.
         if (v != 0)
         {   int n = 63-nlz(v);
 // Convert back from an address in the bitmap to the location in memory.
-            return reinterpret_cast<uintptr_t>(x) + 8*(word*64 + n);
+            return reinterpret_cast<std::uintptr_t>(x) + 8*(word*64 + n);
         }
     }
 // Now I can scan down 64 8-byte locations at a time, ie 512 bytes at a go.
@@ -559,7 +559,7 @@ uintptr_t findObjectStart(uintptr_t p, Page *x)
 // entry in the map the top bit it identifies the highest-addressed object
 // start, and that is what I want.
     int n = 63-nlz(x->pageBody.pageBitmaps.maps.objstart[word]);
-    return reinterpret_cast<uintptr_t>(x) + 8*(word*64 + n);
+    return reinterpret_cast<std::uintptr_t>(x) + 8*(word*64 + n);
 }
 
 // Here we have a function to call during a major garbage collection. It is
@@ -567,13 +567,13 @@ uintptr_t findObjectStart(uintptr_t p, Page *x)
 // map for the page that addresses, and then it marks as pinned the object
 // referenced.
 
-void setPinnedMajor(uintptr_t p)
+void setPinnedMajor(std::uintptr_t p)
 {   Page *x = findPage(p);
     if (x == NULL) return;
     if (!x->pageHeader.onstarts_present) recordObjectStarts(x);
-    uintptr_t os = findObjectStart(p, x);
+    std::uintptr_t os = findObjectStart(p, x);
     if (os == 0) return;
-    os = (os - reinterpret_cast<uintptr_t>(previousPage))/8;
+    os = (os - reinterpret_cast<std::uintptr_t>(previousPage))/8;
     previousPage->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
 }
 
@@ -589,16 +589,16 @@ void recordObjectStartsMinor()
 // Set a pinned bit for an address if it lies within the single scavengable
 // page that exists during a minor collection.
 
-void setPinnedMinor(uintptr_t p)
+void setPinnedMinor(std::uintptr_t p)
 {
 // If the address is not in the scavengable page I can ignore it.
     if (!inPreviousPage(p)) return;
 // Find the object within the page that it is within, or return NULL if none.
 // This will always return a value that is an address aligned zero mod 8.
-    uintptr_t os = findObjectStart(p, previousPage);
+    std::uintptr_t os = findObjectStart(p, previousPage);
     if (os == 0) return;
 // Now I set a bit in the pinned map.
-    os = (os - reinterpret_cast<uintptr_t>(previousPage))/8;
+    os = (os - reinterpret_cast<std::uintptr_t>(previousPage))/8;
     previousPage->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
 }
 
@@ -608,7 +608,7 @@ void setPinnedMinor(uintptr_t p)
 // pages.
 
 void clearPinnedMap(Page *x)
-{   memset(x->pageBody.pageBitmaps.maps.pinned, 0,
+{   std::memset(x->pageBody.pageBitmaps.maps.pinned, 0,
            sizeof(x->pageBody.pageBitmaps.maps.pinned));
 }
 
@@ -616,7 +616,7 @@ LispObject get_symbol(bool gensymp)
 {   return get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
 }
 
-LispObject get_basic_vector(int tag, int type, size_t size)
+LispObject get_basic_vector(int tag, int type, std::size_t size)
 {
 // tag is the value (e.g. TAG_VECTOR) that will go in the low order
 // 3 bits of the pointer result.
@@ -628,7 +628,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // 32-bit or 64-bit representation. However it would be hard to unwind
 // that now!]
 //
-    size_t allocSize = (size_t)doubleword_align_up(size);
+    std::size_t allocSize = (std::size_t)doubleword_align_up(size);
 // Basic vectors must be smaller then the CSL page size.
     if (allocSize > (CSL_PAGE_SIZE - 32))
         aerror1("request for basic vector too big",
@@ -663,8 +663,8 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // put a padder in the vacated space so that it will still be possible to
 // do linear scans of memory.
 
-LispObject reduce_basic_vector_size(LispObject v, size_t len)
-{   size_t oldlen = doubleword_align_up(length_of_header(vechdr(v)));
+LispObject reduce_basic_vector_size(LispObject v, std::size_t len)
+{   std::size_t oldlen = doubleword_align_up(length_of_header(vechdr(v)));
     setvechdr(v, TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED);
     len = doubleword_align_up(len);
     if (len != oldlen) setvechdr(v + len, makePaddingHeader(oldlen-len));
@@ -709,12 +709,12 @@ void prepare_for_borrowing()
 
 // It would be a fatal error if there was not space for the borrow!
 
-LispObject borrow_n_bytes(size_t n)
+LispObject borrow_n_bytes(std::size_t n)
 {   my_abort();
 }
 
-LispObject borrow_basic_vector(int tag, int type, size_t size)
-{   size_t allocSize = (size_t)doubleword_align_up(size);
+LispObject borrow_basic_vector(int tag, int type, std::size_t size)
+{   std::size_t allocSize = (std::size_t)doubleword_align_up(size);
     if (allocSize > (CSL_PAGE_SIZE - 32))
         aerror1("request for basic vector too big",
                 fixnum_of_int(allocSize/CELL-1));
@@ -725,15 +725,15 @@ LispObject borrow_basic_vector(int tag, int type, size_t size)
     return (LispObject)(r + tag);
 }
 
-LispObject borrow_vector(int tag, int type, size_t n)
+LispObject borrow_vector(int tag, int type, std::size_t n)
 {   if (n-CELL > VECTOR_CHUNK_BYTES)
-    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
-        size_t lastSize = (n - CELL) % VECTOR_CHUNK_BYTES;
+    {   std::size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+        std::size_t lastSize = (n - CELL) % VECTOR_CHUNK_BYTES;
         if (lastSize == 0) lastSize = VECTOR_CHUNK_BYTES;
         LispObject v =
             borrow_basic_vector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
-        for (size_t i=0; i<chunks; i++)
-        {   size_t k = i==chunks-1 ? lastSize : VECTOR_CHUNK_BYTES;
+        for (std::size_t i=0; i<chunks; i++)
+        {   std::size_t k = i==chunks-1 ? lastSize : VECTOR_CHUNK_BYTES;
             basic_elt(v, i) = borrow_basic_vector(tag, type, k+CELL);
         }
         return v;
@@ -749,8 +749,8 @@ LispObject borrow_vector(int tag, int type, size_t n)
 static_assert(spareBytes/64 > offsetof(Page, pageHeader.endOfHeader));
 
 void set_up_empty_page(Page *p)
-{   p->pageHeader.fringe = reinterpret_cast<uintptr_t>(&p->pageBody.data);
-    p->pageHeader.heaplimit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
+{   p->pageHeader.fringe = reinterpret_cast<std::uintptr_t>(&p->pageBody.data);
+    p->pageHeader.heaplimit = reinterpret_cast<std::uintptr_t>(p) + sizeof(Page);
     p->pageHeader.dirtypage.store(false);
     p->pageHeader.onstarts_present = false;
 // I would like to be able to set the dirty bitmap all zero other than by
@@ -764,7 +764,7 @@ void set_up_empty_page(Page *p)
 // I must not clobber memory earlier than that because the first bytes of the
 // page are always needed for the pageHeader! Well what I will do is zero
 // out everything from the end of pageHeader onwards.
-    for (size_t i=spareBytes/64; i<2*bytesForMap; i++)
+    for (std::size_t i=spareBytes/64; i<2*bytesForMap; i++)
         p->pageBody.pageBitmaps.dirty[i].store(0);
 }
 
@@ -789,7 +789,7 @@ void save_variables_to_page(Page *p)
 // that allocating a new segment may shuffle existing ones in the tables.
 // So the index of a segment in the tables may not be viewed as permenant.
 
-void allocate_segment(size_t n)
+void allocate_segment(std::size_t n)
 {
 // I will round up the size to allocate so it is a multiple of the
 // page size. Note that this will be quite a large value!
@@ -807,7 +807,7 @@ void allocate_segment(size_t n)
 // to get the address within the bigger block that I want.
 // In this case I will need to preserve the base of the full block because
 // that will be what I will be able to free at the end.
-    size_t N = n + pageSize - 1;
+    std::size_t N = n + pageSize - 1;
     rbase = static_cast<void *>(new char[N]);
     my_assert(rbase != NULL);
     void *work = rbase;
@@ -821,10 +821,10 @@ void allocate_segment(size_t n)
     heapSegmentCount++;
 // Now I need to arrange that the segments are sorted in the tables
 // that record them.
-    for (size_t i=heapSegmentCount-1; i!=0; i--)
+    for (std::size_t i=heapSegmentCount-1; i!=0; i--)
     {   int j = i-1;
         void *h1 = heapSegment[i], *h2 = heapSegment[j];
-        if (reinterpret_cast<uintptr_t>(h2) < reinterpret_cast<uintptr_t>(h1))
+        if (reinterpret_cast<std::uintptr_t>(h2) < reinterpret_cast<std::uintptr_t>(h1))
             break; // Ordering is OK
 // The segment must sink a place in the tables.
         std::swap(heapSegment[i], heapSegment[j]);
@@ -833,7 +833,7 @@ void allocate_segment(size_t n)
     }
 // r now refers to a new segment of size n, I want to structure it into
 // pages.
-    for (size_t k=0; k<n; k+=CSL_PAGE_SIZE)
+    for (std::size_t k=0; k<n; k+=CSL_PAGE_SIZE)
     {   Page *p = reinterpret_cast<Page *>(reinterpret_cast<char *>(r) + k);
 // Keep a chain of all the pages.
         set_up_empty_page(p);
@@ -841,25 +841,14 @@ void allocate_segment(size_t n)
         freePages = p;
         freePagesCount++;
     }
-    printf("%" PRIu64 " pages available\n", (uint64_t)freePagesCount);
+    std::printf("%" PRIu64 " pages available\n", (std::uint64_t)freePagesCount);
 }
 
-size_t pages_count = 0;
-size_t heap_pages_count = 0;
-size_t vheap_pages_count = 0;
+std::size_t pages_count = 0;
+std::size_t heap_pages_count = 0;
+std::size_t vheap_pages_count = 0;
 bool garbage_collection_permitted = true;
 bool force_verbos = false;
-
-double maxStoreSize = 0.0;
-
-void init_heap_segments(double d)
-{   std::cout << "init_heap_segments " << d << std::endl;
-    my_abort();
-}
-
-void drop_heap_segments()
-{   my_abort();
-}
 
 // gc-forcer(a, b) should arrange that a garbage collection is triggered
 // when at most A cons-sized units of consing happens or when at most
@@ -869,15 +858,15 @@ void drop_heap_segments()
 // storage management issues.
 
 bool next_gc_is_hard = false;
-uint64_t force_cons=0, force_vec = 0;
+std::uint64_t force_cons=0, force_vec = 0;
 
 LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
 {   if (force_cons != 0 || force_vec != 0)
         trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\n",
             force_cons, force_vec);
 // If you pass a non-fixnum then that leaves the trigger-point unchanged.
-    if (is_fixnum(a)) force_cons = (uint64_t)sixty_four_bits(a);
-    if (is_fixnum(b)) force_vec = (uint64_t)sixty_four_bits(b);
+    if (is_fixnum(a)) force_cons = (std::uint64_t)sixty_four_bits(a);
+    if (is_fixnum(b)) force_vec = (std::uint64_t)sixty_four_bits(b);
     return onevalue(nil);
 }
 
@@ -929,10 +918,10 @@ std::mutex threadStartingMutex;
 // threadMap will have a zero bit in places that correspond to thread
 // numbers that are allocated.
 
-uint64_t threadMap = -1;
+std::uint64_t threadMap = -1;
 
-uint64_t threadBit(int n)
-{   return (uint64_t)1 << (63-n);
+std::uint64_t threadBit(int n)
+{   return (std::uint64_t)1 << (63-n);
 }
 
 int allocateThreadNumber()
@@ -966,7 +955,8 @@ LispObject *nilSegment, *stackSegment;
 LispObject *stackBase;
 
 LispObject initial_heap_setup(LispObject *stacksegment)
-{   my_abort();  // Until I know what this has to do!
+{   std::cout << "initial_heap_setup" << std::endl;
+    my_abort();  // Until I know what this has to do!
     return 0;
 }
 
@@ -980,15 +970,15 @@ void initHeapSegments(double storeSize)
 // machine and 512M on a 64-bit system. If the user specified a "-K" option
 // they can override this, and also the system will tend to allocate more
 // space (if it can) when its memory starts to get full.
-    size_t freeSpace = (SIXTY_FOUR_BIT ? 512 : 64)*1024*1024;
-    size_t request = (size_t)storeSize;
+    std::size_t freeSpace = (SIXTY_FOUR_BIT ? 512 : 64)*1024*1024;
+    std::size_t request = (std::size_t)storeSize;
     if (request != 0) freeSpace = 1024*request;
 // Now freeSpace is the amount I want to allocate. I will explicitly
 // set the variables that are associated with tracking memory allocation
 // to keep everything as clear as I can.
     heapSegmentCount = 0;
     freePages = NULL;
-    printf("Allocate %" PRIu64 " Kbytes\n", (uint64_t)freeSpace/1024);
+    std::printf("Allocate %" PRIu64 " Kbytes\n", (std::uint64_t)freeSpace/1024);
     allocate_segment(freeSpace);
 
 // There are other bits of memory that I will grab manually for now...
@@ -996,34 +986,34 @@ void initHeapSegments(double storeSize)
 #if defined __cpp_aligned_new && defined HAVE_ALIGNED_ALLOC
     nilSegment = nilSegmentBase =
         reinterpret_cast<LispObject *>(
-            aligned_alloc(16, NIL_SEGMENT_SIZE));
+            std::aligned_alloc(16, NIL_SEGMENT_SIZE));
 #else
     nilSegment =
-       reinterpret_cast<LispObject *>(malloc(NIL_SEGMENT_SIZE+32));
+       reinterpret_cast<LispObject *>(std::malloc(NIL_SEGMENT_SIZE+32));
     nilSegment = static_cast<LispObject *>(
-        doubleword_align_up(static_cast<uintptr_t>(nilSegmentBase)));
+        doubleword_align_up(static_cast<std::uintptr_t>(nilSegmentBase)));
 #endif
     if (nilSegment == NULL) fatal_error(err_no_store);
-    nil = (LispObject)((uintptr_t)nilSegment + TAG_SYMBOL);
+    nil = (LispObject)((std::uintptr_t)nilSegment + TAG_SYMBOL);
 #if defined __cpp_aligned_new&& defined HAVE_ALIGNED_ALLOC
     stackSegment = stackSegmentBase =
         reinterpret_cast<LispObject *>(
-            aligned_alloc(16, CSL_PAGE_SIZE));
+            std::aligned_alloc(16, CSL_PAGE_SIZE));
 #else
     stackSegment =
-        reinterpret_cast<LispObject *>(malloc(CSL_PAGE_SIZE+32));
+        reinterpret_cast<LispObject *>(std::malloc(CSL_PAGE_SIZE+32));
     stackSegment = static_cast<LispObject *>(
-        doubleword_align_up(static_cast<uintptr_t>(stackSegmentBase)));
+        doubleword_align_up(static_cast<std::uintptr_t>(stackSegmentBase)));
 #endif
     if (stackSegment == NULL) fatal_error(err_no_store);
     stackBase = (LispObject *)stackSegment;
 }
 
 void drop_heapSegments(void)
-{   for (size_t i=0; i<heapSegmentCount; i++)
+{   for (std::size_t i=0; i<heapSegmentCount; i++)
         delete [] static_cast<Page *>(heapSegmentBase[i]);
-    free(nilSegmentBase);
-    free(stackSegmentBase);
+    std::free(nilSegmentBase);
+    std::free(stackSegmentBase);
 }
 
 // This allocates another page of memory if that is allowed and if it is
@@ -1032,7 +1022,7 @@ void drop_heapSegments(void)
 bool allocate_more_memory()
 {   return false;
 //  if ((init_flags & INIT_EXPANDABLE) == 0) return false;
-//  void *page = (void *)aligned_alloc((size_t)CSL_PAGE_SIZE);
+//  void *page = (void *)std::aligned_alloc((size_t)CSL_PAGE_SIZE);
 //  if (page == NULL)
 //  {   init_flags &= ~INIT_EXPANDABLE;
 //      return false;
@@ -1043,9 +1033,9 @@ bool allocate_more_memory()
 //  }
 }
 
-extern double maxStoreSize;
+double maxStoreSize = 0.0;
 
-void grab_more_memory(size_t npages)
+void grab_more_memory(std::size_t npages)
 {
 // Here I grab more memory (if I am allowed to).
 // An initial version here, and one still suitable on machines that will
@@ -1061,14 +1051,14 @@ void grab_more_memory(size_t npages)
 // On systems where it is possible to measure the amount of available
 // real memory more sophisticated calculations may be possible.
     if (init_flags & INIT_EXPANDABLE)
-    {   size_t ideal = MAX_PAGES; //
+    {   std::size_t ideal = MAX_PAGES; //
 //@@@@ ok_to_grab_memory(heap_pagesCount + vheap_pagesCount);
-        size_t more;
+        std::size_t more;
         if (ideal > MAX_PAGES) ideal = MAX_PAGES;
         if (maxStoreSize != 0.0)
         {   double pageLimit = maxStoreSize*1024*1024/(double)CSL_PAGE_SIZE;
 // Limit memory to (about) the amount the user indicated with --max-mem
-            size_t plim = (size_t)pageLimit;
+            std::size_t plim = (std::size_t)pageLimit;
             if (ideal > plim) ideal = plim;
         }
         if (ideal > pagesCount)
@@ -1081,9 +1071,24 @@ void grab_more_memory(size_t npages)
     }
 }
 
-std::atomic<uintptr_t> stack_bases[maxThreads];
-std::atomic<uintptr_t> stack_fringes[maxThreads];
-extern std::atomic<uint32_t> threadCount;
+void init_heap_segments(double d)
+{   std::cout << "init_heap_segments " << d << std::endl;
+// I first impose a minimum of 64 megabytes, then convert the value so that
+// I pass it in kilobytes.
+    if (d > maxStoreSize) d = maxStoreSize;
+    if (d < 64.0*1024.0*1024.0)
+        d = 64.0*1024.0*1024.0;
+    initHeapSegments(d/1024.0);
+}
+
+void drop_heap_segments()
+{   std::cout << "drop_heap_segments" << std::endl;
+    my_abort();
+}
+
+std::atomic<std::uintptr_t> stack_bases[maxThreads];
+std::atomic<std::uintptr_t> stack_fringes[maxThreads];
+extern std::atomic<std::uint32_t> threadCount;
 std::mutex mutex_for_gc;
 bool gc_started;
 std::condition_variable cv_for_gc_idling;
@@ -1093,24 +1098,24 @@ std::condition_variable cv_for_gc_complete;
 std::mutex gc_mutex;
 //static ThreadLocal<uintptr_t> threadId;
 //static ThreadLocal<uintptr_t> fringe;
-std::atomic<uintptr_t> limit[maxThreads];
-uintptr_t              limitBis[maxThreads];
-uintptr_t              fringeBis[maxThreads];
-size_t                 request[maxThreads];
+std::atomic<std::uintptr_t> limit[maxThreads];
+std::uintptr_t              limitBis[maxThreads];
+std::uintptr_t              fringeBis[maxThreads];
+std::size_t                 request[maxThreads];
 LispObject             result[maxThreads];
-size_t                 gIncrement[maxThreads];
-std::atomic<uintptr_t> gFringe;
-uintptr_t              gLimit;
-uintptr_t              gNext;
+std::size_t                 gIncrement[maxThreads];
+std::atomic<std::uintptr_t> gFringe;
+std::uintptr_t              gLimit;
+std::uintptr_t              gNext;
 
 #ifdef WIN32
 #include <conio.h>
 #endif
 
-int64_t gc_number = 0;
-int64_t reclaim_trap_count = -1;
-uintptr_t reclaim_stack_limit = 0;
-uint64_t reclaim_trigger_count = 0, reclaim_trigger_target = 0;
+std::int64_t gc_number = 0;
+std::int64_t reclaim_trap_count = -1;
+std::uintptr_t reclaim_stack_limit = 0;
+std::uint64_t reclaim_trigger_count = 0, reclaim_trigger_target = 0;
 
 //static intptr_t cons_cells, symbol_heads, strings, user_vectors,
 //       big_numbers, box_floats, bytestreams, other_mem,

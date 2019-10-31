@@ -44,9 +44,9 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
 
 //
 // In some cases I may end up passing a file-name of the form
@@ -55,52 +55,52 @@
 //     d:/...path/leaf
 //
 
-static FILE *myfopen(const char *name, const char *mode)
+static std::FILE *myfopen(const char *name, const char *mode)
 {   char newname[256];
-    if (strncmp(name, "/cygdrive/", 10) != 0)
-        return fopen(name, mode);
+    if (std::strncmp(name, "/cygdrive/", 10) != 0)
+        return std::fopen(name, mode);
     newname[0] = name[10];
     newname[1] = ':';
-    strcpy(&newname[2], &name[11]);
-    return fopen(newname, mode);
+    std::strcpy(&newname[2], &name[11]);
+    return std::fopen(newname, mode);
 }
 
 int main(int argc, const char *argv[])
-{   FILE *f1, *f2;
-    time_t t = time(NULL);
+{   std::FILE *f1, *f2;
+    std::time_t t = std::time(NULL);
     unsigned char hdr[20];
     int sixtyFourBit = 0, byteOrder = 0, machine = 0;
     const char *s = NULL;
     int i;
     if (argc < 3)
-    {   fprintf(stderr, "Usage: objtype xx.obj dest.c $CC $CFLAGS\n");
+    {   std::fprintf(stderr, "Usage: objtype xx.obj dest.c $CC $CFLAGS\n");
         return 1;
     }
-    if (strcmp(argv[1], "-") == 0) f1 = stdin;
+    if (std::strcmp(argv[1], "-") == 0) f1 = stdin;
     else f1 = myfopen(argv[1], "rb");
     if (f1 == NULL)
-    {   fprintf(stderr, "File \"%s\" not found\n", argv[1]);
+    {   std::fprintf(stderr, "File \"%s\" not found\n", argv[1]);
         return 1;
     }
-    if (strcmp(argv[2], "-") == 0) f2 = stdout;
+    if (std::strcmp(argv[2], "-") == 0) f2 = stdout;
     else f2 = myfopen(argv[2], "w");
     if (f2 == NULL)
-    {   fprintf(stderr, "File \"%s\" can not be written to\n", argv[2]);
-        fclose(f1);
+    {   std::fprintf(stderr, "File \"%s\" can not be written to\n", argv[2]);
+        std::fclose(f1);
         return 1;
     }
-    if (fread(hdr, 20, 1, f1) != 1)
-    {   fprintf(stderr, "Unable to read header from input file\n");
-        fclose(f1);
-        fclose(f2);
+    if (std::fread(hdr, 20, 1, f1) != 1)
+    {   std::fprintf(stderr, "Unable to read header from input file\n");
+        std::fclose(f1);
+        std::fclose(f2);
         return 1;
     }
-    fprintf(f2, "/*\n * Created %s */\n\n", asctime(localtime(&t)));
-    fprintf(f2, "\nconst char *linker_type = \"");
+    std::fprintf(f2, "/*\n * Created %s */\n\n", std::asctime(std::localtime(&t)));
+    std::fprintf(f2, "\nconst char *linker_type = \"");
     if (hdr[0] == 0xfe &&
         hdr[1] == 0xed &&
         hdr[2] == 0xfa &&
-        hdr[3] == 0xce) fprintf(f2, "mac-darwin");
+        hdr[3] == 0xce) std::fprintf(f2, "mac-darwin");
     else if (hdr[0] == 0x7f &&
              hdr[1] == 'E' &&
              hdr[2] == 'L' &&
@@ -144,8 +144,8 @@ int main(int argc, const char *argv[])
             case 62:if (sixtyFourBit) s = "x86_64";
                 break;
         }
-        if (s != NULL) fprintf(f2, "%s", s);
-        else fprintf(f2, "ELF-%d-%d", 2*sixtyFourBit+byteOrder, machine);
+        if (s != NULL) std::fprintf(f2, "%s", s);
+        else std::fprintf(f2, "ELF-%d-%d", 2*sixtyFourBit+byteOrder, machine);
     }
     else
     {
@@ -160,18 +160,18 @@ int main(int argc, const char *argv[])
 //
         machine = hdr[0] + (hdr[1]<<8);
         switch (machine)
-        {   case 0x14c: fprintf(f2, "win32");
+        {   case 0x14c: std::fprintf(f2, "win32");
                 break;
-            case 0x1c0: fprintf(f2, "arm-coff");
+            case 0x1c0: std::fprintf(f2, "arm-coff");
                 break;
-            case 0x8664:fprintf(f2, "win64");
+            case 0x8664:std::fprintf(f2, "win64");
                 break;
             default:    // eg Itanium Windows could hit this case, I guess
-                fprintf(f2, "COFF-%x", hdr[0] | (hdr[1]<<8));
+                std::fprintf(f2, "COFF-%x", hdr[0] | (hdr[1]<<8));
                 break;
         }
     }
-    fprintf(f2, "\";\n\nconst char *compiler_command[] = {\n    \"%s\"",
+    std::fprintf(f2, "\";\n\nconst char *compiler_command[] = {\n    \"%s\"",
            argv[3]);
     for (i=4; i<argc; i++)
     {   const char *a = argv[i];
@@ -181,18 +181,18 @@ int main(int argc, const char *argv[])
 // will be using here...
 //
         if (a[0]=='-' && a[1]=='I' && a[2]=='.') continue;
-        if (strcmp(a, "-Wall") == 0) continue;
-        if (strcmp(a, "-DHAVE_CONFIG_H") == 0) continue;
-        fprintf(f2, ",\n    \"%s\"", a);
+        if (std::strcmp(a, "-Wall") == 0) continue;
+        if (std::strcmp(a, "-DHAVE_CONFIG_H") == 0) continue;
+        std::fprintf(f2, ",\n    \"%s\"", a);
     }
-    fprintf(f2, "\n};\n\n");
-    fclose(f1);
-    fclose(f2);
+    std::fprintf(f2, "\n};\n\n");
+    std::fclose(f1);
+    std::fclose(f2);
     return 0;
 invalidObjectFormat:
-    fprintf(stderr, "Object file appears to be corrupt\n");
-    fclose(f1);
-    fclose(f2);
+    std::fprintf(stderr, "Object file appears to be corrupt\n");
+    std::fclose(f1);
+    std::fclose(f2);
     return 1;
 }
 

@@ -1452,61 +1452,61 @@ put('fixp, 'c!:opcode_printer, function c!:pfixp);
 flag('(fixp), 'c!:uses_nil);
 
 symbolic procedure c!:piminusp(op, r1, r2, r3);
-   c!:printf("    %v = ((intptr_t)(%v) < 0 ? lisp_true : nil);\n", r1, r3);
+   c!:printf("    %v = ((std::intptr_t)(%v) < 0 ? lisp_true : nil);\n", r1, r3);
 
 put('iminusp, 'c!:opcode_printer, function c!:piminusp);
 flag('(iminusp), 'c!:uses_nil);
 
 symbolic procedure c!:pilessp(op, r1, r2, r3);
-   c!:printf("    %v = ((intptr_t)%v < (intptr_t)%v) ? lisp_true : nil;\n",
+   c!:printf("    %v = ((std::intptr_t)%v < (std::intptr_t)%v) ? lisp_true : nil;\n",
              r1, r2, r3);
 
 put('ilessp, 'c!:opcode_printer, function c!:pilessp);
 flag('(ilessp), 'c!:uses_nil);
 
 symbolic procedure c!:pigreaterp(op, r1, r2, r3);
-   c!:printf("    %v = ((intptr_t)%v > (intptr_t)%v) ? lisp_true : nil;\n",
+   c!:printf("    %v = ((std::intptr_t)%v > (std::intptr_t)%v) ? lisp_true : nil;\n",
              r1, r2, r3);
 
 put('igreaterp, 'c!:opcode_printer, function c!:pigreaterp);
 flag('(igreaterp), 'c!:uses_nil);
 
 symbolic procedure c!:piminus(op, r1, r2, r3);
-   c!:printf("    %v = (LispObject)(2*TAG_FIXNUM-((intptr_t)(%v)));\n", r1, r3);
+   c!:printf("    %v = (LispObject)(2*TAG_FIXNUM-((std::intptr_t)(%v)));\n", r1, r3);
 
 put('iminus, 'c!:opcode_printer, function c!:piminus);
 
 symbolic procedure c!:piadd1(op, r1, r2, r3);
-   c!:printf("    %v = (LispObject)((intptr_t)(%v) + 0x10);\n", r1, r3);
+   c!:printf("    %v = (LispObject)((std::intptr_t)(%v) + 0x10);\n", r1, r3);
 
 put('iadd1, 'c!:opcode_printer, function c!:piadd1);
 
 symbolic procedure c!:pisub1(op, r1, r2, r3);
-   c!:printf("    %v = (LispObject)((intptr_t)(%v) - 0x10);\n", r1, r3);
+   c!:printf("    %v = (LispObject)((std::intptr_t)(%v) - 0x10);\n", r1, r3);
 
 put('isub1, 'c!:opcode_printer, function c!:pisub1);
 
 symbolic procedure c!:piplus2(op, r1, r2, r3);
- << c!:printf("    %v = (LispObject)(intptr_t)((intptr_t)%v +", r1, r2);
-    c!:printf(" (intptr_t)%v - TAG_FIXNUM);\n", r3) >>;
+ << c!:printf("    %v = (LispObject)(std::intptr_t)((std::intptr_t)%v +", r1, r2);
+    c!:printf(" (std::intptr_t)%v - TAG_FIXNUM);\n", r3) >>;
 
 put('iplus2, 'c!:opcode_printer, function c!:piplus2);
 
 symbolic procedure c!:pidifference(op, r1, r2, r3);
- << c!:printf("    %v = (LispObject)(intptr_t)((intptr_t)%v - (intptr_t)%v", r1, r2, r3);
+ << c!:printf("    %v = (LispObject)(std::intptr_t)((std::intptr_t)%v - (std::intptr_t)%v", r1, r2, r3);
     c!:printf(" + TAG_FIXNUM);\n") >>;
 
 put('idifference, 'c!:opcode_printer, function c!:pidifference);
 
 symbolic procedure c!:pitimes2(op, r1, r2, r3);
- << c!:printf("    %v = fixnum_of_int((intptr_t)(int_of_fixnum(%v) *", r1, r2);
+ << c!:printf("    %v = fixnum_of_int((std::intptr_t)(int_of_fixnum(%v) *", r1, r2);
     c!:printf(" int_of_fixnum(%v)));\n", r3) >>;
 
 put('itimes2, 'c!:opcode_printer, function c!:pitimes2);
 
 symbolic procedure c!:pmodular_plus(op, r1, r2, r3);
  <<
-    c!:printf("    {   intptr_t w = int_of_fixnum(%v) + int_of_fixnum(%v);\n",
+    c!:printf("    {   std::intptr_t w = int_of_fixnum(%v) + int_of_fixnum(%v);\n",
                     r2, r3);
     c!:printf("        if (w >= current_modulus) w -= current_modulus;\n");
     c!:printf("        %v = fixnum_of_int(w);\n", r1);
@@ -1517,7 +1517,7 @@ put('modular!-plus, 'c!:opcode_printer, function c!:pmodular_plus);
 
 symbolic procedure c!:pmodular_difference(op, r1, r2, r3);
  <<
-    c!:printf("    {   intptr_t w = int_of_fixnum(%v) - int_of_fixnum(%v);\n",
+    c!:printf("    {   std::intptr_t w = int_of_fixnum(%v) - int_of_fixnum(%v);\n",
                     r2, r3);
     c!:printf("        if (w < 0) w += current_modulus;\n");
     c!:printf("        %v = fixnum_of_int(w);\n", r1);
@@ -1528,7 +1528,7 @@ put('modular!-difference, 'c!:opcode_printer, function c!:pmodular_difference);
 
 symbolic procedure c!:pmodular_minus(op, r1, r2, r3);
  <<
-    c!:printf("    {   intptr_t w = int_of_fixnum(%v);\n", r3);
+    c!:printf("    {   std::intptr_t w = int_of_fixnum(%v);\n", r3);
     c!:printf("        if (w != 0) w = current_modulus - w;\n");
     c!:printf("        %v = fixnum_of_int(w);\n", r1);
     c!:printf("    }\n")
@@ -1578,14 +1578,14 @@ put('get, 'c!:opcode_printer, function c!:pget);
 symbolic procedure c!:pqgetv(op, r1, r2, r3);
  << c!:printf("    %v = *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +",
               r1, r2);
-    c!:printf(" (((intptr_t)%v-TAG_FIXNUM)/(16/CELL)));\n", r3) >>;
+    c!:printf(" (((std::intptr_t)%v-TAG_FIXNUM)/(16/CELL)));\n", r3) >>;
 
 put('qgetv, 'c!:opcode_printer, function c!:pqgetv);
 
 symbolic procedure c!:pqputv(op, r1, r2, r3);
  <<
   c!:printf("    *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +", r2);
-  c!:printf(" (((intptr_t)%v-TAG_FIXNUM)/(16/CELL))) = %v;\n", r3, r1) >>;
+  c!:printf(" (((std::intptr_t)%v-TAG_FIXNUM)/(16/CELL))) = %v;\n", r3, r1) >>;
 
 put('qputv, 'c!:opcode_printer, function c!:pqputv);
 
@@ -1757,12 +1757,12 @@ symbolic procedure c!:pifequal s;
 put('ifequal, 'c!:exit_helper, function c!:pifequal);
 
 symbolic procedure c!:pifilessp s;
-  c!:printf("((intptr_t)(%v)) < ((intptr_t)(%v))", car s, cadr s);
+  c!:printf("((std::intptr_t)(%v)) < ((std::intptr_t)(%v))", car s, cadr s);
 
 put('ifilessp, 'c!:exit_helper, function c!:pifilessp);
 
 symbolic procedure c!:pifigreaterp s;
-  c!:printf("((intptr_t)(%v)) > ((intptr_t)(%v))", car s, cadr s);
+  c!:printf("((std::intptr_t)(%v)) > ((std::intptr_t)(%v))", car s, cadr s);
 
 put('ifigreaterp, 'c!:exit_helper, function c!:pifigreaterp);
 

@@ -1,7 +1,7 @@
 
 % u18.lsp           Machine generated Lisp
 
-(c!:install "u18" 62049 7141115 3376320)
+(c!:install "u18" 172187 4366394 2013585)
 
 (c!:install 'command '(command errmsg!* loopdelimslist!* !*demo ifl!*
 !*slin !*reduce4 lreadfn!* crchar!* !$eol!$ !*struct !*pret (in out shut
@@ -109,8 +109,6 @@ putobject terminalp) 7966353812840996655)
 
 (c!:install 'read_namelist '(read_namelist cursym!* !*comma!*
 valid_as_variable read_typed_name scan) 3194005069515663249)
-
-(c!:install 'simpg3 '(simpg3 g3 simpcv) 2740668184409933)
 
 (c!:install 'ev_sum '(ev_sum) 3122904571819917221)
 

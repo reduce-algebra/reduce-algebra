@@ -54,7 +54,7 @@ LispObject ModularPlus::op(LispObject a, Fixnum b)
 {   return number_dispatcher::ibinaryR<LispObject,ModularPlus>("modular-plus", a, b);
 }
 
-LispObject ModularPlus::op(LispObject a, uint64_t *b)
+LispObject ModularPlus::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::ibinaryR<LispObject,ModularPlus>("modular-plus", a, b);
 }
 
@@ -62,7 +62,7 @@ LispObject ModularPlus::op(Fixnum a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,ModularPlus>("modular-plus", a, b);
 }
 
-LispObject ModularPlus::op(uint64_t *a, LispObject b)
+LispObject ModularPlus::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,ModularPlus>("modular-plus", a, b);
 }
 
@@ -71,15 +71,15 @@ LispObject ModularPlus::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::ModularPlus::op(a.intval(), b.intval());
 }
 // bignum + fixnum
-LispObject ModularPlus::op(uint64_t *a, Fixnum b)
+LispObject ModularPlus::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::ModularPlus::op(a, b.intval());
 }
 // fixnum + bignum
-LispObject ModularPlus::op(Fixnum a, uint64_t *b)
+LispObject ModularPlus::op(Fixnum a, std::uint64_t *b)
 {   return ModularPlus::op(b, a);
 }
 // bignum + bignum
-LispObject ModularPlus::op(uint64_t *a, uint64_t *b)
+LispObject ModularPlus::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::ModularPlus::op(a, b);
 }
 
@@ -91,7 +91,7 @@ LispObject ModularTimes::op(LispObject a, Fixnum b)
 {   return number_dispatcher::ibinaryR<LispObject,ModularTimes>("modular-times", a, b);
 }
 
-LispObject ModularTimes::op(LispObject a, uint64_t *b)
+LispObject ModularTimes::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::ibinaryR<LispObject,ModularTimes>("modular-times", a, b);
 }
 
@@ -99,7 +99,7 @@ LispObject ModularTimes::op(Fixnum a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,ModularTimes>("modular-times", a, b);
 }
 
-LispObject ModularTimes::op(uint64_t *a, LispObject b)
+LispObject ModularTimes::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,ModularTimes>("modular-times", a, b);
 }
 
@@ -108,15 +108,15 @@ LispObject ModularTimes::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::ModularTimes::op(a.intval(), b.intval());
 }
 // bignum * fixnum
-LispObject ModularTimes::op(uint64_t *a, Fixnum b)
+LispObject ModularTimes::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::ModularTimes::op(a, b.intval());
 }
 // fixnum * bignum
-LispObject ModularTimes::op(Fixnum a, uint64_t *b)
+LispObject ModularTimes::op(Fixnum a, std::uint64_t *b)
 {   return ModularTimes::op(b, a);
 }
 // bignum * bignum
-LispObject ModularTimes::op(uint64_t *a, uint64_t *b)
+LispObject ModularTimes::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::ModularTimes::op(a, b);
 }
 
@@ -128,7 +128,7 @@ LispObject ModularDifference::op(LispObject a, Fixnum b)
 {   return number_dispatcher::ibinaryR<LispObject,ModularDifference>("modular-difference", a, b);
 }
 
-LispObject ModularDifference::op(LispObject a, uint64_t *b)
+LispObject ModularDifference::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::ibinaryR<LispObject,ModularDifference>("modular-difference", a, b);
 }
 
@@ -136,7 +136,7 @@ LispObject ModularDifference::op(Fixnum a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,ModularDifference>("modular-difference", a, b);
 }
 
-LispObject ModularDifference::op(uint64_t *a, LispObject b)
+LispObject ModularDifference::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,ModularDifference>("modular-difference", a, b);
 }
 
@@ -145,15 +145,15 @@ LispObject ModularDifference::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::ModularDifference::op(a.intval(), b.intval());
 }
 // bignum - fixnum
-LispObject ModularDifference::op(uint64_t *a, Fixnum b)
+LispObject ModularDifference::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::ModularDifference::op(a, b.intval());
 }
 // fixnum - bignum
-LispObject ModularDifference::op(Fixnum a, uint64_t *b)
+LispObject ModularDifference::op(Fixnum a, std::uint64_t *b)
 {   return arithlib_lowlevel::ModularDifference::op(a.intval(), b);
 }
 // bignum - bignum
-LispObject ModularDifference::op(uint64_t *a, uint64_t *b)
+LispObject ModularDifference::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::ModularDifference::op(a, b);
 }
 
@@ -165,7 +165,7 @@ LispObject ModularQuotient::op(LispObject a, Fixnum b)
 {   return number_dispatcher::ibinaryR<LispObject,ModularQuotient>("modular-quotient", a, b);
 }
 
-LispObject ModularQuotient::op(LispObject a, uint64_t *b)
+LispObject ModularQuotient::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::ibinaryR<LispObject,ModularQuotient>("modular-quotient", a, b);
 }
 
@@ -173,7 +173,7 @@ LispObject ModularQuotient::op(Fixnum a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,ModularQuotient>("modular-quotient", a, b);
 }
 
-LispObject ModularQuotient::op(uint64_t *a, LispObject b)
+LispObject ModularQuotient::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,ModularQuotient>("modular-quotient", a, b);
 }
 
@@ -182,15 +182,15 @@ LispObject ModularQuotient::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::ModularQuotient::op(a.intval(), b.intval());
 }
 // bignum / fixnum
-LispObject ModularQuotient::op(uint64_t *a, Fixnum b)
+LispObject ModularQuotient::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::ModularQuotient::op(a, b.intval());
 }
 // fixnum / bignum
-LispObject ModularQuotient::op(Fixnum a, uint64_t *b)
+LispObject ModularQuotient::op(Fixnum a, std::uint64_t *b)
 {   return arithlib_lowlevel::ModularQuotient::op(a.intval(), b);
 }
 // bignum / bignum
-LispObject ModularQuotient::op(uint64_t *a, uint64_t *b)
+LispObject ModularQuotient::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::ModularQuotient::op(a, b);
 }
 
@@ -203,16 +203,16 @@ LispObject ModularExpt::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::ModularExpt::op(a.intval(), b.intval());
 }
 // bignum ** n
-LispObject ModularExpt::op(uint64_t *a, Fixnum b)
+LispObject ModularExpt::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::ModularExpt::op(a, b.intval());
 }
 
 // fixnum ** n
-LispObject ModularExpt::op(Fixnum a, uint64_t *b)
+LispObject ModularExpt::op(Fixnum a, std::uint64_t *b)
 {   return arithlib_lowlevel::ModularExpt::op(a.intval(), b);
 }
 // bignum ** n
-LispObject ModularExpt::op(uint64_t *a, uint64_t *b)
+LispObject ModularExpt::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::ModularExpt::op(a, b);
 }
 
@@ -225,7 +225,7 @@ LispObject ModularReciprocal::op(Fixnum a)
 {   return arithlib_lowlevel::ModularReciprocal::op(a.intval());
 }
 // -bignum
-LispObject ModularReciprocal::op(uint64_t *a)
+LispObject ModularReciprocal::op(std::uint64_t *a)
 {   return arithlib_lowlevel::ModularReciprocal::op(a);
 }
 
@@ -238,7 +238,7 @@ LispObject ModularMinus::op(Fixnum a)
 {   return arithlib_lowlevel::ModularMinus::op(a.intval());
 }
 // -bignum
-LispObject ModularMinus::op(uint64_t *a)
+LispObject ModularMinus::op(std::uint64_t *a)
 {   return arithlib_lowlevel::ModularMinus::op(a);
 }
 
@@ -251,7 +251,7 @@ LispObject SetModulus::op(Fixnum a)
 {   return arithlib_lowlevel::SetModulus::op(a.intval());
 }
 // -bignum
-LispObject SetModulus::op(uint64_t *a)
+LispObject SetModulus::op(std::uint64_t *a)
 {   return arithlib_lowlevel::SetModulus::op(a);
 }
 
@@ -264,7 +264,7 @@ LispObject ModularNumber::op(Fixnum a)
 {   return arithlib_lowlevel::ModularNumber::op(a.intval());
 }
 // -bignum
-LispObject ModularNumber::op(uint64_t *a)
+LispObject ModularNumber::op(std::uint64_t *a)
 {   return arithlib_lowlevel::ModularNumber::op(a);
 }
 

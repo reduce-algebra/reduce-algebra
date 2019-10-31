@@ -36,9 +36,9 @@
 #include "headers.h"
 
 static int spset = 0;
-static int32_t spbase = 0, spmin;
+static std::int32_t spbase = 0, spmin;
 
-static FILE *stack_log = NULL;
+static std::FILE *stack_log = NULL;
 
 #pragma aux __PRO modify [];
 
@@ -50,16 +50,16 @@ extern int popa(void);
 #pragma aux popa = "pop edx" "pop ecx" "pop eax" value [eax] modify [eax ecx edx];
 
 void __PRO()
-{   int32_t temp;
+{   std::int32_t temp;
     pusha();
-    temp = (int32_t)&temp;
+    temp = (std::int32_t)&temp;
     if (!spset)
     {   spbase = spmin = temp;
         spset = 1;
     }
-    if (stack_log == NULL) stack_log = fopen("stack.log", "w");
+    if (stack_log == NULL) stack_log = std::fopen("stack.log", "w");
     if (temp <= spmin-64)  // Only check at granularity of 64 bytes
-    {   fprintf(stack_log, "Stack depth %d\n", spbase-temp);
+    {   std::fprintf(stack_log, "Stack depth %d\n", spbase-temp);
         spmin = temp;
     }
     popa();

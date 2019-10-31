@@ -46,7 +46,7 @@ LispObject copyb(LispObject a)
 // copy a bignum.
 //
 {   LispObject b;
-    size_t len = bignum_length(a), i;
+    std::size_t len = bignum_length(a), i;
     push(a);
     b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
     pop(a);
@@ -70,8 +70,8 @@ LispObject negateb(LispObject a)
 // negated to get a fixnum result.
 //
 {   LispObject b;
-    size_t len = bignum_length(a), i;
-    int32_t carry;
+    std::size_t len = bignum_length(a), i;
+    std::int32_t carry;
 // There are two messy special cases here. The first is that there is a
 // positive value (2^27 or 2^59) which has to be represented as a bignum,
 // but when you negate it you get a fixnum.
@@ -83,18 +83,18 @@ LispObject negateb(LispObject a)
 // can be handled as fixnums instead.
     if (SIXTY_FOUR_BIT && len == CELL+8)   // two-word bignum - do specially
     {   if (bignum_digits(a)[0] == 0 &&
-            bignum_digits(a)[1] == (int32_t)0x10000000)
+            bignum_digits(a)[1] == (std::int32_t)0x10000000)
             return MOST_NEGATIVE_FIXNUM;
         else if (bignum_digits(a)[0] == 0 &&
-            (int32_t)bignum_digits(a)[1] == -(int32_t)(1<<30))
+            (std::int32_t)bignum_digits(a)[1] == -(std::int32_t)(1<<30))
             return make_three_word_bignum(0, 1<<30, 0);
-        uint32_t d0 = bignum_digits(a)[0];
-        int32_t d1 = (int32_t)~bignum_digits(a)[1];
+        std::uint32_t d0 = bignum_digits(a)[0];
+        std::int32_t d1 = (std::int32_t)~bignum_digits(a)[1];
         if (d0 == 0) d1++;
         else return make_two_word_bignum(d1, (-d0) & 0x7fffffff);
     }
     if (!SIXTY_FOUR_BIT && len == CELL+4)   // one-word bignum - do specially
-    {   int32_t d0 = -(int32_t)bignum_digits(a)[0];
+    {   std::int32_t d0 = -(std::int32_t)bignum_digits(a)[0];
         if (d0 == MOST_NEGATIVE_FIXVAL) return MOST_NEGATIVE_FIXNUM;
         else if (d0 == 0x40000000) return make_two_word_bignum(0, d0);
         else return make_one_word_bignum(d0);
@@ -176,7 +176,7 @@ LispObject negate(LispObject a)
                 return a ^ UINT64_C(0x8000000000000000);
             else return make_lisp_integer64(-int_of_fixnum(a));
         case TAG_NUMBERS:
-        {   int32_t ha = type_of_header(numhdr(a));
+        {   std::int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                     return negateb(a);
@@ -266,7 +266,7 @@ typedef union _char_double
 #define _fp_normalize(high, low)                                          \
     {   char_double_union temp;  /* access to representation     */       \
         temp.d = high;           /* take original number         */       \
-        memset(&temp.c[LOW_BITS_OFFSET], 0, 4);                           \
+        std::memset(&temp.c[LOW_BITS_OFFSET], 0, 4);                           \
                                  /* make low part of mantissa 0  */       \
         low += (high - temp.d);  /* add into low-order result    */       \
         high = temp.d;                                                    \
@@ -296,14 +296,14 @@ double Cabs(Complex z)
     double x = z.real, y = z.imag;
     double scale;
     int n1, n2;
-    if (x==0.0) return fabs(y);
-    else if (y==0.0) return fabs(x);
-    (void)frexp(x, &n1);
-    (void)frexp(y, &n2);
+    if (x==0.0) return std::fabs(y);
+    else if (y==0.0) return std::fabs(x);
+    (void)std::frexp(x, &n1);
+    (void)std::frexp(y, &n2);
 // The exact range of values returned by frexp does not matter here
     if (n2>n1) n1 = n2;
 // n1 is now the exponent of the larger (in absolute value) of x, y
-    scale = ldexp(1.0, n1);     // can not be 0.0
+    scale = std::ldexp(1.0, n1);     // can not be 0.0
     x /= scale;
     y /= scale;
 // The above scaling operation introduces no rounding error (since the
@@ -311,7 +311,7 @@ double Cabs(Complex z)
 // to be somewhere near 1.0 so overflow in x*x+y*y is impossible. It is
 // still possible that one of x*x and y*y will underflow (but not both)
 // but this is harmless.
-    return scale * sqrt(x*x + y*y);
+    return scale * std::sqrt(x*x + y*y);
 }
 
 Complex Ccos(Complex z)
@@ -321,10 +321,10 @@ Complex Ccos(Complex z)
 // For smallish y this can be used directly.  For |y| > 50 I will
 // compute sinh and cosh as just +/- exp(|y|)/2
 //
-    double s = sin(x), c = cos(x);
-    double absy = fabs(y);
+    double s = std::sin(x), c = std::cos(x);
+    double absy = std::fabs(y);
     if (absy <= 50.0)
-    {   double sh = sinh(y), ch = cosh(y);
+    {   double sh = std::sinh(y), ch = std::cosh(y);
         z.real = c*ch;
         z.imag = - s*sh;
         return z;
@@ -332,9 +332,9 @@ Complex Ccos(Complex z)
     else
     {   double w;
         int n = _reduced_exp(absy, &w) - 1;
-        z.real = ldexp(c*w, n);
-        if (y < 0.0) z.imag = ldexp(s*w, n);
-        else z.imag = ldexp(-s*w, n);
+        z.real = std::ldexp(c*w, n);
+        if (y < 0.0) z.imag = std::ldexp(s*w, n);
+        else z.imag = std::ldexp(-s*w, n);
         return z;
     }
 }
@@ -385,7 +385,7 @@ int _reduced_exp(double x, double *r)
 // representation here, so f is computed without any rounding error.
 // (do I need something like the (x - 0.5) - 0.5 trick here?)
 //
-    f = exp(x - 7.625*(double)n);
+    f = std::exp(x - 7.625*(double)n);
 //
 // the magic constant is ((exp(61/8) / 2048) - 1) and it arises because
 // 61/88 is a decent rational approximation to log(2), hence exp(61/8)
@@ -413,7 +413,7 @@ Complex Cexp(Complex z)
 // perhaps with hardware support for the calculation of real-valued
 // trig functions I am not going to try to realise this saving.
 //
-    double s = sin(y), c = cos(y);
+    double s = std::sin(y), c = std::cos(y);
 //
 // if x > 50 I will use a cautious sceme which computes exp(x) with
 // its (binary) exponent separated. Note that 50.0 is chosen as a
@@ -421,7 +421,7 @@ Complex Cexp(Complex z)
 // but is not a critical very special number.
 //
     if (x <= 50.0)      // includes x < 0.0, of course
-    {   double w = exp(x);
+    {   double w = std::exp(x);
         z.real = w*c;
         z.imag = w*s;
         return z;
@@ -429,8 +429,8 @@ Complex Cexp(Complex z)
     else
     {   double w;
         int n = _reduced_exp(x, &w);
-        z.real = ldexp(w*c, n);
-        z.imag = ldexp(w*s, n);
+        z.real = std::ldexp(w*c, n);
+        z.imag = std::ldexp(w*s, n);
         return z;
     }
 }
@@ -445,17 +445,17 @@ Complex Cln(Complex z)
 //
     double scale, r;
     int n1, n2;
-    if (x==0.0) r = log(fabs(y));
-    else if (y==0.0) r = log(fabs(x));
+    if (x==0.0) r = std::log(std::fabs(y));
+    else if (y==0.0) r = std::log(std::fabs(x));
     else
-    {   (void)frexp(x, &n1);
-        (void)frexp(y, &n2);
+    {   (void)std::frexp(x, &n1);
+        (void)std::frexp(y, &n2);
 // The exact range of values returned by frexp does not matter here
         if (n2>n1) n1 = n2;
-        scale = ldexp(1.0, n1);
+        scale = std::ldexp(1.0, n1);
         x /= scale;
         y /= scale;
-        r = log(scale) + 0.5*log(x*x + y*y);
+        r = std::log(scale) + 0.5*std::log(x*x + y*y);
     }
     z.real = r;
 //
@@ -466,7 +466,7 @@ Complex Cln(Complex z)
     if (y == 0.0)
         if (x < 0.0) z.imag = _pi;
         else z.imag = 0.0;
-    else z.imag = atan2(y, x);
+    else z.imag = std::atan2(y, x);
     return z;
 }
 
@@ -815,7 +815,7 @@ Complex Cpow(Complex z1, Complex z2)
     double cw, sw, cost, sint;
 
     if (b == 0.0 && d == 0.0 && a >= 0.0)// Simple case if both args are real
-    {   z1.real = pow(a, c);
+    {   z1.real = std::pow(a, c);
         z1.imag = 0.0;
         return z1;
     }
@@ -826,17 +826,17 @@ Complex Cpow(Complex z1, Complex z2)
     if (a == 0.0)
     {   if (b == 0.0) return z1;    // 0.0**anything is really an error
 // The exact values returned by frexp do not matter here
-        (void)frexp(b, &k);
+        (void)std::frexp(b, &k);
     }
     else
-    {   (void)frexp(a, &k);
+    {   (void)std::frexp(a, &k);
         if (b != 0.0)
         {   int n;
-            (void)frexp(b, &n);
+            (void)std::frexp(b, &n);
             if (n > k) k = n;
         }
     }
-    scale = ldexp(1.0, k);
+    scale = std::ldexp(1.0, k);
     a /= scale;
     b /= scale;
 //
@@ -903,7 +903,7 @@ Complex Cpow(Complex z1, Complex z2)
     rl = rl - q*_approx_part_log2;
 #undef _exact_part_log2
 #undef _approx_part_log2
-    r = exp(rh + rl);        // This should now be accurate enough
+    r = std::exp(rh + rl);        // This should now be accurate enough
 
     ih = fp_add(ih, il, &il);
     i = ih + il;        // Approximate value
@@ -934,8 +934,8 @@ Complex Cpow(Complex z1, Complex z2)
 // that could speed things up a little bit, but by this stage they have
 // not much in common.
 //
-    cw = cos(i);
-    sw = sin(i);
+    cw = std::cos(i);
+    sw = std::sin(i);
     switch (n & 3)  // quadrant control
 {       default:
         case 0: cost = cw;  sint = sw;  break;
@@ -948,8 +948,8 @@ Complex Cpow(Complex z1, Complex z2)
 // Now, at long last, I can assemble the results and return.
 //
 
-    z1.real = ldexp(r*cost, m);
-    z1.imag = ldexp(r*sint, m);
+    z1.real = std::ldexp(r*cost, m);
+    z1.imag = std::ldexp(r*sint, m);
     return z1;
 }
 

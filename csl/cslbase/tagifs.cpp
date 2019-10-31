@@ -49,62 +49,62 @@ char *pending[MAXDEPTH];
 char curline[MAXLINE];
 
 int main(int argc, char *argv[])
-{   FILE *in, *out;
+{   std::FILE *in, *out;
     int i, c;
     char outname[256];
     if (argc != 2)
-    {   fprintf(stderr, "Usage: tagifs xxx.cpp\n");
+    {   std::fprintf(stderr, "Usage: tagifs xxx.cpp\n");
         return 1;
     }
     for (i=0; i<MAXDEPTH; i++)
-        pending[i] = (char *)malloc(MAXLINE); // should check for failure!
-    in = fopen(argv[1], "r");
+        pending[i] = (char *)std::malloc(MAXLINE); // should check for failure!
+    in = std::fopen(argv[1], "r");
     if (in == NULL)
-    {   fprintf(stderr, "Failed to access \"%s\"\n", argv[1]);
+    {   std::fprintf(stderr, "Failed to access \"%s\"\n", argv[1]);
         return 1;
     }
-    sprintf(outname, "%s.new", argv[1]);
-    out = fopen(outname, "w");
+    std::sprintf(outname, "%s.new", argv[1]);
+    out = std::fopen(outname, "w");
     if (out == NULL)
-    {   fprintf(stderr, "Failed to access \"%s\"\n", outname);
-        fclose(in);
+    {   std::fprintf(stderr, "Failed to access \"%s\"\n", outname);
+        std::fclose(in);
         return 1;
     }
     depth = 0;
     for (;;)
     {   i = 0;
-        while ((c = getc(in)) != EOF && c != '\n' && c != '\r')
+        while ((c = std::getc(in)) != EOF && c != '\n' && c != '\r')
         {   curline[i++] = c;
         }
         curline[i] = 0;
         if (i == 0 && c == EOF) break;
-        if (strncmp(curline, "#if", 3) == 0) // #if OR #ifdef
+        if (std::strncmp(curline, "#if", 3) == 0) // #if OR #ifdef
         {   i = 3;
             while (curline[i] != 0 && curline[i] != ' ') i++;
             while (curline[i] == ' ') i++;
-            strcpy(pending[depth], &curline[i]);
+            std::strcpy(pending[depth], &curline[i]);
             depth++;
         }
-        else if (strncmp(curline, "#else", 5) == 0)
+        else if (std::strncmp(curline, "#else", 5) == 0)
         {   i = 5;
             while (curline[i] != 0 && curline[i] != ' ') i++;
-            if (depth == 0) sprintf(&curline[i], " // ERROR");
-            else sprintf(&curline[i], " // %s", pending[depth-1]);
+            if (depth == 0) std::sprintf(&curline[i], " // ERROR");
+            else std::sprintf(&curline[i], " // %s", pending[depth-1]);
         }
-        else if (strncmp(curline, "#endif", 6) == 0)
+        else if (std::strncmp(curline, "#endif", 6) == 0)
         {   i = 6;
             while (curline[i] != 0 && curline[i] != ' ') i++;
-            if (depth == 0) sprintf(&curline[i], " // ERROR");
-            else sprintf(&curline[i], " // %s", pending[depth-1]);
+            if (depth == 0) std::sprintf(&curline[i], " // ERROR");
+            else std::sprintf(&curline[i], " // %s", pending[depth-1]);
             depth--;
         }
-        fprintf(out, "%s\n", curline);
+        std::fprintf(out, "%s\n", curline);
         if (c == EOF) break;
     }
-    fclose(in);
-    fclose(out);
+    std::fclose(in);
+    std::fclose(out);
     while (depth != 0)
-    {   fprintf(stderr, "ERROR: \"%s\" not closed\n", pending[depth]);
+    {   std::fprintf(stderr, "ERROR: \"%s\" not closed\n", pending[depth]);
         depth--;
     }
     return 0;

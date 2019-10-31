@@ -14,9 +14,9 @@
 
 typedef struct font_width
 {   const char *name;
-    int32_t checksum;
-    int32_t designsize;
-    int32_t charwidth[128];
+    std::int32_t checksum;
+    std::int32_t designsize;
+    std::int32_t charwidth[128];
 } font_width;
 
 static font_width cm_font_width[] =

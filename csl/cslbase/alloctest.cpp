@@ -59,7 +59,7 @@ void ensure_screen()
 {
 }
 
-volatile std::atomic<uintptr_t> event_flag;
+volatile std::atomic<std::uintptr_t> event_flag;
 
 int fwin_getchar()
 {   return EOF;
@@ -75,7 +75,7 @@ LispObject get_pname(LispObject a)
 
 LispObject nil, lisp_true, unset_var;
 LispObject *nilsegment, *stacksegment, *stack, *stackbase, *stacklimit;
-uintptr_t *C_stackbase, C_stacklimit;
+std::uintptr_t *C_stackbase, C_stacklimit;
 
 [[noreturn]] void fatal_error(int code, ...)
 {   my_abort();
@@ -95,7 +95,7 @@ void respond_to_stack_event()
 int init_flags;
 double maxStoreSize;
 unsigned int exit_count;
-intptr_t miscflags;
+std::intptr_t miscflags;
 
 const char *programDir;
 const char *programName;
@@ -103,7 +103,7 @@ const char *standard_directory;
 
 LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1] = {0};
 
-uint32_t Crand()
+std::uint32_t Crand()
 {   return 0;
 }
 
@@ -121,7 +121,7 @@ const volatile char *errorset_msg;
 {   my_abort();
 }
 
-int64_t sixty_four_bits(LispObject a)
+std::int64_t sixty_four_bits(LispObject a)
 {   return 0;
 }
 
@@ -138,11 +138,11 @@ LispObject zcons(LispObject a, LispObject b)
     return r1;
 }
 
-thread_local uint64_t treehash;
+thread_local std::uint64_t treehash;
 
 LispObject make_n_tree1(int n)
 {   if (n == 0)
-    {   uint64_t r = arithlib_implementation::mersenne_twister();
+    {   std::uint64_t r = arithlib_implementation::mersenne_twister();
         r &= UINT64_C(0x0000ffffffffffff);
         treehash = 1234567*treehash + r;
         treehash -= (treehash >> 32);
@@ -166,7 +166,7 @@ LispObject make_n_tree(int n)
 
 int treesize1(LispObject a)
 {   if (is_fixnum(a))
-    {   uint64_t r = int_of_fixnum(a);
+    {   std::uint64_t r = int_of_fixnum(a);
         treehash = 1234567*treehash + r;
         treehash -= (treehash >> 32);
         return 0;
@@ -177,7 +177,7 @@ int treesize1(LispObject a)
     return left+right+1;
 }
 
-void treesize(LispObject a, int expected_size, uint64_t expected_hash)
+void treesize(LispObject a, int expected_size, std::uint64_t expected_hash)
 {   treehash = 0;
     int n = treesize1(a);
     my_assert(n == expected_size);
@@ -199,24 +199,24 @@ int thread_function(int id)
     int size = 3;
     LispObject a = fixnum_of_int(0), b = fixnum_of_int(0);
     {   std::lock_guard<std::mutex> lock(print_mutex);
-        printf("Starting thread %d\n", id);
-        fflush(stdout);
+        std::printf("Starting thread %d\n", id);
+        std::fflush(stdout);
     }
     int sizeA = 0, sizeB = 0;
-    uint64_t checkA = 0, checkB = 0;
+    std::uint64_t checkA = 0, checkB = 0;
     while (size < 400)
     {   a = b;
         sizeA = sizeB;
         checkA = checkB;
         sizeB = arithlib_implementation::mersenne_twister() % size;
         {   std::lock_guard<std::mutex> lock(print_mutex);
-            printf("Thread %d, next size will be %d [%d]\n", id, sizeB, size);
-            fflush(stdout);
+            std::printf("Thread %d, next size will be %d [%d]\n", id, sizeB, size);
+            std::fflush(stdout);
         }
         b = make_n_tree(sizeB);
         {   std::lock_guard<std::mutex> lock(print_mutex);
-            printf("Thread %d, tree made\n", id);
-            fflush(stdout);
+            std::printf("Thread %d, tree made\n", id);
+            std::fflush(stdout);
         }
         checkB = treehash;
         treesize(a, sizeA, checkA);
@@ -227,8 +227,8 @@ int thread_function(int id)
 }
 
 int main(int argc, char *argv[])
-{   printf("alloctest starting\n");
-    fflush(stdout);
+{   std::printf("alloctest starting\n");
+    std::fflush(stdout);
     for (int i=0; i<max_threads; i++)
     {   stack_bases[i] = NULL;
         stack_fringes[i] = NULL;
@@ -253,8 +253,8 @@ int main(int argc, char *argv[])
 // thread as well as the subsidiary ones just in case that makes a difference.
     t1.join();
     t2.join();
-    printf("Memory left = %" PRId64 "\n",
-        (int64_t)(Alimit.load() - Afringe.load()));
+    std::printf("Memory left = %" PRId64 "\n",
+        (std::int64_t)(Alimit.load() - Afringe.load()));
     return 0;
 }
 

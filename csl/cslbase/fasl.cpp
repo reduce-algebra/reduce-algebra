@@ -209,8 +209,8 @@ bool fasl_output_file = false;  // An output file is open?
 static char package_name[256];
 #endif
 
-char *trim_module_name(char *name, size_t *lenp)
-{   size_t len = *lenp, len1;
+char *trim_module_name(char *name, std::size_t *lenp)
+{   std::size_t len = *lenp, len1;
     len1 = len - 1;
 //
 // Firstly I will decrease the length of the string if there is a "."
@@ -249,7 +249,7 @@ LispObject Lcopy_module(LispObject env, LispObject file)
 // startup banner data - that must be set up by hand.
 //
 {   Header h;
-    size_t len;
+    std::size_t len;
     char *modname;
     if (file == nil) Icopy(NULL, 0);
     else
@@ -275,7 +275,7 @@ LispObject Ldelete_module(LispObject env, LispObject file)
 // was there to begin with.  (delete-module nil) deletes any help data.
 //
 {   Header h;
-    size_t len;
+    std::size_t len;
     char *modname;
     if (file == nil) Idelete(NULL, 0);
     else
@@ -303,7 +303,7 @@ LispObject Lbanner(LispObject env, LispObject info)
 //
 {   Header h;
     int i;
-    int32_t len;
+    std::int32_t len;
     char *name;
     if (info == nil)
     {   char b[64];
@@ -379,10 +379,10 @@ static void IputcDebug(int c, int line)
 LispObject Lmodule_exists(LispObject env, LispObject file)
 {   char filename[LONGEST_LEGAL_FILENAME], tt[32];
     Header h;
-    size_t len;
-    size_t size;
+    std::size_t len;
+    std::size_t size;
     char *modname;
-    memset(filename, 0, sizeof(filename));
+    std::memset(filename, 0, sizeof(filename));
     if (symbolp(file))
     {   file = get_pname(file);
         h = vechdr(file);
@@ -472,9 +472,9 @@ LispObject Lstart_module(LispObject env, LispObject name)
     else
     {   char filename[LONGEST_LEGAL_FILENAME];
         char *modname;
-        size_t len;
+        std::size_t len;
         Header h;
-        memset(filename, 0, sizeof(filename));
+        std::memset(filename, 0, sizeof(filename));
 #ifdef COMMON
         if (complex_stringp(name))
         {   name = simplify_string(name);
@@ -526,12 +526,12 @@ LispObject Lstart_module(LispObject env, LispObject name)
 LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
 {   const char *w;
     char *aa, *bb = NULL;
-    size_t lena, lenb;
+    std::size_t lena, lenb;
     if (a != nil)
     {   w = get_string_data(a, "set-help-file", lena);
-        aa = (char *)malloc(lena+1);
+        aa = (char *)std::malloc(lena+1);
         if (aa == NULL) aerror("set-help-file");
-        memcpy(aa, w, lena);
+        std::memcpy(aa, w, lena);
         aa[lena] = 0;
     }
     else
@@ -540,9 +540,9 @@ LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
     }
     if (b != nil)
     {   w = get_string_data(b, "set-help-file", lenb);
-        bb = (char *)malloc(lenb+1);
+        bb = (char *)std::malloc(lenb+1);
         if (bb == NULL) aerror("set-help-file");
-        memcpy(bb, w, lenb);
+        std::memcpy(bb, w, lenb);
         bb[lenb] = 0;
     }
     fwin_set_help_file(aa, bb);
@@ -564,7 +564,7 @@ LispObject Lsetpchar(LispObject env, LispObject a)
     push(old);
     internal_prin(a, 0);
     pop(old);
-    memcpy(prompt_string, memory_print_buffer, MAX_PROMPT_LENGTH);
+    std::memcpy(prompt_string, memory_print_buffer, MAX_PROMPT_LENGTH);
     prompt_string[MAX_PROMPT_LENGTH-1] = 0;
     fwin_set_prompt(prompt_string);
     return onevalue(old);

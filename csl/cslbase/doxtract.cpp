@@ -162,19 +162,19 @@ int main(int argc, char *argv[])
 {   int i;
     for (i=1; i<argc; i++)
     {   const char *a = argv[i];
-        if (strcmp(a, "--help") == 0)
-        {   printf("Usage: %s [-p prod] [-t tag]* file*\n", argv[0]);
-            exit(0);
+        if (std::strcmp(a, "--help") == 0)
+        {   std::printf("Usage: %s [-p prod] [-t tag]* file*\n", argv[0]);
+            std::exit(0);
         }
-        else if (strcmp(a, "-p") == 0 || strcmp(a, "-P") == 0)
+        else if (std::strcmp(a, "-p") == 0 || std::strcmp(a, "-P") == 0)
         {   i++;
             if (i < argc) product = argv[i];
         }
-        else if (strcmp(a, "-o") == 0 || strcmp(a, "-O") == 0)
+        else if (std::strcmp(a, "-o") == 0 || std::strcmp(a, "-O") == 0)
         {   i++;
             if (i < argc) output = argv[i];
         }
-        else if (strcmp(a, "-t") == 0 || strcmp(a, "-T") == 0)
+        else if (std::strcmp(a, "-t") == 0 || std::strcmp(a, "-T") == 0)
         {   i++;
             if (i < argc && n_tags < MAX_TAGS) tags[n_tags++] = argv[i];
         }
@@ -201,10 +201,10 @@ enum Context
 
 static int context = Standard;
 static int active = 0;
-static void C_doc_comment(FILE *f, int c);
-static void lisp_product_comment(FILE *f);
-static void lisp_section_comment(FILE *f);
-static void lisp_doc_comment(FILE *f);
+static void C_doc_comment(std::FILE *f, int c);
+static void lisp_product_comment(std::FILE *f);
+static void lisp_section_comment(std::FILE *f);
+static void lisp_doc_comment(std::FILE *f);
 
 #define MAX_LINE 512
 static char line[MAX_LINE+1];
@@ -212,24 +212,24 @@ int n_line = 0;
 
 static void process_file(const char *file)
 {   PAD;
-    FILE *f = fopen(file, "r");
+    std::FILE *f = std::fopen(file, "r");
     int c, lisp_mode = 0;
     if (f == NULL)
-    {   printf("Input file %s could not be opened\n", file);
-        printf("Ignoring it and continuing...\n");
+    {   std::printf("Input file %s could not be opened\n", file);
+        std::printf("Ignoring it and continuing...\n");
         return;
     }
 
-    c = strlen(file)-4;
-    if (strcmp(file+c, ".lsp") == 0 ||
-        strcmp(file+c, ".red") == 0) lisp_mode = 1;
+    c = std::strlen(file)-4;
+    if (std::strcmp(file+c, ".lsp") == 0 ||
+        std::strcmp(file+c, ".red") == 0) lisp_mode = 1;
 
     context = Standard;
     active = 0;
     if (lisp_mode)
     {   for (;;)
         {   n_line = 0;
-            while ((c = getc(f)) != EOF && c != '\n')
+            while ((c = std::getc(f)) != EOF && c != '\n')
             {   if (c == '\r') continue;
                 if (n_line < MAX_LINE) line[n_line++] = c;
             }
@@ -245,7 +245,7 @@ static void process_file(const char *file)
             }
         }
     }
-    else while ((c = getc(f)) != EOF)
+    else while ((c = std::getc(f)) != EOF)
         {   if (c == '\r') continue;
             switch (context)
             {   case Standard:
@@ -300,28 +300,28 @@ static void process_file(const char *file)
                     continue;
             }
         }
-    fclose(f);
+    std::fclose(f);
 }
 
 static char *heap(const char *s)
 {   PAD;
-    char *r = (char *)malloc(strlen(s)+1);
+    char *r = (char *)std::malloc(std::strlen(s)+1);
     if (r == NULL)
-    {   printf("malloc failure\n");
-        exit(1);
+    {   std::printf("malloc failure\n");
+        std::exit(1);
     }
-    strcpy(r, s);
+    std::strcpy(r, s);
     return r;
 }
 
-static char *C_until_comment_end(FILE *f, int active);
-static void C_section_comment(FILE *f);
+static char *C_until_comment_end(std::FILE *f, int active);
+static void C_section_comment(std::FILE *f);
 
 #define MAX_HEADER MAX_LINE
 static char header[MAX_HEADER+1];
 static int n_header = 0;
 
-static void read_header(FILE *f, int c, const char *msg);
+static void read_header(std::FILE *f, int c, const char *msg);
 
 #define MAX_SECNAME 64
 static char secname[MAX_SECNAME+1];
@@ -349,7 +349,7 @@ typedef struct subsection
 static subsection *make_subsection(const char *alphakey, const char *subsechdr,
                                    const char *text, subsection *next)
 {   PAD;
-    subsection *r = (subsection *)malloc(sizeof(subsection));
+    subsection *r = (subsection *)std::malloc(sizeof(subsection));
     r->alphakey = alphakey;
     r->subsechdr = subsechdr;
     r->text = text;
@@ -375,10 +375,10 @@ static section *find_section(const char *name)
 {   PAD;
     section *r = list_of_sections;
     while (r != NULL)
-    {   if (strcmp(name, r->name) == 0) return r;
+    {   if (std::strcmp(name, r->name) == 0) return r;
         r = r->next;
     }
-    r = (section *)malloc(sizeof(section));
+    r = (section *)std::malloc(sizeof(section));
     r->name = heap(name);
     r->alphakey = "unset alphakey";
     r->sechdr = "unset section header";
@@ -389,11 +389,11 @@ static section *find_section(const char *name)
     return r;
 }
 
-static void C_doc_comment(FILE *f, int c)
+static void C_doc_comment(std::FILE *f, int c)
 {   PAD;
     char *p;
     section *s;
-    while (c == '\r') c = getc(f);
+    while (c == '\r') c = std::getc(f);
     if (c == '!')
     {   C_section_comment(f);
         return;
@@ -406,8 +406,8 @@ static void C_doc_comment(FILE *f, int c)
     p = header;
     while (*p == ' ') p++;
     if (*p == 0)
-    {   printf("Empty subsection directive\n");
-        exit(1);
+    {   std::printf("Empty subsection directive\n");
+        std::exit(1);
     }
     n_secname = n_alphakey = n_subsechdr = 0;
     secname[0] = 0;
@@ -438,7 +438,7 @@ static void C_doc_comment(FILE *f, int c)
     alphakey[n_alphakey] = 0;
     subsechdr[n_subsechdr] = 0;
 // If no alphakey is explicitly given then use the subsection heading
-    if (n_alphakey == 0) strcpy(alphakey, subsechdr);
+    if (n_alphakey == 0) std::strcpy(alphakey, subsechdr);
 //  printf("Section: %s\n", secname);
 //  printf("AlphaKey: %s\n", alphakey);
 //  printf("Sub Heading: %s\n", subsechdr);
@@ -448,15 +448,15 @@ static void C_doc_comment(FILE *f, int c)
                                heap(p), s->parts);
 }
 
-static void read_header(FILE *f, int c, const char *msg)
+static void read_header(std::FILE *f, int c, const char *msg)
 {   PAD;
     if (c == '\n' || c == EOF)
-    {   printf("Documentation comment with no header information\n");
-        exit(1);
+    {   std::printf("Documentation comment with no header information\n");
+        std::exit(1);
     }
     n_header = 0;
     header[n_header++] = c;
-    while ((c = getc(f)) != '\n' && c != EOF)
+    while ((c = std::getc(f)) != '\n' && c != EOF)
     {   if (c == '\r') continue;
         if (n_header < MAX_HEADER) header[n_header++] = c;
     }
@@ -464,14 +464,14 @@ static void read_header(FILE *f, int c, const char *msg)
 //  printf("%s header <%s>\n", msg, header);
 }
 
-static void C_product_comment(FILE *f);
+static void C_product_comment(std::FILE *f);
 
-static void C_section_comment(FILE *f)
+static void C_section_comment(std::FILE *f)
 {   PAD;
-    int c = getc(f);
+    int c = std::getc(f);
     char *p;
     section *s;
-    while (c == '\r') c = getc(f);
+    while (c == '\r') c = std::getc(f);
     if (c == '!')
     {   C_product_comment(f);
         return;
@@ -483,8 +483,8 @@ static void C_section_comment(FILE *f)
     p = header;
     while (*p == ' ') p++;
     if (*p == 0)
-    {   printf("Empty section directive\n");
-        exit(1);
+    {   std::printf("Empty section directive\n");
+        std::exit(1);
     }
     n_secname = n_alphakey = n_sechdr = 0;
     secname[0] = 0;
@@ -515,7 +515,7 @@ static void C_section_comment(FILE *f)
     alphakey[n_alphakey] = 0;
     sechdr[n_sechdr] = 0;
 // If no alphakey is explicitly given then use the section heading
-    if (n_alphakey == 0) strcpy(alphakey, sechdr);
+    if (n_alphakey == 0) std::strcpy(alphakey, sechdr);
 //  printf("Section: %s\n", secname);
 //  printf("AlphaKey: %s\n", alphakey);
 //  printf("Heading: %s\n", sechdr);
@@ -528,11 +528,11 @@ static void C_section_comment(FILE *f)
 
 static const char *top_heading = "";
 
-static void C_product_comment(FILE *f)
+static void C_product_comment(std::FILE *f)
 {   PAD;
     const char *p;
-    int c = getc(f);
-    while (c == '\r') c = getc(f);
+    int c = std::getc(f);
+    while (c == '\r') c = std::getc(f);
     read_header(f, c, "document");
 // Here I have the case
 //    /*!!! product ...
@@ -545,17 +545,17 @@ static void C_product_comment(FILE *f)
 //
     if (product != NULL)
     {   const char *l = header , *s;
-        int n = strlen(product);
-        while ((s = strstr(l, product)) != NULL)
-        {   if ((s == header|| isspace(*(s-1))) &&
-                (s[n] == 0 || isspace(s[n]))) break;
+        int n = std::strlen(product);
+        while ((s = std::strstr(l, product)) != NULL)
+        {   if ((s == header|| std::isspace(*(s-1))) &&
+                (s[n] == 0 || std::isspace(s[n]))) break;
             l = s+1;
         }
         if (s == NULL) active = 0;
 //      else printf("Found product tag %s\n", product);
     }
     p = C_until_comment_end(f, active);
-    if (p!=NULL && strlen(p) > strlen(top_heading)) top_heading = p;
+    if (p!=NULL && std::strlen(p) > std::strlen(top_heading)) top_heading = p;
 }
 
 //
@@ -571,7 +571,7 @@ static void C_product_comment(FILE *f)
 static char text[MAX_TEXT+1];
 static int n_text;
 
-static char *C_until_comment_end(FILE *f, int active)
+static char *C_until_comment_end(std::FILE *f, int active)
 {   PAD;
     int c;
     int first = 1;
@@ -582,34 +582,34 @@ static char *C_until_comment_end(FILE *f, int active)
 // followed by a slash, and discard any spaces before that. Also if a line
 // starts with " *" I will discard the "*".
 //
-    while ((c = getc(f)) != EOF)
+    while ((c = std::getc(f)) != EOF)
     {   if (c == '\r') continue;
         if (c == '\n') first = 1;
         if (n_text < MAX_TEXT)
         {   text[n_text++] = c;
             text[n_text] = 0; // keep neatly terminated at all times
         }
-        if (n_text>=2 && strcmp(&text[n_text-2], "*/") == 0)
+        if (n_text>=2 && std::strcmp(&text[n_text-2], "*/") == 0)
         {   n_text -= 2;
             while (n_text>= 1 && text[n_text-1]==' ') n_text--;
             break;
         }
-        else if (n_text>=4 && strcmp(&text[n_text-4], "\n *\n") == 0 ||
-                 n_text>=4 && strcmp(&text[n_text-4], "\n * ") == 0 ||
-                 n_text==3 && strcmp(&text[n_text-3], " *\n") == 0 ||
-                 n_text==3 && strcmp(&text[n_text-3], " * ") == 0)
+        else if (n_text>=4 && std::strcmp(&text[n_text-4], "\n *\n") == 0 ||
+                 n_text>=4 && std::strcmp(&text[n_text-4], "\n * ") == 0 ||
+                 n_text==3 && std::strcmp(&text[n_text-3], " *\n") == 0 ||
+                 n_text==3 && std::strcmp(&text[n_text-3], " * ") == 0)
             text[n_text-2] = ' ';
-        if (first && strncmp(&text[n_text-3], "   ", 3) == 0)
+        if (first && std::strncmp(&text[n_text-3], "   ", 3) == 0)
         {   first = 0;
             n_text -= 3;
         }
     }
     if (c == EOF)
-    {   printf("Documentation comment not properly terminated\n");
+    {   std::printf("Documentation comment not properly terminated\n");
     }
     text[n_text++] = 0;
     if (!active)
-    {   printf("Ignoring section because processing is inactive\n");
+    {   std::printf("Ignoring section because processing is inactive\n");
         return NULL;
     }
 //  printf("Found text: <<<<<<<<\n%s\n>>>>>>>>\n", text);
@@ -617,9 +617,9 @@ static char *C_until_comment_end(FILE *f, int active)
 }
 
 static void lisp_header(const char *msg);
-static char *lisp_until_comment_end(FILE *f, int active);
+static char *lisp_until_comment_end(std::FILE *f, int active);
 
-static void lisp_doc_comment(FILE *f)
+static void lisp_doc_comment(std::FILE *f)
 {   PAD;
     int c;
     char *p;
@@ -631,8 +631,8 @@ static void lisp_doc_comment(FILE *f)
     p = line+3;
     while (*p == ' ') p++;
     if (*p == 0)
-    {   printf("Empty subsection directive\n");
-        exit(1);
+    {   std::printf("Empty subsection directive\n");
+        std::exit(1);
     }
     n_secname = n_alphakey = n_subsechdr = 0;
     secname[0] = 0;
@@ -663,7 +663,7 @@ static void lisp_doc_comment(FILE *f)
     alphakey[n_alphakey] = 0;
     subsechdr[n_subsechdr] = 0;
 // If no alphakey is explicitly given then use the subsection heading
-    if (n_alphakey == 0) strcpy(alphakey, subsechdr);
+    if (n_alphakey == 0) std::strcpy(alphakey, subsechdr);
 //  printf("Section: %s\n", secname);
 //  printf("AlphaKey: %s\n", alphakey);
 //  printf("Sub Heading: %s\n", subsechdr);
@@ -673,7 +673,7 @@ static void lisp_doc_comment(FILE *f)
                                heap(p), s->parts);
 }
 
-static void lisp_section_comment(FILE *f)
+static void lisp_section_comment(std::FILE *f)
 {
 // Here I have the case
 //    /*!! section [alphakey] title
@@ -684,8 +684,8 @@ static void lisp_section_comment(FILE *f)
     section *s;
     while (*p == ' ') p++;
     if (*p == 0)
-    {   printf("Empty section directive\n");
-        exit(1);
+    {   std::printf("Empty section directive\n");
+        std::exit(1);
     }
     n_secname = n_alphakey = n_sechdr = 0;
     secname[0] = 0;
@@ -716,7 +716,7 @@ static void lisp_section_comment(FILE *f)
     alphakey[n_alphakey] = 0;
     sechdr[n_sechdr] = 0;
 // If no alphakey is explicitly given then use the section heading
-    if (n_alphakey == 0) strcpy(alphakey, sechdr);
+    if (n_alphakey == 0) std::strcpy(alphakey, sechdr);
 //  printf("Section: %s\n", secname);
 //  printf("AlphaKey: %s\n", alphakey);
 //  printf("Heading: %s\n", sechdr);
@@ -727,7 +727,7 @@ static void lisp_section_comment(FILE *f)
     s->text = heap(p);
 }
 
-static void lisp_product_comment(FILE *f)
+static void lisp_product_comment(std::FILE *f)
 {   PAD;
     const char *p;
 // Here I have the case
@@ -741,20 +741,20 @@ static void lisp_product_comment(FILE *f)
 //
     if (product != NULL)
     {   const char *l = line+5 , *s;
-        int n = strlen(product);
-        while ((s = strstr(l, product)) != NULL)
-        {   if ((s == header|| isspace(*(s-1))) &&
-                (s[n] == 0 || isspace(s[n]))) break;
+        int n = std::strlen(product);
+        while ((s = std::strstr(l, product)) != NULL)
+        {   if ((s == header|| std::isspace(*(s-1))) &&
+                (s[n] == 0 || std::isspace(s[n]))) break;
             l = s+1;
         }
         if (s == NULL) active = 0;
 //      else printf("Found product tag %s\n", product);
     }
     p = lisp_until_comment_end(f, active);
-    if (p != NULL && strlen(p) > strlen(top_heading)) top_heading = p;
+    if (p != NULL && std::strlen(p) > std::strlen(top_heading)) top_heading = p;
 }
 
-static char *lisp_until_comment_end(FILE *f, int active)
+static char *lisp_until_comment_end(std::FILE *f, int active)
 {   PAD;
     int c;
     n_text = 0;
@@ -767,7 +767,7 @@ static char *lisp_until_comment_end(FILE *f, int active)
     for (;;)
     {   char *p;
         n_line = 0;
-        while ((c = getc(f)) != EOF && c != '\n')
+        while ((c = std::getc(f)) != EOF && c != '\n')
         {   if (c == '\r') continue;
             if (n_line < MAX_LINE)
             {   line[n_line++] = c;
@@ -784,11 +784,11 @@ static char *lisp_until_comment_end(FILE *f, int active)
         text[n_text] = 0;
     }
     if (c == EOF)
-    {   printf("Documentation comment not properly terminated\n");
+    {   std::printf("Documentation comment not properly terminated\n");
     }
     text[n_text++] = 0;
     if (!active)
-    {   printf("Ignoring section because processing is inactive\n");
+    {   std::printf("Ignoring section because processing is inactive\n");
         return NULL;
     }
 //  printf("Found text: <<<<<<<<\n%s\n>>>>>>>>\n", text);
@@ -800,7 +800,7 @@ static int compare_sections(const void *a1, const void *a2)
     section *s1 = *(section **)a1;
     section *s2 = *(section **)a2;
 //  printf("Sections %s %s\n", s1->alphakey, s2->alphakey);
-    return strcmp(s1->alphakey, s2->alphakey);
+    return std::strcmp(s1->alphakey, s2->alphakey);
 }
 
 static section *sort_sections(section *s)
@@ -810,21 +810,21 @@ static section *sort_sections(section *s)
     section **v;
     if (s == NULL) return NULL;
     for (s1=s; s1!=NULL; s1=s1->next) i++;
-    v = (section **)malloc(i*sizeof(section *));
+    v = (section **)std::malloc(i*sizeof(section *));
     if (v == NULL)
-    {   printf("malloc failure\n");
-        exit(1);
+    {   std::printf("malloc failure\n");
+        std::exit(1);
     }
     i = 0;
     for (s1=s; s1!=NULL; s1=s1->next) v[i++] = s1;
-    qsort(v, i, sizeof(v[0]), compare_sections);
+    std::qsort(v, i, sizeof(v[0]), compare_sections);
     s1 = NULL;
     while (i > 0)
     {   s = v[--i];
         s->next = s1;
         s1 = s;
     }
-    free(v);
+    std::free(v);
     return s1;
 }
 
@@ -833,7 +833,7 @@ static int compare_subsections(const void *a1, const void *a2)
     subsection *s1 = *(subsection **)a1;
     subsection *s2 = *(subsection **)a2;
 //  printf("Subsections %s %s\n", s1->alphakey, s2->alphakey);
-    return strcmp(s1->alphakey, s2->alphakey);
+    return std::strcmp(s1->alphakey, s2->alphakey);
 }
 
 static subsection *sort_subsections(subsection *s)
@@ -843,38 +843,38 @@ static subsection *sort_subsections(subsection *s)
     subsection **v;
     if (s == NULL) return NULL;
     for (s1=s; s1!=NULL; s1=s1->next) i++;
-    v = (subsection **)malloc(i*sizeof(subsection *));
+    v = (subsection **)std::malloc(i*sizeof(subsection *));
     if (v == NULL)
-    {   printf("malloc failure\n");
-        exit(1);
+    {   std::printf("malloc failure\n");
+        std::exit(1);
     }
     i = 0;
     for (s1=s; s1!=NULL; s1=s1->next) v[i++] = s1;
-    qsort(v, i, sizeof(v[0]), compare_subsections);
+    std::qsort(v, i, sizeof(v[0]), compare_subsections);
     s1 = NULL;
     while (i > 0)
     {   s = v[--i];
         s->next = s1;
         s1 = s;
     }
-    free(v);
+    std::free(v);
     return s1;
 }
 
 
 static void dump_tex()
 {   PAD;
-    FILE *f = fopen(output, "w");
+    std::FILE *f = std::fopen(output, "w");
     section *s;
-    time_t t;
+    std::time_t t;
     if (f == NULL)
-    {   printf("Destination file %s could not be opened\n", output);
-        exit(1);
+    {   std::printf("Destination file %s could not be opened\n", output);
+        std::exit(1);
     }
-    printf("Writing output to %s\n", output);
-    time(&t);
-    fprintf(f, "%% Generated using doxtract %s", ctime(&t));
-    fprintf(f, "%s", top_heading);
+    std::printf("Writing output to %s\n", output);
+    std::time(&t);
+    std::fprintf(f, "%% Generated using doxtract %s", std::ctime(&t));
+    std::fprintf(f, "%s", top_heading);
 //
 // I need to sort sections by their alphakey and then subsections within
 // each section ditto.
@@ -883,19 +883,19 @@ static void dump_tex()
     {   subsection *ss;
         int i = 0;
         if (s->sechdr == NULL)
-        {   printf("Section without a name?\n");
+        {   std::printf("Section without a name?\n");
             s->sechdr = "Unknown";
         }
         if (s->text == NULL) s->text = "";
         for (ss=s->parts; ss!=NULL; ss=ss->next) i++;
-        printf("Generating section %s [%s] with %d subsections\n", s->alphakey, s->name, i);
-        fprintf(f, "%% Generating section %s [%s] with %d subsections\n", s->alphakey, s->name, i);
-        fprintf(f, "%s\n%s\n", s->sechdr, s->text);
+        std::printf("Generating section %s [%s] with %d subsections\n", s->alphakey, s->name, i);
+        std::fprintf(f, "%% Generating section %s [%s] with %d subsections\n", s->alphakey, s->name, i);
+        std::fprintf(f, "%s\n%s\n", s->sechdr, s->text);
         for (ss=sort_subsections(s->parts); ss!=NULL; ss=ss->next)
-        {   fprintf(f, "%s\n%s\n", ss->subsechdr, ss->text);
+        {   std::fprintf(f, "%s\n%s\n", ss->subsechdr, ss->text);
         }
     }
-    fclose(f);
+    std::fclose(f);
 }
 
 // end of doxtract.cpp

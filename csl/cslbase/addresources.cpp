@@ -78,7 +78,7 @@
 // an error reading or writing the files.
 //
 
-int def(FILE *source, FILE *dest, int level)
+int def(std::FILE *source, std::FILE *dest, int level)
 {
     int ret, flush;
     unsigned have;
@@ -95,12 +95,12 @@ int def(FILE *source, FILE *dest, int level)
 
     // compress until end of file
     do
-    {   strm.avail_in = fread(in, 1, CHUNK, source);
-        if (ferror(source))
+    {   strm.avail_in = std::fread(in, 1, CHUNK, source);
+        if (std::ferror(source))
         {   (void)deflateEnd(&strm);
             return Z_ERRNO;
         }
-        flush = feof(source) ? Z_FINISH : Z_NO_FLUSH;
+        flush = std::feof(source) ? Z_FINISH : Z_NO_FLUSH;
         strm.next_in = in;
 
         // run deflate() on input until output buffer not full, finish
@@ -111,7 +111,7 @@ int def(FILE *source, FILE *dest, int level)
             ret = deflate(&strm, flush);    // no bad return value
             assert(ret != Z_STREAM_ERROR);  // state not clobbered
             have = CHUNK - strm.avail_out;
-            if (fwrite(out, 1, have, dest) != have || ferror(dest))
+            if (std::fwrite(out, 1, have, dest) != have || std::ferror(dest))
             {   (void)deflateEnd(&strm);
                 return Z_ERRNO;
             }
@@ -127,69 +127,69 @@ int def(FILE *source, FILE *dest, int level)
     return Z_OK;
 }
 
-static void put8(FILE *f, int64_t w)
+static void put8(std::FILE *f, std::int64_t w)
 {
     int i;
     for (i=0; i<8; i++)
-    {   putc((int)(w & 0xff), f);
+    {   std::putc((int)(w & 0xff), f);
         w >>= 8;
     }
 }
 
 #define MAX_RESOURCE_COUNT 16
 
-int64_t resourcebase[MAX_RESOURCE_COUNT];
-int64_t resourcesize[MAX_RESOURCE_COUNT];
+std::int64_t resourcebase[MAX_RESOURCE_COUNT];
+std::int64_t resourcesize[MAX_RESOURCE_COUNT];
 int resourcecount = 0;
 
 int main(int argc, char *argv[])
 {
-    FILE *f1, *f2;
+    std::FILE *f1, *f2;
     int i, n, w;
-    int64_t pos, pos1, pos2;
+    std::int64_t pos, pos1, pos2;
     if (argc < 2)
-    {   fprintf(stderr, "Usage: addresources executable [extrafiles...]\n");
-        exit(1);
+    {   std::fprintf(stderr, "Usage: addresources executable [extrafiles...]\n");
+        std::exit(1);
     }
-    f1 = fopen(argv[1], "ab");  // append in binary mode
+    f1 = std::fopen(argv[1], "ab");  // append in binary mode
     if (f1 == NULL)
-    {   fprintf(stderr, "Unable to access %s\n", argv[1]);
-        exit(1);
+    {   std::fprintf(stderr, "Unable to access %s\n", argv[1]);
+        std::exit(1);
     }
-    w = fseek(f1, 0L, SEEK_END);
+    w = std::fseek(f1, 0L, SEEK_END);
     if (w != 0)
-    {   fprintf(stderr, "Seeking to end of %s failed with code %d\n", argv[1], w);
-        exit(1);
+    {   std::fprintf(stderr, "Seeking to end of %s failed with code %d\n", argv[1], w);
+        std::exit(1);
     }
-    pos = (int64_t)ftell(f1);
+    pos = (std::int64_t)std::ftell(f1);
     while ((pos & 7) != 0)  // Pad to multiple of 8 bytes
-    {   putc(0, f1);
+    {   std::putc(0, f1);
         pos++;
     }
     resourcecount = 0;
 // Now copy the resources
     for (i=2; i<argc; i++)
-    {   f2 = fopen(argv[i], "rb");
+    {   f2 = std::fopen(argv[i], "rb");
         if (f2 == NULL)
-        {   fprintf(stderr, "Unable to access %s\n", argv[i]);
-            fclose(f1);
-            exit(1);
+        {   std::fprintf(stderr, "Unable to access %s\n", argv[i]);
+            std::fclose(f1);
+            std::exit(1);
         }
         def(f2, f1, 9);
-        pos1 = (int64_t)ftell(f1);
+        pos1 = (std::int64_t)std::ftell(f1);
         pos2 = pos1;
         while ((pos2 & 7) != 0)  // Pad to multiple of 8 bytes
-        {   putc(0, f1);
+        {   std::putc(0, f1);
             pos2++;
         }
         resourcebase[resourcecount] = pos;
-        resourcesize[resourcecount] = ftell(f2);
-        printf("resource %d at %" PRIx64 " length %" PRId64
+        resourcesize[resourcecount] = std::ftell(f2);
+        std::printf("resource %d at %" PRIx64 " length %" PRId64
                " compressed to %" PRId64 "\n",
             i-2, pos, resourcesize[resourcecount], pos1-pos);
         pos = pos2;
         resourcecount++;
-        fclose(f2);
+        std::fclose(f2);
     } 
 // Finally put a trailer record with an index
     put8(f1, 0x1234567887654321LL);
@@ -198,17 +198,17 @@ int main(int argc, char *argv[])
         put8(f1, resourcesize[i]);
     }
     put8(f1, 0x8765432112345678LL);
-    printf("Final length of file = %" PRId64 "\n", (int64_t)ftell(f1));
-    if (ferror(f1) || ferror(f2))
-    {   fprintf(stderr, "Copying failed\n");
-        fclose(f1);
-        fclose(f2);
-        exit(1);
+    std::printf("Final length of file = %" PRId64 "\n", (std::int64_t)std::ftell(f1));
+    if (std::ferror(f1) || std::ferror(f2))
+    {   std::fprintf(stderr, "Copying failed\n");
+        std::fclose(f1);
+        std::fclose(f2);
+        std::exit(1);
     }
-    if (fclose(f1) != 0)
-    {   fprintf(stderr, "Closing  %s failed\n", argv[0]);
-        fclose(f2);
-        exit(1);
+    if (std::fclose(f1) != 0)
+    {   std::fprintf(stderr, "Closing  %s failed\n", argv[0]);
+        std::fclose(f2);
+        std::exit(1);
     }
     return 0; 
 }

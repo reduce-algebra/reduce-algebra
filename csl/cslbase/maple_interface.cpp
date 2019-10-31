@@ -55,7 +55,7 @@
 // But when the underlying issue is resolved this silly definition will
 // need to be removed again.
 //
-int atexit(void (*fn)())
+int std::atexit(void (*fn)())
 {
 }
 
@@ -91,7 +91,7 @@ void start_csl()
     argv[argc++] = "/scl/people/guests/norman/rtaylor/tay.out";
     obufp = 0;
     cslstart(argc, argv, iput);
-    fprintf(stderr, "%s\n", obuff);
+    std::fprintf(stderr, "%s\n", obuff);
 }
 
 #include "machine.h"
@@ -122,12 +122,12 @@ int execute_lisp_function(char *fname,
 }
 
 void use_csl(char *s)
-{   fprintf(stderr, "calling CSL : <%s>\n", s);
-    if (strlen(s) >= sizeof(ibuff))
-    {   fprintf(stderr, "Input string is too long\n");
+{   std::fprintf(stderr, "calling CSL : <%s>\n", s);
+    if (std::strlen(s) >= sizeof(ibuff))
+    {   std::fprintf(stderr, "Input string is too long\n");
         return;
     }
-    strcpy(ibuff, s);
+    std::strcpy(ibuff, s);
     ibufp = obufp = 0;
     execute_lisp_function("read_tay", iget, NULL /*iput*/);
 //  fprintf(stderr, "%s\n", obuff);
@@ -153,8 +153,8 @@ void use_csl1(unsigned int s)
 {   ibufp = obufp = 0;
     execute_lisp_function1("maple_tay", encapsulate_pointer((void *)s),
                            iget, iput);
-    fprintf(stderr, "%s\n", obuff);
-    fflush(stderr);
+    std::fprintf(stderr, "%s\n", obuff);
+    std::fflush(stderr);
 }
 
 

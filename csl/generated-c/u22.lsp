@@ -1,9 +1,7 @@
 
 % u22.lsp           Machine generated Lisp
 
-(c!:install "u22" 70965 7508063 942208)
-
-(c!:install 'trwrite '(trwrite "**in procedure: ") 2614111771358147492)
+(c!:install "u22" 69902 3031837 3472700)
 
 (c!:install 'lienjactest '(lienjactest lie_jtest difference plus times
 lie_cc aeval setk aeval!* aminusp!: evalneq) 10602272048410938972)

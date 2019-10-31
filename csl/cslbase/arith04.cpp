@@ -41,7 +41,7 @@
 #include "headers.h"
 
 
-LispObject make_n_word_bignum(int32_t a2, uint32_t a1, uint32_t a0, size_t n)
+LispObject make_n_word_bignum(std::int32_t a2, std::uint32_t a1, std::uint32_t a0, std::size_t n)
 //
 // This make a bignum with n words of data and digits a1, a2, a3 and
 // then n zeros.  Will only be called with n>=0 and a1, a2, a3 already
@@ -49,7 +49,7 @@ LispObject make_n_word_bignum(int32_t a2, uint32_t a1, uint32_t a0, size_t n)
 // as passed is the number of zero words to be inserted before the 3
 // words at the end!
 //
-{   size_t i;
+{   std::size_t i;
     LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+12);
     for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
     bignum_digits(w)[n] = a0;
@@ -61,9 +61,9 @@ LispObject make_n_word_bignum(int32_t a2, uint32_t a1, uint32_t a0, size_t n)
 
 // Now the same sort of idea but with yet more digits being passed.
 
-LispObject make_n4_word_bignum(int32_t a3, uint32_t a2, uint32_t a1,
-                               uint32_t a0, size_t n)
-{   size_t i;
+LispObject make_n4_word_bignum(std::int32_t a3, std::uint32_t a2, std::uint32_t a1,
+                               std::uint32_t a0, std::size_t n)
+{   std::size_t i;
     LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+16);
     for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
     bignum_digits(w)[n] = a0;
@@ -74,9 +74,9 @@ LispObject make_n4_word_bignum(int32_t a3, uint32_t a2, uint32_t a1,
     return w;
 }
 
-LispObject make_n5_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
-                               uint32_t a1, uint32_t a0, size_t n)
-{   size_t i;
+LispObject make_n5_word_bignum(std::int32_t a4, std::uint32_t a3, std::uint32_t a2,
+                               std::uint32_t a1, std::uint32_t a0, std::size_t n)
+{   std::size_t i;
     LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+20);
     for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
     bignum_digits(w)[n] = a0;
@@ -88,21 +88,21 @@ LispObject make_n5_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
     return w;
 }
 
-LispObject make_power_of_two(size_t n)
+LispObject make_power_of_two(std::size_t n)
 //
 // Create the number 2^n where n is positive.  Used to make the
 // denominator of a rational representation of a float.  Some fun
 // to cope with various small cases before I get to the general call
 // to make_n_word_bignum.
 //
-{   if (n < 64) return make_lisp_unsigned64((uint64_t)1 << n);
+{   if (n < 64) return make_lisp_unsigned64((std::uint64_t)1 << n);
     else if ((n % 31) == 30)
         return make_n_word_bignum(0, 0x40000000, 0, (n/31)-2);
-    else return make_n_word_bignum(((int32_t)1) << (n % 31), 0, 0, (n/31)-2);
+    else return make_n_word_bignum(((std::int32_t)1) << (n % 31), 0, 0, (n/31)-2);
 }
 
-static LispObject make_fix_or_big2(int32_t a1, uint32_t a2)
-{   return make_lisp_integer64(((int64_t)a1 << 31) | a2);
+static LispObject make_fix_or_big2(std::int32_t a1, std::uint32_t a2)
+{   return make_lisp_integer64(((std::int64_t)a1 << 31) | a2);
 }
 
 LispObject rationalf(double d)
@@ -118,7 +118,7 @@ LispObject rationalf(double d)
 // an int64_t. When I cast the result back to a float there will not be
 // any need for rounding, so I can detect cases where the floating point
 // input has a value that is exactly an integer.
-    int64_t i = (int64_t)d;
+    std::int64_t i = (std::int64_t)d;
     if (d == (double)i) return make_lisp_integer64(i);
 // Now the value is smallish but is known not be to an integer. It may
 // be that it is VERY small.
@@ -127,9 +127,9 @@ LispObject rationalf(double d)
     {   d = -d;
         negative = true;
     }
-    int32_t a2;
-    uint32_t a1, a0;
-    intptr_t x = 31*double_to_3_digits(d, a2, a1, a0);
+    std::int32_t a2;
+    std::uint32_t a1, a0;
+    std::intptr_t x = 31*double_to_3_digits(d, a2, a1, a0);
 // The representation extracted above is carefully aligned at a 32-bit
 // boundary. I want to shift it right so that the least significant bit is
 // a 1. I do the shifting in stages - by 31, by 6 and by 1 bit movements.
@@ -142,7 +142,7 @@ LispObject rationalf(double d)
     while ((a0 & 0x3f) == 0)
     {   a0 = (a0 >> 6) | ((a1 & 0x3f) << 25);
         a1 = (a1 >> 6) | ((a2 & 0x3f) << 25);
-        a2 = (uint32_t)a2 >> 6;
+        a2 = (std::uint32_t)a2 >> 6;
         x += 6;
     }
 // Because d started as a floating point value it can involve at most 53 bits,
@@ -181,9 +181,9 @@ LispObject rationalf(double d)
 double truncate20(double d)
 {   Float_union aa, bb;
     aa.f = d;
-    memcpy(&bb, &aa, sizeof(bb));
+    std::memcpy(&bb, &aa, sizeof(bb));
     bb.i &= ~0xf;
-    memcpy(&aa, &bb, sizeof(aa));
+    std::memcpy(&aa, &bb, sizeof(aa));
     return aa.f;
 }
 
@@ -200,11 +200,11 @@ static LispObject rationalizef(double dd, int bits)
 // Now d is the absolute value of the float that I need to deal with.
 // If the absolute value of the input is large just convert it to an
 // integer.
-    if (d >= (double)((uint64_t)1<<bits))
+    if (d >= (double)((std::uint64_t)1<<bits))
         return lisp_fix(make_boxfloat(dd, TYPE_DOUBLE_FLOAT), FIX_ROUND);
 // If the value is small first convert it to a rational number p/q, then
 // find the integer value r of q/p and return (1/r).
-    if (d <= 1.0/(double)((uint64_t)1<<bits))
+    if (d <= 1.0/(double)((std::uint64_t)1<<bits))
     {   LispObject r = rationalf(dd);
         r = lisp_ifix(denominator(r), numerator(r), FIX_ROUND);
         return make_ratio(fixnum_of_int(1), r);
@@ -213,10 +213,10 @@ static LispObject rationalizef(double dd, int bits)
 // the true value is in the range 2^-K to 2^K with only K bits of precision
 // both numerator and denominator will ens up with no more than (about?) K
 // bits, and so they fit very happily in 64-bit integers.
-    uint64_t p, q;
-    uint64_t a;
-    uint64_t u0, u1;
-    uint64_t v0, v1;
+    std::uint64_t p, q;
+    std::uint64_t a;
+    std::uint64_t u0, u1;
+    std::uint64_t v0, v1;
     if (d >= 1.0)
     {
 // if the input was at least 1.0 but under 2^53 I can multiply it by a
@@ -225,11 +225,11 @@ static LispObject rationalizef(double dd, int bits)
 // needs a denominator that is the power of 2 that I scaled by. I will use
 // 2^53 here even if I am working with single or short floats as input.
         int x;
-        volatile double d1 = frexp(d, &x);
-        p = (uint64_t)(d1*(double)((uint64_t)1<<53));
+        volatile double d1 = std::frexp(d, &x);
+        p = (std::uint64_t)(d1*(double)((std::uint64_t)1<<53));
 // The above conversion to an integer does little beyond keep the low 52
 // bits of the floating point value and force bit 53 to be set!
-        q = (uint64_t)1<<(53-x);
+        q = (std::uint64_t)1<<(53-x);
 // The fraction (p/q) will now be an exact representation of the floating
 // point input.
         a = p / q;       // partial quotient, which is at least 1.
@@ -246,8 +246,8 @@ static LispObject rationalizef(double dd, int bits)
 // fraction algorithm would use a partial quotient of zero, and just take
 // the reciprocal of my value for d.
         int x;
-        double d1 = frexp(d, &x);
-        p = (uint64_t)(d1*(double)((uint64_t)1<<53));
+        double d1 = std::frexp(d, &x);
+        p = (std::uint64_t)(d1*(double)((std::uint64_t)1<<53));
 // The next 3 lines express what I want to achieve, but because the exponent
 // x is negative the initial value of the denominator q for the exact
 // representation of d can be up to about 106 bits and in particular it
@@ -259,7 +259,7 @@ static LispObject rationalizef(double dd, int bits)
 // floating point, but rounding when I calculate the reciprocal may mean
 // it is not quite exact, or even quite in the integer range I had in mind.
         double d2 = 1.0/d;
-        a = (uint64_t)d2;
+        a = (std::uint64_t)d2;
 // Given a quotient I can compute a remainder as q = 1<<(53-x) - a*p.
 //      int128_t w1 = int128(1)<<(53-x);
 //      int128_t w2 = (uint128_t)a*(uint128_t)p;
@@ -270,15 +270,15 @@ static LispObject rationalizef(double dd, int bits)
 // But whatever else its value will fit within a 64-bit (signed) integer.
 // I do the arithmetic as unsigned because I am deliberately expecting
 // to truncate bits above the low 64. 
-        uint64_t w1 = 0;
-        if (53-x < 64) w1 = (uint64_t)1<<(53-x);
+        std::uint64_t w1 = 0;
+        if (53-x < 64) w1 = (std::uint64_t)1<<(53-x);
         q = w1 - a*p;
 // Now the value of a that I had computed in floating point might have
 // been just slightly different from the exact value. This can now be
 // observed by checking the remainder, so I will correct if necessary.
 // I think I should probably only ever be out by +1 or -1 but I will write
 // a loop "to be safe".
-        while ((int64_t)q < 0)
+        while ((std::int64_t)q < 0)
         {   q = q + p;
             a--;
         }
@@ -303,14 +303,14 @@ static LispObject rationalizef(double dd, int bits)
            bits==24 ? d != (float)((double)u1/(double)v1) :
            d != truncate20((double)u1/(double)v1))
     {   a = p/q;
-        uint64_t u2 = u0 + a*u1;
-        uint64_t v2 = v0 + a*v1;
+        std::uint64_t u2 = u0 + a*u1;
+        std::uint64_t v2 = v0 + a*v1;
         p = q;   q = p%q;
         u0 = u1; u1 = u2;
         v0 = v1; v1 = v2;
     }
     LispObject p1;
-    if (dd < 0.0) p1 = make_lisp_integer64(-(int64_t)u1);
+    if (dd < 0.0) p1 = make_lisp_integer64(-(std::int64_t)u1);
     else p1 = make_lisp_integer64(u1);
     if (v1 == 1) return p1;
     push(p1);
@@ -364,9 +364,9 @@ LispObject rationalf128(float128_t *d)
 // Remember that |d| < 2^112. That means it will use at most 4 digits
 // of bignum. Well the calculations I do here split it into 5 digits,
 // but by the time I end only the low 4 should be relevant.
-    int32_t a4;
-    uint32_t a3, a2, a1, a0;
-    intptr_t x = 31*float128_to_5_digits(&dd, a4, a3, a2, a1, a0);
+    std::int32_t a4;
+    std::uint32_t a3, a2, a1, a0;
+    std::intptr_t x = 31*float128_to_5_digits(&dd, a4, a3, a2, a1, a0);
     while (a0 == 0 && x <= -31)
     {   a0 = a1;
         a1 = a2;
@@ -380,7 +380,7 @@ LispObject rationalf128(float128_t *d)
         a1 = (a1 >> 6) | ((a2 & 0x3f) << 25);
         a2 = (a2 >> 6) | ((a3 & 0x3f) << 25);
         a3 = (a3 >> 6) | ((a4 & 0x3f) << 25);
-        a4 = (uint32_t)a4 >> 6;
+        a4 = (std::uint32_t)a4 >> 6;
         x += 6;
     }
     while ((a0 & 1) == 0 && x <= -1)
@@ -388,13 +388,13 @@ LispObject rationalf128(float128_t *d)
         a1 = (a1 >> 1) | ((a2 & 1) << 30);
         a2 = (a2 >> 1) | ((a3 & 1) << 30);
         a3 = (a3 >> 1) | ((a4 & 1) << 30);
-        a4 = ((uint32_t)a4 >> 1);
+        a4 = ((std::uint32_t)a4 >> 1);
         x += 1;
     }
     assert(a4 == 0);
     LispObject w;
     if (negative)
-    {   uint32_t carry = 1;
+    {   std::uint32_t carry = 1;
         a0 = ~a0 + carry;
         carry = a0 >> 31;
         a0 &= 0x7fffffffU;
@@ -427,7 +427,7 @@ LispObject rationalf128(float128_t *d)
             w = make_three_word_bignum(a2, a1, a0);
             break;
         case 2:
-            int64_t n = ((int64_t)a1 << 31) + a0;
+            std::int64_t n = ((std::int64_t)a1 << 31) + a0;
             if (negative) n = -n;
             w = make_lisp_integer64(n);
             break;
@@ -466,7 +466,7 @@ uint128_t uint128_fix(float128_t *a)
     f128M_frexp(a, &aa, &x);
 // Now I take the 113 bits of mantissa (including an implicit bit) and
 // shuffle to be in the form of the uint128_t integer.
-    uint64_t hi = (aa.v[HIPART] & UINT64_C(0x0000ffffffffffff)) |
+    std::uint64_t hi = (aa.v[HIPART] & UINT64_C(0x0000ffffffffffff)) |
                   UINT64_C(0x0001000000000000);
     uint128_t w = aa.v[LOPART] | (uint128(hi)<<64);
 // Now I may need to shift b by an amount determined by x.
@@ -503,10 +503,10 @@ void uint128_float(uint128_t a, float128_t *b)
     {   a = a<<1;
         x--;
     }
-    uint64_t ahi = (uint64_t)(a>>64) & UINT64_C(0x0000ffffffffffff);
-    ahi = ahi | ((uint64_t)(x + 0x3ffe)<<48);
+    std::uint64_t ahi = (std::uint64_t)(a>>64) & UINT64_C(0x0000ffffffffffff);
+    ahi = ahi | ((std::uint64_t)(x + 0x3ffe)<<48);
     b->v[HIPART] = ahi;
-    b->v[LOPART] = (uint64_t)a; 
+    b->v[LOPART] = (std::uint64_t)a; 
 }
 
 static LispObject rationalizef128(float128_t *dd)
@@ -575,7 +575,7 @@ static LispObject rationalizef128(float128_t *dd)
            !f128M_eq(&d, &q2))
     {   uint128_t a1;
         if (q == 0)
-        {   printf("\n+++ Trouble in rationalizef128. q = 0\n");
+        {   std::printf("\n+++ Trouble in rationalizef128. q = 0\n");
             break;
         }
         a1 = p/q;
@@ -605,7 +605,7 @@ LispObject rational(LispObject a)
             return rationalf(value_of_immediate_float(a));
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
-        {   int32_t ha = type_of_header(numhdr(a));
+        {   std::int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                 case TYPE_RATNUM:
@@ -637,7 +637,7 @@ LispObject rationalize(LispObject a)
             else return rationalizef(value_of_immediate_float(a), 20);
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
-        {   int32_t ha = type_of_header(numhdr(a));
+        {   std::int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                 case TYPE_RATNUM:
@@ -754,7 +754,7 @@ inline bool lessp_l_l(LispObject a1, LispObject a2);
 #endif // HAVE_SOFTFLOAT
 
 inline bool lessp_i_i(LispObject a, LispObject b)
-{   return (intptr_t)a < (intptr_t)b;
+{   return (std::intptr_t)a < (std::intptr_t)b;
 }
 
 inline bool lessp_i_s(LispObject a, LispObject b)
@@ -778,8 +778,8 @@ inline bool lessp_i_b(LispObject, LispObject b)
 // the bignum must be at least as great as that of the fixnum, hence
 // to do a comparison I just need to look at sign of the bignum.
 //
-{   size_t len = bignum_length(b);
-    int32_t msd = bignum_digits(b)[(len-CELL-4)/4];
+{   std::size_t len = bignum_length(b);
+    std::int32_t msd = bignum_digits(b)[(len-CELL-4)/4];
     return (msd >= 0);
 }
 
@@ -805,7 +805,7 @@ inline bool lessp_i_d(LispObject a, LispObject b)
 #ifdef HAVE_SOFTFLOAT
 inline bool lessp_i_l(LispObject a, LispObject b)
 {   float128_t aa;
-    i64_to_f128M((int64_t)int_of_fixnum(a), &aa);
+    i64_to_f128M((std::int64_t)int_of_fixnum(a), &aa);
     return f128M_lt(&aa, (float128_t *)long_float_addr(b));
 }
 #endif // HAVE_SOFTFLOAT
@@ -825,15 +825,15 @@ inline bool lessp_d_i(LispObject a, LispObject b)
 #ifdef HAVE_SOFTFLOAT
 inline bool lessp_l_i(LispObject a, LispObject b)
 {   float128_t bb;
-    i64_to_f128M((int64_t)int_of_fixnum(b), &bb);
+    i64_to_f128M((std::int64_t)int_of_fixnum(b), &bb);
     return f128M_lt((float128_t *)long_float_addr(a), &bb);
 }
 #endif // HAVE_SOFTFLOAT
 
 inline bool lessp_rawd_b(double a, LispObject b)
 // a is a floating point number and b a bignum.  Compare them.
-{   size_t n = (bignum_length(b)-CELL-4)/4;
-    int32_t bn = (int32_t)bignum_digits(b)[n];
+{   std::size_t n = (bignum_length(b)-CELL-4)/4;
+    std::int32_t bn = (std::int32_t)bignum_digits(b)[n];
 // The value represented by b can not be in the range that fixnums
 // cover, so if a is in that range I need only inspect the sign of b.
 // However I need to note that the range of fixnums is differs based on
@@ -860,7 +860,7 @@ inline bool lessp_rawd_b(double a, LispObject b)
     if (n == 1)
     {   if (a >= (double)INT64_C(0x4000000000000000)) return false;
         else if (a < -(double)INT64_C(0x4000000000000000)) return true;
-        a -= TWO_31*(int32_t)bn;
+        a -= TWO_31*(std::int32_t)bn;
         return a < (double)bignum_digits(b)[0];
     }
 //
@@ -875,14 +875,14 @@ inline bool lessp_rawd_b(double a, LispObject b)
 // a datastructure for the bignum provided I can collect up the data that
 // would have to be stored in it.  See lisp_fix (arith08.c) for related code.
 //
-    int32_t a2;
-    uint32_t a1, a0; 
-    intptr_t x = double_to_3_digits(a, a2, a1, a0);
+    std::int32_t a2;
+    std::uint32_t a1, a0; 
+    std::intptr_t x = double_to_3_digits(a, a2, a1, a0);
 // If the float would turn into a bignum with either fewer or more digits
 // than the value it is to be compared with the result is based on just the
 // sign bit of whichever is larger.
-    if (n != 2+(size_t)x)
-    {   if (n < 2+(size_t)x) return (a < 0);
+    if (n != 2+(std::size_t)x)
+    {   if (n < 2+(std::size_t)x) return (a < 0);
         else return (bn >= 0);
     }
 // Now the two numbers are rather similar in magnitude. Compare the
@@ -893,7 +893,7 @@ inline bool lessp_rawd_b(double a, LispObject b)
     else if (a1 > bignum_digits(b)[n-1]) return false;
     else if (a0 < bignum_digits(b)[n-2]) return true;
     else if (a0 > bignum_digits(b)[n-2]) return false;
-    for (size_t i=0; i<n-2; i++)
+    for (std::size_t i=0; i<n-2; i++)
         if (bignum_digits(b)[i] != 0) return true;
     return false;
 }
@@ -902,24 +902,24 @@ inline bool greaterp_rawd_b(double a, LispObject b)
 // logic here is much as for the lessp test. By leavinbg the commentary
 // out of this version you can get a clearer idea of how much code is
 // involved.
-{   size_t n = (bignum_length(b)-CELL-4)/4;
-    int32_t bn = (int32_t)bignum_digits(b)[n];
+{   std::size_t n = (bignum_length(b)-CELL-4)/4;
+    std::int32_t bn = (std::int32_t)bignum_digits(b)[n];
     if ((double)MOST_NEGATIVE_FIXVAL <= a &&
         a < -(double)MOST_NEGATIVE_FIXVAL) return (bn < 0);
     if (n == 0) return a > (double)bn;
     if (n == 1)
     {   if (a >= (double)INT64_C(0x4000000000000000)) return true;
         else if (a < -(double)INT64_C(0x4000000000000000)) return false;
-        a -= TWO_31*(int32_t)bn;
+        a -= TWO_31*(std::int32_t)bn;
         return a > (double)bignum_digits(b)[0];
     }
     if (bn >= 0 && a < 0.0) return false;
     if (bn < 0 && a >= 0.0) return true;
-    int32_t a2;
-    uint32_t a1, a0; 
-    intptr_t x = double_to_3_digits(a, a2, a1, a0);
-    if (n != 2+(size_t)x)
-    {   if (n < 2+(size_t)x) return (a > 0);
+    std::int32_t a2;
+    std::uint32_t a1, a0; 
+    std::intptr_t x = double_to_3_digits(a, a2, a1, a0);
+    if (n != 2+(std::size_t)x)
+    {   if (n < 2+(std::size_t)x) return (a > 0);
         else return (bn < 0);
     }
     if (a2 > bn) return true;
@@ -950,13 +950,13 @@ inline bool lessp_rawl_b(float128_t *a, LispObject b)
 //    top bit of the mantissa aligns nicely againt the top word of the
 //    bignum. It will only be necessary to check 4 words of the bignum.
 // [Actually this does not look too bad either.]
-    size_t n = (length_of_header(numhdr(b))-CELL)/4;
+    std::size_t n = (length_of_header(numhdr(b))-CELL)/4;
     float128_t bb, w0, w1;
-    int32_t k;
+    std::int32_t k;
     switch (n)
     {
     case 1: // Only happens on 32-bit systems
-        i32_to_f128M((int32_t)bignum_digits(b)[0], &bb);
+        i32_to_f128M((std::int32_t)bignum_digits(b)[0], &bb);
         return f128M_lt(a, &bb);
     case 2:
         i64_to_f128M(bignum_digits64(b, 1)<<31 | bignum_digits(b)[0], &bb);
@@ -968,11 +968,11 @@ inline bool lessp_rawl_b(float128_t *a, LispObject b)
 #else
         w1.v[0] += UINT64_C(31) << 48;
 #endif
-        ui32_to_f128M((int32_t)bignum_digits(b)[0], &w0);
+        ui32_to_f128M((std::int32_t)bignum_digits(b)[0], &w0);
         f128M_add(&w0, &w1, &bb);
         return f128M_lt(a, &bb);
     case 4:
-        k = (int32_t)bignum_digits(b)[3];
+        k = (std::int32_t)bignum_digits(b)[3];
         if (k > 0x80000 ||
             k < -0x80000) break;
 // I am now confident that b will turn into a number that will convert to
@@ -995,13 +995,13 @@ inline bool lessp_rawl_b(float128_t *a, LispObject b)
 
 inline bool lessp_b_rawl(LispObject a, float128_t *b)
 {
-    size_t n = (length_of_header(numhdr(a))-CELL)/4;
+    std::size_t n = (length_of_header(numhdr(a))-CELL)/4;
     float128_t aa, w0, w1;
-    int32_t k;
+    std::int32_t k;
     switch (n)
     {
     case 1: // Only happens on 32-bit systems
-        i32_to_f128M((int32_t)bignum_digits(a)[0], &aa);
+        i32_to_f128M((std::int32_t)bignum_digits(a)[0], &aa);
         return f128M_lt(&aa, b);
     case 2:
         i64_to_f128M(bignum_digits64(a, 1)<<31 | bignum_digits(a)[0], &aa);
@@ -1013,11 +1013,11 @@ inline bool lessp_b_rawl(LispObject a, float128_t *b)
 #else
         w1.v[0] += UINT64_C(31) << 48;
 #endif
-        ui32_to_f128M((int32_t)bignum_digits(a)[0], &w0);
+        ui32_to_f128M((std::int32_t)bignum_digits(a)[0], &w0);
         f128M_add(&w0, &w1, &aa);
         return f128M_lt(&aa, b);
     case 4:
-        k = (int32_t)bignum_digits(a)[3];
+        k = (std::int32_t)bignum_digits(a)[3];
         if (k > 0x80000 ||
             k < -0x80000) break;
 // I am now confident that a will turn into a number that will convert to
@@ -1148,8 +1148,8 @@ inline bool lessp_s_r(LispObject a, LispObject b)
 }
 
 inline bool lessp_b_i(LispObject a, LispObject)
-{   size_t len = bignum_length(a);
-    int32_t msd = bignum_digits(a)[(len-CELL-4)/4];
+{   std::size_t len = bignum_length(a);
+    std::int32_t msd = bignum_digits(a)[(len-CELL-4)/4];
     return (msd < 0);
 }
 
@@ -1158,19 +1158,19 @@ inline bool lessp_b_s(LispObject a, LispObject b)
 }
 
 inline bool lessp_b_b(LispObject a, LispObject b)
-{   size_t lena = bignum_length(a),
+{   std::size_t lena = bignum_length(a),
            lenb = bignum_length(b);
     if (lena > lenb)
-    {   int32_t msd = bignum_digits(a)[(lena-CELL-4)/4];
+    {   std::int32_t msd = bignum_digits(a)[(lena-CELL-4)/4];
         return (msd < 0);
     }
     else if (lenb > lena)
-    {   int32_t msd = bignum_digits(b)[(lenb-CELL-4)/4];
+    {   std::int32_t msd = bignum_digits(b)[(lenb-CELL-4)/4];
         return (msd >= 0);
     }
     lena = (lena-CELL-4)/4;
     // lenb == lena here
-    {   int32_t msa = bignum_digits(a)[lena],
+    {   std::int32_t msa = bignum_digits(a)[lena],
                 msb = bignum_digits(b)[lena];
         if (msa < msb) return true;
         else if (msa > msb) return false;
@@ -1180,7 +1180,7 @@ inline bool lessp_b_b(LispObject a, LispObject b)
 //
         if (lena != 0) for (;;)
         {   lena--;
-            uint32_t da = bignum_digits(a)[lena],
+            std::uint32_t da = bignum_digits(a)[lena],
                      db = bignum_digits(b)[lena];
             if (da == db && lena != 0) continue;
             return (da < db);
@@ -1361,7 +1361,7 @@ bool lessp2(LispObject a, LispObject b)
 }
 
 inline bool geq_i_i(LispObject a1, LispObject a2)
-{   return (intptr_t)a1 >= (intptr_t)a2;
+{   return (std::intptr_t)a1 >= (std::intptr_t)a2;
 }
 
 // A bignum can not be equal to a fixnum, so I>=B is the same as B<I

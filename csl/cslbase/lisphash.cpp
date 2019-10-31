@@ -85,9 +85,9 @@
 
 static LispObject h_table, v_table;
 static int h_shift;
-static size_t h_table_size;
+static std::size_t h_table_size;
 
-typedef uint64_t hash_function_t(uint64_t r, LispObject key);
+typedef std::uint64_t hash_function_t(std::uint64_t r, LispObject key);
 typedef bool hash_compare_t(LispObject key, LispObject hashentry);
 
 static hash_function_t *hash_function;
@@ -99,28 +99,28 @@ static hash_compare_t  *hash_compare;
 // other more elaborate  cases it will need to descend into the
 // representation of its key.
 
-inline void UPDATE(uint64_t& r, uint64_t x)
+inline void UPDATE(std::uint64_t& r, std::uint64_t x)
 {   r = HASH_MULTIPLIER*(r ^ x);
     if (SIXTY_FOUR_BIT) r = HASH_MULTIPLIER*(r ^ (x>>32));
 //  trace_printf("UPDATE64 %" PRIx64 "\n", x);
 }
 
-inline void UPDATE32(uint64_t& r, uint32_t x)
+inline void UPDATE32(std::uint64_t& r, std::uint32_t x)
 {   r = HASH_MULTIPLIER*(r ^ x);
 //  trace_printf("UPDATE32 %" PRIx32 "\n", x);
 }
 
-inline uint64_t HASH(LispObject key)
+inline std::uint64_t HASH(LispObject key)
 {
 //  trace_printf("\nhash "); prin_to_trace(key);
-    uint64_t h = (*hash_function)(0, key);
+    std::uint64_t h = (*hash_function)(0, key);
 //  trace_printf(" = %" PRIx64 "\n", h);
     return h;
 }
 
 // SECOND_HASH generated a second hash value from the initial one.
 
-inline uint64_t SECOND_HASH(uint64_t h)
+inline std::uint64_t SECOND_HASH(std::uint64_t h)
 {   return ((h ^ (h>>32)) + 0x1234567)*HASH_MULTIPLIER;
 }
 
@@ -132,23 +132,23 @@ inline bool COMPARE(LispObject k1, LispObject k2)
 
 // I will give myself accessors to the keys and values.
 
-inline std::atomic<LispObject>& ht(size_t n)
+inline std::atomic<LispObject>& ht(std::size_t n)
 {   return elt(h_table, n);
 }
 
-inline std::atomic<LispObject>& htv(size_t n)
+inline std::atomic<LispObject>& htv(std::size_t n)
 {   return elt(v_table, n);
 }
 
 // Now it may be that the biggest delicacy here is in the scheme for
 // computing hash values!
 
-static uint64_t hash_eq(uint64_t r, LispObject key);
-static uint64_t hash_eql(uint64_t r, LispObject key);
-static uint64_t hash_cl_equal(uint64_t r, LispObject key);
-static uint64_t hash_equal(uint64_t r, LispObject key);
-static uint64_t hash_equalp(uint64_t r, LispObject key);
-static uint64_t hash_binary_vector(uint64_t r, LispObject key);
+static std::uint64_t hash_eq(std::uint64_t r, LispObject key);
+static std::uint64_t hash_eql(std::uint64_t r, LispObject key);
+static std::uint64_t hash_cl_equal(std::uint64_t r, LispObject key);
+static std::uint64_t hash_equal(std::uint64_t r, LispObject key);
+static std::uint64_t hash_equalp(std::uint64_t r, LispObject key);
+static std::uint64_t hash_binary_vector(std::uint64_t r, LispObject key);
 
 static bool hash_compare_eq(LispObject key, LispObject hashentry);
 static bool hash_compare_eql(LispObject key, LispObject hashentry);
@@ -198,7 +198,7 @@ static void set_hash_operations(LispObject tab)
     my_assert(h_shift > 32 && h_shift < 63,
         [&] { trace_printf("\n+++ h_shift = %d\nfrom table: ", h_shift);
               prin_to_trace(tab); trace_printf("\n"); });
-    h_table_size = ((size_t)(1<<(64-h_shift)));
+    h_table_size = ((std::size_t)(1<<(64-h_shift)));
     h_table = basic_elt(tab, HASH_KEYS);
     v_table = basic_elt(tab, HASH_VALUES);
 }
@@ -210,25 +210,25 @@ static void set_hash_operations(LispObject tab)
 // or NOT_PRESENT.
 
 #ifdef PROFILE
-static size_t next = 2, lookups = 0, probes=0;
+static std::size_t next = 2, lookups = 0, probes=0;
 #endif
 
-size_t hash_lookup(LispObject key)
-{   uint64_t h = HASH(key);
-    size_t n = h>>h_shift;
+std::size_t hash_lookup(LispObject key)
+{   std::uint64_t h = HASH(key);
+    std::size_t n = h>>h_shift;
     LispObject v = ht(n);
 #ifdef PROFILE
     if (lookups == next)
     {   next = 2*next;
-        printf("%d lookups %d probes %.2f\n",
+        std::printf("%d lookups %d probes %.2f\n",
                (int)lookups, (int)probes, probes/(double)lookups);
     }
     lookups++; probes++;
 #endif
     if (v == SPID_HASHEMPTY) return NOT_PRESENT;
     if (v != SPID_HASHTOMB && COMPARE(v, key)) return n;
-    size_t inc = (SECOND_HASH(h)>>h_shift) | 1;
-    size_t mask = (((size_t)1)<<(64-h_shift)) - 1;
+    std::size_t inc = (SECOND_HASH(h)>>h_shift) | 1;
+    std::size_t mask = (((std::size_t)1)<<(64-h_shift)) - 1;
 // If the hash table ever got 100% full then the loop here would not
 // terminate if you tried to look up a value that was not in the table.
 // So my maintenance code must ALWAYS force table expansion before that
@@ -249,28 +249,28 @@ size_t hash_lookup(LispObject key)
 // SPID_HASHEMPTY or SPID_HASHTOMB) where it should be inserted.
 
 #ifdef PROFILE
-size_t next1 = 2, lookups1 = 0, probes1=0;
+std::size_t next1 = 2, lookups1 = 0, probes1=0;
 #endif
 
-size_t hash_where_to_insert(LispObject key)
-{   uint64_t h = HASH(key);
-    size_t n = h>>h_shift;
+std::size_t hash_where_to_insert(LispObject key)
+{   std::uint64_t h = HASH(key);
+    std::size_t n = h>>h_shift;
     LispObject v = ht(n);
 #ifdef PROFILE
     if (lookups1 == next1)
     {   next1 = 2*next1;
-        printf("%d inserts %d probes %.2f\n",
+        std::printf("%d inserts %d probes %.2f\n",
                (int)lookups1, (int)probes1, probes1/(double)lookups1);
     }
     lookups1++; probes1++;
 #endif
-    size_t gap;
+    std::size_t gap;
     if (v == SPID_HASHEMPTY) return n;
     else if (v == SPID_HASHTOMB) gap = n;
     else if (COMPARE(v, key)) return n;
     else gap  = NOT_PRESENT;
-    size_t inc = (SECOND_HASH(h)>>h_shift) | 1;
-    size_t mask = (((size_t)1)<<(64-h_shift)) - 1;
+    std::size_t inc = (SECOND_HASH(h)>>h_shift) | 1;
+    std::size_t mask = (((std::size_t)1)<<(64-h_shift)) - 1;
     for (;;)
     {   n = (n + inc) & mask;
         v = ht(n);
@@ -285,7 +285,7 @@ size_t hash_where_to_insert(LispObject key)
 
 LispObject Lrem_hash(LispObject env, LispObject key, LispObject tab)
 {   set_hash_operations(tab);
-    size_t pos = hash_lookup(key);
+    std::size_t pos = hash_lookup(key);
     if (pos == NOT_PRESENT) return onevalue(nil); // item not there
 // I replace the deleted key with a tombstone value. Because that still
 // consumes space I will leave the record of how full the table is unchanged.
@@ -323,7 +323,7 @@ LispObject Lmkhash_3(LispObject env, LispObject size, LispObject flavour, LispOb
         else if (flavour == equalp_symbol) flavour = fixnum_of_int(HASH_AS_EQUALP);
         else aerror1("mkhash", flavour);
     }
-    size_t bits = 3;
+    std::size_t bits = 3;
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
     push(v1);
     LispObject v2 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
@@ -364,7 +364,7 @@ LispObject Lmkhashset(LispObject env, LispObject flavour)
 // (mkhashset flavour)
 {   STACK_SANITY;
     if (!is_fixnum(flavour)) aerror1("mkhashset", flavour);
-    size_t bits = 3;
+    std::size_t bits = 3;
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
     push(v1);
     LispObject v = get_basic_vector_init(6*CELL, nil);
@@ -393,8 +393,8 @@ LispObject Lmkhashset(LispObject env, LispObject flavour)
 // key shifted right by 32 bits. I use XOR not PLUS to make it a bit
 // nonlinear.
 
-static uint64_t hash_eq(uint64_t r, LispObject key)
-{   UPDATE(r, (uint64_t)key);
+static std::uint64_t hash_eq(std::uint64_t r, LispObject key)
+{   UPDATE(r, (std::uint64_t)key);
     return r;
 }
 
@@ -417,52 +417,52 @@ static uint64_t hash_eq(uint64_t r, LispObject key)
 // were not written as either sequences of characters or sequences of
 // 32-bit integers there could be Strict Aliasing worries...
 
-static uint64_t hash_binary_vector(uint64_t r, LispObject key)
+static std::uint64_t hash_binary_vector(std::uint64_t r, LispObject key)
 {
 // Find number of bytes in use, and start the hash code off with the
 // header word (which involves the length).
     r = hash_eq(r, (LispObject)vechdr(key));
-    size_t n = length_of_byteheader(vechdr(key))-CELL;
-    uint32_t *p = (uint32_t *)&basic_ielt(key, 0);
+    std::size_t n = length_of_byteheader(vechdr(key))-CELL;
+    std::uint32_t *p = (std::uint32_t *)&basic_ielt(key, 0);
 // Hash the string 32 bits at a time regardless on word-length.
-    for (size_t i=0; i<n; i+=sizeof(uint32_t)) UPDATE32(r, *p++);
+    for (std::size_t i=0; i<n; i+=sizeof(std::uint32_t)) UPDATE32(r, *p++);
 // Any part-filled word at the end MUST be zero-padded.
     return r;
 }
 
-static uint64_t hash_byte_vector(uint64_t r, LispObject key)
+static std::uint64_t hash_byte_vector(std::uint64_t r, LispObject key)
 {
 // This is used when hashing strings and bitvectors in sxhash mode, and
 // it works byte by byte.
-    UPDATE(r, (uint64_t)vechdr(key));
-    size_t n = length_of_byteheader(vechdr(key))-CELL;
+    UPDATE(r, (std::uint64_t)vechdr(key));
+    std::size_t n = length_of_byteheader(vechdr(key))-CELL;
     unsigned char *p = (unsigned char *)&basic_ucelt(key, 0);
-    for (size_t i=0; i<n; i++) UPDATE32(r, *p++);
+    for (std::size_t i=0; i<n; i++) UPDATE32(r, *p++);
     return r;
 }
 
-static uint64_t hash_halfword_vector(uint64_t r, LispObject key)
-{   UPDATE(r, (uint64_t)vechdr(key));
-    size_t n = length_of_hwordheader(vechdr(key))-CELL/sizeof(uint16_t);
-    uint16_t *p = (uint16_t *)&basic_helt(key, 0);
-    for (size_t i=0; i<n; i++) UPDATE32(r, *p++);
+static std::uint64_t hash_halfword_vector(std::uint64_t r, LispObject key)
+{   UPDATE(r, (std::uint64_t)vechdr(key));
+    std::size_t n = length_of_hwordheader(vechdr(key))-CELL/sizeof(std::uint16_t);
+    std::uint16_t *p = (std::uint16_t *)&basic_helt(key, 0);
+    for (std::size_t i=0; i<n; i++) UPDATE32(r, *p++);
     return r;
 }
 
-static uint64_t hash_double_vector(uint64_t r, LispObject key)
+static std::uint64_t hash_double_vector(std::uint64_t r, LispObject key)
 {
 // This is used when hashing arrays of doubles or 64-bit integers in
 // sxhash mode. I will ignore horrid issues of strict aliasing here,
 // and assume that byte-order variations from machine to machine behave
 // the same way for doubles and for 64-bit integers.
-    UPDATE(r, (uint64_t)vechdr(key));
-    size_t n = length_of_header(vechdr(key))-CELL;
-    uint64_t *p = (uint64_t *)&basic_delt(key, 0);
-    for (size_t i=0; i<n; i+=sizeof(uint64_t)) UPDATE(r, *p++);
+    UPDATE(r, (std::uint64_t)vechdr(key));
+    std::size_t n = length_of_header(vechdr(key))-CELL;
+    std::uint64_t *p = (std::uint64_t *)&basic_delt(key, 0);
+    for (std::size_t i=0; i<n; i+=sizeof(std::uint64_t)) UPDATE(r, *p++);
     return r;
 }
 
-static uint64_t hash_eql(uint64_t r, LispObject key)
+static std::uint64_t hash_eql(std::uint64_t r, LispObject key)
 // Must return same code for two eql numbers. This regime views
 // numbers as equal if they have the same type aned the same value, so
 // apart from an ugly dispatch to cope with all the different sorts of
@@ -475,26 +475,26 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
     {   Header h = flthdr(key);
 // The headers of floating point values fit in just 32-bits so I do not do the
 // two steps that I would with general vector headers.
-        UPDATE(r, (uint64_t)h);
+        UPDATE(r, (std::uint64_t)h);
         switch (type_of_header(h))
         {   case TYPE_SINGLE_FLOAT:
 // Here I hash single floats as if they had been represented in the way that
 // they would have been on a 64-bit machine. This is so that the values
 // returned by sxhash can be consistent across platforms.
-            {   uint64_t v = intfloat32_t_val(key);
+            {   std::uint64_t v = intfloat32_t_val(key);
                 v = (v<<32) + XTAG_SFLOAT + XTAG_FLOAT32;
                 UPDATE(r, v);
                 return r;
             }
             default:
             case TYPE_DOUBLE_FLOAT:
-                UPDATE32(r, (uint64_t)h);
+                UPDATE32(r, (std::uint64_t)h);
                 if (double_float_val(key) == 0.0) UPDATE(r, 0);
                 else UPDATE(r, intfloat64_t_val(key));
                 return r;
 #ifdef HAVE_SOFTFLOAT
             case TYPE_LONG_FLOAT:
-                UPDATE32(r, (uint64_t)h);
+                UPDATE32(r, (std::uint64_t)h);
                 if (f128M_zero((float128_t *)long_float_addr(key)))
                 {   UPDATE(r, 0);
                     UPDATE(r, 0);
@@ -509,8 +509,8 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
     }
     else if (is_numbers(key))
     {   Header h = numhdr(key);
-        size_t n;
-        UPDATE(r, (uint64_t)h);
+        std::size_t n;
+        UPDATE(r, (std::uint64_t)h);
         switch (type_of_header(h))
         {   case TYPE_BIGNUM:
                 n = (length_of_header(h)-CELL-4)/4;
@@ -581,27 +581,27 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
 // behaviour.
 
 
-static uint64_t hash_generic_equal(uint64_t r, LispObject key, int mode, size_t depth);
+static std::uint64_t hash_generic_equal(std::uint64_t r, LispObject key, int mode, std::size_t depth);
 
-static uint64_t hash_cl_equal(uint64_t r, LispObject key)
+static std::uint64_t hash_cl_equal(std::uint64_t r, LispObject key)
 {   return hash_generic_equal(r, key, HASH_AS_CL_EQUAL, 0);
 }
 
-static uint64_t hash_equal(uint64_t r, LispObject key)
+static std::uint64_t hash_equal(std::uint64_t r, LispObject key)
 {   return hash_generic_equal(r, key, HASH_AS_EQUAL, 0);
 }
 
-static uint64_t hash_equalp(uint64_t r, LispObject key)
+static std::uint64_t hash_equalp(std::uint64_t r, LispObject key)
 {   return hash_generic_equal(r, key, HASH_AS_EQUALP, 0);
 }
 
-static uint64_t hash_nonsimple_string(uint64_t r, LispObject key)
-{   printf("\nNon-simple-string\n");  // Pending!!!!
+static std::uint64_t hash_nonsimple_string(std::uint64_t r, LispObject key)
+{   std::printf("\nNon-simple-string\n");  // Pending!!!!
     return hash_eq(r, key);        // hash as for EQ for now
 }
 
-static uint64_t hash_nonsimple_bitvector(uint64_t r, LispObject key)
-{   printf("\nNon-simple-bitvector\n"); // Pending!!!
+static std::uint64_t hash_nonsimple_bitvector(std::uint64_t r, LispObject key)
+{   std::printf("\nNon-simple-bitvector\n"); // Pending!!!
     return hash_eq(r, key);
 }
 
@@ -652,9 +652,9 @@ static bool float_if_exact(LispObject x)
 }
 #endif // HAVE_SOFTFLOAT
 
-static uint64_t hash_generic_equal(uint64_t r, LispObject key,
-                                      int mode, size_t depth)
-{   size_t len;
+static std::uint64_t hash_generic_equal(std::uint64_t r, LispObject key,
+                                      int mode, std::size_t depth)
+{   std::size_t len;
     unsigned char *data;
     Header h;
 #ifdef CHECK_STACK
@@ -685,7 +685,7 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
     {   UPDATE32(r, VIRTUAL_TYPE_NIL | TAG_HDR_IMMED);
         return r;
     }
-    switch (TAG_BITS & (int32_t)key)
+    switch (TAG_BITS & (std::int32_t)key)
     {   case TAG_SYMBOL:
             if (mode == HASH_AS_SXHASH)
             {   key = get_pname(key);
@@ -739,7 +739,7 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
 // The string will be stored in UTF8. A consequence is that any bytes forming
 // part of a character beyond Basic Latin will have their top bit set. I will
 // case-convert Basic Latin characters (only).
-                            if ((c & 0x80) == 0) c = tolower(c);
+                            if ((c & 0x80) == 0) c = std::tolower(c);
                             UPDATE32(r, c);
                         }
                         return r;
@@ -786,7 +786,7 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
 // Here I should POSSIBLY look at non-simple strings and bitvectors and at
 // pathnames. For now I intend to follw the principle of "You Ain't Gonna
 // Need It" and just ignore the issues.
-                        UPDATE(r, (uint64_t)h);
+                        UPDATE(r, (std::uint64_t)h);
                         len = length_of_header(h)/CELL - 1;
                         while (len != 0)
                         {   len--;
@@ -853,17 +853,17 @@ static bool hash_compare_equalp(LispObject key, LispObject hashentry)
 // may run risks of breacing strict aliasing rules.
 
 static bool hash_compare_symtab(LispObject key, LispObject hashentry)
-{   size_t n;
-    uintptr_t *p1, *p2;
+{   std::size_t n;
+    std::uintptr_t *p1, *p2;
     hashentry = qpname(hashentry); // allow for entry in table being a symbol.
     if (vechdr(key) != vechdr(hashentry)) return false; // lengths differ.
     n = length_of_byteheader(vechdr(key));
-    p1 = (uintptr_t *)&celt(key, 0);
-    p2 = (uintptr_t *)&celt(hashentry, 0);
+    p1 = (std::uintptr_t *)&celt(key, 0);
+    p2 = (std::uintptr_t *)&celt(hashentry, 0);
 // Compare the string 32 or 64-bits at a time depending on word-length.
-    while (n >= sizeof(uintptr_t))
+    while (n >= sizeof(std::uintptr_t))
     {   if (*p1++ != *p2++) return false;
-        n -= sizeof(uintptr_t);
+        n -= sizeof(std::uintptr_t);
     }
 // There may be a partly-filled word to check at the end.
     if (n != 0 && *p1 != *p2) return false;
@@ -874,7 +874,7 @@ static bool hash_compare_symtab(LispObject key, LispObject hashentry)
 
 LispObject Lget_hash(LispObject env, LispObject key, LispObject tab, LispObject dflt)
 {   STACK_SANITY;
-    size_t pos;
+    std::size_t pos;
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
     {   if (type_of_header(vechdr(tab)) != TYPE_HASHX)
             aerror1("gethash", tab);
@@ -895,9 +895,9 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab, LispObject 
             borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
         LispObject oldvals = v_table == nil ? nil :
             borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
-        size_t load = 0;
+        std::size_t load = 0;
 // Copy live data to the borrowed space and make the existing table empty.
-        for (size_t i=0; i<h_table_size; i++)
+        for (std::size_t i=0; i<h_table_size; i++)
         {   LispObject k = ht(i);
             if (k != SPID_HASHEMPTY && k != SPID_HASHTOMB)
             {   elt(oldkeys, load) = k;
@@ -909,9 +909,9 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab, LispObject 
                 load++;
             }
         }
-        for (size_t i=0; i<load; i++)
+        for (std::size_t i=0; i<load; i++)
         {   LispObject k = elt(oldkeys, i);
-            size_t j = hash_where_to_insert(k);
+            std::size_t j = hash_where_to_insert(k);
             ht(j) = k;
             write_barrier(&ht(j));
             if (v_table != nil)
@@ -941,7 +941,7 @@ LispObject Lmap_hash(LispObject env, LispObject fn, LispObject tab)
 // that provided nobody tries either lookup or set operations on the table I
 // will be OK.
 {   STACK_SANITY;
-    int32_t size, i;
+    std::int32_t size, i;
     LispObject v, v1;
     if (!is_vector(tab) ||
         (type_of_header(vechdr(tab)) != TYPE_HASH &&
@@ -974,7 +974,7 @@ LispObject Lhash_contents(LispObject env, LispObject tab)
 // returns a list of keys, in the latter an association list of keys
 // and values.
 {   STACK_SANITY;
-    size_t size, i;
+    std::size_t size, i;
     LispObject v, v1, r;
     if (!is_vector(tab) ||
         (type_of_header(vechdr(tab)) != TYPE_HASH &&
@@ -1033,7 +1033,7 @@ LispObject Lput_hash(LispObject env,
         else aerror1("puthash", tab);
     }
     set_hash_operations(tab);
-    size_t count = int_of_fixnum(basic_elt(tab, HASH_COUNT));
+    std::size_t count = int_of_fixnum(basic_elt(tab, HASH_COUNT));
     if (5*count > 4*h_table_size) needs_rehashing = true;
 // I will rehash either if I have to because there has been a garbage
 // collection since the last operation on the table (and hence hash codes
@@ -1041,12 +1041,12 @@ LispObject Lput_hash(LispObject env,
 // not rehashed on general operations when it has shrunk, but when garbage
 // collection occurs and forces a rehash it may shrink.
     if (needs_rehashing)
-    {   size_t load = 0;
-        for (size_t i=0; i<h_table_size; i++)
+    {   std::size_t load = 0;
+        for (std::size_t i=0; i<h_table_size; i++)
             if ((LispObject)ht(i) != SPID_HASHEMPTY &&
                 (LispObject)ht(i) != SPID_HASHTOMB) load++;
 #ifdef PROFILE
-        printf("Inserting with load=%d count=%d size=%d\n",
+        std::printf("Inserting with load=%d count=%d size=%d\n",
                (int)load, (int)count, (int)h_table_size);
 #endif
 // When I rehash I may grow, shrink or leave the table the same size. If the
@@ -1080,11 +1080,11 @@ LispObject Lput_hash(LispObject env,
             write_barrier(&basic_elt(tab, HASH_VALUES));
             basic_elt(tab, HASH_SHIFT) = fixnum_of_int(h_shift);
             basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
-            for (size_t i=0; i<h_table_size; i++)
+            for (std::size_t i=0; i<h_table_size; i++)
             {   LispObject k = elt(oldkeys, i);
 // Copy active stuff to the new table...
                 if (k != SPID_HASHEMPTY && k != SPID_HASHTOMB)
-                {   size_t j = hash_where_to_insert(k);
+                {   std::size_t j = hash_where_to_insert(k);
                     ht(j) = k;
                     write_barrier(&ht(j));
                     if (v_table != nil)
@@ -1108,8 +1108,8 @@ LispObject Lput_hash(LispObject env,
                 borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
             LispObject oldvals = v_table == nil ? nil :
                 borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
-            size_t load = 0;
-            for (size_t i=0; i<h_table_size; i++)
+            std::size_t load = 0;
+            for (std::size_t i=0; i<h_table_size; i++)
             {   LispObject k = ht(i);
                 if (k != SPID_HASHEMPTY && k != SPID_HASHTOMB)
                 {   elt(oldkeys, load) = k;
@@ -1131,14 +1131,14 @@ LispObject Lput_hash(LispObject env,
                 basic_elt(tab, HASH_VALUES) = v_table;
                 write_barrier(&basic_elt(tab, HASH_VALUES));
             }
-            for (size_t i=0; i<h_table_size; i++)
+            for (std::size_t i=0; i<h_table_size; i++)
             {   ht(i) = SPID_HASHEMPTY;
                 if (v_table != nil) htv(i) = SPID_HASHEMPTY;
             }
             basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
-            for (size_t i=0; i<load; i++)
+            for (std::size_t i=0; i<load; i++)
             {   LispObject k = elt(oldkeys, i);
-                size_t j = hash_where_to_insert(k);
+                std::size_t j = hash_where_to_insert(k);
                 ht(j) = k;
                 write_barrier(&ht(j));
                 if (v_table != nil)
@@ -1149,7 +1149,7 @@ LispObject Lput_hash(LispObject env,
             }
         }
     }
-    size_t pos = hash_where_to_insert(key);
+    std::size_t pos = hash_where_to_insert(key);
     k1 = ht(pos);
 // If I insert where a tombstone value had been I do not increment the
 // occupancy count, since the tombstone is counted as an occupier.
@@ -1179,7 +1179,7 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
         aerror1("clrhash", tab);
     basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
     int sh = int_of_fixnum(basic_elt(tab, HASH_SHIFT));
-    size_t size = ((size_t)1)<<(64-sh);
+    std::size_t size = ((std::size_t)1)<<(64-sh);
     if (size > (1<<4))
     {   size = (1<<4);
         h_table = reduce_vector_size(h_table, CELL*(size+1));
@@ -1193,7 +1193,7 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
     }
     LispObject keys = basic_elt(tab, HASH_KEYS);
     LispObject vals = basic_elt(tab, HASH_VALUES);
-    for (size_t i=0; i<size; i++)
+    for (std::size_t i=0; i<size; i++)
     {   elt(keys, i) = SPID_HASHEMPTY;
         if (vals != nil) elt(vals, i) = SPID_HASHEMPTY;
     }
@@ -1225,7 +1225,7 @@ LispObject Lclr_hash_0(LispObject env)
 
 LispObject Lsxhash(LispObject env, LispObject key)
 {   Lclr_hash(nil, sxhash_hash_table);
-    uint64_t h = hash_generic_equal(0, key, HASH_AS_SXHASH, 0);
+    std::uint64_t h = hash_generic_equal(0, key, HASH_AS_SXHASH, 0);
     Lclr_hash(nil, sxhash_hash_table); // Just to tidy up.
     h = h ^ (h >> 32);
     h = (h ^ (h >> 16)) & 0x03ffffff; // ensure it will be a positive fixnum
@@ -1249,7 +1249,7 @@ static int simple_column = 0;
 
 void simple_lineend(int n)
 {   if (simple_column + n > 70)
-    {   fprintf(stderr, "\n");
+    {   std::fprintf(stderr, "\n");
         simple_column = n;
     }
     else simple_column += n;
@@ -1259,96 +1259,96 @@ void simple_print1(LispObject x)
 {   char buffer[40];
     if (x == nil)
     {   simple_lineend(3);
-        fprintf(stderr, "nil");
+        std::fprintf(stderr, "nil");
         return;
     }
     if (x == 0)
     {   simple_lineend(3);
-        fprintf(stderr, "@0@");
+        std::fprintf(stderr, "@0@");
         return;
     }
     if (is_cons(x))
     {   const char *sep = "(";
         while (consp(x))
         {   simple_lineend(1);
-            fprintf(stderr, "%s", sep);
+            std::fprintf(stderr, "%s", sep);
             sep = " ";
             simple_print1(car(x));
             x = cdr(x);
         }
         if (x != nil)
         {   simple_lineend(3);
-            fprintf(stderr, " . ");
+            std::fprintf(stderr, " . ");
             simple_print1(x);
         }
         simple_lineend(3);
-        fprintf(stderr, ")");
+        std::fprintf(stderr, ")");
         return;
     }
     else if (is_fixnum(x))
-    {   int k = sprintf(buffer, "%" PRId64, (int64_t)int_of_fixnum(x));
+    {   int k = std::sprintf(buffer, "%" PRId64, (std::int64_t)int_of_fixnum(x));
         simple_lineend(k);
-        fprintf(stderr, "%s", buffer);
+        std::fprintf(stderr, "%s", buffer);
         return;
     }
     else if (is_symbol(x))
-    {   size_t len;
+    {   std::size_t len;
         x = qpname(x);
         len = length_of_byteheader(vechdr(x)) - CELL;
         simple_lineend(len);
-        fprintf(stderr, "%.*s", (int)len, (const char *)&celt(x, 0));
+        std::fprintf(stderr, "%.*s", (int)len, (const char *)&celt(x, 0));
     }
     else if (is_vector(x))
-    {   size_t i, len;
+    {   std::size_t i, len;
         if (is_string(x))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
             simple_lineend(len+2);
-            fprintf(stderr, "\"%.*s\"", (int)len, (const char *)&celt(x, 0));
+            std::fprintf(stderr, "\"%.*s\"", (int)len, (const char *)&celt(x, 0));
             return;
         }
         else if (vector_holds_binary(vechdr(x)) &&
                  vector_i8(vechdr(x)))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
-            fprintf(stderr, "<Header is %" PRIxPTR ">", (uintptr_t)vechdr(x));
+            std::fprintf(stderr, "<Header is %" PRIxPTR ">", (std::uintptr_t)vechdr(x));
             simple_lineend(2*len+3);
-            fprintf(stderr, "#8[");
-            for (size_t i=0; i<len; i++)
+            std::fprintf(stderr, "#8[");
+            for (std::size_t i=0; i<len; i++)
             {   simple_lineend(2);
-                fprintf(stderr, "%.2x", celt(x, i) & 0xff);
+                std::fprintf(stderr, "%.2x", celt(x, i) & 0xff);
             }
-            fprintf(stderr, "]");
+            std::fprintf(stderr, "]");
             return;
         }
-        len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
-        int nn = sprintf(buffer, "[%" PRId64 ":", (int64_t)len);
+        len = (std::int64_t)(length_of_header(vechdr(x))/CELL - 1);
+        int nn = std::sprintf(buffer, "[%" PRId64 ":", (std::int64_t)len);
         simple_lineend(nn);
-        fprintf(stderr, "%s", buffer);
+        std::fprintf(stderr, "%s", buffer);
         for (i=0; i<len; i++)
         {   simple_lineend(1);
-            fprintf(stderr, " ");
+            std::fprintf(stderr, " ");
             if (i > 2 && is_mixed_header(vechdr(x)))
-            {   nn = sprintf(buffer, "%" PRIx64, (uint64_t)elt(x, i));
+            {   nn = std::sprintf(buffer, "%" PRIx64, (std::uint64_t)elt(x, i));
                 simple_lineend(nn);
-                fprintf(stderr, "%s", buffer);
+                std::fprintf(stderr, "%s", buffer);
             }
             else simple_print1(elt(x, i));
         }
         simple_lineend(1);
-        fprintf(stderr, "]");
+        std::fprintf(stderr, "]");
         return;
     }
     else if (is_numbers(x) && is_bignum(x))
-    {   size_t len = (length_of_header(numhdr(x))-CELL)/4;
-        size_t i;
+    {   std::size_t len = (length_of_header(numhdr(x))-CELL)/4;
+        std::size_t i;
         int clen;
         for (i=len; i>0; i--)
-        {   int32_t d = bignum_digits(x)[i-1];
+        {   std::int32_t d = bignum_digits(x)[i-1];
 // I will print bignums in a manner that shows the 31-bit digits that they
 // are made up from.
-            if (i == len) clen = sprintf(buffer, "@#%d", d);
-            else clen = sprintf(buffer, ":%u", d);
+            if (i == len) clen = std::sprintf(buffer, "@#%d", d);
+            else clen = std::sprintf(buffer, ":%u", d);
             simple_lineend(clen);
-            fprintf(stderr, "%s", buffer);
+            std::fprintf(stderr, "%s", buffer);
         }
         return;
     }
@@ -1358,9 +1358,9 @@ void simple_print1(LispObject x)
 // to render them here! But it certainly looks ugly when they get
 // displayed as @xxxxx@ with the xxxxx being a bunch of hex digits giving
 // the memory address the data lies at!
-        int clen = sprintf(buffer, "@%" PRIx64 "@", (int64_t)x);
+        int clen = std::sprintf(buffer, "@%" PRIx64 "@", (std::int64_t)x);
         simple_lineend(clen);
-        fprintf(stderr, "%s", buffer);
+        std::fprintf(stderr, "%s", buffer);
         return;
     }
 }
@@ -1371,9 +1371,9 @@ void simple_print(LispObject x)
 }
 
 void simple_msg(const char *s, LispObject x)
-{   fprintf(stderr, "%s", s);
+{   std::fprintf(stderr, "%s", s);
     simple_print(x);
-    fprintf(stderr, "\n");
+    std::fprintf(stderr, "\n");
 }
 
 setup_type const lisphash_setup[] =

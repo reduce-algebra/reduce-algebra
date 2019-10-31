@@ -46,7 +46,7 @@
 
 int main(int argc, char *argv[])
 {
-    printf("FOX library not detected and so this demo is unavailable\n");
+    std::printf("FOX library not detected and so this demo is unavailable\n");
     return 0;
 }
 
@@ -272,7 +272,7 @@ int main(int argc,char *argv[])
 
     while (argc-- > 1)
     {   const char *a = *argv++;
-        unsigned int n = atoi(a);
+        unsigned int n = std::atoi(a);
         switch (whichArg++)
         {
     case 0:
@@ -305,8 +305,8 @@ int main(int argc,char *argv[])
     topBox = parseTeX(nextChar, 0);
 
     if (topBox == NULL)
-    {   printf("Failed to parse this example\n");
-        exit(1);
+    {   std::printf("Failed to parse this example\n");
+        std::exit(1);
     }
 
     measureBox(topBox);

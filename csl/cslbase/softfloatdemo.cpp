@@ -58,21 +58,21 @@
 
 static void show(const char *s, float128_t *p)
 {
-    printf("Displaying %16s: ", s);
+    std::printf("Displaying %16s: ", s);
     f128M_print_E(0, 33, p);
-    printf("\n");
+    std::printf("\n");
 }
 
 static void show256(float256_t *p)
 {
     float256_t q, r;
     q = *p;
-    printf("%.16" PRIx64 " %.16" PRIx64 "\n", q.hi.v[1], q.hi.v[0]);
+    std::printf("%.16" PRIx64 " %.16" PRIx64 "\n", q.hi.v[1], q.hi.v[0]);
     q.lo = f128_0;
     q.hi.v[0] = 0;
     q.hi.v[1] ^= INT64_C(0x8000000000000000);
     f256M_add(p, &q, &r);
-    printf("%.16" PRIx64 " %.16" PRIx64 "\n", r.hi.v[1], r.hi.v[0]);
+    std::printf("%.16" PRIx64 " %.16" PRIx64 "\n", r.hi.v[1], r.hi.v[0]);
 } 
 
 float256_t f256_1;
@@ -81,9 +81,9 @@ int main(int argc, char *argv[])
 {
     float128_t a, b, c, d, e, f, g, w1, w2;
 #ifdef LITTLEENDIAN
-    printf("Testing using a little-endian version\n");
+    std::printf("Testing using a little-endian version\n");
 #else
-    printf("Testing using a big-endian version\n");
+    std::printf("Testing using a big-endian version\n");
 #endif
 
     ui32_to_f128M(0, &f128_0);
@@ -106,8 +106,8 @@ int main(int argc, char *argv[])
     show("10^17", &f);
     show("10^18", &g);
     ui64_to_f128M(INT64_C(10000000000000000), &g);
-    printf("%.16" PRIx64 "/%.16" PRIx64 "\n",
-        ((int64_t *)&g)[1], ((int64_t *)&g)[0]);
+    std::printf("%.16" PRIx64 "/%.16" PRIx64 "\n",
+        ((std::int64_t *)&g)[1], ((std::int64_t *)&g)[0]);
     show("10^16", &g);
 
     float256_t dd,ee,ff;
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
     {   for (int p=3; p<80; p++)
         {   char bb[256];
             f128M_sprint_F(bb, 120, p, &a);
-            printf("@@%3d, %3d : %s\n", x, p, bb);
+            std::printf("@@%3d, %3d : %s\n", x, p, bb);
         }
         f128M_div(&a, &c, &b);
         a = b;
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     {   for (int p=3; p<80; p++)
         {   char bb[256];
             f128M_sprint_F(bb, 120, p, &a);
-            printf("@@%3d, %3d : %s\n", x, p, bb);
+            std::printf("@@%3d, %3d : %s\n", x, p, bb);
         }
         f128M_div(&a, &c, &b);
         a = b;

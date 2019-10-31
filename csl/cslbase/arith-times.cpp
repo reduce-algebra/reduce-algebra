@@ -59,7 +59,7 @@ LispObject Times::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
 }
 
-LispObject Times::op(LispObject a, uint64_t *b)
+LispObject Times::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
 }
 
@@ -91,7 +91,7 @@ LispObject Times::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
 
-LispObject Times::op(uint64_t *a, LispObject b)
+LispObject Times::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
 
@@ -125,7 +125,7 @@ LispObject Times::op(Fixnum a, Fixnum b)
 }
 
 // bignum * fixnum
-LispObject Times::op(uint64_t *a, Fixnum b)
+LispObject Times::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Times::op(a, b.intval());
 }
 
@@ -164,17 +164,17 @@ LispObject Times::op(LFlt a, Fixnum b)
 }
 
 // fixnum * bignum
-LispObject Times::op(Fixnum a, uint64_t *b)
+LispObject Times::op(Fixnum a, std::uint64_t *b)
 {   return Times::op(b, a);
 }
 
 // bignum * bignum
-LispObject Times::op(uint64_t *a, uint64_t *b)
+LispObject Times::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::Times::op(a, b);
 }
 
 // rational * bignum
-LispObject Times::op(Rat a, uint64_t *b)
+LispObject Times::op(Rat a, std::uint64_t *b)
 {   LispObject g = Gcdn::op(a.denominator(), b);
     LispObject cofactor = Quotient::op(b, g);
     return make_ratio(Times::op(a.numerator(), cofactor),
@@ -182,28 +182,28 @@ LispObject Times::op(Rat a, uint64_t *b)
 }
 
 // complex * bignum
-LispObject Times::op(Cpx a, uint64_t *b)
+LispObject Times::op(Cpx a, std::uint64_t *b)
 {   return make_complex(Times::op(a.real_part(), b),
                         Times::op(a.imag_part(), b));
 }
 
 // short float * bignum
-LispObject Times::op(SFlt a, uint64_t *b)
+LispObject Times::op(SFlt a, std::uint64_t *b)
 {   return pack_short_float(a.floatval() * RawFloat::op(b));
 }
 
 // single float * bignum
-LispObject Times::op(Flt a, uint64_t *b)
+LispObject Times::op(Flt a, std::uint64_t *b)
 {   return pack_single_float(a.floatval() * RawFloat::op(b));
 }
 
 // double float * bignum
-LispObject Times::op(double a, uint64_t *b)
+LispObject Times::op(double a, std::uint64_t *b)
 {   return make_boxfloat(a * arithlib_lowlevel::Double::op(b));
 }
 
 // long float * bignum
-LispObject Times::op(LFlt a, uint64_t *b)
+LispObject Times::op(LFlt a, std::uint64_t *b)
 {   return make_boxfloat128(f128_mul(a.floatval(), RawFloat128::op(b)));
 }
 
@@ -213,7 +213,7 @@ LispObject Times::op(Fixnum a, Rat b)
 }
 
 // bignum * rational
-LispObject Times::op(uint64_t *a, Rat b)
+LispObject Times::op(std::uint64_t *a, Rat b)
 {   return Times::op(b, a);
 }
 
@@ -239,7 +239,7 @@ LispObject Times::op(Cpx a, Rat b)
 // early, but the numerator and denominators of the rational could be
 // really huge.
 LispObject Times::op(SFlt a, Rat b)
-{   int64_t xb;
+{   std::int64_t xb;
     double d = Frexp::op(b, xb); // A special version for internal use!
     int x;
     d *= std::frexp(a.floatval(), &x);
@@ -250,7 +250,7 @@ LispObject Times::op(SFlt a, Rat b)
 
 // single float * rational
 LispObject Times::op(Flt a, Rat b)
-{   int64_t xb;
+{   std::int64_t xb;
     double d = Frexp::op(b, xb);
     int x;
     d *= std::frexp(a.floatval(), &x);
@@ -261,7 +261,7 @@ LispObject Times::op(Flt a, Rat b)
 
 // double float * rational
 LispObject Times::op(double a, Rat b)
-{   int64_t xb;
+{   std::int64_t xb;
     double d = Frexp::op(b, xb);
     int x;
     d *= std::frexp(a, &x);
@@ -272,7 +272,7 @@ LispObject Times::op(double a, Rat b)
 
 // long float * rational
 LispObject Times::op(LFlt a, Rat b)
-{   int64_t xb;
+{   std::int64_t xb;
     float128_t d = Frexp128::op(b, xb);
     int x;
     float128_t d1 = a.floatval();
@@ -289,7 +289,7 @@ LispObject Times::op(Fixnum a, Cpx b)
 }
 
 // bignum * complex
-LispObject Times::op(uint64_t *a, Cpx b)
+LispObject Times::op(std::uint64_t *a, Cpx b)
 {   return Times::op(b, a);
 }
 
@@ -337,7 +337,7 @@ LispObject Times::op(Fixnum a, SFlt b)
 }
 
 // bignum * short float
-LispObject Times::op(uint64_t *a, SFlt b)
+LispObject Times::op(std::uint64_t *a, SFlt b)
 {   return Times::op(b, a);
 }
 
@@ -377,7 +377,7 @@ LispObject Times::op(Fixnum a, Flt b)
 }
 
 // bignum * single float
-LispObject Times::op(uint64_t *a, Flt b)
+LispObject Times::op(std::uint64_t *a, Flt b)
 {   return Times::op(b, a);
 }
 
@@ -417,7 +417,7 @@ LispObject Times::op(Fixnum a, double b)
 }
 
 // bignum * double float
-LispObject Times::op(uint64_t *a, double b)
+LispObject Times::op(std::uint64_t *a, double b)
 {   return Times::op(b, a);
 }
 
@@ -457,7 +457,7 @@ LispObject Times::op(Fixnum a, LFlt b)
 }
 
 // bignum * long float
-LispObject Times::op(uint64_t *a, LFlt b)
+LispObject Times::op(std::uint64_t *a, LFlt b)
 {   return Times::op(b, a);
 }
 
@@ -499,7 +499,7 @@ LispObject Expt::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Expt>("expt", a, b);
 }
 
-LispObject Expt::op(LispObject a, uint64_t *b)
+LispObject Expt::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Expt>("expt", a, b);
 }
 
@@ -531,7 +531,7 @@ LispObject Expt::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Expt>("expt", a, b);
 }
 
-LispObject Expt::op(uint64_t *a, LispObject b)
+LispObject Expt::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Expt>("expt", a, b);
 }
 
@@ -561,15 +561,15 @@ LispObject Expt::op(LFlt a, LispObject b)
 
 // fixnum ** fixnum
 LispObject Expt::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Pow::op(a.intval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Pow::op(a.intval(), (std::int64_t)b.intval());
 }
 
 // bignum ** fixnum
-LispObject Expt::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::Pow::op(a, (int64_t)b.intval());
+LispObject Expt::op(std::uint64_t *a, Fixnum b)
+{   return arithlib_lowlevel::Pow::op(a, (std::int64_t)b.intval());
 }
 template <typename T>
-LispObject generic_expt(T a, int64_t n)
+LispObject generic_expt(T a, std::int64_t n)
 {   if (n == 1) return a.value();
     else
     {   LispObject aa = generic_expt(a, n/2);
@@ -581,7 +581,7 @@ LispObject generic_expt(T a, int64_t n)
 
 // rational ** fixnum
 LispObject Expt::op(Rat a, Fixnum b)
-{   int64_t n = b.intval();
+{   std::int64_t n = b.intval();
     if (n == 0) return make_ratio(fixnum_of_int(1), fixnum_of_int(1));
     else if (n == 1) return a.value();
     else if (n < 0)
@@ -629,7 +629,7 @@ LispObject match_type(LispObject in, int value)
 }
 
 LispObject Expt::op(Cpx a, Fixnum b)
-{   int64_t n = b.intval();
+{   std::int64_t n = b.intval();
 // A complex number ought to have both components the same type, but that
 // could be integer, rational or one of the various sorts of float. If I
 // raise it to the power zero I want a result that has value 1 + 0i but both
@@ -665,8 +665,8 @@ LispObject Expt::op(LFlt a, Fixnum b)
 }
 
 // fixnum ** bignum
-LispObject Expt::op(Fixnum a, uint64_t *b)
-{   int64_t aa = a.intval();
+LispObject Expt::op(Fixnum a, std::uint64_t *b)
+{   std::int64_t aa = a.intval();
     switch (aa)
     {
     case 0:
@@ -683,19 +683,19 @@ LispObject Expt::op(Fixnum a, uint64_t *b)
 }
 
 // bignum ** bignum
-LispObject Expt::op(uint64_t *a, uint64_t *b)
+LispObject Expt::op(std::uint64_t *a, std::uint64_t *b)
 {   if (arithlib_lowlevel::Minusp::op(b)) return fixnum_of_int(0);
     aerror1("bad argument for expt", (LispObject)(TAG_NUMBERS+(char *)b-8));
 }
 
 // rational ** bignum
-LispObject Expt::op(Rat a, uint64_t *b)
+LispObject Expt::op(Rat a, std::uint64_t *b)
 {   return make_ratio(Expt::op(a.numerator(), b),
                       Expt::op(a.denominator(), b));
 }
 
 // complex ** bignum
-LispObject Expt::op(Cpx a, uint64_t *b)
+LispObject Expt::op(Cpx a, std::uint64_t *b)
 {
 // I suppose that huge powers of (0+0i), (1+0i), (0+1i), (-1+0i), (0+-1i)
 // can give sane results!
@@ -737,22 +737,22 @@ LispObject Expt::op(Cpx a, uint64_t *b)
 }
 
 // short float ** bignum
-LispObject Expt::op(SFlt a, uint64_t *b)
+LispObject Expt::op(SFlt a, std::uint64_t *b)
 {   aerror1("bad argument for expt", (LispObject)(TAG_NUMBERS+(char *)b-8));
 }
 
 // single float ** bignum
-LispObject Expt::op(Flt a, uint64_t *b)
+LispObject Expt::op(Flt a, std::uint64_t *b)
 {   aerror1("bad argument for expt", (LispObject)(TAG_NUMBERS+(char *)b-8));
 }
 
 // double float ** bignum
-LispObject Expt::op(double a, uint64_t *b)
+LispObject Expt::op(double a, std::uint64_t *b)
 {   aerror1("bad argument for expt", (LispObject)(TAG_NUMBERS+(char *)b-8));
 }
 
 // long float ** bignum
-LispObject Expt::op(LFlt a, uint64_t *b)
+LispObject Expt::op(LFlt a, std::uint64_t *b)
 {   aerror1("bad argument for expt", (LispObject)(TAG_NUMBERS+(char *)b-8));
 }
 
@@ -773,7 +773,7 @@ LispObject Expt::op(Fixnum a, Rat b)
 // remind me to come back to it!
 //
 #pragma message ("bignum ** fractional power needs attention")
-LispObject Expt::op(uint64_t *a, Rat b)
+LispObject Expt::op(std::uint64_t *a, Rat b)
 {   return make_boxfloat(std::pow(RawFloat::op(a), RawFloat::op(b)));
 }
 
@@ -821,7 +821,7 @@ LispObject Expt::op(Fixnum a, Cpx b)
 }
 
 // bignum ** complex
-LispObject Expt::op(uint64_t *a, Cpx b)
+LispObject Expt::op(std::uint64_t *a, Cpx b)
 {   std::complex<double> aa(RawFloat::op(a), 0.0);
     std::complex<double> bb(RawFloat::op(b.real_part()),
                             RawFloat::op(b.imag_part()));
@@ -941,7 +941,7 @@ LispObject Expt::op(Fixnum a, SFlt b)
 }
 
 // bignum ** short float
-LispObject Expt::op(uint64_t *a, SFlt b)
+LispObject Expt::op(std::uint64_t *a, SFlt b)
 {   double aa = RawFloat::op(a),
            bb = RawFloat::op(b);
     return make_boxfloat(std::pow(aa, bb));
@@ -999,7 +999,7 @@ LispObject Expt::op(Fixnum a, Flt b)
 }
 
 // bignum ** single float
-LispObject Expt::op(uint64_t *a, Flt b)
+LispObject Expt::op(std::uint64_t *a, Flt b)
 {   double aa = RawFloat::op(a),
            bb = RawFloat::op(b);
     return make_boxfloat(std::pow(aa, bb));
@@ -1055,7 +1055,7 @@ LispObject Expt::op(Fixnum a, double b)
 }
 
 // bignum ** double float
-LispObject Expt::op(uint64_t *a, double b)
+LispObject Expt::op(std::uint64_t *a, double b)
 {   double aa = RawFloat::op(a),
            bb = b;
     return make_boxfloat(std::pow(aa, bb));
@@ -1109,7 +1109,7 @@ LispObject Expt::op(Fixnum a, LFlt b)
 }
 
 // bignum ** long float
-LispObject Expt::op(uint64_t *a, LFlt b)
+LispObject Expt::op(std::uint64_t *a, LFlt b)
 {   return Expt::op(LFlt(Float128::op(a)), b);
 }
 
@@ -1145,7 +1145,7 @@ LispObject Expt::op(double a, LFlt b)
 // return f128_exp(f128_mul(b.floatval(), f128_log(a.floatval())))
 
 LispObject Expt::op(LFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 //  return f128_exp(f128_mul(b.floatval(), f128_log(a.floatval())))
 #pragma message ("exponentiation involving float128_t not available yet")
 }
@@ -1158,7 +1158,7 @@ LispObject Quotient::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
 }
 
-LispObject Quotient::op(LispObject a, uint64_t *b)
+LispObject Quotient::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
 }
 
@@ -1190,7 +1190,7 @@ LispObject Quotient::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
-LispObject Quotient::op(uint64_t *a, LispObject b)
+LispObject Quotient::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
@@ -1224,7 +1224,7 @@ LispObject Quotient::op(Fixnum a, Fixnum b)
 }
 
 // bignum / fixnum
-LispObject Quotient::op(uint64_t *a, Fixnum b)
+LispObject Quotient::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Quotient::op(a, b.intval());
 }
 
@@ -1263,58 +1263,58 @@ LispObject Quotient::op(LFlt a, Fixnum b)
 }
 
 // fixnum / bignum
-LispObject Quotient::op(Fixnum a, uint64_t *b)
+LispObject Quotient::op(Fixnum a, std::uint64_t *b)
 {   return fixnum_of_int(0);
 }
 
 // bignum / bignum
-LispObject Quotient::op(uint64_t *a, uint64_t *b)
+LispObject Quotient::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::Quotient::op(a, b);
 }
 
 // rational / bignum
-LispObject Quotient::op(Rat a, uint64_t *b)
+LispObject Quotient::op(Rat a, std::uint64_t *b)
 {   LispObject g = Gcdn::op(a.denominator(), b);
     return make_ratio(Times::op(a.numerator(), Quotient::op(b, g)),
                       Quotient::op(a.denominator(), g));
 }
 
 // complex / bignum
-LispObject Quotient::op(Cpx a, uint64_t *b)
+LispObject Quotient::op(Cpx a, std::uint64_t *b)
 {   return make_complex(Quotient::op(a.real_part(), b),
                         Quotient::op(a.imag_part(), b));
 }
 
 // short float / bignum
-LispObject Quotient::op(SFlt a, uint64_t *b)
+LispObject Quotient::op(SFlt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // single float / bignum
-LispObject Quotient::op(Flt a, uint64_t *b)
+LispObject Quotient::op(Flt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // double float / bignum
-LispObject Quotient::op(double a, uint64_t *b)
+LispObject Quotient::op(double a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return make_boxfloat(std::ldexp(aa/bb, ax-bx));
 }
 
 // long float / bignum
-LispObject Quotient::op(LFlt a, uint64_t *b)
-{   int64_t xx;
+LispObject Quotient::op(LFlt a, std::uint64_t *b)
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -1334,7 +1334,7 @@ LispObject Quotient::op(Fixnum a, Rat b)
 }
 
 // bignum / rational
-LispObject Quotient::op(uint64_t *a, Rat b)
+LispObject Quotient::op(std::uint64_t *a, Rat b)
 {   LispObject g = Gcdn::op(a, b.numerator());
     LispObject p = Times::op(Quotient::op(a, g), b.denominator());
     LispObject q = b.numerator();
@@ -1371,7 +1371,7 @@ LispObject Quotient::op(Cpx a, Rat b)
 // short float / rational
 LispObject Quotient::op(SFlt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
@@ -1380,7 +1380,7 @@ LispObject Quotient::op(SFlt a, Rat b)
 // single float / rational
 LispObject Quotient::op(Flt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -1389,7 +1389,7 @@ LispObject Quotient::op(Flt a, Rat b)
 // double float / rational
 LispObject Quotient::op(double a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -1397,7 +1397,7 @@ LispObject Quotient::op(double a, Rat b)
 
 // long float / rational
 LispObject Quotient::op(LFlt a, Rat b)
-{   int64_t xx;
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -1406,43 +1406,43 @@ LispObject Quotient::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Quotient::op(Fixnum a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 #pragma message ("quotient involving complex incomplete code")
 }
 
 // bignum / complex
-LispObject Quotient::op(uint64_t *a, Cpx b)
-{   abort("not done yet");
+LispObject Quotient::op(std::uint64_t *a, Cpx b)
+{   std::abort("not done yet");
 }
 
 // rational / complex
 LispObject Quotient::op(Rat a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / complex
 LispObject Quotient::op(Cpx a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / complex
 LispObject Quotient::op(SFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / complex
 LispObject Quotient::op(Flt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / complex
 LispObject Quotient::op(double a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / complex
 LispObject Quotient::op(LFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / short float
@@ -1451,8 +1451,8 @@ LispObject Quotient::op(Fixnum a, SFlt b)
 }
 
 // bignum / short float
-LispObject Quotient::op(uint64_t *a, SFlt b)
-{   int64_t x;
+LispObject Quotient::op(std::uint64_t *a, SFlt b)
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -1461,7 +1461,7 @@ LispObject Quotient::op(uint64_t *a, SFlt b)
 
 // rational / short float
 LispObject Quotient::op(Rat a, SFlt b)
-{   int64_t x;
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -1469,68 +1469,68 @@ LispObject Quotient::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Quotient::op(Cpx a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 #pragma message ("quitient involving short float incomplete code")
 }
 
 // short float / short float
 LispObject Quotient::op(SFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / short float
 LispObject Quotient::op(Flt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / short float
 LispObject Quotient::op(double a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / short float
 LispObject Quotient::op(LFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Quotient::op(Fixnum a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / single float
-LispObject Quotient::op(uint64_t *a, Flt b)
-{   abort("quotient involving single float not done yet");
+LispObject Quotient::op(std::uint64_t *a, Flt b)
+{   std::abort("quotient involving single float not done yet");
 }
 
 // rational / single float
 LispObject Quotient::op(Rat a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / single float
 LispObject Quotient::op(Cpx a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / single float
 LispObject Quotient::op(SFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / single float
 LispObject Quotient::op(Flt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / single float
 LispObject Quotient::op(double a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / single float
 LispObject Quotient::op(LFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / double float
@@ -1539,8 +1539,8 @@ LispObject Quotient::op(Fixnum a, double b)
 }
 
 // bignum / double float
-LispObject Quotient::op(uint64_t *a, double b)
-{   int64_t ax;
+LispObject Quotient::op(std::uint64_t *a, double b)
+{   std::int64_t ax;
     int bx;
     double aa = Frexp::op(a, ax);
     double bb = std::frexp(b, &bx);
@@ -1550,12 +1550,12 @@ LispObject Quotient::op(uint64_t *a, double b)
 // rational / double float
 #pragma message ("quotient involving double float incomplete code")
 LispObject Quotient::op(Rat a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / double float
 LispObject Quotient::op(Cpx a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / double float
@@ -1575,48 +1575,48 @@ LispObject Quotient::op(double a, double b)
 
 // long float / double float
 LispObject Quotient::op(LFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Quotient::op(Fixnum a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 #pragma message ("quotient involving long float incomplete code")
 }
 
 // bignum / long float
-LispObject Quotient::op(uint64_t *a, LFlt b)
-{   abort("not done yet");
+LispObject Quotient::op(std::uint64_t *a, LFlt b)
+{   std::abort("not done yet");
 }
 
 // rational / long float
 LispObject Quotient::op(Rat a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / long float
 LispObject Quotient::op(Cpx a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / long float
 LispObject Quotient::op(SFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / long float
 LispObject Quotient::op(Flt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / long float
 LispObject Quotient::op(double a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / long float
 LispObject Quotient::op(LFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // (quotient 22 7) => 3 and (!/!/ 22 7) => 3
@@ -1630,7 +1630,7 @@ LispObject CLQuotient::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,CLQuotient>("quotient", a, b);
 }
 
-LispObject CLQuotient::op(LispObject a, uint64_t *b)
+LispObject CLQuotient::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,CLQuotient>("quotient", a, b);
 }
 
@@ -1662,7 +1662,7 @@ LispObject CLQuotient::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,CLQuotient>("quotient", a, b);
 }
 
-LispObject CLQuotient::op(uint64_t *a, LispObject b)
+LispObject CLQuotient::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,CLQuotient>("quotient", a, b);
 }
 
@@ -1692,7 +1692,7 @@ LispObject CLQuotient::op(LFlt a, LispObject b)
 
 // fixnum / fixnum
 LispObject CLQuotient::op(Fixnum a, Fixnum b)
-{   int64_t aa = a.intval(),
+{   std::int64_t aa = a.intval(),
             bb = b.intval(),
 // @@ This is WRONG at present!
             gg = arithlib_lowlevel::Gcd::op(aa, bb);
@@ -1709,14 +1709,14 @@ LispObject CLQuotient::op(Fixnum a, Fixnum b)
 }
 
 // bignum / fixnum
-LispObject CLQuotient::op(uint64_t *a, Fixnum b)
+LispObject CLQuotient::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Quotient::op(a, b.intval());
 }
 
 // rational / fixnum
 LispObject CLQuotient::op(Rat a, Fixnum b)
 {   if (b.intval() == 0) return a.value();
-    abort("not coded yet");
+    std::abort("not coded yet");
 }
 
 // complex / fixnum
@@ -1746,58 +1746,58 @@ LispObject CLQuotient::op(LFlt a, Fixnum b)
 }
 
 // fixnum / bignum
-LispObject CLQuotient::op(Fixnum a, uint64_t *b)
-{   abort("not coded yet");
+LispObject CLQuotient::op(Fixnum a, std::uint64_t *b)
+{   std::abort("not coded yet");
 }
 
 // bignum / bignum
-LispObject CLQuotient::op(uint64_t *a, uint64_t *b)
-{   abort("not coded yet");
+LispObject CLQuotient::op(std::uint64_t *a, std::uint64_t *b)
+{   std::abort("not coded yet");
 }
 
 // rational / bignum
-LispObject CLQuotient::op(Rat a, uint64_t *b)
+LispObject CLQuotient::op(Rat a, std::uint64_t *b)
 {   LispObject g = Gcdn::op(a.denominator(), b);
     return make_ratio(Times::op(a.numerator(), CLQuotient::op(b, g)),
                       CLQuotient::op(a.denominator(), g));
 }
 
 // complex / bignum
-LispObject CLQuotient::op(Cpx a, uint64_t *b)
+LispObject CLQuotient::op(Cpx a, std::uint64_t *b)
 {   return make_complex(CLQuotient::op(a.real_part(), b),
                         CLQuotient::op(a.imag_part(), b));
 }
 
 // short float / bignum
-LispObject CLQuotient::op(SFlt a, uint64_t *b)
+LispObject CLQuotient::op(SFlt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // single float / bignum
-LispObject CLQuotient::op(Flt a, uint64_t *b)
+LispObject CLQuotient::op(Flt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // double float / bignum
-LispObject CLQuotient::op(double a, uint64_t *b)
+LispObject CLQuotient::op(double a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return make_boxfloat(std::ldexp(aa/bb, ax-bx));
 }
 
 // long float / bignum
-LispObject CLQuotient::op(LFlt a, uint64_t *b)
-{   int64_t xx;
+LispObject CLQuotient::op(LFlt a, std::uint64_t *b)
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -1817,7 +1817,7 @@ LispObject CLQuotient::op(Fixnum a, Rat b)
 }
 
 // bignum / rational
-LispObject CLQuotient::op(uint64_t *a, Rat b)
+LispObject CLQuotient::op(std::uint64_t *a, Rat b)
 {   LispObject g = Gcdn::op(a, b.numerator());
     LispObject p = Times::op(CLQuotient::op(a, g), b.denominator());
     LispObject q = b.numerator();
@@ -1854,7 +1854,7 @@ LispObject CLQuotient::op(Cpx a, Rat b)
 // short float / rational
 LispObject CLQuotient::op(SFlt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
@@ -1863,7 +1863,7 @@ LispObject CLQuotient::op(SFlt a, Rat b)
 // single float / rational
 LispObject CLQuotient::op(Flt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -1872,7 +1872,7 @@ LispObject CLQuotient::op(Flt a, Rat b)
 // double float / rational
 LispObject CLQuotient::op(double a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -1880,7 +1880,7 @@ LispObject CLQuotient::op(double a, Rat b)
 
 // long float / rational
 LispObject CLQuotient::op(LFlt a, Rat b)
-{   int64_t xx;
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -1889,43 +1889,43 @@ LispObject CLQuotient::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject CLQuotient::op(Fixnum a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 #pragma message ("CL quotient incomplete code")
 }
 
 // bignum / complex
-LispObject CLQuotient::op(uint64_t *a, Cpx b)
-{   abort("not done yet");
+LispObject CLQuotient::op(std::uint64_t *a, Cpx b)
+{   std::abort("not done yet");
 }
 
 // rational / complex
 LispObject CLQuotient::op(Rat a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / complex
 LispObject CLQuotient::op(Cpx a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / complex
 LispObject CLQuotient::op(SFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / complex
 LispObject CLQuotient::op(Flt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / complex
 LispObject CLQuotient::op(double a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / complex
 LispObject CLQuotient::op(LFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / short float
@@ -1934,8 +1934,8 @@ LispObject CLQuotient::op(Fixnum a, SFlt b)
 }
 
 // bignum / short float
-LispObject CLQuotient::op(uint64_t *a, SFlt b)
-{   int64_t x;
+LispObject CLQuotient::op(std::uint64_t *a, SFlt b)
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -1944,7 +1944,7 @@ LispObject CLQuotient::op(uint64_t *a, SFlt b)
 
 // rational / short float
 LispObject CLQuotient::op(Rat a, SFlt b)
-{   int64_t x;
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -1952,97 +1952,97 @@ LispObject CLQuotient::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject CLQuotient::op(Cpx a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / short float
 LispObject CLQuotient::op(SFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / short float
 LispObject CLQuotient::op(Flt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / short float
 LispObject CLQuotient::op(double a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / short float
 LispObject CLQuotient::op(LFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / single float
 LispObject CLQuotient::op(Fixnum a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / single float
-LispObject CLQuotient::op(uint64_t *a, Flt b)
-{   abort("not done yet");
+LispObject CLQuotient::op(std::uint64_t *a, Flt b)
+{   std::abort("not done yet");
 }
 
 // rational / single float
 LispObject CLQuotient::op(Rat a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / single float
 LispObject CLQuotient::op(Cpx a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / single float
 LispObject CLQuotient::op(SFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / single float
 LispObject CLQuotient::op(Flt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / single float
 LispObject CLQuotient::op(double a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / single float
 LispObject CLQuotient::op(LFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / double float
 LispObject CLQuotient::op(Fixnum a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / double float
-LispObject CLQuotient::op(uint64_t *a, double b)
-{   abort("not done yet");
+LispObject CLQuotient::op(std::uint64_t *a, double b)
+{   std::abort("not done yet");
 }
 
 // rational / double float
 LispObject CLQuotient::op(Rat a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / double float
 LispObject CLQuotient::op(Cpx a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / double float
 LispObject CLQuotient::op(SFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / double float
 LispObject CLQuotient::op(Flt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / double float
@@ -2052,47 +2052,47 @@ LispObject CLQuotient::op(double a, double b)
 
 // long float / double float
 LispObject CLQuotient::op(LFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / long float
 LispObject CLQuotient::op(Fixnum a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / long float
-LispObject CLQuotient::op(uint64_t *a, LFlt b)
-{   abort("not done yet");
+LispObject CLQuotient::op(std::uint64_t *a, LFlt b)
+{   std::abort("not done yet");
 }
 
 // rational / long float
 LispObject CLQuotient::op(Rat a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / long float
 LispObject CLQuotient::op(Cpx a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / long float
 LispObject CLQuotient::op(SFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / long float
 LispObject CLQuotient::op(Flt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / long float
 LispObject CLQuotient::op(double a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / long float
 LispObject CLQuotient::op(LFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 LispObject Remainder::op(LispObject a, LispObject b)
@@ -2103,7 +2103,7 @@ LispObject Remainder::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Remainder>("remainder", a, b);
 }
 
-LispObject Remainder::op(LispObject a, uint64_t *b)
+LispObject Remainder::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Remainder>("remainder", a, b);
 }
 
@@ -2135,7 +2135,7 @@ LispObject Remainder::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Remainder>("remainder", a, b);
 }
 
-LispObject Remainder::op(uint64_t *a, LispObject b)
+LispObject Remainder::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Remainder>("remainder", a, b);
 }
 
@@ -2169,7 +2169,7 @@ LispObject Remainder::op(Fixnum a, Fixnum b)
 }
 
 // bignum remainder fixnum
-LispObject Remainder::op(uint64_t *a, Fixnum b)
+LispObject Remainder::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Remainder::op(a, b.intval());
 }
 
@@ -2210,46 +2210,46 @@ LispObject Remainder::op(LFlt a, Fixnum b)
 }
 
 // fixnum % bignum
-LispObject Remainder::op(Fixnum a, uint64_t *b)
+LispObject Remainder::op(Fixnum a, std::uint64_t *b)
 {   return a.value();
 }
 
 // bignum % bignum
-LispObject Remainder::op(uint64_t *a, uint64_t *b)
+LispObject Remainder::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::Remainder::op(a, b);
 }
 
 // rational % bignum
-LispObject Remainder::op(Rat a, uint64_t *b)
+LispObject Remainder::op(Rat a, std::uint64_t *b)
 {   return fixnum_of_int(0);
 }
 
 // complex % bignum
-LispObject Remainder::op(Cpx a, uint64_t *b)
+LispObject Remainder::op(Cpx a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     return Difference::op(a, Times::op(q, b));
 }
 
 // short float % bignum
-LispObject Remainder::op(SFlt a, uint64_t *b)
+LispObject Remainder::op(SFlt a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     return Difference::op(a, Times::op(q, b));
 }
 
 // single float % bignum
-LispObject Remainder::op(Flt a, uint64_t *b)
+LispObject Remainder::op(Flt a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     return Difference::op(a, Times::op(q, b));
 }
 
 // double float % bignum
-LispObject Remainder::op(double a, uint64_t *b)
+LispObject Remainder::op(double a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     return Difference::op(a, Times::op(q, b));
 }
 
 // long float % bignum
-LispObject Remainder::op(LFlt a, uint64_t *b)
+LispObject Remainder::op(LFlt a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     return Difference::op(a, Times::op(q, b));
 }
@@ -2260,7 +2260,7 @@ LispObject Remainder::op(Fixnum a, Rat b)
 }
 
 // bignum % rational
-LispObject Remainder::op(uint64_t *a, Rat b)
+LispObject Remainder::op(std::uint64_t *a, Rat b)
 {   return fixnum_of_int(0);
 }
 
@@ -2306,7 +2306,7 @@ LispObject Remainder::op(Fixnum a, Cpx b)
 }
 
 // bignum % complex
-LispObject Remainder::op(uint64_t *a, Cpx b)
+LispObject Remainder::op(std::uint64_t *a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
     return Difference::op(a, Times::op(q, b));
 }
@@ -2354,7 +2354,7 @@ LispObject Remainder::op(Fixnum a, SFlt b)
 }
 
 // bignum % short float
-LispObject Remainder::op(uint64_t *a, SFlt b)
+LispObject Remainder::op(std::uint64_t *a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
     return Difference::op(a, Times::op(q, b));
 }
@@ -2402,7 +2402,7 @@ LispObject Remainder::op(Fixnum a, Flt b)
 }
 
 // bignum % single float
-LispObject Remainder::op(uint64_t *a, Flt b)
+LispObject Remainder::op(std::uint64_t *a, Flt b)
 {   LispObject q = Truncate::op(a, b);
     return Difference::op(a, Times::op(q, b));
 }
@@ -2450,7 +2450,7 @@ LispObject Remainder::op(Fixnum a, double b)
 }
 
 // bignum % double float
-LispObject Remainder::op(uint64_t *a, double b)
+LispObject Remainder::op(std::uint64_t *a, double b)
 {   LispObject q = Truncate::op(a, b);
     return Difference::op(a, Times::op(q, b));
 }
@@ -2498,7 +2498,7 @@ LispObject Remainder::op(Fixnum a, LFlt b)
 }
 
 // bignum % long float
-LispObject Remainder::op(uint64_t *a, LFlt b)
+LispObject Remainder::op(std::uint64_t *a, LFlt b)
 {   LispObject q = Truncate::op(a, b);
     return Difference::op(a, Times::op(q, b));
 }
@@ -2547,7 +2547,7 @@ LispObject Divide::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
 }
 
-LispObject Divide::op(LispObject a, uint64_t *b)
+LispObject Divide::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
 }
 
@@ -2579,7 +2579,7 @@ LispObject Divide::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
 }
 
-LispObject Divide::op(uint64_t *a, LispObject b)
+LispObject Divide::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
 }
 
@@ -2615,7 +2615,7 @@ LispObject Divide::op(Fixnum a, Fixnum b)
 }
 
 // bignum divide fixnum
-LispObject Divide::op(uint64_t *a, Fixnum b)
+LispObject Divide::op(std::uint64_t *a, Fixnum b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
@@ -2664,56 +2664,56 @@ LispObject Divide::op(LFlt a, Fixnum b)
 }
 
 // fixnum divide bignum
-LispObject Divide::op(Fixnum a, uint64_t *b)
+LispObject Divide::op(Fixnum a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
 }
 
 // bignum divide bignum
-LispObject Divide::op(uint64_t *a, uint64_t *b)
+LispObject Divide::op(std::uint64_t *a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
 }
 
 // rational divide bignum
-LispObject Divide::op(Rat a, uint64_t *b)
+LispObject Divide::op(Rat a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
 }
 
 // complex divide bignum
-LispObject Divide::op(Cpx a, uint64_t *b)
+LispObject Divide::op(Cpx a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
 }
 
 // short float divide bignum
-LispObject Divide::op(SFlt a, uint64_t *b)
+LispObject Divide::op(SFlt a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
 }
 
 // single float divide bignum
-LispObject Divide::op(Flt a, uint64_t *b)
+LispObject Divide::op(Flt a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
 }
 
 // double float divide bignum
-LispObject Divide::op(double a, uint64_t *b)
+LispObject Divide::op(double a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
 }
 
 // long float divide bignum
-LispObject Divide::op(LFlt a, uint64_t *b)
+LispObject Divide::op(LFlt a, std::uint64_t *b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
@@ -2727,7 +2727,7 @@ LispObject Divide::op(Fixnum a, Rat b)
 }
 
 // bignum divide rational
-LispObject Divide::op(uint64_t *a, Rat b)
+LispObject Divide::op(std::uint64_t *a, Rat b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
@@ -2783,7 +2783,7 @@ LispObject Divide::op(Fixnum a, Cpx b)
 }
 
 // bignum divide complex
-LispObject Divide::op(uint64_t *a, Cpx b)
+LispObject Divide::op(std::uint64_t *a, Cpx b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
@@ -2839,7 +2839,7 @@ LispObject Divide::op(Fixnum a, SFlt b)
 }
 
 // bignum divide short float
-LispObject Divide::op(uint64_t *a, SFlt b)
+LispObject Divide::op(std::uint64_t *a, SFlt b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
@@ -2895,7 +2895,7 @@ LispObject Divide::op(Fixnum a, Flt b)
 }
 
 // bignum divide single float
-LispObject Divide::op(uint64_t *a, Flt b)
+LispObject Divide::op(std::uint64_t *a, Flt b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
@@ -2951,7 +2951,7 @@ LispObject Divide::op(Fixnum a, double b)
 }
 
 // bignum divide double float
-LispObject Divide::op(uint64_t *a, double b)
+LispObject Divide::op(std::uint64_t *a, double b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
@@ -3007,7 +3007,7 @@ LispObject Divide::op(Fixnum a, LFlt b)
 }
 
 // bignum divide long float
-LispObject Divide::op(uint64_t *a, LFlt b)
+LispObject Divide::op(std::uint64_t *a, LFlt b)
 {   LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
@@ -3063,7 +3063,7 @@ LispObject Square::op(Fixnum a)
 {   return arithlib_lowlevel::Square::op(a.intval());
 }
 
-LispObject Square::op(uint64_t *a)
+LispObject Square::op(std::uint64_t *a)
 {   return arithlib_lowlevel::Square::op(a);
 }
 
@@ -3109,7 +3109,7 @@ LispObject Reciprocal::op(Fixnum a)
     }
 }
 
-LispObject Reciprocal::op(uint64_t *a)
+LispObject Reciprocal::op(std::uint64_t *a)
 {   return int_of_fixnum(0);
 }
 
@@ -3182,7 +3182,7 @@ LispObject Truncate::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Truncate>("quotient", a, b);
 }
 
-LispObject Truncate::op(LispObject a, uint64_t *b)
+LispObject Truncate::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Truncate>("quotient", a, b);
 }
 
@@ -3214,7 +3214,7 @@ LispObject Truncate::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Truncate>("quotient", a, b);
 }
 
-LispObject Truncate::op(uint64_t *a, LispObject b)
+LispObject Truncate::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Truncate>("quotient", a, b);
 }
 
@@ -3248,7 +3248,7 @@ LispObject Truncate::op(Fixnum a, Fixnum b)
 }
 
 // bignum / fixnum
-LispObject Truncate::op(uint64_t *a, Fixnum b)
+LispObject Truncate::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Quotient::op(a, b.intval());
 }
 
@@ -3287,58 +3287,58 @@ LispObject Truncate::op(LFlt a, Fixnum b)
 }
 
 // fixnum / bignum
-LispObject Truncate::op(Fixnum a, uint64_t *b)
+LispObject Truncate::op(Fixnum a, std::uint64_t *b)
 {   return fixnum_of_int(0);
 }
 
 // bignum / bignum
-LispObject Truncate::op(uint64_t *a, uint64_t *b)
+LispObject Truncate::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::Quotient::op(a, b);
 }
 
 // rational / bignum
-LispObject Truncate::op(Rat a, uint64_t *b)
+LispObject Truncate::op(Rat a, std::uint64_t *b)
 {   LispObject g = Gcdn::op(a.denominator(), b);
     return make_ratio(Times::op(a.numerator(), Truncate::op(b, g)),
                       Truncate::op(a.denominator(), g));
 }
 
 // complex / bignum
-LispObject Truncate::op(Cpx a, uint64_t *b)
+LispObject Truncate::op(Cpx a, std::uint64_t *b)
 {   return make_complex(Truncate::op(a.real_part(), b),
                         Truncate::op(a.imag_part(), b));
 }
 
 // short float / bignum
-LispObject Truncate::op(SFlt a, uint64_t *b)
+LispObject Truncate::op(SFlt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // single float / bignum
-LispObject Truncate::op(Flt a, uint64_t *b)
+LispObject Truncate::op(Flt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // double float / bignum
-LispObject Truncate::op(double a, uint64_t *b)
+LispObject Truncate::op(double a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return make_boxfloat(std::ldexp(aa/bb, ax-bx));
 }
 
 // long float / bignum
-LispObject Truncate::op(LFlt a, uint64_t *b)
-{   int64_t xx;
+LispObject Truncate::op(LFlt a, std::uint64_t *b)
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -3358,7 +3358,7 @@ LispObject Truncate::op(Fixnum a, Rat b)
 }
 
 // bignum / rational
-LispObject Truncate::op(uint64_t *a, Rat b)
+LispObject Truncate::op(std::uint64_t *a, Rat b)
 {   LispObject g = Gcdn::op(a, b.numerator());
     LispObject p = Times::op(Truncate::op(a, g), b.denominator());
     LispObject q = b.numerator();
@@ -3395,7 +3395,7 @@ LispObject Truncate::op(Cpx a, Rat b)
 // short float / rational
 LispObject Truncate::op(SFlt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
@@ -3404,7 +3404,7 @@ LispObject Truncate::op(SFlt a, Rat b)
 // single float / rational
 LispObject Truncate::op(Flt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -3413,7 +3413,7 @@ LispObject Truncate::op(Flt a, Rat b)
 // double float / rational
 LispObject Truncate::op(double a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -3421,7 +3421,7 @@ LispObject Truncate::op(double a, Rat b)
 
 // long float / rational
 LispObject Truncate::op(LFlt a, Rat b)
-{   int64_t xx;
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -3430,43 +3430,43 @@ LispObject Truncate::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Truncate::op(Fixnum a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 #pragma message ("truncate incomplete code")
 }
 
 // bignum / complex
-LispObject Truncate::op(uint64_t *a, Cpx b)
-{   abort("not done yet");
+LispObject Truncate::op(std::uint64_t *a, Cpx b)
+{   std::abort("not done yet");
 }
 
 // rational / complex
 LispObject Truncate::op(Rat a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / complex
 LispObject Truncate::op(Cpx a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / complex
 LispObject Truncate::op(SFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / complex
 LispObject Truncate::op(Flt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / complex
 LispObject Truncate::op(double a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / complex
 LispObject Truncate::op(LFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / short float
@@ -3475,8 +3475,8 @@ LispObject Truncate::op(Fixnum a, SFlt b)
 }
 
 // bignum / short float
-LispObject Truncate::op(uint64_t *a, SFlt b)
-{   int64_t x;
+LispObject Truncate::op(std::uint64_t *a, SFlt b)
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -3485,7 +3485,7 @@ LispObject Truncate::op(uint64_t *a, SFlt b)
 
 // rational / short float
 LispObject Truncate::op(Rat a, SFlt b)
-{   int64_t x;
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -3493,97 +3493,97 @@ LispObject Truncate::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Truncate::op(Cpx a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / short float
 LispObject Truncate::op(SFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / short float
 LispObject Truncate::op(Flt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / short float
 LispObject Truncate::op(double a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / short float
 LispObject Truncate::op(LFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Truncate::op(Fixnum a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / single float
-LispObject Truncate::op(uint64_t *a, Flt b)
-{   abort("not done yet");
+LispObject Truncate::op(std::uint64_t *a, Flt b)
+{   std::abort("not done yet");
 }
 
 // rational / single float
 LispObject Truncate::op(Rat a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / single float
 LispObject Truncate::op(Cpx a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / single float
 LispObject Truncate::op(SFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / single float
 LispObject Truncate::op(Flt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / single float
 LispObject Truncate::op(double a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / single float
 LispObject Truncate::op(LFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Truncate::op(Fixnum a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / double float
-LispObject Truncate::op(uint64_t *a, double b)
-{   abort("not done yet");
+LispObject Truncate::op(std::uint64_t *a, double b)
+{   std::abort("not done yet");
 }
 
 // rational / double float
 LispObject Truncate::op(Rat a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / double float
 LispObject Truncate::op(Cpx a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / double float
 LispObject Truncate::op(SFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / double float
 LispObject Truncate::op(Flt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / double float
@@ -3593,47 +3593,47 @@ LispObject Truncate::op(double a, double b)
 
 // long float / double float
 LispObject Truncate::op(LFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Truncate::op(Fixnum a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / long float
-LispObject Truncate::op(uint64_t *a, LFlt b)
-{   abort("not done yet");
+LispObject Truncate::op(std::uint64_t *a, LFlt b)
+{   std::abort("not done yet");
 }
 
 // rational / long float
 LispObject Truncate::op(Rat a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / long float
 LispObject Truncate::op(Cpx a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / long float
 LispObject Truncate::op(SFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / long float
 LispObject Truncate::op(Flt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / long float
 LispObject Truncate::op(double a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / long float
 LispObject Truncate::op(LFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 LispObject Ceiling::op(LispObject a, LispObject b)
@@ -3644,7 +3644,7 @@ LispObject Ceiling::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Ceiling>("quotient", a, b);
 }
 
-LispObject Ceiling::op(LispObject a, uint64_t *b)
+LispObject Ceiling::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Ceiling>("quotient", a, b);
 }
 
@@ -3676,7 +3676,7 @@ LispObject Ceiling::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Ceiling>("quotient", a, b);
 }
 
-LispObject Ceiling::op(uint64_t *a, LispObject b)
+LispObject Ceiling::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Ceiling>("quotient", a, b);
 }
 
@@ -3710,7 +3710,7 @@ LispObject Ceiling::op(Fixnum a, Fixnum b)
 }
 
 // bignum / fixnum
-LispObject Ceiling::op(uint64_t *a, Fixnum b)
+LispObject Ceiling::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Quotient::op(a, b.intval());
 }
 
@@ -3749,58 +3749,58 @@ LispObject Ceiling::op(LFlt a, Fixnum b)
 }
 
 // fixnum / bignum
-LispObject Ceiling::op(Fixnum a, uint64_t *b)
+LispObject Ceiling::op(Fixnum a, std::uint64_t *b)
 {   return fixnum_of_int(0);
 }
 
 // bignum / bignum
-LispObject Ceiling::op(uint64_t *a, uint64_t *b)
+LispObject Ceiling::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::Quotient::op(a, b);
 }
 
 // rational / bignum
-LispObject Ceiling::op(Rat a, uint64_t *b)
+LispObject Ceiling::op(Rat a, std::uint64_t *b)
 {   LispObject g = Gcdn::op(a.denominator(), b);
     return make_ratio(Times::op(a.numerator(), Ceiling::op(b, g)),
                       Ceiling::op(a.denominator(), g));
 }
 
 // complex / bignum
-LispObject Ceiling::op(Cpx a, uint64_t *b)
+LispObject Ceiling::op(Cpx a, std::uint64_t *b)
 {   return make_complex(Ceiling::op(a.real_part(), b),
                         Ceiling::op(a.imag_part(), b));
 }
 
 // short float / bignum
-LispObject Ceiling::op(SFlt a, uint64_t *b)
+LispObject Ceiling::op(SFlt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // single float / bignum
-LispObject Ceiling::op(Flt a, uint64_t *b)
+LispObject Ceiling::op(Flt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // double float / bignum
-LispObject Ceiling::op(double a, uint64_t *b)
+LispObject Ceiling::op(double a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return make_boxfloat(std::ldexp(aa/bb, ax-bx));
 }
 
 // long float / bignum
-LispObject Ceiling::op(LFlt a, uint64_t *b)
-{   int64_t xx;
+LispObject Ceiling::op(LFlt a, std::uint64_t *b)
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -3820,7 +3820,7 @@ LispObject Ceiling::op(Fixnum a, Rat b)
 }
 
 // bignum / rational
-LispObject Ceiling::op(uint64_t *a, Rat b)
+LispObject Ceiling::op(std::uint64_t *a, Rat b)
 {   LispObject g = Gcdn::op(a, b.numerator());
     LispObject p = Times::op(Ceiling::op(a, g), b.denominator());
     LispObject q = b.numerator();
@@ -3857,7 +3857,7 @@ LispObject Ceiling::op(Cpx a, Rat b)
 // short float / rational
 LispObject Ceiling::op(SFlt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
@@ -3866,7 +3866,7 @@ LispObject Ceiling::op(SFlt a, Rat b)
 // single float / rational
 LispObject Ceiling::op(Flt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -3875,7 +3875,7 @@ LispObject Ceiling::op(Flt a, Rat b)
 // double float / rational
 LispObject Ceiling::op(double a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -3883,7 +3883,7 @@ LispObject Ceiling::op(double a, Rat b)
 
 // long float / rational
 LispObject Ceiling::op(LFlt a, Rat b)
-{   int64_t xx;
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -3892,43 +3892,43 @@ LispObject Ceiling::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Ceiling::op(Fixnum a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 #pragma message ("2-arg ceiling incomplete code")
 }
 
 // bignum / complex
-LispObject Ceiling::op(uint64_t *a, Cpx b)
-{   abort("not done yet");
+LispObject Ceiling::op(std::uint64_t *a, Cpx b)
+{   std::abort("not done yet");
 }
 
 // rational / complex
 LispObject Ceiling::op(Rat a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / complex
 LispObject Ceiling::op(Cpx a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / complex
 LispObject Ceiling::op(SFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / complex
 LispObject Ceiling::op(Flt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / complex
 LispObject Ceiling::op(double a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / complex
 LispObject Ceiling::op(LFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / short float
@@ -3937,8 +3937,8 @@ LispObject Ceiling::op(Fixnum a, SFlt b)
 }
 
 // bignum / short float
-LispObject Ceiling::op(uint64_t *a, SFlt b)
-{   int64_t x;
+LispObject Ceiling::op(std::uint64_t *a, SFlt b)
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -3947,7 +3947,7 @@ LispObject Ceiling::op(uint64_t *a, SFlt b)
 
 // rational / short float
 LispObject Ceiling::op(Rat a, SFlt b)
-{   int64_t x;
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -3955,97 +3955,97 @@ LispObject Ceiling::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Ceiling::op(Cpx a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / short float
 LispObject Ceiling::op(SFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / short float
 LispObject Ceiling::op(Flt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / short float
 LispObject Ceiling::op(double a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / short float
 LispObject Ceiling::op(LFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Ceiling::op(Fixnum a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / single float
-LispObject Ceiling::op(uint64_t *a, Flt b)
-{   abort("not done yet");
+LispObject Ceiling::op(std::uint64_t *a, Flt b)
+{   std::abort("not done yet");
 }
 
 // rational / single float
 LispObject Ceiling::op(Rat a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / single float
 LispObject Ceiling::op(Cpx a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / single float
 LispObject Ceiling::op(SFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / single float
 LispObject Ceiling::op(Flt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / single float
 LispObject Ceiling::op(double a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / single float
 LispObject Ceiling::op(LFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Ceiling::op(Fixnum a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / double float
-LispObject Ceiling::op(uint64_t *a, double b)
-{   abort("not done yet");
+LispObject Ceiling::op(std::uint64_t *a, double b)
+{   std::abort("not done yet");
 }
 
 // rational / double float
 LispObject Ceiling::op(Rat a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / double float
 LispObject Ceiling::op(Cpx a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / double float
 LispObject Ceiling::op(SFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / double float
 LispObject Ceiling::op(Flt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / double float
@@ -4055,47 +4055,47 @@ LispObject Ceiling::op(double a, double b)
 
 // long float / double float
 LispObject Ceiling::op(LFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Ceiling::op(Fixnum a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / long float
-LispObject Ceiling::op(uint64_t *a, LFlt b)
-{   abort("not done yet");
+LispObject Ceiling::op(std::uint64_t *a, LFlt b)
+{   std::abort("not done yet");
 }
 
 // rational / long float
 LispObject Ceiling::op(Rat a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / long float
 LispObject Ceiling::op(Cpx a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / long float
 LispObject Ceiling::op(SFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / long float
 LispObject Ceiling::op(Flt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / long float
 LispObject Ceiling::op(double a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / long float
 LispObject Ceiling::op(LFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 
@@ -4107,7 +4107,7 @@ LispObject Floor::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Floor>("quotient", a, b);
 }
 
-LispObject Floor::op(LispObject a, uint64_t *b)
+LispObject Floor::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Floor>("quotient", a, b);
 }
 
@@ -4139,7 +4139,7 @@ LispObject Floor::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Floor>("quotient", a, b);
 }
 
-LispObject Floor::op(uint64_t *a, LispObject b)
+LispObject Floor::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Floor>("quotient", a, b);
 }
 
@@ -4173,7 +4173,7 @@ LispObject Floor::op(Fixnum a, Fixnum b)
 }
 
 // bignum / fixnum
-LispObject Floor::op(uint64_t *a, Fixnum b)
+LispObject Floor::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Quotient::op(a, b.intval());
 }
 
@@ -4212,58 +4212,58 @@ LispObject Floor::op(LFlt a, Fixnum b)
 }
 
 // fixnum / bignum
-LispObject Floor::op(Fixnum a, uint64_t *b)
+LispObject Floor::op(Fixnum a, std::uint64_t *b)
 {   return fixnum_of_int(0);
 }
 
 // bignum / bignum
-LispObject Floor::op(uint64_t *a, uint64_t *b)
+LispObject Floor::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::Quotient::op(a, b);
 }
 
 // rational / bignum
-LispObject Floor::op(Rat a, uint64_t *b)
+LispObject Floor::op(Rat a, std::uint64_t *b)
 {   LispObject g = Gcdn::op(a.denominator(), b);
     return make_ratio(Times::op(a.numerator(), Floor::op(b, g)),
                       Floor::op(a.denominator(), g));
 }
 
 // complex / bignum
-LispObject Floor::op(Cpx a, uint64_t *b)
+LispObject Floor::op(Cpx a, std::uint64_t *b)
 {   return make_complex(Floor::op(a.real_part(), b),
                         Floor::op(a.imag_part(), b));
 }
 
 // short float / bignum
-LispObject Floor::op(SFlt a, uint64_t *b)
+LispObject Floor::op(SFlt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // single float / bignum
-LispObject Floor::op(Flt a, uint64_t *b)
+LispObject Floor::op(Flt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // double float / bignum
-LispObject Floor::op(double a, uint64_t *b)
+LispObject Floor::op(double a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return make_boxfloat(std::ldexp(aa/bb, ax-bx));
 }
 
 // long float / bignum
-LispObject Floor::op(LFlt a, uint64_t *b)
-{   int64_t xx;
+LispObject Floor::op(LFlt a, std::uint64_t *b)
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -4283,7 +4283,7 @@ LispObject Floor::op(Fixnum a, Rat b)
 }
 
 // bignum / rational
-LispObject Floor::op(uint64_t *a, Rat b)
+LispObject Floor::op(std::uint64_t *a, Rat b)
 {   LispObject g = Gcdn::op(a, b.numerator());
     LispObject p = Times::op(Floor::op(a, g), b.denominator());
     LispObject q = b.numerator();
@@ -4320,7 +4320,7 @@ LispObject Floor::op(Cpx a, Rat b)
 // short float / rational
 LispObject Floor::op(SFlt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
@@ -4329,7 +4329,7 @@ LispObject Floor::op(SFlt a, Rat b)
 // single float / rational
 LispObject Floor::op(Flt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -4338,7 +4338,7 @@ LispObject Floor::op(Flt a, Rat b)
 // double float / rational
 LispObject Floor::op(double a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -4346,7 +4346,7 @@ LispObject Floor::op(double a, Rat b)
 
 // long float / rational
 LispObject Floor::op(LFlt a, Rat b)
-{   int64_t xx;
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -4355,43 +4355,43 @@ LispObject Floor::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Floor::op(Fixnum a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 #pragma message ("2 arg floor incomplete code")
 }
 
 // bignum / complex
-LispObject Floor::op(uint64_t *a, Cpx b)
-{   abort("not done yet");
+LispObject Floor::op(std::uint64_t *a, Cpx b)
+{   std::abort("not done yet");
 }
 
 // rational / complex
 LispObject Floor::op(Rat a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / complex
 LispObject Floor::op(Cpx a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / complex
 LispObject Floor::op(SFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / complex
 LispObject Floor::op(Flt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / complex
 LispObject Floor::op(double a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / complex
 LispObject Floor::op(LFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / short float
@@ -4400,8 +4400,8 @@ LispObject Floor::op(Fixnum a, SFlt b)
 }
 
 // bignum / short float
-LispObject Floor::op(uint64_t *a, SFlt b)
-{   int64_t x;
+LispObject Floor::op(std::uint64_t *a, SFlt b)
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -4410,7 +4410,7 @@ LispObject Floor::op(uint64_t *a, SFlt b)
 
 // rational / short float
 LispObject Floor::op(Rat a, SFlt b)
-{   int64_t x;
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -4418,97 +4418,97 @@ LispObject Floor::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Floor::op(Cpx a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / short float
 LispObject Floor::op(SFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / short float
 LispObject Floor::op(Flt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / short float
 LispObject Floor::op(double a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / short float
 LispObject Floor::op(LFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Floor::op(Fixnum a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / single float
-LispObject Floor::op(uint64_t *a, Flt b)
-{   abort("not done yet");
+LispObject Floor::op(std::uint64_t *a, Flt b)
+{   std::abort("not done yet");
 }
 
 // rational / single float
 LispObject Floor::op(Rat a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / single float
 LispObject Floor::op(Cpx a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / single float
 LispObject Floor::op(SFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / single float
 LispObject Floor::op(Flt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / single float
 LispObject Floor::op(double a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / single float
 LispObject Floor::op(LFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Floor::op(Fixnum a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / double float
-LispObject Floor::op(uint64_t *a, double b)
-{   abort("not done yet");
+LispObject Floor::op(std::uint64_t *a, double b)
+{   std::abort("not done yet");
 }
 
 // rational / double float
 LispObject Floor::op(Rat a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / double float
 LispObject Floor::op(Cpx a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / double float
 LispObject Floor::op(SFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / double float
 LispObject Floor::op(Flt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / double float
@@ -4518,47 +4518,47 @@ LispObject Floor::op(double a, double b)
 
 // long float / double float
 LispObject Floor::op(LFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Floor::op(Fixnum a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / long float
-LispObject Floor::op(uint64_t *a, LFlt b)
-{   abort("not done yet");
+LispObject Floor::op(std::uint64_t *a, LFlt b)
+{   std::abort("not done yet");
 }
 
 // rational / long float
 LispObject Floor::op(Rat a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / long float
 LispObject Floor::op(Cpx a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / long float
 LispObject Floor::op(SFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / long float
 LispObject Floor::op(Flt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / long float
 LispObject Floor::op(double a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / long float
 LispObject Floor::op(LFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 LispObject Ftruncate::op(LispObject a, LispObject b)
@@ -4569,7 +4569,7 @@ LispObject Ftruncate::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Ftruncate>("quotient", a, b);
 }
 
-LispObject Ftruncate::op(LispObject a, uint64_t *b)
+LispObject Ftruncate::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Ftruncate>("quotient", a, b);
 }
 
@@ -4601,7 +4601,7 @@ LispObject Ftruncate::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Ftruncate>("quotient", a, b);
 }
 
-LispObject Ftruncate::op(uint64_t *a, LispObject b)
+LispObject Ftruncate::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Ftruncate>("quotient", a, b);
 }
 
@@ -4635,7 +4635,7 @@ LispObject Ftruncate::op(Fixnum a, Fixnum b)
 }
 
 // bignum / fixnum
-LispObject Ftruncate::op(uint64_t *a, Fixnum b)
+LispObject Ftruncate::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Quotient::op(a, b.intval());
 }
 
@@ -4674,58 +4674,58 @@ LispObject Ftruncate::op(LFlt a, Fixnum b)
 }
 
 // fixnum / bignum
-LispObject Ftruncate::op(Fixnum a, uint64_t *b)
+LispObject Ftruncate::op(Fixnum a, std::uint64_t *b)
 {   return fixnum_of_int(0);
 }
 
 // bignum / bignum
-LispObject Ftruncate::op(uint64_t *a, uint64_t *b)
+LispObject Ftruncate::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::Quotient::op(a, b);
 }
 
 // rational / bignum
-LispObject Ftruncate::op(Rat a, uint64_t *b)
+LispObject Ftruncate::op(Rat a, std::uint64_t *b)
 {   LispObject g = Gcdn::op(a.denominator(), b);
     return make_ratio(Times::op(a.numerator(), Ftruncate::op(b, g)),
                       Ftruncate::op(a.denominator(), g));
 }
 
 // complex / bignum
-LispObject Ftruncate::op(Cpx a, uint64_t *b)
+LispObject Ftruncate::op(Cpx a, std::uint64_t *b)
 {   return make_complex(Ftruncate::op(a.real_part(), b),
                         Ftruncate::op(a.imag_part(), b));
 }
 
 // short float / bignum
-LispObject Ftruncate::op(SFlt a, uint64_t *b)
+LispObject Ftruncate::op(SFlt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // single float / bignum
-LispObject Ftruncate::op(Flt a, uint64_t *b)
+LispObject Ftruncate::op(Flt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // double float / bignum
-LispObject Ftruncate::op(double a, uint64_t *b)
+LispObject Ftruncate::op(double a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return make_boxfloat(std::ldexp(aa/bb, ax-bx));
 }
 
 // long float / bignum
-LispObject Ftruncate::op(LFlt a, uint64_t *b)
-{   int64_t xx;
+LispObject Ftruncate::op(LFlt a, std::uint64_t *b)
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -4745,7 +4745,7 @@ LispObject Ftruncate::op(Fixnum a, Rat b)
 }
 
 // bignum / rational
-LispObject Ftruncate::op(uint64_t *a, Rat b)
+LispObject Ftruncate::op(std::uint64_t *a, Rat b)
 {   LispObject g = Gcdn::op(a, b.numerator());
     LispObject p = Times::op(Ftruncate::op(a, g), b.denominator());
     LispObject q = b.numerator();
@@ -4782,7 +4782,7 @@ LispObject Ftruncate::op(Cpx a, Rat b)
 // short float / rational
 LispObject Ftruncate::op(SFlt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
@@ -4791,7 +4791,7 @@ LispObject Ftruncate::op(SFlt a, Rat b)
 // single float / rational
 LispObject Ftruncate::op(Flt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -4800,7 +4800,7 @@ LispObject Ftruncate::op(Flt a, Rat b)
 // double float / rational
 LispObject Ftruncate::op(double a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -4808,7 +4808,7 @@ LispObject Ftruncate::op(double a, Rat b)
 
 // long float / rational
 LispObject Ftruncate::op(LFlt a, Rat b)
-{   int64_t xx;
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -4817,43 +4817,43 @@ LispObject Ftruncate::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Ftruncate::op(Fixnum a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 #pragma message ("2 arg ftruncate incomplete code")
 }
 
 // bignum / complex
-LispObject Ftruncate::op(uint64_t *a, Cpx b)
-{   abort("not done yet");
+LispObject Ftruncate::op(std::uint64_t *a, Cpx b)
+{   std::abort("not done yet");
 }
 
 // rational / complex
 LispObject Ftruncate::op(Rat a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / complex
 LispObject Ftruncate::op(Cpx a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / complex
 LispObject Ftruncate::op(SFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / complex
 LispObject Ftruncate::op(Flt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / complex
 LispObject Ftruncate::op(double a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / complex
 LispObject Ftruncate::op(LFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / short float
@@ -4862,8 +4862,8 @@ LispObject Ftruncate::op(Fixnum a, SFlt b)
 }
 
 // bignum / short float
-LispObject Ftruncate::op(uint64_t *a, SFlt b)
-{   int64_t x;
+LispObject Ftruncate::op(std::uint64_t *a, SFlt b)
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -4872,7 +4872,7 @@ LispObject Ftruncate::op(uint64_t *a, SFlt b)
 
 // rational / short float
 LispObject Ftruncate::op(Rat a, SFlt b)
-{   int64_t x;
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -4880,97 +4880,97 @@ LispObject Ftruncate::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Ftruncate::op(Cpx a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / short float
 LispObject Ftruncate::op(SFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / short float
 LispObject Ftruncate::op(Flt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / short float
 LispObject Ftruncate::op(double a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / short float
 LispObject Ftruncate::op(LFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Ftruncate::op(Fixnum a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / single float
-LispObject Ftruncate::op(uint64_t *a, Flt b)
-{   abort("not done yet");
+LispObject Ftruncate::op(std::uint64_t *a, Flt b)
+{   std::abort("not done yet");
 }
 
 // rational / single float
 LispObject Ftruncate::op(Rat a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / single float
 LispObject Ftruncate::op(Cpx a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / single float
 LispObject Ftruncate::op(SFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / single float
 LispObject Ftruncate::op(Flt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / single float
 LispObject Ftruncate::op(double a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / single float
 LispObject Ftruncate::op(LFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Ftruncate::op(Fixnum a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / double float
-LispObject Ftruncate::op(uint64_t *a, double b)
-{   abort("not done yet");
+LispObject Ftruncate::op(std::uint64_t *a, double b)
+{   std::abort("not done yet");
 }
 
 // rational / double float
 LispObject Ftruncate::op(Rat a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / double float
 LispObject Ftruncate::op(Cpx a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / double float
 LispObject Ftruncate::op(SFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / double float
 LispObject Ftruncate::op(Flt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / double float
@@ -4980,47 +4980,47 @@ LispObject Ftruncate::op(double a, double b)
 
 // long float / double float
 LispObject Ftruncate::op(LFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Ftruncate::op(Fixnum a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / long float
-LispObject Ftruncate::op(uint64_t *a, LFlt b)
-{   abort("not done yet");
+LispObject Ftruncate::op(std::uint64_t *a, LFlt b)
+{   std::abort("not done yet");
 }
 
 // rational / long float
 LispObject Ftruncate::op(Rat a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / long float
 LispObject Ftruncate::op(Cpx a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / long float
 LispObject Ftruncate::op(SFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / long float
 LispObject Ftruncate::op(Flt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / long float
 LispObject Ftruncate::op(double a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / long float
 LispObject Ftruncate::op(LFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 LispObject Fceiling::op(LispObject a, LispObject b)
@@ -5031,7 +5031,7 @@ LispObject Fceiling::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Fceiling>("quotient", a, b);
 }
 
-LispObject Fceiling::op(LispObject a, uint64_t *b)
+LispObject Fceiling::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Fceiling>("quotient", a, b);
 }
 
@@ -5063,7 +5063,7 @@ LispObject Fceiling::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Fceiling>("quotient", a, b);
 }
 
-LispObject Fceiling::op(uint64_t *a, LispObject b)
+LispObject Fceiling::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Fceiling>("quotient", a, b);
 }
 
@@ -5097,7 +5097,7 @@ LispObject Fceiling::op(Fixnum a, Fixnum b)
 }
 
 // bignum / fixnum
-LispObject Fceiling::op(uint64_t *a, Fixnum b)
+LispObject Fceiling::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Quotient::op(a, b.intval());
 }
 
@@ -5136,58 +5136,58 @@ LispObject Fceiling::op(LFlt a, Fixnum b)
 }
 
 // fixnum / bignum
-LispObject Fceiling::op(Fixnum a, uint64_t *b)
+LispObject Fceiling::op(Fixnum a, std::uint64_t *b)
 {   return fixnum_of_int(0);
 }
 
 // bignum / bignum
-LispObject Fceiling::op(uint64_t *a, uint64_t *b)
+LispObject Fceiling::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::Quotient::op(a, b);
 }
 
 // rational / bignum
-LispObject Fceiling::op(Rat a, uint64_t *b)
+LispObject Fceiling::op(Rat a, std::uint64_t *b)
 {   LispObject g = Gcdn::op(a.denominator(), b);
     return make_ratio(Times::op(a.numerator(), Fceiling::op(b, g)),
                       Fceiling::op(a.denominator(), g));
 }
 
 // complex / bignum
-LispObject Fceiling::op(Cpx a, uint64_t *b)
+LispObject Fceiling::op(Cpx a, std::uint64_t *b)
 {   return make_complex(Fceiling::op(a.real_part(), b),
                         Fceiling::op(a.imag_part(), b));
 }
 
 // short float / bignum
-LispObject Fceiling::op(SFlt a, uint64_t *b)
+LispObject Fceiling::op(SFlt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // single float / bignum
-LispObject Fceiling::op(Flt a, uint64_t *b)
+LispObject Fceiling::op(Flt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // double float / bignum
-LispObject Fceiling::op(double a, uint64_t *b)
+LispObject Fceiling::op(double a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return make_boxfloat(std::ldexp(aa/bb, ax-bx));
 }
 
 // long float / bignum
-LispObject Fceiling::op(LFlt a, uint64_t *b)
-{   int64_t xx;
+LispObject Fceiling::op(LFlt a, std::uint64_t *b)
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -5207,7 +5207,7 @@ LispObject Fceiling::op(Fixnum a, Rat b)
 }
 
 // bignum / rational
-LispObject Fceiling::op(uint64_t *a, Rat b)
+LispObject Fceiling::op(std::uint64_t *a, Rat b)
 {   LispObject g = Gcdn::op(a, b.numerator());
     LispObject p = Times::op(Fceiling::op(a, g), b.denominator());
     LispObject q = b.numerator();
@@ -5244,7 +5244,7 @@ LispObject Fceiling::op(Cpx a, Rat b)
 // short float / rational
 LispObject Fceiling::op(SFlt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
@@ -5253,7 +5253,7 @@ LispObject Fceiling::op(SFlt a, Rat b)
 // single float / rational
 LispObject Fceiling::op(Flt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -5262,7 +5262,7 @@ LispObject Fceiling::op(Flt a, Rat b)
 // double float / rational
 LispObject Fceiling::op(double a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -5270,7 +5270,7 @@ LispObject Fceiling::op(double a, Rat b)
 
 // long float / rational
 LispObject Fceiling::op(LFlt a, Rat b)
-{   int64_t xx;
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -5279,43 +5279,43 @@ LispObject Fceiling::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Fceiling::op(Fixnum a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 #pragma message ("2 arg fceiling incomplete code")
 }
 
 // bignum / complex
-LispObject Fceiling::op(uint64_t *a, Cpx b)
-{   abort("not done yet");
+LispObject Fceiling::op(std::uint64_t *a, Cpx b)
+{   std::abort("not done yet");
 }
 
 // rational / complex
 LispObject Fceiling::op(Rat a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / complex
 LispObject Fceiling::op(Cpx a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / complex
 LispObject Fceiling::op(SFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / complex
 LispObject Fceiling::op(Flt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / complex
 LispObject Fceiling::op(double a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / complex
 LispObject Fceiling::op(LFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / short float
@@ -5324,8 +5324,8 @@ LispObject Fceiling::op(Fixnum a, SFlt b)
 }
 
 // bignum / short float
-LispObject Fceiling::op(uint64_t *a, SFlt b)
-{   int64_t x;
+LispObject Fceiling::op(std::uint64_t *a, SFlt b)
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -5334,7 +5334,7 @@ LispObject Fceiling::op(uint64_t *a, SFlt b)
 
 // rational / short float
 LispObject Fceiling::op(Rat a, SFlt b)
-{   int64_t x;
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -5342,97 +5342,97 @@ LispObject Fceiling::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Fceiling::op(Cpx a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / short float
 LispObject Fceiling::op(SFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / short float
 LispObject Fceiling::op(Flt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / short float
 LispObject Fceiling::op(double a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / short float
 LispObject Fceiling::op(LFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Fceiling::op(Fixnum a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / single float
-LispObject Fceiling::op(uint64_t *a, Flt b)
-{   abort("not done yet");
+LispObject Fceiling::op(std::uint64_t *a, Flt b)
+{   std::abort("not done yet");
 }
 
 // rational / single float
 LispObject Fceiling::op(Rat a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / single float
 LispObject Fceiling::op(Cpx a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / single float
 LispObject Fceiling::op(SFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / single float
 LispObject Fceiling::op(Flt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / single float
 LispObject Fceiling::op(double a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / single float
 LispObject Fceiling::op(LFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Fceiling::op(Fixnum a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / double float
-LispObject Fceiling::op(uint64_t *a, double b)
-{   abort("not done yet");
+LispObject Fceiling::op(std::uint64_t *a, double b)
+{   std::abort("not done yet");
 }
 
 // rational / double float
 LispObject Fceiling::op(Rat a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / double float
 LispObject Fceiling::op(Cpx a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / double float
 LispObject Fceiling::op(SFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / double float
 LispObject Fceiling::op(Flt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / double float
@@ -5442,47 +5442,47 @@ LispObject Fceiling::op(double a, double b)
 
 // long float / double float
 LispObject Fceiling::op(LFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Fceiling::op(Fixnum a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / long float
-LispObject Fceiling::op(uint64_t *a, LFlt b)
-{   abort("not done yet");
+LispObject Fceiling::op(std::uint64_t *a, LFlt b)
+{   std::abort("not done yet");
 }
 
 // rational / long float
 LispObject Fceiling::op(Rat a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / long float
 LispObject Fceiling::op(Cpx a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / long float
 LispObject Fceiling::op(SFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / long float
 LispObject Fceiling::op(Flt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / long float
 LispObject Fceiling::op(double a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / long float
 LispObject Fceiling::op(LFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 LispObject Ffloor::op(LispObject a, LispObject b)
@@ -5493,7 +5493,7 @@ LispObject Ffloor::op(LispObject a, Fixnum b)
 {   return number_dispatcher::binaryR<LispObject,Ffloor>("quotient", a, b);
 }
 
-LispObject Ffloor::op(LispObject a, uint64_t *b)
+LispObject Ffloor::op(LispObject a, std::uint64_t *b)
 {   return number_dispatcher::binaryR<LispObject,Ffloor>("quotient", a, b);
 }
 
@@ -5525,7 +5525,7 @@ LispObject Ffloor::op(Fixnum a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Ffloor>("quotient", a, b);
 }
 
-LispObject Ffloor::op(uint64_t *a, LispObject b)
+LispObject Ffloor::op(std::uint64_t *a, LispObject b)
 {   return number_dispatcher::binaryL<LispObject,Ffloor>("quotient", a, b);
 }
 
@@ -5559,7 +5559,7 @@ LispObject Ffloor::op(Fixnum a, Fixnum b)
 }
 
 // bignum / fixnum
-LispObject Ffloor::op(uint64_t *a, Fixnum b)
+LispObject Ffloor::op(std::uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Quotient::op(a, b.intval());
 }
 
@@ -5598,58 +5598,58 @@ LispObject Ffloor::op(LFlt a, Fixnum b)
 }
 
 // fixnum / bignum
-LispObject Ffloor::op(Fixnum a, uint64_t *b)
+LispObject Ffloor::op(Fixnum a, std::uint64_t *b)
 {   return fixnum_of_int(0);
 }
 
 // bignum / bignum
-LispObject Ffloor::op(uint64_t *a, uint64_t *b)
+LispObject Ffloor::op(std::uint64_t *a, std::uint64_t *b)
 {   return arithlib_lowlevel::Quotient::op(a, b);
 }
 
 // rational / bignum
-LispObject Ffloor::op(Rat a, uint64_t *b)
+LispObject Ffloor::op(Rat a, std::uint64_t *b)
 {   LispObject g = Gcdn::op(a.denominator(), b);
     return make_ratio(Times::op(a.numerator(), Ffloor::op(b, g)),
                       Ffloor::op(a.denominator(), g));
 }
 
 // complex / bignum
-LispObject Ffloor::op(Cpx a, uint64_t *b)
+LispObject Ffloor::op(Cpx a, std::uint64_t *b)
 {   return make_complex(Ffloor::op(a.real_part(), b),
                         Ffloor::op(a.imag_part(), b));
 }
 
 // short float / bignum
-LispObject Ffloor::op(SFlt a, uint64_t *b)
+LispObject Ffloor::op(SFlt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // single float / bignum
-LispObject Ffloor::op(Flt a, uint64_t *b)
+LispObject Ffloor::op(Flt a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // double float / bignum
-LispObject Ffloor::op(double a, uint64_t *b)
+LispObject Ffloor::op(double a, std::uint64_t *b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return make_boxfloat(std::ldexp(aa/bb, ax-bx));
 }
 
 // long float / bignum
-LispObject Ffloor::op(LFlt a, uint64_t *b)
-{   int64_t xx;
+LispObject Ffloor::op(LFlt a, std::uint64_t *b)
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -5669,7 +5669,7 @@ LispObject Ffloor::op(Fixnum a, Rat b)
 }
 
 // bignum / rational
-LispObject Ffloor::op(uint64_t *a, Rat b)
+LispObject Ffloor::op(std::uint64_t *a, Rat b)
 {   LispObject g = Gcdn::op(a, b.numerator());
     LispObject p = Times::op(Ffloor::op(a, g), b.denominator());
     LispObject q = b.numerator();
@@ -5706,7 +5706,7 @@ LispObject Ffloor::op(Cpx a, Rat b)
 // short float / rational
 LispObject Ffloor::op(SFlt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_short_float(std::ldexp(aa/bb, ax-bx));
@@ -5715,7 +5715,7 @@ LispObject Ffloor::op(SFlt a, Rat b)
 // single float / rational
 LispObject Ffloor::op(Flt a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a.floatval(), &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -5724,7 +5724,7 @@ LispObject Ffloor::op(Flt a, Rat b)
 // double float / rational
 LispObject Ffloor::op(double a, Rat b)
 {   int ax;
-    int64_t bx;
+    std::int64_t bx;
     double aa = std::frexp(a, &ax);
     double bb = Frexp::op(b, bx);
     return pack_single_float(std::ldexp(aa/bb, ax-bx));
@@ -5732,7 +5732,7 @@ LispObject Ffloor::op(double a, Rat b)
 
 // long float / rational
 LispObject Ffloor::op(LFlt a, Rat b)
-{   int64_t xx;
+{   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
     f128M_ldexp(&d, -xx);
@@ -5741,43 +5741,43 @@ LispObject Ffloor::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Ffloor::op(Fixnum a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 #pragma message ("2 arg ffloor incomplete code")
 }
 
 // bignum / complex
-LispObject Ffloor::op(uint64_t *a, Cpx b)
-{   abort("not done yet");
+LispObject Ffloor::op(std::uint64_t *a, Cpx b)
+{   std::abort("not done yet");
 }
 
 // rational / complex
 LispObject Ffloor::op(Rat a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / complex
 LispObject Ffloor::op(Cpx a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / complex
 LispObject Ffloor::op(SFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / complex
 LispObject Ffloor::op(Flt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / complex
 LispObject Ffloor::op(double a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / complex
 LispObject Ffloor::op(LFlt a, Cpx b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / short float
@@ -5786,8 +5786,8 @@ LispObject Ffloor::op(Fixnum a, SFlt b)
 }
 
 // bignum / short float
-LispObject Ffloor::op(uint64_t *a, SFlt b)
-{   int64_t x;
+LispObject Ffloor::op(std::uint64_t *a, SFlt b)
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -5796,7 +5796,7 @@ LispObject Ffloor::op(uint64_t *a, SFlt b)
 
 // rational / short float
 LispObject Ffloor::op(Rat a, SFlt b)
-{   int64_t x;
+{   std::int64_t x;
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
@@ -5804,97 +5804,97 @@ LispObject Ffloor::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Ffloor::op(Cpx a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / short float
 LispObject Ffloor::op(SFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / short float
 LispObject Ffloor::op(Flt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / short float
 LispObject Ffloor::op(double a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / short float
 LispObject Ffloor::op(LFlt a, SFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Ffloor::op(Fixnum a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / single float
-LispObject Ffloor::op(uint64_t *a, Flt b)
-{   abort("not done yet");
+LispObject Ffloor::op(std::uint64_t *a, Flt b)
+{   std::abort("not done yet");
 }
 
 // rational / single float
 LispObject Ffloor::op(Rat a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / single float
 LispObject Ffloor::op(Cpx a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / single float
 LispObject Ffloor::op(SFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / single float
 LispObject Ffloor::op(Flt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / single float
 LispObject Ffloor::op(double a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / single float
 LispObject Ffloor::op(LFlt a, Flt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Ffloor::op(Fixnum a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / double float
-LispObject Ffloor::op(uint64_t *a, double b)
-{   abort("not done yet");
+LispObject Ffloor::op(std::uint64_t *a, double b)
+{   std::abort("not done yet");
 }
 
 // rational / double float
 LispObject Ffloor::op(Rat a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / double float
 LispObject Ffloor::op(Cpx a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / double float
 LispObject Ffloor::op(SFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / double float
 LispObject Ffloor::op(Flt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / double float
@@ -5904,47 +5904,47 @@ LispObject Ffloor::op(double a, double b)
 
 // long float / double float
 LispObject Ffloor::op(LFlt a, double b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Ffloor::op(Fixnum a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // bignum / long float
-LispObject Ffloor::op(uint64_t *a, LFlt b)
-{   abort("not done yet");
+LispObject Ffloor::op(std::uint64_t *a, LFlt b)
+{   std::abort("not done yet");
 }
 
 // rational / long float
 LispObject Ffloor::op(Rat a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // complex / long float
 LispObject Ffloor::op(Cpx a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // short float / long float
 LispObject Ffloor::op(SFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // single float / long float
 LispObject Ffloor::op(Flt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // double float / long float
 LispObject Ffloor::op(double a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 // long float / long float
 LispObject Ffloor::op(LFlt a, LFlt b)
-{   abort("not done yet");
+{   std::abort("not done yet");
 }
 
 

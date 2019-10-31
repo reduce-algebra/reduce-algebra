@@ -155,20 +155,20 @@ BOOL IsWow64()
 
 #endif // FAT32
 
-static int64_t read8(FILE *f)
+static std::int64_t read8(std::FILE *f)
 {
-    int64_t r = 0;
+    std::int64_t r = 0;
     int i;
     for (i=0; i<8; i++)
-    {   int w = getc(f) & 0xff;
-        r |= ((int64_t)w) << (8*i);
+    {   int w = std::getc(f) & 0xff;
+        r |= ((std::int64_t)w) << (8*i);
     }
     return r;
 }
 
 static char pPath[MAX_PATH];
-static int64_t address[NUMBER_OF_MODULES];
-static int64_t length[NUMBER_OF_MODULES];
+static std::int64_t address[NUMBER_OF_MODULES];
+static std::int64_t length[NUMBER_OF_MODULES];
 
 //
 // Run the program stored with this code and kept as a resource with
@@ -186,31 +186,31 @@ static int64_t length[NUMBER_OF_MODULES];
 
 int RunResource(int index, int forcegui, const char *modulename)
 {
-    FILE *src, *dest;
+    std::FILE *src, *dest;
     int i;
-    uint64_t hdr;
+    std::uint64_t hdr;
 #ifdef DEBUG
-    printf("RunResource %s: %d %d\n", modulename, index, forcegui);
-    fflush(stdout);
+    std::printf("RunResource %s: %d %d\n", modulename, index, forcegui);
+    std::fflush(stdout);
 #endif
     GetModuleFileName(NULL, pPath, sizeof(pPath));
 #ifdef DEBUG
-    printf("my name is %s\n", pPath);
-    fflush(stdout);
+    std::printf("my name is %s\n", pPath);
+    std::fflush(stdout);
 #endif
-    char *lastsep = strrchr(pPath, '\\');
-    sprintf(lastsep, "\\reduce.dir\\%s", modulename);
+    char *lastsep = std::strrchr(pPath, '\\');
+    std::sprintf(lastsep, "\\reduce.dir\\%s", modulename);
 #ifdef DEBUG
-    printf("Code to run %s\n", pPath);
-    fflush(stdout);
+    std::printf("Code to run %s\n", pPath);
+    std::fflush(stdout);
 #endif
     const char *cmd = GetCommandLine();
-    char *cmd1 = (char *)malloc(strlen(cmd) + 12);
+    char *cmd1 = (char *)std::malloc(std::strlen(cmd) + 12);
     if (cmd1 == NULL)
-    {   printf("No memory for new command line\n"); fflush(stdout);
+    {   std::printf("No memory for new command line\n"); std::fflush(stdout);
         return ERROR_NO_MEMORY;
     }
-    strcpy(cmd1, cmd);
+    std::strcpy(cmd1, cmd);
 // Now a rather horrible mess. I will have several versions of Reduce
 // created here
 //     reduce.exe       the general one
@@ -226,15 +226,15 @@ int RunResource(int index, int forcegui, const char *modulename)
 // name of the file that the application was actually launches from since
 // the latter is the weird temporary file I just created.
 // [Hmm - the naming conventions here need review...]
-    if (forcegui) strcat(cmd1, " --gui");
+    if (forcegui) std::strcat(cmd1, " --gui");
 
     STARTUPINFO peStartUpInformation;
     PROCESS_INFORMATION peProcessInformation;
-    memset(&peStartUpInformation, 0, sizeof(STARTUPINFO));
+    std::memset(&peStartUpInformation, 0, sizeof(STARTUPINFO));
     peStartUpInformation.cb = sizeof(STARTUPINFO);
-    memset(&peProcessInformation, 0, sizeof(PROCESS_INFORMATION));
+    std::memset(&peProcessInformation, 0, sizeof(PROCESS_INFORMATION));
 #ifdef DEBUG
-    printf("Launch <%s> cmd line <%s>\n", pPath, cmd1); fflush(stdout);
+    std::printf("Launch <%s> cmd line <%s>\n", pPath, cmd1); std::fflush(stdout);
 #endif
     SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
 //  _set_abort_behavior(0,_WRITE_ABORT_MSG | _CALL_REPORTFAULT);
@@ -253,9 +253,9 @@ int RunResource(int index, int forcegui, const char *modulename)
         if (GetExitCodeProcess(peProcessInformation.hProcess, &rc) == 0)
             rc = ERROR_PROCESS_INFO; // Getting the return code failed!
 #ifdef DEBUG
-        printf("CreateProcess happened, rc reported as %d = %#x\n", rc, rc);
+        std::printf("CreateProcess happened, rc reported as %d = %#x\n", rc, rc);
 #endif
-        fflush(stdout);
+        std::fflush(stdout);
         CloseHandle(peProcessInformation.hProcess);
         CloseHandle(peProcessInformation.hThread);
         return rc;
@@ -263,7 +263,7 @@ int RunResource(int index, int forcegui, const char *modulename)
     else
     {
 #ifdef DEBUG
-        printf("CreateProcess failed\n"); fflush(stdout);
+        std::printf("CreateProcess failed\n"); std::fflush(stdout);
         DWORD dw = GetLastError();
         LPVOID lpMsgBuf;
         FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -275,8 +275,8 @@ int RunResource(int index, int forcegui, const char *modulename)
                       (LPSTR)&lpMsgBuf,
                       0,
                       NULL);
-        printf("CreateProcess failed (%d): %s\n", dw, lpMsgBuf);
-        fflush(stdout);
+        std::printf("CreateProcess failed (%d): %s\n", dw, lpMsgBuf);
+        std::fflush(stdout);
 #endif
         return ERROR_CREATEPROCESS;
     }
@@ -304,25 +304,25 @@ void dllcheck(const char **table)
     {   HMODULE h = LoadLibraryEx(table[i], NULL, DONT_RESOLVE_DLL_REFERENCES);
         if (h == NULL)
         {   if (!messaged)
-            {   printf("\nCygwin needs at least %s", table[i]);
+            {   std::printf("\nCygwin needs at least %s", table[i]);
                 messaged = 3;
             }
             else if (messaged >= 5)
-            {   printf(",\n  %s", table[1]);
+            {   std::printf(",\n  %s", table[1]);
                 messaged = 1;
             }
             else
-            {   printf(", %s", table[i]);
+            {   std::printf(", %s", table[i]);
                 messaged++;
             }
         }
         else FreeLibrary(h);
     }
     if (messaged)
-    {   printf("\n");
-        printf("Please run cygwin setup and install packages that will\n");
-        printf("provide these. Then try again.\n\n");
-        fflush(stdout);
+    {   std::printf("\n");
+        std::printf("Please run cygwin setup and install packages that will\n");
+        std::printf("provide these. Then try again.\n\n");
+        std::fflush(stdout);
     }
 }
 
@@ -380,8 +380,8 @@ int main(int argc, char* argv[])
     int gcsbi = GetConsoleScreenBufferInfo(h1, &csbi);
     int force_cygwin = 0, dashdash = 0, i;
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--") == 0) dashdash = 1;
-        else if (strcmp(argv[i], "--cygwin") == 0) force_cygwin = 1;
+    {   if (std::strcmp(argv[i], "--") == 0) dashdash = 1;
+        else if (std::strcmp(argv[i], "--cygwin") == 0) force_cygwin = 1;
     }
     if (!force_cygwin &&
         (gcsbi ||              // console available: can use Windows API
@@ -408,7 +408,7 @@ int main(int argc, char* argv[])
 // to verify that it works. But if somebody found a situation where it was
 // valuable I could reinstate and publicise it.
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--32") == 0)
+    {   if (std::strcmp(argv[i], "--32") == 0)
         {   wow64 = 0;
         }
     }
@@ -466,15 +466,15 @@ int main(int argc, char* argv[])
         if (!force_cygwin && rc != 0) possibly_under_cygwin = 0;
 // If DISPLAY and SSH_ENV are both null then I will look at the command
 // line options... "--cygwin" trumps most other options.
-        else if (getenv("DISPLAY") == NULL &&
-                 getenv("SSH_HOST") == NULL &&
+        else if (std::getenv("DISPLAY") == NULL &&
+                 std::getenv("SSH_HOST") == NULL &&
                  !force_cygwin)
         {   int nogui = 0;
 // ... I look for "--nogui" (or the abbreviations "-w" or "-w-") ...
             for (i=1; i<argc; i++)
-            {   if (strcmp(argv[i], "--nogui") == 0 ||
-                    strcmp(argv[i], "-w") == 0 ||
-                    strcmp(argv[i], "-w-") == 0)
+            {   if (std::strcmp(argv[i], "--nogui") == 0 ||
+                    std::strcmp(argv[i], "-w") == 0 ||
+                    std::strcmp(argv[i], "-w-") == 0)
                 {   nogui = 1;
                     break;
                 }
@@ -496,7 +496,7 @@ int main(int argc, char* argv[])
     possibly_under_cygwin = 0;
 #endif // FATWIN
 #ifdef DEBUG
-    printf("Analysis yields wow64=%d cygwin=%d forcegui=%d\n",
+    std::printf("Analysis yields wow64=%d cygwin=%d forcegui=%d\n",
            wow64, possibly_under_cygwin, forcegui);
 #endif
 //
