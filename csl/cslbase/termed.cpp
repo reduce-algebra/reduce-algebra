@@ -209,13 +209,13 @@ extern char **loadable_packages, **switches;
 #include <sys/ioctl.h>
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <wchar.h>
-#include <ctype.h>
-#include <wctype.h>
-#include <string.h>
-#include <signal.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cwchar>
+#include <cctype>
+#include <cwctype>
+#include <cstring>
+#include <csignal>
 
 // I require C++-11 or later.
 

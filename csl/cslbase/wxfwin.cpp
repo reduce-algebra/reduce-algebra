@@ -58,14 +58,14 @@
 #include <wchar.h>
 #endif // WIN32
 
-#include <string.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <ctype.h>
-#include <time.h>
-#include <signal.h>
+#include <cstring>
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+#include <cstdarg>
+#include <cctype>
+#include <ctime>
+#include <csignal>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -75,7 +75,7 @@ extern char *getcwd(char *s, std::size_t n);
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <errno.h>
+#include <cerrno>
 
 #ifndef WIN32
 #include <glob.h>

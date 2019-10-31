@@ -56,16 +56,16 @@
 //   FATWIN   win32 win64
 
 
-#include <stdio.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdint>
+#include <cinttypes>
+#include <cstring>
 #include <windows.h>
 #include <tchar.h>
 #include <io.h>
-#include <stdlib.h>
-#include <time.h>
-#include <assert.h>
+#include <cstdlib>
+#include <ctime>
+#include <cassert>
 #include <zlib.h>
 
 

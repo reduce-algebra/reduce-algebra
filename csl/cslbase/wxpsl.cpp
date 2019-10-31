@@ -58,12 +58,12 @@
 #define __STDC_CONSTANT_MACROS 1
 #endif
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <ctype.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstdlib>
+#include <cerrno>
+#include <cctype>
+#include <cstring>
 #include <libgen.h>
 #include <sys/types.h>
 #include <sys/stat.h>

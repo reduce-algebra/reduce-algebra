@@ -1075,6 +1075,7 @@ void init_heap_segments(double d)
 {   std::cout << "init_heap_segments " << d << std::endl;
 // I first impose a minimum of 64 megabytes, then convert the value so that
 // I pass it in kilobytes.
+    stackbase = (LispObject *)malloc(8*1024*1024); // Temp measure maybe!
     if (d > maxStoreSize) d = maxStoreSize;
     if (d < 64.0*1024.0*1024.0)
         d = 64.0*1024.0*1024.0;

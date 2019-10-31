@@ -1010,7 +1010,7 @@ void write_f128(float128_t f)
 
 // #define __STDC_CONSTANT_MACROS 1
 // #define __STDC_FORMAT_MACROS
-// #include <stdint.h>
+// #include <cstdint>
 // Code layout adjusted bc ACN (using astyle) plus adaptations to fit C++
 // rather than C.
 
@@ -1155,7 +1155,7 @@ std::uint64_t crc64(std::uint64_t crc, const void *buf, std::size_t size)
 /* Test main */
 #ifdef TEST_MAIN
 
-#include <stdio.h>
+#include <cstdio>
 int main(void)
 {   std::printf("e9c6d914c4b8d9ca == %016" PRIx64 "\n",
            crc64(0,(const std::uint8_t *)"123456789",9));

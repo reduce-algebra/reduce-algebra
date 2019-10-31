@@ -4,7 +4,7 @@
 
 #include "wxfwin.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 
 

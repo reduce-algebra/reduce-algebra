@@ -83,14 +83,14 @@ static Display *dpy;
 #include "wxterminal.h"      // my own header file.
 
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <ctype.h>
-#include <time.h>
-#include <signal.h>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
+#include <cstdarg>
+#include <cstdint>
+#include <cctype>
+#include <ctime>
+#include <csignal>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -100,7 +100,7 @@ extern char *getcwd(char *s, std::size_t n);
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <errno.h>
+#include <cerrno>
 
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>

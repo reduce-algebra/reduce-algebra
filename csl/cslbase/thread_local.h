@@ -125,6 +125,12 @@
 
 // First define some utility functions for the Microsoft case...
 
+#ifndef DEBUG
+// Well if I am debugging I will not use all of my special scheme for
+// thread-local support under Windows. I will still end up with somewhat
+// complicated wrapper classes, but tracing code using gdb will be easier
+// with even a little less special "clever" code.
+
 #if defined __CYGWIN__ || defined __MINGW32__
 
 #define USE_MICROSOFT_API 1
@@ -238,6 +244,7 @@ inline void tls_store(tls_handle teb_slot, void *v)
 
 #endif // Microsoft case
 
+#endif // DEBUG
 
 // Usage:   static ThreadLocal<T> var;
 //    acts rather like

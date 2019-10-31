@@ -39,10 +39,10 @@
 
 // Free-standing demonstration of how I use zlib to compress image files.
 
-#include <stdio.h>
+#include <cstdio>
 #include <zlib.h>
-#include <string.h>
-#include <assert.h>
+#include <cstring>
+#include <cassert>
 
 
 std::FILE *src, *dest;

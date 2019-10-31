@@ -369,8 +369,8 @@ extern volatile int my_return_code;
 // The following would normally be picked up from "lispthrow.h" but to make
 // stuff here more free-stannding I have my own copy.
 
-#include <stdint.h>
-#include <setjmp.h>
+#include <cstdint>
+#include <csetjmp>
 #include <exception>
 
 typedef std::intptr_t LispObject;
