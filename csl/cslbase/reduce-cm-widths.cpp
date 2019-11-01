@@ -55,9 +55,9 @@
 
 // $Id$
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
 
 //
 // This program is really just for MY use so I will build a fixed

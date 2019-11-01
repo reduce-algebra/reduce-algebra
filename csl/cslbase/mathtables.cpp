@@ -33,10 +33,10 @@
 // This is an utterly specialised progrem for extracting bits of maths
 // tables from cslSTIXMath.tables
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
 
 #include "../uninames.cpp"
 

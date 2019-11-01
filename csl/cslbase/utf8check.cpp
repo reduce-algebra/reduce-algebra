@@ -51,10 +51,10 @@
 // $Id$
 
 
-#include <stdio.h>
-#include <wchar.h>
-#include <ctype.h>
-#include <wctype.h>
+#include <cstdio>
+#include <cwchar>
+#include <cctype>
+#include <cwctype>
 
 int encode(char *s, int c)
 {   char *s1 = s;

@@ -55,7 +55,7 @@
 
 #ifndef HAVE_LIBFOX
 
-#include <stdio.h>
+#include <cstdio>
 
 int main(int argc, char *argv[])
 {
@@ -107,9 +107,9 @@ static XftFont *ftFont = NULL;
 #endif
 #endif
  
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cstring>
+#include <cctype>
 
 #include "fx.h"	
 #include "fwin.h"

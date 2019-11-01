@@ -14,7 +14,7 @@
 
 // $Id$
 
-#include <stdio.h>
+#include <cstdio>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 
 int main(int argc, char *argv[])
 {   std::FILE *src = std::fopen("uninames.h", "r");

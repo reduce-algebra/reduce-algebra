@@ -136,15 +136,15 @@
 // I may be old fashioned, but I will be happier using C rather than C++
 // libraries here. Hes yes I *AM* old fashioned!
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <ctype.h>
-#include <time.h>
-#include <signal.h>
-#include <stdint.h>
-#include <inttypes.h>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
+#include <cstdarg>
+#include <cctype>
+#include <ctime>
+#include <csignal>
+#include <cstdint>
+#include <cinttypes>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -154,7 +154,7 @@ extern char *getcwd(char *s, std::size_t n);
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <errno.h>
+#include <cerrno>
 
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>

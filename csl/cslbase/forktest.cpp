@@ -12,10 +12,10 @@
 #else
 #include <sys/wait.h>
 #endif
-#include <signal.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <csignal>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
 
 /**************************************************************************
  * Copyright (C) 2016, Codemist.                         A C Norman       *

@@ -43,13 +43,13 @@
 
 #define __STDC_FORMAT_MACROS 1
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <cstring>
+#include <cstdint>
+#include <cinttypes>
+#include <cassert>
 
 // This is a utility program only used on Windows and only used by
 // system builders, so I will maybe not be as conservative in its
@@ -213,4 +213,4 @@ int main(int argc, char *argv[])
     return 0; 
 }
 
-// end of addresources.c
+// end of addresources.cpp

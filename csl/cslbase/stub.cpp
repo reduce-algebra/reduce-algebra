@@ -478,7 +478,7 @@ static const char *dll64[] =
 };
 
 #include <windows.h>
-#include <stdio.h>
+#include <cstdio>
 
 void dllcheck(const char **table)
 {

@@ -138,11 +138,11 @@
 // I will not have any problems at all just storing everything in memory.
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <ctime>
 
 static const char *product = NULL;
 static const char *output = "manual.tex";

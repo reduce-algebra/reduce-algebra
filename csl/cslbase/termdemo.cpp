@@ -199,9 +199,9 @@
 // "\r\n" rather than just "\n" in output strings for that platform.
 //
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <unistd.h>
 
 #include "termed.h"

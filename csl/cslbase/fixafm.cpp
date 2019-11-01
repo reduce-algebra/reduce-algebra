@@ -36,10 +36,10 @@
 // basic multilingual plane and where I have remapped some glyphs from
 // outside the Unicode range to be at U+108xxx).
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
 
 #include "../uninames.c"
 

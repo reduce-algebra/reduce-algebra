@@ -39,10 +39,10 @@
 
 // $Id$
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cstdint>
 #include "cuckoo.h"
 
 #define MAXN1  50000   // limit size of first set (A)

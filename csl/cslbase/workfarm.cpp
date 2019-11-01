@@ -35,12 +35,12 @@
 // in each...
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <errno.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
+#include <cstring>
+#include <cerrno>
+#include <cmath>
 
 #ifdef WIN32
 #include <windows.h>

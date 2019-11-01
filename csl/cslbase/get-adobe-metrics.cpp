@@ -54,8 +54,8 @@
 
 // $Id$
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #define FONT_PATH "./tetex/fonts/afm/adobe"
 

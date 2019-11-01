@@ -206,8 +206,8 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 #ifdef HAVE_LIBWX
 #include "wxfwin.h"

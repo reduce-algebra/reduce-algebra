@@ -42,7 +42,7 @@
 
 #ifndef HAVE_LIBFOX
 
-#include <stdio.h>
+#include <cstdio>
 
 int main(int argc, char *argv[])
 {
@@ -52,9 +52,9 @@ int main(int argc, char *argv[])
 
 #else
 
-#include <ctype.h>
-#include <string.h>
-#include <stdio.h>
+#include <cctype>
+#include <cstring>
+#include <cstdio>
 
 #ifndef WIN32
 #ifdef HAVE_LIBXFT

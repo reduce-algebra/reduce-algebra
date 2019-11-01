@@ -994,13 +994,13 @@ princ "C file = "; print name;
     else c!:printf("\n// %s.c %tMachine generated C code\n\n", name, 25);
     c!:printf("// $I");
     c!:printf("d: $\n\n");
-    c!:printf "#include <stdio.h>\n";
-    c!:printf "#include <stdlib.h>\n";
-    c!:printf "#include <string.h>\n";
-    c!:printf "#include <ctype.h>\n";
-    c!:printf "#include <stdarg.h>\n";
-    c!:printf "#include <time.h>\n";
-    c!:printf "#include <setjmp.h>\n";
+    c!:printf "#include <cstdio>\n";
+    c!:printf "#include <cstdlib>\n";
+    c!:printf "#include <cstring>\n";
+    c!:printf "#include <cctype>\n";
+    c!:printf "#include <cstdarg>\n";
+    c!:printf "#include <ctime>\n";
+    c!:printf "#include <csetjmp>\n";
     c!:printf "#include <exception>\n";
 % The stuff I put in the file here includes written-in copies of header
 % files. The main "csl_headers" should be the same for all systems built

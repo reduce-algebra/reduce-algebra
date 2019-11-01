@@ -35,7 +35,7 @@
 
 // $Id$
 
-#include <stdio.h>
+#include <cstdio>
 
 #ifdef WIN32
 #include <windows.h>

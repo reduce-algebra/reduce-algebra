@@ -23,7 +23,7 @@
 #ifdef WIN32
 
 #include <windows.h>
-#include <stdio.h>
+#include <cstdio>
 
 void showwindow()
 {   MessageBox(NULL, "Arthur", "Sample Window", MB_OK);
@@ -32,9 +32,9 @@ void showwindow()
 #else // WIN32 vs X11
 
 #include <X11/Xlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include "libwindow.h"
 
@@ -48,8 +48,8 @@ void showwindow()
     XEvent event;
 
     if (disp == NULL)
-    {   fprintf(stderr, "Unable to access default display\n");
-        exit(1);
+    {   std::fprintf(stderr, "Unable to access default display\n");
+        std::exit(1);
     }
 
 // Now I have a display to draw on extract all the information from it that
@@ -62,7 +62,7 @@ void showwindow()
     root = RootWindow(disp, screen);
     gc = DefaultGC(disp, screen);
 
-    printf("Screen is %d by %d\n", width, height);
+    std::printf("Screen is %d by %d\n", width, height);
     window = XCreateSimpleWindow(disp, root,
                                  width/3, height/3, width/3, height/3,
                                  1, black, white);
@@ -98,5 +98,5 @@ void showwindow()
 
 #endif // X11
 
-// end of window.c
+// end of window.cpp
 

@@ -3492,10 +3492,10 @@ cadr o) (cons (car o) d)))) (setq d (compress (cons (quote !") (cons (cadr w)
 c!:defnames nil) (cond (hdrnow (c!:printf 
 "\n// Module: %s %tMachine generated C code\n\n" setupname 25)) (t (c!:printf
 "\n// %s.c %tMachine generated C code\n\n" name 25))) (c!:printf "// $I") (
-c!:printf "d: $\n\n") (c!:printf "#include <stdio.h>\n") (c!:printf 
-"#include <stdlib.h>\n") (c!:printf "#include <string.h>\n") (c!:printf 
-"#include <ctype.h>\n") (c!:printf "#include <stdarg.h>\n") (c!:printf 
-"#include <time.h>\n") (c!:printf "#include <setjmp.h>\n") (c!:printf 
+c!:printf "d: $\n\n") (c!:printf "#include <cstdio>\n") (c!:printf 
+"#include <cstdlib>\n") (c!:printf "#include <cstring>\n") (c!:printf 
+"#include <cctype>\n") (c!:printf "#include <cstdarg>\n") (c!:printf 
+"#include <ctime>\n") (c!:printf "#include <csetjmp>\n") (c!:printf 
 "#include <exception>\n") (cond (hdrnow (print!-config!-header)) (t (
 c!:printf "#include \qconfig.h\q\n\n"))) (print!-csl!-headers) (cond (hdrnow 
 (c!:print!-init))) (wrs O_file) (return nil)))

@@ -39,10 +39,10 @@
 // set up as anything can possibly be.
 //
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <cstdint>
 
 #include "config.h"
 #include "machine.h"

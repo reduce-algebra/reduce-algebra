@@ -35,8 +35,8 @@
 
 #define __USE_MINGW_ANSI_STDIO 1
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 // I will need to use different system calls on Linux and Windows! At present
 // the code covers Linux, Macintosh and *BSD, all using mprotefct/sigaction,
@@ -48,12 +48,12 @@
 // in structure and their arrangement in the file here is not at all neat.
 // That needs sorting out!
 
-#include <signal.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <errno.h>
+#include <csignal>
+#include <cstdio>
+#include <cinttypes>
+#include <cstdint>
+#include <cstdlib>
+#include <cerrno>
 #include <atomic>
 
 #ifdef WIN32

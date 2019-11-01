@@ -48,7 +48,7 @@
 #include "res.h"
 #include <commctrl.h>
 #include <aygshell.h>
-#include <stdio.h>
+#include <cstdio>
 
 HINSTANCE g_hInst;       // The current instance
 HWND      g_hwndCB;      // The command bar handle

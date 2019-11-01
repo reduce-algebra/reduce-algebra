@@ -44,8 +44,8 @@
 
 // $Id$
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 //
 // This program is really just for MY use so I will build a fixed

@@ -26,8 +26,8 @@
 // Adjusted by ACN to use a sparse representation. Quite a substantial set of
 // changes really, but not to the underlying logic.
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include "hungarian.h"
 
 #define INF (0x7FFFFFFF)

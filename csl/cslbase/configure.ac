@@ -791,8 +791,8 @@ if test "x$GCC" = "xyes"
 then
   OLDLDFLAGS="$LDFLAGS"
   LDFLAGS="$LDFLAGS -Wl,--hash-style=both"
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                  [[printf("\n");]])],
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
+                                  [[std::printf("\n");]])],
     [AC_MSG_NOTICE(Will use --hash-style=both)],
     [LDFLAGS="$OLDLDFLAGS"
      AC_MSG_NOTICE(--hash-style=both not available)])
@@ -978,8 +978,8 @@ then
     then
       OLDLDFLAGS="$LDFLAGS"
       LDFLAGS="$LDFLAGS -rdynamic"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("\n");]])],
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
+                                      [[std::printf("\n");]])],
         [rdynamic_available="yes"],
 # This test behaves as if it succeeded if gcc did not actually refuse to
 # work if given a flag "-rdynamic", but it seems that it also lets through
@@ -1004,8 +1004,8 @@ fi
 # want to comment out this adjustment.
 OLDCPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS -fno-diagnostic-color"
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                [[printf("\n");]])],
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
+                                [[std::printf("\n");]])],
   [],
   [CPPFLAGS="$OLDCPPFLAGS"])
 AC_MSG_NOTICE([CPPFLAGS now = $CPPFLAGS])
@@ -1039,8 +1039,8 @@ i386* | i486* | i586* | i686*)
   *)
    OLDCPPFLAGS="$CPPFLAGS"
    CPPFLAGS="$CPPFLAGS -msse2 -mfpmath=sse"
-   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                   [[printf("\n");]])],
+   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
+                                   [[std::printf("\n");]])],
      [sse2math_available="yes"],
      [CPPFLAGS="$OLDCPPFLAGS"
      sse2math_available="no"])
@@ -1059,8 +1059,8 @@ then
   then
     OLDLDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                    [[printf("\n");]])],
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
+                                    [[std::printf("\n");]])],
       [framework_available="yes"],
       [LDFLAGS="$OLDLDFLAGS"
       framework_available="no"])
@@ -1088,8 +1088,8 @@ then
   then
     OLDCFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -fPIC"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                     [[printf("\n");]])],
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
+                                     [[std::printf("\n");]])],
        [fpic_available="yes"],
        [fpic_available="no"])
     CFLAGS="$OLDCFLAGS"
@@ -1110,8 +1110,8 @@ then
 # such a flag is accepted and if so I will use it.
   OLDCFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -mt"
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                  [[printf("\n");]])],
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
+                                  [[std::printf("\n");]])],
                  [CXXFLAGS="$CXXFLAGS -mt"],
                  [CFLAGS="$OLDCFLAGS"])
 fi
@@ -1125,8 +1125,8 @@ then
     OLDLDFLAGS="$LDFLAGS"
     CFLAGS="$CFLAGS -flto"
     LDFLAGS="$LDFLAGS -flto"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                    [[printf("\n");]])],
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
+                                    [[std::printf("\n");]])],
       [CXXFLAGS="$CXXFLAGS -flto"
        HIGHOPT="-O3"
        AC_MSG_NOTICE(Will use link-time optimisation and -O3)],
@@ -1493,7 +1493,7 @@ AC_CHECK_HEADER([inttypes.h],
 
 AC_CHECK_HEADERS([complex.h])
 
-AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h stdio.h])
+AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h cstdio])
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h sys/resource.h time.h])
 AC_CHECK_HEADERS([sys/param.h sys/time.h sys/times.h unistd.h utime.h])
 AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h sys/socket.h sys/stat.h])
@@ -1594,8 +1594,8 @@ fi
 
 save_cross=cross_compiling
 cross_compiling=no
-AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                               [[printf("\n"); return 0;]])],
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
+                               [[std::printf("\n"); return 0;]])],
               [can_run_executables="yes"],
               [can_run_executables="no"],
               [can_run_executables="no"])

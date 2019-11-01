@@ -54,10 +54,10 @@
 #ifndef header_wxfwin_h
 #define header_wxfwin_h 1
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <signal.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstdlib>
+#include <csignal>
 
 //
 // Logging support, only enabled in debug mode.

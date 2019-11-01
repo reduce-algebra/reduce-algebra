@@ -134,14 +134,14 @@
 
 
 
-#include <stdio.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
-#include <limits.h>
+#include <cstdio>
+#include <cstdint>
+#include <cinttypes>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <ctime>
+#include <climits>
 
 // This takes a bunch of font information files and creates some C
 // tables that can be used to access the information rapidly.
@@ -217,10 +217,10 @@
 
 #else // CREATE
 #ifdef TEST
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
+#include <cinttypes>
 #include "cuckoo.h"
 #else // TEST
 #include "headers.h"
@@ -1522,7 +1522,7 @@ int main(int argc, char *argv[])
         std::fprintf(dest, "#ifndef __STDC_CONSTANT_MACROS\n");
         std::fprintf(dest, "#define __STDC_CONSTANT_MACROS 1\n");
         std::fprintf(dest, "#endif\n");
-        std::fprintf(dest, "\n#include <stdint.h>\n\n");
+        std::fprintf(dest, "\n#include <cstdint>\n\n");
         std::fprintf(dest, "// Character metric hash table created using the program charmetrics.cpp\n");
         std::fprintf(dest, "// sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfontxs\n");
         std::fprintf(dest, "// contains README files with full credits to the fonts this is used with\n");

@@ -36,7 +36,7 @@
 
 // $Id$
 
-#include <stdio.h>
+#include <cstdio>
 
 extern "C"
 {

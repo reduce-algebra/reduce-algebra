@@ -32,8 +32,8 @@
 // $Id$
 
 #ifdef TEST
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include "inthash.h"
 #else
 #include "headers.h"
@@ -579,8 +579,8 @@ done:
 // If you predefine TEST when compiling this code you will get a
 // small test program
 
-#include <stdio.h>
-#include <time.h>
+#include <cstdio>
+#include <ctime>
 
 #ifndef TESTSIZE
 #define TESTSIZE 1700000

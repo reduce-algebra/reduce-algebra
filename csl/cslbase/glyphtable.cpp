@@ -110,9 +110,9 @@
 //
 
 
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdint>
 
 int main(int argc, char *argv[])
 {   std::FILE *in, *out;
@@ -149,11 +149,11 @@ int main(int argc, char *argv[])
     std::fprintf(out, " * elsewhere in the Reduce project.\n");
     std::fprintf(out, " */\n\n");
     std::fprintf(out, "/* $Id$ */\n");
-    std::fprintf(out, "\n#include <stdint.h>\n\n");
+    std::fprintf(out, "\n#include <cstdint>\n\n");
     std::fprintf(out, "typedef struct _fontmap\n");
     std::fprintf(out, "{\n");
     std::fprintf(out, "    const char *name;\n");
-    std::fprintf(out, "    uint32_t map[65536/32]; /* 2048 words */\n");
+    std::fprintf(out, "    std::uint32_t map[65536/32]; /* 2048 words */\n");
     std::fprintf(out, "} fontmap;\n");
     std::fprintf(out, "\n");
     std::fprintf(out, "fontmap coverage[] =\n");

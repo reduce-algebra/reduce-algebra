@@ -8,9 +8,9 @@
 // world.
 //
 
-#include <inttypes.h>
-#include <stdint.h>
-#include <stdio.h>
+#include <cinttypes>
+#include <cstdint>
+#include <cstdio>
 
 /**************************************************************************
  * Copyright (C) 2017, Codemist.                         A C Norman       *

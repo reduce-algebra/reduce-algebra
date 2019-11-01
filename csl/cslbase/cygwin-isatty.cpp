@@ -32,10 +32,10 @@
 
 // $Id$
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 
 //
 // The purpose of this tiny program is to return (as an error-code)

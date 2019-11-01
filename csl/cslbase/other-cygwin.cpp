@@ -68,9 +68,10 @@
 
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
 #include <windows.h>
 #include <tlhelp32.h>
 #include <unistd.h>

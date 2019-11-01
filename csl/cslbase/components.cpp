@@ -47,14 +47,14 @@
 // should work on Linux, Windows and OS/X, checking for the number of
 // CPUs and using them all.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdarg.h>
-#include <errno.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
+#include <cinttypes>
+#include <cstring>
+#include <cstdarg>
+#include <cerrno>
+#include <cmath>
 
 #ifdef WIN32
 #include <windows.h>

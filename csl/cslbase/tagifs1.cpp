@@ -54,9 +54,9 @@
 
 // $Id$
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 
 #define MAXDEPTH 30
 #define MAXLINE 2048
