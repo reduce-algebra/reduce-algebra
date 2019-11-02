@@ -206,6 +206,8 @@
 
 #include "termed.h"
 
+const char *programDir = ".";
+
 int main(int argc, char *argv[])
 {   bool wait = 0;
     for (int i=1; i<argc; i++)

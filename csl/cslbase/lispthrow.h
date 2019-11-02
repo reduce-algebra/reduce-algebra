@@ -233,13 +233,13 @@ extern void respond_to_stack_event();
 inline void stackcheck0()
 {   if_check_stack();                                         
     if (((std::uintptr_t)stack | event_flag.load()) >=
-        (std::uintptr_t)stacklimit) respond_to_stack_event();
+        (std::uintptr_t)stackLimit) respond_to_stack_event();
 }
 
 inline void stackcheck1(LispObject& a1)                                   
 {   if_check_stack();                                        
     if (((std::uintptr_t)stack | event_flag.load()) >=
-        (std::uintptr_t)stacklimit)
+        (std::uintptr_t)stackLimit)
     {   push(a1);
         respond_to_stack_event();
         pop(a1);
@@ -249,7 +249,7 @@ inline void stackcheck1(LispObject& a1)
 inline void stackcheck2(LispObject& a1, LispObject& a2)                               
 {   if_check_stack();                                        
     if (((std::uintptr_t)stack | event_flag.load()) >=
-        (std::uintptr_t)stacklimit)
+        (std::uintptr_t)stackLimit)
     {   push(a1, a2);
         respond_to_stack_event();
         pop(a2, a1);
@@ -259,7 +259,7 @@ inline void stackcheck2(LispObject& a1, LispObject& a2)
 inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)                           
 {   if_check_stack();                                        
     if (((std::uintptr_t)stack | event_flag.load()) >=
-        (std::uintptr_t)stacklimit)
+        (std::uintptr_t)stackLimit)
     {   push(a1, a2, a3);
         respond_to_stack_event();
         pop(a3, a2, a1);
@@ -269,7 +269,7 @@ inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)
 inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObject& a4)                       
 {   if_check_stack();                                        
     if (((std::uintptr_t)stack | event_flag.load()) >=
-        (std::uintptr_t)stacklimit)
+        (std::uintptr_t)stackLimit)
     {   push(a1, a2, a3, a4);
         respond_to_stack_event();
         pop(a4, a3, a2, a1);
@@ -281,13 +281,13 @@ inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObje
 inline void stackcheck()
 {   if_check_stack();                                         
     if (((std::uintptr_t)stack | event_flag.load()) >=
-        (std::uintptr_t)stacklimit) respond_to_stack_event();
+        (std::uintptr_t)stackLimit) respond_to_stack_event();
 }
 
 inline void stackcheck(LispObject& a1)        
 {   if_check_stack();                                        
     if (((std::uintptr_t)stack | event_flag.load()) >=
-        (std::uintptr_t)stacklimit)
+        (std::uintptr_t)stackLimit)
     {   push(a1);
         respond_to_stack_event();
         pop(a1);
@@ -297,7 +297,7 @@ inline void stackcheck(LispObject& a1)
 inline void stackcheck(LispObject& a1, LispObject& a2)                               
 {   if_check_stack();                                        
     if (((std::uintptr_t)stack | event_flag.load()) >=
-        (std::uintptr_t)stacklimit)
+        (std::uintptr_t)stackLimit)
     {   push(a1, a2);
         respond_to_stack_event();
         pop(a2, a1);
@@ -307,7 +307,7 @@ inline void stackcheck(LispObject& a1, LispObject& a2)
 inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)                           
 {   if_check_stack();                                        
     if (((std::uintptr_t)stack | event_flag.load()) >=
-        (std::uintptr_t)stacklimit)
+        (std::uintptr_t)stackLimit)
     {   push(a1, a2, a3);
         respond_to_stack_event();
         pop(a3, a2, a1);
@@ -318,7 +318,7 @@ inline void stackcheck(LispObject& a1, LispObject& a2,
                        LispObject& a3, LispObject& a4)                       
 {   if_check_stack();                                        
     if (((std::uintptr_t)stack | event_flag.load()) >=
-        (std::uintptr_t)stacklimit)
+        (std::uintptr_t)stackLimit)
     {   push(a1, a2, a3, a4);
         respond_to_stack_event();
         pop(a4, a3, a2, a1);
@@ -540,11 +540,11 @@ struct LispException : public std::exception
 // more agressive use of C++ features that I tends to be into, so I will
 // use uncaught_exceptions() in a rather naive manner.
 // I used to have code here that could verify (Lisp) stack consistency,
-// however C__17 deprecates std::uncaught_exception() and demands a change
+// however C++17 deprecates std::uncaught_exception() and demands a change
 // to use a new function std::uncaught_exceptions() not present in earlier
 // versions of the standard, while it is expected that C++20 will withdraw
 // the original function. I used it and rather than modify my code with ugly
-// checks for whether I have C++17 or not anbd rather that put up with the
+// checks for whether I have C++17 or not and rather that put up with the
 // torrent of warnings that GCC generates in response to deprecated features
 
 // If I build for debugging I will verify that the stack pointer is

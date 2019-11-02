@@ -43,7 +43,6 @@
 
 extern void set_up_signal_handlers();
 extern void *allocateSegment(std::size_t);
-extern LispObject initial_heap_setup(LispObject *stacksegment);
 
 // Here is a layout for an 8 Mbyte page, specifying the various
 // ways in which data can be accessed. This uses a union so that the page
@@ -183,6 +182,7 @@ inline void write_barrier(std::atomic<LispObject> *p)
 {   write_barrier((LispObject *)p);
 }
 
+extern std::uint64_t threadMap;
 
 class ThreadStartup
 {
@@ -323,8 +323,23 @@ inline int nlz(std::uint64_t x)
 static const unsigned int maxThreads = 64;
 
 extern std::mutex gc_mutex;
+// The next two values need to be thread-local. On a Windows or Cygwin
+// platform I need to access them using the Microsoft thread-local API
+// because g++ otherwise generates code which seems to give a rather severe
+// overhead. But if I build in debug mode I will drop back to using direct
+// C++ declarations in the expectation that doung so will make tracing and
+// debugging with gdb smoother. Using g++ under cygwin I had trouble geting
+// thinhs to link when I used "extern thread_local" declarations here but
+// provided I can use a C++17 compiler I am OK as shown now.
+
+#if defined __cpp_inline_variables && \
+    !(defined __CYGWIN__ || defined __MINGW32__)
+inline thread_local std::uintptr_t threadId;
+inline thread_local std::uintptr_t fringe;
+#else // inline thread_local
 static ThreadLocal<std::uintptr_t> threadId;
 static ThreadLocal<std::uintptr_t> fringe;
+#endif // inline_thread_local
 extern std::atomic<std::uintptr_t> limit[maxThreads];
 extern std::uintptr_t              limitBis[maxThreads];
 extern std::uintptr_t              fringeBis[maxThreads];
@@ -420,7 +435,7 @@ inline std::atomic<std::uintptr_t>& firstWord(std::uintptr_t a)
 static const std::size_t CHUNK=16384;
 
 inline LispObject get_n_bytes(std::size_t n)
-{   n = doubleword_align_up(n);
+{
 // I have a thread-local variable fringe and limit[threadId] is in effect
 // thread-local. These delimit a region of size CHUNK within which allocation
 // can be especially cheap. limit[threadId] is atomic and that indicates that
@@ -615,7 +630,6 @@ inline void withRecordedStack(F &&action)
 
 
 
-extern std::atomic<std::uint32_t> threadCount;
 extern std::mutex mutex_for_gc;
 extern bool gc_started;
 extern std::condition_variable cv_for_gc_idling;
@@ -631,6 +645,27 @@ extern std::condition_variable cv_for_gc_complete;
 
 extern std::atomic<std::uint32_t> activeThreads;
 //  0x00 : total_threads : lisp_threads : still_busy_threads
+//
+// The meaning of all those is as follows:
+//   total_threads: Count of all the threads that CSL has started and that
+//                  might ever participate as Lisp mutators.
+//   lisp_threads:  The number of threads that are at present running as
+//                  Lisp mutators. This can be less than total_threads
+//                  because if a thread is about to perform a (potentially)
+//                  blocking system call it must decrease thsi count. All
+//                  threads included in this count thereby guarantee that they
+//                  will either allocate memory or perform a polling operation
+//                  fairly soon.
+//   still_busy_threads: Used during synchronization at the start and end of
+//                  garbage collection. Specifically as threads poll and
+//                  discover that a garbage collection is pending they
+//                  decrement this field. When it reaches zero that indicates
+//                  that all (lisp) threads have become quiescent, and so
+//                  global action can start.
+// There can be delicacies involved in updating all these! In particular
+// starting or terminating a thread while all others are in the process
+// of synchronizing for or after garbage collection is something that will
+// involve some care!
 
 
 inline void performGarbageCollection()

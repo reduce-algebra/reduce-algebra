@@ -1947,7 +1947,7 @@ void internal_prin(LispObject u, int blankp)
     }
 restart:
 #endif
-    if (stack >= stacklimit) respond_to_stack_event();
+    if (stack >= stackLimit) respond_to_stack_event();
     switch ((int)u & TAG_BITS)
     {   case TAG_CONS:
 #ifdef COMMON

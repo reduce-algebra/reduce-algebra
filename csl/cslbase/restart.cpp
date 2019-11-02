@@ -89,8 +89,8 @@ extern int load_count, load_limit;
 #include "machineid.cpp"
 
 LispObject nil;
-LispObject *stackbase;
-LispObject *stacklimit;
+LispObject *stackBase;
+LispObject *stackLimit;
 
 LispObject *nilsegment, *nilsegmentbase;
 LispObject *stacksegment, *stacksegmentbase;
@@ -933,7 +933,7 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
     dll = (setup_type_1 *)GetProcAddress(a, setupname);
 //
 // The dynamic module that I create should always have a function called
-// "init" that I must call to tell it where nil, stack and stacklimit are.
+// "init" that I must call to tell it where nil, stack and stackLimit are.
 //
     init = (initfn *)GetProcAddress(a, "init");
 #else // WIN32
@@ -958,7 +958,7 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 #endif
         return NULL;
     }
-    (*init)(&nil, &stack, &stacklimit);
+    (*init)(&nil, &stack, &stackLimit);
 //
 // Wheee - I have now loaded and initialised the module.
 //
@@ -2414,7 +2414,7 @@ void setup(int restart_flag, double store_size)
     std::int32_t i;
     if ((restart_flag & 2) != 0) init_heap_segments(store_size);
     garbage_collection_permitted = false;
-    stack = stackbase;
+    stack = stackBase;
     stack[0] = nil;
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
@@ -2486,7 +2486,7 @@ void setup(int restart_flag, double store_size)
     }
     else for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
 
-    stacklimit = (LispObject *) (~(std::uintptr_t)0xff &
+    stackLimit = (LispObject *) (~(std::uintptr_t)0xff &
         (std::uintptr_t)&stack[stack_segsize*CSL_PAGE_SIZE/4-200]);
     // allow some slop at end
     if ((restart_flag & 1) != 0) warm_setup();

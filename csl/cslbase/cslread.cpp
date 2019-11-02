@@ -1144,7 +1144,7 @@ static int ordpv(LispObject u, LispObject v)
                        ev = *(LispObject *)(v - TAG_VECTOR + n);
             int w;
             push(u, v);
-            if (stack >= stacklimit) respond_to_stack_event();
+            if (stack >= stackLimit) respond_to_stack_event();
             w = orderp(eu, ev);
             pop(v, u);
             if (w != 0) return w;
@@ -1212,7 +1212,7 @@ static int orderp(LispObject u, LispObject v)
             int w;
             push(u, v);
 //          stackcheck();
-            if (stack >= stacklimit) respond_to_stack_event();
+            if (stack >= stackLimit) respond_to_stack_event();
             w = orderp(cu, cv);
             pop(v, u);
             if (w != 0)

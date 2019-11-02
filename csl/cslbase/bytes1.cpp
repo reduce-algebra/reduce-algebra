@@ -907,8 +907,14 @@ inline void do_freerstr()
 }
 
 inline void poll_jump_back(LispObject& A_reg)
-{   if ((std::uintptr_t)stack >=
-        ((std::uintptr_t)stacklimit | event_flag.load())) respond_to_stack_event();
+{
+#ifdef CONSERVATIVE
+    poll();
+#else
+    if ((std::uintptr_t)stack >=
+        ((std::uintptr_t)stackLimit | event_flag.load()))
+        respond_to_stack_event();
+#endif
 }
 
 inline void do_pvbind(LispObject vals, LispObject vars)

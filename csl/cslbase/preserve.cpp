@@ -1968,7 +1968,7 @@ bool finished_with(int j)
                 while (len != 0)
                 {   std::size_t n =
                         (std::size_t)((CSL_PAGE_SIZE - 64 -
-                                  ((char *)stack - (char *)stackbase)) &
+                                  ((char *)stack - (char *)stackBase)) &
                                  (~(std::int32_t)0xff));
 //
 // I only perform compression of the file when I am in the process of stopping,

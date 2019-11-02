@@ -928,8 +928,7 @@ int allocateThreadNumber()
 {   my_assert(threadMap != 0); // I need at least one spare.
     int n = nlz(threadMap);
 // Now n is 0 if the top bit is set, 1 for the next etc down to 63 when
-// the least bit is the only one set.
-    threadMap &= ~threadBit(n);
+// the least bit is the only one se    threadMap &= ~threadBit(n);
     return n;
 }
 
@@ -942,29 +941,27 @@ ThreadStartup::ThreadStartup()
 {   std::cout << "ThreadStartup" << std::endl;
     std::lock_guard<std::mutex> lock(mutex_for_gc);
     threadId = allocateThreadNumber();
+// The update here is just fine while I am in fact single threaded, but I
+// will need to review it when multiple threads can be in play.
+    activeThreads.fetch_add(0x00010101);
 }
 
 ThreadStartup::~ThreadStartup()
 {   std::cout << "~ThreadStartup" << std::endl;
     std::lock_guard<std::mutex> lock(mutex_for_gc);
     releaseThreadNumber(threadId);
+    activeThreads.fetch_sub(0x00010101);
 }
 
 LispObject *nilSegmentBase, *stackSegmentBase;
 LispObject *nilSegment, *stackSegment;
-LispObject *stackBase;
 
-LispObject initial_heap_setup(LispObject *stacksegment)
-{   std::cout << "initial_heap_setup" << std::endl;
-    my_abort();  // Until I know what this has to do!
-    return 0;
-}
 
 void initHeapSegments(double storeSize)
 //
 // This function just makes nil and the pool of page-frames available.
-// The store-size is passed in units of Kilobyte, and as a double not
-// an integer so that overflow is not an issue.
+// The store-size is passed in units of Kilobyte, and as a double rather
+// than as an integer so that overflow is not an issue.
 {
 // I will make the default initial store size around 64M on a 64-bit
 // machine and 512M on a 64-bit system. If the user specified a "-K" option
@@ -1075,8 +1072,7 @@ void init_heap_segments(double d)
 {   std::cout << "init_heap_segments " << d << std::endl;
 // I first impose a minimum of 64 megabytes, then convert the value so that
 // I pass it in kilobytes.
-    stackbase = (LispObject *)malloc(8*1024*1024); // Temp measure maybe!
-    if (d > maxStoreSize) d = maxStoreSize;
+    if (maxStoreSize != 0 && d > maxStoreSize) d = maxStoreSize;
     if (d < 64.0*1024.0*1024.0)
         d = 64.0*1024.0*1024.0;
     initHeapSegments(d/1024.0);
@@ -1097,8 +1093,15 @@ std::condition_variable cv_for_gc_busy;
 bool gc_complete;
 std::condition_variable cv_for_gc_complete;
 std::mutex gc_mutex;
+// See newallocate.h for why I do this - it is to make debugging easier.
+#if defined __cpp_inline_variables && \
+    !(defined __CYGWIN__ || defined __MINGE32__)
+//inline thread_local std::uintptr_t threadId;
+//inline thread_local std::uintptr_t fringe;
+#else // inline thread_local
 //static ThreadLocal<uintptr_t> threadId;
 //static ThreadLocal<uintptr_t> fringe;
+#endif // inline thread_local
 std::atomic<std::uintptr_t> limit[maxThreads];
 std::uintptr_t              limitBis[maxThreads];
 std::uintptr_t              fringeBis[maxThreads];
@@ -1155,8 +1158,6 @@ LispObject Lverbos(LispObject env, LispObject a)
 
 bool volatile already_in_gc;
 bool volatile interrupt_pending;
-LispObject volatile saveheaplimit;
-LispObject *volatile savestacklimit;
 
 // static int stop_after_gc = 0;
 

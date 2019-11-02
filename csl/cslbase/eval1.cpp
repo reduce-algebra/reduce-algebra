@@ -1685,7 +1685,7 @@ LispObject Lshow_stack_2(LispObject env, LispObject a1, LispObject a2)
     {   n = int_of_fixnum(a2);
         if (n > 100) n = m+10;
     }
-    term_printf("Stack depth %d\n", (int)(stack-stackbase));
+    term_printf("Stack depth %d\n", (int)(stack-stackBase));
     for (int i=m; i<=n; i++)
     {   term_printf("%d: ", i);
         prin_to_terminal(stack[-i]);

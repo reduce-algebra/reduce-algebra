@@ -1820,7 +1820,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     goto call1;
                 }
                 push(codevec, litvec, A_reg); // the argument
-                if (stack >= stacklimit) respond_to_stack_event();
+                if (stack >= stackLimit) respond_to_stack_event();
                 A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0), stack-1);
                 pop(litvec, codevec);
                 assert(A_reg != 0);
@@ -1864,7 +1864,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     goto call2;
                 }
                 push(codevec, litvec, B_reg, A_reg);
-                if (stack >= stacklimit) respond_to_stack_event();
+                if (stack >= stackLimit) respond_to_stack_event();
                 A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0), stack-2);
                 pop(litvec, codevec);
                 assert(A_reg != 0);

@@ -1025,18 +1025,18 @@ symbolic procedure c!:print!-init();
    c!:printf "\n";
    c!:printf "LispObject *nilp;\n";
    c!:printf "LispObject **stackp;\n";
-   c!:printf "LispObject * volatile * stacklimitp;\n";
+   c!:printf "LispObject * volatile * stackLimitp;\n";
    c!:printf "\n";
    c!:printf "void init(LispObject *a, LispObject **b, LispObject * volatile *c)\n";
    c!:printf "{\n";
    c!:printf "    nilp = a;\n";
    c!:printf "    stackp = b;\n";
-   c!:printf "    stacklimitp = c;\n";
+   c!:printf "    stackLimitp = c;\n";
    c!:printf "}\n";
    c!:printf "\n";
    c!:printf "#define nil (*nilp)\n";
    c!:printf "#define stack  (*stackp)\n";
-   c!:printf "#define stacklimit (*stacklimitp)\n";
+   c!:printf "#define stackLimit (*stackLimitp)\n";
    c!:printf "\n"
   >>;
 
@@ -2248,7 +2248,7 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
 % that this policy will speed up code a bit.
     if does_call then <<
        c!:printf("    if (++reclaim_trigger_count == reclaim_trigger_target ||\n");
-       c!:printf("        stack >= stacklimit)\n");
+       c!:printf("        stack >= stackLimit)\n");
        c!:printf "    {\n";
 % This is slightly clumsy code to save all args on the stack across the
 % call to reclaim(), but it is not executed often...

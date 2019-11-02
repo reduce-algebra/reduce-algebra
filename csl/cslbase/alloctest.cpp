@@ -74,7 +74,7 @@ LispObject get_pname(LispObject a)
 }
 
 LispObject nil, lisp_true, unset_var;
-LispObject *nilsegment, *stacksegment, *stack, *stackbase, *stacklimit;
+LispObject *nilsegment, *stacksegment, *stack, *stackBase, *stackLimit;
 std::uintptr_t *C_stackbase, C_stacklimit;
 
 [[noreturn]] void fatal_error(int code, ...)

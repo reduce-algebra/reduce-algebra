@@ -236,7 +236,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
 // way through printing a bignum. In particular it will make it possible for
 // the printing to be interrupted.
         if ((std::uintptr_t)stack >=
-            ((std::uintptr_t)stacklimit | event_flag.load()))
+            ((std::uintptr_t)stackLimit | event_flag.load()))
             respond_to_stack_event();
         // divide by 10^9 to obtain remainder
         for (k=len-1; k>=0; k--)
@@ -283,7 +283,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         for (i=0; i<=8; i++) putc_stream(my_buff[i], active_stream);
         pop(w);
         if ((std::uintptr_t)stack >=
-            ((std::uintptr_t)stacklimit | event_flag.load()))
+            ((std::uintptr_t)stackLimit | event_flag.load()))
             respond_to_stack_event();
     }
 }

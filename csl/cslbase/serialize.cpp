@@ -3905,7 +3905,7 @@ down:
 //                      (int)length_of_byteheader(vechdr(pn))-CELL, &celt(pn, 0));
 //          }
 // I will stop 256 bytes before letting the stack overflow.
-            if ((std::uintptr_t)stack+256 < (std::uintptr_t)stacklimit)
+            if ((std::uintptr_t)stack+256 < (std::uintptr_t)stackLimit)
             {   if ((*pp)(p)) push(p);
             }
             else fail = true; // I must keep traversing to restore things.
@@ -4037,7 +4037,7 @@ my_assert(p != 0x7e65);
 
 static bool push_all_symbols(symbol_processor_predicate *pp)
 {   map_releaser RAII;
-    for (LispObject *s=stackbase+1; s<=stack; s++)
+    for (LispObject *s=stackBase+1; s<=stack; s++)
     {   std::sprintf(trigger, "Stack@%p", s);
         if (push_symbols(pp, *s)) return true;
     }

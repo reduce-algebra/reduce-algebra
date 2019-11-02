@@ -3502,12 +3502,12 @@ c!:printf "#include \qconfig.h\q\n\n"))) (print!-csl!-headers) (cond (hdrnow
 
 (de c!:print!-init nil (progn (c!:printf "\n") (c!:printf 
 "LispObject *nilp;\n") (c!:printf "LispObject **stackp;\n") (c!:printf 
-"LispObject * volatile * stacklimitp;\n") (c!:printf "\n") (c!:printf 
+"LispObject * volatile * stackLimitp;\n") (c!:printf "\n") (c!:printf 
 "void init(LispObject *a, LispObject **b, LispObject * volatile *c)\n") (
 c!:printf "{\n") (c!:printf "    nilp = a;\n") (c!:printf "    stackp = b;\n"
-) (c!:printf "    stacklimitp = c;\n") (c!:printf "}\n") (c!:printf "\n") (
+) (c!:printf "    stackLimitp = c;\n") (c!:printf "}\n") (c!:printf "\n") (
 c!:printf "#define nil (*nilp)\n") (c!:printf "#define stack  (*stackp)\n") (
-c!:printf "#define stacklimit (*stacklimitp)\n") (c!:printf "\n")))
+c!:printf "#define stackLimit (*stackLimitp)\n") (c!:printf "\n")))
 
 (de C!-end nil (C!-end1 t))
 
@@ -4268,7 +4268,7 @@ var1350 (cdr var1350)) (go lab1349)) (c!:printf
 )))) (c!:printf "#ifdef CHECK_STACK\n") (c!:printf "    if_check_stack;\n") (
 c!:printf "#endif\n") (cond (does_call (progn (c!:printf 
 "    if (++reclaim_trigger_count == reclaim_trigger_target ||\n") (c!:printf 
-"        stack >= stacklimit)\n") (c!:printf "    {\n") (c!:pushpop (quote 
+"        stack >= stackLimit)\n") (c!:printf "    {\n") (c!:pushpop (quote 
 push) args) (c!:printf 
 "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n") (c!:pushpop (quote 
 pop) (reverse args)) (c!:printf "    }\n")))) (cond (reloadenv (c!:printf 

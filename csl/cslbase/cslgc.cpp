@@ -523,7 +523,7 @@ static void real_garbage_collector()
 // I should arrange something totally different for copying the package
 // structure...
     for (LispObject **p = list_bases; *p!=NULL; p++) copy(*p);
-    for (LispObject *sp=stack; sp>(LispObject *)stackbase; sp--) copy(sp);
+    for (LispObject *sp=stack; sp>(LispObject *)stackBase; sp--) copy(sp);
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
 // updated.
@@ -715,7 +715,7 @@ void reclaim(const char *why, int stg_class)
             big_numbers, box_floats, bytestreams, other_mem, litvecs);
         trace_printf("getvecs=%" PRIdPTR " C-stacks=%" PRIdPTR "K Lisp-stack=%" PRIdPTR "K\n",
                      getvecs, (((char *)C_stackbase-(char *)&why)+1023)/1024,
-                     (std::intptr_t)((stack-stackbase)+1023)/1024);
+                     (std::intptr_t)((stack-stackBase)+1023)/1024);
     }
 
     grab_more_memory(heap_pages_count + vheap_pages_count);

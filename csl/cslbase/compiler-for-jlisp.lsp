@@ -3393,13 +3393,13 @@ nil)))
 
 (de c!:print!-init nil (progn (c!:printf "\n") (c!:printf 
 "LispObject *nilp;\n") (c!:printf "LispObject **C_stackp;\n") (c!:printf 
-"LispObject * volatile * stacklimitp;\n") (c!:printf "\n") (c!:printf 
+"LispObject * volatile * stackLimitp;\n") (c!:printf "\n") (c!:printf 
 "void init(LispObject *a, LispObject **b, LispObject * volatile *c)\n") (
 c!:printf "{\n") (c!:printf "    nilp = a;\n") (c!:printf 
-"    C_stackp = b;\n") (c!:printf "    stacklimitp = c;\n") (c!:printf "}\n")
+"    C_stackp = b;\n") (c!:printf "    stackLimitp = c;\n") (c!:printf "}\n")
 (c!:printf "\n") (c!:printf "#define nil (*nilp)\n") (c!:printf 
 "#define C_stack  (*C_stackp)\n") (c!:printf 
-"#define stacklimit (*stacklimitp)\n") (c!:printf "\n")))
+"#define stackLimit (*stackLimitp)\n") (c!:printf "\n")))
 
 (de C!-end nil (C!-end1 t))
 
@@ -4148,7 +4148,7 @@ var1344)) (go lab1343)) (c!:printf "    va_end(aa);\n")))) (c!:printf
 "    if (check_env(env)) return aerror(\qenv for %s\q);\n" (cdr argch)) (
 c!:printf "#endif\n") (c!:printf "#ifdef CHECK_STACK\n") (c!:printf 
 "    if_check_stack;\n") (c!:printf "#endif\n") (cond (does_call (progn (
-c!:printf "    if (stack >= stacklimit)\n") (c!:printf "    {\n") (c!:pushpop
+c!:printf "    if (stack >= stackLimit)\n") (c!:printf "    {\n") (c!:pushpop
 (quote push) args) (c!:printf 
 "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n") (c!:pushpop (quote 
 pop) (reverse args))  (c!:printf 

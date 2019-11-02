@@ -160,7 +160,7 @@ void init_heap_segments(double store_size)
     {   std::printf("pages_count <= 0 = %d\n", (int)pages_count);
         fatal_error(err_no_store);
     }
-    stackbase = (LispObject *)stacksegment;
+    stackBase = (LispObject *)stacksegment;
 }
 
 inline bool is_in_big_chunk(void *p)

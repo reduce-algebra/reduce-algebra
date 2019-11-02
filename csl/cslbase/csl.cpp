@@ -1101,7 +1101,7 @@ static void lisp_main(void)
 // Of course a tick may very well have happened rather recently - so
 // I will flush it out now just to clear the air.
 //
-                    if ((stack+event_flag.load()) >= stacklimit) respond_to_stack_event();
+                    if ((stack+event_flag.load()) >= stackLimit) respond_to_stack_event();
                     cold_start = (exit_value == nil);
                     Lrds(nil, nil);
                     Lwrs(nil, nil);
@@ -2735,7 +2735,7 @@ static void start_threads()
 
 // I need a way that a thread that is not synchronised with this one can
 // generate a Lisp-level interrupt. I achieve that by
-// letting that thread reset stacklimit. Then rather soon CSL will
+// letting that thread reset stackLimit. Then rather soon CSL will
 // do a stackcheck() and will notice it.
 //
 // call this with
@@ -2752,10 +2752,10 @@ static void start_threads()
 // The value I store in event_flag is either 0 if there is no request pending,
 // or it has the bottom 8 bits as a map showing what event or events have been
 // requested and all other bits set. It is used in tests of the form
-//   if ((stackpointer | event_flag.load()) >= stacklimit) ...
-// and for this toi make sense I must have stacklimitC a lower address than
+//   if ((stackpointer | event_flag.load()) >= stackLimit) ...
+// and for this to make sense I must have stackLimit a lower address than
 // within 256 bytes of the top of my address space. Being of a neurotic
-// style I ensure this by rounding stacklimit down to a multiple of 256
+// style I ensure this by rounding stackLimit down to a multiple of 256
 // when I set it! This scheme allows for 8 independent ways in which the IO
 // system can report "events" or "requests" back to the code here. Having
 // a couple in hand for any future thread-supporting system seems a good idea.
@@ -3004,6 +3004,11 @@ static void cslaction(void)
     volatile std::uintptr_t sp;
     C_stackbase = (std::uintptr_t *)&sp;
 #ifdef CONSERVATIVE
+// The constructor here will set up so that I have one thread and one
+// active thread. And by doing that in a constuctor I arrange that at the
+// end of the run the counts are decremented again.
+    threadMap = 0;
+    activeThreads = 0;
     ThreadStartup set_thread_local_variables;
 #endif
     errorset_msg = NULL;
