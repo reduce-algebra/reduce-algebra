@@ -436,6 +436,7 @@ static const std::size_t CHUNK=16384;
 
 inline LispObject get_n_bytes(std::size_t n)
 {
+// The size passed here MUST be a multiple of 8.
 // I have a thread-local variable fringe and limit[threadId] is in effect
 // thread-local. These delimit a region of size CHUNK within which allocation
 // can be especially cheap. limit[threadId] is atomic and that indicates that
@@ -1099,22 +1100,4 @@ void allocate_segment(std::size_t n);
 #endif // header_newallocate_h
 
 // end of newallocate.h
-
-
-
-#if 0
-
-===========
-
-potentially_blocking()
-{   //THREAD_COUNT--;
-    if (--active_threads == 0) master_for_gc();
-    //DO WHATEVER MIGHT BLOCK;
-    //THREAD_COUNT++;
-    ++active_thread_count;
-}
-
-===========
-
-#endif
 

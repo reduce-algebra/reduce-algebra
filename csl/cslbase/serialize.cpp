@@ -3717,23 +3717,8 @@ void write_everything()
 }
 
 void warm_setup()
-{
-// I must start by getting the heaps so that allocation etc is possible.
-    void *p;
-    std::size_t i;
-#ifndef CONSERVATIVE
-    p = vheap_pages[vheap_pages_count++] = allocate_page("vheap warm setup");
-    vfringe = (LispObject)(8 + (char *)doubleword_align_up((std::intptr_t)p));
-    vheaplimit = (LispObject)(vfringe + (CSL_PAGE_SIZE - 16));
-
-    p = heap_pages[heap_pages_count++] = allocate_page("heap warm setup");
-    heaplimit = (std::intptr_t)p;
-    fringe = (LispObject)(heaplimit + CSL_PAGE_SIZE);
-    heaplimit = (LispObject)(heaplimit + SPARE);
-#endif
-
+{   std::size_t i;
     set_up_function_tables();
-
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
     for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
     *stack = nil;

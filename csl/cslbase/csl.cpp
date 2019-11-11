@@ -1222,6 +1222,7 @@ static long int initial_random_seed;
 std::vector<stringBool> fasl_paths;
 std::vector<stringBoolString> symbolsToDefine;
 std::vector<stringBoolString> stringsToDefine;
+std::vector<std::string> stringsToEvaluate;
 
 std::size_t output_directory;
 character_reader *procedural_input;
@@ -2151,13 +2152,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     },
 
 /*! options [-e] \item [{\ttfamily -e}] \index{{\ttfamily -e}}
- * A ``spare'' option used from time to time to activate experiments within
- * CSL.
+ * If you follow "-e" with a Lisp form then that gets evaluated and
+ * its result printed during startup. This may be useful for forcing
+ * settings or other debugging.
  */
-    {"-e", false,
-     "-e       A \"spare\" option used to enable experiments within the system.",
+    {"-e", true,
+     "-e       Can be followed by a Lisp form top be evaluated during startup.",
      [&](std::string key, bool hasVal, std::string val)
-     {   // None active at present.
+     {   if (val != "") stringsToEvaluate.push_back(val);
      }
     },
 
@@ -3148,6 +3150,12 @@ int execute_lisp_function(const char *fname,
 // just yet.
 // The protocol for calling Lisp code from C is as follows:
 //
+//
+#ifdef CONSERVATIVE
+//     Create an instance of a ThreadStartup object, and keep it alive
+//     while everytthing else is happening.
+//
+#endif
 //     cslstart(argc, argv, writer);allocate memory and Lisp heap etc. Args
 //                                  should be "as if" CSL was being called
 //                                  directly and this was the main entrypoint.
@@ -3183,7 +3191,16 @@ static void iput(int c)
 #endif
 
 [[noreturn]] static int submain(int argc, const char *argv[])
-{   cslstart(argc, argv, NULL);
+{   volatile std::uintptr_t sp;
+    C_stackbase = (std::uintptr_t *)&sp;
+#ifdef CONSERVATIVE
+// The next line sets threadId (in fact it should always be to zero!)
+// and using RAII arranges to release that identifier on exit. It is
+// part of the protocol that will allow other threads to get created and
+// run later on.
+    ThreadStartup set_thread_local_variables;
+#endif
+    cslstart(argc, argv, NULL);
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
     std::strcpy(ibuff, "(print '(a b c d))");
     start_threads();

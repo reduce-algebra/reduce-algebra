@@ -413,6 +413,7 @@ std::atomic<std::uint32_t> activeThreads;
 // objects only reside in the data[] part the first couple of kilobytes
 // of objstart[] will never be used.
 
+
 Page *currentPage;       // Where allocation is happening. The "nursery".
 Page *previousPage;      // A page that was recently the current one.
 Page *busyPages;         // Chained list of pages that contain live data.
@@ -771,13 +772,20 @@ void set_up_empty_page(Page *p)
 void set_variables_from_page(Page *p)
 {
 // Set the variable that are used when allocating within the active page.
-    fringe = p->pageHeader.fringe;
-    limit[threadId] = limitBis[threadId] = p->pageHeader.heaplimit;
+    uintptr_t pFringe = p->pageHeader.fringe;
+    uintptr_t pLimit = p->pageHeader.heaplimit;
+// Here I suppose there are no pinned items in the page. I set fringe and
+// limit such that on the very first allocation the code will grab a bit of
+// memory at gFringe.
+    fringe = limit[threadId] = limitBis[threadId] = gFringe = pFringe;
+    gLimit = pLimit;
+    gNext = 0;
 }
 
 void save_variables_to_page(Page *p)
 {
-// Dump global variable values back into a page header.
+// Dump global variable values back into a page header. THIS IS NOT USEFUL
+// OR CORRECT YET!
     p->pageHeader.fringe = fringe;
     p->pageHeader.heaplimit  = limitBis[threadId];
 }

@@ -1007,19 +1007,7 @@ static LispObject make_undefined_global(const char *name)
 
 static void cold_setup()
 {   LispObject w;
-#ifndef CONSERVATIVE
-// In the conservative version I set up everything read for allocation
-// already.
-    void *p = allocate_page("vheap cold setup");
-    vheap_pages[vheap_pages_count++] = p;
-    vfringe = (LispObject)(8 + (char *)doubleword_align_up((std::intptr_t)p));
-    vheaplimit = (LispObject)(vfringe + (CSL_PAGE_SIZE - 16));
 
-    p = heap_pages[heap_pages_count++] = allocate_page("heap cold setup");
-    heaplimit = (std::intptr_t)p;
-    fringe = (LispObject)(heaplimit + CSL_PAGE_SIZE);
-    heaplimit = (LispObject)(heaplimit + SPARE);
-#endif // CONSERVATIVE
     miscflags = 3;
     setplist(nil, nil);
     setfastgets(nil, nil);
@@ -2214,6 +2202,18 @@ void set_up_variables(int restart_flag)
             setvalue(n, v);
         }
     }
+    for (auto ss : stringsToEvaluate)
+    {   const char *s = ss.c_str();
+        LispObject v = make_string(s);
+        v = Lexplodec(nil, v);
+        v = Lcompress(nil, v);
+        push(v);
+        Lprin(nil, v);
+        pop(v);
+        v = Leval(nil, v);
+        term_printf(" => ");
+        Lprint(nil, v);
+    }
 //
 // Now if I have the FWIN windowed system I look in the Lisp variables
 //    loadable-packages!*
@@ -2489,6 +2489,27 @@ void setup(int restart_flag, double store_size)
     stackLimit = (LispObject *) (~(std::uintptr_t)0xff &
         (std::uintptr_t)&stack[stack_segsize*CSL_PAGE_SIZE/4-200]);
     // allow some slop at end
+
+#ifdef CONSERVATIVE
+    currentPage = freePages;
+    set_variables_from_page(currentPage);
+    freePages = freePages->pageHeader.chain;
+    freePagesCount--;
+    previousPage = NULL;
+    busyPages = NULL;
+    busyPagesCount = 0;
+    mostlyFreePages = NULL;
+    mostlyFreePagesCount = 0;
+#else // CONSERVATIVE
+    void *p = vheap_pages[vheap_pages_count++] = allocate_page("vheap warm setup");
+    vfringe = (LispObject)(8 + (char *)doubleword_align_up((std::intptr_t)p));
+    vheaplimit = (LispObject)(vfringe + (CSL_PAGE_SIZE - 16));
+    p = heap_pages[heap_pages_count++] = allocate_page("heap warm setup");
+    heaplimit = (std::intptr_t)p;
+    fringe = (LispObject)(heaplimit + CSL_PAGE_SIZE);
+    heaplimit = (LispObject)(heaplimit + SPARE);
+#endif // CONSERVATIVE
+
     if ((restart_flag & 1) != 0) warm_setup();
     else cold_setup();
 

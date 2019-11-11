@@ -218,6 +218,7 @@ public:
 
 extern std::vector<stringBoolString> symbolsToDefine;
 extern std::vector<stringBoolString> stringsToDefine;
+extern std::vector<std::string> stringsToEvaluate;
 extern std::vector<faslFileRecord> fasl_files; 
 
 extern char *big_chunk_start, *big_chunk_end;
