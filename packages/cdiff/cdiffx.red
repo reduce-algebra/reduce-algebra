@@ -99,7 +99,11 @@ lisp procedure elim(i,koplist,coplist);
       	    <<
                linear_solve_and_assign(list('equ,i),car lijst);
                setk(list('equ,i),0); lijst:=car lijst;
-               terpri();varpri(list('list,i,lijst),nil,t);
+               terpri();
+% Modified to keep into account the change from varpri to assignpri
+% in Reduce 3.5
+%	       varpri(list('list,i,lijst),nil,t);
+	       assignpri(list('list,i,lijst),nil,t);
       	    >>;
    end$
 

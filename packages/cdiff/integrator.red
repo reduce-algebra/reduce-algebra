@@ -707,9 +707,12 @@ lisp procedure show_equation n;
       if(equation:=assoc(list(cur_eq_set!*,n),
 	 get(cur_eq_set!*, 'kvalue)))then
 	 begin
-	    equation:=setk(list(cur_eq_set!*,n),aeval cadr equation);
-	    varpri(equation,list('setk,mkquote list(cur_eq_set!*,n),
-	       mkquote equation), 'only);
+	   equation:=setk(list(cur_eq_set!*,n),aeval cadr equation);
+% Modified to keep into account the change from varpri to assignpri
+% in Reduce 3.5
+%	    varpri(equation,list('setk,mkquote list(cur_eq_set!*,n),
+%	       mkquote equation), 'only);
+	    assgnpri(equation,list(list(cur_eq_set!*,n)), 'only);
 	    function_list:=get_recursive_kernels(numr simp equation,
 	       get(cur_eq_set!*, 'function_list));
 	    if function_list then
