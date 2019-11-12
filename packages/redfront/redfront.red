@@ -49,7 +49,7 @@ procedure redfront_oh(m,l);
          terpri!* l
       else if m eq 'assgnpri then <<
             redfront_on();
-	    assgnpri(l,nil,nil);
+	    assgnpri(car l,nil,nil);
             redfront_off()
          >>
       else

@@ -158,8 +158,27 @@ if numberp u then nil else get(u,v);
 fluid '(!*latex !*lasimp !*verbatim !*!*a2sfn);
 switch latex,lasimp,verbatim;
 !*lasimp := t;
-symbolic put('latex,'simpfg,'((t (latexon)) (nil(latexoff)) ));
+symbolic put('latex,'simpfg,
+                    '((t (latexon)(setq outputhandler!* 'rlfi_output))
+                      (nil (latexoff)(setq outputhandler!* nil)) ));
 symbolic put('verbatim,'simpfg,'((t (verbatimon)) (nil (verbatimoff))));
+
+symbolic procedure rlfi_output(m, u);
+   begin scalar outputhandler!*;
+     if m eq 'maprin 
+        then maprin(if !*verbatim then cadr texaeval1 u 
+                     else texaeval1 u)
+      else if m eq 'prin2!*
+        then prin2!*(if !*verbatim then cadr texaeval1 u
+                      else texaeval1 u)
+      else if m eq 'terpri then terpri!* u
+      else if m eq 'assgnpri 
+        then assgnpri(texaeval1 car u, cadr u, caddr u)
+   end; 
+
+symbolic procedure texaeval1 l;
+   if !*latex and null eqcar(l, 'tex) 
+      then texaeval l else l;
 
 symbolic procedure latexon;
 % Procedure called after ON LATEX

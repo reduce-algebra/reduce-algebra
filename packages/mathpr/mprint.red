@@ -401,7 +401,7 @@ symbolic procedure assgnpri(u,v,w);
       then <<if null outputhandler!*
                then <<if null v then apply1(get(get(x,'tag),'prifn),u)
                        else maprin ('setq . aconc(v,u)) >>
-              else apply2(outputhandler!*,'assgnpri,u)>>
+              else apply2(outputhandler!*,'assgnpri,{u, v, w})>>
     else <<
       if w memq '(first only) then terpri!* t;
       v := evalvars v;
