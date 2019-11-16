@@ -72,27 +72,27 @@
 
 
 
-float128_t std::sin(float128_t x)
+float128_t sin(float128_t x)
 {   return x;
 #pragma message ("float128_t elementary functions not coded yet")
 }
 
-float128_t std::cos(float128_t x)
+float128_t cos(float128_t x)
 {   return x;
 #pragma message ("float128_t elementary functions not coded yet")
 }
 
-float128_t std::exp(float128_t x)
+float128_t exp(float128_t x)
 {   return x;
 #pragma message ("float128_t elementary functions not coded yet")
 }
 
-float128_t std::log(float128_t x)
+float128_t log(float128_t x)
 {   return x;
 #pragma message ("float128_t elementary functions not coded yet")
 }
 
-float128_t std::atan2(float128_t y, float128_t x)
+float128_t atan2(float128_t y, float128_t x)
 {   return x;
 #pragma message ("float128_t elementary functions not coded yet")
 }
@@ -103,7 +103,7 @@ float128_t abs2(float128_t x, float128_t y)
 }
 
 
-float128_t std::sqrt(float128_t x)
+float128_t sqrt(float128_t x)
 {   return x;
 #pragma message ("float128_t elementary functions not coded yet")
 }

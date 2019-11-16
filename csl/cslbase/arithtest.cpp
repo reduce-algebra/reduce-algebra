@@ -38,6 +38,8 @@
 
 #include "arithlib.hpp"
 
+#include <cstdlib>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <chrono>
@@ -264,7 +266,7 @@ int main(int argc, char *argv[])
                             display("b  ", b, lenb);
                             display("me ", c1, lenc1);
                             display("gmp", c, lena+lenb);
-                            std::abort();
+                            abort();
                         }
                         break;
                     case 1:
@@ -460,7 +462,7 @@ int main(int argc, char *argv[])
         display("bnota", bnota);
         std::cout << "c4 a&~b|b&~a "  << c4 << std::endl;
         std::cout << "Failed " << std::dec << std::endl;
-        std::abort();
+        abort();
         return 1;
     }
 
@@ -494,7 +496,7 @@ int main(int argc, char *argv[])
         a = fudge_distribution_bignum(a, (int)r & 0xf);
         r = (r >> 4)%800;
         Bignum c1 = a << r;
-        Bignum p = std::pow(Bignum(2), (std::int64_t)r);
+        Bignum p = pow(Bignum(2), (std::int64_t)r);
         Bignum c2 = a * p;
         Bignum c3 = a >> r;
         Bignum w = a & ~(p-1_Z);
@@ -515,7 +517,7 @@ int main(int argc, char *argv[])
         std::cout << "c4 a/2^r     " << c4 << std::endl;
         display("c4", c4);
         std::cout << "Failed " << std::dec << std::endl;
-        std::abort();
+        abort();
         return 1;
     }
 
@@ -569,7 +571,7 @@ int main(int argc, char *argv[])
         std::cout << "square(-a)  = " << square(-a) << std::endl;
         std::cout << "square(-b)  = " << square(-b) << std::endl;
         std::cout << "Failed" << std::endl;
-        std::abort();
+        abort();
         return 1;
     }
 
@@ -599,14 +601,14 @@ int main(int argc, char *argv[])
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {   Bignum divisor, std::remainder, quotient;
+    {   Bignum divisor, remainder, quotient;
         do
         {   divisor = random_upto_bits_bignum(maxbits) + 1;
-            std::remainder = uniform_upto_bignum(divisor);
+            remainder = uniform_upto_bignum(divisor);
             quotient = random_upto_bits_bignum(maxbits);
             std::uint64_t rr = mersenne_twister();
             divisor = fudge_distribution_bignum(divisor, (int)(rr & 0xf));
-            std::remainder = fudge_distribution_bignum(std::remainder, (int)((rr>>4) & 0xf));
+            remainder = fudge_distribution_bignum(remainder, (int)((rr>>4) & 0xf));
             quotient = fudge_distribution_bignum(quotient, (int)((rr>>8) & 0xf));
 // While I still want my strange distribution of numbers for testing, I
 // need the sign of my target remainder to be proper, so I will generate
@@ -615,32 +617,32 @@ int main(int argc, char *argv[])
 // invalid in magnitude... so I need to discard those cases too. It is
 // plausible that this means I will discard around 75% of the sets of random
 // numberfs that I initially generate.
-        } while (((quotient ^ std::remainder ^ divisor) < Bignum(0)) ||
-                 (std::abs(std::remainder) >= std::abs(divisor))); 
+        } while (((quotient ^ remainder ^ divisor) < Bignum(0)) ||
+                 (abs(remainder) >= abs(divisor))); 
 
-        Bignum dividend = quotient*divisor + std::remainder;
+        Bignum dividend = quotient*divisor + remainder;
         Bignum q1 = dividend / divisor;
         Bignum r1 = 999999;
 // If the quotient is incorrect I will not compute the remainder.
         if (q1 == quotient)
         {   r1 = dividend % divisor;
-            if (r1 == std::remainder) continue;
+            if (r1 == remainder) continue;
         }
         std::cout << "FAILED on test " << i << std::endl;
         std::cout << "divisor   " << divisor << std::endl;
-        std::cout << "remainder " << std::remainder << std::endl;
+        std::cout << "remainder " << remainder << std::endl;
         std::cout << "quotient  " << quotient << std::endl;
         std::cout << "dividend  " << dividend << std::endl;
         std::cout << "q1        " << q1 << std::endl;
         std::cout << "r1        " << r1 << std::endl;
         display("dividend ", dividend);
         display("divisor  ", divisor);
-        display("remainder", std::remainder);
+        display("remainder", remainder);
         display("quotient ", quotient);
         display("q1       ", q1);
         display("r1       ", r1);
         std::cout << "Failed " << std::endl;
-        std::abort();
+        abort();
         return 1;
     }
 
@@ -685,7 +687,7 @@ int main(int argc, char *argv[])
 //        display("A", A);
 //        display("B", B);
         Bignum g2 = gcd(A, B);
-        if (g2 == g1*std::abs(g) &&
+        if (g2 == g1*abs(g) &&
             A%g2 == 0 &&
             B%g2 == 0) continue;
         std::cout << "FAILED on test " << i << std::endl;
@@ -696,7 +698,7 @@ int main(int argc, char *argv[])
         std::cout << "B  " << B << std::endl;
         std::cout << "g1 " << g1 << std::endl;
         std::cout << "g2 " << g2 << std::endl;
-        std::abort("Failed");
+        abort("Failed");
         return 1;
     }
 
@@ -736,7 +738,7 @@ int main(int argc, char *argv[])
         display("a", a);
         display("b", b);
         std::cout << "Failed " << std::endl;
-        std::abort();
+        abort();
         return 1;
     }
 
@@ -796,12 +798,12 @@ int main(int argc, char *argv[])
         Bignum errminus = a-nminus;
     
         if (nplus != n && nminus != n)
-        {   if (std::abs(err) < std::abs(errplus) &&
-                std::abs(err) < std::abs(errminus)) continue;
-            if (std::abs(err) == std::abs(errplus) &&
-                std::abs(err) < std::abs(errminus) && evenfloat(d)) continue;
-            if (std::abs(err) < std::abs(errplus) &&
-                std::abs(err) == std::abs(errminus) && evenfloat(d)) continue;
+        {   if (abs(err) < abs(errplus) &&
+                abs(err) < abs(errminus)) continue;
+            if (abs(err) == abs(errplus) &&
+                abs(err) < abs(errminus) && evenfloat(d)) continue;
+            if (abs(err) < abs(errplus) &&
+                abs(err) == abs(errminus) && evenfloat(d)) continue;
         }
 
         std::cout << "FAILED on test " << i << std::endl;
@@ -818,7 +820,7 @@ int main(int argc, char *argv[])
         display("a", a);
         display("n", n);
         std::cout << "Failed " << std::endl;
-        std::abort();
+        abort();
         return 1;
     }
 

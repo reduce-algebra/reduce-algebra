@@ -33,6 +33,7 @@
 // $Id$
 
 #include <windows.h>
+#include <cstring>
 
 //
 // The purpose of this tiny program is to return (as an error-code)

@@ -777,7 +777,7 @@ void set_variables_from_page(Page *p)
 // Here I suppose there are no pinned items in the page. I set fringe and
 // limit such that on the very first allocation the code will grab a bit of
 // memory at gFringe.
-    fringe = limit[threadId] = limitBis[threadId] = gFringe = pFringe;
+    fringe::set(limit[threadId::get()] = limitBis[threadId::get()] = gFringe = pFringe);
     gLimit = pLimit;
     gNext = 0;
 }
@@ -786,8 +786,8 @@ void save_variables_to_page(Page *p)
 {
 // Dump global variable values back into a page header. THIS IS NOT USEFUL
 // OR CORRECT YET!
-    p->pageHeader.fringe = fringe;
-    p->pageHeader.heaplimit  = limitBis[threadId];
+    p->pageHeader.fringe = fringe::get();
+    p->pageHeader.heaplimit  = limitBis[threadId::get()];
 }
 
 // This code allocates a segment by asking the operating system.
@@ -948,7 +948,7 @@ void releaseThreadNumber(int n)
 ThreadStartup::ThreadStartup()
 {   std::cout << "ThreadStartup" << std::endl;
     std::lock_guard<std::mutex> lock(mutex_for_gc);
-    threadId = allocateThreadNumber();
+    threadId::set(allocateThreadNumber());
 // The update here is just fine while I am in fact single threaded, but I
 // will need to review it when multiple threads can be in play.
     activeThreads.fetch_add(0x00010101);
@@ -957,7 +957,7 @@ ThreadStartup::ThreadStartup()
 ThreadStartup::~ThreadStartup()
 {   std::cout << "~ThreadStartup" << std::endl;
     std::lock_guard<std::mutex> lock(mutex_for_gc);
-    releaseThreadNumber(threadId);
+    releaseThreadNumber(threadId::get());
     activeThreads.fetch_sub(0x00010101);
 }
 
@@ -993,10 +993,10 @@ void initHeapSegments(double storeSize)
         reinterpret_cast<LispObject *>(
             std::aligned_alloc(16, NIL_SEGMENT_SIZE));
 #else
-    nilSegment =
+    nilSegmentBase =
        reinterpret_cast<LispObject *>(std::malloc(NIL_SEGMENT_SIZE+32));
-    nilSegment = static_cast<LispObject *>(
-        doubleword_align_up(static_cast<std::uintptr_t>(nilSegmentBase)));
+    nilSegment = reinterpret_cast<LispObject *>(
+        doubleword_align_up(reinterpret_cast<std::uintptr_t>(nilSegmentBase)));
 #endif
     if (nilSegment == NULL) fatal_error(err_no_store);
     nil = (LispObject)((std::uintptr_t)nilSegment + TAG_SYMBOL);
@@ -1005,10 +1005,10 @@ void initHeapSegments(double storeSize)
         reinterpret_cast<LispObject *>(
             std::aligned_alloc(16, CSL_PAGE_SIZE));
 #else
-    stackSegment =
+    stackSegmentBase =
         reinterpret_cast<LispObject *>(std::malloc(CSL_PAGE_SIZE+32));
-    stackSegment = static_cast<LispObject *>(
-        doubleword_align_up(static_cast<std::uintptr_t>(stackSegmentBase)));
+    stackSegment = reinterpret_cast<LispObject *>(
+        doubleword_align_up(reinterpret_cast<std::uintptr_t>(stackSegmentBase)));
 #endif
     if (stackSegment == NULL) fatal_error(err_no_store);
     stackBase = (LispObject *)stackSegment;
@@ -1101,15 +1101,7 @@ std::condition_variable cv_for_gc_busy;
 bool gc_complete;
 std::condition_variable cv_for_gc_complete;
 std::mutex gc_mutex;
-// See newallocate.h for why I do this - it is to make debugging easier.
-#if defined __cpp_inline_variables && \
-    !(defined __CYGWIN__ || defined __MINGE32__)
-//inline thread_local std::uintptr_t threadId;
-//inline thread_local std::uintptr_t fringe;
-#else // inline thread_local
-//static ThreadLocal<uintptr_t> threadId;
-//static ThreadLocal<uintptr_t> fringe;
-#endif // inline thread_local
+// fringe::get() declared in newallocate.h, as is threadId.
 std::atomic<std::uintptr_t> limit[maxThreads];
 std::uintptr_t              limitBis[maxThreads];
 std::uintptr_t              fringeBis[maxThreads];

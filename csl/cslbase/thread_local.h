@@ -49,100 +49,70 @@
 // thread-local support that has respectable performance, but which is
 // limited to storing values as "void ".
 //
-// The code here is to abstract over my responses to all this. I provide
-// two templates, used as follows:
-//      static ThreadLocal<int *> name;
-//   or static ThreadLocalRef<std::atomic<int>> name;
-// where the first case is for use if the type parameter is convertible to
-// and from void* and the second for more general cases.
-// The second then defined (name) as something whose type is a pointer to
-// the indicated type. The expected use is then that one goes something
-// along the lines of (name->load()) [or some other use of "->"]. This
-// visible level of indirection is because C++ allows for overloading of
-// "->" but not ".".
+// The code here is to abstract over my responses to all this. I used to have
+// a more elaborate scheme where I had fallen into the C++ trap of using too
+// many of its facilities all at once - templates, overloading rather basic
+// operators etc etc. That version avoided use of "#define" and means that
+// in the end the thread-local values I introduced could be referenced (almost)
+// as if they were simmple variable. However when I came to debug code that
+// used it each reference to such a variable made single-stepping my code
+// really bad, and on at least one occasion it seemed to crash gdb. So this is
+// a simpler scheme that puts less strain on the compiler's optimizer and
+// is what I am trying now.  To use it one replaces the definition of any
+// thread-local with
+//     declare_thread_local(name, T);
+// or  declare_thread_local_ref(name, T);
+// and both of those are (more or less) substitutes for
+//     inline thread_local T name;
+// Note that in this scheme there is no support for initializing the variable
+// at its point of definition. Then in the first case where "name" would have
+// been used the rest of the code has to write name::get() or name::set(value),
+// and in the second case only name::get() is supported.
+// The first version van be used when the type T can be converted to and from
+// a "void *", and that covers (obviously) any sort of pointer type but
+// also intptr_t and uintptr_t. The second case is intended for use when the
+// type T is an array or class type, and so usage will be of the form
+//    name::get()[index]   or name::get().field   or name::get().member(..)
 //
-// Note that even when used in a header file (which is where you should
-// generaly use this, because I do not provide an "extern" varient) and
-// expecting that the variable defined will be shared across all compilation
-// units you should use a "static" definition! That is because the template
-// expands to a wrapper that can and should be static but that arranges to
-// reference the thread-local value that is really wanted.
+// The macros here may introduce a class called "name_Ref", and "name" will
+// end of the name of a class (with a static member get()) rather than a
+// normal symbol. Tha implementation does not always make it naturally easy
+// to access the value from a debugger, and so if the symbol DEBUG is defined
+// at compile-time and if C++17 inline variables are supported I will arrange
+// that "name::val" holds the value in the first case and a reference to it
+// in the second. If you do not have inline variables supported then
+// "name::val" will be a static function that has defined within itself a
+// value called Val.
 
-// All this mess would not be needed if I only ever used compilers that
-// supported C++17 and also if I only ever ran on platforms where use
-// of the C++ thread_local keyword had at worst minimal overhead! 
 
-
-// The challenge is to make encapsulated things behave (almost) as
-// if they were simple variables. The trick that I use has three parts
-// the first is of the form
-//      inline T& getvar()
-//      {   thread_local T var;
-//          return var;
-//      }
-// where this arranges that even if the above occurs via multiple inclusions
-// of header files that only one instance per thread of (var) arises. And
-// getvar() returns a reference value to it. That copes with the desire to
-// have what is in effect an inline variable, but at this stage suffers
-// because every reference to it needs to go "getvar()" rather than "var".
+// What follows supports 3 cases:
+// (a) Cygwin/mingsw32 using the Microsoft thread-local API and assuming
+//     that the C++ compiler supports C++17 inline variables.
+// (b) Other platforms but making us of C++17 inline variables.
+// (c) A fallback for use with older C++ compilers and libraries.
 //
-// The second trick (mostly) overcomes that!
-//      class wrapper
-//      {
-//      public:
-//          operator T() { return getvar(); }
-//          wrapper& operator=(T value)
-//          {   getvar() = value;
-//              return *this;
-//          }
-//      }
-//      static wrapper name;
-// Now name is declared static and so it can be defined in multiple
-// compilation units, but the wrapper class has no data members and so
-// an instance of it does not consume a lot of space. If you take (name)
-// and use it where it will be cast to type T then the method that uses
-// getvar() is activated, while assignments to it are also intercepted
-// and dealt with nicely. There are cases where explicit casts of the
-// form (T)name may be required to make this happen, but very often usage
-// can be as if name was a simple variable. And a sufficiently good
-// compiler will render the function and method invocations inline
-// leading to hardly any overhead. Well the key overhead will be in
-// the function getvar() which may in principle want to do initialization
-// work for var the first time it is called, and so may use a hidden
-// "bool firstTime" flag to control that and so test that flag on all
-// subsequent calls. An update to use of C++17 will remove that (typically
-// rather modest) cost.
-//
-// The third thing that goes on is that on Microsoft platforms I use the
-// API involving TlsAlloc, TlsSetValue and TlsGetvalue to cope with
-// thread-locality - however for extra performance I provide inline
-// assembly-code functions to replace TlsGetValue and TlsSetValue, so my
-// version avoids the overhead of procedure calls when thread-local values
-// are referenced.
 
-#include <cinttypes>
-#include <mutex>
 
-// First define some utility functions for the Microsoft case...
+#if defined __cpp_inline_variables && \
+    (defined __CYGWIN__ || defined __MINGW32__)
 
-#ifndef DEBUG
-// Well if I am debugging I will not use all of my special scheme for
-// thread-local support under Windows. I will still end up with somewhat
-// complicated wrapper classes, but tracing code using gdb will be easier
-// with even a little less special "clever" code.
+// With Cygwin and mingw32 (as of 2019) the support of thread-local variables
+// uses a mechanism "emutls". For code that makes extensive use of such
+// variables in many separate little functions this can add severe overhead.
+// Microsoft provides a scheme of rather different style to support
+// thread-local. Direct use of it just allows the storage of "void *" values,
+// and there is a limit to how many can be stored -- although for my purposes
+// the limit is plenty high enough. Here I have code fragments that activate
+// the Microsoft scheme. And I go beyond that and provide inline definitions
+// of machine code replacements for the low-level access procedures so that
+// unless the preprocessor symbol CAUTIOUS is defined you have a chance for
+// yet further savings.
 
-#if defined __CYGWIN__ || defined __MINGW32__
-
-#define USE_MICROSOFT_API 1
-
-// If I go "#include <windows.h>" (well the bit I actually need seems to be
-// processthreadsapi.h) that tends to define all sorts of things that can
-// clash with my own code. So here I put in explicit declarations for the
-// thread-local support functions I use, trying rather hard to match just
-// what Windows will use.
+// Define some utility functions for the Microsoft case...
 
 extern "C"
 {
+
 // TlsAlloc() allocates a small integer that acts as a handle for a
 // fresh thread-local. Once such a handle has been allocated TlsSetValue and
 // TlsGetValue can save and load void * values from a location that it
@@ -153,7 +123,10 @@ extern "C"
 // handles will be slightly cheaper than via the remaining 1024). If a
 // value that you want to be thread-local can not be stored in a void * using
 // TlsSetValue then it is necessary to allocate space elsewhere and set the
-// Microsoft slot to point to it.
+// Microsoft slot to point to it. I really do not want to go
+// "#include <windows.h>" because that can pollute my name-space with macros
+// and definitions that can clash with definitions that are otherwise
+// important, and so I put in my own version of the declarations that I need.
 
 #ifdef __LP64__
 typedef unsigned int tls_handle;
@@ -163,11 +136,21 @@ typedef unsigned long tls_handle;
 
 extern __declspec(dllimport) tls_handle TlsAlloc(void);
 extern __declspec(dllimport) int TlsFree(tls_handle);
-// I will use my own replacements for the next two. But I include
-// declarations here for reference.
 extern __declspec(dllimport) void *TlsGetValue(tls_handle);
 extern __declspec(dllimport) int TlsSetValue(tls_handle, void *);
 };
+
+#ifdef CAUTIOUS
+
+inline void *tls_load(tls_handle teb_slot)
+{   return TlsGetValue(teb_slot);
+}
+
+inline void tls_store(tls_handle teb_slot, void *v)
+{   TlsSetValue(teb_slot, v);
+}
+
+#else // CAUTIOUS
 
 // The code here is intended and expected to behave exactly like a version
 // that calls the Microsoft-provided functions, except (1) it does not
@@ -242,379 +225,158 @@ inline void tls_store(tls_handle teb_slot, void *v)
         basic_TLS_offset + sizeof(void *)*teb_slot, v);
 }
 
-#endif // Microsoft case
+#endif // CAUTIOUS
 
+// The purpose of this class is to encapsulate an allocation of a slot in
+// Microsoft's table of TLS locations. In declare_thread_local I create a
+// static instance of it. It is guaranteed that the constructor here gets
+// called before and use of the object, and that the object outlasts any
+// possible use of it.
+
+class TlsHandle
+{
+public:
+    tls_handle h;
+    TlsHandle()
+    {   h = TlsAlloc();
+    }
+    ~TlsHandle()
+    {   TlsFree(h);
+    }
+};
+
+// declare_thread_local() can be used when the type passed is convertable to
+// void *, so intptr_t, uintptr_t and any sort of pointer should be OK.
+// Simple integers should be widened to (u)intptr_t for use here.
+
+#ifdef DEBUG
+#define declare_thread_local(name, Type)                      \
+class name                                                    \
+{                                                             \
+    static inline TlsHandle H;                                \
+    static inline thread_local Type val;                      \
+public:                                                       \
+    static Type get()                                         \
+    {   return (Type)tls_load(H.h);                           \
+    }                                                         \
+    static void set(Type v)                                   \
+    {   tls_store(H.h, (void *)v);                            \
+        val = v;                                              \
+    }                                                         \
+};
+#else // DEBUG
+#define declare_thread_local(name, Type)                      \
+class name                                                    \
+{                                                             \
+    static inline TlsHandle H;                                \
+public:                                                       \
+    static Type get()                                         \
+    {   return (Type)tls_load(H.h);                           \
+    }                                                         \
+    static void set(Type v)                                   \
+    {   tls_store(H.h, (void *)v);                            \
+    }                                                         \
+};
 #endif // DEBUG
 
-// Usage:   static ThreadLocal<T> var;
-//    acts rather like
-//          inline thread_local T var;
-//    or
-//          static ThreadLocal<T> var(init);
-//    for
-//          inline thread_local T var = init;
-// subject to a constraint that casting between T and void * must be valid.
-
-template <typename T>
-class ThreadLocal
-{
-    inline bool& initialized()
-    {   static bool flag;
-        return flag;
-    }
-    inline std::mutex& mutex()
-    {   static std::mutex m;
-        return m;
-    }
-#ifdef USE_MICROSOFT_API
-#ifdef __cpp_inline_variables
-// I need a single (ie not thread_local and not per-compilation-unit)
-// variable slotNumber to record the number in Microsoft's thread block.
-    static inline tls_handle slotNumber;
-    inline tls_handle& getSlotNumber()
-    {   return slotNumber;
-    }
-#else
-    inline tls_handle& getSlotNumber()
-    {   static tls_handle slotNumber;
-        return slotNumber;
-    }
-#endif
-// Simple thread-local values that can be case to and from (void *) are
-// then stored directly in the Microsoft table.
-    inline T getter()
-    {   return (T)tls_load(getSlotNumber());
-    }
-    inline void setter(T value)
-    {   tls_store(getSlotNumber(), (void *)value);
-    }
-#else // !Microsoft
-// In the non-Microsoft case I want just an "inline thread_local" variable,
-// but prior to C++17 I have to provide that via trickery.
-#ifdef __cpp_inline_variables
-    static inline thread_local T data;
-    inline T& getData()
-    {   return data;
-    }
-#else
-    inline T& getData()
-    {   thread_local T data;
-        return data;
-    }
-#endif
-    inline T getter()
-    {   return getData();
-    }
-    inline void setter(T value)
-    {   getData() = value;
-    }
-#endif // !Microsoft
-
-public:
-// Although there will be only one instance (per thread!) of the
-// thread-local value that this class encapsulates there can be many
-// instances of the class itself. There are no non-static fields in the
-// class and so an instance should not use up much (if any) space.
-// To be fully cautious I guard initialization with a mutex and with a
-// flag that ensures that it is done just once.
-    ThreadLocal()
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (!initialized())
-        {   initialized() = true;
-#ifdef USE_MICROSOFT_API
-            getSlotNumber() = TlsAlloc();
-#endif
-        }
-    }
-    ThreadLocal(T init)
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (!initialized())
-        {   initialized() = true;
-#ifdef USE_MICROSOFT_API
-            getSlotNumber() = TlsAlloc();
-#endif
-            setter(init);
-        }
-    }
-    ~ThreadLocal()
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (initialized())
-        {   initialized() = false;
-#ifdef USE_MICROSOFT_API
-            TlsFree(getSlotNumber());
-#endif
-        }
-    }
-    operator T() { return getter(); }
-    ThreadLocal& operator=(T val)
-    {   setter(val);
-        return *this;
-    }
-    ThreadLocal& operator+=(std::uintptr_t val)
-    {   setter(getter() + val);
-        return *this;
-    }
-    ThreadLocal& operator-=(std::uintptr_t val)
-    {   setter(getter() - val);
-        return *this;
-    }                                                 
+#define declare_thread_local_ref(name, Type)                  \
+class name ## _Ref                                            \
+{                                                             \
+    static Type* get()                                        \
+    {   static thread_local Type val;                         \
+        return &val;                                          \
+    }                                                         \
+public:                                                       \
+    static inline TlsHandle H;                                \
+    name ## _Ref()                                            \
+    {   tls_store(H.h, (void *)get());                        \
+    }                                                         \
+};                                                            \
+class name                                                    \
+{                                                             \
+public:                                                       \
+    static Type &get()                                        \
+    {   static thread_local name ## _Ref val;                 \
+        return *(Type *)tls_load(val.H.h);                    \
+    }                                                         \
 };
 
-// The version above can store thread_local values that can be converted
-// to void *. This next one will support other types. In the Microsoft
-// case it has to do that by first storing a thread_local instance
-// So
-//     static ThreadLocalRef<T> var;
-// behaves rather like
-//     inline thread_local T actual_var;
-//     inline thread_local T* var = &actual_var;
-// and this will perhaps most often be used when T is a class type, say with
-// fields a, b and c, and then
-//       var->a
-// etc can be used to access those fields. The indirection involved is
-// necessary in the Microsoft mapping and so is imposed in every case so
-// that usage is uniform.
+#elif defined __cpp_inline_variables
 
-template <typename T>
-class ThreadLocalRef
-{
-    inline bool& initialized()
-    {   static bool flag;
-        return flag;
-    }
-    inline std::mutex& mutex()
-    {   static std::mutex m;
-        return m;
-    }
-#ifdef USE_MICROSOFT_API
-#ifdef __cpp_inline_variables
-// I need a single (ie not thread_local and not per-compilation-unit)
-// variable slotNumber to record the number in Microsoft's thread block.
-    static inline tls_handle slotNumber;
-    inline tls_handle& getSlotNumber()
-    {   return slotNumber;
-    }
-#else
-    inline tls_handle& getSlotNumber()
-    {   static tls_handle slotNumber;
-        return slotNumber;
-    }
-#endif
-// Non-simple items have a pointer to them stored in the TLS slot, and
-// for this to happen there has to be an item to point to.
-#ifdef __cpp_inline_variables
-    static inline thread_local T data;
-    inline T* getData()
-    {   return &data;
-    }
-#else
-    inline T* getData()
-    {   thread_local T data;
-        return &data;
-    }
-#endif
-    inline T* getter()
-    {   return (T*)tls_load(getSlotNumber());
-    }
-    inline void setter(T value)
-    {   *(T*)tls_load(getSlotNumber()) = value;
-    }
-#else // !Microsoft
-// In the non-Microsoft case I want just an "inline thread_local" variable,
-// but prior to C++17 I have to provide that via trickery.
-#ifdef __cpp_inline_variables
-    static inline thread_local T data;
-    inline T* getData()
-    {   return &data;
-    }
-#else
-    inline T* getData()
-    {   thread_local T data;
-        return &data;
-    }
-#endif
-    inline T* getter()
-    {   return getData();
-    }
-    inline void setter(T value)
-    {   *getData() = value;
-    }
-#endif // !Microsoft
+// Here I have inline variables but I am not going to use any Microsoft
+// specialities - this is really just a simple wrapping of a plain
+//     inline thread_local T name;
+// declaration, with get() and set() methods solely to provide compatibility
+// with the other cases that have to be more complicated.
 
-public:
-    ThreadLocalRef()
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (!initialized())
-        {   initialized() = true;
-#ifdef USE_MICROSOFT_API
-            getSlotNumber() = TlsAlloc();
-            tls_store(getSlotNumber(), (void *)getData());
-#endif
-        }
-    }
-    ~ThreadLocalRef()
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (initialized())
-        {   initialized() = false;
-#ifdef USE_MICROSOFT_API
-            TlsFree(getSlotNumber());
-#endif
-        }
-    }
-    operator T*() { return getter(); }
-    
-    ThreadLocalRef& operator=(T val)
-    {   setter(val);
-        return *this;
-    }
-    T* operator->() { return getter(); }
+#define declare_thread_local(name, Type)                      \
+class name                                                    \
+{                                                             \
+    static inline thread_local Type val;                      \
+public:                                                       \
+    static Type& get()                                        \
+    {   return val;                                           \
+    }                                                         \
+    static void set(Type v)                                   \
+    {   val = v;                                              \
+    }                                                         \
 };
 
-// Now having set that bit of mechanism up I will provide something along
-// the same line JUST for supporting inline variables.
-// Thus
-//     static Inline<T> var;
-// may be used where if one was certain that the C++ compiler used was
-// modern enough it would have been more natural to write just
-//     inline T var;
-// As with Thread_local one can set an initial value as in
-//     static Inline<T> var(init);
-
-
-template <typename T>
-class Inline
-{
-    inline bool& initialized()
-    {   static bool flag;
-        return flag;
-    }
-    inline std::mutex& mutex()
-    {   static std::mutex m;
-        return m;
-    }
-#ifdef __cpp_inline_variables
-    static inline T data;
-    inline T& getData()
-    {   return data;
-    }
-#else
-    inline T& getData()
-    {   static T data;
-        return data;
-    }
-#endif
-    inline T getter()
-    {   return getData();
-    }
-    inline void setter(T value)
-    {   getData() = value;
-    }
-
-public:
-    Inline()
-    {
-    }
-    Inline(T init)
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (!initialized())
-        {   initialized() = true;
-            setter(init);
-        }
-    }
-    operator T() { return getter(); }
-    Inline& operator=(T val)
-    {   setter(val);
-        return *this;
-    }
-    Inline& operator+=(std::uintptr_t val)
-    {   setter(getter() + val);
-        return *this;
-    }
-    Inline& operator-=(std::uintptr_t val)
-    {   setter(getter() - val);
-        return *this;
-    }                                                 
+#define declare_thread_local_ref(name, Type)                  \
+class name                                                    \
+{                                                             \
+    static inline thread_local Type val;                      \
+public:                                                       \
+    static Type& get()                                        \
+    {   return val;                                           \
+    }                                                         \
 };
 
-// This is for inline variables where the type is a class.
+#else 
 
-template <typename T>
-class InlineRef
-{
-    inline bool& initialized()
-    {   static bool flag;
-        return flag;
-    }
-    inline std::mutex& mutex()
-    {   static std::mutex m;
-        return m;
-    }
-#ifdef __cpp_inline_variables
-    static inline thread_local T data;
-    inline T* getData()
-    {   return &data;
-    }
-#else
-    inline T* getData()
-    {   thread_local T data;
-        return &data;
-    }
-#endif
-    inline T* getter()
-    {   return getData();
-    }
-    inline void setter(T value)
-    {   *getData() = value;
-    }
+// Here I do not have C++17 inline variables, and I will assume that I
+// do not need to worry about Microsoft. I cope by wrapping variable
+// definitions within (inline) functions. Well all the methods in a class
+// are treated as inline without me needing to use that keyword.
+// This may have slightly inferior performance to the version that uses
+// inline variables in that the functions that encapsulate variable
+// definitions may feel the need to keep a "first time" flag and initialize
+// the variable on the first occasion that control traverses the definition.
+//
+// Well this case can also apply under Cygwin/mingw32 (and indeed elsewhere
+// if you do not specify "-std=c++17" as an option for g++. I view that as
+// possibly good since it lets me drop down to this simpler scheme if I
+// find it easier for use with a debugger!
 
-public:
-    operator T*() { return getter(); }
-    
-    InlineRef& operator=(T val)
-    {   setter(val);
-        return *this;
-    }
-    T* operator->() { return getter(); }
+#define declare_thread_local(name, Type)                      \
+class name                                                    \
+{                                                             \
+    static Type& val()                                        \
+    {   static thread_local Type Val;                         \
+        return Val;                                           \
+    }                                                         \
+public:                                                       \
+    static Type& get()                                        \
+    {   return val();                                         \
+    }                                                         \
+    static void set(Type v)                                   \
+    {   val() = v;                                            \
+    }                                                         \
 };
 
-#ifdef SMALL_TEST
+#define declare_thread_local_ref(name, Type)                  \
+class name                                                    \
+{                                                             \
+public:                                                       \
+    static Type& get()                                        \
+    {   static thread_local Type val;                         \
+        return val;                                           \
+    }                                                         \
+};
 
-// Some test code
-
-#include <iostream>
-#include <atomic>
-
-// Despite these being set up as "static" the thread-local variables
-// that they establish will be shared across all compilation units that
-// include this definition.
-
-static ThreadLocal<std::intptr_t> x(1);
-static ThreadLocalRef<std::atomic<std::intptr_t>> y;
-
-int main(int argc, char *argv[])
-{
-    std::cout << x << std::endl;
-    x = 3;
-    std::cout << x << std::endl;
-    x += 4;
-    std::cout << x << std::endl;
-    x = x + 4;
-    std::cout << x << std::endl;
-
-    y->store(17);
-    std::cout << y->load() << std::endl;
-    std::cout << y << std::endl;
-// If y had been just std::atomic<intptr_t> I could have gone
-//        intptr_t val = y;
-//     or std::cout << ((intptr_t)y) << std::endl;
-// but, with the wrapping, I need to use ->load() or things get confused.
-    return 0;
-}
-
-#endif // SMALL_TEST
+#endif // __cpp_inline_variables
 
 #endif // header_thread_local_h
 
 // end of thread_local.h
-
 

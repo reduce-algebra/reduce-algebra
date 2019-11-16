@@ -426,12 +426,14 @@
 // way of achieving the same through use of C++11 annotations. And a final
 // fall back to just not worrying.
 
+#ifndef MAYBE_UNUSED
 #ifdef __has_cpp_attribute_maybe_unused
 #define MAYBE_UNUSED [[maybe_unused]]
 #elif defined __GNUC__
 #define MAYBE_UNUSED [[gnu::unused]]
 #else
 #define MAYBE_UNUSED
+#endif
 #endif
 
 #include <cstdio>
@@ -451,7 +453,6 @@
 #include <chrono>
 #include <utility>
 #include <string>
-#include <thread>
 #include <chrono>
 #include <mutex>
 #include <atomic>
@@ -526,16 +527,14 @@ inline std::mutex &diagnostic_mutex(const char ***where)
     std::abort();
 }
 
-#undef abort
-
-// This version of an abort() macro established a log_guard so that only one
+// This version of an abort() macro established a lock_guard so that only one
 // part of the code can be aborting at any one time, and sets up information
 // about the file and line where trouble arose. It could cope with arbitrary
 // overloads of abort1() and the fact that the location information is not
 // passed as an extra argument to abort1() is because of limitations in
 // __VA_ARGS__ in portable code until C++2a.
 
-#define abort(...)                                                         \
+#define arithlib_abort(...)                                                         \
     {   const char **where;                                                \
         std::lock_guard<std::mutex> lock(                                  \
             arithlib_implementation::diagnostic_mutex(&where));                           \
@@ -567,7 +566,7 @@ inline void assert1(bool ok, const char *why,
                     F&& action, const char *location)
 {
 // Use this as in:
-//     assert(predicate, [&]{...});
+//     arithlib_assert(predicate, [&]{...});
 // where the "..." is an arbitrary sequence of actions to be taken
 // if the assertion fails. The action will typically be to display
 // extra information about what went wrong.
@@ -583,7 +582,7 @@ inline void assert1(bool ok, const char *why,
 inline void assert1(bool ok, const char *why, const char *location)
 {
 // For simple use where a customised message is not required:
-//     assert(predicate);
+//     arithlib_assert(predicate);
     if (debug_arith && !ok)
     {   const char **where;
         std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
@@ -592,10 +591,9 @@ inline void assert1(bool ok, const char *why, const char *location)
     }
 }
 
-#undef assert
-
-#define assert(...)                                                \
-    arithlib_implementation::assert1(__VA_ARGS__, "assert(" #__VA_ARGS__ ")",     \
+#define arithlib_assert(...)                                 \
+    arithlib_implementation::assert1(__VA_ARGS__,            \
+                      "arithlib_assert(" #__VA_ARGS__ ")",   \
                       __FILE__ " line " STRINGIFY(__LINE__))
 
 
@@ -731,13 +729,15 @@ namespace std
     }
 }
 
-// #include "thread_local.h"
+// Provide better support for thread-local values.
+// I could go '#include "thread_local.h"' here if I knew that that header
+// file was available, but I want arithlib.hpp to be totally freestanding.
+// To achieve that I textually insert a copy of thread_local.h, including the
+// guards that avoid it being scanned more than once.
 
-// I include the contents of the file "thread_local.h" so that this
-// arithlib.h stuff ends up as a single header file. The coding here
-// arranges that is "thread_local.h" is also included otherwise either
-// before or after this there will be no problem, but I will need
-// to remember to refresh what I have here any time I update that file.
+#ifdef CSL
+#include "thread_local.h"
+#else // CSL
 
 // thread_local.h                                 Copyright A C Norman 2019
 
@@ -773,7 +773,7 @@ namespace std
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: thread_local.h 5143 2019-09-22 15:07:16Z arthurcnorman $
+// $Id: thread_local.h 5180 2019-10-31 23:30:57Z arthurcnorman $
 
 
 // There are time when I want to write
@@ -790,85 +790,108 @@ namespace std
 // thread-local support that has respectable performance, but which is
 // limited to storing values as "void ".
 //
-// The code here is to abstract over my responses to all this. I provide
-// two templates, used as follows:
-//      static ThreadLocal<int *> name;
-//   or static ThreadLocalRef<std::atomic<int>> name;
-// where the first case is for use if the type parameter is convertible to
-// and from void* and the second for more general cases.
-// The second then defined (name) as something whose type is a pointer to
-// the indicated type. The expected use is then that one goes something
-// along the lines of (name->load()) [or some other use of "->"]. This
-// visible level of indirection is because C++ allows for overloading of
-// "->" but not ".".
+// The code here is to abstract over my responses to all this. I used to have
+// a more elaborate scheme where I had fallen into the C++ trap of using too
+// many of its facilities all at once - templates, overloading rather basic
+// operators etc etc. That version avoided use of "#define" and means that
+// in the end the thread-local values I introduced could be referenced (almost)
+// as if they were simmple variable. However when I came to debug code that
+// used it each reference to such a variable made single-stepping my code
+// really bad, and on at least one occasion it seemed to crash gdb. So this is
+// a simpler scheme that puts less strain on the compiler's optimizer and
+// is what I am trying now.  To use it one replaces the definition of any
+// thread-local with
+//     declare_thread_local(name, T);
+// or  declare_thread_local_ref(name, T);
+// and both of those are (more or less) substitutes for
+//     inline thread_local T name;
+// Note that in this scheme there is no support for initializing the variable
+// at its point of definition. Then in the first case where "name" would have
+// been used the rest of the code has to write name::get() or name::set(value),
+// and in the second case only name::get() is supported.
+// The first version van be used when the type T can be converted to and from
+// a "void *", and that covers (obviously) any sort of pointer type but
+// also intptr_t and uintptr_t. The second case is intended for use when the
+// type T is an array or class type, and so usage will be of the form
+//    name::get()[index]   or name::get().field   or name::get().member(..)
 //
-// Note that even when used in a header file (which is where you should
-// generaly use this, because I do not provide an "extern" varient) and
-// expecting that the variable defined will be shared across all compilation
-// units you should use a "static" definition! That is because the template
-// expands to a wrapper that can and should be static but that arranges to
-// reference the thread-local value that is really wanted.
+// The macros here may introduce a class called "name_Ref", and "name" will
+// end of the name of a class (with a static member get()) rather than a
+// normal symbol. Tha implementation does not always make it naturally easy
+// to access the value from a debugger, and so if the symbol DEBUG is defined
+// at compile-time and if C++17 inline variables are supported I will arrange
+// that "name::val" holds the value in the first case and a reference to it
+// in the second. If you do not have inline variables supported then
+// "name::val" will be a static function that has defined within itself a
+// value called Val.
 
-// All this mess would not be needed if I only ever used compilers that
-// supported C++17 and also if I only ever ran on platforms where use
-// of the C++ thread_local keyword had at worst minimal overhead! 
 
-
-// The challenge is to make encapsulated things behave (almost) as
-// if they were simple variables. The trick that I use has three parts
-// the first is of the form
-//      inline T& getvar()
-//      {   thread_local T var;
-//          return var;
-//      }
-// where this arranges that even if the above occurs via multiple inclusions
-// of header files that only one instance per thread of (var) arises. And
-// getvar() returns a reference value to it. That copes with the desire to
-// have what is in effect an inline variable, but at this stage suffers
-// because every reference to it needs to go "getvar()" rather than "var".
+// What follows supports 3 cases:
+// (a) Cygwin/mingsw32 using the Microsoft thread-local API and assuming
+//     that the C++ compiler supports C++17 inline variables.
+// (b) Other platforms but making us of C++17 inline variables.
+// (c) A fallback for use with older C++ compilers and libraries.
 //
-// The second trick (mostly) overcomes that!
-//      class wrapper
-//      {
-//      public:
-//          operator T() { return getvar(); }
-//          wrapper& operator=(T value)
-//          {   getvar() = value;
-//              return *this;
-//          }
-//      }
-//      static wrapper name;
-// Now name is declared static and so it can be defined in multiple
-// compilation units, but the wrapper class has no data members and so
-// an instance of it does not consume a lot of space. If you take (name)
-// and use it where it will be cast to type T then the method that uses
-// getvar() is activated, while assignments to it are also intercepted
-// and dealt with nicely. There are cases where explicit casts of the
-// form (T)name may be required to make this happen, but very often usage
-// can be as if name was a simple variable. And a sufficiently good
-// compiler will render the function and method invocations inline
-// leading to hardly any overhead. Well the key overhead will be in
-// the function getvar() which may in principle want to do initialization
-// work for var the first time it is called, and so may use a hidden
-// "bool firstTime" flag to control that and so test that flag on all
-// subsequent calls. An update to use of C++17 will remove that (typically
-// rather modest) cost.
-//
-// The third thing that goes on is that on Microsoft platforms I use the
-// API involving TlsAlloc, TlsSetValue and TlsGetvalue to cope with
-// thread-locality - however for extra performance I provide inline
-// assembly-code functions to replace TlsGetValue and TlsSetValue, so my
-// version avoids the overhead of procedure calls when thread-local values
-// are referenced.
 
-#include <cinttypes>
-#include <mutex>
 
-// First define some utility functions for the Microsoft case...
+#if defined __cpp_inline_variables && \
+    (defined __CYGWIN__ || defined __MINGW32__)
 
-#if defined __CYGWIN__ || defined __MINGW32__
+// With Cygwin and mingw32 (as of 2019) the support of thread-local variables
+// uses a mechanism "emutls". For code that makes extensive use of such
+// variables in many separate little functions this can add severe overhead.
+// Microsoft provides a scheme of rather different style to support
+// thread-local. Direct use of it just allows the storage of "void *" values,
+// and there is a limit to how many can be stored -- although for my purposes
+// the limit is plenty high enough. Here I have code fragments that activate
+// the Microsoft scheme. And I go beyond that and provide inline definitions
+// of machine code replacements for the low-level access procedures so that
+// unless the preprocessor symbol CAUTIOUS is defined you have a chance for
+// yet further savings.
 
-#include <windows.h>
+// Define some utility functions for the Microsoft case...
+
+extern "C"
+{
+
+// TlsAlloc() allocates a small integer that acts as a handle for a
+// fresh thread-local. Once such a handle has been allocated TlsSetValue and
+// TlsGetValue can save and load void * values from a location that it
+// refers to. This location will in fact by found relative to either the FS
+// or GS segment register. When the handle is no longer required it will be
+// proper to cell TlsFree to release it. One can certainly not allocate more
+// than 1088 handles (this value is 64+1024, and access via the first 64
+// handles will be slightly cheaper than via the remaining 1024). If a
+// value that you want to be thread-local can not be stored in a void * using
+// TlsSetValue then it is necessary to allocate space elsewhere and set the
+// Microsoft slot to point to it. I really do not want to go
+// "#include <windows.h>" because that can pollute my name-space with macros
+// and definitions that can clash with definitions that are otherwise
+// important, and so I put in my own version of the declarations that I need.
+
+#ifdef __LP64__
+typedef unsigned int tls_handle;
+#else
+typedef unsigned long tls_handle;
+#endif
+
+extern __declspec(dllimport) tls_handle TlsAlloc(void);
+extern __declspec(dllimport) int TlsFree(tls_handle);
+extern __declspec(dllimport) void *TlsGetValue(tls_handle);
+extern __declspec(dllimport) int TlsSetValue(tls_handle, void *);
+};
+
+#ifdef CAUTIOUS
+
+inline void *tls_load(tls_handle teb_slot)
+{   return TlsGetValue(teb_slot);
+}
+
+inline void tls_store(tls_handle teb_slot, void *v)
+{   TlsSetValue(teb_slot, v);
+}
+
+#else // CAUTIOUS
 
 // The code here is intended and expected to behave exactly like a version
 // that calls the Microsoft-provided functions, except (1) it does not
@@ -901,7 +924,7 @@ namespace std
 #define extended_TLS_offset        0x1780
 #endif // Windows 32 vs 64 bit
 
-inline void *read_via_segment_register(DWORD n)
+inline void *read_via_segment_register(tls_handle n)
 {   void *r;
     asm volatile
     (   MOVE_INSTRUCTION "  " SEGMENT_REGISTER ":(%1), %0"
@@ -912,7 +935,7 @@ inline void *read_via_segment_register(DWORD n)
     return r;
 }
 
-inline void write_via_segment_register(DWORD n, void *v)
+inline void write_via_segment_register(tls_handle n, void *v)
 {   asm volatile
     (   MOVE_INSTRUCTION " %0, " SEGMENT_REGISTER ":(%1)"
         :
@@ -921,403 +944,187 @@ inline void write_via_segment_register(DWORD n, void *v)
     );
 }
 
-inline void *extended_tls_load(DWORD teb_slot)
+inline void *extended_tls_load(tls_handle teb_slot)
 {   void **a = (void **)read_via_segment_register(extended_TLS_offset);
     return a[teb_slot - 64];
 }
 
-inline void extended_tls_store(DWORD teb_slot, void *v)
+inline void extended_tls_store(tls_handle teb_slot, void *v)
 {   void **a = (void **)read_via_segment_register(extended_TLS_offset);
     a[teb_slot - 64] = v;
 }
 
-inline void *tls_load(DWORD teb_slot)
+inline void *tls_load(tls_handle teb_slot)
 {   if (teb_slot >= 64) return extended_tls_load(teb_slot);
     else return (void *)read_via_segment_register(
         basic_TLS_offset + sizeof(void *)*teb_slot);
 }
 
-inline void tls_store(DWORD teb_slot, void *v)
+inline void tls_store(tls_handle teb_slot, void *v)
 {   if (teb_slot >= 64) return extended_tls_store(teb_slot, v);
     else write_via_segment_register(
         basic_TLS_offset + sizeof(void *)*teb_slot, v);
 }
 
-#define USE_MICROSOFT_API 1
+#endif // CAUTIOUS
 
-#endif // Microsoft case
+// The purpose of this class is to encapsulate an allocation of a slot in
+// Microsoft's table of TLS locations. In declare_thread_local I create a
+// static instance of it. It is guaranteed that the constructor here gets
+// called before and use of the object, and that the object outlasts any
+// possible use of it.
 
-
-// Usage:   static ThreadLocal<T> var;
-//    acts rather like
-//          inline thread_local T var;
-//    or
-//          static ThreadLocal<T> var(init);
-//    for
-//          inline thread_local T var = init;
-// subject to a constraint that casting between T and void * must be valid.
-
-template <typename T>
-class ThreadLocal
+class TlsHandle
 {
-    inline bool& initialized()
-    {   static bool flag;
-        return flag;
-    }
-    inline std::mutex& mutex()
-    {   static std::mutex m;
-        return m;
-    }
-#ifdef USE_MICROSOFT_API
-#ifdef __cpp_inline_variables
-// I need a single (ie not thread_local and not per-compilation-unit)
-// variable slotNumber to record the number in Microsoft's thread block.
-    static inline DWORD slotNumber;
-    inline DWORD& getSlotNumber()
-    {   return slotNumber;
-    }
-#else
-    inline DWORD& getSlotNumber()
-    {   static DWORD slotNumber;
-        return slotNumber;
-    }
-#endif
-// Simple thread-local values that can be case to and from (void *) are
-// then stored directly in the Microsoft table.
-    inline T getter()
-    {   return (T)tls_load(getSlotNumber());
-    }
-    inline void setter(T value)
-    {   tls_store(getSlotNumber(), (void *)value);
-    }
-#else // !Microsoft
-// In the non-Microsoft case I want just an "inline thread_local" variable,
-// but prior to C++17 I have to provide that via trickery.
-#ifdef __cpp_inline_variables
-    static inline thread_local T data;
-    inline T& getData()
-    {   return data;
-    }
-#else
-    inline T& getData()
-    {   thread_local T data;
-        return data;
-    }
-#endif
-    inline T getter()
-    {   return getData();
-    }
-    inline void setter(T value)
-    {   getData() = value;
-    }
-#endif // !Microsoft
-
 public:
-// Although there will be only one instance (per thread!) of the
-// thread-local value that this class encapsulates there can be many
-// instances of the class itself. There are no non-static fields in the
-// class and so an instance should not use up much (if any) space.
-// To be fully cautious I guard initialization with a mutex and with a
-// flag that ensures that it is done just once.
-    ThreadLocal()
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (!initialized())
-        {   initialized() = true;
-#ifdef USE_MICROSOFT_API
-            getSlotNumber() = TlsAlloc();
-#endif
-        }
+    tls_handle h;
+    TlsHandle()
+    {   h = TlsAlloc();
     }
-    ThreadLocal(T init)
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (!initialized())
-        {   initialized() = true;
-#ifdef USE_MICROSOFT_API
-            getSlotNumber() = TlsAlloc();
-#endif
-            setter(init);
-        }
+    ~TlsHandle()
+    {   TlsFree(h);
     }
-    ~ThreadLocal()
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (initialized())
-        {   initialized() = false;
-#ifdef USE_MICROSOFT_API
-            TlsFree(getSlotNumber());
-#endif
-        }
-    }
-    operator T() { return getter(); }
-    ThreadLocal& operator=(T val)
-    {   setter(val);
-        return *this;
-    }
-    ThreadLocal& operator+=(uintptr_t val)
-    {   setter(getter() + val);
-        return *this;
-    }
-    ThreadLocal& operator-=(uintptr_t val)
-    {   setter(getter() - val);
-        return *this;
-    }                                                 
 };
 
-// The version above can store thread_local values that can be converted
-// to void *. This next one will support other types. In the Microsoft
-// case it has to do that by first storing a thread_local instance
-// So
-//     static ThreadLocalRef<T> var;
-// behaves rather like
-//     inline thread_local T actual_var;
-//     inline thread_local T* var = &actual_var;
-// and this will perhaps most often be used when T is a class type, say with
-// fields a, b and c, and then
-//       var->a
-// etc can be used to access those fields. The indirection involved is
-// necessary in the Microsoft mapping and so is imposed in every case so
-// that usage is uniform.
+// declare_thread_local() can be used when the type passed is convertable to
+// void *, so intptr_t, uintptr_t and any sort of pointer should be OK.
+// Simple integers should be widened to (u)intptr_t for use here.
 
-template <typename T>
-class ThreadLocalRef
-{
-    inline bool& initialized()
-    {   static bool flag;
-        return flag;
-    }
-    inline std::mutex& mutex()
-    {   static std::mutex m;
-        return m;
-    }
-#ifdef USE_MICROSOFT_API
-#ifdef __cpp_inline_variables
-// I need a single (ie not thread_local and not per-compilation-unit)
-// variable slotNumber to record the number in Microsoft's thread block.
-    static inline DWORD slotNumber;
-    inline DWORD& getSlotNumber()
-    {   return slotNumber;
-    }
-#else
-    inline DWORD& getSlotNumber()
-    {   static DWORD slotNumber;
-        return slotNumber;
-    }
-#endif
-// Non-simple items have a pointer to them stored in the TLS slot, and
-// for this to happen there has to be an item to point to.
-#ifdef __cpp_inline_variables
-    static inline thread_local T data;
-    inline T* getData()
-    {   return &data;
-    }
-#else
-    inline T* getData()
-    {   thread_local T data;
-        return &data;
-    }
-#endif
-    inline T* getter()
-    {   return (T*)tls_load(getSlotNumber());
-    }
-    inline void setter(T value)
-    {   *(T*)tls_load(getSlotNumber()) = value;
-    }
-#else // !Microsoft
-// In the non-Microsoft case I want just an "inline thread_local" variable,
-// but prior to C++17 I have to provide that via trickery.
-#ifdef __cpp_inline_variables
-    static inline thread_local T data;
-    inline T* getData()
-    {   return &data;
-    }
-#else
-    inline T* getData()
-    {   thread_local T data;
-        return &data;
-    }
-#endif
-    inline T* getter()
-    {   return getData();
-    }
-    inline void setter(T value)
-    {   *getData() = value;
-    }
-#endif // !Microsoft
+#ifdef DEBUG
+#define declare_thread_local(name, Type)                      \
+class name                                                    \
+{                                                             \
+    static inline TlsHandle H;                                \
+    static inline thread_local Type val;                      \
+public:                                                       \
+    static Type get()                                         \
+    {   return (Type)tls_load(H.h);                           \
+    }                                                         \
+    static void set(Type v)                                   \
+    {   tls_store(H.h, (void *)v);                            \
+        val = v;                                              \
+    }                                                         \
+};
+#else // DEBUG
+#define declare_thread_local(name, Type)                      \
+class name                                                    \
+{                                                             \
+    static inline TlsHandle H;                                \
+public:                                                       \
+    static Type get()                                         \
+    {   return (Type)tls_load(H.h);                           \
+    }                                                         \
+    static void set(Type v)                                   \
+    {   tls_store(H.h, (void *)v);                            \
+    }                                                         \
+};
+#endif // DEBUG
 
-public:
-    ThreadLocalRef()
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (!initialized())
-        {   initialized() = true;
-#ifdef USE_MICROSOFT_API
-            getSlotNumber() = TlsAlloc();
-            tls_store(getSlotNumber(), (void *)getData());
-#endif
-        }
-    }
-    ~ThreadLocalRef()
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (initialized())
-        {   initialized() = false;
-#ifdef USE_MICROSOFT_API
-            TlsFree(getSlotNumber());
-#endif
-        }
-    }
-    operator T*() { return getter(); }
-    
-    ThreadLocalRef& operator=(T val)
-    {   setter(val);
-        return *this;
-    }
-    T* operator->() { return getter(); }
+#define declare_thread_local_ref(name, Type)                  \
+class name ## _Ref                                            \
+{                                                             \
+    static Type* get()                                        \
+    {   static thread_local Type val;                         \
+        return &val;                                          \
+    }                                                         \
+public:                                                       \
+    static inline TlsHandle H;                                \
+    name ## _Ref()                                            \
+    {   tls_store(H.h, (void *)get());                        \
+    }                                                         \
+};                                                            \
+class name                                                    \
+{                                                             \
+public:                                                       \
+    static Type &get()                                        \
+    {   static thread_local name ## _Ref val;                 \
+        return *(Type *)tls_load(val.H.h);                    \
+    }                                                         \
 };
 
-// Now having set that bit of mechanism up I will provide something along
-// the same line JUST for supporting inline variables.
-// Thus
-//     static Inline<T> var;
-// may be used where if one was certain that the C++ compiler used was
-// modern enough it would have been more natural to write just
-//     inline T var;
-// As with Thread_local one can set an initial value as in
-//     static Inline<T> var(init);
+#elif defined __cpp_inline_variables
 
+// Here I have inline variables but I am not going to use any Microsoft
+// specialities - this is really just a simple wrapping of a plain
+//     inline thread_local T name;
+// declaration, with get() and set() methods solely to provide compatibility
+// with the other cases that have to be more complicated.
 
-template <typename T>
-class Inline
-{
-    inline bool& initialized()
-    {   static bool flag;
-        return flag;
-    }
-    inline std::mutex& mutex()
-    {   static std::mutex m;
-        return m;
-    }
-#ifdef __cpp_inline_variables
-    static inline T data;
-    inline T& getData()
-    {   return data;
-    }
-#else
-    inline T& getData()
-    {   static T data;
-        return data;
-    }
-#endif
-    inline T getter()
-    {   return getData();
-    }
-    inline void setter(T value)
-    {   getData() = value;
-    }
-
-public:
-    Inline()
-    {
-    }
-    Inline(T init)
-    {   std::lock_guard<std::mutex> lock(mutex());
-        if (!initialized())
-        {   initialized() = true;
-            setter(init);
-        }
-    }
-    operator T() { return getter(); }
-    Inline& operator=(T val)
-    {   setter(val);
-        return *this;
-    }
-    Inline& operator+=(uintptr_t val)
-    {   setter(getter() + val);
-        return *this;
-    }
-    Inline& operator-=(uintptr_t val)
-    {   setter(getter() - val);
-        return *this;
-    }                                                 
+#define declare_thread_local(name, Type)                      \
+class name                                                    \
+{                                                             \
+    static inline thread_local Type val;                      \
+public:                                                       \
+    static Type& get()                                        \
+    {   return val;                                           \
+    }                                                         \
+    static void set(Type v)                                   \
+    {   val = v;                                              \
+    }                                                         \
 };
 
-// This is for inline variables where the type is a class.
-
-template <typename T>
-class InlineRef
-{
-    inline bool& initialized()
-    {   static bool flag;
-        return flag;
-    }
-    inline std::mutex& mutex()
-    {   static std::mutex m;
-        return m;
-    }
-#ifdef __cpp_inline_variables
-    static inline thread_local T data;
-    inline T* getData()
-    {   return &data;
-    }
-#else
-    inline T* getData()
-    {   thread_local T data;
-        return &data;
-    }
-#endif
-    inline T* getter()
-    {   return getData();
-    }
-    inline void setter(T value)
-    {   *getData() = value;
-    }
-
-public:
-    operator T*() { return getter(); }
-    
-    InlineRef& operator=(T val)
-    {   setter(val);
-        return *this;
-    }
-    T* operator->() { return getter(); }
+#define declare_thread_local_ref(name, Type)                  \
+class name                                                    \
+{                                                             \
+    static inline thread_local Type val;                      \
+public:                                                       \
+    static Type& get()                                        \
+    {   return val;                                           \
+    }                                                         \
 };
 
-#ifdef SMALL_TEST
+#else 
 
-// Some test code
+// Here I do not have C++17 inline variables, and I will assume that I
+// do not need to worry about Microsoft. I cope by wrapping variable
+// definitions within (inline) functions. Well all the methods in a class
+// are treated as inline without me needing to use that keyword.
+// This may have slightly inferior performance to the version that uses
+// inline variables in that the functions that encapsulate variable
+// definitions may feel the need to keep a "first time" flag and initialize
+// the variable on the first occasion that control traverses the definition.
+//
+// Well this case can also apply under Cygwin/mingw32 (and indeed elsewhere
+// if you do not specify "-std=c++17" as an option for g++. I view that as
+// possibly good since it lets me drop down to this simpler scheme if I
+// find it easier for use with a debugger!
 
-#include <iostream>
-#include <atomic>
+#define declare_thread_local(name, Type)                      \
+class name                                                    \
+{                                                             \
+    static Type& val()                                        \
+    {   static thread_local Type Val;                         \
+        return Val;                                           \
+    }                                                         \
+public:                                                       \
+    static Type& get()                                        \
+    {   return val();                                         \
+    }                                                         \
+    static void set(Type v)                                   \
+    {   val() = v;                                            \
+    }                                                         \
+};
 
-// Despite these being set up as "static" the thread-local variables
-// that they establish will be shared across all compilation units that
-// include this definition.
+#define declare_thread_local_ref(name, Type)                  \
+class name                                                    \
+{                                                             \
+public:                                                       \
+    static Type& get()                                        \
+    {   static thread_local Type val;                         \
+        return val;                                           \
+    }                                                         \
+};
 
-static ThreadLocal<intptr_t> x(1);
-static ThreadLocalRef<std::atomic<intptr_t>> y;
-
-int main(int argc, char *argv[])
-{
-    std::cout << x << std::endl;
-    x = 3;
-    std::cout << x << std::endl;
-    x += 4;
-    std::cout << x << std::endl;
-    x = x + 4;
-    std::cout << x << std::endl;
-
-    y->store(17);
-    std::cout << y->load() << std::endl;
-    std::cout << y << std::endl;
-// If y had been just std::atomic<intptr_t> I could have gone
-//        intptr_t val = y;
-//     or std::cout << ((intptr_t)y) << std::endl;
-// but, with the wrapping, I need to use ->load() or things get confused.
-    return 0;
-}
-
-#endif // SMALL_TEST
+#endif // __cpp_inline_variables
 
 #endif // header_thread_local_h
 
 // end of thread_local.h
+
+#endif // CSL
+
+// end of schemes that are to do with thread-local support
+
 
 namespace arithlib_implementation
 {
@@ -1395,6 +1202,23 @@ namespace arithlib_implementation
 
 #if defined __CYGWIN__ || defined __MINGW32__
 #define USE_MICROSOFT_MUTEX 1
+
+extern "C"
+{
+struct SecApp
+{   uintptr_t nLength;
+    void *lpSecurityDescriptor;
+    int bINheritHandle;
+};
+
+extern __declspec(dllimport)  void *
+    CreateMutexA(SecApp *, uintptr_t, const char *);
+extern __declspec(dllimport) int CloseHandle(void *);
+extern __declspec(dllimport) int ReleaseMutex(void *);
+extern __declspec(dllimport) void *
+    WaitForSingleObject(void *, uintptr_t);
+};
+
 #endif // __CYGWIN__ or __MINGW32__
 
 class Worker_data
@@ -1524,7 +1348,7 @@ public:
 // exactly one copy gets made for each top-level thread that calls this,
 // ie that uses a huge multiplication.
 
-static ThreadLocalRef<Driver_data> driver_data;
+declare_thread_local_ref(driver_data, Driver_data);
 
 // Declare a number of functions that might usefully be used elsewhere. If
 // I declare them "inline" then it will be OK even if I include this header
@@ -1643,17 +1467,17 @@ INLINE_VAR realloc_t *realloc_function = realloc;
 INLINE_VAR free_t    *free_function   = free;
 
 inline uint64_t *reserve(size_t n)
-{   assert(n>0);
+{   arithlib_assert(n>0);
     uint64_t *r = (uint64_t *)(*malloc_function)((n+1)*sizeof(uint64_t));
-    assert(r != NULL);
+    arithlib_assert(r != NULL);
     return &r[1];
 }
 
 inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
-{   assert(final>0 && n>=final);
+{   artithlib_assert(final>0 && n>=final);
     p = (uint64_t *)
         (*realloc_function)((void *)&p[-1], (final_n+1)*sizeof(uint64_t));
-    assert(p != NULL);
+    arithlib_assert(p != NULL);
     p[0] = final_n;
     return vector_to_handle(&p[1]);
 }
@@ -1661,7 +1485,7 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
 // In this model confirm_size_x() is just the same as confirm_size().
 
 inline intptr_t confirm_size_x(uint64_t *p, size_t n, size_t final)
-{   assert(final>0 && n>=final);
+{   arithlib_assert(final>0 && n>=final);
     confirm_size(p, n, final);
 }
 
@@ -1673,7 +1497,7 @@ inline void abandon(uint64_t *p)
 
 inline char *reserve_string(size_t n)
 {   char *r = (char *)(*malloc_function)(n+1);
-    assert(r != NULL);
+    arithlib_assert(r != NULL);
     return r;
 }
 
@@ -1684,7 +1508,7 @@ inline char *reserve_string(size_t n)
 // be a good bargain.
 
 inline char *confirm_size_string(char *p, size_t n, size_t final)
-{   assert(final>0 && (n+9)>final);
+{   arithlib_assert(final>0 && (n+9)>final);
     r[final] = 0;
     return r;
 }
@@ -1705,7 +1529,7 @@ inline uint64_t *vector_of_handle(intptr_t n)
 }
 
 inline size_t number_size(uint64_t *p)
-{   assert(p[-1]!=0);
+{   arithlib_assert(p[-1]!=0);
     return p[-1];
 }
 
@@ -1826,10 +1650,28 @@ std::mutex& freechain_mutex()
 typedef uint64_t *freechain_table_type[64];
 
 #ifdef ARITHLIB_THREAD_LOCAL
-static ThreadLocalRef<freechain_table_type> freechain_table;
-#else
-static InlineRef<freechain_table_type> freechain_table;
-#endif
+declare_thread_local_ref(freechain_table, freechain_table_type);
+#else // ARITHLIB_THREAD_LOCAL
+#ifdef __cpp_inline_variables
+class freechain_table
+{
+    static inline freechain_table_type freechain_table_Var;
+public:
+    static freechain_table_type& get()
+    {   return freechain_table_Var;
+    }
+};
+#else // __cpp_inline_variables
+class freechain_table
+{
+public:
+    static freechain_table_type& get()
+    {   static freechain_table_type freechain_table_Var;
+        return freechain_table_Var;
+    }
+};
+#endif // __cpp_inline_variables
+#endif // ARITHLIB_THREAD_LOCAL
 
 class Freechains
 {
@@ -1843,13 +1685,13 @@ private:
 
 public:
     Freechains()
-    {   for (int i=0; i<64; i++) (*freechain_table)[i] = NULL;
+    {   for (int i=0; i<64; i++) (freechain_table::get())[i] = NULL;
     }
 
     ~Freechains()
     {   if (debug_arith) std::cout << "Destructor being called" << std::endl;
         for (size_t i=0; i<64; i++)
-        {   uint64_t *f = (*freechain_table)[i];
+        {   uint64_t *f = (freechain_table::get())[i];
             if (debug_arith)
 // Report how many entries there are in the freechain.
             {   size_t n = 0;
@@ -1858,7 +1700,7 @@ public:
 // freechains here should show that. I set and test for that in the other
 // bits of code that allocate or release memory.
                 for (uint64_t *b=f; b!=NULL; b = (uint64_t *)b[1])
-                {   assert(b[0] == -(uint64_t)1);
+                {   arithlib_assert(b[0] == -(uint64_t)1);
                     n++;
                 }
                 if (n != 0)
@@ -1871,7 +1713,7 @@ public:
                 delete [] f;
                 f = (uint64_t *)w;
             }
-            (*freechain_table)[i] = NULL;
+            (freechain_table::get())[i] = NULL;
         }
     }
 
@@ -1890,17 +1732,17 @@ public:
 // function will compile this into a single machine code instruction.
         int bits = log_next_power_of_2(n);
 #endif
-        assert(n<=(((size_t)1)<<bits) && n>0);
+        arithlib_assert(n<=(((size_t)1)<<bits) && n>0);
         uint64_t *r;
 #if defined ARITHLIB_THREAD_LOCAL || ARITHLIB_NO_THREADS
-        r = (*freechain_table)[bits];
+        r = (freechain_table::get())[bits];
         if (r != NULL)
-            (*freechain_table)[bits] = (uint64_t *)r[1];
+            (freechain_table::get())[bits] = (uint64_t *)r[1];
 #elif defined ARITHLIB_MUTEX
         {   std::lock_guard<std::mutex> lock(freechain_mutex());
-            r = (*freechain_table)[bits];
+            r = (freechain_table::get())[bits];
             if (r != NULL)
-                (*freechain_table)[bits] = (uint64_t *)r[1];
+                (freechain_table::get())[bits] = (uint64_t *)r[1];
         }
 #else
 #error Internal inconsistency in arithlib.hpp: memory allocation strategy.
@@ -1909,7 +1751,7 @@ public:
 // more.
         if (r == NULL)
         {   r = new uint64_t[((size_t)1)<<bits];
-            if (r == NULL) abort("Run out of memory");
+            if (r == NULL) arithlib_abort("Run out of memory");
         }
 #ifdef DEBUG_OVERRUN
 // When debugging I tend to initialize all memory to a known pattern
@@ -1933,46 +1775,64 @@ public:
 
     static void abandon(uint64_t *p)
     {
-        assert(p[0] != -(uint64_t)1);
+        arithlib_assert(p[0] != -(uint64_t)1);
         int bits = ((uint32_t *)p)[0];
-        assert(bits>0 && bits<48);
+        arithlib_assert(bits>0 && bits<48);
 // Here I assume that sizeof(uint64_t) >= sizeof(intptr_t) so I am not
 // going to lose information here on any platform I can consider.
         if (debug_arith) p[0] = -(uint64_t)1;
 #ifdef ARITHLIB_ATOMIC
-        lockfree_push(p, *freechain_table, bits);
+        lockfree_push(p, freechain_table::get(), bits);
 #else
 #ifdef ARITHLIB_MUTEX
         std::lock_guard<std::mutex> lock(freechain_mutex());
 #endif
-        p[1] = (uint64_t)(*freechain_table)[bits];
-        (*freechain_table)[bits] = p;
+        p[1] = (uint64_t)(freechain_table::get())[bits];
+        (freechain_table::get())[bits] = p;
 #endif
     }
 
 };
 
 #ifdef ARITHLIB_THREAD_LOCAL
-static ThreadLocalPtr<Freechains> freechains;
-#else
-static InlineRef<Freechains> freechains;
-#endif
+declare_thread_local_ref(freechains, Freechains);
+#else // ARITHLIB_THREAD_LOCAL
+#ifdef __cpp_inline_variables
+class freechains
+{
+    static inline Freechains freechains_Var;
+public:
+    static Freechains& get()
+    {   return freechains_Var;
+    }
+};
+#else // __cpp_inline_variables
+class freechains
+{
+public:
+    static Freechains& get()
+    {   static Freechains freechains_Var;
+        return freechains_Var;
+    }
+};
+#endif // __cpp_inline_variables
+#endif // ARITHLIB_THREAD_LOCAL
 
 inline uint64_t *reserve(size_t n)
-{   assert(n>0);
-    return &(freechains->allocate(n+1))[1];
+{   arithlib_assert(n>0);
+    return &(freechains::get().allocate(n+1))[1];
 }
 
 inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
-{   assert(final>0 && n>=final);
+{   arithlib_assert(final>0 && n>=final);
 // Verify that the word just beyond where anything should have been
 // stored has not been clobbered.
 #ifdef DEBUG_OVERRUN
-    if (debug_arith) assert(p[n] == 0xaaaaaaaaaaaaaaaaU);
+    if (debug_arith) arithlib_assert(p[n] == 0xaaaaaaaaaaaaaaaaU);
 #endif
     if (final == 1 && fits_into_fixnum((int64_t)p[0]))
     {   intptr_t r = int_to_handle((int64_t)p[0]);
-        freechains->abandon(&p[-1]);
+        freechains::get().abandon(&p[-1]);
         return r;
     }
 // I compare the final size with the capacity and if it is a LOT smaller
@@ -1983,10 +1843,10 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
     size_t capacity = ((size_t)1)<<bits;
     if (capacity > 4*final)
     {   uint64_t *w =
-            freechains->allocate(
+            freechains::get().allocate(
                 ((size_t)1)<<log_next_power_of_2(final+1));
         memcpy(&w[1], p, final*sizeof(uint64_t));
-        freechains->abandon(&p[-1]);
+        freechains::get().abandon(&p[-1]);
         p = &w[1];
     }
     ((uint32_t *)(&p[-1]))[1] = final;
@@ -1994,7 +1854,7 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
 }
 
 inline intptr_t confirm_size_x(uint64_t *p, size_t n, size_t final)
-{   assert(final>0 && n>=final);
+{   arithlib_assert(final>0 && n>=final);
     return confirm_size(p, n, final);
 }
 
@@ -2008,7 +1868,7 @@ inline uint64_t *vector_of_handle(intptr_t n)
 
 inline size_t number_size(uint64_t *p)
 {   size_t r = ((uint32_t *)(&p[-1]))[1];
-    assert(r>0);
+    arithlib_assert(r>0);
     return ((uint32_t *)(&p[-1]))[1];
 }
 
@@ -2039,13 +1899,13 @@ inline bool fits_into_fixnum(int64_t a)
 }
 
 inline void abandon(uint64_t *p)
-{   freechains->abandon(&p[-1]);
+{   freechains::get().abandon(&p[-1]);
 }
 
 inline void abandon(intptr_t p)
 {   if (!stored_as_fixnum(p) && p!=0)
     {   uint64_t *pp = vector_of_handle(p);
-        freechains->abandon(&pp[-1]);
+        freechains::get().abandon(&pp[-1]);
     }
 }
 
@@ -2054,7 +1914,7 @@ inline char *reserve_string(size_t n)
 }
 
 inline char *confirm_size_string(char *p, size_t n, size_t final)
-{   assert(final>0 && (n+9)>final);
+{   arithlib_assert(final>0 && (n+9)>final);
     p[final] = 0;
     return p;
 }
@@ -2157,7 +2017,7 @@ inline intptr_t copy_if_no_garbage_collector(intptr_t pp)
 // been #included.
 
 inline uint64_t *reserve(size_t n)
-{   assert(n>0);
+{   arithlib_assert(n>0);
 // During a transition period I will use TYPE_NEW_BIGNUM rather than
 // TYPE_BIGNUM.
     LispObject a = get_basic_vector(TAG_NUMBERS, TYPE_NEW_BIGNUM,
@@ -2166,7 +2026,7 @@ inline uint64_t *reserve(size_t n)
 }
 
 inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
-{   assert(final>0 && n>=final);
+{   arithlib_assert(final>0 && n>=final);
     if (final == 1 && fits_into_fixnum((int64_t)p[0]))
     {   intptr_t r = int_to_handle((int64_t)p[0]);
         return r;
@@ -2192,7 +2052,7 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
 }
 
 inline intptr_t confirm_size_x(uint64_t *p, size_t n, size_t final)
-{   assert(final>0 && n>=final);
+{   arithlib_assert(final>0 && n>=final);
 // Here I might need to write a nice dummy object into the gap left by
 // shrinking the object.
     return confirm_size(p, n, final);
@@ -2224,7 +2084,7 @@ inline size_t number_size(uint64_t *p)
 // The length value packed into the header is the length of the vector
 // including its header.
     r = (r-8)/sizeof(uint64_t);
-    assert(r>0);
+    arithlib_assert(r>0);
     return r;
 }
 
@@ -2338,7 +2198,7 @@ inline intptr_t copy_if_no_garbage_collector(intptr_t pp)
 #else // !CSL
 
 inline uint64_t *reserve(size_t n)
-{   assert(n>0);
+{   arithlib_assert(n>0);
 // I must allow for alignment padding on 32-bit platforms.
     if (sizeof(LispObject)==4) n = n*sizeof(uint64_t) + 4;
     else n = n*sizeof(uint64_t);
@@ -2347,7 +2207,7 @@ inline uint64_t *reserve(size_t n)
 }
 
 inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
-{   assert(final>0 && n>=final);
+{   arithlib_assert(final>0 && n>=final);
     if (final == 1 && fits_into_fixnum((int64_t)p[0]))
     {   intptr_t r = int_to_handle((int64_t)p[0]);
         return r;
@@ -2366,7 +2226,7 @@ inline intptr_t confirm_size(uint64_t *p, size_t n, size_t final)
 }
 
 inline intptr_t confirm_size_x(uint64_t *p, size_t n, size_t final)
-{   assert(final>0 && n>=final);
+{   arithlib_assert(final>0 && n>=final);
 // Here I might need to write a nice dummy object into the gap left by
 // shrinking the object.
     return confirm_size(p, n, final);
@@ -2399,7 +2259,7 @@ inline size_t number_size(uint64_t *p)
 // excluding its header.
 //  if (sizeof(LispObject) == 4) r -= 4; { the remaindering does all I need! }
     r = r/sizeof(uint64_t);
-    assert(r>0);
+    arithlib_assert(r>0);
     return r;
 }
 
@@ -3798,7 +3658,7 @@ inline void signed_multiply64(int64_t a, int64_t b, uint64_t c,
 
 inline void divide64(uint64_t hi, uint64_t lo, uint64_t divisor,
                      uint64_t &q, uint64_t &r)
-{   assert(divisor != 0 && hi < divisor);
+{   arithlib_assert(divisor != 0 && hi < divisor);
     UINT128 dividend = pack128(hi, lo);
     q = dividend / divisor;
     r = dividend % divisor;
@@ -3887,7 +3747,7 @@ inline void signed_multiply64(int64_t a, int64_t b, uint64_t c,
 
 inline void divide64(uint64_t hi, uint64_t lo, uint64_t divisor,
                      uint64_t &q, uint64_t &r)
-{   assert(divisor != 0 && hi < divisor);
+{   arithlib_assert(divisor != 0 && hi < divisor);
     uint64_t u1 = hi;
     uint64_t u0 = lo;
     uint64_t c = divisor;
@@ -4470,7 +4330,7 @@ inline void random_upto_bits(uint64_t *r, size_t &lenr, size_t n)
         r[lenr-1] &= UINT64_C(0xffffffffffffffff) >> (64-bits%64);
     r[lenr-1] |= UINT64_C(1) << ((bits-1)%64);
     if (bits%64 == 0) r[lenr++] = 0;
-    assert(!negative(r[lenr-1]));
+    arithlib_assert(!negative(r[lenr-1]));
 }
 
 inline intptr_t random_upto_bits(size_t bits)
@@ -5205,10 +5065,10 @@ inline float Float::op(uint64_t *a)
     {   if (next != 0) top24++;
         else top24 += (top24&1);
     }
-    assert(top24 >= ((int64_t)1)<<23 &&
+    arithlib_assert(top24 >= ((int64_t)1)<<23 &&
            top24 <= ((int64_t)1)<<24);
     double d = (float)top24;
-    assert(top24 == (uint64_t)d);
+    arithlib_assert(top24 == (uint64_t)d);
     if (sign) d = -d;
     return ldexpf(d, (int)(128-24-lz+64*(lena-2)));
 }
@@ -5234,11 +5094,11 @@ inline double Frexp::op(int64_t a, int64_t &x)
     top53 = top53 >> (64-53-lz);
     if (low > 0x8000000000000000U) top53++;
     else if (low == 0x8000000000000000U) top53 += (top53 & 1); // round to even
-    assert(top53 >= ((int64_t)1)<<52 &&
+    arithlib_assert(top53 >= ((int64_t)1)<<52 &&
            top53 <= ((int64_t)1)<<53);
 // The next line should never introduce any rounding at all.
     double d = (double)top53;
-    assert(top53 == (uint64_t)d);
+    arithlib_assert(top53 == (uint64_t)d);
     if (sign) d = -d;
     x =64-53-lz;
     return d;
@@ -5321,10 +5181,10 @@ inline double Frexp::op(uint64_t *a, int64_t &x)
     {   if (next != 0) top53++;
         else top53 += (top53&1);
     }
-    assert(top53 >= ((int64_t)1)<<52 &&
+    arithlib_assert(top53 >= ((int64_t)1)<<52 &&
            top53 <= ((int64_t)1)<<53);
     double d = (double)top53;
-    assert(top53 == (uint64_t)d);
+    arithlib_assert(top53 == (uint64_t)d);
     if (sign) d = -d;
     x = 128-53-lz+64*(lena-2);
     return d;
@@ -5482,7 +5342,7 @@ inline intptr_t string_to_bignum(const char *s)
     {   uint64_t d = 0;
 // assemble 19 digit blocks from the input into a value (d).
         while (chars != next)
-        {   assert(std::isdigit(*s));
+        {   arithlib_assert(std::isdigit(*s));
             d = 10*d + (*s++ - '0');
             chars--;
         }
@@ -5719,7 +5579,7 @@ inline size_t bignum_to_string(char *result, size_t m,
     {   *p1++ = buffer[--bp];
         len++;
     } while (bp != 0);
-    assert(len + 19*(m/sizeof(uint64_t)-p)<= m);
+    arithlib_assert(len + 19*(m/sizeof(uint64_t)-p)<= m);
     while (p < m/sizeof(uint64_t))
     {
 // I will always pick up the number I am going to expand before writing any
@@ -5917,7 +5777,7 @@ inline string_handle bignum_to_string_binary(intptr_t aa)
         }
     }
     else
-    {   assert(top != 0);
+    {   arithlib_assert(top != 0);
         while ((top>>63) == 0)
         {   top = top << 1;
             m--;
@@ -7352,7 +7212,7 @@ inline bool Logbitp::op(int64_t a, size_t n)
 inline void ordered_bigplus(const uint64_t *a, size_t lena,
                             const uint64_t *b, size_t lenb,
                             uint64_t *r, size_t &lenr)
-{   assert(lena >= lenb);
+{   arithlib_assert(lena >= lenb);
     uint64_t carry = 0;
     size_t i = 0;
 // The lowest digits can be added without there being any carry-in.
@@ -7473,7 +7333,7 @@ inline intptr_t bigplus_small(intptr_t aa, int64_t b)
 inline void ordered_bigsubtract(const uint64_t *a, size_t lena,
                                 const uint64_t *b, size_t lenb,
                                 uint64_t *r, size_t &lenr)
-{   assert(lena >= lenb);
+{   arithlib_assert(lena >= lenb);
     uint64_t carry = 1;
     size_t i;
 // Add the digits that (a) and (b) have in common
@@ -7500,7 +7360,7 @@ inline void ordered_bigsubtract(const uint64_t *a, size_t lena,
 inline void ordered_bigrevsubtract(const uint64_t *a, size_t lena,
                                    const uint64_t *b, size_t lenb,
                                    uint64_t *r, size_t &lenr)
-{   assert(lena >= lenb);
+{   arithlib_assert(lena >= lenb);
     uint64_t carry = 1;
     size_t i;
 // Add the digits that (a) and (b) have in common
@@ -7712,7 +7572,7 @@ inline uint64_t kadd(const uint64_t *a, size_t lena,
 inline uint64_t ksub(const uint64_t *a, size_t lena,
                      const uint64_t *b, size_t lenb,
                      uint64_t *c)
-{   assert(lena >= lenb);
+{   arithlib_assert(lena >= lenb);
     uint64_t borrow = 0;
     size_t i;
     for (i=0; i<lenb; i++)
@@ -7739,7 +7599,7 @@ inline bool absdiff(const uint64_t *a, size_t lena,
 {
 // I will do a cheap comparison of a and b first, based on an understanding
 // that lena >= lenb. The result will be of length lena.
-    assert(lena >= lenb);
+    arithlib_assert(lena >= lenb);
     if (lenb < lena ||
         b[lenb-1]<=a[lena-1])
     {
@@ -8091,9 +7951,9 @@ inline void karatsuba(const uint64_t *a, size_t lena,
                       const uint64_t *b, size_t lenb,
                       uint64_t *c, uint64_t *w)
 {
-    assert(lena == lenb ||
+    arithlib_assert(lena == lenb ||
            (lena%2 == 0 && lenb == lena-1));
-    assert(lena >= 2);
+    arithlib_assert(lena >= 2);
     size_t n = (lena+1)/2;    // size of a "half-number"
     size_t lenc = lena+lenb;
 // lena-n and lenb-n will each be either n or n-1.
@@ -8190,38 +8050,38 @@ inline void top_level_karatsuba(const uint64_t *a, size_t lena,
                                 uint64_t *w0, uint64_t *w1)
 {
 // Here I have a HUGE case and I should use threads!
-    assert(lena == lenb ||
+    arithlib_assert(lena == lenb ||
            (lena%2 == 0 && lenb == lena-1));
-    assert(lena >= 2);
+    arithlib_assert(lena >= 2);
     size_t n = (lena+1)/2;    // size of a "half-number"
     size_t lenc = lena+lenb;
 // I start by arranging that the two threads that can do things in parallel
 // can get access to data from here and that I will be able to retrieve
 // results. And that the worker threads have workspace to make use of.
-    driver_data->wd_0.a = a;
-    driver_data->wd_0.lena = n;
-    driver_data->wd_0.b = b;
-    driver_data->wd_0.lenb = n;
-    driver_data->wd_0.c = w0;
-    driver_data->wd_0.w = w0+2*n;
+    driver_data::get().wd_0.a = a;
+    driver_data::get().wd_0.lena = n;
+    driver_data::get().wd_0.b = b;
+    driver_data::get().wd_0.lenb = n;
+    driver_data::get().wd_0.c = w0;
+    driver_data::get().wd_0.w = w0+2*n;
 
-    driver_data->wd_1.a = a+n;
-    driver_data->wd_1.lena = lena-n;
-    driver_data->wd_1.b = b+n;
-    driver_data->wd_1.lenb = lenb-n;
-    driver_data->wd_1.c = w1;
-    driver_data->wd_1.w = w1+2*n;
+    driver_data::get().wd_1.a = a+n;
+    driver_data::get().wd_1.lena = lena-n;
+    driver_data::get().wd_1.b = b+n;
+    driver_data::get().wd_1.lenb = lenb-n;
+    driver_data::get().wd_1.c = w1;
+    driver_data::get().wd_1.w = w1+2*n;
 
 // Now trigger the two threads to do some work for me. One will be forming
 // alo*blo while the other computes ahi*bhi . 
-    driver_data->release_workers();
+    driver_data::get().release_workers();
 // Now I will work on either |ahi-alo|*|bhi-blo|
 // lena-n and lenb-n will each be either n or n-1.
     bool signs_differ = absdiff(a, n, a+n, lena-n, w) !=
                         absdiff(b, n, b+n, lenb-n, w+n);
     small_or_big_multiply(w, n, w+n, n, c+n, w+2*n);     // (a1-a0)*(b0-b1)
 // That has the product of differences written into the middle of c.
-    driver_data->wait_for_workers();
+    driver_data::get().wait_for_workers();
     if (signs_differ)
     {
 // Here I have
@@ -8274,9 +8134,9 @@ inline void top_level_karatsuba(const uint64_t *a, size_t lena,
 inline void karatsuba_and_add(const uint64_t *a, size_t lena,
                               const uint64_t *b, size_t lenb,
                               uint64_t *c, size_t lenc, uint64_t *w)
-{   assert(lena == lenb ||
+{   arithlib_assert(lena == lenb ||
            (lena%2 == 0 && lenb == lena-1));
-    assert(lena >= 2);
+    arithlib_assert(lena >= 2);
     size_t n = (lena+1)/2;    // size of a "half-number"
     size_t lenc1 = lena+lenb;
     if (absdiff(a, n, a+n, lena-n, w) !=
@@ -9224,18 +9084,18 @@ inline void bigpow(uint64_t *a, size_t lena, uint64_t n,
     while (n > 1)
     {   if (n%2 == 0)
         {   bigsquare(v, lenv, r, lenr);
-            assert(lenr <= maxlenr);
+            arithlib_assert(lenr <= maxlenr);
             internal_copy(r, lenr, v);
             lenv = lenr;
             n = n/2;
         }
         else
         {   bigmultiply(v, lenv, w, lenw, r, lenr);
-            assert(lenr <= maxlenr);
+            arithlib_assert(lenr <= maxlenr);
             internal_copy(r, lenr, w);
             lenw = lenr;
             bigsquare(v, lenv, r, lenr);
-            assert(lenr <= maxlenr);
+            arithlib_assert(lenr <= maxlenr);
             internal_copy(r, lenr, v);
             lenv = lenr;
             n = (n-1)/2;
@@ -9245,8 +9105,8 @@ inline void bigpow(uint64_t *a, size_t lena, uint64_t n,
 }
 
 // In cases where n is too large this can fail. At present I deal with that
-// with assert() statements rather than any comfortable scheme for reporting
-// the trouble.
+// with arithlib_assert() statements rather than any comfortable scheme for
+// reporting the trouble.
 
 // The code that dispatches into here should have filtered cases such that
 // the exponent n is not 0, 1 or 2 here.
@@ -9261,7 +9121,7 @@ inline intptr_t Pow::op(uint64_t *a, int64_t n)
         if (lena == 0)
         {   if ((int64_t)a[0]==1) z = 1;
             else if ((int64_t)a[0]==-1) z = (n%1==0 ? 1 : -1);
-            else assert(a[0] != 0u);
+            else arithlib_assert(a[0] != 0u);
         }
 // 0^(-n) is an error
 // 1^(-n) = 1
@@ -9273,7 +9133,7 @@ inline intptr_t Pow::op(uint64_t *a, int64_t n)
     size_t bitsa = bignum_bits(a, lena);
     uint64_t hi, bitsr;
     multiply64(n, bitsa, hi, bitsr);
-    assert(hi == 0); // Check that size is at least somewhat sane!
+    arithlib_assert(hi == 0); // Check that size is at least somewhat sane!
 // I estimate the largest size that my result could be, but then add
 // an extra word because the internal working of multiplication can
 // write a zero beyond its true result - eg if you are multiplying a pair
@@ -9283,7 +9143,7 @@ inline intptr_t Pow::op(uint64_t *a, int64_t n)
     size_t lenr = (size_t)lenr1;
 // if size_t was more narrow than 64-bits I could lose information in
 // truncating from uint64_t to size_t.
-    assert(lenr == lenr1);
+    arithlib_assert(lenr == lenr1);
     uint64_t olenr = lenr;
     push(a);
     uint64_t *r = reserve(lenr);
@@ -9293,7 +9153,7 @@ inline intptr_t Pow::op(uint64_t *a, int64_t n)
     uint64_t *w = reserve(lenr);
     pop(v); pop(r); pop(a);
     bigpow(a, lena, (uint64_t)n, v, w, r, lenr, lenr);
-    assert(lenr <= olenr);
+    arithlib_assert(lenr <= olenr);
     abandon(w);
     abandon(v);
     return confirm_size(r, olenr, lenr);
@@ -9306,7 +9166,7 @@ inline intptr_t Pow::op(int64_t a, int64_t n)
     {   int z = 0;
         if (a == 1) z = 1;
         else if (a == -1) z = (n%1==0 ? 1 : 0);
-        else assert(a != 0);
+        else arithlib_assert(a != 0);
         return int_to_handle(z);
     }
     if (a == 0) return int_to_handle(0);
@@ -9316,7 +9176,7 @@ inline intptr_t Pow::op(int64_t a, int64_t n)
     size_t bitsa = 64 - nlz(absa);
     uint64_t hi, bitsr;
     multiply64(n, bitsa, hi, bitsr);
-    assert(hi == 0); // Check that size is at least somewhat sane!
+    arithlib_assert(hi == 0); // Check that size is at least somewhat sane!
     uint64_t lenr1 = 2 + bitsr/64;
     if (bitsr < 64) // Can do all the work as machine integers.
     {   int64_t result = 1;
@@ -9330,7 +9190,7 @@ inline intptr_t Pow::op(int64_t a, int64_t n)
     size_t lenr = (size_t)lenr1;
 // if size_t was more narrow than 64-bits I could lose information in
 // truncating from uint64_t to size_t.
-    assert(lenr == lenr1);
+    arithlib_assert(lenr == lenr1);
     uint64_t olenr = lenr;
     uint64_t *r = reserve(lenr);
     push(r);
@@ -9340,7 +9200,7 @@ inline intptr_t Pow::op(int64_t a, int64_t n)
     pop(v); pop(r);
     uint64_t aa[1] = {(uint64_t)a};
     bigpow(aa, 1, (uint64_t)n, v, w, r, lenr, lenr);
-    assert(lenr <= olenr);
+    arithlib_assert(lenr <= olenr);
     abandon(w);
     abandon(v);
     return confirm_size(r, olenr, lenr);
@@ -9519,7 +9379,7 @@ inline void division(uint64_t *a, size_t lena,
                      uint64_t *b, size_t lenb,
                      bool want_q, uint64_t *&q, size_t &olenq, size_t &lenq,
                      bool want_r, uint64_t *&r, size_t &olenr, size_t &lenr)
-{   assert(want_q || want_r);
+{   arithlib_assert(want_q || want_r);
 // First I will filter out a number of cases where the divisor is "small".
 // I only want to proceed into the general case code if it is a "genuine"
 // big number with at least two digits. This bit of the code is messier
@@ -9531,11 +9391,11 @@ inline void division(uint64_t *a, size_t lena,
 // range -2^63 to 2^63-1.
     if (lenb == 1)
     {
-// At present I cause an attempt to divide by zero to crash with an assert
-// failure if I have build in debug mode or to do who knows what (possibly
-// raise an exception) otherwise. This maybe needs review. I wonder if
-// I should throw a "division by zero" exception?
-        assert(b[0] != 0); // would be division by zero
+// At present I cause an attempt to divide by zero to crash with an
+// arithlib_assert failure if I have build in debug mode or to do who
+// knows what (possibly raise an exception) otherwise. This maybe needs
+// review. I wonder if I should throw a "division by zero" exception?
+        arithlib_assert(b[0] != 0); // would be division by zero
         signed_short_division(a, lena, (int64_t)b[0],
                               want_q, q, olenq, lenq,
                               want_r, r, olenr, lenr);
@@ -9621,7 +9481,7 @@ inline void division(uint64_t *a, size_t lena,
         if (bb[lenbb-1] == 0) lenbb--;
     }
     else if (b[lenb-1] == 0) lenbb--;
-    assert(lenbb >= 2);
+    arithlib_assert(lenbb >= 2);
 // Now I should look at the dividend. If it is shorter than the divisor
 // then I know that the quotient will be zero and the dividend will be the
 // remainder. If I had made this test before normalizing the divisor I could
@@ -9662,7 +9522,7 @@ inline void division(uint64_t *a, size_t lena,
         internal_copy(b, lenbb, bb);
     }
 #ifdef DEBUG_OVERRUN
-    if (debug_arith) assert(bb[olenr] == 0xaaaaaaaaaaaaaaaa);
+    if (debug_arith) arithlib_assert(bb[olenr] == 0xaaaaaaaaaaaaaaaa);
 #endif
 // If I actually return the quotient I may need to add a leading 0 or -1 to
 // make its 2s complement representation valid. Hence the "+2" rather than
@@ -9688,7 +9548,7 @@ inline void division(uint64_t *a, size_t lena,
     else internal_copy(a, lena, r);
     unsigned_long_division(r, lenr, bb, lenbb, want_q, q, olenq, lenq);
 #ifdef DEBUG_OVERRUN
-    if (debug_arith) assert(r[lena+1] == 0xaaaaaaaaaaaaaaaa);
+    if (debug_arith) arithlib_assert(r[lena+1] == 0xaaaaaaaaaaaaaaaa);
 #endif
 // While performing the long division I will have had three vectors that
 // were newly allocated. r starts off containing a copy of a but ends up
@@ -9700,12 +9560,12 @@ inline void division(uint64_t *a, size_t lena,
 // remainder is smaller than the divisor and so it will be a closer fit into
 // bb than r. So copy it into there so that the allocate/abandon and
 // size confirmation code is given less extreme things to cope with.
-    assert(lenr<=lenb);
+    arithlib_assert(lenr<=lenb);
     if (want_r) internal_copy(r, lenr, bb);
     abandon(r);
     if (want_q)
     {   if (negative(q[lenq-1]))
-        {   assert(lenq < olenq);
+        {   arithlib_assert(lenq < olenq);
             q[lenq++] = 0;
         }
         if (a_negative != b_negative)
@@ -9718,7 +9578,7 @@ inline void division(uint64_t *a, size_t lena,
     if (want_r)
     {   r = bb;
         if (negative(r[lenr-1]))
-        {   assert(lenr < olenr);
+        {   arithlib_assert(lenr < olenr);
             r[lenr++] = 0;
         }
         if (a_negative)
@@ -9760,7 +9620,7 @@ inline uint64_t scale_for_division(uint64_t *r, size_t lenr, int s)
 inline void multiply_and_subtract(uint64_t *r, size_t lenr,
                                   uint64_t q0,
                                   uint64_t *b, size_t lenb)
-{   assert(lenr > lenb);
+{   arithlib_assert(lenr > lenb);
     uint64_t hi = 0, lo, carry = 1;
     for (size_t i=0; i<lenb; i++)
     {   multiply64(b[i], q0, hi, hi, lo);
@@ -9778,7 +9638,7 @@ inline void multiply_and_subtract(uint64_t *r, size_t lenr,
 
 inline void add_back_correction(uint64_t *r, size_t lenr,
                                 uint64_t *b, size_t lenb)
-{   assert(lenr > lenb);
+{   arithlib_assert(lenr > lenb);
     uint64_t carry = 0;
     for (size_t i=0; i<lenb; i++)
         carry = add_with_carry(r[i+lenr-lenb-1], b[i], carry, r[i+lenr-lenb-1]);
@@ -9787,9 +9647,9 @@ inline void add_back_correction(uint64_t *r, size_t lenr,
 
 inline uint64_t next_quotient_digit(uint64_t *r, size_t &lenr,
                                     uint64_t *b, size_t lenb)
-{   assert(lenr > lenb);
-    assert(lenb >= 2);
-    assert(b[lenb-1] != 0);
+{   arithlib_assert(lenr > lenb);
+    arithlib_assert(lenb >= 2);
+    arithlib_assert(b[lenb-1] != 0);
     uint64_t q0, r0;
     if (r[lenr-1] == b[lenb-1])
     {   q0 = (uint64_t)(-1);
@@ -9838,7 +9698,7 @@ inline void unscale_for_division(uint64_t *r, size_t &lenr, int s)
             if (i == 0) break;
             i--;
         }
-        assert(carry==0);
+        arithlib_assert(carry==0);
     }
     truncate_unsigned(r, lenr);
 }
@@ -9854,21 +9714,21 @@ inline void unsigned_long_division(uint64_t *a, size_t &lena,
                                    uint64_t *b, size_t &lenb,
                                    bool want_q, uint64_t *q,
                                    size_t &olenq, size_t &lenq)
-{   assert(lenb >= 2);
-    assert(lena >= lenb);
+{   arithlib_assert(lenb >= 2);
+    arithlib_assert(lena >= lenb);
 // I will multiply a and b by a scale factor that gets the top digit of "b"
 // reasonably large. The value stored in "a" can become one digit longer,
 // but there is space to store that.
 //
 // The scaling is done here using a shift, which seems cheaper to sort out
 // then multiplication by a single-digit value.
-    assert(b[lenb-1] != 0);
+    arithlib_assert(b[lenb-1] != 0);
     int ss = nlz(b[lenb-1]);
 // When I scale the dividend expands into an extra digit but the scale
 // factor has been chosen so that the divisor does not.
     a[lena] = scale_for_division(a, lena, ss);
     lena++;
-    assert(scale_for_division(b, lenb, ss) == 0);
+    arithlib_assert(scale_for_division(b, lenb, ss) == 0);
     lenq = lena-lenb; // potential length of quotient.
     size_t m = lenq-1;
     for (;;)
@@ -10058,7 +9918,7 @@ inline intptr_t Divide::op(uint64_t *a, uint64_t *b, intptr_t &rem)
 inline bool reduce_for_gcd(uint64_t *a, size_t lena,
                            uint64_t q,
                            uint64_t *b, size_t lenb)
-{   assert(lena == lenb || lena == lenb+1);
+{   arithlib_assert(lena == lenb || lena == lenb+1);
     uint64_t hi = 0, hi1, lo, borrow = 0;
     for (size_t i=0; i<lenb; i++)
     {   multiply64(b[i], q, hi1, lo);
@@ -10084,7 +9944,7 @@ inline bool shifted_reduce_for_gcd(uint64_t *a, size_t lena,
                                    uint64_t q,
                                    uint64_t *b, size_t lenb,
                                    int shift)
-{   assert(lena == lenb+1 || lena == lenb+2);
+{   arithlib_assert(lena == lenb+1 || lena == lenb+2);
     uint64_t hi = 0, hi1, lo, borrow = 0;
     for (size_t i=0; i<=lenb; i++)
     {   multiply64(shifted_digit(b, lenb, shift, i), q, hi1, lo);
@@ -10118,7 +9978,7 @@ inline bool ua_minus_vb(uint64_t *a, size_t lena,
                         uint64_t *b, size_t lenb,
                         uint64_t v,
                         uint64_t *r, size_t &lenr)
-{   assert(lena == lenb || lena == lenb+1);
+{   arithlib_assert(lena == lenb || lena == lenb+1);
     uint64_t hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
     for (size_t i=0; i<lenb; i++)
     {   multiply64(a[i], u, hia, loa);
@@ -10155,7 +10015,7 @@ inline bool minus_ua_plus_vb(uint64_t *a, size_t lena,
                         uint64_t *b, size_t lenb,
                         uint64_t v,
                         uint64_t *r, size_t &lenr)
-{   assert(lena == lenb || lena == lenb+1);
+{   arithlib_assert(lena == lenb || lena == lenb+1);
     uint64_t hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
     for (size_t i=0; i<lenb; i++)
     {   multiply64(a[i], u, hia, loa);
@@ -10289,7 +10149,7 @@ inline void gcd_reduction(uint64_t *&a, size_t &lena,
 // end up negative.
             q = ahi/bhi;
             if (negative(q)) break;
-            assert(q != 0);
+            arithlib_assert(q != 0);
 // Now I need to go
 //              ua -= q*va;
 //              ub -= q*vb;
@@ -10353,23 +10213,23 @@ inline void gcd_reduction(uint64_t *&a, size_t &lena,
             pop(a);
         }
         if (ub < 0)
-        {   assert(ua >= 0);
+        {   arithlib_assert(ua >= 0);
             if (ua_minus_vb(a, lena, ua, b, lenb, -ub, temp, lentemp))
                 internal_negate(temp, lentemp, temp);
         }
         else
-        {   assert(ua <= 0);
+        {   arithlib_assert(ua <= 0);
             if (minus_ua_plus_vb(a, lena, -ua, b, lenb, ub, temp, lentemp))
                 internal_negate(temp, lentemp, temp);
         }
         truncate_unsigned(temp, lentemp);
         if (vb < 0)
-        {   assert(va >= 0);
+        {   arithlib_assert(va >= 0);
             if (ua_minus_vb(a, lena, va, b, lenb, -vb, a, lena))
                 internal_negate(a, lena, a);
         }
         else
-        {   assert(va <= 0);
+        {   arithlib_assert(va <= 0);
             if (minus_ua_plus_vb(a, lena, -va, b, lenb, vb, a, lena))
                 internal_negate(a, lena, a);
         }
@@ -10574,13 +10434,13 @@ inline intptr_t Gcd::op(uint64_t *a, uint64_t *b)
             else abandon(b);
 #ifdef DEBUG_OVERRUN
             if (debug_arith)
-            {   assert(a[olena] == 0xaaaaaaaaaaaaaaaaU);
+            {   arithlib_assert(a[olena] == 0xaaaaaaaaaaaaaaaaU);
             }
 #endif
             a[lena++] = 0;
 #ifdef DEBUG_OVERRUN
             if (debug_arith)
-            {   assert(a[olena] == 0xaaaaaaaaaaaaaaaaU);
+            {   arithlib_assert(a[olena] == 0xaaaaaaaaaaaaaaaaU);
             }
 #endif
         }

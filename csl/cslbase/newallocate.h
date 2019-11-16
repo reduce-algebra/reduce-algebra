@@ -325,21 +325,11 @@ static const unsigned int maxThreads = 64;
 extern std::mutex gc_mutex;
 // The next two values need to be thread-local. On a Windows or Cygwin
 // platform I need to access them using the Microsoft thread-local API
-// because g++ otherwise generates code which seems to give a rather severe
-// overhead. But if I build in debug mode I will drop back to using direct
-// C++ declarations in the expectation that doung so will make tracing and
-// debugging with gdb smoother. Using g++ under cygwin I had trouble geting
-// thinhs to link when I used "extern thread_local" declarations here but
-// provided I can use a C++17 compiler I am OK as shown now.
+// because g++ (in 2019) otherwise generates code (using emutls) which
+// seems to give a rather severe overhead.
 
-#if defined __cpp_inline_variables && \
-    !(defined __CYGWIN__ || defined __MINGW32__)
-inline thread_local std::uintptr_t threadId;
-inline thread_local std::uintptr_t fringe;
-#else // inline thread_local
-static ThreadLocal<std::uintptr_t> threadId;
-static ThreadLocal<std::uintptr_t> fringe;
-#endif // inline_thread_local
+declare_thread_local(threadId, uintptr_t);
+declare_thread_local(fringe,   uintptr_t);
 extern std::atomic<std::uintptr_t> limit[maxThreads];
 extern std::uintptr_t              limitBis[maxThreads];
 extern std::uintptr_t              fringeBis[maxThreads];
@@ -383,17 +373,17 @@ extern std::uintptr_t              gNext;
 //   apart from limit should be unaltered, (specifically fringe will be
 //   as it was at the start and will NOT have changed) but
 //    . The word at fringe has been set to be a dummy header using up all
-//      the space as far as limitBis[threadId].
-//    . fringe has been copied into fringeBis{threadId].
-//    . request[threadId] has been set to the request size n.
-//    . gIncrement[threadId] is set to zero.
+//      the space as far as limitBis[threadId::get()].
+//    . fringe has been copied into fringeBis{threadId::get()].
+//    . request[threadId::get()] has been set to the request size n.
+//    . gIncrement[threadId::get()] is set to zero.
 // Possibility 2: gFringe has just been incremented and now lies beyond
 //   gLimit. Because gFringe is incremented atomically once any thread
 //   moves it beyond gLimit any other thread that attempts to use it will
 //   find that it has also overrun its range.
-//   Variables will be set as for Possibility 1 save that gIncrement[threadId]
+//   Variables will be set as for Possibility 1 save that gIncrement[threadId::get()]
 //   is set to the amount by which gFringe had been incremented.
-// In the above values are places in arrays indexed by threadId so that the
+// In the above values are places in arrays indexed by threadId::get() so that the
 // single thread that happens to end up doing the work of garbage collection
 // can both observe what requests each of the other threads had been making
 // and can update their versions of fringe and limit.
@@ -437,18 +427,18 @@ static const std::size_t CHUNK=16384;
 inline LispObject get_n_bytes(std::size_t n)
 {
 // The size passed here MUST be a multiple of 8.
-// I have a thread-local variable fringe and limit[threadId] is in effect
+// I have a thread-local variable fringe::get() and limit[threadId::get()] is in effect
 // thread-local. These delimit a region of size CHUNK within which allocation
-// can be especially cheap. limit[threadId] is atomic and that indicates that
+// can be especially cheap. limit[threadId::get()] is atomic and that indicates that
 // other threads may access it. In particular another thread can set it to
 // zero to cause this thread to synchronize with others to participate in
 // garbage collection.
-    std::uintptr_t r = fringe;
-    std::uintptr_t w = limit[threadId].load();
-    fringe += n;
+    std::uintptr_t r = fringe::get();
+    std::uintptr_t w = limit[threadId::get()].load();
+    fringe::set(fringe::get() + n);
 // The simple case completes here. If CHUNK is around 16K then only 1 cons
 // in 1000 will take the longer route.
-    if (fringe <= w) return static_cast<LispObject>(r);
+    if (fringe::get() <= w) return static_cast<LispObject>(r);
 // There are two possibilities here. One is that the new block I need to
 // allocate really will not fit in the current chunk, and the other is that
 // some other thread had set limit[] to zero to force this one to join in
@@ -471,9 +461,9 @@ inline LispObject get_n_bytes(std::size_t n)
 // I am going to assume (ha ha) that even if the maximum number of threads
 // each increment gFringe by the largest possible amount the it will not
 // suffer arithmetic overflow.
-        std::uintptr_t oldFringe = fringe - n;
-        fringe = r + n;
-        std::uint64_t newLimit = fringe + CHUNK;
+        std::uintptr_t oldFringe = fringe::get() - n;
+        fringe::set(r + n);
+        std::uint64_t newLimit = fringe::get() + CHUNK;
 // Possibly the allocation of the new chunk ran beyond the current page
 // and that will be cause to consider triggering garbage collection. If the
 // chunk size is 16K and the page size 8M it will take 512 chunk allocations
@@ -484,37 +474,37 @@ inline LispObject get_n_bytes(std::size_t n)
         if (newLimit <= gLimit)
         {
 // now my allocation of a new chunk has been successful. I wish to write
-// back limit[threadId] but it is possible that in the meanwhile somebody
+// back limit[threadId::get()] but it is possible that in the meanwhile somebody
 // set that to zero, so I need to be a bit careful. Specifically I will
 // only write back the new limit if the old one was still in force.
 //
 // Here I have (successfully) allocated a new chunk, and I have set my
-// fringe to point within it. Because limit[threadId] can be arbitrarily
+// fringe::get() to point within it. Because limit[threadId::get()] can be arbitrarily
 // clobbered by others I will only update it if it has not changed since
 // I loaded it earlier. If it has changed it will have been set to zero
 // and I must participate in a GC.
-            limitBis[threadId] = newLimit;
-            bool ok = limit[threadId].compare_exchange_strong(w, newLimit);
+            limitBis[threadId::get()] = newLimit;
+            bool ok = limit[threadId::get()].compare_exchange_strong(w, newLimit);
             if (ok) return static_cast<LispObject>(r);
         }
-        gIncrement[threadId] = CHUNK+n;
-        fringe = oldFringe;
+        gIncrement[threadId::get()] = CHUNK+n;
+        fringe::set(oldFringe);
     }
     else
     {
 // Here I am about to be forced to participate in garbage collection,
 // typically for the benefit of some other thread.
-        std::size_t gap = limitBis[threadId] - r;
+        std::size_t gap = limitBis[threadId::get()] - r;
         if (gap != 0) firstWord(r).store(makePaddingHeader(gap));
-        gIncrement[threadId] = 0;
-        fringe = r;
+        gIncrement[threadId::get()] = 0;
+        fringe::set(r);
     }
-    fringeBis[threadId] = fringe;
-    request[threadId] = n;
+    fringeBis[threadId::get()] = fringe::get();
+    request[threadId::get()] = n;
 // Here I can not complete the work with this inline function because
 // either I have run out of space for a new chunk or because some
 // other thread had done that and had set my limit register to zero
-// to tell me. I set fringe back to the value that it had on entry, so the
+// to tell me. I set fringe::get() back to the value that it had on entry, so the
 // situation when I call difficult_n_bytes() is just as if it had been
 // called directly from the main program save that gFringe may have been
 // incremented - possibly beyond gLimit.
@@ -531,15 +521,15 @@ inline LispObject get_n_bytes(std::size_t n)
 
 inline void poll()
 {   std::uintptr_t w;
-    if (fringe > (w = limit[threadId].load()))
+    if (fringe::get() > (w = limit[threadId::get()].load()))
     {
 // Here I need to set everything up just as if I had been making an
 // allocation request for zero bytes.
-        std::size_t gap = w - fringe;
-        if (gap != 0) firstWord(fringe).store(makePaddingHeader(gap));
-        fringeBis[threadId] = fringe;
-        request[threadId] = 0;
-        gIncrement[threadId] = 0;
+        std::size_t gap = w - fringe::get();
+        if (gap != 0) firstWord(fringe::get()).store(makePaddingHeader(gap));
+        fringeBis[threadId::get()] = fringe::get();
+        request[threadId::get()] = 0;
+        gIncrement[threadId::get()] = 0;
         (void)difficult_n_bytes();
     }
 }
@@ -575,7 +565,7 @@ inline void poll()
 // on the stack above buffer that should not be a problem.
 //
 // There can be at most maxThreads threads in play, and each must have
-// the thread-local value threadId set.
+// the thread-local value threadId::get() set.
 
 extern std::jmp_buf *buffer_pointer;
 
@@ -604,7 +594,7 @@ inline void may_block(F &&action)
     buffer_pointer = &buffer;
 // ASSUME that setjmp dumps all the machine registers into the jmp_buf.
     if (setjmp(buffer) == 0)
-    {   stack_fringes[threadId] = reinterpret_cast<std::uintptr_t>(buffer);
+    {   stack_fringes[threadId::get()] = reinterpret_cast<std::uintptr_t>(buffer);
 // I will need to do more here to decrement the count of threads that
 // the system knows to be potentially involved in memory allocation.
         action();
@@ -623,7 +613,7 @@ inline void withRecordedStack(F &&action)
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
     if (setjmp(buffer) == 0)
-    {   stack_fringes[threadId] = reinterpret_cast<std::uintptr_t>(buffer);
+    {   stack_fringes[threadId::get()] = reinterpret_cast<std::uintptr_t>(buffer);
         action();
         std::longjmp(buffer, 1);
     }
@@ -878,16 +868,16 @@ inline void waitWhileAnotherThreadGarbageCollects()
     {   std::unique_lock<std::mutex> lock(mutex_for_gc);
         cv_for_gc_complete.wait(lock, []{ return gc_complete; });
     }
-    fringe = fringeBis[threadId];
+    fringe::set(fringeBis[threadId::get()]);
 }
 
 // Here I have just attempted to allocate n bytes but the attempt failed
-// because it left fringe>=limit. I must synchronize with all other
+// because it left fringe::get()>=limit. I must synchronize with all other
 // threads and one of the threads (it may not be me!) must garbage collect.
 // When they synchronize with me here the other threads will also have tried
 // an allocation, but the largest request any is allowed to make is
 // VECTOR_CHUNK_BYTES (at present 2 megabyte). If all the maxThreads do
-// this they can have caused fringe to overshoot by about an amount
+// this they can have caused fringe::get() to overshoot by about an amount
 // maxThreads*VECTOR_CHUNK_BYTES and if that caused uintptr_t arithmetic to
 // overflow and wrap round then there could be big trouble. So when I
 // allocate chunks of memory I ought to ensure that none has an end-address
@@ -923,11 +913,11 @@ inline std::uintptr_t difficult_n_bytes()
         else garbageCollectOnBehalfOfAll();
 // I must arrange that threads continue after idling only when the master
 // thread has completed its work.
-// At the end the GC can have updated the fringe and heaplimit values for
+// At the end the GC can have updated the fringe::get() and heaplimit values for
 // each thread, so I need to put its updates in the correct place.
 //
     });
-    return result[threadId] - TAG_VECTOR;
+    return result[threadId::get()] - TAG_VECTOR;
 }
 
 
@@ -1100,4 +1090,3 @@ void allocate_segment(std::size_t n);
 #endif // header_newallocate_h
 
 // end of newallocate.h
-

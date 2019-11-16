@@ -155,13 +155,13 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 #define BUFFERED_STREAM_SIZE  (STREAM_SIZE+STREAM_BUFFER_SIZE)
 
 inline std::atomic<LispObject> &stream_type(LispObject v)
-{   return elt(v, 0);
+{   return basic_elt(v, 0);
 }
 inline std::atomic<LispObject> &stream_write_data(LispObject v)
-{   return elt(v, 1);
+{   return basic_elt(v, 1);
 }
 inline std::atomic<LispObject> &stream_read_data(LispObject v)
-{   return elt(v, 2);
+{   return basic_elt(v, 2);
 }
 inline std::atomic<std::FILE *> &stream_file(LispObject v)
 {   return (std::atomic<std::FILE *>&)elt(v, 3);
@@ -173,13 +173,13 @@ inline std::atomic<other_stream_op *> &stream_write_other(LispObject v)
 {   return (std::atomic<other_stream_op *>&)elt(v,5);
 }
 inline std::atomic<LispObject> &stream_line_length(LispObject v)
-{   return elt(v, 6);
+{   return basic_elt(v, 6);
 }
 inline std::atomic<LispObject> &stream_byte_pos(LispObject v)
-{   return elt(v, 7);
+{   return basic_elt(v, 7);
 }
 inline std::atomic<LispObject> &stream_char_pos(LispObject v)
-{   return elt(v, 8);
+{   return basic_elt(v, 8);
 }
 inline std::atomic<character_stream_reader *> &stream_read_fn(LispObject v)
 {   return (std::atomic<character_stream_reader *>&)elt(v, 9);
@@ -188,10 +188,10 @@ inline std::atomic<other_stream_op *> &stream_read_other(LispObject v)
 {   return (std::atomic<other_stream_op *>&)elt(v,10);
 }
 inline std::atomic<LispObject> &stream_pushed_char(LispObject v)
-{   return elt(v, 11);
+{   return basic_elt(v, 11);
 }
 inline std::atomic<LispObject> &stream_spare(LispObject v)
-{   return elt(v, 12);
+{   return basic_elt(v, 12);
 }
 
 inline LispObject set_stream_file(LispObject v, std::FILE *x)

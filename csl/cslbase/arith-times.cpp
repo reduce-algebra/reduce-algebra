@@ -1145,7 +1145,7 @@ LispObject Expt::op(double a, LFlt b)
 // return f128_exp(f128_mul(b.floatval(), f128_log(a.floatval())))
 
 LispObject Expt::op(LFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 //  return f128_exp(f128_mul(b.floatval(), f128_log(a.floatval())))
 #pragma message ("exponentiation involving float128_t not available yet")
 }
@@ -1406,43 +1406,43 @@ LispObject Quotient::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Quotient::op(Fixnum a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 #pragma message ("quotient involving complex incomplete code")
 }
 
 // bignum / complex
 LispObject Quotient::op(std::uint64_t *a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / complex
 LispObject Quotient::op(Rat a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / complex
 LispObject Quotient::op(Cpx a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / complex
 LispObject Quotient::op(SFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / complex
 LispObject Quotient::op(Flt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / complex
 LispObject Quotient::op(double a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / complex
 LispObject Quotient::op(LFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / short float
@@ -1469,68 +1469,68 @@ LispObject Quotient::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Quotient::op(Cpx a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 #pragma message ("quitient involving short float incomplete code")
 }
 
 // short float / short float
 LispObject Quotient::op(SFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / short float
 LispObject Quotient::op(Flt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / short float
 LispObject Quotient::op(double a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / short float
 LispObject Quotient::op(LFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Quotient::op(Fixnum a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / single float
 LispObject Quotient::op(std::uint64_t *a, Flt b)
-{   std::abort("quotient involving single float not done yet");
+{   arithlib_abort("quotient involving single float not done yet");
 }
 
 // rational / single float
 LispObject Quotient::op(Rat a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / single float
 LispObject Quotient::op(Cpx a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / single float
 LispObject Quotient::op(SFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / single float
 LispObject Quotient::op(Flt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / single float
 LispObject Quotient::op(double a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / single float
 LispObject Quotient::op(LFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / double float
@@ -1550,12 +1550,12 @@ LispObject Quotient::op(std::uint64_t *a, double b)
 // rational / double float
 #pragma message ("quotient involving double float incomplete code")
 LispObject Quotient::op(Rat a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / double float
 LispObject Quotient::op(Cpx a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / double float
@@ -1575,48 +1575,48 @@ LispObject Quotient::op(double a, double b)
 
 // long float / double float
 LispObject Quotient::op(LFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Quotient::op(Fixnum a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 #pragma message ("quotient involving long float incomplete code")
 }
 
 // bignum / long float
 LispObject Quotient::op(std::uint64_t *a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / long float
 LispObject Quotient::op(Rat a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / long float
 LispObject Quotient::op(Cpx a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / long float
 LispObject Quotient::op(SFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / long float
 LispObject Quotient::op(Flt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / long float
 LispObject Quotient::op(double a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / long float
 LispObject Quotient::op(LFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // (quotient 22 7) => 3 and (!/!/ 22 7) => 3
@@ -1716,7 +1716,7 @@ LispObject CLQuotient::op(std::uint64_t *a, Fixnum b)
 // rational / fixnum
 LispObject CLQuotient::op(Rat a, Fixnum b)
 {   if (b.intval() == 0) return a.value();
-    std::abort("not coded yet");
+    arithlib_abort("not coded yet");
 }
 
 // complex / fixnum
@@ -1747,12 +1747,12 @@ LispObject CLQuotient::op(LFlt a, Fixnum b)
 
 // fixnum / bignum
 LispObject CLQuotient::op(Fixnum a, std::uint64_t *b)
-{   std::abort("not coded yet");
+{   arithlib_abort("not coded yet");
 }
 
 // bignum / bignum
 LispObject CLQuotient::op(std::uint64_t *a, std::uint64_t *b)
-{   std::abort("not coded yet");
+{   arithlib_abort("not coded yet");
 }
 
 // rational / bignum
@@ -1889,43 +1889,43 @@ LispObject CLQuotient::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject CLQuotient::op(Fixnum a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 #pragma message ("CL quotient incomplete code")
 }
 
 // bignum / complex
 LispObject CLQuotient::op(std::uint64_t *a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / complex
 LispObject CLQuotient::op(Rat a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / complex
 LispObject CLQuotient::op(Cpx a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / complex
 LispObject CLQuotient::op(SFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / complex
 LispObject CLQuotient::op(Flt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / complex
 LispObject CLQuotient::op(double a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / complex
 LispObject CLQuotient::op(LFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / short float
@@ -1952,97 +1952,97 @@ LispObject CLQuotient::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject CLQuotient::op(Cpx a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / short float
 LispObject CLQuotient::op(SFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / short float
 LispObject CLQuotient::op(Flt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / short float
 LispObject CLQuotient::op(double a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / short float
 LispObject CLQuotient::op(LFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / single float
 LispObject CLQuotient::op(Fixnum a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / single float
 LispObject CLQuotient::op(std::uint64_t *a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / single float
 LispObject CLQuotient::op(Rat a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / single float
 LispObject CLQuotient::op(Cpx a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / single float
 LispObject CLQuotient::op(SFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / single float
 LispObject CLQuotient::op(Flt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / single float
 LispObject CLQuotient::op(double a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / single float
 LispObject CLQuotient::op(LFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / double float
 LispObject CLQuotient::op(Fixnum a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / double float
 LispObject CLQuotient::op(std::uint64_t *a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / double float
 LispObject CLQuotient::op(Rat a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / double float
 LispObject CLQuotient::op(Cpx a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / double float
 LispObject CLQuotient::op(SFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / double float
 LispObject CLQuotient::op(Flt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / double float
@@ -2052,47 +2052,47 @@ LispObject CLQuotient::op(double a, double b)
 
 // long float / double float
 LispObject CLQuotient::op(LFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / long float
 LispObject CLQuotient::op(Fixnum a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / long float
 LispObject CLQuotient::op(std::uint64_t *a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / long float
 LispObject CLQuotient::op(Rat a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / long float
 LispObject CLQuotient::op(Cpx a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / long float
 LispObject CLQuotient::op(SFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / long float
 LispObject CLQuotient::op(Flt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / long float
 LispObject CLQuotient::op(double a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / long float
 LispObject CLQuotient::op(LFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 LispObject Remainder::op(LispObject a, LispObject b)
@@ -3430,43 +3430,43 @@ LispObject Truncate::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Truncate::op(Fixnum a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 #pragma message ("truncate incomplete code")
 }
 
 // bignum / complex
 LispObject Truncate::op(std::uint64_t *a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / complex
 LispObject Truncate::op(Rat a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / complex
 LispObject Truncate::op(Cpx a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / complex
 LispObject Truncate::op(SFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / complex
 LispObject Truncate::op(Flt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / complex
 LispObject Truncate::op(double a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / complex
 LispObject Truncate::op(LFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / short float
@@ -3493,97 +3493,97 @@ LispObject Truncate::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Truncate::op(Cpx a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / short float
 LispObject Truncate::op(SFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / short float
 LispObject Truncate::op(Flt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / short float
 LispObject Truncate::op(double a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / short float
 LispObject Truncate::op(LFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Truncate::op(Fixnum a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / single float
 LispObject Truncate::op(std::uint64_t *a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / single float
 LispObject Truncate::op(Rat a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / single float
 LispObject Truncate::op(Cpx a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / single float
 LispObject Truncate::op(SFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / single float
 LispObject Truncate::op(Flt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / single float
 LispObject Truncate::op(double a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / single float
 LispObject Truncate::op(LFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Truncate::op(Fixnum a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / double float
 LispObject Truncate::op(std::uint64_t *a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / double float
 LispObject Truncate::op(Rat a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / double float
 LispObject Truncate::op(Cpx a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / double float
 LispObject Truncate::op(SFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / double float
 LispObject Truncate::op(Flt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / double float
@@ -3593,47 +3593,47 @@ LispObject Truncate::op(double a, double b)
 
 // long float / double float
 LispObject Truncate::op(LFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Truncate::op(Fixnum a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / long float
 LispObject Truncate::op(std::uint64_t *a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / long float
 LispObject Truncate::op(Rat a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / long float
 LispObject Truncate::op(Cpx a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / long float
 LispObject Truncate::op(SFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / long float
 LispObject Truncate::op(Flt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / long float
 LispObject Truncate::op(double a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / long float
 LispObject Truncate::op(LFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 LispObject Ceiling::op(LispObject a, LispObject b)
@@ -3892,43 +3892,43 @@ LispObject Ceiling::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Ceiling::op(Fixnum a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 #pragma message ("2-arg ceiling incomplete code")
 }
 
 // bignum / complex
 LispObject Ceiling::op(std::uint64_t *a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / complex
 LispObject Ceiling::op(Rat a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / complex
 LispObject Ceiling::op(Cpx a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / complex
 LispObject Ceiling::op(SFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / complex
 LispObject Ceiling::op(Flt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / complex
 LispObject Ceiling::op(double a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / complex
 LispObject Ceiling::op(LFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / short float
@@ -3955,97 +3955,97 @@ LispObject Ceiling::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Ceiling::op(Cpx a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / short float
 LispObject Ceiling::op(SFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / short float
 LispObject Ceiling::op(Flt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / short float
 LispObject Ceiling::op(double a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / short float
 LispObject Ceiling::op(LFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Ceiling::op(Fixnum a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / single float
 LispObject Ceiling::op(std::uint64_t *a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / single float
 LispObject Ceiling::op(Rat a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / single float
 LispObject Ceiling::op(Cpx a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / single float
 LispObject Ceiling::op(SFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / single float
 LispObject Ceiling::op(Flt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / single float
 LispObject Ceiling::op(double a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / single float
 LispObject Ceiling::op(LFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Ceiling::op(Fixnum a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / double float
 LispObject Ceiling::op(std::uint64_t *a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / double float
 LispObject Ceiling::op(Rat a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / double float
 LispObject Ceiling::op(Cpx a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / double float
 LispObject Ceiling::op(SFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / double float
 LispObject Ceiling::op(Flt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / double float
@@ -4055,47 +4055,47 @@ LispObject Ceiling::op(double a, double b)
 
 // long float / double float
 LispObject Ceiling::op(LFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Ceiling::op(Fixnum a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / long float
 LispObject Ceiling::op(std::uint64_t *a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / long float
 LispObject Ceiling::op(Rat a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / long float
 LispObject Ceiling::op(Cpx a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / long float
 LispObject Ceiling::op(SFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / long float
 LispObject Ceiling::op(Flt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / long float
 LispObject Ceiling::op(double a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / long float
 LispObject Ceiling::op(LFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 
@@ -4355,43 +4355,43 @@ LispObject Floor::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Floor::op(Fixnum a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 #pragma message ("2 arg floor incomplete code")
 }
 
 // bignum / complex
 LispObject Floor::op(std::uint64_t *a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / complex
 LispObject Floor::op(Rat a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / complex
 LispObject Floor::op(Cpx a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / complex
 LispObject Floor::op(SFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / complex
 LispObject Floor::op(Flt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / complex
 LispObject Floor::op(double a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / complex
 LispObject Floor::op(LFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / short float
@@ -4418,97 +4418,97 @@ LispObject Floor::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Floor::op(Cpx a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / short float
 LispObject Floor::op(SFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / short float
 LispObject Floor::op(Flt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / short float
 LispObject Floor::op(double a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / short float
 LispObject Floor::op(LFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Floor::op(Fixnum a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / single float
 LispObject Floor::op(std::uint64_t *a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / single float
 LispObject Floor::op(Rat a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / single float
 LispObject Floor::op(Cpx a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / single float
 LispObject Floor::op(SFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / single float
 LispObject Floor::op(Flt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / single float
 LispObject Floor::op(double a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / single float
 LispObject Floor::op(LFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Floor::op(Fixnum a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / double float
 LispObject Floor::op(std::uint64_t *a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / double float
 LispObject Floor::op(Rat a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / double float
 LispObject Floor::op(Cpx a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / double float
 LispObject Floor::op(SFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / double float
 LispObject Floor::op(Flt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / double float
@@ -4518,47 +4518,47 @@ LispObject Floor::op(double a, double b)
 
 // long float / double float
 LispObject Floor::op(LFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Floor::op(Fixnum a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / long float
 LispObject Floor::op(std::uint64_t *a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / long float
 LispObject Floor::op(Rat a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / long float
 LispObject Floor::op(Cpx a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / long float
 LispObject Floor::op(SFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / long float
 LispObject Floor::op(Flt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / long float
 LispObject Floor::op(double a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / long float
 LispObject Floor::op(LFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 LispObject Ftruncate::op(LispObject a, LispObject b)
@@ -4817,43 +4817,43 @@ LispObject Ftruncate::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Ftruncate::op(Fixnum a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 #pragma message ("2 arg ftruncate incomplete code")
 }
 
 // bignum / complex
 LispObject Ftruncate::op(std::uint64_t *a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / complex
 LispObject Ftruncate::op(Rat a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / complex
 LispObject Ftruncate::op(Cpx a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / complex
 LispObject Ftruncate::op(SFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / complex
 LispObject Ftruncate::op(Flt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / complex
 LispObject Ftruncate::op(double a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / complex
 LispObject Ftruncate::op(LFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / short float
@@ -4880,97 +4880,97 @@ LispObject Ftruncate::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Ftruncate::op(Cpx a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / short float
 LispObject Ftruncate::op(SFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / short float
 LispObject Ftruncate::op(Flt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / short float
 LispObject Ftruncate::op(double a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / short float
 LispObject Ftruncate::op(LFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Ftruncate::op(Fixnum a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / single float
 LispObject Ftruncate::op(std::uint64_t *a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / single float
 LispObject Ftruncate::op(Rat a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / single float
 LispObject Ftruncate::op(Cpx a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / single float
 LispObject Ftruncate::op(SFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / single float
 LispObject Ftruncate::op(Flt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / single float
 LispObject Ftruncate::op(double a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / single float
 LispObject Ftruncate::op(LFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Ftruncate::op(Fixnum a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / double float
 LispObject Ftruncate::op(std::uint64_t *a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / double float
 LispObject Ftruncate::op(Rat a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / double float
 LispObject Ftruncate::op(Cpx a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / double float
 LispObject Ftruncate::op(SFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / double float
 LispObject Ftruncate::op(Flt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / double float
@@ -4980,47 +4980,47 @@ LispObject Ftruncate::op(double a, double b)
 
 // long float / double float
 LispObject Ftruncate::op(LFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Ftruncate::op(Fixnum a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / long float
 LispObject Ftruncate::op(std::uint64_t *a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / long float
 LispObject Ftruncate::op(Rat a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / long float
 LispObject Ftruncate::op(Cpx a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / long float
 LispObject Ftruncate::op(SFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / long float
 LispObject Ftruncate::op(Flt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / long float
 LispObject Ftruncate::op(double a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / long float
 LispObject Ftruncate::op(LFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 LispObject Fceiling::op(LispObject a, LispObject b)
@@ -5279,43 +5279,43 @@ LispObject Fceiling::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Fceiling::op(Fixnum a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 #pragma message ("2 arg fceiling incomplete code")
 }
 
 // bignum / complex
 LispObject Fceiling::op(std::uint64_t *a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / complex
 LispObject Fceiling::op(Rat a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / complex
 LispObject Fceiling::op(Cpx a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / complex
 LispObject Fceiling::op(SFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / complex
 LispObject Fceiling::op(Flt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / complex
 LispObject Fceiling::op(double a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / complex
 LispObject Fceiling::op(LFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / short float
@@ -5342,97 +5342,97 @@ LispObject Fceiling::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Fceiling::op(Cpx a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / short float
 LispObject Fceiling::op(SFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / short float
 LispObject Fceiling::op(Flt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / short float
 LispObject Fceiling::op(double a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / short float
 LispObject Fceiling::op(LFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Fceiling::op(Fixnum a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / single float
 LispObject Fceiling::op(std::uint64_t *a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / single float
 LispObject Fceiling::op(Rat a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / single float
 LispObject Fceiling::op(Cpx a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / single float
 LispObject Fceiling::op(SFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / single float
 LispObject Fceiling::op(Flt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / single float
 LispObject Fceiling::op(double a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / single float
 LispObject Fceiling::op(LFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Fceiling::op(Fixnum a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / double float
 LispObject Fceiling::op(std::uint64_t *a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / double float
 LispObject Fceiling::op(Rat a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / double float
 LispObject Fceiling::op(Cpx a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / double float
 LispObject Fceiling::op(SFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / double float
 LispObject Fceiling::op(Flt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / double float
@@ -5442,47 +5442,47 @@ LispObject Fceiling::op(double a, double b)
 
 // long float / double float
 LispObject Fceiling::op(LFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Fceiling::op(Fixnum a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / long float
 LispObject Fceiling::op(std::uint64_t *a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / long float
 LispObject Fceiling::op(Rat a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / long float
 LispObject Fceiling::op(Cpx a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / long float
 LispObject Fceiling::op(SFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / long float
 LispObject Fceiling::op(Flt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / long float
 LispObject Fceiling::op(double a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / long float
 LispObject Fceiling::op(LFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 LispObject Ffloor::op(LispObject a, LispObject b)
@@ -5741,43 +5741,43 @@ LispObject Ffloor::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Ffloor::op(Fixnum a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 #pragma message ("2 arg ffloor incomplete code")
 }
 
 // bignum / complex
 LispObject Ffloor::op(std::uint64_t *a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / complex
 LispObject Ffloor::op(Rat a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / complex
 LispObject Ffloor::op(Cpx a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / complex
 LispObject Ffloor::op(SFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / complex
 LispObject Ffloor::op(Flt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / complex
 LispObject Ffloor::op(double a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / complex
 LispObject Ffloor::op(LFlt a, Cpx b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / short float
@@ -5804,97 +5804,97 @@ LispObject Ffloor::op(Rat a, SFlt b)
 }
 // complex / short float
 LispObject Ffloor::op(Cpx a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / short float
 LispObject Ffloor::op(SFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / short float
 LispObject Ffloor::op(Flt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / short float
 LispObject Ffloor::op(double a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / short float
 LispObject Ffloor::op(LFlt a, SFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / single float
 LispObject Ffloor::op(Fixnum a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / single float
 LispObject Ffloor::op(std::uint64_t *a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / single float
 LispObject Ffloor::op(Rat a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / single float
 LispObject Ffloor::op(Cpx a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / single float
 LispObject Ffloor::op(SFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / single float
 LispObject Ffloor::op(Flt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / single float
 LispObject Ffloor::op(double a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / single float
 LispObject Ffloor::op(LFlt a, Flt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / double float
 LispObject Ffloor::op(Fixnum a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / double float
 LispObject Ffloor::op(std::uint64_t *a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / double float
 LispObject Ffloor::op(Rat a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / double float
 LispObject Ffloor::op(Cpx a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / double float
 LispObject Ffloor::op(SFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / double float
 LispObject Ffloor::op(Flt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / double float
@@ -5904,47 +5904,47 @@ LispObject Ffloor::op(double a, double b)
 
 // long float / double float
 LispObject Ffloor::op(LFlt a, double b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // fixnum / long float
 LispObject Ffloor::op(Fixnum a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // bignum / long float
 LispObject Ffloor::op(std::uint64_t *a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // rational / long float
 LispObject Ffloor::op(Rat a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // complex / long float
 LispObject Ffloor::op(Cpx a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // short float / long float
 LispObject Ffloor::op(SFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // single float / long float
 LispObject Ffloor::op(Flt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // double float / long float
 LispObject Ffloor::op(double a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 // long float / long float
 LispObject Ffloor::op(LFlt a, LFlt b)
-{   std::abort("not done yet");
+{   arithlib_abort("not done yet");
 }
 
 

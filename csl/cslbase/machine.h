@@ -135,10 +135,14 @@
 #define __has_cpp_attribute(name) 0
 #endif
 
+#ifndef MAYBE_UNUSED
 #if __has_cpp_attribute(maybe_unused)
 #define MAYBE_UNUSED [[maybe_unused]]
+#elif defined __GNUC__
+#define MAYBE_UNUSED [[gnu::unused]]
 #else
 #define MAYBE_UNUSED
+#endif
 #endif
 
 #ifdef WIN32

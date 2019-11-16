@@ -1909,6 +1909,7 @@ static void wait_for_char()
 // properly even while I am suspended waiting for getchar() to return...
 // However basically handling of interrupts here will be really uncertain!
         c = std::getchar();
+        if (c == '\r') c = '\n';
         if (c == EOF)
         {   std::clearerr(stdin);    // Believed to be what is wanted
             c = CTRL_D;         // Use ASCII ^D as EOF marker

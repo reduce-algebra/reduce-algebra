@@ -2180,6 +2180,15 @@ public:
     static LispObject op(std::uint64_t *a);
 };
 
+class Logcount
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum a);
+    static LispObject op(std::uint64_t *a);
+};
+
 class LeftShift
 {
 public:

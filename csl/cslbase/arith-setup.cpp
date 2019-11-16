@@ -1148,7 +1148,7 @@ static LispObject Nmodf(LispObject env, LispObject a1)
             df = std::modf(double_float_val(a1), &di);
             return cons(make_boxfloat(di), make_boxfloat(df));
         case TYPE_LONG_FLOAT:
-            lf = arithlib_lowlevel::std::modf(long_float_val(a1), li);
+            lf = arithlib_lowlevel::modf(long_float_val(a1), li);
             return cons(make_boxfloat128(li), make_boxfloat128(lf));
         }
     }
@@ -1264,7 +1264,7 @@ setup_type const arith_setup[] =
     {"newilogxor",           Nilogxor,           Nilogxor,           Nilogxor,           Nilogxor,           Nilogxor},
     {"newilogeqv",           Nilogeqv,           Nilogeqv,           Nilogeqv,           Nilogeqv,           Nilogeqv},
     {"newilognot",           G0W1,               Nilognot,           G2W1,               G3W1,               G4W1},
-    {"newilogcount",         G0W1,               Nilogcount,         G2W1,               G3W1,               G4W1},
+    {"newilogcount",         G0W1,               Nlogcount,          G2W1,               G3W1,               G4W1},
     {"newilshift",           G0W2,               G1W2,               Nileftshift,        G3W1,               G4W1},
     {"newirshift",           G0W2,               G1W2,               Nirightshift,       G3W1,               G4W1},
     {NULL,                   0, 0, 0, 0, 0}
