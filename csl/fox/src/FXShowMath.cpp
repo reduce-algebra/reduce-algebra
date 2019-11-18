@@ -1,5 +1,4 @@
-//
-// "FXShowMath.cpp"                       Copyright A C Norman 2004-2015
+// FXShowMath.cpp"                       Copyright A C Norman 2004-2019
 //
 //
 // Code to layout mathematical formulae for display. Formulae are
@@ -303,6 +302,7 @@ TeXState currentState;
 #define SymNothing     0x60
 #define SymUnderscore  0x70
 #define SymRule        0x80
+#define SymRealStar    0x90
 
 static Box *makeSymBox(int type)
 {
@@ -1619,6 +1619,43 @@ default:
     }
 }
 
+int endsWithDigit(Box *b)
+{   for (;;)
+    {   if (b->nest.type == BoxNest &&
+            (b->nest.flags == BoxBeside ||
+             b->nest.flags == BoxAdjacent))
+        {   b = b->nest.sub2;
+            continue;
+        }
+        break;
+    }
+    if (b->text.type != BoxText) return 0;
+    return (b->text.n != 0 &&
+            isdigit(b->text.text[b->text.n-1]));
+}
+
+int startsWithDigit(Box *b)
+{   for (;;)
+    {   if (b->nest.type == BoxNest &&
+            (b->nest.flags == BoxBeside ||
+             b->nest.flags == BoxAdjacent ||
+             b->nest.flags == BoxSubscript ||
+             b->nest.flags == BoxSuperscript))
+        {   b = b->nest.sub1;
+            continue;
+        }
+        if (b->nest.type == BoxNest &&
+            b->nest.flags == BoxBothScripts)
+        {   b = b->nest3.sub1;
+            continue;
+        }
+        break;
+    }
+    if (b->text.type != BoxText) return 0;
+    return (b->text.n != 0 &&
+            isdigit(b->text.text[0]));
+}
+
 #ifdef WIN32
 static char utfchars[256];
 #endif
@@ -1644,6 +1681,8 @@ void measureBox1(Box *b)
     {   printf("measureBox1(%p)\n", b); fflush(stdout);
         printf("type = %d\n", b->text.type); fflush(stdout);
     }
+// Every variant on Box has "type" and "flag" fields first, so I feel
+// OK accessing those as if it was of type TextBox.
     switch (b->text.type)
     {
 case BoxSym:
@@ -1655,6 +1694,10 @@ case BoxSym:
         {
     case SymStar:   // used as space between items that are multiplied
             s->width = mathFontWidth[s->flags & FontSizeMask]/6;
+            return;
+    case SymRealStar:   // In places where I have eg 2 \* 2
+                        // which I want to render as 2 \times 2
+            s->width = (5*mathFontWidth[s->flags & FontSizeMask])/6;
             return;
     case SymComma:  // narrow space
             s->width = mathFontWidth[s->flags & FontSizeMask]/4;
@@ -1904,6 +1947,24 @@ case BoxNest:
             }
             return;
     case BoxBeside:    // --> A B
+// I may want an utter HACK here in the case where I have
+//      BoxBeside(BoxBeside(X, BoxSym(SymStar)), Y)
+// and X will end in a digit while Y starts with one. In such a case I
+// might like to replace SymStar with SymRealStar. If I put the transformation
+// in here it should be OK because every box structure gets measured before
+// being displayed, and the change of the symbol can happen easily in-place.
+            if (n->sub1->text.type == BoxNest &&
+                (n->sub1->text.flags & NestMask) == BoxBeside)
+            {   Box *left = n->sub1->nest.sub1;
+                Box *mid = n->sub1->nest.sub2;
+                Box *right = n->sub2;
+                if (mid->text.type == BoxSym &&
+                    (mid->sym.flags & SymTypeMask) == SymStar)
+                {   if (endsWithDigit(left) &&
+                        startsWithDigit(right))
+                        mid->sym.flags ^= (SymStar ^ SymRealStar);
+                }
+            }
             measureBox1(n->sub1);
             measureBox1(n->sub2);
             n->width = n->sub1->text.width + n->sub2->text.width;
@@ -2272,6 +2333,7 @@ static Box *doSpaceCommand(int w)
 default:
 case ' ': return makeSymBox(SymBlank); 
 case '*': return makeSymBox(SymStar);
+case 'x': return makeSymBox(SymRealStar);
 case ',': return makeSymBox(SymComma); 
 case '!': return makeSymBox(SymExclam); 
 case ':': return makeSymBox(SymColon);
@@ -2330,7 +2392,8 @@ static void nextSymbol();
 
 static Box *doNot(int w)
 {
-// Overstrike anthing (much) with a "/". Hence "\not \equiv" etc.
+// Overstrike anything (well almost anything) with a "/". Hence
+// "\not \equiv" etc.
     Box *b1;
     nextSymbol();
     b1 = readP();
@@ -2834,7 +2897,7 @@ static Keyword texWords[1<<texWordBits] =
 // will not occur freestanding.
     {"&",            TeX0Arg, 0,         0,    NULL},
     {"\\\\",         TeX0Arg, 0,         0,    NULL},
-// The next bunch insert spacing manually
+// The next bunch insert spacing manually.
     {"\\*",          TeX0Arg, 0,         '*',  (void *)doSpaceCommand},
     {"\\ ",          TeX0Arg, 0,         ' ',  (void *)doSpaceCommand},
     {"\\,",          TeX0Arg, 0,         ',',  (void *)doSpaceCommand},
@@ -4371,6 +4434,15 @@ case BoxSym:
     case SymBlank:
     case SymNothing:
     case SymRule:     // this is a rule with either height or width zero
+            return;
+    case SymRealStar:
+// There are cases where the TeX input says things like
+//     2 \* 2^\frac{1,2}
+// and if I map \* onto a narrow space the display can look too much
+// like "22^\frac{1,2}". So what I do is put out something that I think is
+// "2 \times 2..."
+            setFont1(dc, mathFont[FntSymbol]);
+            drawText1(dc, x, y, "\xa3", 1);
             return;
     case SymUnderscore:
             {   int h = (mathFontHeight[b->nest.flags & FontSizeMask]+12)/25;

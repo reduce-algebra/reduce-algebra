@@ -210,4 +210,12 @@ June 2019. A fix related to the judgment as to whether we are running "reduce"
 July 2019. On the Mac try a bit harder to find a font that will exist, and
       also in the FOX code consolidate which logging functions I use.
       
+October 2019. Some of the files shared with and specific to CSL now use
+      eg <cstdio> rather than <stdio.h> and prefix function names etc with
+      std:: so that they are "more C++ like".
+
+November 2019. Fixes so that the TeX input 2 \* 2^\frac{1,2} gets treated as
+      if it has \times rather than \* so that the pair of almost-adjacent
+      digits do not cause confusion.
+
 <end of CHANGED>

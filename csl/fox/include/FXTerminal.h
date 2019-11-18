@@ -506,7 +506,10 @@ inline const char *get_mac_default_font()
             if (found)
                 printlog("%s found but will not be used\n", possible_fonts[i]);
             else
-            {   strcpy(mac_default_font, 1+strrchr(possible_fonts[i], '/'));
+            {
+// Keep just the bif after the last "/", and then clobber the suffix, so
+// eg /System/Library/Fonts/Menlo.ttc gets turned into just Menlo.
+                strcpy(mac_default_font, 1+strrchr(possible_fonts[i], '/'));
                 *strrchr(mac_default_font, '.') = 0;
                 printlog("Will try with font %s\n", mac_default_font);
                 found = true;
