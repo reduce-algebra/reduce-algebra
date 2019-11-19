@@ -19,7 +19,7 @@ IC=${3:-fwin}
 SetFile -t APPL $1
 mkdir -p $1.app/Contents
 mkdir -p $1.app/Contents/MacOS
-rm       $1.app/Contents/MacOS/*.log
+rm -f    $1.app/Contents/MacOS/*.log
 mkdir -p $1.app/Contents/MacOS/reduce.fonts
 mkdir -p $1.app/Contents/MacOS/reduce.doc
 mkdir -p $1.app/Contents/Resources
@@ -29,6 +29,7 @@ cp $srcdir/../reduce.doc/*.tex                        $D
 cp $srcdir/../reduce.doc/*.html                       $D
 # cp $srcdir/../reduce.gif                            $D
 F="$1.app/Contents/MacOS/reduce.fonts"
+cp -r $srcdir/fontconfig.conf                         $F
 # Copy everything from my source tree. This makes sense if the tree is
 # clean and does not contain any local extras!
 cp -r $srcdir/fonts/*READ*                            $F

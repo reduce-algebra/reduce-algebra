@@ -218,4 +218,8 @@ November 2019. Fixes so that the TeX input 2 \* 2^\frac{1,2} gets treated as
       if it has \times rather than \* so that the pair of almost-adjacent
       digits do not cause confusion.
 
+November 2019. If it looks as if the fontconfig configuration file is not
+      present use a version that I copied from the macports version of
+      fontconfig and that I then hide in the Application Bundle.
+
 <end of CHANGED>

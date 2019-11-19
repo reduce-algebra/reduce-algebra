@@ -1015,8 +1015,14 @@ void initHeapSegments(double storeSize)
 }
 
 void drop_heapSegments(void)
-{   for (std::size_t i=0; i<heapSegmentCount; i++)
+{
+#ifdef __cpp_aligned_new
+    for (std::size_t i=0; i<heapSegmentCount; i++)
         delete [] static_cast<Page *>(heapSegmentBase[i]);
+#else
+    for (std::size_t i=0; i<heapSegmentCount; i++)
+        delete [] static_cast<char *>(heapSegmentBase[i]);
+#endif
     std::free(nilSegmentBase);
     std::free(stackSegmentBase);
 }
