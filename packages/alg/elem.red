@@ -98,17 +98,21 @@ symbolic procedure simp!-sign2 u;
 symbolic procedure simp!-sign u;
    simp!-sign1 reval car u;
 
+symbolic inline procedure sq!-is!-sign u;
+   % Returns t is s.q. u is either 1, -1, or 0
+   denr u = 1 and (nu=1 or nu=-1 or nu=0) where nu=numr u;
+   
 symbolic procedure simp!-sign!-times w;
  % Factor all known signs out of the product.
   begin scalar n,s,x;
    n:=1;
    for each f in cdr w do
-   <<x:=simp!-sign1 f;
-     if fixp numr x then n:=n * numr x else s:=f.s>>;
-   n:=(n/abs n) ./ 1;
+   << x:=simp!-sign1 f;
+      % Make sure that only values 1,-1, and 0 are used here, everything else is left in place
+      if sq!-is!-sign x then n:=n * numr x else s:=f.s>>;
    s:=if null s then '(1 . 1)
        else simp!-sign2(if cdr s then 'times.reversip s else car s);
-   return multsq (n,s)
+   return multsq (n ./ 1,s)
   end;
 
 symbolic procedure simp!-sign!-quot w;
@@ -117,7 +121,7 @@ symbolic procedure simp!-sign!-quot w;
      if eqcar(cadr w,'minus) then << flg:=t;  w := {car w,cadr cadr w, caddr w} >>;
      x := simp!-sign1 cadr w;		% numerator
      y := simp!-sign1 caddr w;		% denominator
-     if denr x = 1 and fixp numr x or denr y = 1 and fixp numr y then z := multsq (x,y)
+     if sq!-is!-sign x or sq!-is!-sign y then z := quotsq (x,y)
       else z := simp!-sign2 w;
      return if flg then negsq z else z
   end;
@@ -128,7 +132,7 @@ symbolic procedure simp!-sign!-plus w;
   begin scalar n,m,x,q;
    for each f in cdr w do if null q then
    <<x:=simp!-sign1 f;
-     m:=if fixp numr x then numr x/abs denr x;
+     m:=if sq!-is!-sign x then numr x;
      if null m or n and m neq n then q:=t;
      n:=m>>;
    return if null q then n ./ 1 else simp!-sign2 w;
@@ -137,7 +141,7 @@ symbolic procedure simp!-sign!-plus w;
 symbolic procedure simp!-sign!-expt w;
   (if fixp ex and evenp ex and not(!*complex or !*precise_complex) then (1 ./ 1)
     else (
-     if fixp ex and denr sb = 1 and fixp numr sb
+     if fixp ex and sq!-is!-sign sb
        then (if not evenp ex and numr sb < 0 then -1 else 1) ./ 1
       else if fixp ex and not(!*complex or !*precise_complex) then sb
       else if ex = '(quotient 1 2) and sb = (1 ./ 1) then 1 ./ 1
