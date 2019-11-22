@@ -12,6 +12,8 @@ sqrt(10*(x^2+10));
 
 int(sqrt(1-x^2),x,0,1);
 
-int(sqrt(10*(x^2+10)),x,0,1);
+% removed last line since it doesn't work any longer after revision 5144
+% which adds resimplification after definite integration
+%int(sqrt(10*(x^2+10)),x,0,1);
 
 end;

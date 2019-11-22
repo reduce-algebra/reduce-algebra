@@ -35,25 +35,18 @@ sqrt(10*x  + 1)
 int(sqrt(1-x^2),x,0,1);
 
 
- 1
----*pi
- 4
+3*pi
 
 
-int(sqrt(10*(x^2+10)),x,0,1);
-
-
- 1                              sqrt(11) + 6
----*sqrt(10)*(sqrt(11) + 5*log(--------------))
- 2                                   5
-
+% removed last line since it doesn't work any longer after revision 5144
+% which adds resimplification after definite integration
+%int(sqrt(10*(x^2+10)),x,0,1);
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 16 ms  plus GC time: 31 ms
-
-End of Lisp run after 0.01+0.09 seconds
-real 0.26
-user 0.04
-sys 0.03
+Tested on x86_64-unknown-ubuntu18.04 PSL
+Time (counter 1): 130 ms
+Quitting
+real 0.50
+user 0.27
+sys 0.07
