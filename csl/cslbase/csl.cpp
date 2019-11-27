@@ -3005,14 +3005,6 @@ static void cslaction(void)
 {
     volatile std::uintptr_t sp;
     C_stackbase = (std::uintptr_t *)&sp;
-#ifdef CONSERVATIVE
-// The constructor here will set up so that I have one thread and one
-// active thread. And by doing that in a constuctor I arrange that at the
-// end of the run the counts are decremented again.
-    threadMap = -1;
-    activeThreads = 0;
-    ThreadStartup set_thread_local_variables;
-#endif
     errorset_msg = NULL;
     try
     {   START_SETJMP_BLOCK;

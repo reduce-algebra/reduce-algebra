@@ -42,7 +42,7 @@
 // that can hold up to 32 segments.
 
 extern void set_up_signal_handlers();
-extern void *allocateSegment(std::size_t);
+extern void allocateSegment(std::size_t);
 
 // Here is a layout for an 8 Mbyte page, specifying the various
 // ways in which data can be accessed. This uses a union so that the page
@@ -320,7 +320,8 @@ inline int nlz(std::uint64_t x)
 #endif // __GNUC__
 #define NLZ_DEFINED 1
 
-static const unsigned int maxThreads = 64;
+//static const unsigned int maxThreads = 64;
+static const unsigned int maxThreads = 2; // Nicer for debugging!
 
 extern std::mutex gc_mutex;
 // The next two values need to be thread-local. On a Windows or Cygwin
@@ -423,6 +424,8 @@ inline std::atomic<std::uintptr_t>& firstWord(std::uintptr_t a)
 // bignums, strings and vectors.
 
 static const std::size_t CHUNK=16384;
+
+
 
 inline LispObject get_n_bytes(std::size_t n)
 {
@@ -659,17 +662,9 @@ extern std::atomic<std::uint32_t> activeThreads;
 // involve some care!
 
 
-inline void performGarbageCollection()
-{   std::printf("Hello, this is the master_GC\n");
-// set space in via request_sizes[] etc. Note that especially if I am
-// dealing with fragmented heap-space because of pinned items left over by
-// the conservative collector I may actually end up doing two or even more
-// garbage collections here before I can satisfy all the pending memory
-// requests. On a second or subsequent GC I must allow for the newly-
-// allocated blocks that are here.
-    std::fflush(stdout);
-    my_abort(); // give up for now
-}
+extern bool generationalGarbageCollection;
+extern void generationalGarbageCollect();
+extern void fullGarbageCollect();
 
 // I have multiple threads, and when a GC is needed they need to synchronize.
 // My plan is that one thread is selected as the key one, with that
@@ -709,6 +704,10 @@ inline void performGarbageCollection()
 // can afford to clear gc_started and set gc_finished and finally notify
 // all other threads. Ught this feels heavy-handed and messy!
 
+extern void setUpEmptyPage(Page *p);
+extern void setVariablesFromPage(Page *p);
+extern void saveVariablesToPage(Page *p);
+
 inline void garbageCollectOnBehalfOfAll()
 {
 // When I get here I know that actveThreads==0 and that all other threads
@@ -720,6 +719,7 @@ inline void garbageCollectOnBehalfOfAll()
         gc_started = true;
     }
     cv_for_gc_idling.notify_all();
+std::cout << "@@ garbageCollectOnBehalfOfAll called\n";
 // Now while the other threads are idle I can perform some garbage
 // collection and fill in results via result[] based on request[].
 // I will also put gFringe back to the value it had before any thread
@@ -735,80 +735,117 @@ inline void garbageCollectOnBehalfOfAll()
 // into an atomic decrement - and that is not needed here and may be a lot
 // more expensive than the load and store of the alternative.
     gFringe = gFringe - inc;
-// I now have a loop because in the facte of fragmentation and many
-// simultaneous large requests just one pass of the generational GC might
-// not clear out enough space. That should only be a problem that arises
-// in somewhat pathalogical cases, but I need to allow for it!
+// When I get here it is as if every thread had known to pause right at the
+// very start of a call to allocate_n_bytes() with request[threadId()] showing
+// how much space it was trying to allocate.
+//
+// The "for" loop here is to keep going until I have managed to satisfy all
+// the pending allocation requests.
     for (;;)
-    {   performGarbageCollection();
-// After garbage collection I will perform as many of the allocations as I
-// can. The vector result[] must be treated as list-bases and so the values
-// I store in it are kep neatly tagged.
-// Here some threads may have been left with fringeBis[i] and limitBis[i]
-// such that space can be allocated in that gap. I can use that space
-// for any purposes at all, not only for the thread it officially belongs to.
-// Some may have been left with those values equal, so that when that
-// particular thread next needs to allocate it will need to go via gFringe.
-        unsigned int tryFrom = 0;
-        bool success = true;
+    {   unsigned int pendingCount = 0;
         for (unsigned int i=0; i<maxThreads; i++)
-        {   std::size_t n;
-            if ((n = request[i]) != 0)
-            {   if (tryFrom < maxThreads)
-                {   std::size_t gap = limitBis[tryFrom] - fringeBis[tryFrom];
-                    if (n <= gap) // can allocate here
-                    {   result[i] = fringeBis[tryFrom] + TAG_VECTOR;
-// If I have filled in result[i] I can set request[i] to zero so that any
-// subsequent pass does not try to do this allocation again. But note that
-// result[i] must be treated as a list-base.
-                        request[i] = 0;
-                        firstWord(fringeBis[tryFrom]).store(
-                            makeVectorHeader(n));
-                        fringeBis[tryFrom] += n;
-                        gap -= n;
-                        if (gap != 0)
-                            firstWord(fringeBis[tryFrom]).store(
-                                makePaddingHeader(gap));
-                        continue;
-                    }
-// If the request was small but failed that means that the chunk I had been
-// using is full up, and if another is available I will move on and try it.
-// Note that all this requires the fringeBis[] and limitBis[] values to
-// have been set up for all potential threads, not just for the ones that
-// actually exist!
-                    if (n <= 2*sizeof(std::uintptr_t))
-                    {   tryFrom++;
-                        i--;
-                        continue;
-                    }
-                }
-// Here either I had a large request or I had run out of chunks to try
-// to fill up, so I need to use space at gFringe.
-                if (n <= gLimit - gFringe)
-                {   result[i] = gFringe + TAG_VECTOR;
+        {   size_t n = request[i];
+            if (n != 0)
+            {   uintptr_t f = fringeBis[i];
+                uintptr_t l = limitBis[i];
+                size_t gap = l - f;
+                if (n <= gap)
+                {   result[i] = fringeBis[i] + TAG_VECTOR;
                     request[i] = 0;
-                    firstWord(gFringe).store(makeVectorHeader(n));
-                    gFringe = gFringe + n;
-                    continue;
+                    firstWord(result[i]).store(makeVectorHeader(n));
+                    fringeBis[i] += n;
+                    gap -= n;
+                    if (gap != 0)
+                        firstWord(fringeBis[i]).store(makePaddingHeader(gap));
                 }
-// A yet worse case - the request did not fit in the space up to gLimit.
-// However this may be purely because of pinned items getting in the way
-// so I will skip the next pinned item (supposing there is one) and re-try.
-                std::size_t gap = gLimit - gFringe;
-                if (gap != 0) firstWord(gFringe).store(makePaddingHeader(gap));
-                if (gNext == 0)
-                {   success = false;
-                    break;
+                else
+                {   size_t gap1 = gLimit - gFringe;
+                    if (n+CHUNK < gap1)
+                    {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+                        result[i] = gFringe + TAG_VECTOR;
+                        request[i] = 0;
+                        firstWord(result[i]).store(makeVectorHeader(n));
+                        fringeBis[i] = gFringe + n;
+                        gFringe = limitBis[i] = limit[i] = fringeBis[i] + CHUNK;
+                    }
+                    else
+                    {   while (gNext != 0)
+                        {   gFringe = gNext;
+                            gLimit = ((std::uintptr_t *)gFringe.load())[0];
+                            gNext = ((std::uintptr_t *)gFringe.load())[1];
+                            gap1 = gLimit - gFringe;
+                            if (n+CHUNK < gap1)
+                            {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+                                result[i] = gFringe + TAG_VECTOR;
+                                request[i] = 0;
+                                firstWord(result[i]).store(makeVectorHeader(n));
+                                fringeBis[i] = gFringe + n;
+                                gFringe = limitBis[i] = limit[i] = fringeBis[i] + CHUNK;
+                                break;
+                            }
+                        }
+                        if (gNext == 0) pendingCount++;
+                    }
                 }
-                gFringe = gNext;
-                gLimit = ((std::uintptr_t *)gFringe.load())[0];
-                gNext = ((std::uintptr_t *)gFringe.load())[1];
-                i--;
-                continue;
             }
         }
-        if (success) break;
+        if (pendingCount == 0) break;
+// This where a page is full up.
+// I wll set padders everywhere even if I might think I have done so
+// already, just so I am certain.
+        for (unsigned int i=0; i<maxThreads; i++)
+        {   size_t gap = limitBis[i] - fringeBis[i];
+            if (gap != 0)
+                firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+        }
+        size_t gap = gLimit - gFringe;
+        if (gap != 0) firstWord(gFringe).store(makePaddingHeader(gap));
+        if (!generationalGarbageCollection ||
+            !garbage_collection_permitted ||
+            previousPage == NULL)
+        {   if (busyPagesCount >= freePagesCount+mostlyFreePagesCount)
+            {    std::cout << "@@ full GC needed\n";
+                fullGarbageCollect();
+            }
+            else
+            {
+// Here I can just allocate a next page to use...
+                if (previousPage == NULL) busyPages++;
+                previousPage = currentPage;
+// If I have some pages that contain pinned material I will use them next.
+// The reasoning behind that is that by doing so they will get scavanged
+// tolerably soon and with luck the pinned locations will end up free by then.
+                if (mostlyFreePages != NULL)
+                {   currentPage = mostlyFreePages;
+                    mostlyFreePages = mostlyFreePages->pageHeader.chain;
+                    mostlyFreePagesCount--;
+                }
+                else
+                {   currentPage = freePages;
+                    freePages = freePages->pageHeader.chain;
+                    freePagesCount--;
+                }
+                uintptr_t pFringe = currentPage->pageHeader.fringe;
+                uintptr_t pLimit = currentPage->pageHeader.heaplimit;
+// Here I suppose there are no pinned items in the page. I set fringe and
+// limit such that on the very first allocation the code will grab a bit of
+// memory at gFringe.
+                gFringe = pFringe;
+                gLimit = pLimit;
+// Every thread will now need to grab its own fresh chunk!
+                for (unsigned int k=0; k<maxThreads; k++)
+                    limit[k] = fringeBis[k] = limitBis[k] = gFringe;
+                gNext = 0;
+                busyPagesCount++;
+                std::cout << "@@ just allocated a fresh page\n";
+            }
+        }
+        else
+        {   std::cout << "@@ minor GC needed\n";
+            generationalGarbageCollect();
+        }
     }
+    std::cout << "@@ unlock any other threads at end of page allocation\n";
 // Now I need to be confident that the other threads have all accessed
 // gc_started. When they have they will increment activeThreads and when the
 // last one does that it will notify me.
@@ -913,13 +950,17 @@ inline std::uintptr_t difficult_n_bytes()
         else garbageCollectOnBehalfOfAll();
 // I must arrange that threads continue after idling only when the master
 // thread has completed its work.
-// At the end the GC can have updated the fringe::get() and heaplimit values for
-// each thread, so I need to put its updates in the correct place.
 //
     });
+// At the end the GC can have updated the fringe for each thread,
+// so I need to put its updated value in the correct place.
+    fringe::set(fringeBis[threadId::get()]);
     return result[threadId::get()] - TAG_VECTOR;
 }
 
+extern LispObject Lgctest_0(LispObject);
+extern LispObject Lgctest_1(LispObject, LispObject);
+extern LispObject Lgctest_2(LispObject, LispObject, LispObject);
 
 // Now for higher level code that performs Lisp-specific allocation.
 
@@ -1076,10 +1117,6 @@ inline LispObject Lncons(LispObject env, LispObject a)
 }
 
 // Low level functions for allocating objects.
-
-extern void set_up_empty_page(Page *p);
-extern void set_variables_from_page(Page *p);
-extern void save_variables_to_page(Page *p);
 
 // Entry to a garbage collector.
 

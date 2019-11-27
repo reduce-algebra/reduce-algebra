@@ -1,7 +1,7 @@
-// isprime.cpp                                Copyright (C) A C Norman 2017
+// isprime.cpp                                Copyright (C) A C Norman 2019
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -32,7 +32,7 @@
 // $Id$
 
 // This is free-standing code.
-// It provides a function "bool isprime(uint64_t n)" that tests if n
+// It provides a function "bool isprime(std::uint64_t n)" that tests if n
 // is a prime number.
 
 // See https://sourceforge.net/projects/isprime64/ for the programs used
@@ -75,13 +75,13 @@ extern bool isprime(std::uint64_t n);
 // In my use here nlz should never be given a zero argument - that would
 // correspond to trying to perform modular arithmetic with a zero modulus. 
 
-inline int nlz(std::uint64_t x)
+static inline int nlz(std::uint64_t x)
 {   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
 }
 
 #else // __GNUC__
 
-inline int nlz(std::uint64_t x)
+static inline int nlz(std::uint64_t x)
 {   int n = 0;
     if (x <= 0x00000000FFFFFFFFU) {n = n +32; x = x <<32;}
     if (x <= 0x0000FFFFFFFFFFFFU) {n = n +16; x = x <<16;}
@@ -99,7 +99,7 @@ inline int nlz(std::uint64_t x)
 
 #ifdef __SIZEOF_INT128__
 
-inline std::uint64_t mulmod64(std::uint64_t a, std::uint64_t b, std::uint64_t c)
+static inline std::uint64_t mulmod64(std::uint64_t a, std::uint64_t b, std::uint64_t c)
 {   return (std::uint64_t)(((unsigned __int128)a * b) % c);
 }
 
@@ -174,9 +174,9 @@ again2:
 
 #endif // __SIZEOF_INT128__
 
-#define TWO32 ((uint64_t)1<<32)
-#define TWO44 ((uint64_t)1<<44)
-#define TWO52 ((uint64_t)1<<52)
+#define TWO32 ((std::uint64_t)1<<32)
+#define TWO44 ((std::uint64_t)1<<44)
+#define TWO52 ((std::uint64_t)1<<52)
 #define extrabase 9375
 
 ////////////////////////////////////////////////////////////////////////////
@@ -267,39 +267,39 @@ static std::uint16_t witness44[335] =
 
 ////////////////////////////////////////////////////////////////////////////
 
-static const std::uint64_t hash52_multiplier  = UINT64_C(0x889ef81931a424ae),
-                      hash52_multiplier1 = UINT64_C(0x272a4f78dd97c990);
+static const uint64_t hash52_multiplier  = UINT64_C(0x222156ef26884dc1),
+                      hash52_multiplier1 = UINT64_C(0x8cd52a331c96952f);
 
-static std::uint16_t witness52[286] =
-{  33833,  3682, 38905, 10322, 23550,  1266,  5097,   606,  1482,  6875, 
-   31703,  1981,  4974,  8426, 18651,  2729, 62166,  5731,  2335,  3026, 
-    9461, 10578, 21563,  1663,  3262,   386, 16077, 10910,  2053, 21082, 
-     786, 30485,  1506, 34089,  4618,   438, 53763, 18222,  6251, 12806, 
-   51357, 28959,  7331,  6038,  1645, 28834,   889, 34371, 14026,   986, 
-    2081,  6442,  6217, 63810,   829,   650,  8209, 22142, 12043,   446, 
-   28378,  5611, 10113, 20355,  9346,    55, 26241,  8937,  6662,   362, 
-   14423,  6879,  5505, 24561, 40254,  1955, 13071,  1707,   501, 20781, 
-   10727,   553,  5439,  4943,  4281, 26439,  6583,   557, 40237,  1406, 
-   51371,  3751,  2769, 26855,  4787,  1322,  3999,  1065,  5706, 16883, 
-   15955, 28731,  2221,  7771, 40750,  2867,  7311,   606, 50341,  2335, 
-    1555,  4933,   379,  3514,   279,  6321,  1247, 17910,  1427,  6067, 
-    7490, 21854,  2975,   530, 29383, 15510,  1255,  1679,  5923,  3681, 
-   11337, 12277,  5210,   787,  2345,  1446,   365, 15719,  3155,  2253, 
-     111,   301, 10037, 13495,  8269,   133,   382,  3347,   970, 15345, 
-   44833,  5359,  4133,   721,   342, 36442, 11555,  9263,  2478,  6323, 
-    6334,  4270,  5605,  3165,  8306, 14750,  1141,  1297,   182, 17239, 
-   52106,   569,   438,  5826,  2169, 17173,   637, 11835, 12839,  3253, 
-   12619,  4589,   401,  6309,  1007, 62507,  5035,  1683,  5426,  1061, 
-   21703,  8956,  5927,  5218, 13590,   553,   111, 13022, 32415,  4726, 
-    1278, 10183,   465,  2594,  9958,  6741, 28087,  1421, 25026,    33, 
-    1733,  5311,  1634,   274, 32217, 19498, 41131,  8777, 14749, 11782, 
-   25017, 12571, 10269,  9947, 10482,  1554, 23334,   609,   962, 19807, 
-   12778,  9501,  1871,  1986,  8709,  5539,  1718,  8207,  2143,  7187, 
-    2953, 11075,   974,  4678,   234, 24494,  7393, 22306,  8149, 14593, 
-   24306,  7126,  2582,   122, 14227,   558,  8170,  1257,  9871,   430, 
-   35505,  4549,  3405, 30793,  4327, 31341,  2507,  1281, 10451, 14118, 
-    1037, 37539, 51710,  1055,  8302, 14979, 17815,  6243,  5734,   939, 
-   14589,  2115,  1030,  1673,  8334, 10626
+static uint16_t witness52[284] =
+{  26379, 47775, 17083,  2425, 33806,  3946, 12979, 18862,  3529, 11502, 
+   22435, 16230,  1915, 21314,   365, 48603,  8143,  2893, 17057, 32861, 
+    3503,  7915, 11757,  3082, 11461,  5321,  3307,   149,  4130,    29, 
+    9030,  9966,  9817,   427,   585, 16331,   457, 19890, 15951, 11731, 
+     459, 29026,  3351, 33749,  1425, 35957,  5178, 12078,  9946,  9229, 
+    4621,  1883,  6015, 22567,   342, 16499,  2186,  5734,   862, 59618, 
+    1239, 21214,   615, 11161, 40743, 41787,   637,  1047, 20629, 53283, 
+    1979,   323,   615,  1513,  3627,  5739,  6290,  7042,  2630,  9410, 
+    8181,  1823,  6401,  2174, 10169,  8466,  6741,   979,   915,  6046, 
+    6090,  6046, 12127, 37303,  2758, 19525,  5717,   426,  6935,  2502, 
+   47083,   111, 21281, 14002, 11247,  1101,  2849, 11654,  3355,  9002, 
+   12345, 28821, 10786, 27663,   137,  3877, 10798, 23923, 18411,  1686, 
+     666, 15086,  2186, 31758,  1394, 32467, 12646, 12969,   538, 16754, 
+    3049,  2717, 46858,  1378, 16121,  5499,   663,  3006, 12174, 13505, 
+    1039, 10275, 19763,  4129,  1894, 15803,  3035, 37358, 32070, 25318, 
+    6549, 27201,  2993, 10818,  2367, 13883, 45914,   945,  8641, 19435, 
+    2709, 12727,   161,  6649,  1737,  3917, 24139, 12370, 10559,  3838, 
+    8007,  6199,  1659, 28333,  8291,  3079, 23439, 13581,   978, 16010, 
+    6802,     7, 17749,   947, 14837,  2849,  6797, 10855,  4477,   910, 
+    7974,  2937, 61419,  9290, 21137,   330,  7390,   267,  1181, 12893, 
+     577,  3250,  1031, 19353,  1317, 21006, 10001,  2485, 47935,  5153, 
+    8329, 59487,  1299,   321, 39347,  4303,  4321,  1030, 29395, 12098, 
+    2817,   247,  9321, 54810,  1979,  2837,  7599, 31778, 24066, 29302, 
+     329, 18890, 10918, 11982,  4687,  5097, 40687,  4102, 34009,   821, 
+    7931,  2689,  5378,  6554, 24923,  2429, 33627,  9881,  3809,  5545, 
+   29531,  4757,  4645,  2670,  2262,  9397,  2797,  2595, 22817,  5057, 
+    4823,  7465, 23585,  1573, 23447,  1005,    77,  1546, 58829,  3107, 
+     291,   754,   897,  1783,   246,    13,  2691,  5363,  2962,  8165, 
+    6903,  3287, 13631, 18523
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -425,7 +425,7 @@ static std::uint16_t witness[870] =
 
 // Compute x^n mod p
 
-inline std::uint64_t exptmod(std::uint64_t x, std::uint64_t n, std::uint64_t p)
+static inline std::uint64_t exptmod(std::uint64_t x, std::uint64_t n, std::uint64_t p)
 {   std::uint64_t y = 1;
     while (n > 1)
     {   if (n%2 != 0) y = mulmod64(x, y, p);
@@ -442,7 +442,7 @@ inline std::uint64_t exptmod(std::uint64_t x, std::uint64_t n, std::uint64_t p)
 // use if is called with carefully selected first arguments so as to avoid
 // strong pseudo-primes.
 
-inline bool miller_rabin_isprime(std::uint64_t a, std::uint64_t n)
+static inline bool miller_rabin_isprime(std::uint64_t a, std::uint64_t n)
 {   std::uint64_t d = n-1;
     int s = 0;
     while ((d % 2) == 0)  // Find largest power of 2 dividing n-1
@@ -463,7 +463,7 @@ inline bool miller_rabin_isprime(std::uint64_t a, std::uint64_t n)
 // To make the treatment of 32-bit inputs faster I have a second copy
 // of the above code, but here restricted to 32-bit inputs.
 
-inline std::uint32_t exptmod32(std::uint32_t x, std::uint32_t n, std::uint32_t p)
+static inline std::uint32_t exptmod32(std::uint32_t x, std::uint32_t n, std::uint32_t p)
 {   std::uint32_t y = 1;
     while (n > 1)
     {   if (n%2 != 0) y = (std::uint32_t)(((std::uint64_t)x*y)%p);
@@ -473,7 +473,7 @@ inline std::uint32_t exptmod32(std::uint32_t x, std::uint32_t n, std::uint32_t p
     return (std::uint32_t)(((std::uint64_t)x*y)%p);
 }
 
-inline bool miller_rabin_isprime32(std::uint32_t a, std::uint32_t n)
+static inline bool miller_rabin_isprime32(std::uint32_t a, std::uint32_t n)
 {   std::uint32_t d = n-1;
     int s = 0;
     while ((d % 2) == 0)  // Find largest power of 2 dividing n-1
@@ -491,18 +491,18 @@ inline bool miller_rabin_isprime32(std::uint32_t a, std::uint32_t n)
     return false;
 }
 
-inline std::int32_t hash32_function(std::uint32_t p)
+static inline int32_t hash32_function(std::uint32_t p)
 {   return (std::uint32_t)
         ((hash32_multiplier*(std::uint64_t)p)>>32) % number32_of_buckets;
 }
 
-inline std::int32_t hash44_function(std::uint64_t p)
+static inline int32_t hash44_function(std::uint64_t p)
 {   return (std::uint32_t)
         (((hash44_multiplier*p)>>32) ^
          ((hash44_multiplier1*(p>>32))>>32)) % number44_of_buckets;
 }
 
-inline std::int32_t hash52_function(std::uint64_t p)
+static inline int32_t hash52_function(std::uint64_t p)
 {   return (std::uint32_t)
         (((hash52_multiplier*p)>>32) ^
          ((hash52_multiplier1*(p>>32))>>32)) % number52_of_buckets;
@@ -525,7 +525,7 @@ static std::uint32_t oddprime_bitmap[] =
     0x01140868, 0x802832ca, 0x264b0400, 0x60901300
 };
 
-inline int jacobi_symbol_positive_args(std::uint64_t a, std::uint64_t b)
+static inline int jacobi_symbol_positive_args(std::uint64_t a, std::uint64_t b)
 {   if (b%2 == 0) return 0;
     int j = 1;
     std::uint64_t r;
@@ -549,7 +549,7 @@ inline int jacobi_symbol_positive_args(std::uint64_t a, std::uint64_t b)
     else return 0;
 }
 
-static int signed_jacobi_symbol(std::int64_t a, std::uint64_t b)
+static int signed_jacobi_symbol(int64_t a, std::uint64_t b)
 {   if (a >= 0) return jacobi_symbol_positive_args(a, b);
     int r = jacobi_symbol_positive_args(-a, b);
     if ((b & 3) == 3) r = -r;
@@ -564,7 +564,7 @@ static int signed_jacobi_symbol(std::int64_t a, std::uint64_t b)
 //    integer_length(4)   = 3
 //    integer_length(8)   = 4
 
-inline int integer_length(std::uint64_t n)
+static inline int integer_length(std::uint64_t n)
 {   return 64 - nlz(n);
 }
 
@@ -576,7 +576,7 @@ inline int integer_length(std::uint64_t n)
 //    lsd(4)   = 3
 //    lsd(8)   = 4
 
-inline int lsd(std::uint64_t n)
+static inline int lsd(std::uint64_t n)
 {
 #ifdef __GNUC__
     return __builtin_ctzll(n) + 1;
@@ -595,15 +595,15 @@ inline int lsd(std::uint64_t n)
 
 // logbitp counts the least significant bit of the number as bit 0.
 
-inline int logbitp(int pos, std::uint64_t a)
+static inline int logbitp(int pos, std::uint64_t a)
 {   return (a & ((std::uint64_t)1<<pos)) != 0;
 }
 
-inline std::uint64_t addmod64(std::uint64_t a, std::uint64_t b, std::uint64_t c)
+static inline std::uint64_t addmod64(std::uint64_t a, std::uint64_t b, std::uint64_t c)
 {
 // If a and b are both in the range [0..c-1] then (a+b)%c will be either
 // a+b or a+b-c. There are two circumstances where I must go for the second
-// of these. The first is where the calculation a+b overflows the uint64_t
+// of these. The first is where the calculation a+b overflows the std::uint64_t
 // type. That case can be detected by the calculated sum being smaller than
 // one of the operands. In that case the true value of a+b is at least 2^64,
 // and i is smaller than that, so subtracting it to restore things is good.
@@ -614,7 +614,7 @@ inline std::uint64_t addmod64(std::uint64_t a, std::uint64_t b, std::uint64_t c)
     return w;
 }
 
-inline std::uint64_t negatemod64(std::uint64_t a, std::uint64_t c)
+static inline std::uint64_t negatemod64(std::uint64_t a, std::uint64_t c)
 {   if (a == 0) return a;
     else return c - a;
 }
@@ -664,9 +664,9 @@ static std::uint64_t gcdn(std::uint64_t a, std::uint64_t b)
 
 static const bool trace_primep = false;
 
-static std::int64_t mmod(std::int64_t a, std::uint64_t c)
+static int64_t mmod(int64_t a, std::uint64_t c)
 {   if (a >= 0) return a%c;
-    a = a % (std::int64_t)c;
+    a = a % (int64_t)c;
     if (a < 0) a += c;
     return a;
 }
@@ -676,7 +676,7 @@ static std::int64_t mmod(std::int64_t a, std::uint64_t c)
 
 static bool lucas_test(std::uint64_t c)
 {
-    std::int64_t d;
+    int64_t d;
     int j;
     std::uint64_t k, kk, u, v, q, qk, tmp;
     int l, ll;
@@ -739,7 +739,7 @@ static bool lucas_test(std::uint64_t c)
 // only intended to be set when you are debugging and then only when looking
 // at small inputs.
     if (trace_primep && c < 500)
-    {   std::int64_t w, u0, u1, ut, v0, v1, vt;
+    {   int64_t w, u0, u1, ut, v0, v1, vt;
         std::uint64_t nn[200];
         int nnp = 0;
         w = c + 1;

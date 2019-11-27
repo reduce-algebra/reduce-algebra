@@ -2958,7 +2958,8 @@ down:
 // but since they are just for debugging that seems like too much work
 // for today. I also transmit as unsigned bytes regardless of whether the
 // final use will be signed or unsigned.
-                for (std::size_t i=0; i<len; i++) write_byte(*x++, "part of vec8/string");
+                for (std::size_t i=0; i<len; i++)
+                    write_byte(*x++, "part of vec8/string");
             }
             else if (vector_i32(h))
             {   std::uint32_t *x = (std::uint32_t *)start_contents(p);

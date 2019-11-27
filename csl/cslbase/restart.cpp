@@ -484,6 +484,9 @@ setup_type const restart_setup[] =
     {"reclaim-stack-limit",     G0W1, Lreclaim_stack_limit, G2W1, G3W1, G4W1},
     {"resource-limit",          G0Wother, G1Wother, Lresource_limit_2, Lresource_limit_3, Lresource_limit_4up},
     {"errorset",                G0Wother, Lerrorset_1, Lerrorset_2, Lerrorset_3, G4Wother},
+#ifdef CONSERVATIVE
+    {"gctest",                  Lgctest_0, Lgctest_1, Lgctest_2, G3Wother, G4Wother},
+#endif
     {NULL,                      0, 0, 0, 0, 0}
 };
 
@@ -2492,12 +2495,12 @@ void setup(int restart_flag, double store_size)
 
 #ifdef CONSERVATIVE
     currentPage = freePages;
-    set_variables_from_page(currentPage);
+    setVariablesFromPage(currentPage);
     freePages = freePages->pageHeader.chain;
     freePagesCount--;
     previousPage = NULL;
     busyPages = NULL;
-    busyPagesCount = 0;
+    busyPagesCount = 1;
     mostlyFreePages = NULL;
     mostlyFreePagesCount = 0;
 #else // CONSERVATIVE

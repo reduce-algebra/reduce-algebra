@@ -38,4 +38,21 @@
 #include "headers.h"
 
 
+// This may end up as a command-line option or it may end up always
+// enabled, but for now there is no code for generational garbage
+// collection so it needs to be false!
+
+bool generationalGarbageCollection = false;
+
+void generationalGarbageCollect()
+{   std::cout << "\n+++++ Attempt to perform a generational GC\n";
+    my_abort();
+}
+
+void fullGarbageCollect()
+{   std::cout << "\n+++++ Attempt to perform a full GC\n";
+    my_abort();
+}
+
+
 // end of file cslgc.cpp

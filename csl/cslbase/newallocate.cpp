@@ -1,3 +1,4 @@
+// newallocate.cpp                         Copyright (C) 2018-2018 Codemist
 //
 // Code to deal with storage allocation, both grabbing memory at the start
 // or a run and significant aspects of garbage collection.
@@ -749,7 +750,7 @@ LispObject borrow_vector(int tag, int type, std::size_t n)
 
 static_assert(spareBytes/64 > offsetof(Page, pageHeader.endOfHeader));
 
-void set_up_empty_page(Page *p)
+void setUpEmptyPage(Page *p)
 {   p->pageHeader.fringe = reinterpret_cast<std::uintptr_t>(&p->pageBody.data);
     p->pageHeader.heaplimit = reinterpret_cast<std::uintptr_t>(p) + sizeof(Page);
     p->pageHeader.dirtypage.store(false);
@@ -769,7 +770,7 @@ void set_up_empty_page(Page *p)
         p->pageBody.pageBitmaps.dirty[i].store(0);
 }
 
-void set_variables_from_page(Page *p)
+void setVariablesFromPage(Page *p)
 {
 // Set the variable that are used when allocating within the active page.
     uintptr_t pFringe = p->pageHeader.fringe;
@@ -777,12 +778,13 @@ void set_variables_from_page(Page *p)
 // Here I suppose there are no pinned items in the page. I set fringe and
 // limit such that on the very first allocation the code will grab a bit of
 // memory at gFringe.
-    fringe::set(limit[threadId::get()] = limitBis[threadId::get()] = gFringe = pFringe);
+    fringe::set(limit[threadId::get()] = limitBis[threadId::get()] =
+        gFringe = pFringe);
     gLimit = pLimit;
     gNext = 0;
 }
 
-void save_variables_to_page(Page *p)
+void saveVariablesToPage(Page *p)
 {
 // Dump global variable values back into a page header. THIS IS NOT USEFUL
 // OR CORRECT YET!
@@ -797,7 +799,7 @@ void save_variables_to_page(Page *p)
 // that allocating a new segment may shuffle existing ones in the tables.
 // So the index of a segment in the tables may not be viewed as permenant.
 
-void allocate_segment(std::size_t n)
+void allocateSegment(std::size_t n)
 {
 // I will round up the size to allocate so it is a multiple of the
 // page size. Note that this will be quite a large value!
@@ -841,10 +843,15 @@ void allocate_segment(std::size_t n)
     }
 // r now refers to a new segment of size n, I want to structure it into
 // pages.
-    for (std::size_t k=0; k<n; k+=CSL_PAGE_SIZE)
-    {   Page *p = reinterpret_cast<Page *>(reinterpret_cast<char *>(r) + k);
+//
+//  for (std::size_t k=0; k<n; k+=CSL_PAGE_SIZE)
+// Go forwards or backwards!
+    for (std::size_t k=n; k!=0; k-=CSL_PAGE_SIZE)
+    {   Page *p =
+            reinterpret_cast<Page *>(
+                reinterpret_cast<char *>(r) + k - CSL_PAGE_SIZE);
 // Keep a chain of all the pages.
-        set_up_empty_page(p);
+        setUpEmptyPage(p);
         p->pageHeader.chain = freePages;
         freePages = p;
         freePagesCount++;
@@ -984,7 +991,7 @@ void initHeapSegments(double storeSize)
     heapSegmentCount = 0;
     freePages = NULL;
     std::printf("Allocate %" PRIu64 " Kbytes\n", (std::uint64_t)freeSpace/1024);
-    allocate_segment(freeSpace);
+    allocateSegment(freeSpace);
 
 // There are other bits of memory that I will grab manually for now...
 // and at present csl.cpp ALSO sets them up... @@@@
@@ -1014,7 +1021,7 @@ void initHeapSegments(double storeSize)
     stackBase = (LispObject *)stackSegment;
 }
 
-void drop_heapSegments(void)
+void dropHeapSegments(void)
 {
 #ifdef __cpp_aligned_new
     for (std::size_t i=0; i<heapSegmentCount; i++)
@@ -1025,6 +1032,10 @@ void drop_heapSegments(void)
 #endif
     std::free(nilSegmentBase);
     std::free(stackSegmentBase);
+}
+
+void drop_heap_segments()
+{   dropHeapSegments();
 }
 
 // This allocates another page of memory if that is allowed and if it is
@@ -1090,11 +1101,6 @@ void init_heap_segments(double d)
     if (d < 64.0*1024.0*1024.0)
         d = 64.0*1024.0*1024.0;
     initHeapSegments(d/1024.0);
-}
-
-void drop_heap_segments()
-{   std::cout << "drop_heap_segments" << std::endl;
-    my_abort();
 }
 
 std::atomic<std::uintptr_t> stack_bases[maxThreads];
@@ -1184,5 +1190,83 @@ bool volatile interrupt_pending;
 // {   return p;
 // }
 
+static unsigned int MEM=2u*1024u*1024u*1024u;
+bool pageFull;
+
+LispObject Lgctest_0(LispObject env)
+{   LispObject a = nil;
+    for (unsigned int i=0; i<MEM/16u; i++)
+    {   a = cons(fixnum_of_int(i), a);
+        printf(":"); fflush(stdout);
+        if (i % 1000000 == 0)
+        {   printf("%u", i);
+            LispObject b = a;
+            for (unsigned int j=i; j!=(unsigned int)(-1); j--)
+            {   if (!is_cons(b)) my_abort();
+                if (car(b) != fixnum_of_int(j)) my_abort();
+                b = cdr(b);
+            }
+            if (b != nil) my_abort();
+        }
+    }
+    return nil;
+}
+
+LispObject Lgctest_1(LispObject env, LispObject a1)
+{   LispObject a = nil, b;
+    size_t n = int_of_fixnum(a1);
+    for (unsigned int i=0; i<n; i++)
+        a = cons(fixnum_of_int(i), a);
+    std::cout << "list created" << std::endl;
+    b = a;
+    for (unsigned int j=n-1; j!=(unsigned int)(-1); j--)
+    {   if (!is_cons(b)) goto failing2;
+        if (car(b) != fixnum_of_int(j))
+        {   std::cout << "Fail3 case with j = " << std::dec << j << std::endl
+                << " fixnum_of_int(j) = " << std::hex << fixnum_of_int(j) << std::endl
+                << " car(b) = " << car(b) << " which differs" << std::endl
+                << " " << (n-1-j) << " items down the list" << std::endl;
+            goto failing3; //<<<<<<<<<
+        }
+        b = cdr(b);
+    }
+    if (b != nil) goto failing4;
+    return nil;
+failing2:
+    std::cout << "Crashed2 " << std::hex << "b = " << b
+        << " car(b) = " << car(b) << std::endl;
+    std::cout << "n = " << n << std::endl;
+    for (int z=1; z<10; z++)
+    {   std::cout << std::dec << (car(b)/16) << " ";
+        b = cdr(b);
+    }
+    std::cout << std::endl;
+    return nil;
+failing3:
+    std::cout << "Crashed3 " << std::hex << "b = " << b
+        << " car(b) = " << car(b) << std::endl;
+    std::cout << "n = " << n << std::endl;
+    for (int z=1; z<10; z++)
+    {   std::cout << std::dec << (car(b)/16) << " ";
+        b = cdr(b);
+    }
+    std::cout << std::endl;
+    return nil;
+failing4:
+    std::cout << "Crashed4 " << std::hex << "b = " << b
+        << " car(b) = " << car(b) << std::endl;
+    std::cout << "n = " << n << std::endl;
+    for (int z=1; z<10; z++)
+    {   std::cout << std::dec << (car(b)/16) << " ";
+        b = cdr(b);
+    }
+    std::cout << std::endl;
+    return nil;
+}
+
+LispObject Lgctest_2(LispObject env, LispObject a1, LispObject a2)
+{
+    return nil;
+}
 
 // end of newallocate.cpp
