@@ -19,10 +19,12 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
   <p>Please note that the apps listed below are <strong>not supported</strong> by the <a href="https://sourceforge.net/p/reduce-algebra/_members/">REDUCE developers</a>, so any queries should be directed to the app developers.  The links below are provided purely for information and their presence here does not constitute any recommendation by the REDUCE developers.  These apps may not use the latest version of REDUCE and you use them entirely at you own risk!</p>
   <ul>
     <li><a href="https://apps.apple.com/us/app/icas/id394637176">iCAS</a> is a version of REDUCE packaged for the Apple iPhone and iPad.</li>
-    <li><a href="https://play.google.com/store/apps/details?id=de.dieteregger.symbolic">Symbolic</a> is a CLI version of REDUCE packaged for Android, which is available for free from Google Play.  It was developed from Android REDUCE and was last updated in 2013.  Some additional information is available <a href="https://apkpure.com/reduce/de.dieteregger">here</a>.</li>
-    <li><a href="https://www.torrapk.com/en/apps/24-office-and-productivity/2791-Android-REDUCE">Android REDUCE</a> is a calculator-style GUI version of REDUCE packaged for Android, which is available for free (but <strong>not</strong> from Google Play).  It is essentially the original Android version of REDUCE.</li>
+    <li><a href="https://play.google.com/store/apps/details?id=de.dieteregger.symbolic">Symbolic</a> is a CLI version of REDUCE packaged for Android, which is available for free from Google Play.  It was developed from Android REDUCE (see below) and was last updated in 2013.</li>
+    <li><a href="https://www.torrapk.com/en/apps/24-office-and-productivity/2791-Android-REDUCE">Android REDUCE</a> is a GUI version of REDUCE packaged for Android that provides only non-programmable calculator-style input with limited functionality, which is available for free (but <strong>not</strong> from Google Play).  It is essentially the original Android version of REDUCE.</li>
   </ul>
-<h2>External projects using REDUCE</h2>
+  <p>Beware that users have reported that the above Android apps can be a little fragile and that the <code>read</code> and <code>save</code> facilities in Symbolic do not work, in which case a work-around is to copy and paste from a separate file editor.</p>
+  <p><a href="https://github.com/n0n3m4/ReduceNative">ReduceNative</a> is code that provides a GUI written in Kotlin for running REDUCE on Android that was kindly released by the authors on 25 November 2019.  It includes a prebuilt binary version of REDUCE itself but not the code to build REDUCE for Android.  This project needs some further development and does not include a prebuild app.</p>
+  <h2>External projects using REDUCE</h2>
   <p>There are a number of independent projects that use REDUCE in various ways. These include:</p>
   <ul>
     <li>the <a href="http://www.alltypes.de/">ALLTYPES</a> algebraic language and type system;</li>
