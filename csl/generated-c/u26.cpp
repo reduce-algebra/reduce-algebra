@@ -3,13 +3,13 @@
 
 // $Id$
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <time.h>
-#include <setjmp.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <cstdarg>
+#include <ctime>
+#include <csetjmp>
 #include <exception>
 #include "config.h"
 
@@ -49,10 +49,14 @@
 #ifndef __has_cpp_attribute
 #define __has_cpp_attribute(name) 0
 #endif
+#ifndef MAYBE_UNUSED
 #if __has_cpp_attribute(maybe_unused)
 #define MAYBE_UNUSED [[maybe_unused]]
+#elif defined __GNUC__
+#define MAYBE_UNUSED [[gnu::unused]]
 #else
 #define MAYBE_UNUSED
+#endif
 #endif
 #ifdef WIN32
 #define __USE_MINGW_ANSI_STDIO 1
@@ -1730,7 +1734,7 @@ extern std::size_t new_heap_pages_count, new_vheap_pages_count;
 extern LispObject *list_bases[];
 extern LispObject *nilsegment, *stacksegment;
 extern LispObject *nilsegmentbase, *stacksegmentbase;
-extern LispObject *stackbase;
+extern LispObject *stackBase;
 extern std::int32_t stack_segsize; 
 extern double max_store_size;
 extern bool restartp;
@@ -1820,6 +1824,7 @@ public:
 };
 extern std::vector<stringBoolString> symbolsToDefine;
 extern std::vector<stringBoolString> stringsToDefine;
+extern std::vector<std::string> stringsToEvaluate;
 extern std::vector<faslFileRecord> fasl_files; 
 extern char *big_chunk_start, *big_chunk_end;
 extern std::uintptr_t *C_stackbase, C_stacklimit;
@@ -1904,9 +1909,9 @@ extern std::uintptr_t xor_chain;
 extern std::uintptr_t vheapstart;
 extern std::uintptr_t vlen;
 extern std::uintptr_t vxor_chain;
-extern LispObject *stacklimit;
+extern LispObject *stackLimit;
 #else 
-extern LispObject *stacklimit;
+extern LispObject *stackLimit;
 #endif 
 extern volatile std::atomic<std::uintptr_t> event_flag;
 extern std::intptr_t nwork;
@@ -3163,6 +3168,9 @@ stgclass type name(LispObject a1, LispObject a2) \
 #endif 
 #ifndef header_entries_h
 #define header_entries_h 1
+#ifdef CONSERVATIVE
+extern void poll();
+#endif
 extern LispObject Lbatchp(LispObject env);
 extern LispObject Ldate(LispObject env);
 extern LispObject Ldatestamp(LispObject env);
@@ -3911,12 +3919,12 @@ extern void respond_to_stack_event();
 inline void stackcheck0()
 { if_check_stack(); 
  if (((std::uintptr_t)stack | event_flag.load()) >=
- (std::uintptr_t)stacklimit) respond_to_stack_event();
+ (std::uintptr_t)stackLimit) respond_to_stack_event();
 }
 inline void stackcheck1(LispObject& a1) 
 { if_check_stack(); 
  if (((std::uintptr_t)stack | event_flag.load()) >=
- (std::uintptr_t)stacklimit)
+ (std::uintptr_t)stackLimit)
  { push(a1);
  respond_to_stack_event();
  pop(a1);
@@ -3925,7 +3933,7 @@ inline void stackcheck1(LispObject& a1)
 inline void stackcheck2(LispObject& a1, LispObject& a2) 
 { if_check_stack(); 
  if (((std::uintptr_t)stack | event_flag.load()) >=
- (std::uintptr_t)stacklimit)
+ (std::uintptr_t)stackLimit)
  { push(a1, a2);
  respond_to_stack_event();
  pop(a2, a1);
@@ -3934,7 +3942,7 @@ inline void stackcheck2(LispObject& a1, LispObject& a2)
 inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3) 
 { if_check_stack(); 
  if (((std::uintptr_t)stack | event_flag.load()) >=
- (std::uintptr_t)stacklimit)
+ (std::uintptr_t)stackLimit)
  { push(a1, a2, a3);
  respond_to_stack_event();
  pop(a3, a2, a1);
@@ -3943,7 +3951,7 @@ inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)
 inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObject& a4) 
 { if_check_stack(); 
  if (((std::uintptr_t)stack | event_flag.load()) >=
- (std::uintptr_t)stacklimit)
+ (std::uintptr_t)stackLimit)
  { push(a1, a2, a3, a4);
  respond_to_stack_event();
  pop(a4, a3, a2, a1);
@@ -3952,12 +3960,12 @@ inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObje
 inline void stackcheck()
 { if_check_stack(); 
  if (((std::uintptr_t)stack | event_flag.load()) >=
- (std::uintptr_t)stacklimit) respond_to_stack_event();
+ (std::uintptr_t)stackLimit) respond_to_stack_event();
 }
 inline void stackcheck(LispObject& a1) 
 { if_check_stack(); 
  if (((std::uintptr_t)stack | event_flag.load()) >=
- (std::uintptr_t)stacklimit)
+ (std::uintptr_t)stackLimit)
  { push(a1);
  respond_to_stack_event();
  pop(a1);
@@ -3966,7 +3974,7 @@ inline void stackcheck(LispObject& a1)
 inline void stackcheck(LispObject& a1, LispObject& a2) 
 { if_check_stack(); 
  if (((std::uintptr_t)stack | event_flag.load()) >=
- (std::uintptr_t)stacklimit)
+ (std::uintptr_t)stackLimit)
  { push(a1, a2);
  respond_to_stack_event();
  pop(a2, a1);
@@ -3975,7 +3983,7 @@ inline void stackcheck(LispObject& a1, LispObject& a2)
 inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3) 
 { if_check_stack(); 
  if (((std::uintptr_t)stack | event_flag.load()) >=
- (std::uintptr_t)stacklimit)
+ (std::uintptr_t)stackLimit)
  { push(a1, a2, a3);
  respond_to_stack_event();
  pop(a3, a2, a1);
@@ -3985,7 +3993,7 @@ inline void stackcheck(LispObject& a1, LispObject& a2,
  LispObject& a3, LispObject& a4) 
 { if_check_stack(); 
  if (((std::uintptr_t)stack | event_flag.load()) >=
- (std::uintptr_t)stacklimit)
+ (std::uintptr_t)stackLimit)
  { push(a1, a2, a3, a4);
  respond_to_stack_event();
  pop(a4, a3, a2, a1);
@@ -4279,13 +4287,17 @@ static LispObject CC_talp_telp(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push3(nil, nil, nil);
@@ -4370,13 +4382,17 @@ static LispObject CC_multi_args(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -4418,13 +4434,17 @@ static LispObject CC_getdec(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -4469,13 +4489,17 @@ static LispObject CC_vdpequal(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push3(nil, nil, nil);
@@ -4564,13 +4588,17 @@ static LispObject CC_oprinla(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
     stack_popper stack_popper_var(1);
 // copy arguments values to proper place
@@ -4650,13 +4678,17 @@ static LispObject CC_fieldconv(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push4(nil, nil, nil, nil);
@@ -4869,13 +4901,17 @@ static LispObject CC_repeats(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -4939,13 +4975,17 @@ static LispObject CC_reduceKmodKpH(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -4980,13 +5020,17 @@ static LispObject CC_lalr_make_compressed_goto_column(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push5(nil, nil, nil, nil, nil);
@@ -5123,13 +5167,17 @@ static LispObject CC_add2locs(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push4(nil, nil, nil, nil);
@@ -5291,13 +5339,17 @@ static LispObject CC_talp_subat(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push4(nil, nil, nil, nil);
@@ -5352,13 +5404,17 @@ static LispObject CC_fctrf1(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push5(nil, nil, nil, nil, nil);
@@ -5629,11 +5685,15 @@ static LispObject CC_rl_updcache(LispObject env)
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         env = reclaim(env, "stack", GC_STACK, 0);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -5761,13 +5821,17 @@ static LispObject CC_lambdafun(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
     stack_popper stack_popper_var(1);
 // copy arguments values to proper place
@@ -5793,13 +5857,17 @@ static LispObject CC_ftTzerop(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -5847,13 +5915,17 @@ static LispObject CC_indxchk(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push2(nil, nil);
@@ -6016,13 +6088,17 @@ static LispObject CC_sfpx1(LispObject env, LispObject v_2,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3,v_4,v_5,v_6);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_6,v_5,v_4,v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push5(nil, nil, nil, nil, nil);
@@ -6254,13 +6330,17 @@ static LispObject CC_pcdiv(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push5(nil, nil, nil, nil, nil);
@@ -6356,13 +6436,17 @@ static LispObject CC_sc_rep(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -6396,13 +6480,17 @@ static LispObject CC_evaluateKmodKp(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3,v_4);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_4,v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push5(nil, nil, nil, nil, nil);
@@ -6538,13 +6626,17 @@ static LispObject CC_super_der_simp(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push5(nil, nil, nil, nil, nil);
@@ -6901,11 +6993,15 @@ static LispObject CC_yylex(LispObject env)
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         env = reclaim(env, "stack", GC_STACK, 0);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push4(nil, nil, nil, nil);
@@ -7155,13 +7251,17 @@ static LispObject CC_outrdefun(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3,v_4);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_4,v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push4(nil, nil, nil, nil);
@@ -7323,13 +7423,17 @@ static LispObject CC_getKfreeKform(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push3(nil, nil, nil);
@@ -7442,13 +7546,17 @@ static LispObject CC_termorder1(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push2(nil, nil);
@@ -7549,13 +7657,17 @@ static LispObject CC_vsl_subatsq(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3,v_4);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_4,v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -7599,13 +7711,17 @@ static LispObject CC_matrixrowom(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -7672,13 +7788,17 @@ static LispObject CC_rootextractsq(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push2(nil, nil);
@@ -7737,13 +7857,17 @@ static LispObject CC_oldmtch(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push4(nil, nil, nil, nil);
@@ -7844,13 +7968,17 @@ static LispObject CC_evaluate1(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
     stack_popper stack_popper_var(1);
 // copy arguments values to proper place
@@ -8006,13 +8134,17 @@ static LispObject CC_edge_new_parent(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -8073,13 +8205,17 @@ static LispObject CC_log_inlines(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3,v_4);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_4,v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push2(nil, nil);
@@ -8127,13 +8263,17 @@ static LispObject CC_extract_dummy_ids(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -8195,13 +8335,17 @@ static LispObject CC_lalr_most_common_dest(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push4(nil, nil, nil, nil);
@@ -8315,13 +8459,17 @@ static LispObject CC_get_char_value(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push4(nil, nil, nil, nil);
@@ -8418,13 +8566,17 @@ static LispObject CC_qqe_argKcheckKq(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -8517,13 +8669,17 @@ static LispObject CC_homogp(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push2(nil, nil);
@@ -8674,13 +8830,17 @@ static LispObject CC_ofsf_optsubstat(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3,v_4);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_4,v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push4(nil, nil, nil, nil);
@@ -8755,13 +8915,17 @@ static LispObject CC_meq(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push2(nil, nil);
@@ -8854,13 +9018,17 @@ static LispObject CC_rdTplus(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push4(nil, nil, nil, nil);
@@ -9086,13 +9254,17 @@ static LispObject CC_fortranname(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push(nil);
@@ -9188,13 +9360,17 @@ static LispObject CC_assert_error(LispObject env, LispObject v_2,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3,v_4,v_5,v_6,v_7);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_7,v_6,v_5,v_4,v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push5(nil, nil, nil, nil, nil);
@@ -9317,13 +9493,17 @@ static LispObject CC_redMsubst1(LispObject env,
 #ifdef CHECK_STACK
     if_check_stack;
 #endif
+#ifdef CONSERVATIVE
+    poll();
+#else // CONSERVATIVE
     if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
+        stack >= stackLimit)
     {
         push(v_2,v_3);
         env = reclaim(env, "stack", GC_STACK, 0);
         pop(v_3,v_2);
     }
+#endif // CONSERVATIVE
     push(env);
 // space for vars preserved across procedure calls
     push5(nil, nil, nil, nil, nil);

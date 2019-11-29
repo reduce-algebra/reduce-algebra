@@ -4267,12 +4267,15 @@ var1350 (cdr var1350)) (go lab1349)) (c!:printf
 "    if (_a4up_ != nil)\n        aerror1(\qtoo many arguments provided\q, basic_elt(env, 0));\n"
 )))) (c!:printf "#ifdef CHECK_STACK\n") (c!:printf "    if_check_stack;\n") (
 c!:printf "#endif\n") (cond (does_call (progn (c!:printf 
+"#ifdef CONSERVATIVE\n") (c!:printf "    poll();\n") (c!:printf 
+"#else // CONSERVATIVE\n") (c!:printf 
 "    if (++reclaim_trigger_count == reclaim_trigger_target ||\n") (c!:printf 
 "        stack >= stackLimit)\n") (c!:printf "    {\n") (c!:pushpop (quote 
 push) args) (c!:printf 
 "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n") (c!:pushpop (quote 
-pop) (reverse args)) (c!:printf "    }\n")))) (cond (reloadenv (c!:printf 
-"    push(env);\n"))) (setq n 0) (cond (stacks (progn (c!:printf 
+pop) (reverse args)) (c!:printf "    }\n") (c!:printf 
+"#endif // CONSERVATIVE\n")))) (cond (reloadenv (c!:printf "    push(env);\n"
+))) (setq n 0) (cond (stacks (progn (c!:printf 
 "%<// space for vars preserved across procedure calls\n") (prog (var1352) (
 setq var1352 stacks) lab1351 (cond ((null var1352) (return nil))) (prog (v) (
 setq v (car var1352)) (progn (put v (quote c!:location) n) (setq n (plus n 1)

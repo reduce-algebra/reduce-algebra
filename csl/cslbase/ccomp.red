@@ -2247,6 +2247,11 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
 % I will not do a stack check if I have a leaf procedure, and I hope
 % that this policy will speed up code a bit.
     if does_call then <<
+% The conservative GC version will (eventually!) hardly use the Lisp stack
+% and so checking for overflow will not be needed, however it should poll()
+       c!:printf("#ifdef CONSERVATIVE\n");
+       c!:printf("    poll();\n");
+       c!:printf("#else // CONSERVATIVE\n");
        c!:printf("    if (++reclaim_trigger_count == reclaim_trigger_target ||\n");
        c!:printf("        stack >= stackLimit)\n");
        c!:printf "    {\n";
@@ -2255,7 +2260,8 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        c!:pushpop('push, args);
        c!:printf "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n";
        c!:pushpop('pop, reverse args);
-       c!:printf "    }\n" >>;
+       c!:printf "    }\n";
+       c!:printf("#endif // CONSERVATIVE\n") >>;
 % Now I will allocate space for everything that has to go on the stack.
 % and record in the c!:location property where on the stack the variable
 % will live.

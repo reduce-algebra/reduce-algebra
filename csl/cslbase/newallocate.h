@@ -719,7 +719,7 @@ inline void garbageCollectOnBehalfOfAll()
         gc_started = true;
     }
     cv_for_gc_idling.notify_all();
-std::cout << "@@ garbageCollectOnBehalfOfAll called\n";
+//std::cout << "@@ garbageCollectOnBehalfOfAll called\n";
 // Now while the other threads are idle I can perform some garbage
 // collection and fill in results via result[] based on request[].
 // I will also put gFringe back to the value it had before any thread
@@ -804,7 +804,7 @@ std::cout << "@@ garbageCollectOnBehalfOfAll called\n";
             !garbage_collection_permitted ||
             previousPage == NULL)
         {   if (busyPagesCount >= freePagesCount+mostlyFreePagesCount)
-            {    std::cout << "@@ full GC needed\n";
+            {   std::cout << "@@ full GC needed\n";
                 fullGarbageCollect();
             }
             else
@@ -837,7 +837,7 @@ std::cout << "@@ garbageCollectOnBehalfOfAll called\n";
                     limit[k] = fringeBis[k] = limitBis[k] = gFringe;
                 gNext = 0;
                 busyPagesCount++;
-                std::cout << "@@ just allocated a fresh page\n";
+//              std::cout << "@@ just allocated a fresh page\n";
             }
         }
         else
@@ -845,7 +845,7 @@ std::cout << "@@ garbageCollectOnBehalfOfAll called\n";
             generationalGarbageCollect();
         }
     }
-    std::cout << "@@ unlock any other threads at end of page allocation\n";
+//  std::cout << "@@ unlock any other threads at end of page allocation\n";
 // Now I need to be confident that the other threads have all accessed
 // gc_started. When they have they will increment activeThreads and when the
 // last one does that it will notify me.
