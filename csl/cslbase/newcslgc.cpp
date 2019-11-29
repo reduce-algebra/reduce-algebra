@@ -50,7 +50,7 @@ void generationalGarbageCollect()
 }
 
 void fullGarbageCollect()
-{   std::cout << "\n+++++ Attempt to perform a full GC\n";
+{   std::cout << "\n+++++ Start of a full GC\n";
     my_abort();
 }
 

@@ -186,7 +186,15 @@ do
   fi
 done
 
-wait $procids
-printf "\nReduce has now been remade\n"
+# wait $procids
+rc=0
+for i in $procids
+do
+  wait $i
+  rc1=$?
+  rc=$(($rc1 > $rc ? $rc1 : $rc)) 
+done
+
+printf "\nReduce build tasks finished with highest return code $rc\n"
 
 exit $rc
