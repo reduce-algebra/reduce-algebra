@@ -1282,6 +1282,10 @@ int kara_done = 0;
 
 // Arguments of the form "-x" for any single letter x might have an
 // associated value which can be written as either "-xVAL" or "-x VAL".
+// Well that is not good in the case "-w" because I want "-w" on its own to
+// be valid but also "-w+" and "-w-", so what about "-w -"? Well that needs
+// to be treated as "-w" on its own followed be a quite separte argument "-"
+// which indicated an input source.
 // Arguments written in the form "--word" can have an associated value
 // either as "--word=VAL" or "--word VAL".
 // As a special case "--args" terminates scanning.
@@ -1289,8 +1293,9 @@ int kara_done = 0;
 typedef void argAction(std::string key, bool takesVal, std::string value);
 
 struct argSpec
-{   const char *name;      // e.g. "-x" or "--word"
-    bool takesVal;         // true if either "-x NN" or "-xNN" will be valid
+{   const char *name;      // e.g. "-x" or "--word".
+    bool takesVal;         // Either "-xNN" or maybe "-x NN" will be valid.
+    bool takesSeparateVal; // "-x NN" is valid as well as "-xNN".
     std::string help;      // e.g. "-k NN  Set memory allocation to NN."
     std::function<void(std::string,bool,std::string)>action;
                            // procedure to call when this case arises.
@@ -1361,7 +1366,7 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
 // line and that does not start with "-" then that will be used as the
 // operand. Otherwise an empty string will be used.
         if (aspec->takesVal)
-        {   if (!hasVal)
+        {   if (!hasVal && aspec->takesSeparateVal)
             {   if (i+1 < argc &&
                     (argv[i+1][0] != '-' ||
                      argv[i+1][1] == 0))     // Permit "-" as value.
@@ -1524,7 +1529,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * but if that is not used and the system tries to run in a window it will
  * create it starting off minimised.
  */
-    {"--", true,
+    {"--", true, true,
      "-- NAME  Redirect output to the given file so it does not appear\n"
      "         on the screen.",
 // -- <outfile> arranges that output is sent to the indicated file. It is
@@ -1588,7 +1593,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * console to display the help text in, and organizes a delay to give
  * people a chance to read it.
  */
-    {"--help", false,
+    {"--help", false, false,
      "--help   Generate this text.",
         [&](std::string key, bool hasVal, std::string val)
         {   std::vector<std::string>helpText;
@@ -1644,7 +1649,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * will automatically expand its heap, and so it should normally never be
  * necessary to use this option.
  */
-    {"-k", true,
+    {"-k", true, true,
      "-k nnnK or -knnnM or -knnnG Suggest heap-size to use.\n"
      "         -knnn/ss sets the Lisp stack to use ss chunks each of which\n"
      "         is large enough that this option is basically never needed!\n"
@@ -1730,7 +1735,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * windows version of Reduce is needed. This can be the situation in some
  * cases where the foreign function interface is to be used.
  */
-    {"--cygwin", false,
+    {"--cygwin", false, false,
      "--cygwin [on Windows] Try to use the cygwin version of Reduce rather\n"
      "         than a native Windows version, regardless of other circumstances.",
      [&](std::string key, bool hasVal, std::string val)
@@ -1744,7 +1749,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * with debugging options and then want to start it fairly normally and
  * then attach from gdb or some other debugger.
  */
-    {"--wait", false,
+    {"--wait", false, false,
      "--wait   Pause for 15 second before starting anything.\n"
      "         This may be useful for those who want to attach a debugger to\n"
      "         during that time, so provided there is a console availabe\n"
@@ -1782,7 +1787,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * is possible at all!
  */
 
-    {"-w", true,
+    {"-w", true, false,
      "-w or -w+ or -w- When using a platform that supports a windowed mode\n"
      "         -w or -w- forces the system to fall back to console mode, while -w+\n"
      "         forces use of the GUI even when other issues might have inhibited it.",
@@ -1797,7 +1802,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * used to arrange that the {\ttfamily texmacs} flag is set in
  * {\ttfamily lispsystem!*}, and the code may then do special things.
  */
-    {"--texmacs", false,
+    {"--texmacs", false, false,
      "--texmacs Run in texmacs mode. You must use the plugin from the\n"
      "         cslbase/texmacs-plugin directory.",
      [&](std::string key, bool hasVal, std::string val)
@@ -1812,7 +1817,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * can be useful during system building where utterly self-contained and
  * predictable behaviour is important.
  */
-    {"--no-rcfile", false,
+    {"--no-rcfile", false, false,
      "--no-rcfile Sets the Lisp variable no_init_file which for Reduce arranges\n"
      "         that any file $HOME/.reducerc is ignored rather than read",
      [&](std::string key, bool hasVal, std::string val)
@@ -1825,7 +1830,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * Encourage the system to run in its own window. Similar behaviour
  * to {\ttfamily -w+}.
  */
-    {"--gui", false,
+    {"--gui", false, false,
      "--gui    Use a windowed interface if possible. Equivalent to \"-w+\".",
      [&](std::string key, bool hasVal, std::string val)
      {
@@ -1836,7 +1841,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * Encourage the system to run as a console-style application. Similar
  * to {\ttfamily -w-} or just simply {\ttfamily -w}.
  */
-    {"--nogui", false,
+    {"--nogui", false, false,
      "--nogui  Use a console-mode interface (not a windowed one), Equivalent to \"-w-\".",
      [&](std::string key, bool hasVal, std::string val)
      {
@@ -1848,7 +1853,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * start that window off minimised. Similar
  * to {\ttfamily -w.}.
  */
-    {"--guimin", false,
+    {"--guimin", false, false,
      "--guimin Start up with window for the interface minimised. Equivalent to \"-w.\".",
      [&](std::string key, bool hasVal, std::string val)
      {
@@ -1862,7 +1867,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * is set every garbage collection displays the count that it corresponds to,
  * and the intent is that these counts should be fairly deterministic.
  */
-    {"--gc-trigger", true,
+    {"--gc-trigger", true, true,
      "--gc-trigger NN Force garbage collection to happen on the NNth time it\n"
      "         possibly could. Used when tracking garbage collection bugs and in\n"
      "         particular one that may arise when GC is triggered from some particular\n"
@@ -1882,7 +1887,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * after whatever backtrace might have been generated any inner errorset
  * just propagates the error out, and at the top level the system exits.
  */
-    {"--stop-on-error", false,
+    {"--stop-on-error", false, false,
      "--stop-on-error  If any error arises then give up and stop.",
      [&](std::string key, bool hasVal, std::string val)
      {   stop_on_error=true;
@@ -1895,7 +1900,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * debugging where it may be important to see when a garbage collection occurs
  * but undesirable to change the input script at all.
  */
-    {"--force-verbos", false,
+    {"--force-verbos", false, false,
      "--force-verbos Ensure that garbage collection messages are displayed.",
      [&](std::string key, bool hasVal, std::string val)
      {   force_verbos = true;
@@ -1908,7 +1913,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * debugging where it may be important to observe progress through an
  * input file but undesirable to change the input script at all.
  */
-    {"--force_echo", false,
+    {"--force_echo", false, false,
      "--force-echo Echo innput, regardless of system switches or other options.",
      [&](std::string key, bool hasVal, std::string val)
      {   force_echo = true;
@@ -1922,14 +1927,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * observe behaviour otherwise hidden by (errorset X nil nil) but when it
  * undesirable to change the input script at all.
  */
-    {"-force-backtrace", false,
+    {"-force-backtrace", false, false,
      "--force-backtrace Always generate a backtrace after any error.",
      [&](std::string key, bool hasVal, std::string val)
      {   force_backtrace = true;
      }
     },
 
-    {"-force-bt", false,
+    {"-force-bt", false, false,
      "--force-bt More concise version of --force-backtrace.",
      [&](std::string key, bool hasVal, std::string val)
      {   force_backtrace = true;
@@ -1941,7 +1946,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * issue here about whether one is looking at the CSL version identification or
  * one for the Lisp application from an image file (eg often Reduce).
  */
-    {"--version", false,
+    {"--version", false, false,
      "---version Display version information and stop.",
      [&](std::string key, bool hasVal, std::string val)
      {   term_printf(
@@ -1960,7 +1965,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * at any time when it feels that would be useful.This option can be used to
  * set an approximate limit on the amount it will use. 
  */
-    {"--maxmem", true,
+    {"--maxmem", true, true,
      "--maxmem NNN Prevent memory expansion beyond NNN.",
      [&](std::string key, bool hasVal, std::string val)
      {   std::string valLow(val);
@@ -2007,7 +2012,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * performance effects can be measured and the cut-off adjusted to suit the
  * machine involved.
  */
-    {"--kara", true,
+    {"--kara", true, true,
      "---kara NN Set transition between single and multi-thread Karatsuba\n"
      "         multiplication.",
      [&](std::string key, bool hasVal, std::string val)
@@ -2029,14 +2034,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * and used when an input script leads to failure and one wants to investigate
  * its behaviour without altering the script at all.
  */
-    {"--trace", true,
+    {"--trace", true, true,
      "---trace NAME Sets up tracing on the names Lisp function.",
      [&](std::string key, bool hasVal, std::string val)
      {   tracedFunctions.push_back(val);
      }
     },
 
-    {"--tr", true,
+    {"--tr", true, true,
      "---tr NAME Equivalent to \"--trace NAME\".",
      [&](std::string key, bool hasVal, std::string val)
      {   tracedFunctions.push_back(val);
@@ -2057,7 +2062,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * behaviour.  I hope that this is never used!
  */
 
-    {"-a", false,
+    {"-a", false, false,
      "-a       Causes the sense of the Lisp (batchp) function to be inverted.",
      [&](std::string key, bool hasVal, std::string val)
      {   batch_flag = true;
@@ -2075,7 +2080,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * standing for blacK, Red, Green, Yellow, blue, Magenta, Cyan and White.
  * This may not fully work yet!
  */
-    {"-b", true,
+    {"-b", true, false,
      "-b or -bCOLOURS Just \"-b\" sets black and white mode, while COLOURS\n"
      "         can be one of blacK, Red, Green, Yellow, blue, Magenta, Cyan\n"
      "         or White (with blue indicated by a lower case \"b\" and black by\n"
@@ -2091,7 +2096,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * (L)GPL code is involved that would place requirements on what was
  * displayed in a Copyright Notice.
  */
-    {"-c", false,
+    {"-c", false, false,
      "-c       Display an authorship (but not a copyright) message that documents\n"
      "         the license under which this code is distributed.",
      [&](std::string key, bool hasVal, std::string val)
@@ -2106,7 +2111,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * A command line entry {\ttfamily -Dname=value} or {\ttfamily -D name=value}
  * sets the value of the named lisp variable to the value as a string.
  */
-    {"-d", true,
+    {"-d", true, true,
      "-d       -dNAME=VAL defines the symbol NAME to have the given value,\n"
      "         Note that when a value is given it will be passed as a string,\n"
      "         so \"-dN=3\" sets the variable N to the string \"3\". Use \"--d\"\n"
@@ -2132,7 +2137,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * name, number, string etc using normal Lisp conventions. Cf -D which always
  * leaves the value as a string.
  */
-    {"-dd", true,
+    {"-dd", true, true,
      "-dd      -dd NAME=VAL defines the symbol NAME to have the given value,\n"
      "         Note that when a value is given it will be passed through the\n"
      "         Lisp reader, so numbers and symbols can be generated.",
@@ -2156,7 +2161,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * its result printed during startup. This may be useful for forcing
  * settings or other debugging.
  */
-    {"-e", true,
+    {"-e", true, true,
      "-e       Can be followed by a Lisp form top be evaluated during startup.",
      [&](std::string key, bool hasVal, std::string val)
      {   if (val != "") stringsToEvaluate.push_back(val);
@@ -2178,7 +2183,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // something similar becomes needed in the future it should be re-implemented
 // from the ground up. Here I will not even issue a complaint if somebody
 // specifies "-f".
-    {"-f", false,
+    {"-f", false, false,
      "-f       Not in use.",
      [&](std::string key, bool hasVal, std::string val)
      {
@@ -2193,9 +2198,9 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * {\ttfamily errorset}.
  */
 
-    {"-g", true,
+    {"-g", true, false,
      "-g       Set various options that may help with debugging.\n"
-     "         -gw not only sets teh options but delays by 15 seconds.",
+     "         -gw not only sets the options but delays by 15 seconds.",
      [&](std::string key, bool hasVal, std::string val)
      {   symbolsToDefine.push_back(
              stringBoolString("*backtrace", true, "t"));
@@ -2234,7 +2239,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // checks for "-h" and "-H" and interprets what it finds. So what I do here
 // is just a redundant reminder. Ugh.
 //
-    {"-h", false,
+    {"-h", false, false,
      "-h       Obsolete option!",
      [&](std::string key, bool hasVal, std::string val)
      {   fwin_use_xft = 0;
@@ -2252,7 +2257,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * that can also be used for output. Normally there would only be one
  * {\ttfamily -o} directive.
  */
-    {"-i", true,
+    {"-i", true, true,
      "-i       The option \"-i xxx.img\" causes the image file named to be available\n"
      "         for reading.",
      [&](std::string key, bool hasVal, std::string val)
@@ -2266,7 +2271,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * during the Lisp run will be dumped there with a view that it can be included
  * in a Makefile to document dependencies.
  */
-    {"-j", true,
+    {"-j", true, true,
      "-j       If you go \"-j FILE\" then Reduce puts some dependency information\n"
      "         into the named file as if builds modules for you.",
      [&](std::string key, bool hasVal, std::string val)
@@ -2279,7 +2284,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * very much as if the Lisp function {\ttfamily (spool ``logfile'')} had been
  * invoked at the start of the run.
  */
-    {"-l", true,
+    {"-l", true, true,
      "-l FILE  Send a copy of all output to the named file. If no FILE is\n"
      "         specified try \"logfile.log\".",
      [&](std::string key, bool hasVal, std::string val)
@@ -2312,7 +2317,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 /*! options [-m] \item [{\ttfamily -m}] \index{{\ttfamily -m}}
  * Not used at present.
  */
-    {"-m", false,
+    {"-m", false, false,
      "-m       Unused..",
      [&](std::string key, bool hasVal, std::string val)
      {
@@ -2329,7 +2334,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * read-eval-print loop. This is intended for experts to do disaster recovery
  * and diagnosis of damaged image files.
  */
-    {"-n", false,
+    {"-n", false, false,
      "-n       Ignore any restart function and run a Lisp read-eval-print-loop.",
      [&](std::string key, bool hasVal, std::string val)
      {   ignore_restart_fn = true;
@@ -2341,7 +2346,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * See {\ttfamily -i}. This specifies an image file used for output via
  * {\ttfamily faslout} and {\ttfamily reserve}.
  */
-    {"-o", true,
+    {"-o", true, true,
      "-o FILE.img Make the named file an image file that is written to.\n"
      "         See also \"-i\".",
      [&](std::string key, bool hasVal, std::string val)
@@ -2355,7 +2360,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * If a suitable profile option gets implemented one day this will activate it,
  * but for now it has no effect.
  */
-    {"-p", true,
+    {"-p", false, false, 
      "-p       Reserved for a profiling option.",
      [&](std::string key, bool hasVal, std::string val)
      {
@@ -2366,7 +2371,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * This option sets {\ttfamily !*echo} to {\ttfamily nil} and switches off
  * garbage collector messages to give a slightly quieter run.
  */
-    {"-q", true,
+    {"-q", false, false,
      "-q       Set *echo to nil to avoid echoed input.",
      [&](std::string key, bool hasVal, std::string val)
      {   symbolsToDefine.push_back(stringBoolString("echo", true, "nil"));
@@ -2384,7 +2389,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * coded at a higher level and does not get reset this way -- this is the
  * lower level CSL generator.
  */
-    {"-r", true,
+    {"-r", true, true,
      "-r NNN   Use NNN as an initial seed for the random number generator.\n"
      "         The case \"-r0\" which is the default asks for a random seed\n"
      "         that will depend on the date, time of day and as much genuine\n"
@@ -2405,7 +2410,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * Sets the Lisp variable {\ttfamily !*plap} and hence the compiler generates
  * an assembly listing.
  */
-    {"-s", false,
+    {"-s", false, false,
      "-s       Sets the variable *plap to true so that Lisp compilation displays\n"
      "         the code that it generates.",
      [&](std::string key, bool hasVal, std::string val)
@@ -2423,7 +2428,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * with {\ttfamily -- filename} since the information generated here goes to
  * the default output, which in some cases is just the screen.
  */
-    {"-t", true,
+    {"-t", true, true,
      "-t NAME  Rather than run any user code, this checks the date-stamp\n"
      "         on a loadable module with the given name. It was provided\n"
      "         in case it would be useful in scripts to remake modules\n"
@@ -2438,7 +2443,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * very very few cases where it is useful since I do not have a large
  * number of system-specific predefined names.
  */
-    {"-u", true,
+    {"-u", true, true,
      "-u NAME  Undefine the named symbol.",
      [&](std::string key, bool hasVal, std::string val)
      {   std::cout << "Undefine " << val << std::endl; 
@@ -2450,7 +2455,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * An option to make things mildly more verbose. It displays more of a banner
  * at startup and switches garbage collection messages on.
  */
-    {"-v", false,
+    {"-v", false, false,
      "-v       Print a larger startup banner and force echoing of input.",
      [&](std::string key, bool hasVal, std::string val)
      {   init_flags &= ~INIT_QUIET;
@@ -2467,7 +2472,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * code traps signals in its usual way and tries to recover it can make it a lot
  * harder to find out just what was going wrong.
  */
-    {"-x", false,
+    {"-x", false, false,
      "-x       Disable trapping of signals/exceptions so that a debugger can see them.",
      [&](std::string key, bool hasVal, std::string val)
      {   segvtrap = false;
@@ -2478,7 +2483,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * {\ttfamily -y } is at present unused.
  */
 
-    {"-y", false,
+    {"-y", false, false,
      "-y       Currently not used.",
      [&](std::string key, bool hasVal, std::string val)
      {
@@ -2496,7 +2501,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * main things I use, and once they are loaded the Lisp compiler can be used
  * to compile itself.
  */
-    {"-z", false,
+    {"-z", false, false,
      "-z       This forces a cold start. It is for use while bootstrapping the\n"
      "         system, since with a cold start only a subset of Lisp capabilities\n"
      "         are available. For use by system-builders and sometimes during\n"
@@ -2507,7 +2512,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     },
 
 // This is now the end of the table that describes arguments...
-    {NULL, false,
+    {NULL, false, false,
      "[Termination record for table]",
      [&](std::string key, bool hasVal, std::string val)
      {   std::abort();   // Should never arise!
