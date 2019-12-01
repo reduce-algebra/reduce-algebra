@@ -80,7 +80,9 @@ sign(-x/y);
 sign(3/x);
 
 
-sign(x)
+    1
+---------
+ sign(x)
 
 
 sign(x/e);
