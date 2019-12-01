@@ -268,9 +268,99 @@ std::uintptr_t sortPinList(std::uintptr_t l)
 {   return sortList<std::uintptr_t, PinChainClass>(l);
 }
 
+// During garbage collection I will allocate items in the half of my memory
+// that has been free up to now. This follows a pattern rather similar to
+// the onme used by the main allocation code, except that it does not have
+// to concern itself with concurrency at all (YET!). I *could* try a bit
+// harder to avoid fragmentation by keeping track of holes that I leave in
+// newly allocated memory, but I will certainoly not do that in a first
+// version and it could very easily be that to do so would complicate matters
+// and slow GC down for gains in memory occupancy that would not be great
+// enough to justify it. If I am keen I will come back to the issue later on.
+
+std::uintptr_t nFringe, nLimit, nNext;
+
+std::uintptr_t get_n_bytes_new(std::size_t n)
+{   size_t gap = nLimit - nFringe;
+    while (n > gap)
+    {   if (gap != 0) setcar(nFringe, makePaddingHeader(gap));
+        if (nNext != 0)
+        {   nFringe = nNext;   // Skip past pinned data to the next chunk.
+            nLimit = ((std::uintptr_t *)nFringe)[0];
+            nNext = ((std::uintptr_t *)nFringe)[1];
+            gap = nLimit - nFringe;
+        }
+        else   // Need to allocate a further page. If I get fully cautious
+               // I will check in case I utterly run out of space. That would
+               // be a pretty extreme pathological situation.
+        {   if (mostlyFreePages != NULL)   // Use pages with pinned items 1st.
+            {   currentPage = mostlyFreePages;
+                mostlyFreePages = mostlyFreePages->pageHeader.chain;
+                mostlyFreePagesCount--;
+            }
+            else
+            {   currentPage = freePages;
+                freePages = freePages->pageHeader.chain;
+                freePagesCount--;
+            }
+// The labels the page I am allocatint into as "current".
+            currentPage->pageHeader.pageClass = currentPageTag;
+            currentPage->pageHeader.chain = busyPages;
+            busyPages = currentPage;
+            busyPagesCount++;
+            uintptr_t pFringe = currentPage->pageHeader.fringe;
+            uintptr_t pLimit = currentPage->pageHeader.heaplimit;
+            nFringe = pFringe;
+            nLimit = pLimit;
+            gap = nLimit - nFringe;
+        }
+    }
+    std::uintptr_t r = nFringe;
+    nFringe += n;
+    return r;
+}
+
+std::uintptr_t pinsA, pinsC;
 
 void fullGarbageCollect()
 {   std::cout << "\n+++++ Start of a full GC\n";
+// (1) Clear the "pinned" maps for pages in A.
+//     Initialize pinsA list to be empty.
+    for (Page *p=busyPages; p!=NULL; p=p->pageHeader.chain)
+        clearPinnedMap(p);
+    pinsA = TAG_FORWARD;
+// (1a) Get ready for allocation into free space.
+    doomedPages = busyPages;
+    busyPages = 0;
+    currentPage = previousPage = 0;
+    nFringe = nLimit = nNext = 0;
+//
+// (2) For each ambiguous value (ie value on the stack associated with
+//     any thread) do processAmbiguousValue()
+    for (unsigned int thr=0; thr<maxThreads; thr++)
+    {   if ((threadMap & threadBit(thr)) != 0)
+        {   std::uintptr_t base = stackBases[thr];
+            std::uintptr_t fringe = stackFringes[thr];
+            for (std::uintptr_t s=fringe; s<base; s+=sizeof(std::uintptr_t))
+            {   setPinnedMajor(*reinterpret_cast<std::uintptr_t *>(s));
+            }
+        }
+    }
+//
+// (3) Evacuate each of the following locations:
+//   (a) Every precise pointer.
+//   (b) Every pointer field in any object in list pinsC.
+//   (c) Every pointer field in any object copies into C in via the
+//       evacuation process.
+//   See later for explanation of "evacuate".
+//
+// (4) Set up A with the structure needed to be an empty page, ie
+//   a gFringe/gLimit/gNext chain that works around pinned items. To do this
+//   a sorted version of pinsA is liable to be useful, especially if while
+//   doing this I can have all pages making up A in a sorted list.
+//
+// (5) Flip status and interpretation of A and C.
+//
     my_abort();
 }
 

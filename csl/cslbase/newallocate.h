@@ -58,6 +58,17 @@ static const std::size_t bytesForMap = pageSize/64;
 static const std::size_t qwordsForMap = bytesForMap/8;
 static const std::size_t spareBytes = 2*bytesForMap;
 
+enum PageClass
+{
+    reservedPageTag   = 0x00,     // Reserved value, never used.
+    freePageTag       = 0x01,     // All the data area in this page is free.
+    mostlyFreePageTag = 0x11,     // (Probably) Mostly empty page but with
+                                  //    some pinned data within it.
+    busyPageTag       = 0x02,     // Page contains active data.
+    currentPageTag    = 0x12,     // Page within which allocation is active.
+    previousPageTag   = 0x22      // Previous current page.
+};
+
 // I am going to require Pages to be aligned at nice neat boundaries
 // because then if I have an arbitrary address within one I will be able to
 // find the page header using a simple AND operation.
@@ -69,6 +80,7 @@ union alignas(pageSize) Page
 // chain of all the pages that are not currently full but that (may)
 // have pinned live data within them.
         union Page *chain;
+        PageClass pageClass;
 // When a page is the Nursery or the I keep fringe and heaplimit pointers
 // showing how the next allocation must happen. There will be further
 // variables related to mapping pinned items within the page where it
@@ -99,6 +111,8 @@ union alignas(pageSize) Page
 // be invalidated whenever the mutator runs, and so the information will
 // have to be regenerated at the start of each garbage collection.
         bool onstarts_present;
+// Are there any bits set in the pin-map?
+        bool somePins;
         double endOfHeader;
     } pageHeader;
 // Here I need to explain the bit and byte-maps I use and when I use them,
@@ -159,6 +173,10 @@ union alignas(pageSize) Page
     } pageBody;
 };
 
+inline bool pageIsBusy(Page *p)
+{   return (p->pageHeader.pageClass & 0x0f) == busyPageTag;
+}
+
 // First I will give code that implements the write-barrier. It is passed
 // the address of a valid Lisp location - that can be one of &car(x),
 // &cdr(x) or &elt(v, n). It records the fact that an update has
@@ -191,16 +209,18 @@ public:
     ~ThreadStartup();
 };
 
-extern Page *currentPage;       // where allocation is happening
-extern Page *previousPage;
-extern Page *busyPages;
-extern Page *mostlyFreePages;
-extern Page *freePages;
+extern Page *currentPage;       // Where allocation is happening.
+extern Page *previousPage;      // Predecessor for allocation.
+extern Page *busyPages;         // All pages that are in use including above.
+extern Page *mostlyFreePages;   // Free apart from some pinned data.
+extern Page *freePages;         // Free and clear of pinning.
+extern Page *doomedPages;       // Used during garbage collection.
 
 extern std::size_t busyPagesCount;
 extern std::size_t mostlyFreePagesCount;
 extern std::size_t freePagesCount;
 
+extern std::uintptr_t pinsA, pinsC;
 
 // For up to 32 segments I have...
 //   heapSegmentCount   number of allocated segments
@@ -425,7 +445,8 @@ inline std::atomic<std::uintptr_t>& firstWord(std::uintptr_t a)
 
 static const std::size_t CHUNK=16384;
 
-
+extern std::uintptr_t nFringe, nLimit, nNext;
+extern std::uintptr_t get_n_bytes_new(std::size_t n); // For use within GC
 
 inline LispObject get_n_bytes(std::size_t n)
 {
@@ -541,7 +562,7 @@ inline void poll()
 //   withRecordedStack([&]{ ... });
 // where the "..." represents some actions. Its job is to arrange that
 // the C stack has all local values on (in particular that nothing is
-// referenced solely via machine registers) and that a stack_top variable
+// referenced solely via machine registers) and that a stackFringe variable
 // is set so that the garbage collector can do its job properly.
 
 
@@ -585,8 +606,8 @@ extern std::jmp_buf *buffer_pointer;
 // be able to participate actively in that! Yes another plausible user-case
 // is the code performing a "sleep" operation.kx 
 
-extern std::atomic<std::uintptr_t> stack_bases[maxThreads];
-extern std::atomic<std::uintptr_t> stack_fringes[maxThreads];
+extern std::uintptr_t stackBases[maxThreads];
+extern std::uintptr_t stackFringes[maxThreads];
 
 template <typename F>
 #ifdef __GNUC__
@@ -597,7 +618,7 @@ inline void may_block(F &&action)
     buffer_pointer = &buffer;
 // ASSUME that setjmp dumps all the machine registers into the jmp_buf.
     if (setjmp(buffer) == 0)
-    {   stack_fringes[threadId::get()] = reinterpret_cast<std::uintptr_t>(buffer);
+    {   stackFringes[threadId::get()] = reinterpret_cast<std::uintptr_t>(buffer);
 // I will need to do more here to decrement the count of threads that
 // the system knows to be potentially involved in memory allocation.
         action();
@@ -616,7 +637,7 @@ inline void withRecordedStack(F &&action)
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
     if (setjmp(buffer) == 0)
-    {   stack_fringes[threadId::get()] = reinterpret_cast<std::uintptr_t>(buffer);
+    {   stackFringes[threadId::get()] = reinterpret_cast<std::uintptr_t>(buffer);
         action();
         std::longjmp(buffer, 1);
     }
@@ -812,6 +833,7 @@ inline void garbageCollectOnBehalfOfAll()
 // Here I can just allocate a next page to use...
                 if (previousPage == NULL) busyPages++;
                 previousPage = currentPage;
+                previousPage->pageHeader.pageClass = previousPageTag; 
 // If I have some pages that contain pinned material I will use them next.
 // The reasoning behind that is that by doing so they will get scavanged
 // tolerably soon and with luck the pinned locations will end up free by then.
@@ -825,6 +847,10 @@ inline void garbageCollectOnBehalfOfAll()
                     freePages = freePages->pageHeader.chain;
                     freePagesCount--;
                 }
+                currentPage->pageHeader.pageClass = currentPageTag;
+                currentPage->pageHeader.chain = busyPages;
+                busyPages = currentPage;
+                busyPagesCount++;
                 uintptr_t pFringe = currentPage->pageHeader.fringe;
                 uintptr_t pLimit = currentPage->pageHeader.heaplimit;
 // Here I suppose there are no pinned items in the page. I set fringe and
@@ -836,7 +862,6 @@ inline void garbageCollectOnBehalfOfAll()
                 for (unsigned int k=0; k<maxThreads; k++)
                     limit[k] = fringeBis[k] = limitBis[k] = gFringe;
                 gNext = 0;
-                busyPagesCount++;
 //              std::cout << "@@ just allocated a fresh page\n";
             }
         }
@@ -928,7 +953,7 @@ inline std::uintptr_t difficult_n_bytes()
 // collection can identify the regions of stack it must scan. For that to
 // be proper the code must not be hiding values in register variables. The
 // function "withRecordedStack()" tries to arrange that, so that when the
-// body of code is executed stack_fringes[] has that information nicely
+// body of code is executed stackFringes[] has that information nicely
 // set up. 
     withRecordedStack([&]
     {
@@ -1123,6 +1148,9 @@ inline LispObject Lncons(LispObject env, LispObject a)
 extern void garbageCollect();
 
 void allocate_segment(std::size_t n);
+extern void clearPinnedMap(Page *x);
+extern std::uint64_t threadBit(unsigned int n);
+extern void setPinnedMajor(std::uintptr_t p);
 
 #endif // header_newallocate_h
 

@@ -1,4 +1,4 @@
-// newallocate.cpp                         Copyright (C) 2018-2018 Codemist
+// newallocate.cpp                         Copyright (C) 2018-2019 Codemist
 //
 // Code to deal with storage allocation, both grabbing memory at the start
 // or a run and significant aspects of garbage collection.
@@ -7,17 +7,13 @@
 
 // Development game-plan for this stuff - showing the steps or stages
 // to go through:
-// (1) Work towards being able to allocate vectors and lists and
-//     set up an initial large chunk of memory. Hope that the code in
-//     restart.cpp for a cold start can be got working again.
-// (2) Test a bit of execution that can happen eithout garbage collection.
-//     I rather hope that PRESERVE will then "just work", and that will
-//     let me build a csl.img
+// [Steps I have achieved are deleted from this list!]
+//
 // (3) Arrange that every garbage collection will be a major one and
 //     re-work the allocation and re-allocation of memory blocks for that.
 //     By keeping the code with precise list-bases for everything that
 //     matters the ambiguous pointers should never be the only reason
-//     for saving any data - they just pin things and hance mess up memory
+//     for saving any data - they just pin things and hence mess up memory
 //     layout. Get that version of GC working. Note that write barriers
 //     may collect information but it is never used!
 // (4) Make some collections minor ones, thus needing to cope with the
@@ -418,6 +414,7 @@ std::atomic<std::uint32_t> activeThreads;
 Page *currentPage;       // Where allocation is happening. The "nursery".
 Page *previousPage;      // A page that was recently the current one.
 Page *busyPages;         // Chained list of pages that contain live data.
+Page *doomedPages;       // Page from which live stuff is being evacuated.
 Page *mostlyFreePages;   // Chained list of pages that the GC has mostly
                          // cleared but that have some pinned data left in
                          // them.
@@ -570,13 +567,29 @@ std::uintptr_t findObjectStart(std::uintptr_t p, Page *x)
 // referenced.
 
 void setPinnedMajor(std::uintptr_t p)
-{   Page *x = findPage(p);
-    if (x == NULL) return;
+{
+//   If value could not be a pointer into A then ignore it.
+//   Ensure that object-starts bitmap in relevant page of A is set up.
+//   Identify the start of the object in A that the value might refer to.
+//   If that item is already pinned then no need to do more.
+//   If that object is part of pinsC (because the CAR field contains
+//     something tagged as FORWARD) do no more.
+//   Set pinned bit for the location concerned. Mark page as one that
+//     contains pinned items.
+//   Add the pinned item to the list pinsA, which is built in space C.
+    Page *x = findPage(p);
+    if (x == NULL) return;      // Not pointing at any page at all.
+    if (!pageIsBusy(x)) return; // not in A.
     if (!x->pageHeader.onstarts_present) recordObjectStarts(x);
     std::uintptr_t os = findObjectStart(p, x);
-    if (os == 0) return;
-    os = (os - reinterpret_cast<std::uintptr_t>(previousPage))/8;
-    previousPage->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
+    if (os == 0) return;               // Does not point within any object
+    if (is_forward(car(os))) return;   // part of pinsC
+    os = (os - reinterpret_cast<std::uintptr_t>(x))/8;
+    x->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
+    x->pageHeader.somePins = true;
+    p = get_n_bytes_new(2*CELL);
+    setcar(p, pinsA);
+    pinsA = p + TAG_FORWARD;
 }
 
 // At the start of a minor garbage collection it it is necessary to call
@@ -755,6 +768,7 @@ void setUpEmptyPage(Page *p)
     p->pageHeader.heaplimit = reinterpret_cast<std::uintptr_t>(p) + sizeof(Page);
     p->pageHeader.dirtypage.store(false);
     p->pageHeader.onstarts_present = false;
+    p->pageHeader.somePins = false;
 // I would like to be able to set the dirty bitmap all zero other than by
 // using the store() method one byte at a time. It is also possible that
 // when I first allocate a page that page will not be put in the stable
@@ -852,6 +866,7 @@ void allocateSegment(std::size_t n)
                 reinterpret_cast<char *>(r) + k - CSL_PAGE_SIZE);
 // Keep a chain of all the pages.
         setUpEmptyPage(p);
+        p->pageHeader.pageClass = freePageTag;
         p->pageHeader.chain = freePages;
         freePages = p;
         freePagesCount++;
@@ -935,20 +950,20 @@ std::mutex threadStartingMutex;
 
 std::uint64_t threadMap = -1;
 
-std::uint64_t threadBit(int n)
+std::uint64_t threadBit(unsigned int n)
 {   return (std::uint64_t)1 << (63-n);
 }
 
-int allocateThreadNumber()
+unsigned int allocateThreadNumber()
 {   my_assert(threadMap != 0); // I need at least one spare.
-    int n = nlz(threadMap);
+    unsigned int n = nlz(threadMap);
 // Now n is 0 if the top bit is set, 1 for the next etc down to 63 when
 // the least bit is the only one se    threadMap &= ~threadBit(n);
     return n;
 }
 
-void releaseThreadNumber(int n)
-{   my_assert(0<=n && n <=63);
+void releaseThreadNumber(unsigned int n)
+{   my_assert(n <=63);
     threadMap |= threadBit(n);
 }
 
@@ -989,7 +1004,8 @@ void initHeapSegments(double storeSize)
 // set the variables that are associated with tracking memory allocation
 // to keep everything as clear as I can.
     heapSegmentCount = 0;
-    freePages = NULL;
+    freePages = mostlyFreePages = NULL;
+    pinsA = pinsC = TAG_FORWARD;
     std::printf("Allocate %" PRIu64 " Kbytes\n", (std::uint64_t)freeSpace/1024);
     allocateSegment(freeSpace);
 
@@ -1103,8 +1119,8 @@ void init_heap_segments(double d)
     initHeapSegments(d/1024.0);
 }
 
-std::atomic<std::uintptr_t> stack_bases[maxThreads];
-std::atomic<std::uintptr_t> stack_fringes[maxThreads];
+std::uintptr_t stackBases[maxThreads];
+std::uintptr_t stackFringes[maxThreads];
 extern std::atomic<std::uint32_t> threadCount;
 std::mutex mutex_for_gc;
 bool gc_started;

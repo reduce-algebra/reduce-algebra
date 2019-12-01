@@ -779,17 +779,16 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
 {   if (!consp(args)) return onevalue(nil);
     STACK_SANITY;
     stackcheck(args, ienv);
-    push(car(args), cdr(args), ienv);
-    push5(nil, nil,                 // p, q
-          ienv, nil, nil);          // env1, specenv, local_decs
-    LispObject &local_decs = stack[0];
+    push(car(args), cdr(args), ienv); // bvl, body, env
+    push4(nil, nil,                   // p, q
+          nil, nil);                  // specenv, local_decs
+    LispObject &local_decs = stack[ 0];
     LispObject &specenv    = stack[-1];
-    LispObject &env1       = stack[-2];  // Unused it seems!
-    LispObject &p          = stack[-3];
-    LispObject &q          = stack[-4];
-    LispObject &env        = stack[-5];
-    LispObject &body       = stack[-6];
-    LispObject &bvl        = stack[-7];
+    LispObject &p          = stack[-2];
+    LispObject &q          = stack[-3];
+    LispObject &env        = stack[-4];
+    LispObject &body       = stack[-5];
+    LispObject &bvl        = stack[-6];
     for (;;)
     {   if (!consp(body)) break;
         p = macroexpand(car(body), env);
@@ -827,8 +826,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
             {   error(1, err_bad_bvl, q);
             }
             else
-            {
-                Header h = qheader(q);
+            {   Header h = qheader(q);
                 if (z != nil)
                 z = eval(z, env);
                 if (h & SYM_GLOBAL_VAR)
@@ -870,7 +868,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
             setvalue(v, z);
         }
         {   LispObject bodyx = body;
-            popv(8);
+            popv(7);
             return bodyx;
         }
     }
@@ -879,7 +877,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
         {   LispObject w = car(bvl), v = car(w), z = cdr(w);
             setvalue(v, z);
         }
-        popv(8);
+        popv(7);
         throw;
     }
 }
