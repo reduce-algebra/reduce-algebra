@@ -1,0 +1,168 @@
+                       Building Reduce from source
+
+
+
+(1) Very basic software expectations.
+
+Just to fetch reduce you need to have a copy of "subversion" installed and
+the ability to run from a unix-like console. I strongly recommend that you
+run under the "bash" shell or something fairly compatible with that.
+On Linux you MAY need to open a terminal and go "sudo apr-get subversion".
+On Windows you should install cygwin from www.cygwin.com (please fetch and
+use the 64-bit variant) and when you run their setup utility you should
+use their search-box to find "subversion" and select it for installation.
+On a Macintosh visit www.macports.org and follow the instructions there to
+install that - you can then go "sudo port install subversion". You will need
+to fetch Xcode from Apple, install it and activate the command-line
+utilities along the way, and while you are about it you might as well fetch
+and install the XQuartz version of the X windows system (www.xquartz.org).
+
+The main Reduce supporters do not make provision for building Reduce using
+the Microsoft compilers and VIsual Studio on Windows, or using software
+and libraries on the Macintosh other than Xcode+Macports on the Macintosh, so
+use of eg homebrew is something we have not investigated at all. It may not
+be impossible to use alternatives to the setup described here, but you will
+be basically on your own!
+Other Unix-style platforms should be easy to adapt for, but we do not have
+scripts to help you install all the necessary support software.
+
+(2) Fetching Reduce.
+
+The first time you want to fetch REDUCE you can then issue the command
+
+svn co svn://svn.code.sf.net/p/reduce-algebra/code/trunk reduce-algebra
+
+which will check-out Reduce and put a copy in the directory reduce-algebra.
+You can select whatever name of location you like for the copy that you
+check-out. I often have several, with the second one called testing-reduce.
+
+Then there are perhaps two key recipes for use of subversion that you may
+like to be aletred to. In each case go "cd reduce-algebra" first:
+   svn update
+updates your local files to bring them into step with the ones on the server.
+If you have made local changes these changes are NOT overwritten.
+If you have made local changes that clash with updates at the repository
+the attempt to use "svn update" may generate messages or options that you
+find hard to understand at the start. If in doubt use ^C to abandon the
+fetch and then use
+   svn -R revert .
+which should undo any local changes you made and bring your local copy back
+in step with the version you last fetched. Then "svn update" will have a
+better change of working without complaint.
+One further circumstance can still cause confusion to those who have not used
+subversion significantly. If a new file or directory is published in the
+sourceforge server but somehow you have something with the same name in your
+local tree the clash will lead to alerts. If you delete the part of your local
+tree including the unexpected material then subversion is liable to be able
+to re-fetch anything that is missing and restore your tree.
+
+The fundamantal basis for the above advice is that you will not be making
+private changes or additions to Reduce within the main tree, and so you would
+be happy if everything within that directory was snapped back to be a mere
+copy of what is at sourceforge. When you move beyond that state take a while
+to read the subversion documentation rather than blindly following the
+simplistic guidance here!
+
+(3) Support software and libraries.
+Building Reduce uses a collection of utilities and libraries. For the main
+supported platforms there are scripts that attempt to simplfy the process
+of ensuring that all that is needed has been installed. Because the platforms
+re-package software, update versions and generally develop over time the
+recipes given here can not be guaranteed perfect for ever, but at the very
+least they can get you started.
+
+For Windows consider scripts/cygwin-sanity-check.sh which tries to to
+check if everything that Reduce does or might need is installed. At the end
+if more packages need to be installed it will display a command of the
+form
+    ./setup-x86_64.exe --no-desktop --no-shortcuts \
+      --no-startmenu --quiet-mode -P ... ... ...
+with a list of packages following. I use copy and paste so that I can
+launch that command from within the directoryt where I have already got
+the Cygwin version of setup-x86_64.exe. This installs some software beyond
+the bare minimum for simple building of Reduce - it is used to ensure that
+everything needed when building a binary release is present.
+
+For Linux I have scripts/ubuntu-sanity-check.sh, fedora-sanity-check.sh and
+scientific-linux-sanity-check.sh. The first of these may suffice on other
+Debian and Debian derived systems and is the one checked most often. The
+Fedora one is a prototype for RPM worlds and both it and the Scientific Linux
+support were set up at some stage in the past so should be viewed as
+starting points rather than up to date validated scripts. If you try them and
+find updates are necessary please report so we can fix them.
+
+On the Macintosh scripts/macports-setup.sh is where to start. Because macports
+installs many of its packages by fetching source and compiling locally this
+can take quite some while to complete, but the initial set up is a once-off
+cost.
+
+If you are on some other platform and are willing to develop and contribute
+a script in the above spirit for configuring software on an initially
+pristine copy of some other operation system then please do that and send
+in a copt to be put in the reduce-algebra/scripts directory. For instance
+Reduce can be build in various BSD-family platforms. It is not some years
+since a version was tested on Solaris but with some care that was possible.
+
+(4) Initial testing
+You can either launch straight into an attempt to build Reduce or you can run
+scripts/csl-sanity-check.sh. If the latter succeeds it should display a
+window containing the text "Arthur". It is far from a rigorous check of all
+pre-requisites, but if it does behave that can build confidence!
+
+(5) Building and testing REDUCE
+The key commands are
+        ./configure --with-psl
+or      ./configure --with-csl
+[and it is valid to issue first one and the the second so that both variants
+of Reduce will get built].
+        make
+The initial build of Reduce has to go through a bootstrapping process and
+takes longer than subsequent rebuilds. It is also much slower under Windows
+than on the other platforms where it only needs a moderate number of minutes.
+If you are uncertain I would suggest going
+        script buildreduce.log
+        make
+        exit
+which makes a transcript of the lengthy and untidy output. If things fail
+it can be hard to decode why - in part because the build scripts can run
+some parts of the build process in parallel so that fragments of output from
+independent sub-tasks end up interleaved.
+
+When building has completed sucessfully you can try
+        bin/redcsl          Open CSL-reduce in a window
+        bin/redcsl -w       Run CSL-reduce in console mode
+        bin/redpsl          Run PSL-reduce
+where the reduce-algebra/bin directory contains the recipes for running things.
+You may wish to put that on your PATH. Of course you only get the CSL or PSL
+version available if you had used the proper ./configure option! If you
+seleced just one (say PSL) initially and later want to try the other then
+re-run ./configure in the reduce-algebra directory with "--with-XXX" for the
+second variant then re-run "make". Then you should have both to try and to
+compare.
+Plausible inoutail inpout to see that Reduce is working might be:
+   2+2;                        % Trivial arithmetic
+   int(1/(x^6-1), x);          % Indefinite integration
+   df(ws, x);                  % Differentiate the integral
+   solve(a*x^2 + b*x + x, x);  % Quadratic formula
+   quit;                       % Done!
+After that it can be good to try a more exhausitive set of tests by going
+        scripts/testall.sh
+which runs test and demonstration examples for almost all parts of Reduce
+and also a collection of regression tests written as issues have been
+identified and addressed. If you only installed either the PSL or CSL
+version you will need to follow "testall.sh" with either "--csl" or "--psl"
+as relevant - by default it runs both and compares their output both against
+stored reference logs and against each other.
+At sny moment there will be a small number of the test cases that report
+inconsistencies. Whiel some may reflect bugs or limitations others may be
+where the core system has been improved but the reference logs have not
+caught up.
+
+This now quite long enough for a getting-started guide. Note that there
+is a full Reduce manual in doc/manual/manual.pdf, and those who may wish to
+understand Reduce internals in greater detail can also look in the
+doc/primers directory.
+
+
+Arthur Norman. December 2019
+
