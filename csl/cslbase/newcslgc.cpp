@@ -64,13 +64,28 @@ void generationalGarbageCollect()
 // Within the active part of the heap there will be a list pinsC that has
 // pointers to each pinned item in C. This is not a Lisp standard list - it
 // will be chained in the CAR field with pointers tagged as FORWARD while the
-// CDR field of each entry refers to the pinned item. I may later arrange that
-// this list is sorted, but at the current stage of my design and coding I will
-// just describe it as a list with the contents as explained here.
+// CDR field of each entry refers to the pinned item. furthermore this list is
+// sorted so that items appear in it in order of increasing memory address,
+// and each of the lists freePages and mostlyFreePages will be similarly
+// sorted. *MAYBE*!!!!!!!
 // I should note that at the start of a GC the object-start and pinned bitmaps
 // for each page contain junk - that is because those two bitmaps share space
 // with maps used for write barriers. During a global GC write barrier data
-// is not used.
+// is not used. During a minor GC it will be necessary to use dirty bits
+// (where RPLACx, PUTVEC and relatives have updated field in stable data and
+// these must be treated as list-bases potentially referring into the
+// current nursery and previous pages). In that case I will need to set up
+// pinned maps for previousPage (which is the only one from which information
+// gets evacuated). Because all live data in that is about to be relocated
+// dirty bits associated with it are not relevant. So I first set up
+// information about pinning in previousPage. I can then inspect all data
+// that may be dirty, and if it refers into previousPage I leave it alone if
+// pinned, evacuate data or follow a forwarding address. If while doing that
+// I find that all references from the region marked as dirty end up in
+// pages that will be stable at the end of this collection I can clear the
+// dirty bit. If pointers remain into what is current at the start of GC
+// (and so will be previous at the end) I leave the dirty bit set. But beyond
+// that I can use the space for pin information if I want.
 //
 // When I say that all pages in C have freespace mapping in them I will in
 // fact in due course arrange that on a "lazy" basis so that from when the
@@ -178,7 +193,8 @@ Concrete sortList(Concrete a)
     l1 = sortList<Concrete,Abstract>(l1);
     l2 = sortList<Concrete,Abstract>(l2);
 // Now merge.
-    Concrete r, rp;
+    Concrete r = Abstract::nil();
+    Concrete rp = r;
     bool some = false;
     while (!Abstract::isNil(l1) &&
            !Abstract::isNil(l2))
@@ -320,6 +336,55 @@ std::uintptr_t get_n_bytes_new(std::size_t n)
     return r;
 }
 
+void evacuate(LispObject *p)
+{
+// Here p is a pointer to a location that is a list-base, ie it contains
+// a valid Lisp object. I want to arrange that the object and all its
+// components are moved to the new half space, and (if necessary) the
+// list base is updated to refer to the copy and a forwarding pointer is left
+// where the original had been. The procedure is:
+//   Let a = *p, ie the object that may need to be copied.
+//   If a is tagged as immediate data do nothing.
+//   [now a is some sort of tagged pointer]
+//   If a is a forwarding pointer replace the list base with the
+//      object referred to, reconstructing suitable tag bits.
+//   If the address that a refers to is in the free half-space it must be
+//      a pointer to an object that had been pinned last time, so do nothing.
+//   Determine the length, b, of the object that a refers to.
+//   Allocate b byte in the new space and do a simple binary copy of all
+//      of object a to there.
+//   Write in a forwarding pointer.
+//   Update the list-base to refer to the copy.
+// Note that this is a shallow copy operation. A later stage must perform
+// a linear scan of the newly copied material, along the lines of:
+//   Let a be the address of the first location in the new heap, where
+//     data has been placed by the copy operations docmented above.
+//   If item is marked as pinned then skip it (this can happen when the
+//      item is not one that has been just copied into the but is one
+//      that was already there as a pinned item. For this step to be
+//      possible I must have clear then pinmaps for every page that I
+//      copy stuff into and then use the pinsC list to set pinned bits.
+//      Well what I can do is clear the pin maps in every page that is
+//      in mostlyFreePages (I hope there are not too many), then traverse
+//      pinsC setting bits. At this stage I MUST not need to look back
+//      at dirty bits that the write barrier has set!).
+//   [the steps that follow are what evacuateContents does]
+//   Identify the type of the object.
+//   If the item contains binary then skip it. Note that this will
+//      include skipping over padder items that were inserted to keep the
+//      region contiguous.
+//   [Now the item contains some pointer data. It may be a cons cell,
+//   a symbol or some sort of vector]
+//   For each pointer field within the object perform the shallow copy
+//   (evacuation) step.
+//
+// 
+}
+
+void evacuateContents(uintptr_t *p)
+{
+}
+
 std::uintptr_t pinsA, pinsC;
 
 void fullGarbageCollect()
@@ -352,7 +417,41 @@ void fullGarbageCollect()
 //   (b) Every pointer field in any object in list pinsC.
 //   (c) Every pointer field in any object copies into C in via the
 //       evacuation process.
-//   See later for explanation of "evacuate".
+//
+// I should remind you, gentle reader, that the value cell
+// and env cells of nil will always contain nil, which does not move,
+// and so I do not need to copy them here provided that NIL itself
+// never moves.
+    evacuate((LispObject *)plistaddr(nil));
+    evacuate((LispObject *)pnameaddr(nil));
+    evacuate((LispObject *)fastgetsaddr(nil));
+    evacuate((LispObject *)packageaddr(nil));
+// All of the "ordinary" list bases are scanned here.
+    for (LispObject **p = list_bases; *p!=NULL; p++) evacuate(*p);
+// This Lisp stack still exists, even though my longer term aim is to
+// be able to get rid of it.
+    for (LispObject *sp=stack; sp>(LispObject *)stackBase; sp--) evacuate(sp);
+// When running the deserialization code I keep references to multiply-
+// used items in repeat_heap, and if garbage collection occurs they must be
+// updated.
+    if (repeat_heap != NULL)
+    {   for (std::size_t i=1; i<=repeat_count; i++)
+            evacuate(&repeat_heap[i]);
+    }
+// Now I should deal with all pointers emerging from items in the C region
+// they were pinned and hence have to be deemed alive.
+    for (std::uintptr_t p=pinsC;
+         p!=0;
+         p=(reinterpret_cast<std::uintptr_t *>(p-TAG_FORWARD))[0])
+    {   evacuateContents(
+            &(reinterpret_cast<uintptr_t *>(p-TAG_FORWARD))[1]);
+        // set pinned bits here...
+    }
+// (3.1)
+// Scan the copied data evacuating fields found within it. This of course
+// can add to the total bulk of copied data! So stop when the evacuation
+// process catches up to the end of the copied data.
+//
 //
 // (4) Set up A with the structure needed to be an empty page, ie
 //   a gFringe/gLimit/gNext chain that works around pinned items. To do this
@@ -360,6 +459,8 @@ void fullGarbageCollect()
 //   doing this I can have all pages making up A in a sorted list.
 //
 // (5) Flip status and interpretation of A and C.
+// For a FULL garbage collection the partly filled page that was the final
+// one that material was evacuated into becomed the new currentPage.
 //
     my_abort();
 }

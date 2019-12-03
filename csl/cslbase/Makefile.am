@@ -2020,8 +2020,10 @@ machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(E
 			$(cslbase)/machine.h $(cslbase)/int128_t.h \
 			$(cslbase)/$(FWIN) \
 			$(cslbase)/tags.h $(cslbase)/cslerror.h \
+			$(cslbase)/thread_local.h \
 			$(cslbase)/externs.h $(cslbase)/arith.h \
 			$(cslbase)/entries.h $(cslbase)/lispthrow.h \
+			$(cslbase)/allocate.h $(cslbase)/newallocate.h \
 			$(USE_CORRECT_CYGWIN)
 	./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
 		machineid-1.cpp $(COMPILE_DLL)
@@ -2030,6 +2032,7 @@ machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(E
 		$(CYGSRC)/$(FWIN) \
 		$(CYGSRC)/int128_t.h \
 		$(CYGSRC)/tags.h \
+		$(CYGSRC)/thread_local.h \
 		$(CYGSRC)/cslerror.h \
 		$(CYGSRC)/externs.h \
 		$(CYGSRC)/arith.h \

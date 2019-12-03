@@ -103,128 +103,145 @@ static int get_without_cr(std::FILE *f)
     return c;
 }
 
+void transcribe(const char *fname)
+{   std::FILE *f = myfopen(fname, "r");
+    int ch = '\n', state = BASE, linechars = 0;
+    if (f == NULL)
+    {   std::fprintf(stderr, "unable to read \"%s\"\n", fname);
+        std::exit(1);
+    }
+    for (;;)
+    {
+// I will consolidate multiple spaces into just one if I am not in
+// a string or a character literal.
+        if (ch == ' ' &&
+            state != STRING &&
+            state != STRINGESC &&
+            state != CHAR &&
+            state != CHARESC)
+        {   while (ch == ' ') ch = get_without_cr(f);
+        }
+        else if (ch != EOF) ch = get_without_cr(f);  // next character
+        if (ch == EOF) break;
+        switch (state)
+        {
+    default:
+    case BASE:
+            if (ch == '/')
+            {   state = SLASH;
+                continue;
+            }
+            else if (ch == '\"')
+            {   state = STRING;
+                break;
+            }
+            else if (ch == '\'')
+            {   state = CHAR;
+                break;
+            }
+            else if (ch == '\n')
+            {   if (linechars != 0) std::printf("\",\n    \"");
+                linechars = 0;
+                continue;
+            }
+            else break;
+    case SLASH:
+            if (ch == '/')
+            {   state = SLASHSLASH;
+                continue;
+            }
+            else if (ch == '*')
+            {   state = SLASHSTAR;
+                continue;
+            }
+            else if (ch == '\"')
+            {   state = STRING;
+                std::printf("/");
+                linechars++;
+                break;
+            }
+            else if (ch == '\'')
+            {   state = CHAR;
+                std::printf("/");
+                linechars++;
+                break;
+            }
+            else if (ch == '\n')
+            {   std::printf("/\",\n    \"");
+                continue;
+            }
+            else
+            {   std::printf("/");
+                state = BASE;
+                break;
+            }
+    case SLASHSLASH:
+            if (ch != '\n' && ch != EOF) continue;
+            state = BASE;
+            if (ch == '\n')
+            {   if (linechars != 0) std::printf("\",\n    \"");
+                linechars = 0;
+                continue;
+            }
+            else continue;
+    case SLASHSTAR:
+            if (ch != '*') continue;
+            state = STAR;
+            continue;
+    case STAR:
+            if (ch == '/') state = BASE;
+            else state = SLASHSTAR;
+            continue;
+    case STRING:
+            if (ch == '\"') state = BASE;
+            else if (ch == '\\') state = STRINGESC;
+            break;
+    case STRINGESC:
+            state = STRING;
+            break;
+    case CHAR:
+            if (ch == '\'') state = BASE;
+            else if (ch == '\\') state = CHARESC;
+            break;
+    case CHARESC:
+            state = CHAR;
+            break;
+        }
+        linechars++;
+        if (ch == '\n')
+        {   std::putchar('\\');
+            std::putchar('n');
+            continue;
+        }
+        if (ch == '\"' || ch == '\'' || ch == '\\') std::putchar('\\');
+        std::putchar(ch);
+        continue;
+    }
+    std::fclose(f);
+}
+
+const char *adapt(const char *base, const char *leaf)
+{   static char fname[1024];
+    const char *slash = std::strrchr(base, '/');
+    std::strcpy(fname, base);
+    std::strcpy(fname+(slash-base+1), leaf);
+    return fname;
+}
+
 int main(int argc, const char *argv[])
 {   int i;
     std::printf("const char *config_header[] =\n{\n    \"");
     for (i=1; i<argc; i++)
-    {   std::FILE *f = myfopen(argv[i], "r");
-        int ch = '\n', state = BASE, linechars = 0;
-        if (f == NULL)
-        {   std::fprintf(stderr, "unable to read \"%s\"\n", argv[i]);
-            std::exit(1);
-        }
-        for (;;)
-        {
-// I will consolidate multiple spaces into just one if I am not in
-// a string or a character literal.
-            if (ch == ' ' &&
-                state != STRING &&
-                state != STRINGESC &&
-                state != CHAR &&
-                state != CHARESC)
-            {   while (ch == ' ') ch = get_without_cr(f);
-            }
-            else if (ch != EOF) ch = get_without_cr(f);  // next character
-            if (ch == EOF) break;
-            switch (state)
-            {
-        default:
-        case BASE:
-                if (ch == '/')
-                {   state = SLASH;
-                    continue;
-                }
-                else if (ch == '\"')
-                {   state = STRING;
-                    break;
-                }
-                else if (ch == '\'')
-                {   state = CHAR;
-                    break;
-                }
-                else if (ch == '\n')
-                {   if (linechars != 0) std::printf("\",\n    \"");
-                    linechars = 0;
-                    continue;
-                }
-                else break;
-        case SLASH:
-                if (ch == '/')
-                {   state = SLASHSLASH;
-                    continue;
-                }
-                else if (ch == '*')
-                {   state = SLASHSTAR;
-                    continue;
-                }
-                else if (ch == '\"')
-                {   state = STRING;
-                    std::printf("/");
-                    linechars++;
-                    break;
-                }
-                else if (ch == '\'')
-                {   state = CHAR;
-                    std::printf("/");
-                    linechars++;
-                    break;
-                }
-                else if (ch == '\n')
-                {   std::printf("/\",\n    \"");
-                    continue;
-                }
-                else
-                {   std::printf("/");
-                    state = BASE;
-                    break;
-                }
-        case SLASHSLASH:
-                if (ch != '\n' && ch != EOF) continue;
-                state = BASE;
-                if (ch == '\n')
-                {   if (linechars != 0) std::printf("\",\n    \"");
-                    linechars = 0;
-                    continue;
-                }
-                else continue;
-        case SLASHSTAR:
-                if (ch != '*') continue;
-                state = STAR;
-                continue;
-        case STAR:
-                if (ch == '/') state = BASE;
-                else state = SLASHSTAR;
-                continue;
-        case STRING:
-                if (ch == '\"') state = BASE;
-                else if (ch == '\\') state = STRINGESC;
-                break;
-        case STRINGESC:
-                state = STRING;
-                break;
-        case CHAR:
-                if (ch == '\'') state = BASE;
-                else if (ch == '\\') state = CHARESC;
-                break;
-        case CHARESC:
-                state = CHAR;
-                break;
-            }
-            linechars++;
-            if (ch == '\n')
-            {   std::putchar('\\');
-                std::putchar('n');
-                continue;
-            }
-            if (ch == '\"' || ch == '\'' || ch == '\\') std::putchar('\\');
-            std::putchar(ch);
-            continue;
-        }
-        std::fclose(f);
+    {   transcribe(argv[i]);
         if (i == 1)
         {   std::printf("\",\n    NULL\n};\n\nconst char *csl_headers[] =\n{\n    \"");
         }
     }
+    std::printf("#ifdef CONSERVATIVE\",\n    \"");
+    transcribe(adapt(argv[2], "newallocate.h"));
+    std::printf("#else // CONSERVATIVE\",\n    \"");
+    transcribe(adapt(argv[2], "allocate.h"));
+    std::printf("#endif // CONSERVATIVE");
     std::printf("\",\n    NULL\n};\n\n// end of machineid.cpp\n\n");
     return 0;
 }

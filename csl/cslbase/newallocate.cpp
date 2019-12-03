@@ -1111,11 +1111,14 @@ void grab_more_memory(std::size_t npages)
 
 void init_heap_segments(double d)
 {   std::cout << "init_heap_segments " << d << std::endl;
-// I first impose a minimum of 64 megabytes, then convert the value so that
+
+// I first impose a minimum of K megabytes, then convert the value so that
 // I pass it in kilobytes.
+    static const double K = 8192.0; // for an 8 Gbyte default for now!!!
     if (maxStoreSize != 0 && d > maxStoreSize) d = maxStoreSize;
-    if (d < 64.0*1024.0*1024.0)
-        d = 64.0*1024.0*1024.0;
+    if (d < K*1024.0*1024.0)
+        d = K*1024.0*1024.0;
+
     initHeapSegments(d/1024.0);
 }
 

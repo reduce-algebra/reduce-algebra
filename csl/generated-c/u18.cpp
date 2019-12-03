@@ -1529,6 +1529,188 @@ inline std::uintptr_t object_2_align_up(std::uintptr_t n)
 #define HASH_AS_SYMBOL 5
 #define HASH_AS_SXHASH 6
 #endif 
+#ifndef header_thread_local_h
+#define header_thread_local_h 1
+#if defined __cpp_inline_variables && \
+ (defined __CYGWIN__ || defined __MINGW32__)
+extern "C"
+{
+#ifdef __LP64__
+typedef unsigned int tls_handle;
+#else
+typedef unsigned long tls_handle;
+#endif
+extern __declspec(dllimport) tls_handle TlsAlloc(void);
+extern __declspec(dllimport) int TlsFree(tls_handle);
+extern __declspec(dllimport) void *TlsGetValue(tls_handle);
+extern __declspec(dllimport) int TlsSetValue(tls_handle, void *);
+};
+#ifdef CAUTIOUS
+inline void *tls_load(tls_handle teb_slot)
+{ return TlsGetValue(teb_slot);
+}
+inline void tls_store(tls_handle teb_slot, void *v)
+{ TlsSetValue(teb_slot, v);
+}
+#else 
+#if __SIZEOF_POINTER__ == 4
+#define MOVE_INSTRUCTION "movl"
+#define SEGMENT_REGISTER "%%fs"
+#define basic_TLS_offset 0xe10
+#define extended_TLS_offset 0xf94
+#else 
+#define MOVE_INSTRUCTION "movq"
+#define SEGMENT_REGISTER "%%gs"
+#define basic_TLS_offset 0x1480
+#define extended_TLS_offset 0x1780
+#endif 
+inline void *read_via_segment_register(tls_handle n)
+{ void *r;
+ asm volatile
+ ( MOVE_INSTRUCTION "  " SEGMENT_REGISTER ":(%1), %0"
+ : "=r" (r)
+ : "r" (n)
+ :
+ );
+ return r;
+}
+inline void write_via_segment_register(tls_handle n, void *v)
+{ asm volatile
+ ( MOVE_INSTRUCTION " %0, " SEGMENT_REGISTER ":(%1)"
+ :
+ : "r" (v), "r" (n)
+ :
+ );
+}
+inline void *extended_tls_load(tls_handle teb_slot)
+{ void **a = (void **)read_via_segment_register(extended_TLS_offset);
+ return a[teb_slot - 64];
+}
+inline void extended_tls_store(tls_handle teb_slot, void *v)
+{ void **a = (void **)read_via_segment_register(extended_TLS_offset);
+ a[teb_slot - 64] = v;
+}
+inline void *tls_load(tls_handle teb_slot)
+{ if (teb_slot >= 64) return extended_tls_load(teb_slot);
+ else return (void *)read_via_segment_register(
+ basic_TLS_offset + sizeof(void *)*teb_slot);
+}
+inline void tls_store(tls_handle teb_slot, void *v)
+{ if (teb_slot >= 64) return extended_tls_store(teb_slot, v);
+ else write_via_segment_register(
+ basic_TLS_offset + sizeof(void *)*teb_slot, v);
+}
+#endif 
+class TlsHandle
+{
+public:
+ tls_handle h;
+ TlsHandle()
+ { h = TlsAlloc();
+ }
+ ~TlsHandle()
+ { TlsFree(h);
+ }
+};
+#ifdef DEBUG
+#define declare_thread_local(name, Type) \
+class name \
+{ \
+ static inline TlsHandle H; \
+ static inline thread_local Type val; \
+public: \
+ static Type get() \
+ { return (Type)tls_load(H.h); \
+ } \
+ static void set(Type v) \
+ { tls_store(H.h, (void *)v); \
+ val = v; \
+ } \
+};
+#else 
+#define declare_thread_local(name, Type) \
+class name \
+{ \
+ static inline TlsHandle H; \
+public: \
+ static Type get() \
+ { return (Type)tls_load(H.h); \
+ } \
+ static void set(Type v) \
+ { tls_store(H.h, (void *)v); \
+ } \
+};
+#endif 
+#define declare_thread_local_ref(name, Type) \
+class name ## _Ref \
+{ \
+ static Type* get() \
+ { static thread_local Type val; \
+ return &val; \
+ } \
+public: \
+ static inline TlsHandle H; \
+ name ## _Ref() \
+ { tls_store(H.h, (void *)get()); \
+ } \
+}; \
+class name \
+{ \
+public: \
+ static Type &get() \
+ { static thread_local name ## _Ref val; \
+ return *(Type *)tls_load(val.H.h); \
+ } \
+};
+#elif defined __cpp_inline_variables
+#define declare_thread_local(name, Type) \
+class name \
+{ \
+ static inline thread_local Type val; \
+public: \
+ static Type& get() \
+ { return val; \
+ } \
+ static void set(Type v) \
+ { val = v; \
+ } \
+};
+#define declare_thread_local_ref(name, Type) \
+class name \
+{ \
+ static inline thread_local Type val; \
+public: \
+ static Type& get() \
+ { return val; \
+ } \
+};
+#else 
+#define declare_thread_local(name, Type) \
+class name \
+{ \
+ static Type& val() \
+ { static thread_local Type Val; \
+ return Val; \
+ } \
+public: \
+ static Type& get() \
+ { return val(); \
+ } \
+ static void set(Type v) \
+ { val() = v; \
+ } \
+};
+#define declare_thread_local_ref(name, Type) \
+class name \
+{ \
+public: \
+ static Type& get() \
+ { static thread_local Type val; \
+ return val; \
+ } \
+};
+#endif 
+#endif 
 #ifndef header_cslerror_h
 #define header_cslerror_h 1
 extern void interrupted(bool noisy);
@@ -4272,7 +4454,664 @@ public:
  { \
  }
 #endif 
-
+#ifdef CONSERVATIVE
+#ifndef header_newallocate_h
+#define header_newallocate_h 1
+#include <csetjmp>
+extern void set_up_signal_handlers();
+extern void allocateSegment(std::size_t);
+static const std::size_t pageSize = 8*1024*1024; 
+static const std::size_t bytesForMap = pageSize/64;
+static const std::size_t qwordsForMap = bytesForMap/8;
+static const std::size_t spareBytes = 2*bytesForMap;
+enum PageClass
+{
+ reservedPageTag = 0x00, 
+ freePageTag = 0x01, 
+ mostlyFreePageTag = 0x11, 
+ 
+ busyPageTag = 0x02, 
+ currentPageTag = 0x12, 
+ previousPageTag = 0x22 
+};
+union alignas(pageSize) Page
+{ struct PageHeader
+ {
+ union Page *chain;
+ PageClass pageClass;
+ std::uintptr_t fringe;
+ std::uintptr_t heaplimit;
+ std::atomic<bool> dirtypage;
+ bool onstarts_present;
+ bool somePins;
+ double endOfHeader;
+ } pageHeader;
+ struct PageBody
+ { union PageBitmaps
+ {
+ std::atomic<std::uint8_t> dirty[2*bytesForMap];
+ std::uint64_t qwordsDirty[2*qwordsForMap];
+ struct Maps
+ { std::uint64_t objstart[qwordsForMap];
+ std::uint64_t pinned[qwordsForMap];
+ } maps;
+ } pageBitmaps;
+ LispObject data[(pageSize - spareBytes)/sizeof(LispObject)];
+ } pageBody;
+};
+inline bool pageIsBusy(Page *p)
+{ return (p->pageHeader.pageClass & 0x0f) == busyPageTag;
+}
+inline void write_barrier(LispObject *p)
+{ std::uintptr_t a = reinterpret_cast<std::uintptr_t>(p);
+ 
+ Page *x = reinterpret_cast<Page *>(a & -UINT64_C(0x800000));
+ x->pageHeader.dirtypage.store(true);
+ std::uintptr_t offset = a & 0x7fffffU;
+ x->pageBody.pageBitmaps.dirty[offset/32].store(1);
+}
+inline void write_barrier(std::atomic<LispObject> *p)
+{ write_barrier((LispObject *)p);
+}
+extern std::uint64_t threadMap;
+class ThreadStartup
+{
+public:
+ ThreadStartup();
+ ~ThreadStartup();
+};
+extern Page *currentPage; 
+extern Page *previousPage; 
+extern Page *busyPages; 
+extern Page *mostlyFreePages; 
+extern Page *freePages; 
+extern Page *doomedPages; 
+extern std::size_t busyPagesCount;
+extern std::size_t mostlyFreePagesCount;
+extern std::size_t freePagesCount;
+extern std::uintptr_t pinsA, pinsC;
+extern void *heapSegment[32];
+extern void *heapSegmentBase[32];
+extern std::size_t heapSegmentSize[32];
+extern std::size_t heapSegmentCount;
+void initHeapSegments(double n);
+inline int find_segment2(std::uintptr_t p, int n)
+{ if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n+1])) return n;
+ else return n+1;
+}
+inline int find_segment4(std::uintptr_t p, int n)
+{ if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n+2]))
+ return find_segment2(p, n);
+ else return find_segment2(p, n+2);
+}
+inline int find_segment8(std::uintptr_t p, int n)
+{ if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n+4]))
+ return find_segment4(p, n);
+ else return find_segment4(p, n+4);
+}
+inline int find_segment16(std::uintptr_t p, int n)
+{ if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n+8]))
+ return find_segment8(p, n);
+ else return find_segment8(p, n+8);
+}
+inline int find_segment32(std::uintptr_t p, int n)
+{ if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n+16]))
+ return find_segment8(p, n);
+ else return find_segment16(p, n+16);
+}
+inline int find_heapSegment(std::uintptr_t p)
+{ int n = find_segment32(p, 0);
+ if (p < reinterpret_cast<std::uintptr_t>(heapSegment[n]) ||
+ p >= reinterpret_cast<std::uintptr_t>(heapSegment[n]) +
+ heapSegmentSize[n]) return -1;
+ return n;
+}
+inline Page *findPage(std::uintptr_t p)
+{ int n = find_heapSegment(p);
+ if (n < 0) return NULL;
+ return reinterpret_cast<Page *>(p & -pageSize);
+}
+inline bool inCurrentPage(std::uintptr_t p)
+{ std::uintptr_t n = reinterpret_cast<std::uintptr_t>(currentPage);
+ return (p >= n &&
+ p < (n + pageSize));
+}
+inline bool inPreviousPage(std::uintptr_t p)
+{ std::uintptr_t n = reinterpret_cast<std::uintptr_t>(previousPage);
+ return (p >= n &&
+ p < (n + pageSize));
+}
+#ifdef __GNUC__
+inline int nlz(std::uint64_t x)
+{ return __builtin_clzll(x); 
+}
+#else 
+inline int nlz(std::uint64_t x)
+{ int n = 0;
+ if (x <= 0x00000000FFFFFFFFU) {n = n +32; x = x <<32;}
+ if (x <= 0x0000FFFFFFFFFFFFU) {n = n +16; x = x <<16;}
+ if (x <= 0x00FFFFFFFFFFFFFFU) {n = n + 8; x = x << 8;}
+ if (x <= 0x0FFFFFFFFFFFFFFFU) {n = n + 4; x = x << 4;}
+ if (x <= 0x3FFFFFFFFFFFFFFFU) {n = n + 2; x = x << 2;}
+ if (x <= 0x7FFFFFFFFFFFFFFFU) {n = n + 1;}
+ return n;
+}
+#endif 
+#define NLZ_DEFINED 1
+static const unsigned int maxThreads = 2; 
+extern std::mutex gc_mutex;
+declare_thread_local(threadId, uintptr_t);
+declare_thread_local(fringe, uintptr_t);
+extern std::atomic<std::uintptr_t> limit[maxThreads];
+extern std::uintptr_t limitBis[maxThreads];
+extern std::uintptr_t fringeBis[maxThreads];
+extern std::size_t request[maxThreads];
+extern LispObject result[maxThreads];
+extern std::size_t gIncrement[maxThreads];
+extern std::atomic<std::uintptr_t> gFringe;
+extern std::uintptr_t gLimit;
+extern std::uintptr_t gNext;
+extern std::uintptr_t difficult_n_bytes();
+inline Header makePaddingHeader(std::size_t n) 
+{ return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_PADDER;
+}
+inline Header makeVectorHeader(std::size_t n) 
+{ return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_VEC32;
+}
+inline std::atomic<std::uintptr_t>& firstWord(std::uintptr_t a)
+{ return ((std::atomic<std::uintptr_t> *)a)[0];
+}
+static const std::size_t CHUNK=16384;
+extern std::uintptr_t nFringe, nLimit, nNext;
+extern std::uintptr_t get_n_bytes_new(std::size_t n); 
+inline LispObject get_n_bytes(std::size_t n)
+{
+ std::uintptr_t r = fringe::get();
+ std::uintptr_t w = limit[threadId::get()].load();
+ fringe::set(fringe::get() + n);
+ if (fringe::get() <= w) return static_cast<LispObject>(r);
+ if (w != 0)
+ { std::size_t gap = w - r;
+ if (gap != 0) firstWord(r).store(makePaddingHeader(gap));
+ r = gFringe.fetch_add(CHUNK+n);
+ std::uintptr_t oldFringe = fringe::get() - n;
+ fringe::set(r + n);
+ std::uint64_t newLimit = fringe::get() + CHUNK;
+ if (newLimit <= gLimit)
+ {
+ limitBis[threadId::get()] = newLimit;
+ bool ok = limit[threadId::get()].compare_exchange_strong(w, newLimit);
+ if (ok) return static_cast<LispObject>(r);
+ }
+ gIncrement[threadId::get()] = CHUNK+n;
+ fringe::set(oldFringe);
+ }
+ else
+ {
+ std::size_t gap = limitBis[threadId::get()] - r;
+ if (gap != 0) firstWord(r).store(makePaddingHeader(gap));
+ gIncrement[threadId::get()] = 0;
+ fringe::set(r);
+ }
+ fringeBis[threadId::get()] = fringe::get();
+ request[threadId::get()] = n;
+ return static_cast<LispObject>(difficult_n_bytes());
+}
+inline void poll()
+{ std::uintptr_t w;
+ if (fringe::get() > (w = limit[threadId::get()].load()))
+ {
+ std::size_t gap = w - fringe::get();
+ if (gap != 0) firstWord(fringe::get()).store(makePaddingHeader(gap));
+ fringeBis[threadId::get()] = fringe::get();
+ request[threadId::get()] = 0;
+ gIncrement[threadId::get()] = 0;
+ (void)difficult_n_bytes();
+ }
+}
+extern std::jmp_buf *buffer_pointer;
+extern std::uintptr_t stackBases[maxThreads];
+extern std::uintptr_t stackFringes[maxThreads];
+template <typename F>
+#ifdef __GNUC__
+[[gnu::noinline]]
+#endif 
+inline void may_block(F &&action)
+{ std::jmp_buf buffer;
+ buffer_pointer = &buffer;
+ if (setjmp(buffer) == 0)
+ { stackFringes[threadId::get()] = reinterpret_cast<std::uintptr_t>(buffer);
+ action();
+ std::longjmp(buffer, 1);
+ }
+};
+template <typename F>
+#ifdef __GNUC__
+[[gnu::noinline]]
+#endif 
+inline void withRecordedStack(F &&action)
+{ std::jmp_buf buffer;
+ buffer_pointer = &buffer;
+ if (setjmp(buffer) == 0)
+ { stackFringes[threadId::get()] = reinterpret_cast<std::uintptr_t>(buffer);
+ action();
+ std::longjmp(buffer, 1);
+ }
+};
+extern std::mutex mutex_for_gc;
+extern bool gc_started;
+extern std::condition_variable cv_for_gc_idling;
+extern std::condition_variable cv_for_gc_busy;
+extern bool gc_complete;
+extern std::condition_variable cv_for_gc_complete;
+extern std::atomic<std::uint32_t> activeThreads;
+extern bool generationalGarbageCollection;
+extern void generationalGarbageCollect();
+extern void fullGarbageCollect();
+extern void setUpEmptyPage(Page *p);
+extern void setVariablesFromPage(Page *p);
+extern void saveVariablesToPage(Page *p);
+inline void garbageCollectOnBehalfOfAll()
+{
+ { std::lock_guard<std::mutex> guard(mutex_for_gc);
+ gc_complete = false;
+ gc_started = true;
+ }
+ cv_for_gc_idling.notify_all();
+ std::size_t inc = 0;
+ for (unsigned int i=0; i<maxThreads; i++)
+ { result[i] = nil;
+ inc += gIncrement[i];
+ gIncrement[i] = 0;
+ }
+ gFringe = gFringe - inc;
+ for (;;)
+ { unsigned int pendingCount = 0;
+ for (unsigned int i=0; i<maxThreads; i++)
+ { size_t n = request[i];
+ if (n != 0)
+ { uintptr_t f = fringeBis[i];
+ uintptr_t l = limitBis[i];
+ size_t gap = l - f;
+ if (n <= gap)
+ { result[i] = fringeBis[i] + TAG_VECTOR;
+ request[i] = 0;
+ firstWord(result[i]).store(makeVectorHeader(n));
+ fringeBis[i] += n;
+ gap -= n;
+ if (gap != 0)
+ firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+ }
+ else
+ { size_t gap1 = gLimit - gFringe;
+ if (n+CHUNK < gap1)
+ { firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+ result[i] = gFringe + TAG_VECTOR;
+ request[i] = 0;
+ firstWord(result[i]).store(makeVectorHeader(n));
+ fringeBis[i] = gFringe + n;
+ gFringe = limitBis[i] = limit[i] = fringeBis[i] + CHUNK;
+ }
+ else
+ { while (gNext != 0)
+ { gFringe = gNext;
+ gLimit = ((std::uintptr_t *)gFringe.load())[0];
+ gNext = ((std::uintptr_t *)gFringe.load())[1];
+ gap1 = gLimit - gFringe;
+ if (n+CHUNK < gap1)
+ { firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+ result[i] = gFringe + TAG_VECTOR;
+ request[i] = 0;
+ firstWord(result[i]).store(makeVectorHeader(n));
+ fringeBis[i] = gFringe + n;
+ gFringe = limitBis[i] = limit[i] = fringeBis[i] + CHUNK;
+ break;
+ }
+ }
+ if (gNext == 0) pendingCount++;
+ }
+ }
+ }
+ }
+ if (pendingCount == 0) break;
+ for (unsigned int i=0; i<maxThreads; i++)
+ { size_t gap = limitBis[i] - fringeBis[i];
+ if (gap != 0)
+ firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+ }
+ size_t gap = gLimit - gFringe;
+ if (gap != 0) firstWord(gFringe).store(makePaddingHeader(gap));
+ if (!generationalGarbageCollection ||
+ !garbage_collection_permitted ||
+ previousPage == NULL)
+ { if (busyPagesCount >= freePagesCount+mostlyFreePagesCount)
+ { std::cout << "@@ full GC needed\n";
+ fullGarbageCollect();
+ }
+ else
+ {
+ if (previousPage == NULL) busyPages++;
+ previousPage = currentPage;
+ previousPage->pageHeader.pageClass = previousPageTag; 
+ if (mostlyFreePages != NULL)
+ { currentPage = mostlyFreePages;
+ mostlyFreePages = mostlyFreePages->pageHeader.chain;
+ mostlyFreePagesCount--;
+ }
+ else
+ { currentPage = freePages;
+ freePages = freePages->pageHeader.chain;
+ freePagesCount--;
+ }
+ currentPage->pageHeader.pageClass = currentPageTag;
+ currentPage->pageHeader.chain = busyPages;
+ busyPages = currentPage;
+ busyPagesCount++;
+ uintptr_t pFringe = currentPage->pageHeader.fringe;
+ uintptr_t pLimit = currentPage->pageHeader.heaplimit;
+ gFringe = pFringe;
+ gLimit = pLimit;
+ for (unsigned int k=0; k<maxThreads; k++)
+ limit[k] = fringeBis[k] = limitBis[k] = gFringe;
+ gNext = 0;
+ }
+ }
+ else
+ { std::cout << "@@ minor GC needed\n";
+ generationalGarbageCollect();
+ }
+ }
+ { std::unique_lock<std::mutex> lock(mutex_for_gc);
+ cv_for_gc_busy.wait(lock,
+ []{ std::uint32_t n = activeThreads.load();
+ return (n & 0xff) == ((n>>8) & 0xff) - 1;
+ });
+ }
+ { std::lock_guard<std::mutex> guard(mutex_for_gc);
+ gc_started = false;
+ activeThreads.fetch_add(0x0000001);
+ gc_complete = true;
+ }
+ cv_for_gc_complete.notify_all();
+}
+inline void waitWhileAnotherThreadGarbageCollects()
+{
+ { std::unique_lock<std::mutex> lock(mutex_for_gc);
+ cv_for_gc_idling.wait(lock, []{ return gc_started; });
+ }
+ bool inform = false;
+ { std::lock_guard<std::mutex> guard(mutex_for_gc);
+ std::uint32_t n = activeThreads.fetch_add(0x000001);
+ if ((n & 0xff) == ((n>>8) & 0xff) - 2) inform = true;
+ }
+ if (inform) cv_for_gc_busy.notify_one();
+ { std::unique_lock<std::mutex> lock(mutex_for_gc);
+ cv_for_gc_complete.wait(lock, []{ return gc_complete; });
+ }
+ fringe::set(fringeBis[threadId::get()]);
+}
+inline std::uintptr_t difficult_n_bytes()
+{
+ withRecordedStack([&]
+ {
+ std::int32_t a = activeThreads.fetch_sub(0x000001);
+ if ((a & 0xff) > 1) waitWhileAnotherThreadGarbageCollects();
+ else garbageCollectOnBehalfOfAll();
+ });
+ fringe::set(fringeBis[threadId::get()]);
+ return result[threadId::get()] - TAG_VECTOR;
+}
+extern LispObject Lgctest_0(LispObject);
+extern LispObject Lgctest_1(LispObject, LispObject);
+extern LispObject Lgctest_2(LispObject, LispObject, LispObject);
+inline LispObject cons(LispObject a, LispObject b)
+{ LispObject r = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+ setcar(r, a);
+ setcdr(r, b);
+ return r;
+}
+inline LispObject cons_no_gc(LispObject a, LispObject b)
+{ return cons(a, b);
+}
+inline LispObject cons_gc_test(LispObject p)
+{ return p;
+}
+inline LispObject ncons(LispObject a)
+{ LispObject r = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+ setcar(r, a);
+ setcdr(r, nil);
+ return r;
+}
+inline LispObject list2(LispObject a, LispObject b)
+{ LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
+ LispObject r2 = r1 + 2*sizeof(LispObject);
+ setcar(r1, a);
+ setcar(r2, b);
+ setcdr(r1, r2);
+ setcdr(r2, nil);
+ return r1;
+}
+inline LispObject list2star(LispObject a, LispObject b, LispObject c)
+{ LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
+ LispObject r2 = r1 + 2*sizeof(LispObject);
+ setcar(r1, a);
+ setcar(r2, b);
+ setcdr(r1, r2);
+ setcdr(r2, c);
+ return r1;
+}
+inline LispObject list2starrev(LispObject c, LispObject b, LispObject a)
+{ LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
+ LispObject r2 = r1 + 2*sizeof(LispObject);
+ setcar(r1, a);
+ setcar(r2, b);
+ setcdr(r1, r2);
+ setcdr(r2, c);
+ return r1;
+}
+inline LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
+{ LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
+ LispObject r2 = r1 + 2*sizeof(LispObject);
+ LispObject r3 = r1 + 4*sizeof(LispObject);
+ setcar(r1, a);
+ setcar(r2, b);
+ setcar(r3, c);
+ setcdr(r1, r2);
+ setcdr(r2, r3);
+ setcdr(r3, d);
+ return r1;
+}
+inline LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
+{ LispObject r1 = get_n_bytes(8*sizeof(LispObject)) + TAG_CONS;
+ LispObject r2 = r1 + 2*sizeof(LispObject);
+ LispObject r3 = r1 + 4*sizeof(LispObject);
+ LispObject r4 = r1 + 6*sizeof(LispObject);
+ setcar(r1, a);
+ setcar(r2, b);
+ setcar(r3, c);
+ setcar(r4, d);
+ setcdr(r1, r2);
+ setcdr(r2, r3);
+ setcdr(r3, r4);
+ setcdr(r4, nil);
+ return r1;
+}
+inline LispObject acons(LispObject a, LispObject b, LispObject c)
+{ LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
+ LispObject r2 = r1 + 2*sizeof(LispObject);
+ setcar(r1, r2);
+ setcar(r2, a);
+ setcdr(r1, c);
+ setcdr(r2, b);
+ return r1;
+}
+inline LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
+{ return acons(a, b, c);
+}
+inline LispObject list3(LispObject a, LispObject b, LispObject c)
+{ LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
+ LispObject r2 = r1 + 2*sizeof(LispObject);
+ LispObject r3 = r1 + 4*sizeof(LispObject);
+ setcar(r1, a);
+ setcar(r2, b);
+ setcar(r3, c);
+ setcdr(r1, r2);
+ setcdr(r2, r3);
+ setcdr(r3, nil);
+ return r1;
+}
+inline LispObject list3rev(LispObject c, LispObject b, LispObject a)
+{ LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
+ LispObject r2 = r1 + 2*sizeof(LispObject);
+ LispObject r3 = r1 + 4*sizeof(LispObject);
+ setcar(r1, a);
+ setcar(r2, b);
+ setcar(r3, c);
+ setcdr(r1, r2);
+ setcdr(r2, r3);
+ setcdr(r3, nil);
+ return r1;
+}
+inline LispObject Lcons(LispObject, LispObject a, LispObject b)
+{ LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+ setcar(r1, a);
+ setcdr(r1, b);
+ return onevalue(r1);
+}
+inline LispObject Lxcons(LispObject, LispObject a, LispObject b)
+{ LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+ setcar(r1, b);
+ setcdr(r1, a);
+ return onevalue(r1);
+}
+inline LispObject Lnilfn(LispObject)
+{ return onevalue(nil);
+}
+inline LispObject Lncons(LispObject env, LispObject a)
+{ LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
+ setcar(r1, a);
+ setcdr(r1, nil);
+ return onevalue(r1);
+}
+extern void garbageCollect();
+void allocate_segment(std::size_t n);
+extern void clearPinnedMap(Page *x);
+extern std::uint64_t threadBit(unsigned int n);
+extern void setPinnedMajor(std::uintptr_t p);
+#endif 
+#else // CONSERVATIVE
+#ifndef header_allocate_h
+#define header_allocate_h 1
+#if defined THREAD_LOCAL
+inline thread_local std::uintptr_t fringe;
+inline thread_local std::uintptr_t heaplimit;
+inline thread_local std::uintptr_t vfringe;
+inline thread_local std::uintptr_t vheaplimit;
+#elif defined WINDOWS_THREADS && defined WIN32
+const inline int fringe_slot = TlsAlloc();
+const inline int heaplimit_slot = TlsAlloc();
+const inline int vfringe_slot = TlsAlloc();
+const inline int vheaplimit_slot = TlsAlloc();
+inline thread_local std::atomic<std::uintptr_t> real_heaplimit;
+inline thread_local std::atomic<std::uintptr_t> real_vheaplimit;
+class ForFringe
+{
+public:
+ operator std::uintptr_t()
+ { return (std::uintptr_t)TlsGetValue(fringe_slot);
+ };
+ ForFringe& operator= (const std::uintptr_t a)
+ { TlsSetValue(fringe_slot, (void *)a);
+ return *this;
+ };
+ ForFringe& operator+= (const std::size_t a)
+ { std::uintptr_t v = (std::uintptr_t)TlsGetValue(fringe_slot) + a;
+ TlsSetValue(fringe_slot, (void *)v);
+ return *this;
+ };
+};
+inline ForFringe fringe;
+class ForHeapLimit
+{
+public:
+ operator std::uintptr_t()
+ { return *(std::atomic<std::uintptr_t> *)TlsGetValue(heaplimit_slot);
+ };
+ ForHeapLimit& operator= (const std::uintptr_t a)
+ { TlsSetValue(heaplimit_slot, (void *)a);
+ return *this;
+ };
+ ForHeapLimit()
+ { TlsSetValue(heaplimit_slot, (void *)&real_heaplimit);
+ };
+};
+inline ForHeapLimit heaplimit;
+class ForVFringe
+{
+public:
+ operator std::uintptr_t()
+ { return (std::uintptr_t)TlsGetValue(vfringe_slot);
+ };
+ ForVFringe& operator= (const std::uintptr_t a)
+ { TlsSetValue(vfringe_slot, (void *)a);
+ return *this;
+ };
+ ForVFringe& operator+= (const std::size_t a)
+ { std::uintptr_t v = (std::uintptr_t)TlsGetValue(vfringe_slot) + a;
+ TlsSetValue(vfringe_slot, (void *)v);
+ return *this;
+ };
+};
+inline ForVFringe vfringe;
+class ForVHeapLimit
+{
+public:
+ operator std::uintptr_t()
+ { return *(std::atomic<std::uintptr_t> *)TlsGetValue(vheaplimit_slot);
+ };
+ ForVHeapLimit& operator= (const std::uintptr_t a)
+ { TlsSetValue(vheaplimit_slot, (void *)a);
+ return *this;
+ };
+ ForVHeapLimit()
+ { TlsSetValue(vheaplimit_slot, (void *)&real_heaplimit);
+ };
+};
+inline ForVHeapLimit vheaplimit;
+#elif defined ATOMIC
+inline std::atomic<std::uintptr_t> fringe;
+inline std::atomic<std::uintptr_t> heaplimit;
+inline std::atomic<std::uintptr_t> vfringe;
+inline std::atomic<std::uintptr_t> vheaplimit;
+#else
+extern std::uintptr_t fringe;
+extern std::uintptr_t heaplimit;
+extern std::uintptr_t vfringe;
+extern std::uintptr_t vheaplimit;
+#endif
+#define MIN_PAGE_SIZE 0x01000
+#define MAX_PAGE_SIZE 0x10000
+extern void get_page_size();
+extern std::size_t page_size;
+extern void set_up_signal_handlers();
+extern void *allocate_segment(std::size_t);
+extern std::size_t heap_segment_count;
+extern void *heap_segment[32];
+extern std::size_t heap_segment_size[32];
+extern std::uint64_t *heap_dirty_pages_bitmap_1[32];
+extern std::uint64_t *heap_dirty_pages_bitmap_2[32];
+extern std::size_t free_pages_count, active_pages_count;
+#define SMALL_BITMAP_SIZE (MAX_PAGE_SIZE/sizeof(uint64_t)/2)
+extern std::uint64_t heap_small_bitmaps_1[SMALL_BITMAP_SIZE+1];
+extern std::uint64_t *heap_small_bitmaps_1_ptr;
+extern std::uint64_t heap_small_bitmaps_2[SMALL_BITMAP_SIZE+1];
+extern std::uint64_t *heap_small_bitmaps_2_ptr;
+int find_heap_segment(std::uintptr_t p);
+extern bool clear_bitmap(std::size_t h);
+extern bool refresh_bitmap(std::size_t h);
+extern void garbage_collect();
+#endif 
+#endif // CONSERVATIVE
 
 
 // Code for command
