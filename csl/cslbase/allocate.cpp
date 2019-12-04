@@ -87,7 +87,7 @@ void *allocate_page(const char *why)
 void init_heap_segments(double store_size)
 //
 // This function just makes nil and the pool of page-frames available.
-// The store-size is passed in units of Kilobyte, and as a double not
+// The store-size is passed in units bytes, and as a double not
 // an integer so that overflow is not an issue.
 //
 {   pages = (void **)std::malloc(MAX_PAGES*sizeof(void *));
@@ -106,7 +106,7 @@ void init_heap_segments(double store_size)
     {   std::size_t free_space = SIXTY_FOUR_BIT ? 128000000 : 32000000;
         std::size_t request = (std::size_t)store_size;
 // By doing this in size_t I should avoid overflow
-        if (request != 0) free_space = 1024*request;
+        if (request != 0) free_space = request;
         free_space = free_space/(CSL_PAGE_SIZE+4);
         if (free_space > MAX_PAGES) free_space = MAX_PAGES;
         pages_count = heap_pages_count = vheap_pages_count = 0;
