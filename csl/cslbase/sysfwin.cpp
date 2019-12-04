@@ -42,6 +42,7 @@
 // If I am under Cygwin and I will need to use some Windows calls it
 // appears best to include this file very early - otherwise I have found
 // some confusion between cygwin and mingw entrypoints hurting me.
+#define __USE_MINGW_ANSI_STDIO 1
 #include <winsock.h>
 #include <windows.h>
 #include <sys/cygwin.h>

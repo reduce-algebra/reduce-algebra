@@ -306,23 +306,33 @@ std::uintptr_t get_n_bytes_new(std::size_t n)
             nNext = ((std::uintptr_t *)nFringe)[1];
             gap = nLimit - nFringe;
         }
-        else   // Need to allocate a further page. If I get fully cautious
-               // I will check in case I utterly run out of space. That would
-               // be a pretty extreme pathological situation.
-        {   if (mostlyFreePages != NULL)   // Use pages with pinned items 1st.
-            {   currentPage = mostlyFreePages;
+        else   // Need to allocate a further page.
+        {   Page *nextPage;
+            if (mostlyFreePages != NULL)   // Use pages with pinned items 1st.
+            {   nextPage = mostlyFreePages;
                 mostlyFreePages = mostlyFreePages->pageHeader.chain;
                 mostlyFreePagesCount--;
             }
             else
-            {   currentPage = freePages;
+            {   nextPage = freePages;
                 freePages = freePages->pageHeader.chain;
                 freePagesCount--;
             }
-// The labels the page I am allocatint into as "current".
-            currentPage->pageHeader.pageClass = currentPageTag;
-            currentPage->pageHeader.chain = busyPages;
-            busyPages = currentPage;
+// Here I carefully take the newly allocated page on the END of the list of
+// busy pages so that I will be able to scan that list sequentially and when
+// I do so I will visit objects in the order of their allocation. This is
+// needed to make the Garbage Collector work.
+            nextPage->pageHeader.pageClass = currentPageTag;
+            nextPage->pageHeader.chain = NULL;
+            if (busyPages == NULL)
+            {   busyPages = nextPage;
+                previousPage = NULL;
+            }
+            else
+            {   currentPage->pageHeader.chain = nextPage;
+                previousPage = currentPage;
+            }
+            currentPage = nextPage;
             busyPagesCount++;
             uintptr_t pFringe = currentPage->pageHeader.fringe;
             uintptr_t pLimit = currentPage->pageHeader.heaplimit;

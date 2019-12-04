@@ -1114,7 +1114,7 @@ void init_heap_segments(double d)
 
 // I first impose a minimum of K megabytes, then convert the value so that
 // I pass it in kilobytes.
-    static const double K = 8192.0; // for an 8 Gbyte default for now!!!
+    static const double K = 16384.0; // for an 16 Gbyte default for now!!!
     if (maxStoreSize != 0 && d > maxStoreSize) d = maxStoreSize;
     if (d < K*1024.0*1024.0)
         d = K*1024.0*1024.0;

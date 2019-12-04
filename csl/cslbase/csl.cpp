@@ -1389,6 +1389,7 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
     }
 }
 
+bool timeTestCons = false;
 
 void cslstart(int argc, const char *argv[], character_writer *wout)
 {   double store_size = 0.0;
@@ -2063,7 +2064,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
 
     {"-a", false, false,
-     "-a       Causes the sense of the Lisp (batchp) function to be inverted.",
+     "- a       Causes the sense of the Lisp (batchp) function to be inverted.",
      [&](std::string key, bool hasVal, std::string val)
      {   batch_flag = true;
      }
@@ -2186,7 +2187,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"-f", false, false,
      "-f       Not in use.",
      [&](std::string key, bool hasVal, std::string val)
-     {
+     {    timeTestCons = true; // Ha ha!
      }
     },
 
@@ -2701,6 +2702,18 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // rather more promptly.
 //
     fwin_pause_at_end = false;
+
+    if (timeTestCons)
+    {   clock_t c0 = std::clock();
+        LispObject a = nil;
+// This is 100M conses so on a 64-bit system that should fill up 1.6G of
+// memory. CSL will need that to be less than half, so this is looking at
+// a total heap size of 4G for success I think.
+        for (size_t i=0; i<100000000; i++)
+            a = cons(fixnum_of_int(i), a);
+        clock_t c1 = std::clock();
+        std::printf("Timing %.3f\n", ((double)c1 - (double)c0)/CLOCKS_PER_SEC);
+    }
 
 // Now if --trace/--tr has been specified set up some traced functions.
     for (auto name : tracedFunctions)

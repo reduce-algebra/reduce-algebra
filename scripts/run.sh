@@ -82,7 +82,7 @@ xWindows_NT)
     if test "x$cygwin" = "xyes"
     then
       versions="x86_64-pc-cygwin x86_64-pc-cygwin-wx \
-            x86_64-pc-cygwin-nogui \
+            x86_64-pc-cygwin-nogui x86_64-pc-cygwin-conservative \
             x86_64-pc-cygwin-debug x86_64-pc-window-wx-debug \
             x86_64-pc-cygwin-nogui-debug \
             i686-pc-cygwin i686-pc-cygwin-wx i686-pc-cygwin-nogui \
@@ -90,14 +90,14 @@ xWindows_NT)
             i686-pc-cygwin-nogui-debug"
     else
       versions="x86_64-pc-windows x86_64-pc-windows-wx \
-            x86_64-pc-windows-nogui \
+            x86_64-pc-windows-nogui x86_64-pc-cygwin-conservative \
             i686-pc-windows i686-pc-window-wx i686-pc-windows-nogui \
             x86_64-pc-windows-debug x86_64-pc-window-wx-debug \
             x86_64-pc-windows-nogui-debug \
             i686-pc-windows-debug i686-pc-windows-wx-debug \
             i686-pc-windows-nogui-debug \
             x86_64-pc-cygwin x86_64-pc-cygwin-wx \
-            x86_64-pc-cygwin-nogui \
+            x86_64-pc-cygwin-nogui x86_64-pc-cygwin-conservative \
             x86_64-pc-cygwin-debug x86_64-pc-window-wx-debug \
             x86_64-pc-cygwin-nogui-debug \
             i686-pc-cygwin i686-pc-cygwin-wx i686-pc-cygwin-nogui \
@@ -159,7 +159,8 @@ xWindows_NT)
   host0=`$here/../config.guess`
   host=`$here/findhost.sh $host0`
   for hx in "" "-debug" "-m32" "-m32-debug" "-m64" "-m64-debug" \
-            "-nogui" "-nogui-debug" "-m32-nogui" "-m32-nogui-debug" \
+            "-nogui" "-conservative" "-nogui-debug" "-m32-nogui" \
+            "-m32-nogui-debug" \
             "-m64-nogui" "-m64-nogui-debug"
   do
     if test -x $here/../cslbuild/$host$hx/csl/$ap
