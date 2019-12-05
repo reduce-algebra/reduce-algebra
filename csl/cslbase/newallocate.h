@@ -343,7 +343,6 @@ inline int nlz(std::uint64_t x)
 //static const unsigned int maxThreads = 64;
 static const unsigned int maxThreads = 2; // Nicer for debugging!
 
-extern std::mutex gc_mutex;
 // The next two values need to be thread-local. On a Windows or Cygwin
 // platform I need to access them using the Microsoft thread-local API
 // because g++ (in 2019) otherwise generates code (using emutls) which
@@ -645,7 +644,8 @@ inline void withRecordedStack(F &&action)
 
 
 
-extern std::mutex mutex_for_gc;
+extern std::mutex mutexForGc;
+extern std::mutex mutexForFreePages;
 extern bool gc_started;
 extern std::condition_variable cv_for_gc_idling;
 extern std::condition_variable cv_for_gc_busy;
@@ -697,12 +697,12 @@ extern void fullGarbageCollect();
 // The two variables are to let the underpinning variables get set up.
 // So outside GC-time a variable "gc_started" will be false, and all
 // non-key threads can go
-//      {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+//      {   std::unique_lock<std::mutex> lock(mutexForGc);
 //          gc_start_cv.wait(lock, []{ return gc_started; });
 //      }
 // followed immediately  by
 //      activeThreads++;
-//      {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+//      {   std::unique_lock<std::mutex> lock(mutexForGc);
 //          gc_end_cv.wait(lock, []{ return gc_finished; });
 //      }
 // The key thread on the other hand can go
@@ -711,7 +711,7 @@ extern void fullGarbageCollect();
 // before gc_started is seen as true, because otherwise spurious wake-ups
 // on gc_start_cv and gc_end_cv could let one of the other threads run
 // through improperly.
-//      {   std::lock_guard<std::mutex> lock(mutex_for_gc);
+//      {   std::lock_guard<std::mutex> lock(mutexForGc);
 //          gc_started = true;
 //      }
 //      gc_start_cv.notify_all();
@@ -735,7 +735,7 @@ inline void garbageCollectOnBehalfOfAll()
 // have just decremented that variable and are ready to wait on gc_started.
 // Before I release them from that I will ensure that gc_finished is false so
 // that they do not get over-enthusiastic!
-    {   std::lock_guard<std::mutex> guard(mutex_for_gc);
+    {   std::lock_guard<std::mutex> guard(mutexForGc);
         gc_complete = false;
         gc_started = true;
     }
@@ -837,15 +837,17 @@ inline void garbageCollectOnBehalfOfAll()
 // If I have some pages that contain pinned material I will use them next.
 // The reasoning behind that is that by doing so they will get scavanged
 // tolerably soon and with luck the pinned locations will end up free by then.
-                if (mostlyFreePages != NULL)
-                {   currentPage = mostlyFreePages;
-                    mostlyFreePages = mostlyFreePages->pageHeader.chain;
-                    mostlyFreePagesCount--;
-                }
-                else
-                {   currentPage = freePages;
-                    freePages = freePages->pageHeader.chain;
-                    freePagesCount--;
+                {   std::lock_guard<std::mutex> guard(mutexForFreePages);
+                    if (mostlyFreePages != NULL)
+                    {   currentPage = mostlyFreePages;
+                        mostlyFreePages = mostlyFreePages->pageHeader.chain;
+                        mostlyFreePagesCount--;
+                    }
+                    else
+                    {   currentPage = freePages;
+                        freePages = freePages->pageHeader.chain;
+                        freePagesCount--;
+                    }
                 }
                 currentPage->pageHeader.pageClass = currentPageTag;
                 currentPage->pageHeader.chain = busyPages;
@@ -874,7 +876,7 @@ inline void garbageCollectOnBehalfOfAll()
 // Now I need to be confident that the other threads have all accessed
 // gc_started. When they have they will increment activeThreads and when the
 // last one does that it will notify me.
-    {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+    {   std::unique_lock<std::mutex> lock(mutexForGc);
 // Note that if my entire system had only one thread then the condition
 // tested here would always be true and the computation would not pause at
 // all.
@@ -886,7 +888,7 @@ inline void garbageCollectOnBehalfOfAll()
 // OK, so now I know that all the other threads are ready to wait on
 // gc_finished, so I ensure that useful variables are set ready for next
 // time and release all the threads that have been idling.
-    {   std::lock_guard<std::mutex> guard(mutex_for_gc);
+    {   std::lock_guard<std::mutex> guard(mutexForGc);
         gc_started = false;
         activeThreads.fetch_add(0x0000001);
         gc_complete = true;
@@ -909,7 +911,7 @@ inline void waitWhileAnotherThreadGarbageCollects()
 // variable. It can not know how long each will take to notice that so it
 // must not clear gc_started until it has had positive confirmation that
 // all the idle threads have responded.
-    {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+    {   std::unique_lock<std::mutex> lock(mutexForGc);
         cv_for_gc_idling.wait(lock, []{ return gc_started; });
     }
 // To record that threads have paused they can then increment activeThreads
@@ -917,7 +919,7 @@ inline void waitWhileAnotherThreadGarbageCollects()
 // know that all the idle threads have got here, and I nofify the master GC
 // thread.
     bool inform = false;
-    {   std::lock_guard<std::mutex> guard(mutex_for_gc);
+    {   std::lock_guard<std::mutex> guard(mutexForGc);
         std::uint32_t n = activeThreads.fetch_add(0x000001);
         if ((n & 0xff) == ((n>>8) & 0xff) - 2) inform = true;
     }
@@ -927,7 +929,7 @@ inline void waitWhileAnotherThreadGarbageCollects()
 // it has filled in results for everybody, incremented activeThreads to
 // reflect that it is busy again and made certain that gc_started is false
 // again so that everything is tidily ready for next time.
-    {   std::unique_lock<std::mutex> lock(mutex_for_gc);
+    {   std::unique_lock<std::mutex> lock(mutexForGc);
         cv_for_gc_complete.wait(lock, []{ return gc_complete; });
     }
     fringe::set(fringeBis[threadId::get()]);
@@ -1151,6 +1153,44 @@ void allocate_segment(std::size_t n);
 extern void clearPinnedMap(Page *x);
 extern std::uint64_t threadBit(unsigned int n);
 extern void setPinnedMajor(std::uintptr_t p);
+
+//extern thread_local Page *borrowPages;
+//extern thread_local std::uintptr_t borrowFringe;
+//extern thread_local std::uintptr_t borrowLimit;
+//extern thread_local std::uintptr_t borrowNext;
+
+declare_thread_local(borrowPages, Page *);
+declare_thread_local(borrowFringe, std::uintptr_t);
+declare_thread_local(borrowLimit, std::uintptr_t);
+declare_thread_local(borrowNext, std::uintptr_t);
+
+class Borrowing
+{
+public:
+    Borrowing()
+    {   borrowPages::set(NULL);
+        borrowFringe::set(0);
+        borrowLimit::set(0);
+        borrowNext::set(0);
+    }
+    ~Borrowing()
+    {   std::lock_guard<std::mutex> lock(mutexForFreePages);
+        while (borrowPages::get() != NULL)
+        {   if (borrowPages::get()->pageHeader.pageClass == mostlyFreePageTag)
+            {   Page *w = borrowPages::get()->pageHeader.chain;
+                borrowPages::get()->pageHeader.chain = mostlyFreePages;
+                mostlyFreePages = borrowPages::get();
+                borrowPages::set(w);
+            }
+            else
+            {   Page *w = borrowPages::get()->pageHeader.chain;
+                borrowPages::get()->pageHeader.chain = freePages;
+                freePages = borrowPages::get();
+                borrowPages::set(w);
+            }
+        }
+    }
+};
 
 #endif // header_newallocate_h
 

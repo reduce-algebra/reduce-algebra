@@ -833,6 +833,7 @@ inline void zero_out(void *p)
 }
 extern LispObject borrow_basic_vector(int tag, int type, std::size_t length);
 extern LispObject borrow_vector(int tag, int type, std::size_t length);
+extern void       finished_borrowing();
 extern std::uint64_t   hash_lisp_string(LispObject s);
 extern void lose_C_def(LispObject a);
 extern bool       geq2(LispObject a, LispObject b);

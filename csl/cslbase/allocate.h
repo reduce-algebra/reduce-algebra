@@ -271,6 +271,18 @@ extern bool refresh_bitmap(std::size_t h);
 
 extern void garbage_collect();
 
+extern std::size_t borrowed_pages_count;
+extern void get_borrowed_page();
+
+class Borrowing
+{
+public:
+    Borrowing()
+    {   borrowed_pages_count = pages_count;
+        get_borrowed_page();
+    }
+};
+
 #endif // header_allocate_h
 
 // end of allocate.h

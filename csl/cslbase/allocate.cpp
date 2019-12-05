@@ -744,10 +744,10 @@ LispObject reduce_basic_vector_size(LispObject v, std::size_t len)
 // way. At present this scheme is only ever used while rehashing hash
 // tables.
 
-static std::size_t borrowed_pages_count;
+std::size_t borrowed_pages_count;
 static LispObject borrowed_vfringe, borrowed_vheaplimit;
 
-static void get_borrowed_page()
+void get_borrowed_page()
 {   if (borrowed_pages_count == 0)
     {   trace_printf("\nRun out of memory (for rehashing)\n");
 #ifdef DEBUG
@@ -761,11 +761,6 @@ static void get_borrowed_page()
         (LispObject)((char *)doubleword_align_up((std::intptr_t)p) + 8);
     borrowed_vheaplimit =
         (LispObject)((char *)borrowed_vfringe + (CSL_PAGE_SIZE-16));
-}
-
-void prepare_for_borrowing()
-{   borrowed_pages_count = pages_count;
-    get_borrowed_page();
 }
 
 LispObject borrow_basic_vector(int tag, int type, std::size_t size)

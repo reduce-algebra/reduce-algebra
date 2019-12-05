@@ -690,8 +690,9 @@ LispObject reduce_basic_vector_size(LispObject v, std::size_t len)
 // space by allocating vectors (never lists) from the half of memory that
 // the copying garbage collector is not keeping live data in at present.
 // The protocol I have is that it goes
-//      prepare_for_borrowing();
-//      ... get_vector() ... get_vector() ...
+//      {   Borrowing borrowObject;
+//          ... get_vector() ... get_vector() ...
+//      }
 // and it MUST be coded so that it can not trigger garbage collection while
 // the "borrowed" vectors are in use. It does not have any specific way of
 // indicating when the space is no longer needed, save that a subsequent
@@ -708,6 +709,9 @@ LispObject reduce_basic_vector_size(LispObject v, std::size_t len)
 // but the code to borrow memory will in fact be very similar to that used
 // during garbage collection to allocate space in the new half-space when
 // a vector needs to be evacuated to there.
+// Note that other threads might be busy allocating memory during the
+// time that one is borrowing, so they can need garbage collection. It will
+// have to wait until the use of borrowed memory is over.
 
 // Perhaps I could invent and then use an alternative protocol so that each
 // thread could do its own borrowing without messy clashes. Perhaps the main
@@ -718,14 +722,49 @@ LispObject reduce_basic_vector_size(LispObject v, std::size_t len)
 // borrowed shadow ... that starts to sound sensible to me! I will get a LOT
 // more of this code working before I worry about that detail.
 
-void prepare_for_borrowing()
-{   my_abort();
-}
+//thread_local Page *borrowPages;
+//thread_local std::uintptr_t borrowFringe;
+//thread_local std::uintptr_t borrowLimit;
+//thread_local std::uintptr_t borrowNext;
 
-// It would be a fatal error if there was not space for the borrow!
+// Here I need to arrange that if several threads each try to borrow memory
+// at the same (or overlapping) times that they end up with separate
+// chunks. I do this by letting each grab memort from mostlyFreePages and
+// freePages, but with a mutex to protect the allocation. Then when borrowing
+// is complete I push stuff back. I do not change the recorded counts of
+// free pages.
 
 LispObject borrow_n_bytes(std::size_t n)
-{   my_abort();
+{   for (;;)
+    {   size_t gap=borrowLimit::get() - borrowFringe::get();
+        if (n <= gap)
+        {   uintptr_t r = borrowFringe::get();
+            borrowFringe::set(borrowFringe::get() + n);
+            return (LispObject)r;
+        }
+        if (borrowNext::get() != 0)
+        {   borrowFringe::set(borrowNext::get());
+            borrowLimit::set(((std::uintptr_t *)borrowFringe::get())[0]);
+            borrowNext::set(((std::uintptr_t *)borrowFringe::get())[1]);
+            continue;
+        }
+// here I need to allocate a new page....
+        std::lock_guard<std::mutex> lock(mutexForFreePages);
+        Page *w;
+        if (mostlyFreePages != NULL)
+        {   w = mostlyFreePages;
+            mostlyFreePages = mostlyFreePages->pageHeader.chain;
+        }
+        else
+        {   w = freePages;
+            freePages = freePages->pageHeader.chain;
+        }
+        w->pageHeader.chain = borrowPages::get();
+        borrowPages::set(w);
+        borrowFringe::set(w->pageHeader.fringe);
+        borrowLimit::set(w->pageHeader.heaplimit);
+        borrowNext::set(0);    // BAD....
+    }
 }
 
 LispObject borrow_basic_vector(int tag, int type, std::size_t size)
@@ -969,7 +1008,7 @@ void releaseThreadNumber(unsigned int n)
 
 ThreadStartup::ThreadStartup()
 {   std::cout << "ThreadStartup" << std::endl;
-    std::lock_guard<std::mutex> lock(mutex_for_gc);
+    std::lock_guard<std::mutex> lock(mutexForGc);
     threadId::set(allocateThreadNumber());
 // The update here is just fine while I am in fact single threaded, but I
 // will need to review it when multiple threads can be in play.
@@ -978,7 +1017,7 @@ ThreadStartup::ThreadStartup()
 
 ThreadStartup::~ThreadStartup()
 {   std::cout << "~ThreadStartup" << std::endl;
-    std::lock_guard<std::mutex> lock(mutex_for_gc);
+    std::lock_guard<std::mutex> lock(mutexForGc);
     releaseThreadNumber(threadId::get());
     activeThreads.fetch_sub(0x00010101);
 }
@@ -1125,13 +1164,13 @@ void init_heap_segments(double d)
 std::uintptr_t stackBases[maxThreads];
 std::uintptr_t stackFringes[maxThreads];
 extern std::atomic<std::uint32_t> threadCount;
-std::mutex mutex_for_gc;
+std::mutex mutexForGc;
+std::mutex mutexForFreePages;
 bool gc_started;
 std::condition_variable cv_for_gc_idling;
 std::condition_variable cv_for_gc_busy;
 bool gc_complete;
 std::condition_variable cv_for_gc_complete;
-std::mutex gc_mutex;
 // fringe::get() declared in newallocate.h, as is threadId.
 std::atomic<std::uintptr_t> limit[maxThreads];
 std::uintptr_t              limitBis[maxThreads];
