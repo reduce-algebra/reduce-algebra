@@ -1655,7 +1655,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "         -knnn/ss sets the Lisp stack to use ss chunks each of which\n"
      "         is large enough that this option is basically never needed!\n"
      "         Since the system auto-expands memory as it needs to it is very\n"
-     "         rate to need to use this option.",
+     "         rare to need to use this option. See also --maxmem",
      [&](std::string key, bool hasVal, std::string val)
      {   if (!hasVal || val.length() == 0)
          {   badArgs.push_back(key);
@@ -1964,7 +1964,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 /*! options [--maxmem] \item [{\ttfamily --maxmem}] \index{{\ttfamily --maxmem}}
  * Normally this code goes back to the operating system and requests more memory
  * at any time when it feels that would be useful.This option can be used to
- * set an approximate limit on the amount it will use. 
+ * set an approximate limit on the amount it will use. See also -k 
  */
     {"--maxmem", true, true,
      "--maxmem NNN Prevent memory expansion beyond NNN.",
@@ -1986,7 +1986,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
          {   valD *= 1024.0*1024.0;
          }
          else if (std::sscanf(valS, "%lgg%n", &valD, &pos)==1 && pos==len)
-         {   valD *= 1024.0*1024.0*1024.0*1024.0;
+         {   valD *= 1024.0*1024.0*1024.0;
          }
          else
          {   badArgs.push_back(key.append(val));

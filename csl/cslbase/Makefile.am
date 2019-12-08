@@ -2299,7 +2299,7 @@ $(gensrc)/profile.dat:	$(csl)/generated-c/profile.dat
 c-code:	$(gensrc)/make.stamp
 
 $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
-		$(cslbase)/make-c-code.red
+		$(cslbase)/make-c-code.red $(cslbase)/compiler.lsp
 	chmod 664 $(gensrc)/*
 	$(TRACE)$(RM) -f $(gensrc)/make.tmp
 	touch $(gensrc)/make.tmp

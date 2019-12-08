@@ -559,7 +559,7 @@ static void real_garbage_collector()
 }
 
 // The string "why" is just a message that I can include in any message that
-// the garbage collector displays. The "std_class" indicates what sort of
+// the garbage collector displays. The "stg_class" indicates what sort of
 // memory might be running low and the cases are:
 //   GC_CONS     cons heap
 //   GC_VEC      vector heap   (and GC_BPS)
@@ -570,36 +570,9 @@ static void real_garbage_collector()
 // more.
 
 void reclaim(const char *why, int stg_class)
-{   if (pages_count != 0 ||
-        (!garbage_collection_permitted && allocate_more_memory()))
-    {   void *p;
-        char *vf, *vh;
-        switch (stg_class)
-        {
-        case GC_CONS:
-            p = pages[--pages_count];
-            space_now++;
-            zero_out(p);
-            heap_pages[heap_pages_count++] = p;
-            heaplimit = (std::intptr_t)p;
-            fringe = (LispObject)((char *)(std::uintptr_t)heaplimit + CSL_PAGE_SIZE);
-            heaplimit = (LispObject)((char *)(std::uintptr_t)heaplimit + SPARE);
-            return;
-        case GC_VEC: case GC_BPS:
-            p = pages[--pages_count];
-            space_now++;
-            zero_out(p);
-            vheap_pages[vheap_pages_count++] = p;
-            vf = (char *)p + 8;
-            vfringe = (LispObject)vf;
-            vh = vf + (CSL_PAGE_SIZE - 16);
-            vheaplimit = (LispObject)vh;
-            return;
-        default:
-        // GC_STACK, GC_USER_SOFT, GC_USER_HARD
-            break;
-        }
-    }
+{   if (stg_class != GC_USER_HARD &&
+        stg_class != GC_STACK &&
+        reset_limit_registers()) return;
     std::uint64_t t0;
     stop_after_gc = 0;
     t0 = read_clock();

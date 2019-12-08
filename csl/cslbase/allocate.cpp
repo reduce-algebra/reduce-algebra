@@ -196,6 +196,15 @@ void drop_heap_segments(void)
 
 bool allocate_more_memory()
 {   if ((init_flags & INIT_EXPANDABLE) == 0) return false;
+    if (max_store_size != 0.0)
+        {   double page_limit =
+                max_store_size/(double)CSL_PAGE_SIZE;
+            if (pages_count+heap_pages_count+vheap_pages_count >=
+                (std::size_t)page_limit)
+            {   init_flags &= ~INIT_EXPANDABLE;
+                return false;
+            }
+        }
     void *page = (void *)std::malloc((std::size_t)CSL_PAGE_SIZE);
     if (page == NULL)
     {   init_flags &= ~INIT_EXPANDABLE;
@@ -222,22 +231,25 @@ void grab_more_memory(std::size_t npages)
 // adjusted on the basis of experience with this code.
 // On systems where it is possible to measure the amount of available
 // real memory more sophisticated calculations may be possible.
-    if (init_flags & INIT_EXPANDABLE)
-    {   std::size_t ideal = ok_to_grab_memory(heap_pages_count + vheap_pages_count);
-        std::size_t more;
-        if (ideal > MAX_PAGES) ideal = MAX_PAGES;
+    if ((init_flags & INIT_EXPANDABLE) != 0)
+    {   std::size_t ideal =
+            ok_to_grab_memory(heap_pages_count + vheap_pages_count);
+// ideal is now liable to be about 3 times the amount of current active
+// memory, and is the amount that I would like to have free at the end
+// of this GC.
+        ideal += heap_pages_count + vheap_pages_count; // ideal total space
+// I have an architectural limit (well one based on the size of a vector..).
+// On a 32-bit system I could cope with up to 2GB (but almost certainly I can
+// not allocate that much, while on a 64-bit platform I allow for up to
+// 2TB which is larger than I expect to encounter for a few years yet (2019).
+        if (ideal > MAX_PAGES) ideal=MAX_PAGES;
+// Also the user may have set a limit.
         if (max_store_size != 0.0)
-        {   double page_limit = max_store_size*1024*1024/(double)CSL_PAGE_SIZE;
-// Limit memory to (about) the amount the user indicated with --max-mem
-            std::size_t plim = (std::size_t)page_limit;
+        {   std::size_t plim = (size_t)(max_store_size/(double)CSL_PAGE_SIZE);
             if (ideal > plim) ideal = plim;
         }
-        if (ideal > pages_count)
-        {   more = ideal - pages_count;
-            while (more > 0)
-            {   if (!allocate_more_memory()) break;
-                more--;
-            }
+        while (ideal > pages_count+heap_pages_count+vheap_pages_count)
+        {   if (!allocate_more_memory()) break;
         }
     }
 }

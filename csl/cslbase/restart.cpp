@@ -2527,7 +2527,7 @@ void setup(int restart_flag, double store_size)
 // The aim of keeping the heap less than half full is an heuristic and
 // could be adjusted on the basis of experience with this code.
 //
-    if (init_flags & INIT_EXPANDABLE)
+    if ((init_flags & INIT_EXPANDABLE) != 0)
     {   std::int32_t more = heap_pages_count + vheap_pages_count;
         more = 3 *more - pages_count;
         while (more-- > 0)

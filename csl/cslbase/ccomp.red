@@ -1648,10 +1648,14 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
           c!:printf("%v", car r2);
           for each a in cdr r2 do c!:printf(", %v", a) >>;
        c!:printf(");\n") >>
+!#if 0
+% The qsum package redefines simpexpt while executing a function by that
+% name in a way that might be interacting really basly with this!
     else if car r3 = c!:current_procedure then <<
        c!:printf("    %v = %s(basic_elt(env, 0)", r1, c!:current_c_name);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n") >>
+!#endif
     else if w := get(car r3, 'c!:c_entrypoint) then <<
 % For things that have a C entrypoint I will rather improperly pass NIL where
 % the code really expects its own name. This should only have a bad
@@ -2057,7 +2061,7 @@ symbolic procedure c!:insert_tailcall b;
        if car cadddr fcall = c!:current_procedure and
           length c!:current_args < 4 then <<
 % If a tail call to self then copy args for the call into the local
-% variables used at the head of the procedure.
+% variables used at the head of the procedure. I will leave this in place!
           for each p in pair(c!:current_args, caddr fcall) do
              contents := c!:assign(car p, cdr p, contents);
 % Replace the block with a itself sans the call
