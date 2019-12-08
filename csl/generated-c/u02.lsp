@@ -1,28 +1,15 @@
 
 % u02.lsp           Machine generated Lisp
 
-(c!:install "u02" 183440 9156243 2234832)
+(c!:install "u02" 80729 2973829 9096559)
 
-(c!:install 'pappl '(pappl unpkp) 8550675407748926371)
-
-(c!:install 'rnequiv '(rnequiv) 13456506203434818050)
-
-(c!:install 'general!-modular!-times '(general!-modular!-times
-current!-modulus) 12723973456730574931)
-
-(c!:install 'multdm '(multdm dmode!* times dcombine) 6516973467835205199
-)
-
-(c!:install 'lalr_lr0_move_dot '(lalr_lr0_move_dot !.) 
-8933058430108074818)
-
-(c!:install 'prin2x '(prin2x outl!*) 8707702100765069327)
-
-(c!:install 'reorder '(reorder rmultpf raddf) 12871853738173991382)
-
-(c!:install 'aconc!* '(aconc!*) 12129366969500193987)
+(c!:install 'mchk '(mchk !*sq frlis!* minus difference plus prepsqxx
+mchkopt mcharg mchkminus) 148810512295251760)
 
 (c!:install 'quotsq '(quotsq invsq multsq) 16017804956025636103)
+
+(c!:install 'tayexp!-greaterp '(tayexp!-greaterp tayexp!-lessp) 
+1123168781243193893)
 
 (c!:install '!*d2q '(!*d2q !:zerop) 2942878362772793713)
 
@@ -32,10 +19,10 @@ current!-modulus) 12723973456730574931)
 (c!:install 'qqe_qoptailp '(qqe_qoptailp (rtail ltail)) 
 17434519072488697490)
 
-(c!:install 'ibalp_emptyclausep '(ibalp_emptyclausep) 
-12892062950656430122)
-
 (c!:install 'addf '(addf addd ordpp) 589911931644006365)
+
+(c!:install 'multdm '(multdm dmode!* times dcombine) 6516973467835205199
+)
 
 (c!:install '!*q2a '(!*q2a !*nosq !*q2a1) 11555987202239149450)
 
@@ -48,6 +35,11 @@ gevcompatible1) 11196724188458402298)
 
 (c!:install 'sublistp '(sublistp) 3169363773062908815)
 
+(c!:install 'csl_normbf '(csl_normbf (!:rd!: 0 . 0) !:rd!: lsd lshift) 
+13915775592432571512)
+
+(c!:install 'round!* '(round!*) 15435073396947745909)
+
 (c!:install 'collectindices_reversed '(collectindices_reversed isanindex
 ) 15344220528776217650)
 
@@ -56,7 +48,7 @@ gevcompatible1) 11196724188458402298)
 
 (c!:install 'mo!=sprod '(mo!=sprod) 9344181336102125413)
 
-(c!:install 'reduce_pv '(reduce_pv reduce_pv0) 7786781876430233123)
+(c!:install 'pappl '(pappl unpkp) 8550675407748926371)
 
 (c!:install '!*i2mod '(!*i2mod general!-modular!-number !*modular2f) 
 15015861616903927392)
@@ -70,14 +62,9 @@ current!-modulus) 8526843358129128471)
 
 (c!:install 'getpower '(getpower expt !*sub2) 5825647195735019199)
 
-(c!:install 'aex_ctx '(aex_ctx nth) 17701972192989521900)
-
 (c!:install 'sort '(sort stable!-sortip) 17468245960117337925)
 
 (c!:install 'finde '(finde) 15015524044270863670)
-
-(c!:install 'mchk '(mchk !*sq frlis!* minus difference plus prepsqxx
-mchkopt mcharg mchkminus) 148810512295251760)
 
 (c!:install 'sfp '(sfp) 5333901289349618817)
 
@@ -93,17 +80,12 @@ mchkopt mcharg mchkminus) 148810512295251760)
 (c!:install 'mri_floorkernelp '(mri_floorkernelp kernels mri_floorp) 
 12260307348955726856)
 
-(c!:install 'ibalp_cequal '(ibalp_cequal lto_setequalq) 
-7258514506553550344)
-
 (c!:install 'get_token '(get_token ch !> !$) 9412163165595484911)
 
 (c!:install 'xsimp '(xsimp simp!* expchk) 3255895205295822210)
 
 (c!:install 'prepsqxx '(prepsqxx prepsqx negnumberchk) 
 331390757553135339)
-
-(c!:install 'i2rd!* '(i2rd!* chkint!* mkround) 5437373606316795850)
 
 (c!:install 'aeval!* '(aeval!* alglist!* reval1) 7399874288010001339)
 
@@ -136,8 +118,7 @@ lalr_item_with_rule setdiff lalr_add_lookahead) 11861106866886183000)
 
 (c!:install 'talp_varlt '(talp_varlt talp_varlt1) 5444361619200117433)
 
-(c!:install 'ibalp_cec '(ibalp_cec ibalp_emptyclausep) 
-12136049770026895052)
+(c!:install 'lprim '(lprim !*msg "***" lpriw) 7798764165975688666)
 
 (c!:install 'notstring '(notstring !  !" delall) 2964729193865468950)
 
@@ -150,8 +131,6 @@ lalr_item_with_rule setdiff lalr_add_lookahead) 11861106866886183000)
 (c!:install 'multpfsq '(multpfsq nreverse multsq) 5143380340612129390)
 
 (c!:install 'negnumberchk '(negnumberchk minus) 17451271898430660305)
-
-(c!:install 'order!: '(order!: msd) 2743596083191641400)
 
 (c!:install 'opmtch!* '(opmtch!* subfg!* opmtch) 4529636177027904564)
 
@@ -171,10 +150,14 @@ multiply!-by!-constant!-mod!-p !*n2f) 6160203573024828849)
 (c!:install 'lalr_prin_symbol '(lalr_prin_symbol "$" terminal_codes
 cdrassoc explode2uc) 11673478962445058462)
 
+(c!:install 'aex_mk '(aex_mk aex) 14887199082447899676)
+
 (c!:install 'monomisdivisibleby '(monomisdivisibleby) 
 14863886936527861088)
 
 (c!:install 'setcdr '(setcdr) 14832354553454505069)
+
+(c!:install 'powers0 '(powers0 repasc) 6537133265482714906)
 
 (c!:install 'remove!-free!-vars!-l '(remove!-free!-vars!-l !*sq prepsq!*
 remove!-free!-vars) 109993854797769662)
@@ -187,17 +170,14 @@ remove!-free!-vars) 109993854797769662)
 (c!:install 'qqe_qopaddp '(qqe_qopaddp (ladd radd)) 11458331942659716410
 )
 
-(c!:install 'setcar '(setcar) 8503541034644394161)
-
 (c!:install 'attributes '(attributes !  (!$) atts) 2379865991065383663)
-
-(c!:install 'bcprod '(bcprod !*grmod!* times bcfi bcint2op multsq
-bccheckz) 5527952162054297686)
 
 (c!:install 'fast!-row!-dim '(fast!-row!-dim) 9304921290682235866)
 
 (c!:install 'evmatrixcomp1 '(evmatrixcomp1 evmatrixcomp2 iequal) 
 1762009739234747312)
+
+(c!:install 'i2rd!* '(i2rd!* chkint!* mkround) 5437373606316795850)
 
 (c!:install 'getphystype!*sq '(getphystype!*sq getphystypesf) 
 6440093314568178873)
@@ -210,6 +190,30 @@ bccheckz) 5527952162054297686)
 
 (c!:install 'modtimes!: '(modtimes!: general!-modular!-times !*modular2f
 ) 18159281788179474687)
+
+(c!:install 'times!-in!-vector '(times!-in!-vector) 4779664854939156595)
+
+(c!:install 'gcdfd '(gcdfd dmode!* gcdfd1) 9690821169017690901)
+
+(c!:install 'cdrassoc '(cdrassoc "ASSOC trouble: " " " "assoc trouble"
+rederr) 1475441646810113968)
+
+(c!:install 'cl_atmlc '(cl_atmlc) 17505962978350274030)
+
+(c!:install 'delallasc '(delallasc nreverse) 12463333164811695390)
+
+(c!:install 'rank '(rank !*mcd degr) 13785758358482167955)
+
+(c!:install 'sizchk '(sizchk nreverse) 12235146735279254117)
+
+(c!:install 'rl_smcpknowl '(rl_smcpknowl rl_smcpknowl!* apply) 
+16284918986271660351)
+
+(c!:install 'qqe_qopheadp '(qqe_qopheadp (lhead rhead)) 
+15180717920636906257)
+
+(c!:install 'lto_hashequalq '(lto_hashequalq lto_hashid iequal) 
+9738948250641085975)
 
 
 % End of generated Lisp code

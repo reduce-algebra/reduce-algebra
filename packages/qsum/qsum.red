@@ -81,112 +81,64 @@ for all x,n such that fixp(n/2) and not(lisp !*complex) let
 
 % BESCHREIBUNG:
 %
-%      new_simpexpt ist gedacht um das Fakorisieren von Exponenten
-%      (bei on factor) zu verhindern.
-%
-%      Die alte Prozedure simpexpt wird vorher mittels
-%           copyd('original_simpexpt, 'simpexpt)
-%      gesichert. Anschlie"sen kann die neue Prozedur
-%      mittels
-%           copyd('simpexpt, 'new_simpexpt)
-%      als neuer Standard gesetzt werden. Will man dies wieder
-%      r"uckg"angig machen, so mu"s man die alte Prozedur mittels
-%           copyd('simpexpt, 'original_simpexpt)
-%      wieder als Standard defininieren.
-%
-%
-%
+%      The flag !*qsum!-simpexpt influences the behaviour of the
+%      function simpexpt. Temporarily binding it to T here avoids the
+%      need for function redefinition.
 %
 
-lisp;
-if null(getd 'original_simpexpt) then
-        copyd('original_simpexpt, 'simpexpt);
-algebraic;
+fluid '(!*qsum!-simpexpt);
 
 % ----------------------------------------------------------------------
-
-symbolic procedure new_simpexpt(u);
-begin
-        scalar !*precise, !*factor, !*exp, !*mcd, !*allfac, redefmode;
-
-        % Schalte exp ein, damit die Exponenten expandiert werden.
-        % Ausschalten von PRECISE um Vereinfachungen wie
-        %  (x*y)^k => x^k*y^k zu erreichen.
-        on exp, mcd;  off precise, allfac;  % switch-setting
-
-        if eqcar(car u, 'minus) then
-                return multsq(original_simpexpt({{'minus,1},cadr(u)}),
-                        new_simpexpt({cadar(u),cadr(u)}));
-
-        % Rufe zun"achst die Original-Prozedur auf...
-        % Da diese rekursive programmiert ist, kann sie sich selber wieder
-        % aufrufen, so da"s sie zun"achst wieder als Standard
-        % wiederherzustellen ist.
-        % Zudem ist zu verhindern, da"s Warning-messages
-        % Function has been redefined erscheinen...
-        redefmode:= !*redefmsg;
-        !*redefmsg:= nil;
-        copyd('simpexpt, 'original_simpexpt);
-
-        u:= simpexpt u;
-
-        copyd('simpexpt, 'new_simpexpt);
-
-        !*redefmsg:= redefmode;
-
-        return u;
-end;
-
 % ----------------------------------------------------------------------
-%  ----------------------------------------------------------------------
 
 % some compatibility functions for Maple sources.
 % by Winfried Neun
 
 put('polynomqq,'psopfn,'polynomqqq);
 
-algebraic procedure polynomq4(expr1,k);
-begin scalar !*exp;
-on exp;
-return polynomqq(expr1,k);
-end;
+algebraic procedure polynomq4(expr1, k);
+  begin scalar !*exp;
+    on exp;
+    return polynomqq(expr1, k);
+  end;
 
 
 % checks if expr is rational in var
-algebraic procedure type_ratpoly(expr1,var);
-begin
-scalar deno, nume;
-deno:=den expr1;
-nume:=num expr1;
-  if (polynomqq (deno,var) and polynomqq (nume,var))
-    then return t else return nil;
-end;
+algebraic procedure type_ratpoly(expr1, var);
+  begin
+    scalar deno, nume;
+    deno:=den expr1;
+    nume:=num expr1;
+    if polynomqq(deno,var) and polynomqq(nume,var) then
+      return t
+    else return nil;
+  end;
+
 flag ('(type_ratpoly),'boolean);
 
-symbolic procedure tttype_ratpoly(u,xx);
+symbolic procedure tttype_ratpoly(u, xx);
   ( if fixp xx then t else
         if not eqcar (xx , '!*sq) then  nil
           else and(polynomqqq(list(mk!*sq (numr cadr xx ./ 1),
                                   reval cadr u))
                  ,polynomqqq(list(mk!*sq (denr cadr xx ./ 1),
                                   reval cadr u)))
- ) where xx = aeval(car u);
+  ) where xx = aeval(car u);
 
 flag ('(tttype_ratpoly),'boolean);
 
 %checks if x is polynomial in var
-symbolic procedure polynomq (x,var);
-
+symbolic procedure polynomq(x, var);
  if not fixp denr simp x then nil else
  begin scalar kerns,kern,aa;
-
- kerns:=kernels !*q2f simp x;
-
- aa: if null kerns then return t;
-     kern:=first kerns;
-     kerns:=cdr kerns;
-     if not(eq (kern, var)) and depends(kern,var)
-                then return nil else go aa;
+   kerns:=kernels !*q2f simp x;
+ aa:
+   if null kerns then return t;
+   kern:=first kerns;
+   kerns:=cdr kerns;
+   if not(eq (kern, var)) and depends(kern,var) then
+     return nil
+   else go aa;
 end;
 
 flag('(polynomq),'opfn);
@@ -194,8 +146,7 @@ flag('(polynomq),'opfn);
 flag ('(polynomq type_ratpoly),'boolean);
 
 
-symbolic procedure polynomqqq (x);
-
+symbolic procedure polynomqqq x;
 (if fixp xx then t else
  if not onep denr (xx:=cadr xx) then nil
  else begin scalar kerns,kern,aa,var,fform,mvv,degg;
@@ -1083,18 +1034,12 @@ symbolic procedure qsimplify(f);
 begin
         scalar !*precise, !*factor, !*exp, !*mcd, !*gcd, !*rational,
                 redefmode, orig_bino, orig_qbin, orig_qbra, orig_qfct,
-                orig_qfac, orig_qpoc;
+                orig_qfac, orig_qpoc, !*qsum!-simpexpt:=t;
         on factor, mcd, gcd;  off rational, precise;  % switch-setting
 
         if (length(f) neq 1) then
                 rederr "Wrong number of arguments in qsimp";
 
-        % Install the procedure new_simpexpt, which does more rigid
-        % simplifications of powers and save original one
-        % AND prevent redefined-messages.
-        redefmode:= !*redefmsg;
-        !*redefmsg:= nil;
-        copyd('simpexpt, 'new_simpexpt);
         orig_bino:= get('binomial,    'simpfn);
         put('binomial,    'simpfn, 'qsimpcomb_binomial);
 
@@ -1125,10 +1070,6 @@ begin
         put('qfactorial,  'simpfn, orig_qfct);
         put('qfac,        'simpfn, orig_qfac);
         put('qpochhammer, 'simpfn, orig_qpoc);
-
-        % Restore old simpexpt and former !*redefmsg-mode
-        copyd('simpexpt, 'original_simpexpt);
-        !*redefmsg:= redefmode;
 
         return f;
 end;
@@ -1645,22 +1586,12 @@ put('qgosper, 'psopfn, 'qgosper);
 
 algebraic procedure qgosper_eval(a, q, k);
 begin
-        scalar !*precise, !*exp, !*factor, !*mcd, qk, pqr, f, redefmode;
+        scalar !*precise, !*exp, !*factor, !*mcd,
+               qk, pqr, f, !*qsum!-simpext := t;
         on factor, mcd; off precise;  % switch-setting
-
-        % Turn off function-has-been-redefined-messages.
-        share redefmode;
-        redefmode:= (lisp !*redefmsg);
-        lisp (!*redefmsg:= nil);
-
-        % Set new_simpexpt as standard which does more simplifications
-        % on power-terms:
-        copyd('simpexpt, 'new_simpexpt);
 
         qk:= (lisp gensym());
         f:= down_qratio(a,k);
-% qsimpcomb_simpexpt shouldn't be necessary any longer (new_simpexpt!)
-% f:= qsimpcomb_simpexpt(down_qratio(a,k), q);
 
         if (lisp !*qsum_trace) then
                 write "Applied substitution: ", q^k=k;
@@ -1683,9 +1614,6 @@ begin
         if (lisp !*qgosper_specialsol) then
                 f:= (f where (arbcomplex(~z) => 0));
 
-        % restore simpexpt and proper redefmsg-mode...
-        copyd('simpexpt, 'original_simpexpt);
-        lisp (!*redefmsg:= redefmode);
         return f;
 end$
 
@@ -1742,19 +1670,11 @@ end$
 algebraic procedure qsumrecursion_eval(f, q, k, summ, n, recrange);
 begin
         scalar !*precise, !*factor, !*exp, !*mcd, !*gcd, !*limitedfactors,
-                        redefmode, qk, qn, rk, rn, lo, hi, a, poly, sigmalist,
-                        record, pqr, fpol, solu, cert;
+                        qk, qn, rk, rn, lo, hi, a, poly, sigmalist,
+                        record, pqr, fpol, solu, cert, !*qsum!-simpexpt := t;
         timing(start); timing(qsumrecursion);
 
         on factor, mcd;  off precise, gcd, limitedfactors;  % switch-setting
-        % Turn off function-has-been-redefined-messages.
-        share redefmode;
-        redefmode:= (lisp !*redefmsg);
-        lisp (!*redefmsg:= nil);
-
-        % Set new_simpexpt as standard which does more simplifications
-        % on power-terms:
-        copyd('simpexpt, 'new_simpexpt);
 
         lo:= part(recrange, 1);
         hi:= part(recrange, 2);
@@ -1820,10 +1740,6 @@ begin
                 rec:= num rec;
         timing(qsumrecursion);
         if (lisp !*qsumrecursion_profile) then qsumrecursion_qprofile();
-
-        % restore original simpexpt and redefmsg-mode...
-        copyd('simpexpt, 'original_simpexpt);
-        lisp (!*redefmsg:= redefmode);
 
         return sub(qn=q^n, qk=q^k, rec);
 end$

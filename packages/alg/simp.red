@@ -421,7 +421,55 @@ symbolic procedure simpexpon1(u,v);
      then apply1(v,u)
     else begin scalar dmode!*,alglist!*; return apply1(v,u) end;
 
+fluid '(!*qsum!-simpexpt);
+
 symbolic procedure simpexpt u;
+   if !*qsum!-simpexpt then qsum!-simpexpt u
+   else basic!-simpexpt u;
+
+fluid '(inside!-qsum!-simpexpt!*);
+
+% qsum!-simpexp wants to arrange that when it is first entered it
+% resets a range of switches. I make it rebind inside!-qsum!-expt!* so
+% that the action there only happens on the outermost call to the function.
+% While within it it wants !*exp true and various other simplification
+% control flags in a standard state. If it changes some of those then it
+% needs to call rmsubs(), so I have two cases here, one for when it indeed
+% needs to make chanmges and the other (cheaper and simpler) for when flags
+% are already in a state that should leave it happy.
+
+symbolic procedure qsum!-simpexpt u;
+  if inside!-qsum!-simpexpt!* then qsum!-simpexpt1 u
+  else if not !*exp or !*factor or null !*mcd then
+    begin
+      scalar w :=
+        begin
+          scalar inside!-qsum!-expt!*:=t,
+                 !*precise,!*factor,!*exp:=t,!*mcd:=t,!*allfac, w;
+          rmsubs();
+          return qsum!-simpexpt1 u;
+          end;
+      rmsubs(); % Because !*exp or !*mcd or !*factor has been restored
+      return w
+    end
+  else
+    begin
+      scalar inside!-qsum!-expt!*:=t,!*precise,!*allfac;
+      return qsum!-simpexpt1 u;
+    end;
+
+% The logic here attempts to reproduce just what the original code in
+% qsum.red would have done.
+
+symbolic procedure qsum!-simpexpt1 u;
+  if eqcar(car u, 'minus) then
+    multsq(basic!-simpexpt list('(minus 1), cadr u),
+           qsum!-simpexpt1 list(cadar u, cadr u))
+  else <<
+     basic!-simpexpt u where inside!-qsum!-simpexpt!* = nil >>;
+
+
+symbolic procedure basic!-simpexpt u;
    % We suppress reordering during exponent evaluation, otherwise
    % internal parts (as in e^(a*b)) can have wrong order.
    begin scalar expon;

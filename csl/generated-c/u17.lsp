@@ -1,20 +1,103 @@
 
 % u17.lsp           Machine generated Lisp
 
-(c!:install "u17" 35248 8068667 7220859)
+(c!:install "u17" 178071 4720664 5981409)
 
-(c!:install 'xread1 '(xread1 commentlist!* cursym!* !*lpar!* !*rpar!*
-!*reduce4 type decstat !$eol!$ nxtsym!* !( !*eoldelimp times
-curescaped!* proc "Syntax error in procedure header" struct paren
-!*comma!* lambda "Improper delimiter" group "Too many right parentheses"
-unary "Redundant operator" !*!*un!*!* "Missing operator"
-"Please use parentheses around use of the unary operator" right (lambda
-paren) not member "NOT" "infix operator" endstat go endstatfn !,
-procedure "proc form" !*semicol!* !*colon!* for !*blockp nodel (
-!*rsqbkt!* !*rcbkt!* !*rsqb!*) "Too few right parentheses"
-"Please send hearn@rand.org your program!!" lispapply toknump chknewnam
-symerr scan eolcheck remcomma xread mkvar typerr delcp procstat1
-xcomment) 11814043184281624487)
+(c!:install 'simpatom '(simpatom dmode!* !:mod!: current!-modulus
+"String" "identifier" !*numval constant lispapply !:rd!: scalar rd!:simp
+!*d2q typerr lispeval mksq simp errorset!* errorp complexp getrtype) 
+2731299654662377707)
+
+(c!:install 'get_goto '(get_goto parser_goto_table) 5242891756119734055)
+
+(c!:install 'aex_subrat1 '(aex_subrat1 aex_ex sfto_qsubhor1 kernels
+aex_ctx ctx_filter aex_mk) 8596099509159613937)
+
+(c!:install 'collect_cars '(collect_cars nreverse) 13682026793595834967)
+
+(c!:install 'qremf '(qremf !*exp qremd praddf multf to negf addf ordop) 
+8572729870254090815)
+
+(c!:install 'updtemplate '(updtemplate reval!-without) 
+6684292596128315330)
+
+(c!:install 'tmsf '(tmsf sfp tmsf!*) 14540052551771722099)
+
+(c!:install 'talp_td '(talp_td talp_fargl lto_max) 3753277161145513143)
+
+(c!:install 'qqe_id!-nyt!-branchq '(qqe_id!-nyt!-branchq qqe_qtidp
+qqe_nytidp qqe_qopaddp qqe_qoptailp) 11050168470374905022)
+
+(c!:install 'pasf_vf '(pasf_vf true false (cong ncong) pasf_evalatp) 
+18406771852544693406)
+
+(c!:install 'ibalp_readclause '(ibalp_readclause true false not
+ibalp_arg2l ibalp_arg2r iequal setcar ibalp_process!-var) 
+9540077995733504917)
+
+(c!:install 'expt!-mod!-p '(expt!-mod!-p times!-mod!-p) 
+17085857477794159462)
+
+(c!:install 'omsir '(omsir name atts cd (v e c t o r) (vectorml linalg1)
+mmleq!* special_cases!* special_cases2!* valid_om!* find apply encodeir)
+ 15719045185100625031)
+
+(c!:install 'ps!:expression '(ps!:expression !:ps!: ps!:getv) 
+18283141111150797452)
+
+(c!:install 'evallessp '(evallessp evalgreaterp) 1093636265455228741)
+
+(c!:install 'dipilcomb1 '(dipilcomb1 !*gcd vbcsize evzero!? dipprod
+evsum evcomp bcprod bczero!? bcsum) 14052257147707387263)
+
+(c!:install 'mkprogn '(mkprogn progn) 16326704874711010330)
+
+(c!:install 'getmatelem '(getmatelem "matrix element" matrix "matrix"
+mat "Matrix" "not set" "positive integer" typerr rerror
+reval_without_mod nth) 1667832788066605898)
+
+(c!:install 'di_restore '(di_restore di_restore1) 7191922973657611938)
+
+(c!:install 'negate!-term '(negate!-term minus!-mod!-p) 
+15424624617406357051)
+
+(c!:install 'lalr_associativity '(lalr_associativity precedence_table) 
+5173428193707042643)
+
+(c!:install 'simplify!-filename '(simplify!-filename "/packages/"
+starts!-with list2string) 16691211218299472791)
+
+(c!:install 'wureducedpolysp '(wureducedpolysp wureducedp) 
+14055942286802406885)
+
+(c!:install 'talp_smwrmknowl '(talp_smwrmknowl !*rlsusi cl_susirmknowl
+cl_smrmknowl) 1099794248977726135)
+
+(c!:install 'setunion '(setunion) 942439817850394096)
+
+(c!:install 'cl_pnf2 '(cl_pnf2 ex all or and true false not impl repl
+equiv bex ball "cl_pnf2():" "invalid as operator" cl_pnf2!-quantifier
+cl_pnf2!-junctor rl_external apply rederr) 2844749681406684364)
+
+(c!:install 'attributesml '(attributesml ">" " " "=""" definitionurl
+vectorml "vector" """" mathml_list2string) 314911681028717662)
+
+(c!:install 'spband_matrix '(spband_matrix spm
+"Error in spband_matrix(second argument): should be an integer." list
+"Error in spband_matrix(first argument): should be single value or list."
+"Error in spband matrix(first argument): number of elements must be odd."
+quotient
+"Error in spband_matrix: too many elements. Band matrix is overflowing."
+mkempspmat rederr reval nth letmtr3) 12477874448771780044)
+
+(c!:install 'dm!-eq '(dm!-eq dm!-difference !:zerop) 
+11122949172106058183)
+
+(c!:install 'removeindices '(removeindices "u= " " x= "
+"invalid arguments to removeindices" trwrite !*physopp isanindex idlistp
+areallindices rederr2) 1411264797663108431)
+
+(c!:install 'il_simp '(il_simp il_simp1) 4935923963562041708)
 
 (c!:install 'b!:ordexp '(b!:ordexp) 6049226428041095357)
 
@@ -30,116 +113,8 @@ subfg!* linear opvalfn antisymmetric even valuechk aeval mksq fnreval
 prepsqxx formlnr simp opmtch ordn repeats permp negsq minusf) 
 17265303734153583015)
 
-(c!:install 'lex_restore_context '(lex_restore_context lex_fixed_code
-lex_next_code lex_dipthong lex_code lex_codename lex_keyword_names
-lex_cleanup) 8552250953619299359)
-
-(c!:install 'outdefr '(outdefr outref) 18442974756550478845)
-
-(c!:install 'processpartitie1 '(processpartitie1 times ext
-all_graded_der ordn processcarpartitie1 aeval nth) 5270571181269673177)
-
-(c!:install 'constsml '(constsml "<cn" " type=""real""> "
-" type=""integer""> " "> " " </cn>" constants!*
-"<cn type=""constant""> " "<ci" " type=""list""> " " type=""vector""> "
-" </ci>" printout listp) 5623348492682102215)
-
-(c!:install 'ldt!-tvar '(ldt!-tvar df) 1507920018313660544)
-
-(c!:install 'maprin '(maprin outputhandler!* overflowed!* maprint) 
-4776319739805101826)
-
-(c!:install 'findnewvars '(findnewvars genp lastpair) 935728443037538372
-)
-
-(c!:install 'xord_gradlex '(xord_gradlex xord_lex) 15896039013277011291)
-
-(c!:install 'physopaeval '(physopaeval !*sq psimpfn physopp !*q2a
-opmtch!*) 12861057458750378330)
-
-(c!:install 'contr1!-strand '(contr1!-strand contr2!-strand) 
-11639404597423064168)
-
-(c!:install 'simp!-sign '(simp!-sign reval simp!-sign1) 
-8598755088569764858)
-
-(c!:install 'sqp '(sqp sfpx) 10901859175073036387)
-
-(c!:install 'get_action '(get_action parser_action_table) 
-2610735660823891640)
-
-(c!:install 'read_typed_name '(read_typed_name cursym!* !*colon!*
-general scan read_type) 10497267313877367188)
-
-(c!:install 'mkkl '(mkkl) 18093329309246472598)
-
-(c!:install 'findremainder '(findremainder wupseudodivide) 
-405066793970175807)
-
-(c!:install 'talp_eqtp '(talp_eqtp) 12077953681667779134)
-
-(c!:install 'qqe_number!-of!-adds!-in!-qterm '(
-qqe_number!-of!-adds!-in!-qterm (ladd radd) qqe_op qqe_arg2r qqe_arg2l) 
-14869044607652472136)
-
-(c!:install 'cgp_number '(cgp_number nth) 3932898882118499463)
-
-(c!:install 'nary '(nary e power exp "<apply>" "<" "/" "</apply>" unary
-printout attributesml indent!* multi_elem) 11829697404901466361)
-
-(c!:install 'sacar '(sacar) 4142193243579579156)
-
-(c!:install 'inshisto '(inshisto codmat maxvar codhisto headhisto min) 
-11848284699196277464)
-
-(c!:install 'bcquot '(bcquot !*grmod!* !*vdpinteger quotientx bcfi
-bcint2op quotfx quotsq) 10560766879555860784)
-
-(c!:install 'bcplus!? '(bcplus!?) 7742897583963382144)
-
-(c!:install 'groebbuchcrit4t '(groebbuchcrit4t) 8809090727100979647)
-
-(c!:install 'list!+list '(list!+list nreverse !:plus) 
-3588448022400956151)
-
-(c!:install 'general!-reduce!-degree!-mod!-p '(
-general!-reduce!-degree!-mod!-p general!-modular!-minus
-general!-modular!-quotient general!-multiply!-by!-constant!-mod!-p
-general!-plus!-mod!-p mksp general!-times!-term!-mod!-p) 
-1728089144768213125)
-
-(c!:install 'update_kc_list '(update_kc_list list_assoc addf) 
-8917953687871662656)
-
-(c!:install 'aex_subrat1 '(aex_subrat1 aex_ex sfto_qsubhor1 kernels
-aex_ctx ctx_filter aex_mk) 8596099509159613937)
-
-(c!:install 'prepreform '(prepreform ordl!* factors!* prepreform1) 
-5970433628684237291)
-
-(c!:install 'exptcompare '(exptcompare) 5372125586460383598)
-
-(c!:install 'cl_smsimpl!-junct2 '(cl_smsimpl!-junct2 !*rlsichk !*rlsiso
-rl_ordatp !*rlsisocx cl_sordp rl_smmkatl lto_insert sort cl_flip) 
-10742815408394509146)
-
-(c!:install 'sf2ss '(sf2ss searchpl qsort sq2sspl lx2xx) 
-12717373165686143115)
-
-(c!:install 'ibalp_initwl '(ibalp_initwl setcar) 13150529795419341680)
-
-(c!:install 'variablesir '(variablesir char (!/ o m b v a r) omvir lex) 
-2307334160926180555)
-
-(c!:install '!*pf2wedgepf '(!*pf2wedgepf nreverse wedgefax) 
-458561407058774177)
-
-(c!:install 'deleteall '(deleteall) 8011811616758810551)
-
-(c!:install 'cstimes '(cstimes times) 13052923761714089834)
-
-(c!:install 'simprepart '(simprepart !*factor simp!* repartsq) 
-15241199411347169298)
+(c!:install 'ra_refine1 '(ra_refine1 x sfto_avgq sfto_qsub1
+ra_budancount) 4048150596571684560)
 
 
 % End of generated Lisp code
