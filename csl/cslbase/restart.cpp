@@ -2207,15 +2207,25 @@ void set_up_variables(int restart_flag)
     }
     for (auto ss : stringsToEvaluate)
     {   const char *s = ss.c_str();
-        LispObject v = make_string(s);
-        v = Lexplodec(nil, v);
-        v = Lcompress(nil, v);
-        push(v);
-        Lprin(nil, v);
-        pop(v);
-        v = Leval(nil, v);
-        term_printf(" => ");
-        Lprint(nil, v);
+        try
+        {   LispObject v = make_string(s);
+            v = Lexplodec(nil, v);
+            v = Lcompress(nil, v);
+            push(v);
+            Lprin(nil, v);
+            pop(v);
+            v = Leval(nil, v);
+            term_printf(" => ");
+            Lprint(nil, v);
+        }
+        catch (LispException &e)
+        {
+            ensure_screen();
+#ifdef WITH_GUI
+            pause_for_user();
+#endif
+            std::exit(0);
+        }
     }
 //
 // Now if I have the FWIN windowed system I look in the Lisp variables

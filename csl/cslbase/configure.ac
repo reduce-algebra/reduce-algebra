@@ -1302,7 +1302,10 @@ then
 # where there were hot-spots. If I get keen I will put in extra tests here to
 # check if the "-pg" option is at least acceptable to the compiler... but
 # for now it is something that one puts in by manually editing this file or
-# the eventual Makefile.
+# the eventual Makefile. Well if --enable-conservative is set I will use it!
+# That is because the extra costs of atomic access to memory can be extreme
+# and the impact of that hard to predict (at least for me) so I feel I need
+# profiling while I develop.
 #
 #   PROFILE="-pg"
     PROFILE=""
@@ -1310,6 +1313,13 @@ then
     CXXFLAGS="${CXXFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     LDFLAGS="${LDFLAGS} -g ${PROFILE}"
+    if test "x$enable_conservative" = "xyes"
+    then
+      CFLAGS="${CFLAGS} -pg"
+      CXXFLAGS="${CXXFLAGS} -pg"
+      DLL_CFLAGS="${DLL_CFLAGS} -pg"
+      LDFLAGS="${LDFLAGS} -pg"
+    fi
   else
     CFLAGS="$CFLAGS ${NSA} ${HIGHOPT} -Wall"
     CXXFLAGS="$CXXFLAGS ${NSA} ${HIGHOPT} -Wall"

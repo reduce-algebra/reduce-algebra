@@ -99,7 +99,7 @@
 // Memory is grabbed from the operating system in large chunks, with a few
 // hundred megabytes for the first chunk and larger ones potentially sized
 // in geometric progression, so that with a maximum of 16 chunks I can end up
-// with as much memort as can ever be useful. The limit on the total number
+// with as much memory as can ever be useful. The limit on the total number
 // of chunks used as so that given a value that might be a pointer it will
 // be possible to identify the chunk it might point within using a small
 // number of comparison operations. The mega-chunk allocation is such that the
@@ -819,8 +819,15 @@ void setUpEmptyPage(Page *p)
 // I must not clobber memory earlier than that because the first bytes of the
 // page are always needed for the pageHeader! Well what I will do is zero
 // out everything from the end of pageHeader onwards.
-    for (std::size_t i=spareBytes/64; i<2*bytesForMap; i++)
-        p->pageBody.pageBitmaps.dirty[i].store(0);
+//
+// When I had the next 2 lines in place thet added a HUGE time to system
+// startup...
+//--    for (std::size_t i=spareBytes/64; i<2*bytesForMap; i++)
+//--        p->pageBody.pageBitmaps.dirty[i].store(0);
+// I am now going to argue that before an empty page is made available to
+// "other" threads I will have plenty of memory fences, so I can avoid
+// using ones here, and furthermore there is no need to have the bitmap
+// cleared until the page is about to be used.
 }
 
 void setVariablesFromPage(Page *p)
@@ -851,8 +858,10 @@ void saveVariablesToPage(Page *p)
 // such that their addresses are in ascending order, and in consequence of
 // that allocating a new segment may shuffle existing ones in the tables.
 // So the index of a segment in the tables may not be viewed as permenant.
+//
+// Returns false and does nothing if it can not grab the memory.
 
-void allocateSegment(std::size_t n)
+bool allocateSegment(std::size_t n)
 {
 // I will round up the size to allocate so it is a multiple of the
 // page size. Note that this will be quite a large value!
@@ -862,8 +871,11 @@ void allocateSegment(std::size_t n)
 // If I have C++17 I can rely on alignment constraints and just allocate
 // using new[]
 #ifdef __cpp_aligned_new
-    r = new Page[n/pageSize];
-    my_assert(r != NULL);
+    try
+    {   r = new Page[n/pageSize];
+    } catch (std::bad_alloc &e)
+    {   return false;
+    }
     rbase = static_cast<void *>(r);
 #else // !__cpp_aligned_new
 // On older platforms I need to allocate extra memory and then use std::align
@@ -871,8 +883,12 @@ void allocateSegment(std::size_t n)
 // In this case I will need to preserve the base of the full block because
 // that will be what I will be able to free at the end.
     std::size_t N = n + pageSize - 1;
-    rbase = static_cast<void *>(new char[N]);
-    my_assert(rbase != NULL);
+    try
+    {   rbase = static_cast<void *>(new char[N]);
+    }
+    catch (std::bad_alloc &e)
+    {   return false;
+    }
     void *work = rbase;
     work = std::align(pageSize, n, work, N);
     my_assert(work != NULL);
@@ -911,6 +927,7 @@ void allocateSegment(std::size_t n)
         freePagesCount++;
     }
     std::printf("%" PRIu64 " pages available\n", (std::uint64_t)freePagesCount);
+    return true; // Success!
 }
 
 std::size_t pages_count = 0;
@@ -1148,16 +1165,37 @@ void grab_more_memory(std::size_t npages)
     }
 }
 
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <sys/sysinfo.h>
+#endif
+
 void init_heap_segments(double d)
 {   std::cout << "init_heap_segments " << d << std::endl;
-
-// I first impose a minimum of K megabytes, then convert the value so that
-// I pass it in kilobytes.
-    static const double K = 16384.0; // for an 16 Gbyte default for now!!!
-    if (maxStoreSize != 0 && d > maxStoreSize) d = maxStoreSize;
-    if (d < K*1024.0*1024.0)
-        d = K*1024.0*1024.0;
-
+#ifdef WIN32
+    MEMORYSTATUSEX s;
+    s.dwLength = sizeof(s);
+    GlobalMemoryStatusEx(&s);
+    std::size_t mem = s.ullTotalPhys;
+#else
+    struct sysinfo s;
+    sysinfo(&s);
+    std::size_t mem = s.totalram*s.mem_unit;
+#endif
+    mem /= (1024*1024);    // Physical memory now in megabytes
+    size_t g3 = 3u*1024u;  // 3Gbytes
+    if (mem <= 2*g3) mem = g3;
+    else mem -= g3;
+// I think if my machine has at most 6GB I will default to using 3GB. If
+// has more than that I will use (physmem-3G) up to the stage that I
+// use a total of 16GB. All subject to any --maxmem that the user had
+// specified.
+    static const size_t K = 16384;
+    if (K < mem) mem = K;
+    if (d == 0.0) d = 1024.0*1024.0*mem; // back to bytes
+    if (maxStoreSize != 0.0 && maxStoreSize < d) d = maxStoreSize;
+// I have to pass the amount to initHeapSegments in kilobytes.
     initHeapSegments(d/1024.0);
 }
 

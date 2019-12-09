@@ -42,7 +42,7 @@
 // that can hold up to 32 segments.
 
 extern void set_up_signal_handlers();
-extern void allocateSegment(std::size_t);
+extern bool allocateSegment(std::size_t);
 
 // Here is a layout for an 8 Mbyte page, specifying the various
 // ways in which data can be accessed. This uses a union so that the page
