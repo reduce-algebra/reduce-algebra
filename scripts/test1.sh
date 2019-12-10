@@ -11,15 +11,14 @@
 #                 debugging.
 #     --install   copy CSL results back into the main source tree as
 #                 a fresh set of reference log files
-#
-#     --debug     pass "-g" flags to CSL and Jlisp to help debugging
-#                 (well, I will use a version of CSL compiled with
-#                 --enable-debug if I can).
 #     --csl       run tests using CSL
 #     --psl       run tests using PSL
 #     --jlisp     run tests using Jlisp
 #     --cslboot   run tests using CSL "bootstrapreduce"
 #     --jlispboot run tests using Jlisp "bootstrapreduce.jar"
+#
+#     --nogui/--fox/--wx/--test/--arithlib/--conservative/--debug
+#                 test a non-default version of CSL
 #
 # It is legal and reasonable and proper to specify multiple Lisp variants to
 # be tested. If none are explicitly mentioned the code will default to
@@ -49,7 +48,6 @@ diffBw() {
 install="no"
 keep="no"
 platform=""
-debug="no"
 slow="no"
 
 csl="no"
@@ -63,6 +61,7 @@ psl="no"
 # stop if I either upperly run put of arguments (detected when $# = 0) or
 # if $1 fails to match one of the keywords.
 
+v=""
 stop="no"
 until test "$stop" = "yes"
 do
@@ -87,10 +86,6 @@ do
         exit 1
       fi
       keep="yes";
-      shift
-      ;;
-    --debug)
-      debug="yes"
       shift
       ;;
     --csl)
@@ -146,6 +141,10 @@ do
       platform="$platform psl"
       shift
       ;;
+    --nogui | --fox | --wx | --test | --arithlib | --conservative | --debug)
+      v="$v $1"
+      shift
+      ;;
     -*)
       printf "\"$1\" looks like an option but is not recognized.\n"
       printf "Stopping.\n"
@@ -164,13 +163,6 @@ then
   csl="yes"
   psl="yes"
   platform=" csl psl"
-fi
-
-if test "$debug" = "yes"
-then
-  gflag="-g"
-else
-  gflag=""
 fi
 
 loader=""
@@ -365,43 +357,11 @@ command=$2
 showname=$3
 gflag=$4
 
-fullcommand="$here/bin/$command"
-
-if test "$debug" = "yes"
-then
-  w=""
-  if test "$command" = "redcsl"
-  then
-    c1="reduce"
-  else
-    c1="bootstrapreduce"
-  fi
-# The following ugly list tries to show an order of prededence for versions
-# of Reduce that I will run if the --debug option is passed. The key idea
-# is that on Windows I will use a 64-bit cygwin versiuon in preference to
-# anything else (because I can use gdb most easily there), and in all cases
-# I will try to use a "-nogui" version since that reduces the amount of
-# complication that the Windowed interface introduces.
-  for x in "$here/cslbuild/x*cygwin-nogui-debug" \
-           "$here/cslbuild/x*cygwin-debug" \
-           "$here/cslbuild/x*cygwin-wx-debug" \
-           "$here/cslbuild/*nogui-debug" \
-           "$here/cslbuild/*debug"
-  do
-    if test -x $x/csl/$c1 && \
-       test -f $x/csl/$c1.img
-    then
-      w="$x"
-      break
-    fi
-  done
-# echo "Selected $w" 
-  fullcommand="$w/csl/$c1"
-fi
+fullcommand="$here/bin/$command $extras"
 
 mkdir -p $name-times
 
-$timeoutcmd $timecmd sh -c "$fullcommand -v -w $gflag $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timeoutcmd $timecmd sh -c "$fullcommand $v -v -w $gflag $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);

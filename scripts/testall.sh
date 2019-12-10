@@ -46,6 +46,7 @@ fi
 platform=""
 some="no"
 base=""
+extras=""
 for a in $*
 do
   case $a
@@ -62,6 +63,9 @@ do
       platform="$platform $sys"
     fi
     some="yes"
+    ;;
+  --nogui | --fox | --wx | --test | --arithlib | --conservative | --debug)
+    extras="$extras $a"
     ;;
   *)
     printf "\"$a\" is not a valid argument to this script.\n"
@@ -95,7 +99,7 @@ packages=`sed -e '/^\%/d' $here/packages/package.map | \
 for p in $packages
 do
   echo "Test package $p"
-  $here/scripts/test1.sh $* $p
+  $here/scripts/test1.sh $extras $p
 done
 
 if test "$noregressions" = "no"
@@ -105,7 +109,7 @@ then
     p=${p1%.tst}
     p=${p##*/}
     echo "Test regression case $p"
-    $here/scripts/test1.sh $* regressions $p
+    $here/scripts/test1.sh $extras regressions $p
   done
 fi
 
