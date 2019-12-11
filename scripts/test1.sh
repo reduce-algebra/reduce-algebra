@@ -12,6 +12,7 @@
 #     --install   copy CSL results back into the main source tree as
 #                 a fresh set of reference log files
 #     --csl       run tests using CSL
+#     --basecsl   use CSL but ignore the --nogui etc varient selectors
 #     --psl       run tests using PSL
 #     --jlisp     run tests using Jlisp
 #     --cslboot   run tests using CSL "bootstrapreduce"
@@ -51,6 +52,7 @@ platform=""
 slow="no"
 
 csl="no"
+basecsl="no"
 cslboot="no"
 jlisp="no"
 jlispboot="no"
@@ -96,6 +98,16 @@ do
       fi
       csl="yes"
       platform="$platform csl"
+      shift
+      ;;
+    --basecsl)
+      if test "$basecsl" = "yes"
+      then
+        printf "You should only specify --basecsl once. Stopping.\n"
+        exit 1
+      fi
+      basecsl="yes"
+      platform="$platform basecsl"
       shift
       ;;
     --cslboot)
@@ -345,7 +357,7 @@ ESCAPED_DIR=`echo $dd | sed -e 's/[\/\\\\]/\\\\&/g'`
 # CSL testing
 #######################################################################
 
-if test "$csl" = "yes" || test "$cslboot" = "yes"
+if test "$csl" = "yes" || test "$basecsl" = "yes" || test "$cslboot" = "yes"
 then
 
 # For CSL the normal and bootstrap versions will be processed almost
@@ -355,13 +367,13 @@ csltest() {
 name=$1
 command=$2
 showname=$3
-gflag=$4
+extras="$4"
 
 fullcommand="$here/bin/$command $extras"
 
 mkdir -p $name-times
 
-$timeoutcmd $timecmd sh -c "$fullcommand $v -v -w $gflag $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timeoutcmd $timecmd sh -c "$fullcommand $extras -v -w $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -400,7 +412,7 @@ fi
 
 if test "$csl" = "yes"
 then
-  csltest "csl" "redcsl" "CSL" "$gflag"
+  csltest "csl" "redcsl" "CSL" "$v"
 
   if test "$install" = "yes"
   then
@@ -410,14 +422,21 @@ then
   fi
 fi
 
-if test "$cslboot" = "yes"
+if test "$basecsl" = "yes"
 then
-  csltest "cslboot" "bootstrapreduce" "BootstrapCSL"
+  csltest "basecsl" "redcsl" "BASECSL" ""
+
+  if test "$install" = "yes"
+  then
+    cat $here/packages/$d/$p.tst > $here/xmpl/$p.tst
+    cat basecsl-times/$p.rlg basecsl-times/$p.time > $here/xmpl/$p.rlg
+    cat basecsl-times/$p.rlg basecsl-times/$p.time > $here/packages/$d/$p.rlg
+  fi
 fi
 
-if test "$csldebug" = "yes"
+if test "$cslboot" = "yes"
 then
-  csltest "csldebug" "csldebug" "csldebug"
+  csltest "cslboot" "bootstrapreduce" "BootstrapCSL" "$v"
 fi
 
 fi # CSL case
@@ -483,7 +502,6 @@ jlisptest() {
 name=$1
 command=$2
 showname=$3
-gflag=$4
 
 mkdir -p $name-times
 
@@ -493,7 +511,7 @@ then
   wh=`cygpath -m $wh`
 fi
 
-$timeoutcmd $timecmd sh -c "java -jar $wh/jlisp/$command -v -w $gflag $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timeoutcmd $timecmd sh -c "java -jar $wh/jlisp/$command -v -w $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -530,7 +548,7 @@ fi
 
 if test "$jlisp" = "yes"
 then
-  jlisptest "jlisp" "reduce.jar" "Jlisp" "$gflag"
+  jlisptest "jlisp" "reduce.jar" "Jlisp"
 fi
 
 if test "$jlispboot" = "yes"

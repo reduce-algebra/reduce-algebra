@@ -4,8 +4,10 @@
 
 # Usage:
 #   scripts/testall.sh [--noregressions]
-#                      [--install] [--keep] [--debug]
-#                      [--csl] [--psl] [--jlisp] [--cslboot] [--jlispboot]
+#                      [--install] [--keep]
+#                      [--csl] [--psl] [--jlisp] [--cslboot]
+#                      [--jlispboot] [--basecsl]
+#                         [--debug] [--wx] [--nogui] [--conservative] ...
 #
 # If present the argument "--noregressions" must come first and it
 # causes the script to avoid running the regression tests. This may be useful
@@ -53,7 +55,7 @@ do
   in
   --install | --keep | --debug)
     ;;
-  --csl | --psl | --jlisp | --cslboot | --jlispboot)
+  --csl | --basecsl | --psl | --jlisp | --cslboot | --jlispboot)
     sys=`echo $a | sed 's/--//'`
     if test "$some" = "no"
     then
@@ -69,8 +71,8 @@ do
     ;;
   *)
     printf "\"$a\" is not a valid argument to this script.\n"
-    printf "Valid options are: --csl --psl --jlisp --cslboot --jlispboot\n"
-    printf "    --noregressions --install --keep --debug\n"
+    printf "Valid options are: --csl --basecsl --psl --jlisp --cslboot --jlispboot\n"
+    printf "    --noregressions --install --keep [variants]\n"
     printf "Stopping.\n"
     exit 1
     ;;
@@ -159,6 +161,9 @@ then
     case $sys in
     csl)
       reporttime "CSL" "csl-times"
+      ;;
+    basecsl)
+      reporttime "CSL" "basecsl-times"
       ;;
     psl)
       reporttime "PSL" "psl-times"
