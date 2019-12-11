@@ -46,6 +46,7 @@ then
 fi
 
 platform=""
+plist=""
 some="no"
 base=""
 extras=""
@@ -53,10 +54,11 @@ for a in $*
 do
   case $a
   in
-  --install | --keep | --debug)
+  --install | --keep)
     ;;
   --csl | --basecsl | --psl | --jlisp | --cslboot | --jlispboot)
     sys=`echo $a | sed 's/--//'`
+    plist="$plist $a"
     if test "$some" = "no"
     then
       base="$sys"
@@ -101,7 +103,7 @@ packages=`sed -e '/^\%/d' $here/packages/package.map | \
 for p in $packages
 do
   echo "Test package $p"
-  $here/scripts/test1.sh $extras $p
+  $here/scripts/test1.sh $plist $extras $p
 done
 
 if test "$noregressions" = "no"
@@ -163,7 +165,7 @@ then
       reporttime "CSL" "csl-times"
       ;;
     basecsl)
-      reporttime "CSL" "basecsl-times"
+      reporttime "BASECSL" "basecsl-times"
       ;;
     psl)
       reporttime "PSL" "psl-times"
