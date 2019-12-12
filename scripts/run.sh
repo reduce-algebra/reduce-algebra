@@ -13,7 +13,7 @@ shift
 shift
 shift
 
-for ((;;))
+while :
 do
   case ${1:-nothing} in
   --nogui)
