@@ -51,7 +51,6 @@ do
 done
 
 version="$nogui$fox$wx$test$arithlib$conservative$debug"
-echo version=$version
 
 case "x$OS" in
 xWindows_NT)
