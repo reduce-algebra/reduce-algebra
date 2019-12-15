@@ -126,7 +126,7 @@ xWindows_NT)
 #   echo Try: -x $here/../cslbuild/$hx$version/csl/$pre$ap$suffix
     if test -x $here/../cslbuild/$hx$version/csl/$pre$ap$suffix
     then
-      exec $here/../cslbuild/$hx$version/csl/$pre$ap$suffix $xtra $(CSLFLAGS) $*
+      exec $here/../cslbuild/$hx$version/csl/$pre$ap$suffix $xtra $CSLFLAGS $*
       exit 0
     fi
   done
@@ -138,7 +138,7 @@ xWindows_NT)
 #   echo Try: -x $here/../cslbuild/$hx$version/csl/$ap.exe
     if test -x $here/../cslbuild/$hx$version/csl/$ap.exe
     then
-      exec $here/../cslbuild/$hx$version/csl/$ap.exe $xtra $(CSLFLAGS) $*
+      exec $here/../cslbuild/$hx$version/csl/$ap.exe $xtra $CSLFLAGS $*
       exit 0
     fi
   done
@@ -150,7 +150,7 @@ xWindows_NT)
   host=`$here/findhost.sh $host0`
   if test -x $here/../cslbuild/$host$version/csl/$ap
   then
-    exec $here/../cslbuild/$host$version/csl/$ap $(CSLFLAGS) $*
+    exec $here/../cslbuild/$host$version/csl/$ap $CSLFLAGS $*
     exit 0
   fi
   ;;
