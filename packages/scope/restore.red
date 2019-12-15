@@ -131,7 +131,7 @@ symbolic expr procedure arestore(list_of_names);
            avarlst:=delete(name,avarlst);
            if assoc(name,malst)
               then <<put(name,'rtype,cdr assoc(name,malst));
-                     remprop(name,'klist);
+                     remklist name;
                      remprop(name,'simpfn);
                      malst:=delete(assoc(name,malst),malst)
                    >>

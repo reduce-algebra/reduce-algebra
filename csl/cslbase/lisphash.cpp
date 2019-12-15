@@ -1178,6 +1178,7 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
         (type_of_header(vechdr(tab)) != TYPE_HASH &&
          type_of_header(vechdr(tab)) != TYPE_HASHX))
         aerror1("clrhash", tab);
+    set_hash_operations(tab);
     basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
     int sh = int_of_fixnum(basic_elt(tab, HASH_SHIFT));
     std::size_t size = ((std::size_t)1)<<(64-sh);

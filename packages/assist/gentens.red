@@ -89,7 +89,7 @@ symbolic procedure rem_value_tens u;
 symbolic procedure rem_tensor1 x;
 <<remflag(list x,'tensor); elim_names x;
     remprop(x,'kvalue);
-    remprop(x,'klist);
+    remklist x;
     remprop(x,'simpfn);
     remprop(x,'prifn);
     remprop(x,'fancy!-pprifn);

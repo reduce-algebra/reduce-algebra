@@ -134,7 +134,7 @@ module smacro;  % Support for SMACRO expansion
 % The flag !*loginlines enables reports that may help identify places where
 % some of the above issues arise.  ACN March 2013.
 
-fluid '(!*defn inlineinfo);
+fluid '(!*defn inlineinfo !*noinlines);
 
 symbolic procedure applsmacro(u,vals,name);
    % U is smacro body of form (lambda <varlist> <body>), VALS is

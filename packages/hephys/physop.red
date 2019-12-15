@@ -1073,11 +1073,11 @@ symbolic  procedure physop2sq u; %modified 1.01
         if (x:= get(u,'rvalue)) then physop2sq x
         else if idp u then !*k2q u
         else if (x:= get(car u,'psimpfn)) then
-          if physopp (x:=apply1(x,u)) then !*k2q x
+          if physopp (x:=apply1(x,u)) then !*kk2q x
           else cadr physopsm!* x
         else if get(car u,'opmtch) and
                 (x:= opmtch!* u) then physop2sq x
-        else !*k2q u
+        else !*kk2q u
       else if atom u then simp u % added 1.01
       else if car u eq '!*sq then cadr u
       else if null getphystype u then simp u % moved from top 1.01
@@ -1116,7 +1116,7 @@ symbolic procedure physopsm!* u;
             " has been flagged Physopfunction"," but is not defined"))
 % this is for fns having a physop argument and no evaluation procedure
    else if flagp(oper,'physopmapping) and !*physopp!* args then
-                v := mk!*sq !*k2q (oper . args)
+                v := mk!*sq !*kk2q (oper . args)
 %   special hack for handling of PROG constructs
    else if oper = 'prog then v := physopprog args
         else  v := aeval  u
@@ -1463,16 +1463,16 @@ rtype := getphystype v;
 if ltype neq rtype then
        rederr2('multopop,"type conflict in TIMES")
  else if (invp u = v) then res := mk!*sq !*k2q 'unit
- else if u = 'unit then res := mk!*sq !*k2q  v
- else if v = 'unit then res := mk!*sq !*k2q u
+ else if u = 'unit then res := mk!*sq !*kk2q v
+ else if v = 'unit then res := mk!*sq !*kk2q u
  else if physop!-ordop(u,v) then
-              res :=  mk!*sq !*f2q physop!-multfnc(!*k2f u,!*k2f v)
+              res :=  mk!*sq !*f2q physop!-multfnc(!*kk2f u,!*kk2f v)
  else if noncommuting(u,v) then <<x:= comm2(u,v);
                  res:= if !*anticommchk then physopplus
                           list(list('minus,list('times,v,u)),x)
                        else  physopplus
                            list(list('times,v,u),x) >>
- else  res := mk!*sq !*f2q physop!-multfnc(!*k2f v,!*k2f u);
+ else  res := mk!*sq !*f2q physop!-multfnc(!*kk2f v,!*kk2f u);
 return res
 end;
 
@@ -1547,13 +1547,13 @@ bool := if n < 0 then t else nil;
 n := if bool then abs(n) else n;
 n1 := car divide(n,2);
 n2 := cdr divide(n,2);
-if zerop n1 then return mk!*sq !*k2q
+if zerop n1 then return mk!*sq !*kk2q
             if bool then invp u else u;
 res := (1 . 1);
 for k := 1 : n1 do <<
   if scalopp u then
-     if bool then x := physop!-multf(!*k2f invp u, !*k2f invp u) . 1
-     else x := physop!-multf(!*k2f u, !*k2f u) . 1
+     if bool then x := physop!-multf(!*kk2f invp u, !*kk2f invp u) . 1
+     else x := physop!-multf(!*kk2f u, !*kk2f u) . 1
 %    if bool then  x:= list(list((invp u . 1),((invp u . 1) . 1))) . 1
 %    else x:= list(list((u . 1),((u . 1) . 1))) . 1
   else if vecopp u then
@@ -1569,7 +1569,7 @@ res := multsq(res,x)
 b:
 if zerop n2 then return mk!*sq res;
 u:= if bool then invp u else u;
-return mk!*sq multsq(res,!*k2q u)
+return mk!*sq multsq(res,!*kk2q u)
 end;
 
 
@@ -1589,7 +1589,7 @@ symbolic  procedure physopquotient args;
    rht := physopaeval rht;
    rhtype := physopp  rht;
 if rhtype then
-   if not lhtype then  lht:= mk!*sq multsq(physop2sq lht,!*k2q invp rht)
+   if not lhtype then  lht:= mk!*sq multsq(physop2sq lht,!*kk2q invp rht)
    else lht:= physoptimes list(lht,invp rht)
 else if car rht eq 'times and null deadindices rht then
            << rht := reverse cdr rht;
@@ -1680,18 +1680,20 @@ end;
 physopfn('dot,'physopdot);
 infix dot;
 precedence dot,*;
+
 symbolic procedure  physopdot args;
-begin scalar lht,rht,lhtype,rhtype,x,n,res;
-lht :=  physopaeval physopsim!*  car args;
-rht := physopaeval physopsim!* cadr args;
-lhtype := getphystype lht;
-rhtype := getphystype rht;
-if not( (lhtype and rhtype) and (lhtype eq 'vector) ) then
-   rederr2 ('physopdot,"invalid arguments to dotproduct");
-lhtype := physopp lht;
-rhtype := physopp rht;
-if rhtype then
-  if lhtype then << if !*indflg then<<
+  begin
+    scalar lht,rht,lhtype,rhtype,x,n,res;
+    lht :=  physopaeval physopsim!*  car args;
+    rht := physopaeval physopsim!* cadr args;
+    lhtype := getphystype lht;
+    rhtype := getphystype rht;
+    if not( (lhtype and rhtype) and (lhtype eq 'vector) ) then
+      rederr2 ('physopdot,"invalid arguments to dotproduct");
+    lhtype := physopp lht;
+    rhtype := physopp rht;
+    if rhtype then
+      if lhtype then << if !*indflg then <<
                            lht := insertfreeindices(lht,nil);
                            rht := insertfreeindices(rht,nil);
                            indcnt!* := indcnt!* + 1; >>
@@ -1700,47 +1702,47 @@ if rhtype then
                            rht := insertindices(rht,x);>>;
                     res := physoptimes list(lht,rht)>>
      else <<
-  if car lht eq 'minus then
+      if car lht eq 'minus then
         res := mk!*sq negsq(physop2sq physopdot list(cadr lht,rht))
-    else if car lht eq 'difference then res := mk!*sq addsq(
+      else if car lht eq 'difference then res := mk!*sq addsq(
         physop2sq physopdot list(cadr lht,rht),negsq(physop2sq
                            physopdot list(caddr lht,rht)))
-     else if car lht eq 'plus then <<
-       x := for each y in cdr lht collect physopdot list(y,rht);
-       res := reval3 append(list('plus),x)  >>
-     else if car lht  eq 'quotient then <<
+      else if car lht eq 'plus then <<
+        x := for each y in cdr lht collect physopdot list(y,rht);
+        res := reval3 append(list('plus),x)  >>
+      else if car lht  eq 'quotient then <<
              if not vecopp cadr lht  then
                rederr2('physopdot,"argument to DOT")
               else res := mk!*sq quotsq(physop2sq
                 physopdot list(cadr lht,rht),physop2sq caddr lht) >>
-     else if car lht  eq 'times then <<
+      else if car lht  eq 'times then <<
         for each y in cdr lht do
            if getphystype y  eq 'vector then x:=y;
         lht :=delete(x,cdr lht);
         res := physoptimes
         nconc(lht,list(physopdot list(x,rht))) >>
-     else rederr2('physopdot, "invalid arguments to DOT") >>;
-if not rhtype then <<
-  if car rht eq 'minus then
+      else rederr2('physopdot, "invalid arguments to DOT") >>;
+    if not rhtype then <<
+      if car rht eq 'minus then
         res := mk!*sq negsq(physop2sq physopdot list(lht,cadr rht))
-    else if car rht eq 'difference then res := mk!*sq addsq(
+      else if car rht eq 'difference then res := mk!*sq addsq(
         physop2sq physopdot list(lht,cadr rht),negsq(physop2sq
                            physopdot list(lht, caddr rht)))
-     else if car rht eq 'plus then <<
-       x := for each y in cdr rht collect physopdot list(lht,y);
-       res := reval3 append(list('plus),x)  >>
-     else if car rht  eq 'quotient then <<
-             if not vecopp cadr rht  then
-      rederr2 ('physopdot,"invalid argument to DOT")
-              else res := mk!*sq quotsq(physop2sq physopdot
+      else if car rht eq 'plus then <<
+        x := for each y in cdr rht collect physopdot list(lht,y);
+        res := reval3 append(list('plus),x)  >>
+      else if car rht  eq 'quotient then <<
+        if not vecopp cadr rht  then
+          rederr2 ('physopdot,"invalid argument to DOT")
+        else res := mk!*sq quotsq(physop2sq physopdot
                     list(lht,cadr rht),physop2sq caddr rht)  >>
-     else if car rht  eq 'times then <<
+      else if car rht  eq 'times then <<
         for each y in cdr rht do if getphystype y  eq 'vector then x:=y;
         rht :=delete(x,cdr rht);
         res := physoptimes
                nconc(rht,list(physopdot list(lht,x))) >>
-     else rederr2 ('physopdot,"invalid arguments to DOT") >>;
-return res
+      else rederr2 ('physopdot,"invalid arguments to DOT") >>;
+    return res
 end;
 
 put('dot,'phystype,'scalar);
@@ -1829,7 +1831,7 @@ if not (utype eq 'scalar) and (vtype eq 'scalar) then
 rederr2('comm2, "comm2 can only handle scalar operators");
 !*anticommchk:= nil;
 if not noncommuting(u,v) then return
-  if !*anticom then mk!*sq !*f2q physop!-multf(!*n2f 2,physop!-multfnc(!*k2f v,!*k2f u))
+  if !*anticom then mk!*sq !*f2q physop!-multf(!*n2f 2,physop!-multfnc(!*kk2f v,!*kk2f u))
   else mk!*sq (nil . 1);
 x := list(u,v);
 z := opmtch!* ('comm . x);
@@ -1846,9 +1848,9 @@ else << z1 := opmtch!* ('anticomm . x);
      >>;
 if null res then
    << !*hardstop:= t;
-      if null !*anticom then res := mk!*sq !*k2q ('comm . x)
+      if null !*anticom then res := mk!*sq !*kk2q ('comm . x)
       else << !*anticommchk := t;
-              res := mk!*sq !*k2q ('anticomm . x) >>
+              res := mk!*sq !*kk2q ('anticomm . x) >>
 >>;
 return res
 end;
@@ -1938,7 +1940,7 @@ if rhtype then
    <<
       x := comm2(lht,rht);
       if null !*anticommchk then
-         if !*hardstop then res := mk!*sq !*k2q list('anticomm,lht,rht)
+         if !*hardstop then res := mk!*sq !*kk2q list('anticomm,lht,rht)
          else res := reval3 list('plus,x,physoptimes list(2,rht,lht))
       else res := x;
    >>
@@ -2056,7 +2058,7 @@ else if physopp wave or eqcar(wave,'opapply) or %%% E.S.
                if null x then x := physopadj list(
                         opmtch!* list('opapply,adjp wave,adjp op));
                if null x then <<!*hardstop := t;
-                                res := mk!*sq !*k2q
+                                res := mk!*sq !*kk2q
                                        list('opapply,op,wave); >>
                else  res := mk!*sq physop2sq x;
              >>
@@ -2103,7 +2105,7 @@ if physopp u then
          if null x then
          <<
              !*hardstop := t;
-             res:= !*k2q list('opapply,u,v)
+             res:= !*kk2q list('opapply,u,v)
          >>
          else  res := physop2sq aeval compconj x
       >>;
@@ -2151,7 +2153,7 @@ if physopp op then
        << !*hardstop := nil;
           x:= physopapply list(u,op);
           res := if !*hardstop then mk!*sq
-                    !*k2q list('opapply,list('opapply,u,op),v)
+                    !*kk2q list('opapply,list('opapply,u,op),v)
                  else physopapply list(x,v) >>
      else res:= physopapply list(u,x)
    >>
@@ -2195,7 +2197,7 @@ else if car op eq 'times then
                            list(('times . x),physopaeval v) >>
               >>
       >>;
-     res := if !*hardstop then mk!*sq !*k2q list('opapply,
+     res := if !*hardstop then mk!*sq !*kk2q list('opapply,
                  physopaeval u,physopaeval y)
             else physopapply list(u,y);
    >>
@@ -2223,7 +2225,7 @@ symbolic procedure  physopadj arg;
 begin scalar rht,rhtype,x,n,res;
 rht :=  physopaeval physopsim!* car arg;
 rhtype := physopp rht;
-if rhtype then return mk!*sq !*k2q physopsm!* adjp rht
+if rhtype then return mk!*sq !*kk2q physopsm!* adjp rht
 else <<
   if not getphystype rht then res := aeval compconj rht
   else if car rht eq 'minus then
@@ -2243,7 +2245,7 @@ else <<
       x:= for each y in cdr rht collect physopadj list(y);
       res := physoptimes reverse x >>
   else if flagp(car rht,'physopmapping) then
-       res := mk!*sq !*k2q list(car rht, physopaeval physopadj cdr rht)
+       res := mk!*sq !*kk2q list(car rht, physopaeval physopadj cdr rht)
   else  res :=physopadj list(physopsim!* rht) >>;
 return res
 end;

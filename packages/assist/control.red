@@ -505,7 +505,7 @@ put('suppress,'stat,'rlis);
 % 5. Complementary means to CLEAR operators and functions.
 
 symbolic procedure clearop u;
-<<clear u; remopr u; remprop(u , 'kvalue);remprop(u,'klist)$
+<<clear u; remopr u; remprop(u , 'kvalue);remklist u$
   for each x in !:flaglis do
             if u eq car x then putflag(u,cadr x,0) else nil;
   for each x in !:proplis do

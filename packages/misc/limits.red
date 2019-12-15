@@ -258,11 +258,10 @@ symbolic procedure limitset(ex,x,a);
   end;
 
 symbolic procedure limit1t(ex,x,a);
-   begin scalar nnn, vvv,oldklist;
-     oldklist := get('taylor!*,'klist);
+   begin scalar nnn, vvv, oldklist := get('taylor!*,'klist);
      ex := {ex,x,a,0};
      vvv := errorset!*({'simptaylor,mkquote ex},!*backtrace);
-     put('taylor!*,'klist,oldklist);
+     resetklist('taylor!*, oldklist);
      if errorp vvv then <<if !*backtrace then break();return nil>>
       else ex := car vvv;
      if kernp ex then ex := mvar numr ex

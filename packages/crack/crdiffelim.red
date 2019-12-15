@@ -336,7 +336,7 @@ symbolic procedure unargfuns u$
 symbolic procedure clear_unargfuns u$
    for each j in u do <<%let2(car j,nil,nil,nil);
                         remprop(caar j,'simpfn);
-                        remprop(caar j,'klist);
+                        remklist caar j;
                         remprop(caar j,'kvalue)>>$
   
 symbolic procedure diff_elim u$

@@ -94,9 +94,25 @@ symbolic procedure cancel u;
 
 % ***** FUNCTIONS FOR ADDING AND MULTIPLYING STANDARD FORMS *****
 
+global '(!*trap!-non!-unique!-kernels);
+!*trap!-non!-unique!-kernels := nil;
+
 symbolic inline procedure peq(u,v);
-   %tests for equality of powers U and V;
-   u = v;
+% tests for equality of powers U and V;
+   if !*trap!-non!-unique!-kernels then <<
+% The main variables are kernels and are supposed to be kept
+% unique via ise of the 'klist property. The degrees should be
+% integers. It would be improper to assume that EQ was valid even on
+% things expected to be fixnums, and anyway there is a pathological case
+% of a degree that ends up as a bignum, so I use EQN.
+     if car u eq car v then eqn(cdr u, cdr v)
+% For a WHILE at least I will police kernel uniqueness. At the time of
+% writing the cantens test file would trigger this. By the time you read
+% the comment it may well have been updated!
+     else if car u = car v then error("non-unique kernels detected", car u)
+     else nil >>
+   else u = v;
+
 
 %symbolic procedure addf(u,v);
 %   % U and V are standard forms. Value is standard form for U+V.

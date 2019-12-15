@@ -2276,6 +2276,21 @@ profile:	bootstrapreduce.img $(USE_CORRECT_CYGWIN)
 if canrun
 	$(TRACE)mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
+	if test -f $(INLINE_DEFS); \
+	then mv $(INLINE_DEFS) old-inline-defs.dat; \
+	else touch old-inline-defs.dat; \
+	fi
+	touch $(INLINE_DEFS)
+	$(RM) -f bootstrapreduce.img
+	$(USE_CORRECT_CYGWIN) $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
+	chmod 664 $(gensrc)/*
+	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
+	then \
+	  echo "Inline definitions have not changed"; \
+	  else \
+	  $(RM) bootstrapreduce.img; \
+	  $(USE_CORRECT_CYGWIN) $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
+	fi
 	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) \
 		-w $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/profile.red \
@@ -2287,6 +2302,7 @@ if canrun
 	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
 	mv profile.dat $(gensrc)
 	chmod 664 $(gensrc)/*
+	$(USE_CORRECT_CYGWIN) $(MAKE) standard-c-code
 else !canrun
 	echo Can not profile on this platform
 endif !canrun

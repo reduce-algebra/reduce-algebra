@@ -30,7 +30,7 @@ module proc4;  % Support for REDUCE 4 procedures.
 
 fluid '(!*specification_reduce !*specification);
 
-fluid '(!*spec);
+fluid '(!*spec !*noinlines);
 
 switch spec;
 

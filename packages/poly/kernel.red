@@ -30,6 +30,52 @@ module kernel;   % Functions for operations on kernels.
 
 global '(exlist!* kprops!*);
 
+!#if (memq 'csl lispsystem!*)
+
+global '(kernhash);
+
+kernhash := mkhash(20, 3, nil);
+
+symbolic procedure fkern u;
+% Finds the unique "p-list" reference to the kernel U.  The choice of
+% the search and merge used here has a strong influence on some
+% timings.  The ordered list used here is also used by prepsq* to
+% order factors in printed output, so cannot be unilaterally changed.
+  begin
+    scalar x,y;
+    if atom u then return list(u,nil)
+    else if x := get(car u,'fkernfn) then return apply1(x,u);
+% This version maintains a single hash table of all non-atomic
+% kernels such that when a key is looked up in it a unique item will
+% be recovered. This hash table contains information that is in
+% parallel with the set of values stored via the 'klist property.
+% so klist information shoould remain exactly as it always has been.
+% however anywhere that klist information is to be discarded the
+% hash table will need an extry cleared too, so simple use of REMPROP
+% will no longer suffice - so I will provide a remklist function to
+% capture what I do need to do.
+    if null (x := gethash(u, kernhash)) then <<
+      x := list(u, nil);
+      puthash(u, kernhash, x);
+      if atom car u then <<
+         if null (car u member kprops!*) then kprops!* := car u . kprops!*;
+         put(car u, 'klist, ordad(x, get(car u, 'klist))) >>
+      else exlist!* := ordad(x, exlist!*) >>;
+    return x
+  end;
+
+symbolic procedure remklist x;
+  begin
+    for each u in get(x, 'klist) do remhash(car u, kernhash);
+    remprop(x, 'klist);
+  end;
+
+symbolic procedure resetklist(x, v);
+ << remklist x;
+    for each u in v do puthash(car u, kernhash, u);
+    put(x, 'klist, v) >>;
+
+!#else
 symbolic procedure fkern u;
    % Finds the unique "p-list" reference to the kernel U.  The choice of
    % the search and merge used here has a strong influence on some
@@ -48,6 +94,14 @@ symbolic procedure fkern u;
                   else exlist!* := y>>;
         return x
    end;
+
+symbolic inline procedure remklist x;
+  remprop(x, 'klist);
+
+symbolic procedure resetklist(x, v);
+  put(x, 'klist, v);
+
+!#endif
 
 symbolic procedure kernels u;
    % Returns list of kernels in standard form u.

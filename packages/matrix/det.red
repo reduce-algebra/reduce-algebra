@@ -51,7 +51,7 @@ flag('(array),'eval);      % Declared again for bootstrapping purposes.
 % Use the CSL hash tables...
 
 fluid '(!$hash);
-!$hash := mkhash(5,2,nil);
+!$hash := mkhash(5,3,nil);
 
 symbolic procedure matrix_gethash key;
   begin

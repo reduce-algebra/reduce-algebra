@@ -83,9 +83,14 @@ symbolic procedure tayfkern u;
     if !*tayinternal!* then return u;
     % rest of code borrowed from fkern
     y := get('taylor!*,'klist);
+% Here I will do the potentially slow search using assoc rather than
+% hash table lookup.
     x := assoc(u,y);
     if null x
       then <<x := list(u,nil);
+#if (memq 'csl lispsystem!*)
+             puthash(u, kernhash, x);
+#endif
              y := ordad(x,y);
              kprops!* := union('(taylor!*),kprops!*);
              put('taylor!*,'klist,y)>>;
@@ -241,10 +246,10 @@ symbolic procedure taylor1sq (f, varlis, var0, n);
                  nil)$
 
 symbolic procedure taylor2 (f, varlis, var0, n);
-  begin scalar result,oldklist;
-    oldklist := get('taylor!*,'klist);
+  begin
+    scalar result, oldklist := get('taylor!*, 'klist);
     result := errorset!* ({'taylor2e, mkquote f, mkquote varlis, mkquote var0, mkquote n}, nil);
-    put('taylor!*,'klist,oldklist);
+    resetklist('taylor!*, oldklist);
     if atom result
       then taylor!-error ('expansion, "(possible singularity!)")
      else return car result

@@ -456,8 +456,8 @@ symbolic procedure prload; nil;
 
  symbolic procedure cresys u$
    begin scalar r,v,w,lgl,lsub,depl!*!*,list!-sder;
-   remprop('df,'kvalue); remprop('df,'klist);
-   remprop('c,'kvalue); remprop('c,'klist);
+   remprop('df,'kvalue); remklist 'df;
+   remprop('c,'kvalue); remklist 'c;
    prload();
    rmsubs();
    depl!*:=nil;
@@ -856,7 +856,7 @@ symbolic procedure prload; nil;
 
  symbolic procedure gengen$
    begin scalar u,z,cgen,dgen; integer ngen;
-   remprop('gen,'kvalue); remprop('gen,'klist);
+   remprop('gen,'kvalue); remklist 'gen;
    foreach x in cadr uhf do u:=append(ldf!-fvar numr x,u);
    foreach x in makeset u do
      begin scalar v,w;
@@ -927,7 +927,7 @@ symbolic procedure prload; nil;
  symbolic procedure prsys$
    begin scalar v;
    terpri();
-   remprop('gl,'kvalue); remprop('gl,'klist);
+   remprop('gl,'kvalue); remklist 'gl;
    for k:=1:length car uhf do
      begin scalar z; integer l;
      z:=prepf nth(car uhf,k);
