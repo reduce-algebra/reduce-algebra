@@ -46,7 +46,8 @@ begin scalar y,z,w;
  w:=z;
  l: if domainp z then return w
     else if (not atom mvar z) and (y:=get(car mvar z, 'translate2))
-       then set_mvar(z, apply1(car y,mvar z));
+       then set_mvar(z, !*a2k apply1(car y,mvar z))
+    else set_mvar(z, !*a2k mvar z);
      z:= lc z;
      go to l;
 end;

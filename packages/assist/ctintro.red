@@ -91,31 +91,31 @@ if not(gettype fn eq 'procedure) then typerr(fn,"procedure");
   if flagp(fn,'opfn) then x:=alg_to_symb x;
   n:=length x -1;
   if not bool then <<
-     res:= if sym then sym_sign((
+     res:= if sym then sym_sign(!*kk2f(
                  if cadr ut then oper . (cadr ut . car x)
-                   else oper . car x) .** 1 .* 1 .+ nil)
-             else
+                   else oper . car x))
+             else !*kk2f
           (if cadr ut then  oper . (cadr ut . car x)
-            else oper . car x) .** 1 .* 1 .+ nil ;
+            else oper . car x);
   for i:=1:n do
-   << uu:=cadr x; aconc(res, if sym then  car sym_sign(
+   << uu:=cadr x; aconc(res, if sym then  car sym_sign(!*kk2f
                    (if cadr ut then oper . (cadr ut . uu)
-                     else oper . uu) .** 1 .* 1 .+ nil)
-                              else
+                     else oper . uu))
+                              else mksp
       (if cadr ut then  oper . (cadr ut . uu)
-          else oper . uu) .** 1 .* 1); delqip(uu,x);>>;
+          else oper . uu, 1) . 1); delqip(uu,x);>>;
                     >>
   else
- << res:=if sym then sym_sign((oper . list('list .
-      for each i in car x collect mk!*sq simp!* i)) .** 1 .* 1 .+ nil)
-           else
+ << res:=if sym then sym_sign(!*kk2f(oper . list('list .
+      for each i in car x collect mk!*sq simp!* i)))
+           else !*kk2f
         (oper . list('list .
-         for each i in car x collect mk!*sq simp!* i)) .** 1 .* 1 .+ nil;
+         for each i in car x collect mk!*sq simp!* i));
    for i:=1:n do << uu:=cadr x;
-    aconc(res, if sym then car sym_sign((oper . list('list .
-                  for each j in uu collect simp!* j)) .** 1 .* 1 .+ nil)
-                else (oper . list('list .
-                 for each i in uu collect mk!*sq simp!* i)) .** 1 .* 1 );
+    aconc(res, if sym then car sym_sign(!*kk2f(oper . list('list .
+                  for each j in uu collect simp!* j)))
+                else mksp(oper . list('list .
+                 for each i in uu collect mk!*sq simp!* i), 1) . 1 );
      delqip(uu,x);>>;
  >>;
   return
