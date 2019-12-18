@@ -281,7 +281,7 @@ symbolic procedure laplace1 u;
    if denr z neq 1 then rederr list(u,"has non-trivial denominator");
    z := numr z;
    if v neq 'lp!& then << kord!*:=cdr kord!*;
-                        z:=subla(list(v.'lp!&),z); z:=reorder z >>;
+                        z:=lpchvar(list(v.'lp!&),z) >>;
    if erfg!* then return !*kk2q list
        ('laplace, subla(list('lp!& . lpvar!*), u), lpvar!*,transvar!*);
    w:= nil ./ 1;  u:=z; !*exp:=nil;
@@ -294,6 +294,11 @@ symbolic procedure laplace1 u;
                 u:= red u >>;
    return w;
  end;
+
+symbolic procedure lpchvar(u, v);
+   if domainp v then v
+    else addf(multf(!*p2f mksp(subla(u, mvar v), ldeg v), lpchvar(u, lc v)),
+              lpchvar(u, red v));
 
 symbolic procedure lptermx  u ;
  % U is standard term, which may contain integer power of lp!&.
@@ -673,7 +678,7 @@ symbolic procedure invlap1 u;
    z := numr z;
    u := z;
    if v neq 'il!& then << kord!*:=cdr kord!*;
-                     u:=subla(list(v.'il!&),u); u:=reorder u >>;
+                     u:=lpchvar(list(v.'il!&),u)>>;
    w:= nil ./ 1;
    while u do
      if domainp u
