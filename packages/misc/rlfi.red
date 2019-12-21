@@ -216,8 +216,12 @@ procedure verbatimoff;
 
 symbolic procedure TeXaeval u;
 % Procedure replaces the AEVAL procedure in the LATEX mode
-if !*lasimp then list('TeX,aeval u)
-  else list('TeX,u);
+if !*lasimp then texify aeval u
+  else texify u;
+
+symbolic procedure texify u;
+  if numberp u then u
+  else list('TeX, u);
 
 % deklarace latex modu;
 put('TeX,'tag,'TeX);
