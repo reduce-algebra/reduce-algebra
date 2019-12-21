@@ -1,0 +1,30 @@
+Comment
+ Error because of recursion when rlfi is used;
+
+
+load_package rlfi;
+
+ 
+
+on latex;
+
+\documentstyle{article}
+\begin{document}
+ 
+
+int(log x, x, 1, 5);
+
+\begin{displaymath}
+5 \log \,5\:-4
+\end{displaymath}
+
+
+end;
+1: \begin{displaymath}
+1: 
+Time (counter 1): 150 ms
+1: 
+Quitting
+real 0.61
+user 0.28
+sys 0.08
