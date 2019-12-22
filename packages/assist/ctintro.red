@@ -77,7 +77,7 @@ symbolic procedure simpsumsym(u);
   sym:=if cdddr u then
           if cadddr u eq 'perm_sign then t;
   if sym and null permp(cdar u, ordn cdar u) then thesign:=-thesign;
-if not(gettype fn eq 'procedure) then typerr(fn,"procedure");
+if not(gettype fn memq '(procedure algebraic_procedure)) then typerr(fn,"procedure");
   ut:= select_vars car u;
   uu:=(if flagp(fn,'opfn) then <<boolfn:=t; reval x>>
           else  if car reval x eq 'minus then cdadr reval x

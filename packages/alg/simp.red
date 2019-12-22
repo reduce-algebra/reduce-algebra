@@ -358,7 +358,8 @@ symbolic procedure mkop u;
     if null u then typerr("Local variable","operator")
      else if u eq 'lambda then typerr("The symbol ""lambda""","operator")
      else if get(u, 'formfn) then typerr("Reserved word", "operator")
-     else if (x := gettype u) eq 'operator
+     % check for psopfn property added since it cannot yet be included in gettype, messes up assist
+     else if (x := gettype u) eq 'operator or get(u,'psopfn)
       then lprim list(u,"already defined as operator")
      else if x eq 'algebraic_procedure
       then lprim list(u,"already defined as algebraic procedure")

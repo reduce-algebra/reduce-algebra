@@ -43,31 +43,5 @@ fn1 a;
 fn1(a)
 
 
-
-operator op1;
-
-
-
-algebraic procedure op1; 1;
-*** op1 already defined as operator 
-
-
-
-
-op1 x;
-
-
-op1(x)
-
-
-get('op1,'simpfn);
-
-
-simpiden
-
-flagp('op1,'opfn);
-
-
-
 end;
 

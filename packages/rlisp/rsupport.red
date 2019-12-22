@@ -213,8 +213,8 @@ symbolic procedure gettype u;
    else if get(u,'simpfn) then 'operator
    % opfn property indicates an algebraic procedure
    else if flagp(u,'opfn) then 'algebraic_procedure
-   % For the moment, treat psopfn like simpfn
-   else if get(u,'psopfn) then 'operator
+   %taken out again as it messes up assist XXX For the moment, treat psopfn like simpfn
+   %else if get(u,'psopfn) then 'operator
    % what should be done about evfn?
    %% else if get(u,'evfn) then xxxxxx
    else if get(u,'avalue) then car get(u,'avalue)

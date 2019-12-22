@@ -222,7 +222,7 @@ if length u neq 3 then rederr("3 arguments required for symmetrize")
 else
 begin scalar uu,x,res,oper,fn,bool,boolfn; integer n;
   fn:= caddr u;
-  if not(gettype fn eq 'procedure) then typerr(fn,"procedure");
+  if not(gettype fn memq '(procedure algebraic_procedure)) then typerr(fn,"procedure");
   uu:=(if flagp(fn,'opfn) then <<boolfn:=t; reval x>>
           else cdr reval x) where x=car u;
   n:=length uu;

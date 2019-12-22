@@ -16,6 +16,10 @@ algebraic operator fn1;
 
 fn1 a;
 
+end;
+
+% Vice versa case needs more thinking.....
+
 
 operator op1;
 
