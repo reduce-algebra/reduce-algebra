@@ -29,6 +29,21 @@ flagp('fn1,'opfn);
 t
 
 
+clear fn1;
+
+
+
+algebraic operator fn1;
+
+
+
+fn1 a;
+
+
+fn1(a)
+
+
+
 operator op1;
 
 

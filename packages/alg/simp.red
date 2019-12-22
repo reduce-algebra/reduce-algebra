@@ -360,6 +360,8 @@ symbolic procedure mkop u;
      else if get(u, 'formfn) then typerr("Reserved word", "operator")
      else if (x := gettype u) eq 'operator
       then lprim list(u,"already defined as operator")
+     else if x eq 'algebraic_procedure
+      then lprim list(u,"already defined as algebraic procedure")
     % Allow a scalar to also be an operator.
      else if x and not(x memq '(fluid global procedure scalar))
       then typerr(u,'operator)

@@ -10,6 +10,13 @@ fn1 a;
 get('fn1,'simpfn);
 flagp('fn1,'opfn);
 
+clear fn1;
+
+algebraic operator fn1;
+
+fn1 a;
+
+
 operator op1;
 
 algebraic procedure op1; 1;
