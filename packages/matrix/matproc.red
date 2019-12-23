@@ -32,8 +32,9 @@ global '(cursym!*);
 symbolic procedure readmatproc;
    begin scalar x;
      cursym!* := 'procedure;
-     x := for each j in procstat1 'algebraic conc 
-            if eqcar(j, 'procedure) then 'matproc . j;
+     x := procstat1 'algebraic;
+     if eqcar(x, 'procedure) then x := 'matproc . x
+      else x := for each j in x conc if eqcar(j, 'procedure) then 'matproc . j;
      return x
    end;
 

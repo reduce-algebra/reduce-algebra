@@ -212,7 +212,7 @@ symbolic procedure gettype u;
    else if null atom u or null u or null idp u then 'form
    else if get(u,'simpfn) then 'operator
    % opfn property indicates an algebraic procedure
-   else if flagp(u,'opfn) then 'algebraic_procedure
+   else if flagp(u,'opfn) then 'algebraic!_procedure
    %taken out again as it messes up assist XXX For the moment, treat psopfn like simpfn
    %else if get(u,'psopfn) then 'operator
    % what should be done about evfn?
