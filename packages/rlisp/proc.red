@@ -84,9 +84,10 @@ symbolic procedure portable!-embfn(name, args, body);
 symbolic procedure mkprogn(u,v);
    if eqcar(v,'progn) then 'progn . u . cdr v else list('progn,u,v);
 
-symbolic procedure proc!-add!-info(info,body);
+symbolic procedure proc!-add!-info(name,info,body);
    if null info then body
-    else proc!-add!-info(cdr info,
+    else proc!-add!-info(name,
+      cdr info,
       mkprogn(list('put,mkquote name,mkquote caar info,mkquote cdar info),body));
 
 symbolic procedure formproc(u,vars,mode);
@@ -179,7 +180,7 @@ symbolic procedure formproc(u,vars,mode);
                               mkquote type,
                               mkquote list('lambda,varlis,body));
                  if !*defn then lispeval body >>;
-	body := proc!-add!-info(info,body);
+	body := proc!-add!-info(name,info,body);
         if not(mode = 'symbolic)
           then body :=
               mkprogn(list('flag,mkquote list name,mkquote 'opfn),body);
