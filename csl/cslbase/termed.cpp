@@ -292,6 +292,8 @@ static void quitKeyboardThread()
 }
 
 #endif // !WIN32
+
+#ifdef WIN32
 BOOL MyReadConsoleInput(DWORD *np)
 {   HANDLE events[2];
     events[0] = keyboardNeeded;
@@ -303,6 +305,7 @@ BOOL MyReadConsoleInput(DWORD *np)
 // signalled.
     return !ReadConsoleInput(consoleInputHandle, keyboardBuffer, 1, np);
 }
+#endif // WIN32
 
 int getFromKeyboard()
 {
