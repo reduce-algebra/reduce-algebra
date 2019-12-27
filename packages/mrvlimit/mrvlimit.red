@@ -146,7 +146,7 @@ symbolic procedure mrv(li,var);
     else if li='(list) then return nil
     else if li=var then return {li};
    %% operators of one argument that do not change the compatibility class:
-   %% drop the oprator
+   %% drop the operator
    if car li memq '(minus log sqrt)
      then return
        %% Shortcut for common cases of log(x), -x, sqrt(x)
