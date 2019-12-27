@@ -248,8 +248,8 @@ static bool termEnabled = false;
 // To allow for that I will arrange that whenever I am waiting for a new
 // character from the keyboard I will also wait on a pipe. When a byte
 // is available from the pipe I will terminate the thread and that will
-// allow a join to proceed. Well I can not do that on Windows because it does
-// not provide a useful select(), so there I forcibly kill the thread.
+// allow a join to proceed. Well I can not do that quite that way Windows
+// so I use a WaitForMultipleObjects on a mutex alongside the console.
 // I will do this even when EMBEDDED is true since it will arrange that
 // I am more or less always trying to read from the keyboard, and that allows
 // ^C to be detected promptly.
@@ -270,10 +270,11 @@ static std::thread keyboardThread;
 
 #ifdef WIN32
 static HANDLE keyboardThreadHandle = (HANDLE)(-1);
+static HANDLE keyboardNeeded; // a mutex
 
 static void quitKeyboardThread()
 {   while (keyboardThreadHandle == (HANDLE)(-1)) Sleep(10);
-    TerminateThread(keyboardThreadHandle, 0);
+    ReleaseMutex(keyboardNeeded);
     keyboardThread.join();
 }
 
@@ -291,14 +292,21 @@ static void quitKeyboardThread()
 }
 
 #endif // !WIN32
+BOOL MyReadConsoleInput(DWORD *np)
+{   HANDLE events[2];
+    events[0] = keyboardNeeded;
+    events[1] = consoleInputHandle;
+    if (WaitForMultipleObjects(2, events, FALSE, 0) !=
+        WAIT_OBJECT_0+1) return FALSE;
+// This should not only try to read from the consoleInputHandle when
+// there is input available and when the termination mutex has not been
+// signalled.
+    return !ReadConsoleInput(consoleInputHandle, keyboardBuffer, 1, np);
+}
 
 int getFromKeyboard()
 {
 #ifdef WIN32
-// I have so much less messing around here because on Windows I will
-// just kill this thread at system exit time. That risks leaving locks etc
-// in a messy state, but since it is when the program is exiting I do not
-// mind. 
     DWORD n;
     int down, key, ascii, unicode, ctrl;
     for (;;)
@@ -310,7 +318,7 @@ int getFromKeyboard()
 // get some more. If that call fails I will return EOF as an error indication.
         if ((keyboardBuffer[0].EventType != KEY_EVENT ||
              keyboardBuffer[0].Event.KeyEvent.wRepeatCount == 0) &&
-            !ReadConsoleInput(consoleInputHandle, keyboardBuffer, 1, &n))
+            !MyReadConsoleInput(&n))
         {   return EOF;
         }
 // By the time I get here keyboardBuffer will hold an event. It might be
@@ -487,9 +495,8 @@ static void keyboardThreadFunction()
         {   std::lock_guard<std::mutex> lock(keyboardMutex);
             if (c == EOF)
             {   eofSeen = true;
-                break;
+                return;              // end of thread!
             }
-            else if (c == EOF) eofSeen = true;
             else if (c == CTRL_C ||
                      c == CTRL_G ||
                      c == (CTRL_C | ALT_BIT) ||
@@ -545,7 +552,7 @@ int getcFromThread()
 // notified keyboardCondvar so that this function, which is in the main
 // thread, is released.
         while (aheadIn == aheadOut && !eofSeen) keyboardCondvar.wait(lock);
-        if (aheadIn == aheadOut) return EOF;
+        if (aheadIn == aheadOut || eofSeen) return EOF;
         ch = typeaheadBuffer[aheadOut];
         aheadOut = (aheadOut + 1) % TYPEAHEAD_MAX;
 //      if (ch >= ' ' && ch < 0x7f)
@@ -607,7 +614,8 @@ int getwcFromThread()
 #ifdef WIN32
 
 static void startKeyboardThread()
-{   keyboardThread = std::thread(keyboardThreadFunction);
+{   keyboardNeeded = CreateMutex(NULL, TRUE, NULL);
+    keyboardThread = std::thread(keyboardThreadFunction);
     std::atexit(quitKeyboardThread);
 }
 
