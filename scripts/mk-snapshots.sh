@@ -39,6 +39,10 @@
 #                                                       ACN February 2018
 #                                                           July 2019
 #                                                           September 2019
+#                                                           December 2019
+
+# [some of the access schemes that chain ssh and virtual machines etc do not
+# get path quoting right yet, but the simple cases are OK!]
 
 
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
@@ -54,6 +58,7 @@ case $@ in
   printf "where the supported 'machines' are\n"
   printf "    windows (win32, win64, winboth), macintosh, linux32,\n"
   printf "linux64 and rpi (or rpi32), rpi64.\n"
+  printf "You can also include '--rev=NNNN' to specify a revisoin to use\n"
   printf "The two Linux variants refer to ones hosted on i686 and x86_64,\n"
   printf "and 'rpi' is a Raspberry Pi running raspbian.\n"
   printf "[July 2019] rpi64 is an experiment re 64-bit Raspberry Pi\n"
@@ -157,6 +162,19 @@ case "$*" in
   ;;
 esac
 
+SVNOPT=""
+case "$*" in
+*--rev=*)
+  revision="$*"
+  revision=${revision##*--rev=}
+  revision=${revision%% *}
+  if test "$revision" != ""
+  then
+    SVNOPT="-r $revision"
+  fi
+  ;;
+esac
+
 printf "Will read profile from $DOT_SNAPSHOTS\n"
 
 if test -f $DOT_SNAPSHOTS
@@ -188,14 +206,14 @@ prepare() {
 # trunk directory on the machine coordinating the build. That makes it hard
 # to send stuff there directly, so I first put the log within
 # $REDUCE_DISTRIBUTION and then when I have done a "popd" back to my top
-# leven l0ocation I can move it to where I want it!
-    svn update | tee reduce-update.log
+# level location I can move it to where I want it!
+    svn $SVNOPT update | tee reduce-update.log
     REVISION=`svnversion`
     popd >/dev/null
     mv $REDUCE_DISTRIBUTION/reduce-update.log $SNAPSHOTS
   else
     printf "Will check out a new $REDUCE_DISTRIBUTION to use.\n"
-    svn co svn://svn.code.sf.net/p/reduce-algebra/code/trunk \
+    svn co $SVNOPT svn://svn.code.sf.net/p/reduce-algebra/code/trunk \
            $REDUCE_DISTRIBUTION > $SNAPSHOTS/reduce-checkout.log
     pushd $REDUCE_DISTRIBUTION >/dev/null
     REVISION=`svnversion`
@@ -359,7 +377,7 @@ build() {
     -macintosh)
       remove_target "${a#-}"
       ;;
-    --rc=*)
+    --rc=* | --rev=*)
       ;;
     *)
       printf "\n### Option '$a' not recognized. Stopping.\n"
