@@ -78,7 +78,6 @@
 #define PART_OF_FOX 1
 #endif // HAVE_CONFIG_H
 
-#include <stdint.h>
 
 #include "fwin.h"
 
@@ -102,6 +101,8 @@ extern int fwin_main(int argc, const char *argv[]);
 #include <cwctype>
 #include <ctime>
 #include <csignal>
+#include <thread>
+#include <chrono>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -392,13 +393,11 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
             nargs[argc+2] = NULL;
 // /usr/bin/open foo.app --args [any original arguments]
             execv("/usr/bin/open", const_cast<char * const *>(nargs));
-//
 // execv should NEVER return, but if it does I might like to at least
 // attempt to display a report including the error code.
-//
             std::fprintf(stderr,
                     "Returned from execv with error code %d\n", errno);
-            std::exit(1);
+            my_exit(1);
         }
     }
 }
@@ -422,10 +421,8 @@ BOOL CtrlHandler(DWORD x)
         case CTRL_LOGOFF_EVENT:
         case CTRL_SHUTDOWN_EVENT:
         case CTRL_BREAK_EVENT:
-//
 // I had tried the use of ExitProcess(1) here and that was not strong enough
 // to avoid program-restart! So I take drastic action with TerminateProcess.
-//
             TerminateProcess(GetCurrentProcess(), 1);
         default:
             return 0;
@@ -434,21 +431,18 @@ BOOL CtrlHandler(DWORD x)
 
 void consoleWait()
 {
-//
 // If the console had to be created specially to view this information
 // it is probable that it will close as soon as the program closes, and so
 // to give at least a minimal chance for the user to inspect it I will
-// put in a delay here.
-//
-    int i = 5;
-    std::clock_t c0;
-    while (i > 0)
-    {   char title[30];
+// put in a delay here. I will still use atexit() with this because I feel
+// reasonably confident that it does not interact with any CSL data at all
+// and so the order of invocatio nof it and any other termination processes
+// should be unimportant.
+    for (int i=5; i!=0; i--)
+    {   char title[32];
         std::sprintf(title, "Exiting after %d seconds", i);
         SetConsoleTitle(title);
-        c0 = std::clock() + CLOCKS_PER_SEC;
-        while (std::clock() < c0);
-        i--;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
 
@@ -801,7 +795,7 @@ int main(int argc, const char *argv[])
     for (i=1; i<argc; i++)
     {   if (std::strcmp(argv[i], "--my-path") == 0)
         {   std::printf("%s\n", programDir);
-            std::exit(0);
+            std::exit(0);  // Such a special case that I will exit this way.
         }
         else if (std::strcmp(argv[i], "--args") == 0) break;
     }
@@ -847,16 +841,8 @@ int main(int argc, const char *argv[])
 //
 // Note well that I detect just "--" as an entire argument here, so that
 // extended options "--option" do not interfere.
-//
-// The "--my-path" option may be useful for debugging, but probably does
-// not make much sense otherwise!
-//
         else if (std::strcmp(argv[i], "--") == 0 &&
                  windowed != 0) windowed = -1;
-        else if (std::strcmp(argv[i], "--my-path") == 0)
-        {   std::printf("%s\n", programDir);
-            std::exit(0);
-        }
     }
     if (texmacs_mode) windowed = 0;
 //
@@ -979,8 +965,7 @@ int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
     std::signal(SIGINT, sigint_handler);
 #endif // !HAVE_SIGACTION
 #endif // !EMBEDDED
-    term_setup(argv[0], colour_spec);
-    std::atexit(term_close);
+    TermSetup ts(argv[0], colour_spec);
     std::strcpy(fwin_prompt_string, "> ");
     int r = (*fwin_main)(argc, argv);
     term_close();

@@ -517,16 +517,8 @@ static void long_times1(std::uint32_t *c, std::uint32_t *a, std::uint32_t *b,
 // has all been done elsewhere. These threads never terminate, and so will
 // end up being killed when the whole program exits.
 //
-// A previous version of this code used Windows native threads on Windows and
-// pthreads elsewhere, with different synchronization code not just as between
-// those case but also between Linux and Macintosh. I now use the C++11
-// threading primitives which makes the code much more uniform. And I have
-// also gained better (albeit still basic!) understanding of multi-core
-// programming and so this time I use condition variables rather than an
-// indordinate number of semaphores. However there is still some conditional
-// compilation in the code here. If the "CILK" parallel framework is present
-// that will be used, which provides a yet higher level way of expressing
-// all that is needed.
+// If the "CILK" parallel framework is present that will be used, which
+// provides a yet higher level way of expressing all that is needed.
 
 //
 //   Karatsuba memory:

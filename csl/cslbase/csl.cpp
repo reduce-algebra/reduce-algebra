@@ -854,22 +854,23 @@ static void report_dependencies()
 
 void my_exit(int n)
 {
-//
 // This all seems a HORRID MESS. It is here because of a general need to
 // tidy up at the end of a run, and the fact that I may be running as
 // a sub-task of some other package so I can not let atexit() take the
 // strain since although I am exiting CSL here I may not be (quite yet)
 // leaving the whole of the current application.
-//
-    report_dependencies();
-#ifdef USE_MPI
-    MPI_Finalize();
-#endif
-    ensure_screen();
-#ifdef WITH_GUI
-    pause_for_user();
-#endif // WITH_GUI
-    throw n;   // I use thrown on a simple integer to causse exit with that
+// In the future there will be a yet more messy issue, in that I may have
+// several user-mode threads! So what happens here is that my_exit() JUST
+// throws an exception (with a simple integer as its payload). Each user
+// thread must catch such exceptions and, as it terminates, get a message
+// back to the thread that invoked it. Since its termination may not be
+// at a time that the creating thread is expecting a stop request that
+// is perhaps delicate. Then also when the main thread terminates it is going
+// to have to arrange that all subsidiary user threads close down so that they
+// can be joined. That is all going to be messy!
+// However in the simple case the exception will propagate down to somewhere
+// in the main program where it can lead to an exit from the system.
+    throw n;   // I use thrown on a simple integer to cause exit with that
                // value as my return code.
 }
 
@@ -877,14 +878,6 @@ static int return_code = 0;
 bool segvtrap = true;
 bool batch_flag = false;
 bool ignore_restart_fn = false;
-
-#ifdef HAVE_CRLIBM
-static unsigned long long crlibstatus = 0;
-
-static void tidy_up_crlibm()
-{   crlibm_exit(crlibstatus);
-}
-#endif
 
 #ifdef DEBUG
 
@@ -968,12 +961,7 @@ std::jmp_buf *global_jb;
 bool stop_on_error = false;
 
 static void lisp_main(void)
-{
-#ifdef HAVE_CRLIBM
-    crlibstatus = crlibm_init();
-    std::atexit(tidy_up_crlibm);
-#endif
-    trap_floating_overflow = true;
+{   trap_floating_overflow = true;
     tty_count = 0;
     while (true)
 //
@@ -1390,6 +1378,41 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
 }
 
 bool timeTestCons = false;
+
+// I have some background threads to help me, so here is the code to start
+// them up. It seems to be important to terminate detached threads (or join
+// with regular ones) before quitting, so I also cope with that.
+
+// Everybody needs to create an instance of this and keep it alive until
+// CSL is ready to exit.
+
+class KaratsubaThreads
+{
+public:
+    KaratsubaThreads()
+    {
+#ifndef HAVE_CILK
+// If CILK is available then the concurrency is expressed using its
+// higher level constructs. Otherwise I will do the thread creation
+// and coordination myself.
+        kara_ready = kara_done = 0;
+        for (int i=0; i<2; i++)
+        {   kara_thread[i] = std::thread(kara_worker, i);
+            kara_thread[i].detach();
+        }
+#endif
+    }
+   ~KaratsubaThreads()
+    {
+#ifndef HAVE_CILK
+        {   std::lock_guard<std::mutex> lk(kara_mutex);
+            kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
+            kara_done = 0;
+        }
+        cv_kara_ready.notify_all();
+#endif
+    }
+};
 
 void cslstart(int argc, const char *argv[], character_writer *wout)
 {   double store_size = 0.0;
@@ -2660,10 +2683,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // If the user hits the close button here I may be in trouble
 #endif // WITH_GUI
 
-    if (number_of_processors() >= 3)
-    {   karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
-        if (kparallel > 0) karatsuba_parallel = kparallel;
-    }
+// I will now ALWAYS use threads for Karatsuba even on a CPU that only has
+// a single core!
+    karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
+    if (kparallel > 0) karatsuba_parallel = kparallel;
 
 //
 // Up until the time I call setup() I may only use term_printf for
@@ -2721,36 +2744,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     }
 }
 
-// I have some background threads to help me, so here is the code to start
-// them up. It seems to be important to terminate deteched threads or join
-// with regular ones before quitting, so I also cope with that.
-
-static void quit_threads()
-{   {   std::lock_guard<std::mutex> lk(kara_mutex);
-        kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
-        kara_done = 0;
-    }
-    cv_kara_ready.notify_all();
-}
-
-static void start_threads()
-{
-#ifndef HAVE_CILK
-// If CILK is available then the concurrency is expressed using its
-// higher level constructs. Otherwise I will do the thread creation
-// and coordination myself.
-    kara_ready = kara_done = 0;
-    for (int i=0; i<2; i++)
-    {   kara_thread[i] = std::thread(kara_worker, i);
-// By making detaching the threads I will not need to join them when the
-// program exits. Well it seems that just what happens when threads are left
-// running at program exit (and in fact waiting on a condition variable!)
-// may be "undefined", but my EXPECTATION is that they will be killed for me.
-        kara_thread[i].detach();
-    }
-#endif
-    std::atexit(quit_threads);
-}
 
 
 // I need a way that a thread that is not synchronised with this one can
@@ -3163,7 +3156,7 @@ int execute_lisp_function(const char *fname,
 //
 #ifdef CONSERVATIVE
 //     Create an instance of a ThreadStartup object, and keep it alive
-//     while everytthing else is happening.
+//     while everything else is happening.
 //
 #endif
 //     cslstart(argc, argv, writer);allocate memory and Lisp heap etc. Args
@@ -3200,6 +3193,21 @@ static void iput(int c)
 
 #endif
 
+#ifdef HAVE_CRLIBM
+static unsigned long long crlibstatus = 0;
+
+class CrlibmSetup
+{
+    public:
+    CrlibmSetup()
+    {   crlibstatus = crlibm_init();
+    }
+    ~CrlibmSetup()
+    {   crlibm_exit(crlibstatus);
+    }
+};
+#endif
+
 [[noreturn]] static int submain(int argc, const char *argv[])
 {   volatile std::uintptr_t sp;
     C_stackbase = (std::uintptr_t *)&sp;
@@ -3210,16 +3218,18 @@ static void iput(int c)
 // protocol that will allow other threads to get created and run later on.
     threadMap = -1;
     activeThreads = 0;
-    ThreadStartup set_thread_local_variables;
+    ThreadStartup userThreads;
 #endif
+#ifdef HAVE_CRLIBM
+    CrlibmSetup crlibmVar;
+#endif
+    KaratsubaThreads kthreads;
     cslstart(argc, argv, NULL);
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
     std::strcpy(ibuff, "(print '(a b c d))");
-    start_threads();
     execute_lisp_function("oem-supervisor", iget, iput);
     std::printf("Buffered output is <%s>\n", obuff);
 #else
-    start_threads(); // For Parallel Karatsuba
     set_keyboard_callbacks(async_interrupt);
     cslaction();
 #endif
@@ -3263,12 +3273,20 @@ int ENTRYPOINT(int argc, const char *argv[])
     {   START_SETJMP_BLOCK;
         res = submain(argc, argv);
     }
-    catch(int r)
-    {   res = r;
+    catch (int r)
+    {
+// Here is where the EXIT exception is caught when somebody in the main
+// thread obeys my_exit().
+        res = r;
     }
-#ifdef USE_MPI
+    report_dependencies();
+ #ifdef USE_MPI
     MPI_Finalize();
 #endif
+    ensure_screen();
+#ifdef WITH_GUI
+    pause_for_user();
+#endif // WITH_GUI
     return res;
 }
 

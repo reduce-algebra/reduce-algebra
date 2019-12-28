@@ -306,7 +306,7 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 #define debug_show_trail(data) debug_show_trail_raw(data, __FILE__, __LINE__)
 
 #define debug_assert(x) \
-  if (!(x)) { debug_show_trail("Assertion failed"); std::exit(7); }
+  if (!(x)) { debug_show_trail("Assertion failed"); my_exit(999); }
 
 #else
 

@@ -2224,7 +2224,7 @@ void set_up_variables(int restart_flag)
 #ifdef WITH_GUI
             pause_for_user();
 #endif
-            std::exit(0);
+            my_exit(0);
         }
     }
 //

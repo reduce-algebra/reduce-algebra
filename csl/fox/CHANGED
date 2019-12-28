@@ -222,4 +222,8 @@ November 2019. If it looks as if the fontconfig configuration file is not
       present use a version that I copied from the macports version of
       fontconfig and that I then hide in the Application Bundle.
 
+December 2019. Use RAII rather than atexit() in a couple of places and
+      terminate keyboard thread on Windows is a way that is a little messier
+      to code but that may be safer.
+
 <end of CHANGED>

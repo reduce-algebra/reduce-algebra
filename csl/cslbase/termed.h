@@ -67,7 +67,29 @@
 //      cmy  cyan, magenta or yellow
 // (I think that the colour selection is not available on Windows).
 
+extern bool termEnabled;
+
 extern int term_setup(const char *argv0, const char *colours);
+
+// Before returning from your code it would be a really good idea to
+// call "term_close" since that can re-set all sorts of terminal
+// characteristics. I use an object of class TermSetup to arrange this.
+
+extern void term_close(void);
+
+class TermSetup
+{
+public:
+    TermSetup(const char *argv0, const char *colours)
+    {   termEnabled = false;
+        term_setup(argv0, colours);
+    }
+    ~TermSetup()
+    {   if (termEnabled) term_close();
+    }
+};
+
+
 
 //
 // Set the prompt string.
@@ -94,14 +116,6 @@ extern void set_keyboard_callbacks(keyboard_interrupt_callback *f1);
 //
 extern char *term_getline(void);
 extern wchar_t *term_wide_getline(void);
-
-//
-// Before returning from your code it would be a really good idea to
-// call "term_close" since that can re-set all sorts of terminal
-// characteristics. In some cases use of "atext" to ensure this will
-// make sense.
-//
-extern void term_close(void);
 
 //
 // What follows is to do with a history mechanism... it is not

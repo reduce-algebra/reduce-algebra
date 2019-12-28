@@ -66,6 +66,8 @@
 #include <cctype>
 #include <ctime>
 #include <csignal>
+#include <thread>
+#include <chrono>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -410,15 +412,11 @@ void consoleWait()
 // to give at least a minimal chance for the user to inspect it I will
 // put in a delay here.
 //
-    int i = 5;
-    std::clock_t c0;
-    while (i > 0)
-    {   char title[30];
+    for (int i=5; i!=0; i--)
+    {   char title[32];
         std::sprintf(title, "Exiting after %d seconds", i);
         SetConsoleTitleA(title);
-        c0 = std::clock() + CLOCKS_PER_SEC;
-        while (std::clock() < c0);
-        i--;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
 
@@ -897,22 +895,32 @@ static int direct_to_terminal(int argc, const char *argv[])
 #endif // WIN32
 }
 
+class InputHistory
+{
+public:
+    InputHistory()
+    {   input_history_init();
+    }
+    ~InputHistory()
+    {   input_history_end();
+    }
+};
+
 int plain_worker(int argc, const char *argv[], fwin_entrypoint *main)
 {   int r;
-    if (!texmacs_mode && direct_to_terminal(argc, argv))
-    {   input_history_init();
-        term_setup(argv[0], colour_spec);
-        std::atexit(term_close);
-        using_termed = true;
-    }
-    else using_termed = false;
     std::strcpy(fwin_prompt_string, "> ");
-    r = (*main)(argc, argv);
-    input_history_end();
-    term_close();
+    if (!texmacs_mode && direct_to_terminal(argc, argv))
+    {   TermSetup ts(argv[0], colour_spec);
+        using_termed = true;
+        InputHistory ih;
+        r = (*main)(argc, argv);
+    }
+    else
+    {   using_termed = false;
+        r = (*main)(argc, argv);
+    }
     return r;
 }
-
 
 #define INPUT_BUFFER_SIZE 100
 

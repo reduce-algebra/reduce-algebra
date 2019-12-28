@@ -195,10 +195,24 @@ int wimpget(char *buf)
 
 HANDLE gnuplot_process = 0;
 HWND gnuplot_handle = 0;
+bool gnuplotActive = false;
 
-void kill_gnuplot()
-{   TerminateProcess(gnuplot_process, 0);
-}
+class GnuplotClass
+{
+public:
+   GnuplotClass()
+   {   gnuplotActive = false;
+   }
+   ~GnuplotClass()
+   {   if (gnuplotActive)
+           TerminateProcess(gnuplot_process, 0);
+   }
+};
+
+// When the program terminates I expect the destructor of this object to
+// be invoked, and if gnuplot has been started up this will then kill it.
+
+static GnuplotClass gnuplotAlive;
 
 BOOL CALLBACK find_text(HWND h, LPARAM)
 {   char buffer[24];
@@ -262,7 +276,7 @@ std::FILE *my_popen(const char *command, const char *direction)
         if (!CreateProcess(NULL, c1, NULL, NULL, FALSE,
                            0, NULL, NULL, &startup, &process)) return 0;
         gnuplot_process = process.hProcess;
-        std::atexit(kill_gnuplot);
+        gnuplotActive = true;
         gnuplot_handle = 0;
         t0 = std::clock();
         for (i=0; i<25; i++)  // Give it 5 seconds to appear

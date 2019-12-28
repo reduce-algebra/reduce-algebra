@@ -229,8 +229,7 @@ int main(int argc, char *argv[])
     {   const char *a = argv[i];
         if (a[0] == '-' && a[1] == 'b') colours = &a[2];
     }
-    i = term_setup(argv[0], colours);
-    std::atexit(term_close);
+    TermSetup ts(argv[0], colours);
 
 // On at least some non-Windows platforms console output will be in RAW mode
 // where '\n' is interpreted as line feed and causes the cursor to move

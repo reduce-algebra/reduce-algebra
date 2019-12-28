@@ -1,8 +1,8 @@
-// babyreduce.cpp                          Copyright (C) 2016-2017 Codemist    
+// babyreduce.cpp                          Copyright (C) 2016-2019 Codemist    
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -84,15 +84,13 @@ static int submain(int argc, char *argv[])
     return 0;
 }
 
-
 int main(int argc, char *argv[])
 {   int res;
     if (find_program_directory(argv[0]))
     {   std::fprintf(stderr, "Unable to identify program name and directory\n");
         return 1;
     }
-    term_setup(argv[0], NULL);
-    std::atexit(term_close);
+    TermSetup ts(argv[0], NULL);
     try
     {   res = submain(argc, argv);
     }
@@ -101,6 +99,5 @@ int main(int argc, char *argv[])
     }
     return res;
 }
-
 
 // End of babyreduce.cpp

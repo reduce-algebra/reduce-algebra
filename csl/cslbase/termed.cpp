@@ -237,7 +237,7 @@ extern char **loadable_packages, **switches;
 // should not intervene, Eg when stdin/stdout have been redirected. When
 // it is not enabled it can do simple getchar/putchar IO.
 
-static bool termEnabled = false;
+bool termEnabled = false;
 
 // The keyboard will need to be handled in a thread - the reason for that
 // is that the code here sets the keyboard to "raw" mode and that lead
@@ -267,6 +267,7 @@ static bool termEnabled = false;
 #define ARROW_BIT  0x40000000
 
 static std::thread keyboardThread;
+static bool keyboardThreadActive;
 
 #ifdef WIN32
 static HANDLE keyboardThreadHandle = (HANDLE)(-1);
@@ -619,7 +620,7 @@ int getwcFromThread()
 static void startKeyboardThread()
 {   keyboardNeeded = CreateMutex(NULL, TRUE, NULL);
     keyboardThread = std::thread(keyboardThreadFunction);
-    std::atexit(quitKeyboardThread);
+    keyboardThreadActive = true;
 }
 
 #else // !WIN32
@@ -627,7 +628,7 @@ static void startKeyboardThread()
 static void startKeyboardThread()
 {   if (pipe(keyboardPipe) == -1) std::printf("pipe creation failed\n");
     keyboardThread = std::thread(keyboardThreadFunction);
-    std::atexit(quitKeyboardThread);
+    keyboardThreadActive = true;
 }
 
 #endif // !WIN32
@@ -1540,7 +1541,6 @@ int term_setup(const char *argv0, const char *colour)
 // If I am using the Unicode functions to write to the console then
 // the issue of a code page for it becomes somewhat irrelevant!
     originalCodePage = GetConsoleOutputCP();
-    std::atexit(resetCP);
     SetConsoleOutputCP(CP_UTF8);
 #else // !WIN32
     int errval, errcode;
@@ -1672,11 +1672,15 @@ int term_setup(const char *argv0, const char *colour)
 }
 
 void term_close(void)
-{
+{   if (!termEnabled) return;
 // Note here and elsewhere in this file that I go "fflush(stdout)" before
 // doing anything that may change styles or options for stream handling.
     std::fflush(stdout);
     std::fflush(stderr);
+#ifdef WIN32
+    resetCP();
+#endif
+    if (keyboardThreadActive) quitKeyboardThread();
 #ifndef EMBEDDED
 #ifdef WIN32
     if (*term_colour != 0)
@@ -5589,8 +5593,7 @@ static void term_pause_execution(void)
 
 
 static void term_exit_program(void)
-{   term_close();
-    std::exit(0);
+{   throw 0;  // my_exit(0)
 }
 
 
@@ -6260,11 +6263,10 @@ static void record_keys(void)
 }
 
 int main(int argc, char *argv[])
-{   term_setup(argv[0], NULL);
+{   TermSetup ts(argv[0], NULL);
 //    def_prog_mode();
     record_keys();
 //    reset_shell_mode();
-    term_close();
     return 0;
 }
 
