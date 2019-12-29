@@ -11,7 +11,7 @@ else
 SNAPSHOT=$(REVISION)
 SVNREVISION := $(REVISION)
 endif
-BUILDTOPDIR=C
+BUILDTOPDIR := $(shell pwd)/C
 REVISION=HEAD
 
 # If the following path to Inno Setup is correct then running "make" will
