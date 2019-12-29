@@ -6,7 +6,7 @@ $smarty = new Smarty_REDUCE();
 $smarty->assign('header_title', 'Tutorial: Ordinary Differential Equations');
 
 $smarty->assign('preamble',  <<< END_OF_PREAMBLE
-	<p><a href="https://sourceforge.net/users/fjwright/">Francis Wright</a>, June 2018</p>
+	<p><a href="https://sourceforge.net/users/fjwright/">Francis Wright</a>, June 2018, December 2019</p>
 END_OF_PREAMBLE
 );
 
@@ -122,7 +122,30 @@ sub(x=soln(1,1), y=soln(2,1), ode);
 x0 := 2$  y0 := 0$  soln;
 % The zero solution is a stable equilibrium and nearby solutions
 % spiral in towards zero.
-sub(t=0, sub(x=soln(1,1), y=soln(2,1), dxy));')
+sub(t=0, sub(x=soln(1,1), y=soln(2,1), dxy));'),
+
+         array(
+         'P' => '(Suggested by Tony Roberts from <a href="/books.php#roberts">his book</a>.)<br />
+Find the power series solution \(y(x)\) up to degree \(x^7\) to the differential equation
+\[ y\'\'+(1+x)y\'-6y^2=0 \]
+such that
+\[ y(0)=1 \mbox{ and } y\'(0)=-1. \]
+',
+         'S' => '% The following switch settings display the solution as usual for a
+% power series:
+on div; off allfac; on revpri;
+y := 1 - x;  % using the initial conditions
+let x^8 => 0;  % truncate at degree 7
+% This loop shows successive terms converging:
+for iter := 1:99 do <<  % loop at most 99 times
+   res := df(y,x,2) + (1+x)*df(y,x) - 6y^2;
+   write y := y + (dy := -int(int(res,x),x));
+   if dy = 0 then iter := 1000;  % terminate the loop
+>>;
+
+% You can also find power series for solutions of a wide range of
+% related ODEs simply by changing the lines "res := ..." and applying
+% the initial conditions by changing the initial assignment "y := ...".')
 
 ));
 
