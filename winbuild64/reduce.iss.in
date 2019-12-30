@@ -71,16 +71,18 @@ Source: "@here@\C\doc\misc\primer.pdf"; DestDir: "{app}\doc\"; Flags: ignorevers
 Source: "@here@\C\doc\misc\sl.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\misc\sl.bib"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\misc\sl.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
+Source: "@here@\C\doc\misc\insidereduce.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
+Source: "@here@\C\doc\misc\insidereduce.pdf"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\misc\reduce.sty"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\manual\redlogo.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\manual\*.tex"; DestDir: "{app}\doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\manual\manual.pdf"; DestDir: "{app}\lib\csl\reduce.doc\"; Flags: ignoreversion; Components: common
 Source: "@here@\C\doc\manual\manual*.html"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: common
 Source: "@here@\C\doc\manual\manual*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: common
-Source: "@here@\C\doc\manual\bild*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: common
-Source: "@here@\C\doc\manual\cmsy10*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: common
-Source: "@here@\C\doc\manual\gnuplotex*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: common
-Source: "@here@\C\doc\manual\turtleeg*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: common
+;Source: "@here@\C\doc\manual\bild*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: common
+;Source: "@here@\C\doc\manual\cmsy10*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: common
+;Source: "@here@\C\doc\manual\gnuplotex*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: common
+;Source: "@here@\C\doc\manual\turtleeg*.png"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: common
 Source: "@here@\C\doc\manual\manual.css"; DestDir: "{app}\lib\csl\reduce.doc\"; Components: common
 Source: "@here@\C\doc\manual\manual.html"; DestDir: "{app}\lib\csl\reduce.doc\"; DestName: "index.html"; Components: common
 Source: "@here@\C\winbuild\gp460-win32-setup.exe"; DestDir: "{app}\lib\"; Components: common
@@ -140,6 +142,7 @@ Name: "{group}\CSL Lisp system"; Filename: "{app}\lib\csl\wincsl.exe"; WorkingDi
 Name: "{group}\PSL Reduce"; Filename: "{app}\bin\redpsl.bat"; IconFileName: "{app}\lib\psl\psl\bpslw.exe"; WorkingDir: "%USERPROFILE%\Documents"; Components: psl64
 Name: "{group}\Reduce Manual (PDF version)"; Filename: "{app}\lib\csl\reduce.doc\manual.pdf" ; Components: common
 Name: "{group}\Reduce Manual (HTML version)"; Filename: "{app}\lib\csl\reduce.doc\manual.html" ; Components: common
+Name: "{group}\Inside Reduce"; Filename: "{app}\doc\insidereduce.pdf" ; Components: common
 Name: "{group}\Reduce Symbolic Mode Primer"; Filename: "{app}\doc\primer.pdf" ; Components: common
 Name: "{group}\Standard Lisp Report"; Filename: "{app}\doc\sl.pdf" ; Components: common
 

@@ -32,7 +32,7 @@ DOCSRCDIR=$(TOPDIR)/doc/manual
 DOCMISCDIR=$(TOPDIR)/doc/misc
 
 DOCBASENAME=manual
-EXTRADOCIMAGEBASENAMES=bild cmsy10 gnuplotex turtleeg
+EXTRADOCIMAGEBASENAMES= #bild gnuplotex turtleeg #cmsy10
 
 GENERICTOPDIR=$(TOPDIR)/generic
 
@@ -126,6 +126,7 @@ install-stamp: build-stamp
 	mkdir -p $(REDFRONTSHAREDIR)/redfront $(EMACSSITELISPDIR) $(EMACSSITESTARTDIR) $(ADDONDOCDIR)
 # copy documentation files
 	cp $(TOPDIR)/doc/misc/primer.tex $(TOPDIR)/doc/misc/primer.pdf $(TOPDIR)/doc/misc/sl.tex $(TOPDIR)/doc/misc/sl.bib $(TOPDIR)/doc/misc/sl.pdf $(TOPDIR)/doc/misc/reduce.sty \
+           $(TOPDIR)/doc/misc/insidereduce.tex $(TOPDIR)/doc/misc/insidereduce.pdf \
            $(TOPDIR)/csl/reduce.doc/BINARY-LICENSE.txt $(TOPDIR)/csl/reduce.doc/BSD-LICENSE.txt $(TOPDIR)/csl/reduce.doc/LGPL-2.1.txt $(TOPDIR)/doc/manual/redlogo.png $(DOCDIR)
 	cp $(DOCSRCDIR)/*.tex $(DOCDIR)
 	cp $(DOCSRCDIR)/$(DOCBASENAME).pdf $(DOCSRCDIR)/$(DOCBASENAME)*.html $(DOCSRCDIR)/$(DOCBASENAME)*.png $(DOCSRCDIR)/$(DOCBASENAME).css $(DOCDIR)
