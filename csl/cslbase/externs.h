@@ -177,6 +177,8 @@ inline int get_dirsize(directory &d)
 #define D_COMPACT   4
 #define D_PENDING   8
 
+extern char *mystrdup(const char *s);
+
 class stringBool
 {
 public:

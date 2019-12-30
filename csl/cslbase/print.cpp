@@ -2151,7 +2151,8 @@ restart:
 // to 124 characters. This is somewhat arbitrary (but MUST relate to the
 // size of my_buff), but will tend to keep output more compact.
 //
-                        std::sprintf(my_buff, "#{%.124s}", fasl_files[u].name.c_str());
+                        std::sprintf(my_buff, "#{%.124s}",
+                                     fasl_files[u].name.c_str());
                         break;
                     default:           std::sprintf(my_buff, "SPID_%lx",
                                                (long)((u >> 8) & 0x00ffffff));

@@ -1414,6 +1414,12 @@ public:
     }
 };
 
+char *mystrdup(const char *s)
+{   char *r = new char[std::strlen(s)+1];
+    std::strcpy(r, s);
+    return r;
+}
+
 void cslstart(int argc, const char *argv[], character_writer *wout)
 {   double store_size = 0.0;
 //
@@ -2299,7 +2305,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "-j       If you go \"-j FILE\" then Reduce puts some dependency information\n"
      "         into the named file as if builds modules for you.",
      [&](std::string key, bool hasVal, std::string val)
-     {   if (!val.empty()) dependency_file = val.c_str();
+     {   if (!val.empty()) dependency_file = mystrdup(val.c_str());
      }
     },
 
