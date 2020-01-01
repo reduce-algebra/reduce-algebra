@@ -1207,7 +1207,6 @@ static void lisp_main(void)
 static long int initial_random_seed;
 
 
-std::vector<stringBool> fasl_paths;
 std::vector<stringBoolString> symbolsToDefine;
 std::vector<stringBoolString> stringsToDefine;
 std::vector<std::string> stringsToEvaluate;
@@ -2564,7 +2563,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
 
 
-    if (fasl_paths.empty())
+    if (fasl_files.empty())
     {   const char *p = standard_directory;
         char *p1;
         char cur[LONGEST_LEGAL_FILENAME];
