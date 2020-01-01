@@ -4458,9 +4458,11 @@ Alt key seems to repeat.
 
 #endif
 
+extern void setEOF();
 
 // Handle quit
 long FXApp::onCmdQuit(FXObject*,FXSelector,void*){
+  setEOF();
   exit(0);
   return 1;
   }

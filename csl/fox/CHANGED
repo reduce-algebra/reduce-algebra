@@ -226,4 +226,7 @@ December 2019. Use RAII rather than atexit() in a couple of places and
       terminate keyboard thread on Windows is a way that is a little messier
       to code but that may be safer.
 
+January 2020. Fixing re the December adjustment so that closing a window
+      causes the underlying application to exit.
+
 <end of CHANGED>

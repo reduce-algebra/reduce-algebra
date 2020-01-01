@@ -128,7 +128,7 @@ x86_64-w64-*)
     CXXFLAGS="$CXXFLAGS -funsigned-char"
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
     DLL_CFLAGS="$CFLAGS -shared"
-    XLIBS="-lXext -lX11"
+    XLIBS="-lXext -lX11 -lXft"
     cygwin_build="yes"
     exeext="yes"
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
@@ -185,7 +185,7 @@ x86_64-w64-*)
     AC_PATH_PROGS(SED, [gsed sed], sed, [/usr/sfw/bin:$PATH])
   fi
   LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
-  XLIBS="-lXext -lX11"
+  XLIBS="-lXext -lX11 -lXft"
   DLL_CFLAGS="$CFLAGS -shared"
   AC_DEFINE(SOLARIS, [1], [True if we are running on Solaris])
   solaris="yes"
@@ -241,7 +241,7 @@ x86_64-w64-*)
   fi
   LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL -pthread"
   DLL_CFLAGS="$CFLAGS -shared"
-  XLIBS="-lXext -lX11"
+  XLIBS="-lXext -lX11 -lXft"
   ;;
 *)
   AC_MSG_NOTICE([Assuming a Unix-like environment, including Linux])
@@ -267,7 +267,7 @@ x86_64-w64-*)
   fi
   LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL"
   DLL_CFLAGS="$CFLAGS -shared"
-  XLIBS="-lXext -lX11"
+  XLIBS="-lXext -lX11 -lXft"
   ;;
 esac
 

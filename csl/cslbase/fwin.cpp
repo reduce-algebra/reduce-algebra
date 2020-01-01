@@ -1079,6 +1079,8 @@ void fwin_report_right(const char *s)
 {
 }
 
+bool mustQuit = false;
+
 int fwin_getchar()
 {   return fwin_plain_getchar();
 }

@@ -215,6 +215,7 @@ public:
   long onCmdHelp(FXObject *c, FXSelector s, void *ptr);
   long onCmdAbout(FXObject *c, FXSelector s, void *ptr);
 
+  void setEOF();
   void setEditable(FXbool st = TRUE);
   void performPaste(FXchar *, FXint);
   int insertFromPaste();
@@ -465,6 +466,7 @@ public:
 
   };
 
+extern void setEOF();
 
 extern FXTerminal *text;
 

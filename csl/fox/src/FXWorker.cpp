@@ -1040,8 +1040,10 @@ void fwin_ensure_screen()
     UnlockMutex(term->pauseMutex);
 }
 
+bool mustQuit = false;
+
 int fwin_getchar()
-{
+{   if (mustQuit) return EOF;
     if (!windowed) return fwin_plain_getchar();
 // In general I have a line of stuff ready sitting in a buffer. So on
 // most calls to here I can just return what is in it.
@@ -1058,11 +1060,12 @@ int fwin_getchar()
 // Wait until the signal that I just sent has been received
 // and processed.
     regain_lockstep();
+    if (mustQuit) return EOF;
     if (delay_callback != NULL) (*delay_callback)(0);
 // I will try a convention that if inputBufferLen is zero that indicates
 // a dodgy state. Eg the user is sending an EOF or interrupt.
     int n = term->inputBufferLen;
-    if (n == 0) return EOF;
+    if (n == 0 || mustQuit) return EOF;
     const char *p = &term->inputBuffer[term->inputBufferP];
     while (n>0 && isspace(*p))
     {   n--;

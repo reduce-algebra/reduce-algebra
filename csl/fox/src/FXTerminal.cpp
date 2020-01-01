@@ -1713,6 +1713,36 @@ long FXTerminal::onCmdBreakLoop(FXObject *c, FXSelector s, void *ptr)
     return 1;
 }
 
+// This should be called when the window is being closed...
+
+void setEOF()
+{   if (text != NULL) text->setEOF();
+}
+
+void FXTerminal::setEOF()
+{   if (mustQuit) return; // already done!
+    mustQuit = true;
+// In CSL/Reduce is active doing computation it should detect the request
+// to quit that is set here...
+    if (async_interrupt_callback != NULL)
+        (*async_interrupt_callback)(QUIT_PROGRAM);
+// But maybe it was in fact hanging waiting for input. In which case I
+// can unlock some mutexes to allow it to move forward. Here I want to code
+// that tries to read characters to think it has some available. Because
+// I am not going to do anything much after this I can just unlock every
+// mutex that I think I might own and that the client might be waiting
+// on. It should then be able to move forward and detect the "give up"
+// flag that I have set!
+    if (sync_even)
+    {   UnlockMutex(mutex3);
+        UnlockMutex(mutex4);
+    }
+    else
+    {   UnlockMutex(mutex1);
+        UnlockMutex(mutex2);
+    }
+}
+
 
 // The following are concerned with a list of options and plugins that the
 // application may have.

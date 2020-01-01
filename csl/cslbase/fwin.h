@@ -216,6 +216,12 @@ extern void fwin_ensure_screen(void);
 extern int fwin_getchar(void);
 
 //
+// If FWIN is running in a window and that window is closed then mustQuit is
+// set so that fwin_getchar() then always return EOF.
+//
+extern bool mustQuit;
+
+//
 // fwin_set_prompt() tells fwin what string (of up to some limited
 // number of characters) should be used as a prompt.
 //
