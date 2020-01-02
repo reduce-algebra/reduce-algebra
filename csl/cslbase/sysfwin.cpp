@@ -164,10 +164,6 @@ void flush_screen()
 {   fwin_ensure_screen();
 }
 
-void pause_for_user()
-{
-}
-
 int terminal_eof_seen = 0;
 
 #define CTRL_C  3

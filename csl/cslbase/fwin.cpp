@@ -1,4 +1,4 @@
-// fwin.cpp                                 Copyright A C Norman 2003-2019
+// fwin.cpp                                 Copyright A C Norman 2003-2020
 //
 //
 // Window interface for old-fashioned C/C++ applications. Intended to
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -103,6 +103,7 @@ extern int fwin_main(int argc, const char *argv[]);
 #include <csignal>
 #include <thread>
 #include <chrono>
+#include <atomic>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -338,7 +339,7 @@ static int macApp = 0;
 #endif // __APPLE__
 
 int windowed = 0;
-
+bool fwin_pause_at_end = false;
 bool texmacs_mode = false;
 
 #ifdef HAVE_LIBXFT
@@ -346,8 +347,6 @@ bool fwin_use_xft = true;
 #else // HAVE_LIBXFT
 bool fwin_use_xft = false;
 #endif // HAVE_LIBXFT
-
-bool fwin_pause_at_end = false;
 
 #ifdef __APPLE__
 
@@ -1079,7 +1078,7 @@ void fwin_report_right(const char *s)
 {
 }
 
-bool mustQuit = false;
+std::atomic<bool> mustQuit(false);
 
 int fwin_getchar()
 {   return fwin_plain_getchar();

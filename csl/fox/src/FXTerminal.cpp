@@ -78,6 +78,9 @@
 #include <pthread.h>
 #endif
 
+#include <thread>
+#include <chrono>
+
 #include <fxkeys.h>          // not included by <fx.h>
 
 #include "FXShowMath.h"
@@ -2385,9 +2388,6 @@ case RESTORE_MAIN:
 
 long FXTerminal::requestWorkerExiting()
 {
-    if (fwin_pause_at_end)
-        FXMessageBox::information(this, MBOX_OK, "Pause at End",
-            "Application is exiting");
 #ifdef WIN32
     DWORD retval;
     switch (WaitForSingleObject(thread1, 10000))

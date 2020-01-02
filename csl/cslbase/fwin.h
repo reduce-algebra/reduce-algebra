@@ -58,6 +58,7 @@
 #include <cstdarg>
 #include <cstdlib>
 #include <csignal>
+#include <atomic>
 
 //
 // Logging support, only enabled in debug mode.
@@ -219,7 +220,7 @@ extern int fwin_getchar(void);
 // If FWIN is running in a window and that window is closed then mustQuit is
 // set so that fwin_getchar() then always return EOF.
 //
-extern bool mustQuit;
+extern std::atomic<bool> mustQuit;
 
 //
 // fwin_set_prompt() tells fwin what string (of up to some limited

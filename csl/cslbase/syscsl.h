@@ -366,11 +366,6 @@ extern int terminal_eof_seen;
 //
 extern void report_time(std::int32_t t, std::int32_t gct);
 extern void report_space(std::uint64_t gccount, double percent, double mbytes);
-//
-// pause_for_user() gets called right at the end to give a chance for the
-// system to delay before closing the main output window.
-//
-extern void pause_for_user(void);
 
 // These can be used (without 100% reliability!) to check if memory
 // addresses are proper. They are only for use in desparate debugging

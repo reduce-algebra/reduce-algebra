@@ -2658,7 +2658,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         term_printf("%.24s   size=%" PRIuPTR " file=%s\n",
                     datestamp, (std::uintptr_t)size, fullname);
         init_flags &= ~INIT_VERBOSE;
-        fwin_pause_at_end = false;
+        fwin_pause_at_end = true;
         my_exit(0);
     }
     base_time = read_clock();
@@ -3285,13 +3285,10 @@ int ENTRYPOINT(int argc, const char *argv[])
         res = r;
     }
     report_dependencies();
- #ifdef USE_MPI
+#ifdef USE_MPI
     MPI_Finalize();
 #endif
     ensure_screen();
-#ifdef WITH_GUI
-    pause_for_user();
-#endif // WITH_GUI
     return res;
 }
 

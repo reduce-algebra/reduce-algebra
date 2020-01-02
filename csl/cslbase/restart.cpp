@@ -2221,9 +2221,6 @@ void set_up_variables(int restart_flag)
         catch (LispException &e)
         {
             ensure_screen();
-#ifdef WITH_GUI
-            pause_for_user();
-#endif
             my_exit(0);
         }
     }

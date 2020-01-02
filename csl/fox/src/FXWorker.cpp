@@ -57,6 +57,7 @@
 #include <signal.h>
 #include <time.h>
 #include <ctype.h>
+#include <thread>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -735,6 +736,14 @@ void *FXTerminal::worker_thread(void *arg)
 
 // run the application code.
     returncode = (*fwin_main1)(term->argc, term->argv);
+// Now if fwin_pause_at_end is true I want to hang around until mustQuit
+// has been set. It gets set when the user closes the various windows
+// either via File/Close or by clicking on the little close "x" button.
+    if (fwin_pause_at_end)
+    {   while (!mustQuit)
+        {   std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    }
     wake_up_terminal(WORKER_EXITING);
 #ifdef WIN32
     ExitThread(returncode);
@@ -1040,7 +1049,7 @@ void fwin_ensure_screen()
     UnlockMutex(term->pauseMutex);
 }
 
-bool mustQuit = false;
+std::atomic<bool> mustQuit(false);
 
 int fwin_getchar()
 {   if (mustQuit) return EOF;

@@ -1024,7 +1024,7 @@ void releaseThreadNumber(unsigned int n)
 }
 
 ThreadStartup::ThreadStartup()
-{   std::cout << "ThreadStartup" << std::endl;
+{   // std::cout << "ThreadStartup" << std::endl;
     std::lock_guard<std::mutex> lock(mutexForGc);
     threadId::set(allocateThreadNumber());
 // The update here is just fine while I am in fact single threaded, but I
@@ -1033,7 +1033,7 @@ ThreadStartup::ThreadStartup()
 }
 
 ThreadStartup::~ThreadStartup()
-{   std::cout << "~ThreadStartup" << std::endl;
+{   // std::cout << "~ThreadStartup" << std::endl;
     std::lock_guard<std::mutex> lock(mutexForGc);
     releaseThreadNumber(threadId::get());
     activeThreads.fetch_sub(0x00010101);
