@@ -113,7 +113,7 @@ then
     p=${p1%.tst}
     p=${p##*/}
     echo "Test regression case $p"
-    $here/scripts/test1.sh $extras regressions $p
+    $here/scripts/test1.sh $plist $extras regressions $p
   done
 fi
 
