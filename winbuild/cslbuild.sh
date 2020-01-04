@@ -159,7 +159,7 @@ mkdir -p cslbuild
 # The files that I list here are the ones that are the "results" from
 # this script.
 
-ls -lh cslbuild
+ls -lh cslbuild cslbuild/reduce.resources
 
 # I hope that the installer will include a copy of make-cygwin-symlink
 # (which will not be required beyond install time) and will go something

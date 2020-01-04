@@ -229,4 +229,12 @@ December 2019. Use RAII rather than atexit() in a couple of places and
 January 2020. Fixing re the December adjustment so that closing a window
       causes the underlying application to exit.
 
+January 2020. Remove PRINT, CUT, PASTE menu items since the underlying code
+      does not function - this is to be seen as a request that some volunteer
+      with C++ skills join in and reinstate these facilities. If somebody
+      is making a proper start at that I will advise the the extent that I am
+      able. Note that the code that does all this is fairly separate from the
+      Reduce algebra engine and so working on it does not require familiarity
+      with Reduce internals, Lisp, computer algebra etc!
+
 <end of CHANGED>

@@ -1,5 +1,5 @@
 //
-// "FXTerminal.cpp"                         Copyright A C Norman 2003-2019
+// "FXTerminal.cpp"                         Copyright A C Norman 2003-2020
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -8,7 +8,7 @@
 //
 
 /******************************************************************************
-* Copyright (C) 2003-19 by Arthur Norman, Codemist.  All Rights Reserved.     *
+* Copyright (C) 2003-20 by Arthur Norman, Codemist.  All Rights Reserved.     *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *

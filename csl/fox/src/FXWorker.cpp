@@ -372,10 +372,10 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
                                 (FXObject *)text, FXTerminal::ID_SAVE);
     new FXMenuCommand(fileMenu, "Save Se&lection...", NULL,
                                 (FXObject *)text, FXTerminal::ID_SAVE_SELECTION);
-    new FXMenuCommand(fileMenu, "&Print...", NULL,
-                                (FXObject *)text, FXTerminal::ID_PRINT);
-    new FXMenuCommand(fileMenu, "Pri&nt Selection...", NULL,
-                                (FXObject *)text, FXTerminal::ID_PRINT_SELECTION);
+//  new FXMenuCommand(fileMenu, "&Print...", NULL,
+//                              (FXObject *)text, FXTerminal::ID_PRINT);
+//  new FXMenuCommand(fileMenu, "Pri&nt Selection...", NULL,
+//                              (FXObject *)text, FXTerminal::ID_PRINT_SELECTION);
     new FXMenuCommand(fileMenu, "&Break\tCtl-C\tInterrupt", NULL,
                                 (FXObject *)text, FXTerminal::ID_BREAK);
     new FXMenuCommand(fileMenu, "Bac&ktrace\tCtl-G\tInterrupt/backtrace", NULL,
@@ -398,18 +398,18 @@ int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
     new FXMenuTitle(main_menu_bar, "F&ile", NULL, fileMenu);
 
     editMenu = new FXMenuPane(main_window);
-    new FXMenuCommand(editMenu, "&Cut", NULL,
-                                (FXObject *)text, FXTerminal::ID_CUT_SEL_X);
-    new FXMenuCommand(editMenu, "C&opy", NULL,
-                                (FXObject *)text, FXTerminal::ID_COPY_SEL_X);
-    new FXMenuCommand(editMenu, "Copy &Text", NULL,
-                                (FXObject *)text, FXTerminal::ID_COPY_SEL_TEXT_X);
-    new FXMenuCommand(editMenu, "&Paste\tCtl-V", NULL,
-                                (FXObject *)text, FXTerminal::ID_PASTE_SEL_X);
-    new FXMenuCommand(editMenu, "&Reinput\tCtl-^\tReinput", NULL,
-                                (FXObject *)text, FXTerminal::ID_REINPUT);
-    new FXMenuCommand(editMenu, "Select &All", NULL,
-                                (FXObject *)text, FXText::ID_SELECT_ALL);
+//  new FXMenuCommand(editMenu, "&Cut", NULL,
+//                              (FXObject *)text, FXTerminal::ID_CUT_SEL_X);
+//  new FXMenuCommand(editMenu, "C&opy", NULL,
+//                              (FXObject *)text, FXTerminal::ID_COPY_SEL_X);
+//  new FXMenuCommand(editMenu, "Copy &Text", NULL,
+//                              (FXObject *)text, FXTerminal::ID_COPY_SEL_TEXT_X);
+//  new FXMenuCommand(editMenu, "&Paste\tCtl-V", NULL,
+//                              (FXObject *)text, FXTerminal::ID_PASTE_SEL_X);
+//  new FXMenuCommand(editMenu, "&Reinput\tCtl-^\tReinput", NULL,
+//                              (FXObject *)text, FXTerminal::ID_REINPUT);
+//  new FXMenuCommand(editMenu, "Select &All", NULL,
+//                              (FXObject *)text, FXText::ID_SELECT_ALL);
     new FXMenuCommand(editMenu, "C&lear\tCtl-L", NULL,
                                 (FXObject *)text, FXTerminal::ID_CLEAR);
     new FXMenuCommand(editMenu, "Re&draw\tCtl-R", NULL,

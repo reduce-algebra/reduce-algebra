@@ -1756,7 +1756,7 @@ AC_SUBST(LOCALCYG)
 AC_SUBST(CYG32)
 AC_SUBST(CYG64)
 
-if test "x$exeext" = "xyes"
+if test "x$windows_build" = "xyes"
 then
   absolute_cyg32=`pwd -P`/cyg32
   AC_SUBST(absolute_cyg32)
