@@ -57,28 +57,28 @@ symbolic inline procedure get!-log!-base u;
    if car u eq 'log10 then 10 else nil;
 
 symbolic procedure simplog u;
-   (if !*expandlogs then
-     (resimp simplogbi(x,get!-log!-base u) where !*expandlogs=nil)
-    else if x=0 then rerror(alg,210,{car u,"0 formed"})
-    % log(1) = 0
-    else if x=1 then nil ./ 1
-    % log(e) = 1, log10(10) = 1
-    else if x eq 'e and not (car u eq 'log10) then 1 ./ 1
-    else if fixp x and car u eq 'log10 and not(dmode!* and get('log10,dmode!*))
-     then simplogbn(x,get!-log!-base u,t)
-    % log(e^x) = x, log10(10^x) = x
-    else if eqcar(x,'expt) and cadr x = (if car u eq 'log10 then 10 else 'e)
-     then simp caddr x 
-    else if eqcar(x,'quotient) and cadr x=1
-      and (null !*precise or realvaluedp caddr x)
-     then negsq simpiden(car u . cddr x)
-    else simpiden u)
-    where x=reval carx(cdr u,'simplog);
+   if null cdr u then rerror(alg,5,{"Wrong number of arguments to",car u})
+    else if !*expandlogs then (resimp simplogbi(aeval cadr u,get!-log!-base u) where !*expandlogs=nil)
+   else (if x=0 then rerror(alg,210,{car u,"0 formed"})
+    	      % log(1) = 0
+    	   else if x=1 then nil ./ 1
+    	      % log(e) = 1, log10(10) = 1
+    	   else if x eq 'e and not (car u eq 'log10) then 1 ./ 1
+    	   else if fixp x and car u eq 'log10 and not(dmode!* and get('log10,dmode!*))
+     	   then simplogbn(x,get!-log!-base u,t)
+    	      % log(e^x) = x, log10(10^x) = x
+    	   else if eqcar(x,'expt) and cadr x = (if car u eq 'log10 then 10 else 'e)
+     	   then simp caddr x 
+    	   else if eqcar(x,'quotient) and cadr x=1
+      	      and (null !*precise or realvaluedp caddr x)
+     	   then negsq simpiden(car u . cddr x)
+    	   else simpiden u)
+    where x=reval cadr u;
 
 symbolic procedure simplogb u;
-   (if !*expandlogs then
-     (resimp simplogbi(x,carx(cddr u,'simplogb)) where !*expandlogs=nil)
-    else if x=0 then rerror(alg,210,"Logb(0,...) formed")
+   if null cdr u or null cddr u then rerror(alg,5,"Wrong number of arguments to logb")
+    else if !*expandlogs then (simplogbi(aeval cadr u,caddr u) where !*expandlogs=nil)
+    else (if x=0 then rerror(alg,210,"Logb(0,...) formed")
     % logb(1,x) = 0
     else if x=1 then nil ./ 1
     % logb(x,x) = 1
@@ -253,6 +253,8 @@ symbolic procedure formlogterm(sf,base);
                          multsq!*(simplogbi(u,base),simp!* ldeg sf))
         else if (lc sf iequal 1) and (ldeg sf iequal 1)
          then u := ((mksp(mk!-log!-arg(sfchk u,base),1) .* 1) .+ nil) ./ 1
+%        else if domainp lc sf and !:minusp lc sf
+%         then u := ((mksp(mk!-log!-arg(prepf sf,base),1) .* 1) .+ nil) ./ 1
         else u := addsq(simptimes list(mk!-log!-arg(sfchk u,base),ldeg sf),
                         simplogb2(lc sf,base));
       return u
