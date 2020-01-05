@@ -109,6 +109,7 @@ fluid '(
   tolerance!*      % value within break points are considered to be
                    % feasible  (range: 0..10000)
   !*lower    % used in REDUCE 3.5 to make everything lower case
+  metricu!*        % EXCALC
 % -----------------+---------------------------------------------------+
 );
 
@@ -116,7 +117,6 @@ global '(
 % ------------------+---------------------------------------------------+
 % GLOBAL VARIABLES  | EXPLANATION                                       |
 % ------------------+---------------------------------------------------+
-  metricu!*         % EXCALC
   indxl!*           % EXCALC
 % ------------------+---------------------------------------------------+
 );
