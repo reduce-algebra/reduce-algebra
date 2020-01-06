@@ -75,28 +75,62 @@ xWindows_NT)
     try64="no";
     ;;
   esac
+# Now I will want to check which variant of reduce to use...
   pre=""
+  suffix=".com"
+  case `uname -m -o` in
+  x86_64*Cygwin)
+    for x in $*
+    do
+      if test "$x" = "--nogui" ||
+         test "$x" = "-w-" ||
+         test "$x" = "-w"
+      then
+        withgui="no"
+        break
+      fi
+    done
+# On Cygwin (and here I have the cygwin64 case) I will behave as follows:
+#    --nogui or -w or -w- present on the command line: these indicate
+# that a console style use of Reduce is required. So run the explicitly
+# cygwin64 variant so it knows how to interact with a cygwin console.
+# Also if the --nogui option is not selected so a GUI is requested and
+# if DISPLAY is set also use the cygwin64 version that will use X11 for its
+# display.
+    if test "$withgui" = "no" || ! test -z "$DISPLAY"
+    then
+      pre="cygwin64-"
+      suffix=".exe"
+# Otherwise the request was for the default behaviour, which is to use
+# the GUI, and the Windows-native version should be the one used.
+    fi
+    ;;
+
+  i686*Cygwin)
+    for x in $*
+    do
+      if test "$x" = "--nogui" ||
+         test "$x" = "-w-" ||
+         test "$x" = "-w"
+      then
+        withgui="no"
+        break
+      fi
+    done
+    if test "$withgui" = "no" || ! test -z "$DISPLAY"
+    then
+      pre="cygwin32-"
+      suffix=".exe"
+    fi
+    ;;
+
+  *)
+    ;;
+  esac
+
   if test "x$ap" = "xbootstrapreduce"
   then
     suffix=".exe"
-  else
-    suffix=".com"
-  fi
-  xtra=""
-  if ! $here/../bin/not-under-cygwin.exe $*
-  then
-    $here/../bin/cygwin${c64}-isatty.exe $*
-    case $? in
-    0)
-      xtra="--gui"
-      ;;
-    1)
-      pre="cygwin${c64}-"
-      suffix=".exe"
-      ;;
-    *)
-      ;;
-    esac
   fi
 
 # I put an ordered list of preferences here. I put 64-bit release
