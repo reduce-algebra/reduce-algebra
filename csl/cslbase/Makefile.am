@@ -709,6 +709,8 @@ reduce_LDADD = $(reduceres) $(FOX_LIBS)
 if cygwin
 WINHELPERS=
 else !cygwin
+# The helper programs cygwin-isatty and not-under-cygwin will not be
+# needed in teh future, but leaving them present for now is safest!
 if win32bit
 WINHELPERS= cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
 else !win32bit
@@ -1877,13 +1879,13 @@ local_image_files = bootstrapreduce.img noinlines.img
 if win32bit
 win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
 	cygwin64-reduce cygwin64-csl \
-	not-under-cygwin.exe cygwin-isatty.exe cygwin64-isatty.exe csl \
-	reduce fwindemo
+	not-under-cygwin.exe cygwin-isatty.exe cygwin64-isatty.exe \
+	csl reduce fwindemo
 else !win32bit
 win_specials = \
 	cygwin64-reduce cygwin64-csl \
-	not-under-cygwin.exe cygwin64-isatty.exe csl \
-	reduce fwindemo
+	not-under-cygwin.exe cygwin64-isatty.exe \
+	csl reduce fwindemo
 endif !win32bit
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
