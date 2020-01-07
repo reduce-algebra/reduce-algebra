@@ -29,6 +29,7 @@ module driver;  % Driving routines for integration program.
 
 fluid '(!*algint
         !*backtrace
+        !*combineexpt
         !*combinelogs
         !*exp
         !*expandlogs
@@ -105,7 +106,7 @@ symbolic procedure simpint u;
                  !*intflag!*,!*purerisch,cflag,intvar,listofnewsqrts,
                  listofallsqrts,sqrtfn,sqrt!-intvar,sqrt!-places!-alist,
                  basic!-listofallsqrts,basic!-listofnewsqrts,coefft,
-                 varchange,w,!*precise,!*precise_complex;
+                 varchange,w,!*precise,!*precise_complex,!*combineexpt;
     !*intflag!* := t;     % Shows we are in integrator.
     variable := !*a2k cadr u;
     if not(idp variable or pairp variable and numlistp cdr variable)
