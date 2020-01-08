@@ -37,7 +37,7 @@ switch acn;
 off acn;
 
 symbolic procedure simpdint u;
-   begin scalar cflag,dmod,result;
+   begin scalar cflag,dmod,result,ceflg;!*combineexpt;
       if length u neq 4
         then rerror(int,2,"Improper number of arguments to INT");
       if dmode!*

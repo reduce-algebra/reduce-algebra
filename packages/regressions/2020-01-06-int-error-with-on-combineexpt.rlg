@@ -2,6 +2,24 @@
 % Test file for bug #115: integrator fails with combineexpt on.
 %  https://sourceforge.net/p/reduce-algebra/bugs/115/
 
+int(sqrt(x^2+9)/x^4,x);
+
+
+          2       2           2         3
+  - sqrt(x  + 9)*x  - 9*sqrt(x  + 9) - x
+------------------------------------------
+                      3
+                  27*x
+
+
+int(sqrt(x^2+9)/x^4,x,1,2);
+
+
+  - 13*sqrt(13) + 80*sqrt(10)
+------------------------------
+             216
+
+
 on combineexpt;
 
 
@@ -14,6 +32,14 @@ int(sqrt(x^2+9)/x^4,x);
 ------------------------------------------
                       3
                   27*x
+
+
+int(sqrt(x^2+9)/x^4,x,1,2);
+
+
+    13               10
+ - -----*sqrt(13) + ----*sqrt(10)
+    216              27
 
 
 end;
