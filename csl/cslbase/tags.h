@@ -1,4 +1,4 @@
-// tags.h                                  Copyright (C) Codemist 1990-2019
+// tags.h                                  Copyright (C) Codemist 1990-2020
 
 //
 //   Data-structure and tag bit definitions, also common C macros
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -122,8 +122,8 @@ inline void CSL_IGNORE(LispObject x)
 // this idea works provided all memory addresses needed can be kept
 // doubleword aligned.  The main tag allocation is documented here.
 
-static const int TAG_BITS      = 0x7;
-static const int XTAG_BITS     = 0xf;
+static const std::uintptr_t TAG_BITS      = 0x7;
+static const std::uintptr_t XTAG_BITS     = 0xf;
 
 //                                                               bit-mask in (1<<tag)
 
@@ -162,6 +162,10 @@ inline bool is_float(LispObject p)
 
 inline bool is_immed_or_cons(LispObject p)
 {   return ((0x85 >> (p & TAG_BITS)) & 1) != 0;
+}
+
+inline bool is_immediate(LispObject p)
+{   return ((0x84 >> (p & TAG_BITS)) & 1) != 0;
 }
 
 inline bool is_immed_cons_sym(LispObject p)
@@ -269,6 +273,10 @@ inline bool is_cons(LispObject p)
 
 inline bool is_fixnum(LispObject p)
 {   return ((((int)(p)) & XTAG_BITS) == TAG_FIXNUM);
+}
+
+inline bool is_immediate_num(LispObject p)
+{   return ((((int)(p)) & TAG_BITS) == TAG_FIXNUM);
 }
 
 inline bool is_odds(LispObject p)

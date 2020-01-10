@@ -1,8 +1,8 @@
-// newallocate.h                          Copyright (C) Codemist, 1990-2019
+// newallocate.h                          Copyright (C) Codemist, 1990-2020
 
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -67,6 +67,8 @@ enum PageClass
     busyPageTag       = 0x02,     // Page contains active data.
     currentPageTag    = 0x12,     // Page within which allocation is active.
     previousPageTag   = 0x22      // Previous current page.
+
+    
 };
 
 // I am going to require Pages to be aligned at nice neat boundaries
@@ -219,6 +221,7 @@ extern Page *doomedPages;       // Used during garbage collection.
 extern std::size_t busyPagesCount;
 extern std::size_t mostlyFreePagesCount;
 extern std::size_t freePagesCount;
+extern std::size_t doomedPagesCount;
 
 extern std::uintptr_t pinsA, pinsC;
 
@@ -1152,7 +1155,10 @@ extern void garbageCollect();
 void allocate_segment(std::size_t n);
 extern void clearPinnedMap(Page *x);
 extern std::uint64_t threadBit(unsigned int n);
-extern void setPinnedMajor(std::uintptr_t p);
+extern bool isPinned(Page *x, std::uintptr_t p);   // test if pin bit set
+extern void setPinned(Page *x, std::uintptr_t p);  // just set mark in pinmap
+extern void setPinnedMajor(std::uintptr_t p); // used during major GC
+extern void setPinnedMinor(std::uintptr_t p); // used during minor GC
 
 //extern thread_local Page *borrowPages;
 //extern thread_local std::uintptr_t borrowFringe;

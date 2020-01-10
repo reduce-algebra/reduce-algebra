@@ -1,4 +1,4 @@
-// newallocate.cpp                         Copyright (C) 2018-2019 Codemist
+// newallocate.cpp                         Copyright (C) 2018-2020 Codemist
 //
 // Code to deal with storage allocation, both grabbing memory at the start
 // or a run and significant aspects of garbage collection.
@@ -38,7 +38,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -421,7 +421,8 @@ Page *mostlyFreePages;   // Chained list of pages that the GC has mostly
 Page *freePages;         // Chained list of pages that are not currenty in
                          // use and that contain no useful information.
 
-std::size_t busyPagesCount, mostlyFreePagesCount, freePagesCount;
+std::size_t busyPagesCount, mostlyFreePagesCount,
+            freePagesCount, doomedPagesCount;
 
 void *heapSegment[32];
 void *heapSegmentBase[32];
@@ -566,6 +567,17 @@ std::uintptr_t findObjectStart(std::uintptr_t p, Page *x)
 // map for the page that addresses, and then it marks as pinned the object
 // referenced.
 
+bool isPinned(Page *x, std::uintptr_t os)
+{   os = (os - reinterpret_cast<std::uintptr_t>(x))/8;
+    return (x->pageBody.pageBitmaps.maps.pinned[os/64] &
+               (UINT64_C(1)<<(os%64))) != 0;
+}
+
+void setPinned(Page *x, std::uintptr_t os)
+{   os = (os - reinterpret_cast<std::uintptr_t>(x))/8;
+    x->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
+}
+
 void setPinnedMajor(std::uintptr_t p)
 {
 //   If value could not be a pointer into A then ignore it.
@@ -584,12 +596,11 @@ void setPinnedMajor(std::uintptr_t p)
     std::uintptr_t os = findObjectStart(p, x);
     if (os == 0) return;               // Does not point within any object
     if (is_forward(car(os))) return;   // part of pinsC
-    os = (os - reinterpret_cast<std::uintptr_t>(x))/8;
-    x->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
+    setPinned(x, os);
     x->pageHeader.somePins = true;
     p = get_n_bytes_new(2*CELL);
     setcar(p, pinsA);
-    pinsA = p + TAG_FORWARD;
+    pinsA = os + TAG_FORWARD;
 }
 
 // At the start of a minor garbage collection it it is necessary to call

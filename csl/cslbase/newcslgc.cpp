@@ -1,11 +1,11 @@
-// File cslgc.cpp                         Copyright (c) Codemist, 1990-2019
+// File newcslgc.cpp                      Copyright (c) Codemist, 1990-2020
 
 //
 // Garbage collection.
 //
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -292,7 +292,9 @@ std::uintptr_t sortPinList(std::uintptr_t l)
 // newly allocated memory, but I will certainoly not do that in a first
 // version and it could very easily be that to do so would complicate matters
 // and slow GC down for gains in memory occupancy that would not be great
-// enough to justify it. If I am keen I will come back to the issue later on.
+// enough to justify it. If I am keen I will come back to the issue later on,
+// but I will need to evaluate whether it would actually help before I code
+// too much.
 
 std::uintptr_t nFringe, nLimit, nNext;
 
@@ -329,8 +331,11 @@ std::uintptr_t get_n_bytes_new(std::size_t n)
                 previousPage = NULL;
             }
             else
-            {   currentPage->pageHeader.chain = nextPage;
+            {   if (previousPage != NULL)
+                    previousPage->pageHeader.pageClass = busyPageTag;
+                currentPage->pageHeader.chain = nextPage;
                 previousPage = currentPage;
+                previousPage->pageHeader.pageClass = previousPageTag;
             }
             currentPage = nextPage;
             busyPagesCount++;
@@ -356,7 +361,7 @@ void evacuate(LispObject *p)
 //   Let a = *p, ie the object that may need to be copied.
 //   If a is tagged as immediate data do nothing.
 //   [now a is some sort of tagged pointer]
-//   If a is a forwarding pointer replace the list base with the
+//   If *a is a forwarding pointer replace the list base with the
 //      object referred to, reconstructing suitable tag bits.
 //   If the address that a refers to is in the free half-space it must be
 //      a pointer to an object that had been pinned last time, so do nothing.
@@ -366,33 +371,51 @@ void evacuate(LispObject *p)
 //   Write in a forwarding pointer.
 //   Update the list-base to refer to the copy.
 // Note that this is a shallow copy operation. A later stage must perform
-// a linear scan of the newly copied material, along the lines of:
-//   Let a be the address of the first location in the new heap, where
-//     data has been placed by the copy operations docmented above.
-//   If item is marked as pinned then skip it (this can happen when the
-//      item is not one that has been just copied into the but is one
-//      that was already there as a pinned item. For this step to be
-//      possible I must have clear then pinmaps for every page that I
-//      copy stuff into and then use the pinsC list to set pinned bits.
-//      Well what I can do is clear the pin maps in every page that is
-//      in mostlyFreePages (I hope there are not too many), then traverse
-//      pinsC setting bits. At this stage I MUST not need to look back
-//      at dirty bits that the write barrier has set!).
-//   [the steps that follow are what evacuateContents does]
-//   Identify the type of the object.
-//   If the item contains binary then skip it. Note that this will
-//      include skipping over padder items that were inserted to keep the
-//      region contiguous.
-//   [Now the item contains some pointer data. It may be a cons cell,
-//   a symbol or some sort of vector]
-//   For each pointer field within the object perform the shallow copy
-//   (evacuation) step.
+// a linear scan of the newly copied material. That stage is not discussed
+// here because this function does not directly cause it to happen.
 //
-// 
+    LispObject a = *p;
+    if (is_odds(a) || is_immediate_num(a) || a == nil) return;
+    LispObject *ap = reinterpret_cast<LispObject *>(a & ~TAG_BITS);
+    LispObject aa = *ap;
+    if (is_forward(aa))
+    {   *p = aa + ((a&TAG_BITS)-TAG_FORWARD);
+        return;
+    }
+    size_t len;
+    if (is_cons(a)) len = 2*CELL;
+    else if (is_symbol(a)) len = symhdr_length;
+    else len = doubleword_align_up(length_of_header(aa));
+    aa = get_n_bytes_new(len);
+    std::memcpy(reinterpret_cast<void *>(aa), ap, len);
+    *ap = TAG_FORWARD + aa;
+    *p = aa + (a&TAG_BITS);
 }
 
-void evacuateContents(uintptr_t *p)
-{
+// For the following p starts off as a pointer to the first word of an object.
+// It must identify the object type and call evacuate() on every pointer-
+// holding field within it. It returns a pointer just beyond the object.
+
+LispObject *evacuateContents(LispObject *p)
+{   LispObject a = *p;
+// a will NOT be a forwarding pointer because any object may only have this
+// operation invoked on it once. If the object is a symbol or a vector then
+// a will be tagged as its header. In other cases the object will be just
+// a CONS cell.
+    if (!is_odds(a) || !is_header(a))
+    {   evacuate(&p[0]);            // A cons cell.
+        evacuate(&p[1]);
+        return &p[2];
+    }
+    if (is_symbol_header(a))
+    {
+//...
+        return &p[symhdr_length/CELL];
+    }
+    size_t len = length_of_header(a);
+    if (vector_holds_binary(a)) return &p[doubleword_align_up(len)/CELL];
+//...
+    return &p[doubleword_align_up(len)/CELL];
 }
 
 std::uintptr_t pinsA, pinsC;
@@ -406,8 +429,10 @@ void fullGarbageCollect()
     pinsA = TAG_FORWARD;
 // (1a) Get ready for allocation into free space.
     doomedPages = busyPages;
-    busyPages = 0;
-    currentPage = previousPage = 0;
+    doomedPagesCount = busyPagesCount;
+    busyPages = NULL;
+    currentPage = previousPage = NULL;
+    busyPagesCount = 0;
     nFringe = nLimit = nNext = 0;
 //
 // (2) For each ambiguous value (ie value on the stack associated with
@@ -425,7 +450,7 @@ void fullGarbageCollect()
 // (3) Evacuate each of the following locations:
 //   (a) Every precise pointer.
 //   (b) Every pointer field in any object in list pinsC.
-//   (c) Every pointer field in any object copies into C in via the
+//   (c) Every pointer field in any object copied into C in via the
 //       evacuation process.
 //
 // I should remind you, gentle reader, that the value cell
@@ -453,15 +478,52 @@ void fullGarbageCollect()
     for (std::uintptr_t p=pinsC;
          p!=0;
          p=(reinterpret_cast<std::uintptr_t *>(p-TAG_FORWARD))[0])
-    {   evacuateContents(
-            &(reinterpret_cast<uintptr_t *>(p-TAG_FORWARD))[1]);
-        // set pinned bits here...
+    {   (void)evacuateContents(
+            &(reinterpret_cast<LispObject *>(p-TAG_FORWARD))[1]);
     }
 // (3.1)
 // Scan the copied data evacuating fields found within it. This of course
 // can add to the total bulk of copied data! So stop when the evacuation
 // process catches up to the end of the copied data.
-//
+// There is a special issue to consider here. I have just done evacuateContents
+// on every pinned item that was in the mostlyFree page-set. As I perform
+// the following scan I will do evacuateContents on every item that I find
+// amongst that data that I have copied to there, and that interleaves with
+// the pinned data. I must not process anything twice!
+// To cope with this I will arrange that when I have one or a sequence of
+// pinned items left behind clogging up otherwise free memory I will prefix
+// same with a header word that indicates a block of binary data spanning
+// across the pinned region. So in the scan that follows I will come across
+// these special headers and that causes me to skip over the pinned data
+// which has in fact already been processed). To make it possible to set this
+// up I need to be able to place a header word in front of anything that ends
+// up pinned. The only very special case there is if the first real object
+// on a page ends up pinned. To cope with that I will arrange that the very
+// first item placed on every page starts off as a padder header with its
+// length code such that no data follows it. This will of course never end up
+// either pinned or live (I ensure that I do not pin padder data ever!) and
+// so there will always be space before the first real item.
+// Note that in a free page any pinned block is followed by two words that
+// identify the start and end of the following pinned block - that is until
+// allocation reaches and passes it. These two words will not be included in
+// the region spanned by the padding header. However their presence means that
+// pinned blocks need to be at least 3 units apart. In reality I will want to
+// cluster sets of pinned data that lie reasonably compactly into a single
+// pinned block, because there is overhead in the allocator moving from one
+// free region to the next.
+    Page *scanPage = busyPages;
+    uintptr_t scanPoint = scanPage->pageHeader.fringe;
+    uintptr_t scanLimit = scanPage->pageHeader.heaplimit;
+    for (;;)
+    {   scanPoint =
+            reinterpret_cast<std::uintptr_t>(
+                evacuateContents(reinterpret_cast<LispObject *>(scanPoint)));
+        if (scanPoint >= scanLimit)
+        {   if (scanPoint == nFringe) break;
+//          ...
+        }
+    }
+
 //
 // (4) Set up A with the structure needed to be an empty page, ie
 //   a gFringe/gLimit/gNext chain that works around pinned items. To do this
@@ -475,4 +537,4 @@ void fullGarbageCollect()
     my_abort();
 }
 
-// end of file cslgc.cpp
+// end of file newcslgc.cpp

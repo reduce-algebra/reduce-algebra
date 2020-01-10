@@ -25,32 +25,6 @@ cp $ver/csl/csl.img cslbuild/csl.img
 cp -r $ver/csl/reduce.fonts cslbuild/reduce.fonts
 cp -r $ver/csl/reduce.resources cslbuild/reduce.resources
 
-# I will need two helper programs that have been built so as to run
-# under cygwin32 and cygwin64. Here I build them...
-# The code tries to launch these to determine whether cygwin is active, and
-# if it is whether stdin and stdout are linked directly to a cygwin console.
-
-case `uname -m` in
-i686)
-  gcc -O2 cygwin-isatty.c -o cygwin32-isatty.exe
-  strip cygwin32-isatty.exe
-
-  x86_64-pc-cygwin-gcc -O2 cygwin-isatty.c -o cygwin64-isatty.exe
-  x86_64-pc-cygwin-strip cygwin64-isatty.exe
-  ;;
-x86_64)
-  i686-pc-cygwin-gcc -O2 cygwin-isatty.c -o cygwin32-isatty.exe
-  i686-pc-cygwin-strip cygwin32-isatty.exe
-
-  gcc -O2 cygwin-isatty.c -o cygwin64-isatty.exe
-  strip cygwin64-isatty.exe
-  ;;
-*)
-  echo unknown architecture `uname -n`
-  exit 1
-  ;;
-esac
-
 # stub.c is a stub program that tests the environment it is launched from
 # and chains to a suitable version of the code... But I want the stub to
 # be able to recover reasonably if not enough cygwin components have been
@@ -89,8 +63,6 @@ mkdir cslbuild/reduce.resources
 # from a console (either Windows or 32 or 64-bit cygwin) by packing
 # stuff on the end of the stub.
 
-cp	cygwin32-isatty.exe      cslbuild/reduce.resources/isatty32.exe
-cp	cygwin64-isatty.exe      cslbuild/reduce.resources/isatty64.exe
 cp	cslwin32/csl/reduce.com  cslbuild/reduce.resources/redwin32.exe
 cp	cslwin64/csl/reduce.com  cslbuild/reduce.resources/redwin64.exe
 cp	cslcyg32/csl/reduce.exe  cslbuild/reduce.resources/redcyg32.exe
@@ -119,8 +91,6 @@ i686-w64-mingw32-strip cslbuild/bootstrapreduce.exe
 
 # Also the real version of a "bootstrapreduce.exe"
 
-cp	cygwin32-isatty.exe              cslbuild/reduce.resources/isatty32.exe
-cp	cygwin64-isatty.exe              cslbuild/reduce.resources/isatty64.exe
 cp	cslwin32/csl/bootstrapreduce.exe cslbuild/reduce.resources/bootwin32.exe
 cp	cslwin64/csl/bootstrapreduce.exe cslbuild/reduce.resources/bootwin64.exe
 cp	cslcyg32/csl/bootstrapreduce.exe cslbuild/reduce.resources/bootcyg32.exe
@@ -134,8 +104,6 @@ i686-w64-mingw32-strip cslbuild/csl.exe
 # from a console (either Windows or 32 or 64-bit cygwin) by packing
 # stuff on the end of the stub.
 
-cp	cygwin32-isatty.exe  cslbuild/reduce.resources/isatty32.exe
-cp	cygwin64-isatty.exe  cslbuild/reduce.resources/isatty64.exe
 cp	cslwin32/csl/csl.com cslbuild/reduce.resources/cslwin32.exe
 cp	cslwin64/csl/csl.com cslbuild/reduce.resources/cslwin64.exe
 cp	cslcyg32/csl/csl.exe cslbuild/reduce.resources/cslcyg32.exe
@@ -155,9 +123,5 @@ cp	cslwin64/csl/csl.exe cslbuild/reduce.resources/wcslwin64.exe
 # Inspect the files created.
 
 ls -lhR cslbuild
-
-# Tidy up the the helper apps
-
-rm cygwin32-isatty.exe cygwin64-isatty.exe
 
 echo all versions built
