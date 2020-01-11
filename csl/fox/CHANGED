@@ -237,4 +237,6 @@ January 2020. Remove PRINT, CUT, PASTE menu items since the underlying code
       Reduce algebra engine and so working on it does not require familiarity
       with Reduce internals, Lisp, computer algebra etc!
 
+January 2020. Fixes to Windows console handling...
+
 <end of CHANGED>
