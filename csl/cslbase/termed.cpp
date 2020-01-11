@@ -1,7 +1,7 @@
-// termed.cpp                              Copyright (C) 2004-2019 Codemist
+// termed.cpp                              Copyright (C) 2004-2020 Codemist
 
 /**************************************************************************
- * Copyright (C) 2004-2019, Codemist.                    A C Norman       *
+ * Copyright (C) 2004-2020, Codemist.                    A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -295,16 +295,25 @@ static void quitKeyboardThread()
 #endif // !WIN32
 
 #ifdef WIN32
+// Returns true on success.
+
 BOOL MyReadConsoleInput(DWORD *np)
 {   HANDLE events[2];
     events[0] = keyboardNeeded;
     events[1] = consoleInputHandle;
-    if (WaitForMultipleObjects(2, events, FALSE, 0) !=
-        WAIT_OBJECT_0+1) return FALSE;
+    DWORD r;
+    for (;;)
+    {   if ((r = WaitForMultipleObjects(2, events, FALSE, INFINITE)) !=
+            WAIT_OBJECT_0+1) return FALSE;
+        DWORD nEvents;
+        GetNumberOfConsoleInputEvents(consoleInputHandle, &nEvents);
+        if (nEvents != 0) break;
+    }
 // This should not only try to read from the consoleInputHandle when
 // there is input available and when the termination mutex has not been
 // signalled.
-    return !ReadConsoleInput(consoleInputHandle, keyboardBuffer, 1, np);
+    BOOL rc = ReadConsoleInput(consoleInputHandle, keyboardBuffer, 1, np);
+    return (rc!=0);
 }
 #endif // WIN32
 
@@ -339,6 +348,7 @@ int getFromKeyboard()
                 ascii = keyboardBuffer[0].Event.KeyEvent.uChar.AsciiChar;
                 unicode = keyboardBuffer[0].Event.KeyEvent.uChar.UnicodeChar;
                 ctrl = keyboardBuffer[0].Event.KeyEvent.dwControlKeyState;
+printlog("key=%x ascii=%x unicode=%x ctrl=%x\n", key, ascii, unicode, ctrl);
 // If Windows thinks that the key that has been hit corresponded to an
 // ordinary character than I will just return it. No hassle here! Well
 // not quite so easy after all. If ALT is held down at the same time as
@@ -364,7 +374,8 @@ int getFromKeyboard()
 // extend the tables here later if I feel moved to, but getting compatibility
 // with the Unix-like case means I am unlikely to want to support every
 // possible feature.
-                switch (key)
+printlog("key=%x unicode=%x\n", key, unicode);
+            switch (key)
             {       default:    continue;     // Ignore unknown keys
                     case VK_LEFT:
                         return unicode | TERM_LEFT | ARROW_BIT;
@@ -420,7 +431,7 @@ int getFromKeyboard()
 // and just discard ones beyond that.
 
 #define TYPEAHEAD_MAX 1000
-static char typeaheadBuffer[TYPEAHEAD_MAX];
+static int typeaheadBuffer[TYPEAHEAD_MAX];
 static unsigned int aheadIn = 0, aheadOut = 0;
 static bool eofSeen = false;
 static std::mutex keyboardMutex;
@@ -493,6 +504,7 @@ static void keyboardThreadFunction()
     bool prevWasEsc = false;
     while (true)
     {   int c = getFromKeyboard();
+printlog("getFromKeyboard = %x\n", c);
 //      if (c >= ' ' && c < 0x7f)
 //          log("Keyboard delivers %.2x (%c) prev=%d\n", c, c, prevWasEsc);
 //      else log("Keyboard delivers %.2x prev=%d\n", c, prevWasEsc);
@@ -5759,6 +5771,7 @@ static wchar_t *term_wide_fancy_getline(void)
     for (;;)
     {   int n;
         ch = term_getchar();
+printlog("term_getchar = %x\n", ch);
         if (ch == EOF || (ch == CTRL_D && !any_keys))
         {   set_default_colour();
             return NULL;
