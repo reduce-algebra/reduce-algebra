@@ -20,7 +20,7 @@ z :=  - (x + 1)*(x - 1)
 log(z);
 
 
-log(x + 1) + log(-1) + log(x - 1)
+log( - (x - 1)) + log(x + 1)
 
 
 % The following used to return 
@@ -29,7 +29,7 @@ log(x + 1) + log(-1) + log(x - 1)
 log(1-x^2);
 
 
-log(x + 1) + log(-1) + log(x - 1)
+log( - (x - 1)) + log(x + 1)
 
 
 end;

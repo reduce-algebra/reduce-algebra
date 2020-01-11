@@ -18,27 +18,65 @@ As eps goes to 0, the original term is log(1)=0, but the expanded term is
 ;
 
 
+
 z := int(log(1/x)^2,x);
+
+
+              2
+z := x*(log(x)  - 2*log(x) + 2)
+
 
 z2 := limit!-(z,x,1);
 
+
+z2 := 2
+
+
 on factor;
+
+
 
 z1 := z;
 
+
+             2
+z1 := (log(x)  - 2*log(x) + 2)*x
+
+
 z2 := limit!-(z1,x,1);
+
+
+z2 := 2
+
 
 off factor;
 
+
+
 z2;
+
+
+2
+
 
 Comment The underlying reason is this behaviour;
 
+
 off precise;
+
+
 on expandlogs;
+
+
 on factor;
 
+
+
 log(eps*(1-eps^2))-log(eps);
+
+
+log(eps + 1) - log(eps) + log(eps - 1) + log( - eps)
+
 
 end;
 

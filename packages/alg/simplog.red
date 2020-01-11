@@ -253,8 +253,8 @@ symbolic procedure formlogterm(sf,base);
                          multsq!*(simplogbi(u,base),simp!* ldeg sf))
         else if (lc sf iequal 1) and (ldeg sf iequal 1)
          then u := ((mksp(mk!-log!-arg(sfchk u,base),1) .* 1) .+ nil) ./ 1
-%        else if domainp lc sf and !:minusp lc sf
-%         then u := ((mksp(mk!-log!-arg(prepf sf,base),1) .* 1) .+ nil) ./ 1
+        else if domainp lc sf and !:minusp lc sf
+         then u := ((mksp(mk!-log!-arg(prepf sf,base),1) .* 1) .+ nil) ./ 1
         else u := addsq(simptimes list(mk!-log!-arg(sfchk u,base),ldeg sf),
                         simplogb2(lc sf,base));
       return u
