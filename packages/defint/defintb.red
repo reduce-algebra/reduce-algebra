@@ -26,6 +26,8 @@ module defintb;
 
 algebraic ;
 
+begin scalar !*combinelogs,!*expandlogs;
+
  defint_choose_data :=
 
 { %defint_choose(1/e**(~x),~var) => defint!:opf1(1,x),
@@ -127,6 +129,8 @@ algebraic ;
   defint_choose(~f,~var)        => unknown };  % fallthrough case
 
 let defint_choose_data;
+
+end;
 
 endmodule;
 end;
