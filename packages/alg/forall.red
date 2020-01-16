@@ -689,7 +689,7 @@ symbolic procedure frvarsof(u,l);
     else frvarsof(cdr u,frvarsof(car u,l));
 
 symbolic procedure simp0 u;
-   begin scalar !*factor,x,y,z;
+   begin scalar !*factor,!*combinelogs,x,y,z;
         if eqcar(u,'!*sq) then return simp0 prepsq!* cadr u;
         y := setkorder frvarsof(u,nil);
         x := subfg!* . !*sub2;
