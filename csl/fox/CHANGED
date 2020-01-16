@@ -238,5 +238,8 @@ January 2020. Remove PRINT, CUT, PASTE menu items since the underlying code
       with Reduce internals, Lisp, computer algebra etc!
 
 January 2020. Fixes to Windows console handling...
+      Also arrange that if argv[0] is enclosed in single quotes (to allow
+      for whitespace) that they are removed when I am thinking about file
+      paths for the image file.
 
 <end of CHANGED>

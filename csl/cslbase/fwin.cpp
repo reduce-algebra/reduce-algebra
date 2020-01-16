@@ -1157,13 +1157,31 @@ int find_program_directory(const char *argv0)
 // variant to use, so if argv0 looks like a fully rooted windows path
 // I will use it!
 //
-    if (!(std::isalpha(argv0[0]) &&
-          argv0[1] == ':' &&
-          argv0[2] == '\\'))
+    std::strcpy(this_executable, argv0);
+// In argv0 was enclosed in single or double quotes then remove them.
+    if (this_executable[0]=='\'')
+    {   for (unsigned int i=0;;i++)
+        {   int c = this_executable[i+1];
+            if (c == '\'') c = 0;
+            this_executable[i] = c;
+            if (c == 0) break;
+        }
+    }
+    if (this_executable[0]=='"')
+    {   for (unsigned int i=0;;i++)
+        {   int c = this_executable[i+1];
+            if (c == '"') c = 0;
+            this_executable[i] = c;
+            if (c == 0) break;
+        }
+    }
+    if (!(std::isalpha(this_executable[0]) &&
+          this_executable[1] == ':' &&
+          this_executable[2] == '\\'))
     {   GetModuleFileName(NULL, this_executable, LONGEST_LEGAL_FILENAME-2);
         argv0 = this_executable;
     }
-    std::strncpy(ww, argv0, sizeof(ww));
+    std::strncpy(ww, this_executable, sizeof(ww));
     ww[sizeof(ww)-1] = 0;
     w = ww;
 //

@@ -151,11 +151,6 @@ mkdir -p cslbuild
 
 ./fatbinary.sh $buildcase
 
-# I want a program that can establish cygwin symlinks but that is a regular
-# Windows program. This is for calling from an installer.
-
-./set-up-symlinks.sh
-
 # The files that I list here are the ones that are the "results" from
 # this script.
 

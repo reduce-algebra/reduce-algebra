@@ -1,0 +1,114 @@
+# Makefile for "fat binaries" of Reduce. This version for a 64-bit only world.
+
+DEBUG =
+#DEBUG = -DDEBUG=1
+
+REDUCE = ../C
+PACKAGES = $(REDUCE)/packages
+
+WIN64 = ../cslwin64/csl
+CYG64 = ../cslcyg64/csl
+
+RED64 = $(CYG64)/reduce.exe
+
+RESOURCES = \
+	reduce.resources/cslwin64.exe \
+	reduce.resources/cslcyg64.exe \
+	reduce.resources/bootwin64.exe \
+	reduce.resources/bootcyg64.exe \
+	reduce.resources/redwin64.exe \
+	reduce.resources/redcyg64.exe \
+	reduce.resources/wredwin64.exe \
+	reduce.resources/mma.awk \
+	reduce.resources/qepcad.awk \
+	csl.img \
+	bootstrapreduce.img \
+	reduce.img
+
+all:	csl wincsl bootstrapreduce reduce winreduce make-cygwin-symlink
+
+# I will need to work out which DLLs are required by the Cygwin version
+# of Reduce. I do so here by using "objdump" on the executables and
+# editing the output to end up with a list in the form that will help me.
+
+dll64.c:
+	objdump -p $(RED64) | \
+		grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$$#\",#' | \
+		grep cyg | sort > dll64.c
+
+
+csl:	../stub2020.c dll64.c $(RESOURCES)
+	x86_64-w64-mingw32-gcc -O3 $(DEBUG) ../stub2020.c -static \
+	        -DNO_32_BIT=1 -DNAME=csl -I. -o csl
+	x86_64-w64-mingw32-strip csl
+
+wincsl:	$(RESOURCES)
+	cp $(WIN64)/csl.exe wincsl.exe
+
+bootstrapreduce:	../stub2020.c dll64.c $(RESOURCES)
+	x86_64-w64-mingw32-gcc -O3 -DNO_32_BIT=1 $(DEBUG) ../stub2020.c -static \
+	        -DNAME=boot -I. -o bootstrapreduce
+	x86_64-w64-mingw32-strip bootstrapreduce
+	x86_64-w64-mingw32-strip bootstrapreduce
+reduce:	../stub2020.c dll64.c $(RESOURCES)
+	x86_64-w64-mingw32-gcc -O3 -DNO_32_BIT=1 $(DEBUG) ../stub2020.c -static \
+	        -DNAME=red -I. -o reduce
+	x86_64-w64-mingw32-strip reduce
+
+winreduce:	$(RESOURCES)
+	cp $(WIN64)/reduce.exe winreduce.exe
+
+
+# Build the program "make-cygwin-symlink" that can be called as
+#   ./make-cygwin-symlink "full windows name" short-linux-name
+#
+# The effect of this is roughly as if cygwin had been active and
+# one had gone
+#   ln -s `cygpath "full windows name"` /usr/local/bin/short-linux-name
+# for each installation of cygwin found.
+
+make-cygwin-symlink:	../make-cygwin-symlink.c
+	x86_64-w64-mingw32-gcc ../make-cygwin-symlink.c -static \
+		-o make-cygwin-symlink
+	x86_64-w64-mingw32-strip make-cygwin-symlink
+
+reduce.resources/cslwin64.exe:	$(WIN64)/csl.com
+	cp $< $@
+reduce.resources/cslcyg64.exe:	$(CYG64)/csl.exe
+	cp $< $@
+
+reduce.resources/bootwin64.exe:	$(WIN64)/bootstrapreduce.exe
+	cp $< $@
+reduce.resources/bootcyg64.exe:	$(CYG64)/bootstrapreduce.exe
+	cp $< $@
+
+reduce.resources/redwin64.exe:	$(WIN64)/reduce.com
+	cp $< $@
+reduce.resources/redcyg64.exe:	$(CYG64)/reduce.exe
+	cp $< $@
+
+reduce.resources/wredwin64.exe:	$(WIN64)/reduce.exe
+	cp $< $@
+
+reduce.resources/mma.awk: $(PACKAGES)/redlog/ofsf/mma.awk
+	cp $< $@
+
+reduce.resources/qepcad.awk:	$(PACKAGES)/redlog/ofsf/qepcad.awk
+	cp $< $@
+
+csl.img:	$(WIN64)/csl.img
+	cp $< $@
+
+bootstrapreduce.img:	$(WIN64)/bootstrapreduce.img
+	cp $< $@
+
+reduce.img:	$(WIN64)/reduce.img
+	cp $< $@
+
+
+clean:
+	rm -rf dll64.c $(RESOURCES) \
+		reduce winreduce bootstrapreduce csl \
+		make-cygwin-symlink
+
+# end of Makefile
