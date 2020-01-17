@@ -701,43 +701,6 @@ flatcsl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 reduce_LDADD = $(reduceres) $(FOX_LIBS)
 
-# The purpose of these two tiny programs is explained in the
-# file $(cslbase)/gui-or-not.txt and both are only for use on Windows.
-# They are not compiled with the general configure-detected compilation
-# options.
-
-if cygwin
-WINHELPERS=
-else !cygwin
-# The helper programs cygwin-isatty and not-under-cygwin will not be
-# needed in teh future, but leaving them present for now is safest!
-if win32bit
-WINHELPERS= cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
-else !win32bit
-WINHELPERS= cygwin64-isatty.exe not-under-cygwin.exe
-endif !win32bit
-endif !cygwin
-
-if win32bit
-cygwin-isatty.exe:	$(cslbase)/cygwin-isatty.cpp $(absolute_cyg32)
-	$(absolute_cyg32) g++ -O3 $(cslbase)/cygwin-isatty.cpp -o cygwin-isatty.exe
-
-cygwin64-isatty.exe:	$(cslbase)/cygwin-isatty.cpp $(absolute_cyg64)
-	$(absolute_cyg64) g++ -O3 $(cslbase)/cygwin-isatty.cpp -o cygwin64-isatty.exe
-else
-cygwin64-isatty.exe:	$(cslbase)/cygwin-isatty.cpp
-	g++ -O3 $(cslbase)/cygwin-isatty.cpp -o cygwin64-isatty.exe
-endif
-
-not-under-cygwin.exe:	$(cslbase)/not-under-cygwin.cpp
-if win32bit
-	i686-w64-mingw32-g++ -O3 $(cslbase)/not-under-cygwin.cpp -static -o not-under-cygwin.exe
-	i686-w64-mingw32-strip not-under-cygwin.exe
-else !win32bit
-	x86_64-w64-mingw32-g++ -O3 $(cslbase)/not-under-cygwin.cpp -static -o not-under-cygwin.exe
-	x86_64-w64-mingw32-strip not-under-cygwin.exe
-endif !win32bit
-
 # These used to have things like local-cslexe.def as dependencies...
 csl_DEPENDENCIES = fwin-csl.$(OBJEXT) $(FONTDEP) $(WXC)
 flatcsl_DEPENDENCIES = fwin-csl.$(OBJEXT) $(FONTDEP) $(WXC)
@@ -751,7 +714,7 @@ if wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 else !wx
-fwindemo_DEPENDENCIES = $(fwin_icon) $(WINHELPERS)
+fwindemo_DEPENDENCIES = $(fwin_icon)
 endif !wx
 dyndemo_DEPENDENCIES = $(cslbase)/dyndemo.def dynmodule.dll
 
@@ -1310,7 +1273,7 @@ else !wx
 WXDEPS=
 endif !wx
 
-csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
+csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-$(RM) -f csl$(EXEEXT)
 if windows
 if gui
@@ -1360,7 +1323,7 @@ endif mac_framework
 
 endif !wx
 
-flatcsl$(EXEEXT): $(flatcsl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
+flatcsl$(EXEEXT): $(flatcsl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-$(RM) -f csl$(EXEEXT)
 if windows
 if gui
@@ -1415,7 +1378,7 @@ alloctest$(EXEEXT): $(alloctest_OBJECTS) $(alloctest_DEPENDENCIES)
 	$(CXXLINKTO) $(DEST)alloctest$(EXEEXT) $(alloctest_OBJECTS) $(alloctest_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
-			$(WXDEPS) $(generated_lisp) $(WINHELPERS)
+			$(WXDEPS) $(generated_lisp)
 	-$(RM) -f reduce$(EXEEXT)
 if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
@@ -1518,7 +1481,7 @@ endif !wx
 if windows
 endif windows
 
-fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
+fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-$(RM) -f fwindemo$(EXEEXT)
 if windows
 if gui
@@ -1879,12 +1842,10 @@ local_image_files = bootstrapreduce.img noinlines.img
 if win32bit
 win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
 	cygwin64-reduce cygwin64-csl \
-	not-under-cygwin.exe cygwin-isatty.exe cygwin64-isatty.exe \
 	csl reduce fwindemo
 else !win32bit
 win_specials = \
 	cygwin64-reduce cygwin64-csl \
-	not-under-cygwin.exe cygwin64-isatty.exe \
 	csl reduce fwindemo
 endif !win32bit
 
