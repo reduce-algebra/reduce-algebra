@@ -18,7 +18,6 @@ RESOURCES = \
 	reduce.resources/bootcyg64.exe \
 	reduce.resources/redwin64.exe \
 	reduce.resources/redcyg64.exe \
-	reduce.resources/wredwin64.exe \
 	reduce.resources/mma.awk \
 	reduce.resources/qepcad.awk \
 	csl.img \
@@ -85,9 +84,6 @@ reduce.resources/bootcyg64.exe:	$(CYG64)/bootstrapreduce.exe
 reduce.resources/redwin64.exe:	$(WIN64)/reduce.com
 	cp $< $@
 reduce.resources/redcyg64.exe:	$(CYG64)/reduce.exe
-	cp $< $@
-
-reduce.resources/wredwin64.exe:	$(WIN64)/reduce.exe
 	cp $< $@
 
 reduce.resources/mma.awk: $(PACKAGES)/redlog/ofsf/mma.awk

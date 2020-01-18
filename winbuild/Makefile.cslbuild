@@ -27,6 +27,8 @@ RESOURCES = \
 	reduce.resources/redwin64.exe \
 	reduce.resources/redcyg32.exe \
 	reduce.resources/redcyg64.exe \
+	reduce.resources/wcslwin32.exe \
+	reduce.resources/wcslwin64.exe \
 	reduce.resources/wredwin32.exe \
 	reduce.resources/wredwin64.exe \
 	reduce.resources/mma.awk \
@@ -54,27 +56,27 @@ dll64.c:
 
 csl:	../stub2020.c dll32.c dll64.c $(RESOURCES)
 	i686-w64-mingw32-gcc -O3 $(DEBUG) ../stub2020.c -static \
-        -DNAME=csl -I. -o csl
+	        -DNAME=csl -I. -o csl
 	i686-w64-mingw32-strip csl
 
 wincsl:	../stub2020.c dll32.c dll64.c $(RESOURCES)
 	i686-w64-mingw32-gcc -O3 $(DEBUG) ../stub2020.c -static \
-        -DNO_CYGWIN=1 -DNAME=csl -Wl,--subsystem,windows -I. -o wincsl
+	        -DNO_CYGWIN=1 -DNAME=wcsl -Wl,--subsystem,windows -I. -o wincsl
 	i686-w64-mingw32-strip wincsl
 
 bootstrapreduce:	../stub2020.c dll32.c dll64.c $(RESOURCES)
 	i686-w64-mingw32-gcc -O3 $(DEBUG) ../stub2020.c -static \
-        -DNAME=boot -I. -o bootstrapreduce
+	        -DNAME=boot -I. -o bootstrapreduce
 	i686-w64-mingw32-strip bootstrapreduce
 
 reduce:	../stub2020.c dll32.c dll64.c $(RESOURCES)
 	i686-w64-mingw32-gcc -O3 $(DEBUG) ../stub2020.c -static \
-        -DNAME=red -I. -o reduce
+	        -DNAME=red -I. -o reduce
 	i686-w64-mingw32-strip reduce
 
 winreduce:	../stub2020.c dll32.c dll64.c $(RESOURCES)
 	i686-w64-mingw32-gcc -O3 $(DEBUG) ../stub2020.c -static \
-        -DNO_CYGWIN=1 -DNAME=wred -Wl,--subsystem,windows -I. -o winreduce
+	        -DNO_CYGWIN=1 -DNAME=wred -Wl,--subsystem,windows -I. -o winreduce
 	i686-w64-mingw32-strip winreduce
 
 # Build the program "make-cygwin-symlink" that can be called as
@@ -115,6 +117,11 @@ reduce.resources/redwin64.exe:	$(WIN64)/reduce.com
 reduce.resources/redcyg32.exe:	$(CYG32)/reduce.exe
 	cp $< $@
 reduce.resources/redcyg64.exe:	$(CYG64)/reduce.exe
+	cp $< $@
+
+reduce.resources/wcslwin32.exe:	$(WIN32)/csl.exe
+	cp $< $@
+reduce.resources/wcslwin64.exe:	$(WIN64)/csl.exe
 	cp $< $@
 
 reduce.resources/wredwin32.exe:	$(WIN32)/reduce.exe
