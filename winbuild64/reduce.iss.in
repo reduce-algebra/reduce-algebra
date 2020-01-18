@@ -106,9 +106,9 @@ Source: "cslbuild\csl.img"; DestDir: "{app}\lib\csl\"; Components: csl;
 Source: "@here@\redcsl.bat"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\redcsl.sh"; DestDir: "{app}\bin\"; DestName: "redcsl"; Components: csl;
 Source: "@here@\bootstrapreduce.bat"; DestDir: "{app}\bin\"; Components: csl;
-Source: "@here@\bootstrapreduce.sh"; DestDir: "{app}\bin\"; DestName: "redcsl"; Components: csl;
+Source: "@here@\bootstrapreduce.sh"; DestDir: "{app}\bin\"; DestName: "bootstrapreduce"; Components: csl;
 Source: "@here@\csl.bat"; DestDir: "{app}\bin\"; Components: csl;
-Source: "@here@\csl.sh"; DestDir: "{app}\bin\"; DestName: "redcsl"; Components: csl;
+Source: "@here@\csl.sh"; DestDir: "{app}\bin\"; DestName: "csl"; Components: csl;
 Source: "@here@\cslcyg64\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; DestName: "rfcslcyg64.exe"; Components: csl;
 
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\csl\"; Components: csl;
