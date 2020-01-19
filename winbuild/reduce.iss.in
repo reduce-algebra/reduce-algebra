@@ -110,7 +110,7 @@ Source: "@here@\bootstrapreduce.bat"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\bootstrapreduce.sh"; DestDir: "{app}\bin\"; DestName: "bootstrapreduce"; Components: csl;
 Source: "@here@\csl.bat"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\csl.sh"; DestDir: "{app}\bin\"; DestName: "csl"; Components: csl;
-Source: "@here@\cslcyg32\redfront\.libs\rfcsl.exe"; DestDir: "{app}\bin\"; DestName: "rfcsl32.exe" Components: csl;
+Source: "@here@\cslcyg32\redfront\.libs\rfcsl.exe"; DestDir: "{app}\bin\"; DestName: "rfcsl32.exe"; Components: csl;
 Source: "@here@\cslcyg64\redfront\.libs\rfcsl.exe"; DestDir: "{app}\bin\"; DestName: "rfcsl.exe"; Components: csl;
 Source: "@here@\cslcyg64\redfront\rfcslwin.exe"; DestDir: "{app}\bin\"; DestName: "rfcsl.com"; Components: csl;
 
