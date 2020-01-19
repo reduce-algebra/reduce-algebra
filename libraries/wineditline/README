@@ -5,17 +5,12 @@ An EditLine API implementation for the native Windows Console.
 This BSD-licensed library provides command line editing and history
 functions similar to those found in GNU Readline.
 
-Paolo Tosco (a,*)
+Paolo Tosco (*)
 
-a) Department of Drug Science and Technology,
-   University of Turin, via Pietro Giuria 9, 10125 Torino, Italy;
-   e-mail: paolo.tosco@unito.it
+*) e-mail: paolo.tosco.mail@gmail.com
 
 http://mingweditline.sourceforge.net/
 
-
-Some adaptations by Arthur Norman to allow this to fit in better with the
-"redfront" program used as part of Reduce. May 2016.
 
 WinEditLine (formerly MinGWEditLine) is a BSD-licensed, open-source
 software aimed at implementing most of the functionality of the GNU
@@ -47,7 +42,8 @@ WinEditLine API:
   HIST_ENTRY *next_history()
   int read_history(const char *filename)
   int write_history(const char *filename)
- 
+  int append_history(int nelements, const char *filename)
+  int history_truncate_file(const char *filename, int nlines)
 
 Please refer to the website and to the fully commented source code
 for more detailed and up-to-date information.

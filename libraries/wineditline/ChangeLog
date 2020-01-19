@@ -1,19 +1,62 @@
 WinEditLine's (formerly MinGWEditLine) ChangeLog
 ------------------------------------------------
 
-*** March 8, 2016: release of WinEditLine 2.102 ***
+*** January 6, 2020: release of WinEditLine 2.206 ***
+
+  Changes with respect to the previous version include:
+  - Added a missing "extern C" in readline.h
+
+*** January 12, 2018: release of WinEditLine 2.205 ***
+
+  Changes with respect to the previous version include:
+  - Fixed https://bugs.php.net/bug.php?id=75775
+    (Thanks to Anatol Belski for the report)
+
+*** December 12, 2017: release of WinEditLine 2.204 ***
+
+  Changes with respect to the previous version include:
+  - install .pdb files when building in Debug mode with MSVC
+
+*** November 20, 2017: release of WinEditLine 2.203 ***
+
+  Changes with respect to the previous version include:
+  - enable building with C89 standard
+  - enable building with MT flag on MSVC
+
+*** May 11, 2017: release of WinEditLine 2.202 ***
+
+  Changes with respect to the previous version include:
+  - fixed https://bugs.php.net/bug.php?id=74490
+  - fixed https://bugs.php.net/bug.php?id=74489
+
+*** November 17, 2016: release of WinEditLine 2.201 ***
+
+  Changes with respect to the previous version include:
+  - all CR, LF characters are now stripped when redirecting input
+    from a file or pipe (thanks to Paolo Vergano for reporting this)
+  - empty lines in redirected input do not cause readline() to
+    return NULL, but "" as it should
+
+*** November 13, 2016: release of WinEditLine 2.2 ***
 
   Changes with respect to the previous version include:
 
+  - The length of lines is not limited to 4096 characters anymore
+  - Text can now be piped into readline() or read from a file
+    (thanks to Paolo Vergano and Anatol Belski for reporting this)
+  - Implemented append_history() and history_truncate_file()
+  - Cleaned up editline/readline.h to report only exposed functions
+  - The history file is now written with Windows CR+LF endings
+  - Both Unix and Windows line endings are accepted on input
   - history_length() now reports the correct history length (it used
     to report the actual length + 1)
   - current_history() now correctly reports the current history entry
   - previous_history() and next_history() do not allow going outside
     history boundaries
-  - where_history() is now 1-based as in libedit/readline
-  - set_current_pos() is now 1-based as in libedit/readline
-  - fixed the DLL name in libedit_test_dll.c
-  
+  - where_history() is now 1-based as in libedit/readline libraries
+  - set_current_pos() is now 1-based as in libedit/readline libraries
+  - Fixed the DLL name in libedit_test_dll.c
+
 
 *** April 12, 2014: release of WinEditLine 2.101 ***
 

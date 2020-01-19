@@ -22,15 +22,13 @@ C:\Users\ptosco> cd build
 
 then, for a 32-bit build:
 
-C:\Users\ptosco> cmake -G"Visual Studio 10" ..
-C:\Users\ptosco> c:\Windows\Microsoft.NET\Framework\v4.0.30319\^
-MSBuild.exe /p:Configuration=Release INSTALL.vcxproj
+C:\Users\ptosco> cmake -A x86 ..
+C:\Users\ptosco> MSBuild.exe /p:Configuration=Release INSTALL.vcxproj
 
 instead, for a 64-bit build:
 
-C:\Users\ptosco> cmake -G"Visual Studio 10 Win64" ..
-C:\Users\ptosco> c:\Windows\Microsoft.NET\Framework64\v4.0.30319\^
-MSBuild.exe /p:Configuration=Release INSTALL.vcxproj
+C:\Users\ptosco> cmake -A x64 ..
+C:\Users\ptosco> MSBuild.exe /p:Configuration=Release INSTALL.vcxproj
 
 The path to the MSBuild.exe binary might vary depending on the
 installation on your system.
@@ -53,4 +51,4 @@ of static linking against libedit_static.a/edit_static.lib.
 Pre-built static libraries and DLLs are provided for both 32 and
 64-bit Windows in the lib32, lib64, bin32, bin64 folders. Files
 whose name starts with "libedit" were built with MinGW compilers,
-while those starting with "edit" were built with MSVC 2010.
+while those starting with "edit" were built with MSVC 2017.
