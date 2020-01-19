@@ -150,7 +150,7 @@ AC_ARG_WITH(psl,
   [with_psl="no"])
 
 # By configuring "--without-redfront" you can avoid having a CSL built
-# making an attempt to coompile and instate the newfront version of redfront.
+# making an attempt to compile and instate the newfront version of redfront.
 
 AC_ARG_WITH(redfront,
   AC_HELP_STRING([--with-redfront], [Build and install redfront]),

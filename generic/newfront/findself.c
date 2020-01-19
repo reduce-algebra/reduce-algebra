@@ -154,6 +154,10 @@ int find_program_directory(const char *argv0)
     strncpy(w, fullProgramName + len - npgm, npgm);
     w[npgm] = 0;
     programName = w;
+#ifdef DEBUG
+    fprintf(stderr, "programName = %s\n", programName);
+    fprintf(stderr, "fullProgramName = %s\n", fullProgramName);
+#endif
     return 0;
 }
 

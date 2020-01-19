@@ -2703,7 +2703,7 @@ $(reduce)/bin/rfcsl$(EXEEXT): \
 		$(generic)/newfront/redstrings.c \
 		$(USE_CORRECT_CYGWIN)
 	@printf "About to build redfront for %s\n" `pwd`; \
-	cd ../redfront && $(USE_CORRECT_CYGWIN) $(MAKE) install
+	cd ../redfront && $(USE_CORRECT_CYGWIN) $(MAKE)
 
 endif redfront
 

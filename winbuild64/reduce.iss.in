@@ -109,7 +109,8 @@ Source: "@here@\bootstrapreduce.bat"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\bootstrapreduce.sh"; DestDir: "{app}\bin\"; DestName: "bootstrapreduce"; Components: csl;
 Source: "@here@\csl.bat"; DestDir: "{app}\bin\"; Components: csl;
 Source: "@here@\csl.sh"; DestDir: "{app}\bin\"; DestName: "csl"; Components: csl;
-Source: "@here@\cslcyg64\redfront\rfcsl.exe"; DestDir: "{app}\bin\"; DestName: "rfcslcyg64.exe"; Components: csl;
+Source: "@here@\cslcyg64\redfront\.libs\rfcsl.exe"; DestDir: "{app}\bin\"; DestName: "rfcsl.exe"; Components: csl;
+Source: "@here@\cslcyg64\redfront\.libs\rfcslwin.exe"; DestDir: "{app}\bin\"; DestName: "rfcsl.com"; Components: csl;
 
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\csl\"; Components: csl;
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\psl\"; Components: psl64;
@@ -117,8 +118,8 @@ Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\psl\"; Component
 
 
 ;psl
-Source: "@here@\cslcyg64\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; Components: psl64;
-Source: "@here@\cslcyg64\redfront\rfpslwin.exe"; DestDir: "{app}\bin\"; DestName: "rfpsl.com"; Components: psl64;
+Source: "@here@\cslcyg64\redfront\.libs\rfpsl.exe"; DestDir: "{app}\bin\"; Components: psl64;
+Source: "@here@\cslcyg64\redfront\.libs\rfpslwin.exe"; DestDir: "{app}\bin\"; DestName: "rfpsl.com"; Components: psl64;
 
 Source: "@here@\C\pslbuild\x86_64-pc-windows\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: psl64
 Source: "@here@\C\pslbuild\x86_64-pc-windows\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: psl64

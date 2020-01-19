@@ -40,6 +40,8 @@ HANDLE_T ReduceToMe[2];
 
 #ifdef NATIVE_WINDOWS
 
+#include <windows.h>
+
 int redread(HANDLE_T h, void *buffer, int len)
 {   DWORD res;
     ReadFile(h, buffer, len, &res, NULL);
@@ -120,8 +122,6 @@ int main(int argc,char **argv,char **envp) {
 
   deb_init();
 
-  print_banner(verbose);
-
   line_init();
 
   line_init_history();
@@ -140,13 +140,27 @@ int main(int argc,char **argv,char **envp) {
  */
 #ifdef NATIVE_WINDOWS
 
+// In (at least) early 2020 this was failing when I did not force
+// virtual terminal processing for console output. The symptom was
+// that escape sequences intended to change text colour were displayed
+// as text rather than acted on. This arose under CMD. In a powershell
+// the escape sequences are swallowed but it looks a bit as if colour
+// changes do not then happen. ACN January 2020.
+  HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+  DWORD oldMode;
+  GetConsoleMode(hOut, &oldMode);
+  SetConsoleMode(hOut, oldMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+
+  print_banner(verbose);
   child(nargv); // Creates child process that runs Reduce, with pipes
                 // to connect it to this process.
   free(nargv);
   parent();  
+  SetConsoleMode(hOut, oldMode);
 
 #else
 
+  print_banner(verbose);
   if ((reduceProcessID = fork())) {  /* I am not the child */
 
     if (reduceProcessID < 0) {  /* Failure */

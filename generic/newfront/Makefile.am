@@ -2,9 +2,17 @@
 
 #    $Id$
 
-bin_PROGRAMS = rfpsl rfcsl rfboot
-
 ACLOCAL_AMFLAGS = -I m4
+
+if NATIVEWIN
+
+bin_PROGRAMS =
+dist_bin_SCRIPTS = rfpslwin.exe rfcslwin.exe rfbootwin.exe
+progs = rfpslwin.exe rfcslwin.exe rfbootwin.exe
+
+else !NATIVEWIN
+
+bin_PROGRAMS = rfpsl rfcsl rfboot
 
 if WINDOWS
 dist_bin_SCRIPTS = rfpslwin.exe rfcslwin.exe rfbootwin.exe
@@ -12,6 +20,8 @@ progs = rfpsl.exe rfcsl.exe rfboot.exe rfpslwin.exe rfcslwin.exe rfbootwin.exe
 else
 progs = rfpsl rfcsl rfboot
 endif
+
+endif !NATIVEWIN
 
 # This little bit of trickery is intended to arrange that if you go
 # just "make" it will build all the executables and copy them into the
@@ -21,6 +31,22 @@ endif
 
 noinst_SCRIPTS = redfront.marker
 redfront.marker:	$(progs)
+
+if WINDOWS
+if !NATIVEWIN
+# These days I find that automake arranges that the actual executable that
+# I want gets put in the .libs directory - this is (I believe) to do with
+# libtool.
+if !DEBUG
+	strip .libs/rfcsl$(EXEEXT)
+	strip .libs/rfboot$(EXEEXT)
+	strip .libs/rfpsl$(EXEEXT)
+endif
+	cp .libs/rfcsl$(EXEEXT) $(srcdir)/../../bin
+	cp .libs/rfboot$(EXEEXT) $(srcdir)/../../bin
+	cp .libs/rfpsl$(EXEEXT) $(srcdir)/../../bin
+endif
+else
 if !DEBUG
 	strip rfcsl$(EXEEXT)
 	strip rfboot$(EXEEXT)
@@ -29,6 +55,8 @@ endif
 	cp rfcsl$(EXEEXT) $(srcdir)/../../bin
 	cp rfboot$(EXEEXT) $(srcdir)/../../bin
 	cp rfpsl$(EXEEXT) $(srcdir)/../../bin
+endif
+
 if WINDOWS
 if !DEBUG
 	i686-w64-mingw32-strip rfcslwin.exe

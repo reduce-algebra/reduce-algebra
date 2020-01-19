@@ -187,12 +187,16 @@ void line_add_history(char this_command[]) {
 
 void line_end_history(void) {
   char *hname;
+#if 0
 /*
- * stifle_history discards all bu the last N items in the history list.
+ * stifle_history discards all but the last N items in the history list.
  * in this case the limit is 10000 and so it is really not liable to do
  * anything much!
  */
+// This function seems not to be available in a 2020 version of wineditline
+// and since its use here is frivolous I just comment the call out. ACN
   stifle_history(HISTFILESIZE);
+#endif
   hname = line_histname();
   write_history(hname);
   free(hname);

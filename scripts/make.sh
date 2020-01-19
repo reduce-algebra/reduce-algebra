@@ -166,20 +166,38 @@ esac
 
 for l in $list
 do
+  case $l in
+  i686*cygwin*)
+    x86_64-w64-mingw32-g++ ?/other-cygwin.cpp -DFORCE32=1 -o cyg32
+    PREFIX=./cyg32
+    ;;
+  *)
+    PREFIX=
+    ;;
+  esac
   if test -f ${l}/Makefile
   then
     h=`pwd`
+    case $l in
+    i686*cygwin*)
+      x86_64-w64-mingw32-g++ csl/cslbase/other-cygwin.cpp -DFORCE32=1 -o cyg32
+      PREFIX=$h/cyg32
+      ;;
+    *)
+      PREFIX=
+      ;;
+    esac
     cd ${l}
     if test "x$firstcsl" != "x"
     then
-      $MAKE c-code
+      $PREFIX $MAKE c-code
       firstcsl=""
     fi
     if test "$sequential" = "yes"
     then
-      $MAKE $flags $args MYFLAGS="$flags" 
+      $PREFIX $MAKE $flags $args MYFLAGS="$flags" 
     else
-      $MAKE $flags $args MYFLAGS="$flags" &
+      $PREFIX $MAKE $flags $args MYFLAGS="$flags" &
       procids="$procids $!"
     fi
     cd "$h"

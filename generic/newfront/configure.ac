@@ -50,6 +50,16 @@ AC_PROG_CC
 
 on_windows="no"
 on_linux="no"
+
+case $CC in
+*w64-mingw32*)
+  native_win="yes"
+  ;;
+*)
+  native_win="no"
+  ;;
+esac
+
 # Note that the native windows version will have WIN32 defined and
 # __CYGWIN__ not defined.
 
@@ -119,9 +129,17 @@ then
   CFLAGS="$CFLAGS -O3"
 fi
 
+AC_ARG_WITH(win32bit,
+  AC_HELP_STRING([--with-win32bit], [not relevent here]))
+
+AC_ARG_WITH(c32,
+  AC_HELP_STRING([--with-c32], [not relevent here]))
+
+
 AM_CONDITIONAL(DEBUG,   test "x$debug" = "xyes")
 AM_CONDITIONAL(WINDOWS, test "x$on_windows" = "xyes")
 AM_CONDITIONAL(LINUX,   test "x$on_linux" = "xyes")
+AM_CONDITIONAL(NATIVEWIN, test "x$native_win" = "xyes")
 
 # The previous version of this configuration file provided a range of extra
 # configuration options that made it possible to selectively disable parts
