@@ -124,8 +124,8 @@ Source: "@here@\C\pslbuild\i686-pc-windows\psl\*"; DestDir: "{app}\lib\psl\psl\"
 Source: "@here@\C\pslbuild\i686-pc-windows\red\*.b"; DestDir: "{app}\lib\psl\red\"; Components: psl32
 Source: "@here@\C\pslbuild\i686-pc-windows\red\*.lap"; DestDir: "{app}\lib\psl\red\"; Components: psl32; Flags: skipifsourcedoesntexist
 Source: "@here@\redpsl.sh"; DestDir: "{app}\bin\"; DestName: "redpsl"; Components: psl32;
-Source: "@here@\cslcyg32\.libs\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; DestName: "rfpsl32.exe"; Components: psl32;
-Source: "@here@\cslcyg64\.libs\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; Components: psl64;
+Source: "@here@\cslcyg32\redfront\.libs\rfpsl.exe"; DestDir: "{app}\bin\"; DestName: "rfpsl32.exe"; Components: psl32;
+Source: "@here@\cslcyg64\redfront\.libs\rfpsl.exe"; DestDir: "{app}\bin\"; Components: psl64;
 Source: "@here@\cslcyg64\redfront\rfpslwin.exe"; DestDir: "{app}\bin\"; DestName: "rfpsl.com"; Components: psl32 psl64;
 
 Source: "@here@\C\pslbuild\x86_64-pc-windows\psl\*"; DestDir: "{app}\lib\psl\psl\"; Components: psl64
@@ -139,7 +139,7 @@ Source: "@here@\redpsl.bat"; DestDir: "{app}\bin\"; Components: psl32 psl64; Che
 Source: "@here@\redpsl64.bat"; DestName: "redpsl.bat"; DestDir: "{app}\bin\"; Components: psl64
 ;;;Source: "@here@\redpsl64w.bat"; DestName: "redpslw.bat"; DestDir: "{app}\bin\"; Components: psl64
 Source: "@here@\redpsl64.sh"; DestDir: "{app}\bin\"; DestName: "redpsl"; Components: psl64;
-Source: "@here@\cslcyg64\redfront\rfpsl.exe"; DestDir: "{app}\bin\"; Destname: "rfpslcyg64.exe"; Components: psl32 psl64;
+Source: "@here@\cslcyg64\redfront\.libs\rfpsl.exe"; DestDir: "{app}\bin\"; Destname: "rfpsl.exe"; Components: psl32 psl64;
 
 Source: "cslbuild\make-cygwin-symlink.exe"; DestDir: "{app}\lib\psl\"; Components: psl32 psl64;
 
