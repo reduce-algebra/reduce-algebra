@@ -73,15 +73,6 @@ docs.stamp:	$(BUILDTOPDIR).stamp
 	(cd $(BUILDTOPDIR)/doc/manual ; script -c "time make" ../../../docmanual.log )
 	touch docs.stamp
 
-# reduce.iss is the script for Inno Setup. It is created here by
-# setting the string @here@ in it to the absolute path to this
-# directory. That is so that when Inno Setup processes it there is no
-# reliance on any "current directory".
-
-reduce.iss:	reduce.iss.in
-	sed -e 's#\@here\@#$(subst /,\\,$(shell cygpath -m $(abspath .)))#; s#\@VERSION\@#$(shell date +%Y-%m-%d) (Rev. $(SVNREVISION))#' \
-		<reduce.iss.in >reduce.iss
-
 # The final step in the creation of an installer involved saving PSL
 # images for both 32 and 64-bit versions and then invoking Inno Setup
 # to pack up everything.
@@ -91,7 +82,11 @@ package-win:	$(BUILDTOPDIR).stamp csl.stamp psl.stamp docs.stamp reduce.iss
 		$(abspath .) '$$reduce/lib/psl' && mv reduce.img reduce64.img
 	$(BUILDTOPDIR)/psl/saveimage.sh $(BUILDTOPDIR)/pslbuild/i686-pc-windows \
 		$(abspath .) '$$reduce/lib/psl'
-	if test -x "$(inno)/ISCC.exe"; then "$(inno)/ISCC" reduce.iss;\
+	if test -x "$(inno)/ISCC.exe"; then \
+		"$(inno)/ISCC" \
+		  /Dmydir="$(subst /,\\,$(shell cygpath -m $(abspath .)))" \
+		  /Dmyver="$(shell date +%Y-%m-%d) (Rev. $(SVNREVISION))" \
+		  reduce.iss;\
 		else echo Please run Innosetup on winbuild/reduce.iss; fi
 	mv Output/Reduce-Setup.exe Output/Reduce-Setup_$(SNAPSHOT).exe
 # At present I do not know if the .cab files created here will be any
