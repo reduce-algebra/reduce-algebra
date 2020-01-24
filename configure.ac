@@ -1,5 +1,36 @@
 AC_INIT([REDUCE], [from SourceForge], [acn1@cam.ac.uk])
 
+# **************************************************************************
+# * Copyright (C) 2017-20, Codemist.                      A C Norman       *
+# *                                                                        *
+# * Redistribution and use in source and binary forms, with or without     *
+# * modification, are permitted provided that the following conditions are *
+# * met:                                                                   *
+# *                                                                        *
+# *     * Redistributions of source code must retain the relevant          *
+# *       copyright notice, this list of conditions and the following      *
+# *       disclaimer.                                                      *
+# *     * Redistributions in binary form must reproduce the above          *
+# *       copyright notice, this list of conditions and the following      *
+# *       disclaimer in the documentation and/or other materials provided  *
+# *       with the distribution.                                           *
+# *                                                                        *
+# * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+# * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+# * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+# * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+# * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+# * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+# * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+# * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+# * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+# * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+# * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+# * DAMAGE.                                                                *
+# **************************************************************************
+
+
+
 # The next line is a dreadful thing and is in case I am launched
 # from a bash prompt, in which case the SHELL variable will be set
 # to /bin/bash (or perhaps the user's login shell?). Anyway that hurts
@@ -419,11 +450,13 @@ fi
 # enabled by default. At present on a 64-bit operating system where both
 # versions of cygwin are installed all 4 versions will be enabled, but at some
 # stage in the future I expect to change that so that the 32-bit versions are
-# only built if explicitly requested.
+# only built if explicitly requested. [YES that is now happening! See
+# --with-win32bit.]
 # Regardless of host and operating system I will want the i686-w64-mingw32
 # toolchain installed, since that produces binaries that come closest to
 # being able to run everywhere. Specifically I will want that toolchain
-# installed even if you specify --without-w32.
+# installed even if you specify --without-w32. [Again I will be relaxing this
+# and usinhg x86_64-w64-mingw32 builds even for tiny utilities fairly soon]
 
 
 with_w32="yes"
@@ -497,9 +530,9 @@ then
 # etc options...
 #
 
-# The program that I build here scans the Windows registry to look for
-# cygwin installations. When run it generates output "32", "64" or "32 64"
-# depending on which variants it finds.
+# The program that I build here looks for cygwin installations. When run
+# it generates output "32", "64" or "32 64" depending on which variants it
+# finds.
 
   if test "x$with_win32bit" = "xno"
   then
@@ -539,8 +572,8 @@ then
 
   AC_MSG_NOTICE(cyg32_available = $cyg32_available)
 
-# If 32-bit cygwin is available then by default build for it. If it is
-# not then refuse to even if the user asked for it.
+# If 32-bit cygwin is available then build for it if with_win32bit was
+# specified. If it is not then refuse to even if the user asked for it.
   if test "$cyg32_available" = "yes" && test "x$with_win32bit" != "no"
   then
     if test "$with_c32" = "default"
@@ -564,11 +597,12 @@ AC_MSG_NOTICE(with_c32 = $with_c32)
       with_c64="yes"
     fi
   else
-    if test "$with_c64" = "yes"
-    then
-      AC_MSG_ERROR([64-bit cygwin environment needed but not found in c:\cygwin64])
-    fi
-    with_c64="no"
+# I am now going to INSIST that 64-bit cygwin builds will be possible, and
+# indeed really that this script is initially launched from a 64-bit cygwin
+# world. It will in fact re-invoke itself at times in a 32-bit cygwin world
+# when it wants to build a 32-bit cywgin set of binaries.
+    AC_MSG_ERROR([64-bit cygwin environment needed but not found in c:\cygwin64])
+    exit 1
   fi
 fi
 
@@ -881,17 +915,57 @@ AC_ARG_WITH(sequential,
   [with_sequential="no"])
 
 
+
+case `uname -n` in
+*panamint* | *gauguin*)
+  default_windows_layout="new"
+  ;;
+*)
+  default_windows_layout="old"
+  ;;
+esac
+
+AC_ARG_WITH(windows_layout,
+  AC_HELP_STRING([--with-windows_layout], [old or new windows layout]),
+  [],
+  [with_windows_layout="$default_windows_layout"])
+
+AC_MSG_NOTICE([default=$default_windows_layout this-layout=$with_windows_layout])
+
+if test "$with_windows_layout" != "new"
+then
+  with_windows_layout="old"
+fi
+
 csl_inplace_cygwin_build ()
 {
 # The argument here will be either i686-pc-cygwin or x88_64-pc-cygwin
   target=$1
   forcer=$2
+AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
 # Find the proper name for the target directory, allowing for --enable-debug
 # and any other options that may be relevant.
-  build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args" --with-cygwin`
-  AC_MSG_NOTICE([target=$target => build=$build])
-  mkdir -p "$abssrcdir/cslbuild/$build"
-  cd "$abssrcdir/cslbuild/$build"
+  if test "$with_windows_layout" = "new"
+  then
+    case $target in
+    *i686*)
+      cygver="cyg32"
+      ;;
+    *)
+      cygver="cyg64"
+      ;;
+    esac
+    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh intel-pc-windows $ac_configure_args --with-cygwin"`
+    AC_MSG_NOTICE([target=$target => build=$build/$cygver])
+    mkdir -p "$abssrcdir/cslbuild/$build/$cygver"
+    cp "$abssrcdir/csl/cslbase/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
+    cd "$abssrcdir/cslbuild/$build/$cygver"
+  else
+    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args --with-cygwin"`
+    AC_MSG_NOTICE([target=$target => build=$build])
+    mkdir -p "$abssrcdir/cslbuild/$build"
+    cd "$abssrcdir/cslbuild/$build"
+  fi
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
@@ -941,10 +1015,27 @@ csl_inplace_nativewin_build ()
   buildmc=$1
   host=$2
   AC_MSG_NOTICE([CSL inplace for native Windows])
-  build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $buildmc $ac_configure_args"`
-  AC_MSG_NOTICE([About to configure using $host in $build])
-  mkdir -p "$abssrcdir/cslbuild/$build"
-  cd "$abssrcdir/cslbuild/$build"
+  if test "$with_windows_layout" = "new"
+  then
+    case $buildmc in
+    *i686*)
+      winver="win32"
+      ;;
+    *)
+      winver="win64"
+      ;;
+    esac
+    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh intel-pc-windows $ac_configure_args"`
+    AC_MSG_NOTICE([About to configure using $host in $build/$winver])
+    mkdir -p "$abssrcdir/cslbuild/$build/$winver"
+    cp "$abssrcdir/csl/cslbase/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
+    cd "$abssrcdir/cslbuild/$build/$winver"
+  else
+    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args"`
+    AC_MSG_NOTICE([About to configure using $host in $build])
+    mkdir -p "$abssrcdir/cslbuild/$build"
+    cd "$abssrcdir/cslbuild/$build"
+  fi
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""

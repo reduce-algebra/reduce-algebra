@@ -46,7 +46,7 @@ case $host in
 # i686, so I wan to normalise. The second is that the build for the Mac
 # creates a "fat" universal binary that should run on either powerpc or
 # Intel Macs, and so to tag the build with one or the other architecture
-# may could as clumsy.
+# may could as clumsy. This is an archaic issue now no longer used!
   host=`echo $host | $SED -e s/i386/universal/`
   host=`echo $host | $SED -e s/i686/universal/`
   host=`echo $host | $SED -e s/powerpc/universal/`
@@ -176,6 +176,8 @@ do
     in
     *x86_64*)
       host=x86_64-pc-cygwin
+      ;;
+    intel-*)
       ;;
     *)
       host=i686-pc-cygwin

@@ -1,0 +1,12 @@
+# This gets placed in a directory called intel-pc-windows that has
+# sub-directories win32, win64, cyg32 and cyg64 in the most general
+# case. I build in all such directories that exist.
+
+
+all:
+	if test -d win64; then cd win64; make; fi
+	if test -d cyg64; then cd cyg64; make; fi
+	if test -d win32; then cd win32; make; fi
+	if test -d cyg32; then cd cyg32; ./cyg32 make; fi
+
+
