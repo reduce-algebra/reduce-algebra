@@ -959,6 +959,8 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
     AC_MSG_NOTICE([target=$target => build=$build/$cygver])
     mkdir -p "$abssrcdir/cslbuild/$build/$cygver"
     cp "$abssrcdir/csl/cslbase/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
+    cp "$abssrcdir/csl/cslbase/stub2020.c" "$abssrcdir/cslbuild/$build/stub2020.c"
+    cp "$abssrcdir/csl/cslbase/make-cygwin-symlink.c" "$abssrcdir/cslbuild/$build/make-cygwin-symlink.c"
     cd "$abssrcdir/cslbuild/$build/$cygver"
   else
     build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args --with-cygwin"`
@@ -1043,15 +1045,20 @@ csl_inplace_nativewin_build ()
     passcc=""
   fi
   AC_MSG_NOTICE([passcc = $passcc])
+  if test "$with_windows_layout" = "new"
+  then
+    cygextra=
+  else
 # The Windows version would like to know where to find cygwin variants...
-  cygextra=
-  ed32="s/.*windows/i686-pc-cygwin/; s/.*cygwin/i686-pc-cygwin/"
-  dd32=`echo $build | sed -e "$ed32"`
-  cygextra="--with-cygbuild=$abssrcdir/cslbuild/$dd32"
-  ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
-  dd64=`echo $build | sed -e "$ed64"`
-  cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
-  AC_MSG_NOTICE([cygextra = $cygextra])
+    cygextra=
+    ed32="s/.*windows/i686-pc-cygwin/; s/.*cygwin/i686-pc-cygwin/"
+    dd32=`echo $build | sed -e "$ed32"`
+    cygextra="--with-cygbuild=$abssrcdir/cslbuild/$dd32"
+    ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
+    dd64=`echo $build | sed -e "$ed64"`
+    cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
+    AC_MSG_NOTICE([cygextra = $cygextra])
+  fi
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
   doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
           CC=\"$CC\" CXX=\"$CXX\" \

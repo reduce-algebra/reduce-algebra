@@ -1,8 +1,57 @@
+# Makefile for CSL/Reduce on Windows
+
 # This gets placed in a directory called intel-pc-windows that has
 # sub-directories win32, win64, cyg32 and cyg64 in the most general
 # case.
 
-all:	fonts.stamp win.stamp cyg.stamp
+win32 := $(shell if test -d win32; then echo "yes"; else echo "no"; fi)
+win64 := $(shell if test -d win64; then echo "yes"; else echo "no"; fi)
+cyg32 := $(shell if test -d cyg32; then echo "yes"; else echo "no"; fi)
+cyg64 := $(shell if test -d cyg64; then echo "yes"; else echo "no"; fi)
+
+# BINARIES will list files that I need for the final packaged version.
+# COPIEDBINARRIES are also needed, but rather than being created via
+# compilation in this Makefile thay are fetched from one of the sub-
+# directories that also get built.
+
+BINARIES = csl wincsl bootstrapreduce reduce winreduce make-cygwin-symlink
+
+COPIEDBINARIES = \
+	reduce.resources/cslwin32.exe \
+	reduce.resources/cslwin64.exe \
+	reduce.resources/cslcyg32.exe \
+	reduce.resources/cslcyg64.exe \
+	reduce.resources/bootwin32.exe \
+	reduce.resources/bootwin64.exe \
+	reduce.resources/bootcyg32.exe \
+	reduce.resources/bootcyg64.exe \
+	reduce.resources/redwin32.exe \
+	reduce.resources/redwin64.exe \
+	reduce.resources/redcyg32.exe \
+	reduce.resources/redcyg64.exe \
+	reduce.resources/wcslwin32.exe \
+	reduce.resources/wcslwin64.exe \
+	reduce.resources/wredwin32.exe \
+	reduce.resources/wredwin64.exe \
+	csl.img \
+	bootstrapreduce.img \
+	reduce.img
+
+all:	fonts.stamp resources.stamp win.stamp cyg.stamp \
+		$(BINARIES) $(COPIEDBINARIES)
+
+# A first section of this file will arrange that winX and cygX versions
+# can be built. Their building will be marked by having *.stamp files
+# created here. To force rebuilding it should be sufficient to delete the
+# *.stamp files.
+
+# This is just for debugging:
+subs:
+	echo DEBUG win32:$(win32) win64:$(win64) cyg32:$(cyg32) cyg64:$(cyg64)
+
+ifeq "$(win64)" "no"
+$(error The win64 directory must be present)
+endif
 
 FONTS = reduce.fonts/cmex10.pfa reduce.fonts/cmex10.pfb \
 	reduce.fonts/cmex10.ttf reduce.fonts/cmex7.ttf \
@@ -29,6 +78,8 @@ FONTS = reduce.fonts/cmex10.pfa reduce.fonts/cmex10.pfb \
 	reduce.fonts/src/cmmi10.asm.gz reduce.fonts/src/cmr10.asm.gz \
 	reduce.fonts/src/cmsy10.asm.gz
 
+RESOURCES = reduce.resources/mma.awk reduce.resources/qepcad.awk
+
 WIN64FILES = win64/csl/reduce.exe \
 	win64/csl/reduce.com \
 	win64/csl/bootstrapreduce.exe \
@@ -37,8 +88,7 @@ WIN64FILES = win64/csl/reduce.exe \
 	win64/csl/bootstrapreduce.img \
 	win64/csl/img.exe \
 	win64/csl/reduce.resources/mma.awk \
-	win64/csl/reduce.resources/qepcad.awk \
-	win64/csl/reduce.fonts/README
+	win64/csl/reduce.resources/qepcad.awk
 
 # win64 is the only platform I force the building of image files, because
 # those files should be usable in all otherw contexts. When I build for
@@ -48,17 +98,26 @@ WIN64FILES = win64/csl/reduce.exe \
 # to invoke sub-builds, but here I am just on Cygwin and so it is proper
 # to use just "make".
 
-
 $(WIN64FILES):	win.stamp
 
+ifeq "$(win32)" "yes"
 win.stamp:
 	rm -f win.stamp
 	cd win64 && \
 		make && \
 		make bootstrapreduce.img && \
 		cd .. && \
-                if test -d win32; then make win32.stamp; fi && \
+                make win32.stamp && \
 		touch win.stamp
+else
+win.stamp:
+	rm -f win.stamp
+	cd win64 && \
+		make && \
+		make bootstrapreduce.img && \
+		cd .. && \
+		touch win.stamp
+endif
 
 $(FONTS):	fonts.stamp
 
@@ -66,6 +125,15 @@ fonts.stamp:	win.stamp
 	rm -f fonts.stamp
 	cp -r win64/csl/reduce.fonts . && \
 		touch fonts.stamp
+
+$(RESOURCES):	resources.stamp
+
+resources.stamp:	win.stamp
+	rm -f resources.stamp
+	mkdir -p reduce.resources && \
+		cp win64/csl/reduce.resources/mma.awk reduce.resources && \
+		cp win64/csl/reduce.resources/qepcad.awk reduce.resources && \
+		touch resources.stamp
 
 WIN32FILES = win32/csl/reduce.exe \
 	win32/csl/reduce.com \
@@ -86,17 +154,27 @@ CYG64FILES = cyg64/csl/reduce.exe \
 	cyg64/csl/csl.exe
 
 # When I build for cyg64 I check if cyg32 is present and if so I build
-# for it. Note that I drop into a Cygwin32 shell to do that.
+# for it. Note that I drop into a Cygwin32 shell to do that. I will not
+# support a case where Cygwin32 is present but not Cygwin64.
 
 $(CYG64FILES):	cyg.stamp
 
+ifeq "$(cyg32)" "yes"
 cyg.stamp:
 	rm -f cyg.stamp
 	cd cyg64 && \
 		make && \
 		cd .. && \
-                if test -d cyg32; then make cyg32.stamp; fi && \
+                make cyg32.stamp && \
 		touch cyg.stamp
+else
+cyg.stamp:
+	rm -f cyg.stamp
+	cd cyg64 && \
+		make && \
+		cd .. && \
+		touch cyg.stamp
+endif
 
 CYG32FILES = cyg32/csl/reduce.exe \
 	cyg32/csl/bootstrapreduce.exe \
@@ -112,13 +190,143 @@ cyg32.stamp:
 		cd .. && \
 		touch cyg32.stamp
 
-.PHONEY:	clean
+# Now a section that is for building things that amount to "fat binaries"
+# here
+
+# DEBUG can be set and it causes the top-level code to display trace
+# information as it runs. This should only be at all relevant to those who
+# maintain that particular bit of code.
+
+#DEBUG =
+DEBUG = -DDEBUG=1
+
+# I will use RED32 and RED64 to list the collection of Cygwin DLLs used
+# by each of those.
+RED32 = cyg32/csl/reduce.exe
+RED64 = cyg64/csl/reduce.exe
+
+# I will need to work out which DLLs are required by the Cygwin version
+# of Reduce. I do so here by using "objdump" on the executables and
+# editing the output to end up with a list in the form that will help me.
+
+dll32.c:
+	i686-pc-cygwin-objdump -p $(RED32) | \
+		grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$$#\",#' | \
+		grep cyg | sort > dll32.c
+
+dll64.c:
+	objdump -p $(RED64) | \
+		grep DLL | sed '1d;s#\tDLL Name: #    \"#; s#$$#\",#' | \
+		grep cyg | sort > dll64.c
+
+
+csl:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
+	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
+	        -DNAME=csl -I. -o csl
+	i686-w64-mingw32-strip csl
+
+wincsl:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
+	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
+	        -DNO_CYGWIN=1 -DNAME=wcsl -Wl,--subsystem,windows -I. -o wincsl
+	i686-w64-mingw32-strip wincsl
+
+bootstrapreduce:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
+	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
+	        -DNAME=boot -I. -o bootstrapreduce
+	i686-w64-mingw32-strip bootstrapreduce
+
+reduce:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
+	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
+	        -DNAME=red -I. -o reduce
+	i686-w64-mingw32-strip reduce
+
+winreduce:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
+	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
+	        -DNO_CYGWIN=1 -DNAME=wred -Wl,--subsystem,windows -I. -o winreduce
+	i686-w64-mingw32-strip winreduce
+
+# Build the program "make-cygwin-symlink" that can be called as
+#   ./make-cygwin-symlink "full windows name" short-linux-name
+#
+# The effect of this is roughly as if cygwin had been active and
+# one had gone
+#   ln -s `cygpath "full windows name"` /usr/local/bin/short-linux-name
+# for each installation of cygwin found.
+
+make-cygwin-symlink:	make-cygwin-symlink.c
+	i686-w64-mingw32-gcc make-cygwin-symlink.c -static \
+		-o make-cygwin-symlink
+	i686-w64-mingw32-strip make-cygwin-symlink
+
+reduce.resources/cslwin32.exe:	win32/csl/csl.com
+	cp $< $@
+reduce.resources/cslwin64.exe:	win64/csl/csl.com
+	cp $< $@
+reduce.resources/cslcyg32.exe:	cyg32/csl/csl.exe
+	cp $< $@
+reduce.resources/cslcyg64.exe:	cyg64/csl/csl.exe
+	cp $< $@
+
+reduce.resources/bootwin32.exe:	win32/csl/bootstrapreduce.exe
+	cp $< $@
+reduce.resources/bootwin64.exe:	win64/csl/bootstrapreduce.exe
+	cp $< $@
+reduce.resources/bootcyg32.exe:	cyg32/csl/bootstrapreduce.exe
+	cp $< $@
+reduce.resources/bootcyg64.exe:	cyg64/csl/bootstrapreduce.exe
+	cp $< $@
+
+reduce.resources/redwin32.exe:	win32/csl/reduce.com
+	cp $< $@
+reduce.resources/redwin64.exe:	win64/csl/reduce.com
+	cp $< $@
+reduce.resources/redcyg32.exe:	cyg32/csl/reduce.exe
+	cp $< $@
+reduce.resources/redcyg64.exe:	cyg64/csl/reduce.exe
+	cp $< $@
+
+reduce.resources/wcslwin32.exe:	win32/csl/csl.exe
+	cp $< $@
+reduce.resources/wcslwin64.exe:	win64/csl/csl.exe
+	cp $< $@
+
+reduce.resources/wredwin32.exe:	win32/csl/reduce.exe
+	cp $< $@
+reduce.resources/wredwin64.exe:	win64/csl/reduce.exe
+	cp $< $@
+
+reduce.resources/mma.awk: win64/csl/reduce.resources/mma.awk
+	cp $< $@
+
+reduce.resources/qepcad.awk:	win64/csl/reduce.resources/qepcad.awk
+	cp $< $@
+
+csl.img:	win64/csl/csl.img
+	cp $< $@
+
+bootstrapreduce.img:	win64/csl/bootstrapreduce.img
+	cp $< $@
+
+reduce.img:	win64/csl/reduce.img
+	cp $< $@
+
+
+# At present this does not do anything about redfront,
+# but it is going to have to!
+#
+
+# *** REDFRONT STUFF HERE ***
+
+# "make clean" should delete all the built-files here.
+
+.PHONY:	clean
 clean:
-	cd win64 && make clean
-	cd cyg64 && make clean
+	if test -d win64; then cd win64 && make clean; fi
+	if test -d cyg64; then cd cyg64 && make clean; fi
 	if test -d win32; then cd win32 && make clean; fi
 	if test -d cyg32; then cd cyg32 && make clean; fi
 	rm -rf reduce.resources
 	rm -rf reduce.fonts
+	rm -rf dll32.c dll64.c  $(BINARIES)
 
 # end of Makefile
