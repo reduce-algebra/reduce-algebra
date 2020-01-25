@@ -126,9 +126,31 @@ esac
 
 AC_MSG_NOTICE([with_cygwin32=$with_cygwin32 with_cygwin64=$with_cygwin64 uname_o=$uname_o uname_m=$uname_m uname_s=$uname_s wow=$wow])
 
+case `uname -n` in
+*panamint* | *gauguin*)
+  default_windows_layout="new"
+  ;;
+*)
+  default_windows_layout="old"
+  ;;
+esac
+
+AC_ARG_WITH(windows_layout,
+  AC_HELP_STRING([--with-windows_layout], [old or new windows layout]),
+  [],
+  [with_windows_layout="$default_windows_layout"])
+
+AC_MSG_NOTICE([default=$default_windows_layout this-layout=$with_windows_layout])
+
+if test "$with_windows_layout" != "new"
+then
+  with_windows_layout="old"
+fi
+
 if test "$with_cygwin32" != "no" &&
    test "$uname_o" = "Cygwin" &&
-   test "$uname_m" = "x86_64"
+   test "$uname_m" = "x86_64" &&
+   test "$with_windows_layout" != "new"
 then
   AC_MSG_NOTICE([Restart to use a 32-bit Cygwin shell])
 # I am on cygwin - and I will just assume that the directory with Reduce
@@ -150,7 +172,8 @@ AC_ARG_WITH(cygwin64,
 if test "$with_cygwin64" != "no"
    test "$uname_o" = "Cygwin" &&
    test "$uname_m" = "i686" &&
-   test "wow" = "yes"
+   test "wow" = "yes" &&
+   test "$with_windows_laout" != "new"
 then
   AC_MSG_NOTICE([Restart to use a 64-bit Cygwin shell])
   i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -static -o ./cyg64
@@ -1785,7 +1808,8 @@ AC_SUBST(LOCALCYG)
 AC_SUBST(CYG32)
 AC_SUBST(CYG64)
 
-if test "x$windows_build" = "xyes"
+if test "x$windows_build" = "xyes" &&
+   test "$with_windows_layout" != "new"
 then
   absolute_cyg32=`pwd -P`/cyg32
   AC_SUBST(absolute_cyg32)
@@ -1799,7 +1823,8 @@ then
   CYG64=$absolute_cyg64
 fi
 
-if test "x$with_cygwin" = "xyes"
+if test "x$with_cygwin" = "xyes" &&
+   test "$with_windows_layout" != "new"
 then
 
   if test "x$cyg32" = "xyes"

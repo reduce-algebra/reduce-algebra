@@ -1,12 +1,124 @@
 # This gets placed in a directory called intel-pc-windows that has
 # sub-directories win32, win64, cyg32 and cyg64 in the most general
-# case. I build in all such directories that exist.
+# case.
+
+all:	fonts.stamp win.stamp cyg.stamp
+
+FONTS = reduce.fonts/cmex10.pfa reduce.fonts/cmex10.pfb \
+	reduce.fonts/cmex10.ttf reduce.fonts/cmex7.ttf \
+	reduce.fonts/cmex8.ttf reduce.fonts/cmex9.ttf \
+	reduce.fonts/cmmi10.pfa reduce.fonts/cmmi10.pfb \
+	reduce.fonts/cmmi10.ttf reduce.fonts/cmmi12.ttf \
+	reduce.fonts/cmmi5.ttf reduce.fonts/cmmi6.ttf \
+	reduce.fonts/cmmi7.ttf reduce.fonts/cmmi8.ttf \
+	reduce.fonts/cmmi9.ttf reduce.fonts/cmr10.pfa \
+	reduce.fonts/cmr10.pfb reduce.fonts/cmr10.ttf \
+	reduce.fonts/cmr12.ttf reduce.fonts/cmr17.ttf \
+	reduce.fonts/cmr5.ttf reduce.fonts/cmr6.ttf \
+	reduce.fonts/cmr7.ttf reduce.fonts/cmr8.ttf reduce.fonts/cmr9.ttf \
+	reduce.fonts/cmsy10.pfa reduce.fonts/cmsy10.pfb \
+	reduce.fonts/cmsy10.ttf reduce.fonts/cmsy5.ttf \
+	reduce.fonts/cmsy6.ttf reduce.fonts/cmsy7.ttf \
+	reduce.fonts/cmsy8.ttf reduce.fonts/cmsy9.ttf \
+	reduce.fonts/cmuntt.pfb reduce.fonts/cmuntt.ttf \
+	reduce.fonts/fonts.dir reduce.fonts/fonts.scale \
+	reduce.fonts/pfmfiles/cmex10.pfm reduce.fonts/pfmfiles/cmmi10.pfm \
+	reduce.fonts/pfmfiles/cmr10.pfm reduce.fonts/pfmfiles/cmsy10.pfm \
+	reduce.fonts/README reduce.fonts/README.BaKoMa \
+	reduce.fonts/README.cmps-fonts reduce.fonts/src/cmex10.asm.gz \
+	reduce.fonts/src/cmmi10.asm.gz reduce.fonts/src/cmr10.asm.gz \
+	reduce.fonts/src/cmsy10.asm.gz
+
+WIN64FILES = win64/csl/reduce.exe \
+	win64/csl/reduce.com \
+	win64/csl/bootstrapreduce.exe \
+	win64/csl/csl.exe \
+	win64/csl/reduce.img \
+	win64/csl/bootstrapreduce.img \
+	win64/csl/img.exe \
+	win64/csl/reduce.resources/mma.awk \
+	win64/csl/reduce.resources/qepcad.awk \
+	win64/csl/reduce.fonts/README
+
+# win64 is the only platform I force the building of image files, because
+# those files should be usable in all otherw contexts. When I build for
+# win64 I test if a win32 directory is present and if it is I build for that
+# too.
+# In general platform-independent Makefiles one should perhaps use $(MAKE)
+# to invoke sub-builds, but here I am just on Cygwin and so it is proper
+# to use just "make".
 
 
-all:
-	if test -d win64; then cd win64; make; fi
-	if test -d cyg64; then cd cyg64; make; fi
-	if test -d win32; then cd win32; make; fi
-	if test -d cyg32; then cd cyg32; ./cyg32 make; fi
+$(WIN64FILES):	win.stamp
 
+win.stamp:
+	rm -f win.stamp
+	cd win64 && \
+		make && \
+		make bootstrapreduce.img && \
+		cd .. && \
+                if test -d win32; then make win32.stamp; fi && \
+		touch win.stamp
 
+$(FONTS):	fonts.stamp
+
+fonts.stamp:	win.stamp
+	rm -f fonts.stamp
+	cp -r win64/csl/reduce.fonts . && \
+		touch fonts.stamp
+
+WIN32FILES = win32/csl/reduce.exe \
+	win32/csl/reduce.com \
+	win32/csl/bootstrapreduce.exe \
+	win32/csl/csl.exe
+
+$(WIN32FILES):	win32.stamp
+
+win32.stamp:
+	rm -f win32.stamp
+	cd win32 && \
+		make && \
+		cd .. && \
+		touch win32.stamp
+
+CYG64FILES = cyg64/csl/reduce.exe \
+	cyg64/csl/bootstrapreduce.exe \
+	cyg64/csl/csl.exe
+
+# When I build for cyg64 I check if cyg32 is present and if so I build
+# for it. Note that I drop into a Cygwin32 shell to do that.
+
+$(CYG64FILES):	cyg.stamp
+
+cyg.stamp:
+	rm -f cyg.stamp
+	cd cyg64 && \
+		make && \
+		cd .. && \
+                if test -d cyg32; then make cyg32.stamp; fi && \
+		touch cyg.stamp
+
+CYG32FILES = cyg32/csl/reduce.exe \
+	cyg32/csl/bootstrapreduce.exe \
+	cyg32/csl/csl.exe \
+	cyg32.stamp
+
+$(CYG32FILES):	cyg32.stamp
+
+cyg32.stamp:
+	rm -f cyg32.stamp
+	cd cyg32 && \
+		./cyg32 make && \
+		cd .. && \
+		touch cyg32.stamp
+
+.PHONEY:	clean
+clean:
+	cd win64 && make clean
+	cd cyg64 && make clean
+	if test -d win32; then cd win32 && make clean; fi
+	if test -d cyg32; then cd cyg32 && make clean; fi
+	rm -rf reduce.resources
+	rm -rf reduce.fonts
+
+# end of Makefile

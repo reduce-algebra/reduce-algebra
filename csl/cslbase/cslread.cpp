@@ -1883,7 +1883,7 @@ static void wait_for_char()
 {   ensure_screen();
 // I rather believe that EMBEDDED and WINDOW_SYSTEM should by mutually
 // exclusive
-#ifdef WINDOW_SYSTEM
+#ifndef EMBEDDED
     {   on_backtrace(tty_count = wimpget(tty_buffer),
             if (miscflags & HEADLINE_FLAG)
                 err_printf("+++ Interrupted\n");
@@ -1896,10 +1896,8 @@ static void wait_for_char()
         tty_pointer = tty_buffer;
         return;
     }
-#else // WINDOW_SYSTEM
-//
-// Here I either do not have a window system or I have elected not to use it.
-//
+#else // EMBEDDED
+// Here is for the EMBEDDED case.
     std::fflush(stdout);
     std::fflush(stderr);
     errorset_msg = NULL;
@@ -1921,7 +1919,7 @@ static void wait_for_char()
         if (c == '\n' || c == '\v' || c == CTRL_D) break;
     }
     tty_pointer = tty_buffer;
-#endif // WINDOW_SYSTEM
+#endif // EMBEDDED
 }
 
 bool force_echo = false;
