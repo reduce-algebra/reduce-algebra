@@ -133,26 +133,43 @@ xWindows_NT)
     suffix=".exe"
   fi
 
+# If I have built anything using the "new layout" I will try that!
+  case $here/cslbuild/intel-pc-windows*
+  in
+  \*)
+    ;;
+  *)
+    pre=""
+    suffix=""
+    ;;
+  esac
+
 # I put an ordered list of preferences here. I put 64-bit release
 # versions first: FOX-based, wxWidgets-based and a version without a GUI
 # at all. These (if available) will support large memory and might (I hope)
 # run fastest. Failing any of those I try a 32-bit version. If none of those
 # are present I try for the same varieties but with debug builds. I will use
 # the first of these where I find a built version...
+# I now put "intel-pc-windows" first and that is the name used by my
+# "new layout" - when it is in general use I can withdraw a load of the
+# rest of the complication that is here!
   if test "$try64" = "yes"
   then
     if test "x$cygwin" = "xyes"
     then
-      versions="x86_64-pc-cygwin \
+      versions="intel-pc-windows \
+                x86_64-pc-cygwin \
                 i686-pc-cygwin"
     else
-      versions="x86_64-pc-windows \
+      versions="intel-pc-windows \
+                x86_64-pc-windows \
                 i686-pc-windows \
                 x86_64-pc-cygwin \
                 i686-pc-cygwin"
     fi
   else
-      versions="i686-pc-windows \
+      versions="intel-pc-windows \
+                i686-pc-windows \
                 i686-pc-cygwin"
   fi
   for hx in $versions
@@ -161,6 +178,12 @@ xWindows_NT)
     if test -x $here/../cslbuild/$hx$version/csl/$pre$ap$suffix
     then
       exec $here/../cslbuild/$hx$version/csl/$pre$ap$suffix $xtra $CSLFLAGS $*
+      exit 0
+    fi
+#   echo Try: -x $here/..cslbuild/$hx$version/$pre$ap$suffix
+    if test -x $here/../cslbuild/$hx$version/$pre$ap$suffix
+    then
+      exec $here/../cslbuild/$hx$version/$pre$ap$suffix $xtra $CSLFLAGS $*
       exit 0
     fi
   done

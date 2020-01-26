@@ -961,6 +961,7 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
     cp "$abssrcdir/csl/cslbase/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
     cp "$abssrcdir/csl/cslbase/stub2020.c" "$abssrcdir/cslbuild/$build/stub2020.c"
     cp "$abssrcdir/csl/cslbase/make-cygwin-symlink.c" "$abssrcdir/cslbuild/$build/make-cygwin-symlink.c"
+    cp "$abssrcdir/csl/cslbase/redpsl.sh" "$abssrcdir/cslbuild/$build/redpsl"
     cd "$abssrcdir/cslbuild/$build/$cygver"
   else
     build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args --with-cygwin"`

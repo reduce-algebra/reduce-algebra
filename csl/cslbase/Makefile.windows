@@ -4,6 +4,13 @@
 # sub-directories win32, win64, cyg32 and cyg64 in the most general
 # case.
 
+# DEBUG can be set and it causes the top-level code to display trace
+# information as it runs. This should only be at all relevant to those who
+# maintain that particular bit of code.
+
+#DEBUG =
+DEBUG = -DDEBUG=1
+
 win32 := $(shell if test -d win32; then echo "yes"; else echo "no"; fi)
 win64 := $(shell if test -d win64; then echo "yes"; else echo "no"; fi)
 cyg32 := $(shell if test -d cyg32; then echo "yes"; else echo "no"; fi)
@@ -14,7 +21,17 @@ cyg64 := $(shell if test -d cyg64; then echo "yes"; else echo "no"; fi)
 # compilation in this Makefile thay are fetched from one of the sub-
 # directories that also get built.
 
-BINARIES = csl wincsl bootstrapreduce reduce winreduce make-cygwin-symlink
+BINARIES =	csl wincsl \
+		bootstrapreduce \
+		redcsl wincsl \
+		redpsl \
+		make-cygwin-symlink \
+		rfcsl rfboot rfpsl
+
+# rfcslwin32 and rfcslwin64 will in fact be identical 32-bit Windows binaries
+# (and similarly for rfboot and rfpsl) because all tfcsl does is chain to
+# a suitable copy of Reduce. That can be done equally well using either
+# 32 or 64-bit code.
 
 COPIEDBINARIES = \
 	reduce.resources/cslwin32.exe \
@@ -35,9 +52,21 @@ COPIEDBINARIES = \
 	reduce.resources/wredwin64.exe \
 	csl.img \
 	bootstrapreduce.img \
-	reduce.img
+	reduce.img \
+	reduce.resources/rfcslwin32.exe \
+	reduce.resources/rfcslwin64.exe \
+	reduce.resources/rfcslcyg32.exe \
+	reduce.resources/rfcslcyg64.exe \
+	reduce.resources/rfbootwin32.exe \
+	reduce.resources/rfbootwin64.exe \
+	reduce.resources/rfbootcyg32.exe \
+	reduce.resources/rfbootcyg64.exe \
+	reduce.resources/rfpslwin32.exe \
+	reduce.resources/rfpslwin64.exe \
+	reduce.resources/rfpslcyg32.exe \
+	reduce.resources/rfpslcyg64.exe
 
-all:	fonts.stamp resources.stamp win.stamp cyg.stamp \
+all:	fonts.stamp resources.stamp win.stamp cyg.stamp psl.stamp \
 		$(BINARIES) $(COPIEDBINARIES)
 
 # A first section of this file will arrange that winX and cygX versions
@@ -45,12 +74,12 @@ all:	fonts.stamp resources.stamp win.stamp cyg.stamp \
 # created here. To force rebuilding it should be sufficient to delete the
 # *.stamp files.
 
-# This is just for debugging:
-subs:
-	echo DEBUG win32:$(win32) win64:$(win64) cyg32:$(cyg32) cyg64:$(cyg64)
-
 ifeq "$(win64)" "no"
 $(error The win64 directory must be present)
+endif
+
+ifeq "$(cyg64)" "no"
+$(error The cyg64 directory must be present)
 endif
 
 FONTS = reduce.fonts/cmex10.pfa reduce.fonts/cmex10.pfb \
@@ -106,7 +135,11 @@ win.stamp:
 	cd win64 && \
 		make && \
 		make bootstrapreduce.img && \
-		cd .. && \
+		cd redfront && make CSL="../reduce" \
+			PSL="???" \
+			BOOTSTRAPREDUCE="../bootstrapreduce" \
+			BAT="" && \
+		cd ../.. && \
                 make win32.stamp && \
 		touch win.stamp
 else
@@ -115,7 +148,8 @@ win.stamp:
 	cd win64 && \
 		make && \
 		make bootstrapreduce.img && \
-		cd .. && \
+		cd redfront && make && \
+		cd ../.. && \
 		touch win.stamp
 endif
 
@@ -146,12 +180,22 @@ win32.stamp:
 	rm -f win32.stamp
 	cd win32 && \
 		make && \
-		cd .. && \
+		cd redfront && make CSL="../reduce" \
+			PSL="???" \
+			BOOTSTRAPREDUCE="../bootstrapreduce" \
+			BAT="" && \
+		cd ../.. && \
 		touch win32.stamp
 
 CYG64FILES = cyg64/csl/reduce.exe \
 	cyg64/csl/bootstrapreduce.exe \
-	cyg64/csl/csl.exe
+	cyg64/csl/csl.exe \
+	cyg64/redfront/rfcsl.exe \
+	cyg64/redfront/rfboot.exe \
+	cyg64/redfront/rfpsl.exe \
+	cyg64/redfront/rfcslwin.exe \
+	cyg64/redfront/rfbootwin.exe \
+	cyg64/redfront/rfpslwin.exe
 
 # When I build for cyg64 I check if cyg32 is present and if so I build
 # for it. Note that I drop into a Cygwin32 shell to do that. I will not
@@ -164,7 +208,11 @@ cyg.stamp:
 	rm -f cyg.stamp
 	cd cyg64 && \
 		make && \
-		cd .. && \
+		cd redfront && make CSL="../reduce" \
+			PSL="???" \
+			BOOTSTRAPREDUCE="../bootstrapreduce" \
+			BAT="" && \
+		cd ../.. && \
                 make cyg32.stamp && \
 		touch cyg.stamp
 else
@@ -172,14 +220,17 @@ cyg.stamp:
 	rm -f cyg.stamp
 	cd cyg64 && \
 		make && \
-		cd .. && \
+		cd redfront && make && \
+		cd ../.. && \
 		touch cyg.stamp
 endif
 
 CYG32FILES = cyg32/csl/reduce.exe \
 	cyg32/csl/bootstrapreduce.exe \
 	cyg32/csl/csl.exe \
-	cyg32.stamp
+	cyg32/redfront/rfcsl.exe \
+	cyg32/redfront/rfboot.exe \
+	cyg32/redfront/rfpsl.exe
 
 $(CYG32FILES):	cyg32.stamp
 
@@ -187,21 +238,35 @@ cyg32.stamp:
 	rm -f cyg32.stamp
 	cd cyg32 && \
 		./cyg32 make && \
-		cd .. && \
+		cd redfront && ../cyg32 make && \
+		cd ../.. && \
 		touch cyg32.stamp
+
+psl.stamp:
+	rm -rf psl.stamp
+	rm -rf psl32 psl64
+	mkdir -p psl64
+	pushd ../../pslbuild/x86_64-pc-windows && \
+		make && \
+		popd && \
+		cp -r ../../pslbuild/x86_64-pc-windows/psl psl64 && \
+		cp -r ../../pslbuild/x86_64-pc-windows/red psl64 && \
+	if test -d ../../pslbuild/i686-pc-windows; \
+	then pushd ../../pslbuild/i686-pc-windows && \
+		make && \
+		popd && \
+		cp -r ../../pslbuild/x86_64-pc-windows/psl psl64 &&\
+		cp -r ../../pslbuild/x86_64-pc-windows/red psl64; \
+	fi && \
+	touch psl.stamp
 
 # Now a section that is for building things that amount to "fat binaries"
 # here
 
-# DEBUG can be set and it causes the top-level code to display trace
-# information as it runs. This should only be at all relevant to those who
-# maintain that particular bit of code.
-
-#DEBUG =
-DEBUG = -DDEBUG=1
-
 # I will use RED32 and RED64 to list the collection of Cygwin DLLs used
-# by each of those.
+# by each of those. And then to see if Cygwin is available I will look for
+# each of those DLLs on my PATH.
+
 RED32 = cyg32/csl/reduce.exe
 RED64 = cyg64/csl/reduce.exe
 
@@ -235,15 +300,30 @@ bootstrapreduce:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
 	        -DNAME=boot -I. -o bootstrapreduce
 	i686-w64-mingw32-strip bootstrapreduce
 
-reduce:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
+redcsl:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
 	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
-	        -DNAME=red -I. -o reduce
-	i686-w64-mingw32-strip reduce
+	        -DNAME=red -I. -o redcsl
+	i686-w64-mingw32-strip redcsl
 
-winreduce:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
+winredcsl:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
 	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
-	        -DNO_CYGWIN=1 -DNAME=wred -Wl,--subsystem,windows -I. -o winreduce
-	i686-w64-mingw32-strip winreduce
+	        -DNO_CYGWIN=1 -DNAME=wred -Wl,--subsystem,windows -I. -o winredcsl
+	i686-w64-mingw32-strip winredcsl
+
+rfcsl:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
+	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
+	        -DNAME=rfcsl -I. -o rfcsl
+	i686-w64-mingw32-strip rfcsl
+
+rfboot:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
+	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
+	        -DNAME=rfboot -I. -o rfboot
+	i686-w64-mingw32-strip rfboot
+
+rfpsl:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp psl.stamp
+	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
+	        -DNAME=rfpsl -I. -o rfpsl
+	i686-w64-mingw32-strip rfpsl
 
 # Build the program "make-cygwin-symlink" that can be called as
 #   ./make-cygwin-symlink "full windows name" short-linux-name
@@ -293,6 +373,33 @@ reduce.resources/wcslwin64.exe:	win64/csl/csl.exe
 reduce.resources/wredwin32.exe:	win32/csl/reduce.exe
 	cp $< $@
 reduce.resources/wredwin64.exe:	win64/csl/reduce.exe
+	cp $< $@
+
+reduce.resources/rfcslwin32.exe:	cyg64/redfront/rfcslwin.exe
+	cp $< $@
+reduce.resources/rfcslwin64.exe:	cyg64/redfront/rfcslwin.exe
+	cp $< $@
+reduce.resources/rfcslcyg32.exe:	cyg32/redfront/.libs/rfcsl.exe
+	cp $< $@
+reduce.resources/rfcslcyg64.exe:	cyg64/redfront/.libs/rfcsl.exe
+	cp $< $@
+
+reduce.resources/rfbootwin32.exe:	cyg64/redfront/rfbootwin.exe
+	cp $< $@
+reduce.resources/rfbootwin64.exe:	cyg64/redfront/rfbootwin.exe
+	cp $< $@
+reduce.resources/rfbootcyg32.exe:	cyg32/redfront/.libs/rfboot.exe
+	cp $< $@
+reduce.resources/rfbootcyg64.exe:	cyg64/redfront/.libs/rfboot.exe
+	cp $< $@
+
+reduce.resources/rfpslwin32.exe:	cyg64/redfront/rfpslwin.exe
+	cp $< $@
+reduce.resources/rfpslwin64.exe:	cyg64/redfront/rfpslwin.exe
+	cp $< $@
+reduce.resources/rfpslcyg32.exe:	cyg32/redfront/.libs/rfpsl.exe
+	cp $< $@
+reduce.resources/rfpslcyg64.exe:	cyg64/redfront/.libs/rfpsl.exe
 	cp $< $@
 
 reduce.resources/mma.awk: win64/csl/reduce.resources/mma.awk

@@ -522,6 +522,19 @@ void rf_exit(int ecode) {
   exit(ecode);
 }
 
+#ifndef REDCSL
+#define REDCSL "redcsl"
+#endif
+#ifndef BOOTSTRAPREDUCE
+#define BOOTSTRAPREDUCE "bootstrapreduce"
+#endif
+#ifndef REDPSL
+#define REDPSL "redpsl"
+#endif
+#ifndef BAT
+#define BAT ".bat"
+#endif
+
 char **create_call(int argc,char *argv[]) {
   char **nargv;
   char *reducename;
@@ -534,9 +547,9 @@ char **create_call(int argc,char *argv[]) {
 
 #ifdef PSL
    reducename = (char *)malloc(strlen(programDir) + 16);
-   sprintf(reducename, "%s/redpsl", programDir);
+   sprintf(reducename, "%s/%s", programDir, REDPSL);
 #ifdef NATIVE_WINDOWS
-   strcat(reducename, ".bat");
+   strcat(reducename, BAT);
 #endif
 
   if ((tempfd = open(reducename,O_RDONLY)) == -1) {  /* Does not check x */
@@ -569,12 +582,12 @@ char **create_call(int argc,char *argv[]) {
 
    reducename = (char *)malloc(strlen(programDir) + 16);
 #ifdef BOOT
-   sprintf(reducename, "%s/bootstrapreduce", programDir);
+   sprintf(reducename, "%s/%s", BOOTSTRAPREDUCE);
 #else
-   sprintf(reducename, "%s/redcsl", programDir);
+   sprintf(reducename, "%s/%s", programDir, REDCSL);
 #endif
 #ifdef NATIVE_WINDOWS
-   strcat(reducename, ".bat");
+   strcat(reducename, BAT);
 #endif
 
   if ((tempfd = open(reducename,O_RDONLY)) == -1)

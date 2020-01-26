@@ -8,6 +8,15 @@
 
 # $Id$
 
+if cyg32
+mc:=$(shell uname -m)
+ifneq "$mc" "i686"
+$(error This version must be built using a 32-bit Cygwin environment)
+# There is a "joke" about both automake and make using the word "endif", so
+# I use a work-around here substituting it in where I need to.
+@ENDIFWORD@
+endif  cyg32
+
 # Set up ways to refer to files in the main Reduce source tree.
 
 cslbase = $(srcdir)
