@@ -1025,7 +1025,7 @@ again
 
 (de -errapply (-fn -args -nam) 
 (prog (-ans -chn) 
-  (setq -ans (-errorset (list '-apply -fn -args) t *backtrace)) 
+  (setq -ans (-errorset (list '-apply (-mkquote -fn) (-mkquote -args)) t *backtrace)) 
   (cond ((atom -ans) (progn 
     (setq -chn (-wrs msgchnl*)) 
     (-prin2 "***** Error occured evaluating ") 
