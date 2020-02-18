@@ -174,8 +174,8 @@ rfcslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
 	i686-w64-mingw32-gcc $(CFLAGS) -DCSL=1 \
-		-DREDCSL=$(REDCSL) -DREDPSL=$(REDPSL) \
-		-DBOOTSTRAPREDUCE=$(BOOTSTRAPREDUCE) -DBAT=$(BAT) \
+		-DREDCSL=\"$(REDCSL)\" -DREDPSL=\"$(REDPSL)\" \
+		-DBOOTSTRAPREDUCE=\"$(BOOTSTRAPREDUCE)\" -DBAT=\"$(BAT)\" \
 		-DBUILDTIME="\"$(DATESTAMP)\"" \
 		-DHAVE_HISTORY=1 -DLITHIST=1 \
 		-DIGNOREDUPS=1 -DHISTFILESIZE=10000 \
@@ -193,8 +193,8 @@ rfbootwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
 	i686-w64-mingw32-gcc $(CFLAGS) -DBOOT=1 \
-		-DREDCSL=$(REDCSL) -DREDPSL=$(REDPSL) \
-		-DBOOTSTRAPREDUCE=$(BOOTSTRAPREDUCE) -DBAT=$(BAT) \
+		-DREDCSL=\"$(REDCSL)\" -DREDPSL=\"$(REDPSL)\" \
+		-DBOOTSTRAPREDUCE=\"$(BOOTSTRAPREDUCE)\" -DBAT=\"$(BAT)\" \
 		-DBUILDTIME="\"$(DATESTAMP)\"" \
 		-DHAVE_HISTORY=1 -DLITHIST=1 \
 		-DIGNOREDUPS=1 -DHISTFILESIZE=10000 \
@@ -212,8 +212,8 @@ rfpslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
 	i686-w64-mingw32-gcc $(CFLAGS) -DPSL=1 \
-		-DREDCSL=$(REDCSL) -DREDPSL=$(REDPSL) \
-		-DBOOTSTRAPREDUCE=$(BOOTSTRAPREDUCE) -DBAT=$(BAT) \
+		-DREDCSL=\"$(REDCSL)\" -DREDPSL=\"$(REDPSL)\" \
+		-DBOOTSTRAPREDUCE=\"$(BOOTSTRAPREDUCE)\" -DBAT=\"$(BAT)\" \
 		-DBUILDTIME="\"$(DATESTAMP)\"" \
 		-DHAVE_HISTORY=1 -DLITHIST=1 \
 		-DIGNOREDUPS=1 -DHISTFILESIZE=10000 \

@@ -108,6 +108,6 @@ package-win:	$(BUILDTOPDIR).stamp csl.stamp psl.stamp docs.stamp reduce.iss
 clean:
 	rm -rf cyg*.exe add*.exe *red*.exe *.img $(BUILDTOPDIR) \
 		cslwin32 cslwin64 cslcyg32 cslcyg64 \
-		cslbuild log reduce.iss dll*.c *.stamp
+		cslbuild log dll*.c *.stamp
 
 # end of Makefile
