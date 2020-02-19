@@ -109,12 +109,15 @@ symbolic procedure coframe1 u;
      w := !*pf2matwrtcoords(v,scoord);
      naturalvector2framevector := v;
      subfg!* := nil;
-     naturalframe2coframe := pair(scoord,
+     naturalframe2coframe := 
           for each j in lnrsolve(w,for each k in basisforml!*
                                        collect list !*k2q k)
-              collect mk!*sqpf partitsq!* car j);
+              collect car j;
      subfg!* := osubfg;
      coord!* := scoord;
+     naturalframe2coframe := pair(scoord,
+          for each j in naturalframe2coframe
+              collect mk!*sqpf repartit partitsq!* j);
      dbaseform2base2form := pair(basisforml!*,
           for each j in v collect mk!*sqpf repartit exdfpf j)
    end;

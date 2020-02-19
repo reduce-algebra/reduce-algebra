@@ -184,7 +184,7 @@ symbolic procedure multsqpsf(u,v);
 
 symbolic procedure repartit u;
    if null u then nil
-    else addpf(multpfsq(partitop ldpf u,lc u),repartit red u);
+    else addpf(multpfsq(partitop ldpf u,resimp lc u),repartit red u);
 
 symbolic procedure partitsq!* u;
    %U is a standardquotient. Partitfunction for *sq's.
