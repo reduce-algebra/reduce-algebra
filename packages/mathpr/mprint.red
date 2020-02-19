@@ -398,8 +398,11 @@ symbolic procedure assgnpri(u,v,w);
        fmp!-switch nil;
        tm := t >>;
     if (x := getrtype u) and flagp(x,'sprifn)
-      then <<if null outputhandler!*
-               then <<if null v then apply1(get(get(x,'tag),'prifn),u)
+      then <<if null outputhandler!* or (outputhandler!* eq 'redfront_oh)
+               then <<if y := get(get(x,'tag),'assgnpri)
+                         then apply1(y,{u, v, w})
+                       else if null v 
+                         then apply1(get(get(x,'tag),'prifn),u)
                        else maprin ('setq . aconc(v,u)) >>
               else apply2(outputhandler!*,'assgnpri,{u, v, w})>>
     else <<

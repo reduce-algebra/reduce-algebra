@@ -66,11 +66,18 @@ put('form!-with!-free!-indices,'prifn,'indxpri1);
 
 put('form!-with!-free!-indices,'fancy!-setprifn,'indxpri);
 
-put('form!-with!-free!-indices,'fancy!-assgnpri,'indxpri1);
+put('form!-with!-free!-indices,'fancy!-assgnpri,'assgn_indxpri);
+
+put('form!-with!-free!-indices,'assgnpri,'assgn_indxpri);
 
 flag('(form!-with!-free!-indices),'sprifn);
 
 put('indvarprt,'expt,'inbrackets);
+
+symbolic procedure assgn_indxpri u;
+   if null cadr u and null atom car u and null flagp(caar u,'indexvar)
+      then indxpri1 car u
+    else indxpri(if null cadr u then car u else caadr u, car u);
 
 symbolic procedure xindvarprt(l,p);
   % Thanks to Herbert Melenk.

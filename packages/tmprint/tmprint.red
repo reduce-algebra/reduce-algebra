@@ -495,10 +495,10 @@ symbolic procedure fancy!-output(mode,l);
          if getd 'math!-display and
             math!-display 0 and
             math!-display 1 then <<
-            assgnpri(car l,nil,nil) where outputhandler!* = nil >>;
+            assgnpri(car l,cadr l,caddr l) where outputhandler!* = nil >>;
          most_recent_fancy := car l . most_recent_fancy;
 #endif
-         fancy!-assgnpri car l;
+         fancy!-assgnpri l;
          fancy!-flush() >>
       else <<
 #if (memq 'csl lispsystem!*)
@@ -514,9 +514,9 @@ symbolic procedure fancy!-output(mode,l);
 % and calls it
 symbolic procedure fancy!-assgnpri u;
    begin scalar x,y;
-     x := getrtype u;
+     x := getrtype car u;
      y := get(get(x,'tag),'fancy!-assgnpri);
-     return if y then apply1(y,u) else fancy!-maprin0 u
+     return if y then apply1(y,u) else fancy!-maprin0 car u
   end;
 
 
