@@ -582,7 +582,7 @@ char **create_call(int argc,char *argv[]) {
 
    reducename = (char *)malloc(strlen(programDir) + 16);
 #ifdef BOOT
-   sprintf(reducename, "%s/%s", BOOTSTRAPREDUCE);
+   sprintf(reducename, "%s/%s", programDir, BOOTSTRAPREDUCE);
 #else
    sprintf(reducename, "%s/%s", programDir, REDCSL);
 #endif
