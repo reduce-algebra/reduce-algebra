@@ -98,6 +98,9 @@ int runResource(const char *modulename, const char *extra)
 #endif
 // I will pass my own command line down to the program that I execute.
     const char *cmd = GetCommandLine();
+#ifdef DEBUG
+    printf("GetCommandLine returns <%s>\n", cmd);
+#endif
     char *cmd1 = (char *)malloc(strlen(cmd) + strlen(pPath) + 12);
     if (cmd1 == NULL)
     {   printf("No memory for new command line\n"); fflush(stdout);

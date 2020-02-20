@@ -18,6 +18,8 @@ RESOURCES = \
 	reduce.resources/bootcyg64.exe \
 	reduce.resources/redwin64.exe \
 	reduce.resources/redcyg64.exe \
+	reduce.resources/wcslwin64.exe \
+	reduce.resources/wredwin64.exe \
 	reduce.resources/mma.awk \
 	reduce.resources/qepcad.awk \
 	csl.img \
@@ -37,18 +39,18 @@ dll64.c:
 
 
 csl:	../stub2020.c dll64.c $(RESOURCES)
-	x86_64-w64-mingw32-gcc -O3 $(DEBUG) ../stub2020.c -static \
-	        -DNO_32_BIT=1 -DNAME=csl -I. -o csl
+	x86_64-w64-mingw32-gcc -O3 -DNO_32_BIT=1 $(DEBUG) ../stub2020.c -static \
+	        -DNAME=csl -I. -o csl
 	x86_64-w64-mingw32-strip csl
 
 wincsl:	$(RESOURCES)
 	cp $(WIN64)/csl.exe wincsl.exe
 
 bootstrapreduce:	../stub2020.c dll64.c $(RESOURCES)
-	x86_64-w64-mingw32-gcc -O3 -DNO_32_BIT=1 $(DEBUG) ../stub2020.c -static \
+	i686-w64-mingw32-gcc -O3 -DNO_32_BIT=1 $(DEBUG) ../stub2020.c -static \
 	        -DNAME=boot -I. -o bootstrapreduce
-	x86_64-w64-mingw32-strip bootstrapreduce
-	x86_64-w64-mingw32-strip bootstrapreduce
+	i686-w64-mingw32-strip bootstrapreduce
+
 reduce:	../stub2020.c dll64.c $(RESOURCES)
 	x86_64-w64-mingw32-gcc -O3 -DNO_32_BIT=1 $(DEBUG) ../stub2020.c -static \
 	        -DNAME=red -I. -o reduce
@@ -56,7 +58,6 @@ reduce:	../stub2020.c dll64.c $(RESOURCES)
 
 winreduce:	$(RESOURCES)
 	cp $(WIN64)/reduce.exe winreduce.exe
-
 
 # Build the program "make-cygwin-symlink" that can be called as
 #   ./make-cygwin-symlink "full windows name" short-linux-name
@@ -84,6 +85,11 @@ reduce.resources/bootcyg64.exe:	$(CYG64)/bootstrapreduce.exe
 reduce.resources/redwin64.exe:	$(WIN64)/reduce.com
 	cp $< $@
 reduce.resources/redcyg64.exe:	$(CYG64)/reduce.exe
+	cp $< $@
+
+reduce.resources/wcslwin64.exe: $(WIN64)/csl.exe
+	cp $< $@
+reduce.resources/wredwin64.exe:	$(WIN64)/reduce.exe
 	cp $< $@
 
 reduce.resources/mma.awk: $(PACKAGES)/redlog/ofsf/mma.awk

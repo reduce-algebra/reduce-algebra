@@ -1,12 +1,9 @@
-#! /bin/bash -v
+#! /bin/bash
 
-# This must be run from a cygwin64 shell.
-
-C/scripts/cygwin-sanity-check.sh
 
 # Configure and build CSL version from scratch
 
-#     a native-style win64 version. Always done the same way.
+# (3) a native-style win64 version. Always done the same way.
 
 ./cslbuild1.sh win64
 
