@@ -75,6 +75,7 @@
 
 (
  (support       "support"     core                               psl)
+ (revision      "support"     core                           csl psl)
  (rlisp         "rlisp"       core                           csl psl)
  (alg           "alg"         core      test                 csl psl)
  (poly          "poly"        core      test                 csl psl)
