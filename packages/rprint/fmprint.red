@@ -236,7 +236,7 @@ symbolic procedure fancy!-output(mode,l);
      else
    <<set!-fancymode t;
      if mode = 'maprin then fancy!-maprin0 l
-     else if mode = 'assgnpri then << fancy!-assgnpri car l; fancy!-flush() >>
+     else if mode = 'assgnpri then << fancy!-assgnpri l; fancy!-flush() >>
      else
      fancy!-flush();
     >>;
@@ -245,9 +245,9 @@ symbolic procedure fancy!-output(mode,l);
 % and calls it
 symbolic procedure fancy!-assgnpri u;
    begin scalar x,y;
-     x := getrtype u;
+     x := getrtype car u;
      y := get(get(x,'tag),'fancy!-assgnpri);
-     return if y then apply1(y,u) else fancy!-maprin0 u
+     return if y then apply1(y,u) else fancy!-maprin0 car u
   end;
 
 

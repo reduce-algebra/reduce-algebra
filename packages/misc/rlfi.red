@@ -229,7 +229,10 @@ put('TeX,'simpfn,'simpcar);
 put('TeX,'typeletfn,'TeXlet);
 put('TeX,'prifn,'latexprint);
 put('TeX,'setprifn,'setlaprin);
+put('Tex,'evfn,'texevfn);
 flag('(TeX),'sprifn);
+
+symbolic procedure texevfn(u,v); reval1(cadr u,v);
 
 symbolic procedure TeXlet(u,v,tu,b,tv);
 % Assignment procedure for LATEX mode
@@ -772,6 +775,18 @@ put('list,'laprifn,'listprla);
 put('arbint,'indexed,'(down));
 put('arbreal,'indexed,'(down));
 put('arbcomplex,'indexed,'(down));
+
+symbolic procedure binomprla(u,p);
+   begin
+     prin2la "\binom";
+     prin2la "{";
+     maprintla(car u,0);
+     prin2la "}{";
+     maprintla(cadr u,0);
+     prin2la "}"
+   end;
+
+put('binomial,'laprifn,'binomprla);
 
 algebraic;
 
