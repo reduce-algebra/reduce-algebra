@@ -75,7 +75,8 @@ flag('(form!-with!-free!-indices),'sprifn);
 put('indvarprt,'expt,'inbrackets);
 
 symbolic procedure assgn_indxpri u;
-   <<if caddr u memq '(first only) then terpri!* t; 
+   <<if caddr u memq '(first only) 
+        then if !*fancy then fancy!-terpri!* t else terpri!* t; 
      if null cadr u and null atom car u and null flagp(caar u,'indexvar)
         then indxpri1 car u
       else indxpri(if null cadr u then car u else caadr u, car u)>>;
