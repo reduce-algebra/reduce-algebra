@@ -1,4 +1,4 @@
-// other-cygwin.cpp                     Copyright (C) A C Norman  2014-2019
+// other-cygwin.cpp                     Copyright (C) A C Norman  2014-2020
 
 //
 // This program is to be run from a DOS command prompt or any cygwin
@@ -33,9 +33,12 @@
 // that may be useful at configure time. This will be in the form "32"
 // "64", "32 64" or a moaning message that no Cygwin installation can be
 // identified.
+//
+// [2020] Cygwin changes (I believe that will be whait it is) led to
+// output from the spawned command being lost.
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -76,6 +79,7 @@
 #include <tlhelp32.h>
 #include <unistd.h>
 #include <process.h>
+#include <thread>
 
 static bool run64;
 
@@ -298,6 +302,16 @@ bool find_cygwin(bool sixty_four)
     return cygwin_root[0] != 0;
 }
 
+static void echoOutput(HANDLE h)
+{   char buffer[4];
+    DWORD actual;
+    for (;;)
+    {   BOOL fg = ReadFile(h, buffer, 1, &actual, NULL);
+        if (!fg || actual!=1) break;
+        std::putchar(buffer[0]);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     if (argc == 1)
@@ -391,9 +405,24 @@ int main(int argc, char *argv[])
 // enough for IMMEDIATE purposes even without the upgrades needed to sort
 // out the problems described here! But please be aware that some output can
 // get misdirected along the way!
-    startup.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-    startup.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-    startup.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+//
+// The bad behaviour explained as above now seems to arise under mintty as
+// well as from a Windows console. But it looks as if xterm is still OK!
+    HANDLE p1a, p1b, p2a, p2b;
+    SECURITY_ATTRIBUTES sa;
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa.bInheritHandle = TRUE;
+    sa.lpSecurityDescriptor = NULL; 
+    if (!CreatePipe(&p1a, &p1b, &sa, 0) ||
+        !CreatePipe(&p2a, &p2b, &sa, 0))
+    {   std::printf("Failed to create pipes\n");
+        std::exit(1);
+    }
+    SetHandleInformation(p1b, HANDLE_FLAG_INHERIT, 0);
+    SetHandleInformation(p2a, HANDLE_FLAG_INHERIT, 0);
+    startup.hStdInput = p1a;
+    startup.hStdOutput = p2b;
+    startup.hStdError = p2b;
     startup.wShowWindow = SW_HIDE;
     startup.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
 // Now set up a command line
@@ -416,7 +445,7 @@ int main(int argc, char *argv[])
 //
 // If I am NOT needing to flip which version of cygwin I am using I can try
 // use of a command line "bash -c \"c1; c2; ...\""
-// and avoid starting up cygwin from scrath again.
+// and avoid starting up cygwin from scratch again.
 //
     char newdir[1024];
  
@@ -434,7 +463,8 @@ int main(int argc, char *argv[])
         std::strcat(command, "\"");
     }
     else
-    {// Under cygwin the shell variable USER gives the effective user name. A
+    {
+// Under cygwin the shell variable USER gives the effective user name. A
 // second variable USERNAME holds the name of the user that Windows believes
 // is active: eg when I am linked in over ssh that may be "cyg_server".
 // If I fail to read USER I will default to the name "unknown".
@@ -482,8 +512,8 @@ int main(int argc, char *argv[])
              NULL,                       // Security attributes
              1,                          // Inherit handles?
              CREATE_NEW_CONSOLE,         // Process creation flags
-             pnewenv,                    // environment
-             pnewdir,                    // Current Directory
+             pnewenv,                    // environment or NULL
+             pnewdir,                    // Current Directory or NULL
              &startup,                   // Startup Info
              &process);                  // process info
     if (rc == 0)
@@ -506,13 +536,13 @@ int main(int argc, char *argv[])
         else std::fprintf(stderr, "Process creation failed\n");
         return 1;
     }
+// Here I will try to echo the output from the process.
+    std::thread echoer(echoOutput, p2a);
     WaitForSingleObject(process.hThread, INFINITE);
     WaitForSingleObject(process.hProcess, INFINITE);
-    FlushFileBuffers(startup.hStdOutput);
-    FlushFileBuffers(startup.hStdError);
-    CloseHandle(startup.hStdInput);
-    CloseHandle(startup.hStdOutput);
-    CloseHandle(startup.hStdError);
+    CloseHandle(p1a);
+    CloseHandle(p2b);
+    echoer.join();
     CloseHandle(process.hProcess);
     CloseHandle(process.hThread);
     return 0;
