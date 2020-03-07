@@ -51,6 +51,10 @@ case "guess:$guess" in
         cd "$CURDIR"
 	;;
 
+  guess:armv6l-unknown-linux* )
+	MACHINE=armv6
+	;;
+
 esac
 
 export MACHINE
