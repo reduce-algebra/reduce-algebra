@@ -586,8 +586,8 @@ contact(1,{x,y,z},{u,v});
         d v - v *d x - v *d y - v *d z},{d x,d y,d z})
                x        y        z 
 
-contact(2,{e(i)},{w(a)}) 
-   where index_expand{d e(1)=>e(1)^e(2),d e(2)=>0,d w(a)=>0};
+OMrules := index_expand{d e(1)=>e(1)^e(2),d e(2)=>0,d w(a)=>0}; 
+contact(2,{e(i)},{w(a)}) where OMrules;
 
          1    1    1    1    2
    EDS({w  - w   *e  - w   *e ,
