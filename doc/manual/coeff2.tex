@@ -1,0 +1,104 @@
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+%
+% 2020.02.27     M. Ito
+
+%\textbf{COEFF2 Package} \quad ( \textsf{COEFF2, NM, EVAL2, RESET} )\\[\baselineskip]
+\ttindextype{COEFF2}{operator}
+\ttindextype{NM}{operator}
+\ttindextype{EVAL2}{operator}
+\ttindextype{RESET}{operator}
+
+In \REDUCE,  we can use the \f{COEFF} operator which returns a list of coefficients of a polynomial
+with respect to  specified variables. 
+On the other hand, the \f{COEFF2} operator gives a polynomial in which each coefficient is replaced by
+special variables \verb|#1,#2|,$\cdots$. It is used with the same syntax as the \f{COEFF} operator:
+\begin{syntax}
+        \texttt{COEFF2(}\meta{EXPRN:polynomial},\meta{VAR:kernel}\texttt{)}:algebraic
+\end{syntax}
+\textit{Example:}
+\begin{verbatim}
+off allfac;
+f := (a+b)^2*x^2*y+(c+d)^2*x*y;
+f2 := coeff2(f,x,y);
+g := (2*c+d)*x^2+(3+a)*x*y^3;
+g2 := coeff2(g,x,y);
+\end{verbatim}
+would result in the output
+\begin{verbatim}
+      2  2            2      2  2      2                    2
+f := a *x *y + 2*a*b*x *y + b *x *y + c *x*y + 2*c*d*x*y + d *x*y
+
+          2
+f2 := #1*x *y + #2*x*y
+
+          3        2      2        3
+g := a*x*y  + 2*c*x  + d*x  + 3*x*y
+
+          2         3
+g2 := #3*x  + #4*x*y
+\end{verbatim}
+If you want to retrieve the values of  special variables \verb|#1,#2|,$\cdots$,
+we can use the command \f{NM}. The syntax for this is:
+\begin{syntax}
+        \texttt{NM(}\meta{N:integer}\texttt{)}:algebraic
+\end{syntax}
+It returns the value of the variable \verb|#n|. For example, to get the value of 
+\verb|#1| in the above, one could say:
+\begin{verbatim}
+nm(1);
+\end{verbatim}
+yields the result
+\begin{verbatim}
+ 2            2
+a  + 2*a*b + b
+\end{verbatim}
+It is also possible to evaluate an expression including  special variables \verb|#1,#2,|$\cdots$
+by \f{EVAL2} operator.
+The syntax for this is:
+\begin{syntax}
+        \texttt{EVAL2(}\meta{EXPRN:rational}\texttt{)}:algebraic
+\end{syntax}
+\textit{Example:}
+\begin{verbatim}
+coeff2(f2*g2,x,y);
+
+    4         3  4       3         2  4
+#5*x *y + #6*x *y  + #7*x *y + #8*x *y
+
+nm(8);
+
+#2*#4
+
+eval2(ws);
+
+   2                2      2              2
+a*c  + 2*a*c*d + a*d  + 3*c  + 6*c*d + 3*d
+
+\end{verbatim}
+The user may remove all values of special variables \verb|#1,#2|,$\cdots$
+by the command \f{RESET}, in the form
+\begin{verbatim}
+       RESET( );
+\end{verbatim}
+

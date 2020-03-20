@@ -232,6 +232,7 @@
  (listvecops    "listvecops"            test                 csl psl)
  (cde           "cde"                   test                 csl psl)
  (sstools       "sstools"               test                 csl psl)
+ (coeff2        "misc"                                       csl psl)
 %  (heugcd        "heugcd"               test                 csl psl)
 )
 
