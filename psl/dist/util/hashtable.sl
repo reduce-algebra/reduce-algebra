@@ -54,7 +54,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(compiletime (load if f-vectors f-evectors))
+(compiletime (load if f-vectors f-evectors vfvect))
 
 % This is the golden ration times 2^32
 %(define-constant !#hash-multiplier!# (wconst 16#9E3779B9))
@@ -113,6 +113,13 @@
             ))
       (inf result)))
 
+(de big-sxhash (b)
+    (let ((l (veclen (vecinf b)))
+	  (result 0))
+      (vfor (from i 1 l 1) (do (setq result (wxor (igetv b i) result))))
+      (if (eq (igetv b 0) 'bigneg) (setq result (wnot result)))
+      (inf result)))
+
 (de ht-check-twopower (n)
   (let ((len 0))
     (while (eq 0 (wand n 1))
@@ -121,7 +128,7 @@
       )
     (if (eq n 1) len)))
 
-(de mkhash (size flavor)
+(de mkhash1 (size flavor)
     (let ((len
 	   (and (fixp size)
 		(greaterp size 1)
@@ -137,9 +144,27 @@
 	       (putv v 0 (list '!#hashtable!# comp len (isub1 size)))
                v)))))
 
+%%
+%% external entrypoint:
+%%  allow any value for size (automatically increased to next power of 2) and ignore growth
+%%
+
+(de mkhash (size flavor growth)
+    (mkhash1 (ht-compute-size size) flavor))
+
+(de ht-compute-size (size)
+    (cond ((or (not (fixp size)) (lessp size 2) (greaterp size 65536))
+	   (stderror (bldmsg "Argument size to mkhash must be an integer of the form 2^n, 1<=n<=16, not %w" size)))
+	  (t
+	   (let ((power 1))
+	     (while (wlessp power size)
+	       (setq power (wshift power 1)))
+	     power))))
+    
 (ds is-hashtable (table)
     (and (vectorp table)
-         (eq (car (getv table 0)) '!#hashtable!#)))
+	 (let ((first (getv table 0)))
+	   (and (pairp first) (eq (car first) '!#hashtable!#)))))
 
 (ds valid-hashtable (table fnc)
     (if (not (is-hashtable table))
