@@ -56,13 +56,21 @@
 
 (compiletime (load if f-vectors f-evectors vfvect))
 
+(fluid '(*sxhash-visited-nodes*))
+
 % This is the golden ration times 2^32
 %(define-constant !#hash-multiplier!# (wconst 16#9E3779B9))
 
 % For reference: golden ration times 2^64 is 16#9e3779b97f4a7c15
 
+%(flag '(sxhash-internal sxhash-string big-sxhash ht-check-twopower ht-compute-size is-hashtable)
+%       'internalfunction)
 
 (de sxhash (o)
+    (prog (*sxhash-visited-nodes*)
+	  (return (sxhash-internal o))))
+
+(de sxhash-internal (o)
   (case (tag o)
         ((posint-tag) o)
         ((negint-tag) (inf o))
@@ -82,16 +90,33 @@
            s))
         ((vector-tag)
          (let ((n (upbv o))
-               (s (sxhash (getv o 0))))
+               (s (sxhash-internal (getv o 0))))
            (for (from i 1 n 1)
-                (do (setq s (wxor s (sxhash (getv o i))))))
+                (do (setq s (wxor s (sxhash-internal (getv o i))))))
            s))
-        ((pair-tag) (wxor (sxhash (car o)) (sxhash (cdr o))))
+        ((pair-tag)
+	 (progn
+	   (let ((found (atsoc o *sxhash-visited-nodes*)))   % check whether we have already seen this pair
+	     (if found (cdr found)                           % if so, return the recorded hash.
+	       (progn
+		 %% if o was not yet seen (first occurence), push a pair (o . 0) onto the association list,
+		 %% i.e., record occurence with tentative hash value 0
+		 (setq *sxhash-visited-nodes* (cons (setq found (cons o 0)) *sxhash-visited-nodes*)) 
+		 %% Now continue the hash computation. If the same node occurs again, 0 will be used as hash value.
+		 (let ((s (sxhash-internal (car o)))
+		       (o1 (cdr o)))
+		   (while (and (pairp o1) (null (atsoc o1 *sxhash-visited-nodes*)))
+		     (setq s (wxor (wshift s 3) (sxhash-internal (car o1))))
+		     (setq o1 (cdr o1)))
+		   (setq s (wxor s (sxhash-internal o1)))
+		   %% At this point found is a pair (o . 0), replace cdr by s
+		   (rplacd found s)
+		   s))))))
         ((evector-tag)
          (let ((n (eupbv o))
-               (s (sxhash (egetv o 0))))
+               (s (sxhash-internal (egetv o 0))))
            (for (from i 1 n 1)
-                (do (setq s (wxor s (sxhash (egetv o i))))))
+                (do (setq s (wxor s (sxhash-internal (egetv o i))))))
            s))
         ((id-tag) (id2int o))
         % More or less random value for other lisp objects
