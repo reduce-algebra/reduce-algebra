@@ -50,13 +50,17 @@
 % 1. The function sxhash computes a PSL posint (i.e. an integer that fits in a machine word
 %     and has zero tag bits). This integer is an invariant over the life of the lisp image.
 % 2. The bucket number is computed by multiplying this integer by a constant fix(2^32*golden_ratio)
-%     and taking the lowest n bits of the result.
+%     and taking the highest n bits of the result (a 32 bit number).
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load if f-vectors f-evectors vfvect))
 
-(fluid '(*sxhash-visited-nodes*))
+(fluid '(*sxhash-max-depth*))
+
+(setq *sxhash-max-depth* 5)
+
+(define-constant *sxhash-cons-default-value* 261835505)
 
 % This is the golden ration times 2^32
 %(define-constant !#hash-multiplier!# (wconst 16#9E3779B9))
@@ -67,10 +71,9 @@
 %       'internalfunction)
 
 (de sxhash (o)
-    (prog (*sxhash-visited-nodes*)
-	  (return (sxhash-internal o))))
+    (sxhash-internal o *sxhash-max-depth*))
 
-(de sxhash-internal (o)
+(de sxhash-internal (o depth)
   (case (tag o)
         ((posint-tag) o)
         ((negint-tag) (inf o))
@@ -81,43 +84,46 @@
         ((halfwords-tag)
          (let ((n (halfwordlen o))
                (s (halfworditm o 0)))
-           (for (from i 1 n 1)                                                                                                                                                                           (do (setq s (wxor s (halfworditm o i)))))
-           s))
+           (for (from i 1 n 1)                                                                                                                                                                           (do (setq s (wxor (wshift s 4) (halfworditm o i)))))
+           (inf s)))
         ((words-tag)
          (let ((n (wrdlen o))
                (s (inf (wrditm o 0))))
-           (for (from i 1 n 1)                                                                                                                                                                           (do (setq s (wxor s (inf (wrditm o i))))))
-           s))
+           (for (from i 1 n 1)                                                                                                                                                                           (do (setq s (wxor (wshift s 6) (inf (wrditm o i))))))
+           (inf s)))
         ((vector-tag)
          (let ((n (upbv o))
-               (s (sxhash-internal (getv o 0))))
-           (for (from i 1 n 1)
-                (do (setq s (wxor s (sxhash-internal (getv o i))))))
-           s))
+               (s 0))
+           (for (from i 0 n 1)
+		%% do a left shift of 5 bits before using the intermediate value
+		%% otherwise all vectors with the same elements but different order would hash to the same value
+                (do (setq s (wxor (wshift s 5) (sxhash-internal (getv o i) depth)))))
+           (inf s)))
         ((pair-tag)
 	 (progn
-	   (let ((found (atsoc o *sxhash-visited-nodes*)))   % check whether we have already seen this pair
-	     (if found (cdr found)                           % if so, return the recorded hash.
-	       (progn
-		 %% if o was not yet seen (first occurence), push a pair (o . 0) onto the association list,
-		 %% i.e., record occurence with tentative hash value 0
-		 (setq *sxhash-visited-nodes* (cons (setq found (cons o 0)) *sxhash-visited-nodes*)) 
-		 %% Now continue the hash computation. If the same node occurs again, 0 will be used as hash value.
-		 (let ((s (sxhash-internal (car o)))
-		       (o1 (cdr o)))
-		   (while (and (pairp o1) (null (atsoc o1 *sxhash-visited-nodes*)))
-		     (setq s (wxor (wshift s 3) (sxhash-internal (car o1))))
-		     (setq o1 (cdr o1)))
-		   (setq s (wxor s (sxhash-internal o1)))
-		   %% At this point found is a pair (o . 0), replace cdr by s
-		   (rplacd found s)
-		   s))))))
+	   (if (not (greaterp depth 0))
+	       *sxhash-cons-default-value*
+	     (let ((s 0)
+		   (o1 o))
+	       (while (and (pairp o1) (greaterp depth 1))
+		 %% do a left shift of 3 bits before using the intermediate value
+		 %% otherwise all lists with the same elements but different order would hash to the same value
+		 %% use a different shift than for vectors in order to hash a list to another value than a vector with the same elements
+		 (setq depth (sub1 depth))
+		 (setq s (wxor (wshift s 3) (sxhash-internal (car o1) depth)))
+		 (setq o1 (cdr o1)))
+	       %% At this point we are either at the end of the list (o1 is not a pair) or depth is 1
+	       %% In both cases we recurse on o1
+	       (setq depth (sub1 depth))
+	       (setq s (wxor (wshift s 3) (sxhash-internal o1 depth)))
+	       (inf s)))))
         ((evector-tag)
          (let ((n (eupbv o))
-               (s (sxhash-internal (egetv o 0))))
-           (for (from i 1 n 1)
-                (do (setq s (wxor s (sxhash-internal (egetv o i))))))
-           s))
+               (s 0))
+           (for (from i 0 n 1)
+		%% see comments on vectors and pairs above
+                (do (setq s (wxor (wshift s 7) (sxhash-internal (egetv o i) depth)))))
+           (inf s)))
         ((id-tag) (id2int o))
         % More or less random value for other lisp objects
         ((hvect-tag hwords-tag hhalfwords-tag hbytes-tag) 4711)
