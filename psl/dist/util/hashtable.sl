@@ -67,11 +67,24 @@
 
 % For reference: golden ration times 2^64 is 16#9e3779b97f4a7c15
 
-%(flag '(sxhash-internal sxhash-string big-sxhash ht-check-twopower ht-compute-size is-hashtable)
+%(flag '(sxhash-internal sxhash-float sxhash-string big-sxhash ht-check-twopower ht-compute-size is-hashtable)
 %       'internalfunction)
 
 (de sxhash (o)
     (sxhash-internal o *sxhash-max-depth*))
+
+(compiletime
+ (progn
+   (when (equal bitsperword 64)
+     (ds sxhash-float (o) (wshift (floathighorder o) -8))
+     )
+   (when (equal bitsperword 32)
+     (ds sxhash-float (o)
+	 (wshift (wxor (floathighorder o) (floatloworder o)) -8))
+     )
+   ))
+
+(de sxhash-float-x (o) (sxhash-float o))
 
 (de sxhash-internal (o depth)
   (case (tag o)
@@ -79,7 +92,7 @@
         ((negint-tag) (inf o))
         ((fixnum-tag) (inf (fixval (fixinf o))))
         ((bignum-tag) (big-sxhash o))
-        ((floatnum-tag) (wxor (floathiword o) (floatloword o)))
+        ((floatnum-tag) (sxhash-float (fltinf o)))
         ((string-tag bytes-tag) (sxhash-string o))
         ((halfwords-tag)
          (let ((n (halfwordlen o))
