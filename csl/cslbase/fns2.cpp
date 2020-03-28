@@ -1,11 +1,11 @@
-// fns2.cpp                                Copyright (C) 1989-2017 Codemist    
+// fns2.cpp                                Copyright (C) 1989-2020 Codemist    
 
 //
 // Basic functions part 2.
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1630,21 +1630,31 @@ static void record_equal(const char *file, int line, int depth, bool eqqq)
     return;
 }
 
-void dump_equals()
-{   int i;
-    std::FILE *log = std::fopen("equal.log", "w");
-    if (log == NULL) log = stdout;
-    std::fprintf(log, "\nCalls to equal...\n");
+void dump_equals_1(FILE *log)
+{   std::fprintf(log, "\nCalls to equal...\n");
     std::fprintf(log, "%24.24s %5s %5s %10s %10s\n",
         "file", "line", "depth", "count", "matched");
-    for (i=0; i<LOG_SIZE; i++)
+    for (std::size_t i=0; i<LOG_SIZE; i++)
         if (equal_counts[i].count != 0)
             std::fprintf(log, "%24.24s %5d %5d %10d %10d\n",
                     equal_counts[i].file, equal_counts[i].line,
                     equal_counts[i].depth, equal_counts[i].count,
                     equal_counts[i].eqcount);
     std::fprintf(log, "end of counts\n");
+}
+
+void dump_equals()
+{   std::FILE *log = std::fopen("equal.log", "w");
+    if (log == NULL) log = stdout;
+    dump_equals_1(log);
     if (log != stdout) std::fclose(log);
+}
+
+LispObject Lequalstats(LispObject env)
+{   dump_equals_1(stdout);
+    for (size_t i=0; i<LOG_SIZE; i++)
+        equal_counts[i].count = 0;
+    return onevalue(nil);
 }
 
 extern bool inner_equal(LispObject a, LispObject b,
@@ -1839,6 +1849,12 @@ bool equal_fn(LispObject a, LispObject b)
 #undef equal_fn
 #define equal_fn(a, b) traced_equal_fn(a, b, __FILE__, __LINE__, 0)
 #endif
+
+#ifndef TRACED_EQUAL
+LispObject Lequalstats(LispObject env)
+{   return onevalue(nil);
+}
+#endif // TRACED_EQUAL
 
 static bool vec_equal(LispObject a, LispObject b)
 //
@@ -3428,6 +3444,7 @@ setup_type const funcs2_setup[] =
 // In Standard Lisp mode EQUAL descends vectors (but does not case fold)
 // I provide cl-equal to do what Common Lisp does.
     {"cl-equal",                G0W1, G1W2, Lcl_equal, G3W2, G4W2},
+    {"equalstats",              Lequalstats, G1W0, G2W0, G3W0, G4W0},
     {"equal",                   G0W1, G1W2, Lequal, G3W2, G4W2},
     {"member",                  G0W1, G1W2, Lmember, G3W2, G4W2},
     {"symbol-package",          G0W1, Lsymbol_package, G2W1, G3W1, G4W1},

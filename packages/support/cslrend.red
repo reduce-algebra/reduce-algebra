@@ -534,8 +534,6 @@ remflag('(begin),'go);
 symbolic procedure begin;
   begin
      scalar w,!*redefmsg;
-% The next line is a temporary debugging hack!
-     if boundp 'tracefluid then trace '(fluid assgnpri);
      !*echo := not !*int;
      !*extraecho := t;
 % Enable heavy debugging option in bootstrap version. The effect of this
