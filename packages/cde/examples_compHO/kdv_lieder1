@@ -1,0 +1,75 @@
+% KdV local Hamiltonian operators,
+% check that A_2 = L_\tau A_1
+% 2018-08-10
+% R Vitolo
+
+load_package cde;
+
+% Initialization of the jet environment of the differential equation.
+indep_var:={x}$
+dep_var:={u}$
+odd_var:={p}$
+total_order:=10$
+
+% Calling cde's main routine
+cde({indep_var,dep_var,odd_var,total_order},
+   {})$
+
+% Define the two Hamiltonian operators for KdV
+mk_cdiffop(a1,1,{1},1);
+for all psi1 let a1(1,1,psi1)=td(psi1,x);
+
+mk_cdiffop(a3,1,{1},1);
+for all psi3 let a3(1,1,psi3)=u_x*psi3 + td(psi3,x,3)
+  + 2*u*td(psi3,x);
+
+mk_cdiffop(tau,1,{1},1);
+for all phi let tau(1,phi) = (- (1/2)*u**2 - (1/2)*u_2x)*phi;
+
+mk_superfun(tau_sf,1,1);
+tau_sf(1):= (- (1/2)*u**2 - (1/2)*u_2x)*p;
+
+% Note: one could equivalently load the operators as superfunctions
+% and convert them to operators.
+
+% Convert the two Hamiltonian operators to superfunctions:
+conv_cdiff2superfun(a1,s1);
+conv_cdiff2superfun(a3,s3);
+
+% Converts the two operators to bivectors
+conv_genfun2biv(s1,biv1);
+conv_genfun2biv(s3,biv3);
+
+% Check the expressions of the bivectors
+biv1(1);
+biv3(1);
+
+schouten_bracket(biv3,biv3,thr33);
+thr33(1);
+
+schouten_bracket(tau_sf,biv1,l_tau_biv1);
+l_tau_biv1(1);
+
+% Check if the two operators coincide in cohomology
+euler_df(l_tau_biv1(1) - biv3(1));
+
+;end;
+
+% The result is zero. Please check the sign of the Lie derivative!
+
+off nat$
+off echo$
+out <<resname>>$
+write "thr11:=",thr11;
+write "thr12:=",thr12;
+write "thr22:=",thr22;
+write ";end;";
+shut <<resname>>$
+on echo$
+on nat$
+
+;end;
+
+Local Variables:
+mode:reduce
+End:

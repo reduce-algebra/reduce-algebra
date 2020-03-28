@@ -1,0 +1,323 @@
+% WDVV in 3 components
+% Here I check that the generalized vector field tau
+% in the paper Pavlov-Vitolo JGP 2017 yields L_tau A_1 = A_2.
+% 2016 - 06 - 15
+% Raffaele Vitolo
+
+% The result is zero. Please check the sign of the Lie derivative!
+% Here we use the correct choice L_\tau A_1 = - [A_1,\tau]
+
+load_package cde;
+
+% Initialization of the jet environment of the differential equation.
+indep_var:={x}$
+dep_var:={u1,u2,u3}$
+odd_var:={p1,p2,p3}$
+total_order:=10$
+% names for output of the state of cde and results of computations
+resname:="w3c_lagrep3_res.red"$
+
+% Calling cde's main routine
+cde({indep_var,dep_var,odd_var,total_order},{})$
+
+% Reconstructing the IIIrd order operator from the metric.
+
+% Number of components of the operators
+ncomp:=length(dep_var)$
+
+% Must load one metric (as a matrix), then rename it as 'gl3'.
+
+gu3:=mat((0,0,1),(0,1, - a),(1, - a,2*b + a**2))$
+gl3:=gu3**(-1)$
+
+% Reconstruction of the third order operator.
+gu3:=gl3**(-1)$
+vars:={a,b,c}$
+
+% Define c_ijk = (1/3)*(g_ki,j - g_ji,k)
+operator c_lo$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  for k:=1:ncomp do
+  <<
+   c_lo(i,j,k):=
+    (1/3)*(df(gl3(k,i),part(vars,j)) - df(gl3(j,i),part(vars,k)))$
+  >>$
+
+% Define c^ij_k=c_hi(i,j,k) using the formula
+% g^ni*g^mj*c_mnk = c^ij_k
+templist:={}$
+operator c_hi$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  for k:=1:ncomp do
+   c_hi(i,j,k):=
+    <<
+     templist:=
+      for m:=1:ncomp join
+       for n:=1:ncomp collect
+        gu3(n,i)*gu3(m,j)*c_lo(m,n,k)$
+     templist:=part(templist,0):=plus
+    >>$
+
+% Introduce the contracted operator
+operator c_hi_con$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  c_hi_con(i,j):=
+   <<
+    templist:=for k:=1:ncomp collect c_hi(i,j,k)*mkid(part(vars,k),!_x)$
+    templist:=part(templist,0):=plus
+   >>$
+
+% The operator aa2 is the ansatz for the second hamiltonian operator aa
+mk_cdiffop(aa2,1,{3},3)$
+for all i,j,psi let aa2(i,j,psi) =
+td(
+gu3(i,j)*td(psi,x,2)+c_hi_con(i,j)*td(psi,x)
+,x)$
+
+% Changing the variables of the above operator into Viete variables
+
+a:=u1 + u2 + u3$
+a_x:=td(a,x)$
+
+b:=-1/2*(u1*u2 + u2*u3 + u3*u1)$
+b_x:=td(b,x)$
+
+c:=u1*u2*u3$
+c_x:=td(c,x)$
+
+%% The change of coordinates from a^i to u^1, ...
+a_uqs:={
+a,b,c
+}$
+% and its Jacobian
+matrix jac(ncomp,ncomp)$
+
+for i:=1:ncomp do
+<<
+  for j:=1:ncomp do jac(i,j):=df(part(a_uqs,i),part(dep_var,j))
+>>$
+jacinv:=jac**(-1)$
+
+% This is the operator in new coordinates. This approach is too slow.
+mk_cdiffop(taa2,1,{3},3)$
+for all i,j,psi let taa2(i,j,psi)=
+  (for h:=1:ncomp sum
+    (for k:=1:ncomp sum jacinv(i,h)*aa2(h,k,jacinv(j,k)*psi))
+   )$
+
+% This is K^{ij} (UPPER indexes!); we need it to extract
+% the Lagrangian representation.
+matrix kap(ncomp,ncomp),kapinv(ncomp,ncomp)$
+kap:=(1/2)*mat((1,-1,-1),(-1,1,-1),(-1,-1,1))$
+kapinv:=kap**(-1)$
+
+% The first-order operator taa1 (in flat coordinates)
+mk_cdiffop(taa1,1,{3},3)$
+for all i,j,psi let taa1(i,j,psi) =
+kap(i,j)*td(psi,x)$
+
+% The matrix of free terms of the operator taa2: taa2(i,j,1)$
+operator taa2_0$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  taa2_0(i,j):=
+  <<
+   tempterm:=for h:=1:ncomp join for k:=1:ncomp collect
+    (jacinv(i,h)*aa2(h,k,jacinv(j,k)*1));
+   tempterm:=part(tempterm,0):=plus
+  >>$
+
+% The matrix of coefficients of D_x of the operator taa2: taa2(i,j,x)
+operator taa2_1$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  <<
+   taa2_1(i,j):=
+  <<
+   tempterm:=for h:=1:ncomp join for k:=1:ncomp collect
+    (jacinv(i,h)*aa2(h,k,jacinv(j,k)*x));
+   tempterm:=part(tempterm,0):=plus
+  >>;
+   taa2_1(i,j):=sub(x=0,taa2_1(i,j))
+  >>$
+
+% The matrix of coefficients of D_x^3 of the operator taa2: taa2(i,j,x**3)
+% This should be the metric of the leading term after the change of coordinates.
+operator taa2_3$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  <<
+   taa2_3(i,j):=
+  <<
+   tempterm:=for h:=1:ncomp join for k:=1:ncomp collect
+    (jacinv(i,h)*aa2(h,k,jacinv(j,k)*(x**3)));
+   tempterm:=part(tempterm,0):=plus
+  >>;
+   taa2_3(i,j):=sub(x=0,(1/6)*taa2_3(i,j))
+  >>$
+
+% Take the coefficients of u^m_{3x}, u^m_{2x} in the matrices 0,1 resp.
+dv3:=selectvars(0,3,dep_var,all_parametric_der)$
+dv2:=selectvars(0,2,dep_var,all_parametric_der)$
+operator kellk,keffk,ell,eff$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  for m:=1:ncomp do
+  <<
+   kellk(i,j,m):=coeffn(taa2_0(i,j),part(dv3,m),1);
+   keffk(i,j,m):=coeffn(taa2_1(i,j),part(dv2,m),1)
+  >>$
+
+% Reconstructing the tensor L_npm in the Lagrangian representation
+for n:=1:ncomp do
+ for p:=1:ncomp do
+  for m:=1:ncomp do
+  ell(n,p,m):=
+  <<
+   tempterm:=0;
+   tempterm:=for i:=1:ncomp join for j:=1:ncomp collect
+    kapinv(p,i)*kellk(i,j,m)*kapinv(j,n);
+   tempterm:=part(tempterm,0):=plus
+  >>$
+
+% Finding the conservation laws that are quadratic in velocities
+dv1:=selectvars(0,1,dep_var,all_parametric_der)$
+for i:=1:ncomp do
+ ell(i):=(
+for j:=1:ncomp sum for k:=1:ncomp sum ell(i,j,k)*part(dv1,j)*part(dv1,k)
+)$
+
+% Reconstructing the tensor F_npm in the Lagrangian representation
+for p:=1:ncomp do
+ for m:=1:ncomp do
+  for n:=1:ncomp do
+   eff(p,m,n):=
+   <<
+    tempterm:=0;
+    tempterm:=for i:=1:ncomp join for j:=1:ncomp collect
+     kapinv(p,i)*keffk(i,j,m)*kapinv(j,n);
+    tempterm:=part(tempterm,0):=plus
+   >>$
+
+% Reconstructing the metric of the symplectic operator gsymcv_ui
+matrix gsymcv_ui(ncomp,ncomp)$
+for i:=1:ncomp do
+ for j:=i:ncomp do
+ <<
+  gsymcv_ui(i,j):=(
+   for k:=1:ncomp sum for h:=1:ncomp sum kapinv(i,h)*taa2_3(h,k)*kapinv(k,j)
+  );
+ if i neq j then gsymcv_ui(j,i):=gsymcv_ui(i,j)
+ >>$
+
+% Reconstructing the tensor R_mp in the Lagrangian representation
+% The following code is useless - I use an input from a calculation by Maxim.
+%% operator gd$
+%% for i:=1:ncomp do
+%%  for j:=1:ncomp do
+%%   for k:=1:ncomp do
+%%    gd(i,j,k):=df(gsymcv_ui(i,j),part(dep_var,k))$
+
+% Use the formula
+% F_pmn = (1/2)G_pm,n + (1/2)G_np,m - (1/2)G_nm,p + 2L_npm
+%        + R_pm,n + R_mn,p + R_np,m
+% in order to find R_pm,n + R_mn,p + R_np,m.
+%% operator er$
+%% for p:=1:ncomp do
+%%  for m:=1:ncomp do
+%%   for n:=1:ncomp do
+%%    er(p,m,n):=eff(p,m,n) - (1/2)*gd(p,m,n) - (1/2)*gd(n,p,m) + (1/2)*gd(n,m,p)
+%%     -2*ell(n,p,m)$
+
+% RESULT: only er(1,2,3) survives and its value is
+%%               - 1
+%% -------------------------------
+%%  (u1 - u2)*(u1 - u3)*(u2 - u3)
+% This confirms old and painful computations.
+
+% Define the operator R_mn (only two indices!)
+operator er$
+er(1,2):= - (1/3)*(1/((u1 - u2)*(u1 - u3)) - 1/((u2 - u1)*(u2 - u3)))$
+er(1,3):= - (1/3)*(1/((u1 - u3)*(u1 - u2)) - 1/((u3 - u1)*(u3 - u2)))$
+er(2,3):= - (1/3)*(1/((u2 - u3)*(u2 - u1)) - 1/((u3 - u2)*(u3 - u1)))$
+er(1,1):=0$
+er(2,2):=0$
+er(3,3):=0$
+er(2,1):= - er(1,2)$
+er(3,1):= - er(1,3)$
+er(3,2):= - er(2,3)$
+
+%% Check that this is really a potential of R_mnp
+%% done, OK!
+%% for i:=1:ncomp do
+%%   for j:=1:ncomp do
+%%     for k:=1:ncomp do
+%%       write (er(i,j,k) -
+%% 	(df(er(i,j),part(dep_var,k))
+%%  	  + df(er(k,i),part(dep_var,j))
+%%  	    + df(er(j,k),part(dep_var,i))));
+
+operator l_n$
+for all n let l_n(n)=
+  td(
+    for m:=1:ncomp sum ((1/2)*gsymcv_ui(n,m) + er(n,m))*part(dv1,m)
+      ,x) - (1/2)*ell(n);
+
+% This is the potential, or the vector field tau such that L_tau A_1 = A_2
+% It is a linear CDifferential operator of order 0 with values into densities.
+mk_cdiffop(tau,1,{3},1)$
+for all i,phi let tau(i,1,phi)=(for j:=1:ncomp sum - kap(i,j)*l_n(j))*phi$
+
+% The corresponding superfunction. Note that conv_cdiff2superfun will not work
+% for this task at the moment of writing (161005).
+mk_superfun(tau_sf,1,1);
+tau_sf(1):=for i:=1:ncomp sum tau(i,1,part(odd_var,i))$
+
+% Here I check that L_tau A_1 = A_2 using the formula L_tau A_1 = - [A_1,tau]
+
+% Convert the two Hamiltonian operators to superfunctions:
+conv_cdiff2superfun(taa1,taa1_sf);
+conv_cdiff2superfun(taa2,taa2_sf);
+
+% Converts the two operators to bivectors
+conv_genfun2biv(taa1_sf,biv1);
+conv_genfun2biv(taa2_sf,biv2);
+
+% Check the expressions of the bivectors
+%% biv1(1);
+%% biv3(1);
+
+% This takes a long computer time!
+% iszero_schouten_bracket(biv2,biv2);
+
+schouten_bracket(biv1,tau_sf,l_tau_biv1);
+% l_tau_biv1(1);
+
+% Check if the two operators coincide in
+% zero in cohomology
+edf:=euler_df(l_tau_biv1(1) + biv2(1));
+
+% The result is zero. Please check the sign of the Lie derivative!
+
+end;
+
+
+off nat$
+off echo$
+out <<resname>>$
+write "thr11:=",thr11;
+write "thr12:=",thr12;
+write "thr22:=",thr22;
+write ";end;";
+shut <<resname>>$
+on echo$
+on nat$
+
+;end;
+
+Local Variables:
+mode:reduce
+End:

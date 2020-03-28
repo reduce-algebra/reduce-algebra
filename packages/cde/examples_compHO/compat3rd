@@ -1,0 +1,150 @@
+% Compatibility of pairs of third-order homogeneous Hamiltonian operators
+
+% Loading the interface to cdiff packages
+load_package cde;
+
+% Initialization
+indep_var:={x}$
+dep_var:={b1,b2,b3}$
+odd_var:={p1,p2,p3}$
+total_order:=8$
+
+% Calling cde's main routine
+cde({indep_var,dep_var,odd_var,total_order},
+   {})$
+
+% Number of components of the operators
+ncomp:=length(dep_var)$
+
+% IIIrd order operator
+
+% Must load one metric (as a matrix), then rename it as 'gl3'.
+in "class_3c.red"$
+
+gl3_1:=g_1$
+
+% Reconstruction of the third order operator.
+gu3_1:=gl3_1**(-1)$
+
+% Define c_ijk = (1/3)*(g_ki,j - g_ji,k)
+% Verified 15.09.01
+operator c_lo_1$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  for k:=1:ncomp do
+  <<
+   c_lo_1(i,j,k):=
+    (1/3)*(df(gl3_1(k,i),part(dep_var,j)) - df(gl3_1(j,i),part(dep_var,k)))$
+  >>$
+
+% Define c^ij_k=c_hi(i,j,k) using the formula
+% g^ni*g^mj*c_mnk = c^ij_k
+templist:={}$
+operator c_hi_1$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  for k:=1:ncomp do
+   c_hi_1(i,j,k):=
+    <<
+     templist:=
+      for m:=1:ncomp join
+       for n:=1:ncomp collect
+        gu3_1(n,i)*gu3_1(m,j)*c_lo_1(m,n,k)$
+     templist:=part(templist,0):=plus
+    >>$
+
+% Command to check the matrices c^ij_k
+% for i:=1:3 do for j:=1:3 do write "c_hi(",i,",",j,",",1,"):=",c_hi(i,j,1);
+
+% Introduce the contracted operator
+operator c_hi_con_1$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  c_hi_con_1(i,j):=
+   <<
+    templist:=for k:=1:ncomp collect c_hi_1(i,j,k)*mkid(part(dep_var,k),!_x)$
+    templist:=part(templist,0):=plus
+   >>$
+
+% The operator aa1 is the third-order hamiltonian operator
+mk_cdiffop(aa1,1,{ncomp},ncomp);
+for all i,j,psi let aa1(i,j,psi) =
+td(
+  gu3_1(i,j)*td(psi,x,2) + c_hi_con_1(i,j)*td(psi,x)
+    ,x
+)$
+
+gl3_2:=sub({mu=sig},g_2)$
+
+% Reconstruction of the third order operator.
+gu3_2:=gl3_2**(-1)$
+
+% Define c_ijk = (1/3)*(g_ki,j - g_ji,k)
+% Verified 15.09.01
+operator c_lo_2$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  for k:=1:ncomp do
+  <<
+   c_lo_2(i,j,k):=
+    (1/3)*(df(gl3_2(k,i),part(dep_var,j)) - df(gl3_2(j,i),part(dep_var,k)))$
+  >>$
+
+% Define c^ij_k=c_hi(i,j,k) using the formula
+% g^ni*g^mj*c_mnk = c^ij_k
+templist:={}$
+operator c_hi_2$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  for k:=1:ncomp do
+   c_hi_2(i,j,k):=
+    <<
+     templist:=
+      for m:=1:ncomp join
+       for n:=1:ncomp collect
+        gu3_2(n,i)*gu3_2(m,j)*c_lo_2(m,n,k)$
+     templist:=part(templist,0):=plus
+    >>$
+
+% Command to check the matrices c^ij_k
+% for i:=1:3 do for j:=1:3 do write "c_hi(",i,",",j,",",1,"):=",c_hi(i,j,1);
+
+% Introduce the contracted operator
+operator c_hi_con_2$
+for i:=1:ncomp do
+ for j:=1:ncomp do
+  c_hi_con_2(i,j):=
+   <<
+    templist:=for k:=1:ncomp collect c_hi_2(i,j,k)*mkid(part(dep_var,k),!_x)$
+    templist:=part(templist,0):=plus
+   >>$
+
+% The operator aa2 is the third-order hamiltonian operator
+mk_cdiffop(aa2,1,{ncomp},ncomp);
+for all i,j,psi let aa2(i,j,psi) =
+td(
+  gu3_2(i,j)*td(psi,x,2) + c_hi_con_2(i,j)*td(psi,x)
+    ,x
+)$
+
+% Convert the two Hamiltonian operators to superfunctions:
+conv_cdiff2superfun(aa1,aa1_sf);
+conv_cdiff2superfun(aa2,aa2_sf);
+% Converts the two operators to bivectors
+conv_genfun2biv(aa1_sf,biv_aa1);
+conv_genfun2biv(aa2_sf,biv_aa2);
+
+% for i:=1:10 do schouten_bracket(biv_aa1,biv_aa2,thr_12);
+
+schouten_bracket(biv_aa1,biv_aa2,th12)$
+eth12:=euler_df(th12(1))$
+templ:=for each el in eth12 join el$
+sb_coeff:=splitext_list({first templ})$
+sb_num_coeff:=for each el in sb_coeff collect num el$
+sb_allcoeff:=splitvars_list(sb_num_coeff,all_parametric_der);
+
+;end;
+
+Local Variables:
+mode:reduce
+End:
