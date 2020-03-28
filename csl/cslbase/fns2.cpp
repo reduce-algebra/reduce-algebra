@@ -1424,7 +1424,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
     }
 #endif
     for (;;)
-    {   std::int32_t ta = (std::int32_t)a & TAG_BITS;
+    {   std::uint32_t ta = (std::uint32_t)a & TAG_BITS;
         if (ta == TAG_CONS && a != nil)
         {   if (!consp(b) || b == nil) return false;
             else
@@ -1441,7 +1441,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
 // with nested lists.
 //
                 for (;;)
-                {   std::int32_t tca = (std::int32_t)ca & TAG_BITS;
+                {   std::uint32_t tca = (std::uint32_t)ca & TAG_BITS;
                     if (tca == TAG_CONS && ca != nil)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
@@ -1464,7 +1464,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
                         }
                     }
                     else if (is_immed_cons_sym(tca) ||
-                             ((std::int32_t)cb & TAG_BITS) != tca) return false;
+                             ((std::uint32_t)cb & TAG_BITS) != tca) return false;
                     else switch (tca)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
@@ -1519,7 +1519,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
             }
         }
         else if (is_immed_cons_sym(ta) ||
-                 ((std::int32_t)b & TAG_BITS) != ta) return false;
+                 ((std::uint32_t)b & TAG_BITS) != ta) return false;
 //
 // OK - now a and b both have the same type and neither are immediate data
 // conses or symbols. That leaves vectors (including strings) and boxed
@@ -1597,13 +1597,18 @@ typedef struct equal_record
     int line;
     int depth;
     int count;
+    int eqcount;
 } equal_record;
 
 static equal_record equal_counts[LOG_SIZE];
 
-static void record_equal(char *file, int line, int depth)
-{   int hash = 169*line + depth;
-    char *p = file;
+static void record_equal(const char *file, int line, int depth, bool eqqq)
+{   const char *s = std::strrchr(file, '/');
+    if (s != NULL) file = s+1;
+    s = std::strrchr(file, '\\');
+    if (s != NULL) file = s+1;
+    int hash = 169*line + depth;
+    const char *p = file;
     while (*p != 0) hash = 169*hash + (*p++ & 0xff);
     hash = ((169*hash) & 0x7fffffff) % LOG_SIZE;
     while (equal_counts[hash].count != 0)
@@ -1611,6 +1616,7 @@ static void record_equal(char *file, int line, int depth)
             equal_counts[hash].depth == depth &&
             std::strncmp(equal_counts[hash].file, file, 24) == 0)
         {   equal_counts[hash].count++;
+            if (eqqq) equal_counts[hash].eqcount++;
             return;
         }
         hash = (hash + 1) % LOG_SIZE;
@@ -1619,32 +1625,48 @@ static void record_equal(char *file, int line, int depth)
     equal_counts[hash].line = line;
     equal_counts[hash].depth = depth;
     equal_counts[hash].count = 1;
+    if (eqqq) equal_counts[hash].count = 1;
+    else equal_counts[hash].count = 0;
     return;
 }
 
 void dump_equals()
 {   int i;
-    std::FILE *std::log = std::fopen("equal.log", "w");
-    if (std::log == NULL) std::log = stdout;
-    std::fprintf(std::log, "\nCalls to equal...\n");
+    std::FILE *log = std::fopen("equal.log", "w");
+    if (log == NULL) log = stdout;
+    std::fprintf(log, "\nCalls to equal...\n");
+    std::fprintf(log, "%24.24s %5s %5s %10s %10s\n",
+        "file", "line", "depth", "count", "matched");
     for (i=0; i<LOG_SIZE; i++)
         if (equal_counts[i].count != 0)
-            std::fprintf(std::log, "%24.24s %5d %5d %10d\n",
+            std::fprintf(log, "%24.24s %5d %5d %10d %10d\n",
                     equal_counts[i].file, equal_counts[i].line,
-                    equal_counts[i].depth, equal_counts[i].count);
-    std::fprintf(std::log, "end of counts\n");
-    if (std::log != stdout) std::fclose(std::log);
+                    equal_counts[i].depth, equal_counts[i].count,
+                    equal_counts[i].eqcount);
+    std::fprintf(log, "end of counts\n");
+    if (log != stdout) std::fclose(log);
 }
 
+extern bool inner_equal(LispObject a, LispObject b,
+                        const char *file, int line, int depth);
+
 bool traced_equal_fn(LispObject a, LispObject b,
-                        char *file, int line, int depth)
+                     const char *file, int line, int depth)
 //
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code.
 //
-{   record_equal(file, line, depth);
+{   bool r = inner_equal(a, b, file, line,depth);
+    record_equal(file, line, depth, r);
+    return r;
+}
+
 #undef equal_fn
 #define equal_fn(a, b) traced_equal_fn(a, b, file, line, depth+1)
+
+bool inner_equal(LispObject a, LispObject b,
+                 const char *file, int line, int depth)
+{
 #else
 bool equal_fn(LispObject a, LispObject b)
 //
@@ -1672,7 +1694,7 @@ bool equal_fn(LispObject a, LispObject b)
     }
 #endif
     for (;;)
-    {   std::int32_t ta = (std::int32_t)a & TAG_BITS;
+    {   std::uint32_t ta = (std::uint32_t)a & TAG_BITS;
         if (ta == TAG_CONS && a != nil)
         {   if (!consp(b) || b == nil) return false;
             else
@@ -1689,7 +1711,7 @@ bool equal_fn(LispObject a, LispObject b)
 // with nested lists.
 //
                 for (;;)
-                {   std::int32_t tca = (std::int32_t)ca & TAG_BITS;
+                {   std::uint32_t tca = (std::uint32_t)ca & TAG_BITS;
                     if (tca == TAG_CONS && ca != nil)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
@@ -1712,7 +1734,7 @@ bool equal_fn(LispObject a, LispObject b)
                         }
                     }
                     else if (is_immed_cons_sym(tca) ||
-                             ((std::int32_t)cb & TAG_BITS) != tca) return false;
+                             ((std::uint32_t)cb & TAG_BITS) != tca) return false;
                     else switch (tca)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
@@ -1767,7 +1789,7 @@ bool equal_fn(LispObject a, LispObject b)
             }
         }
         else if (is_immed_cons_sym(ta) ||
-                 ((std::int32_t)b & TAG_BITS) != ta) return false;
+                 ((std::uint32_t)b & TAG_BITS) != ta) return false;
         else switch (ta)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
@@ -1815,7 +1837,7 @@ bool equal_fn(LispObject a, LispObject b)
 
 #ifdef TRACED_EQUAL
 #undef equal_fn
-#define equal_fn(a, b) traced_equal(a, b, __FILE__, __LINE__, 0)
+#define equal_fn(a, b) traced_equal_fn(a, b, __FILE__, __LINE__, 0)
 #endif
 
 static bool vec_equal(LispObject a, LispObject b)
@@ -1877,7 +1899,7 @@ bool equalp(LispObject a, LispObject b)
     }
 #endif
     for (;;)
-    {   std::int32_t ta = (std::int32_t)a & TAG_BITS;
+    {   std::uint32_t ta = (std::uint32_t)a & TAG_BITS;
         if (ta == TAG_CONS && a != nil)
         {   if (!consp(b) || b == nil) return false;
             else
@@ -1894,7 +1916,7 @@ bool equalp(LispObject a, LispObject b)
 // with nested lists.
 //
                 for (;;)
-                {   std::int32_t tca = (std::int32_t)ca & TAG_BITS;
+                {   std::uint32_t tca = (std::uint32_t)ca & TAG_BITS;
                     if (tca == TAG_CONS && ca != nil)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
@@ -1917,7 +1939,7 @@ bool equalp(LispObject a, LispObject b)
                         }
                     }
                     else if (is_immed_cons_sym(tca) ||
-                             ((std::int32_t)cb & TAG_BITS) != tca) return false;
+                             ((std::uint32_t)cb & TAG_BITS) != tca) return false;
                     else switch (tca)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
@@ -1973,7 +1995,7 @@ bool equalp(LispObject a, LispObject b)
             }
         }
         else if (is_immed_cons_sym(ta) ||
-                 ((std::int32_t)b & TAG_BITS) != ta) return false;
+                 ((std::uint32_t)b & TAG_BITS) != ta) return false;
 // What is left is vectors, strings and boxed numbers
         else switch (ta)
             {   case TAG_NUMBERS:

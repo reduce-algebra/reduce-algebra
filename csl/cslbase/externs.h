@@ -808,7 +808,7 @@ extern bool cl_equal_fn(LispObject a, LispObject b);
 extern bool equal_fn(LispObject a, LispObject b);
 #ifdef TRACED_EQUAL
 extern bool traced_equal_fn(LispObject a, LispObject b,
-                               const char *, int, int);
+                            const char *, int, int);
 #define equal_fn(a, b) traced_equal_fn(a, b, __FILE__, __LINE__, 0)
 extern void dump_equals();
 #endif
@@ -962,19 +962,39 @@ inline LispObject nvalues(LispObject r, int n)
 //            then they are not EQUAL (those types need to be EQ to be EQUAL)
 //   otherwise call equal_fn(a, b) to decide the issue.
 //
+
+// If I am using TRACED_EQUAL then the inline function defeats my attempt to
+// keep track of where equal() is called from - so I revert to use of a macro.
+
+#ifdef TRACED_EQUAL
+#define equal(a, b)                                  \
+   ((a == b) ? true :                                \
+    ((a & TAG_BITS) != (b & TAG_BITS)) ? false :     \
+    (need_more_than_eq(a)) ? equal_fn(a, b) :        \
+    false)
+#else
 inline bool equal(LispObject a, LispObject b)
 {   if (a == b) return true;  // This may be bad for (equal NaN NaN) ?
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return equal_fn(a, b);
     else return false;
 }
+#endif
 
+#ifdef TRACED_EQUAL
+#define cl_equal(a, b)                            \
+   ((a == b) ? true :                             \
+    ((a & TAG_BITS) != (b & TAG_BITS)) ? false :  \
+    (need_more_than_eq(a)) ? cl_equal_fn(a, b) :  \
+    false)
+#else
 inline bool cl_equal(LispObject a, LispObject b)
 {   if (a == b) return true;  // This may be bad for (equal NaN NaN) ?
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return cl_equal_fn(a, b);
     else return false;
 }
+#endif
 
 inline bool eql(LispObject a, LispObject b)
 {   if (a == b) return true;  // This may be bad for (equal NaN NaN) ?
