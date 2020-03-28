@@ -7,7 +7,7 @@
 # Modified:
 # Mode:         Text
 # Package:      
-# Status:
+# Status:	Open Source: BSD License
 #
 # (c) Copyright 1982, University of Utah
 # %
@@ -62,7 +62,7 @@ all: \
 	$(PL)/nbig30.b $(PL)/nbig30a.b $(PL)/double.b \
 	$(PL)/nbig32.b $(PL)/nbig32a.b $(PL)/double32.b \
 	$(PL)/mbarith.b \
-	$(PL)/qualified-timing.b $(PL)/spy.b \
+	$(PL)/qualcount.b $(PL)/qualified-timing.b $(PL)/spy.b \
 	$(PL)/compat.b
 
 # MODEL should be either AREGMODEL for 3.2 or DREGMODEL for 3.4.
@@ -95,6 +95,9 @@ $(PL)/symget.b:  $(PXU)/symget.sl
 
 $(PL)/spy.b: $(PXU)/spy.sl
 	$(PDIST)/make-lap $(PXU) spy
+
+$(PL)/qualcount.b: $(PXU)/qualcount.sl
+	$(PDIST)/make-lap $(PXU) qualcount
 
 $(PL)/qualified-timing.b: $(PXU)/qualified-timing.sl
 	$(PDIST)/make-lap $(PXU) qualified-timing
