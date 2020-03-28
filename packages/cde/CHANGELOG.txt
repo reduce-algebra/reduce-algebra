@@ -1,0 +1,42 @@
+Time-stamp: "2020-03-28 16:51:25 vitolo"
+
+2020-03-28 Raffaele Vitolo <raffaele.vitolo@unisalento.it>
+Updated: package CDE. Main changes are:
+* Added: this CHANGELOG.txt file.
+* Added: folder 'examples_book' with all examples discussed in the book
+by J.S. Krasilshchik, A.M. Verbovetsky, R. Vitolo:
+"The symbolic computation of integrability structures for partial
+differential equations", Texts and Monographs in Symbolic Computations,
+Springer 2018, ISBN: 978-3-319-71655-8. The programs are also available
+at the Geometry of Differential Equations website http://gdeq.org
+* Added: folder 'examples_compHO' with all examples discussed in the paper
+by R. Vitolo 'Computing with Hamitlonian Operators',
+Computer Physics Communications Volume 244 (2019), 228-245
+ArXiv: https://arxiv.org/abs/1808.03902
+
+2017-10-30 Raffaele Vitolo <raffaele.vitolo@unisalento.it>
+* Updated: CDE version 2.1. Main changes are:
+1 - New cde_superfunction module, with new syntax to declare superfunctions.
+2 - The cde_cdiff module has been cleared of code related with superfunctions.
+3 - The cde_cdcalc module is now ready to be extended with operations between
+C-Differential operators. It currently covers the linearization of a vector
+function and its formal adjoint.
+* Fixed: a bug was fixed in a procedure in cde_ansatz.
+
+2016-04-04 Raffaele Vitolo <raffaele.vitolo@unisalento.it>
+* Updated: Several small improvements that are not visible at the user.
+
+2015-10-10 Raffaele Vitolo <raffaele.vitolo@unisalento.it>
+* Updated:  CDE version 2.0.
+* Added: it is possible to compute the linearization of vector
+functions, the formal adjoint of differential operators in total derivatives,
+Schouten brackets between local Hamiltonian operators, also in multidimensions.
+
+2014-10-10 Raffaele Vitolo <raffaele.vitolo@unisalento.it>
+* Added: Version 1.0 of CDE. A new REDUCE package for computations in the
+Geometry of PDEs and integrability.
+* Capabilities: CDE can compute total derivatives and their restriction on even
+or odd partial differential equations, generalized symmetries, conservation
+laws, Hamiltonian, symplectic and recursion operators, with local and nonlocal
+coordinates.
+* License: it is distributed under the same free BSD license of REDUCE.
