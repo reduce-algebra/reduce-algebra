@@ -704,6 +704,20 @@ then
   AC_DEFINE(CONSERVATIVE, [1], [True if GC experiment enabled])
 fi
 
+# Want to build with statistic-gathering for the EQUAL function?
+AC_MSG_CHECKING(for trace-equal)
+AC_ARG_ENABLE(trace-equal,
+  AC_HELP_STRING([--enable-trace-equal],
+                 [trace use of EQUAL for profiling]),
+  [],
+  [enable_trace_equal="no"])
+AC_MSG_RESULT([$enable_trace_equal])
+
+if test "x$enable_trace_equal" = "xyes"
+then
+  AC_DEFINE(TRACED_EQUAL, [1], [True if EQUAL should be profiled])
+fi
+
 # Want to build "test" variant?
 AC_MSG_CHECKING(for test)
 AC_ARG_ENABLE(test,

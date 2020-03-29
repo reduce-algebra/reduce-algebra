@@ -1630,17 +1630,41 @@ static void record_equal(const char *file, int line, int depth, bool eqqq)
     return;
 }
 
+int compare_eqstats(const void *a, const void *b)
+{    return static_cast<const equal_record *>(b)->count -
+            static_cast<const equal_record *>(a)->count;
+}
+
 void dump_equals_1(FILE *log)
 {   std::fprintf(log, "\nCalls to equal...\n");
     std::fprintf(log, "%24.24s %5s %5s %10s %10s\n",
         "file", "line", "depth", "count", "matched");
+    qsort(equal_counts, LOG_SIZE, sizeof(equal_counts[0]), compare_eqstats);
     for (std::size_t i=0; i<LOG_SIZE; i++)
         if (equal_counts[i].count != 0)
-            std::fprintf(log, "%24.24s %5d %5d %10d %10d\n",
-                    equal_counts[i].file, equal_counts[i].line,
-                    equal_counts[i].depth, equal_counts[i].count,
-                    equal_counts[i].eqcount);
+        {   std::fprintf(log, "%24.24s %5d %5d %10d %10d\n",
+                equal_counts[i].file, equal_counts[i].line,
+                equal_counts[i].depth, equal_counts[i].count,
+                equal_counts[i].eqcount);
+            equal_counts[i].count = 0;
+        }
     std::fprintf(log, "end of counts\n");
+}
+
+void dump_equals_2()
+{   trace_printf("\nCalls to equal...\n");
+    trace_printf("%24.24s %5s %5s %10s %10s\n",
+        "file", "line", "depth", "count", "matched");
+    qsort(equal_counts, LOG_SIZE, sizeof(equal_counts[0]), compare_eqstats);
+    for (std::size_t i=0; i<LOG_SIZE; i++)
+        if (equal_counts[i].count != 0)
+        {   trace_printf("%24.24s %5d %5d %10d %10d\n",
+                equal_counts[i].file, equal_counts[i].line,
+                equal_counts[i].depth, equal_counts[i].count,
+                equal_counts[i].eqcount);
+            equal_counts[i].count = 0;
+        }
+    trace_printf("end of counts\n");
 }
 
 void dump_equals()
@@ -1651,7 +1675,7 @@ void dump_equals()
 }
 
 LispObject Lequalstats(LispObject env)
-{   dump_equals_1(stdout);
+{   dump_equals_2();
     for (size_t i=0; i<LOG_SIZE; i++)
         equal_counts[i].count = 0;
     return onevalue(nil);
