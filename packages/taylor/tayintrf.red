@@ -63,7 +63,7 @@ imports
         preptaylor!*;
 
 
-fluid '(!*backtrace !*precise !*tayinternal!* !*taylorkeeporiginal !*taylorautocombine
+fluid '(!*backtrace !*precise !*tayinternal!* !*taylorkeeporiginal !*taylorautocombine taynomul!*
         frlis!* subfg!*);
 
 global '(mul!*);
@@ -99,6 +99,8 @@ symbolic procedure tayfkern u;
 
 put('taylor!*, 'fkernfn, 'tayfkern);
 
+symbolic procedure taysimpsq!-from!-mul u;
+   (taysimpsq u) where taynomul!* := t;
 
 symbolic procedure simptaylor u;
   %
@@ -124,8 +126,8 @@ symbolic procedure simptaylor u;
      %
      % Allow automatic combination of Taylor kernels.
      %
-     if !*taylorautocombine and not ('taysimpsq memq mul!*)
-       then mul!* := aconc!*(mul!*,'taysimpsq);
+     if !*taylorautocombine and not taynomul!* and not ('taysimpsq memq mul!*)
+       then mul!* := aconc!*(mul!*,'taysimpsq!-from!-mul);
      %
      % First of all, call the simplifier on exp (i.e. car u),
      %
@@ -411,8 +413,8 @@ symbolic procedure simptaylor!* u;
      %
      % Allow automatic combination of Taylor kernels.
      %
-     if !*taylorautocombine and not ('taysimpsq memq mul!*)
-       then mul!* := aconc!* (mul!*, 'taysimpsq);
+     if !*taylorautocombine and not taynomul!* and not ('taysimpsq memq mul!*)
+       then mul!* := aconc!* (mul!*, 'taysimpsq!-from!-mul);
      !*tay2q resimptaylor u >>$
 
 flag ('(taylor!*), 'full)$

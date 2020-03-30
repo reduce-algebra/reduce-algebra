@@ -7,7 +7,7 @@ module taylor;
 %
 %****************************************************************
 %
-%  Copyright (C) 1989--2018 by Rainer M. Schoepf, all rights reserved.
+%  Copyright (C) 1989--2020 by Rainer M. Schoepf, all rights reserved.
 %
 %
 %  Error reports please to: <reduce-algebra-developers@lists.sourceforge.net>
@@ -80,6 +80,15 @@ module taylor;
 %
 %*****************************************************************
 %
+%
+% 30-Mar-2020    2.3
+%   Changed interface to global mul!* variable:
+%    Previously, every occurence of a Taylor kernel in simplication had
+%    added taysimpsq to the mul!* variable. This led to an infinite recursion
+%    if !*uncached was set to t.
+%   Now the interface is via a new function taysimpsq!-from-mul that sets
+%    a fluid taynomul!* to indicate that mul!* should not be modified in
+%    inferior calls to simplification. This reduces run time slightly.
 %
 % 22-Jun-2018    2.2g
 %   When a taylor series is computed via differentiation, the constant term is
@@ -959,8 +968,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.2g";     % version number of the package
-taylor!:date!* := "22-Jun-2018"; % release date
+taylor!:version := "2.3";      % version number of the package
+taylor!:date!* := "30-Mar-2020"; % release date
 
 if !*verboseload then
   << terpri ();
