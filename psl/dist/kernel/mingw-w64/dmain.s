@@ -2367,11 +2367,11 @@ symfnc:
  .quad undefinedfunction
  .globl psl_main
  .quad psl_main
- .quad undefinedfunction
- .quad undefinedfunction
- .quad undefinedfunction
  .globl l0218
  .quad l0218
+ .quad undefinedfunction
+ .quad undefinedfunction
+ .quad undefinedfunction
  .quad undefinedfunction
  .globl l0007
  .quad l0007

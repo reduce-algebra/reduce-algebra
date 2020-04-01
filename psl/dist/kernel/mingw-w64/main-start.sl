@@ -256,13 +256,21 @@
 (lap '((*entry !p!s!l!_!m!a!i!n expr 0)
 
        %  Do OS specific initializations (uses argc and argv)
-       (*move (reg rcx) (fluid argc))
-       (*move (reg rdx) (fluid argv))
-       (*move (reg 5) (fluid ebxsave!*)) % have to save %rbp
-
        (*move (reg rcx) (reg 1))
        (*move (reg rdx) (reg 2))
+
+       (*alloc 3) % changes Stack pointer
+
+       (*move (reg 1) (frame 1))   % save argc
+       (*move (reg 2) (frame 2))   % save argv
+       (*move (reg 5) (frame 3))   % save rbp register
+
        (*link os_startup_hook expr 2)
+
+       % restore argc and argv
+       (*move (frame 1) (fluid argc))
+       (*move (frame 2) (fluid argv))
+       (*move (frame 3) (fluid ebxsave!*)) % have to save %rbp
 
        (*call init-pointers)
 
@@ -277,8 +285,8 @@
 panic-exit                      % need to do UNIX cleanup after
                                 % a fatal error, so jump here
        (*move (wconst 0) (reg 1))
-       (*linke 0 exit-with-status expr 1)
-       (*exit 0)
+       (*linke 3 exit-with-status expr 1)
+       (*exit 3)
 
        (*entry exit-with-status expr 1)
        (*push (reg 1))
