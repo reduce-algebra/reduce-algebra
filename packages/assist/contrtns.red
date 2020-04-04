@@ -321,7 +321,7 @@ symbolic procedure dv_canon_tensor u;
  % and put the rest in tel_free
      for each y in tel do
        if tensor_has_dummy_idx(dummy_id!*,y) then tel_dum:=y . tel_dum
-       else tel_free:=multf(!*k2f y,tel_free);
+       else tel_free:=multf(!*kk2f y,tel_free);
    tel_dum:=tel_dum; % to restitute the order
  % now tel_dum must eventually be transformed by contractions.
  % Two cases appear:
@@ -329,7 +329,7 @@ symbolic procedure dv_canon_tensor u;
   return
    if tens_list_is_generic tel_dum then
     <<x:=!*n2f 1;
-       if tel_dum then tel_dum:=for each y in tel_dum collect !*k2f y;
+       if tel_dum then tel_dum:=for each y in tel_dum collect !*kk2f y;
       while tel_dum do <<
                      x:=multf(car tel_dum, x);tel_dum:=cdr tel_dum;
                        >>;

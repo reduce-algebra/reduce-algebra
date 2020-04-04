@@ -111,7 +111,7 @@ symbolic procedure simpdelt (x,varl);
 % varl is the set of variables {v1,v2, ...}
 % result is the simplified form of the Dirac delta function if varl is nil
 % and cdr x is nil.
- if varl and null cdr x then !*k2f(car x . varl . nil) else
+ if varl and null cdr x then !*kk2f(car x . varl . nil) else
   if null varl or null cdr varl then
  begin scalar delt,ind,y,yv,yc;
   delt := car x; ind:= cdr x;
@@ -132,14 +132,14 @@ symbolic procedure simpdelt (x,varl);
   else
   if !*onespace then return
        if yv eq yc then dimex!*
-       else !*k2f(delt . append(cadr y,lowerind_lst car y))
+       else !*kk2f(delt . append(cadr y,lowerind_lst car y))
   else return
    if null get(yv,'space) and yv eq yc then
-      if  assoc('wholespace,spaces!*) then !*k2f get_dim_space 'wholespace
+      if  assoc('wholespace,spaces!*) then !*kk2f get_dim_space 'wholespace
        else "not meaningful"
     else
-   if  yv eq yc then  !*k2f space_dim_of_idx yv
-     else  !*k2f(delt . append(cadr y,lowerind_lst car y))
+   if  yv eq yc then  !*kk2f space_dim_of_idx yv
+     else  !*kk2f(delt . append(cadr y,lowerind_lst car y))
  end
 else "not meaningful";
 
@@ -199,7 +199,7 @@ symbolic procedure simpdel u;
     % now search the space in which we are working.
       dim_space:= if idv then     %% since, may be, no dummy indices
                        if null spaces!* then  dimex!*
-                                else !*k2f space_dim_of_idx cadar idv;
+                                else !*kk2f space_dim_of_idx cadar idv;
       for i:=free_ind : (tot_ind -1) do
               <<spweight:=multf(addf(dim_space,negf !*n2f i),spweight);
                  idvn:=cdr idvn; idcn:=cdr idcn;
@@ -228,16 +228,16 @@ symbolic procedure simpdel u;
       if length idvn=1 then
             if bool then
             multf(spweight,
-                 !*k2f(find_name('delta) . append(lowerind_lst idvn,idcn)))
+                 !*kk2f(find_name('delta) . append(lowerind_lst idvn,idcn)))
              else
               negf multf(spweight,
-                !*k2f(find_name('delta) . append(lowerind_lst idvn,idcn)))
+                !*kk2f(find_name('delta) . append(lowerind_lst idvn,idcn)))
       else
          if bool then
-           multf(spweight,!*k2f(del . append(lowerind_lst idvn ,idcn)))
+           multf(spweight,!*kk2f(del . append(lowerind_lst idvn ,idcn)))
           else
            multf(spweight,negf
-                 !*k2f(del . append(lowerind_lst idvn , idcn)))
+                 !*kk2f(del . append(lowerind_lst idvn , idcn)))
  end;
 
 
@@ -324,11 +324,11 @@ symbolic procedure simpeta u;
   x:=for each y in x collect !*id2num y;
   return if numlis x then num_eta x
          else
-  if !*onespace then !*k2f(eta . ordn ind)
+  if !*onespace then !*kk2f(eta . ordn ind)
   else
   if ids_not_member_whosp {car ind,cadr ind} and
         get(car ind,'space) neq get(cadr ind,'space) then 0
-  else !*k2f(eta . ordn ind)
+  else !*kk2f(eta . ordn ind)
   end;
 
 
@@ -378,9 +378,9 @@ symbolic procedure simpepsi u;
             <<xy:=cont_before_cov ind;
                  if null permp(xy,xx) then bool:=not bool>>;
     return if bool then
-                     !*k2f(epsi . if car x eq 'mixed then
+                     !*kk2f(epsi . if car x eq 'mixed then
                                   xy else xx)
-   else negf !*k2f(epsi . if car x eq 'mixed then
+   else negf !*kk2f(epsi . if car x eq 'mixed then
                                   xy else xx)
    end
    else
@@ -416,27 +416,27 @@ symbolic procedure num_epsi_non_euclid(epsi,ind);
  x:=ordn cdr ind;
  return if car ind eq 'cont then
              (if y then y
-               else  if permp(x,cdr ind) then !*k2f(epsi . x)
-                        else negf !*k2f(epsi . x))where
+               else  if permp(x,cdr ind) then !*kk2f(epsi . x)
+                        else negf !*kk2f(epsi . x))where
                                              y=!*q2f match_kvalue(epsi,x,nil)
            else
            if car ind eq 'cov then
                  if sgn!* = 1  then
                       if evenp length cdr x then
                         (if y then y
-                           else  if permp(x,cdr ind) then !*k2f(epsi . x)
-                                  else negf !*k2f(epsi . x))where
+                           else  if permp(x,cdr ind) then !*kk2f(epsi . x)
+                                  else negf !*kk2f(epsi . x))where
                                             y=!*q2f match_kvalue(epsi,x,nil)
                        else
                        (if y then negf y
-                         else if permp(x,cdr ind) then negf !*k2f(epsi . x)
-                        else  !*k2f(epsi . x))where
+                         else if permp(x,cdr ind) then negf !*kk2f(epsi . x)
+                        else  !*kk2f(epsi . x))where
                                             y=!*q2f match_kvalue(epsi,x,nil)
                   else
                  if sgn!* =-1 then
                       (if y then negf y
-                       else if permp(x,cdr ind) then negf !*k2f(epsi . x)
-                              else !*k2f(epsi . x))where
+                       else if permp(x,cdr ind) then negf !*kk2f(epsi . x)
+                              else !*kk2f(epsi . x))where
                                             y=!*q2f match_kvalue(epsi,x,nil)
                  else nil
            else nil;
@@ -492,19 +492,19 @@ symbolic procedure simpmetric(u,var);
    return if numlis x then
              if !*onespace then
                 if x:= match_kvalue(g,ordn ind,var) then x
-                 else !*k2f(g . if var then var . ordn ind
+                 else !*kk2f(g . if var then var . ordn ind
                                    else ordn ind) ./ 1
              else mult_spaces_num_metric(g,ind,var) ./ 1
          else
   if !*onespace then
       if x:= match_kvalue(g,ordn ind,var) then x
-       else !*k2f(g . if var then var . ordn ind
+       else !*kk2f(g . if var then var . ordn ind
                         else ordn ind) ./ 1
    else
   if get(car ind,'space) neq get(cadr ind,'space) then 0
    else
   if x:= match_kvalue(g,ordn ind,var) then x
-     else !*k2f(g . if var then var . ordn ind
+     else !*kk2f(g . if var then var . ordn ind
                      else ordn ind) ./ 1
  end;
 
@@ -519,7 +519,7 @@ symbolic procedure mult_spaces_num_metric(g,ind,var);
     else
    if y:= match_kvalue(g,if var then var . ordn ind
                                    else ordn ind,var) then y
-    else !*k2f(g . if var then var . ordn ind
+    else !*kk2f(g . if var then var . ordn ind
                      else ordn ind)
   end;
 
