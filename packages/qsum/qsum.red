@@ -928,7 +928,7 @@ begin
 
         if null(a) then return (simp 1);
 
-        if (a eq qq) then
+        if (a = qq) then
                 m:= 0
         else <<
                 m:= qsimpcomb_standard_qexp_part(a,q,qe);
