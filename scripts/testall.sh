@@ -7,6 +7,7 @@
 #                      [--install] [--keep]
 #                      [--csl] [--psl] [--jlisp] [--cslboot]
 #                      [--jlispboot] [--basecsl]
+#                      [--uncached]
 #                         [--debug] [--wx] [--nogui] [--conservative] ...
 #
 # If present the argument "--noregressions" must come first and it
@@ -16,7 +17,8 @@
 # Other arguments can be given in any order. "--install" will lead to
 # a fresh set of reference logs being places in the source tree based on
 # testing the CSL version. "--keep" preserves some temporary files created
-# during testing and may be useful when debugging this script.
+# during testing and may be useful when debugging this script. "--uncached"
+# runs the tests with symbolic(!*uncached := t);
 # --csl, --psl, --jlisp, --cslbool and --jlispboot select the variants
 # of Reduce to test, and any number of those options can be given. If none
 # are then "--csl --psl" is assumed.
@@ -54,7 +56,8 @@ for a in $*
 do
   case $a
   in
-  --install | --keep)
+  --install | --keep | --uncached)
+    extras="$extras $a"
     ;;
   --csl | --basecsl | --psl | --jlisp | --cslboot | --jlispboot)
     sys=`echo $a | sed 's/--//'`
@@ -74,7 +77,7 @@ do
   *)
     printf "\"$a\" is not a valid argument to this script.\n"
     printf "Valid options are: --csl --basecsl --psl --jlisp --cslboot --jlispboot\n"
-    printf "    --noregressions --install --keep [variants]\n"
+    printf "    --noregressions --install --keep --uncached [variants]\n"
     printf "Stopping.\n"
     exit 1
     ;;

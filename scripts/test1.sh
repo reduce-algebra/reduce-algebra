@@ -21,6 +21,8 @@
 #     --nogui/--fox/--wx/--test/--arithlib/--conservative/--debug
 #                 test a non-default version of CSL
 #
+#     --uncached  run tests with symbolic(!*uncached := t);
+#
 # It is legal and reasonable and proper to specify multiple Lisp variants to
 # be tested. If none are explicitly mentioned the code will default to
 # behaving as if "--csl --psl" has been specified. Note that this means that
@@ -57,6 +59,8 @@ cslboot="no"
 jlisp="no"
 jlispboot="no"
 psl="no"
+
+uncached=""
 
 # I allow any number of the keyword arguments in any order. I will pick
 # off and process arguments for so long as any are available. This will
@@ -155,6 +159,10 @@ do
       ;;
     --nogui | --fox | --wx | --test | --arithlib | --conservative | --debug)
       v="$v $1"
+      shift
+      ;;
+    --uncached)
+      uncached='symbolic (!*uncached := t);'
       shift
       ;;
     -*)
@@ -377,6 +385,7 @@ $timeoutcmd $timecmd sh -c "$fullcommand $extras -v -w $otherflags > $name-times
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
+$uncached
 on errcont;
 $loader
 lisp (testdirectory:="$dd");
@@ -457,6 +466,7 @@ symbolic linelength 80;
 symbolic(!*redefmsg := nil);
 symbolic(!*redeflg!* := nil);
 %off pwrds;
+$uncached
 on errcont;
 $loader
 lisp (testdirectory:="$dd");
@@ -515,6 +525,7 @@ $timeoutcmd $timecmd sh -c "java -jar $wh/jlisp/$command -v -w $otherflags > $na
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
+$uncached
 on errcont;
 $loader
 lisp (testdirectory:="$dd");
