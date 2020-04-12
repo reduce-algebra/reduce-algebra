@@ -43,6 +43,7 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <cassert>
 
 #if defined __CYGWIN__ || defined __MINGW32__
 // One thing I want to check is that declarations and definitions that I
@@ -698,7 +699,7 @@ int main(int argc, char *argv[])
         std::cout << "B  " << B << std::endl;
         std::cout << "g1 " << g1 << std::endl;
         std::cout << "g2 " << g2 << std::endl;
-        abort("Failed");
+        abort();
         return 1;
     }
 
