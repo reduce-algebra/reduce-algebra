@@ -1937,7 +1937,7 @@ constexpr inline std::int64_t int_of_handle(std::intptr_t a)
 // arithmetic indicated will not overflow.
 
 inline std::intptr_t int_to_handle(std::int64_t n)
-{   return reinterpret_cast<std::intptr_t>(2*n + 1);
+{   return static_cast<std::intptr_t>(2*n + 1);
 }
 
 // The following two lines are slighly delicate in that INTPTR_MIN and _MAX
