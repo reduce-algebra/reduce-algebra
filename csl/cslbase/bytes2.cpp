@@ -1,4 +1,4 @@
-// bytes2.cpp                             Copyright (C) 1991-2017, Codemist
+// bytes2.cpp                             Copyright (C) 1991-2020, Codemist
 //
 //
 // Bytecode interpreter for Lisp
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -113,9 +113,7 @@
 // bytecode but was called just under 2 million times. The overheads of
 // starting up the bytecode interpreter nake that an invalid judgement,
 // and the "+30" here is intended to counterbalance it.
-    qcount(basic_elt(litvec, 0)) =
-        (std::uint64_t)qcount(basic_elt(litvec, 0)) +
-        (profile_count_mode ? 1 : 30);
+    incCount(qcount(basic_elt(litvec, 0)), profile_count_mode ? 1 : 30);
 #endif
 //
     A_reg = nil;
@@ -137,6 +135,7 @@
     {   char *p = (char *)&p;
         if ((std::uintptr_t)p < C_stacklimit)
         {   err_printf("\n+++ stack overflow\n");
+            if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
             aerror("stack_overflow");
         }
     }
@@ -194,9 +193,7 @@ next_opcode:   // This label is so that I can restart what I am doing
     for (;;)
     {
 #ifndef NO_BYTECOUNT
-        if (!profile_count_mode)
-            qcount(basic_elt(litvec, 0)) =
-                (std::uint64_t)qcount(basic_elt(litvec, 0)) + 1;
+        if (!profile_count_mode) incCount(qcount(basic_elt(litvec, 0)));
         total++;
         frequencies[((unsigned char *)codevec)[ppc]]++;
 #endif
@@ -1554,9 +1551,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     stack = entry_stack;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(basic_elt(litvec, 0)) =
-                        (std::uint64_t)qcount(basic_elt(litvec, 0)) +
-                        (profile_count_mode ? 1 : 30);
+                    incCount(qcount(basic_elt(litvec, 0)),
+                             profile_count_mode ? 1 : 30);
 #endif
                     continue;
                 }
@@ -1601,9 +1597,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     push(A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(basic_elt(litvec, 0)) =
-                        (std::uint64_t)qcount(basic_elt(litvec, 0)) +
-                        (profile_count_mode ? 1 : 30);
+                    incCount(qcount(basic_elt(litvec, 0)),
+                        profile_count_mode ? 1 : 30);
 #endif
                     continue;
                 }
@@ -1649,9 +1644,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     push(B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(basic_elt(litvec, 0)) =
-                        (std::uint64_t)qcount(basic_elt(litvec, 0)) +
-                        (profile_count_mode ? 1 : 30);
+                    incCount(qcount(basic_elt(litvec, 0)),
+                        profile_count_mode ? 1 : 30);
 #endif
                     continue;
                 }
@@ -1696,9 +1690,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     push(r2, B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(basic_elt(litvec, 0)) =
-                        (std::uint64_t)qcount(basic_elt(litvec, 0)) +
-                        (profile_count_mode ? 1 : 30);
+                    incCount(qcount(basic_elt(litvec, 0)),
+                        profile_count_mode ? 1 : 30);
 #endif
                     continue;
                 }

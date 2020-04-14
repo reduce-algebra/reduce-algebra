@@ -283,7 +283,10 @@ inline void if_check_stack()
 #else
 inline void if_check_stack()
 {   const char *_p_ = (const char *)&_p_; \
-    if ((std::uintptr_t)_p_ < C_stacklimit) aerror("stack overflow"); \
+    if ((std::uintptr_t)_p_ < C_stacklimit)
+    {  if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
+        aerror("stack overflow"); \
+    }
 }
 #endif
 

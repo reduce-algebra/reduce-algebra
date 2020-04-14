@@ -1679,9 +1679,62 @@ inline void a4a5a6(const char *name, LispObject a4up,
     a6 = car(a4up);
 }
 
+// I store qcount as an unsigned 64-bit integer, but to allow for a
+// conservative garbage collector I want it to be garbage collecor safe at
+// all times. On a 64-bit machine I can achieve that by arranging that
+// its bottom 4 bits are always TAG_FIXNUM and that when I want to
+// increment it I do so by 0x10. On a 32-bit platform it is slightly
+// harder. I will want to arrange that it is a value of the form
+//        0xnnnnnnn7nnnnnnn7
+// such that on little endian computers if accessed as a pair of adjacent
+// 32-bit values each will look like a fixnum (and hence be GC safe).
+// Incrementing such a value in an atomic manner adds fun to the code!
+
 inline std::atomic<std::uint64_t>& qcount(LispObject p)
 {   return *(std::atomic<std::uint64_t> *)((char *)p + (12*CELL-TAG_SYMBOL));
 }
+
+#ifdef SIXTY_FOUR_BIT
+static const std::uint64_t zeroCount = TAG_FIXNUM;
+
+inline std::uint64_t valueOfCount(std::uint64_t n)
+{   return n >> 4;
+}
+
+inline std::uint64_t countOfValue(std::uint64_t n)
+{   return (n << 4) + TAG_FIXNUM;
+}
+
+inline void incCount(std::atomic<std::uint64_t>& n, int m=1)
+{   n.fetch_add(0x10*m);
+}
+
+#else
+static const std::uint64_t zeroCount =
+    TAG_FIXNUM | (static_cast<std::uint64_t>(TAG_FIXNUM)<<32);
+
+inline std::uint64_t valueOfCount(std::uint64_t n)
+{   return ((n >> 4) & 0x0fffffffU) |
+           ((n >> 8) & 0x00fffffff0000000U);
+}
+
+inline std::uint64_t countOfValue(std::uint64_t n)
+{   return zeroCount |
+           ((n & 0x0fffffffU) << 4)  |
+           ((n & 0x00fffffff0000000U) << 8); 
+}
+
+inline void incCount(std::atomic<std::uint64_t>& n, int m=1)
+{   for (;;)
+    {   std::uint64_t old = n.load();
+        std::uint64_t next = old + 0x10*m;
+        if ((next & 0xff00000000U) != (old & 0xff00000000U))
+            next += 0x0000000f00000000U; 
+        if (n.compare_exchange_weak(old, next) break;
+    }
+}
+
+#endif
 
 #ifndef HAVE_SOFTFLOAT
 typedef struct _float32_t

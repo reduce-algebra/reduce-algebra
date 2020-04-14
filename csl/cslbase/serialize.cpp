@@ -1639,7 +1639,7 @@ down:
                     qfn2(w) = (two_args *)read_function();
                     qfn3(w) = (three_args *)read_function();
                     qfn4up(w) = (fourup_args *)read_function();
-                    qcount(w) = read_u64();
+                    qcount(w) = countOfValue(read_u64());
 // Now to allow me to feel safe I will put NIL in all the other fields
 // on a provisional basis. They get their proper values later.
                     setvalue(w, nil);
@@ -2803,7 +2803,7 @@ down:
             write_function((void *)(two_args *)(qfn2(p)));
             write_function((void *)(three_args *)(qfn3(p)));
             write_function((void *)(fourup_args *)(qfn4up(p)));
-            write_u64(qcount(p));
+            write_u64(valueOfCount(qcount(p)));
             w = p;
             p = qpname(p);
             setpname(w, b);
@@ -3723,7 +3723,7 @@ void warm_setup()
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
     for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
     *stack = nil;
-    qcount(nil) = 0;
+    qcount(nil) = zeroCount;
 // Make things GC safe first...
     setvalue(nil, nil);
     setenv(nil, nil);
@@ -4136,7 +4136,7 @@ static int profile_cf(const void *a, const void *b)
 static double itotal_count = 0.0, total_count = 0.0;
 
 static bool count_totals(LispObject x)
-{   std::uint64_t n = qcount(x);
+{   std::uint64_t n = valueOfCount(qcount(x));
     if (n == 0) return false; // Ignore items with zero count
     LispObject e = qenv(x);
     if (is_cons(e))
@@ -4164,12 +4164,12 @@ static bool count_totals(LispObject x)
 }
 
 static bool clear_counts(LispObject x)
-{   qcount(x) = 0;
+{   qcount(x) = zeroCount;
     return false;
 }
 
 static bool non_zero_count(LispObject x)
-{   return ((std::uint64_t)qcount(x) != 0);
+{   return valueOfCount(qcount(x)) != 0;
 }
 
 LispObject Lmapstore(LispObject env, LispObject a)
@@ -4217,7 +4217,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
         while (stack != savestack)
         {   LispObject x;
             x = stack[0];
-            std::uint64_t n = qcount(x);
+            std::uint64_t n = valueOfCount(qcount(x));
             if (n == 0) continue;
             LispObject e = qenv(x);
             if (is_cons(e))
@@ -4258,7 +4258,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
                 }
             }
             pop(x);
-            if ((what & 1) == 0) qcount(x) = 0;
+            if ((what & 1) == 0) qcount(x) = zeroCount;
         }
     }
     if (what == 0 || what == 1)

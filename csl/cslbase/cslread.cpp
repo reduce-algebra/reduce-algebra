@@ -1312,7 +1312,7 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
     ifn2(s) = (std::intptr_t)undefined_2;
     ifn3(s) = (std::intptr_t)undefined_3;
     ifn4up(s) = (std::intptr_t)undefined_4up;
-    qcount(s) = 0;      // set counts to zero to be tidy
+    qcount(s) = zeroCount;      // set counts to zero to be tidy
     return onevalue(s);
 }
 
@@ -1352,7 +1352,7 @@ LispObject Lgensym(LispObject env)
     ifn2(id) = (std::intptr_t)undefined_2;
     ifn3(id) = (std::intptr_t)undefined_3;
     ifn4up(id) = (std::intptr_t)undefined_4up;
-    qcount(id) = 0;     // to be tidy
+    qcount(id) = zeroCount;     // to be tidy
 
     return onevalue(id);
 }
@@ -1392,7 +1392,7 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     ifn2(id) = (std::intptr_t)undefined_2;
     ifn3(id) = (std::intptr_t)undefined_3;
     ifn4up(id) = (std::intptr_t)undefined_4up;
-    qcount(id) = 0;     // to be tidy
+    qcount(id) = zeroCount;     // to be tidy
     return onevalue(id);
 }
 
@@ -1439,7 +1439,7 @@ LispObject Lgensym1(LispObject env, LispObject a)
     ifn2(id) = (std::intptr_t)undefined_2;
     ifn3(id) = (std::intptr_t)undefined_3;
     ifn4up(id) = (std::intptr_t)undefined_4up;
-    qcount(id) = 0;     // to be tidy
+    qcount(id) = zeroCount;     // to be tidy
     return onevalue(id);
 }
 
@@ -1476,7 +1476,7 @@ LispObject Lgensym2(LispObject env, LispObject a)
     ifn2(id) = (std::intptr_t)undefined_2;
     ifn3(id) = (std::intptr_t)undefined_3;
     ifn4up(id) = (std::intptr_t)undefined_4up;
-    qcount(id) = 0;     // to be tidy
+    qcount(id) = zeroCount;     // to be tidy
     return onevalue(id);
 }
 
@@ -1609,7 +1609,7 @@ LispObject iintern(LispObject str, std::size_t h, LispObject p, int str_is_ok)
         ifn2(s) = (std::intptr_t)undefined_2;
         ifn3(s) = (std::intptr_t)undefined_3;
         ifn4up(s) = (std::intptr_t)undefined_4up;
-        qcount(s) = 0;
+        qcount(s) = zeroCount;
         push(s);
 #ifdef COMMON
         if ((p == qvalue(keyword_package) && keyword_package != nil) ||

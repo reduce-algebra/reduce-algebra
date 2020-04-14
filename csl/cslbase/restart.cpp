@@ -1037,7 +1037,7 @@ static void cold_setup()
     setpackage(nil, nil);
     setpname(nil, make_string("nil"));
 #endif
-    qcount(nil) = 0;
+    qcount(nil) = zeroCount;
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
     eq_hash_tables = nil;
