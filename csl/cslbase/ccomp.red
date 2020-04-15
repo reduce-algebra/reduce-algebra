@@ -1326,7 +1326,7 @@ put('movk, 'c!:opcode_printer, function c!:pmovk);
 symbolic procedure c!:pmovk1(op, r1, r2, r3);
    if null r3 then c!:printf("    %v = nil;\n", r1)
    else if r3 = 't then c!:printf("    %v = lisp_true;\n", r1)
-   else c!:printf("    %v = (LispObject)%s+TAG_FIXNUM; %<// %c\n", r1, 16*r3, r3);
+   else c!:printf("    %v = static_cast<LispObject>(%s)+TAG_FIXNUM; %<// %c\n", r1, 16*r3, r3);
 
 put('movk1, 'c!:opcode_printer, function c!:pmovk1);
 flag('(movk1), 'c!:uses_nil);  % Well it does SOMETIMES
@@ -1452,54 +1452,54 @@ put('fixp, 'c!:opcode_printer, function c!:pfixp);
 flag('(fixp), 'c!:uses_nil);
 
 symbolic procedure c!:piminusp(op, r1, r2, r3);
-   c!:printf("    %v = ((std::intptr_t)(%v) < 0 ? lisp_true : nil);\n", r1, r3);
+   c!:printf("    %v = (static_cast<std::intptr_t>(%v) < 0 ? lisp_true : nil);\n", r1, r3);
 
 put('iminusp, 'c!:opcode_printer, function c!:piminusp);
 flag('(iminusp), 'c!:uses_nil);
 
 symbolic procedure c!:pilessp(op, r1, r2, r3);
-   c!:printf("    %v = ((std::intptr_t)%v < (std::intptr_t)%v) ? lisp_true : nil;\n",
+   c!:printf("    %v = (static_cast<std::intptr_t>(%v) < static_cast<std::intptr_t>(%v)) ? lisp_true : nil;\n",
              r1, r2, r3);
 
 put('ilessp, 'c!:opcode_printer, function c!:pilessp);
 flag('(ilessp), 'c!:uses_nil);
 
 symbolic procedure c!:pigreaterp(op, r1, r2, r3);
-   c!:printf("    %v = ((std::intptr_t)%v > (std::intptr_t)%v) ? lisp_true : nil;\n",
+   c!:printf("    %v = (static_cast<std::intptr_t>(%v) > static_cast<std::intptr_t>(%v)) ? lisp_true : nil;\n",
              r1, r2, r3);
 
 put('igreaterp, 'c!:opcode_printer, function c!:pigreaterp);
 flag('(igreaterp), 'c!:uses_nil);
 
 symbolic procedure c!:piminus(op, r1, r2, r3);
-   c!:printf("    %v = (LispObject)(2*TAG_FIXNUM-((std::intptr_t)(%v)));\n", r1, r3);
+   c!:printf("    %v = static_cast<LispObject>(2*TAG_FIXNUM-(static_cast<std::intptr_t>(%v)));\n", r1, r3);
 
 put('iminus, 'c!:opcode_printer, function c!:piminus);
 
 symbolic procedure c!:piadd1(op, r1, r2, r3);
-   c!:printf("    %v = (LispObject)((std::intptr_t)(%v) + 0x10);\n", r1, r3);
+   c!:printf("    %v = static_cast<LispObject>(static_cast<std::intptr_t>(%v) + 0x10);\n", r1, r3);
 
 put('iadd1, 'c!:opcode_printer, function c!:piadd1);
 
 symbolic procedure c!:pisub1(op, r1, r2, r3);
-   c!:printf("    %v = (LispObject)((std::intptr_t)(%v) - 0x10);\n", r1, r3);
+   c!:printf("    %v = static_cast<LispObject>(static_cast<std::intptr_t>(%v) - 0x10);\n", r1, r3);
 
 put('isub1, 'c!:opcode_printer, function c!:pisub1);
 
 symbolic procedure c!:piplus2(op, r1, r2, r3);
- << c!:printf("    %v = (LispObject)(std::intptr_t)((std::intptr_t)%v +", r1, r2);
-    c!:printf(" (std::intptr_t)%v - TAG_FIXNUM);\n", r3) >>;
+ << c!:printf("    %v = static_cast<LispObject>(static_cast<std::uintptr_t>(%v) +", r1, r2);
+    c!:printf(" static_cast<std::uintptr_t>(%v) - TAG_FIXNUM);\n", r3) >>;
 
 put('iplus2, 'c!:opcode_printer, function c!:piplus2);
 
 symbolic procedure c!:pidifference(op, r1, r2, r3);
- << c!:printf("    %v = (LispObject)(std::intptr_t)((std::intptr_t)%v - (std::intptr_t)%v", r1, r2, r3);
+ << c!:printf("    %v = static_cast<LispObject>(static_cast<std::uintptr_t>(%v) - static_cast<std::uintptr_t>(%v)", r1, r2, r3);
     c!:printf(" + TAG_FIXNUM);\n") >>;
 
 put('idifference, 'c!:opcode_printer, function c!:pidifference);
 
 symbolic procedure c!:pitimes2(op, r1, r2, r3);
- << c!:printf("    %v = fixnum_of_int((std::intptr_t)(int_of_fixnum(%v) *", r1, r2);
+ << c!:printf("    %v = fixnum_of_int(static_cast<std::intptr_t>(int_of_fixnum(%v) *", r1, r2);
     c!:printf(" int_of_fixnum(%v)));\n", r3) >>;
 
 put('itimes2, 'c!:opcode_printer, function c!:pitimes2);
@@ -1576,16 +1576,16 @@ flag('(get), 'c!:uses_nil);
 put('get, 'c!:opcode_printer, function c!:pget);
 
 symbolic procedure c!:pqgetv(op, r1, r2, r3);
- << c!:printf("    %v = *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +",
+ << c!:printf("    %v = *reinterpret_cast<LispObject *>(reinterpret_cast<char *>(%v) + (CELL-TAG_VECTOR) +",
               r1, r2);
-    c!:printf(" (((std::intptr_t)%v-TAG_FIXNUM)/(16/CELL)));\n", r3) >>;
+    c!:printf(" (((static_cast<std::intptr_t<(%v)-TAG_FIXNUM)/(16/CELL)));\n", r3) >>;
 
 put('qgetv, 'c!:opcode_printer, function c!:pqgetv);
 
 symbolic procedure c!:pqputv(op, r1, r2, r3);
  <<
   c!:printf("    *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +", r2);
-  c!:printf(" (((std::intptr_t)%v-TAG_FIXNUM)/(16/CELL))) = %v;\n", r3, r1) >>;
+  c!:printf(" ((static_cast<std::intptr_t>(%v)-TAG_FIXNUM)/(16/CELL))) = %v;\n", r3, r1) >>;
 
 put('qputv, 'c!:opcode_printer, function c!:pqputv);
 
@@ -1643,11 +1643,11 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
        c!:printf(");\n") >>
     else if w := get(car r3, 'c!:direct_predicate) then <<
        boolfn := t;
-       c!:printf("    %v = (LispObject)%s(", r1, cdr w);
+       c!:printf("    %v = static_cast<LispObject>(%s(", r1, cdr w);
        if r2 then <<
           c!:printf("%v", car r2);
           for each a in cdr r2 do c!:printf(", %v", a) >>;
-       c!:printf(");\n") >>
+       c!:printf("));\n") >>
 !#if 0
 % The qsum package redefines simpexpt while executing a function by that
 % name in a way that might be interacting really basly with this!
@@ -1761,12 +1761,12 @@ symbolic procedure c!:pifequal s;
 put('ifequal, 'c!:exit_helper, function c!:pifequal);
 
 symbolic procedure c!:pifilessp s;
-  c!:printf("((std::intptr_t)(%v)) < ((std::intptr_t)(%v))", car s, cadr s);
+  c!:printf("(static_cast<std::intptr_t>(%v) < static_cast<std::intptr_t>(%v))", car s, cadr s);
 
 put('ifilessp, 'c!:exit_helper, function c!:pifilessp);
 
 symbolic procedure c!:pifigreaterp s;
-  c!:printf("((std::intptr_t)(%v)) > ((std::intptr_t)(%v))", car s, cadr s);
+  c!:printf("(static_cast<std::intptr_t>(%v) > static_cast<std::intptr_t>(%v))", car s, cadr s);
 
 put('ifigreaterp, 'c!:exit_helper, function c!:pifigreaterp);
 

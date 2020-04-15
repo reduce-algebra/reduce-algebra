@@ -282,10 +282,10 @@ inline void if_check_stack()
 }
 #else
 inline void if_check_stack()
-{   const char *_p_ = (const char *)&_p_; \
-    if ((std::uintptr_t)_p_ < C_stacklimit)
+{   const char *_p_ = reinterpret_cast<const char *>(&_p_);
+    if (reinterpret_cast<std::uintptr_t>(_p_) < C_stacklimit)
     {  if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
-        aerror("stack overflow"); \
+        aerror("stack overflow");
     }
 }
 #endif
@@ -833,7 +833,7 @@ extern LispObject get_vector_init(std::size_t n, LispObject v);
 extern LispObject reduce_vector_size(LispObject n, std::size_t length);
 extern void       prepare_for_borrowing();
 inline void zero_out(void *p)
-{   char *p1 = (char *)doubleword_align_up((std::uintptr_t)p);
+{   char *p1 = reinterpret_cast<char *>(doubleword_align_up(reinterpret_cast<std::uintptr_t>(p)));
     std::memset(p1, 0, CSL_PAGE_SIZE);
 }
 extern LispObject borrow_basic_vector(int tag, int type, std::size_t length);

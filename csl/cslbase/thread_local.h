@@ -215,8 +215,8 @@ inline void extended_tls_store(tls_handle teb_slot, void *v)
 
 inline void *tls_load(tls_handle teb_slot)
 {   if (teb_slot >= 64) return extended_tls_load(teb_slot);
-    else return (void *)read_via_segment_register(
-        basic_TLS_offset + sizeof(void *)*teb_slot);
+    else return reinterpret_cast<void *>(read_via_segment_register(
+        basic_TLS_offset + sizeof(void *)*teb_slot));
 }
 
 inline void tls_store(tls_handle teb_slot, void *v)
@@ -260,7 +260,7 @@ public:                                                       \
     {   return (Type)tls_load(H.h);                           \
     }                                                         \
     static void set(Type v)                                   \
-    {   tls_store(H.h, (void *)v);                            \
+    {   tls_store(H.h, reinterpret_cast<void *>(v));                            \
         val = v;                                              \
     }                                                         \
 };
@@ -274,7 +274,7 @@ public:                                                       \
     {   return (Type)tls_load(H.h);                           \
     }                                                         \
     static void set(Type v)                                   \
-    {   tls_store(H.h, (void *)v);                            \
+    {   tls_store(H.h, reinterpret_cast<void *>(v));                            \
     }                                                         \
 };
 #endif // DEBUG
@@ -289,7 +289,7 @@ class name ## _Ref                                            \
 public:                                                       \
     static inline TlsHandle H;                                \
     name ## _Ref()                                            \
-    {   tls_store(H.h, (void *)get());                        \
+    {   tls_store(H.h, reinterpret_cast<void *>(get()));                        \
     }                                                         \
 };                                                            \
 class name                                                    \

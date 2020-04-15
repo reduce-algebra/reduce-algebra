@@ -3642,8 +3642,8 @@ cadr where_to))) (flag (list (cadr where_to)) (quote c!:visited))))))
 
 (de c!:pmovk1 (op r1 r2 r3) (cond ((null r3) (c!:printf "    %v = nil;\n" r1)
 ) (t (cond ((equal r3 (quote t)) (c!:printf "    %v = lisp_true;\n" r1)) (t (
-c!:printf "    %v = (LispObject)%s+TAG_FIXNUM; %<// %c\n" r1 (times 16 r3) r3
-))))))
+c!:printf "    %v = static_cast<LispObject>(%s)+TAG_FIXNUM; %<// %c\n" r1 (
+times 16 r3) r3))))))
 
 (put (quote movk1) (quote c!:opcode_printer) (function c!:pmovk1))
 
@@ -3758,59 +3758,62 @@ r1 r1) (c!:printf "#endif\n")))
 (flag (quote (fixp)) (quote c!:uses_nil))
 
 (de c!:piminusp (op r1 r2 r3) (c!:printf 
-"    %v = ((std::intptr_t)(%v) < 0 ? lisp_true : nil);\n" r1 r3))
+"    %v = (static_cast<std::intptr_t>(%v) < 0 ? lisp_true : nil);\n" r1 r3))
 
 (put (quote iminusp) (quote c!:opcode_printer) (function c!:piminusp))
 
 (flag (quote (iminusp)) (quote c!:uses_nil))
 
 (de c!:pilessp (op r1 r2 r3) (c!:printf 
-"    %v = ((std::intptr_t)%v < (std::intptr_t)%v) ? lisp_true : nil;\n" r1 r2
-r3))
+"    %v = (static_cast<std::intptr_t>(%v) < static_cast<std::intptr_t>(%v)) ? lisp_true : nil;\n"
+r1 r2 r3))
 
 (put (quote ilessp) (quote c!:opcode_printer) (function c!:pilessp))
 
 (flag (quote (ilessp)) (quote c!:uses_nil))
 
 (de c!:pigreaterp (op r1 r2 r3) (c!:printf 
-"    %v = ((std::intptr_t)%v > (std::intptr_t)%v) ? lisp_true : nil;\n" r1 r2
-r3))
+"    %v = (static_cast<std::intptr_t>(%v) > static_cast<std::intptr_t>(%v)) ? lisp_true : nil;\n"
+r1 r2 r3))
 
 (put (quote igreaterp) (quote c!:opcode_printer) (function c!:pigreaterp))
 
 (flag (quote (igreaterp)) (quote c!:uses_nil))
 
 (de c!:piminus (op r1 r2 r3) (c!:printf 
-"    %v = (LispObject)(2*TAG_FIXNUM-((std::intptr_t)(%v)));\n" r1 r3))
+"    %v = static_cast<LispObject>(2*TAG_FIXNUM-(static_cast<std::intptr_t>(%v)));\n"
+r1 r3))
 
 (put (quote iminus) (quote c!:opcode_printer) (function c!:piminus))
 
 (de c!:piadd1 (op r1 r2 r3) (c!:printf 
-"    %v = (LispObject)((std::intptr_t)(%v) + 0x10);\n" r1 r3))
+"    %v = static_cast<LispObject>(static_cast<std::intptr_t>(%v) + 0x10);\n" 
+r1 r3))
 
 (put (quote iadd1) (quote c!:opcode_printer) (function c!:piadd1))
 
 (de c!:pisub1 (op r1 r2 r3) (c!:printf 
-"    %v = (LispObject)((std::intptr_t)(%v) - 0x10);\n" r1 r3))
+"    %v = static_cast<LispObject>(static_cast<std::intptr_t>(%v) - 0x10);\n" 
+r1 r3))
 
 (put (quote isub1) (quote c!:opcode_printer) (function c!:pisub1))
 
 (de c!:piplus2 (op r1 r2 r3) (progn (c!:printf 
-"    %v = (LispObject)(std::intptr_t)((std::intptr_t)%v +" r1 r2) (c!:printf 
-" (std::intptr_t)%v - TAG_FIXNUM);\n" r3)))
+"    %v = static_cast<LispObject>(static_cast<std::uintptr_t>(%v) +" r1 r2) (
+c!:printf " static_cast<std::uintptr_t>(%v) - TAG_FIXNUM);\n" r3)))
 
 (put (quote iplus2) (quote c!:opcode_printer) (function c!:piplus2))
 
 (de c!:pidifference (op r1 r2 r3) (progn (c!:printf 
-"    %v = (LispObject)(std::intptr_t)((std::intptr_t)%v - (std::intptr_t)%v" 
+"    %v = static_cast<LispObject>(static_cast<std::uintptr_t>(%v) - static_cast<std::uintptr_t>(%v)"
 r1 r2 r3) (c!:printf " + TAG_FIXNUM);\n")))
 
 (put (quote idifference) (quote c!:opcode_printer) (function c!:pidifference)
 )
 
 (de c!:pitimes2 (op r1 r2 r3) (progn (c!:printf 
-"    %v = fixnum_of_int((std::intptr_t)(int_of_fixnum(%v) *" r1 r2) (
-c!:printf " int_of_fixnum(%v)));\n" r3)))
+"    %v = fixnum_of_int(static_cast<std::intptr_t>(int_of_fixnum(%v) *" r1 r2
+) (c!:printf " int_of_fixnum(%v)));\n" r3)))
 
 (put (quote itimes2) (quote c!:opcode_printer) (function c!:pitimes2))
 
@@ -3874,14 +3877,15 @@ r3))
 (put (quote get) (quote c!:opcode_printer) (function c!:pget))
 
 (de c!:pqgetv (op r1 r2 r3) (progn (c!:printf 
-"    %v = *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +" r1 r2) (c!:printf
-" (((std::intptr_t)%v-TAG_FIXNUM)/(16/CELL)));\n" r3)))
+"    %v = *reinterpret_cast<LispObject *>(reinterpret_cast<char *>(%v) + (CELL-TAG_VECTOR) +"
+r1 r2) (c!:printf 
+" (((static_cast<std::intptr_t<(%v)-TAG_FIXNUM)/(16/CELL)));\n" r3)))
 
 (put (quote qgetv) (quote c!:opcode_printer) (function c!:pqgetv))
 
 (de c!:pqputv (op r1 r2 r3) (progn (c!:printf 
 "    *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +" r2) (c!:printf 
-" (((std::intptr_t)%v-TAG_FIXNUM)/(16/CELL))) = %v;\n" r3 r1)))
+" ((static_cast<std::intptr_t>(%v)-TAG_FIXNUM)/(16/CELL))) = %v;\n" r3 r1)))
 
 (put (quote qputv) (quote c!:opcode_printer) (function c!:pqputv))
 
@@ -3923,16 +3927,16 @@ var1273 (cdr r2)) lab1272 (cond ((null var1273) (return nil))) (prog (a) (
 setq a (car var1273)) (c!:printf ", %v" a)) (setq var1273 (cdr var1273)) (go 
 lab1272))))) (c!:printf ");\n"))) (t (cond ((setq w (get (car r3) (quote 
 c!:direct_predicate))) (progn (setq boolfn t) (c!:printf 
-"    %v = (LispObject)%s(" r1 (cdr w)) (cond (r2 (progn (c!:printf "%v" (car 
-r2)) (prog (var1275) (setq var1275 (cdr r2)) lab1274 (cond ((null var1275) (
-return nil))) (prog (a) (setq a (car var1275)) (c!:printf ", %v" a)) (setq 
-var1275 (cdr var1275)) (go lab1274))))) (c!:printf ");\n"))) (t (cond ((setq 
-w (get (car r3) (quote c!:c_entrypoint))) (progn (cond ((flagp (intern w) (
-quote c!:noreturn)) (c!:printf "    %s(nil" w)) (t (c!:printf 
-"    %v = %s(nil" r1 w))) (prog (var1277) (setq var1277 r2) lab1276 (cond ((
-null var1277) (return nil))) (prog (a) (setq a (car var1277)) (c!:printf 
-", %v" a)) (setq var1277 (cdr var1277)) (go lab1276)) (c!:printf ");\n"))) (t
-(prog (nargs) (setq nargs (length r2)) (c!:printf 
+"    %v = static_cast<LispObject>(%s(" r1 (cdr w)) (cond (r2 (progn (
+c!:printf "%v" (car r2)) (prog (var1275) (setq var1275 (cdr r2)) lab1274 (
+cond ((null var1275) (return nil))) (prog (a) (setq a (car var1275)) (
+c!:printf ", %v" a)) (setq var1275 (cdr var1275)) (go lab1274))))) (c!:printf
+"));\n"))) (t (cond ((setq w (get (car r3) (quote c!:c_entrypoint))) (progn 
+(cond ((flagp (intern w) (quote c!:noreturn)) (c!:printf "    %s(nil" w)) (t 
+(c!:printf "    %v = %s(nil" r1 w))) (prog (var1277) (setq var1277 r2) 
+lab1276 (cond ((null var1277) (return nil))) (prog (a) (setq a (car var1277))
+(c!:printf ", %v" a)) (setq var1277 (cdr var1277)) (go lab1276)) (c!:printf 
+");\n"))) (t (prog (nargs) (setq nargs (length r2)) (c!:printf 
 "    {   LispObject fn = basic_elt(env, %s); %<// %c\n" (c!:find_literal (car
 r3)) (car r3)) (cond ((equal nargs 0) (c!:printf "    %v = (*qfn0(fn))(fn" 
 r1)) (t (cond ((equal nargs 1) (c!:printf "    %v = (*qfn1(fn))(fn" r1)) (t (
@@ -3994,12 +3998,14 @@ s)))
 (put (quote ifequal) (quote c!:exit_helper) (function c!:pifequal))
 
 (de c!:pifilessp (s) (c!:printf 
-"((std::intptr_t)(%v)) < ((std::intptr_t)(%v))" (car s) (cadr s)))
+"(static_cast<std::intptr_t>(%v) < static_cast<std::intptr_t>(%v))" (car s) (
+cadr s)))
 
 (put (quote ifilessp) (quote c!:exit_helper) (function c!:pifilessp))
 
 (de c!:pifigreaterp (s) (c!:printf 
-"((std::intptr_t)(%v)) > ((std::intptr_t)(%v))" (car s) (cadr s)))
+"(static_cast<std::intptr_t>(%v) > static_cast<std::intptr_t>(%v))" (car s) (
+cadr s)))
 
 (put (quote ifigreaterp) (quote c!:exit_helper) (function c!:pifigreaterp))
 

@@ -199,7 +199,7 @@ inline void write_barrier(LispObject *p)
 }
 
 inline void write_barrier(std::atomic<LispObject> *p)
-{   write_barrier((LispObject *)p);
+{   write_barrier(reinterpret_cast<LispObject *>(p));
 }
 
 extern std::uint64_t threadMap;
@@ -556,7 +556,7 @@ inline void poll()
         fringeBis[threadId::get()] = fringe::get();
         request[threadId::get()] = 0;
         gIncrement[threadId::get()] = 0;
-        (void)difficult_n_bytes();
+        static_cast<void>(difficult_n_bytes());
     }
 }
 
@@ -795,8 +795,8 @@ inline void garbageCollectOnBehalfOfAll()
                     else
                     {   while (gNext != 0)
                         {   gFringe = gNext;
-                            gLimit = ((std::uintptr_t *)gFringe.load())[0];
-                            gNext = ((std::uintptr_t *)gFringe.load())[1];
+                            gLimit = (reinterpret_cast<std::uintptr_t *>(gFringe.load()))[0];
+                            gNext = (reinterpret_cast<std::uintptr_t *>(gFringe.load()))[1];
                             gap1 = gLimit - gFringe;
                             if (n+CHUNK < gap1)
                             {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
@@ -1135,7 +1135,7 @@ inline LispObject Lxcons(LispObject, LispObject a, LispObject b)
     return onevalue(r1);
 }
 
-inline LispObject Lnilfn(LispObject)
+inline LispObject Lnilfnstatic_cast<LispObject>()
 {   return onevalue(nil);
 }
 

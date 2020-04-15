@@ -64,13 +64,13 @@ typedef std::intptr_t LispObject;
 // Perhaps the most important value here is nil!
 extern LispObject nil;
 
-#define SIXTY_FOUR_BIT (sizeof(intptr_t) == 8)
+#define SIXTY_FOUR_BIT (sizeof(std::intptr_t) == 8)
 
 // My hope is that writing CSL_IGNORE(x) will cause the compiler to believe
 // that x is "used" enough that it does not give any "not used" warnings.
 
 inline void CSL_IGNORE(LispObject x)
-{   (void)x;
+{   static_cast<void>(x);
 }
 
 // I manage memory in CSL_PAGE_SIZE chunks.
@@ -189,7 +189,8 @@ inline bool need_more_than_eq(LispObject p)
 // territory.
 
 inline constexpr LispObject fixnum_of_int(std::intptr_t x)
-{   return  (LispObject)((((std::uintptr_t)x)<<4) + TAG_FIXNUM);
+{   return  static_cast<LispObject>(
+        (static_cast<std::uintptr_t>(x)<<4) + TAG_FIXNUM);
 }
 
 // There are places where I want to use this as a case-constant and then I
@@ -207,7 +208,8 @@ inline constexpr LispObject fixnum_of_int(std::intptr_t x)
 // portable manner. 
 
 inline constexpr std::intptr_t int_of_fixnum(LispObject x)
-{   return ((std::intptr_t)x & ~(std::intptr_t)15)/16;
+{   return (static_cast<std::intptr_t>(x) &
+            ~static_cast<std::intptr_t>(15)) / 16;
 }
 
 // The following test will see if an intptr_t value can be reduced to
@@ -250,57 +252,57 @@ inline bool intptr_valid_as_fixnum(std::intptr_t x)
 
 inline bool valid_as_fixnum(std::uint32_t x)
 {   if (SIXTY_FOUR_BIT) return true;
-    else return x < (((std::uintptr_t)1) << 28);
+    else return x < ((static_cast<std::uintptr_t>(1)) << 28);
 }
 
 inline bool valid_as_fixnum(std::uint64_t x)
-{   return x < (((std::uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
+{   return x < ((static_cast<std::uintptr_t>(1)) << (SIXTY_FOUR_BIT ? 60 : 28));
 }
 
 inline bool uint128_valid_as_fixnum(uint128_t x)
-{   return x < (((std::uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
+{   return x < ((static_cast<std::uintptr_t>(1)) << (SIXTY_FOUR_BIT ? 60 : 28));
 }
 
-#define MOST_POSITIVE_FIXVAL (((intptr_t)1 << (8*sizeof(LispObject)-5)) - 1)
-#define MOST_NEGATIVE_FIXVAL (-((intptr_t)1 << (8*sizeof(LispObject)-5)))
+#define MOST_POSITIVE_FIXVAL ((static_cast<std::intptr_t>(1) << (8*sizeof(LispObject)-5)) - 1)
+#define MOST_NEGATIVE_FIXVAL (-(static_cast<std::intptr_t>(1) << (8*sizeof(LispObject)-5)))
 
 #define MOST_POSITIVE_FIXNUM fixnum_of_int(MOST_POSITIVE_FIXVAL)
 #define MOST_NEGATIVE_FIXNUM fixnum_of_int(MOST_NEGATIVE_FIXVAL)
 
 inline bool is_cons(LispObject p)
-{   return ((((int)(p)) & TAG_BITS)  == TAG_CONS);
+{   return (((static_cast<int>(p)) & TAG_BITS)  == TAG_CONS);
 }
 
 inline bool is_fixnum(LispObject p)
-{   return ((((int)(p)) & XTAG_BITS) == TAG_FIXNUM);
+{   return (((static_cast<int>(p)) & XTAG_BITS) == TAG_FIXNUM);
 }
 
 inline bool is_immediate_num(LispObject p)
-{   return ((((int)(p)) & TAG_BITS) == TAG_FIXNUM);
+{   return (((static_cast<int>(p)) & TAG_BITS) == TAG_FIXNUM);
 }
 
 inline bool is_odds(LispObject p)
-{   return ((((int)(p)) & TAG_BITS)  == TAG_HDR_IMMED); // many subcases
+{   return (((static_cast<int>(p)) & TAG_BITS)  == TAG_HDR_IMMED); // many subcases
 }
 
 inline bool is_sfloat(LispObject p)
-{   return ((((int)(p)) & XTAG_BITS) == XTAG_SFLOAT);
+{   return (((static_cast<int>(p)) & XTAG_BITS) == XTAG_SFLOAT);
 }
 
 inline bool is_symbol(LispObject p)
-{   return ((((int)(p)) & TAG_BITS)  == TAG_SYMBOL);
+{   return (((static_cast<int>(p)) & TAG_BITS)  == TAG_SYMBOL);
 }
 
 inline bool is_numbers(LispObject p)
-{   return ((((int)(p)) & TAG_BITS)  == TAG_NUMBERS);
+{   return (((static_cast<int>(p)) & TAG_BITS)  == TAG_NUMBERS);
 }
 
 inline bool is_vector(LispObject p)
-{   return ((((int)(p)) & TAG_BITS)  == TAG_VECTOR);
+{   return (((static_cast<int>(p)) & TAG_BITS)  == TAG_VECTOR);
 }
 
 inline bool is_bfloat(LispObject p)
-{   return ((((int)(p)) & TAG_BITS)  == TAG_BOXFLOAT);
+{   return (((static_cast<int>(p)) & TAG_BITS)  == TAG_BOXFLOAT);
 }
 
 inline bool consp(LispObject p)
@@ -383,32 +385,32 @@ extern bool valid_address(void *pointer);
 
 inline LispObject car(LispObject p, std::memory_order mo=std::memory_order_relaxed)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
-    return ((Cons_Cell *)p)->car.load(mo);
+    return (reinterpret_cast<Cons_Cell *>(p))->car.load(mo);
 }
 
 inline LispObject cdr(LispObject p, std::memory_order mo=std::memory_order_relaxed)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
-    return ((Cons_Cell *)p)->cdr.load(mo);
+    return (reinterpret_cast<Cons_Cell *>(p))->cdr.load(mo);
 }
 
 inline void setcar(LispObject p, LispObject q, std::memory_order mo=std::memory_order_relaxed)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
-    ((Cons_Cell *)p)->car.store(q, mo);
+    (reinterpret_cast<Cons_Cell *>(p))->car.store(q, mo);
 }
 
 inline void setcdr(LispObject p, LispObject q, std::memory_order mo=std::memory_order_relaxed)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
-    ((Cons_Cell *)p)->cdr.store(q, mo);
+    (reinterpret_cast<Cons_Cell *>(p))->cdr.store(q, mo);
 }
 
 inline std::atomic<LispObject> *caraddr(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
-    return &(((Cons_Cell *)p)->car);
+    return &((reinterpret_cast<Cons_Cell *>(p))->car);
 }
 
 inline std::atomic<LispObject> *cdraddr(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
-    return &(((Cons_Cell *)p)->cdr);
+    return &((reinterpret_cast<Cons_Cell *>(p))->cdr);
 }
 
 // At present (boo hiss) the serialization code and the garbage collector
@@ -418,12 +420,14 @@ inline std::atomic<LispObject> *cdraddr(LispObject p)
 
 inline LispObject *vcaraddr(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
-    return (LispObject *)&(((Cons_Cell *)p)->car);
+    return reinterpret_cast<LispObject *>(
+        &(reinterpret_cast<Cons_Cell *>(p)->car));
 }
 
 inline LispObject *vcdraddr(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort();
-    return (LispObject *)&(((Cons_Cell *)p)->cdr);
+    return reinterpret_cast<LispObject *>(
+        &(reinterpret_cast<Cons_Cell *>(p)->cdr));
 }
 
 typedef LispObject Special_Form(LispObject, LispObject);
@@ -638,27 +642,27 @@ inline bool vector_holds_binary(Header h)
 #define SPID_LIBRARY    (TAG_SPID+(0x0c<<(Tw+4)))  // + 0xnnn00000 offset
 
 inline Header vechdr(LispObject v, std::memory_order mo=std::memory_order_relaxed)
-{   return ((std::atomic<Header> *)((char *)v - TAG_VECTOR))->load(mo);
+{   return (reinterpret_cast<std::atomic<Header> *>(reinterpret_cast<char *>(v) - TAG_VECTOR))->load(mo);
 }
 
 inline void setvechdr(LispObject v, Header h, std::memory_order mo=std::memory_order_relaxed)
-{   ((std::atomic<Header> *)((char *)v - TAG_VECTOR))->store(h, mo);
+{   (reinterpret_cast<std::atomic<Header> *>(reinterpret_cast<char *>(v) - TAG_VECTOR))->store(h, mo);
 }
 
 inline unsigned int type_of_header(Header h)
-{   return ((unsigned int)h) & header_mask;
+{   return (static_cast<unsigned int>(h)) & header_mask;
 }
 
 // length_of_header returns the length of a word or doubleword oriented
 // object in bytes. NOT in words.
 
 inline std::size_t length_of_header(Header h)
-{   return (((std::size_t)h) >> (Tw+7)) << 2;
+{   return ((static_cast<std::size_t>(h)) >> (Tw+7)) << 2;
 }
 
 // length_of_bitheader returns a length in bits.
 inline std::size_t length_of_bitheader(Header h)
-{   return (((std::size_t)h) >> (Tw+2)) - 31;
+{   return ((static_cast<std::size_t>(h)) >> (Tw+2)) - 31;
 }
 
 // length_of_byteheader returns a length in bytes, and so compatible with what
@@ -666,12 +670,12 @@ inline std::size_t length_of_bitheader(Header h)
 
 
 inline std::size_t length_of_byteheader(Header h)
-{   return (((std::size_t)h) >> (Tw+5))  - 3;
+{   return ((static_cast<std::size_t>(h)) >> (Tw+5))  - 3;
 }
 
 // length_of_hwordheader gives the number of halfwords used.
 inline std::size_t length_of_hwordheader(Header h)
-{   return (((std::size_t)h) >> (Tw+6)) - 1;
+{   return ((static_cast<std::size_t>(h)) >> (Tw+6)) - 1;
 }
 
 inline Header bitvechdr_(std::size_t n)
@@ -734,11 +738,11 @@ inline Header bitvechdr_(std::size_t n)
 #define symhdr_length       (doubleword_align_up(sizeof(Symbol_Head)))
 
 inline bool is_symbol_header(Header h)
-{   return ((int)h & (0xf<<Tw)) == TYPE_SYMBOL;
+{   return (static_cast<int>(h) & (0xf<<Tw)) == TYPE_SYMBOL;
 }
 
 inline bool is_symbol_header_full_test(Header h)
-{   return ((int)h & ((0xf<<Tw) + TAG_BITS)) == (TYPE_SYMBOL + TAG_HDR_IMMED);
+{   return (static_cast<int>(h) & ((0xf<<Tw) + TAG_BITS)) == (TYPE_SYMBOL + TAG_HDR_IMMED);
 }
 
 inline int header_fastget(Header h)
@@ -746,12 +750,12 @@ inline int header_fastget(Header h)
 }
 
 inline bool is_number_header_full_test(Header h)
-{   return ((int)h & ((0x1d<<Tw) + TAG_BITS)) == ((0x1d<<Tw) + TAG_HDR_IMMED);
+{   return (static_cast<int>(h) & ((0x1d<<Tw) + TAG_BITS)) == ((0x1d<<Tw) + TAG_HDR_IMMED);
 }
 
 // The "vector" case here includes vector-like number cases
 inline bool is_vector_header_full_test(Header h)
-{   return is_odds(h) && (((int)h & (0x3<<Tw)) != 0);
+{   return is_odds(h) && ((static_cast<int>(h) & (0x3<<Tw)) != 0);
 }
 
 inline bool is_array_header(Header h)
@@ -871,7 +875,7 @@ inline bool vector_f128(Header h)
 }
 
 inline std::atomic<LispObject>& basic_elt(LispObject v, std::size_t n)
-{   return *(std::atomic<LispObject> *)((char *)v +
+{   return *reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(v) +
                            (CELL-TAG_VECTOR) +
                            (n*sizeof(LispObject)));
 }
@@ -940,19 +944,19 @@ inline bool vector_f128(LispObject n)
 #define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
 
 inline Header numhdr(LispObject v, std::memory_order mo = std::memory_order_relaxed)
-{   return ((std::atomic<Header> *)((char *)(v) - TAG_NUMBERS))->load(mo);
+{   return (reinterpret_cast<std::atomic<Header> *>(reinterpret_cast<char *>(v) - TAG_NUMBERS))->load(mo);
 }
 
 inline Header flthdr(LispObject v, std::memory_order mo = std::memory_order_relaxed)
-{   return ((std::atomic<Header> *)((char *)(v) - TAG_BOXFLOAT))->load(mo);
+{   return (reinterpret_cast<std::atomic<Header> *>(reinterpret_cast<char *>(v) - TAG_BOXFLOAT))->load(mo);
 }
 
 inline void setnumhdr(LispObject v, Header h, std::memory_order mo = std::memory_order_relaxed)
-{   ((std::atomic<Header> *)((char *)(v) - TAG_NUMBERS))->store(h, mo);
+{   (reinterpret_cast<std::atomic<Header> *>(reinterpret_cast<char *>(v) - TAG_NUMBERS))->store(h, mo);
 }
 
 inline void setflthdr(LispObject v, Header h, std::memory_order mo = std::memory_order_relaxed)
-{   ((std::atomic<Header> *)((char *)(v) - TAG_BOXFLOAT))->store(h, mo);
+{   (reinterpret_cast<std::atomic<Header> *>(reinterpret_cast<char *>(v) - TAG_BOXFLOAT))->store(h, mo);
 }
 
 inline bool is_short_float(LispObject v)
@@ -1049,21 +1053,21 @@ inline bool is_bitvec(LispObject n)
 }
 
 inline char& basic_celt(LispObject v, std::size_t n)
-{   return *((char *)(v) + (CELL-TAG_VECTOR) + n);
+{   return *(reinterpret_cast<char *>(v) + (CELL-TAG_VECTOR) + n);
 }
 
 inline unsigned char& basic_ucelt(LispObject v, std::size_t n)
-{   return *((unsigned char *)v + (CELL-TAG_VECTOR) + n);
+{   return *(reinterpret_cast<unsigned char *>(v) + (CELL-TAG_VECTOR) + n);
 }
 
 inline signed char& basic_scelt(LispObject v, std::size_t n)
-{   return *((signed char *)v + (CELL-TAG_VECTOR) + n);
+{   return *(reinterpret_cast<signed char *>(v) + (CELL-TAG_VECTOR) + n);
 }
 
 #define BPS_DATA_OFFSET (CELL-TAG_VECTOR)
 
 inline unsigned char* data_of_bps(LispObject v)
-{   return (unsigned char *)v + BPS_DATA_OFFSET;
+{   return reinterpret_cast<unsigned char *>(v) + BPS_DATA_OFFSET;
 }
 
 
@@ -1082,8 +1086,10 @@ inline unsigned char* data_of_bps(LispObject v)
 // large vs basic vectors does not apply.
 
 inline LispObject& vselt(LispObject v, std::size_t n)
-{   return *(LispObject *)(((std::intptr_t)v & ~((std::intptr_t)TAG_BITS)) +
-                            ((1 + n)*sizeof(LispObject)));
+{   return *reinterpret_cast<LispObject *>(
+        (static_cast<std::intptr_t>(v) &
+            ~(static_cast<std::intptr_t>(TAG_BITS))) +
+        ((1 + n)*sizeof(LispObject)));
 }
 
 //
@@ -1097,15 +1103,15 @@ inline LispObject& vselt(LispObject v, std::size_t n)
 // to expect that int16_t will exist and will be something I can rely on.
 //
 inline std::int16_t& basic_helt(LispObject v, std::size_t n)
-{   return *(std::int16_t *)((char *)v +
+{   return *reinterpret_cast<std::int16_t *>(reinterpret_cast<char *>(v) +
                         (CELL-TAG_VECTOR) +
                         n*sizeof(std::int16_t));
 }
 
 inline std::intptr_t& basic_ielt(LispObject v, std::size_t n)
-{   return  *(std::intptr_t *)((char *)v +
+{   return  *reinterpret_cast<std::intptr_t *>(reinterpret_cast<char *>(v) +
                          (CELL-TAG_VECTOR) +
-                         n*sizeof(std::intptr_t));
+                         n*sizeof(intptr_t));
 }
 
 //
@@ -1113,19 +1119,19 @@ inline std::intptr_t& basic_ielt(LispObject v, std::size_t n)
 // ints or short-floats.
 //
 inline std::int32_t& basic_ielt32(LispObject v, std::size_t n)
-{   return *(std::int32_t *)((char *)v +
+{   return *reinterpret_cast<std::int32_t *>(reinterpret_cast<char *>(v) +
                         (CELL-TAG_VECTOR) +
                         n*sizeof(std::int32_t));
 }
 
 inline float& basic_felt(LispObject v, std::size_t n)
-{   return *(float *)((char *)v +
+{   return *reinterpret_cast<float *>(reinterpret_cast<char *>(v) +
                       (CELL-TAG_VECTOR) +
                       n*sizeof(float));
 }
 
 inline double& basic_delt(LispObject v, std::size_t n)
-{   return *(double *)((char *)v +
+{   return *reinterpret_cast<double *>(reinterpret_cast<char *>(v) +
                        (8-TAG_VECTOR) +
                        n*sizeof(double));
 }
@@ -1279,7 +1285,7 @@ inline void discard_basic_vector(LispObject v)
             setvechdr(v,TYPE_SIMPLE_VEC +
                         (size << (Tw+5)) +
                         TAG_HDR_IMMED);
-            v = (v & ~(std::uintptr_t)TAG_BITS) | TAG_VECTOR;
+            v = (v & ~reinterpret_cast<std::uintptr_t>(TAG_BITS)) | TAG_VECTOR;
             free_vectors[i] = v;
         }
     }
@@ -1331,8 +1337,9 @@ inline std::int16_t& helt(LispObject v, std::size_t n)
 
 inline std::intptr_t& ielt(LispObject v, std::size_t n)
 {   if (is_basic_vector(v)) return basic_ielt(v, n);
-    return basic_ielt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(std::intptr_t))),
-                      n%(VECTOR_CHUNK_BYTES/sizeof(std::intptr_t)));
+    return basic_ielt(
+        elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(std::intptr_t))),
+        n%(VECTOR_CHUNK_BYTES/sizeof(std::intptr_t)));
 }
 
 inline std::int32_t& ielt32(LispObject v, std::size_t n)
@@ -1354,19 +1361,19 @@ inline double& delt(LispObject v, std::size_t n)
 }
 
 inline bool is_header(LispObject x)
-{   return ((int)x & (0x3<<Tw)) != 0; // valid if TAG_HDR_IMMED
+{   return (static_cast<int>(x) & (0x3<<Tw)) != 0; // valid if TAG_HDR_IMMED
 }
 
 inline bool is_char(LispObject x)
-{   return ((int)x & HDR_IMMED_MASK) == TAG_CHAR;
+{   return (static_cast<int>(x) & HDR_IMMED_MASK) == TAG_CHAR;
 }
 
 inline bool is_spid(LispObject x)
-{   return ((int)x & HDR_IMMED_MASK) == TAG_SPID;
+{   return (static_cast<int>(x) & HDR_IMMED_MASK) == TAG_SPID;
 }
 
 inline bool is_library(LispObject x)
-{   return ((int)x & 0xfffff) == SPID_LIBRARY;
+{   return (static_cast<int>(x) & 0xfffff) == SPID_LIBRARY;
 }
 
 inline unsigned int library_number(LispObject x)
@@ -1388,7 +1395,7 @@ inline unsigned int library_number(LispObject x)
 // 16 distinct "Font" codes when I am on 32-bit hardware.
 
 inline int font_of_char(LispObject n)
-{   return ((std::int32_t)n >> (21+4+Tw)) & 0xf;
+{   return (static_cast<std::int32_t>(n) >> (21+4+Tw)) & 0xf;
 }
 
 // The Common Lisp "bits" part of a character object no longer makes any sense!
@@ -1397,12 +1404,13 @@ inline int bits_of_char(LispObject n)
 }
 
 inline unsigned int code_of_char(LispObject n)
-{   return   ((std::uint32_t)(n) >>  (4+Tw)) & 0x001fffff;
+{   return   (static_cast<std::uint32_t>(n) >>  (4+Tw)) & 0x001fffff;
 }
 
 inline LispObject pack_char(int font, unsigned int code)
-{   return (LispObject)((((std::uint32_t)(font)) << (21+4+Tw)) |
-                        (((std::uint32_t)(code)) << (4+Tw)) | TAG_CHAR);
+{   return static_cast<LispObject>(
+        ((static_cast<std::uint32_t>(font)) << (21+4+Tw)) |
+         ((static_cast<std::uint32_t>(code)) << (4+Tw)) | TAG_CHAR);
 }
 
 //
@@ -1520,134 +1528,134 @@ typedef struct Bytecoded_Function_Object_
 // offsetof is badly supported by some C compilers I have come across.
 //
 inline Header qheader(LispObject p, std::memory_order mo=std::memory_order_relaxed)
-{   return ((std::atomic<Header> *)((char *)p + (0*CELL-TAG_SYMBOL)))->load(mo);
+{   return (reinterpret_cast<std::atomic<Header> *>(reinterpret_cast<char *>(p) + (0*CELL-TAG_SYMBOL)))->load(mo);
 }
 
 inline LispObject qvalue(LispObject p, std::memory_order mo=std::memory_order_relaxed)
-{   return ((std::atomic<LispObject> *)((char *)p + (1*CELL-TAG_SYMBOL)))->load(mo);
+{   return (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (1*CELL-TAG_SYMBOL)))->load(mo);
 }
 
 inline LispObject qenv(LispObject p, std::memory_order mo=std::memory_order_relaxed)
-{   return ((std::atomic<LispObject> *)((char *)p + (2*CELL-TAG_SYMBOL)))->load(mo);
+{   return (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (2*CELL-TAG_SYMBOL)))->load(mo);
 }
 
 inline LispObject qplist(LispObject p, std::memory_order mo=std::memory_order_relaxed)
-{   return ((std::atomic<LispObject> *)((char *)p + (3*CELL-TAG_SYMBOL)))->load(mo);
+{   return (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (3*CELL-TAG_SYMBOL)))->load(mo);
 }
 
 inline LispObject qfastgets(LispObject p, std::memory_order mo=std::memory_order_relaxed)
-{   return ((std::atomic<LispObject> *)((char *)p + (4*CELL-TAG_SYMBOL)))->load(mo);
+{   return (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (4*CELL-TAG_SYMBOL)))->load(mo);
 }
 
 inline LispObject qpackage(LispObject p, std::memory_order mo=std::memory_order_relaxed)
-{   return ((std::atomic<LispObject> *)((char *)p + (5*CELL-TAG_SYMBOL)))->load(mo);
+{   return (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (5*CELL-TAG_SYMBOL)))->load(mo);
 }
 
 inline LispObject qpname(LispObject p, std::memory_order mo=std::memory_order_relaxed)
-{   return ((std::atomic<LispObject> *)((char *)p + (6*CELL-TAG_SYMBOL)))->load(mo);
+{   return (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (6*CELL-TAG_SYMBOL)))->load(mo);
 }
 
 inline std::atomic<LispObject> *valueaddr(LispObject p)
-{   return (std::atomic<LispObject> *)((char *)p + (1*CELL-TAG_SYMBOL));
+{   return reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (1*CELL-TAG_SYMBOL));
 }
 
 inline std::atomic<LispObject> *envaddr(LispObject p)
-{   return (std::atomic<LispObject> *)((char *)p + (2*CELL-TAG_SYMBOL));
+{   return reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (2*CELL-TAG_SYMBOL));
 }
 
 inline std::atomic<LispObject> *plistaddr(LispObject p)
-{   return (std::atomic<LispObject> *)((char *)p + (3*CELL-TAG_SYMBOL));
+{   return reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (3*CELL-TAG_SYMBOL));
 }
 
 inline std::atomic<LispObject> *fastgetsaddr(LispObject p)
-{   return (std::atomic<LispObject> *)((char *)p + (4*CELL-TAG_SYMBOL));
+{   return reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (4*CELL-TAG_SYMBOL));
 }
 
 inline std::atomic<LispObject> *packageaddr(LispObject p)
-{   return (std::atomic<LispObject> *)((char *)p + (5*CELL-TAG_SYMBOL));
+{   return reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (5*CELL-TAG_SYMBOL));
 }
 
 inline std::atomic<LispObject> *pnameaddr(LispObject p)
-{   return (std::atomic<LispObject> *)((char *)p + (6*CELL-TAG_SYMBOL));
+{   return reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (6*CELL-TAG_SYMBOL));
 }
 
 inline void setheader(LispObject p, Header h, std::memory_order mo=std::memory_order_relaxed)
-{   ((std::atomic<Header> *)((char *)p + (0*CELL-TAG_SYMBOL)))->store(h, mo);
+{   (reinterpret_cast<std::atomic<Header> *>(reinterpret_cast<char *>(p) + (0*CELL-TAG_SYMBOL)))->store(h, mo);
 }
 
 inline void setvalue(LispObject p, LispObject q, std::memory_order mo=std::memory_order_relaxed)
-{   ((std::atomic<LispObject> *)((char *)p + (1*CELL-TAG_SYMBOL)))->store(q, mo);   
+{   (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (1*CELL-TAG_SYMBOL)))->store(q, mo);   
 }
 
 inline void setenv(LispObject p, LispObject q, std::memory_order mo=std::memory_order_relaxed)
-{   ((std::atomic<LispObject> *)((char *)p + (2*CELL-TAG_SYMBOL)))->store(q, mo);
+{   (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (2*CELL-TAG_SYMBOL)))->store(q, mo);
 }
 
 inline void setplist(LispObject p, LispObject q, std::memory_order mo=std::memory_order_relaxed)
-{   ((std::atomic<LispObject> *)((char *)p + (3*CELL-TAG_SYMBOL)))->store(q, mo);
+{   (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (3*CELL-TAG_SYMBOL)))->store(q, mo);
 }
 
 inline void setfastgets(LispObject p, LispObject q, std::memory_order mo=std::memory_order_relaxed)
-{   ((std::atomic<LispObject> *)((char *)p + (4*CELL-TAG_SYMBOL)))->store(q, mo);
+{   (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (4*CELL-TAG_SYMBOL)))->store(q, mo);
 }
 
 inline void setpackage(LispObject p, LispObject q, std::memory_order mo=std::memory_order_relaxed)
-{   ((std::atomic<LispObject> *)((char *)p + (5*CELL-TAG_SYMBOL)))->store(q, mo);
+{   (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (5*CELL-TAG_SYMBOL)))->store(q, mo);
 }
 
 inline void setpname(LispObject p, LispObject q, std::memory_order mo=std::memory_order_relaxed)
-{   ((std::atomic<LispObject> *)((char *)p + (6*CELL-TAG_SYMBOL)))->store(q, mo);
+{   (reinterpret_cast<std::atomic<LispObject> *>(reinterpret_cast<char *>(p) + (6*CELL-TAG_SYMBOL)))->store(q, mo);
 }
 
 // The ifn() selector gives access to the qfn() cell, but treating its
-// contents as (intptr_t).
+// contents as (std::intptr_t).
 //
 inline std::intptr_t& ifn0(LispObject p)
-{   return *(std::intptr_t *)((char *)p + (7*CELL-TAG_SYMBOL));
+{   return *reinterpret_cast<std::intptr_t *>(reinterpret_cast<char *>(p) + (7*CELL-TAG_SYMBOL));
 }
 
 inline std::intptr_t& ifn1(LispObject p)
-{   return *(std::intptr_t *)((char *)p + (8*CELL-TAG_SYMBOL));
+{   return *reinterpret_cast<std::intptr_t *>(reinterpret_cast<char *>(p) + (8*CELL-TAG_SYMBOL));
 }
 
 inline std::intptr_t& ifn2(LispObject p)
-{   return *(std::intptr_t *)((char *)p + (9*CELL-TAG_SYMBOL));
+{   return *reinterpret_cast<std::intptr_t *>(reinterpret_cast<char *>(p) + (9*CELL-TAG_SYMBOL));
 }
 
 inline std::intptr_t& ifn3(LispObject p)
-{   return *(std::intptr_t *)((char *)p + (10*CELL-TAG_SYMBOL));
+{   return *reinterpret_cast<std::intptr_t *>(reinterpret_cast<char *>(p) + (10*CELL-TAG_SYMBOL));
 }
 
 inline std::intptr_t& ifn4up(LispObject p)
-{   return *(std::intptr_t *)((char *)p + (11*CELL-TAG_SYMBOL));
+{   return *reinterpret_cast<std::intptr_t *>(reinterpret_cast<char *>(p) + (11*CELL-TAG_SYMBOL));
 }
 
 inline std::intptr_t& ifnunused(LispObject p)
-{   return *(std::intptr_t *)((char *)p + (12*CELL-TAG_SYMBOL));
+{   return *reinterpret_cast<std::intptr_t *>(reinterpret_cast<char *>(p) + (12*CELL-TAG_SYMBOL));
 }
 
 inline std::intptr_t& ifnn(LispObject p)
-{   return *(std::intptr_t *)((char *)p + (13*CELL-TAG_SYMBOL));
+{   return *reinterpret_cast<std::intptr_t *>(reinterpret_cast<char *>(p) + (13*CELL-TAG_SYMBOL));
 }
 
 inline no_args*& qfn0(LispObject p)
-{   return *((no_args **)((char *)p + (7*CELL-TAG_SYMBOL)));
+{   return *((no_args **)(reinterpret_cast<char *>(p) + (7*CELL-TAG_SYMBOL)));
 }
 
 inline one_arg*& qfn1(LispObject p)
-{   return *(one_arg **)((char *)p + (8*CELL-TAG_SYMBOL));
+{   return *(one_arg **)(reinterpret_cast<char *>(p) + (8*CELL-TAG_SYMBOL));
 }
 
 inline two_args*& qfn2(LispObject p)
-{   return *(two_args **)((char *)p + (9*CELL-TAG_SYMBOL));
+{   return *(two_args **)(reinterpret_cast<char *>(p) + (9*CELL-TAG_SYMBOL));
 }
 
 inline three_args*& qfn3(LispObject p)
-{   return *(three_args **)((char *)p + (10*CELL-TAG_SYMBOL));
+{   return *(three_args **)(reinterpret_cast<char *>(p) + (10*CELL-TAG_SYMBOL));
 }
 
 inline fourup_args*& qfn4up(LispObject p)
-{   return *(fourup_args **)((char *)p + (11*CELL-TAG_SYMBOL));
+{   return *(fourup_args **)(reinterpret_cast<char *>(p) + (11*CELL-TAG_SYMBOL));
 }
 
 [[noreturn]] extern void aerror1(const char *s, LispObject a);
@@ -1691,7 +1699,7 @@ inline void a4a5a6(const char *name, LispObject a4up,
 // Incrementing such a value in an atomic manner adds fun to the code!
 
 inline std::atomic<std::uint64_t>& qcount(LispObject p)
-{   return *(std::atomic<std::uint64_t> *)((char *)p + (12*CELL-TAG_SYMBOL));
+{   return *(std::atomic<std::uint64_t> *)(reinterpret_cast<char *>(p) + (12*CELL-TAG_SYMBOL));
 }
 
 #ifdef SIXTY_FOUR_BIT
@@ -1756,7 +1764,7 @@ typedef union _Float_union
 // bottom 32.
 
 inline LispObject low32(LispObject a)
-{   return (LispObject)(std::uint32_t)a;
+{   return static_cast<LispObject>(static_cast<std::uint32_t>(a));
 }
 
 typedef struct Big_Number_
@@ -1778,17 +1786,21 @@ inline std::size_t bignum_length(LispObject b)
 }
 
 inline std::uint32_t* bignum_digits(LispObject b)
-{   return (std::uint32_t *)((char *)b  + (CELL-TAG_NUMBERS));
+{   return reinterpret_cast<std::uint32_t *>(
+        reinterpret_cast<char *>(b)  + (CELL-TAG_NUMBERS));
 }
 
 inline std::uint32_t* vbignum_digits(LispObject b)
-{   return (std::uint32_t *)((char *)b  + (CELL-TAG_NUMBERS));
+{   return reinterpret_cast<std::uint32_t *>(
+        reinterpret_cast<char *>(b)  + (CELL-TAG_NUMBERS));
 }
 
 // For work on bignums when I have a 64-bit machine I frequently need the
 // top word of a bignum as a 64-bit (signed) value...
 inline std::int64_t bignum_digits64(LispObject b, std::size_t n)
-{   return (std::int64_t)((std::int32_t *)((char *)b+(CELL-TAG_NUMBERS)))[n];
+{   return static_cast<std::int64_t>(
+        reinterpret_cast<std::int32_t *>(
+            reinterpret_cast<char *>(b)+(CELL-TAG_NUMBERS))[n]);
 }
 
 
@@ -1806,20 +1818,21 @@ inline Header make_new_bighdr(std::size_t n)
 }
 
 inline std::uint64_t* new_bignum_digits(LispObject b)
-{   return (std::uint64_t *)((char *)b  + (8-TAG_NUMBERS));
+{   return reinterpret_cast<std::uint64_t *>(
+        reinterpret_cast<char *>(b)  + (8-TAG_NUMBERS));
 }
 
 // pack_hdrlength takes a length in 32-bit words (including the size of
 // the header). NOTE VERY WELL that although the other header length packers
 // take a count of items this one takes a length in 32-bit words!
-#define pack_hdrlength(n) (((intptr_t)(n))<<(Tw+7))
+#define pack_hdrlength(n) (static_cast<std::intptr_t>(n)<<(Tw+7))
 
 // pack_hdrlengthbytes takes a number of 32-bit words as an argument and
 // adjusts it to go in a header.
 
-//@#define pack_hdrlengthbits(n) ((31+(intptr_t)(n))<<(Tw+2))
-//@#define pack_hdrlengthbytes(n) ((3+(intptr_t)(n))<<(Tw+5))
-//@#define pack_hdrlengthhwords(n) ((1+(intptr_t)(n))<<(Tw+4))
+//@#define pack_hdrlengthbits(n) ((31+static_cast<std::intptr_t>(n))<<(Tw+2))
+//@#define pack_hdrlengthbytes(n) ((3+static_cast<std::intptr_t>(n))<<(Tw+5))
+//@#define pack_hdrlengthhwords(n) ((1+static_cast<std::intptr_t>(n))<<(Tw+4))
 
 typedef struct Rational_Number_
 {   std::atomic<Header> header;
@@ -1828,19 +1841,19 @@ typedef struct Rational_Number_
 } Rational_Number;
 
 inline LispObject numerator(LispObject r, std::memory_order mo=std::memory_order_relaxed)
-{   return ((Rational_Number *)((char *)r-TAG_NUMBERS))->num.load(mo);
+{   return ((Rational_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->num.load(mo);
 }
 
 inline LispObject denominator(LispObject r, std::memory_order mo=std::memory_order_relaxed)
-{   return ((Rational_Number *)((char *)r-TAG_NUMBERS))->den.load(mo);
+{   return ((Rational_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->den.load(mo);
 }
 
 inline void setnumerator(LispObject r, LispObject v, std::memory_order mo=std::memory_order_relaxed)
-{   ((Rational_Number *)((char *)r-TAG_NUMBERS))->num.store(v, mo);
+{   ((Rational_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->num.store(v, mo);
 }
 
 inline void setdenominator(LispObject r, LispObject v, std::memory_order mo=std::memory_order_relaxed)
-{   return ((Rational_Number *)((char *)r-TAG_NUMBERS))->den.store(v, mo);
+{   return ((Rational_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->den.store(v, mo);
 }
 
 typedef struct Complex_Number_
@@ -1850,19 +1863,19 @@ typedef struct Complex_Number_
 } Complex_Number;
 
 inline LispObject real_part(LispObject r, std::memory_order mo=std::memory_order_relaxed)
-{   return ((Complex_Number *)((char *)r-TAG_NUMBERS))->real.load(mo);
+{   return ((Complex_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->real.load(mo);
 }
 
 inline LispObject imag_part(LispObject r, std::memory_order mo=std::memory_order_relaxed)
-{   return ((Complex_Number *)((char *)r-TAG_NUMBERS))->imag.load(mo);
+{   return ((Complex_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->imag.load(mo);
 }
 
 inline void setreal_part(LispObject r, LispObject v, std::memory_order mo=std::memory_order_relaxed)
-{   return ((Complex_Number *)((char *)r-TAG_NUMBERS))->real.store(v, mo);
+{   return ((Complex_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->real.store(v, mo);
 }
 
 inline void setimag_part(LispObject r, LispObject v, std::memory_order mo=std::memory_order_relaxed)
-{   return ((Complex_Number *)((char *)r-TAG_NUMBERS))->imag.store(v, mo);
+{   return ((Complex_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->imag.store(v, mo);
 }
 
 typedef struct Single_Float_
@@ -1875,15 +1888,15 @@ typedef struct Single_Float_
 } Single_Float;
 
 inline float& single_float_val(LispObject v)
-{   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.f;
+{   return ((Single_Float *)(reinterpret_cast<char *>(v)-TAG_BOXFLOAT))->f.f;
 }
 
 inline float32_t& float32_t_val(LispObject v)
-{   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.f32;
+{   return ((Single_Float *)(reinterpret_cast<char *>(v)-TAG_BOXFLOAT))->f.f32;
 }
 
 inline std::int32_t& intfloat32_t_val(LispObject v)
-{   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.i;
+{   return ((Single_Float *)(reinterpret_cast<char *>(v)-TAG_BOXFLOAT))->f.i;
 }
 
 //
@@ -1917,33 +1930,34 @@ typedef union _Double_union
 
 #define SIZEOF_DOUBLE_FLOAT     16
 inline double *double_float_addr(LispObject v)
-{   return (double *)((char *)v + (8-TAG_BOXFLOAT));
+{   return reinterpret_cast<double *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 // on 32-bit machines there has to be a padding work in a double_float,
 // and this lets me clear it out.
 inline std::int32_t& double_float_pad(LispObject v)
-{   return *(std::int32_t *)((char *)v + (4-TAG_BOXFLOAT));
+{   return *reinterpret_cast<std::int32_t *>(reinterpret_cast<char *>(v) + (4-TAG_BOXFLOAT));
 }
 
 inline double& double_float_val(LispObject v)
-{   return *(double *)((char *)v + (8-TAG_BOXFLOAT));
+{   return *reinterpret_cast<double *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline float64_t& float64_t_val(LispObject v)
-{   return *(float64_t *)((char *)v + (8-TAG_BOXFLOAT));
+{   return *reinterpret_cast<float64_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline std::int64_t& intfloat64_t_val(LispObject v)
-{   return *(std::int64_t *)((char *)v + (8-TAG_BOXFLOAT));
+{   return *reinterpret_cast<std::int64_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline std::int32_t& intfloat64_t_val_hi(LispObject v)
-{   return *(std::int32_t *)((char *)v + (8-TAG_BOXFLOAT));
+{   return *reinterpret_cast<std::int32_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline std::int32_t& intfloat64_t_val_lo(LispObject v)
-{   return *(std::int32_t *)((char *)v + (12-TAG_BOXFLOAT));
+{   return *reinterpret_cast<std::int32_t *>(
+        reinterpret_cast<char *>(v) + (12-TAG_BOXFLOAT));
 }
 
 //
@@ -1975,74 +1989,89 @@ inline std::int32_t& intfloat64_t_val_lo(LispObject v)
 #ifdef HAVE_SOFTFLOAT
 #define SIZEOF_LONG_FLOAT       24
 inline float128_t *long_float_addr(LispObject v)
-{   return (float128_t *)((char *)v + (8-TAG_BOXFLOAT));
+{   return (float128_t *)(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline std::int32_t& long_float_pad(LispObject v)
-{   return *(std::int32_t *)((char *)v + (4-TAG_BOXFLOAT));
+{   return *reinterpret_cast<std::int32_t *>(reinterpret_cast<char *>(v) + (4-TAG_BOXFLOAT));
 }
 
 inline float128_t& long_float_val(LispObject v)
-{   return *(float128_t *)((char *)v + (8-TAG_BOXFLOAT));
+{   return *reinterpret_cast<float128_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline float128_t& float128_t_val(LispObject v)
-{   return *(float128_t *)((char *)v + (8-TAG_BOXFLOAT));
+{   return *reinterpret_cast<float128_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline std::int64_t& intfloat128_t_val0(LispObject v)
-{   return *(std::int64_t *)((char *)v + (8-TAG_BOXFLOAT));
+{   return *reinterpret_cast<std::int64_t *>(
+        reinterpret_cast<char *>(
+        v) + (8-TAG_BOXFLOAT));
 }
 
 inline std::int64_t& intfloat128_t_val1(LispObject v)
-{   return *(std::int64_t *)((char *)v + (16-TAG_BOXFLOAT));
+{   return *reinterpret_cast<std::int64_t *>(
+        reinterpret_cast<char *>(
+        v) + (16-TAG_BOXFLOAT));
 }
 
 inline std::int32_t& intfloat128_t_val32_0(LispObject v)
-{   return *(std::int32_t *)((char *)v + (8-TAG_BOXFLOAT));
+{   return *reinterpret_cast<std::int32_t *>(
+        reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline std::int32_t& intfloat128_t_val32_1(LispObject v)
-{   return *(std::int32_t *)((char *)v + (12-TAG_BOXFLOAT));
+{   return *reinterpret_cast<std::int32_t *>(
+        reinterpret_cast<char *>(v) + (12-TAG_BOXFLOAT));
 }
 
 inline std::int32_t& intfloat128_t_val32_2(LispObject v)
-{   return *(std::int32_t *)((char *)v + (16-TAG_BOXFLOAT));
+{   return *reinterpret_cast<std::int32_t *>(
+        reinterpret_cast<char *>(
+        v) + (16-TAG_BOXFLOAT));
 }
 
 inline std::int32_t& intfloat128_t_val32_3(LispObject v)
-{   return *(std::int32_t *)((char *)v + (20-TAG_BOXFLOAT));
+{   return *reinterpret_cast<std::int32_t *>(
+        reinterpret_cast<char *>(v) + (20-TAG_BOXFLOAT));
 }
 #endif // HAVE_SOFTFLOAT
 
 inline std::uintptr_t word_align_up(std::uintptr_t n)
-{   return (LispObject)((n + 3) & (-(std::uintptr_t)4U));
+{   return static_cast<LispObject>((n + 3) & (-static_cast<std::uintptr_t>(4U)));
 }
 
 inline std::uintptr_t doubleword_align_up(std::uintptr_t n)
-{   return (std::uintptr_t)((n + 7) & (-(std::uintptr_t)8U));
+{   return static_cast<std::uintptr_t>(
+        (n + 7) & (-static_cast<std::uintptr_t>(8U)));
 }
 
 inline LispObject doubleword_align_up(LispObject n)
-{   return (LispObject)(((std::uintptr_t)n + 7) & (-(std::uintptr_t)8U));
+{   return static_cast<LispObject>(
+        (static_cast<std::uintptr_t>(n) + 7) &
+         (-static_cast<std::uintptr_t>(8U)));
 }
 
 inline std::uintptr_t doubleword_align_down(std::uintptr_t n)
-{   return (std::uintptr_t)((std::intptr_t)n & (-(std::uintptr_t)8U));
+{   return static_cast<std::uintptr_t>(
+        static_cast<std::intptr_t>(n) & (-static_cast<std::uintptr_t>(8U)));
 }
 
 inline std::uintptr_t object_align_up(std::uintptr_t n)
-{   return (std::uintptr_t)((n + sizeof(LispObject) - 1) &
-                       (-(std::uintptr_t)sizeof(LispObject)));
+{   return static_cast<std::uintptr_t>((n + sizeof(LispObject) - 1) &
+                       (-static_cast<std::uintptr_t>(sizeof(LispObject))));
 }
 
 inline std::uintptr_t object_2_align_up(std::uintptr_t n)
-{   return (std::uintptr_t)((n + 2*sizeof(LispObject) - 1) &
-                       (-(std::uintptr_t)2*sizeof(LispObject)));
+{   return static_cast<std::uintptr_t>(
+        (n + 2*sizeof(LispObject) - 1) &
+            (-static_cast<std::uintptr_t>(
+        2)*sizeof(LispObject)));
 }
 
 //inline uintptr_t quadword_align_up(uintptr_t n)
-//{   return (uintptr_t)((n + 15) & (-(uintptr_t)16U));
+//{   return static_cast<uintptr_t>((n + 15) & (-static_cast<uintptr_t>(16U)));
 //}
 
 // values to go in exit_reason at times when exceptions are being thrown.

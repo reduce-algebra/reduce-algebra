@@ -105,7 +105,7 @@ extern unsigned char msd_table[256], lsd_table[256];
 // mask operation as written here is not really needed on most machines.
 
 #define signed_overflow(n) \
-  top_bit_set((std::uint32_t)(n) ^ ((std::uint32_t)(n) << 1))
+  top_bit_set(static_cast<std::uint32_t>(n) ^ (static_cast<std::uint32_t>(n) << 1))
 
 // ADD32 forces and addition to be done as unsigned arithmetic, and may be
 // useful when this avoids risk of a carry into the most significant bit
@@ -115,23 +115,23 @@ extern unsigned char msd_table[256], lsd_table[256];
 
 
 // The following all take an intptr_t or int64_t values (as per their name)
-// and check if their argument would bit in a 29 or 31-bit signed value. I
+// and check if their argument would fit in a 29 or 31-bit signed value. I
 // try fairly hard to avoid overflow and keep the code here so that the
 // only way in which it goes beyond what the C/C++ standards guarantee is
 // an assumption that numbers are 2s complement and that casts between
 // signed and unsigned values leave the bitwise representations unchanged.
 
 #define signed29_in_64(n)                                                   \
-  (((std::int64_t)(((std::uint64_t)(n) & 0x1fffffffU) << 35) / ((std::int64_t)1 << 35)) == \
-   (std::int64_t)(n))
+  ((static_cast<std::int64_t>((static_cast<std::uint64_t>(n) & 0x1fffffffU) << 35) / (static_cast<std::int64_t>(1) << 35)) == \
+   static_cast<std::int64_t>(n))
 
 #define signed31_in_64(n)                                                   \
-  (((std::int64_t)(((std::uint64_t)(n) & 0x7fffffffU) << 33) / ((std::int64_t)1 << 33)) == \
-   (std::int64_t)(n))
+  ((static_cast<std::int64_t>((static_cast<std::uint64_t>(n) & 0x7fffffffU) << 33) / (static_cast<std::int64_t>(1) << 33)) == \
+   static_cast<std::int64_t>(n))
 
 #define signed31_in_ptr(n)                                                  \
-  (((std::intptr_t)(((std::uintptr_t)(n)&0x7fffffffU) << (8*sizeof(std::intptr_t) - 31)) / \
-    ((std::intptr_t)1 << (8*sizeof(std::intptr_t) - 31))) == (std::intptr_t)(n))
+  ((static_cast<std::intptr_t>((static_cast<std::uintptr_t>(n)&0x7fffffffU) << (8*sizeof(std::intptr_t) - 31)) / \
+    (static_cast<std::intptr_t>(1) << (8*sizeof(std::intptr_t) - 31))) == static_cast<std::intptr_t>(n))
 
 #ifdef HAVE_SOFTFLOAT
 // I use rounding-direction specifiers from SoftFloat because I can then
@@ -190,45 +190,48 @@ inline void floating_clear_flags()
 // to avoid nasty problems with C syntax and the need for semicolons.
 // I should make a transition to use of inline functions!
 
-#define Dmultiply(hi, lo, a, b, c)                        \
- do { std::uint64_t r64 = (std::uint64_t)(a) * (std::uint64_t)(b) +      \
-                     (std::uint32_t)(c);                       \
-      (lo) = 0x7fffffffu & (std::uint32_t)r64;                 \
-      (hi) = (std::uint32_t)(r64 >> 31); } while (0)
+#define Dmultiply(hi, lo, a, b, c)                           \
+ do { std::uint64_t r64 = static_cast<std::uint64_t>(a) *    \
+                          static_cast<std::uint64_t>(b) +    \
+                      static_cast<std::uint32_t>(c);         \
+      (lo) = 0x7fffffffu & static_cast<std::uint32_t>(r64);  \
+      (hi) = static_cast<std::uint32_t>(r64 >> 31); } while (0)
 
-#define Ddivide(r, q, a, b, c)                                \
- do { std::uint64_t r64 = (((std::uint64_t)(a)) << 31) | (std::uint64_t)(b); \
-      std::uint64_t c64 = (std::uint64_t)(std::uint32_t)(c);                 \
-      q = (std::uint32_t)(r64 / c64);                              \
-      r = (std::uint32_t)(r64 % c64); } while (0)
+#define Ddivide(r, q, a, b, c)                                        \
+ do { std::uint64_t r64 = (static_cast<std::uint64_t>(a) << 31) |     \
+                          static_cast<std::uint64_t>(b);              \
+      std::uint64_t c64 = static_cast<std::uint64_t>(                 \
+                          static_cast<std::uint32_t>(c));             \
+      q = static_cast<std::uint32_t>(r64 / c64);                      \
+      r = static_cast<std::uint32_t>(r64 % c64); } while (0)
 
 #define Ddiv10_9(r, q, a, b) Ddivide(r, q, a, b, 1000000000u)
 
 #define Ddivideq(q, a, b, c)                                  \
- do { std::uint64_t r64 = (((std::uint64_t)(a)) << 31) | (std::uint64_t)(b); \
-      std::uint64_t c64 = (std::uint64_t)(std::uint32_t)(c);                 \
-      q = (std::uint32_t)(r64 / c64); } while (0)
+ do { std::uint64_t r64 = ((static_cast<std::uint64_t>(a)) << 31) | static_cast<std::uint64_t>(b); \
+      std::uint64_t c64 = static_cast<std::uint64_t>(static_cast<std::uint32_t>(c));                 \
+      q = static_cast<std::uint32_t>(r64 / c64); } while (0)
 
 #define Ddiv10_9q(r, q, a, b) Ddivideq(q, a, b, 1000000000u)
 
 #define Ddivider(r, a, b, c)                                  \
- do { std::uint64_t r64 = (((std::uint64_t)(a)) << 31) | (std::uint64_t)(b); \
-      std::uint64_t c64 = (std::uint64_t)(std::uint32_t)(c);                 \
-      r = (std::uint32_t)(r64 % c64); } while (0)
+ do { std::uint64_t r64 = ((static_cast<std::uint64_t>(a)) << 31) | static_cast<std::uint64_t>(b); \
+      std::uint64_t c64 = static_cast<std::uint64_t>(static_cast<std::uint32_t>(c));                 \
+      r = static_cast<std::uint32_t>(r64 % c64); } while (0)
 
 #define Ddiv10_9r(r, q, a, b) Ddivider(r, a, b, 1000000000u)
 
 #define fixnum_minusp(a) ((intptr_t)(a) < 0)
 
 #define bignum_minusp(a) \
-    ((std::int32_t)bignum_digits(a)[((bignum_length(a)-CELL)/4)-1]<0)
+    (static_cast<std::int32_t>(bignum_digits(a)[((bignum_length(a)-CELL)/4)-1])<0)
 
 inline double value_of_immediate_float(LispObject a)
 {   Float_union aa;
 // Worry about strict aliasing here, at least maybe. With GCC I believe I am
 // safe, but as per the standards I think I am not.
-    if (SIXTY_FOUR_BIT) aa.i = (std::int32_t)((std::uint64_t)a>>32);
-    else aa.i = (std::int32_t)(a - XTAG_SFLOAT);
+    if (SIXTY_FOUR_BIT) aa.i = static_cast<std::int32_t>(static_cast<std::uint64_t>(a)>>32);
+    else aa.i = static_cast<std::int32_t>(a - XTAG_SFLOAT);
     return aa.f;
 }
 
@@ -249,7 +252,7 @@ inline LispObject pack_short_float(double d)
     }
     aa.i &= ~0xf;
     if (SIXTY_FOUR_BIT)
-        return (LispObject)(((std::uint64_t)aa.i) << 32) + XTAG_SFLOAT;
+        return static_cast<LispObject>((static_cast<std::uint64_t>(aa.i)) << 32) + XTAG_SFLOAT;
     else return aa.i + XTAG_SFLOAT;
 }
 
@@ -265,12 +268,12 @@ inline LispObject pack_single_float(double d)
         {   floating_clear_flags();
             aerror("exception with single float");
         }
-        return (LispObject)((std::uint64_t)aa.i << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
+        return static_cast<LispObject>(static_cast<std::uint64_t>(aa.i) << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
     }
     else
     {   LispObject r = get_basic_vector(TAG_BOXFLOAT,
             TYPE_SINGLE_FLOAT, sizeof(Single_Float));
-        single_float_val(r) = (float)d;
+        single_float_val(r) = static_cast<float>(d);
         if (trap_floating_overflow &&
             floating_edge_case(single_float_val(r)))
         {   floating_clear_flags();
@@ -298,7 +301,7 @@ inline LispObject pack_immediate_float(double d,
     }
     if (SIXTY_FOUR_BIT)
     {   if (((l1 | l2) & XTAG_FLOAT32) == 0) aa.i &= ~0xf;
-        return (LispObject)(((std::uint64_t)aa.i) << 32) + XTAG_SFLOAT +
+        return static_cast<LispObject>((static_cast<std::uint64_t>(aa.i)) << 32) + XTAG_SFLOAT +
             ((l1 | l2) & XTAG_FLOAT32);
     }
     aa.i &= ~0xf;
@@ -308,7 +311,7 @@ inline LispObject pack_immediate_float(double d,
 // comparing 64-bit integers against (double precision) is perhaps
 // unexpectedly delicate. Here is some code to help. You can find two
 // sources of extra commentary about this. One is by Andrew Koenig in
-// a Dr Doobs article in 2013, the other is in (MIT Licensed) Julia and
+// a Dr Dobbs article in 2013, the other is in (MIT Licensed) Julia and
 // a discussion at https://github.com/JuliaLang/julia/issues/257.
 
 inline bool eq_i64d(std::int64_t a, double b)
@@ -318,7 +321,7 @@ inline bool eq_i64d(std::int64_t a, double b)
 // match the double even after rounding then the two values are certainly
 // different. Also if the double happens to be a NaN this will lead to
 // a returned value of false (as required).
-    if (b != (double)a) return false;
+    if (b != static_cast<double>(a)) return false;
 // Now the two values differ by at most the rounding that happened when
 // the integer was converted to a double. This ALMOST means that the double
 // has a value that fits in the range of integers. However if a has a value
@@ -326,10 +329,10 @@ inline bool eq_i64d(std::int64_t a, double b)
 // an integer safely. In C++ the consequence of trying to cast a double to
 // and int where the result would not fit is undefined, and so could
 // include arbitrary bad behaviour. So I have to filter that case out.
-    if (b == (double)((std::uint64_t)1<<63)) return false;
+    if (b == static_cast<double>(static_cast<std::uint64_t>(1)<<63)) return false;
 // With the special case out of the way I can afford to case from double to
 // int64_t. The negative end of the range is safe!
-    return a == (std::int64_t)b;
+    return a == static_cast<std::int64_t>(b);
 }
 
 inline bool lessp_i64d(std::int64_t a, double b)
@@ -337,16 +340,16 @@ inline bool lessp_i64d(std::int64_t a, double b)
 // If the integer is <= 2^53 then converting it to a double does not
 // introduce any error at all, so I can perform the comparison reliably
 // on doubles. If d ia a NaN this is still OK.
-    if (a <= ((std::int64_t)1<<53) &&
-        a >= -((std::int64_t)1<<53)) return (double)a < b;
+    if (a <= (static_cast<std::int64_t>(1)<<53) &&
+        a >= -(static_cast<std::int64_t>(1)<<53)) return static_cast<double>(a) < b;
 // If the float is outside the range of int64_t I can tell how the
 // comparison must play out. Note that near the value 2^63 the next
 // double value lower than 2^63 is in integer, as we can not have any
 // floating point value larger than the largest positive int64_t value
 // and less then 2^63. I make these tests of the form "if (!xxx)" because
 // then if b is a NaN the comparison returns false and I end up exiting.
-    if (!(b >= -(double)((std::uint64_t)1<<63))) return false;
-    if (!(b < (double)((std::uint64_t)1<<63))) return true;
+    if (!(b >= -static_cast<double>(static_cast<std::uint64_t>(1)<<63))) return false;
+    if (!(b < static_cast<double>(static_cast<std::uint64_t>(1)<<63))) return true;
 // Now we know that a is large and b is not huge. I will just discuss the
 // case of two positive numbers here, but mixed signs and negative values
 // follow the same.
@@ -358,18 +361,18 @@ inline bool lessp_i64d(std::int64_t a, double b)
 // will be exact and the comparison reliable.
 // if b < 2^52 but a > 2^53 then rounding of b that leaves a fractional part
 // less than 1 does not matter and again the comparison is reliable.
-    return a < (std::int64_t)b;
+    return a < static_cast<std::int64_t>(b);
 }
 
 inline bool lessp_di64(double a, std::int64_t b)
 {
 // The logic here is much as above - by omitting all the commentary
 // you can see much more clearly just how long the code is.
-    if (b <= ((std::int64_t)1<<53) &&
-        b >= -((std::int64_t)1<<53)) return a < (double)b;
-    if (!(a < (double)((std::uint64_t)1<<63))) return false;
-    if (!(a >= -(double)((std::uint64_t)1<<63))) return true;
-    return (std::int64_t)a < b;
+    if (b <= (static_cast<std::int64_t>(1)<<53) &&
+        b >= -(static_cast<std::int64_t>(1)<<53)) return a < static_cast<double>(b);
+    if (!(a < static_cast<double>(static_cast<std::uint64_t>(1)<<63))) return false;
+    if (!(a >= -static_cast<double>(static_cast<std::uint64_t>(1)<<63))) return true;
+    return static_cast<std::int64_t>(a) < b;
 }
 
 extern LispObject negateb(LispObject);
@@ -427,20 +430,20 @@ extern LispObject make_power_of_two(std::size_t n);
 
 extern LispObject make_lisp_integer32_fn(std::int32_t n);
 inline LispObject make_lisp_integer32(std::int32_t n)
-{   if (SIXTY_FOUR_BIT || valid_as_fixnum(n)) return fixnum_of_int((std::intptr_t)n);
+{   if (SIXTY_FOUR_BIT || valid_as_fixnum(n)) return fixnum_of_int(static_cast<std::intptr_t>(n));
     else return make_lisp_integer32_fn(n);
 }
 
 extern LispObject make_lisp_integer64_fn(std::int64_t n);
 inline LispObject make_lisp_integer64(std::int64_t n)
-{   if (valid_as_fixnum(n)) return fixnum_of_int((std::intptr_t)n);
+{   if (valid_as_fixnum(n)) return fixnum_of_int(reinterpret_cast<std::intptr_t>(n));
     else return make_lisp_integer64_fn(n);
 }
 
 extern LispObject make_lisp_unsigned64_fn(std::uint64_t n);
 inline LispObject make_lisp_unsigned64(std::uint64_t n)
-{   if (n < ((std::uint64_t)1)<<(8*sizeof(std::intptr_t)-5))
-        return fixnum_of_int((std::intptr_t)n);
+{   if (n < (static_cast<std::uint64_t>(1))<<(8*sizeof(std::intptr_t)-5))
+        return fixnum_of_int(static_cast<std::intptr_t>(n));
     else return make_lisp_unsigned64_fn(n);
 }
 
@@ -467,8 +470,8 @@ inline LispObject make_lisp_integerptr(std::intptr_t n)
 
 extern LispObject make_lisp_unsignedptr_fn(std::uintptr_t n);
 inline LispObject make_lisp_unsignedptr(std::uintptr_t n)
-{   if (n < ((std::uintptr_t)1)<<(8*sizeof(std::intptr_t)-5))
-        return fixnum_of_int((std::intptr_t)n);
+{   if (n < (static_cast<std::uintptr_t>(1))<<(8*sizeof(std::intptr_t)-5))
+        return fixnum_of_int(static_cast<std::intptr_t>(n));
     else return make_lisp_unsignedptr_fn(n);
 }
 
@@ -481,7 +484,7 @@ inline LispObject make_lisp_integer128(int128_t n)
 extern LispObject make_lisp_unsigned128_fn(uint128_t n);
 inline LispObject make_lisp_unsigned128(uint128_t n)
 {   if (uint128_valid_as_fixnum(n))
-        return fixnum_of_int((std::uint64_t)NARROW128(n));
+        return fixnum_of_int(static_cast<std::uint64_t>(NARROW128(n)));
     else return make_lisp_unsigned128_fn(n);
 }
 
@@ -645,7 +648,7 @@ inline bool f128M_nan(const float128_t *p)
 
 inline bool f128M_negative(const float128_t *x)
 {   if (f128M_nan(x)) return false;
-    return ((std::int64_t)x->v[HIPART]) < 0;
+    return (static_cast<std::int64_t>(x->v[HIPART])) < 0;
 }
 
 inline int f128M_exponent(const float128_t *p)
@@ -654,7 +657,7 @@ inline int f128M_exponent(const float128_t *p)
 
 inline void f128M_set_exponent(float128_t *p, int n)
 {   p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-        (((std::uint64_t)n + 0x3fff) << 48);
+        ((static_cast<std::uint64_t>(n) + 0x3fff) << 48);
 }
 
 inline void f128M_negate(float128_t *x)

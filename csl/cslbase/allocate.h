@@ -116,15 +116,15 @@ class ForFringe
 {
 public:
     operator std::uintptr_t()
-    {   return (std::uintptr_t)TlsGetValue(fringe_slot);
+    {   return reinterpret_cast<std::uintptr_t>(TlsGetValue(fringe_slot));
     };
     ForFringe& operator= (const std::uintptr_t a)
-    {    TlsSetValue(fringe_slot, (void *)a);
+    {    TlsSetValue(fringe_slot, reinterpret_cast<void *>(a));
          return *this;
     };
     ForFringe& operator+= (const std::size_t a)
-    {    std::uintptr_t v = (std::uintptr_t)TlsGetValue(fringe_slot) + a;
-         TlsSetValue(fringe_slot, (void *)v);
+    {    std::uintptr_t v = reinterpret_cast<std::uintptr_t>(TlsGetValue(fringe_slot)) + a;
+         TlsSetValue(fringe_slot, reinterpret_cast<void *>(v));
          return *this;
     };
 };
@@ -138,11 +138,11 @@ public:
     {   return *(std::atomic<std::uintptr_t> *)TlsGetValue(heaplimit_slot);
     };
     ForHeapLimit& operator= (const std::uintptr_t a)
-    {    TlsSetValue(heaplimit_slot, (void *)a);
+    {    TlsSetValue(heaplimit_slot, reinterpret_cast<void *>(a));
          return *this;
     };
     ForHeapLimit()
-    {   TlsSetValue(heaplimit_slot, (void *)&real_heaplimit);
+    {   TlsSetValue(heaplimit_slot, reinterpret_cast<void *>()&real_heaplimit);
     };
 };
 
@@ -152,15 +152,15 @@ class ForVFringe
 {
 public:
     operator std::uintptr_t()
-    {   return (std::uintptr_t)TlsGetValue(vfringe_slot);
+    {   return reinterpret_cast<std::uintptr_t>(TlsGetValue(vfringe_slot));
     };
     ForVFringe& operator= (const std::uintptr_t a)
-    {    TlsSetValue(vfringe_slot, (void *)a);
+    {    TlsSetValue(vfringe_slot, reinterpret_cast<void *>(a));
          return *this;
     };
     ForVFringe& operator+= (const std::size_t a)
-    {    std::uintptr_t v = (std::uintptr_t)TlsGetValue(vfringe_slot) + a;
-         TlsSetValue(vfringe_slot, (void *)v);
+    {    std::uintptr_t v = reinterpret_cast<std::uintptr_t>(TlsGetValue(vfringe_slot)) + a;
+         TlsSetValue(vfringe_slot, reinterpret_cast<void *>(v));
          return *this;
     };
 };
@@ -174,11 +174,11 @@ public:
     {   return *(std::atomic<std::uintptr_t> *)TlsGetValue(vheaplimit_slot);
     };
     ForVHeapLimit& operator= (const std::uintptr_t a)
-    {    TlsSetValue(vheaplimit_slot, (void *)a);
+    {    TlsSetValue(vheaplimit_slot, reinterpret_cast<void *>(a));
          return *this;
     };
     ForVHeapLimit()
-    {   TlsSetValue(vheaplimit_slot, (void *)&real_heaplimit);
+    {   TlsSetValue(vheaplimit_slot, reinterpret_cast<void *>()&real_heaplimit);
     };
 };
 

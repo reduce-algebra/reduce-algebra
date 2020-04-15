@@ -316,31 +316,31 @@ extern "C"
 // implementation settled on!
 
 inline std::int32_t ASR(std::int32_t a, int n)
-{   if (n<0 || n>=8*(int)sizeof(std::int32_t)) n=0;
+{   if (n<0 || n>=8*static_cast<int>(sizeof(std::int32_t))) n=0;
     return a >> n;
 }
 
 inline std::int64_t ASR(std::int64_t a, int n)
-{   if (n<0 || n>=8*(int)sizeof(std::int64_t)) n=0;
+{   if (n<0 || n>=8*static_cast<int>(sizeof(std::int64_t))) n=0;
     return a >> n;
 }
 
 #else // SIGNED_SHIFTS_ARE_ARITHMETIC
 
 inline std::int32_t ASR(std::int32_t a, int n)
-{   if (n<0 || n>=8*(int)sizeof(std::int32_t)) n=0;
-    std::uint32_t r = ((std::uint32_t)a) >> n;
-    std::uint32_t std::signbit = ((std::uint32_t)a) >> (8*sizeof(std::uint32_t)-1);
+{   if (n<0 || n>=8*static_cast<int>(sizeof(std::int32_t))) n=0;
+    std::uint32_t r = (static_cast<std::uint32_t>(a)) >> n;
+    std::uint32_t std::signbit = (static_cast<std::uint32_t>(a)) >> (8*sizeof(std::uint32_t)-1);
     if (n != 0) r |= ((-std::signbit) << (8*sizeof(std::uint32_t) - n));
-    return (std::int32_t)r;
+    return static_cast<std::int32_t>(r);
 }
 
 inline std::int64_t ASR(std::int64_t a, int n)
-{   if (n<0 || n>=8*(int)sizeof(std::int64_t)) n=0;
-    std::uint64_t r = ((std::uint64_t)a) >> n;
-    std::uint64_t std::signbit = ((std::uint64_t)a) >> (8*sizeof(std::uint64_t)-1);
+{   if (n<0 || n>=8*static_cast<int>(sizeof(std::int64_t))) n=0;
+    std::uint64_t r = (static_cast<std::uint64_t>(a)) >> n;
+    std::uint64_t std::signbit = (static_cast<std::uint64_t>(a)) >> (8*sizeof(std::uint64_t)-1);
     if (n != 0) r |= ((-std::signbit) << (8*sizeof(std::uint64_t) - n));
-    return (std::int64_t)r;
+    return static_cast<std::int64_t>(r);
 }
 
 #endif // SIGNED_SHIFTS_ARE_ARITHMETIC
@@ -352,17 +352,17 @@ inline std::int64_t ASR(std::int64_t a, int n)
 // again I will have versions for each possible width that I might use.
 
 inline std::int32_t ASL(std::int32_t a, int n)
-{   if (n < 0 || n>=8*(int)sizeof(std::uint32_t)) n = 0;
-    return (std::int32_t)(((std::uint32_t)a) << n);
+{   if (n < 0 || n>=8*static_cast<int>(sizeof(std::uint32_t))) n = 0;
+    return static_cast<std::int32_t>((static_cast<std::uint32_t>(a)) << n);
 }
 
 inline std::int64_t ASL(std::int64_t a, int n)
-{   if (n < 0 || n>=8*(int)sizeof(std::uint64_t)) n = 0;
-    return (std::int64_t)(((std::uint64_t)a) << n);
+{   if (n < 0 || n>=8*static_cast<int>(sizeof(std::uint64_t))) n = 0;
+    return static_cast<std::int64_t>((static_cast<std::uint64_t>(a)) << n);
 }
 
 inline std::uint64_t ASL(std::uint64_t a, int n)
-{   if (n < 0 || n>=8*(int)sizeof(std::uint64_t)) n = 0;
+{   if (n < 0 || n>=8*static_cast<int>(sizeof(std::uint64_t))) n = 0;
     return a << n;
 }
 
@@ -400,10 +400,10 @@ typedef __int128 int128_t;
 // the block.
 
 inline void *aligned_malloc(std::size_t n)
-{   void *p = (void *)std::malloc(n + 32);
+{   void *p = reinterpret_cast<void *>(std)::malloc(n + 32);
     if (p == NULL) return p;
-    void *r = (void *)((((std::uintptr_t)p + 15) & -(std::uint64_t)16) + 16);
-    (void *)((std::uintptr_t)r - 16) = p;
+    void *r = reinterpret_cast<void *>(((reinterpret_cast<std::uintptr_t>(p) + 15) & -static_cast<std::uint64_t>(16)) + 16);
+    reinterpret_cast<void *>(reinterpret_cast<std::uintptr_t>(r) - 16) = p;
     return r;
 }
 
@@ -412,7 +412,7 @@ inline void *aligned_malloc(std::size_t n)
 
 inline void aligned_free(void *p)
 {   if (p == NULL) return;
-    std::free(*(void *)((std::uintptr_t)p - 16));
+    std::free(*reinterpret_cast<void *>(reinterpret_cast<std::uintptr_t>(p) - 16));
 }
 #else // MAXALING4
 
@@ -420,7 +420,7 @@ inline void aligned_free(void *p)
 // 8 byte boundaries I can use malloc() and free() directly.
 
 inline void *aligned_malloc(std::size_t n)
-{   return (void *)std::malloc(n);
+{   return reinterpret_cast<void *>(std::malloc(n));
 }
 
 inline void aligned_free(void *p)

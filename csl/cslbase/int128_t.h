@@ -45,19 +45,19 @@
 #ifdef HAVE_NATIVE_INT128
 
 inline uint128_t uint128(int128_t v)
-{   return (uint128_t)v;
+{   return static_cast<uint128_t>(v);
 }
 
 inline uint128_t uint128(std::uint64_t v)
-{   return (uint128_t)v;
+{   return static_cast<uint128_t>(v);
 }
 
 inline uint128_t uint128(std::int64_t v)
-{   return (uint128_t)v;
+{   return static_cast<uint128_t>(v);
 }
 
 inline int128_t int128(std::int64_t v)
-{   return (int128_t)v;
+{   return static_cast<int128_t>(v);
 }
 
 inline bool greaterp128(int128_t a, int128_t b)
@@ -77,31 +77,31 @@ inline bool leq128(int128_t a, int128_t b)
 }
 
 inline int128_t ASL128(int128_t a, int n)
-{   if (n<0 || n>=8*(int)sizeof(int128_t)) n = 0;
-    return(int128_t) ((uint128_t)a) << n;
+{   if (n<0 || n>=8*static_cast<int>(sizeof(int128_t))) n = 0;
+    return static_cast<int128_t>(static_cast<uint128_t>(a) << n);
 }
 
 #ifdef SIGNED_SHIFTS_ARE_ARITHMETIC
 
 inline int128_t ASR128(int128_t a, int n)
-{   if (n<0 || n>=8*(int)sizeof(int128_t)) n = 0;
+{   if (n<0 || n>=8*static_cast<int>(sizeof(int128_t))) n = 0;
     return a >> n;
 }
 
 #else // SIGNED_SHIFTS_ARE_ARITHMETIC
 
 inline int128_t ASR128(int128_t a, int n)
-{   if (n<0 || n>=(int)sizeof(uint128_t)) n = 0;
-    uint128_t r = ((uint128_t)a) >> n;
-    uint128_t std::signbit = ((uint128_t)a) >> (8*sizeof(uint128_t)-1);
+{   if (n<0 || n>=static_cast<int>(sizeof(uint128_t))) n = 0;
+    uint128_t r = (static_cast<uint128_t>(a)) >> n;
+    uint128_t std::signbit = (static_cast<uint128_t>(a)) >> (8*sizeof(uint128_t)-1);
     if (n != 0) r |= ((-std::signbit) << (8*sizeof(uint128_t) - n));
-    return (int128_t)r;
+    return static_cast<int128_t>(r);
 }
 
 #endif // SIGNED_SHIFTS_ARE_ARITHMETIC
 
 inline std::int64_t NARROW128(int128_t a)
-{   return (std::int64_t)a;
+{   return static_cast<std::int64_t>(a);
 }
 
 inline void divrem128(int128_t a, int128_t b,
@@ -126,7 +126,7 @@ inline uint128_t uint128(int128_t v)
 }
 
 inline uint128_t uint128(std::int64_t v)
-{   uint128_t r = (std::uint64_t)v;
+{   uint128_t r = static_cast<std::uint64_t>(v);
     return r;
 }
 
@@ -140,9 +140,9 @@ inline uint128_t uint128(std::uint64_t v)
 // as easy as I might have hoped!
 
 inline int128_t int128(std::int64_t v)
-{   int128_t r = (std::uint64_t)v;
+{   int128_t r = static_cast<std::uint64_t>(v);
     if (v < 0)
-    {   int128_t w = -(std::uint64_t)1;
+    {   int128_t w = -static_cast<std::uint64_t>(1);
         w = w <<64;
         r = r | w;
     }
@@ -190,18 +190,18 @@ inline int128_t ASL128(const int128_t & a, int n)
 
 inline int128_t ASR128(const int128_t & a, int n)
 {   if (n >= 128) return (a < 0 ? -1 : 0);
-    if (n < 64) return int128_t(ASR((std::int64_t)a.upper(), n),
+    if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
                                 (a.upper()<<(64-n)) | (a.lower()>>n));
-    else if (n == 64) return int128_t(-(std::int64_t)(a.upper()<0),
+    else if (n == 64) return int128_t(-static_cast<std::int64_t>(a.upper()<0),
                                       a.upper());
-    else if (n < 64) return int128_t(ASR((std::int64_t)a.upper(), n),
+    else if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
                                      (a.upper()<<(64-n)) | (a.lower()>>n));
-    else return int128_t(-(std::int64_t)(a.upper()<0),
-                         ASR(((std::int64_t)a.upper()), n-64));
+    else return int128_t(-static_cast<std::int64_t>(a.upper()<0),
+                         ASR((static_cast<std::int64_t>(a.upper())), n-64));
 }
 
 inline std::int64_t NARROW128(const int128_t & a)
-{   return (std::int64_t)a.lower();
+{   return static_cast<std::int64_t>(a.lower());
 }
 
 // Produce quotient and remainder for signed values. I can take the
@@ -210,12 +210,12 @@ inline std::int64_t NARROW128(const int128_t & a)
 
 inline void divrem128(const int128_t & a, const int128_t & b,
                              int128_t & q, int128_t & r)
-{   if ((std::int64_t)a.upper() < 0)
-    {   if ((std::int64_t)b.upper() < 0) q = (-a)/(-b);
+{   if (static_cast<std::int64_t>(a.upper()) < 0)
+    {   if (static_cast<std::int64_t>(b.upper()) < 0) q = (-a)/(-b);
         else q = -((-a)/b);
     }
     else
-    {   if ((std::int64_t)b.upper() < 0) q = -(a/(-b));
+    {   if (static_cast<std::int64_t>(b.upper()) < 0) q = -(a/(-b));
         else q = a/b;
     }
     r = a - q*b;
