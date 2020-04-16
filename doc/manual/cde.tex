@@ -47,7 +47,7 @@ sources. The mathematical theory on which
 computations are based can be found in refs.~\cite{Krasilshchik:99,KerstenKrasilshchikVerboretsky:2004}. We invite the
 interested reader to have a look at the website \cite{gdeq} which contains
 useful resources in the above mathematical area. There is also a book on integrable systems
-and \cde \cite{KrasilshchikVerbovetskyVitolo:2017} with more examples and
+and \cde \cite{KrasilshchikVerbovetskyVitolo:2018} with more examples and
 more detailed explanations about the mathematical part.
 
 \subsection{Introduction: why \cde?}
@@ -82,7 +82,7 @@ symmetry and conservation laws computations.  The aim of this guide is to
 introduce the reader to computations of integrability related structures using
 \cde.
 
-The current version of \cde, 2.0, has the following features:
+The current version of \cde, 3.0, has the following features:
 \begin{enumerate}
 \item It is able to do standard computations in integrable systems like
   determining systems for generalized symmetries and conservation
@@ -94,9 +94,18 @@ The current version of \cde, 2.0, has the following features:
   overdetermined systems of PDEs \cite{WolfBrand:CRACK}.
 \item \cde can compute linearization (or Fr\'echet derivatives) of vector
   functions and adjoints of differential operators.
-\item \cde is able to compute Schouten brackets between multivectors. This can
-  be used \emph{eg} to check Hamiltonianity of an operator or to check their
-  compatibility.
+\item \cde can do calculations on supermanifolds. In particular it can compute
+  variational derivatives of superdensities, linearization of superfunctions,
+  adjoint of superdifferential operators. Some of the features are still
+  undocumented as they will be published in forthcoming papers.
+\item \cde is able to compute Schouten brackets between local
+  multivectors. This can be used \emph{eg} to check Hamiltonianity of an
+  operator or to check their compatibility.
+\item \cde can calculate the Schouten bracket of weakly nonlocal differential
+  operators; these are distinguished pseudodifferential operators in one
+  independent variable. The algorithm has been published in \cite{CLV2020},
+  while a user guide is being written and will appear soon (interested readers
+  can ask the author of \cde for details).
 \end{enumerate}
 
 At the moment the papers
@@ -897,9 +906,8 @@ This approach is described below. The file for the above computation is
 \texttt{results/bur\_hsy2\_res.red}.
 
 
-\subsection{Setting up the jet space and the differential equation.}
+\paragraph*{Setting up the jet space and the differential equation.}
 \label{cdesec:setting-up-jet}
-
 After loading \cde:
 \begin{verbatim}
 indep_var:={x,t}$
@@ -924,9 +932,8 @@ cde({indep_var,dep_var,{},total_order},
    {principal_der,de,{},{}})$
 \end{verbatim}
 
-\subsection{Solving the problem via dimensional analysis.}
+\paragraph*{Solving the problem via dimensional analysis.}
 \label{cdesec:solving-problem-via}
-
 Higher symmetries of the given equation are functions \texttt{sym} depending on
 parametric coordinates up to some jet space order. We assume that they are
 graded polynomials of all parametric derivatives. In practice, we generate a
@@ -1093,8 +1100,7 @@ Or we could use \texttt{sym = x*}(something of degree 1)\texttt{ +
   t*}(something of degree 3) + (something of degree 0);
 this yields Galilean boosts.
 
-\subsection{Solving the problem using CRACK}
-
+\paragraph*{Solving the problem using CRACK.}
 \crack is a PDE solver which is devoted mostly to the solution of
 overdetermined PDE systems \cite{Brand:95,WolfBrand:CRACK}. Several mathematical problems
 have been solved by the help of \crack, like finding symmetries
@@ -1241,9 +1247,8 @@ two independent variables. This comes from a new mathematical theory which
 started in \cite{KerstenKrasilshchikVerboretsky:2004} for evolution equations and was later extended to general
 differential equations in \cite{KerstenKrasilshchikVerbovetskyVitolo:HSGP}.
 
-\subsection{Korteweg--de Vries equation}
+\paragraph*{Korteweg--de Vries equation.}
 \label{cdesec:korteweg-de-vries}
-
 Here we will find local Hamiltonian operators for the KdV equation
 $u_t=u_{xxx}+uu_x$. A necessary condition for an operator to be Hamiltonian is
 that it sends generating functions (or characteristics, according with
@@ -1396,9 +1401,8 @@ crack_results := {{{},
 \end{verbatim}
 
 
-\subsection{Boussinesq equation}
+\paragraph*{Boussinesq equation.}
 \label{cdesec:comp-syst-pdes}
-
 There is no conceptual difference when computing for systems of PDEs with
 respect to the previous computations for scalar equations. We will look for
 Hamiltonian structures for the dispersionless Boussinesq equation \eqref{cdeeq:1}.
@@ -1472,9 +1476,8 @@ phi2_odd := (2*c(31)*p*u_x + 2*c(31)*p*v*v_x
 There is a whole hierarchy of nonlocal Hamiltonian operators~\cite{KerstenKrasilshchikVerboretsky:2004}.
 
 
-\subsection{Kadomtsev--Petviashvili equation}
+\paragraph*{Kadomtsev--Petviashvili equation.}
 \label{cdesec:mult-case}
-
 There is no conceptual difference in symbolic computations of Hamiltonian
 operators for PDEs in $2$ independent variables and in more than $2$
 independent variables, regardless of the fact that the equation at hand is
@@ -1524,6 +1527,18 @@ formulae could also be provided.
 \subsection{Examples of Schouten bracket of local Hamiltonian
   operators}
 \label{cdesec:scho-brack-local}
+
+In this Section we will discuss examples of calculation of Schouten bracket in
+order to check the Hamiltonian property for $\mathcal{C}$-differential
+operators and/or the compatibility of two distinct Hamiltonian operators. This
+subject is treated in a much greater detail in the recent paper
+\cite{Vitolo2019}, where many examples of Schouten bracket calculations with
+\cde have been described.
+
+We observe that a package that is capable to calculate the Schouten bracket of
+weakly nonlocal operators (in one independent variable) is currently part of
+\cde, version 3.0. Documentation for the package is being written; interested
+readers may contact the author of \cde for questions.
 
 Let $F=0$ be a system of PDEs. Here $F\in P$, where $P$ is the module (in the
 algebraic sense) of vector functions $P=\{J^r(n,m) \to \mathbb{R}^k\}$.
@@ -1579,9 +1594,8 @@ is possible to apply the formulae \eqref{eq:11} and~\eqref{eq:14} in order to
 compute the Schouten bracket. This is what we will see in next section.
 
 
-\subsection{Bi-Hamiltonian structure of the KdV equation}
+\paragraph*{Bi-Hamiltonian structure of the KdV equation.}
 \label{cdesec:bi-hamilt-struct}
-
 We can do the above computations using KdV equation as a test case (see the
 file \texttt{kdv\_lho3.red}).
 
@@ -1631,9 +1645,8 @@ schouten_bracket(biv2,biv2,sb22);
 \end{verbatim}
 the result are well-known lists of zeros.
 
-\subsection{Bi-Hamiltonian structure of the WDVV equation}
+\paragraph*{Bi-Hamiltonian structure of the WDVV equation.}
 \label{cdesec:bi-hamilt-struct-1}
-
 This subsection refers to the the example file \texttt{wdvv\_biham1.red}.
 The simplest nontrivial case of the WDVV equations is the third-order
 Monge--Amp\`ere equation, $f_{ttt} = f_{xxt}^2 - f_{xxx}f_{xtt}$
@@ -1842,9 +1855,8 @@ Needless to say, the result of the last three command is a list of zeroes.
 We observe that the same software can be used to prove the bi-Hamiltonianity of
 a $6$-component WDVV system \cite{PavlovVitolo:2015}.
 
-\subsection{Schouten bracket of multidimensional operators}
+\paragraph*{Schouten bracket of multidimensional operators.}
 \label{cdesec:mult-oper}
-
 The formulae~\eqref{eq:11},~\eqref{eq:14} hold also in the case of
 multidimensional operators, \emph{ie} operators with total derivatives in more
 than one independent variables. Here we give one Hamiltonian operator $H$ and we
@@ -1987,10 +1999,9 @@ In Section~\ref{cdesec:plebanski-equation} we will also discuss a procedure for
 finding conservation laws from their generating functions that is of
 independent interest.
 
-\subsection{Non-local Hamiltonian operators for the
-  Korteweg--de Vries equation}
+\paragraph*{Non-local Hamiltonian operators for the
+  Korteweg--de Vries equation.}
 \label{cdesec:korteweg-de-vries-1}
-
 Here we will compute some nonlocal Hamiltonian operators for the KdV
 equation. The result of the computation (without the details below) has been
 published in \cite{KerstenKrasilshchikVerboretsky:2004}.
@@ -2089,9 +2100,8 @@ Higher non-local Hamiltonian operators could also be found
 
 
 \subsection{Non-local recursion operator for the
-  Korteweg--de Vries equation}
+  Korteweg--de Vries equation.}
 \label{cdesec:korteweg-de-vries-2}
-
 Following the ideas in \cite{KerstenKrasilshchikVerboretsky:2004}, a differential operator that sends
 symmetries into symmetries can be found as a shadow of symmetry on the
 $\ell$-covering of the KdV equation, with the further condition that the
@@ -2140,9 +2150,8 @@ always a solution; the other solution corresponds to the Lenard--Magri operator
 \end{displaymath}
 
 \subsection{Non-local Hamiltonian-recursion operators for
-  Plebanski equation}
+  Plebanski equation.}
 \label{cdesec:plebanski-equation}
-
 The Plebanski (or second Heavenly) equation
 \begin{equation}
   \label{eq:102}
@@ -2224,26 +2233,4 @@ changing coordinates to the evolutionary presentation yields the local operator
 (which has a much more complex expression than the identity operator) and one
 of the nonlocal operators of \cite{NeyziNutkuSheftel:JPA:2005}. More details on
 this computation can be found in \cite{KrasilshchikVerbovetskyVitolo:SPT:2012}.
-
-
-
-\subsection{Appendix: old versions of \cde}
-
-A short version history is provided here.
-
-\paragraph{\cde 1.0} This version was published in October 2014. It was
-programmed in \REDUCE's \textbf{algebraic mode}, so its capabilities were
-limited, and its speed was severely affected by the systematic use of the
-package \texttt{assist} for manipulating algebraic lists. Its features were:
-\begin{enumerate}
-\item \cde 1.0 is able to do standard computations in integrable systems like
-  determining systems for generalized symmetries and conservation laws.
-\item \cde 1.0 is able to compute linear overdetermined systems of partial
-  differential equations whose solutions are Hamiltonian operators.
-\item \cde is able to compute Schouten brackets between bivectors. This can be
-  used \emph{eg} to check Hamiltonianity of an operator, or the compatibility
-  of two operators.
-\end{enumerate}
-\cde 1.0 has never ben included in the official \REDUCE distribution, and it is
-still available at \cite{gdeq}.
 
