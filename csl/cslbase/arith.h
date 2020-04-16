@@ -436,7 +436,7 @@ inline LispObject make_lisp_integer32(std::int32_t n)
 
 extern LispObject make_lisp_integer64_fn(std::int64_t n);
 inline LispObject make_lisp_integer64(std::int64_t n)
-{   if (valid_as_fixnum(n)) return fixnum_of_int(reinterpret_cast<std::intptr_t>(n));
+{   if (valid_as_fixnum(n)) return fixnum_of_int(static_cast<std::intptr_t>(n));
     else return make_lisp_integer64_fn(n);
 }
 
