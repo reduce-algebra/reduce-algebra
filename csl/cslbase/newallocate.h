@@ -1135,7 +1135,7 @@ inline LispObject Lxcons(LispObject, LispObject a, LispObject b)
     return onevalue(r1);
 }
 
-inline LispObject Lnilfnstatic_cast<LispObject>()
+inline LispObject Lnilfn(LispObject)
 {   return onevalue(nil);
 }
 
