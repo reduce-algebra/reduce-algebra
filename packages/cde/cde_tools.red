@@ -249,6 +249,10 @@ symbolic procedure cde_create_indices l;
     else nil;
   end;
 
+symbolic procedure cde_mal(ll);
+  % Make an Rlisp list into an algebraic list
+  cons('list,ll);
+
 symbolic procedure cde_tools();
 % This is a place for possible initialization routines.
    nil;

@@ -230,6 +230,49 @@ end;
 
 symbolic operator conv_superfun2cdiff;
 
+% Definition of super-vector functions
+
+symbolic procedure mk_supermap(supermap,sm_par,len_even,len_odd);
+  % This procedures creates a map of supermanifolds
+  % and associates with it the following properties:
+  % 1 - the parity of the map as an element of a graded module;
+  % 2 - the length of the even target space,
+  % 3 - the length of the odd target space.
+  % NOTE:
+  % to get the parity of the map do get('smpar,supermap);
+  % to get the number of even components do get('smapecomp,supermap);
+  % to get the number of odd components do get('smapocomp,supermap);
+  % to see if an identifier is a supermap do get('sfun,supermap) or
+  % supermapp(supermap);
+begin
+  mkop supermap;
+  put('smap,supermap,t);
+  if not fixp sm_par then
+    rederr "Error: the parity of the odd components must be an integer";
+  put('smpar,supermap,sm_par);
+  if not fixp len_even then rederr
+    "Error in the number of even components";
+  put('smapecomp,supermap,len_even);
+  if not fixp len_odd then
+    rederr "Error in the number of odd components";
+  put('smapocomp,supermap,len_odd);
+end;
+
+symbolic operator mk_supermap;
+
+symbolic procedure supermapp(supermap);
+  get('smap,supermap);
+
+symbolic procedure check_supermap_even(supermap);
+  % Checks if a supermap is even
+  begin
+    scalar par;
+    if not supermapp(supermap) then
+      rederr "Error: the first argument must be a declared supermap";
+    if not eqn(par:=get('smpar,supermap),0) then
+      rederr "Error: the supermap is not even";
+  end;
+
 symbolic procedure cde_superfun();
 % Here initialization routines might be added if needed.
   prin2 "";

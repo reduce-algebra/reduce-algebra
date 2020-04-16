@@ -31,7 +31,7 @@ module cde; % CDE package main file
 % ===============================================================
 
 prin2t "This is CDE, a REDUCE package for calculus on differential equations";
-prin2t "version 2.1, October 2017";
+prin2t "version 3.0, 14 April 2020";
 prin2t "by Raffaele Vitolo";
 
 %-----------------------------------------------------------------------------%
@@ -94,8 +94,8 @@ load_package cdiff;
 
 create!-package('(cde cde_tools cde_jetspace cde_parametric
                   cde_totalder cde_diffcon cde_cdiff cde_superfun
-                    cde_varcalc cde_vectorfield cde_cdcalc cde_ansatz
- 		      cde_init), nil);
+                    cde_varcalc cde_vectorfield cde_cdcalc cde_weaklynl
+		      cde_ansatz cde_init), nil);
 
 endmodule;
 

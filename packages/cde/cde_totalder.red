@@ -230,35 +230,19 @@ algebraic operator td;
 % The operator td defaults to expanding total derivatives:
 put('td,'simpfn,'compute_td);
 
-%% Code for total derivative with multiindexes
-%% 
-%% symbolic procedure iter_td(mind,arg);
-%%   % Computes the total derivative D_mind(arg)
-%%   begin
-%%     for i:=1:n_indep_var do
-%%     <<
-%%       arg:=simp aeval iter_dd(nth(tot_der!*,i),arg,nth(mind,i));
-%%     >>;
-%%     print arg;
-%%      if !*checkord then
-%%       if not freeof(arg,'letop) then
-%%  	rederr "Presence of letop, jetspace too small!";
-%%     return arg
-%%   end;
-%% 
-%% symbolic procedure compute_td_mind u; %u:(mind,arg),
-%%   % where mind is an algebraic multiindex and arg is an odd var
-%%   % replace_extodd iter_td(cdar u,<<prin2t cadr u; replace_oddext(cadr u)>>);
-%%   begin
-%%     scalar val;
-%%     val:=iter_td(cdar u,simp replace_oddext(cadr u));
-%%     prin2t "ora valuto replace_extodd...";
-%%     return simp replace_extodd0(val);
-%%   end;
-%% 
-%% algebraic operator td_mind;
-%% The operator td_mind defaults to expanding total derivatives:
-%% put('td_mind,'simpfn,'compute_td_mind);
+symbolic procedure td_mind(arg,mind);
+  % Total derivatives with respect to a multiindex
+  td_mind0(arg,cdr mind);
+
+symbolic procedure td_mind0(arg,mind);
+  begin
+    scalar u;
+    u:=for i:=1:n_indep_var join list(nth(indep_var!*,i),nth(mind,i));
+    u:=arg . u;
+    return aeval cons('td,u)
+  end;
+
+symbolic operator td_mind;
 
 % Go with one of the following when you need to change the behaviour
 

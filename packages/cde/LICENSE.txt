@@ -9,7 +9,7 @@
 % email: raffaele.vitolo@unisalento.it
 % web: http://poincare.unisalento.it/vitolo
 %
-% Version and Date:  Version 2.0, 10 October 2015.
+% Version and Date:  Version 3.0, 14 April 2020.
 %
 % ===============================================================
 % Redistribution and use in source and binary forms, with or without

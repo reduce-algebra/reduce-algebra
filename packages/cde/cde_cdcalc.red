@@ -46,7 +46,7 @@ symbolic procedure sum_cdiffop(cd1,cd2,cd3);
     target1:=get('cdtarget,cd1);
     mk_cdiffop(cd3,parity1,largcd1,target1);
     % Sistemare questa parte di codice con la definizione di somma
-%    cde_ev_forall cde_forall_form(opname,lpars,lfvars,rhs_opdef);
+  % cde_ev_forall cde_forall_form(opname,lpars,lfvars,rhs_opdef);
   % Given a list of indices lpars:=(j,i1,i2,...)
   % and a list of free variables lfvars:=(phi1,phi2,...)
   % and an operator name opname
@@ -67,7 +67,7 @@ symbolic procedure scalarmult_cdiffop(cfm,cd1,cd2);
     mk_cdiffop(cd2,parity1,largcd1,target1);
     return cfm
     % Sistemare questa parte di codice con la definizione di prodotto
-%    cde_ev_forall cde_forall_form(opname,lpars,lfvars,rhs_opdef);
+  % cde_ev_forall cde_forall_form(opname,lpars,lfvars,rhs_opdef);
   % Given a list of indices lpars:=(j,i1,i2,...)
   % and a list of free variables lfvars:=(phi1,phi2,...)
   % and an operator name opname
@@ -206,6 +206,158 @@ symbolic procedure adjoint_cdiffop(cdiffop,cdadj);
   end;
 
 symbolic operator adjoint_cdiffop;
+
+% Procedures for supercalculus: linearization of supermaps and
+% adjoints of super-C-differential operators.
+
+symbolic procedure index_par(ind);
+  % Calculate the parity of an index
+  begin
+    scalar l_dv,retval;
+    l_dv:=length(dep_var!*);
+    if ind <= l_dv then retval:=0 else retval:=1;
+    return retval
+  end;
+
+symbolic procedure ell_supermap(sm_name,scdop);
+  % We calculate the linearization of a super vector function and
+  % define it to be a new super-CDiff operator `scdop'
+  % i is the row (upper) index, j is the column (lower) index
+  begin
+    scalar par_sm,l_even,l_odd,l_dv,l_ov,l_tot_i,l_tot_j,tempsign;
+    if not(supermapp(sm_name)) then rederr
+      "Error: the argument must be a declared supermap";
+    par_sm:=get('smpar,sm_name);
+    l_even:=get('smapecomp,sm_name);
+    l_odd:=get('smapocomp,sm_name);
+    l_dv:=length(dep_var!*);
+    l_ov:=length(odd_var!*);
+    l_tot_i:=aeval list('plus,l_even,l_odd);
+    l_tot_j:=aeval list('plus,l_dv,l_ov);
+    mk_scdiffop(scdop,par_sm,1,
+      list('list,list('list,l_dv,l_ov)),
+      list('list,l_even,l_odd));
+    for i:=1:l_tot_i do for j:=1:l_tot_j do
+    <<
+      tempsign:=aeval list('expt, - 1,
+	list('times,list('plus,par_sm,index_par(i),1),index_par(j))
+	  );
+%      print i;
+%      print j;
+%      print tempsign;
+      define_component_ell_supermap(sm_name,i,j,tempsign,scdop)
+    >>;
+  end;
+
+symbolic procedure define_component_ell_supermap(sm_name,i,j,tempsign,scdop);
+  begin
+    scalar tempvar,temppar,templvar,tempmind,tempdername,tempcf,l_coeff;
+    temppar:=index_par(j);
+    if eqn(temppar,0) then
+    <<
+      tempvar:=nth(dep_var!*,j);
+      templvar:=select_all_ders(temppar,tempvar,all_parametric_der!*);
+      tempdername:='df
+    >>
+    else
+    <<
+      tempvar:=nth(odd_var!*,j - length(dep_var!*));
+      templvar:=select_all_ders(temppar,tempvar,all_parametric_odd!*);
+      tempdername:='df_odd
+    >>;
+    l_coeff:=list();
+    for each el in templvar do
+    <<
+      tempmind:=cadr idtomind(temppar,el);
+      tempcf:=aeval list('times,
+	tempsign,
+	list(tempdername,aeval list(sm_name,i),el)
+	  );
+      l_coeff:=list('list,tempcf,cons('list,tempmind)) . l_coeff;
+    >>;
+    load_cdiffop0(scdop,list(i,j),l_coeff)
+  end;
+
+symbolic operator ell_supermap;
+
+symbolic procedure load_adj_cdiffop0(opname,par,inds,l_coeff);
+  % Defines an entry of the adjoint of a sCDiff-op
+  % (probably also good for a CDiffop)
+  % inds is a list with two indices (i,j)
+  % l_coeff is a list of algebraic lists {cf,mind}
+  % where cf is a coefficient and mind is a multiindex
+  % It only works for operators with one argument.
+  begin
+    scalar phi,sign_comp,tempexp,tempcf,templmind,tempsign,change_expand_td;
+    phi:=gensym();
+    change_expand_td:=0;
+    if eq(get('td,'simpfn),'compute_td) then
+    <<
+      change_expand_td:=1;
+      noexpand_td()
+    >>;
+    % Evaluate odd_product to itself
+    put('oddprod!*,'simpfn,'simpiden);
+    % Remember: el={{arg1,mind1},{arg2,mind2},...} is an algebraic list below.
+    sign_comp:=aeval list('expt,-1,
+      aeval list('times,
+      aeval list('plus,par,index_par(car inds)),
+      aeval list('plus,index_par(car inds),index_par(cadr inds))
+	)
+	  );
+    tempexp:=list();
+    for each el in l_coeff do
+    <<
+      tempcf:=cadr el;
+      templmind:=caddr el;
+      tempsign:=aeval list('expt, - 1,length_multiindex(cdr templmind));
+      tempexp:=
+        cons(
+            aeval list('times,tempsign,
+	    aeval list('td_mind,aeval list('oddprod!*,tempcf,phi),templmind)
+	    ),
+	  tempexp);
+    >>;
+    tempexp:=aeval list('times,sign_comp,aeval cons('plus,tempexp));
+    %    if not(eq(aeval mk!*sq exprop,0)) then
+    cde_ev_forall cde_forall_form(
+	opname,inds,list(phi),tempexp
+	  );
+    put('oddprod!*,'simpfn,'ev_odd_product);
+    return if eqn(change_expand_td,1) then expand_td()
+  end;
+
+symbolic procedure adjoint_scdiffop(scdop,adj_scdop);
+  begin
+    scalar l_arg,l_tar,par,l_coeff,l_arg_adj,l_tar_adj,tot_i,tot_j,inds;
+    check_scdiff_onearg(scdop);
+    l_arg:=get('scdlarg,scdop);
+    l_tar:=get('scdtarget,scdop);
+    l_arg_adj:=list('list,l_tar);
+    l_tar_adj:=cadr l_arg;
+    par:=get('scdpar,scdop);
+    mk_scdiffop(adj_scdop,par,1,l_arg_adj,l_tar_adj);
+    % clean algebraic lists
+    l_arg_adj:=cdr cadr l_arg_adj;
+    l_tar_adj:=cdr l_tar_adj;
+    tot_i:=aeval list('plus,car l_arg_adj,cadr l_arg_adj);
+    tot_j:=aeval list('plus,car l_tar_adj,cadr l_tar_adj);
+    l_coeff:=cdr all_coeff_scdiffop(scdop);
+    % Remember: l_coeff={{inds1,{cf11,mind11},{cf12,mind12},...},
+    % {inds2,{cf21,mind21},{cf22,mind22},...}
+    % all-algebraic lists!
+    for each el in l_coeff do
+    <<
+      inds:=reverse cdr cadr el;
+%      print "el:=";
+%      print el;
+%      print "inds:=";
+%      print inds;
+      load_adj_cdiffop0(adj_scdop,par,inds,cddr el);
+    >>;
+  end;
+
+symbolic operator adjoint_scdiffop;
 
 symbolic procedure cde_cdcalc();
 % Here initialization routines might be added if needed.

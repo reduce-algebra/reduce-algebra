@@ -1,4 +1,23 @@
-Time-stamp: "2020-03-28 16:51:25 vitolo"
+Time-stamp: "2020-04-16 11:31:16 vitolo"
+
+2020-04-14 Raffaele Vitolo <raffaele.vitolo@unisalento.it>
+Updated: CDE version 3.0. Main changes are:
+* Added: file cde_weaklynl.red with procedures for the Schouten bracket
+of weakly nonlocal C-differential operators, following the algorithm in
+Casati, Lorenzoni, Vitolo, Studies in Applied Mathematics, 2020.
+* Added: example files for the above procedures.
+* Added: in manual.bib: new references for the manual, most of all
+the book and the paper in Computer Physics Comm (see below).
+* Added: command td(arg,mind) in cde_totalder.red
+* Added: command cde_mal in cde_tools.red
+* Added: in cde_cdiff.red: definition of super-C-differential operators,
+extraction of coefficients of C-differential operators
+definition of C-differential operators from a list of coefficients
+same for super-C-differential operators
+* Added: Nijenhuis bracket in cde_varcalc.red
+* Added: definition of super-vector functions (supermap) in cde_superfun.red
+* Added: in cde_cdcalc.red: linearization of a supermap
+adjoint of a super-C-differential operator.
 
 2020-03-28 Raffaele Vitolo <raffaele.vitolo@unisalento.it>
 Updated: package CDE. Main changes are:
@@ -10,7 +29,7 @@ differential equations", Texts and Monographs in Symbolic Computations,
 Springer 2018, ISBN: 978-3-319-71655-8. The programs are also available
 at the Geometry of Differential Equations website http://gdeq.org
 * Added: folder 'examples_compHO' with all examples discussed in the paper
-by R. Vitolo 'Computing with Hamitlonian Operators',
+by R. Vitolo 'Computing with Hamiltonian Operators',
 Computer Physics Communications Volume 244 (2019), 228-245
 ArXiv: https://arxiv.org/abs/1808.03902
 
