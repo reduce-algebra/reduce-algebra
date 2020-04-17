@@ -283,30 +283,31 @@ symbolic procedure variational_df(sfun,sfun_out);
 
 symbolic operator variational_df;
 
-% Procedures for the Nijenhuis bracket of two recursion operators
+% Procedures for the variational Nijenhuis bracket
 
 symbolic procedure ev_superfun_even(superf1,superf_scal);
   % Computes the even summand of the Nijenhuis bracket.
   % The superfunctions must have been checked in the procedure
   % nijenhuis_bracket!
   begin
-    scalar tempvar,tempmind,tempdvar,ntempdvar,tempres;
+    scalar tempvar,tempmind,tempdvar,ntempdvar,tempres,der_even;
     tempres:=
     for each el in all_parametric_der!* collect
     <<
-      tempvar:=idtomind(0,el);
-      tempmind:=cadr tempvar;
-      tempdvar:=car tempvar;
-      ntempdvar:=cde_position(tempdvar,dep_var!*);
-      exprtemp:=replace_oddext(aeval list(superf1,ntempdvar));
-      for i:=1:n_indep_var do
-      for j:=1:nth(tempmind,i) do
-        exprtemp:=aeval list(nth(tot_der!*,i),exprtemp);
-      if !*checkord then check_letop(exprtemp);
-      super_product(
-	exprtemp,
-	aeval list('df,replace_oddext(superf_scal),el)
-	  )
+      der_even:=aeval list('df,replace_oddext(superf_scal),el);
+      if equal(der_even,0) then 0 else
+	<<
+          tempvar:=idtomind(0,el);
+          tempmind:=cadr tempvar;
+          tempdvar:=car tempvar;
+          ntempdvar:=cde_position(tempdvar,dep_var!*);
+          exprtemp:=replace_oddext(aeval list(superf1,ntempdvar));
+          for i:=1:n_indep_var do
+          for j:=1:nth(tempmind,i) do
+          exprtemp:=aeval list(nth(tot_der!*,i),exprtemp);
+          if !*checkord then check_letop(exprtemp);
+          super_product(exprtemp,der_even)
+	>>
     >>;
     return aeval cons('plus,tempres)
   end;
@@ -316,32 +317,36 @@ symbolic procedure ev_superfun_odd(superf1,superf_scal);
   % The superfunctions must have been checked in the procedure
   % nijenhuis_bracket!
   begin
-    scalar tempovar,tempmind,tempovar,ntempovar,tempcoeff,tempres;
+    scalar tempovar,tempmind,tempovar,ntempovar,tempres,der_odd;
     tempres:=
     for each el in all_parametric_odd!* collect
     <<
-      tempovar:=idtomind(1,el);
-      tempmind:=cadr tempovar;
-      tempovar:=car tempovar;
-      ntempovar:=cde_position(tempovar,odd_var!*);
-      tempcoeff:=aeval('df,superf_scal,el);
-      % Next expression is X(superf_scalar), which is equivalent
-      % to the Cartan differential of the superfunction
-      exprtemp:=replace_oddext(
-	cartan_df_expr(aeval list(superf1,ntempovar))
+      der_odd:=coeffn(superf_scal,el,1);
+      if equal(der_odd,0) then 0 else
+	<<
+          tempovar:=idtomind(1,el);
+          tempmind:=cadr tempovar;
+          tempovar:=car tempovar;
+          ntempovar:=cde_position(tempovar,odd_var!*);
+          % Next expression is X(superf_scalar), which is equivalent
+          % to the Cartan differential of the superfunction
+          exprtemp:=replace_oddext(
+	    cartan_df_expr(aeval list(superf1,ntempovar))
 	  );
-      for i:=1:n_indep_var do
-      for j:=1:nth(tempmind,i) do
-        exprtemp:=aeval list(nth(tot_der!*,i),exprtemp);
-      aeval list('times,tempcoeff,exprtemp)
+          for i:=1:n_indep_var do
+            for j:=1:nth(tempmind,i) do
+              exprtemp:=aeval list(nth(tot_der!*,i),exprtemp);
+          if !*checkord then check_letop(exprtemp);
+          aeval list('times,der_odd,exprtemp)
+	>>
     >>;
-    return aeval('times,-1,aeval list('plus,tempres))
+    return aeval list('times,-1,cons('plus,tempres))
   end;
 
 symbolic procedure ev_superfun(superf1,superf_scal);
   % Computes the essential part of the Nijenhuis bracket.
   % The superfunctions must have been checked in the procedure
-  % nijenhuis_bracket!
+  % nijenhuis_bracket
   aeval list('plus,
     ev_superfun_even(superf1,superf_scal),
     ev_superfun_odd(superf1,superf_scal)
@@ -371,10 +376,10 @@ symbolic procedure nijenhuis_bracket(superf1,superf2,superf3);
       rederr "The second argument must be a vector-valued function with m args";
     mk_superfun(superf3,2,n_dep_var);
     for j:=1:n_dep_var do
-      superf3(i):=replace_extodd(
+      superf3(j):=replace_extodd(
 	aeval list('plus,
-	ev_superfun(superf1,superf2(j)),
- 	ev_superfun(superf2,superf1(j))
+	ev_superfun(superf1,aeval list(superf2,j)),
+ 	ev_superfun(superf2,aeval list(superf1,j))
 	  )
 	    );
   end;

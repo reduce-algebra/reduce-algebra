@@ -446,7 +446,7 @@ symbolic procedure schouten_bracket_wnl(ham1,ham2,
     check_cdiff_onearg(ham1_l);
     check_cdiff_onearg(ham2_l);
     check_cdiff_sametype(ham1_l,ham2_l);
-    if not eqn(get('cdlarg,ham1_l),get('cdlarg,ham2_l)) then
+    if not equal(get('cdlarg,ham1_l),get('cdlarg,ham2_l)) then
       rederr "Error: non-conformant C-Differential operators";
     dep_var_equ:=cdr dep_var_equ;
     loc_arg:=cdr loc_arg;
