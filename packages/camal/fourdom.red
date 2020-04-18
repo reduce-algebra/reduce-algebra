@@ -47,6 +47,7 @@ put('!:fs!:,'onep,'fs!:onep!:);
 put('!:fs!:,'prepfn,'fs!:prepfn!:);
 put('!:fs!:,'specprn,'fs!:prin!:);
 put('!:fs!:,'prifn,'fs!:prin!:);
+put('!:fs!:,'fancy!-prifn,'fs!:fancy!-prin!:);
 put('!:fs!:,'intequivfn,'fs!:intequiv!:);
 flag('(!:fs!:),'ratmode);
 % conversion functions
@@ -290,6 +291,41 @@ begin scalar first, u, v;
      prin2!* "]"
   >>
   else if fs!:coeff x = '(1 . 1) then prin2!* "1"
+end;
+
+symbolic procedure fs!:fancy!-prin!:(x);
+  << fancy!-prin2 "["; fs!:fancy!-prin cdr x; fancy!-prin2 "]" >>;
+
+symbolic procedure fs!:fancy!-prin x;
+   if null x then fancy!-prin2 "0" else <<
+   while x do <<
+     fs!:fancy!-prin1 x;
+     x := fs!:next x;
+     if x then fancy!-oprin 'plus
+   >>
+>>;
+
+symbolic procedure fs!:fancy!-prin1 x;
+begin scalar first, u, v;
+   first := t;
+   if not(fs!:coeff x = '(1 . 1)) then 
+      fancy!-in!-brackets({'fancy!-maprin0,
+          {'list, ''!*sq, mkquote fs!:coeff x}}, '!(,'!));
+   if not(fs!:null!-angle x) then <<
+     fancy!-prin2 fs!:fn x;
+     fancy!-prin2 "[";
+     u := fs!:angle x;
+     for i:=0:7 do
+         if not((v := getv!.unsafe(u,i)) = 0) then <<
+            if v<0 then << first := t; fancy!-oprin 'minus; v := -v >>;
+            if not first then fancy!-oprin 'plus;
+            if not(v=1) then fancy!-prin2 v;
+            first := nil;
+            fancy!-prin2 getv!.unsafe(fourier!-name!*, i)
+     >>;
+     fancy!-prin2 "]"
+  >>
+  else if fs!:coeff x = '(1 . 1) then fancy!-prin2 "1"
 end;
 
 symbolic procedure fs!:intequiv!:(u);
