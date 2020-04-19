@@ -58,9 +58,9 @@
 
 extern int c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo;
 extern int lookupchar(int fontnum, int codepoint);
-extern std::int32_t lookupkernandligature(int codepoint);
-extern std::int32_t lookupkernadjustment(int codepoint);
-extern std::int32_t lookupligature(int codepoint);
+extern int32_t lookupkernandligature(int codepoint);
+extern int32_t lookupkernadjustment(int codepoint);
+extern int32_t lookupligature(int codepoint);
 extern int accentposition(int codepoint);
 
 extern const std::uint16_t chardepth_WIN32[31];
@@ -69,7 +69,7 @@ extern const std::uint16_t chardepth_OSX[31];
 extern const std::uint16_t *chardepth;
 extern const char *fontnames[31];
 
-const std::uint64_t charmetrics[10057][5] = 
+const uint64_t charmetrics[10057][5] = 
 {
     {UINT64_C(0x0000000000000000), UINT64_C(0x0000000000000000), UINT64_C(0x0000000000000000),
                                    UINT64_C(0x0000000000000000), UINT64_C(0x0000000000000000)},
@@ -20190,7 +20190,7 @@ const std::uint64_t charmetrics[10057][5] =
 #define CHAR_METRICS_MODULUS 4955
 #define CHAR_METRICS_OFFSET 5000
 
-const std::uint32_t topcentre[153] = 
+const uint32_t topcentre[153] = 
 {
     UINT32_C(0xe10020df),
     UINT32_C(0x00000000),
@@ -20350,7 +20350,7 @@ const std::uint32_t topcentre[153] =
 #define TOPCENTRE_MODULUS 88
 #define TOPCENTRE_OFFSET 64
 
-const std::uint32_t variant_table[104][6] = 
+const uint32_t variant_table[104][6] = 
 {
     {0x00002a0a, 0x00002a0a, 0x0010824b, 0x00000000, 0x00000000, 0x00000000},
     {0x002023dc, 0x0010822d, 0x00108274, 0x001082ad, 0x001082e5, 0x0010830e},
@@ -20461,7 +20461,7 @@ const std::uint32_t variant_table[104][6] =
 #define VARIANT_MODULUS 51
 #define VARIANT_OFFSET 53
 
-const std::uint32_t extension_table[142][11] = 
+const uint32_t extension_table[142][11] = 
 {
     {0x000027f0,
      0x0c90815a, 0x81300064,
@@ -21331,7 +21331,7 @@ const std::int16_t fontkern[] =
     4167       // cslSTIXMath-Regular [-4167 items]
 };
 
-const std::uint32_t kerntable[] = 
+const uint32_t kerntable[] = 
 {
     0x00200309,   // [0:1] space + hookabovecomb ligature #0 (cmuntt)
     0x00a00489,   // [1:2] space + COMBINING_CYRILLIC_MILLIONS_SIGN ligature #1 (cmuntt)
@@ -26527,7 +26527,7 @@ const std::uint32_t kerntable[] =
     0x2460006c    // [5191:1024] ff + l ligature #72 (cslSTIXMath-Regular) ;;
 };
 
-const std::uint32_t ligaturetable[] = 
+const uint32_t ligaturetable[] = 
 {
     62083,    // [0] space + hookabovecomb => space_hookabovecomb (cmuntt)
     61877,    // [1] space + COMBINING_CYRILLIC_MILLIONS_SIGN => space_COMBINING_CYRILLIC_MILLIONS_SIGN (cmuntt)

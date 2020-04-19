@@ -1471,10 +1471,21 @@ endif
 	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 endif !cygwin
 endif windows
-	$(CXXLINKTO) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
+if windows
+if gui
+	-$(RM) -f bootstraprreduce$(COM)
+	$(CXXLINKTO) $(DEST)bootstrapreduce$(COM) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+endif gui
+endif windows
 if !debug
 if !darwin
 	$(STRIP) bootstrapreduce$(EXEEXT)
+if windows
+if gui
+	$(STRIP) bootstrapreduce$(COM)
+endif gui
+endif windows
 endif !darwin
 endif !debug
 if wx
@@ -2112,7 +2123,7 @@ if canrun
 	if ! test -f bootstrapreduce.img; then $(USE_CORRECT_CYGWIN) $(MAKE) bootstrapreduce.img; fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/recompile.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2182,7 +2193,7 @@ if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) \
 		-w -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
@@ -2210,7 +2221,7 @@ if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) \
 		-w -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
@@ -2234,7 +2245,7 @@ if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) \
 		-w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildboot.lsp \
 		-D@srcdir=$(CYGSRC) \
@@ -2263,7 +2274,7 @@ if canrun
 	  $(RM) bootstrapreduce.img; \
 	  $(USE_CORRECT_CYGWIN) $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
 	fi
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) \
 		-w $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/profile.red \
 		-D@srcdir=$(CYGSRC) \
@@ -2330,7 +2341,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # while debugging.
 
 just-c-code:	$(USE_CORRECT_CYGWIN)
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) -i- -w $(CSLFLAGS) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -i- -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
@@ -2383,7 +2394,7 @@ partial-c-code:	bootstrapreduce.img $(gensrc)/profile.dat $(USE_CORRECT_CYGWIN)
 if canrun
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
@@ -2400,7 +2411,7 @@ full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat $(USE_CORRECT_CYGWIN)
 if canrun
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
@@ -2418,7 +2429,7 @@ j-code:	bootstrapreduce.img $(gensrc)/profile.dat $(USE_CORRECT_CYGWIN)
 if canrun
 	mkdir -p buildlogs
 	mkdir -p $(CYGREDUCE)/cslbuild/generated-java
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -w $(CSLFLAGS) \
 		-Dno_init_file $(CYGSRC)/make-j-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-java \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
@@ -2431,7 +2442,7 @@ smacros smacros.red:	bootstrapreduce.img $(USE_CORRECT_CYGWIN)
 if canrun
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-smacros.red \
 		-Dhow_many=$(how_many) -Dhow_big=$(how_big) \
@@ -2444,13 +2455,13 @@ endif !canrun
 testslow:	bootstrapreduce.img $(USE_CORRECT_CYGWIN)
 if canrun
 	mkdir -p testlogs
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) -v -w \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -v -w \
 		$(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-- testlogs/testslow.log
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/checkall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2483,7 +2494,7 @@ endif !canrun
 testslow1:	bootstrapreduce.img $(USE_CORRECT_CYGWIN)
 if canrun
 	mkdir -p testlogs
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) \
+	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \

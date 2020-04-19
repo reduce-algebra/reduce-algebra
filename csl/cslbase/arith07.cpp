@@ -46,7 +46,7 @@ LispObject copyb(LispObject a)
 // copy a bignum.
 //
 {   LispObject b;
-    std::size_t len = bignum_length(a), i;
+    size_t len = bignum_length(a), i;
     push(a);
     b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
     pop(a);
@@ -70,8 +70,8 @@ LispObject negateb(LispObject a)
 // negated to get a fixnum result.
 //
 {   LispObject b;
-    std::size_t len = bignum_length(a), i;
-    std::int32_t carry;
+    size_t len = bignum_length(a), i;
+    int32_t carry;
 // There are two messy special cases here. The first is that there is a
 // positive value (2^27 or 2^59) which has to be represented as a bignum,
 // but when you negate it you get a fixnum.
@@ -83,18 +83,18 @@ LispObject negateb(LispObject a)
 // can be handled as fixnums instead.
     if (SIXTY_FOUR_BIT && len == CELL+8)   // two-word bignum - do specially
     {   if (bignum_digits(a)[0] == 0 &&
-            bignum_digits(a)[1] == (std::int32_t)0x10000000)
+            bignum_digits(a)[1] == (int32_t)0x10000000)
             return MOST_NEGATIVE_FIXNUM;
         else if (bignum_digits(a)[0] == 0 &&
-            (std::int32_t)bignum_digits(a)[1] == -(std::int32_t)(1<<30))
+            (int32_t)bignum_digits(a)[1] == -(int32_t)(1<<30))
             return make_three_word_bignum(0, 1<<30, 0);
-        std::uint32_t d0 = bignum_digits(a)[0];
-        std::int32_t d1 = (std::int32_t)~bignum_digits(a)[1];
+        uint32_t d0 = bignum_digits(a)[0];
+        int32_t d1 = (int32_t)~bignum_digits(a)[1];
         if (d0 == 0) d1++;
         else return make_two_word_bignum(d1, (-d0) & 0x7fffffff);
     }
     if (!SIXTY_FOUR_BIT && len == CELL+4)   // one-word bignum - do specially
-    {   std::int32_t d0 = -(std::int32_t)bignum_digits(a)[0];
+    {   int32_t d0 = -(int32_t)bignum_digits(a)[0];
         if (d0 == MOST_NEGATIVE_FIXVAL) return MOST_NEGATIVE_FIXNUM;
         else if (d0 == 0x40000000) return make_two_word_bignum(0, d0);
         else return make_one_word_bignum(d0);
@@ -176,7 +176,7 @@ LispObject negate(LispObject a)
                 return a ^ UINT64_C(0x8000000000000000);
             else return make_lisp_integer64(-int_of_fixnum(a));
         case TAG_NUMBERS:
-        {   std::int32_t ha = type_of_header(numhdr(a));
+        {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                     return negateb(a);

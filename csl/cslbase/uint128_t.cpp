@@ -48,12 +48,12 @@ uint128_t::operator std::uint16_t() const{
     return (std::uint16_t) LOWER;
 }
 
-uint128_t::operator std::uint32_t() const{
-    return (std::uint32_t) LOWER;
+uint128_t::operator uint32_t() const{
+    return (uint32_t) LOWER;
 }
 
-uint128_t::operator std::uint64_t() const{
-    return (std::uint64_t) LOWER;
+uint128_t::operator uint64_t() const{
+    return (uint64_t) LOWER;
 }
 
 uint128_t uint128_t::operator&(const uint128_t & rhs) const{
@@ -91,7 +91,7 @@ uint128_t uint128_t::operator~() const{
 }
 
 uint128_t uint128_t::operator<<(const uint128_t & rhs) const{
-    const std::uint64_t shift = rhs.LOWER;
+    const uint64_t shift = rhs.LOWER;
     if (((bool) rhs.UPPER) || (shift >= 128)){
         return uint128_0;
     }
@@ -118,7 +118,7 @@ uint128_t & uint128_t::operator<<=(const uint128_t & rhs){
 }
 
 uint128_t uint128_t::operator>>(const uint128_t & rhs) const{
-    const std::uint64_t shift = rhs.LOWER;
+    const uint64_t shift = rhs.LOWER;
     if (((bool) rhs.UPPER) || (shift >= 128)){
         return uint128_0;
     }
@@ -207,9 +207,9 @@ uint128_t & uint128_t::operator-=(const uint128_t & rhs){
 
 uint128_t uint128_t::operator*(const uint128_t & rhs) const{
     // split values into 4 32-bit parts
-    std::uint64_t top[4] = {UPPER >> 32, UPPER & 0xffffffff, LOWER >> 32, LOWER & 0xffffffff};
-    std::uint64_t bottom[4] = {rhs.UPPER >> 32, rhs.UPPER & 0xffffffff, rhs.LOWER >> 32, rhs.LOWER & 0xffffffff};
-    std::uint64_t products[4][4];
+    uint64_t top[4] = {UPPER >> 32, UPPER & 0xffffffff, LOWER >> 32, LOWER & 0xffffffff};
+    uint64_t bottom[4] = {rhs.UPPER >> 32, rhs.UPPER & 0xffffffff, rhs.LOWER >> 32, rhs.LOWER & 0xffffffff};
+    uint64_t products[4][4];
 
     // multiply each component of the values
     for(int y = 3; y > -1; y--){
@@ -219,10 +219,10 @@ uint128_t uint128_t::operator*(const uint128_t & rhs) const{
     }
 
     // first row
-    std::uint64_t fourth32 = (products[0][3] & 0xffffffff);
-    std::uint64_t third32  = (products[0][2] & 0xffffffff) + (products[0][3] >> 32);
-    std::uint64_t second32 = (products[0][1] & 0xffffffff) + (products[0][2] >> 32);
-    std::uint64_t first32  = (products[0][0] & 0xffffffff) + (products[0][1] >> 32);
+    uint64_t fourth32 = (products[0][3] & 0xffffffff);
+    uint64_t third32  = (products[0][2] & 0xffffffff) + (products[0][3] >> 32);
+    uint64_t second32 = (products[0][1] & 0xffffffff) + (products[0][2] >> 32);
+    uint64_t first32  = (products[0][0] & 0xffffffff) + (products[0][1] >> 32);
 
     // second row
     third32  += (products[1][3] & 0xffffffff);
@@ -334,11 +334,11 @@ uint128_t uint128_t::operator-() const{
     return ~*this + uint128_1;
 }
 
-const std::uint64_t & uint128_t::upper() const{
+const uint64_t & uint128_t::upper() const{
     return UPPER;
 }
 
-const std::uint64_t & uint128_t::lower() const{
+const uint64_t & uint128_t::lower() const{
     return LOWER;
 }
 
@@ -346,14 +346,14 @@ std::uint8_t uint128_t::bits() const{
     std::uint8_t out = 0;
     if (UPPER){
         out = 64;
-        std::uint64_t up = UPPER;
+        uint64_t up = UPPER;
         while (up){
             up >>= 1;
             out++;
         }
     }
     else{
-        std::uint64_t low = LOWER;
+        uint64_t low = LOWER;
         while (low){
             low >>= 1;
             out++;
@@ -395,11 +395,11 @@ uint128_t operator<<(const std::uint16_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) << rhs;
 }
 
-uint128_t operator<<(const std::uint32_t & lhs, const uint128_t & rhs){
+uint128_t operator<<(const uint32_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) << rhs;
 }
 
-uint128_t operator<<(const std::uint64_t & lhs, const uint128_t & rhs){
+uint128_t operator<<(const uint64_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) << rhs;
 }
 
@@ -411,11 +411,11 @@ uint128_t operator<<(const std::int16_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) << rhs;
 }
 
-uint128_t operator<<(const std::int32_t & lhs, const uint128_t & rhs){
+uint128_t operator<<(const int32_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) << rhs;
 }
 
-uint128_t operator<<(const std::int64_t & lhs, const uint128_t & rhs){
+uint128_t operator<<(const int64_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) << rhs;
 }
 
@@ -431,11 +431,11 @@ uint128_t operator>>(const std::uint16_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) >> rhs;
 }
 
-uint128_t operator>>(const std::uint32_t & lhs, const uint128_t & rhs){
+uint128_t operator>>(const uint32_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) >> rhs;
 }
 
-uint128_t operator>>(const std::uint64_t & lhs, const uint128_t & rhs){
+uint128_t operator>>(const uint64_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) >> rhs;
 }
 
@@ -447,11 +447,11 @@ uint128_t operator>>(const std::int16_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) >> rhs;
 }
 
-uint128_t operator>>(const std::int32_t & lhs, const uint128_t & rhs){
+uint128_t operator>>(const int32_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) >> rhs;
 }
 
-uint128_t operator>>(const std::int64_t & lhs, const uint128_t & rhs){
+uint128_t operator>>(const int64_t & lhs, const uint128_t & rhs){
     return uint128_t(lhs) >> rhs;
 }
 

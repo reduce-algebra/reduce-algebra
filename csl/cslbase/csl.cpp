@@ -1,4 +1,4 @@
-// csl.cpp                                 Copyright (C) 1989-2019 Codemist
+// csl.cpp                                 Copyright (C) 1989-2020 Codemist
 
 //
 // This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -145,7 +145,7 @@ bool symbol_protect_flag = true;
 bool warn_about_protected_symbols = false;
 
 #ifdef USE_MPI
-std::int32_t mpi_rank,mpi_size;
+int32_t mpi_rank,mpi_size;
 #endif
 
 /*****************************************************************************/
@@ -170,15 +170,15 @@ volatile char stack_contents_temp = 0;
 #define C_STACK_ALLOCATION 1000000
 
 static int spset = 0;
-static std::intptr_t spbase = 0, spmin;
+static intptr_t spbase = 0, spmin;
 
-static std::uintptr_t stack_depth[C_STACK_ALLOCATION];
+static uintptr_t stack_depth[C_STACK_ALLOCATION];
 static int stack_line[C_STACK_ALLOCATION];
 static const char *stack_file[C_STACK_ALLOCATION];
-static std::uintptr_t c_stack_ptr = 0;
+static uintptr_t c_stack_ptr = 0;
 
 int check_stack(const char *file, int line)
-{   std::uintptr_t temp = (std::intptr_t)&temp;
+{   uintptr_t temp = (intptr_t)&temp;
     char *file1;
     int first = 1;
     if (!spset)
@@ -212,7 +212,7 @@ int check_stack(const char *file, int line)
         term_printf("\n");
         spmin = temp;
         if (temp < spbase-C_STACK_ALLOCATION ||
-            temp < (std::uintptr_t)C_stacklimit) return 1;
+            temp < (uintptr_t)C_stacklimit) return 1;
     }
     return 0;
 }
@@ -1029,7 +1029,7 @@ static void lisp_main(void)
                 else if (exit_tag == fixnum_of_int(3)) // "preserve & restart"
                 {   const char *msg = "";
                     int len = 0;
-                    std::int32_t fd = stream_pushed_char(lisp_terminal_io);
+                    int32_t fd = stream_pushed_char(lisp_terminal_io);
                     Lrds(nil, nil);
                     Lwrs(nil, nil);
                     return_code = EXIT_SUCCESS;
@@ -1046,7 +1046,7 @@ static void lisp_main(void)
 // put things back as if all memory is totally empty.
 // NOT DONE in the conservative case yet. @@@@@
 #else
-                    for (std::size_t i=0; i<pages_count; i++)
+                    for (size_t i=0; i<pages_count; i++)
                     {   char *w = (char *)pages[i];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             continue;
@@ -1081,7 +1081,7 @@ static void lisp_main(void)
                     continue;
                 }
                 else                                   // "restart"
-                {   std::int32_t fd = stream_pushed_char(lisp_terminal_io);
+                {   int32_t fd = stream_pushed_char(lisp_terminal_io);
                     char new_module[64], new_fn[64]; // Limited name length
                     int cold_start;
                     cold_start = (exit_value == nil);
@@ -1111,21 +1111,21 @@ static void lisp_main(void)
                             if (symbolp(modname) && modname != nil)
                             {   modname = get_pname(modname);
                                 Header h = vechdr(modname);
-                                std::int32_t len = length_of_byteheader(h) - CELL;
+                                int32_t len = length_of_byteheader(h) - CELL;
                                 if (len > 63) len = 63;
                                 std::memcpy(new_module,
                                        (char *)modname + (CELL - TAG_VECTOR),
-                                       (std::size_t)len);
+                                       (size_t)len);
                                 new_module[len] = 0;
                             }
                             if (symbolp(exit_value) && exit_value != nil)
                             {   exit_value = get_pname(exit_value);
                                 Header h = vechdr(exit_value);
-                                std::int32_t len = length_of_byteheader(h) - CELL;
+                                int32_t len = length_of_byteheader(h) - CELL;
                                 if (len > 63) len = 63;
                                 std::memcpy(new_fn,
                                        (char *)exit_value + (CELL - TAG_VECTOR),
-                                       (std::size_t)len);
+                                       (size_t)len);
                                 new_fn[len] = 0;
                             }
                         }
@@ -1136,7 +1136,7 @@ static void lisp_main(void)
 //
 // This puts all recorded heap pages back in the main pool.
 //
-                    for (std::size_t i=0; i<pages_count; i++)
+                    for (size_t i=0; i<pages_count; i++)
                     {   char *w = (char *)pages[i];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             continue;
@@ -1209,9 +1209,9 @@ static long int initial_random_seed;
 
 std::vector<stringBoolString> symbolsToDefine;
 std::vector<stringBoolString> stringsToDefine;
-std::vector<std::string> stringsToEvaluate;
+std::vector<string> stringsToEvaluate;
 
-std::size_t output_directory;
+size_t output_directory;
 character_reader *procedural_input;
 character_writer *procedural_output;
 
@@ -1233,7 +1233,7 @@ const char *standard_directory;
 // to behave in a totally odd manner - it does not run Lisp at all but
 // performs a directory enquiry within the image file.
 //
-static std::string module_enquiry;
+static string module_enquiry;
 
 int errorset_min = 0, errorset_max = 3;
 
@@ -1244,7 +1244,7 @@ const char **csl_argv;
 
 bool restartp;
 
-std::uintptr_t C_stacklimit = 0;
+uintptr_t C_stacklimit = 0;
 double max_store_size = 0.0;
 
 #ifndef HAVE_CILK
@@ -1277,32 +1277,32 @@ int kara_done = 0;
 // either as "--word=VAL" or "--word VAL".
 // As a special case "--args" terminates scanning.
 
-typedef void argAction(std::string key, bool takesVal, std::string value);
+typedef void argAction(string key, bool takesVal, string value);
 
 struct argSpec
 {   const char *name;      // e.g. "-x" or "--word".
     bool takesVal;         // Either "-xNN" or maybe "-x NN" will be valid.
     bool takesSeparateVal; // "-x NN" is valid as well as "-xNN".
-    std::string help;      // e.g. "-k NN  Set memory allocation to NN."
-    std::function<void(std::string,bool,std::string)>action;
+    string help;      // e.g. "-k NN  Set memory allocation to NN."
+    std::function<void(string,bool,string)>action;
                            // procedure to call when this case arises.
 };
 
-static std::unordered_map<std::string, argSpec *> argIndex;
+static std::unordered_map<string, argSpec *> argIndex;
 
 // All command-line items that do not begin with "-" are collected in the
 // vector simpleArgs[]. They will be treated as names of files to be
 // read from. Also an isolated "-" is treated this way so it can be used
 // to indicate a default value.
 
-static std::vector<std::string> simpleArgs;
+static std::vector<string> simpleArgs;
 
 // If an item is not recognized I will collect it here. This will also
 // apply if an item does not expect an associated value but is provided
 // with one. If an item is expecting a value but nothing is provided it
 // will just use the empty string "".
 
-static std::vector<std::string> badArgs;
+static std::vector<string> badArgs;
 
 void setupArgs(argSpec *v, int argc, const char *argv[])
 {   argIndex.clear(); // Just to be safe!
@@ -1312,15 +1312,15 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
     for (int i=0; v[i].name != NULL; i++)  argIndex[v[i].name] = &v[i];
 // Now scan the arguments.
     for (int i=1; i<argc && argv[i]!=NULL; i++)
-    {   std::string a(argv[i]);       // The next argument provided
-        std::string aSave(a);
+    {   string a(argv[i]);       // The next argument provided
+        string aSave(a);
         if (a.compare("--args") == 0) break;
-        std::string val;
+        string val;
         bool hasVal = false;
         if (a[0] == '-' && a[1] != 0)
         {   if (a[1] == '-')            // Here I have "--word"
             {   auto pos = a.find('=');
-                if (pos != std::string::npos) //       "--word=VAL"
+                if (pos != string::npos) //       "--word=VAL"
                 {   val = a.substr(pos+1);
                     hasVal = true;
                     a = a.substr(0, pos);
@@ -1340,7 +1340,7 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
         }
         argSpec *aspec;
         try                           // Look up the keyword.
-        {   std::string aLow(a);
+        {   string aLow(a);
             std::transform(aLow.begin(), aLow.end(), aLow.begin(),
                 [](int c){ return std::tolower(c); });
             aspec = argIndex.at(aLow);
@@ -1429,15 +1429,15 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // or otherwise do things that run against my intent! But then to put its
 // address in C_stackbase I need to cast away the volatile qualifier.
 //
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     C_stacklimit = 0;
     max_store_size = 0.0;
     karatsuba_parallel = 0x7fffffff;
 
 #ifdef EMBEDDED
 // This provides a fixed limit in the embedded build
-    C_stacklimit = (std::uintptr_t)C_stackbase - 2*1024*1024 + 0x10000;
+    C_stacklimit = (uintptr_t)C_stackbase - 2*1024*1024 + 0x10000;
 #else // EMBEDDED
 #ifdef WIN32
     {   HMODULE h = GetModuleHandle(NULL); // For current executable
@@ -1445,8 +1445,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         {   IMAGE_DOS_HEADER *dh = (IMAGE_DOS_HEADER*)h;
             IMAGE_NT_HEADERS *NTh =
                 (IMAGE_NT_HEADERS*)((BYTE*)dh + dh->e_lfanew);
-            std::int64_t stackLimit =
-                (std::int64_t)NTh->OptionalHeader.SizeOfStackReserve;
+            int64_t stackLimit =
+                (int64_t)NTh->OptionalHeader.SizeOfStackReserve;
 //
 // If the limit recovered above is under 200K I will pretend it is
 // just plain wrong and increase it to that. The effect may be that I
@@ -1457,7 +1457,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // I also assume that any figure over 20 Mbytes is a mess so ignore it
             if (stackLimit <= 20*1024*1024)
             {   // I try to give myself 64K spare...
-                C_stacklimit = (std::uintptr_t)C_stackbase - stackLimit + 0x10000;
+                C_stacklimit = (uintptr_t)C_stackbase - stackLimit + 0x10000;
             }
         }
     }
@@ -1465,7 +1465,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #ifdef HAVE_SYS_RESOURCE_H
     {   struct rlimit r;
         if (getrlimit(RLIMIT_STACK, &r) == 0)
-        {   std::int64_t stackLimit = (std::int64_t)r.rlim_cur;
+        {   int64_t stackLimit = (int64_t)r.rlim_cur;
 //
 // If the user has used ulimit to remove all stack limits I will
 // nevertheless apply one at 20 Mbytes. That is SO much higher than any
@@ -1475,24 +1475,24 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // getrlimit so I will treat them as failure.
 //
 #if HAVE_DECL_RLIM_SAVED_MAX
-            if (stackLimit == (std::int64_t)RLIM_SAVED_MAX &&
+            if (stackLimit == (int64_t)RLIM_SAVED_MAX &&
                 RLIM_SAVED_MAX != RLIM_INFINITY)
             {   /* do nothing */
             }
             else
 #endif
 #if HAVE_DECL_RLIM_SAVED_CUR
-                if (stackLimit == (std::int64_t)RLIM_SAVED_CUR &&
+                if (stackLimit == (int64_t)RLIM_SAVED_CUR &&
                     RLIM_SAVED_CUR != RLIM_INFINITY)
                 {   /* do nothing */
                 }
                 else
 #endif
-                    if (stackLimit == (std::int64_t)RLIM_INFINITY)
+                    if (stackLimit == (int64_t)RLIM_INFINITY)
                         stackLimit = 20*1024*1024;
 // I view values under 200K as silly and ignore them!
             if (stackLimit >= 200*1024)
-            {   C_stacklimit = (std::uintptr_t)C_stackbase - stackLimit + 0x10000;
+            {   C_stacklimit = (uintptr_t)C_stackbase - stackLimit + 0x10000;
             }
         }
     }
@@ -1500,7 +1500,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif // WIN32
 // If I can not read a value then I will set a limit at 4 Mbytes...
     if (C_stacklimit == 0)
-    {   C_stacklimit = (std::uintptr_t)C_stackbase - 4*1024*1024 + 0x10000;
+    {   C_stacklimit = (uintptr_t)C_stackbase - 4*1024*1024 + 0x10000;
     }
 #endif // EMBEDDED
 
@@ -1542,7 +1542,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     csl_argc = argc;
     csl_argv = argv;
 
-    std::vector<std::string> tracedFunctions;
+    std::vector<string> tracedFunctions;
 
     {   argSpec argTable[] =
         {
@@ -1567,7 +1567,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // Windows NT) where this would not work.
 // So              -- filename
 // redirects the standard output to the named file.
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   if (!hasVal || val.length() == 0)
          {   badArgs.push_back(key);
              return;
@@ -1624,8 +1624,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"--help", false, false,
      "--help   Generate this text.",
-        [&](std::string key, bool hasVal, std::string val)
-        {   std::vector<std::string>helpText;
+        [&](string key, bool hasVal, string val)
+        {   std::vector<string>helpText;
             for (auto a=&argTable[0]; a->name!=NULL; a++)
                 helpText.push_back(a->help);
             std::sort(helpText.begin(), helpText.end());
@@ -1684,7 +1684,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "         is large enough that this option is basically never needed!\n"
      "         Since the system auto-expands memory as it needs to it is very\n"
      "         rare to need to use this option. See also --maxmem",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   if (!hasVal || val.length() == 0)
          {   badArgs.push_back(key);
              return;
@@ -1701,7 +1701,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // providing input unless I allow plain numbers without a K, M or G suffix
 // to specify amounts in bytes, so that -K1.0e9 and -K1G are treated
 // as meaning the same thing. Ignore case in the specifier.
-         std::string valLow(val);
+         string valLow(val);
          std::transform(valLow.begin(), valLow.end(), valLow.begin(),
              [](int c){ return std::tolower(c); });
          const char *valS = valLow.c_str();
@@ -1767,7 +1767,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"--cygwin", false, false,
      "--cygwin [on Windows] Try to use the cygwin version of Reduce rather\n"
      "         than a native Windows version, regardless of other circumstances.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {
      }
     },
@@ -1783,7 +1783,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "         This may be useful for those who want to attach a debugger to\n"
      "         during that time, so provided there is a console availabe\n"
      "         the process number will be displayed on the standard output.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   std::printf("Process identifier = %d\r\n", getpid());
          std::printf("Waiting 15 seconds in case you want to attach\r\n");
          std::printf("from gdb or some other debugger...\r\n");
@@ -1820,7 +1820,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "-w or -w+ or -w- When using a platform that supports a windowed mode\n"
      "         -w or -w- forces the system to fall back to console mode, while -w+\n"
      "         forces use of the GUI even when other issues might have inhibited it.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   // Detected and processed by the GUI layer before we get here, so
          // no action is needed at this stage.
      }
@@ -1834,7 +1834,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"--texmacs", false, false,
      "--texmacs Run in texmacs mode. You must use the plugin from the\n"
      "         cslbase/texmacs-plugin directory.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   // Detected and processed by the GUI layer before we get here, so
          // no action is needed at this stage.
      }
@@ -1849,7 +1849,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"--no-rcfile", false, false,
      "--no-rcfile Sets the Lisp variable no_init_file which for Reduce arranges\n"
      "         that any file $HOME/.reducerc is ignored rather than read",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   symbolsToDefine.push_back(
              stringBoolString("no_init_file", true, ""));
      }
@@ -1861,7 +1861,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"--gui", false, false,
      "--gui    Use a windowed interface if possible. Equivalent to \"-w+\".",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {
      }
     },
@@ -1872,7 +1872,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"--nogui", false, false,
      "--nogui  Use a console-mode interface (not a windowed one), Equivalent to \"-w-\".",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {
      }
     },
@@ -1884,7 +1884,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"--guimin", false, false,
      "--guimin Start up with window for the interface minimised. Equivalent to \"-w.\".",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {
      }
     },
@@ -1901,7 +1901,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "         possibly could. Used when tracking garbage collection bugs and in\n"
      "         particular one that may arise when GC is triggered from some particular\n"
      "         context -- hence not useful for ordinary users.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   try
          {   reclaim_trigger_target = std::stoull(val);
          }
@@ -1918,7 +1918,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"--stop-on-error", false, false,
      "--stop-on-error  If any error arises then give up and stop.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   stop_on_error=true;
      }
     },
@@ -1931,7 +1931,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"--force-verbos", false, false,
      "--force-verbos Ensure that garbage collection messages are displayed.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   force_verbos = true;
      }
     },
@@ -1944,7 +1944,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"--force_echo", false, false,
      "--force-echo Echo innput, regardless of system switches or other options.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   force_echo = true;
      }
     },
@@ -1958,14 +1958,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"-force-backtrace", false, false,
      "--force-backtrace Always generate a backtrace after any error.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   force_backtrace = true;
      }
     },
 
     {"-force-bt", false, false,
      "--force-bt More concise version of --force-backtrace.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   force_backtrace = true;
      }
     },
@@ -1977,7 +1977,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"--version", false, false,
      "---version Display version information and stop.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   term_printf(
 #ifndef COMMON
              "Codemist Standard Lisp revision %u for %s: %s\n",
@@ -1996,8 +1996,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"--maxmem", true, true,
      "--maxmem NNN Prevent memory expansion beyond NNN.",
-     [&](std::string key, bool hasVal, std::string val)
-     {   std::string valLow(val);
+     [&](string key, bool hasVal, string val)
+     {   string valLow(val);
          std::transform(valLow.begin(), valLow.end(), valLow.begin(),
              [](int c){ return std::tolower(c); });
          const char *valS = valLow.c_str();
@@ -2044,7 +2044,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"--kara", true, true,
      "---kara NN Set transition between single and multi-thread Karatsuba\n"
      "         multiplication.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   try
          {   kparallel = std::stoi(val);
          }
@@ -2065,14 +2065,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"--trace", true, true,
      "---trace NAME Sets up tracing on the names Lisp function.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   tracedFunctions.push_back(val);
      }
     },
 
     {"--tr", true, true,
      "---tr NAME Equivalent to \"--trace NAME\".",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   tracedFunctions.push_back(val);
      }
     },
@@ -2093,7 +2093,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
     {"-a", false, false,
      "- a       Causes the sense of the Lisp (batchp) function to be inverted.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   batch_flag = true;
      }
     },
@@ -2114,7 +2114,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "         can be one of blacK, Red, Green, Yellow, blue, Magenta, Cyan\n"
      "         or White (with blue indicated by a lower case \"b\" and black by\n"
      "         a \"k\" for each of output, input and prompts.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   // Processed earlier by fwin.
      }
     },
@@ -2128,9 +2128,9 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"-c", false, false,
      "-c       Display an authorship (but not a copyright) message that documents\n"
      "         the license under which this code is distributed.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   fwin_restore();
-         term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2019\n");
+         term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2020\n");
          term_printf("Distributed under the Modified BSD License\n");
          term_printf("See also --help\n");
      }
@@ -2145,10 +2145,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "         Note that when a value is given it will be passed as a string,\n"
      "         so \"-dN=3\" sets the variable N to the string \"3\". Use \"--d\"\n"
      "         if you want the value interpreted and converted.",
-     [&](std::string key, bool hasVal, std::string val)
-     {   std::string name, value;
+     [&](string key, bool hasVal, string val)
+     {   string name, value;
          auto n = val.find('=');
-         if (n == std::string::npos)
+         if (n == string::npos)
          {   name = val;
              value = "t";
          }
@@ -2170,10 +2170,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "-dd      -dd NAME=VAL defines the symbol NAME to have the given value,\n"
      "         Note that when a value is given it will be passed through the\n"
      "         Lisp reader, so numbers and symbols can be generated.",
-     [&](std::string key, bool hasVal, std::string val)
-     {   std::string name, value;
+     [&](string key, bool hasVal, string val)
+     {   string name, value;
          auto n = val.find('=');
-         if (n == std::string::npos)
+         if (n == string::npos)
          {   name = val;
              value = "t";
          }
@@ -2192,7 +2192,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"-e", true, true,
      "-e       Can be followed by a Lisp form top be evaluated during startup.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   if (val != "") stringsToEvaluate.push_back(val);
      }
     },
@@ -2214,7 +2214,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // specifies "-f".
     {"-f", false, false,
      "-f       Not in use.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {    timeTestCons = true; // Ha ha!
      }
     },
@@ -2230,7 +2230,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"-g", true, false,
      "-g       Set various options that may help with debugging.\n"
      "         -gw not only sets the options but delays by 15 seconds.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   symbolsToDefine.push_back(
              stringBoolString("*backtrace", true, "t"));
          errorset_min = 3;
@@ -2270,7 +2270,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 //
     {"-h", false, false,
      "-h       Obsolete option!",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   fwin_use_xft = 0;
      }
     },
@@ -2289,7 +2289,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"-i", true, true,
      "-i       The option \"-i xxx.img\" causes the image file named to be available\n"
      "         for reading.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   if (val == "-") val = standard_directory;
          fasl_files.push_back(faslFileRecord(val, false));
      }
@@ -2303,7 +2303,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"-j", true, true,
      "-j       If you go \"-j FILE\" then Reduce puts some dependency information\n"
      "         into the named file as if builds modules for you.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   if (!val.empty()) dependency_file = mystrdup(val.c_str());
      }
     },
@@ -2316,7 +2316,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"-l", true, true,
      "-l FILE  Send a copy of all output to the named file. If no FILE is\n"
      "         specified try \"logfile.log\".",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   char filename[LONGEST_LEGAL_FILENAME];
          std::memset(filename, 0, sizeof(filename));
          const char *w = val.c_str();
@@ -2348,7 +2348,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"-m", false, false,
      "-m       Unused..",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {
      }
     },
@@ -2365,7 +2365,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"-n", false, false,
      "-n       Ignore any restart function and run a Lisp read-eval-print-loop.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   ignore_restart_fn = true;
      }
     },
@@ -2378,7 +2378,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"-o", true, true,
      "-o FILE.img Make the named file an image file that is written to.\n"
      "         See also \"-i\".",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   if (val == "-") val = standard_directory;
          output_directory = fasl_files.size();
          fasl_files.push_back(faslFileRecord(val, true));
@@ -2391,7 +2391,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"-p", false, false, 
      "-p       Reserved for a profiling option.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {
      }
     },
@@ -2402,7 +2402,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"-q", false, false,
      "-q       Set *echo to nil to avoid echoed input.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   symbolsToDefine.push_back(stringBoolString("echo", true, "nil"));
      }
     },
@@ -2425,7 +2425,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "         randomness as the operating system is willing to provide.\n"
      "         Note that the Reduce-level code uses its own random source not\n"
      "         the one controlled here.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   try
          {   initial_random_seed = std::stoll(val);
          }
@@ -2442,7 +2442,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {"-s", false, false,
      "-s       Sets the variable *plap to true so that Lisp compilation displays\n"
      "         the code that it generates.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   symbolsToDefine.push_back(stringBoolString("*plap", true, "t"));
      }
     },
@@ -2462,7 +2462,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "         on a loadable module with the given name. It was provided\n"
      "         in case it would be useful in scripts to remake modules\n"
      "         based on which had been updated recently enough.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   module_enquiry = val;
      }
     },
@@ -2474,8 +2474,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"-u", true, true,
      "-u NAME  Undefine the named symbol.",
-     [&](std::string key, bool hasVal, std::string val)
-     {   std::cout << "Undefine " << val << std::endl; 
+     [&](string key, bool hasVal, string val)
+     {   cout << "Undefine " << val << endl; 
          symbolsToDefine.push_back(stringBoolString(val, false, ""));
      }
     },
@@ -2486,7 +2486,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"-v", false, false,
      "-v       Print a larger startup banner and force echoing of input.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   init_flags &= ~INIT_QUIET;
          init_flags |= INIT_VERBOSE;
          symbolsToDefine.push_back(stringBoolString("*echo", true, "t"));
@@ -2503,7 +2503,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
     {"-x", false, false,
      "-x       Disable trapping of signals/exceptions so that a debugger can see them.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   segvtrap = false;
      }
     },
@@ -2514,7 +2514,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
     {"-y", false, false,
      "-y       Currently not used.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {
      }
     },
@@ -2535,7 +2535,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
      "         system, since with a cold start only a subset of Lisp capabilities\n"
      "         are available. For use by system-builders and sometimes during\n"
      "         debugging.",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   restartp = false;
      }
     },
@@ -2543,7 +2543,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // This is now the end of the table that describes arguments...
     {NULL, false, false,
      "[Termination record for table]",
-     [&](std::string key, bool hasVal, std::string val)
+     [&](string key, bool hasVal, string val)
      {   std::abort();   // Should never arise!
      }
     }
@@ -2551,7 +2551,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
         setupArgs(argTable, argc, argv);
         for (auto msg : badArgs)
-            std::cout << "+++ " << msg << " not accepted" << std::endl;
+            cout << "+++ " << msg << " not accepted" << endl;
     }
 
 // I will try not to act on too many of the options and even not generate
@@ -2638,9 +2638,9 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
     if (module_enquiry != "")
     {   char datestamp[32], fullname[LONGEST_LEGAL_FILENAME];
-        std::size_t size;
+        size_t size;
         bool success = false;
-        for (std::size_t i=0; i<fasl_files.size(); i++)
+        for (size_t i=0; i<fasl_files.size(); i++)
         {   if (fasl_files[i].inUse)
             {   if (!Imodulep1(i, module_enquiry.c_str(),
                                module_enquiry.size(),
@@ -2656,7 +2656,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             std::strcpy(fullname, module_enquiry.c_str());
         }
         term_printf("%.24s   size=%" PRIuPTR " file=%s\n",
-                    datestamp, (std::uintptr_t)size, fullname);
+                    datestamp, (uintptr_t)size, fullname);
         init_flags &= ~INIT_VERBOSE;
         fwin_pause_at_end = true;
         my_exit(0);
@@ -2716,7 +2716,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // default will be to put it in an unpredictable (well hard to predict!)
 // state
 //
-    Csrand((std::uint32_t)initial_random_seed);
+    Csrand((uint32_t)initial_random_seed);
 
 //?        uint64_t t0 = read_clock();
 //?        gc_time += t0;
@@ -2778,20 +2778,20 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // system can report "events" or "requests" back to the code here. Having
 // a couple in hand for any future thread-supporting system seems a good idea.
 
-volatile std::atomic<std::uintptr_t> event_flag(0);
+volatile atomic<uintptr_t> event_flag(0);
 
 // The following function can be called from a signal handler. It just
 // sets a volatile atomic variable, because basically that is the only
 // think it can do and remain "safe".
 
-const std::intptr_t RECEIVE_TICK       = 0x01;
-const std::intptr_t RECEIVE_INTERRUPT  = 0x02;
-const std::intptr_t RECEIVE_BACKTRACE  = 0x04;
-const std::intptr_t RECEIVE_QUIT       = 0x08;
-const std::intptr_t RECEIVE_BREAK_LOOP = 0x10;
+const intptr_t RECEIVE_TICK       = 0x01;
+const intptr_t RECEIVE_INTERRUPT  = 0x02;
+const intptr_t RECEIVE_BACKTRACE  = 0x04;
+const intptr_t RECEIVE_QUIT       = 0x08;
+const intptr_t RECEIVE_BREAK_LOOP = 0x10;
 
 int async_interrupt(int type)
-{   std::uintptr_t newval;
+{   uintptr_t newval;
     switch (type)
     {
         default:
@@ -2821,15 +2821,15 @@ int async_interrupt(int type)
 // it, but spelling it out helps to stress what is going on. I really want
 // the implemention to be lock-free and I very much expect that given that
 // the atomic value is a wrapped uintptr_t that this will be possible. However
-// C++ could have been implemented with std::atomic<uintptr_t> as a type
+// C++ could have been implemented with atomic<uintptr_t> as a type
 // that is not lock-free - eg perhaps on a machine where the bus size
 // is less than the size of an address?
-    std::uintptr_t oldval = event_flag.fetch_or(newval);
+    uintptr_t oldval = event_flag.fetch_or(newval);
     return (int)oldval & 0xff;
 }
 
 void respond_to_stack_event()
-{   std::uintptr_t f = event_flag.fetch_and(0);
+{   uintptr_t f = event_flag.fetch_and(0);
     if (f == 0) aerror("stack overflow");
 // Each of the messages that I might be sent comes in a separate bit, so
 // here I have to test each bit. I will test the bits in some sort of
@@ -2838,7 +2838,7 @@ void respond_to_stack_event()
     if ((f&RECEIVE_TICK) != 0)
     {   //fwin_acknowledge_tick();
 #if !defined EMBEDDED && !defined WITHOUT_GUI
-        std::uintptr_t tt = read_clock() - base_time;
+        uintptr_t tt = read_clock() - base_time;
         long int t = (long int)(tt/10000);
         long int gct = gc_time/100000;
         report_time(t, gct);
@@ -3019,8 +3019,8 @@ static void cslaction(void)
 // to provide a network service on some socket.
 //
 {
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     errorset_msg = NULL;
     try
     {   START_SETJMP_BLOCK;
@@ -3031,7 +3031,7 @@ static void cslaction(void)
 #endif // WITH_GUI
         if (simpleArgs.empty()) lisp_main();
         else
-        {   std::size_t i;
+        {   size_t i;
             for (i=0; i<simpleArgs.size(); i++)
             {   if (std::strcmp(simpleArgs[i].c_str(), "-") == 0)
                 {   non_terminal_input = NULL;
@@ -3076,8 +3076,8 @@ static void cslaction(void)
 
 int cslfinish(character_writer *w)
 {
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     procedural_output = w;
     if (Ifinished())
         term_printf("\n+++ Errors on checkpoint-image file\n");
@@ -3085,8 +3085,8 @@ int cslfinish(character_writer *w)
     dump_equals();
 #endif
     if (init_flags & INIT_VERBOSE)
-    {   std::uint64_t t = (read_clock() - base_time)/10000;  // centisecond units
-        std::uint64_t gct = gc_time/10000;
+    {   uint64_t t = (read_clock() - base_time)/10000;  // centisecond units
+        uint64_t gct = gc_time/10000;
 #ifdef HASH_STATISTICS
         term_printf("oblist: found: %" PRIu64 " probes: %" PRIu64 " (%.2f)\n"
                     "        added: %" PRIu64 " probes: %" PRIu64 " (%.2f)\n",
@@ -3125,8 +3125,8 @@ int execute_lisp_function(const char *fname,
                           character_reader *r,
                           character_writer *w)
 {   LispObject ff;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(ff = make_undefined_symbol(fname),
              return 1);  // Failed to make the symbol
     procedural_input = r;
@@ -3214,8 +3214,8 @@ class CrlibmSetup
 #endif
 
 [[noreturn]] static int submain(int argc, const char *argv[])
-{   volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+{   volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
 #ifdef CONSERVATIVE
 // The next line sets threadId (in fact it should always be to zero since
 // at this stage this is the firts and only thread that exists!) and using
@@ -3318,8 +3318,8 @@ int PROC_set_callbacks(character_reader *r,
 
 int PROC_load_package(const char *name)
 {   LispObject w = nil, w1 = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("load-package");
              push(w1);
              w = make_undefined_symbol(name);
@@ -3332,8 +3332,8 @@ int PROC_load_package(const char *name)
 
 int PROC_set_switch(const char *name, int val)
 {   LispObject w = nil, w1 = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("onoff");
              push(w1);
              w = make_undefined_symbol(name);
@@ -3367,8 +3367,8 @@ int PROC_clear_stack()
 
 int PROC_push_symbol(const char *name)
 {   LispObject w = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_undefined_symbol(name);
              w = cons(w, procstack),
         return 1);
@@ -3383,8 +3383,8 @@ int PROC_push_symbol(const char *name)
 
 int PROC_push_string(const char *data)
 {   LispObject w = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_string(data);
              w = cons(w, procstack),
         return 2);  // Failed to push onto stack
@@ -3403,10 +3403,10 @@ int PROC_push_string(const char *data)
 // 28-bit fixnum.
 //
 
-int PROC_push_small_integer(std::int32_t n)
+int PROC_push_small_integer(int32_t n)
 {   LispObject w = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_lisp_integer32(n);
              w = cons(w, procstack),
         return 1);
@@ -3417,8 +3417,8 @@ int PROC_push_small_integer(std::int32_t n)
 int PROC_push_big_integer(const char *n)
 {   LispObject w = nil;
     int len = 0;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
 // Here I need to parse a C string to obtain a Lisp number.
     boffop = 0;
     if_error(
@@ -3435,8 +3435,8 @@ int PROC_push_big_integer(const char *n)
 
 int PROC_push_floating(double n)
 {   LispObject w = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
 // Here I have to construct a Lisp (boxed) float
     if_error(w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
              w = cons(w, procstack),
@@ -3457,8 +3457,8 @@ int PROC_push_floating(double n)
 
 int PROC_make_function_call(const char *name, int n)
 {   LispObject w = nil, w1 = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(
         while (n > 0)
         {   if (procstack == nil) return 1; // Not enough args available
@@ -3495,8 +3495,8 @@ int PROC_save(int n)
 
 int PROC_load(int n)
 {   LispObject w = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if (n < 0 || n > 99) return 1; // index out of range
     w = elt(procmem, n);
     if_error(w = cons(w, procstack),
@@ -3511,8 +3511,8 @@ int PROC_load(int n)
 
 int PROC_dup()
 {   LispObject w = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // no item to duplicate
     w = car(procstack);
     if_error(w = cons(w, procstack),
@@ -3536,8 +3536,8 @@ int PROC_pop()
 
 int PROC_simplify()
 {   LispObject w = nil, w1 = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = make_undefined_symbol("simp");
@@ -3576,8 +3576,8 @@ static void PROC_standardise_gensyms(LispObject w)
 int PROC_lisp_eval()
 {   save_current_function saver(eval_symbol);
     LispObject w = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = eval(car(procstack), nil);
@@ -3625,8 +3625,8 @@ static LispObject PROC_standardise_printed_form(LispObject w)
 
 int PROC_make_printable()
 {   LispObject w = nil, w1 = nil;
-    volatile std::uintptr_t sp;
-    C_stackbase = (std::uintptr_t *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
 //
 // I want to use "simp" again so that I can then use prepsq!
@@ -3719,8 +3719,8 @@ int PROC_symbol(PROC_handle p)
 // Given that it is a small integer return the integer value
 //
 
-std::int32_t PROC_integer_value(PROC_handle p)
-{   return (std::int32_t)int_of_fixnum((LispObject)p);
+int32_t PROC_integer_value(PROC_handle p)
+{   return (int32_t)int_of_fixnum((LispObject)p);
 }
 
 double PROC_floating_value(PROC_handle p)
@@ -3741,10 +3741,10 @@ static char PROC_name[256];
 
 const char *PROC_symbol_name(PROC_handle p)
 {   LispObject w = (LispObject)p;
-    std::intptr_t n;
+    intptr_t n;
     w = qpname(w);
     n = length_of_byteheader(vechdr(w)) - CELL;
-    if (n > (std::intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
+    if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
     std::strncpy(PROC_name, (const char *)&celt(w, 0), n);
     PROC_name[n] = 0;
     return &PROC_name[0];
@@ -3752,13 +3752,13 @@ const char *PROC_symbol_name(PROC_handle p)
 
 const char *PROC_string_data(PROC_handle p)
 {   LispObject w = (LispObject)p;
-    std::intptr_t n;
+    intptr_t n;
     n = length_of_byteheader(vechdr(w)) - CELL;
 //
 // NOTE that I truncate long strings here. Boo Hiss! This may make a mess
 // of dealing with big numbers, so in due course I will need to fix it!
 //
-    if (n > (std::intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
+    if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
     std::strncpy(PROC_name, (const char *)&celt(w, 0), n);
     PROC_name[n] = 0;
     return &PROC_name[0];
@@ -3766,7 +3766,7 @@ const char *PROC_string_data(PROC_handle p)
 
 //
 // First and rest allow list traversal. The two-levels of cast are to
-// dispose of std::atomic<> stuff.
+// dispose of atomic<> stuff.
 //
 
 PROC_handle PROC_first(PROC_handle p)

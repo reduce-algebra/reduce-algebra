@@ -36,7 +36,7 @@
 #include "headers.h"
 
 static int spset = 0;
-static std::int32_t spbase = 0, spmin;
+static int32_t spbase = 0, spmin;
 
 static std::FILE *stack_log = NULL;
 
@@ -50,9 +50,9 @@ extern int popa(void);
 #pragma aux popa = "pop edx" "pop ecx" "pop eax" value [eax] modify [eax ecx edx];
 
 void __PRO()
-{   std::int32_t temp;
+{   int32_t temp;
     pusha();
-    temp = (std::int32_t)&temp;
+    temp = (int32_t)&temp;
     if (!spset)
     {   spbase = spmin = temp;
         spset = 1;

@@ -38,8 +38,8 @@
 #include "headers.h"
 
 LispObject Lget_bps(LispObject env, LispObject n)
-{   if (!is_fixnum(n) || (std::intptr_t)n<0) aerror1("get-bps", n);
-    std::intptr_t n1 = int_of_fixnum(n);
+{   if (!is_fixnum(n) || (intptr_t)n<0) aerror1("get-bps", n);
+    intptr_t n1 = int_of_fixnum(n);
 // Size limited
     n = get_basic_vector(TAG_VECTOR, TYPE_BPS_4, n1+CELL);
     return onevalue(n);
@@ -65,11 +65,11 @@ void set_fns(LispObject a, no_args *f0, one_arg *f1, two_args *f2, three_args *f
             Lsymbol_protect(nil, a, nil);
         }
     }
-    ifn0(a) = (std::intptr_t)f0;
-    ifn1(a) = (std::intptr_t)f1;
-    ifn2(a) = (std::intptr_t)f2;
-    ifn3(a) = (std::intptr_t)f3;
-    ifn4up(a) = (std::intptr_t)f4up;
+    ifn0(a) = (intptr_t)f0;
+    ifn1(a) = (intptr_t)f1;
+    ifn2(a) = (intptr_t)f2;
+    ifn3(a) = (intptr_t)f3;
+    ifn4up(a) = (intptr_t)f4up;
 }
 
 #ifdef HIDE_USELESS_SYMBOL_ENVIRONMENTS
@@ -464,7 +464,7 @@ LispObject Lsymbol_make_fastget1(LispObject env, LispObject a)
 }
 
 LispObject Lsymbol_make_fastget(LispObject env, LispObject a, LispObject n)
-{   std::intptr_t n1, p, q;
+{   intptr_t n1, p, q;
     Header h;
     if (!symbolp(a)) return onevalue(nil);
     h = qheader(a);
@@ -523,10 +523,10 @@ void lose_C_def(LispObject a)
 }
 
 static bool restore_fn_cell(LispObject a, char *name,
-                               std::size_t len, setup_type const s[])
-{   std::size_t i;
+                               size_t len, setup_type const s[])
+{   size_t i;
     for (i=0; s[i].name != NULL; i++)
-    {   if (std::strlen(s[i].name) == (std::size_t)len &&
+    {   if (std::strlen(s[i].name) == (size_t)len &&
             std::memcmp(name, s[i].name, len) == 0) break;
     }
     if (s[i].name == NULL) return false;
@@ -546,8 +546,8 @@ static bool restore_fn_cell(LispObject a, char *name,
 
 static LispObject Lrestore_c_code(LispObject env, LispObject a)
 {   char *name;
-    std::size_t len;
-    std::size_t i;
+    size_t len;
+    size_t i;
     LispObject pn;
     if (!symbolp(a)) aerror1("restore-c-code", a);
     push(a);
@@ -640,7 +640,7 @@ LispObject Lsymbol_set_definition(LispObject env,
     }
     else if (!consp(b)) aerror1("symbol-set-definition", b);
     else if (is_fixnum(car(b)))
-    {   std::int32_t nargs = (std::int32_t)int_of_fixnum(car(b)),
+    {   int32_t nargs = (int32_t)int_of_fixnum(car(b)),
                 nopts, flagbits, ntail;
         nopts = nargs >> 8;
         flagbits = nopts >> 8;
@@ -922,7 +922,7 @@ LispObject get_pname(LispObject a)
 // failure.
 //
     if (qheader(a) & SYM_UNPRINTED_GENSYM)
-    {   std::uintptr_t len;
+    {   uintptr_t len;
         char *p;
         char genname[80];
         len = length_of_byteheader(vechdr(name)) - CELL;
@@ -1211,19 +1211,19 @@ bool eql_fn(LispObject a, LispObject b)
 //
     if (SIXTY_FOUR_BIT)
     {   if (a == XTAG_SFLOAT &&
-            b == (LispObject)(XTAG_SFLOAT|((std::uint64_t)1<<63))) return true;
+            b == (LispObject)(XTAG_SFLOAT|((uint64_t)1<<63))) return true;
         if (b == XTAG_SFLOAT &&
-            a == (LispObject)(XTAG_SFLOAT|((std::uint64_t)1<<63))) return true;
+            a == (LispObject)(XTAG_SFLOAT|((uint64_t)1<<63))) return true;
 // Here I need to deal with single as well as short floats.
         if (a == (XTAG_SFLOAT|XTAG_FLOAT32) &&
-            b == (LispObject)(XTAG_SFLOAT|XTAG_FLOAT32|((std::uint64_t)1<<63)))
+            b == (LispObject)(XTAG_SFLOAT|XTAG_FLOAT32|((uint64_t)1<<63)))
             return true;
         if (b == (XTAG_SFLOAT|XTAG_FLOAT32) &&
-            a == (LispObject)(XTAG_SFLOAT|XTAG_FLOAT32|((std::uint64_t)1<<63)))
+            a == (LispObject)(XTAG_SFLOAT|XTAG_FLOAT32|((uint64_t)1<<63)))
             return true;
     }
-    else if ((a == XTAG_SFLOAT && b == (XTAG_SFLOAT|(std::intptr_t)0x80000000U)) ||
-        (a == (XTAG_SFLOAT|(std::intptr_t)0x80000000U) && b == XTAG_SFLOAT))
+    else if ((a == XTAG_SFLOAT && b == (XTAG_SFLOAT|(intptr_t)0x80000000U)) ||
+        (a == (XTAG_SFLOAT|(intptr_t)0x80000000U) && b == XTAG_SFLOAT))
         return true;
     if (!is_number(a) || is_immed_or_cons(a)) return false;
     if (is_bfloat(a))
@@ -1246,11 +1246,11 @@ bool eql_fn(LispObject a, LispObject b)
     {   Header h = numhdr(a);
         if (h != numhdr(b)) return false;
         if (type_of_header(h) == TYPE_BIGNUM)
-        {   std::intptr_t hh = (std::intptr_t)length_of_header(h) - TAG_NUMBERS;
-            while (hh > (std::intptr_t)(CELL - TAG_NUMBERS))
+        {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
+            while (hh > (intptr_t)(CELL - TAG_NUMBERS))
             {   hh -= 4;
-                if (*(std::uint32_t *)((char *)a + hh) !=
-                    *(std::uint32_t *)((char *)b + hh))
+                if (*(uint32_t *)((char *)a + hh) !=
+                    *(uint32_t *)((char *)b + hh))
                     return false;
             }
             return true;
@@ -1273,9 +1273,9 @@ static bool cl_vec_equal(LispObject a, LispObject b)
 // vector or array are tested using EQ.
 //
 {   Header ha = vechdr(a), hb = vechdr(b);
-    std::intptr_t offa = 0, offb = 0;
+    intptr_t offa = 0, offb = 0;
     int ta = type_of_header(ha), tb = type_of_header(hb);
-    std::intptr_t la = length_of_header(ha), lb = length_of_header(hb);
+    intptr_t la = length_of_header(ha), lb = length_of_header(hb);
     if (is_bitvec_header(ha)) ta = TYPE_BITVEC_1;
     if (is_bitvec_header(hb)) tb = TYPE_BITVEC_1;
     switch (ta)
@@ -1424,7 +1424,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
     }
 #endif
     for (;;)
-    {   std::uint32_t ta = (std::uint32_t)a & TAG_BITS;
+    {   uint32_t ta = (uint32_t)a & TAG_BITS;
         if (ta == TAG_CONS && a != nil)
         {   if (!consp(b) || b == nil) return false;
             else
@@ -1441,7 +1441,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
 // with nested lists.
 //
                 for (;;)
-                {   std::uint32_t tca = (std::uint32_t)ca & TAG_BITS;
+                {   uint32_t tca = (uint32_t)ca & TAG_BITS;
                     if (tca == TAG_CONS && ca != nil)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
@@ -1464,17 +1464,17 @@ bool cl_equal_fn(LispObject a, LispObject b)
                         }
                     }
                     else if (is_immed_cons_sym(tca) ||
-                             ((std::uint32_t)cb & TAG_BITS) != tca) return false;
+                             ((uint32_t)cb & TAG_BITS) != tca) return false;
                     else switch (tca)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
                                 if (h != numhdr(cb)) return false;
                                 if (type_of_header(h) == TYPE_BIGNUM)
-                                {   std::intptr_t hh = (std::intptr_t)length_of_header(h) - TAG_NUMBERS;
-                                    while (hh > (std::intptr_t)(CELL - TAG_NUMBERS))
+                                {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
+                                    while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(std::uint32_t *)((char *)ca + hh) !=
-                                            *(std::uint32_t *)((char *)cb + hh))
+                                        if (*(uint32_t *)((char *)ca + hh) !=
+                                            *(uint32_t *)((char *)cb + hh))
                                             return false;
                                     }
                                     break;
@@ -1519,7 +1519,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
             }
         }
         else if (is_immed_cons_sym(ta) ||
-                 ((std::uint32_t)b & TAG_BITS) != ta) return false;
+                 ((uint32_t)b & TAG_BITS) != ta) return false;
 //
 // OK - now a and b both have the same type and neither are immediate data
 // conses or symbols. That leaves vectors (including strings) and boxed
@@ -1530,11 +1530,11 @@ bool cl_equal_fn(LispObject a, LispObject b)
                 {   Header h = numhdr(a);
                     if (h != numhdr(b)) return false;
                     if (type_of_header(h) == TYPE_BIGNUM)
-                    {   std::intptr_t hh = (std::intptr_t)length_of_header(h) - TAG_NUMBERS;
-                        while (hh > (std::intptr_t)(CELL - TAG_NUMBERS))
+                    {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
+                        while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(std::uint32_t *)((char *)a + hh) !=
-                                *(std::uint32_t *)((char *)b + hh))
+                            if (*(uint32_t *)((char *)a + hh) !=
+                                *(uint32_t *)((char *)b + hh))
                                 return false;
                         }
                         return true;
@@ -1640,7 +1640,7 @@ void dump_equals_1(FILE *log)
     std::fprintf(log, "%24.24s %5s %5s %10s %10s\n",
         "file", "line", "depth", "count", "matched");
     qsort(equal_counts, LOG_SIZE, sizeof(equal_counts[0]), compare_eqstats);
-    for (std::size_t i=0; i<LOG_SIZE; i++)
+    for (size_t i=0; i<LOG_SIZE; i++)
         if (equal_counts[i].count != 0)
         {   std::fprintf(log, "%24.24s %5d %5d %10d %10d\n",
                 equal_counts[i].file, equal_counts[i].line,
@@ -1656,7 +1656,7 @@ void dump_equals_2()
     trace_printf("%24.24s %5s %5s %10s %10s\n",
         "file", "line", "depth", "count", "matched");
     qsort(equal_counts, LOG_SIZE, sizeof(equal_counts[0]), compare_eqstats);
-    for (std::size_t i=0; i<LOG_SIZE; i++)
+    for (size_t i=0; i<LOG_SIZE; i++)
         if (equal_counts[i].count != 0)
         {   trace_printf("%24.24s %5d %5d %10d %10d\n",
                 equal_counts[i].file, equal_counts[i].line,
@@ -1728,7 +1728,7 @@ bool equal_fn(LispObject a, LispObject b)
     }
 #endif
     for (;;)
-    {   std::uint32_t ta = (std::uint32_t)a & TAG_BITS;
+    {   uint32_t ta = (uint32_t)a & TAG_BITS;
         if (ta == TAG_CONS && a != nil)
         {   if (!consp(b) || b == nil) return false;
             else
@@ -1745,7 +1745,7 @@ bool equal_fn(LispObject a, LispObject b)
 // with nested lists.
 //
                 for (;;)
-                {   std::uint32_t tca = (std::uint32_t)ca & TAG_BITS;
+                {   uint32_t tca = (uint32_t)ca & TAG_BITS;
                     if (tca == TAG_CONS && ca != nil)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
@@ -1768,17 +1768,17 @@ bool equal_fn(LispObject a, LispObject b)
                         }
                     }
                     else if (is_immed_cons_sym(tca) ||
-                             ((std::uint32_t)cb & TAG_BITS) != tca) return false;
+                             ((uint32_t)cb & TAG_BITS) != tca) return false;
                     else switch (tca)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
                                 if (h != numhdr(cb)) return false;
                                 if (type_of_header(h) == TYPE_BIGNUM)
-                                {   std::intptr_t hh = (std::intptr_t)length_of_header(h) - TAG_NUMBERS;
-                                    while (hh > (std::intptr_t)(CELL - TAG_NUMBERS))
+                                {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
+                                    while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(std::uint32_t *)((char *)ca + hh) !=
-                                            *(std::uint32_t *)((char *)cb + hh))
+                                        if (*(uint32_t *)((char *)ca + hh) !=
+                                            *(uint32_t *)((char *)cb + hh))
                                             return false;
                                     }
                                     break;
@@ -1823,17 +1823,17 @@ bool equal_fn(LispObject a, LispObject b)
             }
         }
         else if (is_immed_cons_sym(ta) ||
-                 ((std::uint32_t)b & TAG_BITS) != ta) return false;
+                 ((uint32_t)b & TAG_BITS) != ta) return false;
         else switch (ta)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
                     if (h != numhdr(b)) return false;
                     if (type_of_header(h) == TYPE_BIGNUM)
-                    {   std::intptr_t hh = (std::intptr_t)length_of_header(h) - TAG_NUMBERS;
-                        while (hh > (std::intptr_t)(CELL - TAG_NUMBERS))
+                    {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
+                        while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(std::uint32_t *)((char *)a + hh) !=
-                                *(std::uint32_t *)((char *)b + hh))
+                            if (*(uint32_t *)((char *)a + hh) !=
+                                *(uint32_t *)((char *)b + hh))
                                 return false;
                         }
                         return true;
@@ -1886,7 +1886,7 @@ static bool vec_equal(LispObject a, LispObject b)
 // EQUAL on all components.
 //
 {   Header ha = vechdr(a), hb = vechdr(b);
-    std::size_t l;
+    size_t l;
     if (ha != hb) return false;
 //
 // This used to check all the way up to the end of the final doubleword
@@ -1895,18 +1895,18 @@ static bool vec_equal(LispObject a, LispObject b)
 // Checking only the words that matter is just marginally quicker and
 // will fail less often if I do not pad properly!
 //
-    l = (std::size_t)word_align_up(length_of_header(ha));
+    l = (size_t)word_align_up(length_of_header(ha));
     if (vector_holds_binary(ha))
     {   while ((l -= 4) != 0)
-            if (*((std::uint32_t *)((char *)a + l - TAG_VECTOR)) !=
-                *((std::uint32_t *)((char *)b + l - TAG_VECTOR))) return false;
+            if (*((uint32_t *)((char *)a + l - TAG_VECTOR)) !=
+                *((uint32_t *)((char *)b + l - TAG_VECTOR))) return false;
         return true;
     }
     else
     {   if (is_mixed_header(ha))
         {   while (l > 16)
-            {   std::uint32_t ea = *((std::uint32_t *)((char *)a + l - TAG_VECTOR - 4)),
-                         eb = *((std::uint32_t *)((char *)b + l - TAG_VECTOR - 4));
+            {   uint32_t ea = *((uint32_t *)((char *)a + l - TAG_VECTOR - 4)),
+                         eb = *((uint32_t *)((char *)b + l - TAG_VECTOR - 4));
                 if (ea != eb) return false;
                 l -= 4;
             }
@@ -1939,7 +1939,7 @@ bool equalp(LispObject a, LispObject b)
     }
 #endif
     for (;;)
-    {   std::uint32_t ta = (std::uint32_t)a & TAG_BITS;
+    {   uint32_t ta = (uint32_t)a & TAG_BITS;
         if (ta == TAG_CONS && a != nil)
         {   if (!consp(b) || b == nil) return false;
             else
@@ -1956,7 +1956,7 @@ bool equalp(LispObject a, LispObject b)
 // with nested lists.
 //
                 for (;;)
-                {   std::uint32_t tca = (std::uint32_t)ca & TAG_BITS;
+                {   uint32_t tca = (uint32_t)ca & TAG_BITS;
                     if (tca == TAG_CONS && ca != nil)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
@@ -1979,17 +1979,17 @@ bool equalp(LispObject a, LispObject b)
                         }
                     }
                     else if (is_immed_cons_sym(tca) ||
-                             ((std::uint32_t)cb & TAG_BITS) != tca) return false;
+                             ((uint32_t)cb & TAG_BITS) != tca) return false;
                     else switch (tca)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
                                 if (h != numhdr(cb)) return false;
                                 if (type_of_header(h) == TYPE_BIGNUM)
-                                {   std::intptr_t hh = (std::intptr_t)length_of_header(h) - TAG_NUMBERS;
-                                    while (hh > (std::intptr_t)(CELL - TAG_NUMBERS))
+                                {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
+                                    while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(std::uint32_t *)((char *)ca + hh) !=
-                                            *(std::uint32_t *)((char *)cb + hh))
+                                        if (*(uint32_t *)((char *)ca + hh) !=
+                                            *(uint32_t *)((char *)cb + hh))
                                             return false;
                                     }
                                     break;
@@ -2035,18 +2035,18 @@ bool equalp(LispObject a, LispObject b)
             }
         }
         else if (is_immed_cons_sym(ta) ||
-                 ((std::uint32_t)b & TAG_BITS) != ta) return false;
+                 ((uint32_t)b & TAG_BITS) != ta) return false;
 // What is left is vectors, strings and boxed numbers
         else switch (ta)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
                     if (h != numhdr(b)) return false;
                     if (type_of_header(h) == TYPE_BIGNUM)
-                    {   std::intptr_t hh = (std::intptr_t)length_of_header(h) - TAG_NUMBERS;
-                        while (hh > (std::intptr_t)(CELL - TAG_NUMBERS))
+                    {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
+                        while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(std::uint32_t *)((char *)a + hh) !=
-                                *(std::uint32_t *)((char *)b + hh))
+                            if (*(uint32_t *)((char *)a + hh) !=
+                                *(uint32_t *)((char *)b + hh))
                                 return false;
                         }
                         return true;
@@ -2149,8 +2149,8 @@ LispObject Lendp(LispObject env, LispObject a)
 LispObject Lnreverse(LispObject env, LispObject a)
 {   LispObject b = nil;
     if (is_vector(a))
-    {   std::intptr_t n = Llength(nil, a) - 0x10;
-        std::intptr_t i = TAG_FIXNUM;
+    {   intptr_t n = Llength(nil, a) - 0x10;
+        intptr_t i = TAG_FIXNUM;
         while (n > i)
         {   LispObject w = Laref_2(nil, a, i);
             Laset_3(nil, a, i, Laref_2(nil, a, n));
@@ -2244,7 +2244,7 @@ LispObject Lreverse(LispObject env, LispObject a)
 }
 
 #ifdef DEBUG_ASSOC
-static std::int64_t assoc_calls = 0, assoc_length = 0, assoc_max = 0; //@@
+static int64_t assoc_calls = 0, assoc_length = 0, assoc_max = 0; //@@
 #endif
 
 LispObject Lassoc(LispObject env, LispObject a, LispObject b)
@@ -2254,7 +2254,7 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
     int pos = 0;
 #endif
 #ifdef DEBUG_ASSOC
-    std::int64_t this_assoc = 0;
+    int64_t this_assoc = 0;
     if ((assoc_calls % 1000) == 999)
         term_printf("Assoc %.3f av length %.1f max %.1f calls\n",
                     (double)assoc_length/(double)assoc_calls,
@@ -2493,7 +2493,7 @@ LispObject Llastpair(LispObject env, LispObject a)
 LispObject Llength(LispObject env, LispObject a)
 {   if (a == nil) return onevalue(fixnum_of_int(0));
     if (is_cons(a))
-    {   std::size_t n = 1;
+    {   size_t n = 1;
 //
 // Possibly I should do something to trap cyclic lists.. But doing so
 // would tend to be extra cost so unless it becomes a vital issue because
@@ -2533,7 +2533,7 @@ LispObject Llength(LispObject env, LispObject a)
 //
     else if (is_vector(a))
     {   Header h = vechdr(a);
-        std::size_t n = length_of_header(h) - CELL;
+        size_t n = length_of_header(h) - CELL;
 // If at any stage I move to a segmented representation for huge vectors I
 // will need to re-work this!
         if (type_of_header(h) == TYPE_ARRAY)

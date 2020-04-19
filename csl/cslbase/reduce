@@ -17,7 +17,8 @@ here=`cd "$here" ; pwd`
 #   cygwin32
 #   mingw
 # If there are any others then they will be treated as per the mingw case.
-# The cygwin32 case is deprecated.
+# The cygwin32 case is deprecated - indeed in general 32-bit working on
+# a Windows platform now belongs in the past!
 # With the two cygwin cases there is an additional issue as to whether
 # the shell variable DISPLAY is set. If it is set at all I will assume it
 # identifies an X11 screen that is available for use.

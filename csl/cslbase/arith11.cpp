@@ -48,7 +48,7 @@ LispObject rembi(LispObject a, LispObject b)
 {   if (b == fixnum_of_int(0)) aerror2("bad arg for remainder", a, b);
     else if (b == fixnum_of_int(1) ||
              b == fixnum_of_int(-1)) return fixnum_of_int(0);
-    std::intptr_t n = int_of_fixnum(b);
+    intptr_t n = int_of_fixnum(b);
     if (signed31_in_ptr(n))
     {   quotbn1(a, n);
         return fixnum_of_int(nwork);
@@ -143,7 +143,7 @@ static LispObject remff(LispObject a, LispObject b)
 }
 
 LispObject Cremainder(LispObject a, LispObject b)
-{   std::intptr_t c;
+{   intptr_t c;
     switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & XTAG_BITS)
@@ -155,8 +155,8 @@ LispObject Cremainder(LispObject a, LispObject b)
                     if (b == fixnum_of_int(0))
                         aerror2("bad arg for remainder", a, b);
                     // No overflow is possible in a remaindering operation
-                    {   std::intptr_t aa = int_of_fixnum(a);
-                        std::intptr_t bb = int_of_fixnum(b);
+                    {   intptr_t aa = int_of_fixnum(a);
+                        intptr_t bb = int_of_fixnum(b);
                         c = aa % bb;
 //
 // C does not specify just what happens when % is used with negative
@@ -180,7 +180,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                     return remis(a, b);
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
 //
@@ -227,7 +227,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                 }
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return remsb(a, b);
@@ -245,7 +245,7 @@ LispObject Cremainder(LispObject a, LispObject b)
             }
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
-        {   std::int32_t ha = type_of_header(numhdr(a));
+        {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                     switch ((int)b & XTAG_BITS)
@@ -255,7 +255,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                             return rembs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return rembb(a, b);
@@ -279,7 +279,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                             return remrs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return remrb(a, b);
@@ -308,7 +308,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                     return remfs(a, b);
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return remfb(a, b);
@@ -361,7 +361,7 @@ static LispObject modbi(LispObject a, LispObject b)
 {   if (b == fixnum_of_int(0)) aerror2("bad arg for mod", a, b);
     if (b == fixnum_of_int(1) || b == fixnum_of_int(-1))
         return fixnum_of_int(0);
-    std::intptr_t n = int_of_fixnum(b);
+    intptr_t n = int_of_fixnum(b);
     if (signed31_in_ptr(n))
     {   quotbn1(a, n);
 // The modulus must have the same sign as b (ie as n).
@@ -477,8 +477,8 @@ LispObject modulus(LispObject a, LispObject b)
 // This is where fixnum % fixnum arithmetic happens - the case I most want to
 // make efficient.
 //
-                {   std::intptr_t p = int_of_fixnum(a);
-                    std::intptr_t q = int_of_fixnum(b);
+                {   intptr_t p = int_of_fixnum(a);
+                    intptr_t q = int_of_fixnum(b);
                     if (q == 0) aerror2("bad arg for mod", a, b);
                     p = p % q;
                     if (q < 0)
@@ -531,7 +531,7 @@ LispObject modulus(LispObject a, LispObject b)
                 }
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return modsb(a, b);
@@ -708,7 +708,7 @@ bool minusp(LispObject a)
 bool plusp(LispObject a)
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            return (std::intptr_t)a > fixnum_of_int(0);
+            return (intptr_t)a > fixnum_of_int(0);
         case XTAG_SFLOAT:
             return value_of_immediate_float(a) > 0.0;
         case TAG_NUMBERS:
@@ -716,9 +716,9 @@ bool plusp(LispObject a)
         {   int ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                {   std::size_t l = (bignum_length(a)-CELL-4)/4;
+                {   size_t l = (bignum_length(a)-CELL-4)/4;
 // This is OK because a bignum can never have the value zero
-                    return ((std::int32_t)bignum_digits(a)[l] >= 0);
+                    return ((int32_t)bignum_digits(a)[l] >= 0);
                 }
                 case TYPE_RATNUM:
                     return plusp(numerator(a));
@@ -764,9 +764,9 @@ static bool numeqsb(LispObject a, LispObject b)
 //
 {   double d = float_of_number(a), d1;
     int x;
-    std::int32_t w;
-    std::size_t len;
-    std::uint32_t u;
+    int32_t w;
+    size_t len;
+    uint32_t u;
 // MOST_NEGATIVE_FIXVAL will be a power of 2, and so even if is bigger
 // then 2^53 it can convert exactly to a double, or indeed to any floating
 // point type. My reasoning here is that b is a BIGNUM and hence its
@@ -776,7 +776,7 @@ static bool numeqsb(LispObject a, LispObject b)
         d < -(double)MOST_NEGATIVE_FIXVAL) return false;
     len = (bignum_length(b)-CELL-4)/4;
     if (len == 0)   // One word bignums can be treated specially
-    {   std::int32_t v = bignum_digits(b)[0];
+    {   int32_t v = bignum_digits(b)[0];
         return (d == (double)v);
     }
     d1 = std::frexp(d, &x);  // separate exponent from mantissa
@@ -789,7 +789,7 @@ static bool numeqsb(LispObject a, LispObject b)
 // result left is zero and (b) there are no more bits left.
 //
     x = x / 31;
-    if (x < 0 || (std::size_t)x != len) return false;
+    if (x < 0 || (size_t)x != len) return false;
     w = bignum_digits(b)[len];
     d1 = (d1 - (double)w) * TWO_31;
     u = bignum_digits(b)[--len];
@@ -814,8 +814,8 @@ static bool numeqsr(LispObject a, LispObject b)
 {   LispObject nb = numerator(b), db = denominator(b);
     double d = float_of_number(a), d1;
     int x;
-    std::int32_t dx, w, len;
-    std::uint32_t u, bit;
+    int32_t dx, w, len;
+    uint32_t u, bit;
 //
 // first I will check that db (which will be positive) is a power of 2,
 // and set dx to indicate what power of two it is.
@@ -830,7 +830,7 @@ static bool numeqsr(LispObject a, LispObject b)
         dx = 0;
     }
     else if (is_numbers(db) && is_bignum(db))
-    {   std::int32_t lenb = (bignum_length(db)-CELL-4)/4;
+    {   int32_t lenb = (bignum_length(db)-CELL-4)/4;
         bit = bignum_digits(db)[lenb];
 //
 // I need to cope with bignums where the leading digits is zero because
@@ -864,7 +864,7 @@ static bool numeqsr(LispObject a, LispObject b)
     }
     len = (bignum_length(nb)-CELL-4)/4;
     if (len == 0)   // One word bignums can be treated specially
-    {   std::int32_t v = bignum_digits(nb)[0];
+    {   int32_t v = bignum_digits(nb)[0];
         double d1;
         if (dx > 10000) return false;  // Avoid gross underflow
         d1 = std::ldexp((double)v, (int)-dx);
@@ -906,8 +906,8 @@ static bool numeqsf(LispObject a, LispObject b)
 #define numeqbs(a, b) numeqsb(b, a)
 
 static bool numeqbb(LispObject a, LispObject b)
-{   std::int32_t la = bignum_length(a);
-    if (la != (std::int32_t)bignum_length(b)) return false;
+{   int32_t la = bignum_length(a);
+    if (la != (int32_t)bignum_length(b)) return false;
     la = (la-CELL-4)/4;
     while (la != 0)
         if (bignum_digits(a)[la] != bignum_digits(b)[la]) return false;
@@ -987,7 +987,7 @@ bool numeq2(LispObject a, LispObject b)
                     return numeqis(a, b);
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return false; // fixnum can not be equal to a bignum
@@ -1014,7 +1014,7 @@ bool numeq2(LispObject a, LispObject b)
                            value_of_immediate_float(b);
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return numeqsb(a, b);
@@ -1034,7 +1034,7 @@ bool numeq2(LispObject a, LispObject b)
             }
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
-        {   std::int32_t ha = type_of_header(numhdr(a));
+        {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                     switch ((int)b & XTAG_BITS)
@@ -1044,7 +1044,7 @@ bool numeq2(LispObject a, LispObject b)
                             return numeqbs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return numeqbb(a, b);
@@ -1070,7 +1070,7 @@ bool numeq2(LispObject a, LispObject b)
                             return numeqrs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return 0;
@@ -1096,7 +1096,7 @@ bool numeq2(LispObject a, LispObject b)
                             return numeqcs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return numeqcb(a, b);
@@ -1126,7 +1126,7 @@ bool numeq2(LispObject a, LispObject b)
                     return numeqfs(a, b);
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return numeqfb(a, b);

@@ -69,6 +69,8 @@
 
 using std::cout;
 using std::endl;
+using std::string;
+using std::size_t;
 
 // What I need here is a list of all the types I can imagine anybody
 // ever casting to. Eg I have not put the specializations of std::vector<>
@@ -395,7 +397,7 @@ enum state
     dquoteback
 };
 
-static std::string word("");
+static string word("");
 static char buffer[1000000] = "                    ";
 
 // This tried to judge whether the string starting at p might be a
@@ -534,9 +536,9 @@ char* endOfCasted(char* p)
 
 // Insert next text in buffer by deleting n characters and replacing then with
 // the given text.
-void insert(const char* text, char *buffer, std::size_t n)
-{   std::size_t len = std::strlen(text);
-    std::size_t bLen = std::strlen(buffer);
+void insert(const char* text, char *buffer, size_t n)
+{   size_t len = std::strlen(text);
+    size_t bLen = std::strlen(buffer);
     std::memmove(buffer+len-n, buffer, bLen+1);
     std::memmove(buffer, text, len);
 }

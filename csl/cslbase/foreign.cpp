@@ -50,7 +50,7 @@
 // can be tried.
 //
 
-static std::int32_t k = 12345;
+static int32_t k = 12345;
 
 //
 // First a series of functions that illustrate support for the
@@ -61,14 +61,14 @@ void vff()
 {   std::printf("void vff()\n");
 }
 
-std::int32_t i32ff()
+int32_t i32ff()
 {   std::printf("int32_t i32ff()\n");
     return k++;
 }
 
-std::int64_t i64ff()
+int64_t i64ff()
 {   std::printf("int64_t i64ff()\n");
-    return (std::int64_t)k++ * (std::int64_t)100000000;
+    return (int64_t)k++ * (int64_t)100000000;
 }
 
 double dff()
@@ -90,11 +90,11 @@ char *sff()
 // can cope with not having any result.
 //
 
-void vffi32(std::int32_t a)
+void vffi32(int32_t a)
 {   std::printf("vffi32(%d)\n", (int)a);
 }
 
-void vffi64(std::int64_t a)
+void vffi64(int64_t a)
 {   std::printf("vffi64(%" PRId64 ")\n", a);
 }
 
@@ -157,12 +157,12 @@ typedef void *PROC_handle;
 #define PROC_get_raw_value                ((PROC_handle (*)())callbacks[32])
 
 
-void register_callback(std::int32_t which, std::int64_t value)
-{   if (0<=which && which<=32) callbacks[which] = (void *)(std::intptr_t)value;
+void register_callback(int32_t which, int64_t value)
+{   if (0<=which && which<=32) callbacks[which] = (void *)(intptr_t)value;
     std::printf("Callback number %d registered as %p\n", which, callbacks[which]);
 }
 
-std::int32_t two_way(std::int32_t x)
+int32_t two_way(int32_t x)
 {   PROC_handle w;
     std::printf("In foreign code. x = %d. Result will be %d^6 = %d\n",
            x, x, x*x*x*x*x*x);

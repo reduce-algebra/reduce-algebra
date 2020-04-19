@@ -458,15 +458,15 @@ static void ser_print_opname(int n)
 // them is lower down.
 
 static int delayed_byte = -1;
-static std::uint64_t delayed_count = 0, delayed_arg = 0;
+static uint64_t delayed_count = 0, delayed_arg = 0;
 static bool delayed_has_arg = false;
 static char delayed_message[80];
 
 static inthash repeat_hash;
 LispObject *repeat_heap = NULL;
-std::size_t repeat_heap_size = 0, repeat_count = 0;
+size_t repeat_heap_size = 0, repeat_count = 0;
 
-void reader_setup_repeats(std::size_t n)
+void reader_setup_repeats(size_t n)
 {   if (repeat_heap_size != 0 ||
         repeat_heap != NULL)
     {   std::fprintf(stderr, "\n+++ repeat heap processing error\n");
@@ -481,7 +481,7 @@ void reader_setup_repeats(std::size_t n)
         my_abort();
     }
 // I fill the vector with fixnum_of_int(0) so it is GC safe.
-    for (std::size_t i=0; i<repeat_heap_size; i++)
+    for (size_t i=0; i<repeat_heap_size; i++)
         repeat_heap[i] = fixnum_of_int(0);
 }
 
@@ -494,7 +494,7 @@ void writer_setup_repeats()
     {   std::fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
         my_abort();
     }
-    for (std::size_t i=0; i<=repeat_heap_size; i++)
+    for (size_t i=0; i<=repeat_heap_size; i++)
         repeat_heap[i] = fixnum_of_int(0);
 // I will call this before generating any output bytes, and so here is a
 // convenient place to prime the peephole optimiser.
@@ -515,11 +515,11 @@ void writer_setup_repeats()
 // all other items one place (and having linear cost per access) and
 // not using move-to-front at all.
 
-LispObject reader_repeat_old(std::size_t n)
+LispObject reader_repeat_old(size_t n)
 {   if (n == 1) return repeat_heap[1];
     LispObject w;
     for (;;)
-    {   std::size_t n2 = n/2;           // parent in binary heap
+    {   size_t n2 = n/2;           // parent in binary heap
         w = repeat_heap[n];
         repeat_heap[n] = repeat_heap[n2];
         repeat_heap[n2] = w;
@@ -553,8 +553,8 @@ LispObject reader_repeat_new(LispObject x)
 // the item was before the move-to-front operation. I can use this when a
 // new item is to be entered in the repeat heap.
 
-std::size_t find_index_in_repeats(std::size_t h)
-{   std::size_t n = hash_get_value(&repeat_hash, h);
+size_t find_index_in_repeats(size_t h)
+{   size_t n = hash_get_value(&repeat_hash, h);
 // if n == 0 then this is the first time we have seen this item. So it
 // needs to be inserted into repeat_hash.
     if (n == 0)
@@ -568,7 +568,7 @@ std::size_t find_index_in_repeats(std::size_t h)
 // repeat_hash so that I can still find the moved items.
     h = n;
     for (;;)
-    {   std::size_t n2 = n/2;           // parent in binary heap
+    {   size_t n2 = n/2;           // parent in binary heap
         LispObject w = repeat_heap[n];
         repeat_heap[n] = repeat_heap[n2];
         hash_set_value(&repeat_hash, repeat_heap[n2],  n);
@@ -633,7 +633,7 @@ int read_string_byte()
 // version. That will either be a fixed string or a reference to a character
 // array that has been left uninitialized.
 
-extern void write_u64(std::uint64_t n);
+extern void write_u64(uint64_t n);
 extern void write_opcode(int byte, const char *msg, ...);
 
 void write_delayed(int byte, const char *msg, ...)
@@ -656,7 +656,7 @@ void write_delayed(int byte, const char *msg, ...)
     }
 }
 
-void write_delayed_with_arg(int byte, std::uint64_t arg, const char *msg, ...)
+void write_delayed_with_arg(int byte, uint64_t arg, const char *msg, ...)
 {
     if (byte == delayed_byte &&
         arg == delayed_arg) delayed_count++;
@@ -683,7 +683,7 @@ void write_opcode(int byte, const char *msg, ...)
 // useful I will just emit the pending material 1, 2 or 3 times in a
 // simple manner.
     if (delayed_count != 0)
-    {   std::uint64_t n = delayed_count;
+    {   uint64_t n = delayed_count;
         int b = delayed_byte;
         delayed_count = 0;
 // If I called write_opcode from here before resetting delayed_count to
@@ -697,7 +697,7 @@ void write_opcode(int byte, const char *msg, ...)
                 write_opcode(b, delayed_message);
                 write_u64(delayed_arg);
             }
-            else for (std::uint64_t i=0; i<n; i++)
+            else for (uint64_t i=0; i<n; i++)
             {   write_opcode(b, delayed_message);
                 write_u64(delayed_arg);
             }
@@ -718,7 +718,7 @@ void write_opcode(int byte, const char *msg, ...)
                 else if (n == 3) write_opcode(SER_NIL3, "NIL NIL NIL");
                 else my_abort();
             }
-            else for (std::uint64_t i=0; i<n; i++)
+            else for (uint64_t i=0; i<n; i++)
                 write_opcode(b, delayed_message);
         }
     }
@@ -772,8 +772,8 @@ void write_byte(int byte, const char *msg, ...)
 // of which have their top bit zero then the final byte is treated as a full
 // 8 bits.
 
-std::uint64_t read_u64()
-{   std::uint64_t r = 0;
+uint64_t read_u64()
+{   uint64_t r = 0;
     int b, i;
     for (i=0; i<8; i++)
     {   if (((b = read_data_byte()) & 0x80) != 0)
@@ -785,7 +785,7 @@ std::uint64_t read_u64()
 
 // Write a 64-bit unsigned value in a format compatible with read_u64()
 
-void write_u64(std::uint64_t n)
+void write_u64(uint64_t n)
 {   char msg[40];
     if (n == (n & 0x7f))
     {
@@ -812,7 +812,7 @@ void write_u64(std::uint64_t n)
         if (any || (b != 0))
         {   any = true;
 #ifdef DEBUG_SERIALIZE
-            std::sprintf(msg, "%#" PRIx64, ((std::uint64_t)b) << (7*(7-i)+final));
+            std::sprintf(msg, "%#" PRIx64, ((uint64_t)b) << (7*(7-i)+final));
 #endif // DEBUG_SERIALIZE
             write_byte(b, msg);
         }
@@ -1014,7 +1014,7 @@ void write_f128(float128_t f)
 // Code layout adjusted bc ACN (using astyle) plus adaptations to fit C++
 // rather than C.
 
-static const std::uint64_t crc64_tab[256] =
+static const uint64_t crc64_tab[256] =
 {   UINT64_C(0x0000000000000000), UINT64_C(0x7ad870c830358979),
     UINT64_C(0xf5b0e190606b12f2), UINT64_C(0x8f689158505e9b8b),
     UINT64_C(0xc038e5739841b68f), UINT64_C(0xbae095bba8743ff6),
@@ -1145,7 +1145,7 @@ static const std::uint64_t crc64_tab[256] =
     UINT64_C(0x536fa08fdfd90e51), UINT64_C(0x29b7d047efec8728),
 };
 
-std::uint64_t crc64(std::uint64_t crc, const void *buf, std::size_t size)
+uint64_t crc64(uint64_t crc, const void *buf, size_t size)
 {   const std::uint8_t *p = (const std::uint8_t *)buf;
     while (size-- != 0)
         crc = crc64_tab[(std::uint8_t)crc ^ *p++] ^ (crc >> 8);
@@ -1180,18 +1180,18 @@ int main(void)
 
 #define NCODEPOINTERS 5000U
 
-std::size_t ncodepointers = 0;
-std::intptr_t codepointers[NCODEPOINTERS];
+size_t ncodepointers = 0;
+intptr_t codepointers[NCODEPOINTERS];
 
 inthash codehash;
 
-bool insert_codepointer(std::uintptr_t x, const char *s)
+bool insert_codepointer(uintptr_t x, const char *s)
 {
 // If this codepointer is one I have seen before then do nothing and return
 // false.
-    if (hash_lookup(&codehash, x) != (std::size_t)(-1)) return false;
+    if (hash_lookup(&codehash, x) != (size_t)(-1)) return false;
 // Add to the table of code-pointers, recording where it goes.
-    std::size_t pos = hash_insert(&codehash, x);
+    size_t pos = hash_insert(&codehash, x);
     hash_set_value(&codehash, pos, ncodepointers);
     if (ncodepointers >= NCODEPOINTERS)
     {   std::fprintf(stderr, "Too many built-in functions. Please increase NCODEPOINTERS\n");
@@ -1202,14 +1202,14 @@ bool insert_codepointer(std::uintptr_t x, const char *s)
     return true;
 }
 
-std::uint64_t use_setup(std::uint64_t crc, const setup_type *p)
+uint64_t use_setup(uint64_t crc, const setup_type *p)
 {   while (p->name != NULL)
     {   unsigned char n = 0;
-        if (insert_codepointer((std::uintptr_t)(p->zero), p->name)) n += 1;
-        if (insert_codepointer((std::uintptr_t)(p->one), p->name)) n += 2;
-        if (insert_codepointer((std::uintptr_t)(p->two), p->name)) n += 4;
-        if (insert_codepointer((std::uintptr_t)(p->three), p->name)) n += 8;
-        if (insert_codepointer((std::uintptr_t)(p->fourup), p->name)) n += 16;
+        if (insert_codepointer((uintptr_t)(p->zero), p->name)) n += 1;
+        if (insert_codepointer((uintptr_t)(p->one), p->name)) n += 2;
+        if (insert_codepointer((uintptr_t)(p->two), p->name)) n += 4;
+        if (insert_codepointer((uintptr_t)(p->three), p->name)) n += 8;
+        if (insert_codepointer((uintptr_t)(p->fourup), p->name)) n += 16;
         crc = crc64(crc, &n, 1);
         crc = crc64(crc, (const unsigned char *)p->name, std::strlen(p->name));
         p++;
@@ -1217,15 +1217,15 @@ std::uint64_t use_setup(std::uint64_t crc, const setup_type *p)
     return crc;
 }
 
-std::uint64_t function_crc = 0;
+uint64_t function_crc = 0;
 
 void set_up_function_tables()
-{   std::uint64_t crc = 0;
+{   uint64_t crc = 0;
     hash_init(&codehash);
     ncodepointers = 0;
 // I put a value that I expect to be invalid at position zero in the table
 // so that if by accident I retrieve it I will see a visible crash (I hope).
-    codepointers[ncodepointers++] = (std::intptr_t)(-1);
+    codepointers[ncodepointers++] = (intptr_t)(-1);
 // The code here must find all the function addresses that are built
 // into CSL that might legitimately end up within a heap image. The
 // code sets up a 64-bit CRC code this is intended to be a signature
@@ -1237,27 +1237,27 @@ void set_up_function_tables()
 // indexable array of the entrypoints. For Reduce there are somewhat under
 // 4000 pointers to handle here, so costs are not too severe.
     for (entry_point0 *p = &entries_table0[1]; p->p!=NULL; p++)
-    {   insert_codepointer((std::uintptr_t)p->p, p->s);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
     }
     for (entry_point1 *p = &entries_table1[1]; p->p!=NULL; p++)
-    {   insert_codepointer((std::uintptr_t)p->p, p->s);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
     }
     for (entry_point2 *p = &entries_table2[1]; p->p!=NULL; p++)
-    {   insert_codepointer((std::uintptr_t)p->p, p->s);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
     }
     for (entry_point3 *p = &entries_table3[1]; p->p!=NULL; p++)
-    {   insert_codepointer((std::uintptr_t)p->p, p->s);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
     }
     for (entry_point4up *p = &entries_table4up[1]; p->p!=NULL; p++)
-    {   insert_codepointer((std::uintptr_t)p->p, p->s);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
     }
     for (entry_point1 *p = &entries_tableio[1]; p->p!=NULL; p++)
-    {   insert_codepointer((std::uintptr_t)p->p, p->s);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
     }
     const setup_type **p = setup_tables;
@@ -1269,7 +1269,7 @@ void set_up_function_tables()
 }
 
 void *read_function()
-{   std::uint64_t handle = read_u64();
+{   uint64_t handle = read_u64();
     if (handle == 0 || handle >= ncodepointers)
     {   std::fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
                 handle, handle);
@@ -1279,12 +1279,12 @@ void *read_function()
 }
 
 void write_function(void *p)
-{   std::size_t h = hash_lookup(&codehash, (std::intptr_t)p);
-    if (h == (std::size_t)(-1))
+{   size_t h = hash_lookup(&codehash, (intptr_t)p);
+    if (h == (size_t)(-1))
     {   std::fprintf(stderr, "Unknown item used as code pointer (%p)\n", p);
         my_abort();
     }
-    std::uint64_t handle = hash_get_value(&codehash, h);
+    uint64_t handle = hash_get_value(&codehash, h);
     if (handle == 0 || handle >= ncodepointers)
     {   std::fprintf(stderr, "Invalid code handle recovered for writing codepointer\n");
         std::fprintf(stderr, "codehash hash-table presumed messed up!\n");
@@ -1344,7 +1344,7 @@ LispObject serial_read()
     int c;
     prev = pbase = r = s = b = fixnum_of_int(0);
     p = &r;
-    std::uint64_t opcode_repeats = 0, repeat_arg = 0;
+    uint64_t opcode_repeats = 0, repeat_arg = 0;
     bool repeat_arg_ready = false;
 down:
 // read_byte() needs to read from the stream representation of things
@@ -1413,7 +1413,7 @@ down:
                 case SER_L_A:
                     GC_PROTECT(prev = cons(fixnum_of_int(0), nil));
                     if (c & 1) reader_repeat_new(prev);
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     pbase = prev;
                     p = (LispObject *)vcaraddr(pbase);
                     goto down;
@@ -1422,7 +1422,7 @@ down:
                 case SER_L_A_S:
                     GC_PROTECT(prev = cons(b, fixnum_of_int(0)));
                     if (c & 1) reader_repeat_new(prev);
-                    *(std::atomic<LispObject>*)p = b = prev;
+                    *(atomic<LispObject>*)p = b = prev;
                     pbase = b;
                     p = (LispObject *)vcdraddr(b);
                     goto down;
@@ -1438,7 +1438,7 @@ down:
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(cdr(prev));
                     setcar(prev, b);
-                    b = *(std::atomic<LispObject>*)p = prev;
+                    b = *(atomic<LispObject>*)p = prev;
                     pbase = cdr(b);
                     p = (LispObject *)vcaraddr(pbase);
                     goto down;
@@ -1453,7 +1453,7 @@ down:
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(cdr(prev));
                     setcar(prev, b);
-                    b = *(std::atomic<LispObject>*)p = prev;
+                    b = *(atomic<LispObject>*)p = prev;
                     pbase = cdr(b);
                     setcar(pbase, b);
                     b = pbase;
@@ -1473,7 +1473,7 @@ down:
                     if (c & 2) reader_repeat_new(cdr(prev));
                     if (c & 4) reader_repeat_new(cdr(cdr(prev)));
                     setcar(prev, b);
-                    b = *(std::atomic<LispObject>*)p = prev;
+                    b = *(atomic<LispObject>*)p = prev;
                     pbase = cdr(b);
                     setcar(pbase, b);
                     b = pbase;
@@ -1494,7 +1494,7 @@ down:
                     if (c & 2) reader_repeat_new(cdr(prev));
                     if (c & 4) reader_repeat_new(cdr(cdr(prev)));
                     setcar(prev, b);
-                    b = *(std::atomic<LispObject>*)p = prev;
+                    b = *(atomic<LispObject>*)p = prev;
                     pbase = cdr(b);
                     setcar(pbase, b);
                     b = pbase;
@@ -1511,7 +1511,7 @@ down:
 // can be shared.
                     if (c & 1) reader_repeat_new(prev);
                     setcar(prev, b);
-                    b = *(std::atomic<LispObject>*)p = prev;
+                    b = *(atomic<LispObject>*)p = prev;
                     pbase = cdr(b);
                     setcar(pbase, b);
                     b = pbase;
@@ -1527,7 +1527,7 @@ down:
                     GC_PROTECT(prev = list4(nil, nil, nil, nil));
                     if (c & 1) reader_repeat_new(prev);
                     setcar(prev, b);
-                    b = *(std::atomic<LispObject>*)p = prev;
+                    b = *(atomic<LispObject>*)p = prev;
                     pbase = cdr(b);
                     setcar(pbase, b);
                     b = pbase;
@@ -1558,7 +1558,7 @@ down:
 // and so on using 7 bits per byte... up until I have used 8 bytes.
 // If one is needed beyond that it can be a final 8-bit value.
 // This allows for up to 2^64 back-references.
-                    *(std::atomic<LispObject>*)p = reader_repeat_old(1 + 64 + read_u64());
+                    *(atomic<LispObject>*)p = reader_repeat_old(1 + 64 + read_u64());
                     goto up;
 
                 case SER_DUP:
@@ -1592,7 +1592,7 @@ down:
 // they needed to be bignums. Since they are immutable objects I do not
 // believe that should cause any trouble.
                     GC_PROTECT(prev = make_lisp_unsigned64(repeat_arg));
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     goto up;
 
                 case SER_NEGFIXNUM:
@@ -1609,7 +1609,7 @@ down:
                         repeat_arg_ready = true;
                     }
                     GC_PROTECT(prev = make_lisp_integer64(repeat_arg));
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     goto up;
 
                 case SER_DUPRAWSYMBOL:
@@ -1624,7 +1624,7 @@ down:
                     assert(opcode_repeats == 0);
                     GC_PROTECT(prev =
                         get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length));
-                    *(std::atomic<LispObject>*)p = w = prev;
+                    *(atomic<LispObject>*)p = w = prev;
                     if (c == SER_DUPRAWSYMBOL) reader_repeat_new(prev);
 // Note that the vector as created will have its LENGTH encoded in the
 // header, but for symbols that is incorrect so I need to re-write the
@@ -1670,7 +1670,7 @@ down:
 // pergaps very often just "G", and the name read in will be set up as
 // if not yet printed, so a sequence number will be added leter.
                     assert(opcode_repeats == 0);
-                    {   std::size_t len = read_u64();
+                    {   size_t len = read_u64();
                         boffop = 0;
 // HAHAHA - if BOFFO does not exist properly at this stage then I am in
 // deep trouble. But these opcodes will only be used at times I am
@@ -1681,7 +1681,7 @@ down:
 // Well what I say above is not quite true after all. Serialization is used
 // for FASL files, so a FASL file that used a symbol with an absurdly
 // long name could lead to boffo overflow here, triggering garbage collection.
-                        for (std::size_t i=0; i<len; i++)
+                        for (size_t i=0; i<len; i++)
                         {   if (boffop >=
                                 length_of_byteheader(vechdr(boffo))-CELL-8)
                             GC_PROTECT(packbyte(read_string_byte()));
@@ -1691,8 +1691,8 @@ down:
                         {   GC_PROTECT(prev = copy_string(boffo, boffop));
                             GC_PROTECT(prev = Lgensym1(nil, prev));
                         }
-                        else GC_PROTECT(prev = iintern(boffo, (std::int32_t)boffop, CP, 0));
-                        *(std::atomic<LispObject>*)p = prev;
+                        else GC_PROTECT(prev = iintern(boffo, (int32_t)boffop, CP, 0));
+                        *(atomic<LispObject>*)p = prev;
                         if (c == SER_DUPSYMBOL || c == SER_DUPGENSYM)
                             reader_repeat_new(prev);
                         goto up;
@@ -1708,7 +1708,7 @@ down:
 // a 32-bit single float
                     assert(opcode_repeats == 0);
                     GC_PROTECT(prev = make_boxfloat(read_f32(), TYPE_SINGLE_FLOAT));
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     goto up;
 
                 case SER_FLOAT64:
@@ -1719,7 +1719,7 @@ down:
 // But at present I think that will be an uncommon case with Reduce and so
 // I will give priority to other cases.
                     GC_PROTECT(prev = make_boxfloat(read_f64(), TYPE_DOUBLE_FLOAT));
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     goto up;
 
 #ifdef HAVE_SOFTFLOAT
@@ -1728,7 +1728,7 @@ down:
                     assert(opcode_repeats == 0);
                     GC_PROTECT(prev = make_boxfloat(0.0, TYPE_LONG_FLOAT));
                     long_float_val(prev) = read_f128();
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     goto up;
 #endif // HAVE_SOFTFLOAT
 
@@ -1753,20 +1753,20 @@ down:
                     {   repeat_arg = read_u64();
                         repeat_arg_ready = true;
                     }
-                    prev = *(std::atomic<LispObject>*)p = ((LispObject)repeat_arg<<(Tw+2)) | TAG_HDR_IMMED;
+                    prev = *(atomic<LispObject>*)p = ((LispObject)repeat_arg<<(Tw+2)) | TAG_HDR_IMMED;
                     goto up;
 
                 case SER_BITVEC:
                     assert(opcode_repeats == 0);
                     w = read_u64();
-                    {   std::size_t len = CELL + (w + 7)/8; // length in bytes
+                    {   size_t len = CELL + (w + 7)/8; // length in bytes
                         GC_PROTECT(prev =
                             get_basic_vector(TAG_VECTOR, bitvechdr_(w), len));
-                        *(std::atomic<LispObject>*)p = prev;
+                        *(atomic<LispObject>*)p = prev;
                         char *x = (char *)&basic_celt(prev, 0);
-                        for (std::size_t i=0; i<(std::size_t)w; i++)
+                        for (size_t i=0; i<(size_t)w; i++)
                             *x++ = read_data_byte();
-                        while (((std::intptr_t)x & 7) != 0) *x++ = 0;
+                        while (((intptr_t)x & 7) != 0) *x++ = 0;
                     }
                     goto up;
 
@@ -1778,7 +1778,7 @@ down:
                     opcode_repeats++;
                     c = SER_NIL;
                 case SER_NIL:
-                    prev = *(std::atomic<LispObject>*)p = nil;
+                    prev = *(atomic<LispObject>*)p = nil;
                     goto up;
 
                 case SER_END:
@@ -1825,9 +1825,9 @@ down:
 // The size here will be the number of Lisp items held in the vector, so
 // what I need to pass to get_basic_vector makes that into a byte count and
 // allows for the header word as well.
-                std::size_t n = read_u64();
+                size_t n = read_u64();
                 GC_PROTECT(prev = get_basic_vector(tag, type, CELL*(n+1)));
-                w = *(std::atomic<LispObject>*)p = prev;
+                w = *(atomic<LispObject>*)p = prev;
 // Note that the "vector" just created may be tagged with TAG_NUMBERS
 // rather than TAG_VECTOR, so I use the access macro "vselt" rather than
 // "elt" - and that survives whichever case I am in.
@@ -1835,10 +1835,10 @@ down:
 // and even number of words of data it will use a padder word to bring its
 // total size up to a 64-bit boundary. Tidy up that final word. This OUGHT
 // not to matter, but is still tidy.
-                std::size_t n1 = n;
+                size_t n1 = n;
 // In case there is a GC before I have finished filling in proper values
 // in the vector I will out in values that are at least safe.
-                for (std::size_t i=0; i<n1; i++) vselt(w, i) = fixnum_of_int(0);
+                for (size_t i=0; i<n1; i++) vselt(w, i) = fixnum_of_int(0);
 // If the vector does not have any content at all then I am now done.
                 if (n == 0) goto up;
                 if (is_mixed_header(vechdr(w))) n = 2;  // Ie elements 0, 1 and 2
@@ -1866,19 +1866,19 @@ down:
 // repeat-runs of "SER_BACKREF0 <1>" to reference the top item in the
 // repeat heap. The efford involved in supporting SER_REPEAT to compress
 // such sequences is minimal here, so I do so.
-            *(std::atomic<LispObject>*)p = reader_repeat_old(1 + (c & 0x1f));
+            *(atomic<LispObject>*)p = reader_repeat_old(1 + (c & 0x1f));
             goto up;
 
         case SER_BACKREF1:
 // I do not view repeated instances of BACKREF1 as significant, but it is
 // so cheap to support that I will.
-            *(std::atomic<LispObject>*)p = reader_repeat_old(1 + 32 + (c & 0x1f));
+            *(atomic<LispObject>*)p = reader_repeat_old(1 + 32 + (c & 0x1f));
             goto up;
 
         case SER_FIXNUM:
             repeat_arg = c & 0x1f;
-            if ((c & 0x10) != 0) repeat_arg |= (std::uint64_t)~0xf; // sign extend
-            *(std::atomic<LispObject>*)p = fixnum_of_int((std::int64_t)repeat_arg);
+            if ((c & 0x10) != 0) repeat_arg |= (uint64_t)~0xf; // sign extend
+            *(atomic<LispObject>*)p = fixnum_of_int((int64_t)repeat_arg);
             goto up;
 
         case SER_STRING:
@@ -1890,13 +1890,13 @@ down:
             assert(opcode_repeats == 0);
             w = (c & 0x1f) + 1;
             GC_PROTECT(prev = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
-            *(std::atomic<LispObject>*)p = prev;
+            *(atomic<LispObject>*)p = prev;
             {   char *x = (char *)&basic_celt(prev, 0);
-                for (std::size_t i=0; i<(std::size_t)w; i++) *x++ = read_string_byte();
+                for (size_t i=0; i<(size_t)w; i++) *x++ = read_string_byte();
 // Fill in end of the memory block with zero bytes so it is properly tidy.
 // This is needed so that comaprisons between strings and hash value
 // calculations are easier.
-                while (((std::intptr_t)x & 7) != 0) *x++ = 0;
+                while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
             goto up;
 
@@ -1922,54 +1922,54 @@ down:
                                                    TAG_VECTOR;
                 if (vector_i8(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+w));
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     unsigned char *x = (unsigned char *)start_contents(prev);
                     if (is_string_header(type))
-                        for (std::size_t i=0; i<(std::size_t)w; i++)
+                        for (size_t i=0; i<(size_t)w; i++)
                             *x++ = read_string_byte();
-                    else for (std::size_t i=0; i<(std::size_t)w; i++)
+                    else for (size_t i=0; i<(size_t)w; i++)
                         *x++ = read_data_byte();
-                    while (((std::intptr_t)x & 7) != 0) *x++ = 0;
+                    while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_i32(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+4*w));
-                    *(std::atomic<LispObject>*)p = prev;
-                    std::uint32_t *x = (std::uint32_t *)start_contents(prev);
+                    *(atomic<LispObject>*)p = prev;
+                    uint32_t *x = (uint32_t *)start_contents(prev);
 // 32-bit integers are transmitted most significant byte first.
-                    for (std::size_t i=0; i<(std::size_t)w; i++)
-                    {   std::uint32_t q = read_data_byte() & 0xff;
+                    for (size_t i=0; i<(size_t)w; i++)
+                    {   uint32_t q = read_data_byte() & 0xff;
                         q = (q << 8) | (read_data_byte() & 0xff);
                         q = (q << 8) | (read_data_byte() & 0xff);
                         *x++ = (q << 8) | (read_data_byte() & 0xff);
                     }
-                    while (((std::intptr_t)x & 7) != 0) *x++ = 0;
+                    while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_f64(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+8*w));
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     double *x = (double *)start_contents64(prev);
 // There has to be a padder word in these objects on a 32-bit machine so
 // that the data is 64-bit aligned. Clean it up.
-                    if (!SIXTY_FOUR_BIT) *(std::int32_t *)start_contents(prev) = 0;
-                    for (std::size_t i=0; i<(std::size_t)w; i++) *x++ = read_f64();
+                    if (!SIXTY_FOUR_BIT) *(int32_t *)start_contents(prev) = 0;
+                    for (size_t i=0; i<(size_t)w; i++) *x++ = read_f64();
                 }
                 else if (vector_i16(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+2*w));
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     std::uint16_t *x = (std::uint16_t *)start_contents(prev);
-                    for (std::size_t i=0; i<(std::size_t)w; i++)
-                    {   std::uint32_t q = read_data_byte() & 0xff;
+                    for (size_t i=0; i<(size_t)w; i++)
+                    {   uint32_t q = read_data_byte() & 0xff;
                         *x++ = (q << 8) | (read_data_byte() & 0xff);
                     }
-                    while (((std::intptr_t)x & 7) != 0) *x++ = 0;
+                    while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_i64(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+8*w));
-                    *(std::atomic<LispObject>*)p = prev;
-                    std::uint64_t *x = (std::uint64_t *)start_contents64(prev);
-                    if (!SIXTY_FOUR_BIT) *(std::int32_t *)start_contents(prev) = 0;
-                    for (std::size_t i=0; i<(std::size_t)w; i++)
-                    {   std::uint64_t q = read_data_byte() & 0xff;
+                    *(atomic<LispObject>*)p = prev;
+                    uint64_t *x = (uint64_t *)start_contents64(prev);
+                    if (!SIXTY_FOUR_BIT) *(int32_t *)start_contents(prev) = 0;
+                    for (size_t i=0; i<(size_t)w; i++)
+                    {   uint64_t q = read_data_byte() & 0xff;
                         q = (q << 8) | (read_data_byte() & 0xff);
                         q = (q << 8) | (read_data_byte() & 0xff);
                         q = (q << 8) | (read_data_byte() & 0xff);
@@ -1981,22 +1981,22 @@ down:
                 }
                 else if (vector_f32(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+4*w));
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     float *x = (float *)start_contents(prev);
-                    for (std::size_t i=0; i<(std::size_t)w; i++) *x++ = read_f32();
-                    while (((std::intptr_t)x & 7) != 0) *x++ = 0;
+                    for (size_t i=0; i<(size_t)w; i++) *x++ = read_f32();
+                    while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
 #ifdef HAVE_SOFTFLOAT
                 else if (vector_f128(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     std::fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
                     my_abort();
                 }
 #endif // HAVE_SOFTFLOAT
                 else if (vector_i128(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
-                    *(std::atomic<LispObject>*)p = prev;
+                    *(atomic<LispObject>*)p = prev;
                     std::fprintf(stderr, "128-bit floats not supported (yet?)\n");
                     my_abort();
                 }
@@ -2046,10 +2046,10 @@ up:
         simple_print(car(s));
         my_abort();
     }
-    std::intptr_t n = int_of_fixnum(car(s)) - 1;
+    intptr_t n = int_of_fixnum(car(s)) - 1;
     if (n < 0)
     {   std::fprintf(stderr, "car s negative at line %d in serialize.cpp\n", __LINE__);
-        std::fprintf(stderr, "car(s) = %" PRIx64 " in raw hex\n", (std::int64_t)car(s));
+        std::fprintf(stderr, "car(s) = %" PRIx64 " in raw hex\n", (int64_t)car(s));
         std::fprintf(stderr, "value of car(s) as list: ");
         simple_print(car(s));
         my_abort();
@@ -2124,27 +2124,27 @@ static std::uint8_t *****used_map[1024] = {NULL};
 
 // Test if an address is marked as in use.
 
-static int address_used(std::uint64_t addr)
+static int address_used(uint64_t addr)
 {   unsigned int i = (unsigned int)(addr >> 54);
     std::uint8_t *****m1 = used_map[i];
     if (m1 == NULL) return 0;
-    addr -= ((std::uint64_t)i) << 54;   // offset in page
+    addr -= ((uint64_t)i) << 54;   // offset in page
     i = (unsigned int)(addr >> 45);
     std::uint8_t ****m2 = m1[i];
     if (m2 == NULL) return 0;
-    addr -= ((std::uint64_t)i) << 45;
+    addr -= ((uint64_t)i) << 45;
     i = (unsigned int)(addr >> 36);
     std::uint8_t ***m3 = m2[i];
     if (m3 == NULL) return 0;
-    addr -= ((std::uint64_t)i) << 36;
+    addr -= ((uint64_t)i) << 36;
     i = (unsigned int)(addr >> 27);
     std::uint8_t **m4 = m3[i];
     if (m4 == NULL) return 0;
-    addr -= ((std::uint64_t)i) << 27;
+    addr -= ((uint64_t)i) << 27;
     i = (unsigned int)(addr >> 18);
     std::uint8_t *m5 = m4[i];
     if (m5 == NULL) return 0;
-    addr -= ((std::uint64_t)i) << 18;
+    addr -= ((uint64_t)i) << 18;
 // Now addr is just an 18-bit number. Discard the low 3 bits
     addr >>= 3;
 //  fprintf(stderr, "address-used %" PRIxPTR " = %d\n", (uintptr_t)addr,
@@ -2189,28 +2189,28 @@ static std::uint8_t *new_final_map_block()
 // it should ever consume should be under 50 Mbytes and on a small machine
 // such as a 512 Mbyte Raspberry pi it ought to use under 10 Mbytes.
 
-static void mark_address_as_used(std::uint64_t addr)
+static void mark_address_as_used(uint64_t addr)
 {
     unsigned int i = (unsigned int)(addr >> 54);
     std::uint8_t *****m1 = used_map[i];
     if (m1 == NULL) used_map[i] = m1 = (std::uint8_t *****)new_map_block();
-    addr -= ((std::uint64_t)i) << 54;   // offset in page
+    addr -= ((uint64_t)i) << 54;   // offset in page
     i = (unsigned int)(addr >> 45);
     std::uint8_t ****m2 = m1[i];
     if (m2 == NULL) m1[i] = m2 = (std::uint8_t ****)new_map_block();
-    addr -= ((std::uint64_t)i) << 45;
+    addr -= ((uint64_t)i) << 45;
     i = (unsigned int)(addr >> 36);
     std::uint8_t ***m3 = m2[i];
     if (m3 == NULL) m2[i] = m3 = (std::uint8_t ***)new_map_block();
-    addr -= ((std::uint64_t)i) << 36;
+    addr -= ((uint64_t)i) << 36;
     i = (unsigned int)(addr >> 27);
     std::uint8_t **m4 = m3[i];
     if (m4 == NULL) m3[i] = m4 = (std::uint8_t **)new_map_block();
-    addr -= ((std::uint64_t)i) << 27;
+    addr -= ((uint64_t)i) << 27;
     i = (unsigned int)(addr >> 18);
     std::uint8_t *m5 = m4[i];
     if (m5 == NULL) m4[i] = m5 = new_final_map_block();
-    addr -= ((std::uint64_t)i) << 18;
+    addr -= ((uint64_t)i) << 18;
 // Now addr is just an 18-bit number. Discard the low 3 bits
     addr >>= 3;
     m5[addr >> 3] |= (1 << (addr & 7));
@@ -2293,7 +2293,7 @@ char trigger[40] = "unknown";
 
 void scan_data(LispObject p)
 {   LispObject b = 0 + BACKPOINTER_CAR, w;
-    std::uintptr_t len;
+    uintptr_t len;
     Header h;
 down:
     if (p == 0)
@@ -2515,24 +2515,24 @@ up:
 
 void write_data(LispObject p)
 {   LispObject b = 0 + BACKPOINTER_CAR, w;
-    std::uintptr_t len;
-    std::int64_t w64;
+    uintptr_t len;
+    int64_t w64;
     Header h;
     LispObject tail1, tail2, tail3, tail4;
-    std::size_t i;
-    std::size_t i2=-1, i3=-1, i4=-1;
+    size_t i;
+    size_t i2=-1, i3=-1, i4=-1;
 down:
     if (p == 0) p = SPID_NIL; // reload as a SPID.
     else if (p == nil)
     {   write_delayed(SER_NIL, "nil");
         goto up;
     }
-    if ((i = hash_lookup(&repeat_hash, p)) != (std::size_t)(-1))
+    if ((i = hash_lookup(&repeat_hash, p)) != (size_t)(-1))
     {   if (hash_get_value(&repeat_hash, i) != 0)
-        {   std::size_t n = find_index_in_repeats(i);
+        {   size_t n = find_index_in_repeats(i);
             char msg[40];
 #ifdef DEBUG_SERIALIZE
-            std::sprintf(msg, "back %" PRIuPTR, (std::uintptr_t)n);
+            std::sprintf(msg, "back %" PRIuPTR, (uintptr_t)n);
 #endif // DEBUG_SERIALIZE
             if (n <= 32) write_delayed(SER_BACKREF0 + n - 1, msg);
             else if (n <= 64) write_delayed(SER_BACKREF1 + n - 33, msg);
@@ -2566,7 +2566,7 @@ down:
 //         (CONS a nil)
 //         (CONS b a)
 // niltail will do what is sort of obvious from its name
-            i2 = i3 = i4 = (std::size_t)(-1);
+            i2 = i3 = i4 = (size_t)(-1);
             tail1 = cdr(p);
 // Let me talk through the logic of the next lines. I will consider the tail
 // of the list something I can consolidate into one of my more elaborate
@@ -2588,7 +2588,7 @@ down:
 //
 // First check if the case that I have is (CONS a nil)...
             if (tail1 == nil)
-            {   if (i != (std::size_t)-1)
+            {   if (i != (size_t)-1)
                     write_delayed(SER_L_A, "ncons that will be re-used");
                 else write_delayed(SER_L_a, "ncons");
                 w = p;
@@ -2602,10 +2602,10 @@ down:
 // then I do not have scope for further optimisaion so use just the SER_CONS
 // code.
             if (!is_cons(tail1) ||
-                ((i2 = hash_lookup(&repeat_hash, tail1)) != (std::size_t)(-1) &&
+                ((i2 = hash_lookup(&repeat_hash, tail1)) != (size_t)(-1) &&
                  hash_get_value(&repeat_hash, i2) != 0))
             {   // Write out just (CONS b a)
-                if (i != (std::size_t)-1)
+                if (i != (size_t)-1)
                     write_delayed(SER_L_A_S, "cons that will be re-used");
                 else write_delayed(SER_L_a_S, "cons");
                 w = p;
@@ -2621,10 +2621,10 @@ down:
 // Here the case I have is (LIST b a) and either or both of the CONS cells
 // concerned may need to be entered into the table of shared items.
                 write_delayed(
-                   i==(std::size_t)(-1) ?
-                     (i2==(std::size_t)(-1) ? SER_L_aa : SER_L_aA) :
-                     (i2==(std::size_t)(-1) ? SER_L_Aa : SER_L_AA), "list2");
-                if (i2 != (std::size_t)(-1)) find_index_in_repeats(i2);
+                   i==(size_t)(-1) ?
+                     (i2==(size_t)(-1) ? SER_L_aa : SER_L_aA) :
+                     (i2==(size_t)(-1) ? SER_L_Aa : SER_L_AA), "list2");
+                if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
                 setcdr(p, b);
                 b = p - TAG_CONS + BACKPOINTER_CDR;
                 p = car(tail1);
@@ -2637,13 +2637,13 @@ down:
 // more.
             if (!is_cons(tail2) ||
                 tail2 == tail1 ||
-                ((i3 = hash_lookup(&repeat_hash, tail2)) != (std::size_t)(-1) &&
+                ((i3 = hash_lookup(&repeat_hash, tail2)) != (size_t)(-1) &&
                   hash_get_value(&repeat_hash, i3) != 0))
             {   write_delayed(
-                   i==(std::size_t)(-1) ?
-                     (i2==(std::size_t)(-1) ? SER_L_aa_S : SER_L_aA_S) :
-                     (i2==(std::size_t)(-1) ? SER_L_Aa_S : SER_L_AA_S), "list2*");
-                if (i2 != (std::size_t)(-1)) find_index_in_repeats(i2);
+                   i==(size_t)(-1) ?
+                     (i2==(size_t)(-1) ? SER_L_aa_S : SER_L_aA_S) :
+                     (i2==(size_t)(-1) ? SER_L_Aa_S : SER_L_AA_S), "list2*");
+                if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
                 setcdr(p, b);
                 b = p - TAG_CONS + BACKPOINTER_CDR;
                 p = tail2;
@@ -2654,15 +2654,15 @@ down:
             tail3 = cdr(tail2);
             if (tail3 == nil)
             {   write_delayed(
-                   i==(std::size_t)(-1) ?
-                     (i2==(std::size_t)(-1) ?
-                       (i3==(std::size_t)(-1) ? SER_L_aaa : SER_L_aaA) :
-                       (i3==(std::size_t)(-1) ? SER_L_aAa : SER_L_aAA)) :
-                     (i2==(std::size_t)(-1) ?
-                       (i3==(std::size_t)(-1) ? SER_L_Aaa : SER_L_AaA) :
-                       (i3==(std::size_t)(-1) ? SER_L_AAa : SER_L_AAA)), "list3");
-                if (i2 != (std::size_t)(-1)) find_index_in_repeats(i2);
-                if (i3 != (std::size_t)(-1)) find_index_in_repeats(i3);
+                   i==(size_t)(-1) ?
+                     (i2==(size_t)(-1) ?
+                       (i3==(size_t)(-1) ? SER_L_aaa : SER_L_aaA) :
+                       (i3==(size_t)(-1) ? SER_L_aAa : SER_L_aAA)) :
+                     (i2==(size_t)(-1) ?
+                       (i3==(size_t)(-1) ? SER_L_Aaa : SER_L_AaA) :
+                       (i3==(size_t)(-1) ? SER_L_AAa : SER_L_AAA)), "list3");
+                if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
+                if (i3 != (size_t)(-1)) find_index_in_repeats(i3);
                 setcdr(p, b);
                 b = p - TAG_CONS + BACKPOINTER_CDR;
                 setcdr(tail1, b);
@@ -2678,21 +2678,21 @@ down:
             if (!is_cons(tail3) ||
                 tail3 == tail2 ||
                 tail3 == tail1 ||
-                i2 != (std::size_t)(-1) ||
-                i3 != (std::size_t)(-1) ||
-                ((i4 = hash_lookup(&repeat_hash, tail3)) != (std::size_t)(-1) &&
+                i2 != (size_t)(-1) ||
+                i3 != (size_t)(-1) ||
+                ((i4 = hash_lookup(&repeat_hash, tail3)) != (size_t)(-1) &&
                  hash_get_value(&repeat_hash, i4) != 0))
             {   write_delayed(
-                   i==(std::size_t)(-1) ?
-                     (i2==(std::size_t)(-1) ?
-                       (i3==(std::size_t)(-1) ? SER_L_aaa_S : SER_L_aaA_S) :
-                       (i3==(std::size_t)(-1) ? SER_L_aAa_S : SER_L_aAA_S)) :
-                     (i2==(std::size_t)(-1) ?
-                       (i3==(std::size_t)(-1) ? SER_L_Aaa_S : SER_L_AaA_S) :
-                       (i3==(std::size_t)(-1) ? SER_L_AAa_S : SER_L_AAA_S)),
+                   i==(size_t)(-1) ?
+                     (i2==(size_t)(-1) ?
+                       (i3==(size_t)(-1) ? SER_L_aaa_S : SER_L_aaA_S) :
+                       (i3==(size_t)(-1) ? SER_L_aAa_S : SER_L_aAA_S)) :
+                     (i2==(size_t)(-1) ?
+                       (i3==(size_t)(-1) ? SER_L_Aaa_S : SER_L_AaA_S) :
+                       (i3==(size_t)(-1) ? SER_L_AAa_S : SER_L_AAA_S)),
                     "list3*");
-                if (i2 != (std::size_t)(-1)) find_index_in_repeats(i2);
-                if (i3 != (std::size_t)(-1)) find_index_in_repeats(i3);
+                if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
+                if (i3 != (size_t)(-1)) find_index_in_repeats(i3);
                 setcdr(p, b);
                 b = p - TAG_CONS + BACKPOINTER_CDR;
                 setcdr(tail1, b);
@@ -2705,7 +2705,7 @@ down:
             tail4 = cdr(tail3);
             if (tail4 == nil)
             {   write_delayed(
-                   i==(std::size_t)(-1) ? SER_L_aaaa : SER_L_Aaaa, "list4");
+                   i==(size_t)(-1) ? SER_L_aaaa : SER_L_Aaaa, "list4");
                 setcdr(p, b);
                 b = p - TAG_CONS + BACKPOINTER_CDR;
                 setcdr(tail1, b);
@@ -2718,7 +2718,7 @@ down:
                 goto down;
             }
             write_delayed(
-                   i==(std::size_t)(-1) ? SER_L_aaaa_S : SER_L_Aaaa_S, "list4*");
+                   i==(size_t)(-1) ? SER_L_aaaa_S : SER_L_Aaaa_S, "list4*");
             setcdr(p, b);
             b = p - TAG_CONS + BACKPOINTER_CDR;
             setcdr(tail1, b);
@@ -2735,7 +2735,7 @@ down:
             {   w = qpname(p);
                 char msg[40];
                 bool isgensym = false;
-                std::size_t n = length_of_byteheader(vechdr(w)) - CELL;
+                size_t n = length_of_byteheader(vechdr(w)) - CELL;
 // If I have a gensym that has been printed then its pname field
 // holds a string of the form
 //      GGGnnnn_nnn_nnn_nnn
@@ -2747,39 +2747,39 @@ down:
                     n -= 4;
                 }
                 if (isgensym)
-                {   if (i != (std::size_t)-1)
+                {   if (i != (size_t)-1)
                     {
 #ifdef DEBUG_SERIALIZE
-                        std::sprintf(msg, "dup-gensym, length=%" PRIuPTR, (std::uintptr_t)n);
+                        std::sprintf(msg, "dup-gensym, length=%" PRIuPTR, (uintptr_t)n);
 #endif // DEBUG_SERIALIZE
                         write_opcode(SER_DUPGENSYM, msg);
                     }
                     else
                     {
 #ifdef DEBUG_SERIALIZE
-                        std::sprintf(msg, "gensym, length=%" PRIuPTR, (std::uintptr_t)n);
+                        std::sprintf(msg, "gensym, length=%" PRIuPTR, (uintptr_t)n);
 #endif // DEBUG_SERIALIZE
                         write_opcode(SER_GENSYM, msg);
                     }
                 }
                 else
-                {   if (i != (std::size_t)-1)
+                {   if (i != (size_t)-1)
                     {
 #ifdef DEBUG_SERIALIZE
-                        std::sprintf(msg, "dup-symbol, length=%" PRIuPTR, (std::uintptr_t)n);
+                        std::sprintf(msg, "dup-symbol, length=%" PRIuPTR, (uintptr_t)n);
 #endif // DEBUG_SERIALIZE
                         write_opcode(SER_DUPSYMBOL, msg);
                     }
                     else
                     {
 #ifdef DEBUG_SERIALIZE
-                        std::sprintf(msg, "symbol, length=%" PRIuPTR, (std::uintptr_t)n);
+                        std::sprintf(msg, "symbol, length=%" PRIuPTR, (uintptr_t)n);
 #endif // DEBUG_SERIALIZE
                         write_opcode(SER_SYMBOL, msg);
                     }
                 }
                 write_u64(n);  // number of bytes in the name
-                for (std::size_t i=0; i<n; i++)
+                for (size_t i=0; i<n; i++)
                 {   int c = basic_celt(w, i) & 0xff;
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
@@ -2790,14 +2790,14 @@ down:
                 }
                 goto up;
             }
-            if (i != (std::size_t)-1)
+            if (i != (size_t)-1)
                 write_opcode(SER_DUPRAWSYMBOL, "raw symbol header");
             else write_opcode(SER_RAWSYMBOL, "raw symbol header");
 // Here I need to cope with the tagging bits and function cells, and
 // the count field... Each of these uses a variable length coding scheme that
 // will be 1 byte long in easy cases but can cope with 2^64 possibilities in
 // all if necessary.
-            write_u64(((std::uint64_t)qheader(p))>>(Tw+4));
+            write_u64(((uint64_t)qheader(p))>>(Tw+4));
             write_function((void *)(no_args *)(qfn0(p)));
             write_function((void *)(one_arg *)(qfn1(p)));
             write_function((void *)(two_args *)(qfn2(p)));
@@ -2823,7 +2823,7 @@ down:
             write_u64(length_of_header(h)/CELL - 1);
 // Observe that for vectors containing List data the DUP comes after the
 // SER_LVECTOR opcode but before the sequences that fill in vector contents.
-            if (i != (std::size_t)-1)
+            if (i != (size_t)-1)
                 write_opcode(SER_DUP, "repeatedly referenced vector");
 // For now the data beyond the 3 list-holding items in a MIXED structure
 // will not be dumped. I may need to review that later on.
@@ -2848,10 +2848,10 @@ down:
                 len != 0)
             {   char msg[40];
 #ifdef DEBUG_SERIALIZE
-                std::sprintf(msg, "string, length=%" PRIuPTR, (std::intptr_t)len);
+                std::sprintf(msg, "string, length=%" PRIuPTR, (intptr_t)len);
 #endif // DEBUG_SERIALIZE
                 write_opcode(SER_STRING+len-1, msg);
-                for (std::size_t j=0; j<len; j++)
+                for (size_t j=0; j<len; j++)
                 {   int c = basic_ucelt(p, j);
 #ifdef DEBUG_SERIALIZE
                     if (0x20 < c && c <= 0x7e) std::sprintf(msg, "'%c'", c);
@@ -2859,19 +2859,19 @@ down:
 #endif // DEBUG_SERIALIZE
                     write_byte(c, msg);
                 }
-                if (i != (std::size_t)-1) write_opcode(SER_DUP, "dup string");
+                if (i != (size_t)-1) write_opcode(SER_DUP, "dup string");
                 goto up;
             }
             else if (is_bitvec_header(h))
             {   char msg[40];
                 len = length_of_bitheader(h);
 #ifdef DEBUG_SERIALIZE
-                std::sprintf(msg, "bitvec, length=%" PRIuPTR, (std::intptr_t)len);
+                std::sprintf(msg, "bitvec, length=%" PRIuPTR, (intptr_t)len);
 #endif // DEBUG_SERIALIZE
                 write_opcode(SER_BITVEC, msg);
                 write_u64(len);
                 len = (len + 7)/8;
-                for (std::size_t j=0; j<len; j++)
+                for (size_t j=0; j<len; j++)
                 {   int c = basic_ucelt(p, j);
 #ifdef DEBUG_SERIALIZE
                     for (int k=0; k<8; k++)
@@ -2880,7 +2880,7 @@ down:
 #endif // DEBUG_SERIALIZE
                     write_byte(c, msg);
                 }
-                if (i != (std::size_t)-1) write_opcode(SER_DUP, "dup bitvector");
+                if (i != (size_t)-1) write_opcode(SER_DUP, "dup bitvector");
                 goto up;
             }
 // If I have a big-integer that uses at most two (32-bit) words then
@@ -2895,7 +2895,7 @@ down:
 // int64_t to ensure that the sign gets propagated the way I need it to.
             else if (is_bignum_header(h))
             {   if (length_of_header(h) == CELL+4)
-                {   std::int64_t n = (std::int32_t)bignum_digits(p)[0];
+                {   int64_t n = (int32_t)bignum_digits(p)[0];
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
                     std::sprintf(msg, "int value=%" PRId64, n);
@@ -2903,12 +2903,12 @@ down:
                     if (n < 0)
                         write_delayed_with_arg(SER_NEGFIXNUM, -n-1, msg);
                     else write_delayed_with_arg(SER_POSFIXNUM, n, msg);
-                    if (i != (std::size_t)-1) write_opcode(SER_DUP, "dup bignum");
+                    if (i != (size_t)-1) write_opcode(SER_DUP, "dup bignum");
                     goto up;
                 }
                 else if (length_of_header(h) == CELL+8)
-                {   std::int64_t n = (std::int32_t)bignum_digits(p)[0] |
-                                ((std::int64_t)(std::int32_t)bignum_digits(p)[1] << 31);
+                {   int64_t n = (int32_t)bignum_digits(p)[0] |
+                                ((int64_t)(int32_t)bignum_digits(p)[1] << 31);
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
                     std::sprintf(msg, "int value=%" PRId64, n);
@@ -2919,7 +2919,7 @@ down:
                     if (n < 0)
                         write_delayed_with_arg(SER_NEGFIXNUM, -n-1, msg);
                     else write_delayed_with_arg(SER_POSFIXNUM, n, msg);
-                    if (i != (std::size_t)-1) write_opcode(SER_DUP, "dup bignum");
+                    if (i != (size_t)-1) write_opcode(SER_DUP, "dup bignum");
                     goto up;
                 }
 // I will treat bignums with 3 or more words using a general scheme
@@ -2958,16 +2958,16 @@ down:
 // but since they are just for debugging that seems like too much work
 // for today. I also transmit as unsigned bytes regardless of whether the
 // final use will be signed or unsigned.
-                for (std::size_t i=0; i<len; i++)
+                for (size_t i=0; i<len; i++)
                     write_byte(*x++, "part of vec8/string");
             }
             else if (vector_i32(h))
-            {   std::uint32_t *x = (std::uint32_t *)start_contents(p);
+            {   uint32_t *x = (uint32_t *)start_contents(p);
 // The packed length is the length in words.
                 write_u64(len = (length_of_header(h) - CELL)/4);
 // 32-bit integers are transmitted most significant byte first.
-                for (std::size_t i=0; i<len; i++)
-                {   std::uint32_t q = *x++;
+                for (size_t i=0; i<len; i++)
+                {   uint32_t q = *x++;
                     write_byte((q>>24) & 0xff, "high byte");
                     write_byte((q>>16) & 0xff, "3");
                     write_byte((q>>8) & 0xff, "2");
@@ -2977,23 +2977,23 @@ down:
             else if (vector_f64(h))
             {   double *x = (double *)start_contents64(p);
                 write_u64(len = (length_of_header(h) - CELL)/8);
-                for (std::size_t i=0; i<len; i++) write_f64(*x++);
+                for (size_t i=0; i<len; i++) write_f64(*x++);
             }
             else if (vector_i16(h))
             {   std::uint16_t *x = (std::uint16_t *)start_contents(p);
                 write_u64(len = length_of_hwordheader(h) - CELL/2);
-                for (std::size_t i=0; i<len; i++)
-                {   std::uint32_t q = *x++;
+                for (size_t i=0; i<len; i++)
+                {   uint32_t q = *x++;
                     write_byte((q>>8) & 0xff, "high byte");
                     write_byte(q & 0xff, "low byte");
                 }
             }
             else if (vector_i64(h))
-            {   std::uint64_t *x = (std::uint64_t *)start_contents64(p);
+            {   uint64_t *x = (uint64_t *)start_contents64(p);
                 write_u64(len = (length_of_header(h) - CELL)/8);
 // 64-bit integers are transmitted most significant byte first.
-                for (std::size_t i=0; i<len/8; i++)
-                {   std::uint64_t q = *x++;
+                for (size_t i=0; i<len/8; i++)
+                {   uint64_t q = *x++;
                     write_byte((q>>56) & 0xff, "high byte");
                     write_byte((q>>48) & 0xff, "7");
                     write_byte((q>>40) & 0xff, "6");
@@ -3007,7 +3007,7 @@ down:
             else if (vector_f32(h))
             {   float *x = (float *)start_contents(p);
                 write_u64(len = (length_of_header(h) - CELL)/4);
-                for (std::size_t i=0; i<len/4; i++) write_f32(*x++);
+                for (size_t i=0; i<len/4; i++) write_f32(*x++);
             }
 #ifdef HAVE_SOFTFLOAT
             else if (vector_f128(h))
@@ -3023,7 +3023,7 @@ down:
             {   std::fprintf(stderr, "Vector code is impossible\n");
                 my_abort();
             }
-            if (i != (std::size_t)-1)
+            if (i != (size_t)-1)
                 write_opcode(SER_DUP, "repeatedly ref. vector");
             goto up;
 
@@ -3067,7 +3067,7 @@ down:
                     std::fprintf(stderr, "floating point representation not recognized\n");
                     my_abort();
             }
-            if (i != (std::size_t)-1)
+            if (i != (size_t)-1)
                 write_opcode(SER_DUP, "repeatedly referenced vector");
 // A boxed float never contains further pointers, so there is no more
 // to do here.
@@ -3097,9 +3097,9 @@ down:
         case TAG_HDR_IMMED:
 // Immediate data (eg characters and SPIDs).
         {   char msg[40];
-            std::uint64_t nn = ((std::uint64_t)p) >> (Tw+2);
+            uint64_t nn = ((uint64_t)p) >> (Tw+2);
 #ifdef DEBUG_SERIALIZE
-            std::sprintf(msg, "char/spid, value=%#" PRIx64, (std::uint64_t)p);
+            std::sprintf(msg, "char/spid, value=%#" PRIx64, (uint64_t)p);
 #endif // DEBUG_SERIALIZE
             write_delayed_with_arg(SER_CHARSPID, nn, msg);
         }
@@ -3301,7 +3301,7 @@ static LispObject load_module(LispObject env, LispObject file,
 {   save_current_function saver(env);
     char filename[LONGEST_LEGAL_FILENAME];
     Header h;
-    std::size_t len;
+    size_t len;
     bool from_stream = false;
     char *modname;
     std::memset(filename, 0, sizeof(filename));
@@ -3346,7 +3346,7 @@ static LispObject load_module(LispObject env, LispObject file,
 // overhead to be counted as "garbage collector time" rather than
 // regular "cpu time"
 //
-    std::uint64_t t0 = read_clock();
+    uint64_t t0 = read_clock();
     if (verbos_flag & 2)
     {   freshline_trace();
         if (option != F_LOAD_MODULE)
@@ -3364,9 +3364,9 @@ static LispObject load_module(LispObject env, LispObject file,
     class serializer_tidy
     {   LispObject *save;
         bool from_stream;
-        std::uint64_t t0b;
+        uint64_t t0b;
     public:
-        serializer_tidy(bool fg, std::uint64_t t0a)
+        serializer_tidy(bool fg, uint64_t t0a)
         {   save = stack;
             from_stream = fg;
             t0b = t0a;
@@ -3387,7 +3387,7 @@ static LispObject load_module(LispObject env, LispObject file,
                 pop(p);
                 setvalue(standard_input, p);
             }
-            std::uint64_t delta = read_clock() - t0b;
+            uint64_t delta = read_clock() - t0b;
             gc_time += delta;
             base_time += delta;
         }
@@ -3718,7 +3718,7 @@ void write_everything()
 }
 
 void warm_setup()
-{   std::size_t i;
+{   size_t i;
     set_up_function_tables();
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
     for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
@@ -3731,11 +3731,11 @@ void warm_setup()
     setplist(nil, nil);
     setfastgets(nil, nil);
     setpackage(nil, nil);
-    ifn0(nil) = (std::intptr_t)undefined_0;
-    ifn1(nil) = (std::intptr_t)undefined_1;
-    ifn2(nil) = (std::intptr_t)undefined_2;
-    ifn3(nil) = (std::intptr_t)undefined_3;
-    ifn4up(nil) = (std::intptr_t)undefined_4up;
+    ifn0(nil) = (intptr_t)undefined_0;
+    ifn1(nil) = (intptr_t)undefined_1;
+    ifn2(nil) = (intptr_t)undefined_2;
+    ifn3(nil) = (intptr_t)undefined_3;
+    ifn4up(nil) = (intptr_t)undefined_4up;
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
 
 #define boffo_size 256
@@ -3756,7 +3756,7 @@ void warm_setup()
     modulus_is_large = read_u64();
     trap_floating_overflow = read_u64();
 
-    std::uint64_t entrypt_checksum = read_u64();
+    uint64_t entrypt_checksum = read_u64();
     if (entrypt_checksum != function_crc)
     {
 // This was of reporting the problem is not neat, but may hold the fort
@@ -3766,7 +3766,7 @@ void warm_setup()
         std::fprintf(stderr, "do not match. Image made by incompatible version\n");
         my_exit(1);
     }
-    std::size_t repeatsize = read_u64();
+    size_t repeatsize = read_u64();
     reader_setup_repeats(repeatsize);
 
 // Now I can use serial_read...
@@ -3858,7 +3858,7 @@ typedef bool symbol_processor_predicate(LispObject);
 
 bool push_symbols(symbol_processor_predicate *pp, LispObject p)
 {   LispObject b = 0 + BACKPOINTER_CAR, w;
-    std::uintptr_t len;
+    uintptr_t len;
     Header h;
     bool fail = false;
     debug_record("push_symbols start");
@@ -3891,7 +3891,7 @@ down:
 //                      (int)length_of_byteheader(vechdr(pn))-CELL, &celt(pn, 0));
 //          }
 // I will stop 256 bytes before letting the stack overflow.
-            if ((std::uintptr_t)stack+256 < (std::uintptr_t)stackLimit)
+            if ((uintptr_t)stack+256 < (uintptr_t)stackLimit)
             {   if ((*pp)(p)) push(p);
             }
             else fail = true; // I must keep traversing to restore things.
@@ -4112,7 +4112,7 @@ LispObject Lall_symbols0(LispObject env)
 typedef struct mapstore_item
 {   double w;
     double n;
-    std::uint64_t n1;
+    uint64_t n1;
     char name[40]; // I will truncate names to 39 chars
 } mapstore_item;
 
@@ -4136,13 +4136,13 @@ static int profile_cf(const void *a, const void *b)
 static double itotal_count = 0.0, total_count = 0.0;
 
 static bool count_totals(LispObject x)
-{   std::uint64_t n = valueOfCount(qcount(x));
+{   uint64_t n = valueOfCount(qcount(x));
     if (n == 0) return false; // Ignore items with zero count
     LispObject e = qenv(x);
     if (is_cons(e))
     {   e = car(e);
         if (is_bps(e))
-        {   std::size_t clen = length_of_byteheader(vechdr(e)) - CELL;
+        {   size_t clen = length_of_byteheader(vechdr(e)) - CELL;
             double w = (double)n/(double)clen;
 //
 // Here I want a measure that will give a good idea of how worthwhile it
@@ -4187,7 +4187,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
 // 
 {   int what;
     mapstore_item *buff=NULL;
-    std::size_t buffp=0, buffn=0;
+    size_t buffp=0, buffn=0;
     if (a == nil) a = fixnum_of_int(0);
     if (is_fixnum(a)) what = int_of_fixnum(a);
     else what = 0;
@@ -4217,13 +4217,13 @@ LispObject Lmapstore(LispObject env, LispObject a)
         while (stack != savestack)
         {   LispObject x;
             x = stack[0];
-            std::uint64_t n = valueOfCount(qcount(x));
+            uint64_t n = valueOfCount(qcount(x));
             if (n == 0) continue;
             LispObject e = qenv(x);
             if (is_cons(e))
             {   e = car(e);
                 if (is_bps(e))
-                {   std::size_t clen = length_of_byteheader(vechdr(e)) - CELL;
+                {   size_t clen = length_of_byteheader(vechdr(e)) - CELL;
                     double w = (double)n/(double)clen;
                     if (w/total_count > 0.00001 ||
                         (double)n/itotal_count > 0.0001)
@@ -4239,7 +4239,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
                             buff[buffp].n = 100.0*(double)n/itotal_count;
                             buff[buffp].n1 = n;
                             LispObject pn = qpname(x);
-                            std::size_t npn = length_of_byteheader(vechdr(pn)) - CELL;
+                            size_t npn = length_of_byteheader(vechdr(pn)) - CELL;
                             if (npn >= 40) npn = 39;
                             std::strncpy(buff[buffp].name, (const char *)&basic_celt(pn, 0), npn);
                             buff[buffp].name[npn] = 0; 
@@ -4265,7 +4265,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
     {   double running = 0.0;
         std::qsort((void *)buff, buffp, sizeof(buff[0]), profile_cf);
         trace_printf("\n  Value  %%bytes (So far) MBytecodes Function name\n");
-        for (std::size_t j=0; j<buffp; j++)
+        for (size_t j=0; j<buffp; j++)
         {   running += buff[j].n;
             trace_printf("%7.2f %7.2f (%6.2f) %9lu: ",
                          buff[j].w, buff[j].n, running,

@@ -229,7 +229,7 @@ extern int PROC_push_string(const char *data);
 //      PROC_push_big_integer("-12345678901234567890");
 //
 
-extern int PROC_push_small_integer(std::int32_t n);
+extern int PROC_push_small_integer(int32_t n);
 
 extern int PROC_push_big_integer(const char *n);
 
@@ -332,7 +332,7 @@ extern PROC_handle PROC_rest(PROC_handle p);
 // and big numbers, but release 1 of those code concentrates on the basics.
 //
 
-extern std::int32_t PROC_integer_value(PROC_handle p);
+extern int32_t PROC_integer_value(PROC_handle p);
 extern double PROC_floating_value(PROC_handle p);
 extern const char *PROC_symbol_name(PROC_handle p);
 extern const char *PROC_string_data(PROC_handle p);
@@ -373,11 +373,11 @@ extern volatile int my_return_code;
 #include <csetjmp>
 #include <exception>
 
-typedef std::intptr_t LispObject;
+typedef intptr_t LispObject;
 extern  std::jmp_buf *global_jb;
 extern LispObject *stack;
 [[noreturn]] extern void global_longjmp();
-extern std::intptr_t exit_reason, miscflags;
+extern intptr_t exit_reason, miscflags;
 extern void err_printf(const char *fmt, ...);
 extern const volatile char *errorset_msg;
 

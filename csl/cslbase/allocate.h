@@ -49,10 +49,10 @@
 //      using C++ facilities. So there us code that uses the Windows native
 //      thread local support API. To help speed yet further the key access
 //      functions are re-implemented with a line or two of assembly code and
-//      inline functions. This version also uses std::atomic<T> access for
+//      inline functions. This version also uses atomic<T> access for
 //      the limit registers which would make it possible to have officially
 //      correct inter-thread communication via them.
-//  (3) Use of a std::atomic<T> value for the fringe so that a fetch_add()
+//  (3) Use of a atomic<T> value for the fringe so that a fetch_add()
 //      operation on it can allocate store within a single heap segment in
 //      such a way that if multiple theads all try to allocate at once
 //      all remains safe. As coded here this is not actually safe because
@@ -60,7 +60,7 @@
 //      checking if it overflowed the heap region. With just one thread this
 //      is OK provided I ensure I have a few words spare, but with multiple
 //      threads it would be a problem! In the code here I also use
-//      std::atomic<T> for the limit register and so communication between
+//      atomic<T> for the limit register and so communication between
 //      threads using it will be safe.
 //  (4) Baseline code - which is what will apply unless some special pre-
 //      processor symbol is defined - that uses simple C++ variables. This is
@@ -88,20 +88,20 @@
 // The message I take from this is that on a x86_64 (and I believe that
 // aarch64 figures are in line) use of C++ thread-local on Linus but the
 // uglier Windows-special code on Cygwin/Mingw32 has really low overhead,
-// but would demand multiple nursery regions. Use of std::atomic::fetch_add
+// but would demand multiple nursery regions. Use of atomic::fetch_add
 // looks attractive but has a high local cost leading to a system-wide
 // slow-down by around 10%. The naive use of C++ thread-local is obviously
 // unacceptable, and I think I feel that if a change in CONS just to use
-// std::atomic::fetch_add slows the whole system down by enough to measure
+// atomic::fetch_add slows the whole system down by enough to measure
 // easily in these tests I should avoid it.... it is very probable that
 // in pathological cases it could lead to really dramatic slow-down.
 
 #if defined THREAD_LOCAL
 
-inline thread_local std::uintptr_t fringe;
-inline thread_local std::uintptr_t heaplimit;
-inline thread_local std::uintptr_t vfringe;
-inline thread_local std::uintptr_t vheaplimit;
+inline thread_local uintptr_t fringe;
+inline thread_local uintptr_t heaplimit;
+inline thread_local uintptr_t vfringe;
+inline thread_local uintptr_t vheaplimit;
 
 #elif defined WINDOWS_THREADS && defined WIN32
 
@@ -109,21 +109,21 @@ const inline int fringe_slot = TlsAlloc();
 const inline int heaplimit_slot = TlsAlloc();
 const inline int vfringe_slot = TlsAlloc();
 const inline int vheaplimit_slot = TlsAlloc();
-inline thread_local std::atomic<std::uintptr_t> real_heaplimit;
-inline thread_local std::atomic<std::uintptr_t> real_vheaplimit;
+inline thread_local atomic<uintptr_t> real_heaplimit;
+inline thread_local atomic<uintptr_t> real_vheaplimit;
 
 class ForFringe
 {
 public:
-    operator std::uintptr_t()
-    {   return reinterpret_cast<std::uintptr_t>(TlsGetValue(fringe_slot));
+    operator uintptr_t()
+    {   return reinterpret_cast<uintptr_t>(TlsGetValue(fringe_slot));
     };
-    ForFringe& operator= (const std::uintptr_t a)
+    ForFringe& operator= (const uintptr_t a)
     {    TlsSetValue(fringe_slot, reinterpret_cast<void *>(a));
          return *this;
     };
-    ForFringe& operator+= (const std::size_t a)
-    {    std::uintptr_t v = reinterpret_cast<std::uintptr_t>(TlsGetValue(fringe_slot)) + a;
+    ForFringe& operator+= (const size_t a)
+    {    uintptr_t v = reinterpret_cast<uintptr_t>(TlsGetValue(fringe_slot)) + a;
          TlsSetValue(fringe_slot, reinterpret_cast<void *>(v));
          return *this;
     };
@@ -134,10 +134,10 @@ inline ForFringe fringe;
 class ForHeapLimit
 {
 public:
-    operator std::uintptr_t()
-    {   return *(std::atomic<std::uintptr_t> *)TlsGetValue(heaplimit_slot);
+    operator uintptr_t()
+    {   return *(atomic<uintptr_t> *)TlsGetValue(heaplimit_slot);
     };
-    ForHeapLimit& operator= (const std::uintptr_t a)
+    ForHeapLimit& operator= (const uintptr_t a)
     {    TlsSetValue(heaplimit_slot, reinterpret_cast<void *>(a));
          return *this;
     };
@@ -151,15 +151,15 @@ inline ForHeapLimit heaplimit;
 class ForVFringe
 {
 public:
-    operator std::uintptr_t()
-    {   return reinterpret_cast<std::uintptr_t>(TlsGetValue(vfringe_slot));
+    operator uintptr_t()
+    {   return reinterpret_cast<uintptr_t>(TlsGetValue(vfringe_slot));
     };
-    ForVFringe& operator= (const std::uintptr_t a)
+    ForVFringe& operator= (const uintptr_t a)
     {    TlsSetValue(vfringe_slot, reinterpret_cast<void *>(a));
          return *this;
     };
-    ForVFringe& operator+= (const std::size_t a)
-    {    std::uintptr_t v = reinterpret_cast<std::uintptr_t>(TlsGetValue(vfringe_slot)) + a;
+    ForVFringe& operator+= (const size_t a)
+    {    uintptr_t v = reinterpret_cast<uintptr_t>(TlsGetValue(vfringe_slot)) + a;
          TlsSetValue(vfringe_slot, reinterpret_cast<void *>(v));
          return *this;
     };
@@ -170,10 +170,10 @@ inline ForVFringe vfringe;
 class ForVHeapLimit
 {
 public:
-    operator std::uintptr_t()
-    {   return *(std::atomic<std::uintptr_t> *)TlsGetValue(vheaplimit_slot);
+    operator uintptr_t()
+    {   return *(atomic<uintptr_t> *)TlsGetValue(vheaplimit_slot);
     };
-    ForVHeapLimit& operator= (const std::uintptr_t a)
+    ForVHeapLimit& operator= (const uintptr_t a)
     {    TlsSetValue(vheaplimit_slot, reinterpret_cast<void *>(a));
          return *this;
     };
@@ -186,17 +186,17 @@ inline ForVHeapLimit vheaplimit;
 
 #elif defined ATOMIC
 
-inline std::atomic<std::uintptr_t> fringe;
-inline std::atomic<std::uintptr_t> heaplimit;
-inline std::atomic<std::uintptr_t> vfringe;
-inline std::atomic<std::uintptr_t> vheaplimit;
+inline atomic<uintptr_t> fringe;
+inline atomic<uintptr_t> heaplimit;
+inline atomic<uintptr_t> vfringe;
+inline atomic<uintptr_t> vheaplimit;
 
 #else
 
-extern std::uintptr_t fringe;
-extern std::uintptr_t heaplimit;
-extern std::uintptr_t vfringe;
-extern std::uintptr_t vheaplimit;
+extern uintptr_t fringe;
+extern uintptr_t heaplimit;
+extern uintptr_t vfringe;
+extern uintptr_t vheaplimit;
 
 #endif
 
@@ -209,7 +209,7 @@ extern std::uintptr_t vheaplimit;
 #define MAX_PAGE_SIZE 0x10000
 
 extern void get_page_size();
-extern std::size_t page_size;
+extern size_t page_size;
 
 // alloc_segment grabs a chunk of memory of the given size, which must
 // be a multiple of CSL_PAGE_SIZE. It also allocated an associated bitmap
@@ -218,7 +218,7 @@ extern std::size_t page_size;
 // set_up_signal_handlers() must be called first.
 
 extern void set_up_signal_handlers();
-extern void *allocate_segment(std::size_t);
+extern void *allocate_segment(size_t);
 
 // These arrays record information about allocated segments. heap_segment[i]
 // is the base address of a segment. (heap_segment_count keeps track of
@@ -226,19 +226,19 @@ extern void *allocate_segment(std::size_t);
 // amount of user data in it. There may have been additional space allocated
 // at the end of the segment for bitmaps.
 
-extern std::size_t heap_segment_count;
+extern size_t heap_segment_count;
 extern void *heap_segment[32];
-extern std::size_t heap_segment_size[32];
+extern size_t heap_segment_size[32];
 
 // Associated with each segment there is a bitmap that has one bit for
 // each system page within it (ie using the operating system's concept of
 // memory allocation granularity, which is typically 0x1000 but may be
 // 0x10000 on some platforms).
 
-extern std::uint64_t *heap_dirty_pages_bitmap_1[32];
-extern std::uint64_t *heap_dirty_pages_bitmap_2[32];
+extern uint64_t *heap_dirty_pages_bitmap_1[32];
+extern uint64_t *heap_dirty_pages_bitmap_2[32];
 
-extern std::size_t free_pages_count, active_pages_count;
+extern size_t free_pages_count, active_pages_count;
 
 // I only export the next few for debugging purposes. When a bitmap is small
 // it gets allocated within a pre-allocated fixed bit-array. If it needed
@@ -246,24 +246,24 @@ extern std::size_t free_pages_count, active_pages_count;
 // be large enough to hold it.
 
 #define SMALL_BITMAP_SIZE (MAX_PAGE_SIZE/sizeof(uint64_t)/2)
-extern std::uint64_t heap_small_bitmaps_1[SMALL_BITMAP_SIZE+1];
-extern std::uint64_t *heap_small_bitmaps_1_ptr;
-extern std::uint64_t heap_small_bitmaps_2[SMALL_BITMAP_SIZE+1];
-extern std::uint64_t *heap_small_bitmaps_2_ptr;
+extern uint64_t heap_small_bitmaps_1[SMALL_BITMAP_SIZE+1];
+extern uint64_t *heap_small_bitmaps_1_ptr;
+extern uint64_t heap_small_bitmaps_2[SMALL_BITMAP_SIZE+1];
+extern uint64_t *heap_small_bitmaps_2_ptr;
 
 // Given an arbitrary bit-pattern the find_heap_segment() function tests
 // if it could be an address within one of the allocated segments, and if so
 // it returns the index into heap_segments[] that is relevant. If it is not
 // a valid address the value -1 is returned.
 
-int find_heap_segment(std::uintptr_t p);
+int find_heap_segment(uintptr_t p);
 
 // Each system-page within an allocated segment has a bitmap entry showing
 // whether it has been written to. The following two functions provide
 // key operations on those bitmaps.
 
-extern bool clear_bitmap(std::size_t h);
-extern bool refresh_bitmap(std::size_t h);
+extern bool clear_bitmap(size_t h);
+extern bool refresh_bitmap(size_t h);
 
 // Low level functions for allocating objects.
 
@@ -271,7 +271,7 @@ extern bool refresh_bitmap(std::size_t h);
 
 extern void garbage_collect();
 
-extern std::size_t borrowed_pages_count;
+extern size_t borrowed_pages_count;
 extern void get_borrowed_page();
 
 class Borrowing

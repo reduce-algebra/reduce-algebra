@@ -95,7 +95,7 @@ static Display *dpy;
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else
-extern char *getcwd(char *s, std::size_t n);
+extern char *getcwd(char *s, size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -131,7 +131,7 @@ static int returncode = 0;
 
 // See cmtt_coverage lower down in this code
 
-extern std::uint32_t cmtt_coverage[];
+extern uint32_t cmtt_coverage[];
 
 #define CMTT_AVAIL(ch)    \
     ((ch) <= 0xffff &&    \
@@ -403,7 +403,7 @@ public:
     int inputBufferP;
     unsigned char *inputBuffer;
     int awaiting;
-    std::uint32_t unicodePrompt[MAX_PROMPT_LENGTH];
+    uint32_t unicodePrompt[MAX_PROMPT_LENGTH];
     int unicodePromptLength;
     int promptEnd;
 
@@ -444,7 +444,7 @@ private:
 // character stored. Ie it is zero if the buffer is empty.
 // caretPos is between zero and textEnd (inclusive) and denotes a position
 // between two characters where insertion might happen.
-    std::uint32_t *textBuffer;
+    uint32_t *textBuffer;
 // Only the bottom 21 bits are genuine character data...
 #define TXT(n) (textBuffer[n] & 0x001fffff)
     int textBufferSize;
@@ -461,7 +461,7 @@ private:
     wxCaret *caret;
     int caretPos;
     void repositionCaret(int w=0, int r=0, int c=0);
-    std::int32_t locateChar(int p, int w=0, int r=0, int c=0);
+    int32_t locateChar(int p, int w=0, int r=0, int c=0);
 // The result handed back by locateChar is a packed (row,column) pair.
 // It indicates the location the character would start on the screen apart
 // from any line-wrap it might trigger.
@@ -486,23 +486,23 @@ private:
 #define FLAG_TIP     2
 
 #define TYPEAHEAD_SIZE 100
-    std::uint32_t ahead_buffer[TYPEAHEAD_SIZE];
+    uint32_t ahead_buffer[TYPEAHEAD_SIZE];
     int type_in, type_out;
 
-    void type_ahead(std::uint32_t c);
+    void type_ahead(uint32_t c);
     int searchFlags;
 #define SEARCH_LENGTH    (searchFlags & 0xff)
 #define SEARCH_FORWARD   0x100
 #define SEARCH_BACKWARD  0x200
-    std::uint32_t searchString[256];
+    uint32_t searchString[256];
     int searchStack[256];
     int startMatch;
 
     void beep();
-    void insertChar(std::uint32_t ch);
+    void insertChar(uint32_t ch);
     void insertString(wxString s);
-    void insertChars(std::uint32_t *s, int len);
-    void replaceChars(std::uint32_t *s, int len);
+    void insertChars(uint32_t *s, int len);
+    void replaceChars(uint32_t *s, int len);
     void deleteChars(int len);
     void insertNewline();
     void deleteForwards(int n);
@@ -567,7 +567,7 @@ private:
     void interrupt();
     void displayBacktrace();
 
-    int unpackUTF8chars(std::uint32_t *u, const char *s, int n);
+    int unpackUTF8chars(uint32_t *u, const char *s, int n);
 
     int MapChar(int c);      // map from TeX character code to BaKoMa+ one
 
@@ -781,7 +781,7 @@ wxThread::ExitCode fwinWorker::Entry()
              rc, pause_on_exit);
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, WORKER_FINISHED);
     wxQueueEvent(panel, event);
-    return (wxThread::ExitCode)(std::intptr_t)rc;
+    return (wxThread::ExitCode)(intptr_t)rc;
 }
 
 int get_current_directory(char *s, int n)
@@ -818,7 +818,7 @@ int get_current_directory(char *s, int n)
 // using a jiffy Java program, and at present related to the 0.6.3a version
 // of the font concerned.
 
-std::uint32_t cmtt_coverage[2048] = {
+uint32_t cmtt_coverage[2048] = {
     0x00640000, 0xffffffff, 0xffffffff, 0xfffffffe,
     0x00000000, 0xffffffff, 0xffffffff, 0xffffffff,
     0xffffffff, 0xcdfcfc66, 0x79bffcff, 0xfcffcfff,
@@ -1537,7 +1537,7 @@ fwinText::fwinText(fwinFrame *parent)
 // generous to me. The plan is that the buffer will automatically expand
 // as needed.
     textBufferSize = 40000;
-    textBuffer = (std::uint32_t *)std::malloc(textBufferSize*sizeof(std::uint32_t));
+    textBuffer = (uint32_t *)std::malloc(textBufferSize*sizeof(uint32_t));
     textEnd = 0;
     searchFlags = 0;
     caret = NULL;
@@ -2181,7 +2181,7 @@ void fwinText::insertNewline()
 }
 
 
-std::int32_t fwinText::locateChar(int p, int w, int r, int c)
+int32_t fwinText::locateChar(int p, int w, int r, int c)
 {
 // Normally call as locateChar(p, 0, 0, 0) but the final 3
 // args are to allow resumption after a previous call.
@@ -2207,7 +2207,7 @@ std::int32_t fwinText::locateChar(int p, int w, int r, int c)
 // arrange an index that lets me skip lines or rows fast.
     if (w == -1) w = 0;
     while (w != p)
-    {   std::uint32_t ch = TXT(w);
+    {   uint32_t ch = TXT(w);
         int wide = double_width(ch);
 // The characters processed within this loop are all BEFORE the one I am
 // interested in, and so I process tabs, newlines and line-wrap.
@@ -2236,22 +2236,22 @@ std::int32_t fwinText::locateChar(int p, int w, int r, int c)
     return PACK(r, c);
 }
 
-void fwinText::insertChar(std::uint32_t ch)
+void fwinText::insertChar(uint32_t ch)
 {
     insertChars(&ch, 1);
 }
 
 void fwinText::insertString(wxString s)
 {
-    std::size_t n = s.Len();
+    size_t n = s.Len();
 // insertString has a LIMITED capability as regarsd the string length.
 // it is probably onnly really intended for debugging use.
     if (n > 100)
     {   FWIN_LOG("Truncating in insertString\n");
         n = 100;
     }
-    std::uint32_t b[100];
-    for (std::size_t i=0; i<n; i++) b[i] = s.GetChar(i);
+    uint32_t b[100];
+    for (size_t i=0; i<n; i++) b[i] = s.GetChar(i);
     insertChars(b, (int)n);
 }
 
@@ -2265,16 +2265,16 @@ void fwinText::insertString(wxString s)
 // both insert and replace will move the caret to a position after the
 // new material.
 
-void fwinText::insertChars(std::uint32_t *pch, int n)
+void fwinText::insertChars(uint32_t *pch, int n)
 {
-    std::int32_t loc1 = locateChar(caretPos);
+    int32_t loc1 = locateChar(caretPos);
     int r1 = ROW(loc1), c1 = COL(loc1);
 // I find the location of the end of the line that the character I am
 // about to insert will be on.
     int lineEnd = caretPos;
     while (lineEnd < textEnd && TXT(lineEnd) != '\n')
         lineEnd++;
-    std::int32_t loc2 = locateChar(lineEnd, caretPos, r1, c1);
+    int32_t loc2 = locateChar(lineEnd, caretPos, r1, c1);
     int r2 = ROW(loc2);
     int p = textEnd+n;
     if (p >= textBufferSize) enlargeTextBuffer();
@@ -2292,7 +2292,7 @@ void fwinText::insertChars(std::uint32_t *pch, int n)
     for (int i=0; i<n; i++) textBuffer[caretPos+i] = pch[i];
 // After inserting the character I look to find where the end of the
 // line that it is on has moved to.
-    std::int32_t loc3 = locateChar(lineEnd+n, caretPos, r1, c1);
+    int32_t loc3 = locateChar(lineEnd+n, caretPos, r1, c1);
     int r3 = ROW(loc3), c3 = COL(loc3);;
     caretPos += n;
     textEnd += n;
@@ -2331,19 +2331,19 @@ void fwinText::insertChars(std::uint32_t *pch, int n)
     }
 }
 
-void fwinText::replaceChars(std::uint32_t *pch, int n)
+void fwinText::replaceChars(uint32_t *pch, int n)
 {
 }
 
 void fwinText::deleteChars(int n)
 {
-    std::int32_t loc1 = locateChar(caretPos);
+    int32_t loc1 = locateChar(caretPos);
     int r1 = ROW(loc1), c1 = COL(loc1);
     int eol = caretPos+n;
 // Find the line-end just beyond all the deleted characters.
 // to the end of the line that the caret is on fall.
     while (eol < textEnd && TXT(eol) != '\n') eol++;
-    std::int32_t loc2 = locateChar(eol, caretPos, r1, c1);
+    int32_t loc2 = locateChar(eol, caretPos, r1, c1);
     int r2 = ROW(loc2), c2 = COL(loc2);
     int w = caretPos;
     while (w <= textEnd-n)
@@ -2352,7 +2352,7 @@ void fwinText::deleteChars(int n)
     }
     textEnd -= n;
     eol -= n;
-    std::int32_t loc3 = locateChar(eol, caretPos, r1, c1);
+    int32_t loc3 = locateChar(eol, caretPos, r1, c1);
     int r3 = ROW(loc3);
 // Apply scroll adjustment. Since I never scroll horizontally the x coordinate
 // is not an issue.
@@ -2389,7 +2389,7 @@ void fwinText::deleteChars(int n)
 
 void fwinText::makePositionVisible(int p)
 {
-    std::int32_t loc = locateChar(p);
+    int32_t loc = locateChar(p);
     int r = ROW(loc);
     int x, y;
     CalcScrolledPosition(0, r*rowHeight, &x, &y);
@@ -2429,7 +2429,7 @@ void fwinText::unicodeInput()
 // table of character names that are recognised - it is set of entity
 // names from HTML.
     wchar_t buffer[64];
-    std::uint32_t replacement[16];
+    uint32_t replacement[16];
     if (caretPos == 0)
     {   beep();
         return;
@@ -2480,7 +2480,7 @@ void fwinText::ctrlXcommand()
     int i = 0;
     const char *s;
     insertString("\n");
-    std::uint32_t buffer[100];
+    uint32_t buffer[100];
     while ((s = p->name) != NULL)
     {   int j = 0;
         char h[8];
@@ -2589,7 +2589,7 @@ void fwinText::copyWordPrev()
 
 
 
-void fwinText::type_ahead(std::uint32_t c)
+void fwinText::type_ahead(uint32_t c)
 {
 #ifdef RECONSTRUCTED
 #endif
@@ -2754,7 +2754,7 @@ void fwinText::enlargeTextBuffer()
 {
     textBufferSize *= 2;
     textBuffer =
-        (std::uint32_t *)std::realloc(textBuffer, textBufferSize*sizeof(std::uint32_t));
+        (uint32_t *)std::realloc(textBuffer, textBufferSize*sizeof(uint32_t));
     if (textBuffer == NULL) std::exit(1); // Abrupt collapse on no memory.
 }
 
@@ -3010,9 +3010,9 @@ void fwinText::OnHelpHelp()
 
 void fwinText::OnKeyDown(wxKeyEvent &event)
 {
-    std::uint32_t c = event.GetUnicodeKey();
-    std::uint32_t r = event.GetKeyCode();
-    std::uint32_t m = event.GetModifiers();
+    uint32_t c = event.GetUnicodeKey();
+    uint32_t r = event.GetKeyCode();
+    uint32_t m = event.GetModifiers();
 //-    FWIN_LOG("SHIFT=%x ALT=%x META=%x CONTROL=%x\n",
 //-       wxMOD_SHIFT, wxMOD_ALT, wxMOD_META, wxMOD_CONTROL);
 //-    FWIN_LOG("KeyDown raw:%x unicode:%x modifiers:%x\n", r, c, m);
@@ -3058,8 +3058,8 @@ void fwinText::OnKeyDown(wxKeyEvent &event)
 
 void fwinText::OnChar(wxKeyEvent &event)
 {
-    std::uint32_t c = event.GetUnicodeKey();
-    std::uint32_t r = event.GetKeyCode();
+    uint32_t c = event.GetUnicodeKey();
+    uint32_t r = event.GetKeyCode();
     int m = event.GetModifiers(); // wxMOD_ALT, wxMOD_SHIFT, wxMOD_CMD
                                   // Also ALTGR, META, WIN, CONTROL that
                                   // I will not use.
@@ -3885,7 +3885,7 @@ void fwinText::historyEnd()
 void fwinText::historyAdd(unsigned char *s, int n)
 {
 /* Make a copy of the input string... */
-    std::size_t size = sizeof(char)*(n + 1);
+    size_t size = sizeof(char)*(n + 1);
     unsigned char *scopy = (unsigned char *)std::malloc(size);
     int p = historyNextEntry % INPUT_HISTORY_SIZE;
 /* If malloc returns NULL I just store an empty history entry. */
@@ -3935,7 +3935,7 @@ void fwinText::OnSetFocus(wxFocusEvent &event)
 
 void fwinText::repositionCaret(int w, int r, int c)
 {
-    std::int32_t caretCell = locateChar(caretPos, w, r, c);
+    int32_t caretCell = locateChar(caretPos, w, r, c);
     if (caretCell < 0) while (caret->IsVisible()) caret->Hide();
     else
     {   int r = ROW(caretCell), c = COL(caretCell);
@@ -3971,13 +3971,13 @@ void fwinText::OnToScreen(wxThreadEvent& event)
     insertString(text);
 }
 
-int fwinText::unpackUTF8chars(std::uint32_t *u, const char *s, int ends)
+int fwinText::unpackUTF8chars(uint32_t *u, const char *s, int ends)
 {
     int k = 0;
     int n = 0, state = 0;
-    std::uint32_t uc = 0;    // Unicode char that is being reconstructed.
+    uint32_t uc = 0;    // Unicode char that is being reconstructed.
     while (k != ends)
-    {   std::uint32_t c = s[k] & 0xff;
+    {   uint32_t c = s[k] & 0xff;
         k++;
         switch (state)
         {
@@ -4074,7 +4074,7 @@ void fwinText::OnFlushBuffer2(wxThreadEvent& event)
 void fwinText::OnFlushBuffer(const char *fwin_buffer)
 {
     recently_flushed = 0;
-    std::uint32_t wideBuffer[FWIN_BUFFER_SIZE];
+    uint32_t wideBuffer[FWIN_BUFFER_SIZE];
     int n = unpackUTF8chars(&wideBuffer[0], fwin_buffer, fwin_out);
     insertChars(&wideBuffer[0], n);
     int p = textEnd;
@@ -4251,7 +4251,7 @@ int fwinText::SkipTextRow(int p)
 {
     int col = 0;
     while (p < textEnd)
-    {   std::uint32_t ch = TXT(p++);
+    {   uint32_t ch = TXT(p++);
         if (ch == '\n') return p;
 // a TAB can take you exactly up to column 80 but never over it. But a wide
 // character in column 79 could trigger a wrap.
@@ -4272,8 +4272,8 @@ int fwinText::DrawTextRow(wxDC &dc, int y, int p)
 {
     int col = 0;
     while (p < textEnd)
-    {   std::uint32_t ch = textBuffer[p++];
-        std::uint32_t flags = ch & ~0x001fffff;
+    {   uint32_t ch = textBuffer[p++];
+        uint32_t flags = ch & ~0x001fffff;
         ch &= 0x001fffff;
         if (ch == '\n') return p;
 // a TAB can take you exactly up to column 80 but never over it. But a wide

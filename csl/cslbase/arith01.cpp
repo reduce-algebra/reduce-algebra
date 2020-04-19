@@ -59,7 +59,7 @@
 
 LispObject validate_number(const char *s, LispObject a,
                            LispObject b, LispObject c)
-{   std::int32_t la, msd, nsd;
+{   int32_t la, msd, nsd;
 // The only two bad things that I can think of are (a) for a number that
 // should be a fixnum to be stored as a bignum and (b) for a bignum
 // to have leading zero digits when it ought not to. So unless the
@@ -68,7 +68,7 @@ LispObject validate_number(const char *s, LispObject a,
     la = (length_of_header(numhdr(a))-CELL-4)/4;
     if (la < 0)
     {   trace_printf("%s: number with no digits (%.16" PRIx16 ")\n",
-                     s, (std::uint64_t)numhdr(a));
+                     s, (uint64_t)numhdr(a));
         prin_to_trace(b), trace_printf("\n");
         prin_to_trace(c), trace_printf("\n");
 #ifdef VALIDATE_STOPS
@@ -115,7 +115,7 @@ LispObject validate_number(const char *s, LispObject a,
         }
     }
     if (SIXTY_FOUR_BIT && la == 1)
-    {   std::int64_t v = ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
+    {   int64_t v = ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
         if (valid_as_fixnum(v))
         {   trace_printf("%s: %#" PRIx64 " should be fixnum\n", s, v);
             prin_to_trace(b), trace_printf("\n");
@@ -174,68 +174,68 @@ LispObject validate_number(const char *s, LispObject a,
 // that check if all that is needed is fixnum_of_int, so here I know that
 // I have to create a bignum.
 
-LispObject make_lisp_integer32_fn(std::int32_t n)
+LispObject make_lisp_integer32_fn(int32_t n)
 {   if (!SIXTY_FOUR_BIT && (n < 0x40000000 && n >= -0x40000000))
         return make_one_word_bignum(n);
-    return make_two_word_bignum((std::int32_t)ASR(n, 31),
-                                (std::uint32_t)(n & 0x7fffffff));
+    return make_two_word_bignum((int32_t)ASR(n, 31),
+                                (uint32_t)(n & 0x7fffffff));
 }
 
-LispObject make_lisp_integer64_fn(std::int64_t n)
+LispObject make_lisp_integer64_fn(int64_t n)
 {   if (!SIXTY_FOUR_BIT && (n < 0x40000000 && n >= -0x40000000))
-        return make_one_word_bignum((std::int32_t)n);
+        return make_one_word_bignum((int32_t)n);
 // With a RECENT C++ compiler I would not need the INT64_C macro here,
 // since the C++ standard would cause the large value to be treated as a
 // wide integer automatically. However if I go back and use an old version
 // of gcc this is required...
     if (n < INT64_C(0x2000000000000000) &&
         n >= -INT64_C(0x2000000000000000))
-        return make_two_word_bignum((std::int32_t)ASR(n, 31),
-                                    (std::uint32_t)(n & 0x7fffffff));
+        return make_two_word_bignum((int32_t)ASR(n, 31),
+                                    (uint32_t)(n & 0x7fffffff));
     return make_three_word_bignum(
-               (std::int32_t)ASR(n, 62),
-               (std::uint32_t)((n >> 31) & 0x7fffffff),
-               (std::uint32_t)(n & 0x7fffffff));
+               (int32_t)ASR(n, 62),
+               (uint32_t)((n >> 31) & 0x7fffffff),
+               (uint32_t)(n & 0x7fffffff));
 }
 
-LispObject make_lisp_unsigned64_fn(std::uint64_t n)
+LispObject make_lisp_unsigned64_fn(uint64_t n)
 {   if (!SIXTY_FOUR_BIT && n < 0x40000000)
-        return make_one_word_bignum((std::int32_t)n);
+        return make_one_word_bignum((int32_t)n);
     if (n < UINT64_C(0x2000000000000000))
-        return make_two_word_bignum((std::int32_t)(n >> 31),
-                                    (std::uint32_t)(n & 0x7fffffff));
+        return make_two_word_bignum((int32_t)(n >> 31),
+                                    (uint32_t)(n & 0x7fffffff));
     return make_three_word_bignum(
-               (std::int32_t)(n >> 62),
-               (std::uint32_t)((n >> 31) & 0x7fffffff),
-               (std::uint32_t)(n & 0x7fffffff));
+               (int32_t)(n >> 62),
+               (uint32_t)((n >> 31) & 0x7fffffff),
+               (uint32_t)(n & 0x7fffffff));
 }
 
-LispObject make_lisp_integerptr_fn(std::intptr_t n)
+LispObject make_lisp_integerptr_fn(intptr_t n)
 {   if (!SIXTY_FOUR_BIT && (n < 0x40000000 && n >= -0x40000000))
-        return make_one_word_bignum((std::int32_t)n);
+        return make_one_word_bignum((int32_t)n);
     if (!SIXTY_FOUR_BIT ||
-        (n < (std::intptr_t)INT64_C(0x2000000000000000) &&
-         n >= -(std::intptr_t)INT64_C(0x2000000000000000)))
-        return make_two_word_bignum((std::int32_t)ASR((std::int64_t)n, 31),
-                                    (std::uint32_t)(n & 0x7fffffff));
+        (n < (intptr_t)INT64_C(0x2000000000000000) &&
+         n >= -(intptr_t)INT64_C(0x2000000000000000)))
+        return make_two_word_bignum((int32_t)ASR((int64_t)n, 31),
+                                    (uint32_t)(n & 0x7fffffff));
 // Noter that intptr_t may be a 32-bit type where trying to shift right be 62
 // bits would be a mistake. So I cast to 64-bits to be safe.
     return make_three_word_bignum(
-               (std::int32_t)ASR((std::int64_t)n, 62),
-               (std::uint32_t)((n >> 31) & 0x7fffffff),
-               (std::uint32_t)(n & 0x7fffffff));
+               (int32_t)ASR((int64_t)n, 62),
+               (uint32_t)((n >> 31) & 0x7fffffff),
+               (uint32_t)(n & 0x7fffffff));
 }
 
-LispObject make_lisp_unsignedptr_fn(std::uintptr_t n)
+LispObject make_lisp_unsignedptr_fn(uintptr_t n)
 {   if (!SIXTY_FOUR_BIT && n < 0x40000000)
-        return make_one_word_bignum((std::int32_t)n);
-    if (!SIXTY_FOUR_BIT || n < (std::uintptr_t)UINT64_C(0x2000000000000000))
-        return make_two_word_bignum((std::int32_t)(n >> 31),
-                                    (std::uint32_t)(n & 0x7fffffff));
+        return make_one_word_bignum((int32_t)n);
+    if (!SIXTY_FOUR_BIT || n < (uintptr_t)UINT64_C(0x2000000000000000))
+        return make_two_word_bignum((int32_t)(n >> 31),
+                                    (uint32_t)(n & 0x7fffffff));
     return make_three_word_bignum(
-               (std::int32_t)((std::uint64_t)n >> 62),
-               (std::uint32_t)((n >> 31) & 0x7fffffff),
-               (std::uint32_t)(n & 0x7fffffff));
+               (int32_t)((uint64_t)n >> 62),
+               (uint32_t)((n >> 31) & 0x7fffffff),
+               (uint32_t)(n & 0x7fffffff));
 }
 
 // In some cases I need the software implementation of wide arithmetic.
@@ -251,53 +251,53 @@ LispObject make_lisp_integer128_fn(int128_t r)
 // The result will be a bignum using 2, 3, 4 or 5 digits.
     if (lessp128(r, int128(INT64_C(0x2000000000000000))) &&
         geq128(r, -int128(INT64_C(0x2000000000000000))))
-        return make_two_word_bignum((std::int32_t)ASR(NARROW128(r), 31),
-                                    (std::uint32_t)(r & 0x7fffffff));
+        return make_two_word_bignum((int32_t)ASR(NARROW128(r), 31),
+                                    (uint32_t)(r & 0x7fffffff));
 // I will split off the high and low 62-bit chunks...
-    std::uint64_t lo = (std::uint64_t)(r & UINT64_C(0x3fffffffffffffff));
-    std::int64_t hi = NARROW128(ASR128(r, 62));
+    uint64_t lo = (uint64_t)(r & UINT64_C(0x3fffffffffffffff));
+    int64_t hi = NARROW128(ASR128(r, 62));
     if (hi < INT64_C(0x40000000) &&
         hi >= -INT64_C(0x40000000))
         return make_three_word_bignum(
-               (std::int32_t)hi,
-               (std::uint32_t)((lo >> 31) & 0x7fffffff),
-               (std::uint32_t)(lo & 0x7fffffff));
+               (int32_t)hi,
+               (uint32_t)((lo >> 31) & 0x7fffffff),
+               (uint32_t)(lo & 0x7fffffff));
     else if (hi < INT64_C(0x2000000000000000) &&
              hi >= -INT64_C(0x2000000000000000))
         return make_four_word_bignum(
-               (std::int32_t)ASR(hi, 31),
-               (std::uint32_t)(hi & 0x7fffffff),
-               (std::uint32_t)((lo >> 31) & 0x7fffffff),
-               (std::uint32_t)(lo & 0x7fffffff));
+               (int32_t)ASR(hi, 31),
+               (uint32_t)(hi & 0x7fffffff),
+               (uint32_t)((lo >> 31) & 0x7fffffff),
+               (uint32_t)(lo & 0x7fffffff));
     else return make_five_word_bignum(
-               (std::int32_t)ASR(hi, 62),
-               (std::uint32_t)(ASR(hi, 31) & 0x7fffffff),
-               (std::uint32_t)(hi & 0x7fffffff),
-               (std::uint32_t)((lo >> 31) & 0x7fffffff),
-               (std::uint32_t)(lo & 0x7fffffff));
+               (int32_t)ASR(hi, 62),
+               (uint32_t)(ASR(hi, 31) & 0x7fffffff),
+               (uint32_t)(hi & 0x7fffffff),
+               (uint32_t)((lo >> 31) & 0x7fffffff),
+               (uint32_t)(lo & 0x7fffffff));
 }
 
 LispObject make_lisp_unsigned128_fn(uint128_t r)
 {
 // The result will be a bignum using 2, 3 or 4 digits.
     if (lessp128(r, int128(INT64_C(0x2000000000000000))))
-        return make_two_word_bignum((std::int32_t)ASR(NARROW128(r), 31),
-            (std::uint32_t)(NARROW128(r) & 0x7fffffff));
+        return make_two_word_bignum((int32_t)ASR(NARROW128(r), 31),
+            (uint32_t)(NARROW128(r) & 0x7fffffff));
 // I will split off the high and low 62-bit chunks...
-    std::uint64_t lo = (std::uint64_t)(NARROW128(r) &
+    uint64_t lo = (uint64_t)(NARROW128(r) &
                              INT64_C(0x3fffffffffffffffU));
-    std::int64_t hi = NARROW128(ASR128(r, 62)); // Will be posititive
+    int64_t hi = NARROW128(ASR128(r, 62)); // Will be posititive
     if (hi < INT64_C(0x40000000))
         return make_three_word_bignum(
-               (std::int32_t)hi,
-               (std::uint32_t)((lo >> 31) & 0x7fffffff),
-               (std::uint32_t)(lo & 0x7fffffff));
+               (int32_t)hi,
+               (uint32_t)((lo >> 31) & 0x7fffffff),
+               (uint32_t)(lo & 0x7fffffff));
     else
         return make_four_word_bignum(
-               (std::int32_t)ASR(hi, 31),
-               (std::uint32_t)(hi & 0x7fffffff),
-               (std::uint32_t)((lo >> 31) & 0x7fffffff),
-               (std::uint32_t)(lo & 0x7fffffff));
+               (int32_t)ASR(hi, 31),
+               (uint32_t)(hi & 0x7fffffff),
+               (uint32_t)((lo >> 31) & 0x7fffffff),
+               (uint32_t)(lo & 0x7fffffff));
 }
 
 // There are places within the arithmetic code where the simplest
@@ -306,7 +306,7 @@ LispObject make_lisp_unsigned128_fn(uint128_t r)
 // should never arise "in the wild". This function makes a 1 or 2 word
 // bignum as necessary.
 
-LispObject make_fake_bignum(std::intptr_t n)
+LispObject make_fake_bignum(intptr_t n)
 {
 // It could be made into a 1-word bignum if the value is up to 31-bits...
     if (!SIXTY_FOUR_BIT ||
@@ -319,13 +319,13 @@ LispObject make_fake_bignum(std::intptr_t n)
 // Otherwise it must be a 2-digit bignum. That could cope with 31+31=62 bit
 // numbers and a fixnum can only be 60 bits, so I never need a 3-digit
 // bignum.
-    bignum_digits(big_fake2)[1] = (std::int32_t)ASR((std::int64_t)n, 31);
-    bignum_digits(big_fake2)[0] = (std::uint32_t)(n & 0x7fffffff);
+    bignum_digits(big_fake2)[1] = (int32_t)ASR((int64_t)n, 31);
+    bignum_digits(big_fake2)[0] = (uint32_t)(n & 0x7fffffff);
     if (!SIXTY_FOUR_BIT) bignum_digits(big_fake2)[2] = 0;     // padding
     return big_fake2;
 }
 
-LispObject make_one_word_bignum(std::int32_t n)
+LispObject make_one_word_bignum(int32_t n)
 //
 // n is an integer - create a bignum representation of it.  This is
 // done when n is outside the range 0xf8000000 to 0x07ffffff, but
@@ -351,7 +351,7 @@ LispObject make_one_word_bignum(std::int32_t n)
     return w;
 }
 
-LispObject make_two_word_bignum(std::int32_t a1, std::uint32_t a0)
+LispObject make_two_word_bignum(int32_t a1, uint32_t a0)
 //
 // This make a 2-word bignum from the 2-word value (a1,a0), where it
 // must have been arranged already that a1 and a0 are correctly
@@ -363,7 +363,7 @@ LispObject make_two_word_bignum(std::int32_t a1, std::uint32_t a0)
     return w;
 }
 
-LispObject make_three_word_bignum(std::int32_t a2, std::uint32_t a1, std::uint32_t a0)
+LispObject make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
 //
 // This make a 3-word bignum from the 3-word value (a2,a1,a0), where it
 // must have been arranged already that the values are correctly
@@ -376,8 +376,8 @@ LispObject make_three_word_bignum(std::int32_t a2, std::uint32_t a1, std::uint32
     return w;
 }
 
-LispObject make_four_word_bignum(std::int32_t a3, std::uint32_t a2,
-                                 std::uint32_t a1, std::uint32_t a0)
+LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
+                                 uint32_t a1, uint32_t a0)
 //
 // This make a 4-word bignum from the 4-word value (a3,a2,a1,a0), where it
 // must have been arranged already that the values are correctly
@@ -391,8 +391,8 @@ LispObject make_four_word_bignum(std::int32_t a3, std::uint32_t a2,
     return w;
 }
 
-LispObject make_five_word_bignum(std::int32_t a4, std::uint32_t a3, std::uint32_t a2,
-                                 std::uint32_t a1, std::uint32_t a0)
+LispObject make_five_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
+                                 uint32_t a1, uint32_t a0)
 //
 // This make a 5-word bignum from the 5-word value (a4,a3,a2,a1,a0), where it
 // must have been arranged already that the values are correctly
@@ -444,7 +444,7 @@ LispObject make_boxfloat128(float128_t a)
 }
 #endif // HAVE_SOFTFLOAT
 
-static double bignum_to_float(LispObject v, std::int32_t h, int *xp)
+static double bignum_to_float(LispObject v, int32_t h, int *xp)
 //
 // Convert a Lisp bignum to get a floating point value.  This uses at most the
 // top 3 digits of the bignum's representation since that is enough to achieve
@@ -466,9 +466,9 @@ static double bignum_to_float(LispObject v, std::int32_t h, int *xp)
 // a floating point value [1]222, while if x is non-zero I will need to round
 // up and deliver [1]223. There could be very very many zeros before the "x",
 // bounded only by the limit on exponents. 
-{   std::int32_t n = (h-CELL-4)/4;  // Last index into the data
+{   int32_t n = (h-CELL-4)/4;  // Last index into the data
     int x = 31*(int)n;
-    std::int32_t msd = (std::int32_t)bignum_digits(v)[n];
+    int32_t msd = (int32_t)bignum_digits(v)[n];
 // NB signed conversion on next line
     double r = (double)msd;
 // If I have a one-word bignum then there is no messing around needed and the
@@ -482,7 +482,7 @@ static double bignum_to_float(LispObject v, std::int32_t h, int *xp)
             x -= 31;
         }
         else
-        {   std::int32_t lo;
+        {   int32_t lo;
 // Here I have a bignum with at least 3 digits. I will do different things
 // based on whether there are less than or more then 16 bits in use in the
 // most significant digit
@@ -509,7 +509,7 @@ static double bignum_to_float(LispObject v, std::int32_t h, int *xp)
 // Here the top digit is reasonably large, so I will combine it with the
 // top 15 bits from the second highest digit. That will give me a value
 // using between 31 and 46 bits. This can be computed without rounding.
-                std::int32_t mid = bignum_digits(v)[--n];
+                int32_t mid = bignum_digits(v)[--n];
                 r = 32768.0*r + (double)(mid >> 16);
                 x -= 15;
                 lo = bignum_digits(v)[--n];
@@ -534,7 +534,7 @@ static float128_t f128_TWO_31 = {{0, INT64_C(0x401e000000000000)}};
 static float128_t f128_TWO_31 = {{INT64_C(0x401e000000000000), 0}};
 #endif
 
-static float128_t bignum_to_float128(LispObject v, std::int32_t h, int *xp)
+static float128_t bignum_to_float128(LispObject v, int32_t h, int *xp)
 //
 // Convert a Lisp bignum to get a 128-bit floating point value.
 // This uses at most the top 5 digits of the bignum's representation
@@ -546,9 +546,9 @@ static float128_t bignum_to_float128(LispObject v, std::int32_t h, int *xp)
 // integer whose mantissa has 0.5 in the last place, then a long string of
 // zero bits and then MAYBE a final trailing 1 that could force rounding up
 // rather than down...
-{   std::int32_t n = (h-CELL-4)/4;  // Last index into the data
+{   int32_t n = (h-CELL-4)/4;  // Last index into the data
     int x = 31*(int)n;
-    std::int32_t msd = (std::int32_t)bignum_digits(v)[n];
+    int32_t msd = (int32_t)bignum_digits(v)[n];
 // NB signed conversion on next line
     float128_t r, w1, w2;
     i32_to_f128M(msd, &r);
@@ -593,13 +593,13 @@ static float128_t bignum_to_float128(LispObject v, std::int32_t h, int *xp)
 // original float is equal to m*2^x. It returns special values for x in the
 // case of infinities and NaNs.
 
-int double_to_binary(double d, std::int64_t &m)
+int double_to_binary(double d, int64_t &m)
 {   Double_union u;
     u.f = d;
     int x = (int)(u.i64 >> 52) & 0x7ff;
-    std::int64_t f = u.i64 & UINT64_C(0x000fffffffffffff);
+    int64_t f = u.i64 & UINT64_C(0x000fffffffffffff);
     if (x != 0) f |= INT64_C(0x0010000000000000);
-    if ((std::int64_t)u.i64 < 0) f = -f;
+    if ((int64_t)u.i64 < 0) f = -f;
     m = f;
 // for Infinity I will return INT_MAX and for a NaN INT_MIN as otherwise
 // invalid exponent values.
@@ -610,13 +610,13 @@ int double_to_binary(double d, std::int64_t &m)
 #ifdef HAVE_SOFTFLOAT
 // This does much the same for 128-bit floats.
 
-int float128_to_binary(const float128_t *d, std::int64_t &mhi, std::uint64_t &mlo)
-{   std::uint64_t hi = d->v[HIPART];
-    std::uint64_t lo = d->v[LOPART];
+int float128_to_binary(const float128_t *d, int64_t &mhi, uint64_t &mlo)
+{   uint64_t hi = d->v[HIPART];
+    uint64_t lo = d->v[LOPART];
     int x = (int)(hi >> 48) & 0x7fff;
-    std::uint64_t fhi = hi & UINT64_C(0x0000ffffffffffff);
+    uint64_t fhi = hi & UINT64_C(0x0000ffffffffffff);
     if (x != 0) fhi |= UINT64_C(0x0001000000000000);
-    if ((std::int64_t)hi < 0)  // Now negate the mantissa
+    if ((int64_t)hi < 0)  // Now negate the mantissa
     {   fhi = ~fhi;
         lo = ~lo;
         if (lo == UINT64_C(0xffffffffffffffff))
@@ -644,12 +644,12 @@ int float128_to_binary(const float128_t *d, std::int64_t &mhi, std::uint64_t &ml
 // less than zero correspond to fractional floating point values.
 // If the argument is infinite or a NaN the result will be INTPTR_MAX.
 
-std::intptr_t double_to_3_digits(double d, std::int32_t &a2, std::uint32_t &a1, std::uint32_t &a0)
-{   std::int64_t m;
+intptr_t double_to_3_digits(double d, int32_t &a2, uint32_t &a1, uint32_t &a0)
+{   int64_t m;
     int x = double_to_binary(d, m);
-    a0 = (std::uint32_t)m & 0x7fffffffU;
-    a1 = (std::uint32_t)((std::uint64_t)m >> 31) & 0x7fffffff;
-    a2 = (std::int32_t)ASR(m, 62);   // In fact value should be either 0 or -1
+    a0 = (uint32_t)m & 0x7fffffffU;
+    a1 = (uint32_t)((uint64_t)m >> 31) & 0x7fffffff;
+    a2 = (int32_t)ASR(m, 62);   // In fact value should be either 0 or -1
                                 // because m is only a 53 bit + sign value.
     if (x == 0x7ff) return INTPTR_MAX;
 // Now I need to adjust in effect so that the exponent is treated as
@@ -661,7 +661,7 @@ std::intptr_t double_to_3_digits(double d, std::int32_t &a2, std::uint32_t &a1, 
     }
 // I now shift the 3-digit value left by r bits. It will not overflow.
     if (r != 0)
-    {   a2 = ((std::uint32_t)a2<<r) | a1>>(31-r);
+    {   a2 = ((uint32_t)a2<<r) | a1>>(31-r);
         a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
         a0 = (a0<<r) & 0x7fffffffU;
     }
@@ -688,16 +688,16 @@ std::intptr_t double_to_3_digits(double d, std::int32_t &a2, std::uint32_t &a1, 
 }
 
 #ifdef HAVE_SOFTFLOAT
-std::intptr_t float128_to_5_digits(float128_t *d,
-    std::int32_t &a4, std::uint32_t &a3, std::uint32_t &a2, std::uint32_t &a1, std::uint32_t &a0)
-{   std::int64_t mhi;
-    std::uint64_t mlo;
+intptr_t float128_to_5_digits(float128_t *d,
+    int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0)
+{   int64_t mhi;
+    uint64_t mlo;
     int x = float128_to_binary(d, mhi, mlo);
-    a0 = (std::uint32_t)mlo & 0x7fffffffU;
-    a1 = (std::uint32_t)((std::uint64_t)mlo >> 31) & 0x7fffffff;
-    a2 = (((std::uint32_t)mhi << 2) & 0x7fffffff) | (std::uint32_t)(mlo>>62);
-    a3 = (std::uint32_t)(mhi>>29);
-    a4 = (std::int32_t)ASR(mhi, 60);   // again either 0 or -1
+    a0 = (uint32_t)mlo & 0x7fffffffU;
+    a1 = (uint32_t)((uint64_t)mlo >> 31) & 0x7fffffff;
+    a2 = (((uint32_t)mhi << 2) & 0x7fffffff) | (uint32_t)(mlo>>62);
+    a3 = (uint32_t)(mhi>>29);
+    a4 = (int32_t)ASR(mhi, 60);   // again either 0 or -1
     if (x == 0x7fff) return INTPTR_MAX;
     int q = x/31, r = x%31;
     if (r < 0)
@@ -706,7 +706,7 @@ std::intptr_t float128_to_5_digits(float128_t *d,
     }
     if (a4 == 0 && a3 == 0 && a2 == 0 && a1 == 0 && a0 == 0) return q;
     if (r != 0)
-    {   a4 = (std::int32_t)(((std::uint32_t)a4<<r) | a3>>(31-r));
+    {   a4 = (int32_t)(((uint32_t)a4<<r) | a3>>(31-r));
         a3 = ((a3<<r) & 0x7fffffffU) | a2>>(31-r);
         a2 = ((a2<<r) & 0x7fffffffU) | a1>>(31-r); 
         a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
@@ -738,7 +738,7 @@ double float_of_number(LispObject a)
     else if (is_sfloat(a))
         return value_of_immediate_float(a);
     else if (is_bfloat(a))
-    {   std::int32_t h = type_of_header(flthdr(a));
+    {   int32_t h = type_of_header(flthdr(a));
         switch (h)
         {   case TYPE_SINGLE_FLOAT:
 // On a 64-bit system one should NEVER encounter a boxed single precision
@@ -803,18 +803,18 @@ float128_t float128_of_number(LispObject a)
     float64_t r64;
     float32_t r32;
     if (is_fixnum(a))
-    {   i64_to_f128M((std::int64_t)int_of_fixnum(a), &r);
+    {   i64_to_f128M((int64_t)int_of_fixnum(a), &r);
         return r;
     }
     else if (is_sfloat(a))
     {   Float_union w;
-        if (SIXTY_FOUR_BIT) w.i = (std::int32_t)((std::uint64_t)a>>32);
+        if (SIXTY_FOUR_BIT) w.i = (int32_t)((uint64_t)a>>32);
         else w.i = a - XTAG_SFLOAT;
         f32_to_f128M(w.f32, &r);
         return r;
     }
     else if (is_bfloat(a))
-    {   std::int32_t h = type_of_header(flthdr(a));
+    {   int32_t h = type_of_header(flthdr(a));
         switch (h)
         {   case TYPE_SINGLE_FLOAT:
                 if (SIXTY_FOUR_BIT)
@@ -869,30 +869,30 @@ float128_t float128_of_number(LispObject a)
 }
 #endif // HAVE_SOFTFLOAT
 
-std::int32_t thirty_two_bits(LispObject a)
+int32_t thirty_two_bits(LispObject a)
 // return a 32 bit integer value for the Lisp integer (fixnum or bignum)
 // passed down - return 0 if the arg was out of range, or floating,
 // rational etc or not a number at all.  Only really wanted where
 // links between C-specific code (that might really want 32-bit values)
 // and Lisp are being coded.
-{   std::int64_t r;
+{   int64_t r;
     switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            r = (std::int64_t)int_of_fixnum(a);
+            r = (int64_t)int_of_fixnum(a);
             if (r > INT32_MAX ||
                 r < INT32_MIN) return 0;
-            return (std::int32_t)r;
+            return (int32_t)r;
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
             if (is_bignum(a))
-            {   std::size_t len = bignum_length(a);
+            {   size_t len = bignum_length(a);
 // Note that I keep 31 bits per word and use a 2s complement representation.
 // thus if I have a one-word bignum I just want its contents but in all
 // other cases I need just one bit from the next word up.
 // The left shift by 31-bits is OK because it is on an unsigned value.
                 if (len == CELL+4) return bignum_digits(a)[0]; // One word.
                 if (len == CELL+8)
-                {   std::uint32_t d1 = bignum_digits(a)[1];
+                {   uint32_t d1 = bignum_digits(a)[1];
                     if (d1 == 0 || d1 == 0xffffffff)
                         return bignum_digits(a)[0] | (d1 << 31);
                 }
@@ -904,31 +904,31 @@ std::int32_t thirty_two_bits(LispObject a)
     }
 }
 
-std::uint32_t thirty_two_bits_unsigned(LispObject a)
+uint32_t thirty_two_bits_unsigned(LispObject a)
 // return a 32 bit unsigned integer value for the Lisp integer (fixnum
 // or bignum) passed down - return 0 if the arg was out of range, or
 // floating, rational etc or not a number at all.  Only really wanted where
 // links between C-specific code (that might really want 32-bit values)
 // and Lisp are being coded.
-{   std::int64_t r;
+{   int64_t r;
     switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            r = (std::int64_t)int_of_fixnum(a);
+            r = (int64_t)int_of_fixnum(a);
             if (r > UINT32_MAX ||
                 r < 0) return 0;
-            return (std::int32_t)r;
+            return (int32_t)r;
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
             if (is_bignum(a))
-            {   std::size_t len = bignum_length(a);
+            {   size_t len = bignum_length(a);
 // Note that I keep 31 bits per word and use a 2s complement representation.
                 if (len == CELL+4)
-                {   std::int32_t w = (std::int32_t)bignum_digits(a)[0]; // One word.
+                {   int32_t w = (int32_t)bignum_digits(a)[0]; // One word.
                     if (w < 0) return 0;
                     else return w;
                 }
                 if (len == CELL+8)
-                {   std::uint32_t d1 = bignum_digits(a)[1];
+                {   uint32_t d1 = bignum_digits(a)[1];
                     if (d1 == 0 || d1 == 1)
                         return bignum_digits(a)[0] | (d1 << 31);
                 }
@@ -943,10 +943,10 @@ std::uint32_t thirty_two_bits_unsigned(LispObject a)
 // This returns a 64-bit signed integer if the argument is in that range,
 // or 0 for an invalid argument.
 
-std::int64_t sixty_four_bits(LispObject a)
+int64_t sixty_four_bits(LispObject a)
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            return (std::int64_t)int_of_fixnum(a); // always in range
+            return (int64_t)int_of_fixnum(a); // always in range
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
             if (is_bignum(a))
@@ -954,16 +954,16 @@ std::int64_t sixty_four_bits(LispObject a)
                 switch (len)
                 {   case CELL+4:
 // One word bignum. Do a double cast to stress how sign extension is needed.
-                        return (std::int64_t)(std::int32_t)bignum_digits(a)[0];
+                        return (int64_t)(int32_t)bignum_digits(a)[0];
                     case CELL+8:
 // Here the bignum provides 62 bits as a 2s complement value
                         return bignum_digits(a)[0] |
                                ASL(bignum_digits64(a, 1), 31);
                     default:
-                        std::int64_t d2 = bignum_digits64(a, 2);
+                        int64_t d2 = bignum_digits64(a, 2);
                         if (d2==0 || d2==1 || d2==-1 || d2==-2)
                             return bignum_digits(a)[0] |
-                                ((std::uint64_t)bignum_digits(a)[1] << 31) |
+                                ((uint64_t)bignum_digits(a)[1] << 31) |
                                 ASL(d2, 62);
                 }
             }
@@ -974,28 +974,28 @@ std::int64_t sixty_four_bits(LispObject a)
     }
 }
 
-std::uint64_t sixty_four_bits_unsigned(LispObject a)
+uint64_t sixty_four_bits_unsigned(LispObject a)
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
             if (int_of_fixnum(a) < 0) return 0;
-            return (std::uint64_t)int_of_fixnum(a);
+            return (uint64_t)int_of_fixnum(a);
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
             if (is_bignum(a))
             {   int len = bignum_length(a);
                 switch (len)
                 {   case CELL+4:
-                        if ((std::int32_t)bignum_digits(a)[0] < 0) return 0;
-                        return (std::uint64_t)bignum_digits(a)[0];
+                        if ((int32_t)bignum_digits(a)[0] < 0) return 0;
+                        return (uint64_t)bignum_digits(a)[0];
                     case CELL+8:
-                        if ((std::int32_t)bignum_digits(a)[1] < 0) return 0;
+                        if ((int32_t)bignum_digits(a)[1] < 0) return 0;
                         return bignum_digits(a)[0] |
                                ASL(bignum_digits64(a, 1), 31);
                     default:
-                        std::int64_t d2 = bignum_digits64(a, 2);
+                        int64_t d2 = bignum_digits64(a, 2);
                         if (d2==0 || d2==1 || d2==2 || d2==3)
                             return bignum_digits(a)[0] |
-                                ((std::uint64_t)bignum_digits(a)[1] << 31) |
+                                ((uint64_t)bignum_digits(a)[1] << 31) |
                                 ASL(d2, 62);
                 }
             }
@@ -1282,19 +1282,19 @@ inline LispObject plus_i_i(LispObject a1, LispObject a2)
 // omitted. If I use unsigned arithmetic I will be somewhat safer.
 
 inline LispObject plus_i_b(LispObject a1, LispObject a2)
-{   std::size_t len = (bignum_length(a2)-CELL)/4, i;
-    std::intptr_t s1 = int_of_fixnum(a1);
+{   size_t len = (bignum_length(a2)-CELL)/4, i;
+    intptr_t s1 = int_of_fixnum(a1);
 // If you are on a 64-bit machine it should NEVER be possible to end up
 // with a 1-word bignum, because the relevant range always fits within
 // a fixnum. The test on SIXTY_FOUR_BIT here should end up letting a reasonably
 // clever compiler omit the code that covers this case.
     if (!SIXTY_FOUR_BIT && len == 1)
-        return make_lisp_integerptr((std::int32_t)bignum_digits(a2)[0] + s1);
+        return make_lisp_integerptr((int32_t)bignum_digits(a2)[0] + s1);
 // I write out the 2-word case longhand because in the 64-bit case
 // it can yield a fixnum.
     if (len == 2)
-    {   std::int64_t s = (ASL(bignum_digits64(a2,1),31) | bignum_digits(a2)[0]) +
-                    (std::int64_t)s1;
+    {   int64_t s = (ASL(bignum_digits64(a2,1),31) | bignum_digits(a2)[0]) +
+                    (int64_t)s1;
 // a 2-word bignum has at worst 62 bits and a fixnum 28 or 60, so their
 // sum can not overflow a 64-bit word.
         return make_lisp_integer64(s);
@@ -1307,23 +1307,23 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
     pop(a2);
 // Add in the lowest digit by hand because at this stage s1 can have
 // more than 31 bits and so intrudes beyond there.
-    std::uint32_t d0 = bignum_digits(a2)[0] + (std::uint32_t)clear_top_bit(s1);
+    uint32_t d0 = bignum_digits(a2)[0] + (uint32_t)clear_top_bit(s1);
     bignum_digits(c)[0] = clear_top_bit(d0);
-    s1 = ASR((std::int64_t)s1, 31);
+    s1 = ASR((int64_t)s1, 31);
     if (top_bit_set(d0)) s1 = s1 + 1;
 // Now s1 is at most 29 bits... I can treat it as a carry from the
 // previous digit. Note that it may be either positive or negative
     for (i=1; i<len-1; i++)
-    {   std::uint32_t s = bignum_digits(a2)[i] + (std::uint32_t)(s1 & 0x7fffffff);
-        s1 = ASR((std::int64_t)s1, 31); // Note that s1 was signed so this is -1, 0 or 1
+    {   uint32_t s = bignum_digits(a2)[i] + (uint32_t)(s1 & 0x7fffffff);
+        s1 = ASR((int64_t)s1, 31); // Note that s1 was signed so this is -1, 0 or 1
         bignum_digits(c)[i] = s & 0x7fffffff;
         s1 = s1 + top_bit(s);
     }
-    s1 = (std::int32_t)ADD32(s1, bignum_digits(a2)[i]);
+    s1 = (int32_t)ADD32(s1, bignum_digits(a2)[i]);
 // A trap I fell into here is that ADD32 returns an unsigned result and when
 // that expands to an uniptr_t on a 64-bit machine it gets zero bits stuck
 // on the front. Then when I compare against -1 it says "no".
-    if (!signed_overflow((std::int32_t)s1))         // did it overflow?
+    if (!signed_overflow((int32_t)s1))         // did it overflow?
     {
 // Here the most significant digit did not produce an overflow, but maybe
 // what we actually had was some cancellation and the MSD is now zero
@@ -1379,7 +1379,7 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
     push(c);
     a2 = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
     pop(c);
-    for (std::size_t i=0; i<len-1; i++)
+    for (size_t i=0; i<len-1; i++)
         bignum_digits(a2)[i] = vbignum_digits(c)[i];
 //
 // I move the top digit across by hand since if the number is negative
@@ -1440,7 +1440,7 @@ inline LispObject plus_i_d(LispObject a1, LispObject a2)
 #ifdef HAVE_SOFTFLOAT
 inline LispObject plus_i_l(LispObject a1, LispObject a2)
 {   float128_t x, z;
-    i64_to_f128M((std::int64_t)int_of_fixnum(a1), &x);
+    i64_to_f128M((int64_t)int_of_fixnum(a1), &x);
     f128M_add(&x, (float128_t *)long_float_addr(a2), &z);
     return make_boxfloat128(z);
 }
@@ -1452,16 +1452,16 @@ inline LispObject plus_b_i(LispObject a1, LispObject a2)
 
 // Add two bignums.
 
-LispObject lengthen_by_one_bit(LispObject a, std::int32_t msd)
+LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
 // (a) is a bignum, and arithmetic on it has (just) caused overflow
 // in its top word - I just need to stick on another word. (msd) is the
 // current top word, and its sign will be used to decide on the value
 // that must be appended.
-{   std::int32_t len = bignum_length(a);
+{   int32_t len = bignum_length(a);
 // Sometimes I need to allocate a new vector and copy data across into it
     if ((len & 4) == 0)
     {   LispObject b;
-        std::int32_t i;
+        int32_t i;
         push(a);
         b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len+4);
         pop(a);
@@ -1483,22 +1483,22 @@ LispObject lengthen_by_one_bit(LispObject a, std::int32_t msd)
 }
 
 inline LispObject plus_b_b(LispObject a, LispObject b)
-{   std::size_t la = (bignum_length(a)-CELL)/4,
+{   size_t la = (bignum_length(a)-CELL)/4,
            lb = (bignum_length(b)-CELL)/4;
     if (la < lb)    // maybe swap order of args
     {   LispObject t = a; a = b; b = t;
-        std::size_t t1 = la; la = lb; lb = t1;
+        size_t t1 = la; la = lb; lb = t1;
     }
 // now (a) is AT LEAST as long as (b).  I have special case code for
 // when both args are single-word bignums, since I expect that to be
 // an especially common case on 32-bit machines.
     if (!SIXTY_FOUR_BIT && la == 1) // and hence b also has only 1 digit
         return make_lisp_integer32(
-            (std::int32_t)bignum_digits(a)[0] + (std::int32_t)bignum_digits(b)[0]);
+            (int32_t)bignum_digits(a)[0] + (int32_t)bignum_digits(b)[0]);
 // If the longer number is just 2 words I can convert both to int64_t.
     if (la == 2)
-    {   std::int64_t va = ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
-        std::int64_t vb = (!SIXTY_FOUR_BIT && lb == 1) ?
+    {   int64_t va = ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
+        int64_t vb = (!SIXTY_FOUR_BIT && lb == 1) ?
                      bignum_digits64(b, 0) :
                      ASL(bignum_digits64(b, 1), 31) | bignum_digits(b)[0];
         return make_lisp_integer64(va + vb);
@@ -1508,36 +1508,36 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
     push(a, b);
     LispObject c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, 4*la+CELL);
     pop(b, a);
-    std::uint32_t carry = 0;
+    uint32_t carry = 0;
 // Add all but the top digit of b
     la--;
     lb--;
-    std::size_t i;
+    size_t i;
     for (i=0; i<lb; i++)
     {   carry = bignum_digits(a)[i] + bignum_digits(b)[i] +
-                (std::uint32_t)top_bit(carry);
+                (uint32_t)top_bit(carry);
         bignum_digits(c)[i] = clear_top_bit(carry);
     }
-    std::int32_t s;
+    int32_t s;
     if (la == lb) s = bignum_digits(b)[i];
     else
 // If a is strictly longer than b I sign extend b here and add in as many
 // copies of 0 or -1 as needbe to get up to the length of a.
 // Note that the index "i" is left over from the previous loop...
-    {   s = (std::int32_t)bignum_digits(b)[i];
-        carry =  bignum_digits(a)[i] + (std::uint32_t)clear_top_bit(s) +
-                 (std::uint32_t)top_bit(carry);
+    {   s = (int32_t)bignum_digits(b)[i];
+        carry =  bignum_digits(a)[i] + (uint32_t)clear_top_bit(s) +
+                 (uint32_t)top_bit(carry);
         bignum_digits(c)[i] = clear_top_bit(carry);
         if (s < 0) s = -1;
         else s = 0;
         for (i++; i<la; i++)
-        {   carry = bignum_digits(a)[i] + (std::uint32_t)clear_top_bit(s) +
-                    (std::uint32_t)top_bit(carry);
+        {   carry = bignum_digits(a)[i] + (uint32_t)clear_top_bit(s) +
+                    (uint32_t)top_bit(carry);
             bignum_digits(c)[i] = clear_top_bit(carry);
         }
     }
-    carry = (std::int32_t)bignum_digits(a)[i] + (std::uint32_t)s +
-            (std::uint32_t)top_bit(carry);
+    carry = (int32_t)bignum_digits(a)[i] + (uint32_t)s +
+            (uint32_t)top_bit(carry);
 // I need to know if the top digit leads to 31-bit signed overflow.
     if (!signed_overflow(carry))
     {
@@ -1546,18 +1546,18 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
 // shrink by any number of words, all the way down to a fixnum maybe.  Note
 // that I started with at least a 2-word bignum here.
 //
-        std::int32_t msd;
+        int32_t msd;
         bignum_digits(c)[i] = carry;
         if (carry == 0)
-        {   std::size_t j = i-1;
+        {   size_t j = i-1;
             while ((msd = bignum_digits(c)[j]) == 0 && j > 0) j--;
             if (SIXTY_FOUR_BIT && j == 1)
-            {   std::int64_t s = ASL(bignum_digits64(c,1), 31) |
+            {   int64_t s = ASL(bignum_digits64(c,1), 31) |
                             bignum_digits(c)[0];
                 if (valid_as_fixnum(s)) return fixnum_of_int(s);
             }
             else if (j == 0)
-            {   std::int32_t s = bignum_digits(c)[0];
+            {   int32_t s = bignum_digits(c)[0];
                 if (valid_as_fixnum(s)) return fixnum_of_int(s);
             }
 // ... but I may need a zero word on the front if the next word down
@@ -1590,17 +1590,17 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
         }
 // Now do all the same sorts of things but this time for negative numbers.
         else if (carry == 0xffffffff)
-        {   std::size_t j = i-1;
+        {   size_t j = i-1;
             msd = carry;    // in case j = 0
             while ((msd = bignum_digits(c)[j]) == 0x7fffffff && j > 0) j--;
             if (SIXTY_FOUR_BIT && j == 1)
-            {   std::int64_t s = ASL(bignum_digits64(c,1) |
+            {   int64_t s = ASL(bignum_digits64(c,1) |
                                   INT64_C(0xffffffff80000000), 31) |
                             bignum_digits(c)[0];
                 if (valid_as_fixnum(s)) return fixnum_of_int(s);
             }
             else if (j == 0)
-            {   std::int32_t s = bignum_digits(c)[0] | 0x80000000;
+            {   int32_t s = bignum_digits(c)[0] | 0x80000000;
                 if (valid_as_fixnum(s)) return fixnum_of_int(s);
             }
             if ((msd & 0x40000000) == 0)
@@ -2338,7 +2338,7 @@ inline LispObject difference_d_l(LispObject a1, LispObject a2)
 
 inline LispObject difference_l_i(LispObject a1, LispObject a2)
 {   float128_t x, z;
-    i64_to_f128M((std::int64_t)int_of_fixnum(a2), &x);
+    i64_to_f128M((int64_t)int_of_fixnum(a2), &x);
     f128M_sub((float128_t *)long_float_addr(a1), &x, &z);
     return make_boxfloat128(z);
 }

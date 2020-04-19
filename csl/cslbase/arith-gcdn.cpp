@@ -54,7 +54,7 @@ LispObject Gcdn::op(LispObject a, Fixnum b)
 {   return number_dispatcher::ibinaryR<LispObject,Gcdn>("gcdn", a, b);
 }
 
-LispObject Gcdn::op(LispObject a, std::uint64_t *b)
+LispObject Gcdn::op(LispObject a, uint64_t *b)
 {   return number_dispatcher::ibinaryR<LispObject,Gcdn>("gcdn", a, b);
 }
 
@@ -62,7 +62,7 @@ LispObject Gcdn::op(Fixnum a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,Gcdn>("gcdn", a, b);
 }
 
-LispObject Gcdn::op(std::uint64_t *a, LispObject b)
+LispObject Gcdn::op(uint64_t *a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,Gcdn>("gcdn", a, b);
 }
 
@@ -70,15 +70,15 @@ LispObject Gcdn::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::Gcd::op(a.intval(), b.intval());
 }
 // bignum gcdn fixnum
-LispObject Gcdn::op(std::uint64_t *a, Fixnum b)
+LispObject Gcdn::op(uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Gcd::op(a, b.intval());
 }
 // fixnum gcdn bignum
-LispObject Gcdn::op(Fixnum a, std::uint64_t *b)
+LispObject Gcdn::op(Fixnum a, uint64_t *b)
 {   return Gcdn::op(b, a);
 }
 // bignum gcdn bignum
-LispObject Gcdn::op(std::uint64_t *a, std::uint64_t *b)
+LispObject Gcdn::op(uint64_t *a, uint64_t *b)
 {   return arithlib_lowlevel::Gcd::op(a, b);
 }
 
@@ -90,7 +90,7 @@ LispObject Lcmn::op(LispObject a, Fixnum b)
 {   return number_dispatcher::ibinaryR<LispObject,Lcmn>("lcmn", a, b);
 }
 
-LispObject Lcmn::op(LispObject a, std::uint64_t *b)
+LispObject Lcmn::op(LispObject a, uint64_t *b)
 {   return number_dispatcher::ibinaryR<LispObject,Lcmn>("lcmn", a, b);
 }
 
@@ -98,7 +98,7 @@ LispObject Lcmn::op(Fixnum a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,Lcmn>("lcmn", a, b);
 }
 
-LispObject Lcmn::op(std::uint64_t *a, LispObject b)
+LispObject Lcmn::op(uint64_t *a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,Lcmn>("lcmn", a, b);
 }
 
@@ -106,15 +106,15 @@ LispObject Lcmn::op(Fixnum a, Fixnum b)
 {   return arithlib_lowlevel::Lcm::op(a.intval(), b.intval());
 }
 // bignum lcmn fixnum
-LispObject Lcmn::op(std::uint64_t *a, Fixnum b)
+LispObject Lcmn::op(uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::Lcm::op(a, b.intval());
 }
 // fixnum lcmn bignum
-LispObject Lcmn::op(Fixnum a, std::uint64_t *b)
+LispObject Lcmn::op(Fixnum a, uint64_t *b)
 {   return Lcmn::op(b, a);
 }
 // bignum lcmn bignum
-LispObject Lcmn::op(std::uint64_t *a, std::uint64_t *b)
+LispObject Lcmn::op(uint64_t *a, uint64_t *b)
 {   return arithlib_lowlevel::Lcm::op(a, b);
 }
 

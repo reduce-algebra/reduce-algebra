@@ -45,8 +45,8 @@
     three_args *f3;
     fourup_args *f4up;
     unsigned int fname, w;
-    std::int32_t n, k;
-    std::size_t xppc;
+    int32_t n, k;
+    size_t xppc;
 //
 // I declare all the other variables I need here up at the top of the function
 // since at least on some C compilers putting the declarations more locally
@@ -64,7 +64,7 @@
 // I have decided to accept the cost at all times so that full tracing
 // facilities are always available.
     LispObject ffpname = qpname(lit);
-    std::size_t fflength = (std::size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+    size_t fflength = (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
     char ffname[32];
     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
     std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
@@ -133,7 +133,7 @@
 #endif
 #else // CHECK_STACK
     {   char *p = (char *)&p;
-        if ((std::uintptr_t)p < C_stacklimit)
+        if ((uintptr_t)p < C_stacklimit)
         {   err_printf("\n+++ stack overflow\n");
             if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
             aerror("stack_overflow");
@@ -467,7 +467,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_PLUS2:
                 if (is_fixnum(A_reg) && is_fixnum(B_reg))
-                {   std::intptr_t nn = int_of_fixnum(A_reg) + int_of_fixnum(B_reg);
+                {   intptr_t nn = int_of_fixnum(A_reg) + int_of_fixnum(B_reg);
                     A_reg = make_lisp_integerptr(nn);
                     continue;
                 }
@@ -490,7 +490,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_DIFFERENCE:
                 if (is_fixnum(A_reg) && is_fixnum(B_reg))
-                {   std::intptr_t nn = int_of_fixnum(B_reg) - int_of_fixnum(A_reg);
+                {   intptr_t nn = int_of_fixnum(B_reg) - int_of_fixnum(A_reg);
                     A_reg = make_lisp_integerptr(nn);
                     continue;
                 }
@@ -1544,7 +1544,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
-                        (std::size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
                     std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
@@ -1589,7 +1589,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
-                        (std::size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
                     std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
@@ -1636,7 +1636,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
-                        (std::size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
                     std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
@@ -1682,7 +1682,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
-                        (std::size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
                     std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;

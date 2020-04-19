@@ -120,7 +120,7 @@ om_toDev(LispObject obj)
 
 LispObject om_fromDev(OMdev dev)
 {   LispObject obj;
-    obj = make_one_word_bignum((std::int32_t)dev);
+    obj = make_one_word_bignum((int32_t)dev);
     return obj;
 }
 
@@ -137,7 +137,7 @@ om_toStatus(LispObject obj)
 
 LispObject om_fromStatus(OMstatus status)
 {   LispObject obj;
-    obj = fixnum_of_int((std::int32_t)status);
+    obj = fixnum_of_int((int32_t)status);
     return obj;
 }
 
@@ -154,7 +154,7 @@ om_toEncodingType(LispObject obj)
 
 LispObject om_fromEncodingType(OMencodingType enc)
 {   LispObject obj;
-    obj = fixnum_of_int((std::int32_t)enc);
+    obj = fixnum_of_int((int32_t)enc);
     return obj;
 }
 
@@ -288,7 +288,7 @@ om_toConn(LispObject obj)
 
 LispObject om_fromConn(OMconn conn)
 {   LispObject obj;
-    obj = make_one_word_bignum((std::int32_t)conn);
+    obj = make_one_word_bignum((int32_t)conn);
     return obj;
 }
 
@@ -334,7 +334,7 @@ om_toCString(LispObject obj)
 
 LispObject om_fromCString(char **str)
 {   LispObject obj;
-    obj = make_one_word_bignum((std::int32_t)str);
+    obj = make_one_word_bignum((int32_t)str);
     return obj;
 }
 
@@ -385,7 +385,7 @@ LispObject om_openFileDev(LispObject env, int nargs, ...)
     OMencodingType fenc;
     std::FILE *f;
     OMdev dev;
-    std::int32_t len = 0;
+    int32_t len = 0;
     LispObject lispDev;
 
     // Unpack the parameters into Lisp_Objects.
@@ -505,7 +505,7 @@ LispObject om_setDevEncoding(LispObject env, LispObject ldev, LispObject lenc)
 
 LispObject om_makeConn(LispObject env, LispObject ltimeout)
 {   OMconn conn;
-    std::int32_t timeout;
+    int32_t timeout;
 
     push(ltimeout);
 
@@ -584,8 +584,8 @@ LispObject om_connectTCP(LispObject env, int nargs, ...)
     LispObject lconn, lhost, lport;
     OMconn conn;
     char *host = NULL;
-    std::int32_t hostlen = 0;
-    std::int32_t port;
+    int32_t hostlen = 0;
+    int32_t port;
     OMstatus status;
 
 
@@ -626,7 +626,7 @@ LispObject om_connectTCP(LispObject env, int nargs, ...)
 
 LispObject om_bindTCP(LispObject env, LispObject lconn, LispObject lport)
 {   OMconn conn;
-    std::int32_t port;
+    int32_t port;
     OMstatus status;
 
     push(lconn, lport);
@@ -895,7 +895,7 @@ LispObject om_putInt(LispObject env, LispObject ldev, LispObject val)
         aerror("om_putInt");
 
     if (is_fixnum(val))
-    {   std::int32_t ival = int_of_fixnum(val);
+    {   int32_t ival = int_of_fixnum(val);
         status = OMputInt32(dev, ival);
     }
     else
@@ -947,7 +947,7 @@ LispObject om_putByteArray(LispObject env, LispObject ldev, LispObject val)
 //
 {   OMdev dev;
     OMstatus status;
-    std::int32_t len;
+    int32_t len;
 
     dev = om_toDev(ldev);
     if (!dev)
@@ -972,7 +972,7 @@ LispObject om_putVar(LispObject env, LispObject ldev, LispObject val)
 {   OMdev dev;
     OMstatus status;
     char *name;
-    std::int32_t len = 0;
+    int32_t len = 0;
 
     dev = om_toDev(ldev);
     if (!dev)
@@ -1001,7 +1001,7 @@ LispObject om_putString(LispObject env, LispObject ldev, LispObject val)
 {   OMdev dev;
     OMstatus status;
     char *name;
-    std::int32_t len = 0;
+    int32_t len = 0;
 
     dev = om_toDev(ldev);
     if (!dev)
@@ -1058,7 +1058,7 @@ LispObject om_putSymbol2(LispObject env, int nargs, ...)
     LispObject lcd, lname;
     OMdev dev;
     char *cd, *name;
-    std::int32_t cdLen = 0, nameLen = 0;
+    int32_t cdLen = 0, nameLen = 0;
     OMstatus status;
 
     // Get the arguments from the arglist.
@@ -1347,7 +1347,7 @@ LispObject om_getInt(LispObject env, LispObject ldev)
     if (status == OMsuccess)
     {   switch (ttype)
         {   case OMtokenInt32:
-            {   std::int32_t val;
+            {   int32_t val;
                 status = OMgetInt32(dev, &val);
                 if (status == OMsuccess)
                 {   // If none of the top 4 bits are set, we can make this a

@@ -220,7 +220,7 @@ extern int fwin_getchar(void);
 // If FWIN is running in a window and that window is closed then mustQuit is
 // set so that fwin_getchar() then always return EOF.
 //
-extern std::atomic<bool> mustQuit;
+extern atomic<bool> mustQuit;
 
 //
 // fwin_set_prompt() tells fwin what string (of up to some limited
@@ -467,7 +467,7 @@ extern int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_m
 
 extern bool fwin_use_xft;
 
-extern bool directoryp(char *f, const char *o, std::size_t n);
+extern bool directoryp(char *f, const char *o, size_t n);
 
 extern bool using_termed;
 
@@ -484,14 +484,14 @@ extern void sigint_handler(int signo);
 extern int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main);
 extern char fwin_prompt_string[MAX_PROMPT_LENGTH];
 
-extern int get_current_directory(char *s, std::size_t n);
-extern bool file_readable(char *filename, const char *old, std::size_t n);
-extern bool file_writeable(char *filename, const char *old, std::size_t n);
-extern bool file_executable(char *filename, const char *old, std::size_t n);
-extern int rename_file(char *from_name, const char *from_old, std::size_t from_size,
-                char *to_name, const char *to_old, std::size_t to_size);
-extern int get_home_directory(char *b, std::size_t len);
-extern int get_users_home_directory(char *b, std::size_t len);
+extern int get_current_directory(char *s, size_t n);
+extern bool file_readable(char *filename, const char *old, size_t n);
+extern bool file_writeable(char *filename, const char *old, size_t n);
+extern bool file_executable(char *filename, const char *old, size_t n);
+extern int rename_file(char *from_name, const char *from_old, size_t from_size,
+                char *to_name, const char *to_old, size_t to_size);
+extern int get_home_directory(char *b, size_t len);
+extern int get_users_home_directory(char *b, size_t len);
 extern int my_system(const char *s);
 extern int truncate_file(std::FILE *f, long int where);
 

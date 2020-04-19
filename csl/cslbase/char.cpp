@@ -311,7 +311,7 @@ LispObject Ldigit_char_p_2(LispObject env, LispObject a, LispObject radix)
     else if ('a' <= cc && cc <= 'z') cc = cc - 'a' + 10;
     else cc = 255;
     if (cc >= int_of_fixnum(r)) return onevalue(nil);
-    else return onevalue(fixnum_of_int((std::int32_t)cc));
+    else return onevalue(fixnum_of_int((int32_t)cc));
 }
 
 LispObject Ldigit_char_p_1(LispObject env, LispObject a)
@@ -426,7 +426,7 @@ LispObject Lutf8_encode(LispObject env, LispObject a)
 // indicated by the utf-8 sequence ofthem.
 //
 static LispObject utf8_decode(int c1, int c2, int c3, int c4)
-{   std::int32_t n;
+{   int32_t n;
     switch (c1 & 0xf0)
     {   default:
             if ((c2&0x80)==0) aerror("utf8-decode");
@@ -526,10 +526,10 @@ LispObject Lchar_code(LispObject, LispObject a)
 
 static LispObject Lcode_char_3(LispObject, LispObject code, LispObject bits,
         LispObject font )
-{   if ((std::intptr_t)font < 0 || (std::intptr_t)font > (std::intptr_t)fixnum_of_int(7) ||
-        (std::intptr_t)code < 0 || (std::intptr_t)code > (std::intptr_t)fixnum_of_int(0x001fffff))
+{   if ((intptr_t)font < 0 || (intptr_t)font > (intptr_t)fixnum_of_int(7) ||
+        (intptr_t)code < 0 || (intptr_t)code > (intptr_t)fixnum_of_int(0x001fffff))
         aerror("code-char");
-    std::uintptr_t icode = int_of_fixnum(code) & 0x001fffff;
+    uintptr_t icode = int_of_fixnum(code) & 0x001fffff;
 #ifdef COMMON
     return onevalue(pack_char(int_of_fixnum(font) & 0x7, icode));
 #else
@@ -553,7 +553,7 @@ static LispObject Lchar_int(LispObject, LispObject a)
 }
 
 static LispObject Lint_char(LispObject env, LispObject a)
-{   std::intptr_t n;
+{   intptr_t n;
     if (!is_fixnum(a)) return nil;
     n = int_of_fixnum(a);
     if (n == -1) n = 0x001fffff;
@@ -566,7 +566,7 @@ static LispObject Lmake_char_3(LispObject, LispObject a,
 // bits are ignores these days. They represented an attempt by Common Lisp
 // to put extra information into character objects that has not really
 // survived very well.
-    if ((std::intptr_t)font < 0 || (std::intptr_t)font > fixnum_of_int(3L) ||
+    if ((intptr_t)font < 0 || (intptr_t)font > fixnum_of_int(3L) ||
         !is_char(a)) aerror("make-char");
     return onevalue(pack_char(int_of_fixnum(font) & 0x3,
                               code_of_char(a)));
@@ -1181,7 +1181,7 @@ static LispObject Lcharacter_leq_0(LispObject env)
 // packing.
 //
 
-static LispObject get_char_vec(LispObject v, std::int32_t *high, std::int32_t *offset)
+static LispObject get_char_vec(LispObject v, int32_t *high, int32_t *offset)
 {   Header h;
     LispObject w;
     if (symbolp(v)) v = qpname(v);
@@ -1207,7 +1207,7 @@ static LispObject get_char_vec(LispObject v, std::int32_t *high, std::int32_t *o
 
 static LispObject Lstring_greaterp_2(LispObject env,
                                      LispObject a, LispObject b)
-{   std::int32_t la, oa, lb, ob, i;
+{   int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1241,7 +1241,7 @@ static LispObject Lstring_lessp_2(LispObject env,
 
 static LispObject Lstring_not_equal_2(LispObject env,
                                       LispObject a, LispObject b)
-{   std::int32_t la, oa, lb, ob, i;
+{   int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1264,7 +1264,7 @@ static LispObject Lstring_not_equal_2(LispObject env,
 }
 
 static LispObject Lstring_equal_2(LispObject env, LispObject a, LispObject b)
-{   std::int32_t la, oa, lb, ob, i;
+{   int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1288,7 +1288,7 @@ static LispObject Lstring_equal_2(LispObject env, LispObject a, LispObject b)
 
 static LispObject Lstring_not_greaterp_2(LispObject env,
                                          LispObject a, LispObject b)
-{   std::int32_t la, oa, lb, ob, i;
+{   int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1315,7 +1315,7 @@ static LispObject Lstring_not_lessp_2(LispObject env,
 
 static LispObject L_string_greaterp_2(LispObject env,
                                       LispObject a, LispObject b)
-{   std::int32_t la, oa, lb, ob, i;
+{   int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1345,7 +1345,7 @@ static LispObject L_string_lessp_2(LispObject env,
 
 static LispObject L_string_not_equal_2(LispObject env,
                                        LispObject a, LispObject b)
-{   std::int32_t la, oa, lb, ob, i;
+{   int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1369,7 +1369,7 @@ static LispObject L_string_not_equal_2(LispObject env,
 
 static LispObject L_string_equal_2(LispObject env,
                                    LispObject a, LispObject b)
-{   std::int32_t la, oa, lb, ob, i;
+{   int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1393,7 +1393,7 @@ static LispObject L_string_equal_2(LispObject env,
 
 static LispObject L_string_not_greaterp_2(LispObject env,
         LispObject a, LispObject b)
-{   std::int32_t la, oa, lb, ob, i;
+{   int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);

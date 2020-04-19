@@ -38,7 +38,7 @@ LispObject Ls01eaf(LispObject env, int nargs, ...)
 {   std::va_list args;
     LispObject Lzr, Lzi, Lifail, Lwr, Lwi;
     double z[2], w[2];
-    std::int32_t ifail;
+    int32_t ifail;
 
     //
     // Returning DOUBLE COMPLEX objects via the function name is not portable
@@ -46,11 +46,11 @@ LispObject Ls01eaf(LispObject env, int nargs, ...)
     //
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PSXXEAF) (double *, double *, std::int32_t *);
+    typedef void (__stdcall *PSXXEAF) (double *, double *, int32_t *);
     HINSTANCE hLib;
     PSXXEAF sxxeaf_proc;
 #else
-    extern void __stdcall SXXEAF (double *, double *, std::int32_t *);
+    extern void __stdcall SXXEAF (double *, double *, int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -112,14 +112,14 @@ LispObject Ls01eaf(LispObject env, int nargs, ...)
 LispObject Ls13aaf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS13AAF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS13AAF) (double *, int32_t *);
     HINSTANCE hLib;
     PS13AAF s13aaf_proc;
 #else
-    extern double __stdcall S13AAF (double *, std::int32_t *);
+    extern double __stdcall S13AAF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -168,14 +168,14 @@ LispObject Ls13aaf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls13acf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS13ACF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS13ACF) (double *, int32_t *);
     HINSTANCE hLib;
     PS13ACF s13acf_proc;
 #else
-    extern double __stdcall S13ACF (double *, std::int32_t *);
+    extern double __stdcall S13ACF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -223,14 +223,14 @@ LispObject Ls13acf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls13adf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS13ADF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS13ADF) (double *, int32_t *);
     HINSTANCE hLib;
     PS13ADF s13adf_proc;
 #else
-    extern double __stdcall S13ADF (double *, std::int32_t *);
+    extern double __stdcall S13ADF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -278,14 +278,14 @@ LispObject Ls13adf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls14aaf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS14AAF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS14AAF) (double *, int32_t *);
     HINSTANCE hLib;
     PS14AAF s14aaf_proc;
 #else
-    extern double __stdcall S14AAF (double *, std::int32_t *);
+    extern double __stdcall S14AAF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -333,14 +333,14 @@ LispObject Ls14aaf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls14abf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS14ABF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS14ABF) (double *, int32_t *);
     HINSTANCE hLib;
     PS14ABF s14abf_proc;
 #else
-    extern double __stdcall S14ABF (double *, std::int32_t *);
+    extern double __stdcall S14ABF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -389,16 +389,16 @@ LispObject Ls14baf(LispObject env, int nargs, ...)
 {   std::va_list args;
     LispObject La, Lx, Ltol, Lp, Lq, Lifail;
     double a, x, tol, p, q;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
     typedef void (__stdcall *PS14BAF) (double *, double *, double *, double *,
-                                       double *, std::int32_t *);
+                                       double *, int32_t *);
     HINSTANCE hLib;
     PS14BAF s14baf_proc;
 #else
     extern void __stdcall S14BAF (double *, double *, double *, double *,
-                                  double *, std::int32_t *);
+                                  double *, int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -464,14 +464,14 @@ LispObject Ls14baf(LispObject env, int nargs, ...)
 LispObject Ls15adf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS15ADF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS15ADF) (double *, int32_t *);
     HINSTANCE hLib;
     PS15ADF s15adf_proc;
 #else
-    extern double __stdcall S15ADF (double *, std::int32_t *);
+    extern double __stdcall S15ADF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -519,14 +519,14 @@ LispObject Ls15adf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls15aef(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS15AEF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS15AEF) (double *, int32_t *);
     HINSTANCE hLib;
     PS15AEF s15aef_proc;
 #else
-    extern double __stdcall S15AEF (double *, std::int32_t *);
+    extern double __stdcall S15AEF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -574,14 +574,14 @@ LispObject Ls15aef(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls17acf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS17ACF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS17ACF) (double *, int32_t *);
     HINSTANCE hLib;
     PS17ACF s17acf_proc;
 #else
-    extern double __stdcall S17ACF (double *, std::int32_t *);
+    extern double __stdcall S17ACF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -629,14 +629,14 @@ LispObject Ls17acf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls17adf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS17ADF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS17ADF) (double *, int32_t *);
     HINSTANCE hLib;
     PS17ADF s17adf_proc;
 #else
-    extern double __stdcall S17ADF (double *, std::int32_t *);
+    extern double __stdcall S17ADF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -684,14 +684,14 @@ LispObject Ls17adf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls17aef(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS17AEF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS17AEF) (double *, int32_t *);
     HINSTANCE hLib;
     PS17AEF s17aef_proc;
 #else
-    extern double __stdcall S17AEF (double *, std::int32_t *);
+    extern double __stdcall S17AEF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -739,14 +739,14 @@ LispObject Ls17aef(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls17aff(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS17AFF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS17AFF) (double *, int32_t *);
     HINSTANCE hLib;
     PS17AFF s17aff_proc;
 #else
-    extern double __stdcall S17AFF (double *, std::int32_t *);
+    extern double __stdcall S17AFF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -794,14 +794,14 @@ LispObject Ls17aff(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls17agf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS17AGF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS17AGF) (double *, int32_t *);
     HINSTANCE hLib;
     PS17AGF s17agf_proc;
 #else
-    extern double __stdcall S17AGF (double *, std::int32_t *);
+    extern double __stdcall S17AGF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -849,14 +849,14 @@ LispObject Ls17agf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls17ahf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS17AHF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS17AHF) (double *, int32_t *);
     HINSTANCE hLib;
     PS17AHF s17ahf_proc;
 #else
-    extern double __stdcall S17AHF (double *, std::int32_t *);
+    extern double __stdcall S17AHF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -904,14 +904,14 @@ LispObject Ls17ahf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls17ajf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS17AJF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS17AJF) (double *, int32_t *);
     HINSTANCE hLib;
     PS17AJF s17ajf_proc;
 #else
-    extern double __stdcall S17AJF (double *, std::int32_t *);
+    extern double __stdcall S17AJF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -959,14 +959,14 @@ LispObject Ls17ajf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls17akf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS17AKF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS17AKF) (double *, int32_t *);
     HINSTANCE hLib;
     PS17AKF s17akf_proc;
 #else
-    extern double __stdcall S17AKF (double *, std::int32_t *);
+    extern double __stdcall S17AKF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -1018,17 +1018,17 @@ LispObject Ls17dcf(LispObject env, int nargs, ...)
     LispObject Lzr, Lzi, Lscale, Lifail, Ln, Lnz, Lfnu, Lcy;
     fstring1 scale;
     double z[2], *cy, *cwrk, fnu;
-    std::int32_t n, nz, ifail;
+    int32_t n, nz, ifail;
     char sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS17DCF) (double *, double *, std::int32_t *, fstring1,
-                                       double *, std::int32_t *, double *, std::int32_t *);
+    typedef void (__stdcall *PS17DCF) (double *, double *, int32_t *, fstring1,
+                                       double *, int32_t *, double *, int32_t *);
     HINSTANCE hLib;
     PS17DCF s17dcf_proc;
 #else
-    extern void __stdcall S17DCF (double *, double *, std::int32_t *, fstring1,
-                                  double *, std::int32_t *, double *, std::int32_t *);
+    extern void __stdcall S17DCF (double *, double *, int32_t *, fstring1,
+                                  double *, int32_t *, double *, int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1138,17 +1138,17 @@ LispObject Ls17def(LispObject env, int nargs, ...)
     LispObject Lzr, Lzi, Lscale, Lifail, Ln, Lnz, Lfnu, Lcy;
     fstring1 scale;
     double z[2], *cy, fnu;
-    std::int32_t n, nz, ifail;
+    int32_t n, nz, ifail;
     char sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS17DEF) (double *, double *, std::int32_t *, fstring1,
-                                       double *, std::int32_t *, std::int32_t *);
+    typedef void (__stdcall *PS17DEF) (double *, double *, int32_t *, fstring1,
+                                       double *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PS17DEF s17def_proc;
 #else
-    extern void __stdcall S17DEF (double *, double *, std::int32_t *, fstring1,
-                                  double *, std::int32_t *, std::int32_t *);
+    extern void __stdcall S17DEF (double *, double *, int32_t *, fstring1,
+                                  double *, int32_t *, int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1255,17 +1255,17 @@ LispObject Ls17dgf(LispObject env, int nargs, ...)
     LispObject Lderiv, Lzr, Lzi, Lscale, Lifail, Lair, Laii, Lnz;
     fstring1 deriv, scale;
     double z[2], ai[2];
-    std::int32_t nz, ifail;
+    int32_t nz, ifail;
     char sderiv[2], sscale[2];
 
 #ifdef LOADLIB
     typedef void (__stdcall *PS17DGF) (fstring1, double *, fstring1, double *,
-                                       std::int32_t *, std::int32_t *);
+                                       int32_t *, int32_t *);
     HINSTANCE hLib;
     PS17DGF s17dgf_proc;
 #else
     extern void __stdcall S17DGF (fstring1, double *, fstring1, double *,
-                                  std::int32_t *, std::int32_t *);
+                                  int32_t *, int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1350,17 +1350,17 @@ LispObject Ls17dhf(LispObject env, int nargs, ...)
     LispObject Lderiv, Lzr, Lzi, Lscale, Lifail, Lbir, Lbii;
     fstring1 deriv, scale;
     double z[2], bi[2];
-    std::int32_t ifail;
+    int32_t ifail;
     char sderiv[2], sscale[2];
 
 #ifdef LOADLIB
     typedef void (__stdcall *PS17DHF) (fstring1, double *, fstring1, double *,
-                                       std::int32_t *);
+                                       int32_t *);
     HINSTANCE hLib;
     PS17DHF s17dhf_proc;
 #else
     extern void __stdcall S17DHF (fstring1, double *, fstring1, double *,
-                                  std::int32_t *);
+                                  int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1443,17 +1443,17 @@ LispObject Ls17dlf(LispObject env, int nargs, ...)
     LispObject Lzr, Lzi, Lscale, Lifail, Ln, Lnz, Lfnu, Lcy, Lm;
     fstring1 scale;
     double z[2], *cy, fnu;
-    std::int32_t n, nz, ifail, m;
+    int32_t n, nz, ifail, m;
     char sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS17DLF) (std::int32_t *, double *, double *, std::int32_t *,
-                                       fstring1, double *, std::int32_t *, std::int32_t *);
+    typedef void (__stdcall *PS17DLF) (int32_t *, double *, double *, int32_t *,
+                                       fstring1, double *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PS17DLF s17dlf_proc;
 #else
-    extern void __stdcall S17DLF (std::int32_t *, double *, double *, std::int32_t *,
-                                  fstring1, double *, std::int32_t *, std::int32_t *);
+    extern void __stdcall S17DLF (int32_t *, double *, double *, int32_t *,
+                                  fstring1, double *, int32_t *, int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1563,14 +1563,14 @@ LispObject Ls17dlf(LispObject env, int nargs, ...)
 LispObject Ls18acf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS18ACF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS18ACF) (double *, int32_t *);
     HINSTANCE hLib;
     PS18ACF s18acf_proc;
 #else
-    extern double __stdcall S18ACF (double *, std::int32_t *);
+    extern double __stdcall S18ACF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -1618,14 +1618,14 @@ LispObject Ls18acf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls18adf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS18ADF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS18ADF) (double *, int32_t *);
     HINSTANCE hLib;
     PS18ADF s18adf_proc;
 #else
-    extern double __stdcall S18ADF (double *, std::int32_t *);
+    extern double __stdcall S18ADF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -1673,14 +1673,14 @@ LispObject Ls18adf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls18aef(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS18AEF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS18AEF) (double *, int32_t *);
     HINSTANCE hLib;
     PS18AEF s18aef_proc;
 #else
-    extern double __stdcall S18AEF (double *, std::int32_t *);
+    extern double __stdcall S18AEF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -1728,14 +1728,14 @@ LispObject Ls18aef(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls18aff(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS18AFF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS18AFF) (double *, int32_t *);
     HINSTANCE hLib;
     PS18AFF s18aff_proc;
 #else
-    extern double __stdcall S18AFF (double *, std::int32_t *);
+    extern double __stdcall S18AFF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -1787,17 +1787,17 @@ LispObject Ls18dcf(LispObject env, int nargs, ...)
     LispObject Lzr, Lzi, Lscale, Lifail, Ln, Lnz, Lfnu, Lcy;
     fstring1 scale;
     double z[2], *cy, fnu;
-    std::int32_t n, nz, ifail;
+    int32_t n, nz, ifail;
     char sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS18DCF) (double *, double *, std::int32_t *, fstring1,
-                                       double *, std::int32_t *, std::int32_t *);
+    typedef void (__stdcall *PS18DCF) (double *, double *, int32_t *, fstring1,
+                                       double *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PS18DCF s18dcf_proc;
 #else
-    extern void __stdcall S18DCF (double *, double *, std::int32_t *, fstring1,
-                                  double *, std::int32_t *, std::int32_t *);
+    extern void __stdcall S18DCF (double *, double *, int32_t *, fstring1,
+                                  double *, int32_t *, int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -1905,17 +1905,17 @@ LispObject Ls18def(LispObject env, int nargs, ...)
     LispObject Lzr, Lzi, Lscale, Lifail, Ln, Lnz, Lfnu, Lcy;
     fstring1 scale;
     double z[2], *cy, fnu;
-    std::int32_t n, nz, ifail;
+    int32_t n, nz, ifail;
     char sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS18DEF) (double *, double *, std::int32_t *, fstring1,
-                                       double *, std::int32_t *, std::int32_t *);
+    typedef void (__stdcall *PS18DEF) (double *, double *, int32_t *, fstring1,
+                                       double *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PS18DEF s18def_proc;
 #else
-    extern void __stdcall S18DEF (double *, double *, std::int32_t *, fstring1,
-                                  double *, std::int32_t *, std::int32_t *);
+    extern void __stdcall S18DEF (double *, double *, int32_t *, fstring1,
+                                  double *, int32_t *, int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -2019,14 +2019,14 @@ LispObject Ls18def(LispObject env, int nargs, ...)
 LispObject Ls19aaf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS19AAF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS19AAF) (double *, int32_t *);
     HINSTANCE hLib;
     PS19AAF s19aaf_proc;
 #else
-    extern double __stdcall S19AAF (double *, std::int32_t *);
+    extern double __stdcall S19AAF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -2074,14 +2074,14 @@ LispObject Ls19aaf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls19abf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS19ABF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS19ABF) (double *, int32_t *);
     HINSTANCE hLib;
     PS19ABF s19abf_proc;
 #else
-    extern double __stdcall S19ABF (double *, std::int32_t *);
+    extern double __stdcall S19ABF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -2129,14 +2129,14 @@ LispObject Ls19abf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls19acf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS19ACF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS19ACF) (double *, int32_t *);
     HINSTANCE hLib;
     PS19ACF s19acf_proc;
 #else
-    extern double __stdcall S19ACF (double *, std::int32_t *);
+    extern double __stdcall S19ACF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -2184,14 +2184,14 @@ LispObject Ls19acf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls19adf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS19ADF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS19ADF) (double *, int32_t *);
     HINSTANCE hLib;
     PS19ADF s19adf_proc;
 #else
-    extern double __stdcall S19ADF (double *, std::int32_t *);
+    extern double __stdcall S19ADF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -2239,14 +2239,14 @@ LispObject Ls19adf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls20acf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS20ACF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS20ACF) (double *, int32_t *);
     HINSTANCE hLib;
     PS20ACF s20acf_proc;
 #else
-    extern double __stdcall S20ACF (double *, std::int32_t *);
+    extern double __stdcall S20ACF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -2294,14 +2294,14 @@ LispObject Ls20acf(LispObject env, LispObject Lx, LispObject Lifail)
 LispObject Ls20adf(LispObject env, LispObject Lx, LispObject Lifail)
 {   LispObject Ly;
     double x, y;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS20ADF) (double *, std::int32_t *);
+    typedef double (__stdcall *PS20ADF) (double *, int32_t *);
     HINSTANCE hLib;
     PS20ADF s20adf_proc;
 #else
-    extern double __stdcall S20ADF (double *, std::int32_t *);
+    extern double __stdcall S20ADF (double *, int32_t *);
 #endif
 
     // Translate arguments into C objects
@@ -2351,14 +2351,14 @@ LispObject Ls21baf(LispObject env, int nargs, ...)
 {   std::va_list args;
     LispObject Lx, Ly, Lifail, Lrc;
     double x, y, rc;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS21BAF) (double *, double *, std::int32_t *);
+    typedef double (__stdcall *PS21BAF) (double *, double *, int32_t *);
     HINSTANCE hLib;
     PS21BAF s21baf_proc;
 #else
-    extern double __stdcall S21BAF (double *, double *, std::int32_t *);
+    extern double __stdcall S21BAF (double *, double *, int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -2418,14 +2418,14 @@ LispObject Ls21bbf(LispObject env, int nargs, ...)
 {   std::va_list args;
     LispObject Lx, Ly, Lz, Lifail, Lrf;
     double x, y, z, rf;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS21BBF) (double *, double *, double *, std::int32_t *);
+    typedef double (__stdcall *PS21BBF) (double *, double *, double *, int32_t *);
     HINSTANCE hLib;
     PS21BBF s21bbf_proc;
 #else
-    extern double __stdcall S21BBF (double *, double *, double *, std::int32_t *);
+    extern double __stdcall S21BBF (double *, double *, double *, int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -2489,14 +2489,14 @@ LispObject Ls21bcf(LispObject env, int nargs, ...)
 {   std::va_list args;
     LispObject Lx, Ly, Lz, Lifail, Lrd;
     double x, y, z, rd;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS21BCF) (double *, double *, double *, std::int32_t *);
+    typedef double (__stdcall *PS21BCF) (double *, double *, double *, int32_t *);
     HINSTANCE hLib;
     PS21BCF s21bcf_proc;
 #else
-    extern double __stdcall S21BCF (double *, double *, double *, std::int32_t *);
+    extern double __stdcall S21BCF (double *, double *, double *, int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -2560,16 +2560,16 @@ LispObject Ls21bdf(LispObject env, int nargs, ...)
 {   std::va_list args;
     LispObject Lx, Ly, Lz, Lr, Lifail, Lrj;
     double x, y, z, r, rj;
-    std::int32_t ifail;
+    int32_t ifail;
 
 #ifdef LOADLIB
     typedef double (__stdcall *PS21BDF) (double *, double *, double *, double *,
-                                         std::int32_t *);
+                                         int32_t *);
     HINSTANCE hLib;
     PS21BDF s21bdf_proc;
 #else
     extern double __stdcall S21BDF (double *, double *, double *, double *,
-                                    std::int32_t *);
+                                    int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects

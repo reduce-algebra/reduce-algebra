@@ -88,7 +88,7 @@ static double arg_reduce(double a, int *quadrant)
     static double c2 = 1121027177.0/1073741824.0/1073741824.0/16.0;
     static double c3 = 2.91273205609335616e-20;
     double w = a / 1.5707963267948966;
-    std::int32_t n = (int)(w < 0.0 ? w - 0.5 : w + 0.5);
+    int32_t n = (int)(w < 0.0 ? w - 0.5 : w + 0.5);
 //
 // OK - now n should be the nearest integer to a/(pi/2) so
 // (a - n) should be at most (about) pi/4 in absolute value.
@@ -389,7 +389,7 @@ static LispObject make_complex_float(Complex v, LispObject a)
 //
 // Note that regardless of their input type the elementary functions deliver
 // at most double precision results.
-{   std::int32_t type;
+{   int32_t type;
     LispObject a1, a2;
     a = real_part(a);
     if (is_sfloat(a))
@@ -751,7 +751,7 @@ static double arg_reduce_degrees(double a, int *quadrant)
 // relevant quadant.  Returns arg converted to radians.
 //
 {   double w = a / 90.0;
-    std::int32_t n = (int)w;
+    int32_t n = (int)w;
     w = a - 90.0*n;
     while (w < -45.0)
     {   n--;
@@ -1227,11 +1227,11 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 //
 {   double d;
 #ifndef COMMON
-    std::int32_t restype = TYPE_DOUBLE_FLOAT;
+    int32_t restype = TYPE_DOUBLE_FLOAT;
 #else
 // single floats seem to me to be a bad idea! But they are the default
 // for Common Lisp. Boo Hiss.
-    std::int32_t restype = TYPE_SINGLE_FLOAT;
+    int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
     if (which_one > 46) aerror("trigfn internal error");
     switch ((int)a & TAG_BITS)
@@ -1244,7 +1244,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             else d = (double)int_of_fixnum(a);
             break;
         case TAG_NUMBERS:
-        {   std::int32_t ha = type_of_header(numhdr(a));
+        {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                 case TYPE_RATNUM:
@@ -1314,21 +1314,21 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
     }
 }
 
-static LispObject makenum(LispObject a, std::int32_t n)
+static LispObject makenum(LispObject a, int32_t n)
 // Make the value n, but type-consistent with the object a.  Usually
 // used with n=0 or n=1
 {
 #ifndef COMMON
-    std::int32_t restype = TYPE_DOUBLE_FLOAT;
+    int32_t restype = TYPE_DOUBLE_FLOAT;
 #else
-    std::int32_t restype = TYPE_SINGLE_FLOAT;
+    int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             if (is_sfloat(a)) return pack_immediate_float((double)n, a);
             else return fixnum_of_int(n);
         case TAG_NUMBERS:
-        {   std::int32_t ha = type_of_header(numhdr(a));
+        {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                 case TYPE_RATNUM:
@@ -1357,7 +1357,7 @@ static LispObject makenum(LispObject a, std::int32_t n)
     }
 }
 
-static LispObject CSLpowi(LispObject a, std::uint32_t n)
+static LispObject CSLpowi(LispObject a, uint32_t n)
 //
 // Raise a to the power n by repeated multiplication. The name is CSLpowi
 // rather than just powi because some miserable C compilers come with an
@@ -1420,7 +1420,7 @@ static LispObject Lhypot(LispObject env, LispObject a, LispObject b)
 
 LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 {   double d, e;
-    std::int32_t restype, n;
+    int32_t restype, n;
     LispObject w;
     Complex c1, c2, c3;
 //
@@ -1482,14 +1482,14 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
     if (is_fixnum(b))   // bignum exponents would yield silly values!
     {   n = int_of_fixnum(b);
         if (n < 0)
-        {   a = CSLpowi(a, (std::uint32_t)(-n));
+        {   a = CSLpowi(a, (uint32_t)(-n));
 #ifdef COMMON
             a = CLquot2(fixnum_of_int(1), a);
 #else
             a = quot2(fixnum_of_int(1), a);
 #endif
         }
-        else a = CSLpowi(a, (std::uint32_t)n);
+        else a = CSLpowi(a, (uint32_t)n);
         return onevalue(a);
     }
     if (is_numbers(a) && is_complex(a)) w = real_part(a);
@@ -1562,7 +1562,7 @@ static LispObject Lisqrt(LispObject, LispObject a)
             d = (double)int_of_fixnum(a);
             break;
         case TAG_NUMBERS:
-        {   std::int32_t ha = type_of_header(numhdr(a));
+        {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                     d = float_of_number(a);
@@ -1577,7 +1577,7 @@ static LispObject Lisqrt(LispObject, LispObject a)
     }
     d = std::sqrt(d);
 // /* This is not anything like good enough yet
-    return onevalue(fixnum_of_int((std::int32_t)d));
+    return onevalue(fixnum_of_int((int32_t)d));
 }
 #endif
 
@@ -1593,7 +1593,7 @@ LispObject Labsval(LispObject env, LispObject a)
 //      case XTAG_SFLOAT:
             break;
         case TAG_NUMBERS:
-        {   std::int32_t ha = type_of_header(numhdr(a));
+        {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                 case TYPE_RATNUM:

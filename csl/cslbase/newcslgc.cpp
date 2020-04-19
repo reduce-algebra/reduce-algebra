@@ -38,17 +38,6 @@
 #include "headers.h"
 
 
-// This may end up as a command-line option or it may end up always
-// enabled, but for now there is no code for generational garbage
-// collection so it needs to be false!
-
-bool generationalGarbageCollection = false;
-
-void generationalGarbageCollect()
-{   std::cout << "\n+++++ Attempt to perform a generational GC\n";
-    my_abort();
-}
-
 // Overview of procedure for full garbage collection:
 //
 // For garbage collection I will refer to the full half-space as "A"
@@ -262,26 +251,26 @@ Page *sortPages(Page *p)
 class PinChainClass
 {
 public:
-    static std::uintptr_t nil()
+    static uintptr_t nil()
     {   return TAG_FORWARD;
     }
-    static bool isNil(std::uintptr_t p)
+    static bool isNil(uintptr_t p)
     {   return p == TAG_FORWARD;
     }
-    static std::uintptr_t cdr(std::uintptr_t p)
-    {   return ((std::uintptr_t *)(p-TAG_FORWARD))[0];
+    static uintptr_t cdr(uintptr_t p)
+    {   return ((uintptr_t *)(p-TAG_FORWARD))[0];
     }
-    static void rplacd(std::uintptr_t p, std::uintptr_t x)
-    {   ((std::uintptr_t *)(p-TAG_FORWARD))[0] = x;
+    static void rplacd(uintptr_t p, uintptr_t x)
+    {   ((uintptr_t *)(p-TAG_FORWARD))[0] = x;
     }
-    static bool before(std::uintptr_t x, std::uintptr_t y)
-    {   return ((std::uintptr_t *)(x-TAG_FORWARD))[1] <
-               ((std::uintptr_t *)(y-TAG_FORWARD))[1];
+    static bool before(uintptr_t x, uintptr_t y)
+    {   return ((uintptr_t *)(x-TAG_FORWARD))[1] <
+               ((uintptr_t *)(y-TAG_FORWARD))[1];
     }
 };
 
-std::uintptr_t sortPinList(std::uintptr_t l)
-{   return sortList<std::uintptr_t, PinChainClass>(l);
+uintptr_t sortPinList(uintptr_t l)
+{   return sortList<uintptr_t, PinChainClass>(l);
 }
 
 // During garbage collection I will allocate items in the half of my memory
@@ -296,16 +285,16 @@ std::uintptr_t sortPinList(std::uintptr_t l)
 // but I will need to evaluate whether it would actually help before I code
 // too much.
 
-std::uintptr_t nFringe, nLimit, nNext;
+uintptr_t nFringe, nLimit, nNext;
 
-std::uintptr_t get_n_bytes_new(std::size_t n)
+uintptr_t get_n_bytes_new(size_t n)
 {   size_t gap = nLimit - nFringe;
     while (n > gap)
     {   if (gap != 0) setcar(nFringe, makePaddingHeader(gap));
         if (nNext != 0)
         {   nFringe = nNext;   // Skip past pinned data to the next chunk.
-            nLimit = ((std::uintptr_t *)nFringe)[0];
-            nNext = ((std::uintptr_t *)nFringe)[1];
+            nLimit = ((uintptr_t *)nFringe)[0];
+            nNext = ((uintptr_t *)nFringe)[1];
             gap = nLimit - nFringe;
         }
         else   // Need to allocate a further page.
@@ -346,7 +335,7 @@ std::uintptr_t get_n_bytes_new(std::size_t n)
             gap = nLimit - nFringe;
         }
     }
-    std::uintptr_t r = nFringe;
+    uintptr_t r = nFringe;
     nFringe += n;
     return r;
 }
@@ -418,10 +407,113 @@ LispObject *evacuateContents(LispObject *p)
     return &p[doubleword_align_up(len)/CELL];
 }
 
-std::uintptr_t pinsA, pinsC;
+// Each page consists of a header followed by a number of chunks. There may
+// be unused space in the page after the last chunk. For the purposes of
+// pinning I want to identif the chunk (if any) that (a) points into, and
+// arrange that it is on a per-page list of pinned chunks and that if there
+// are any such chunks that the page itself is on a list of pages that contain
+// pinned material.
+// Each page header contains a 128-entry table where the entries in same
+// point to the start of the first chunk following (1/128)th fractions of
+// the Page. That means that those pointers are around 64K apart and so there
+// can be about 4 chunks in each gap. I can scan those sequentially.
 
-void fullGarbageCollect()
-{   std::cout << "\n+++++ Start of a full GC\n";
+void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
+{   uintptr_t pp = reinterpret_cast<uintptr_t>(p);
+    uintptr_t offset = a - pp;
+    Chunk *c = p->chunkMap[offset/
+        (sizeof(Chunk *)*sizeof(Page)/sizeof(p->chunkMap))];
+// The list of chunks will be arranged such that the highest address one
+// is first in the list. I will now scan it until I find one such that
+// the chunk has (a) pointing within it, and I should not need many tries
+// at all.
+    for (;;)
+    {   if (a >= c->endPoint) return;
+        else if (a < c->startPoint)
+        {   c = c->chunkChain;
+            if (c == NULL) return;
+            continue;
+        }
+// Here (a) lies within the range of the chunk c. Every page that has any
+// pinning must record that both by being on a chain of pages with pins
+// and by having a list of its own pinned chunks.
+// If the chunk is already tagged as pinned there is no need to do so again.
+        if (c->isPinned) return;
+        c->isPinned = true;
+        c->pinChain = p->pinChain;
+        p->pinChain = c;
+// When a chunk gets pinned then page must be too unless it already has been.
+        if (p->isPinned) return;
+        p->isPinned = true;
+        p->pinChain = globalPinChain;
+        globalPinChain = p;
+        return;
+    }
+}
+
+// Here I have an item that may be arbitrary binary material but which COULD
+// be a LispObject that will later be re-used. If it is a LispObject that
+// refers to memory address (a) then I will want to be certain that garbage
+// collection does not relocate material at (a). For a minor collection only
+// objects in the victim page will be evacuated, so I have a simple initial
+// filter. For a full GC I will need to determine whether (a) points anywhere
+// within memory that is currently in use holding active Lisp data. This
+// could be within the page currently bein allocated into, its predecessor
+// page, all the pages that ephemeral collection would view as stable plus
+// those sections of otherwise empty pages that might have live data that
+// had been pinned during a previous GC. But not pages that had ended up
+// totally empty.
+
+void processAmbiguousValue(bool major, uintptr_t a)
+{   if (!major)
+    {   uintptr_t victimBase =
+            reinterpret_cast<uintptr_t>(victimPage);
+        if (victimBase <= a && a < victimBase+pageSize)
+            processAmbiguousInPage(major, victimPage, a);
+        return;
+    }
+    Page* p = findPage(a);
+    if (!p.isEmpty()) processAmbiguousInPage(major, p, a);
+}
+
+void identifyPinnedItems(bool major)
+{
+// For each ambiguous value (ie value on the stack associated with
+// any thread) do processAmbiguousValue(). This must ensure that if
+// the item might be a LispObject that is a reference that the destination
+// address of that reference is marked as "pinned". During a minor GC
+// the only items that need special marking will be one in the "victim"
+// page since nothing else will ever be moved. 
+    for (unsigned int thr=0; thr<maxThreads; thr++)
+    {   if ((threadMap & threadBit(thr)) != 0)
+        {   uintptr_t base = stackBases[thr];
+            uintptr_t fringe = stackFringes[thr];
+            for (uintptr_t s=fringe; s<base; s+=sizeof(uintptr_t))
+            {   processAmbiguousValue(major,
+                    *reinterpret_cast<uintptr_t *>(s));
+            }
+        }
+    }
+}
+
+void garbageCollect(bool major)
+{   cout << "\n+++++ Start of a "
+              << (major ? "major" : "minor)"
+              << " GC\n";
+    prepareForGarbageCollection(major);
+    clearPinnedInformation(major);
+    identifyPinnedItems(major);
+    evacuateFromUnambiguousBases(major);
+    evacuateFromPinnedItems(major);
+    if (!major) evacuateFromDirty();
+    evacuateFromCopiedData(major);
+    endOfGarbageCollection(major);
+}
+
+
+#if 0
+uintptr_t pinsA, pinsC;
+
 // (1) Clear the "pinned" maps for pages in A.
 //     Initialize pinsA list to be empty.
     for (Page *p=busyPages; p!=NULL; p=p->pageHeader.chain)
@@ -435,17 +527,6 @@ void fullGarbageCollect()
     busyPagesCount = 0;
     nFringe = nLimit = nNext = 0;
 //
-// (2) For each ambiguous value (ie value on the stack associated with
-//     any thread) do processAmbiguousValue()
-    for (unsigned int thr=0; thr<maxThreads; thr++)
-    {   if ((threadMap & threadBit(thr)) != 0)
-        {   std::uintptr_t base = stackBases[thr];
-            std::uintptr_t fringe = stackFringes[thr];
-            for (std::uintptr_t s=fringe; s<base; s+=sizeof(std::uintptr_t))
-            {   setPinnedMajor(*reinterpret_cast<std::uintptr_t *>(s));
-            }
-        }
-    }
 //
 // (3) Evacuate each of the following locations:
 //   (a) Every precise pointer.
@@ -470,14 +551,14 @@ void fullGarbageCollect()
 // used items in repeat_heap, and if garbage collection occurs they must be
 // updated.
     if (repeat_heap != NULL)
-    {   for (std::size_t i=1; i<=repeat_count; i++)
+    {   for (size_t i=1; i<=repeat_count; i++)
             evacuate(&repeat_heap[i]);
     }
 // Now I should deal with all pointers emerging from items in the C region
 // they were pinned and hence have to be deemed alive.
-    for (std::uintptr_t p=pinsC;
+    for (uintptr_t p=pinsC;
          p!=0;
-         p=(reinterpret_cast<std::uintptr_t *>(p-TAG_FORWARD))[0])
+         p=(reinterpret_cast<uintptr_t *>(p-TAG_FORWARD))[0])
     {   (void)evacuateContents(
             &(reinterpret_cast<LispObject *>(p-TAG_FORWARD))[1]);
     }
@@ -516,7 +597,7 @@ void fullGarbageCollect()
     uintptr_t scanLimit = scanPage->pageHeader.heaplimit;
     for (;;)
     {   scanPoint =
-            reinterpret_cast<std::uintptr_t>(
+            reinterpret_cast<uintptr_t>(
                 evacuateContents(reinterpret_cast<LispObject *>(scanPoint)));
         if (scanPoint >= scanLimit)
         {   if (scanPoint == nFringe) break;
@@ -535,6 +616,18 @@ void fullGarbageCollect()
 // one that material was evacuated into becomed the new currentPage.
 //
     my_abort();
+}
+
+#endif
+
+bool generationalGarbageCollection = false;
+
+void generationalGarbageCollect()
+{   garbageCollect(false);
+}
+
+void fullGarbageCollect()
+{   garbageCollect(true);
 }
 
 // end of file newcslgc.cpp

@@ -443,14 +443,14 @@ static int pack_character(int font, int codepoint)
 
 static int       charcount = 0;
 static int       fontkey[MAXCHARS];
-static std::int32_t   codepoint[MAXCHARS];
+static int32_t   codepoint[MAXCHARS];
 static int       mainkeycount;
-static std::uint32_t  mainkey[MAXCHARS];
-static std::int32_t   width[MAXCHARS];
-static std::int32_t   llx[MAXCHARS];
-static std::int32_t   lly[MAXCHARS];
-static std::int32_t   urx[MAXCHARS];
-static std::int32_t   ury[MAXCHARS];
+static uint32_t  mainkey[MAXCHARS];
+static int32_t   width[MAXCHARS];
+static int32_t   llx[MAXCHARS];
+static int32_t   lly[MAXCHARS];
+static int32_t   urx[MAXCHARS];
+static int32_t   ury[MAXCHARS];
 static char      uninames[MAXCHARS][MAXUNILEN];
 static int       kernreference[MAXCHARS];
 
@@ -460,11 +460,11 @@ static int       kernreference[MAXCHARS];
 
 static int       nligatures = 0;
 static int       ligfont[MAXLIGATURES];
-static std::int32_t   ligstart[MAXLIGATURES];
+static int32_t   ligstart[MAXLIGATURES];
 static char      ligfollow[MAXLIGATURES][MAXUNILEN];
 static char      ligreplacement[MAXLIGATURES][MAXUNILEN];
-static std::int32_t   ligfollowcode[MAXLIGATURES];
-static std::int32_t   ligreplacementcode[MAXLIGATURES];
+static int32_t   ligfollowcode[MAXLIGATURES];
+static int32_t   ligreplacementcode[MAXLIGATURES];
 
 // For kerning information I will store the identity of the
 // start and follow characters and the integer adjustment to be made.
@@ -474,12 +474,12 @@ static int       kernfont[MAXKERNS];
 static char      kernstart[MAXKERNS][MAXUNILEN];
 static char      kernfollow[MAXKERNS][MAXUNILEN];
 static int       kernadjustment[MAXKERNS];
-static std::int32_t   kernstartcode[MAXKERNS];
-static std::int32_t   kernfollowcode[MAXKERNS];
+static int32_t   kernstartcode[MAXKERNS];
+static int32_t   kernfollowcode[MAXKERNS];
 
 static int kernp = 0;
 static std::int16_t  fontkern[F_end];
-static std::uint32_t kerntable[MAXKERNS];
+static uint32_t kerntable[MAXKERNS];
 static char     ktstart[MAXKERNS][MAXUNILEN];
 static char     ktfollow[MAXKERNS][MAXUNILEN];
 static int      ktadjustment[MAXKERNS];
@@ -487,7 +487,7 @@ static char     ktfont[MAXKERNS][32];
 static int      ktfontn[MAXKERNS];
 
 static int ligp = 0;
-static std::uint32_t ligtable[MAXLIGATURES];
+static uint32_t ligtable[MAXLIGATURES];
 static char ltfirst[MAXLIGATURES][MAXUNILEN],
        ltfollow[MAXLIGATURES][MAXUNILEN],
        ltname[MAXLIGATURES][MAXUNILEN],
@@ -495,8 +495,8 @@ static char ltfirst[MAXLIGATURES][MAXUNILEN],
 
 static int accentp = 0;
 static char accentname[MAXMATHSYMS][MAXUNILEN];
-static std::uint32_t accentnum[MAXMATHSYMS];
-static std::int32_t  accentval[MAXMATHSYMS];
+static uint32_t accentnum[MAXMATHSYMS];
+static int32_t  accentval[MAXMATHSYMS];
 
 static int variantp = 0;
 static int variantdirection[MAXMATHSYMS];
@@ -512,17 +512,17 @@ static char P3[MAXMATHSYMS][MAXUNILEN]; // middle     bottom
 static char P4[MAXMATHSYMS][MAXUNILEN]; // extension
 static char P5[MAXMATHSYMS][MAXUNILEN]; // bottom
 // Now the same converted to codepoints rather than names.
-static std::int32_t variantcode[MAXMATHSYMS];
-static std::int32_t nv1[MAXMATHSYMS];     // size 1 (just bigger than basic)
-static std::int32_t nv2[MAXMATHSYMS];     // size 2
-static std::int32_t nv3[MAXMATHSYMS];     // size 3
-static std::int32_t nv4[MAXMATHSYMS];     // size 4
-static std::int32_t nv5[MAXMATHSYMS];     // size 5 (biggest)
-static std::int32_t np1[MAXMATHSYMS];     // bottom piece
-static std::int32_t np2[MAXMATHSYMS];     // extension
-static std::int32_t np3[MAXMATHSYMS];     // middle piece
-static std::int32_t np4[MAXMATHSYMS];     // extension
-static std::int32_t np5[MAXMATHSYMS];     // top piece
+static int32_t variantcode[MAXMATHSYMS];
+static int32_t nv1[MAXMATHSYMS];     // size 1 (just bigger than basic)
+static int32_t nv2[MAXMATHSYMS];     // size 2
+static int32_t nv3[MAXMATHSYMS];     // size 3
+static int32_t nv4[MAXMATHSYMS];     // size 4
+static int32_t nv5[MAXMATHSYMS];     // size 5 (biggest)
+static int32_t np1[MAXMATHSYMS];     // bottom piece
+static int32_t np2[MAXMATHSYMS];     // extension
+static int32_t np3[MAXMATHSYMS];     // middle piece
+static int32_t np4[MAXMATHSYMS];     // extension
+static int32_t np5[MAXMATHSYMS];     // top piece
 static int vdata1[MAXMATHSYMS][4];   // start end full flag
 static int vdata2[MAXMATHSYMS][4];
 static int vdata3[MAXMATHSYMS][4];
@@ -534,7 +534,7 @@ static int vdata5[MAXMATHSYMS][4];
 // that with a crude linear search because I do not expect this to be a
 // performance-limiting part of this whole program.
 
-std::int32_t decodename(int fontnum, const char *name)
+int32_t decodename(int fontnum, const char *name)
 {   int i;
     for (i=0; i<charcount; i++)
         if (fontnum == fontkey[i] &&
@@ -561,11 +561,11 @@ std::int32_t decodename(int fontnum, const char *name)
 // to save space by having an index of bounding boxes does not appear to be
 // useful.
 
-static std::uint64_t hashtable[MAXCHAR_METRICS_TABLE_SIZE][5];
+static uint64_t hashtable[MAXCHAR_METRICS_TABLE_SIZE][5];
 // The following smaller array is used with the Hungarian algorithm...
-static std::uint32_t uint32hashtable[MAXCHAR_METRICS_TABLE_SIZE];
+static uint32_t uint32hashtable[MAXCHAR_METRICS_TABLE_SIZE];
 
-static int main_importance(std::uint32_t key)
+static int main_importance(uint32_t key)
 {   int font = key >> 16;
     if (font != F_cmuntt && font != F_Math) return CUCKOO_STANDARD;
     key &= 0xffff;
@@ -590,16 +590,16 @@ static int main_importance(std::uint32_t key)
     return CUCKOO_STANDARD;
 }
 
-static std::uint32_t main_get(void *p)
+static uint32_t main_get(void *p)
 {
 // The FULL key may be up to 21-bits but because I then have hash-table lines
 // with 4 items in I only use 19-bit keys here. In reality with the packing
 // scheme used at present I only ise 19-bit full keys and hence 17 bits here,
 // so there are two bits available for future expansion if necessary.
-    return *(std::uint32_t *)p & 0x0007ffff;
+    return *(uint32_t *)p & 0x0007ffff;
 }
-static void main_set(void *p, std::uint32_t key)
-{   *(std::uint32_t *)p = (*(std::uint32_t *)p & 0xfff80000) | (key & 0x0007ffff);
+static void main_set(void *p, uint32_t key)
+{   *(uint32_t *)p = (*(uint32_t *)p & 0xfff80000) | (key & 0x0007ffff);
 }
 
 
@@ -611,19 +611,19 @@ static void main_set(void *p, std::uint32_t key)
 // into a 32-bit integere here.
 
 #define MAXTOPCENTRESIZE 500
-static std::int32_t topcentre[MAXTOPCENTRESIZE];
+static int32_t topcentre[MAXTOPCENTRESIZE];
 
 
-static int accent_importance(std::uint32_t key)
+static int accent_importance(uint32_t key)
 {   return CUCKOO_IMPORTANT;
 }
 
 
-static std::uint32_t accent_get(void *p)
-{   return *(std::uint32_t *)p;
+static uint32_t accent_get(void *p)
+{   return *(uint32_t *)p;
 }
-static void accent_set(void *p, std::uint32_t key)
-{   *(std::uint32_t *)p = key;
+static void accent_set(void *p, uint32_t key)
+{   *(uint32_t *)p = key;
 }
 
 
@@ -631,34 +631,34 @@ static void accent_set(void *p, std::uint32_t key)
 // a left parenthesis will have five gradually larger versions.
 
 static int variantsize = MAXMATHSYMS;
-static std::uint32_t variant_table[MAXMATHSYMS][6];
+static uint32_t variant_table[MAXMATHSYMS][6];
 
-static int variant_importance(std::uint32_t key)
+static int variant_importance(uint32_t key)
 {   return CUCKOO_STANDARD;
 }
 
-static std::uint32_t variant_get(void *p)
-{   return *(std::uint32_t *)p;
+static uint32_t variant_get(void *p)
+{   return *(uint32_t *)p;
 }
-static void variant_set(void *p, std::uint32_t key)
-{   *(std::uint32_t *)p = key;
+static void variant_set(void *p, uint32_t key)
+{   *(uint32_t *)p = key;
 }
 
 // Yet another is for the ways to build up huge symbols out of multiple
 // glyphs.
 
 static int extensionsize = MAXMATHSYMS;
-static std::uint32_t extension_table[MAXMATHSYMS][11];
+static uint32_t extension_table[MAXMATHSYMS][11];
 
-static int extension_importance(std::uint32_t key)
+static int extension_importance(uint32_t key)
 {   return CUCKOO_STANDARD;
 }
 
-static std::uint32_t extension_get(void *p)
-{   return *(std::uint32_t *)p;
+static uint32_t extension_get(void *p)
+{   return *(uint32_t *)p;
 }
-static void extension_set(void *p, std::uint32_t key)
-{   *(std::uint32_t *)p = key;
+static void extension_set(void *p, uint32_t key)
+{   *(uint32_t *)p = key;
 }
 
 
@@ -705,7 +705,7 @@ int main(int argc, char *argv[])
         }
         for (;;)
         {   int ia, ib, ic, id;
-            std::int32_t cp, wid, bb1, bb2, bb3, bb4;
+            int32_t cp, wid, bb1, bb2, bb3, bb4;
             char unn[MAXLINE], lig1[MAXLINE], lig2[MAXLINE];
             cp = -1;
             wid = bb1 = bb2 = bb3 = bb4 = 0;
@@ -1177,11 +1177,11 @@ int main(int argc, char *argv[])
     cuckoo_parameters variant_r;
     int usefulp = 0;
 // I will only put characters that actually have variants in here
-    {   std::uint32_t usefulcode[MAXMATHSYMS];
+    {   uint32_t usefulcode[MAXMATHSYMS];
         for (i=0; i<variantp; i++)
         {   if (nv1[i] != 0 || nv2[i] != 0 || nv3[i] != 0 ||
                 nv4[i] != 0 || nv5[i] != 0)
-                usefulcode[usefulp++] = (std::uint32_t)variantcode[i];
+                usefulcode[usefulp++] = (uint32_t)variantcode[i];
         }
         variant_r = cuckoo_binary_optimise(
                         usefulcode,
@@ -1244,11 +1244,11 @@ int main(int argc, char *argv[])
     cuckoo_parameters extension_r;
     usefulp = 0;
 // I will only put characters that actually have variants in here
-    {   std::uint32_t usefulcode[MAXMATHSYMS];
+    {   uint32_t usefulcode[MAXMATHSYMS];
         for (i=0; i<variantp; i++)
         {   if (np1[i] != 0 || np2[i] != 0 || np3[i] != 0 ||
                 np4[i] != 0 || np5[i] != 0)
-                usefulcode[usefulp++] = (std::uint32_t)variantcode[i];
+                usefulcode[usefulp++] = (uint32_t)variantcode[i];
         }
         extension_r = cuckoo_binary_optimise(
                           usefulcode,
@@ -1318,7 +1318,7 @@ int main(int argc, char *argv[])
     mainkeycount = 0;
     for (i=0; i<charcount; i++)
     {   int j;
-        std::uint32_t k = pack_character(fontkey[i], codepoint[i]) >> 2;
+        uint32_t k = pack_character(fontkey[i], codepoint[i]) >> 2;
         if (k == 0) continue;
         for (j=0; j<mainkeycount; j++)
             if (k == mainkey[j]) break;
@@ -1424,7 +1424,7 @@ int main(int argc, char *argv[])
         int key = fullkey >> 2; // because my hash table has line-size 4
         if (codepoint[i] == 0) continue;
         int h1;
-        std::uint64_t w;
+        uint64_t w;
         h1 = cuckoo_lookup(
                  key,
                  hashtable,
@@ -1447,15 +1447,15 @@ int main(int argc, char *argv[])
         }
 
 // Pack and write in the messy information about width and bounding boxes.
-        w = ((std::uint64_t)width[i] & 0x1fff) << 51 |
-            ((std::uint64_t)(llx[i]+3000) & 0x1fff) << 38 |
-            ((std::uint64_t)(lly[i]+1000) & 0x0fff) << 26 |
-            ((std::uint64_t)(urx[i]+500) & 0x1fff) << 13 |
-            ((std::uint64_t)(ury[i]+1000) & 0x1fff);
+        w = ((uint64_t)width[i] & 0x1fff) << 51 |
+            ((uint64_t)(llx[i]+3000) & 0x1fff) << 38 |
+            ((uint64_t)(lly[i]+1000) & 0x0fff) << 26 |
+            ((uint64_t)(urx[i]+500) & 0x1fff) << 13 |
+            ((uint64_t)(ury[i]+1000) & 0x1fff);
         hashtable[h1][1+(fullkey&3)] = w;
 // Finally merge in an offset to any kern info that might be available
         if (kernreference[i] != 0)
-        {   std::int64_t q = (kernreference[i] & 0x7fffffff)-fontkern[fontkey[i]];
+        {   int64_t q = (kernreference[i] & 0x7fffffff)-fontkern[fontkey[i]];
 #if 0
             std::printf("Fill in kern ref %d as %d\n",
                    kernreference[i] & 0x7fffffff, (int)q);
@@ -2153,7 +2153,7 @@ int lookupchar(int fontnum, int codepoint)
 {   int fullkey = pack_character(fontnum, codepoint); // 21-bit key
     int key = fullkey >> 2; // because my hash table has line-size 4
     int v, h1, h2;
-    std::uint64_t w;
+    uint64_t w;
     h1 = key % CHAR_METRICS_TABLE_SIZE;
     v = (int)charmetrics[h1][0] & 0x7ffff;
     if (v != key)
@@ -2211,9 +2211,9 @@ int lookupchar(int fontnum, int codepoint)
 //
 // I provide variants that collect just kern or just ligature information.
 
-std::int32_t lookupkernandligature(int codepoint)
-{   std::int32_t r = 0;
-    std::uint32_t w;
+int32_t lookupkernandligature(int codepoint)
+{   int32_t r = 0;
+    uint32_t w;
     int i;
     if ((i = c_kerninfo) == 0) return 0;  // No info based on current start.
 // The worst cases I can see in my fonts is the kern information for "W"
@@ -2253,8 +2253,8 @@ std::int32_t lookupkernandligature(int codepoint)
 // its result as a simple integer. In case kern information is found this
 // is just slightly faster than using the more general method.
 
-std::int32_t lookupkernadjustment(int codepoint)
-{   std::int32_t w;
+int32_t lookupkernadjustment(int codepoint)
+{   int32_t w;
     int i;
     if ((i = c_kerninfo) == 0) return 0;  // No info based on current start.
     do
@@ -2270,8 +2270,8 @@ std::int32_t lookupkernadjustment(int codepoint)
 
 // Much the same as the above but ONLY looks for ligature information.
 
-std::int32_t lookupligature(int codepoint)
-{   std::uint32_t w;
+int32_t lookupligature(int codepoint)
+{   uint32_t w;
     int i;
     if ((i = c_kerninfo) == 0) return 0;  // No info based on current start.
     do
@@ -2294,10 +2294,10 @@ std::int32_t lookupligature(int codepoint)
 
 int accentposition(int code)
 {   int hash1 = code % TOPCENTRE_TABLE_SIZE, hash2;
-    std::int32_t r;
-    if (((r = topcentre[hash1]) & 0x001fffff) == code) return ((std::int32_t)r)>>21;
+    int32_t r;
+    if (((r = topcentre[hash1]) & 0x001fffff) == code) return ((int32_t)r)>>21;
     hash2 = (code % TOPCENTRE_MODULUS) + TOPCENTRE_OFFSET;
-    if (((r = topcentre[hash2]) & 0x001fffff) == code) return ((std::int32_t)r)>>21;
+    if (((r = topcentre[hash2]) & 0x001fffff) == code) return ((int32_t)r)>>21;
     else return 0;
 }
 
@@ -2314,9 +2314,9 @@ int accentposition(int code)
 // is the base character passed, but then r[1] tp r[5] are gradually larger
 // versions, or U+0000 when no further large versions are available.
 
-const std::uint32_t *character_variants(int code)
+const uint32_t *character_variants(int code)
 {   int hash1 = code % VARIANT_TABLE_SIZE, hash2, hash3;
-    std::int32_t r;
+    int32_t r;
     if (variant_table[hash1][0] == code) return &variant_table[hash1][0];
     hash2 = (code % VARIANT_MODULUS) + VARIANT_OFFSET;
     if (variant_table[hash2][0] == code) return &variant_table[hash2][0];
@@ -2331,9 +2331,9 @@ const std::uint32_t *character_variants(int code)
 // can be placed together to ranfer a huge version of it. This retrieves
 // a table showing how to do that.
 
-const std::uint32_t *character_extension(int code)
+const uint32_t *character_extension(int code)
 {   int hash1 = code % EXTENSION_TABLE_SIZE, hash2, hash3;
-    std::int32_t r;
+    int32_t r;
     if (extension_table[hash1][0] == code) return &extension_table[hash1][0];
     hash2 = (code % EXTENSION_MODULUS) + EXTENSION_OFFSET;
     if (extension_table[hash2][0] == code) return &extension_table[hash2][0];
@@ -2388,7 +2388,7 @@ const std::uint32_t *character_extension(int code)
 
 int main(int argc, char *argv[])
 {   int i, r;
-    const std::uint32_t *p;
+    const uint32_t *p;
     std::printf("====== Test program starting ======\n");
     std::printf("Hash table size was %d\n", (int)CHAR_METRICS_TABLE_SIZE);
     std::printf("Second modulus, offset %d (%d)\n", (int)CHAR_METRICS_MODULUS,
@@ -2402,7 +2402,7 @@ int main(int argc, char *argv[])
     }
     if (!lookupchar(F_Regular, 'f')) std::printf("Character \"f\" not found\n");
     else
-    {   std::int32_t k = lookupkernandligature('i');
+    {   int32_t k = lookupkernandligature('i');
         std::printf("Kern/ligature data for sequence f-i is %d %d\n",
                (int)(k >> 23), (int)(k & 0x001fffff));
         std::fflush(stdout);

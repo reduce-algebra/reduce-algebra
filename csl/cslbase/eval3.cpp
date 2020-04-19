@@ -748,7 +748,7 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
 {   LispObject *sp = stack;
     while (sp != entry_stack)
     {   LispObject bv, w;
-        std::size_t n;
+        size_t n;
         w = *sp--;
         if (findcatch && w == SPID_CATCH) break;
         if (w == (LispObject)SPID_FBIND)
@@ -761,7 +761,7 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
             n = length_of_header(vechdr(bv));
             while (n>CELL)
             {   LispObject v = *(LispObject *)(
-                                   (std::intptr_t)bv + n - (CELL + TAG_VECTOR));
+                                   (intptr_t)bv + n - (CELL + TAG_VECTOR));
                 n -= CELL;
                 setvalue(v, *sp--);
             }
@@ -794,7 +794,7 @@ static LispObject errorset3(volatile LispObject env,
                             volatile LispObject fg2)
 {   LispObject r;
     STACK_SANITY;
-    volatile std::uint32_t flags = miscflags;
+    volatile uint32_t flags = miscflags;
 //
 // See also (ENABLE-BACKTRACE level) and (ENABLE-ERROSET min max)
 //
@@ -990,15 +990,15 @@ LispObject Lerrorset_2(LispObject env, LispObject form, LispObject ffg1)
 // note that resources have expired.
 //
 
-std::int64_t time_base = 0,   space_base = 0,   io_base = 0,   errors_base = 0;
-std::int64_t time_now = 0,    space_now = 0,    io_now = 0,    errors_now = 0;
-std::int64_t time_limit = -1, space_limit = -1, io_limit = -1, errors_limit = 0;
-std::int64_t Cstack_base = 0,   Lispstack_base = 0;
-std::int64_t Cstack_now = 0,    Lispstack_now = 0;
-std::int64_t Cstack_limit = -1, Lispstack_limit = -1;
+int64_t time_base = 0,   space_base = 0,   io_base = 0,   errors_base = 0;
+int64_t time_now = 0,    space_now = 0,    io_now = 0,    errors_now = 0;
+int64_t time_limit = -1, space_limit = -1, io_limit = -1, errors_limit = 0;
+int64_t Cstack_base = 0,   Lispstack_base = 0;
+int64_t Cstack_now = 0,    Lispstack_now = 0;
+int64_t Cstack_limit = -1, Lispstack_limit = -1;
 
 class RAIIresource_variables
-{   std::int64_t save_time_base,
+{   int64_t save_time_base,
             save_space_base,
             save_io_base,
             save_errors_base,
@@ -1047,9 +1047,9 @@ static LispObject resource_limit7(LispObject env,
 //
     STACK_SANITY;
     LispObject r;
-    std::int64_t lltime, llspace, llio, llerrors;
+    int64_t lltime, llspace, llio, llerrors;
     RAIIresource_variables RAIIresource_variables_object;
-    std::int64_t r0=0, r1=0, r2=0, r3=0;
+    int64_t r0=0, r1=0, r2=0, r3=0;
     errorset_msg = NULL;
 //
 // Here I need to do something that actually sets up the limits!

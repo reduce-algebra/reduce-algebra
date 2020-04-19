@@ -85,7 +85,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else
-extern char *getcwd(char *s, std::size_t n);
+extern char *getcwd(char *s, size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -530,12 +530,12 @@ void farey(int p1, int q1, int p2, int q2, int maxQ)
 // area up to 7680x7680, which is ridiculously large by the standards of
 // the year in which this code is being written. 
 
-static std::uint64_t tileMap[64];
+static uint64_t tileMap[64];
 
 #define maxSmallTileSize 120
 #define maxBigTileSize (4*maxSmallTileSize)
 
-static std::int32_t convert_font_name(char *dest, char *src)
+static int32_t convert_font_name(char *dest, char *src)
 {
 // The font name passed should be one of
 //    cmuntt
@@ -546,7 +546,7 @@ static std::int32_t convert_font_name(char *dest, char *src)
 //    <anything else>-Italic
 //    <anything else>-BoldItalic
 //
-    std::int32_t r = wxFONTFLAG_DEFAULT;
+    int32_t r = wxFONTFLAG_DEFAULT;
     if (std::strcmp(src, "cmuntt") == 0) std::strcpy(dest, "CMU Typewriter Text");
     else if (std::strcmp(src, "odokai") == 0) std::strcpy(dest, "AR PL New Kai");
     else if (std::strcmp(src, "Math") == 0) std::strcpy(dest, "cslSTIXMath");
@@ -930,7 +930,7 @@ showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathFilename
         }
         std::fseek(f, (off_t)0, SEEK_END);
         off_t len = std::ftell(f);
-        showmathData = (char *)std::malloc(4+(std::size_t)len);
+        showmathData = (char *)std::malloc(4+(size_t)len);
         std::fseek(f, (off_t)0, SEEK_SET);
         for (i=0; i<len; i++) showmathData[i] = std::getc(f);
         showmathData[i] = 0;
@@ -1069,13 +1069,13 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
                 printlog("tile at %d %d to be redrawn\n",
                     x*smallTileSize, y*smallTileSize);
 #endif
-                tileMap[y] |= ((std::uint64_t)1)<<x;
+                tileMap[y] |= ((uint64_t)1)<<x;
             }
         upd++;
     }
 #ifdef DISPLAY_TILE_BITMAP
     for (int y=0; y<64; y++)
-    {   std::uint64_t v = tileMap[y];
+    {   uint64_t v = tileMap[y];
         for (int x=0; x<64; x++)
         {   std::putchar('0' + (int)(v & 1));
             v = v >> 1;
@@ -1095,7 +1095,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     for (int tileY=0; tileY<clientHeight; tileY+=smallTileSize)
     for (int tileX=0; tileX<clientWidth;  tileX+=smallTileSize)
     {   if ((tileMap[tileY/smallTileSize] &
-             (((std::uint64_t)1)<<(tileX/smallTileSize))) == 0) continue;
+             (((uint64_t)1)<<(tileX/smallTileSize))) == 0) continue;
         tileCount++;
         pBig.MoveTo(bigData, (bigTileSize*tileX)/smallTileSize,
                              (bigTileSize*tileY)/smallTileSize);
@@ -1181,7 +1181,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
         mydc.DrawBitmap(*smallTile, tileX, tileY);
     }
     printlog("Scale %d tiles from bitmap to screen in %" PRId64 "\n",
-        tileCount, (std::int64_t)sw.Time());
+        tileCount, (int64_t)sw.Time());
 
 
 }

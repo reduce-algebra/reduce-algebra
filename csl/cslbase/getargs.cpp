@@ -1,10 +1,10 @@
-// getargs.h                                    Copyright (C) 2019 Codemist
+// getargs.h                                    Copyright (C) 2020 Codemist
 
 // $Id$
 
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -59,31 +59,31 @@
 #include <string>
 #include <algorithm>
 
-typedef void argAction(std::string key, bool takesVal, std::string value);
+typedef void argAction(string key, bool takesVal, string value);
 
 struct argSpec
 {   const char *name;      // e.g. "-k"
     bool takesVal;         // true if either "-k NN" or "-k=NN" will be valid
-    std::string help;      // e.g. "-k NN: set memory allocation to NN"
-    std::function<void(std::string,bool,std::string)>action;
+    string help;           // e.g. "-k NN: set memory allocation to NN"
+    std::function<void(string,bool,string)>action;
                            // procedure to call when this case arises.
 };
 
-static std::unordered_map<std::string, argSpec *> argIndex;
+static std::unordered_map<string, argSpec *> argIndex;
 
 // All command-line items that do not begin with "-" are collected in the
 // vector simpleArgs[]. They will be treated as names of files to be
 // read from. Also an isolated "-" is treated this way so it can be used
 // to indicate a default file-name, as in "-I -".
 
-static std::vector<std::string> simpleArgs;
+static std::vector<string> simpleArgs;
 
 // If an item is not recognized I will collect it here. This will also
 // apply if an item does not expect an associated value but is provided
 // with one. If an item is expecting a value but nothing is provided it
 // will just use the empty string "".
 
-static std::vector<std::string> badArgs;
+static std::vector<string> badArgs;
 
 void setupArgs(argSpec *v, int argc, const char *argv[])
 {   argIndex.clear(); // Just to be safe!
@@ -93,15 +93,15 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
     for (int i=0; v[i].name != NULL; i++)  argIndex[v[i].name] = &v[i];
 // Now scan the arguments.
     for (int i=1; i<argc && argv[i]!=NULL; i++)
-    {   std::string a(argv[i]);       // The next argument provided
-        std::string aSave(a);
+    {   string a(argv[i]);       // The next argument provided
+        string aSave(a);
         if (a.compare("--args") == 0) break;
-        std::string val;
+        string val;
         bool hasVal = false;
         if (a[0] == '-' && a[1] != 0)
         {   if (a[1] == '-')            // Here I have "--word"
             {   auto pos = a.find('=');
-                if (pos != std::string::npos) //       "--word=VAL"
+                if (pos != string::npos) //       "--word=VAL"
                 {   val = a.substr(pos+1);
                     hasVal = true;
                     a = a.substr(0, pos);
@@ -118,8 +118,8 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
         else simpleArgs.push_back(a); // No initial "-" or JUST "-".
         argSpec *aspec;
         try                           // Look up the keyword.
-        {   std::string aLow(a);
-            std::transform(aLow.begin(), aLow.end(), aLow.begin(),
+        {   string aLow(a);
+            transform(aLow.begin(), aLow.end(), aLow.begin(),
                 [](int c){ return std::tolower(c); });
             aspec = argIndex.at(aLow);
         }

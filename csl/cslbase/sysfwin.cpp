@@ -136,7 +136,7 @@ static char time_string[40], space_string[32];
 // are called periodically - ideally so that the user gets to see things
 // chance roughtly once per second.
 
-void report_time(std::int32_t t, std::int32_t gct)
+void report_time(int32_t t, int32_t gct)
 {
 #ifndef EMBEDDED
     std::sprintf(time_string, "%ld.%.2ld+%ld.%.2ld secs  ",
@@ -145,7 +145,7 @@ void report_time(std::int32_t t, std::int32_t gct)
 #endif
 }
 
-void report_space(std::uint64_t n, double percent, double mbytes)
+void report_space(uint64_t n, double percent, double mbytes)
 {
 #ifndef EMBEDDED
     if (mbytes > 9500.0)
@@ -380,7 +380,7 @@ char *look_in_lisp_variable(char *o, int prefix)
 // text for it. Otherwise I need to look harder at its value.
     if (qvalue(var) == unset_var) return o;
     else
-    {   std::intptr_t len;
+    {   intptr_t len;
         var = qvalue(var);
 // Mostly I expect that the value will be a string or symbol.
 #ifdef COMMON
@@ -393,7 +393,7 @@ char *look_in_lisp_variable(char *o, int prefix)
 // into the file-name buffer. There could at present be a crash here
 // if the expansion was very very long and overflowed my buffer. Tough
 // luck for now - people doing that (maybe) get what they (maybe) deserve.
-        std::memcpy(o, (char *)var + (CELL - TAG_VECTOR), (std::size_t)len);
+        std::memcpy(o, (char *)var + (CELL - TAG_VECTOR), (size_t)len);
         o = o + len;
         return o;
     }
@@ -408,11 +408,11 @@ char *look_in_lisp_variable(char *o, int prefix)
 // a value expressed in microseconds, but of course there is no guarantee that
 // I will have anything like that as my actual granularity!
 
-std::uint64_t read_clock_microseconds(void)
+uint64_t read_clock_microseconds(void)
 {   struct std::timespec tt;
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tt);
     double w1 = (double)tt.tv_sec + (double)tt.tv_nsec/1000000000.0;
-    return (std::uint64_t)(1000000.0*w1);
+    return (uint64_t)(1000000.0*w1);
 }
 
 
@@ -423,7 +423,7 @@ std::uint64_t read_clock_microseconds(void)
 
 double unix_ticks = 0.0;
 
-std::uint64_t read_clock(void)
+uint64_t read_clock(void)
 {   struct tms tmsbuf;
     times(&tmsbuf);
     std::clock_t w1 = tmsbuf.tms_utime;   // User time in UNIX_TIMES ticks
@@ -431,12 +431,12 @@ std::uint64_t read_clock(void)
     if (unix_ticks == 0.0) unix_ticks = (double)sysconf(_SC_CLK_TCK);
 #endif
     if (unix_ticks == 0.0) unix_ticks = 100.0;
-    return (std::uint64_t)((1000000.0/unix_ticks) * (double)w1);
+    return (uint64_t)((1000000.0/unix_ticks) * (double)w1);
 }
 
 #elif defined WIN32
 
-std::uint64_t read_clock()
+uint64_t read_clock()
 {   FILETIME t0, t1, t2, t3;
     if (GetProcessTimes(GetCurrentProcess(), &t0, &t1, &t2, &t3) == 0)
         return 0;
@@ -446,7 +446,7 @@ std::uint64_t read_clock()
 // type that I can use.
    ul.LowPart = t3.dwLowDateTime;
    ul.HighPart = t3.dwHighDateTime;
-   std::uint64_t n = ul.QuadPart;
+   uint64_t n = ul.QuadPart;
 // Times are returned in units of 100ns, so I divide by 10 to get
 // microseconds.
    return n/10;
@@ -457,8 +457,8 @@ std::uint64_t read_clock()
 // In cases where clock_t is a 32-bit data type this fallback version
 // will wraps round after around 20 minutes of CPU time!
 
-std::uint64_t read_clock()
-{   return (std::uint64_t)((1000000.0/CLOCKS_PER_SEC)*(double)std::clock());
+uint64_t read_clock()
+{   return (uint64_t)((1000000.0/CLOCKS_PER_SEC)*(double)std::clock());
 }
 
 #endif
@@ -646,7 +646,7 @@ int executable_file(const char *name)
 
 int find_gnuplot(char *name)
 {   const char *w = std::getenv("GNUPLOT");
-    std::size_t len;
+    size_t len;
     if (w != NULL && (len = std::strlen(w)) > 0)
     {   if (w[len-1] == '/' ||
             w[len-1] == '\\') len--;
@@ -773,7 +773,7 @@ int find_gnuplot(char *name)
 // The following function controls memory allocation policy
 //
 
-std::int32_t ok_to_grab_memory(std::int32_t current)
+int32_t ok_to_grab_memory(int32_t current)
 {   return 3*current + 2;
 }
 
@@ -821,7 +821,7 @@ int number_of_processors()
 
 int number_of_processors()
 {   int n;
-    std::size_t len=4;
+    size_t len=4;
     if (sysctlbyname("hw.ncpu", &n, &len, NULL, 0) != 0) return 1;
     return n;
 }
@@ -905,7 +905,7 @@ const char *CSLtmpdir()
 #endif
 }
 
-const char *CSLtmpnam(const char *suffix, std::size_t suffixlen)
+const char *CSLtmpnam(const char *suffix, size_t suffixlen)
 {   std::time_t t0 = std::time(NULL);
     std::clock_t c0 = std::clock();
     unsigned long taskid;
@@ -986,19 +986,19 @@ const char *CSLtmpnam(const char *suffix, std::size_t suffixlen)
 
 #if defined __CYGWIN__ || defined __MINGW32__
 
-std::uint32_t myTlsAlloc()
+uint32_t myTlsAlloc()
 {   return TlsAlloc();
 }
 
-void myTlsFree(std::uint32_t h)
+void myTlsFree(uint32_t h)
 {   (void)TlsFree(h);
 }
 
-void *myTlsGetValue(std::uint32_t h)
+void *myTlsGetValue(uint32_t h)
 {   return TlsGetValue(h);
 }
 
-void myTlsSetValue(std::uint32_t h, void *v)
+void myTlsSetValue(uint32_t h, void *v)
 {   TlsSetValue(h, v);
 }
 
@@ -1068,7 +1068,7 @@ bool valid_address(void *pointer)
 
 #endif
 
-bool valid_address(std::uintptr_t pointer)  // an overload to accept integer types
+bool valid_address(uintptr_t pointer)  // an overload to accept integer types
 {   return valid_address((void *)pointer);
 }
 

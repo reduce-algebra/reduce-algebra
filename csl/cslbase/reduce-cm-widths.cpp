@@ -70,8 +70,8 @@
 
 static std::FILE *out = NULL;
 
-static std::int32_t read4(std::FILE *f)
-{   std::int32_t r = std::getc(f) & 0xff;
+static int32_t read4(std::FILE *f)
+{   int32_t r = std::getc(f) & 0xff;
     r = (r << 8) | (std::getc(f) & 0xff);
     r = (r << 8) | (std::getc(f) & 0xff);
     r = (r << 8) | (std::getc(f) & 0xff);
@@ -81,9 +81,9 @@ static std::int32_t read4(std::FILE *f)
 static int process(char *d, char *s, int final)
 {   char line[1024];
     int i;
-    std::int32_t checksum, designsize, w;
+    int32_t checksum, designsize, w;
     int lenhdr, bc, ec, lenwidths;
-    std::int32_t finfo[65536], lentab[256];
+    int32_t finfo[65536], lentab[256];
     std::FILE *f;
     int c;
     int headershown = 0;
@@ -122,7 +122,7 @@ static int process(char *d, char *s, int final)
     std::fclose(f);
     std::fprintf(out, "    %% name checksum design-size (millipoints)\n");
     std::fprintf(out, "    list(\"%s\", %d, %d, list!-to!-vector '(\n    ",
-            d, checksum, (int)((10000LL*(std::int64_t)designsize+512LL*1024LL)/(1024LL*1024LL)));
+            d, checksum, (int)((10000LL*(int64_t)designsize+512LL*1024LL)/(1024LL*1024LL)));
 // The TeX fonts only use the first 128 character positions and so I will
 // not bother with recording widths for the range 128-255.
     for (c=0; c<127; c++)

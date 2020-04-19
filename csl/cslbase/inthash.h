@@ -81,8 +81,8 @@
 
 typedef struct _hash_alist
 {
-    std::uintptr_t key;
-    std::uintptr_t value;
+    uintptr_t key;
+    uintptr_t value;
     struct _hash_alist *next;
 } hash_alist;
 
@@ -90,13 +90,13 @@ typedef struct _hash_alist
 
 typedef struct _inthash
 {
-    std::size_t size;
-    std::size_t count;
-    std::uintptr_t *keys;
-    std::uintptr_t *values;
+    size_t size;
+    size_t count;
+    uintptr_t *keys;
+    uintptr_t *values;
     int shift;
-    std::size_t mult1;
-    std::size_t mult2;
+    size_t mult1;
+    size_t mult2;
 #ifdef CHECK_INTHASH
 // If I am debugging I will run a simple association-list style table
 // alongside the hash table and compare results. This will be really bad
@@ -134,9 +134,9 @@ extern void hash_init_values(inthash *h);
 // hash entry at offset hx.I try to make these "kind" in the case that
 // the values part of the table has not yet been allocated.
 
-extern std::uintptr_t hash_get_value(inthash *h, std::size_t hx);
+extern uintptr_t hash_get_value(inthash *h, size_t hx);
 
-extern void hash_set_value(inthash *h, std::size_t hx, std::uintptr_t v);
+extern void hash_set_value(inthash *h, size_t hx, uintptr_t v);
 
 // The lookup code takes a key k and return either an index into
 // the table where the key is present or the special value (-1) which
@@ -145,12 +145,12 @@ extern void hash_set_value(inthash *h, std::size_t hx, std::uintptr_t v);
 // officially undefined!
 // Looking up a key using this function always has constant cost.
 
-extern std::size_t hash_lookup(inthash *h, std::uintptr_t k);
+extern size_t hash_lookup(inthash *h, uintptr_t k);
 
 // One can delete a key from the table in constant cost. The function
 // here returns true if the item had in fact been present to start with.
 
-extern bool hash_delete(inthash *h, std::uintptr_t k);
+extern bool hash_delete(inthash *h, uintptr_t k);
 
 // The function that inserts into a table returns the location where the
 // item was placed, much like hash_lookup. To enter a key/value pair
@@ -158,7 +158,7 @@ extern bool hash_delete(inthash *h, std::uintptr_t k);
 //    hash_set_value(h, hash_insert(h, KEY), VALUE)
 // doing things in two steps.
 
-extern std::size_t hash_insert(inthash *h, std::uintptr_t k);
+extern size_t hash_insert(inthash *h, uintptr_t k);
 
 #endif // __inthash_h
 

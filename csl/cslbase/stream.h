@@ -46,7 +46,7 @@ extern int terminal_pushed;
 
 typedef int character_stream_reader(LispObject);
 typedef int character_stream_writer(int, LispObject);
-typedef std::int32_t other_stream_op(std::int32_t, LispObject);
+typedef int32_t other_stream_op(int32_t, LispObject);
 
 extern LispObject Lopen(LispObject env, LispObject name, LispObject dir);
 
@@ -77,17 +77,17 @@ extern int char_to_math(int c, LispObject f);
 extern int char_to_spool(int c, LispObject f);
 #endif
 
-extern std::int32_t write_action_terminal(std::int32_t c, LispObject f);
-extern std::int32_t write_action_file(std::int32_t c, LispObject f);
-extern std::int32_t write_action_pipe(std::int32_t c, LispObject f);
-extern std::int32_t write_action_synonym(std::int32_t c, LispObject f);
-extern std::int32_t write_action_broadcast(std::int32_t c, LispObject f);
-extern std::int32_t write_action_twoway(std::int32_t c, LispObject f);
-extern std::int32_t write_action_illegal(std::int32_t c, LispObject f);
-extern std::int32_t write_action_list(std::int32_t c, LispObject f);
+extern int32_t write_action_terminal(int32_t c, LispObject f);
+extern int32_t write_action_file(int32_t c, LispObject f);
+extern int32_t write_action_pipe(int32_t c, LispObject f);
+extern int32_t write_action_synonym(int32_t c, LispObject f);
+extern int32_t write_action_broadcast(int32_t c, LispObject f);
+extern int32_t write_action_twoway(int32_t c, LispObject f);
+extern int32_t write_action_illegal(int32_t c, LispObject f);
+extern int32_t write_action_list(int32_t c, LispObject f);
 #if defined HAVE_LIBFOX || defined HAVE_LIBWX
-extern std::int32_t write_action_math(std::int32_t c, LispObject f);
-extern std::int32_t write_action_spool(std::int32_t c, LispObject f);
+extern int32_t write_action_math(int32_t c, LispObject f);
+extern int32_t write_action_spool(int32_t c, LispObject f);
 #endif
 
 extern int char_from_terminal(LispObject f);
@@ -100,16 +100,16 @@ extern int char_from_illegal(LispObject f);
 extern int char_from_list(LispObject f);
 extern int char_from_vector(LispObject f);
 
-extern std::int32_t read_action_terminal(std::int32_t c, LispObject f);
-extern std::int32_t read_action_file(std::int32_t c, LispObject f);
-extern std::int32_t read_action_output_file(std::int32_t c, LispObject f);
-extern std::int32_t read_action_synonym(std::int32_t c, LispObject f);
-extern std::int32_t read_action_concatenated(std::int32_t c, LispObject f);
-extern std::int32_t read_action_echo(std::int32_t c, LispObject f);
-extern std::int32_t read_action_twoway(std::int32_t c, LispObject f);
-extern std::int32_t read_action_illegal(std::int32_t c, LispObject f);
-extern std::int32_t read_action_list(std::int32_t c, LispObject f);
-extern std::int32_t read_action_vector(std::int32_t c, LispObject f);
+extern int32_t read_action_terminal(int32_t c, LispObject f);
+extern int32_t read_action_file(int32_t c, LispObject f);
+extern int32_t read_action_output_file(int32_t c, LispObject f);
+extern int32_t read_action_synonym(int32_t c, LispObject f);
+extern int32_t read_action_concatenated(int32_t c, LispObject f);
+extern int32_t read_action_echo(int32_t c, LispObject f);
+extern int32_t read_action_twoway(int32_t c, LispObject f);
+extern int32_t read_action_illegal(int32_t c, LispObject f);
+extern int32_t read_action_list(int32_t c, LispObject f);
+extern int32_t read_action_vector(int32_t c, LispObject f);
 
 #define MAX_PROMPT_LENGTH 80
 extern char memory_print_buffer[MAX_PROMPT_LENGTH];
@@ -154,43 +154,43 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 #define STREAM_SIZE           (14*CELL)
 #define BUFFERED_STREAM_SIZE  (STREAM_SIZE+STREAM_BUFFER_SIZE)
 
-inline std::atomic<LispObject> &stream_type(LispObject v)
+inline atomic<LispObject> &stream_type(LispObject v)
 {   return basic_elt(v, 0);
 }
-inline std::atomic<LispObject> &stream_write_data(LispObject v)
+inline atomic<LispObject> &stream_write_data(LispObject v)
 {   return basic_elt(v, 1);
 }
-inline std::atomic<LispObject> &stream_read_data(LispObject v)
+inline atomic<LispObject> &stream_read_data(LispObject v)
 {   return basic_elt(v, 2);
 }
-inline std::atomic<std::FILE *> &stream_file(LispObject v)
-{   return (std::atomic<std::FILE *>&)elt(v, 3);
+inline atomic<std::FILE *> &stream_file(LispObject v)
+{   return (atomic<std::FILE *>&)elt(v, 3);
 }
-inline std::atomic<character_stream_writer *> &stream_write_fn(LispObject v)
-{   return (std::atomic<character_stream_writer *>&)elt(v, 4);
+inline atomic<character_stream_writer *> &stream_write_fn(LispObject v)
+{   return (atomic<character_stream_writer *>&)elt(v, 4);
 }
-inline std::atomic<other_stream_op *> &stream_write_other(LispObject v)
-{   return (std::atomic<other_stream_op *>&)elt(v,5);
+inline atomic<other_stream_op *> &stream_write_other(LispObject v)
+{   return (atomic<other_stream_op *>&)elt(v,5);
 }
-inline std::atomic<LispObject> &stream_line_length(LispObject v)
+inline atomic<LispObject> &stream_line_length(LispObject v)
 {   return basic_elt(v, 6);
 }
-inline std::atomic<LispObject> &stream_byte_pos(LispObject v)
+inline atomic<LispObject> &stream_byte_pos(LispObject v)
 {   return basic_elt(v, 7);
 }
-inline std::atomic<LispObject> &stream_char_pos(LispObject v)
+inline atomic<LispObject> &stream_char_pos(LispObject v)
 {   return basic_elt(v, 8);
 }
-inline std::atomic<character_stream_reader *> &stream_read_fn(LispObject v)
-{   return (std::atomic<character_stream_reader *>&)elt(v, 9);
+inline atomic<character_stream_reader *> &stream_read_fn(LispObject v)
+{   return (atomic<character_stream_reader *>&)elt(v, 9);
 }
-inline std::atomic<other_stream_op *> &stream_read_other(LispObject v)
-{   return (std::atomic<other_stream_op *>&)elt(v,10);
+inline atomic<other_stream_op *> &stream_read_other(LispObject v)
+{   return (atomic<other_stream_op *>&)elt(v,10);
 }
-inline std::atomic<LispObject> &stream_pushed_char(LispObject v)
+inline atomic<LispObject> &stream_pushed_char(LispObject v)
 {   return basic_elt(v, 11);
 }
-inline std::atomic<LispObject> &stream_spare(LispObject v)
+inline atomic<LispObject> &stream_spare(LispObject v)
 {   return basic_elt(v, 12);
 }
 
@@ -227,12 +227,12 @@ inline int getc_stream(LispObject f)
     return (*fn)(f);
 }
 
-inline std::int32_t other_write_action(std::int32_t c, LispObject f)
+inline int32_t other_write_action(int32_t c, LispObject f)
 {   other_stream_op *fn = stream_write_other(f);
     return (*fn)(c, f);
 }
 
-inline std::int32_t other_read_action(std::int32_t c, LispObject f)
+inline int32_t other_read_action(int32_t c, LispObject f)
 {   other_stream_op *fn = stream_read_other(f);
     return (*fn)(c, f);
 }

@@ -46,7 +46,7 @@
 // Division
 //
 
-std::uint32_t Idivide(std::uint32_t *qp, std::uint32_t a, std::uint32_t b, std::uint32_t c)
+uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
 //
 //         *qp = (a,b) / c,  return the remainder
 //
@@ -65,9 +65,9 @@ std::uint32_t Idivide(std::uint32_t *qp, std::uint32_t a, std::uint32_t b, std::
 // but depending on the hardware of your computer you are entitled to use
 // either signed or unsigned arithmetic.
 //
-{   std::uint64_t p = ((std::uint64_t)a << 31) | (std::uint64_t)b;
-    if (qp != NULL) *qp = (std::uint32_t)(p / (std::uint64_t)c);
-    return (std::uint32_t)(p % (std::uint64_t)c);
+{   uint64_t p = ((uint64_t)a << 31) | (uint64_t)b;
+    if (qp != NULL) *qp = (uint32_t)(p / (uint64_t)c);
+    return (uint32_t)(p % (uint64_t)c);
 }
 
 static LispObject quotis(LispObject a, LispObject b)
@@ -243,7 +243,7 @@ static LispObject quotsf(LispObject a, LispObject b)
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
-LispObject quotbn(LispObject a, std::int32_t n)
+LispObject quotbn(LispObject a, int32_t n)
 //
 // Divide a bignum by an integer, where the integer is (by now)
 // a natural C int32_t but limited to 31 not 32 bits active.  I.e.
@@ -256,10 +256,10 @@ LispObject quotbn(LispObject a, std::int32_t n)
 // for dividing by a general fixnum.
 //
 {   int sign;
-    std::size_t lena = (bignum_length(a)-CELL)/4-1, i, lenc, lenx;
-    std::uint32_t carry;
+    size_t lena = (bignum_length(a)-CELL)/4-1, i, lenc, lenx;
+    uint32_t carry;
     if (!SIXTY_FOUR_BIT && lena == 0)   // one-word bignum as numerator
-    {   std::int32_t p = (std::int32_t)bignum_digits(a)[0];
+    {   int32_t p = (int32_t)bignum_digits(a)[0];
         nwork = p % n;
 //
 // C does not define what happens on non-exact division involving
@@ -276,8 +276,8 @@ LispObject quotbn(LispObject a, std::int32_t n)
         return make_lisp_integer32(p);
     }
     else if (lena == 1)   // two-word bignum as numerator
-    {   std::int64_t a0 = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
-        std::int64_t p = a0 / n;
+    {   int64_t a0 = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+        int64_t p = a0 / n;
         nwork = a0 % n;
         if (nwork != 0 &&
             (nwork ^ a0) < 0) 
@@ -300,14 +300,14 @@ LispObject quotbn(LispObject a, std::int32_t n)
 // I would rather not allocate memory that I am then going to abandon, so I
 // will write out the 3-word/1-word case here specially.
     if (SIXTY_FOUR_BIT && lena == 2)
-    {   std::int32_t a2 = bignum_digits(a)[2];
-        std::int32_t a1 = bignum_digits(a)[1];
-        std::int32_t a0 = bignum_digits(a)[0];
-        std::int64_t hi = (std::int64_t)a2<<31 | a1;
-        std::int64_t q1 = hi/n;
-        std::int64_t lo = (hi%n)<<31 | a0;
-        std::int64_t q0 = lo/n;
-        std::int32_t r0 = (std::int32_t)(lo%n);
+    {   int32_t a2 = bignum_digits(a)[2];
+        int32_t a1 = bignum_digits(a)[1];
+        int32_t a0 = bignum_digits(a)[0];
+        int64_t hi = (int64_t)a2<<31 | a1;
+        int64_t q1 = hi/n;
+        int64_t lo = (hi%n)<<31 | a0;
+        int64_t q0 = lo/n;
+        int32_t r0 = (int32_t)(lo%n);
 // Now fix the sign of the remainder...
         if (r0 != 0 &&
             (r0 ^ a2) < 0) 
@@ -327,15 +327,15 @@ LispObject quotbn(LispObject a, std::int32_t n)
 // be fairly small. I need to see if the full result can be a fixnum.
         if (signed29_in_64(q1)) return fixnum_of_int(q1<<31 | q0);
         if (signed31_in_64(q1))
-            return make_two_word_bignum((std::int32_t)q1, (std::uint32_t)q0);
-        return make_three_word_bignum((std::int32_t)(q1>>31),
-            (std::uint32_t)(q1&0x7fffffff), (std::uint32_t)q0);
+            return make_two_word_bignum((int32_t)q1, (uint32_t)q0);
+        return make_three_word_bignum((int32_t)(q1>>31),
+            (uint32_t)(q1&0x7fffffff), (uint32_t)q0);
     }
 // Start by allocating a workspace copy of the dividend.  negateb will
 // leave a a bignum, although it may change its length.
 // I am (reasonably) happy to allocate new space here for to work in
 // because it will be used as the result that I hand back.
-    if ((std::int32_t)bignum_digits(a)[lena] < 0) a = negateb(a), sign = 3;
+    if ((int32_t)bignum_digits(a)[lena] < 0) a = negateb(a), sign = 3;
     else a = copyb(a), sign = 0;
     if (n < 0)
     {   sign ^= 1;
@@ -351,7 +351,7 @@ LispObject quotbn(LispObject a, std::int32_t n)
     carry = 0;
     for (i=lena; i>0; i--)
         Ddivide(carry, bignum_digits(a)[i-1], carry, bignum_digits(a)[i-1], n);
-    if ((sign & 2) != 0) nwork = -(std::int32_t)carry;
+    if ((sign & 2) != 0) nwork = -(int32_t)carry;
     else nwork = carry;
     lena--;
     while (bignum_digits(a)[lena] == 0) lena--;
@@ -386,7 +386,7 @@ LispObject quotbn(LispObject a, std::int32_t n)
     return a;
 }
 
-LispObject quotbn1(LispObject a, std::int32_t n)
+LispObject quotbn1(LispObject a, int32_t n)
 //
 // Divide a bignum by an integer, where the integer is (by now)
 // a natural C int32_t but limited to 31 not 32 bits active.  I.e.
@@ -400,10 +400,10 @@ LispObject quotbn1(LispObject a, std::int32_t n)
 // The motivation for this is that I can avoid needing to allocate memory
 // for the quotient...
 {   int sign;
-    std::int32_t lena = (bignum_length(a)-CELL)/4-1, i;
-    std::uint32_t carry;
+    int32_t lena = (bignum_length(a)-CELL)/4-1, i;
+    uint32_t carry;
     if (!SIXTY_FOUR_BIT && lena == 0)      // one-word bignum as numerator
-    {   std::int32_t p = (std::int32_t)bignum_digits(a)[0];
+    {   int32_t p = (int32_t)bignum_digits(a)[0];
         nwork = p % n;
 //
 // C does not define what happens on non-exact division involving
@@ -418,7 +418,7 @@ LispObject quotbn1(LispObject a, std::int32_t n)
         return nil;
     }
     else if (lena == 1)
-    {   std::int64_t p = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+    {   int64_t p = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
         nwork = p % n;
         if (p < 0)
         {   if (nwork > 0) nwork -= n;
@@ -439,7 +439,7 @@ LispObject quotbn1(LispObject a, std::int32_t n)
 // The code here is something of a cop-out in that it allocates memory for
 // a copy of a even though it really does not need to. Maybe I should revisit
 // it sometime.
-    if ((std::int32_t)bignum_digits(a)[lena] < 0) a = negateb(a), sign = 3;
+    if ((int32_t)bignum_digits(a)[lena] < 0) a = negateb(a), sign = 3;
     else a = copyb(a), sign = 0;
     if (n < 0)
     {   sign ^= 1;
@@ -455,9 +455,9 @@ LispObject quotbn1(LispObject a, std::int32_t n)
     carry = 0;
     for (i=lena-1; i>=0; i--)
         Ddivide(carry, bignum_digits(a)[i], carry, bignum_digits(a)[i], n);
-    if ((sign & 2) != 0) carry = -(std::int32_t)carry;
+    if ((sign & 2) != 0) carry = -(int32_t)carry;
 // Beware and force carry to be treated as a signed value here!
-    nwork = (std::int32_t)carry;          // leave remainder available to caller
+    nwork = (int32_t)carry;          // leave remainder available to caller
     return nil;
 }
 
@@ -472,10 +472,10 @@ static LispObject quotbi(LispObject a, LispObject b)
     else if (b == fixnum_of_int(0))
         aerror2("bad arg for quotient", a, b);
 // Beware: quotbn can only take a 31-bit second argument...
-    std::intptr_t n = int_of_fixnum(b);
+    intptr_t n = int_of_fixnum(b);
 // Check if b fits within 31-bits of signed integer...
     if (!SIXTY_FOUR_BIT ||
-        signed31_in_ptr(n)) return quotbn(a, (std::int32_t)n);
+        signed31_in_ptr(n)) return quotbn(a, (int32_t)n);
 // I should only get here on a 64-bit machine! I fake up a 2-word bignum
 // for the value. On a 64-bit system that is NOT a standardly valid bignum,
 // but it will allow me to call quotbb.
@@ -484,7 +484,7 @@ static LispObject quotbi(LispObject a, LispObject b)
 // and just doing the division there. This may be faster than using long
 // division on some platforms, while on others it will involve its own
 // limited-width long division code.
-    std::size_t lena = (bignum_length(a)-CELL-4)/4;
+    size_t lena = (bignum_length(a)-CELL-4)/4;
     int128_t p;
     switch (lena)
     {   case 0: // should never arise but put code in for frivolity!
@@ -522,18 +522,18 @@ static LispObject quotrembi(LispObject a, LispObject b)
     else if (b == fixnum_of_int(0))
         aerror2("bad arg for quotient", a, b);
 // Beware: quotbn can only take a 31-bit second argument...
-    std::intptr_t n = int_of_fixnum(b);
+    intptr_t n = int_of_fixnum(b);
 // Check if b fits within 31-bits of signed integer...
     if (!SIXTY_FOUR_BIT ||
         signed31_in_ptr(n))
-    {   LispObject q = quotbn(a, (std::int32_t)n);
+    {   LispObject q = quotbn(a, (int32_t)n);
         mv_2 = fixnum_of_int(nwork);
         return q;
     }
 // I should only get here on a 64-bit machine! I fake up a 2-word bignum
 // for the value. On a 64-bit system that is NOT a standardly valid bignum,
 // but it will allow me to call quotbb.
-    std::size_t lena = (bignum_length(a)-CELL-4)/4;
+    size_t lena = (bignum_length(a)-CELL-4)/4;
     int128_t p;
     switch (lena)
     {   case 0: // should never arise but put code in for frivolity!
@@ -627,19 +627,19 @@ static LispObject quotbs(LispObject a, LispObject b)
 // lengths of a and b unchanged by negation so there can be no risk. So it
 // seems that I have just a single edge case to test for!
 
-inline LispObject short_numerator(LispObject a, std::size_t lena,
-                                         LispObject b, std::size_t lenb)
+inline LispObject short_numerator(LispObject a, size_t lena,
+                                         LispObject b, size_t lenb)
 {   mv_2 = a;
 // I can only have trouble if the representation of a is just one
 // digit shorter than that of b and a starts off [-2^30,...] while
 // b starts off [0,2^30,...].
     if (lena != lenb-1 ||
-        (std::int32_t)bignum_digits(a)[lena] != -0x40000000 ||
-        (std::int32_t)bignum_digits(b)[lenb] != 0 ||
+        (int32_t)bignum_digits(a)[lena] != -0x40000000 ||
+        (int32_t)bignum_digits(b)[lenb] != 0 ||
         bignum_digits(b)[lenb-1] != 0x40000000U) return fixnum_of_int(0);
 // Furthermore all further digits of both a and b must be zero for the
 // odd case to apply.
-    for (std::size_t i=0; i<lena; i++)
+    for (size_t i=0; i<lena; i++)
         if (bignum_digits(a)[i] != 0x00000000U ||
             bignum_digits(b)[i] != 0x00000000U) return fixnum_of_int(0);
 // Here we go - return (-1) remainder zero.
@@ -647,9 +647,9 @@ inline LispObject short_numerator(LispObject a, std::size_t lena,
     return fixnum_of_int(-1);
 }
 
-inline std::size_t copy_unsigned(LispObject r, LispObject a, std::size_t lena)
+inline size_t copy_unsigned(LispObject r, LispObject a, size_t lena)
 {   if (bignum_digits(a)[lena] == 0) lena--;
-    for (std::size_t i=0; i<=lena; i++)
+    for (size_t i=0; i<=lena; i++)
        bignum_digits(r)[i] = vbignum_digits(a)[i];
     return lena;
 }
@@ -657,12 +657,12 @@ inline std::size_t copy_unsigned(LispObject r, LispObject a, std::size_t lena)
 // The following should only ever be used for negating numbers that
 // start off negative, so the result should always be positive.
 
-inline std::size_t copy_negated(LispObject r, LispObject a, std::size_t lena)
-{   std::uint32_t carry = 1;
+inline size_t copy_negated(LispObject r, LispObject a, size_t lena)
+{   uint32_t carry = 1;
 //  show("input to copy_negated ", a, lena);
 //  trace_printf("with lena = %d\n", (int)lena);
-    for (std::size_t i=0; i<lena; i++) // all except the top digit
-    {   std::uint32_t d = (bignum_digits(a)[i] ^ 0x7fffffff) + carry;
+    for (size_t i=0; i<lena; i++) // all except the top digit
+    {   uint32_t d = (bignum_digits(a)[i] ^ 0x7fffffff) + carry;
         bignum_digits(r)[i] = d & 0x7fffffff;
         carry = d >> 31;
     }
@@ -676,13 +676,13 @@ inline std::size_t copy_negated(LispObject r, LispObject a, std::size_t lena)
 #define SIGN_QUOTIENT_NEGATIVE   1
 #define SIGN_REMAINDER_NEGATIVE  2
 
-inline int make_positive_and_copy(LispObject &a, std::size_t &lena,
-                                         LispObject &b, std::size_t &lenb)
+inline int make_positive_and_copy(LispObject &a, size_t &lena,
+                                         LispObject &b, size_t &lenb)
 {
 // Before I do anything else I will ensure that there is space available
 // in the working variables... And I will leave myself a few bytes in hand.
     while (bignum_length(a)+16 >= bignum_length(big_dividend))
-    {   std::size_t newlen = 2*bignum_length(big_dividend);
+    {   size_t newlen = 2*bignum_length(big_dividend);
         push(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
@@ -690,7 +690,7 @@ inline int make_positive_and_copy(LispObject &a, std::size_t &lena,
         big_dividend = w;
     }
     while (bignum_length(b)+16 >= bignum_length(big_divisor))
-    {   std::size_t newlen = 2*bignum_length(big_divisor);
+    {   size_t newlen = 2*bignum_length(big_divisor);
         push(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
@@ -698,7 +698,7 @@ inline int make_positive_and_copy(LispObject &a, std::size_t &lena,
         big_divisor = w;
     }
     while (bignum_length(a)-bignum_length(b)+16 >= bignum_length(big_quotient))
-    {   std::size_t newlen = 2*bignum_length(big_quotient);
+    {   size_t newlen = 2*bignum_length(big_quotient);
         push(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
@@ -709,12 +709,12 @@ inline int make_positive_and_copy(LispObject &a, std::size_t &lena,
 // While copying |a| into big_dividend and |b| into big_divisor I know that
 // the results will be positive, so I discard any leading zero digits that
 // might normally end up on the front of the numbers.
-    if ((std::int32_t)bignum_digits(a)[lena] < 0)
+    if ((int32_t)bignum_digits(a)[lena] < 0)
     {   lena = copy_negated(big_dividend, a, lena);
         sign = SIGN_QUOTIENT_NEGATIVE | SIGN_REMAINDER_NEGATIVE;
     }
     else lena = copy_unsigned(big_dividend, a, lena);
-    if ((std::int32_t)bignum_digits(b)[lenb] < 0)
+    if ((int32_t)bignum_digits(b)[lenb] < 0)
     {   lenb = copy_negated(big_divisor, b, lenb);
         sign ^= SIGN_QUOTIENT_NEGATIVE;
     }
@@ -732,32 +732,32 @@ inline int make_positive_and_copy(LispObject &a, std::size_t &lena,
 // most 0x40000000U and each digit in a is at most 0x7fffffffU, so the
 // carry digit returned is at worst 0x3fffffffU.
 
-inline std::uint32_t timesbn(LispObject a, std::size_t len, std::uint32_t scale)
-{   std::uint32_t carry = 0;
-    for (std::size_t i=0; i<=len; i++)
-    {   std::uint64_t d = (std::uint64_t)bignum_digits(a)[i] * (std::uint64_t)scale + carry;
-        bignum_digits(a)[i] = (std::uint32_t)d & 0x7fffffff;
-        carry = (std::uint32_t)(d >> 31);
+inline uint32_t timesbn(LispObject a, size_t len, uint32_t scale)
+{   uint32_t carry = 0;
+    for (size_t i=0; i<=len; i++)
+    {   uint64_t d = (uint64_t)bignum_digits(a)[i] * (uint64_t)scale + carry;
+        bignum_digits(a)[i] = (uint32_t)d & 0x7fffffff;
+        carry = (uint32_t)(d >> 31);
     }
     return carry;   
 }
 
-inline std::int32_t multiply_and_subtract(LispObject a, std::size_t lena,
-                                            std::uint32_t q0,
-                                            LispObject b, std::size_t lenb)
-{   std::int32_t carry = 0;
-    for (std::size_t i=0; i<=lenb; i++)
-    {   std::int64_t d = (std::int64_t)bignum_digits(a)[lena-lenb+i] -
-                    (std::int64_t)bignum_digits(b)[i]*(std::int64_t)q0 +
-                    (std::int64_t)carry;
+inline int32_t multiply_and_subtract(LispObject a, size_t lena,
+                                            uint32_t q0,
+                                            LispObject b, size_t lenb)
+{   int32_t carry = 0;
+    for (size_t i=0; i<=lenb; i++)
+    {   int64_t d = (int64_t)bignum_digits(a)[lena-lenb+i] -
+                    (int64_t)bignum_digits(b)[i]*(int64_t)q0 +
+                    (int64_t)carry;
 //      trace_printf("%.8x - %.8x * %.8x + %.8x = %" PRIx64 "\n",
 //          bignum_digits(a)[lena-lenb+i],
 //          bignum_digits(b)[i],
 //          q0,
 //          carry,
 //          d);
-        bignum_digits(a)[lena-lenb+i] = (std::uint32_t)d & 0x7fffffff;
-        carry = (std::int32_t)(d >> 31);
+        bignum_digits(a)[lena-lenb+i] = (uint32_t)d & 0x7fffffff;
+        carry = (int32_t)(d >> 31);
 //      trace_printf("digit for a = %.8x\n", bignum_digits(a)[lena-lenb+i]);
 //      trace_printf("new carry = %.8x\n", (int)carry);
     }
@@ -765,11 +765,11 @@ inline std::int32_t multiply_and_subtract(LispObject a, std::size_t lena,
     return carry;   
 }
 
-inline std::int32_t add_back_correction(LispObject a, std::size_t lena,
-                                          LispObject b, std::size_t lenb)
-{    std::uint32_t carry = 0;
-     for (std::size_t i=0; i<=lenb; i++)
-     {   std::uint32_t d = bignum_digits(a)[lena-lenb+i] +
+inline int32_t add_back_correction(LispObject a, size_t lena,
+                                          LispObject b, size_t lenb)
+{    uint32_t carry = 0;
+     for (size_t i=0; i<=lenb; i++)
+     {   uint32_t d = bignum_digits(a)[lena-lenb+i] +
                       bignum_digits(b)[i] +
                       carry;
          bignum_digits(a)[lena-lenb+i] = d & 0x7fffffff;
@@ -778,12 +778,12 @@ inline std::int32_t add_back_correction(LispObject a, std::size_t lena,
      return carry;   
 }
 
-inline std::uint32_t next_quotient_digit(std::uint32_t atop,
-                                           LispObject a, std::size_t &lena,
-                                           LispObject b, std::size_t lenb)
-{   std::uint64_t p0 = (std::uint64_t)atop<<31 | bignum_digits(a)[lena];
-    std::uint32_t q0 =  p0 / (std::uint64_t)bignum_digits(b)[lenb];
-    std::uint32_t r0 =  p0 % (std::uint64_t)bignum_digits(b)[lenb];
+inline uint32_t next_quotient_digit(uint32_t atop,
+                                           LispObject a, size_t &lena,
+                                           LispObject b, size_t lenb)
+{   uint64_t p0 = (uint64_t)atop<<31 | bignum_digits(a)[lena];
+    uint32_t q0 =  p0 / (uint64_t)bignum_digits(b)[lenb];
+    uint32_t r0 =  p0 % (uint64_t)bignum_digits(b)[lenb];
 // At this stage q0 may be correct or it may be an over-estimate by 1 or 2,
 // but never any worse than that.
 //
@@ -791,8 +791,8 @@ inline std::uint32_t next_quotient_digit(std::uint32_t atop,
 // by 2 and most when it was in error by 1. 
 //
     if (q0 == 0x80000000U ||
-        (std::uint64_t)q0*(std::uint64_t)bignum_digits(b)[lenb-1] >
-        ((std::uint64_t)r0<<31 | bignum_digits(a)[lena-1]))
+        (uint64_t)q0*(uint64_t)bignum_digits(b)[lenb-1] >
+        ((uint64_t)r0<<31 | bignum_digits(a)[lena-1]))
         q0--;
 //  trace_printf("Leading quotient digit = %d = %#x\n", q0, q0);
 //
@@ -803,7 +803,7 @@ inline std::uint32_t next_quotient_digit(std::uint32_t atop,
 //
     atop += multiply_and_subtract(a, lena, q0, b, lenb);
 //  show1("sets a to ", atop, a, lena);
-    if ((std::int32_t)atop < 0)
+    if ((int32_t)atop < 0)
     {   q0--;
         atop = add_back_correction(a, lena, b, lenb);
 // When I add back b I ought to get a carry...
@@ -816,13 +816,13 @@ inline std::uint32_t next_quotient_digit(std::uint32_t atop,
 // a is a scaled positive value that , when divided by the scale factor
 // will be less than the original divisor.
 
-inline std::size_t unscale(LispObject a, std::size_t lena, std::uint32_t scale)
-{   std::uint32_t atop = 0;
-    std::size_t i = lena;
+inline size_t unscale(LispObject a, size_t lena, uint32_t scale)
+{   uint32_t atop = 0;
+    size_t i = lena;
     for (;;)
-    {   std::uint64_t d = (std::uint64_t)atop<<31 | bignum_digits(a)[i];
-        bignum_digits(a)[i] = (std::uint32_t)(d / scale);
-        atop = (std::uint32_t)(d % scale);
+    {   uint64_t d = (uint64_t)atop<<31 | bignum_digits(a)[i];
+        bignum_digits(a)[i] = (uint32_t)(d / scale);
+        atop = (uint32_t)(d % scale);
         if (i == 0) break;
         i--;
     }
@@ -839,7 +839,7 @@ inline std::size_t unscale(LispObject a, std::size_t lena, std::uint32_t scale)
 // Adjust the quotient format so it will be OK for my awkward internal
 // representation.
 
-inline std::size_t fix_up_bignum_length(LispObject q, std::size_t lenq)
+inline size_t fix_up_bignum_length(LispObject q, size_t lenq)
 {
     if ((bignum_digits(q)[lenq] & 0x40000000U) != 0)
     {   lenq++;
@@ -854,16 +854,16 @@ inline std::size_t fix_up_bignum_length(LispObject q, std::size_t lenq)
 // For this one the input starts off positive and so it will end up negative.
 // That could lead to it being able to get away with just one fewer digit.
 
-inline std::size_t negate_in_place(LispObject a, std::size_t lena)
-{   std::uint32_t carry = 1;
-    for (std::size_t i=0; i<lena; i++)
-    {   std::uint32_t d = (bignum_digits(a)[i] ^ 0x7fffffff) + carry;
+inline size_t negate_in_place(LispObject a, size_t lena)
+{   uint32_t carry = 1;
+    for (size_t i=0; i<lena; i++)
+    {   uint32_t d = (bignum_digits(a)[i] ^ 0x7fffffff) + carry;
         bignum_digits(a)[i] = d & 0x7fffffff;
         carry = d >> 31; 
 //      trace_printf("negate in place: %.8x %.8x\n", bignum_digits(a)[i], carry);
     }
 // I treat the top digit specially since it is thought of as a signed value.
-    std::int32_t d = ~bignum_digits(a)[lena] + carry;
+    int32_t d = ~bignum_digits(a)[lena] + carry;
 //  trace_printf("top digits = %.8x\n", d);
     if (d == -1 &&
         lena != 0 &&
@@ -876,21 +876,21 @@ inline std::size_t negate_in_place(LispObject a, std::size_t lena)
     return lena;
 }
 
-inline LispObject pack_up_result(LispObject a, std::size_t lena)
+inline LispObject pack_up_result(LispObject a, size_t lena)
 {
 //  show("pack_up_result ", a, lena);
     if (lena == 0 &&
-        (SIXTY_FOUR_BIT || valid_as_fixnum((std::int32_t)bignum_digits(a)[0])))
-        return fixnum_of_int((std::int32_t)bignum_digits(a)[0]);
+        (SIXTY_FOUR_BIT || valid_as_fixnum((int32_t)bignum_digits(a)[0])))
+        return fixnum_of_int((int32_t)bignum_digits(a)[0]);
     else if (SIXTY_FOUR_BIT && lena == 1)
-    {   std::int64_t r = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+    {   int64_t r = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
         if (valid_as_fixnum(r)) return fixnum_of_int(r);
     }
     push(a);
     LispObject r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lena+4);
     pop(a);
 //  trace_printf("lena = %d  r = %p\n", (int)lena, (void *)r);
-    for (std::size_t i=0; i<=lena; i++)
+    for (size_t i=0; i<=lena; i++)
         bignum_digits(r)[i] = vbignum_digits(a)[i];
     if ((SIXTY_FOUR_BIT && (lena & 1) == 0) ||
         (!SIXTY_FOUR_BIT && (lena & 1) != 0)) bignum_digits(r)[lena+1] = 0;
@@ -912,7 +912,7 @@ inline LispObject pack_up_result(LispObject a, std::size_t lena)
 // that arises will be small in the context of everything else.
 
 LispObject quotbb(LispObject a, LispObject b, int need)
-{   std::size_t lena = (bignum_length(a)-CELL-4)/4,
+{   size_t lena = (bignum_length(a)-CELL-4)/4,
            lenb = (bignum_length(b)-CELL-4)/4;
 // On 32-bit machines I may have a denominator that still fits in 31-bits.
 // In that case I can optimise. The case lenb==0 ought not to arise on a
@@ -926,10 +926,10 @@ LispObject quotbb(LispObject a, LispObject b, int need)
 // the header word of the bignum as if it has been part of the numeric data.
     if (!SIXTY_FOUR_BIT && (lenb == 0 ||
         (lenb == 1 && (bignum_digits(b)[1]==0 ||
-                       (std::int32_t)bignum_digits(b)[1]==-1))))
-    {   std::int32_t nn = (std::int32_t)bignum_digits(b)[0];
-        if (lenb != 0 && (std::int32_t)bignum_digits(b)[1]==-1)
-            nn = (std::int32_t)((std::uint32_t)nn | 0x80000000U);
+                       (int32_t)bignum_digits(b)[1]==-1))))
+    {   int32_t nn = (int32_t)bignum_digits(b)[0];
+        if (lenb != 0 && (int32_t)bignum_digits(b)[1]==-1)
+            nn = (int32_t)((uint32_t)nn | 0x80000000U);
         LispObject q = quotbn(a, nn);
         if ((need & QUOTBB_REMAINDER_NEEDED) != 0)
         {   push(q);
@@ -956,7 +956,7 @@ LispObject quotbb(LispObject a, LispObject b, int need)
 // the leading zero on a is removed.
     if (lena < lenb) return fixnum_of_int(0);
 // By now a and b both have strictly positive leading digits.
-    std::size_t lenq = lena-lenb; // potential length of quotient.
+    size_t lenq = lena-lenb; // potential length of quotient.
 // I will multiply a and b by a scale factor that gets the top digit of "b"
 // reasonably large. The value stored in "a" can become one digit longer,
 // but there is space to store that.
@@ -965,17 +965,17 @@ LispObject quotbb(LispObject a, LispObject b, int need)
 // proposed 0x7fffffffU/bignum_digits(b)[lenb] and if you look at just the
 // leading digit of b alone that seems OK, but I am concerned that when you
 // take lower digits of b into account that multiplying b by it can overflow.
-    std::uint32_t scale = 0x80000000U / (bignum_digits(b)[lenb] + 1);
+    uint32_t scale = 0x80000000U / (bignum_digits(b)[lenb] + 1);
 // When I scale the dividend expands into an extra digit but the scale
 // factor has been chosen so that the divisor does not. So beware that
 // a now has digits running from 0 to lena+1.
     bignum_digits(a)[lena+1] = timesbn(a, lena, scale);
-    std::uint32_t btop = timesbn(b, lenb, scale);
+    uint32_t btop = timesbn(b, lenb, scale);
     (void)btop; // To try to get rid of warning on unused variable btop.
     assert(btop == 0);
-    std::size_t m = lenq;
+    size_t m = lenq;
     for (;;)
-    {   std::uint32_t q = next_quotient_digit(
+    {   uint32_t q = next_quotient_digit(
             bignum_digits(a)[lena+1], a, lena,
             b, lenb);
         bignum_digits(big_quotient)[m] = q;
@@ -1151,8 +1151,8 @@ static LispObject quotfr(LispObject a, LispObject b)
 #define quotfc(a, b) quotic(a, b)
 
 static LispObject quotff(LispObject a, LispObject b)
-{   std::int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
-    std::int32_t hc;
+{   int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
+    int32_t hc;
     mv_2 = fixnum_of_int(0);
 #ifdef HAVE_SOFTFLOAT
 // If EITHER argument is a long float I will need to do things differently,
@@ -1196,7 +1196,7 @@ LispObject quot2a(LispObject a, LispObject b)
                     if (b == fixnum_of_int(0))
                         aerror2("bad arg for quotient", a, b);
                     else
-                    {   std::intptr_t r, aa, bb;
+                    {   intptr_t r, aa, bb;
                         aa = int_of_fixnum(a);
                         bb = int_of_fixnum(b);
 // calculate remainder and force its sign to be correct
@@ -1221,7 +1221,7 @@ LispObject quot2a(LispObject a, LispObject b)
                     return quotis(a, b);
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return quotib(a, b);
@@ -1250,7 +1250,7 @@ LispObject quot2a(LispObject a, LispObject b)
                 }
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return quotsb(a, b);
@@ -1270,7 +1270,7 @@ LispObject quot2a(LispObject a, LispObject b)
             }
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
-        {   std::int32_t ha = type_of_header(numhdr(a));
+        {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                     switch ((int)b & XTAG_BITS)
@@ -1280,7 +1280,7 @@ LispObject quot2a(LispObject a, LispObject b)
                             return quotbs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return quotbb(a, b, QUOTBB_QUOTIENT_NEEDED);
@@ -1306,7 +1306,7 @@ LispObject quot2a(LispObject a, LispObject b)
                             return quotrs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return quotrb(a, b);
@@ -1332,7 +1332,7 @@ LispObject quot2a(LispObject a, LispObject b)
                             return quotcs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return quotcb(a, b);
@@ -1362,7 +1362,7 @@ LispObject quot2a(LispObject a, LispObject b)
                     return quotfs(a, b);
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return quotfb(a, b);
@@ -1408,7 +1408,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
                     if (b == fixnum_of_int(0))
                         aerror2("bad arg for divide", a, b);
                     else
-                    {   std::intptr_t r, aa, bb;
+                    {   intptr_t r, aa, bb;
                         aa = int_of_fixnum(a);
                         bb = int_of_fixnum(b);
 // calculate remainder and force its sign to be correct
@@ -1432,7 +1432,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
                     return quotis(a, b);
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return quotib(a, b);
@@ -1461,7 +1461,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
                 }
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return quotsb(a, b);
@@ -1481,7 +1481,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
             }
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
-        {   std::int32_t ha = type_of_header(numhdr(a));
+        {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                     switch ((int)b & XTAG_BITS)
@@ -1491,7 +1491,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
                             return quotbs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return quotbb(a, b,
@@ -1519,7 +1519,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
                             return quotrs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return quotrb(a, b);
@@ -1545,7 +1545,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
                             return quotcs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return quotcb(a, b);
@@ -1575,7 +1575,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
                     return quotfs(a, b);
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return quotfb(a, b);
@@ -1633,7 +1633,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                     if (b == fixnum_of_int(0))
                         aerror2("bad arg for /", a, b);
                     else
-                    {   std::intptr_t r, aa, bb, w;
+                    {   intptr_t r, aa, bb, w;
                         aa = int_of_fixnum(a);
                         bb = int_of_fixnum(b);
                         if (bb < 0) aa = -aa, bb = -bb;
@@ -1654,7 +1654,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                         w = bb;
                         if (r < 0) r = -r;
                         while (r != 0)
-                        {   std::int32_t w1 = w % r;
+                        {   int32_t w1 = w % r;
                             w = r;
                             r = w1;
                         }
@@ -1666,7 +1666,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                     return quotis(a, b);
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return CLquotib(a, b);
@@ -1695,7 +1695,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                 }
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return quotsb(a, b);
@@ -1715,7 +1715,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
             }
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
-        {   std::int32_t ha = type_of_header(numhdr(a));
+        {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
                     switch ((int)b & XTAG_BITS)
@@ -1725,7 +1725,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                             return quotbs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return CLquotbb(a, b);
@@ -1751,7 +1751,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                             return quotrs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return quotrb(a, b);
@@ -1777,7 +1777,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                             return quotcs(a, b);
                         case TAG_NUMBERS:
                         case TAG_NUMBERS+TAG_XBIT:
-                        {   std::int32_t hb = type_of_header(numhdr(b));
+                        {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return quotcb(a, b);
@@ -1807,7 +1807,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                     return quotfs(a, b);
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
-                {   std::int32_t hb = type_of_header(numhdr(b));
+                {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
                             return quotfb(a, b);

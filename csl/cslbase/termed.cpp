@@ -231,6 +231,8 @@ extern char **loadable_packages, **switches;
 #include <sys/select.h>
 #endif
 
+using std::string;
+
 #include "termed.h"
 
 // When the code is built it can still determine (dynamically) that it
@@ -725,7 +727,7 @@ int input_history_next = 0,
     longest_history_line = 0;
 static bool history_active = false;
 
-static std::string history_filename;
+static string history_filename;
 
 // Sort of beware! I have fields in the class FXTerminal with the same
 // names as these (static) variables and serving the same purpose (but for
@@ -778,8 +780,8 @@ void input_history_init(const char *argv0,
     if (h.fail()) return;
 // Can now re-load.
     plongest_history_line = 0;
-    std::string histline;
-// I read into a std::string because that means I do not need to worry about
+    string histline;
+// I read into a string because that means I do not need to worry about
 // the length of the input line.
     std::getline(h, histline);
     if (h.fail()) return;
@@ -811,7 +813,7 @@ void input_history_init(const char *argv0,
             continue;
         }
         else if (hl[0] == '"')
-        {   std::size_t len=0;
+        {   size_t len=0;
             for (const char *q=&hl[1]; *q!='"'; q++)
             {   len++;
                 if (*q == '\\') q+=4;
@@ -887,14 +889,14 @@ void input_history_end(void)
 // "-NN" stands for the next NN entries being blank.
     std::ofstream h(history_filename, std::ofstream::out);
     h << std::dec << "History " << INPUT_HISTORY_SIZE
-      << " " << input_history_next << std::endl;
+      << " " << input_history_next << endl;
     int blankcount = 0;
     for (int i=0; i<INPUT_HISTORY_SIZE; i++)
     {   wchar_t *l = input_history[i];
         if (l == NULL) blankcount++;
         else
         {   if (blankcount != 0)
-            {   h << std::dec << "-" << blankcount << std::endl;
+            {   h << std::dec << "-" << blankcount << endl;
                 blankcount = 0;
             }
             h << "\"";
@@ -910,12 +912,12 @@ void input_history_end(void)
                 else h << "\\" << std::hex << std::setw(4) <<
                      std::setfill('0') << (ch & 0xffff);
             } 
-            h << "\"" << std::endl;
+            h << "\"" << endl;
             std::free(l);
         }
     }
-    if (blankcount != 0) h << std::dec << "-" << blankcount << std::endl;
-    h << "History end" << std::endl;
+    if (blankcount != 0) h << std::dec << "-" << blankcount << endl;
+    h << "History end" << endl;
     if (pending_history_line != NULL) std::free(pending_history_line);
     history_active = false;
 // Now as h goes out of scope the output stream will be closed.
@@ -923,7 +925,7 @@ void input_history_end(void)
 
 
 void input_history_stage(const wchar_t *s)
-{   std::size_t n;
+{   size_t n;
     if (s == NULL) return;
 // The first line after a new prompt just simply forms the pending input
 // line.
@@ -5263,7 +5265,7 @@ static int lookup_name(const char *s)
 
 static int lookup_wide_name(const wchar_t *s)
 {   char narrow[20];
-    std::size_t i;
+    size_t i;
     for (i=0; i<sizeof(narrow)-1; i++)
     {   if (s[i] == 0) break;
         if (s[i] >= 0x7f) return -1; // not a basic ASCII character
@@ -5274,7 +5276,7 @@ static int lookup_wide_name(const wchar_t *s)
 }
 
 const char *lookup_code(int c)
-{   std::size_t i;
+{   size_t i;
 // I do a simple linear search here. It is cheap-enough given that it is
 // only needed when the user types a special command, ALT-x. It does not
 // matter here that I scan the very final NULL entry.
@@ -6197,7 +6199,7 @@ char *term_getline(void)
 // Expanding a code such as 0x1111 unto utf-8 will expand it from a 2-byte
 // wchar_t to 3 bytes. This risks clobbering the input data. To avoid that
 // I will move the raw input data up the buffer first.
-        std::size_t n = std::wcslen(r);
+        size_t n = std::wcslen(r);
         wchar_t *s = r + n;  // end of original data
         q = s + (n/2) + 2;   // safe place for end of copied version
         for (;;)

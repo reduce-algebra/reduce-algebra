@@ -22,7 +22,7 @@ cyg64 := $(shell if test -d cyg64; then echo "yes"; else echo "no"; fi)
 # directories that also get built.
 
 BINARIES =	csl wincsl \
-		bootstrapreduce \
+		bootstrapreduce winbootstrapreduce \
 		redcsl wincsl \
 		redpsl \
 		make-cygwin-symlink \
@@ -112,6 +112,7 @@ RESOURCES = reduce.resources/mma.awk reduce.resources/qepcad.awk
 WIN64FILES = win64/csl/reduce.exe \
 	win64/csl/reduce.com \
 	win64/csl/bootstrapreduce.exe \
+	win64/csl/bootstrapreduce.com \
 	win64/csl/csl.exe \
 	win64/csl/reduce.img \
 	win64/csl/bootstrapreduce.img \
@@ -172,7 +173,9 @@ resources.stamp:	win.stamp
 WIN32FILES = win32/csl/reduce.exe \
 	win32/csl/reduce.com \
 	win32/csl/bootstrapreduce.exe \
-	win32/csl/csl.exe
+	win32/csl/bootstrapreduce.com \
+	win32/csl/csl.exe \
+	win32/csl/csl.com
 
 $(WIN32FILES):	win32.stamp
 
@@ -300,6 +303,11 @@ bootstrapreduce:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
 	        -DNAME=boot -I. -o bootstrapreduce
 	i686-w64-mingw32-strip bootstrapreduce
 
+winbootstrapreduce:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
+	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
+	        -DNAME=wboot -Wl,--subsystem,windows -I. -o winbootstrapreduce
+	i686-w64-mingw32-strip winbootstrapreduce
+
 redcsl:	stub2020.c dll32.c dll64.c $(RESOURCES) win.stamp cyg.stamp
 	i686-w64-mingw32-gcc -O3 $(DEBUG) stub2020.c -static \
 	        -DNAME=red -I. -o redcsl
@@ -347,9 +355,9 @@ reduce.resources/cslcyg32.exe:	cyg32/csl/csl.exe
 reduce.resources/cslcyg64.exe:	cyg64/csl/csl.exe
 	cp $< $@
 
-reduce.resources/bootwin32.exe:	win32/csl/bootstrapreduce.exe
+reduce.resources/bootwin32.exe:	win32/csl/bootstrapreduce.com
 	cp $< $@
-reduce.resources/bootwin64.exe:	win64/csl/bootstrapreduce.exe
+reduce.resources/bootwin64.exe:	win64/csl/bootstrapreduce.com
 	cp $< $@
 reduce.resources/bootcyg32.exe:	cyg32/csl/bootstrapreduce.exe
 	cp $< $@
@@ -368,6 +376,11 @@ reduce.resources/redcyg64.exe:	cyg64/csl/reduce.exe
 reduce.resources/wcslwin32.exe:	win32/csl/csl.exe
 	cp $< $@
 reduce.resources/wcslwin64.exe:	win64/csl/csl.exe
+	cp $< $@
+
+reduce.resources/wbootstrapreducewin32.exe:	win32/csl/bootstrapreduce.exe
+	cp $< $@
+reduce.resources/wbootstrapreducewin64.exe:	win64/csl/bootstrapreduce.exe
 	cp $< $@
 
 reduce.resources/wredwin32.exe:	win32/csl/reduce.exe

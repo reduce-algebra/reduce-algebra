@@ -109,7 +109,7 @@ extern int fwin_main(int argc, const char *argv[]);
 #include <unistd.h>
 #else // HAVE_UNISTD_H
 // The declaration here is an expression of optimism!
-extern "C" char *getcwd(const char *s, std::size_t n);
+extern "C" char *getcwd(const char *s, size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -1078,7 +1078,7 @@ void fwin_report_right(const char *s)
 {
 }
 
-std::atomic<bool> mustQuit(false);
+atomic<bool> mustQuit(false);
 
 int fwin_getchar()
 {   return fwin_plain_getchar();
@@ -1114,7 +1114,7 @@ int fwin_windowmode()
 
 #endif // PART_OF_FOX
 
-int get_current_directory(char *s, std::size_t n)
+int get_current_directory(char *s, size_t n)
 {   if (getcwd(s, n) == 0)
     {   switch(errno)
         {   case ERANGE: return -2; // negative return value flags an error.
@@ -1539,8 +1539,8 @@ int find_program_directory(const char *argv0)
 #endif // __S_IXUSR
 #endif // S_IXUSR
 
-extern int get_home_directory(char *b, std::size_t len);
-extern int get_users_home_directory(char *b, std::size_t len);
+extern int get_home_directory(char *b, size_t len);
+extern int get_users_home_directory(char *b, size_t len);
 
 static lookup_function *look_in_variable = NULL;
 
@@ -1548,7 +1548,7 @@ void fwin_set_lookup(lookup_function *f)
 {   look_in_variable = f;
 }
 
-void process_file_name(char *filename, const char *old, std::size_t n)
+void process_file_name(char *filename, const char *old, size_t n)
 //
 // This procedure maps filenames by expanding some environment
 // variables.  It is very thoroughly system specific, which is why it
@@ -2307,7 +2307,7 @@ void scan_files(const char *dir,
 #endif // WIN32
 
 
-std::FILE *open_file(char *filename, const char *old, std::size_t n,
+std::FILE *open_file(char *filename, const char *old, size_t n,
                 const char *mode, std::FILE *old_file)
 {
 //
@@ -2345,7 +2345,7 @@ std::FILE *open_file(char *filename, const char *old, std::size_t n,
 
 static char err_buf[LONGEST_LEGAL_FILENAME+100];
 
-char *change_directory(char *filename, const char *old, std::size_t n)
+char *change_directory(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0)
     {   std::sprintf(err_buf, "Filename \"%s\" invalid.", old);
@@ -2376,7 +2376,7 @@ char *change_directory(char *filename, const char *old, std::size_t n)
     else return NULL;
 }
 
-int create_directory(char *filename, const char *old, std::size_t n)
+int create_directory(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0) return 1;
     return Cmkdir(filename);
@@ -2396,7 +2396,7 @@ static void remove_files(const char *name, int dirp, long int size)
     }
 }
 
-int delete_file(char *filename, const char *old, std::size_t n)
+int delete_file(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0) return 0;
     //
@@ -2408,7 +2408,7 @@ int delete_file(char *filename, const char *old, std::size_t n)
     return 0;
 }
 
-int delete_wildcard(char *filename, const char *old, std::size_t n)
+int delete_wildcard(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0) return 0;
     {
@@ -2425,7 +2425,7 @@ int delete_wildcard(char *filename, const char *old, std::size_t n)
         }
 #else // WIN32
         glob_t gg;
-        std::size_t i;
+        size_t i;
         if (glob(filename, GLOB_NOSORT, NULL, &gg) == 0)
         {   for (i=0; i<gg.gl_pathc; i++)
                 scan_directory(gg.gl_pathv[i], remove_files);
@@ -2436,18 +2436,18 @@ int delete_wildcard(char *filename, const char *old, std::size_t n)
     return 0;
 }
 
-std::int64_t file_length(char *filename, const char *old, std::size_t n)
+int64_t file_length(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return 0;
     if (stat(filename,&buf) == -1) return -1;
-    return (std::int64_t)(buf.st_size);
+    return (int64_t)(buf.st_size);
 }
 
 #ifdef NAG_VERSION
 
 int list_directory_members(char *filename, const char *old, char **filelist[],
-                           std::size_t n)
+                           size_t n)
 {   struct dirent **namelist;
     int number_of_entries, i;
     char **files;
@@ -2496,7 +2496,7 @@ int list_directory_members(char *filename, const char *old, char **filelist[],
 
 
 void list_directory_members(char *filename, const char *old,
-                            std::size_t n,
+                            size_t n,
                             void (*fn)(const char *name, int why, long int size))
 {   process_file_name(filename, old, n);
     scan_files(filename, fn);
@@ -2505,7 +2505,7 @@ void list_directory_members(char *filename, const char *old,
 #endif // NAG_VERSION
 
 
-bool file_exists(char *filename, const char *old, std::size_t n, char *tt)
+bool file_exists(char *filename, const char *old, size_t n, char *tt)
 //
 // This returns YES if the file exists, and as a side-effect copies a
 // textual form of the last-changed-time of the file into the buffer tt.
@@ -2518,7 +2518,7 @@ bool file_exists(char *filename, const char *old, std::size_t n, char *tt)
     return true;
 }
 
-bool directoryp(char *filename, const char *old, std::size_t n)
+bool directoryp(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return false;
@@ -2526,7 +2526,7 @@ bool directoryp(char *filename, const char *old, std::size_t n)
     return ((buf.st_mode & S_IFMT) == S_IFDIR);
 }
 
-char *get_truename(char *filename, const char *old, std::size_t n)
+char *get_truename(char *filename, const char *old, size_t n)
 {   struct stat buf;
     char *temp, *fn, *dir;
     char pwd[LONGEST_LEGAL_FILENAME];
@@ -2635,7 +2635,7 @@ char *get_truename(char *filename, const char *old, std::size_t n)
 // I do here will hold the fort for now.
 //
 
-bool file_readable(char *filename, const char *old, std::size_t n)
+bool file_readable(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return false;
@@ -2649,7 +2649,7 @@ bool file_readable(char *filename, const char *old, std::size_t n)
 }
 
 
-bool file_writeable(char *filename, const char *old, std::size_t n)
+bool file_writeable(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return false;
@@ -2663,7 +2663,7 @@ bool file_writeable(char *filename, const char *old, std::size_t n)
 }
 
 
-bool file_executable(char *filename, const char *old, std::size_t n)
+bool file_executable(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return false;
@@ -2677,8 +2677,8 @@ bool file_executable(char *filename, const char *old, std::size_t n)
 }
 
 
-int rename_file(char *from_name, const char *from_old, std::size_t from_size,
-                char *to_name, const char *to_old, std::size_t to_size)
+int rename_file(char *from_name, const char *from_old, size_t from_size,
+                char *to_name, const char *to_old, size_t to_size)
 {   process_file_name(from_name, from_old, from_size);
     process_file_name(to_name, to_old, to_size);
     if (*from_name == 0 || *to_name == 0) return 0;
@@ -2723,7 +2723,7 @@ int my_system(const char *s)
 
 #include <pwd.h>
 
-int get_home_directory(char *b, std::size_t len)
+int get_home_directory(char *b, size_t len)
 {   int i;
     struct passwd *pw = getpwuid(getuid());
     std::strcpy(b, pw->pw_dir);
@@ -2736,7 +2736,7 @@ int get_home_directory(char *b, std::size_t len)
     return i;
 }
 
-int get_users_home_directory(char *b, std::size_t len)
+int get_users_home_directory(char *b, size_t len)
 {   struct passwd *pw = getpwnam(b);
     if (pw != NULL) std::strcpy(b, pw->pw_dir);
     else std::strcpy(b, ".");    // use current directory if getpwnam() fails
@@ -2745,8 +2745,8 @@ int get_users_home_directory(char *b, std::size_t len)
 
 #else // DO_NOT_USE_GETUID
 
-int get_home_directory(char *b, std::size_t len)
-{   std::size_t i;
+int get_home_directory(char *b, size_t len)
+{   size_t i;
     const char *s = std::getenv("HOME"); // Probably works with most shells
     if ((i = std::strlen(s)) > len) s = "~";
     std::strcpy(b, s);
@@ -2757,7 +2757,7 @@ int get_home_directory(char *b, std::size_t len)
     return i;
 }
 
-int get_users_home_directory(char *b, std::size_t len)
+int get_users_home_directory(char *b, size_t len)
 {   (void)len;
     std::strcpy(b, ".");    // use current directory if getpwnam() no available
     return 1;
@@ -2772,7 +2772,7 @@ int get_users_home_directory(char *b, std::size_t len)
     {   return 0;
     }
 
-    const char *getcwd(char *s, std::size_t n)
+    const char *getcwd(char *s, size_t n)
     {   return ".";
     }
 
@@ -2820,7 +2820,7 @@ int get_users_home_directory(char *b, std::size_t len)
     {   return 0;
     }
 
-    int readlink(const char *name, char *b, std::size_t n)
+    int readlink(const char *name, char *b, size_t n)
     {   return 0;
     }
 

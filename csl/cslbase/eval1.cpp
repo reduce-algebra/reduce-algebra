@@ -1504,7 +1504,7 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 static void write_result(LispObject env, LispObject r, char *shared)
 {
 // This converts an arbitrary result into a string so I can pass it back.
-    std::int32_t i, len, ok = 1;
+    int32_t i, len, ok = 1;
 // Cyclic and re-entrant structures could lead to failure here, and
 // uninterned symbols (eg gensyms) will not be coped with very well. But
 // SIMPLE data types should all be safe.
@@ -1548,7 +1548,7 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 // Create an identifier for a private shared segment of memory of size
 // 2*PARSIZE. This will be used for passing a result from the sub-task
 // to the main one. Give up if such a segment can not be allocated.
-    int status, segid = shmget(IPC_PRIVATE, (std::size_t)(2*PARSIZE),
+    int status, segid = shmget(IPC_PRIVATE, (size_t)(2*PARSIZE),
                                IPC_CREAT | S_IRUSR | S_IWUSR);
     char *shared, *w;
     int overflow;

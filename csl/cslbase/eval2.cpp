@@ -123,7 +123,7 @@ LispObject apply(LispObject fn, LispObject args,
             push(fn);
             char name_of_caller[32];
             from = qpname(from);
-            std::size_t len = length_of_byteheader(vechdr(from)) - CELL;
+            size_t len = length_of_byteheader(vechdr(from)) - CELL;
             if (len >= sizeof(name_of_caller)) len = sizeof(name_of_caller)-1;
             std::memcpy(name_of_caller, &celt(from, 0), len);
             name_of_caller[len] = 0;
@@ -158,7 +158,7 @@ LispObject apply(LispObject fn, LispObject args,
     char message[64];
     char name_of_caller[32];
     from = qpname(from);
-    std::size_t len = length_of_byteheader(vechdr(from)) - CELL;
+    size_t len = length_of_byteheader(vechdr(from)) - CELL;
     if (len >= sizeof(name_of_caller)) len = sizeof(name_of_caller)-1;
     std::memcpy(name_of_caller, &celt(from, 0), len);
     name_of_caller[len] = 0;

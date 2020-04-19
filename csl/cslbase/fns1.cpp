@@ -53,7 +53,7 @@
 
 // For some debugging purposes it is noce to have a counter...
 
-static std::uintptr_t countup_counter = 0;
+static uintptr_t countup_counter = 0;
 
 LispObject Lcount_up(LispObject)
 {   return fixnum_of_int(countup_counter++);
@@ -926,11 +926,11 @@ LispObject Lpair(LispObject env, LispObject a, LispObject b)
 }
 
 
-static std::size_t membercount(LispObject a, LispObject b)
+static size_t membercount(LispObject a, LispObject b)
 //
 // Counts how many times a is a member of the list b
 //
-{   std::size_t r = 0;
+{   size_t r = 0;
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
         {   if (a == car(b)) r++;
@@ -961,13 +961,13 @@ LispObject Lintersect(LispObject env, LispObject a, LispObject b)
         w = Lmember(nil, car(a), stack[-2]);
 // Here I ignore any item in a that is not also in b
         if (w != nil)
-        {   std::size_t n1 = membercount(car(stack[-1]), stack[0]);
+        {   size_t n1 = membercount(car(stack[-1]), stack[0]);
 //
 // Here I want to arrange that items only appear in the result list multiple
 // times if they occur multiple times in BOTH the input lists.
 //
             if (n1 != 0)
-            {   std::size_t n2 = membercount(car(stack[-1]), stack[-2]);
+            {   size_t n2 = membercount(car(stack[-1]), stack[-2]);
                 if (n2 > n1) n1 = 0;
             }
             if (n1 == 0)
@@ -1173,7 +1173,7 @@ LispObject Lenable_backtrace(LispObject env, LispObject a)
 //    (enable-backtrace t)      ditto
 //    otherwise                 just return previous setting
 //
-    std::int32_t n = miscflags;
+    int32_t n = miscflags;
     miscflags &= ~BACKTRACE_MSG_BITS;
     if (a == nil || a == fixnum_of_int(0)) /* nothing */;
     else if (a == fixnum_of_int(1))
@@ -1526,13 +1526,13 @@ LispObject Lcodep(LispObject env, LispObject a)
     else return onevalue(nil);
 }
 
-LispObject get_basic_vector_init(std::size_t n, LispObject k)
+LispObject get_basic_vector_init(size_t n, LispObject k)
 {   LispObject p;
     push(k);
     p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(k);
     n = n/CELL - 1;
-    for (std::size_t i=0; i<n; i++)
+    for (size_t i=0; i<n; i++)
         basic_elt(p, i) = k;
     return p;
 }
@@ -1567,12 +1567,12 @@ LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1] = {0};
 // the size of the vector including its header word, but as far as powers
 // of 2 go I look at the size of the data part only.
 
-static LispObject gvector(int tag, int type, std::size_t size)
+static LispObject gvector(int tag, int type, size_t size)
 {   STACK_SANITY;
 // I will never let odd sized vectors participate in this recycling
 // process.
     if (size%CELL != 0) return get_basic_vector(tag, type, size);
-    std::size_t n = size/CELL - 1;  // size in words of data part in cells.
+    size_t n = size/CELL - 1;  // size in words of data part in cells.
     if (is_power_of_two(n))    // special if size is a power of 2.
     {   int i = intlog2(n);    // identify what power of 2 we have.
         LispObject r;
@@ -1595,7 +1595,7 @@ static LispObject gvector(int tag, int type, std::size_t size)
     return get_basic_vector(tag, type, size);
 }
 
-LispObject get_vector(int tag, int type, std::size_t n)
+LispObject get_vector(int tag, int type, size_t n)
 {   LispObject v;
 //
 // A major ugliness here is that I need to support huge vectors.
@@ -1614,11 +1614,11 @@ LispObject get_vector(int tag, int type, std::size_t n)
     {
 // If the number size is exactly a multiple of the chunk size I will not
 // need a special shorter final vector.
-        std::size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
-        std::size_t i;
+        size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+        size_t i;
 // The final chunk will be full size if I have a neat multiple of
 // VECTOR_CHUNK_BYTES, otherwise smaller.
-        std::size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
+        size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
         if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
         v = gvector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
 // Note that this index vector will be around while the various sub
@@ -1634,8 +1634,8 @@ LispObject get_vector(int tag, int type, std::size_t n)
 // The vector here will be active as later chunks are allocated, so it needs
 // to be GC safe.
             if (!vector_holds_binary(v1))
-            {   std::size_t k1 = k/CELL;
-                for (std::size_t j=0; j<k1; j++)
+            {   size_t k1 = k/CELL;
+                for (size_t j=0; j<k1; j++)
                     basic_elt(v1, j) = nil;
             }
             basic_elt(v, i) = v1;
@@ -1646,7 +1646,7 @@ LispObject get_vector(int tag, int type, std::size_t n)
 }
 
 
-LispObject reduce_vector_size(LispObject v, std::size_t len)
+LispObject reduce_vector_size(LispObject v, size_t len)
 {   if (is_basic_vector(v)) return reduce_basic_vector_size(v, len);
 // Maybe the shorter vector will fit entirely within the first chunk of
 // the general one.
@@ -1654,8 +1654,8 @@ LispObject reduce_vector_size(LispObject v, std::size_t len)
         return reduce_basic_vector_size(basic_elt(v, 0), len);
 // Work out how many chunks the smaller vector will need, and how large
 // its last chunk will end up.
-    std::size_t chunks = (len - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
-    std::size_t last_size = (len - CELL) % VECTOR_CHUNK_BYTES;
+    size_t chunks = (len - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+    size_t last_size = (len - CELL) % VECTOR_CHUNK_BYTES;
     if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
     len = CELL*(chunks+1);
 // Shorten the index vector...
@@ -1665,7 +1665,7 @@ LispObject reduce_vector_size(LispObject v, std::size_t len)
     return v;
 }
 
-LispObject get_vector_init(std::size_t n, LispObject val)
+LispObject get_vector_init(size_t n, LispObject val)
 {   LispObject p;
     push(val);
     p = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
@@ -1692,12 +1692,12 @@ LispObject get_vector_init(std::size_t n, LispObject val)
 {   Lstop1(env, fixnum_of_int(0));
 }
 
-std::uint64_t base_time;
-std::uint64_t gc_time;
+uint64_t base_time;
+uint64_t gc_time;
 std::chrono::high_resolution_clock::time_point base_walltime;
 
 LispObject Ltime(LispObject env)
-{   std::uint64_t t0 = read_clock() - base_time;
+{   uint64_t t0 = read_clock() - base_time;
     LispObject r = make_lisp_unsigned64(t0/1000);
     return onevalue(r);
 }
@@ -1707,7 +1707,7 @@ LispObject Lwalltime(LispObject env)
     high_resolution_clock::time_point t0 = high_resolution_clock::now();
     duration<double> span =
         duration_cast<duration<double>>(t0 - base_walltime);
-    LispObject r = make_lisp_unsigned64((std::uint64_t)(1000.0*span.count()));
+    LispObject r = make_lisp_unsigned64((uint64_t)(1000.0*span.count()));
     return onevalue(r);
 }
 
@@ -1829,7 +1829,7 @@ LispObject Ldatestamp(LispObject env)
 // pretty-well almost any other thing, as per the C "time_t" type.
 // I do not allow for time-zones etc here either!
 {   std::time_t t = std::time(NULL);
-    return onevalue(make_lisp_integer64((std::int64_t)t));
+    return onevalue(make_lisp_integer64((int64_t)t));
 }
 
 LispObject Ltimeofday(LispObject env)
@@ -1845,15 +1845,15 @@ LispObject Ltimeofday(LispObject env)
 // Note that if this is a 32-bit value it will wrap in 2038. Probably some
 // other API should be used here!
 //
-    std::uint64_t n = (std::uint64_t)t;
-    std::uint32_t un = 0;  // will be for microseconds, so value will be 0-999999
+    uint64_t n = (uint64_t)t;
+    uint32_t un = 0;  // will be for microseconds, so value will be 0-999999
 #ifdef HAVE_SYS_TIME_H
 #ifdef HAVE_GETTIMEOFDAY
 // If more precise information is available then use it
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    n = (std::uint64_t)tv.tv_sec;
-    un = (std::uint32_t)tv.tv_usec;
+    n = (uint64_t)tv.tv_sec;
+    un = (uint32_t)tv.tv_usec;
 #endif
 #endif
     w = make_lisp_unsigned64(n);
@@ -1931,7 +1931,7 @@ LispObject Lrepresentation1(LispObject env, LispObject a)
 //
 // Intended for debugging, and use with indirect (q.v.)
 //
-{   a = make_lisp_integer64((std::intptr_t)a);
+{   a = make_lisp_integer64((intptr_t)a);
     return onevalue(a);
 }
 
@@ -1944,43 +1944,43 @@ LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
 {   if (SIXTY_FOUR_BIT)
     {   if (b != nil)
         {   if (!is_fixnum(b))
-                trace_printf("R = %.16" PRIx64 " ", (std::uint64_t)a);
+                trace_printf("R = %.16" PRIx64 " ", (uint64_t)a);
             if (is_numbers(a) && is_bignum(a))
-            {   std::size_t len = (length_of_header(numhdr(a))-CELL)/4;
-                for (std::size_t i=len; i>0; i--)
-                    trace_printf("%.8x ", (std::uint32_t)bignum_digits(a)[i-1]);
+            {   size_t len = (length_of_header(numhdr(a))-CELL)/4;
+                for (size_t i=len; i>0; i--)
+                    trace_printf("%.8x ", (uint32_t)bignum_digits(a)[i-1]);
             }
             if (is_numbers(a) && is_new_bignum(a))
-            {   std::size_t len = (length_of_header(numhdr(a))-8)/8;
-                for (std::size_t i=len; i>0; i--)
-                    trace_printf("%.8x ", (std::uint64_t)new_bignum_digits(a)[i-1]);
+            {   size_t len = (length_of_header(numhdr(a))-8)/8;
+                for (size_t i=len; i>0; i--)
+                    trace_printf("%.8x ", (uint64_t)new_bignum_digits(a)[i-1]);
             }
             else if (is_fixnum(a))
-                trace_printf("#%cFIX:%" PRIx64, ((std::intptr_t)a>=0 ? 'p' : 'n'),
+                trace_printf("#%cFIX:%" PRIx64, ((intptr_t)a>=0 ? 'p' : 'n'),
                              int_of_fixnum(a));
             trace_printf("\n");
         }
-        a = make_lisp_integer64((std::intptr_t)a);
+        a = make_lisp_integer64((intptr_t)a);
         return onevalue(a);
     }
     else
     {   if (b != nil)
         {   if (!is_fixnum(b))
-                trace_printf("R = %.8lx ", (long)(std::uint32_t)a);
+                trace_printf("R = %.8lx ", (long)(uint32_t)a);
             if (is_numbers(a) && is_bignum(a))
-            {   std::size_t len = (length_of_header(numhdr(a))-CELL)/4;
-                for (std::size_t i=len; i>0; i--)
-                    trace_printf("%.8x ", (std::uint32_t)bignum_digits(a)[i-1]);
+            {   size_t len = (length_of_header(numhdr(a))-CELL)/4;
+                for (size_t i=len; i>0; i--)
+                    trace_printf("%.8x ", (uint32_t)bignum_digits(a)[i-1]);
             }
             trace_printf("\n");
         }
-        a = make_lisp_integer32((std::int32_t)a);
+        a = make_lisp_integer32((int32_t)a);
         return onevalue(a);
     }
 }
 
 LispObject Lindirect(LispObject, LispObject a)
-{   return onevalue(*(LispObject *)(std::intptr_t)sixty_four_bits(a));
+{   return onevalue(*(LispObject *)(intptr_t)sixty_four_bits(a));
 }
 
 //
@@ -2006,7 +2006,7 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
 #endif
     LispObject r;
     char libname[LONGEST_LEGAL_FILENAME];
-    std::size_t len = 0;
+    size_t len = 0;
     const char *w;
     char *w2, *w1 = NULL;
     std::memset(libname, 0, sizeof(libname));
@@ -2092,7 +2092,7 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
     void *b;
     const char *w;
     char sname[100];
-    std::size_t len = 0;
+    size_t len = 0;
 #ifdef WIN32
     HMODULE a;
 #else
@@ -2152,7 +2152,7 @@ LispObject Lcallf_1(LispObject env, LispObject entry)
 // "void *" to the function pointer "void_function *" using intptr_t as
 // an intermediary. This is obviously undefined behaviour! But "The Spirit
 // of C" would give a clear indication of expectations!
-    ffi_call(&cif, (void_function *)(std::uintptr_t)f, NULL, NULL);
+    ffi_call(&cif, (void_function *)(uintptr_t)f, NULL, NULL);
     return onevalue(nil);
 }
 
@@ -2184,14 +2184,14 @@ void     *vargs[MAX_ARGCOUNT];
 
 void *fresult;
 
-std::int32_t i32args[MAX_ARGCOUNT];
-std::int64_t i64args[MAX_ARGCOUNT];
-std::int64_t dblargs[MAX_ARGCOUNT];
+int32_t i32args[MAX_ARGCOUNT];
+int64_t i64args[MAX_ARGCOUNT];
+int64_t dblargs[MAX_ARGCOUNT];
 char    strargs[MAX_ARGCOUNT][MAX_STRINGLEN];
 
 long longres;
-std::int32_t i32res;
-std::int64_t i64res;
+int32_t i32res;
+int64_t i64res;
 double  dblres;
 void   *strres;
 
@@ -2200,7 +2200,7 @@ void   *strres;
 // same as the value given as arg2.
 //
 int name_matches(LispObject a, const char *s)
-{   std::size_t len = 0;
+{   size_t len = 0;
     const char *w = get_string_data(a, "call-foreign", len);
     if (len == std::strlen(s) &&
         std::strncmp(w, s, len) == 0) return 1;
@@ -2244,12 +2244,12 @@ int name_matches(LispObject a, const char *s)
 //
 
 static void dumparg(int i, LispObject type, LispObject value)
-{   std::size_t len = 0;
+{   size_t len = 0;
     const char *w = get_string_data(type, "call-foreign-function", len);
     if ((len==5 && std::strncmp(w, "int64", 5)==0) ||
         (sizeof(long)==8 && len==4 && std::strncmp(w, "long", 4)==0) ||
-        (sizeof(std::size_t)==8 && len==4 && std::strncmp(w, "size", 4)==0) ||
-        (sizeof(std::intptr_t)==8 && len==6 && std::strncmp(w, "intptr", 6)==0) ||
+        (sizeof(size_t)==8 && len==4 && std::strncmp(w, "size", 4)==0) ||
+        (sizeof(intptr_t)==8 && len==6 && std::strncmp(w, "intptr", 6)==0) ||
         (len==8 && std::strncmp(w, "longlong", 8)==0))
     {   vargs[i] = &i64args[i];
         targs[i] = &ffi_type_sint64;
@@ -2258,8 +2258,8 @@ static void dumparg(int i, LispObject type, LispObject value)
     else if ((type == nil && (is_fixnum(value) || is_bignum(value))) ||
         (len==5 && std::strncmp(w, "int32", 5)==0) ||
         (sizeof(long)==4 && len==4 && std::strncmp(w, "long", 4)==0) ||
-        (sizeof(std::size_t)==4 && len==4 && std::strncmp(w, "size", 4)==0) ||
-        (sizeof(std::intptr_t)==4 && len==6 && std::strncmp(w, "intptr", 6)==0) ||
+        (sizeof(size_t)==4 && len==4 && std::strncmp(w, "size", 4)==0) ||
+        (sizeof(intptr_t)==4 && len==6 && std::strncmp(w, "intptr", 6)==0) ||
         (len==3 && std::strncmp(w, "int", 3)==0))
     {   vargs[i] = &i32args[i];
         targs[i] = &ffi_type_sint32;
@@ -2286,7 +2286,7 @@ LispObject callf_n(LispObject fun, LispObject args)
 {   if (Lencapsulatedp(nil, fun) == nil)
         aerror1("call-foreign-function", fun);
 // Note double cast to allow some pre C++-11 compilers to cope.
-    void_function *f = (void_function *)(std::uintptr_t)extract_pointer(fun);
+    void_function *f = (void_function *)(uintptr_t)extract_pointer(fun);
     LispObject currenttype = nil;
     unsigned int nargs = 0;
     while (args != nil)
@@ -2330,8 +2330,8 @@ LispObject callf_n(LispObject fun, LispObject args)
     if (name_matches(currenttype, "int32") ||
         name_matches(currenttype, "int") ||
         (sizeof(long)==4 && name_matches(currenttype, "long")) ||
-        (sizeof(std::size_t)==4 && name_matches(currenttype, "size")) ||
-        (sizeof(std::intptr_t)==4 && name_matches(currenttype, "intptr")))
+        (sizeof(size_t)==4 && name_matches(currenttype, "size")) ||
+        (sizeof(intptr_t)==4 && name_matches(currenttype, "intptr")))
     {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_sint32, targs) != FFI_OK)
             aerror("call-foreign-function");
         ffi_call(&cif, f, &i32res, vargs);
@@ -2340,8 +2340,8 @@ LispObject callf_n(LispObject fun, LispObject args)
     if (name_matches(currenttype, "int64") ||
         name_matches(currenttype, "longlong") ||
         (sizeof(long)==8 && name_matches(currenttype, "long")) ||
-        (sizeof(std::size_t)==8 && name_matches(currenttype, "size")) ||
-        (sizeof(std::intptr_t)==8 && name_matches(currenttype, "intptr")))
+        (sizeof(size_t)==8 && name_matches(currenttype, "size")) ||
+        (sizeof(intptr_t)==8 && name_matches(currenttype, "intptr")))
     {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_sint64, targs) != FFI_OK)
             aerror("call-foreign-function");
         ffi_call(&cif, f, &i64res, vargs);

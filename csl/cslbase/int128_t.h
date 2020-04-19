@@ -48,15 +48,15 @@ inline uint128_t uint128(int128_t v)
 {   return static_cast<uint128_t>(v);
 }
 
-inline uint128_t uint128(std::uint64_t v)
+inline uint128_t uint128(uint64_t v)
 {   return static_cast<uint128_t>(v);
 }
 
-inline uint128_t uint128(std::int64_t v)
+inline uint128_t uint128(int64_t v)
 {   return static_cast<uint128_t>(v);
 }
 
-inline int128_t int128(std::int64_t v)
+inline int128_t int128(int64_t v)
 {   return static_cast<int128_t>(v);
 }
 
@@ -100,8 +100,8 @@ inline int128_t ASR128(int128_t a, int n)
 
 #endif // SIGNED_SHIFTS_ARE_ARITHMETIC
 
-inline std::int64_t NARROW128(int128_t a)
-{   return static_cast<std::int64_t>(a);
+inline int64_t NARROW128(int128_t a)
+{   return static_cast<int64_t>(a);
 }
 
 inline void divrem128(int128_t a, int128_t b,
@@ -125,12 +125,12 @@ inline uint128_t uint128(int128_t v)
     return r;
 }
 
-inline uint128_t uint128(std::int64_t v)
-{   uint128_t r = static_cast<std::uint64_t>(v);
+inline uint128_t uint128(int64_t v)
+{   uint128_t r = static_cast<uint64_t>(v);
     return r;
 }
 
-inline uint128_t uint128(std::uint64_t v)
+inline uint128_t uint128(uint64_t v)
 {   uint128_t r = v;
     return r;
 }
@@ -139,10 +139,10 @@ inline uint128_t uint128(std::uint64_t v)
 // this achieves what I need! Getting values into the top 64-bits is not
 // as easy as I might have hoped!
 
-inline int128_t int128(std::int64_t v)
-{   int128_t r = static_cast<std::uint64_t>(v);
+inline int128_t int128(int64_t v)
+{   int128_t r = static_cast<uint64_t>(v);
     if (v < 0)
-    {   int128_t w = -static_cast<std::uint64_t>(1);
+    {   int128_t w = -static_cast<uint64_t>(1);
         w = w <<64;
         r = r | w;
     }
@@ -190,18 +190,18 @@ inline int128_t ASL128(const int128_t & a, int n)
 
 inline int128_t ASR128(const int128_t & a, int n)
 {   if (n >= 128) return (a < 0 ? -1 : 0);
-    if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
+    if (n < 64) return int128_t(ASR(static_cast<int64_t>(a.upper()), n),
                                 (a.upper()<<(64-n)) | (a.lower()>>n));
-    else if (n == 64) return int128_t(-static_cast<std::int64_t>(a.upper()<0),
+    else if (n == 64) return int128_t(-static_cast<int64_t>(a.upper()<0),
                                       a.upper());
-    else if (n < 64) return int128_t(ASR(static_cast<std::int64_t>(a.upper()), n),
+    else if (n < 64) return int128_t(ASR(static_cast<int64_t>(a.upper()), n),
                                      (a.upper()<<(64-n)) | (a.lower()>>n));
-    else return int128_t(-static_cast<std::int64_t>(a.upper()<0),
-                         ASR((static_cast<std::int64_t>(a.upper())), n-64));
+    else return int128_t(-static_cast<int64_t>(a.upper()<0),
+                         ASR((static_cast<int64_t>(a.upper())), n-64));
 }
 
-inline std::int64_t NARROW128(const int128_t & a)
-{   return static_cast<std::int64_t>(a.lower());
+inline int64_t NARROW128(const int128_t & a)
+{   return static_cast<int64_t>(a.lower());
 }
 
 // Produce quotient and remainder for signed values. I can take the
@@ -210,12 +210,12 @@ inline std::int64_t NARROW128(const int128_t & a)
 
 inline void divrem128(const int128_t & a, const int128_t & b,
                              int128_t & q, int128_t & r)
-{   if (static_cast<std::int64_t>(a.upper()) < 0)
-    {   if (static_cast<std::int64_t>(b.upper()) < 0) q = (-a)/(-b);
+{   if (static_cast<int64_t>(a.upper()) < 0)
+    {   if (static_cast<int64_t>(b.upper()) < 0) q = (-a)/(-b);
         else q = -((-a)/b);
     }
     else
-    {   if (static_cast<std::int64_t>(b.upper()) < 0) q = -(a/(-b));
+    {   if (static_cast<int64_t>(b.upper()) < 0) q = -(a/(-b));
         else q = a/b;
     }
     r = a - q*b;

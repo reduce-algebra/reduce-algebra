@@ -94,16 +94,16 @@ LispObject *stackLimit;
 
 LispObject *nilsegment, *nilsegmentbase;
 LispObject *stacksegment, *stacksegmentbase;
-std::int32_t stack_segsize = 1;
+int32_t stack_segsize = 1;
 
 char *exit_charvec = NULL;
-std::intptr_t exit_reason;
+intptr_t exit_reason;
 
-std::intptr_t nwork;
+intptr_t nwork;
 unsigned int exit_count;
-std::uint64_t gensym_ser;
-std::intptr_t print_precision, miscflags;
-std::intptr_t current_modulus, fastget_size, package_bits, modulus_is_large;
+uint64_t gensym_ser;
+intptr_t print_precision, miscflags;
+intptr_t current_modulus, fastget_size, package_bits, modulus_is_large;
 LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
 LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
@@ -345,7 +345,7 @@ entry_point1 entries_tableio[] =
 #define entry_table_sizeio ((int)(sizeof(entries_tableio)/sizeof(entries_tableio[0])))
 
 static LispObject Lreclaim_trap(LispObject env, LispObject a)
-{   std::int64_t previous = reclaim_trap_count;
+{   int64_t previous = reclaim_trap_count;
     if (!is_fixnum(a)) aerror1("reclaim-trap", a);
     reclaim_trap_count = int_of_fixnum(a);
     term_printf("+++ Reclaim trap set at %d, previous = %d\n",
@@ -354,7 +354,7 @@ static LispObject Lreclaim_trap(LispObject env, LispObject a)
 }
 
 static LispObject Lreclaim_stack_limit(LispObject env, LispObject a)
-{   std::intptr_t previous = reclaim_stack_limit;
+{   intptr_t previous = reclaim_stack_limit;
     if (!is_fixnum(a)) aerror1("reclaim-stack-limit", a);
     reclaim_stack_limit = int_of_fixnum(a);
     term_printf("+++ Reclaim stack limit set at %d, previous = %d\n",
@@ -362,7 +362,7 @@ static LispObject Lreclaim_stack_limit(LispObject env, LispObject a)
     return onevalue(fixnum_of_int(previous));
 }
 
-static char *find_checksum(const char *name, std::size_t len, const setup_type *p)
+static char *find_checksum(const char *name, size_t len, const setup_type *p)
 {   char *n;
     while (p->name != NULL) p++;
     n = (char *)p->zero;
@@ -410,12 +410,12 @@ setup_type const *setup_tables[] =
 
 static LispObject Lcheck_c_code(LispObject env, LispObject name,
         LispObject lc1, LispObject lc2, LispObject a4up)
-{   std::int32_t c1=-1, c2=-1, c3=-1;
+{   int32_t c1=-1, c2=-1, c3=-1;
     long int x1=-2, x2=-2, x3=-2;
-    std::int32_t len;
+    int32_t len;
     char *p;
     const char *sname;
-    std::size_t i;
+    size_t i;
     LispObject lc3 = arg4("check-c-code", a4up);
 // This is called as when the system is about to install some linke between
 // Lisp and code that has been compiled into C++. It is given 4 arguments:
@@ -492,16 +492,16 @@ setup_type const restart_setup[] =
 
 
 static void create_symbols(setup_type const s[], int restart_flag)
-{   std::size_t i;
+{   size_t i;
     for (i=0; s[i].name != NULL; i++)
         make_symbol(s[i].name, restart_flag,
            s[i].zero,  s[i].one, s[i].two, s[i].three, s[i].fourup);
 }
 
-static std::int32_t defined_symbols;
+static int32_t defined_symbols;
 
 static void count_symbols(setup_type const s[])
-{   std::size_t i;
+{   size_t i;
     for (i=0; s[i].name != NULL; i++) defined_symbols++;
 }
 
@@ -530,9 +530,9 @@ static unsigned int loaded_dynamic_count = 0 , loaded_dynamic_size = 0;
 // data is non-transient. BEWARE if you try to use these at some stage in the
 // future.
 //
-static setup_type_1 *find_dynamic_module(char *name, std::size_t len)
+static setup_type_1 *find_dynamic_module(char *name, size_t len)
 {   unsigned int hash = 0;
-    std::size_t i;
+    size_t i;
     char *p = name;
     if (loaded_dynamic_size == 0) return NULL;
     for (i=0; i<len; i++) hash=169*hash+(*p++ & 0xff);
@@ -557,8 +557,8 @@ static void record_dynamic_module(char *name, setup_type_1 *entries)
     loaded_dynamic_count++;
     if (3*loaded_dynamic_count >= 2*loaded_dynamic_size)
     {   dynamic_modules *newtable;
-        std::uint32_t newsize; // so I can use isprime()
-        std::size_t i;
+        uint32_t newsize; // so I can use isprime()
+        size_t i;
         if (loaded_dynamic_size == 0)
             newsize = INITIAL_DYNAMIC_MODULE_HASH_SIZE;
         else
@@ -750,7 +750,7 @@ static void tidy_up_old_dlls(const char *name, int why, long int size)
 
 #if 0
 static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
-{   std::size_t len = 0, checklen = 0;
+{   size_t len = 0, checklen = 0;
     const char *sname, *checkname;
     char modname[80], xmodname[LONGEST_LEGAL_FILENAME];
     char sname1[LONGEST_LEGAL_FILENAME];
@@ -1015,11 +1015,11 @@ static void cold_setup()
     setplist(nil, nil);
     setfastgets(nil, nil);
     setenv(nil, nil);        // points to self in undefined case
-    ifn0(nil) = (std::intptr_t)undefined_0;
-    ifn1(nil) = (std::intptr_t)undefined_1;
-    ifn2(nil) = (std::intptr_t)undefined_2;
-    ifn3(nil) = (std::intptr_t)undefined_3;
-    ifn4up(nil) = (std::intptr_t)undefined_4up;
+    ifn0(nil) = (intptr_t)undefined_0;
+    ifn1(nil) = (intptr_t)undefined_1;
+    ifn2(nil) = (intptr_t)undefined_2;
+    ifn3(nil) = (intptr_t)undefined_3;
+    ifn4up(nil) = (intptr_t)undefined_4up;
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
     setvalue(nil, nil);
 //
@@ -1085,14 +1085,14 @@ static void cold_setup()
     packnint_((LispObject)CP) = fixnum_of_int(0);
     packext_((LispObject)CP) = get_basic_vector_init(CELL*(1+INIT_OBVECX_SIZE), fixnum_of_int(0));
     packnext_((LispObject)CP) = fixnum_of_int(1); // Allow for nil
-    {   std::size_t i = (std::size_t)(hash_lisp_string(qpname(nil)) &
+    {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
                            (INIT_OBVECX_SIZE - 1));
         elt(packext_((LispObject)CP), i) = nil;
     }
 #else
     packnint_((LispObject)CP) = fixnum_of_int(1); // Allow for nil
 // Place NIL into the table.
-    {   std::size_t i = (std::size_t)(hash_lisp_string(qpname(nil)) &
+    {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
                             (INIT_OBVECI_SIZE - 1));
         elt(packint_((LispObject)CP), i) = nil;
     }
@@ -1313,7 +1313,7 @@ void set_up_functions(int restart_flag)
 // actual addresses associated with C entrypoints will vary from version
 // to version of the binary of the system.
 //
-    std::size_t i;
+    size_t i;
 #ifdef COMMON
 //
 // In Common Lisp mode it could be that the user had something other than the
@@ -1438,7 +1438,7 @@ static int alpha1(const void *a, const void *b)
 
 void set_up_variables(int restart_flag)
 {   LispObject w, w1;
-    std::size_t i;
+    size_t i;
 // There are a number of system variables that are not saved in
 // image files and so that have to be set up manually in every case.
 #ifdef COMMON
@@ -1471,11 +1471,11 @@ void set_up_variables(int restart_flag)
     for (i=fasl_files.size(); i!=0; i--)
         if (fasl_files[i-1].inUse)
             setvalue(input_libraries,
-                     cons(SPID_LIBRARY + (((std::int32_t)(i-1))<<20),
+                     cons(SPID_LIBRARY + (((int32_t)(i-1))<<20),
                           qvalue(input_libraries)));
     output_library = make_undefined_symbol("output-library");
     setvalue(output_library, (output_directory & 0x80000000u) != 0 ? nil :
-                              SPID_LIBRARY + (((std::int32_t)output_directory)<<20));
+                              SPID_LIBRARY + (((int32_t)output_directory)<<20));
 //
 // The Lisp variable lispsystem* gets set here. (in Common mode it is
 // the variable *features*)
@@ -2393,7 +2393,7 @@ static void get_checksum(const setup_type *p)
 }
 
 void get_user_files_checksum(unsigned char *b)
-{   std::size_t i;
+{   size_t i;
     CSL_MD5_Init();
     for (i=0; setup_tables[i]!=NULL; i++)
         get_checksum(setup_tables[i]);
@@ -2421,7 +2421,7 @@ void setup(int restart_flag, double store_size)
 //            allocated, and to re-use what there is.
 //    4, 8, ...   not used yet!
 //
-    std::int32_t i;
+    int32_t i;
     if ((restart_flag & 2) != 0) init_heap_segments(store_size);
     garbage_collection_permitted = false;
     stack = stackBase;
@@ -2496,8 +2496,8 @@ void setup(int restart_flag, double store_size)
     }
     else for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
 
-    stackLimit = (LispObject *) (~(std::uintptr_t)0xff &
-        (std::uintptr_t)&stack[stack_segsize*CSL_PAGE_SIZE/4-200]);
+    stackLimit = (LispObject *) (~(uintptr_t)0xff &
+        (uintptr_t)&stack[stack_segsize*CSL_PAGE_SIZE/4-200]);
     // allow some slop at end
 
 #ifdef CONSERVATIVE
@@ -2512,10 +2512,10 @@ void setup(int restart_flag, double store_size)
     mostlyFreePagesCount = 0;
 #else // CONSERVATIVE
     void *p = vheap_pages[vheap_pages_count++] = allocate_page("vheap warm setup");
-    vfringe = (LispObject)(8 + (char *)doubleword_align_up((std::intptr_t)p));
+    vfringe = (LispObject)(8 + (char *)doubleword_align_up((intptr_t)p));
     vheaplimit = (LispObject)(vfringe + (CSL_PAGE_SIZE - 16));
     p = heap_pages[heap_pages_count++] = allocate_page("heap warm setup");
-    heaplimit = (std::intptr_t)p;
+    heaplimit = (intptr_t)p;
     fringe = (LispObject)(heaplimit + CSL_PAGE_SIZE);
     heaplimit = (LispObject)(heaplimit + SPARE);
 #endif // CONSERVATIVE
@@ -2535,10 +2535,10 @@ void setup(int restart_flag, double store_size)
 // could be adjusted on the basis of experience with this code.
 //
     if ((init_flags & INIT_EXPANDABLE) != 0)
-    {   std::int32_t more = heap_pages_count + vheap_pages_count;
+    {   int32_t more = heap_pages_count + vheap_pages_count;
         more = 3 *more - pages_count;
         while (more-- > 0)
-        {   void *page = (void *)aligned_malloc((std::size_t)CSL_PAGE_SIZE);
+        {   void *page = (void *)aligned_malloc((size_t)CSL_PAGE_SIZE);
             if (page == NULL)
             {   init_flags &= ~INIT_EXPANDABLE;
                 break;
@@ -2547,7 +2547,7 @@ void setup(int restart_flag, double store_size)
         }
     }
 #endif
-    {   std::int32_t w = 0;
+    {   int32_t w = 0;
 //
 // The total store allocated is that used plus that free, including the
 // page set aside for the Lisp stack. I had better report this in Kbytes
@@ -2825,7 +2825,7 @@ void CSL_MD5_Init(void)
     MD5_Init(&context);
 }
 
-void CSL_MD5_Update(const unsigned char *data, std::size_t len)
+void CSL_MD5_Update(const unsigned char *data, size_t len)
 {   MD5_Update(&context, data, len);
 }
 

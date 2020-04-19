@@ -41,18 +41,18 @@
 static thread_local std::vector<char> print_buffer;
 
 void print_newbignum(LispObject u, bool blankp, int nobreak)
-{   std::size_t approx_length =
+{   size_t approx_length =
         arithlib_lowlevel::bignum_to_string_length(
-            (std::uint64_t *)(u - TAG_NUMBERS + 8),
+            (uint64_t *)(u - TAG_NUMBERS + 8),
             (length_of_header(numhdr(u)) - 8)/8);
     if (print_buffer.size() < approx_length)
         print_buffer.resize(approx_length);
     char *b = print_buffer.data();
 // I now have a buffer long enough to put my digits in.
-    std::size_t len =
+    size_t len =
         arithlib_lowlevel::bignum_to_string(
             b, approx_length,
-            (std::uint64_t *)(u - TAG_NUMBERS + 8),
+            (uint64_t *)(u - TAG_NUMBERS + 8),
             (length_of_header(numhdr(u)) - 8)/8);
 // Now len is the actual length of the output and the buffer b contains
 // that many characters. I will need to cope with line breaks and the
@@ -70,11 +70,11 @@ void print_newbignum(LispObject u, bool blankp, int nobreak)
     }
     else if (nobreak==0 && column != 0 && column+len > line_length)
         putc_stream('\n', active_stream);
-    for (std::size_t i=0; i<len; i++) putc_stream(b[i], active_stream);
+    for (size_t i=0; i<len; i++) putc_stream(b[i], active_stream);
 // Printing was potentially a fairly expensive step. So I will check to
 // see if an interrupt was posted during it.
-    if ((std::uintptr_t)stack >=
-        ((std::uintptr_t)stackLimit | event_flag.load()))
+    if ((uintptr_t)stack >=
+        ((uintptr_t)stackLimit | event_flag.load()))
         respond_to_stack_event();
 }
 

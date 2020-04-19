@@ -232,14 +232,14 @@ extern void respond_to_stack_event();
 
 inline void stackcheck0()
 {   if_check_stack();                                         
-    if ((reinterpret_cast<std::uintptr_t>(stack) | event_flag.load()) >=
-        reinterpret_cast<std::uintptr_t>(stackLimit)) respond_to_stack_event();
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
+        reinterpret_cast<uintptr_t>(stackLimit)) respond_to_stack_event();
 }
 
 inline void stackcheck1(LispObject& a1)                                   
 {   if_check_stack();                                        
-    if ((reinterpret_cast<std::uintptr_t>(stack) | event_flag.load()) >=
-        reinterpret_cast<std::uintptr_t>(stackLimit))
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
+        reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1);
         respond_to_stack_event();
         pop(a1);
@@ -248,8 +248,8 @@ inline void stackcheck1(LispObject& a1)
 
 inline void stackcheck2(LispObject& a1, LispObject& a2)                               
 {   if_check_stack();                                        
-    if ((reinterpret_cast<std::uintptr_t>(stack) | event_flag.load()) >=
-        reinterpret_cast<std::uintptr_t>(stackLimit))
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
+        reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2);
         respond_to_stack_event();
         pop(a2, a1);
@@ -258,8 +258,8 @@ inline void stackcheck2(LispObject& a1, LispObject& a2)
 
 inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)                           
 {   if_check_stack();                                        
-    if ((reinterpret_cast<std::uintptr_t>(stack) | event_flag.load()) >=
-        reinterpret_cast<std::uintptr_t>(stackLimit))
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
+        reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2, a3);
         respond_to_stack_event();
         pop(a3, a2, a1);
@@ -268,8 +268,8 @@ inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)
 
 inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObject& a4)                       
 {   if_check_stack();                                        
-    if ((reinterpret_cast<std::uintptr_t>(stack) | event_flag.load()) >=
-        reinterpret_cast<std::uintptr_t>(stackLimit))
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
+        reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2, a3, a4);
         respond_to_stack_event();
         pop(a4, a3, a2, a1);
@@ -280,14 +280,14 @@ inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObje
 
 inline void stackcheck()
 {   if_check_stack();                                         
-    if ((reinterpret_cast<std::uintptr_t>(stack) | event_flag.load()) >=
-        reinterpret_cast<std::uintptr_t>(stackLimit)) respond_to_stack_event();
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
+        reinterpret_cast<uintptr_t>(stackLimit)) respond_to_stack_event();
 }
 
 inline void stackcheck(LispObject& a1)        
 {   if_check_stack();                                        
-    if ((reinterpret_cast<std::uintptr_t>(stack) | event_flag.load()) >=
-        reinterpret_cast<std::uintptr_t>(stackLimit))
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
+        reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1);
         respond_to_stack_event();
         pop(a1);
@@ -296,8 +296,8 @@ inline void stackcheck(LispObject& a1)
 
 inline void stackcheck(LispObject& a1, LispObject& a2)                               
 {   if_check_stack();                                        
-    if ((reinterpret_cast<std::uintptr_t>(stack) | event_flag.load()) >=
-        reinterpret_cast<std::uintptr_t>(stackLimit))
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
+        reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2);
         respond_to_stack_event();
         pop(a2, a1);
@@ -306,8 +306,8 @@ inline void stackcheck(LispObject& a1, LispObject& a2)
 
 inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)                           
 {   if_check_stack();                                        
-    if ((reinterpret_cast<std::uintptr_t>(stack) | event_flag.load()) >=
-        reinterpret_cast<std::uintptr_t>(stackLimit))
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
+        reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2, a3);
         respond_to_stack_event();
         pop(a3, a2, a1);
@@ -317,8 +317,8 @@ inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)
 inline void stackcheck(LispObject& a1, LispObject& a2,
                        LispObject& a3, LispObject& a4)                       
 {   if_check_stack();                                        
-    if ((reinterpret_cast<std::uintptr_t>(stack) | event_flag.load()) >=
-        reinterpret_cast<std::uintptr_t>(stackLimit))
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
+        reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2, a3, a4);
         respond_to_stack_event();
         pop(a4, a3, a2, a1);
@@ -355,7 +355,7 @@ inline void respond_to_fringe_event(LispObject &r, const char *msg)
 // If an asynchronous event has arisen then event_flag has an interesting
 // value. I want to read and reset it atomically, and these two lines
 // using compare_exchange_weak() should achieve that.
-    std::uintptr_t f = event_flag.load();
+    uintptr_t f = event_flag.load();
     while (!event_flag.compare_exchange_weak(f, 0)) {}
 // Now one possibility is that this is a perfectly normal ordinary case
 // for garbage collection because event_flag had been zero. In that case

@@ -429,6 +429,30 @@ inline void aligned_free(void *p)
 
 #endif // MAXALING4
 
+// To keep my C++ just a bit more compact I will put in some "using"
+// statements here so that especially commonly used things can avoid needing
+// explicit "std::" prefixes. The things I "use" here are ones that should
+// be standard from the headers I have included and should not be names
+// where there is any proper chance for conflict.
+
+using std::cout;      // Make C++ output as in "cout << "string" << endl;"
+using std::endl;      // a lot nicer.
+
+using std::int32_t;   // Fixed-width and architectiure-specific with integers
+using std::int64_t;   // that are really having used.
+using std::intptr_t;
+using std::uint32_t;
+using std::uint64_t;
+using std::uintptr_t;
+using std::size_t;
+
+using std::string;    // This to encourage me to use "string" rather than
+                      // "char *".
+
+using std::atomic;    // If I am going to be multi-threaded then very many
+                      // things need to be atomic and writing std::atomic<>
+                      // every time is a burden.
+
 #endif // header_machine_h
 
 // end machine.h

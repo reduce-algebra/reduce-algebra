@@ -110,13 +110,13 @@ void f128M_ldexp(float128_t *p, int x)
 // not lead to a sub-norm and then using a multiply to scale it down.
     if (x <= 0)
     {   p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-            ((std::uint64_t)(x+4096) << 48);
+            ((uint64_t)(x+4096) << 48);
         float128_t w1;
         f128M_div(p, &f128_N1, &w1);
         *p = w1;
     }
     else p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-        ((std::uint64_t)x << 48);
+        ((uint64_t)x << 48);
 }
 
 void f128M_frexp(float128_t *p, float128_t *r, int *x)
@@ -137,7 +137,7 @@ void f128M_frexp(float128_t *p, float128_t *r, int *x)
     }
     else *r = *p;
     r->v[HIPART] = (r->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-        ((std::uint64_t)0x3ffe << 48);
+        ((uint64_t)0x3ffe << 48);
     *x = px - 0x3ffe;
 }    
 
@@ -385,7 +385,7 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
 // consolidate all of it into the 128-bit top half.
     float128_t v;
     f128M_add(&w2.hi, &w2.lo, &v);
-    std::uint64_t d = f128M_to_ui64(&v, softfloat_round_min, false);
+    uint64_t d = f128M_to_ui64(&v, softfloat_round_min, false);
     s += std::sprintf(s, "%.17" PRIu64, d);
     float128_t w3, w4;
     i64_to_f128M(-d, &w3);
@@ -694,7 +694,7 @@ static LispObject idfplus(LispObject a, LispObject b)
 float128_t atof128(const char *s)
 {   int x = 0;
     bool sign = false, seen = false, dotseen = false;
-    std::uint64_t z[3];
+    uint64_t z[3];
     int nz = 0, n = 0;
     z[0] = z[1] = z[2] = 0;
     if (*s == '+') s++;

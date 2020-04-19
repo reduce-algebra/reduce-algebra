@@ -209,8 +209,8 @@ bool fasl_output_file = false;  // An output file is open?
 static char package_name[256];
 #endif
 
-char *trim_module_name(char *name, std::size_t *lenp)
-{   std::size_t len = *lenp, len1;
+char *trim_module_name(char *name, size_t *lenp)
+{   size_t len = *lenp, len1;
     len1 = len - 1;
 //
 // Firstly I will decrease the length of the string if there is a "."
@@ -249,7 +249,7 @@ LispObject Lcopy_module(LispObject env, LispObject file)
 // startup banner data - that must be set up by hand.
 //
 {   Header h;
-    std::size_t len;
+    size_t len;
     char *modname;
     if (file == nil) Icopy(NULL, 0);
     else
@@ -275,7 +275,7 @@ LispObject Ldelete_module(LispObject env, LispObject file)
 // was there to begin with.  (delete-module nil) deletes any help data.
 //
 {   Header h;
-    std::size_t len;
+    size_t len;
     char *modname;
     if (file == nil) Idelete(NULL, 0);
     else
@@ -303,7 +303,7 @@ LispObject Lbanner(LispObject env, LispObject info)
 //
 {   Header h;
     int i;
-    std::int32_t len;
+    int32_t len;
     char *name;
     if (info == nil)
     {   char b[64];
@@ -379,8 +379,8 @@ static void IputcDebug(int c, int line)
 LispObject Lmodule_exists(LispObject env, LispObject file)
 {   char filename[LONGEST_LEGAL_FILENAME], tt[32];
     Header h;
-    std::size_t len;
-    std::size_t size;
+    size_t len;
+    size_t size;
     char *modname;
     std::memset(filename, 0, sizeof(filename));
     if (symbolp(file))
@@ -472,7 +472,7 @@ LispObject Lstart_module(LispObject env, LispObject name)
     else
     {   char filename[LONGEST_LEGAL_FILENAME];
         char *modname;
-        std::size_t len;
+        size_t len;
         Header h;
         std::memset(filename, 0, sizeof(filename));
 #ifdef COMMON
@@ -526,7 +526,7 @@ LispObject Lstart_module(LispObject env, LispObject name)
 LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
 {   const char *w;
     char *aa, *bb = NULL;
-    std::size_t lena, lenb;
+    size_t lena, lenb;
     if (a != nil)
     {   w = get_string_data(a, "set-help-file", lena);
         aa = (char *)std::malloc(lena+1);

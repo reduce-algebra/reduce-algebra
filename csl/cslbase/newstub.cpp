@@ -155,20 +155,20 @@ BOOL IsWow64()
 
 #endif // FAT32
 
-static std::int64_t read8(std::FILE *f)
+static int64_t read8(std::FILE *f)
 {
-    std::int64_t r = 0;
+    int64_t r = 0;
     int i;
     for (i=0; i<8; i++)
     {   int w = std::getc(f) & 0xff;
-        r |= ((std::int64_t)w) << (8*i);
+        r |= ((int64_t)w) << (8*i);
     }
     return r;
 }
 
 static char pPath[MAX_PATH];
-static std::int64_t address[NUMBER_OF_MODULES];
-static std::int64_t length[NUMBER_OF_MODULES];
+static int64_t address[NUMBER_OF_MODULES];
+static int64_t length[NUMBER_OF_MODULES];
 
 //
 // Run the program stored with this code and kept as a resource with
@@ -188,7 +188,7 @@ int RunResource(int index, int forcegui, const char *modulename)
 {
     std::FILE *src, *dest;
     int i;
-    std::uint64_t hdr;
+    uint64_t hdr;
 #ifdef DEBUG
     std::printf("RunResource %s: %d %d\n", modulename, index, forcegui);
     std::fflush(stdout);

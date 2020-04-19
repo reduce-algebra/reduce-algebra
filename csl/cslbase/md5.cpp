@@ -94,7 +94,7 @@
 // This processes one or more 64-byte data blocks, but does NOT update
 // the bit counters.  There are no alignment requirements.
 //
-static const void *body(MD5_CTX *ctx, const void *data, std::size_t size)
+static const void *body(MD5_CTX *ctx, const void *data, size_t size)
 {   const unsigned char *ptr;
     MD5_u32plus a, b, c, d;
     MD5_u32plus saved_a, saved_b, saved_c, saved_d;
@@ -211,9 +211,9 @@ void MD5_Init(MD5_CTX *ctx)
     ctx->hi = 0;
 }
 
-void MD5_Update(MD5_CTX *ctx, const void *data, std::size_t size)
+void MD5_Update(MD5_CTX *ctx, const void *data, size_t size)
 {   MD5_u32plus saved_lo;
-    std::size_t used, available;
+    size_t used, available;
 
     saved_lo = ctx->lo;
     if ((ctx->lo = (saved_lo + size) & 0x1fffffff) < saved_lo)
@@ -245,7 +245,7 @@ void MD5_Update(MD5_CTX *ctx, const void *data, std::size_t size)
 }
 
 void MD5_Final(unsigned char *result, MD5_CTX *ctx)
-{   std::size_t used, available;
+{   size_t used, available;
 
     used = ctx->lo & 0x3f;
 

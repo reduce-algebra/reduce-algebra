@@ -32,7 +32,7 @@
 // $Id$
 
 // This is free-standing code.
-// It provides a function "bool isprime(std::uint64_t n)" that tests if n
+// It provides a function "bool isprime(uint64_t n)" that tests if n
 // is a prime number.
 
 // See https://sourceforge.net/projects/isprime64/ for the programs used
@@ -51,7 +51,7 @@
 // write its declaration here rather than having a trivial header file
 // to declare it.
 
-extern bool isprime(std::uint64_t n);
+extern bool isprime(uint64_t n);
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -75,13 +75,13 @@ extern bool isprime(std::uint64_t n);
 // In my use here nlz should never be given a zero argument - that would
 // correspond to trying to perform modular arithmetic with a zero modulus. 
 
-static inline int nlz(std::uint64_t x)
+static inline int nlz(uint64_t x)
 {   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
 }
 
 #else // __GNUC__
 
-static inline int nlz(std::uint64_t x)
+static inline int nlz(uint64_t x)
 {   int n = 0;
     if (x <= 0x00000000FFFFFFFFU) {n = n +32; x = x <<32;}
     if (x <= 0x0000FFFFFFFFFFFFU) {n = n +16; x = x <<16;}
@@ -99,19 +99,19 @@ static inline int nlz(std::uint64_t x)
 
 #ifdef __SIZEOF_INT128__
 
-static inline std::uint64_t mulmod64(std::uint64_t a, std::uint64_t b, std::uint64_t c)
-{   return (std::uint64_t)(((unsigned __int128)a * b) % c);
+static inline uint64_t mulmod64(uint64_t a, uint64_t b, uint64_t c)
+{   return (uint64_t)(((unsigned __int128)a * b) % c);
 }
 
 #else // __SIZEOF_INT128__
 
-static std::uint64_t mulmod64(std::uint64_t a, std::uint64_t b, std::uint64_t c)
-{   std::uint64_t a1 = a >> 32,           // top half
+static uint64_t mulmod64(uint64_t a, uint64_t b, uint64_t c)
+{   uint64_t a1 = a >> 32,           // top half
              a0 = a & 0xFFFFFFFFU;   // low half
-    std::uint64_t b1 = b >> 32,           // top half
+    uint64_t b1 = b >> 32,           // top half
              b0 = b & 0xFFFFFFFFU;   // low half
-    std::uint64_t u1 = a1*b1, u0 = a0*b0; // for the double length product
-    std::uint64_t w = a0*b1;
+    uint64_t u1 = a1*b1, u0 = a0*b0; // for the double length product
+    uint64_t w = a0*b1;
     u1 += w >> 32;
     w <<= 32;
     u0 += w;
@@ -137,8 +137,8 @@ static std::uint64_t mulmod64(std::uint64_t a, std::uint64_t b, std::uint64_t c)
 // Any error that have crept in in my adapaptation of the original code
 // will be my fault, but you see in the BSD license at the top of this
 // file that I disclaim any possible liability for consequent loss or damage.
-    const std::uint64_t base = 0x100000000U; // Number base (32 bits).
-    std::uint64_t un1, un0,        // Norm. dividend LSD's.
+    const uint64_t base = 0x100000000U; // Number base (32 bits).
+    uint64_t un1, un0,        // Norm. dividend LSD's.
              vn1, vn0,        // Norm. divisor digits.
              q1, q0,          // Quotient digits.
              un32, un21, un10,// Dividend digit pairs.
@@ -174,9 +174,9 @@ again2:
 
 #endif // __SIZEOF_INT128__
 
-#define TWO32 ((std::uint64_t)1<<32)
-#define TWO44 ((std::uint64_t)1<<44)
-#define TWO52 ((std::uint64_t)1<<52)
+#define TWO32 ((uint64_t)1<<32)
+#define TWO44 ((uint64_t)1<<44)
+#define TWO52 ((uint64_t)1<<52)
 #define extrabase 9375
 
 ////////////////////////////////////////////////////////////////////////////
@@ -197,7 +197,7 @@ again2:
 // Note that I have three tables covering different ranges of inputs.
 ////////////////////////////////////////////////////////////////////////////
 
-static const std::uint64_t hash32_multiplier  = UINT64_C(0x6f1ec8475ebe63cc),
+static const uint64_t hash32_multiplier  = UINT64_C(0x6f1ec8475ebe63cc),
                       hash32_multiplier1 = UINT64_C(0x9b814cb804ce0bfe);
 
 static std::uint16_t witness32[195] =
@@ -225,7 +225,7 @@ static std::uint16_t witness32[195] =
 
 ////////////////////////////////////////////////////////////////////////////
 
-static const std::uint64_t hash44_multiplier  = UINT64_C(0x7549c298f9834e52),
+static const uint64_t hash44_multiplier  = UINT64_C(0x7549c298f9834e52),
                       hash44_multiplier1 = UINT64_C(0x955be7f2d22d28a2);
 
 static std::uint16_t witness44[335] =
@@ -315,7 +315,7 @@ static uint16_t witness52[284] =
 // it becomes easy to produce a spin-off version of the code that only
 // goes as far as 2^32 but that is especially compact.
 
-static const std::uint64_t hash_multiplier  = UINT64_C(0x0162f7db9c161952),
+static const uint64_t hash_multiplier  = UINT64_C(0x0162f7db9c161952),
                       hash_multiplier1 = UINT64_C(0x447f94b0903d127c);
 
 static std::uint16_t witness[870] =
@@ -425,8 +425,8 @@ static std::uint16_t witness[870] =
 
 // Compute x^n mod p
 
-static inline std::uint64_t exptmod(std::uint64_t x, std::uint64_t n, std::uint64_t p)
-{   std::uint64_t y = 1;
+static inline uint64_t exptmod(uint64_t x, uint64_t n, uint64_t p)
+{   uint64_t y = 1;
     while (n > 1)
     {   if (n%2 != 0) y = mulmod64(x, y, p);
         x = mulmod64(x, x, p);
@@ -442,14 +442,14 @@ static inline std::uint64_t exptmod(std::uint64_t x, std::uint64_t n, std::uint6
 // use if is called with carefully selected first arguments so as to avoid
 // strong pseudo-primes.
 
-static inline bool miller_rabin_isprime(std::uint64_t a, std::uint64_t n)
-{   std::uint64_t d = n-1;
+static inline bool miller_rabin_isprime(uint64_t a, uint64_t n)
+{   uint64_t d = n-1;
     int s = 0;
     while ((d % 2) == 0)  // Find largest power of 2 dividing n-1
     {   d = d/2;
         ++s;
     }
-    std::uint64_t x = exptmod(a, d, n);
+    uint64_t x = exptmod(a, d, n);
     if (x == 1 || x == n-1) return true;
     while (s > 1)
     {   x = mulmod64(x, x, n);
@@ -463,27 +463,27 @@ static inline bool miller_rabin_isprime(std::uint64_t a, std::uint64_t n)
 // To make the treatment of 32-bit inputs faster I have a second copy
 // of the above code, but here restricted to 32-bit inputs.
 
-static inline std::uint32_t exptmod32(std::uint32_t x, std::uint32_t n, std::uint32_t p)
-{   std::uint32_t y = 1;
+static inline uint32_t exptmod32(uint32_t x, uint32_t n, uint32_t p)
+{   uint32_t y = 1;
     while (n > 1)
-    {   if (n%2 != 0) y = (std::uint32_t)(((std::uint64_t)x*y)%p);
-        x = (std::uint32_t)(((std::uint64_t)x*x)%p);
+    {   if (n%2 != 0) y = (uint32_t)(((uint64_t)x*y)%p);
+        x = (uint32_t)(((uint64_t)x*x)%p);
         n = n / 2;
     }
-    return (std::uint32_t)(((std::uint64_t)x*y)%p);
+    return (uint32_t)(((uint64_t)x*y)%p);
 }
 
-static inline bool miller_rabin_isprime32(std::uint32_t a, std::uint32_t n)
-{   std::uint32_t d = n-1;
+static inline bool miller_rabin_isprime32(uint32_t a, uint32_t n)
+{   uint32_t d = n-1;
     int s = 0;
     while ((d % 2) == 0)  // Find largest power of 2 dividing n-1
     {   d = d/2;
         ++s;
     }
-    std::uint32_t x = exptmod32(a, d, n);
+    uint32_t x = exptmod32(a, d, n);
     if (x == 1 || x == n-1) return true;
     while (s > 1)
-    {   x = (std::uint32_t)(((std::uint64_t)x*x)%n);
+    {   x = (uint32_t)(((uint64_t)x*x)%n);
         if (x == 1) return false;
         else if (x == n-1) return true;
         --s;
@@ -491,19 +491,19 @@ static inline bool miller_rabin_isprime32(std::uint32_t a, std::uint32_t n)
     return false;
 }
 
-static inline int32_t hash32_function(std::uint32_t p)
-{   return (std::uint32_t)
-        ((hash32_multiplier*(std::uint64_t)p)>>32) % number32_of_buckets;
+static inline int32_t hash32_function(uint32_t p)
+{   return (uint32_t)
+        ((hash32_multiplier*(uint64_t)p)>>32) % number32_of_buckets;
 }
 
-static inline int32_t hash44_function(std::uint64_t p)
-{   return (std::uint32_t)
+static inline int32_t hash44_function(uint64_t p)
+{   return (uint32_t)
         (((hash44_multiplier*p)>>32) ^
          ((hash44_multiplier1*(p>>32))>>32)) % number44_of_buckets;
 }
 
-static inline int32_t hash52_function(std::uint64_t p)
-{   return (std::uint32_t)
+static inline int32_t hash52_function(uint64_t p)
+{   return (uint32_t)
         (((hash52_multiplier*p)>>32) ^
          ((hash52_multiplier1*(p>>32))>>32)) % number52_of_buckets;
 }
@@ -511,7 +511,7 @@ static inline int32_t hash52_function(std::uint64_t p)
 // This bitmap lets me check numbers up to 4096 for primality especially
 // fast.
 
-static std::uint32_t oddprime_bitmap[] =
+static uint32_t oddprime_bitmap[] =
 {   0x64b4cb6e, 0x816d129a, 0x864a4c32, 0x2196820d, 0x5a0434c9, 0xa4896120,
     0x29861144, 0x4a2882d1, 0x32424030, 0x08349921, 0x4225064b, 0x148a4884,
     0x6c304205, 0x0b40b408, 0x125108a0, 0x65048928, 0x804c3098, 0x80124496,
@@ -525,10 +525,10 @@ static std::uint32_t oddprime_bitmap[] =
     0x01140868, 0x802832ca, 0x264b0400, 0x60901300
 };
 
-static inline int jacobi_symbol_positive_args(std::uint64_t a, std::uint64_t b)
+static inline int jacobi_symbol_positive_args(uint64_t a, uint64_t b)
 {   if (b%2 == 0) return 0;
     int j = 1;
-    std::uint64_t r;
+    uint64_t r;
 //  if (a < 0)    // I leave this in as a reminder re signed values of a.
 //  {   a = -a;
 //      if ((b & 3) == 3) j = -j;
@@ -549,7 +549,7 @@ static inline int jacobi_symbol_positive_args(std::uint64_t a, std::uint64_t b)
     else return 0;
 }
 
-static int signed_jacobi_symbol(int64_t a, std::uint64_t b)
+static int signed_jacobi_symbol(int64_t a, uint64_t b)
 {   if (a >= 0) return jacobi_symbol_positive_args(a, b);
     int r = jacobi_symbol_positive_args(-a, b);
     if ((b & 3) == 3) r = -r;
@@ -564,7 +564,7 @@ static int signed_jacobi_symbol(int64_t a, std::uint64_t b)
 //    integer_length(4)   = 3
 //    integer_length(8)   = 4
 
-static inline int integer_length(std::uint64_t n)
+static inline int integer_length(uint64_t n)
 {   return 64 - nlz(n);
 }
 
@@ -576,7 +576,7 @@ static inline int integer_length(std::uint64_t n)
 //    lsd(4)   = 3
 //    lsd(8)   = 4
 
-static inline int lsd(std::uint64_t n)
+static inline int lsd(uint64_t n)
 {
 #ifdef __GNUC__
     return __builtin_ctzll(n) + 1;
@@ -595,31 +595,31 @@ static inline int lsd(std::uint64_t n)
 
 // logbitp counts the least significant bit of the number as bit 0.
 
-static inline int logbitp(int pos, std::uint64_t a)
-{   return (a & ((std::uint64_t)1<<pos)) != 0;
+static inline int logbitp(int pos, uint64_t a)
+{   return (a & ((uint64_t)1<<pos)) != 0;
 }
 
-static inline std::uint64_t addmod64(std::uint64_t a, std::uint64_t b, std::uint64_t c)
+static inline uint64_t addmod64(uint64_t a, uint64_t b, uint64_t c)
 {
 // If a and b are both in the range [0..c-1] then (a+b)%c will be either
 // a+b or a+b-c. There are two circumstances where I must go for the second
-// of these. The first is where the calculation a+b overflows the std::uint64_t
+// of these. The first is where the calculation a+b overflows the uint64_t
 // type. That case can be detected by the calculated sum being smaller than
 // one of the operands. In that case the true value of a+b is at least 2^64,
 // and i is smaller than that, so subtracting it to restore things is good.
 // The second case is where a+b does not overflow, but ends up at least as
 // large as c.
-    std::uint64_t w = a + b;
+    uint64_t w = a + b;
     if (w < a || w >= c) w -= c;
     return w;
 }
 
-static inline std::uint64_t negatemod64(std::uint64_t a, std::uint64_t c)
+static inline uint64_t negatemod64(uint64_t a, uint64_t c)
 {   if (a == 0) return a;
     else return c - a;
 }
 
-static bool is_perfect_square(std::uint64_t n)
+static bool is_perfect_square(uint64_t n)
 {   if (n <= 1U) return true;
 // I will find where the most significant bit of the input is... I can
 // use a built-in function if I am using or fully compatible with g++,
@@ -629,13 +629,13 @@ static bool is_perfect_square(std::uint64_t n)
 // input by shifting it right by half its length, but then applying
 // a simple linear approximation that leaves my result exact on every other
 // power of 2.
-    std::uint64_t r = n >> (w/2);
-    r = (r + ((std::uint64_t)2 << (w/2))) / 3;
+    uint64_t r = n >> (w/2);
+    r = (r + ((uint64_t)2 << (w/2))) / 3;
 // I do an initial Newton-Raphson step.
     r = (r + n/r)/2;
 // This initial step will always leave me with an over-estimate for the
 // square root, so I can iterate until the value stops decreasing.
-    std::uint64_t r1 = (r + (n/r))/2;
+    uint64_t r1 = (r + (n/r))/2;
 // When I have done the second step I check if that decreased my
 // approximation, and if it did I will do another.
     if (r1 < r) r1 = (r1 + (n/r1))/2;
@@ -649,9 +649,9 @@ static bool is_perfect_square(std::uint64_t n)
     return (r1*r1 == n);
 }
 
-static std::uint64_t gcdn(std::uint64_t a, std::uint64_t b)
+static uint64_t gcdn(uint64_t a, uint64_t b)
 {   while (b != 0)
-    {   std::uint64_t c = a % b;
+    {   uint64_t c = a % b;
         a = b;
         b = c;
     }
@@ -664,7 +664,7 @@ static std::uint64_t gcdn(std::uint64_t a, std::uint64_t b)
 
 static const bool trace_primep = false;
 
-static int64_t mmod(int64_t a, std::uint64_t c)
+static int64_t mmod(int64_t a, uint64_t c)
 {   if (a >= 0) return a%c;
     a = a % (int64_t)c;
     if (a < 0) a += c;
@@ -674,11 +674,11 @@ static int64_t mmod(int64_t a, std::uint64_t c)
 #define P PRIu64
 #define D PRId64
 
-static bool lucas_test(std::uint64_t c)
+static bool lucas_test(uint64_t c)
 {
     int64_t d;
     int j;
-    std::uint64_t k, kk, u, v, q, qk, tmp;
+    uint64_t k, kk, u, v, q, qk, tmp;
     int l, ll;
 // Find a proper value for D such that jacobi(d,c)=-1. This is achieved
 // by trying the sequence 5, -7, 9, -11, 13, -15, 17, -19, 21, -23,....
@@ -707,11 +707,11 @@ static bool lucas_test(std::uint64_t c)
 // means it is not prime. Well if c = |d| then c might still be a prime!
     if (j >= 0)
     {   if (d < 0) d = -d;
-        if (c != (std::uint64_t)d) return false;
+        if (c != (uint64_t)d) return false;
 // Now I need to check if c is prime, but I very strongly expect it to be
 // a really small value, so I will use crude code. Let me remind myself that
 // it is an odd number.
-        for (std::uint64_t f=3; f*f<=c; f+=2) // Test division by odd numbers...
+        for (uint64_t f=3; f*f<=c; f+=2) // Test division by odd numbers...
            if (c%f == 0) return false;
         return true;
     }
@@ -740,7 +740,7 @@ static bool lucas_test(std::uint64_t c)
 // at small inputs.
     if (trace_primep && c < 500)
     {   int64_t w, u0, u1, ut, v0, v1, vt;
-        std::uint64_t nn[200];
+        uint64_t nn[200];
         int nnp = 0;
         w = c + 1;
 // I will tabulate the values of k that the doubling method will go via..
@@ -753,7 +753,7 @@ static bool lucas_test(std::uint64_t c)
         }
         u0 = 0; u1 = 1;
         v0 = 2; v1 = 1;
-        for (std::uint64_t i = 1; i<=c+1; i++)
+        for (uint64_t i = 1; i<=c+1; i++)
         {   ut = u1 - q*u0;
             vt = v1 - q*v0;
             u0 = u1; u1 = ut;
@@ -894,7 +894,7 @@ static bool lucas_test(std::uint64_t c)
 
 int main(int argc, char *argv[])
 {   int npseudos = 0;
-    for (std::uint64_t i=3;;i+=2)
+    for (uint64_t i=3;;i+=2)
     {   int f;
         for (f=3; f*f<=i; f+=2)
             if (i%f == 0) break;
@@ -910,7 +910,7 @@ int main(int argc, char *argv[])
 
 #endif
 
-bool isprime(std::uint64_t n)
+bool isprime(uint64_t n)
 {
 // I will start by filtering out potential very small factors. This
 // detects a significant fraction of composites cheaply, and is expected to
@@ -948,7 +948,7 @@ bool isprime(std::uint64_t n)
 // the intermediate result of modular multiplication fits into 64-bits.
     if (n < TWO32)
         return miller_rabin_isprime32(
-            witness32[hash32_function((std::uint32_t)n)], (std::uint32_t)n);
+            witness32[hash32_function((uint32_t)n)], (uint32_t)n);
 // For larger numbers I will test using base 2 and then some more work.
     if (!miller_rabin_isprime(2, n)) return false;
     if (n < TWO44)
