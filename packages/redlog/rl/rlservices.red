@@ -309,6 +309,15 @@ rl_service {
    mode = both};
 
 rl_service {
+   name = in,
+   doc = "silently read *.red file",
+   arg = {pos = 1, name = file, type = String, doc = "file name"},
+   arg = {pos = 2, name = msg, type = Flag, default = no, doc = "print warnings"},
+   arg = {pos = 3, name = output, type = Flag, default = no, doc = "print output"},
+   returns = {type = Void},
+   mode = both};
+
+rl_service {
    name = kapur,
    doc = "GB-based satisfiability",
    arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
@@ -452,7 +461,7 @@ rl_service {
    name = preqe,
    doc = "pre-quantifier elimination (domain R only)",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
-   returns = {type = Formula},
+   returns = {type = Pair(List(Atom), Formula)},
    mode = both};
 
 rl_service {
