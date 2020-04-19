@@ -324,6 +324,13 @@ asserted procedure ioto_smaprinbuf(c: Id): List;
       push(c, rlsmaprinbuf!*)
    >>;
 
+asserted procedure ioto_in(file: String, msg: Boolean, output: Boolean): Any;
+   begin scalar !*msg, !*output;
+      !*msg := msg;
+      !*output := output;
+      infile file
+   end;
+
 endmodule;  % [ioto]
 
 end;  % of file
