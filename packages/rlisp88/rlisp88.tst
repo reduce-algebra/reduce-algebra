@@ -71,8 +71,8 @@ record mapf  /* A MAPF record defines
   with 
   mapf!:name := ""        /* Name of MAPF (a string) */,
   mapf!:number := 0       /* MAPF number (integer) */,
-  mapf!:road-count := 0   /* Number of roads */,
-  mapf!:node-count := 0   /* Number of nodes */,
+  mapf!:road!-count := 0   /* Number of roads */,
+  mapf!:node!-count := 0   /* Number of nodes */,
   mapf!:llat := 0.0       /* Lower left hand corner map latitude */,
   mapf!:llong := 0.0      /* Lower left hand corner map longitude */,
   mapf!:ulat := 0.0       /* Upper right hand corner map latitude */,
@@ -81,17 +81,17 @@ record mapf  /* A MAPF record defines
 % 2: Creation.
 global '(r1 r2 r3);
 r1 := mapf();
-r2 := mapf(mapf!:name := "foobar", mapf!:road-count := 34);
+r2 := mapf(mapf!:name := "foobar", mapf!:road!-count := 34);
 r3 := list('a . r1, 'b . r2);
 
 % 3: Accessing.
 mapf!:number r1;
-mapf!:road-count cdr assoc('b, r3);
+mapf!:road!-count cdr assoc('b, r3);
 
 % 4: Assignment.
 mapf!:number r1 := 7622;
-mapf!:road-count cdr assoc('b, r3) := 376;
-mapf!:node-count(mapf!:name r2 := mapf()) := 34;
+mapf!:road!-count cdr assoc('b, r3) := 376;
+mapf!:node!-count(mapf!:name r2 := mapf()) := 34;
 r2;
 
 
@@ -101,7 +101,7 @@ record complex /* Stores complex reals */
    r := 0.0  /* Real part */,
    i := 0.0  /* Imaginary part */
   has constructor;
-make-complex(i := 34.0, r := 12.0);
+make!-complex(i := 34.0, r := 12.0);
 
 record rational /* Representation of rational numbers */
   with
