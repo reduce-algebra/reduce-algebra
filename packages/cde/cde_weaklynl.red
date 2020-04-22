@@ -202,14 +202,21 @@ symbolic procedure nl_summand_2(c,w,nloc_arg_3,vec_op2_2,loc_arg_1,all_parder);
 symbolic procedure dubrovin_zhang_expr(ham1_l,c,w,ham2_l,d,z,
   dep_var_equ,
   loc_arg_1,loc_arg_2,loc_arg_3,
-  nlargw_1,nlargw_2,nlargw_3,
-  nlargz_1,nlargz_2,nlargz_3);
+  nlargw,
+  nlargz);
   begin
-    scalar vec_op1_1,vec_op1_2,vec_op1_3,vec_op2_1,vec_op2_2,vec_op2_3,
+    scalar nlargw_1,nlargw_2,nlargw_3,nlargz_1,nlargz_2,nlargz_3,
+      vec_op1_1,vec_op1_2,vec_op1_3,vec_op2_1,vec_op2_2,vec_op2_3,
       ham1_l_coeff,ham2_l_coeff,
       all_parder,
       l_h1_h2_123,l_h1_h2_312,l_h1_h2_231,
       l_h2_h1_123,l_h2_h1_312,l_h2_h1_231;
+    nlargw_1:=nth(nlargw,1);
+    nlargw_2:=nth(nlargw,2);
+    nlargw_3:=nth(nlargw,3);
+    nlargz_1:=nth(nlargz,1);
+    nlargz_2:=nth(nlargz,2);
+    nlargz_3:=nth(nlargz,3);
     % Transforming operators into vector-valued expressions
     vec_op1_1:=cdwnl2vec(ham1_l,c,w,loc_arg_1,nlargw_1);
     vec_op1_2:=cdwnl2vec(ham1_l,c,w,loc_arg_2,nlargw_2);
@@ -380,7 +387,8 @@ symbolic procedure sb_wnl_algorithm(ham1_l,c,w,ham2_l,d,z,
       scalar loc_arg_1,loc_arg_2,loc_arg_3,
       nlargw_1,nlargw_2,nlargw_3,
       nlargz_1,nlargz_2,nlargz_3,
-      	dz,first_step;
+      nlargw,nlargz,
+      dz,first_step;
       % Defining the three lists of the three local arguments of [P,Q]
       loc_arg_1:=for each el in loc_arg collect mkid(el,1);
       loc_arg_2:=for each el in loc_arg collect mkid(el,2);
@@ -392,12 +400,14 @@ symbolic procedure sb_wnl_algorithm(ham1_l,c,w,ham2_l,d,z,
       nlargz_1:=generate_nlarg(z,nloc_arg,1);
       nlargz_2:=generate_nlarg(z,nloc_arg,2);
       nlargz_3:=generate_nlarg(z,nloc_arg,3);
+      nlargw:=list(nlargw_1,nlargw_2,nlargw_3);
+      nlargz:=list(nlargz_1,nlargz_2,nlargz_3);
       % Computing Dubrovin-Zhang formula
       dz:=dubrovin_zhang_expr(ham1_l,c,w,ham2_l,d,z,
       	dep_var_equ,
       	loc_arg_1,loc_arg_2,loc_arg_3,
-      	nlargw_1,nlargw_2,nlargw_3,
-	nlargz_1,nlargz_2,nlargz_3);
+      	nlargw,
+	nlargz);
 %%      return dz;
       % First step of the algorithm: nonlocal reduction
       % Integrating Coeff * tpsi^1_w,\a * psi^2_p * d^k_x psi^3_i, k>0
