@@ -656,6 +656,7 @@ case $host in
   ;;
 *)
   AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
+  LOCALCXX="$LOCALCXX -std=gnu++11"
   LOCALSTRIP="$STRIP"
   ;;
 esac

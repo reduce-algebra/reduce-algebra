@@ -1094,15 +1094,23 @@ procedure C!-end1 create_lfile;
     c3 := c3 / 10000000;
     checksum := list2string append(explodec c3,
                      '!  . append(explodec c2, '!  . explodec c1));
-    c!:printf("    {NULL, reinterpret_cast<no_args *>(%a), reinterpret_cast<one_arg *>(%a),\n        nullptr, nullptr, nullptr}\n};\n\n",
-              Setup_name, checksum);
+    c!:printf("    {nullptr, \n");
+    c!:printf("        reinterpret_cast<no_args *>(\n");
+    c!:printf("            reinterpret_cast<uintptr_t>(%a)),\n", Setup_name);
+    c!:printf("        reinterpret_cast<one_arg *>(\n");
+    c!:printf("            reinterpret_cast<uintptr_t>(%a)),\n", checksum);
+    c!:printf("        nullptr, nullptr, nullptr}\n};\n\n");
     if stubs then <<
       for i := 2:60 do <<
         c!:printf("setup_type const u");
         if i < 10 then c!:printf("0");
         c!:printf("%s_setup[] = {\n", i);
-        c!:printf("    {nullptr, reinterpret_cast<no_args *>(%a), reinterpret_cast<one_arg *>(%a),\n        nullptr, nullptr, nullptr}\n};\n\n",
-                  Setup_name, checksum) >>;
+        c!:printf("    {nullptr, \n");
+        c!:printf("        reinterpret_cast<no_args *>(\n");
+        c!:printf("            reinterpret_cast<uintptr_t>(%a)),\n", Setup_name);
+        c!:printf("        reinterpret_cast<one_arg *>(\n");
+        c!:printf("            reinterpret_cast<uintptr_t>(%a)),\n", checksum);
+        c!:printf("        nullptr, nullptr, nullptr}\n};\n\n") >>;
       c!:printf("\n\n") >>;
         c!:printf "%<// end of generated code\n";
     close C_file;
