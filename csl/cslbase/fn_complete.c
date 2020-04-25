@@ -1,4 +1,4 @@
-// fn_complete.c                                Copyright (C) 2018 Codemist    
+// fn_complete.c                                Copyright (C) 2018 Codemist
 
 
 /**************************************************************************

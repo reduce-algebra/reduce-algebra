@@ -1,4 +1,4 @@
-// history.c                                    Copyright (C) 2018 Codemist    
+// history.c                                    Copyright (C) 2018 Codemist
 
 
 /**************************************************************************

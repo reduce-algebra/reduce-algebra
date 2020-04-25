@@ -1,4 +1,4 @@
-// editline.c                                   Copyright (C) 2018 Codemist    
+// editline.c                                   Copyright (C) 2018 Codemist
 
 
 /**************************************************************************

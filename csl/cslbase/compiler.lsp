@@ -3537,12 +3537,12 @@ setq c3 (setq checksum (md60 L_contents))) (setq c1 (remainder c3 10000000))
 quotient c3 10000000)) (setq checksum (list2string (append (explodec c3) (
 cons (quote ! ) (append (explodec c2) (cons (quote ! ) (explodec c1))))))) (
 c!:printf 
-"    {NULL, (no_args *)%a, (one_arg *)%a,\n        NULL, NULL, NULL}\n};\n\n"
+"    {NULL, reinterpret_cast<no_args *>(%a), reinterpret_cast<one_arg *>(%a),\n        nullptr, nullptr, nullptr}\n};\n\n"
 Setup_name checksum) (cond (stubs (progn (prog (i) (setq i 2) lab1257 (cond 
 ((minusp (times 1 (difference 60 i))) (return nil))) (progn (c!:printf 
 "setup_type const u") (cond ((lessp i 10) (c!:printf "0"))) (c!:printf 
 "%s_setup[] = {\n" i) (c!:printf 
-"    {NULL, (no_args *)%a, (one_arg *)%a,\n        NULL, NULL, NULL}\n};\n\n"
+"    {nullptr, reinterpret_cast<no_args *>(%a), reinterpret_cast<one_arg *>(%a),\n        nullptr, nullptr, nullptr}\n};\n\n"
 Setup_name checksum)) (setq i (plus i 1)) (go lab1257)) (c!:printf "\n\n")))
 ) (c!:printf "%<// end of generated code\n") (close C_file) (cond (
 create_lfile (progn (setq L_file (open L_file (quote output))) (wrs L_file) (
