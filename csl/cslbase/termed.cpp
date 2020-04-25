@@ -139,6 +139,10 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 #include "log.h"
 
@@ -875,7 +879,7 @@ void input_history_init(const char *argv0,
 // The input stream is closed at end of block
 }
 
-void input_history_endstatic_cast<void>()
+void input_history_end()
 {   if (!history_active) return;
     printlog("Write out updated history\n");
 // Dump_history_to_file.
@@ -1034,7 +1038,7 @@ static int input_line_size;
 
 static void term_putchar(int c);
 
-static wchar_t *term_wide_plain_getlinestatic_cast<void>()
+static wchar_t *term_wide_plain_getline()
 {   std::fflush(stdout); std::fflush(stderr);
     for (int i=0; i<prompt_length; i++)
         term_putchar(termed_prompt_string[i]);
@@ -1435,7 +1439,7 @@ static void term_putchar(int c)
 // the current screen, rather than relying on shell variables, like COLUMNS,
 // that could possibly get out of step with reality.
 
-static void measure_screenstatic_cast<void>()
+static void measure_screen()
 {
 // I try to measure the size of the current window or terminal.
 // on some systems I may not be able to!
@@ -1695,7 +1699,7 @@ int term_setup(const char *argv0, const char *colour)
 #endif // !EMBEDDED
 }
 
-void term_closestatic_cast<void>()
+void term_close()
 {   if (!termEnabled) return;
 // Note here and elsewhere in this file that I go "fflush(stdout)" before
 // doing anything that may change styles or options for stream handling.
@@ -1752,7 +1756,7 @@ void term_closestatic_cast<void>()
 // style terminal (rather than Windows) I will just ignore invalid or
 // unrecognized escape systems sent by the lower level terminal drivers.
 
-static int term_getcharstatic_cast<void>()
+static int term_getchar()
 {
 // If input was from a file or a pipe I am not going to use a separate
 // thread to handle it. I may in fact take this simplistic stance if
@@ -2041,7 +2045,7 @@ static void term_move_right(int del)
 #endif // !WIN32
 }
 
-static void term_move_first_columnstatic_cast<void>()
+static void term_move_first_column()
 {   std::fflush(stdout); std::fflush(stderr);
 #ifdef WIN32
     CONSOLE_SCREEN_BUFFER_INFO csb;
@@ -2059,7 +2063,7 @@ static void term_move_first_columnstatic_cast<void>()
 #endif // !WIN32
 }
 
-static void term_bellstatic_cast<void>()
+static void term_bell()
 {   std::fflush(stdout); std::fflush(stderr);
 #ifdef WIN32
     Beep(1000, 100);
@@ -2186,7 +2190,7 @@ static int line_wrap(int ch, int tab_offset)
     return tab_offset;
 }
 
-static void refresh_displaystatic_cast<void>()
+static void refresh_display()
 {
 // The version here right now is done as directly as I can without
 // thought for optimisation. That is in the hope that I can get it
@@ -2394,7 +2398,7 @@ static void refresh_displaystatic_cast<void>()
     std::wcscpy(display_line, input_line);
 }
 
-static void term_set_markstatic_cast<void>()
+static void term_set_mark()
 {
 // Actually I will not (at present) do anything here! And furthermore I
 // have a degree of pain. When I try running on a Unix-like system even
@@ -2404,13 +2408,13 @@ static void term_set_markstatic_cast<void>()
 }
 
 
-static void term_to_startstatic_cast<void>()
+static void term_to_start()
 {   insert_point = prompt_length;
     refresh_display();
 }
 
 
-static void term_toEndstatic_cast<void>()
+static void term_toEnd()
 {   while (input_line[insert_point] != 0) insert_point++;
     refresh_display();
 }
@@ -2420,7 +2424,7 @@ static void term_toEndstatic_cast<void>()
 // by words, with a FOX-like interpretation of the term "word", which I
 // hope will also be an emacs-like interpretation.
 
-static int term_findNext_word_forwardsstatic_cast<void>()
+static int term_findNext_word_forwards()
 {   int n = insert_point;
     if (input_line[n] == 0) return n;
     do
@@ -2436,7 +2440,7 @@ static int term_findNext_word_forwardsstatic_cast<void>()
     return n;
 }
 
-static int term_findNext_word_backwardsstatic_cast<void>()
+static int term_findNext_word_backwards()
 {   int n = insert_point;
     if (n == prompt_length) return n;
     do
@@ -2454,7 +2458,7 @@ static int term_findNext_word_backwardsstatic_cast<void>()
     else return n+1;
 }
 
-static void term_forwards_charstatic_cast<void>()
+static void term_forwards_char()
 {   if (input_line[insert_point] == 0) term_bell();
     else insert_point++;
     if (is_high_surrogate(input_line[insert_point])) insert_point++;
@@ -2462,7 +2466,7 @@ static void term_forwards_charstatic_cast<void>()
 }
 
 
-static void term_forwards_wordstatic_cast<void>()
+static void term_forwards_word()
 {   if (input_line[insert_point] == 0) term_bell();
     else
     {   insert_point = term_findNext_word_forwards();
@@ -2471,7 +2475,7 @@ static void term_forwards_wordstatic_cast<void>()
 }
 
 
-static void term_back_charstatic_cast<void>()
+static void term_back_char()
 {   if (insert_point == prompt_length) term_bell();
     else insert_point--;
     if (insert_point != prompt_length &&
@@ -2479,7 +2483,7 @@ static void term_back_charstatic_cast<void>()
     refresh_display();
 }
 
-static void term_back_wordstatic_cast<void>()
+static void term_back_word()
 {   if (insert_point == prompt_length) term_bell();
     else
     {   insert_point = term_findNext_word_backwards();
@@ -2488,7 +2492,7 @@ static void term_back_wordstatic_cast<void>()
 }
 
 
-static void term_delete_forwardsstatic_cast<void>()
+static void term_delete_forwards()
 {   int i = insert_point;
 // If the unit at the insertion point is a high surrogate I must delete
 // two units not just one - ie the high and then the low surrogate.
@@ -2506,7 +2510,7 @@ static void term_delete_forwardsstatic_cast<void>()
 }
 
 
-static void term_delete_backwardsstatic_cast<void>()
+static void term_delete_backwards()
 {   if (insert_point == prompt_length) term_bell();
     else
     {   int i = insert_point - 1;
@@ -2526,7 +2530,7 @@ static void term_delete_backwardsstatic_cast<void>()
 }
 
 
-static void term_delete_word_forwardsstatic_cast<void>()
+static void term_delete_word_forwards()
 {   if (input_line[insert_point] == 0) term_bell();
     else
     {   int i = insert_point;
@@ -2541,7 +2545,7 @@ static void term_delete_word_forwardsstatic_cast<void>()
 }
 
 
-static void term_delete_word_backwardsstatic_cast<void>()
+static void term_delete_word_backwards()
 {   if (insert_point == prompt_length) term_bell();
     else
     {   int i = term_findNext_word_backwards();
@@ -2557,14 +2561,14 @@ static void term_delete_word_backwardsstatic_cast<void>()
 }
 
 
-static void term_kill_linestatic_cast<void>()
+static void term_kill_line()
 {   insert_point = prompt_length;
     input_line[insert_point] = 0;
     refresh_display();
 }
 
 
-static void term_history_nextstatic_cast<void>()
+static void term_history_next()
 {   const wchar_t *history_string;
     if (historyLast == -1)
     {   term_bell();
@@ -2586,7 +2590,7 @@ static void term_history_nextstatic_cast<void>()
 }
 
 
-static void term_history_previousstatic_cast<void>()
+static void term_history_previous()
 {   printlog("term_history_previous hNum=%d hFirst=%dhLast=%d\n",
              historyNumber, historyFirst, historyLast);
     const wchar_t *history_string;
@@ -2618,7 +2622,7 @@ static wchar_t searchBuff[100];
 static int searchStack[100];
 static int searchLen;
 
-static void term_searchNextstatic_cast<void>()
+static void term_searchNext()
 {
 // I remember where I was on the input line but then move to the end and
 // append a message that indicates to the user that a search is in progress.
@@ -2633,7 +2637,7 @@ static void term_searchNextstatic_cast<void>()
 }
 
 
-static void term_search_previousstatic_cast<void>()
+static void term_search_previous()
 {   search_found = search_saved_point = insert_point;
     regular_lineEnd = std::wcslen(input_line);
     std::wcscpy(&input_line[regular_lineEnd], L"\nP-search: ");
@@ -2663,7 +2667,7 @@ static int matchString(const wchar_t *pat, int n, const wchar_t *text)
 }
 
 
-static int trySearchstatic_cast<void>()
+static int trySearch()
 {   int r = -1;
     const wchar_t *history_string = input_history_get(historyNumber);
     if (history_string == nullptr) return -1;
@@ -2831,7 +2835,7 @@ static int term_search_char(int ch)
     return 1;
 }
 
-static int term_find_word_startstatic_cast<void>()
+static int term_find_word_start()
 {
 // If the insert point points at an alphemumeric character this ends up
 // returning the address of the first letter of the "word". If the
@@ -2844,7 +2848,7 @@ static int term_find_word_startstatic_cast<void>()
     return n+1;
 }
 
-static int term_find_wordEndstatic_cast<void>()
+static int term_find_wordEnd()
 {
 // returns the address of the first character beyond the end of a current
 // word. If the character at the insert point is not alphanumeric then its
@@ -2856,7 +2860,7 @@ static int term_find_wordEndstatic_cast<void>()
     return n;
 }
 
-static void term_capitalize_wordstatic_cast<void>()
+static void term_capitalize_word()
 {   int a = term_find_word_start();
     int b = term_find_wordEnd();
     int i;
@@ -2874,7 +2878,7 @@ static void term_capitalize_wordstatic_cast<void>()
 }
 
 
-static void term_lowercase_wordstatic_cast<void>()
+static void term_lowercase_word()
 {   int a = term_find_word_start();
     int b = term_find_wordEnd();
     int i;
@@ -2885,7 +2889,7 @@ static void term_lowercase_wordstatic_cast<void>()
 }
 
 
-static void term_uppercase_wordstatic_cast<void>()
+static void term_uppercase_word()
 {   int a = term_find_word_start();
     int b = term_find_wordEnd();
     int i;
@@ -2896,7 +2900,7 @@ static void term_uppercase_wordstatic_cast<void>()
 }
 
 
-static void term_transpose_charsstatic_cast<void>()
+static void term_transpose_chars()
 {   int c, d;
 // I fear there are 4 cases here in the windows world...
 //     x, y    =>    y, x
@@ -2952,7 +2956,7 @@ static void term_transpose_charsstatic_cast<void>()
 }
 
 
-static void term_undostatic_cast<void>()
+static void term_undo()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -2961,7 +2965,7 @@ static void term_undostatic_cast<void>()
 }
 
 
-static void term_quoted_insertstatic_cast<void>()
+static void term_quoted_insert()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -2970,7 +2974,7 @@ static void term_quoted_insertstatic_cast<void>()
 }
 
 
-static void term_copy_previous_wordstatic_cast<void>()
+static void term_copy_previous_word()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -2979,7 +2983,7 @@ static void term_copy_previous_wordstatic_cast<void>()
 }
 
 
-static void term_copy_regionstatic_cast<void>()
+static void term_copy_region()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -2988,7 +2992,7 @@ static void term_copy_regionstatic_cast<void>()
 }
 
 
-static void term_yankstatic_cast<void>()
+static void term_yank()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -2997,7 +3001,7 @@ static void term_yankstatic_cast<void>()
 }
 
 
-static void term_reinputstatic_cast<void>()
+static void term_reinput()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -3006,7 +3010,7 @@ static void term_reinputstatic_cast<void>()
 }
 
 
-static void term_redisplaystatic_cast<void>()
+static void term_redisplay()
 {
 // To get as much of the active area redrawn as I can I will reset the
 // record of what is visible to suggest that everything is totally out of
@@ -3017,7 +3021,7 @@ static void term_redisplaystatic_cast<void>()
 }
 
 
-static void term_clear_screenstatic_cast<void>()
+static void term_clear_screen()
 {
 // This will then leave the input-line displayed at the top of your window...
     std::fflush(stdout); std::fflush(stderr);
@@ -3044,19 +3048,19 @@ static void term_clear_screenstatic_cast<void>()
 }
 
 
-static void term_pause_outputstatic_cast<void>()
+static void term_pause_output()
 {
 // @@@@@
 }
 
 
-static void term_resume_outputstatic_cast<void>()
+static void term_resume_output()
 {
 // @@@@@
 }
 
 
-static void term_discard_outputstatic_cast<void>()
+static void term_discard_output()
 {
 // @@@@@
 }
@@ -5351,7 +5355,7 @@ static void make_wchar(wchar_t *s, int c)
     }
 }
 
-static void term_ctrl_z_commandstatic_cast<void>()
+static void term_ctrl_z_command()
 {
 // It is not yet clear that I have anything much to allocate this to. In
 // emacs it would be "obey extended command".
@@ -5361,7 +5365,7 @@ static void term_ctrl_z_commandstatic_cast<void>()
     term_redisplay();
 }
 
-void term_unicode_convertstatic_cast<void>()
+void term_unicode_convert()
 {
 // If you position the caret to the right of (up to) 6 hex digits and
 // go ALT-X then the digits are replaced by single Unicode character.
@@ -5612,17 +5616,17 @@ void term_unicode_convertstatic_cast<void>()
 
 #ifndef EMBEDDED
 
-static void term_pause_executionstatic_cast<void>()
+static void term_pause_execution()
 {
 }
 
 
-static void term_exit_programstatic_cast<void>()
+static void term_exit_program()
 {   throw 0;  // my_exit(0)
 }
 
 
-static void term_edit_menustatic_cast<void>()
+static void term_edit_menu()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -5631,7 +5635,7 @@ static void term_edit_menustatic_cast<void>()
 }
 
 
-static void term_file_menustatic_cast<void>()
+static void term_file_menu()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -5640,7 +5644,7 @@ static void term_file_menustatic_cast<void>()
 }
 
 
-static void term_module_menustatic_cast<void>()
+static void term_module_menu()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -5649,7 +5653,7 @@ static void term_module_menustatic_cast<void>()
 }
 
 
-static void term_font_menustatic_cast<void>()
+static void term_font_menu()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -5658,7 +5662,7 @@ static void term_font_menustatic_cast<void>()
 }
 
 
-static void term_break_menustatic_cast<void>()
+static void term_break_menu()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -5667,7 +5671,7 @@ static void term_break_menustatic_cast<void>()
 }
 
 
-static void term_switch_menustatic_cast<void>()
+static void term_switch_menu()
 {
 // @@@@@
     insert_point += std::swprintf(&input_line[insert_point],
@@ -5723,7 +5727,7 @@ static void set_foreground_colour(int n)
     std::fflush(stdout);
 }
 
-static void set_default_colourstatic_cast<void>()
+static void set_default_colour()
 {   std::fflush(stdout); std::fflush(stderr);
 #ifdef WIN32
     if (*term_colour != 0)
@@ -5756,7 +5760,7 @@ static void set_default_colourstatic_cast<void>()
 
 static int left_over = 0;
 
-static wchar_t *term_wide_fancy_getlinestatic_cast<void>()
+static wchar_t *term_wide_fancy_getline()
 {   int ch, i;
     bool any_keys = false;
     if (left_over != 0)
@@ -6184,7 +6188,7 @@ int utf_decode(const unsigned char *b)
     }
 }
 
-wchar_t *term_wide_getlinestatic_cast<void>()
+wchar_t *term_wide_getline()
 {
 #ifdef EMBEDDED
     return term_wide_plain_getline();
@@ -6194,7 +6198,7 @@ wchar_t *term_wide_getlinestatic_cast<void>()
 #endif // !EMBEDDED
 }
 
-char *term_getlinestatic_cast<void>()
+char *term_getline()
 {   wchar_t *r = term_wide_getline();
     if (r == nullptr) return nullptr;
 // To get a "narrow char" line I read a wide char line and then expand
@@ -6242,7 +6246,7 @@ char *term_getlinestatic_cast<void>()
 // that a whole bunch of things generate for me. I do not guarantee that
 // it will always work, but when it does it may be useful!
 
-static void record_keysstatic_cast<void>()
+static void record_keys()
 {   static char *keys[] =
     {   "left arrow",
         "right arrow",

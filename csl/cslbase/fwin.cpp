@@ -105,6 +105,8 @@ extern int fwin_main(int argc, const char *argv[]);
 #include <chrono>
 #include <atomic>
 
+using std::atomic;
+
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #else // HAVE_UNISTD_H
@@ -1214,7 +1216,7 @@ int find_program_directory(const char *argv0)
         return 0;
     }
 
-    w = reinterpret_cast<char *>(std)::malloc(1+std::strlen(ww));
+    w = reinterpret_cast<char *>(std::malloc(1+std::strlen(ww)));
     if (w == nullptr) return 5;           // 5 = malloc fails
     std::strcpy(w, ww);
     fullProgramName = w;
@@ -1260,13 +1262,13 @@ int find_program_directory(const char *argv0)
     ndir = len - npgm - 1;
     if (ndir < 0) programDir = ".";  // none really visible
     else
-    {   if ((w = reinterpret_cast<char *>(std)::malloc(
-                     ndir+1)) == nullptr) return 1;
+    {   if ((w = reinterpret_cast<char *>(std::malloc(
+                     ndir+1))) == nullptr) return 1;
         std::strncpy(w, fullProgramName, ndir);
         w[ndir] = 0;
         programDir = w;
     }
-    if ((w = reinterpret_cast<char *>(std)::malloc(npgm+1)) == nullptr)
+    if ((w = reinterpret_cast<char *>(std::malloc(npgm+1))) == nullptr)
         return 1;
     std::strncpy(w, fullProgramName + len - npgm, npgm);
     w[npgm] = 0;
@@ -1460,8 +1462,8 @@ int find_program_directory(const char *argv0)
 // Now fullProgramName is set up, but may refer to an array that
 // is stack allocated. I need to make it proper!
 //
-    w1 = reinterpret_cast<char *>(std)::malloc(1+std::strlen(
-                fullProgramName));
+    w1 = reinterpret_cast<char *>(std::malloc(1+std::strlen(
+                fullProgramName)));
     if (w1 == nullptr) return 5;           // 5 = malloc fails
     std::strcpy(w1, fullProgramName);
     fullProgramName = w1;
@@ -1519,7 +1521,7 @@ int find_program_directory(const char *argv0)
     for (n=std::strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               // 6 = no "/" in full file path
-    w1 = reinterpret_cast<char *>(std)::malloc(1+n);
+    w1 = reinterpret_cast<char *>(std::malloc(1+n));
     if (w1 == nullptr) return 7;           // 7 = malloc fails
     std::strncpy(w1, fullProgramName, n);
     w1[n] = 0;
@@ -1528,7 +1530,7 @@ int find_program_directory(const char *argv0)
 //
     programDir = w1;
     n1 = std::strlen(fullProgramName) - n;
-    w1 = reinterpret_cast<char *>(std)::malloc(n1);
+    w1 = reinterpret_cast<char *>(std::malloc(n1));
     if (w1 == nullptr) return 8;           // 8 = malloc fails
     std::strncpy(w1, fullProgramName+n+1, n1-1);
     w1[n1-1] = 0;
@@ -2200,7 +2202,7 @@ int n_found_files = 0, max_found_files = 0;
 
 #define TABLE_INCREMENT 50
 
-static int more_filesstatic_cast<void>()
+static int more_files()
 {   if (n_found_files > max_found_files - 5)
     {   char **fnew = (char **)
                       std::realloc(reinterpret_cast<void *>(found_files),
@@ -2249,8 +2251,8 @@ static void exall(int namelength,
             if (std::strcmp(leafname, ".") == 0 ||
                 std::strcmp(leafname, "..") == 0) continue;
             if (more_files()) break;
-            copyname = reinterpret_cast<char *>(std)::malloc(1+std::strlen(
-                           leafname));
+            copyname = reinterpret_cast<char *>(std::malloc(1+std::strlen(
+                           leafname)));
             if (copyname == nullptr) break;
             std::strcpy(copyname, leafname);
             found_files[n_found_files++] = copyname;
@@ -2258,7 +2260,7 @@ static void exall(int namelength,
         closedir(d);
     }
 
-    std::qsort(reinterpret_cast<void *>()&found_files[first],
+    std::qsort(reinterpret_cast<void *>(&found_files[first]),
                n_found_files-first,
                sizeof(char *),
                alphasort_files);
@@ -2583,7 +2585,7 @@ char *get_truename(char *filename, const char *old, size_t n)
         {   std::strcpy(filename, "truename: cannot change directory");
             return nullptr;
         }
-        dir1 = reinterpret_cast<char*>(std)::malloc(LONGEST_LEGAL_FILENAME);
+        dir1 = reinterpret_cast<char*>(std::malloc(LONGEST_LEGAL_FILENAME));
         if (getcwd(dir1,LONGEST_LEGAL_FILENAME) == nullptr)
         {   std::strcpy(filename,
                         "truename: cannot get current working directory");
@@ -2613,7 +2615,7 @@ char *get_truename(char *filename, const char *old, size_t n)
         {   // Found a directory component
             char theDir[LONGEST_LEGAL_FILENAME];
             std::memset(theDir, 0, sizeof(theDir));
-            fn   = reinterpret_cast<char *>(std)::malloc(1+std::strlen(temp));
+            fn   = reinterpret_cast<char *>(std::malloc(1+std::strlen(temp)));
             std::strcpy(fn, temp);
             *temp = '\0';
             // fn is now "/file" and filename is the directory
@@ -2632,8 +2634,8 @@ char *get_truename(char *filename, const char *old, size_t n)
             {   std::strcpy(filename, "truename: cannot change directory");
                 return nullptr;
             }
-            dir = reinterpret_cast<char *>(std)::malloc((std::strlen(
-                        temp) + std::strlen(fn) + 1)*sizeof(char));
+            dir = reinterpret_cast<char *>(std::malloc((std::strlen(
+                        temp) + std::strlen(fn) + 1)*sizeof(char)));
             if (dir == nullptr)
             {   std::strcpy(filename, "truename: run out of memory");
                 return nullptr;
@@ -2644,8 +2646,8 @@ char *get_truename(char *filename, const char *old, size_t n)
             return dir;
         }
         else
-        {   dir = reinterpret_cast<char *>(std)::malloc((std::strlen(
-                        pwd) + std::strlen(filename) + 2)*sizeof(char));
+        {   dir = reinterpret_cast<char *>(std::malloc((std::strlen(
+                        pwd) + std::strlen(filename) + 2)*sizeof(char)));
             if (dir == nullptr)
             {   std::strcpy(filename, "truename: run out of memory");
                 return nullptr;

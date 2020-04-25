@@ -60,6 +60,8 @@
 #include <csignal>
 #include <atomic>
 
+using std::atomic;
+
 //
 // Logging support, only enabled in debug mode.
 //

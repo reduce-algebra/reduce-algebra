@@ -425,7 +425,7 @@ uint64_t read_clock_microsecondsstatic_cast<void>()
 
 double unix_ticks = 0.0;
 
-uint64_t read_clockstatic_cast<void>()
+uint64_t read_clock()
 {   struct tms tmsbuf;
     times(&tmsbuf);
     std::clock_t w1 = tmsbuf.tms_utime;   // User time in UNIX_TIMES ticks
@@ -462,7 +462,7 @@ uint64_t read_clock()
 
 uint64_t read_clock()
 {   return (uint64_t)((1000000.0/CLOCKS_PER_SEC)*static_cast<double>
-                      (std)::clock());
+                      (std::clock()));
 }
 
 #endif
@@ -527,7 +527,7 @@ const char *find_image_directory(int argc, const char *argv[])
 // This dates from when I thought I would put the image in merely Contents not
 // in Contents/MacOS.
         std::sprintf(xname, "%.*s/%s.img",
-                     static_cast<int>(std)::strlen(programDir), programDir, programName);
+                     static_cast<int>(std::strlen(programDir)), programDir, programName);
     }
     else
     {   struct stat buf;
@@ -844,7 +844,7 @@ int number_of_processors()
 int number_of_processors()
 {   cpu_set_t cs;
     int n, len;
-    unsigned char *p = reinterpret_cast<unsigned char *>()&cs;
+    unsigned char *p = reinterpret_cast<unsigned char *>(&cs);
     std::memset(p, 0, sizeof(cs));
 //
 // The library calls to sched_getaffinity have changed several times with
