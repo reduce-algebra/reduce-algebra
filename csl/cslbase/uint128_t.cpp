@@ -40,11 +40,11 @@ uint128_t::operator bool() const
 }
 
 uint128_t::operator std::uint8_t() const
-{   return static_cast<std::uint8_t>() LOWER;
+{   return static_cast<std::uint8_t>(LOWER);
 }
 
 uint128_t::operator std::uint16_t() const
-{   return static_cast<std::uint16_t>() LOWER;
+{   return static_cast<std::uint16_t>(LOWER);
 }
 
 uint128_t::operator uint32_t() const
@@ -318,7 +318,7 @@ uint128_t & uint128_t::operator++()
 {   return *this += uint128_1;
 }
 
-uint128_t uint128_t::operator++static_cast<int>()
+uint128_t uint128_t::operator++(int)
 {   uint128_t temp(*this);
     ++*this;
     return temp;
@@ -328,7 +328,7 @@ uint128_t & uint128_t::operator--()
 {   return *this -= uint128_1;
 }
 
-uint128_t uint128_t::operator--static_cast<int>()
+uint128_t uint128_t::operator--(int)
 {   uint128_t temp(*this);
     --*this;
     return temp;
@@ -383,7 +383,7 @@ std::string uint128_t::str(std::uint8_t base,
     {   std::pair <uint128_t, uint128_t> qr(*this, uint128_0);
         do
         {   qr = divmod(qr.first, base);
-            out = "0123456789abcdef"[static_cast<std::uint8_t>() qr.second] + out;
+            out = "0123456789abcdef"[static_cast<std::uint8_t>(qr.second)] + out;
         }
         while (qr.first);
     }

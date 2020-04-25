@@ -43,6 +43,8 @@ C++ versions.
 #include <stdexcept>
 #include <utility>
 
+using std::string;
+
 class uint128_t
 {
 private:
@@ -213,7 +215,7 @@ public:
     uint128_t operator+(const uint128_t & rhs) const;
 
     template <typename T> uint128_t operator+(const T & rhs) const
-    {   return uint128_t(UPPER + ((LOWER + static_cast<uint64_t>() rhs) <
+    {   return uint128_t(UPPER + ((LOWER + static_cast<uint64_t>(rhs)) <
                                   LOWER), LOWER + static_cast<uint64_t>(rhs));
     }
 
@@ -228,8 +230,9 @@ public:
     uint128_t operator-(const uint128_t & rhs) const;
 
     template <typename T> uint128_t operator-(const T & rhs) const
-    {   return uint128_t(static_cast<uint64_t>() (UPPER - ((
-                             LOWER - rhs) > LOWER)), static_cast<uint64_t>(LOWER - rhs));
+    {   return uint128_t(static_cast<uint64_t>(
+                             UPPER - ((LOWER - rhs) > LOWER)),
+                         static_cast<uint64_t>(LOWER - rhs));
     }
 
     uint128_t & operator-=(const uint128_t & rhs);
