@@ -96,17 +96,20 @@ LispObject *nilsegment, *nilsegmentbase;
 LispObject *stacksegment, *stacksegmentbase;
 int32_t stack_segsize = 1;
 
-char *exit_charvec = NULL;
+char *exit_charvec = nullptr;
 intptr_t exit_reason;
 
 intptr_t nwork;
 unsigned int exit_count;
 uint64_t gensym_ser;
 intptr_t print_precision, miscflags;
-intptr_t current_modulus, fastget_size, package_bits, modulus_is_large;
+intptr_t current_modulus, fastget_size, package_bits,
+         modulus_is_large;
 LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
-LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
-LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
+LispObject quote_symbol, function_symbol, comma_symbol,
+           comma_at_symbol;
+LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol,
+           evalhook;
 LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
 LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
@@ -116,37 +119,52 @@ LispObject gcknt_symbol, external_symbol, inherited_symbol;
 LispObject gensym_base, string_char_sym, boffo;
 LispObject key_key, allow_other_keys, aux_key;
 LispObject err_table, format_symbol, progn_symbol, expand_def_symbol;
-LispObject allow_key_key, declare_symbol, special_symbol, large_modulus;
-LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol, echo_symbol;
+LispObject allow_key_key, declare_symbol, special_symbol,
+           large_modulus;
+LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol,
+           echo_symbol;
 LispObject codevec, litvec, supervisor, B_reg, savedef, comp_symbol;
 LispObject compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
-LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
+LispObject lisp_standard_output, lisp_standard_input,
+           lisp_error_output;
 LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
-LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star, redef_msg;
+LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star,
+           redef_msg;
 LispObject current_function, expr_symbol, fexpr_symbol, macro_symbol;
-LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
+LispObject big_divisor, big_dividend, big_quotient, big_fake1,
+           big_fake2;
 LispObject active_stream, current_module;
 LispObject autoload_symbol, features_symbol, lisp_package;
 LispObject sys_hash_table, sxhash_hash_table;
 LispObject help_index, cfunarg, lex_words, get_counts, fastget_names;
-LispObject input_libraries, output_library, current_file, break_function;
+LispObject input_libraries, output_library, current_file,
+           break_function;
 LispObject standard_output, standard_input, debug_io;
-LispObject error_output, query_io, terminal_io, trace_output, fasl_stream;
-LispObject startup_symbol, mv_call_symbol, traceprint_symbol, load_source_symbol;
-LispObject load_selected_source_symbol, bytecoded_symbol, funcall_symbol;
-LispObject gchook, resources, callstack, procstack, procmem, trap_time;
+LispObject error_output, query_io, terminal_io, trace_output,
+           fasl_stream;
+LispObject startup_symbol, mv_call_symbol, traceprint_symbol,
+           load_source_symbol;
+LispObject load_selected_source_symbol, bytecoded_symbol,
+           funcall_symbol;
+LispObject gchook, resources, callstack, procstack, procmem,
+           trap_time;
 LispObject used_space, avail_space, eof_symbol, call_stack;
-LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol, not_symbol;
-LispObject reader_workspace, named_character, read_float_format, short_float;
-LispObject single_float, double_float, long_float, bit_symbol, pathname_symbol;
+LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol,
+           not_symbol;
+LispObject reader_workspace, named_character, read_float_format,
+           short_float;
+LispObject single_float, double_float, long_float, bit_symbol,
+           pathname_symbol;
 LispObject print_array_sym, read_base, initial_element;
 LispObject builtin0_symbol, builtin1_symbol, builtin2_symbol;
-LispObject builtin3_symbol, builtin4_symbol; 
+LispObject builtin3_symbol, builtin4_symbol;
 
 LispObject workbase[51];
 
-LispObject user_base_0, user_base_1, user_base_2, user_base_3, user_base_4;
-LispObject user_base_5, user_base_6, user_base_7, user_base_8, user_base_9;
+LispObject user_base_0, user_base_1, user_base_2, user_base_3,
+           user_base_4;
+LispObject user_base_5, user_base_6, user_base_7, user_base_8,
+           user_base_9;
 
 LispObject eq_hash_tables;
 
@@ -154,19 +172,18 @@ char program_name[64] = {0};
 
 //
 // The tables here are slightly oddly formatted. Every other entry is
-// NULL (reserved for other uses...) and each string has a single character
+// nullptr (reserved for other uses...) and each string has a single character
 // stuck on its front that is also used as a marker elsewhere...
 //
 
-char **loadable_packages = NULL, **switches = NULL;
+char **loadable_packages = nullptr, **switches = nullptr;
 
 bool trap_floating_overflow = true;
 
 int procstackp;
 
 entry_point0 entries_table0[] =
-{
-    {0,                                 "illegal"},
+{   {0,                                 "illegal"},
     {undefined_0,                       "undefined_0"},
     {autoload_0,                        "autoload_0"},
     {interpreted_0,                     "interpreted_0"},
@@ -182,7 +199,7 @@ entry_point0 entries_table0[] =
     {G0W4up,                            "G0W4up"},
     {G0Wother,                          "G0Wother"},
     {f0_as_0,                           "0->0"},
-    {NULL,                              "dummy"}
+    {nullptr,                           "dummy"}
 };
 
 #define entry_table_size0 ((int)(sizeof(entries_table0)/sizeof(entries_table0[0])))
@@ -220,7 +237,7 @@ entry_point1 entries_table1[] =
 // extra arguments.
     {f1_as_0,                           "1->0"},
     {f1_as_1,                           "1->1"},
-    {NULL,                              "dummy"}
+    {nullptr,                           "dummy"}
 };
 
 #define entry_table_size1 ((int)(sizeof(entries_table1)/sizeof(entries_table1[0])))
@@ -254,14 +271,13 @@ entry_point2 entries_table2[] =
     {f2_as_0,                           "2->0"},
     {f2_as_1,                           "2->1"},
     {f2_as_2,                           "2->2"},
-    {NULL,                              "dummy"}
+    {nullptr,                           "dummy"}
 };
 
 #define entry_table_size2 ((int)(sizeof(entries_table2)/sizeof(entries_table2[0])))
 
 entry_point3 entries_table3[] =
-{
-    {0,                                 "illegal"},
+{   {0,                                 "illegal"},
     {undefined_3,                       "undefined_3"},
     {autoload_3,                        "autoload_3"},
     {interpreted_3,                     "interpreted_3"},
@@ -280,7 +296,7 @@ entry_point3 entries_table3[] =
     {f3_as_1,                           "3->1"},
     {f3_as_2,                           "3->2"},
     {f3_as_3,                           "3->3"},
-    {NULL,                              "dummy"}
+    {nullptr,                           "dummy"}
 };
 
 #define entry_table_size3 ((int)(sizeof(entries_table3)/sizeof(entries_table3[0])))
@@ -301,7 +317,7 @@ entry_point4up entries_table4up[] =
     {G4W2,                              "G4W2"},
     {G4W3,                              "G4W3"},
     {G4Wother,                          "G4Wother"},
-    {NULL,                              "dummy"}
+    {nullptr,                           "dummy"}
 };
 
 #define entry_table_size4up ((int)(sizeof(entries_table4up)/sizeof(entries_table4up[0])))
@@ -339,7 +355,7 @@ entry_point1 entries_tableio[] =
     {(one_arg *)read_action_concatenated,"read_action_concatenated"},
     {(one_arg *)write_action_broadcast, "write_action_broadcast"},
     {(one_arg *)char_from_echo,         "char_from_echo"},
-    {NULL,                              "dummy"}
+    {nullptr,                           "dummy"}
 };
 
 #define entry_table_sizeio ((int)(sizeof(entries_tableio)/sizeof(entries_tableio[0])))
@@ -362,13 +378,14 @@ static LispObject Lreclaim_stack_limit(LispObject env, LispObject a)
     return onevalue(fixnum_of_int(previous));
 }
 
-static char *find_checksum(const char *name, size_t len, const setup_type *p)
-{   char *n;
-    while (p->name != NULL) p++;
-    n = (char *)p->zero;
+static const char *find_checksum(const char *name, size_t len,
+                                 const setup_type *p)
+{   const char *n;
+    while (p->name != nullptr) p++;
+    n = reinterpret_cast<const char *>(p->zero);
     if (std::strlen(n) == len && std::memcmp(name, n, len) == 0)
-        return (char *)p->one;
-    else return NULL;
+        return reinterpret_cast<const char *>(p->one);
+    else return nullptr;
 }
 
 setup_type const *setup_tables[] =
@@ -386,10 +403,10 @@ setup_type const *setup_tables[] =
     u55_setup, u56_setup, u57_setup, u58_setup, u59_setup,
     u60_setup,
 //
-// I also include the kernel setup tables, but I put a NULL in this
+// I also include the kernel setup tables, but I put a nullptr in this
 // table so it is easy to see where they start.
 //
-    NULL,
+    nullptr,
     arith06_setup, arith08_setup, arith10_setup, arith12_setup,
     arith13_setup, char_setup, eval1_setup, eval2_setup, eval3_setup,
     funcs1_setup, funcs2_setup, funcs3_setup, lisphash_setup,
@@ -397,7 +414,7 @@ setup_type const *setup_tables[] =
 #ifdef ARITHLIB
     arith_setup,
 #endif
-    NULL
+    nullptr
 };
 
 //
@@ -409,11 +426,11 @@ setup_type const *setup_tables[] =
 //
 
 static LispObject Lcheck_c_code(LispObject env, LispObject name,
-        LispObject lc1, LispObject lc2, LispObject a4up)
+                                LispObject lc1, LispObject lc2, LispObject a4up)
 {   int32_t c1=-1, c2=-1, c3=-1;
     long int x1=-2, x2=-2, x3=-2;
     int32_t len;
-    char *p;
+    const char *p;
     const char *sname;
     size_t i;
     LispObject lc3 = arg4("check-c-code", a4up);
@@ -423,7 +440,7 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
 //       c1 c2 c3)     % 3 parts of a checksum
 // It looks at the setup table sfo rall the modules it is aware of. For
 // each such the final entry will be of the form
-//    {NULL, "module-name", "checksum info", ...}
+//    {nullptr, "module-name", "checksum info", ...}
 // and it sees if the information from there matches what it is looking for.
     if (!is_vector(name) ||
         !is_string_header(vechdr(name)) ||
@@ -433,21 +450,23 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
     c1 = int_of_fixnum(lc1);
     c2 = int_of_fixnum(lc2);
     c3 = int_of_fixnum(lc3);
-    sname = (const char *)&celt(name, 0);
+    sname = reinterpret_cast<const char *>(&celt(name, 0));
     len = length_of_byteheader(vechdr(name)) - CELL;
 
-    p = NULL;
-    for (i=0; setup_tables[i]!=NULL; i++)
-    {   if ((p = find_checksum(sname, len, setup_tables[i])) != NULL) break;
+    p = nullptr;
+    for (i=0; setup_tables[i]!=nullptr; i++)
+    {   if ((p = find_checksum(sname, len,
+                               setup_tables[i])) != nullptr) break;
     }
-    if (p == NULL) aerror1("check-c-code", name);
+    if (p == nullptr) aerror1("check-c-code", name);
 
     if (std::sscanf(p, "%ld %ld %ld", &x1, &x2, &x3) != 3)
         aerror1("check-c-code", name);
     if (c1 == x1 && c2 == x2 && c3 == x3) return onevalue(nil);
     err_printf("\n+++++ C code and environment files not compatible\n");
     err_printf("please check, re-compile and try again\n");
-    err_printf("versions from %.*s.c %lx %lx %lx\n", len, sname, x1, x2, x3);
+    err_printf("versions from %.*s.c %lx %lx %lx\n", len, sname, x1, x2,
+               x3);
     err_printf("version passed here %lx %lx %lx\n", c1, c2, c3);
     aerror1("check-c-code", name);
 }
@@ -457,8 +476,7 @@ setup_type const restart_setup[] =
 // things that are in modules that do not define enough Lisp entrypoints
 // to be worth giving separate entry-tables.
 //
-{
-    {"~load-spid",              Lload_spid, G1W0, G2W0, G3W0, G4W0},
+{   {"~load-spid",              Lload_spid, G1W0, G2W0, G3W0, G4W0},
     {"~is-spid",                G0W1, Lis_spid, G2W1, G3W1, G4W1},
     {"~spid-to-nil",            G0W1, Lspid_to_nil, G2W1, G3W1, G4W1},
     {"~mv-list",                G0W1, Lmv_list, G2W1, G3W1, G4W1},
@@ -487,27 +505,28 @@ setup_type const restart_setup[] =
 #ifdef CONSERVATIVE
     {"gctest",                  Lgctest_0, Lgctest_1, Lgctest_2, G3Wother, G4Wother},
 #endif
-    {NULL,                      0, 0, 0, 0, 0}
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 
 static void create_symbols(setup_type const s[], int restart_flag)
 {   size_t i;
-    for (i=0; s[i].name != NULL; i++)
+    for (i=0; s[i].name != nullptr; i++)
         make_symbol(s[i].name, restart_flag,
-           s[i].zero,  s[i].one, s[i].two, s[i].three, s[i].fourup);
+                    s[i].zero,  s[i].one, s[i].two, s[i].three, s[i].fourup);
 }
 
 static int32_t defined_symbols;
 
 static void count_symbols(setup_type const s[])
 {   size_t i;
-    for (i=0; s[i].name != NULL; i++) defined_symbols++;
+    for (i=0; s[i].name != nullptr; i++) defined_symbols++;
 }
 
 #ifndef EMBEDDED
 #if 0
-static setup_type_1 *find_def_table(LispObject mod, LispObject checksum);
+static setup_type_1 *find_def_table(LispObject mod,
+                                    LispObject checksum);
 #endif // 0
 #endif
 
@@ -518,28 +537,30 @@ typedef struct dynamic_modules
     setup_type_1 *entries;
 } dynamic_modules;
 
-static dynamic_modules *loaded_dynamic_modules = NULL;
-static unsigned int loaded_dynamic_count = 0 , loaded_dynamic_size = 0;
+static dynamic_modules *loaded_dynamic_modules = nullptr;
+static unsigned int loaded_dynamic_count = nullptr,
+                    loaded_dynamic_size = nullptr;
 
 //
 // A real curiosity of my implementation is that find_dynamic_module
 // takes a char * and a length. The "string" it is given need not be
-// properly terminated with a "\0". The string data might be transient.
+// properly terminated with a "\nullptr". The string data might be transient.
 // in contrase, record_dynamic_module takes a normal-style C string (which
-// of course is terminated with '\0', and it requires that the string
+// of course is terminated with '\nullptr', and it requires that the string
 // data is non-transient. BEWARE if you try to use these at some stage in the
 // future.
 //
 static setup_type_1 *find_dynamic_module(char *name, size_t len)
-{   unsigned int hash = 0;
+{   unsigned int hash = nullptr;
     size_t i;
     char *p = name;
-    if (loaded_dynamic_size == 0) return NULL;
-    for (i=0; i<len; i++) hash=169*hash+(*p++ & 0xff);
+    if (loaded_dynamic_size == nullptr) return nullptr;
+    for (i=nullptr; i<len; i++) hash=169*hash+(*p++ & nullptrxff);
     hash %= loaded_dynamic_size;
     for (;;)
-    {   if (loaded_dynamic_modules[hash].name == NULL) return NULL;
-        if (std::strncmp(name, loaded_dynamic_modules[hash].name, len) == 0 &&
+    {   if (loaded_dynamic_modules[hash].name == nullptr) return nullptr;
+        if (std::strncmp(name, loaded_dynamic_modules[hash].name,
+                         len) == nullptr &&
             std::strlen(loaded_dynamic_modules[hash].name) == len)
             return loaded_dynamic_modules[hash].entries;
         hash = (hash + 1) % loaded_dynamic_size;
@@ -566,14 +587,15 @@ static void record_dynamic_module(char *name, setup_type_1 *entries)
             while (!isprime(newsize)) newsize+=2;
         }
 #ifdef TRACE_NATIVE
-        trace_printf("Hash needs to grow from %d to %d\n", loaded_dynamic_size, newsize);
+        trace_printf("Hash needs to grow from %d to %d\n",
+                     loaded_dynamic_size, newsize);
         ensure_screen();
 #endif
         newtable = (dynamic_modules *)
                    std::malloc(newsize*sizeof(dynamic_modules));
-        for (i=0; i<newsize; i++) newtable[i].name = NULL;
+        for (i=0; i<newsize; i++) newtable[i].name = nullptr;
         for (i=0; i<loaded_dynamic_size; i++)
-        {   if ((p = loaded_dynamic_modules[i].name) == NULL) continue;
+        {   if ((p = loaded_dynamic_modules[i].name) == nullptr) continue;
             hash = 0;
             while (*p != 0) hash=169*hash+(*p++ & 0xff);
 //
@@ -583,12 +605,13 @@ static void record_dynamic_module(char *name, setup_type_1 *entries)
 // provoked.
 //
 #ifdef TRACE_NATIVE
-            trace_printf("Hash for %s is %x in REHASH\n", loaded_dynamic_modules[i].name, hash);
+            trace_printf("Hash for %s is %x in REHASH\n",
+                         loaded_dynamic_modules[i].name, hash);
             ensure_screen();
 #endif
             hash %= newsize;
             for (;;)
-            {   if (newtable[hash].name == NULL)
+            {   if (newtable[hash].name == nullptr)
                 {   newtable[hash].name = loaded_dynamic_modules[i].name;
                     newtable[hash].entries = loaded_dynamic_modules[i].entries;
                     break;
@@ -605,7 +628,7 @@ static void record_dynamic_module(char *name, setup_type_1 *entries)
     while (*p != 0) hash=169*hash+(*p++ & 0xff);
     hash %= loaded_dynamic_size;
     for (;;)
-    {   if (loaded_dynamic_modules[hash].name == NULL)
+    {   if (loaded_dynamic_modules[hash].name == nullptr)
         {   loaded_dynamic_modules[hash].name = name;
             loaded_dynamic_modules[hash].entries = entries;
             return;
@@ -636,22 +659,26 @@ static void find_dll_cache_directory()
     for (count=0; count<100; count++)
     {   CSL_MD5_Init();
         std::sprintf(counts, "%d:", count);
-        CSL_MD5_Update((unsigned char *)counts, std::strlen(counts));
-        CSL_MD5_Update((unsigned char *)fullProgramName,
+        CSL_MD5_Update(reinterpret_cast<unsigned char *>(counts),
+                       std::strlen(counts));
+        CSL_MD5_Update(reinterpret_cast<unsigned char *>(fullProgramName),
                        std::strlen(fullProgramName));
 #ifdef WIN32
         userinfo[0] = ';';
         n = sizeof(userinfo) - 1;
-        if (!GetUserName(userinfo+1, &n)) std::strcpy(userinfo, ";UnknownUser;");
+        if (!GetUserName(userinfo+1, &n)) std::strcpy(userinfo,
+                    ";UnknownUser;");
         else std::strcat(userinfo, ";");
         if (GetTempPath(LONGEST_LEGAL_FILENAME, dll_cache_directory) == 0)
             std::strcpy(dll_cache_directory, ".\\");
 #else
-        std::sprintf(userinfo, ";%d;", (int)geteuid());
+        std::sprintf(userinfo, ";%d;", static_cast<int>(geteuid()));
         std::strcpy(dll_cache_directory, "/tmp/");
 #endif
-        CSL_MD5_Update((const unsigned char *)userinfo, std::strlen(userinfo));
-        CSL_MD5_Update((const unsigned char *)linker_type, std::strlen(linker_type));
+        CSL_MD5_Update(reinterpret_cast<const unsigned char *>(userinfo),
+                       std::strlen(userinfo));
+        CSL_MD5_Update(reinterpret_cast<const unsigned char *>(linker_type),
+                       std::strlen(linker_type));
         CSL_MD5_Final(md);
 #ifdef TRACE_NATIVE
         trace_printf("Base cache name on %s %s %s\n",
@@ -731,11 +758,11 @@ static void tidy_up_old_dlls(const char *name, int why, long int size)
 // pattern. Well it is a bit messier than that - the first few chars of the
 // checksum info may have matched...
 //
-    while (*p != 0 && std::isdigit((int)*p)) p++;
+    while (*p != 0 && std::isdigit(static_cast<int>()*p)) p++;
     if (*p == '-') p++;
-    while (*p != 0 && std::isdigit((int)*p)) p++;
+    while (*p != 0 && std::isdigit(static_cast<int>()*p)) p++;
     if (*p == '-') p++;
-    while (*p != 0 && std::isdigit((int)*p)) p++;
+    while (*p != 0 && std::isdigit(static_cast<int>()*p)) p++;
     if (std::strcmp(p, ".dll") != 0 &&
         std::strcmp(p, ".so") != 0) return;
 #ifdef TRACE_NATIVE
@@ -749,7 +776,8 @@ static void tidy_up_old_dlls(const char *name, int why, long int size)
 #ifndef EMBEDDED
 
 #if 0
-static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
+static setup_type_1 *find_def_table(LispObject mod,
+                                    LispObject checksum)
 {   size_t len = 0, checklen = 0;
     const char *sname, *checkname;
     char modname[80], xmodname[LONGEST_LEGAL_FILENAME];
@@ -781,20 +809,22 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 #ifdef TRACE_NATIVE
     trace_printf("Checksum given as \"%.*s\"\n", checklen, checkname);
 #endif
-    std::sprintf(sname1, "%.*s-%.*s", (int)len, sname, (int)checklen, checkname);
+    std::sprintf(sname1, "%.*s-%.*s", static_cast<int>(len), sname,
+                 static_cast<int>(checklen), checkname);
     p = sname1;
     while (*p!=0)
     {   if (*p == ' ') *p = '-';
         p++;
     }
     dll = find_dynamic_module(sname1, std::strlen(sname1));
-    if (dll != NULL) return dll;
+    if (dll != nullptr) return dll;
 //
 // I keep dynamically-loadable read code in the image where a module
 // whose portable version is called foo.fasl might have a machine-specific
 // variant foo.win32.fasl.
 //
-    std::sprintf(modname, "%.*s.%s", (int)len, sname, linker_type);
+    std::sprintf(modname, "%.*s.%s", static_cast<int>(len), sname,
+                 linker_type);
 
 //
 // Here I will do some more cache-style activity. I will hold a
@@ -826,7 +856,8 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
     std::sprintf(objname, "%s/%s.so", dll_cache_directory, sname1);
 #endif
 #ifdef TRACE_NATIVE
-    trace_printf("Invented name %s for temp location of module\n", objname);
+    trace_printf("Invented name %s for temp location of module\n",
+                 objname);
 #endif
     {   struct stat stbuf;
 //
@@ -843,7 +874,7 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
            )
         {   if (Iopen(modname, std::strlen(modname), IOPEN_IN, xmodname))
             {   trace_printf("module not found\n");
-                return NULL;
+                return nullptr;
             }
 
 #ifdef TRACE_NATIVE
@@ -860,9 +891,9 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 // Here I can read and process the module...
 //
             dest = std::fopen(objname, "wb");
-            if (dest == NULL)              // failed to write to temp file
+            if (dest == nullptr)              // failed to write to temp file
             {   IcloseInput();
-                return NULL;
+                return nullptr;
             }
 // This uses Igets not Zgetc because it wants to access the raw compressed
 // data so it can just copy it across. At least at present if I ever have
@@ -872,17 +903,18 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
             IcloseInput();
             if (std::fclose(dest) != 0)
             {   trace_printf("failed to write DLL to temp directory\n");
-                return NULL;
+                return nullptr;
             }
         }
     }
 //
 // Now I have copied the object file data to a "real" but temporary file.
 //
-    std::sprintf(modname, "%.*s", (int)len, sname);
+    std::sprintf(modname, "%.*s", static_cast<int>(len), sname);
 
 #ifdef TRACE_NATIVE
-    trace_printf("load_dynamic for find_def_table %s %s\n", objname, modname);
+    trace_printf("load_dynamic for find_def_table %s %s\n", objname,
+                 modname);
 #endif
     std::sprintf(setupname, "%s_setup", modname);
     for (p=setupname; *p!=0; p++)
@@ -904,7 +936,7 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
     a = LoadLibrary(objname);
     if (a == 0)
     {   DWORD err = GetLastError(), err1;
-        LPTSTR errbuf = NULL;
+        LPTSTR errbuf = nullptr;
 //
 // If I let Windows pop up its message box I still seem to get more info
 // than FormatMessage presents me with... Specifically if the module I tried
@@ -914,15 +946,15 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
         err1 = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
                              FORMAT_MESSAGE_ALLOCATE_BUFFER |
                              FORMAT_MESSAGE_IGNORE_INSERTS,
-                             NULL,
+                             nullptr,
                              err,
                              MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                              (LPTSTR)&errbuf,
                              0,
-                             NULL);
-        if (err1 == 0 || errbuf==NULL)
+                             nullptr);
+        if (err1 == 0 || errbuf==nullptr)
             trace_printf("FormatMessage on code %d failed with %d\n",
-                         (int)err, (int)GetLastError());
+                         static_cast<int>(err), static_cast<int>(GetLastError()));
         else
         {   trace_printf("%s", errbuf);
             LocalFree(errbuf);
@@ -930,7 +962,8 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
     }
     SetErrorMode(ww);
 #ifdef TRACE_NATIVE
-    trace_printf("Dynamic loading of test code\na = %p\n", (void *)a);
+    trace_printf("Dynamic loading of test code\na = %p\n",
+                 reinterpret_cast<void *>(a));
 #endif
     if (a == 0) return 0;
     dll = (setup_type_1 *)GetProcAddress(a, setupname);
@@ -944,7 +977,7 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 #ifdef TRACE_NATIVE
     trace_printf("a = %p\n", a);
 #endif
-    if (a == NULL)
+    if (a == nullptr)
     {   trace_printf("Err = <%s>\n", dlerror()); std::fflush(stdout);
         return 0;
     }
@@ -954,12 +987,12 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 #ifdef TRACE_NATIVE
     trace_printf("setup table is %p, init fn is %p\n", dll, init);
 #endif
-    if (dll == NULL || init == NULL)
+    if (dll == nullptr || init == nullptr)
     {
 #ifdef WIN32
         FreeLibrary(a);
 #endif
-        return NULL;
+        return nullptr;
     }
     (*init)(&nil, &stack, &stackLimit);
 //
@@ -967,12 +1000,13 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 //
 #ifdef TRACE_NATIVE
     {   setup_type_1 *b = dll;
-        while (b->name != NULL)
+        while (b->name != nullptr)
         {   trace_printf("%s %p %p %p %u %u\n",
                          b->name, b->one, b->two, b->n, b->c1, b->c2);
             b++;
         }
-        trace_printf("%s %s\n", (char *)(b->one), (char *)(b->two));
+        trace_printf("%s %s\n", reinterpret_cast<char *>(b->one),
+                     reinterpret_cast<char *>(b->two));
     }
 #endif
 //
@@ -986,7 +1020,7 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 //
 // Update the cache...
 //
-    p = (char *)std::malloc(std::strlen(sname1)+1);
+    p = reinterpret_cast<char *>(std)::malloc(std::strlen(sname1)+1);
     std::strcpy(p, sname1);
     p[len] = 0;
     record_dynamic_module(p, dll);
@@ -1028,7 +1062,7 @@ static void cold_setup()
 // have a tidy world in place here.
 //
     setpname(nil, nil);
-    for (LispObject **p=list_bases; *p!=NULL; p++) **p = nil;
+    for (LispObject **p=list_bases; *p!=nullptr; p++) **p = nil;
     eq_hash_tables = nil;
 #ifdef COMMON
     setpackage(nil, nil);
@@ -1061,12 +1095,13 @@ static void cold_setup()
     setpackage(nil, qvalue(nil));    // For sake of restart code
     all_packages = ncons(qvalue(nil));
 #else
-    setpackage(nil, (LispObject)qvalue(nil));
+    setpackage(nil, static_cast<LispObject>(qvalue(nil)));
 #endif
 
-    packhdr_((LispObject)CP) = TYPE_STRUCTURE + (packhdr_((LispObject)CP) & ~header_mask);
+    packhdr_(static_cast<LispObject>(CP)) = TYPE_STRUCTURE + (packhdr_
+                                            (static_cast<LispObject>(CP)) & ~header_mask);
 #ifdef COMMON
-    packname_((LispObject)CP) = make_string("LISP");
+    packname_(static_cast<LispObject>(CP)) = make_string("LISP");
 #endif
 //
 // The size chosen here is only an initial size - the hash table in a package
@@ -1076,25 +1111,30 @@ static void cold_setup()
 // table to have the same number of entries regardless of whether I am on
 // a 32 or 64-bit machine to make cross-loading of images possible.
 //
-    packint_((LispObject)CP) = get_basic_vector_init(CELL*(1+INIT_OBVECI_SIZE), fixnum_of_int(0));
-    packflags_((LispObject)CP) = fixnum_of_int(++package_bits);
+    packint_(static_cast<LispObject>(CP)) = get_basic_vector_init(CELL*
+                                            (1+INIT_OBVECI_SIZE), fixnum_of_int(0));
+    packflags_(static_cast<LispObject>(CP)) = fixnum_of_int(
+                ++package_bits);
 #ifdef COMMON
 //
 // Common Lisp also has "external" symbols to allow for...
 //
-    packnint_((LispObject)CP) = fixnum_of_int(0);
-    packext_((LispObject)CP) = get_basic_vector_init(CELL*(1+INIT_OBVECX_SIZE), fixnum_of_int(0));
-    packnext_((LispObject)CP) = fixnum_of_int(1); // Allow for nil
+    packnint_(static_cast<LispObject>(CP)) = fixnum_of_int(0);
+    packext_(static_cast<LispObject>(CP)) = get_basic_vector_init(CELL*
+                                            (1+INIT_OBVECX_SIZE), fixnum_of_int(0));
+    packnext_(static_cast<LispObject>(CP)) = fixnum_of_int(
+                1); // Allow for nil
     {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
-                           (INIT_OBVECX_SIZE - 1));
-        elt(packext_((LispObject)CP), i) = nil;
+                            (INIT_OBVECX_SIZE - 1));
+        elt(packext_(static_cast<LispObject>(CP)), i) = nil;
     }
 #else
-    packnint_((LispObject)CP) = fixnum_of_int(1); // Allow for nil
+    packnint_(static_cast<LispObject>(CP)) = fixnum_of_int(
+                1); // Allow for nil
 // Place NIL into the table.
     {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
                             (INIT_OBVECI_SIZE - 1));
-        elt(packint_((LispObject)CP), i) = nil;
+        elt(packint_(static_cast<LispObject>(CP)), i) = nil;
     }
 #endif
     gensym_ser = 1;
@@ -1114,7 +1154,8 @@ static void cold_setup()
 //
 #define boffo_size 256
     boffo = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
-    std::memset((void *)((char *)boffo + (CELL - TAG_VECTOR)), '@', boffo_size);
+    std::memset(reinterpret_cast<void *>(reinterpret_cast<char *>
+                                         (boffo) + (CELL - TAG_VECTOR)), '@', boffo_size);
 //
 // The next line has hidden depths.  When it is obeyed during cold start
 // the C variable *package* has the value nil, hence make_symbol
@@ -1129,7 +1170,8 @@ static void cold_setup()
     setpackage(current_package,lisp_package);
 
     B_reg = nil;                             // safe for GC
-    unset_var                = make_undefined_global("~indefinite-value~");
+    unset_var                =
+        make_undefined_global("~indefinite-value~");
     setvalue(unset_var,        unset_var);
 //@@@@@@@@@@@@@@@@@@@    Lunintern(nil, unset_var);
 //
@@ -1148,10 +1190,11 @@ static void cold_setup()
     key_key             = make_undefined_symbol("&key");
     allow_other_keys    = make_undefined_symbol("&allow-other-keys");
     aux_key             = make_undefined_symbol("&aux");
-    work_symbol         = make_undefined_symbol("~magic-internal-symbol~");
+    work_symbol         =
+        make_undefined_symbol("~magic-internal-symbol~");
     Lunintern(nil, work_symbol);
     package_symbol      = make_undefined_symbol("package");
-    packid_((LispObject)CP)         = package_symbol;
+    packid_(static_cast<LispObject>(CP))         = package_symbol;
 
     macroexpand_hook    = make_undefined_fluid("*macroexpand-hook*");
     evalhook            = make_undefined_fluid("*evalhook*");
@@ -1189,7 +1232,8 @@ static void cold_setup()
     not_symbol          = make_undefined_symbol("not");
     reader_workspace    = make_undefined_symbol("#:x");
     named_character     = make_undefined_symbol(":named-character");
-    read_float_format   = make_undefined_symbol("*read-default-float-format*");
+    read_float_format   =
+        make_undefined_symbol("*read-default-float-format*");
     short_float         = make_undefined_symbol("short-float");
     single_float        = make_undefined_symbol("single-float");
     double_float        = make_undefined_symbol("double-float");
@@ -1217,15 +1261,20 @@ static void cold_setup()
     comp_symbol         = make_undefined_fluid("*comp");
     compiler_symbol     = make_undefined_symbol("compile");
     current_function    = // system-startup
-    startup_symbol      = make_undefined_symbol("system-startup");
-    mv_call_symbol      = make_symbol("multiple-value-call", 0, BAD_SPECIAL_0, mv_call_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up);
+        startup_symbol      = make_undefined_symbol("system-startup");
+    mv_call_symbol      = make_symbol("multiple-value-call", 0,
+                                      BAD_SPECIAL_0, mv_call_fn, BAD_SPECIAL_2, BAD_SPECIAL_3,
+                                      BAD_SPECIAL_4up);
     autoload_symbol     = make_undefined_symbol("autoload");
     bytecoded_symbol    = make_undefined_symbol("bytecoded-definition");
     traceprint_symbol   = make_undefined_symbol("trace-print");
-    load_source_symbol  = make_symbol("load-source", 0, Lload_source0, Lload_source, G2Wother, G3Wother, G4Wother);
+    load_source_symbol  = make_symbol("load-source", 0, Lload_source0,
+                                      Lload_source, G2Wother, G3Wother, G4Wother);
     load_selected_source_symbol =
-                          make_symbol("load-selected-source", 0, Lload_selected_source0, Lload_selected_source, G2Wother, G3Wother, G4Wother);
-    prinl_symbol        = make_symbol("prinl", 0, G0W1, Lprin, G2W1, G3W1, G4W1);
+        make_symbol("load-selected-source", 0, Lload_selected_source0,
+                    Lload_selected_source, G2Wother, G3Wother, G4Wother);
+    prinl_symbol        = make_symbol("prinl", 0, G0W1, Lprin, G2W1, G3W1,
+                                      G4W1);
     emsg_star           = make_undefined_global("emsg*");
     redef_msg           = make_undefined_fluid("*redefmsg");
     expr_symbol         = make_undefined_symbol("expr");
@@ -1271,7 +1320,8 @@ static void cold_setup()
 // I make the vector that can hold the names used for "fast" get tags big
 // enough for the largest possible number.
 //
-    fastget_names = get_basic_vector_init((MAX_FASTGET_SIZE+2)*CELL, SPID_NOPROP);
+    fastget_names = get_basic_vector_init((MAX_FASTGET_SIZE+2)*CELL,
+                                          SPID_NOPROP);
 //
 // The next bit is a horrid fudge, used in read.c (function orderp) to
 // support REDUCE. It ensures that the flag 'noncom is subject to an
@@ -1324,59 +1374,74 @@ void set_up_functions(int restart_flag)
     LispObject saved_package = CP;
     CP = find_package("LISP", 4);
 #endif
-    function_symbol          = make_symbol("function", restart_flag, BAD_SPECIAL_0, function_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up);
-    setheader(function_symbol, qheader(function_symbol) | SYM_SPECIAL_FORM);
-    quote_symbol             = make_symbol("quote", restart_flag, BAD_SPECIAL_0, quote_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up);
+    function_symbol          = make_symbol("function", restart_flag,
+                                           BAD_SPECIAL_0, function_fn, BAD_SPECIAL_2, BAD_SPECIAL_3,
+                                           BAD_SPECIAL_4up);
+    setheader(function_symbol,
+              qheader(function_symbol) | SYM_SPECIAL_FORM);
+    quote_symbol             = make_symbol("quote", restart_flag,
+                                           BAD_SPECIAL_0, quote_fn, BAD_SPECIAL_2, BAD_SPECIAL_3,
+                                           BAD_SPECIAL_4up);
     setheader(quote_symbol, qheader(quote_symbol) | SYM_SPECIAL_FORM);
-    progn_symbol             = make_symbol("progn", restart_flag, BAD_SPECIAL_0, progn_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up);
+    progn_symbol             = make_symbol("progn", restart_flag,
+                                           BAD_SPECIAL_0, progn_fn, BAD_SPECIAL_2, BAD_SPECIAL_3,
+                                           BAD_SPECIAL_4up);
     setheader(progn_symbol, qheader(progn_symbol) | SYM_SPECIAL_FORM);
-    declare_symbol           = make_symbol("declare", restart_flag, BAD_SPECIAL_0, declare_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up);
+    declare_symbol           = make_symbol("declare", restart_flag,
+                                           BAD_SPECIAL_0, declare_fn, BAD_SPECIAL_2, BAD_SPECIAL_3,
+                                           BAD_SPECIAL_4up);
     setheader(declare_symbol, qheader(declare_symbol) | SYM_SPECIAL_FORM);
     special_symbol           = make_undefined_symbol("special");
     large_modulus            = fixnum_of_int(1);
-    cons_symbol              = make_symbol("cons", restart_flag, G0W1, G1W2, Lcons, G3W2, G4W2);
-    list_symbol              = make_symbol("list", restart_flag, Lnilfn, Lncons, Llist_2, Llist_3, Llist_4up);
-    liststar_symbol          = make_symbol("list*", restart_flag, G0Wother, Lidentity, Lcons, Llist_2star, Lliststar_4up);
+    cons_symbol              = make_symbol("cons", restart_flag, G0W1,
+                                           G1W2, Lcons, G3W2, G4W2);
+    list_symbol              = make_symbol("list", restart_flag, Lnilfn,
+                                           Lncons, Llist_2, Llist_3, Llist_4up);
+    liststar_symbol          = make_symbol("list*", restart_flag,
+                                           G0Wother, Lidentity, Lcons, Llist_2star, Lliststar_4up);
     eq_symbol                = make_undefined_symbol("eq");
     eql_symbol               = make_undefined_symbol("eql");
     cl_equal_symbol          = make_undefined_symbol("cl-equal");
     equal_symbol             = make_undefined_symbol("equal");
     equalp_symbol            = make_undefined_symbol("equalp");
-    eval_symbol              = make_symbol("eval", restart_flag, G0W1, Leval, G2W1, G3W1, G4W1);
-    apply_symbol             = make_symbol("apply", restart_flag, G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up);
-    load_source_symbol       = make_symbol("load-source", restart_flag, Lload_source0, Lload_source, G2Wother, G3Wother, G4Wother);
+    eval_symbol              = make_symbol("eval", restart_flag, G0W1,
+                                           Leval, G2W1, G3W1, G4W1);
+    apply_symbol             = make_symbol("apply", restart_flag,
+                                           G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up);
+    load_source_symbol       = make_symbol("load-source", restart_flag,
+                                           Lload_source0, Lload_source, G2Wother, G3Wother, G4Wother);
     builtin0_symbol          = make_undefined_symbol("s:builtin0");
-    builtin1_symbol          = make_undefined_symbol("s:builtin1");  
-    builtin2_symbol          = make_undefined_symbol("s:builtin2");  
-    builtin3_symbol          = make_undefined_symbol("s:builtin3");  
-    builtin4_symbol          = make_undefined_symbol("s:builtin4");  
+    builtin1_symbol          = make_undefined_symbol("s:builtin1");
+    builtin2_symbol          = make_undefined_symbol("s:builtin2");
+    builtin3_symbol          = make_undefined_symbol("s:builtin3");
+    builtin4_symbol          = make_undefined_symbol("s:builtin4");
     load_selected_source_symbol =
-                               make_symbol("load-selected-source",
-                                   restart_flag, Lload_selected_source0,
-                                   Lload_selected_source, G2Wother, G3Wother,
-                                   G4Wother);
+        make_symbol("load-selected-source",
+                    restart_flag, Lload_selected_source0,
+                    Lload_selected_source, G2Wother, G3Wother,
+                    G4Wother);
 //
 // The main bunch of symbols can be handed using a table that
 // gives names and values.
 //
-    for (i=0; eval2_setup[i].name != NULL; i++)
+    for (i=0; eval2_setup[i].name != nullptr; i++)
     {   LispObject v = make_symbol(eval2_setup[i].name,
-                            restart_flag,
-                            eval2_setup[i].zero,
-                            eval2_setup[i].one,
-                            eval2_setup[i].two,
-                            eval2_setup[i].three,
-                            eval2_setup[i].fourup);
+                                   restart_flag,
+                                   eval2_setup[i].zero,
+                                   eval2_setup[i].one,
+                                   eval2_setup[i].two,
+                                   eval2_setup[i].three,
+                                   eval2_setup[i].fourup);
         setheader(v, qheader(v) | SYM_SPECIAL_FORM);
     }
-    for (i=0; eval3_setup[i].name != NULL; i++)
+    for (i=0; eval3_setup[i].name != nullptr; i++)
     {   LispObject v = make_symbol(eval3_setup[i].name,
-                            restart_flag,
-                            eval3_setup[i].zero,
-                            eval3_setup[i].one,
-                            eval3_setup[i].two,
-                            eval3_setup[1].three,
-                            eval3_setup[i].fourup);
+                                   restart_flag,
+                                   eval3_setup[i].zero,
+                                   eval3_setup[i].one,
+                                   eval3_setup[i].two,
+                                   eval3_setup[1].three,
+                                   eval3_setup[i].fourup);
         setheader(v, qheader(v) | SYM_SPECIAL_FORM);
     }
     create_symbols(arith06_setup, restart_flag);
@@ -1401,7 +1466,7 @@ void set_up_functions(int restart_flag)
 // Although almost everything is mapped into upper case in a Common Lisp
 // world, I will preserve the case of symbols defined in u01 to u60.
 //
-    for (i=0; setup_tables[i]!=NULL; i++)
+    for (i=0; setup_tables[i]!=nullptr; i++)
         create_symbols(setup_tables[i], restart_flag | 2);
 
 #ifdef NAG
@@ -1464,9 +1529,11 @@ void set_up_variables(int restart_flag)
     big_dividend = make_four_word_bignum(0, 0, 0, 0);
     big_quotient = make_four_word_bignum(0, 0, 0, 0);
     setvalue(macroexpand_hook, funcall_symbol =
-        make_symbol("funcall", restart_flag, G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up));
+                 make_symbol("funcall", restart_flag, G0Wother, Lfuncall_1, Lfuncall_2,
+                             Lfuncall_3, Lfuncall_4up));
     input_libraries = make_undefined_symbol("input-libraries");
-    setheader(input_libraries, qheader(input_libraries) | SYM_SPECIAL_VAR);
+    setheader(input_libraries,
+              qheader(input_libraries) | SYM_SPECIAL_VAR);
     setvalue(input_libraries, nil);
     for (i=fasl_files.size(); i!=0; i--)
         if (fasl_files[i-1].inUse)
@@ -1475,7 +1542,7 @@ void set_up_variables(int restart_flag)
                           qvalue(input_libraries)));
     output_library = make_undefined_symbol("output-library");
     setvalue(output_library, (output_directory & 0x80000000u) != 0 ? nil :
-                              SPID_LIBRARY + (((int32_t)output_directory)<<20));
+             SPID_LIBRARY + (((int32_t)output_directory)<<20));
 //
 // The Lisp variable lispsystem* gets set here. (in Common mode it is
 // the variable *features*)
@@ -1720,7 +1787,8 @@ void set_up_variables(int restart_flag)
         w = acons(make_keyword("compiler-command"), w1, w);
 #endif
         defined_symbols = 0;
-        for (i=0; setup_tables[i]!=NULL; i++) count_symbols(setup_tables[i]);
+        for (i=0; setup_tables[i]!=nullptr;
+             i++) count_symbols(setup_tables[i]);
 #ifdef COMMON
 //
 // A gratuitous misery here is the need to make words
@@ -1817,7 +1885,7 @@ void set_up_variables(int restart_flag)
 // redirect standard output to a file.
 //
             if (showmathInitialised &&
-                alternative_stdout == NULL)
+                alternative_stdout == nullptr)
             {   w = cons(make_keyword("showmath"), w);
                 w = cons(make_keyword("showmath1"), w);
             }
@@ -1832,7 +1900,7 @@ void set_up_variables(int restart_flag)
 // redirect standard output to a file.
 //
             if (showmathInitialised &&
-                alternative_stdout == NULL)
+                alternative_stdout == nullptr)
             {   w = cons(make_keyword("showmath"), w);
                 w = cons(make_keyword("showmath1"), w);
             }
@@ -1860,15 +1928,14 @@ void set_up_variables(int restart_flag)
             w1 = qvalue(make_undefined_symbol("version*"));
             if (is_vector(w1) &&
                 is_string_header(vechdr(w1)))
-            {
-                int n = length_of_byteheader(vechdr(w1))-CELL;
+            {   int n = length_of_byteheader(vechdr(w1))-CELL;
                 std::sprintf(about_box_title, "About %.*s",
-                        (n > 31-(int)std::strlen("About ") ?
-                         31-(int)std::strlen("About ") : n),
-                        (const char *)&celt(w1, 0));
+                             (n > 31-static_cast<int>(std::strlen("About ")) ?
+                              31-static_cast<int>(std::strlen("About ")) : n),
+                             reinterpret_cast<const char *>(&celt(w1, 0)));
                 std::sprintf(about_box_description, "%.*s",
-                        (n > 31 ? 31 : n),
-                        (const char *)&celt(w1, 0));
+                             (n > 31 ? 31 : n),
+                             reinterpret_cast<const char *>(&celt(w1, 0)));
 //
 // The provision here is that if variables called "author!*" and
 // "author2!*" exist with strings as values then those values will
@@ -1881,7 +1948,7 @@ void set_up_variables(int restart_flag)
                     is_string_header(vechdr(w1)))
                 {   n = length_of_byteheader(vechdr(w1))-CELL;
                     std::sprintf(about_box_rights_1, "%.*s",
-                            n > 31 ? 31 : n, (const char *)&celt(w1, 0));
+                                 n > 31 ? 31 : n, reinterpret_cast<const char *>(&celt(w1, 0)));
                 }
                 else std::strcpy(about_box_rights_1, "A C Hearn/RAND");
                 w1 = qvalue(make_undefined_symbol("author2*"));
@@ -1889,7 +1956,8 @@ void set_up_variables(int restart_flag)
                     is_string_header(vechdr(w1)))
                 {   n = length_of_byteheader(vechdr(w1))-CELL;
                     std::sprintf(about_box_rights_2, "%.*s",
-                            n > 31 ? 31 : n, (const char *)&celt(w1, 0));
+                                 n > 31 ? 31 : n,
+                                 reinterpret_cast<const char *>(&celt(w1, 0)));
                 }
                 else std::strcpy(about_box_rights_2, "Codemist    ");
             }
@@ -2219,8 +2287,7 @@ void set_up_variables(int restart_flag)
             Lprint(nil, v);
         }
         catch (LispException &e)
-        {
-            ensure_screen();
+        {   ensure_screen();
             my_exit(0);
         }
     }
@@ -2236,8 +2303,9 @@ void set_up_variables(int restart_flag)
 // set at the very start of a run ONLY) but should only be visible to those
 // who call restart!-csl.
 //
-    if (loadable_packages == NULL && switches==NULL)
-    {   LispObject w1 = qvalue(make_undefined_symbol("loadable-packages*"));
+    if (loadable_packages == nullptr && switches==nullptr)
+    {   LispObject w1 = qvalue(
+                            make_undefined_symbol("loadable-packages*"));
         LispObject w2;
         int n;
         char *v;
@@ -2245,7 +2313,7 @@ void set_up_variables(int restart_flag)
         for (w2=w1; consp(w2); w2=cdr(w2)) n++; // How many?
         n = 2*n;
         loadable_packages = (char **)std::malloc((n+1)*sizeof(char *));
-        if (loadable_packages != NULL)
+        if (loadable_packages != nullptr)
         {   n = 0;
             for (w2=w1; consp(w2); w2=cdr(w2))
             {   LispObject w3 = car(w2);
@@ -2254,16 +2322,16 @@ void set_up_variables(int restart_flag)
                 if (!is_vector(w3) ||
                     !is_string_header(vechdr(w3))) break;
                 n1 = length_of_byteheader(vechdr(w3))-CELL;
-                v = (char *)std::malloc(n1+2);
-                if (v == NULL) break;
+                v = reinterpret_cast<char *>(std::malloc(n1+2));
+                if (v == nullptr) break;
                 v[0] = ' ';
                 std::memcpy(v+1, &celt(w3, 0), n1);
                 v[n1+1] = 0;
                 loadable_packages[n++] = v;
-                loadable_packages[n++] = NULL;
+                loadable_packages[n++] = nullptr;
             }
             std::qsort(loadable_packages, n/2, 2*sizeof(char *), alpha1);
-            loadable_packages[n] = NULL;   // NULL-terminate the list
+            loadable_packages[n] = nullptr;   // nullptr-terminate the list
         }
         w1 = qvalue(make_undefined_symbol("switches*"));
         n = 0;
@@ -2271,7 +2339,7 @@ void set_up_variables(int restart_flag)
         n = (n+1)*sizeof(char *);
         n = 2*n;
         switches = (char **)std::malloc(n);
-        if (switches != NULL)
+        if (switches != nullptr)
         {   n = 0;
             for (w2=w1; consp(w2); w2=cdr(w2))
             {   LispObject w3 = car(w2), w4;
@@ -2282,10 +2350,11 @@ void set_up_variables(int restart_flag)
                     !is_string_header(vechdr(w3))) break;
                 n1 = length_of_byteheader(vechdr(w3))-CELL;
                 if (n1 > 60) break;
-                std::sprintf(sname, "*%.*s", n1, (const char *)&celt(w3, 0));
+                std::sprintf(sname, "*%.*s", n1,
+                             reinterpret_cast<const char *>(&celt(w3, 0)));
                 w4 = make_undefined_symbol(sname);
-                v = (char *)std::malloc(n1+2);
-                if (v == NULL) break;
+                v = reinterpret_cast<char *>(std::malloc(n1+2));
+                if (v == nullptr) break;
 //
 // The first character records the current state of the switch. With FWIN
 // I have entries that say "x" for "I am not at present active" which copes
@@ -2300,10 +2369,10 @@ void set_up_variables(int restart_flag)
                 std::memcpy(v+1, &celt(w3, 0), n1);
                 v[n1+1] = 0;
                 switches[n++] = v;
-                switches[n++] = NULL;
+                switches[n++] = nullptr;
             }
             std::qsort(switches, n/2, 2*sizeof(char *), alpha1);
-            switches[n] = NULL;
+            switches[n] = nullptr;
         }
     }
 
@@ -2331,11 +2400,12 @@ void review_switch_settings()
         if (!is_vector(s) || !is_string_header(vechdr(s))) continue;
         n1 = length_of_byteheader(vechdr(s))-CELL;
         if (n1 > 60) continue;
-        std::sprintf(sname, "*%.*s", n1, (const char *)&celt(s, 0));
-        for (p=switches; *p!=NULL; p+=2)
+        std::sprintf(sname, "*%.*s", n1,
+                     reinterpret_cast<const char *>(&celt(s, 0)));
+        for (p=switches; *p!=nullptr; p+=2)
         {   if (std::strcmp(1+*p, &sname[1]) == 0) break;
         }
-        if ((v=*p) == NULL) continue;
+        if ((v=*p) == nullptr) continue;
         starsw = make_undefined_symbol(sname);
         if (qvalue(starsw) == nil) switch(*v)
             {   case 'y':  *v = 0x3f&'N'; break;
@@ -2365,11 +2435,12 @@ void review_switch_settings()
         if (!is_vector(s) || !is_string_header(s)) continue;
         n1 = length_of_byteheader(vechdr(s))-CELL;
         if (n1 > 60) continue;
-        std::sprintf(sname, "%.*s", n1, (const char *)&celt(s, 0));
-        for (p=loadable_packages; *p!=NULL; p+=2)
+        std::sprintf(sname, "%.*s", n1,
+                     reinterpret_cast<const char *>(&celt(s, 0)));
+        for (p=loadable_packages; *p!=nullptr; p+=2)
         {   if (std::strcmp(1+*p, sname) == 0) break;
         }
-        if ((v=*p) == NULL) continue;
+        if ((v=*p) == nullptr) continue;
         if (*v == ' ') *v = 'X';  // X here says "update the info"
     }
     fwin_refresh_switches(switches, loadable_packages);
@@ -2385,17 +2456,18 @@ bool CSL_MD5_busy;
 // number of things that have been compiled into C.
 
 static void get_checksum(const setup_type *p)
-{   while (p->name!=NULL) p++;
-    if (p->one != NULL && p->two != NULL)
-    {   unsigned char *w = (unsigned char *)p->two;
-        CSL_MD5_Update(w, std::strlen((char *)w));
+{   while (p->name!=nullptr) p++;
+    if (p->one != nullptr && p->two != nullptr)
+    {   const unsigned char *w = reinterpret_cast<const unsigned char *>
+                                 (p->two);
+        CSL_MD5_Update(w, std::strlen(reinterpret_cast<const char *>(w)));
     }
 }
 
 void get_user_files_checksum(unsigned char *b)
 {   size_t i;
     CSL_MD5_Init();
-    for (i=0; setup_tables[i]!=NULL; i++)
+    for (i=0; setup_tables[i]!=nullptr; i++)
         get_checksum(setup_tables[i]);
     CSL_MD5_Final(b);
 }
@@ -2472,7 +2544,7 @@ void setup(int restart_flag, double store_size)
         {   char b[64];
             if (IopenRoot(filename, BANNER_CODE, 0)) b[0] = 0;
             else
-            {   for (i=0; i<64; i++) b[i] = (char)Igetc();
+            {   for (i=0; i<64; i++) b[i] = static_cast<char>(Igetc());
 // The banner will not be subject to compression technology because it will
 // normally be too short to benefit.
                 IcloseInput();
@@ -2494,10 +2566,12 @@ void setup(int restart_flag, double store_size)
             }
         }
     }
-    else for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
+    else for (LispObject **p = list_bases; *p!=nullptr; p++) **p = nil;
 
-    stackLimit = (LispObject *) (~(uintptr_t)0xff &
-        (uintptr_t)&stack[stack_segsize*CSL_PAGE_SIZE/4-200]);
+    stackLimit = reinterpret_cast<LispObject *>(
+                     ~static_cast<uintptr_t>(0xff) &
+                     reinterpret_cast<uintptr_t>(
+                         &stack[stack_segsize*CSL_PAGE_SIZE/CELL-200]));
     // allow some slop at end
 
 #ifdef CONSERVATIVE
@@ -2505,19 +2579,22 @@ void setup(int restart_flag, double store_size)
     setVariablesFromPage(currentPage);
     freePages = freePages->pageHeader.chain;
     freePagesCount--;
-    previousPage = NULL;
-    busyPages = NULL;
+    previousPage = nullptr;
+    busyPages = nullptr;
     busyPagesCount = 1;
-    mostlyFreePages = NULL;
+    mostlyFreePages = nullptr;
     mostlyFreePagesCount = 0;
 #else // CONSERVATIVE
-    void *p = vheap_pages[vheap_pages_count++] = allocate_page("vheap warm setup");
-    vfringe = (LispObject)(8 + (char *)doubleword_align_up((intptr_t)p));
-    vheaplimit = (LispObject)(vfringe + (CSL_PAGE_SIZE - 16));
+    void *p = vheap_pages[vheap_pages_count++] =
+                  allocate_page("vheap warm setup");
+    vfringe = reinterpret_cast<LispObject>(
+                  8 + reinterpret_cast<char *>(doubleword_align_up(
+                              reinterpret_cast<intptr_t>(p))));
+    vheaplimit = static_cast<LispObject>(vfringe + (CSL_PAGE_SIZE - 16));
     p = heap_pages[heap_pages_count++] = allocate_page("heap warm setup");
     heaplimit = (intptr_t)p;
-    fringe = (LispObject)(heaplimit + CSL_PAGE_SIZE);
-    heaplimit = (LispObject)(heaplimit + SPARE);
+    fringe = static_cast<LispObject>(heaplimit + CSL_PAGE_SIZE);
+    heaplimit = static_cast<LispObject>(heaplimit + SPARE);
 #endif // CONSERVATIVE
 
     if ((restart_flag & 1) != 0) warm_setup();
@@ -2538,8 +2615,9 @@ void setup(int restart_flag, double store_size)
     {   int32_t more = heap_pages_count + vheap_pages_count;
         more = 3 *more - pages_count;
         while (more-- > 0)
-        {   void *page = (void *)aligned_malloc((size_t)CSL_PAGE_SIZE);
-            if (page == NULL)
+        {   void *page = reinterpret_cast<void *>(aligned_malloc((
+                    size_t)CSL_PAGE_SIZE));
+            if (page == nullptr)
             {   init_flags &= ~INIT_EXPANDABLE;
                 break;
             }
@@ -2556,7 +2634,7 @@ void setup(int restart_flag, double store_size)
 //
         if (init_flags & INIT_VERBOSE)
         {   unsigned long m =
-                ((unsigned long)(CSL_PAGE_SIZE/1000))*(pages_count+w+1);
+                (static_cast<unsigned long>(CSL_PAGE_SIZE/1000))*(pages_count+w+1);
             if (m > 4000)
                 term_printf("Memory allocation: %lu Mbytes\n", m/1000);
             else term_printf("Memory allocation: %lu Kbytes\n", m);
@@ -2726,7 +2804,7 @@ LispObject *list_bases[] =
     &builtin1_symbol,
     &builtin2_symbol,
     &builtin3_symbol,
-    &builtin4_symbol, 
+    &builtin4_symbol,
     &user_base_0,
     &user_base_1,
     &user_base_2,
@@ -2788,7 +2866,7 @@ LispObject *list_bases[] =
     &workbase[48],
     &workbase[49],
     &workbase[50],
-    NULL              // Used to mark the end of the table.
+    nullptr              // Used to mark the end of the table.
 };
 
 //
@@ -2814,13 +2892,13 @@ LispObject *list_bases[] =
 //     make of it.
 // (2) There is a scheme that ensures that Lisp that has been translated
 //     into C++ and put in u01.cpp .. u60.cpp is only activated when a
-//     Lisp function with the same checksum is to be used. 
+//     Lisp function with the same checksum is to be used.
 
 #include "md5.cpp"
 
 MD5_CTX context;
 
-void CSL_MD5_Init(void)
+void CSL_MD5_Init()
 {   CSL_MD5_busy = true;
     MD5_Init(&context);
 }

@@ -112,12 +112,12 @@ int execute_lisp_function(char *fname,
         Lapply0(nil, ff);
     }
     catch (LispException &e)
-    {   procedural_input = NULL;
-        procedural_output = NULL;
+    {   procedural_input = nullptr;
+        procedural_output = nullptr;
         return 1;
     }
-    procedural_input = NULL;
-    procedural_output = NULL;
+    procedural_input = nullptr;
+    procedural_output = nullptr;
     return 0;
 }
 
@@ -129,7 +129,7 @@ void use_csl(char *s)
     }
     std::strcpy(ibuff, s);
     ibufp = obufp = 0;
-    execute_lisp_function("read_tay", iget, NULL /*iput*/);
+    execute_lisp_function("read_tay", iget, nullptr /*iput*/);
 //  fprintf(stderr, "%s\n", obuff);
 }
 
@@ -141,17 +141,18 @@ int execute_lisp_function1(char *fname, LispObject arg,
     procedural_input = r;
     procedural_output = w;
     if_error(Lapply1(nil, ff, arg),
-             procedural_input = NULL;
-             procedural_output = NULL;
+             procedural_input = nullptr;
+             procedural_output = nullptr;
              return 2);
-    procedural_input = NULL;
-    procedural_output = NULL;
+    procedural_input = nullptr;
+    procedural_output = nullptr;
     return 0;
 }
 
 void use_csl1(unsigned int s)
 {   ibufp = obufp = 0;
-    execute_lisp_function1("maple_tay", encapsulate_pointer((void *)s),
+    execute_lisp_function1("maple_tay",
+                           encapsulate_pointer(reinterpret_cast<void *>(s)),
                            iget, iput);
     std::fprintf(stderr, "%s\n", obuff);
     std::fflush(stderr);

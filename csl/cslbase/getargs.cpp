@@ -66,7 +66,7 @@ struct argSpec
     bool takesVal;         // true if either "-k NN" or "-k=NN" will be valid
     string help;           // e.g. "-k NN: set memory allocation to NN"
     std::function<void(string,bool,string)>action;
-                           // procedure to call when this case arises.
+    // procedure to call when this case arises.
 };
 
 static std::unordered_map<string, argSpec *> argIndex;
@@ -90,9 +90,9 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
     simpleArgs.clear();
     badArgs.clear();
 // I start by putting all the key values into my unordered_map.
-    for (int i=0; v[i].name != NULL; i++)  argIndex[v[i].name] = &v[i];
+    for (int i=0; v[i].name != nullptr; i++)  argIndex[v[i].name] = &v[i];
 // Now scan the arguments.
-    for (int i=1; i<argc && argv[i]!=NULL; i++)
+    for (int i=1; i<argc && argv[i]!=nullptr; i++)
     {   string a(argv[i]);       // The next argument provided
         string aSave(a);
         if (a.compare("--args") == 0) break;
@@ -120,7 +120,9 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
         try                           // Look up the keyword.
         {   string aLow(a);
             transform(aLow.begin(), aLow.end(), aLow.begin(),
-                [](int c){ return std::tolower(c); });
+                      [](int c)
+            {   return std::tolower(c);
+            });
             aspec = argIndex.at(aLow);
         }
         catch (std::out_of_range &)

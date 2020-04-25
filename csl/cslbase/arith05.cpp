@@ -1,4 +1,4 @@
-//  arith05.cpp                            Copyright (C) 1990-2019 Codemist    
+//  arith05.cpp                            Copyright (C) 1990-2019 Codemist
 
 //
 // Arithmetic functions.
@@ -66,20 +66,21 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
     {   int32_t d1 = bignum_digits(u)[(len-4)/4];
         if (!SIXTY_FOUR_BIT && len == 4)
         {   if (valid_as_fixnum(d1))
-                std::printf("[%.8lx should be fixnum]", (long)d1);
+                std::printf("[%.8lx should be fixnum]", static_cast<long>(d1));
             if (signed_overflow(d1))
-                std::printf("[%.8lx needs 2 words]", (long)d1);
+                std::printf("[%.8lx needs 2 words]", static_cast<long>(d1));
         }
         else if (SIXTY_FOUR_BIT && len == 4)
-            std::printf("[%.8lx should be a fixnum]", (long)bignum_digits(u)[0]);
+            std::printf("[%.8lx should be a fixnum]",
+                        static_cast<long>(bignum_digits(u)[0]));
         if (SIXTY_FOUR_BIT && len == 8)
         {   int64_t v = (bignum_digits64(u, 1)<<31) +
                         bignum_digits(u)[0];
             if (valid_as_fixnum(v))
-                std::printf("[%.8lx should be fixnum]", (long)d1);
+                std::printf("[%.8lx should be fixnum]", static_cast<long>(d1));
             if (signed_overflow(bignum_digits(u)[1]))
                 std::printf("[%.8lx:%.8lx needs 3 words]",
-                    (long)d1, (long)bignum_digits(u)[0]);
+                            static_cast<long>(d1), static_cast<long>(bignum_digits(u)[0]));
         }
         else
         {   int32_t d0 = bignum_digits(u)[(len-8)/4];
@@ -109,7 +110,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
             do
             {   int32_t nxt = dig % 10;
                 dig = dig / 10;
-                my_buff[i++] = (char)(nxt + '0');
+                my_buff[i++] = static_cast<char>(nxt + '0');
             }
             while (dig != 0);
             if (dig0 < 0) my_buff[i++] = '-';
@@ -168,9 +169,9 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
             p2 = w % 10000;
             i = 0;
             for (j=0; j<4; j++)
-                my_buff[i++] = (char)((p0 % 10) + '0'), p0 = p0/10;
+                my_buff[i++] = static_cast<char>((p0 % 10) + '0'), p0 = p0/10;
             for (j=0; j<4; j++)
-                my_buff[i++] = (char)((p1 % 10) + '0'), p1 = p1/10;
+                my_buff[i++] = static_cast<char>((p1 % 10) + '0'), p1 = p1/10;
 //
 // Because the value used 2 words it must have more than 8 digits in it,
 // but it may not have more than 12.  Therefore I am not certain whether
@@ -178,13 +179,13 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
 //
             if (d0 == 0)
             {   while (p2 != 0)
-                    my_buff[i++] = (char)((p2 % 10) + '0'), p2 = p2/10;
+                    my_buff[i++] = static_cast<char>((p2 % 10) + '0'), p2 = p2/10;
             }
             else
             {   for (j=0; j<4; j++)
-                    my_buff[i++] = (char)((p2 % 10) + '0'), p2 = p2/10;
+                    my_buff[i++] = static_cast<char>((p2 % 10) + '0'), p2 = p2/10;
                 while (d0 != 0)
-                    my_buff[i++] = (char)((d0 % 10) + '0'), d0 = d0/10;
+                    my_buff[i++] = static_cast<char>((d0 % 10) + '0'), d0 = d0/10;
             }
             if (negativep) my_buff[i++] = '-';
             if (blankp)
@@ -222,7 +223,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
     {   int32_t carry = -1;
         sign = true;
         for (i=0; i<len; i++)
-        // negate the number so I am working with a +ve value
+            // negate the number so I am working with a +ve value
         {   carry = ADD32(clear_top_bit(~bignum_digits(u)[i]),
                           top_bit(carry));
             bignum_digits(w)[i] = clear_top_bit(carry);
@@ -255,7 +256,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         do
         {   int32_t nxt = dig % 10;
             dig = dig / 10;
-            my_buff[i++] = (char)(nxt + '0');
+            my_buff[i++] = static_cast<char>(nxt + '0');
         }
         while (dig != 0);
         if (sign) my_buff[i++] = '-';
@@ -278,7 +279,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         for (i=8; i>=0; i--)
         {   int32_t nxt = dig % 10;
             dig = dig / 10;
-            my_buff[i] = (char)(nxt + '0');
+            my_buff[i] = static_cast<char>(nxt + '0');
         }
         for (i=0; i<=8; i++) putc_stream(my_buff[i], active_stream);
         pop(w);
@@ -378,7 +379,8 @@ void print_bighexoctbin(LispObject u, int radix, int width,
             b = b << (-bits);
             bits += 31;
         }
-        if ((int)a != flag)  // leading '0' or 'f' (or '7') supression code
+        if (static_cast<int>(a) !=
+            flag)  // leading '0' or 'f' (or '7') supression code
         {   if (!started)
             {   if (blankp)
                 {   if (nobreak==0 && column+len >= line_length)
@@ -399,7 +401,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
         if (flag >= 0) continue;        // lose leading zeros (or F digits)
         if (a < 10) a += '0';
         else a += ('a' - 10);
-        putc_stream((int)a, active_stream);
+        putc_stream(static_cast<int>(a), active_stream);
     }
     popv(1);
 }

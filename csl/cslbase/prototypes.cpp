@@ -28,9 +28,9 @@ using namespace std;
 
 /*
 
-prototypes:	prototypes.cpp
-	g++ -std=gnu++14 -I/usr/lib/llvm-4.0/include prototypes.cpp \
-	-L /usr/lib/llvm-4.0/lib -lclang -o prototypes
+prototypes: prototypes.cpp
+    g++ -std=gnu++14 -I/usr/lib/llvm-4.0/include prototypes.cpp \
+    -L /usr/lib/llvm-4.0/lib -lclang -o prototypes
 
 */
 
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     }
 // I will process each of the files named on the command line. If one can not
 // be accessed I will give up.
-    const char *searchdir = NULL;
+    const char *searchdir = nullptr;
     for (int k=1; k<argc; k++)
     {   const char *arg = argv[k];
 // I aupport the crudent imaginable scheme to indicate where the files
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
             continue;
         }
         char source[1000];
-        if (searchdir==NULL) std::strcpy(source, arg);
+        if (searchdir==nullptr) std::strcpy(source, arg);
         else std::sprintf(source, "%s/%s", searchdir, arg);
         CXIndex index = clang_createIndex(0, 0);
         CXTranslationUnit unit = clang_parseTranslationUnit(
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
                                      CXTranslationUnit_None); // options
 // Then get the source file ready for reading.
         srcfile = std::fopen(source, "r");
-        if (unit == nullptr || srcfile == NULL)
+        if (unit == nullptr || srcfile == nullptr)
         {   cerr << "Unable to parse translation unit. Quitting." << endl;
             std::exit(1);
         }

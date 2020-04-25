@@ -86,8 +86,7 @@ using std::size_t;
 // cast!
 
 const char *typeNames[] =
-{
-    "char",
+{   "char",
     "signed char",
     "unsigned char",
     "short",
@@ -404,7 +403,7 @@ static char buffer[1000000] = "                    ";
 // C style cast.
 
 char* looksLikeCast(char* p)
-{   if (*p != '(') return NULL;   // No "(" at start means NO
+{   if (*p != '(') return nullptr;   // No "(" at start means NO
     bool found = false;
     size_t len;
     for (const char *t:typeNames)
@@ -414,8 +413,8 @@ char* looksLikeCast(char* p)
             break;
         }
     }
-    if (!found) return NULL;
-    if (std::strncmp(p-6, "sizeof", 6) == 0) return NULL;
+    if (!found) return nullptr;
+    if (std::strncmp(p-6, "sizeof", 6) == 0) return nullptr;
 // If the apparent cast is the final item in this buffer then it will not
 // be proper to treat it as a cast. A case where this naturally arises is
 // with a declataion like
@@ -424,7 +423,7 @@ char* looksLikeCast(char* p)
 // associated name.
     const char *q = p+len+2;
     while (*q == ' ') q++;
-    if (*q == 0 || *q==';') return NULL;
+    if (*q == 0 || *q==';') return nullptr;
     return p+len+2;
 }
 
@@ -432,30 +431,29 @@ char* skipToMatching(char *p)
 {   int sqdepth=0, angdepth = 0, pardepth=0;
     for (; *p!=0; p++)
     {   switch (*p)
-        {
-        case '[':
-            sqdepth++;
-            continue;
-        case '<':
-            angdepth++;
-            continue;
-        case '(':
-            pardepth++;
-            continue;
-        case ']':
-            if (sqdepth == 0) return p+1;
-            sqdepth--;
-            continue;
-        case '>':
-            if (angdepth == 0) return p+1;
-            angdepth--;
-            continue;
-        case ')':
-            if (pardepth == 0) return p+1;
-            pardepth--;
-            continue;
-        default:
-            continue;
+        {   case '[':
+                sqdepth++;
+                continue;
+            case '<':
+                angdepth++;
+                continue;
+            case '(':
+                pardepth++;
+                continue;
+            case ']':
+                if (sqdepth == 0) return p+1;
+                sqdepth--;
+                continue;
+            case '>':
+                if (angdepth == 0) return p+1;
+                angdepth--;
+                continue;
+            case ')':
+                if (pardepth == 0) return p+1;
+                pardepth--;
+                continue;
+            default:
+                continue;
         }
     }
     return p;
@@ -483,52 +481,50 @@ char* endOfCasted(char* p)
 // was written with an exponent). I make some attempt to cope with the second.
     char* oldp = p;
     int sqdepth=0, pardepth=0;
-    for (;*p!=0; p++)
+    for (; *p!=0; p++)
     {   switch (*p)
-        {
-        case '<':
-            switch (p-oldp)
-            {
-            default:
-                return p;
-            case 11:
-                if (std::strncmp(oldp, "static_cast", p-oldp) != 0) return p;
-                break;
-            case 16:
-                if (std::strncmp(oldp, "reinterpret_cast", p-oldp) != 0) return p;
-                break;
-            case 10:
-                if (std::strncmp(oldp, "const_cast", p-oldp) != 0) return p;
-                break;
-            case 12:
-                if (std::strncmp(oldp, "dynamic_cast", p-oldp) != 0) return p;
-                break;
-            }
+        {   case '<':
+                switch (p-oldp)
+            {       default:
+                        return p;
+                    case 11:
+                        if (std::strncmp(oldp, "static_cast", p-oldp) != 0) return p;
+                        break;
+                    case 16:
+                        if (std::strncmp(oldp, "reinterpret_cast", p-oldp) != 0) return p;
+                        break;
+                    case 10:
+                        if (std::strncmp(oldp, "const_cast", p-oldp) != 0) return p;
+                        break;
+                    case 12:
+                        if (std::strncmp(oldp, "dynamic_cast", p-oldp) != 0) return p;
+                        break;
+                }
 // OK here I have a mess! The start of the text after a cast that I am in the
 // process of looking at contains "zzz_cast<". I need first the skip to the
 // ">" that matches the "<" I have just seen, then after that slip to the end
 // of a patenthesised unit (which must be there!)
-            p = skipToMatching(p+1);
-            if (*p != '(') return p;
-            return skipToMatching(p+1);
-        case '[':
-            sqdepth++;
-            continue;
-        case '(':
-            pardepth++;
-            continue;
-        case ']':
-            if (sqdepth==0) return p;
-            sqdepth--;
-            continue;
-        case ')':
-            if (pardepth==0) return p;
-            pardepth--;
-            continue;
-        default:
-            if (sqdepth!=0 || pardepth!=0) continue;
-            if (std::isalnum(*p) || *p=='_' || *p=='.') continue;
-            return p;
+                p = skipToMatching(p+1);
+                if (*p != '(') return p;
+                return skipToMatching(p+1);
+            case '[':
+                sqdepth++;
+                continue;
+            case '(':
+                pardepth++;
+                continue;
+            case ']':
+                if (sqdepth==0) return p;
+                sqdepth--;
+                continue;
+            case ')':
+                if (pardepth==0) return p;
+                pardepth--;
+                continue;
+            default:
+                if (sqdepth!=0 || pardepth!=0) continue;
+                if (std::isalnum(*p) || *p=='_' || *p=='.') continue;
+                return p;
         }
     }
     return p;
@@ -550,8 +546,8 @@ void flushPending()
     char *p, *q, *r;
     for (;;) // I will do one pass per cast that I find
     {   p = b + std::strlen(b);
-        while (p!=b && (q = looksLikeCast(p)) == NULL) p--;
-        if (q == NULL) break;
+        while (p!=b && (q = looksLikeCast(p)) == nullptr) p--;
+        if (q == nullptr) break;
         size_t origLen = q-p;
         const char *castType = "reinterpret";
         for (const char *cc:staticCastable)
@@ -605,130 +601,128 @@ int main(int argc, char* argv[])
         {
 // Being at the start of a line is only special in that if I see a
 // "#" with at most whitespace before it I have a pre-processor directive.
-        case freshline:
-            if (ch == '#')         // ignore preprocessor stuff
-            {   cur = slashslash;  // Ha Ha treat it as a comments, so
-                flushPending();
-                std::putchar(ch);  // "#XXX ..." is treated just like
-                std::fflush(stdout);
-                continue;          // "// ..." would be.
-            }
-            if (ch != ' ' && ch != '\t') cur = generic;
+            case freshline:
+                if (ch == '#')         // ignore preprocessor stuff
+                {   cur = slashslash;  // Ha Ha treat it as a comments, so
+                    flushPending();
+                    std::putchar(ch);  // "#XXX ..." is treated just like
+                    std::fflush(stdout);
+                    continue;          // "// ..." would be.
+                }
+                if (ch != ' ' && ch != '\t') cur = generic;
             // drop through
-        case generic:
-        general:
-            switch (ch)
-            {
-            default:
-                word.push_back(ch);
-                continue;
-            case '\n':
-                word.push_back(ch);
-                cur = freshline;
-                continue;
-            case ';':
-            case '{':
-            case '}':
-                word.push_back(ch);
-                flushPending();
-                continue;
-            case '/':
-                cur = slash;
-                word.push_back(ch);
-                continue;
-            case '\'':
-                cur = quote;
-                flushPending();
-                std::putchar(ch);
-                std::fflush(stdout);
-                continue;
-            case '"':
-                cur = dquote;
-                flushPending();
-                std::putchar(ch);
-                std::fflush(stdout);
-                continue;
-            }
-        case slash:
-            switch (ch)
-            {
-            default:
-                cur = generic;
+            case generic:
+            general:
+                switch (ch)
+            {       default:
+                        word.push_back(ch);
+                        continue;
+                    case '\n':
+                        word.push_back(ch);
+                        cur = freshline;
+                        continue;
+                    case ';':
+                    case '{':
+                    case '}':
+                        word.push_back(ch);
+                        flushPending();
+                        continue;
+                    case '/':
+                        cur = slash;
+                        word.push_back(ch);
+                        continue;
+                    case '\'':
+                        cur = quote;
+                        flushPending();
+                        std::putchar(ch);
+                        std::fflush(stdout);
+                        continue;
+                    case '"':
+                        cur = dquote;
+                        flushPending();
+                        std::putchar(ch);
+                        std::fflush(stdout);
+                        continue;
+                }
+            case slash:
+                switch (ch)
+            {       default:
+                        cur = generic;
+                        if (ch == '\n') cur = freshline;
+                        word.push_back(ch);
+                        continue;
+                    case '/':
+                        cur = slashslash;
+                        flushPending();
+                        std::putchar(ch);
+                        std::fflush(stdout);
+                        continue;
+                    case '*':
+                        cur = slashstar;
+                        flushPending();
+                        std::putchar(ch);
+                        std::fflush(stdout);
+                        continue;
+                    case '\'':
+                        cur = quote;
+                        flushPending();
+                        std::putchar(ch);
+                        std::fflush(stdout);
+                        continue;
+                    case '"':
+                        cur = dquote;
+                        flushPending();
+                        std::putchar(ch);
+                        std::fflush(stdout);
+                        continue;
+                }
+            case slashslash:
                 if (ch == '\n') cur = freshline;
-                word.push_back(ch);
+                std::putchar(ch);
                 continue;
-            case '/':
-                cur = slashslash;
-                flushPending();
+            case slashstar:
+                if (ch == '*') cur = slashstarstar;
                 std::putchar(ch);
                 std::fflush(stdout);
                 continue;
-            case '*':
-                cur = slashstar;
-                flushPending();
+            case slashstarstar:
+                if (ch == '/')
+                {   word.clear();
+                    cur = generic;
+                }
+                else if (ch != '*') cur = slashstar;
                 std::putchar(ch);
                 std::fflush(stdout);
                 continue;
-            case '\'':
+            case quote:
+                flushPending();
+                std::putchar(ch);
+                std::fflush(stdout);
+                if (ch == '\'')
+                {   word.clear();
+                    cur = generic;
+                }
+                else if (ch == '\\') cur = quoteback;
+                continue;
+            case quoteback:
                 cur = quote;
-                flushPending();
                 std::putchar(ch);
                 std::fflush(stdout);
                 continue;
-            case '"':
+            case dquote:
+                if (ch == '"')
+                {   word.clear();
+                    cur = generic;
+                }
+                else if (ch == '\\') cur = dquoteback;
+                std::putchar(ch);
+                std::fflush(stdout);
+                continue;
+            case dquoteback:
                 cur = dquote;
-                flushPending();
                 std::putchar(ch);
                 std::fflush(stdout);
                 continue;
-            }
-        case slashslash:
-            if (ch == '\n') cur = freshline;
-            std::putchar(ch);
-            continue;
-        case slashstar:
-            if (ch == '*') cur = slashstarstar;
-            std::putchar(ch);
-            std::fflush(stdout);
-            continue;
-        case slashstarstar:
-            if (ch == '/')
-            {   word.clear();
-                cur = generic;
-            }
-            else if (ch != '*') cur = slashstar;
-            std::putchar(ch);
-            std::fflush(stdout);
-            continue;
-        case quote:
-            flushPending();
-            std::putchar(ch);
-            std::fflush(stdout);
-            if (ch == '\'')
-            {   word.clear();
-                cur = generic;
-            }
-            else if (ch == '\\') cur = quoteback;
-            continue;
-        case quoteback:
-            cur = quote;
-            std::putchar(ch);
-            std::fflush(stdout);
-            continue;
-        case dquote:
-            if (ch == '"')
-            {   word.clear();
-                cur = generic;
-            }
-            else if (ch == '\\') cur = dquoteback;
-            std::putchar(ch);
-            std::fflush(stdout);
-            continue;
-        case dquoteback:
-            cur = dquote;
-            std::putchar(ch);
-            std::fflush(stdout);
-            continue;
         }
     }
     flushPending();

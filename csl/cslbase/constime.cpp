@@ -162,7 +162,7 @@ public:
     void *TLvar3;
     std::atomic<std::uintptr_t> limit;
     void setGeneralSlot(std::int32_t generalSlot)
-    {   tls_store(generalSlot, (void *)this);
+    {   tls_store(generalSlot, reinterpret_cast<void *>(this));
     }
 };
 
@@ -225,7 +225,7 @@ inline TEBSlots myTEBSlots;
 // I have to have separate read and write functions because it is hard to
 // return the address of a location that is addressed with a segment
 // override. I had wanted to use "leal %%fx:(%1), %0" but the CPU does not
-// support that. 
+// support that.
 
 #ifdef ON_WINDOWS_32
 
@@ -278,41 +278,45 @@ inline void write_via_segment_register(std::uint32_t n, void *v)
 #endif // Windows 32 vs 64 bit
 
 inline void *extended_tls_load(std::int32_t slot)
-{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+{   void **a = (void **)read_via_segment_register(
+                   extended_TLS_offset);
     return a[slot - 64];
 }
 
 inline void extended_tls_store(std::int32_t slot, void *v)
-{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+{   void **a = (void **)read_via_segment_register(
+                   extended_TLS_offset);
     a[slot - 64] = v;
 }
 
 inline void *tls_load(std::int32_t slot)
 {   if (slot >= 64) return extended_tls_load(slot);
-    else return (void *)read_via_segment_register(
-        basic_TLS_offset + sizeof(void *)*slot);
+    else return reinterpret_cast<void *>(read_via_segment_register(
+                basic_TLS_offset + sizeof(void *)*slot));
 }
 
 inline void tls_store(std::int32_t slot, void *v)
 {   if (slot >= 64) return extended_tls_store(slot, v);
     else write_via_segment_register(
-        basic_TLS_offset + sizeof(void *)*slot, v);
+            basic_TLS_offset + sizeof(void *)*slot, v);
 }
 
 inline std::uintptr_t load_fringe()
-{   return (std::uintptr_t)tls_load(myTEBSlots.fringeSlot);
+{   return reinterpret_cast<std::uintptr_t>(tls_load(
+            myTEBSlots.fringeSlot));
 }
 
 inline void store_fringe(std::uintptr_t v)
-{   tls_store(myTEBSlots.fringeSlot, (void *)v);
+{   tls_store(myTEBSlots.fringeSlot, reinterpret_cast<void *>(v));
 }
 
 inline std::uintptr_t load_limit()
-{   return (std::uintptr_t)tls_load(myTEBSlots.limitSlot);
+{   return reinterpret_cast<std::uintptr_t>(tls_load(
+            myTEBSlots.limitSlot));
 }
 
 inline void store_limit(std::uintptr_t v)
-{   tls_store(myTEBSlots.limitSlot, (void *)v);
+{   tls_store(myTEBSlots.limitSlot, reinterpret_cast<void *>(v));
 }
 
 inline GeneralTLVars *load_general()
@@ -320,23 +324,25 @@ inline GeneralTLVars *load_general()
 }
 
 inline void store_general(GeneralTLVars *v)
-{   tls_store(myTEBSlots.generalSlot, (void *)v);
+{   tls_store(myTEBSlots.generalSlot, reinterpret_cast<void *>(v));
 }
 
 inline std::uintptr_t MS_load_fringe()
-{   return (std::uintptr_t)TlsGetValue(myTEBSlots.fringeSlot);
+{   return reinterpret_cast<std::uintptr_t>(TlsGetValue(
+            myTEBSlots.fringeSlot));
 }
 
 inline void MS_store_fringe(std::uintptr_t v)
-{   TlsSetValue(myTEBSlots.fringeSlot, (void *)v);
+{   TlsSetValue(myTEBSlots.fringeSlot, reinterpret_cast<void *>(v));
 }
 
 inline std::uintptr_t MS_load_limit()
-{   return (std::uintptr_t)TlsGetValue(myTEBSlots.limitSlot);
+{   return reinterpret_cast<std::uintptr_t>(TlsGetValue(
+            myTEBSlots.limitSlot));
 }
 
 inline void MS_store_limit(std::uintptr_t v)
-{   TlsSetValue(myTEBSlots.limitSlot, (void *)v);
+{   TlsSetValue(myTEBSlots.limitSlot, reinterpret_cast<void *>(v));
 }
 
 inline GeneralTLVars *MS_load_general()
@@ -344,7 +350,7 @@ inline GeneralTLVars *MS_load_general()
 }
 
 inline void MS_store_general(GeneralTLVars *v)
-{   TlsSetValue(myTEBSlots.generalSlot, (void *)v);
+{   TlsSetValue(myTEBSlots.generalSlot, reinterpret_cast<void *>(v));
 }
 
 class SetUpGeneralVars
@@ -392,22 +398,24 @@ inline GeneralTLVars *MS_load_general()
 
 inline std::atomic<std::uintptr_t> &TLlimit()
 {   return load_general()->limit;
-} 
+}
 
 inline std::atomic<std::uintptr_t> &MS_TLlimit()
 {   return MS_load_general()->limit;
-} 
+}
 
 std::atomic<std::uintptr_t> Afringe;
 std::uintptr_t fringe;
 thread_local std::uintptr_t Tfringe;
 
 std::atomic<std::uintptr_t> Alimit;
-volatile std::uintptr_t limit;     // so that compiler does not optimize
-                              // out accesses.
+volatile std::uintptr_t
+limit;     // so that compiler does not optimize
+// out accesses.
 thread_local std::atomic<std::uintptr_t> Tlimit;
 
-[[gnu::noinline]] LispObject garbage_collect(std::uintptr_t fringe, std::size_t n)
+[[gnu::noinline]] LispObject garbage_collect(std::uintptr_t fringe,
+        std::size_t n)
 {   std::cout << "GC invoked" << std::endl;
     return 0;
 }
@@ -434,7 +442,8 @@ thread_local std::atomic<std::uintptr_t> Tlimit;
 // understood the impact on ARMV8.
 
 [[gnu::noinline]] LispObject relaxed_get_n_bytes(std::size_t n)
-{   std::uintptr_t result = Afringe.fetch_sub(n, std::memory_order_relaxed);
+{   std::uintptr_t result = Afringe.fetch_sub(n,
+                            std::memory_order_relaxed);
     if (result-n == Alimit.load(std::memory_order_acquire))
         result = garbage_collect(result, n);
     return static_cast<LispObject>(result-n);
@@ -500,7 +509,8 @@ thread_local std::atomic<std::uintptr_t> Tlimit;
     return static_cast<LispObject>(result);
 }
 
-[[gnu::noinline]] LispObject relaxed_threadlocal_get_n_bytes(std::size_t n)
+[[gnu::noinline]] LispObject relaxed_threadlocal_get_n_bytes(
+    std::size_t n)
 {   std::uintptr_t result = (Tfringe -= n);
     if (Tfringe == Tlimit.load(std::memory_order_relaxed))
         result = garbage_collect(result, n);
@@ -518,22 +528,25 @@ void time1(const char *name, testfn fn)
 {   std::uintptr_t *mem = new std::uintptr_t[HEAPSIZE];
     std::clock_t c0 = std::clock();
     for (int count=0; count<30; count++)
-    {   Afringe.store(fringe = (std::uintptr_t)mem);
-        store_fringe((std::uintptr_t)mem);
-        Tfringe = (std::uintptr_t)mem;
-        Alimit.store(limit = (std::uintptr_t)(-1));
-        store_limit((std::uintptr_t)(-1));
-        Tlimit = (std::uintptr_t)(-1);
-        TLlimit() = (std::uintptr_t)(-1);
-        for (std::size_t i=0; i<HEAPSIZE-2; i++) (*fn)(sizeof(std::uintptr_t));
+    {   Afringe.store(fringe = reinterpret_cast<std::uintptr_t>(mem));
+        store_fringe(reinterpret_cast<std::uintptr_t>(mem));
+        Tfringe = reinterpret_cast<std::uintptr_t>(mem);
+        Alimit.store(limit = reinterpret_cast<std::uintptr_t>(-1));
+        store_limit(reinterpret_cast<std::uintptr_t>(-1));
+        Tlimit = reinterpret_cast<std::uintptr_t>(-1);
+        TLlimit() = reinterpret_cast<std::uintptr_t>(-1);
+        for (std::size_t i=0; i<HEAPSIZE-2;
+             i++) (*fn)(sizeof(std::uintptr_t));
     }
     std::clock_t c1 = std::clock();
-    if (first) basetime = (std::int64_t)(c1 - c0);
-    std::int64_t ms = (std::int64_t)(100.0*(c1-c0)/(double)basetime);
+    if (first) basetime = static_cast<std::int64_t>(c1 - c0);
+    std::int64_t ms = static_cast<std::int64_t>(100.0*
+                      (c1-c0)/static_cast<double>(basetime));
     std::cout << name << " " << ms << "%";
     if (first) std::cout << "   "
-                         << (std::int64_t)(100.0*(c1-c0)/(double)CLOCKS_PER_SEC)
-                         << " centiseconds";
+                             << static_cast<std::int64_t>(100.0*(c1-c0)/static_cast<double>
+                                     (CLOCKS_PER_SEC))
+                             << " centiseconds";
     std::cout << std::endl;
     first = false;
 }

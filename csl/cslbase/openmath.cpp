@@ -83,7 +83,8 @@
 //
 
 LispObject om_getLispProperty(LispObject obj, LispObject name);
-LispObject om_setLispProperty(LispObject obj, LispObject name, LispObject val);
+LispObject om_setLispProperty(LispObject obj, LispObject name,
+                              LispObject val);
 
 
 //
@@ -110,9 +111,9 @@ om_toDev(LispObject obj)
     // END DEBUG
 
     if (!is_bignum(obj))
-        return NULL;
+        return nullptr;
     else if (((bignum_length(obj) >> 2) - 1) != 1)
-        return NULL;
+        return nullptr;
     dev = (OMdev) ( bignum_digits(obj)[0] );
     return dev;
 }
@@ -173,7 +174,8 @@ om_toBigNumStr(LispObject num)
     i = ((bignum_length(num) >> 2) - 1) * 31;
     numDigits = (i >> 2) + (((i & 0x3) != 0) ? 1 : 0);
 
-    str = (char *)std::malloc((numDigits + 1) * sizeof(char));
+    str = reinterpret_cast<char *>(std)::malloc((numDigits + 1) * sizeof(
+                char));
     std::memset(str, 0, (numDigits + 1) * sizeof(char));
 
     strPos = 0;
@@ -215,7 +217,8 @@ om_toBigNumStr(LispObject num)
 }
 
 
-LispObject om_fromBigNumStr(char *inData, int len, int sign, OMbigIntType fmt)
+LispObject om_fromBigNumStr(char *inData, int len, int sign,
+                            OMbigIntType fmt)
 {   LispObject obj, radix, digit;
     int i;
 
@@ -240,15 +243,15 @@ LispObject om_fromBigNumStr(char *inData, int len, int sign, OMbigIntType fmt)
 
         switch (fmt)
         {   case OMbigIntBase10:
-                digit = fixnum_of_int( (int)(inData[i] - '0') );
+                digit = fixnum_of_int( static_cast<int>(inData[i] - '0') );
                 break;
             case OMbigIntBase16:
                 if (inData[i] >= 'a' && inData[i] <= 'f')
-                    digit = fixnum_of_int( (int)(inData[i] - 'a') + 10 );
+                    digit = fixnum_of_int( static_cast<int>(inData[i] - 'a') + 10 );
                 else if (inData[i] >= 'A' && inData[i] <= 'F')
-                    digit = fixnum_of_int( (int)(inData[i] - 'A') + 10 );
+                    digit = fixnum_of_int( static_cast<int>(inData[i] - 'A') + 10 );
                 else
-                    digit = fixnum_of_int( (int)(inData[i] - '0') );
+                    digit = fixnum_of_int( static_cast<int>(inData[i] - '0') );
                 break;
         }
 
@@ -278,9 +281,9 @@ om_toConn(LispObject obj)
     // END DEBUG
 
     if (!is_bignum(obj))
-        return NULL;
+        return nullptr;
     else if (((bignum_length(obj) >> 2) - 1) != 1)
-        return NULL;
+        return nullptr;
     conn = (OMconn)(bignum_digits(obj)[0]);
     return conn;
 }
@@ -300,7 +303,7 @@ om_toCString(LispObject obj)
 // control of the CCL garbage collection). Does not check that the Lisp object
 // *is* a C string though.
 //
-{   char **pstr = NULL;
+{   char **pstr = nullptr;
 
     // DEBUG
     if (!is_bignum(obj) && !stringp(obj))
@@ -309,19 +312,20 @@ om_toCString(LispObject obj)
     else if (is_bignum(obj))
     {   int blen = (bignum_length(obj) >> 2) - 1;
         if (blen != 1)
-            err_printf("[om_toCString] bignum length is %d (should be 1)!\n", blen);
+            err_printf("[om_toCString] bignum length is %d (should be 1)!\n",
+                       blen);
     }
     // END DEBUG
 
     if (!is_bignum(obj) && !stringp(obj))
-        return NULL;
+        return nullptr;
     else if (is_bignum(obj))
     {   if (((bignum_length(obj) >> 2) - 1) != 1)
-            return NULL;
+            return nullptr;
         pstr = (char **)(bignum_digits(obj)[0]);
     }
     else
-    {   char *tmp = NULL;
+    {   char *tmp = nullptr;
         int len = 0;
         tmp = get_string_data(obj, "om_toCString", len);
         tmp[len] = '\0';
@@ -363,7 +367,8 @@ LispObject om_getLispProperty(LispObject obj, LispObject name)
 }
 
 
-LispObject om_setLispProperty(LispObject obj, LispObject name, LispObject val)
+LispObject om_setLispProperty(LispObject obj, LispObject name,
+                              LispObject val)
 {   return putprop(obj, name, val);
 }
 
@@ -399,12 +404,14 @@ LispObject om_openFileDev(LispObject env, int nargs, ...)
     push(lname, lmode, lenc);
 
     // Convert the parameters into their C equivalents.
-    if (!is_vector(lname) || !(type_of_header(vechdr(lname)) == TYPE_STRING))
+    if (!is_vector(lname) ||
+        !(type_of_header(vechdr(lname)) == TYPE_STRING))
         aerror("om_openFileDev");
     fname = get_string_data(lname, "om_openFileDev", len);
     fname[len] = '\0';
 
-    if (!is_vector(lmode) || !(type_of_header(vechdr(lmode)) == TYPE_STRING))
+    if (!is_vector(lmode) ||
+        !(type_of_header(vechdr(lmode)) == TYPE_STRING))
         aerror("om_openFileDev");
     fmode = get_string_data(lmode, "om_openFileDev", len);
     fmode[len] = '\0';
@@ -418,7 +425,7 @@ LispObject om_openFileDev(LispObject env, int nargs, ...)
     pop(lname, lmode, lenc);
 
     f = std::fopen(fname, fmode);
-    if (f == NULL)
+    if (f == nullptr)
         aerror("om_openFileDev: couldn't open named file!");
 
     // Create an OpenMath device on the given file.
@@ -431,7 +438,8 @@ LispObject om_openFileDev(LispObject env, int nargs, ...)
 }
 
 
-LispObject om_openStringDev(LispObject env, LispObject lstr, LispObject lenc)
+LispObject om_openStringDev(LispObject env, LispObject lstr,
+                            LispObject lenc)
 // Creates an OpenMath string device on an existing string. The return value is
 // the LISP object which wraps the created device. The parameters are:
 //  lstr    - string    - The string to create the device on. This must be a C
@@ -443,7 +451,7 @@ LispObject om_openStringDev(LispObject env, LispObject lstr, LispObject lenc)
 //     problem).
 //
 
-    char **pstr = NULL;
+    char **pstr = nullptr;
     OMencodingType enc;
     OMdev dev;
     LispObject ldev;
@@ -475,7 +483,8 @@ LispObject om_closeDev(LispObject env, LispObject ldev)
 }
 
 
-LispObject om_setDevEncoding(LispObject env, LispObject ldev, LispObject lenc)
+LispObject om_setDevEncoding(LispObject env, LispObject ldev,
+                             LispObject lenc)
 {   OMdev dev;
     OMencodingType enc;
 
@@ -583,7 +592,7 @@ LispObject om_connectTCP(LispObject env, int nargs, ...)
 {   std::va_list args;
     LispObject lconn, lhost, lport;
     OMconn conn;
-    char *host = NULL;
+    char *host = nullptr;
     int32_t hostlen = 0;
     int32_t port;
     OMstatus status;
@@ -607,7 +616,7 @@ LispObject om_connectTCP(LispObject env, int nargs, ...)
     if (!stringp(lhost))
         aerror("om_connectTCP: host name must be a string");
     host = get_string_data(lhost, "om_putString", hostlen);
-    if (host != NULL)
+    if (host != nullptr)
         host[hostlen] = '\0';
 
     if (!is_fixnum(lport))
@@ -624,7 +633,8 @@ LispObject om_connectTCP(LispObject env, int nargs, ...)
 }
 
 
-LispObject om_bindTCP(LispObject env, LispObject lconn, LispObject lport)
+LispObject om_bindTCP(LispObject env, LispObject lconn,
+                      LispObject lport)
 {   OMconn conn;
     int32_t port;
     OMstatus status;
@@ -913,7 +923,8 @@ LispObject om_putInt(LispObject env, LispObject ldev, LispObject val)
 }
 
 
-LispObject om_putFloat(LispObject env, LispObject ldev, LispObject val)
+LispObject om_putFloat(LispObject env, LispObject ldev,
+                       LispObject val)
 // This routine expects val to be a real-valued number of some
 // sort (this includes floats, rationals, etc.) and puts it
 // out as an IEEE 64-bit floating point number.
@@ -942,7 +953,8 @@ LispObject om_putFloat(LispObject env, LispObject ldev, LispObject val)
 }
 
 
-LispObject om_putByteArray(LispObject env, LispObject ldev, LispObject val)
+LispObject om_putByteArray(LispObject env, LispObject ldev,
+                           LispObject val)
 // This routine expects val to be a Lisp vector of 8-bit values.
 //
 {   OMdev dev;
@@ -960,7 +972,8 @@ LispObject om_putByteArray(LispObject env, LispObject ldev, LispObject val)
     len = length_of_byteheader(val) - CELL; // is this correct?
 
     // Write out the array data.
-    status = OMputByteArray(dev, ((char *)val - TAG_VECTOR + CELL), len);
+    status = OMputByteArray(dev,
+                            (reinterpret_cast<char *>(val) - TAG_VECTOR + CELL), len);
     if (status != OMsuccess) return om_error(status);
     else return lisp_true;
 }
@@ -983,7 +996,7 @@ LispObject om_putVar(LispObject env, LispObject ldev, LispObject val)
 
     // Do I need to free the memory for name myself? I don't know...
     name = get_string_data(val, "om_putVar", len);
-    if (name == NULL)
+    if (name == nullptr)
         return om_error(OMinternalError);
     else
     {   status = OMputVarN(dev, name, len);
@@ -995,7 +1008,8 @@ LispObject om_putVar(LispObject env, LispObject ldev, LispObject val)
 }
 
 
-LispObject om_putString(LispObject env, LispObject ldev, LispObject val)
+LispObject om_putString(LispObject env, LispObject ldev,
+                        LispObject val)
 // This routine expects val to be a Lisp string.
 //
 {   OMdev dev;
@@ -1012,7 +1026,7 @@ LispObject om_putString(LispObject env, LispObject ldev, LispObject val)
 
     // Do I need to free the memory for name myself? I don't know...
     name = get_string_data(val, "om_putString", len);
-    if (name == NULL)
+    if (name == nullptr)
         return om_error(OMinternalError);
     else
     {   status = OMputStringN(dev, name, len);
@@ -1024,7 +1038,8 @@ LispObject om_putString(LispObject env, LispObject ldev, LispObject val)
 }
 
 
-LispObject om_putSymbol(LispObject env, LispObject ldev, LispObject val)
+LispObject om_putSymbol(LispObject env, LispObject ldev,
+                        LispObject val)
 // This routine expects val to be a cons cell where the first element is the
 // name of the content dictionary and the second (and final) element is the
 // name of the symbol.
@@ -1079,17 +1094,18 @@ LispObject om_putSymbol2(LispObject env, int nargs, ...)
     if (!is_vector(lcd) || !(type_of_header(vechdr(lcd)) == TYPE_STRING))
         aerror("om_putSymbol2");
     cd = get_string_data(lcd, "om_putSymbol2", cdLen);
-    if (cd == NULL)
+    if (cd == nullptr)
     {   status = OMinternalError;
         return om_error(status);
     }
 
     // err_printf("[om_putSymbol2] converted cd name (%s)\n", cd);
 
-    if (!is_vector(lname) || !(type_of_header(vechdr(lname)) == TYPE_STRING))
+    if (!is_vector(lname) ||
+        !(type_of_header(vechdr(lname)) == TYPE_STRING))
         aerror("om_putSymbol2");
     name = get_string_data(lname, "om_putSymbol2", nameLen);
-    if (name == NULL)
+    if (name == nullptr)
     {   status = OMinternalError;
         return om_error(status);
     }
@@ -1393,7 +1409,7 @@ LispObject om_getFloat(LispObject env, LispObject ldev)
     double val;
 
     dev = om_toDev(ldev);
-    if (dev == NULL)
+    if (dev == nullptr)
         aerror("om_toDev");
 
     status = OMgetType(dev, &ttype);
@@ -1417,7 +1433,7 @@ LispObject om_getByteArray(LispObject env, LispObject ldev)
     LispObject obj;
 
     dev = om_toDev(ldev);
-    if (dev == NULL)
+    if (dev == nullptr)
         aerror("om_toDev");
 
     status = OMgetLength(dev, &len);
@@ -1426,7 +1442,8 @@ LispObject om_getByteArray(LispObject env, LispObject ldev)
     else
     {   // I hope this is right...
         obj = get_basic_vector(TAG_VECTOR, TYPE_VEC8, len + 4);
-        status = OMgetByteArrayN(dev, ((char *)obj - TAG_VECTOR + 4), len);
+        status = OMgetByteArrayN(dev,
+                                 (reinterpret_cast<char *>(obj) - TAG_VECTOR + 4), len);
         if (status != OMsuccess)
             return om_error(status);
         else
@@ -1442,7 +1459,7 @@ LispObject om_getVar(LispObject env, LispObject ldev)
     LispObject obj;
 
     dev = om_toDev(ldev);
-    if (dev == NULL)
+    if (dev == nullptr)
         aerror("om_toDev");
 
     status = OMgetVar(dev, &var);
@@ -1464,7 +1481,7 @@ LispObject om_getString(LispObject env, LispObject ldev)
     LispObject obj;
 
     dev = om_toDev(ldev);
-    if (dev == NULL)
+    if (dev == nullptr)
         aerror("om_toDev");
 
     status = OMgetString(dev, &str);
@@ -1491,7 +1508,7 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
     push(ldev);
 
     dev = om_toDev(ldev);
-    if (dev == NULL)
+    if (dev == nullptr)
         aerror("om_toDev");
 
     pop(ldev);
@@ -1499,11 +1516,13 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
     status = OMgetSymbolLength(dev, &cdLen, &nameLen);
     if (status != OMsuccess)
         return om_error(status);
-    cd = (char *)std::malloc(sizeof(char) * (cdLen + 1));
-    name = (char *)std::malloc(sizeof(char) * (nameLen + 1));
-    if (cd == NULL || name == NULL)
-    {   if (cd != NULL) std::free(cd);
-        else if (name != NULL) std::free(name);
+    cd = reinterpret_cast<char *>(std)::malloc(sizeof(char) *
+            (cdLen + 1));
+    name = reinterpret_cast<char *>(std)::malloc(sizeof(char) *
+            (nameLen + 1));
+    if (cd == nullptr || name == nullptr)
+    {   if (cd != nullptr) std::free(cd);
+        else if (name != nullptr) std::free(name);
         return om_error(OMinternalError);
     }
     cd[cdLen] = '\0';
@@ -1558,7 +1577,7 @@ LispObject om_getType(LispObject env, LispObject ldev)
     LispObject obj;
 
     dev = om_toDev(ldev);
-    if (dev == NULL)
+    if (dev == nullptr)
         aerror("om_toDev");
 
     status = OMgetType(dev, &ttype);
@@ -1604,6 +1623,7 @@ LispObject om_stringPtrToString(LispObject env, LispObject lpstr)
 {   return om_lispStringFromCString(lpstr);
 }
 
+// This is OUT OF DATE code and will not at present work!
 
 setup_type const om_setup[] =
 {   /* LISP Name */         /* Unary */         /* Binary */        // Nary
@@ -1669,7 +1689,7 @@ setup_type const om_setup[] =
     {"om-stringToStringPtr",     om_stringToStringPtr,      too_many_1,     wrong_no_1},
     {"om-stringPtrToString",     om_stringPtrToString,      too_many_1,     wrong_no_1},
 
-    {NULL,  0,  0,  0}
+    {nullptr,  nullptr,  nullptr,  nullptr}
 };
 
 #endif // OPENMATH

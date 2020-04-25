@@ -74,7 +74,8 @@ LispObject get_pname(LispObject a)
 }
 
 LispObject nil, lisp_true, unset_var;
-LispObject *nilsegment, *stacksegment, *stack, *stackBase, *stackLimit;
+LispObject *nilsegment, *stacksegment, *stack, *stackBase,
+           *stackLimit;
 std::uintptr_t *C_stackbase, C_stacklimit;
 
 [[noreturn]] void fatal_error(int code, ...)
@@ -151,111 +152,113 @@ LispObject make_n_tree1(int n)
     int n1 = (n-1)/2;
     LispObject left = make_n_tree1(n1);
     if ((arithlib_implementation::mersenne_twister() % 1000) == 0)
-    {   may_block([&]{
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            });
-    LispObject right = make_n_tree1(n-n1-1);
-    return cons(left, right);
-}
-
-LispObject make_n_tree(int n)
-{   treehash = 0;
-    LispObject r = make_n_tree1(n);
-    return r;
-}
-
-int treesize1(LispObject a)
-{   if (is_fixnum(a))
-    {   std::uint64_t r = int_of_fixnum(a);
-        treehash = 1234567*treehash + r;
-        treehash -= (treehash >> 32);
-        return 0;
+    {   may_block([&]
+        {   std::this_thread::sleep_for(std::chrono::seconds(1));
+        });
+        LispObject right = make_n_tree1(n-n1-1);
+        return cons(left, right);
     }
-    if (!is_cons(a)) my_abort();
-    int left = treesize1(car(a));
-    int right = treesize1(cdr(a));
-    return left+right+1;
-}
 
-void treesize(LispObject a, int expected_size, std::uint64_t expected_hash)
-{   treehash = 0;
-    int n = treesize1(a);
-    my_assert(n == expected_size);
-    my_assert(treehash == expected_hash);
-}
+    LispObject make_n_tree(int n)
+    {   treehash = 0;
+        LispObject r = make_n_tree1(n);
+        return r;
+    }
+
+    int treesize1(LispObject a)
+    {   if (is_fixnum(a))
+        {   std::uint64_t r = int_of_fixnum(a);
+            treehash = 1234567*treehash + r;
+            treehash -= (treehash >> 32);
+            return 0;
+        }
+        if (!is_cons(a)) my_abort();
+        int left = treesize1(car(a));
+        int right = treesize1(cdr(a));
+        return left+right+1;
+    }
+
+    void treesize(LispObject a, int expected_size,
+                  std::uint64_t expected_hash)
+    {   treehash = 0;
+        int n = treesize1(a);
+        my_assert(n == expected_size);
+        my_assert(treehash == expected_hash);
+    }
 
 // Threads are created using this function, and its argument cen be passed
 // to identify the activity with a thread number.
 
-int thread_function(int id)
-{   thread_id = id;
+    int thread_function(int id)
+    {   thread_id = id;
 // The next 2 lines may need to be in a critical region? And/or
 // threadcount might need to be atomic. And the issue of creating
 // a new thread while another is involved in garbage collection might be
 // a hideous mess.
-    activeThreads.fetch_add(1);
-    threadcount++;
-    stack_bases[id].store(reinterpret_cast<void *>(&id));
-    int size = 3;
-    LispObject a = fixnum_of_int(0), b = fixnum_of_int(0);
-    {   std::lock_guard<std::mutex> lock(print_mutex);
-        std::printf("Starting thread %d\n", id);
-        std::fflush(stdout);
-    }
-    int sizeA = 0, sizeB = 0;
-    std::uint64_t checkA = 0, checkB = 0;
-    while (size < 400)
-    {   a = b;
-        sizeA = sizeB;
-        checkA = checkB;
-        sizeB = arithlib_implementation::mersenne_twister() % size;
+        activeThreads.fetch_add(1);
+        threadcount++;
+        stack_bases[id].store(reinterpret_cast<void *>(&id));
+        int size = 3;
+        LispObject a = fixnum_of_int(0), b = fixnum_of_int(0);
         {   std::lock_guard<std::mutex> lock(print_mutex);
-            std::printf("Thread %d, next size will be %d [%d]\n", id, sizeB, size);
+            std::printf("Starting thread %d\n", id);
             std::fflush(stdout);
         }
-        b = make_n_tree(sizeB);
-        {   std::lock_guard<std::mutex> lock(print_mutex);
-            std::printf("Thread %d, tree made\n", id);
-            std::fflush(stdout);
+        int sizeA = 0, sizeB = 0;
+        std::uint64_t checkA = 0, checkB = 0;
+        while (size < 400)
+        {   a = b;
+            sizeA = sizeB;
+            checkA = checkB;
+            sizeB = arithlib_implementation::mersenne_twister() % size;
+            {   std::lock_guard<std::mutex> lock(print_mutex);
+                std::printf("Thread %d, next size will be %d [%d]\n", id, sizeB,
+                            size);
+                std::fflush(stdout);
+            }
+            b = make_n_tree(sizeB);
+            {   std::lock_guard<std::mutex> lock(print_mutex);
+                std::printf("Thread %d, tree made\n", id);
+                std::fflush(stdout);
+            }
+            checkB = treehash;
+            treesize(a, sizeA, checkA);
+            treesize(b, sizeB, checkB);
+            size = size + (size+9)/10;
         }
-        checkB = treehash;
-        treesize(a, sizeA, checkA);
-        treesize(b, sizeB, checkB);
-        size = size + (size+9)/10;
+        return 0;
     }
-    return 0;
-}
 
-int main(int argc, char *argv[])
-{   std::printf("alloctest starting\n");
-    std::fflush(stdout);
-    for (int i=0; i<max_threads; i++)
-    {   stack_bases[i] = NULL;
-        stack_fringes[i] = NULL;
-    }
-    heapSegmentCount = 0;
-    freePages = NULL;
-    freePagesCount = activePagesCount = 0;
-    initHeapSegments(64.0*1024.0);
-    nurseryPage = freePages;
-    freePages = freePages->pageHeader.chain;
-    set_variables_from_page(nurseryPage);
+    int main(int argc, char *argv[])
+    {   std::printf("alloctest starting\n");
+        std::fflush(stdout);
+        for (int i=0; i<max_threads; i++)
+        {   stack_bases[i] = nullptr;
+            stack_fringes[i] = nullptr;
+        }
+        heapSegmentCount = 0;
+        freePages = nullptr;
+        freePagesCount = activePagesCount = 0;
+        initHeapSegments(64.0*1024.0);
+        nurseryPage = freePages;
+        freePages = freePages->pageHeader.chain;
+        set_variables_from_page(nurseryPage);
 // If I leave the opage empty to start with I will have to do rather a lot of
 // work before it is full enough to trigger GC, so here I will just do a bulk
 // allocation that uses up all but a little bit of the space.
-    get_n_bytes(pageSize - spareBytes - 1000);
+        get_n_bytes(pageSize - spareBytes - 1000);
 // Each thread MUST be given a (distinct) thraed_id in the range from 0
 /// to max_threads-1.
-    std::thread t1(thread_function, 1);
-    std::thread t2(thread_function, 2);
-    thread_function(0);
+        std::thread t1(thread_function, 1);
+        std::thread t2(thread_function, 2);
+        thread_function(0);
 // all threads are done. I will run the mutatuor task in this the main
 // thread as well as the subsidiary ones just in case that makes a difference.
-    t1.join();
-    t2.join();
-    std::printf("Memory left = %" PRId64 "\n",
-        (std::int64_t)(Alimit.load() - Afringe.load()));
-    return 0;
-}
+        t1.join();
+        t2.join();
+        std::printf("Memory left = %" PRId64 "\n",
+                    static_cast<std::int64_t>(Alimit.load() - Afringe.load()));
+        return 0;
+    }
 
 // end of alloctest.cpp

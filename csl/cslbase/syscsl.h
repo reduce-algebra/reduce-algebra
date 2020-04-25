@@ -6,7 +6,6 @@
 //
 
 
-
 /**************************************************************************
  * Copyright (C) 2019, Codemist.                         A C Norman       *
  *                                                                        *
@@ -56,7 +55,8 @@ extern const char *find_image_directory(int argc, const char *argv[]);
 // process_file_name expands the old name into filename.
 //
 
-extern void process_file_name(char *filename, const char *old, size_t n);
+extern void process_file_name(char *filename, const char *old,
+                              size_t n);
 
 //
 // open_file accepts a vector of characters (old) and looks at the first
@@ -75,14 +75,15 @@ extern void process_file_name(char *filename, const char *old, size_t n);
 //
 
 extern std::FILE *open_file(char *filename, const char *old, size_t n,
-                       const char *mode, std::FILE *old_file);
+                            const char *mode, std::FILE *old_file);
 
 //
 // find if a file exists, and if it does return (as 24 chars) the
 // change time for it.  See open_file re args.
 //
 
-extern bool file_exists(char *filename, const char *old, size_t n, char *tt);
+extern bool file_exists(char *filename, const char *old, size_t n,
+                        char *tt);
 
 //
 // The interfaces to create_directory and delete_file are similar
@@ -93,14 +94,16 @@ extern bool file_exists(char *filename, const char *old, size_t n, char *tt);
 // match...
 //
 
-extern int create_directory(char *filename, const char *old, size_t n);
+extern int create_directory(char *filename, const char *old,
+                            size_t n);
 
 extern int delete_file(char *filename, const char *old, size_t n);
 
 extern int delete_wildcard(char *filename, const char *old, size_t n);
 
-extern int rename_file(char *from_name, const char *from_old, size_t from_size,
-                           char *to_name, const char *to_old, size_t to_size);
+extern int rename_file(char *from_name, const char *from_old,
+                       size_t from_size,
+                       char *to_name, const char *to_old, size_t to_size);
 
 //
 // The interfaces to file_readable and file_writable are also similar
@@ -115,7 +118,8 @@ extern bool file_readable(char *filename, const char *old, size_t n);
 
 extern bool file_writeable(char *filename, const char *old, size_t n);
 
-extern bool file_executable(char *filename, const char *old, size_t n);
+extern bool file_executable(char *filename, const char *old,
+                            size_t n);
 
 extern bool directoryp(char *filename, const char *old, size_t n);
 
@@ -147,8 +151,9 @@ extern int get_users_home_directory(char *name, size_t len);
 //
 extern int find_gnuplot(char *name);
 
-// returns NULL for OK or an error string
-extern char *change_directory(char *filename, const char *old, size_t n);
+// returns nullptr for OK or an error string
+extern char *change_directory(char *filename, const char *old,
+                              size_t n);
 
 //
 // get_truename attempts to get a canonical name for a file or directory.
@@ -163,7 +168,7 @@ extern char *change_directory(char *filename, const char *old, size_t n);
 // intent is to allow wildcard inputs or whether this function is
 // expected to convert from a relative file-name into a fully rooted one.
 //
-// It normally returns the "true name" but return NULL in error cases
+// It normally returns the "true name" but return nullptr in error cases
 // and in that case leave filename an error string.
 //
 extern char *get_truename(char *filename, const char *old, size_t n);
@@ -177,7 +182,8 @@ extern char *get_truename(char *filename, const char *old, size_t n);
 // later stage.
 //
 
-extern int list_directory_members(char *filename, const char *old, char **filelist[],
+extern int list_directory_members(char *filename, const char *old,
+                                  char **filelist[],
                                   size_t n);
 
 #else // !NAG_VERSION
@@ -208,7 +214,7 @@ extern int truncate_file(std::FILE *f, long int where);
 // This is called with a file- or directory-name as its first argument
 // and a function as its second.
 // It calls the function for every directory and every file that can be found
-// rooted from the given place.  If the file to scan is specified as NULL
+// rooted from the given place.  If the file to scan is specified as nullptr
 // the current directory is processed.
 // When a simple file is found the procedure is called with the name of the
 // file, why=0, and the length (in bytes) of the file.  For a directory
@@ -218,7 +224,7 @@ extern int truncate_file(std::FILE *f, long int where);
 // flagged as  "invisible" or "not readable" or if they are otherwise special.
 // The value returned is the number of characters that should be removed
 // the start of file-names returned to get rid of any initial directory
-// specified.  If dir is passed as NULL this will be zero and names will
+// specified.  If dir is passed as nullptr this will be zero and names will
 // come back plain, otherwise it will be 1+strlen(dir)
 //
 
@@ -276,7 +282,8 @@ extern int my_system(const char *s);
 // my_popen() and my_pclose() are intended to be just like the Unix
 // popen() and pclose functions.
 //
-extern std::FILE *my_popen(const char *command_name, const char *direction);
+extern std::FILE *my_popen(const char *command_name,
+                           const char *direction);
 extern void my_pclose(std::FILE *stream);
 
 //
@@ -365,7 +372,8 @@ extern int terminal_eof_seen;
 // been spent and how many garbage collections have been done.
 //
 extern void report_time(int32_t t, int32_t gct);
-extern void report_space(uint64_t gccount, double percent, double mbytes);
+extern void report_space(uint64_t gccount, double percent,
+                         double mbytes);
 
 // These can be used (without 100% reliability!) to check if memory
 // addresses are proper. They are only for use in desparate debugging

@@ -137,7 +137,7 @@ inline int get_my_TEB_slot()
 // and so should be robust against potential changes in Windows.
 
 inline void *tls_load()
-{   return (void *)TlsGetValue(get_my_TEB_slot());
+{   return reinterpret_cast<void *>(TlsGetValue(get_my_TEB_slot()));
 }
 
 std::uintptr_t tls_store(void *v)
@@ -168,25 +168,28 @@ std::uintptr_t tls_store(void *v)
 #endif // Windows 32 vs 64 bit
 
 inline void *extended_tls_load()
-{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+{   void **a = (void **)read_via_segment_register(
+                   extended_TLS_offset);
     return a[get_my_TEB_slot() - 64];
 }
 
 inline void extended_tls_store(void *v)
-{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+{   void **a = (void **)read_via_segment_register(
+                   extended_TLS_offset);
     a[get_my_TEB_slot() - 64] = v;
 }
 
 inline void *tls_load()
 {   if (get_my_TEB_slot() >= 64) return extended_tls_load();
-    else return (void *)read_via_segment_register(
-        basic_TLS_offset + sizeof(void *)*get_my_TEB_slot());
+    else return reinterpret_cast<void *>(read_via_segment_register(
+                basic_TLS_offset + sizeof(void *)*get_my_TEB_slot()));
 }
 
 inline void tls_store(void *v)
 {   if (get_my_TEB_slot() >= 64) return extended_tls_store(v);
     else write_via_segment_register(
-        basic_TLS_offset + sizeof(void *)*get_my_TEB_slot(), (std::intptr_t)v);
+            basic_TLS_offset + sizeof(void *)*get_my_TEB_slot(),
+            reinterpret_cast<std::intptr_t>(v));
 }
 
 #endif // CAUTIOUS
@@ -213,11 +216,11 @@ inline void tls_store(void *v)
 
 
 [[gnu::noinline]] void windows_inc()
-{   ((int *)TlsGetValue(get_my_TEB_slot()))[5]++;
+{   (reinterpret_cast<int *>(TlsGetValue(get_my_TEB_slot())))[5]++;
 }
 
 [[gnu::noinline]] void gs_inc()
-{   ((int *)tls_load())[5]++;
+{   (reinterpret_cast<int *>(tls_load()))[5]++;
 }
 
 #endif // ON_WINDOWS
@@ -236,7 +239,7 @@ void timeit(const char *name, void (*fn)(), int *var)
     std::cout << "incremented value = " << var[5] << "  ";
     std::cout << std::setw(25) << name << "  "
               << std::fixed << std::setprecision(2)
-              << ((c1-c0)/(double)CLOCKS_PER_SEC)
+              << ((c1-c0)/static_cast<double>(CLOCKS_PER_SEC))
               << std::flush << std::endl;
 }
 
@@ -253,13 +256,13 @@ void runtests(const char *msg)
 #if defined ON_WINDOWS
 // Each thread must set the slot that is relative to ITS version of the GS
 // segment register to point at the data that it will use.
-    TlsSetValue(get_my_TEB_slot(), (void *)&tl_vars);
+    TlsSetValue(get_my_TEB_slot(), reinterpret_cast<void *>()&tl_vars);
 #ifdef ON_WINDOWS_32
     timeit("thread local via FS", gs_inc,     tl_vars);
 #else
     timeit("thread local via GS", gs_inc,     tl_vars);
 #endif
-    TlsSetValue(get_my_TEB_slot(), (void *)&tl_vars);
+    TlsSetValue(get_my_TEB_slot(), reinterpret_cast<void *>()&tl_vars);
     timeit("Using Windows Tls API", windows_inc, tl_vars);
 #endif // ON_WINDOWS
 // The final test uses direct C++11 "thread_local" storage qualification.

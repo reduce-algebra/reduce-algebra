@@ -129,15 +129,15 @@ extern "C"
 // important, and so I put in my own version of the declarations that I need.
 
 #ifdef __LP64__
-typedef unsigned int tls_handle;
+    typedef unsigned int tls_handle;
 #else
-typedef unsigned long tls_handle;
+    typedef unsigned long tls_handle;
 #endif
 
-extern __declspec(dllimport) tls_handle TlsAlloc(void);
-extern __declspec(dllimport) int TlsFree(tls_handle);
-extern __declspec(dllimport) void *TlsGetValue(tls_handle);
-extern __declspec(dllimport) int TlsSetValue(tls_handle, void *);
+    extern __declspec(dllimport) tls_handle TlsAlloc(void);
+    extern __declspec(dllimport) int TlsFree(tls_handle);
+    extern __declspec(dllimport) void *TlsGetValue(tls_handle);
+    extern __declspec(dllimport) int TlsSetValue(tls_handle, void *);
 };
 
 #ifdef CAUTIOUS
@@ -204,25 +204,27 @@ inline void write_via_segment_register(tls_handle n, void *v)
 }
 
 inline void *extended_tls_load(tls_handle teb_slot)
-{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+{   void **a = (void **)read_via_segment_register(
+                   extended_TLS_offset);
     return a[teb_slot - 64];
 }
 
 inline void extended_tls_store(tls_handle teb_slot, void *v)
-{   void **a = (void **)read_via_segment_register(extended_TLS_offset);
+{   void **a = (void **)read_via_segment_register(
+                   extended_TLS_offset);
     a[teb_slot - 64] = v;
 }
 
 inline void *tls_load(tls_handle teb_slot)
 {   if (teb_slot >= 64) return extended_tls_load(teb_slot);
     else return reinterpret_cast<void *>(read_via_segment_register(
-        basic_TLS_offset + sizeof(void *)*teb_slot));
+                basic_TLS_offset + sizeof(void *)*teb_slot));
 }
 
 inline void tls_store(tls_handle teb_slot, void *v)
 {   if (teb_slot >= 64) return extended_tls_store(teb_slot, v);
     else write_via_segment_register(
-        basic_TLS_offset + sizeof(void *)*teb_slot, v);
+            basic_TLS_offset + sizeof(void *)*teb_slot, v);
 }
 
 #endif // CAUTIOUS
@@ -332,7 +334,7 @@ public:                                                       \
     }                                                         \
 };
 
-#else 
+#else
 
 // Here I do not have C++17 inline variables, and I will assume that I
 // do not need to worry about Microsoft. I cope by wrapping variable

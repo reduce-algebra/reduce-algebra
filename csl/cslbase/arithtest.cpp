@@ -84,7 +84,7 @@ bool evenfloat(double d)
 {   int x;
     d = std::frexp(d, &x);
     d = std::ldexp(d, 53);
-    std::int64_t i = (std::int64_t)d;
+    std::int64_t i = static_cast<std::int64_t>(d);
     return (i&1) == 0;
 }
 
@@ -94,9 +94,10 @@ bool evenfloat(double d)
 // ones that my more complicated code produce. Note that this does signed
 // multiplication and it trims its output to "proper" length.
 
-inline void referencemultiply(const std::uint64_t *a, std::size_t lena,
-                             const std::uint64_t *b, std::size_t lenb,
-                             std::uint64_t *c, std::size_t &lenc)
+inline void referencemultiply(const std::uint64_t *a,
+                              std::size_t lena,
+                              const std::uint64_t *b, std::size_t lenb,
+                              std::uint64_t *c, std::size_t &lenc)
 {   for (std::size_t i=0; i<lena+lenb; i++) c[i] = 0;
 // If a and/or be are negative then I can treat their true values as
 //    a = sa + va      b = sb + vb
@@ -129,13 +130,13 @@ inline void referencemultiply(const std::uint64_t *a, std::size_t lena,
     {   std::uint64_t carry = 1;
         for (std::size_t i=0; i<lenb; i++)
             carry = arithlib_implementation::add_with_carry(
-                c[i+lena], ~b[i], carry, c[i+lena]);
+                        c[i+lena], ~b[i], carry, c[i+lena]);
     }
     if (arithlib_implementation::negative(b[lenb-1]))
     {   std::uint64_t carry = 1;
         for (std::size_t i=0; i<lena; i++)
             carry = arithlib_implementation::add_with_carry(
-                c[i+lenb], ~a[i], carry, c[i+lenb]);
+                        c[i+lenb], ~a[i], carry, c[i+lenb]);
     }
     lenc = lena + lenb;
 // The actual value may be shorter than this.
@@ -163,7 +164,7 @@ int main(int argc, char *argv[])
     std::chrono::high_resolution_clock::time_point clk, clk2;
     std::chrono::duration<double, std::micro> elapsed;
     std::chrono::nanoseconds timing;
-    clk2 = std::chrono::high_resolution_clock::now();    
+    clk2 = std::chrono::high_resolution_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -189,7 +190,7 @@ int main(int argc, char *argv[])
 
         const int N = 30;
         const int LEN = 1600;
- 
+
         std::uint64_t a[2000], b[2000], c[5000], c1[5000];
         std::size_t lena, lenb, lenc1;
 
@@ -221,7 +222,8 @@ int main(int argc, char *argv[])
 // grow as n^1.585, and so to arrange that I tke roughly the same
 // absolute time on each number-length I perform my tests a number of
 // times scaled inversely by that.
-                std::size_t tests = 2+(10000*N)/(int)std::pow((double)lena, 1.585);
+                std::size_t tests = 2+(10000*N)/static_cast<int>(std)::pow(
+                                        static_cast<double>(lena), 1.585);
                 for (std::size_t n = 0; n<tests; n++)
                 {
 // The gpm function mpn_mul multiplies unsigned integers, while my
@@ -244,50 +246,49 @@ int main(int argc, char *argv[])
 // I do the actual multiplication of each test case 500 times.
                     bool ok;
                     switch (method)
-                    {
-                    case 0:
-                        arithlib_implementation::bigmultiply(
-                            a, lena, b, lenb, c1, lenc1);
-                        c[lena+lenb-1] = 0;
-                        mpn_mul((mp_ptr)c,
-                                (mp_srcptr)a,
-                                sizeof(std::uint64_t)/sizeof(mp_limb_t)*lena,
-                                (mp_srcptr)b,
-                                sizeof(std::uint64_t)/sizeof(mp_limb_t)*lenb);
-                        ok = true;
-                        for (std::size_t i=0; i<lena+lenb; i++)
-                        {   if (c[i] != c1[i])
-                            {   ok = false;
-                                std::cout << "Failed at " << std::dec
-                                          << i << std::endl;
-                            }
-                        }
-                        if (!ok)
-                        {   display("a  ", a, lena);
-                            display("b  ", b, lenb);
-                            display("me ", c1, lenc1);
-                            display("gmp", c, lena+lenb);
-                            abort();
-                        }
-                        break;
-                    case 1:
-                        for (std::size_t m=0; m<500; m++)
+                    {   case 0:
                             arithlib_implementation::bigmultiply(
                                 a, lena, b, lenb, c1, lenc1);
+                            c[lena+lenb-1] = 0;
+                            mpn_mul((mp_ptr)c,
+                                    (mp_srcptr)a,
+                                    sizeof(std::uint64_t)/sizeof(mp_limb_t)*lena,
+                                    (mp_srcptr)b,
+                                    sizeof(std::uint64_t)/sizeof(mp_limb_t)*lenb);
+                            ok = true;
+                            for (std::size_t i=0; i<lena+lenb; i++)
+                            {   if (c[i] != c1[i])
+                                {   ok = false;
+                                    std::cout << "Failed at " << std::dec
+                                              << i << std::endl;
+                                }
+                            }
+                            if (!ok)
+                            {   display("a  ", a, lena);
+                                display("b  ", b, lenb);
+                                display("me ", c1, lenc1);
+                                display("gmp", c, lena+lenb);
+                                abort();
+                            }
+                            break;
+                        case 1:
+                            for (std::size_t m=0; m<500; m++)
+                                arithlib_implementation::bigmultiply(
+                                    a, lena, b, lenb, c1, lenc1);
 // By accumulating a sort of checksum on all the products that I compute
 // I will be able to reassure myself that the output from gmp and from my
 // own code agrees.
-                        for (std::size_t i=0; i<lena+lenb; i++)
-                            my_check = my_check*MULT + c1[i];
-                        break;
-                    case 2:
-                        for (std::size_t m=0; m<500; m++)
-                            mpn_mul((mp_ptr)c,
-                                    (mp_srcptr)a, lena,
-                                    (mp_srcptr)b, lenb);
-                        for (std::size_t i=0; i<lena+lenb; i++)
-                            gmp_check = gmp_check*MULT + c[i];
-                        break;
+                            for (std::size_t i=0; i<lena+lenb; i++)
+                                my_check = my_check*MULT + c1[i];
+                            break;
+                        case 2:
+                            for (std::size_t m=0; m<500; m++)
+                                mpn_mul((mp_ptr)c,
+                                        (mp_srcptr)a, lena,
+                                        (mp_srcptr)b, lenb);
+                            for (std::size_t i=0; i<lena+lenb; i++)
+                                gmp_check = gmp_check*MULT + c[i];
+                            break;
                     }
 // I alter the inputs using a linear congruential scheme (which is cheap)
 // so that for any length inputs I am doing test multiplications of a
@@ -298,7 +299,7 @@ int main(int argc, char *argv[])
                     for (std::size_t i=0; i<lenb; i++)
                         b[i] = MULT*b[i] + ADD;
                 }
-                clk2 = std::chrono::high_resolution_clock::now();    
+                clk2 = std::chrono::high_resolution_clock::now();
                 elapsed = clk2 - clk;
                 timing =
                     std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -306,18 +307,17 @@ int main(int argc, char *argv[])
                 size[trial] = lena;
                 testcount[trial] = 500*tests;
                 switch (method)
-                {
-                case 0:
-                    std::cout << ".";
-                    break;
-                case 1:
-                    mine[trial] = timing;
-                    std::cout << ":";
-                    break;
-                case 2:
-                    gmp[trial] = timing;
-                    std::cout << "|";
-                    break;
+                {   case 0:
+                        std::cout << ".";
+                        break;
+                    case 1:
+                        mine[trial] = timing;
+                        std::cout << ":";
+                        break;
+                    case 2:
+                        gmp[trial] = timing;
+                        std::cout << "|";
+                        break;
                 }
                 std::cout.flush();
             }
@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
 // compilers are not allowed to avoid computing it!
         std::cout << std::endl;
         std::cout << (my_check == gmp_check ? "checksums match" :
-                                              "checksums disagree")
+                      "checksums disagree")
                   << std::endl;
         std::cout << std::hex << "my checksum:  " << my_check << std::endl;
         std::cout             << "gmp checksum: " << gmp_check << std::endl;
@@ -341,15 +341,18 @@ int main(int argc, char *argv[])
                   << std::setw(10) << "gmp time"
                   << std::setw(10) << "  ratio mine/gmp"
                   << std::fixed << std::setprecision(3)
-                   << std::endl;
+                  << std::endl;
 // In the following table times are reported in seconds per
 // multiplication. The ratio is > 1.0 when my code is slower than gmp.
         for (std::size_t i=0; i<table_size; i++)
         {   if (size[i] == 0) break;
             std::cout << std::setw(10) << size[i]
-                      << std::setw(10) << (1.0e-3*(double)mine[i].count()/testcount[i])
-                      << std::setw(10) << (1.0e-3*(double)gmp[i].count()/testcount[i])
-                      << std::setw(10) << ((double)mine[i].count()/gmp[i].count())
+                      << std::setw(10) << (1.0e-3*static_cast<double>
+                                           (mine[i].count())/testcount[i])
+                      << std::setw(10) << (1.0e-3*static_cast<double>
+                                           (gmp[i].count())/testcount[i])
+                      << std::setw(10) << (static_cast<double>
+                                           (mine[i].count())/gmp[i].count())
                       << std::endl;
         }
     }
@@ -396,17 +399,19 @@ int main(int argc, char *argv[])
     maxbits = 80;
     ntries = 10;
 
-    std::cout << "Print some random numbers in decimal and hex" << std::endl;
+    std::cout << "Print some random numbers in decimal and hex" <<
+              std::endl;
     for (int i=1; i<=ntries; i++)
     {   Bignum a = random_upto_bits_bignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        Bignum b = fudge_distribution_bignum(a, (int)r & 0xf);
+        Bignum b = fudge_distribution_bignum(a, static_cast<int>(r) & 0xf);
 //      std::cout << a << std::endl;
         std::cout << b << " "
                   << std::hex << b << std::dec
                   << std::endl;
     }
-    std::cout << "end of display of random values" << std::endl << std::endl;
+    std::cout << "end of display of random values" << std::endl <<
+              std::endl;
 
 #endif // TEST_RANDOM
 
@@ -434,8 +439,8 @@ int main(int argc, char *argv[])
     {   Bignum a = random_upto_bits_bignum(maxbits);
         Bignum b = random_upto_bits_bignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        a = fudge_distribution_bignum(a, (int)r & 0xf);
-        b = fudge_distribution_bignum(b, (int)(r>>4) & 0xf);
+        a = fudge_distribution_bignum(a, static_cast<int>(r) & 0xf);
+        b = fudge_distribution_bignum(b, static_cast<int>(r>>4) & 0xf);
         Bignum c1 = ~(a & b);
         Bignum c2 = (~a) | (~b);
         Bignum c3 = a ^ b;
@@ -467,7 +472,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();    
+    clk2 = std::chrono::high_resolution_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -494,10 +499,10 @@ int main(int argc, char *argv[])
     for (int i=1; i<=ntries; i++)
     {   Bignum a = random_upto_bits_bignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        a = fudge_distribution_bignum(a, (int)r & 0xf);
+        a = fudge_distribution_bignum(a, static_cast<int>(r) & 0xf);
         r = (r >> 4)%800;
         Bignum c1 = a << r;
-        Bignum p = pow(Bignum(2), (std::int64_t)r);
+        Bignum p = pow(Bignum(2), static_cast<std::int64_t>(r));
         Bignum c2 = a * p;
         Bignum c3 = a >> r;
         Bignum w = a & ~(p-1_Z);
@@ -505,7 +510,8 @@ int main(int argc, char *argv[])
         if (c1==c2 && c3==c4) continue;
         std::cout << "FAILED on test " << i << std::hex << std::endl;
         std::cout << "a            " << a << std::endl;
-        std::cout << "r            " << std::dec << r << std::hex << std::endl;
+        std::cout << "r            " << std::dec << r << std::hex <<
+                  std::endl;
         std::cout << "divide " << std::dec << w << std::endl;
         display("div", w);
         std::cout << "by " << std::dec << p << std::hex << std::endl;
@@ -522,7 +528,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();    
+    clk2 = std::chrono::high_resolution_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -551,8 +557,8 @@ int main(int argc, char *argv[])
     {   Bignum a = random_upto_bits_bignum(maxbits);
         Bignum b = random_upto_bits_bignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        a = fudge_distribution_bignum(a, (int)r & 0xf);
-        b = fudge_distribution_bignum(b, (int)(r>>4) & 0xf);
+        a = fudge_distribution_bignum(a, static_cast<int>(r) & 0xf);
+        b = fudge_distribution_bignum(b, static_cast<int>(r>>4) & 0xf);
         Bignum c1 = (a + b)*(a - b);
         Bignum c2 = a*a - b*b;
         Bignum c3 = square(a) - square(b);
@@ -576,7 +582,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();    
+    clk2 = std::chrono::high_resolution_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -608,9 +614,12 @@ int main(int argc, char *argv[])
             remainder = uniform_upto_bignum(divisor);
             quotient = random_upto_bits_bignum(maxbits);
             std::uint64_t rr = mersenne_twister();
-            divisor = fudge_distribution_bignum(divisor, (int)(rr & 0xf));
-            remainder = fudge_distribution_bignum(remainder, (int)((rr>>4) & 0xf));
-            quotient = fudge_distribution_bignum(quotient, (int)((rr>>8) & 0xf));
+            divisor = fudge_distribution_bignum(divisor,
+                                                static_cast<int>(rr & 0xf));
+            remainder = fudge_distribution_bignum(remainder,
+                                                  static_cast<int>((rr>>4) & 0xf));
+            quotient = fudge_distribution_bignum(quotient,
+                                                 static_cast<int>((rr>>8) & 0xf));
 // While I still want my strange distribution of numbers for testing, I
 // need the sign of my target remainder to be proper, so I will generate
 // random inputs until that is so. Also when I adjust the numbers I could
@@ -618,8 +627,9 @@ int main(int argc, char *argv[])
 // invalid in magnitude... so I need to discard those cases too. It is
 // plausible that this means I will discard around 75% of the sets of random
 // numberfs that I initially generate.
-        } while (((quotient ^ remainder ^ divisor) < Bignum(0)) ||
-                 (abs(remainder) >= abs(divisor))); 
+        }
+        while (((quotient ^ remainder ^ divisor) < Bignum(0)) ||
+               (abs(remainder) >= abs(divisor)));
 
         Bignum dividend = quotient*divisor + remainder;
         Bignum q1 = dividend / divisor;
@@ -647,7 +657,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();    
+    clk2 = std::chrono::high_resolution_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -674,10 +684,11 @@ int main(int argc, char *argv[])
             b = random_upto_bits_bignum(maxbits);
             g = random_upto_bits_bignum(maxbits);
             std::uint64_t rr = mersenne_twister();
-            a = fudge_distribution_bignum(a, (int)(rr & 0xf));
-            b = fudge_distribution_bignum(b, (int)((rr>>4) & 0xf));
-            g = fudge_distribution_bignum(g, (int)((rr>>8) & 0xf));
-        } while (a<=0 || b<=0 || g<=0);
+            a = fudge_distribution_bignum(a, static_cast<int>(rr & 0xf));
+            b = fudge_distribution_bignum(b, static_cast<int>((rr>>4) & 0xf));
+            g = fudge_distribution_bignum(g, static_cast<int>((rr>>8) & 0xf));
+        }
+        while (a<=0 || b<=0 || g<=0);
 //        std::cout << i << " " << a << " " << b << " " << g << std::endl;
 //        display("a", a);
 //        display("a", b);
@@ -703,7 +714,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();    
+    clk2 = std::chrono::high_resolution_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -728,7 +739,7 @@ int main(int argc, char *argv[])
     {   Bignum a, b;
         a = random_upto_bits_bignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        a = fudge_distribution_bignum(a, (int)r & 7);
+        a = fudge_distribution_bignum(a, static_cast<int>(r) & 7);
         b = isqrt(a);
         if (square(b) <= a && square(b+1) > a) continue;
         std::cout << "FAILED on test " << i << std::endl;
@@ -743,7 +754,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();    
+    clk2 = std::chrono::high_resolution_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -778,7 +789,7 @@ int main(int argc, char *argv[])
     {   Bignum a, b;
         a = random_upto_bits_bignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        a = fudge_distribution_bignum(a, (int)r & 15);
+        a = fudge_distribution_bignum(a, static_cast<int>(r) & 15);
 
         double d = double_bignum(a);
         Bignum n = fix_bignum(d);
@@ -797,7 +808,7 @@ int main(int argc, char *argv[])
         Bignum err = a-n;
         Bignum errplus = a-nplus;
         Bignum errminus = a-nminus;
-    
+
         if (nplus != n && nminus != n)
         {   if (abs(err) < abs(errplus) &&
                 abs(err) < abs(errminus)) continue;
@@ -825,7 +836,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clk2 = std::chrono::high_resolution_clock::now();    
+    clk2 = std::chrono::high_resolution_clock::now();
     elapsed = clk2 - clk;
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
@@ -835,7 +846,7 @@ int main(int argc, char *argv[])
 #endif // TEST_FLOAT
 
     std::cout << "About to exit" << std::endl;
-    return 0;    
+    return 0;
 }
 
 // end of arithtest.cpp

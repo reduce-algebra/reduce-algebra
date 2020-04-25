@@ -99,7 +99,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
 // and A>=B).  I return as if this code was invalid, and the fall-back
 // case will do one step and tidy up a bit. A jolly uncommon case!
 //
-    if ((int)b0 >= 0)
+    if (static_cast<int>(b0) >= 0)
     {   for (;;)
         {   uint32_t c0, c1;
 //
@@ -223,7 +223,8 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
     }
 }
 
-static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
+static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
+                       size_t lenb)
 //
 // A and B are vectors of unsigned integers, representing numbers with
 // radix 2^31.  lena and lenb indicate how many digits are present. The
@@ -234,7 +235,7 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
 // hold the length (remaining) of A.
 //
 // When this returns the bignums that A and B refer to will have been
-// reduced until B has a single 31-bit digit. 
+// reduced until B has a single 31-bit digit.
 //
 {   uint32_t a0, a1, a2, b0, b1;
     bool flipped = false;
@@ -463,9 +464,9 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
 // for the leading digit of b I can treat both as having length lena
 //
             {   uint32_t carryax = 0, carryay = 0,
-                         carrybx = 0, carryby = 0,
-                         borrowa = 1, borrowb = 1,
-                         aix, aiy, bix, biy, aa, bb;
+                             carrybx = 0, carryby = 0,
+                             borrowa = 1, borrowb = 1,
+                             aix, aiy, bix, biy, aa, bb;
                 for (i=0; i<lena; i++)
                 {   Dmultiply(carryax, aix, a[i], ax, carryax);
                     Dmultiply(carryay, aiy, b[i], ay, carryay);
@@ -510,8 +511,10 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
                     carryby - carrybx + borrowb != 1)
                 {   err_printf("Carries %d \"%s\" %ld %ld %ld %ld %ld %ld\n",
                                __LINE__, __FILE__,
-                               (long)carryax, (long)carryay, (long)carrybx,
-                               (long)carryby, (long)borrowa, (long)borrowb);
+                               static_cast<long>(carryax), static_cast<long>(carryay),
+                               static_cast<long>(carrybx),
+                               static_cast<long>(carryby), static_cast<long>(borrowa),
+                               static_cast<long>(borrowb));
                     my_exit(EXIT_FAILURE);
                 }
 #endif // DEBUG
@@ -565,7 +568,8 @@ LispObject gcd(LispObject a, LispObject b)
             else b = copyb(b);
             pop(a);
 #ifdef DEBUG_GCD_CODE
-            trace_printf("GCD of 2 positive bignums %x %x\n", topdigit(a), topdigit(b));
+            trace_printf("GCD of 2 positive bignums %x %x\n", topdigit(a),
+                         topdigit(b));
             trace_printf("signs %d %d\n", bignum_minusp(a), bignum_minusp(b));
 #endif
 //
@@ -660,7 +664,7 @@ LispObject gcd(LispObject a, LispObject b)
                         new_lena = (new_lena + 1) & ~(size_t)1;
                     }
                     if (new_lena != lena)
-                        *(Header *)&bignum_digits(a)[new_lena+1] =
+                        *reinterpret_cast<Header *>(&bignum_digits(a)[new_lena+1]) =
                             make_bighdr(lena - new_lena);
                     return a;
                 }
@@ -677,7 +681,7 @@ LispObject gcd(LispObject a, LispObject b)
                 {   q = bignum_digits(a)[new_lena] % p;
                     while (new_lena > 0)
                         Ddivider(q, q,
-                                bignum_digits(a)[--new_lena], p);
+                                 bignum_digits(a)[--new_lena], p);
                 }
                 if (p < q)
                 {   int32_t r = p;
@@ -717,7 +721,8 @@ gcd_using_machine_arithmetic:
                     twos++;
                     continue;
                 }
-                do p = p >> 1; while ((p & 1) == 0);
+                do p = p >> 1;
+                while ((p & 1) == 0);
                 break;
             }
             while ((q & 1) == 0) q = q >> 1;
@@ -732,11 +737,13 @@ gcd_using_machine_arithmetic:
         while (p != q)
         {   if (p > q)
             {   p = p - q;
-                do p = p >> 1; while ((p & 1) == 0);
+                do p = p >> 1;
+                while ((p & 1) == 0);
             }
             else
             {   q = q - p;
-                do q = q >> 1; while ((q & 1) == 0);
+                do q = q >> 1;
+                while ((q & 1) == 0);
             }
         }
 // Finally I must re-instate the power of two that was taken out
@@ -783,7 +790,7 @@ LispObject lognot(LispObject a)
 // a bignum.  For bignums I implement ~a as -(a+1).
 //
     if (is_fixnum(a))
-        return (LispObject)((uintptr_t)a ^ ~(uintptr_t)XTAG_BITS);
+        return static_cast<LispObject>((uintptr_t)a ^ ~(uintptr_t)XTAG_BITS);
     else if (is_numbers(a) && is_bignum(a))
     {   a = plus2(a, fixnum_of_int(1));
         return negate(a);
@@ -831,7 +838,7 @@ LispObject ash(LispObject a, LispObject b)
                 return make_lisp_integer64((int64_t)d1<<31 | d0);
             else if (d3==-1 && (int32_t)d2==0x7fffffff)
                 return make_lisp_integer64(
-                    ((int64_t)(int32_t)(d1|0x80000000))<<31 | d0);
+                           ((int64_t)(int32_t)(d1|0x80000000))<<31 | d0);
 // Now I have at least a 3-word bignum
             else if (d3 == 0 && (d2 & 0x40000000) == 0)
                 return make_three_word_bignum(d2, d1, d0);
@@ -1006,12 +1013,14 @@ LispObject shrink_bignum(LispObject a, size_t lena)
 //
     setnumhdr(a, numhdr(a) - pack_hdrlength(olen-lena));
     msd = bignum_digits(a)[lena];
-    if ((msd & 0x40000000) != 0) bignum_digits(a)[lena] = msd | ~0x7fffffff;
+    if ((msd & 0x40000000) != 0) bignum_digits(a)[lena] = msd |
+                ~0x7fffffff;
     if ((lena & 1) != 0) bignum_digits(a)[++lena] = 0;
     lena++;
     olen = (olen+1)|1;
     if (lena == olen) return a;
-    *(Header *)&bignum_digits(a)[lena]=make_bighdr(olen-lena);
+    *reinterpret_cast<Header *>(&bignum_digits(a)[lena]) = make_bighdr(
+                olen-lena);
     return a;
 }
 
@@ -1060,7 +1069,8 @@ static LispObject logiorib(LispObject a, LispObject b)
 
 LispObject logior2(LispObject a, LispObject b)
 {   if (is_fixnum(a))
-    {   if (is_fixnum(b)) return (LispObject)((intptr_t)a | (intptr_t)b);
+    {   if (is_fixnum(b)) return static_cast<LispObject>((intptr_t)a |
+                                     (intptr_t)b);
         else if (is_numbers(b) && is_bignum(b)) return logiorib(a, b);
         else aerror2("bad arg for logior", a, b);
     }
@@ -1108,7 +1118,8 @@ static LispObject logxorib(LispObject a, LispObject b)
 LispObject logxor2(LispObject a, LispObject b)
 {   if (is_fixnum(a))
     {   if (is_fixnum(b))
-            return (LispObject)(((uintptr_t)a ^ (uintptr_t)b) + TAG_FIXNUM);
+            return static_cast<LispObject>(((uintptr_t)a ^ (uintptr_t)b) +
+                                           TAG_FIXNUM);
         else if (is_numbers(b) && is_bignum(b)) return logxorib(a, b);
         else aerror2("bad arg for logxor", a, b);
     }
@@ -1123,8 +1134,8 @@ LispObject logxor2(LispObject a, LispObject b)
 LispObject logeqv2(LispObject a, LispObject b)
 {   if (is_fixnum(a))
     {   if (is_fixnum(b))
-            return (LispObject)((intptr_t)a ^ (intptr_t)b ^
-                                (intptr_t)fixnum_of_int(-1));
+            return static_cast<LispObject>((intptr_t)a ^ (intptr_t)b ^
+                                           (intptr_t)fixnum_of_int(-1));
         else if (is_numbers(b) && is_bignum(b))
             return logxorbb(make_fake_bignum(~int_of_fixnum(a)), b);
         else aerror2("bad arg for logeqv", a, b);
@@ -1190,7 +1201,8 @@ static LispObject logandib(LispObject a, LispObject b)
 
 LispObject logand2(LispObject a, LispObject b)
 {   if (is_fixnum(a))
-    {   if (is_fixnum(b)) return (LispObject)((intptr_t)a & (intptr_t)b);
+    {   if (is_fixnum(b)) return static_cast<LispObject>((intptr_t)a &
+                                     (intptr_t)b);
         else if (is_numbers(b) && is_bignum(b)) return logandib(a, b);
         else aerror2("bad arg for logand", a, b);
     }

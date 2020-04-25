@@ -1,4 +1,4 @@
-// doxtract.cpp                            Copyright (C) 2016-2017 Codemist    
+// doxtract.cpp                            Copyright (C) 2016-2017 Codemist
 
 
 /**************************************************************************
@@ -144,7 +144,7 @@
 #include <cctype>
 #include <ctime>
 
-static const char *product = NULL;
+static const char *product = nullptr;
 static const char *output = "manual.tex";
 #define MAX_TAGS 10
 static const char *tags[MAX_TAGS];
@@ -214,7 +214,7 @@ static void process_file(const char *file)
 {   PAD;
     std::FILE *f = std::fopen(file, "r");
     int c, lisp_mode = 0;
-    if (f == NULL)
+    if (f == nullptr)
     {   std::printf("Input file %s could not be opened\n", file);
         std::printf("Ignoring it and continuing...\n");
         return;
@@ -305,8 +305,8 @@ static void process_file(const char *file)
 
 static char *heap(const char *s)
 {   PAD;
-    char *r = (char *)std::malloc(std::strlen(s)+1);
-    if (r == NULL)
+    char *r = reinterpret_cast<char *>(std)::malloc(std::strlen(s)+1);
+    if (r == nullptr)
     {   std::printf("malloc failure\n");
         std::exit(1);
     }
@@ -346,7 +346,8 @@ typedef struct subsection
     struct subsection *next;
 } subsection;
 
-static subsection *make_subsection(const char *alphakey, const char *subsechdr,
+static subsection *make_subsection(const char *alphakey,
+                                   const char *subsechdr,
                                    const char *text, subsection *next)
 {   PAD;
     subsection *r = (subsection *)std::malloc(sizeof(subsection));
@@ -365,7 +366,7 @@ typedef struct section
     struct section *next;
 } section;
 
-static section *list_of_sections = NULL;
+static section *list_of_sections = nullptr;
 
 //
 // This next seeks a section with a given name and if one already exists
@@ -374,7 +375,7 @@ static section *list_of_sections = NULL;
 static section *find_section(const char *name)
 {   PAD;
     section *r = list_of_sections;
-    while (r != NULL)
+    while (r != nullptr)
     {   if (std::strcmp(name, r->name) == 0) return r;
         r = r->next;
     }
@@ -383,7 +384,7 @@ static section *find_section(const char *name)
     r->alphakey = "unset alphakey";
     r->sechdr = "unset section header";
     r->text = "";
-    r->parts = NULL;
+    r->parts = nullptr;
     r->next = list_of_sections;
     list_of_sections = r;
     return r;
@@ -543,19 +544,20 @@ static void C_product_comment(std::FILE *f)
 // only enable processing for the rest of this file if the product specified
 // is mentioned as a word on the line.
 //
-    if (product != NULL)
-    {   const char *l = header , *s;
+    if (product != nullptr)
+    {   const char *l = header, *s;
         int n = std::strlen(product);
-        while ((s = std::strstr(l, product)) != NULL)
+        while ((s = std::strstr(l, product)) != nullptr)
         {   if ((s == header|| std::isspace(*(s-1))) &&
                 (s[n] == 0 || std::isspace(s[n]))) break;
             l = s+1;
         }
-        if (s == NULL) active = 0;
+        if (s == nullptr) active = 0;
 //      else printf("Found product tag %s\n", product);
     }
     p = C_until_comment_end(f, active);
-    if (p!=NULL && std::strlen(p) > std::strlen(top_heading)) top_heading = p;
+    if (p!=nullptr &&
+        std::strlen(p) > std::strlen(top_heading)) top_heading = p;
 }
 
 //
@@ -610,7 +612,7 @@ static char *C_until_comment_end(std::FILE *f, int active)
     text[n_text++] = 0;
     if (!active)
     {   std::printf("Ignoring section because processing is inactive\n");
-        return NULL;
+        return nullptr;
     }
 //  printf("Found text: <<<<<<<<\n%s\n>>>>>>>>\n", text);
     return heap(text);
@@ -739,19 +741,20 @@ static void lisp_product_comment(std::FILE *f)
 // only enable processing for the rest of this file if the product specified
 // is mentioned as a word on the line.
 //
-    if (product != NULL)
-    {   const char *l = line+5 , *s;
+    if (product != nullptr)
+    {   const char *l = line+5, *s;
         int n = std::strlen(product);
-        while ((s = std::strstr(l, product)) != NULL)
+        while ((s = std::strstr(l, product)) != nullptr)
         {   if ((s == header|| std::isspace(*(s-1))) &&
                 (s[n] == 0 || std::isspace(s[n]))) break;
             l = s+1;
         }
-        if (s == NULL) active = 0;
+        if (s == nullptr) active = 0;
 //      else printf("Found product tag %s\n", product);
     }
     p = lisp_until_comment_end(f, active);
-    if (p != NULL && std::strlen(p) > std::strlen(top_heading)) top_heading = p;
+    if (p != nullptr &&
+        std::strlen(p) > std::strlen(top_heading)) top_heading = p;
 }
 
 static char *lisp_until_comment_end(std::FILE *f, int active)
@@ -789,7 +792,7 @@ static char *lisp_until_comment_end(std::FILE *f, int active)
     text[n_text++] = 0;
     if (!active)
     {   std::printf("Ignoring section because processing is inactive\n");
-        return NULL;
+        return nullptr;
     }
 //  printf("Found text: <<<<<<<<\n%s\n>>>>>>>>\n", text);
     return heap(text);
@@ -808,17 +811,17 @@ static section *sort_sections(section *s)
     section *s1;
     int i = 0;
     section **v;
-    if (s == NULL) return NULL;
-    for (s1=s; s1!=NULL; s1=s1->next) i++;
+    if (s == nullptr) return nullptr;
+    for (s1=s; s1!=nullptr; s1=s1->next) i++;
     v = (section **)std::malloc(i*sizeof(section *));
-    if (v == NULL)
+    if (v == nullptr)
     {   std::printf("malloc failure\n");
         std::exit(1);
     }
     i = 0;
-    for (s1=s; s1!=NULL; s1=s1->next) v[i++] = s1;
+    for (s1=s; s1!=nullptr; s1=s1->next) v[i++] = s1;
     std::qsort(v, i, sizeof(v[0]), compare_sections);
-    s1 = NULL;
+    s1 = nullptr;
     while (i > 0)
     {   s = v[--i];
         s->next = s1;
@@ -841,17 +844,17 @@ static subsection *sort_subsections(subsection *s)
     subsection *s1;
     int i = 0;
     subsection **v;
-    if (s == NULL) return NULL;
-    for (s1=s; s1!=NULL; s1=s1->next) i++;
+    if (s == nullptr) return nullptr;
+    for (s1=s; s1!=nullptr; s1=s1->next) i++;
     v = (subsection **)std::malloc(i*sizeof(subsection *));
-    if (v == NULL)
+    if (v == nullptr)
     {   std::printf("malloc failure\n");
         std::exit(1);
     }
     i = 0;
-    for (s1=s; s1!=NULL; s1=s1->next) v[i++] = s1;
+    for (s1=s; s1!=nullptr; s1=s1->next) v[i++] = s1;
     std::qsort(v, i, sizeof(v[0]), compare_subsections);
-    s1 = NULL;
+    s1 = nullptr;
     while (i > 0)
     {   s = v[--i];
         s->next = s1;
@@ -867,7 +870,7 @@ static void dump_tex()
     std::FILE *f = std::fopen(output, "w");
     section *s;
     std::time_t t;
-    if (f == NULL)
+    if (f == nullptr)
     {   std::printf("Destination file %s could not be opened\n", output);
         std::exit(1);
     }
@@ -879,19 +882,21 @@ static void dump_tex()
 // I need to sort sections by their alphakey and then subsections within
 // each section ditto.
 //
-    for (s=sort_sections(list_of_sections); s!=NULL; s=s->next)
+    for (s=sort_sections(list_of_sections); s!=nullptr; s=s->next)
     {   subsection *ss;
         int i = 0;
-        if (s->sechdr == NULL)
+        if (s->sechdr == nullptr)
         {   std::printf("Section without a name?\n");
             s->sechdr = "Unknown";
         }
-        if (s->text == NULL) s->text = "";
-        for (ss=s->parts; ss!=NULL; ss=ss->next) i++;
-        std::printf("Generating section %s [%s] with %d subsections\n", s->alphakey, s->name, i);
-        std::fprintf(f, "%% Generating section %s [%s] with %d subsections\n", s->alphakey, s->name, i);
+        if (s->text == nullptr) s->text = "";
+        for (ss=s->parts; ss!=nullptr; ss=ss->next) i++;
+        std::printf("Generating section %s [%s] with %d subsections\n",
+                    s->alphakey, s->name, i);
+        std::fprintf(f, "%% Generating section %s [%s] with %d subsections\n",
+                     s->alphakey, s->name, i);
         std::fprintf(f, "%s\n%s\n", s->sechdr, s->text);
-        for (ss=sort_subsections(s->parts); ss!=NULL; ss=ss->next)
+        for (ss=sort_subsections(s->parts); ss!=nullptr; ss=ss->next)
         {   std::fprintf(f, "%s\n%s\n", ss->subsechdr, ss->text);
         }
     }

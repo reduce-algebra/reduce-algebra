@@ -73,14 +73,14 @@ int64_t i64ff()
 
 double dff()
 {   std::printf("double dff()\n");
-    return (double)k++ + 0.12345;
+    return static_cast<double>(k)++ + 0.12345;
 }
 
 char buffer[100];
 
 char *sff()
 {   std::printf("double sff()\n");
-    std::sprintf(buffer, "SFF%d!", (int)k++);
+    std::sprintf(buffer, "SFF%d!", static_cast<int>(k)++);
     return buffer;
 }
 
@@ -91,7 +91,7 @@ char *sff()
 //
 
 void vffi32(int32_t a)
-{   std::printf("vffi32(%d)\n", (int)a);
+{   std::printf("vffi32(%d)\n", static_cast<int>(a));
 }
 
 void vffi64(int64_t a)
@@ -158,14 +158,16 @@ typedef void *PROC_handle;
 
 
 void register_callback(int32_t which, int64_t value)
-{   if (0<=which && which<=32) callbacks[which] = (void *)(intptr_t)value;
-    std::printf("Callback number %d registered as %p\n", which, callbacks[which]);
+{   if (0<=which &&
+        which<=32) callbacks[which] = reinterpret_cast<void *>(intptr_t)value;
+    std::printf("Callback number %d registered as %p\n", which,
+                callbacks[which]);
 }
 
 int32_t two_way(int32_t x)
 {   PROC_handle w;
     std::printf("In foreign code. x = %d. Result will be %d^6 = %d\n",
-           x, x, x*x*x*x*x*x);
+                x, x, x*x*x*x*x*x);
 //
 // The PROC_xxx calls tend to return zero on success
 //

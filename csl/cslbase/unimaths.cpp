@@ -1,4 +1,4 @@
-// unimaths.cpp                            Copyright (C) 2015-2017 Codemist    
+// unimaths.cpp                            Copyright (C) 2015-2017 Codemist
 
 
 /**************************************************************************

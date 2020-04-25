@@ -1,4 +1,4 @@
-//  arith-print.cpp                             Copyright (C) 2019 Codemist    
+//  arith-print.cpp                             Copyright (C) 2019 Codemist
 
 #ifdef ARITHLIB
 
@@ -80,7 +80,7 @@ void print_newbignum(LispObject u, bool blankp, int nobreak)
 
 #pragma message ("print_newbighexoctbin")
 void print_newbighexoctbin(LispObject u, int radix, int width,
-                        bool blankp, int nobreak)
+                           bool blankp, int nobreak)
 //
 // This prints a bignum in base 16, 8 or 2.
 //
@@ -90,23 +90,23 @@ void print_newbighexoctbin(LispObject u, int radix, int width,
     unsigned int column =
         other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
 
-/*
-        if (blankp)
-        {   if (nobreak==0 && column+len >= line_length)
-            {   if (column != 0) putc_stream('\n', active_stream);
+    /*
+            if (blankp)
+            {   if (nobreak==0 && column+len >= line_length)
+                {   if (column != 0) putc_stream('\n', active_stream);
+                }
+                else putc_stream(' ', active_stream);
             }
-            else putc_stream(' ', active_stream);
+            else if (nobreak==0 && column != 0 && column+len > line_length)
+                putc_stream('\n', active_stream);
+            while (--i >= 0) putc_stream(my_buff[i], active_stream);
+
+            if ((uintptr_t)stack >=
+                ((uintptr_t)stackLimit | event_flag.load()))
+                respond_to_stack_event();
         }
-        else if (nobreak==0 && column != 0 && column+len > line_length)
-            putc_stream('\n', active_stream);
-        while (--i >= 0) putc_stream(my_buff[i], active_stream);
 
-        if ((uintptr_t)stack >=
-            ((uintptr_t)stackLimit | event_flag.load()))
-            respond_to_stack_event();
-    }
-
-*/
+    */
 }
 
 #endif // ARITHLIB

@@ -1,4 +1,4 @@
-// utfcheck.cpp                            Copyright (C) 2016-2017 Codemist    
+// utfcheck.cpp                            Copyright (C) 2016-2017 Codemist
 
 //
 // This is a pretty silly program! It looks at Unicode characters and tests
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
         status = (n1 == n2 && n1 == n3); // are utf-8 lengths unchanged?
         if (status && flag) continue;
         std::printf("%#.4x(%d) %#.4x(%d) %#.4x(%d) %s  %s %s %s\n",
-               c1, n1, c2, n2, c3, n3, (status ? "OK " : "bad"), s1, s2, s3);
+                    c1, n1, c2, n2, c3, n3, (status ? "OK " : "bad"), s1, s2, s3);
     }
     return 0;
 }

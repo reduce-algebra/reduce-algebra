@@ -1,4 +1,4 @@
-//  arith07.cpp                           Copyright (C) 1990-2017 Codemist    
+//  arith07.cpp                           Copyright (C) 1990-2017 Codemist
 
 //
 // Arithmetic functions.  negation plus a load of Common Lisp things
@@ -81,19 +81,21 @@ LispObject negateb(LispObject a)
 // Note that on a 64-bit machine there ought never to be any one-word
 // bignums because all the values representable with just one 31-bit digit
 // can be handled as fixnums instead.
-    if (SIXTY_FOUR_BIT && len == CELL+8)   // two-word bignum - do specially
+    if (SIXTY_FOUR_BIT &&
+        len == CELL+8)   // two-word bignum - do specially
     {   if (bignum_digits(a)[0] == 0 &&
             bignum_digits(a)[1] == (int32_t)0x10000000)
             return MOST_NEGATIVE_FIXNUM;
         else if (bignum_digits(a)[0] == 0 &&
-            (int32_t)bignum_digits(a)[1] == -(int32_t)(1<<30))
+                 (int32_t)bignum_digits(a)[1] == -(int32_t)(1<<30))
             return make_three_word_bignum(0, 1<<30, 0);
         uint32_t d0 = bignum_digits(a)[0];
         int32_t d1 = (int32_t)~bignum_digits(a)[1];
         if (d0 == 0) d1++;
         else return make_two_word_bignum(d1, (-d0) & 0x7fffffff);
     }
-    if (!SIXTY_FOUR_BIT && len == CELL+4)   // one-word bignum - do specially
+    if (!SIXTY_FOUR_BIT &&
+        len == CELL+4)   // one-word bignum - do specially
     {   int32_t d0 = -(int32_t)bignum_digits(a)[0];
         if (d0 == MOST_NEGATIVE_FIXVAL) return MOST_NEGATIVE_FIXNUM;
         else if (d0 == 0x40000000) return make_two_word_bignum(0, d0);
@@ -146,11 +148,13 @@ LispObject negateb(LispObject a)
             setnumhdr(b, numhdr(b) - pack_hdrlength(1));
             if (SIXTY_FOUR_BIT)
             {   if ((i & 1) != 0) bignum_digits(b)[i] = 0;
-                else *(Header *)&bignum_digits(b)[i] = make_bighdr(2);
+                else *reinterpret_cast<Header *>(&bignum_digits(b)[i]) = make_bighdr(
+                                2);
             }
             else
             {   if ((i & 1) == 0) bignum_digits(b)[i] = 0;
-                else *(Header *)&bignum_digits(b)[i] = make_bighdr(2);
+                else *reinterpret_cast<Header *>(&bignum_digits(b)[i]) = make_bighdr(
+                                2);
             }
         }
         else bignum_digits(b)[i] = carry;   // no shrinking needed
@@ -168,7 +172,7 @@ LispObject negateb(LispObject a)
 //
 
 LispObject negate(LispObject a)
-{   switch ((int)a & TAG_BITS)
+{   switch (static_cast<int>(a) & TAG_BITS)
     {   case TAG_FIXNUM:
             if (!SIXTY_FOUR_BIT && is_sfloat(a))
                 return a ^ 0x80000000U;
@@ -213,10 +217,10 @@ LispObject negate(LispObject a)
                                          TYPE_DOUBLE_FLOAT);
 #ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
-                    {   float128_t aa = long_float_val(a);
-                        f128M_negate(&aa);
-                        return make_boxfloat128(aa);
-                    }
+                {   float128_t aa = long_float_val(a);
+                    f128M_negate(&aa);
+                    return make_boxfloat128(aa);
+                }
 #endif // HAVE_SOFTFLOAT
             }
         default:
@@ -298,8 +302,8 @@ double Cabs(Complex z)
     int n1, n2;
     if (x==0.0) return std::fabs(y);
     else if (y==0.0) return std::fabs(x);
-    (void)std::frexp(x, &n1);
-    (void)std::frexp(y, &n2);
+    static_cast<void>(std::frexp(x, &n1));
+    static_cast<void>(std::frexp(y, &n2));
 // The exact range of values returned by frexp does not matter here
     if (n2>n1) n1 = n2;
 // n1 is now the exponent of the larger (in absolute value) of x, y
@@ -379,13 +383,13 @@ int _reduced_exp(double x, double *r)
 //
     int n;
     double f;
-    n = (int)(x / 7.625 + 0.5);
+    n = static_cast<int>(x / 7.625 + 0.5);
 //
 // 7.625 = 61/8 and is expected to have an exact floating point
 // representation here, so f is computed without any rounding error.
 // (do I need something like the (x - 0.5) - 0.5 trick here?)
 //
-    f = std::exp(x - 7.625*(double)n);
+    f = std::exp(x - 7.625*static_cast<double>(n));
 //
 // the magic constant is ((exp(61/8) / 2048) - 1) and it arises because
 // 61/88 is a decent rational approximation to log(2), hence exp(61/8)
@@ -448,8 +452,8 @@ Complex Cln(Complex z)
     if (x==0.0) r = std::log(std::fabs(y));
     else if (y==0.0) r = std::log(std::fabs(x));
     else
-    {   (void)std::frexp(x, &n1);
-        (void)std::frexp(y, &n2);
+    {   static_cast<void>(std::frexp(x, &n1));
+        static_cast<void>(std::frexp(y, &n2));
 // The exact range of values returned by frexp does not matter here
         if (n2>n1) n1 = n2;
         scale = std::ldexp(1.0, n1);
@@ -496,8 +500,10 @@ static double fp_add(double a, double b, double *lowres)
 {
 // Result is the high part of a+b, with the low part assigned to *lowres
     double absa, absb;
-    if (a >= 0.0) absa = a; else absa = -a;
-    if (b >= 0.0) absb = b; else absb = -b;
+    if (a >= 0.0) absa = a;
+    else absa = -a;
+    if (b >= 0.0) absb = b;
+    else absb = -b;
     if (absa < absb)
     {   double t = a; a = b; b = t;
     }
@@ -527,8 +533,10 @@ static double fp_add(double a, double b, double *lowres)
         _fp_normalize(a, al);
         b = b + al;
     }
-    if (a >= 0.0) absa = a; else absa = -a;
-    if (b >= 0.0) absb = b; else absb = -b;
+    if (a >= 0.0) absa = a;
+    else absa = -a;
+    if (b >= 0.0) absb = b;
+    else absb = -b;
     if (absb > absa * _two_minus_25)
 //
 // If on input a is close to -b, then a+b is close to zero.  In this
@@ -548,7 +556,8 @@ static double fp_add(double a, double b, double *lowres)
 
 #undef _two_minus_25
 
-static void extended_atan2(double b, double a, double *thetah, double *thetal)
+static void extended_atan2(double b, double a, double *thetah,
+                           double *thetal)
 {   int octant;
     double rh, rl, thh, thl;
 //
@@ -604,8 +613,8 @@ static void extended_atan2(double b, double a, double *thetah, double *thetal)
             { 0.75315129756927490234375,  -1.66070805128190106297e-8 },
             { 0.785398185253143310546875, -2.18556950009312141541e-8 }
         };
-        int k = (int)(16.0*(b/a + 0.03125)); // 0 to 16
-        double kd = (double)k/16.0;
+        int k = static_cast<int>(16.0*(b/a + 0.03125)); // 0 to 16
+        double kd = static_cast<double>(k)/16.0;
         double ah = a, al = 0.0,
                bh = b, bl = 0.0,
                ch, cl, q, q2;
@@ -729,8 +738,8 @@ static void extended_log(int k, double a, double b,
     }
 #undef _sqrt_half
 #undef _sqrt_two
-    n = (int)(16.0/c + 0.5);
-    w = (double)n / 16.0;
+    n = static_cast<int>(16.0/c + 0.5);
+    w = static_cast<double>(n) / 16.0;
     ch *= w;
     cl *= w;
     cll *= w;           // Now |c-1| < 0.04317
@@ -792,7 +801,7 @@ static void extended_log(int k, double a, double b,
 #define _exact_part_logroot2    0.3465735912322998046875
 #define _approx_part_logroot2   (-9.5232714997888393927e-10)
 // Multiply this by k and add it in
-    {   double temp, kd = (double)k;
+    {   double temp, kd = static_cast<double>(k);
         rh = fp_add(rh, kd*_exact_part_logroot2, &temp);
         rl = rl + temp + kd*_approx_part_logroot2;
     }
@@ -814,7 +823,8 @@ Complex Cpow(Complex z1, Complex z2)
     double r, i, rh, rl, ih, il, clow, dlow, q;
     double cw, sw, cost, sint;
 
-    if (b == 0.0 && d == 0.0 && a >= 0.0)// Simple case if both args are real
+    if (b == 0.0 && d == 0.0 &&
+        a >= 0.0)// Simple case if both args are real
     {   z1.real = std::pow(a, c);
         z1.imag = 0.0;
         return z1;
@@ -826,13 +836,13 @@ Complex Cpow(Complex z1, Complex z2)
     if (a == 0.0)
     {   if (b == 0.0) return z1;    // 0.0**anything is really an error
 // The exact values returned by frexp do not matter here
-        (void)std::frexp(b, &k);
+        static_cast<void>(std::frexp(b, &k));
     }
     else
-    {   (void)std::frexp(a, &k);
+    {   static_cast<void>(std::frexp(a, &k));
         if (b != 0.0)
         {   int n;
-            (void)std::frexp(b, &n);
+            static_cast<void>(std::frexp(b, &n));
             if (n > k) k = n;
         }
     }
@@ -868,11 +878,13 @@ Complex Cpow(Complex z1, Complex z2)
 
 //  (rh, rl) = c*logr - d*theta;
     rh = c*logrh - d*thetah;  // No rounding in this computation
-    rl = c*logrl + clow*(logrh + logrl) - d*thetal - dlow*(thetah + thetal);
+    rl = c*logrl + clow*(logrh + logrl) - d*thetal - dlow*
+         (thetah + thetal);
 
 //  (ih, il) = c*theta + d*logr;
     ih = c*thetah + d*logrh;  // No rounding in this computation
-    il = c*thetal + clow*(thetah + thetal) + d*logrl + dlow*(logrh + logrl);
+    il = c*thetal + clow*(thetah + thetal) + d*logrl + dlow*
+         (logrh + logrl);
 
 //
 // Now it remains to take the exponential of the extended precision
@@ -887,8 +899,8 @@ Complex Cpow(Complex z1, Complex z2)
 #define _recip_log_2 1.4426950408889634074
 
     q = r * _recip_log_2;
-    m = (q < 0.0) ? (int)(q - 0.5) : (int)(q + 0.5);
-    q = (double)m;
+    m = (q < 0.0) ? static_cast<int>(q - 0.5) : static_cast<int>(q + 0.5);
+    q = static_cast<double>(m);
 #undef _recip_log_2
 //
 // log 2 = 11629080/2^24  - 0.000 00000 19046 54299 95776 78785
@@ -911,8 +923,8 @@ Complex Cpow(Complex z1, Complex z2)
 #define _recip_pi_by_2 0.6366197723675813431
 
     q = i * _recip_pi_by_2;
-    n = (q < 0.0) ? (int)(q - 0.5) : (int)(q + 0.5);
-    q = (double)n;
+    n = (q < 0.0) ? static_cast<int>(q - 0.5) : static_cast<int>(q + 0.5);
+    q = static_cast<double>(n);
 //
 // pi/2 = 105414357/2^26 + 0.000 00000 09920 93579 68054 04416 39751
 // to reasonable accuracy.  It is vital that the exact part be

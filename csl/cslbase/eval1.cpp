@@ -1,4 +1,4 @@
-// eval1.cpp                               Copyright (C) 1989-1019 Codemist    
+// eval1.cpp                               Copyright (C) 1989-1019 Codemist
 
 //
 // Interpreter (part 1).
@@ -82,7 +82,7 @@ LispObject eval(LispObject u, LispObject env)
     if (check_stack("@" __FILE__,__LINE__)) aerror("deep stack in eval");
 #endif
 restart:
-    int t = (int)u & TAG_BITS;
+    int t = static_cast<int>(u) & TAG_BITS;
 // The first case considered is of symbols - lexical and special bindings
 // have to be allowed for.
     if (t == TAG_SYMBOL)
@@ -153,44 +153,44 @@ restart:
 // extra "fun" here.
         {   LispObject p;
             if (is_symbol(fn)) // can only be a local function if atomic.
-            for (p=env; p!=nil; p=cdr(p))
-            {   LispObject w = car(p);
+                for (p=env; p!=nil; p=cdr(p))
+                {   LispObject w = car(p);
 // The form (<list> . sym) is used in an environment to indicate a local
 // binding of a function, either as a regular function or as a macro
 // (i.e. flet or macrolet).  The structure of the list distinguishes
 // between these two cases.
-                if (cdr(w) == fn && is_cons(w = car(w)) && w!=nil)
-                {   p = car(w);
+                    if (cdr(w) == fn && is_cons(w = car(w)) && w!=nil)
+                    {   p = car(w);
 // p will now be (funarg env bvl ...body...) for a simple local
 // function definition, or (bvl ...body...) with the bvl non-atomic
 // for a local macro introduced using MACROLET.
-                    if (p == funarg) // ordinary function
-                    {   fn = w;      // (funarg ...) is OK to apply
-                        goto ordinary_function;
-                    }
+                        if (p == funarg) // ordinary function
+                        {   fn = w;      // (funarg ...) is OK to apply
+                            goto ordinary_function;
+                        }
 // Here it is a local macro. Observe that the macroexpansion is done
 // with respect to an empty environment.  Macros that are defined at the same
 // time may seem to be mutually recursive but there is a sense in which they
 // are not (as well as a sense in which they are) - self and cross references
 // only happen AFTER an expansion and can not happen during one.
-                    push(u, env);
-                    on_backtrace(
-                        w = cons(lambda, w);
-                        p = apply(qvalue(macroexpand_hook),
-                                  list3(w, u, nil),
-                                  nil,
-                                  macroexpand_hook),
-                        // now the error handler
-                        pop(env, u);
-                        if (SHOW_FNAME)
-                        {   err_printf("\nMacroexpanding: ");
+                        push(u, env);
+                        on_backtrace(
+                            w = cons(lambda, w);
+                            p = apply(qvalue(macroexpand_hook),
+                                      list3(w, u, nil),
+                                      nil,
+                                      macroexpand_hook),
+                            // now the error handler
+                            pop(env, u);
+                            if (SHOW_FNAME)
+                    {   err_printf("\nMacroexpanding: ");
                             loop_print_error(u);
                         });
-                    pop(env, u);
-                    u = p;
-                    goto restart;
+                        pop(env, u);
+                        u = p;
+                        goto restart;
+                    }
                 }
-            }
         }
 // Here I have dropped out from the search for a local definition of the
 // function, so a global interpretation is needed.
@@ -202,7 +202,7 @@ restart:
             debug_record_symbol(fn);
             if (h & SYM_SPECIAL_FORM)
             {   STACK_SANITY1(u);
-                assert(qfn1(fn) != NULL);
+                assert(qfn1(fn) != nullptr);
                 return (*qfn1(fn))(args, env);
             }
             else if (h & SYM_MACRO)
@@ -221,9 +221,9 @@ restart:
                     // now the error handler
                     pop(env, u);
                     if (SHOW_FNAME)
-                    {   err_printf("\nMacroexpanding: ");
-                        loop_print_error(u);
-                    });
+            {   err_printf("\nMacroexpanding: ");
+                    loop_print_error(u);
+                });
                 pop(env, u);
                 return eval(fn, env);
             }
@@ -245,9 +245,9 @@ restart:
                 a1 = eval(a1, env),
                 pop(env, args, fn);
                 if (SHOW_ARGS)
-                {   err_printf("\nEvaluating: ");
-                    loop_print_error(car(args));
-                });
+        {   err_printf("\nEvaluating: ");
+                loop_print_error(car(args));
+            });
             pop(env, args, fn);
             args = cdr(args);
             if (args == nil) return (*qfn1(fn))(fn, a1);
@@ -257,9 +257,9 @@ restart:
                 a2 = eval(a2, env),
                 pop(a1, env, args, fn);
                 if (SHOW_ARGS)
-                {   err_printf("\nEvaluating: ");
-                    loop_print_error(car(args));
-                });
+        {   err_printf("\nEvaluating: ");
+                loop_print_error(car(args));
+            });
             pop(a1, env, args, fn);
             args = cdr(args);
             if (args == nil) return (*qfn2(fn))(fn, a1, a2);
@@ -269,9 +269,9 @@ restart:
                 a3 = eval(a3, env),
                 pop5(a2, a1, env, args, fn);
                 if (SHOW_ARGS)
-                {   err_printf("\nEvaluating: ");
-                    loop_print_error(car(args));
-                });
+        {   err_printf("\nEvaluating: ");
+                loop_print_error(car(args));
+            });
             pop5(a2, a1, env, args, fn);
             args = cdr(args);
             if (args == nil) return (*qfn3(fn))(fn, a1, a2, a3);
@@ -291,9 +291,9 @@ restart:
                     // Now the error handler
                     pop(eargs, env, args, fn);
                     if (SHOW_ARGS)
-                    {   err_printf("\nEvaluating: ");
-                        loop_print_error(car(args));
-                    });
+            {   err_printf("\nEvaluating: ");
+                    loop_print_error(car(args));
+                });
                 pop(eargs);
                 eargs = cons(w, eargs);
                 pop(env, args, fn);
@@ -312,7 +312,8 @@ restart:
 // &rest and keyword arguments and all the odd generality that Common Lisp
 // introduces. This slows down the interpreter.
 
-static bool check_no_unwanted_keys(LispObject restarg, LispObject ok_keys)
+static bool check_no_unwanted_keys(LispObject restarg,
+                                   LispObject ok_keys)
 // verify that there were no unwanted keys in the actual arg list
 {   bool odd_key_found = false;
     while (restarg!=nil)
@@ -345,8 +346,7 @@ static bool check_keyargs_even(LispObject restarg)
 }
 
 static LispObject keywordify(LispObject v)
-{
-    LispObject name = get_pname(v);
+{   LispObject name = get_pname(v);
 #ifdef COMMON
     return Lintern_2(nil, name, qvalue(keyword_package));
 #else
@@ -400,7 +400,7 @@ static LispObject key_lookup(LispObject keyname, LispObject args)
 // via some of the stack-addresses names show above. Ugh.
 
 inline void instate_binding(LispObject var, LispObject val,
-        LispObject local_decs1)
+                            LispObject local_decs1)
 {   Header h;
 // Complain if the varianble that somebody is attempting to bind seems bad.
     if (!is_symbol(var) || (qheader(var) & SYM_GLOBAL_VAR)!=0)
@@ -481,8 +481,8 @@ LispObject apply_lambda(LispObject def, LispObject args,
 //
     push(args);                         // arglist
     push(w1,                           // bvl
-          cdr(def),                    // body
-          env1, name1);
+         cdr(def),                    // body
+         env1, name1);
     push5(nil, nil,                     // local_decs, ok_keys
           nil, nil, nil);               // restarg, specenv, val1
     push5(nil, nil,                     // arg, v1
@@ -498,7 +498,8 @@ LispObject apply_lambda(LispObject def, LispObject args,
         p = car(body);
         body = cdr(body);
         if (!consp(p))
-        {   if (stringp(p) && consp(body)) continue; // string is comment here.
+        {   if (stringp(p) &&
+                consp(body)) continue; // string is comment here.
             body = cons(p, body);  // other atoms get stuck back on body.
             break;
         }
@@ -633,7 +634,8 @@ LispObject apply_lambda(LispObject def, LispObject args,
 
                 case STATE_REST1:
                     if (v == key_key)
-                    {   if (check_keyargs_even(restarg)) error(1, err_bad_keyargs, restarg);
+                    {   if (check_keyargs_even(restarg)) error(1, err_bad_keyargs,
+                                                                   restarg);
                         opt_rest_state = STATE_KEY;
                         continue;
                     }
@@ -747,7 +749,8 @@ LispObject apply_lambda(LispObject def, LispObject args,
 
             case STATE_OPT:         // error if bvl finishes here
             case STATE_REST:
-                error(1, err_bad_bvl, opt_rest_state == STATE_OPT ? opt_key : rest_key);
+                error(1, err_bad_bvl,
+                      opt_rest_state == STATE_OPT ? opt_key : rest_key);
 
             case STATE_KEY:         // ensure only valid keys were given
                 if (check_no_unwanted_keys(restarg, ok_keys))
@@ -840,7 +843,7 @@ LispObject Levlis(LispObject env, LispObject a)
 // In my C code here these cases are Lapply_1, Lapply_2 etc.
 
 LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
-        LispObject a2, LispObject a3up)
+                      LispObject a2, LispObject a3up)
 {   STACK_SANITY;
     save_current_function saver(apply_symbol);
 // Here I have something like
@@ -872,7 +875,8 @@ LispObject Lapply_2(LispObject env, LispObject fn, LispObject a1)
     return apply(fn, a1, nil, apply_symbol);
 }
 
-LispObject Lapply_3(LispObject env, LispObject fn, LispObject a1, LispObject a2)
+LispObject Lapply_3(LispObject env, LispObject fn, LispObject a1,
+                    LispObject a2)
 {   save_current_function saver(apply_symbol);
     push(fn);
     a1 = cons(a1, a2);
@@ -899,7 +903,7 @@ LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
 }
 
 LispObject Lapply2(LispObject env, LispObject fn,
-        LispObject a1, LispObject a2)
+                   LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
     push(env, fn);
@@ -909,7 +913,7 @@ LispObject Lapply2(LispObject env, LispObject fn,
 }
 
 LispObject Lapply3(LispObject env, LispObject fn,
-        LispObject a1, LispObject a2, LispObject a3up)
+                   LispObject a1, LispObject a2, LispObject a3up)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
     {   LispObject a3 = arg4("apply3", a3up);
         return (*qfn3(fn))(fn, a1, a2, a3);
@@ -941,7 +945,7 @@ LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
 }
 
 LispObject Lfuncall_3(LispObject env, LispObject fn,
-        LispObject a1, LispObject a2)
+                      LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
     push(env, fn);
@@ -951,7 +955,7 @@ LispObject Lfuncall_3(LispObject env, LispObject fn,
 }
 
 LispObject Lfuncall_4up(LispObject env, LispObject fn,
-        LispObject a1, LispObject a2, LispObject a3up)
+                        LispObject a1, LispObject a2, LispObject a3up)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
     {   if (cdr(a3up) == nil) return (*qfn3(fn))(fn, a1, a2, car(a3up));
         else return (*qfn4up(fn))(fn, a1, a2, car(a3up), cdr(a3up));
@@ -978,7 +982,7 @@ LispObject Lfuncall_4up(LispObject env, LispObject fn,
 // me as if for non-leaf things it is less help.
 
 LispObject Lvalues_4up(LispObject env, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+                       LispObject a3, LispObject a4up)
 {   mv_2 = a2;
     mv_3 = a3;
 // Because multiple-values get passed back in static storage there is
@@ -994,7 +998,8 @@ LispObject Lvalues_4up(LispObject env, LispObject a1, LispObject a2,
     return nvalues(a1, n);
 }
 
-LispObject Lvalues_3(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Lvalues_3(LispObject env, LispObject a, LispObject b,
+                     LispObject c)
 {   mv_2 = b;
     mv_3 = c;
     return nvalues(a, 3);
@@ -1073,7 +1078,8 @@ LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
     return apply_lambda(qenv(def), a1, nil, def);
 }
 
-LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2, LispObject a3)
+LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2,
+                         LispObject a3)
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck(def, a1, a2, a3);
@@ -1083,8 +1089,9 @@ LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2, LispObjec
     return apply_lambda(qenv(def), a1, nil, def);
 }
 
-LispObject interpreted_4up(LispObject def, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+LispObject interpreted_4up(LispObject def, LispObject a1,
+                           LispObject a2,
+                           LispObject a3, LispObject a4up)
 {   STACK_SANITY;
     save_current_function saver(def);
     push(def);
@@ -1124,7 +1131,8 @@ LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
     return apply_lambda(cdr(def), a1, car(def), cdr(def));
 }
 
-LispObject funarged_3(LispObject def, LispObject a1, LispObject a2, LispObject a3)
+LispObject funarged_3(LispObject def, LispObject a1, LispObject a2,
+                      LispObject a3)
 {   STACK_SANITY;
     save_current_function saver(def);
     stackcheck(def, a1, a2, a3);
@@ -1136,7 +1144,7 @@ LispObject funarged_3(LispObject def, LispObject a1, LispObject a2, LispObject a
 }
 
 LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+                        LispObject a3, LispObject a4up)
 {   STACK_SANITY;
     save_current_function saver(def);
     def = qenv(def);
@@ -1179,9 +1187,9 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
                         // Now the error handler
                         pop(done, form);
                         if (SHOW_FNAME)
-                        {   err_printf("\nMacroexpanding: ");
-                            loop_print_error(form);
-                        });
+                {   err_printf("\nMacroexpanding: ");
+                        loop_print_error(form);
+                    });
                     pop(done, form);
                     mv_2 = lisp_true;
                     return nvalues(p, 2);
@@ -1254,7 +1262,8 @@ LispObject autoload_0(LispObject fname)
 {   STACK_SANITY;
     fname = qenv(fname);
     push(car(fname));
-    set_fns(car(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    set_fns(car(fname), undefined_0, undefined_1, undefined_2,
+            undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
     fname = cdr(fname);
     while (consp(fname))
@@ -1270,7 +1279,8 @@ LispObject autoload_1(LispObject fname, LispObject a1)
 {   STACK_SANITY;
     fname = qenv(fname);
     push(car(fname), a1);
-    set_fns(car(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    set_fns(car(fname), undefined_0, undefined_1, undefined_2,
+            undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
     fname = cdr(fname);
     while (consp(fname))
@@ -1288,7 +1298,8 @@ LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     fname = qenv(fname);
     push(car(fname), a1, a2);
-    set_fns(car(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
+            undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
     fname = cdr(fname);
     while (consp(fname))
@@ -1302,11 +1313,13 @@ LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
     return apply(fname, a1, nil, autoload_symbol);
 }
 
-LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2, LispObject a3)
+LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2,
+                      LispObject a3)
 {   STACK_SANITY;
     fname = qenv(fname);
     push(car(fname), a1, a2, a3);
-    set_fns(car(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
+            undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
     fname = cdr(fname);
     while (consp(fname))
@@ -1320,12 +1333,14 @@ LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2, LispObject
     return apply(fname, a1, nil, autoload_symbol);
 }
 
-LispObject autoload_4up(LispObject fname, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+LispObject autoload_4up(LispObject fname, LispObject a1,
+                        LispObject a2,
+                        LispObject a3, LispObject a4up)
 {   STACK_SANITY;
     fname = qenv(fname);
     push5(fname, a1, a2, a3, a4up);
-    set_fns(car(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
+            undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
     fname = cdr(fname);
     while (consp(fname))
@@ -1340,8 +1355,7 @@ LispObject autoload_4up(LispObject fname, LispObject a1, LispObject a2,
 }
 
 LispObject undefined_0(LispObject fname)
-{
-    error(1, err_undefined_function_0, fname);
+{   error(1, err_undefined_function_0, fname);
 }
 
 LispObject undefined_1(LispObject fname, LispObject)
@@ -1357,12 +1371,13 @@ LispObject undefined_2(LispObject fname, LispObject, LispObject)
 {   error(1, err_undefined_function_2, fname);
 }
 
-LispObject undefined_3(LispObject fname, LispObject, LispObject, LispObject)
+LispObject undefined_3(LispObject fname, LispObject, LispObject,
+                       LispObject)
 {   error(1, err_undefined_function_3, fname);
 }
 
 LispObject undefined_4up(LispObject fname,
-                      LispObject, LispObject, LispObject, LispObject)
+                         LispObject, LispObject, LispObject, LispObject)
 {   error(1, err_undefined_function_4up, fname);
 }
 
@@ -1410,7 +1425,8 @@ LispObject f2_as_1(LispObject env, LispObject a, LispObject)
     return (*qfn1(env))(env, a);
 }
 
-LispObject f3_as_1(LispObject env, LispObject a1, LispObject, LispObject)
+LispObject f3_as_1(LispObject env, LispObject a1, LispObject,
+                   LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
     return (*qfn1(env))(env, a1);
@@ -1422,13 +1438,15 @@ LispObject f2_as_2(LispObject env, LispObject a, LispObject b)
     return (*qfn2(env))(env, a, b);
 }
 
-LispObject f3_as_2(LispObject env, LispObject a1, LispObject a2, LispObject)
+LispObject f3_as_2(LispObject env, LispObject a1, LispObject a2,
+                   LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
     return (*qfn2(env))(env, a1, a2);
 }
 
-LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2,
+                   LispObject a3)
 {   env = qenv(env);
     debug_record_symbol(env);
     return (*qfn3(env))(env, a1, a2, a3);
@@ -1556,8 +1574,8 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
     if (segid == -1) aerror("Unable to allocate a shared segment");
 // Attach to the shared segment to obtain a memory address via which it can be
 // accessed. Again raise an error if this fails.
-    shared = (char *)shmat(segid, NULL, 0);
-    if (shared == (char *)(-1))
+    shared = reinterpret_cast<char *>(shmat(segid, nullptr, 0));
+    if (shared == reinterpret_cast<char *>(-1))
         aerror("Unable to attach to shared segment");
 // the shared segment is set up to contain null strings in the two places
 // where it might be used to hold return values.
@@ -1697,7 +1715,7 @@ LispObject Lshow_stack_2(LispObject env, LispObject a1, LispObject a2)
     {   n = int_of_fixnum(a2);
         if (n > 100) n = m+10;
     }
-    term_printf("Stack depth %d\n", (int)(stack-stackBase));
+    term_printf("Stack depth %d\n", static_cast<int>(stack-stackBase));
     for (int i=m; i<=n; i++)
     {   term_printf("%d: ", i);
         prin_to_terminal(stack[-i]);
@@ -1732,7 +1750,7 @@ setup_type const eval1_setup[] =
     {"macroexpand",             G0Wother, Lmacroexpand, Lmacroexpand_2, G3W1, G4W1},
     {"macroexpand-1",           G0Wother, Lmacroexpand_1, Lmacroexpand_2, G3Wother, G4Wother},
     {"show-stack",              Lshow_stack_0, Lshow_stack_1, Lshow_stack_2, G3Wother, G4Wother},
-    {NULL,                      0, 0, 0, 0, 0}
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of eval1.cpp

@@ -21,7 +21,7 @@
 // have been installed - that will very often be in c:\cygwin and c:\cygwin64.
 // Anybody who has or once had multiple instances of cygwin installed (apart
 // from one 32-bit and one 64-bit) MAY be lucky but I will not make any
-// guarantees. 
+// guarantees.
 //
 // When compiled without command line flags this executes the command it
 // is given in the opposite version of cygwin to whichever is is invoked
@@ -168,7 +168,7 @@ bool find_cygwin(bool sixty_four)
                      TEXT("Software\\cygwin\\Installations"),
                      0,
                      KEY_READ,
-                     &hKey) == ERROR_SUCCESS) 
+                     &hKey) == ERROR_SUCCESS)
     {
 // If the key was not present then I do not seem to have any cygwin
 // copies at all. If I do I will want to see where they live, and before
@@ -176,18 +176,18 @@ bool find_cygwin(bool sixty_four)
 // records that I will extract might be.
         DWORD n_name, n_data;        // max size of fields in registry
         DWORD rc = RegQueryInfoKey(
-            hKey,                    // key handle
-            NULL,                    // buffer for class name
-            NULL,                    // size of class string
-            NULL,                    // reserved
-            NULL,                    // number of subkeys
-            NULL,                    // longest subkey size
-            NULL,                    // longest class string
-            NULL,                    // number of values for this key
-            &n_name,                 // longest value name
-            &n_data,                 // longest value data
-            NULL,                    // security descriptor
-            NULL);                   // last write time
+                       hKey,                    // key handle
+                       nullptr,                 // buffer for class name
+                       nullptr,                 // size of class string
+                       nullptr,                 // reserved
+                       nullptr,                 // number of subkeys
+                       nullptr,                 // longest subkey size
+                       nullptr,                 // longest class string
+                       nullptr,                 // number of values for this key
+                       &n_name,                 // longest value name
+                       &n_data,                 // longest value data
+                       nullptr,                 // security descriptor
+                       nullptr);                // last write time
 // I create space for the returned value plus a terminating NUL. If the
 // allocation fails then an exception will be raised an the program will
 // terminate.
@@ -201,14 +201,14 @@ bool find_cygwin(bool sixty_four)
             DWORD namesize = n_name+1;    // allow for terminating NUL
             DWORD datasize = n_data+1;
             rc = RegEnumValue(
-                hKey,                     // Key
-                i,                        // Index
-                name,                     // put name here
-                &namesize,                // name size
-                NULL,                     // Reserved - must be NULL
-                &type,                    // put type here
-                data,                     // put data here
-                &datasize);               // data size
+                     hKey,                     // Key
+                     i,                        // Index
+                     name,                     // put name here
+                     &namesize,                // name size
+                     nullptr,                  // Reserved - must be nullptr
+                     &type,                    // put type here
+                     data,                     // put data here
+                     &datasize);               // data size
 // The key error code here is ERROR_NO_MORE_ITEMS, but I will abandon my
 // scan on any error, and not alert users to just what it was.
             if (rc != ERROR_SUCCESS) break;
@@ -225,7 +225,7 @@ bool find_cygwin(bool sixty_four)
 // look for PE headers that might confirm that they looked like a DLL and
 // and executable and on that basis work out whether they are 32 or 64-bit
 // variants.
-            char *p = (char *)data;
+            char *p = reinterpret_cast<char *>(data);
 // Verify that the data starts of "\??\x:\" as expected. Also ignore any
 // cases where the string is unreasonably long.
             if (p[0] != '\\' ||
@@ -243,11 +243,11 @@ bool find_cygwin(bool sixty_four)
             std::FILE *f2 = std::fopen(path2, "rb");
 // If the file does not exist or is not readable then this is not a good
 // candidate.
-            if (f1 == NULL)
-            {   if (f2 != NULL) std::fclose(f2);
+            if (f1 == nullptr)
+            {   if (f2 != nullptr) std::fclose(f2);
                 continue;
             }
-            if (f2 == NULL)
+            if (f2 == nullptr)
             {   std::fclose(f1);
                 continue;
             }
@@ -257,7 +257,7 @@ bool find_cygwin(bool sixty_four)
                 std::fread(&dos_header2, sizeof(dos_header2), 1, f2) == 1 &&
                 dos_header2.e_magic == IMAGE_DOS_SIGNATURE)
             {   LONG next1 = dos_header1.e_lfanew,
-                     next2 = dos_header2.e_lfanew;
+                         next2 = dos_header2.e_lfanew;
                 IMAGE_NT_HEADERS nt_headers1, nt_headers2;
                 if (std::fseek(f1, next1, SEEK_SET) == 0 &&
                     std::fread(&nt_headers1, sizeof(nt_headers1), 1, f1) == 1 &&
@@ -271,14 +271,14 @@ bool find_cygwin(bool sixty_four)
                     bool ok;
                     if (sixty_four)
                         ok = nt_headers1.FileHeader.Machine ==
-                                 IMAGE_FILE_MACHINE_AMD64 &&
+                             IMAGE_FILE_MACHINE_AMD64 &&
                              nt_headers2.FileHeader.Machine ==
-                                 IMAGE_FILE_MACHINE_AMD64;
+                             IMAGE_FILE_MACHINE_AMD64;
                     else
                         ok = nt_headers1.FileHeader.Machine ==
-                                 IMAGE_FILE_MACHINE_I386 &&
+                             IMAGE_FILE_MACHINE_I386 &&
                              nt_headers2.FileHeader.Machine ==
-                                 IMAGE_FILE_MACHINE_I386;
+                             IMAGE_FILE_MACHINE_I386;
 // Wow - now  may have found a nice installation. Well there is some messy
 // possibility that I might find several locations corresponding to
 // multiple cygwin installations. I think that ought not to be the situation,
@@ -290,7 +290,7 @@ bool find_cygwin(bool sixty_four)
                         (cygwin_root[0] == 0 ||
                          (std::strlen(p+4) <= std::strlen(cygwin_root) &&
                           std::strcmp(p+4, cygwin_root) < 0)))
-                          std::strcpy(cygwin_root, p+4);
+                        std::strcpy(cygwin_root, p+4);
                 }
             }
             std::fclose(f1);
@@ -306,24 +306,23 @@ static void echoOutput(HANDLE h)
 {   char buffer[4];
     DWORD actual;
     for (;;)
-    {   BOOL fg = ReadFile(h, buffer, 1, &actual, NULL);
+    {   BOOL fg = ReadFile(h, buffer, 1, &actual, nullptr);
         if (!fg || actual!=1) break;
         std::putchar(buffer[0]);
     }
 }
 
 int main(int argc, char *argv[])
-{
-    if (argc == 1)
+{   if (argc == 1)
     {   bool c32 = find_cygwin(false);
         bool c64 = find_cygwin(true);
 // In general I will be expecting that this program is called from a cygwin
 // shell...
         std::printf("%s\n",
-            !c32 && !c64 ? "No cygwin installation at all found!\n" :
-            !c32 && c64  ? "64" :
-            c32 && !c64  ? "32" :
-                           "32 64");
+                    !c32 && !c64 ? "No cygwin installation at all found!\n" :
+                    !c32 && c64  ? "64" :
+                    c32 && !c64  ? "32" :
+                    "32 64");
         return 0;
     }
     run64 = false;
@@ -379,7 +378,7 @@ int main(int argc, char *argv[])
 
     if (!find_cygwin(run64))
     {   std::printf("No %d bit version of cygwin found. Sorry\n",
-               run64 ? 64 : 32);
+                    run64 ? 64 : 32);
         return 1;
     }
 
@@ -388,8 +387,8 @@ int main(int argc, char *argv[])
     const char *user;
     char newenv[1024];
     int dirsize, i, rc;
-    std::memset((void *)&startup, 0, sizeof(startup));
-    std::memset((void *)&process, 0, sizeof(process));
+    std::memset(reinterpret_cast<void *>()&startup, 0, sizeof(startup));
+    std::memset(reinterpret_cast<void *>()&process, 0, sizeof(process));
     startup.cb = sizeof(startup);
 // Passing STD_OUTPUT etc down seems to behave well when I am under mintty
 // or an xterm, but if I am running in a Windows console (eg as in the
@@ -412,7 +411,7 @@ int main(int argc, char *argv[])
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.bInheritHandle = TRUE;
-    sa.lpSecurityDescriptor = NULL; 
+    sa.lpSecurityDescriptor = nullptr;
     if (!CreatePipe(&p1a, &p1b, &sa, 0) ||
         !CreatePipe(&p2a, &p2b, &sa, 0))
     {   std::printf("Failed to create pipes\n");
@@ -426,8 +425,8 @@ int main(int argc, char *argv[])
     startup.wShowWindow = SW_HIDE;
     startup.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
 // Now set up a command line
-    const char *pnewdir = NULL;
-    char *pnewenv = NULL;
+    const char *pnewdir = nullptr;
+    char *pnewenv = nullptr;
     char *current;
 // What I do here is to create a string that contains
 //    windir\system32\cmd /c
@@ -448,7 +447,7 @@ int main(int argc, char *argv[])
 // and avoid starting up cygwin from scratch again.
 //
     char newdir[1024];
- 
+
     if (run64 == running64)
     {
 // The command I issue here will be interpreted by Windows, but I should have
@@ -469,22 +468,22 @@ int main(int argc, char *argv[])
 // is active: eg when I am linked in over ssh that may be "cyg_server".
 // If I fail to read USER I will default to the name "unknown".
         user = std::getenv("USER");
-        if (user == NULL) user = "unknown";
+        if (user == nullptr) user = "unknown";
         std::memset(newenv, 0, sizeof(newenv));
 // I need a variant on cygwin_root converted from x:\... to /cygdrive/x/...
         std::sprintf(cygwinized_root, "/cygdrive/%c%s",
-             cygwin_root[0], &cygwin_root[2]);
+                     cygwin_root[0], &cygwin_root[2]);
         for (char *p=cygwinized_root; *p!=0; p++)
             if (*p == '\\') *p = '/';
         std::sprintf(newenv, "OTHER=yes%cUSER=%s%cPATH=%s/bin%c",
-            0, user, 0, cygwinized_root, 0);
+                     0, user, 0, cygwinized_root, 0);
         pnewenv = newenv;
 
         std::sprintf(newdir, "%s\\bin", cygwin_root);
         pnewdir = newdir;
 
-        dirsize = GetCurrentDirectory(0, NULL);
-        current = (char *)std::malloc(dirsize+4);
+        dirsize = GetCurrentDirectory(0, nullptr);
+        current = reinterpret_cast<char *>(std)::malloc(dirsize+4);
         rc = GetCurrentDirectory(dirsize, current);
         if (rc > dirsize)
         {   std::printf("Getting directory failed\n");
@@ -494,9 +493,9 @@ int main(int argc, char *argv[])
             if (current[i] == '\\') current[i] = '/';
 
         std::sprintf(command,
-                "%s\\%s\\cmd /s /d /c %s\\bin\\bash --login -c \\\"cd ",
-            std::getenv("WINDIR"), run64 ? "sysnative" : "system32",
-            cygwin_root);
+                     "%s\\%s\\cmd /s /d /c %s\\bin\\bash --login -c \\\"cd ",
+                     std::getenv("WINDIR"), run64 ? "sysnative" : "system32",
+                     cygwin_root);
         append_command(current);
         std::strcat(command, " ; ");
         for (i=1; i<argc; i++)
@@ -506,32 +505,32 @@ int main(int argc, char *argv[])
         std::strcat(command, "\"");
     }
     rc = CreateProcess(
-             NULL,                       // ApplicationName
+             nullptr,                    // ApplicationName
              command,                    // Command line
-             NULL,                       // Process attributes
-             NULL,                       // Security attributes
+             nullptr,                    // Process attributes
+             nullptr,                    // Security attributes
              1,                          // Inherit handles?
              CREATE_NEW_CONSOLE,         // Process creation flags
-             pnewenv,                    // environment or NULL
-             pnewdir,                    // Current Directory or NULL
+             pnewenv,                    // environment or nullptr
+             pnewdir,                    // Current Directory or nullptr
              &startup,                   // Startup Info
              &process);                  // process info
     if (rc == 0)
-    {   LPTSTR msg = NULL;
+    {   LPTSTR msg = nullptr;
         FormatMessage(
             FORMAT_MESSAGE_FROM_SYSTEM |
-                FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL,
+            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
             GetLastError(),
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
             (LPTSTR)&msg,
             0,
-            NULL);
-        if (msg != NULL)
+            nullptr);
+        if (msg != nullptr)
         {   std::fprintf(stderr, "%s\n", msg);
             LocalFree(msg);
-            msg = NULL;
+            msg = nullptr;
         }
         else std::fprintf(stderr, "Process creation failed\n");
         return 1;

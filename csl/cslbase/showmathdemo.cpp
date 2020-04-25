@@ -45,8 +45,7 @@
 #include <cstdio>
 
 int main(int argc, char *argv[])
-{
-    std::printf("FOX library not detected and so this demo is unavailable\n");
+{   std::printf("FOX library not detected and so this demo is unavailable\n");
     return 0;
 }
 
@@ -64,7 +63,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#include "fx.h"	
+#include "fx.h"
 #include "fwin.h"
 
 #include "FXShowMath.h"
@@ -99,8 +98,7 @@ using namespace FX;
 static const char *TeXInput;
 
 static int nextChar()
-{
-    return *TeXInput++;
+{   return *TeXInput++;
 }
 
 
@@ -135,40 +133,37 @@ public:
 
 
 FXDEFMAP(MathWindow) MathWindowMap[] =
-{
-    FXMAPFUNC(SEL_PAINT, MathWindow::ID_CANVAS, MathWindow::onPaint),
+{   FXMAPFUNC(SEL_PAINT, MathWindow::ID_CANVAS, MathWindow::onPaint),
 };
 
-FXIMPLEMENT(MathWindow,FXMainWindow,MathWindowMap,ARRAYNUMBER(MathWindowMap))
+FXIMPLEMENT(MathWindow,FXMainWindow,MathWindowMap,
+            ARRAYNUMBER(MathWindowMap))
 
 
 MathWindow::MathWindow(FXApp *a)
-          :FXMainWindow(a,"ShowMathDemo",NULL,NULL,DECOR_ALL,100,100,550,600)
-{
-    canvas=new FXCanvas(this,this,ID_CANVAS,
-        FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_Y|
-        LAYOUT_FILL_ROW|LAYOUT_FILL_COLUMN);
+    :FXMainWindow(a,"ShowMathDemo",nullptr,nullptr,DECOR_ALL,100,100,550,
+                  600)
+{   canvas=new FXCanvas(this,this,ID_CANVAS,
+                        FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_Y|
+                        LAYOUT_FILL_ROW|LAYOUT_FILL_COLUMN);
     app = a;
 }
 
 MathWindow::~MathWindow()
-{
-    closeShowMath(app);
+{   closeShowMath(app);
 }
 
 void MathWindow::create()
-{
-    FXMainWindow::create();
+{   FXMainWindow::create();
     show(PLACEMENT_SCREEN);
 }
 
-static Box *topBox = NULL;
+static Box *topBox = nullptr;
 
 static int fontFace = 2;
 
 long MathWindow::onPaint(FXObject *, FXSelector, void *ptr)
-{
-    FXEvent *ev = (FXEvent*)ptr;
+{   FXEvent *ev = (FXEvent*)ptr;
     FXDCWindow dc(canvas, ev);
     dc.setForeground(canvas->getBackColor());
     dc.fillRectangle(ev->rect.x, ev->rect.y, ev->rect.w, ev->rect.h);
@@ -177,7 +172,7 @@ long MathWindow::onPaint(FXObject *, FXSelector, void *ptr)
 #ifndef WIN32
     ftFont = (XftFont *)mathFont[fontFace];
 #endif
-        dc.setFont((FXFont *)mathFont[fontFace]);
+    dc.setFont((FXFont *)mathFont[fontFace]);
     int i, j;
     for (i=0; i<256; i+=16)
     {   for (j=0; j<16; j++)
@@ -209,56 +204,54 @@ long MathWindow::onPaint(FXObject *, FXSelector, void *ptr)
 // Some test data.
 
 static const char *testData[] =
-{
-"\\begin{center}$\\displaystyle x \\not \\equiv y $\\end{center}",
+{   "\\begin{center}$\\displaystyle x \\not \\equiv y $\\end{center}",
 
-"\\begin{center}$\\displaystyle x_2$\\end{center}",
+    "\\begin{center}$\\displaystyle x_2$\\end{center}",
 
-"\\begin{center}$\\displaystyle x+\\mathrm{100}$\\end{center}",
+    "\\begin{center}$\\displaystyle x+\\mathrm{100}$\\end{center}",
 
-"\\begin{center}$\\displaystyle x^4-\\mathrm{12}\\*x^3+\\mathrm{54}\\*x^2"
-"-\\mathrm{108}\\*x+\\mathrm{81}$\\end{center}",
+    "\\begin{center}$\\displaystyle x^4-\\mathrm{12}\\*x^3+\\mathrm{54}\\*x^2"
+    "-\\mathrm{108}\\*x+\\mathrm{81}$\\end{center}",
 
-"\\begin{center}$\\displaystyle x^{\\mathrm{30}}+\\mathrm{30}\\*x^{"
-"\\mathrm{29}}+\\mathrm{435}\\*x^{\\mathrm{28}}+\\mathrm{4060}\\*x^{\\mathrm{27}}+"
-"\\mathrm{27405}\\*x^{\\mathrm{26}}+\\mathrm{142506}\\*x^{\\mathrm{25}}+\\mathrm{593775}"
-"\\*x^{\\mathrm{24}}+\\mathrm{2035800}\\*x^{\\mathrm{23}}+\\mathrm{5852925}\\*x^{"
-"\\mathrm{22}}+$\\end{center}",
+    "\\begin{center}$\\displaystyle x^{\\mathrm{30}}+\\mathrm{30}\\*x^{"
+    "\\mathrm{29}}+\\mathrm{435}\\*x^{\\mathrm{28}}+\\mathrm{4060}\\*x^{\\mathrm{27}}+"
+    "\\mathrm{27405}\\*x^{\\mathrm{26}}+\\mathrm{142506}\\*x^{\\mathrm{25}}+\\mathrm{593775}"
+    "\\*x^{\\mathrm{24}}+\\mathrm{2035800}\\*x^{\\mathrm{23}}+\\mathrm{5852925}\\*x^{"
+    "\\mathrm{22}}+$\\end{center}",
 
-"\\begin{center}$\\displaystyle \\mathrm{14307150}\\*x^{\\mathrm{21}}+"
-"\\mathrm{30045015}\\*x^{\\mathrm{20}}+\\mathrm{54627300}\\*x^{\\mathrm{19}}+\\mathrm{86"
-"493225}\\*x^{\\mathrm{18}}+\\mathrm{119759850}\\*x^{\\mathrm{17}}+\\mathrm{145422675}"
-"\\*x^{\\mathrm{16}}+$\\end{center}",
+    "\\begin{center}$\\displaystyle \\mathrm{14307150}\\*x^{\\mathrm{21}}+"
+    "\\mathrm{30045015}\\*x^{\\mathrm{20}}+\\mathrm{54627300}\\*x^{\\mathrm{19}}+\\mathrm{86"
+    "493225}\\*x^{\\mathrm{18}}+\\mathrm{119759850}\\*x^{\\mathrm{17}}+\\mathrm{145422675}"
+    "\\*x^{\\mathrm{16}}+$\\end{center}",
 
-"\\begin{center}$\\displaystyle \\sin\\left(y\\right)$\\end{center}",
+    "\\begin{center}$\\displaystyle \\sin\\left(y\\right)$\\end{center}",
 
-"\\begin{center}$\\displaystyle \\sqrt{-x+1}$\\end{center}",
+    "\\begin{center}$\\displaystyle \\sqrt{-x+1}$\\end{center}",
 
-"\\begin{center}$\\displaystyle \\left(\\frac{x+1}{x-1}\\right)$\\end{center}",
+    "\\begin{center}$\\displaystyle \\left(\\frac{x+1}{x-1}\\right)$\\end{center}",
 
-"\\begin{center}$\\displaystyle \\pi$\\end{center}",
+    "\\begin{center}$\\displaystyle \\pi$\\end{center}",
 
-"\\begin{center}$\\displaystyle e^z$\\end{center}",
+    "\\begin{center}$\\displaystyle e^z$\\end{center}",
 
-"\\begin{center}$\\displaystyle e^{i\\*\\theta}$\\end{center}",
+    "\\begin{center}$\\displaystyle e^{i\\*\\theta}$\\end{center}",
 
-"\\begin{center}$\\displaystyle \\left(\\begin{matrix} \\sin \\left(1\\right) & x_2+\\Theta^2 \\\\"
-"\\frac{\\exists x : x < 2}{3-z_2} & \\gamma"
-"\\end{matrix}\\right\\}$\\end{center}",
+    "\\begin{center}$\\displaystyle \\left(\\begin{matrix} \\sin \\left(1\\right) & x_2+\\Theta^2 \\\\"
+    "\\frac{\\exists x : x < 2}{3-z_2} & \\gamma"
+    "\\end{matrix}\\right\\}$\\end{center}",
 
-"\\begin{center}$\\displaystyle \\int 2^{e^{e^x}}\\,d\\,x$\\end{center}",
+    "\\begin{center}$\\displaystyle \\int 2^{e^{e^x}}\\,d\\,x$\\end{center}",
 
-"\\begin{center}$\\displaystyle b!$\\end{center}",
+    "\\begin{center}$\\displaystyle b!$\\end{center}",
 
-"\\begin{center}$\\displaystyle a \\not\\equiv b$\\end{center}",
+    "\\begin{center}$\\displaystyle a \\not\\equiv b$\\end{center}",
 
-NULL
+    nullptr
 };
 
 
 int main(int argc,char *argv[])
-{
-    int example = 0;
+{   int example = 0;
     int fontSize = 160;
     fontFace = 2;
 
@@ -274,22 +267,21 @@ int main(int argc,char *argv[])
     {   const char *a = *argv++;
         unsigned int n = std::atoi(a);
         switch (whichArg++)
-        {
-    case 0:
-            if (n < sizeof(testData)/sizeof(testData[0])) example = n;
-            break;
-    case 1:
-            if (n == 0) n = 280;
-            while (n < 50) n = n*10;
-            while (n >= 500) n = n/10;
-            fontSize = n;
-            break;
-    case 2:
-            if (n<12) fontFace = n;
-            else fontFace = 2;
-            break;
-    default:
-            break;
+        {   case 0:
+                if (n < sizeof(testData)/sizeof(testData[0])) example = n;
+                break;
+            case 1:
+                if (n == 0) n = 280;
+                while (n < 50) n = n*10;
+                while (n >= 500) n = n/10;
+                fontSize = n;
+                break;
+            case 2:
+                if (n<12) fontFace = n;
+                else fontFace = 2;
+                break;
+            default:
+                break;
         }
     }
 
@@ -304,7 +296,7 @@ int main(int argc,char *argv[])
 
     topBox = parseTeX(nextChar, 0);
 
-    if (topBox == NULL)
+    if (topBox == nullptr)
     {   std::printf("Failed to parse this example\n");
         std::exit(1);
     }

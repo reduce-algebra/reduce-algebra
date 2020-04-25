@@ -58,8 +58,7 @@ static bool Iputc(int ch)
 bool Iread(void *buff, std::size_t size)
 // Reads (size) bytes into the indicated buffer.  Returns true if
 // if fails to read the expected number of bytes.
-{
-    unsigned char *p = (unsigned char *)buff;
+{   unsigned char *p = reinterpret_cast<unsigned char *>(buff);
     while (size > 0)
     {   int c;
         if ((c = Igetc()) == EOF) return true;
@@ -73,7 +72,8 @@ bool Iwrite(const void *buff, std::size_t size)
 //
 // Writes (size) bytes from the given buffer, returning true if trouble.
 //
-{   const unsigned char *p = (const unsigned char *)buff;
+{   const unsigned char *p = reinterpret_cast<const unsigned char *>
+                             (buff);
     for (std::size_t i=0; i<size; i++)
         if (Iputc(p[i])) return true;
     return false;
@@ -92,27 +92,26 @@ static unsigned char out[CHUNK];
 
 const char *Zreturncode(int rc)
 {   switch (rc)
-    {
-    default:
-        return "Unknown return code from zlib";
-    case Z_OK:
-        return "OK";
-    case Z_STREAM_END:
-        return "STREAM_END";
-    case Z_NEED_DICT:
-        return "NEED_DICT";
-    case Z_ERRNO:
-        return "ERRNO";
-    case Z_STREAM_ERROR:
-        return "STREAM_ERROR";
-    case Z_DATA_ERROR:
-        return "DATA_ERROR";
-    case Z_MEM_ERROR:
-        return "MEM_ERROR";
-    case Z_BUF_ERROR:
-        return "BUF_ERROR";
-    case Z_VERSION_ERROR:
-        return "VERSION_ERROR";
+{       default:
+            return "Unknown return code from zlib";
+        case Z_OK:
+            return "OK";
+        case Z_STREAM_END:
+            return "STREAM_END";
+        case Z_NEED_DICT:
+            return "NEED_DICT";
+        case Z_ERRNO:
+            return "ERRNO";
+        case Z_STREAM_ERROR:
+            return "STREAM_ERROR";
+        case Z_DATA_ERROR:
+            return "DATA_ERROR";
+        case Z_MEM_ERROR:
+            return "MEM_ERROR";
+        case Z_BUF_ERROR:
+            return "BUF_ERROR";
+        case Z_VERSION_ERROR:
+            return "VERSION_ERROR";
     }
 }
 
@@ -152,7 +151,7 @@ bool Zputc(int ch)
             if (Iputc(n >> 8)) return true;
             if (Iputc(n)) return true;
 // Calculate and write a CRC for this block.
-            int crc_out = crc32(crc32(0, NULL, 0), out, n);
+            int crc_out = crc32(crc32(0, nullptr, 0), out, n);
             if (Iputc(crc_out>>24)) return true;
             if (Iputc(crc_out>>16)) return true;
             if (Iputc(crc_out>>8)) return true;
@@ -160,7 +159,8 @@ bool Zputc(int ch)
             if (Iwrite(out, n)) return true;
         }
 // I will keep going until I have used up all this input block.
-    } while (strm.avail_in != 0);
+    }
+    while (strm.avail_in != 0);
     return false;
 }
 
@@ -171,19 +171,20 @@ bool def_finish()
         strm.next_out = out;
         int rc;
         if ((rc = deflate(&strm, Z_FINISH)) != Z_OK &&
-             rc != Z_STREAM_END) return true;
+            rc != Z_STREAM_END) return true;
         std::size_t n = CHUNK - strm.avail_out;
         if (n != 0)
         {   if (Iputc(n >> 8)) return true;
             if (Iputc(n)) return true;
-            int crc_out = crc32(crc32(0, NULL, 0), out, n);
+            int crc_out = crc32(crc32(0, nullptr, 0), out, n);
             if (Iputc(crc_out>>24)) return true;
             if (Iputc(crc_out>>16)) return true;
             if (Iputc(crc_out>>8)) return true;
             if (Iputc(crc_out)) return true;
             if (Iwrite(out, n)) return true;
         }
-    } while (strm.avail_out == 0);
+    }
+    while (strm.avail_out == 0);
     int rc = deflateEnd(&strm);
     if (rc != Z_OK) return true;
     if (Iputc(0)) return true;  // Termination bytes
@@ -192,7 +193,7 @@ bool def_finish()
 }
 
 bool Zwrite(const void *b, std::size_t n)
-{   const char *c = (const char *)b;
+{   const char *c = reinterpret_cast<const char *>(b);
     while (n-- != 0) if (Zputc(*c++)) return true;
     return false;
 }
@@ -220,13 +221,14 @@ bool inf_init()
 
 int Zgetc()
 {   for (;;)
-    {   if (n_out != 0)    // Use byte from the current decompressed chunk.
+    {   if (n_out !=
+            0)    // Use byte from the current decompressed chunk.
         {   n_out--;
             return *p_out++;
         }
         if (z_eof != 0) return (z_eof = -1);
 // Here the zlib output buffer is empty. If the input buffer contains anything
-// at all I will just call inflate() again. 
+// at all I will just call inflate() again.
 // I do not believe that inflate can ever leave input untouched in its input
 // buffer while there is space in the output buffer.
         if (strm.avail_in == 0)
@@ -262,7 +264,7 @@ int Zgetc()
             if (Iread(in, n)) return (z_eof = -1);
 // Compute a CRC on the block just read and complain if it is not as
 // expected.
-            int crc = crc32(crc32(0, NULL, 0), in, n);
+            int crc = crc32(crc32(0, nullptr, 0), in, n);
             if (crc != crc_needed) return (z_eof = -1);
 // Set the zlib input buffer information so that this new block can be
 // processed. There will be at least 1 new byte of data!
@@ -288,7 +290,7 @@ int Zgetc()
 }
 
 bool Zread(void *b, std::size_t n)
-{   char *c = (char *)b;
+{   char *c = reinterpret_cast<char *>(b);
     while (n-- != 0)
     {   int n = Zgetc();
         if (n == -1) return true;
@@ -311,7 +313,7 @@ int main(int argc, char **argv)
 // OR   zlibdemo -d compressed-src dest
 //
     if (argc < 3 ||
-        (argc == 3 && std::strcmp(argv[1] , "-d") == 0) ||
+        (argc == 3 && std::strcmp(argv[1], "-d") == 0) ||
         (argc == 4 && std::strcmp(argv[1], "-d") != 0) ||
         argc > 4)
     {   std::fputs("Usage: zlibdemo [-d] source dest\n", stderr);
@@ -319,10 +321,11 @@ int main(int argc, char **argv)
     }
 
     if (argc == 3)
-    {   src = std::strcmp(argv[1], "-") == 0 ? stdin : std::fopen(argv[1], "r");
-        assert(src != NULL);
+    {   src = std::strcmp(argv[1], "-") == 0 ? stdin : std::fopen(argv[1],
+                "r");
+        assert(src != nullptr);
         dest = std::fopen(argv[2], "wb");
-        assert(dest != NULL);
+        assert(dest != nullptr);
         def_init();
         int ch;
         while ((ch = std::getc(src)) != EOF) Zputc(ch);
@@ -330,13 +333,14 @@ int main(int argc, char **argv)
         std::fclose(src);
         std::fclose(dest);
         return 0;
-     }
+    }
 
     else
     {   src = std::fopen(argv[2], "rb");
-        assert(src != NULL);
-        dest = std::strcmp(argv[3], "-") == 0 ? stdout : std::fopen(argv[3], "w");
-        assert(dest != NULL);
+        assert(src != nullptr);
+        dest = std::strcmp(argv[3], "-") == 0 ? stdout : std::fopen(argv[3],
+                "w");
+        assert(dest != nullptr);
         inf_init();
         int ch;
         while ((ch = Zgetc()) != -1) std::putc(ch, dest);

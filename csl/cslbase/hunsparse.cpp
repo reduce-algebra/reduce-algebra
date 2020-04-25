@@ -33,15 +33,15 @@
 #define INF (0x7FFFFFFF)
 #define verbose (0)
 
-#define hungarian_test_alloc(X) do {if ((void *)(X) == NULL) fprintf(stderr, "Out of memory in %s, (%s, line %d).\n", __FUNCTION__, __FILE__, __LINE__); } while (0)
+#define hungarian_test_alloc(X) do {if ((void *)(X) == nullptr) fprintf(stderr, "Out of memory in %s, (%s, line %d).\n", __FUNCTION__, __FILE__, __LINE__); } while (0)
 
 edge_t *find_in_row(edge_t u, int n)
-{   while (u != NULL && u->col != n) u = u->next_in_row;
+{   while (u != nullptr && u->col != n) u = u->next_in_row;
     return u;
 }
 
 edge_t *find_in_col(edge_t u, int n)
-{   while (u != NULL && u->row != n) u = u->next_in_col;
+{   while (u != nullptr && u->row != n) u = u->next_in_col;
     return u;
 }
 
@@ -49,28 +49,30 @@ edge_t *find_edge(hungarian_problem_t *p, int row, int col)
 {   return find_in_row(p->by_rows[row], col);
 }
 
-void hungarian_print_matrix(hungarian_problem_t* p, int rows, int cols)
+void hungarian_print_matrix(hungarian_problem_t* p, int rows,
+                            int cols)
 {   int i,j;
-    fprintf(stderr , "\n");
+    fprintf(stderr, "\n");
     for(i=0; i<rows; i++)
     {   fprintf(stderr, " [");
         for(j=0; j<cols; j++)
         {   edge_t *e = find_edge(p, i, j);
-            fprintf(stderr, "%5d ",e==NULL ? -1 : e->cost);
+            fprintf(stderr, "%5d ",e==nullptr ? -1 : e->cost);
         }
         fprintf(stderr, "]\n");
     }
     fprintf(stderr, "\n");
 }
 
-void hungarian_print_boolean_matrix(hungarian_problem_t* p, int rows, int cols)
+void hungarian_print_boolean_matrix(hungarian_problem_t* p, int rows,
+                                    int cols)
 {   int i,j;
-    fprintf(stderr , "\n");
+    fprintf(stderr, "\n");
     for(i=0; i<rows; i++)
     {   fprintf(stderr, " [");
         for(j=0; j<cols; j++)
         {   edge_t *e = find_edge(p, i, j);
-            fprintf(stderr, "%2d ", e==NULL ? -1 : e->assigned);
+            fprintf(stderr, "%2d ", e==nullptr ? -1 : e->assigned);
         }
         fprintf(stderr, "]\n");
     }
@@ -96,7 +98,8 @@ int hungarian_imax(int a, int b)
 {   return (a<b)?b:a;
 }
 
-int hungarian_init(hungarian_problem_t* p, int rows, int cols, int edges)
+int hungarian_init(hungarian_problem_t* p, int rows, int cols,
+                   int edges)
 {   int i,j, org_cols, org_rows;
     int memsize;
     char *mem;
@@ -115,19 +118,24 @@ int hungarian_init(hungarian_problem_t* p, int rows, int cols, int edges)
     memsize = 2*ROUNDUP(rows*sizeof(edge_t *)) +
               ROUNDUP(edges*sizeof(edge_t)) +
               rows*(ROUNDUP(cols*sizeof(int)) + ROUNDUP(cols*sizeof(char)));
-    mem = (char *)malloc(memsize);
+    mem = reinterpret_cast<char *>(malloc(memsize));
     hungarian_test_alloc(mem);
     memset(mem, 0, memsize);
     p->memp = 0;
 
-    p->by_rows = (edge_t *)&mem[p->memp]; p->memp += ROUNDUP(rows+sizeof(edge_t *));
-    p->by_cols = (edge_t *)&mem[p->memp]; p->memp += ROUNDUP(rows+sizeof(edge_t *));
+    p->by_rows = (edge_t *)&mem[p->memp];
+    p->memp += ROUNDUP(rows+sizeof(edge_t *));
+    p->by_cols = (edge_t *)&mem[p->memp];
+    p->memp += ROUNDUP(rows+sizeof(edge_t *));
     for(i=0; i<p->num_rows; i++)
-    {   p->[i] = (int*)&mem[p->memp]; p->memp += ROUNDUP(cols*sizeof(int));
-        p->assignment[i] = (char*)&mem[p->memp]; p->memp += ROUNDUP(cols*sizeof(char));
+    {   p->[i] = reinterpret_cast<int*>()&mem[p->memp];
+        p->memp += ROUNDUP(cols*sizeof(int));
+        p->assignment[i] = reinterpret_cast<char*>()&mem[p->memp];
+        p->memp += ROUNDUP(cols*sizeof(char));
         hungarian_test_alloc(p->assignment[i]);
         for(j=0; j<p->num_cols; j++)
-        {   p->cost[i][j] =  (i < org_rows && j < org_cols) ? cost_matrix[i][j] : 0;
+        {   p->cost[i][j] =  (i < org_rows &&
+                              j < org_cols) ? cost_matrix[i][j] : 0;
             p->assignment[i][j] = 0;
         }
     }
@@ -137,8 +145,8 @@ int hungarian_init(hungarian_problem_t* p, int rows, int cols, int edges)
 void hungarian_free(hungarian_problem_t* p)
 {   int i;
     free(p->cost);
-    p->cost = NULL;
-    p->assignment = NULL;
+    p->cost = nullptr;
+    p->assignment = nullptr;
 }
 
 void hungarian_solve(hungarian_problem_t* p)
@@ -160,19 +168,27 @@ void hungarian_solve(hungarian_problem_t* p)
 
     memsize = 4*ROUNDUP(p->num_rows*sizeof(int)) +
               4*ROUNDUP(p->num_cols*sizeof(int));
-    mem = (char *)malloc(memsize);
+    mem = reinterpret_cast<char *>(malloc(memsize));
     hungarian_test_alloc(mem);
     memset(mem, 0, memsize);
 
-    col_mate = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_rows*sizeof(int));
-    unchosen_row = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_rows*sizeof(int));
-    row_dec  = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_rows*sizeof(int));
-    slack_row  = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_rows*sizeof(int));
+    col_mate = reinterpret_cast<int*>()&mem[memptr];
+    memptr += ROUNDUP(p->num_rows*sizeof(int));
+    unchosen_row = reinterpret_cast<int*>()&mem[memptr];
+    memptr += ROUNDUP(p->num_rows*sizeof(int));
+    row_dec  = reinterpret_cast<int*>()&mem[memptr];
+    memptr += ROUNDUP(p->num_rows*sizeof(int));
+    slack_row  = reinterpret_cast<int*>()&mem[memptr];
+    memptr += ROUNDUP(p->num_rows*sizeof(int));
 
-    row_mate = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_cols*sizeof(int));
-    parent_row = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_cols*sizeof(int));
-    col_inc = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_cols*sizeof(int));
-    slack = (int*)&mem[memptr]; memptr += ROUNDUP(p->num_cols*sizeof(int));
+    row_mate = reinterpret_cast<int*>()&mem[memptr];
+    memptr += ROUNDUP(p->num_cols*sizeof(int));
+    parent_row = reinterpret_cast<int*>()&mem[memptr];
+    memptr += ROUNDUP(p->num_cols*sizeof(int));
+    col_inc = reinterpret_cast<int*>()&mem[memptr];
+    memptr += ROUNDUP(p->num_cols*sizeof(int));
+    slack = reinterpret_cast<int*>()&mem[memptr];
+    memptr += ROUNDUP(p->num_cols*sizeof(int));
 
     for (i=0; i<p->num_rows; i++)
     {   col_mate[i]=0;
@@ -302,7 +318,8 @@ void hungarian_solve(hungarian_problem_t* p)
                         else
                         {   parent_row[l]=k;
                             if (verbose)
-                                fprintf(stderr, "node %d: row %d==col %d--row %d\n",t,row_mate[l],l,k);
+                                fprintf(stderr, "node %d: row %d==col %d--row %d\n",t,row_mate[l],l,
+                                        k);
                             unchosen_row[t++]=row_mate[l];
                         }
                         // End look at a new zero 22

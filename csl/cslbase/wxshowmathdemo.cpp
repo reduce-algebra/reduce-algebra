@@ -9,8 +9,7 @@
 
 
 int main(int argc, char *argv[])
-{
-    std::fprintf(stderr, "wxshowmathdemo not implemented yet\n");
+{   std::fprintf(stderr, "wxshowmathdemo not implemented yet\n");
     return 1;
 }
 

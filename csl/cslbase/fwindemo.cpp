@@ -1,4 +1,4 @@
-// fwindemo.cpp                            Copyright (C) 2004-2017 Codemist    
+// fwindemo.cpp                            Copyright (C) 2004-2017 Codemist
 
 
 //

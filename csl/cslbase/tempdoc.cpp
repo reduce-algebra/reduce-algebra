@@ -1,4 +1,4 @@
-// tempdoc.cpp                             Copyright (C) 2016-2017 Codemist    
+// tempdoc.cpp                             Copyright (C) 2016-2017 Codemist
 
 
 /**************************************************************************
@@ -151,384 +151,390 @@
  * material and collaborates with the mathematical display parts of CSL.
  */
 
- * The CSL compiler normally tries to detect patterns of recursion that it
- * can convert into iteration. This can dramatically reduce stack use and
- * so allow calculations to succeed when otherwise they would have failed.
- * This flag can disable that optimisation. The most plausible reason to
- * want to do that would be if there was serious cause to believe that the
- * code performorming the optimisation was faulty, and results without it were
- * needed as part of the process of tracking down the bug.
- */
+* The CSL compiler normally tries to detect patterns of recursion that
+it
+* can convert into iteration. This can dramatically reduce stack use
+and
+* so allow calculations to succeed when otherwise they would have
+failed.
+* This flag can disable that optimisation. The most plausible reason
+to
+* want to do that would be if there was serious cause to believe that
+    the
+    * code performorming the optimisation was faulty, and
+    results without it were
+    * needed as part of the process of tracking down the bug.
+    */
 
-/*! predef [*package*] \item [{\ttfamily !*package!*}] \index{{\ttfamily "!*package"!*}} ~\newline
- * Interrnally CSL stores the table that maps names into symbols in a way
- * following the style of the Common Lisp package system. When used as
- * a Standard Lisp there is only one package and no distinction between
- * internal and external name visibility, but this name provides access to
- * the main tdata-structure involved. It is in general expected that this
- * will be used via the {\ttfamily oblist} function, not directly be users.
- */
+    /*! predef [*package*] \item [{\ttfamily !*package!*}] \index{{\ttfamily "!*package"!*}} ~\newline
+     * Interrnally CSL stores the table that maps names into symbols in a way
+     * following the style of the Common Lisp package system. When used as
+     * a Standard Lisp there is only one package and no distinction between
+     * internal and external name visibility, but this name provides access to
+     * the main tdata-structure involved. It is in general expected that this
+     * will be used via the {\ttfamily oblist} function, not directly be users.
+     */
 
-/*! predef [*pgwd] \item [{\ttfamily !*pgwd}] \index{{\ttfamily "!*pgwd}} ~\newline
- * See {\ttfamily !*plap}.
- */
+    /*! predef [*pgwd] \item [{\ttfamily !*pgwd}] \index{{\ttfamily "!*pgwd}} ~\newline
+     * See {\ttfamily !*plap}.
+     */
 
-/*! predef [*plap] \item [{\ttfamily !*plap}] \index{{\ttfamily "!*plap}} ~\newline
- * When the CSL compiler runs to generate byte-codes if {\ttfamily !*plap} or
- * {\ttfamily !*pgwd} is set then the generated code is displayed. This may
- * be of interest when debugging or for anybody who wants to explore the
- * Lisp bytecode model that is used.
- */
+    /*! predef [*plap] \item [{\ttfamily !*plap}] \index{{\ttfamily "!*plap}} ~\newline
+     * When the CSL compiler runs to generate byte-codes if {\ttfamily !*plap} or
+     * {\ttfamily !*pgwd} is set then the generated code is displayed. This may
+     * be of interest when debugging or for anybody who wants to explore the
+     * Lisp bytecode model that is used.
+     */
 
-/*! predef [*pretty-symmetric] \item [{\ttfamily !*pretty!-symmetric}] \index{{\ttfamily "!*pretty"!-symmetric}} ~\newline
- * The {\ttfamily prettyprint} function displays a Lisp expression neatly
- * indended. If this variable is set (which by default it is) symbols and
- * strings are shown with escape characters and quotation marks so that the
- * indented form could be re-input. If this variable is set to {\ttfamily nil}
- * that does not happen -- the output may not be re-readable by CSL but in
- * some cases it may be easier for a human reader to decipher.
- */
+    /*! predef [*pretty-symmetric] \item [{\ttfamily !*pretty!-symmetric}] \index{{\ttfamily "!*pretty"!-symmetric}} ~\newline
+     * The {\ttfamily prettyprint} function displays a Lisp expression neatly
+     * indended. If this variable is set (which by default it is) symbols and
+     * strings are shown with escape characters and quotation marks so that the
+     * indented form could be re-input. If this variable is set to {\ttfamily nil}
+     * that does not happen -- the output may not be re-readable by CSL but in
+     * some cases it may be easier for a human reader to decipher.
+     */
 
-/*! predef [*prinl-fn!*] \item [{\ttfamily !*prinl!-fn!*}] \index{{\ttfamily "!*prinl"!-fn"!*}} ~\newline
- * Used internally by the functions {\ttfamily prinl} and {\ttfamily princl}
- * that can print data structures that are re-entrant or looped. Not for use
- * by end-users.
- */
+    /*! predef [*prinl-fn!*] \item [{\ttfamily !*prinl!-fn!*}] \index{{\ttfamily "!*prinl"!-fn"!*}} ~\newline
+     * Used internally by the functions {\ttfamily prinl} and {\ttfamily princl}
+     * that can print data structures that are re-entrant or looped. Not for use
+     * by end-users.
+     */
 
-/*! predef [*prinl-index] \item [{\ttfamily !*prinl!-index!*}] \index{{\ttfamily "!*prinl"!-index"!*}} ~\newline
- * Used internally by the functions {\ttfamily prinl} and {\ttfamily princl}
- * that can print data structures that are re-entrant or looped. Not for use
- * by end-users.
- */
+    /*! predef [*prinl-index] \item [{\ttfamily !*prinl!-index!*}] \index{{\ttfamily "!*prinl"!-index"!*}} ~\newline
+     * Used internally by the functions {\ttfamily prinl} and {\ttfamily princl}
+     * that can print data structures that are re-entrant or looped. Not for use
+     * by end-users.
+     */
 
-/*! predef [*prinl-visited-nodes*] \item [{\ttfamily !*prinl!-visited!-nodes!*}] \index{{\ttfamily "!*prinl"!-visited"!-nodes"!*}} ~\newline
- * Used internally by the functions {\ttfamily prinl} and {\ttfamily princl}
- * that can print data structures that are re-entrant or looped. Not for use
- * by end-users.
- */
+    /*! predef [*prinl-visited-nodes*] \item [{\ttfamily !*prinl!-visited!-nodes!*}] \index{{\ttfamily "!*prinl"!-visited"!-nodes"!*}} ~\newline
+     * Used internally by the functions {\ttfamily prinl} and {\ttfamily princl}
+     * that can print data structures that are re-entrant or looped. Not for use
+     * by end-users.
+     */
 
-/*! predef [*print-array*] \item [{\ttfamily !*print!-array!*}] \index{{\ttfamily "!*print"!-array"!*}} ~\newline
- * In {\ttfamily prinl} if this variable is {\ttfamily nil} arrays and
- * structures are not printed in full. In some cases this merely loses valuable
- * information, while in others it leads to output that is more concise and
- * legible and hence nore useful.
- */
+    /*! predef [*print-array*] \item [{\ttfamily !*print!-array!*}] \index{{\ttfamily "!*print"!-array"!*}} ~\newline
+     * In {\ttfamily prinl} if this variable is {\ttfamily nil} arrays and
+     * structures are not printed in full. In some cases this merely loses valuable
+     * information, while in others it leads to output that is more concise and
+     * legible and hence nore useful.
+     */
 
-/*! predef [*print-length*] \item [{\ttfamily !*print!-length!*}] \index{{\ttfamily "!*print"!-length"!*}} ~\newline
- * In {\ttfamily prinl} if this variable is set to an integer then that specifies
- * the largest number of items in a list that will be displayed.
- */
+    /*! predef [*print-length*] \item [{\ttfamily !*print!-length!*}] \index{{\ttfamily "!*print"!-length"!*}} ~\newline
+     * In {\ttfamily prinl} if this variable is set to an integer then that specifies
+     * the largest number of items in a list that will be displayed.
+     */
 
-/*! predef [*print-level*] \item [{\ttfamily !*print!-level!*}] \index{{\ttfamily "!*print"!-level"!*}} ~\newline
- * In {\ttfamily prinl} if this variable is set to an integer then that specifies
- * the greatest depth of nesting of lists before the printing gives up. This
- * and {\ttfamily !*print!-length!*} may very occasionally be useful when
- * faced with huge lists of whihc only the top few layers are relevant.
- */
+    /*! predef [*print-level*] \item [{\ttfamily !*print!-level!*}] \index{{\ttfamily "!*print"!-level"!*}} ~\newline
+     * In {\ttfamily prinl} if this variable is set to an integer then that specifies
+     * the greatest depth of nesting of lists before the printing gives up. This
+     * and {\ttfamily !*print!-length!*} may very occasionally be useful when
+     * faced with huge lists of whihc only the top few layers are relevant.
+     */
 
-/*! predef [*pwrds] \item [{\ttfamily !*pwrds}] \index{{\ttfamily "!*pwrds}} ~\newline
- * This is normally set, and it causes the compiler to display a message
- * commenting on how many bytes were used in the compiled version of each
- * function that is processed.
- */
+    /*! predef [*pwrds] \item [{\ttfamily !*pwrds}] \index{{\ttfamily "!*pwrds}} ~\newline
+     * This is normally set, and it causes the compiler to display a message
+     * commenting on how many bytes were used in the compiled version of each
+     * function that is processed.
+     */
 
-/*! predef [*query-io*] \item [{\ttfamily !*query!-io!*}] \index{{\ttfamily "!*query"!-io"!*}} ~\newline
- * An I/O channel intended to be used for query interactions. The concept
- * and name is taken from Common Lisp, but there is in fact no real separation
- * between this and the standard input and output streams.
- */
+    /*! predef [*query-io*] \item [{\ttfamily !*query!-io!*}] \index{{\ttfamily "!*query"!-io"!*}} ~\newline
+     * An I/O channel intended to be used for query interactions. The concept
+     * and name is taken from Common Lisp, but there is in fact no real separation
+     * between this and the standard input and output streams.
+     */
 
-/*! predef [*quotes] \item [{\ttfamily !*quotes}] \index{{\ttfamily "!*quotes}} ~\newline
- * Used in the prettyprinter to determine whether the form {\ttfamily (quote x)}
- * should be displayed as {\ttfamily 'x}. By default it is.
- */
+    /*! predef [*quotes] \item [{\ttfamily !*quotes}] \index{{\ttfamily "!*quotes}} ~\newline
+     * Used in the prettyprinter to determine whether the form {\ttfamily (quote x)}
+     * should be displayed as {\ttfamily 'x}. By default it is.
+     */
 
-/*! predef [*raise] \item [{\ttfamily !*raise}] \index{{\ttfamily "!*raise}} ~\newline
- * See {\ttfamily !*lower}.
- */
+    /*! predef [*raise] \item [{\ttfamily !*raise}] \index{{\ttfamily "!*raise}} ~\newline
+     * See {\ttfamily !*lower}.
+     */
 
-/*! predef [*redefmsg] \item [{\ttfamily !*redefmsg}] \index{{\ttfamily "!*redefmsg}} ~\newline
- * If this is set a message is displayed when a function is redefined.
- */
+    /*! predef [*redefmsg] \item [{\ttfamily !*redefmsg}] \index{{\ttfamily "!*redefmsg}} ~\newline
+     * If this is set a message is displayed when a function is redefined.
+     */
 
-/*! predef [*resources*] \item [{\ttfamily !*resources!*}] \index{{\ttfamily "!*resources"!*}} ~\newline
- * See the {\ttfamily resource!-limit} function.
- */
+    /*! predef [*resources*] \item [{\ttfamily !*resources!*}] \index{{\ttfamily "!*resources"!*}} ~\newline
+     * See the {\ttfamily resource!-limit} function.
+     */
 
-/*! predef [*savedef] \item [{\ttfamily !*savedef}] \index{{\ttfamily "!*savedef}} ~\newline
- * If this variable is set then when you define a function and compile it the
- * original interpratable Lisp form of the defintion is saved under the
- * property-name {\ttfamily !*savedef} so that it could be recovered using
- * {\ttfamily get}. If the function is being compiled into a fasl-file for
- * later reloading the lisp form of the definition is saved there so that when
- * {\ttfamily load!-module} or {\ttfamily load!-source} is used it can be
- * retrieved. This facility is activated when the ``bootstrap'' version of
- * Reduce is built so that in effect the full source code is available at
- * run-time. The availability of source in that way can be useful for forms
- * of global analysis or optimisation of the code -- for instance Reduce
- * uses it to find the definitions of functions that it wants to optimise
- * int C code rather than the slower (but more compact) bytecodes it uses
- * for most things.
- */
+    /*! predef [*savedef] \item [{\ttfamily !*savedef}] \index{{\ttfamily "!*savedef}} ~\newline
+     * If this variable is set then when you define a function and compile it the
+     * original interpratable Lisp form of the defintion is saved under the
+     * property-name {\ttfamily !*savedef} so that it could be recovered using
+     * {\ttfamily get}. If the function is being compiled into a fasl-file for
+     * later reloading the lisp form of the definition is saved there so that when
+     * {\ttfamily load!-module} or {\ttfamily load!-source} is used it can be
+     * retrieved. This facility is activated when the ``bootstrap'' version of
+     * Reduce is built so that in effect the full source code is available at
+     * run-time. The availability of source in that way can be useful for forms
+     * of global analysis or optimisation of the code -- for instance Reduce
+     * uses it to find the definitions of functions that it wants to optimise
+     * int C code rather than the slower (but more compact) bytecodes it uses
+     * for most things.
+     */
 
-/*! predef [*spool-output*] \item [{\ttfamily !*spool!-output!*}] \index{{\ttfamily "!*spool"!-output"!*}} ~\newline
- * The {\ttfamily spool} function or the command-line option {\ttfamily -l}
- * can establish a file that normal output is copied to as a log. This variable
- * holds a handle to that file.
- */
+    /*! predef [*spool-output*] \item [{\ttfamily !*spool!-output!*}] \index{{\ttfamily "!*spool"!-output"!*}} ~\newline
+     * The {\ttfamily spool} function or the command-line option {\ttfamily -l}
+     * can establish a file that normal output is copied to as a log. This variable
+     * holds a handle to that file.
+     */
 
-/*! predef [*standard-input*] \item [{\ttfamily !*standard!-input!*}] \index{{\ttfamily "!*standard"!-input"!*}} ~\newline
- * Standard Lisp specifies that to select input from the ``standard'' source
- * one goes {\ttfamily (rds nil)}. In CSL this is underpinned by having an
- * input stream as stored in this variable following the naming convention used
- * by Common Lisp.
- */
+    /*! predef [*standard-input*] \item [{\ttfamily !*standard!-input!*}] \index{{\ttfamily "!*standard"!-input"!*}} ~\newline
+     * Standard Lisp specifies that to select input from the ``standard'' source
+     * one goes {\ttfamily (rds nil)}. In CSL this is underpinned by having an
+     * input stream as stored in this variable following the naming convention used
+     * by Common Lisp.
+     */
 
-/*! predef [*standard-output*] \item [{\ttfamily !*standard!-output!*}] \index{{\ttfamily "!*standard"!-output"!*}} ~\newline
- * As {\ttfamily !*standard!-input!*} but for output.
- */
+    /*! predef [*standard-output*] \item [{\ttfamily !*standard!-output!*}] \index{{\ttfamily "!*standard"!-output"!*}} ~\newline
+     * As {\ttfamily !*standard!-input!*} but for output.
+     */
 
-/*! predef [*terminal-io*] \item [{\ttfamily !*terminal!-io!*}] \index{{\ttfamily "!*terminal"!-io"!*}} ~\newline
- * A Common Lisp motivated variable which is intended to provide access to
- * the ``terminal''. In Standard Lisp you are expected to use {\ttfamily rds}
- * and the precise concept of a terminal is not really defined.
- */
+    /*! predef [*terminal-io*] \item [{\ttfamily !*terminal!-io!*}] \index{{\ttfamily "!*terminal"!-io"!*}} ~\newline
+     * A Common Lisp motivated variable which is intended to provide access to
+     * the ``terminal''. In Standard Lisp you are expected to use {\ttfamily rds}
+     * and the precise concept of a terminal is not really defined.
+     */
 
-/*! predef [*trace-output*] \item [{\ttfamily !*trace!-output!*}] \index{{\ttfamily "!*trace"!-output"!*}} ~\newline
- * The Lisp trace facility tends to send output to this which is a synonym
- * for the original standard output.
- */
+    /*! predef [*trace-output*] \item [{\ttfamily !*trace!-output!*}] \index{{\ttfamily "!*trace"!-output"!*}} ~\newline
+     * The Lisp trace facility tends to send output to this which is a synonym
+     * for the original standard output.
+     */
 
-/*! predef [@cslbase] \item [{\ttfamily !@cslbase}] \index{{\ttfamily "!"@cslbase}} ~\newline
- * This variable is not actually predefined, but I will nevertheless give some
- * explanation of how it is used during the bootstrapping process that makes
- * a CSL or a Reduce image. When you attempt to open a file you mau give
- * a path starting with an initial ``\$word/\ldots'' or ``\$\{word\}/\ldots''.
- * these notations of course model typical Unix-style parameter substitution.
- * The expansion proceeds by first checking if a Lisp variable ``@word''
- * exists with a string or a symbol as its name. If so that value is used
- * as the expansion. If that scheme fails the system next looks for an
- * environment variable and uses its value. This the use of a Lisp variable
- * ``@word'' takes priority over the system environment. Finally if there is
- * no environment variable available a Lisp variable with name ``\$word'' is
- * checked and if its value is a string or symbol that is the expansion,
- * otherwise the expansion will be empty.
- *
- * This is used in the build sequences by passing a command-line
- * option {\ttfamily -D@cslbase=...} that predefines
- * {\ttfamily @cslbase} to refer to a key directory where necessary files
- * can be found.
- * By defining this rather than {\ttfamily \$cslbase} there is no chance that
- * any odd values in the (shell) environment will cause trouble, and the
- * lines such as {\ttfamily (rdf~"\$cslbase/compat.lsp")} can appear in the build
- * code without any need for absolute path names or any
- * reliance on the setting of a current directory.
- *
- * In a file-name a path that starting {\ttfamily $\sim$/} or
- * {\ttfamily $\sim$name/} tries to identify the home directory of the
- * current or named user. This has a clear-cut meaning on Unix-like
- * platforms but should perhaps not be relied on under Windows.
- */
+    /*! predef [@cslbase] \item [{\ttfamily !@cslbase}] \index{{\ttfamily "!"@cslbase}} ~\newline
+     * This variable is not actually predefined, but I will nevertheless give some
+     * explanation of how it is used during the bootstrapping process that makes
+     * a CSL or a Reduce image. When you attempt to open a file you mau give
+     * a path starting with an initial ``\$word/\ldots'' or ``\$\{word\}/\ldots''.
+     * these notations of course model typical Unix-style parameter substitution.
+     * The expansion proceeds by first checking if a Lisp variable ``@word''
+     * exists with a string or a symbol as its name. If so that value is used
+     * as the expansion. If that scheme fails the system next looks for an
+     * environment variable and uses its value. This the use of a Lisp variable
+     * ``@word'' takes priority over the system environment. Finally if there is
+     * no environment variable available a Lisp variable with name ``\$word'' is
+     * checked and if its value is a string or symbol that is the expansion,
+     * otherwise the expansion will be empty.
+     *
+     * This is used in the build sequences by passing a command-line
+     * option {\ttfamily -D@cslbase=...} that predefines
+     * {\ttfamily @cslbase} to refer to a key directory where necessary files
+     * can be found.
+     * By defining this rather than {\ttfamily \$cslbase} there is no chance that
+     * any odd values in the (shell) environment will cause trouble, and the
+     * lines such as {\ttfamily (rdf~"\$cslbase/compat.lsp")} can appear in the build
+     * code without any need for absolute path names or any
+     * reliance on the setting of a current directory.
+     *
+     * In a file-name a path that starting {\ttfamily $\sim$/} or
+     * {\ttfamily $\sim$name/} tries to identify the home directory of the
+     * current or named user. This has a clear-cut meaning on Unix-like
+     * platforms but should perhaps not be relied on under Windows.
+     */
 
-/*! predef [$cslbase] \item [{\ttfamily !\$cslbase}] \index{{\ttfamily "!\$cslbase}} ~\newline
- * See {\ttfamily !@cslbase}.
- */
+    /*! predef [$cslbase] \item [{\ttfamily !\$cslbase}] \index{{\ttfamily "!\$cslbase}} ~\newline
+     * See {\ttfamily !@cslbase}.
+     */
 
-/*! predef [s:bn] \item [{\ttfamily s!:bn}]  ~\newline
- * Used internally by the prettyprint function.
- */
+    /*! predef [s:bn] \item [{\ttfamily s!:bn}]  ~\newline
+     * Used internally by the prettyprint function.
+     */
 
-/*! predef [s:bufferi]  \item [{\ttfamily s!:bufferi}] ~\newline
- * Used internally by the prettyprint function.
- */
+    /*! predef [s:bufferi]  \item [{\ttfamily s!:bufferi}] ~\newline
+     * Used internally by the prettyprint function.
+     */
 
-/*! predef [s:buffero]  \item [{\ttfamily s!:bufferp}] ~\newline
- * Used internally by the prettyprint function.
- */
+    /*! predef [s:buffero]  \item [{\ttfamily s!:bufferp}] ~\newline
+     * Used internally by the prettyprint function.
+     */
 
-/*! predef [common-lisp-mode]  \item [{\ttfamily common!-lisp!-mode}] \index{{\ttfamily common"!-lisp"!-mode}} ~\newline
- * The CSL Lisp system was designed so that if necessary much of the code could
- * be shared with a version that met the Common Lisp Standard. At no stage has
- * there been anything like a complete Common version. This is both because the
- * main use of CSL has been to support Reduce and that wants Standard (not
- * Common) Lisp, and because providing complete support for all the
- * functionality in Common Lisp would be a lot of work and would tend to make
- * the code bulkier (and hence necessarily less reliable) and slower. However
- * various key underpinnings for Common Lisp are present in the C-coded sources,
- * generally guarded by ``{\ttfamily \#ifdef COMMON}''. If the Lisp has been
- * built in this way then this variable will be set in order that users can
- * readily detect the situation.  At one stage the Axiom algebra system could
- * be built using the limited Common Lisp compatibility mode, but the recent
- * Open Source versions of Axiom have probably changed leaving that not an
- * easy option.
- */
+    /*! predef [common-lisp-mode]  \item [{\ttfamily common!-lisp!-mode}] \index{{\ttfamily common"!-lisp"!-mode}} ~\newline
+     * The CSL Lisp system was designed so that if necessary much of the code could
+     * be shared with a version that met the Common Lisp Standard. At no stage has
+     * there been anything like a complete Common version. This is both because the
+     * main use of CSL has been to support Reduce and that wants Standard (not
+     * Common) Lisp, and because providing complete support for all the
+     * functionality in Common Lisp would be a lot of work and would tend to make
+     * the code bulkier (and hence necessarily less reliable) and slower. However
+     * various key underpinnings for Common Lisp are present in the C-coded sources,
+     * generally guarded by ``{\ttfamily \#ifdef COMMON}''. If the Lisp has been
+     * built in this way then this variable will be set in order that users can
+     * readily detect the situation.  At one stage the Axiom algebra system could
+     * be built using the limited Common Lisp compatibility mode, but the recent
+     * Open Source versions of Axiom have probably changed leaving that not an
+     * easy option.
+     */
 
-/*! predef [crbuf*]  \item [{\ttfamily crbuf!*}] \index{{\ttfamily crbuf"!*}} ~\newline
- * This is a variable used by the Reduce parser, and as a matter of caution it
- * is to be treated as reserved in the Lisp system.
- */
+    /*! predef [crbuf*]  \item [{\ttfamily crbuf!*}] \index{{\ttfamily crbuf"!*}} ~\newline
+     * This is a variable used by the Reduce parser, and as a matter of caution it
+     * is to be treated as reserved in the Lisp system.
+     */
 
-/*! predef [emsg*]  \item [{\ttfamily emsg!*}] \index{{\ttfamily emsg"!*}} ~\newline
- * After a call {\ttfamily (error nn msg)} this variable gets set to the
- * value of the second argument ({\ttfamily msg}). This may help if you have had
- * a failure and want to see if it resulted from a call to the {\ttfamily error}
- * function and if so what message had been used with it!
- */
+    /*! predef [emsg*]  \item [{\ttfamily emsg!*}] \index{{\ttfamily emsg"!*}} ~\newline
+     * After a call {\ttfamily (error nn msg)} this variable gets set to the
+     * value of the second argument ({\ttfamily msg}). This may help if you have had
+     * a failure and want to see if it resulted from a call to the {\ttfamily error}
+     * function and if so what message had been used with it!
+     */
 
-/*! predef [eof*]  \item [{\ttfamily eof!*}] \index{{\ttfamily eof"!*}} ~\newline
- * Used in Reduce in association with detecting and handling end-of-file
- * conditions, and reserved in the Lisp to avoid potential interference with
- * that.
- */
+    /*! predef [eof*]  \item [{\ttfamily eof!*}] \index{{\ttfamily eof"!*}} ~\newline
+     * Used in Reduce in association with detecting and handling end-of-file
+     * conditions, and reserved in the Lisp to avoid potential interference with
+     * that.
+     */
 
-/*! predef [s:indblanks]  \item [{\ttfamily s!:indblanks}]  ~\newline
- * Used internally by the prettyprint function.
- */
+    /*! predef [s:indblanks]  \item [{\ttfamily s!:indblanks}]  ~\newline
+     * Used internally by the prettyprint function.
+     */
 
-/*! predef [s:indentlevel]  \item [{\ttfamily s!:indentlevel}] ~\newline
- * Used internally by the prettyprint function.
- */
+    /*! predef [s:indentlevel]  \item [{\ttfamily s!:indentlevel}] ~\newline
+     * Used internally by the prettyprint function.
+     */
 
-/*! predef [s:initialblanls]  \item [{\ttfamily s!:initialblanks}] ~\newline
- * Used internally by the prettyprint function.
- */
+    /*! predef [s:initialblanls]  \item [{\ttfamily s!:initialblanks}] ~\newline
+     * Used internally by the prettyprint function.
+     */
 
-/*! predef [lispsystem*]  \item [{\ttfamily lispsystem!*}] \index{{\ttfamily lispsystem"!*}} ~\newline
- * This variable is initialised at the start of any run of Lisp to hold
- * information about the computer in use and the collection of features
- * available in the Lisp. The items that might be present are explained
- * further in Section \ref{lispsys}.
- */
+    /*! predef [lispsystem*]  \item [{\ttfamily lispsystem!*}] \index{{\ttfamily lispsystem"!*}} ~\newline
+     * This variable is initialised at the start of any run of Lisp to hold
+     * information about the computer in use and the collection of features
+     * available in the Lisp. The items that might be present are explained
+     * further in Section \ref{lispsys}.
+     */
 
-/*! predef [s:lmar]  \item [{\ttfamily s!:lmar}] ~\newline
- * Used internally by the prettyprint function.
- */
+    /*! predef [s:lmar]  \item [{\ttfamily s!:lmar}] ~\newline
+     * Used internally by the prettyprint function.
+     */
 
-/*! predef [load-source]  \item [{\ttfamily load!-source}] \index{{\ttfamily load"!-source}} ~\newline
- * The function {\ttfamily load!-source} will load data from a fasl file
- * and is intended to make it possible to have saved uncompiled Lisp forms
- * for functions there -- and to be able to reload then in a selective
- * way. The {\ttfamily load!-source} variable can tune this behaviour. See the
- * explanation of the function for further details.
- */
+    /*! predef [load-source]  \item [{\ttfamily load!-source}] \index{{\ttfamily load"!-source}} ~\newline
+     * The function {\ttfamily load!-source} will load data from a fasl file
+     * and is intended to make it possible to have saved uncompiled Lisp forms
+     * for functions there -- and to be able to reload then in a selective
+     * way. The {\ttfamily load!-source} variable can tune this behaviour. See the
+     * explanation of the function for further details.
+     */
 
-/*! predef [nil]  \item [{\ttfamily nil}] \index{{\ttfamily nil}} ~\newline
- * {\ttfamily nil} is the fundamental Lisp atom used to stand for ``false'',
- * used to terminate lists and generally something that every Lisp programmer
- * will already understand about. In Standard Lisp {\ttfamily nil} is a
- * symbol and as such you may not take {\ttfamily car} or {\ttfamily cdr} of
- * it. So any code that had been developed for Common Lisp and relies on being
- * able to treat it as if it was a non-empty list will need revision. CSL
- * always checks for valid access so not only would {\ttfamily (car~nil)} be
- * a mistake,  but any attempt to do it will lead to an exception being
- * raised. {\ttfamily nil} must not be used as a name of an argument or a
- * {\ttfamily prog} variable or in any other context that could attempt to
- * alter its value.
- */
+    /*! predef [nil]  \item [{\ttfamily nil}] \index{{\ttfamily nil}} ~\newline
+     * {\ttfamily nil} is the fundamental Lisp atom used to stand for ``false'',
+     * used to terminate lists and generally something that every Lisp programmer
+     * will already understand about. In Standard Lisp {\ttfamily nil} is a
+     * symbol and as such you may not take {\ttfamily car} or {\ttfamily cdr} of
+     * it. So any code that had been developed for Common Lisp and relies on being
+     * able to treat it as if it was a non-empty list will need revision. CSL
+     * always checks for valid access so not only would {\ttfamily (car~nil)} be
+     * a mistake,  but any attempt to do it will lead to an exception being
+     * raised. {\ttfamily nil} must not be used as a name of an argument or a
+     * {\ttfamily prog} variable or in any other context that could attempt to
+     * alter its value.
+     */
 
-/*! predef [ofl*]  \item [{\ttfamily ofl!*}] \index{{\ttfamily ofl"!*}} ~\newline
- * Used in Reduce in association with tracking output files, and reserved in
- * CSL to avoid conflict with that.
- */
+    /*! predef [ofl*]  \item [{\ttfamily ofl!*}] \index{{\ttfamily ofl"!*}} ~\newline
+     * Used in Reduce in association with tracking output files, and reserved in
+     * CSL to avoid conflict with that.
+     */
 
-/*! predef [s:pendingrpars]  \item [{\ttfamily s!:pendingrpars}] ~\newline
- * Used internally by the prettyprint function.
- */
+    /*! predef [s:pendingrpars]  \item [{\ttfamily s!:pendingrpars}] ~\newline
+     * Used internally by the prettyprint function.
+     */
 
-/*! predef [program*]  \item [{\ttfamily program!*}] \index{{\ttfamily program"!*}} ~\newline
- * Used by the Reduce parser to hold a command that has just been parsed, and
- * reserved in CSL in order to ensure that there is no conflict with that.
- */
+    /*! predef [program*]  \item [{\ttfamily program!*}] \index{{\ttfamily program"!*}} ~\newline
+     * Used by the Reduce parser to hold a command that has just been parsed, and
+     * reserved in CSL in order to ensure that there is no conflict with that.
+     */
 
-/*! predef [s:rmar]  \item [{\ttfamily s!:rmar}] ~\newline
- * Used internally by the prettyprint function.
- */
+    /*! predef [s:rmar]  \item [{\ttfamily s!:rmar}] ~\newline
+     * Used internally by the prettyprint function.
+     */
 
-/*! predef [s:rparcount]  \item [{\ttfamily s!:rparcount}] ~\newline
- * Used internally by the prettyprint function.
- */
+    /*! predef [s:rparcount]  \item [{\ttfamily s!:rparcount}] ~\newline
+     * Used internally by the prettyprint function.
+     */
 
-/*! predef [s:gensym-serial]  \item [{\ttfamily s!:gensym!-serial}] \index{{\ttfamily s"!:gensym"!-serial}} ~\newline
- * internal variable used by {\ttfamily dated!-name}.
- */
+    /*! predef [s:gensym-serial]  \item [{\ttfamily s!:gensym!-serial}] \index{{\ttfamily s"!:gensym"!-serial}} ~\newline
+     * internal variable used by {\ttfamily dated!-name}.
+     */
 
-/*! predef [s:stack]  \item [{\ttfamily s!:stack}] ~\newline
- * Used internally by the prettyprint function.
- */
+    /*! predef [s:stack]  \item [{\ttfamily s!:stack}] ~\newline
+     * Used internally by the prettyprint function.
+     */
 
-/*! predef [t]  \item [{\ttfamily t}] \index{{\ttfamily t}} ~\newline
- * The Lisp value that stands for ``true''. Any attempt to reset or
- * rebind {\ttfamily t} will be an error. The value of {\ttfamily t} is
- * itself. Yoy may recall that in Lisp 1.5 the value of {\ttfamily t}
- * had been {\ttfamily *t*}, but Standard Lisp mandates the behaviour
- * implemented here. As far as truth values are concerned, {\ttfamily nil}
- * is treated as meaning ``false'' and anything that is non-{\ttfamily nil}
- * is true, including as an obvious special case {\ttfamily t}.
- */
+    /*! predef [t]  \item [{\ttfamily t}] \index{{\ttfamily t}} ~\newline
+     * The Lisp value that stands for ``true''. Any attempt to reset or
+     * rebind {\ttfamily t} will be an error. The value of {\ttfamily t} is
+     * itself. Yoy may recall that in Lisp 1.5 the value of {\ttfamily t}
+     * had been {\ttfamily *t*}, but Standard Lisp mandates the behaviour
+     * implemented here. As far as truth values are concerned, {\ttfamily nil}
+     * is treated as meaning ``false'' and anything that is non-{\ttfamily nil}
+     * is true, including as an obvious special case {\ttfamily t}.
+     */
 
-/*! predef [thin*]  \item [{\ttfamily thin!*}] \index{{\ttfamily thin"!*}} ~\newline
- * In the prettyprinter if {\ttfamily thin!*} values (default 5) can be
- * fitted on a single line. The idea behind this is so that long lists can
- * in relevant cases be displayed almost horizontalloy rather than
- * vertically, as in
- * {\footnotesize\begin{verbatim}
- *   (one two three four five             (one
- *    six seven eight nine ten   vs.       two
- *    eleven twelve)                       three
- *                                         ...
- * \end{verbatim}}
- */
+    /*! predef [thin*]  \item [{\ttfamily thin!*}] \index{{\ttfamily thin"!*}} ~\newline
+     * In the prettyprinter if {\ttfamily thin!*} values (default 5) can be
+     * fitted on a single line. The idea behind this is so that long lists can
+     * in relevant cases be displayed almost horizontalloy rather than
+     * vertically, as in
+     * {\footnotesize\begin{verbatim}
+     *   (one two three four five             (one
+     *    six seven eight nine ten   vs.       two
+     *    eleven twelve)                       three
+     *                                         ...
+     * \end{verbatim}}
+     */
 
-/*! predef [ttype*]  \item [{\ttfamily ttype!*}] \index{{\ttfamily ttype"!*}} ~\newline
- * Used by the Reduce parser, and so best not used for other purposes.
- */
+    /*! predef [ttype*]  \item [{\ttfamily ttype!*}] \index{{\ttfamily ttype"!*}} ~\newline
+     * Used by the Reduce parser, and so best not used for other purposes.
+     */
 
-/*! flags [s:ppchar]  \item [{\ttfamily s!:ppchar} and {\ttfamily s!:ppformat}] \index{{\ttfamily s"!:ppchar} and {\ttfamily s!:ppformat}}
- * These are used in the prettyprint code found in {\ttfamily extras.red}. A
- * name is given a property {\ttfamily s!:ppformat} if in prettyprinted display
- * its first few arguments should appear on the same line as it if at all
- * possible. The {\ttfamily s!:ppchar} property is used to make the display of
- * bracket characters a little more tidy in the source code.
- */
+    /*! flags [s:ppchar]  \item [{\ttfamily s!:ppchar} and {\ttfamily s!:ppformat}] \index{{\ttfamily s"!:ppchar} and {\ttfamily s!:ppformat}}
+     * These are used in the prettyprint code found in {\ttfamily extras.red}. A
+     * name is given a property {\ttfamily s!:ppformat} if in prettyprinted display
+     * its first few arguments should appear on the same line as it if at all
+     * possible. The {\ttfamily s!:ppchar} property is used to make the display of
+     * bracket characters a little more tidy in the source code.
+     */
 
-/*! flags [switch]  \item [{\ttfamily switch}] \index{{\ttfamily switch}}
- * In the Reduce parser some names are ``switches'', and then directives such
- * as {\ttfamily on xxx} and {\ttfamily off xx} have the effect of setting or
- * clearing the value of a variable {\ttfamily !*xxx}. This is managed by
- * setting the {\ttfamily switch} flag om {\ttfamily xxx}. CSL sets some
- * things as switches ready for when they may be used by the Reduce parser.
- */
+    /*! flags [switch]  \item [{\ttfamily switch}] \index{{\ttfamily switch}}
+     * In the Reduce parser some names are ``switches'', and then directives such
+     * as {\ttfamily on xxx} and {\ttfamily off xx} have the effect of setting or
+     * clearing the value of a variable {\ttfamily !*xxx}. This is managed by
+     * setting the {\ttfamily switch} flag om {\ttfamily xxx}. CSL sets some
+     * things as switches ready for when they may be used by the Reduce parser.
+     */
 
-/*! flags [lose]  \item [{\ttfamily lose}] \index{{\ttfamily lose}}
- * If a name is flagged as {ttfamily lose} then a subsequent attempt to
- * define or redefine it will be ignored.
- */
+    /*! flags [lose]  \item [{\ttfamily lose}] \index{{\ttfamily lose}}
+     * If a name is flagged as {ttfamily lose} then a subsequent attempt to
+     * define or redefine it will be ignored.
+     */
 
-/*! flags [~magic-internal-symbol~]  \item [{\ttfamily !$\sim$magic!-internal!-symbol!$\sim$}] \index{{\ttfamily "!$\sim$magic"!-internal"!-symbol"!$\sim$}}
- * CSL does not have a clear representation for functions that is separated from
- * the representation of an identifier, and so when you ask to get the value
- * of a raw function you get an identifier (probably a gensym) and this
- * tag is used to link such values with the symbols they were originally
- * extracted from.
- */
+    /*! flags [~magic-internal-symbol~]  \item [{\ttfamily !$\sim$magic!-internal!-symbol!$\sim$}] \index{{\ttfamily "!$\sim$magic"!-internal"!-symbol"!$\sim$}}
+     * CSL does not have a clear representation for functions that is separated from
+     * the representation of an identifier, and so when you ask to get the value
+     * of a raw function you get an identifier (probably a gensym) and this
+     * tag is used to link such values with the symbols they were originally
+     * extracted from.
+     */
 
-/*!! fns [05] \section{Functions and Special Forms}
- *
- * Each line here shows a name and then one of the words {\itshape  expr},
- * {\itshape  fexpr} or {\itshape  macro}. In some cases there can also be special
- * treatment of functions by the compiler so that they get compiled in-line.
- * \begin{description}
- */
+    /*!! fns [05] \section{Functions and Special Forms}
+     *
+     * Each line here shows a name and then one of the words {\itshape  expr},
+     * {\itshape  fexpr} or {\itshape  macro}. In some cases there can also be special
+     * treatment of functions by the compiler so that they get compiled in-line.
+     * \begin{description}
+     */
 
-/*! fns [~~~~~~~~]  \end{description} % end of fns section [tempdoc.c]
- */
+    /*! fns [~~~~~~~~]  \end{description} % end of fns section [tempdoc.c]
+     */
 
-/*! fns [abs]  \item [{\ttfamily abs} {\itshape  expr}] \index{{\ttfamily abs} {\itshape  expr}} ~\newline
- * This takes one argument that should be a number -- and returns its absolute
- * value. In Common Lisp mode it would find the magnitude of a complex
- * number, but in normal Standard Lisp mode the only cases that arise are
- * integers are floating point values.
- */
+    /*! fns [abs]  \item [{\ttfamily abs} {\itshape  expr}] \index{{\ttfamily abs} {\itshape  expr}} ~\newline
+     * This takes one argument that should be a number -- and returns its absolute
+     * value. In Common Lisp mode it would find the magnitude of a complex
+     * number, but in normal Standard Lisp mode the only cases that arise are
+     * integers are floating point values.
+     */
 
 // fns [acons expr] \item [{\ttfamily acons} {\itshape  expr}] \index{{\ttfamily acons} {\itshape  expr}} ~\newline
 // {\ttfamily (acons a b c)} = {\ttfamily (cons (cons a b) x)}. The name
@@ -699,73 +705,73 @@
 // Not yet written
 //
 
-/*! fns [binary_close_input]  \item [{\ttfamily binary\_close\_input} {\itshape  expr}] \index{{\ttfamily binary\_close\_input} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_close_input]  \item [{\ttfamily binary\_close\_input} {\itshape  expr}] \index{{\ttfamily binary\_close\_input} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_close_output]  \item [{\ttfamily binary\_close\_output} {\itshape  expr}] \index{{\ttfamily binary\_close\_output} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_close_output]  \item [{\ttfamily binary\_close\_output} {\itshape  expr}] \index{{\ttfamily binary\_close\_output} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_open_input]  \item [{\ttfamily binary\_open\_input} {\itshape  expr}] \index{{\ttfamily binary\_open\_input} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_open_input]  \item [{\ttfamily binary\_open\_input} {\itshape  expr}] \index{{\ttfamily binary\_open\_input} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_open_output]  \item [{\ttfamily binary\_open\_output} {\itshape  expr}] \index{{\ttfamily binary\_open\_output} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_open_output]  \item [{\ttfamily binary\_open\_output} {\itshape  expr}] \index{{\ttfamily binary\_open\_output} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_prin1]  \item [{\ttfamily binary\_prin1} {\itshape  expr}] \index{{\ttfamily binary\_prin1} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_prin1]  \item [{\ttfamily binary\_prin1} {\itshape  expr}] \index{{\ttfamily binary\_prin1} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_prin2]  \item [{\ttfamily binary\_prin2} {\itshape  expr}] \index{{\ttfamily binary\_prin2} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_prin2]  \item [{\ttfamily binary\_prin2} {\itshape  expr}] \index{{\ttfamily binary\_prin2} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_prin3]  \item [{\ttfamily binary\_prin3} {\itshape  expr}] \index{{\ttfamily binary\_prin3} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_prin3]  \item [{\ttfamily binary\_prin3} {\itshape  expr}] \index{{\ttfamily binary\_prin3} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_prinbyte]  \item [{\ttfamily binary\_prinbyte} {\itshape  expr}] \index{{\ttfamily binary\_prinbyte} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_prinbyte]  \item [{\ttfamily binary\_prinbyte} {\itshape  expr}] \index{{\ttfamily binary\_prinbyte} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_princ]  \item [{\ttfamily binary\_princ} {\itshape  expr}] \index{{\ttfamily binary\_princ} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_princ]  \item [{\ttfamily binary\_princ} {\itshape  expr}] \index{{\ttfamily binary\_princ} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_prinfloat]  \item [{\ttfamily binary\_prinfloat} {\itshape  expr}] \index{{\ttfamily binary\_prinfloat} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_prinfloat]  \item [{\ttfamily binary\_prinfloat} {\itshape  expr}] \index{{\ttfamily binary\_prinfloat} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_read2]  \item [{\ttfamily binary\_read2} {\itshape  expr}] \index{{\ttfamily binary\_read2} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_read2]  \item [{\ttfamily binary\_read2} {\itshape  expr}] \index{{\ttfamily binary\_read2} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_read3]  \item [{\ttfamily binary\_read3} {\itshape  expr}] \index{{\ttfamily binary\_read3} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_read3]  \item [{\ttfamily binary\_read3} {\itshape  expr}] \index{{\ttfamily binary\_read3} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_read4]  \item [{\ttfamily binary\_read4} {\itshape  expr}] \index{{\ttfamily binary\_read4} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_read4]  \item [{\ttfamily binary\_read4} {\itshape  expr}] \index{{\ttfamily binary\_read4} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_readbyte]  \item [{\ttfamily binary\_readbyte} {\itshape  expr}] \index{{\ttfamily binary\_readbyte} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_readbyte]  \item [{\ttfamily binary\_readbyte} {\itshape  expr}] \index{{\ttfamily binary\_readbyte} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_readfloat]  \item [{\ttfamily binary\_readfloat} {\itshape  expr}] \index{{\ttfamily binary\_readfloat} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_readfloat]  \item [{\ttfamily binary\_readfloat} {\itshape  expr}] \index{{\ttfamily binary\_readfloat} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_select_input]  \item [{\ttfamily binary\_select\_input} {\itshape  expr}] \index{{\ttfamily binary\_select\_input} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_select_input]  \item [{\ttfamily binary\_select\_input} {\itshape  expr}] \index{{\ttfamily binary\_select\_input} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [binary_terpri]  \item [{\ttfamily binary\_terpri} {\itshape  expr}] \index{{\ttfamily binary\_terpri} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [binary_terpri]  \item [{\ttfamily binary\_terpri} {\itshape  expr}] \index{{\ttfamily binary\_terpri} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [binopen expr] \item [{\ttfamily binopen} {\itshape  expr}] \index{{\ttfamily binopen} {\itshape  expr}} ~\newline
 // Not yet written
@@ -775,25 +781,25 @@
 // Not yet written
 //
 
-/*! fns [bps-getv]  \item [{\ttfamily bps!-getv} {\itshape  expr}] \index{{\ttfamily bps"!-getv} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [bps-getv]  \item [{\ttfamily bps!-getv} {\itshape  expr}] \index{{\ttfamily bps"!-getv} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [bps-putv]  \item [{\ttfamily bps!-putv} {\itshape  expr}] \index{{\ttfamily bps"!-putv} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [bps-putv]  \item [{\ttfamily bps!-putv} {\itshape  expr}] \index{{\ttfamily bps"!-putv} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [bps-upvb]  \item [{\ttfamily bps!-upbv} {\itshape  expr}] \index{{\ttfamily bps"!-upbv} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [bps-upvb]  \item [{\ttfamily bps!-upbv} {\itshape  expr}] \index{{\ttfamily bps"!-upbv} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [bpsp expr] \item [{\ttfamily bpsp} {\itshape  expr}] \index{{\ttfamily bpsp} {\itshape  expr}} ~\newline
 // Not yet written
 //
 
-/*! fns [break-loop]  \item [{\ttfamily break!-loop} {\itshape  expr}] \index{{\ttfamily break"!-loop} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [break-loop]  \item [{\ttfamily break!-loop} {\itshape  expr}] \index{{\ttfamily break"!-loop} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [byte!-getv expr] \item [{\ttfamily byte!-getv} {\itshape  expr}] \index{{\ttfamily byte"!-getv} {\itshape  expr}} ~\newline
 // Not yet written
@@ -803,9 +809,9 @@
 // Not yet written
 //
 
-/*! fns [c_out]  \item [{\ttfamily c\_out} {\itshape  expr}] \index{{\ttfamily c\_out} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [c_out]  \item [{\ttfamily c\_out} {\itshape  expr}] \index{{\ttfamily c\_out} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [carcheck expr] \item [{\ttfamily carcheck} {\itshape  expr}] \index{{\ttfamily carcheck} {\itshape  expr}} ~\newline
 // Not yet written
@@ -823,50 +829,50 @@
 // Not yet written
 //
 
-/*! fns [char-code]  \item [{\ttfamily char!-code} {\itshape  expr}] \index{{\ttfamily char"!-code} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [char-code]  \item [{\ttfamily char!-code} {\itshape  expr}] \index{{\ttfamily char"!-code} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [char-downcase]  \item [{\ttfamily char!-downcase} {\itshape  expr}] \index{{\ttfamily char"!-downcase} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [char-downcase]  \item [{\ttfamily char!-downcase} {\itshape  expr}] \index{{\ttfamily char"!-downcase} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [char-upcase]  \item [{\ttfamily char!-upcase} {\itshape  expr}] \index{{\ttfamily char"!-upcase} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [char-upcase]  \item [{\ttfamily char!-upcase} {\itshape  expr}] \index{{\ttfamily char"!-upcase} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [chdir expr] \item [{\ttfamily chdir} {\itshape  expr}] \index{{\ttfamily chdir} {\itshape  expr}} ~\newline
 // Not yet written
 //
 
-/*! fns [check-c-code]  \item [{\ttfamily check!-c!-code} {\itshape  expr}] \index{{\ttfamily check"!-c"!-code} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [check-c-code]  \item [{\ttfamily check!-c!-code} {\itshape  expr}] \index{{\ttfamily check"!-c"!-code} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [checkpoint expr] \item [{\ttfamily checkpoint} {\itshape  expr}] \index{{\ttfamily checkpoint} {\itshape  expr}} ~\newline
 // A function by this name used to exist, but its functionality has now
 // been subsumed into {\ttfamily (preserve)}
 //
 
-/*! fns [cl-equal]  \item [{\ttfamily cl!-equal} {\itshape  expr}] \index{{\ttfamily cl"!-equal} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [cl-equal]  \item [{\ttfamily cl!-equal} {\itshape  expr}] \index{{\ttfamily cl"!-equal} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [close expr] \item [{\ttfamily close} {\itshape  expr}] \index{{\ttfamily close} {\itshape  expr}} ~\newline
 // Not yet written
 //
 
-/*! fns [close-library]  \item [{\ttfamily close!-library} {\itshape  expr}] \index{{\ttfamily close"!-library} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [close-library]  \item [{\ttfamily close!-library} {\itshape  expr}] \index{{\ttfamily close"!-library} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [clrhash expr] \item [{\ttfamily clrhash} {\itshape  expr}] \index{{\ttfamily clrhash} {\itshape  expr}} ~\newline
 // Not yet written
 //
 
-/*! fns [code-char]  \item [{\ttfamily code!-char} {\itshape  expr}] \index{{\ttfamily code"!-char} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [code-char]  \item [{\ttfamily code!-char} {\itshape  expr}] \index{{\ttfamily code"!-char} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [codep expr] \item [{\ttfamily codep} {\itshape  expr}] \index{{\ttfamily codep} {\itshape  expr}} ~\newline
 // Not yet written
@@ -876,9 +882,9 @@
 // Not yet written
 //
 
-/*! fns [compile-all]  \item [{\ttfamily compile!-all} {\itshape  expr}] \index{{\ttfamily compile"!-all} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [compile-all]  \item [{\ttfamily compile!-all} {\itshape  expr}] \index{{\ttfamily compile"!-all} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [compress expr] \item [{\ttfamily compress} {\itshape  expr}] \index{{\ttfamily compress} {\itshape  expr}} ~\newline
 // Not yet written
@@ -904,17 +910,17 @@
 // Not yet written
 //
 
-/*! fns [convert-to-evector]  \item [{\ttfamily convert!-to!-evector} {\itshape  expr}] \index{{\ttfamily convert"!-to"!-evector} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [convert-to-evector]  \item [{\ttfamily convert!-to!-evector} {\itshape  expr}] \index{{\ttfamily convert"!-to"!-evector} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [copy expr] \item [{\ttfamily copy} {\itshape  expr}] \index{{\ttfamily copy} {\itshape  expr}} ~\newline
 // Not yet written
 //
 
-/*! fns [copy-module]  \item [{\ttfamily copy!-module} {\itshape  expr}] \index{{\ttfamily copy"!-module} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [copy-module]  \item [{\ttfamily copy!-module} {\itshape  expr}] \index{{\ttfamily copy"!-module} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [cos expr] \item [{\ttfamily cos} {\itshape  expr}] \index{{\ttfamily cos} {\itshape  expr}} ~\newline
 // Not yet written
@@ -940,9 +946,9 @@
 // Not yet written
 //
 
-/*! fns [create-directory]  \item [{\ttfamily create!-directory} {\itshape  expr}] \index{{\ttfamily create"!-directory} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [create-directory]  \item [{\ttfamily create!-directory} {\itshape  expr}] \index{{\ttfamily create"!-directory} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [csc expr] \item [{\ttfamily csc} {\itshape  expr}] \index{{\ttfamily csc} {\itshape  expr}} ~\newline
 // Not yet written
@@ -960,9 +966,9 @@
 // Not yet written
 //
 
-/*! fns [dated-name]  \item [{\ttfamily dated!-name} {\itshape  expr}] \index{{\ttfamily dated"!-name} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [dated-name]  \item [{\ttfamily dated!-name} {\itshape  expr}] \index{{\ttfamily dated"!-name} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [datelessp expr] \item [{\ttfamily datelessp} {\itshape  expr}] \index{{\ttfamily datelessp} {\itshape  expr}} ~\newline
 // Not yet written
@@ -976,9 +982,9 @@
 // Not yet written
 //
 
-/*! fns [define-in-module]  \item [{\ttfamily define!-in!-module} {\itshape  expr}] \index{{\ttfamily define"!-in"!-module} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [define-in-module]  \item [{\ttfamily define!-in!-module} {\itshape  expr}] \index{{\ttfamily define"!-in"!-module} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [deflist expr] \item [{\ttfamily deflist} {\itshape  expr}] \index{{\ttfamily deflist} {\itshape  expr}} ~\newline
 // Not yet written
@@ -992,13 +998,13 @@
 // Not yet written
 //
 
-/*! fns [delete-file]  \item [{\ttfamily delete!-file} {\itshape  expr}] \index{{\ttfamily delete"!-file} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [delete-file]  \item [{\ttfamily delete!-file} {\itshape  expr}] \index{{\ttfamily delete"!-file} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [delete-module]  \item [{\ttfamily delete!-module} {\itshape  expr}] \index{{\ttfamily delete"!-module} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [delete-module]  \item [{\ttfamily delete!-module} {\itshape  expr}] \index{{\ttfamily delete"!-module} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [difference expr] \item [{\ttfamily difference} {\itshape  expr}] \index{{\ttfamily difference} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1024,9 +1030,9 @@
 // Not yet written
 //
 
-/*! fns [do*]  \item [{\ttfamily do!*} {\itshape macro}] \index{{\ttfamily do"!*} {\itshape macro}} ~\newline
- * Not yet written
- */
+    /*! fns [do*]  \item [{\ttfamily do!*} {\itshape macro}] \index{{\ttfamily do"!*} {\itshape macro}} ~\newline
+     * Not yet written
+     */
 
 // fns [dolist macro] \item [{\ttfamily dolist} {\itshape macro}] \index{{\ttfamily dolist} {\itshape macro}} ~\newline
 // Not yet written
@@ -1037,9 +1043,9 @@
 // Not yet written
 //
 
-/*! fns [double-execute]  \item [{\ttfamily double!-execute} {\itshape  expr}] \index{{\ttfamily double"!-execute} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [double-execute]  \item [{\ttfamily double!-execute} {\itshape  expr}] \index{{\ttfamily double"!-execute} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [egetv expr] \item [{\ttfamily egetv} {\itshape  expr}] \index{{\ttfamily egetv} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1049,13 +1055,13 @@
 // Not yet written
 //
 
-/*! fns [enable-backtrace]  \item [{\ttfamily enable!-backtrace} {\itshape  expr}] \index{{\ttfamily enable"!-backtrace} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [enable-backtrace]  \item [{\ttfamily enable!-backtrace} {\itshape  expr}] \index{{\ttfamily enable"!-backtrace} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [enable-errorset]  \item [{\ttfamily enable!-errorset} {\itshape  expr}] \index{{\ttfamily enable"!-errorset} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [enable-errorset]  \item [{\ttfamily enable!-errorset} {\itshape  expr}] \index{{\ttfamily enable"!-errorset} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [encapsulatedp expr] \item [{\ttfamily encapsulatedp} {\itshape  expr}] \index{{\ttfamily encapsulatedp} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1073,9 +1079,9 @@
 // Not yet written
 //
 
-/*! fns [eq-safe]  \item [{\ttfamily eq!-safe} {\itshape  expr}] \index{{\ttfamily eq"!-safe} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [eq-safe]  \item [{\ttfamily eq!-safe} {\itshape  expr}] \index{{\ttfamily eq"!-safe} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [eqcar expr] \item [{\ttfamily eqcar} {\itshape  expr}] \index{{\ttfamily eqcar} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1125,9 +1131,9 @@
 // Not yet written
 //
 
-/*! fns [eval-when]  \item [{\ttfamily eval!-when} {\itshape  fexpr}] \index{{\ttfamily eval"!-when} {\itshape  fexpr}} ~\newline
- * Not yet written
- */
+    /*! fns [eval-when]  \item [{\ttfamily eval!-when} {\itshape  fexpr}] \index{{\ttfamily eval"!-when} {\itshape  fexpr}} ~\newline
+     * Not yet written
+     */
 
 // fns [evectorp expr] \item [{\ttfamily evectorp} {\itshape  expr}] \index{{\ttfamily evectorp} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1221,17 +1227,17 @@
 // Not yet written
 //
 
-/*! fns [file-length]  \item [{\ttfamily file!-length} {\itshape  expr}] \index{{\ttfamily file"!-length} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [file-length]  \item [{\ttfamily file!-length} {\itshape  expr}] \index{{\ttfamily file"!-length} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [file-readablep]  \item [{\ttfamily file!-readablep} {\itshape  expr}] \index{{\ttfamily file"!-readablep} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [file-readablep]  \item [{\ttfamily file!-readablep} {\itshape  expr}] \index{{\ttfamily file"!-readablep} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [file-writablep]  \item [{\ttfamily file!-writeablep} {\itshape  expr}] \index{{\ttfamily file"!-writeablep} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [file-writablep]  \item [{\ttfamily file!-writeablep} {\itshape  expr}] \index{{\ttfamily file"!-writeablep} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [filedate expr] \item [{\ttfamily filedate} {\itshape  expr}] \index{{\ttfamily filedate} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1257,9 +1263,9 @@
 // Not yet written
 //
 
-/*! fns [flagp**]  \item [{\ttfamily flagp!*!*} {\itshape  expr}] \index{{\ttfamily flagp"!*"!*} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [flagp**]  \item [{\ttfamily flagp!*!*} {\itshape  expr}] \index{{\ttfamily flagp"!*"!*} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [flagpcar expr] \item [{\ttfamily flagpcar} {\itshape  expr}] \index{{\ttfamily flagpcar} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1294,9 +1300,9 @@
 //
 
 
-/*! fns [fp-evaluate]  \item [{\ttfamily fp!-evaluate} {\itshape  expr}] \index{{\ttfamily fp"!-evaluate} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [fp-evaluate]  \item [{\ttfamily fp!-evaluate} {\itshape  expr}] \index{{\ttfamily fp"!-evaluate} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [fputv32 expr] \item [{\ttfamily fputv32} {\itshape  expr}] \index{{\ttfamily fputv32} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1314,9 +1320,9 @@
 // Not yet written
 //
 
-/*! fns [funcall*]  \item [{\ttfamily funcall!*} {\itshape  expr}] \index{{\ttfamily funcall"!*} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [funcall*]  \item [{\ttfamily funcall!*} {\itshape  expr}] \index{{\ttfamily funcall"!*} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [function fexpr] \item [{\ttfamily function} {\itshape  fexpr}] \index{{\ttfamily function} {\itshape  fexpr}} ~\newline
 // Not yet written
@@ -1354,17 +1360,17 @@
 // Not yet written
 //
 
-/*! fns [get*]  \item [{\ttfamily get!*} {\itshape  expr}] \index{{\ttfamily get"!*} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [get*]  \item [{\ttfamily get!*} {\itshape  expr}] \index{{\ttfamily get"!*} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [get-current-directory]  \item [{\ttfamily get!-current!-directory} {\itshape  expr}] \index{{\ttfamily get"!-current"!-directory} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [get-current-directory]  \item [{\ttfamily get!-current!-directory} {\itshape  expr}] \index{{\ttfamily get"!-current"!-directory} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [get-lisp-directory]  \item [{\ttfamily get!-lisp!-directory} {\itshape  expr}] \index{{\ttfamily get"!-lisp"!-directory} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [get-lisp-directory]  \item [{\ttfamily get!-lisp!-directory} {\itshape  expr}] \index{{\ttfamily get"!-lisp"!-directory} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [getd expr] \item [{\ttfamily getd} {\itshape  expr}] \index{{\ttfamily getd} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1410,17 +1416,17 @@
 // Not yet written
 //
 
-/*! fns [hash-table-p]  \item [{\ttfamily hash!-table!-p} {\itshape  expr}] \index{{\ttfamily hash"!-table"!-p} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [hash-table-p]  \item [{\ttfamily hash!-table!-p} {\itshape  expr}] \index{{\ttfamily hash"!-table"!-p} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [hashcontents expr] \item [{\ttfamily hashcontents} {\itshape  expr}] \index{{\ttfamily hashcontents} {\itshape  expr}} ~\newline
 // Not yet written
 //
 
-/*! fns [hashtagged-name]  \item [{\ttfamily hashtagged!-name} {\itshape  expr}] \index{{\ttfamily hashtagged"!-name} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [hashtagged-name]  \item [{\ttfamily hashtagged!-name} {\itshape  expr}] \index{{\ttfamily hashtagged"!-name} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [hypot expr] \item [{\ttfamily hypot} {\itshape  expr}] \index{{\ttfamily hypot} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1502,13 +1508,13 @@
 // Not yet written
 //
 
-/*! fns [input-libraries]  \item [{\ttfamily input!-libraries} {\itshape  fexpr}] \index{{\ttfamily input"!-libraries} {\itshape  fexpr}} ~\newline
- * Not yet written
- */
+    /*! fns [input-libraries]  \item [{\ttfamily input!-libraries} {\itshape  fexpr}] \index{{\ttfamily input"!-libraries} {\itshape  fexpr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [instate-c-code]  \item [{\ttfamily instate!-c!-code} {\itshape  expr}] \index{{\ttfamily instate"!-c"!-code} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [instate-c-code]  \item [{\ttfamily instate!-c!-code} {\itshape  expr}] \index{{\ttfamily instate"!-c"!-code} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [integerp expr] \item [{\ttfamily integerp} {\itshape  expr}] \index{{\ttfamily integerp} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1518,9 +1524,9 @@
 // Not yet written
 //
 
-/*! fns [interbal-open]  \item [{\ttfamily internal!-open} {\itshape  expr}] \index{{\ttfamily internal"!-open} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [interbal-open]  \item [{\ttfamily internal!-open} {\itshape  expr}] \index{{\ttfamily internal"!-open} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [intersection expr] \item [{\ttfamily intersection} {\itshape  expr}] \index{{\ttfamily intersection} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1550,9 +1556,9 @@
 // Not yet written
 //
 
-/*! fns [is-console]  \item [{\ttfamily is!-console} {\itshape  expr}] \index{{\ttfamily is"!-console} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [is-console]  \item [{\ttfamily is!-console} {\itshape  expr}] \index{{\ttfamily is"!-console} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [isub1 expr] \item [{\ttfamily isub1} {\itshape  expr}] \index{{\ttfamily isub1} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1602,21 +1608,21 @@
 // Not yet written
 //
 
-/*! fns [let*]  \item [{\ttfamily let!*} {\itshape  fexpr}] \index{{\ttfamily let"!*} {\itshape  fexpr}} ~\newline
- * Not yet written
- */
+    /*! fns [let*]  \item [{\ttfamily let!*} {\itshape  fexpr}] \index{{\ttfamily let"!*} {\itshape  fexpr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [library-members]  \item [{\ttfamily library!-members} {\itshape  expr}] \index{{\ttfamily library"!-members} {\itshape  expr}} ~\newline
- * Returns a list of all the modules that could potentially be loaded using
- * {\ttfamily load!-module}. See {\ttfamily list!-modules} to get a human
- * readable display that looks more like the result of listing a directory, or
- * {\ttfamily modulep} for checking the state of a particular named module.
- *
- */
+    /*! fns [library-members]  \item [{\ttfamily library!-members} {\itshape  expr}] \index{{\ttfamily library"!-members} {\itshape  expr}} ~\newline
+     * Returns a list of all the modules that could potentially be loaded using
+     * {\ttfamily load!-module}. See {\ttfamily list!-modules} to get a human
+     * readable display that looks more like the result of listing a directory, or
+     * {\ttfamily modulep} for checking the state of a particular named module.
+     *
+     */
 
-/*! fns [library-name]  \item [{\ttfamily library!-name} {\itshape  expr}] \index{{\ttfamily library"!-name} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [library-name]  \item [{\ttfamily library!-name} {\itshape  expr}] \index{{\ttfamily library"!-name} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [linelength expr] \item [{\ttfamily linelength} {\itshape  expr}] \index{{\ttfamily linelength} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1626,62 +1632,62 @@
 // Not yet written
 //
 
-/*! fns [list*]  \item [{\ttfamily list!*} {\itshape  fexpr}] \index{{\ttfamily list"!*} {\itshape  fexpr}} ~\newline
- * Not yet written
- */
+    /*! fns [list*]  \item [{\ttfamily list!*} {\itshape  fexpr}] \index{{\ttfamily list"!*} {\itshape  fexpr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [list-directory]  \item [{\ttfamily list!-directory} {\itshape  expr}] \index{{\ttfamily list"!-directory} {\itshape  expr}} ~\newline
- * Not yet written
- *
- */
+    /*! fns [list-directory]  \item [{\ttfamily list!-directory} {\itshape  expr}] \index{{\ttfamily list"!-directory} {\itshape  expr}} ~\newline
+     * Not yet written
+     *
+     */
 
-/*! fns [list-modules]  \item [{\ttfamily list!-modules} {\itshape  expr}] \index{{\ttfamily list"!-modules} {\itshape  expr}} ~\newline
- * This prints a human-readable display of the modules present in the current
- * image files. This will include ``InitialImage'' which is the heap-image
- * loaded at system startup. For example
- * {\footnotesize \begin{verbatim}
- * > (list!-modules)
- *
- * File d:\csl\csl.img (dirsize 8  length 155016, Writable):
- *   compat       Sat Jul 26 10:20:08 2008  position 556   size: 9320
- *   compiler     Sat Jul 26 10:20:08 2008  position 9880  size: 81088
- *   InitialImage Sat Jul 26 10:20:09 2008  position 90972 size: 64040
- *
- * nil
- * \end{verbatim}}
- *
- * See {\ttfamily library!-members} and {\ttfamily modulep} for functions that
- * make it possible for Lisp code to discover about the loadable modules that are
- * available.
- */
+    /*! fns [list-modules]  \item [{\ttfamily list!-modules} {\itshape  expr}] \index{{\ttfamily list"!-modules} {\itshape  expr}} ~\newline
+     * This prints a human-readable display of the modules present in the current
+     * image files. This will include ``InitialImage'' which is the heap-image
+     * loaded at system startup. For example
+     * {\footnotesize \begin{verbatim}
+     * > (list!-modules)
+     *
+     * File d:\csl\csl.img (dirsize 8  length 155016, Writable):
+     *   compat       Sat Jul 26 10:20:08 2008  position 556   size: 9320
+     *   compiler     Sat Jul 26 10:20:08 2008  position 9880  size: 81088
+     *   InitialImage Sat Jul 26 10:20:09 2008  position 90972 size: 64040
+     *
+     * nil
+     * \end{verbatim}}
+     *
+     * See {\ttfamily library!-members} and {\ttfamily modulep} for functions that
+     * make it possible for Lisp code to discover about the loadable modules that are
+     * available.
+     */
 
-/*! fns [list-to-string]  \item [{\ttfamily list!-to!-string} {\itshape  expr}] \index{{\ttfamily list"!-to"!-string} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [list-to-string]  \item [{\ttfamily list!-to!-string} {\itshape  expr}] \index{{\ttfamily list"!-to"!-string} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [list-to-symbol]  \item [{\ttfamily list!-to!-symbol} {\itshape  expr}] \index{{\ttfamily list"!-to"!-symbol} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [list-to-symbol]  \item [{\ttfamily list!-to!-symbol} {\itshape  expr}] \index{{\ttfamily list"!-to"!-symbol} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [list-to-vector]  \item [{\ttfamily list!-to!-vector} {\itshape  expr}] \index{{\ttfamily list"!-to"!-vector} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [list-to-vector]  \item [{\ttfamily list!-to!-vector} {\itshape  expr}] \index{{\ttfamily list"!-to"!-vector} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [list2 expr] \item [{\ttfamily list2} {\itshape  expr}] \index{{\ttfamily list2} {\itshape  expr}} ~\newline
 // Not yet written
 //
 
-/*! fns [list2*]  \item [{\ttfamily list2!*} {\itshape  expr}] \index{{\ttfamily list2"!*} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [list2*]  \item [{\ttfamily list2!*} {\itshape  expr}] \index{{\ttfamily list2"!*} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [list3 expr] \item [{\ttfamily list3} {\itshape  expr}] \index{{\ttfamily list3} {\itshape  expr}} ~\newline
 // Not yet written
 //
 
-/*! fns [list3*]  \item [{\ttfamily list3!*} {\itshape  expr}] \index{{\ttfamily list3"!*} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [list3*]  \item [{\ttfamily list3!*} {\itshape  expr}] \index{{\ttfamily list3"!*} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [list4 expr] \item [{\ttfamily list4} {\itshape  expr}] \index{{\ttfamily list4} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1695,13 +1701,13 @@
 // Not yet written
 //
 
-/*! fns [load-module]  \item [{\ttfamily load!-module} {\itshape  expr}] \index{{\ttfamily load"!-module} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [load-module]  \item [{\ttfamily load!-module} {\itshape  expr}] \index{{\ttfamily load"!-module} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [load-source]  \item [{\ttfamily load!-source} {\itshape  expr}] \index{{\ttfamily load"!-source} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [load-source]  \item [{\ttfamily load!-source} {\itshape  expr}] \index{{\ttfamily load"!-source} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [log expr] \item [{\ttfamily log} {\itshape  expr}] \index{{\ttfamily log} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1735,9 +1741,9 @@
 // Not yet written
 //
 
-/*! fns [lose-precision]  \item [{\ttfamily lose!-precision} {\itshape  expr}] \index{{\ttfamily lose"!-precision} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [lose-precision]  \item [{\ttfamily lose!-precision} {\itshape  expr}] \index{{\ttfamily lose"!-precision} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [lposn expr] \item [{\ttfamily lposn} {\itshape  expr}] \index{{\ttfamily lposn} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1747,41 +1753,41 @@
 // Not yet written
 //
 
-/*! fns [macro-function]  \item [{\ttfamily macro!-function} {\itshape  expr}] \index{{\ttfamily macro"!-function} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [macro-function]  \item [{\ttfamily macro!-function} {\itshape  expr}] \index{{\ttfamily macro"!-function} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [macroexpand expr] \item [{\ttfamily macroexpand} {\itshape  expr}] \index{{\ttfamily macroexpand} {\itshape  expr}} ~\newline
 // Not yet written
 //
 
-/*! fns [macroexpand-1]  \item [{\ttfamily macroexpand!-1} {\itshape  expr}] \index{{\ttfamily macroexpand"!-1} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [macroexpand-1]  \item [{\ttfamily macroexpand!-1} {\itshape  expr}] \index{{\ttfamily macroexpand"!-1} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [make-bps]  \item [{\ttfamily make!-bps} {\itshape  expr}] \index{{\ttfamily make"!-bps} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [make-bps]  \item [{\ttfamily make!-bps} {\itshape  expr}] \index{{\ttfamily make"!-bps} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [make-function-stream]  \item [{\ttfamily make!-function!-stream} {\itshape  expr}] \index{{\ttfamily make"!-function"!-stream} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [make-function-stream]  \item [{\ttfamily make!-function!-stream} {\itshape  expr}] \index{{\ttfamily make"!-function"!-stream} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [make-global]  \item [{\ttfamily make!-global} {\itshape  expr}] \index{{\ttfamily make"!-global} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [make-global]  \item [{\ttfamily make!-global} {\itshape  expr}] \index{{\ttfamily make"!-global} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [make-random-state]  \item [{\ttfamily make!-random!-state} {\itshape  expr}] \index{{\ttfamily make"!-random"!-state} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [make-random-state]  \item [{\ttfamily make!-random!-state} {\itshape  expr}] \index{{\ttfamily make"!-random"!-state} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [make-simple-string]  \item [{\ttfamily make!-simple!-string} {\itshape  expr}] \index{{\ttfamily make"!-simple"!-string} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [make-simple-string]  \item [{\ttfamily make!-simple!-string} {\itshape  expr}] \index{{\ttfamily make"!-simple"!-string} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [make-special]  \item [{\ttfamily make!-special} {\itshape  expr}] \index{{\ttfamily make"!-special} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [make-special]  \item [{\ttfamily make!-special} {\itshape  expr}] \index{{\ttfamily make"!-special} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [map expr] \item [{\ttfamily map} {\itshape  expr}] \index{{\ttfamily map} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1839,9 +1845,9 @@
 // Not yet written
 //
 
-/*! fns [math-display]  \item [{\ttfamily math!-display} {\itshape  expr}] \index{{\ttfamily math"!-display} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [math-display]  \item [{\ttfamily math!-display} {\itshape  expr}] \index{{\ttfamily math"!-display} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [max expr] \item [{\ttfamily max} {\itshape  expr}] \index{{\ttfamily max} {\itshape  expr}} ~\newline
 // Not yet written
@@ -1863,9 +1869,9 @@
 // Not yet written
 //
 
-/*! fns [member**]  \item [{\ttfamily member!*!*} {\itshape  expr}] \index{{\ttfamily member"!*"!*} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [member**]  \item [{\ttfamily member!*!*} {\itshape  expr}] \index{{\ttfamily member"!*"!*} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // fns [memq expr] \item [{\ttfamily memq} {\itshape  expr}] \index{{\ttfamily memq} {\itshape  expr}} ~\newline
 // Not yet written
@@ -3083,16 +3089,16 @@
 // Not yet written
 //
 
-/*! fns [~block]  \item [{\ttfamily !$\sim$block} {\itshape  fexpr}] \index{{\ttfamily "!$\sim$block} {\itshape  fexpr}} ~\newline
- * Not yet written
- */
+    /*! fns [~block]  \item [{\ttfamily !$\sim$block} {\itshape  fexpr}] \index{{\ttfamily "!$\sim$block} {\itshape  fexpr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [~let]  \item [{\ttfamily !$\sim$let} {\itshape  fexpr}] \index{{\ttfamily "!$\sim$let} {\itshape  fexpr}} ~\newline
- * Not yet written
- */
+    /*! fns [~let]  \item [{\ttfamily !$\sim$let} {\itshape  fexpr}] \index{{\ttfamily "!$\sim$let} {\itshape  fexpr}} ~\newline
+     * Not yet written
+     */
 
-/*! fns [~tyi]  \item [{\ttfamily !$\sim$tyi} {\itshape  expr}] \index{{\ttfamily "!$\sim$tyi} {\itshape  expr}} ~\newline
- * Not yet written
- */
+    /*! fns [~tyi]  \item [{\ttfamily !$\sim$tyi} {\itshape  expr}] \index{{\ttfamily "!$\sim$tyi} {\itshape  expr}} ~\newline
+     * Not yet written
+     */
 
 // end of tempdoc.cpp

@@ -1,4 +1,4 @@
-// babyreduce.cpp                          Copyright (C) 2016-2019 Codemist    
+// babyreduce.cpp                          Copyright (C) 2016-2019 Codemist
 
 
 /**************************************************************************
@@ -51,16 +51,16 @@
 #include "termed.h"
 #include "proc.h"
 
-static const char *line = NULL, *linep = NULL;
+static const char *line = nullptr, *linep = nullptr;
 
-static int iget(void)
-{   if (linep == NULL)
+static int igetstatic_cast<void>()
+{   if (linep == nullptr)
     {   term_setprompt(prompt_string);
         line = linep = term_getline();
-        if (line == NULL) return EOF;
+        if (line == nullptr) return EOF;
     }
     if (*linep == 0)
-    {   linep = NULL;
+    {   linep = nullptr;
         return '\n';
     }
     return *linep++;
@@ -87,10 +87,11 @@ static int submain(int argc, char *argv[])
 int main(int argc, char *argv[])
 {   int res;
     if (find_program_directory(argv[0]))
-    {   std::fprintf(stderr, "Unable to identify program name and directory\n");
+    {   std::fprintf(stderr,
+                     "Unable to identify program name and directory\n");
         return 1;
     }
-    TermSetup ts(argv[0], NULL);
+    TermSetup ts(argv[0], nullptr);
     try
     {   res = submain(argc, argv);
     }

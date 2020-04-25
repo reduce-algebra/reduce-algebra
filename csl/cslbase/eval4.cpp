@@ -75,7 +75,7 @@
 // fit.
 // &KEY arguments (to the extent that they are supported!) are merely handled
 // via the &REST machanism.
-// 
+//
 
 // I will expect most calls to be to functions with rigidly fixed known
 // numbers of arguments, and the other more complicated cases may well
@@ -166,7 +166,8 @@ LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
     return r;
 }
 
-LispObject bytecoded_3(LispObject def, LispObject a, LispObject b, LispObject c)
+LispObject bytecoded_3(LispObject def, LispObject a, LispObject b,
+                       LispObject c)
 {   SAVE_CODEVEC;
     push(def, a, b, c);
     LispObject r;
@@ -191,20 +192,20 @@ LispObject bytecoded_3(LispObject def, LispObject a, LispObject b, LispObject c)
 }
 
 inline int countargs(LispObject a4up)
-{    int r = 3;
-     while (a4up != nil)
-     {   r++;
-         a4up = cdr(a4up);
-     }
-     return r;
+{   int r = 3;
+    while (a4up != nil)
+    {   r++;
+        a4up = cdr(a4up);
+    }
+    return r;
 }
 
 LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+                         LispObject a3, LispObject a4up)
 {   SAVE_CODEVEC;
     int nargs = countargs(a4up);
     LispObject r = car(qenv(def));   // the vector of bytecodes
-    if (nargs != ((unsigned char *)data_of_bps(r))[0])
+    if (nargs != (reinterpret_cast<unsigned char *>(data_of_bps(r)))[0])
         error(2, err_wrong_no_args, def, fixnum_of_int(nargs));
 // I now know that there will be the right number of arguments.
     push(def);
@@ -245,8 +246,9 @@ LispObject nreverse2(LispObject a, LispObject b)
 // The code that follows is just used to support compiled code that
 // has &optional or &rest arguments.
 
-static LispObject byteopt(LispObject def, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up, LispObject defaultval, bool restp)
+static LispObject byteopt(LispObject def, LispObject a1,
+                          LispObject a2,
+                          LispObject a3, LispObject a4up, LispObject defaultval, bool restp)
 {   LispObject r;
     int i, wantargs, wantopts;
     SAVE_CODEVEC;
@@ -265,11 +267,11 @@ static LispObject byteopt(LispObject def, LispObject a1, LispObject a2,
 // In this case the first 2 bytes of the bytecode stream give and upper and
 // lower bound for arguments ahead of any &REST ones.
     r = car(qenv(def));
-    wantargs = ((unsigned char *)data_of_bps(r))[0];
-    wantopts = ((unsigned char *)data_of_bps(r))[1];
+    wantargs = (reinterpret_cast<unsigned char *>(data_of_bps(r)))[0];
+    wantopts = (reinterpret_cast<unsigned char *>(data_of_bps(r)))[1];
     if (nargs < wantargs || (!restp && nargs > wantargs+wantopts))
         error(2, err_wrong_no_args, def,
-                     fixnum_of_int((int32_t)nargs));
+              fixnum_of_int((int32_t)nargs));
 // Now to make life easier for myself I will collect ALL the arguments as
 // a list. I will keep that in a4up, which in some sense now becomes "a1up".
     switch (nargs)
@@ -363,7 +365,8 @@ static LispObject byteopt(LispObject def, LispObject a1, LispObject a2,
 }
 
 LispObject byteopt_0(LispObject def)
-{   return byteopt(def, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil, nil, false);
+{   return byteopt(def, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil, nil,
+                   false);
 }
 
 LispObject byteopt_1(LispObject def, LispObject a)
@@ -374,39 +377,44 @@ LispObject byteopt_2(LispObject def, LispObject a, LispObject b)
 {   return byteopt(def, a, b, SPID_NOARG, nil, nil, false);
 }
 
-LispObject byteopt_3(LispObject def, LispObject a, LispObject b, LispObject c)
+LispObject byteopt_3(LispObject def, LispObject a, LispObject b,
+                     LispObject c)
 {   return byteopt(def, a, b, c, nil, nil, false);
 }
 
 LispObject byteopt_4up(LispObject def, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+                       LispObject a3, LispObject a4up)
 {   return byteopt(def, a1, a2, a3, a4up, nil, false);
 }
 
 LispObject hardopt_0(LispObject def)
-{   return byteopt(def, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil, SPID_NOARG, false);
+{   return byteopt(def, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil,
+                   SPID_NOARG, false);
 }
 
 LispObject hardopt_1(LispObject def, LispObject a)
-{   return byteopt(def, a, SPID_NOARG, SPID_NOARG, nil, SPID_NOARG, false);
+{   return byteopt(def, a, SPID_NOARG, SPID_NOARG, nil, SPID_NOARG,
+                   false);
 }
 
 LispObject hardopt_2(LispObject def, LispObject a, LispObject b)
 {   return byteopt(def, a, b, SPID_NOARG, nil, SPID_NOARG, false);
 }
 
-LispObject hardopt_3(LispObject def, LispObject a, LispObject b, LispObject c)
+LispObject hardopt_3(LispObject def, LispObject a, LispObject b,
+                     LispObject c)
 {   return byteopt(def, a, b, c, nil, SPID_NOARG, false);
 }
 
 LispObject hardopt_4up(LispObject def, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+                       LispObject a3, LispObject a4up)
 {   return byteopt(def, a1, a3, a3, a4up, SPID_NOARG, false);
 }
 
 
 LispObject byteoptrest_0(LispObject def)
-{   return byteopt(def, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil, nil, true);
+{   return byteopt(def, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil, nil,
+                   true);
 }
 
 LispObject byteoptrest_1(LispObject def, LispObject a)
@@ -417,33 +425,39 @@ LispObject byteoptrest_2(LispObject def, LispObject a, LispObject b)
 {   return byteopt(def, a, b, SPID_NOARG, nil, nil, true);
 }
 
-LispObject byteoptrest_3(LispObject def, LispObject a, LispObject b, LispObject c)
+LispObject byteoptrest_3(LispObject def, LispObject a, LispObject b,
+                         LispObject c)
 {   return byteopt(def, a, b, c, nil, nil, true);
 }
 
-LispObject byteoptrest_4up(LispObject def, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+LispObject byteoptrest_4up(LispObject def, LispObject a1,
+                           LispObject a2,
+                           LispObject a3, LispObject a4up)
 {   return byteopt(def, a1, a2, a3, a4up, nil, true);
 }
 
 LispObject hardoptrest_0(LispObject def)
-{   return byteopt(def, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil, SPID_NOARG, true);
+{   return byteopt(def, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil,
+                   SPID_NOARG, true);
 }
 
 LispObject hardoptrest_1(LispObject def, LispObject a)
-{   return byteopt(def, a, SPID_NOARG, SPID_NOARG, nil, SPID_NOARG, true);
+{   return byteopt(def, a, SPID_NOARG, SPID_NOARG, nil, SPID_NOARG,
+                   true);
 }
 
 LispObject hardoptrest_2(LispObject def, LispObject a, LispObject b)
 {   return byteopt(def, a, b, SPID_NOARG, nil, SPID_NOARG, true);
 }
 
-LispObject hardoptrest_3(LispObject def, LispObject a, LispObject b, LispObject c)
+LispObject hardoptrest_3(LispObject def, LispObject a, LispObject b,
+                         LispObject c)
 {   return byteopt(def, a, b, c, nil, SPID_NOARG, true);
 }
 
-LispObject hardoptrest_4up(LispObject def, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+LispObject hardoptrest_4up(LispObject def, LispObject a1,
+                           LispObject a2,
+                           LispObject a3, LispObject a4up)
 {   return byteopt(def, a1, a2, a3, a4up, SPID_NOARG, true);
 }
 
@@ -529,23 +543,22 @@ LispObject Lmv_list(LispObject env, LispObject a)
     BI(Ltime,                  "time",       12), \
     BI(Ltyi,                   "tyi",        13), \
     BI(Lload_spid,             "load-spid",  14), \
-    BI(NULL,                   NULL,         0)
+    BI(nullptr,                nullptr,      0)
 
 #undef BI
 #define BI(a, b, c) a
 no_args *no_arg_functions[] =
-{
-    NO_ARGS
+{   NO_ARGS
 };
 
 #undef BI
 #define BI(a, b, c) b
 const char *no_arg_names[] =
-{
-    NO_ARGS
+{   NO_ARGS
 };
 
-bool no_arg_traceflags[sizeof(no_arg_functions)/sizeof(no_arg_functions[0])];
+bool no_arg_traceflags[sizeof(no_arg_functions)/sizeof(
+                           no_arg_functions[0])];
 
 #define ONE_ARGS    \
    BI(Labsval,            "absval",                  0),   \
@@ -668,23 +681,22 @@ bool no_arg_traceflags[sizeof(no_arg_functions)/sizeof(no_arg_functions[0])];
    BI(progn_fn,           "progn",                   117), \
    BI(declare_fn,         "declare",                 118), \
    BI(function_fn,        "function",                119), \
-   BI(NULL,               NULL,                      0)
+   BI(nullptr,            nullptr,                   0)
 
 #undef BI
 #define BI(a, b, c) a
 one_arg *one_arg_functions[] =
-{
-    ONE_ARGS
+{   ONE_ARGS
 };
 
 #undef BI
 #define BI(a, b, c) b
 const char *one_arg_names[] =
-{
-    ONE_ARGS
+{   ONE_ARGS
 };
 
-bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(one_arg_functions[0])];
+bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(
+                            one_arg_functions[0])];
 
 #define TWO_ARGS \
     BI(Lappend_2,                  "append",                 0),   \
@@ -760,23 +772,22 @@ bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(one_arg_functions[0])];
     BI(Lequalcar,                  "equalcar",               70),  \
     BI(Leq,                        "eq",                     71),  \
     BI(Lnreverse2,                 "nreverse2",              72),  \
-    BI(NULL,                       NULL,                     0)
+    BI(nullptr,                    nullptr,                  0)
 
 #undef BI
 #define BI(a, b, c) a
 two_args *two_arg_functions[] =
-{
-    TWO_ARGS
+{   TWO_ARGS
 };
 
 #undef BI
 #define BI(a, b, c) b
 const char *two_arg_names[] =
-{
-    TWO_ARGS
+{   TWO_ARGS
 };
 
-bool two_arg_traceflags[sizeof(two_arg_functions)/sizeof(two_arg_functions[0])];
+bool two_arg_traceflags[sizeof(two_arg_functions)/sizeof(
+                            two_arg_functions[0])];
 
 #define THREE_ARGS \
     BI(Lbpsputv,     "bpsputv",                0),  \
@@ -789,41 +800,39 @@ bool two_arg_traceflags[sizeof(two_arg_functions)/sizeof(two_arg_functions[0])];
     BI(Lsubst,       "subst",                  7),  \
     BI(Lapply_3,     "apply2",                 8),  \
     BI(Lacons,       "acons",                  9),  \
-    BI(NULL,         NULL,                     0)
+    BI(nullptr,      nullptr,                  0)
 
 #undef BI
 #define BI(a, b, c) a
 three_args *three_arg_functions[] =
-{
-    THREE_ARGS
+{   THREE_ARGS
 };
 
 #undef BI
 #define BI(a, b, c) b
 const char *three_arg_names[] =
-{
-    THREE_ARGS
+{   THREE_ARGS
 };
 
-bool three_arg_traceflags[sizeof(three_arg_functions)/sizeof(three_arg_functions[0])];
+bool three_arg_traceflags[sizeof(three_arg_functions)/sizeof(
+                              three_arg_functions[0])];
 
 #define FOURUP_ARGS \
-    BI(NULL,         NULL,                     0)
+    BI(nullptr,      nullptr,                  0)
 
 #undef BI
 #define BI(a, b, c) a
 fourup_args *fourup_arg_functions[] =
-{
-    FOURUP_ARGS
+{   FOURUP_ARGS
 };
 
 #undef BI
 #define BI(a, b, c) b
 const char *fourup_arg_names[] =
-{
-    FOURUP_ARGS
+{   FOURUP_ARGS
 };
 
-bool fourup_arg_traceflags[sizeof(fourup_arg_functions)/sizeof(fourup_arg_functions[0])];
+bool fourup_arg_traceflags[sizeof(fourup_arg_functions)/sizeof(
+                               fourup_arg_functions[0])];
 
 // end of eval4.cpp

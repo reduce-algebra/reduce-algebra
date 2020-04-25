@@ -299,7 +299,7 @@ uintptr_t get_n_bytes_new(size_t n)
         }
         else   // Need to allocate a further page.
         {   Page *nextPage;
-            if (mostlyFreePages != NULL)   // Use pages with pinned items 1st.
+            if (mostlyFreePages != nullptr)   // Use pages with pinned items 1st.
             {   nextPage = mostlyFreePages;
                 mostlyFreePages = mostlyFreePages->pageHeader.chain;
                 mostlyFreePagesCount--;
@@ -314,13 +314,13 @@ uintptr_t get_n_bytes_new(size_t n)
 // I do so I will visit objects in the order of their allocation. This is
 // needed to make the Garbage Collector work.
             nextPage->pageHeader.pageClass = currentPageTag;
-            nextPage->pageHeader.chain = NULL;
-            if (busyPages == NULL)
+            nextPage->pageHeader.chain = nullptr;
+            if (busyPages == nullptr)
             {   busyPages = nextPage;
-                previousPage = NULL;
+                previousPage = nullptr;
             }
             else
-            {   if (previousPage != NULL)
+            {   if (previousPage != nullptr)
                     previousPage->pageHeader.pageClass = busyPageTag;
                 currentPage->pageHeader.chain = nextPage;
                 previousPage = currentPage;
@@ -422,7 +422,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 {   uintptr_t pp = reinterpret_cast<uintptr_t>(p);
     uintptr_t offset = a - pp;
     Chunk *c = p->chunkMap[offset/
-        (sizeof(Chunk *)*sizeof(Page)/sizeof(p->chunkMap))];
+                           (sizeof(Chunk *)*sizeof(Page)/sizeof(p->chunkMap))];
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
 // the chunk has (a) pointing within it, and I should not need many tries
@@ -431,7 +431,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
     {   if (a >= c->endPoint) return;
         else if (a < c->startPoint)
         {   c = c->chunkChain;
-            if (c == NULL) return;
+            if (c == nullptr) return;
             continue;
         }
 // Here (a) lies within the range of the chunk c. Every page that has any
@@ -483,14 +483,14 @@ void identifyPinnedItems(bool major)
 // the item might be a LispObject that is a reference that the destination
 // address of that reference is marked as "pinned". During a minor GC
 // the only items that need special marking will be one in the "victim"
-// page since nothing else will ever be moved. 
+// page since nothing else will ever be moved.
     for (unsigned int thr=0; thr<maxThreads; thr++)
     {   if ((threadMap & threadBit(thr)) != 0)
         {   uintptr_t base = stackBases[thr];
             uintptr_t fringe = stackFringes[thr];
             for (uintptr_t s=fringe; s<base; s+=sizeof(uintptr_t))
             {   processAmbiguousValue(major,
-                    *reinterpret_cast<uintptr_t *>(s));
+                                      *reinterpret_cast<uintptr_t *>(s));
             }
         }
     }
@@ -498,34 +498,34 @@ void identifyPinnedItems(bool major)
 
 void garbageCollect(bool major)
 {   cout << "\n+++++ Start of a "
-              << (major ? "major" : "minor)"
-              << " GC\n";
-    prepareForGarbageCollection(major);
-    clearPinnedInformation(major);
-    identifyPinnedItems(major);
-    evacuateFromUnambiguousBases(major);
-    evacuateFromPinnedItems(major);
-    if (!major) evacuateFromDirty();
-    evacuateFromCopiedData(major);
-    endOfGarbageCollection(major);
+         << (major ? "major" : "minor)"
+             << " GC\n";
+             prepareForGarbageCollection(major);
+             clearPinnedInformation(major);
+             identifyPinnedItems(major);
+             evacuateFromUnambiguousBases(major);
+             evacuateFromPinnedItems(major);
+             if (!major) evacuateFromDirty();
+             evacuateFromCopiedData(major);
+             endOfGarbageCollection(major);
 }
 
 
 #if 0
-uintptr_t pinsA, pinsC;
+     uintptr_t pinsA, pinsC;
 
 // (1) Clear the "pinned" maps for pages in A.
 //     Initialize pinsA list to be empty.
-    for (Page *p=busyPages; p!=NULL; p=p->pageHeader.chain)
-        clearPinnedMap(p);
-    pinsA = TAG_FORWARD;
+for (Page *p=busyPages; p!=nullptr; p=p->pageHeader.chain)
+    clearPinnedMap(p);
+pinsA = TAG_FORWARD;
 // (1a) Get ready for allocation into free space.
-    doomedPages = busyPages;
-    doomedPagesCount = busyPagesCount;
-    busyPages = NULL;
-    currentPage = previousPage = NULL;
-    busyPagesCount = 0;
-    nFringe = nLimit = nNext = 0;
+doomedPages = busyPages;
+doomedPagesCount = busyPagesCount;
+busyPages = nullptr;
+currentPage = previousPage = nullptr;
+busyPagesCount = 0;
+nFringe = nLimit = nNext = 0;
 //
 //
 // (3) Evacuate each of the following locations:
@@ -538,30 +538,31 @@ uintptr_t pinsA, pinsC;
 // and env cells of nil will always contain nil, which does not move,
 // and so I do not need to copy them here provided that NIL itself
 // never moves.
-    evacuate((LispObject *)plistaddr(nil));
-    evacuate((LispObject *)pnameaddr(nil));
-    evacuate((LispObject *)fastgetsaddr(nil));
-    evacuate((LispObject *)packageaddr(nil));
+evacuate(reinterpret_cast<LispObject *>(plistaddr(nil)));
+evacuate(reinterpret_cast<LispObject *>(pnameaddr(nil)));
+evacuate(reinterpret_cast<LispObject *>(fastgetsaddr(nil)));
+evacuate(reinterpret_cast<LispObject *>(packageaddr(nil)));
 // All of the "ordinary" list bases are scanned here.
-    for (LispObject **p = list_bases; *p!=NULL; p++) evacuate(*p);
+for (LispObject **p = list_bases; *p!=nullptr; p++) evacuate(*p);
 // This Lisp stack still exists, even though my longer term aim is to
 // be able to get rid of it.
-    for (LispObject *sp=stack; sp>(LispObject *)stackBase; sp--) evacuate(sp);
+for (LispObject *sp=stack;
+     sp>reinterpret_cast<LispObject *>(stackBase); sp--) evacuate(sp);
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
 // updated.
-    if (repeat_heap != NULL)
-    {   for (size_t i=1; i<=repeat_count; i++)
-            evacuate(&repeat_heap[i]);
-    }
+if (repeat_heap != nullptr)
+{   for (size_t i=1; i<=repeat_count; i++)
+        evacuate(&repeat_heap[i]);
+}
 // Now I should deal with all pointers emerging from items in the C region
 // they were pinned and hence have to be deemed alive.
-    for (uintptr_t p=pinsC;
-         p!=0;
-         p=(reinterpret_cast<uintptr_t *>(p-TAG_FORWARD))[0])
-    {   (void)evacuateContents(
-            &(reinterpret_cast<LispObject *>(p-TAG_FORWARD))[1]);
-    }
+for (uintptr_t p=pinsC;
+     p!=0;
+     p=(reinterpret_cast<uintptr_t *>(p-TAG_FORWARD))[0])
+{   static_cast<void>(evacuateContents(
+                          &(reinterpret_cast)<LispObject *>(p-TAG_FORWARD))[1]);
+}
 // (3.1)
 // Scan the copied data evacuating fields found within it. This of course
 // can add to the total bulk of copied data! So stop when the evacuation
@@ -592,18 +593,18 @@ uintptr_t pinsA, pinsC;
 // cluster sets of pinned data that lie reasonably compactly into a single
 // pinned block, because there is overhead in the allocator moving from one
 // free region to the next.
-    Page *scanPage = busyPages;
-    uintptr_t scanPoint = scanPage->pageHeader.fringe;
-    uintptr_t scanLimit = scanPage->pageHeader.heaplimit;
-    for (;;)
-    {   scanPoint =
-            reinterpret_cast<uintptr_t>(
-                evacuateContents(reinterpret_cast<LispObject *>(scanPoint)));
-        if (scanPoint >= scanLimit)
-        {   if (scanPoint == nFringe) break;
+Page *scanPage = busyPages;
+uintptr_t scanPoint = scanPage->pageHeader.fringe;
+uintptr_t scanLimit = scanPage->pageHeader.heaplimit;
+for (;;)
+{   scanPoint =
+        reinterpret_cast<uintptr_t>(
+            evacuateContents(reinterpret_cast<LispObject *>(scanPoint)));
+    if (scanPoint >= scanLimit)
+    {   if (scanPoint == nFringe) break;
 //          ...
-        }
     }
+}
 
 //
 // (4) Set up A with the structure needed to be an empty page, ie
@@ -615,7 +616,7 @@ uintptr_t pinsA, pinsC;
 // For a FULL garbage collection the partly filled page that was the final
 // one that material was evacuated into becomed the new currentPage.
 //
-    my_abort();
+my_abort();
 }
 
 #endif

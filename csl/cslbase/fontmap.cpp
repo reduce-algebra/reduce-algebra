@@ -1,4 +1,4 @@
-// fontmap.cpp                             Copyright (C) 2016-2017 Codemist    
+// fontmap.cpp                             Copyright (C) 2016-2017 Codemist
 
 #error DEFUNCT
 
@@ -73,11 +73,11 @@ std::uint32_t *find_glyphmap(const char *name)
 {   unsigned int i, j;
     for (i=0; i<sizeof(fontfilename)/sizeof(fontfilename[0]); i++)
         if (std::strcmp(name, fontfilename[i][0]) == 0) break;
-    if (i>=sizeof(fontfilename)/sizeof(fontfilename[0])) return NULL;
+    if (i>=sizeof(fontfilename)/sizeof(fontfilename[0])) return nullptr;
     for (j=0; j<sizeof(coverage)/sizeof(coverage[0]); j++)
         if (std::strcmp(fontfilename[i][1], coverage[j].name) == 0)
             return coverage[j].map;
-    return NULL;
+    return nullptr;
 }
 
 int char_present(int c, std::uint32_t *map)

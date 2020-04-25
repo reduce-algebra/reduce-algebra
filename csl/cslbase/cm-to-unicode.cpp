@@ -42,8 +42,7 @@
 // friends) to Unicode in a way that should suit use with STIXMath.ttf
 
 int cmr_to_unicode[128] =
-{
-    unicode_GREEK_CAPITAL_LETTER_GAMMA,
+{   unicode_GREEK_CAPITAL_LETTER_GAMMA,
     unicode_GREEK_CAPITAL_LETTER_DELTA,
     unicode_GREEK_CAPITAL_LETTER_THETA,
     unicode_GREEK_CAPITAL_LETTER_LAMDA,
@@ -175,8 +174,7 @@ int cmr_to_unicode[128] =
 };
 
 int cmmi_to_unicode[128] =
-{
-    unicode_MATHEMATICAL_ITALIC_CAPITAL_GAMMA,
+{   unicode_MATHEMATICAL_ITALIC_CAPITAL_GAMMA,
     unicode_MATHEMATICAL_ITALIC_CAPITAL_DELTA,
     unicode_MATHEMATICAL_ITALIC_CAPITAL_THETA,
     unicode_MATHEMATICAL_ITALIC_CAPITAL_LAMDA,
@@ -307,8 +305,7 @@ int cmmi_to_unicode[128] =
 };
 
 int cmsy_to_unicode[128] =
-{
-    unicode_MINUS_SIGN,
+{   unicode_MINUS_SIGN,
     unicode_MIDDLE_DOT,
     unicode_MULTIPLICATION_SIGN,
     unicode_ASTERISK_OPERATOR,
@@ -440,7 +437,7 @@ int cmsy_to_unicode[128] =
 
 
 int cmex_to_unicode[128] =
-{  // not done yet!
+{   // not done yet!
 };
 
 // end of cm-to-unicode.cpp

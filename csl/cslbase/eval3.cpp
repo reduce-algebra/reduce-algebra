@@ -177,7 +177,7 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
         throw;
     }
     popv(3);  // I get here if using let_fn_1 to process the body of the
-              // PROG just returned without doing a (RETURN ...).
+    // PROG just returned without doing a (RETURN ...).
     return onevalue(nil);
 }
 
@@ -193,13 +193,13 @@ LispObject progn_fn(LispObject args, LispObject env)
         if (!consp(args)) break;
         push(args, env, f);
         on_backtrace(
-            (void)eval(f, env),
+            static_cast<void>(eval(f, env)),
             // Action for backtrace here...
             pop(f, env, args);
             if (SHOW_FNAME)
-            {   err_printf("\nEvaluating: ");
-                loop_print_error(f);
-            });
+    {   err_printf("\nEvaluating: ");
+            loop_print_error(f);
+        });
         pop(f, env, args);
     }
     return eval(f, env);    // tail call on last item in the progn
@@ -225,7 +225,7 @@ static LispObject prog1_fn(LispObject args, LispObject env)
         if (!consp(args)) break;
         push(args, env);
         {   LispObject w = car(args);
-            (void)eval(w, env);
+            static_cast<void>(eval(w, env));
         }
         pop(env, args);
     }
@@ -240,7 +240,8 @@ static LispObject prog2_fn(LispObject args, LispObject env)
     stackcheck(args, env);
     push(args, env);
     args = car(args);
-    (void)eval(args, env);                    // discard first arg
+    static_cast<void>(eval(args,
+                           env));                    // discard first arg
     pop(env, args);
     args = cdr(args);
     if (!consp(args)) return onevalue(nil); // (prog2 x) -> nil
@@ -254,7 +255,7 @@ static LispObject prog2_fn(LispObject args, LispObject env)
         if (!consp(args)) break;
         push(args, env);
         args = car(args);
-        (void)eval(args, env);
+        static_cast<void>(eval(args, env));
         pop(env, args);
     }
     pop(f);
@@ -444,7 +445,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
             setvalue(var, val);
         else
         {   LispObject p = env, w;   // Here it seems to be a local variable,
-                                     // or it could be locally FLUID.
+            // or it could be locally FLUID.
             for (;;)
             {   if (!consp(p))
                 {   setheader(var, qheader(var) | SYM_SPECIAL_VAR);
@@ -516,7 +517,7 @@ LispObject tagbody_fn(LispObject args, LispObject env)
         push(p, env, f);
         try
         {   START_TRY_BLOCK;
-            (void)eval(f, env);
+            static_cast<void>(eval(f, env));
         }
         catch (LispGo &e)
         {   int _reason = exit_reason;
@@ -543,7 +544,7 @@ LispObject tagbody_fn(LispObject args, LispObject env)
             }
 // Because this is a sort of error I will display a message. It was for
 // the benefit of this code that I had stacked f, the expression that
-// contained the (GO ..) statement. 
+// contained the (GO ..) statement.
             if (SHOW_FNAME)
             {   err_printf("\nEvaluating: ");
                 loop_print_error(f);
@@ -695,7 +696,7 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
         while (is_cons(args = cdr(args)) && args!=nil)
         {   LispObject w = car(args);
             push(args, env);
-            (void)eval(w, env);
+            static_cast<void>(eval(w, env));
             pop(env, args);
         }
         pop(rl, xt, xv);
@@ -726,7 +727,7 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
     LispObject &xargs = stack[-2];
     while (is_cons(xargs = cdr(xargs)) && xargs!=nil)
     {   LispObject w = car(xargs);
-        (void)eval(w, xenv);
+        static_cast<void>(eval(w, xenv));
     }
     pop(rl);
     popv(2);
@@ -751,7 +752,7 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
         size_t n;
         w = *sp--;
         if (findcatch && w == SPID_CATCH) break;
-        if (w == (LispObject)SPID_FBIND)
+        if (w == static_cast<LispObject>(SPID_FBIND))
         {
 //
 // Here I have found some fluid binding that need to be unwound. The code
@@ -760,13 +761,13 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
             bv = *sp--;
             n = length_of_header(vechdr(bv));
             while (n>CELL)
-            {   LispObject v = *(LispObject *)(
+            {   LispObject v = *reinterpret_cast<LispObject *>(
                                    (intptr_t)bv + n - (CELL + TAG_VECTOR));
                 n -= CELL;
                 setvalue(v, *sp--);
             }
         }
-        else if (w == (LispObject)SPID_PVBIND)
+        else if (w == static_cast<LispObject>(SPID_PVBIND))
         {   bv = *sp--;
             while (bv != nil)
             {   LispObject w = car(bv);
@@ -875,7 +876,7 @@ static LispObject errorset3(volatile LispObject env,
         env = env1;
         form = form1;
     }
-    errorset_msg = NULL;
+    errorset_msg = nullptr;
     try
     {   START_TRY_BLOCK;
         r = eval(form, nil);
@@ -937,7 +938,8 @@ static LispObject errorset3(volatile LispObject env,
     return onevalue(r);
 }
 
-LispObject Lerrorset_3(LispObject env, LispObject form, LispObject fg1, LispObject fg2)
+LispObject Lerrorset_3(LispObject env, LispObject form,
+                       LispObject fg1, LispObject fg2)
 //
 // This is not a special form, but is put into the code here because,
 // like unwind-protect, it has to re-gain control after an evaluation
@@ -952,7 +954,8 @@ LispObject Lerrorset_1(LispObject env, LispObject form)
 }
 
 
-LispObject Lerrorset_2(LispObject env, LispObject form, LispObject ffg1)
+LispObject Lerrorset_2(LispObject env, LispObject form,
+                       LispObject ffg1)
 {   return errorset3(env, form, ffg1, nil);
 }
 
@@ -990,24 +993,27 @@ LispObject Lerrorset_2(LispObject env, LispObject form, LispObject ffg1)
 // note that resources have expired.
 //
 
-int64_t time_base = 0,   space_base = 0,   io_base = 0,   errors_base = 0;
-int64_t time_now = 0,    space_now = 0,    io_now = 0,    errors_now = 0;
-int64_t time_limit = -1, space_limit = -1, io_limit = -1, errors_limit = 0;
+int64_t time_base = 0,   space_base = 0,   io_base = 0,
+        errors_base = 0;
+int64_t time_now = 0,    space_now = 0,    io_now = 0,
+        errors_now = 0;
+int64_t time_limit = -1, space_limit = -1, io_limit = -1,
+        errors_limit = 0;
 int64_t Cstack_base = 0,   Lispstack_base = 0;
 int64_t Cstack_now = 0,    Lispstack_now = 0;
 int64_t Cstack_limit = -1, Lispstack_limit = -1;
 
 class RAIIresource_variables
 {   int64_t save_time_base,
-            save_space_base,
-            save_io_base,
-            save_errors_base,
-            save_time_limit,
-            save_space_limit,
-            save_io_limit,
-            save_errors_limit;
+    save_space_base,
+    save_io_base,
+    save_errors_base,
+    save_time_limit,
+    save_space_limit,
+    save_io_limit,
+    save_errors_limit;
     LispObject *save_stack;
- public:
+public:
     RAIIresource_variables()
     {   save_time_base    = time_base;
         save_space_base   = space_base;
@@ -1018,7 +1024,7 @@ class RAIIresource_variables
         save_io_limit     = io_limit;
         save_errors_limit = errors_limit;
         save_stack        = stack;
-     }
+    }
     ~RAIIresource_variables()
     {   time_base    = save_time_base;
         space_base   = save_space_base;
@@ -1050,7 +1056,7 @@ static LispObject resource_limit7(LispObject env,
     int64_t lltime, llspace, llio, llerrors;
     RAIIresource_variables RAIIresource_variables_object;
     int64_t r0=0, r1=0, r2=0, r3=0;
-    errorset_msg = NULL;
+    errorset_msg = nullptr;
 //
 // Here I need to do something that actually sets up the limits!
 // I only allow limits that are up to 31-bits...
@@ -1146,8 +1152,9 @@ static LispObject resource_limit7(LispObject env,
     return onevalue(r);
 }
 
-LispObject Lresource_limit_4up(LispObject env, LispObject form, LispObject ltime,
-    LispObject lspace, LispObject a4up)
+LispObject Lresource_limit_4up(LispObject env, LispObject form,
+                               LispObject ltime,
+                               LispObject lspace, LispObject a4up)
 {   LispObject lio, lerrors, Csk, Lsk;
     STACK_SANITY;
     if (!is_fixnum(ltime)) ltime = fixnum_of_int(-1);
@@ -1168,11 +1175,13 @@ LispObject Lresource_limit_4up(LispObject env, LispObject form, LispObject ltime
             }
         }
     }
-    return resource_limit7(env, form, ltime, lspace, lio, lerrors, Csk, Lsk);
+    return resource_limit7(env, form, ltime, lspace, lio, lerrors, Csk,
+                           Lsk);
 }
 
 
-LispObject Lresource_limit_2(LispObject env, LispObject form, LispObject ltime)
+LispObject Lresource_limit_2(LispObject env, LispObject form,
+                             LispObject ltime)
 {   return resource_limit7(env, form, ltime,
                            fixnum_of_int(-1),
                            fixnum_of_int(-1),
@@ -1181,7 +1190,8 @@ LispObject Lresource_limit_2(LispObject env, LispObject form, LispObject ltime)
                            fixnum_of_int(-1));
 }
 
-LispObject Lresource_limit_3(LispObject env, LispObject form, LispObject ltime, LispObject lspace)
+LispObject Lresource_limit_3(LispObject env, LispObject form,
+                             LispObject ltime, LispObject lspace)
 {   return resource_limit7(env, form, ltime, lspace,
                            fixnum_of_int(-1),
                            fixnum_of_int(-1),
@@ -1211,12 +1221,13 @@ void bad_specialfn_2(LispObject env, LispObject a, LispObject b)
 {   aerror1("bad special function", env);
 }
 
-void bad_specialfn_3(LispObject env, LispObject a, LispObject b, LispObject c)
+void bad_specialfn_3(LispObject env, LispObject a, LispObject b,
+                     LispObject c)
 {   aerror1("bad special function", env);
 }
 
 void bad_specialfn_4up(LispObject env, LispObject a, LispObject b,
-                LispObject c, LispObject d)
+                       LispObject c, LispObject d)
 {   aerror1("bad special function", env);
 }
 
@@ -1240,7 +1251,7 @@ setup_type const eval3_setup[] =
     {"return-from",             BAD_SPECIAL_0, return_from_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
     {"the",                     BAD_SPECIAL_0, the_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
     {"throw",                   BAD_SPECIAL_0, throw_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {NULL,                      0, 0, 0, 0, 0}
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of eval3.cpp

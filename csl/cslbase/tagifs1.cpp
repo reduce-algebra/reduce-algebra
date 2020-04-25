@@ -68,8 +68,7 @@ int elseseen[MAXDEPTH];
 char curline[MAXLINE];
 
 static void stripcomments(char *p)
-{
-    char *q = p;
+{   char *q = p;
     while (*q != 0)
     {   if (*q == '\'')
         {   q++;
@@ -94,7 +93,7 @@ static void stripcomments(char *p)
                 *q = 0;
             }
             return;
-        } 
+        }
         else if (q[0] == '/' && q[1] == '*')
         {   char *r = q+2;
             while (*r != 0)
@@ -114,7 +113,7 @@ static void stripcomments(char *p)
                 }
                 return;
             }
-        } 
+        }
         q++;
     }
     while (q != p && q[-1] == ' ')
@@ -132,17 +131,18 @@ int main(int argc, char *argv[])
         return 1;
     }
     for (i=0; i<MAXDEPTH; i++)
-    {   pending[i] = (char *)std::malloc(MAXLINE); // should check for failure!
+    {   pending[i] = reinterpret_cast<char *>(std)::malloc(
+                         MAXLINE); // should check for failure!
         elseseen[i] = 0;
     }
     in = std::fopen(argv[1], "r");
-    if (in == NULL)
+    if (in == nullptr)
     {   std::fprintf(stderr, "Failed to access \"%s\"\n", argv[1]);
         return 1;
     }
     std::sprintf(outname, "%s.new", argv[1]);
     out = std::fopen(outname, "w");
-    if (out == NULL)
+    if (out == nullptr)
     {   std::fprintf(stderr, "Failed to access \"%s\"\n", outname);
         std::fclose(in);
         return 1;
@@ -226,7 +226,8 @@ int main(int argc, char *argv[])
     std::fclose(in);
     std::fclose(out);
     while (depth != 0)
-    {   std::fprintf(stderr, "ERROR: \"%s\" not closed\n", pending[depth]);
+    {   std::fprintf(stderr, "ERROR: \"%s\" not closed\n",
+                     pending[depth]);
         depth--;
     }
     return 0;

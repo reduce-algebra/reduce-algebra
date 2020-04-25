@@ -50,20 +50,25 @@ using number_dispatcher::LFlt;
 
 
 LispObject Logand::op(LispObject a, LispObject b)
-{   return number_dispatcher::ibinary<LispObject,Logand>("logand", a, b);
+{   return number_dispatcher::ibinary<LispObject,Logand>("logand", a,
+            b);
 }
 LispObject Logand::op(LispObject a, Fixnum b)
-{   return number_dispatcher::ibinaryR<LispObject,Logand>("logand", a, b);
+{   return number_dispatcher::ibinaryR<LispObject,Logand>("logand", a,
+            b);
 }
 LispObject Logand::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::ibinaryR<LispObject,Logand>("logand", a, b);
+{   return number_dispatcher::ibinaryR<LispObject,Logand>("logand", a,
+            b);
 }
 LispObject Logand::op(Fixnum a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Logand>("logand", a, b);
+{   return number_dispatcher::ibinaryL<LispObject,Logand>("logand", a,
+            b);
 }
 
 LispObject Logand::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Logand>("logand", a, b);
+{   return number_dispatcher::ibinaryL<LispObject,Logand>("logand", a,
+            b);
 }
 // fixnum & fixnum
 LispObject Logand::op(Fixnum a, Fixnum b)
@@ -83,20 +88,25 @@ LispObject Logand::op(uint64_t *a, uint64_t *b)
 }
 
 LispObject Logor::op(LispObject a, LispObject b)
-{   return number_dispatcher::ibinary<LispObject,Logor>("logor", a, b);
+{   return number_dispatcher::ibinary<LispObject,Logor>("logor", a,
+            b);
 }
 LispObject Logor::op(LispObject a, Fixnum b)
-{   return number_dispatcher::ibinaryR<LispObject,Logor>("logor", a, b);
+{   return number_dispatcher::ibinaryR<LispObject,Logor>("logor", a,
+            b);
 }
 LispObject Logor::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::ibinaryR<LispObject,Logor>("logor", a, b);
+{   return number_dispatcher::ibinaryR<LispObject,Logor>("logor", a,
+            b);
 }
 LispObject Logor::op(Fixnum a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Logor>("logor", a, b);
+{   return number_dispatcher::ibinaryL<LispObject,Logor>("logor", a,
+            b);
 }
 
 LispObject Logor::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Logor>("logor", a, b);
+{   return number_dispatcher::ibinaryL<LispObject,Logor>("logor", a,
+            b);
 }
 // fixnum | fixnum
 LispObject Logor::op(Fixnum a, Fixnum b)
@@ -116,20 +126,25 @@ LispObject Logor::op(uint64_t *a, uint64_t *b)
 }
 
 LispObject Logxor::op(LispObject a, LispObject b)
-{   return number_dispatcher::ibinary<LispObject,Logxor>("logxor", a, b);
+{   return number_dispatcher::ibinary<LispObject,Logxor>("logxor", a,
+            b);
 }
 LispObject Logxor::op(LispObject a, Fixnum b)
-{   return number_dispatcher::ibinaryR<LispObject,Logxor>("logxor", a, b);
+{   return number_dispatcher::ibinaryR<LispObject,Logxor>("logxor", a,
+            b);
 }
 LispObject Logxor::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::ibinaryR<LispObject,Logxor>("logxor", a, b);
+{   return number_dispatcher::ibinaryR<LispObject,Logxor>("logxor", a,
+            b);
 }
 LispObject Logxor::op(Fixnum a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Logxor>("logxor", a, b);
+{   return number_dispatcher::ibinaryL<LispObject,Logxor>("logxor", a,
+            b);
 }
 
 LispObject Logxor::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Logxor>("logxor", a, b);
+{   return number_dispatcher::ibinaryL<LispObject,Logxor>("logxor", a,
+            b);
 }
 // fixnum ^ fixnum
 LispObject Logxor::op(Fixnum a, Fixnum b)
@@ -149,20 +164,25 @@ LispObject Logxor::op(uint64_t *a, uint64_t *b)
 }
 
 LispObject Logeqv::op(LispObject a, LispObject b)
-{   return number_dispatcher::ibinary<LispObject,Logeqv>("logeqv", a, b);
+{   return number_dispatcher::ibinary<LispObject,Logeqv>("logeqv", a,
+            b);
 }
 LispObject Logeqv::op(LispObject a, Fixnum b)
-{   return number_dispatcher::ibinaryR<LispObject,Logeqv>("logeqv", a, b);
+{   return number_dispatcher::ibinaryR<LispObject,Logeqv>("logeqv", a,
+            b);
 }
 LispObject Logeqv::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::ibinaryR<LispObject,Logeqv>("logeqv", a, b);
+{   return number_dispatcher::ibinaryR<LispObject,Logeqv>("logeqv", a,
+            b);
 }
 LispObject Logeqv::op(Fixnum a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Logeqv>("logeqv", a, b);
+{   return number_dispatcher::ibinaryL<LispObject,Logeqv>("logeqv", a,
+            b);
 }
 
 LispObject Logeqv::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,Logeqv>("logeqv", a, b);
+{   return number_dispatcher::ibinaryL<LispObject,Logeqv>("logeqv", a,
+            b);
 }
 // fixnum  eqv  fixnum
 LispObject Logeqv::op(Fixnum a, Fixnum b)
@@ -191,7 +211,8 @@ LispObject Lognot::op(uint64_t *a)
 }
 
 LispObject Logcount::op(LispObject a)
-{   return number_dispatcher::iunary<LispObject,Logcount>("logcount", a);
+{   return number_dispatcher::iunary<LispObject,Logcount>("logcount",
+            a);
 }
 LispObject Logcount::op(Fixnum a)
 {   return arithlib_lowlevel::Logcount::op(a.intval());
@@ -201,20 +222,25 @@ LispObject Logcount::op(uint64_t *a)
 }
 
 LispObject LeftShift::op(LispObject a, LispObject b)
-{   return number_dispatcher::ibinary<LispObject,LeftShift>("lshift", a, b);
+{   return number_dispatcher::ibinary<LispObject,LeftShift>("lshift",
+            a, b);
 }
 LispObject LeftShift::op(LispObject a, Fixnum b)
-{   return number_dispatcher::ibinaryR<LispObject,LeftShift>("lshift", a, b);
+{   return number_dispatcher::ibinaryR<LispObject,LeftShift>("lshift",
+            a, b);
 }
 LispObject LeftShift::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::ibinaryR<LispObject,LeftShift>("lshift", a, b);
+{   return number_dispatcher::ibinaryR<LispObject,LeftShift>("lshift",
+            a, b);
 }
 LispObject LeftShift::op(Fixnum a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,LeftShift>("lshift", a, b);
+{   return number_dispatcher::ibinaryL<LispObject,LeftShift>("lshift",
+            a, b);
 }
 
 LispObject LeftShift::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,LeftShift>("lshift", a, b);
+{   return number_dispatcher::ibinaryL<LispObject,LeftShift>("lshift",
+            a, b);
 }
 // fixnum << fixnum
 LispObject LeftShift::op(Fixnum a, Fixnum b)
@@ -234,7 +260,8 @@ LispObject LeftShift::op(Fixnum a, uint64_t *b)
         else return fixnum_of_int(0);
     }
     else if (Zerop::op(a)) return fixnum_of_int(0);
-    else aerror1("left shift by value that is too large", bignum_value(b));
+    else aerror1("left shift by value that is too large",
+                     bignum_value(b));
 }
 // bignum << bignum
 LispObject LeftShift::op(uint64_t *a, uint64_t *b)
@@ -242,25 +269,31 @@ LispObject LeftShift::op(uint64_t *a, uint64_t *b)
     {   if (Minusp::op(a)) return fixnum_of_int(-1);
         else return fixnum_of_int(0);
     }
-    else aerror1("left shift by value that is too large", bignum_value(b));
+    else aerror1("left shift by value that is too large",
+                     bignum_value(b));
 
 }
 
 LispObject RightShift::op(LispObject a, LispObject b)
-{   return number_dispatcher::ibinary<LispObject,RightShift>("rshift", a, b);
+{   return number_dispatcher::ibinary<LispObject,RightShift>("rshift",
+            a, b);
 }
 LispObject RightShift::op(LispObject a, Fixnum b)
-{   return number_dispatcher::ibinaryR<LispObject,RightShift>("rshift", a, b);
+{   return
+        number_dispatcher::ibinaryR<LispObject,RightShift>("rshift", a, b);
 }
 LispObject RightShift::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::ibinaryR<LispObject,RightShift>("rshift", a, b);
+{   return
+        number_dispatcher::ibinaryR<LispObject,RightShift>("rshift", a, b);
 }
 LispObject RightShift::op(Fixnum a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,RightShift>("rshift", a, b);
+{   return
+        number_dispatcher::ibinaryL<LispObject,RightShift>("rshift", a, b);
 }
 
 LispObject RightShift::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::ibinaryL<LispObject,RightShift>("rshift", a, b);
+{   return
+        number_dispatcher::ibinaryL<LispObject,RightShift>("rshift", a, b);
 }
 // fixnum >> fixnum
 LispObject RightShift::op(Fixnum a, Fixnum b)
@@ -280,7 +313,7 @@ LispObject RightShift::op(Fixnum a, uint64_t *b)
 {   if (Minusp::op(b))
     {   if (Zerop::op(a)) return fixnum_of_int(0);
         else aerror1("right shift by value that is too negative",
-                     bignum_value(b));
+                         bignum_value(b));
     }
     else if (Minusp::op(a)) return fixnum_of_int(-1);
     else return fixnum_of_int(0);

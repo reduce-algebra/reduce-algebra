@@ -239,8 +239,10 @@ static cuckoo_inline std::uint32_t cuckoo_lookup(
     // must be <= MAX_CUCKOO_ITEM_SIZE
     std::uint32_t table_size,      // number of entries in the hash table
     cuckoo_get_key *get_key,  // function to retrieve keys from table
-    std::uint32_t modulus2,        // used to give a secondary hash function
-    std::uint32_t offset2)         // used to give a secondary hash function
+    std::uint32_t
+    modulus2,        // used to give a secondary hash function
+    std::uint32_t
+    offset2)         // used to give a secondary hash function
 {
 // My initial hash value is merely the key reduced modulo the size of
 // the table.
@@ -291,8 +293,10 @@ extern std::uint32_t cuckoo_insert(
     std::uint32_t table_size,      // number of entries in the hash table
     cuckoo_get_key *get_key,  // function to retrieve keys from table
     cuckoo_set_key *set_key,  // function to set a key in the table
-    std::uint32_t modulus2,        // used to give a secondary hash function
-    std::uint32_t offset2);        // used to give a secondary hash function
+    std::uint32_t
+    modulus2,        // used to give a secondary hash function
+    std::uint32_t
+    offset2);        // used to give a secondary hash function
 
 // Some functions return a "cuckoo_parameters" value. This gives the
 // size of the hash table in use, values for modulus2 and offset2 (ie

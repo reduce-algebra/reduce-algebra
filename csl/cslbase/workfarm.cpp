@@ -76,7 +76,7 @@ static CRITICAL_SECTION critical_section;
 static int number_of_processors()
 {   SYSTEM_INFO si;
     GetSystemInfo(&si);
-    return (int)si.dwNumberOfProcessors;
+    return static_cast<int>(si.dwNumberOfProcessors);
 }
 
 // The function that implements a thread will return a value THREADRESULT
@@ -87,7 +87,7 @@ static int number_of_processors()
 
 static HANDLE thread[MAX_CPU_COUNT];
 #define CREATETHREAD_FAILED(i, p) \
-    (thread[i] = CreateThread(NULL, 0, &p, NULL, 0, NULL)) == NULL
+    (thread[i] = CreateThread(nullptr, 0, &p, nullptr, 0, nullptr)) == nullptr
 #define JOINTHREAD_FAILED(i) \
     WaitForSingleObject(thread[i], INFINITE) != WAIT_OBJECT_0 || \
     CloseHandle(thread[i]) == 0
@@ -95,7 +95,7 @@ static HANDLE thread[MAX_CPU_COUNT];
 #else // Now for the pthreads version for Linux, Unix, BSD, OS/X etc.
 
 static pthread_mutex_t mutex;
-#define CREATEMUTEX_FAILED pthread_mutex_init(&mutex, NULL)
+#define CREATEMUTEX_FAILED pthread_mutex_init(&mutex, nullptr)
 #define LOCKMUTEX          pthread_mutex_lock(&mutex)
 #define UNLOCKMUTEX        pthread_mutex_unlock(&mutex)
 #define DESTROYMUTEX       pthread_mutex_destroy(&mutex)
@@ -124,11 +124,11 @@ static int number_of_processors()
 #endif // sysconf option to check CPU count
 
 #define THREADRESULT_T void *
-#define THREADRESULT   NULL
+#define THREADRESULT   nullptr
 
 static pthread_t thread[MAX_CPU_COUNT];
-#define CREATETHREAD_FAILED(i, p) pthread_create(&thread[i], NULL, &p, NULL)
-#define JOINTHREAD_FAILED(i)     pthread_join(thread[i], NULL)
+#define CREATETHREAD_FAILED(i, p) pthread_create(&thread[i], nullptr, &p, nullptr)
+#define JOINTHREAD_FAILED(i)     pthread_join(thread[i], nullptr)
 
 #endif // Windows vs pthreads.
 
@@ -184,8 +184,8 @@ THREADRESULT_T threadwork(void *arg)
 }
 
 THREADRESULT_T threadnowork(void *arg)
-{   char *w = (char *)std::malloc(10000);
-    if (w == NULL)
+{   char *w = reinterpret_cast<char *>(std)::malloc(10000);
+    if (w == nullptr)
     {   std::printf("Disaster\n");
         std::exit(1);
     }
@@ -201,7 +201,8 @@ int main(int argc, char *argv[])
     if (cpu_count > MAX_CPU_COUNT) cpu_count = MAX_CPU_COUNT;
 
     for (i=0; i<1000000; i++)
-    {   if (i % 100000 == 0) std::printf("i = %d\n", i), std::fflush(stdout);
+    {   if (i % 100000 == 0) std::printf("i = %d\n", i),
+            std::fflush(stdout);
         if (CREATETHREAD_FAILED(1, threadnowork))
         {   std::printf("Failed to create at %d\n", i);
             std::exit(1);
@@ -224,7 +225,7 @@ int main(int argc, char *argv[])
             std::exit(1);
         }
     }
-    threadwork(NULL);   // do some work even in the main thread
+    threadwork(nullptr);   // do some work even in the main thread
     for (i=0; i<cpu_count-1; i++)
     {   if (JOINTHREAD_FAILED(i))
         {   std::fprintf(stderr, "Unable to join thread\n");

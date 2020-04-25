@@ -66,18 +66,17 @@ uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
 // either signed or unsigned arithmetic.
 //
 {   uint64_t p = ((uint64_t)a << 31) | (uint64_t)b;
-    if (qp != NULL) *qp = (uint32_t)(p / (uint64_t)c);
+    if (qp != nullptr) *qp = (uint32_t)(p / (uint64_t)c);
     return (uint32_t)(p % (uint64_t)c);
 }
 
 static LispObject quotis(LispObject a, LispObject b)
-{
-    mv_2 = fixnum_of_int(0);
+{   mv_2 = fixnum_of_int(0);
     double d = value_of_immediate_float(b);
 // Here and at least at present I explicitly fail if I try to divide by 0.0s0
 // while I could wish to return an infinity.
     if (d == 0.0) aerror2("bad arg for quotient", a, b);
-    d = (double)int_of_fixnum(a)/d;
+    d = static_cast<double>(int_of_fixnum(a))/d;
     return pack_immediate_float(b, b);
 }
 
@@ -196,15 +195,15 @@ static LispObject quotif(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
     if (d == 0.0) aerror2("bad arg for quotient", a, b);
-    d = (double)int_of_fixnum(a) / d;
+    d = static_cast<double>(int_of_fixnum(a)) / d;
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
 static LispObject quotsi(LispObject a, LispObject b)
-{
-    if (b == fixnum_of_int(0)) aerror2("bad arg for quotient", a, b);
+{   if (b == fixnum_of_int(0)) aerror2("bad arg for quotient", a, b);
     mv_2 = fixnum_of_int(0);
-    double d = value_of_immediate_float(a)/(double)int_of_fixnum(b);
+    double d = value_of_immediate_float(a)/static_cast<double>
+               (int_of_fixnum(b));
     return pack_immediate_float(d, a);
 }
 
@@ -280,15 +279,15 @@ LispObject quotbn(LispObject a, int32_t n)
         int64_t p = a0 / n;
         nwork = a0 % n;
         if (nwork != 0 &&
-            (nwork ^ a0) < 0) 
-        {  if (p < 0)
-           {   p++;
-               nwork -= n;
-           }
-           else
-           {   p--;
-               nwork += n;
-           }
+            (nwork ^ a0) < 0)
+        {   if (p < 0)
+            {   p++;
+                nwork -= n;
+            }
+            else
+            {   p--;
+                nwork += n;
+            }
         }
         return make_lisp_integer64(p);
     }
@@ -310,15 +309,15 @@ LispObject quotbn(LispObject a, int32_t n)
         int32_t r0 = (int32_t)(lo%n);
 // Now fix the sign of the remainder...
         if (r0 != 0 &&
-            (r0 ^ a2) < 0) 
-        {  if (q1 < 0)
-           {   q0++;
-               r0 -= n;
-           }
-           else
-           {   q0--;
-               r0 += n;
-           }
+            (r0 ^ a2) < 0)
+        {   if (q1 < 0)
+            {   q0++;
+                r0 -= n;
+            }
+            else
+            {   q0--;
+                r0 += n;
+            }
         }
         nwork = r0;   // Remainder should now be OK
         q1 += q0>>31;
@@ -329,7 +328,7 @@ LispObject quotbn(LispObject a, int32_t n)
         if (signed31_in_64(q1))
             return make_two_word_bignum((int32_t)q1, (uint32_t)q0);
         return make_three_word_bignum((int32_t)(q1>>31),
-            (uint32_t)(q1&0x7fffffff), (uint32_t)q0);
+                                      (uint32_t)(q1&0x7fffffff), (uint32_t)q0);
     }
 // Start by allocating a workspace copy of the dividend.  negateb will
 // leave a a bignum, although it may change its length.
@@ -350,7 +349,8 @@ LispObject quotbn(LispObject a, int32_t n)
     lena = (bignum_length(a)-CELL)/4;
     carry = 0;
     for (i=lena; i>0; i--)
-        Ddivide(carry, bignum_digits(a)[i-1], carry, bignum_digits(a)[i-1], n);
+        Ddivide(carry, bignum_digits(a)[i-1], carry, bignum_digits(a)[i-1],
+                n);
     if ((sign & 2) != 0) nwork = -(int32_t)carry;
     else nwork = carry;
     lena--;
@@ -359,7 +359,8 @@ LispObject quotbn(LispObject a, int32_t n)
     if ((sign & 1) != 0)            // quotient will be negative
     {   carry = 0xffffffffU;
         for (i=0; i<lena; i++)
-        {   carry = ADD32(clear_top_bit(~bignum_digits(a)[i]), top_bit(carry));
+        {   carry = ADD32(clear_top_bit(~bignum_digits(a)[i]),
+                          top_bit(carry));
             bignum_digits(a)[i] = clear_top_bit(carry);
         }
         carry = ADD32(~bignum_digits(a)[i], top_bit(carry));
@@ -381,7 +382,8 @@ LispObject quotbn(LispObject a, int32_t n)
         lenc = (lena+1) | 1;
     }
     if (lenc != lenx) // space to discard?
-        *(Header *)&bignum_digits(a)[lenc] = make_bighdr(lenx-lenc);
+        *reinterpret_cast<Header *>(&bignum_digits(a)[lenc]) = make_bighdr(
+                    lenx-lenc);
     setnumhdr(a,  make_bighdr(lena+1+CELL/4));
     return a;
 }
@@ -457,7 +459,8 @@ LispObject quotbn1(LispObject a, int32_t n)
         Ddivide(carry, bignum_digits(a)[i], carry, bignum_digits(a)[i], n);
     if ((sign & 2) != 0) carry = -(int32_t)carry;
 // Beware and force carry to be treated as a signed value here!
-    nwork = (int32_t)carry;          // leave remainder available to caller
+    nwork = (int32_t)
+            carry;          // leave remainder available to caller
     return nil;
 }
 
@@ -497,13 +500,13 @@ static LispObject quotbi(LispObject a, LispObject b)
             p = bignum_digits64(a, 2)<<31 | bignum_digits(a)[1];
             p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;
-        case 3:        
+        case 3:
             p = bignum_digits64(a, 3)<<31 | bignum_digits(a)[2];
             p = (uint128(p) << 31) | bignum_digits(a)[1];
             p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;
-    default:
-        return quotbb(a, make_fake_bignum(n), QUOTBB_QUOTIENT_NEEDED);
+        default:
+            return quotbb(a, make_fake_bignum(n), QUOTBB_QUOTIENT_NEEDED);
     }
     p = p / int_of_fixnum(b);
 // Now I need to re-pack the quotient, which could be anything up to a 3-digit
@@ -546,17 +549,17 @@ static LispObject quotrembi(LispObject a, LispObject b)
             p = bignum_digits64(a, 2)<<31 | bignum_digits(a)[1];
             p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;
-        case 3:        
+        case 3:
             p = bignum_digits64(a, 3)<<31 | bignum_digits(a)[2];
             p = (uint128(p) << 31) | bignum_digits(a)[1];
             p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;
         default:
             return quotbb(a, make_fake_bignum(n),
-                      QUOTBB_QUOTIENT_NEEDED | QUOTBB_REMAINDER_NEEDED);
+                          QUOTBB_QUOTIENT_NEEDED | QUOTBB_REMAINDER_NEEDED);
     }
 // Because b is a fixnum the remainder must be. Note that p and b might be
-// negative here, 
+// negative here,
     mv_2 = fixnum_of_int(NARROW128(p % int_of_fixnum(b)));
     p = p / int_of_fixnum(b);
     return make_lisp_integer128(p);
@@ -628,7 +631,7 @@ static LispObject quotbs(LispObject a, LispObject b)
 // seems that I have just a single edge case to test for!
 
 inline LispObject short_numerator(LispObject a, size_t lena,
-                                         LispObject b, size_t lenb)
+                                  LispObject b, size_t lenb)
 {   mv_2 = a;
 // I can only have trouble if the representation of a is just one
 // digit shorter than that of b and a starts off [-2^30,...] while
@@ -650,7 +653,7 @@ inline LispObject short_numerator(LispObject a, size_t lena,
 inline size_t copy_unsigned(LispObject r, LispObject a, size_t lena)
 {   if (bignum_digits(a)[lena] == 0) lena--;
     for (size_t i=0; i<=lena; i++)
-       bignum_digits(r)[i] = vbignum_digits(a)[i];
+        bignum_digits(r)[i] = vbignum_digits(a)[i];
     return lena;
 }
 
@@ -677,7 +680,7 @@ inline size_t copy_negated(LispObject r, LispObject a, size_t lena)
 #define SIGN_REMAINDER_NEGATIVE  2
 
 inline int make_positive_and_copy(LispObject &a, size_t &lena,
-                                         LispObject &b, size_t &lenb)
+                                  LispObject &b, size_t &lenb)
 {
 // Before I do anything else I will ensure that there is space available
 // in the working variables... And I will leave myself a few bytes in hand.
@@ -697,7 +700,8 @@ inline int make_positive_and_copy(LispObject &a, size_t &lena,
         pop(b, a);
         big_divisor = w;
     }
-    while (bignum_length(a)-bignum_length(b)+16 >= bignum_length(big_quotient))
+    while (bignum_length(a)-bignum_length(b)+16 >= bignum_length(
+               big_quotient))
     {   size_t newlen = 2*bignum_length(big_quotient);
         push(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
@@ -735,16 +739,17 @@ inline int make_positive_and_copy(LispObject &a, size_t &lena,
 inline uint32_t timesbn(LispObject a, size_t len, uint32_t scale)
 {   uint32_t carry = 0;
     for (size_t i=0; i<=len; i++)
-    {   uint64_t d = (uint64_t)bignum_digits(a)[i] * (uint64_t)scale + carry;
+    {   uint64_t d = (uint64_t)bignum_digits(a)[i] *
+                     (uint64_t)scale + carry;
         bignum_digits(a)[i] = (uint32_t)d & 0x7fffffff;
         carry = (uint32_t)(d >> 31);
     }
-    return carry;   
+    return carry;
 }
 
 inline int32_t multiply_and_subtract(LispObject a, size_t lena,
-                                            uint32_t q0,
-                                            LispObject b, size_t lenb)
+                                     uint32_t q0,
+                                     LispObject b, size_t lenb)
 {   int32_t carry = 0;
     for (size_t i=0; i<=lenb; i++)
     {   int64_t d = (int64_t)bignum_digits(a)[lena-lenb+i] -
@@ -762,25 +767,25 @@ inline int32_t multiply_and_subtract(LispObject a, size_t lena,
 //      trace_printf("new carry = %.8x\n", (int)carry);
     }
 //  trace_printf("return %.8x\n", carry);
-    return carry;   
+    return carry;
 }
 
 inline int32_t add_back_correction(LispObject a, size_t lena,
-                                          LispObject b, size_t lenb)
-{    uint32_t carry = 0;
-     for (size_t i=0; i<=lenb; i++)
-     {   uint32_t d = bignum_digits(a)[lena-lenb+i] +
-                      bignum_digits(b)[i] +
-                      carry;
-         bignum_digits(a)[lena-lenb+i] = d & 0x7fffffff;
-         carry = d >> 31;
-     }
-     return carry;   
+                                   LispObject b, size_t lenb)
+{   uint32_t carry = 0;
+    for (size_t i=0; i<=lenb; i++)
+    {   uint32_t d = bignum_digits(a)[lena-lenb+i] +
+                     bignum_digits(b)[i] +
+                     carry;
+        bignum_digits(a)[lena-lenb+i] = d & 0x7fffffff;
+        carry = d >> 31;
+    }
+    return carry;
 }
 
 inline uint32_t next_quotient_digit(uint32_t atop,
-                                           LispObject a, size_t &lena,
-                                           LispObject b, size_t lenb)
+                                    LispObject a, size_t &lena,
+                                    LispObject b, size_t lenb)
 {   uint64_t p0 = (uint64_t)atop<<31 | bignum_digits(a)[lena];
     uint32_t q0 =  p0 / (uint64_t)bignum_digits(b)[lenb];
     uint32_t r0 =  p0 % (uint64_t)bignum_digits(b)[lenb];
@@ -788,7 +793,7 @@ inline uint32_t next_quotient_digit(uint32_t atop,
 // but never any worse than that.
 //
 // The test on the next line should detect all case where q0 was in error
-// by 2 and most when it was in error by 1. 
+// by 2 and most when it was in error by 1.
 //
     if (q0 == 0x80000000U ||
         (uint64_t)q0*(uint64_t)bignum_digits(b)[lenb-1] >
@@ -840,14 +845,13 @@ inline size_t unscale(LispObject a, size_t lena, uint32_t scale)
 // representation.
 
 inline size_t fix_up_bignum_length(LispObject q, size_t lenq)
-{
-    if ((bignum_digits(q)[lenq] & 0x40000000U) != 0)
+{   if ((bignum_digits(q)[lenq] & 0x40000000U) != 0)
     {   lenq++;
         bignum_digits(q)[lenq] = 0;
     }
     else while (lenq != 0 &&
-        bignum_digits(q)[lenq] == 0 &&
-        (bignum_digits(q)[lenq-1] & 0x40000000U) == 0) lenq--;
+                    bignum_digits(q)[lenq] == 0 &&
+                    (bignum_digits(q)[lenq-1] & 0x40000000U) == 0) lenq--;
     return lenq;
 }
 
@@ -859,7 +863,7 @@ inline size_t negate_in_place(LispObject a, size_t lena)
     for (size_t i=0; i<lena; i++)
     {   uint32_t d = (bignum_digits(a)[i] ^ 0x7fffffff) + carry;
         bignum_digits(a)[i] = d & 0x7fffffff;
-        carry = d >> 31; 
+        carry = d >> 31;
 //      trace_printf("negate in place: %.8x %.8x\n", bignum_digits(a)[i], carry);
     }
 // I treat the top digit specially since it is thought of as a signed value.
@@ -887,14 +891,15 @@ inline LispObject pack_up_result(LispObject a, size_t lena)
         if (valid_as_fixnum(r)) return fixnum_of_int(r);
     }
     push(a);
-    LispObject r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lena+4);
+    LispObject r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM,
+                                    CELL+4*lena+4);
     pop(a);
 //  trace_printf("lena = %d  r = %p\n", (int)lena, (void *)r);
     for (size_t i=0; i<=lena; i++)
         bignum_digits(r)[i] = vbignum_digits(a)[i];
     if ((SIXTY_FOUR_BIT && (lena & 1) == 0) ||
         (!SIXTY_FOUR_BIT && (lena & 1) != 0)) bignum_digits(r)[lena+1] = 0;
-    return r;    
+    return r;
 }
 
 // I need to make copies of both numerator and denominator here because
@@ -913,7 +918,7 @@ inline LispObject pack_up_result(LispObject a, size_t lena)
 
 LispObject quotbb(LispObject a, LispObject b, int need)
 {   size_t lena = (bignum_length(a)-CELL-4)/4,
-           lenb = (bignum_length(b)-CELL-4)/4;
+               lenb = (bignum_length(b)-CELL-4)/4;
 // On 32-bit machines I may have a denominator that still fits in 31-bits.
 // In that case I can optimise. The case lenb==0 ought not to arise on a
 // 64-bit machine... And to avoid ending up with a division by a 1-word
@@ -925,8 +930,8 @@ LispObject quotbb(LispObject a, LispObject b, int need)
 // "digit -1" which does not exist. In reality in that case it treats
 // the header word of the bignum as if it has been part of the numeric data.
     if (!SIXTY_FOUR_BIT && (lenb == 0 ||
-        (lenb == 1 && (bignum_digits(b)[1]==0 ||
-                       (int32_t)bignum_digits(b)[1]==-1))))
+                            (lenb == 1 && (bignum_digits(b)[1]==0 ||
+                                           (int32_t)bignum_digits(b)[1]==-1))))
     {   int32_t nn = (int32_t)bignum_digits(b)[0];
         if (lenb != 0 && (int32_t)bignum_digits(b)[1]==-1)
             nn = (int32_t)((uint32_t)nn | 0x80000000U);
@@ -971,13 +976,14 @@ LispObject quotbb(LispObject a, LispObject b, int need)
 // a now has digits running from 0 to lena+1.
     bignum_digits(a)[lena+1] = timesbn(a, lena, scale);
     uint32_t btop = timesbn(b, lenb, scale);
-    (void)btop; // To try to get rid of warning on unused variable btop.
+    static_cast<void>
+    (btop); // To try to get rid of warning on unused variable btop.
     assert(btop == 0);
     size_t m = lenq;
     for (;;)
     {   uint32_t q = next_quotient_digit(
-            bignum_digits(a)[lena+1], a, lena,
-            b, lenb);
+                         bignum_digits(a)[lena+1], a, lena,
+                         b, lenb);
         bignum_digits(big_quotient)[m] = q;
         if (m == 0) break;
         m--;
@@ -995,7 +1001,7 @@ LispObject quotbb(LispObject a, LispObject b, int need)
             lenq = negate_in_place(big_quotient, lenq);
     }
 // Now I need to pack the results so that they are suitable for use
-// elsewhere in the system. 
+// elsewhere in the system.
     if ((need & QUOTBB_REMAINDER_NEEDED) != 0)
         mv_2 = pack_up_result(a, lena);
     if ((need & QUOTBB_QUOTIENT_NEEDED) != 0)
@@ -1120,7 +1126,7 @@ static LispObject quotfi(LispObject a, LispObject b)
 {   double d;
     mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(0)) aerror2("bad arg for quotient", a, b);
-    d = float_of_number(a) / (double)int_of_fixnum(b);
+    d = float_of_number(a) / static_cast<double>(int_of_fixnum(b));
     return make_boxfloat(d, type_of_header(flthdr(a)));
 }
 
@@ -1151,7 +1157,8 @@ static LispObject quotfr(LispObject a, LispObject b)
 #define quotfc(a, b) quotic(a, b)
 
 static LispObject quotff(LispObject a, LispObject b)
-{   int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
+{   int32_t ha = type_of_header(flthdr(a)),
+                hb = type_of_header(flthdr(b));
     int32_t hc;
     mv_2 = fixnum_of_int(0);
 #ifdef HAVE_SOFTFLOAT
@@ -1166,9 +1173,9 @@ static LispObject quotff(LispObject a, LispObject b)
     }
     else
 #endif // HAVE_SOFTFLOAT
-    if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
-        hc = TYPE_DOUBLE_FLOAT;
-    else hc = TYPE_SINGLE_FLOAT;
+        if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
+            hc = TYPE_DOUBLE_FLOAT;
+        else hc = TYPE_SINGLE_FLOAT;
     double d;
     if ((d = float_of_number(b)) == 0.0)
         aerror2("bad arg for quotient", a, b);
@@ -1179,7 +1186,7 @@ LispObject quot2(LispObject a, LispObject b)
 #ifdef DEBUG
 {   validate_number("Arg1 for quot", a, a, b);
     validate_number("Arg2 for quot", b, a, b);
-    extern LispObject quot2a(LispObject a, LispObject b);    
+    extern LispObject quot2a(LispObject a, LispObject b);
     LispObject r = quot2a(a, b);
     validate_number("result for quot", r, a, b);
     return r;
@@ -1187,9 +1194,9 @@ LispObject quot2(LispObject a, LispObject b)
 
 LispObject quot2a(LispObject a, LispObject b)
 #endif
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
 // This is where fixnum / fixnum arithmetic happens - the case I most want to
 // make efficient.
@@ -1240,7 +1247,7 @@ LispObject quot2a(LispObject a, LispObject b)
                     aerror1("bad arg for quotient",  b);
             }
         case XTAG_SFLOAT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotsi(a, b);
                 case XTAG_SFLOAT:
@@ -1273,7 +1280,7 @@ LispObject quot2a(LispObject a, LispObject b)
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotbi(a, b);
                         case XTAG_SFLOAT:
@@ -1299,7 +1306,7 @@ LispObject quot2a(LispObject a, LispObject b)
                             aerror1("bad arg for quotient",  b);
                     }
                 case TYPE_RATNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
                         case XTAG_SFLOAT:
@@ -1325,7 +1332,7 @@ LispObject quot2a(LispObject a, LispObject b)
                             aerror1("bad arg for quotient",  b);
                     }
                 case TYPE_COMPLEX_NUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
                         case XTAG_SFLOAT:
@@ -1355,7 +1362,7 @@ LispObject quot2a(LispObject a, LispObject b)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
                 case XTAG_SFLOAT:
@@ -1389,7 +1396,7 @@ LispObject quotrem2(LispObject a, LispObject b)
 #ifdef DEBUG
 {   validate_number("Arg1 for quotrem", a, a, b);
     validate_number("Arg2 for quotrem", b, a, b);
-    extern LispObject quotrem2a(LispObject a, LispObject b);    
+    extern LispObject quotrem2a(LispObject a, LispObject b);
     LispObject r = quotrem2a(a, b);
     validate_number("result for quotrem", r, a, b);
     return r;
@@ -1397,9 +1404,9 @@ LispObject quotrem2(LispObject a, LispObject b)
 
 LispObject quotrem2a(LispObject a, LispObject b)
 #endif
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
 //
 // This is where fixnum / fixnum arithmetic happens - the case I most want to
@@ -1451,7 +1458,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
                     aerror1("bad arg for quotient",  b);
             }
         case XTAG_SFLOAT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotsi(a, b);
                 case XTAG_SFLOAT:
@@ -1484,7 +1491,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotrembi(a, b);
                         case XTAG_SFLOAT:
@@ -1495,8 +1502,8 @@ LispObject quotrem2a(LispObject a, LispObject b)
                             switch (hb)
                             {   case TYPE_BIGNUM:
                                     return quotbb(a, b,
-                                        QUOTBB_QUOTIENT_NEEDED |
-                                        QUOTBB_REMAINDER_NEEDED);
+                                                  QUOTBB_QUOTIENT_NEEDED |
+                                                  QUOTBB_REMAINDER_NEEDED);
                                 case TYPE_RATNUM:
                                     return quotbr(a, b);
                                 case TYPE_COMPLEX_NUM:
@@ -1512,7 +1519,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
                             aerror1("bad arg for quotient",  b);
                     }
                 case TYPE_RATNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
                         case XTAG_SFLOAT:
@@ -1538,7 +1545,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
                             aerror1("bad arg for quotient",  b);
                     }
                 case TYPE_COMPLEX_NUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
                         case XTAG_SFLOAT:
@@ -1568,7 +1575,7 @@ LispObject quotrem2a(LispObject a, LispObject b)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
                 case XTAG_SFLOAT:
@@ -1614,7 +1621,7 @@ LispObject CLquot2(LispObject a, LispObject b)
 #ifdef DEBUG
 {   validate_number("Arg1 for CLquot", a, a, b);
     validate_number("Arg2 for CLquot", b, a, b);
-    extern LispObject CLquot2a(LispObject a, LispObject b);    
+    extern LispObject CLquot2a(LispObject a, LispObject b);
     LispObject r = CLquot2a(a, b);
     validate_number("result for CLquot", r, a, b);
     return r;
@@ -1622,9 +1629,9 @@ LispObject CLquot2(LispObject a, LispObject b)
 
 LispObject CLquot2a(LispObject a, LispObject b)
 #endif
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
 //
 // This is where fixnum / fixnum arithmetic happens - the case I most want to
@@ -1647,7 +1654,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                             if (!SIXTY_FOUR_BIT && r == 0x08000000)
                                 return make_one_word_bignum(r);
                             else if (SIXTY_FOUR_BIT &&
-                                r == INT64_C(0x0800000000000000))
+                                     r == INT64_C(0x0800000000000000))
                                 return make_lisp_integer64(r);
                             else return fixnum_of_int(r);
                         }
@@ -1685,7 +1692,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                     aerror1("bad arg for /",  b);
             }
         case XTAG_SFLOAT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotsi(a, b);
                 case XTAG_SFLOAT:
@@ -1718,7 +1725,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return CLquotbi(a, b);
                         case XTAG_SFLOAT:
@@ -1744,7 +1751,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                             aerror1("bad arg for /",  b);
                     }
                 case TYPE_RATNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
                         case XTAG_SFLOAT:
@@ -1770,7 +1777,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
                             aerror1("bad arg for /",  b);
                     }
                 case TYPE_COMPLEX_NUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
                         case XTAG_SFLOAT:
@@ -1800,7 +1807,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
                 case XTAG_SFLOAT:

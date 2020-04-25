@@ -116,13 +116,13 @@ static wxStopWatch sw;
 
 static int options = 5;  // default to using my own scaling
 
-static std::FILE *logFile = NULL;
+static std::FILE *logFile = nullptr;
 
 static int printlog(const char *fmt, ...)
 {   std::va_list a;
     int r = 0;
-    if (logFile == NULL) logFile = std::fopen("wxshowmath.log", "w");
-    if (logFile != NULL)
+    if (logFile == nullptr) logFile = std::fopen("wxshowmath.log", "w");
+    if (logFile != nullptr)
     {   va_start(a, fmt);
         r = std::vfprintf(logFile, fmt, a);
         std::fflush(logFile);
@@ -155,7 +155,8 @@ bool FontValid[MAX_FONTS];
 class showmathPanel : public wxPanel
 {
 public:
-    showmathPanel(class showmathFrame *parent, const char *showmathFilename);
+    showmathPanel(class showmathFrame *parent,
+                  const char *showmathFilename);
 
     void OnPaint(wxPaintEvent &event);
 
@@ -225,8 +226,8 @@ int usedWidth, usedHeight;
 // to wxWidgets to create the font. To help me choose a suitable point size
 // I record charWidth_1000 which is the width of a 1000-point character.
 
-wxBitmap *bigTile = NULL;
-wxBitmap *smallTile = NULL;
+wxBitmap *bigTile = nullptr;
+wxBitmap *smallTile = nullptr;
 wxMemoryDC *tileDC;
 int smallTileSize, bigTileSize;
 
@@ -300,7 +301,8 @@ int main(int argc, char *argv[])
 // behaviour I want in more complicated cases.
     for (int i=1; i<argc; i++)
     {   if (std::strncmp(argv[i], "-w", 2) == 0) usegui = 0;
-        if (std::strncmp(argv[i], "-x", 2) == 0) options = std::atoi(argv[i]+2);
+        if (std::strncmp(argv[i], "-x",
+                         2) == 0) options = std::atoi(argv[i]+2);
     }
 #if !defined WIN32 && !defined MACINTOSH
 // Under X11 I will demote to being a console mode application if DISPLAY
@@ -308,7 +310,7 @@ int main(int argc, char *argv[])
 // cases. Eg I could look at stdin & stdout and check if it looks as if
 // they are pipes of they have been redirected...
     {   const char *s = std::getenv("DISPLAY");
-        if (s==NULL || *s == 0) usegui = 0;
+        if (s==nullptr || *s == 0) usegui = 0;
     }
 #endif
     if (usegui)
@@ -321,7 +323,7 @@ int main(int argc, char *argv[])
 // it also seems to cause things to terminate more neatly.
         char xname[LONGEST_LEGAL_FILENAME];
         std::sprintf(xname,"%s.app", programName);
-        if (std::strstr(fullProgramName, xname) == NULL)
+        if (std::strstr(fullProgramName, xname) == nullptr)
         {
 // Here the binary I launched was not located as
 //      ...foo.app../.../foo
@@ -340,7 +342,7 @@ int main(int argc, char *argv[])
                 nargs[2] ="--args";
                 for (int i=1; i<argc; i++)
                     nargs[i+2] = argv[i];
-                nargs[argc+2] = NULL;
+                nargs[argc+2] = nullptr;
 // /usr/bin/open foo.app --args [any original arguments]
                 return execv("/usr/bin/open", const_cast<char * const *>(nargs));
             }
@@ -380,18 +382,18 @@ IMPLEMENT_APP_NO_MAIN(showmathApp)
 bool showmathApp::OnInit()
 {
 // The program can take an argument - grab that here and pass it down to
-// showmathFrame - or NULL if there was none.
+// showmathFrame - or nullptr if there was none.
     char **myargv = (char **)argv;
-    const char *showmathFilename = NULL;
+    const char *showmathFilename = nullptr;
     for (int i=1; i<argc; i++)
         if (myargv[i][0] != '-') showmathFilename = myargv[i];
 #ifdef WIN32
     static char tidyFilename[LONGEST_LEGAL_FILENAME];
-    if (showmathFilename != NULL &&
+    if (showmathFilename != nullptr &&
         std::strncmp(showmathFilename, "/cygdrive/", 10) == 0 &&
         showmathFilename[11] == '/')
     {   std::sprintf(tidyFilename, "%c:%s",
-                showmathFilename[10], showmathFilename+11);
+                     showmathFilename[10], showmathFilename+11);
         showmathFilename = tidyFilename;
     }
 #endif
@@ -402,7 +404,7 @@ bool showmathApp::OnInit()
 }
 
 showmathFrame::showmathFrame(const char *showmathFilename)
-    : wxFrame(NULL, wxID_ANY, "wxshowmath")
+    : wxFrame(nullptr, wxID_ANY, "wxshowmath")
 {   SetIcon(wxICON(fwin));
     panel = new showmathPanel(this, showmathFilename);
     int numDisplays = wxDisplay::GetCount(); // how many displays?
@@ -420,8 +422,8 @@ showmathFrame::showmathFrame(const char *showmathFilename)
                              bigHeight=4*screenHeight,
                              24); // wxBITMAP_SCREEN_DEPTH);
     bigDC = new wxMemoryDC();
-    bigTile = NULL;
-    smallTile = NULL;
+    bigTile = nullptr;
+    smallTile = nullptr;
     tileDC = new wxMemoryDC();
     bigDC->SelectObject(*bigBitmap);
 //
@@ -450,14 +452,15 @@ showmathFrame::showmathFrame(const char *showmathFilename)
 // computers in general the window size may not end up a neat multiple
 // of anything in particular.
     if (10*clientWidth > 9*screenWidth) clientWidth = 90*screenWidth/100;
-    if (10*clientHeight > 9*screenHeight) clientHeight = 90*screenHeight/100;
+    if (10*clientHeight > 9*screenHeight) clientHeight =
+            90*screenHeight/100;
     SetClientSize(clientWidth, clientHeight);
 // I put a minimum on the client size...
     SetMinClientSize(wxSize(400, 100));
 // ... but a maximum on the total size including borders and decorations.
     SetMaxSize(wxSize(screenWidth, screenHeight));
     RepaintBuffer(); // I must get an image ready before I first try to
-                        // display the window.
+    // display the window.
     Centre();
     Refresh();          // Force full re-draw so it appears on-screen
 }
@@ -468,8 +471,7 @@ int bestP, bestQ, bestErr;
 // one will work best for me. Look up "Farey Sequence" for more insight.
 
 void farey(int p1, int q1, int p2, int q2, int maxQ)
-{
-    int uw = (p2 * clientWidth)/q2;
+{   int uw = (p2 * clientWidth)/q2;
     int err = uw % 80;
     if (err <= bestErr)
     {   if (err < bestErr || q2 < bestQ)
@@ -502,33 +504,33 @@ void farey(int p1, int q1, int p2, int q2, int maxQ)
 //          1          40
 //          0          53
 // Based on this table I pick 25 as my cut-off.
-    for (int m = 2; m<80; m++)
-    {   int cw = clientWidth;
-        int maxQ = m;
-        int worstErr = 0;
-        int Q = 0, WW = 0;
-        for (clientWidth = 400; clientWidth <=2000; clientWidth++)
-        {   bestP = 7;
-            bestQ = 2;
-            int uw = (bestP * clientWidth)/bestQ;
-            bestErr = uw % 80;
-            farey(7, 2, 4, 1, maxQ);
-            if (bestErr > worstErr)
-            {   worstErr = bestErr;
-                WW = clientWidth;
-                Q = bestQ;
-            }
+for (int m = 2; m<80; m++)
+{   int cw = clientWidth;
+    int maxQ = m;
+    int worstErr = 0;
+    int Q = 0, WW = 0;
+    for (clientWidth = 400; clientWidth <=2000; clientWidth++)
+    {   bestP = 7;
+        bestQ = 2;
+        int uw = (bestP * clientWidth)/bestQ;
+        bestErr = uw % 80;
+        farey(7, 2, 4, 1, maxQ);
+        if (bestErr > worstErr)
+        {   worstErr = bestErr;
+            WW = clientWidth;
+            Q = bestQ;
         }
-        printlog("at maxQ = %d see err = %d at cw=%d, Q=%d\n",
-            m, worstErr, WW, Q);
-        clientWidth = cw;
     }
+    printlog("at maxQ = %d see err = %d at cw=%d, Q=%d\n",
+             m, worstErr, WW, Q);
+    clientWidth = cw;
+}
 #endif
 
 // The map of tiles here can cover 64*64 tiles in all.  The small tiles
 // can be from 20x20 to 120*120 so that this can deal with a raw display
 // area up to 7680x7680, which is ridiculously large by the standards of
-// the year in which this code is being written. 
+// the year in which this code is being written.
 
 static uint64_t tileMap[64];
 
@@ -547,12 +549,16 @@ static int32_t convert_font_name(char *dest, char *src)
 //    <anything else>-BoldItalic
 //
     int32_t r = wxFONTFLAG_DEFAULT;
-    if (std::strcmp(src, "cmuntt") == 0) std::strcpy(dest, "CMU Typewriter Text");
-    else if (std::strcmp(src, "odokai") == 0) std::strcpy(dest, "AR PL New Kai");
-    else if (std::strcmp(src, "Math") == 0) std::strcpy(dest, "cslSTIXMath");
+    if (std::strcmp(src, "cmuntt") == 0) std::strcpy(dest,
+                "CMU Typewriter Text");
+    else if (std::strcmp(src, "odokai") == 0) std::strcpy(dest,
+                "AR PL New Kai");
+    else if (std::strcmp(src, "Math") == 0) std::strcpy(dest,
+                "cslSTIXMath");
     else std::sprintf(dest, "cslSTIX");
 // Here if the font name is suffixed as "-Bold" or "-Italic" or "-BoldItalic"
-    if (std::strcmp(dest, "CMU Typewriter Text") == 0) r |= (F_cmuntt<<16);
+    if (std::strcmp(dest,
+                    "CMU Typewriter Text") == 0) r |= (F_cmuntt<<16);
     else if (std::strcmp(dest, "AR PL New Kai") == 0) r |= (F_odokai<<16);
     else if (std::strcmp(dest, "cslSTIXMath") == 0) r |= (F_Math<<16);
 // I have not thought through and implemented support for bold and italic
@@ -566,7 +572,7 @@ static int32_t convert_font_name(char *dest, char *src)
              wxFONTFLAG_ITALIC) r |= (F_Italic<<16);
     else
 #endif
-    r |= (F_Regular<<16);
+        r |= (F_Regular<<16);
     printlog("Gives %s with flags %x\n", dest, r); std::fflush(stdout);
     return r;
 }
@@ -594,8 +600,7 @@ static void allow_for_utf16(wchar_t *ccc, int cp)
 }
 
 void showmathFrame::RepaintBuffer()
-{
-    printlog("RepaintBuffer called\n");
+{   printlog("RepaintBuffer called\n");
 // Now that I know how big by client window will be I can work out how
 // much of the big bitmap I will use.
     bestP = 7;
@@ -607,7 +612,7 @@ void showmathFrame::RepaintBuffer()
 // them across the window. If the window is narrow I will keep the size
 // at least 20 pixels. So each tile is slightly larger than a single
 // character. I will also limit things so that the window is no more than
-// 64 tiles high. 
+// 64 tiles high.
     {   int nw = (clientWidth + 63)/64;  // ideal width
         int nh = (clientHeight + 63)/64; // ideal height
         int n = nh > nw ? nh : nw;       // use the larger
@@ -617,15 +622,16 @@ void showmathFrame::RepaintBuffer()
         smallTileSize = r*bestQ;
     }
     printlog("Small tiles are %d square, with %d*%d covering window\n",
-        smallTileSize,
-        (clientWidth+smallTileSize-1)/smallTileSize,
-        (clientHeight+smallTileSize-1)/smallTileSize);
-    if (bigTile != NULL) delete bigTile;
+             smallTileSize,
+             (clientWidth+smallTileSize-1)/smallTileSize,
+             (clientHeight+smallTileSize-1)/smallTileSize);
+    if (bigTile != nullptr) delete bigTile;
     bigTile =
         new wxBitmap(bigTileSize, bigTileSize, 24); // wxBITMAP_SCREEN_DEPTH);
-    if (smallTile != NULL) delete smallTile;
+    if (smallTile != nullptr) delete smallTile;
     smallTile =
-        new wxBitmap(smallTileSize, smallTileSize, 24); // wxBITMAP_SCREEN_DEPTH);
+        new wxBitmap(smallTileSize, smallTileSize,
+                     24); // wxBITMAP_SCREEN_DEPTH);
 // The used region of the big bitmap will be bestP/bestQ times the size of
 // the client area. Well that might not be exactly an integer, so I will
 // round up here, and what I will end up with will be a width that is 0, 1,
@@ -634,7 +640,8 @@ void showmathFrame::RepaintBuffer()
 // seems like pretty good fitting to me.
     usedWidth = (bestP*clientWidth + bestQ - 1)/bestQ;
     usedHeight = (bestP*clientHeight + bestQ - 1)/bestQ;
-    bigDC->SelectObject(*bigBitmap); // Writing to the DC writes into bitmap
+    bigDC->SelectObject(
+        *bigBitmap); // Writing to the DC writes into bitmap
 // Predict a point size to use...
     pointSize = (usedWidth*1000 + 40*charWidth_1000)/(80*charWidth_1000);
 // There us a potential danger that xWidgets create a font here that was
@@ -657,7 +664,7 @@ void showmathFrame::RepaintBuffer()
         break;
     }
     printlog("Now 80 chars should have with %d in bigBitmap (cf %d)\n",
-              80*charWidth, usedWidth);
+             80*charWidth, usedWidth);
 
 
 // Now I should find how all my fonts will be arranged in terms of the
@@ -669,10 +676,11 @@ void showmathFrame::RepaintBuffer()
 // This seems hideously hacky.
     for (;;)
     {   int depth, leading;
-        wxFont tf1(wxFontInfo(10000).FaceName(wxT("cslSTIX")).Bold().Italic());
+        wxFont tf1(wxFontInfo(10000).FaceName(
+                       wxT("cslSTIX")).Bold().Italic());
         bigDC->SetFont(tf1);
         bigDC->GetTextExtent(wxString((wchar_t)'X'),
-                            &width, &height, &depth, &leading);
+                             &width, &height, &depth, &leading);
         printlog("%d %d [%d]\n", height, depth, height-depth);
         if ((height - depth + 5)/10 == chardepth_WIN32[F_BoldItalic])
         {   chardepth = chardepth_WIN32;
@@ -710,8 +718,8 @@ void showmathFrame::RepaintBuffer()
     bigDC->Clear();
     for (int i=0; i<80; i++)
     {   bigDC->DrawText(wxString((wchar_t)(i+0x21)),
-           i*charWidth,
-           charLinespace - charOffset);
+                        i*charWidth,
+                        charLinespace - charOffset);
     }
 #if 1
 // Draw blocks every 1000 pixels in bigBitmap
@@ -723,13 +731,15 @@ void showmathFrame::RepaintBuffer()
 // Next I move to draw some stuff that is a bit more "mathsy"
     wxFont regular(wxFontInfo(pointSize).FaceName(wxT("cslSTIX")));
     bigDC->SetFont(regular);
-    bigDC->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
+    bigDC->GetTextExtent(wxString((wchar_t)'x'), &width, &height,
+                         &descent, &xleading);
     printlog("%d %d %d %d regular\n", width, height, descent, xleading);
     int regularBaseline = height - descent;
     printlog("regular baseline = %d\n", regularBaseline);
 
     bigDC->SetFont(*mathFont);
-    bigDC->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
+    bigDC->GetTextExtent(wxString((wchar_t)'x'), &width, &height,
+                         &descent, &xleading);
     printlog("%d %d %d %d math\n", width, height, descent, xleading);
     int mathBaseline = height - descent;
     printlog("math baseline = %d\n", mathBaseline);
@@ -753,7 +763,7 @@ void showmathFrame::RepaintBuffer()
     lookupchar(F_Math, stix_CURLY_BRACKET_EXTENSION);
     printlog("extension    %d %d\n", c_lly, c_ury);
 
-    double s = (double)pointSize/10.0;
+    double s = static_cast<double>(pointSize)/10.0;
 #define H (10.0)
 #define XX 120.0
 #define YY 100.0
@@ -773,9 +783,10 @@ void showmathFrame::RepaintBuffer()
 // Windows that use UTF16 internally.
     bigDC->SetFont(regular);
     bigDC->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_OMEGA),
-        s*XX, s*(YY+100.0)-regularBaseline);
-    bigDC->DrawText(wxString((wchar_t)unicode_RIGHT_ANGLE_WITH_DOWNWARDS_ZIGZAG_ARROW),
-        s*(XX+100.0), s*(YY+100.0)-regularBaseline);
+                    s*XX, s*(YY+100.0)-regularBaseline);
+    bigDC->DrawText(wxString((wchar_t)
+                             unicode_RIGHT_ANGLE_WITH_DOWNWARDS_ZIGZAG_ARROW),
+                    s*(XX+100.0), s*(YY+100.0)-regularBaseline);
 // Now I will try a row of text.Or some material provided on an input file.
     const char *in = panel->showmathData;
     printlog("About to process data:\n\"%.70s\"... ...\n\n", in);
@@ -796,7 +807,8 @@ void showmathFrame::RepaintBuffer()
             if (*in == '\n') in++;
             continue;
         }
-        else if (std::sscanf(in, "deffont %d %60s %d;", &n, name, &size) == 3 &&
+        else if (std::sscanf(in, "deffont %d %60s %d;", &n, name,
+                             &size) == 3 &&
 // deffont number name size;   define font with given number
                  0 <= n &&
                  n < MAX_FONTS)
@@ -804,19 +816,22 @@ void showmathFrame::RepaintBuffer()
             int col;
             printlog("font[%d] = \"%s\" size %d\n", n, name1, size);
             Font[n] =
-               new wxFont(wxFontInfo((pointSize*size*5)/144).FaceName(name1));
+                new wxFont(wxFontInfo((pointSize*size*5)/144).FaceName(name1));
             bigDC->SetFont(*Font[n]);
-            bigDC->GetTextExtent(wxString((wchar_t)'('), &width, &height, &descent, &xleading);
+            bigDC->GetTextExtent(wxString((wchar_t)'('), &width, &height,
+                                 &descent, &xleading);
             printlog("( %s/%d: %d %d [%d]\n",
-                      name1, size, height, descent, height-descent);
-            col = printlog("    %d,", (int)((height - descent)/10.0 + 0.5));
+                     name1, size, height, descent, height-descent);
+            col = printlog("    %d,",
+                           static_cast<int>((height - descent)/10.0 + 0.5));
             while (col++ < 20) printlog(" ");
             printlog("// %s\n", name);
             Baseline[n] =   // This still needs review!
                 size * chardepth[(flags >> 16) & 0x1f] / 1000.0;
             printlog("from table baseline offset = %.6g\n", Baseline[n]);
         }
-        else if (std::sscanf(in, "put %d %d %d 0x%x;", &n, &x, &y, &cp) == 4 ||
+        else if (std::sscanf(in, "put %d %d %d 0x%x;", &n, &x, &y,
+                             &cp) == 4 ||
                  std::sscanf(in, "put %d %d %d %d;", &n, &x, &y, &cp) == 4)
         {
 // put fontnum xpos ypos codepoint;  dump character onto screen
@@ -829,13 +844,13 @@ void showmathFrame::RepaintBuffer()
 // probably apply anywhere where sizeof(wchar_t) < 4.
             allow_for_utf16(ccc, cp);
             bigDC->DrawText(wxString(ccc),
-                         (s*x)/2400, s*150 + (400-y)/2400); //-graphicsBaseline[n]);
+                            (s*x)/2400, s*150 + (400-y)/2400); //-graphicsBaseline[n]);
         }
         else printlog("\nLine <%.32s> unrecognised\n", in);
         in = std::strchr(in, ';');
-        if (in != NULL) in++;
+        if (in != nullptr) in++;
     }
-    while (in != NULL);
+    while (in != nullptr);
 
 // I will mark all the fonts I might have created as invalid now
 // that the context they were set up for is being left.
@@ -914,23 +929,24 @@ static char default_data[4096] =
 // that is the reason behind providing so many arguments to the parent
 // constructor
 
-showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathFilename)
+showmathPanel::showmathPanel(showmathFrame *parent,
+                             const char *showmathFilename)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition,
               wxDefaultSize, 0L,"showmathPanel")
 {
 // I will read in any data once here and put it in a character buffer.
-    std::FILE *f = NULL;
-    if (showmathFilename == NULL) showmathData = default_data;
+    std::FILE *f = nullptr;
+    if (showmathFilename == nullptr) showmathData = default_data;
     else
     {   int i;
         f = std::fopen(showmathFilename,"r");
-        if (f == NULL)
+        if (f == nullptr)
         {   printlog("File \"%s\" not found\n", showmathFilename);
             std::exit(1);
         }
         std::fseek(f, (off_t)0, SEEK_END);
         off_t len = std::ftell(f);
-        showmathData = (char *)std::malloc(4+(size_t)len);
+        showmathData = reinterpret_cast<char *>(std)::malloc(4+(size_t)len);
         std::fseek(f, (off_t)0, SEEK_SET);
         for (i=0; i<len; i++) showmathData[i] = std::getc(f);
         showmathData[i] = 0;
@@ -970,8 +986,8 @@ void showmathFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
     wxMessageBox(
         wxString::Format(
             "wxshowmath (A C Norman 2016)\n"
-              "wxWidgets version: %s\n"
-              "Operating system: %s",
+            "wxWidgets version: %s\n"
+            "Operating system: %s",
             wxVERSION_STRING,
             wxGetOsDescription()),
         "About wxshowmath",
@@ -1067,7 +1083,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
             {
 #ifdef SHOW_WHICH_TILES_WILL_BE_REDRAWN
                 printlog("tile at %d %d to be redrawn\n",
-                    x*smallTileSize, y*smallTileSize);
+                         x*smallTileSize, y*smallTileSize);
 #endif
                 tileMap[y] |= ((uint64_t)1)<<x;
             }
@@ -1077,7 +1093,7 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     for (int y=0; y<64; y++)
     {   uint64_t v = tileMap[y];
         for (int x=0; x<64; x++)
-        {   std::putchar('0' + (int)(v & 1));
+        {   std::putchar('0' + static_cast<int>(v & 1));
             v = v >> 1;
         }
         std::putchar('\n');
@@ -1093,95 +1109,95 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     PixelData::Iterator pBig(bigData);
     PixelData::Iterator pSmall(smallData);
     for (int tileY=0; tileY<clientHeight; tileY+=smallTileSize)
-    for (int tileX=0; tileX<clientWidth;  tileX+=smallTileSize)
-    {   if ((tileMap[tileY/smallTileSize] &
-             (((uint64_t)1)<<(tileX/smallTileSize))) == 0) continue;
-        tileCount++;
-        pBig.MoveTo(bigData, (bigTileSize*tileX)/smallTileSize,
-                             (bigTileSize*tileY)/smallTileSize);
-        pSmall.MoveTo(smallData, 0, 0);
-        int srcY=0, srcY1=smallTileSize, destY=0, destY1=bigTileSize;
-        int srcPixYR[maxSmallTileSize],
-            srcPixYG[maxSmallTileSize],
-            srcPixYB[maxSmallTileSize],
-            destPixYR[maxBigTileSize],
-            destPixYG[maxBigTileSize],
-            destPixYB[maxBigTileSize];
-        int scale = bigTileSize*bigTileSize;
-        for (int i=0; i<smallTileSize; i++)
-        {   srcPixYR[i] = 0;  srcPixYG[i] = 0;  srcPixYB[i] = 0;
-            destPixYR[i] = 0; destPixYG[i] = 0; destPixYB[i] = 0;
-        }
-        while (destY < smallTileSize)
-        {   PixelData::Iterator rowStartSmall = pSmall;
-            PixelData::Iterator rowStartBig = pBig;
-            int srcX=0, srcX1=smallTileSize, destX=0, destX1=bigTileSize;
-            int srcPixXR=0, srcPixXG=0, srcPixXB=0,
-                destPixXR=0, destPixXG=0, destPixXB=0,
-                w;
-            while (destX < smallTileSize)
-            {
+        for (int tileX=0; tileX<clientWidth;  tileX+=smallTileSize)
+        {   if ((tileMap[tileY/smallTileSize] &
+                 (((uint64_t)1)<<(tileX/smallTileSize))) == 0) continue;
+            tileCount++;
+            pBig.MoveTo(bigData, (bigTileSize*tileX)/smallTileSize,
+                        (bigTileSize*tileY)/smallTileSize);
+            pSmall.MoveTo(smallData, 0, 0);
+            int srcY=0, srcY1=smallTileSize, destY=0, destY1=bigTileSize;
+            int srcPixYR[maxSmallTileSize],
+                srcPixYG[maxSmallTileSize],
+                srcPixYB[maxSmallTileSize],
+                destPixYR[maxBigTileSize],
+                destPixYG[maxBigTileSize],
+                destPixYB[maxBigTileSize];
+            int scale = bigTileSize*bigTileSize;
+            for (int i=0; i<smallTileSize; i++)
+            {   srcPixYR[i] = 0;  srcPixYG[i] = 0;  srcPixYB[i] = 0;
+                destPixYR[i] = 0; destPixYG[i] = 0; destPixYB[i] = 0;
+            }
+            while (destY < smallTileSize)
+            {   PixelData::Iterator rowStartSmall = pSmall;
+                PixelData::Iterator rowStartBig = pBig;
+                int srcX=0, srcX1=smallTileSize, destX=0, destX1=bigTileSize;
+                int srcPixXR=0, srcPixXG=0, srcPixXB=0,
+                    destPixXR=0, destPixXG=0, destPixXB=0,
+                    w;
+                while (destX < smallTileSize)
+                {
 // The next few lines are the only ones where I access the source bitmap...
-                srcPixXR = pBig.Red();
-                srcPixXG = pBig.Green();
-                srcPixXB = pBig.Blue();
-                ++pBig;
-                srcX++;
-                if (srcX1 < destX1)
-                {   destPixXR += smallTileSize*srcPixXR;
-                    destPixXG += smallTileSize*srcPixXG;
-                    destPixXB += smallTileSize*srcPixXB;
+                    srcPixXR = pBig.Red();
+                    srcPixXG = pBig.Green();
+                    srcPixXB = pBig.Blue();
+                    ++pBig;
+                    srcX++;
+                    if (srcX1 < destX1)
+                    {   destPixXR += smallTileSize*srcPixXR;
+                        destPixXG += smallTileSize*srcPixXG;
+                        destPixXB += smallTileSize*srcPixXB;
+                    }
+                    else
+                    {   w = srcX1 - destX1;
+                        srcPixYR[destX] = (srcPixXR*(smallTileSize-w) + destPixXR);
+                        srcPixYG[destX] = (srcPixXG*(smallTileSize-w) + destPixXG);
+                        srcPixYB[destX] = (srcPixXB*(smallTileSize-w) + destPixXB);
+                        destPixXR = srcPixXR*w;
+                        destPixXG = srcPixXG*w;
+                        destPixXB = srcPixXB*w;
+                        destX++;
+                        destX1 += bigTileSize;
+                    }
+                    srcX1 += smallTileSize;
+                }
+                pBig = rowStartBig;
+                pBig.OffsetY(bigData, 1);
+                srcY++;
+                if (srcY1 < destY1)
+                {   for (int i=0; i<smallTileSize; i++)
+                    {   destPixYR[i] += smallTileSize*srcPixYR[i];
+                        destPixYG[i] += smallTileSize*srcPixYG[i];
+                        destPixYB[i] += smallTileSize*srcPixYB[i];
+                    }
                 }
                 else
-                {   w = srcX1 - destX1;
-                    srcPixYR[destX] = (srcPixXR*(smallTileSize-w) + destPixXR);
-                    srcPixYG[destX] = (srcPixXG*(smallTileSize-w) + destPixXG);
-                    srcPixYB[destX] = (srcPixXB*(smallTileSize-w) + destPixXB);
-                    destPixXR = srcPixXR*w;
-                    destPixXG = srcPixXG*w;
-                    destPixXB = srcPixXB*w;
-                    destX++;
-                    destX1 += bigTileSize;
-                }
-                srcX1 += smallTileSize;
-            }
-            pBig = rowStartBig;
-            pBig.OffsetY(bigData, 1);
-            srcY++;
-            if (srcY1 < destY1)
-            {   for (int i=0; i<smallTileSize; i++)
-                {   destPixYR[i] += smallTileSize*srcPixYR[i];
-                    destPixYG[i] += smallTileSize*srcPixYG[i];
-                    destPixYB[i] += smallTileSize*srcPixYB[i];
-                }
-            }
-            else
-            {   w = srcY1 - destY1;
-                for (int i=0; i<smallTileSize; i++)
-                {
+                {   w = srcY1 - destY1;
+                    for (int i=0; i<smallTileSize; i++)
+                    {
 // The next few lines are the only ones where I access the destination bitmap...
-                    pSmall.Red() =
-                        (srcPixYR[i]*(smallTileSize-w) + destPixYR[i])/scale;
-                    pSmall.Green() =
-                        (srcPixYG[i]*(smallTileSize-w) + destPixYG[i])/scale;
-                    pSmall.Blue() =
-                        (srcPixYB[i]*(smallTileSize-w) + destPixYB[i])/scale;
-                    ++pSmall;
-                    destPixYR[i] = srcPixYR[i]*w;
-                    destPixYG[i] = srcPixYG[i]*w;
-                    destPixYB[i] = srcPixYB[i]*w;
+                        pSmall.Red() =
+                            (srcPixYR[i]*(smallTileSize-w) + destPixYR[i])/scale;
+                        pSmall.Green() =
+                            (srcPixYG[i]*(smallTileSize-w) + destPixYG[i])/scale;
+                        pSmall.Blue() =
+                            (srcPixYB[i]*(smallTileSize-w) + destPixYB[i])/scale;
+                        ++pSmall;
+                        destPixYR[i] = srcPixYR[i]*w;
+                        destPixYG[i] = srcPixYG[i]*w;
+                        destPixYB[i] = srcPixYB[i]*w;
+                    }
+                    pSmall = rowStartSmall;
+                    pSmall.OffsetY(smallData, 1);
+                    destY++;
+                    destY1 += bigTileSize;
                 }
-                pSmall = rowStartSmall;
-                pSmall.OffsetY(smallData, 1);
-                destY++;
-                destY1 += bigTileSize;
+                srcY1 += smallTileSize;
             }
-            srcY1 += smallTileSize;
+            mydc.DrawBitmap(*smallTile, tileX, tileY);
         }
-        mydc.DrawBitmap(*smallTile, tileX, tileY);
-    }
     printlog("Scale %d tiles from bitmap to screen in %" PRId64 "\n",
-        tileCount, (int64_t)sw.Time());
+             tileCount, (int64_t)sw.Time());
 
 
 }

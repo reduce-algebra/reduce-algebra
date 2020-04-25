@@ -43,272 +43,278 @@ C++ versions.
 #include <stdexcept>
 #include <utility>
 
-class uint128_t{
-    private:
-        std::uint64_t UPPER, LOWER;
+class uint128_t
+{
+private:
+    uint64_t UPPER, LOWER;
+
+public:
+    // Constructors
+    uint128_t();
+    uint128_t(const uint128_t & rhs);
+    uint128_t(uint128_t && rhs);
+
+    template <typename T> uint128_t(const T & rhs)
+        : UPPER(0), LOWER(rhs)
+    {   static_assert(std::is_integral <T>::value,
+                      "Input argument type must be an integer.");
+    }
 
-    public:
-        // Constructors
-        uint128_t();
-        uint128_t(const uint128_t & rhs);
-        uint128_t(uint128_t && rhs);
+    template <typename S, typename T> uint128_t(const S & upper_rhs,
+            const T & lower_rhs)
+        : UPPER(upper_rhs), LOWER(lower_rhs)
+    {   static_assert(std::is_integral <S>::value &&
+                      std::is_integral <T>::value
+                      , "Input argument types must be integers.");
+    }
+
+    //  RHS input args only
+
+    // Assignment Operator
+    uint128_t operator=(const uint128_t & rhs);
+    uint128_t operator=(uint128_t && rhs);
+
+    template <typename T> uint128_t operator=(const T & rhs)
+    {   static_assert(std::is_integral <T>::value,
+                      "Input argument type must be an integer.");
+        UPPER = 0;
+        LOWER = rhs;
+        return *this;
+    }
 
-        template <typename T> uint128_t(const T & rhs)
-            : UPPER(0), LOWER(rhs)
-        {
-            static_assert(std::is_integral <T>::value, "Input argument type must be an integer.");
-        }
+    // Typecast Operators
+    operator bool() const;
+    operator std::uint8_t() const;
+    operator std::uint16_t() const;
+    operator uint32_t() const;
+    operator uint64_t() const;
 
-        template <typename S, typename T> uint128_t(const S & upper_rhs, const T & lower_rhs)
-            : UPPER(upper_rhs), LOWER(lower_rhs)
-        {
-            static_assert(std::is_integral <S>::value &&
-                          std::is_integral <T>::value
-                          , "Input argument types must be integers.");
-        }
+    // Bitwise Operators
+    uint128_t operator&(const uint128_t & rhs) const;
 
-        //  RHS input args only
-
-        // Assignment Operator
-        uint128_t operator=(const uint128_t & rhs);
-        uint128_t operator=(uint128_t && rhs);
-
-        template <typename T> uint128_t operator=(const T & rhs){
-            static_assert(std::is_integral <T>::value, "Input argument type must be an integer.");
-            UPPER = 0;
-            LOWER = rhs;
-            return *this;
-        }
+    template <typename T> uint128_t operator&(const T & rhs) const
+    {   return uint128_t(0, LOWER & static_cast<uint64_t>(rhs));
+    }
 
-        // Typecast Operators
-        operator bool() const;
-        operator std::uint8_t() const;
-        operator std::uint16_t() const;
-        operator std::uint32_t() const;
-        operator std::uint64_t() const;
+    uint128_t & operator&=(const uint128_t & rhs);
 
-        // Bitwise Operators
-        uint128_t operator&(const uint128_t & rhs) const;
+    template <typename T> uint128_t & operator&=(const T & rhs)
+    {   UPPER = 0;
+        LOWER &= rhs;
+        return *this;
+    }
 
-        template <typename T> uint128_t operator&(const T & rhs) const{
-            return uint128_t(0, LOWER & static_cast<std::uint64_t>(rhs));
-        }
+    uint128_t operator|(const uint128_t & rhs) const;
 
-        uint128_t & operator&=(const uint128_t & rhs);
+    template <typename T> uint128_t operator|(const T & rhs) const
+    {   return uint128_t(UPPER, LOWER | static_cast<uint64_t>(rhs));
+    }
 
-        template <typename T> uint128_t & operator&=(const T & rhs){
-            UPPER = 0;
-            LOWER &= rhs;
-            return *this;
-        }
+    uint128_t & operator|=(const uint128_t & rhs);
 
-        uint128_t operator|(const uint128_t & rhs) const;
+    template <typename T> uint128_t & operator|=(const T & rhs)
+    {   LOWER |= static_cast<uint64_t>(rhs);
+        return *this;
+    }
 
-        template <typename T> uint128_t operator|(const T & rhs) const{
-            return uint128_t(UPPER, LOWER | static_cast<std::uint64_t>(rhs));
-        }
+    uint128_t operator^(const uint128_t & rhs) const;
 
-        uint128_t & operator|=(const uint128_t & rhs);
+    template <typename T> uint128_t operator^(const T & rhs) const
+    {   return uint128_t(UPPER, LOWER ^ static_cast<uint64_t>(rhs));
+    }
 
-        template <typename T> uint128_t & operator|=(const T & rhs){
-            LOWER |= static_cast<std::uint64_t>(rhs);
-            return *this;
-        }
+    uint128_t & operator^=(const uint128_t & rhs);
 
-        uint128_t operator^(const uint128_t & rhs) const;
+    template <typename T> uint128_t & operator^=(const T & rhs)
+    {   LOWER ^= static_cast<uint64_t>(rhs);
+        return *this;
+    }
 
-        template <typename T> uint128_t operator^(const T & rhs) const{
-            return uint128_t(UPPER, LOWER ^ static_cast<std::uint64_t>(rhs));
-        }
+    uint128_t operator~() const;
 
-        uint128_t & operator^=(const uint128_t & rhs);
+    // Bit Shift Operators
+    uint128_t operator<<(const uint128_t & rhs) const;
 
-        template <typename T> uint128_t & operator^=(const T & rhs){
-            LOWER ^= static_cast<std::uint64_t>(rhs);
-            return *this;
-        }
+    template <typename T> uint128_t operator<<(const T & rhs) const
+    {   return *this << uint128_t(rhs);
+    }
 
-        uint128_t operator~() const;
+    uint128_t & operator<<=(const uint128_t & rhs);
 
-        // Bit Shift Operators
-        uint128_t operator<<(const uint128_t & rhs) const;
+    template <typename T> uint128_t & operator<<=(const T & rhs)
+    {   *this = *this << uint128_t(rhs);
+        return *this;
+    }
 
-        template <typename T> uint128_t operator<<(const T & rhs) const{
-            return *this << uint128_t(rhs);
-        }
+    uint128_t operator>>(const uint128_t & rhs) const;
 
-        uint128_t & operator<<=(const uint128_t & rhs);
+    template <typename T> uint128_t operator>>(const T & rhs) const
+    {   return *this >> uint128_t(rhs);
+    }
 
-        template <typename T> uint128_t & operator<<=(const T & rhs){
-            *this = *this << uint128_t(rhs);
-            return *this;
-        }
+    uint128_t & operator>>=(const uint128_t & rhs);
 
-        uint128_t operator>>(const uint128_t & rhs) const;
+    template <typename T> uint128_t & operator>>=(const T & rhs)
+    {   *this = *this >> uint128_t(rhs);
+        return *this;
+    }
 
-        template <typename T> uint128_t operator>>(const T & rhs) const{
-            return *this >> uint128_t(rhs);
-        }
+    // Logical Operators
+    bool operator!() const;
+    bool operator&&(const uint128_t & rhs) const;
+    bool operator||(const uint128_t & rhs) const;
 
-        uint128_t & operator>>=(const uint128_t & rhs);
+    template <typename T> bool operator&&(const T & rhs)
+    {   return static_cast <bool> (*this && rhs);
+    }
 
-        template <typename T> uint128_t & operator>>=(const T & rhs){
-            *this = *this >> uint128_t(rhs);
-            return *this;
-        }
+    template <typename T> bool operator||(const T & rhs)
+    {   return static_cast <bool> (*this || rhs);
+    }
 
-        // Logical Operators
-        bool operator!() const;
-        bool operator&&(const uint128_t & rhs) const;
-        bool operator||(const uint128_t & rhs) const;
+    // Comparison Operators
+    bool operator==(const uint128_t & rhs) const;
 
-        template <typename T> bool operator&&(const T & rhs){
-            return static_cast <bool> (*this && rhs);
-        }
+    template <typename T> bool operator==(const T & rhs) const
+    {   return (!UPPER && (LOWER == static_cast<uint64_t>(rhs)));
+    }
 
-        template <typename T> bool operator||(const T & rhs){
-            return static_cast <bool> (*this || rhs);
-        }
+    bool operator!=(const uint128_t & rhs) const;
 
-        // Comparison Operators
-        bool operator==(const uint128_t & rhs) const;
+    template <typename T> bool operator!=(const T & rhs) const
+    {   return (UPPER | (LOWER != static_cast<uint64_t>(rhs)));
+    }
 
-        template <typename T> bool operator==(const T & rhs) const{
-            return (!UPPER && (LOWER == static_cast<std::uint64_t>(rhs)));
-        }
+    bool operator>(const uint128_t & rhs) const;
 
-        bool operator!=(const uint128_t & rhs) const;
+    template <typename T> bool operator>(const T & rhs) const
+    {   return (UPPER || (LOWER > static_cast<uint64_t>(rhs)));
+    }
 
-        template <typename T> bool operator!=(const T & rhs) const{
-            return (UPPER | (LOWER != static_cast<std::uint64_t>(rhs)));
-        }
+    bool operator<(const uint128_t & rhs) const;
 
-        bool operator>(const uint128_t & rhs) const;
+    template <typename T> bool operator<(const T & rhs) const
+    {   return (!UPPER)?(LOWER < static_cast<uint64_t>(rhs)):false;
+    }
 
-        template <typename T> bool operator>(const T & rhs) const{
-            return (UPPER || (LOWER > static_cast<std::uint64_t>(rhs)));
-        }
+    bool operator>=(const uint128_t & rhs) const;
 
-        bool operator<(const uint128_t & rhs) const;
+    template <typename T> bool operator>=(const T & rhs) const
+    {   return ((*this > rhs) | (*this == rhs));
+    }
 
-        template <typename T> bool operator<(const T & rhs) const{
-            return (!UPPER)?(LOWER < static_cast<std::uint64_t>(rhs)):false;
-        }
+    bool operator<=(const uint128_t & rhs) const;
 
-        bool operator>=(const uint128_t & rhs) const;
+    template <typename T> bool operator<=(const T & rhs) const
+    {   return ((*this < rhs) | (*this == rhs));
+    }
 
-        template <typename T> bool operator>=(const T & rhs) const{
-            return ((*this > rhs) | (*this == rhs));
-        }
+    // Arithmetic Operators
+    uint128_t operator+(const uint128_t & rhs) const;
 
-        bool operator<=(const uint128_t & rhs) const;
+    template <typename T> uint128_t operator+(const T & rhs) const
+    {   return uint128_t(UPPER + ((LOWER + static_cast<uint64_t>() rhs) <
+                                  LOWER), LOWER + static_cast<uint64_t>(rhs));
+    }
 
-        template <typename T> bool operator<=(const T & rhs) const{
-            return ((*this < rhs) | (*this == rhs));
-        }
+    uint128_t & operator+=(const uint128_t & rhs);
 
-        // Arithmetic Operators
-        uint128_t operator+(const uint128_t & rhs) const;
+    template <typename T> uint128_t & operator+=(const T & rhs)
+    {   UPPER = UPPER + ((LOWER + rhs) < LOWER);
+        LOWER = LOWER + rhs;
+        return *this;
+    }
 
-        template <typename T> uint128_t operator+(const T & rhs) const{
-            return uint128_t(UPPER + ((LOWER + static_cast<std::uint64_t>(rhs)) < LOWER), LOWER + static_cast<std::uint64_t>(rhs));
-        }
+    uint128_t operator-(const uint128_t & rhs) const;
 
-        uint128_t & operator+=(const uint128_t & rhs);
+    template <typename T> uint128_t operator-(const T & rhs) const
+    {   return uint128_t(static_cast<uint64_t>() (UPPER - ((
+                             LOWER - rhs) > LOWER)), static_cast<uint64_t>(LOWER - rhs));
+    }
 
-        template <typename T> uint128_t & operator+=(const T & rhs){
-            UPPER = UPPER + ((LOWER + rhs) < LOWER);
-            LOWER = LOWER + rhs;
-            return *this;
-        }
+    uint128_t & operator-=(const uint128_t & rhs);
 
-        uint128_t operator-(const uint128_t & rhs) const;
+    template <typename T> uint128_t & operator-=(const T & rhs)
+    {   *this = *this - rhs;
+        return *this;
+    }
 
-        template <typename T> uint128_t operator-(const T & rhs) const{
-            return uint128_t(static_cast<std::uint64_t>(UPPER - ((LOWER - rhs) > LOWER)),
-                             static_cast<std::uint64_t>(LOWER - rhs));
-        }
+    uint128_t operator*(const uint128_t & rhs) const;
 
-        uint128_t & operator-=(const uint128_t & rhs);
+    template <typename T> uint128_t operator*(const T & rhs) const
+    {   return *this * uint128_t(rhs);
+    }
 
-        template <typename T> uint128_t & operator-=(const T & rhs){
-            *this = *this - rhs;
-            return *this;
-        }
+    uint128_t & operator*=(const uint128_t & rhs);
 
-        uint128_t operator*(const uint128_t & rhs) const;
+    template <typename T> uint128_t & operator*=(const T & rhs)
+    {   *this = *this * uint128_t(rhs);
+        return *this;
+    }
 
-        template <typename T> uint128_t operator*(const T & rhs) const{
-            return *this * uint128_t(rhs);
-        }
+private:
+    std::pair <uint128_t, uint128_t> divmod(const uint128_t & lhs,
+                                            const uint128_t & rhs) const;
 
-        uint128_t & operator*=(const uint128_t & rhs);
+public:
+    uint128_t operator/(const uint128_t & rhs) const;
 
-        template <typename T> uint128_t & operator*=(const T & rhs){
-            *this = *this * uint128_t(rhs);
-            return *this;
-        }
+    template <typename T> uint128_t operator/(const T & rhs) const
+    {   return *this / uint128_t(rhs);
+    }
 
-    private:
-        std::pair <uint128_t, uint128_t> divmod(const uint128_t & lhs, const uint128_t & rhs) const;
+    uint128_t & operator/=(const uint128_t & rhs);
 
-    public:
-		uint128_t operator/(const uint128_t & rhs) const;
+    template <typename T> uint128_t & operator/=(const T & rhs)
+    {   *this = *this / uint128_t(rhs);
+        return *this;
+    }
 
-        template <typename T> uint128_t operator/(const T & rhs) const{
-            return *this / uint128_t(rhs);
-        }
+    uint128_t operator%(const uint128_t & rhs) const;
 
-        uint128_t & operator/=(const uint128_t & rhs);
+    template <typename T> uint128_t operator%(const T & rhs) const
+    {   return *this - (rhs * (*this / rhs));
+    }
 
-        template <typename T> uint128_t & operator/=(const T & rhs){
-            *this = *this / uint128_t(rhs);
-            return *this;
-        }
+    uint128_t & operator%=(const uint128_t & rhs);
 
-        uint128_t operator%(const uint128_t & rhs) const;
+    template <typename T> uint128_t & operator%=(const T & rhs)
+    {   *this = *this % uint128_t(rhs);
+        return *this;
+    }
 
-        template <typename T> uint128_t operator%(const T & rhs) const{
-            return *this - (rhs * (*this / rhs));
-        }
+    // Increment Operator
+    uint128_t & operator++();
+    uint128_t operator++(int);
 
-        uint128_t & operator%=(const uint128_t & rhs);
+    // Decrement Operator
+    uint128_t & operator--();
+    uint128_t operator--(int);
 
-        template <typename T> uint128_t & operator%=(const T & rhs){
-            *this = *this % uint128_t(rhs);
-            return *this;
-        }
+    // Nothing done since promotion doesn't work here
+    uint128_t operator+() const;
 
-        // Increment Operator
-        uint128_t & operator++();
-        uint128_t operator++(int);
+    // two's complement
+    uint128_t operator-() const;
 
-        // Decrement Operator
-        uint128_t & operator--();
-        uint128_t operator--(int);
+    // Get private values
+    const uint64_t & upper() const;
+    const uint64_t & lower() const;
 
-        // Nothing done since promotion doesn't work here
-        uint128_t operator+() const;
+    // Get bitsize of value
+    std::uint8_t bits() const;
 
-        // two's complement
-        uint128_t operator-() const;
-
-        // Get private values
-        const std::uint64_t & upper() const;
-        const std::uint64_t & lower() const;
-
-        // Get bitsize of value
-        std::uint8_t bits() const;
-
-        // Get string representation of value
-        std::string str(std::uint8_t base = 10, const unsigned int & len = 0) const;
+    // Get string representation of value
+    string str(std::uint8_t base = 10,
+               const unsigned int & len = 0) const;
 };
 
 // Give uint128_t type traits
-namespace std {  // This is probably not a good idea
-    template <> struct is_arithmetic <uint128_t> : std::true_type {};
-    template <> struct is_integral   <uint128_t> : std::true_type {};
-    template <> struct is_unsigned   <uint128_t> : std::true_type {};
+namespace std    // This is probably not a good idea
+{
+template <> struct is_arithmetic <uint128_t> : std::true_type {};
+template <> struct is_integral   <uint128_t> : std::true_type {};
+template <> struct is_unsigned   <uint128_t> : std::true_type {};
 };
 
 // useful values
@@ -319,134 +325,160 @@ extern const uint128_t uint128_1;
 // If the output is not a bool, casts to type T
 
 // Bitwise Operators
-template <typename T> uint128_t operator&(const T & lhs, const uint128_t & rhs){
-    return rhs & lhs;
+template <typename T> uint128_t operator&(const T & lhs,
+        const uint128_t & rhs)
+{   return rhs & lhs;
 }
 
-template <typename T> T & operator&=(T & lhs, const uint128_t & rhs){
-    return lhs = static_cast <T> (rhs & lhs);
+template <typename T> T & operator&=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs & lhs);
 }
 
-template <typename T> uint128_t operator|(const T & lhs, const uint128_t & rhs){
-    return rhs | lhs;
+template <typename T> uint128_t operator|(const T & lhs,
+        const uint128_t & rhs)
+{   return rhs | lhs;
 }
 
-template <typename T> T & operator|=(T & lhs, const uint128_t & rhs){
-    return lhs = static_cast <T> (rhs | lhs);
+template <typename T> T & operator|=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs | lhs);
 }
 
-template <typename T> uint128_t operator^(const T & lhs, const uint128_t & rhs){
-    return rhs ^ lhs;
+template <typename T> uint128_t operator^(const T & lhs,
+        const uint128_t & rhs)
+{   return rhs ^ lhs;
 }
 
-template <typename T> T & operator^=(T & lhs, const uint128_t & rhs){
-    return lhs = static_cast <T> (rhs ^ lhs);
+template <typename T> T & operator^=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs ^ lhs);
 }
 
 // Bitshift operators
 uint128_t operator<<(const bool     & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint8_t  & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint16_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint32_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::uint64_t & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int8_t   & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int16_t  & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int32_t  & lhs, const uint128_t & rhs);
-uint128_t operator<<(const std::int64_t  & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::uint8_t  & lhs,
+                     const uint128_t & rhs);
+uint128_t operator<<(const std::uint16_t & lhs,
+                     const uint128_t & rhs);
+uint128_t operator<<(const uint32_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const uint64_t & lhs, const uint128_t & rhs);
+uint128_t operator<<(const std::int8_t   & lhs,
+                     const uint128_t & rhs);
+uint128_t operator<<(const std::int16_t  & lhs,
+                     const uint128_t & rhs);
+uint128_t operator<<(const int32_t  & lhs, const uint128_t & rhs);
+uint128_t operator<<(const int64_t  & lhs, const uint128_t & rhs);
 
-template <typename T> T & operator<<=(T & lhs, const uint128_t & rhs){
-    return lhs = static_cast <T> (uint128_t(lhs) << rhs);
+template <typename T> T & operator<<=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) << rhs);
 }
 
 uint128_t operator>>(const bool     & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint8_t  & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint16_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint32_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::uint64_t & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int8_t   & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int16_t  & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int32_t  & lhs, const uint128_t & rhs);
-uint128_t operator>>(const std::int64_t  & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::uint8_t  & lhs,
+                     const uint128_t & rhs);
+uint128_t operator>>(const std::uint16_t & lhs,
+                     const uint128_t & rhs);
+uint128_t operator>>(const uint32_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const uint64_t & lhs, const uint128_t & rhs);
+uint128_t operator>>(const std::int8_t   & lhs,
+                     const uint128_t & rhs);
+uint128_t operator>>(const std::int16_t  & lhs,
+                     const uint128_t & rhs);
+uint128_t operator>>(const int32_t  & lhs, const uint128_t & rhs);
+uint128_t operator>>(const int64_t  & lhs, const uint128_t & rhs);
 
-template <typename T> T & operator>>=(T & lhs, const uint128_t & rhs){
-    return lhs = static_cast <T> (uint128_t(lhs) >> rhs);
+template <typename T> T & operator>>=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) >> rhs);
 }
 
 // Comparison Operators
-template <typename T> bool operator==(const T & lhs, const uint128_t & rhs){
-    return (!rhs.upper() && (static_cast<std::uint64_t>(lhs) == rhs.lower()));
+template <typename T> bool operator==(const T & lhs,
+                                      const uint128_t & rhs)
+{   return (!rhs.upper() &&
+            (static_cast<uint64_t>(lhs) == rhs.lower()));
 }
 
-template <typename T> bool operator!=(const T & lhs, const uint128_t & rhs){
-    return (rhs.upper() | (static_cast<std::uint64_t>(lhs) != rhs.lower()));
+template <typename T> bool operator!=(const T & lhs,
+                                      const uint128_t & rhs)
+{   return (rhs.upper() | (static_cast<uint64_t>(lhs) !=
+                           rhs.lower()));
 }
 
-template <typename T> bool operator>(const T & lhs, const uint128_t & rhs){
-    return (!rhs.upper()) && (static_cast<std::uint64_t>(lhs) > rhs.lower());
+template <typename T> bool operator>(const T & lhs,
+                                     const uint128_t & rhs)
+{   return (!rhs.upper()) &&
+           (static_cast<uint64_t>(lhs) > rhs.lower());
 }
 
-template <typename T> bool operator<(const T & lhs, const uint128_t & rhs){
-    if (rhs.upper()){
-        return true;
+template <typename T> bool operator<(const T & lhs,
+                                     const uint128_t & rhs)
+{   if (rhs.upper())
+    {   return true;
     }
-    return (static_cast<std::uint64_t>(lhs) < rhs.lower());
+    return (static_cast<uint64_t>(lhs) < rhs.lower());
 }
 
-template <typename T> bool operator>=(const T & lhs, const uint128_t & rhs){
-    if (rhs.upper()){
-        return false;
+template <typename T> bool operator>=(const T & lhs,
+                                      const uint128_t & rhs)
+{   if (rhs.upper())
+    {   return false;
     }
-    return (static_cast<std::uint64_t>(lhs) >= rhs.lower());
+    return (static_cast<uint64_t>(lhs) >= rhs.lower());
 }
 
-template <typename T> bool operator<=(const T & lhs, const uint128_t & rhs){
-    if (rhs.upper()){
-        return true;
+template <typename T> bool operator<=(const T & lhs,
+                                      const uint128_t & rhs)
+{   if (rhs.upper())
+    {   return true;
     }
-    return (static_cast<std::uint64_t>(lhs) <= rhs.lower());
+    return (static_cast<uint64_t>(lhs) <= rhs.lower());
 }
 
 // Arithmetic Operators
-template <typename T> uint128_t operator+(const T & lhs, const uint128_t & rhs){
-    return rhs + lhs;
+template <typename T> uint128_t operator+(const T & lhs,
+        const uint128_t & rhs)
+{   return rhs + lhs;
 }
 
-template <typename T> T & operator+=(T & lhs, const uint128_t & rhs){
-    return lhs = static_cast <T> (rhs + lhs);
+template <typename T> T & operator+=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs + lhs);
 }
 
-template <typename T> uint128_t operator-(const T & lhs, const uint128_t & rhs){
-    return -(rhs - lhs);
+template <typename T> uint128_t operator-(const T & lhs,
+        const uint128_t & rhs)
+{   return -(rhs - lhs);
 }
 
-template <typename T> T & operator-=(T & lhs, const uint128_t & rhs){
-    return lhs = static_cast <T> (-(rhs - lhs));
+template <typename T> T & operator-=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (-(rhs - lhs));
 }
 
-template <typename T> uint128_t operator*(const T & lhs, const uint128_t & rhs){
-    return rhs * lhs;
+template <typename T> uint128_t operator*(const T & lhs,
+        const uint128_t & rhs)
+{   return rhs * lhs;
 }
 
-template <typename T> T & operator*=(T & lhs, const uint128_t & rhs){
-    return lhs = static_cast <T> (rhs * lhs);
+template <typename T> T & operator*=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (rhs * lhs);
 }
 
-template <typename T> uint128_t operator/(const T & lhs, const uint128_t & rhs){
-    return uint128_t(lhs) / rhs;
+template <typename T> uint128_t operator/(const T & lhs,
+        const uint128_t & rhs)
+{   return uint128_t(lhs) / rhs;
 }
 
-template <typename T> T & operator/=(T & lhs, const uint128_t & rhs){
-    return lhs = static_cast <T> (uint128_t(lhs) / rhs);
+template <typename T> T & operator/=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) / rhs);
 }
 
-template <typename T> uint128_t operator%(const T & lhs, const uint128_t & rhs){
-    return uint128_t(lhs) % rhs;
+template <typename T> uint128_t operator%(const T & lhs,
+        const uint128_t & rhs)
+{   return uint128_t(lhs) % rhs;
 }
 
-template <typename T> T & operator%=(T & lhs, const uint128_t & rhs){
-    return lhs = static_cast <T> (uint128_t(lhs) % rhs);
+template <typename T> T & operator%=(T & lhs, const uint128_t & rhs)
+{   return lhs = static_cast <T> (uint128_t(lhs) % rhs);
 }
 
 // IO Operator
-std::ostream & operator<<(std::ostream & stream, const uint128_t & rhs);
+std::ostream & operator<<(std::ostream & stream,
+                          const uint128_t & rhs);
 #endif

@@ -139,7 +139,7 @@
 #include "wxfwin.h"
 
 #include "wx/wxprec.h"
- 
+
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
@@ -151,8 +151,7 @@
 #endif
 
 int main(int argc, const char *argv[])
-{
-    find_program_directory(argv[0]);
+{   find_program_directory(argv[0]);
     add_custom_fonts();
     display_font_information();
     wxEntry(argc, (char **)argv);
@@ -177,8 +176,7 @@ private:
 };
 
 enum
-{
-    ACN_Quit = wxID_EXIT,
+{   ACN_Quit = wxID_EXIT,
     ACN_About = wxID_ABOUT
 };
 
@@ -190,9 +188,9 @@ END_EVENT_TABLE()
 
 IMPLEMENT_APP_NO_MAIN(wxDemo)
 
-static wxFont *ff1 = NULL;
-static wxFont *ff2 = NULL;
-static wxFont *ff3 = NULL;
+static wxFont *ff1 = nullptr;
+static wxFont *ff2 = nullptr;
+static wxFont *ff3 = nullptr;
 
 #define FONTSIZE1 36
 #define FONTSIZE2  3
@@ -204,8 +202,7 @@ static wxFont *ff3 = NULL;
 #define HEIGHT   400
 
 bool wxDemo::OnInit()
-{
-    ::wxInitAllImageHandlers();
+{   ::wxInitAllImageHandlers();
     wxFontInfo ffi;
     ffi.FaceName("cslSTIXMath");
     ff1 = new wxFont(ffi);
@@ -239,9 +236,8 @@ bool wxDemo::OnInit()
 }
 
 DemoFrame::DemoFrame(const wxString& title)
-       : wxFrame(NULL, wxID_ANY, title)
-{
-    SetIcon(wxICON(fwin));
+    : wxFrame(nullptr, wxID_ANY, title)
+{   SetIcon(wxICON(fwin));
 
 // The size specified here is the size of the client area of the
 // window, and so should lead to consistent (client area) visuals on
@@ -255,24 +251,23 @@ DemoFrame::DemoFrame(const wxString& title)
 
 
 void DemoFrame::OnQuit(wxCommandEvent& WXUNUSED(event))
-{
-    Close(true);
+{   Close(true);
 }
 
 void DemoFrame::OnPaint(wxPaintEvent& event)
-{
-    wxPaintDC dc(this);
+{   wxPaintDC dc(this);
 // This is a fairly simple test of wxWidgets, but I am now using it
 // to illustrate the SetUserScale capability.
-    dc.SetUserScale(1.0, 1.0);  // This should be how it starts off anyway.
+    dc.SetUserScale(1.0,
+                    1.0);  // This should be how it starts off anyway.
 // First draw a pale purple background for the window.
     wxColour background_colour(230, 200, 255);
     wxBrush background_brush(background_colour);
     dc.SetBackground(background_brush);
     dc.Clear();
-        
+
     wxGraphicsContext *gc = wxGraphicsContext::Create(dc);
-    if (gc == NULL)
+    if (gc == nullptr)
     {   wxPrintf("Unable to create Graphics Context\n");
         return;
     }
@@ -299,7 +294,7 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 // Context the TextExtents show the size of the scaled item not of the
 // original.
     wxPrintf("Letter 'X' in GraphicsContext w=%.2f h=%.2f d=%.2f l=%.2f\n",
-           dwidth, dheight, ddepth, dleading);
+             dwidth, dheight, ddepth, dleading);
     std::fflush(stdout);
 
     dc.SetPen(*wxRED_PEN);
@@ -320,7 +315,7 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
     dc.GetTextExtent(msg, &w, &h, &d, &xl);
     wxPrintf("Width if text measured as %d\n", w);
     dc.DrawText(msg, (WIDTH - w)/2,
-                     HEIGHT/3 - (h-d));
+                HEIGHT/3 - (h-d));
 // Now to investigate overprinting... What I THINK this shows is that the
 // default behaviour is that the body of letters get written but the
 // background is untouched. This is as per SetBackgroundMode(wxTRANSPARENT).
@@ -332,7 +327,7 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 //  dc.SetBackgroundMode(wxSOLID);
 // This overprints the first few characters of my message with some junk.
     dc.DrawText(".. ++", (WIDTH - w)/2,
-                     HEIGHT/3 - (h-d));
+                HEIGHT/3 - (h-d));
     dc.SetTextForeground(*wxBLACK);
 
 
@@ -346,8 +341,9 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 // visual effect on the display helps to confirm that scaling has been in
 // effect, and I can check for consistency across platforms.
     dc.SetPen(*wxGREEN_PEN);
-    dc.DrawLine(0, (int)((2*HEIGHT)/(3*SCALE)),
-                (int)(WIDTH/SCALE), (int)((2*HEIGHT)/(3*SCALE)));
+    dc.DrawLine(0, static_cast<int>((2*HEIGHT)/(3*SCALE)),
+                static_cast<int>(WIDTH/SCALE),
+                static_cast<int>((2*HEIGHT)/(3*SCALE)));
 
     dc.SetFont(*ff2);
 // GetTextExtents gives me a width based on the 3-point size of the font,
@@ -369,12 +365,13 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 // not in general scale in width as neatly as one might hope when other
 // scale factors are used. So characters should usually be placed one by
 // one under full user control! Oh dear!! Well discovering things like
-// this is what this code is for. 
+// this is what this code is for.
     dc.GetTextExtent(msg, &w, &h, &d, &xl);
-    wxPrintf("Width of text when scaled = %.2f*%d = %.2f\n", SCALE, w, w*SCALE);
+    wxPrintf("Width of text when scaled = %.2f*%d = %.2f\n", SCALE, w,
+             w*SCALE);
     std::fflush(stdout);
-    dc.DrawText(msg, ((int)(WIDTH/SCALE) - w)/2,
-                     (int)((2*HEIGHT)/(3*SCALE)) - (h-d));
+    dc.DrawText(msg, (static_cast<int>(WIDTH/SCALE) - w)/2,
+                static_cast<int>((2*HEIGHT)/(3*SCALE)) - (h-d));
     dc.SetUserScale(1.0, 1.0);
 
 // Now I will draw a sequence is small characters across the middle of the
@@ -438,7 +435,7 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 // Now a more complicated scheme. I will explicitly draw onto a large
 // bitmap then shrink it in a way that has an anti-aliasing effect. The
 // result is liable to be not that sharp but (on at least some platforms) it
-// may be fairer. 
+// may be fairer.
 //
 // I will want to have a bitmap that will be neatly aligned against the
 // main grid when I print from it. I am coding this on the basis that my
@@ -487,7 +484,7 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 
 // Now basically the same stuff but without interleaved commentary, so you
 // can see it is not THAT much code after all! But also so that I can see
-// where it might be allocating fresh memory for each character it renders! 
+// where it might be allocating fresh memory for each character it renders!
 
             memdc.SelectObject(bitmap);
             memdc.SetBackground(background_brush);
@@ -510,7 +507,7 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 // ... and that this new bitmap may also involve extra memory management.
             wxBitmap bm3(im);
             dc.DrawBitmap(bm3, x2a/6, y1a/6+HEIGHT/3+20, true);
-       }
+        }
     delete gc;
 }
 

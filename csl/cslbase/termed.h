@@ -56,7 +56,7 @@
 // general you need not worry about the return value here in that if
 // local-editing can not be supported the remaining things still
 // have some sort of default behaviour.
-// The second argument is used to indicate colour options. NULL or "-"
+// The second argument is used to indicate colour options. nullptr or "-"
 // will indicate "use default". An empty string will prevent any attempt
 // to use colour. Other strings set colours as follows:
 //      There are three characters, which specify the colours for
@@ -129,8 +129,8 @@ extern wchar_t *input_history[INPUT_HISTORY_SIZE];
 extern int input_history_next;
 
 extern void input_history_init(const char *argv0,
-    int &historyFirst, int &historyLast, int &historyNumber,
-    int &input_history_next, int &longest_history_line);
+                               int &historyFirst, int &historyLast, int &historyNumber,
+                               int &input_history_next, int &longest_history_line);
 
 extern void input_history_end(void);
 

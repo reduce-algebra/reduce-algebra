@@ -173,13 +173,12 @@ extern char *getcwd(char *s, std::size_t n);
 #include "cm-to-unicode.cpp"
 
 
-static std::FILE *logfile = NULL;
+static std::FILE *logfile = nullptr;
 
 static void printlog(const char *fmt, ...)
-{
-    std::va_list a;
-    if (logfile == NULL) logfile = std::fopen("wxdvi.log", "w");
-    if (logfile != NULL)
+{   std::va_list a;
+    if (logfile == nullptr) logfile = std::fopen("wxdvi.log", "w");
+    if (logfile != nullptr)
     {   va_start(a, fmt);
         std::vfprintf(logfile, fmt, a);
         std::fflush(logfile);
@@ -305,8 +304,7 @@ END_EVENT_TABLE()
 #define LONGEST_LEGAL_FILENAME 1000
 
 int main(int argc, const char *argv[])
-{
-    int i;
+{   int i;
     int usegui = 1;
 // I have had a case where my code appears to run happily when I run it
 // under gdb or when I have compiled it with full debugging options, but
@@ -326,7 +324,7 @@ int main(int argc, const char *argv[])
 // cases. Eg I could look at stdin & stdout and check if it looks as if
 // they are pipes of they have been redirected...
     {   const char *s = std::getenv("DISPLAY");
-        if (s==NULL || *s == 0) usegui = 0;
+        if (s==nullptr || *s == 0) usegui = 0;
     }
 #endif
 #if DEBUG
@@ -342,7 +340,7 @@ int main(int argc, const char *argv[])
 // it also seems to cause things to terminate more neatly.
         char xname[LONGEST_LEGAL_FILENAME];
         std::sprintf(xname, "%s.app", programName);
-        if (std::strstr(fullProgramName, xname) == NULL)
+        if (std::strstr(fullProgramName, xname) == nullptr)
         {
 // Here the binary I launched was not located as
 //      ...foo.app../.../foo
@@ -354,14 +352,15 @@ int main(int argc, const char *argv[])
                 (buf.st_mode & S_IFDIR) != 0)
             {
 // Well foo.app exists and is a directory, so I will try to use it
-                const char **nargs = (const char **)std::malloc(sizeof(char *)*(argc+3));
+                const char **nargs = (const char **)std::malloc(sizeof(char *)*
+                                     (argc+3));
                 int i;
                 nargs[0] = "/usr/bin/open";
                 nargs[1] = xname;
                 nargs[2] = "--args";
                 for (i=1; i<argc; i++)
                     nargs[i+2] = argv[i];
-                nargs[argc+2] = NULL;
+                nargs[argc+2] = nullptr;
 // /usr/bin/open foo.app --args [any original arguments]
                 return execv("/usr/bin/open", const_cast<char * const *>(nargs));
             }
@@ -369,7 +368,7 @@ int main(int argc, const char *argv[])
 #endif
         wxDISABLE_DEBUG_SUPPORT();
 #if DEBUG
-    printlog("calling wxEntry\n");
+        printlog("calling wxEntry\n");
 #endif
 
         return wxEntry(argc, (char **)argv);
@@ -415,8 +414,7 @@ IMPLEMENT_APP_NO_MAIN(dviApp)
  */
 
 unsigned char mathDvi[] =
-{
-    0xf7,  0x02,  0x01,  0x83,  0x92,  0xc0,  0x1c,  0x3b,
+{   0xf7,  0x02,  0x01,  0x83,  0x92,  0xc0,  0x1c,  0x3b,
     0x00,  0x00,  0x00,  0x00,  0x03,  0xe8,  0x1b,  0x20,
     0x54,  0x65,  0x58,  0x20,  0x6f,  0x75,  0x74,  0x70,
     0x75,  0x74,  0x20,  0x32,  0x30,  0x31,  0x30,  0x2e,
@@ -516,45 +514,41 @@ unsigned char mathDvi[] =
 // style, as defined by the DVI format.
 
 std::int32_t dviPanel::u2()
-{
-    std::int32_t c1 = *stringInput++;
+{   std::int32_t c1 = *stringInput++;
     std::int32_t c2 = *stringInput++;
     return (c1 << 8) | c2;
 }
 
 std::int32_t dviPanel::u3()
-{
-    std::int32_t c1 = *stringInput++;
+{   std::int32_t c1 = *stringInput++;
     std::int32_t c2 = *stringInput++;
     std::int32_t c3 = *stringInput++;
     return (c1 << 16) | (c2 << 8) | c3;
 }
 
 std::int32_t dviPanel::s1()
-{
-    return (std::int32_t)(std::int8_t)(*stringInput++);
+{   return static_cast<std::int32_t>(static_cast<std::int8_t>
+                                     (*stringInput++));
 }
 
 std::int32_t dviPanel::s2()
-{
-    std::int32_t c1 = *stringInput++;
+{   std::int32_t c1 = *stringInput++;
     std::int32_t c2 = *stringInput++;
-    return (std::int32_t)(std::int16_t)((c1 << 8) | c2);
+    return static_cast<std::int32_t>(static_cast<std::int16_t>((
+                                         c1 << 8) | c2));
 }
 
 std::int32_t dviPanel::s3()
-{
-    std::int32_t c1 = *stringInput++;
+{   std::int32_t c1 = *stringInput++;
     std::int32_t c2 = *stringInput++;
     std::int32_t c3 = *stringInput++;
     std::int32_t r = (c1 << 16) | (c2 << 8) | c3;
     if ((r & 0x00800000) != 0) r |= 0xff000000;
-    return (std::int32_t)r;
+    return static_cast<std::int32_t>(r);
 }
 
 std::int32_t dviPanel::s4()
-{
-    std::int32_t c1 = *stringInput++;
+{   std::int32_t c1 = *stringInput++;
     std::int32_t c2 = *stringInput++;
     std::int32_t c3 = *stringInput++;
     std::int32_t c4 = *stringInput++;
@@ -584,7 +578,8 @@ std::int32_t dviPanel::s4()
 void dviPanel::DefFont(int k)
 {
 #if 1
-    printlog("Define Font %d at offset %d\n", k, (int)(stringInput - dviData));
+    printlog("Define Font %d at offset %d\n", k,
+             static_cast<int>(stringInput - dviData));
 #endif
     char fontname[LONGEST_LEGAL_FILENAME];
     std::int32_t checksum = s4();
@@ -617,13 +612,13 @@ void dviPanel::DefFont(int k)
     if (graphicsFontValid[k]) return;
 #if 1
     printlog("checksum = %.8x\n", checksum);
-    printlog("size = %d %g\n", size, (double)size/65536.0);
+    printlog("size = %d %g\n", size, static_cast<double>(size)/65536.0);
     printlog("%s\n", fontname);
 #endif
     font_width *p = cm_font_width;
-    while (p->name != NULL &&
+    while (p->name != nullptr &&
            std::strcmp(p->name, fontname) != 0) p++;
-    if (p->name == NULL)
+    if (p->name == nullptr)
     {   printlog("Fonts not found in the private font-set I support\n");
         return;
     }
@@ -639,15 +634,16 @@ void dviPanel::DefFont(int k)
 // all oddities might go away.
     if (p->checksum != checksum)
     {   printlog("Font checksum issue %#o vs %#o for %s\n",
-               checksum, p->checksum, fontname);
+                 checksum, p->checksum, fontname);
 // Continue in a spirit of optimism!
     }
     if (p->designsize != designsize)
     {   printlog("Font designsize issue %x vs %x for %s\n",
-               designsize, p->designsize, fontname);
+                 designsize, p->designsize, fontname);
 // Continue in a spirit of optimism!
     }
-    printlog("Designsize = %.4g\n", (double)designsize/1048576.0);
+    printlog("Designsize = %.4g\n",
+             static_cast<double>(designsize)/1048576.0);
 // Everything come from STIXMath!!!!
     graphicsFont[k] = gc->CreateFont(designsize/1048576.0, "cslSTIXMath");
     printlog("font = %p\n", graphicsFont[k]);
@@ -674,16 +670,15 @@ void dviPanel::SelectFont(int n)
 int dviPanel::MapChar(int c)
 {   if (c >= 0x80) return c;
     switch (currentFontMapping)
-    {
-default:
-case 0:
-        return cmr_to_unicode[c];
-case 1:
-        return cmmi_to_unicode[c];
-case 2:
-        return cmsy_to_unicode[c];
-case 3:
-        return cmex_to_unicode[c];
+{       default:
+        case 0:
+            return cmr_to_unicode[c];
+        case 1:
+            return cmmi_to_unicode[c];
+        case 2:
+            return cmsy_to_unicode[c];
+        case 3:
+            return cmex_to_unicode[c];
     }
 }
 
@@ -693,7 +688,7 @@ double dviPanel::DVItoScreen(int n)
 // at some later stage. The scaling here, which is based on an assumption
 // I make about the dots-per-inch resolution of my display, will end up
 // important when establishing fonts.
-    return (double)n/65536.0;
+    return static_cast<double>(n)/65536.0;
 }
 
 double dviPanel::DVItoScreenUP(int n)
@@ -703,7 +698,7 @@ double dviPanel::DVItoScreenUP(int n)
 // adding a value just under 1.0 then truncating. That recipe works OK for
 // positive arguments!
 // well using wxGraphicsContext I do not need to round.
-    return (double)n/65536.0;
+    return static_cast<double>(n)/65536.0;
 }
 
 static int rendered = 0;
@@ -711,9 +706,9 @@ static int rendered = 0;
 void dviPanel::SetChar(std::int32_t c)
 {
 #if 1
-    printlog("SetChar%d [%c] %d %d\n", (int)c,
-        (c <  0x20 || c >= 0x7f ? ' ' : (int)c),
-        (int)h, (int)v);
+    printlog("SetChar%d [%c] %d %d\n", static_cast<int>(c),
+             (c <  0x20 || c >= 0x7f ? ' ' : static_cast<int>(c)),
+             static_cast<int>(h), static_cast<int>(v));
 #endif
     int k = MapChar(c);
     wchar_t ccc[4];
@@ -745,16 +740,18 @@ void dviPanel::SetChar(std::int32_t c)
 // to the glyph if it is set at its standard size. So adjust for all of
 // that and end up in TeX coordinate units.
     std::int32_t texwidth =
-        (std::int32_t)(0.5 + (double)design*(double)ww/
-                        (double)(1<<24));
+        static_cast<std::int32_t>(0.5 + static_cast<double>
+                                  (design)*static_cast<double>(ww)/
+                                  static_cast<double>(1<<24));
     h += texwidth;
 #if 0
 // Now I want to compare the width that TeX thinks the character has with
 // what wxWidgets thinks. So I convert the TeX width to pixels.
-    double twp = (double)(1024*1024)*(double)texwidth/
+    double twp = static_cast<double>(1024*1024)*static_cast<double>
+                 (texwidth)/
                  (72.0*65536.0*1000.0);
     printlog("TeX says %#.6g wxWidgets says %.6g (%.6g)\n",
-        twp, (double)width, twp/(double)width);
+             twp, static_cast<double>(width), twp/static_cast<double>(width));
 #endif
 }
 
@@ -762,9 +759,11 @@ void dviPanel::PutChar(std::int32_t c)
 {
 #ifdef DEBUG
     if (!rendered)
-    printlog("Put (%.2f,%.2f) char %.2x (%c)\n",
-        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
-            c < 0x20 || c > 0x7f ? ' ' :  (int)c);
+        printlog("Put (%.2f,%.2f) char %.2x (%c)\n",
+                 static_cast<double>(h)/static_cast<double>(1<<20),
+                 static_cast<double>(v)/static_cast<double>(1<<20),
+                 static_cast<int>(c),
+                 c < 0x20 || c > 0x7f ? ' ' :  static_cast<int>(c));
 #endif
     wxString s = (wchar_t)MapChar(c);
     double width, height, descent, xleading;
@@ -776,20 +775,22 @@ void dviPanel::PutChar(std::int32_t c)
     std::int32_t ww = currentFontWidth->charwidth[c & 0x7f];
     std::int32_t design = currentFontWidth->designsize;
     std::int32_t texwidth =
-        (std::int32_t)(0.5 + (double)design*(double)ww/
-                        (double)(1<<24));
-    double twp = (double)96*(double)texwidth/
+        static_cast<std::int32_t>(0.5 + static_cast<double>
+                                  (design)*static_cast<double>(ww)/
+                                  static_cast<double>(1<<24));
+    double twp = static_cast<double>(96)*static_cast<double>(texwidth)/
                  (72.0*65536.0*1000.0);
     printlog("TeX says %#.4g wxWidgets says %d (%.3g)\n",
-        twp, width, twp/(double)width);
+             twp, width, twp/static_cast<double>(width));
 #endif
 }
 
 void dviPanel::SetRule(int height, int width)
 {
 #if 0
-    printlog("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
-                                        height, (double)height/65537.0);
+    printlog("SetRule %d %.3g %d %.3g\n", width,
+             static_cast<double>(width)/65536.0,
+             height, static_cast<double>(height)/65537.0);
 #endif
 // The curious re-scaling here is so that the border of the rectangle does not
 // end up fatter than the rectangle itself.
@@ -818,233 +819,232 @@ void dviPanel::RenderDVI()
         }
         else
         {   switch (c)
-            {
-        case 128: // set1
-                SetChar(*stringInput++);
-                continue;
-        case 129: // set2
-                SetChar(u2());
-                continue;
-        case 130: // set3
-                SetChar(u3());
-                continue;
-        case 131: // set4
-                SetChar(s4());
-                continue;
-        case 132: // set rule
-                a = s4();
-                b = s4();
-                if (a > 0 && b > 0) SetRule(a, b);
-                h += b;
-                continue;
-        case 133: // put1
-                PutChar(*stringInput++);
-                continue;
-        case 134: // put2
-                PutChar(u2());
-                continue;
-        case 135: // put3
-                PutChar(u3());
-                continue;
-        case 136: // put4
-                PutChar(s4());
-                continue;
-        case 137: // put rule
-                a = s4();
-                b = s4();
-                if (a > 0 && b > 0) SetRule(a, b);
-                continue;
-        case 138: // nop
-                continue;
-        case 139: // beginning of page
-                h = v = w = x = y = z = stackp = 0;
-                for (i=0; i<10; i++)
-                    C[i] = s4();
-                p = s4();
-                continue;
-        case 140: // end of page
-                continue;
-        case 141: // push
-                push();
-                continue;
-        case 142: // pop
-                pop();
-                continue;
-        case 143: // right1
-                h += s1();
-                continue;
-        case 144: // right2
-                h += s2();
-                continue;
-        case 145: // right3
-                h += s3();
-                continue;
-        case 146: // right4
-                h += s4();
-                continue;
-        case 147: // w0
-                h += w;
-                continue;
-        case 148: // w1
-                h += (w = s1());
-                continue;
-        case 149: // w2
-                h += (w = s2());
-                continue;
-        case 150: // w3
-                h += (w = s3());
-                continue;
-        case 151: // w4
-                h += (w = s4());
-                continue;
-        case 152: // x0
-                h += x;
-                continue;
-        case 153: // x1
-                h += (x = s1());
-                continue;
-        case 154: // x2
-                h += (x = s2());
-                continue;
-        case 155: //x3
-                h += (x = s3());
-                continue;
-        case 156: // x4
-                h += (x = s4());
-                continue;
-        case 157: // down1
-                v += s1();
-                continue;
-        case 158: // down2
-                v += s2();
-                continue;
-        case 159: // down3
-                v += s3();
-                continue;
-        case 160: // down4
-                v += s4();
-                continue;
-        case 161: // y0
-                v += y;
-                continue;
-        case 162: // y1
-                v += (y = s1());
-                continue;
-        case 163: // y2
-                v += (y = s2());
-                continue;
-        case 164: // y3
-                v += (y = s3());
-                continue;
-        case 165: // y4
-                v += (y = s4());
-                continue;
-        case 166: // z0
-                v += z;
-                continue;
-        case 167: // z1
-                v += (z = s1());
-                continue;
-        case 168: // z2
-                v += (z = s2());
-                continue;
-        case 169: // z3
-                v += (z = s3());
-                continue;
-        case 170: // z4
-                v += (z = s4());
-                continue;
-        case 171:  case 172:  case 173:  case 174: // fnt
-        case 175:  case 176:  case 177:  case 178:
-        case 179:  case 180:  case 181:  case 182:
-        case 183:  case 184:  case 185:  case 186:
-        case 187:  case 188:  case 189:  case 190:
-        case 191:  case 192:  case 193:  case 194:
-        case 195:  case 196:  case 197:  case 198:
-        case 199:  case 200:  case 201:  case 202:
-        case 203:  case 204:  case 205:  case 206:
-        case 207:  case 208:  case 209:  case 210:
-        case 211:  case 212:  case 213:  case 214:
-        case 215:  case 216:  case 217:  case 218:
-        case 219:  case 220:  case 221:  case 222:
-        case 223:  case 224:  case 225:  case 226:
-        case 227:  case 228:  case 229:  case 230:
-        case 231:  case 232:  case 233:  case 234:
-                SelectFont(c - 171);
-                continue;
-        case 235: // fnt1
-                SelectFont(*stringInput++);
-                continue;
-        case 236: // fnt2
-                SelectFont(u2());
-                continue;
-        case 237: // fnt3
-                SelectFont(u3());
-                continue;
-        case 238: // fnt4
-                SelectFont(s4());
-                continue;
-        case 239: // xxx1
-                k = *stringInput++;
-                for (i=0; i<k; i++) (void)*stringInput++;
-                continue;
-        case 240: // xxx2
-                k = u2();
-                for (i=0; i<k; i++) (void)*stringInput++;
-                continue;
-        case 241: // xxx3
-                k = u3();
-                for (i=0; i<k; i++) (void)*stringInput++;
-                continue;
-        case 242: // xxx4
-                k = s4();
-                for (i=0; i<k; i++) (void)*stringInput++;
-                continue;
-        case 243: // fnt_def1
-                DefFont(*stringInput++);
-                continue;
-        case 244: // fnt_def2
-                DefFont(u2());
-                continue;
-        case 245: // fnt_def3
-                DefFont(u3());
-                continue;
-        case 246: // fnt_def4
-                DefFont(s4());
-                continue;
-        case 247: // pre
-                i = *stringInput++;
-                if (i != 2)
-                {   printlog("illegal DVI version %d\n", i);
+            {   case 128: // set1
+                    SetChar(*stringInput++);
+                    continue;
+                case 129: // set2
+                    SetChar(u2());
+                    continue;
+                case 130: // set3
+                    SetChar(u3());
+                    continue;
+                case 131: // set4
+                    SetChar(s4());
+                    continue;
+                case 132: // set rule
+                    a = s4();
+                    b = s4();
+                    if (a > 0 && b > 0) SetRule(a, b);
+                    h += b;
+                    continue;
+                case 133: // put1
+                    PutChar(*stringInput++);
+                    continue;
+                case 134: // put2
+                    PutChar(u2());
+                    continue;
+                case 135: // put3
+                    PutChar(u3());
+                    continue;
+                case 136: // put4
+                    PutChar(s4());
+                    continue;
+                case 137: // put rule
+                    a = s4();
+                    b = s4();
+                    if (a > 0 && b > 0) SetRule(a, b);
+                    continue;
+                case 138: // nop
+                    continue;
+                case 139: // beginning of page
+                    h = v = w = x = y = z = stackp = 0;
+                    for (i=0; i<10; i++)
+                        C[i] = s4();
+                    p = s4();
+                    continue;
+                case 140: // end of page
+                    continue;
+                case 141: // push
+                    push();
+                    continue;
+                case 142: // pop
+                    pop();
+                    continue;
+                case 143: // right1
+                    h += s1();
+                    continue;
+                case 144: // right2
+                    h += s2();
+                    continue;
+                case 145: // right3
+                    h += s3();
+                    continue;
+                case 146: // right4
+                    h += s4();
+                    continue;
+                case 147: // w0
+                    h += w;
+                    continue;
+                case 148: // w1
+                    h += (w = s1());
+                    continue;
+                case 149: // w2
+                    h += (w = s2());
+                    continue;
+                case 150: // w3
+                    h += (w = s3());
+                    continue;
+                case 151: // w4
+                    h += (w = s4());
+                    continue;
+                case 152: // x0
+                    h += x;
+                    continue;
+                case 153: // x1
+                    h += (x = s1());
+                    continue;
+                case 154: // x2
+                    h += (x = s2());
+                    continue;
+                case 155: //x3
+                    h += (x = s3());
+                    continue;
+                case 156: // x4
+                    h += (x = s4());
+                    continue;
+                case 157: // down1
+                    v += s1();
+                    continue;
+                case 158: // down2
+                    v += s2();
+                    continue;
+                case 159: // down3
+                    v += s3();
+                    continue;
+                case 160: // down4
+                    v += s4();
+                    continue;
+                case 161: // y0
+                    v += y;
+                    continue;
+                case 162: // y1
+                    v += (y = s1());
+                    continue;
+                case 163: // y2
+                    v += (y = s2());
+                    continue;
+                case 164: // y3
+                    v += (y = s3());
+                    continue;
+                case 165: // y4
+                    v += (y = s4());
+                    continue;
+                case 166: // z0
+                    v += z;
+                    continue;
+                case 167: // z1
+                    v += (z = s1());
+                    continue;
+                case 168: // z2
+                    v += (z = s2());
+                    continue;
+                case 169: // z3
+                    v += (z = s3());
+                    continue;
+                case 170: // z4
+                    v += (z = s4());
+                    continue;
+                case 171:  case 172:  case 173:  case 174: // fnt
+                case 175:  case 176:  case 177:  case 178:
+                case 179:  case 180:  case 181:  case 182:
+                case 183:  case 184:  case 185:  case 186:
+                case 187:  case 188:  case 189:  case 190:
+                case 191:  case 192:  case 193:  case 194:
+                case 195:  case 196:  case 197:  case 198:
+                case 199:  case 200:  case 201:  case 202:
+                case 203:  case 204:  case 205:  case 206:
+                case 207:  case 208:  case 209:  case 210:
+                case 211:  case 212:  case 213:  case 214:
+                case 215:  case 216:  case 217:  case 218:
+                case 219:  case 220:  case 221:  case 222:
+                case 223:  case 224:  case 225:  case 226:
+                case 227:  case 228:  case 229:  case 230:
+                case 231:  case 232:  case 233:  case 234:
+                    SelectFont(c - 171);
+                    continue;
+                case 235: // fnt1
+                    SelectFont(*stringInput++);
+                    continue;
+                case 236: // fnt2
+                    SelectFont(u2());
+                    continue;
+                case 237: // fnt3
+                    SelectFont(u3());
+                    continue;
+                case 238: // fnt4
+                    SelectFont(s4());
+                    continue;
+                case 239: // xxx1
+                    k = *stringInput++;
+                    for (i=0; i<k; i++) static_cast<void>()*stringInput++;
+                    continue;
+                case 240: // xxx2
+                    k = u2();
+                    for (i=0; i<k; i++) static_cast<void>()*stringInput++;
+                    continue;
+                case 241: // xxx3
+                    k = u3();
+                    for (i=0; i<k; i++) static_cast<void>()*stringInput++;
+                    continue;
+                case 242: // xxx4
+                    k = s4();
+                    for (i=0; i<k; i++) static_cast<void>()*stringInput++;
+                    continue;
+                case 243: // fnt_def1
+                    DefFont(*stringInput++);
+                    continue;
+                case 244: // fnt_def2
+                    DefFont(u2());
+                    continue;
+                case 245: // fnt_def3
+                    DefFont(u3());
+                    continue;
+                case 246: // fnt_def4
+                    DefFont(s4());
+                    continue;
+                case 247: // pre
+                    i = *stringInput++;
+                    if (i != 2)
+                    {   printlog("illegal DVI version %d\n", i);
+                        break;
+                    }
+                    static_cast<void>(s4());    // ignore num
+                    static_cast<void>(s4());    // ignore den
+                    static_cast<void>(s4());    // ignore mag
+                    k = *stringInput++;
+                    for (i=0; i<k; i++) static_cast<void>()*stringInput++;
+                    continue;
+                case 248: // post
+                    static_cast<void>(s4()); // ignore p;
+                    static_cast<void>(s4()); // ignure num
+                    static_cast<void>(s4()); // ignore den
+                    static_cast<void>(s4()); // ignore mag
+                    static_cast<void>(s4()); // height+depth of largest page
+                    static_cast<void>(s4()); // width of largest page
+                    static_cast<void>(u2()); // stack depth
+                    static_cast<void>(u2()); // page count
+                    // The postamble will have font definitions here as well.
+                    continue;
+                case 249: // post_post
+                    static_cast<void>(s4());
+                    static_cast<void>()*stringInput++;
+                    if (*stringInput++ != 223) printlog("Malformed DVI file\n");
                     break;
-                }
-                (void)s4();    // ignore num
-                (void)s4();    // ignore den
-                (void)s4();    // ignore mag
-                k = *stringInput++;
-                for (i=0; i<k; i++) (void)*stringInput++;
-                continue;
-        case 248: // post
-                (void)s4(); // ignore p;
-                (void)s4(); // ignure num
-                (void)s4(); // ignore den
-                (void)s4(); // ignore mag
-                (void)s4(); // height+depth of largest page
-                (void)s4(); // width of largest page
-                (void)u2(); // stack depth
-                (void)u2(); // page count
-    // The postamble will have font definitions here as well.
-                continue;
-        case 249: // post_post
-                (void)s4();
-                (void)*stringInput++;
-                if (*stringInput++ != 223) printlog("Malformed DVI file\n");
-                break;
 
-        // 250-255 undefined
-        default:
-                printlog("Unknown/undefined opcode %.2x\n", c);
-                break;
+                // 250-255 undefined
+                default:
+                    printlog("Unknown/undefined opcode %.2x\n", c);
+                    break;
             }
             break;
         }
@@ -1073,12 +1073,12 @@ bool dviApp::OnInit()
     printlog("fonts added\n");
 #endif
 
-    const char *dvifilename = NULL;
+    const char *dvifilename = nullptr;
     if (argc > 1) dvifilename = myargv[1];
 
 #if DEBUG
     printlog("dvifilename=%s\n",
-              dvifilename == NULL ? "<null>" : dvifilename);
+             dvifilename == nullptr ? "<null>" : dvifilename);
 #endif
 
     dviFrame *frame = new dviFrame(dvifilename);
@@ -1090,9 +1090,8 @@ bool dviApp::OnInit()
 }
 
 dviFrame::dviFrame(const char *dvifilename)
-       : wxFrame(NULL, wxID_ANY, "wxdvi")
-{
-    SetIcon(wxICON(fwin));
+    : wxFrame(nullptr, wxID_ANY, "wxdvi")
+{   SetIcon(wxICON(fwin));
     int numDisplays = wxDisplay::GetCount(); // how many displays?
 // It is not clear to me what I should do if there are several displays,
 // and if there are none I am probably in a mess!
@@ -1103,7 +1102,8 @@ dviFrame::dviFrame(const char *dvifilename)
     wxRect screenArea(d0.GetClientArea());   // omitting task bar
     screenWidth = screenArea.GetWidth();
     screenHeight = screenArea.GetHeight();
-    printlog("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
+    printlog("Usable area of screen is %d by %d\n", screenWidth,
+             screenHeight);
 // I will want to end up saving screen size (and even position) between runs
 // of this program.
     int width = 1280;      // default size.
@@ -1136,22 +1136,23 @@ dviFrame::dviFrame(const char *dvifilename)
 // constructor
 
 dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
-       : wxPanel(parent, wxID_ANY, wxDefaultPosition,
-                 wxDefaultSize, 0L, "dviPanel")
+    : wxPanel(parent, wxID_ANY, wxDefaultPosition,
+              wxDefaultSize, 0L, "dviPanel")
 {
 // I will read the DVI data once here.
-    std::FILE *f = NULL;
-    if (dvifilename == NULL) dviData = mathDvi;
+    std::FILE *f = nullptr;
+    if (dvifilename == nullptr) dviData = mathDvi;
     else
-    {   stringInput = NULL;
+    {   stringInput = nullptr;
         f = std::fopen(dvifilename, "rb");
-        if (f == NULL)
+        if (f == nullptr)
         {   printlog("File \"%s\" not found\n", dvifilename);
             std::exit(1);
         }
         std::fseek(f, (off_t)0, SEEK_END);
         off_t len = std::ftell(f);
-        dviData = (unsigned char *)std::malloc((std::size_t)len);
+        dviData = reinterpret_cast<unsigned char *>(std)::malloc(
+                      static_cast<std::size_t>(len));
         std::fseek(f, (off_t)0, SEEK_SET);
         for (int i=0; i<len; i++) dviData[i] = std::getc(f);
         std::fclose(f);
@@ -1162,8 +1163,7 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
 
 
 void dviFrame::OnClose(wxCloseEvent &WXUNUSED(event))
-{
-    Destroy();
+{   Destroy();
 #ifdef WIN32
 // Otherwise under XP bad things happen for me. Like the application
 // re-launching.
@@ -1174,8 +1174,7 @@ void dviFrame::OnClose(wxCloseEvent &WXUNUSED(event))
 }
 
 void dviFrame::OnExit(wxCommandEvent &WXUNUSED(event))
-{
-    Destroy();
+{   Destroy();
 #ifdef WIN32
     TerminateProcess(GetCurrentProcess(), 1);
 #else
@@ -1187,25 +1186,23 @@ void dviFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 {
 // At present this never gets activated!
     wxMessageBox(
-       wxString::Format(
-           "wxdvi (A C Norman 2010)\nwxWidgets version: %s\nOperating system: %s",
-           wxVERSION_STRING,
-           wxGetOsDescription()),
-       "About wxdvi",
-       wxOK | wxICON_INFORMATION,
-       this);
+        wxString::Format(
+            "wxdvi (A C Norman 2010)\nwxWidgets version: %s\nOperating system: %s",
+            wxVERSION_STRING,
+            wxGetOsDescription()),
+        "About wxdvi",
+        wxOK | wxICON_INFORMATION,
+        this);
 }
 
 void dviFrame::OnSize(wxSizeEvent &WXUNUSED(event))
-{
-    wxSize client(GetClientSize());
+{   wxSize client(GetClientSize());
     panel->SetSize(client);
     panel->Refresh();
 }
 
 void dviPanel::OnChar(wxKeyEvent &event)
-{
-    const char *msg = "OnChar", *raw = "";
+{   const char *msg = "OnChar", *raw = "";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw ";
     if (0x20 < c && c < 0x7f) printlog("%s%s %x (%c)\n", msg, raw, c, c);
@@ -1213,8 +1210,7 @@ void dviPanel::OnChar(wxKeyEvent &event)
 }
 
 void dviPanel::OnKeyDown(wxKeyEvent &event)
-{
-    const char *msg = "OnKeyDown", *raw = "";
+{   const char *msg = "OnKeyDown", *raw = "";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
     if (0x20 < c && c < 0x7f) printlog("%s%s %x (%c)\n", msg, raw, c, c);
@@ -1223,8 +1219,7 @@ void dviPanel::OnKeyDown(wxKeyEvent &event)
 }
 
 void dviPanel::OnKeyUp(wxKeyEvent &event)
-{
-    const char *msg = "OnKeyUp", *raw = "";
+{   const char *msg = "OnKeyUp", *raw = "";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
     if (0x20 < c && c < 0x7f) printlog("%s%s %x (%c)\n", msg, raw, c, c);
@@ -1233,18 +1228,16 @@ void dviPanel::OnKeyUp(wxKeyEvent &event)
 }
 
 void dviPanel::OnMouse(wxMouseEvent &event)
-{
-    printlog("Mouse event\n");
+{   printlog("Mouse event\n");
     event.Skip();
 //  Refresh();     // forces redraw of everything
 }
 
 void dviPanel::OnPaint(wxPaintEvent &event)
-{
-    wxPaintDC mydc(this);
+{   wxPaintDC mydc(this);
     gc = wxGraphicsContext::Create(mydc);
     printlog("OnPaint: graphicsContext created at %p\n", gc);
-    if (gc == NULL) return;
+    if (gc == nullptr) return;
 // The next could probably be done merely by setting a background colour
     wxColour c1(230, 200, 255);
     wxBrush b1(c1);
@@ -1252,10 +1245,11 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     gc->SetBrush(b1);
     printlog("setbrush done\n");
     wxSize window(mydc.GetSize());
-    printlog("Window is %d by %d\n", window.GetWidth(), window.GetHeight());
+    printlog("Window is %d by %d\n", window.GetWidth(),
+             window.GetHeight());
     gc->DrawRectangle(0.0, 0.0,
-                      (double)window.GetWidth(),
-                      (double)window.GetHeight());
+                      static_cast<double>(window.GetWidth()),
+                      static_cast<double>(window.GetHeight()));
     printlog("background drawn\n");
 
 #if defined WIN32 && 0
@@ -1280,9 +1274,9 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     em = dwidth;
     printlog("(D)em=%#.3g\n", em);
     printlog("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
-        dheight-ddepth-dleading, dheight, dleading);
+             dheight-ddepth-dleading, dheight, dleading);
 
-    double screenWidth = (double)window.GetWidth();
+    double screenWidth = static_cast<double>(window.GetWidth());
     double lineWidth = 80.0*em;
     double scale = screenWidth/lineWidth;
     gc->Scale(scale, scale);
@@ -1293,7 +1287,7 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     gc->SetFont(graphicsFixedPitch);
     for (int i=0; i<80; i++)
     {   wxString c1 = (wchar_t)MapChar(i);
-        gc->DrawText(c1, (double)i*em, 10.0);
+        gc->DrawText(c1, static_cast<double>(i)*em, 10.0);
     }
     RenderDVI();
 // I will mark all the fonts I might have created as invalid now
@@ -1301,7 +1295,7 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
     printlog("About to delete gc\n");
     delete gc;
-    gc = NULL; // just to be tidy!
+    gc = nullptr; // just to be tidy!
     return;
 }
 

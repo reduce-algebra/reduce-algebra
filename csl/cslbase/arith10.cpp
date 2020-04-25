@@ -88,15 +88,15 @@ static double arg_reduce(double a, int *quadrant)
     static double c2 = 1121027177.0/1073741824.0/1073741824.0/16.0;
     static double c3 = 2.91273205609335616e-20;
     double w = a / 1.5707963267948966;
-    int32_t n = (int)(w < 0.0 ? w - 0.5 : w + 0.5);
+    int32_t n = static_cast<int>(w < 0.0 ? w - 0.5 : w + 0.5);
 //
 // OK - now n should be the nearest integer to a/(pi/2) so
 // (a - n) should be at most (about) pi/4 in absolute value.
 //
-    w = a - (double)n*c1;
-    w = w - (double)n*c2;
-    w = w - (double)n*c3;
-    *quadrant = (int)(n & 3);
+    w = a - static_cast<double>(n)*c1;
+    w = w - static_cast<double>(n)*c2;
+    w = w - static_cast<double>(n)*c3;
+    *quadrant = static_cast<int>(n & 3);
     return w;
 }
 
@@ -249,11 +249,11 @@ static Complex CSLcsqrt(Complex z)
         }
         return z;           // Pure real arguments are easy
     }
-    (void)std::frexp(y, &n);
+    static_cast<void>(std::frexp(y, &n));
 // Exact value returned by frexp not critical
     if (x != 0.0)
     {   int n1;
-        (void)std::frexp(x, &n1);
+        static_cast<void>(std::frexp(x, &n1));
         if (n1 > n) n = n1;
     }
     n &= ~1;                // ensure it is even
@@ -313,7 +313,8 @@ static Complex CSLctan(Complex z)
     double t2 = t*t, th2 = th*th;
     // many risks of premature overflow here
     double d = 1.0 + t2*th2;
-    z.real = t*(1.0-th2)/d;  // /* if th2 is very near 1.0 this is inaccurate
+    z.real = t*(1.0
+                -th2)/d;  // /* if th2 is very near 1.0 this is inaccurate
     z.imag = th*(1.0+t2)/d;
     return z;
 }
@@ -350,12 +351,12 @@ static Complex Cdiv_z(Complex p, Complex q)
         if (a == 0.0)
         {   if (b == 0.0) return p;         // (0.0, 0.0)/z
 // Exact results from frexp unimportant
-            else (void)std::frexp(b, &n1);
+            else static_cast<void>(std::frexp(b, &n1));
         }
-        else if (b == 0.0) (void)std::frexp(a, &n1);
+        else if (b == 0.0) static_cast<void>(std::frexp(a, &n1));
         else
-        {   (void)std::frexp(a, &n1);
-            (void)std::frexp(b, &n2);
+        {   static_cast<void>(std::frexp(a, &n1));
+            static_cast<void>(std::frexp(b, &n2));
             if (n2>n1) n1 = n2;
         }
         n = n1;
@@ -363,8 +364,8 @@ static Complex Cdiv_z(Complex p, Complex q)
         a = a / scalep;
         b = b / scalep;
 // At this stage I know that the denominator has nonzero real & imag parts
-        (void)std::frexp(c, &n1);
-        (void)std::frexp(d, &n2);
+        static_cast<void>(std::frexp(c, &n1));
+        static_cast<void>(std::frexp(d, &n2));
         if (n2>n1) n1 = n2;
         n = n - n1;
         scaleq = std::ldexp(1.0, n1);        // scale denominator
@@ -751,7 +752,7 @@ static double arg_reduce_degrees(double a, int *quadrant)
 // relevant quadant.  Returns arg converted to radians.
 //
 {   double w = a / 90.0;
-    int32_t n = (int)w;
+    int32_t n = static_cast<int>(w);
     w = a - 90.0*n;
     while (w < -45.0)
     {   n--;
@@ -761,7 +762,7 @@ static double arg_reduce_degrees(double a, int *quadrant)
     {   n++;
         w = a - 90.0*n;
     }
-    *quadrant = (int)(n & 3);
+    *quadrant = static_cast<int>(n & 3);
     return pi180*w;
 }
 
@@ -862,7 +863,7 @@ static double rlog2(double a)
 {   if (a > 0.0)
     {   int x;
         a = std::frexp(a, &x);
-        return CSLlog(a)/CSL_log2 + (double)x;
+        return CSLlog(a)/CSL_log2 + static_cast<double>(x);
     }
     else return 0.0;
 }
@@ -1159,7 +1160,7 @@ typedef Complex complex_arg_fn(Complex);
 // Each trig function has three associated helpers.
 // the first two are used for real arguments, and return the real and
 // imaginary parts of the answer. If the function is always real for
-// real input then the second function is gicen as NULL.
+// real input then the second function is given as nullptr.
 // The final case is for genuine complex arguments.
 //
 
@@ -1174,49 +1175,49 @@ static trigfn_record const trig_functions[] =
 {   {racos,  iacos,  CSLcacos,  "acos"},  // acos   0  inverse cos, rads, [0, pi)
     {racosd, iacosd, CSLcacosd, "acosd"}, // acosd  1  inverse cos, degs, [0, 180)
     {racosh, iacosh, CSLcacosh, "acosh"}, // acosh  2  inverse hyperbolic cosine
-    {racot,  NULL,   CSLcacot,  "acot"},  // acot   3  inverse cot, rads, (0, pi)
-    {racotd, NULL,   CSLcacotd, "acotd"}, // acotd  4  inverse cot, degs, (0, 180)
+    {racot,  nullptr,CSLcacot,  "acot"},  // acot   3  inverse cot, rads, (0, pi)
+    {racotd, nullptr,CSLcacotd, "acotd"}, // acotd  4  inverse cot, degs, (0, 180)
     {racoth, iacoth, CSLcacoth, "acoth"}, // acoth  5  inverse hyperbolic cotangent
     {racsc,  iacsc,  CSLcacsc,  "acsc"},  // acsc   6  inverse cosec, [-pi/2, pi/2]
     {racscd, iacscd, CSLcacscd, "acscd"}, // acscd  7  inverse cosec, degs, [-90, 90]
-    {racsch, NULL,   CSLcacsch, "acsch"}, // acsch  8  inverse hyperbolic coseCSLcant
+    {racsch, nullptr,CSLcacsch, "acsch"}, // acsch  8  inverse hyperbolic coseCSLcant
     {rasec,  iasec,  CSLcasec,  "asec"},  // asec   9  inverse sec, rads, [0, pi)
     {rasecd, iasecd, CSLcasecd, "asecd"}, // asecd  10 inverse sec, degs, [0, 180)
     {rasech, iasech, CSLcasech, "asech"}, // asech  11 inverse hyperbolic seCSLcant
     {rasin,  iasin,  CSLcasin,  "asin"},  // asin   12 inverse sin, rads, [-pi/2, pi/2]
     {rasind, iasind, CSLcasind, "asind"}, // asind  13 inverse sin, degs, [-90, 90]
-    {CSLasinh, NULL, CSLcasinh, "asinh"}, // asinh  14 inverse hyperbolic sin
-    {CSLatan,   NULL,   CSLcatan,  "atan"},  // atan   15 1-arg inverse tan, (-pi/2, pi/2)
-    {ratand, NULL,   CSLcatand, "atand"}, // atand  16 inverse tan, degs, (-90, 90)
-    {NULL,   NULL,   NULL,      "atan2"}, // atan2  17 2-arg inverse tan, [0, 2pi)
-    {NULL,   NULL,   NULL,      "atan2d"},// atan2d 18 2-arg inverse tan, degs, [0, 360)
+    {CSLasinh, nullptr, CSLcasinh, "asinh"}, // asinh  14 inverse hyperbolic sin
+    {CSLatan,nullptr,CSLcatan,  "atan"},  // atan   15 1-arg inverse tan, (-pi/2, pi/2)
+    {ratand, nullptr,CSLcatand, "atand"}, // atand  16 inverse tan, degs, (-90, 90)
+    {nullptr,nullptr,nullptr,      "atan2"}, // atan2  17 2-arg inverse tan, [0, 2pi)
+    {nullptr,nullptr,nullptr,      "atan2d"},// atan2d 18 2-arg inverse tan, degs, [0, 360)
     {ratanh, iatanh, CSLcatanh, "atanh"}, // atanh  19 inverse hyperbolic tan
-    {rcbrt,  NULL,   ccbrt,     "cbrt"},  // cbrt   20 cube root
-    {my_cos, NULL,   Ccos,      "cos"},   // cos    21 cosine, rads
-    {rcosd,  NULL,   CSLccosd,  "cosd"},  // cosd   22 cosine, degs
-    {CSLcosh,   NULL,   CSLccosh,  "cosh"},  // cosh   23 hyperbolic cosine
-    {rcot,   NULL,   CSLccot,   "cot"},   // cot    24 cotangent, rads
-    {rcotd,  NULL,   CSLccotd,  "cotd"},  // cotd   25 cotangent, degs
-    {rcoth,  NULL,   CSLccoth,  "coth"},  // coth   26 hyperbolic cotangent
-    {rcsc,   NULL,   CSLccsc,   "csc"},   // csc    27 cosecant, rads
-    {rcscd,  NULL,   CSLccscd,  "cscd"},  // cscd   28 cosecant, degs
-    {rcsch,  NULL,   CSLccsch,  "csch"},  // csch   29 hyperbolic cosecant
-    {CSLexp,    NULL,   Cexp,      "exp"},   // exp    30 exp(x) = e^z, e approx 2.71828
-    {NULL,   NULL,   NULL,      "expt"},  // expt   31 expt(a,b) = a^b
-    {NULL,   NULL,   NULL,      "hypot"}, // hypot  32 hypot(a,b) = sqrt(a^2+b^2)
+    {rcbrt,  nullptr,ccbrt,     "cbrt"},  // cbrt   20 cube root
+    {my_cos, nullptr,Ccos,      "cos"},   // cos    21 cosine, rads
+    {rcosd,  nullptr,CSLccosd,  "cosd"},  // cosd   22 cosine, degs
+    {CSLcosh,nullptr,CSLccosh,  "cosh"},  // cosh   23 hyperbolic cosine
+    {rcot,   nullptr,CSLccot,   "cot"},   // cot    24 cotangent, rads
+    {rcotd,  nullptr,CSLccotd,  "cotd"},  // cotd   25 cotangent, degs
+    {rcoth,  nullptr,CSLccoth,  "coth"},  // coth   26 hyperbolic cotangent
+    {rcsc,   nullptr,CSLccsc,   "csc"},   // csc    27 cosecant, rads
+    {rcscd,  nullptr,CSLccscd,  "cscd"},  // cscd   28 cosecant, degs
+    {rcsch,  nullptr,CSLccsch,  "csch"},  // csch   29 hyperbolic cosecant
+    {CSLexp, nullptr,Cexp,      "exp"},   // exp    30 exp(x) = e^z, e approx 2.71828
+    {nullptr,nullptr,nullptr,   "expt"},  // expt   31 expt(a,b) = a^b
+    {nullptr,nullptr,nullptr,   "hypot"}, // hypot  32 hypot(a,b) = sqrt(a^2+b^2)
     {rln,    iln,    Cln,       "ln"},    // ln     33 log base e, e approx 2.71828
-    {NULL,   NULL,   NULL,      "log"},   // log    34 2-arg log
+    {nullptr,nullptr,nullptr,   "log"},   // log    34 2-arg log
     {rlog10, ilog10, CSLclog10, "log10"}, // log10  35 log to base 10
-    {rsec,   NULL,   CSLcsec,   "sec"},   // sec    36 secant, rads
-    {rsecd,  NULL,   CSLcsecd,  "secd"},  // secd   37 secant, degs
-    {rsech,  NULL,   CSLcsech,  "sech"},  // sech   38 hyperbolic secant
-    {my_sin, NULL,   CSLcsin,   "sin"},   // sin    39 sine, rads
-    {rsind,  NULL,   CSLcsind,  "sind"},  // sind   40 sine, degs
-    {CSLsinh,NULL,   CSLcsinh,  "sinh"},  // sinh   41 hyperbolic sine
+    {rsec,   nullptr,CSLcsec,   "sec"},   // sec    36 secant, rads
+    {rsecd,  nullptr,CSLcsecd,  "secd"},  // secd   37 secant, degs
+    {rsech,  nullptr,CSLcsech,  "sech"},  // sech   38 hyperbolic secant
+    {my_sin, nullptr,CSLcsin,   "sin"},   // sin    39 sine, rads
+    {rsind,  nullptr,CSLcsind,  "sind"},  // sind   40 sine, degs
+    {CSLsinh,nullptr,CSLcsinh,  "sinh"},  // sinh   41 hyperbolic sine
     {rsqrt,  isqrt,  CSLcsqrt,  "sqrt"},  // sqrt   42 square root
-    {CSLtan, NULL,   CSLctan,   "tan"},   // tan    43 tangent, rads
-    {rtand,  NULL,   CSLctand,  "tand"},  // tand   44 tangent, degs
-    {std::tanh,   NULL,   CSLctanh,  "tanh"},  // tanh   45 hyperbolic tangent
+    {CSLtan, nullptr,CSLctan,   "tan"},   // tan    43 tangent, rads
+    {rtand,  nullptr,CSLctand,  "tand"},  // tand   44 tangent, degs
+    {std::tanh,nullptr,CSLctanh,"tanh"},  // tanh   45 hyperbolic tangent
     {rlog2,  ilog2,  CSLclog2,  "log2"}   // log2   46 log to base 2
 };
 
@@ -1234,14 +1235,14 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
     int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
     if (which_one > 46) aerror("trigfn internal error");
-    switch ((int)a & TAG_BITS)
+    switch (static_cast<int>(a) & TAG_BITS)
     {   case TAG_FIXNUM:
             if (is_sfloat(a))
             {   d = value_of_immediate_float(a);
                 restype = 0;
                 break;
             }
-            else d = (double)int_of_fixnum(a);
+            else d = static_cast<double>(int_of_fixnum(a));
             break;
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
@@ -1271,7 +1272,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             aerror1("bad arg for trig function",  a);
     }
     {       double (*im)(double) = trig_functions[which_one].imag;
-        if (im == NULL)
+        if (im == nullptr)
 //
 // If there is no function for giving the complex part of a result
 // from a real argument then at this point I have a real input and
@@ -1283,7 +1284,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 // Lisp if an elementary function leads to overflow.
 //
         {   double (*rl)(double) = trig_functions[which_one].real;
-            if (rl == NULL) aerror("unimplemented trig function");
+            if (rl == nullptr) aerror("unimplemented trig function");
             return onevalue(make_boxfloat((*rl)(d), restype));
         }
         else
@@ -1323,9 +1324,10 @@ static LispObject makenum(LispObject a, int32_t n)
 #else
     int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
-    switch ((int)a & TAG_BITS)
+    switch (static_cast<int>(a) & TAG_BITS)
     {   case TAG_FIXNUM:
-            if (is_sfloat(a)) return pack_immediate_float((double)n, a);
+            if (is_sfloat(a)) return pack_immediate_float(static_cast<double>(n),
+                                         a);
             else return fixnum_of_int(n);
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
@@ -1349,9 +1351,9 @@ static LispObject makenum(LispObject a, int32_t n)
 #ifdef HAVE_SOFTFLOAT
             if (restype == TYPE_LONG_FLOAT)
                 return onevalue(make_boxfloat128(
-                    float128_of_number(fixnum_of_int(n))));
+                                    float128_of_number(fixnum_of_int(n))));
 #endif // HAVE_SOFTFLOAT
-            return onevalue(make_boxfloat((double)n, restype));
+            return onevalue(make_boxfloat(static_cast<double>(n), restype));
         default:
             aerror1("bad arg for makenumber",  a);
     }
@@ -1461,7 +1463,8 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 // In a similar vein I will take special action on #C(0 1) and #C(0 -1)
 // raise to integer (including bignum) powers.
 //
-    if (is_numbers(a) && is_complex(a) && real_part(a)==fixnum_of_int(0) &&
+    if (is_numbers(a) && is_complex(a) &&
+        real_part(a)==fixnum_of_int(0) &&
         (imag_part(a) == fixnum_of_int(1) ||
          imag_part(a) == fixnum_of_int(-1)))
     {   n = -1;
@@ -1557,9 +1560,9 @@ static LispObject Lisqrt(LispObject, LispObject a)
 // then expecting the square root computed that way to fit into a fixnum,
 // ie to be at worst 27 or 60 bits long. That is not at all good enough for
 // serious use so I am disabling it for now!
-    switch ((int)a & TAG_BITS)
+    switch (static_cast<int>(a) & TAG_BITS)
     {   case TAG_FIXNUM:
-            d = (double)int_of_fixnum(a);
+            d = static_cast<double>(int_of_fixnum(a));
             break;
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
@@ -1588,7 +1591,7 @@ LispObject Labsval(LispObject env, LispObject a)
 // Of course I do not think that case-insensitive linkers should be allowed
 // to remain in service....
 //
-{   switch ((int)a & TAG_BITS)
+{   switch (static_cast<int>(a) & TAG_BITS)
     {   case TAG_FIXNUM:
 //      case XTAG_SFLOAT:
             break;
@@ -1941,7 +1944,7 @@ setup_type const arith10_setup[] =
     {"signum",                  G0W1, Lsignum, G2W1, G3W1, G4W1},
     {"atan",                    G0Wother, Latan, Latan_2, G3Wother, G4Wother},
     {"logb",                    G0W2, G1W2, Llog_2, G3W2, G4W2},
-    {NULL,                      0, 0, 0, 0, 0}
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of arith10.cpp

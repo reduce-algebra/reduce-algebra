@@ -402,11 +402,13 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     }
 }
 
-LispObject Lget_3(LispObject, LispObject a, LispObject b, LispObject c)
+LispObject Lget_3(LispObject, LispObject a, LispObject b,
+                  LispObject c)
 {   return onevalue(get(a, b, c));
 }
 
-LispObject Lputprop(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Lputprop(LispObject env, LispObject a, LispObject b,
+                    LispObject c)
 {   return onevalue(putprop(a, b, c));
 }
 
@@ -772,13 +774,13 @@ LispObject Lbytecounts_0(LispObject env)
     stdout_printf("bytecode statistics not available\n");
 #else
     stdout_printf("\nFrequencies of each bytecode (%ldM total)",
-                  (int)(total/1000000));
+                  static_cast<int>(total/1000000));
     if (total == 0) total = 1;
     for (i=0; i<256; i++)
     {   if ((i & 3) == 0) stdout_printf("\n");
         stdout_printf("%-9.9s%7.4f  ",
                       opnames[i],
-                      100.0*(double)frequencies[i]/(double)total);
+                      100.0*static_cast<double>(frequencies[i])/static_cast<double>(total));
     }
     stdout_printf("\n");
 #endif
@@ -797,7 +799,7 @@ LispObject Lbytecounts_0(LispObject env)
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(car(val)),
                             no  = int_of_fixnum(cdr(val));
-        tot += (double)(yes+2*no);
+        tot += static_cast<double>(yes+2*no);
     }
     tot /= 100.0;
     for (i=1; i<size; i+=2)
@@ -807,7 +809,8 @@ LispObject Lbytecounts_0(LispObject env)
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(car(val)),
                             no  = int_of_fixnum(cdr(val));
-        stdout_printf("%7.2f %10d %10d  ", (double)(yes+2*no)/tot, yes+no, no);
+        stdout_printf("%7.2f %10d %10d  ", static_cast<double>(yes+2*no)/tot,
+                      yes+no, no);
         loop_print_stdout(key);
         stdout_printf("\n");
     }
@@ -842,7 +845,7 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(car(val)),
                             no  = int_of_fixnum(cdr(val));
-        tot += (double)(yes+2*no);
+        tot += static_cast<double>(yes+2*no);
     }
     tot /= 100.0;
     stdout_printf("\n(\n");
@@ -853,7 +856,7 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
         yes = no = 0;
         if (consp(val)) yes = int_of_fixnum(car(val)),
                             no  = int_of_fixnum(cdr(val));
-        stdout_printf("(%7.2f ", (double)(yes+2*no)/tot);
+        stdout_printf("(%7.2f ", static_cast<double>(yes+2*no)/tot);
         loop_print_stdout(key);
         stdout_printf(")\n");
     }
@@ -879,7 +882,8 @@ inline void do_freebind(LispObject bvec)
 {   int32_t n, k;
     n = length_of_header(vechdr(bvec));
     for (k=CELL; k<n; k+=CELL)
-    {   LispObject v = *(LispObject *)((intptr_t)bvec + k - TAG_VECTOR);
+    {   LispObject v = *reinterpret_cast<LispObject *>((
+                           intptr_t)bvec + k - TAG_VECTOR);
         push(qvalue(v));
         setvalue(v, nil);
     }
@@ -887,7 +891,7 @@ inline void do_freebind(LispObject bvec)
 // SPID_FBIND is a value that can NEVER occur elsewhere in the Lisp system,
 // and so it unambiguously marks a block of fluid bindings on that stack.
 //
-    push(bvec, (LispObject)SPID_FBIND);
+    push(bvec, static_cast<LispObject>(SPID_FBIND));
 }
 
 inline void do_freerstr()
@@ -897,7 +901,8 @@ inline void do_freerstr()
     pop(bv);
     n = length_of_header(vechdr(bv));
     while (n>CELL)
-    {   LispObject v = *(LispObject *)((intptr_t)bv + n - (CELL + TAG_VECTOR));
+    {   LispObject v = *reinterpret_cast<LispObject *>((
+                           intptr_t)bv + n - (CELL + TAG_VECTOR));
         n -= CELL;
         LispObject v1;
         pop(v1);
@@ -960,7 +965,7 @@ inline LispObject encapsulate_sp(LispObject *sp)
 // Creates a boxed up representation of a pointer into the stack.
 //
 {   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_SP, 2*CELL);
-    elt(w, 0) = (LispObject)sp;
+    elt(w, 0) = reinterpret_cast<LispObject>(sp);
     return w;
 }
 
@@ -1159,7 +1164,7 @@ void rplacd_fails(LispObject a)
 #define previous_byte        (((unsigned char *)codevec)[ppc-1])
 
 #ifdef CHECK_STACK
-char *native_stack = NULL, *native_stack_base = NULL;
+char *native_stack = nullptr, *native_stack_base = nullptr;
 #endif
 
 inline void short_jump(size_t& ppc, size_t xppc)
@@ -1167,7 +1172,7 @@ inline void short_jump(size_t& ppc, size_t xppc)
 #ifdef LABEL_RESOLUTION_DEBUGGING
     size_t oldppc = ppc;
 #endif
-    ppc = ppc + ((unsigned char *)codevec)[xppc];
+    ppc = ppc + (reinterpret_cast<unsigned char *>(codevec))[xppc];
 // The extra test here was useful at a time I was worried about label
 // resolution in the compiler, and some jumps led to bytecode execution
 // resuming a byte early or late. The bug that was involved there has
@@ -1178,26 +1183,27 @@ inline void short_jump(size_t& ppc, size_t xppc)
 #ifdef LABEL_RESOLUTION_DEBUGGING
     my_assert(
         current_byte == OP_SPARE,
-        [&]{trace_printf("failure at ppc=%d = %x from %d %x\n",
-                         ppc, ppc, oldppc, oldppc);
-           });
+        [&] {trace_printf("failure at ppc=%d = %x from %d %x\n",
+                          ppc, ppc, oldppc, oldppc);
+            });
 #endif
 }
 
-inline void short_jump_back(size_t& ppc, size_t xppc, LispObject& A_reg)
+inline void short_jump_back(size_t& ppc, size_t xppc,
+                            LispObject& A_reg)
 {
 #ifdef LABEL_RESOLUTION_DEBUGGING
     size_t oldppc = ppc;
 #endif
-    ppc = ppc - ((unsigned char *)codevec)[xppc];
+    ppc = ppc - (reinterpret_cast<unsigned char *>(codevec))[xppc];
 // To allow for interruption I will poll on every backwards jump
     poll_jump_back(A_reg);
 #ifdef LABEL_RESOLUTION_DEBUGGING
     my_assert(
         current_byte == OP_SPARE,
-        [&]{trace_printf("failure at ppc=%d = %x from %d %x\n",
-                         ppc, ppc, oldppc, oldppc);
-           });
+        [&] {trace_printf("failure at ppc=%d = %x from %d %x\n",
+                          ppc, ppc, oldppc, oldppc);
+            });
 #endif
 }
 
@@ -1206,29 +1212,32 @@ inline void long_jump(unsigned int w, size_t& ppc, size_t xppc)
 #ifdef LABEL_RESOLUTION_DEBUGGING
     size_t oldppc = ppc;
 #endif
-    ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[xppc]);
+    ppc = ppc + ((w << 8) + (reinterpret_cast<unsigned char *>
+                             (codevec))[xppc]);
 #ifdef LABEL_RESOLUTION_DEBUGGING
     my_assert(
         current_byte == OP_SPARE,
-        [&]{trace_printf("failure at ppc=%d = %x from %d %x\n",
-                         ppc, ppc, oldppc, oldppc);
-           });
+        [&] {trace_printf("failure at ppc=%d = %x from %d %x\n",
+                          ppc, ppc, oldppc, oldppc);
+            });
 #endif
 }
 
-inline void long_jump_back(unsigned int w, size_t& ppc, size_t xppc, LispObject& A_reg)
+inline void long_jump_back(unsigned int w, size_t& ppc, size_t xppc,
+                           LispObject& A_reg)
 {
 #ifdef LABEL_RESOLUTION_DEBUGGING
     size_t oldppc = ppc;
 #endif
-    ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
+    ppc = ppc - ((w << 8) + (reinterpret_cast<unsigned char *>
+                             (codevec))[xppc]);
     poll_jump_back(A_reg);
 #ifdef LABEL_RESOLUTION_DEBUGGING
     my_assert(
         current_byte == OP_SPARE,
-        [&]{trace_printf("failure at ppc=%d = %x from %d %x\n",
-                         ppc, ppc, oldppc, oldppc);
-           });
+        [&] {trace_printf("failure at ppc=%d = %x from %d %x\n",
+                          ppc, ppc, oldppc, oldppc);
+            });
 #endif
 }
 

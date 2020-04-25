@@ -133,8 +133,7 @@ typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
 LPFN_ISWOW64PROCESS fnIsWow64Process;
 
 BOOL IsWow64()
-{
-    BOOL bIsWow64 = FALSE;
+{   BOOL bIsWow64 = FALSE;
 // IsWow64Process is not available on all supported versions of Windows.
 // Use GetModuleHandle to get a handle to the DLL that contains the function
 // and GetProcAddress to get a pointer to the function if available. Well
@@ -142,10 +141,9 @@ BOOL IsWow64()
 // but the hack here is fairly simple and local so to be kind to the
 // historical world I will preserve it for a while!
     fnIsWow64Process = (LPFN_ISWOW64PROCESS) GetProcAddress(
-        GetModuleHandle(TEXT("kernel32")),"IsWow64Process");
-    if(NULL != fnIsWow64Process)
-    {
-        if (!fnIsWow64Process(GetCurrentProcess(),&bIsWow64))
+                           GetModuleHandle(TEXT("kernel32")),"IsWow64Process");
+    if(nullptr != fnIsWow64Process)
+    {   if (!fnIsWow64Process(GetCurrentProcess(),&bIsWow64))
         {   //handle error - well heer I just return "no"
             return FALSE;
         }
@@ -156,8 +154,7 @@ BOOL IsWow64()
 #endif // FAT32
 
 static int64_t read8(std::FILE *f)
-{
-    int64_t r = 0;
+{   int64_t r = 0;
     int i;
     for (i=0; i<8; i++)
     {   int w = std::getc(f) & 0xff;
@@ -185,15 +182,14 @@ static int64_t length[NUMBER_OF_MODULES];
 #define ERROR_NO_TEMP_FILE         88
 
 int RunResource(int index, int forcegui, const char *modulename)
-{
-    std::FILE *src, *dest;
+{   std::FILE *src, *dest;
     int i;
     uint64_t hdr;
 #ifdef DEBUG
     std::printf("RunResource %s: %d %d\n", modulename, index, forcegui);
     std::fflush(stdout);
 #endif
-    GetModuleFileName(NULL, pPath, sizeof(pPath));
+    GetModuleFileName(nullptr, pPath, sizeof(pPath));
 #ifdef DEBUG
     std::printf("my name is %s\n", pPath);
     std::fflush(stdout);
@@ -205,9 +201,11 @@ int RunResource(int index, int forcegui, const char *modulename)
     std::fflush(stdout);
 #endif
     const char *cmd = GetCommandLine();
-    char *cmd1 = (char *)std::malloc(std::strlen(cmd) + 12);
-    if (cmd1 == NULL)
-    {   std::printf("No memory for new command line\n"); std::fflush(stdout);
+    char *cmd1 = reinterpret_cast<char *>(std)::malloc(std::strlen(
+                     cmd) + 12);
+    if (cmd1 == nullptr)
+    {   std::printf("No memory for new command line\n");
+        std::fflush(stdout);
         return ERROR_NO_MEMORY;
     }
     std::strcpy(cmd1, cmd);
@@ -234,18 +232,19 @@ int RunResource(int index, int forcegui, const char *modulename)
     peStartUpInformation.cb = sizeof(STARTUPINFO);
     std::memset(&peProcessInformation, 0, sizeof(PROCESS_INFORMATION));
 #ifdef DEBUG
-    std::printf("Launch <%s> cmd line <%s>\n", pPath, cmd1); std::fflush(stdout);
+    std::printf("Launch <%s> cmd line <%s>\n", pPath, cmd1);
+    std::fflush(stdout);
 #endif
     SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
 //  _set_abort_behavior(0,_WRITE_ABORT_MSG | _CALL_REPORTFAULT);
     if (CreateProcessA(pPath,            // appname
                        cmd1,             // command line
-                       NULL,             // process attributes
-                       NULL,             // thread attributes
+                       nullptr,          // process attributes
+                       nullptr,          // thread attributes
                        1,                // inherits handles
                        0,                // allow it to run now
-                       NULL,             // environment
-                       NULL,             // current directory
+                       nullptr,          // environment
+                       nullptr,          // current directory
                        &peStartUpInformation,
                        &peProcessInformation))
     {   WaitForSingleObject(peProcessInformation.hProcess, INFINITE);
@@ -253,7 +252,8 @@ int RunResource(int index, int forcegui, const char *modulename)
         if (GetExitCodeProcess(peProcessInformation.hProcess, &rc) == 0)
             rc = ERROR_PROCESS_INFO; // Getting the return code failed!
 #ifdef DEBUG
-        std::printf("CreateProcess happened, rc reported as %d = %#x\n", rc, rc);
+        std::printf("CreateProcess happened, rc reported as %d = %#x\n", rc,
+                    rc);
 #endif
         std::fflush(stdout);
         CloseHandle(peProcessInformation.hProcess);
@@ -269,40 +269,40 @@ int RunResource(int index, int forcegui, const char *modulename)
         FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
                       FORMAT_MESSAGE_FROM_SYSTEM |
                       FORMAT_MESSAGE_IGNORE_INSERTS,
-                      NULL,
+                      nullptr,
                       dw,
                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                       (LPSTR)&lpMsgBuf,
                       0,
-                      NULL);
+                      nullptr);
         std::printf("CreateProcess failed (%d): %s\n", dw, lpMsgBuf);
         std::fflush(stdout);
 #endif
         return ERROR_CREATEPROCESS;
     }
 }
-    
+
 static const char *dll32[] =
 {
 #include "dll32.cpp"
-    NULL
+    nullptr
 };
 
 static const char *dll64[] =
 {
 #include "dll64.cpp"
-    NULL
+    nullptr
 };
 
 #include <windows.h>
 #include <cstdio>
 
 void dllcheck(const char **table)
-{
-    int i, messaged = 0;
-    for (i=0; table[i]!=NULL; i++)
-    {   HMODULE h = LoadLibraryEx(table[i], NULL, DONT_RESOLVE_DLL_REFERENCES);
-        if (h == NULL)
+{   int i, messaged = 0;
+    for (i=0; table[i]!=nullptr; i++)
+    {   HMODULE h = LoadLibraryEx(table[i], nullptr,
+                                  DONT_RESOLVE_DLL_REFERENCES);
+        if (h == nullptr)
         {   if (!messaged)
             {   std::printf("\nCygwin needs at least %s", table[i]);
                 messaged = 3;
@@ -340,7 +340,7 @@ int main(int argc, char* argv[])
 // Furthermore the command-line option "--", (which is used here to redirect
 // the standard output) is detected and is similarly viewed as a signature
 // of non-interactive use.
-// 
+//
 // What this is really about is deciding if there is a risk that I need to
 // use the Cygwin console API.
 //
@@ -466,8 +466,8 @@ int main(int argc, char* argv[])
         if (!force_cygwin && rc != 0) possibly_under_cygwin = 0;
 // If DISPLAY and SSH_ENV are both null then I will look at the command
 // line options... "--cygwin" trumps most other options.
-        else if (std::getenv("DISPLAY") == NULL &&
-                 std::getenv("SSH_HOST") == NULL &&
+        else if (std::getenv("DISPLAY") == nullptr &&
+                 std::getenv("SSH_HOST") == nullptr &&
                  !force_cygwin)
         {   int nogui = 0;
 // ... I look for "--nogui" (or the abbreviations "-w" or "-w-") ...
@@ -497,7 +497,7 @@ int main(int argc, char* argv[])
 #endif // FATWIN
 #ifdef DEBUG
     std::printf("Analysis yields wow64=%d cygwin=%d forcegui=%d\n",
-           wow64, possibly_under_cygwin, forcegui);
+                wow64, possibly_under_cygwin, forcegui);
 #endif
 //
 // Now I will run the version of Reduce that I have picked. All the #ifdef
@@ -507,33 +507,33 @@ int main(int argc, char* argv[])
     switch ((wow64<<4) | possibly_under_cygwin)
     {
 #ifndef FAT64
-    case 0x00:
-        return RunResource(MODULE_WIN32, forcegui, "win32");
+        case 0x00:
+            return RunResource(MODULE_WIN32, forcegui, "win32");
 #endif
 #ifndef FAT32
-    case 0x10:
-        return RunResource(MODULE_WIN64, forcegui, "win64");
+        case 0x10:
+            return RunResource(MODULE_WIN64, forcegui, "win64");
 #endif
 #ifndef FATWIN
 #ifndef FAT64
-    case 0x01:
-        rc = RunResource(MODULE_CYG32, forcegui, "cyg32");
-        if (rc != 0)
-        {   dllcheck(dll32);
-        }
-        return rc;
+        case 0x01:
+            rc = RunResource(MODULE_CYG32, forcegui, "cyg32");
+            if (rc != 0)
+            {   dllcheck(dll32);
+            }
+            return rc;
 #endif
 #ifndef FAT32
-    case 0x11:
-        rc = RunResource(MODULE_CYG64, forcegui, "cyg64");
-        if (rc != 0)
-        {   dllcheck(dll64);
-        }
-        return rc;
+        case 0x11:
+            rc = RunResource(MODULE_CYG64, forcegui, "cyg64");
+            if (rc != 0)
+            {   dllcheck(dll64);
+            }
+            return rc;
 #endif // FAT32
 #endif // FATWIN
-    default:
-        return 1;
+        default:
+            return 1;
     }
 }
 

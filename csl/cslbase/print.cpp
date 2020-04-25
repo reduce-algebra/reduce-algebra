@@ -86,9 +86,13 @@ void debugprint1(LispObject a, int depth)
     else if (is_symbol(a))
     {   LispObject pn = qpname(a);
         if (is_string(pn))
-        {   unsigned int len = (unsigned int)length_of_byteheader(vechdr(pn));
-            if (CELL<len && len < 64) std::printf("%.*s", (int)(len-CELL), &celt(pn, 0));
-            else std::printf("<symbol with pname hdr %p>", (void *)vechdr(pn));
+        {   unsigned int len = static_cast<unsigned int>(length_of_byteheader(
+                                   vechdr(pn)));
+            if (CELL<len &&
+                len < 64) std::printf("%.*s", static_cast<int>(len-CELL), &celt(pn,
+                                          0));
+            else std::printf("<symbol with pname hdr %p>",
+                                 reinterpret_cast<void *>(vechdr(pn)));
         }
         else std::printf("<symbol with odd pname>");
     }
@@ -103,12 +107,12 @@ void debugprint1(LispObject a, int depth)
         std::printf("]");
     }
     else
-    {   std::printf("@%p@", (void *)a);
+    {   std::printf("@%p@", reinterpret_cast<void *>(a));
     }
 }
 
 void debugprint(LispObject a, int depth)
-{   std::printf("%p: ", (void *)a);
+{   std::printf("%p: ", reinterpret_cast<void *>(a));
     debugprint1(a, depth);
     std::printf("\n");
     std::fflush(stdout);
@@ -141,7 +145,7 @@ void debugprint(LispObject a, int depth)
 #endif
 #endif
 
-std::FILE *spool_file = NULL;
+std::FILE *spool_file = nullptr;
 char spool_file_name[128];
 
 int32_t terminal_column = 0;
@@ -166,9 +170,8 @@ int32_t terminal_line_length = (int32_t)0x80000000;
 #define VPRINTF_CHUNK 2048
 
 void ensure_screen()
-{
-    fwin_ensure_screen();
-    if (spool_file != NULL) std::fflush(spool_file);
+{   fwin_ensure_screen();
+    if (spool_file != nullptr) std::fflush(spool_file);
 }
 
 void term_printf(const char *fmt, ...)
@@ -252,8 +255,8 @@ LispObject Ltyo(LispObject env, LispObject a)
     int c;
     LispObject stream = qvalue(standard_output);
     if (a == CHAR_EOF || a == fixnum_of_int(-1)) return onevalue(a);
-    else if (is_char(a)) c = (int)code_of_char(a);
-    else if (is_fixnum(a)) c = (int)int_of_fixnum(a);
+    else if (is_char(a)) c = static_cast<int>(code_of_char(a));
+    else if (is_fixnum(a)) c = static_cast<int>(int_of_fixnum(a));
     else aerror1("tyo", a);
     push(a);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
@@ -265,7 +268,7 @@ LispObject Ltyo(LispObject env, LispObject a)
 
 int char_to_illegal(int, LispObject f)
 {   aerror1("Attempt to write to an input stream or one that has been closed",
-        stream_type(f));
+            stream_type(f));
     return 1;
 }
 
@@ -287,13 +290,13 @@ int32_t write_action_file(int32_t op, LispObject f)
 {   int32_t w;
     switch (op & 0xf0000000)
     {   case WRITE_CLOSE:
-            if ((std::FILE *)stream_file(f) == NULL) op = 0;
+            if ((std::FILE *)stream_file(f) == nullptr) op = 0;
             else op = std::fclose(stream_file(f));
             set_stream_write_fn(f, char_to_illegal);
             set_stream_write_other(f, write_action_illegal);
             set_stream_read_fn(f, char_from_illegal);
             set_stream_read_other(f, read_action_illegal);
-            set_stream_file(f, NULL);
+            set_stream_file(f, nullptr);
             return op;
         case WRITE_FLUSH:
             return std::fflush(stream_file(f));
@@ -327,7 +330,7 @@ int32_t write_action_pipe(int32_t op, LispObject f)
                 my_pclose(stream_file(f));
                 set_stream_write_fn(f, char_to_illegal);
                 set_stream_write_other(f, write_action_illegal);
-                set_stream_file(f, NULL);
+                set_stream_file(f, nullptr);
                 return 0;
             case WRITE_FLUSH:
                 return my_pipe_flush(stream_file(f));
@@ -424,7 +427,7 @@ int32_t write_action_spool(int32_t op, LispObject)
         {   case WRITE_CLOSE:
                 return 0;   // I will never close the spool stream this way
             case WRITE_FLUSH:
-                if (spool_file != NULL) std::fflush(spool_file);
+                if (spool_file != nullptr) std::fflush(spool_file);
                 return 0;
 //
 // In many respects this behaves just like terminal output.
@@ -465,7 +468,7 @@ int32_t write_action_list(int32_t op, LispObject f)
         {   case WRITE_CLOSE:
                 set_stream_write_fn(f, char_to_illegal);
                 set_stream_write_other(f, write_action_illegal);
-                set_stream_file(f, NULL);
+                set_stream_file(f, nullptr);
                 return 0;
             case WRITE_FLUSH:
                 return 0;
@@ -500,8 +503,9 @@ LispObject Lis_console(LispObject env, LispObject a)
     return onevalue(Lispify_predicate(r1 || r2));
 }
 
-LispObject make_stream_handle(void)
-{   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_STREAM, STREAM_SIZE);
+LispObject make_stream_handle()
+{   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_STREAM,
+                                    STREAM_SIZE);
     stream_type(w) = nil;
     stream_write_data(w) = nil;
     stream_read_data(w) = nil;
@@ -545,7 +549,8 @@ LispObject Lmake_broadcast_stream_1(LispObject env, LispObject a)
 {   return Lmake_broadcast_stream_n(env, 1, a);
 }
 
-LispObject Lmake_broadcast_stream_2(LispObject env, LispObject a, LispObject b)
+LispObject Lmake_broadcast_stream_2(LispObject env, LispObject a,
+                                    LispObject b)
 {   return Lmake_broadcast_stream_n(env, 2, a, b);
 }
 
@@ -576,7 +581,8 @@ LispObject Lmake_concatenated_stream_1(LispObject env, LispObject a)
 {   return Lmake_concatenated_stream_n(env, 1, a);
 }
 
-LispObject Lmake_concatenated_stream_2(LispObject env, LispObject a, LispObject b)
+LispObject Lmake_concatenated_stream_2(LispObject env, LispObject a,
+                                       LispObject b)
 {   return Lmake_concatenated_stream_n(env, 2, a, b);
 }
 
@@ -595,7 +601,8 @@ LispObject Lmake_synonym_stream(LispObject env, LispObject a)
     return onevalue(w);
 }
 
-LispObject Lmake_two_way_stream(LispObject env, LispObject a, LispObject b)
+LispObject Lmake_two_way_stream(LispObject env, LispObject a,
+                                LispObject b)
 {   LispObject w;
     if (!is_symbol(a)) aerror1("make-two-way-stream", a);
     if (!is_symbol(b)) aerror1("make-two-way-stream", b);
@@ -611,7 +618,8 @@ LispObject Lmake_two_way_stream(LispObject env, LispObject a, LispObject b)
     return onevalue(w);
 }
 
-LispObject Lmake_echo_stream(LispObject env, LispObject a, LispObject b)
+LispObject Lmake_echo_stream(LispObject env, LispObject a,
+                             LispObject b)
 {   LispObject w;
     if (!is_symbol(a)) aerror1("make-echo-stream", a);
     if (!is_symbol(b)) aerror1("make-echo-stream", b);
@@ -640,7 +648,8 @@ LispObject Lmake_string_input_stream_1(LispObject env, LispObject a)
 {   return Lmake_string_input_stream_n(env, 1, a);
 }
 
-LispObject Lmake_string_input_stream_2(LispObject env, LispObject a, LispObject b)
+LispObject Lmake_string_input_stream_2(LispObject env, LispObject a,
+                                       LispObject b)
 {   return Lmake_string_input_stream_n(env, 2, a, b);
 }
 
@@ -664,8 +673,9 @@ LispObject Lget_output_stream_string(LispObject env, LispObject a)
     a = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     pop(w);
     k = (n + 3) & ~(int32_t)7;
-    *(int32_t *)((char *)a + k + 4 - TAG_VECTOR) = 0;
-    if (k != 0) *(int32_t *)((char *)a + k - TAG_VECTOR) = 0;
+    *(int32_t *)(reinterpret_cast<char *>(a) + k + 4 - TAG_VECTOR) = 0;
+    if (k != 0) *(int32_t *)(reinterpret_cast<char *>
+                                 (a) + k - TAG_VECTOR) = 0;
     while (n > 0)
     {   n--;
 // /* The list can now contain big characters that need to re-expand to
@@ -706,16 +716,16 @@ int char_to_terminal(int c, LispObject)
     else if (c == '\t') terminal_column = (terminal_column + 8) & ~7;
     else if ((c & 0xc0) == 0x80) /* do nothing */;
     else terminal_column++;
-    if (spool_file != NULL)
+    if (spool_file != nullptr)
     {   PUTC(c, spool_file);
 #ifdef DEBUG
         std::fflush(spool_file);
 #endif
     }
-    if (procedural_output != NULL) return (*procedural_output)(c);
+    if (procedural_output != nullptr) return (*procedural_output)(c);
 #ifdef WITH_GUI
 // "alternative_stdout" is only relevant if there may be a GUI.
-    if (alternative_stdout != NULL)
+    if (alternative_stdout != nullptr)
     {   PUTC(c, alternative_stdout);
         return 0;
     }
@@ -727,28 +737,29 @@ int char_to_terminal(int c, LispObject)
 #if defined HAVE_LIBFOX || defined HAVE_LIBWX
 
 static int math_buffer_size, math_buffer_p;
-static char *math_buffer = NULL;
+static char *math_buffer = nullptr;
 
 int char_to_math(int c, LispObject stream)
 {   if (++io_kilo >= 1024)
     {   io_kilo = 0;
         io_now++;
     }
-    if (math_buffer == NULL)
+    if (math_buffer == nullptr)
     {   math_buffer_size = 500;
-        math_buffer = (char *)std::malloc(math_buffer_size);
+        math_buffer = reinterpret_cast<char *>(std::malloc(math_buffer_size));
         math_buffer_p = 0;
-        if (math_buffer == NULL) return 1; // failed
+        if (math_buffer == nullptr) return 1; // failed
     }
     if (math_buffer_p == math_buffer_size-1)
     {   math_buffer_size += 500; // Grow the buffer
-        math_buffer = (char *)std::realloc(math_buffer, math_buffer_size);
+        math_buffer = reinterpret_cast<char *>(std::realloc(math_buffer,
+                                               math_buffer_size));
 //
 // If I fail to extend the buffer then I will lose some initial part of
 // my output. Ugh! But (provided the memory situation improves!) things will
 // correct themselves when I next try to display a smaller expression.
 //
-        if (math_buffer == NULL) return 1;
+        if (math_buffer == nullptr) return 1;
     }
     math_buffer[math_buffer_p++] = c;
     math_buffer[math_buffer_p] = 0;
@@ -756,7 +767,7 @@ int char_to_math(int c, LispObject stream)
 }
 
 int char_to_spool(int c, LispObject stream)
-{   if (spool_file == NULL) return 1;
+{   if (spool_file == nullptr) return 1;
     if (c == '\n' || c == '\f') terminal_column = 0;
     else if (c == '\t') terminal_column = (terminal_column + 8) & ~7;
     else if ((c & 0xc0) == 0x80) /* do nothing */ ;
@@ -779,7 +790,8 @@ int char_to_file(int c, LispObject stream)
     if (c == '\n' || c == '\f')
         stream_char_pos(stream) = stream_byte_pos(stream) = 0;
     else if (c == '\t')
-    {   stream_char_pos(stream) = ((int)stream_char_pos(stream) + 8) & ~7;
+    {   stream_char_pos(stream) = (static_cast<int>(stream_char_pos(
+                                       stream)) + 8) & ~7;
         stream_byte_pos(stream)++;
     }
     else if ((c & 0xc0) == 0x80) stream_byte_pos(stream)++;
@@ -824,12 +836,12 @@ int32_t write_action_synonym(int32_t c, LispObject f)
     LispObject f1 = qvalue(stream_write_data(f));
     if (!is_stream(f1))
         aerror1("attempt to act on",
-                       cons_no_gc(fixnum_of_int(c >> 8), f));
+                cons_no_gc(fixnum_of_int(c >> 8), f));
     r = other_write_action(c, f1);
     if (c == WRITE_CLOSE)
     {   set_stream_write_fn(f, char_to_illegal);
         set_stream_write_other(f, write_action_illegal);
-        set_stream_file(f, NULL);
+        set_stream_file(f, nullptr);
     }
     return r;
 }
@@ -851,7 +863,7 @@ int32_t write_action_broadcast(int32_t c, LispObject f)
     if (c == WRITE_CLOSE)
     {   set_stream_write_fn(f, char_to_illegal);
         set_stream_write_other(f, write_action_illegal);
-        set_stream_file(f, NULL);
+        set_stream_file(f, nullptr);
     }
     return r;
 }
@@ -865,7 +877,8 @@ int char_to_pipeout(int c, LispObject stream)
         stream_byte_pos(stream) = stream_char_pos(stream) = 0;
     else if (c == '\t')
     {   stream_byte_pos(stream)++;
-        stream_char_pos(stream) = ((int)stream_char_pos(stream) + 8) & ~7;
+        stream_char_pos(stream) = (static_cast<int>(stream_char_pos(
+                                       stream)) + 8) & ~7;
     }
     else if ((c & 0xc0) == 0x80) stream_byte_pos(stream)++;
     else
@@ -897,11 +910,11 @@ int32_t read_action_pipe(int32_t op, LispObject f)
     else if (op <= 0xffff) return (stream_pushed_char(f) = op);
     else switch (op)
         {   case READ_CLOSE:
-                if ((std::FILE *)stream_file(f) == NULL) op = 0;
+                if ((std::FILE *)stream_file(f) == nullptr) op = 0;
                 else my_pclose(stream_file(f));
                 set_stream_read_fn(f, char_from_illegal);
                 set_stream_read_other(f, read_action_illegal);
-                set_stream_file(f, NULL);
+                set_stream_file(f, nullptr);
                 return 0;
             case READ_FLUSH:
                 stream_pushed_char(f) = NOT_CHAR;
@@ -915,7 +928,8 @@ int32_t read_action_pipe(int32_t op, LispObject f)
         }
 }
 
-const char *get_string_data(LispObject name, const char *why, size_t &len)
+const char *get_string_data(LispObject name, const char *why,
+                            size_t &len)
 {   Header h;
 #ifdef COMMON
     if (complex_stringp(name))
@@ -924,14 +938,14 @@ const char *get_string_data(LispObject name, const char *why, size_t &len)
     }
     else
 #endif
-    if (symbolp(name))
-    {   name = get_pname(name);
-        h = vechdr(name);
-    }
-    else if (!is_vector(name)) aerror1(why, name);
-    else if (!is_string_header(h = vechdr(name))) aerror1(why, name);
+        if (symbolp(name))
+        {   name = get_pname(name);
+            h = vechdr(name);
+        }
+        else if (!is_vector(name)) aerror1(why, name);
+        else if (!is_string_header(h = vechdr(name))) aerror1(why, name);
     len = length_of_byteheader(h) - CELL;
-    return (const char *)&celt(name, 0);
+    return reinterpret_cast<const char *>(&celt(name, 0));
 }
 
 static LispObject Lfiledate(LispObject env, LispObject name)
@@ -967,7 +981,7 @@ LispObject Ltmpnam1(LispObject env, LispObject extn)
     LispObject r;
     suffix = get_string_data(extn, "tmpnam", suffixlen);
     suffix1 = CSLtmpnam(suffix, suffixlen);
-    if (suffix1 == NULL) return onevalue(nil);
+    if (suffix1 == nullptr) return onevalue(nil);
     r = make_string(suffix1);
     return onevalue(r);
 }
@@ -1075,7 +1089,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
     std::memset(filename, 0, sizeof(filename));
     std::memset(fn1, 0, sizeof(fn1));
     if (!is_fixnum(dir)) aerror1("open", dir);
-    d = (int)int_of_fixnum(dir);
+    d = static_cast<int>(int_of_fixnum(dir));
 #ifdef DEBUG_OPENING_FILES
     trace_printf("Open file:");
     switch (d & DIRECTION_MASK)
@@ -1085,19 +1099,30 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
         case DIRECTION_IO:    trace_printf(" io");     break;
     }
     switch (d & IF_EXISTS_MASK)
-    {   case IF_EXISTS_NIL:                trace_printf(" if-exists-nil"); break;
-        case IF_EXISTS_OVERWRITE:          trace_printf(" if-exists-overwrite"); break;
-        case IF_EXISTS_APPEND:             trace_printf(" if-exists-append"); break;
-        case IF_EXISTS_RENAME:             trace_printf(" if-exists-rename"); break;
-        case IF_EXISTS_ERROR:              trace_printf(" if-exists-error"); break;
-        case IF_EXISTS_NEW_VERSION:        trace_printf(" if-exists-new-version"); break;
-        case IF_EXISTS_SUPERSEDE:          trace_printf(" if-exists-supersede"); break;
-        case IF_EXISTS_RENAME_AND_DELETE:  trace_printf(" if-exists-r-and-d"); break;
+    {   case IF_EXISTS_NIL:                trace_printf(" if-exists-nil");
+            break;
+        case IF_EXISTS_OVERWRITE:
+            trace_printf(" if-exists-overwrite"); break;
+        case IF_EXISTS_APPEND:             trace_printf(" if-exists-append");
+            break;
+        case IF_EXISTS_RENAME:             trace_printf(" if-exists-rename");
+            break;
+        case IF_EXISTS_ERROR:              trace_printf(" if-exists-error");
+            break;
+        case IF_EXISTS_NEW_VERSION:
+            trace_printf(" if-exists-new-version"); break;
+        case IF_EXISTS_SUPERSEDE:
+            trace_printf(" if-exists-supersede"); break;
+        case IF_EXISTS_RENAME_AND_DELETE:  trace_printf(" if-exists-r-and-d");
+            break;
     }
     switch (d & IF_MISSING_MASK)
-    {   case IF_MISSING_NIL:                trace_printf(" if-missing-nil"); break;
-        case IF_MISSING_CREATE:             trace_printf(" if-missing-create"); break;
-        case IF_MISSING_ERROR:              trace_printf(" if-missing-error"); break;
+    {   case IF_MISSING_NIL:
+            trace_printf(" if-missing-nil"); break;
+        case IF_MISSING_CREATE:
+            trace_printf(" if-missing-create"); break;
+        case IF_MISSING_ERROR:              trace_printf(" if-missing-error");
+            break;
     }
     if (d & OPEN_BINARY) trace_printf(" binary");
     if (d & OPEN_PIPE) trace_printf(" pipe");
@@ -1107,11 +1132,11 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
     w = get_string_data(name, "open", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
 
-    file = NULL;
+    file = nullptr;
     switch (d & (DIRECTION_MASK | OPEN_PIPE))
     {   case DIRECTION_PROBE:      // probe file - can not be used with pipes
-            file = open_file(filename, w, (size_t)len, "r", NULL);
-            if (file == NULL)
+            file = open_file(filename, w, (size_t)len, "r", nullptr);
+            if (file == nullptr)
             {   switch (d & IF_MISSING_MASK)
                 {   case IF_MISSING_NIL:
                         return onevalue(nil);
@@ -1124,23 +1149,23 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
 // are to be considered unduly enthusiastic, but I will still try to do what
 // they tell me to!
 //
-                        file = open_file(filename, w, (size_t)len, "w", NULL);
-                        if (file == NULL) error(1, err_open_failed, name);
+                        file = open_file(filename, w, (size_t)len, "w", nullptr);
+                        if (file == nullptr) error(1, err_open_failed, name);
                         std::fclose(file);
-                        file = NULL;
+                        file = nullptr;
                 }
             }
             else
             {   std::fclose(file);
-                file = NULL;
+                file = nullptr;
             }
             break;        // Must then create a no-direction stream
 
         case DIRECTION_INPUT:
             file = open_file(filename, w, (size_t)len,
                              (d & OPEN_BINARY ? "rb" : "r"),
-                             NULL);
-            if (file == NULL)
+                             nullptr);
+            if (file == nullptr)
             {   switch (d & IF_MISSING_MASK)
                 {   case IF_MISSING_NIL:
                         return onevalue(nil);
@@ -1148,8 +1173,8 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
                         error(1, err_open_failed, name);
                     case IF_MISSING_CREATE:
                         file = open_file(filename, w,
-                                         (size_t)len, "w", NULL);
-                        if (file == NULL) error(1, err_open_failed, name);
+                                         (size_t)len, "w", nullptr);
+                        if (file == nullptr) error(1, err_open_failed, name);
                         std::fclose(file);
 //
 // I use fopen(xx,"w") to create the file, then close it again and re-open
@@ -1159,8 +1184,8 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
 //
                         file = open_file(filename, w, (size_t)len,
                                          (d & OPEN_BINARY ? "rb" : "r"),
-                                         NULL);
-                        if (file == NULL) error(1, err_open_failed, name);
+                                         nullptr);
+                        if (file == nullptr) error(1, err_open_failed, name);
                         break;
 
                 }
@@ -1178,8 +1203,8 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
 //
             file = open_file(filename, w, (size_t)len,
                              (d & OPEN_BINARY ? "r+b" : "r+"),
-                             NULL);
-            if (file == NULL) switch (d & IF_MISSING_MASK)
+                             nullptr);
+            if (file == nullptr) switch (d & IF_MISSING_MASK)
                 {   case IF_MISSING_NIL:
                         return onevalue(nil);
                     case IF_MISSING_ERROR:
@@ -1200,7 +1225,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
 // would have little sympathy for users who relied on it!
 //
                         std::fclose(file);
-                        file = NULL;
+                        file = nullptr;
                         rename_file(filename, w, (size_t)len,
                                     fn1, "oldfile.bak", 11);
                         break;
@@ -1217,7 +1242,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
                     case IF_EXISTS_NEW_VERSION:
                         std::fclose(file);
                         delete_file(filename, w, (size_t)len);
-                        file = NULL;
+                        file = nullptr;
                         break;
                     case IF_EXISTS_OVERWRITE:
                         break;
@@ -1225,12 +1250,12 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
                         std::fseek(file, 0L, SEEK_END);
                         break;
                 }
-            if (file == NULL)
+            if (file == nullptr)
             {   file = open_file(filename, w,
                                  (size_t)len,
                                  (d & OPEN_BINARY ? "w+b" : "w+"),
-                                 NULL);
-                if (file == NULL) error(1, err_open_failed, name);
+                                 nullptr);
+                if (file == nullptr) error(1, err_open_failed, name);
             }
             break;
 
@@ -1239,14 +1264,14 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
             std::memcpy(filename, w, (size_t)len);
             filename[len] = 0;
             file = my_popen(filename, "w");
-            if (file == NULL) error(1, err_pipe_failed, name);
+            if (file == nullptr) error(1, err_pipe_failed, name);
             break;
 
         case DIRECTION_INPUT | OPEN_PIPE:
             std::memcpy(filename, w, (size_t)len);
             filename[len] = 0;
             file = my_popen(filename, "r");
-            if (file == NULL) error(1, err_pipe_failed, name);
+            if (file == nullptr) error(1, err_pipe_failed, name);
             break;
 
         case DIRECTION_IO | OPEN_PIPE:
@@ -1291,7 +1316,8 @@ LispObject Lwrs(LispObject env, LispObject a)
     if (a == nil) a = qvalue(terminal_io);
     if (a == old) return onevalue(old);
     else if (!is_stream(a)) aerror1("wrs", a);
-    else if ((character_stream_writer *)stream_write_fn(a) == char_to_illegal)
+    else if ((character_stream_writer *)stream_write_fn(
+                 a) == char_to_illegal)
 #ifdef COMMON
         a = qvalue(terminal_io);
 #else
@@ -1323,7 +1349,8 @@ LispObject Lclose(LispObject env, LispObject a)
 }
 
 #if defined HAVE_LIBFOX
-namespace FX {
+namespace FX
+{
 extern void *text;
 }
 #define GUI_TEST FX::text
@@ -1359,24 +1386,26 @@ LispObject Lmath_display(LispObject env, LispObject a)
         LispObject std = qvalue(standard_output);
 //
 // GUI_TEST is the FXTerminal object, or corresponding wxWidgets object.
-// If it is NULL that means that I had selected non-windowed mode....
+// If it is nullptr that means that I had selected non-windowed mode....
 //
-        if (GUI_TEST == NULL) return onevalue(nil);
+        if (GUI_TEST == nullptr) return onevalue(nil);
 //
 // With CSL I have all these curious ways of ending up with standard output
 // redirected to elsewhere! In any such case I want this code to report "not
 // directly to a maths-aware window".
 //
-        if (alternative_stdout != NULL ||
-            procedural_output != NULL) return onevalue(nil);
+        if (alternative_stdout != nullptr ||
+            procedural_output != nullptr) return onevalue(nil);
 //
 // I allow for synonym streams (which are probably only used in Common Lisp
 // mode). I do NOT allow for broadcast streams. I then check if the current
 // output stream would end up executing char_to_terminal to write a character.
 //
-        while ((character_stream_writer *)stream_write_fn(std) == char_to_synonym)
+        while ((character_stream_writer *)stream_write_fn(
+                   std) == char_to_synonym)
             std = stream_write_data(std);
-        if ((character_stream_writer *)stream_write_fn(std) != char_to_terminal) return onevalue(nil);
+        if ((character_stream_writer *)stream_write_fn(std) !=
+            char_to_terminal) return onevalue(nil);
 //
 // Now I believe I am attached to a screen that can display maths.
 //
@@ -1388,16 +1417,17 @@ LispObject Lmath_display(LispObject env, LispObject a)
 // Note that I let this say TRUE if a spool file is in use regardless
 // of whether maths display is to be used...
 //
-        if (spool_file == NULL) return onevalue(nil);
+        if (spool_file == nullptr) return onevalue(nil);
         else return onevalue(lisp_true);
     }
     else if (a == fixnum_of_int(2))        // clear out local buffer
     {   math_buffer_p = 0;
-        if (math_buffer != NULL) math_buffer[0] = 0;
+        if (math_buffer != nullptr) math_buffer[0] = 0;
         return onevalue(lisp_true);
     }
     else if (a == fixnum_of_int(3))        // display local buffer
-    {   if (math_buffer == NULL || math_buffer[0]==0) return onevalue(nil);
+    {   if (math_buffer == nullptr ||
+            math_buffer[0]==0) return onevalue(nil);
         fwin_showmath(math_buffer);
         math_buffer_p = 0;
         math_buffer[0] = 0;
@@ -1418,7 +1448,7 @@ LispObject Ltruename(LispObject env, LispObject name)
     if (len >= sizeof(filename)) len = sizeof(filename);
 
     w1 = get_truename(filename,w,len);
-    if (w1 == NULL) aerror0(filename);
+    if (w1 == nullptr) aerror0(filename);
 
     truename = make_string(w1);
     std::free(w1);
@@ -1463,8 +1493,8 @@ LispObject Lchange_directory(LispObject env, LispObject name)
 //
 
     err = change_directory(filename, w, (size_t)len);
-    if (err != NULL) aerror0(err);
-    return onevalue(Lispify_predicate(err == NULL));
+    if (err != nullptr) aerror0(err);
+    return onevalue(Lispify_predicate(err == nullptr));
 }
 
 LispObject Lfile_writeable(LispObject env, LispObject name)
@@ -1593,8 +1623,10 @@ LispObject Lgetpid(LispObject env)
 #endif
 }
 
-LispObject Lrename_file(LispObject env, LispObject from, LispObject to)
-{   char from_name[LONGEST_LEGAL_FILENAME], to_name[LONGEST_LEGAL_FILENAME];
+LispObject Lrename_file(LispObject env, LispObject from,
+                        LispObject to)
+{   char from_name[LONGEST_LEGAL_FILENAME],
+    to_name[LONGEST_LEGAL_FILENAME];
     size_t from_len = 0, to_len = 0;
     const char *from_w, *to_w;
     std::memset(from_name, 0, sizeof(from_name));
@@ -1605,12 +1637,12 @@ LispObject Lrename_file(LispObject env, LispObject from, LispObject to)
     from_w = get_string_data(from, "rename-file", from_len);
     pop(to);
     if (from_len >= sizeof(from_name)) from_len = sizeof(from_name);
-    from = (LispObject)(from_w + TAG_VECTOR - CELL);
+    from = reinterpret_cast<LispObject>(from_w + TAG_VECTOR - CELL);
 
     push(from);
     to_w = get_string_data(to, "rename-file", to_len);
     pop(from);
-    from_w = (const char *)&celt(from, 0);
+    from_w = reinterpret_cast<const char *>(&celt(from, 0));
     if (to_len >= sizeof(to_name)) to_len = sizeof(to_name);
 
     to_len = rename_file(from_name, from_w, (size_t)from_len,
@@ -1624,7 +1656,7 @@ LispObject Lrename_file(LispObject env, LispObject from, LispObject to)
 
 static void make_dir_list(const char *name, int, long int)
 {   LispObject w;
-    if (scan_leafstart >= (int)std::strlen(name)) return;
+    if (scan_leafstart >= static_cast<int>(std::strlen(name))) return;
     w = make_string(name+scan_leafstart);
     w = cons(w, stack[0]);
     stack[0] = w;
@@ -1747,11 +1779,13 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
         return;
     }
     if (x != x)
-    {   std::strcpy(buff, "NaN"); // The length of the NaN will not be visible
+    {   std::strcpy(buff,
+                    "NaN"); // The length of the NaN will not be visible
         return;
     }
     if (x == 2.0*x)
-    {   if (x < 0.0) std::strcpy(buff, "minusinf"); // Length of infinity not shown.
+    {   if (x < 0.0) std::strcpy(buff,
+                                     "minusinf"); // Length of infinity not shown.
         else std::strcpy(buff, "inf");
         return;
     }
@@ -1802,11 +1836,12 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
         }
         return; // no E present. Add exponent mark if not default type
     }
-    if (xmark != 'e') *buff = xmark; 
+    if (xmark != 'e') *buff = xmark;
     buff++;
 // At this stage I am looking at the exponent part
     if (*buff == 0) std::strcpy(buff, "+00");
-    else if (std::isdigit((unsigned char)*buff)) char_ins(buff, '+');
+    else if (std::isdigit(static_cast<unsigned char>(*buff)))
+        char_ins(buff, '+');
 // Exponent should now start with explicit + or - sign
     buff++;
 // Force exponent to have at least 2 digits
@@ -1816,7 +1851,8 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
 }
 
 #ifdef HAVE_SOFTFLOAT
-static void fp_sprint128(char *buff, float128_t x, int prec, int xchar)
+static void fp_sprint128(char *buff, float128_t x, int prec,
+                         int xchar)
 {   if (f128M_eq(&x, &f128_0))
     {   if (f128M_negative(&x)) std::strcpy(buff, "-0.0L+00");
         else std::strcpy(buff, "0.0L+00");
@@ -1874,7 +1910,8 @@ static void fp_sprint128(char *buff, float128_t x, int prec, int xchar)
     *buff = 'L';
     buff++;
     if (*buff == 0) std::strcpy(buff, "+00");
-    else if (std::isdigit((unsigned char)*buff)) char_ins(buff, '+');
+    else if (std::isdigit(static_cast<unsigned char>(*buff)))
+        char_ins(buff, '+');
     buff++;
     if (*(buff+1) == 0) char_ins(buff, '0');
     else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
@@ -1948,7 +1985,7 @@ void internal_prin(LispObject u, int blankp)
 restart:
 #endif
     if (stack >= stackLimit) respond_to_stack_event();
-    switch ((int)u & TAG_BITS)
+    switch (static_cast<int>(u) & TAG_BITS)
     {   case TAG_CONS:
 #ifdef COMMON
             if (u == nil)           // BEWARE - nil is tagged as a cons cell
@@ -2019,7 +2056,7 @@ restart:
                     goto float_print_tidyup;
                 }
 
-                fp_sprint(my_buff, (double)uu.f, print_precision, xmark);
+                fp_sprint(my_buff, static_cast<double>(uu.f), print_precision, xmark);
                 goto float_print_tidyup;
             }
             if (escaped_printing & escape_hex)
@@ -2057,7 +2094,7 @@ restart:
                 {   width--;
                     mask = (mask<<4) | 0xf;
                 }
-                while (--width > 0) my_buff[len++] = (char)k;
+                while (--width > 0) my_buff[len++] = static_cast<char>(k);
                 std::sprintf(&my_buff[len], "%" PRIxPTR, v);
             }
             else if (escaped_printing & escape_octal)
@@ -2083,7 +2120,7 @@ restart:
                 {   width--;
                     mask = (mask<<3) | 0x7;
                 }
-                while (--width > 0) my_buff[len++] = (char)k;
+                while (--width > 0) my_buff[len++] = static_cast<char>(k);
                 std::sprintf(&my_buff[len], "%" PRIoPTR, v);
             }
             else if (escaped_printing & escape_binary)
@@ -2138,8 +2175,8 @@ restart:
 // SPID_HASHEMPTY and SPID_HASHTOMB should anly appear within hash tables,
 // and I do not expect to be able to re-read those. I will use concise
 // representations for them.
-                    case SPID_HASHEMPTY:std::strcpy(my_buff, "~");break;
-                    case SPID_HASHTOMB:std::strcpy(my_buff, "+");break;
+                    case SPID_HASHEMPTY:std::strcpy(my_buff, "~"); break;
+                    case SPID_HASHTOMB:std::strcpy(my_buff, "+"); break;
                     case SPID_GCMARK:  std::strcpy(my_buff, "SPID_GCMARK");  break;
                     case SPID_NOINPUT: std::strcpy(my_buff, "SPID_NOINPUT"); break;
                     case SPID_ERROR:   std::strcpy(my_buff, "SPID_ERROR");   break;
@@ -2155,7 +2192,7 @@ restart:
                                      fasl_files[u].name.c_str());
                         break;
                     default:           std::sprintf(my_buff, "SPID_%lx",
-                                               (long)((u >> 8) & 0x00ffffff));
+                                                        static_cast<long>((u >> 8) & 0x00ffffff));
                         break;
                 }
                 len = std::strlen(my_buff);
@@ -2172,7 +2209,7 @@ restart:
 // I know that a char is immediate data and so does not need GC protection
             {   if (escaped_printing & escape_yes)
                     putc_stream('#', active_stream), putc_stream('\\', active_stream);
-                putc_stream((int)code_of_char(u), active_stream);
+                putc_stream(static_cast<int>(code_of_char(u)), active_stream);
             }
             return;
 
@@ -2184,8 +2221,7 @@ restart:
         print_non_simple_string:
 #endif
             switch (type_of_header(h))
-            {
-                case TYPE_BPS_1:
+            {   case TYPE_BPS_1:
                 case TYPE_BPS_2:
                 case TYPE_BPS_3:
                 case TYPE_BPS_4:
@@ -2474,7 +2510,7 @@ restart:
                 case TYPE_SP:
                     pop(u);
                     std::sprintf(my_buff, "#<closure: %p>",
-                            (void *)(LispObject)elt(u, 0));
+                                 reinterpret_cast<void *>(static_cast<LispObject>(elt(u, 0))));
                     goto print_my_buff;
 
 #if 0
@@ -2484,7 +2520,7 @@ restart:
                 case TYPE_ENCAPSULATE:
                     pop(u);
                     std::sprintf(my_buff, "#<encapsulated pointer: %p>",
-                            *(void **)&elt(u, 0));
+                                 *(void **)&elt(u, 0));
                     goto print_my_buff;
 
                 case TYPE_BITVEC_1:   bl = 1; break;
@@ -2535,7 +2571,8 @@ restart:
 #else
                 case TYPE_STRUCTURE:
                     pop(u);
-                    std::sprintf(my_buff, "[e-vector:%.8lx]", (long)(uint32_t)u);
+                    std::sprintf(my_buff, "[e-vector:%.8lx]",
+                                 static_cast<long>(static_cast<uint32_t>(u)));
                     goto print_my_buff;
 
 #endif
@@ -2580,20 +2617,23 @@ restart:
 #endif
                         if (type_of_header(h) == TYPE_STRUCTURE)
                         {   outprefix(blankp, 3);
-                            putc_stream('#', active_stream); putc_stream('S', active_stream); putc_stream('(', active_stream);
+                            putc_stream('#', active_stream); putc_stream('S', active_stream);
+                            putc_stream('(', active_stream);
                         }
                         else if (// type_of_header(h) == TYPE_OLDHASH ||
-                                 type_of_header(h) == TYPE_HASH ||
-                                 type_of_header(h) == TYPE_HASHX)
+                            type_of_header(h) == TYPE_HASH ||
+                            type_of_header(h) == TYPE_HASHX)
                         {   int ch = 'H';
                             if (type_of_header(h) == TYPE_HASH) ch = 'H';
                             else if (type_of_header(h) == TYPE_HASHX) ch = 'h';
                             outprefix(blankp, 3);
-                            putc_stream('#', active_stream); putc_stream(ch, active_stream); putc_stream('(', active_stream);
+                            putc_stream('#', active_stream); putc_stream(ch, active_stream);
+                            putc_stream('(', active_stream);
                         }
                         else if (type_of_header(h) == TYPE_OBJECT)
                         {   outprefix(blankp, 3);
-                            putc_stream('#', active_stream); putc_stream('O', active_stream); putc_stream('(', active_stream);
+                            putc_stream('#', active_stream); putc_stream('O', active_stream);
+                            putc_stream('(', active_stream);
                         }
                         else
                         {   outprefix(blankp, 2);
@@ -2608,14 +2648,16 @@ restart:
                     else
 #endif
                         for (k=0; k<len; k+=CELL)
-                        {   LispObject vv = *(LispObject *)
-                                            ((char *)stack[0] + (CELL - TAG_VECTOR) + k);
+                        {   LispObject vv = *reinterpret_cast<LispObject *>(
+                                                (reinterpret_cast<char *>(stack[0]) +
+                                                 (CELL - TAG_VECTOR) + k));
                             internal_prin(vv, (k != 0) ? 1 : 0);
                         }
                     popv(1);
                     outprefix(false, 1);
 #ifndef COMMON
-                    if (type_of_header(h) == TYPE_SIMPLE_VEC) putc_stream(']', active_stream);
+                    if (type_of_header(h) == TYPE_SIMPLE_VEC) putc_stream(']',
+                                active_stream);
                     else
 #endif
                         putc_stream(')', active_stream);
@@ -2650,8 +2692,11 @@ restart:
                         internal_prin(elt(stack[0], 2), 1);
                     }
                     for (k=3*CELL; k<len; k+=CELL)
-                    {   std::sprintf(my_buff, "%.8lx", (long)*(LispObject *)
-                                ((char *)stack[0] + (CELL - TAG_VECTOR) + k));
+                    {   std::sprintf(my_buff, "%.8lx",
+                                     static_cast<long>(
+                                         *reinterpret_cast<LispObject *>(
+                                             reinterpret_cast<char *>(stack[0]) +
+                                             (CELL - TAG_VECTOR) + k)));
                         prin_buf(my_buff, true);
                     }
                     popv(1);
@@ -2668,7 +2713,7 @@ restart:
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
                     putc_stream('8', active_stream); putc_stream('(', active_stream);
                     for (k=0; k<len; k++)
-                    {   std::sprintf(my_buff, "%d", (int)scelt(stack[0], k));
+                    {   std::sprintf(my_buff, "%d", static_cast<int>(scelt(stack[0], k)));
                         prin_buf(my_buff, k != 0);
                     }
                     outprefix(false, 1);
@@ -2680,9 +2725,10 @@ restart:
                     len = length_of_hwordheader(h);
                     outprefix(blankp, 5);
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
-                    putc_stream('1', active_stream); putc_stream('6', active_stream); putc_stream('(', active_stream);
+                    putc_stream('1', active_stream); putc_stream('6', active_stream);
+                    putc_stream('(', active_stream);
                     for (k=0; k<len; k++)
-                    {   std::sprintf(my_buff, "%d", (int)helt(stack[0], k));
+                    {   std::sprintf(my_buff, "%d", static_cast<int>(helt(stack[0], k)));
                         prin_buf(my_buff, k != 0);
                     }
                     outprefix(false, 1);
@@ -2692,10 +2738,12 @@ restart:
                 case TYPE_VEC32:
                     outprefix(blankp, 5);
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
-                    putc_stream('3', active_stream); putc_stream('2', active_stream); putc_stream('(', active_stream);
+                    putc_stream('3', active_stream); putc_stream('2', active_stream);
+                    putc_stream('(', active_stream);
                     len = len >> 2;
                     for (k=0; k<len; k++)
-                    {   std::sprintf(my_buff, "%ld", (long)ielt32(stack[0], k));
+                    {   std::sprintf(my_buff, "%ld", static_cast<long>(ielt32(stack[0],
+                                     k)));
                         prin_buf(my_buff, k != 0);
                     }
                     outprefix(false, 1);
@@ -2708,7 +2756,7 @@ restart:
                     putc_stream('S', active_stream); putc_stream('(', active_stream);
                     len = len >> 2;
                     for (k=0; k<len; k++)
-                    {   fp_sprint(my_buff, (double)felt(stack[0], k),
+                    {   fp_sprint(my_buff, static_cast<double>(felt(stack[0], k)),
                                   print_precision, 'f');
                         prin_buf(my_buff, k != 0);
                     }
@@ -2788,7 +2836,7 @@ restart:
                         stream_write_data(active_stream) = al;
                     }
                     al = cdr(car(al));
-                    std::sprintf(my_buff, "#G%lx", (long)int_of_fixnum(al));
+                    std::sprintf(my_buff, "#G%lx", static_cast<long>(int_of_fixnum(al)));
                     break;
                 }
             }
@@ -2936,7 +2984,7 @@ restart:
                     if (len > 0)
                     {   int ch = celt(stack[0], 0);
                         if (escaped_printing & escape_yes &&
-                            (std::isdigit((unsigned char)ch)
+                            (std::isdigit(static_cast<unsigned char>(ch))
 #ifdef COMMON
                              || (ch=='.')
 #else
@@ -2985,8 +3033,9 @@ restart:
 #ifdef COMMON
                                   (ch=='.' || ch=='\\' || ch=='|' || ch==':') ||
 #endif
-                                  (raised < 0 && std::isupper((unsigned char)ch)) ||
-                                  (raised > 0 && std::islower((unsigned char)ch)))) extralen++;
+                                  (raised < 0 && std::isupper(static_cast<unsigned char>(ch))) ||
+                                  (raised > 0 &&
+                                   std::islower(static_cast<unsigned char>(ch))))) extralen++;
                         slen++;
                     }
 #ifdef COMMON
@@ -3060,8 +3109,8 @@ restart:
                                escape_capitalize)) &&
                             (ch > 0x7f ||
                              !is_constituent(ch) ||
-                             (raised < 0 && std::isupper((unsigned char)ch)) ||
-                             (raised > 0 && std::islower((unsigned char)ch))))
+                             (raised < 0 && std::isupper(static_cast<unsigned char>(ch))) ||
+                             (raised > 0 && std::islower(static_cast<unsigned char>(ch)))))
                             putc_stream(ESCAPE_CHAR, active_stream);
 #endif
 //
@@ -3182,15 +3231,15 @@ restart:
                     else if (escaped_printing & escape_hex)
                     {   uint32_t *p = (uint32_t *)&single_float_val(u);
                         std::sprintf(my_buff, "{%.8" PRIx32 ":%#.8g}",
-                            p[0], (double)single_float_val(u));
+                                     p[0], static_cast<double>(single_float_val(u)));
                     }
                     else if (escaped_printing & escape_octal)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
                         std::sprintf(my_buff, "{%.11" PRIo32 ":%#.8g}",
-                                p[0], (double)single_float_val(u));
+                                     p[0], static_cast<double>(single_float_val(u)));
                     }
                     else fp_sprint(my_buff,
-                        (double)single_float_val(u), print_precision, 'f');
+                                       static_cast<double>(single_float_val(u)), print_precision, 'f');
                     break;
                 case TYPE_DOUBLE_FLOAT:
 //
@@ -3205,24 +3254,24 @@ restart:
                     else if (escaped_printing & escape_hex)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
                         std::sprintf(my_buff,
-                            "{%.8" PRIx32 "/%.8" PRIx32 ":%#.15g}",
+                                     "{%.8" PRIx32 "/%.8" PRIx32 ":%#.15g}",
 #ifdef LITTLEENDIAN
-                            p[1], p[0], (double)double_float_val(u));
+                                     p[1], p[0], static_cast<double>(double_float_val(u)));
 #else
-                            p[0], p[1], (double)double_float_val(u));
+                                     p[0], p[1], static_cast<double>(double_float_val(u)));
 #endif
                     }
                     else if (escaped_printing & escape_octal)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
                         std::sprintf(my_buff, "{%.11" PRIo32 "/%.11" PRIo32 ":%#.8g}",
 #ifdef LITTLEENDIAN
-                            p[1], p[0], (double)double_float_val(u));
+                                     p[1], p[0], static_cast<double>(double_float_val(u)));
 #else
-                            p[0], p[1], (double)double_float_val(u));
+                                     p[0], p[1], static_cast<double>(double_float_val(u)));
 #endif
                     }
                     else fp_sprint(my_buff, double_float_val(u),
-                                   print_precision, 'e');
+                                       print_precision, 'e');
                     break;
 #ifdef HAVE_SOFTFLOAT
                 case TYPE_LONG_FLOAT:
@@ -3250,7 +3299,9 @@ restart:
                         o += std::sprintf(o, "/%.8" PRIx32, p[3]);
 #endif
                         *o++ = ':';
-                        o += f128M_sprint_G(o, 0, 34, (float128_t *)&long_float_val(u));
+                        o += f128M_sprint_G(o, 0, 34,
+                                            reinterpret_cast<float128_t *>(
+                                                &long_float_val(u)));
                         *o++ = '}';
                         *o = 0;
                     }
@@ -3269,18 +3320,20 @@ restart:
                         o += std::sprintf(o, "/%.11" PRIo32, p[3]);
 #endif
                         *o++ = ':';
-                        o += f128M_sprint_G(o, 0, 34, (float128_t *)&long_float_val(u));
+                        o += f128M_sprint_G(o, 0, 34,
+                                            reinterpret_cast<float128_t *>(
+                                                &long_float_val(u)));
                         *o++ = '}';
                         *o = 0;
                     }
 // I use an upper case "L" as an exponent marker in "long floats" because
 // a lower case "l" looks too much like a "1" (ell vs one).
                     else fp_sprint128(my_buff, long_float_val(u),
-                                      print_precision, 'L');
+                                          print_precision, 'L');
                     break;
 #endif // HAVE_SOFTFLOAT
                 default:
-                    std::sprintf(my_buff, "?%p?", (void *)u);
+                    std::sprintf(my_buff, "?%p?", reinterpret_cast<void *>(u));
                     break;
             }
         float_print_tidyup:   // label to join in from short float printing
@@ -3344,7 +3397,8 @@ restart:
             else if (is_complex(u))
             {   push(u);
                 outprefix(blankp, 3);
-                putc_stream('#', active_stream), putc_stream('C', active_stream); putc_stream('(', active_stream);
+                putc_stream('#', active_stream), putc_stream('C', active_stream);
+                putc_stream('(', active_stream);
                 internal_prin(real_part(stack[0]), 0);
                 pop(u);
                 internal_prin(imag_part(u), 1);
@@ -3355,7 +3409,7 @@ restart:
         // Else drop through to treat as an error
         default:
         error_case:
-            std::sprintf(my_buff, "?%p?", (void *)u);
+            std::sprintf(my_buff, "?%p?", reinterpret_cast<void *>(u));
             break;
     }
 print_my_buff:
@@ -3538,9 +3592,10 @@ LispObject prinraw(LispObject u)
 // format specifier %.16llx is not universally available, so I use two 32-bit
 // chunks.
 //
-        unsigned long long w = (unsigned long long)u;
+        unsigned long long w = static_cast<unsigned long long>(u);
         unsigned long long hi = w >> 32, lo = w;
-        std::sprintf(b, "%.8x%.8x", (int)hi, (int)lo);
+        std::sprintf(b, "%.8x%.8x", static_cast<int>(hi),
+                     static_cast<int>(lo));
         for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
     }
     if (is_numbers(u) && type_of_header(h = numhdr(u)) == TYPE_BIGNUM)
@@ -3555,7 +3610,7 @@ LispObject prinraw(LispObject u)
     {   len = length_of_header(h);
         for (i=8; i<len; i+=8)
         {   std::sprintf(b, "%.16" PRIx64 " ",
-                *(uint64_t *)((char *)u - TAG_NUMBERS + i));
+                         *(uint64_t *)(reinterpret_cast<char *>(u) - TAG_NUMBERS + i));
             for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
         }
     }
@@ -3638,14 +3693,14 @@ LispObject printc(LispObject u)
     return u;
 }
 
-void freshline_trace(void)
+void freshline_trace()
 {   if (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
                            qvalue(trace_output)) != 0)
         putc_stream('\n', qvalue(trace_output));
 
 }
 
-void freshline_debug(void)
+void freshline_debug()
 {   if (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
                            qvalue(debug_io)) != 0)
         putc_stream('\n', qvalue(debug_io));
@@ -3710,7 +3765,7 @@ int char_to_list(int c, LispObject f)
         if (k == nil)
         {   int len;
             if (c <= 0x7f)
-            {   celt(boffo, 0) = (char)c;
+            {   celt(boffo, 0) = static_cast<char>(c);
                 len = 1;
             }
             else
@@ -3751,8 +3806,7 @@ static unsigned char checksum_buffer[64];
 static int checksum_count;
 
 int char_to_checksum(int c, LispObject)
-{ 
-    checksum_buffer[checksum_count++] = (unsigned char)c;
+{   checksum_buffer[checksum_count++] = static_cast<unsigned char>(c);
     if (checksum_count == sizeof(checksum_buffer))
     {   CSL_MD5_Update(checksum_buffer, sizeof(checksum_buffer));
         checksum_count = 0;
@@ -3769,7 +3823,8 @@ void checksum(LispObject u)
     local_gensym_count = checksum_count = 0;
     internal_prin(u, 0);
     stream_write_data(lisp_work_stream) = nil;
-    if (checksum_count != 0) CSL_MD5_Update(checksum_buffer, checksum_count);
+    if (checksum_count != 0) CSL_MD5_Update(checksum_buffer,
+                                                checksum_count);
 }
 
 //
@@ -3849,7 +3904,8 @@ LispObject Llinelength(LispObject env, LispObject a)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     if (a == nil)
-        oll = other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH, stream);
+        oll = other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
+                                 stream);
     else if (a == lisp_true)
         oll = other_write_action(WRITE_SET_LINELENGTH_DEFAULT, stream);
     else if (!is_fixnum(a)) aerror1("linelength", a);
@@ -3880,7 +3936,7 @@ LispObject Lprint_imports(LispObject env)
     i = std::strlen(s)-1;
     while (i>=0 && s[i]!='/' && s[i]!='\\') i--;
     s = s + (i + 1);
-    for (i=0; (p=import_data[i])!=NULL; i++)
+    for (i=0; (p=import_data[i])!=nullptr; i++)
     {   const char *w = s;
         putc_stream(' ', stream);
         while (*w != 0) putc_stream(*w++, stream);
@@ -3899,7 +3955,7 @@ LispObject Lprint_csl_headers(LispObject env)
     stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
-    for (i=0; (p=csl_headers[i])!=NULL; i++)
+    for (i=0; (p=csl_headers[i])!=nullptr; i++)
     {   while ((ch = *p++) != 0) putc_stream(ch, stream);
         putc_stream('\n', stream);
     }
@@ -3913,21 +3969,21 @@ LispObject Lprint_config_header(LispObject env)
     stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
-    for (i=0; (p=config_header[i])!=NULL; i++)
+    for (i=0; (p=config_header[i])!=nullptr; i++)
     {   while ((ch = *p++) != 0) putc_stream(ch, stream);
         putc_stream('\n', stream);
     }
     return onevalue(nil);
 }
 
-static void internal_check(LispObject original_a, LispObject a, int depth, uint64_t path)
-{
-    if (!is_cons(a)) return;
+static void internal_check(LispObject original_a, LispObject a,
+                           int depth, uint64_t path)
+{   if (!is_cons(a)) return;
     if ((a & 0x7ffffff0) == 0)
     {   std::printf("Zero cons pointer at depth %d\n", depth);
         std::printf("Original a = %" PRIxPTR " path = %" PRIx64 "\n",
-            original_a, path);
-        *(char *)(-1) = 0;
+                    original_a, path);
+        *reinterpret_cast<char *>(-1) = 0;
     }
     internal_check(original_a, car(a), depth+1, path<<1);
     internal_check(original_a, cdr(a), depth+1, (path<<1)+1);
@@ -3984,7 +4040,8 @@ static LispObject Lprinbinary(LispObject env, LispObject a)
     return onevalue(a);
 }
 
-static LispObject Lprinhex2(LispObject env, LispObject a, LispObject b)
+static LispObject Lprinhex2(LispObject env, LispObject a,
+                            LispObject b)
 {   if (!is_fixnum(b)) aerror1("prinhex", b);
     push(a);
     prinhex(a, int_of_fixnum(b));
@@ -3993,7 +4050,8 @@ static LispObject Lprinhex2(LispObject env, LispObject a, LispObject b)
     return onevalue(a);
 }
 
-static LispObject Lprinoctal2(LispObject env, LispObject a, LispObject b)
+static LispObject Lprinoctal2(LispObject env, LispObject a,
+                              LispObject b)
 {   if (!is_fixnum(b)) aerror1("prinoctal", b);
     push(a);
     prinoctal(a, int_of_fixnum(b));
@@ -4002,7 +4060,8 @@ static LispObject Lprinoctal2(LispObject env, LispObject a, LispObject b)
     return onevalue(a);
 }
 
-static LispObject Lprinbinary2(LispObject env, LispObject a, LispObject b)
+static LispObject Lprinbinary2(LispObject env, LispObject a,
+                               LispObject b)
 {   if (!is_fixnum(b)) aerror1("prinbinary", b);
     push(a);
     prinbinary(a, int_of_fixnum(b));
@@ -4013,16 +4072,17 @@ static LispObject Lprinbinary2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lposn(LispObject)
 {   return onevalue(
-       fixnum_of_int((int32_t)
-           other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
-                              qvalue(standard_output))));
+               fixnum_of_int((int32_t)
+                             other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
+                                     qvalue(standard_output))));
 }
 
 LispObject Lposn_1(LispObject, LispObject stream)
 {   if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     return onevalue(fixnum_of_int(
-        (int32_t)other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, stream)));
+                        (int32_t)other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
+                                stream)));
 }
 
 LispObject Llposn(LispObject)
@@ -4091,7 +4151,7 @@ int count_character(int c, LispObject f)
 // a multi-byte character. I will tidy that up somewhere else!
 //
     if (n < MAX_PROMPT_LENGTH-1)
-    {   memory_print_buffer[n] = (char)c;
+    {   memory_print_buffer[n] = static_cast<char>(c);
         memory_print_buffer[n+1] = 0;
     }
     stream_byte_pos(f) = n+1;
@@ -4147,7 +4207,7 @@ LispObject Ldebug_print(LispObject env, LispObject a)
     h = vechdr(a);
     if (!is_string_header(h)) return Lprint(env, a);
     len = length_of_byteheader(h) - CELL;
-    p = (const char *)&celt(a, 0);
+    p = reinterpret_cast<const char *>(&celt(a, 0));
     for (i=0; i<len; i++)
     {   push(a);
         putc_stream(p[i], stream);
@@ -4157,7 +4217,7 @@ LispObject Ldebug_print(LispObject env, LispObject a)
     push(a);
     putc_stream(':', stream);
     pop(a);
-    p = (const char *)&celt(a, 0);
+    p = reinterpret_cast<const char *>(&celt(a, 0));
     for (; i<doubleword_align_up(len+CELL)-CELL; i++)
     {   int c = p[i] & 0xff;
         push(a);
@@ -4171,7 +4231,7 @@ LispObject Ldebug_print(LispObject env, LispObject a)
         }
         putc_stream(c, stream);
         pop(a);
-        p = (const char *)&celt(a, 0);
+        p = reinterpret_cast<const char *>(&celt(a, 0));
     }
     putc_stream('\n', stream);
     return onevalue(nil);
@@ -4251,7 +4311,8 @@ LispObject Lttab(LispObject env, LispObject a)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     active_stream = stream;
-    while (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, stream) < n)
+    while (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
+                              stream) < n)
         putc_stream(' ', active_stream);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
@@ -4285,17 +4346,20 @@ LispObject Lexplode(LispObject env, LispObject a)
 }
 
 LispObject Lexplodehex(LispObject env, LispObject a)
-{   escaped_printing = escape_yes+escape_hex+escape_nolinebreak+escape_exploding;
+{   escaped_printing = escape_yes+escape_hex+escape_nolinebreak
+                       +escape_exploding;
     return onevalue(explode(a));
 }
 
 LispObject Lexplodeoctal(LispObject env, LispObject a)
-{   escaped_printing = escape_yes+escape_octal+escape_nolinebreak+escape_exploding;
+{   escaped_printing = escape_yes+escape_octal+escape_nolinebreak
+                       +escape_exploding;
     return onevalue(explode(a));
 }
 
 LispObject Lexplodebinary(LispObject env, LispObject a)
-{   escaped_printing = escape_yes+escape_binary+escape_nolinebreak+escape_exploding;
+{   escaped_printing = escape_yes+escape_binary+escape_nolinebreak
+                       +escape_exploding;
     return onevalue(explode(a));
 }
 
@@ -4305,12 +4369,14 @@ LispObject Lexplodec(LispObject env, LispObject a)
 }
 
 LispObject Lexplode2lc(LispObject env, LispObject a)
-{   escaped_printing = escape_fold_down+escape_nolinebreak+escape_exploding;
+{   escaped_printing = escape_fold_down+escape_nolinebreak
+                       +escape_exploding;
     return onevalue(explode(a));
 }
 
 LispObject Lexplode2uc(LispObject env, LispObject a)
-{   escaped_printing = escape_fold_up+escape_nolinebreak+escape_exploding;
+{   escaped_printing = escape_fold_up+escape_nolinebreak
+                       +escape_exploding;
     return onevalue(explode(a));
 }
 
@@ -4325,12 +4391,14 @@ LispObject Lexplodecn(LispObject env, LispObject a)
 }
 
 LispObject Lexplode2lcn(LispObject env, LispObject a)
-{   escaped_printing = escape_fold_down+escape_nolinebreak+escape_exploding;
+{   escaped_printing = escape_fold_down+escape_nolinebreak
+                       +escape_exploding;
     return onevalue(exploden(a));
 }
 
 LispObject Lexplode2ucn(LispObject env, LispObject a)
-{   escaped_printing = escape_fold_up+escape_nolinebreak+escape_exploding;
+{   escaped_printing = escape_fold_up+escape_nolinebreak
+                       +escape_exploding;
     return onevalue(exploden(a));
 }
 
@@ -4343,7 +4411,8 @@ LispObject Lexplode2ucn(LispObject env, LispObject a)
 
 static std::FILE *binary_outfile, *binary_infile;
 
-static std::FILE *binary_open(LispObject env, LispObject name, const char *dir, const char *e)
+static std::FILE *binary_open(LispObject env, LispObject name,
+                              const char *dir, const char *e)
 {   std::FILE *file;
     char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
@@ -4351,21 +4420,22 @@ static std::FILE *binary_open(LispObject env, LispObject name, const char *dir, 
     std::memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
     file = open_file(filename, w,
-                     (size_t)len, dir, NULL);
-    if (file == NULL)
+                     (size_t)len, dir, nullptr);
+    if (file == nullptr)
     {   error(1, err_open_failed, name);
-        return NULL;
+        return nullptr;
     }
     return file;
 }
 
 static LispObject Lbinary_open_output(LispObject env, LispObject name)
-{   binary_outfile = binary_open(env, name, "wb", "binary_open_output");
+{   binary_outfile = binary_open(env, name, "wb",
+                                 "binary_open_output");
     return onevalue(nil);
 }
 
 int binary_outchar(int c, LispObject)
-{   if (binary_outfile == NULL) return 1;
+{   if (binary_outfile == nullptr) return 1;
     PUTC(c, binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return 0;   // indicate success
@@ -4399,9 +4469,9 @@ static LispObject Lbinary_princ(LispObject, LispObject a)
 
 static LispObject Lbinary_prinbyte(LispObject env, LispObject a)
 {   int x;
-    if (binary_outfile == NULL) return onevalue(nil);
+    if (binary_outfile == nullptr) return onevalue(nil);
     if (!is_fixnum(a)) aerror1("binary_prinbyte", a);
-    x = (int)int_of_fixnum(a);
+    x = static_cast<int>(int_of_fixnum(a));
     PUTC(x, binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
@@ -4409,56 +4479,56 @@ static LispObject Lbinary_prinbyte(LispObject env, LispObject a)
 
 static LispObject Lbinary_prin2(LispObject env, LispObject a)
 {   uint32_t x;
-    if (binary_outfile == NULL) return onevalue(nil);
+    if (binary_outfile == nullptr) return onevalue(nil);
     if (!is_fixnum(a)) aerror1("binary_prin2", a);
     x = int_of_fixnum(a);
-    PUTC((int)(x >> 8), binary_outfile);
-    PUTC((int)x, binary_outfile);
+    PUTC(static_cast<int>(x >> 8), binary_outfile);
+    PUTC(static_cast<int>(x), binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
 static LispObject Lbinary_prin3(LispObject env, LispObject a)
 {   uint32_t x;
-    if (binary_outfile == NULL) return onevalue(nil);
+    if (binary_outfile == nullptr) return onevalue(nil);
     if (!is_fixnum(a)) aerror1("binary_prin3", a);
     x = int_of_fixnum(a);
-    PUTC((int)(x >> 16), binary_outfile);
-    PUTC((int)(x >> 8), binary_outfile);
-    PUTC((int)x, binary_outfile);
+    PUTC(static_cast<int>(x >> 16), binary_outfile);
+    PUTC(static_cast<int>(x >> 8), binary_outfile);
+    PUTC(static_cast<int>(x), binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
 static LispObject Lbinary_prinfloat(LispObject env, LispObject a)
 {   uint32_t *w, x;
-    if (binary_outfile == NULL) return onevalue(nil);
+    if (binary_outfile == nullptr) return onevalue(nil);
     if (!is_float(a)) aerror1("binary_prinfloat", a);
     w = (uint32_t *)&double_float_val(a);
     x = w[0];
-    PUTC((int)(x >> 24), binary_outfile);
-    PUTC((int)(x >> 16), binary_outfile);
-    PUTC((int)(x >> 8), binary_outfile);
-    PUTC((int)x, binary_outfile);
+    PUTC(static_cast<int>(x >> 24), binary_outfile);
+    PUTC(static_cast<int>(x >> 16), binary_outfile);
+    PUTC(static_cast<int>(x >> 8), binary_outfile);
+    PUTC(static_cast<int>(x), binary_outfile);
     x = w[1];
-    PUTC((int)(x >> 24), binary_outfile);
-    PUTC((int)(x >> 16), binary_outfile);
-    PUTC((int)(x >> 8), binary_outfile);
-    PUTC((int)x, binary_outfile);
+    PUTC(static_cast<int>(x >> 24), binary_outfile);
+    PUTC(static_cast<int>(x >> 16), binary_outfile);
+    PUTC(static_cast<int>(x >> 8), binary_outfile);
+    PUTC(static_cast<int>(x), binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
 static LispObject Lbinary_terpri(LispObject env)
-{   if (binary_outfile != NULL) PUTC('\n', binary_outfile);
+{   if (binary_outfile != nullptr) PUTC('\n', binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
 static LispObject Lbinary_close_output(LispObject env)
-{   if (binary_outfile != NULL)
+{   if (binary_outfile != nullptr)
     {   std::fclose(binary_outfile);
-        binary_outfile = NULL;
+        binary_outfile = nullptr;
     }
     return onevalue(nil);
 }
@@ -4475,7 +4545,7 @@ static LispObject Lbinary_open_input(LispObject env, LispObject name)
 
 static LispObject Lbinary_select_input(LispObject env, LispObject a)
 {   if (!is_stream(a) ||
-        (std::FILE *)stream_file(a) == NULL ||
+        (std::FILE *)stream_file(a) == nullptr ||
         (character_stream_writer *)stream_write_fn(a) != 0)
         aerror1("binary-select-input", a); // closed file or output file
 
@@ -4484,7 +4554,7 @@ static LispObject Lbinary_select_input(LispObject env, LispObject a)
 }
 
 static LispObject Lbinary_readbyte(LispObject)
-{   if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
+{   if (binary_infile == nullptr) return onevalue(fixnum_of_int(-1));
     if (++io_kilo >= 1024)
     {   io_kilo = 0;
         io_now++;
@@ -4493,7 +4563,7 @@ static LispObject Lbinary_readbyte(LispObject)
 }
 
 static LispObject Lbinary_read2(LispObject)
-{   if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
+{   if (binary_infile == nullptr) return onevalue(fixnum_of_int(-1));
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
         ++io_kilo;
@@ -4506,7 +4576,7 @@ static LispObject Lbinary_read2(LispObject)
 }
 
 static LispObject Lbinary_read3(LispObject)
-{   if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
+{   if (binary_infile == nullptr) return onevalue(fixnum_of_int(-1));
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c3 = (int32_t)GETC(binary_infile) & 0xff;
@@ -4520,7 +4590,7 @@ static LispObject Lbinary_read3(LispObject)
 }
 
 static LispObject Lbinary_read4(LispObject)
-{   if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
+{   if (binary_infile == nullptr) return onevalue(fixnum_of_int(-1));
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c3 = (int32_t)GETC(binary_infile) & 0xff;
@@ -4538,7 +4608,7 @@ static LispObject Lbinary_read4(LispObject)
 static LispObject Lbinary_readfloat(LispObject env)
 {   LispObject r = make_boxfloat(0.0, TYPE_DOUBLE_FLOAT);
     uint32_t w;
-    if (binary_infile == NULL) return onevalue(r);
+    if (binary_infile == nullptr) return onevalue(r);
 // Note that the code here treats the float as binary data so infinities and
 // NaNs are never anything special.
     w = (int32_t)GETC(binary_infile) & 0xff;
@@ -4560,9 +4630,9 @@ static LispObject Lbinary_readfloat(LispObject env)
 }
 
 static LispObject Lbinary_close_input(LispObject env)
-{   if (binary_infile != NULL)
+{   if (binary_infile != nullptr)
     {   std::fclose(binary_infile);
-        binary_infile = NULL;
+        binary_infile = nullptr;
     }
     return onevalue(nil);
 }
@@ -4606,14 +4676,15 @@ found:
 // Allocating space using malloc() here is dodgy, because the matching
 // place in close-library does not do a corresponding free() operation.
 // For now I will accept that space leak.
-    w1 = (char *)std::malloc(std::strlen(filename)+1);
-    if (w1 == NULL) w = "Unknown file";
+    w1 = reinterpret_cast<char *>(std::malloc(std::strlen(filename)+1));
+    if (w1 == nullptr) w = "Unknown file";
     else
     {   std::strcpy(w1, filename);
         w = w1;
     }
     fasl_files[i].name = w;
-    fasl_files[i].dir = open_pds(filename, forinput ? PDS_INPUT : PDS_OUTPUT);
+    fasl_files[i].dir = open_pds(filename,
+                                 forinput ? PDS_INPUT : PDS_OUTPUT);
     fasl_files[i].isOutput = !forinput;
     return onevalue(SPID_LIBRARY + (((int32_t)i)<<20));
 }
@@ -4648,7 +4719,8 @@ static char error_name[32];
 
 const char *WSAErrName(int i)
 {   switch (i)
-{       default:                 std::sprintf(error_name, "Socket error %d", i);
+{       default:                 std::sprintf(error_name,
+                    "Socket error %d", i);
             return error_name;
 
 #ifdef WIN32
@@ -4762,7 +4834,7 @@ const char *WSAErrName(int i)
 
 bool sockets_ready = false;
 
-int ensure_sockets_ready(void)
+int ensure_sockets_ready()
 {   if (!sockets_ready)
     {
 #ifdef WIN32
@@ -4809,7 +4881,7 @@ int char_from_socket(LispObject stream)
         if (sb_start != sb_end) ch = ucelt(w, sb_start++);
         else
         {   ch = recv((SOCKET)(intptr_t)(std::FILE *)stream_file(stream),
-                      (char *)&celt(w, 4), SOCKET_BUFFER_SIZE, 0);
+                      reinterpret_cast<char *>(&celt(w, 4)), SOCKET_BUFFER_SIZE, 0);
             if (ch == 0) return EOF;
             if (ch == SOCKET_ERROR)
             {   err_printf("socket read error (%s)\n",
@@ -4837,17 +4909,17 @@ int32_t read_action_socket(int32_t op, LispObject f)
     else if (op <= 0xff) return (stream_pushed_char(f) = op);
     else switch (op)
         {   case READ_CLOSE:
-                if ((std::FILE *)stream_file(f) == NULL) op = 0;
+                if ((std::FILE *)stream_file(f) == nullptr) op = 0;
                 else
 #ifdef SOCKETS
                     op = closesocket(
-                        (SOCKET)(intptr_t)(std::FILE *)stream_file(f));
+                             (SOCKET)(intptr_t)(std::FILE *)stream_file(f));
 #else
                     op = 0;
 #endif
                 set_stream_read_fn(f, char_from_illegal);
                 set_stream_read_other(f, read_action_illegal);
-                set_stream_file(f, NULL);
+                set_stream_file(f, nullptr);
                 stream_read_data(f) = nil;
                 return op;
             case READ_FLUSH:
@@ -4864,7 +4936,7 @@ int fetch_response(char *buffer, LispObject r)
     for (i = 0; i < LONGEST_LEGAL_FILENAME; i++)
     {   int ch = char_from_socket(r);
         if (ch == EOF) return 1;
-        buffer[i] = (char)ch;
+        buffer[i] = static_cast<char>(ch);
         if (ch == 0x0a)
         {   buffer[i] = 0;
 //
@@ -4872,7 +4944,8 @@ int fetch_response(char *buffer, LispObject r)
 // case insensitive, so I fold things to lower case right here.
 //
             for (i=0; buffer[i]!=0 && buffer[i]!=' '; i++)
-                buffer[i] = (char)std::tolower((unsigned char)buffer[i]);
+                buffer[i] = static_cast<char>(std::tolower(static_cast<unsigned char>
+                                              (buffer[i])));
             return 0;
         }
     }
@@ -4914,7 +4987,7 @@ start_again:
 // then that is a protocol name, and I will force it into lower case.
 //
     for (i=0; i<len; i++)
-        if (!std::isalnum((unsigned char)p[i])) break;
+        if (!std::isalnum(static_cast<unsigned char>(p[i]))) break;
     if (p[i] == ':')
     {   char *oldp = p;
         proto = p;
@@ -4922,7 +4995,8 @@ start_again:
         p += i+1;
         len -= i+1;
         for (i=0; i<nproto; i++)
-            oldp[i] = (char)std::tolower((unsigned char)oldp[i]);
+            oldp[i] = static_cast<char>(std::tolower(static_cast<unsigned char>
+                                        (oldp[i])));
     }
 //
 // After any protocol specification I may have a host name, introduced
@@ -5027,7 +5101,8 @@ start_again:
     }
     if (nport == 0)
     {   if (nproto == 3 && std::memcmp(proto, "ftp", 3) == 0) nport = 21;
-        else if (nproto == 4 && std::memcmp(proto, "http", 4) == 0) nport = 80;
+        else if (nproto == 4 &&
+                 std::memcmp(proto, "http", 4) == 0) nport = 80;
 //
 // Elsewhere I have code that can call on an external "scp" program to support
 // a secure-fetch scheme, but I will NOT include that here.
@@ -5041,8 +5116,9 @@ start_again:
 // protocol etc).
 //
     if (nhostaddr == 0)
-    {   std::FILE *file = open_file(filename1, path, (size_t)npath, "r", NULL);
-        if (file == NULL) return onevalue(nil);
+    {   std::FILE *file = open_file(filename1, path, (size_t)npath, "r",
+                                    nullptr);
+        if (file == nullptr) return onevalue(nil);
         push(url);
         r = make_stream_handle();
         pop(url);
@@ -5078,11 +5154,12 @@ start_again:
     hostnum = inet_addr(filename1);
     if (hostnum == INADDR_NONE)
     {   host = gethostbyname(filename1);
-        if (host != NULL)
+        if (host != nullptr)
             hostnum = ((struct in_addr *)host->h_addr)->s_addr;
     }
     if (hostnum == INADDR_NONE)
-    {   err_printf("Host not found (%s)\n", WSAErrName(WSAGetLastError()));
+    {   err_printf("Host not found (%s)\n",
+                   WSAErrName(WSAGetLastError()));
         return onevalue(nil);
     }
     s = socket(PF_INET, SOCK_STREAM, 0);  // Make a new socket
@@ -5097,14 +5174,16 @@ start_again:
 //
         trace_printf("Contacting %.*s...\n", nhostaddr, hostaddr);
         ensure_screen();
-        if (connect(s, (struct sockaddr *)&sockin, sizeof(sockin)) == SOCKET_ERROR)
+        if (connect(s, (struct sockaddr *)&sockin,
+                    sizeof(sockin)) == SOCKET_ERROR)
         {   err_printf("connect failed %s\n", WSAErrName(WSAGetLastError()));
             closesocket(s);
             return onevalue(nil);
         }
         trace_printf("Connection created\n");
     }
-    std::sprintf(filename1, "GET %.*s HTTP/1.0\x0d\x0a\x0d\x0a", (int)npath, path);
+    std::sprintf(filename1, "GET %.*s HTTP/1.0\x0d\x0a\x0d\x0a",
+                 static_cast<int>(npath), path);
 
 // MD addition from webcore.c
     i = std::strlen(filename1);
@@ -5130,7 +5209,8 @@ start_again:
     pop(url);
     stream_type(r) = url;
     push(r);
-    url = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+4+SOCKET_BUFFER_SIZE);
+    url = get_basic_vector(TAG_VECTOR, TYPE_STRING_4,
+                           CELL+4+SOCKET_BUFFER_SIZE);
     pop(r);
     ielt32(url, 0) = 0;
     stream_read_data(r) = url;
@@ -5160,7 +5240,7 @@ start_again:
 // do not check for (and thus reject) illegal responses such as 0000200.
 //
         if (std::sscanf(filename1,
-                   "http/%d.%d %d", &major, &minor, &retcode) != 3 ||
+                        "http/%d.%d %d", &major, &minor, &retcode) != 3 ||
             retcode < 0 || retcode > 999)
         {   err_printf("Bad protocol specification returned\n");
             err_printf(filename1); // So I can see what did come back
@@ -5242,7 +5322,8 @@ start_again:
             }
             if (ch == 0x0a) break;
         }
-    } while (i > 1);
+    }
+    while (i > 1);
 
     return onevalue(r);
 }
@@ -5253,7 +5334,8 @@ int window_heading = 0;
 
 char saveright[32];
 
-LispObject Lwindow_heading2(LispObject env, LispObject a, LispObject b)
+LispObject Lwindow_heading2(LispObject env, LispObject a,
+                            LispObject b)
 {
 #ifndef EMBEDDED
     int32_t n, bit;
@@ -5270,14 +5352,14 @@ LispObject Lwindow_heading2(LispObject env, LispObject a, LispObject b)
         s = txt;
     }
     else if (b == 2) s = "";
-    else s = NULL;
+    else s = nullptr;
     switch (n)
     {   case 0: fwin_report_left(s);  bit = 1; break;
         case 1: fwin_report_mid(s);   bit = 2; break;
         default:
 #ifdef WITH_GUI
-            if (alternative_stdout != NULL)
-            {   if (std::strcmp(txt, saveright) != 0 && s != NULL)
+            if (alternative_stdout != nullptr)
+            {   if (std::strcmp(txt, saveright) != 0 && s != nullptr)
                 {   std::fprintf(stderr, "Info: %s\n", txt);
 #ifdef __CYGWIN__
                     std::putc('\r', stderr);
@@ -5289,7 +5371,7 @@ LispObject Lwindow_heading2(LispObject env, LispObject a, LispObject b)
 #endif // WITH_GUI
             fwin_report_right(s); bit = 4; break;
     }
-    if (s == NULL || *s == 0) window_heading &= ~bit;
+    if (s == nullptr || *s == 0) window_heading &= ~bit;
     else window_heading |= bit;
 #endif // !EMBEDDED
     return onevalue(nil);
@@ -5413,7 +5495,7 @@ setup_type const print_setup[] =
 #else
     {"tyo",                     G0W1, Ltyo, G2W1, G3W1, G4W1},
 #endif
-    {NULL,                      0, 0, 0, 0, 0}
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of print.cpp

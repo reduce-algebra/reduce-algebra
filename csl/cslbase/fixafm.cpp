@@ -73,7 +73,7 @@ static void adjustuninames(char *linebuffer)
             std::isxdigit(p[6]) &&
             !std::isxdigit(p[7]) &&
             std::sscanf(p, "uni%x", &code) == 1 &&
-            (r = uniname(code)) != NULL)
+            (r = uniname(code)) != nullptr)
         {   std::strcpy(q, r);
             p += 7;
             q += std::strlen(r);
@@ -91,9 +91,10 @@ int main(int argc, char *argv[])
     int minurx = 1000000, maxurx = -1000000;
     int minury = 1000000, maxury = -1000000;
     std::FILE *src = std::fopen(argv[1], "r");
-    std::FILE *dest = std::fopen(argv[2], "w"); // No check for errors here!
+    std::FILE *dest = std::fopen(argv[2],
+                                 "w"); // No check for errors here!
     char linebuffer[2000];            // Fixed buffer with no overflow checks!
-    if (std::strstr(argv[1], "STIX") != NULL) isSTIX = 1;
+    if (std::strstr(argv[1], "STIX") != nullptr) isSTIX = 1;
     if (isSTIX)
     {   int private_area = 0;
         char name[MAXNEWNAME];
@@ -109,7 +110,7 @@ int main(int argc, char *argv[])
 // if it had been at U+110000 is named ".notdef". Here I collect the
 // names that have been provided for all those out-of-range glyphs.
             if (std::sscanf(linebuffer, "C -1 ; WX %d ; N ",
-                       &width) == 1)
+                            &width) == 1)
             {   char *p = linebuffer + 9;
                 if (width > maxwidth) maxwidth = width;
                 if (width < minwidth) minwidth = width;
@@ -137,7 +138,7 @@ int main(int argc, char *argv[])
         linebuffer[i] = 0;
         if (i == 0 && c == EOF) break;
         if (std::sscanf(linebuffer, "C %d ; WX %d ; N %s ; B %d %d %d %d ;",
-                   &cc, &ww, name, &llx, &lly, &urx, &ury) == 7)
+                        &cc, &ww, name, &llx, &lly, &urx, &ury) == 7)
         {   if (ww > maxwidth) maxwidth = ww;
             if (ww < minwidth) minwidth = ww;
             if (llx > maxllx) maxllx = llx;
@@ -153,7 +154,7 @@ int main(int argc, char *argv[])
         if (std::strncmp(linebuffer, "C -1 ; ", 7) == 0)
         {   int width, code;
             if (std::sscanf(linebuffer, "C -1 ; WX %d ; N u%x ;",
-                       &width, &code) == 2)
+                            &width, &code) == 2)
             {   char *p = linebuffer + 10;
                 while (*p != ';') p++;
                 p++;
@@ -174,7 +175,7 @@ int main(int argc, char *argv[])
 // it. If the codepoint was a copy of one of the STIX glyphs not previously
 // within the Unicode range I will transfer the name it originally had to the
 // new position at 0x108xxx.
-                if (r == NULL)
+                if (r == nullptr)
                 {   if  (code >= 0x108000 &&
                          code-0x108000 < nmoved &&
                          width == movedwidth[code-0x108000])
@@ -182,7 +183,7 @@ int main(int argc, char *argv[])
                     else r = p;
                 }
                 std::fprintf(dest, "C %d ; WX %d ; N %s ;%s\n",
-                        code, width, r, q+1);
+                             code, width, r, q+1);
             }
         }
         else std::fprintf(dest, "%s\n", linebuffer);

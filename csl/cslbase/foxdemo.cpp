@@ -42,29 +42,28 @@
 
 
 int main(int argc,char *argv[])
-{
-    FXApp a("foxdemo", "foxdemo");   // Arguments are just used as
-                                     // registry keys
+{   FXApp a("foxdemo", "foxdemo");   // Arguments are just used as
+    // registry keys
     a.init(argc, argv);              // captures args and opens display
     FXMainWindow *win =
         new FXMainWindow(&a,         // application
-                        "foxdemo",   // windows name
-                        NULL,        // icon
-                        NULL,        // icon
-                        DECOR_ALL,   // all options
-                        100,         // x position
-                        100,         // y position
-                        300,         // width
-                        200);        // height
+                         "foxdemo",   // windows name
+                         nullptr,     // icon
+                         nullptr,     // icon
+                         DECOR_ALL,   // all options
+                         100,         // x position
+                         100,         // y position
+                         300,         // width
+                         200);        // height
     FXButton *b =
-       new FXButton(win,             // parent window
-                    "QUIT",          // text
-                     NULL,           //icon
+        new FXButton(win,             // parent window
+                     "QUIT",          // text
+                     nullptr,        //icon
                      &a,             // target for messages
                      FXApp::ID_QUIT, // selector code
                      BUTTON_NORMAL | // options
-                        LAYOUT_FILL_X |
-                        LAYOUT_FILL_Y);
+                     LAYOUT_FILL_X |
+                     LAYOUT_FILL_Y);
     b->setFont(                      // specify font for the text
         new FXFont(&a, "serif", 36));
 
@@ -72,3 +71,4 @@ int main(int argc,char *argv[])
     win->show();                     // make window visible
     return a.run();                  // run until closed
 }
+

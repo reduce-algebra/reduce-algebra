@@ -1,4 +1,4 @@
-// objtype.cpp                             Copyright (C) 2005-2017 Codemist    
+// objtype.cpp                             Copyright (C) 2005-2017 Codemist
 
 
 /**************************************************************************
@@ -67,25 +67,27 @@ static std::FILE *myfopen(const char *name, const char *mode)
 
 int main(int argc, const char *argv[])
 {   std::FILE *f1, *f2;
-    std::time_t t = std::time(NULL);
+    std::time_t t = std::time(nullptr);
     unsigned char hdr[20];
     int sixtyFourBit = 0, byteOrder = 0, machine = 0;
-    const char *s = NULL;
+    const char *s = nullptr;
     int i;
     if (argc < 3)
-    {   std::fprintf(stderr, "Usage: objtype xx.obj dest.c $CC $CFLAGS\n");
+    {   std::fprintf(stderr,
+                     "Usage: objtype xx.obj dest.c $CC $CFLAGS\n");
         return 1;
     }
     if (std::strcmp(argv[1], "-") == 0) f1 = stdin;
     else f1 = myfopen(argv[1], "rb");
-    if (f1 == NULL)
+    if (f1 == nullptr)
     {   std::fprintf(stderr, "File \"%s\" not found\n", argv[1]);
         return 1;
     }
     if (std::strcmp(argv[2], "-") == 0) f2 = stdout;
     else f2 = myfopen(argv[2], "w");
-    if (f2 == NULL)
-    {   std::fprintf(stderr, "File \"%s\" can not be written to\n", argv[2]);
+    if (f2 == nullptr)
+    {   std::fprintf(stderr, "File \"%s\" can not be written to\n",
+                     argv[2]);
         std::fclose(f1);
         return 1;
     }
@@ -95,7 +97,8 @@ int main(int argc, const char *argv[])
         std::fclose(f2);
         return 1;
     }
-    std::fprintf(f2, "/*\n * Created %s */\n\n", std::asctime(std::localtime(&t)));
+    std::fprintf(f2, "/*\n * Created %s */\n\n",
+                 std::asctime(std::localtime(&t)));
     std::fprintf(f2, "\nconst char *linker_type = \"");
     if (hdr[0] == 0xfe &&
         hdr[1] == 0xed &&
@@ -144,7 +147,7 @@ int main(int argc, const char *argv[])
             case 62:if (sixtyFourBit) s = "x86_64";
                 break;
         }
-        if (s != NULL) std::fprintf(f2, "%s", s);
+        if (s != nullptr) std::fprintf(f2, "%s", s);
         else std::fprintf(f2, "ELF-%d-%d", 2*sixtyFourBit+byteOrder, machine);
     }
     else
@@ -171,8 +174,9 @@ int main(int argc, const char *argv[])
                 break;
         }
     }
-    std::fprintf(f2, "\";\n\nconst char *compiler_command[] = {\n    \"%s\"",
-           argv[3]);
+    std::fprintf(f2,
+                 "\";\n\nconst char *compiler_command[] = {\n    \"%s\"",
+                 argv[3]);
     for (i=4; i<argc; i++)
     {   const char *a = argv[i];
 //

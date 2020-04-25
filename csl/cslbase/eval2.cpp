@@ -67,7 +67,7 @@ LispObject apply(LispObject fn, LispObject args,
                 loop_print_trace(stack[0]);  // caller
                 trace_printf("\n");
                 stack[0] = stack[-2];
-                for (int i=1;stack[0]!=nil; i++)
+                for (int i=1; stack[0]!=nil; i++)
                 {   trace_printf("Arg%d: ", i);
                     loop_print_trace(car(stack[0]));
                     trace_printf("\n");
@@ -78,9 +78,9 @@ LispObject apply(LispObject fn, LispObject args,
             }
             def = fn; // this is passed as arg1 to the called code
             push(fn); // I may need the function name when tracing
-                      // displays a result.
+            // displays a result.
             if (args == nil)
-                 def = (*qfn0(fn))(def);
+                def = (*qfn0(fn))(def);
             else
             {   LispObject a1 = car(args);
                 args = cdr(args);
@@ -128,7 +128,7 @@ LispObject apply(LispObject fn, LispObject args,
             std::memcpy(name_of_caller, &celt(from, 0), len);
             name_of_caller[len] = 0;
             std::sprintf(message, "Bad function called from %s: ",
-                    name_of_caller);
+                         name_of_caller);
             aerror1(message, fn);
         }
 // apply_lambda() is the key part of calls to interpreted functions.
@@ -163,7 +163,7 @@ LispObject apply(LispObject fn, LispObject args,
     std::memcpy(name_of_caller, &celt(from, 0), len);
     name_of_caller[len] = 0;
     std::sprintf(message, "Bad function called from %s: ",
-            name_of_caller);
+                 name_of_caller);
     aerror1(message, fn);
 }
 
@@ -208,8 +208,8 @@ static LispObject block_fn(LispObject iargs, LispObject ienv)
     if (!consp(iargs)) return onevalue(nil);
     stackcheck(iargs, ienv);
     push(car(iargs),          // my_tag
-          cdr(iargs),          // args
-          ienv);
+         cdr(iargs),          // args
+         ienv);
     LispObject &env = stack[0];
     LispObject &args = stack[-1];
     LispObject &my_tag = stack[-2];
@@ -368,7 +368,8 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
         if (consp(q))
         {   z = cdr(q);
             q = car(q);
-            if (consp(z)) z = car(z); else z = nil;
+            if (consp(z)) z = car(z);
+            else z = nil;
         }
         else z = nil;
         if (!is_symbol(q) || q==nil || q==lisp_true)
@@ -505,7 +506,7 @@ LispObject declare_fn(LispObject, LispObject)
 
 
 #define flagged_lose(v) \
-    ((fv = qfastgets(v)) != nil && (LispObject)elt(fv, 1) != SPID_NOPROP)
+    ((fv = qfastgets(v)) != nil && static_cast<LispObject>(elt(fv, 1)) != SPID_NOPROP)
 
 static LispObject defun_fn(LispObject args, LispObject)
 {
@@ -540,7 +541,8 @@ static LispObject defun_fn(LispObject args, LispObject)
                     loop_print_debug(fname);
                     debug_printf(" redefined\n");
                 }
-                set_fns(fname, undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+                set_fns(fname, undefined_0, undefined_1, undefined_2, undefined_3,
+                        undefined_4up);
                 setenv(fname, fname);
             }
 //
@@ -549,7 +551,8 @@ static LispObject defun_fn(LispObject args, LispObject)
 // case the definition (in qenv()) is a pair (<def> . <env>)
 //
             setenv(fname, args);         // Sort of notional lambda present
-            set_fns(fname, interpreted_0, interpreted_1, interpreted_2, interpreted_3, interpreted_4up);
+            set_fns(fname, interpreted_0, interpreted_1, interpreted_2,
+                    interpreted_3, interpreted_4up);
             if (qvalue(comp_symbol) != nil &&
                 qfn1(compiler_symbol) != undefined_1)
             {   push(fname);
@@ -580,7 +583,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
 // Here if bvl is a list such as (u) I will expand it to be (u &optional g).
         if (consp(bvl) && cdr(bvl) == nil)
             args = cons(list3(car(bvl), opt_key, Lgensym(nil)),
-                        cdr(args)); 
+                        cdr(args));
         if (is_symbol(fname))
         {   if ((qheader(fname) & (SYM_C_DEF | SYM_CODEPTR)) ==
                 (SYM_C_DEF | SYM_CODEPTR)) return onevalue(fname);
@@ -603,7 +606,8 @@ static LispObject defmacro_fn(LispObject args, LispObject)
                     loop_print_debug(fname);
                     debug_printf(" redefined as a macro\n");
                 }
-                set_fns(fname, undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+                set_fns(fname, undefined_0, undefined_1, undefined_2, undefined_3,
+                        undefined_4up);
             }
             setenv(fname, args);         // Sort of notional lambda present
             if (qvalue(comp_symbol) != nil &&
@@ -819,7 +823,8 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
             if (consp(q))
             {   z = cdr(q);
                 q = car(q);
-                if (consp(z)) z = car(z); else z = nil;
+                if (consp(z)) z = car(z);
+                else z = nil;
             }
             else z = nil;
             if (!is_symbol(q) || q==nil || q==lisp_true)
@@ -828,7 +833,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
             else
             {   Header h = qheader(q);
                 if (z != nil)
-                z = eval(z, env);
+                    z = eval(z, env);
                 if (h & SYM_GLOBAL_VAR)
                     aerror1("attempt to bind", q);
                 if (h & SYM_SPECIAL_VAR)
@@ -910,7 +915,7 @@ setup_type const eval2_setup[] =
 //  {"let",                     BAD_SPECIAL_0, let_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
     {"~block",                  BAD_SPECIAL_0, block_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
     {"~let",                    BAD_SPECIAL_0, let_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {NULL,                      0, 0, 0, 0, 0}
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of eval2.cpp

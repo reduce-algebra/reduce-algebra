@@ -50,9 +50,9 @@
 #include <aygshell.h>
 #include <cstdio>
 
-HINSTANCE g_hInst;       // The current instance
-HWND      g_hwndCB;      // The command bar handle
-HWND      g_hWnd = NULL; // main window
+HINSTANCE g_hInst;          // The current instance
+HWND      g_hwndCB;         // The command bar handle
+HWND      g_hWnd = nullptr; // main window
 
 
 HFONT     hFont = 0;
@@ -91,8 +91,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
                    HINSTANCE hPrevInstance,
                    LPTSTR    lpCmdLine,
                    int       nCmdShow)
-{
-    MSG msg;
+{   MSG msg;
     HACCEL hAccelTable;
 
     // Perform application initialization:
@@ -101,9 +100,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
     hAccelTable = LoadAccelerators(hInstance, L"ACCEL");
 
     // Main message loop:
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+    while (GetMessage(&msg, nullptr, 0, 0))
+    {   if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {   TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
@@ -122,8 +120,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 //    will get 'well formed' small icons associated with it.
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
-{
-    WNDCLASS wc;
+{   WNDCLASS wc;
     wc.style         = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc   = (WNDPROC)WndProc;
     wc.cbClsExtra    = 0;
@@ -166,7 +163,7 @@ int textX = 0, textY = 0;
 //                ^           ^
 //    (textOut)---^           ^--- textIn
 //
-//      textLine[0]  2 
+//      textLine[0]  2
 //      textLine[1]  5
 //      textLine[2]  -1 (indicates no such line)
 //      textLine[3]  -1 (and -1 from now on)
@@ -190,13 +187,11 @@ int textX = 0, textY = 0;
 
 
 inline int attribute(int n)
-{
-    return (textColour[n>>2] >> (2*(n & 3))) & 3;
+{   return (textColour[n>>2] >> (2*(n & 3))) & 3;
 }
 
 void setAttribute(int n, int v)
-{
-    int k = n>>2;
+{   int k = n>>2;
     int b = textColour[k];
     int s = 2*(n & 3);
     int mask = 3 << s;
@@ -216,8 +211,8 @@ void setAttribute(int n, int v)
 // create and display the main program window.
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-    g_hInst = hInstance; // Store instance handle in our global variable
+{   g_hInst =
+        hInstance; // Store instance handle in our global variable
 
     //If it is already running, then focus on the window
     g_hWnd = FindWindow(L"PPC-CSL", L"CSL");
@@ -234,7 +229,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     g_hWnd =
         CreateWindow(L"PPC-CSL", L"CSL", WS_VISIBLE,
                      CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-                     CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
+                     CW_USEDEFAULT, nullptr, nullptr, hInstance, nullptr);
     if (!g_hWnd) return FALSE;
 // When the main window is created using CW_USEDEFAULT the height of the
 // menubar (if one is created is not taken into account). So we resize
@@ -245,10 +240,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
         GetWindowRect(g_hwndCB, &rcMenuBar);
         windowSize.bottom -= (rcMenuBar.bottom - rcMenuBar.top);
         MoveWindow(g_hWnd, windowSize.left,
-                           windowSize.top,
-                           windowSize.right - windowSize.left,
-                           windowSize.bottom - windowSize.top,
-                           FALSE);
+                   windowSize.top,
+                   windowSize.right - windowSize.left,
+                   windowSize.bottom - windowSize.top,
+                   FALSE);
     }
     LOGFONT f;
     std::memset(&f, 0, sizeof(f));
@@ -269,9 +264,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     ShowWindow(g_hWnd, nCmdShow);
     UpdateWindow(g_hWnd);
 
-    mutex1 = CreateMutex(NULL, 1, NULL);
-    mutex2 = CreateMutex(NULL, 0, NULL);
-    workerThread = CreateThread(NULL, 0, WorkerProc, NULL, 0, NULL);
+    mutex1 = CreateMutex(nullptr, 1, nullptr);
+    mutex2 = CreateMutex(nullptr, 0, nullptr);
+    workerThread = CreateThread(nullptr, 0, WorkerProc, nullptr, 0,
+                                nullptr);
 
     return TRUE;
 }
@@ -282,8 +278,7 @@ void deleteChar()
 }
 
 void insertChar(int ch)
-{
-    int n = (textIn + 1) % TEXTSIZE;
+{   int n = (textIn + 1) % TEXTSIZE;
     text[textIn] = ch;
     setAttribute(textIn, currentColour);
     textIn = n;
@@ -291,8 +286,7 @@ void insertChar(int ch)
 }
 
 void showChar(int ch)
-{
-    RECT r;
+{   RECT r;
     if (ch == '\n')         // end a line
     {   insertChar(ch);
         if (textY == TEXTLINES-1)
@@ -301,7 +295,7 @@ void showChar(int ch)
 // If the screen scrolls I will erase the whole background so I can
 // paint everything again. Maybe if I had a BitBlt to scroll data on the
 // screen directly I could use that.
-            InvalidateRect(g_hWnd, NULL, TRUE);
+            InvalidateRect(g_hWnd, nullptr, TRUE);
         }
         else textY++;
         textLine[textY] = textIn;
@@ -323,8 +317,7 @@ void showChar(int ch)
 char promptString[32] = {'A', ':', ' ', 0};
 
 void displayPrompt()
-{
-    char *p = promptString;
+{   char *p = promptString;
     currentColour = TEXT_BLUE;
     while (*p != 0) showChar(*p++);
     currentColour = TEXT_RED;
@@ -332,7 +325,7 @@ void displayPrompt()
 }
 
 int colourTable[4] =       // These colours are subject to review!
-{    // bbggrr
+{   // bbggrr
     0x00000000,   // black           normal program output
     0x004000c0,   // redish maroon   echo of keyboard input
     0x00801000,   // darkish blue    prompt strings
@@ -350,15 +343,13 @@ int colourTable[4] =       // These colours are subject to review!
 //
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
-                                    WPARAM wParam, LPARAM lParam)
-{
-    HDC hdc;
+                         WPARAM wParam, LPARAM lParam)
+{   HDC hdc;
     int wmId, wmEvent;
     PAINTSTRUCT ps;
     int i, x, y;
     switch (message)
-    {
-case WM_CHAR:
+    {   case WM_CHAR:
 // I need to write myself an essay about how I will handle input!
 //
 // At the start of a run there is no input request pending. The worker
@@ -392,57 +383,56 @@ case WM_CHAR:
 // strategy will be to start by handling CHAR messages and later (perhaps)
 // I will detect the other cases.
 //
-        if (!readRequestPending)
-        {   if (wParam == (0x1f & 'H'))
-            {   if (aheadIn == aheadOut) return 0; // no type-ahead
-                int p = aheadIn == 0 ? TYPEAHEADSIZE-1 : aheadIn-1;
+            if (!readRequestPending)
+            {   if (wParam == (0x1f & 'H'))
+                {   if (aheadIn == aheadOut) return 0; // no type-ahead
+                    int p = aheadIn == 0 ? TYPEAHEADSIZE-1 : aheadIn-1;
 // When the user presses ENTER the line they have just completed becomes
 // committed. ENTER is represented as Ctl-M
-                if (typeAhead[p] == (0x1f & 'M')) return 0;
-                aheadIn = p;
+                    if (typeAhead[p] == (0x1f & 'M')) return 0;
+                    aheadIn = p;
+                }
+                else
+                {   int p = (aheadIn+1) % TYPEAHEADSIZE;
+                    if (p == aheadOut) return 0; // no room in the buffer
+                    typeAhead[aheadIn] = wParam;
+                    aheadIn = p;
+                }
+                return 0;
             }
-            else
-            {   int p = (aheadIn+1) % TYPEAHEADSIZE;
-                if (p == aheadOut) return 0; // no room in the buffer
-                typeAhead[aheadIn] = wParam;
-                aheadIn = p;
-            }
-            return 0;
-        }
 
-        switch (wParam)
-        {
-    case 0x1f & 'H':
+            switch (wParam)
+            {   case 0x1f & 'H':
 // Backspace: if no chars in current line just ignore it.
-            if (inputN == 0) return 0;
-            inputN--;
-            deleteChar();
-            return 0;
-    default:
-            if (inputN < sizeof(inputLine)-1) 
-            {   inputLine[inputN++] = wParam;
-                currentColour = TEXT_RED;
-                showChar(wParam);
-            }
-            return 0;
-    case 0x1f & 'M':
+                    if (inputN == 0) return 0;
+                    inputN--;
+                    deleteChar();
+                    return 0;
+                default:
+                    if (inputN < sizeof(inputLine)-1)
+                    {   inputLine[inputN++] = wParam;
+                        currentColour = TEXT_RED;
+                        showChar(wParam);
+                    }
+                    return 0;
+                case 0x1f & 'M':
 // ENTER: and there was a read request pending so I must pass data to the
 // worker thread and release it.
-            inputLine[inputN++] = '\n'; // return as '\n' even if '\r'
-            inputLine[inputN] = 0;      // terminate the input line
-            showChar('\n');
-            currentColour = TEXT_BLACK;
-            readRequestPending = 0;
-            HANDLE m2 = mutex2;
-            ReleaseMutex(mutex1);   // permits worker to access the char
+                    inputLine[inputN++] = '\n'; // return as '\n' even if '\r'
+                    inputLine[inputN] = 0;      // terminate the input line
+                    showChar('\n');
+                    currentColour = TEXT_BLACK;
+                    readRequestPending = 0;
+                    HANDLE m2 = mutex2;
+                    ReleaseMutex(mutex1);   // permits worker to access the char
 // The next line has a slight depth. It waits until the worker thread has
 // accepted the data (and because it was waiting for it that should happen
 // promptly). But while the worker has control it flips the two variables
 // mutex1 and mutex2 so that after the WaitForSingleObject here the mutext
 // actually claimed will be the one referred to be mutex1.
-            WaitForSingleObject(m2, INFINITE);
-            return 0;
-        }
+                    WaitForSingleObject(m2, INFINITE);
+                    return 0;
+            }
 
 //  void ce_getline()
 //  {
@@ -458,129 +448,127 @@ case WM_CHAR:
 //  }
 
 // The next few messages are ones that my worker thread can post to me.
-case WM_REQUESTINPUT:
-        inputN = 0;
-        displayPrompt();
-        while (aheadOut != aheadIn)
-        {   int ch = typeAhead[aheadOut];
-            aheadOut = (aheadOut+1) % TYPEAHEADSIZE;
-            if (ch == (0x1f & 'M'))
-            {   inputLine[inputN++] = '\n';
-                inputLine[inputN] = 0;
-                showChar('\n');
-                currentColour = TEXT_BLACK;
-                HANDLE m2 = mutex2;
-                ReleaseMutex(mutex1);
-                WaitForSingleObject(m2, INFINITE);
-                return 0;
+        case WM_REQUESTINPUT:
+            inputN = 0;
+            displayPrompt();
+            while (aheadOut != aheadIn)
+            {   int ch = typeAhead[aheadOut];
+                aheadOut = (aheadOut+1) % TYPEAHEADSIZE;
+                if (ch == (0x1f & 'M'))
+                {   inputLine[inputN++] = '\n';
+                    inputLine[inputN] = 0;
+                    showChar('\n');
+                    currentColour = TEXT_BLACK;
+                    HANDLE m2 = mutex2;
+                    ReleaseMutex(mutex1);
+                    WaitForSingleObject(m2, INFINITE);
+                    return 0;
+                }
+                inputLine[inputN++] = ch;
+                currentColour = TEXT_RED;
+                showChar(ch);
             }
-            inputLine[inputN++] = ch;
-            currentColour = TEXT_RED;
-            showChar(ch);
-        }
-        readRequestPending = 1;
-        return 0;
+            readRequestPending = 1;
+            return 0;
 
-case WM_PRINTCHAR:
-        showChar(wParam);
-        return 0;
+        case WM_PRINTCHAR:
+            showChar(wParam);
+            return 0;
 
-case WM_PRINTBUFFER:
+        case WM_PRINTBUFFER:
 // This is pending!
         {   char *s = "<printbuffer>";
             while (*s != 0) showChar(*s++);
         }
         return 0;
 
-case WM_WORKERQUIT: // the worker can send this to terminate the application
-        SendMessage(hWnd, WM_CLOSE, 0, 0);
-        return 0;
+        case WM_WORKERQUIT: // the worker can send this to terminate the application
+            SendMessage(hWnd, WM_CLOSE, 0, 0);
+            return 0;
 
 // Now handlers for some system messages that get treated in fairly
 // standard manners.
 
-case WM_COMMAND:
-        wmId    = LOWORD(wParam);
-        wmEvent = HIWORD(wParam);
-        switch (wmId)
-        {
-    case IDM_HELP_ABOUT:
-            DialogBox(g_hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
+        case WM_COMMAND:
+            wmId    = LOWORD(wParam);
+            wmEvent = HIWORD(wParam);
+            switch (wmId)
+            {   case IDM_HELP_ABOUT:
+                    DialogBox(g_hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
+                    return 0;
+                case IDM_ITEM_QUIT:
+                case IDOK:
+                    SendMessage(hWnd, WM_CLOSE, 0, 0);
+                    return 0;
+                default:
+                    return DefWindowProc(hWnd, message, wParam, lParam);
+            }
+        case WM_CREATE:
+            g_hwndCB = CreateRpCommandBar(hWnd);
+            // Initialize the shell activate info structure
+            std::memset(&s_sai, 0, sizeof(s_sai));
+            s_sai.cbSize = sizeof(s_sai);
             return 0;
-    case IDM_ITEM_QUIT:
-    case IDOK:
-            SendMessage(hWnd, WM_CLOSE, 0, 0);
-            return 0;
-    default:
-            return DefWindowProc(hWnd, message, wParam, lParam);
-        }
-case WM_CREATE:
-        g_hwndCB = CreateRpCommandBar(hWnd);
-        // Initialize the shell activate info structure
-        std::memset(&s_sai, 0, sizeof(s_sai));
-        s_sai.cbSize = sizeof(s_sai);
-        return 0;
-case WM_PAINT:
-        RECT rt;
-        hdc = BeginPaint(hWnd, &ps);
-        if (hFont != 0) SelectObject(hdc, hFont);
-        for (i=0; i<TEXTLINES; i++)
-        {   int start = textLine[i],
-                end = textLine[i+1];
-            if (start == end) continue;
+        case WM_PAINT:
+            RECT rt;
+            hdc = BeginPaint(hWnd, &ps);
+            if (hFont != 0) SelectObject(hdc, hFont);
+            for (i=0; i<TEXTLINES; i++)
+            {   int start = textLine[i],
+                        end = textLine[i+1];
+                if (start == end) continue;
 // Now the text that I need to draw may have to be drawn in several
 // segments. There are two reasons for making a break: (a) the line can
 // be represented by a sequence of chars that wrap around in the circular
 // text buffer and (b) I may need to deal with colour effects
-            x = 0;
-            y = 16*i;
-            int ch = text[start];
-            while (ch != '\n' && ch != 0)
-            {   int attstart = attribute(start);
-                int next = start;
-                int count = 0;
+                x = 0;
+                y = 16*i;
+                int ch = text[start];
                 while (ch != '\n' && ch != 0)
-                {   next = (next + 1) % TEXTSIZE;
-                    count++;
-                    if (next == 0) break; // circular buffer wrap
-                    int attnext = attribute(next);
-                    if (attstart != attnext) break; // colour change
-                    ch = text[next];
-                }
-                SetTextColor(hdc, colourTable[attstart]);
-                ExtTextOut(hdc, x, y, 0, NULL,
-                           &text[start], count, NULL);
+                {   int attstart = attribute(start);
+                    int next = start;
+                    int count = 0;
+                    while (ch != '\n' && ch != 0)
+                    {   next = (next + 1) % TEXTSIZE;
+                        count++;
+                        if (next == 0) break; // circular buffer wrap
+                        int attnext = attribute(next);
+                        if (attstart != attnext) break; // colour change
+                        ch = text[next];
+                    }
+                    SetTextColor(hdc, colourTable[attstart]);
+                    ExtTextOut(hdc, x, y, 0, nullptr,
+                               &text[start], count, nullptr);
 // Note that to cope with cleartype fonts I do not use opaque chars.
 // Thus I need to clear the background manually at some stage. I think
-// that two times SHOULD suffice for that: (a) at the start of the 
+// that two times SHOULD suffice for that: (a) at the start of the
 // session and (b) clearing a row of stuff when I scroll the screen up.
-                x += 7*count;  // I believe that my chars are 7 pixels wide
-                start = next;
-                ch = text[start];
+                    x += 7*count;  // I believe that my chars are 7 pixels wide
+                    start = next;
+                    ch = text[start];
+                }
             }
-        }
-        EndPaint(hWnd, &ps);
-        return 0;
-case WM_DESTROY:
-        CommandBar_Destroy(g_hwndCB);
-        if (hFont != 0) DeleteObject(hFont);
-        PostQuitMessage(0);
-        return 0;
-case WM_ACTIVATE:
-        // Notify shell of our activate message
-        SHHandleWMActivate(hWnd, wParam, lParam, &s_sai, FALSE);
-        return 0;
-case WM_SETTINGCHANGE:
-        SHHandleWMSettingChange(hWnd, wParam, lParam, &s_sai);
-        return 0;
-default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
+            EndPaint(hWnd, &ps);
+            return 0;
+        case WM_DESTROY:
+            CommandBar_Destroy(g_hwndCB);
+            if (hFont != 0) DeleteObject(hFont);
+            PostQuitMessage(0);
+            return 0;
+        case WM_ACTIVATE:
+            // Notify shell of our activate message
+            SHHandleWMActivate(hWnd, wParam, lParam, &s_sai, FALSE);
+            return 0;
+        case WM_SETTINGCHANGE:
+            SHHandleWMSettingChange(hWnd, wParam, lParam, &s_sai);
+            return 0;
+        default:
+            return DefWindowProc(hWnd, message, wParam, lParam);
     }
 }
 
 HWND CreateRpCommandBar(HWND hwnd)
-{
-    SHMENUBARINFO mbi;
+{   SHMENUBARINFO mbi;
     std::memset(&mbi, 0, sizeof(SHMENUBARINFO));
     mbi.cbSize     = sizeof(SHMENUBARINFO);
     mbi.hwndParent = hwnd;
@@ -589,37 +577,35 @@ HWND CreateRpCommandBar(HWND hwnd)
     mbi.nBmpId     = 0;
     mbi.cBmpImages = 0;
     if (!SHCreateMenuBar(&mbi))
-        return NULL;
+        return nullptr;
     return mbi.hwndMB;
 }
 
 // Message handler for the About box.
-LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    SHINITDLGINFO shidi;
+LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam,
+                       LPARAM lParam)
+{   SHINITDLGINFO shidi;
     switch (message)
-    {
-case WM_INITDIALOG:
-        // Create a Done button and size it.
-        shidi.dwMask = SHIDIM_FLAGS;
-        shidi.dwFlags = SHIDIF_DONEBUTTON | SHIDIF_SIPDOWN |
-                        SHIDIF_SIZEDLGFULLSCREEN;
-        shidi.hDlg = hDlg;
-        SHInitDialog(&shidi);
-        return TRUE;
-case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK)
-        {   EndDialog(hDlg, LOWORD(wParam));
+    {   case WM_INITDIALOG:
+            // Create a Done button and size it.
+            shidi.dwMask = SHIDIM_FLAGS;
+            shidi.dwFlags = SHIDIF_DONEBUTTON | SHIDIF_SIPDOWN |
+                            SHIDIF_SIZEDLGFULLSCREEN;
+            shidi.hDlg = hDlg;
+            SHInitDialog(&shidi);
             return TRUE;
-        }
-        break;
+        case WM_COMMAND:
+            if (LOWORD(wParam) == IDOK)
+            {   EndDialog(hDlg, LOWORD(wParam));
+                return TRUE;
+            }
+            break;
     }
     return FALSE;
 }
 
 void ce_getline()
-{
-    PostMessage(g_hWnd, WM_REQUESTINPUT, 0, 0);
+{   PostMessage(g_hWnd, WM_REQUESTINPUT, 0, 0);
     WaitForSingleObject(mutex1, INFINITE);
     std::memcpy(workerLine, inputLine, inputN);
     workerN = inputN;
@@ -635,31 +621,27 @@ extern int ce_readch();
 extern void ce_print(char *s);
 
 int ce_readch()
-{
-    if (workerN == workerP) ce_getline();
+{   if (workerN == workerP) ce_getline();
     if (workerN == workerP) return EOF;
     else return workerLine[workerP++];
 }
 
 void ce_print(char *s)
-{
-    while (*s != 0) PostMessage(g_hWnd, WM_PRINTCHAR, *s++, 0);
+{   while (*s != 0) PostMessage(g_hWnd, WM_PRINTCHAR, *s++, 0);
 }
 
 char *argvec[] =
-{
-    "csl",
+{   "csl",
     "-v",
     "-i",
     "\\IPAQ File Store\\reduce.img",
-    NULL
+    nullptr
 };
 
 extern int fwin_main(int argc, char *argv[]);
 
 DWORD WINAPI WorkerProc(LPVOID parm)
-{
-    WaitForSingleObject(mutex2, INFINITE);
+{   WaitForSingleObject(mutex2, INFINITE);
     int i;
     for (i=0; i<7; i++)
         ce_print("....:....*");

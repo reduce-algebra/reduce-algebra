@@ -99,7 +99,7 @@ static const void *body(MD5_CTX *ctx, const void *data, size_t size)
     MD5_u32plus a, b, c, d;
     MD5_u32plus saved_a, saved_b, saved_c, saved_d;
 
-    ptr = (const unsigned char *)data;
+    ptr = reinterpret_cast<const unsigned char *>(data);
 
     a = ctx->a;
     b = ctx->b;
@@ -231,13 +231,13 @@ void MD5_Update(MD5_CTX *ctx, const void *data, size_t size)
         }
 
         std::memcpy(&ctx->buffer[used], data, available);
-        data = (const unsigned char *)data + available;
+        data = reinterpret_cast<const unsigned char *>(data) + available;
         size -= available;
         body(ctx, ctx->buffer, 64);
     }
 
     if (size >= 64)
-    {   data = body(ctx, data, size & ~(unsigned long)0x3f);
+    {   data = body(ctx, data, size & ~static_cast<unsigned long>(0x3f));
         size &= 0x3f;
     }
 

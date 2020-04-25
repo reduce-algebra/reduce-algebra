@@ -159,7 +159,10 @@ inline void my_assert(bool ok, F&& action)
 //     my_assert(predicate, [&]{...});
 // where the "..." is an arbitrary sequence of actions to be taken
 // if the assertion fails.
-    if (!ok) { action(); my_abort(); }
+    if (!ok)
+    {   action();
+        my_abort();
+    }
 #endif //NDEBUG
 }
 
@@ -171,39 +174,39 @@ inline void my_assert(bool ok, F&& action)
 // semicolons.
 //
 
-#define D do { \
-          const char *_f_ = std::strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = std::strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          std::fprintf(stderr, "Line %d File %s\n", __LINE__, _f_); \
-          std::fflush(stderr); \
+#define D do {                                                         \
+          const char *_f_ = std::strrchr(__FILE__, '/');               \
+          if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');      \
+          if (_f_ == nullptr) _f_ = __FILE__; else _f_++;              \
+          std::fprintf(stderr, "Line %d File %s\n", __LINE__, _f_);    \
+          std::fflush(stderr);                                         \
           } while (0)
 
-#define DS(s) do { \
-          const char *_f_ = std::strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = std::strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+#define DS(s) do {                                                           \
+          const char *_f_ = std::strrchr(__FILE__, '/');                     \
+          if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');            \
+          if (_f_ == nullptr) _f_ = __FILE__; else _f_++;                    \
           std::fprintf(stderr, "Line %d File %s: %s\n", __LINE__, _f_, (s)); \
-          std::fflush(stderr); \
+          std::fflush(stderr);                                               \
           } while (0)
 
-#define DX(s) do { \
-          const char *_f_ = std::strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = std::strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          std::fprintf(stderr, "Line %d File %s: %llx\n", __LINE__, _f_, \
-                          (long long unsigned)(s)); \
-          std::fflush(stderr); \
+#define DX(s) do {                                                          \
+          const char *_f_ = std::strrchr(__FILE__, '/');                    \
+          if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');           \
+          if (_f_ == nullptr) _f_ = __FILE__; else _f_++;                   \
+          std::fprintf(stderr, "Line %d File %s: %llx\n", __LINE__, _f_,    \
+                          (long long unsigned)(s));                         \
+          std::fflush(stderr);                                              \
           } while (0)
 
-#define DF(f,...) do { \
-          const char *_f_ = std::strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = std::strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          std::fprintf(stderr, "Line %d File %s: ", __LINE__, _f_); \
-          std::fprintf(stderr, f, __VA_ARGS__); \
-          std::fprintf(stderr, "\n"); \
-          std::fflush(stderr); \
+#define DF(f,...) do {                                               \
+          const char *_f_ = std::strrchr(__FILE__, '/');             \
+          if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');    \
+          if (_f_ == nullptr) _f_ = __FILE__; else _f_++;            \
+          std::fprintf(stderr, "Line %d File %s: ", __LINE__, _f_);  \
+          std::fprintf(stderr, f, __VA_ARGS__);                      \
+          std::fprintf(stderr, "\n");                                \
+          std::fflush(stderr);                                       \
           } while (0)
 
 
@@ -229,7 +232,7 @@ inline void my_assert(bool ok, F&& action)
 // if debugging you might want to ensure that such a directory exists!
 //
 
-static std::FILE *fwin_logfile = NULL;
+static std::FILE *fwin_logfile = nullptr;
 
 #define LOGFILE_NAME "fwin-debug.log"
 
@@ -245,7 +248,7 @@ void fwin_write_log(const char *s, ...)
 // created when there is not concurrency to cause confusion. That seems
 // lighter weight than messing with a further critical section here.
 //
-    int create = (fwin_logfile == NULL);
+    int create = (fwin_logfile == nullptr);
     std::va_list x;
 //
 // Note that I create this file in "a" (append) mode so that previous
@@ -263,25 +266,29 @@ void fwin_write_log(const char *s, ...)
 // then I will place the log file adjacant to the .app directory rather
 // than in the MacOS directory next to the actual raw executable.
 //
-        else if (std::sprintf(logfile_name, "%s.app/Contents/MacOS", programName),
+        else if (std::sprintf(logfile_name, "%s.app/Contents/MacOS",
+                              programName),
                  std::strlen(programDir) >= std::strlen(logfile_name) &&
-                 std::strcmp(programDir+std::strlen(programDir)-std::strlen(logfile_name),
-                        logfile_name) == 0)
+                 std::strcmp(programDir+std::strlen(programDir)-std::strlen(
+                                 logfile_name),
+                             logfile_name) == 0)
         {   std::sprintf(logfile_name, "%.*s/%s",
-                    (int)(std::strlen(programDir)-std::strlen(programName)-19),
-                    programDir, LOGFILE_NAME);
+                         static_cast<int>(std::strlen(programDir)-std::strlen(programName)-19),
+                         programDir, LOGFILE_NAME);
         }
 #endif // __APPLE__
         else std::sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
         fwin_logfile = std::fopen(logfile_name, "a");
 // I provide a fallback in case (perhaps) permissions fail me.
-        if (fwin_logfile == NULL) fwin_logfile = std::fopen("/tmp/fwin.log", "w");
+        if (fwin_logfile == nullptr) fwin_logfile =
+                std::fopen("/tmp/fwin.log", "w");
     }
-    if (fwin_logfile == NULL) return; // the file can not be used
+    if (fwin_logfile == nullptr) return; // the file can not be used
     if (create)
-    {   std::time_t tt = std::time(NULL);
+    {   std::time_t tt = std::time(nullptr);
         struct std::tm *tt1 = std::localtime(&tt);
-        std::fprintf(fwin_logfile, "Log segment starting: %s\n", std::asctime(tt1));
+        std::fprintf(fwin_logfile, "Log segment starting: %s\n",
+                     std::asctime(tt1));
     }
     va_start(x, s);
     std::vfprintf(fwin_logfile, s, x);
@@ -372,16 +379,17 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
             (buf.st_mode & S_IFDIR) != 0)
         {
 // Well foo.app exists and is a directory, so I will try to use it
-            const char **nargs = (const char **)std::malloc(sizeof(char *)*(argc+3));
+            const char **nargs = (const char **)std::malloc(sizeof(char *)*
+                                 (argc+3));
             int i;
 #ifdef DEBUG
 //
 // Since I am about to restart the program I do not want the new version to
 // find that the log file is open and hence not accessible.
 //
-            if (fwin_logfile != NULL)
+            if (fwin_logfile != nullptr)
             {   std::fclose(fwin_logfile);
-                fwin_logfile = NULL;
+                fwin_logfile = nullptr;
             }
 #endif // DEBUG
             nargs[0] = "/usr/bin/open";
@@ -389,16 +397,16 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
             nargs[2] = "--args";
             for (i=1; i<argc; i++)
                 nargs[i+2] = argv[i];
-            nargs[argc+2] = NULL;
+            nargs[argc+2] = nullptr;
 // /usr/bin/open foo.app --args [any original arguments]
             execv("/usr/bin/open", const_cast<char * const *>(nargs));
 // execv should NEVER return, but if it does I might like to at least
 // attempt to display a report including the error code.
             std::fprintf(stderr,
-                    "Returned from execv with error code %d\n", errno);
+                         "Returned from execv with error code %d\n", errno);
 // These daya I can not even be certain that calling std::exit() will cause
 // and application to terminate (I think) but the use here should NEVER get
-// called and so just what happens here is not that important! 
+// called and so just what happens here is not that important!
             std::exit(1);
         }
     }
@@ -418,8 +426,7 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
 //
 BOOL CtrlHandler(DWORD x)
 {   switch (x)
-    {
-        case CTRL_CLOSE_EVENT:
+    {   case CTRL_CLOSE_EVENT:
         case CTRL_LOGOFF_EVENT:
         case CTRL_SHUTDOWN_EVENT:
         case CTRL_BREAK_EVENT:
@@ -530,7 +537,7 @@ int windows_checks(int is_windowed)
 // want to run a terminal or a windowed version of everything.
 //
         const char *ssh = my_getenv("SSH_CLIENT");
-        if (ssh != NULL && *ssh != 0)
+        if (ssh != nullptr && *ssh != 0)
         {   FWIN_LOG("SSH_CLIENT set on Windows, so treat as console app\n");
             ssh_client = 1;
             is_windowed = 0;
@@ -572,7 +579,7 @@ int windows_checks(int is_windowed)
 // work in stream/console mode.
 //
         const char *ssh = my_getenv("SSH_CLIENT");
-        if (ssh != NULL && *ssh != 0)
+        if (ssh != nullptr && *ssh != 0)
         {   FWIN_LOG("SSH_CLIENT set\n");
             ssh_client = 1;
             is_windowed = 0;
@@ -626,12 +633,12 @@ void sort_out_windows_console(int is_windowed)
                 std::freopen("CONOUT$", "w+", stderr);
                 SetStdHandle(STD_INPUT_HANDLE,
                              CreateFile("CONIN$",
-                                        GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL,
-                                        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
+                                        GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, nullptr,
+                                        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
                 SetStdHandle(STD_OUTPUT_HANDLE,
                              h = CreateFile("CONOUT$",
-                                            GENERIC_READ|GENERIC_WRITE, FILE_SHARE_WRITE, NULL,
-                                            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
+                                            GENERIC_READ|GENERIC_WRITE, FILE_SHARE_WRITE, nullptr,
+                                            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
                 SetStdHandle(STD_ERROR_HANDLE, h);
 #endif // __CYGWIN__
 // I will also pause for 5 seconds at the end...
@@ -647,8 +654,7 @@ void sort_out_windows_console(int is_windowed)
 #ifdef __APPLE__
 
 static int unix_and_osx_checks(int xwindowed)
-{
-    const char *disp;
+{   const char *disp;
 //
 // If stdin or stdout is not from a "tty" I will run in non-windowed mode.
 // This may help when the system is used in scripts. I worry a bit about
@@ -668,22 +674,22 @@ static int unix_and_osx_checks(int xwindowed)
 // native display I would merely omit this test.
 //
         disp = my_getenv("DISPLAY");
-        if (disp == NULL || std::strchr(disp, ':')==NULL) xwindowed = 0;
+        if (disp == nullptr || std::strchr(disp, ':')==nullptr) xwindowed = 0;
     }
 //
 // This may be a proper way to test if I am really running in an application
 // bundle.
 //
     {   CFBundleRef mainBundle = CFBundleGetMainBundle();
-        if (mainBundle == NULL) macApp = 0;
+        if (mainBundle == nullptr) macApp = 0;
         else
         {   CFDictionaryRef d = CFBundleGetInfoDictionary(mainBundle);
-            if (d == NULL) macApp = 0;
+            if (d == nullptr) macApp = 0;
             else
             {   CFStringRef s =
                     (CFStringRef)CFDictionaryGetValue(d,
                                                       CFSTR("ATSApplicationFontsPath"));
-                macApp = (s != NULL);
+                macApp = (s != nullptr);
             }
         }
     }
@@ -701,7 +707,7 @@ static int unix_and_osx_checks(int xwindowed)
 // have connected via ssh since I will not have the desktop forwarded.
 //
     {   const char *ssh = my_getenv("SSH_CLIENT");
-        if (ssh != NULL && *ssh != 0)
+        if (ssh != nullptr && *ssh != 0)
         {   FWIN_LOG("SSH_CLIENT set on MacOSX\n");
 //          ssh_client = 1;
             xwindowed = 0;
@@ -713,8 +719,7 @@ static int unix_and_osx_checks(int xwindowed)
 #else // __APPLE__
 
 static int unix_and_osx_checks(int is_windowed)
-{
-    const char *disp;
+{   const char *disp;
 //
 // If stdin or stdout is not from a "tty" I will run in non-windowed mode.
 // This may help when the system is used in scripts. I worry a bit about
@@ -722,7 +727,8 @@ static int unix_and_osx_checks(int is_windowed)
 // but by clicking on an icon...
 //
     if (is_windowed != 0)
-    {   if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) is_windowed = 0;
+    {   if (!isatty(fileno(stdin)) ||
+            !isatty(fileno(stdout))) is_windowed = 0;
 //
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
 // set I will suppose that I can not create a window. That case will normally
@@ -734,14 +740,16 @@ static int unix_and_osx_checks(int is_windowed)
 // native display I would merely omit this test.
 //
         disp = my_getenv("DISPLAY");
-        if (disp == NULL || std::strchr(disp, ':')==NULL) is_windowed = 0;
+        if (disp == nullptr ||
+            std::strchr(disp, ':')==nullptr) is_windowed = 0;
     }
 // If stdin or stdout is not from a "tty" I will run in non-windowed mode.
 // This may help when the system is used in scripts. I worry a bit about
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
 //
-    if ((!isatty(fileno(stdin)) || !isatty(fileno(stdout)))) is_windowed = 0;
+    if ((!isatty(fileno(stdin)) ||
+         !isatty(fileno(stdout)))) is_windowed = 0;
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
 // set I will suppose that I can not create a window. That case will normally
 // arise when you have gained remote access to the system eg via telnet or
@@ -750,7 +758,8 @@ static int unix_and_osx_checks(int is_windowed)
 // string.
 //
     disp = my_getenv("DISPLAY");
-    if (disp == NULL || std::strchr(disp, ':')==NULL) is_windowed = 0;
+    if (disp == nullptr ||
+        std::strchr(disp, ':')==nullptr) is_windowed = 0;
     return is_windowed;
 }
 
@@ -765,7 +774,8 @@ static int unix_and_osx_checks(int is_windowed)
 // to use it outside the CSL project
 //
 #if defined PART_OF_FOX || defined CSL
-int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
+int fwin_startup(int argc, const char *argv[],
+                 fwin_entrypoint *fwin_main)
 #else // defined PART_OF_FOX || defined CSL
 int main(int argc, const char *argv[])
 #endif // defined PART_OF_FOX || defined CSL
@@ -781,11 +791,12 @@ int main(int argc, const char *argv[])
 //
     if (argc == 0)
     {   std::fprintf(stderr,
-                "argc == 0. You tried to launch the code in a funny way?\n");
+                     "argc == 0. You tried to launch the code in a funny way?\n");
         return 1;
     }
     if ((i = find_program_directory(argv[0])) != 0)
-    {   std::fprintf(stderr, "Unable to identify program name and directory (%d)\n", i);
+    {   std::fprintf(stderr,
+                     "Unable to identify program name and directory (%d)\n", i);
         return 1;
     }
     texmacs_mode = false;
@@ -937,12 +948,14 @@ void sigint_handler(int signo, siginfo_t *t, void *v)
 #else // !HAVE_SIGACTION
 void sigint_handler(int signo)
 #endif // !HAVE_SIGACTION
-{   if (async_interrupt_callback != NULL) (*async_interrupt_callback)(QUIET_INTERRUPT);
+{   if (async_interrupt_callback != nullptr) (
+            *async_interrupt_callback)(QUIET_INTERRUPT);
 }
 
 #endif // !EMBEDDED
 
-int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
+int plain_worker(int argc, const char *argv[],
+                 fwin_entrypoint *fwin_main)
 {
 #ifndef EMBEDDED
 // Even though these days I mostly intend ^C to be detected by observing
@@ -961,7 +974,7 @@ int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 //     far as the exception system is concerned that leaves us within the
 //     handler. But after the  exit is caught by setjmp I want the
 //     exception to remain trapped.
-    if (sigaction(SIGINT, &sa, NULL) == -1)
+    if (sigaction(SIGINT, &sa, nullptr) == -1)
         /* I can not thing of anything useful to do if I fail here! */;
 #else // !HAVE_SIGACTION
     std::signal(SIGINT, sigint_handler);
@@ -987,7 +1000,7 @@ int fwin_plain_getchar()
     {   while (chars_left == 0)
         {   term_setprompt(fwin_prompt_string);
             current_line = term_getline();
-            if (current_line == NULL) return EOF;  // failed or EOF
+            if (current_line == nullptr) return EOF;  // failed or EOF
             chars_left = std::strlen(current_line);
         }
     }
@@ -1092,7 +1105,7 @@ void fwin_set_prompt(const char *s)
 }
 
 void fwin_menus(char **modules, char **switches,
-                       review_switch_settings_function *f)
+                review_switch_settings_function *f)
 {
 }
 
@@ -1160,7 +1173,7 @@ int find_program_directory(const char *argv0)
     std::strcpy(this_executable, argv0);
 // In argv0 was enclosed in single or double quotes then remove them.
     if (this_executable[0]=='\'')
-    {   for (unsigned int i=0;;i++)
+    {   for (unsigned int i=0;; i++)
         {   int c = this_executable[i+1];
             if (c == '\'') c = 0;
             this_executable[i] = c;
@@ -1168,7 +1181,7 @@ int find_program_directory(const char *argv0)
         }
     }
     if (this_executable[0]=='"')
-    {   for (unsigned int i=0;;i++)
+    {   for (unsigned int i=0;; i++)
         {   int c = this_executable[i+1];
             if (c == '"') c = 0;
             this_executable[i] = c;
@@ -1178,7 +1191,8 @@ int find_program_directory(const char *argv0)
     if (!(std::isalpha(this_executable[0]) &&
           this_executable[1] == ':' &&
           this_executable[2] == '\\'))
-    {   GetModuleFileName(NULL, this_executable, LONGEST_LEGAL_FILENAME-2);
+    {   GetModuleFileName(nullptr, this_executable,
+                          LONGEST_LEGAL_FILENAME-2);
         argv0 = this_executable;
     }
     std::strncpy(ww, this_executable, sizeof(ww));
@@ -1200,8 +1214,8 @@ int find_program_directory(const char *argv0)
         return 0;
     }
 
-    w = (char *)std::malloc(1+std::strlen(ww));
-    if (w == NULL) return 5;           // 5 = malloc fails
+    w = reinterpret_cast<char *>(std)::malloc(1+std::strlen(ww));
+    if (w == nullptr) return 5;           // 5 = malloc fails
     std::strcpy(w, ww);
     fullProgramName = w;
     len = std::strlen(ww);
@@ -1246,12 +1260,14 @@ int find_program_directory(const char *argv0)
     ndir = len - npgm - 1;
     if (ndir < 0) programDir = ".";  // none really visible
     else
-    {   if ((w = (char *)std::malloc(ndir+1)) == NULL) return 1;
+    {   if ((w = reinterpret_cast<char *>(std)::malloc(
+                     ndir+1)) == nullptr) return 1;
         std::strncpy(w, fullProgramName, ndir);
         w[ndir] = 0;
         programDir = w;
     }
-    if ((w = (char *)std::malloc(npgm+1)) == NULL) return 1;
+    if ((w = reinterpret_cast<char *>(std)::malloc(npgm+1)) == nullptr)
+        return 1;
     std::strncpy(w, fullProgramName + len - npgm, npgm);
     w[npgm] = 0;
     programName = w;
@@ -1323,7 +1339,8 @@ int find_program_directory(const char *argv0)
 // environment variables and user-name get expanded out by the shell before
 // the command is actually launched.
 //
-    if (argv0 == NULL || argv0[0] == 0) // Information not there - return
+    if (argv0 == nullptr ||
+        argv0[0] == 0) // Information not there - return
     {   programDir = (const char *)"."; // some sort of default.
         programName = (const char *)"fwin";
         fullProgramName = (const char *)"./fwin";
@@ -1372,13 +1389,13 @@ int find_program_directory(const char *argv0)
 // that had embedded colons, and quote marks or escapes in $PATH to allow
 // for that. In such case this code will just fail to cope.
 //
-            if (path != NULL)
+            if (path != nullptr)
             {   while (*path != 0)
                 {   while (*path == ':') path++; // skip over ":"
                     n = 0;
                     while (*path != 0 && *path != ':')
                     {   pgmname[n++] = *path++;
-                        if (n > (int)(sizeof(pgmname)-3-std::strlen(argv0)))
+                        if (n > static_cast<int>(sizeof(pgmname)-3-std::strlen(argv0)))
                             return 3; // fail! 3=$PATH element overlong
                     }
 // Here I have separated off the next segment of my $PATH and put it at
@@ -1443,8 +1460,9 @@ int find_program_directory(const char *argv0)
 // Now fullProgramName is set up, but may refer to an array that
 // is stack allocated. I need to make it proper!
 //
-    w1 = (char *)std::malloc(1+std::strlen(fullProgramName));
-    if (w1 == NULL) return 5;           // 5 = malloc fails
+    w1 = reinterpret_cast<char *>(std)::malloc(1+std::strlen(
+                fullProgramName));
+    if (w1 == nullptr) return 5;           // 5 = malloc fails
     std::strcpy(w1, fullProgramName);
     fullProgramName = w1;
 #ifdef __CYGWIN__
@@ -1458,12 +1476,12 @@ int find_program_directory(const char *argv0)
     if (std::strlen(w1) > 4)
     {   char *w2 = w1 + std::strlen(w1) - 4;
         if (w2[0] == '.' &&
-            ((std::tolower((unsigned char)w2[1]) == 'e' &&
-              std::tolower((unsigned char)w2[2]) == 'x' &&
-              std::tolower((unsigned char)w2[3]) == 'e') ||
-             (std::tolower((unsigned char)w2[1]) == 'c' &&
-              std::tolower((unsigned char)w2[2]) == 'o' &&
-              std::tolower((unsigned char)w2[3]) == 'm'))) w2[0] = 0;
+            ((std::tolower(static_cast<unsigned char>(w2[1])) == 'e' &&
+              std::tolower(static_cast<unsigned char>(w2[2])) == 'x' &&
+              std::tolower(static_cast<unsigned char>(w2[3])) == 'e') ||
+             (std::tolower(static_cast<unsigned char>(w2[1])) == 'c' &&
+              std::tolower(static_cast<unsigned char>(w2[2])) == 'o' &&
+              std::tolower(static_cast<unsigned char>(w2[3])) == 'm'))) w2[0] = 0;
     }
     if (std::strlen(w1) > 2)
     {   char *w2 = w1 + std::strlen(w1) - 2;
@@ -1501,8 +1519,8 @@ int find_program_directory(const char *argv0)
     for (n=std::strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               // 6 = no "/" in full file path
-    w1 = (char *)std::malloc(1+n);
-    if (w1 == NULL) return 7;           // 7 = malloc fails
+    w1 = reinterpret_cast<char *>(std)::malloc(1+n);
+    if (w1 == nullptr) return 7;           // 7 = malloc fails
     std::strncpy(w1, fullProgramName, n);
     w1[n] = 0;
 // Note that if the executable was "/foo" then programDir will end up as ""
@@ -1510,8 +1528,8 @@ int find_program_directory(const char *argv0)
 //
     programDir = w1;
     n1 = std::strlen(fullProgramName) - n;
-    w1 = (char *)std::malloc(n1);
-    if (w1 == NULL) return 8;           // 8 = malloc fails
+    w1 = reinterpret_cast<char *>(std)::malloc(n1);
+    if (w1 == nullptr) return 8;           // 8 = malloc fails
     std::strncpy(w1, fullProgramName+n+1, n1-1);
     w1[n1-1] = 0;
     programName = w1;
@@ -1542,7 +1560,7 @@ int find_program_directory(const char *argv0)
 extern int get_home_directory(char *b, size_t len);
 extern int get_users_home_directory(char *b, size_t len);
 
-static lookup_function *look_in_variable = NULL;
+static lookup_function *look_in_variable = nullptr;
 
 void fwin_set_lookup(lookup_function *f)
 {   look_in_variable = f;
@@ -1617,7 +1635,7 @@ void process_file_name(char *filename, const char *old, size_t n)
             if (c == '.' || c == '/' || c == '\\') break;
             old++;
             n--;
-            *o++ = (char)c;
+            *o++ = static_cast<char>(c);
         }
         *o = 0;
 //
@@ -1664,7 +1682,7 @@ void process_file_name(char *filename, const char *old, size_t n)
                 {   c = *old++;
                     n--;
                     if (c == '}') break;
-                    *p++ = (char)c;
+                    *p++ = static_cast<char>(c);
                 }
             }
             else
@@ -1673,28 +1691,28 @@ void process_file_name(char *filename, const char *old, size_t n)
                     if (c == '.' || c == '/' || c == '\\') break;
                     old++;
                     n--;
-                    *p++ = (char)c;
+                    *p++ = static_cast<char>(c);
                 }
             }
             *p = 0;
             i = std::strlen(o) + 2;
             while (i-- != 0) o[i] = o[i-1];
-            if (look_in_variable != NULL &&
-                (p = (*look_in_variable)(o, '@')) != NULL &&
+            if (look_in_variable != nullptr &&
+                (p = (*look_in_variable)(o, '@')) != nullptr &&
                 p != o) o = p;
-            else if ((w = my_getenv(o+1)) != NULL)   // Shell variable?
+            else if ((w = my_getenv(o+1)) != nullptr)   // Shell variable?
             {   std::strcpy(o, w);
                 o = o + std::strlen(o);
             }
-            else if (look_in_variable != NULL &&
-                     (p = (*look_in_variable)(o, '$')) != NULL)
+            else if (look_in_variable != nullptr &&
+                     (p = (*look_in_variable)(o, '$')) != nullptr)
                 o = p;
             else
             {   *filename = 0;  // return reporting failure
                 return;
             }
         }
-        else *o++ = (char)c;
+        else *o++ = static_cast<char>(c);
     }
     *o = 0;
 #ifdef WIN32
@@ -1770,7 +1788,7 @@ void process_file_name(char *filename, const char *old, size_t n)
 // nothing.  In the end if all works I convert from an FSRef back to a path and
 // copy it to where I want it to be.
 //
-        if (FSPathMakeRef((UInt8 *)filename, &ref, NULL) == noErr &&
+        if (FSPathMakeRef((UInt8 *)filename, &ref, nullptr) == noErr &&
             FSResolveAliasFile(&ref, TRUE, &is_folder, &is_alias) == noErr &&
             is_alias &&
             FSRefMakePath(&ref, (UInt8 *)alias, (UInt32)sizeof(alias)) == noErr)
@@ -1846,7 +1864,7 @@ unsigned long int pack_date(int year, int mon, int day,
 int Cmkdir(const char *name)
 {   SECURITY_ATTRIBUTES s;
     s.nLength = sizeof(s);
-    s.lpSecurityDescriptor = NULL;
+    s.lpSecurityDescriptor = nullptr;
     s.bInheritHandle = FALSE;
     return CreateDirectory(name, &s);
 }
@@ -1863,8 +1881,8 @@ int truncate_file(std::FILE *f, long int where)
 
 void set_filedate(char *name, unsigned long int datestamp,
                   unsigned long int filetype)
-{   HANDLE h = CreateFile(name, GENERIC_WRITE, 0, NULL,
-                          OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+{   HANDLE h = CreateFile(name, GENERIC_WRITE, 0, nullptr,
+                          OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     SYSTEMTIME st;
     FILETIME ft;
     int yr, mon, day, hr, min, sec;
@@ -1882,7 +1900,7 @@ void set_filedate(char *name, unsigned long int datestamp,
     st.wMinute = min;
     st.wSecond = sec;
     SystemTimeToFileTime(&st, &ft);
-    SetFileTime(h, NULL, NULL, &ft);
+    SetFileTime(h, nullptr, nullptr, &ft);
     CloseHandle(h);
 }
 
@@ -1983,7 +2001,7 @@ void put_fileinfo(date_and_type *p, char *name)
 // This is called with a file- or directory-name as its first argument
 // and a function as its second.
 // It calls the function for every directory and every file that can be found
-// rooted from the given place.  If the file to scan is specified as NULL
+// rooted from the given place.  If the file to scan is specified as nullptr
 // the current directory is processed. I also arrange that an input string
 // "." (on Windows, DOS and Unix) or "@" (Archimedes) is treated as a request
 // to scan the whole of the current directory.
@@ -2033,18 +2051,18 @@ void set_hostcase(int fg)
 // Hmm - buffer overflow worry with the next line!
 static char win_filename[LONGEST_LEGAL_FILENAME];
 
-static WIN32_FIND_DATA *found_files = NULL;
+static WIN32_FIND_DATA *found_files = nullptr;
 static int n_found_files = 0, max_found_files = 0;
 
 #define TABLE_INCREMENT 50
 
-static int more_files(void)
+static int more_filesstatic_cast<void>()
 {   if (n_found_files > max_found_files - 5)
     {   WIN32_FIND_DATA *fnew = (WIN32_FIND_DATA *)
-                                std::realloc((void *)found_files,
-                                        sizeof(WIN32_FIND_DATA)*
-                                        (max_found_files + TABLE_INCREMENT));
-        if (fnew == NULL) return 1;  // failure flag
+                                std::realloc(reinterpret_cast<void *>(found_files),
+                                             sizeof(WIN32_FIND_DATA)*
+                                             (max_found_files + TABLE_INCREMENT));
+        if (fnew == nullptr) return 1;  // failure flag
         found_files = fnew;
         max_found_files += TABLE_INCREMENT;
     }
@@ -2054,7 +2072,8 @@ static int more_files(void)
 int alphasort_files(const void *a, const void *b)
 {   const WIN32_FIND_DATA *fa = (const WIN32_FIND_DATA *)a,
                                *fb = (const WIN32_FIND_DATA *)b;
-    return std::strncmp(fb->cFileName, fa->cFileName, sizeof(fa->cFileName));
+    return std::strncmp(fb->cFileName, fa->cFileName,
+                        sizeof(fa->cFileName));
 }
 
 static void exall(int namelength,
@@ -2078,14 +2097,16 @@ static void exall(int namelength,
         if (!FindNextFile(hSearch, &found)) break;
     }
     FindClose(hSearch);
-    std::qsort((void *)&found_files[first],
-          n_found_files-first,
-          sizeof(WIN32_FIND_DATA),
-          alphasort_files);
-    while (rootlen>=0 && win_filename[rootlen]!='\\' && win_filename[rootlen]!='/')
+    std::qsort(reinterpret_cast<void *>()&found_files[first],
+               n_found_files-first,
+               sizeof(WIN32_FIND_DATA),
+               alphasort_files);
+    while (rootlen>=0 && win_filename[rootlen]!='\\' &&
+           win_filename[rootlen]!='/')
         rootlen--;
     while (n_found_files != first)
-    {   char *p = (char *)&found_files[--n_found_files].cFileName;
+    {   char *p = reinterpret_cast<char *>()
+                  &found_files[--n_found_files].cFileName;
         int c;
 //
 // Fill out filename with the actual name I grabbed, i.e. with
@@ -2099,7 +2120,7 @@ static void exall(int namelength,
 //
         while ((c = *p++) != 0)
         {   if (!hostcase) if (std::isupper(c)) c = std::tolower(c);
-            win_filename[namelength++] = (char)c;
+            win_filename[namelength++] = static_cast<char>(c);
         }
         win_filename[namelength] = 0;
         if (found_files[n_found_files].dwFileAttributes &
@@ -2131,7 +2152,7 @@ static void exall(int namelength,
 void scan_directory(const char *dir,
                     void (*proc)(const char *name, int why, long int size))
 {   recursive_scan = 1;
-    if (dir==NULL || std::strcmp(dir,".")==0)
+    if (dir==nullptr || std::strcmp(dir,".")==0)
     {   dir = "*.*";
         scan_leafstart = 0;
     }
@@ -2143,7 +2164,7 @@ void scan_directory(const char *dir,
 void scan_files(const char *dir,
                 void (*proc)(const char *name, int why, long int size))
 {   recursive_scan = 0;
-    if (dir==NULL || std::strcmp(dir,".")==0)
+    if (dir==nullptr || std::strcmp(dir,".")==0)
     {   std::strcpy(win_filename, "*.*");
         scan_leafstart = 0;
     }
@@ -2173,19 +2194,19 @@ static char posix_filename[LONGEST_LEGAL_FILENAME];
 //
 
 
-static char **found_files = NULL;
+static char **found_files = nullptr;
 
 int n_found_files = 0, max_found_files = 0;
 
 #define TABLE_INCREMENT 50
 
-static int more_files(void)
+static int more_filesstatic_cast<void>()
 {   if (n_found_files > max_found_files - 5)
     {   char **fnew = (char **)
-                      std::realloc((void *)found_files,
-                              sizeof(char *) *
-                              (max_found_files + TABLE_INCREMENT));
-        if (fnew == NULL) return 1;  // failure flag
+                      std::realloc(reinterpret_cast<void *>(found_files),
+                                   sizeof(char *) *
+                                   (max_found_files + TABLE_INCREMENT));
+        if (fnew == nullptr) return 1;  // failure flag
         found_files = fnew;
         max_found_files += TABLE_INCREMENT;
     }
@@ -2217,8 +2238,8 @@ static void exall(int namelength,
     int rootlen = namelength, first = n_found_files;
     proc(posix_filename, SCAN_STARTDIR, 0);
     d = opendir(posix_filename);
-    if (d != NULL)
-    {   while ((dd = readdir(d)) != NULL)
+    if (d != nullptr)
+    {   while ((dd = readdir(d)) != nullptr)
         {   char *leafname = dd->d_name;
             char *copyname;
 //
@@ -2228,25 +2249,27 @@ static void exall(int namelength,
             if (std::strcmp(leafname, ".") == 0 ||
                 std::strcmp(leafname, "..") == 0) continue;
             if (more_files()) break;
-            copyname = (char *)std::malloc(1+std::strlen(leafname));
-            if (copyname == NULL) break;
+            copyname = reinterpret_cast<char *>(std)::malloc(1+std::strlen(
+                           leafname));
+            if (copyname == nullptr) break;
             std::strcpy(copyname, leafname);
             found_files[n_found_files++] = copyname;
         }
         closedir(d);
     }
 
-    std::qsort((void *)&found_files[first],
-          n_found_files-first,
-          sizeof(char *),
-          alphasort_files);
+    std::qsort(reinterpret_cast<void *>()&found_files[first],
+               n_found_files-first,
+               sizeof(char *),
+               alphasort_files);
     posix_filename[rootlen] = '/';
     while (n_found_files != first)
     {   char *p = found_files[--n_found_files];
         int c;
         namelength = rootlen+1;
-        while ((c = *p++) != 0) posix_filename[namelength++] = (char)c;
-        std::free((void *)found_files[n_found_files]);
+        while ((c = *p++) != 0) posix_filename[namelength++] =
+                static_cast<char>(c);
+        std::free(reinterpret_cast<void *>(found_files[n_found_files]));
         posix_filename[namelength] = 0;
         scan_file(namelength, proc);
     }
@@ -2289,7 +2312,7 @@ static void scan_file(int namelength,
 void scan_directory(const char *dir,
                     void (*proc)(const char *name, int why, long int size))
 {   recursive_scan = 1;
-    if (dir==NULL || std::strcmp(dir, ".")==0) dir = ".";
+    if (dir==nullptr || std::strcmp(dir, ".")==0) dir = ".";
     scan_leafstart = std::strlen(dir)+1;
     std::strcpy(posix_filename, dir);
     scan_file(scan_leafstart-1, proc);
@@ -2298,7 +2321,7 @@ void scan_directory(const char *dir,
 void scan_files(const char *dir,
                 void (*proc)(const char *name, int why, long int size))
 {   recursive_scan = 0;
-    if (dir==NULL || std::strcmp(dir, ".")==0) dir = ".";
+    if (dir==nullptr || std::strcmp(dir, ".")==0) dir = ".";
     scan_leafstart = std::strlen(dir)+1;
     std::strcpy(posix_filename, dir);
     exall(scan_leafstart-1, proc);
@@ -2308,23 +2331,23 @@ void scan_files(const char *dir,
 
 
 std::FILE *open_file(char *filename, const char *old, size_t n,
-                const char *mode, std::FILE *old_file)
+                     const char *mode, std::FILE *old_file)
 {
 //
 // mode is something like "r" or "w" or "rb", as needed by fopen(),
-// and old_file is NULL normally, but can be a (FILE *) to indicate
+// and old_file is nullptr normally, but can be a (FILE *) to indicate
 // the use of freopen rather than fopen.
 //
     std::FILE *ff;
     process_file_name(filename, old, n);
-    if (*filename == 0) return NULL;
-    if (old_file == NULL) ff = std::fopen(filename, mode);
+    if (*filename == 0) return nullptr;
+    if (old_file == nullptr) ff = std::fopen(filename, mode);
     else ff = std::freopen(filename, mode, old_file);
 //
 // In suitable cases when the first attempt to open the file fails I
 // will try creating any necessary directories and then try again.
 //
-    if (ff==NULL && *mode=='w')
+    if (ff==nullptr && *mode=='w')
     {   char *p = filename;
         while (*p != 0)
         {   int ch = *p;
@@ -2335,10 +2358,10 @@ std::FILE *open_file(char *filename, const char *old, size_t n,
             }
             p++;
         }
-        if (old_file == NULL) ff = std::fopen(filename, mode);
+        if (old_file == nullptr) ff = std::fopen(filename, mode);
         else ff = std::freopen(filename, mode, old_file);
     }
-    if (ff != NULL) std::setvbuf(ff, NULL, _IOFBF, 0x10000);
+    if (ff != nullptr) std::setvbuf(ff, nullptr, _IOFBF, 0x10000);
     return ff;
 }
 
@@ -2373,7 +2396,7 @@ char *change_directory(char *filename, const char *old, size_t n)
         std::sprintf(err_buf, msg, filename);
         return err_buf;
     }
-    else return NULL;
+    else return nullptr;
 }
 
 int create_directory(char *filename, const char *old, size_t n)
@@ -2426,7 +2449,7 @@ int delete_wildcard(char *filename, const char *old, size_t n)
 #else // WIN32
         glob_t gg;
         size_t i;
-        if (glob(filename, GLOB_NOSORT, NULL, &gg) == 0)
+        if (glob(filename, GLOB_NOSORT, nullptr, &gg) == 0)
         {   for (i=0; i<gg.gl_pathc; i++)
                 scan_directory(gg.gl_pathv[i], remove_files);
             globfree(&gg);
@@ -2446,7 +2469,8 @@ int64_t file_length(char *filename, const char *old, size_t n)
 
 #ifdef NAG_VERSION
 
-int list_directory_members(char *filename, const char *old, char **filelist[],
+int list_directory_members(char *filename, const char *old,
+                           char **filelist[],
                            size_t n)
 {   struct dirent **namelist;
     int number_of_entries, i;
@@ -2455,8 +2479,9 @@ int list_directory_members(char *filename, const char *old, char **filelist[],
     process_file_name(filename, old, n);
 
     // scandir expects "." for the current directory
-    if (*filename == 0) number_of_entries = scandir(".",&namelist,NULL,NULL);
-    else number_of_entries = scandir(filename,&namelist,NULL,NULL);
+    if (*filename == 0) number_of_entries = scandir(".",&namelist,nullptr,
+                                                nullptr);
+    else number_of_entries = scandir(filename,&namelist,nullptr,nullptr);
 
     //
     // If the scandir failed then return now, since we make an assumption later
@@ -2535,19 +2560,20 @@ char *get_truename(char *filename, const char *old, size_t n)
     process_file_name(filename, old, n);
     if (*filename == 0)
     {   std::strcpy(filename, "truename");
-        return NULL;
+        return nullptr;
     }
 
     // Find out whether we have a file or a directory
     if (stat(filename,&buf) == -1)
     {   std::strcpy(filename, "truename: cannot stat file");
-        return NULL;
+        return nullptr;
     }
 
     // Store current directory
     if (get_current_directory(pwd, LONGEST_LEGAL_FILENAME) < 0)
-    {   std::strcpy(filename, "truename: cannot get current working directory");
-        return NULL;
+    {   std::strcpy(filename,
+                    "truename: cannot get current working directory");
+        return nullptr;
     }
 
     if ((buf.st_mode & S_IFMT) == S_IFDIR)
@@ -2555,18 +2581,19 @@ char *get_truename(char *filename, const char *old, size_t n)
         char *dir1;
         if (chdir(filename) != 0)
         {   std::strcpy(filename, "truename: cannot change directory");
-            return NULL;
+            return nullptr;
         }
-        dir1 = (char*)std::malloc(LONGEST_LEGAL_FILENAME);
-        if (getcwd(dir1,LONGEST_LEGAL_FILENAME) == NULL)
-        {   std::strcpy(filename, "truename: cannot get current working directory");
+        dir1 = reinterpret_cast<char*>(std)::malloc(LONGEST_LEGAL_FILENAME);
+        if (getcwd(dir1,LONGEST_LEGAL_FILENAME) == nullptr)
+        {   std::strcpy(filename,
+                        "truename: cannot get current working directory");
             std::free(dir1);
-            return NULL;
+            return nullptr;
         }
         if (chdir(pwd) != 0)
         {   std::strcpy(filename, "truename: cannot change directory");
             std::free(dir1);
-            return NULL;
+            return nullptr;
         }
 //
 // Axiom-specific hack: truename preserves '/' at the end of
@@ -2586,28 +2613,30 @@ char *get_truename(char *filename, const char *old, size_t n)
         {   // Found a directory component
             char theDir[LONGEST_LEGAL_FILENAME];
             std::memset(theDir, 0, sizeof(theDir));
-            fn   = (char *)std::malloc(1+std::strlen(temp));
+            fn   = reinterpret_cast<char *>(std)::malloc(1+std::strlen(temp));
             std::strcpy(fn, temp);
             *temp = '\0';
             // fn is now "/file" and filename is the directory
 
             if (chdir(filename) != 0)
             {   std::strcpy(filename, "truename: cannot change directory");
-                return NULL;
+                return nullptr;
             }
             if (get_current_directory(theDir, LONGEST_LEGAL_FILENAME) < 0)
-            {   std::strcpy(filename, "truename: cannot get current working directory");
-                return NULL;
+            {   std::strcpy(filename,
+                            "truename: cannot get current working directory");
+                return nullptr;
             }
             temp = theDir;
             if (chdir(pwd) != 0)
             {   std::strcpy(filename, "truename: cannot change directory");
-                return NULL;
+                return nullptr;
             }
-            dir = (char *)std::malloc((std::strlen(temp) + std::strlen(fn) + 1)*sizeof(char));
-            if (dir == NULL)
+            dir = reinterpret_cast<char *>(std)::malloc((std::strlen(
+                        temp) + std::strlen(fn) + 1)*sizeof(char));
+            if (dir == nullptr)
             {   std::strcpy(filename, "truename: run out of memory");
-                return NULL;
+                return nullptr;
             }
             std::strcpy(dir, temp);
             std::strcat(dir, fn);
@@ -2615,10 +2644,11 @@ char *get_truename(char *filename, const char *old, size_t n)
             return dir;
         }
         else
-        {   dir = (char *)std::malloc((std::strlen(pwd) + std::strlen(filename) + 2)*sizeof(char));
-            if (dir == NULL)
+        {   dir = reinterpret_cast<char *>(std)::malloc((std::strlen(
+                        pwd) + std::strlen(filename) + 2)*sizeof(char));
+            if (dir == nullptr)
             {   std::strcpy(filename, "truename: run out of memory");
-                return NULL;
+                return nullptr;
             }
             std::strcpy(dir, pwd);
             std::strcat(dir, "/");
@@ -2677,7 +2707,8 @@ bool file_executable(char *filename, const char *old, size_t n)
 }
 
 
-int rename_file(char *from_name, const char *from_old, size_t from_size,
+int rename_file(char *from_name, const char *from_old,
+                size_t from_size,
                 char *to_name, const char *to_old, size_t to_size)
 {   process_file_name(from_name, from_old, from_size);
     process_file_name(to_name, to_old, to_size);
@@ -2738,8 +2769,9 @@ int get_home_directory(char *b, size_t len)
 
 int get_users_home_directory(char *b, size_t len)
 {   struct passwd *pw = getpwnam(b);
-    if (pw != NULL) std::strcpy(b, pw->pw_dir);
-    else std::strcpy(b, ".");    // use current directory if getpwnam() fails
+    if (pw != nullptr) std::strcpy(b, pw->pw_dir);
+    else std::strcpy(b,
+                         ".");    // use current directory if getpwnam() fails
     return std::strlen(b);
 }
 
@@ -2747,7 +2779,8 @@ int get_users_home_directory(char *b, size_t len)
 
 int get_home_directory(char *b, size_t len)
 {   size_t i;
-    const char *s = std::getenv("HOME"); // Probably works with most shells
+    const char *s =
+        std::getenv("HOME"); // Probably works with most shells
     if ((i = std::strlen(s)) > len) s = "~";
     std::strcpy(b, s);
     if ( b[i-1] != '/')
@@ -2758,8 +2791,9 @@ int get_home_directory(char *b, size_t len)
 }
 
 int get_users_home_directory(char *b, size_t len)
-{   (void)len;
-    std::strcpy(b, ".");    // use current directory if getpwnam() no available
+{   static_cast<void>(len);
+    std::strcpy(b,
+                ".");    // use current directory if getpwnam() no available
     return 1;
 }
 
@@ -2768,61 +2802,61 @@ int get_users_home_directory(char *b, size_t len)
 #ifdef EMBEDDED
 #if defined __ARM_EABI__ && !defined __linux__
 
-    int rmdir(const char *s)
-    {   return 0;
-    }
+int rmdir(const char *s)
+{   return 0;
+}
 
-    const char *getcwd(char *s, size_t n)
-    {   return ".";
-    }
+const char *getcwd(char *s, size_t n)
+{   return ".";
+}
 
-    int chdir(const char *s)
-    {   return 0;
-    }
+int chdir(const char *s)
+{   return 0;
+}
 
-    uid_t getuid()
-    {   return 100;
-    }
+uid_t getuid()
+{   return 100;
+}
 
-    struct passwd *getpwuid(int x)
-    {   return NULL;
-    }
+struct passwd *getpwuid(int x)
+{   return nullptr;
+}
 
-    void utime(const char *s, struct utimbuf *t)
-    {
-    }
+void utime(const char *s, struct utimbuf *t)
+{
+}
 
-    int ftruncate(int a, long b)
-    {   return 0;
-    }
+int ftruncate(int a, long b)
+{   return 0;
+}
 
-    int lstat(char *n, struct stat b)
-    {   return 0;
-    }
+int lstat(char *n, struct stat b)
+{   return 0;
+}
 
-    uid_t geteuid()
-    {   return 0;
-    }
+uid_t geteuid()
+{   return 0;
+}
 
-    gid_t getegid()
-    {   return 0;
-    }
+gid_t getegid()
+{   return 0;
+}
 
-    int mkdir(const char *d, mode_t m)
-    {
-    }
+int mkdir(const char *d, mode_t m)
+{
+}
 
-    std::FILE *popen(const char *s, const char *d)
-    {   return NULL;
-    }
+std::FILE *popen(const char *s, const char *d)
+{   return nullptr;
+}
 
-    int pclose(std::FILE *f)
-    {   return 0;
-    }
+int pclose(std::FILE *f)
+{   return 0;
+}
 
-    int readlink(const char *name, char *b, size_t n)
-    {   return 0;
-    }
+int readlink(const char *name, char *b, size_t n)
+{   return 0;
+}
 
 #endif // __ARM_EABI__
 #endif // EMBEDDED

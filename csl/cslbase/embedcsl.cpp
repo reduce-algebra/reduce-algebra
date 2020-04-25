@@ -1,4 +1,4 @@
-//  embedcsl.cpp                            Copyright (C) 2010 Codemist    
+//  embedcsl.cpp                            Copyright (C) 2010 Codemist
 
 
 /**************************************************************************

@@ -65,7 +65,10 @@ inline void my_assert(bool ok, F&& action)
 //     my_assert(predicate, [&]{...});
 // where the "..." is an arbitrary sequence of actions to be taken
 // if the assertion fails.
-    if (!ok) { action(); my_abort(); }
+    if (!ok)
+    {   action();
+        my_abort();
+    }
 }
 
 inline void my_assert(bool ok)
@@ -88,39 +91,40 @@ inline void my_assert(bool ok)
 
 #else // !__OPTIMIZE__
 
-#define D do { \
-          const char *_f_ = std::strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = std::strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+#define D do {                                                      \
+          const char *_f_ = std::strrchr(__FILE__, '/');            \
+          if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');   \
+          if (_f_ == nullptr) _f_ = __FILE__; else _f_++;           \
           std::fprintf(stderr, "Line %d File %s\n", __LINE__, _f_); \
-          std::fflush(stderr); \
+          std::fflush(stderr);                                      \
           } while (false)
 
-#define DS(s) do { \
-          const char *_f_ = std::strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = std::strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          std::fprintf(stderr, "Line %d File %s: %s\n", __LINE__, _f_, (s)); \
-          std::fflush(stderr); \
+#define DS(s) do {                                                  \
+          const char *_f_ = std::strrchr(__FILE__, '/');            \
+          if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');   \
+          if (_f_ == nullptr) _f_ = __FILE__; else _f_++;           \
+          std::fprintf(stderr, "Line %d File %s: %s\n",             \
+                               __LINE__, _f_, (s));                 \
+          std::fflush(stderr);                                      \
           } while (false)
 
-#define DX(s) do { \
-          const char *_f_ = std::strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = std::strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
+#define DX(s) do {                                                       \
+          const char *_f_ = std::strrchr(__FILE__, '/');                 \
+          if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');        \
+          if (_f_ == nullptr) _f_ = __FILE__; else _f_++;                \
           std::fprintf(stderr, "Line %d File %s: %llx\n", __LINE__, _f_, \
-                          (long long unsigned)(s)); \
-          std::fflush(stderr); \
+                          (long long unsigned)(s));                      \
+          std::fflush(stderr);                                           \
           } while (false)
 
-#define DF(f,...) do { \
-          const char *_f_ = std::strrchr(__FILE__, '/'); \
-          if (_f_ == NULL) _f_ = std::strrchr(__FILE__, '\\'); \
-          if (_f_ == NULL) _f_ = __FILE__; else _f_++; \
-          std::fprintf(stderr, "Line %d File %s: ", __LINE__, _f_); \
-          std::fprintf(stderr, f, __VA_ARGS__); \
-          std::fprintf(stderr, "\n"); \
-          std::fflush(stderr); \
+#define DF(f,...) do {                                               \
+          const char *_f_ = std::strrchr(__FILE__, '/');             \
+          if (_f_ == nullptr) _f_ = std::strrchr(__FILE__, '\\');    \
+          if (_f_ == nullptr) _f_ = __FILE__; else _f_++;            \
+          std::fprintf(stderr, "Line %d File %s: ", __LINE__, _f_);  \
+          std::fprintf(stderr, f, __VA_ARGS__);                      \
+          std::fprintf(stderr, "\n");                                \
+          std::fflush(stderr);                                       \
           } while (false)
 
 #endif // !__OPTIMIZE__
@@ -144,20 +148,20 @@ inline void printlog(const char *s, ...)
 extern const char *programDir;
 
 inline void printlog(const char *s, ...)
-{   static std::FILE *logfile = NULL;
+{   static std::FILE *logfile = nullptr;
     std::va_list x;
-    if (logfile == NULL)
+    if (logfile == nullptr)
     {   char logfile_name[LONGEST_LEGAL_FILENAME];
         std::memset(logfile_name, 0, sizeof(logfile_name));
         if (std::strcmp(programDir, ".") == 0)
             std::sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
         else std::sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
         logfile = std::fopen(logfile_name, "a");
-        if (logfile == NULL) logfile = std::fopen("/tmp/fwin.log", "w");
-        if (logfile == NULL) return; // the file can not be used
-        std::time_t now = std::time(NULL);
+        if (logfile == nullptr) logfile = std::fopen("/tmp/fwin.log", "w");
+        if (logfile == nullptr) return; // the file can not be used
+        std::time_t now = std::time(nullptr);
         std::fprintf(logfile, "New log segment started %s",
-            std::asctime(std::localtime(&now)));
+                     std::asctime(std::localtime(&now)));
     }
     va_start(x, s);
     std::vfprintf(logfile, s, x);

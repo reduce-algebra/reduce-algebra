@@ -150,7 +150,8 @@ extern unsigned char msd_table[256], lsd_table[256];
 #endif // HAVE_SOFTFLOAT
 
 extern LispObject lisp_fix(LispObject a, int roundmode);
-extern LispObject lisp_ifix(LispObject a, LispObject b, int roundmode);
+extern LispObject lisp_ifix(LispObject a, LispObject b,
+                            int roundmode);
 
 
 // The following tests for IEEE infinities and NaNs depends on arithmetic
@@ -230,7 +231,8 @@ inline double value_of_immediate_float(LispObject a)
 {   Float_union aa;
 // Worry about strict aliasing here, at least maybe. With GCC I believe I am
 // safe, but as per the standards I think I am not.
-    if (SIXTY_FOUR_BIT) aa.i = static_cast<int32_t>(static_cast<uint64_t>(a)>>32);
+    if (SIXTY_FOUR_BIT) aa.i = static_cast<int32_t>(static_cast<uint64_t>
+                                   (a)>>32);
     else aa.i = static_cast<int32_t>(a - XTAG_SFLOAT);
     return aa.f;
 }
@@ -252,7 +254,8 @@ inline LispObject pack_short_float(double d)
     }
     aa.i &= ~0xf;
     if (SIXTY_FOUR_BIT)
-        return static_cast<LispObject>((static_cast<uint64_t>(aa.i)) << 32) + XTAG_SFLOAT;
+        return static_cast<LispObject>((static_cast<uint64_t>
+                                        (aa.i)) << 32) + XTAG_SFLOAT;
     else return aa.i + XTAG_SFLOAT;
 }
 
@@ -268,11 +271,12 @@ inline LispObject pack_single_float(double d)
         {   floating_clear_flags();
             aerror("exception with single float");
         }
-        return static_cast<LispObject>(static_cast<uint64_t>(aa.i) << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
+        return static_cast<LispObject>(static_cast<uint64_t>
+                                       (aa.i) << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
     }
     else
     {   LispObject r = get_basic_vector(TAG_BOXFLOAT,
-            TYPE_SINGLE_FLOAT, sizeof(Single_Float));
+                                        TYPE_SINGLE_FLOAT, sizeof(Single_Float));
         single_float_val(r) = static_cast<float>(d);
         if (trap_floating_overflow &&
             floating_edge_case(single_float_val(r)))
@@ -301,8 +305,9 @@ inline LispObject pack_immediate_float(double d,
     }
     if (SIXTY_FOUR_BIT)
     {   if (((l1 | l2) & XTAG_FLOAT32) == 0) aa.i &= ~0xf;
-        return static_cast<LispObject>((static_cast<uint64_t>(aa.i)) << 32) + XTAG_SFLOAT +
-            ((l1 | l2) & XTAG_FLOAT32);
+        return static_cast<LispObject>((static_cast<uint64_t>
+                                        (aa.i)) << 32) + XTAG_SFLOAT +
+               ((l1 | l2) & XTAG_FLOAT32);
     }
     aa.i &= ~0xf;
     return aa.i + XTAG_SFLOAT;
@@ -329,7 +334,8 @@ inline bool eq_i64d(int64_t a, double b)
 // an integer safely. In C++ the consequence of trying to cast a double to
 // and int where the result would not fit is undefined, and so could
 // include arbitrary bad behaviour. So I have to filter that case out.
-    if (b == static_cast<double>(static_cast<uint64_t>(1)<<63)) return false;
+    if (b == static_cast<double>(static_cast<uint64_t>
+                                 (1)<<63)) return false;
 // With the special case out of the way I can afford to case from double to
 // int64_t. The negative end of the range is safe!
     return a == static_cast<int64_t>(b);
@@ -341,15 +347,18 @@ inline bool lessp_i64d(int64_t a, double b)
 // introduce any error at all, so I can perform the comparison reliably
 // on doubles. If d ia a NaN this is still OK.
     if (a <= (static_cast<int64_t>(1)<<53) &&
-        a >= -(static_cast<int64_t>(1)<<53)) return static_cast<double>(a) < b;
+        a >= -(static_cast<int64_t>(1)<<53)) return static_cast<double>
+                    (a) < b;
 // If the float is outside the range of int64_t I can tell how the
 // comparison must play out. Note that near the value 2^63 the next
 // double value lower than 2^63 is in integer, as we can not have any
 // floating point value larger than the largest positive int64_t value
 // and less then 2^63. I make these tests of the form "if (!xxx)" because
 // then if b is a NaN the comparison returns false and I end up exiting.
-    if (!(b >= -static_cast<double>(static_cast<uint64_t>(1)<<63))) return false;
-    if (!(b < static_cast<double>(static_cast<uint64_t>(1)<<63))) return true;
+    if (!(b >= -static_cast<double>(static_cast<uint64_t>
+                                    (1)<<63))) return false;
+    if (!(b < static_cast<double>(static_cast<uint64_t>
+                                  (1)<<63))) return true;
 // Now we know that a is large and b is not huge. I will just discuss the
 // case of two positive numbers here, but mixed signs and negative values
 // follow the same.
@@ -369,9 +378,12 @@ inline bool lessp_di64(double a, int64_t b)
 // The logic here is much as above - by omitting all the commentary
 // you can see much more clearly just how long the code is.
     if (b <= (static_cast<int64_t>(1)<<53) &&
-        b >= -(static_cast<int64_t>(1)<<53)) return a < static_cast<double>(b);
-    if (!(a < static_cast<double>(static_cast<uint64_t>(1)<<63))) return false;
-    if (!(a >= -static_cast<double>(static_cast<uint64_t>(1)<<63))) return true;
+        b >= -(static_cast<int64_t>(1)<<53)) return a < static_cast<double>
+                    (b);
+    if (!(a < static_cast<double>(static_cast<uint64_t>
+                                  (1)<<63))) return false;
+    if (!(a >= -static_cast<double>(static_cast<uint64_t>
+                                    (1)<<63))) return true;
     return static_cast<int64_t>(a) < b;
 }
 
@@ -413,7 +425,8 @@ extern LispObject validate_number(const char *s, LispObject a,
 extern LispObject make_fake_bignum(intptr_t n);
 extern LispObject make_one_word_bignum(int32_t n);
 extern LispObject make_two_word_bignum(int32_t a, uint32_t b);
-extern LispObject make_three_word_bignum(int32_t a, uint32_t b, uint32_t c);
+extern LispObject make_three_word_bignum(int32_t a, uint32_t b,
+        uint32_t c);
 extern LispObject make_four_word_bignum(int32_t a, uint32_t b,
                                         uint32_t c, uint32_t d);
 extern LispObject make_five_word_bignum(int32_t a, uint32_t b,
@@ -430,13 +443,15 @@ extern LispObject make_power_of_two(size_t n);
 
 extern LispObject make_lisp_integer32_fn(int32_t n);
 inline LispObject make_lisp_integer32(int32_t n)
-{   if (SIXTY_FOUR_BIT || valid_as_fixnum(n)) return fixnum_of_int(static_cast<intptr_t>(n));
+{   if (SIXTY_FOUR_BIT ||
+        valid_as_fixnum(n)) return fixnum_of_int(static_cast<intptr_t>(n));
     else return make_lisp_integer32_fn(n);
 }
 
 extern LispObject make_lisp_integer64_fn(int64_t n);
 inline LispObject make_lisp_integer64(int64_t n)
-{   if (valid_as_fixnum(n)) return fixnum_of_int(static_cast<intptr_t>(n));
+{   if (valid_as_fixnum(n)) return fixnum_of_int(
+                                           static_cast<intptr_t>(n));
     else return make_lisp_integer64_fn(n);
 }
 
@@ -503,7 +518,8 @@ extern float128_t float128_of_number(LispObject a);
 #endif // HAVE_SOFTFLOAT
 extern LispObject make_complex(LispObject r, LispObject i);
 extern LispObject make_ratio(LispObject p, LispObject q);
-extern LispObject make_approx_ratio(LispObject p, LispObject q, int bits);
+extern LispObject make_approx_ratio(LispObject p, LispObject q,
+                                    int bits);
 extern LispObject ash(LispObject a, LispObject b);
 extern LispObject lognot(LispObject a);
 extern LispObject logior2(LispObject a, LispObject b);
@@ -547,7 +563,7 @@ extern std::thread kara_thread[2];
 extern void kara_worker(int id);
 extern std::mutex kara_mutex;
 extern std::condition_variable cv_kara_ready,
-                               cv_kara_done;
+       cv_kara_done;
 extern unsigned int kara_ready;
 extern int kara_done;
 
@@ -608,13 +624,13 @@ extern void f128M_split(
 
 inline bool f128M_zero(const float128_t *p)
 {   return ((p->v[HIPART] & INT64_C(0x7fffffffffffffff)) == 0) &&
-            (p->v[LOPART] == 0);
+           (p->v[LOPART] == 0);
 }
 
 inline bool f128M_infinite(const float128_t *p)
 {   return (((p->v[HIPART] >> 48) & 0x7fff) == 0x7fff) &&
-            ((p->v[HIPART] & INT64_C(0xffffffffffff)) == 0) &&
-            (p->v[LOPART] == 0);
+           ((p->v[HIPART] & INT64_C(0xffffffffffff)) == 0) &&
+           (p->v[LOPART] == 0);
 }
 
 inline bool f128M_finite(const float128_t *p)
@@ -636,14 +652,14 @@ inline void f128M_make_zero(float128_t *p)
 
 inline bool f128M_subnorm(const float128_t *p)
 {   return (((p->v[HIPART] >> 48) & 0x7fff) == 0) &&
-            (((p->v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
-             (p->v[LOPART] != 0));
+           (((p->v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
+            (p->v[LOPART] != 0));
 }
 
 inline bool f128M_nan(const float128_t *p)
 {   return (((p->v[HIPART] >> 48) & 0x7fff) == 0x7fff) &&
-            (((p->v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
-             (p->v[LOPART] != 0));
+           (((p->v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
+            (p->v[LOPART] != 0));
 }
 
 inline bool f128M_negative(const float128_t *x)
@@ -657,7 +673,7 @@ inline int f128M_exponent(const float128_t *p)
 
 inline void f128M_set_exponent(float128_t *p, int n)
 {   p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-        ((static_cast<uint64_t>(n) + 0x3fff) << 48);
+                   ((static_cast<uint64_t>(n) + 0x3fff) << 48);
 }
 
 inline void f128M_negate(float128_t *x)
@@ -676,20 +692,20 @@ extern int float128_to_binary(const float128_t *d,
                               int64_t &mhi, uint64_t &mlo);
 #endif // HAVE_SOFTFLOAT
 extern intptr_t double_to_3_digits(double d,
-    int32_t &a2, uint32_t &a1, uint32_t &a0);
+                                   int32_t &a2, uint32_t &a1, uint32_t &a0);
 #ifdef HAVE_SOFTFLOAT
 extern intptr_t float128_to_5_digits(float128_t *d,
-    int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0);
+                                     int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0);
 
 extern float128_t f128_0,      // 0.0L0
-                      f128_half,   // 0.5L0
-                      f128_mhalf,  // -0.5L0
-                      f128_1,      // 1.0L0
-                      f128_10,     // 10.0L0
-                      f128_10_17,  // 1.0L17
-                      f128_10_18,  // 1.0L18
-                      f128_r10,    // 0.1L0
-                      f128_N1;     // 2.0L0^4096
+       f128_half,   // 0.5L0
+       f128_mhalf,  // -0.5L0
+       f128_1,      // 1.0L0
+       f128_10,     // 10.0L0
+       f128_10_17,  // 1.0L17
+       f128_10_18,  // 1.0L18
+       f128_r10,    // 0.1L0
+       f128_N1;     // 2.0L0^4096
 
 typedef struct _float256_t
 {
@@ -705,7 +721,7 @@ typedef struct _float256_t
 inline void f128M_to_f256M(const float128_t *a, float256_t *b)
 {   b->hi = *a;
     b->lo = f128_0;
-} 
+}
 
 extern void f256M_add(
     const float256_t *x, const float256_t *y, float256_t *z);
@@ -713,7 +729,8 @@ extern void f256M_add(
 extern void f256M_mul(
     const float256_t *x, const float256_t *y, float256_t *z);
 
-extern void f256M_pow(const float256_t *x, unsigned int y, float256_t *z);
+extern void f256M_pow(const float256_t *x, unsigned int y,
+                      float256_t *z);
 
 extern float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
 
@@ -721,9 +738,12 @@ extern float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
 // number of characters used. The "sprint" versions put their result in
 // a buffer, while "print" goes to stdout.
 
-extern int f128M_sprint_E(char *s, int width, int precision, float128_t *p);
-extern int f128M_sprint_F(char *s, int width, int precision, float128_t *p);
-extern int f128M_sprint_G(char *s, int width, int precision, float128_t *p);
+extern int f128M_sprint_E(char *s, int width, int precision,
+                          float128_t *p);
+extern int f128M_sprint_F(char *s, int width, int precision,
+                          float128_t *p);
+extern int f128M_sprint_G(char *s, int width, int precision,
+                          float128_t *p);
 extern int f128M_print_E(int width, int precision, float128_t *p);
 extern int f128M_print_F(int width, int precision, float128_t *p);
 extern int f128M_print_G(int width, int precision, float128_t *p);

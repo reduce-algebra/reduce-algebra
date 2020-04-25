@@ -86,7 +86,8 @@ typedef int fwin_entrypoint(int argc, const char *argv[]);
 // main application.
 //
 
-extern int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main);
+extern int fwin_startup(int argc, const char *argv[],
+                        fwin_entrypoint *fwin_main);
 
 //
 // fullProgramName is a string like "d:\xxx\yyy\something.exe"  This is
@@ -248,7 +249,7 @@ extern int fwin_screen_size();
 // "xxx" part and a character (which will be '$' or '@' - the two cases
 // give two chances for lookup, one used ahead of checking system environment
 // variables and the other after. If returns either a string that is the
-// expansion or NULL if there is none.
+// expansion or nullptr if there is none.
 // If you do not register anything then no custom lookup is performed.
 //
 typedef char *lookup_function(char *s, int ch);
@@ -326,7 +327,7 @@ extern void fwin_refresh_switches(char **switches, char **packages);
 // (and will be best if kept shorter than that).  The default position was
 // once that the left position displayed the time & date (but it is
 // now left blank), the middle one the name of the program being run and
-// the right one is blank. fwin_report_left(NULL) or fwin_report_mid(NULL)
+// the right one is blank. fwin_report_left(nullptr) or fwin_report_mid(nullptr)
 // re-instate the default display. Use fwin_report_left("") is a yet clearer
 // way of indicating that blank info to the left is required.
 //
@@ -362,7 +363,7 @@ extern char about_box_rights_4[40];    // "ditto";
 // The HELP drop-down menu in fwin always has some basic items on it, but
 // the user can add more by calling fwin_setHelpFile() where arg 1 is the
 // text to appear on the menu and arg 2 identifies the help file that will be
-// opened if the menu item is selected. Specifying NULL as the second item
+// opened if the menu item is selected. Specifying nullptr as the second item
 // removes the key. The information about help keys is kept in the registry
 // not in any file that CSL has direct access to, and the new help items may
 // not be visible until the user exits from CSL and re-starts it.
@@ -373,7 +374,8 @@ extern void fwin_set_help_file(const char *key, const char *path);
 // The declarations below here are to be treated as private and should
 // not be touched by users.
 //
-extern int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main);
+extern int plain_worker(int argc, const char *argv[],
+                        fwin_entrypoint *fwin_main);
 extern delay_callback_t *delay_callback;
 
 //
@@ -446,7 +448,8 @@ typedef struct date_and_type_
 
 // Reinstate date and filetype...
 
-extern void set_filedate(const char *name, unsigned long int datestamp,
+extern void set_filedate(const char *name,
+                         unsigned long int datestamp,
                          unsigned long int ftype);
 
 extern void put_fileinfo(date_and_type *p, const char *name);
@@ -463,7 +466,8 @@ extern void put_fileinfo(date_and_type *p, const char *name);
 
 extern int windowed;
 
-extern int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main);
+extern int windowed_worker(int argc, const char *argv[],
+                           fwin_entrypoint *fwin_main);
 
 extern bool fwin_use_xft;
 
@@ -481,15 +485,18 @@ extern void sigint_handler(int signo, siginfo_t *t, void *v);
 extern void sigint_handler(int signo);
 #endif // !HAVE_SIGACTION
 
-extern int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main);
+extern int plain_worker(int argc, const char *argv[],
+                        fwin_entrypoint *fwin_main);
 extern char fwin_prompt_string[MAX_PROMPT_LENGTH];
 
 extern int get_current_directory(char *s, size_t n);
 extern bool file_readable(char *filename, const char *old, size_t n);
 extern bool file_writeable(char *filename, const char *old, size_t n);
-extern bool file_executable(char *filename, const char *old, size_t n);
-extern int rename_file(char *from_name, const char *from_old, size_t from_size,
-                char *to_name, const char *to_old, size_t to_size);
+extern bool file_executable(char *filename, const char *old,
+                            size_t n);
+extern int rename_file(char *from_name, const char *from_old,
+                       size_t from_size,
+                       char *to_name, const char *to_old, size_t to_size);
 extern int get_home_directory(char *b, size_t len);
 extern int get_users_home_directory(char *b, size_t len);
 extern int my_system(const char *s);

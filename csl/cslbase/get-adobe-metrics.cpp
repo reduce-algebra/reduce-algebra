@@ -73,7 +73,7 @@
 // other lines will be ignored
 //
 
-static std::FILE *out = NULL;
+static std::FILE *out = nullptr;
 
 static int process(char *d, char *s)
 {   char line[1000], junk[1000], name[1000];
@@ -89,7 +89,7 @@ static int process(char *d, char *s)
     int headershown = 0;
     std::sprintf(line, "%s/%s/%s", FONT_PATH, d, s);
     f = std::fopen(line, "r");
-    if (f == NULL)
+    if (f == nullptr)
     {   std::fprintf(stderr, "Failed to read \"%s\"\n", line);
         std::exit(1);
     }
@@ -108,14 +108,14 @@ static int process(char *d, char *s)
         else if (std::sscanf(line, "IsFixedPitch tru%s", junk) == 1)
             isFixed = 1;
         else if (std::sscanf(line, "FontBBox %d %d %d %d",
-                        &bb1, &bb2, &bb3, &bb4) == 4);
+                             &bb1, &bb2, &bb3, &bb4) == 4);
         else if (std::sscanf(line, "CapHeight %d", &capheight) == 1);
         else if (std::sscanf(line, "XHeight %d", &xheight) == 1);
         else if (std::sscanf(line, "Ascender %d", &ascender) == 1);
         else if (std::sscanf(line, "Descender %d", &descender) == 1);
         else if (std::sscanf(line, "C %d ; WX %d ; N %*s ; B %d %d %d %d",
-                        &charNo, &charWidth,
-                        &bc1, &bc2, &bc3, &bc4) == 6)
+                             &charNo, &charWidth,
+                             &bc1, &bc2, &bc3, &bc4) == 6)
         {   if (charNo >= 0 && charNo < 256 &&
                 charWidth >= 0)
             {   int rightbearing, leftbearing;
@@ -136,8 +136,8 @@ static int process(char *d, char *s)
     std::fclose(f);
     if (name[0] == 0) return;  // no font name
     std::fprintf(out, "{\"%s\", %d, %d, %d, %d, %d, %d, %d, %d, {\n",
-            name, isFixed, maxwidth, maxleftbearing, maxrightbearing,
-            capheight, xheight, ascender, descender);
+                 name, isFixed, maxwidth, maxleftbearing, maxrightbearing,
+                 capheight, xheight, ascender, descender);
     for (c=0; c<255; c++)
     {   std::fprintf(out, "%6d,", charwidth[c]);
         if ((c % 8) == 7) std::fprintf(out, "\n");
@@ -148,32 +148,40 @@ static int process(char *d, char *s)
 int main(int argc, char *argv[])
 {   std::FILE *note;
     int ch;
-    if ((note = std::fopen(FONT_PATH "/../../../LICENSE.texmf", "r")) == NULL)
-    {   std::fprintf(stderr, "+++ Failed to find proper fonts directory\n");
+    if ((note = std::fopen(FONT_PATH "/../../../LICENSE.texmf",
+                           "r")) == nullptr)
+    {   std::fprintf(stderr,
+                     "+++ Failed to find proper fonts directory\n");
         std::exit(1);
     }
     std::printf("Here is the license notice from the fonts source directory:\n\n");
-    for (ch=std::getc(note); ch!=EOF; ch=std::getc(note)) std::putchar(ch);
+    for (ch=std::getc(note); ch!=EOF;
+         ch=std::getc(note)) std::putchar(ch);
     std::printf("\n");
     out = std::fopen("font-info.cpp", "w");
-    if (out == NULL)
+    if (out == nullptr)
     {   std::printf("Failed to open font-info.cpp\n");
         return 1;
     }
     std::fprintf(out, "/*\n * font-info.cpp\n");
     std::fprintf(out, " * Font metrics for Adobe Type1 Fonts\n *\n");
     std::fprintf(out, " * extracted from %s\n *\n", FONT_PATH);
-    std::fprintf(out, " * see file LICENCE.texmf within that tree for a clear\n");
-    std::fprintf(out, " * statement that the files may be distributed.\n");
+    std::fprintf(out,
+                 " * see file LICENCE.texmf within that tree for a clear\n");
+    std::fprintf(out,
+                 " * statement that the files may be distributed.\n");
     std::fprintf(out, " * Thank you to Adobe and to the teTeX people.\n");
-    std::fprintf(out, " * ftp.adobe.com/pub/adobe/type/win/all/afmfiles/base35\n");
+    std::fprintf(out,
+                 " * ftp.adobe.com/pub/adobe/type/win/all/afmfiles/base35\n");
     std::fprintf(out, " * and www.tug.org/teTeX.\n");
     std::fprintf(out, " */\n");
     std::fprintf(out, "\n\n\n\n");
     std::fprintf(out, "typedef struct font_info {\n");
     std::fprintf(out, "   char *name;\n");
-    std::fprintf(out, "   short int isfixed, fontwidth, maxleftbearing, maxrightbearing;\n");
-    std::fprintf(out, "   short int capheight, xheight, ascent, descent;\n");
+    std::fprintf(out,
+                 "   short int isfixed, fontwidth, maxleftbearing, maxrightbearing;\n");
+    std::fprintf(out,
+                 "   short int capheight, xheight, ascent, descent;\n");
     std::fprintf(out, "   short int charwidth[256];\n");
     std::fprintf(out, "} font_info;\n\n");
     std::fprintf(out, "static font_info font_widths[] = {\n");

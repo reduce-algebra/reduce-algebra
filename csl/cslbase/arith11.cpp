@@ -144,9 +144,9 @@ static LispObject remff(LispObject a, LispObject b)
 
 LispObject Cremainder(LispObject a, LispObject b)
 {   intptr_t c;
-    switch ((int)a & XTAG_BITS)
+    switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
 //
 // This is where fixnum % fixnum arithmetic happens - the case I most want to
@@ -195,7 +195,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                                   bignum_length(b) == CELL+8 &&
                                   bignum_digits(b)[0] == 0 &&
                                   bignum_digits(b)[1] == (1<<(59-31))) ||
-                                (!SIXTY_FOUR_BIT &&
+                                 (!SIXTY_FOUR_BIT &&
                                   bignum_length(b) == CELL+4 &&
                                   bignum_digits(b)[0] == (1<<27))))
                                 return fixnum_of_int(0);
@@ -213,17 +213,17 @@ LispObject Cremainder(LispObject a, LispObject b)
                     aerror1("Bad arg for remainder",  b);
             }
         case XTAG_SFLOAT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return remsi(a, b);
                 case XTAG_SFLOAT:
                 {   LispObject q = pack_immediate_float(
-                        value_of_immediate_float(a) /
-                        value_of_immediate_float(b), a, b);
+                                       value_of_immediate_float(a) /
+                                       value_of_immediate_float(b), a, b);
                     return pack_immediate_float(
-                        value_of_immediate_float(a) -
-                        (value_of_immediate_float(b) *
-                         value_of_immediate_float(q)), a, b);
+                               value_of_immediate_float(a) -
+                               (value_of_immediate_float(b) *
+                                value_of_immediate_float(q)), a, b);
                 }
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:
@@ -248,7 +248,7 @@ LispObject Cremainder(LispObject a, LispObject b)
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return rembi(a, b);
                         case XTAG_SFLOAT:
@@ -272,7 +272,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                             aerror1("Bad arg for remainder",  b);
                     }
                 case TYPE_RATNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return remri(a, b);
                         case XTAG_SFLOAT:
@@ -300,9 +300,8 @@ LispObject Cremainder(LispObject a, LispObject b)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch ((int)b & TAG_BITS)
-            {
-                case TAG_FIXNUM:
+            switch (static_cast<int>(b) & TAG_BITS)
+            {   case TAG_FIXNUM:
                     return remfi(a, b);
                 case XTAG_SFLOAT:
                     return remfs(a, b);
@@ -469,9 +468,9 @@ static LispObject ccl_modff(LispObject a, LispObject b)
 }
 
 LispObject modulus(LispObject a, LispObject b)
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
 //
 // This is where fixnum % fixnum arithmetic happens - the case I most want to
@@ -515,18 +514,18 @@ LispObject modulus(LispObject a, LispObject b)
                     aerror1("Bad arg for mod",  b);
             }
         case XTAG_SFLOAT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return modsi(a, b);
                 case XTAG_SFLOAT:
                 {   LispObject q = pack_immediate_float(
-                        value_of_immediate_float(a) /
-                        value_of_immediate_float(b), a, b);
+                                       value_of_immediate_float(a) /
+                                       value_of_immediate_float(b), a, b);
 // What I have here is a remainder rather than a modulus. I ought to adjust
 // this code in a spirit of directed rounding.
                     double r = value_of_immediate_float(a) -
-                        value_of_immediate_float(b) *
-                        value_of_immediate_float(q);
+                               value_of_immediate_float(b) *
+                               value_of_immediate_float(q);
                     return pack_immediate_float(r, a, b);
                 }
                 case TAG_NUMBERS:
@@ -552,7 +551,7 @@ LispObject modulus(LispObject a, LispObject b)
         {   int ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return modbi(a, b);
                         case XTAG_SFLOAT:
@@ -576,7 +575,7 @@ LispObject modulus(LispObject a, LispObject b)
                             aerror1("Bad arg for mod",  b);
                     }
                 case TYPE_RATNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return modri(a, b);
                         case XTAG_SFLOAT:
@@ -604,7 +603,7 @@ LispObject modulus(LispObject a, LispObject b)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return modfi(a, b);
                 case XTAG_SFLOAT:
@@ -633,7 +632,7 @@ LispObject modulus(LispObject a, LispObject b)
 }
 
 bool zerop(LispObject a)
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             return (a == fixnum_of_int(0));
         case TAG_NUMBERS:
@@ -653,7 +652,7 @@ bool zerop(LispObject a)
 }
 
 bool onep(LispObject a)
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             return (a == fixnum_of_int(1));
         case TAG_NUMBERS:
@@ -677,7 +676,7 @@ bool onep(LispObject a)
 //
 
 bool minusp(LispObject a)
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             return fixnum_minusp(a);
         case XTAG_SFLOAT:
@@ -706,7 +705,7 @@ bool minusp(LispObject a)
 
 
 bool plusp(LispObject a)
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             return (intptr_t)a > fixnum_of_int(0);
         case XTAG_SFLOAT:
@@ -772,12 +771,12 @@ static bool numeqsb(LispObject a, LispObject b)
 // point type. My reasoning here is that b is a BIGNUM and hence its
 // value is outside the range of fixnums. So if the value of a is within
 // the range of fixnums we can not have equality.
-    if (d >= (double)MOST_NEGATIVE_FIXVAL &&
-        d < -(double)MOST_NEGATIVE_FIXVAL) return false;
+    if (d >= static_cast<double>(MOST_NEGATIVE_FIXVAL) &&
+        d < -static_cast<double>(MOST_NEGATIVE_FIXVAL)) return false;
     len = (bignum_length(b)-CELL-4)/4;
     if (len == 0)   // One word bignums can be treated specially
     {   int32_t v = bignum_digits(b)[0];
-        return (d == (double)v);
+        return (d == static_cast<double>(v));
     }
     d1 = std::frexp(d, &x);  // separate exponent from mantissa
     if (d1 == 1.0) d1 = 0.5, x++;  // For Zortech
@@ -791,12 +790,12 @@ static bool numeqsb(LispObject a, LispObject b)
     x = x / 31;
     if (x < 0 || (size_t)x != len) return false;
     w = bignum_digits(b)[len];
-    d1 = (d1 - (double)w) * TWO_31;
+    d1 = (d1 - static_cast<double>(w)) * TWO_31;
     u = bignum_digits(b)[--len];
-    d1 = (d1 - (double)u) * TWO_31;
+    d1 = (d1 - static_cast<double>(u)) * TWO_31;
     if (len > 0)
     {   u = bignum_digits(b)[--len];
-        d1 = d1 - (double)u;
+        d1 = d1 - static_cast<double>(u);
     }
     if (d1 != 0.0) return false;
     while (len != 0)
@@ -851,7 +850,7 @@ static bool numeqsr(LispObject a, LispObject b)
     if ((bit & 0x3) == 0) dx += 2, bit = bit >> 2;
     if ((bit & 0x1) == 0) dx += 1;
     if (is_fixnum(nb))
-    {   double d1 = (double)int_of_fixnum(nb);
+    {   double d1 = static_cast<double>(int_of_fixnum(nb));
 //
 // The ldexp on the next line could potentially underflow.  In that case C
 // defines that the result 0.0 be returned.  To avoid trouble I put in a
@@ -859,7 +858,7 @@ static bool numeqsr(LispObject a, LispObject b)
 // would not have been zero.
 //
         if (dx > 10000) return false;  // Avoid gross underflow
-        d1 = std::ldexp(d1, (int)-dx);
+        d1 = std::ldexp(d1, static_cast<int>(-dx));
         return (d == d1 && d != 0.0);
     }
     len = (bignum_length(nb)-CELL-4)/4;
@@ -867,13 +866,13 @@ static bool numeqsr(LispObject a, LispObject b)
     {   int32_t v = bignum_digits(nb)[0];
         double d1;
         if (dx > 10000) return false;  // Avoid gross underflow
-        d1 = std::ldexp((double)v, (int)-dx);
+        d1 = std::ldexp(static_cast<double>(v), static_cast<int>(-dx));
         return (d == d1 && d != 0.0);
     }
     d1 = std::frexp(d, &x);    // separate exponent from mantissa
     if (d1 == 1.0) d1 = 0.5, x++; // For Zortech
     dx += x;              // adjust to allow for the denominator
-    d1 = std::ldexp(d1, (int)(dx % 31));
+    d1 = std::ldexp(d1, static_cast<int>(dx % 31));
     // can neither underflow nor overflow here
 //
 // At most 3 words in the bignum may contain nonzero data - I subtract
@@ -883,12 +882,12 @@ static bool numeqsr(LispObject a, LispObject b)
     dx = dx / 31;
     if (dx != len) return false;
     w = bignum_digits(nb)[len];
-    d1 = (d1 - (double)w) * TWO_31;
+    d1 = (d1 - static_cast<double>(w)) * TWO_31;
     u = bignum_digits(nb)[--len];
-    d1 = (d1 - (double)u) * TWO_31;
+    d1 = (d1 - static_cast<double>(u)) * TWO_31;
     if (len > 0)
     {   u = bignum_digits(nb)[--len];
-        d1 = d1 - (double)u;
+        d1 = d1 - static_cast<double>(u);
     }
     if (d1 != 0.0) return false;
     while (len != 0)
@@ -899,8 +898,7 @@ static bool numeqsr(LispObject a, LispObject b)
 #define numeqsc(a, b) numeqic(a, b)
 
 static bool numeqsf(LispObject a, LispObject b)
-{
-    return value_of_immediate_float(a) == float_of_number(b);
+{   return value_of_immediate_float(a) == float_of_number(b);
 }
 
 #define numeqbs(a, b) numeqsb(b, a)
@@ -978,9 +976,9 @@ static bool numeqff(LispObject a, LispObject b)
 // non-numeric cases.
 
 bool numeq2(LispObject a, LispObject b)
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return (a == b);
                 case XTAG_SFLOAT:
@@ -1006,7 +1004,7 @@ bool numeq2(LispObject a, LispObject b)
                     differentb;
             }
         case XTAG_SFLOAT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return numeqsi(a, b);
                 case XTAG_SFLOAT:
@@ -1037,7 +1035,7 @@ bool numeq2(LispObject a, LispObject b)
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return 0;
                         case XTAG_SFLOAT:
@@ -1063,7 +1061,7 @@ bool numeq2(LispObject a, LispObject b)
                             differentb;
                     }
                 case TYPE_RATNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return 0;
                         case XTAG_SFLOAT:
@@ -1089,7 +1087,7 @@ bool numeq2(LispObject a, LispObject b)
                             differentb;
                     }
                 case TYPE_COMPLEX_NUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return numeqci(a, b);
                         case XTAG_SFLOAT:
@@ -1119,7 +1117,7 @@ bool numeq2(LispObject a, LispObject b)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return numeqfi(a, b);
                 case XTAG_SFLOAT:
@@ -1156,7 +1154,7 @@ bool numeq2(LispObject a, LispObject b)
 
 bool SL_numeq2(LispObject a, LispObject b)
 {   unsigned int ha;
-    switch ((int)a & XTAG_BITS)
+    switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             return (a == b);
         case XTAG_SFLOAT:
@@ -1164,29 +1162,29 @@ bool SL_numeq2(LispObject a, LispObject b)
 // floats, but I am going to make EQN demand that values are the same width
 // as well as having the same value for them to be EQN. This is consistent with
 // them "having the same type".
-            if (((int)b & XTAG_BITS) != XTAG_SFLOAT) return false;
+            if ((static_cast<int>(b) & XTAG_BITS) != XTAG_SFLOAT) return false;
             return (value_of_immediate_float(a)==value_of_immediate_float(b));
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
-                if (a == b) return true;
-                if (((int)b & TAG_BITS) != TAG_NUMBERS) return false;
-                ha = type_of_header(numhdr(a));
-                if (ha != type_of_header(numhdr(b))) return false;
-                switch (ha)
-                {   case TYPE_BIGNUM:
-                        return numeqbb(a, b);
-                    case TYPE_RATNUM:
-                        return numeqrr(a, b);
-                    case TYPE_COMPLEX_NUM:
-                        return numeqcc(a, b);
-                }
-                differenta;
+            if (a == b) return true;
+            if ((static_cast<int>(b) & TAG_BITS) != TAG_NUMBERS) return false;
+            ha = type_of_header(numhdr(a));
+            if (ha != type_of_header(numhdr(b))) return false;
+            switch (ha)
+            {   case TYPE_BIGNUM:
+                    return numeqbb(a, b);
+                case TYPE_RATNUM:
+                    return numeqrr(a, b);
+                case TYPE_COMPLEX_NUM:
+                    return numeqcc(a, b);
+            }
+            differenta;
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-                if (((int)b & TAG_BITS) != TAG_BOXFLOAT) return false;
-                ha = type_of_header(flthdr(a));
-                if (ha != type_of_header(flthdr(b))) return false;
-                return numeqff(a, b);
+            if ((static_cast<int>(b) & TAG_BITS) != TAG_BOXFLOAT) return false;
+            ha = type_of_header(flthdr(a));
+            if (ha != type_of_header(flthdr(b))) return false;
+            return numeqff(a, b);
         default:
             return (a == b);
     }

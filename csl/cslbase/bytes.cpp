@@ -1,4 +1,4 @@
-// bytes.cpp                              Copyright (C) 1991-2019, Codemist    
+// bytes.cpp                              Copyright (C) 1991-2019, Codemist
 //
 //
 // version of bytes1.c that does not keep counts of how many

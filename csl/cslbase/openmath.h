@@ -90,7 +90,8 @@ extern LispObject       om_fromStatus(OMstatus status);
 extern OMencodingType   om_toEncodingType(LispObject obj);
 extern LispObject       om_fromEncodingType(OMencodingType enc);
 extern char *           om_toBigNumStr(LispObject obj);
-extern LispObject       om_fromBigNumStr(char *data, int len, int sign, OMbigIntType fmt);
+extern LispObject       om_fromBigNumStr(char *data, int len,
+        int sign, OMbigIntType fmt);
 extern OMconn           om_toConn(LispObject obj);
 extern LispObject       om_fromConn(OMconn conn);
 extern char **          om_toCString(LispObject obj);
@@ -103,7 +104,8 @@ extern LispObject       om_cStringFromLispString(LispObject lstr);
 //
 
 extern LispObject om_openFileDev(LispObject env, int nargs, ...);
-extern LispObject om_openStrDev(LispObject env, LispObject lstr, LispObject lenc);
+extern LispObject om_openStrDev(LispObject env, LispObject lstr,
+                                LispObject lenc);
 extern LispObject om_closeDev(LispObject env, LispObject dev);
 
 
@@ -122,7 +124,8 @@ extern LispObject om_getConnOutDev(LispObject env, LispObject lconn);
 //
 
 extern LispObject om_connectTCP(LispObject env, int nargs, ...);
-extern LispObject om_bindTCP(LispObject env, LispObject lconn, LispObject lport);
+extern LispObject om_bindTCP(LispObject env, LispObject lconn,
+                             LispObject lport);
 // TODO: prototypes for the other functions from OMconn.h
 
 
@@ -145,12 +148,18 @@ extern LispObject om_putEndError(LispObject env, LispObject ldev);
 extern LispObject om_putObject(LispObject env, LispObject ldev);
 extern LispObject om_putEndObject(LispObject env, LispObject ldev);
 
-extern LispObject om_putInt(LispObject env, LispObject ldev, LispObject val);
-extern LispObject om_putFloat(LispObject env, LispObject ldev, LispObject val);
-extern LispObject om_putByteArray(LispObject env, LispObject ldev, LispObject val);
-extern LispObject om_putVar(LispObject env, LispObject ldev, LispObject val);
-extern LispObject om_putString(LispObject env, LispObject ldev, LispObject val);
-extern LispObject om_putSymbol(LispObject env, LispObject ldev, LispObject val);
+extern LispObject om_putInt(LispObject env, LispObject ldev,
+                            LispObject val);
+extern LispObject om_putFloat(LispObject env, LispObject ldev,
+                              LispObject val);
+extern LispObject om_putByteArray(LispObject env, LispObject ldev,
+                                  LispObject val);
+extern LispObject om_putVar(LispObject env, LispObject ldev,
+                            LispObject val);
+extern LispObject om_putString(LispObject env, LispObject ldev,
+                               LispObject val);
+extern LispObject om_putSymbol(LispObject env, LispObject ldev,
+                               LispObject val);
 extern LispObject om_putSymbol2(LispObject env, int nargs, ...);
 
 extern LispObject om_getApp(LispObject env, LispObject ldev);
@@ -178,8 +187,10 @@ extern LispObject om_getSymbol(LispObject env, LispObject ldev);
 extern LispObject om_getType(LispObject env, LispObject ldev);
 
 
-extern LispObject om_stringToStringPtr(LispObject env, LispObject lstr);
-extern LispObject om_stringPtrToString(LispObject env, LispObject lpstr);
+extern LispObject om_stringToStringPtr(LispObject env,
+                                       LispObject lstr);
+extern LispObject om_stringPtrToString(LispObject env,
+                                       LispObject lpstr);
 
 #endif // header_openmath_h
 

@@ -300,7 +300,7 @@ bool Eqn::op(SFlt a, Flt b)
 }
 // single float == single float
 bool Eqn::op(Flt a, Flt b)
-{   return (a.floatval() == b.floatval()); 
+{   return (a.floatval() == b.floatval());
 }
 // double float == single float
 bool Eqn::op(double a, Flt b)
@@ -462,11 +462,13 @@ bool CLEqn::op(Cpx a, Fixnum b)
 }
 // short float CL== fixnum
 bool CLEqn::op(SFlt a, Fixnum b)
-{   return arithlib_lowlevel::Eqn::op((double)a.floatval(), b.intval());
+{   return arithlib_lowlevel::Eqn::op(static_cast<double>
+                                      (a.floatval()), b.intval());
 }
 // single float CL== fixnum
 bool CLEqn::op(Flt a, Fixnum b)
-{   return arithlib_lowlevel::Eqn::op((double)a.floatval(), b.intval());
+{   return arithlib_lowlevel::Eqn::op(static_cast<double>
+                                      (a.floatval()), b.intval());
 }
 // double float CL== fixnum
 bool CLEqn::op(double a, Fixnum b)
@@ -494,11 +496,13 @@ bool CLEqn::op(Cpx a, uint64_t *b)
 }
 // short float CL== bignum
 bool CLEqn::op(SFlt a, uint64_t *b)
-{   return arithlib_lowlevel::Eqn::op((double)a.floatval(), b);
+{   return arithlib_lowlevel::Eqn::op(static_cast<double>
+                                      (a.floatval()), b);
 }
 // single float CL== bignum
 bool CLEqn::op(Flt a, uint64_t *b)
-{   return arithlib_lowlevel::Eqn::op((double)a.floatval(), b);
+{   return arithlib_lowlevel::Eqn::op(static_cast<double>
+                                      (a.floatval()), b);
 }
 // double float CL== bignum
 bool CLEqn::op(double a, uint64_t *b)
@@ -630,7 +634,7 @@ bool CLEqn::op(SFlt a, Flt b)
 }
 // single float CL== single float
 bool CLEqn::op(Flt a, Flt b)
-{   return (a.floatval() == b.floatval()); 
+{   return (a.floatval() == b.floatval());
 }
 // double float CL== single float
 bool CLEqn::op(double a, Flt b)
@@ -783,7 +787,8 @@ bool Neqn::op(LFlt a, LispObject b)
 // my code wrong, but I am not about to alter it now.
 
 bool Neqn::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Neqn::op((int64_t)a.intval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Neqn::op((int64_t)a.intval(),
+                                       (int64_t)b.intval());
 }
 // bignum != fixnum
 bool Neqn::op(uint64_t *a, Fixnum b)
@@ -799,15 +804,15 @@ bool Neqn::op(Cpx a, Fixnum b)
 }
 // short float != fixnum
 bool Neqn::op(SFlt a, Fixnum b)
-{   return (a.floatval() != (double)b.intval());
+{   return (a.floatval() != static_cast<double>(b.intval()));
 }
 // single float != fixnum
 bool Neqn::op(Flt a, Fixnum b)
-{   return (a.floatval() != (double)b.intval());
+{   return (a.floatval() != static_cast<double>(b.intval()));
 }
 // double float != fixnum
 bool Neqn::op(double a, Fixnum b)
-{   return (a != (double)b.intval());
+{   return (a != static_cast<double>(b.intval()));
 }
 // long float != fixnum
 bool Neqn::op(LFlt a, Fixnum b)
@@ -966,7 +971,7 @@ bool Neqn::op(SFlt a, Flt b)
 }
 // single float != single float
 bool Neqn::op(Flt a, Flt b)
-{   return (a.floatval() != b.floatval()); 
+{   return (a.floatval() != b.floatval());
 }
 // double float != single float
 bool Neqn::op(double a, Flt b)
@@ -1046,73 +1051,90 @@ bool Greaterp::op(LispObject a, LispObject b)
 }
 
 bool Greaterp::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 bool Greaterp::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
+            b);
 }
 
 // fixnum > fixnum
 
 bool Greaterp::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op((int64_t)a.intval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Greaterp::op((int64_t)a.intval(),
+                                           (int64_t)b.intval());
 }
 // bignum > fixnum
 bool Greaterp::op(uint64_t *a, Fixnum b)
@@ -1129,11 +1151,13 @@ bool Greaterp::op(Cpx a, Fixnum b)
 }
 // short float > fixnum
 bool Greaterp::op(SFlt a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op((double)a.floatval(), b.intval());
+{   return arithlib_lowlevel::Greaterp::op(static_cast<double>
+                                           (a.floatval()), b.intval());
 }
 // single float > fixnum
 bool Greaterp::op(Flt a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op((double)a.floatval(), b.intval());
+{   return arithlib_lowlevel::Greaterp::op(static_cast<double>
+                                           (a.floatval()), b.intval());
 }
 // double float > fixnum
 bool Greaterp::op(double a, Fixnum b)
@@ -1141,7 +1165,8 @@ bool Greaterp::op(double a, Fixnum b)
 }
 // long float > fixnum
 bool Greaterp::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op(a.floatval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Greaterp::op(a.floatval(),
+                                           (int64_t)b.intval());
 }
 // fixnum > bignum
 bool Greaterp::op(Fixnum a, uint64_t *b)
@@ -1162,11 +1187,13 @@ bool Greaterp::op(Cpx a, uint64_t *b)
 }
 // short float > bignum
 bool Greaterp::op(SFlt a, uint64_t *b)
-{   return arithlib_lowlevel::Greaterp::op((double)a.floatval(), b);
+{   return arithlib_lowlevel::Greaterp::op(static_cast<double>
+                                           (a.floatval()), b);
 }
 // single float > bignum
 bool Greaterp::op(Flt a, uint64_t *b)
-{   return arithlib_lowlevel::Greaterp::op((double)a.floatval(), b);
+{   return arithlib_lowlevel::Greaterp::op(static_cast<double>
+                                           (a.floatval()), b);
 }
 // double float > bignum
 bool Greaterp::op(double a, uint64_t *b)
@@ -1297,7 +1324,7 @@ bool Greaterp::op(SFlt a, Flt b)
 }
 // single float > single float
 bool Greaterp::op(Flt a, Flt b)
-{   return (a.floatval() > b.floatval()); 
+{   return (a.floatval() > b.floatval());
 }
 // double float > single float
 bool Greaterp::op(double a, Flt b)
@@ -1443,7 +1470,8 @@ bool Geq::op(LFlt a, LispObject b)
 // fixnum >= fixnum
 
 bool Geq::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Geq::op((int64_t)a.intval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Geq::op((int64_t)a.intval(),
+                                      (int64_t)b.intval());
 }
 // bignum >= fixnum
 bool Geq::op(uint64_t *a, Fixnum b)
@@ -1460,11 +1488,13 @@ bool Geq::op(Cpx a, Fixnum b)
 }
 // short float >= fixnum
 bool Geq::op(SFlt a, Fixnum b)
-{   return arithlib_lowlevel::Geq::op((double)a.floatval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Geq::op(static_cast<double>
+                                      (a.floatval()), (int64_t)b.intval());
 }
 // single float >= fixnum
 bool Geq::op(Flt a, Fixnum b)
-{   return arithlib_lowlevel::Geq::op((double)a.floatval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Geq::op(static_cast<double>
+                                      (a.floatval()), (int64_t)b.intval());
 }
 // double float >= fixnum
 bool Geq::op(double a, Fixnum b)
@@ -1472,7 +1502,8 @@ bool Geq::op(double a, Fixnum b)
 }
 // long float >= fixnum
 bool Geq::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Geq::op(a.floatval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Geq::op(a.floatval(),
+                                      (int64_t)b.intval());
 }
 // fixnum >= bignum
 bool Geq::op(Fixnum a, uint64_t *b)
@@ -1493,11 +1524,13 @@ bool Geq::op(Cpx a, uint64_t *b)
 }
 // short float >= bignum
 bool Geq::op(SFlt a, uint64_t *b)
-{   return arithlib_lowlevel::Geq::op((double)a.floatval(), b);
+{   return arithlib_lowlevel::Geq::op(static_cast<double>
+                                      (a.floatval()), b);
 }
 // single float >= bignum
 bool Geq::op(Flt a, uint64_t *b)
-{   return arithlib_lowlevel::Geq::op((double)a.floatval(), b);
+{   return arithlib_lowlevel::Geq::op(static_cast<double>
+                                      (a.floatval()), b);
 }
 // double float >= bignum
 bool Geq::op(double a, uint64_t *b)
@@ -1629,7 +1662,7 @@ bool Geq::op(SFlt a, Flt b)
 }
 // single float >= single float
 bool Geq::op(Flt a, Flt b)
-{   return (a.floatval() >= b.floatval()); 
+{   return (a.floatval() >= b.floatval());
 }
 // double float >= single float
 bool Geq::op(double a, Flt b)
@@ -1775,7 +1808,8 @@ bool Lessp::op(LFlt a, LispObject b)
 // fixnum < fixnum
 
 bool Lessp::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Lessp::op((int64_t)a.intval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Lessp::op((int64_t)a.intval(),
+                                        (int64_t)b.intval());
 }
 // bignum < fixnum
 bool Lessp::op(uint64_t *a, Fixnum b)
@@ -1792,11 +1826,13 @@ bool Lessp::op(Cpx a, Fixnum b)
 }
 // short float < fixnum
 bool Lessp::op(SFlt a, Fixnum b)
-{   return arithlib_lowlevel::Lessp::op((double)a.floatval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Lessp::op(static_cast<double>
+                                        (a.floatval()), (int64_t)b.intval());
 }
 // single float < fixnum
 bool Lessp::op(Flt a, Fixnum b)
-{   return arithlib_lowlevel::Lessp::op((double)a.floatval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Lessp::op(static_cast<double>
+                                        (a.floatval()), (int64_t)b.intval());
 }
 // double float < fixnum
 bool Lessp::op(double a, Fixnum b)
@@ -1804,7 +1840,8 @@ bool Lessp::op(double a, Fixnum b)
 }
 // long float < fixnum
 bool Lessp::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Lessp::op(a.floatval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Lessp::op(a.floatval(),
+                                        (int64_t)b.intval());
 }
 // fixnum < bignum
 bool Lessp::op(Fixnum a, uint64_t *b)
@@ -1825,11 +1862,13 @@ bool Lessp::op(Cpx a, uint64_t *b)
 }
 // short float < bignum
 bool Lessp::op(SFlt a, uint64_t *b)
-{   return arithlib_lowlevel::Lessp::op((double)a.floatval(), b);
+{   return arithlib_lowlevel::Lessp::op(static_cast<double>
+                                        (a.floatval()), b);
 }
 // single float < bignum
 bool Lessp::op(Flt a, uint64_t *b)
-{   return arithlib_lowlevel::Lessp::op((double)a.floatval(), b);
+{   return arithlib_lowlevel::Lessp::op(static_cast<double>
+                                        (a.floatval()), b);
 }
 // double float < bignum
 bool Lessp::op(double a, uint64_t *b)
@@ -1960,7 +1999,7 @@ bool Lessp::op(SFlt a, Flt b)
 }
 // single float < single float
 bool Lessp::op(Flt a, Flt b)
-{   return (a.floatval() < b.floatval()); 
+{   return (a.floatval() < b.floatval());
 }
 // double float < single float
 bool Lessp::op(double a, Flt b)
@@ -2106,7 +2145,8 @@ bool Leq::op(LFlt a, LispObject b)
 // fixnum <= fixnum
 
 bool Leq::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Leq::op((int64_t)a.intval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Leq::op((int64_t)a.intval(),
+                                      (int64_t)b.intval());
 }
 // bignum <= fixnum
 bool Leq::op(uint64_t *a, Fixnum b)
@@ -2123,11 +2163,13 @@ bool Leq::op(Cpx a, Fixnum b)
 }
 // short float <= fixnum
 bool Leq::op(SFlt a, Fixnum b)
-{   return arithlib_lowlevel::Leq::op((double)a.floatval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Leq::op(static_cast<double>
+                                      (a.floatval()), (int64_t)b.intval());
 }
 // single float <= fixnum
 bool Leq::op(Flt a, Fixnum b)
-{   return arithlib_lowlevel::Leq::op((double)a.floatval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Leq::op(static_cast<double>
+                                      (a.floatval()), (int64_t)b.intval());
 }
 // double float <= fixnum
 bool Leq::op(double a, Fixnum b)
@@ -2135,7 +2177,8 @@ bool Leq::op(double a, Fixnum b)
 }
 // long float <= fixnum
 bool Leq::op(LFlt a, Fixnum b)
-{   return arithlib_lowlevel::Leq::op(a.floatval(), (int64_t)b.intval());
+{   return arithlib_lowlevel::Leq::op(a.floatval(),
+                                      (int64_t)b.intval());
 }
 // fixnum <= bignum
 bool Leq::op(Fixnum a, uint64_t *b)
@@ -2156,11 +2199,13 @@ bool Leq::op(Cpx a, uint64_t *b)
 }
 // short float <= bignum
 bool Leq::op(SFlt a, uint64_t *b)
-{   return arithlib_lowlevel::Leq::op((double)a.floatval(), b);
+{   return arithlib_lowlevel::Leq::op(static_cast<double>
+                                      (a.floatval()), b);
 }
 // single float <= bignum
 bool Leq::op(Flt a, uint64_t *b)
-{   return arithlib_lowlevel::Leq::op((double)a.floatval(), b);
+{   return arithlib_lowlevel::Leq::op(static_cast<double>
+                                      (a.floatval()), b);
 }
 // double float <= bignum
 bool Leq::op(double a, uint64_t *b)
@@ -2291,7 +2336,7 @@ bool Leq::op(SFlt a, Flt b)
 }
 // single float <= single float
 bool Leq::op(Flt a, Flt b)
-{   return (a.floatval() <= b.floatval()); 
+{   return (a.floatval() <= b.floatval());
 }
 // double float <= single float
 bool Leq::op(double a, Flt b)
@@ -2545,7 +2590,7 @@ LispObject Abs::op(Fixnum a)
 
 LispObject Abs::op(uint64_t *a)
 {   if (Minusp::op(a)) return Minus::op(a);
-    else return (LispObject)((uintptr_t)a - 8 + TAG_NUMBERS);
+    else return static_cast<LispObject>((uintptr_t)a - 8 + TAG_NUMBERS);
 }
 
 LispObject Abs::op(Rat a)

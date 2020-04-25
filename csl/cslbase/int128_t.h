@@ -93,7 +93,8 @@ inline int128_t ASR128(int128_t a, int n)
 inline int128_t ASR128(int128_t a, int n)
 {   if (n<0 || n>=static_cast<int>(sizeof(uint128_t))) n = 0;
     uint128_t r = (static_cast<uint128_t>(a)) >> n;
-    uint128_t std::signbit = (static_cast<uint128_t>(a)) >> (8*sizeof(uint128_t)-1);
+    uint128_t std::signbit = (static_cast<uint128_t>(a)) >> (8*sizeof(
+                                 uint128_t)-1);
     if (n != 0) r |= ((-std::signbit) << (8*sizeof(uint128_t) - n));
     return static_cast<int128_t>(r);
 }
@@ -182,8 +183,8 @@ inline bool leq128(const uint128_t & a, const uint128_t & b)
 inline int128_t ASL128(const int128_t & a, int n)
 {   if (n >= 128) return 0;
     if (n < 64) return
-        int128_t((a.upper()<<n) | (a.lower()>>(64-n)),
-                 a.lower()<<n);
+            int128_t((a.upper()<<n) | (a.lower()>>(64-n)),
+                     a.lower()<<n);
     else if (n == 64) return int128_t(a.lower(), 0);
     else return int128_t(a.lower()<<(n-64), 0);
 }
@@ -191,13 +192,14 @@ inline int128_t ASL128(const int128_t & a, int n)
 inline int128_t ASR128(const int128_t & a, int n)
 {   if (n >= 128) return (a < 0 ? -1 : 0);
     if (n < 64) return int128_t(ASR(static_cast<int64_t>(a.upper()), n),
-                                (a.upper()<<(64-n)) | (a.lower()>>n));
+                                    (a.upper()<<(64-n)) | (a.lower()>>n));
     else if (n == 64) return int128_t(-static_cast<int64_t>(a.upper()<0),
-                                      a.upper());
-    else if (n < 64) return int128_t(ASR(static_cast<int64_t>(a.upper()), n),
-                                     (a.upper()<<(64-n)) | (a.lower()>>n));
+                                          a.upper());
+    else if (n < 64) return int128_t(ASR(static_cast<int64_t>(a.upper()),
+                                             n),
+                                         (a.upper()<<(64-n)) | (a.lower()>>n));
     else return int128_t(-static_cast<int64_t>(a.upper()<0),
-                         ASR((static_cast<int64_t>(a.upper())), n-64));
+                             ASR((static_cast<int64_t>(a.upper())), n-64));
 }
 
 inline int64_t NARROW128(const int128_t & a)
@@ -209,7 +211,7 @@ inline int64_t NARROW128(const int128_t & a)
 // and divisions here are done as on unsigned values.
 
 inline void divrem128(const int128_t & a, const int128_t & b,
-                             int128_t & q, int128_t & r)
+                      int128_t & q, int128_t & r)
 {   if (static_cast<int64_t>(a.upper()) < 0)
     {   if (static_cast<int64_t>(b.upper()) < 0) q = (-a)/(-b);
         else q = -((-a)/b);

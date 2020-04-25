@@ -106,7 +106,8 @@ LispObject Lmkxvect(LispObject env, LispObject n)
 
 LispObject encapsulate_pointer(void *data)
 // Creates a boxed up representation of a pointer.
-{   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_ENCAPSULATE, 2*CELL);
+{   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_ENCAPSULATE,
+                                    2*CELL);
     *(void **)&basic_elt(w, 0) = data;
     return w;
 }
@@ -114,7 +115,7 @@ LispObject encapsulate_pointer(void *data)
 void *extract_pointer(LispObject a)
 {   if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_ENCAPSULATE)
-        return NULL;
+        return nullptr;
     else return *(void **)&basic_elt(a, 0);
 }
 
@@ -138,7 +139,7 @@ LispObject Lmaple_atomic_value(LispObject env, LispObject a)
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
         aerror1("not an encapsulated pointer", a);
-    v = (LispObject)extract_pointer(a);
+    v = static_cast<LispObject>(extract_pointer(a));
     if ((v & 1) != 0)
     {
 //
@@ -156,9 +157,9 @@ LispObject Lmaple_tag(LispObject, LispObject a)
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
         aerror1("not an encapsulated pointer", a);
-    v = (LispObject)extract_pointer(a);
+    v = static_cast<LispObject>(extract_pointer(a));
     if ((v & 1) != 0) return onevalue(nil); // an atomic value
-    v1 = (LispObject *)v;
+    v1 = reinterpret_cast<LispObject *>(v);
     v = *v1;    // the header word of the Maple object
 // The following line will be incorrect on 64-bit machines
     return onevalue(fixnum_of_int(v >> 26));
@@ -170,28 +171,29 @@ LispObject Lmaple_length(LispObject, LispObject a)
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
         aerror1("not an encapsulated pointer", a);
-    v = (LispObject)extract_pointer(a);
+    v = static_cast<LispObject>(extract_pointer(a));
     if ((v & 1) != 0) return onevalue(nil); // an atomic value
-    v1 = (LispObject *)v;
+    v1 = reinterpret_cast<LispObject *>(v);
     v = *v1;    // the header word of the Maple object
 // The following line will be incorrect on 64-bit machines
     return onevalue(fixnum_of_int(v & 0x03ffffff));
 }
 
 LispObject Lmaple_string_data(LispObject, LispObject a)
-{   LispObject *p = (LispObject *)extract_pointer(a);
-    char *s = (char *)&p[3];
+{   LispObject *p = reinterpret_cast<LispObject *>(extract_pointer(
+                        a));
+    char *s = reinterpret_cast<char *>()&p[3];
     return onevalue(make_string(s));
 }
 
 LispObject Lmaple_integer(LispObject env, LispObject a)
 {   LispObject r = fixnum_of_int(0);
-    LispObject *p = (LispObject *)extract_pointer(a);
+    LispObject *p = reinterpret_cast<LispObject *>(extract_pointer(a));
     int i;
     LispObject t = fixnum_of_int(1);
-    int len = (int)(*p & 0x03ffffff);
+    int len = static_cast<int>(*p & 0x03ffffff);
     for (i=1; i<len; i++)
-    {   int d = fixnum_of_int((int)p[i]);
+    {   int d = fixnum_of_int(static_cast<int>(p[i]));
         push(r, t);
         d = Ltimes2(nil, d, t);
         pop(t, r);
@@ -213,15 +215,16 @@ LispObject Lmaple_component(LispObject, LispObject a, LispObject nn)
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
         aerror1("not an encapsulated pointer", a);
-    v = (LispObject)extract_pointer(a);
+    v = static_cast<LispObject>(extract_pointer(a));
     if ((v & 1) != 0) return onevalue(nil); // an atomic value
-    v1 = (LispObject *)v;
+    v1 = reinterpret_cast<LispObject *>(v);
     v = *v1;    // the header word of the Maple object
     n = int_of_fixnum(nn);
 // The following line will be incorrect on 64-bit machines
     len = v & 0x03ffffff;
     if (n < 0 || n >= len) aerror1("subscript out of range", nn);
-    return onevalue(encapsulate_pointer((void *)v1[n+1]));
+    return onevalue(encapsulate_pointer(reinterpret_cast<void *>
+                                        (v1[n+1])));
 }
 
 #endif
@@ -233,7 +236,8 @@ LispObject Lmaple_component(LispObject, LispObject a, LispObject nn)
 LispObject Lprimep32(LispObject, LispObject a)
 {   uint64_t n;
     if (!is_number(a) ||
-        (int64_t)(n = sixty_four_bits_unsigned(a)) == 0) aerror1("primep32", a);
+        (int64_t)(n = sixty_four_bits_unsigned(a)) == 0) aerror1("primep32",
+                    a);
     return Lispify_predicate(isprime(n));
 }
 
@@ -316,7 +320,8 @@ LispObject Lmkvect16(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) aerror1("mkvect16", n);
-    nn = sizeof(std::int16_t)*(1 + int_of_fixnum(n)); // Note 1+ for Standard Lisp style
+    nn = sizeof(std::int16_t)*(1 + int_of_fixnum(
+                                   n)); // Note 1+ for Standard Lisp style
     w = get_vector(TAG_VECTOR, TYPE_VEC16_2, nn+CELL);
     nn = (intptr_t)doubleword_align_up(nn+CELL)-CELL;
     nn = nn/sizeof(std::int16_t);
@@ -362,7 +367,7 @@ LispObject Lmkfvect32(LispObject env, LispObject n)
     nn = nn/sizeof(float);
     while (nn != 0)
     {   nn--;
-        felt(w, nn) = (float)0.0;
+        felt(w, nn) = static_cast<float>(0.0);
     }
     return onevalue(w);
 }
@@ -426,11 +431,12 @@ LispObject simplify_string(LispObject s)
     h1 = basic_elt(s, 3);
     h = int_of_fixnum(h1);               // Displace adjustment
     s = basic_elt(s, 2);
-    for (i=0; i<n; i++) celt(w, i) = (char)celt(s, i+h);
+    for (i=0; i<n; i++) celt(w, i) = static_cast<char>(celt(s, i+h));
     return onevalue(w);
 }
 
-LispObject Lsputv(LispObject, LispObject v, LispObject n, LispObject x)
+LispObject Lsputv(LispObject, LispObject v, LispObject n,
+                  LispObject x)
 {   Header h;
     intptr_t vx;
     size_t n1, hl;
@@ -444,7 +450,7 @@ LispObject Lsputv(LispObject, LispObject v, LispObject n, LispObject x)
     hl = bytes_in_vector(v);
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("putv-char", n);
-    celt(v, n1) = (char)vx;
+    celt(v, n1) = static_cast<char>(vx);
     return onevalue(x);
 }
 
@@ -458,7 +464,8 @@ LispObject Lsputv(LispObject, LispObject v, LispObject n, LispObject x)
 // was having to do mappings and conversions.
 //
 
-LispObject Lsputv2(LispObject, LispObject v, LispObject n, LispObject x1, LispObject a4up)
+LispObject Lsputv2(LispObject, LispObject v, LispObject n,
+                   LispObject x1, LispObject a4up)
 {   Header h;
     intptr_t vx1, vx2;
     size_t n1, hl;
@@ -476,12 +483,13 @@ LispObject Lsputv2(LispObject, LispObject v, LispObject n, LispObject x1, LispOb
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
     if (n1+1 >= hl) aerror1("putv-char2", n);
-    celt(v, n1) = (char)vx1;
-    celt(v, n1+1) = (char)vx2;
+    celt(v, n1) = static_cast<char>(vx1);
+    celt(v, n1+1) = static_cast<char>(vx2);
     return onevalue(x2);
 }
 
-LispObject Lsputv3(LispObject, LispObject v, LispObject n, LispObject x1, LispObject a4up)
+LispObject Lsputv3(LispObject, LispObject v, LispObject n,
+                   LispObject x1, LispObject a4up)
 {   Header h;
     intptr_t vx1, vx2, vx3;
     size_t n1, hl;
@@ -503,13 +511,14 @@ LispObject Lsputv3(LispObject, LispObject v, LispObject n, LispObject x1, LispOb
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
     if (n1+2 >= hl) aerror1("putv-char3", n);
-    celt(v, n1) = (char)vx1;
-    celt(v, n1+1) = (char)vx2;
-    celt(v, n1+2) = (char)vx3;
+    celt(v, n1) = static_cast<char>(vx1);
+    celt(v, n1+1) = static_cast<char>(vx2);
+    celt(v, n1+2) = static_cast<char>(vx3);
     return onevalue(x3);
 }
 
-LispObject Lsputv4(LispObject, LispObject v, LispObject n, LispObject x1, LispObject a4up)
+LispObject Lsputv4(LispObject, LispObject v, LispObject n,
+                   LispObject x1, LispObject a4up)
 {   Header h;
     intptr_t vx1, vx2, vx3, vx4;
     size_t n1, hl;
@@ -534,10 +543,10 @@ LispObject Lsputv4(LispObject, LispObject v, LispObject n, LispObject x1, LispOb
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
     if (n1+3 >= hl) aerror1("putv-char3", n);
-    celt(v, n1) = (char)vx1;
-    celt(v, n1+1) = (char)vx2;
-    celt(v, n1+2) = (char)vx3;
-    celt(v, n1+3) = (char)vx4;
+    celt(v, n1) = static_cast<char>(vx1);
+    celt(v, n1+1) = static_cast<char>(vx2);
+    celt(v, n1+2) = static_cast<char>(vx3);
+    celt(v, n1+3) = static_cast<char>(vx4);
     return onevalue(x4);
 }
 
@@ -548,7 +557,8 @@ LispObject Lbpsupbv(LispObject, LispObject v)
     return onevalue(fixnum_of_int(n-1));
 }
 
-LispObject Lbpsputv(LispObject, LispObject v, LispObject n, LispObject x)
+LispObject Lbpsputv(LispObject, LispObject v, LispObject n,
+                    LispObject x)
 {   size_t n1, hl;
     if (!is_bps(v)) aerror1("bpsputv", v);
     else if (!is_fixnum(n) || n < 0) aerror1("bps-putv", n);
@@ -556,7 +566,7 @@ LispObject Lbpsputv(LispObject, LispObject v, LispObject n, LispObject x)
     hl = bytes_in_vector(v);
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("bps-putv", n);
-    celt(v, n1) = (char)int_of_fixnum(x);
+    celt(v, n1) = static_cast<char>(int_of_fixnum(x));
     return onevalue(x);
 }
 
@@ -576,7 +586,8 @@ LispObject Lsgetv(LispObject env, LispObject v, LispObject n)
     size_t n1, hl;
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
         aerror1("schar on non-string", v);
-    else if (!is_fixnum(n) || n < 0) aerror1("schar index type incorrect", n);
+    else if (!is_fixnum(n) ||
+             n < 0) aerror1("schar index type incorrect", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("schar index out of range", n);
@@ -645,7 +656,8 @@ LispObject Lbpsgetv(LispObject, LispObject v, LispObject n)
 // in with the greater generality of vector structures.
 //
 
-LispObject Lputv8(LispObject, LispObject v, LispObject n, LispObject x)
+LispObject Lputv8(LispObject, LispObject v, LispObject n,
+                  LispObject x)
 {   Header h;
     size_t n1, hl;
     if (!is_vector(v) || !is_vec8_header(h = vechdr(v)))
@@ -654,7 +666,7 @@ LispObject Lputv8(LispObject, LispObject v, LispObject n, LispObject x)
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("putv8 index range", n);
-    scelt(v, n1) = (char)int_of_fixnum(x);
+    scelt(v, n1) = static_cast<char>(int_of_fixnum(x));
     return onevalue(x);
 }
 
@@ -670,7 +682,8 @@ LispObject Lgetv8(LispObject, LispObject v, LispObject n)
     else return onevalue(fixnum_of_int(scelt(v, n1)));
 }
 
-LispObject Lputv16(LispObject, LispObject v, LispObject n, LispObject x)
+LispObject Lputv16(LispObject, LispObject v, LispObject n,
+                   LispObject x)
 {   Header h;
     size_t n1, hl;
     if (!is_vector(v) || !is_vec16_header(h = vechdr(v)))
@@ -696,7 +709,8 @@ LispObject Lgetv16(LispObject, LispObject v, LispObject n)
     return onevalue(fixnum_of_int(n1));
 }
 
-LispObject Lputv32(LispObject, LispObject v, LispObject n, LispObject x)
+LispObject Lputv32(LispObject, LispObject v, LispObject n,
+                   LispObject x)
 {   Header h;
     size_t n1, hl;
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC32)
@@ -722,7 +736,8 @@ LispObject Lgetv32(LispObject, LispObject v, LispObject n)
     return make_lisp_integer32(n1);
 }
 
-LispObject Lfputv32(LispObject, LispObject v, LispObject n, LispObject x)
+LispObject Lfputv32(LispObject, LispObject v, LispObject n,
+                    LispObject x)
 {   Header h;
     size_t n1, hl;
     double d = float_of_number(x);
@@ -732,7 +747,7 @@ LispObject Lfputv32(LispObject, LispObject v, LispObject n, LispObject x)
     hl = (length_of_header(h) - CELL)/4;
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("fputv32 index range", n);
-    felt(v, n1) = (float)d;
+    felt(v, n1) = static_cast<float>(d);
     return onevalue(x);
 }
 
@@ -746,14 +761,17 @@ LispObject Lfgetv32(LispObject env, LispObject v, LispObject n)
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("fgetv32 index range", n);
 #ifdef COMMON
-    v = make_boxfloat((double)felt(v, n1), TYPE_SINGLE_FLOAT);
+    v = make_boxfloat(static_cast<double>(felt(v, n1)),
+                      TYPE_SINGLE_FLOAT);
 #else
-    v = make_boxfloat((double)felt(v, n1), TYPE_DOUBLE_FLOAT);
+    v = make_boxfloat(static_cast<double>(felt(v, n1)),
+                      TYPE_DOUBLE_FLOAT);
 #endif
     return onevalue(v);
 }
 
-LispObject Lfputv64(LispObject, LispObject v, LispObject n, LispObject x)
+LispObject Lfputv64(LispObject, LispObject v, LispObject n,
+                    LispObject x)
 {   Header h;
     size_t n1, hl;
     double d = float_of_number(x);
@@ -815,7 +833,8 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
 //       (t (putv v n x))))
 //
 
-static LispObject Lputvec(LispObject, LispObject v, LispObject n, LispObject x)
+static LispObject Lputvec(LispObject, LispObject v, LispObject n,
+                          LispObject x)
 {   Header h;
     intptr_t vx;
     size_t n1, hl;
@@ -833,7 +852,7 @@ static LispObject Lputvec(LispObject, LispObject v, LispObject n, LispObject x)
         if (int_of_fixnum(n) < 0) aerror1("putvec", n);
         n1 = int_of_fixnum(n);
         if (n1 >= hl) aerror1("putvec", n);
-        celt(v, n1) = (int)vx;
+        celt(v, n1) = static_cast<int>(vx);
         return onevalue(x);
     }
     if (is_bitvec_header(h))
@@ -1012,11 +1031,13 @@ LispObject Laref_2(LispObject env, LispObject a, LispObject n)
 {   aerror("aref");
 }
 
-LispObject Laref_3(LispObject env, LispObject a, LispObject n1, LispObject n2)
+LispObject Laref_3(LispObject env, LispObject a, LispObject n1,
+                   LispObject n2)
 {   aerror("aref");
 }
 
-LispObject Laref_a4up(LispObject env, LispObject a, LispObject n1, LispObject n2, LispObject n3up)
+LispObject Laref_a4up(LispObject env, LispObject a, LispObject n1,
+                      LispObject n2, LispObject n3up)
 {   aerror("aref");
 }
 
@@ -1028,11 +1049,13 @@ LispObject Laset_2(LispObject env, LispObject a, LispObject n)
 {   aerror("aset");
 }
 
-LispObject Laset_3(LispObject env, LispObject a, LispObject n1, LispObject n2)
+LispObject Laset_3(LispObject env, LispObject a, LispObject n1,
+                   LispObject n2)
 {   aerror("aset");
 }
 
-LispObject Laset_a4up(LispObject env, LispObject a, LispObject n1, LispObject n2, LispObject n3up)
+LispObject Laset_a4up(LispObject env, LispObject a, LispObject n1,
+                      LispObject n2, LispObject n3up)
 {   aerror("aset");
 }
 
@@ -1153,7 +1176,8 @@ LispObject Laset_4up(LispObject env, int nargs, ...)
         aerror1("aset", v);
     }
     h = vechdr(v);
-    if (nargs == 2) n = 0;  // Funny case (aset v w) legal if no dimensions!
+    if (nargs == 2) n =
+            0;  // Funny case (aset v w) legal if no dimensions!
     else
     {   n = va_arg(a, LispObject);   // First subscript
         if (!is_fixnum(n))
@@ -1283,7 +1307,8 @@ static LispObject Laset_2(LispObject env, LispObject a, LispObject b)
 
 #endif  // DO_AREF_AND_ASET_LATER
 
-static LispObject Lsetelt(LispObject env, LispObject v, LispObject n, LispObject x)
+static LispObject Lsetelt(LispObject env, LispObject v, LispObject n,
+                          LispObject x)
 {   Header h;
     LispObject w;
     size_t hl, n1;
@@ -1437,7 +1462,8 @@ static LispObject Lchar(LispObject env, LispObject v, LispObject n)
 //       (t (aset s n c))))
 //
 
-static LispObject Lcharset(LispObject env, LispObject v, LispObject n, LispObject c)
+static LispObject Lcharset(LispObject env, LispObject v, LispObject n,
+                           LispObject c)
 {   Header h;
     if (!is_vector(v)) aerror1("charset", v);
     h = vechdr(v);
@@ -1452,7 +1478,7 @@ static LispObject Lcharset(LispObject env, LispObject v, LispObject n, LispObjec
         else aerror1("charset contents", c);
         n1 = int_of_fixnum(n);
         if (n1 >= hl) aerror1("charset", n);
-        celt(v, n1) = (int)vx;
+        celt(v, n1) = static_cast<int>(vx);
         return onevalue(c);
     }
 #ifdef DO_AREF_AND_ASET_LATER
@@ -1469,7 +1495,8 @@ static LispObject Lcharset(LispObject env, LispObject v, LispObject n, LispObjec
 //       s))
 //
 
-static LispObject Lmake_string_3(LispObject env, LispObject n, LispObject key, LispObject init)
+static LispObject Lmake_string_3(LispObject env, LispObject n,
+                                 LispObject key, LispObject init)
 {   LispObject w;
     intptr_t nn, blanks;
     size_t z;
@@ -1487,11 +1514,11 @@ static LispObject Lmake_string_3(LispObject env, LispObject n, LispObject key, L
     blanks = (blanks << 16) | blanks;
     while (z > CELL)
     {   z -= 4;
-        *(int32_t *)((char *)w - TAG_VECTOR + z) = blanks;
+        *(int32_t *)(reinterpret_cast<char *>(w) - TAG_VECTOR + z) = blanks;
     }
     nn = nn + CELL;
     while ((nn & 7) != 0)
-    {   *((char *)w - TAG_VECTOR + nn) = 0;
+    {   *(reinterpret_cast<char *>(w) - TAG_VECTOR + nn) = 0;
         nn++;
     }
     return onevalue(w);
@@ -1509,11 +1536,11 @@ static LispObject Lmake_string_1(LispObject env, LispObject n)
     blanks = (' ' << 24) | (' ' << 16) | (' ' << 8) | ' ';
     while (z > CELL)
     {   z -= 4;
-        *(int32_t *)((char *)w - TAG_VECTOR + z) = blanks;
+        *(int32_t *)(reinterpret_cast<char *>(w) - TAG_VECTOR + z) = blanks;
     }
     nn = nn + CELL;
     while ((nn & 7) != 0)
-    {   *((char *)w - TAG_VECTOR + nn) = 0;
+    {   *(reinterpret_cast<char *>(w) - TAG_VECTOR + nn) = 0;
         nn++;
     }
     return onevalue(w);
@@ -1547,7 +1574,8 @@ static LispObject Lstring(LispObject env, LispObject a)
 //
 // Beware abolition of 'string-char
 //
-    else if ((LispObject)elt(a, 0) != string_char_sym) aerror1("string", a);
+    else if (static_cast<LispObject>(elt(a,
+                                         0)) != string_char_sym) aerror1("string", a);
     w = elt(a, 1);
     if (!consp(w) || consp(cdr(w))) aerror1("string", a);
     else return onevalue(a);
@@ -1578,7 +1606,7 @@ static LispObject Lcopy_vector(LispObject env, LispObject a)
 //
 
 LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+                       LispObject a3, LispObject a4up)
 {   LispObject r = nil;
     size_t n = 3;
     for (LispObject x=a4up; x!=nil; x=cdr(x)) n++;
@@ -1623,7 +1651,8 @@ LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
     return onevalue(r);
 }
 
-LispObject Lvector_3(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Lvector_3(LispObject env, LispObject a, LispObject b,
+                     LispObject c)
 {   push(a, b, c);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 4*CELL);
     pop(c, b, a);
@@ -1649,7 +1678,7 @@ static LispObject Lshrink_vector(LispObject env,
 // released space, so that linear scans of the heap were still possible.
 // These days my garbage collector (and other code) never relies on
 // such scans, so I simplify the code here.
-    size_t adjustment = n1 - n2;  // number of bytes to shrink by    
+    size_t adjustment = n1 - n2;  // number of bytes to shrink by
     setvechdr(v, vechdr(v) - pack_hdrlength(adjustment/4));
     return onevalue(v);
 }
@@ -1667,12 +1696,13 @@ static LispObject Lmake_simple_bitvector(LispObject env, LispObject n)
     n1 = doubleword_align_up(bytes);
     while (n1 > CELL)
     {   n1 -= 4;
-        *(int32_t *)((char *)w - TAG_VECTOR + n1) = 0;
+        *(int32_t *)(reinterpret_cast<char *>(w) - TAG_VECTOR + n1) = 0;
     }
     return onevalue(w);
 }
 
-static LispObject Lbputv(LispObject, LispObject v, LispObject n, LispObject x)
+static LispObject Lbputv(LispObject, LispObject v, LispObject n,
+                         LispObject x)
 {   Header h;
     int b;
     size_t n1;
@@ -1728,8 +1758,7 @@ LispObject Lupbv(LispObject env, LispObject v)
     else
 #endif
         switch (type_of_header(h))
-        {
-            case TYPE_STRING_1:
+        {   case TYPE_STRING_1:
             case TYPE_STRING_2:
             case TYPE_STRING_3:
             case TYPE_STRING_4:
@@ -1846,7 +1875,8 @@ LispObject list_subseq(LispObject sequence, size_t start, size_t end)
     return onevalue(copy);
 }
 
-LispObject vector_subseq(LispObject sequence, size_t start, size_t end)
+LispObject vector_subseq(LispObject sequence, size_t start,
+                         size_t end)
 {   LispObject copy;
     Header h;
     size_t hl, seq_length, i;
@@ -1870,8 +1900,8 @@ LispObject vector_subseq(LispObject sequence, size_t start, size_t end)
         //
         copy = get_vector_init(CELL+seq_length*CELL,nil);
         for (i=start; i < end; ++i)
-        {  elt(copy,i-start) = (LispObject)elt(sequence,i);
-           write_barrier(&elt(copy,i-start));
+        {   elt(copy,i-start) = static_cast<LispObject>(elt(sequence,i));
+            write_barrier(&elt(copy,i-start));
         }
         return onevalue(copy);
     }
@@ -1889,12 +1919,14 @@ LispObject vector_subseq(LispObject sequence, size_t start, size_t end)
         pop(sequence);
 
         // This code plagiarised from copy_string ...
-        s = (char *)copy - TAG_VECTOR;
+        s = reinterpret_cast<char *>(copy) - TAG_VECTOR;
         k = (seq_length + 3) & ~(int32_t)7;
         *(int32_t *)(s + k + CELL) = 0;
         if (k != 0) *(int32_t *)(s + k) = 0;
 
-        std::memcpy(s + CELL, (char *)sequence+(CELL-TAG_VECTOR)+start, (size_t)seq_length);
+        std::memcpy(s + CELL,
+                    reinterpret_cast<char *>(sequence)+(CELL-TAG_VECTOR)+start,
+                    (size_t)seq_length);
 
         return onevalue(copy);
     }
@@ -1932,7 +1964,8 @@ LispObject vector_subseq(LispObject sequence, size_t start, size_t end)
         aerror1("vector-subseq*",sequence);
 }
 
-LispObject Llist_subseq1(LispObject env, LispObject seq, LispObject start)
+LispObject Llist_subseq1(LispObject env, LispObject seq,
+                         LispObject start)
 {   LispObject len;
     size_t first, last;
 
@@ -1945,7 +1978,8 @@ LispObject Llist_subseq1(LispObject env, LispObject seq, LispObject start)
     return list_subseq(seq, first, last);
 }
 
-LispObject Llist_subseq2(LispObject env, LispObject seq, LispObject start, LispObject end)
+LispObject Llist_subseq2(LispObject env, LispObject seq,
+                         LispObject start, LispObject end)
 {   size_t first, last;
     first = int_of_fixnum(start);
     last  = int_of_fixnum(end);
@@ -1954,7 +1988,8 @@ LispObject Llist_subseq2(LispObject env, LispObject seq, LispObject start, LispO
     return list_subseq(seq, first, last);
 }
 
-LispObject Lvector_subseq1(LispObject env, LispObject seq, LispObject start)
+LispObject Lvector_subseq1(LispObject env, LispObject seq,
+                           LispObject start)
 {   LispObject len;
     size_t first, last;
 
@@ -1969,7 +2004,8 @@ LispObject Lvector_subseq1(LispObject env, LispObject seq, LispObject start)
     return vector_subseq(seq, first, last);
 }
 
-LispObject Lvector_subseq2(LispObject env, LispObject seq, LispObject start, LispObject end)
+LispObject Lvector_subseq2(LispObject env, LispObject seq,
+                           LispObject start, LispObject end)
 {   size_t first, last;
     first = int_of_fixnum(start);
     last  = int_of_fixnum(end);
@@ -2062,7 +2098,7 @@ setup_type const funcs3_setup[] =
     {"maple_integer",           G0W1, Lmaple_integer, G2W1, G3W1, G4W1},
     {"maple_component",         G0W2, G1W2, Lmaple_component, G3W2, G4W2},
 #endif
-    {NULL,                      0, 0, 0}
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of fns3.cpp

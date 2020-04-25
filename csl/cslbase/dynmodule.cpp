@@ -39,9 +39,8 @@
 #include <cstdio>
 
 extern "C"
-{
-extern int variable_in_base;
-extern int function_in_base(int x);
+{   extern int variable_in_base;
+    extern int function_in_base(int x);
 };
 
 extern "C" int callme(int x)
@@ -57,9 +56,9 @@ extern "C" int callme(int x)
 //
 //
     std::printf("variable in base = %.8x @ %p\n",
-           variable_in_base, &variable_in_base);
+                variable_in_base, &variable_in_base);
     std::printf("function in base = %p\n",
-           function_in_base);
+                function_in_base);
     return 3*function_in_base(x) + 1;
 }
 

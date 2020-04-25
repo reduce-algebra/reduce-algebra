@@ -58,8 +58,7 @@
 #include <cstdio>
 
 int main(int argc, char *argv[])
-{
-    std::printf("FOX library not detected and so this demo is unavailable\n");
+{   std::printf("FOX library not detected and so this demo is unavailable\n");
     return 0;
 }
 
@@ -92,13 +91,13 @@ int main(int argc, char *argv[])
 #include <X11/Xft/Xft.h>
 
 static Display *dpy;
-static XftDraw *ftDraw = NULL;
-static Visual *ftVisual = NULL;
+static XftDraw *ftDraw = nullptr;
+static Visual *ftVisual = nullptr;
 static Colormap ftColorMap;
 static XRenderColor ftRenderBlack = {0,0,0,0xffff};
 static XRenderColor ftRenderWhite = {0xffff,0xffff,0xffff,0xffff};
 static XftColor ftBlack, ftWhite;
-static XftFont *ftFont = NULL;
+static XftFont *ftFont = nullptr;
 
 #else   // No Xft
 
@@ -106,24 +105,24 @@ static XftFont *ftFont = NULL;
 
 #endif
 #endif
- 
+
 #include <cstdio>
 #include <cstring>
 #include <cctype>
 
-#include "fx.h"	
+#include "fx.h"
 #include "fwin.h"
 
 
 extern int main(int argc,char *argv[]);
 
 #ifdef WIN32
-static FXFont *ff = NULL;
+static FXFont *ff = nullptr;
 #endif
 
-static const char *fontname = NULL;
+static const char *fontname = nullptr;
 
-class FontWindow : public FXMainWindow 
+class FontWindow : public FXMainWindow
 {
 
     FXDECLARE(FontWindow)
@@ -147,19 +146,19 @@ public:
 
 
 FXDEFMAP(FontWindow) FontWindowMap[] =
-{
-    FXMAPFUNC(SEL_PAINT, FontWindow::ID_CANVAS, FontWindow::onPaint),
+{   FXMAPFUNC(SEL_PAINT, FontWindow::ID_CANVAS, FontWindow::onPaint),
 };
 
-FXIMPLEMENT(FontWindow,FXMainWindow,FontWindowMap,ARRAYNUMBER(FontWindowMap))
+FXIMPLEMENT(FontWindow,FXMainWindow,FontWindowMap,
+            ARRAYNUMBER(FontWindowMap))
 
 
 FontWindow::FontWindow(FXApp *a)
-          :FXMainWindow(a,"Font Application",NULL,NULL,DECOR_ALL,100,100,1100,800)
-{
-    canvas=new FXCanvas(this,this,ID_CANVAS,
-        FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_Y|
-        LAYOUT_FILL_ROW|LAYOUT_FILL_COLUMN);
+    :FXMainWindow(a,"Font Application",nullptr,nullptr,DECOR_ALL,100,100,
+                  1100,800)
+{   canvas=new FXCanvas(this,this,ID_CANVAS,
+                        FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_Y|
+                        LAYOUT_FILL_ROW|LAYOUT_FILL_COLUMN);
 }
 
 
@@ -172,16 +171,14 @@ FontWindow::~FontWindow()
 }
 
 void FontWindow::create()
-{
-    FXMainWindow::create();
+{   FXMainWindow::create();
     show(PLACEMENT_SCREEN);
 }
 
-static FXApp *appl = NULL;
+static FXApp *appl = nullptr;
 
 long FontWindow::onPaint(FXObject *, FXSelector, void *ptr)
-{
-    int i, j;
+{   int i, j;
     FXEvent *ev = (FXEvent*)ptr;
     FXDCWindow dc(canvas, ev);
     dc.setForeground(FXRGB(230, 200, 255));  // violent purple background
@@ -195,7 +192,7 @@ long FontWindow::onPaint(FXObject *, FXSelector, void *ptr)
     }
     dc.setForeground(FXRGB(90, 20, 70));
 #ifdef WIN32
-    if (ff != NULL) dc.setFont(ff);
+    if (ff != nullptr) dc.setFont(ff);
 #endif
     for (i=0; i<256; i+=32)
     {   for (j=0; j<32; j++)
@@ -215,7 +212,7 @@ long FontWindow::onPaint(FXObject *, FXSelector, void *ptr)
             FT_UInt bbb[1];
             bbb[0] = c+1;
             XftDrawGlyphs(ftDraw, &ftBlack, ftFont,
-                           32*j+5, 3*i+40, (FT_UInt *)&bbb, 1);
+                          32*j+5, 3*i+40, (FT_UInt *)&bbb, 1);
 #endif
         }
     }
@@ -227,18 +224,16 @@ long FontWindow::onPaint(FXObject *, FXSelector, void *ptr)
 #endif
 
 typedef struct localFonts
-{
-    const char *name;
+{   const char *name;
     char *path;
 } localFonts;
 
 static localFonts fontNames[] =
-{
-    {"cmex10", NULL},
-    {"cmmi10", NULL},
-    {"cmr10",  NULL},
-    {"cmr10",  NULL},
-    {"cmuntt", NULL}
+{   {"cmex10", nullptr},
+    {"cmmi10", nullptr},
+    {"cmr10",  nullptr},
+    {"cmr10",  nullptr},
+    {"cmuntt", nullptr}
 };
 
 #ifdef WIN32
@@ -276,8 +271,7 @@ static int CALLBACK fontEnumProc(
     const TEXTMETRICA *lpntme,  // physical-font data
     DWORD FontType,             // type of font
     LPARAM lParam)              // application-defined data
-{
-    fontNeeded = 0;
+{   fontNeeded = 0;
     return 0;
 }
 
@@ -302,8 +296,7 @@ static int CALLBACK fontEnumProc1(
 
 
 int main(int argc,char *argv[])
-{
-    fontname = "cmr10";
+{   fontname = "cmr10";
     for (int i=1; i<argc; i++)
         fontname = argv[i];
 #ifdef WIN32
@@ -327,7 +320,7 @@ int main(int argc,char *argv[])
          std::strcmp(fontname, "csl-reduce-cmsy10") != 0 &&
          std::strcmp(fontname, "csl-reduce-cmex10") != 0) &&
 #endif
-         0)
+        0)
     {   std::printf("Usage: fontdemo [fontname]\n");
         std::printf("The fontname should be csl-reduce-cmr10, csl-reduce-cmmi10, csl-reduce-cmsy10 or csl-reduce-cmex10\n");
         return 1;
@@ -348,22 +341,23 @@ int main(int argc,char *argv[])
     application.create();
 
 #ifdef WIN32
-    HDC hDC = CreateCompatibleDC(NULL);
+    HDC hDC = CreateCompatibleDC(nullptr);
     LOGFONT lf;
 // I check each of the fonts that this application wants to see if they
 // are already installed. If they are then there is no merit in installing
 // them for myself.
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   std::memset((void *)&lf, 0, sizeof(lf));
+    for (int i=0;
+         i<static_cast<int>(sizeof(fontNames)/sizeof(fontNames[0])); i++)
+    {   std::memset(reinterpret_cast<void *>()&lf, 0, sizeof(lf));
         std::strcpy(lf.lfFaceName, fontNames[i].name);
         lf.lfCharSet = DEFAULT_CHARSET;
         lf.lfPitchAndFamily = 0;
         fontNeeded = 1;
-        fontNames[i].path = NULL;
+        fontNames[i].path = nullptr;
         EnumFontFamiliesEx(hDC, &lf, fontEnumProc, 0, 0);
         if (!fontNeeded) continue;
         char *nn = new char [std::strlen(programDir) +
-                             std::strlen(toString(fontsdir)) + 16];
+                                                     std::strlen(toString(fontsdir)) + 16];
         std::strcpy(nn, programDir);
         std::strcat(nn, "\\" toString(fontsdir) "\\");
         std::strcat(nn, fontNames[i].name); std::strcat(nn, ".ttf");
@@ -373,8 +367,9 @@ int main(int argc,char *argv[])
 //       AddFontResource[Ex]("filename")
 //       SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     int newFontAdded = 0;
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   if (fontNames[i].path == NULL) continue;
+    for (int i=0;
+         i<static_cast<int>(sizeof(fontNames)/sizeof(fontNames[0])); i++)
+    {   if (fontNames[i].path == nullptr) continue;
         if (AddFontResourceExA(fontNames[i].path, PRIVATE_FONT, 0) == 0)
         {   std::printf("Failed to add font %s\n", fontNames[i].path);
             std::fflush(stdout);
@@ -390,7 +385,7 @@ int main(int argc,char *argv[])
     }
 
 // Now list all the fonts that are available...
-    std::memset((void *)&lf, 0, sizeof(lf));
+    std::memset(reinterpret_cast<void *>()&lf, 0, sizeof(lf));
     lf.lfFaceName[0] = '\0';
     lf.lfCharSet = DEFAULT_CHARSET;
     lf.lfPitchAndFamily = 0;
@@ -412,14 +407,14 @@ int main(int argc,char *argv[])
     fd.encoding = FONTENCODING_DEFAULT;
     fd.flags = 0;
     ff = new FXFont(appl, fd);
-    if (ff == NULL) std::printf("Font could not be created\n");
+    if (ff == nullptr) std::printf("Font could not be created\n");
     else ff->create();
 
 #else // WIN32
 
     int screen = 0;
-    XftFontSet *fs = NULL;
-    ftDraw = NULL;
+    XftFontSet *fs = nullptr;
+    ftDraw = nullptr;
     FcConfig *config = FcConfigCreate();
     dpy = (Display *)appl->getDisplay();
     screen = DefaultScreen(dpy);
@@ -428,15 +423,15 @@ int main(int argc,char *argv[])
     char fff[256];
     for (std::size_t i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
     {   std::sprintf(fff,
-            "%s/" toString(fontsdir) "/%s.pfb",
-            programDir, fontNames[i].name);
+                     "%s/" toString(fontsdir) "/%s.pfb",
+                     programDir, fontNames[i].name);
         FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
     }
     FcConfigSetCurrent(config);
     XftInit("");
     fs = XftListFonts(dpy, screen,
 //                    XFT_FAMILY, XftTypeString, fontname,
-                      NULL,
+                      nullptr,
 // I will ask XftListFonts to return all available information about the
 // fonts that are found.
                       XFT_FAMILY, XFT_STYLE, XFT_SLANT, XFT_WEIGHT,
@@ -445,9 +440,9 @@ int main(int argc,char *argv[])
                       XFT_XLFD, XFT_FILE, XFT_INDEX, XFT_RASTERIZER,
                       XFT_OUTLINE, XFT_SCALABLE, XFT_RGBA,
                       XFT_SCALE, XFT_RENDER, XFT_MINSPACE,
-                      NULL);
+                      nullptr);
     std::printf("fontset has %d distinct fonts out of %d total\n",
-           fs->nfont, fs->sfont);
+                fs->nfont, fs->sfont);
     char buffer[200];
 // Having obtained all the fonts I will print out all the information about
 // them that Xft is prepared to give me. Note that this seems not to include
@@ -466,7 +461,7 @@ int main(int argc,char *argv[])
     }
 // Note that an XftPattern is just an Fcpattern, so either set of functions
 // can be used to create or manipulate one.
-    XftPattern *ftPattern = NULL;
+    XftPattern *ftPattern = nullptr;
     for (int k=0; k<fs->nfont; k++)
     {   ftPattern = fs->fonts[k];
 // NameUnparse converts the name to something printable
@@ -479,14 +474,16 @@ int main(int argc,char *argv[])
     ftVisual = DefaultVisual(dpy, screen);
     ftColorMap =  DefaultColormap(dpy, screen);
     ftDraw = XftDrawCreate(dpy, w->canvas->id(), ftVisual, ftColorMap);
-    XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderBlack, &ftBlack);
-    XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderWhite, &ftWhite);
+    XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderBlack,
+                       &ftBlack);
+    XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderWhite,
+                       &ftWhite);
 // I had identified the font that I wanted earlier so now I can open it
 // by just using the information collected then.
     ftFont = XftFontOpen(dpy, screen,
                          XFT_FAMILY, XftTypeString, fontname,
                          XFT_SIZE, XftTypeDouble, 24.0,
-                         NULL);
+                         nullptr);
     XftFontSetDestroy(fs); // Now I am done with the list of fonts.
 
 #endif // WIN32

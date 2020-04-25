@@ -68,7 +68,7 @@
 // other lines will be ignored
 //
 
-static std::FILE *out = NULL;
+static std::FILE *out = nullptr;
 
 static int process(char *d, char *s)
 {   char line[1000], junk[1000], name[1000];
@@ -85,7 +85,7 @@ static int process(char *d, char *s)
     int headershown = 0;
     std::sprintf(line, "%s/%s", FONT_PATH, s);
     f = std::fopen(line, "r");
-    if (f == NULL)
+    if (f == nullptr)
     {   std::fprintf(stderr, "Failed to read \"%s\"\n", line);
         std::exit(1);
     }
@@ -106,22 +106,23 @@ static int process(char *d, char *s)
         else if (std::sscanf(line, "Comment%s", junk) == 1);
         else if (std::sscanf(line, "KPX%s", junk) == 1);
         else if (std::sscanf(line, "FontBBox %d %d %d %d",
-                        &bb1, &bb2, &bb3, &bb4) == 4);
+                             &bb1, &bb2, &bb3, &bb4) == 4);
         else if (std::sscanf(line, "CapHeight %d", &capheight) == 1);
         else if (std::sscanf(line, "XHeight %d", &xheight) == 1);
         else if (std::sscanf(line, "Ascender %d", &ascender) == 1);
         else if (std::sscanf(line, "Descender %d", &descender) == 1);
-        else if (std::sscanf(line, "C %d ; WX %lf ; N %*s ; B %lf %lf %lf %lf %s",
-                        &charNo, &dw,
-                        &dc1, &dc2, &dc3, &dc4, junk) == 7)
+        else if (std::sscanf(line,
+                             "C %d ; WX %lf ; N %*s ; B %lf %lf %lf %lf %s",
+                             &charNo, &dw,
+                             &dc1, &dc2, &dc3, &dc4, junk) == 7)
         {   if (charNo >= 0 && charNo < 256 &&
                 dw >= 0.0)
             {   int rightbearing, leftbearing;
-                charWidth = (int)(dw + 0.5);
-                bc1 = (int)(dc1 + 0.5);
-                bc2 = (int)(dc2 + 0.5);
-                bc3 = (int)(dc3 + 0.5);
-                bc4 = (int)(dc4 + 0.5);
+                charWidth = static_cast<int>(dw + 0.5);
+                bc1 = static_cast<int>(dc1 + 0.5);
+                bc2 = static_cast<int>(dc2 + 0.5);
+                bc3 = static_cast<int>(dc3 + 0.5);
+                bc4 = static_cast<int>(dc4 + 0.5);
                 charwidth[charNo] = charWidth;
                 if (charWidth > maxwidth) maxwidth = charWidth;
                 if (bc1!=0 || bc2!=0 || bc3!=0 || bc4!=0)
@@ -155,8 +156,8 @@ static int process(char *d, char *s)
     std::fclose(f);
     if (name[0] == 0) return;  // no font name
     std::fprintf(out, "{\"%s\", %d, %d, %d, %d, %d, %d, %d, %d, {\n",
-            name, isFixed, maxwidth, maxleftbearing, maxrightbearing,
-            capheight, xheight, ascender, descender);
+                 name, isFixed, maxwidth, maxleftbearing, maxrightbearing,
+                 capheight, xheight, ascender, descender);
     for (c=0; c<255; c++)
     {   std::fprintf(out, "%6d,", charwidth[c]);
         if ((c % 8) == 7) std::fprintf(out, "\n");
@@ -168,19 +169,22 @@ int main(int argc, char *argv[])
 {   std::FILE *note;
     int ch;
     out = std::fopen("cmfont-info.cpp", "w");
-    if (out == NULL)
+    if (out == nullptr)
     {   std::printf("Failed to open cmfont-info.cpp\n");
         return 1;
     }
     std::fprintf(out, "/*\n * cmfont-info.cpp\n");
-    std::fprintf(out, " * Font metrics for Type1 Computer Modern Fonts\n *\n");
+    std::fprintf(out,
+                 " * Font metrics for Type1 Computer Modern Fonts\n *\n");
     std::fprintf(out, " * extracted from %s\n *\n", FONT_PATH);
     std::fprintf(out, " */\n");
     std::fprintf(out, "\n\n\n");
     std::fprintf(out, "typedef struct font_info {\n");
     std::fprintf(out, "   char *name;\n");
-    std::fprintf(out, "   short int isfixed, fontwidth, maxleftbearing, maxrightbearing;\n");
-    std::fprintf(out, "   short int capheight, xheight, ascent, descent;\n");
+    std::fprintf(out,
+                 "   short int isfixed, fontwidth, maxleftbearing, maxrightbearing;\n");
+    std::fprintf(out,
+                 "   short int capheight, xheight, ascent, descent;\n");
     std::fprintf(out, "   short int charwidth[256];\n");
     std::fprintf(out, "} font_info;\n\n");
     std::fprintf(out, "static font_info cm_font_widths[] = {\n");

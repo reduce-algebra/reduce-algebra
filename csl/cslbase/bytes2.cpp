@@ -37,16 +37,16 @@
 
 // $Id$
 
-    LispObject A_reg;
-    LispObject r1, r2, r3;
-    no_args *f0;
-    one_arg *f1;
-    two_args *f2;
-    three_args *f3;
-    fourup_args *f4up;
-    unsigned int fname, w;
-    int32_t n, k;
-    size_t xppc;
+LispObject A_reg;
+LispObject r1, r2, r3;
+no_args *f0;
+one_arg *f1;
+two_args *f2;
+three_args *f3;
+fourup_args *f4up;
+unsigned int fname, w;
+int32_t n, k;
+size_t xppc;
 //
 // I declare all the other variables I need here up at the top of the function
 // since at least on some C compilers putting the declarations more locally
@@ -63,24 +63,27 @@
 // I only set this information up when in the slower bootstrap mode, but now
 // I have decided to accept the cost at all times so that full tracing
 // facilities are always available.
-    LispObject ffpname = qpname(lit);
-    size_t fflength = (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
-    char ffname[32];
-    if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-    std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
-    ffname[fflength] = 0;
-    debug_record((const char *)ffname);
+LispObject ffpname = qpname(lit);
+size_t fflength = (size_t)(length_of_byteheader(vechdr(
+                               ffpname)) - CELL);
+char ffname[32];
+if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+std::memcpy(reinterpret_cast<void *>(&ffname[0]), &celt(ffpname, 0),
+            fflength);
+ffname[fflength] = 0;
+debug_record(reinterpret_cast<const char *>(ffname));
 //
 #ifdef CHECK_STACK
-    {   char *my_stack = (char *)&my_stack;
-        if (native_stack == NULL) native_stack = native_stack_base = my_stack;
-        else if (my_stack + 10000 < native_stack)
-        {   native_stack = my_stack;
-            trace_printf("\nFunction %s stack depth %d\n",
-                         &celt(qpname(lit), 0),
-                         native_stack_base - my_stack);
-        }
+{   char *my_stack = reinterpret_cast<char *>()&my_stack;
+    if (native_stack == nullptr) native_stack = native_stack_base =
+                    my_stack;
+    else if (my_stack + 10000 < native_stack)
+    {   native_stack = my_stack;
+        trace_printf("\nFunction %s stack depth %d\n",
+                     &celt(qpname(lit), 0),
+                     native_stack_base - my_stack);
     }
+}
 #endif
 
 //
@@ -97,12 +100,12 @@
 //
 #ifdef ACN
 // ... except that I will only go the whole hog if one defines ACN
-    callstack = cons_no_gc(lit, callstack);
+callstack = cons_no_gc(lit, callstack);
 #endif
 #endif
-    lit = qenv(lit);
-    codevec = car(lit);
-    litvec = cdr(lit);
+lit = qenv(lit);
+codevec = car(lit);
+litvec = cdr(lit);
 #ifndef NO_BYTECOUNT
 // Attribute 30-bytecode overhead to entry sequence. This is a pretty
 // arbitrary number, but the idea is that when I am profiling I want to
@@ -113,42 +116,43 @@
 // bytecode but was called just under 2 million times. The overheads of
 // starting up the bytecode interpreter nake that an invalid judgement,
 // and the "+30" here is intended to counterbalance it.
-    incCount(qcount(basic_elt(litvec, 0)), profile_count_mode ? 1 : 30);
+incCount(qcount(basic_elt(litvec, 0)), profile_count_mode ? 1 : 30);
 #endif
 //
-    A_reg = nil;
+A_reg = nil;
 #ifdef CHECK_STACK
-    if ((char *)fringe <= (char *)heaplimit) A_reg = cons_gc_test(A_reg);
+if (reinterpret_cast<char *>(fringe) <= reinterpret_cast<char *>
+    (heaplimit)) A_reg = cons_gc_test(A_reg);
 
 #ifdef DEBUG
-    if (check_stack((char *)&ffname[0],__LINE__))
-    {   err_printf("\n+++ stack overflow\n");
-        aerror("stack overflow");
-    }
+if (check_stack(reinterpret_cast<char *>()&ffname[0],__LINE__))
+{   err_printf("\n+++ stack overflow\n");
+    aerror("stack overflow");
+}
 #else
-    if (check_stack("bytecode_interpreter",__LINE__))
-    {   err_printf("\n+++ stack overflow\n");
-        aerror("stack overflow");
-    }
+if (check_stack("bytecode_interpreter",__LINE__))
+{   err_printf("\n+++ stack overflow\n");
+    aerror("stack overflow");
+}
 #endif
 #else // CHECK_STACK
-    {   char *p = (char *)&p;
-        if ((uintptr_t)p < C_stacklimit)
-        {   err_printf("\n+++ stack overflow\n");
-            if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
-            aerror("stack_overflow");
-        }
+{   char *p = reinterpret_cast<char *>(&p);
+    if ((uintptr_t)p < C_stacklimit)
+    {   err_printf("\n+++ stack overflow\n");
+        if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
+        aerror("stack_overflow");
     }
+}
 #endif // CHECK_STACK
 #ifdef DEBUG
-    std::jmp_buf *jbsave;
+std::jmp_buf *jbsave;
 #endif
 
 next_opcode:   // This label is so that I can restart what I am doing
-               // following a CATCH or to handle UNWIND-PROTECT.
-    my_assert(A_reg != 0, [&]{ trace_printf("A_reg == 0 @ bytes2.cpp line __LINE__\n"); });
-    try
-    {
+// following a CATCH or to handle UNWIND-PROTECT.
+my_assert(A_reg != 0, [&] { trace_printf("A_reg == 0 @ bytes2.cpp line __LINE__\n"); });
+try
+{
 // The try block will neeed to cope with
 // .  Various errors raised by functions called from here: a fragment of
 //    backtrace may be called for, and variable bindings undone.
@@ -173,11 +177,11 @@ next_opcode:   // This label is so that I can restart what I am doing
     jbsave = global_jb;
     std::jmp_buf jb;
     switch (setjmp(jb))
-    {   default:
+{       default:
         case 1: exit_reason = UNWIND_SIGNAL;
-                if (miscflags & HEADLINE_FLAG)
-                    err_printf("\n+++ Error %s: ", errorset_msg);
-                throw LispSignal();
+            if (miscflags & HEADLINE_FLAG)
+                err_printf("\n+++ Error %s: ", errorset_msg);
+            throw LispSignal();
         case 0: break;
     }
     global_jb = &jb;
@@ -195,7 +199,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
         if (!profile_count_mode) incCount(qcount(basic_elt(litvec, 0)));
         total++;
-        frequencies[((unsigned char *)codevec)[ppc]]++;
+        frequencies[(reinterpret_cast<unsigned char *>(codevec))[ppc]]++;
 #endif
 
 //trace_printf("ppc=%d, byte=%.2x\n", ppc, ((unsigned char *)codevec)[ppc]);
@@ -215,7 +219,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 //
 // Here I have an unrecognised opcode - the result of a compiler error
 //
-                err_printf("\nUnrecognized opcode byte %x\n", ((unsigned char *)codevec)[ppc-1]);
+                err_printf("\nUnrecognized opcode byte %x\n",
+                           (reinterpret_cast<unsigned char *>(codevec))[ppc-1]);
                 aerror("compiler failure");
 
             case OP_ONEVALUE:
@@ -295,7 +300,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     print_traceset(current_byte, A_reg);
                     pop(A_reg);
                 }
-                setvalue(basic_elt(litvec, next_byte), A_reg);  // store into special var
+                setvalue(basic_elt(litvec, next_byte),
+                         A_reg);  // store into special var
                 continue;
 
             case OP_STOREFREE1:
@@ -370,18 +376,18 @@ next_opcode:   // This label is so that I can restart what I am doing
 // (actually as of April 2002 I think there may be bugs I need to fix...)
 // Note that this has STILL not been heavily tested!
             case OP_LOADLEX:
-                r1 = elt(stack[1-(int)next_byte], 0);
+                r1 = elt(stack[1-static_cast<int>(next_byte)], 0);
                 B_reg = A_reg;
                 w = next_byte;             // Number of levels to chain
-                while (w != 0) r1 = ((LispObject *)r1)[1], w--;
-                A_reg = ((LispObject *)r1)[next_byte];
+                while (w != 0) r1 = (reinterpret_cast<LispObject *>(r1))[1], w--;
+                A_reg = (reinterpret_cast<LispObject *>(r1))[next_byte];
                 continue;
 
             case OP_STORELEX:
-                r1 = elt(stack[1-(int)next_byte], 0);
+                r1 = elt(stack[1-static_cast<int>(next_byte)], 0);
                 w = next_byte;             // Number of levels to chain
-                while (w != 0) r1 = ((LispObject *)r1)[1], w--;
-                ((LispObject *)r1)[next_byte] = A_reg;
+                while (w != 0) r1 = (reinterpret_cast<LispObject *>(r1))[1], w--;
+                (reinterpret_cast<LispObject *>(r1))[next_byte] = A_reg;
                 continue;
 
             case OP_CLOSURE:
@@ -392,7 +398,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // variables.
 //
                 w = next_byte;
-                A_reg = encapsulate_sp(&stack[-2-(int)w]);
+                A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
                 pop(B_reg);
                 A_reg = list2star(cfunarg, B_reg, A_reg);
                 pop(B_reg);
@@ -414,16 +420,16 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   case 0x00:                  // LOADLOC extended
                         B_reg = A_reg;
                         w = (w & 0x3f) << 8;
-                        A_reg = stack[-(int)(w + next_byte)];
+                        A_reg = stack[-static_cast<int>(w + next_byte)];
                         continue;
                     case 0x40:                  // STORELOC extended
                         w = (w & 0x3f) << 8;
-                        stack[-(int)(w + next_byte)] = A_reg;
+                        stack[-static_cast<int>(w + next_byte)] = A_reg;
                         continue;
                     case 0x80:                  // CLOSURE extended
                         push(B_reg, A_reg);
                         w = ((w & 0x3f) << 8) + next_byte;
-                        A_reg = encapsulate_sp(&stack[-2-(int)w]);
+                        A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
                         pop(B_reg);
                         A_reg = list2star(cfunarg, B_reg, A_reg);
                         pop(B_reg);
@@ -436,9 +442,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                         r1 = elt(stack[1-n], 0);
                         B_reg = A_reg;
                         n = w & 0x1f;
-                        while (n != 0) r1 = ((LispObject *)r1)[1], n--;
-                        if ((w & 0x20) == 0) A_reg = ((LispObject *)r1)[k];
-                        else ((LispObject *)r1)[k] = A_reg;
+                        while (n != 0) r1 = (reinterpret_cast<LispObject *>(r1))[1], n--;
+                        if ((w & 0x20) == 0) A_reg = (reinterpret_cast<LispObject *>(r1))[k];
+                        else (reinterpret_cast<LispObject *>(r1))[k] = A_reg;
                         continue;
                 }
 
@@ -597,7 +603,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     pop(B_reg, r1, r3, r2);
                     f4up = qfn4up(r2);
                     if ((qheader(r2) & SYM_TRACED) != 0)
-                        A_reg = traced_call4up(basic_elt(litvec, 0), f4up, r2, r3, r1, B_reg, A_reg);
+                        A_reg = traced_call4up(basic_elt(litvec, 0), f4up, r2, r3, r1, B_reg,
+                                               A_reg);
                     else A_reg = f4up(r2, r3, r1, B_reg, A_reg);
                     popv(1);
                     continue;
@@ -634,8 +641,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // and both use of a special opcode here and removal of the checking make
 // noticable differences to performance.
 //
-                A_reg = *(LispObject *)(
-                            (char *)B_reg +
+                A_reg = *reinterpret_cast<LispObject *>(
+                            reinterpret_cast<char *>(B_reg) +
                             (CELL - TAG_VECTOR) +
                             (CELL*int_of_fixnum(A_reg)));
                 continue;
@@ -652,8 +659,9 @@ next_opcode:   // This label is so that I can restart what I am doing
 // around vectors of guff and use (getv vvv 0) etc (aka svref) to
 // grab stuff out.
 //
-                A_reg = *(LispObject *)(
-                            (char *)A_reg + (CELL - TAG_VECTOR) + (CELL*(next_byte)));
+                A_reg = *reinterpret_cast<LispObject *>(
+                            reinterpret_cast<char *>(A_reg) + (CELL - TAG_VECTOR) + (CELL*
+                                    (next_byte)));
                 continue;
 
             case OP_EQCAR:
@@ -804,15 +812,17 @@ next_opcode:   // This label is so that I can restart what I am doing
                 w = next_byte;
                 if (is_fixnum(A_reg) &&
                     (n = int_of_fixnum(A_reg)) >= 0 &&
-                    n < (int)w) ppc += 2*n + 2;
+                    n < static_cast<int>(w)) ppc += 2*n + 2;
                 w = next_byte;
 //
 // I support backwards jumps here by setting their top bit. At present I do
 // poll for interrupts on a backwards case-branch. And the encoding used means
 // that case branches can not reach quite as far as regular jumps.
 //
-                if (w & 0x80) ppc = ppc - (((w & 0x7f) << 8) + ((unsigned char *)codevec)[ppc]);
-                else ppc = ppc + (w << 8) + ((unsigned char *)codevec)[ppc];
+                if (w & 0x80) ppc = ppc - (((w & 0x7f) << 8) +
+                                               (reinterpret_cast<unsigned char *>(codevec))[ppc]);
+                else ppc = ppc + (w << 8) + (reinterpret_cast<unsigned char *>
+                                                 (codevec))[ppc];
                 continue;
 
 //
@@ -1016,49 +1026,57 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_JUMPLIT1EQ:
                 xppc = ppc;
                 ppc++;
-                if ((LispObject)basic_elt(litvec, 1) == A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec,
+                                                      1)) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT1NE:
                 xppc = ppc;
                 ppc++;
-                if ((LispObject)basic_elt(litvec, 1) != A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec,
+                                                      1)) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT2EQ:
                 xppc = ppc;
                 ppc++;
-                if ((LispObject)basic_elt(litvec, 2) == A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec,
+                                                      2)) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT2NE:
                 xppc = ppc;
                 ppc++;
-                if ((LispObject)basic_elt(litvec, 2) != A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec,
+                                                      2)) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT3EQ:
                 xppc = ppc;
                 ppc++;
-                if ((LispObject)basic_elt(litvec, 3) == A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec,
+                                                      3)) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT3NE:
                 xppc = ppc;
                 ppc++;
-                if ((LispObject)basic_elt(litvec, 3) != A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec,
+                                                      3)) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT4EQ:
                 xppc = ppc;
                 ppc++;
-                if ((LispObject)basic_elt(litvec, 4) == A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec,
+                                                      4)) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT4NE:
                 xppc = ppc;
                 ppc++;
-                if ((LispObject)basic_elt(litvec, 4) != A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec,
+                                                      4)) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREENIL:
@@ -1079,14 +1097,16 @@ next_opcode:   // This label is so that I can restart what I am doing
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if ((LispObject)basic_elt(litvec, w) == A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec,
+                                                      w)) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLITNE:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if ((LispObject)basic_elt(litvec, w) != A_reg) short_jump(ppc, xppc);
+                if (static_cast<LispObject>(basic_elt(litvec,
+                                                      w)) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPB1NIL:
@@ -1126,7 +1146,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (car_legal(A_reg) &&
-                    (LispObject)basic_elt(litvec, w) == car(A_reg)) short_jump(ppc, xppc);
+                    static_cast<LispObject>(basic_elt(litvec,
+                                                      w)) == car(A_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPNEQCAR:
@@ -1134,7 +1155,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (!car_legal(A_reg) ||
-                    (LispObject)basic_elt(litvec, w) != car(A_reg)) short_jump(ppc, xppc);
+                    static_cast<LispObject>(basic_elt(litvec,
+                                                      w)) != car(A_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFLAGP:
@@ -1149,7 +1171,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     continue;
                 }
 #else
-                r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
+                    r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
                 if (r1 != nil) short_jump(ppc, xppc);
                 continue;
 #endif
@@ -1343,7 +1365,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump_back(w, ppc, xppc, A_reg);
+                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump_back(w, ppc, xppc,
+                            A_reg);
                 continue;
 
             case OP_JUMP_L:
@@ -1359,24 +1382,28 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_CATCH:
-                w = (unsigned int)(ppc + ((unsigned char *)codevec)[ppc]);
+                w = static_cast<unsigned int>(ppc +
+                                              (reinterpret_cast<unsigned char *>(codevec))[ppc]);
                 ppc++;
                 goto catcher;
 
             case OP_CATCH_B:
-                w = (unsigned int)(ppc - ((unsigned char *)codevec)[ppc]);
+                w = static_cast<unsigned int>(ppc -
+                                              (reinterpret_cast<unsigned char *>(codevec))[ppc]);
                 ppc++;
                 goto catcher;
 
             case OP_CATCH_L:
                 w = next_byte;
-                w = (unsigned int)(ppc + (w << 8) + ((unsigned char *)codevec)[ppc]);
+                w = static_cast<unsigned int>(ppc + (w << 8) +
+                                              (reinterpret_cast<unsigned char *>(codevec))[ppc]);
                 ppc++;
                 goto catcher;
 
             case OP_CATCH_BL:
                 w = next_byte;
-                w = (unsigned int)(ppc - ((w << 8) + ((unsigned char *)codevec)[ppc]));
+                w = static_cast<unsigned int>(ppc - ((w << 8) +
+                                                     (reinterpret_cast<unsigned char *>(codevec))[ppc]));
                 ppc++;
             catcher:
                 A_reg = cons(A_reg, catch_tags);
@@ -1434,18 +1461,17 @@ next_opcode:   // This label is so that I can restart what I am doing
 // "throw;" without an operand except that in this code I am now outside
 // the block that was the signal handler.
                 switch (exit_reason)
-                {
-                case UNWIND_NULL:      continue;
-                case UNWIND_GO:        throw LispGo();
-                case UNWIND_RETURN:    throw LispReturnFrom();
-                case UNWIND_THROW:     throw LispThrow();
-                case UNWIND_RESTART:   throw LispRestart();
-                case UNWIND_RESOURCE:  throw LispResource();
-                case UNWIND_SIGNAL:    throw LispSignal();
-                case UNWIND_ERROR:     throw LispError();
-                case UNWIND_FNAME:     throw LispError();
-                case UNWIND_UNWIND:    throw LispError();
-                default:               throw LispError();
+                {   case UNWIND_NULL:      continue;
+                    case UNWIND_GO:        throw LispGo();
+                    case UNWIND_RETURN:    throw LispReturnFrom();
+                    case UNWIND_THROW:     throw LispThrow();
+                    case UNWIND_RESTART:   throw LispRestart();
+                    case UNWIND_RESOURCE:  throw LispResource();
+                    case UNWIND_SIGNAL:    throw LispSignal();
+                    case UNWIND_ERROR:     throw LispError();
+                    case UNWIND_FNAME:     throw LispError();
+                    case UNWIND_UNWIND:    throw LispError();
+                    default:               throw LispError();
                 }
 
             case OP_THROW:
@@ -1546,7 +1572,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
+                    std::memcpy(reinterpret_cast<void *>(&ffname[0]), &celt(ffpname, 0),
+                                fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
                     ppc = BPS_DATA_OFFSET;
@@ -1591,14 +1618,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
+                    std::memcpy(reinterpret_cast<void *>(&ffname[0]), &celt(ffpname, 0),
+                                fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
                     push(A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(qcount(basic_elt(litvec, 0)),
-                        profile_count_mode ? 1 : 30);
+                             profile_count_mode ? 1 : 30);
 #endif
                     continue;
                 }
@@ -1638,14 +1666,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
+                    std::memcpy(reinterpret_cast<void *>(&ffname[0]), &celt(ffpname, 0),
+                                fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
                     push(B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(qcount(basic_elt(litvec, 0)),
-                        profile_count_mode ? 1 : 30);
+                             profile_count_mode ? 1 : 30);
 #endif
                     continue;
                 }
@@ -1684,14 +1713,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    std::memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
+                    std::memcpy(reinterpret_cast<void *>(&ffname[0]), &celt(ffpname, 0),
+                                fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
                     push(r2, B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(qcount(basic_elt(litvec, 0)),
-                        profile_count_mode ? 1 : 30);
+                             profile_count_mode ? 1 : 30);
 #endif
                     continue;
                 }
@@ -1814,7 +1844,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 push(codevec, litvec, A_reg); // the argument
                 if (stack >= stackLimit) respond_to_stack_event();
-                A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0), stack-1);
+                A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
+                                             stack-1);
                 pop(litvec, codevec);
                 assert(A_reg != 0);
                 continue;
@@ -1858,7 +1889,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 push(codevec, litvec, B_reg, A_reg);
                 if (stack >= stackLimit) respond_to_stack_event();
-                A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0), stack-2);
+                A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
+                                             stack-2);
                 pop(litvec, codevec);
                 assert(A_reg != 0);
                 continue;
@@ -1925,7 +1957,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 pop(r2, r1);
                 B_reg = list3star(r1, r2, B_reg, A_reg);
 // Here the post-byte indicates the function to be called.
-                A_reg = basic_elt(litvec, ((unsigned char *)codevec)[ppc]);
+                A_reg = basic_elt(litvec,
+                                  (reinterpret_cast<unsigned char *>(codevec))[ppc]);
                 A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
                 assert(A_reg != 0);
                 ppc++;
@@ -1940,7 +1973,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // BUILTIN0:  A=fn()
                 if (no_arg_traceflags[previous_byte])
                     A_reg = traced_call0(basic_elt(litvec, 0), f0,
-                        make_undefined_symbol(no_arg_names[previous_byte]));
+                                         make_undefined_symbol(no_arg_names[previous_byte]));
                 else A_reg = f0(nil);
                 assert(A_reg != 0);
                 continue;
@@ -1951,8 +1984,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // BUILTIN1:   A=fn(A);
                 if (one_arg_traceflags[previous_byte])
                     A_reg = traced_call1(basic_elt(litvec, 0), f1,
-                        make_undefined_symbol(one_arg_names[previous_byte]),
-                        A_reg);
+                                         make_undefined_symbol(one_arg_names[previous_byte]),
+                                         A_reg);
                 A_reg = f1(nil, A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -1963,8 +1996,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // BUILTIN2:   A=fn(B,A);
                 if (two_arg_traceflags[previous_byte])
                     A_reg = traced_call2(basic_elt(litvec, 0), f2,
-                        make_undefined_symbol(two_arg_names[previous_byte]),
-                        B_reg, A_reg);
+                                         make_undefined_symbol(two_arg_names[previous_byte]),
+                                         B_reg, A_reg);
                 A_reg = f2(nil, B_reg, A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -1975,8 +2008,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // BUILTIN2R:   A=fn(A,B); NOTE arg order reversed
                 if (two_arg_traceflags[previous_byte])
                     A_reg = traced_call2(basic_elt(litvec, 0), f2,
-                        make_undefined_symbol(two_arg_names[previous_byte]),
-                        A_reg, B_reg);
+                                         make_undefined_symbol(two_arg_names[previous_byte]),
+                                         A_reg, B_reg);
                 else A_reg = f2(nil, A_reg, B_reg);
                 assert(A_reg != 0);
                 continue;
@@ -1988,8 +2021,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 pop(r1);
                 if (three_arg_traceflags[previous_byte])
                     A_reg = traced_call3(basic_elt(litvec, 0), f3,
-                        make_undefined_symbol(three_arg_names[previous_byte]),
-                        r1, B_reg, A_reg);
+                                         make_undefined_symbol(three_arg_names[previous_byte]),
+                                         r1, B_reg, A_reg);
                 else A_reg = f3(nil, r1, B_reg, A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -2002,7 +2035,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 //
             case OP_LOADLOC:
                 B_reg = A_reg;
-                A_reg = stack[-(int)next_byte];
+                A_reg = stack[-static_cast<int>(next_byte)];
                 assert(A_reg != 0);
                 continue;
 
@@ -2187,7 +2220,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_STORELOC:
-                stack[-(int)next_byte] = A_reg;
+                stack[-static_cast<int>(next_byte)] = A_reg;
 // NB this opcode does not pop the A/B stack
                 continue;
 
@@ -2324,7 +2357,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (A_reg == nil) ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[xppc]);
+                if (A_reg == nil) ppc = ppc + ((w << 8) +
+                                                   (reinterpret_cast<unsigned char *>(codevec))[xppc]);
                 continue;
 
             case OP_JUMPNIL_BL:
@@ -2332,7 +2366,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (A_reg == nil)
-                {   ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
+                {   ppc = ppc - ((w << 8) + (reinterpret_cast<unsigned char *>
+                                             (codevec))[xppc]);
                     poll_jump_back(A_reg);
                 }
                 continue;
@@ -2341,7 +2376,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (A_reg != nil) ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[xppc]);
+                if (A_reg != nil) ppc = ppc + ((w << 8) +
+                                                   (reinterpret_cast<unsigned char *>(codevec))[xppc]);
                 continue;
 
             case OP_JUMPT_BL:
@@ -2349,7 +2385,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (A_reg != nil)
-                {   ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
+                {   ppc = ppc - ((w << 8) + (reinterpret_cast<unsigned char *>
+                                             (codevec))[xppc]);
                     poll_jump_back(A_reg);
                 }
                 continue;
@@ -2466,41 +2503,41 @@ next_opcode:   // This label is so that I can restart what I am doing
 // End of the main block of opcodes.
 //*****************************************************************************
     } // end of switch block
-    } // end of try block
-    catch (LispException &e)
-    {
+} // end of try block
+catch (LispException &e)
+{
 // What follows is my current guess for a good diagnostic...
-        if (SHOW_FNAME)
-        {   err_printf("Inside: ");
-            loop_print_error(basic_elt(litvec, 0));
-            err_printf("\n");
-        }
+    if (SHOW_FNAME)
+    {   err_printf("Inside: ");
+        loop_print_error(basic_elt(litvec, 0));
+        err_printf("\n");
+    }
 // Here I need to scan down the current stack-frame looking for either a
 // CATCH or an UNWIND-PROTECT marker.
-        for (;;)
-        {   unwind_stack(entry_stack, true);
-            if (stack == entry_stack) throw;   // re-throw!
+    for (;;)
+    {   unwind_stack(entry_stack, true);
+        if (stack == entry_stack) throw;   // re-throw!
 // Here I have a CATCH/UNWIND record within the current function
-            pop(r1, r2);
+        pop(r1, r2);
 // If the tag matches exit_tag then I must reset pc based on offset (r2)
 // and continue. NB need to restore A_reg from exit_value.
-            w = int_of_fixnum(r2);
-            if (car(r1) == SPID_PROTECT)
-            {   // This is an UNWIND catcher
-                push(exit_tag, fixnum_of_int(exit_reason));
-                A_reg = Lmv_list(nil, exit_value);
-                push(A_reg);
-                ppc = w;
-                A_reg = exit_value;
-                goto next_opcode;
-            }
-            else if (exit_reason == UNWIND_THROW && r1 == exit_tag)
-            {   ppc = w;
-                A_reg = exit_value;
-                goto next_opcode;
-            }
+        w = int_of_fixnum(r2);
+        if (car(r1) == SPID_PROTECT)
+        {   // This is an UNWIND catcher
+            push(exit_tag, fixnum_of_int(exit_reason));
+            A_reg = Lmv_list(nil, exit_value);
+            push(A_reg);
+            ppc = w;
+            A_reg = exit_value;
+            goto next_opcode;
+        }
+        else if (exit_reason == UNWIND_THROW && r1 == exit_tag)
+        {   ppc = w;
+            A_reg = exit_value;
+            goto next_opcode;
         }
     }
+}
 
 
 // end of bytes2.cpp

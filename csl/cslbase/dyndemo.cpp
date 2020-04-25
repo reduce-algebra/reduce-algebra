@@ -44,9 +44,8 @@
 #endif
 
 extern "C"
-{
-extern int variable_in_base;
-extern int function_in_base(int x);
+{   extern int variable_in_base;
+    extern int function_in_base(int x);
 };
 
 int function_in_base(int x)
@@ -67,18 +66,20 @@ int clone(int x)
 typedef int onearg(int a);
 
 int main(int argc, char *argv[])
-{   onearg *b = NULL;
+{   onearg *b = nullptr;
 #ifdef WIN32
     HMODULE a = LoadLibrary(".\\dynmodule.dll");
-    std::printf("Dynamic loading of test code for Windows\na = %p\n", (void *)a);
+    std::printf("Dynamic loading of test code for Windows\na = %p\n",
+                reinterpret_cast<void *>(a));
     std::fflush(stdout);
     if (a == 0)
     {   DWORD err = GetLastError();
         char errbuf[80];
-        std::printf("Error code %ld = %lx\n", (long)err, (long)err);
+        std::printf("Error code %ld = %lx\n", static_cast<long>(err),
+                    static_cast<long>(err));
         err = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
                             FORMAT_MESSAGE_IGNORE_INSERTS,
-                            NULL, err, 0, errbuf, 80, NULL);
+                            nullptr, err, 0, errbuf, 80, nullptr);
         if (err != 0) std::printf("%s", errbuf);
         return 0;
     }
@@ -91,7 +92,7 @@ int main(int argc, char *argv[])
     std::printf("Result of call to dlopen is in 'a'\n");
     std::printf("a = %p\n", a);
     std::fflush(stdout);
-    if (a == NULL)
+    if (a == nullptr)
     {   std::printf("Err = <%s>\n", dlerror()); std::fflush(stdout);
         return 0;
     }
@@ -100,11 +101,11 @@ int main(int argc, char *argv[])
     std::printf("The 'callme' entrypoint should now be in b\n");
     std::printf("b = %p\n", b);
     std::fflush(stdout);
-    if (b == NULL) return 0;
+    if (b == nullptr) return 0;
     std::printf("variable as printed from base = %.8x @ %p\n",
-           variable_in_base, &variable_in_base);
+                variable_in_base, &variable_in_base);
     std::printf("function as printed from base = %p\n",
-           function_in_base);
+                function_in_base);
 //
 // The next 2 lines are expected to display the same numeric value.
 //

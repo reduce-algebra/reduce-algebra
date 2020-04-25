@@ -37,20 +37,23 @@
 
 LispObject Ld01ajf(LispObject env, int nargs, ...)
 {   std::va_list args;
-    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
+    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult,
+               Labserr,
                Lw, Liw;
     double a, b, epsabs, epsrel, result, abserr, *w;
     int32_t  ifail, lw, *iw, liw;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01AJF) (double __stdcall (*fst) (double *),
+    typedef void (__stdcall *PD01AJF) (double __stdcall (
+                                           *fst) reinterpret_cast<double *>(),
                                        double *, double *, double *, double *, double *, double *,
                                        double *, int32_t *, int32_t *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PD01AJF d01ajf_proc;
 #else
-    extern void __stdcall D01AJF(double __stdcall (*fst) (double *), double *,
+    extern void __stdcall D01AJF(double __stdcall (*fst)
+                                 reinterpret_cast<double *>(), double *,
                                  double *, double *, double *, double *, double *, double *,
                                  int32_t *, int32_t *, int32_t *, int32_t *);
 #endif
@@ -105,7 +108,7 @@ LispObject Ld01ajf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)std::malloc(lw*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
     iw = (int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
@@ -114,18 +117,19 @@ LispObject Ld01ajf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d01ajf_proc = (PD01AJF) GetProcAddress (hLib, "_D01AJF@48"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
         else    // have found function in DLL
-        {   (*d01ajf_proc) (&asp1, &a, &b, &epsabs, &epsrel, &result, &abserr, w,
+        {   (*d01ajf_proc) (&asp1, &a, &b, &epsabs, &epsrel, &result, &abserr,
+                            w,
                             &lw, iw, &liw, &ifail);
         }
     }
@@ -162,20 +166,23 @@ LispObject Ld01ajf(LispObject env, int nargs, ...)
 
 LispObject Ld01akf(LispObject env, int nargs, ...)
 {   std::va_list args;
-    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
+    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult,
+               Labserr,
                Lw, Liw;
     double a, b, epsabs, epsrel, result, abserr, *w;
     int32_t  ifail, lw, *iw, liw;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01AKF) (double __stdcall (*fst) (double *),
+    typedef void (__stdcall *PD01AKF) (double __stdcall (
+                                           *fst) reinterpret_cast<double *>(),
                                        double *, double *, double *, double *, double *, double *,
                                        double *, int32_t *, int32_t *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PD01AKF d01akf_proc;
 #else
-    extern void __stdcall D01AKF(double __stdcall (*fst) (double *), double *,
+    extern void __stdcall D01AKF(double __stdcall (*fst)
+                                 reinterpret_cast<double *>(), double *,
                                  double *, double *, double *, double *, double *, double *,
                                  int32_t *, int32_t *, int32_t *, int32_t *);
 #endif
@@ -230,25 +237,26 @@ LispObject Ld01akf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)std::malloc(lw*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
     iw = (int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d01akf_proc = (PD01AKF) GetProcAddress (hLib, "_D01AKF@48"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
         else    // have found function in DLL
-        {   (*d01akf_proc) (&asp1, &a, &b, &epsabs, &epsrel, &result, &abserr, w,
+        {   (*d01akf_proc) (&asp1, &a, &b, &epsabs, &epsrel, &result, &abserr,
+                            w,
                             &lw, iw, &liw, &ifail);
         }
     }
@@ -284,20 +292,24 @@ LispObject Ld01akf(LispObject env, int nargs, ...)
 #if 1
 LispObject Ld01alf(LispObject env, int nargs, ...)
 {   std::va_list args;
-    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
+    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult,
+               Labserr,
                Lw, Liw, Lnpts, Lpoints;
     double a, b, epsabs, epsrel, result, abserr, *w, *points;
     int32_t  ifail, lw, *iw, liw, npts;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01ALF) (double __stdcall (*fst) (double *),
+    typedef void (__stdcall *PD01ALF) (double __stdcall (
+                                           *fst) reinterpret_cast<double *>(),
                                        double *, double *, int32_t *, double *, double *, double *,
-                                       double *, double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                       double *, double *, double *, int32_t *, int32_t *, int32_t *,
+                                       int32_t *);
     HINSTANCE hLib;
     PD01ALF d01alf_proc;
 #else
-    extern void __stdcall D01ALF(double __stdcall (*fst) (double *), double *,
+    extern void __stdcall D01ALF(double __stdcall (*fst)
+                                 reinterpret_cast<double *>(), double *,
                                  double *, int32_t *, double *, double *, double *, double *,
                                  double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
 #endif
@@ -333,7 +345,7 @@ LispObject Ld01alf(LispObject env, int nargs, ...)
     pop(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop(Lpoints,Lnpts,Lb,La);
     // ndim = (length_of_header(vechdr(Lpoints)) - 4)/4;
-    points = (double *)std::malloc(npts*sizeof(double));
+    points = reinterpret_cast<double *>(std)::malloc(npts*sizeof(double));
     push(La,Lb,Lnpts,Lpoints,Lepsabs);
     push(Lepsrel,Llw,Lliw,Lifail);
     mkFortranVectorDouble(points, Lpoints, npts);
@@ -366,20 +378,20 @@ LispObject Ld01alf(LispObject env, int nargs, ...)
     pop(Lpoints,Lnpts,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)std::malloc(lw*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
     iw = (int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d01alf_proc = (PD01ALF) GetProcAddress (hLib, "_D01ALF@56"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -391,7 +403,8 @@ LispObject Ld01alf(LispObject env, int nargs, ...)
 
     currlib = hLib;
 #else
-    D01ALF (&asp1, &a, &b, &npts, points, &epsabs, &epsrel, &result, &abserr,
+    D01ALF (&asp1, &a, &b, &npts, points, &epsabs, &epsrel, &result,
+            &abserr,
             w, &lw, iw, &liw, &ifail);
 #endif
 
@@ -426,21 +439,25 @@ LispObject Ld01alf(LispObject env, int nargs, ...)
 #if 1
 LispObject Ld01amf(LispObject env, int nargs, ...)
 {   std::va_list args;
-    LispObject Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr, Lw, Liw,
+    LispObject Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr, Lw,
+               Liw,
                Lbound, Linf;
     double epsabs, epsrel, result, abserr, *w, bound;
     int32_t  ifail, lw, *iw, liw, inf;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01AMF) (double __stdcall (*fst) (double *),
+    typedef void (__stdcall *PD01AMF) (double __stdcall (
+                                           *fst) reinterpret_cast<double *>(),
                                        double *, int32_t *, double *, double *, double *, double *,
                                        double *, int32_t *, int32_t *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PD01AMF d01amf_proc;
 #else
-    extern void __stdcall D01AMF(double __stdcall (*fst) (double *), double *,
-                                 int32_t *, double *, double *, double *, double *, double *, int32_t *,
+    extern void __stdcall D01AMF(double __stdcall (*fst)
+                                 reinterpret_cast<double *>(), double *,
+                                 int32_t *, double *, double *, double *, double *, double *,
+                                 int32_t *,
                                  int32_t *, int32_t *, int32_t *);
 #endif
 
@@ -494,7 +511,7 @@ LispObject Ld01amf(LispObject env, int nargs, ...)
     pop(Lepsabs,Linf,Lbound);
 
     // Setup workspace arrays etc.
-    w = (double *)std::malloc(lw*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
     iw = (int32_t *)std::malloc(liw*sizeof(int));
 
     push(Lbound,Linf,Lepsabs,Lepsrel);
@@ -504,13 +521,13 @@ LispObject Ld01amf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d01amf_proc = (PD01AMF) GetProcAddress (hLib, "_D01AMF@48"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -522,7 +539,8 @@ LispObject Ld01amf(LispObject env, int nargs, ...)
 
     currlib = hLib;
 #else
-    D01AMF (&asp1, &bound, &inf, &epsabs, &epsrel, &result, &abserr, w, &lw,
+    D01AMF (&asp1, &bound, &inf, &epsabs, &epsrel, &result, &abserr, w,
+            &lw,
             iw, &liw, &ifail);
 #endif
     pop(Lifail,Lliw,Llw,Lepsrel);
@@ -558,20 +576,24 @@ LispObject Ld01amf(LispObject env, int nargs, ...)
 #if 1
 LispObject Ld01anf(LispObject env, int nargs, ...)
 {   std::va_list args;
-    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
+    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult,
+               Labserr,
                Lw, Liw, Lomega, Lkey;
     double a, b, epsabs, epsrel, result, abserr, *w, omega;
     int32_t  ifail, lw, *iw, liw, key;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01ANF) (double __stdcall (*fst) (double *),
+    typedef void (__stdcall *PD01ANF) (double __stdcall (
+                                           *fst) reinterpret_cast<double *>(),
                                        double *, double *, double *, int32_t *, double *, double *,
-                                       double *, double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                       double *, double *, double *, int32_t *, int32_t *, int32_t *,
+                                       int32_t *);
     HINSTANCE hLib;
     PD01ANF d01anf_proc;
 #else
-    extern void __stdcall D01ANF(double __stdcall (*fst) (double *), double *,
+    extern void __stdcall D01ANF(double __stdcall (*fst)
+                                 reinterpret_cast<double *>(), double *,
                                  double *, double *, int32_t *, double *, double *, double *,
                                  double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
 #endif
@@ -638,32 +660,34 @@ LispObject Ld01anf(LispObject env, int nargs, ...)
     pop(Lkey,Lomega,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)std::malloc(lw*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
     iw = (int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d01anf_proc = (PD01ANF) GetProcAddress (hLib, "_D01ANF@56"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
         else    // have found function in DLL
-        {   (*d01anf_proc) (&asp1, &a, &b, &omega, &key, &epsabs, &epsrel, &result,
+        {   (*d01anf_proc) (&asp1, &a, &b, &omega, &key, &epsabs, &epsrel,
+                            &result,
                             &abserr, w, &lw, iw, &liw, &ifail);
         }
     }
 
     currlib = hLib;
 #else
-    D01ANF (&asp1, &a, &b, &omega, &key, &epsabs, &epsrel, &result, &abserr, w,
+    D01ANF (&asp1, &a, &b, &omega, &key, &epsabs, &epsrel, &result,
+            &abserr, w,
             &lw, iw, &liw, &ifail);
 #endif
 
@@ -697,23 +721,28 @@ LispObject Ld01anf(LispObject env, int nargs, ...)
 #if 1
 LispObject Ld01apf(LispObject env, int nargs, ...)
 {   std::va_list args;
-    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
+    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult,
+               Labserr,
                Lw, Liw, Lalfa, Lbeta, Lkey;
     double a, b, epsabs, epsrel, result, abserr, *w, alfa, beta;
     int32_t  ifail, lw, *iw, liw, key;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01APF) (double __stdcall (*fst) (double *),
+    typedef void (__stdcall *PD01APF) (double __stdcall (
+                                           *fst) reinterpret_cast<double *>(),
                                        double *, double *, double *, double *, int32_t *, double *,
-                                       double *, double *, double *, double *, int32_t *, int32_t *, int32_t *,
+                                       double *, double *, double *, double *, int32_t *, int32_t *,
+                                       int32_t *,
                                        int32_t *);
     HINSTANCE hLib;
     PD01APF d01apf_proc;
 #else
-    extern void __stdcall D01APF(double __stdcall (*fst) (double *), double *,
+    extern void __stdcall D01APF(double __stdcall (*fst)
+                                 reinterpret_cast<double *>(), double *,
                                  double *, double *, double *, int32_t *, double *, double *,
-                                 double *, double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
+                                 double *, double *, double *, int32_t *, int32_t *, int32_t *,
+                                 int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -784,25 +813,26 @@ LispObject Ld01apf(LispObject env, int nargs, ...)
     pop(Lkey,Lbeta,Lalfa,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)std::malloc(lw*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
     iw = (int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d01apf_proc = (PD01APF) GetProcAddress (hLib, "_D01APF@60"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
         else    // have found function in DLL
-        {   (*d01apf_proc) (&asp1, &a, &b, &alfa, &beta, &key, &epsabs, &epsrel,
+        {   (*d01apf_proc) (&asp1, &a, &b, &alfa, &beta, &key, &epsabs,
+                            &epsrel,
                             &result, &abserr, w, &lw, iw, &liw, &ifail);
         }
     }
@@ -843,20 +873,23 @@ LispObject Ld01apf(LispObject env, int nargs, ...)
 #if 1
 LispObject Ld01aqf(LispObject env, int nargs, ...)
 {   std::va_list args;
-    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
+    LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult,
+               Labserr,
                Lw, Liw, Lc;
     double a, b, epsabs, epsrel, result, abserr, *w, c;
     int32_t  ifail, lw, *iw, liw;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01AQF) (double __stdcall (*fst) (double *),
+    typedef void (__stdcall *PD01AQF) (double __stdcall (
+                                           *fst) reinterpret_cast<double *>(),
                                        double *, double *, double *, double *, double *, double *,
                                        double *, double *, int32_t *, int32_t *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PD01AQF d01aqf_proc;
 #else
-    extern void __stdcall D01AQF(double __stdcall (*fst) (double *), double *,
+    extern void __stdcall D01AQF(double __stdcall (*fst)
+                                 reinterpret_cast<double *>(), double *,
                                  double *, double *, double *, double *, double *, double *,
                                  double *, int32_t *, int32_t *, int32_t *, int32_t *);
 #endif
@@ -917,32 +950,34 @@ LispObject Ld01aqf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lc,Lb,La);
 
     // Setup workspace arrays etc.
-    w = (double *)std::malloc(lw*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
     iw = (int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d01aqf_proc = (PD01AQF) GetProcAddress (hLib, "_D01AQF@52"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
         else    // have found function in DLL
-        {   (*d01aqf_proc) (&asp1, &a, &b, &c, &epsabs, &epsrel, &result, &abserr,
+        {   (*d01aqf_proc) (&asp1, &a, &b, &c, &epsabs, &epsrel, &result,
+                            &abserr,
                             w, &lw, iw, &liw, &ifail);
         }
     }
 
     currlib = hLib;
 #else
-    D01AQF (&asp1, &a, &b, &c, &epsabs, &epsrel, &result, &abserr, w, &lw, iw,
+    D01AQF (&asp1, &a, &b, &c, &epsabs, &epsrel, &result, &abserr, w, &lw,
+            iw,
             &liw, &ifail);
 #endif
 
@@ -976,23 +1011,30 @@ LispObject Ld01aqf(LispObject env, int nargs, ...)
 #if 1
 LispObject Ld01asf(LispObject env, int nargs, ...)
 {   std::va_list args;
-    LispObject La, Lepsabs, Llw, Lliw, Lifail, Lresult, Labserr, Liw, Lomega,
+    LispObject La, Lepsabs, Llw, Lliw, Lifail, Lresult, Labserr, Liw,
+               Lomega,
                Lkey, Llimlst, Llst, Lerlst, Lrslst, Lierlst;
     double a, epsabs, result, abserr, *w, omega, *erlst, *rslst;
     int32_t  ifail, lw, *iw, liw, key, limlst, lst, *ierlst;
     extern double __stdcall asp1(double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01ASF) (double __stdcall (*fst) (double *),
-                                       double *, double *, int32_t *, double *, double *, double *, int32_t *,
-                                       int32_t *, double *, double *, int32_t *, double *, int32_t *, int32_t *,
+    typedef void (__stdcall *PD01ASF) (double __stdcall (
+                                           *fst) reinterpret_cast<double *>(),
+                                       double *, double *, int32_t *, double *, double *, double *,
+                                       int32_t *,
+                                       int32_t *, double *, double *, int32_t *, double *, int32_t *,
+                                       int32_t *,
                                        int32_t *, int32_t *);
     HINSTANCE hLib;
     PD01ASF d01asf_proc;
 #else
-    extern void __stdcall D01ASF(double __stdcall (*fst) (double *), double *,
-                                 double *, int32_t *, double *, double *, double *, int32_t *, int32_t *,
-                                 double *, double *, int32_t *, double *, int32_t *, int32_t *, int32_t *,
+    extern void __stdcall D01ASF(double __stdcall (*fst)
+                                 reinterpret_cast<double *>(), double *,
+                                 double *, int32_t *, double *, double *, double *, int32_t *,
+                                 int32_t *,
+                                 double *, double *, int32_t *, double *, int32_t *, int32_t *,
+                                 int32_t *,
                                  int32_t *);
 #endif
 
@@ -1052,35 +1094,39 @@ LispObject Ld01asf(LispObject env, int nargs, ...)
     pop(Lepsabs,Lkey,Lomega,La);
 
     // Setup workspace arrays etc.
-    erlst = (double *)std::malloc(limlst*sizeof(double));
-    rslst = (double *)std::malloc(limlst*sizeof(double));
+    erlst = reinterpret_cast<double *>(std)::malloc(limlst*sizeof(
+                double));
+    rslst = reinterpret_cast<double *>(std)::malloc(limlst*sizeof(
+                double));
     ierlst = (int32_t *)std::malloc(limlst*sizeof(int));
-    w = (double *)std::malloc(lw*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc(lw*sizeof(double));
     iw = (int32_t *)std::malloc(liw*sizeof(int));
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d01asf_proc = (PD01ASF) GetProcAddress (hLib, "_D01ASF@68"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
         else    // have found function in DLL
-        {   (*d01asf_proc) (&asp1, &a, &omega, &key, &epsabs, &result, &abserr,
+        {   (*d01asf_proc) (&asp1, &a, &omega, &key, &epsabs, &result,
+                            &abserr,
                             &limlst, &lst, erlst, rslst, ierlst, w, &lw, iw, &liw, &ifail);
         }
     }
 
     currlib = hLib;
 #else
-    D01ASF (&asp1, &a, &omega, &key, &epsabs, &result, &abserr, &limlst, &lst,
+    D01ASF (&asp1, &a, &omega, &key, &epsabs, &result, &abserr, &limlst,
+            &lst,
             erlst, rslst, ierlst, w, &lw, iw, &liw, &ifail);
 #endif
 
@@ -1119,7 +1165,8 @@ LispObject Ld01asf(LispObject env, int nargs, ...)
     std::free (w);
     std::free (iw);
 
-    return Llist(nil,8,Lierlst,Lresult,Labserr,Lerlst,Lifail,Liw,Llst,Lrslst);
+    return Llist(nil,8,Lierlst,Lresult,Labserr,Lerlst,Lifail,Liw,Llst,
+                 Lrslst);
 }
 #else
 LispObject Ld01asf(LispObject env, int nargs, ...)
@@ -1135,7 +1182,8 @@ LispObject Ld01bbf(LispObject env, int nargs, ...)
     int32_t  ifail, itype, n, gtype;
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PAD01BB) (double *, double *, int32_t *, int32_t *,
+    typedef void (__stdcall *PAD01BB) (double *, double *, int32_t *,
+                                       int32_t *,
                                        double *, double *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PAD01BB ad01bb_proc;
@@ -1190,25 +1238,27 @@ LispObject Ld01bbf(LispObject env, int nargs, ...)
     push(Ln,Lgtype,Lifail);
 
     /* Setup workspace arrays etc. */  // return value arrays in this case
-    weight = (double *)std::malloc(n*sizeof(double));
-    abscis = (double *)std::malloc(n*sizeof(double));
+    weight = reinterpret_cast<double *>(std)::malloc(n*sizeof(double));
+    abscis = reinterpret_cast<double *>(std)::malloc(n*sizeof(double));
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfadj")) == NULL )   // FIXME - DLL name?
+    if ( (hLib = LoadLibrary ("nagfadj")) ==
+         nullptr )   // FIXME - DLL name?
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (ad01bb_proc = (PAD01BB) GetProcAddress (hLib, "_AD01BB@32"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
         else    // have found function in DLL
-        {   (*ad01bb_proc) (&a, &b, &itype, &n, weight, abscis, &gtype, &ifail);
+        {   (*ad01bb_proc) (&a, &b, &itype, &n, weight, abscis, &gtype,
+                            &ifail);
         }
     }
 
@@ -1242,20 +1292,23 @@ LispObject Ld01bbf(LispObject env, int nargs, ...)
 #if 1
 LispObject Ld01fcf(LispObject env, int nargs, ...)
 {   std::va_list args;
-    LispObject La, Lb, Lndim, Leps, Lminpts, Lmaxpts, Lifail, Lfinval, Lacc,
+    LispObject La, Lb, Lndim, Leps, Lminpts, Lmaxpts, Lifail, Lfinval,
+               Lacc,
                Llenwrk;
     double *a, *b, eps, finval, acc, *wrkstr;
     int32_t  ifail, ndim, minpts, maxpts, lenwrk;
     extern double __stdcall asp4(int32_t *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01FCF) (int32_t *, double *, double *, int32_t *,
+    typedef void (__stdcall *PD01FCF) (int32_t *, double *, double *,
+                                       int32_t *,
                                        int32_t *, double __stdcall (*functn) (int32_t *, double *), double *,
                                        double *, int32_t *, double *, double *, int32_t *);
     HINSTANCE hLib;
     PD01FCF d01fcf_proc;
 #else
-    extern void __stdcall D01FCF(int32_t *, double *, double *, int32_t *, int32_t *,
+    extern void __stdcall D01FCF(int32_t *, double *, double *, int32_t *,
+                                 int32_t *,
                                  double __stdcall (*functn) (int32_t *, double *), double *, double *,
                                  int32_t *, double *, double *, int32_t *);
 #endif
@@ -1279,13 +1332,13 @@ LispObject Ld01fcf(LispObject env, int nargs, ...)
     ndim = thirty_two_bits(Lndim);
     pop(Lifail,Lminpts,Llenwrk,Leps);
     pop(Lmaxpts,Lb,La,Lndim);
-    a = (double *) std::malloc (ndim * sizeof(double));
+    a = reinterpret_cast<double *>() std::malloc (ndim * sizeof(double));
     push(Lndim,La,Lb,Lmaxpts);
     push(Leps,Llenwrk,Lminpts,Lifail);
     mkFortranVectorDouble(a, La, ndim);
     pop(Lifail,Lminpts,Llenwrk,Leps);
     pop(Lmaxpts,Lb,La,Lndim);
-    b = (double *) std::malloc (ndim * sizeof(double));
+    b = reinterpret_cast<double *>() std::malloc (ndim * sizeof(double));
     push(Lndim,La,Lb,Lmaxpts);
     push(Leps,Llenwrk,Lminpts,Lifail);
     mkFortranVectorDouble(b, Lb, ndim);
@@ -1318,7 +1371,8 @@ LispObject Ld01fcf(LispObject env, int nargs, ...)
     pop(Lmaxpts,Lb,La,Lndim);
 
     // Setup workspace arrays etc.
-    wrkstr = (double *)std::malloc(lenwrk*sizeof(double));
+    wrkstr = reinterpret_cast<double *>(std)::malloc(lenwrk*sizeof(
+                 double));
 
     push(Lndim,La,Lb,Lmaxpts);
     push(Leps,Llenwrk,Lminpts,Lifail);
@@ -1326,13 +1380,13 @@ LispObject Ld01fcf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d01fcf_proc = (PD01FCF) GetProcAddress (hLib, "_D01FCF@48"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1344,7 +1398,8 @@ LispObject Ld01fcf(LispObject env, int nargs, ...)
 
     currlib = hLib;
 #else
-    D01FCF (&ndim, a, b, &minpts, &maxpts, &asp4, &eps, &acc, &lenwrk, wrkstr,
+    D01FCF (&ndim, a, b, &minpts, &maxpts, &asp4, &eps, &acc, &lenwrk,
+            wrkstr,
             &finval, &ifail);
 #endif
     pop(Lifail,Lminpts,Llenwrk,Leps);
@@ -1382,7 +1437,8 @@ LispObject Ld01gaf(LispObject env, int nargs, ...)
     int32_t ifail, n;
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01GAF) (double *, double *, int32_t *, double *,
+    typedef void (__stdcall *PD01GAF) (double *, double *, int32_t *,
+                                       double *,
                                        double *, int32_t *);
     HINSTANCE hLib;
     PD01GAF d01gaf_proc;
@@ -1404,11 +1460,11 @@ LispObject Ld01gaf(LispObject env, int nargs, ...)
     push(Lx,Ly,Ln,Lifail);
     n = thirty_two_bits(Ln);
     pop(Lifail,Ln,Ly,Lx);
-    x = (double *) std::malloc (n * sizeof(double));
+    x = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
     push(Lx,Ly,Ln,Lifail);
     mkFortranVectorDouble(x, Lx, n);
     pop(Lifail,Ln,Ly,Lx);
-    y = (double *) std::malloc (n * sizeof(double));
+    y = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
     push(Lx,Ly,Ln,Lifail);
     mkFortranVectorDouble(y, Ly, n);
     pop(Lifail,Ln,Ly,Lx);
@@ -1421,13 +1477,13 @@ LispObject Ld01gaf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d01gaf_proc = (PD01GAF) GetProcAddress (hLib, "_D01GAF@24"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1465,20 +1521,23 @@ LispObject Ld01gaf(LispObject env, int nargs, ...)
 #if 1
 LispObject Ld01gbf(LispObject env, int nargs, ...)
 {   std::va_list args;
-    LispObject La, Lb, Lndim, Leps, Lmincls, Lmaxcls, Lifail, Lfinval, Lacc,
+    LispObject La, Lb, Lndim, Leps, Lmincls, Lmaxcls, Lifail, Lfinval,
+               Lacc,
                Llenwrk, Lwrkstr;
     double *a, *b, eps, finval, acc, *wrkstr;
     int32_t  ifail, ndim, mincls, maxcls, lenwrk;
     extern double __stdcall asp4(int32_t *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD01GBF) (int32_t *, double *, double *, int32_t *,
+    typedef void (__stdcall *PD01GBF) (int32_t *, double *, double *,
+                                       int32_t *,
                                        int32_t *, double __stdcall (*functn) (int32_t *, double *), double *,
                                        double *, int32_t *, double *, double *, int32_t *);
     HINSTANCE hLib;
     PD01GBF d01gbf_proc;
 #else
-    extern void __stdcall D01GBF(int32_t *, double *, double *, int32_t *, int32_t *,
+    extern void __stdcall D01GBF(int32_t *, double *, double *, int32_t *,
+                                 int32_t *,
                                  double __stdcall (*functn) (int32_t *, double *), double *, double *,
                                  int32_t *, double *, double *, int32_t *);
 #endif
@@ -1503,13 +1562,13 @@ LispObject Ld01gbf(LispObject env, int nargs, ...)
     ndim = thirty_two_bits(Lndim);
     pop(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop(Lmaxcls,Lb,La,Lndim);
-    a = (double *) std::malloc (ndim * sizeof(double));
+    a = reinterpret_cast<double *>() std::malloc (ndim * sizeof(double));
     push(Lndim,La,Lb,Lmaxcls,Leps);
     push(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(a, La, ndim);
     pop(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop(Lmaxcls,Lb,La,Lndim);
-    b = (double *) std::malloc (ndim * sizeof(double));
+    b = reinterpret_cast<double *>() std::malloc (ndim * sizeof(double));
     push(Lndim,La,Lb,Lmaxcls,Leps);
     push(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(b, Lb, ndim);
@@ -1535,7 +1594,8 @@ LispObject Ld01gbf(LispObject env, int nargs, ...)
     mincls = thirty_two_bits(Lmincls);
     pop(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop(Lmaxcls,Lb,La,Lndim);
-    wrkstr = (double *) std::malloc (lenwrk * sizeof(double));
+    wrkstr = reinterpret_cast<double *>() std::malloc (lenwrk * sizeof(
+                 double));
     push(Lndim,La,Lb,Lmaxcls,Leps);
     push(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(wrkstr, Lwrkstr, lenwrk);
@@ -1553,13 +1613,13 @@ LispObject Ld01gbf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d01gbf_proc = (PD01GBF) GetProcAddress (hLib, "_D01GBF@48"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1571,7 +1631,8 @@ LispObject Ld01gbf(LispObject env, int nargs, ...)
 
     currlib = hLib;
 #else
-    D01GBF (&ndim, a, b, &mincls, &maxcls, &asp4, &eps, &acc, &lenwrk, wrkstr,
+    D01GBF (&ndim, a, b, &mincls, &maxcls, &asp4, &eps, &acc, &lenwrk,
+            wrkstr,
             &finval, &ifail);
 #endif
     pop(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
@@ -1614,7 +1675,8 @@ LispObject Ld02bbf(LispObject env, int nargs, ...)
     extern void __stdcall asp8(double *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PXD02BB) (double *, double *, int32_t *, int32_t *,
+    typedef void (__stdcall *PXD02BB) (double *, double *, int32_t *,
+                                       int32_t *,
                                        double *, double *, int32_t *, double *,
                                        void __stdcall (*fcn) (double *, double *, double *),
                                        void __stdcall (*out) (double *, double *), double *, int32_t *);
@@ -1666,7 +1728,7 @@ LispObject Ld02bbf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ltol,Ly,Lx);
     pop(Lirelab,Ln,Lm,Lxend);
-    y = (double *) std::malloc (n * sizeof(double));
+    y = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
     push(Lxend,Lm,Ln,Lirelab);
     push(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -1684,25 +1746,27 @@ LispObject Ld02bbf(LispObject env, int nargs, ...)
     pop(Lirelab,Ln,Lm,Lxend);
 
     // Setup workspace arrays etc.
-    w = (double *)std::malloc(n*7*sizeof(double));
-    result = (double *)std::malloc(m*n*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc(n*7*sizeof(double));
+    result = reinterpret_cast<double *>(std)::malloc(m*n*sizeof(double));
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfadj")) == NULL )   // FIXME - DLL name?
+    if ( (hLib = LoadLibrary ("nagfadj")) ==
+         nullptr )   // FIXME - DLL name?
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (xd02bb_proc = (PXD02BB) GetProcAddress (hLib, "_XD02BB@48"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
         else    // have found function in DLL
-        {   (*xd02bb_proc) (&x, &xend, &m, &n, y, &tol, &irelab, result, &asp7,
+        {   (*xd02bb_proc) (&x, &xend, &m, &n, y, &tol, &irelab, result,
+                            &asp7,
                             &asp8, w, &ifail);
         }
     }
@@ -1720,7 +1784,8 @@ LispObject Ld02bbf(LispObject env, int nargs, ...)
     Ly = mkFloatVector(y,n,1);
     pop(Lx);
     push(Lx,Ly);
-    Lresult = mkFloatVector(result,m,n);  // FIXME: correct array ordering?
+    Lresult = mkFloatVector(result,m,
+                            n);  // FIXME: correct array ordering?
     pop(Ly,Lx);
     push(Lx,Ly,Lresult);
     Lifail = int2ccl(ifail);
@@ -1750,7 +1815,8 @@ LispObject Ld02bhf(LispObject env, int nargs, ...)
     extern double __stdcall asp9(double *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PD02BHF) (double *, double *, int32_t *, int32_t *,
+    typedef void (__stdcall *PD02BHF) (double *, double *, int32_t *,
+                                       int32_t *,
                                        double *, double *, int32_t *, double *,
                                        void __stdcall (*fcn) (double *, double *, double *),
                                        double __stdcall (*g) (double *, double *), double *, int32_t *);
@@ -1802,7 +1868,7 @@ LispObject Ld02bhf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ltol,Ly,Lx);
     pop(Lhmax,Lirelab,Ln,Lxend);
-    y = (double *) std::malloc (n * sizeof(double));
+    y = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
     push(Lxend,Ln,Lirelab,Lhmax);
     push(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -1822,31 +1888,33 @@ LispObject Ld02bhf(LispObject env, int nargs, ...)
     push(Lx,Ly,Ltol,Lifail);
 
     // Setup workspace arrays etc.
-    w = (double *)std::malloc(n*7*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc(n*7*sizeof(double));
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfad01")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfad01")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (d02bhf_proc = (PD02BHF) GetProcAddress (hLib, "_D02BHF@44"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
         else    // have found function in DLL
-        {   (*d02bhf_proc) (&x, &xend, &n, y, &tol, &irelab, &hmax, &asp7, &asp9,
+        {   (*d02bhf_proc) (&x, &xend, &n, y, &tol, &irelab, &hmax, &asp7,
+                            &asp9,
                             w, &ifail);
         }
     }
 
     currlib = hLib;
 #else
-    D02BHF (&x, &xend, &n, y, &tol, &irelab, &hmax, &asp7, &asp9, w, &ifail);
+    D02BHF (&x, &xend, &n, y, &tol, &irelab, &hmax, &asp7, &asp9, w,
+            &ifail);
 #endif
 
     // Translate return values to CCL
@@ -1886,7 +1954,8 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
     extern double __stdcall asp9(double *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PXD02CJ) (double *, double *, int32_t *, int32_t *,
+    typedef void (__stdcall *PXD02CJ) (double *, double *, int32_t *,
+                                       int32_t *,
                                        double *, void __stdcall (*fcn) (double *, double *, double *),
                                        double *, fstring1, double *,
                                        void __stdcall (*out) (double *, double *),
@@ -1948,7 +2017,7 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ly,Lx,Lrelabs);
     pop(Ltol,Ln,Lm,Lxend);
-    y = (double *) std::malloc (n * sizeof(double));
+    y = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
     push(Lxend,Lm,Ln,Ltol);
     push(Lrelabs,Lx,Ly,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -1963,20 +2032,21 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
     relabs.len = 1;
 
     // Setup workspace arrays etc.
-    w = (double *)std::malloc((28+21*n)*sizeof(double));
-    result = (double *)std::malloc(m*n*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc((28+21*n)*sizeof(double));
+    result = reinterpret_cast<double *>(std)::malloc(m*n*sizeof(double));
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfadj")) == NULL )   // FIXME - DLL name?
+    if ( (hLib = LoadLibrary ("nagfadj")) ==
+         nullptr )   // FIXME - DLL name?
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (xd02cj_proc = (PXD02CJ) GetProcAddress (hLib, "_XD02CJ@56"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1988,7 +2058,8 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
 
     currlib = hLib;
 #else
-    XD02CJ (&x, &xend, &m, &n, y, &asp7, &tol, relabs, result, &asp8, &asp9, w,
+    XD02CJ (&x, &xend, &m, &n, y, &asp7, &tol, relabs, result, &asp8,
+            &asp9, w,
             &ifail);
 #endif
 
@@ -1999,7 +2070,8 @@ LispObject Ld02cjf(LispObject env, int nargs, ...)
     Ly = mkFloatVector(y,n,1);
     pop(Lx);
     push(Lx,Ly);
-    Lresult = mkFloatVector(result,m,n);  // FIXME: correct array ordering?
+    Lresult = mkFloatVector(result,m,
+                            n);  // FIXME: correct array ordering?
     pop(Ly,Lx);
     push(Lx,Ly,Lresult);
     Lifail = int2ccl(ifail);
@@ -2031,7 +2103,8 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
     extern void __stdcall asp31(double *, double *, double *);
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PXD02EJ) (double *, double *, int32_t *, int32_t *,
+    typedef void (__stdcall *PXD02EJ) (double *, double *, int32_t *,
+                                       int32_t *,
                                        double *, void __stdcall (*fcn) (double *, double *, double *),
                                        void __stdcall (*pederv) (double *, double *, double *), double *,
                                        fstring1, void __stdcall (*out) (double *, double *),
@@ -2097,7 +2170,7 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
     x = float_of_number(Lx);
     pop(Lifail,Ltol,Ly,Lx,Liw);
     pop(Lrelabs,Ln,Lm,Lxend);
-    y = (double *) std::malloc (n * sizeof(double));
+    y = reinterpret_cast<double *>() std::malloc (n * sizeof(double));
     push(Lxend,Lm,Ln,Lrelabs,Liw);
     push(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
@@ -2119,20 +2192,21 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
     relabs.len = 1;
 
     // Setup workspace arrays etc.
-    w = (double *)std::malloc(iw*sizeof(double));
-    result = (double *)std::malloc(m*n*sizeof(double));
+    w = reinterpret_cast<double *>(std)::malloc(iw*sizeof(double));
+    result = reinterpret_cast<double *>(std)::malloc(m*n*sizeof(double));
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfadj")) == NULL )   // FIXME - DLL name?
+    if ( (hLib = LoadLibrary ("nagfadj")) ==
+         nullptr )   // FIXME - DLL name?
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (xd02ej_proc = (PXD02EJ) GetProcAddress (hLib, "_XD02EJ@64"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -2144,7 +2218,8 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
 
     currlib = hLib;
 #else
-    XD02EJ (&x, &xend, &m, &n, y, &asp7, &asp31, &tol, relabs, &asp8, &asp9, w,
+    XD02EJ (&x, &xend, &m, &n, y, &asp7, &asp31, &tol, relabs, &asp8,
+            &asp9, w,
             &iw, result, &ifail);
 #endif
 
@@ -2155,7 +2230,8 @@ LispObject Ld02ejf(LispObject env, int nargs, ...)
     Ly = mkFloatVector(y,n,1);
     pop(Lx);
     push(Lx,Ly);
-    Lresult = mkFloatVector(result,m,n);  // FIXME: correct array ordering?
+    Lresult = mkFloatVector(result,m,
+                            n);  // FIXME: correct array ordering?
     pop(Ly,Lx);
     push(Lx,Ly,Lresult);
     Lifail = int2ccl(ifail);

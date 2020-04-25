@@ -1,4 +1,4 @@
-// glyphtable.cpp                          Copyright (C) 2016-2017 Codemist    
+// glyphtable.cpp                          Copyright (C) 2016-2017 Codemist
 
 #error DEFUNCT
 
@@ -122,38 +122,59 @@ int main(int argc, char *argv[])
     char *p;
     std::uint32_t map[65536/32];
     out = std::fopen("coverage.cpp", "w");
-    std::fprintf(out, "/* coverage.cpp                                 Copyright A C Norman 2015 */\n");
+    std::fprintf(out,
+                 "/* coverage.cpp                                 Copyright A C Norman 2015 */\n");
     std::fprintf(out, "\n");
     std::fprintf(out, "\n");
     std::fprintf(out, "/*\n");
-    std::fprintf(out, " * Because this file contains information derived from fonts that are\n");
-    std::fprintf(out, " * licensed under the LaTeX Project Public License it needs to adhere\n");
-    std::fprintf(out, " * to the obligations set by that. The way in which information here is\n");
-    std::fprintf(out, " * \"derived\" is that there are bitmaps showing which glyphs are present\n");
-    std::fprintf(out, " * in various of the Latin Modern fonts. This was gathered by using\n");
-    std::fprintf(out, " * a perl script to drive fontforge to extract a list of glyph codes\n");
-    std::fprintf(out, " * and then packing the information as shown here. Thus the information here\n");
-    std::fprintf(out, " * is not in any sense a replacement for any component of an existing\n");
-    std::fprintf(out, " * iplementation of TeX. The original form of the files containing the\n");
-    std::fprintf(out, " * fonts used are available via the sunversion repository associated\n");
-    std::fprintf(out, " * with the project at reduce-algebra.sf.net, are are in the directory\n");
-    std::fprintf(out, " * [trunk]/csl/support-packages. Various copies of README files, detailed\n");
-    std::fprintf(out, " * license information and the like are also in the Reduce source file-set\n");
-    std::fprintf(out, " * in csl/cslbase/wxfonts and in a binary version of the system in\n");
-    std::fprintf(out, " * a directory called reduce.wxfonts (Windows and Linux) and within the\n");
-    std::fprintf(out, " * Application Folder where fonts live for Macintosh.\n");
+    std::fprintf(out,
+                 " * Because this file contains information derived from fonts that are\n");
+    std::fprintf(out,
+                 " * licensed under the LaTeX Project Public License it needs to adhere\n");
+    std::fprintf(out,
+                 " * to the obligations set by that. The way in which information here is\n");
+    std::fprintf(out,
+                 " * \"derived\" is that there are bitmaps showing which glyphs are present\n");
+    std::fprintf(out,
+                 " * in various of the Latin Modern fonts. This was gathered by using\n");
+    std::fprintf(out,
+                 " * a perl script to drive fontforge to extract a list of glyph codes\n");
+    std::fprintf(out,
+                 " * and then packing the information as shown here. Thus the information here\n");
+    std::fprintf(out,
+                 " * is not in any sense a replacement for any component of an existing\n");
+    std::fprintf(out,
+                 " * iplementation of TeX. The original form of the files containing the\n");
+    std::fprintf(out,
+                 " * fonts used are available via the sunversion repository associated\n");
+    std::fprintf(out,
+                 " * with the project at reduce-algebra.sf.net, are are in the directory\n");
+    std::fprintf(out,
+                 " * [trunk]/csl/support-packages. Various copies of README files, detailed\n");
+    std::fprintf(out,
+                 " * license information and the like are also in the Reduce source file-set\n");
+    std::fprintf(out,
+                 " * in csl/cslbase/wxfonts and in a binary version of the system in\n");
+    std::fprintf(out,
+                 " * a directory called reduce.wxfonts (Windows and Linux) and within the\n");
+    std::fprintf(out,
+                 " * Application Folder where fonts live for Macintosh.\n");
     std::fprintf(out, " */\n");
     std::fprintf(out, "\n/*\n");
-    std::fprintf(out, " * Apart from the LaTeX Project Public License obligations, which you should\n");
-    std::fprintf(out, " * check carefully, this file may be used as if under the BSD License applied\n");
+    std::fprintf(out,
+                 " * Apart from the LaTeX Project Public License obligations, which you should\n");
+    std::fprintf(out,
+                 " * check carefully, this file may be used as if under the BSD License applied\n");
     std::fprintf(out, " * elsewhere in the Reduce project.\n");
     std::fprintf(out, " */\n\n");
-    std::fprintf(out, "/* $Id$ */\n");
+    std::fprintf(out,
+                 "/* $Id$ */\n");
     std::fprintf(out, "\n#include <cstdint>\n\n");
     std::fprintf(out, "typedef struct _fontmap\n");
     std::fprintf(out, "{\n");
     std::fprintf(out, "    const char *name;\n");
-    std::fprintf(out, "    std::uint32_t map[65536/32]; /* 2048 words */\n");
+    std::fprintf(out,
+                 "    std::uint32_t map[65536/32]; /* 2048 words */\n");
     std::fprintf(out, "} fontmap;\n");
     std::fprintf(out, "\n");
     std::fprintf(out, "fontmap coverage[] =\n");

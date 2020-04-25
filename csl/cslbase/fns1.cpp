@@ -1,4 +1,4 @@
-// fns1.cpp                                Copyright (C) 1989-2019 Codemist    
+// fns1.cpp                                Copyright (C) 1989-2019 Codemist
 
 //
 // Basic functions part 1.
@@ -60,7 +60,8 @@ LispObject Lcount_up(LispObject)
 }
 
 LispObject integerp(LispObject p)
-{   if (is_fixnum(p) || (is_numbers(p) && is_bignum(p))) return lisp_true;
+{   if (is_fixnum(p) || (is_numbers(p) &&
+                         is_bignum(p))) return lisp_true;
     else return nil;
 }
 
@@ -609,7 +610,8 @@ LispObject Lfixp(LispObject env, LispObject a)
 //
     if (is_fixnum(a)) return onevalue(lisp_true);
     else if (is_numbers(a))
-    {   Header h = *(Header *)((char *)a - TAG_NUMBERS);
+    {   Header h = *reinterpret_cast<Header *>(reinterpret_cast<char *>
+                                               (a) - TAG_NUMBERS);
         if (type_of_header(h) == TYPE_BIGNUM) return onevalue(lisp_true);
         else return onevalue(nil);
     }
@@ -631,10 +633,10 @@ static LispObject Lshort_floatp(LispObject env, LispObject p)
 }
 
 static LispObject Lsingle_floatp(LispObject env, LispObject p)
-{   int tag = TAG_BITS & (int)p;
+{   int tag = TAG_BITS & static_cast<int>(p);
     if (SIXTY_FOUR_BIT &&
         is_sfloat(p) &&
-        (p & XTAG_FLOAT32) != 0) return onevalue(lisp_true); 
+        (p & XTAG_FLOAT32) != 0) return onevalue(lisp_true);
     if (tag == TAG_BOXFLOAT &&
         type_of_header(flthdr(p)) == TYPE_SINGLE_FLOAT)
         return onevalue(lisp_true);
@@ -642,7 +644,7 @@ static LispObject Lsingle_floatp(LispObject env, LispObject p)
 }
 
 static LispObject Ldouble_floatp(LispObject env, LispObject p)
-{   int tag = TAG_BITS & (int)p;
+{   int tag = TAG_BITS & static_cast<int>(p);
     if (tag == TAG_BOXFLOAT &&
         type_of_header(flthdr(p)) == TYPE_DOUBLE_FLOAT)
         return onevalue(lisp_true);
@@ -650,7 +652,7 @@ static LispObject Ldouble_floatp(LispObject env, LispObject p)
 }
 
 static LispObject Llong_floatp(LispObject env, LispObject p)
-{   int tag = TAG_BITS & (int)p;
+{   int tag = TAG_BITS & static_cast<int>(p);
     if (tag == TAG_BOXFLOAT &&
         type_of_header(flthdr(p)) == TYPE_LONG_FLOAT)
         return onevalue(lisp_true);
@@ -658,7 +660,8 @@ static LispObject Llong_floatp(LispObject env, LispObject p)
 }
 
 static LispObject Lmantissa_bits(LispObject env, LispObject p)
-{   if (Ldouble_floatp(env, p) != nil) return onevalue(fixnum_of_int(53));
+{   if (Ldouble_floatp(env,
+                       p) != nil) return onevalue(fixnum_of_int(53));
     if (Lsingle_floatp(env, p) != nil) return onevalue(fixnum_of_int(24));
     if (Lshort_floatp(env, p) != nil) return onevalue(fixnum_of_int(20));
     if (Llong_floatp(env, p) != nil) return onevalue(fixnum_of_int(113));
@@ -674,7 +677,8 @@ LispObject Lrationalp(LispObject env, LispObject a)
 }
 
 LispObject Lcomplexp(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(is_numbers(a) && is_complex(a)));
+{   return onevalue(Lispify_predicate(is_numbers(a) &&
+                                      is_complex(a)));
 }
 
 bool complex_stringp(LispObject a)
@@ -692,14 +696,16 @@ bool complex_stringp(LispObject a)
 // Note that the cheery Common Lisp Committee decided the abolish the
 // separate type 'string-char, so the test here is maybe dubious...
 //
-    else if ((LispObject)elt(a, 0) != string_char_sym) return false;
+    else if (static_cast<LispObject>(elt(a,
+                                         0)) != string_char_sym) return false;
     w = elt(a, 1);
     if (!consp(w) || consp(cdr(w))) return false;
     else return true;
 }
 
 LispObject Lwarn_about_protected_symbols(LispObject env, LispObject a)
-{   LispObject retval = Lispify_predicate(warn_about_protected_symbols);
+{   LispObject retval = Lispify_predicate(
+                            warn_about_protected_symbols);
     warn_about_protected_symbols = (a != nil);
     return onevalue(retval);
 }
@@ -723,7 +729,8 @@ bool stringp(LispObject a)
 //
 // Beware abolition of 'string-char
 //
-    else if ((LispObject)elt(a, 0) != string_char_sym) return false;
+    else if (static_cast<LispObject>(elt(a,
+                                         0)) != string_char_sym) return false;
     w = elt(a, 1);
     if (!consp(w) || consp(cdr(w))) return false;
     else return true;
@@ -788,8 +795,8 @@ LispObject Lthreevectorp(LispObject env, LispObject a)
 // but gives a size expressed in bytes. The "/4" then converts that to a
 // count expressed in 32-bit words which is what pach_hdrlength requires.
     return onevalue(Lispify_predicate(
-        vechdr(a) == (TAG_HDR_IMMED + TYPE_SIMPLE_VEC +
-            pack_hdrlength(4*CELL/4))));
+                        vechdr(a) == (TAG_HDR_IMMED + TYPE_SIMPLE_VEC +
+                                      pack_hdrlength(4*CELL/4))));
 }
 
 static LispObject Larrayp(LispObject env, LispObject a)
@@ -845,33 +852,40 @@ LispObject Lmkquote(LispObject env, LispObject a)
     return onevalue(a);
 }
 
-LispObject Llist_2star(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Llist_2star(LispObject env, LispObject a, LispObject b,
+                       LispObject c)
 {   return onevalue(list2star(a,b,c));
 }
 
-LispObject Llist_2starrev(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Llist_2starrev(LispObject env, LispObject a, LispObject b,
+                          LispObject c)
 {   return onevalue(list2starrev(a,b,c));
 }
 
-LispObject Lacons(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Lacons(LispObject env, LispObject a, LispObject b,
+                  LispObject c)
 {   return onevalue(acons(a, b, c));
 }
 
-LispObject Llist_3(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Llist_3(LispObject env, LispObject a, LispObject b,
+                   LispObject c)
 {   return onevalue(list3(a, b, c));
 }
 
-LispObject Llist_3rev(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Llist_3rev(LispObject env, LispObject a, LispObject b,
+                      LispObject c)
 {   return onevalue(list3rev(a, b, c));
 }
 
-LispObject Llist_3star(LispObject, LispObject a, LispObject b, LispObject c, LispObject a4up)
+LispObject Llist_3star(LispObject, LispObject a, LispObject b,
+                       LispObject c, LispObject a4up)
 {   if (cdr(a4up) != nil) aerror("too many arrguments for list3*");
     LispObject d = car(a4up);
     return onevalue(list3star(a,b,c,d));
 }
 
-LispObject Llist_4(LispObject env, LispObject a, LispObject b, LispObject c, LispObject a4up)
+LispObject Llist_4(LispObject env, LispObject a, LispObject b,
+                   LispObject c, LispObject a4up)
 {   if (cdr(a4up) != nil) aerror("too many arguments for list4");
     LispObject d = car(a4up);
     return onevalue(list4(a,b,c,d));
@@ -879,12 +893,12 @@ LispObject Llist_4(LispObject env, LispObject a, LispObject b, LispObject c, Lis
 
 
 LispObject Llist_4up(LispObject env, LispObject a, LispObject b,
-        LispObject c, LispObject a4up)
+                     LispObject c, LispObject a4up)
 {   return onevalue(list3star(a, b, c, a4up));
 }
 
 LispObject Lliststar_4up(LispObject env, LispObject a, LispObject b,
-        LispObject c, LispObject a4up)
+                         LispObject c, LispObject a4up)
 {   LispObject r= nil, w;
     while (a4up != nil)
     {   w = cdr(a4up);
@@ -1008,13 +1022,15 @@ public:
         LispObject b;
         pop(b);
         while (consp(b))
-        {   setheader(car(b), qheader(car(b)) & ~(Header)SYM_TAGGED);
+        {   setheader(car(b),
+                      qheader(car(b)) & ~static_cast<Header>(SYM_TAGGED));
             b = cdr(b);
         }
     }
 };
 
-LispObject Lintersect_symlist(LispObject env, LispObject a, LispObject b)
+LispObject Lintersect_symlist(LispObject env, LispObject a,
+                              LispObject b)
 {   LispObject r = nil, w;
 // First tag all the symbols in the list b. Any items that are not
 // symbols just get ignored.
@@ -1082,7 +1098,8 @@ public:
     {   stack = save;
         LispObject a = stack[0];
         while (consp(a))
-        {   setheader(car(a), qheader(car(a)) & ~(Header)SYM_TAGGED);
+        {   setheader(car(a),
+                      qheader(car(a)) & ~static_cast<Header>(SYM_TAGGED));
             a = cdr(a);
         }
     }
@@ -1125,7 +1142,8 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
 }
 
 
-LispObject Lenable_errorset(LispObject env, LispObject a, LispObject b)
+LispObject Lenable_errorset(LispObject env, LispObject a,
+                            LispObject b)
 {   LispObject r = cons(fixnum_of_int(errorset_min),
                         fixnum_of_int(errorset_max));
     if (a == nil || a == fixnum_of_int(0))            errorset_min = 0;
@@ -1216,14 +1234,14 @@ LispObject Lunwind(LispObject env)
 // I will use FORMAT to handle error messages provided the first arg
 // to error had been a string and also provided (for bootstrapping) that
 // the function FORMAT seems to be defined.
-        if (qfn1(format_symbol) == undefined_1 ||
-            !stringp(a1)) loop_print_error(cons(a1, args));
-        else Lapply_3(nil, format_symbol, qvalue(error_output), a1, args);
-        err_printf("\n");
-        pop(r);
-    }
-    qvalue(emsg_star) = cons(a1, r);     // "Error message" in CL world
-    exit_value = fixnum_of_int(0);       // "Error number"  in CL world
+    if (qfn1(format_symbol) == undefined_1 ||
+        !stringp(a1)) loop_print_error(cons(a1, args));
+    else Lapply_3(nil, format_symbol, qvalue(error_output), a1, args);
+    err_printf("\n");
+    pop(r);
+}
+qvalue(emsg_star) = cons(a1, r);     // "Error message" in CL world
+exit_value = fixnum_of_int(0);       // "Error number"  in CL world
 #else
     if (miscflags & HEADLINE_FLAG)
     {   push(args, cdr(args));
@@ -1246,33 +1264,36 @@ LispObject Lunwind(LispObject env)
     setvalue(emsg_star, msg);         // "Error message" in SL world
     exit_value = car(args);         // "Error number"  in SL world
 #endif
-    if ((w = qvalue(break_function)) != nil &&
-        symbolp(w) &&
-        qfn1(w) != undefined_1)
-    {   (*qfn1(w))(qenv(w), qvalue(emsg_star));
-    }
-    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
-                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
-                  UNWIND_UNWIND;
-    exit_count = 0;
-    exit_tag = nil;
-    throw LispError();
+if ((w = qvalue(break_function)) != nil &&
+    symbolp(w) &&
+    qfn1(w) != undefined_1)
+{   (*qfn1(w))(qenv(w), qvalue(emsg_star));
+}
+exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+              (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
+              UNWIND_UNWIND;
+exit_count = 0;
+exit_tag = nil;
+throw LispError();
 }
 
 [[noreturn]] void Lerror_1(LispObject env, LispObject a1)
 {   error_N(ncons(a1));
 }
 
-[[noreturn]] void Lerror_2(LispObject env, LispObject a1, LispObject a2)
+[[noreturn]] void Lerror_2(LispObject env, LispObject a1,
+                           LispObject a2)
 {   error_N(list2(a1, a2));
 }
 
-[[noreturn]] void Lerror_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+[[noreturn]] void Lerror_3(LispObject env, LispObject a1,
+                           LispObject a2, LispObject a3)
 {   error_N(list3(a1, a2, a3));
 }
 
-[[noreturn]] void Lerror_4up(LispObject env, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+[[noreturn]] void Lerror_4up(LispObject env, LispObject a1,
+                             LispObject a2,
+                             LispObject a3, LispObject a4up)
 {   error_N(list3star(a1, a2, a3, a4up));
 }
 
@@ -1355,21 +1376,21 @@ LispObject Lunmake_keyword(LispObject env, LispObject a)
 LispObject Lsymbol_specialp(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
     else if ((qheader(a) & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
-                           SYM_SPECIAL_VAR) return onevalue(lisp_true);
+             SYM_SPECIAL_VAR) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
 LispObject Lsymbol_globalp(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
     else if ((qheader(a) & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
-                           SYM_GLOBAL_VAR) return onevalue(lisp_true);
+             SYM_GLOBAL_VAR) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
 LispObject Lsymbol_keywordp(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
     else if ((qheader(a) & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
-                           (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR))
+             (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR))
         return onevalue(lisp_true);
     else return onevalue(nil);
 }
@@ -1410,7 +1431,8 @@ LispObject Lset(LispObject env, LispObject a, LispObject b)
 }
 
 LispObject Lmakeunbound(LispObject env, LispObject a)
-{   if (!symbolp(a) || a == nil || a == lisp_true) aerror("makeunbound");
+{   if (!symbolp(a) || a == nil ||
+        a == lisp_true) aerror("makeunbound");
     setvalue(a, unset_var);
     return onevalue(a);
 }
@@ -1488,7 +1510,8 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
 // in Common Lisp mode gensyms that are "unprinted" are not special
         setheader(b, qheader(b) ^ (SYM_ANY_GENSYM | SYM_CODEPTR));
 #else
-        setheader(b, qheader(b) ^ (SYM_UNPRINTED_GENSYM | SYM_ANY_GENSYM | SYM_CODEPTR));
+        setheader(b, qheader(b) ^ (SYM_UNPRINTED_GENSYM | SYM_ANY_GENSYM |
+                                   SYM_CODEPTR));
 #endif
         if ((qheader(a) & SYM_C_DEF) != 0)
         {   LispObject c, w;
@@ -1510,7 +1533,8 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
 
 LispObject Lspecial_form_p(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
-    else if ((qheader(a) & SYM_SPECIAL_FORM) != 0) return onevalue(lisp_true);
+    else if ((qheader(a) & SYM_SPECIAL_FORM) != 0) return onevalue(
+                    lisp_true);
     else return onevalue(nil);
 }
 
@@ -1614,7 +1638,8 @@ LispObject get_vector(int tag, int type, size_t n)
     {
 // If the number size is exactly a multiple of the chunk size I will not
 // need a special shorter final vector.
-        size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+        size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES -
+                         1)/VECTOR_CHUNK_BYTES;
         size_t i;
 // The final chunk will be full size if I have a neat multiple of
 // VECTOR_CHUNK_BYTES, otherwise smaller.
@@ -1654,7 +1679,8 @@ LispObject reduce_vector_size(LispObject v, size_t len)
         return reduce_basic_vector_size(basic_elt(v, 0), len);
 // Work out how many chunks the smaller vector will need, and how large
 // its last chunk will end up.
-    size_t chunks = (len - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+    size_t chunks = (len - CELL + VECTOR_CHUNK_BYTES -
+                     1)/VECTOR_CHUNK_BYTES;
     size_t last_size = (len - CELL) % VECTOR_CHUNK_BYTES;
     if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
     len = CELL*(chunks+1);
@@ -1717,7 +1743,7 @@ LispObject Lgctime(LispObject env)
 }
 
 LispObject Ldecoded_time(LispObject env)
-{   std::time_t t0 = std::time(NULL);
+{   std::time_t t0 = std::time(nullptr);
 //
 //        tm_sec      -- seconds 0..59
 //        tm_min      -- minutes 0..59
@@ -1762,10 +1788,11 @@ LispObject Ldecoded_time(LispObject env)
 
 LispObject Ldate(LispObject env)
 {   LispObject w;
-    std::time_t t = std::time(NULL);
+    std::time_t t = std::time(nullptr);
     char today[32];
     char today1[32];
-    std::strcpy(today, std::ctime(&t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
+    std::strcpy(today, std::ctime(
+                    &t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
     //       012345678901234567890123
     today[24] = 0;             // loses final '\n'
     today1[0] = today[8]==' ' ? '0' : today[8];
@@ -1784,9 +1811,10 @@ LispObject Ldate(LispObject env)
 
 LispObject Ldate1(LispObject env, LispObject a1)
 {   LispObject w;
-    std::time_t t = std::time(NULL);
+    std::time_t t = std::time(nullptr);
     char today[32];
-    std::strcpy(today, std::ctime(&t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
+    std::strcpy(today, std::ctime(
+                    &t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
     today[24] = 0;             // loses final '\n'
     w = make_string(today);
     return onevalue(w);
@@ -1794,9 +1822,10 @@ LispObject Ldate1(LispObject env, LispObject a1)
 
 LispObject Ldate_and_time(LispObject env)
 {   LispObject w;
-    std::time_t t = std::time(NULL);
+    std::time_t t = std::time(nullptr);
     char today[32];
-    std::strcpy(today, std::ctime(&t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
+    std::strcpy(today, std::ctime(
+                    &t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
     today[24] = 0;             // loses final '\n'
     w = make_string(today);
     return onevalue(w);
@@ -1804,9 +1833,10 @@ LispObject Ldate_and_time(LispObject env)
 
 LispObject Ldate_and_time1(LispObject env, LispObject a1)
 {   LispObject w;
-    std::time_t t = std::time(NULL);
+    std::time_t t = std::time(nullptr);
     char today[32], today1[32];
-    std::strcpy(today, std::ctime(&t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
+    std::strcpy(today, std::ctime(
+                    &t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
     //       012345678901234567890123
     today[24] = 0;             // loses final '\n'
     today1[0] = today[8]==' ' ? '0' : today[8];
@@ -1828,7 +1858,7 @@ LispObject Ldatestamp(LispObject env)
 // number of seconds between 1970.0.0 and now, but which could be
 // pretty-well almost any other thing, as per the C "time_t" type.
 // I do not allow for time-zones etc here either!
-{   std::time_t t = std::time(NULL);
+{   std::time_t t = std::time(nullptr);
     return onevalue(make_lisp_integer64((int64_t)t));
 }
 
@@ -1840,18 +1870,19 @@ LispObject Ltimeofday(LispObject env)
 // microseconds.
 //
 {   LispObject w;
-    std::time_t t = std::time(NULL);
+    std::time_t t = std::time(nullptr);
 //
 // Note that if this is a 32-bit value it will wrap in 2038. Probably some
 // other API should be used here!
 //
     uint64_t n = (uint64_t)t;
-    uint32_t un = 0;  // will be for microseconds, so value will be 0-999999
+    uint32_t un =
+        0;  // will be for microseconds, so value will be 0-999999
 #ifdef HAVE_SYS_TIME_H
 #ifdef HAVE_GETTIMEOFDAY
 // If more precise information is available then use it
     struct timeval tv;
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, nullptr);
     n = (uint64_t)tv.tv_sec;
     un = (uint32_t)tv.tv_usec;
 #endif
@@ -1891,7 +1922,8 @@ static int getmon(char *s)
     return r;
 }
 
-static LispObject Ldatelessp(LispObject env, LispObject a, LispObject b)
+static LispObject Ldatelessp(LispObject env, LispObject a,
+                             LispObject b)
 //
 // This is maybe a bit of an abomination!  The functions (date) and
 // (filedate "filename") [and also (modulep 'modulename)] return times
@@ -1909,8 +1941,8 @@ static LispObject Ldatelessp(LispObject env, LispObject a, LispObject b)
     if (!is_vector(a) || !is_vector(b) ||
         vechdr(a) != STR24HDR ||
         vechdr(b) != STR24HDR) aerror2("datelessp", a, b);
-    aa = (char *)a + (CELL - TAG_VECTOR);
-    bb = (char *)b + (CELL - TAG_VECTOR);
+    aa = reinterpret_cast<char *>(a) + (CELL - TAG_VECTOR);
+    bb = reinterpret_cast<char *>(b) + (CELL - TAG_VECTOR);
 //
 // Layout is eg. "Wed May 12 15:50:23 1993"
 //                012345678901234567890123
@@ -1919,10 +1951,14 @@ static LispObject Ldatelessp(LispObject env, LispObject a, LispObject b)
 //
     if ((wa = getint(aa+20, 4)) != (wb = getint(bb+20, 4))) res = wa < wb;
     else if ((wa = getmon(aa+4)) != (wb = getmon(bb+4))) res = wa < wb;
-    else if ((wa = getint(aa+8, 2)) != (wb = getint(bb+8, 2))) res = wa < wb;
-    else if ((wa = getint(aa+11, 2)) != (wb = getint(bb+11, 2))) res = wa < wb;
-    else if ((wa = getint(aa+14, 2)) != (wb = getint(bb+14, 2))) res = wa < wb;
-    else if ((wa = getint(aa+17, 2)) != (wb = getint(bb+17, 2))) res = wa < wb;
+    else if ((wa = getint(aa+8, 2)) != (wb = getint(bb+8,
+                                        2))) res = wa < wb;
+    else if ((wa = getint(aa+11, 2)) != (wb = getint(bb+11,
+                                         2))) res = wa < wb;
+    else if ((wa = getint(aa+14, 2)) != (wb = getint(bb+14,
+                                         2))) res = wa < wb;
+    else if ((wa = getint(aa+17, 2)) != (wb = getint(bb+17,
+                                         2))) res = wa < wb;
     else res = false;
     return onevalue(Lispify_predicate(res));
 }
@@ -1935,7 +1971,8 @@ LispObject Lrepresentation1(LispObject env, LispObject a)
     return onevalue(a);
 }
 
-LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
+LispObject Lrepresentation2(LispObject env, LispObject a,
+                            LispObject b)
 //
 // Intended for debugging, and use with indirect (q.v.).  arg2, if
 // present and non-nil makes this more verbose. If arg2 is numeric it
@@ -1966,7 +2003,8 @@ LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
     else
     {   if (b != nil)
         {   if (!is_fixnum(b))
-                trace_printf("R = %.8lx ", (long)(uint32_t)a);
+                trace_printf("R = %.8lx ", static_cast<long>(
+                                 static_cast<uint32_t>(a)));
             if (is_numbers(a) && is_bignum(a))
             {   size_t len = (length_of_header(numhdr(a))-CELL)/4;
                 for (size_t i=len; i>0; i--)
@@ -1980,7 +2018,8 @@ LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
 }
 
 LispObject Lindirect(LispObject, LispObject a)
-{   return onevalue(*(LispObject *)(intptr_t)sixty_four_bits(a));
+{   return onevalue(*reinterpret_cast<LispObject *>(
+                        static_cast<intptr_t>(sixty_four_bits(a))));
 }
 
 //
@@ -2008,23 +2047,23 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
     char libname[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     const char *w;
-    char *w2, *w1 = NULL;
+    char *w2, *w1 = nullptr;
     std::memset(libname, 0, sizeof(libname));
     w = get_string_data(name, "find-foreign-library", len);
     if (len > sizeof(libname)-5) len = sizeof(libname)-5;
-    std::sprintf(libname, "%.*s", (int)len, w);
+    std::sprintf(libname, "%.*s", static_cast<int>(len), w);
     for (w2=libname; *w2!=0; w2++)
-        if (w1==NULL && *w2 == '.') w1 = w2;
-        else if (*w2 == '/' || *w2 == '\\') w1 = NULL;
+        if (w1==nullptr && *w2 == '.') w1 = w2;
+        else if (*w2 == '/' || *w2 == '\\') w1 = nullptr;
 //
-// Now of w1 is not NULL it identifies a suffix ".xxx" where there is no
+// Now of w1 is not nullptr it identifies a suffix ".xxx" where there is no
 // "/" or "\\" in the string xxx. A suffix such as ".so.1.3.2" is reported as
 // a whole despite the embedded dots.
 // On Windows if no suffix is provided a ".dll" will be appended, while
 // on other systems ".so" is used.
 //
 #ifdef WIN32
-    if (w1 == NULL) std::strcat(libname, ".dll");
+    if (w1 == nullptr) std::strcat(libname, ".dll");
     for (w1=libname; *w1!=0; w1++)
         if (*w1 == '/') *w1 = '\\';
 //
@@ -2045,16 +2084,17 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
 // The printf calls here to report errors will not be useful in some
 // windowed contexts, so I will need to rework them in due course.
 //
-        std::printf("Error code %ld = %lx\n", (long)err, (long)err);
+        std::printf("Error code %ld = %lx\n", static_cast<long>(err),
+                    static_cast<long>(err));
         err = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
                             FORMAT_MESSAGE_IGNORE_INSERTS,
-                            NULL, err, 0, errbuf, 80, NULL);
+                            nullptr, err, 0, errbuf, 80, nullptr);
         if (err != 0) std::printf("%s", errbuf);
 #endif
         return onevalue(nil);
     }
 #else
-    if (w1 == NULL) std::strcat(libname, ".so");
+    if (w1 == nullptr) std::strcat(libname, ".so");
 #ifdef DEBUG
 //
 // For now I will leave the trace print of the library name here, since
@@ -2064,11 +2104,11 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
     std::printf("open-library Linux/Mac/BSD/Unix etc %s\n", libname);
 #endif
 #ifdef EMBEDDED
-    a = NULL;
+    a = nullptr;
 #else
     a = dlopen(libname, RTLD_NOW | RTLD_GLOBAL);
 #endif
-    if (a == NULL)
+    if (a == nullptr)
     {
 #ifdef DEBUG
         std::printf("Err = <%s>\n", dlerror()); std::fflush(stdout);
@@ -2076,7 +2116,7 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
         return onevalue(nil);
     }
 #endif
-    r = encapsulate_pointer((void *)a);
+    r = encapsulate_pointer(reinterpret_cast<void *>(a));
     return onevalue(r);
 }
 
@@ -2107,22 +2147,22 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
 #endif
     w = get_string_data(name, "find-foreign-function", len);
     if (len > sizeof(sname)-2) len = sizeof(sname)-2;
-    std::sprintf(sname, "%.*s", (int)len, w);
+    std::sprintf(sname, "%.*s", static_cast<int>(len), w);
 //=== #ifdef __CYGWIN__
 //===     printf("name to look up = %s\r\n", sname);
 //=== #else
 //===     printf("name to look up = %s\n", sname);
 //=== #endif
 #ifdef EMBEDDED
-    b = NULL;
+    b = nullptr;
 #else
 #ifdef WIN32
-    b = (void *)GetProcAddress(a, sname);
+    b = reinterpret_cast<void *>(GetProcAddress(a, sname));
 #else
     b = dlsym(a, sname);
 #endif
 #endif
-    if (b == NULL) return onevalue(nil);
+    if (b == nullptr) return onevalue(nil);
     r = encapsulate_pointer(b);
 // Observe that the result is an encapsulated pointer to the entrypoint of the
 // function that you are interested in.
@@ -2143,7 +2183,8 @@ LispObject Lcallf_1(LispObject env, LispObject entry)
         aerror("call-foreign-function");
     f = extract_pointer(entry);
     ffi_cif cif;
-    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 0, &ffi_type_void, NULL) != FFI_OK)
+    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 0, &ffi_type_void,
+                     nullptr) != FFI_OK)
         aerror("callf for a function with no arguments");
 // The strange looking double cast here is because some versions of C++ took
 // the view that conversion between function pointers and object pointers
@@ -2152,7 +2193,7 @@ LispObject Lcallf_1(LispObject env, LispObject entry)
 // "void *" to the function pointer "void_function *" using intptr_t as
 // an intermediary. This is obviously undefined behaviour! But "The Spirit
 // of C" would give a clear indication of expectations!
-    ffi_call(&cif, (void_function *)(uintptr_t)f, NULL, NULL);
+    ffi_call(&cif, (void_function *)(uintptr_t)f, nullptr, nullptr);
     return onevalue(nil);
 }
 
@@ -2256,11 +2297,11 @@ static void dumparg(int i, LispObject type, LispObject value)
         i64args[i] = sixty_four_bits(value);
     }
     else if ((type == nil && (is_fixnum(value) || is_bignum(value))) ||
-        (len==5 && std::strncmp(w, "int32", 5)==0) ||
-        (sizeof(long)==4 && len==4 && std::strncmp(w, "long", 4)==0) ||
-        (sizeof(size_t)==4 && len==4 && std::strncmp(w, "size", 4)==0) ||
-        (sizeof(intptr_t)==4 && len==6 && std::strncmp(w, "intptr", 6)==0) ||
-        (len==3 && std::strncmp(w, "int", 3)==0))
+             (len==5 && std::strncmp(w, "int32", 5)==0) ||
+             (sizeof(long)==4 && len==4 && std::strncmp(w, "long", 4)==0) ||
+             (sizeof(size_t)==4 && len==4 && std::strncmp(w, "size", 4)==0) ||
+             (sizeof(intptr_t)==4 && len==6 && std::strncmp(w, "intptr", 6)==0) ||
+             (len==3 && std::strncmp(w, "int", 3)==0))
     {   vargs[i] = &i32args[i];
         targs[i] = &ffi_type_sint32;
         i32args[i] = thirty_two_bits(value);
@@ -2273,7 +2314,8 @@ static void dumparg(int i, LispObject type, LispObject value)
     }
     else if ((type == nil && is_string(value)) ||
              (len==6 && std::strncmp(w, "string", 6)==0))
-    {   const char *w = get_string_data(value, "call-foreign-function", len);
+    {   const char *w = get_string_data(value, "call-foreign-function",
+                                        len);
         std::memcpy(&strargs[i][0], w, len);
         strargs[i][len] = 0;
         vargs[i] = &strargs[i][0];
@@ -2322,52 +2364,58 @@ LispObject callf_n(LispObject fun, LispObject args)
 // intptr_t is identified with either int32_t or int64_t.
     ffi_cif cif;
     if (currenttype == nil || name_matches(currenttype, "void"))
-    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_void, targs) != FFI_OK)
+    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_void,
+                         targs) != FFI_OK)
             aerror("call-foreign-function");
-        ffi_call(&cif, f, NULL, vargs);
-        return onevalue(nil); 
+        ffi_call(&cif, f, nullptr, vargs);
+        return onevalue(nil);
     }
     if (name_matches(currenttype, "int32") ||
         name_matches(currenttype, "int") ||
         (sizeof(long)==4 && name_matches(currenttype, "long")) ||
         (sizeof(size_t)==4 && name_matches(currenttype, "size")) ||
         (sizeof(intptr_t)==4 && name_matches(currenttype, "intptr")))
-    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_sint32, targs) != FFI_OK)
+    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_sint32,
+                         targs) != FFI_OK)
             aerror("call-foreign-function");
         ffi_call(&cif, f, &i32res, vargs);
-        return onevalue(make_lisp_integer32(i32res)); 
+        return onevalue(make_lisp_integer32(i32res));
     }
     if (name_matches(currenttype, "int64") ||
         name_matches(currenttype, "longlong") ||
         (sizeof(long)==8 && name_matches(currenttype, "long")) ||
         (sizeof(size_t)==8 && name_matches(currenttype, "size")) ||
         (sizeof(intptr_t)==8 && name_matches(currenttype, "intptr")))
-    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_sint64, targs) != FFI_OK)
+    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_sint64,
+                         targs) != FFI_OK)
             aerror("call-foreign-function");
         ffi_call(&cif, f, &i64res, vargs);
-        return onevalue(make_lisp_integer64(i64res)); 
+        return onevalue(make_lisp_integer64(i64res));
     }
     if (name_matches(currenttype, "double"))
-    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_double, targs) != FFI_OK)
+    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_double,
+                         targs) != FFI_OK)
             aerror("call-foreign-function");
         ffi_call(&cif, f, &dblres, vargs);
-        return onevalue(make_boxfloat(dblres, TYPE_DOUBLE_FLOAT)); 
+        return onevalue(make_boxfloat(dblres, TYPE_DOUBLE_FLOAT));
     }
     if (name_matches(currenttype, "string"))
-    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_pointer, targs) != FFI_OK)
+    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_pointer,
+                         targs) != FFI_OK)
             aerror("call-foreign-function");
         ffi_call(&cif, f, &strres, vargs);
-        return onevalue(make_string((const char *)strres)); 
+        return onevalue(make_string(reinterpret_cast<const char *>(strres)));
     }
     else aerror1("call-foreign-function", currenttype);
 }
 
 LispObject Lcallf_4up(LispObject env, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+                      LispObject a3, LispObject a4up)
 {   return callf_n(a1, list2star(a2, a3, a4up));
 }
 
-LispObject Lcallf_3(LispObject env, LispObject entry, LispObject a1, LispObject a2)
+LispObject Lcallf_3(LispObject env, LispObject entry, LispObject a1,
+                    LispObject a2)
 {   return callf_n(entry, list2(a1, a2));
 }
 
@@ -2381,77 +2429,77 @@ LispObject Lcallf_2(LispObject env, LispObject entry, LispObject a1)
 //
 
 static LispObject Lget_callback(LispObject env, LispObject a)
-{   void *r = NULL;
+{   void *r = nullptr;
     if (!is_fixnum(a)) aerror("get_callback needs an integer arg");
     switch (int_of_fixnum(a))
-    {   case  0:  r = (void *)execute_lisp_function;
+    {   case  0:  r = reinterpret_cast<void *>(execute_lisp_function);
             break;
-        case  1:  r = (void *)PROC_set_callbacks;
+        case  1:  r = reinterpret_cast<void *>(PROC_set_callbacks);
             break;
-        case  2:  r = (void *)PROC_load_package;
+        case  2:  r = reinterpret_cast<void *>(PROC_load_package);
             break;
-        case  3:  r = (void *)PROC_set_switch;
+        case  3:  r = reinterpret_cast<void *>(PROC_set_switch);
             break;
-        case  4:  r = (void *)PROC_gc_messages;
+        case  4:  r = reinterpret_cast<void *>(PROC_gc_messages);
             break;
-        case  5:  r = (void *)PROC_clear_stack;
+        case  5:  r = reinterpret_cast<void *>(PROC_clear_stack);
             break;
-        case  6:  r = (void *)PROC_push_symbol;
+        case  6:  r = reinterpret_cast<void *>(PROC_push_symbol);
             break;
-        case  7:  r = (void *)PROC_push_string;
+        case  7:  r = reinterpret_cast<void *>(PROC_push_string);
             break;
-        case  8:  r = (void *)PROC_push_small_integer;
+        case  8:  r = reinterpret_cast<void *>(PROC_push_small_integer);
             break;
-        case  9:  r = (void *)PROC_push_big_integer;
+        case  9:  r = reinterpret_cast<void *>(PROC_push_big_integer);
             break;
-        case 10:  r = (void *)PROC_push_floating;
+        case 10:  r = reinterpret_cast<void *>(PROC_push_floating);
             break;
-        case 11:  r = (void *)PROC_make_function_call;
+        case 11:  r = reinterpret_cast<void *>(PROC_make_function_call);
             break;
-        case 12:  r = (void *)PROC_save;
+        case 12:  r = reinterpret_cast<void *>(PROC_save);
             break;
-        case 13:  r = (void *)PROC_load;
+        case 13:  r = reinterpret_cast<void *>(PROC_load);
             break;
-        case 14:  r = (void *)PROC_dup;
+        case 14:  r = reinterpret_cast<void *>(PROC_dup);
             break;
-        case 15:  r = (void *)PROC_pop;
+        case 15:  r = reinterpret_cast<void *>(PROC_pop);
             break;
-        case 16:  r = (void *)PROC_simplify;
+        case 16:  r = reinterpret_cast<void *>(PROC_simplify);
             break;
-        case 17:  r = (void *)PROC_make_printable;
+        case 17:  r = reinterpret_cast<void *>(PROC_make_printable);
             break;
-        case 18:  r = (void *)PROC_get_value;
+        case 18:  r = reinterpret_cast<void *>(PROC_get_value);
             break;
-        case 19:  r = (void *)PROC_atom;
+        case 19:  r = reinterpret_cast<void *>(PROC_atom);
             break;
-        case 20:  r = (void *)PROC_null;
+        case 20:  r = reinterpret_cast<void *>(PROC_null);
             break;
-        case 21:  r = (void *)PROC_fixnum;
+        case 21:  r = reinterpret_cast<void *>(PROC_fixnum);
             break;
-        case 22:  r = (void *)PROC_floatnum;
+        case 22:  r = reinterpret_cast<void *>(PROC_floatnum);
             break;
-        case 23:  r = (void *)PROC_string;
+        case 23:  r = reinterpret_cast<void *>(PROC_string);
             break;
-        case 24:  r = (void *)PROC_symbol;
+        case 24:  r = reinterpret_cast<void *>(PROC_symbol);
             break;
-        case 25:  r = (void *)PROC_first;
+        case 25:  r = reinterpret_cast<void *>(PROC_first);
             break;
-        case 26:  r = (void *)PROC_rest;
+        case 26:  r = reinterpret_cast<void *>(PROC_rest);
             break;
-        case 27:  r = (void *)PROC_integer_value;
+        case 27:  r = reinterpret_cast<void *>(PROC_integer_value);
             break;
-        case 28:  r = (void *)PROC_floating_value;
+        case 28:  r = reinterpret_cast<void *>(PROC_floating_value);
             break;
-        case 29:  r = (void *)PROC_symbol_name;
+        case 29:  r = reinterpret_cast<void *>(PROC_symbol_name);
             break;
-        case 30:  r = (void *)PROC_string_data;
+        case 30:  r = reinterpret_cast<void *>(PROC_string_data);
             break;
-        case 31:  r = (void *)PROC_lisp_eval;
+        case 31:  r = reinterpret_cast<void *>(PROC_lisp_eval);
             break;
-        case 32:  r = (void *)PROC_get_raw_value;
+        case 32:  r = reinterpret_cast<void *>(PROC_get_raw_value);
             break;
     }
-    return onevalue(make_lisp_integer64((LispObject)r));
+    return onevalue(make_lisp_integer64(reinterpret_cast<LispObject>(r)));
 }
 
 // This is a rather silly function put in here to help me debug exception
@@ -2461,7 +2509,7 @@ static LispObject Lsigsegv(LispObject env, LispObject arg)
 {   trace_printf("\nsigsegv about to be raised\n");
     ensure_screen();
     if (arg == nil) std::raise(SIGSEGV);
-    else *(char *)(-1) = 0x55;
+    else *reinterpret_cast<char *>(-1) = 0x55;
     return onevalue(nil);
 }
 
@@ -2624,7 +2672,7 @@ setup_type const funcs1_setup[] =
     {"get-callback",            G0W1, Lget_callback, G2W1, G3W1, G4W1},
     {"gc-forcer",               G0Wother, Lgc_forcer1, Lgc_forcer, G3Wother, G4Wother},
     {"sigsegv",                 G0W1, Lsigsegv, G2W1, G3W1, G4W1},
-    {NULL,                      0, 0, 0, 0, 0}
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of fns1.cpp

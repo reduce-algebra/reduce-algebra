@@ -54,11 +54,16 @@ extern void interrupted(bool noisy);
 // all would be an error.
 [[noreturn]] extern void got_0_wanted_other(LispObject env);
 
-[[noreturn]] extern void got_1_wanted_0(LispObject env, LispObject a1);
-[[noreturn]] extern void got_1_wanted_2(LispObject env, LispObject a1);
-[[noreturn]] extern void got_1_wanted_3(LispObject env, LispObject a1);
-[[noreturn]] extern void got_1_wanted_4up(LispObject env, LispObject a1);
-[[noreturn]] extern void got_1_wanted_other(LispObject env, LispObject a1);
+[[noreturn]] extern void got_1_wanted_0(LispObject env,
+                                        LispObject a1);
+[[noreturn]] extern void got_1_wanted_2(LispObject env,
+                                        LispObject a1);
+[[noreturn]] extern void got_1_wanted_3(LispObject env,
+                                        LispObject a1);
+[[noreturn]] extern void got_1_wanted_4up(LispObject env,
+        LispObject a1);
+[[noreturn]] extern void got_1_wanted_other(LispObject env,
+        LispObject a1);
 
 [[noreturn]] extern void got_2_wanted_0(LispObject env, LispObject a1,
                                         LispObject a2);
@@ -66,10 +71,12 @@ extern void interrupted(bool noisy);
                                         LispObject a2);
 [[noreturn]] extern void got_2_wanted_3(LispObject env, LispObject a1,
                                         LispObject a2);
-[[noreturn]] extern void got_2_wanted_4up(LispObject env, LispObject a1,
-                                          LispObject a2);
-[[noreturn]] extern void got_2_wanted_other(LispObject env, LispObject a1,
-                                            LispObject a2);
+[[noreturn]] extern void got_2_wanted_4up(LispObject env,
+        LispObject a1,
+        LispObject a2);
+[[noreturn]] extern void got_2_wanted_other(LispObject env,
+        LispObject a1,
+        LispObject a2);
 
 [[noreturn]] extern void got_3_wanted_0(LispObject env, LispObject a1,
                                         LispObject a2, LispObject a3);
@@ -77,26 +84,33 @@ extern void interrupted(bool noisy);
                                         LispObject a2, LispObject a3);
 [[noreturn]] extern void got_3_wanted_2(LispObject env, LispObject a1,
                                         LispObject a2, LispObject a3);
-[[noreturn]] extern void got_3_wanted_4up(LispObject env, LispObject a1,
-                                          LispObject a2, LispObject a3);
-[[noreturn]] extern void got_3_wanted_other(LispObject env, LispObject a1,
-                                            LispObject a2, LispObject a3);
+[[noreturn]] extern void got_3_wanted_4up(LispObject env,
+        LispObject a1,
+        LispObject a2, LispObject a3);
+[[noreturn]] extern void got_3_wanted_other(LispObject env,
+        LispObject a1,
+        LispObject a2, LispObject a3);
 
-[[noreturn]] extern void got_4up_wanted_0(LispObject env, LispObject a1,
-                                          LispObject a2, LispObject a3,
-                                          LispObject a4up);
-[[noreturn]] extern void got_4up_wanted_1(LispObject env, LispObject a1,
-                                          LispObject a2, LispObject a3,
-                                          LispObject a4up);
-[[noreturn]] extern void got_4up_wanted_2(LispObject env, LispObject a1,
-                                          LispObject a2, LispObject a3,
-                                          LispObject a4up);
-[[noreturn]] extern void got_4up_wanted_3(LispObject env, LispObject a1,
-                                          LispObject a2, LispObject a3,
-                                          LispObject a4up);
-[[noreturn]] extern void got_4up_wanted_other(LispObject env, LispObject a1,
-                                              LispObject a2, LispObject a3,
-                                              LispObject a4up);
+[[noreturn]] extern void got_4up_wanted_0(LispObject env,
+        LispObject a1,
+        LispObject a2, LispObject a3,
+        LispObject a4up);
+[[noreturn]] extern void got_4up_wanted_1(LispObject env,
+        LispObject a1,
+        LispObject a2, LispObject a3,
+        LispObject a4up);
+[[noreturn]] extern void got_4up_wanted_2(LispObject env,
+        LispObject a1,
+        LispObject a2, LispObject a3,
+        LispObject a4up);
+[[noreturn]] extern void got_4up_wanted_3(LispObject env,
+        LispObject a1,
+        LispObject a2, LispObject a3,
+        LispObject a4up);
+[[noreturn]] extern void got_4up_wanted_other(LispObject env,
+        LispObject a1,
+        LispObject a2, LispObject a3,
+        LispObject a4up);
 
 
 // The following are put in the function cells of symbols that are special
@@ -104,9 +118,12 @@ extern void interrupted(bool noisy);
 // a tolerable diagnostic.
 
 [[noreturn]] extern void bad_specialfn_0(LispObject env);
-[[noreturn]] extern void bad_specialfn_2(LispObject env, LispObject, LispObject);
-[[noreturn]] extern void bad_specialfn_3(LispObject env, LispObject, LispObject, LispObject);
-[[noreturn]] extern void bad_specialfn_4up(LispObject env, LispObject, LispObject, LispObject, LispObject);
+[[noreturn]] extern void bad_specialfn_2(LispObject env, LispObject,
+        LispObject);
+[[noreturn]] extern void bad_specialfn_3(LispObject env, LispObject,
+        LispObject, LispObject);
+[[noreturn]] extern void bad_specialfn_4up(LispObject env, LispObject,
+        LispObject, LispObject, LispObject);
 
 
 // To go in a setup table the types need to look as if a value will be
@@ -151,12 +168,16 @@ extern void interrupted(bool noisy);
 #define BAD_SPECIAL_4up  ((fourup_args *)bad_specialfn_4up)
 
 
-[[noreturn]] extern void aerror(const char *s);         // Called from C not Lisp
+[[noreturn]] extern void aerror(const char
+                                *s);         // Called from C not Lisp
 [[noreturn]] extern void aerror0(const char *s);
 [[noreturn]] extern void aerror1(const char *s, LispObject a);
-[[noreturn]] extern void aerror2(const char *s, LispObject a, LispObject b);
-[[noreturn]] extern void aerror2(const char *s, const char *a, LispObject b);
-[[noreturn]] extern void aerror3(const char *s, LispObject a, LispObject b, LispObject c);
+[[noreturn]] extern void aerror2(const char *s, LispObject a,
+                                 LispObject b);
+[[noreturn]] extern void aerror2(const char *s, const char *a,
+                                 LispObject b);
+[[noreturn]] extern void aerror3(const char *s, LispObject a,
+                                 LispObject b, LispObject c);
 [[noreturn]] extern void fatal_error(int code, ...);
 
 // For the sake of Common Lisp style treatment of (car nil) and (cdr nil)

@@ -40,7 +40,7 @@
 // and will be the same for almost all wxWidgets code.
 
 #include "wx/wxprec.h"
- 
+
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
@@ -72,8 +72,7 @@ private:
 };
 
 enum
-{
-    ACN_Quit = wxID_EXIT,
+{   ACN_Quit = wxID_EXIT,
     ACN_About = wxID_ABOUT
 };
 
@@ -88,15 +87,14 @@ IMPLEMENT_APP(wsDemo)
 // Pretty much everything so far has been uttery stylised and the contents
 // are forced by the structure that wxWidgets requires!
 
-static wxFont *ff = NULL;
+static wxFont *ff = nullptr;
 
 #define MYFONTSIZE 36
 #define WIDTH    600
 #define HEIGHT   400
 
 bool wsDemo::OnInit()
-{
-    ff = new wxFont(MYFONTSIZE,
+{   ff = new wxFont(MYFONTSIZE,
                     wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
                     wxFONTWEIGHT_NORMAL);
     DemoFrame *frame = new DemoFrame("wxdemo");
@@ -105,9 +103,8 @@ bool wsDemo::OnInit()
 }
 
 DemoFrame::DemoFrame(const wxString& title)
-       : wxFrame(NULL, wxID_ANY, title)
-{
-    SetIcon(wxICON(fwin));
+    : wxFrame(nullptr, wxID_ANY, title)
+{   SetIcon(wxICON(fwin));
 
 // The size specified here is the total size of the whole window,
 // including title bar and borders...
@@ -120,20 +117,18 @@ DemoFrame::DemoFrame(const wxString& title)
 
 
 void DemoFrame::OnQuit(wxCommandEvent& WXUNUSED(event))
-{
-    Close(true);
+{   Close(true);
 }
 
 void DemoFrame::OnPaint(wxPaintEvent& event)
-{
-    wxPaintDC dc(this);
+{   wxPaintDC dc(this);
     wxColour c1(230, 200, 255);
     wxBrush b1(c1);
     wxPen p1(c1);
     dc.SetBrush(b1);
     dc.SetPen(p1);
     dc.DrawRectangle(0, 0, WIDTH, HEIGHT);
-        
+
     dc.SetPen(*wxRED_PEN);
     dc.SetBrush(*wxTRANSPARENT_BRUSH);
     dc.SetFont(*ff);

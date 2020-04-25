@@ -1,4 +1,4 @@
-// fns2.cpp                                Copyright (C) 1989-2020 Codemist    
+// fns2.cpp                                Copyright (C) 1989-2020 Codemist
 
 //
 // Basic functions part 2.
@@ -45,7 +45,8 @@ LispObject Lget_bps(LispObject env, LispObject n)
     return onevalue(n);
 }
 
-void set_fns(LispObject a, no_args *f0, one_arg *f1, two_args *f2, three_args *f3, fourup_args *f4up)
+void set_fns(LispObject a, no_args *f0, one_arg *f1, two_args *f2,
+             three_args *f3, fourup_args *f4up)
 {   if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR))
     {   if (symbol_protect_flag)
@@ -89,49 +90,49 @@ static bool interpreter_entry(LispObject a)
 
 static const char *c_fn0(no_args *p, setup_type const s[])
 {   int i;
-    for (i=0; s[i].name!=NULL; i++)
+    for (i=0; s[i].name!=nullptr; i++)
         if (s[i].zero == p) return s[i].name;
-    return NULL;
+    return nullptr;
 }
 
 static const char *c_fn1(one_arg *p, setup_type const s[])
 {   int i;
-    for (i=0; s[i].name!=NULL; i++)
+    for (i=0; s[i].name!=nullptr; i++)
         if (s[i].one == p) return s[i].name;
-    return NULL;
+    return nullptr;
 }
 
 static const char *c_fn2(two_args *p, setup_type const s[])
 {   int i;
-    for (i=0; s[i].name!=NULL; i++)
+    for (i=0; s[i].name!=nullptr; i++)
         if (s[i].two == p) return s[i].name;
-    return NULL;
+    return nullptr;
 }
 
 static const char *c_fn3(three_args *p, setup_type const s[])
 {   int i;
-    for (i=0; s[i].name!=NULL; i++)
+    for (i=0; s[i].name!=nullptr; i++)
         if (s[i].three == p) return s[i].name;
-    return NULL;
+    return nullptr;
 }
 
 static const char *c_fn4up(fourup_args *p, setup_type const s[])
 {   int i;
-    for (i=0; s[i].name!=NULL; i++)
+    for (i=0; s[i].name!=nullptr; i++)
         if (s[i].fourup == p) return s[i].name;
-    return NULL;
+    return nullptr;
 }
 
 static const char *show_fn0(no_args *p)
 {   int i;
     const char *r;
-    for (i=0; entries_table0[i].s!=NULL; i++)
+    for (i=0; entries_table0[i].s!=nullptr; i++)
         if (entries_table0[i].p == p) return entries_table0[i].s;
-    for (i=0; setup_tables[i]!=NULL; i++)
-        if ((r = c_fn0(p, setup_tables[i])) != NULL) return r;
-// There are more entries in setup_tables after the first NULL!
-    for (i++; setup_tables[i]!=NULL; i++)
-        if ((r = c_fn0(p, setup_tables[i])) != NULL) return r;
+    for (i=0; setup_tables[i]!=nullptr; i++)
+        if ((r = c_fn0(p, setup_tables[i])) != nullptr) return r;
+// There are more entries in setup_tables after the first nullptr!
+    for (i++; setup_tables[i]!=nullptr; i++)
+        if ((r = c_fn0(p, setup_tables[i])) != nullptr) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
@@ -139,13 +140,13 @@ static const char *show_fn0(no_args *p)
 static const char *show_fn1(one_arg *p)
 {   int i;
     const char *r;
-    for (i=0; entries_table1[i].s!=NULL; i++)
+    for (i=0; entries_table1[i].s!=nullptr; i++)
         if (entries_table1[i].p == p) return entries_table1[i].s;
-    for (i=0; setup_tables[i]!=NULL; i++)
-        if ((r = c_fn1(p, setup_tables[i])) != NULL) return r;
-// There are more entries in setup_tables after the first NULL!
-    for (i++; setup_tables[i]!=NULL; i++)
-        if ((r = c_fn1(p, setup_tables[i])) != NULL) return r;
+    for (i=0; setup_tables[i]!=nullptr; i++)
+        if ((r = c_fn1(p, setup_tables[i])) != nullptr) return r;
+// There are more entries in setup_tables after the first nullptr!
+    for (i++; setup_tables[i]!=nullptr; i++)
+        if ((r = c_fn1(p, setup_tables[i])) != nullptr) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
@@ -153,12 +154,12 @@ static const char *show_fn1(one_arg *p)
 static const char *show_fn2(two_args *p)
 {   int i;
     const char *r;
-    for (i=0; entries_table2[i].s!=NULL; i++)
+    for (i=0; entries_table2[i].s!=nullptr; i++)
         if (entries_table2[i].p == p) return entries_table2[i].s;
-    for (i=0; setup_tables[i]!=NULL; i++)
-        if ((r = c_fn2(p, setup_tables[i])) != NULL) return r;
-    for (i++; setup_tables[i]!=NULL; i++)
-        if ((r = c_fn2(p, setup_tables[i])) != NULL) return r;
+    for (i=0; setup_tables[i]!=nullptr; i++)
+        if ((r = c_fn2(p, setup_tables[i])) != nullptr) return r;
+    for (i++; setup_tables[i]!=nullptr; i++)
+        if ((r = c_fn2(p, setup_tables[i])) != nullptr) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
@@ -166,12 +167,12 @@ static const char *show_fn2(two_args *p)
 static const char *show_fn3(three_args *p)
 {   int i;
     const char *r;
-    for (i=0; entries_table3[i].s!=NULL; i++)
+    for (i=0; entries_table3[i].s!=nullptr; i++)
         if (entries_table3[i].p == p) return entries_table3[i].s;
-    for (i=0; setup_tables[i]!=NULL; i++)
-        if ((r = c_fn3(p, setup_tables[i])) != NULL) return r;
-    for (i++; setup_tables[i]!=NULL; i++)
-        if ((r = c_fn3(p, setup_tables[i])) != NULL) return r;
+    for (i=0; setup_tables[i]!=nullptr; i++)
+        if ((r = c_fn3(p, setup_tables[i])) != nullptr) return r;
+    for (i++; setup_tables[i]!=nullptr; i++)
+        if ((r = c_fn3(p, setup_tables[i])) != nullptr) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
@@ -179,12 +180,12 @@ static const char *show_fn3(three_args *p)
 static const char *show_fn4up(fourup_args *p)
 {   int i;
     const char *r;
-    for (i=0; entries_table4up[i].s!=NULL; i++)
+    for (i=0; entries_table4up[i].s!=nullptr; i++)
         if (entries_table4up[i].p == p) return entries_table4up[i].s;
-    for (i=0; setup_tables[i]!=NULL; i++)
-        if ((r = c_fn4up(p, setup_tables[i])) != NULL) return r;
-    for (i++; setup_tables[i]!=NULL; i++)
-        if ((r = c_fn4up(p, setup_tables[i])) != NULL) return r;
+    for (i=0; setup_tables[i]!=nullptr; i++)
+        if ((r = c_fn4up(p, setup_tables[i])) != nullptr) return r;
+    for (i++; setup_tables[i]!=nullptr; i++)
+        if ((r = c_fn4up(p, setup_tables[i])) != nullptr) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
@@ -245,22 +246,22 @@ LispObject Lobject_header(LispObject env, LispObject a)
             trace_printf("Halfwords %" PRIuPTR "\n", length_of_hwordheader(h));
         else if (vector_i32(h))
             trace_printf("32-bit data " PRIuPTR "\n",
-                length_of_header(h)/4);
+                         length_of_header(h)/4);
         else if (vector_i64(h))
             trace_printf("64-bit data " PRIuPTR "\n",
-                length_of_header(h)/8);
+                         length_of_header(h)/8);
         else if (vector_i128(h))
             trace_printf("128-bit data " PRIuPTR "\n",
-                length_of_header(h)/16);
+                         length_of_header(h)/16);
         else if (vector_f32(h))
             trace_printf("32-bit floating point data " PRIuPTR "\n",
-                length_of_header(h)/4);
+                         length_of_header(h)/4);
         else if (vector_f64(h))
             trace_printf("64-bit floating point data " PRIuPTR "\n",
-                length_of_header(h)/8);
+                         length_of_header(h)/8);
         else if (vector_f128(h))
             trace_printf("128-bit floating point data " PRIuPTR "\n",
-                length_of_header(h)/16);
+                         length_of_header(h)/16);
         else trace_printf("Unknown vector type\n");
     }
 // I will expand the following two cases if at some stage my debugging needs
@@ -306,25 +307,25 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
     if (!consp(r)) return onevalue(nil);
     r = car(r);
     if (!is_bps(r)) return onevalue(nil);
-    b = (unsigned char *)data_of_bps(r);
+    b = reinterpret_cast<unsigned char *>(data_of_bps(r));
     if (f0 == bytecoded_0 ||
         f0 == f0_as_0
-        ) return onevalue(fixnum_of_int(1));
+       ) return onevalue(fixnum_of_int(1));
     if (f1 == bytecoded_1 ||
         f1 == f1_as_0 ||
         f1 == f1_as_1
-        ) return onevalue(fixnum_of_int(1));
+       ) return onevalue(fixnum_of_int(1));
     if (f2 == bytecoded_2 ||
         f2 == f2_as_0 ||
         f2 == f2_as_1 ||
         f2 == f2_as_2
-        ) return onevalue(fixnum_of_int(2));
+       ) return onevalue(fixnum_of_int(2));
     if (f3 == bytecoded_3 ||
         f3 == f3_as_0 ||
         f3 == f3_as_1 ||
         f3 == f3_as_2 ||
         f3 == f3_as_3
-        ) return onevalue(fixnum_of_int(2));
+       ) return onevalue(fixnum_of_int(2));
     if (f4up == bytecoded_4up) return onevalue(fixnum_of_int(b[0]));
     low = b[0];          // smallest number of valid args
     high = low + b[1];   // largest number before &rest is accounted for
@@ -463,7 +464,8 @@ LispObject Lsymbol_make_fastget1(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-LispObject Lsymbol_make_fastget(LispObject env, LispObject a, LispObject n)
+LispObject Lsymbol_make_fastget(LispObject env, LispObject a,
+                                LispObject n)
 {   intptr_t n1, p, q;
     Header h;
     if (!symbolp(a)) return onevalue(nil);
@@ -523,13 +525,13 @@ void lose_C_def(LispObject a)
 }
 
 static bool restore_fn_cell(LispObject a, char *name,
-                               size_t len, setup_type const s[])
+                            size_t len, setup_type const s[])
 {   size_t i;
-    for (i=0; s[i].name != NULL; i++)
+    for (i=0; s[i].name != nullptr; i++)
     {   if (std::strlen(s[i].name) == (size_t)len &&
             std::memcmp(name, s[i].name, len) == 0) break;
     }
-    if (s[i].name == NULL) return false;
+    if (s[i].name == nullptr) return false;
     set_fns(a, s[i].zero, s[i].one, s[i].two, s[i].three, s[i].fourup);
     return true;
 }
@@ -553,13 +555,13 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     push(a);
     pn = get_pname(a);
     pop(a);
-    name = (char *)&celt(pn, 0);
+    name = reinterpret_cast<char *>(&celt(pn, 0));
     len = length_of_byteheader(vechdr(pn)) - CELL;
 //
 // This is a potential time-sink in that it does a linear scan of all the
 // definitions in the tables that are in u01.c to u60.c.
 //
-    for (i=0; setup_tables[i]!=NULL; i++)
+    for (i=0; setup_tables[i]!=nullptr; i++)
     {   if (restore_fn_cell(a, name, len, setup_tables[i]))
         {   LispObject env;
             push(a);
@@ -601,7 +603,8 @@ LispObject Lsymbol_set_definition(LispObject env,
     {   if (qheader(a) & SYM_C_DEF) return onevalue(nil);
         aerror1("symbol-set-definition", a);
     }
-    set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up); // Tidy up first
+    set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3,
+            undefined_4up); // Tidy up first
     setenv(a, a);
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
     if (b == nil) return onevalue(b); // set defn to nil to undefine
@@ -626,8 +629,7 @@ LispObject Lsymbol_set_definition(LispObject env,
 // kernel.  Sorry.
 //
             if ((qheader(b) & SYM_C_DEF) != 0)
-            {
-                LispObject c = get(b, unset_var, nil);
+            {   LispObject c = get(b, unset_var, nil);
                 if (c == nil) c = b;
                 push(c, a);
                 putprop(a, unset_var, c);
@@ -641,7 +643,7 @@ LispObject Lsymbol_set_definition(LispObject env,
     else if (!consp(b)) aerror1("symbol-set-definition", b);
     else if (is_fixnum(car(b)))
     {   int32_t nargs = (int32_t)int_of_fixnum(car(b)),
-                nopts, flagbits, ntail;
+                    nopts, flagbits, ntail;
         nopts = nargs >> 8;
         flagbits = nopts >> 8;
         ntail = flagbits >> 2;
@@ -665,15 +667,19 @@ LispObject Lsymbol_set_definition(LispObject env,
         }
         else if (flagbits != 0 || nopts != 0)
         {   switch(flagbits)
-            {   default:
+        {       default:
                 case 0:  // easy case optional arguments
-                    set_fns(a, byteopt_0, byteopt_1, byteopt_2, byteopt_3, byteopt_4up); break;
+                    set_fns(a, byteopt_0, byteopt_1, byteopt_2, byteopt_3, byteopt_4up);
+                    break;
                 case 1:  // optional args, but non-nil default, or supplied-p extra
-                    set_fns(a, hardopt_0, hardopt_1, hardopt_2, hardopt_3, hardopt_4up); break;
+                    set_fns(a, hardopt_0, hardopt_1, hardopt_2, hardopt_3, hardopt_4up);
+                    break;
                 case 2:  // easy opt args, but also a &rest arg
-                    set_fns(a, byteoptrest_0, byteoptrest_1, byteoptrest_2, byteoptrest_3, byteoptrest_4up); break;
+                    set_fns(a, byteoptrest_0, byteoptrest_1, byteoptrest_2, byteoptrest_3,
+                            byteoptrest_4up); break;
                 case 3:  // complicated &options and &rest
-                    set_fns(a, hardoptrest_0, hardoptrest_1, hardoptrest_2, hardoptrest_3, hardoptrest_4up); break;
+                    set_fns(a, hardoptrest_0, hardoptrest_1, hardoptrest_2, hardoptrest_3,
+                            hardoptrest_4up); break;
             }
         }
         else
@@ -700,7 +706,8 @@ LispObject Lsymbol_set_definition(LispObject env,
         int nargs = 0;
         while (consp(bvl)) nargs++, bvl = cdr(bvl);
         setheader(a, qheader(a) & ~SYM_MACRO);
-        set_fns(a, interpreted_0, interpreted_1, interpreted_2, interpreted_3, interpreted_4up);
+        set_fns(a, interpreted_0, interpreted_1, interpreted_2, interpreted_3,
+                interpreted_4up);
         setenv(a, cdr(b));
         if (qvalue(comp_symbol) != nil &&
             qfn1(compiler_symbol) != undefined_1)
@@ -715,7 +722,8 @@ LispObject Lsymbol_set_definition(LispObject env,
         int nargs = 0;
         while (consp(bvl)) nargs++, bvl = cdr(bvl);
         setheader(a, qheader(a) & ~SYM_MACRO);
-        set_fns(a, funarged_0, funarged_1, funarged_2, funarged_3, funarged_4up);
+        set_fns(a, funarged_0, funarged_1, funarged_2, funarged_3,
+                funarged_4up);
         setenv(a, cdr(b));
     }
     else aerror1("symbol-set-definition", b);
@@ -757,7 +765,8 @@ LispObject Lremd(LispObject env, LispObject a)
 //
     setheader(a, qheader(a) & ~SYM_MACRO);
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
-    set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3,
+            undefined_4up);
     setenv(a, a);
     return onevalue(res);
 }
@@ -797,7 +806,8 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
 //
     setheader(a, qheader(a) & ~SYM_MACRO);
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
-    set_fns(a, autoload_0, autoload_1, autoload_2, autoload_3, autoload_4up);
+    set_fns(a, autoload_0, autoload_1, autoload_2, autoload_3,
+            autoload_4up);
     setenv(a, res);
     return onevalue(res);
 }
@@ -937,24 +947,26 @@ LispObject get_pname(LispObject a)
 // the "numeric" suffix. The code I have here would allow for up to 10^13
 // distinct gensyms, and after that it wraps round. Well on a 32-bit
 // system it counts up to 2^32 and wraps there.
-        std::sprintf(genname, "%.*s", (int)len, (const char *)&celt(name, 0));
+        std::sprintf(genname, "%.*s", static_cast<int>(len),
+                     reinterpret_cast<const char *>(&celt(name, 0)));
         p = genname+len;
-        if (gensym_ser <= 9999) std::sprintf(p, "%.4d", (int)gensym_ser);
+        if (gensym_ser <= 9999) std::sprintf(p, "%.4d",
+                                                 static_cast<int>(gensym_ser));
         else if (gensym_ser <= 9999999)
             std::sprintf(p, "%.4d_%.3d",
-                (int)(gensym_ser/1000),
-                (int)(gensym_ser%1000));
+                         static_cast<int>(gensym_ser/1000),
+                         static_cast<int>(gensym_ser%1000));
         else if (!SIXTY_FOUR_BIT || gensym_ser <= UINT64_C(99999999999))
             std::sprintf(p, "%.4d_%.3d_%.3d",
-                (int)(gensym_ser/1000000),
-                (int)((gensym_ser/1000)%1000),
-                (int)(gensym_ser%1000));
+                         static_cast<int>(gensym_ser/1000000),
+                         static_cast<int>((gensym_ser/1000)%1000),
+                         static_cast<int>(gensym_ser%1000));
         else
             std::sprintf(p, "%.4d_%.3d_%.3d_%.3d",
-                (int)((gensym_ser/1000000000)%10000),
-                (int)((gensym_ser/1000000)%1000),
-                (int)((gensym_ser/1000)%1000),
-                (int)(gensym_ser%1000));
+                         static_cast<int>((gensym_ser/1000000000)%10000),
+                         static_cast<int>((gensym_ser/1000000)%1000),
+                         static_cast<int>((gensym_ser/1000)%1000),
+                         static_cast<int>(gensym_ser%1000));
         gensym_ser++;
         push(a);
         name = make_string(genname);
@@ -1013,7 +1025,7 @@ static LispObject Lrestart_lisp2(LispObject env,
     char *v;
     ensure_screen();
     n = 0;
-    v = NULL;
+    v = nullptr;
 //
 // A comment seems in order here. The case b==SPID_NOARG should only
 // arise if I came from Lrestart_lisp: it indicates that there was
@@ -1036,8 +1048,8 @@ static LispObject Lrestart_lisp2(LispObject env,
             if (ch > 0xffff) n++; // Now have enough bytes for utf8
             b1 = cdr(b1);
         }
-        v = (char *)std::malloc(n+1);
-        if (v == NULL) aerror("space exhausted in restart-csl");
+        v = reinterpret_cast<char *>(std::malloc(n+1));
+        if (v == nullptr) aerror("space exhausted in restart-csl");
         n = 0;
         while (b != nil)
         {   int ch = int_of_fixnum(car(b));
@@ -1075,18 +1087,20 @@ static LispObject Lrestart_lisp(LispObject env, LispObject a)
 }
 
 static LispObject Lpreserve_3(LispObject env, LispObject startup,
-        LispObject banner, LispObject resume)
+                              LispObject banner, LispObject resume)
 {   char filename[LONGEST_LEGAL_FILENAME];
     bool failed;
     std::memset(filename, 0, sizeof(filename));
     if (startup != nil) supervisor = startup;
     failed = Iwriterootp(filename);  // Can I open image file for writing?
-    term_printf("\nThe system will be preserved on file \"%s\"\n", filename);
+    term_printf("\nThe system will be preserved on file \"%s\"\n",
+                filename);
     if (failed) aerror("preserve");
     ensure_screen();
     exit_count = 0;  // no value at all returned
     exit_value = banner;
-    exit_tag = resume == nil ? fixnum_of_int(1) : // Flag to say "preserve"
+    exit_tag = resume == nil ? fixnum_of_int(1)
+               : // Flag to say "preserve"
                fixnum_of_int(3);                  // preserve and restart
     exit_reason = UNWIND_RESTART;
     throw LispRestart();
@@ -1137,11 +1151,13 @@ static LispObject Lcheckpoint(LispObject env,
     std::memset(filename, 0, sizeof(filename));
     ensure_screen();
     if (startup != nil) supervisor = startup;
-    bool failed = Iwriterootp(filename);  // Can I open image file for writing?
-    term_printf("\nThe system will be preserved on file \"%s\"\n", filename);
+    bool failed = Iwriterootp(
+                      filename);  // Can I open image file for writing?
+    term_printf("\nThe system will be preserved on file \"%s\"\n",
+                filename);
     if (failed) aerror("checkpoint");
     if (is_vector(banner) && is_string(banner))
-    {   msg = (char *)&celt(banner, 0);
+    {   msg = reinterpret_cast<char *>()&celt(banner, 0);
         len = length_of_byteheader(vechdr(banner)) - CELL;
     }
 //
@@ -1185,11 +1201,11 @@ static bool eql_numbers(LispObject a, LispObject b)
 // as ratios or complex numbers.
 //
 {   LispObject p, q;
-    p = *(LispObject *)(a + (CELL - TAG_NUMBERS));
-    q = *(LispObject *)(b + (CELL - TAG_NUMBERS));
+    p = *reinterpret_cast<LispObject *>(a + (CELL - TAG_NUMBERS));
+    q = *reinterpret_cast<LispObject *>(b + (CELL - TAG_NUMBERS));
     if (!eql(p, q)) return false;
-    p = *(LispObject *)(a + (2*CELL - TAG_NUMBERS));
-    q = *(LispObject *)(b + (2*CELL - TAG_NUMBERS));
+    p = *reinterpret_cast<LispObject *>(a + (2*CELL - TAG_NUMBERS));
+    q = *reinterpret_cast<LispObject *>(b + (2*CELL - TAG_NUMBERS));
     return eql(p, q);
 }
 
@@ -1211,19 +1227,24 @@ bool eql_fn(LispObject a, LispObject b)
 //
     if (SIXTY_FOUR_BIT)
     {   if (a == XTAG_SFLOAT &&
-            b == (LispObject)(XTAG_SFLOAT|((uint64_t)1<<63))) return true;
+            b == static_cast<LispObject>(XTAG_SFLOAT|((uint64_t)1<<63))) return
+                    true;
         if (b == XTAG_SFLOAT &&
-            a == (LispObject)(XTAG_SFLOAT|((uint64_t)1<<63))) return true;
+            a == static_cast<LispObject>(XTAG_SFLOAT|((uint64_t)1<<63))) return
+                    true;
 // Here I need to deal with single as well as short floats.
         if (a == (XTAG_SFLOAT|XTAG_FLOAT32) &&
-            b == (LispObject)(XTAG_SFLOAT|XTAG_FLOAT32|((uint64_t)1<<63)))
+            b == static_cast<LispObject>(XTAG_SFLOAT|XTAG_FLOAT32|((
+                                             uint64_t)1<<63)))
             return true;
         if (b == (XTAG_SFLOAT|XTAG_FLOAT32) &&
-            a == (LispObject)(XTAG_SFLOAT|XTAG_FLOAT32|((uint64_t)1<<63)))
+            a == static_cast<LispObject>(XTAG_SFLOAT|XTAG_FLOAT32|((
+                                             uint64_t)1<<63)))
             return true;
     }
-    else if ((a == XTAG_SFLOAT && b == (XTAG_SFLOAT|(intptr_t)0x80000000U)) ||
-        (a == (XTAG_SFLOAT|(intptr_t)0x80000000U) && b == XTAG_SFLOAT))
+    else if ((a == XTAG_SFLOAT &&
+              b == (XTAG_SFLOAT|(intptr_t)0x80000000U)) ||
+             (a == (XTAG_SFLOAT|(intptr_t)0x80000000U) && b == XTAG_SFLOAT))
         return true;
     if (!is_number(a) || is_immed_or_cons(a)) return false;
     if (is_bfloat(a))
@@ -1249,8 +1270,8 @@ bool eql_fn(LispObject a, LispObject b)
         {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
             while (hh > (intptr_t)(CELL - TAG_NUMBERS))
             {   hh -= 4;
-                if (*(uint32_t *)((char *)a + hh) !=
-                    *(uint32_t *)((char *)b + hh))
+                if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                    *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                     return false;
             }
             return true;
@@ -1384,8 +1405,8 @@ compare_strings:
     if (la != lb) return false;
     while (la > 0)
     {   la--;
-        if (*((char *)a + la + offa - TAG_VECTOR) !=
-            *((char *)b + la + offb - TAG_VECTOR)) return false;
+        if (*(reinterpret_cast<char *>(a) + la + offa - TAG_VECTOR) !=
+            *(reinterpret_cast<char *>(b) + la + offb - TAG_VECTOR)) return false;
     }
     return true;
 compare_bits:
@@ -1393,13 +1414,13 @@ compare_bits:
     lb = length_of_bitheader(hb);
     if (la != lb) return false;
 // I will insist that the bitvectors have zero bits in any unused space
-// in their final byte. 
+// in their final byte.
     la = (la + 7)/8;
     lb = (lb + 7)/8;
     while (la > 0)
     {   la--;
-        if (*((char *)a + la + offa - TAG_VECTOR) !=
-            *((char *)b + la + offb - TAG_VECTOR)) return false;
+        if (*(reinterpret_cast<char *>(a) + la + offa - TAG_VECTOR) !=
+            *(reinterpret_cast<char *>(b) + la + offb - TAG_VECTOR)) return false;
     }
     return true;
 }
@@ -1473,8 +1494,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(uint32_t *)((char *)ca + hh) !=
-                                            *(uint32_t *)((char *)cb + hh))
+                                        if (*(uint32_t *)(reinterpret_cast<char *>(ca) + hh) !=
+                                            *(uint32_t *)(reinterpret_cast<char *>(cb) + hh))
                                             return false;
                                     }
                                     break;
@@ -1502,8 +1523,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                 }
 #ifdef HAVE_SOFTFLOAT
                                 else if (!f128_eq(
-                                    float128_of_number(ca),
-                                    float128_of_number(cb))) return false;
+                                             float128_of_number(ca),
+                                             float128_of_number(cb))) return false;
                                 else break;
 #else
                                 else return false;
@@ -1533,8 +1554,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(uint32_t *)((char *)a + hh) !=
-                                *(uint32_t *)((char *)b + hh))
+                            if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                                *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                                 return false;
                         }
                         return true;
@@ -1560,8 +1581,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
                     }
 #ifdef HAVE_SOFTFLOAT
                     else return f128_eq(
-                        float128_of_number(a),
-                        float128_of_number(b));
+                                        float128_of_number(a),
+                                        float128_of_number(b));
 #else
                     else return false;
 #endif // HAVE_SOFTFLOAT
@@ -1602,11 +1623,12 @@ typedef struct equal_record
 
 static equal_record equal_counts[LOG_SIZE];
 
-static void record_equal(const char *file, int line, int depth, bool eqqq)
+static void record_equal(const char *file, int line, int depth,
+                         bool eqqq)
 {   const char *s = std::strrchr(file, '/');
-    if (s != NULL) file = s+1;
+    if (s != nullptr) file = s+1;
     s = std::strrchr(file, '\\');
-    if (s != NULL) file = s+1;
+    if (s != nullptr) file = s+1;
     int hash = 169*line + depth;
     const char *p = file;
     while (*p != 0) hash = 169*hash + (*p++ & 0xff);
@@ -1631,21 +1653,22 @@ static void record_equal(const char *file, int line, int depth, bool eqqq)
 }
 
 int compare_eqstats(const void *a, const void *b)
-{    return static_cast<const equal_record *>(b)->count -
-            static_cast<const equal_record *>(a)->count;
+{   return static_cast<const equal_record *>(b)->count -
+           static_cast<const equal_record *>(a)->count;
 }
 
 void dump_equals_1(FILE *log)
 {   std::fprintf(log, "\nCalls to equal...\n");
     std::fprintf(log, "%24.24s %5s %5s %10s %10s\n",
-        "file", "line", "depth", "count", "matched");
-    qsort(equal_counts, LOG_SIZE, sizeof(equal_counts[0]), compare_eqstats);
+                 "file", "line", "depth", "count", "matched");
+    qsort(equal_counts, LOG_SIZE, sizeof(equal_counts[0]),
+          compare_eqstats);
     for (size_t i=0; i<LOG_SIZE; i++)
         if (equal_counts[i].count != 0)
         {   std::fprintf(log, "%24.24s %5d %5d %10d %10d\n",
-                equal_counts[i].file, equal_counts[i].line,
-                equal_counts[i].depth, equal_counts[i].count,
-                equal_counts[i].eqcount);
+                         equal_counts[i].file, equal_counts[i].line,
+                         equal_counts[i].depth, equal_counts[i].count,
+                         equal_counts[i].eqcount);
             equal_counts[i].count = 0;
         }
     std::fprintf(log, "end of counts\n");
@@ -1654,14 +1677,15 @@ void dump_equals_1(FILE *log)
 void dump_equals_2()
 {   trace_printf("\nCalls to equal...\n");
     trace_printf("%24.24s %5s %5s %10s %10s\n",
-        "file", "line", "depth", "count", "matched");
-    qsort(equal_counts, LOG_SIZE, sizeof(equal_counts[0]), compare_eqstats);
+                 "file", "line", "depth", "count", "matched");
+    qsort(equal_counts, LOG_SIZE, sizeof(equal_counts[0]),
+          compare_eqstats);
     for (size_t i=0; i<LOG_SIZE; i++)
         if (equal_counts[i].count != 0)
         {   trace_printf("%24.24s %5d %5d %10d %10d\n",
-                equal_counts[i].file, equal_counts[i].line,
-                equal_counts[i].depth, equal_counts[i].count,
-                equal_counts[i].eqcount);
+                         equal_counts[i].file, equal_counts[i].line,
+                         equal_counts[i].depth, equal_counts[i].count,
+                         equal_counts[i].eqcount);
             equal_counts[i].count = 0;
         }
     trace_printf("end of counts\n");
@@ -1669,7 +1693,7 @@ void dump_equals_2()
 
 void dump_equals()
 {   std::FILE *log = std::fopen("equal.log", "w");
-    if (log == NULL) log = stdout;
+    if (log == nullptr) log = stdout;
     dump_equals_1(log);
     if (log != stdout) std::fclose(log);
 }
@@ -1777,8 +1801,8 @@ bool equal_fn(LispObject a, LispObject b)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(uint32_t *)((char *)ca + hh) !=
-                                            *(uint32_t *)((char *)cb + hh))
+                                        if (*(uint32_t *)(reinterpret_cast<char *>(ca) + hh) !=
+                                            *(uint32_t *)(reinterpret_cast<char *>(cb) + hh))
                                             return false;
                                     }
                                     break;
@@ -1794,7 +1818,7 @@ bool equal_fn(LispObject a, LispObject b)
                             {   Header h = flthdr(ca);
                                 if (h != flthdr(cb)) return false;
                                 if (!SIXTY_FOUR_BIT &&
-                                    type_of_header(h) == TYPE_SINGLE_FLOAT)                                    
+                                    type_of_header(h) == TYPE_SINGLE_FLOAT)
                                 {   if (single_float_val(ca) !=
                                         single_float_val(cb)) return false;
                                     else break;
@@ -1806,8 +1830,8 @@ bool equal_fn(LispObject a, LispObject b)
                                 }
 #ifdef HAVE_SOFTFLOAT
                                 else if (!f128_eq(
-                                    float128_of_number(ca),
-                                    float128_of_number(cb))) return false;
+                                             float128_of_number(ca),
+                                             float128_of_number(cb))) return false;
                                 else break;
 #else
                                 else return false;
@@ -1832,8 +1856,8 @@ bool equal_fn(LispObject a, LispObject b)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(uint32_t *)((char *)a + hh) !=
-                                *(uint32_t *)((char *)b + hh))
+                            if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                                *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                                 return false;
                         }
                         return true;
@@ -1859,8 +1883,8 @@ bool equal_fn(LispObject a, LispObject b)
                     }
 #ifdef HAVE_SOFTFLOAT
                     else return f128_eq(
-                        float128_of_number(a),
-                        float128_of_number(b));
+                                        float128_of_number(a),
+                                        float128_of_number(b));
 #else
                     else return false;
 #endif // HAVE_SOFTFLOAT
@@ -1898,22 +1922,27 @@ static bool vec_equal(LispObject a, LispObject b)
     l = (size_t)word_align_up(length_of_header(ha));
     if (vector_holds_binary(ha))
     {   while ((l -= 4) != 0)
-            if (*((uint32_t *)((char *)a + l - TAG_VECTOR)) !=
-                *((uint32_t *)((char *)b + l - TAG_VECTOR))) return false;
+            if (*((uint32_t *)(reinterpret_cast<char *>(a) + l - TAG_VECTOR)) !=
+                *((uint32_t *)(reinterpret_cast<char *>(b) + l - TAG_VECTOR))) return
+                        false;
         return true;
     }
     else
     {   if (is_mixed_header(ha))
         {   while (l > 16)
-            {   uint32_t ea = *((uint32_t *)((char *)a + l - TAG_VECTOR - 4)),
-                         eb = *((uint32_t *)((char *)b + l - TAG_VECTOR - 4));
+            {   uint32_t ea = *((uint32_t *)(reinterpret_cast<char *>
+                                             (a) + l - TAG_VECTOR - 4)),
+                              eb = *((uint32_t *)(reinterpret_cast<char *>(b) + l - TAG_VECTOR -
+                                                  4));
                 if (ea != eb) return false;
                 l -= 4;
             }
         }
         while ((l -= CELL) != 0)
-        {   LispObject ea = *((LispObject *)((char *)a + l - TAG_VECTOR)),
-                       eb = *((LispObject *)((char *)b + l - TAG_VECTOR));
+        {   LispObject ea = *(reinterpret_cast<LispObject *>
+                              (reinterpret_cast<char *>(a) + l - TAG_VECTOR)),
+                            eb = *(reinterpret_cast<LispObject *>(reinterpret_cast<char *>
+                                    (b) + l - TAG_VECTOR));
             if (ea == eb) continue;
             if (!equal(ea, eb)) return false;
         }
@@ -1988,8 +2017,8 @@ bool equalp(LispObject a, LispObject b)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(uint32_t *)((char *)ca + hh) !=
-                                            *(uint32_t *)((char *)cb + hh))
+                                        if (*(uint32_t *)(reinterpret_cast<char *>(ca) + hh) !=
+                                            *(uint32_t *)(reinterpret_cast<char *>(cb) + hh))
                                             return false;
                                     }
                                     break;
@@ -2018,8 +2047,8 @@ bool equalp(LispObject a, LispObject b)
                                 }
 #ifdef HAVE_SOFTFLOAT
                                 else if (!f128_eq(
-                                    float128_of_number(ca),
-                                    float128_of_number(cb))) return false;
+                                             float128_of_number(ca),
+                                             float128_of_number(cb))) return false;
                                 else break;
 #else
                                 else return false;
@@ -2045,8 +2074,8 @@ bool equalp(LispObject a, LispObject b)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(uint32_t *)((char *)a + hh) !=
-                                *(uint32_t *)((char *)b + hh))
+                            if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                                *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                                 return false;
                         }
                         return true;
@@ -2073,8 +2102,8 @@ bool equalp(LispObject a, LispObject b)
                     }
 #ifdef HAVE_SOFTFLOAT
                     else return f128_eq(
-                        float128_of_number(a),
-                        float128_of_number(b));
+                                        float128_of_number(a),
+                                        float128_of_number(b));
 #else
                     else return false;
 #endif // HAVE_SOFTFLOAT
@@ -2195,7 +2224,8 @@ LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
     return onevalue(b);
 }
 
-LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b,
+                       LispObject c)
 {   push(a);
     b = list2(b, c);
     pop(a);
@@ -2257,9 +2287,9 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
     int64_t this_assoc = 0;
     if ((assoc_calls % 1000) == 999)
         term_printf("Assoc %.3f av length %.1f max %.1f calls\n",
-                    (double)assoc_length/(double)assoc_calls,
-                    (double)assoc_max,
-                    (double)assoc_calls);
+                    static_cast<double>(assoc_length)/static_cast<double>(assoc_calls),
+                    static_cast<double>(assoc_max),
+                    static_cast<double>(assoc_calls));
     assoc_calls++;
 #endif
     if (is_symbol(a) || is_fixnum(a))
@@ -2267,7 +2297,8 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
         {   LispObject c = car(b);
 #ifdef DEBUG_ASSOC
             assoc_length++;
-            if (assoc_length > 100*assoc_calls) aerror("average search for assoc");
+            if (assoc_length > 100*assoc_calls)
+                aerror("average search for assoc");
             if (++this_assoc > assoc_max) assoc_max = this_assoc;
 //!!        if (assoc_max > 1000) aerror("length for assoc");
 #endif
@@ -2294,7 +2325,8 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
 //
 // In silly cases the length might not be a fixnum!
 //
-                trace_printf("Assoc true %3d %3d ", pos, int_of_fixnum(Llength(nil,save_b)));
+                trace_printf("Assoc true %3d %3d ", pos, int_of_fixnum(Llength(nil,
+                             save_b)));
                 prin_to_stdout(a); trace_printf("\n");
 #endif
                 return onevalue(c);
@@ -2308,7 +2340,8 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
     }
 #ifdef TRACED_EQUAL
 // beware stupidly long lists...
-    trace_printf("Assoc false  %3d %3d ", pos, int_of_fixnum(Llength(nil,save_b)));
+    trace_printf("Assoc false  %3d %3d ", pos, int_of_fixnum(Llength(nil,
+                 save_b)));
     prin_to_stdout(a); trace_printf("\n");
 #endif
     return onevalue(nil);
@@ -2469,7 +2502,8 @@ static bool containedequal(LispObject env, LispObject x, LispObject y)
     return equal(x, y);
 }
 
-static LispObject Lcontained(LispObject env, LispObject x, LispObject y)
+static LispObject Lcontained(LispObject env, LispObject x,
+                             LispObject y)
 {   bool r;
     if (is_symbol(x) || is_fixnum(x)) r = containedeq(nil, x, y);
     else r = containedequal(nil, x, y);
@@ -2577,7 +2611,8 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
     return onevalue(b);
 }
 
-LispObject Lappend_3(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Lappend_3(LispObject env, LispObject a, LispObject b,
+                     LispObject c)
 {   push(a);
     b = Lappend_2(nil, b, c);
     pop(a);
@@ -2585,7 +2620,7 @@ LispObject Lappend_3(LispObject env, LispObject a, LispObject b, LispObject c)
 }
 
 LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
-        LispObject a3, LispObject a4up)
+                       LispObject a3, LispObject a4up)
 {   push(a1, a2, a3);
 // Note that the list of arguments from a4 upwards will be freshly consed
 // and so I am entitled to overwrite it as I go.
@@ -2858,12 +2893,12 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
             w = substq(a, b, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                setcdr(r, c);
-                write_barrier(cdraddr(r));
-                c = r;
-                r = w;
-            });
+    {   w = cdr(r);
+            setcdr(r, c);
+            write_barrier(cdraddr(r));
+            c = r;
+            r = w;
+        });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
@@ -2986,12 +3021,12 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
             w = subst(a, b, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                setcdr(r, c);
-                write_barrier(cdraddr(r));
-                c = r;
-                r = w;
-            });
+    {   w = cdr(r);
+            setcdr(r, c);
+            write_barrier(cdraddr(r));
+            c = r;
+            r = w;
+        });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
@@ -3114,12 +3149,12 @@ LispObject subla(LispObject a, LispObject c)
             w = subla(a, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                setcdr(r, c);
-                write_barrier(cdraddr(r));
-                c = r;
-                r = w;
-            });
+    {   w = cdr(r);
+            setcdr(r, c);
+            write_barrier(cdraddr(r));
+            c = r;
+            r = w;
+        });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
@@ -3250,12 +3285,12 @@ LispObject sublis(LispObject a, LispObject c)
             w = sublis(a, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-            {   w = cdr(r);
-                setcdr(r, c);
-                write_barrier(cdraddr(r));
-                c = r;
-                r = w;
-            });
+    {   w = cdr(r);
+            setcdr(r, c);
+            write_barrier(cdraddr(r));
+            c = r;
+            r = w;
+        });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
@@ -3325,7 +3360,8 @@ LispObject sublis(LispObject a, LispObject c)
 
 
 
-LispObject Lsubstq(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Lsubstq(LispObject env, LispObject a, LispObject b,
+                   LispObject c)
 {
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
@@ -3336,7 +3372,8 @@ LispObject Lsubstq(LispObject env, LispObject a, LispObject b, LispObject c)
     return substq(a, b, c);
 }
 
-LispObject Lsubst(LispObject env, LispObject a, LispObject b, LispObject c)
+LispObject Lsubst(LispObject env, LispObject a, LispObject b,
+                  LispObject c)
 {
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
@@ -3475,7 +3512,7 @@ setup_type const funcs2_setup[] =
     {"serialize",               G0W1, Lserialize, G2W1, G3W1, G4W1},
     {"full-serialize",          G0W1, Lserialize1, G2W1, G3W1, G4W1},
     {"unserialize",             Lunserialize, G1W0, G2W0, G3W0, G4W0},
-    {NULL,                      0, 0, 0, 0, 0}
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of fns2.cpp

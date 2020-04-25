@@ -57,15 +57,13 @@
 // allows me to build this code on (eg) the 32-bit edition of Fedora 9.
 
 static void show(const char *s, float128_t *p)
-{
-    std::printf("Displaying %16s: ", s);
+{   std::printf("Displaying %16s: ", s);
     f128M_print_E(0, 33, p);
     std::printf("\n");
 }
 
 static void show256(float256_t *p)
-{
-    float256_t q, r;
+{   float256_t q, r;
     q = *p;
     std::printf("%.16" PRIx64 " %.16" PRIx64 "\n", q.hi.v[1], q.hi.v[0]);
     q.lo = f128_0;
@@ -73,13 +71,12 @@ static void show256(float256_t *p)
     q.hi.v[1] ^= INT64_C(0x8000000000000000);
     f256M_add(p, &q, &r);
     std::printf("%.16" PRIx64 " %.16" PRIx64 "\n", r.hi.v[1], r.hi.v[0]);
-} 
+}
 
 float256_t f256_1;
 
 int main(int argc, char *argv[])
-{
-    float128_t a, b, c, d, e, f, g, w1, w2;
+{   float128_t a, b, c, d, e, f, g, w1, w2;
 #ifdef LITTLEENDIAN
     std::printf("Testing using a little-endian version\n");
 #else
@@ -107,7 +104,8 @@ int main(int argc, char *argv[])
     show("10^18", &g);
     ui64_to_f128M(INT64_C(10000000000000000), &g);
     std::printf("%.16" PRIx64 "/%.16" PRIx64 "\n",
-        ((std::int64_t *)&g)[1], ((std::int64_t *)&g)[0]);
+                (reinterpret_cast<std::int64_t *>()&g)[1],
+                (reinterpret_cast<std::int64_t *>()&g)[0]);
     show("10^16", &g);
 
     float256_t dd,ee,ff;
@@ -134,14 +132,14 @@ int main(int argc, char *argv[])
     f256M_mul(&dd, &ee, &ff);
     show("(1/10)*10.hi", &ff.hi);
     show("(1/10)*10.lo", &ff.lo);
-  
+
     ui32_to_f128M(0x80000000u, &a);
     show("2^32", &a);
     show256(&f256_r10);
 
 // What was shown above was from when I was doing rather basic tests. Now I
 // will exercise printing
-   
+
     ui64_to_f128M(INT64_C(1000000000000000), &a);  // 10^15
     f128M_mul(&a, &a, &b);                         // 10^30
     f128M_mul(&b, &b, &c);                         // 10^60

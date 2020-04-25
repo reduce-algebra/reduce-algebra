@@ -74,7 +74,8 @@
 // convenient documentation of what the function needs to do.
 //
 
-inline uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b, uint32_t c)
+inline uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b,
+                          uint32_t c)
 //
 //          (result, *rlow) = a*b + c     as 62-bit product
 //
@@ -100,7 +101,7 @@ inline LispObject timesii(LispObject a, LispObject b)
 // mainly because the result can easily be a bignum
 //
 {   int64_t aa = (int64_t)int_of_fixnum(a),
-            bb = (int64_t)int_of_fixnum(b);
+                bb = (int64_t)int_of_fixnum(b);
 // If I am on a 32-bit system then fixnums are only 28 bits wide so using
 // int64_t multiplication can never overflow.
     if (!SIXTY_FOUR_BIT) return make_lisp_integer64(aa*bb);
@@ -113,7 +114,8 @@ inline LispObject timesii(LispObject a, LispObject b)
 }
 
 static LispObject timesis(LispObject a, LispObject b)
-{   double d = (double)int_of_fixnum(a)*value_of_immediate_float(b);
+{   double d = static_cast<double>(int_of_fixnum(
+                                       a))*value_of_immediate_float(b);
     return pack_immediate_float(d, b);
 }
 
@@ -157,7 +159,8 @@ static LispObject timesib(LispObject a, LispObject b)
     {   aa = -aa;
         carry = 0x80000000U;
         for (i=0; i<lenb-1; i++)
-        {   carry = ADD32(clear_top_bit(~bignum_digits(b)[i]), top_bit(carry));
+        {   carry = ADD32(clear_top_bit(~bignum_digits(b)[i]),
+                          top_bit(carry));
             bignum_digits(c)[i] = clear_top_bit(carry);
         }
 //
@@ -296,19 +299,19 @@ static LispObject timesif(LispObject a, LispObject b)
         case TYPE_LONG_FLOAT:
         {   float128_t x, z;
             i64_to_f128M(int_of_fixnum(a), &x);
-            f128M_mul(&x, (float128_t *)long_float_addr(b), &z);
+            f128M_mul(&x, reinterpret_cast<float128_t *>(long_float_addr(b)), &z);
             return make_boxfloat128(z);
         }
 #endif // HAVE_SOFTFLOAT
         case TYPE_SINGLE_FLOAT:
             return make_boxfloat(
-                (double)int_of_fixnum(a) * single_float_val(b),
-                TYPE_SINGLE_FLOAT);
+                       static_cast<double>(int_of_fixnum(a)) * single_float_val(b),
+                       TYPE_SINGLE_FLOAT);
         case TYPE_DOUBLE_FLOAT:
         default:
             return make_boxfloat(
-                (double)int_of_fixnum(a) * double_float_val(b),
-                TYPE_DOUBLE_FLOAT);
+                       static_cast<double>(int_of_fixnum(a)) * double_float_val(b),
+                       TYPE_DOUBLE_FLOAT);
     }
 }
 
@@ -332,19 +335,19 @@ static LispObject timessf(LispObject a, LispObject b)
     {
 #ifdef HAVE_SOFTFLOAT
         case TYPE_LONG_FLOAT:
-            {   float128_t x, z;
-                x = float128_of_number(a);
-                f128M_mul(&x, (float128_t *)long_float_addr(b), &z);
-                return make_boxfloat128(z);
-            }
+        {   float128_t x, z;
+            x = float128_of_number(a);
+            f128M_mul(&x, reinterpret_cast<float128_t *>(long_float_addr(b)), &z);
+            return make_boxfloat128(z);
+        }
 #endif // HAVE_SOFTFLOAT
         case TYPE_SINGLE_FLOAT:
             return make_boxfloat(
-                float_of_number(a) * single_float_val(b), TYPE_SINGLE_FLOAT);
+                       float_of_number(a) * single_float_val(b), TYPE_SINGLE_FLOAT);
         case TYPE_DOUBLE_FLOAT:
         default:
             return make_boxfloat(
-                float_of_number(a) * double_float_val(b), TYPE_DOUBLE_FLOAT);
+                       float_of_number(a) * double_float_val(b), TYPE_DOUBLE_FLOAT);
     }
 }
 
@@ -967,7 +970,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // ended up as a fixnum.
 //
     {   int32_t va = (int32_t)bignum_digits(a)[0],
-                vb = (int32_t)bignum_digits(b)[0], vc;
+                    vb = (int32_t)bignum_digits(b)[0], vc;
         uint32_t vclow;
         if (va < 0)
         {   if (vb < 0) Dmultiply(vc, vclow, -va, -vb, 0);
@@ -1089,9 +1092,9 @@ static LispObject timesbb(LispObject a, LispObject b)
     pop(b, a);
     d = multiplication_buffer;
     {   uint32_t *da = (uint32_t *)&bignum_digits(a)[0],
-                 *db = (uint32_t *)&bignum_digits(b)[0],
-                 *dc = (uint32_t *)&bignum_digits(c)[0],
-                 *dd = (uint32_t *)&bignum_digits(d)[0];
+                      *db = (uint32_t *)&bignum_digits(b)[0],
+                       *dc = (uint32_t *)&bignum_digits(c)[0],
+                        *dd = (uint32_t *)&bignum_digits(d)[0];
         long_times(dc, da, db, dd, lena, lenb, lenc);
     }
 //
@@ -1117,14 +1120,14 @@ static LispObject timesbb(LispObject a, LispObject b)
         {   bignum_digits(c)[newlenc] = 0;
             if (lenc != newlenc)    // i.e. I padded out somewhat
             {   if (lenc != newlenc+1)
-                    *(Header *)&bignum_digits(c)[newlenc+1] =
+                    *reinterpret_cast<Header *>(&bignum_digits(c)[newlenc+1]) =
                         make_bighdr(lenc-newlenc-1);
                 lenc = newlenc;
                 setnumhdr(c, make_bighdr(lenc+CELL/4));
             }
         }
         else if (lenc != newlenc)    // i.e. I padded out somewhat
-        {   *(Header *)&bignum_digits(c)[newlenc] =
+        {   *reinterpret_cast<Header *>(&bignum_digits(c)[newlenc]) =
                 make_bighdr(lenc-newlenc);
             lenc = newlenc;
             setnumhdr(c, make_bighdr(lenc+CELL/4));
@@ -1137,7 +1140,8 @@ static LispObject timesbb(LispObject a, LispObject b)
     if (sign < 0)
     {   uint32_t carry = 0x80000000U;
         for (i=0; i<lenc-1; i++)
-        {   carry = ADD32(clear_top_bit(~bignum_digits(c)[i]), top_bit(carry));
+        {   carry = ADD32(clear_top_bit(~bignum_digits(c)[i]),
+                          top_bit(carry));
             bignum_digits(c)[i] = clear_top_bit(carry);
         }
         carry = ADD32(~bignum_digits(c)[i], top_bit(carry));
@@ -1188,18 +1192,17 @@ static LispObject timesbb(LispObject a, LispObject b)
     if ((SIXTY_FOUR_BIT && ((lenc & 1) == 0)) ||
         (!SIXTY_FOUR_BIT && ((lenc & 1) != 0)))
         bignum_digits(c)[lenc-1] = 0; // tidy up
-    else *(Header *)&bignum_digits(c)[lenc-1] = make_bighdr(2);
+    else *reinterpret_cast<Header *>(&bignum_digits(c)[lenc-1]) =
+            make_bighdr(2);
     return c;
 chop2:
-//
 // Trim two words from the number c
-//
     setnumhdr(c, numhdr(c) - pack_hdrlength(2));
     lenc -= 2;
     bignum_digits(c)[lenc] = 0;
     if (SIXTY_FOUR_BIT) lenc = (lenc + 1) & ~1;
     else lenc |= 1;
-    *(Header *)&bignum_digits(c)[lenc] = make_bighdr(2);
+    *reinterpret_cast<Header *>(&bignum_digits(c)[lenc]) = make_bighdr(2);
     return c;
 }
 
@@ -1302,7 +1305,8 @@ static LispObject timescc(LispObject a, LispObject b)
 #define timesfc(a, b) timescf(b, a)
 
 inline LispObject timesff(LispObject a, LispObject b)
-{   int ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
+{   int ha = type_of_header(flthdr(a)),
+            hb = type_of_header(flthdr(b));
     int hc;
 #ifdef HAVE_SOFTFLOAT
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
@@ -1314,9 +1318,9 @@ inline LispObject timesff(LispObject a, LispObject b)
     }
     else
 #endif // HAVE_SOFTFLOAT
-    if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
-        hc = TYPE_DOUBLE_FLOAT;
-    else hc = TYPE_SINGLE_FLOAT;
+        if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
+            hc = TYPE_DOUBLE_FLOAT;
+        else hc = TYPE_SINGLE_FLOAT;
     double r = float_of_number(a) * float_of_number(b);
     return make_boxfloat(r, hc);
 }
@@ -1376,7 +1380,7 @@ LispObject times2(LispObject a, LispObject b)
 #ifdef DEBUG
 {   validate_number("Arg1 for times", a, a, b);
     validate_number("Arg2 for times", b, a, b);
-    extern LispObject times2a(LispObject a, LispObject b);    
+    extern LispObject times2a(LispObject a, LispObject b);
     LispObject r = times2a(a, b);
     validate_number("result for times", r, a, b);
     return r;
@@ -1384,9 +1388,9 @@ LispObject times2(LispObject a, LispObject b)
 
 LispObject times2a(LispObject a, LispObject b)
 #endif
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return timesii(a, b);
                 case XTAG_SFLOAT:
@@ -1445,7 +1449,7 @@ LispObject times2a(LispObject a, LispObject b)
         {   int ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & XTAG_BITS)
+                    switch (static_cast<int>(b) & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return timesbi(a, b);
                         case XTAG_SFLOAT:
@@ -1527,7 +1531,7 @@ LispObject times2a(LispObject a, LispObject b)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch ((int)b & XTAG_BITS)
+            switch (static_cast<int>(b) & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return timesfi(a, b);
                 case XTAG_SFLOAT:

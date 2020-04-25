@@ -48,7 +48,7 @@
 static char ibuff[100], obuff[10000];
 static int ibufp = 0, obufp = 0;
 
-static int iget(void)
+static int igetstatic_cast<void>()
 {   int c = ibuff[ibufp];
     if (c == 0) return EOF;
     ibufp++;
@@ -133,7 +133,8 @@ int testcase()
 // explicitly switch gc messages off here!
 //
     E(PROC_gc_messages(1));      // Messages from garbage collector etc
-    E(PROC_set_switch("int", 0));// Running in "batch" mode, so do not even
+    E(PROC_set_switch("int",
+                      0));// Running in "batch" mode, so do not even
     // attempt to make any interactive queries
     // about anything.
     //
@@ -192,7 +193,7 @@ static int submain(int argc, char *argv[])
     nargv[1] = "-i";
     nargv[2] = imageName;
     nargv[3] = "-v";
-    nargv[4] = NULL;
+    nargv[4] = nullptr;
     obufp = 0;
     cslstart(4, nargv, iput);
     std::printf("\nBuffered output is <%s>\n\n", obuff);
@@ -205,7 +206,8 @@ static int submain(int argc, char *argv[])
     ibuff[0] = 0;
     PROC_set_callbacks(iget, iput);
 
-    if ((rc = testcase()) != 0) std::printf("\n+++ Return code = %d\n", rc);
+    if ((rc = testcase()) != 0) std::printf("\n+++ Return code = %d\n",
+                                                rc);
 
     rc = cslfinish(iput);
     std::printf("\nBuffered output is <%s>\n\n", obuff);
@@ -218,7 +220,8 @@ static int submain(int argc, char *argv[])
 int main(int argc, char *argv[])
 {   volatile int res;
     if (find_program_directory(argv[0]))
-    {   std::fprintf(stderr, "Unable to identify program name and directory\n");
+    {   std::fprintf(stderr,
+                     "Unable to identify program name and directory\n");
         return 1;
     }
     try

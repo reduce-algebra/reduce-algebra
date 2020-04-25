@@ -79,11 +79,11 @@
 // Then a similar test using defint.tst
 //       baseline:           15.688
 //       simple C++ threads: 33.906
-//       win32 thread API:   15.704 
+//       win32 thread API:   15.704
 //       atomic fetch_add:   16.469
 // These figures are intended to show the overheads of the various options
 // in context. On Linux the cost of C++ thread-local is minimal and on the
-// Macintosh it is modest. 
+// Macintosh it is modest.
 //
 // The message I take from this is that on a x86_64 (and I believe that
 // aarch64 figures are in line) use of C++ thread-local on Linus but the
@@ -119,13 +119,14 @@ public:
     {   return reinterpret_cast<uintptr_t>(TlsGetValue(fringe_slot));
     };
     ForFringe& operator= (const uintptr_t a)
-    {    TlsSetValue(fringe_slot, reinterpret_cast<void *>(a));
-         return *this;
+    {   TlsSetValue(fringe_slot, reinterpret_cast<void *>(a));
+        return *this;
     };
     ForFringe& operator+= (const size_t a)
-    {    uintptr_t v = reinterpret_cast<uintptr_t>(TlsGetValue(fringe_slot)) + a;
-         TlsSetValue(fringe_slot, reinterpret_cast<void *>(v));
-         return *this;
+    {   uintptr_t v = reinterpret_cast<uintptr_t>(TlsGetValue(
+                          fringe_slot)) + a;
+        TlsSetValue(fringe_slot, reinterpret_cast<void *>(v));
+        return *this;
     };
 };
 
@@ -138,11 +139,12 @@ public:
     {   return *(atomic<uintptr_t> *)TlsGetValue(heaplimit_slot);
     };
     ForHeapLimit& operator= (const uintptr_t a)
-    {    TlsSetValue(heaplimit_slot, reinterpret_cast<void *>(a));
-         return *this;
+    {   TlsSetValue(heaplimit_slot, reinterpret_cast<void *>(a));
+        return *this;
     };
     ForHeapLimit()
-    {   TlsSetValue(heaplimit_slot, reinterpret_cast<void *>()&real_heaplimit);
+    {   TlsSetValue(heaplimit_slot,
+                    reinterpret_cast<void *>()&real_heaplimit);
     };
 };
 
@@ -155,13 +157,14 @@ public:
     {   return reinterpret_cast<uintptr_t>(TlsGetValue(vfringe_slot));
     };
     ForVFringe& operator= (const uintptr_t a)
-    {    TlsSetValue(vfringe_slot, reinterpret_cast<void *>(a));
-         return *this;
+    {   TlsSetValue(vfringe_slot, reinterpret_cast<void *>(a));
+        return *this;
     };
     ForVFringe& operator+= (const size_t a)
-    {    uintptr_t v = reinterpret_cast<uintptr_t>(TlsGetValue(vfringe_slot)) + a;
-         TlsSetValue(vfringe_slot, reinterpret_cast<void *>(v));
-         return *this;
+    {   uintptr_t v = reinterpret_cast<uintptr_t>(TlsGetValue(
+                          vfringe_slot)) + a;
+        TlsSetValue(vfringe_slot, reinterpret_cast<void *>(v));
+        return *this;
     };
 };
 
@@ -174,11 +177,12 @@ public:
     {   return *(atomic<uintptr_t> *)TlsGetValue(vheaplimit_slot);
     };
     ForVHeapLimit& operator= (const uintptr_t a)
-    {    TlsSetValue(vheaplimit_slot, reinterpret_cast<void *>(a));
-         return *this;
+    {   TlsSetValue(vheaplimit_slot, reinterpret_cast<void *>(a));
+        return *this;
     };
     ForVHeapLimit()
-    {   TlsSetValue(vheaplimit_slot, reinterpret_cast<void *>()&real_heaplimit);
+    {   TlsSetValue(vheaplimit_slot,
+                    reinterpret_cast<void *>()&real_heaplimit);
     };
 };
 

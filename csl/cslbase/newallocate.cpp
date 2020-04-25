@@ -326,7 +326,7 @@ size_t activePagesCount;
 // Making almost every value atomic<T> might also do the job, but that
 // would then imply fences everywhere and could hurt performance and it would
 // also be horribly ponderous and clumsy.
-// 
+//
 
 
 uintptr_t *C_stackbase;   // base of the main thread
@@ -416,17 +416,17 @@ Page *previousPage;      // A page that was recently the current one.
 Page *busyPages;         // Chained list of pages that contain live data.
 Page *doomedPages;       // Page from which live stuff is being evacuated.
 Page *mostlyFreePages;   // Chained list of pages that the GC has mostly
-                         // cleared but that have some pinned data left in
-                         // them.
+// cleared but that have some pinned data left in
+// them.
 Page *freePages;         // Chained list of pages that are not currenty in
-                         // use and that contain no useful information.
+// use and that contain no useful information.
 
 size_t busyPagesCount, mostlyFreePagesCount,
-            freePagesCount, doomedPagesCount;
+       freePagesCount, doomedPagesCount;
 
-void *heapSegment[32];
-void *heapSegmentBase[32];
-size_t heapSegmentSize[32];
+void *heapSegment[16];
+void *heapSegmentBase[16];
+size_t heapSegmentSize[16];
 size_t heapSegmentCount;
 
 
@@ -445,25 +445,43 @@ size_t heapSegmentCount;
 // the sizes of atomic specializations match those of the underlying raw
 // types, but that implementations are encouraged to make that the situation
 // where they can.
-// Well atomic_flag is guaranteed lock-free and to my mind that would
-// suggest it had no need for extra memory and I might hope it was thus
-// of size 1, but this is not guaranteed either. So my code is not guaranteed
-// portable! What an amazing situation (ha ha).
+// Here I verify the HOPES that I have by checking them in the constructor
+// for an otherwise worthless class that I then define an instance of.
 
 class MakeAssertions
 {
 public:
     MakeAssertions()
     {   if (sizeof(atomic<std::uint8_t>) != 1)
-        {   cout << "Atomics bytes are too large" << endl;
+        {   cout << "atomic<int8_t> is not the expected size" << endl;
             std::abort();
         }
         if (!atomic<std::uint8_t>().is_lock_free())
-        {   cout << "Atomic<uint8_t> not lock-free" << endl;
+        {   cout << "atomic<uint8_t> not lock-free" << endl;
+            std::abort();
+        }
+        if (sizeof(atomic<std::uintptr_t>) != sizeof(intptr_t))
+        {   cout << "atomic<uintptr_t> is not the expected size" << endl;
             std::abort();
         }
         if (!atomic<uintptr_t>().is_lock_free())
         {   cout << "Atomic<uintptr_t> not lock-free" << endl;
+            std::abort();
+        }
+        if (sizeof(atomic<std::uint32_t>) != 4)
+        {   cout << "atomic<uint32_t> is not the expected size" << endl;
+            std::abort();
+        }
+        if (!atomic<std::uint32_t>().is_lock_free())
+        {   cout << "atomic<uint32_t> not lock-free" << endl;
+            std::abort();
+        }
+        if (sizeof(atomic<std::uint64_t>) != 8)
+        {   cout << "atomic<uint64_t> is not the expected size" << endl;
+            std::abort();
+        }
+        if (!atomic<std::uint64_t>().is_lock_free())
+        {   cout << "atomic<uint64_t> not lock-free" << endl;
             std::abort();
         }
     }
@@ -471,111 +489,16 @@ public:
 
 static MakeAssertions test_for_lockfree;
 
-// Before checking an ambiguous pointer I need to set up the bitmap that
-// notes the start-point of objects. This function does that for one page.
-
-void recordObjectStarts(Page *x)
-{   std::memset(x->pageBody.pageBitmaps.maps.objstart, 0,
-           sizeof(x->pageBody.pageBitmaps.maps.objstart));
-    LispObject *p = x->pageBody.data;
-// @@ The version I have here does not yet allow fror the fact that the
-// data region within the page will have some pinned objects in and they
-// will all need object start tags set - and that fringe may be the
-// current level of allocation but the way that interacts with interleaved
-// pinned items is not really considered.
-    while (reinterpret_cast<uintptr_t>(p) < x->pageHeader.fringe)
-    {   size_t os = (reinterpret_cast<uintptr_t>(p) -
-                     reinterpret_cast<uintptr_t>(x))/8;
-        x->pageBody.pageBitmaps.maps.objstart[os/64] |= UINT64_C(1)<<(os%64);
-        LispObject v = *p;
-        if (!is_odds(v)) p += 2;
-        else if (is_symbol_header(v)) p += symhdr_length/sizeof(LispObject);
-        else p += doubleword_align_up(length_of_header(v))/sizeof(LispObject);
-    }
-    x->pageHeader.onstarts_present = true;
-}
-
-// For findObjectStart() the objectstart bitmap is set in the relevant page
-// and I must return the untagged address of the item containing the address
-// p, or NULL if there is none such. This is used when an ambiguous pointer
-// is processed and it maps from the random address-like value to either 0
-// which is taken to indicate that the value is not a valid pointer, or
-// to the 8-byte aligned address of the start of an object that the
-// address lies within. This is perhaps the part of dealing with ambiguous
-// pointers that I view as having required most thought!
-
-uintptr_t findObjectStart(uintptr_t p, Page *x)
-{
-// First check if p is actually within the (active) data region in the page.
-    if (p < reinterpret_cast<uintptr_t>(x->pageBody.data) ||
-        p >= reinterpret_cast<uintptr_t>(x->pageHeader.fringe)) return 0;
-// Now, and I have NOT done this yet, I shoule cope with the case where p
-// points within an item that had been pinned within page x by an earlier
-// GC.
-//  @@ unfinished work here
-// Next search for the nearest object start at a lower address than p,
-// using the objectstart bitmap to help.
-    size_t os = (p - reinterpret_cast<uintptr_t>(x))/8;
-    size_t word = os/64;
-    int bit = os%64;
-// I am going to expect that an especially common case will be when the
-// pointer p is just to the start of an object with at most a tag value
-// added. My division by 8 a few lines above disarded those low bits, so
-// I will see if what I end up with is in fact a proper object start.
-    if ((x->pageBody.pageBitmaps.maps.objstart[word] & (UINT64_C(1)<<bit)) != 0)
-        return p & -(uintptr_t)8;
-// The next case I will consider is if the object header is fairly close
-// to p, and the word in the bitmap that covers p includes mention of it.
-    if (bit != 0)
-    {   uint64_t v = ((UINT64_C(1)<<bit) - 1) &
-                     x->pageBody.pageBitmaps.maps.objstart[word];
-// Now v records any headers just before p.
-        if (v != 0)
-        {   int n = 63-nlz(v);
-// Convert back from an address in the bitmap to the location in memory.
-            return reinterpret_cast<uintptr_t>(x) + 8*(word*64 + n);
-        }
-    }
-// Now I can scan down 64 8-byte locations at a time, ie 512 bytes at a go.
-// The distance I may need to go is certainly bounded by the possible size
-// of an object that I seem to point within, but for any pointer that is
-// really valid it is related to how far down that object I am pointing,
-// and so to have a really bad cost here I would have to have a (probable)
-// pointer referring to almost the end of a huge object. Because of the
-// finite size of a page the very worst cost could be going round the
-// simple loop 16K times. Well in fact it is better than that. These days
-// the largest basic Lisp object I ever create is of size maybe pageSize/4
-// (specifically VECTOR_CHUNK_BYTES), and this sets the worst case distance
-// that it can ever be necessary to scan to find an object start.
-    word--;
-    while (x->pageBody.pageBitmaps.maps.objstart[word] == 0) word--;
-// The loop must terminate because any page either has no data in it at all,
-// and in that case an ambiguous pointer will be detected as invalid because
-// it addresses above fringe, or it will have at least one item in it,
-// including one right at its start.
-// I will need to double-check this when I put in full support for items that
-// where pinned by the last garbage collection, including the case where the
-// very first item in the page has that status. Anyway when I find a nonzero
-// entry in the map the top bit it identifies the highest-addressed object
-// start, and that is what I want.
-    int n = 63-nlz(x->pageBody.pageBitmaps.maps.objstart[word]);
-    return reinterpret_cast<uintptr_t>(x) + 8*(word*64 + n);
-}
-
-// Here we have a function to call during a major garbage collection. It is
-// given an (ambiguous) pointer. If necessary it established an object-start
-// map for the page that addresses, and then it marks as pinned the object
-// referenced.
 
 bool isPinned(Page *x, uintptr_t os)
 {   os = (os - reinterpret_cast<uintptr_t>(x))/8;
-    return (x->pageBody.pageBitmaps.maps.pinned[os/64] &
-               (UINT64_C(1)<<(os%64))) != 0;
+    return (x->pageBitmaps.maps.pinned[os/64] &
+            (UINT64_C(1)<<(os%64))) != 0;
 }
 
 void setPinned(Page *x, uintptr_t os)
 {   os = (os - reinterpret_cast<uintptr_t>(x))/8;
-    x->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
+    x->pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
 }
 
 void setPinnedMajor(uintptr_t p)
@@ -590,26 +513,17 @@ void setPinnedMajor(uintptr_t p)
 //     contains pinned items.
 //   Add the pinned item to the list pinsA, which is built in space C.
     Page *x = findPage(p);
-    if (x == NULL) return;      // Not pointing at any page at all.
+    if (x == nullptr) return;      // Not pointing at any page at all.
     if (!pageIsBusy(x)) return; // not in A.
-    if (!x->pageHeader.onstarts_present) recordObjectStarts(x);
+    if (!x->onstarts_present) recordObjectStarts(x);
     uintptr_t os = findObjectStart(p, x);
     if (os == 0) return;               // Does not point within any object
     if (is_forward(car(os))) return;   // part of pinsC
     setPinned(x, os);
-    x->pageHeader.somePins = true;
+    x->somePins = true;
     p = get_n_bytes_new(2*CELL);
     setcar(p, pinsA);
     pinsA = os + TAG_FORWARD;
-}
-
-// At the start of a minor garbage collection it it is necessary to call
-// this so that the start-point of all objects in the scavengable region
-// are known. This is done explicitly rather than having it done
-// conditionally on each case where a pointer (seems to) refer to that region.
-
-void recordObjectStartsMinor()
-{   recordObjectStarts(previousPage);
 }
 
 // Set a pinned bit for an address if it lies within the single scavengable
@@ -619,23 +533,13 @@ void setPinnedMinor(uintptr_t p)
 {
 // If the address is not in the scavengable page I can ignore it.
     if (!inPreviousPage(p)) return;
-// Find the object within the page that it is within, or return NULL if none.
+// Find the object within the page that it is within, or return nullptr if none.
 // This will always return a value that is an address aligned zero mod 8.
     uintptr_t os = findObjectStart(p, previousPage);
     if (os == 0) return;
 // Now I set a bit in the pinned map.
     os = (os - reinterpret_cast<uintptr_t>(previousPage))/8;
-    previousPage->pageBody.pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
-}
-
-// Just to provide a level of abstraction I provide a function that clears
-// the pinned map in a page. At the start of a minor collection this should
-// be called on the scavengable region. Before a major collection on all
-// pages.
-
-void clearPinnedMap(Page *x)
-{   std::memset(x->pageBody.pageBitmaps.maps.pinned, 0,
-           sizeof(x->pageBody.pageBitmaps.maps.pinned));
+    previousPage->pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
 }
 
 LispObject get_symbol(bool gensymp)
@@ -660,7 +564,8 @@ LispObject get_basic_vector(int tag, int type, size_t size)
         aerror1("request for basic vector too big",
                 fixnum_of_int(allocSize/CELL-1));
     LispObject r = get_n_bytes(allocSize);
-    *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+    *(reinterpret_cast<Header *>(r)) = type + (size <<
+                                       (Tw+5)) + TAG_HDR_IMMED;
 //
 // DANGER: the vector allocated here is left uninitialised at this stage.
 // This is OK if the vector will contain binary information, but if it
@@ -675,8 +580,8 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // through it. By tidying this up here can feel that I do not have any
 // need to worry about it elsewhere.
     if (!SIXTY_FOUR_BIT && allocSize != size)
-        *(LispObject *)(r+allocSize-CELL) = 0;
-    return (LispObject)(r + tag);
+        *reinterpret_cast<LispObject *>(r+allocSize-CELL) = 0;
+    return static_cast<LispObject>(r + tag);
 }
 
 // This takes a vector (which can be one represented using an INDEXVEC)
@@ -751,7 +656,7 @@ LispObject borrow_n_bytes(size_t n)
         if (n <= gap)
         {   uintptr_t r = borrowFringe::get();
             borrowFringe::set(borrowFringe::get() + n);
-            return (LispObject)r;
+            return static_cast<LispObject>(r);
         }
         if (borrowNext::get() != 0)
         {   borrowFringe::set(borrowNext::get());
@@ -762,18 +667,18 @@ LispObject borrow_n_bytes(size_t n)
 // here I need to allocate a new page....
         std::lock_guard<std::mutex> lock(mutexForFreePages);
         Page *w;
-        if (mostlyFreePages != NULL)
+        if (mostlyFreePages != nullptr)
         {   w = mostlyFreePages;
-            mostlyFreePages = mostlyFreePages->pageHeader.chain;
+            mostlyFreePages = mostlyFreePages->chain;
         }
         else
         {   w = freePages;
-            freePages = freePages->pageHeader.chain;
+            freePages = freePages->chain;
         }
-        w->pageHeader.chain = borrowPages::get();
+        w->chain = borrowPages::get();
         borrowPages::set(w);
-        borrowFringe::set(w->pageHeader.fringe);
-        borrowLimit::set(w->pageHeader.heaplimit);
+        borrowFringe::set(w->fringe);
+        borrowLimit::set(w->heaplimit);
         borrowNext::set(0);    // BAD....
     }
 }
@@ -784,15 +689,17 @@ LispObject borrow_basic_vector(int tag, int type, size_t size)
         aerror1("request for basic vector too big",
                 fixnum_of_int(allocSize/CELL-1));
     LispObject r = borrow_n_bytes(allocSize);
-    *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+    *(reinterpret_cast<Header *>(r)) = type + (size <<
+                                       (Tw+5)) + TAG_HDR_IMMED;
     if (!SIXTY_FOUR_BIT && allocSize != size)
-        *(LispObject *)(r+allocSize-CELL) = 0;
-    return (LispObject)(r + tag);
+        *reinterpret_cast<LispObject *>(r+allocSize-CELL) = 0;
+    return static_cast<LispObject>(r + tag);
 }
 
 LispObject borrow_vector(int tag, int type, size_t n)
 {   if (n-CELL > VECTOR_CHUNK_BYTES)
-    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES -
+                         1)/VECTOR_CHUNK_BYTES;
         size_t lastSize = (n - CELL) % VECTOR_CHUNK_BYTES;
         if (lastSize == 0) lastSize = VECTOR_CHUNK_BYTES;
         LispObject v =
@@ -811,14 +718,13 @@ LispObject borrow_vector(int tag, int type, size_t n)
 // I put the code here adjacent to the code that allocates from pages so
 // that the setup and use can be compared.
 
-static_assert(spareBytes/64 > offsetof(Page, pageHeader.endOfHeader));
-
 void setUpEmptyPage(Page *p)
-{   p->pageHeader.fringe = reinterpret_cast<uintptr_t>(&p->pageBody.data);
-    p->pageHeader.heaplimit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
-    p->pageHeader.dirtypage.store(false);
-    p->pageHeader.onstarts_present = false;
-    p->pageHeader.somePins = false;
+{   p->chain = nullptr;
+    p->fringe = reinterpret_cast<uintptr_t>(&p->data);
+    p->heaplimit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
+    p->dirtypage.store(false);
+    p->onstarts_present = false;
+    p->somePins = false;
 // I would like to be able to set the dirty bitmap all zero other than by
 // using the store() method one byte at a time. It is also possible that
 // when I first allocate a page that page will not be put in the stable
@@ -826,7 +732,7 @@ void setUpEmptyPage(Page *p)
 // the case this initialization loop is not actually needed. I will put it
 // in for now to be tidy! But another delicacy here is that while the map
 // is defined as a vector covering the whole page, the only parts of it that
-// will be used are the ones mapping addresses within pageBody.data. So
+// will be used are the ones mapping addresses within data. So
 // I must not clobber memory earlier than that because the first bytes of the
 // page are always needed for the pageHeader! Well what I will do is zero
 // out everything from the end of pageHeader onwards.
@@ -834,7 +740,7 @@ void setUpEmptyPage(Page *p)
 // When I had the next 2 lines in place thet added a HUGE time to system
 // startup...
 //--    for (size_t i=spareBytes/64; i<2*bytesForMap; i++)
-//--        p->pageBody.pageBitmaps.dirty[i].store(0);
+//--        p->pageBitmaps.dirty[i].store(0);
 // I am now going to argue that before an empty page is made available to
 // "other" threads I will have plenty of memory fences, so I can avoid
 // using ones here, and furthermore there is no need to have the bitmap
@@ -844,13 +750,13 @@ void setUpEmptyPage(Page *p)
 void setVariablesFromPage(Page *p)
 {
 // Set the variable that are used when allocating within the active page.
-    uintptr_t pFringe = p->pageHeader.fringe;
-    uintptr_t pLimit = p->pageHeader.heaplimit;
+    uintptr_t pFringe = p->fringe;
+    uintptr_t pLimit = p->heaplimit;
 // Here I suppose there are no pinned items in the page. I set fringe and
 // limit such that on the very first allocation the code will grab a bit of
 // memory at gFringe.
     fringe::set(limit[threadId::get()] = limitBis[threadId::get()] =
-        gFringe = pFringe);
+            gFringe = pFringe);
     gLimit = pLimit;
     gNext = 0;
 }
@@ -859,8 +765,8 @@ void saveVariablesToPage(Page *p)
 {
 // Dump global variable values back into a page header. THIS IS NOT USEFUL
 // OR CORRECT YET!
-    p->pageHeader.fringe = fringe::get();
-    p->pageHeader.heaplimit  = limitBis[threadId::get()];
+    p->fringe = fringe::get();
+    p->heaplimit  = limitBis[threadId::get()];
 }
 
 // This code allocates a segment by asking the operating system.
@@ -884,7 +790,8 @@ bool allocateSegment(size_t n)
 #ifdef __cpp_aligned_new
     try
     {   r = new Page[n/pageSize];
-    } catch (std::bad_alloc &e)
+    }
+    catch (std::bad_alloc &e)
     {   return false;
     }
     rbase = static_cast<void *>(r);
@@ -902,7 +809,7 @@ bool allocateSegment(size_t n)
     }
     void *work = rbase;
     work = std::align(pageSize, n, work, N);
-    my_assert(work != NULL);
+    my_assert(work != nullptr);
     r = static_cast<Page *>(work);
 #endif // !__cpp_aligned_new
     heapSegment[heapSegmentCount] = r;
@@ -932,12 +839,13 @@ bool allocateSegment(size_t n)
                 reinterpret_cast<char *>(r) + k - CSL_PAGE_SIZE);
 // Keep a chain of all the pages.
         setUpEmptyPage(p);
-        p->pageHeader.pageClass = freePageTag;
-        p->pageHeader.chain = freePages;
+        p->pageClass = freePageTag;
+        p->chain = freePages;
         freePages = p;
         freePagesCount++;
     }
-    std::printf("%" PRIu64 " pages available\n", (uint64_t)freePagesCount);
+    std::printf("%" PRIu64 " pages available\n",
+                (uint64_t)freePagesCount);
     return true; // Success!
 }
 
@@ -960,7 +868,7 @@ uint64_t force_cons=0, force_vec = 0;
 LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
 {   if (force_cons != 0 || force_vec != 0)
         trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\n",
-            force_cons, force_vec);
+                     force_cons, force_vec);
 // If you pass a non-fixnum then that leaves the trigger-point unchanged.
     if (is_fixnum(a)) force_cons = (uint64_t)sixty_four_bits(a);
     if (is_fixnum(b)) force_vec = (uint64_t)sixty_four_bits(b);
@@ -1071,40 +979,41 @@ void initHeapSegments(double storeSize)
 // set the variables that are associated with tracking memory allocation
 // to keep everything as clear as I can.
     heapSegmentCount = 0;
-    freePages = mostlyFreePages = NULL;
+    freePages = mostlyFreePages = nullptr;
     pinsA = pinsC = TAG_FORWARD;
-    std::printf("Allocate %" PRIu64 " Kbytes\n", (uint64_t)freeSpace/1024);
+    std::printf("Allocate %" PRIu64 " Kbytes\n",
+                (uint64_t)freeSpace/1024);
     allocateSegment(freeSpace);
 
 // There are other bits of memory that I will grab manually for now...
 // and at present csl.cpp ALSO sets them up... @@@@
 #if defined __cpp_aligned_new && defined HAVE_ALIGNED_ALLOC
     nilSegment = nilSegmentBase =
-        reinterpret_cast<LispObject *>(
-            std::aligned_alloc(16, NIL_SEGMENT_SIZE));
+                     reinterpret_cast<LispObject *>(
+                         std::aligned_alloc(16, NIL_SEGMENT_SIZE));
 #else
     nilSegmentBase =
-       reinterpret_cast<LispObject *>(std::malloc(NIL_SEGMENT_SIZE+32));
+        reinterpret_cast<LispObject *>(std::malloc(NIL_SEGMENT_SIZE+32));
     nilSegment = reinterpret_cast<LispObject *>(
-        doubleword_align_up(reinterpret_cast<uintptr_t>(nilSegmentBase)));
+                     doubleword_align_up(reinterpret_cast<uintptr_t>(nilSegmentBase)));
 #endif
-    if (nilSegment == NULL) fatal_error(err_no_store);
-    nil = (LispObject)((uintptr_t)nilSegment + TAG_SYMBOL);
+    if (nilSegment == nullptr) fatal_error(err_no_store);
+    nil = static_cast<LispObject>((uintptr_t)nilSegment + TAG_SYMBOL);
 #if defined __cpp_aligned_new&& defined HAVE_ALIGNED_ALLOC
     stackSegment = stackSegmentBase =
-        reinterpret_cast<LispObject *>(
-            std::aligned_alloc(16, CSL_PAGE_SIZE));
+                       reinterpret_cast<LispObject *>(
+                           std::aligned_alloc(16, CSL_PAGE_SIZE));
 #else
     stackSegmentBase =
         reinterpret_cast<LispObject *>(std::malloc(CSL_PAGE_SIZE+32));
     stackSegment = reinterpret_cast<LispObject *>(
-        doubleword_align_up(reinterpret_cast<uintptr_t>(stackSegmentBase)));
+                       doubleword_align_up(reinterpret_cast<uintptr_t>(stackSegmentBase)));
 #endif
-    if (stackSegment == NULL) fatal_error(err_no_store);
-    stackBase = (LispObject *)stackSegment;
+    if (stackSegment == nullptr) fatal_error(err_no_store);
+    stackBase = reinterpret_cast<LispObject *>(stackSegment);
 }
 
-void dropHeapSegments(void)
+void dropHeapSegmentsstatic_cast<void>()
 {
 #ifdef __cpp_aligned_new
     for (size_t i=0; i<heapSegmentCount; i++)
@@ -1128,7 +1037,7 @@ bool allocate_more_memory()
 {   return false;
 //  if ((init_flags & INIT_EXPANDABLE) == 0) return false;
 //  void *page = (void *)std::aligned_alloc((size_t)CSL_PAGE_SIZE);
-//  if (page == NULL)
+//  if (page == nullptr)
 //  {   init_flags &= ~INIT_EXPANDABLE;
 //      return false;
 //  }
@@ -1161,7 +1070,8 @@ void grab_more_memory(size_t npages)
         size_t more;
         if (ideal > MAX_PAGES) ideal = MAX_PAGES;
         if (maxStoreSize != 0.0)
-        {   double pageLimit = maxStoreSize*1024*1024/(double)CSL_PAGE_SIZE;
+        {   double pageLimit = maxStoreSize*1024*1024/static_cast<double>
+                               (CSL_PAGE_SIZE);
 // Limit memory to (about) the amount the user indicated with --max-mem
             size_t plim = (size_t)pageLimit;
             if (ideal > plim) ideal = plim;
@@ -1269,7 +1179,7 @@ LispObject Lverbos(LispObject env, LispObject a)
 // "4" has no effect unless "1" is present.
 {   int code, old_code = verbos_flag;
     if (a == nil) code = 0;
-    else if (is_fixnum(a)) code = (int)int_of_fixnum(a);
+    else if (is_fixnum(a)) code = static_cast<int>(int_of_fixnum(a));
     else code = 1;
     miscflags = (miscflags & ~GC_MSG_BITS) | (code & GC_MSG_BITS);
     return onevalue(fixnum_of_int(old_code));
@@ -1308,7 +1218,7 @@ LispObject Lgctest_0(LispObject env)
         if (i % 1000000 == 0)
         {   printf("%u", i);
             LispObject b = a;
-            for (unsigned int j=i; j!=(unsigned int)(-1); j--)
+            for (unsigned int j=i; j!=static_cast<unsigned int>(-1); j--)
             {   if (!is_cons(b)) my_abort();
                 if (car(b) != fixnum_of_int(j)) my_abort();
                 b = cdr(b);
@@ -1326,13 +1236,13 @@ LispObject Lgctest_1(LispObject env, LispObject a1)
         a = cons(fixnum_of_int(i), a);
     cout << "list created" << endl;
     b = a;
-    for (unsigned int j=n-1; j!=(unsigned int)(-1); j--)
+    for (unsigned int j=n-1; j!=static_cast<unsigned int>(-1); j--)
     {   if (!is_cons(b)) goto failing2;
         if (car(b) != fixnum_of_int(j))
         {   cout << "Fail3 case with j = " << std::dec << j << endl
-                << " fixnum_of_int(j) = " << std::hex << fixnum_of_int(j) << endl
-                << " car(b) = " << car(b) << " which differs" << endl
-                << " " << (n-1-j) << " items down the list" << endl;
+                 << " fixnum_of_int(j) = " << std::hex << fixnum_of_int(j) << endl
+                 << " car(b) = " << car(b) << " which differs" << endl
+                 << " " << (n-1-j) << " items down the list" << endl;
             goto failing3; //<<<<<<<<<
         }
         b = cdr(b);
@@ -1341,7 +1251,7 @@ LispObject Lgctest_1(LispObject env, LispObject a1)
     return nil;
 failing2:
     cout << "Crashed2 " << std::hex << "b = " << b
-        << " car(b) = " << car(b) << endl;
+         << " car(b) = " << car(b) << endl;
     cout << "n = " << n << endl;
     for (int z=1; z<10; z++)
     {   cout << std::dec << (car(b)/16) << " ";
@@ -1351,7 +1261,7 @@ failing2:
     return nil;
 failing3:
     cout << "Crashed3 " << std::hex << "b = " << b
-        << " car(b) = " << car(b) << endl;
+         << " car(b) = " << car(b) << endl;
     cout << "n = " << n << endl;
     for (int z=1; z<10; z++)
     {   cout << std::dec << (car(b)/16) << " ";
@@ -1361,7 +1271,7 @@ failing3:
     return nil;
 failing4:
     cout << "Crashed4 " << std::hex << "b = " << b
-        << " car(b) = " << car(b) << endl;
+         << " car(b) = " << car(b) << endl;
     cout << "n = " << n << endl;
     for (int z=1; z<10; z++)
     {   cout << std::dec << (car(b)/16) << " ";
@@ -1372,8 +1282,7 @@ failing4:
 }
 
 LispObject Lgctest_2(LispObject env, LispObject a1, LispObject a2)
-{
-    return nil;
+{   return nil;
 }
 
 // end of newallocate.cpp

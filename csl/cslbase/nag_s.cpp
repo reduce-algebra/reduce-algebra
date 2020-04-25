@@ -76,13 +76,14 @@ LispObject Ls01eaf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfasj")) == NULL )   // FIXME (jackets)
+    if ( (hLib = LoadLibrary ("nagfasj")) ==
+         nullptr )   // FIXME (jackets)
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (sxxeaf_proc = (PSXXEAF) GetProcAddress (hLib, "_SXXEAF@12"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -134,13 +135,13 @@ LispObject Ls13aaf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s13aaf_proc = (PS13AAF) GetProcAddress (hLib, "_S13AAF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -190,13 +191,13 @@ LispObject Ls13acf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s13acf_proc = (PS13ACF) GetProcAddress (hLib, "_S13ACF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -245,13 +246,13 @@ LispObject Ls13adf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s13adf_proc = (PS13ADF) GetProcAddress (hLib, "_S13ADF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -300,13 +301,13 @@ LispObject Ls14aaf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s14aaf_proc = (PS14AAF) GetProcAddress (hLib, "_S14AAF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -355,13 +356,13 @@ LispObject Ls14abf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s14abf_proc = (PS14ABF) GetProcAddress (hLib, "_S14ABF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -392,7 +393,8 @@ LispObject Ls14baf(LispObject env, int nargs, ...)
     int32_t ifail;
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS14BAF) (double *, double *, double *, double *,
+    typedef void (__stdcall *PS14BAF) (double *, double *, double *,
+                                       double *,
                                        double *, int32_t *);
     HINSTANCE hLib;
     PS14BAF s14baf_proc;
@@ -428,13 +430,13 @@ LispObject Ls14baf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s14baf_proc = (PS14BAF) GetProcAddress (hLib, "_S14BAF@24"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -486,13 +488,13 @@ LispObject Ls15adf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s15adf_proc = (PS15ADF) GetProcAddress (hLib, "_S15ADF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -541,13 +543,13 @@ LispObject Ls15aef(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s15aef_proc = (PS15AEF) GetProcAddress (hLib, "_S15AEF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -596,13 +598,13 @@ LispObject Ls17acf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17acf_proc = (PS17ACF) GetProcAddress (hLib, "_S17ACF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -651,13 +653,13 @@ LispObject Ls17adf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17adf_proc = (PS17ADF) GetProcAddress (hLib, "_S17ADF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -706,13 +708,13 @@ LispObject Ls17aef(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17aef_proc = (PS17AEF) GetProcAddress (hLib, "_S17AEF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -761,13 +763,13 @@ LispObject Ls17aff(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17aff_proc = (PS17AFF) GetProcAddress (hLib, "_S17AFF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -816,13 +818,13 @@ LispObject Ls17agf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17agf_proc = (PS17AGF) GetProcAddress (hLib, "_S17AGF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -871,13 +873,13 @@ LispObject Ls17ahf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17ahf_proc = (PS17AHF) GetProcAddress (hLib, "_S17AHF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -926,13 +928,13 @@ LispObject Ls17ajf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17ajf_proc = (PS17AJF) GetProcAddress (hLib, "_S17AJF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -981,13 +983,13 @@ LispObject Ls17akf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17akf_proc = (PS17AKF) GetProcAddress (hLib, "_S17AKF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1022,7 +1024,8 @@ LispObject Ls17dcf(LispObject env, int nargs, ...)
     char sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS17DCF) (double *, double *, int32_t *, fstring1,
+    typedef void (__stdcall *PS17DCF) (double *, double *, int32_t *,
+                                       fstring1,
                                        double *, int32_t *, double *, int32_t *);
     HINSTANCE hLib;
     PS17DCF s17dcf_proc;
@@ -1082,20 +1085,22 @@ LispObject Ls17dcf(LispObject env, int nargs, ...)
     scale.len = 1;
 
     // Setup workspace arrays etc.
-    cy = (double *)std::malloc(n*2*sizeof(double));    // "complex" array
-    cwrk = (double *)std::malloc(n*2*sizeof(double));  // "complex" array
+    cy = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
+                double));    // "complex" array
+    cwrk = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
+                double));  // "complex" array
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17dcf_proc = (PS17DCF) GetProcAddress (hLib, "_S17DCF@36"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1142,7 +1147,8 @@ LispObject Ls17def(LispObject env, int nargs, ...)
     char sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS17DEF) (double *, double *, int32_t *, fstring1,
+    typedef void (__stdcall *PS17DEF) (double *, double *, int32_t *,
+                                       fstring1,
                                        double *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PS17DEF s17def_proc;
@@ -1202,19 +1208,20 @@ LispObject Ls17def(LispObject env, int nargs, ...)
     scale.len = 1;
 
     // Setup workspace arrays etc.
-    cy = (double *)std::malloc(n*2*sizeof(double));    // "complex" array
+    cy = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
+                double));    // "complex" array
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17def_proc = (PS17DEF) GetProcAddress (hLib, "_S17DEF@32"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1259,7 +1266,8 @@ LispObject Ls17dgf(LispObject env, int nargs, ...)
     char sderiv[2], sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS17DGF) (fstring1, double *, fstring1, double *,
+    typedef void (__stdcall *PS17DGF) (fstring1, double *, fstring1,
+                                       double *,
                                        int32_t *, int32_t *);
     HINSTANCE hLib;
     PS17DGF s17dgf_proc;
@@ -1308,13 +1316,13 @@ LispObject Ls17dgf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17dgf_proc = (PS17DGF) GetProcAddress (hLib, "_S17DGF@32"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1354,7 +1362,8 @@ LispObject Ls17dhf(LispObject env, int nargs, ...)
     char sderiv[2], sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS17DHF) (fstring1, double *, fstring1, double *,
+    typedef void (__stdcall *PS17DHF) (fstring1, double *, fstring1,
+                                       double *,
                                        int32_t *);
     HINSTANCE hLib;
     PS17DHF s17dhf_proc;
@@ -1403,13 +1412,13 @@ LispObject Ls17dhf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17dhf_proc = (PS17DHF) GetProcAddress (hLib, "_S17DHF@28"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1447,12 +1456,14 @@ LispObject Ls17dlf(LispObject env, int nargs, ...)
     char sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS17DLF) (int32_t *, double *, double *, int32_t *,
+    typedef void (__stdcall *PS17DLF) (int32_t *, double *, double *,
+                                       int32_t *,
                                        fstring1, double *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PS17DLF s17dlf_proc;
 #else
-    extern void __stdcall S17DLF (int32_t *, double *, double *, int32_t *,
+    extern void __stdcall S17DLF (int32_t *, double *, double *,
+                                  int32_t *,
                                   fstring1, double *, int32_t *, int32_t *);
 #endif
 
@@ -1513,19 +1524,20 @@ LispObject Ls17dlf(LispObject env, int nargs, ...)
     scale.len = 1;
 
     // Setup workspace arrays etc.
-    cy = (double *)std::malloc(n*2*sizeof(double));    // "complex" array
+    cy = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
+                double));    // "complex" array
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s17dlf_proc = (PS17DLF) GetProcAddress (hLib, "_S17DLF@36"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1585,13 +1597,13 @@ LispObject Ls18acf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s18acf_proc = (PS18ACF) GetProcAddress (hLib, "_S18ACF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1640,13 +1652,13 @@ LispObject Ls18adf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s18adf_proc = (PS18ADF) GetProcAddress (hLib, "_S18ADF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1695,13 +1707,13 @@ LispObject Ls18aef(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s18aef_proc = (PS18AEF) GetProcAddress (hLib, "_S18AEF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1750,13 +1762,13 @@ LispObject Ls18aff(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s18aff_proc = (PS18AFF) GetProcAddress (hLib, "_S18AFF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1791,7 +1803,8 @@ LispObject Ls18dcf(LispObject env, int nargs, ...)
     char sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS18DCF) (double *, double *, int32_t *, fstring1,
+    typedef void (__stdcall *PS18DCF) (double *, double *, int32_t *,
+                                       fstring1,
                                        double *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PS18DCF s18dcf_proc;
@@ -1851,19 +1864,20 @@ LispObject Ls18dcf(LispObject env, int nargs, ...)
     scale.len = 1;
 
     // Setup workspace arrays etc.
-    cy = (double *)std::malloc(n*2*sizeof(double));    // "complex" array
+    cy = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
+                double));    // "complex" array
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s18dcf_proc = (PS18DCF) GetProcAddress (hLib, "_S18DCF@32"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -1909,7 +1923,8 @@ LispObject Ls18def(LispObject env, int nargs, ...)
     char sscale[2];
 
 #ifdef LOADLIB
-    typedef void (__stdcall *PS18DEF) (double *, double *, int32_t *, fstring1,
+    typedef void (__stdcall *PS18DEF) (double *, double *, int32_t *,
+                                       fstring1,
                                        double *, int32_t *, int32_t *);
     HINSTANCE hLib;
     PS18DEF s18def_proc;
@@ -1969,19 +1984,20 @@ LispObject Ls18def(LispObject env, int nargs, ...)
     scale.len = 1;
 
     // Setup workspace arrays etc.
-    cy = (double *)std::malloc(n*2*sizeof(double));    // "complex" array
+    cy = reinterpret_cast<double *>(std)::malloc(n*2*sizeof(
+                double));    // "complex" array
 
     // Call NAG routine
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s18def_proc = (PS18DEF) GetProcAddress (hLib, "_S18DEF@32"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -2041,13 +2057,13 @@ LispObject Ls19aaf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s19aaf_proc = (PS19AAF) GetProcAddress (hLib, "_S19AAF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -2096,13 +2112,13 @@ LispObject Ls19abf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s19abf_proc = (PS19ABF) GetProcAddress (hLib, "_S19ABF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -2151,13 +2167,13 @@ LispObject Ls19acf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s19acf_proc = (PS19ACF) GetProcAddress (hLib, "_S19ACF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -2206,13 +2222,13 @@ LispObject Ls19adf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s19adf_proc = (PS19ADF) GetProcAddress (hLib, "_S19ADF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -2261,13 +2277,13 @@ LispObject Ls20acf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s20acf_proc = (PS20ACF) GetProcAddress (hLib, "_S20ACF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -2316,13 +2332,13 @@ LispObject Ls20adf(LispObject env, LispObject Lx, LispObject Lifail)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s20adf_proc = (PS20ADF) GetProcAddress (hLib, "_S20ADF@8"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -2384,13 +2400,13 @@ LispObject Ls21baf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s21baf_proc = (PS21BAF) GetProcAddress (hLib, "_S21BAF@12"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -2421,11 +2437,13 @@ LispObject Ls21bbf(LispObject env, int nargs, ...)
     int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS21BBF) (double *, double *, double *, int32_t *);
+    typedef double (__stdcall *PS21BBF) (double *, double *, double *,
+                                         int32_t *);
     HINSTANCE hLib;
     PS21BBF s21bbf_proc;
 #else
-    extern double __stdcall S21BBF (double *, double *, double *, int32_t *);
+    extern double __stdcall S21BBF (double *, double *, double *,
+                                    int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -2455,13 +2473,13 @@ LispObject Ls21bbf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s21bbf_proc = (PS21BBF) GetProcAddress (hLib, "_S21BBF@16"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -2492,11 +2510,13 @@ LispObject Ls21bcf(LispObject env, int nargs, ...)
     int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS21BCF) (double *, double *, double *, int32_t *);
+    typedef double (__stdcall *PS21BCF) (double *, double *, double *,
+                                         int32_t *);
     HINSTANCE hLib;
     PS21BCF s21bcf_proc;
 #else
-    extern double __stdcall S21BCF (double *, double *, double *, int32_t *);
+    extern double __stdcall S21BCF (double *, double *, double *,
+                                    int32_t *);
 #endif
 
     // Set up arguments as Lisp Objects
@@ -2526,13 +2546,13 @@ LispObject Ls21bcf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s21bcf_proc = (PS21BCF) GetProcAddress (hLib, "_S21BCF@16"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }
@@ -2563,12 +2583,14 @@ LispObject Ls21bdf(LispObject env, int nargs, ...)
     int32_t ifail;
 
 #ifdef LOADLIB
-    typedef double (__stdcall *PS21BDF) (double *, double *, double *, double *,
+    typedef double (__stdcall *PS21BDF) (double *, double *, double *,
+                                         double *,
                                          int32_t *);
     HINSTANCE hLib;
     PS21BDF s21bdf_proc;
 #else
-    extern double __stdcall S21BDF (double *, double *, double *, double *,
+    extern double __stdcall S21BDF (double *, double *, double *,
+                                    double *,
                                     int32_t *);
 #endif
 
@@ -2603,13 +2625,13 @@ LispObject Ls21bdf(LispObject env, int nargs, ...)
 #ifdef LOADLIB
     free_prevlib ();
 
-    if ( (hLib = LoadLibrary ("nagfas")) == NULL )
+    if ( (hLib = LoadLibrary ("nagfas")) == nullptr )
     {   // couldn't find DLL -- error handling here
         ifail = -999;
     }
     else  // OK so far
     {   if ( (s21bdf_proc = (PS21BDF) GetProcAddress (hLib, "_S21BDF@20"))
-             == NULL )
+             == nullptr )
         {   // couldn't find function within DLL -- error handling here
             ifail = -998;
         }

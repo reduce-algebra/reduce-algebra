@@ -80,8 +80,7 @@
 #ifdef CHECK_INTHASH
 
 typedef struct _hash_alist
-{
-    uintptr_t key;
+{   uintptr_t key;
     uintptr_t value;
     struct _hash_alist *next;
 } hash_alist;
@@ -89,8 +88,7 @@ typedef struct _hash_alist
 #endif
 
 typedef struct _inthash
-{
-    size_t size;
+{   size_t size;
     size_t count;
     uintptr_t *keys;
     uintptr_t *values;
@@ -117,7 +115,7 @@ extern void hash_init(inthash *h, int bits=8);
 
 // I can indicate that I am finished with a table. The important thing
 // that this does is to free the big vectors. It sets the various other
-// fields to dummy values just in a spirit of tidying up. 
+// fields to dummy values just in a spirit of tidying up.
 
 extern void hash_finalize(inthash *h);
 

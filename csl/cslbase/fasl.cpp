@@ -182,7 +182,7 @@
 //   pretty much been able to take for granted since the 1960s. In a similar
 //   style future cross-referencing code might plausibly work based on
 //   !*savedef information rather than by scanning source files. In general
-//   tools for code analysis and improvement may find use for all of this. 
+//   tools for code analysis and improvement may find use for all of this.
 //
 //   If a debugging tool wanted to recover the source version of just a single
 //   function it could set the load!-selected!-source property of the function
@@ -251,7 +251,7 @@ LispObject Lcopy_module(LispObject env, LispObject file)
 {   Header h;
     size_t len;
     char *modname;
-    if (file == nil) Icopy(NULL, 0);
+    if (file == nil) Icopy(nullptr, 0);
     else
     {   if (symbolp(file))
         {   file = get_pname(file);
@@ -260,7 +260,7 @@ LispObject Lcopy_module(LispObject env, LispObject file)
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
             aerror("copy-module");
         len = length_of_byteheader(h) - CELL;
-        modname = (char *)file + CELL - TAG_VECTOR;
+        modname = reinterpret_cast<char *>(file) + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
         modname = trim_module_name(modname, &len);
 #endif
@@ -277,7 +277,7 @@ LispObject Ldelete_module(LispObject env, LispObject file)
 {   Header h;
     size_t len;
     char *modname;
-    if (file == nil) Idelete(NULL, 0);
+    if (file == nil) Idelete(nullptr, 0);
     else
     {   if (symbolp(file))
         {   file = get_pname(file);
@@ -286,11 +286,11 @@ LispObject Ldelete_module(LispObject env, LispObject file)
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
             aerror("delete-module");
         len = length_of_byteheader(h) - CELL;
-        modname = (char *)file + CELL - TAG_VECTOR;
+        modname = reinterpret_cast<char *>(file) + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
         modname = trim_module_name(modname, &len);
 #endif
-        Idelete(modname, (int)len);
+        Idelete(modname, static_cast<int>(len));
     }
     return onevalue(nil);
 }
@@ -309,7 +309,7 @@ LispObject Lbanner(LispObject env, LispObject info)
     {   char b[64];
         if (Iopen_banner(0)) return onevalue(nil);
         for (i=0; i<64; i++)
-            b[i] = (char)Igetc();
+            b[i] = static_cast<char>(Igetc());
         IcloseInput();
         info = make_string(b);
         validate_string(info);
@@ -322,7 +322,7 @@ LispObject Lbanner(LispObject env, LispObject info)
     else if (!is_vector(info) || !is_string_header(h = vechdr(info)))
         aerror("banner");
     len = length_of_byteheader(h) - CELL;
-    name = (char *)info + CELL - TAG_VECTOR;
+    name = reinterpret_cast<char *>(info) + CELL - TAG_VECTOR;
     if (len == 0) Iopen_banner(-2); // delete banner info
     else
     {
@@ -390,11 +390,11 @@ LispObject Lmodule_exists(LispObject env, LispObject file)
     else if (!is_vector(file) ||!is_string_header(h = vechdr(file)))
         aerror("modulep");
     len = length_of_byteheader(h) - CELL;
-    modname = (char *)file + CELL - TAG_VECTOR;
+    modname = reinterpret_cast<char *>(file) + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
     modname = trim_module_name(modname, &len);
 #endif
-    if (Imodulep(modname, (int)len, tt, &size, filename))
+    if (Imodulep(modname, static_cast<int>(len), tt, &size, filename))
         return onevalue(nil);
     tt[24] = 0;
     file = make_string(tt);
@@ -411,11 +411,10 @@ LispObject Lstart_module(LispObject env, LispObject name)
 // As a special bit of magic the name passed can be a Lisp stream, in
 // which case the module data will be written to it.
 //
-{
-    if (name == nil)
+{   if (name == nil)
     {   def_finish();   // flush out and of compressed data.
         if (fasl_output_file)
-        {   int k = (int)Ioutsize() & 0x3;
+        {   int k = static_cast<int>(Ioutsize()) & 0x3;
 //
 // Here I arrange that all FASL modules will end up being a multiple of
 // 4 bytes long.  "WHY?"  Well I once suffered from a machine that was not
@@ -490,7 +489,7 @@ LispObject Lstart_module(LispObject env, LispObject name)
             else if (!is_string_header(h = vechdr(name)))
                 aerror("start-module");
         len = length_of_byteheader(h) - CELL;
-        modname = (char *)name + CELL - TAG_VECTOR;
+        modname = reinterpret_cast<char *>(name) + CELL - TAG_VECTOR;
 //
 // Here I will play jolly games! The name as passed in to start-module will
 // be allowed to be a fairly general file-name. If there is a suffix of the
@@ -525,23 +524,23 @@ LispObject Lstart_module(LispObject env, LispObject name)
 
 LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
 {   const char *w;
-    char *aa, *bb = NULL;
+    char *aa, *bb = nullptr;
     size_t lena, lenb;
     if (a != nil)
     {   w = get_string_data(a, "set-help-file", lena);
-        aa = (char *)std::malloc(lena+1);
-        if (aa == NULL) aerror("set-help-file");
+        aa = reinterpret_cast<char *>(std::malloc(lena+1));
+        if (aa == nullptr) aerror("set-help-file");
         std::memcpy(aa, w, lena);
         aa[lena] = 0;
     }
     else
-    {   aa = NULL;
+    {   aa = nullptr;
         b = nil;
     }
     if (b != nil)
     {   w = get_string_data(b, "set-help-file", lenb);
-        bb = (char *)std::malloc(lenb+1);
-        if (bb == NULL) aerror("set-help-file");
+        bb = reinterpret_cast<char *>(std::malloc(lenb+1));
+        if (bb == nullptr) aerror("set-help-file");
         std::memcpy(bb, w, lenb);
         bb[lenb] = 0;
     }

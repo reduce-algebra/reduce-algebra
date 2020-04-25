@@ -82,8 +82,10 @@ static int mpi_pack_position = 0;
 static void default_check_buffer(int n)
 {   if (mpi_pack_size - mpi_pack_position < n)
     {   mpi_pack_size += MPI_BUFFER_BLOCK;
-        mpi_pack_buffer = (char*)std::realloc( mpi_pack_buffer, mpi_pack_size);
-        if (mpi_pack_buffer == 0) aerror0("Not enough memory for MPI buffer.");
+        mpi_pack_buffer = reinterpret_cast<char*>(std)::realloc(
+                              mpi_pack_buffer, mpi_pack_size);
+        if (mpi_pack_buffer == 0)
+            aerror0("Not enough memory for MPI buffer.");
     }
 }
 static char* mpi_buffer_bottom;
@@ -94,8 +96,10 @@ static void scatter_check_buffer(int n)
                           mpi_pack_position ) < n)
     {   mpi_real_size += MPI_BUFFER_BLOCK;
         mpi_pack_size += MPI_BUFFER_BLOCK;
-        mpi_buffer_bottom = (char*)std::realloc( mpi_buffer_bottom, mpi_real_size);
-        if (mpi_buffer_bottom == 0) aerror0("Not enough memory for MPI buffer.");
+        mpi_buffer_bottom = reinterpret_cast<char*>(std)::realloc(
+                                mpi_buffer_bottom, mpi_real_size);
+        if (mpi_buffer_bottom == 0)
+            aerror0("Not enough memory for MPI buffer.");
         mpi_pack_buffer = mpi_buffer_bottom + mpi_pack_offset;
     }
 }
@@ -175,7 +179,8 @@ static void pack_atom(LispObject a)
         }
     }
     else if (is_symbol(a))
-    {   Symbol_Head* h = (Symbol_Head*)( (char*)a-TAG_SYMBOL);
+    {   Symbol_Head* h = (Symbol_Head*)( reinterpret_cast<char*>
+                                         (a)-TAG_SYMBOL);
         Header My_Head = TYPE_SYMBOL;
         pack_32bit(My_Head);
         pack_atom(h->pname); // This is a string.
@@ -255,7 +260,7 @@ static LispObject unpack_atom()
             size = length_of_header(a);
             a = get_basic_vector(TAG_NUMBERS,type_of_header(a),size);
             MPI_Unpack(mpi_pack_buffer,mpi_pack_size,&mpi_pack_position,
-                       (char*)a - TAG_NUMBERS + CELL,
+                       reinterpret_cast<char*>(a) - TAG_NUMBERS + CELL,
                        (size - sizeof(Header))>>2, MPI_UNSIGNED_LONG, MPI_COMM_WORLD);
             return a;
 
@@ -263,7 +268,7 @@ static LispObject unpack_atom()
             size = length_of_byteheader(a);
             a = get_basic_vector(TAG_VECTOR,TYPE_STRING,size);
             MPI_Unpack(mpi_pack_buffer, mpi_pack_size, &mpi_pack_position,
-                       (char*)a - TAG_VECTOR + CELL,
+                       reinterpret_cast<char*>(a) - TAG_VECTOR + CELL,
                        size - sizeof(Header), MPI_CHAR, MPI_COMM_WORLD);
             return a;
 
@@ -286,7 +291,7 @@ static LispObject unpack_atom()
 }
 
 
-static LispObject unpack_cell(void)
+static LispObject unpack_cellstatic_cast<void>()
 {   switch (unpack_char())
     {   case ' ': return unpack_atom();
         case '(': return unpack_list();
@@ -297,7 +302,7 @@ static LispObject unpack_cell(void)
     }
 }
 
-static LispObject unpack_list(void)
+static LispObject unpack_liststatic_cast<void>()
 {   push(unpack_cell());
     switch (unpack_char())
     {   case ')': return cons(my_pop(),nil);

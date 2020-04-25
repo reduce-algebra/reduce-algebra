@@ -1,4 +1,4 @@
-// arith13.cpp                             Copyright (C) 2016-2017 Codemist    
+// arith13.cpp                             Copyright (C) 2016-2017 Codemist
 
 //
 // Complex elementary functions using the C99 support for same, but with
@@ -99,7 +99,8 @@ static LispObject Lcsqrt(LispObject env, LispObject a, LispObject b)
     complex double r = csqrt(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -115,7 +116,8 @@ static LispObject Lcsin(LispObject env, LispObject a, LispObject b)
     complex double r = csin(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -131,7 +133,8 @@ static LispObject Lccos(LispObject env, LispObject a, LispObject b)
     complex double r = ccos(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -147,7 +150,8 @@ static LispObject Lctan(LispObject env, LispObject a, LispObject b)
     complex double r = ctan(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -175,7 +179,8 @@ static LispObject Lcasin(LispObject env, LispObject a, LispObject b)
     complex double r = casin(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -191,7 +196,8 @@ static LispObject Lcacos(LispObject env, LispObject a, LispObject b)
     complex double r = cacos(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -207,7 +213,8 @@ static LispObject Lcatan(LispObject env, LispObject a, LispObject b)
     complex double r = catan(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -235,7 +242,8 @@ static LispObject Lcsinh(LispObject env, LispObject a, LispObject b)
     complex double r = csinh(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -251,7 +259,8 @@ static LispObject Lccosh(LispObject env, LispObject a, LispObject b)
     complex double r = ccosh(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -267,7 +276,8 @@ static LispObject Lctanh(LispObject env, LispObject a, LispObject b)
     complex double r = ctanh(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -295,7 +305,8 @@ static LispObject Lcasinh(LispObject env, LispObject a, LispObject b)
     complex double r = casinh(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -311,7 +322,8 @@ static LispObject Lcacosh(LispObject env, LispObject a, LispObject b)
     complex double r = cacosh(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -327,7 +339,8 @@ static LispObject Lcatanh(LispObject env, LispObject a, LispObject b)
     complex double r = catanh(c);
     double rr = creal(r);
     double ri = cimag(r);
-    std::printf("A %.8f %.8f\r\n", float_of_number(a), float_of_number(b));
+    std::printf("A %.8f %.8f\r\n", float_of_number(a),
+                float_of_number(b));
     std::printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
@@ -503,7 +516,7 @@ setup_type const arith13_setup[] =
     {"native-cacsch",           G0W2, G1W2, Lcacsch, G3W2, G4W2},
     {"native-casech",           G0W2, G1W2, Lcasech, G3W2, G4W2},
     {"native-cacoth",           G0W2, G1W2, Lcacoth, G3W2, G4W2},
-    {NULL,                      0, 0, 0}
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of arith13.cpp

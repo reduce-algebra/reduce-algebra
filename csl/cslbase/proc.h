@@ -88,7 +88,8 @@ typedef void *PROC_handle;
 // argv and see a big banner.
 //
 
-extern void cslstart(int argc, const char *argv[], character_writer *wr);
+extern void cslstart(int argc, const char *argv[],
+                     character_writer *wr);
 
 //
 // At the end of a run please call cslfinish to close down everything
@@ -166,7 +167,7 @@ extern int execute_lisp_function(const char *fname,
 
 //
 // After having called cslstart() you can set the I/O callback functions
-// using this. If you set one or both to NULL this indicates use of
+// using this. If you set one or both to nullptr this indicates use of
 // stdin/stdout as per usual rather than an callback, otherwise whenever
 // anybody wants to read or write they use these procedures. It is then
 // your responsibility to cope with whatever text gets exchanged!
@@ -425,13 +426,14 @@ struct LispSignal : public LispError
 #define LISPEXCEPTION_DEFINED 1
 
 #define START_SETJMP_BLOCK                          \
-    std::jmp_buf jb;                                     \
+    std::jmp_buf jb;                                \
     RAIIsave_stack_and_jb save_stack_Object;        \
     switch (setjmp(jb))                             \
     {   default:                                    \
         case 1: exit_reason = UNWIND_SIGNAL;        \
                 if (miscflags & HEADLINE_FLAG)      \
-                    err_printf("\n+++ Error %s: ", errorset_msg); \
+                    err_printf("\n+++ Error %s: ",  \
+                               errorset_msg);       \
                 throw LispSignal();                 \
         case 0: break;                              \
     }                                               \

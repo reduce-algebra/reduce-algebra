@@ -148,7 +148,8 @@ LispObject validate_number(const char *s, LispObject a,
         aerror1("validate-number", a);
 #endif
     }
-    else if (msd == -1 && ((nsd = bignum_digits(a)[la-1]) & 0x40000000) != 0)
+    else if (msd == -1 &&
+             ((nsd = bignum_digits(a)[la-1]) & 0x40000000) != 0)
     {   trace_printf("%s: -1: %.8x should be shorter\n", s, nsd);
         prin_to_trace(b); trace_printf("\n");
         prin_to_trace(c); trace_printf("\n");
@@ -259,22 +260,22 @@ LispObject make_lisp_integer128_fn(int128_t r)
     if (hi < INT64_C(0x40000000) &&
         hi >= -INT64_C(0x40000000))
         return make_three_word_bignum(
-               (int32_t)hi,
-               (uint32_t)((lo >> 31) & 0x7fffffff),
-               (uint32_t)(lo & 0x7fffffff));
+                   (int32_t)hi,
+                   (uint32_t)((lo >> 31) & 0x7fffffff),
+                   (uint32_t)(lo & 0x7fffffff));
     else if (hi < INT64_C(0x2000000000000000) &&
              hi >= -INT64_C(0x2000000000000000))
         return make_four_word_bignum(
-               (int32_t)ASR(hi, 31),
-               (uint32_t)(hi & 0x7fffffff),
-               (uint32_t)((lo >> 31) & 0x7fffffff),
-               (uint32_t)(lo & 0x7fffffff));
+                   (int32_t)ASR(hi, 31),
+                   (uint32_t)(hi & 0x7fffffff),
+                   (uint32_t)((lo >> 31) & 0x7fffffff),
+                   (uint32_t)(lo & 0x7fffffff));
     else return make_five_word_bignum(
-               (int32_t)ASR(hi, 62),
-               (uint32_t)(ASR(hi, 31) & 0x7fffffff),
-               (uint32_t)(hi & 0x7fffffff),
-               (uint32_t)((lo >> 31) & 0x7fffffff),
-               (uint32_t)(lo & 0x7fffffff));
+                        (int32_t)ASR(hi, 62),
+                        (uint32_t)(ASR(hi, 31) & 0x7fffffff),
+                        (uint32_t)(hi & 0x7fffffff),
+                        (uint32_t)((lo >> 31) & 0x7fffffff),
+                        (uint32_t)(lo & 0x7fffffff));
 }
 
 LispObject make_lisp_unsigned128_fn(uint128_t r)
@@ -282,22 +283,22 @@ LispObject make_lisp_unsigned128_fn(uint128_t r)
 // The result will be a bignum using 2, 3 or 4 digits.
     if (lessp128(r, int128(INT64_C(0x2000000000000000))))
         return make_two_word_bignum((int32_t)ASR(NARROW128(r), 31),
-            (uint32_t)(NARROW128(r) & 0x7fffffff));
+                                    (uint32_t)(NARROW128(r) & 0x7fffffff));
 // I will split off the high and low 62-bit chunks...
     uint64_t lo = (uint64_t)(NARROW128(r) &
                              INT64_C(0x3fffffffffffffffU));
     int64_t hi = NARROW128(ASR128(r, 62)); // Will be posititive
     if (hi < INT64_C(0x40000000))
         return make_three_word_bignum(
-               (int32_t)hi,
-               (uint32_t)((lo >> 31) & 0x7fffffff),
-               (uint32_t)(lo & 0x7fffffff));
+                   (int32_t)hi,
+                   (uint32_t)((lo >> 31) & 0x7fffffff),
+                   (uint32_t)(lo & 0x7fffffff));
     else
         return make_four_word_bignum(
-               (int32_t)ASR(hi, 31),
-               (uint32_t)(hi & 0x7fffffff),
-               (uint32_t)((lo >> 31) & 0x7fffffff),
-               (uint32_t)(lo & 0x7fffffff));
+                   (int32_t)ASR(hi, 31),
+                   (uint32_t)(hi & 0x7fffffff),
+                   (uint32_t)((lo >> 31) & 0x7fffffff),
+                   (uint32_t)(lo & 0x7fffffff));
 }
 
 // There are places within the arithmetic code where the simplest
@@ -363,13 +364,15 @@ LispObject make_two_word_bignum(int32_t a1, uint32_t a0)
     return w;
 }
 
-LispObject make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
+LispObject make_three_word_bignum(int32_t a2, uint32_t a1,
+                                  uint32_t a0)
 //
 // This make a 3-word bignum from the 3-word value (a2,a1,a0), where it
 // must have been arranged already that the values are correctly
 // normalized.
 //
-{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+12);
+{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM,
+                                    CELL+12);
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -383,7 +386,8 @@ LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
 // must have been arranged already that the values are correctly
 // normalized.
 //
-{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+16);
+{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM,
+                                    CELL+16);
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -398,7 +402,8 @@ LispObject make_five_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
 // must have been arranged already that the values are correctly
 // normalized.
 //
-{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+20);
+{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM,
+                                    CELL+20);
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -419,7 +424,8 @@ LispObject make_boxfloat(double a, int type)
             return pack_single_float(a);
             return r;
         default: // TYPE_DOUBLE_FLOAT I hope
-            r = get_basic_vector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT, SIZEOF_DOUBLE_FLOAT);
+            r = get_basic_vector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,
+                                 SIZEOF_DOUBLE_FLOAT);
             if (!SIXTY_FOUR_BIT) double_float_pad(r) = 0;
             double_float_val(r) = a;
             if (trap_floating_overflow &&
@@ -434,11 +440,13 @@ LispObject make_boxfloat(double a, int type)
 #ifdef HAVE_SOFTFLOAT
 LispObject make_boxfloat128(float128_t a)
 {   LispObject r;
-    r = get_basic_vector(TAG_BOXFLOAT, TYPE_LONG_FLOAT, SIZEOF_LONG_FLOAT);
+    r = get_basic_vector(TAG_BOXFLOAT, TYPE_LONG_FLOAT,
+                         SIZEOF_LONG_FLOAT);
     if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
     long_float_val(r) = a;
     if (trap_floating_overflow &&
-        floating_edge_case128((float128_t *)&long_float_val(r)))
+        floating_edge_case128(reinterpret_cast<float128_t *>(&long_float_val(
+                                  r))))
         aerror("exception with long float");
     return r;
 }
@@ -465,17 +473,17 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
 // floating point rendition. If x is zero then round-to-even will yield
 // a floating point value [1]222, while if x is non-zero I will need to round
 // up and deliver [1]223. There could be very very many zeros before the "x",
-// bounded only by the limit on exponents. 
+// bounded only by the limit on exponents.
 {   int32_t n = (h-CELL-4)/4;  // Last index into the data
-    int x = 31*(int)n;
+    int x = 31*static_cast<int>(n);
     int32_t msd = (int32_t)bignum_digits(v)[n];
 // NB signed conversion on next line
-    double r = (double)msd;
+    double r = static_cast<double>(msd);
 // If I have a one-word bignum then there is no messing around needed and the
 // number will be converted to floating point without any rounding.
     if (n != 0)
     {   if (n == 1)
-        {   r = TWO_31*r + (double)bignum_digits(v)[--n];
+        {   r = TWO_31*r + static_cast<double>(bignum_digits(v)[--n]);
 // A two-word bignum may involve rounding, but each digit can be
 // converted exactly and a correct result should emerge from the single
 // addition that combines low and high parts.
@@ -491,7 +499,7 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
 // Here the top digit is reasonably small, so I can combine the top two
 // digits to get a value that will be at worst 48-bits wide and hence
 // will be converted to floating point without any rounding at all.
-                r = TWO_31*r + (double)bignum_digits(v)[--n];
+                r = TWO_31*r + static_cast<double>(bignum_digits(v)[--n]);
                 x -= 31;
 // Now I need to combine in lower order bits
                 lo = bignum_digits(v)[--n];
@@ -501,7 +509,7 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
 // The bottom bit of lo will be well below the bits that contribute
 // directly to the result, but by ORing in 1 there if any lower word is
 // non-zero I will force rounding up in some cases where it is needed.
-                r = TWO_31*r + (double)lo;
+                r = TWO_31*r + static_cast<double>(lo);
                 x -= 31;
             }
             else
@@ -510,7 +518,7 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
 // top 15 bits from the second highest digit. That will give me a value
 // using between 31 and 46 bits. This can be computed without rounding.
                 int32_t mid = bignum_digits(v)[--n];
-                r = 32768.0*r + (double)(mid >> 16);
+                r = 32768.0*r + static_cast<double>(mid >> 16);
                 x -= 15;
                 lo = bignum_digits(v)[--n];
                 mid = ((mid & 0xffff) << 15) | (lo >> 16);
@@ -518,7 +526,7 @@ static double bignum_to_float(LispObject v, int32_t h, int *xp)
                 while (n > 0)
                 {   if (bignum_digits(v)[--n] != 0) mid |= 1;
                 }
-                r = TWO_31*r + (double)mid;
+                r = TWO_31*r + static_cast<double>(mid);
                 x -= 31;
             }
         }
@@ -547,14 +555,13 @@ static float128_t bignum_to_float128(LispObject v, int32_t h, int *xp)
 // zero bits and then MAYBE a final trailing 1 that could force rounding up
 // rather than down...
 {   int32_t n = (h-CELL-4)/4;  // Last index into the data
-    int x = 31*(int)n;
+    int x = 31*static_cast<int>(n);
     int32_t msd = (int32_t)bignum_digits(v)[n];
 // NB signed conversion on next line
     float128_t r, w1, w2;
     i32_to_f128M(msd, &r);
     switch (n)
-    {
-        default:        // for very big numbers combine in 5 digits
+{       default:        // for very big numbers combine in 5 digits
             ui32_to_f128M(bignum_digits(v)[--n], &w1);
             f128M_mul(&r, &f128_TWO_31, &w2);
             f128M_add(&w1, &w2, &r);
@@ -596,7 +603,7 @@ static float128_t bignum_to_float128(LispObject v, int32_t h, int *xp)
 int double_to_binary(double d, int64_t &m)
 {   Double_union u;
     u.f = d;
-    int x = (int)(u.i64 >> 52) & 0x7ff;
+    int x = static_cast<int>(u.i64 >> 52) & 0x7ff;
     int64_t f = u.i64 & UINT64_C(0x000fffffffffffff);
     if (x != 0) f |= INT64_C(0x0010000000000000);
     if ((int64_t)u.i64 < 0) f = -f;
@@ -610,10 +617,11 @@ int double_to_binary(double d, int64_t &m)
 #ifdef HAVE_SOFTFLOAT
 // This does much the same for 128-bit floats.
 
-int float128_to_binary(const float128_t *d, int64_t &mhi, uint64_t &mlo)
+int float128_to_binary(const float128_t *d, int64_t &mhi,
+                       uint64_t &mlo)
 {   uint64_t hi = d->v[HIPART];
     uint64_t lo = d->v[LOPART];
-    int x = (int)(hi >> 48) & 0x7fff;
+    int x = static_cast<int>(hi >> 48) & 0x7fff;
     uint64_t fhi = hi & UINT64_C(0x0000ffffffffffff);
     if (x != 0) fhi |= UINT64_C(0x0001000000000000);
     if ((int64_t)hi < 0)  // Now negate the mantissa
@@ -644,13 +652,14 @@ int float128_to_binary(const float128_t *d, int64_t &mhi, uint64_t &mlo)
 // less than zero correspond to fractional floating point values.
 // If the argument is infinite or a NaN the result will be INTPTR_MAX.
 
-intptr_t double_to_3_digits(double d, int32_t &a2, uint32_t &a1, uint32_t &a0)
+intptr_t double_to_3_digits(double d, int32_t &a2, uint32_t &a1,
+                            uint32_t &a0)
 {   int64_t m;
     int x = double_to_binary(d, m);
     a0 = (uint32_t)m & 0x7fffffffU;
     a1 = (uint32_t)((uint64_t)m >> 31) & 0x7fffffff;
     a2 = (int32_t)ASR(m, 62);   // In fact value should be either 0 or -1
-                                // because m is only a 53 bit + sign value.
+    // because m is only a 53 bit + sign value.
     if (x == 0x7ff) return INTPTR_MAX;
 // Now I need to adjust in effect so that the exponent is treated as
 // a multiple of 31.
@@ -689,7 +698,7 @@ intptr_t double_to_3_digits(double d, int32_t &a2, uint32_t &a1, uint32_t &a0)
 
 #ifdef HAVE_SOFTFLOAT
 intptr_t float128_to_5_digits(float128_t *d,
-    int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0)
+                              int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0)
 {   int64_t mhi;
     uint64_t mlo;
     int x = float128_to_binary(d, mhi, mlo);
@@ -708,12 +717,12 @@ intptr_t float128_to_5_digits(float128_t *d,
     if (r != 0)
     {   a4 = (int32_t)(((uint32_t)a4<<r) | a3>>(31-r));
         a3 = ((a3<<r) & 0x7fffffffU) | a2>>(31-r);
-        a2 = ((a2<<r) & 0x7fffffffU) | a1>>(31-r); 
+        a2 = ((a2<<r) & 0x7fffffffU) | a1>>(31-r);
         a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
         a0 = (a0<<r) & 0x7fffffffU;
     }
     while ((a4 == 0 && (a3 & 0x40000000U) == 0) ||
-        (a4 == -1 && (a3 & 0x40000000U) != 0))
+           (a4 == -1 && (a3 & 0x40000000U) != 0))
     {   a4 = a3 | ((a3 & 0x40000000U)<<1);
         a3 = a2;
         a2 = a1;
@@ -734,7 +743,7 @@ double float_of_number(LispObject a)
 // code repetition. Be aware that for long floats I will need to do something
 // different!
 //
-{   if (is_fixnum(a)) return (double)int_of_fixnum(a);
+{   if (is_fixnum(a)) return static_cast<double>(int_of_fixnum(a));
     else if (is_sfloat(a))
         return value_of_immediate_float(a);
     else if (is_bfloat(a))
@@ -746,16 +755,19 @@ double float_of_number(LispObject a)
 // seen.
                 if (SIXTY_FOUR_BIT)
                     aerror("boxed single float on 64-bit system");
-                return (double)single_float_val(a);
+                return static_cast<double>(single_float_val(a));
             case TYPE_DOUBLE_FLOAT:
                 return double_float_val(a);
 #ifdef HAVE_SOFTFLOAT
             case TYPE_LONG_FLOAT:
-                {   float128_t w = long_float_val(a);
-                    union { float64_t sf; double f; } f;
-                    f.sf = f128M_to_f64(&w);
-                    return f.f;
-                }
+            {   float128_t w = long_float_val(a);
+                union
+                {   float64_t sf;
+                    double f;
+                } f;
+                f.sf = f128M_to_f64(&w);
+                return f.f;
+            }
 #endif // HAVE_SOFTFLOAT
             default:
                 return 0.0;
@@ -775,10 +787,10 @@ double float_of_number(LispObject a)
                 a = denominator(a);
                 if (is_fixnum(na)) r1 = float_of_number(na), x1 = 0;
                 else r1 = bignum_to_float(na,
-                                  length_of_header(numhdr(na)), &x1);
+                                              length_of_header(numhdr(na)), &x1);
                 if (is_fixnum(a)) r1 = r1 / float_of_number(a), x2 = 0;
                 else r1 = r1 / bignum_to_float(a,
-                                  length_of_header(numhdr(a)), &x2);
+                                                   length_of_header(numhdr(a)), &x2);
 // Floating point overflow can only arise in this ldexp()
                 return std::ldexp(r1, x1 - x2);
             }
@@ -848,10 +860,10 @@ float128_t float128_of_number(LispObject a)
                 a = denominator(a);
                 if (is_fixnum(na)) r1 = float128_of_number(na), x1 = 0;
                 else r1 = bignum_to_float128(na,
-                                  length_of_header(numhdr(na)), &x1);
+                                                 length_of_header(numhdr(na)), &x1);
                 if (is_fixnum(a)) r2 = float128_of_number(a), x2 = 0;
                 else r2 = bignum_to_float128(a,
-                                  length_of_header(numhdr(a)), &x2);
+                                                 length_of_header(numhdr(a)), &x2);
                 f128M_div(&r1, &r2, &w);
                 f128M_ldexp(&w, x1 - x2);
                 return w;
@@ -876,7 +888,7 @@ int32_t thirty_two_bits(LispObject a)
 // links between C-specific code (that might really want 32-bit values)
 // and Lisp are being coded.
 {   int64_t r;
-    switch ((int)a & XTAG_BITS)
+    switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             r = (int64_t)int_of_fixnum(a);
             if (r > INT32_MAX ||
@@ -911,7 +923,7 @@ uint32_t thirty_two_bits_unsigned(LispObject a)
 // links between C-specific code (that might really want 32-bit values)
 // and Lisp are being coded.
 {   int64_t r;
-    switch ((int)a & XTAG_BITS)
+    switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             r = (int64_t)int_of_fixnum(a);
             if (r > UINT32_MAX ||
@@ -944,7 +956,7 @@ uint32_t thirty_two_bits_unsigned(LispObject a)
 // or 0 for an invalid argument.
 
 int64_t sixty_four_bits(LispObject a)
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             return (int64_t)int_of_fixnum(a); // always in range
         case TAG_NUMBERS:
@@ -963,8 +975,8 @@ int64_t sixty_four_bits(LispObject a)
                         int64_t d2 = bignum_digits64(a, 2);
                         if (d2==0 || d2==1 || d2==-1 || d2==-2)
                             return bignum_digits(a)[0] |
-                                ((uint64_t)bignum_digits(a)[1] << 31) |
-                                ASL(d2, 62);
+                                   ((uint64_t)bignum_digits(a)[1] << 31) |
+                                   ASL(d2, 62);
                 }
             }
         // else drop through
@@ -975,7 +987,7 @@ int64_t sixty_four_bits(LispObject a)
 }
 
 uint64_t sixty_four_bits_unsigned(LispObject a)
-{   switch ((int)a & XTAG_BITS)
+{   switch (static_cast<int>(a) & XTAG_BITS)
     {   case TAG_FIXNUM:
             if (int_of_fixnum(a) < 0) return 0;
             return (uint64_t)int_of_fixnum(a);
@@ -995,8 +1007,8 @@ uint64_t sixty_four_bits_unsigned(LispObject a)
                         int64_t d2 = bignum_digits64(a, 2);
                         if (d2==0 || d2==1 || d2==2 || d2==3)
                             return bignum_digits(a)[0] |
-                                ((uint64_t)bignum_digits(a)[1] << 31) |
-                                ASL(d2, 62);
+                                   ((uint64_t)bignum_digits(a)[1] << 31) |
+                                   ASL(d2, 62);
                 }
             }
         // else drop through
@@ -1017,7 +1029,8 @@ LispObject make_complex(LispObject r, LispObject i)
     if (i == fixnum_of_int(0)) return r;
     stackcheck(r, i);
     push(r, i);
-    v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM, sizeof(Complex_Number));
+    v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM,
+                         sizeof(Complex_Number));
 //
 // The vector r has uninitialized contents here - dodgy.  If the call
 // to get_basic_vector succeeded then I fill it in, otherwise I will not
@@ -1037,7 +1050,8 @@ LispObject make_ratio(LispObject p, LispObject q)
     if (q == fixnum_of_int(1)) return p;
     stackcheck(p, q);
     push(p, q);
-    v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
+    v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM,
+                         sizeof(Rational_Number));
     pop(q, p);
     setnumerator(v, p);
     setdenominator(v, q);
@@ -1293,7 +1307,8 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // I write out the 2-word case longhand because in the 64-bit case
 // it can yield a fixnum.
     if (len == 2)
-    {   int64_t s = (ASL(bignum_digits64(a2,1),31) | bignum_digits(a2)[0]) +
+    {   int64_t s = (ASL(bignum_digits64(a2,1),
+                         31) | bignum_digits(a2)[0]) +
                     (int64_t)s1;
 // a 2-word bignum has at worst 62 bits and a fixnum 28 or 60, so their
 // sum can not overflow a 64-bit word.
@@ -1315,7 +1330,8 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // previous digit. Note that it may be either positive or negative
     for (i=1; i<len-1; i++)
     {   uint32_t s = bignum_digits(a2)[i] + (uint32_t)(s1 & 0x7fffffff);
-        s1 = ASR((int64_t)s1, 31); // Note that s1 was signed so this is -1, 0 or 1
+        s1 = ASR((int64_t)s1,
+                 31); // Note that s1 was signed so this is -1, 0 or 1
         bignum_digits(c)[i] = s & 0x7fffffff;
         s1 = s1 + top_bit(s);
     }
@@ -1357,7 +1373,7 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // be avoided. I will leave it in here as a matter of being tidy as well as
 // against the possibility that future GC re-works require it!
 //
-            *(Header *)&bignum_digits(c)[i] = make_bighdr(2L);
+            *reinterpret_cast<Header *>(&bignum_digits(c)[i]) = make_bighdr(2L);
             return c;
         }
         bignum_digits(c)[i] = s1;  // length unchanged
@@ -1423,17 +1439,20 @@ inline LispObject plus_i_c(LispObject a1, LispObject a2)
 }
 
 inline LispObject plus_i_s(LispObject a1, LispObject a2)
-{   double d = (double)int_of_fixnum(a1) + value_of_immediate_float(a2);
+{   double d = static_cast<double>(int_of_fixnum(
+                                       a1)) + value_of_immediate_float(a2);
     return pack_immediate_float(d, a2);
 }
 
 inline LispObject plus_i_f(LispObject a1, LispObject a2)
-{   double d = (double)int_of_fixnum(a1) + single_float_val(a2);
+{   double d = static_cast<double>(int_of_fixnum(
+                                       a1)) + single_float_val(a2);
     return make_boxfloat(d, TYPE_SINGLE_FLOAT);
 }
 
 inline LispObject plus_i_d(LispObject a1, LispObject a2)
-{   double d = (double)int_of_fixnum(a1) + double_float_val(a2);
+{   double d = static_cast<double>(int_of_fixnum(
+                                       a1)) + double_float_val(a2);
     return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
 }
 
@@ -1441,7 +1460,8 @@ inline LispObject plus_i_d(LispObject a1, LispObject a2)
 inline LispObject plus_i_l(LispObject a1, LispObject a2)
 {   float128_t x, z;
     i64_to_f128M((int64_t)int_of_fixnum(a1), &x);
-    f128M_add(&x, (float128_t *)long_float_addr(a2), &z);
+    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)),
+              &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1484,7 +1504,7 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
 
 inline LispObject plus_b_b(LispObject a, LispObject b)
 {   size_t la = (bignum_length(a)-CELL)/4,
-           lb = (bignum_length(b)-CELL)/4;
+               lb = (bignum_length(b)-CELL)/4;
     if (la < lb)    // maybe swap order of args
     {   LispObject t = a; a = b; b = t;
         size_t t1 = la; la = lb; lb = t1;
@@ -1494,7 +1514,7 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
 // an especially common case on 32-bit machines.
     if (!SIXTY_FOUR_BIT && la == 1) // and hence b also has only 1 digit
         return make_lisp_integer32(
-            (int32_t)bignum_digits(a)[0] + (int32_t)bignum_digits(b)[0]);
+                   (int32_t)bignum_digits(a)[0] + (int32_t)bignum_digits(b)[0]);
 // If the longer number is just 2 words I can convert both to int64_t.
     if (la == 2)
     {   int64_t va = ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
@@ -1585,7 +1605,8 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
             }
 // I forge a header word to fill in the discarded space. This is no longer
 // vital, but it still feels the tidy thing to do.
-            if (i != j) *(Header *)&bignum_digits(c)[j] = make_bighdr(i - j);
+            if (i != j) *reinterpret_cast<Header *>(&bignum_digits(
+                        c)[j]) = make_bighdr(i - j);
             return c;
         }
 // Now do all the same sorts of things but this time for negative numbers.
@@ -1595,7 +1616,7 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
             while ((msd = bignum_digits(c)[j]) == 0x7fffffff && j > 0) j--;
             if (SIXTY_FOUR_BIT && j == 1)
             {   int64_t s = ASL(bignum_digits64(c,1) |
-                                  INT64_C(0xffffffff80000000), 31) |
+                                INT64_C(0xffffffff80000000), 31) |
                             bignum_digits(c)[0];
                 if (valid_as_fixnum(s)) return fixnum_of_int(s);
             }
@@ -1625,7 +1646,8 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
             {   i = (i+1) | 1;
                 j = (j+1) | 1;     // Round up to odd index
             }
-            if (i != j) *(Header *)&bignum_digits(c)[j] = make_bighdr(i - j);
+            if (i != j) *reinterpret_cast<Header *>(&bignum_digits(
+                        c)[j]) = make_bighdr(i - j);
             return c;
         }
         return c;
@@ -1663,7 +1685,8 @@ inline LispObject plus_b_d(LispObject a1, LispObject a2)
 inline LispObject plus_b_l(LispObject a1, LispObject a2)
 {   float128_t x, z;
     x = float128_of_number(a1);
-    f128M_add(&x, (float128_t *)long_float_addr(a2), &z);
+    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)),
+              &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1738,7 +1761,7 @@ inline LispObject plus_r_l(LispObject a1, LispObject a2)
 // arithmetic to from x+q, and this will repeat a dispatch on the type
 // of q. If I was really worried about the last tiny fraction of performance
 // I might unfold so that the type-information I have already collected
-// was preserved, but that seems excessive at present. 
+// was preserved, but that seems excessive at present.
 
 inline LispObject plus_c_i(LispObject a1, LispObject a2)
 {   return plus_i_c(a2, a1);
@@ -1798,7 +1821,8 @@ inline LispObject plus_s_c(LispObject a1, LispObject a2)
 }
 
 inline LispObject plus_s_s(LispObject a1, LispObject a2)
-{   double d = value_of_immediate_float(a1) + value_of_immediate_float(a2);
+{   double d = value_of_immediate_float(a1) +
+               value_of_immediate_float(a2);
     return pack_immediate_float(d, a1, a2);
 }
 
@@ -1818,7 +1842,8 @@ inline LispObject plus_s_l(LispObject a1, LispObject a2)
     Double_union xf;
     xf.f = value_of_immediate_float(a1);
     f64_to_f128M(xf.f64, &x);
-    f128M_add(&x, (float128_t *)long_float_addr(a2), &z);
+    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)),
+              &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1859,7 +1884,8 @@ inline LispObject plus_f_l(LispObject a1, LispObject a2)
     Double_union xf;
     xf.f = single_float_val(a1);
     f64_to_f128M(xf.f64, &x);
-    f128M_add(&x, (float128_t *)long_float_addr(a2), &z);
+    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)),
+              &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -1897,9 +1923,10 @@ inline LispObject plus_d_d(LispObject a1, LispObject a2)
 inline LispObject plus_d_l(LispObject a1, LispObject a2)
 {   float128_t x, z;
     Double_union xf;
-    xf.f = (double)double_float_val(a1);
+    xf.f = static_cast<double>(double_float_val(a1));
     f64_to_f128M(xf.f64, &x);
-    f128M_add(&x, (float128_t *)long_float_addr(a2), &z);
+    f128M_add(&x, reinterpret_cast<float128_t *>(long_float_addr(a2)),
+              &z);
     return make_boxfloat128(z);
 }
 
@@ -1933,8 +1960,8 @@ inline LispObject plus_l_d(LispObject a1, LispObject a2)
 
 inline LispObject plus_l_l(LispObject a1, LispObject a2)
 {   float128_t z;
-    f128M_add((float128_t *)long_float_addr(a1),
-              (float128_t *)long_float_addr(a2), &z);
+    f128M_add(reinterpret_cast<float128_t *>(long_float_addr(a1)),
+              reinterpret_cast<float128_t *>(long_float_addr(a2)), &z);
     return make_boxfloat128(z);
 }
 #endif // HAVE_SOFTFLOAT
@@ -2182,7 +2209,8 @@ inline LispObject difference_c_l(LispObject a1, LispObject a2)
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_s_i(LispObject a1, LispObject a2)
-{   double d = value_of_immediate_float(a1) - (double)int_of_fixnum(a2);
+{   double d = value_of_immediate_float(a1) - static_cast<double>
+               (int_of_fixnum(a2));
     return pack_immediate_float(d, a1);
 }
 
@@ -2238,7 +2266,8 @@ inline LispObject difference_s_l(LispObject a1, LispObject a2)
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_f_i(LispObject a1, LispObject a2)
-{   double d = single_float_val(a1) - (double)int_of_fixnum(a2);
+{   double d = single_float_val(a1) - static_cast<double>
+               (int_of_fixnum(a2));
     return make_boxfloat(d, TYPE_SINGLE_FLOAT);
 }
 
@@ -2288,7 +2317,8 @@ inline LispObject difference_f_l(LispObject a1, LispObject a2)
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_d_i(LispObject a1, LispObject a2)
-{   double d = double_float_val(a1) - (double)int_of_fixnum(a2);
+{   double d = double_float_val(a1) - static_cast<double>
+               (int_of_fixnum(a2));
     return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
 }
 
@@ -2339,14 +2369,16 @@ inline LispObject difference_d_l(LispObject a1, LispObject a2)
 inline LispObject difference_l_i(LispObject a1, LispObject a2)
 {   float128_t x, z;
     i64_to_f128M((int64_t)int_of_fixnum(a2), &x);
-    f128M_sub((float128_t *)long_float_addr(a1), &x, &z);
+    f128M_sub(reinterpret_cast<float128_t *>(long_float_addr(a1)), &x,
+              &z);
     return make_boxfloat128(z);
 }
 
 inline LispObject difference_l_b(LispObject a1, LispObject a2)
 {   float128_t x, z;
     x = float128_of_number(a2);
-    f128M_sub((float128_t *)long_float_addr(a2), &x, &z);
+    f128M_sub(reinterpret_cast<float128_t *>(long_float_addr(a2)), &x,
+              &z);
     return make_boxfloat128(z);
 }
 
@@ -2422,7 +2454,7 @@ LispObject add1(LispObject p)
 {   if (is_fixnum(p))
     {   if (p == MOST_POSITIVE_FIXNUM) // ONLY possible overflow case here
             return make_lisp_integerptr(1+MOST_POSITIVE_FIXVAL);
-        else return (LispObject)(p + 0x10);
+        else return static_cast<LispObject>(p + 0x10);
     }
     else return plus2(p, fixnum_of_int(1));
 }
@@ -2434,7 +2466,7 @@ LispObject sub1(LispObject p)
 {   if (is_fixnum(p))
     {   if (p == MOST_NEGATIVE_FIXNUM)
             return make_lisp_integerptr(MOST_NEGATIVE_FIXVAL - 1);
-        else return (LispObject)(p - 0x10);
+        else return static_cast<LispObject>(p - 0x10);
     }
     else return plus2(p, fixnum_of_int(-1));
 }

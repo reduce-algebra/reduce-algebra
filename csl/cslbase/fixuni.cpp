@@ -24,7 +24,8 @@ int main(int argc, char *argv[])
         while (*q != ' ')
         {   q++;
             if (q - line > sizeof(line)-10)
-            {   std::printf("End of word not found %d %d\n", (int)(p-line), (int)(q-line));
+            {   std::printf("End of word not found %d %d\n",
+                            static_cast<int>(p-line), static_cast<int>(q-line));
                 std::printf("%s\n", line);
                 std::exit(1);
             }

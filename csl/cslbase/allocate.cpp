@@ -95,11 +95,11 @@ void init_heap_segments(double store_size)
     vheap_pages = (void **)std::malloc(MAX_PAGES*sizeof(void *));
     new_heap_pages = (void **)std::malloc(MAX_PAGES*sizeof(void *));
     new_vheap_pages = (void **)std::malloc(MAX_PAGES*sizeof(void *));
-    if (pages == NULL ||
-        new_heap_pages == NULL ||
-        new_vheap_pages == NULL ||
-        heap_pages == NULL ||
-        vheap_pages == NULL)
+    if (pages == nullptr ||
+        new_heap_pages == nullptr ||
+        new_vheap_pages == nullptr ||
+        heap_pages == nullptr ||
+        vheap_pages == nullptr)
     {   fatal_error(err_no_store);
     }
 
@@ -110,24 +110,24 @@ void init_heap_segments(double store_size)
         free_space = free_space/(CSL_PAGE_SIZE+4);
         if (free_space > MAX_PAGES) free_space = MAX_PAGES;
         pages_count = heap_pages_count = vheap_pages_count = 0;
-        nilsegment = NULL;
+        nilsegment = nullptr;
         {   size_t n = (size_t)(NIL_SEGMENT_SIZE+free_space*CSL_PAGE_SIZE);
 //
 // I try to get the whole of the initial hunk of memory that I need in
 // one gulp since that (maybe) gives me the best chance to obtain all
 // the memory in just one half of my address space.
 //
-            char *pool = (char *)std::malloc(n);
-            if (pool != NULL)
-            {   big_chunk_start = (char *)pool;
+            char *pool = reinterpret_cast<char *>(std::malloc(n));
+            if (pool != nullptr)
+            {   big_chunk_start = reinterpret_cast<char *>(pool);
                 big_chunk_end = big_chunk_start + (n-1);
-                nilsegment = (LispObject *)pool;
+                nilsegment = reinterpret_cast<LispObject *>(pool);
                 pool = pool + NIL_SEGMENT_SIZE;
 #ifdef COMMON
 // NB here that NIL is tagged as a CONS not as a symbol
-                nil = (LispObject)((uintptr_t)nilsegment + TAG_CONS + 8);
+                nil = static_cast<LispObject>((uintptr_t)nilsegment + TAG_CONS + 8);
 #else
-                nil = (LispObject)((uintptr_t)nilsegment + TAG_SYMBOL);
+                nil = static_cast<LispObject>((uintptr_t)nilsegment + TAG_SYMBOL);
 #endif
 // If at the end of the run I am going to free some space I had better not
 // free these pages. When I free the nilsegment they all get discarded at
@@ -138,8 +138,8 @@ void init_heap_segments(double store_size)
 // to size_t here and as a result if you asked for over 4G of memory
 // there was an integer overflow in the subscript calculation leading to
 // reasonably obscure disaster.
-                        (void *)&pool[pages_count*
-                                      (size_t)CSL_PAGE_SIZE];
+                        reinterpret_cast<void *>(&pool[pages_count*
+                                                       (size_t)CSL_PAGE_SIZE]);
                     pages[pages_count++] = page;
                 }
             }
@@ -148,30 +148,33 @@ void init_heap_segments(double store_size)
 
 // If the user had asked for an oversize stack it has to be allocated
 // independently here anyway.
-    if (nilsegment != NULL && pages_count > 0)
+    if (nilsegment != nullptr && pages_count > 0)
     {   if (stack_segsize != 1)
         {   stacksegment =
-                (LispObject *)aligned_malloc(stack_segsize*CSL_PAGE_SIZE);
-            if (stacksegment == NULL) fatal_error(err_no_store);
+                reinterpret_cast<LispObject *>(aligned_malloc(
+                                                   stack_segsize*CSL_PAGE_SIZE));
+            if (stacksegment == nullptr) fatal_error(err_no_store);
         }
-        else stacksegment = (LispObject *)pages[--pages_count];
+        else stacksegment = reinterpret_cast<LispObject *>
+                                (pages[--pages_count]);
     }
     else
-    {   std::printf("pages_count <= 0 = %d\n", (int)pages_count);
+    {   std::printf("pages_count <= 0 = %d\n",
+                    static_cast<int>(pages_count));
         fatal_error(err_no_store);
     }
-    stackBase = (LispObject *)stacksegment;
+    stackBase = reinterpret_cast<LispObject *>(stacksegment);
 }
 
 inline bool is_in_big_chunk(void *p)
-{   return ((char *)p >= big_chunk_start &&
-            (char *)p <= big_chunk_end);
+{   return (reinterpret_cast<char *>(p) >= big_chunk_start &&
+            reinterpret_cast<char *>(p) <= big_chunk_end);
 }
 
 static void abandon(void *p[], int32_t n)
 {   while (n != 0)
     {   void *w = p[--n];
-// The test here that avoids calling free on a NULL pointer is
+// The test here that avoids calling free on a nullptr pointer is
 // certainly not needed with an ANSI compliant library - but
 // rumour has it that many Unix libraries are unkind in this
 // respect, and the test is pretty cheap... Also pages within the
@@ -179,11 +182,11 @@ static void abandon(void *p[], int32_t n)
 // all be recycled in one go when the whole chunk is freed. Note that
 // the whole of the "big chunk" tends to get allocated as part of the
 // segment that contans nil.
-        if (w != NULL && !is_in_big_chunk(w)) aligned_free(w);
+        if (w != nullptr && !is_in_big_chunk(w)) aligned_free(w);
     }
 }
 
-void drop_heap_segments(void)
+void drop_heap_segments()
 {   abandon(pages,           pages_count);
     abandon(heap_pages,      heap_pages_count);
     abandon(vheap_pages,     vheap_pages_count);
@@ -197,16 +200,17 @@ void drop_heap_segments(void)
 bool allocate_more_memory()
 {   if ((init_flags & INIT_EXPANDABLE) == 0) return false;
     if (max_store_size != 0.0)
-        {   double page_limit =
-                max_store_size/(double)CSL_PAGE_SIZE;
-            if (pages_count+heap_pages_count+vheap_pages_count >=
-                (size_t)page_limit)
-            {   init_flags &= ~INIT_EXPANDABLE;
-                return false;
-            }
+    {   double page_limit =
+            max_store_size/static_cast<double>(CSL_PAGE_SIZE);
+        if (pages_count+heap_pages_count+vheap_pages_count >=
+            (size_t)page_limit)
+        {   init_flags &= ~INIT_EXPANDABLE;
+            return false;
         }
-    void *page = (void *)std::malloc((size_t)CSL_PAGE_SIZE);
-    if (page == NULL)
+    }
+    void *page = reinterpret_cast<void *>(std::malloc((
+            size_t)CSL_PAGE_SIZE));
+    if (page == nullptr)
     {   init_flags &= ~INIT_EXPANDABLE;
         return false;
     }
@@ -245,7 +249,8 @@ void grab_more_memory(size_t npages)
         if (ideal > MAX_PAGES) ideal=MAX_PAGES;
 // Also the user may have set a limit.
         if (max_store_size != 0.0)
-        {   size_t plim = (size_t)(max_store_size/(double)CSL_PAGE_SIZE);
+        {   size_t plim = (size_t)(max_store_size/static_cast<double>
+                                   (CSL_PAGE_SIZE));
             if (ideal > plim) ideal = plim;
         }
         while (ideal > pages_count+heap_pages_count+vheap_pages_count)
@@ -272,7 +277,7 @@ uint64_t force_cons=0, force_vec = 0;
 LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
 {   if (force_cons != 0 || force_vec != 0)
         trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\n",
-            force_cons, force_vec);
+                     force_cons, force_vec);
 // If you pass a non-fixnum then that leaves the trigger-point unchanged.
     if (is_fixnum(a)) force_cons = (uint64_t)sixty_four_bits(a);
     if (is_fixnum(b)) force_vec = (uint64_t)sixty_four_bits(b);
@@ -292,11 +297,11 @@ LispObject cons(LispObject a, LispObject b)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
 #endif
 // As coded here I MUST have a safety margin such that at least 4 CONS
 // cells can always be allocated. If I put the heaplimit check before the
@@ -324,11 +329,11 @@ LispObject cons_no_gc(LispObject a, LispObject b)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, a);
@@ -349,11 +354,11 @@ LispObject ncons(LispObject a)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, a);
@@ -369,11 +374,11 @@ LispObject list2(LispObject a, LispObject b)
 // Note that building two cons cells at once saves some overhead here
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(2*sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(2*sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         2*sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= 2*sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= 2*sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, a);
@@ -390,11 +395,11 @@ LispObject list2star(LispObject a, LispObject b, LispObject c)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(2*sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(2*sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         2*sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= 2*sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= 2*sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, a);
@@ -411,11 +416,11 @@ LispObject list2starrev(LispObject c, LispObject b, LispObject a)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(2*sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(2*sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         2*sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= 2*sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= 2*sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, a);
@@ -428,15 +433,16 @@ LispObject list2starrev(LispObject c, LispObject b, LispObject a)
     else return r;
 }
 
-LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
+LispObject list3star(LispObject a, LispObject b, LispObject c,
+                     LispObject d)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(3*sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(3*sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         3*sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= 3*sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= 3*sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, a);
@@ -452,15 +458,16 @@ LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
     else return r;
 }
 
-LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
+LispObject list4(LispObject a, LispObject b, LispObject c,
+                 LispObject d)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(4*sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(4*sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         4*sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= 4*sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= 4*sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, a);
@@ -485,11 +492,11 @@ LispObject acons(LispObject a, LispObject b, LispObject c)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(2*sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(2*sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         2*sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= 2*sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= 2*sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, r + sizeof(Cons_Cell));
@@ -506,11 +513,11 @@ LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(2*sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(2*sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         2*sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= 2*sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= 2*sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, r + sizeof(Cons_Cell));
@@ -524,11 +531,11 @@ LispObject list3(LispObject a, LispObject b, LispObject c)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(3*sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(3*sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         3*sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= 3*sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= 3*sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, a);
@@ -548,18 +555,18 @@ LispObject list3rev(LispObject c, LispObject b, LispObject a)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(3*sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(3*sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         3*sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= 3*sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= 3*sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, r + sizeof(Cons_Cell));
     setcar(r + sizeof(Cons_Cell), b);
     setcdr(r + sizeof(Cons_Cell),
-          r + 2*sizeof(Cons_Cell));
+           r + 2*sizeof(Cons_Cell));
     setcar(r + 2*sizeof(Cons_Cell), c);
     setcdr(r + 2*sizeof(Cons_Cell), nil);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -572,11 +579,11 @@ LispObject Lcons(LispObject, LispObject a, LispObject b)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, a);
@@ -591,11 +598,11 @@ LispObject Lxcons(LispObject, LispObject a, LispObject b)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, b);
@@ -614,11 +621,11 @@ LispObject Lncons(LispObject env, LispObject a)
 {
 #ifdef ATOMIC
     LispObject r =
-        (LispObject)fringe.fetch_sub(sizeof(Cons_Cell),
-                                     std::memory_order_relaxed) -
+        static_cast<LispObject>(fringe.fetch_sub(sizeof(Cons_Cell),
+                                std::memory_order_relaxed)) -
         sizeof(Cons_Cell);
 #else
-    LispObject r = (LispObject)(fringe -= sizeof(Cons_Cell));
+    LispObject r = static_cast<LispObject>(fringe -= sizeof(Cons_Cell));
 #endif
     r += TAG_CONS;
     setcar(r, a);
@@ -669,44 +676,46 @@ LispObject get_basic_vector(int tag, int type, size_t size)
                 case TAG_NUMBERS:
                     switch (type)
                     {   case TYPE_BIGNUM:
-                            std::sprintf(msg, "bignum(%ld)", (long)size);
+                            std::sprintf(msg, "bignum(%ld)", static_cast<long>(size));
                             break;
                         default:
-                            std::sprintf(msg, "numbers(%lx,%ld)", (long)type, (long)size);
+                            std::sprintf(msg, "numbers(%lx,%ld)", static_cast<long>(type),
+                                         static_cast<long>(size));
                             break;
                     }
                     break;
                 case TAG_VECTOR:
                     switch (type)
-                    {
-                        case TYPE_STRING_1:
+                    {   case TYPE_STRING_1:
                         case TYPE_STRING_2:
                         case TYPE_STRING_3:
                         case TYPE_STRING_4:
-                            std::sprintf(msg, "string(%ld)", (long)size);
+                            std::sprintf(msg, "string(%ld)", static_cast<long>(size));
                             break;
                         case TYPE_BPS_1:
                         case TYPE_BPS_2:
                         case TYPE_BPS_3:
                         case TYPE_BPS_4:
-                            std::sprintf(msg, "BPS(%ld)", (long)size);
+                            std::sprintf(msg, "BPS(%ld)", static_cast<long>(size));
                             break;
                         case TYPE_SIMPLE_VEC:
-                            std::sprintf(msg, "simple vector(%ld)", (long)size);
+                            std::sprintf(msg, "simple vector(%ld)", static_cast<long>(size));
                             break;
                         case TYPE_HASH:
-                            std::sprintf(msg, "hash table(%ld)", (long)size);
+                            std::sprintf(msg, "hash table(%ld)", static_cast<long>(size));
                             break;
                         default:
-                            std::sprintf(msg, "vector(%lx,%ld)", (long)type, (long)size);
+                            std::sprintf(msg, "vector(%lx,%ld)", static_cast<long>(type),
+                                         static_cast<long>(size));
                             break;
                     }
                     break;
                 case TAG_BOXFLOAT:
-                    std::sprintf(msg, "float(%ld)", (long)size);
+                    std::sprintf(msg, "float(%ld)", static_cast<long>(size));
                     break;
                 default:
-                    std::sprintf(msg, "get_basic_vector(%lx,%ld)", (long)tag, (long)size);
+                    std::sprintf(msg, "get_basic_vector(%lx,%ld)", static_cast<long>(tag),
+                                 static_cast<long>(size));
                     break;
             }
             reclaim(nil, msg, GC_VEC, alloc_size);
@@ -717,7 +726,8 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // certain that the loop here terminates!
             continue;
         }
-        *(Header *)r = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+        *reinterpret_cast<Header *>(r) = type + (size <<
+                                         (Tw+5)) + TAG_HDR_IMMED;
 //
 // DANGER: the vector allocated here is left uninitialised at this stage.
 // This is OK if the vector will contain binary information, but if it
@@ -732,8 +742,8 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // through it. By tidying this up here can feel that I do not have any
 // need to worry about it elsewhere.
         if (!SIXTY_FOUR_BIT && alloc_size != size)
-            *(LispObject *)(vfringe-CELL) = 0;
-        return (LispObject)(r + tag);
+            *reinterpret_cast<LispObject *>(vfringe-CELL) = 0;
+        return static_cast<LispObject>(r + tag);
     }
 }
 
@@ -770,32 +780,37 @@ void get_borrowed_page()
     void *p = pages[--borrowed_pages_count];
     zero_out(p);
     borrowed_vfringe =
-        (LispObject)((char *)doubleword_align_up((intptr_t)p) + 8);
+        reinterpret_cast<LispObject>(reinterpret_cast<char *>
+                                     (doubleword_align_up((intptr_t)p)) + 8);
     borrowed_vheaplimit =
-        (LispObject)((char *)borrowed_vfringe + (CSL_PAGE_SIZE-16));
+        reinterpret_cast<LispObject>(reinterpret_cast<char *>
+                                     (borrowed_vfringe) + (CSL_PAGE_SIZE-16));
 }
 
 LispObject borrow_basic_vector(int tag, int type, size_t size)
 {   for (;;)
-    {   char *r = (char *)borrowed_vfringe;
-        size_t freespace = (size_t)((char *)borrowed_vheaplimit - r);
+    {   char *r = reinterpret_cast<char *>(borrowed_vfringe);
+        size_t freespace = (size_t)(reinterpret_cast<char *>
+                                    (borrowed_vheaplimit) - r);
         size_t alloc_size = (size_t)doubleword_align_up(size);
         if (alloc_size > freespace)
         {   get_borrowed_page();
             continue;
         }
-        borrowed_vfringe = (LispObject)(r + alloc_size);
-        *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+        borrowed_vfringe = reinterpret_cast<LispObject>(r + alloc_size);
+        *(reinterpret_cast<Header *>(r)) = type + (size <<
+                                           (Tw+5)) + TAG_HDR_IMMED;
         if (!SIXTY_FOUR_BIT && alloc_size != size)
-            *(LispObject *)(borrowed_vfringe-CELL) = 0;
-        return (LispObject)(r + tag);
+            *reinterpret_cast<LispObject *>(borrowed_vfringe-CELL) = 0;
+        return reinterpret_cast<LispObject>(r + tag);
     }
 }
 
 LispObject borrow_vector(int tag, int type, size_t n)
 {   LispObject v;
     if (n-CELL > VECTOR_CHUNK_BYTES)
-    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES -
+                         1)/VECTOR_CHUNK_BYTES;
         size_t i;
         size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
         if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;

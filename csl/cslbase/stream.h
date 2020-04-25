@@ -48,7 +48,8 @@ typedef int character_stream_reader(LispObject);
 typedef int character_stream_writer(int, LispObject);
 typedef int32_t other_stream_op(int32_t, LispObject);
 
-extern LispObject Lopen(LispObject env, LispObject name, LispObject dir);
+extern LispObject Lopen(LispObject env, LispObject name,
+                        LispObject dir);
 
 //
 // The values used here are placed where characters might be, or possibly
@@ -166,7 +167,8 @@ inline atomic<LispObject> &stream_read_data(LispObject v)
 inline atomic<std::FILE *> &stream_file(LispObject v)
 {   return (atomic<std::FILE *>&)elt(v, 3);
 }
-inline atomic<character_stream_writer *> &stream_write_fn(LispObject v)
+inline atomic<character_stream_writer *> &stream_write_fn(
+    LispObject v)
 {   return (atomic<character_stream_writer *>&)elt(v, 4);
 }
 inline atomic<other_stream_op *> &stream_write_other(LispObject v)
@@ -197,16 +199,20 @@ inline atomic<LispObject> &stream_spare(LispObject v)
 inline LispObject set_stream_file(LispObject v, std::FILE *x)
 {   return (elt(v, 3) = reinterpret_cast<LispObject>(x));
 }
-inline LispObject set_stream_write_fn(LispObject v, character_stream_writer *x)
+inline LispObject set_stream_write_fn(LispObject v,
+                                      character_stream_writer *x)
 {   return (elt(v, 4) = reinterpret_cast<LispObject>(x));
 }
-inline LispObject set_stream_write_other(LispObject v, other_stream_op *x)
+inline LispObject set_stream_write_other(LispObject v,
+        other_stream_op *x)
 {   return (elt(v, 5) = reinterpret_cast<LispObject>(x));
 }
-inline LispObject set_stream_read_fn(LispObject v, character_stream_reader *x)
+inline LispObject set_stream_read_fn(LispObject v,
+                                     character_stream_reader *x)
 {   return (elt(v, 9) = reinterpret_cast<LispObject>(x));
 }
-inline LispObject set_stream_read_other(LispObject v, other_stream_op *x)
+inline LispObject set_stream_read_other(LispObject v,
+                                        other_stream_op *x)
 {   return (elt(v, 10) = reinterpret_cast<LispObject>(x));
 }
 

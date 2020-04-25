@@ -1,4 +1,4 @@
-// termdemo.cpp                            Copyright (C) 2004-2019 Codemist    
+// termdemo.cpp                            Copyright (C) 2004-2019 Codemist
 
 // This code is a very simple test and demonstration of the "termed.cpp"
 // console-mode input local editing and history package that I have, and
@@ -213,7 +213,8 @@ int main(int argc, char *argv[])
     for (int i=1; i<argc; i++)
         if (std::strcmp(argv[i], "-w") == 0) wait = 1;
     if (wait)
-    {   std::printf("Termdemo: PID = %d, now waiting for 15 seconds\n", getpid());
+    {   std::printf("Termdemo: PID = %d, now waiting for 15 seconds\n",
+                    getpid());
         std::printf("in case you wish to attach a debugger session\n");
         std::fflush(stdout);
         sleep(15);
@@ -224,7 +225,7 @@ int main(int argc, char *argv[])
     std::printf("complete. It then gets stored as history for access via cursor keys.\n");
     int i;
     int oldpnumber = 0, pnumber = 1;
-    const char *colours = NULL;
+    const char *colours = nullptr;
     for (i=1; i<argc; i++)
     {   const char *a = argv[i];
         if (a[0] == '-' && a[1] == 'b') colours = &a[2];
@@ -256,12 +257,12 @@ int main(int argc, char *argv[])
             oldpnumber = pnumber;
         }
         d = term_getline();
-        if (d == NULL)
+        if (d == nullptr)
         {   std::printf("EOF detected" EOL);
             break;
         }
         else
-        {   if (std::strchr(d, ';') != NULL) pnumber++;
+        {   if (std::strchr(d, ';') != nullptr) pnumber++;
             std::printf("Input line was <");
             while (*d != 0)
             {   int ch = *d++ & 0xff;

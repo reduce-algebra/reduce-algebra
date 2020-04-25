@@ -69,7 +69,7 @@ static void adjustuninames(char *linebuffer)
             std::isxdigit(p[6]) &&
             !std::isxdigit(p[7]) &&
             std::sscanf(p, "uni%x", &code) == 1 &&
-            (r = uniname(code)) != NULL)
+            (r = uniname(code)) != nullptr)
         {   std::strcpy(q, r);
             p += 7;
             q += std::strlen(r);
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
         if (std::strncmp(linebuffer, "C -1 ; ", 7) == 0)
         {   int width, code;
             if (std::sscanf(linebuffer, "C -1 ; WX %d ; N u%x ;",
-                       &width, &code) == 2)
+                            &width, &code) == 2)
             {   char *p = linebuffer + 10;
                 while (*p != ';') p++;
                 p++;
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 // it. If the codepoint was a copy of one of the STIX glyphs not previously
 // within the Unicode range I will transfer the name it originally had to the
 // new position at 0x108xxx.
-                if (r == NULL)
+                if (r == nullptr)
                 {   if  (code >= 0x108000 &&
                          code-0x108000 < nmoved &&
                          width == movedwidth[code-0x108000])
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
                     else r = p;
                 }
                 std::fprintf(dest, "C %d ; WX %d ; N %s ;%s\n",
-                        code, width, r, q+1);
+                             code, width, r, q+1);
             }
         }
         else std::fprintf(dest, "%s\n", linebuffer);

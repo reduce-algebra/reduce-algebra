@@ -1,4 +1,4 @@
-// pro.cpp                                 Copyright (C) 1989-2017 Codemist    
+// pro.cpp                                 Copyright (C) 1989-2017 Codemist
 
 // Watcom C stack checking code. This only remains as a historical relic!
 
@@ -38,7 +38,7 @@
 static int spset = 0;
 static int32_t spbase = 0, spmin;
 
-static std::FILE *stack_log = NULL;
+static std::FILE *stack_log = nullptr;
 
 #pragma aux __PRO modify [];
 
@@ -57,7 +57,7 @@ void __PRO()
     {   spbase = spmin = temp;
         spset = 1;
     }
-    if (stack_log == NULL) stack_log = std::fopen("stack.log", "w");
+    if (stack_log == nullptr) stack_log = std::fopen("stack.log", "w");
     if (temp <= spmin-64)  // Only check at granularity of 64 bytes
     {   std::fprintf(stack_log, "Stack depth %d\n", spbase-temp);
         spmin = temp;

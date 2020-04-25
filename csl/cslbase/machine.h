@@ -330,7 +330,8 @@ inline std::int64_t ASR(std::int64_t a, int n)
 inline std::int32_t ASR(std::int32_t a, int n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(std::int32_t))) n=0;
     std::uint32_t r = (static_cast<std::uint32_t>(a)) >> n;
-    std::uint32_t std::signbit = (static_cast<std::uint32_t>(a)) >> (8*sizeof(std::uint32_t)-1);
+    std::uint32_t std::signbit = (static_cast<std::uint32_t>(a)) >>
+                                 (8*sizeof(std::uint32_t)-1);
     if (n != 0) r |= ((-std::signbit) << (8*sizeof(std::uint32_t) - n));
     return static_cast<std::int32_t>(r);
 }
@@ -338,7 +339,8 @@ inline std::int32_t ASR(std::int32_t a, int n)
 inline std::int64_t ASR(std::int64_t a, int n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(std::int64_t))) n=0;
     std::uint64_t r = (static_cast<std::uint64_t>(a)) >> n;
-    std::uint64_t std::signbit = (static_cast<std::uint64_t>(a)) >> (8*sizeof(std::uint64_t)-1);
+    std::uint64_t std::signbit = (static_cast<std::uint64_t>(a)) >>
+                                 (8*sizeof(std::uint64_t)-1);
     if (n != 0) r |= ((-std::signbit) << (8*sizeof(std::uint64_t) - n));
     return static_cast<std::int64_t>(r);
 }
@@ -353,12 +355,14 @@ inline std::int64_t ASR(std::int64_t a, int n)
 
 inline std::int32_t ASL(std::int32_t a, int n)
 {   if (n < 0 || n>=8*static_cast<int>(sizeof(std::uint32_t))) n = 0;
-    return static_cast<std::int32_t>((static_cast<std::uint32_t>(a)) << n);
+    return static_cast<std::int32_t>((static_cast<std::uint32_t>
+                                      (a)) << n);
 }
 
 inline std::int64_t ASL(std::int64_t a, int n)
 {   if (n < 0 || n>=8*static_cast<int>(sizeof(std::uint64_t))) n = 0;
-    return static_cast<std::int64_t>((static_cast<std::uint64_t>(a)) << n);
+    return static_cast<std::int64_t>((static_cast<std::uint64_t>
+                                      (a)) << n);
 }
 
 inline std::uint64_t ASL(std::uint64_t a, int n)
@@ -401,9 +405,11 @@ typedef __int128 int128_t;
 
 inline void *aligned_malloc(std::size_t n)
 {   void *p = reinterpret_cast<void *>(std)::malloc(n + 32);
-    if (p == NULL) return p;
-    void *r = reinterpret_cast<void *>(((reinterpret_cast<std::uintptr_t>(p) + 15) & -static_cast<std::uint64_t>(16)) + 16);
-    reinterpret_cast<void *>(reinterpret_cast<std::uintptr_t>(r) - 16) = p;
+    if (p == nullptr) return p;
+    void *r = reinterpret_cast<void *>(((reinterpret_cast<std::uintptr_t>
+                                         (p) + 15) & -static_cast<std::uint64_t>(16)) + 16);
+    reinterpret_cast<void *>(reinterpret_cast<std::uintptr_t>
+                             (r) - 16) = p;
     return r;
 }
 
@@ -411,8 +417,9 @@ inline void *aligned_malloc(std::size_t n)
 // start and hand that to free().
 
 inline void aligned_free(void *p)
-{   if (p == NULL) return;
-    std::free(*reinterpret_cast<void *>(reinterpret_cast<std::uintptr_t>(p) - 16));
+{   if (p == nullptr) return;
+    std::free(*reinterpret_cast<void *>(reinterpret_cast<std::uintptr_t>
+                                        (p) - 16));
 }
 #else // MAXALING4
 
@@ -447,11 +454,11 @@ using std::uintptr_t;
 using std::size_t;
 
 using std::string;    // This to encourage me to use "string" rather than
-                      // "char *".
+// "char *".
 
 using std::atomic;    // If I am going to be multi-threaded then very many
-                      // things need to be atomic and writing std::atomic<>
-                      // every time is a burden.
+// things need to be atomic and writing std::atomic<>
+// every time is a burden.
 
 #endif // header_machine_h
 

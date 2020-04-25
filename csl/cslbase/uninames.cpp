@@ -1,4 +1,4 @@
-// uninames.cpp                            Copyright (C) 2016-2017 Codemist    
+// uninames.cpp                            Copyright (C) 2016-2017 Codemist
 
 
 /**************************************************************************
@@ -480,14 +480,16 @@ static const char *uniname0(int codepoint)
         case   0x01BB: return "LATIN_LETTER_TWO_WITH_STROKE";
         case   0x01BC: return "LATIN_CAPITAL_LETTER_TONE_FIVE";
         case   0x01BD: return "LATIN_SMALL_LETTER_TONE_FIVE";
-        case   0x01BE: return "LATIN_LETTER_INVERTED_GLOTTAL_STOP_WITH_STROKE";
+        case   0x01BE: return
+                "LATIN_LETTER_INVERTED_GLOTTAL_STOP_WITH_STROKE";
         case   0x01BF: return "LATIN_LETTER_WYNN";
         case   0x01C0: return "LATIN_LETTER_DENTAL_CLICK";
         case   0x01C1: return "LATIN_LETTER_LATERAL_CLICK";
         case   0x01C2: return "LATIN_LETTER_ALVEOLAR_CLICK";
         case   0x01C3: return "LATIN_LETTER_RETROFLEX_CLICK";
         case   0x01C4: return "LATIN_CAPITAL_LETTER_DZ_WITH_CARON";
-        case   0x01C5: return "LATIN_CAPITAL_LETTER_D_WITH_SMALL_LETTER_Z_WITH_CARON";
+        case   0x01C5: return
+                "LATIN_CAPITAL_LETTER_D_WITH_SMALL_LETTER_Z_WITH_CARON";
         case   0x01C6: return "LATIN_SMALL_LETTER_DZ_WITH_CARON";
         case   0x01C7: return "LATIN_CAPITAL_LETTER_LJ";
         case   0x01C8: return "LATIN_CAPITAL_LETTER_L_WITH_SMALL_LETTER_J";
@@ -503,19 +505,28 @@ static const char *uniname0(int codepoint)
         case   0x01D2: return "LATIN_SMALL_LETTER_O_WITH_CARON";
         case   0x01D3: return "LATIN_CAPITAL_LETTER_U_WITH_CARON";
         case   0x01D4: return "LATIN_SMALL_LETTER_U_WITH_CARON";
-        case   0x01D5: return "LATIN_CAPITAL_LETTER_U_WITH_DIAERESIS_AND_MACRON";
-        case   0x01D6: return "LATIN_SMALL_LETTER_U_WITH_DIAERESIS_AND_MACRON";
-        case   0x01D7: return "LATIN_CAPITAL_LETTER_U_WITH_DIAERESIS_AND_ACUTE";
+        case   0x01D5: return
+                "LATIN_CAPITAL_LETTER_U_WITH_DIAERESIS_AND_MACRON";
+        case   0x01D6: return
+                "LATIN_SMALL_LETTER_U_WITH_DIAERESIS_AND_MACRON";
+        case   0x01D7: return
+                "LATIN_CAPITAL_LETTER_U_WITH_DIAERESIS_AND_ACUTE";
         case   0x01D8: return "LATIN_SMALL_LETTER_U_WITH_DIAERESIS_AND_ACUTE";
-        case   0x01D9: return "LATIN_CAPITAL_LETTER_U_WITH_DIAERESIS_AND_CARON";
+        case   0x01D9: return
+                "LATIN_CAPITAL_LETTER_U_WITH_DIAERESIS_AND_CARON";
         case   0x01DA: return "LATIN_SMALL_LETTER_U_WITH_DIAERESIS_AND_CARON";
-        case   0x01DB: return "LATIN_CAPITAL_LETTER_U_WITH_DIAERESIS_AND_GRAVE";
+        case   0x01DB: return
+                "LATIN_CAPITAL_LETTER_U_WITH_DIAERESIS_AND_GRAVE";
         case   0x01DC: return "LATIN_SMALL_LETTER_U_WITH_DIAERESIS_AND_GRAVE";
         case   0x01DD: return "LATIN_SMALL_LETTER_TURNED_E";
-        case   0x01DE: return "LATIN_CAPITAL_LETTER_A_WITH_DIAERESIS_AND_MACRON";
-        case   0x01DF: return "LATIN_SMALL_LETTER_A_WITH_DIAERESIS_AND_MACRON";
-        case   0x01E0: return "LATIN_CAPITAL_LETTER_A_WITH_DOT_ABOVE_AND_MACRON";
-        case   0x01E1: return "LATIN_SMALL_LETTER_A_WITH_DOT_ABOVE_AND_MACRON";
+        case   0x01DE: return
+                "LATIN_CAPITAL_LETTER_A_WITH_DIAERESIS_AND_MACRON";
+        case   0x01DF: return
+                "LATIN_SMALL_LETTER_A_WITH_DIAERESIS_AND_MACRON";
+        case   0x01E0: return
+                "LATIN_CAPITAL_LETTER_A_WITH_DOT_ABOVE_AND_MACRON";
+        case   0x01E1: return
+                "LATIN_SMALL_LETTER_A_WITH_DOT_ABOVE_AND_MACRON";
         case   0x01E2: return "LATIN_CAPITAL_LETTER_AE_WITH_MACRON";
         case   0x01E3: return "LATIN_SMALL_LETTER_AE_WITH_MACRON";
         case   0x01E4: return "LATIN_CAPITAL_LETTER_G_WITH_STROKE";
@@ -540,8 +551,10 @@ static const char *uniname0(int codepoint)
         case   0x01F7: return "LATIN_CAPITAL_LETTER_WYNN";
         case   0x01F8: return "LATIN_CAPITAL_LETTER_N_WITH_GRAVE";
         case   0x01F9: return "LATIN_SMALL_LETTER_N_WITH_GRAVE";
-        case   0x01FA: return "LATIN_CAPITAL_LETTER_A_WITH_RING_ABOVE_AND_ACUTE";
-        case   0x01FB: return "LATIN_SMALL_LETTER_A_WITH_RING_ABOVE_AND_ACUTE";
+        case   0x01FA: return
+                "LATIN_CAPITAL_LETTER_A_WITH_RING_ABOVE_AND_ACUTE";
+        case   0x01FB: return
+                "LATIN_SMALL_LETTER_A_WITH_RING_ABOVE_AND_ACUTE";
         case   0x01FC: return "LATIN_CAPITAL_LETTER_AE_WITH_ACUTE";
         case   0x01FD: return "LATIN_SMALL_LETTER_AE_WITH_ACUTE";
         case   0x01FE: return "LATIN_CAPITAL_LETTER_O_WITH_STROKE_AND_ACUTE";
@@ -588,14 +601,18 @@ static const char *uniname0(int codepoint)
         case   0x0227: return "LATIN_SMALL_LETTER_A_WITH_DOT_ABOVE";
         case   0x0228: return "LATIN_CAPITAL_LETTER_E_WITH_CEDILLA";
         case   0x0229: return "LATIN_SMALL_LETTER_E_WITH_CEDILLA";
-        case   0x022A: return "LATIN_CAPITAL_LETTER_O_WITH_DIAERESIS_AND_MACRON";
-        case   0x022B: return "LATIN_SMALL_LETTER_O_WITH_DIAERESIS_AND_MACRON";
+        case   0x022A: return
+                "LATIN_CAPITAL_LETTER_O_WITH_DIAERESIS_AND_MACRON";
+        case   0x022B: return
+                "LATIN_SMALL_LETTER_O_WITH_DIAERESIS_AND_MACRON";
         case   0x022C: return "LATIN_CAPITAL_LETTER_O_WITH_TILDE_AND_MACRON";
         case   0x022D: return "LATIN_SMALL_LETTER_O_WITH_TILDE_AND_MACRON";
         case   0x022E: return "LATIN_CAPITAL_LETTER_O_WITH_DOT_ABOVE";
         case   0x022F: return "LATIN_SMALL_LETTER_O_WITH_DOT_ABOVE";
-        case   0x0230: return "LATIN_CAPITAL_LETTER_O_WITH_DOT_ABOVE_AND_MACRON";
-        case   0x0231: return "LATIN_SMALL_LETTER_O_WITH_DOT_ABOVE_AND_MACRON";
+        case   0x0230: return
+                "LATIN_CAPITAL_LETTER_O_WITH_DOT_ABOVE_AND_MACRON";
+        case   0x0231: return
+                "LATIN_SMALL_LETTER_O_WITH_DOT_ABOVE_AND_MACRON";
         case   0x0232: return "LATIN_CAPITAL_LETTER_Y_WITH_MACRON";
         case   0x0233: return "LATIN_SMALL_LETTER_Y_WITH_MACRON";
         case   0x0234: return "LATIN_SMALL_LETTER_L_WITH_CURL";
@@ -678,7 +695,8 @@ static const char *uniname0(int codepoint)
         case   0x0281: return "LATIN_LETTER_SMALL_CAPITAL_INVERTED_R";
         case   0x0282: return "LATIN_SMALL_LETTER_S_WITH_HOOK";
         case   0x0283: return "LATIN_SMALL_LETTER_ESH";
-        case   0x0284: return "LATIN_SMALL_LETTER_DOTLESS_J_WITH_STROKE_AND_HOOK";
+        case   0x0284: return
+                "LATIN_SMALL_LETTER_DOTLESS_J_WITH_STROKE_AND_HOOK";
         case   0x0285: return "LATIN_SMALL_LETTER_SQUAT_REVERSED_ESH";
         case   0x0286: return "LATIN_SMALL_LETTER_ESH_WITH_CURL";
         case   0x0287: return "LATIN_SMALL_LETTER_TURNED_T";
@@ -708,7 +726,8 @@ static const char *uniname0(int codepoint)
         case   0x029F: return "LATIN_LETTER_SMALL_CAPITAL_L";
         case   0x02A0: return "LATIN_SMALL_LETTER_Q_WITH_HOOK";
         case   0x02A1: return "LATIN_LETTER_GLOTTAL_STOP_WITH_STROKE";
-        case   0x02A2: return "LATIN_LETTER_REVERSED_GLOTTAL_STOP_WITH_STROKE";
+        case   0x02A2: return
+                "LATIN_LETTER_REVERSED_GLOTTAL_STOP_WITH_STROKE";
         case   0x02A3: return "LATIN_SMALL_LETTER_DZ_DIGRAPH";
         case   0x02A4: return "LATIN_SMALL_LETTER_DEZH_DIGRAPH";
         case   0x02A5: return "LATIN_SMALL_LETTER_DZ_DIGRAPH_WITH_CURL";
@@ -721,7 +740,8 @@ static const char *uniname0(int codepoint)
         case   0x02AC: return "LATIN_LETTER_BILABIAL_PERCUSSIVE";
         case   0x02AD: return "LATIN_LETTER_BIDENTAL_PERCUSSIVE";
         case   0x02AE: return "LATIN_SMALL_LETTER_TURNED_H_WITH_FISHHOOK";
-        case   0x02AF: return "LATIN_SMALL_LETTER_TURNED_H_WITH_FISHHOOK_AND_TAIL";
+        case   0x02AF: return
+                "LATIN_SMALL_LETTER_TURNED_H_WITH_FISHHOOK_AND_TAIL";
         case   0x02B0: return "MODIFIER_LETTER_SMALL_H";
         case   0x02B1: return "MODIFIER_LETTER_SMALL_H_WITH_HOOK";
         case   0x02B2: return "MODIFIER_LETTER_SMALL_J";
@@ -888,7 +908,8 @@ static const char *uniname0(int codepoint)
         case   0x0353: return "COMBINING_X_BELOW";
         case   0x0354: return "COMBINING_LEFT_ARROWHEAD_BELOW";
         case   0x0355: return "COMBINING_RIGHT_ARROWHEAD_BELOW";
-        case   0x0356: return "COMBINING_RIGHT_ARROWHEAD_AND_UP_ARROWHEAD_BELOW";
+        case   0x0356: return
+                "COMBINING_RIGHT_ARROWHEAD_AND_UP_ARROWHEAD_BELOW";
         case   0x0357: return "COMBINING_RIGHT_HALF_RING_ABOVE";
         case   0x0358: return "COMBINING_DOT_ABOVE_RIGHT";
         case   0x0359: return "COMBINING_ASTERISK_BELOW";
@@ -925,7 +946,8 @@ static const char *uniname0(int codepoint)
         case   0x037A: return "GREEK_YPOGEGRAMMENI";
         case   0x037B: return "GREEK_SMALL_REVERSED_LUNATE_SIGMA_SYMBOL";
         case   0x037C: return "GREEK_SMALL_DOTTED_LUNATE_SIGMA_SYMBOL";
-        case   0x037D: return "GREEK_SMALL_REVERSED_DOTTED_LUNATE_SIGMA_SYMBOL";
+        case   0x037D: return
+                "GREEK_SMALL_REVERSED_DOTTED_LUNATE_SIGMA_SYMBOL";
         case   0x037E: return "GREEK_QUESTION_MARK";
         case   0x037F: return "GREEK_CAPITAL_LETTER_YOT";
         case   0x0384: return "GREEK_TONOS";
@@ -938,7 +960,8 @@ static const char *uniname0(int codepoint)
         case   0x038C: return "GREEK_CAPITAL_LETTER_OMICRON_WITH_TONOS";
         case   0x038E: return "GREEK_CAPITAL_LETTER_UPSILON_WITH_TONOS";
         case   0x038F: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_TONOS";
-        case   0x0390: return "GREEK_SMALL_LETTER_IOTA_WITH_DIALYTIKA_AND_TONOS";
+        case   0x0390: return
+                "GREEK_SMALL_LETTER_IOTA_WITH_DIALYTIKA_AND_TONOS";
         case   0x0391: return "GREEK_CAPITAL_LETTER_ALPHA";
         case   0x0392: return "GREEK_CAPITAL_LETTER_BETA";
         case   0x0393: return "GREEK_CAPITAL_LETTER_GAMMA";
@@ -969,7 +992,8 @@ static const char *uniname0(int codepoint)
         case   0x03AD: return "GREEK_SMALL_LETTER_EPSILON_WITH_TONOS";
         case   0x03AE: return "GREEK_SMALL_LETTER_ETA_WITH_TONOS";
         case   0x03AF: return "GREEK_SMALL_LETTER_IOTA_WITH_TONOS";
-        case   0x03B0: return "GREEK_SMALL_LETTER_UPSILON_WITH_DIALYTIKA_AND_TONOS";
+        case   0x03B0: return
+                "GREEK_SMALL_LETTER_UPSILON_WITH_DIALYTIKA_AND_TONOS";
         case   0x03B1: return "GREEK_SMALL_LETTER_ALPHA";
         case   0x03B2: return "GREEK_SMALL_LETTER_BETA";
         case   0x03B3: return "GREEK_SMALL_LETTER_GAMMA";
@@ -1048,14 +1072,16 @@ static const char *uniname0(int codepoint)
         case   0x03FC: return "GREEK_RHO_WITH_STROKE_SYMBOL";
         case   0x03FD: return "GREEK_CAPITAL_REVERSED_LUNATE_SIGMA_SYMBOL";
         case   0x03FE: return "GREEK_CAPITAL_DOTTED_LUNATE_SIGMA_SYMBOL";
-        case   0x03FF: return "GREEK_CAPITAL_REVERSED_DOTTED_LUNATE_SIGMA_SYMBOL";
+        case   0x03FF: return
+                "GREEK_CAPITAL_REVERSED_DOTTED_LUNATE_SIGMA_SYMBOL";
         case   0x0400: return "CYRILLIC_CAPITAL_LETTER_IE_WITH_GRAVE";
         case   0x0401: return "CYRILLIC_CAPITAL_LETTER_IO";
         case   0x0402: return "CYRILLIC_CAPITAL_LETTER_DJE";
         case   0x0403: return "CYRILLIC_CAPITAL_LETTER_GJE";
         case   0x0404: return "CYRILLIC_CAPITAL_LETTER_UKRAINIAN_IE";
         case   0x0405: return "CYRILLIC_CAPITAL_LETTER_DZE";
-        case   0x0406: return "CYRILLIC_CAPITAL_LETTER_BYELORUSSIAN_UKRAINIAN_I";
+        case   0x0406: return
+                "CYRILLIC_CAPITAL_LETTER_BYELORUSSIAN_UKRAINIAN_I";
         case   0x0407: return "CYRILLIC_CAPITAL_LETTER_YI";
         case   0x0408: return "CYRILLIC_CAPITAL_LETTER_JE";
         case   0x0409: return "CYRILLIC_CAPITAL_LETTER_LJE";
@@ -1135,7 +1161,8 @@ static const char *uniname0(int codepoint)
         case   0x0453: return "CYRILLIC_SMALL_LETTER_GJE";
         case   0x0454: return "CYRILLIC_SMALL_LETTER_UKRAINIAN_IE";
         case   0x0455: return "CYRILLIC_SMALL_LETTER_DZE";
-        case   0x0456: return "CYRILLIC_SMALL_LETTER_BYELORUSSIAN_UKRAINIAN_I";
+        case   0x0456: return
+                "CYRILLIC_SMALL_LETTER_BYELORUSSIAN_UKRAINIAN_I";
         case   0x0457: return "CYRILLIC_SMALL_LETTER_YI";
         case   0x0458: return "CYRILLIC_SMALL_LETTER_JE";
         case   0x0459: return "CYRILLIC_SMALL_LETTER_LJE";
@@ -1167,8 +1194,10 @@ static const char *uniname0(int codepoint)
         case   0x0473: return "CYRILLIC_SMALL_LETTER_FITA";
         case   0x0474: return "CYRILLIC_CAPITAL_LETTER_IZHITSA";
         case   0x0475: return "CYRILLIC_SMALL_LETTER_IZHITSA";
-        case   0x0476: return "CYRILLIC_CAPITAL_LETTER_IZHITSA_WITH_DOUBLE_GRAVE_ACCENT";
-        case   0x0477: return "CYRILLIC_SMALL_LETTER_IZHITSA_WITH_DOUBLE_GRAVE_ACCENT";
+        case   0x0476: return
+                "CYRILLIC_CAPITAL_LETTER_IZHITSA_WITH_DOUBLE_GRAVE_ACCENT";
+        case   0x0477: return
+                "CYRILLIC_SMALL_LETTER_IZHITSA_WITH_DOUBLE_GRAVE_ACCENT";
         case   0x0478: return "CYRILLIC_CAPITAL_LETTER_UK";
         case   0x0479: return "CYRILLIC_SMALL_LETTER_UK";
         case   0x047A: return "CYRILLIC_CAPITAL_LETTER_ROUND_OMEGA";
@@ -1205,7 +1234,8 @@ static const char *uniname0(int codepoint)
         case   0x0499: return "CYRILLIC_SMALL_LETTER_ZE_WITH_DESCENDER";
         case   0x049A: return "CYRILLIC_CAPITAL_LETTER_KA_WITH_DESCENDER";
         case   0x049B: return "CYRILLIC_SMALL_LETTER_KA_WITH_DESCENDER";
-        case   0x049C: return "CYRILLIC_CAPITAL_LETTER_KA_WITH_VERTICAL_STROKE";
+        case   0x049C: return
+                "CYRILLIC_CAPITAL_LETTER_KA_WITH_VERTICAL_STROKE";
         case   0x049D: return "CYRILLIC_SMALL_LETTER_KA_WITH_VERTICAL_STROKE";
         case   0x049E: return "CYRILLIC_CAPITAL_LETTER_KA_WITH_STROKE";
         case   0x049F: return "CYRILLIC_SMALL_LETTER_KA_WITH_STROKE";
@@ -1225,7 +1255,8 @@ static const char *uniname0(int codepoint)
         case   0x04AD: return "CYRILLIC_SMALL_LETTER_TE_WITH_DESCENDER";
         case   0x04AE: return "CYRILLIC_CAPITAL_LETTER_STRAIGHT_U";
         case   0x04AF: return "CYRILLIC_SMALL_LETTER_STRAIGHT_U";
-        case   0x04B0: return "CYRILLIC_CAPITAL_LETTER_STRAIGHT_U_WITH_STROKE";
+        case   0x04B0: return
+                "CYRILLIC_CAPITAL_LETTER_STRAIGHT_U_WITH_STROKE";
         case   0x04B1: return "CYRILLIC_SMALL_LETTER_STRAIGHT_U_WITH_STROKE";
         case   0x04B2: return "CYRILLIC_CAPITAL_LETTER_HA_WITH_DESCENDER";
         case   0x04B3: return "CYRILLIC_SMALL_LETTER_HA_WITH_DESCENDER";
@@ -1233,14 +1264,18 @@ static const char *uniname0(int codepoint)
         case   0x04B5: return "CYRILLIC_SMALL_LIGATURE_TE_TSE";
         case   0x04B6: return "CYRILLIC_CAPITAL_LETTER_CHE_WITH_DESCENDER";
         case   0x04B7: return "CYRILLIC_SMALL_LETTER_CHE_WITH_DESCENDER";
-        case   0x04B8: return "CYRILLIC_CAPITAL_LETTER_CHE_WITH_VERTICAL_STROKE";
-        case   0x04B9: return "CYRILLIC_SMALL_LETTER_CHE_WITH_VERTICAL_STROKE";
+        case   0x04B8: return
+                "CYRILLIC_CAPITAL_LETTER_CHE_WITH_VERTICAL_STROKE";
+        case   0x04B9: return
+                "CYRILLIC_SMALL_LETTER_CHE_WITH_VERTICAL_STROKE";
         case   0x04BA: return "CYRILLIC_CAPITAL_LETTER_SHHA";
         case   0x04BB: return "CYRILLIC_SMALL_LETTER_SHHA";
         case   0x04BC: return "CYRILLIC_CAPITAL_LETTER_ABKHASIAN_CHE";
         case   0x04BD: return "CYRILLIC_SMALL_LETTER_ABKHASIAN_CHE";
-        case   0x04BE: return "CYRILLIC_CAPITAL_LETTER_ABKHASIAN_CHE_WITH_DESCENDER";
-        case   0x04BF: return "CYRILLIC_SMALL_LETTER_ABKHASIAN_CHE_WITH_DESCENDER";
+        case   0x04BE: return
+                "CYRILLIC_CAPITAL_LETTER_ABKHASIAN_CHE_WITH_DESCENDER";
+        case   0x04BF: return
+                "CYRILLIC_SMALL_LETTER_ABKHASIAN_CHE_WITH_DESCENDER";
         case   0x04C0: return "CYRILLIC_LETTER_PALOCHKA";
         case   0x04C1: return "CYRILLIC_CAPITAL_LETTER_ZHE_WITH_BREVE";
         case   0x04C2: return "CYRILLIC_SMALL_LETTER_ZHE_WITH_BREVE";
@@ -1283,7 +1318,8 @@ static const char *uniname0(int codepoint)
         case   0x04E7: return "CYRILLIC_SMALL_LETTER_O_WITH_DIAERESIS";
         case   0x04E8: return "CYRILLIC_CAPITAL_LETTER_BARRED_O";
         case   0x04E9: return "CYRILLIC_SMALL_LETTER_BARRED_O";
-        case   0x04EA: return "CYRILLIC_CAPITAL_LETTER_BARRED_O_WITH_DIAERESIS";
+        case   0x04EA: return
+                "CYRILLIC_CAPITAL_LETTER_BARRED_O_WITH_DIAERESIS";
         case   0x04EB: return "CYRILLIC_SMALL_LETTER_BARRED_O_WITH_DIAERESIS";
         case   0x04EC: return "CYRILLIC_CAPITAL_LETTER_E_WITH_DIAERESIS";
         case   0x04ED: return "CYRILLIC_SMALL_LETTER_E_WITH_DIAERESIS";
@@ -1299,8 +1335,10 @@ static const char *uniname0(int codepoint)
         case   0x04F7: return "CYRILLIC_SMALL_LETTER_GHE_WITH_DESCENDER";
         case   0x04F8: return "CYRILLIC_CAPITAL_LETTER_YERU_WITH_DIAERESIS";
         case   0x04F9: return "CYRILLIC_SMALL_LETTER_YERU_WITH_DIAERESIS";
-        case   0x04FA: return "CYRILLIC_CAPITAL_LETTER_GHE_WITH_STROKE_AND_HOOK";
-        case   0x04FB: return "CYRILLIC_SMALL_LETTER_GHE_WITH_STROKE_AND_HOOK";
+        case   0x04FA: return
+                "CYRILLIC_CAPITAL_LETTER_GHE_WITH_STROKE_AND_HOOK";
+        case   0x04FB: return
+                "CYRILLIC_SMALL_LETTER_GHE_WITH_STROKE_AND_HOOK";
         case   0x04FC: return "CYRILLIC_CAPITAL_LETTER_HA_WITH_HOOK";
         case   0x04FD: return "CYRILLIC_SMALL_LETTER_HA_WITH_HOOK";
         case   0x04FE: return "CYRILLIC_CAPITAL_LETTER_HA_WITH_STROKE";
@@ -1551,7 +1589,8 @@ static const char *uniname0(int codepoint)
         case   0x0613: return "ARABIC_SIGN_RADI_ALLAHOU_ANHU";
         case   0x0614: return "ARABIC_SIGN_TAKHALLUS";
         case   0x0615: return "ARABIC_SMALL_HIGH_TAH";
-        case   0x0616: return "ARABIC_SMALL_HIGH_LIGATURE_ALEF_WITH_LAM_WITH_YEH";
+        case   0x0616: return
+                "ARABIC_SMALL_HIGH_LIGATURE_ALEF_WITH_LAM_WITH_YEH";
         case   0x0617: return "ARABIC_SMALL_HIGH_ZAIN";
         case   0x0618: return "ARABIC_SMALL_FATHA";
         case   0x0619: return "ARABIC_SMALL_DAMMA";
@@ -1653,12 +1692,14 @@ static const char *uniname0(int codepoint)
         case   0x067A: return "ARABIC_LETTER_TTEHEH";
         case   0x067B: return "ARABIC_LETTER_BEEH";
         case   0x067C: return "ARABIC_LETTER_TEH_WITH_RING";
-        case   0x067D: return "ARABIC_LETTER_TEH_WITH_THREE_DOTS_ABOVE_DOWNWARDS";
+        case   0x067D: return
+                "ARABIC_LETTER_TEH_WITH_THREE_DOTS_ABOVE_DOWNWARDS";
         case   0x067E: return "ARABIC_LETTER_PEH";
         case   0x067F: return "ARABIC_LETTER_TEHEH";
         case   0x0680: return "ARABIC_LETTER_BEHEH";
         case   0x0681: return "ARABIC_LETTER_HAH_WITH_HAMZA_ABOVE";
-        case   0x0682: return "ARABIC_LETTER_HAH_WITH_TWO_DOTS_VERTICAL_ABOVE";
+        case   0x0682: return
+                "ARABIC_LETTER_HAH_WITH_TWO_DOTS_VERTICAL_ABOVE";
         case   0x0683: return "ARABIC_LETTER_NYEH";
         case   0x0684: return "ARABIC_LETTER_DYEH";
         case   0x0685: return "ARABIC_LETTER_HAH_WITH_THREE_DOTS_ABOVE";
@@ -1667,24 +1708,29 @@ static const char *uniname0(int codepoint)
         case   0x0688: return "ARABIC_LETTER_DDAL";
         case   0x0689: return "ARABIC_LETTER_DAL_WITH_RING";
         case   0x068A: return "ARABIC_LETTER_DAL_WITH_DOT_BELOW";
-        case   0x068B: return "ARABIC_LETTER_DAL_WITH_DOT_BELOW_AND_SMALL_TAH";
+        case   0x068B: return
+                "ARABIC_LETTER_DAL_WITH_DOT_BELOW_AND_SMALL_TAH";
         case   0x068C: return "ARABIC_LETTER_DAHAL";
         case   0x068D: return "ARABIC_LETTER_DDAHAL";
         case   0x068E: return "ARABIC_LETTER_DUL";
-        case   0x068F: return "ARABIC_LETTER_DAL_WITH_THREE_DOTS_ABOVE_DOWNWARDS";
+        case   0x068F: return
+                "ARABIC_LETTER_DAL_WITH_THREE_DOTS_ABOVE_DOWNWARDS";
         case   0x0690: return "ARABIC_LETTER_DAL_WITH_FOUR_DOTS_ABOVE";
         case   0x0691: return "ARABIC_LETTER_RREH";
         case   0x0692: return "ARABIC_LETTER_REH_WITH_SMALL_V";
         case   0x0693: return "ARABIC_LETTER_REH_WITH_RING";
         case   0x0694: return "ARABIC_LETTER_REH_WITH_DOT_BELOW";
         case   0x0695: return "ARABIC_LETTER_REH_WITH_SMALL_V_BELOW";
-        case   0x0696: return "ARABIC_LETTER_REH_WITH_DOT_BELOW_AND_DOT_ABOVE";
+        case   0x0696: return
+                "ARABIC_LETTER_REH_WITH_DOT_BELOW_AND_DOT_ABOVE";
         case   0x0697: return "ARABIC_LETTER_REH_WITH_TWO_DOTS_ABOVE";
         case   0x0698: return "ARABIC_LETTER_JEH";
         case   0x0699: return "ARABIC_LETTER_REH_WITH_FOUR_DOTS_ABOVE";
-        case   0x069A: return "ARABIC_LETTER_SEEN_WITH_DOT_BELOW_AND_DOT_ABOVE";
+        case   0x069A: return
+                "ARABIC_LETTER_SEEN_WITH_DOT_BELOW_AND_DOT_ABOVE";
         case   0x069B: return "ARABIC_LETTER_SEEN_WITH_THREE_DOTS_BELOW";
-        case   0x069C: return "ARABIC_LETTER_SEEN_WITH_THREE_DOTS_BELOW_AND_THREE_DOTS_ABOVE";
+        case   0x069C: return
+                "ARABIC_LETTER_SEEN_WITH_THREE_DOTS_BELOW_AND_THREE_DOTS_ABOVE";
         case   0x069D: return "ARABIC_LETTER_SAD_WITH_TWO_DOTS_BELOW";
         case   0x069E: return "ARABIC_LETTER_SAD_WITH_THREE_DOTS_ABOVE";
         case   0x069F: return "ARABIC_LETTER_TAH_WITH_THREE_DOTS_ABOVE";
@@ -1742,8 +1788,10 @@ static const char *uniname0(int codepoint)
         case   0x06D3: return "ARABIC_LETTER_YEH_BARREE_WITH_HAMZA_ABOVE";
         case   0x06D4: return "ARABIC_FULL_STOP";
         case   0x06D5: return "ARABIC_LETTER_AE";
-        case   0x06D6: return "ARABIC_SMALL_HIGH_LIGATURE_SAD_WITH_LAM_WITH_ALEF_MAKSURA";
-        case   0x06D7: return "ARABIC_SMALL_HIGH_LIGATURE_QAF_WITH_LAM_WITH_ALEF_MAKSURA";
+        case   0x06D6: return
+                "ARABIC_SMALL_HIGH_LIGATURE_SAD_WITH_LAM_WITH_ALEF_MAKSURA";
+        case   0x06D7: return
+                "ARABIC_SMALL_HIGH_LIGATURE_QAF_WITH_LAM_WITH_ALEF_MAKSURA";
         case   0x06D8: return "ARABIC_SMALL_HIGH_MEEM_INITIAL_FORM";
         case   0x06D9: return "ARABIC_SMALL_HIGH_LAM_ALEF";
         case   0x06DA: return "ARABIC_SMALL_HIGH_JEEM";
@@ -1861,52 +1909,81 @@ static const char *uniname0(int codepoint)
         case   0x074D: return "SYRIAC_LETTER_SOGDIAN_ZHAIN";
         case   0x074E: return "SYRIAC_LETTER_SOGDIAN_KHAPH";
         case   0x074F: return "SYRIAC_LETTER_SOGDIAN_FE";
-        case   0x0750: return "ARABIC_LETTER_BEH_WITH_THREE_DOTS_HORIZONTALLY_BELOW";
-        case   0x0751: return "ARABIC_LETTER_BEH_WITH_DOT_BELOW_AND_THREE_DOTS_ABOVE";
-        case   0x0752: return "ARABIC_LETTER_BEH_WITH_THREE_DOTS_POINTING_UPWARDS_BELOW";
-        case   0x0753: return "ARABIC_LETTER_BEH_WITH_THREE_DOTS_POINTING_UPWARDS_BELOW_AND_TWO_DOTS_ABOVE";
-        case   0x0754: return "ARABIC_LETTER_BEH_WITH_TWO_DOTS_BELOW_AND_DOT_ABOVE";
+        case   0x0750: return
+                "ARABIC_LETTER_BEH_WITH_THREE_DOTS_HORIZONTALLY_BELOW";
+        case   0x0751: return
+                "ARABIC_LETTER_BEH_WITH_DOT_BELOW_AND_THREE_DOTS_ABOVE";
+        case   0x0752: return
+                "ARABIC_LETTER_BEH_WITH_THREE_DOTS_POINTING_UPWARDS_BELOW";
+        case   0x0753: return
+                "ARABIC_LETTER_BEH_WITH_THREE_DOTS_POINTING_UPWARDS_BELOW_AND_TWO_DOTS_ABOVE";
+        case   0x0754: return
+                "ARABIC_LETTER_BEH_WITH_TWO_DOTS_BELOW_AND_DOT_ABOVE";
         case   0x0755: return "ARABIC_LETTER_BEH_WITH_INVERTED_SMALL_V_BELOW";
         case   0x0756: return "ARABIC_LETTER_BEH_WITH_SMALL_V";
         case   0x0757: return "ARABIC_LETTER_HAH_WITH_TWO_DOTS_ABOVE";
-        case   0x0758: return "ARABIC_LETTER_HAH_WITH_THREE_DOTS_POINTING_UPWARDS_BELOW";
-        case   0x0759: return "ARABIC_LETTER_DAL_WITH_TWO_DOTS_VERTICALLY_BELOW_AND_SMALL_TAH";
+        case   0x0758: return
+                "ARABIC_LETTER_HAH_WITH_THREE_DOTS_POINTING_UPWARDS_BELOW";
+        case   0x0759: return
+                "ARABIC_LETTER_DAL_WITH_TWO_DOTS_VERTICALLY_BELOW_AND_SMALL_TAH";
         case   0x075A: return "ARABIC_LETTER_DAL_WITH_INVERTED_SMALL_V_BELOW";
         case   0x075B: return "ARABIC_LETTER_REH_WITH_STROKE";
         case   0x075C: return "ARABIC_LETTER_SEEN_WITH_FOUR_DOTS_ABOVE";
         case   0x075D: return "ARABIC_LETTER_AIN_WITH_TWO_DOTS_ABOVE";
-        case   0x075E: return "ARABIC_LETTER_AIN_WITH_THREE_DOTS_POINTING_DOWNWARDS_ABOVE";
-        case   0x075F: return "ARABIC_LETTER_AIN_WITH_TWO_DOTS_VERTICALLY_ABOVE";
+        case   0x075E: return
+                "ARABIC_LETTER_AIN_WITH_THREE_DOTS_POINTING_DOWNWARDS_ABOVE";
+        case   0x075F: return
+                "ARABIC_LETTER_AIN_WITH_TWO_DOTS_VERTICALLY_ABOVE";
         case   0x0760: return "ARABIC_LETTER_FEH_WITH_TWO_DOTS_BELOW";
-        case   0x0761: return "ARABIC_LETTER_FEH_WITH_THREE_DOTS_POINTING_UPWARDS_BELOW";
+        case   0x0761: return
+                "ARABIC_LETTER_FEH_WITH_THREE_DOTS_POINTING_UPWARDS_BELOW";
         case   0x0762: return "ARABIC_LETTER_KEHEH_WITH_DOT_ABOVE";
         case   0x0763: return "ARABIC_LETTER_KEHEH_WITH_THREE_DOTS_ABOVE";
-        case   0x0764: return "ARABIC_LETTER_KEHEH_WITH_THREE_DOTS_POINTING_UPWARDS_BELOW";
+        case   0x0764: return
+                "ARABIC_LETTER_KEHEH_WITH_THREE_DOTS_POINTING_UPWARDS_BELOW";
         case   0x0765: return "ARABIC_LETTER_MEEM_WITH_DOT_ABOVE";
         case   0x0766: return "ARABIC_LETTER_MEEM_WITH_DOT_BELOW";
         case   0x0767: return "ARABIC_LETTER_NOON_WITH_TWO_DOTS_BELOW";
         case   0x0768: return "ARABIC_LETTER_NOON_WITH_SMALL_TAH";
         case   0x0769: return "ARABIC_LETTER_NOON_WITH_SMALL_V";
         case   0x076A: return "ARABIC_LETTER_LAM_WITH_BAR";
-        case   0x076B: return "ARABIC_LETTER_REH_WITH_TWO_DOTS_VERTICALLY_ABOVE";
+        case   0x076B: return
+                "ARABIC_LETTER_REH_WITH_TWO_DOTS_VERTICALLY_ABOVE";
         case   0x076C: return "ARABIC_LETTER_REH_WITH_HAMZA_ABOVE";
-        case   0x076D: return "ARABIC_LETTER_SEEN_WITH_TWO_DOTS_VERTICALLY_ABOVE";
-        case   0x076E: return "ARABIC_LETTER_HAH_WITH_SMALL_ARABIC_LETTER_TAH_BELOW";
-        case   0x076F: return "ARABIC_LETTER_HAH_WITH_SMALL_ARABIC_LETTER_TAH_AND_TWO_DOTS";
-        case   0x0770: return "ARABIC_LETTER_SEEN_WITH_SMALL_ARABIC_LETTER_TAH_AND_TWO_DOTS";
-        case   0x0771: return "ARABIC_LETTER_REH_WITH_SMALL_ARABIC_LETTER_TAH_AND_TWO_DOTS";
-        case   0x0772: return "ARABIC_LETTER_HAH_WITH_SMALL_ARABIC_LETTER_TAH_ABOVE";
-        case   0x0773: return "ARABIC_LETTER_ALEF_WITH_EXTENDED_ARABIC_INDIC_DIGIT_TWO_ABOVE";
-        case   0x0774: return "ARABIC_LETTER_ALEF_WITH_EXTENDED_ARABIC_INDIC_DIGIT_THREE_ABOVE";
-        case   0x0775: return "ARABIC_LETTER_FARSI_YEH_WITH_EXTENDED_ARABIC_INDIC_DIGIT_TWO_ABOVE";
-        case   0x0776: return "ARABIC_LETTER_FARSI_YEH_WITH_EXTENDED_ARABIC_INDIC_DIGIT_THREE_ABOVE";
-        case   0x0777: return "ARABIC_LETTER_FARSI_YEH_WITH_EXTENDED_ARABIC_INDIC_DIGIT_FOUR_BELOW";
-        case   0x0778: return "ARABIC_LETTER_WAW_WITH_EXTENDED_ARABIC_INDIC_DIGIT_TWO_ABOVE";
-        case   0x0779: return "ARABIC_LETTER_WAW_WITH_EXTENDED_ARABIC_INDIC_DIGIT_THREE_ABOVE";
-        case   0x077A: return "ARABIC_LETTER_YEH_BARREE_WITH_EXTENDED_ARABIC_INDIC_DIGIT_TWO_ABOVE";
-        case   0x077B: return "ARABIC_LETTER_YEH_BARREE_WITH_EXTENDED_ARABIC_INDIC_DIGIT_THREE_ABOVE";
-        case   0x077C: return "ARABIC_LETTER_HAH_WITH_EXTENDED_ARABIC_INDIC_DIGIT_FOUR_BELOW";
-        case   0x077D: return "ARABIC_LETTER_SEEN_WITH_EXTENDED_ARABIC_INDIC_DIGIT_FOUR_ABOVE";
+        case   0x076D: return
+                "ARABIC_LETTER_SEEN_WITH_TWO_DOTS_VERTICALLY_ABOVE";
+        case   0x076E: return
+                "ARABIC_LETTER_HAH_WITH_SMALL_ARABIC_LETTER_TAH_BELOW";
+        case   0x076F: return
+                "ARABIC_LETTER_HAH_WITH_SMALL_ARABIC_LETTER_TAH_AND_TWO_DOTS";
+        case   0x0770: return
+                "ARABIC_LETTER_SEEN_WITH_SMALL_ARABIC_LETTER_TAH_AND_TWO_DOTS";
+        case   0x0771: return
+                "ARABIC_LETTER_REH_WITH_SMALL_ARABIC_LETTER_TAH_AND_TWO_DOTS";
+        case   0x0772: return
+                "ARABIC_LETTER_HAH_WITH_SMALL_ARABIC_LETTER_TAH_ABOVE";
+        case   0x0773: return
+                "ARABIC_LETTER_ALEF_WITH_EXTENDED_ARABIC_INDIC_DIGIT_TWO_ABOVE";
+        case   0x0774: return
+                "ARABIC_LETTER_ALEF_WITH_EXTENDED_ARABIC_INDIC_DIGIT_THREE_ABOVE";
+        case   0x0775: return
+                "ARABIC_LETTER_FARSI_YEH_WITH_EXTENDED_ARABIC_INDIC_DIGIT_TWO_ABOVE";
+        case   0x0776: return
+                "ARABIC_LETTER_FARSI_YEH_WITH_EXTENDED_ARABIC_INDIC_DIGIT_THREE_ABOVE";
+        case   0x0777: return
+                "ARABIC_LETTER_FARSI_YEH_WITH_EXTENDED_ARABIC_INDIC_DIGIT_FOUR_BELOW";
+        case   0x0778: return
+                "ARABIC_LETTER_WAW_WITH_EXTENDED_ARABIC_INDIC_DIGIT_TWO_ABOVE";
+        case   0x0779: return
+                "ARABIC_LETTER_WAW_WITH_EXTENDED_ARABIC_INDIC_DIGIT_THREE_ABOVE";
+        case   0x077A: return
+                "ARABIC_LETTER_YEH_BARREE_WITH_EXTENDED_ARABIC_INDIC_DIGIT_TWO_ABOVE";
+        case   0x077B: return
+                "ARABIC_LETTER_YEH_BARREE_WITH_EXTENDED_ARABIC_INDIC_DIGIT_THREE_ABOVE";
+        case   0x077C: return
+                "ARABIC_LETTER_HAH_WITH_EXTENDED_ARABIC_INDIC_DIGIT_FOUR_BELOW";
+        case   0x077D: return
+                "ARABIC_LETTER_SEEN_WITH_EXTENDED_ARABIC_INDIC_DIGIT_FOUR_ABOVE";
         case   0x077E: return "ARABIC_LETTER_SEEN_WITH_INVERTED_V";
         case   0x077F: return "ARABIC_LETTER_KAF_WITH_TWO_DOTS_ABOVE";
         case   0x0780: return "THAANA_LETTER_HAA";
@@ -2112,12 +2189,15 @@ static const char *uniname0(int codepoint)
         case   0x08A1: return "ARABIC_LETTER_BEH_WITH_HAMZA_ABOVE";
         case   0x08A2: return "ARABIC_LETTER_JEEM_WITH_TWO_DOTS_ABOVE";
         case   0x08A3: return "ARABIC_LETTER_TAH_WITH_TWO_DOTS_ABOVE";
-        case   0x08A4: return "ARABIC_LETTER_FEH_WITH_DOT_BELOW_AND_THREE_DOTS_ABOVE";
+        case   0x08A4: return
+                "ARABIC_LETTER_FEH_WITH_DOT_BELOW_AND_THREE_DOTS_ABOVE";
         case   0x08A5: return "ARABIC_LETTER_QAF_WITH_DOT_BELOW";
         case   0x08A6: return "ARABIC_LETTER_LAM_WITH_DOUBLE_BAR";
         case   0x08A7: return "ARABIC_LETTER_MEEM_WITH_THREE_DOTS_ABOVE";
-        case   0x08A8: return "ARABIC_LETTER_YEH_WITH_TWO_DOTS_BELOW_AND_HAMZA_ABOVE";
-        case   0x08A9: return "ARABIC_LETTER_YEH_WITH_TWO_DOTS_BELOW_AND_DOT_ABOVE";
+        case   0x08A8: return
+                "ARABIC_LETTER_YEH_WITH_TWO_DOTS_BELOW_AND_HAMZA_ABOVE";
+        case   0x08A9: return
+                "ARABIC_LETTER_YEH_WITH_TWO_DOTS_BELOW_AND_DOT_ABOVE";
         case   0x08AA: return "ARABIC_LETTER_REH_WITH_LOOP";
         case   0x08AB: return "ARABIC_LETTER_WAW_WITH_DOT_WITHIN";
         case   0x08AC: return "ARABIC_LETTER_ROHINGYA_YEH";
@@ -2372,7 +2452,8 @@ static const char *uniname0(int codepoint)
         case   0x09F5: return "BENGALI_CURRENCY_NUMERATOR_TWO";
         case   0x09F6: return "BENGALI_CURRENCY_NUMERATOR_THREE";
         case   0x09F7: return "BENGALI_CURRENCY_NUMERATOR_FOUR";
-        case   0x09F8: return "BENGALI_CURRENCY_NUMERATOR_ONE_LESS_THAN_THE_DENOMINATOR";
+        case   0x09F8: return
+                "BENGALI_CURRENCY_NUMERATOR_ONE_LESS_THAN_THE_DENOMINATOR";
         case   0x09F9: return "BENGALI_CURRENCY_DENOMINATOR_SIXTEEN";
         case   0x09FA: return "BENGALI_ISSHAR";
         case   0x09FB: return "BENGALI_GANDA_MARK";
@@ -2788,13 +2869,20 @@ static const char *uniname0(int codepoint)
         case   0x0C6D: return "TELUGU_DIGIT_SEVEN";
         case   0x0C6E: return "TELUGU_DIGIT_EIGHT";
         case   0x0C6F: return "TELUGU_DIGIT_NINE";
-        case   0x0C78: return "TELUGU_FRACTION_DIGIT_ZERO_FOR_ODD_POWERS_OF_FOUR";
-        case   0x0C79: return "TELUGU_FRACTION_DIGIT_ONE_FOR_ODD_POWERS_OF_FOUR";
-        case   0x0C7A: return "TELUGU_FRACTION_DIGIT_TWO_FOR_ODD_POWERS_OF_FOUR";
-        case   0x0C7B: return "TELUGU_FRACTION_DIGIT_THREE_FOR_ODD_POWERS_OF_FOUR";
-        case   0x0C7C: return "TELUGU_FRACTION_DIGIT_ONE_FOR_EVEN_POWERS_OF_FOUR";
-        case   0x0C7D: return "TELUGU_FRACTION_DIGIT_TWO_FOR_EVEN_POWERS_OF_FOUR";
-        case   0x0C7E: return "TELUGU_FRACTION_DIGIT_THREE_FOR_EVEN_POWERS_OF_FOUR";
+        case   0x0C78: return
+                "TELUGU_FRACTION_DIGIT_ZERO_FOR_ODD_POWERS_OF_FOUR";
+        case   0x0C79: return
+                "TELUGU_FRACTION_DIGIT_ONE_FOR_ODD_POWERS_OF_FOUR";
+        case   0x0C7A: return
+                "TELUGU_FRACTION_DIGIT_TWO_FOR_ODD_POWERS_OF_FOUR";
+        case   0x0C7B: return
+                "TELUGU_FRACTION_DIGIT_THREE_FOR_ODD_POWERS_OF_FOUR";
+        case   0x0C7C: return
+                "TELUGU_FRACTION_DIGIT_ONE_FOR_EVEN_POWERS_OF_FOUR";
+        case   0x0C7D: return
+                "TELUGU_FRACTION_DIGIT_TWO_FOR_EVEN_POWERS_OF_FOUR";
+        case   0x0C7E: return
+                "TELUGU_FRACTION_DIGIT_THREE_FOR_EVEN_POWERS_OF_FOUR";
         case   0x0C7F: return "TELUGU_SIGN_TUUMU";
         case   0x0C81: return "KANNADA_SIGN_CANDRABINDU";
         case   0x0C82: return "KANNADA_SIGN_ANUSVARA";
@@ -3056,7 +3144,8 @@ static const char *uniname0(int codepoint)
         case   0x0DDA: return "SINHALA_VOWEL_SIGN_DIGA_KOMBUVA";
         case   0x0DDB: return "SINHALA_VOWEL_SIGN_KOMBU_DEKA";
         case   0x0DDC: return "SINHALA_VOWEL_SIGN_KOMBUVA_HAA_AELA_PILLA";
-        case   0x0DDD: return "SINHALA_VOWEL_SIGN_KOMBUVA_HAA_DIGA_AELA_PILLA";
+        case   0x0DDD: return
+                "SINHALA_VOWEL_SIGN_KOMBUVA_HAA_DIGA_AELA_PILLA";
         case   0x0DDE: return "SINHALA_VOWEL_SIGN_KOMBUVA_HAA_GAYANUKITTA";
         case   0x0DDF: return "SINHALA_VOWEL_SIGN_GAYANUKITTA";
         case   0x0DE6: return "SINHALA_LITH_DIGIT_ZERO";
@@ -3249,7 +3338,8 @@ static const char *uniname0(int codepoint)
         case   0x0F14: return "TIBETAN_MARK_GTER_TSHEG";
         case   0x0F15: return "TIBETAN_LOGOTYPE_SIGN_CHAD_RTAGS";
         case   0x0F16: return "TIBETAN_LOGOTYPE_SIGN_LHAG_RTAGS";
-        case   0x0F17: return "TIBETAN_ASTROLOGICAL_SIGN_SGRA_GCAN__CHAR_RTAGS";
+        case   0x0F17: return
+                "TIBETAN_ASTROLOGICAL_SIGN_SGRA_GCAN__CHAR_RTAGS";
         case   0x0F18: return "TIBETAN_ASTROLOGICAL_SIGN__KHYUD_PA";
         case   0x0F19: return "TIBETAN_ASTROLOGICAL_SIGN_SDONG_TSHUGS";
         case   0x0F1A: return "TIBETAN_SIGN_RDEL_DKAR_GCIG";
@@ -3429,8 +3519,10 @@ static const char *uniname0(int codepoint)
         case   0x0FD0: return "TIBETAN_MARK_BSKA__SHOG_GI_MGO_RGYAN";
         case   0x0FD1: return "TIBETAN_MARK_MNYAM_YIG_GI_MGO_RGYAN";
         case   0x0FD2: return "TIBETAN_MARK_NYIS_TSHEG";
-        case   0x0FD3: return "TIBETAN_MARK_INITIAL_BRDA_RNYING_YIG_MGO_MDUN_MA";
-        case   0x0FD4: return "TIBETAN_MARK_CLOSING_BRDA_RNYING_YIG_MGO_SGAB_MA";
+        case   0x0FD3: return
+                "TIBETAN_MARK_INITIAL_BRDA_RNYING_YIG_MGO_MDUN_MA";
+        case   0x0FD4: return
+                "TIBETAN_MARK_CLOSING_BRDA_RNYING_YIG_MGO_SGAB_MA";
         case   0x0FD5: return "RIGHT_FACING_SVASTI_SIGN";
         case   0x0FD6: return "LEFT_FACING_SVASTI_SIGN";
         case   0x0FD7: return "RIGHT_FACING_SVASTI_SIGN_WITH_DOTS";
@@ -4267,7 +4359,8 @@ static const char *uniname0(int codepoint)
         case   0x1358: return "ETHIOPIC_SYLLABLE_RYA";
         case   0x1359: return "ETHIOPIC_SYLLABLE_MYA";
         case   0x135A: return "ETHIOPIC_SYLLABLE_FYA";
-        case   0x135D: return "ETHIOPIC_COMBINING_GEMINATION_AND_VOWEL_LENGTH_MARK";
+        case   0x135D: return
+                "ETHIOPIC_COMBINING_GEMINATION_AND_VOWEL_LENGTH_MARK";
         case   0x135E: return "ETHIOPIC_COMBINING_VOWEL_LENGTH_MARK";
         case   0x135F: return "ETHIOPIC_COMBINING_GEMINATION_MARK";
         case   0x1360: return "ETHIOPIC_SECTION_MARK";
@@ -4448,9 +4541,11 @@ static const char *uniname0(int codepoint)
         case   0x1423: return "CANADIAN_SYLLABICS_FINAL_RIGHT_HALF_RING";
         case   0x1424: return "CANADIAN_SYLLABICS_FINAL_RING";
         case   0x1425: return "CANADIAN_SYLLABICS_FINAL_DOUBLE_ACUTE";
-        case   0x1426: return "CANADIAN_SYLLABICS_FINAL_DOUBLE_SHORT_VERTICAL_STROKES";
+        case   0x1426: return
+                "CANADIAN_SYLLABICS_FINAL_DOUBLE_SHORT_VERTICAL_STROKES";
         case   0x1427: return "CANADIAN_SYLLABICS_FINAL_MIDDLE_DOT";
-        case   0x1428: return "CANADIAN_SYLLABICS_FINAL_SHORT_HORIZONTAL_STROKE";
+        case   0x1428: return
+                "CANADIAN_SYLLABICS_FINAL_SHORT_HORIZONTAL_STROKE";
         case   0x1429: return "CANADIAN_SYLLABICS_FINAL_PLUS";
         case   0x142A: return "CANADIAN_SYLLABICS_FINAL_DOWN_TACK";
         case   0x142B: return "CANADIAN_SYLLABICS_EN";
@@ -6087,8 +6182,10 @@ static const char *uniname0(int codepoint)
         case   0x1B6D: return "BALINESE_MUSICAL_SYMBOL_COMBINING_KEMPUL";
         case   0x1B6E: return "BALINESE_MUSICAL_SYMBOL_COMBINING_KEMPLI";
         case   0x1B6F: return "BALINESE_MUSICAL_SYMBOL_COMBINING_JEGOGAN";
-        case   0x1B70: return "BALINESE_MUSICAL_SYMBOL_COMBINING_KEMPUL_WITH_JEGOGAN";
-        case   0x1B71: return "BALINESE_MUSICAL_SYMBOL_COMBINING_KEMPLI_WITH_JEGOGAN";
+        case   0x1B70: return
+                "BALINESE_MUSICAL_SYMBOL_COMBINING_KEMPUL_WITH_JEGOGAN";
+        case   0x1B71: return
+                "BALINESE_MUSICAL_SYMBOL_COMBINING_KEMPLI_WITH_JEGOGAN";
         case   0x1B72: return "BALINESE_MUSICAL_SYMBOL_COMBINING_BENDE";
         case   0x1B73: return "BALINESE_MUSICAL_SYMBOL_COMBINING_GONG";
         case   0x1B74: return "BALINESE_MUSICAL_SYMBOL_RIGHT_HAND_OPEN_DUG";
@@ -6355,18 +6452,22 @@ static const char *uniname0(int codepoint)
         case   0x1CD2: return "VEDIC_TONE_PRENKHA";
         case   0x1CD3: return "VEDIC_SIGN_NIHSHVASA";
         case   0x1CD4: return "VEDIC_SIGN_YAJURVEDIC_MIDLINE_SVARITA";
-        case   0x1CD5: return "VEDIC_TONE_YAJURVEDIC_AGGRAVATED_INDEPENDENT_SVARITA";
+        case   0x1CD5: return
+                "VEDIC_TONE_YAJURVEDIC_AGGRAVATED_INDEPENDENT_SVARITA";
         case   0x1CD6: return "VEDIC_TONE_YAJURVEDIC_INDEPENDENT_SVARITA";
-        case   0x1CD7: return "VEDIC_TONE_YAJURVEDIC_KATHAKA_INDEPENDENT_SVARITA";
+        case   0x1CD7: return
+                "VEDIC_TONE_YAJURVEDIC_KATHAKA_INDEPENDENT_SVARITA";
         case   0x1CD8: return "VEDIC_TONE_CANDRA_BELOW";
-        case   0x1CD9: return "VEDIC_TONE_YAJURVEDIC_KATHAKA_INDEPENDENT_SVARITA_SCHROEDER0";
+        case   0x1CD9: return
+                "VEDIC_TONE_YAJURVEDIC_KATHAKA_INDEPENDENT_SVARITA_SCHROEDER0";
         case   0x1CDA: return "VEDIC_TONE_DOUBLE_SVARITA";
         case   0x1CDB: return "VEDIC_TONE_TRIPLE_SVARITA";
         case   0x1CDC: return "VEDIC_TONE_KATHAKA_ANUDATTA";
         case   0x1CDD: return "VEDIC_TONE_DOT_BELOW";
         case   0x1CDE: return "VEDIC_TONE_TWO_DOTS_BELOW";
         case   0x1CDF: return "VEDIC_TONE_THREE_DOTS_BELOW";
-        case   0x1CE0: return "VEDIC_TONE_RIGVEDIC_KASHMIRI_INDEPENDENT_SVARITA";
+        case   0x1CE0: return
+                "VEDIC_TONE_RIGVEDIC_KASHMIRI_INDEPENDENT_SVARITA";
         case   0x1CE1: return "VEDIC_TONE_ATHARVAVEDIC_INDEPENDENT_SVARITA";
         case   0x1CE2: return "VEDIC_SIGN_VISARGA_SVARITA";
         case   0x1CE3: return "VEDIC_SIGN_VISARGA_UDATTA";
@@ -6506,7 +6607,8 @@ static const char *uniname0(int codepoint)
         case   0x1D70: return "LATIN_SMALL_LETTER_N_WITH_MIDDLE_TILDE";
         case   0x1D71: return "LATIN_SMALL_LETTER_P_WITH_MIDDLE_TILDE";
         case   0x1D72: return "LATIN_SMALL_LETTER_R_WITH_MIDDLE_TILDE";
-        case   0x1D73: return "LATIN_SMALL_LETTER_R_WITH_FISHHOOK_AND_MIDDLE_TILDE";
+        case   0x1D73: return
+                "LATIN_SMALL_LETTER_R_WITH_FISHHOOK_AND_MIDDLE_TILDE";
         case   0x1D74: return "LATIN_SMALL_LETTER_S_WITH_MIDDLE_TILDE";
         case   0x1D75: return "LATIN_SMALL_LETTER_T_WITH_MIDDLE_TILDE";
         case   0x1D76: return "LATIN_SMALL_LETTER_Z_WITH_MIDDLE_TILDE";
@@ -6539,7 +6641,8 @@ static const char *uniname0(int codepoint)
         case   0x1D91: return "LATIN_SMALL_LETTER_D_WITH_HOOK_AND_TAIL";
         case   0x1D92: return "LATIN_SMALL_LETTER_E_WITH_RETROFLEX_HOOK";
         case   0x1D93: return "LATIN_SMALL_LETTER_OPEN_E_WITH_RETROFLEX_HOOK";
-        case   0x1D94: return "LATIN_SMALL_LETTER_REVERSED_OPEN_E_WITH_RETROFLEX_HOOK";
+        case   0x1D94: return
+                "LATIN_SMALL_LETTER_REVERSED_OPEN_E_WITH_RETROFLEX_HOOK";
         case   0x1D95: return "LATIN_SMALL_LETTER_SCHWA_WITH_RETROFLEX_HOOK";
         case   0x1D96: return "LATIN_SMALL_LETTER_I_WITH_RETROFLEX_HOOK";
         case   0x1D97: return "LATIN_SMALL_LETTER_OPEN_O_WITH_RETROFLEX_HOOK";
@@ -6602,7 +6705,8 @@ static const char *uniname0(int codepoint)
         case   0x1DD0: return "COMBINING_IS_BELOW";
         case   0x1DD1: return "COMBINING_UR_ABOVE";
         case   0x1DD2: return "COMBINING_US_ABOVE";
-        case   0x1DD3: return "COMBINING_LATIN_SMALL_LETTER_FLATTENED_OPEN_A_ABOVE";
+        case   0x1DD3: return
+                "COMBINING_LATIN_SMALL_LETTER_FLATTENED_OPEN_A_ABOVE";
         case   0x1DD4: return "COMBINING_LATIN_SMALL_LETTER_AE";
         case   0x1DD5: return "COMBINING_LATIN_SMALL_LETTER_AO";
         case   0x1DD6: return "COMBINING_LATIN_SMALL_LETTER_AV";
@@ -6627,11 +6731,14 @@ static const char *uniname0(int codepoint)
         case   0x1DE9: return "COMBINING_LATIN_SMALL_LETTER_BETA";
         case   0x1DEA: return "COMBINING_LATIN_SMALL_LETTER_SCHWA";
         case   0x1DEB: return "COMBINING_LATIN_SMALL_LETTER_F";
-        case   0x1DEC: return "COMBINING_LATIN_SMALL_LETTER_L_WITH_DOUBLE_MIDDLE_TILDE";
-        case   0x1DED: return "COMBINING_LATIN_SMALL_LETTER_O_WITH_LIGHT_CENTRALIZATION_STROKE0";
+        case   0x1DEC: return
+                "COMBINING_LATIN_SMALL_LETTER_L_WITH_DOUBLE_MIDDLE_TILDE";
+        case   0x1DED: return
+                "COMBINING_LATIN_SMALL_LETTER_O_WITH_LIGHT_CENTRALIZATION_STROKE0";
         case   0x1DEE: return "COMBINING_LATIN_SMALL_LETTER_P";
         case   0x1DEF: return "COMBINING_LATIN_SMALL_LETTER_ESH";
-        case   0x1DF0: return "COMBINING_LATIN_SMALL_LETTER_U_WITH_LIGHT_CENTRALIZATION_STROKE";
+        case   0x1DF0: return
+                "COMBINING_LATIN_SMALL_LETTER_U_WITH_LIGHT_CENTRALIZATION_STROKE";
         case   0x1DF1: return "COMBINING_LATIN_SMALL_LETTER_W";
         case   0x1DF2: return "COMBINING_LATIN_SMALL_LETTER_A_WITH_DIAERESIS";
         case   0x1DF3: return "COMBINING_LATIN_SMALL_LETTER_O_WITH_DIAERESIS";
@@ -6640,7 +6747,8 @@ static const char *uniname0(int codepoint)
         case   0x1DFC: return "COMBINING_DOUBLE_INVERTED_BREVE_BELOW";
         case   0x1DFD: return "COMBINING_ALMOST_EQUAL_TO_BELOW";
         case   0x1DFE: return "COMBINING_LEFT_ARROWHEAD_ABOVE";
-        case   0x1DFF: return "COMBINING_RIGHT_ARROWHEAD_AND_DOWN_ARROWHEAD_BELOW";
+        case   0x1DFF: return
+                "COMBINING_RIGHT_ARROWHEAD_AND_DOWN_ARROWHEAD_BELOW";
         case   0x1E00: return "LATIN_CAPITAL_LETTER_A_WITH_RING_BELOW";
         case   0x1E01: return "LATIN_SMALL_LETTER_A_WITH_RING_BELOW";
         case   0x1E02: return "LATIN_CAPITAL_LETTER_B_WITH_DOT_ABOVE";
@@ -6687,7 +6795,8 @@ static const char *uniname0(int codepoint)
         case   0x1E2B: return "LATIN_SMALL_LETTER_H_WITH_BREVE_BELOW";
         case   0x1E2C: return "LATIN_CAPITAL_LETTER_I_WITH_TILDE_BELOW";
         case   0x1E2D: return "LATIN_SMALL_LETTER_I_WITH_TILDE_BELOW";
-        case   0x1E2E: return "LATIN_CAPITAL_LETTER_I_WITH_DIAERESIS_AND_ACUTE";
+        case   0x1E2E: return
+                "LATIN_CAPITAL_LETTER_I_WITH_DIAERESIS_AND_ACUTE";
         case   0x1E2F: return "LATIN_SMALL_LETTER_I_WITH_DIAERESIS_AND_ACUTE";
         case   0x1E30: return "LATIN_CAPITAL_LETTER_K_WITH_ACUTE";
         case   0x1E31: return "LATIN_SMALL_LETTER_K_WITH_ACUTE";
@@ -6697,8 +6806,10 @@ static const char *uniname0(int codepoint)
         case   0x1E35: return "LATIN_SMALL_LETTER_K_WITH_LINE_BELOW";
         case   0x1E36: return "LATIN_CAPITAL_LETTER_L_WITH_DOT_BELOW";
         case   0x1E37: return "LATIN_SMALL_LETTER_L_WITH_DOT_BELOW";
-        case   0x1E38: return "LATIN_CAPITAL_LETTER_L_WITH_DOT_BELOW_AND_MACRON";
-        case   0x1E39: return "LATIN_SMALL_LETTER_L_WITH_DOT_BELOW_AND_MACRON";
+        case   0x1E38: return
+                "LATIN_CAPITAL_LETTER_L_WITH_DOT_BELOW_AND_MACRON";
+        case   0x1E39: return
+                "LATIN_SMALL_LETTER_L_WITH_DOT_BELOW_AND_MACRON";
         case   0x1E3A: return "LATIN_CAPITAL_LETTER_L_WITH_LINE_BELOW";
         case   0x1E3B: return "LATIN_SMALL_LETTER_L_WITH_LINE_BELOW";
         case   0x1E3C: return "LATIN_CAPITAL_LETTER_L_WITH_CIRCUMFLEX_BELOW";
@@ -6719,7 +6830,8 @@ static const char *uniname0(int codepoint)
         case   0x1E4B: return "LATIN_SMALL_LETTER_N_WITH_CIRCUMFLEX_BELOW";
         case   0x1E4C: return "LATIN_CAPITAL_LETTER_O_WITH_TILDE_AND_ACUTE";
         case   0x1E4D: return "LATIN_SMALL_LETTER_O_WITH_TILDE_AND_ACUTE";
-        case   0x1E4E: return "LATIN_CAPITAL_LETTER_O_WITH_TILDE_AND_DIAERESIS";
+        case   0x1E4E: return
+                "LATIN_CAPITAL_LETTER_O_WITH_TILDE_AND_DIAERESIS";
         case   0x1E4F: return "LATIN_SMALL_LETTER_O_WITH_TILDE_AND_DIAERESIS";
         case   0x1E50: return "LATIN_CAPITAL_LETTER_O_WITH_MACRON_AND_GRAVE";
         case   0x1E51: return "LATIN_SMALL_LETTER_O_WITH_MACRON_AND_GRAVE";
@@ -6733,20 +6845,26 @@ static const char *uniname0(int codepoint)
         case   0x1E59: return "LATIN_SMALL_LETTER_R_WITH_DOT_ABOVE";
         case   0x1E5A: return "LATIN_CAPITAL_LETTER_R_WITH_DOT_BELOW";
         case   0x1E5B: return "LATIN_SMALL_LETTER_R_WITH_DOT_BELOW";
-        case   0x1E5C: return "LATIN_CAPITAL_LETTER_R_WITH_DOT_BELOW_AND_MACRON";
-        case   0x1E5D: return "LATIN_SMALL_LETTER_R_WITH_DOT_BELOW_AND_MACRON";
+        case   0x1E5C: return
+                "LATIN_CAPITAL_LETTER_R_WITH_DOT_BELOW_AND_MACRON";
+        case   0x1E5D: return
+                "LATIN_SMALL_LETTER_R_WITH_DOT_BELOW_AND_MACRON";
         case   0x1E5E: return "LATIN_CAPITAL_LETTER_R_WITH_LINE_BELOW";
         case   0x1E5F: return "LATIN_SMALL_LETTER_R_WITH_LINE_BELOW";
         case   0x1E60: return "LATIN_CAPITAL_LETTER_S_WITH_DOT_ABOVE";
         case   0x1E61: return "LATIN_SMALL_LETTER_S_WITH_DOT_ABOVE";
         case   0x1E62: return "LATIN_CAPITAL_LETTER_S_WITH_DOT_BELOW";
         case   0x1E63: return "LATIN_SMALL_LETTER_S_WITH_DOT_BELOW";
-        case   0x1E64: return "LATIN_CAPITAL_LETTER_S_WITH_ACUTE_AND_DOT_ABOVE";
+        case   0x1E64: return
+                "LATIN_CAPITAL_LETTER_S_WITH_ACUTE_AND_DOT_ABOVE";
         case   0x1E65: return "LATIN_SMALL_LETTER_S_WITH_ACUTE_AND_DOT_ABOVE";
-        case   0x1E66: return "LATIN_CAPITAL_LETTER_S_WITH_CARON_AND_DOT_ABOVE";
+        case   0x1E66: return
+                "LATIN_CAPITAL_LETTER_S_WITH_CARON_AND_DOT_ABOVE";
         case   0x1E67: return "LATIN_SMALL_LETTER_S_WITH_CARON_AND_DOT_ABOVE";
-        case   0x1E68: return "LATIN_CAPITAL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE";
-        case   0x1E69: return "LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE";
+        case   0x1E68: return
+                "LATIN_CAPITAL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE";
+        case   0x1E69: return
+                "LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE";
         case   0x1E6A: return "LATIN_CAPITAL_LETTER_T_WITH_DOT_ABOVE";
         case   0x1E6B: return "LATIN_SMALL_LETTER_T_WITH_DOT_ABOVE";
         case   0x1E6C: return "LATIN_CAPITAL_LETTER_T_WITH_DOT_BELOW";
@@ -6763,8 +6881,10 @@ static const char *uniname0(int codepoint)
         case   0x1E77: return "LATIN_SMALL_LETTER_U_WITH_CIRCUMFLEX_BELOW";
         case   0x1E78: return "LATIN_CAPITAL_LETTER_U_WITH_TILDE_AND_ACUTE";
         case   0x1E79: return "LATIN_SMALL_LETTER_U_WITH_TILDE_AND_ACUTE";
-        case   0x1E7A: return "LATIN_CAPITAL_LETTER_U_WITH_MACRON_AND_DIAERESIS";
-        case   0x1E7B: return "LATIN_SMALL_LETTER_U_WITH_MACRON_AND_DIAERESIS";
+        case   0x1E7A: return
+                "LATIN_CAPITAL_LETTER_U_WITH_MACRON_AND_DIAERESIS";
+        case   0x1E7B: return
+                "LATIN_SMALL_LETTER_U_WITH_MACRON_AND_DIAERESIS";
         case   0x1E7C: return "LATIN_CAPITAL_LETTER_V_WITH_TILDE";
         case   0x1E7D: return "LATIN_SMALL_LETTER_V_WITH_TILDE";
         case   0x1E7E: return "LATIN_CAPITAL_LETTER_V_WITH_DOT_BELOW";
@@ -6797,7 +6917,8 @@ static const char *uniname0(int codepoint)
         case   0x1E99: return "LATIN_SMALL_LETTER_Y_WITH_RING_ABOVE";
         case   0x1E9A: return "LATIN_SMALL_LETTER_A_WITH_RIGHT_HALF_RING";
         case   0x1E9B: return "LATIN_SMALL_LETTER_LONG_S_WITH_DOT_ABOVE";
-        case   0x1E9C: return "LATIN_SMALL_LETTER_LONG_S_WITH_DIAGONAL_STROKE";
+        case   0x1E9C: return
+                "LATIN_SMALL_LETTER_LONG_S_WITH_DIAGONAL_STROKE";
         case   0x1E9D: return "LATIN_SMALL_LETTER_LONG_S_WITH_HIGH_STROKE";
         case   0x1E9E: return "LATIN_CAPITAL_LETTER_SHARP_S";
         case   0x1E9F: return "LATIN_SMALL_LETTER_DELTA";
@@ -6805,25 +6926,38 @@ static const char *uniname0(int codepoint)
         case   0x1EA1: return "LATIN_SMALL_LETTER_A_WITH_DOT_BELOW";
         case   0x1EA2: return "LATIN_CAPITAL_LETTER_A_WITH_HOOK_ABOVE";
         case   0x1EA3: return "LATIN_SMALL_LETTER_A_WITH_HOOK_ABOVE";
-        case   0x1EA4: return "LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX_AND_ACUTE";
-        case   0x1EA5: return "LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX_AND_ACUTE";
-        case   0x1EA6: return "LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX_AND_GRAVE";
-        case   0x1EA7: return "LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX_AND_GRAVE";
-        case   0x1EA8: return "LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
-        case   0x1EA9: return "LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
-        case   0x1EAA: return "LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX_AND_TILDE";
-        case   0x1EAB: return "LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX_AND_TILDE";
-        case   0x1EAC: return "LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX_AND_DOT_BELOW";
-        case   0x1EAD: return "LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX_AND_DOT_BELOW";
+        case   0x1EA4: return
+                "LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX_AND_ACUTE";
+        case   0x1EA5: return
+                "LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX_AND_ACUTE";
+        case   0x1EA6: return
+                "LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX_AND_GRAVE";
+        case   0x1EA7: return
+                "LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX_AND_GRAVE";
+        case   0x1EA8: return
+                "LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
+        case   0x1EA9: return
+                "LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
+        case   0x1EAA: return
+                "LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX_AND_TILDE";
+        case   0x1EAB: return
+                "LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX_AND_TILDE";
+        case   0x1EAC: return
+                "LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX_AND_DOT_BELOW";
+        case   0x1EAD: return
+                "LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX_AND_DOT_BELOW";
         case   0x1EAE: return "LATIN_CAPITAL_LETTER_A_WITH_BREVE_AND_ACUTE";
         case   0x1EAF: return "LATIN_SMALL_LETTER_A_WITH_BREVE_AND_ACUTE";
         case   0x1EB0: return "LATIN_CAPITAL_LETTER_A_WITH_BREVE_AND_GRAVE";
         case   0x1EB1: return "LATIN_SMALL_LETTER_A_WITH_BREVE_AND_GRAVE";
-        case   0x1EB2: return "LATIN_CAPITAL_LETTER_A_WITH_BREVE_AND_HOOK_ABOVE";
-        case   0x1EB3: return "LATIN_SMALL_LETTER_A_WITH_BREVE_AND_HOOK_ABOVE";
+        case   0x1EB2: return
+                "LATIN_CAPITAL_LETTER_A_WITH_BREVE_AND_HOOK_ABOVE";
+        case   0x1EB3: return
+                "LATIN_SMALL_LETTER_A_WITH_BREVE_AND_HOOK_ABOVE";
         case   0x1EB4: return "LATIN_CAPITAL_LETTER_A_WITH_BREVE_AND_TILDE";
         case   0x1EB5: return "LATIN_SMALL_LETTER_A_WITH_BREVE_AND_TILDE";
-        case   0x1EB6: return "LATIN_CAPITAL_LETTER_A_WITH_BREVE_AND_DOT_BELOW";
+        case   0x1EB6: return
+                "LATIN_CAPITAL_LETTER_A_WITH_BREVE_AND_DOT_BELOW";
         case   0x1EB7: return "LATIN_SMALL_LETTER_A_WITH_BREVE_AND_DOT_BELOW";
         case   0x1EB8: return "LATIN_CAPITAL_LETTER_E_WITH_DOT_BELOW";
         case   0x1EB9: return "LATIN_SMALL_LETTER_E_WITH_DOT_BELOW";
@@ -6831,21 +6965,31 @@ static const char *uniname0(int codepoint)
         case   0x1EBB: return "LATIN_SMALL_LETTER_E_WITH_HOOK_ABOVE";
         case   0x1EBC: return "LATIN_CAPITAL_LETTER_E_WITH_TILDE";
         case   0x1EBD: return "LATIN_SMALL_LETTER_E_WITH_TILDE";
-        case   0x1EBE: return "LATIN_CAPITAL_LETTER_E_WITH_CIRCUMFLEX_AND_ACUTE";
-        case   0x1EBF: return "LATIN_SMALL_LETTER_E_WITH_CIRCUMFLEX_AND_ACUTE";
-        case   0x1EC0: return "LATIN_CAPITAL_LETTER_E_WITH_CIRCUMFLEX_AND_GRAVE";
-        case   0x1EC1: return "LATIN_SMALL_LETTER_E_WITH_CIRCUMFLEX_AND_GRAVE";
-        case   0x1EC2: return "LATIN_CAPITAL_LETTER_E_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
-        case   0x1EC3: return "LATIN_SMALL_LETTER_E_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
-        case   0x1EC4: return "LATIN_CAPITAL_LETTER_E_WITH_CIRCUMFLEX_AND_TILDE";
-        case   0x1EC5: return "LATIN_SMALL_LETTER_E_WITH_CIRCUMFLEX_AND_TILDE";
-        case   0x1EC6: return "LATIN_CAPITAL_LETTER_E_WITH_CIRCUMFLEX_AND_DOT_BELOW";
-        case   0x1EC7: return "LATIN_SMALL_LETTER_E_WITH_CIRCUMFLEX_AND_DOT_BELOW";
+        case   0x1EBE: return
+                "LATIN_CAPITAL_LETTER_E_WITH_CIRCUMFLEX_AND_ACUTE";
+        case   0x1EBF: return
+                "LATIN_SMALL_LETTER_E_WITH_CIRCUMFLEX_AND_ACUTE";
+        case   0x1EC0: return
+                "LATIN_CAPITAL_LETTER_E_WITH_CIRCUMFLEX_AND_GRAVE";
+        case   0x1EC1: return
+                "LATIN_SMALL_LETTER_E_WITH_CIRCUMFLEX_AND_GRAVE";
+        case   0x1EC2: return
+                "LATIN_CAPITAL_LETTER_E_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
+        case   0x1EC3: return
+                "LATIN_SMALL_LETTER_E_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
+        case   0x1EC4: return
+                "LATIN_CAPITAL_LETTER_E_WITH_CIRCUMFLEX_AND_TILDE";
+        case   0x1EC5: return
+                "LATIN_SMALL_LETTER_E_WITH_CIRCUMFLEX_AND_TILDE";
+        case   0x1EC6: return
+                "LATIN_CAPITAL_LETTER_E_WITH_CIRCUMFLEX_AND_DOT_BELOW";
+        case   0x1EC7: return
+                "LATIN_SMALL_LETTER_E_WITH_CIRCUMFLEX_AND_DOT_BELOW";
         case   0x1EC8: return "LATIN_CAPITAL_LETTER_I_WITH_HOOK_ABOVE";
         case   0x1EC9: return "LATIN_SMALL_LETTER_I_WITH_HOOK_ABOVE";
         case   0x1ECA: return "LATIN_CAPITAL_LETTER_I_WITH_DOT_BELOW";
         case   0x1ECB: return "LATIN_SMALL_LETTER_I_WITH_DOT_BELOW";
-        default:       return NULL;
+        default:       return nullptr;
     }
 }
 
@@ -6855,25 +6999,37 @@ static const char *uniname1(int codepoint)
         case   0x1ECD: return "LATIN_SMALL_LETTER_O_WITH_DOT_BELOW";
         case   0x1ECE: return "LATIN_CAPITAL_LETTER_O_WITH_HOOK_ABOVE";
         case   0x1ECF: return "LATIN_SMALL_LETTER_O_WITH_HOOK_ABOVE";
-        case   0x1ED0: return "LATIN_CAPITAL_LETTER_O_WITH_CIRCUMFLEX_AND_ACUTE";
-        case   0x1ED1: return "LATIN_SMALL_LETTER_O_WITH_CIRCUMFLEX_AND_ACUTE";
-        case   0x1ED2: return "LATIN_CAPITAL_LETTER_O_WITH_CIRCUMFLEX_AND_GRAVE";
-        case   0x1ED3: return "LATIN_SMALL_LETTER_O_WITH_CIRCUMFLEX_AND_GRAVE";
-        case   0x1ED4: return "LATIN_CAPITAL_LETTER_O_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
-        case   0x1ED5: return "LATIN_SMALL_LETTER_O_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
-        case   0x1ED6: return "LATIN_CAPITAL_LETTER_O_WITH_CIRCUMFLEX_AND_TILDE";
-        case   0x1ED7: return "LATIN_SMALL_LETTER_O_WITH_CIRCUMFLEX_AND_TILDE";
-        case   0x1ED8: return "LATIN_CAPITAL_LETTER_O_WITH_CIRCUMFLEX_AND_DOT_BELOW";
-        case   0x1ED9: return "LATIN_SMALL_LETTER_O_WITH_CIRCUMFLEX_AND_DOT_BELOW";
+        case   0x1ED0: return
+                "LATIN_CAPITAL_LETTER_O_WITH_CIRCUMFLEX_AND_ACUTE";
+        case   0x1ED1: return
+                "LATIN_SMALL_LETTER_O_WITH_CIRCUMFLEX_AND_ACUTE";
+        case   0x1ED2: return
+                "LATIN_CAPITAL_LETTER_O_WITH_CIRCUMFLEX_AND_GRAVE";
+        case   0x1ED3: return
+                "LATIN_SMALL_LETTER_O_WITH_CIRCUMFLEX_AND_GRAVE";
+        case   0x1ED4: return
+                "LATIN_CAPITAL_LETTER_O_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
+        case   0x1ED5: return
+                "LATIN_SMALL_LETTER_O_WITH_CIRCUMFLEX_AND_HOOK_ABOVE";
+        case   0x1ED6: return
+                "LATIN_CAPITAL_LETTER_O_WITH_CIRCUMFLEX_AND_TILDE";
+        case   0x1ED7: return
+                "LATIN_SMALL_LETTER_O_WITH_CIRCUMFLEX_AND_TILDE";
+        case   0x1ED8: return
+                "LATIN_CAPITAL_LETTER_O_WITH_CIRCUMFLEX_AND_DOT_BELOW";
+        case   0x1ED9: return
+                "LATIN_SMALL_LETTER_O_WITH_CIRCUMFLEX_AND_DOT_BELOW";
         case   0x1EDA: return "LATIN_CAPITAL_LETTER_O_WITH_HORN_AND_ACUTE";
         case   0x1EDB: return "LATIN_SMALL_LETTER_O_WITH_HORN_AND_ACUTE";
         case   0x1EDC: return "LATIN_CAPITAL_LETTER_O_WITH_HORN_AND_GRAVE";
         case   0x1EDD: return "LATIN_SMALL_LETTER_O_WITH_HORN_AND_GRAVE";
-        case   0x1EDE: return "LATIN_CAPITAL_LETTER_O_WITH_HORN_AND_HOOK_ABOVE";
+        case   0x1EDE: return
+                "LATIN_CAPITAL_LETTER_O_WITH_HORN_AND_HOOK_ABOVE";
         case   0x1EDF: return "LATIN_SMALL_LETTER_O_WITH_HORN_AND_HOOK_ABOVE";
         case   0x1EE0: return "LATIN_CAPITAL_LETTER_O_WITH_HORN_AND_TILDE";
         case   0x1EE1: return "LATIN_SMALL_LETTER_O_WITH_HORN_AND_TILDE";
-        case   0x1EE2: return "LATIN_CAPITAL_LETTER_O_WITH_HORN_AND_DOT_BELOW";
+        case   0x1EE2: return
+                "LATIN_CAPITAL_LETTER_O_WITH_HORN_AND_DOT_BELOW";
         case   0x1EE3: return "LATIN_SMALL_LETTER_O_WITH_HORN_AND_DOT_BELOW";
         case   0x1EE4: return "LATIN_CAPITAL_LETTER_U_WITH_DOT_BELOW";
         case   0x1EE5: return "LATIN_SMALL_LETTER_U_WITH_DOT_BELOW";
@@ -6883,11 +7039,13 @@ static const char *uniname1(int codepoint)
         case   0x1EE9: return "LATIN_SMALL_LETTER_U_WITH_HORN_AND_ACUTE";
         case   0x1EEA: return "LATIN_CAPITAL_LETTER_U_WITH_HORN_AND_GRAVE";
         case   0x1EEB: return "LATIN_SMALL_LETTER_U_WITH_HORN_AND_GRAVE";
-        case   0x1EEC: return "LATIN_CAPITAL_LETTER_U_WITH_HORN_AND_HOOK_ABOVE";
+        case   0x1EEC: return
+                "LATIN_CAPITAL_LETTER_U_WITH_HORN_AND_HOOK_ABOVE";
         case   0x1EED: return "LATIN_SMALL_LETTER_U_WITH_HORN_AND_HOOK_ABOVE";
         case   0x1EEE: return "LATIN_CAPITAL_LETTER_U_WITH_HORN_AND_TILDE";
         case   0x1EEF: return "LATIN_SMALL_LETTER_U_WITH_HORN_AND_TILDE";
-        case   0x1EF0: return "LATIN_CAPITAL_LETTER_U_WITH_HORN_AND_DOT_BELOW";
+        case   0x1EF0: return
+                "LATIN_CAPITAL_LETTER_U_WITH_HORN_AND_DOT_BELOW";
         case   0x1EF1: return "LATIN_SMALL_LETTER_U_WITH_HORN_AND_DOT_BELOW";
         case   0x1EF2: return "LATIN_CAPITAL_LETTER_Y_WITH_GRAVE";
         case   0x1EF3: return "LATIN_SMALL_LETTER_Y_WITH_GRAVE";
@@ -6909,100 +7067,151 @@ static const char *uniname1(int codepoint)
         case   0x1F03: return "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_VARIA";
         case   0x1F04: return "GREEK_SMALL_LETTER_ALPHA_WITH_PSILI_AND_OXIA";
         case   0x1F05: return "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_OXIA";
-        case   0x1F06: return "GREEK_SMALL_LETTER_ALPHA_WITH_PSILI_AND_PERISPOMENI";
-        case   0x1F07: return "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_PERISPOMENI";
+        case   0x1F06: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_PSILI_AND_PERISPOMENI";
+        case   0x1F07: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_PERISPOMENI";
         case   0x1F08: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI";
         case   0x1F09: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA";
-        case   0x1F0A: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_VARIA";
-        case   0x1F0B: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_VARIA";
-        case   0x1F0C: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_OXIA";
-        case   0x1F0D: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_OXIA";
-        case   0x1F0E: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_PERISPOMENI";
-        case   0x1F0F: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_PERISPOMENI";
+        case   0x1F0A: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_VARIA";
+        case   0x1F0B: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_VARIA";
+        case   0x1F0C: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_OXIA";
+        case   0x1F0D: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_OXIA";
+        case   0x1F0E: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_PERISPOMENI";
+        case   0x1F0F: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_PERISPOMENI";
         case   0x1F10: return "GREEK_SMALL_LETTER_EPSILON_WITH_PSILI";
         case   0x1F11: return "GREEK_SMALL_LETTER_EPSILON_WITH_DASIA";
-        case   0x1F12: return "GREEK_SMALL_LETTER_EPSILON_WITH_PSILI_AND_VARIA";
-        case   0x1F13: return "GREEK_SMALL_LETTER_EPSILON_WITH_DASIA_AND_VARIA";
-        case   0x1F14: return "GREEK_SMALL_LETTER_EPSILON_WITH_PSILI_AND_OXIA";
-        case   0x1F15: return "GREEK_SMALL_LETTER_EPSILON_WITH_DASIA_AND_OXIA";
+        case   0x1F12: return
+                "GREEK_SMALL_LETTER_EPSILON_WITH_PSILI_AND_VARIA";
+        case   0x1F13: return
+                "GREEK_SMALL_LETTER_EPSILON_WITH_DASIA_AND_VARIA";
+        case   0x1F14: return
+                "GREEK_SMALL_LETTER_EPSILON_WITH_PSILI_AND_OXIA";
+        case   0x1F15: return
+                "GREEK_SMALL_LETTER_EPSILON_WITH_DASIA_AND_OXIA";
         case   0x1F18: return "GREEK_CAPITAL_LETTER_EPSILON_WITH_PSILI";
         case   0x1F19: return "GREEK_CAPITAL_LETTER_EPSILON_WITH_DASIA";
-        case   0x1F1A: return "GREEK_CAPITAL_LETTER_EPSILON_WITH_PSILI_AND_VARIA";
-        case   0x1F1B: return "GREEK_CAPITAL_LETTER_EPSILON_WITH_DASIA_AND_VARIA";
-        case   0x1F1C: return "GREEK_CAPITAL_LETTER_EPSILON_WITH_PSILI_AND_OXIA";
-        case   0x1F1D: return "GREEK_CAPITAL_LETTER_EPSILON_WITH_DASIA_AND_OXIA";
+        case   0x1F1A: return
+                "GREEK_CAPITAL_LETTER_EPSILON_WITH_PSILI_AND_VARIA";
+        case   0x1F1B: return
+                "GREEK_CAPITAL_LETTER_EPSILON_WITH_DASIA_AND_VARIA";
+        case   0x1F1C: return
+                "GREEK_CAPITAL_LETTER_EPSILON_WITH_PSILI_AND_OXIA";
+        case   0x1F1D: return
+                "GREEK_CAPITAL_LETTER_EPSILON_WITH_DASIA_AND_OXIA";
         case   0x1F20: return "GREEK_SMALL_LETTER_ETA_WITH_PSILI";
         case   0x1F21: return "GREEK_SMALL_LETTER_ETA_WITH_DASIA";
         case   0x1F22: return "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_VARIA";
         case   0x1F23: return "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_VARIA";
         case   0x1F24: return "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_OXIA";
         case   0x1F25: return "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_OXIA";
-        case   0x1F26: return "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_PERISPOMENI";
-        case   0x1F27: return "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_PERISPOMENI";
+        case   0x1F26: return
+                "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_PERISPOMENI";
+        case   0x1F27: return
+                "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_PERISPOMENI";
         case   0x1F28: return "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI";
         case   0x1F29: return "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA";
         case   0x1F2A: return "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_VARIA";
         case   0x1F2B: return "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_VARIA";
         case   0x1F2C: return "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_OXIA";
         case   0x1F2D: return "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_OXIA";
-        case   0x1F2E: return "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_PERISPOMENI";
-        case   0x1F2F: return "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_PERISPOMENI";
+        case   0x1F2E: return
+                "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_PERISPOMENI";
+        case   0x1F2F: return
+                "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_PERISPOMENI";
         case   0x1F30: return "GREEK_SMALL_LETTER_IOTA_WITH_PSILI";
         case   0x1F31: return "GREEK_SMALL_LETTER_IOTA_WITH_DASIA";
         case   0x1F32: return "GREEK_SMALL_LETTER_IOTA_WITH_PSILI_AND_VARIA";
         case   0x1F33: return "GREEK_SMALL_LETTER_IOTA_WITH_DASIA_AND_VARIA";
         case   0x1F34: return "GREEK_SMALL_LETTER_IOTA_WITH_PSILI_AND_OXIA";
         case   0x1F35: return "GREEK_SMALL_LETTER_IOTA_WITH_DASIA_AND_OXIA";
-        case   0x1F36: return "GREEK_SMALL_LETTER_IOTA_WITH_PSILI_AND_PERISPOMENI";
-        case   0x1F37: return "GREEK_SMALL_LETTER_IOTA_WITH_DASIA_AND_PERISPOMENI";
+        case   0x1F36: return
+                "GREEK_SMALL_LETTER_IOTA_WITH_PSILI_AND_PERISPOMENI";
+        case   0x1F37: return
+                "GREEK_SMALL_LETTER_IOTA_WITH_DASIA_AND_PERISPOMENI";
         case   0x1F38: return "GREEK_CAPITAL_LETTER_IOTA_WITH_PSILI";
         case   0x1F39: return "GREEK_CAPITAL_LETTER_IOTA_WITH_DASIA";
-        case   0x1F3A: return "GREEK_CAPITAL_LETTER_IOTA_WITH_PSILI_AND_VARIA";
-        case   0x1F3B: return "GREEK_CAPITAL_LETTER_IOTA_WITH_DASIA_AND_VARIA";
+        case   0x1F3A: return
+                "GREEK_CAPITAL_LETTER_IOTA_WITH_PSILI_AND_VARIA";
+        case   0x1F3B: return
+                "GREEK_CAPITAL_LETTER_IOTA_WITH_DASIA_AND_VARIA";
         case   0x1F3C: return "GREEK_CAPITAL_LETTER_IOTA_WITH_PSILI_AND_OXIA";
         case   0x1F3D: return "GREEK_CAPITAL_LETTER_IOTA_WITH_DASIA_AND_OXIA";
-        case   0x1F3E: return "GREEK_CAPITAL_LETTER_IOTA_WITH_PSILI_AND_PERISPOMENI";
-        case   0x1F3F: return "GREEK_CAPITAL_LETTER_IOTA_WITH_DASIA_AND_PERISPOMENI";
+        case   0x1F3E: return
+                "GREEK_CAPITAL_LETTER_IOTA_WITH_PSILI_AND_PERISPOMENI";
+        case   0x1F3F: return
+                "GREEK_CAPITAL_LETTER_IOTA_WITH_DASIA_AND_PERISPOMENI";
         case   0x1F40: return "GREEK_SMALL_LETTER_OMICRON_WITH_PSILI";
         case   0x1F41: return "GREEK_SMALL_LETTER_OMICRON_WITH_DASIA";
-        case   0x1F42: return "GREEK_SMALL_LETTER_OMICRON_WITH_PSILI_AND_VARIA";
-        case   0x1F43: return "GREEK_SMALL_LETTER_OMICRON_WITH_DASIA_AND_VARIA";
-        case   0x1F44: return "GREEK_SMALL_LETTER_OMICRON_WITH_PSILI_AND_OXIA";
-        case   0x1F45: return "GREEK_SMALL_LETTER_OMICRON_WITH_DASIA_AND_OXIA";
+        case   0x1F42: return
+                "GREEK_SMALL_LETTER_OMICRON_WITH_PSILI_AND_VARIA";
+        case   0x1F43: return
+                "GREEK_SMALL_LETTER_OMICRON_WITH_DASIA_AND_VARIA";
+        case   0x1F44: return
+                "GREEK_SMALL_LETTER_OMICRON_WITH_PSILI_AND_OXIA";
+        case   0x1F45: return
+                "GREEK_SMALL_LETTER_OMICRON_WITH_DASIA_AND_OXIA";
         case   0x1F48: return "GREEK_CAPITAL_LETTER_OMICRON_WITH_PSILI";
         case   0x1F49: return "GREEK_CAPITAL_LETTER_OMICRON_WITH_DASIA";
-        case   0x1F4A: return "GREEK_CAPITAL_LETTER_OMICRON_WITH_PSILI_AND_VARIA";
-        case   0x1F4B: return "GREEK_CAPITAL_LETTER_OMICRON_WITH_DASIA_AND_VARIA";
-        case   0x1F4C: return "GREEK_CAPITAL_LETTER_OMICRON_WITH_PSILI_AND_OXIA";
-        case   0x1F4D: return "GREEK_CAPITAL_LETTER_OMICRON_WITH_DASIA_AND_OXIA";
+        case   0x1F4A: return
+                "GREEK_CAPITAL_LETTER_OMICRON_WITH_PSILI_AND_VARIA";
+        case   0x1F4B: return
+                "GREEK_CAPITAL_LETTER_OMICRON_WITH_DASIA_AND_VARIA";
+        case   0x1F4C: return
+                "GREEK_CAPITAL_LETTER_OMICRON_WITH_PSILI_AND_OXIA";
+        case   0x1F4D: return
+                "GREEK_CAPITAL_LETTER_OMICRON_WITH_DASIA_AND_OXIA";
         case   0x1F50: return "GREEK_SMALL_LETTER_UPSILON_WITH_PSILI";
         case   0x1F51: return "GREEK_SMALL_LETTER_UPSILON_WITH_DASIA";
-        case   0x1F52: return "GREEK_SMALL_LETTER_UPSILON_WITH_PSILI_AND_VARIA";
-        case   0x1F53: return "GREEK_SMALL_LETTER_UPSILON_WITH_DASIA_AND_VARIA";
-        case   0x1F54: return "GREEK_SMALL_LETTER_UPSILON_WITH_PSILI_AND_OXIA";
-        case   0x1F55: return "GREEK_SMALL_LETTER_UPSILON_WITH_DASIA_AND_OXIA";
-        case   0x1F56: return "GREEK_SMALL_LETTER_UPSILON_WITH_PSILI_AND_PERISPOMENI";
-        case   0x1F57: return "GREEK_SMALL_LETTER_UPSILON_WITH_DASIA_AND_PERISPOMENI";
+        case   0x1F52: return
+                "GREEK_SMALL_LETTER_UPSILON_WITH_PSILI_AND_VARIA";
+        case   0x1F53: return
+                "GREEK_SMALL_LETTER_UPSILON_WITH_DASIA_AND_VARIA";
+        case   0x1F54: return
+                "GREEK_SMALL_LETTER_UPSILON_WITH_PSILI_AND_OXIA";
+        case   0x1F55: return
+                "GREEK_SMALL_LETTER_UPSILON_WITH_DASIA_AND_OXIA";
+        case   0x1F56: return
+                "GREEK_SMALL_LETTER_UPSILON_WITH_PSILI_AND_PERISPOMENI";
+        case   0x1F57: return
+                "GREEK_SMALL_LETTER_UPSILON_WITH_DASIA_AND_PERISPOMENI";
         case   0x1F59: return "GREEK_CAPITAL_LETTER_UPSILON_WITH_DASIA";
-        case   0x1F5B: return "GREEK_CAPITAL_LETTER_UPSILON_WITH_DASIA_AND_VARIA";
-        case   0x1F5D: return "GREEK_CAPITAL_LETTER_UPSILON_WITH_DASIA_AND_OXIA";
-        case   0x1F5F: return "GREEK_CAPITAL_LETTER_UPSILON_WITH_DASIA_AND_PERISPOMENI";
+        case   0x1F5B: return
+                "GREEK_CAPITAL_LETTER_UPSILON_WITH_DASIA_AND_VARIA";
+        case   0x1F5D: return
+                "GREEK_CAPITAL_LETTER_UPSILON_WITH_DASIA_AND_OXIA";
+        case   0x1F5F: return
+                "GREEK_CAPITAL_LETTER_UPSILON_WITH_DASIA_AND_PERISPOMENI";
         case   0x1F60: return "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI";
         case   0x1F61: return "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA";
         case   0x1F62: return "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_VARIA";
         case   0x1F63: return "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_VARIA";
         case   0x1F64: return "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_OXIA";
         case   0x1F65: return "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_OXIA";
-        case   0x1F66: return "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_PERISPOMENI";
-        case   0x1F67: return "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_PERISPOMENI";
+        case   0x1F66: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_PERISPOMENI";
+        case   0x1F67: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_PERISPOMENI";
         case   0x1F68: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI";
         case   0x1F69: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA";
-        case   0x1F6A: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_VARIA";
-        case   0x1F6B: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_VARIA";
-        case   0x1F6C: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_OXIA";
-        case   0x1F6D: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_OXIA";
-        case   0x1F6E: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_PERISPOMENI";
-        case   0x1F6F: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_PERISPOMENI";
+        case   0x1F6A: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_VARIA";
+        case   0x1F6B: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_VARIA";
+        case   0x1F6C: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_OXIA";
+        case   0x1F6D: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_OXIA";
+        case   0x1F6E: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_PERISPOMENI";
+        case   0x1F6F: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_PERISPOMENI";
         case   0x1F70: return "GREEK_SMALL_LETTER_ALPHA_WITH_VARIA";
         case   0x1F71: return "GREEK_SMALL_LETTER_ALPHA_WITH_OXIA";
         case   0x1F72: return "GREEK_SMALL_LETTER_EPSILON_WITH_VARIA";
@@ -7017,76 +7226,131 @@ static const char *uniname1(int codepoint)
         case   0x1F7B: return "GREEK_SMALL_LETTER_UPSILON_WITH_OXIA";
         case   0x1F7C: return "GREEK_SMALL_LETTER_OMEGA_WITH_VARIA";
         case   0x1F7D: return "GREEK_SMALL_LETTER_OMEGA_WITH_OXIA";
-        case   0x1F80: return "GREEK_SMALL_LETTER_ALPHA_WITH_PSILI_AND_YPOGEGRAMMENI";
-        case   0x1F81: return "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_YPOGEGRAMMENI";
-        case   0x1F82: return "GREEK_SMALL_LETTER_ALPHA_WITH_PSILI_AND_VARIA_AND_YPOGEGRAMMENI";
-        case   0x1F83: return "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_VARIA_AND_YPOGEGRAMMENI";
-        case   0x1F84: return "GREEK_SMALL_LETTER_ALPHA_WITH_PSILI_AND_OXIA_AND_YPOGEGRAMMENI";
-        case   0x1F85: return "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_OXIA_AND_YPOGEGRAMMENI";
-        case   0x1F86: return "GREEK_SMALL_LETTER_ALPHA_WITH_PSILI_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
-        case   0x1F87: return "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
-        case   0x1F88: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_PROSGEGRAMMENI";
-        case   0x1F89: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_PROSGEGRAMMENI";
-        case   0x1F8A: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_VARIA_AND_PROSGEGRAMMENI";
-        case   0x1F8B: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_VARIA_AND_PROSGEGRAMMENI";
-        case   0x1F8C: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_OXIA_AND_PROSGEGRAMMENI";
-        case   0x1F8D: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_OXIA_AND_PROSGEGRAMMENI";
-        case   0x1F8E: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
-        case   0x1F8F: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
-        case   0x1F90: return "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_YPOGEGRAMMENI";
-        case   0x1F91: return "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_YPOGEGRAMMENI";
-        case   0x1F92: return "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_VARIA_AND_YPOGEGRAMMENI";
-        case   0x1F93: return "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_VARIA_AND_YPOGEGRAMMENI";
-        case   0x1F94: return "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_OXIA_AND_YPOGEGRAMMENI";
-        case   0x1F95: return "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_OXIA_AND_YPOGEGRAMMENI";
-        case   0x1F96: return "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
-        case   0x1F97: return "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
-        case   0x1F98: return "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_PROSGEGRAMMENI";
-        case   0x1F99: return "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_PROSGEGRAMMENI";
-        case   0x1F9A: return "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_VARIA_AND_PROSGEGRAMMENI";
-        case   0x1F9B: return "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_VARIA_AND_PROSGEGRAMMENI";
-        case   0x1F9C: return "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_OXIA_AND_PROSGEGRAMMENI";
-        case   0x1F9D: return "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_OXIA_AND_PROSGEGRAMMENI";
-        case   0x1F9E: return "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
-        case   0x1F9F: return "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
-        case   0x1FA0: return "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_YPOGEGRAMMENI";
-        case   0x1FA1: return "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_YPOGEGRAMMENI";
-        case   0x1FA2: return "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_VARIA_AND_YPOGEGRAMMENI";
-        case   0x1FA3: return "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_VARIA_AND_YPOGEGRAMMENI";
-        case   0x1FA4: return "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_OXIA_AND_YPOGEGRAMMENI";
-        case   0x1FA5: return "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_OXIA_AND_YPOGEGRAMMENI";
-        case   0x1FA6: return "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
-        case   0x1FA7: return "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
-        case   0x1FA8: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_PROSGEGRAMMENI";
-        case   0x1FA9: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_PROSGEGRAMMENI";
-        case   0x1FAA: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_VARIA_AND_PROSGEGRAMMENI";
-        case   0x1FAB: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_VARIA_AND_PROSGEGRAMMENI";
-        case   0x1FAC: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_OXIA_AND_PROSGEGRAMMENI";
-        case   0x1FAD: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_OXIA_AND_PROSGEGRAMMENI";
-        case   0x1FAE: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
-        case   0x1FAF: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
+        case   0x1F80: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_PSILI_AND_YPOGEGRAMMENI";
+        case   0x1F81: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_YPOGEGRAMMENI";
+        case   0x1F82: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_PSILI_AND_VARIA_AND_YPOGEGRAMMENI";
+        case   0x1F83: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_VARIA_AND_YPOGEGRAMMENI";
+        case   0x1F84: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_PSILI_AND_OXIA_AND_YPOGEGRAMMENI";
+        case   0x1F85: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_OXIA_AND_YPOGEGRAMMENI";
+        case   0x1F86: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_PSILI_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
+        case   0x1F87: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_DASIA_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
+        case   0x1F88: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_PROSGEGRAMMENI";
+        case   0x1F89: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_PROSGEGRAMMENI";
+        case   0x1F8A: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_VARIA_AND_PROSGEGRAMMENI";
+        case   0x1F8B: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_VARIA_AND_PROSGEGRAMMENI";
+        case   0x1F8C: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_OXIA_AND_PROSGEGRAMMENI";
+        case   0x1F8D: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_OXIA_AND_PROSGEGRAMMENI";
+        case   0x1F8E: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_PSILI_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
+        case   0x1F8F: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_DASIA_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
+        case   0x1F90: return
+                "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_YPOGEGRAMMENI";
+        case   0x1F91: return
+                "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_YPOGEGRAMMENI";
+        case   0x1F92: return
+                "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_VARIA_AND_YPOGEGRAMMENI";
+        case   0x1F93: return
+                "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_VARIA_AND_YPOGEGRAMMENI";
+        case   0x1F94: return
+                "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_OXIA_AND_YPOGEGRAMMENI";
+        case   0x1F95: return
+                "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_OXIA_AND_YPOGEGRAMMENI";
+        case   0x1F96: return
+                "GREEK_SMALL_LETTER_ETA_WITH_PSILI_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
+        case   0x1F97: return
+                "GREEK_SMALL_LETTER_ETA_WITH_DASIA_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
+        case   0x1F98: return
+                "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_PROSGEGRAMMENI";
+        case   0x1F99: return
+                "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_PROSGEGRAMMENI";
+        case   0x1F9A: return
+                "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_VARIA_AND_PROSGEGRAMMENI";
+        case   0x1F9B: return
+                "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_VARIA_AND_PROSGEGRAMMENI";
+        case   0x1F9C: return
+                "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_OXIA_AND_PROSGEGRAMMENI";
+        case   0x1F9D: return
+                "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_OXIA_AND_PROSGEGRAMMENI";
+        case   0x1F9E: return
+                "GREEK_CAPITAL_LETTER_ETA_WITH_PSILI_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
+        case   0x1F9F: return
+                "GREEK_CAPITAL_LETTER_ETA_WITH_DASIA_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
+        case   0x1FA0: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_YPOGEGRAMMENI";
+        case   0x1FA1: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_YPOGEGRAMMENI";
+        case   0x1FA2: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_VARIA_AND_YPOGEGRAMMENI";
+        case   0x1FA3: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_VARIA_AND_YPOGEGRAMMENI";
+        case   0x1FA4: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_OXIA_AND_YPOGEGRAMMENI";
+        case   0x1FA5: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_OXIA_AND_YPOGEGRAMMENI";
+        case   0x1FA6: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_PSILI_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
+        case   0x1FA7: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_DASIA_AND_PERISPOMENI_AND_YPOGEGRAMMENI";
+        case   0x1FA8: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_PROSGEGRAMMENI";
+        case   0x1FA9: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_PROSGEGRAMMENI";
+        case   0x1FAA: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_VARIA_AND_PROSGEGRAMMENI";
+        case   0x1FAB: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_VARIA_AND_PROSGEGRAMMENI";
+        case   0x1FAC: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_OXIA_AND_PROSGEGRAMMENI";
+        case   0x1FAD: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_OXIA_AND_PROSGEGRAMMENI";
+        case   0x1FAE: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_PSILI_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
+        case   0x1FAF: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_DASIA_AND_PERISPOMENI_AND_PROSGEGRAMMENI";
         case   0x1FB0: return "GREEK_SMALL_LETTER_ALPHA_WITH_VRACHY";
         case   0x1FB1: return "GREEK_SMALL_LETTER_ALPHA_WITH_MACRON";
-        case   0x1FB2: return "GREEK_SMALL_LETTER_ALPHA_WITH_VARIA_AND_YPOGEGRAMMENI";
+        case   0x1FB2: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_VARIA_AND_YPOGEGRAMMENI";
         case   0x1FB3: return "GREEK_SMALL_LETTER_ALPHA_WITH_YPOGEGRAMMENI";
-        case   0x1FB4: return "GREEK_SMALL_LETTER_ALPHA_WITH_OXIA_AND_YPOGEGRAMMENI";
+        case   0x1FB4: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_OXIA_AND_YPOGEGRAMMENI";
         case   0x1FB6: return "GREEK_SMALL_LETTER_ALPHA_WITH_PERISPOMENI";
-        case   0x1FB7: return "GREEK_SMALL_LETTER_ALPHA_WITH_PERISPOMENI_AND_YPOGEGRAMMENI";
+        case   0x1FB7: return
+                "GREEK_SMALL_LETTER_ALPHA_WITH_PERISPOMENI_AND_YPOGEGRAMMENI";
         case   0x1FB8: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_VRACHY";
         case   0x1FB9: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_MACRON";
         case   0x1FBA: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_VARIA";
         case   0x1FBB: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_OXIA";
-        case   0x1FBC: return "GREEK_CAPITAL_LETTER_ALPHA_WITH_PROSGEGRAMMENI";
+        case   0x1FBC: return
+                "GREEK_CAPITAL_LETTER_ALPHA_WITH_PROSGEGRAMMENI";
         case   0x1FBD: return "GREEK_KORONIS";
         case   0x1FBE: return "GREEK_PROSGEGRAMMENI";
         case   0x1FBF: return "GREEK_PSILI";
         case   0x1FC0: return "GREEK_PERISPOMENI";
         case   0x1FC1: return "GREEK_DIALYTIKA_AND_PERISPOMENI";
-        case   0x1FC2: return "GREEK_SMALL_LETTER_ETA_WITH_VARIA_AND_YPOGEGRAMMENI";
+        case   0x1FC2: return
+                "GREEK_SMALL_LETTER_ETA_WITH_VARIA_AND_YPOGEGRAMMENI";
         case   0x1FC3: return "GREEK_SMALL_LETTER_ETA_WITH_YPOGEGRAMMENI";
-        case   0x1FC4: return "GREEK_SMALL_LETTER_ETA_WITH_OXIA_AND_YPOGEGRAMMENI";
+        case   0x1FC4: return
+                "GREEK_SMALL_LETTER_ETA_WITH_OXIA_AND_YPOGEGRAMMENI";
         case   0x1FC6: return "GREEK_SMALL_LETTER_ETA_WITH_PERISPOMENI";
-        case   0x1FC7: return "GREEK_SMALL_LETTER_ETA_WITH_PERISPOMENI_AND_YPOGEGRAMMENI";
+        case   0x1FC7: return
+                "GREEK_SMALL_LETTER_ETA_WITH_PERISPOMENI_AND_YPOGEGRAMMENI";
         case   0x1FC8: return "GREEK_CAPITAL_LETTER_EPSILON_WITH_VARIA";
         case   0x1FC9: return "GREEK_CAPITAL_LETTER_EPSILON_WITH_OXIA";
         case   0x1FCA: return "GREEK_CAPITAL_LETTER_ETA_WITH_VARIA";
@@ -7097,10 +7361,13 @@ static const char *uniname1(int codepoint)
         case   0x1FCF: return "GREEK_PSILI_AND_PERISPOMENI";
         case   0x1FD0: return "GREEK_SMALL_LETTER_IOTA_WITH_VRACHY";
         case   0x1FD1: return "GREEK_SMALL_LETTER_IOTA_WITH_MACRON";
-        case   0x1FD2: return "GREEK_SMALL_LETTER_IOTA_WITH_DIALYTIKA_AND_VARIA";
-        case   0x1FD3: return "GREEK_SMALL_LETTER_IOTA_WITH_DIALYTIKA_AND_OXIA";
+        case   0x1FD2: return
+                "GREEK_SMALL_LETTER_IOTA_WITH_DIALYTIKA_AND_VARIA";
+        case   0x1FD3: return
+                "GREEK_SMALL_LETTER_IOTA_WITH_DIALYTIKA_AND_OXIA";
         case   0x1FD6: return "GREEK_SMALL_LETTER_IOTA_WITH_PERISPOMENI";
-        case   0x1FD7: return "GREEK_SMALL_LETTER_IOTA_WITH_DIALYTIKA_AND_PERISPOMENI";
+        case   0x1FD7: return
+                "GREEK_SMALL_LETTER_IOTA_WITH_DIALYTIKA_AND_PERISPOMENI";
         case   0x1FD8: return "GREEK_CAPITAL_LETTER_IOTA_WITH_VRACHY";
         case   0x1FD9: return "GREEK_CAPITAL_LETTER_IOTA_WITH_MACRON";
         case   0x1FDA: return "GREEK_CAPITAL_LETTER_IOTA_WITH_VARIA";
@@ -7110,12 +7377,15 @@ static const char *uniname1(int codepoint)
         case   0x1FDF: return "GREEK_DASIA_AND_PERISPOMENI";
         case   0x1FE0: return "GREEK_SMALL_LETTER_UPSILON_WITH_VRACHY";
         case   0x1FE1: return "GREEK_SMALL_LETTER_UPSILON_WITH_MACRON";
-        case   0x1FE2: return "GREEK_SMALL_LETTER_UPSILON_WITH_DIALYTIKA_AND_VARIA";
-        case   0x1FE3: return "GREEK_SMALL_LETTER_UPSILON_WITH_DIALYTIKA_AND_OXIA";
+        case   0x1FE2: return
+                "GREEK_SMALL_LETTER_UPSILON_WITH_DIALYTIKA_AND_VARIA";
+        case   0x1FE3: return
+                "GREEK_SMALL_LETTER_UPSILON_WITH_DIALYTIKA_AND_OXIA";
         case   0x1FE4: return "GREEK_SMALL_LETTER_RHO_WITH_PSILI";
         case   0x1FE5: return "GREEK_SMALL_LETTER_RHO_WITH_DASIA";
         case   0x1FE6: return "GREEK_SMALL_LETTER_UPSILON_WITH_PERISPOMENI";
-        case   0x1FE7: return "GREEK_SMALL_LETTER_UPSILON_WITH_DIALYTIKA_AND_PERISPOMENI";
+        case   0x1FE7: return
+                "GREEK_SMALL_LETTER_UPSILON_WITH_DIALYTIKA_AND_PERISPOMENI";
         case   0x1FE8: return "GREEK_CAPITAL_LETTER_UPSILON_WITH_VRACHY";
         case   0x1FE9: return "GREEK_CAPITAL_LETTER_UPSILON_WITH_MACRON";
         case   0x1FEA: return "GREEK_CAPITAL_LETTER_UPSILON_WITH_VARIA";
@@ -7124,16 +7394,20 @@ static const char *uniname1(int codepoint)
         case   0x1FED: return "GREEK_DIALYTIKA_AND_VARIA";
         case   0x1FEE: return "GREEK_DIALYTIKA_AND_OXIA";
         case   0x1FEF: return "GREEK_VARIA";
-        case   0x1FF2: return "GREEK_SMALL_LETTER_OMEGA_WITH_VARIA_AND_YPOGEGRAMMENI";
+        case   0x1FF2: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_VARIA_AND_YPOGEGRAMMENI";
         case   0x1FF3: return "GREEK_SMALL_LETTER_OMEGA_WITH_YPOGEGRAMMENI";
-        case   0x1FF4: return "GREEK_SMALL_LETTER_OMEGA_WITH_OXIA_AND_YPOGEGRAMMENI";
+        case   0x1FF4: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_OXIA_AND_YPOGEGRAMMENI";
         case   0x1FF6: return "GREEK_SMALL_LETTER_OMEGA_WITH_PERISPOMENI";
-        case   0x1FF7: return "GREEK_SMALL_LETTER_OMEGA_WITH_PERISPOMENI_AND_YPOGEGRAMMENI";
+        case   0x1FF7: return
+                "GREEK_SMALL_LETTER_OMEGA_WITH_PERISPOMENI_AND_YPOGEGRAMMENI";
         case   0x1FF8: return "GREEK_CAPITAL_LETTER_OMICRON_WITH_VARIA";
         case   0x1FF9: return "GREEK_CAPITAL_LETTER_OMICRON_WITH_OXIA";
         case   0x1FFA: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_VARIA";
         case   0x1FFB: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_OXIA";
-        case   0x1FFC: return "GREEK_CAPITAL_LETTER_OMEGA_WITH_PROSGEGRAMMENI";
+        case   0x1FFC: return
+                "GREEK_CAPITAL_LETTER_OMEGA_WITH_PROSGEGRAMMENI";
         case   0x1FFD: return "GREEK_OXIA";
         case   0x1FFE: return "GREEK_DASIA";
         case   0x2000: return "EN_QUAD";
@@ -7347,8 +7621,10 @@ static const char *uniname1(int codepoint)
         case   0x20E9: return "COMBINING_WIDE_BRIDGE_ABOVE";
         case   0x20EA: return "COMBINING_LEFTWARDS_ARROW_OVERLAY";
         case   0x20EB: return "COMBINING_LONG_DOUBLE_SOLIDUS_OVERLAY";
-        case   0x20EC: return "COMBINING_RIGHTWARDS_HARPOON_WITH_BARB_DOWNWARDS";
-        case   0x20ED: return "COMBINING_LEFTWARDS_HARPOON_WITH_BARB_DOWNWARDS";
+        case   0x20EC: return
+                "COMBINING_RIGHTWARDS_HARPOON_WITH_BARB_DOWNWARDS";
+        case   0x20ED: return
+                "COMBINING_LEFTWARDS_HARPOON_WITH_BARB_DOWNWARDS";
         case   0x20EE: return "COMBINING_LEFT_ARROW_BELOW";
         case   0x20EF: return "COMBINING_RIGHT_ARROW_BELOW";
         case   0x20F0: return "COMBINING_ASTERISK_ABOVE";
@@ -7531,7 +7807,8 @@ static const char *uniname1(int codepoint)
         case   0x21B6: return "ANTICLOCKWISE_TOP_SEMICIRCLE_ARROW";
         case   0x21B7: return "CLOCKWISE_TOP_SEMICIRCLE_ARROW";
         case   0x21B8: return "NORTH_WEST_ARROW_TO_LONG_BAR";
-        case   0x21B9: return "LEFTWARDS_ARROW_TO_BAR_OVER_RIGHTWARDS_ARROW_TO_BAR";
+        case   0x21B9: return
+                "LEFTWARDS_ARROW_TO_BAR_OVER_RIGHTWARDS_ARROW_TO_BAR";
         case   0x21BA: return "ANTICLOCKWISE_OPEN_CIRCLE_ARROW";
         case   0x21BB: return "CLOCKWISE_OPEN_CIRCLE_ARROW";
         case   0x21BC: return "LEFTWARDS_HARPOON_WITH_BARB_UPWARDS";
@@ -7582,8 +7859,10 @@ static const char *uniname1(int codepoint)
         case   0x21E9: return "DOWNWARDS_WHITE_ARROW";
         case   0x21EA: return "UPWARDS_WHITE_ARROW_FROM_BAR";
         case   0x21EB: return "UPWARDS_WHITE_ARROW_ON_PEDESTAL";
-        case   0x21EC: return "UPWARDS_WHITE_ARROW_ON_PEDESTAL_WITH_HORIZONTAL_BAR";
-        case   0x21ED: return "UPWARDS_WHITE_ARROW_ON_PEDESTAL_WITH_VERTICAL_BAR";
+        case   0x21EC: return
+                "UPWARDS_WHITE_ARROW_ON_PEDESTAL_WITH_HORIZONTAL_BAR";
+        case   0x21ED: return
+                "UPWARDS_WHITE_ARROW_ON_PEDESTAL_WITH_VERTICAL_BAR";
         case   0x21EE: return "UPWARDS_WHITE_DOUBLE_ARROW";
         case   0x21EF: return "UPWARDS_WHITE_DOUBLE_ARROW_ON_PEDESTAL";
         case   0x21F0: return "RIGHTWARDS_WHITE_ARROW_FROM_WALL";
@@ -7777,7 +8056,8 @@ static const char *uniname1(int codepoint)
         case   0x22AC: return "DOES_NOT_PROVE";
         case   0x22AD: return "NOT_TRUE";
         case   0x22AE: return "DOES_NOT_FORCE";
-        case   0x22AF: return "NEGATED_DOUBLE_VERTICAL_BAR_DOUBLE_RIGHT_TURNSTILE";
+        case   0x22AF: return
+                "NEGATED_DOUBLE_VERTICAL_BAR_DOUBLE_RIGHT_TURNSTILE";
         case   0x22B0: return "PRECEDES_UNDER_RELATION";
         case   0x22B1: return "SUCCEEDS_UNDER_RELATION";
         case   0x22B2: return "NORMAL_SUBGROUP_OF";
@@ -7845,16 +8125,20 @@ static const char *uniname1(int codepoint)
         case   0x22F0: return "UP_RIGHT_DIAGONAL_ELLIPSIS";
         case   0x22F1: return "DOWN_RIGHT_DIAGONAL_ELLIPSIS";
         case   0x22F2: return "ELEMENT_OF_WITH_LONG_HORIZONTAL_STROKE";
-        case   0x22F3: return "ELEMENT_OF_WITH_VERTICAL_BAR_AT_END_OF_HORIZONTAL_STROKE";
-        case   0x22F4: return "SMALL_ELEMENT_OF_WITH_VERTICAL_BAR_AT_END_OF_HORIZONTAL_STROKE";
+        case   0x22F3: return
+                "ELEMENT_OF_WITH_VERTICAL_BAR_AT_END_OF_HORIZONTAL_STROKE";
+        case   0x22F4: return
+                "SMALL_ELEMENT_OF_WITH_VERTICAL_BAR_AT_END_OF_HORIZONTAL_STROKE";
         case   0x22F5: return "ELEMENT_OF_WITH_DOT_ABOVE";
         case   0x22F6: return "ELEMENT_OF_WITH_OVERBAR";
         case   0x22F7: return "SMALL_ELEMENT_OF_WITH_OVERBAR";
         case   0x22F8: return "ELEMENT_OF_WITH_UNDERBAR";
         case   0x22F9: return "ELEMENT_OF_WITH_TWO_HORIZONTAL_STROKES";
         case   0x22FA: return "CONTAINS_WITH_LONG_HORIZONTAL_STROKE";
-        case   0x22FB: return "CONTAINS_WITH_VERTICAL_BAR_AT_END_OF_HORIZONTAL_STROKE";
-        case   0x22FC: return "SMALL_CONTAINS_WITH_VERTICAL_BAR_AT_END_OF_HORIZONTAL_STROKE";
+        case   0x22FB: return
+                "CONTAINS_WITH_VERTICAL_BAR_AT_END_OF_HORIZONTAL_STROKE";
+        case   0x22FC: return
+                "SMALL_CONTAINS_WITH_VERTICAL_BAR_AT_END_OF_HORIZONTAL_STROKE";
         case   0x22FD: return "CONTAINS_WITH_OVERBAR";
         case   0x22FE: return "SMALL_CONTAINS_WITH_OVERBAR";
         case   0x22FF: return "Z_NOTATION_BAG_MEMBERSHIP";
@@ -8034,8 +8318,10 @@ static const char *uniname1(int codepoint)
         case   0x23AD: return "RIGHT_CURLY_BRACKET_LOWER_HOOK";
         case   0x23AE: return "INTEGRAL_EXTENSION";
         case   0x23AF: return "HORIZONTAL_LINE_EXTENSION";
-        case   0x23B0: return "UPPER_LEFT_OR_LOWER_RIGHT_CURLY_BRACKET_SECTION";
-        case   0x23B1: return "UPPER_RIGHT_OR_LOWER_LEFT_CURLY_BRACKET_SECTION";
+        case   0x23B0: return
+                "UPPER_LEFT_OR_LOWER_RIGHT_CURLY_BRACKET_SECTION";
+        case   0x23B1: return
+                "UPPER_RIGHT_OR_LOWER_LEFT_CURLY_BRACKET_SECTION";
         case   0x23B2: return "SUMMATION_TOP";
         case   0x23B3: return "SUMMATION_BOTTOM";
         case   0x23B4: return "TOP_SQUARE_BRACKET";
@@ -8049,20 +8335,28 @@ static const char *uniname1(int codepoint)
         case   0x23BC: return "HORIZONTAL_SCAN_LINE_7";
         case   0x23BD: return "HORIZONTAL_SCAN_LINE_9";
         case   0x23BE: return "DENTISTRY_SYMBOL_LIGHT_VERTICAL_AND_TOP_RIGHT";
-        case   0x23BF: return "DENTISTRY_SYMBOL_LIGHT_VERTICAL_AND_BOTTOM_RIGHT";
+        case   0x23BF: return
+                "DENTISTRY_SYMBOL_LIGHT_VERTICAL_AND_BOTTOM_RIGHT";
         case   0x23C0: return "DENTISTRY_SYMBOL_LIGHT_VERTICAL_WITH_CIRCLE";
-        case   0x23C1: return "DENTISTRY_SYMBOL_LIGHT_DOWN_AND_HORIZONTAL_WITH_CIRCLE";
-        case   0x23C2: return "DENTISTRY_SYMBOL_LIGHT_UP_AND_HORIZONTAL_WITH_CIRCLE";
+        case   0x23C1: return
+                "DENTISTRY_SYMBOL_LIGHT_DOWN_AND_HORIZONTAL_WITH_CIRCLE";
+        case   0x23C2: return
+                "DENTISTRY_SYMBOL_LIGHT_UP_AND_HORIZONTAL_WITH_CIRCLE";
         case   0x23C3: return "DENTISTRY_SYMBOL_LIGHT_VERTICAL_WITH_TRIANGLE";
-        case   0x23C4: return "DENTISTRY_SYMBOL_LIGHT_DOWN_AND_HORIZONTAL_WITH_TRIANGLE";
-        case   0x23C5: return "DENTISTRY_SYMBOL_LIGHT_UP_AND_HORIZONTAL_WITH_TRIANGLE";
+        case   0x23C4: return
+                "DENTISTRY_SYMBOL_LIGHT_DOWN_AND_HORIZONTAL_WITH_TRIANGLE";
+        case   0x23C5: return
+                "DENTISTRY_SYMBOL_LIGHT_UP_AND_HORIZONTAL_WITH_TRIANGLE";
         case   0x23C6: return "DENTISTRY_SYMBOL_LIGHT_VERTICAL_AND_WAVE";
-        case   0x23C7: return "DENTISTRY_SYMBOL_LIGHT_DOWN_AND_HORIZONTAL_WITH_WAVE";
-        case   0x23C8: return "DENTISTRY_SYMBOL_LIGHT_UP_AND_HORIZONTAL_WITH_WAVE";
+        case   0x23C7: return
+                "DENTISTRY_SYMBOL_LIGHT_DOWN_AND_HORIZONTAL_WITH_WAVE";
+        case   0x23C8: return
+                "DENTISTRY_SYMBOL_LIGHT_UP_AND_HORIZONTAL_WITH_WAVE";
         case   0x23C9: return "DENTISTRY_SYMBOL_LIGHT_DOWN_AND_HORIZONTAL";
         case   0x23CA: return "DENTISTRY_SYMBOL_LIGHT_UP_AND_HORIZONTAL";
         case   0x23CB: return "DENTISTRY_SYMBOL_LIGHT_VERTICAL_AND_TOP_LEFT";
-        case   0x23CC: return "DENTISTRY_SYMBOL_LIGHT_VERTICAL_AND_BOTTOM_LEFT";
+        case   0x23CC: return
+                "DENTISTRY_SYMBOL_LIGHT_VERTICAL_AND_BOTTOM_LEFT";
         case   0x23CD: return "SQUARE_FOOT";
         case   0x23CE: return "RETURN_SYMBOL";
         case   0x23CF: return "EJECT_SYMBOL";
@@ -8095,9 +8389,12 @@ static const char *uniname1(int codepoint)
         case   0x23EA: return "BLACK_LEFT_POINTING_DOUBLE_TRIANGLE";
         case   0x23EB: return "BLACK_UP_POINTING_DOUBLE_TRIANGLE";
         case   0x23EC: return "BLACK_DOWN_POINTING_DOUBLE_TRIANGLE";
-        case   0x23ED: return "BLACK_RIGHT_POINTING_DOUBLE_TRIANGLE_WITH_VERTICAL_BAR";
-        case   0x23EE: return "BLACK_LEFT_POINTING_DOUBLE_TRIANGLE_WITH_VERTICAL_BAR";
-        case   0x23EF: return "BLACK_RIGHT_POINTING_TRIANGLE_WITH_DOUBLE_VERTICAL_BAR";
+        case   0x23ED: return
+                "BLACK_RIGHT_POINTING_DOUBLE_TRIANGLE_WITH_VERTICAL_BAR";
+        case   0x23EE: return
+                "BLACK_LEFT_POINTING_DOUBLE_TRIANGLE_WITH_VERTICAL_BAR";
+        case   0x23EF: return
+                "BLACK_RIGHT_POINTING_TRIANGLE_WITH_DOUBLE_VERTICAL_BAR";
         case   0x23F0: return "ALARM_CLOCK";
         case   0x23F1: return "STOPWATCH";
         case   0x23F2: return "TIMER_CLOCK";
@@ -8380,20 +8677,34 @@ static const char *uniname1(int codepoint)
         case   0x253A: return "BOX_DRAWINGS_LEFT_LIGHT_AND_RIGHT_UP_HEAVY";
         case   0x253B: return "BOX_DRAWINGS_HEAVY_UP_AND_HORIZONTAL";
         case   0x253C: return "BOX_DRAWINGS_LIGHT_VERTICAL_AND_HORIZONTAL";
-        case   0x253D: return "BOX_DRAWINGS_LEFT_HEAVY_AND_RIGHT_VERTICAL_LIGHT";
-        case   0x253E: return "BOX_DRAWINGS_RIGHT_HEAVY_AND_LEFT_VERTICAL_LIGHT";
-        case   0x253F: return "BOX_DRAWINGS_VERTICAL_LIGHT_AND_HORIZONTAL_HEAVY";
-        case   0x2540: return "BOX_DRAWINGS_UP_HEAVY_AND_DOWN_HORIZONTAL_LIGHT";
-        case   0x2541: return "BOX_DRAWINGS_DOWN_HEAVY_AND_UP_HORIZONTAL_LIGHT";
-        case   0x2542: return "BOX_DRAWINGS_VERTICAL_HEAVY_AND_HORIZONTAL_LIGHT";
-        case   0x2543: return "BOX_DRAWINGS_LEFT_UP_HEAVY_AND_RIGHT_DOWN_LIGHT";
-        case   0x2544: return "BOX_DRAWINGS_RIGHT_UP_HEAVY_AND_LEFT_DOWN_LIGHT";
-        case   0x2545: return "BOX_DRAWINGS_LEFT_DOWN_HEAVY_AND_RIGHT_UP_LIGHT";
-        case   0x2546: return "BOX_DRAWINGS_RIGHT_DOWN_HEAVY_AND_LEFT_UP_LIGHT";
-        case   0x2547: return "BOX_DRAWINGS_DOWN_LIGHT_AND_UP_HORIZONTAL_HEAVY";
-        case   0x2548: return "BOX_DRAWINGS_UP_LIGHT_AND_DOWN_HORIZONTAL_HEAVY";
-        case   0x2549: return "BOX_DRAWINGS_RIGHT_LIGHT_AND_LEFT_VERTICAL_HEAVY";
-        case   0x254A: return "BOX_DRAWINGS_LEFT_LIGHT_AND_RIGHT_VERTICAL_HEAVY";
+        case   0x253D: return
+                "BOX_DRAWINGS_LEFT_HEAVY_AND_RIGHT_VERTICAL_LIGHT";
+        case   0x253E: return
+                "BOX_DRAWINGS_RIGHT_HEAVY_AND_LEFT_VERTICAL_LIGHT";
+        case   0x253F: return
+                "BOX_DRAWINGS_VERTICAL_LIGHT_AND_HORIZONTAL_HEAVY";
+        case   0x2540: return
+                "BOX_DRAWINGS_UP_HEAVY_AND_DOWN_HORIZONTAL_LIGHT";
+        case   0x2541: return
+                "BOX_DRAWINGS_DOWN_HEAVY_AND_UP_HORIZONTAL_LIGHT";
+        case   0x2542: return
+                "BOX_DRAWINGS_VERTICAL_HEAVY_AND_HORIZONTAL_LIGHT";
+        case   0x2543: return
+                "BOX_DRAWINGS_LEFT_UP_HEAVY_AND_RIGHT_DOWN_LIGHT";
+        case   0x2544: return
+                "BOX_DRAWINGS_RIGHT_UP_HEAVY_AND_LEFT_DOWN_LIGHT";
+        case   0x2545: return
+                "BOX_DRAWINGS_LEFT_DOWN_HEAVY_AND_RIGHT_UP_LIGHT";
+        case   0x2546: return
+                "BOX_DRAWINGS_RIGHT_DOWN_HEAVY_AND_LEFT_UP_LIGHT";
+        case   0x2547: return
+                "BOX_DRAWINGS_DOWN_LIGHT_AND_UP_HORIZONTAL_HEAVY";
+        case   0x2548: return
+                "BOX_DRAWINGS_UP_LIGHT_AND_DOWN_HORIZONTAL_HEAVY";
+        case   0x2549: return
+                "BOX_DRAWINGS_RIGHT_LIGHT_AND_LEFT_VERTICAL_HEAVY";
+        case   0x254A: return
+                "BOX_DRAWINGS_LEFT_LIGHT_AND_RIGHT_VERTICAL_HEAVY";
         case   0x254B: return "BOX_DRAWINGS_HEAVY_VERTICAL_AND_HORIZONTAL";
         case   0x254C: return "BOX_DRAWINGS_LIGHT_DOUBLE_DASH_HORIZONTAL";
         case   0x254D: return "BOX_DRAWINGS_HEAVY_DOUBLE_DASH_HORIZONTAL";
@@ -8419,21 +8730,27 @@ static const char *uniname1(int codepoint)
         case   0x2561: return "BOX_DRAWINGS_VERTICAL_SINGLE_AND_LEFT_DOUBLE";
         case   0x2562: return "BOX_DRAWINGS_VERTICAL_DOUBLE_AND_LEFT_SINGLE";
         case   0x2563: return "BOX_DRAWINGS_DOUBLE_VERTICAL_AND_LEFT";
-        case   0x2564: return "BOX_DRAWINGS_DOWN_SINGLE_AND_HORIZONTAL_DOUBLE";
-        case   0x2565: return "BOX_DRAWINGS_DOWN_DOUBLE_AND_HORIZONTAL_SINGLE";
+        case   0x2564: return
+                "BOX_DRAWINGS_DOWN_SINGLE_AND_HORIZONTAL_DOUBLE";
+        case   0x2565: return
+                "BOX_DRAWINGS_DOWN_DOUBLE_AND_HORIZONTAL_SINGLE";
         case   0x2566: return "BOX_DRAWINGS_DOUBLE_DOWN_AND_HORIZONTAL";
         case   0x2567: return "BOX_DRAWINGS_UP_SINGLE_AND_HORIZONTAL_DOUBLE";
         case   0x2568: return "BOX_DRAWINGS_UP_DOUBLE_AND_HORIZONTAL_SINGLE";
         case   0x2569: return "BOX_DRAWINGS_DOUBLE_UP_AND_HORIZONTAL";
-        case   0x256A: return "BOX_DRAWINGS_VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE";
-        case   0x256B: return "BOX_DRAWINGS_VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE";
+        case   0x256A: return
+                "BOX_DRAWINGS_VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE";
+        case   0x256B: return
+                "BOX_DRAWINGS_VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE";
         case   0x256C: return "BOX_DRAWINGS_DOUBLE_VERTICAL_AND_HORIZONTAL";
         case   0x256D: return "BOX_DRAWINGS_LIGHT_ARC_DOWN_AND_RIGHT";
         case   0x256E: return "BOX_DRAWINGS_LIGHT_ARC_DOWN_AND_LEFT";
         case   0x256F: return "BOX_DRAWINGS_LIGHT_ARC_UP_AND_LEFT";
         case   0x2570: return "BOX_DRAWINGS_LIGHT_ARC_UP_AND_RIGHT";
-        case   0x2571: return "BOX_DRAWINGS_LIGHT_DIAGONAL_UPPER_RIGHT_TO_LOWER_LEFT";
-        case   0x2572: return "BOX_DRAWINGS_LIGHT_DIAGONAL_UPPER_LEFT_TO_LOWER_RIGHT";
+        case   0x2571: return
+                "BOX_DRAWINGS_LIGHT_DIAGONAL_UPPER_RIGHT_TO_LOWER_LEFT";
+        case   0x2572: return
+                "BOX_DRAWINGS_LIGHT_DIAGONAL_UPPER_LEFT_TO_LOWER_RIGHT";
         case   0x2573: return "BOX_DRAWINGS_LIGHT_DIAGONAL_CROSS";
         case   0x2574: return "BOX_DRAWINGS_LIGHT_LEFT";
         case   0x2575: return "BOX_DRAWINGS_LIGHT_UP";
@@ -8472,13 +8789,17 @@ static const char *uniname1(int codepoint)
         case   0x2596: return "QUADRANT_LOWER_LEFT";
         case   0x2597: return "QUADRANT_LOWER_RIGHT";
         case   0x2598: return "QUADRANT_UPPER_LEFT";
-        case   0x2599: return "QUADRANT_UPPER_LEFT_AND_LOWER_LEFT_AND_LOWER_RIGHT";
+        case   0x2599: return
+                "QUADRANT_UPPER_LEFT_AND_LOWER_LEFT_AND_LOWER_RIGHT";
         case   0x259A: return "QUADRANT_UPPER_LEFT_AND_LOWER_RIGHT";
-        case   0x259B: return "QUADRANT_UPPER_LEFT_AND_UPPER_RIGHT_AND_LOWER_LEFT";
-        case   0x259C: return "QUADRANT_UPPER_LEFT_AND_UPPER_RIGHT_AND_LOWER_RIGHT";
+        case   0x259B: return
+                "QUADRANT_UPPER_LEFT_AND_UPPER_RIGHT_AND_LOWER_LEFT";
+        case   0x259C: return
+                "QUADRANT_UPPER_LEFT_AND_UPPER_RIGHT_AND_LOWER_RIGHT";
         case   0x259D: return "QUADRANT_UPPER_RIGHT";
         case   0x259E: return "QUADRANT_UPPER_RIGHT_AND_LOWER_LEFT";
-        case   0x259F: return "QUADRANT_UPPER_RIGHT_AND_LOWER_LEFT_AND_LOWER_RIGHT";
+        case   0x259F: return
+                "QUADRANT_UPPER_RIGHT_AND_LOWER_LEFT_AND_LOWER_RIGHT";
         case   0x25A0: return "BLACK_SQUARE";
         case   0x25A1: return "WHITE_SQUARE";
         case   0x25A2: return "WHITE_SQUARE_WITH_ROUNDED_CORNERS";
@@ -8797,7 +9118,8 @@ static const char *uniname1(int codepoint)
         case   0x26DB: return "HEAVY_WHITE_DOWN_POINTING_TRIANGLE";
         case   0x26DC: return "LEFT_CLOSED_ENTRY";
         case   0x26DD: return "SQUARED_SALTIRE";
-        case   0x26DE: return "FALLING_DIAGONAL_IN_WHITE_CIRCLE_IN_BLACK_SQUARE";
+        case   0x26DE: return
+                "FALLING_DIAGONAL_IN_WHITE_CIRCLE_IN_BLACK_SQUARE";
         case   0x26DF: return "BLACK_TRUCK";
         case   0x26E0: return "RESTRICTED_LEFT_ENTRY_1";
         case   0x26E1: return "RESTRICTED_LEFT_ENTRY_2";
@@ -8830,7 +9152,8 @@ static const char *uniname1(int codepoint)
         case   0x26FC: return "HEADSTONE_GRAVEYARD_SYMBOL";
         case   0x26FD: return "FUEL_PUMP";
         case   0x26FE: return "CUP_ON_BLACK_SQUARE";
-        case   0x26FF: return "WHITE_FLAG_WITH_HORIZONTAL_MIDDLE_BLACK_STRIPE";
+        case   0x26FF: return
+                "WHITE_FLAG_WITH_HORIZONTAL_MIDDLE_BLACK_STRIPE";
         case   0x2700: return "BLACK_SAFETY_SCISSORS";
         case   0x2701: return "UPPER_BLADE_SCISSORS";
         case   0x2702: return "BLACK_SCISSORS";
@@ -8906,7 +9229,8 @@ static const char *uniname1(int codepoint)
         case   0x2748: return "HEAVY_SPARKLE";
         case   0x2749: return "BALLOON_SPOKED_ASTERISK";
         case   0x274A: return "EIGHT_TEARDROP_SPOKED_PROPELLER_ASTERISK";
-        case   0x274B: return "HEAVY_EIGHT_TEARDROP_SPOKED_PROPELLER_ASTERISK";
+        case   0x274B: return
+                "HEAVY_EIGHT_TEARDROP_SPOKED_PROPELLER_ASTERISK";
         case   0x274C: return "CROSS_MARK";
         case   0x274D: return "SHADOWED_WHITE_CIRCLE";
         case   0x274E: return "NEGATIVE_SQUARED_CROSS_MARK";
@@ -8922,12 +9246,16 @@ static const char *uniname1(int codepoint)
         case   0x2758: return "LIGHT_VERTICAL_BAR";
         case   0x2759: return "MEDIUM_VERTICAL_BAR";
         case   0x275A: return "HEAVY_VERTICAL_BAR";
-        case   0x275B: return "HEAVY_SINGLE_TURNED_COMMA_QUOTATION_MARK_ORNAMENT";
+        case   0x275B: return
+                "HEAVY_SINGLE_TURNED_COMMA_QUOTATION_MARK_ORNAMENT";
         case   0x275C: return "HEAVY_SINGLE_COMMA_QUOTATION_MARK_ORNAMENT";
-        case   0x275D: return "HEAVY_DOUBLE_TURNED_COMMA_QUOTATION_MARK_ORNAMENT";
+        case   0x275D: return
+                "HEAVY_DOUBLE_TURNED_COMMA_QUOTATION_MARK_ORNAMENT";
         case   0x275E: return "HEAVY_DOUBLE_COMMA_QUOTATION_MARK_ORNAMENT";
-        case   0x275F: return "HEAVY_LOW_SINGLE_COMMA_QUOTATION_MARK_ORNAMENT";
-        case   0x2760: return "HEAVY_LOW_DOUBLE_COMMA_QUOTATION_MARK_ORNAMENT";
+        case   0x275F: return
+                "HEAVY_LOW_SINGLE_COMMA_QUOTATION_MARK_ORNAMENT";
+        case   0x2760: return
+                "HEAVY_LOW_DOUBLE_COMMA_QUOTATION_MARK_ORNAMENT";
         case   0x2761: return "CURVED_STEM_PARAGRAPH_SIGN_ORNAMENT";
         case   0x2762: return "HEAVY_EXCLAMATION_MARK_ORNAMENT";
         case   0x2763: return "HEAVY_HEART_EXCLAMATION_MARK_ORNAMENT";
@@ -8941,8 +9269,10 @@ static const char *uniname1(int codepoint)
         case   0x276B: return "MEDIUM_FLATTENED_RIGHT_PARENTHESIS_ORNAMENT";
         case   0x276C: return "MEDIUM_LEFT_POINTING_ANGLE_BRACKET_ORNAMENT";
         case   0x276D: return "MEDIUM_RIGHT_POINTING_ANGLE_BRACKET_ORNAMENT";
-        case   0x276E: return "HEAVY_LEFT_POINTING_ANGLE_QUOTATION_MARK_ORNAMENT";
-        case   0x276F: return "HEAVY_RIGHT_POINTING_ANGLE_QUOTATION_MARK_ORNAMENT";
+        case   0x276E: return
+                "HEAVY_LEFT_POINTING_ANGLE_QUOTATION_MARK_ORNAMENT";
+        case   0x276F: return
+                "HEAVY_RIGHT_POINTING_ANGLE_QUOTATION_MARK_ORNAMENT";
         case   0x2770: return "HEAVY_LEFT_POINTING_ANGLE_BRACKET_ORNAMENT";
         case   0x2771: return "HEAVY_RIGHT_POINTING_ANGLE_BRACKET_ORNAMENT";
         case   0x2772: return "LIGHT_LEFT_TORTOISE_SHELL_BRACKET_ORNAMENT";
@@ -8971,14 +9301,21 @@ static const char *uniname1(int codepoint)
         case   0x2789: return "DINGBAT_CIRCLED_SANS_SERIF_NUMBER_TEN";
         case   0x278A: return "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_ONE";
         case   0x278B: return "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_TWO";
-        case   0x278C: return "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_THREE";
-        case   0x278D: return "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_FOUR";
-        case   0x278E: return "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_FIVE";
+        case   0x278C: return
+                "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_THREE";
+        case   0x278D: return
+                "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_FOUR";
+        case   0x278E: return
+                "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_FIVE";
         case   0x278F: return "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_SIX";
-        case   0x2790: return "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_SEVEN";
-        case   0x2791: return "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_EIGHT";
-        case   0x2792: return "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_NINE";
-        case   0x2793: return "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_NUMBER_TEN";
+        case   0x2790: return
+                "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_SEVEN";
+        case   0x2791: return
+                "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_EIGHT";
+        case   0x2792: return
+                "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_NINE";
+        case   0x2793: return
+                "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_NUMBER_TEN";
         case   0x2794: return "HEAVY_WIDE_HEADED_RIGHTWARDS_ARROW";
         case   0x2795: return "HEAVY_PLUS_SIGN";
         case   0x2796: return "HEAVY_MINUS_SIGN";
@@ -8996,19 +9333,25 @@ static const char *uniname1(int codepoint)
         case   0x27A2: return "THREE_D_TOP_LIGHTED_RIGHTWARDS_ARROWHEAD";
         case   0x27A3: return "THREE_D_BOTTOM_LIGHTED_RIGHTWARDS_ARROWHEAD";
         case   0x27A4: return "BLACK_RIGHTWARDS_ARROWHEAD";
-        case   0x27A5: return "HEAVY_BLACK_CURVED_DOWNWARDS_AND_RIGHTWARDS_ARROW";
-        case   0x27A6: return "HEAVY_BLACK_CURVED_UPWARDS_AND_RIGHTWARDS_ARROW";
+        case   0x27A5: return
+                "HEAVY_BLACK_CURVED_DOWNWARDS_AND_RIGHTWARDS_ARROW";
+        case   0x27A6: return
+                "HEAVY_BLACK_CURVED_UPWARDS_AND_RIGHTWARDS_ARROW";
         case   0x27A7: return "SQUAT_BLACK_RIGHTWARDS_ARROW";
         case   0x27A8: return "HEAVY_CONCAVE_POINTED_BLACK_RIGHTWARDS_ARROW";
         case   0x27A9: return "RIGHT_SHADED_WHITE_RIGHTWARDS_ARROW";
         case   0x27AA: return "LEFT_SHADED_WHITE_RIGHTWARDS_ARROW";
         case   0x27AB: return "BACK_TILTED_SHADOWED_WHITE_RIGHTWARDS_ARROW";
         case   0x27AC: return "FRONT_TILTED_SHADOWED_WHITE_RIGHTWARDS_ARROW";
-        case   0x27AD: return "HEAVY_LOWER_RIGHT_SHADOWED_WHITE_RIGHTWARDS_ARROW";
-        case   0x27AE: return "HEAVY_UPPER_RIGHT_SHADOWED_WHITE_RIGHTWARDS_ARROW";
-        case   0x27AF: return "NOTCHED_LOWER_RIGHT_SHADOWED_WHITE_RIGHTWARDS_ARROW";
+        case   0x27AD: return
+                "HEAVY_LOWER_RIGHT_SHADOWED_WHITE_RIGHTWARDS_ARROW";
+        case   0x27AE: return
+                "HEAVY_UPPER_RIGHT_SHADOWED_WHITE_RIGHTWARDS_ARROW";
+        case   0x27AF: return
+                "NOTCHED_LOWER_RIGHT_SHADOWED_WHITE_RIGHTWARDS_ARROW";
         case   0x27B0: return "CURLY_LOOP";
-        case   0x27B1: return "NOTCHED_UPPER_RIGHT_SHADOWED_WHITE_RIGHTWARDS_ARROW";
+        case   0x27B1: return
+                "NOTCHED_UPPER_RIGHT_SHADOWED_WHITE_RIGHTWARDS_ARROW";
         case   0x27B2: return "CIRCLED_HEAVY_WHITE_RIGHTWARDS_ARROW";
         case   0x27B3: return "WHITE_FEATHERED_RIGHTWARDS_ARROW";
         case   0x27B4: return "BLACK_FEATHERED_SOUTH_EAST_ARROW";
@@ -9024,7 +9367,8 @@ static const char *uniname1(int codepoint)
         case   0x27BE: return "OPEN_OUTLINED_RIGHTWARDS_ARROW";
         case   0x27BF: return "DOUBLE_CURLY_LOOP";
         case   0x27C0: return "THREE_DIMENSIONAL_ANGLE";
-        case   0x27C1: return "WHITE_TRIANGLE_CONTAINING_SMALL_WHITE_TRIANGLE";
+        case   0x27C1: return
+                "WHITE_TRIANGLE_CONTAINING_SMALL_WHITE_TRIANGLE";
         case   0x27C2: return "PERPENDICULAR";
         case   0x27C3: return "OPEN_SUBSET";
         case   0x27C4: return "OPEN_SUPERSET";
@@ -9057,8 +9401,10 @@ static const char *uniname1(int codepoint)
         case   0x27DF: return "UP_TACK_WITH_CIRCLE_ABOVE";
         case   0x27E0: return "LOZENGE_DIVIDED_BY_HORIZONTAL_RULE";
         case   0x27E1: return "WHITE_CONCAVE_SIDED_DIAMOND";
-        case   0x27E2: return "WHITE_CONCAVE_SIDED_DIAMOND_WITH_LEFTWARDS_TICK";
-        case   0x27E3: return "WHITE_CONCAVE_SIDED_DIAMOND_WITH_RIGHTWARDS_TICK";
+        case   0x27E2: return
+                "WHITE_CONCAVE_SIDED_DIAMOND_WITH_LEFTWARDS_TICK";
+        case   0x27E3: return
+                "WHITE_CONCAVE_SIDED_DIAMOND_WITH_RIGHTWARDS_TICK";
         case   0x27E4: return "WHITE_SQUARE_WITH_LEFTWARDS_TICK";
         case   0x27E5: return "WHITE_SQUARE_WITH_RIGHTWARDS_TICK";
         case   0x27E6: return "MATHEMATICAL_LEFT_WHITE_SQUARE_BRACKET";
@@ -9067,8 +9413,10 @@ static const char *uniname1(int codepoint)
         case   0x27E9: return "MATHEMATICAL_RIGHT_ANGLE_BRACKET";
         case   0x27EA: return "MATHEMATICAL_LEFT_DOUBLE_ANGLE_BRACKET";
         case   0x27EB: return "MATHEMATICAL_RIGHT_DOUBLE_ANGLE_BRACKET";
-        case   0x27EC: return "MATHEMATICAL_LEFT_WHITE_TORTOISE_SHELL_BRACKET";
-        case   0x27ED: return "MATHEMATICAL_RIGHT_WHITE_TORTOISE_SHELL_BRACKET";
+        case   0x27EC: return
+                "MATHEMATICAL_LEFT_WHITE_TORTOISE_SHELL_BRACKET";
+        case   0x27ED: return
+                "MATHEMATICAL_RIGHT_WHITE_TORTOISE_SHELL_BRACKET";
         case   0x27EE: return "MATHEMATICAL_LEFT_FLATTENED_PARENTHESIS";
         case   0x27EF: return "MATHEMATICAL_RIGHT_FLATTENED_PARENTHESIS";
         case   0x27F0: return "UPWARDS_QUADRUPLE_ARROW";
@@ -9343,8 +9691,10 @@ static const char *uniname1(int codepoint)
         case   0x28FD: return "BRAILLE_PATTERN_DOTS_1345678";
         case   0x28FE: return "BRAILLE_PATTERN_DOTS_2345678";
         case   0x28FF: return "BRAILLE_PATTERN_DOTS_12345678";
-        case   0x2900: return "RIGHTWARDS_TWO_HEADED_ARROW_WITH_VERTICAL_STROKE";
-        case   0x2901: return "RIGHTWARDS_TWO_HEADED_ARROW_WITH_DOUBLE_VERTICAL_STROKE";
+        case   0x2900: return
+                "RIGHTWARDS_TWO_HEADED_ARROW_WITH_VERTICAL_STROKE";
+        case   0x2901: return
+                "RIGHTWARDS_TWO_HEADED_ARROW_WITH_DOUBLE_VERTICAL_STROKE";
         case   0x2902: return "LEFTWARDS_DOUBLE_ARROW_WITH_VERTICAL_STROKE";
         case   0x2903: return "RIGHTWARDS_DOUBLE_ARROW_WITH_VERTICAL_STROKE";
         case   0x2904: return "LEFT_RIGHT_DOUBLE_ARROW_WITH_VERTICAL_STROKE";
@@ -9363,11 +9713,15 @@ static const char *uniname1(int codepoint)
         case   0x2911: return "RIGHTWARDS_ARROW_WITH_DOTTED_STEM";
         case   0x2912: return "UPWARDS_ARROW_TO_BAR";
         case   0x2913: return "DOWNWARDS_ARROW_TO_BAR";
-        case   0x2914: return "RIGHTWARDS_ARROW_WITH_TAIL_WITH_VERTICAL_STROKE";
-        case   0x2915: return "RIGHTWARDS_ARROW_WITH_TAIL_WITH_DOUBLE_VERTICAL_STROKE";
+        case   0x2914: return
+                "RIGHTWARDS_ARROW_WITH_TAIL_WITH_VERTICAL_STROKE";
+        case   0x2915: return
+                "RIGHTWARDS_ARROW_WITH_TAIL_WITH_DOUBLE_VERTICAL_STROKE";
         case   0x2916: return "RIGHTWARDS_TWO_HEADED_ARROW_WITH_TAIL";
-        case   0x2917: return "RIGHTWARDS_TWO_HEADED_ARROW_WITH_TAIL_WITH_VERTICAL_STROKE";
-        case   0x2918: return "RIGHTWARDS_TWO_HEADED_ARROW_WITH_TAIL_WITH_DOUBLE_VERTICAL_STROKE";
+        case   0x2917: return
+                "RIGHTWARDS_TWO_HEADED_ARROW_WITH_TAIL_WITH_VERTICAL_STROKE";
+        case   0x2918: return
+                "RIGHTWARDS_TWO_HEADED_ARROW_WITH_TAIL_WITH_DOUBLE_VERTICAL_STROKE";
         case   0x2919: return "LEFTWARDS_ARROW_TAIL";
         case   0x291A: return "RIGHTWARDS_ARROW_TAIL";
         case   0x291B: return "LEFTWARDS_DOUBLE_ARROW_TAIL";
@@ -9395,10 +9749,14 @@ static const char *uniname1(int codepoint)
         case   0x2931: return "NORTH_EAST_ARROW_CROSSING_NORTH_WEST_ARROW";
         case   0x2932: return "NORTH_WEST_ARROW_CROSSING_NORTH_EAST_ARROW";
         case   0x2933: return "WAVE_ARROW_POINTING_DIRECTLY_RIGHT";
-        case   0x2934: return "ARROW_POINTING_RIGHTWARDS_THEN_CURVING_UPWARDS";
-        case   0x2935: return "ARROW_POINTING_RIGHTWARDS_THEN_CURVING_DOWNWARDS";
-        case   0x2936: return "ARROW_POINTING_DOWNWARDS_THEN_CURVING_LEFTWARDS";
-        case   0x2937: return "ARROW_POINTING_DOWNWARDS_THEN_CURVING_RIGHTWARDS";
+        case   0x2934: return
+                "ARROW_POINTING_RIGHTWARDS_THEN_CURVING_UPWARDS";
+        case   0x2935: return
+                "ARROW_POINTING_RIGHTWARDS_THEN_CURVING_DOWNWARDS";
+        case   0x2936: return
+                "ARROW_POINTING_DOWNWARDS_THEN_CURVING_LEFTWARDS";
+        case   0x2937: return
+                "ARROW_POINTING_DOWNWARDS_THEN_CURVING_RIGHTWARDS";
         case   0x2938: return "RIGHT_SIDE_ARC_CLOCKWISE_ARROW";
         case   0x2939: return "LEFT_SIDE_ARC_ANTICLOCKWISE_ARROW";
         case   0x293A: return "TOP_ARC_ANTICLOCKWISE_ARROW";
@@ -9441,20 +9799,34 @@ static const char *uniname1(int codepoint)
         case   0x295F: return "RIGHTWARDS_HARPOON_WITH_BARB_DOWN_FROM_BAR";
         case   0x2960: return "UPWARDS_HARPOON_WITH_BARB_LEFT_FROM_BAR";
         case   0x2961: return "DOWNWARDS_HARPOON_WITH_BARB_LEFT_FROM_BAR";
-        case   0x2962: return "LEFTWARDS_HARPOON_WITH_BARB_UP_ABOVE_LEFTWARDS_HARPOON_WITH_BARB_DOWN";
-        case   0x2963: return "UPWARDS_HARPOON_WITH_BARB_LEFT_BESIDE_UPWARDS_HARPOON_WITH_BARB_RIGHT";
-        case   0x2964: return "RIGHTWARDS_HARPOON_WITH_BARB_UP_ABOVE_RIGHTWARDS_HARPOON_WITH_BARB_DOWN";
-        case   0x2965: return "DOWNWARDS_HARPOON_WITH_BARB_LEFT_BESIDE_DOWNWARDS_HARPOON_WITH_BARB_RIGHT";
-        case   0x2966: return "LEFTWARDS_HARPOON_WITH_BARB_UP_ABOVE_RIGHTWARDS_HARPOON_WITH_BARB_UP";
-        case   0x2967: return "LEFTWARDS_HARPOON_WITH_BARB_DOWN_ABOVE_RIGHTWARDS_HARPOON_WITH_BARB_DOWN";
-        case   0x2968: return "RIGHTWARDS_HARPOON_WITH_BARB_UP_ABOVE_LEFTWARDS_HARPOON_WITH_BARB_UP";
-        case   0x2969: return "RIGHTWARDS_HARPOON_WITH_BARB_DOWN_ABOVE_LEFTWARDS_HARPOON_WITH_BARB_DOWN";
-        case   0x296A: return "LEFTWARDS_HARPOON_WITH_BARB_UP_ABOVE_LONG_DASH";
-        case   0x296B: return "LEFTWARDS_HARPOON_WITH_BARB_DOWN_BELOW_LONG_DASH";
-        case   0x296C: return "RIGHTWARDS_HARPOON_WITH_BARB_UP_ABOVE_LONG_DASH";
-        case   0x296D: return "RIGHTWARDS_HARPOON_WITH_BARB_DOWN_BELOW_LONG_DASH";
-        case   0x296E: return "UPWARDS_HARPOON_WITH_BARB_LEFT_BESIDE_DOWNWARDS_HARPOON_WITH_BARB_RIGHT";
-        case   0x296F: return "DOWNWARDS_HARPOON_WITH_BARB_LEFT_BESIDE_UPWARDS_HARPOON_WITH_BARB_RIGHT";
+        case   0x2962: return
+                "LEFTWARDS_HARPOON_WITH_BARB_UP_ABOVE_LEFTWARDS_HARPOON_WITH_BARB_DOWN";
+        case   0x2963: return
+                "UPWARDS_HARPOON_WITH_BARB_LEFT_BESIDE_UPWARDS_HARPOON_WITH_BARB_RIGHT";
+        case   0x2964: return
+                "RIGHTWARDS_HARPOON_WITH_BARB_UP_ABOVE_RIGHTWARDS_HARPOON_WITH_BARB_DOWN";
+        case   0x2965: return
+                "DOWNWARDS_HARPOON_WITH_BARB_LEFT_BESIDE_DOWNWARDS_HARPOON_WITH_BARB_RIGHT";
+        case   0x2966: return
+                "LEFTWARDS_HARPOON_WITH_BARB_UP_ABOVE_RIGHTWARDS_HARPOON_WITH_BARB_UP";
+        case   0x2967: return
+                "LEFTWARDS_HARPOON_WITH_BARB_DOWN_ABOVE_RIGHTWARDS_HARPOON_WITH_BARB_DOWN";
+        case   0x2968: return
+                "RIGHTWARDS_HARPOON_WITH_BARB_UP_ABOVE_LEFTWARDS_HARPOON_WITH_BARB_UP";
+        case   0x2969: return
+                "RIGHTWARDS_HARPOON_WITH_BARB_DOWN_ABOVE_LEFTWARDS_HARPOON_WITH_BARB_DOWN";
+        case   0x296A: return
+                "LEFTWARDS_HARPOON_WITH_BARB_UP_ABOVE_LONG_DASH";
+        case   0x296B: return
+                "LEFTWARDS_HARPOON_WITH_BARB_DOWN_BELOW_LONG_DASH";
+        case   0x296C: return
+                "RIGHTWARDS_HARPOON_WITH_BARB_UP_ABOVE_LONG_DASH";
+        case   0x296D: return
+                "RIGHTWARDS_HARPOON_WITH_BARB_DOWN_BELOW_LONG_DASH";
+        case   0x296E: return
+                "UPWARDS_HARPOON_WITH_BARB_LEFT_BESIDE_DOWNWARDS_HARPOON_WITH_BARB_RIGHT";
+        case   0x296F: return
+                "DOWNWARDS_HARPOON_WITH_BARB_LEFT_BESIDE_UPWARDS_HARPOON_WITH_BARB_RIGHT";
         case   0x2970: return "RIGHT_DOUBLE_ARROW_WITH_ROUNDED_HEAD";
         case   0x2971: return "EQUALS_SIGN_ABOVE_RIGHTWARDS_ARROW";
         case   0x2972: return "TILDE_OPERATOR_ABOVE_RIGHTWARDS_ARROW";
@@ -9485,8 +9857,10 @@ static const char *uniname1(int codepoint)
         case   0x298B: return "LEFT_SQUARE_BRACKET_WITH_UNDERBAR";
         case   0x298C: return "RIGHT_SQUARE_BRACKET_WITH_UNDERBAR";
         case   0x298D: return "LEFT_SQUARE_BRACKET_WITH_TICK_IN_TOP_CORNER";
-        case   0x298E: return "RIGHT_SQUARE_BRACKET_WITH_TICK_IN_BOTTOM_CORNER";
-        case   0x298F: return "LEFT_SQUARE_BRACKET_WITH_TICK_IN_BOTTOM_CORNER";
+        case   0x298E: return
+                "RIGHT_SQUARE_BRACKET_WITH_TICK_IN_BOTTOM_CORNER";
+        case   0x298F: return
+                "LEFT_SQUARE_BRACKET_WITH_TICK_IN_BOTTOM_CORNER";
         case   0x2990: return "RIGHT_SQUARE_BRACKET_WITH_TICK_IN_TOP_CORNER";
         case   0x2991: return "LEFT_ANGLE_BRACKET_WITH_DOT";
         case   0x2992: return "RIGHT_ANGLE_BRACKET_WITH_DOT";
@@ -9511,14 +9885,22 @@ static const char *uniname1(int codepoint)
         case   0x29A5: return "REVERSED_ANGLE_WITH_UNDERBAR";
         case   0x29A6: return "OBLIQUE_ANGLE_OPENING_UP";
         case   0x29A7: return "OBLIQUE_ANGLE_OPENING_DOWN";
-        case   0x29A8: return "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_UP_AND_RIGHT";
-        case   0x29A9: return "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_UP_AND_LEFT";
-        case   0x29AA: return "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_DOWN_AND_RIGHT";
-        case   0x29AB: return "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_DOWN_AND_LEFT";
-        case   0x29AC: return "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_RIGHT_AND_UP";
-        case   0x29AD: return "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_LEFT_AND_UP";
-        case   0x29AE: return "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_RIGHT_AND_DOWN";
-        case   0x29AF: return "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_LEFT_AND_DOWN";
+        case   0x29A8: return
+                "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_UP_AND_RIGHT";
+        case   0x29A9: return
+                "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_UP_AND_LEFT";
+        case   0x29AA: return
+                "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_DOWN_AND_RIGHT";
+        case   0x29AB: return
+                "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_DOWN_AND_LEFT";
+        case   0x29AC: return
+                "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_RIGHT_AND_UP";
+        case   0x29AD: return
+                "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_LEFT_AND_UP";
+        case   0x29AE: return
+                "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_RIGHT_AND_DOWN";
+        case   0x29AF: return
+                "MEASURED_ANGLE_WITH_OPEN_ARM_ENDING_IN_ARROW_POINTING_LEFT_AND_DOWN";
         case   0x29B0: return "REVERSED_EMPTY_SET";
         case   0x29B1: return "EMPTY_SET_WITH_OVERBAR";
         case   0x29B2: return "EMPTY_SET_WITH_SMALL_CIRCLE_ABOVE";
@@ -9529,7 +9911,8 @@ static const char *uniname1(int codepoint)
         case   0x29B7: return "CIRCLED_PARALLEL";
         case   0x29B8: return "CIRCLED_REVERSE_SOLIDUS";
         case   0x29B9: return "CIRCLED_PERPENDICULAR";
-        case   0x29BA: return "CIRCLE_DIVIDED_BY_HORIZONTAL_BAR_AND_TOP_HALF_DIVIDED_BY_VERTICAL_BAR";
+        case   0x29BA: return
+                "CIRCLE_DIVIDED_BY_HORIZONTAL_BAR_AND_TOP_HALF_DIVIDED_BY_VERTICAL_BAR";
         case   0x29BB: return "CIRCLE_WITH_SUPERIMPOSED_X";
         case   0x29BC: return "CIRCLED_ANTICLOCKWISE_ROTATED_DIVISION_SIGN";
         case   0x29BD: return "UP_ARROW_THROUGH_CIRCLE";
@@ -9538,7 +9921,8 @@ static const char *uniname1(int codepoint)
         case   0x29C0: return "CIRCLED_LESS_THAN";
         case   0x29C1: return "CIRCLED_GREATER_THAN";
         case   0x29C2: return "CIRCLE_WITH_SMALL_CIRCLE_TO_THE_RIGHT";
-        case   0x29C3: return "CIRCLE_WITH_TWO_HORIZONTAL_STROKES_TO_THE_RIGHT";
+        case   0x29C3: return
+                "CIRCLE_WITH_TWO_HORIZONTAL_STROKES_TO_THE_RIGHT";
         case   0x29C4: return "SQUARED_RISING_DIAGONAL_SLASH";
         case   0x29C5: return "SQUARED_FALLING_DIAGONAL_SLASH";
         case   0x29C6: return "SQUARED_ASTERISK";
@@ -9571,7 +9955,8 @@ static const char *uniname1(int codepoint)
         case   0x29E1: return "INCREASES_AS";
         case   0x29E2: return "SHUFFLE_PRODUCT";
         case   0x29E3: return "EQUALS_SIGN_AND_SLANTED_PARALLEL";
-        case   0x29E4: return "EQUALS_SIGN_AND_SLANTED_PARALLEL_WITH_TILDE_ABOVE";
+        case   0x29E4: return
+                "EQUALS_SIGN_AND_SLANTED_PARALLEL_WITH_TILDE_ABOVE";
         case   0x29E5: return "IDENTICAL_TO_AND_SLANTED_PARALLEL";
         case   0x29E6: return "GLEICH_STARK";
         case   0x29E7: return "THERMODYNAMIC";
@@ -9617,8 +10002,10 @@ static const char *uniname1(int codepoint)
         case   0x2A0F: return "INTEGRAL_AVERAGE_WITH_SLASH";
         case   0x2A10: return "CIRCULATION_FUNCTION";
         case   0x2A11: return "ANTICLOCKWISE_INTEGRATION";
-        case   0x2A12: return "LINE_INTEGRATION_WITH_RECTANGULAR_PATH_AROUND_POLE";
-        case   0x2A13: return "LINE_INTEGRATION_WITH_SEMICIRCULAR_PATH_AROUND_POLE";
+        case   0x2A12: return
+                "LINE_INTEGRATION_WITH_RECTANGULAR_PATH_AROUND_POLE";
+        case   0x2A13: return
+                "LINE_INTEGRATION_WITH_SEMICIRCULAR_PATH_AROUND_POLE";
         case   0x2A14: return "LINE_INTEGRATION_NOT_INCLUDING_THE_POLE";
         case   0x2A15: return "INTEGRAL_AROUND_A_POINT_OPERATOR";
         case   0x2A16: return "QUATERNION_INTEGRAL_OPERATOR";
@@ -9653,7 +10040,8 @@ static const char *uniname1(int codepoint)
         case   0x2A33: return "SMASH_PRODUCT";
         case   0x2A34: return "MULTIPLICATION_SIGN_IN_LEFT_HALF_CIRCLE";
         case   0x2A35: return "MULTIPLICATION_SIGN_IN_RIGHT_HALF_CIRCLE";
-        case   0x2A36: return "CIRCLED_MULTIPLICATION_SIGN_WITH_CIRCUMFLEX_ACCENT";
+        case   0x2A36: return
+                "CIRCLED_MULTIPLICATION_SIGN_WITH_CIRCUMFLEX_ACCENT";
         case   0x2A37: return "MULTIPLICATION_SIGN_IN_DOUBLE_CIRCLE";
         case   0x2A38: return "CIRCLED_DIVISION_SIGN";
         case   0x2A39: return "PLUS_SIGN_IN_TRIANGLE";
@@ -9674,7 +10062,8 @@ static const char *uniname1(int codepoint)
         case   0x2A48: return "UNION_ABOVE_BAR_ABOVE_INTERSECTION";
         case   0x2A49: return "INTERSECTION_ABOVE_BAR_ABOVE_UNION";
         case   0x2A4A: return "UNION_BESIDE_AND_JOINED_WITH_UNION";
-        case   0x2A4B: return "INTERSECTION_BESIDE_AND_JOINED_WITH_INTERSECTION";
+        case   0x2A4B: return
+                "INTERSECTION_BESIDE_AND_JOINED_WITH_INTERSECTION";
         case   0x2A4C: return "CLOSED_UNION_WITH_SERIFS";
         case   0x2A4D: return "CLOSED_INTERSECTION_WITH_SERIFS";
         case   0x2A4E: return "DOUBLE_SQUARE_INTERSECTION";
@@ -9703,8 +10092,10 @@ static const char *uniname1(int codepoint)
         case   0x2A65: return "Z_NOTATION_RANGE_ANTIRESTRICTION";
         case   0x2A66: return "EQUALS_SIGN_WITH_DOT_BELOW";
         case   0x2A67: return "IDENTICAL_WITH_DOT_ABOVE";
-        case   0x2A68: return "TRIPLE_HORIZONTAL_BAR_WITH_DOUBLE_VERTICAL_STROKE";
-        case   0x2A69: return "TRIPLE_HORIZONTAL_BAR_WITH_TRIPLE_VERTICAL_STROKE";
+        case   0x2A68: return
+                "TRIPLE_HORIZONTAL_BAR_WITH_DOUBLE_VERTICAL_STROKE";
+        case   0x2A69: return
+                "TRIPLE_HORIZONTAL_BAR_WITH_TRIPLE_VERTICAL_STROKE";
         case   0x2A6A: return "TILDE_OPERATOR_WITH_DOT_ABOVE";
         case   0x2A6B: return "TILDE_OPERATOR_WITH_RISING_DOTS";
         case   0x2A6C: return "SIMILAR_MINUS_SIMILAR";
@@ -9718,7 +10109,8 @@ static const char *uniname1(int codepoint)
         case   0x2A74: return "DOUBLE_COLON_EQUAL";
         case   0x2A75: return "TWO_CONSECUTIVE_EQUALS_SIGNS";
         case   0x2A76: return "THREE_CONSECUTIVE_EQUALS_SIGNS";
-        case   0x2A77: return "EQUALS_SIGN_WITH_TWO_DOTS_ABOVE_AND_TWO_DOTS_BELOW";
+        case   0x2A77: return
+                "EQUALS_SIGN_WITH_TWO_DOTS_ABOVE_AND_TWO_DOTS_BELOW";
         case   0x2A78: return "EQUIVALENT_WITH_FOUR_DOTS_ABOVE";
         case   0x2A79: return "LESS_THAN_WITH_CIRCLE_INSIDE";
         case   0x2A7A: return "GREATER_THAN_WITH_CIRCLE_INSIDE";
@@ -9727,31 +10119,42 @@ static const char *uniname1(int codepoint)
         case   0x2A7D: return "LESS_THAN_OR_SLANTED_EQUAL_TO";
         case   0x2A7E: return "GREATER_THAN_OR_SLANTED_EQUAL_TO";
         case   0x2A7F: return "LESS_THAN_OR_SLANTED_EQUAL_TO_WITH_DOT_INSIDE";
-        case   0x2A80: return "GREATER_THAN_OR_SLANTED_EQUAL_TO_WITH_DOT_INSIDE";
+        case   0x2A80: return
+                "GREATER_THAN_OR_SLANTED_EQUAL_TO_WITH_DOT_INSIDE";
         case   0x2A81: return "LESS_THAN_OR_SLANTED_EQUAL_TO_WITH_DOT_ABOVE";
-        case   0x2A82: return "GREATER_THAN_OR_SLANTED_EQUAL_TO_WITH_DOT_ABOVE";
-        case   0x2A83: return "LESS_THAN_OR_SLANTED_EQUAL_TO_WITH_DOT_ABOVE_RIGHT";
-        case   0x2A84: return "GREATER_THAN_OR_SLANTED_EQUAL_TO_WITH_DOT_ABOVE_LEFT";
+        case   0x2A82: return
+                "GREATER_THAN_OR_SLANTED_EQUAL_TO_WITH_DOT_ABOVE";
+        case   0x2A83: return
+                "LESS_THAN_OR_SLANTED_EQUAL_TO_WITH_DOT_ABOVE_RIGHT";
+        case   0x2A84: return
+                "GREATER_THAN_OR_SLANTED_EQUAL_TO_WITH_DOT_ABOVE_LEFT";
         case   0x2A85: return "LESS_THAN_OR_APPROXIMATE";
         case   0x2A86: return "GREATER_THAN_OR_APPROXIMATE";
         case   0x2A87: return "LESS_THAN_AND_SINGLE_LINE_NOT_EQUAL_TO";
         case   0x2A88: return "GREATER_THAN_AND_SINGLE_LINE_NOT_EQUAL_TO";
         case   0x2A89: return "LESS_THAN_AND_NOT_APPROXIMATE";
         case   0x2A8A: return "GREATER_THAN_AND_NOT_APPROXIMATE";
-        case   0x2A8B: return "LESS_THAN_ABOVE_DOUBLE_LINE_EQUAL_ABOVE_GREATER_THAN";
-        case   0x2A8C: return "GREATER_THAN_ABOVE_DOUBLE_LINE_EQUAL_ABOVE_LESS_THAN";
+        case   0x2A8B: return
+                "LESS_THAN_ABOVE_DOUBLE_LINE_EQUAL_ABOVE_GREATER_THAN";
+        case   0x2A8C: return
+                "GREATER_THAN_ABOVE_DOUBLE_LINE_EQUAL_ABOVE_LESS_THAN";
         case   0x2A8D: return "LESS_THAN_ABOVE_SIMILAR_OR_EQUAL";
         case   0x2A8E: return "GREATER_THAN_ABOVE_SIMILAR_OR_EQUAL";
         case   0x2A8F: return "LESS_THAN_ABOVE_SIMILAR_ABOVE_GREATER_THAN";
         case   0x2A90: return "GREATER_THAN_ABOVE_SIMILAR_ABOVE_LESS_THAN";
-        case   0x2A91: return "LESS_THAN_ABOVE_GREATER_THAN_ABOVE_DOUBLE_LINE_EQUAL";
-        case   0x2A92: return "GREATER_THAN_ABOVE_LESS_THAN_ABOVE_DOUBLE_LINE_EQUAL";
-        case   0x2A93: return "LESS_THAN_ABOVE_SLANTED_EQUAL_ABOVE_GREATER_THAN_ABOVE_SLANTED_EQUAL";
-        case   0x2A94: return "GREATER_THAN_ABOVE_SLANTED_EQUAL_ABOVE_LESS_THAN_ABOVE_SLANTED_EQUAL";
+        case   0x2A91: return
+                "LESS_THAN_ABOVE_GREATER_THAN_ABOVE_DOUBLE_LINE_EQUAL";
+        case   0x2A92: return
+                "GREATER_THAN_ABOVE_LESS_THAN_ABOVE_DOUBLE_LINE_EQUAL";
+        case   0x2A93: return
+                "LESS_THAN_ABOVE_SLANTED_EQUAL_ABOVE_GREATER_THAN_ABOVE_SLANTED_EQUAL";
+        case   0x2A94: return
+                "GREATER_THAN_ABOVE_SLANTED_EQUAL_ABOVE_LESS_THAN_ABOVE_SLANTED_EQUAL";
         case   0x2A95: return "SLANTED_EQUAL_TO_OR_LESS_THAN";
         case   0x2A96: return "SLANTED_EQUAL_TO_OR_GREATER_THAN";
         case   0x2A97: return "SLANTED_EQUAL_TO_OR_LESS_THAN_WITH_DOT_INSIDE";
-        case   0x2A98: return "SLANTED_EQUAL_TO_OR_GREATER_THAN_WITH_DOT_INSIDE";
+        case   0x2A98: return
+                "SLANTED_EQUAL_TO_OR_GREATER_THAN_WITH_DOT_INSIDE";
         case   0x2A99: return "DOUBLE_LINE_EQUAL_TO_OR_LESS_THAN";
         case   0x2A9A: return "DOUBLE_LINE_EQUAL_TO_OR_GREATER_THAN";
         case   0x2A9B: return "DOUBLE_LINE_SLANTED_EQUAL_TO_OR_LESS_THAN";
@@ -9768,7 +10171,8 @@ static const char *uniname1(int codepoint)
         case   0x2AA6: return "LESS_THAN_CLOSED_BY_CURVE";
         case   0x2AA7: return "GREATER_THAN_CLOSED_BY_CURVE";
         case   0x2AA8: return "LESS_THAN_CLOSED_BY_CURVE_ABOVE_SLANTED_EQUAL";
-        case   0x2AA9: return "GREATER_THAN_CLOSED_BY_CURVE_ABOVE_SLANTED_EQUAL";
+        case   0x2AA9: return
+                "GREATER_THAN_CLOSED_BY_CURVE_ABOVE_SLANTED_EQUAL";
         case   0x2AAA: return "SMALLER_THAN";
         case   0x2AAB: return "LARGER_THAN";
         case   0x2AAC: return "SMALLER_THAN_OR_EQUAL_TO";
@@ -9815,7 +10219,8 @@ static const char *uniname1(int codepoint)
         case   0x2AD5: return "SUBSET_ABOVE_SUBSET";
         case   0x2AD6: return "SUPERSET_ABOVE_SUPERSET";
         case   0x2AD7: return "SUPERSET_BESIDE_SUBSET";
-        case   0x2AD8: return "SUPERSET_BESIDE_AND_JOINED_BY_DASH_WITH_SUBSET";
+        case   0x2AD8: return
+                "SUPERSET_BESIDE_AND_JOINED_BY_DASH_WITH_SUBSET";
         case   0x2AD9: return "ELEMENT_OF_OPENING_DOWNWARDS";
         case   0x2ADA: return "PITCHFORK_WITH_TEE_TOP";
         case   0x2ADB: return "TRANSVERSAL_INTERSECTION";
@@ -9907,16 +10312,22 @@ static const char *uniname1(int codepoint)
         case   0x2B31: return "THREE_LEFTWARDS_ARROWS";
         case   0x2B32: return "LEFT_ARROW_WITH_CIRCLED_PLUS";
         case   0x2B33: return "LONG_LEFTWARDS_SQUIGGLE_ARROW";
-        case   0x2B34: return "LEFTWARDS_TWO_HEADED_ARROW_WITH_VERTICAL_STROKE";
-        case   0x2B35: return "LEFTWARDS_TWO_HEADED_ARROW_WITH_DOUBLE_VERTICAL_STROKE";
+        case   0x2B34: return
+                "LEFTWARDS_TWO_HEADED_ARROW_WITH_VERTICAL_STROKE";
+        case   0x2B35: return
+                "LEFTWARDS_TWO_HEADED_ARROW_WITH_DOUBLE_VERTICAL_STROKE";
         case   0x2B36: return "LEFTWARDS_TWO_HEADED_ARROW_FROM_BAR";
         case   0x2B37: return "LEFTWARDS_TWO_HEADED_TRIPLE_DASH_ARROW";
         case   0x2B38: return "LEFTWARDS_ARROW_WITH_DOTTED_STEM";
-        case   0x2B39: return "LEFTWARDS_ARROW_WITH_TAIL_WITH_VERTICAL_STROKE";
-        case   0x2B3A: return "LEFTWARDS_ARROW_WITH_TAIL_WITH_DOUBLE_VERTICAL_STROKE";
+        case   0x2B39: return
+                "LEFTWARDS_ARROW_WITH_TAIL_WITH_VERTICAL_STROKE";
+        case   0x2B3A: return
+                "LEFTWARDS_ARROW_WITH_TAIL_WITH_DOUBLE_VERTICAL_STROKE";
         case   0x2B3B: return "LEFTWARDS_TWO_HEADED_ARROW_WITH_TAIL";
-        case   0x2B3C: return "LEFTWARDS_TWO_HEADED_ARROW_WITH_TAIL_WITH_VERTICAL_STROKE";
-        case   0x2B3D: return "LEFTWARDS_TWO_HEADED_ARROW_WITH_TAIL_WITH_DOUBLE_VERTICAL_STROKE";
+        case   0x2B3C: return
+                "LEFTWARDS_TWO_HEADED_ARROW_WITH_TAIL_WITH_VERTICAL_STROKE";
+        case   0x2B3D: return
+                "LEFTWARDS_TWO_HEADED_ARROW_WITH_TAIL_WITH_DOUBLE_VERTICAL_STROKE";
         case   0x2B3E: return "LEFTWARDS_ARROW_THROUGH_X";
         case   0x2B3F: return "WAVE_ARROW_POINTING_DIRECTLY_LEFT";
         case   0x2B40: return "EQUALS_SIGN_ABOVE_LEFTWARDS_ARROW";
@@ -9927,7 +10338,8 @@ static const char *uniname1(int codepoint)
         case   0x2B45: return "LEFTWARDS_QUADRUPLE_ARROW";
         case   0x2B46: return "RIGHTWARDS_QUADRUPLE_ARROW";
         case   0x2B47: return "REVERSE_TILDE_OPERATOR_ABOVE_RIGHTWARDS_ARROW";
-        case   0x2B48: return "RIGHTWARDS_ARROW_ABOVE_REVERSE_ALMOST_EQUAL_TO";
+        case   0x2B48: return
+                "RIGHTWARDS_ARROW_ABOVE_REVERSE_ALMOST_EQUAL_TO";
         case   0x2B49: return "TILDE_OPERATOR_ABOVE_LEFTWARDS_ARROW";
         case   0x2B4A: return "LEFTWARDS_ARROW_ABOVE_ALMOST_EQUAL_TO";
         case   0x2B4B: return "LEFTWARDS_ARROW_ABOVE_REVERSE_TILDE_OPERATOR";
@@ -9950,7 +10362,8 @@ static const char *uniname1(int codepoint)
         case   0x2B5C: return "SLANTED_NORTH_ARROW_WITH_HORIZONTAL_TAIL";
         case   0x2B5D: return "BACKSLANTED_SOUTH_ARROW_WITH_HORIZONTAL_TAIL";
         case   0x2B5E: return "BENT_ARROW_POINTING_DOWNWARDS_THEN_NORTH_EAST";
-        case   0x2B5F: return "SHORT_BENT_ARROW_POINTING_DOWNWARDS_THEN_NORTH_EAST";
+        case   0x2B5F: return
+                "SHORT_BENT_ARROW_POINTING_DOWNWARDS_THEN_NORTH_EAST";
         case   0x2B60: return "LEFTWARDS_TRIANGLE_HEADED_ARROW";
         case   0x2B61: return "UPWARDS_TRIANGLE_HEADED_ARROW";
         case   0x2B62: return "RIGHTWARDS_TRIANGLE_HEADED_ARROW";
@@ -9966,7 +10379,8 @@ static const char *uniname1(int codepoint)
         case   0x2B6C: return "RIGHTWARDS_TRIANGLE_HEADED_DASHED_ARROW";
         case   0x2B6D: return "DOWNWARDS_TRIANGLE_HEADED_DASHED_ARROW";
         case   0x2B6E: return "CLOCKWISE_TRIANGLE_HEADED_OPEN_CIRCLE_ARROW";
-        case   0x2B6F: return "ANTICLOCKWISE_TRIANGLE_HEADED_OPEN_CIRCLE_ARROW";
+        case   0x2B6F: return
+                "ANTICLOCKWISE_TRIANGLE_HEADED_OPEN_CIRCLE_ARROW";
         case   0x2B70: return "LEFTWARDS_TRIANGLE_HEADED_ARROW_TO_BAR";
         case   0x2B71: return "UPWARDS_TRIANGLE_HEADED_ARROW_TO_BAR";
         case   0x2B72: return "RIGHTWARDS_TRIANGLE_HEADED_ARROW_TO_BAR";
@@ -9975,16 +10389,24 @@ static const char *uniname1(int codepoint)
         case   0x2B77: return "NORTH_EAST_TRIANGLE_HEADED_ARROW_TO_BAR";
         case   0x2B78: return "SOUTH_EAST_TRIANGLE_HEADED_ARROW_TO_BAR";
         case   0x2B79: return "SOUTH_WEST_TRIANGLE_HEADED_ARROW_TO_BAR";
-        case   0x2B7A: return "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_DOUBLE_HORIZONTAL_STROKE";
-        case   0x2B7B: return "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_DOUBLE_HORIZONTAL_STROKE";
-        case   0x2B7C: return "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_DOUBLE_HORIZONTAL_STROKE";
-        case   0x2B7D: return "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_DOUBLE_HORIZONTAL_STROKE";
+        case   0x2B7A: return
+                "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_DOUBLE_HORIZONTAL_STROKE";
+        case   0x2B7B: return
+                "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_DOUBLE_HORIZONTAL_STROKE";
+        case   0x2B7C: return
+                "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_DOUBLE_HORIZONTAL_STROKE";
+        case   0x2B7D: return
+                "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_DOUBLE_HORIZONTAL_STROKE";
         case   0x2B7E: return "HORIZONTAL_TAB_KEY";
         case   0x2B7F: return "VERTICAL_TAB_KEY";
-        case   0x2B80: return "LEFTWARDS_TRIANGLE_HEADED_ARROW_OVER_RIGHTWARDS_TRIANGLE_HEADED_ARROW";
-        case   0x2B81: return "UPWARDS_TRIANGLE_HEADED_ARROW_LEFTWARDS_OF_DOWNWARDS_TRIANGLE_HEADED_ARROW";
-        case   0x2B82: return "RIGHTWARDS_TRIANGLE_HEADED_ARROW_OVER_LEFTWARDS_TRIANGLE_HEADED_ARROW";
-        case   0x2B83: return "DOWNWARDS_TRIANGLE_HEADED_ARROW_LEFTWARDS_OF_UPWARDS_TRIANGLE_HEADED_ARROW";
+        case   0x2B80: return
+                "LEFTWARDS_TRIANGLE_HEADED_ARROW_OVER_RIGHTWARDS_TRIANGLE_HEADED_ARROW";
+        case   0x2B81: return
+                "UPWARDS_TRIANGLE_HEADED_ARROW_LEFTWARDS_OF_DOWNWARDS_TRIANGLE_HEADED_ARROW";
+        case   0x2B82: return
+                "RIGHTWARDS_TRIANGLE_HEADED_ARROW_OVER_LEFTWARDS_TRIANGLE_HEADED_ARROW";
+        case   0x2B83: return
+                "DOWNWARDS_TRIANGLE_HEADED_ARROW_LEFTWARDS_OF_UPWARDS_TRIANGLE_HEADED_ARROW";
         case   0x2B84: return "LEFTWARDS_TRIANGLE_HEADED_PAIRED_ARROWS";
         case   0x2B85: return "UPWARDS_TRIANGLE_HEADED_PAIRED_ARROWS";
         case   0x2B86: return "RIGHTWARDS_TRIANGLE_HEADED_PAIRED_ARROWS";
@@ -9993,32 +10415,48 @@ static const char *uniname1(int codepoint)
         case   0x2B89: return "UPWARDS_BLACK_CIRCLED_WHITE_ARROW";
         case   0x2B8A: return "RIGHTWARDS_BLACK_CIRCLED_WHITE_ARROW";
         case   0x2B8B: return "DOWNWARDS_BLACK_CIRCLED_WHITE_ARROW";
-        case   0x2B8C: return "ANTICLOCKWISE_TRIANGLE_HEADED_RIGHT_U_SHAPED_ARROW";
-        case   0x2B8D: return "ANTICLOCKWISE_TRIANGLE_HEADED_BOTTOM_U_SHAPED_ARROW";
-        case   0x2B8E: return "ANTICLOCKWISE_TRIANGLE_HEADED_LEFT_U_SHAPED_ARROW";
-        case   0x2B8F: return "ANTICLOCKWISE_TRIANGLE_HEADED_TOP_U_SHAPED_ARROW";
+        case   0x2B8C: return
+                "ANTICLOCKWISE_TRIANGLE_HEADED_RIGHT_U_SHAPED_ARROW";
+        case   0x2B8D: return
+                "ANTICLOCKWISE_TRIANGLE_HEADED_BOTTOM_U_SHAPED_ARROW";
+        case   0x2B8E: return
+                "ANTICLOCKWISE_TRIANGLE_HEADED_LEFT_U_SHAPED_ARROW";
+        case   0x2B8F: return
+                "ANTICLOCKWISE_TRIANGLE_HEADED_TOP_U_SHAPED_ARROW";
         case   0x2B90: return "RETURN_LEFT";
         case   0x2B91: return "RETURN_RIGHT";
         case   0x2B92: return "NEWLINE_LEFT";
         case   0x2B93: return "NEWLINE_RIGHT";
         case   0x2B94: return "FOUR_CORNER_ARROWS_CIRCLING_ANTICLOCKWISE";
         case   0x2B95: return "RIGHTWARDS_BLACK_ARROW";
-        case   0x2B98: return "THREE_D_TOP_LIGHTED_LEFTWARDS_EQUILATERAL_ARROWHEAD";
-        case   0x2B99: return "THREE_D_RIGHT_LIGHTED_UPWARDS_EQUILATERAL_ARROWHEAD";
-        case   0x2B9A: return "THREE_D_TOP_LIGHTED_RIGHTWARDS_EQUILATERAL_ARROWHEAD";
-        case   0x2B9B: return "THREE_D_LEFT_LIGHTED_DOWNWARDS_EQUILATERAL_ARROWHEAD";
+        case   0x2B98: return
+                "THREE_D_TOP_LIGHTED_LEFTWARDS_EQUILATERAL_ARROWHEAD";
+        case   0x2B99: return
+                "THREE_D_RIGHT_LIGHTED_UPWARDS_EQUILATERAL_ARROWHEAD";
+        case   0x2B9A: return
+                "THREE_D_TOP_LIGHTED_RIGHTWARDS_EQUILATERAL_ARROWHEAD";
+        case   0x2B9B: return
+                "THREE_D_LEFT_LIGHTED_DOWNWARDS_EQUILATERAL_ARROWHEAD";
         case   0x2B9C: return "BLACK_LEFTWARDS_EQUILATERAL_ARROWHEAD";
         case   0x2B9D: return "BLACK_UPWARDS_EQUILATERAL_ARROWHEAD";
         case   0x2B9E: return "BLACK_RIGHTWARDS_EQUILATERAL_ARROWHEAD";
         case   0x2B9F: return "BLACK_DOWNWARDS_EQUILATERAL_ARROWHEAD";
-        case   0x2BA0: return "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_LEFTWARDS";
-        case   0x2BA1: return "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_RIGHTWARDS";
-        case   0x2BA2: return "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_LEFTWARDS";
-        case   0x2BA3: return "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_RIGHTWARDS";
-        case   0x2BA4: return "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_UPWARDS";
-        case   0x2BA5: return "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_UPWARDS";
-        case   0x2BA6: return "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_DOWNWARDS";
-        case   0x2BA7: return "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_DOWNWARDS";
+        case   0x2BA0: return
+                "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_LEFTWARDS";
+        case   0x2BA1: return
+                "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_RIGHTWARDS";
+        case   0x2BA2: return
+                "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_LEFTWARDS";
+        case   0x2BA3: return
+                "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_RIGHTWARDS";
+        case   0x2BA4: return
+                "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_UPWARDS";
+        case   0x2BA5: return
+                "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_UPWARDS";
+        case   0x2BA6: return
+                "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_DOWNWARDS";
+        case   0x2BA7: return
+                "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_LONG_TIP_DOWNWARDS";
         case   0x2BA8: return "BLACK_CURVED_DOWNWARDS_AND_LEFTWARDS_ARROW";
         case   0x2BA9: return "BLACK_CURVED_DOWNWARDS_AND_RIGHTWARDS_ARROW";
         case   0x2BAA: return "BLACK_CURVED_UPWARDS_AND_LEFTWARDS_ARROW";
@@ -10035,7 +10473,8 @@ static const char *uniname1(int codepoint)
         case   0x2BB5: return "RIBBON_ARROW_RIGHT_UP";
         case   0x2BB6: return "RIBBON_ARROW_LEFT_DOWN";
         case   0x2BB7: return "RIBBON_ARROW_RIGHT_DOWN";
-        case   0x2BB8: return "UPWARDS_WHITE_ARROW_FROM_BAR_WITH_HORIZONTAL_BAR";
+        case   0x2BB8: return
+                "UPWARDS_WHITE_ARROW_FROM_BAR_WITH_HORIZONTAL_BAR";
         case   0x2BB9: return "UP_ARROWHEAD_IN_A_RECTANGLE_BOX";
         case   0x2BBD: return "BALLOT_BOX_WITH_LIGHT_X";
         case   0x2BBE: return "CIRCLED_X";
@@ -10912,17 +11351,28 @@ static const char *uniname1(int codepoint)
         case   0x2FD3: return "KANGXI_RADICAL_DRAGON";
         case   0x2FD4: return "KANGXI_RADICAL_TURTLE";
         case   0x2FD5: return "KANGXI_RADICAL_FLUTE";
-        case   0x2FF0: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_LEFT_TO_RIGHT";
-        case   0x2FF1: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_ABOVE_TO_BELOW";
-        case   0x2FF2: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_LEFT_TO_MIDDLE_AND_RIGHT";
-        case   0x2FF3: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_ABOVE_TO_MIDDLE_AND_BELOW";
-        case   0x2FF4: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_FULL_SURROUND";
-        case   0x2FF5: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_ABOVE";
-        case   0x2FF6: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_BELOW";
-        case   0x2FF7: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_LEFT";
-        case   0x2FF8: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_UPPER_LEFT";
-        case   0x2FF9: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_UPPER_RIGHT";
-        case   0x2FFA: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_LOWER_LEFT";
+        case   0x2FF0: return
+                "IDEOGRAPHIC_DESCRIPTION_CHARACTER_LEFT_TO_RIGHT";
+        case   0x2FF1: return
+                "IDEOGRAPHIC_DESCRIPTION_CHARACTER_ABOVE_TO_BELOW";
+        case   0x2FF2: return
+                "IDEOGRAPHIC_DESCRIPTION_CHARACTER_LEFT_TO_MIDDLE_AND_RIGHT";
+        case   0x2FF3: return
+                "IDEOGRAPHIC_DESCRIPTION_CHARACTER_ABOVE_TO_MIDDLE_AND_BELOW";
+        case   0x2FF4: return
+                "IDEOGRAPHIC_DESCRIPTION_CHARACTER_FULL_SURROUND";
+        case   0x2FF5: return
+                "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_ABOVE";
+        case   0x2FF6: return
+                "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_BELOW";
+        case   0x2FF7: return
+                "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_LEFT";
+        case   0x2FF8: return
+                "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_UPPER_LEFT";
+        case   0x2FF9: return
+                "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_UPPER_RIGHT";
+        case   0x2FFA: return
+                "IDEOGRAPHIC_DESCRIPTION_CHARACTER_SURROUND_FROM_LOWER_LEFT";
         case   0x2FFB: return "IDEOGRAPHIC_DESCRIPTION_CHARACTER_OVERLAID";
         case   0x3000: return "IDEOGRAPHIC_SPACE";
         case   0x3001: return "IDEOGRAPHIC_COMMA";
@@ -10976,10 +11426,12 @@ static const char *uniname1(int codepoint)
         case   0x3031: return "VERTICAL_KANA_REPEAT_MARK";
         case   0x3032: return "VERTICAL_KANA_REPEAT_WITH_VOICED_SOUND_MARK";
         case   0x3033: return "VERTICAL_KANA_REPEAT_MARK_UPPER_HALF";
-        case   0x3034: return "VERTICAL_KANA_REPEAT_WITH_VOICED_SOUND_MARK_UPPER_HALF";
+        case   0x3034: return
+                "VERTICAL_KANA_REPEAT_WITH_VOICED_SOUND_MARK_UPPER_HALF";
         case   0x3035: return "VERTICAL_KANA_REPEAT_MARK_LOWER_HALF";
         case   0x3036: return "CIRCLED_POSTAL_MARK";
-        case   0x3037: return "IDEOGRAPHIC_TELEGRAPH_LINE_FEED_SEPARATOR_SYMBOL";
+        case   0x3037: return
+                "IDEOGRAPHIC_TELEGRAPH_LINE_FEED_SEPARATOR_SYMBOL";
         case   0x3038: return "HANGZHOU_NUMERAL_TEN";
         case   0x3039: return "HANGZHOU_NUMERAL_TWENTY";
         case   0x303A: return "HANGZHOU_NUMERAL_THIRTY";
@@ -11075,7 +11527,8 @@ static const char *uniname1(int codepoint)
         case   0x3095: return "HIRAGANA_LETTER_SMALL_KA";
         case   0x3096: return "HIRAGANA_LETTER_SMALL_KE";
         case   0x3099: return "COMBINING_KATAKANA_HIRAGANA_VOICED_SOUND_MARK";
-        case   0x309A: return "COMBINING_KATAKANA_HIRAGANA_SEMI_VOICED_SOUND_MARK";
+        case   0x309A: return
+                "COMBINING_KATAKANA_HIRAGANA_SEMI_VOICED_SOUND_MARK";
         case   0x309B: return "KATAKANA_HIRAGANA_VOICED_SOUND_MARK";
         case   0x309C: return "KATAKANA_HIRAGANA_SEMI_VOICED_SOUND_MARK";
         case   0x309D: return "HIRAGANA_ITERATION_MARK";
@@ -11762,18 +12215,27 @@ static const char *uniname1(int codepoint)
         case   0x3362: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_TEN";
         case   0x3363: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_ELEVEN";
         case   0x3364: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_TWELVE";
-        case   0x3365: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_THIRTEEN";
-        case   0x3366: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_FOURTEEN";
+        case   0x3365: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_THIRTEEN";
+        case   0x3366: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_FOURTEEN";
         case   0x3367: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_FIFTEEN";
         case   0x3368: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_SIXTEEN";
-        case   0x3369: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_SEVENTEEN";
-        case   0x336A: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_EIGHTEEN";
-        case   0x336B: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_NINETEEN";
+        case   0x3369: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_SEVENTEEN";
+        case   0x336A: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_EIGHTEEN";
+        case   0x336B: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_NINETEEN";
         case   0x336C: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_TWENTY";
-        case   0x336D: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_TWENTY_ONE";
-        case   0x336E: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_TWENTY_TWO";
-        case   0x336F: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_TWENTY_THREE";
-        case   0x3370: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_TWENTY_FOUR";
+        case   0x336D: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_TWENTY_ONE";
+        case   0x336E: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_TWENTY_TWO";
+        case   0x336F: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_TWENTY_THREE";
+        case   0x3370: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_HOUR_TWENTY_FOUR";
         case   0x3371: return "SQUARE_HPA";
         case   0x3372: return "SQUARE_DA";
         case   0x3373: return "SQUARE_AU";
@@ -11901,21 +12363,32 @@ static const char *uniname1(int codepoint)
         case   0x33ED: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_FOURTEEN";
         case   0x33EE: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_FIFTEEN";
         case   0x33EF: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_SIXTEEN";
-        case   0x33F0: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_SEVENTEEN";
+        case   0x33F0: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_SEVENTEEN";
         case   0x33F1: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_EIGHTEEN";
         case   0x33F2: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_NINETEEN";
         case   0x33F3: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY";
-        case   0x33F4: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_ONE";
-        case   0x33F5: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_TWO";
-        case   0x33F6: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_THREE";
-        case   0x33F7: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_FOUR";
-        case   0x33F8: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_FIVE";
-        case   0x33F9: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_SIX";
-        case   0x33FA: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_SEVEN";
-        case   0x33FB: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_EIGHT";
-        case   0x33FC: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_NINE";
+        case   0x33F4: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_ONE";
+        case   0x33F5: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_TWO";
+        case   0x33F6: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_THREE";
+        case   0x33F7: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_FOUR";
+        case   0x33F8: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_FIVE";
+        case   0x33F9: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_SIX";
+        case   0x33FA: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_SEVEN";
+        case   0x33FB: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_EIGHT";
+        case   0x33FC: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_TWENTY_NINE";
         case   0x33FD: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_THIRTY";
-        case   0x33FE: return "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_THIRTY_ONE";
+        case   0x33FE: return
+                "IDEOGRAPHIC_TELEGRAPH_SYMBOL_FOR_DAY_THIRTY_ONE";
         case   0x33FF: return "SQUARE_GAL";
         case   0x3400: return "CJK_Ideograph_Extension_A__First";
         case   0x4DB5: return "CJK_Ideograph_Extension_A__Last";
@@ -13581,8 +14054,10 @@ static const char *uniname1(int codepoint)
         case   0xA659: return "CYRILLIC_SMALL_LETTER_CLOSED_LITTLE_YUS";
         case   0xA65A: return "CYRILLIC_CAPITAL_LETTER_BLENDED_YUS";
         case   0xA65B: return "CYRILLIC_SMALL_LETTER_BLENDED_YUS";
-        case   0xA65C: return "CYRILLIC_CAPITAL_LETTER_IOTIFIED_CLOSED_LITTLE_YUS";
-        case   0xA65D: return "CYRILLIC_SMALL_LETTER_IOTIFIED_CLOSED_LITTLE_YUS";
+        case   0xA65C: return
+                "CYRILLIC_CAPITAL_LETTER_IOTIFIED_CLOSED_LITTLE_YUS";
+        case   0xA65D: return
+                "CYRILLIC_SMALL_LETTER_IOTIFIED_CLOSED_LITTLE_YUS";
         case   0xA65E: return "CYRILLIC_CAPITAL_LETTER_YN";
         case   0xA65F: return "CYRILLIC_SMALL_LETTER_YN";
         case   0xA660: return "CYRILLIC_CAPITAL_LETTER_REVERSED_TSE";
@@ -13701,7 +14176,7 @@ static const char *uniname1(int codepoint)
         case   0xA6D2: return "BAMUM_LETTER_KEN";
         case   0xA6D3: return "BAMUM_LETTER_NGKWAEN";
         case   0xA6D4: return "BAMUM_LETTER_NGGA";
-        default:       return NULL;
+        default:       return nullptr;
     }
 }
 
@@ -13755,11 +14230,14 @@ static const char *uniname2(int codepoint)
         case   0xA70A: return "MODIFIER_LETTER_MID_DOTTED_TONE_BAR";
         case   0xA70B: return "MODIFIER_LETTER_LOW_DOTTED_TONE_BAR";
         case   0xA70C: return "MODIFIER_LETTER_EXTRA_LOW_DOTTED_TONE_BAR";
-        case   0xA70D: return "MODIFIER_LETTER_EXTRA_HIGH_DOTTED_LEFT_STEM_TONE_BAR";
-        case   0xA70E: return "MODIFIER_LETTER_HIGH_DOTTED_LEFT_STEM_TONE_BAR";
+        case   0xA70D: return
+                "MODIFIER_LETTER_EXTRA_HIGH_DOTTED_LEFT_STEM_TONE_BAR";
+        case   0xA70E: return
+                "MODIFIER_LETTER_HIGH_DOTTED_LEFT_STEM_TONE_BAR";
         case   0xA70F: return "MODIFIER_LETTER_MID_DOTTED_LEFT_STEM_TONE_BAR";
         case   0xA710: return "MODIFIER_LETTER_LOW_DOTTED_LEFT_STEM_TONE_BAR";
-        case   0xA711: return "MODIFIER_LETTER_EXTRA_LOW_DOTTED_LEFT_STEM_TONE_BAR";
+        case   0xA711: return
+                "MODIFIER_LETTER_EXTRA_LOW_DOTTED_LEFT_STEM_TONE_BAR";
         case   0xA712: return "MODIFIER_LETTER_EXTRA_HIGH_LEFT_STEM_TONE_BAR";
         case   0xA713: return "MODIFIER_LETTER_HIGH_LEFT_STEM_TONE_BAR";
         case   0xA714: return "MODIFIER_LETTER_MID_LEFT_STEM_TONE_BAR";
@@ -13772,7 +14250,8 @@ static const char *uniname2(int codepoint)
         case   0xA71B: return "MODIFIER_LETTER_RAISED_UP_ARROW";
         case   0xA71C: return "MODIFIER_LETTER_RAISED_DOWN_ARROW";
         case   0xA71D: return "MODIFIER_LETTER_RAISED_EXCLAMATION_MARK";
-        case   0xA71E: return "MODIFIER_LETTER_RAISED_INVERTED_EXCLAMATION_MARK";
+        case   0xA71E: return
+                "MODIFIER_LETTER_RAISED_INVERTED_EXCLAMATION_MARK";
         case   0xA71F: return "MODIFIER_LETTER_LOW_INVERTED_EXCLAMATION_MARK";
         case   0xA720: return "MODIFIER_LETTER_STRESS_AND_HIGH_TONE";
         case   0xA721: return "MODIFIER_LETTER_STRESS_AND_LOW_TONE";
@@ -13810,26 +14289,33 @@ static const char *uniname2(int codepoint)
         case   0xA741: return "LATIN_SMALL_LETTER_K_WITH_STROKE";
         case   0xA742: return "LATIN_CAPITAL_LETTER_K_WITH_DIAGONAL_STROKE";
         case   0xA743: return "LATIN_SMALL_LETTER_K_WITH_DIAGONAL_STROKE";
-        case   0xA744: return "LATIN_CAPITAL_LETTER_K_WITH_STROKE_AND_DIAGONAL_STROKE";
-        case   0xA745: return "LATIN_SMALL_LETTER_K_WITH_STROKE_AND_DIAGONAL_STROKE";
+        case   0xA744: return
+                "LATIN_CAPITAL_LETTER_K_WITH_STROKE_AND_DIAGONAL_STROKE";
+        case   0xA745: return
+                "LATIN_SMALL_LETTER_K_WITH_STROKE_AND_DIAGONAL_STROKE";
         case   0xA746: return "LATIN_CAPITAL_LETTER_BROKEN_L";
         case   0xA747: return "LATIN_SMALL_LETTER_BROKEN_L";
         case   0xA748: return "LATIN_CAPITAL_LETTER_L_WITH_HIGH_STROKE";
         case   0xA749: return "LATIN_SMALL_LETTER_L_WITH_HIGH_STROKE";
-        case   0xA74A: return "LATIN_CAPITAL_LETTER_O_WITH_LONG_STROKE_OVERLAY";
+        case   0xA74A: return
+                "LATIN_CAPITAL_LETTER_O_WITH_LONG_STROKE_OVERLAY";
         case   0xA74B: return "LATIN_SMALL_LETTER_O_WITH_LONG_STROKE_OVERLAY";
         case   0xA74C: return "LATIN_CAPITAL_LETTER_O_WITH_LOOP";
         case   0xA74D: return "LATIN_SMALL_LETTER_O_WITH_LOOP";
         case   0xA74E: return "LATIN_CAPITAL_LETTER_OO";
         case   0xA74F: return "LATIN_SMALL_LETTER_OO";
-        case   0xA750: return "LATIN_CAPITAL_LETTER_P_WITH_STROKE_THROUGH_DESCENDER";
-        case   0xA751: return "LATIN_SMALL_LETTER_P_WITH_STROKE_THROUGH_DESCENDER";
+        case   0xA750: return
+                "LATIN_CAPITAL_LETTER_P_WITH_STROKE_THROUGH_DESCENDER";
+        case   0xA751: return
+                "LATIN_SMALL_LETTER_P_WITH_STROKE_THROUGH_DESCENDER";
         case   0xA752: return "LATIN_CAPITAL_LETTER_P_WITH_FLOURISH";
         case   0xA753: return "LATIN_SMALL_LETTER_P_WITH_FLOURISH";
         case   0xA754: return "LATIN_CAPITAL_LETTER_P_WITH_SQUIRREL_TAIL";
         case   0xA755: return "LATIN_SMALL_LETTER_P_WITH_SQUIRREL_TAIL";
-        case   0xA756: return "LATIN_CAPITAL_LETTER_Q_WITH_STROKE_THROUGH_DESCENDER";
-        case   0xA757: return "LATIN_SMALL_LETTER_Q_WITH_STROKE_THROUGH_DESCENDER";
+        case   0xA756: return
+                "LATIN_CAPITAL_LETTER_Q_WITH_STROKE_THROUGH_DESCENDER";
+        case   0xA757: return
+                "LATIN_SMALL_LETTER_Q_WITH_STROKE_THROUGH_DESCENDER";
         case   0xA758: return "LATIN_CAPITAL_LETTER_Q_WITH_DIAGONAL_STROKE";
         case   0xA759: return "LATIN_SMALL_LETTER_Q_WITH_DIAGONAL_STROKE";
         case   0xA75A: return "LATIN_CAPITAL_LETTER_R_ROTUNDA";
@@ -13844,8 +14330,10 @@ static const char *uniname2(int codepoint)
         case   0xA763: return "LATIN_SMALL_LETTER_VISIGOTHIC_Z";
         case   0xA764: return "LATIN_CAPITAL_LETTER_THORN_WITH_STROKE";
         case   0xA765: return "LATIN_SMALL_LETTER_THORN_WITH_STROKE";
-        case   0xA766: return "LATIN_CAPITAL_LETTER_THORN_WITH_STROKE_THROUGH_DESCENDER";
-        case   0xA767: return "LATIN_SMALL_LETTER_THORN_WITH_STROKE_THROUGH_DESCENDER";
+        case   0xA766: return
+                "LATIN_CAPITAL_LETTER_THORN_WITH_STROKE_THROUGH_DESCENDER";
+        case   0xA767: return
+                "LATIN_SMALL_LETTER_THORN_WITH_STROKE_THROUGH_DESCENDER";
         case   0xA768: return "LATIN_CAPITAL_LETTER_VEND";
         case   0xA769: return "LATIN_SMALL_LETTER_VEND";
         case   0xA76A: return "LATIN_CAPITAL_LETTER_ET";
@@ -13884,7 +14372,8 @@ static const char *uniname2(int codepoint)
         case   0xA78B: return "LATIN_CAPITAL_LETTER_SALTILLO";
         case   0xA78C: return "LATIN_SMALL_LETTER_SALTILLO";
         case   0xA78D: return "LATIN_CAPITAL_LETTER_TURNED_H";
-        case   0xA78E: return "LATIN_SMALL_LETTER_L_WITH_RETROFLEX_HOOK_AND_BELT";
+        case   0xA78E: return
+                "LATIN_SMALL_LETTER_L_WITH_RETROFLEX_HOOK_AND_BELT";
         case   0xA790: return "LATIN_CAPITAL_LETTER_N_WITH_DESCENDER";
         case   0xA791: return "LATIN_SMALL_LETTER_N_WITH_DESCENDER";
         case   0xA792: return "LATIN_CAPITAL_LETTER_C_WITH_BAR";
@@ -14641,9 +15130,11 @@ static const char *uniname2(int codepoint)
         case   0xAB3F: return "LATIN_SMALL_LETTER_OPEN_O_WITH_STROKE";
         case   0xAB40: return "LATIN_SMALL_LETTER_INVERTED_OE";
         case   0xAB41: return "LATIN_SMALL_LETTER_TURNED_OE_WITH_STROKE";
-        case   0xAB42: return "LATIN_SMALL_LETTER_TURNED_OE_WITH_HORIZONTAL_STROKE";
+        case   0xAB42: return
+                "LATIN_SMALL_LETTER_TURNED_OE_WITH_HORIZONTAL_STROKE";
         case   0xAB43: return "LATIN_SMALL_LETTER_TURNED_O_OPEN_O";
-        case   0xAB44: return "LATIN_SMALL_LETTER_TURNED_O_OPEN_O_WITH_STROKE";
+        case   0xAB44: return
+                "LATIN_SMALL_LETTER_TURNED_O_OPEN_O_WITH_STROKE";
         case   0xAB45: return "LATIN_SMALL_LETTER_STIRRUP_R";
         case   0xAB46: return "LATIN_LETTER_SMALL_CAPITAL_R_WITH_RIGHT_LEG";
         case   0xAB47: return "LATIN_SMALL_LETTER_R_WITHOUT_HANDLE";
@@ -14663,8 +15154,10 @@ static const char *uniname2(int codepoint)
         case   0xAB55: return "LATIN_SMALL_LETTER_CHI_WITH_LOW_LEFT_SERIF";
         case   0xAB56: return "LATIN_SMALL_LETTER_X_WITH_LOW_RIGHT_RING";
         case   0xAB57: return "LATIN_SMALL_LETTER_X_WITH_LONG_LEFT_LEG";
-        case   0xAB58: return "LATIN_SMALL_LETTER_X_WITH_LONG_LEFT_LEG_AND_LOW_RIGHT_RING";
-        case   0xAB59: return "LATIN_SMALL_LETTER_X_WITH_LONG_LEFT_LEG_WITH_SERIF";
+        case   0xAB58: return
+                "LATIN_SMALL_LETTER_X_WITH_LONG_LEFT_LEG_AND_LOW_RIGHT_RING";
+        case   0xAB59: return
+                "LATIN_SMALL_LETTER_X_WITH_LONG_LEFT_LEG_WITH_SERIF";
         case   0xAB5A: return "LATIN_SMALL_LETTER_Y_WITH_SHORT_RIGHT_LEG";
         case   0xAB5B: return "MODIFIER_BREVE_WITH_INVERTED_BREVE";
         case   0xAB5C: return "MODIFIER_LETTER_SMALL_HENG";
@@ -15425,7 +15918,8 @@ static const char *uniname2(int codepoint)
         case   0xFBA1: return "ARABIC_LETTER_RNOON_FINAL_FORM";
         case   0xFBA2: return "ARABIC_LETTER_RNOON_INITIAL_FORM";
         case   0xFBA3: return "ARABIC_LETTER_RNOON_MEDIAL_FORM";
-        case   0xFBA4: return "ARABIC_LETTER_HEH_WITH_YEH_ABOVE_ISOLATED_FORM";
+        case   0xFBA4: return
+                "ARABIC_LETTER_HEH_WITH_YEH_ABOVE_ISOLATED_FORM";
         case   0xFBA5: return "ARABIC_LETTER_HEH_WITH_YEH_ABOVE_FINAL_FORM";
         case   0xFBA6: return "ARABIC_LETTER_HEH_GOAL_ISOLATED_FORM";
         case   0xFBA7: return "ARABIC_LETTER_HEH_GOAL_FINAL_FORM";
@@ -15437,16 +15931,20 @@ static const char *uniname2(int codepoint)
         case   0xFBAD: return "ARABIC_LETTER_HEH_DOACHASHMEE_MEDIAL_FORM";
         case   0xFBAE: return "ARABIC_LETTER_YEH_BARREE_ISOLATED_FORM";
         case   0xFBAF: return "ARABIC_LETTER_YEH_BARREE_FINAL_FORM";
-        case   0xFBB0: return "ARABIC_LETTER_YEH_BARREE_WITH_HAMZA_ABOVE_ISOLATED_FORM";
-        case   0xFBB1: return "ARABIC_LETTER_YEH_BARREE_WITH_HAMZA_ABOVE_FINAL_FORM";
+        case   0xFBB0: return
+                "ARABIC_LETTER_YEH_BARREE_WITH_HAMZA_ABOVE_ISOLATED_FORM";
+        case   0xFBB1: return
+                "ARABIC_LETTER_YEH_BARREE_WITH_HAMZA_ABOVE_FINAL_FORM";
         case   0xFBB2: return "ARABIC_SYMBOL_DOT_ABOVE";
         case   0xFBB3: return "ARABIC_SYMBOL_DOT_BELOW";
         case   0xFBB4: return "ARABIC_SYMBOL_TWO_DOTS_ABOVE";
         case   0xFBB5: return "ARABIC_SYMBOL_TWO_DOTS_BELOW";
         case   0xFBB6: return "ARABIC_SYMBOL_THREE_DOTS_ABOVE";
         case   0xFBB7: return "ARABIC_SYMBOL_THREE_DOTS_BELOW";
-        case   0xFBB8: return "ARABIC_SYMBOL_THREE_DOTS_POINTING_DOWNWARDS_ABOVE";
-        case   0xFBB9: return "ARABIC_SYMBOL_THREE_DOTS_POINTING_DOWNWARDS_BELOW";
+        case   0xFBB8: return
+                "ARABIC_SYMBOL_THREE_DOTS_POINTING_DOWNWARDS_ABOVE";
+        case   0xFBB9: return
+                "ARABIC_SYMBOL_THREE_DOTS_POINTING_DOWNWARDS_BELOW";
         case   0xFBBA: return "ARABIC_SYMBOL_FOUR_DOTS_ABOVE";
         case   0xFBBB: return "ARABIC_SYMBOL_FOUR_DOTS_BELOW";
         case   0xFBBC: return "ARABIC_SYMBOL_DOUBLE_VERTICAL_BAR_BELOW";
@@ -15465,7 +15963,8 @@ static const char *uniname2(int codepoint)
         case   0xFBDA: return "ARABIC_LETTER_OE_FINAL_FORM";
         case   0xFBDB: return "ARABIC_LETTER_YU_ISOLATED_FORM";
         case   0xFBDC: return "ARABIC_LETTER_YU_FINAL_FORM";
-        case   0xFBDD: return "ARABIC_LETTER_U_WITH_HAMZA_ABOVE_ISOLATED_FORM";
+        case   0xFBDD: return
+                "ARABIC_LETTER_U_WITH_HAMZA_ABOVE_ISOLATED_FORM";
         case   0xFBDE: return "ARABIC_LETTER_VE_ISOLATED_FORM";
         case   0xFBDF: return "ARABIC_LETTER_VE_FINAL_FORM";
         case   0xFBE0: return "ARABIC_LETTER_KIRGHIZ_OE_ISOLATED_FORM";
@@ -15476,50 +15975,78 @@ static const char *uniname2(int codepoint)
         case   0xFBE5: return "ARABIC_LETTER_E_FINAL_FORM";
         case   0xFBE6: return "ARABIC_LETTER_E_INITIAL_FORM";
         case   0xFBE7: return "ARABIC_LETTER_E_MEDIAL_FORM";
-        case   0xFBE8: return "ARABIC_LETTER_UIGHUR_KAZAKH_KIRGHIZ_ALEF_MAKSURA_INITIAL_FORM";
-        case   0xFBE9: return "ARABIC_LETTER_UIGHUR_KAZAKH_KIRGHIZ_ALEF_MAKSURA_MEDIAL_FORM";
-        case   0xFBEA: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_ISOLATED_FORM";
-        case   0xFBEB: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_FINAL_FORM";
-        case   0xFBEC: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_AE_ISOLATED_FORM";
-        case   0xFBED: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_AE_FINAL_FORM";
-        case   0xFBEE: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_WAW_ISOLATED_FORM";
-        case   0xFBEF: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_WAW_FINAL_FORM";
-        case   0xFBF0: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_U_ISOLATED_FORM";
-        case   0xFBF1: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_U_FINAL_FORM";
-        case   0xFBF2: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_OE_ISOLATED_FORM";
-        case   0xFBF3: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_OE_FINAL_FORM";
-        case   0xFBF4: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_YU_ISOLATED_FORM";
-        case   0xFBF5: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_YU_FINAL_FORM";
-        case   0xFBF6: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_E_ISOLATED_FORM";
-        case   0xFBF7: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_E_FINAL_FORM";
-        case   0xFBF8: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_E_INITIAL_FORM";
-        case   0xFBF9: return "ARABIC_LIGATURE_UIGHUR_KIRGHIZ_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_MAKSURA_ISOLATED_FORM";
-        case   0xFBFA: return "ARABIC_LIGATURE_UIGHUR_KIRGHIZ_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFBFB: return "ARABIC_LIGATURE_UIGHUR_KIRGHIZ_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_MAKSURA_INITIAL_FORM";
+        case   0xFBE8: return
+                "ARABIC_LETTER_UIGHUR_KAZAKH_KIRGHIZ_ALEF_MAKSURA_INITIAL_FORM";
+        case   0xFBE9: return
+                "ARABIC_LETTER_UIGHUR_KAZAKH_KIRGHIZ_ALEF_MAKSURA_MEDIAL_FORM";
+        case   0xFBEA: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_ISOLATED_FORM";
+        case   0xFBEB: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_FINAL_FORM";
+        case   0xFBEC: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_AE_ISOLATED_FORM";
+        case   0xFBED: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_AE_FINAL_FORM";
+        case   0xFBEE: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_WAW_ISOLATED_FORM";
+        case   0xFBEF: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_WAW_FINAL_FORM";
+        case   0xFBF0: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_U_ISOLATED_FORM";
+        case   0xFBF1: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_U_FINAL_FORM";
+        case   0xFBF2: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_OE_ISOLATED_FORM";
+        case   0xFBF3: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_OE_FINAL_FORM";
+        case   0xFBF4: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_YU_ISOLATED_FORM";
+        case   0xFBF5: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_YU_FINAL_FORM";
+        case   0xFBF6: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_E_ISOLATED_FORM";
+        case   0xFBF7: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_E_FINAL_FORM";
+        case   0xFBF8: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_E_INITIAL_FORM";
+        case   0xFBF9: return
+                "ARABIC_LIGATURE_UIGHUR_KIRGHIZ_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFBFA: return
+                "ARABIC_LIGATURE_UIGHUR_KIRGHIZ_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFBFB: return
+                "ARABIC_LIGATURE_UIGHUR_KIRGHIZ_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_MAKSURA_INITIAL_FORM";
         case   0xFBFC: return "ARABIC_LETTER_FARSI_YEH_ISOLATED_FORM";
         case   0xFBFD: return "ARABIC_LETTER_FARSI_YEH_FINAL_FORM";
         case   0xFBFE: return "ARABIC_LETTER_FARSI_YEH_INITIAL_FORM";
         case   0xFBFF: return "ARABIC_LETTER_FARSI_YEH_MEDIAL_FORM";
-        case   0xFC00: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_JEEM_ISOLATED_FORM";
-        case   0xFC01: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_HAH_ISOLATED_FORM";
-        case   0xFC02: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC03: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_MAKSURA_ISOLATED_FORM";
-        case   0xFC04: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_YEH_ISOLATED_FORM";
+        case   0xFC00: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_JEEM_ISOLATED_FORM";
+        case   0xFC01: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_HAH_ISOLATED_FORM";
+        case   0xFC02: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_MEEM_ISOLATED_FORM";
+        case   0xFC03: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC04: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_YEH_ISOLATED_FORM";
         case   0xFC05: return "ARABIC_LIGATURE_BEH_WITH_JEEM_ISOLATED_FORM";
         case   0xFC06: return "ARABIC_LIGATURE_BEH_WITH_HAH_ISOLATED_FORM";
         case   0xFC07: return "ARABIC_LIGATURE_BEH_WITH_KHAH_ISOLATED_FORM";
         case   0xFC08: return "ARABIC_LIGATURE_BEH_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC09: return "ARABIC_LIGATURE_BEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC09: return
+                "ARABIC_LIGATURE_BEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFC0A: return "ARABIC_LIGATURE_BEH_WITH_YEH_ISOLATED_FORM";
         case   0xFC0B: return "ARABIC_LIGATURE_TEH_WITH_JEEM_ISOLATED_FORM";
         case   0xFC0C: return "ARABIC_LIGATURE_TEH_WITH_HAH_ISOLATED_FORM";
         case   0xFC0D: return "ARABIC_LIGATURE_TEH_WITH_KHAH_ISOLATED_FORM";
         case   0xFC0E: return "ARABIC_LIGATURE_TEH_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC0F: return "ARABIC_LIGATURE_TEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC0F: return
+                "ARABIC_LIGATURE_TEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFC10: return "ARABIC_LIGATURE_TEH_WITH_YEH_ISOLATED_FORM";
         case   0xFC11: return "ARABIC_LIGATURE_THEH_WITH_JEEM_ISOLATED_FORM";
         case   0xFC12: return "ARABIC_LIGATURE_THEH_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC13: return "ARABIC_LIGATURE_THEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC13: return
+                "ARABIC_LIGATURE_THEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFC14: return "ARABIC_LIGATURE_THEH_WITH_YEH_ISOLATED_FORM";
         case   0xFC15: return "ARABIC_LIGATURE_JEEM_WITH_HAH_ISOLATED_FORM";
         case   0xFC16: return "ARABIC_LIGATURE_JEEM_WITH_MEEM_ISOLATED_FORM";
@@ -15549,11 +16076,13 @@ static const char *uniname2(int codepoint)
         case   0xFC2E: return "ARABIC_LIGATURE_FEH_WITH_HAH_ISOLATED_FORM";
         case   0xFC2F: return "ARABIC_LIGATURE_FEH_WITH_KHAH_ISOLATED_FORM";
         case   0xFC30: return "ARABIC_LIGATURE_FEH_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC31: return "ARABIC_LIGATURE_FEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC31: return
+                "ARABIC_LIGATURE_FEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFC32: return "ARABIC_LIGATURE_FEH_WITH_YEH_ISOLATED_FORM";
         case   0xFC33: return "ARABIC_LIGATURE_QAF_WITH_HAH_ISOLATED_FORM";
         case   0xFC34: return "ARABIC_LIGATURE_QAF_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC35: return "ARABIC_LIGATURE_QAF_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC35: return
+                "ARABIC_LIGATURE_QAF_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFC36: return "ARABIC_LIGATURE_QAF_WITH_YEH_ISOLATED_FORM";
         case   0xFC37: return "ARABIC_LIGATURE_KAF_WITH_ALEF_ISOLATED_FORM";
         case   0xFC38: return "ARABIC_LIGATURE_KAF_WITH_JEEM_ISOLATED_FORM";
@@ -15561,80 +16090,108 @@ static const char *uniname2(int codepoint)
         case   0xFC3A: return "ARABIC_LIGATURE_KAF_WITH_KHAH_ISOLATED_FORM";
         case   0xFC3B: return "ARABIC_LIGATURE_KAF_WITH_LAM_ISOLATED_FORM";
         case   0xFC3C: return "ARABIC_LIGATURE_KAF_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC3D: return "ARABIC_LIGATURE_KAF_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC3D: return
+                "ARABIC_LIGATURE_KAF_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFC3E: return "ARABIC_LIGATURE_KAF_WITH_YEH_ISOLATED_FORM";
         case   0xFC3F: return "ARABIC_LIGATURE_LAM_WITH_JEEM_ISOLATED_FORM";
         case   0xFC40: return "ARABIC_LIGATURE_LAM_WITH_HAH_ISOLATED_FORM";
         case   0xFC41: return "ARABIC_LIGATURE_LAM_WITH_KHAH_ISOLATED_FORM";
         case   0xFC42: return "ARABIC_LIGATURE_LAM_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC43: return "ARABIC_LIGATURE_LAM_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC43: return
+                "ARABIC_LIGATURE_LAM_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFC44: return "ARABIC_LIGATURE_LAM_WITH_YEH_ISOLATED_FORM";
         case   0xFC45: return "ARABIC_LIGATURE_MEEM_WITH_JEEM_ISOLATED_FORM";
         case   0xFC46: return "ARABIC_LIGATURE_MEEM_WITH_HAH_ISOLATED_FORM";
         case   0xFC47: return "ARABIC_LIGATURE_MEEM_WITH_KHAH_ISOLATED_FORM";
         case   0xFC48: return "ARABIC_LIGATURE_MEEM_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC49: return "ARABIC_LIGATURE_MEEM_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC49: return
+                "ARABIC_LIGATURE_MEEM_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFC4A: return "ARABIC_LIGATURE_MEEM_WITH_YEH_ISOLATED_FORM";
         case   0xFC4B: return "ARABIC_LIGATURE_NOON_WITH_JEEM_ISOLATED_FORM";
         case   0xFC4C: return "ARABIC_LIGATURE_NOON_WITH_HAH_ISOLATED_FORM";
         case   0xFC4D: return "ARABIC_LIGATURE_NOON_WITH_KHAH_ISOLATED_FORM";
         case   0xFC4E: return "ARABIC_LIGATURE_NOON_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC4F: return "ARABIC_LIGATURE_NOON_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC4F: return
+                "ARABIC_LIGATURE_NOON_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFC50: return "ARABIC_LIGATURE_NOON_WITH_YEH_ISOLATED_FORM";
         case   0xFC51: return "ARABIC_LIGATURE_HEH_WITH_JEEM_ISOLATED_FORM";
         case   0xFC52: return "ARABIC_LIGATURE_HEH_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC53: return "ARABIC_LIGATURE_HEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC53: return
+                "ARABIC_LIGATURE_HEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFC54: return "ARABIC_LIGATURE_HEH_WITH_YEH_ISOLATED_FORM";
         case   0xFC55: return "ARABIC_LIGATURE_YEH_WITH_JEEM_ISOLATED_FORM";
         case   0xFC56: return "ARABIC_LIGATURE_YEH_WITH_HAH_ISOLATED_FORM";
         case   0xFC57: return "ARABIC_LIGATURE_YEH_WITH_KHAH_ISOLATED_FORM";
         case   0xFC58: return "ARABIC_LIGATURE_YEH_WITH_MEEM_ISOLATED_FORM";
-        case   0xFC59: return "ARABIC_LIGATURE_YEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFC59: return
+                "ARABIC_LIGATURE_YEH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFC5A: return "ARABIC_LIGATURE_YEH_WITH_YEH_ISOLATED_FORM";
-        case   0xFC5B: return "ARABIC_LIGATURE_THAL_WITH_SUPERSCRIPT_ALEF_ISOLATED_FORM";
-        case   0xFC5C: return "ARABIC_LIGATURE_REH_WITH_SUPERSCRIPT_ALEF_ISOLATED_FORM";
-        case   0xFC5D: return "ARABIC_LIGATURE_ALEF_MAKSURA_WITH_SUPERSCRIPT_ALEF_ISOLATED_FORM";
-        case   0xFC5E: return "ARABIC_LIGATURE_SHADDA_WITH_DAMMATAN_ISOLATED_FORM";
-        case   0xFC5F: return "ARABIC_LIGATURE_SHADDA_WITH_KASRATAN_ISOLATED_FORM";
-        case   0xFC60: return "ARABIC_LIGATURE_SHADDA_WITH_FATHA_ISOLATED_FORM";
-        case   0xFC61: return "ARABIC_LIGATURE_SHADDA_WITH_DAMMA_ISOLATED_FORM";
-        case   0xFC62: return "ARABIC_LIGATURE_SHADDA_WITH_KASRA_ISOLATED_FORM";
-        case   0xFC63: return "ARABIC_LIGATURE_SHADDA_WITH_SUPERSCRIPT_ALEF_ISOLATED_FORM";
-        case   0xFC64: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_REH_FINAL_FORM";
-        case   0xFC65: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_ZAIN_FINAL_FORM";
-        case   0xFC66: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_MEEM_FINAL_FORM";
-        case   0xFC67: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_NOON_FINAL_FORM";
-        case   0xFC68: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFC69: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_YEH_FINAL_FORM";
+        case   0xFC5B: return
+                "ARABIC_LIGATURE_THAL_WITH_SUPERSCRIPT_ALEF_ISOLATED_FORM";
+        case   0xFC5C: return
+                "ARABIC_LIGATURE_REH_WITH_SUPERSCRIPT_ALEF_ISOLATED_FORM";
+        case   0xFC5D: return
+                "ARABIC_LIGATURE_ALEF_MAKSURA_WITH_SUPERSCRIPT_ALEF_ISOLATED_FORM";
+        case   0xFC5E: return
+                "ARABIC_LIGATURE_SHADDA_WITH_DAMMATAN_ISOLATED_FORM";
+        case   0xFC5F: return
+                "ARABIC_LIGATURE_SHADDA_WITH_KASRATAN_ISOLATED_FORM";
+        case   0xFC60: return
+                "ARABIC_LIGATURE_SHADDA_WITH_FATHA_ISOLATED_FORM";
+        case   0xFC61: return
+                "ARABIC_LIGATURE_SHADDA_WITH_DAMMA_ISOLATED_FORM";
+        case   0xFC62: return
+                "ARABIC_LIGATURE_SHADDA_WITH_KASRA_ISOLATED_FORM";
+        case   0xFC63: return
+                "ARABIC_LIGATURE_SHADDA_WITH_SUPERSCRIPT_ALEF_ISOLATED_FORM";
+        case   0xFC64: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_REH_FINAL_FORM";
+        case   0xFC65: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_ZAIN_FINAL_FORM";
+        case   0xFC66: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_MEEM_FINAL_FORM";
+        case   0xFC67: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_NOON_FINAL_FORM";
+        case   0xFC68: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFC69: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_YEH_FINAL_FORM";
         case   0xFC6A: return "ARABIC_LIGATURE_BEH_WITH_REH_FINAL_FORM";
         case   0xFC6B: return "ARABIC_LIGATURE_BEH_WITH_ZAIN_FINAL_FORM";
         case   0xFC6C: return "ARABIC_LIGATURE_BEH_WITH_MEEM_FINAL_FORM";
         case   0xFC6D: return "ARABIC_LIGATURE_BEH_WITH_NOON_FINAL_FORM";
-        case   0xFC6E: return "ARABIC_LIGATURE_BEH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFC6E: return
+                "ARABIC_LIGATURE_BEH_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFC6F: return "ARABIC_LIGATURE_BEH_WITH_YEH_FINAL_FORM";
         case   0xFC70: return "ARABIC_LIGATURE_TEH_WITH_REH_FINAL_FORM";
         case   0xFC71: return "ARABIC_LIGATURE_TEH_WITH_ZAIN_FINAL_FORM";
         case   0xFC72: return "ARABIC_LIGATURE_TEH_WITH_MEEM_FINAL_FORM";
         case   0xFC73: return "ARABIC_LIGATURE_TEH_WITH_NOON_FINAL_FORM";
-        case   0xFC74: return "ARABIC_LIGATURE_TEH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFC74: return
+                "ARABIC_LIGATURE_TEH_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFC75: return "ARABIC_LIGATURE_TEH_WITH_YEH_FINAL_FORM";
         case   0xFC76: return "ARABIC_LIGATURE_THEH_WITH_REH_FINAL_FORM";
         case   0xFC77: return "ARABIC_LIGATURE_THEH_WITH_ZAIN_FINAL_FORM";
         case   0xFC78: return "ARABIC_LIGATURE_THEH_WITH_MEEM_FINAL_FORM";
         case   0xFC79: return "ARABIC_LIGATURE_THEH_WITH_NOON_FINAL_FORM";
-        case   0xFC7A: return "ARABIC_LIGATURE_THEH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFC7A: return
+                "ARABIC_LIGATURE_THEH_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFC7B: return "ARABIC_LIGATURE_THEH_WITH_YEH_FINAL_FORM";
-        case   0xFC7C: return "ARABIC_LIGATURE_FEH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFC7C: return
+                "ARABIC_LIGATURE_FEH_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFC7D: return "ARABIC_LIGATURE_FEH_WITH_YEH_FINAL_FORM";
-        case   0xFC7E: return "ARABIC_LIGATURE_QAF_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFC7E: return
+                "ARABIC_LIGATURE_QAF_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFC7F: return "ARABIC_LIGATURE_QAF_WITH_YEH_FINAL_FORM";
         case   0xFC80: return "ARABIC_LIGATURE_KAF_WITH_ALEF_FINAL_FORM";
         case   0xFC81: return "ARABIC_LIGATURE_KAF_WITH_LAM_FINAL_FORM";
         case   0xFC82: return "ARABIC_LIGATURE_KAF_WITH_MEEM_FINAL_FORM";
-        case   0xFC83: return "ARABIC_LIGATURE_KAF_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFC83: return
+                "ARABIC_LIGATURE_KAF_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFC84: return "ARABIC_LIGATURE_KAF_WITH_YEH_FINAL_FORM";
         case   0xFC85: return "ARABIC_LIGATURE_LAM_WITH_MEEM_FINAL_FORM";
-        case   0xFC86: return "ARABIC_LIGATURE_LAM_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFC86: return
+                "ARABIC_LIGATURE_LAM_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFC87: return "ARABIC_LIGATURE_LAM_WITH_YEH_FINAL_FORM";
         case   0xFC88: return "ARABIC_LIGATURE_MEEM_WITH_ALEF_FINAL_FORM";
         case   0xFC89: return "ARABIC_LIGATURE_MEEM_WITH_MEEM_FINAL_FORM";
@@ -15642,20 +16199,28 @@ static const char *uniname2(int codepoint)
         case   0xFC8B: return "ARABIC_LIGATURE_NOON_WITH_ZAIN_FINAL_FORM";
         case   0xFC8C: return "ARABIC_LIGATURE_NOON_WITH_MEEM_FINAL_FORM";
         case   0xFC8D: return "ARABIC_LIGATURE_NOON_WITH_NOON_FINAL_FORM";
-        case   0xFC8E: return "ARABIC_LIGATURE_NOON_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFC8E: return
+                "ARABIC_LIGATURE_NOON_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFC8F: return "ARABIC_LIGATURE_NOON_WITH_YEH_FINAL_FORM";
-        case   0xFC90: return "ARABIC_LIGATURE_ALEF_MAKSURA_WITH_SUPERSCRIPT_ALEF_FINAL_FORM";
+        case   0xFC90: return
+                "ARABIC_LIGATURE_ALEF_MAKSURA_WITH_SUPERSCRIPT_ALEF_FINAL_FORM";
         case   0xFC91: return "ARABIC_LIGATURE_YEH_WITH_REH_FINAL_FORM";
         case   0xFC92: return "ARABIC_LIGATURE_YEH_WITH_ZAIN_FINAL_FORM";
         case   0xFC93: return "ARABIC_LIGATURE_YEH_WITH_MEEM_FINAL_FORM";
         case   0xFC94: return "ARABIC_LIGATURE_YEH_WITH_NOON_FINAL_FORM";
-        case   0xFC95: return "ARABIC_LIGATURE_YEH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFC95: return
+                "ARABIC_LIGATURE_YEH_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFC96: return "ARABIC_LIGATURE_YEH_WITH_YEH_FINAL_FORM";
-        case   0xFC97: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_JEEM_INITIAL_FORM";
-        case   0xFC98: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_HAH_INITIAL_FORM";
-        case   0xFC99: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_KHAH_INITIAL_FORM";
-        case   0xFC9A: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_MEEM_INITIAL_FORM";
-        case   0xFC9B: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_HEH_INITIAL_FORM";
+        case   0xFC97: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_JEEM_INITIAL_FORM";
+        case   0xFC98: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_HAH_INITIAL_FORM";
+        case   0xFC99: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_KHAH_INITIAL_FORM";
+        case   0xFC9A: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_MEEM_INITIAL_FORM";
+        case   0xFC9B: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_HEH_INITIAL_FORM";
         case   0xFC9C: return "ARABIC_LIGATURE_BEH_WITH_JEEM_INITIAL_FORM";
         case   0xFC9D: return "ARABIC_LIGATURE_BEH_WITH_HAH_INITIAL_FORM";
         case   0xFC9E: return "ARABIC_LIGATURE_BEH_WITH_KHAH_INITIAL_FORM";
@@ -15717,14 +16282,17 @@ static const char *uniname2(int codepoint)
         case   0xFCD6: return "ARABIC_LIGATURE_NOON_WITH_HEH_INITIAL_FORM";
         case   0xFCD7: return "ARABIC_LIGATURE_HEH_WITH_JEEM_INITIAL_FORM";
         case   0xFCD8: return "ARABIC_LIGATURE_HEH_WITH_MEEM_INITIAL_FORM";
-        case   0xFCD9: return "ARABIC_LIGATURE_HEH_WITH_SUPERSCRIPT_ALEF_INITIAL_FORM";
+        case   0xFCD9: return
+                "ARABIC_LIGATURE_HEH_WITH_SUPERSCRIPT_ALEF_INITIAL_FORM";
         case   0xFCDA: return "ARABIC_LIGATURE_YEH_WITH_JEEM_INITIAL_FORM";
         case   0xFCDB: return "ARABIC_LIGATURE_YEH_WITH_HAH_INITIAL_FORM";
         case   0xFCDC: return "ARABIC_LIGATURE_YEH_WITH_KHAH_INITIAL_FORM";
         case   0xFCDD: return "ARABIC_LIGATURE_YEH_WITH_MEEM_INITIAL_FORM";
         case   0xFCDE: return "ARABIC_LIGATURE_YEH_WITH_HEH_INITIAL_FORM";
-        case   0xFCDF: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_MEEM_MEDIAL_FORM";
-        case   0xFCE0: return "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_HEH_MEDIAL_FORM";
+        case   0xFCDF: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_MEEM_MEDIAL_FORM";
+        case   0xFCE0: return
+                "ARABIC_LIGATURE_YEH_WITH_HAMZA_ABOVE_WITH_HEH_MEDIAL_FORM";
         case   0xFCE1: return "ARABIC_LIGATURE_BEH_WITH_MEEM_MEDIAL_FORM";
         case   0xFCE2: return "ARABIC_LIGATURE_BEH_WITH_HEH_MEDIAL_FORM";
         case   0xFCE3: return "ARABIC_LIGATURE_TEH_WITH_MEEM_MEDIAL_FORM";
@@ -15745,25 +16313,35 @@ static const char *uniname2(int codepoint)
         case   0xFCF2: return "ARABIC_LIGATURE_SHADDA_WITH_FATHA_MEDIAL_FORM";
         case   0xFCF3: return "ARABIC_LIGATURE_SHADDA_WITH_DAMMA_MEDIAL_FORM";
         case   0xFCF4: return "ARABIC_LIGATURE_SHADDA_WITH_KASRA_MEDIAL_FORM";
-        case   0xFCF5: return "ARABIC_LIGATURE_TAH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFCF5: return
+                "ARABIC_LIGATURE_TAH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFCF6: return "ARABIC_LIGATURE_TAH_WITH_YEH_ISOLATED_FORM";
-        case   0xFCF7: return "ARABIC_LIGATURE_AIN_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFCF7: return
+                "ARABIC_LIGATURE_AIN_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFCF8: return "ARABIC_LIGATURE_AIN_WITH_YEH_ISOLATED_FORM";
-        case   0xFCF9: return "ARABIC_LIGATURE_GHAIN_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFCF9: return
+                "ARABIC_LIGATURE_GHAIN_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFCFA: return "ARABIC_LIGATURE_GHAIN_WITH_YEH_ISOLATED_FORM";
-        case   0xFCFB: return "ARABIC_LIGATURE_SEEN_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFCFB: return
+                "ARABIC_LIGATURE_SEEN_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFCFC: return "ARABIC_LIGATURE_SEEN_WITH_YEH_ISOLATED_FORM";
-        case   0xFCFD: return "ARABIC_LIGATURE_SHEEN_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFCFD: return
+                "ARABIC_LIGATURE_SHEEN_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFCFE: return "ARABIC_LIGATURE_SHEEN_WITH_YEH_ISOLATED_FORM";
-        case   0xFCFF: return "ARABIC_LIGATURE_HAH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFCFF: return
+                "ARABIC_LIGATURE_HAH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFD00: return "ARABIC_LIGATURE_HAH_WITH_YEH_ISOLATED_FORM";
-        case   0xFD01: return "ARABIC_LIGATURE_JEEM_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFD01: return
+                "ARABIC_LIGATURE_JEEM_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFD02: return "ARABIC_LIGATURE_JEEM_WITH_YEH_ISOLATED_FORM";
-        case   0xFD03: return "ARABIC_LIGATURE_KHAH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFD03: return
+                "ARABIC_LIGATURE_KHAH_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFD04: return "ARABIC_LIGATURE_KHAH_WITH_YEH_ISOLATED_FORM";
-        case   0xFD05: return "ARABIC_LIGATURE_SAD_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFD05: return
+                "ARABIC_LIGATURE_SAD_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFD06: return "ARABIC_LIGATURE_SAD_WITH_YEH_ISOLATED_FORM";
-        case   0xFD07: return "ARABIC_LIGATURE_DAD_WITH_ALEF_MAKSURA_ISOLATED_FORM";
+        case   0xFD07: return
+                "ARABIC_LIGATURE_DAD_WITH_ALEF_MAKSURA_ISOLATED_FORM";
         case   0xFD08: return "ARABIC_LIGATURE_DAD_WITH_YEH_ISOLATED_FORM";
         case   0xFD09: return "ARABIC_LIGATURE_SHEEN_WITH_JEEM_ISOLATED_FORM";
         case   0xFD0A: return "ARABIC_LIGATURE_SHEEN_WITH_HAH_ISOLATED_FORM";
@@ -15773,25 +16351,35 @@ static const char *uniname2(int codepoint)
         case   0xFD0E: return "ARABIC_LIGATURE_SEEN_WITH_REH_ISOLATED_FORM";
         case   0xFD0F: return "ARABIC_LIGATURE_SAD_WITH_REH_ISOLATED_FORM";
         case   0xFD10: return "ARABIC_LIGATURE_DAD_WITH_REH_ISOLATED_FORM";
-        case   0xFD11: return "ARABIC_LIGATURE_TAH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD11: return
+                "ARABIC_LIGATURE_TAH_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFD12: return "ARABIC_LIGATURE_TAH_WITH_YEH_FINAL_FORM";
-        case   0xFD13: return "ARABIC_LIGATURE_AIN_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD13: return
+                "ARABIC_LIGATURE_AIN_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFD14: return "ARABIC_LIGATURE_AIN_WITH_YEH_FINAL_FORM";
-        case   0xFD15: return "ARABIC_LIGATURE_GHAIN_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD15: return
+                "ARABIC_LIGATURE_GHAIN_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFD16: return "ARABIC_LIGATURE_GHAIN_WITH_YEH_FINAL_FORM";
-        case   0xFD17: return "ARABIC_LIGATURE_SEEN_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD17: return
+                "ARABIC_LIGATURE_SEEN_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFD18: return "ARABIC_LIGATURE_SEEN_WITH_YEH_FINAL_FORM";
-        case   0xFD19: return "ARABIC_LIGATURE_SHEEN_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD19: return
+                "ARABIC_LIGATURE_SHEEN_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFD1A: return "ARABIC_LIGATURE_SHEEN_WITH_YEH_FINAL_FORM";
-        case   0xFD1B: return "ARABIC_LIGATURE_HAH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD1B: return
+                "ARABIC_LIGATURE_HAH_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFD1C: return "ARABIC_LIGATURE_HAH_WITH_YEH_FINAL_FORM";
-        case   0xFD1D: return "ARABIC_LIGATURE_JEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD1D: return
+                "ARABIC_LIGATURE_JEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFD1E: return "ARABIC_LIGATURE_JEEM_WITH_YEH_FINAL_FORM";
-        case   0xFD1F: return "ARABIC_LIGATURE_KHAH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD1F: return
+                "ARABIC_LIGATURE_KHAH_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFD20: return "ARABIC_LIGATURE_KHAH_WITH_YEH_FINAL_FORM";
-        case   0xFD21: return "ARABIC_LIGATURE_SAD_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD21: return
+                "ARABIC_LIGATURE_SAD_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFD22: return "ARABIC_LIGATURE_SAD_WITH_YEH_FINAL_FORM";
-        case   0xFD23: return "ARABIC_LIGATURE_DAD_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD23: return
+                "ARABIC_LIGATURE_DAD_WITH_ALEF_MAKSURA_FINAL_FORM";
         case   0xFD24: return "ARABIC_LIGATURE_DAD_WITH_YEH_FINAL_FORM";
         case   0xFD25: return "ARABIC_LIGATURE_SHEEN_WITH_JEEM_FINAL_FORM";
         case   0xFD26: return "ARABIC_LIGATURE_SHEEN_WITH_HAH_FINAL_FORM";
@@ -15817,129 +16405,250 @@ static const char *uniname2(int codepoint)
         case   0xFD3A: return "ARABIC_LIGATURE_TAH_WITH_MEEM_MEDIAL_FORM";
         case   0xFD3B: return "ARABIC_LIGATURE_ZAH_WITH_MEEM_MEDIAL_FORM";
         case   0xFD3C: return "ARABIC_LIGATURE_ALEF_WITH_FATHATAN_FINAL_FORM";
-        case   0xFD3D: return "ARABIC_LIGATURE_ALEF_WITH_FATHATAN_ISOLATED_FORM";
+        case   0xFD3D: return
+                "ARABIC_LIGATURE_ALEF_WITH_FATHATAN_ISOLATED_FORM";
         case   0xFD3E: return "ORNATE_LEFT_PARENTHESIS";
         case   0xFD3F: return "ORNATE_RIGHT_PARENTHESIS";
-        case   0xFD50: return "ARABIC_LIGATURE_TEH_WITH_JEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFD51: return "ARABIC_LIGATURE_TEH_WITH_HAH_WITH_JEEM_FINAL_FORM";
-        case   0xFD52: return "ARABIC_LIGATURE_TEH_WITH_HAH_WITH_JEEM_INITIAL_FORM";
-        case   0xFD53: return "ARABIC_LIGATURE_TEH_WITH_HAH_WITH_MEEM_INITIAL_FORM";
-        case   0xFD54: return "ARABIC_LIGATURE_TEH_WITH_KHAH_WITH_MEEM_INITIAL_FORM";
-        case   0xFD55: return "ARABIC_LIGATURE_TEH_WITH_MEEM_WITH_JEEM_INITIAL_FORM";
-        case   0xFD56: return "ARABIC_LIGATURE_TEH_WITH_MEEM_WITH_HAH_INITIAL_FORM";
-        case   0xFD57: return "ARABIC_LIGATURE_TEH_WITH_MEEM_WITH_KHAH_INITIAL_FORM";
-        case   0xFD58: return "ARABIC_LIGATURE_JEEM_WITH_MEEM_WITH_HAH_FINAL_FORM";
-        case   0xFD59: return "ARABIC_LIGATURE_JEEM_WITH_MEEM_WITH_HAH_INITIAL_FORM";
-        case   0xFD5A: return "ARABIC_LIGATURE_HAH_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFD5B: return "ARABIC_LIGATURE_HAH_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFD5C: return "ARABIC_LIGATURE_SEEN_WITH_HAH_WITH_JEEM_INITIAL_FORM";
-        case   0xFD5D: return "ARABIC_LIGATURE_SEEN_WITH_JEEM_WITH_HAH_INITIAL_FORM";
-        case   0xFD5E: return "ARABIC_LIGATURE_SEEN_WITH_JEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFD5F: return "ARABIC_LIGATURE_SEEN_WITH_MEEM_WITH_HAH_FINAL_FORM";
-        case   0xFD60: return "ARABIC_LIGATURE_SEEN_WITH_MEEM_WITH_HAH_INITIAL_FORM";
-        case   0xFD61: return "ARABIC_LIGATURE_SEEN_WITH_MEEM_WITH_JEEM_INITIAL_FORM";
-        case   0xFD62: return "ARABIC_LIGATURE_SEEN_WITH_MEEM_WITH_MEEM_FINAL_FORM";
-        case   0xFD63: return "ARABIC_LIGATURE_SEEN_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFD64: return "ARABIC_LIGATURE_SAD_WITH_HAH_WITH_HAH_FINAL_FORM";
-        case   0xFD65: return "ARABIC_LIGATURE_SAD_WITH_HAH_WITH_HAH_INITIAL_FORM";
-        case   0xFD66: return "ARABIC_LIGATURE_SAD_WITH_MEEM_WITH_MEEM_FINAL_FORM";
-        case   0xFD67: return "ARABIC_LIGATURE_SHEEN_WITH_HAH_WITH_MEEM_FINAL_FORM";
-        case   0xFD68: return "ARABIC_LIGATURE_SHEEN_WITH_HAH_WITH_MEEM_INITIAL_FORM";
-        case   0xFD69: return "ARABIC_LIGATURE_SHEEN_WITH_JEEM_WITH_YEH_FINAL_FORM";
-        case   0xFD6A: return "ARABIC_LIGATURE_SHEEN_WITH_MEEM_WITH_KHAH_FINAL_FORM";
-        case   0xFD6B: return "ARABIC_LIGATURE_SHEEN_WITH_MEEM_WITH_KHAH_INITIAL_FORM";
-        case   0xFD6C: return "ARABIC_LIGATURE_SHEEN_WITH_MEEM_WITH_MEEM_FINAL_FORM";
-        case   0xFD6D: return "ARABIC_LIGATURE_SHEEN_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFD6E: return "ARABIC_LIGATURE_DAD_WITH_HAH_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFD6F: return "ARABIC_LIGATURE_DAD_WITH_KHAH_WITH_MEEM_FINAL_FORM";
-        case   0xFD70: return "ARABIC_LIGATURE_DAD_WITH_KHAH_WITH_MEEM_INITIAL_FORM";
-        case   0xFD71: return "ARABIC_LIGATURE_TAH_WITH_MEEM_WITH_HAH_FINAL_FORM";
-        case   0xFD72: return "ARABIC_LIGATURE_TAH_WITH_MEEM_WITH_HAH_INITIAL_FORM";
-        case   0xFD73: return "ARABIC_LIGATURE_TAH_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFD74: return "ARABIC_LIGATURE_TAH_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFD75: return "ARABIC_LIGATURE_AIN_WITH_JEEM_WITH_MEEM_FINAL_FORM";
-        case   0xFD76: return "ARABIC_LIGATURE_AIN_WITH_MEEM_WITH_MEEM_FINAL_FORM";
-        case   0xFD77: return "ARABIC_LIGATURE_AIN_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFD78: return "ARABIC_LIGATURE_AIN_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFD79: return "ARABIC_LIGATURE_GHAIN_WITH_MEEM_WITH_MEEM_FINAL_FORM";
-        case   0xFD7A: return "ARABIC_LIGATURE_GHAIN_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFD7B: return "ARABIC_LIGATURE_GHAIN_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFD7C: return "ARABIC_LIGATURE_FEH_WITH_KHAH_WITH_MEEM_FINAL_FORM";
-        case   0xFD7D: return "ARABIC_LIGATURE_FEH_WITH_KHAH_WITH_MEEM_INITIAL_FORM";
-        case   0xFD7E: return "ARABIC_LIGATURE_QAF_WITH_MEEM_WITH_HAH_FINAL_FORM";
-        case   0xFD7F: return "ARABIC_LIGATURE_QAF_WITH_MEEM_WITH_MEEM_FINAL_FORM";
-        case   0xFD80: return "ARABIC_LIGATURE_LAM_WITH_HAH_WITH_MEEM_FINAL_FORM";
-        case   0xFD81: return "ARABIC_LIGATURE_LAM_WITH_HAH_WITH_YEH_FINAL_FORM";
-        case   0xFD82: return "ARABIC_LIGATURE_LAM_WITH_HAH_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFD83: return "ARABIC_LIGATURE_LAM_WITH_JEEM_WITH_JEEM_INITIAL_FORM";
-        case   0xFD84: return "ARABIC_LIGATURE_LAM_WITH_JEEM_WITH_JEEM_FINAL_FORM";
-        case   0xFD85: return "ARABIC_LIGATURE_LAM_WITH_KHAH_WITH_MEEM_FINAL_FORM";
-        case   0xFD86: return "ARABIC_LIGATURE_LAM_WITH_KHAH_WITH_MEEM_INITIAL_FORM";
-        case   0xFD87: return "ARABIC_LIGATURE_LAM_WITH_MEEM_WITH_HAH_FINAL_FORM";
-        case   0xFD88: return "ARABIC_LIGATURE_LAM_WITH_MEEM_WITH_HAH_INITIAL_FORM";
-        case   0xFD89: return "ARABIC_LIGATURE_MEEM_WITH_HAH_WITH_JEEM_INITIAL_FORM";
-        case   0xFD8A: return "ARABIC_LIGATURE_MEEM_WITH_HAH_WITH_MEEM_INITIAL_FORM";
-        case   0xFD8B: return "ARABIC_LIGATURE_MEEM_WITH_HAH_WITH_YEH_FINAL_FORM";
-        case   0xFD8C: return "ARABIC_LIGATURE_MEEM_WITH_JEEM_WITH_HAH_INITIAL_FORM";
-        case   0xFD8D: return "ARABIC_LIGATURE_MEEM_WITH_JEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFD8E: return "ARABIC_LIGATURE_MEEM_WITH_KHAH_WITH_JEEM_INITIAL_FORM";
-        case   0xFD8F: return "ARABIC_LIGATURE_MEEM_WITH_KHAH_WITH_MEEM_INITIAL_FORM";
-        case   0xFD92: return "ARABIC_LIGATURE_MEEM_WITH_JEEM_WITH_KHAH_INITIAL_FORM";
-        case   0xFD93: return "ARABIC_LIGATURE_HEH_WITH_MEEM_WITH_JEEM_INITIAL_FORM";
-        case   0xFD94: return "ARABIC_LIGATURE_HEH_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFD95: return "ARABIC_LIGATURE_NOON_WITH_HAH_WITH_MEEM_INITIAL_FORM";
-        case   0xFD96: return "ARABIC_LIGATURE_NOON_WITH_HAH_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFD97: return "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_MEEM_FINAL_FORM";
-        case   0xFD98: return "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFD99: return "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFD9A: return "ARABIC_LIGATURE_NOON_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFD9B: return "ARABIC_LIGATURE_NOON_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFD9C: return "ARABIC_LIGATURE_YEH_WITH_MEEM_WITH_MEEM_FINAL_FORM";
-        case   0xFD9D: return "ARABIC_LIGATURE_YEH_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFD9E: return "ARABIC_LIGATURE_BEH_WITH_KHAH_WITH_YEH_FINAL_FORM";
-        case   0xFD9F: return "ARABIC_LIGATURE_TEH_WITH_JEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDA0: return "ARABIC_LIGATURE_TEH_WITH_JEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFDA1: return "ARABIC_LIGATURE_TEH_WITH_KHAH_WITH_YEH_FINAL_FORM";
-        case   0xFDA2: return "ARABIC_LIGATURE_TEH_WITH_KHAH_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFDA3: return "ARABIC_LIGATURE_TEH_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDA4: return "ARABIC_LIGATURE_TEH_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFDA5: return "ARABIC_LIGATURE_JEEM_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDA6: return "ARABIC_LIGATURE_JEEM_WITH_HAH_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFDA7: return "ARABIC_LIGATURE_JEEM_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFDA8: return "ARABIC_LIGATURE_SEEN_WITH_KHAH_WITH_ALEF_MAKSURA_FINAL_FORM";
-        case   0xFDA9: return "ARABIC_LIGATURE_SAD_WITH_HAH_WITH_YEH_FINAL_FORM";
-        case   0xFDAA: return "ARABIC_LIGATURE_SHEEN_WITH_HAH_WITH_YEH_FINAL_FORM";
-        case   0xFDAB: return "ARABIC_LIGATURE_DAD_WITH_HAH_WITH_YEH_FINAL_FORM";
-        case   0xFDAC: return "ARABIC_LIGATURE_LAM_WITH_JEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDAD: return "ARABIC_LIGATURE_LAM_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDAE: return "ARABIC_LIGATURE_YEH_WITH_HAH_WITH_YEH_FINAL_FORM";
-        case   0xFDAF: return "ARABIC_LIGATURE_YEH_WITH_JEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDB0: return "ARABIC_LIGATURE_YEH_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDB1: return "ARABIC_LIGATURE_MEEM_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDB2: return "ARABIC_LIGATURE_QAF_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDB3: return "ARABIC_LIGATURE_NOON_WITH_HAH_WITH_YEH_FINAL_FORM";
-        case   0xFDB4: return "ARABIC_LIGATURE_QAF_WITH_MEEM_WITH_HAH_INITIAL_FORM";
-        case   0xFDB5: return "ARABIC_LIGATURE_LAM_WITH_HAH_WITH_MEEM_INITIAL_FORM";
-        case   0xFDB6: return "ARABIC_LIGATURE_AIN_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDB7: return "ARABIC_LIGATURE_KAF_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDB8: return "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_HAH_INITIAL_FORM";
-        case   0xFDB9: return "ARABIC_LIGATURE_MEEM_WITH_KHAH_WITH_YEH_FINAL_FORM";
-        case   0xFDBA: return "ARABIC_LIGATURE_LAM_WITH_JEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFDBB: return "ARABIC_LIGATURE_KAF_WITH_MEEM_WITH_MEEM_FINAL_FORM";
-        case   0xFDBC: return "ARABIC_LIGATURE_LAM_WITH_JEEM_WITH_MEEM_FINAL_FORM";
-        case   0xFDBD: return "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_HAH_FINAL_FORM";
-        case   0xFDBE: return "ARABIC_LIGATURE_JEEM_WITH_HAH_WITH_YEH_FINAL_FORM";
-        case   0xFDBF: return "ARABIC_LIGATURE_HAH_WITH_JEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDC0: return "ARABIC_LIGATURE_MEEM_WITH_JEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDC1: return "ARABIC_LIGATURE_FEH_WITH_MEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDC2: return "ARABIC_LIGATURE_BEH_WITH_HAH_WITH_YEH_FINAL_FORM";
-        case   0xFDC3: return "ARABIC_LIGATURE_KAF_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFDC4: return "ARABIC_LIGATURE_AIN_WITH_JEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFDC5: return "ARABIC_LIGATURE_SAD_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
-        case   0xFDC6: return "ARABIC_LIGATURE_SEEN_WITH_KHAH_WITH_YEH_FINAL_FORM";
-        case   0xFDC7: return "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_YEH_FINAL_FORM";
-        case   0xFDF0: return "ARABIC_LIGATURE_SALLA_USED_AS_KORANIC_STOP_SIGN_ISOLATED_FORM";
-        case   0xFDF1: return "ARABIC_LIGATURE_QALA_USED_AS_KORANIC_STOP_SIGN_ISOLATED_FORM";
+        case   0xFD50: return
+                "ARABIC_LIGATURE_TEH_WITH_JEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFD51: return
+                "ARABIC_LIGATURE_TEH_WITH_HAH_WITH_JEEM_FINAL_FORM";
+        case   0xFD52: return
+                "ARABIC_LIGATURE_TEH_WITH_HAH_WITH_JEEM_INITIAL_FORM";
+        case   0xFD53: return
+                "ARABIC_LIGATURE_TEH_WITH_HAH_WITH_MEEM_INITIAL_FORM";
+        case   0xFD54: return
+                "ARABIC_LIGATURE_TEH_WITH_KHAH_WITH_MEEM_INITIAL_FORM";
+        case   0xFD55: return
+                "ARABIC_LIGATURE_TEH_WITH_MEEM_WITH_JEEM_INITIAL_FORM";
+        case   0xFD56: return
+                "ARABIC_LIGATURE_TEH_WITH_MEEM_WITH_HAH_INITIAL_FORM";
+        case   0xFD57: return
+                "ARABIC_LIGATURE_TEH_WITH_MEEM_WITH_KHAH_INITIAL_FORM";
+        case   0xFD58: return
+                "ARABIC_LIGATURE_JEEM_WITH_MEEM_WITH_HAH_FINAL_FORM";
+        case   0xFD59: return
+                "ARABIC_LIGATURE_JEEM_WITH_MEEM_WITH_HAH_INITIAL_FORM";
+        case   0xFD5A: return
+                "ARABIC_LIGATURE_HAH_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFD5B: return
+                "ARABIC_LIGATURE_HAH_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD5C: return
+                "ARABIC_LIGATURE_SEEN_WITH_HAH_WITH_JEEM_INITIAL_FORM";
+        case   0xFD5D: return
+                "ARABIC_LIGATURE_SEEN_WITH_JEEM_WITH_HAH_INITIAL_FORM";
+        case   0xFD5E: return
+                "ARABIC_LIGATURE_SEEN_WITH_JEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD5F: return
+                "ARABIC_LIGATURE_SEEN_WITH_MEEM_WITH_HAH_FINAL_FORM";
+        case   0xFD60: return
+                "ARABIC_LIGATURE_SEEN_WITH_MEEM_WITH_HAH_INITIAL_FORM";
+        case   0xFD61: return
+                "ARABIC_LIGATURE_SEEN_WITH_MEEM_WITH_JEEM_INITIAL_FORM";
+        case   0xFD62: return
+                "ARABIC_LIGATURE_SEEN_WITH_MEEM_WITH_MEEM_FINAL_FORM";
+        case   0xFD63: return
+                "ARABIC_LIGATURE_SEEN_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFD64: return
+                "ARABIC_LIGATURE_SAD_WITH_HAH_WITH_HAH_FINAL_FORM";
+        case   0xFD65: return
+                "ARABIC_LIGATURE_SAD_WITH_HAH_WITH_HAH_INITIAL_FORM";
+        case   0xFD66: return
+                "ARABIC_LIGATURE_SAD_WITH_MEEM_WITH_MEEM_FINAL_FORM";
+        case   0xFD67: return
+                "ARABIC_LIGATURE_SHEEN_WITH_HAH_WITH_MEEM_FINAL_FORM";
+        case   0xFD68: return
+                "ARABIC_LIGATURE_SHEEN_WITH_HAH_WITH_MEEM_INITIAL_FORM";
+        case   0xFD69: return
+                "ARABIC_LIGATURE_SHEEN_WITH_JEEM_WITH_YEH_FINAL_FORM";
+        case   0xFD6A: return
+                "ARABIC_LIGATURE_SHEEN_WITH_MEEM_WITH_KHAH_FINAL_FORM";
+        case   0xFD6B: return
+                "ARABIC_LIGATURE_SHEEN_WITH_MEEM_WITH_KHAH_INITIAL_FORM";
+        case   0xFD6C: return
+                "ARABIC_LIGATURE_SHEEN_WITH_MEEM_WITH_MEEM_FINAL_FORM";
+        case   0xFD6D: return
+                "ARABIC_LIGATURE_SHEEN_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFD6E: return
+                "ARABIC_LIGATURE_DAD_WITH_HAH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD6F: return
+                "ARABIC_LIGATURE_DAD_WITH_KHAH_WITH_MEEM_FINAL_FORM";
+        case   0xFD70: return
+                "ARABIC_LIGATURE_DAD_WITH_KHAH_WITH_MEEM_INITIAL_FORM";
+        case   0xFD71: return
+                "ARABIC_LIGATURE_TAH_WITH_MEEM_WITH_HAH_FINAL_FORM";
+        case   0xFD72: return
+                "ARABIC_LIGATURE_TAH_WITH_MEEM_WITH_HAH_INITIAL_FORM";
+        case   0xFD73: return
+                "ARABIC_LIGATURE_TAH_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFD74: return
+                "ARABIC_LIGATURE_TAH_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFD75: return
+                "ARABIC_LIGATURE_AIN_WITH_JEEM_WITH_MEEM_FINAL_FORM";
+        case   0xFD76: return
+                "ARABIC_LIGATURE_AIN_WITH_MEEM_WITH_MEEM_FINAL_FORM";
+        case   0xFD77: return
+                "ARABIC_LIGATURE_AIN_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFD78: return
+                "ARABIC_LIGATURE_AIN_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD79: return
+                "ARABIC_LIGATURE_GHAIN_WITH_MEEM_WITH_MEEM_FINAL_FORM";
+        case   0xFD7A: return
+                "ARABIC_LIGATURE_GHAIN_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFD7B: return
+                "ARABIC_LIGATURE_GHAIN_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD7C: return
+                "ARABIC_LIGATURE_FEH_WITH_KHAH_WITH_MEEM_FINAL_FORM";
+        case   0xFD7D: return
+                "ARABIC_LIGATURE_FEH_WITH_KHAH_WITH_MEEM_INITIAL_FORM";
+        case   0xFD7E: return
+                "ARABIC_LIGATURE_QAF_WITH_MEEM_WITH_HAH_FINAL_FORM";
+        case   0xFD7F: return
+                "ARABIC_LIGATURE_QAF_WITH_MEEM_WITH_MEEM_FINAL_FORM";
+        case   0xFD80: return
+                "ARABIC_LIGATURE_LAM_WITH_HAH_WITH_MEEM_FINAL_FORM";
+        case   0xFD81: return
+                "ARABIC_LIGATURE_LAM_WITH_HAH_WITH_YEH_FINAL_FORM";
+        case   0xFD82: return
+                "ARABIC_LIGATURE_LAM_WITH_HAH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD83: return
+                "ARABIC_LIGATURE_LAM_WITH_JEEM_WITH_JEEM_INITIAL_FORM";
+        case   0xFD84: return
+                "ARABIC_LIGATURE_LAM_WITH_JEEM_WITH_JEEM_FINAL_FORM";
+        case   0xFD85: return
+                "ARABIC_LIGATURE_LAM_WITH_KHAH_WITH_MEEM_FINAL_FORM";
+        case   0xFD86: return
+                "ARABIC_LIGATURE_LAM_WITH_KHAH_WITH_MEEM_INITIAL_FORM";
+        case   0xFD87: return
+                "ARABIC_LIGATURE_LAM_WITH_MEEM_WITH_HAH_FINAL_FORM";
+        case   0xFD88: return
+                "ARABIC_LIGATURE_LAM_WITH_MEEM_WITH_HAH_INITIAL_FORM";
+        case   0xFD89: return
+                "ARABIC_LIGATURE_MEEM_WITH_HAH_WITH_JEEM_INITIAL_FORM";
+        case   0xFD8A: return
+                "ARABIC_LIGATURE_MEEM_WITH_HAH_WITH_MEEM_INITIAL_FORM";
+        case   0xFD8B: return
+                "ARABIC_LIGATURE_MEEM_WITH_HAH_WITH_YEH_FINAL_FORM";
+        case   0xFD8C: return
+                "ARABIC_LIGATURE_MEEM_WITH_JEEM_WITH_HAH_INITIAL_FORM";
+        case   0xFD8D: return
+                "ARABIC_LIGATURE_MEEM_WITH_JEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFD8E: return
+                "ARABIC_LIGATURE_MEEM_WITH_KHAH_WITH_JEEM_INITIAL_FORM";
+        case   0xFD8F: return
+                "ARABIC_LIGATURE_MEEM_WITH_KHAH_WITH_MEEM_INITIAL_FORM";
+        case   0xFD92: return
+                "ARABIC_LIGATURE_MEEM_WITH_JEEM_WITH_KHAH_INITIAL_FORM";
+        case   0xFD93: return
+                "ARABIC_LIGATURE_HEH_WITH_MEEM_WITH_JEEM_INITIAL_FORM";
+        case   0xFD94: return
+                "ARABIC_LIGATURE_HEH_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFD95: return
+                "ARABIC_LIGATURE_NOON_WITH_HAH_WITH_MEEM_INITIAL_FORM";
+        case   0xFD96: return
+                "ARABIC_LIGATURE_NOON_WITH_HAH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD97: return
+                "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_MEEM_FINAL_FORM";
+        case   0xFD98: return
+                "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFD99: return
+                "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD9A: return
+                "ARABIC_LIGATURE_NOON_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFD9B: return
+                "ARABIC_LIGATURE_NOON_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFD9C: return
+                "ARABIC_LIGATURE_YEH_WITH_MEEM_WITH_MEEM_FINAL_FORM";
+        case   0xFD9D: return
+                "ARABIC_LIGATURE_YEH_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFD9E: return
+                "ARABIC_LIGATURE_BEH_WITH_KHAH_WITH_YEH_FINAL_FORM";
+        case   0xFD9F: return
+                "ARABIC_LIGATURE_TEH_WITH_JEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDA0: return
+                "ARABIC_LIGATURE_TEH_WITH_JEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFDA1: return
+                "ARABIC_LIGATURE_TEH_WITH_KHAH_WITH_YEH_FINAL_FORM";
+        case   0xFDA2: return
+                "ARABIC_LIGATURE_TEH_WITH_KHAH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFDA3: return
+                "ARABIC_LIGATURE_TEH_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDA4: return
+                "ARABIC_LIGATURE_TEH_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFDA5: return
+                "ARABIC_LIGATURE_JEEM_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDA6: return
+                "ARABIC_LIGATURE_JEEM_WITH_HAH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFDA7: return
+                "ARABIC_LIGATURE_JEEM_WITH_MEEM_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFDA8: return
+                "ARABIC_LIGATURE_SEEN_WITH_KHAH_WITH_ALEF_MAKSURA_FINAL_FORM";
+        case   0xFDA9: return
+                "ARABIC_LIGATURE_SAD_WITH_HAH_WITH_YEH_FINAL_FORM";
+        case   0xFDAA: return
+                "ARABIC_LIGATURE_SHEEN_WITH_HAH_WITH_YEH_FINAL_FORM";
+        case   0xFDAB: return
+                "ARABIC_LIGATURE_DAD_WITH_HAH_WITH_YEH_FINAL_FORM";
+        case   0xFDAC: return
+                "ARABIC_LIGATURE_LAM_WITH_JEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDAD: return
+                "ARABIC_LIGATURE_LAM_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDAE: return
+                "ARABIC_LIGATURE_YEH_WITH_HAH_WITH_YEH_FINAL_FORM";
+        case   0xFDAF: return
+                "ARABIC_LIGATURE_YEH_WITH_JEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDB0: return
+                "ARABIC_LIGATURE_YEH_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDB1: return
+                "ARABIC_LIGATURE_MEEM_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDB2: return
+                "ARABIC_LIGATURE_QAF_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDB3: return
+                "ARABIC_LIGATURE_NOON_WITH_HAH_WITH_YEH_FINAL_FORM";
+        case   0xFDB4: return
+                "ARABIC_LIGATURE_QAF_WITH_MEEM_WITH_HAH_INITIAL_FORM";
+        case   0xFDB5: return
+                "ARABIC_LIGATURE_LAM_WITH_HAH_WITH_MEEM_INITIAL_FORM";
+        case   0xFDB6: return
+                "ARABIC_LIGATURE_AIN_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDB7: return
+                "ARABIC_LIGATURE_KAF_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDB8: return
+                "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_HAH_INITIAL_FORM";
+        case   0xFDB9: return
+                "ARABIC_LIGATURE_MEEM_WITH_KHAH_WITH_YEH_FINAL_FORM";
+        case   0xFDBA: return
+                "ARABIC_LIGATURE_LAM_WITH_JEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFDBB: return
+                "ARABIC_LIGATURE_KAF_WITH_MEEM_WITH_MEEM_FINAL_FORM";
+        case   0xFDBC: return
+                "ARABIC_LIGATURE_LAM_WITH_JEEM_WITH_MEEM_FINAL_FORM";
+        case   0xFDBD: return
+                "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_HAH_FINAL_FORM";
+        case   0xFDBE: return
+                "ARABIC_LIGATURE_JEEM_WITH_HAH_WITH_YEH_FINAL_FORM";
+        case   0xFDBF: return
+                "ARABIC_LIGATURE_HAH_WITH_JEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDC0: return
+                "ARABIC_LIGATURE_MEEM_WITH_JEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDC1: return
+                "ARABIC_LIGATURE_FEH_WITH_MEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDC2: return
+                "ARABIC_LIGATURE_BEH_WITH_HAH_WITH_YEH_FINAL_FORM";
+        case   0xFDC3: return
+                "ARABIC_LIGATURE_KAF_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFDC4: return
+                "ARABIC_LIGATURE_AIN_WITH_JEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFDC5: return
+                "ARABIC_LIGATURE_SAD_WITH_MEEM_WITH_MEEM_INITIAL_FORM";
+        case   0xFDC6: return
+                "ARABIC_LIGATURE_SEEN_WITH_KHAH_WITH_YEH_FINAL_FORM";
+        case   0xFDC7: return
+                "ARABIC_LIGATURE_NOON_WITH_JEEM_WITH_YEH_FINAL_FORM";
+        case   0xFDF0: return
+                "ARABIC_LIGATURE_SALLA_USED_AS_KORANIC_STOP_SIGN_ISOLATED_FORM";
+        case   0xFDF1: return
+                "ARABIC_LIGATURE_QALA_USED_AS_KORANIC_STOP_SIGN_ISOLATED_FORM";
         case   0xFDF2: return "ARABIC_LIGATURE_ALLAH_ISOLATED_FORM";
         case   0xFDF3: return "ARABIC_LIGATURE_AKBAR_ISOLATED_FORM";
         case   0xFDF4: return "ARABIC_LIGATURE_MOHAMMAD_ISOLATED_FORM";
@@ -15969,15 +16678,21 @@ static const char *uniname2(int codepoint)
         case   0xFE0E: return "VARIATION_SELECTOR_15";
         case   0xFE0F: return "VARIATION_SELECTOR_16";
         case   0xFE10: return "PRESENTATION_FORM_FOR_VERTICAL_COMMA";
-        case   0xFE11: return "PRESENTATION_FORM_FOR_VERTICAL_IDEOGRAPHIC_COMMA";
-        case   0xFE12: return "PRESENTATION_FORM_FOR_VERTICAL_IDEOGRAPHIC_FULL_STOP";
+        case   0xFE11: return
+                "PRESENTATION_FORM_FOR_VERTICAL_IDEOGRAPHIC_COMMA";
+        case   0xFE12: return
+                "PRESENTATION_FORM_FOR_VERTICAL_IDEOGRAPHIC_FULL_STOP";
         case   0xFE13: return "PRESENTATION_FORM_FOR_VERTICAL_COLON";
         case   0xFE14: return "PRESENTATION_FORM_FOR_VERTICAL_SEMICOLON";
-        case   0xFE15: return "PRESENTATION_FORM_FOR_VERTICAL_EXCLAMATION_MARK";
+        case   0xFE15: return
+                "PRESENTATION_FORM_FOR_VERTICAL_EXCLAMATION_MARK";
         case   0xFE16: return "PRESENTATION_FORM_FOR_VERTICAL_QUESTION_MARK";
-        case   0xFE17: return "PRESENTATION_FORM_FOR_VERTICAL_LEFT_WHITE_LENTICULAR_BRACKET";
-        case   0xFE18: return "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_WHITE_LENTICULAR_BRAKCET";
-        case   0xFE19: return "PRESENTATION_FORM_FOR_VERTICAL_HORIZONTAL_ELLIPSIS";
+        case   0xFE17: return
+                "PRESENTATION_FORM_FOR_VERTICAL_LEFT_WHITE_LENTICULAR_BRACKET";
+        case   0xFE18: return
+                "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_WHITE_LENTICULAR_BRAKCET";
+        case   0xFE19: return
+                "PRESENTATION_FORM_FOR_VERTICAL_HORIZONTAL_ELLIPSIS";
         case   0xFE20: return "COMBINING_LIGATURE_LEFT_HALF";
         case   0xFE21: return "COMBINING_LIGATURE_RIGHT_HALF";
         case   0xFE22: return "COMBINING_DOUBLE_TILDE_LEFT_HALF";
@@ -15997,26 +16712,44 @@ static const char *uniname2(int codepoint)
         case   0xFE32: return "PRESENTATION_FORM_FOR_VERTICAL_EN_DASH";
         case   0xFE33: return "PRESENTATION_FORM_FOR_VERTICAL_LOW_LINE";
         case   0xFE34: return "PRESENTATION_FORM_FOR_VERTICAL_WAVY_LOW_LINE";
-        case   0xFE35: return "PRESENTATION_FORM_FOR_VERTICAL_LEFT_PARENTHESIS";
-        case   0xFE36: return "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_PARENTHESIS";
-        case   0xFE37: return "PRESENTATION_FORM_FOR_VERTICAL_LEFT_CURLY_BRACKET";
-        case   0xFE38: return "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_CURLY_BRACKET";
-        case   0xFE39: return "PRESENTATION_FORM_FOR_VERTICAL_LEFT_TORTOISE_SHELL_BRACKET";
-        case   0xFE3A: return "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_TORTOISE_SHELL_BRACKET";
-        case   0xFE3B: return "PRESENTATION_FORM_FOR_VERTICAL_LEFT_BLACK_LENTICULAR_BRACKET";
-        case   0xFE3C: return "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_BLACK_LENTICULAR_BRACKET";
-        case   0xFE3D: return "PRESENTATION_FORM_FOR_VERTICAL_LEFT_DOUBLE_ANGLE_BRACKET";
-        case   0xFE3E: return "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_DOUBLE_ANGLE_BRACKET";
-        case   0xFE3F: return "PRESENTATION_FORM_FOR_VERTICAL_LEFT_ANGLE_BRACKET";
-        case   0xFE40: return "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_ANGLE_BRACKET";
-        case   0xFE41: return "PRESENTATION_FORM_FOR_VERTICAL_LEFT_CORNER_BRACKET";
-        case   0xFE42: return "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_CORNER_BRACKET";
-        case   0xFE43: return "PRESENTATION_FORM_FOR_VERTICAL_LEFT_WHITE_CORNER_BRACKET";
-        case   0xFE44: return "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_WHITE_CORNER_BRACKET";
+        case   0xFE35: return
+                "PRESENTATION_FORM_FOR_VERTICAL_LEFT_PARENTHESIS";
+        case   0xFE36: return
+                "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_PARENTHESIS";
+        case   0xFE37: return
+                "PRESENTATION_FORM_FOR_VERTICAL_LEFT_CURLY_BRACKET";
+        case   0xFE38: return
+                "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_CURLY_BRACKET";
+        case   0xFE39: return
+                "PRESENTATION_FORM_FOR_VERTICAL_LEFT_TORTOISE_SHELL_BRACKET";
+        case   0xFE3A: return
+                "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_TORTOISE_SHELL_BRACKET";
+        case   0xFE3B: return
+                "PRESENTATION_FORM_FOR_VERTICAL_LEFT_BLACK_LENTICULAR_BRACKET";
+        case   0xFE3C: return
+                "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_BLACK_LENTICULAR_BRACKET";
+        case   0xFE3D: return
+                "PRESENTATION_FORM_FOR_VERTICAL_LEFT_DOUBLE_ANGLE_BRACKET";
+        case   0xFE3E: return
+                "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_DOUBLE_ANGLE_BRACKET";
+        case   0xFE3F: return
+                "PRESENTATION_FORM_FOR_VERTICAL_LEFT_ANGLE_BRACKET";
+        case   0xFE40: return
+                "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_ANGLE_BRACKET";
+        case   0xFE41: return
+                "PRESENTATION_FORM_FOR_VERTICAL_LEFT_CORNER_BRACKET";
+        case   0xFE42: return
+                "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_CORNER_BRACKET";
+        case   0xFE43: return
+                "PRESENTATION_FORM_FOR_VERTICAL_LEFT_WHITE_CORNER_BRACKET";
+        case   0xFE44: return
+                "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_WHITE_CORNER_BRACKET";
         case   0xFE45: return "SESAME_DOT";
         case   0xFE46: return "WHITE_SESAME_DOT";
-        case   0xFE47: return "PRESENTATION_FORM_FOR_VERTICAL_LEFT_SQUARE_BRACKET";
-        case   0xFE48: return "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_SQUARE_BRACKET";
+        case   0xFE47: return
+                "PRESENTATION_FORM_FOR_VERTICAL_LEFT_SQUARE_BRACKET";
+        case   0xFE48: return
+                "PRESENTATION_FORM_FOR_VERTICAL_RIGHT_SQUARE_BRACKET";
         case   0xFE49: return "DASHED_OVERLINE";
         case   0xFE4A: return "CENTRELINE_OVERLINE";
         case   0xFE4B: return "WAVY_OVERLINE";
@@ -16066,18 +16799,28 @@ static const char *uniname2(int codepoint)
         case   0xFE7E: return "ARABIC_SUKUN_ISOLATED_FORM";
         case   0xFE7F: return "ARABIC_SUKUN_MEDIAL_FORM";
         case   0xFE80: return "ARABIC_LETTER_HAMZA_ISOLATED_FORM";
-        case   0xFE81: return "ARABIC_LETTER_ALEF_WITH_MADDA_ABOVE_ISOLATED_FORM";
-        case   0xFE82: return "ARABIC_LETTER_ALEF_WITH_MADDA_ABOVE_FINAL_FORM";
-        case   0xFE83: return "ARABIC_LETTER_ALEF_WITH_HAMZA_ABOVE_ISOLATED_FORM";
-        case   0xFE84: return "ARABIC_LETTER_ALEF_WITH_HAMZA_ABOVE_FINAL_FORM";
-        case   0xFE85: return "ARABIC_LETTER_WAW_WITH_HAMZA_ABOVE_ISOLATED_FORM";
+        case   0xFE81: return
+                "ARABIC_LETTER_ALEF_WITH_MADDA_ABOVE_ISOLATED_FORM";
+        case   0xFE82: return
+                "ARABIC_LETTER_ALEF_WITH_MADDA_ABOVE_FINAL_FORM";
+        case   0xFE83: return
+                "ARABIC_LETTER_ALEF_WITH_HAMZA_ABOVE_ISOLATED_FORM";
+        case   0xFE84: return
+                "ARABIC_LETTER_ALEF_WITH_HAMZA_ABOVE_FINAL_FORM";
+        case   0xFE85: return
+                "ARABIC_LETTER_WAW_WITH_HAMZA_ABOVE_ISOLATED_FORM";
         case   0xFE86: return "ARABIC_LETTER_WAW_WITH_HAMZA_ABOVE_FINAL_FORM";
-        case   0xFE87: return "ARABIC_LETTER_ALEF_WITH_HAMZA_BELOW_ISOLATED_FORM";
-        case   0xFE88: return "ARABIC_LETTER_ALEF_WITH_HAMZA_BELOW_FINAL_FORM";
-        case   0xFE89: return "ARABIC_LETTER_YEH_WITH_HAMZA_ABOVE_ISOLATED_FORM";
+        case   0xFE87: return
+                "ARABIC_LETTER_ALEF_WITH_HAMZA_BELOW_ISOLATED_FORM";
+        case   0xFE88: return
+                "ARABIC_LETTER_ALEF_WITH_HAMZA_BELOW_FINAL_FORM";
+        case   0xFE89: return
+                "ARABIC_LETTER_YEH_WITH_HAMZA_ABOVE_ISOLATED_FORM";
         case   0xFE8A: return "ARABIC_LETTER_YEH_WITH_HAMZA_ABOVE_FINAL_FORM";
-        case   0xFE8B: return "ARABIC_LETTER_YEH_WITH_HAMZA_ABOVE_INITIAL_FORM";
-        case   0xFE8C: return "ARABIC_LETTER_YEH_WITH_HAMZA_ABOVE_MEDIAL_FORM";
+        case   0xFE8B: return
+                "ARABIC_LETTER_YEH_WITH_HAMZA_ABOVE_INITIAL_FORM";
+        case   0xFE8C: return
+                "ARABIC_LETTER_YEH_WITH_HAMZA_ABOVE_MEDIAL_FORM";
         case   0xFE8D: return "ARABIC_LETTER_ALEF_ISOLATED_FORM";
         case   0xFE8E: return "ARABIC_LETTER_ALEF_FINAL_FORM";
         case   0xFE8F: return "ARABIC_LETTER_BEH_ISOLATED_FORM";
@@ -16182,12 +16925,18 @@ static const char *uniname2(int codepoint)
         case   0xFEF2: return "ARABIC_LETTER_YEH_FINAL_FORM";
         case   0xFEF3: return "ARABIC_LETTER_YEH_INITIAL_FORM";
         case   0xFEF4: return "ARABIC_LETTER_YEH_MEDIAL_FORM";
-        case   0xFEF5: return "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_MADDA_ABOVE_ISOLATED_FORM";
-        case   0xFEF6: return "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_MADDA_ABOVE_FINAL_FORM";
-        case   0xFEF7: return "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_HAMZA_ABOVE_ISOLATED_FORM";
-        case   0xFEF8: return "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_HAMZA_ABOVE_FINAL_FORM";
-        case   0xFEF9: return "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_HAMZA_BELOW_ISOLATED_FORM";
-        case   0xFEFA: return "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_HAMZA_BELOW_FINAL_FORM";
+        case   0xFEF5: return
+                "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_MADDA_ABOVE_ISOLATED_FORM";
+        case   0xFEF6: return
+                "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_MADDA_ABOVE_FINAL_FORM";
+        case   0xFEF7: return
+                "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_HAMZA_ABOVE_ISOLATED_FORM";
+        case   0xFEF8: return
+                "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_HAMZA_ABOVE_FINAL_FORM";
+        case   0xFEF9: return
+                "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_HAMZA_BELOW_ISOLATED_FORM";
+        case   0xFEFA: return
+                "ARABIC_LIGATURE_LAM_WITH_ALEF_WITH_HAMZA_BELOW_FINAL_FORM";
         case   0xFEFB: return "ARABIC_LIGATURE_LAM_WITH_ALEF_ISOLATED_FORM";
         case   0xFEFC: return "ARABIC_LIGATURE_LAM_WITH_ALEF_FINAL_FORM";
         case   0xFEFF: return "ZERO_WIDTH_NO_BREAK_SPACE";
@@ -16302,7 +17051,8 @@ static const char *uniname2(int codepoint)
         case   0xFF6D: return "HALFWIDTH_KATAKANA_LETTER_SMALL_YU";
         case   0xFF6E: return "HALFWIDTH_KATAKANA_LETTER_SMALL_YO";
         case   0xFF6F: return "HALFWIDTH_KATAKANA_LETTER_SMALL_TU";
-        case   0xFF70: return "HALFWIDTH_KATAKANA_HIRAGANA_PROLONGED_SOUND_MARK";
+        case   0xFF70: return
+                "HALFWIDTH_KATAKANA_HIRAGANA_PROLONGED_SOUND_MARK";
         case   0xFF71: return "HALFWIDTH_KATAKANA_LETTER_A";
         case   0xFF72: return "HALFWIDTH_KATAKANA_LETTER_I";
         case   0xFF73: return "HALFWIDTH_KATAKANA_LETTER_U";
@@ -16722,13 +17472,15 @@ static const char *uniname2(int codepoint)
         case  0x1015E: return "GREEK_ACROPHONIC_EPIDAUREAN_TWO_DRACHMAS";
         case  0x1015F: return "GREEK_ACROPHONIC_TROEZENIAN_FIVE";
         case  0x10160: return "GREEK_ACROPHONIC_TROEZENIAN_TEN";
-        case  0x10161: return "GREEK_ACROPHONIC_TROEZENIAN_TEN_ALTERNATE_FORM";
+        case  0x10161: return
+                "GREEK_ACROPHONIC_TROEZENIAN_TEN_ALTERNATE_FORM";
         case  0x10162: return "GREEK_ACROPHONIC_HERMIONIAN_TEN";
         case  0x10163: return "GREEK_ACROPHONIC_MESSENIAN_TEN";
         case  0x10164: return "GREEK_ACROPHONIC_THESPIAN_TEN";
         case  0x10165: return "GREEK_ACROPHONIC_THESPIAN_THIRTY";
         case  0x10166: return "GREEK_ACROPHONIC_TROEZENIAN_FIFTY";
-        case  0x10167: return "GREEK_ACROPHONIC_TROEZENIAN_FIFTY_ALTERNATE_FORM";
+        case  0x10167: return
+                "GREEK_ACROPHONIC_TROEZENIAN_FIFTY_ALTERNATE_FORM";
         case  0x10168: return "GREEK_ACROPHONIC_HERMIONIAN_FIFTY";
         case  0x10169: return "GREEK_ACROPHONIC_THESPIAN_FIFTY";
         case  0x1016A: return "GREEK_ACROPHONIC_THESPIAN_ONE_HUNDRED";
@@ -19545,7 +20297,8 @@ static const char *uniname2(int codepoint)
         case  0x1202D: return "CUNEIFORM_SIGN_AN";
         case  0x1202E: return "CUNEIFORM_SIGN_AN_OVER_AN";
         case  0x1202F: return "CUNEIFORM_SIGN_AN_THREE_TIMES";
-        case  0x12030: return "CUNEIFORM_SIGN_AN_PLUS_NAGA_OPPOSING_AN_PLUS_NAGA";
+        case  0x12030: return
+                "CUNEIFORM_SIGN_AN_PLUS_NAGA_OPPOSING_AN_PLUS_NAGA";
         case  0x12031: return "CUNEIFORM_SIGN_AN_PLUS_NAGA_SQUARED";
         case  0x12032: return "CUNEIFORM_SIGN_ANSHE";
         case  0x12033: return "CUNEIFORM_SIGN_APIN";
@@ -19556,9 +20309,11 @@ static const char *uniname2(int codepoint)
         case  0x12038: return "CUNEIFORM_SIGN_ASH";
         case  0x12039: return "CUNEIFORM_SIGN_ASH_ZIDA_TENU";
         case  0x1203A: return "CUNEIFORM_SIGN_ASH_KABA_TENU";
-        case  0x1203B: return "CUNEIFORM_SIGN_ASH_OVER_ASH_TUG2_OVER_TUG2_TUG2_OVER_TUG2_PAP";
+        case  0x1203B: return
+                "CUNEIFORM_SIGN_ASH_OVER_ASH_TUG2_OVER_TUG2_TUG2_OVER_TUG2_PAP";
         case  0x1203C: return "CUNEIFORM_SIGN_ASH_OVER_ASH_OVER_ASH";
-        case  0x1203D: return "CUNEIFORM_SIGN_ASH_OVER_ASH_OVER_ASH_CROSSING_ASH_OVER_ASH_OVER_ASH";
+        case  0x1203D: return
+                "CUNEIFORM_SIGN_ASH_OVER_ASH_OVER_ASH_CROSSING_ASH_OVER_ASH_OVER_ASH";
         case  0x1203E: return "CUNEIFORM_SIGN_ASH2";
         case  0x1203F: return "CUNEIFORM_SIGN_ASHGAB";
         case  0x12040: return "CUNEIFORM_SIGN_BA";
@@ -19661,7 +20416,8 @@ static const char *uniname2(int codepoint)
         case  0x120A1: return "CUNEIFORM_SIGN_EZEN";
         case  0x120A2: return "CUNEIFORM_SIGN_EZEN_TIMES_A";
         case  0x120A3: return "CUNEIFORM_SIGN_EZEN_TIMES_A_PLUS_LAL";
-        case  0x120A4: return "CUNEIFORM_SIGN_EZEN_TIMES_A_PLUS_LAL_TIMES_LAL";
+        case  0x120A4: return
+                "CUNEIFORM_SIGN_EZEN_TIMES_A_PLUS_LAL_TIMES_LAL";
         case  0x120A5: return "CUNEIFORM_SIGN_EZEN_TIMES_AN";
         case  0x120A6: return "CUNEIFORM_SIGN_EZEN_TIMES_BAD";
         case  0x120A7: return "CUNEIFORM_SIGN_EZEN_TIMES_DUN3_GUNU";
@@ -19826,7 +20582,8 @@ static const char *uniname2(int codepoint)
         case  0x12146: return "CUNEIFORM_SIGN_IGI";
         case  0x12147: return "CUNEIFORM_SIGN_IGI_DIB";
         case  0x12148: return "CUNEIFORM_SIGN_IGI_RI";
-        case  0x12149: return "CUNEIFORM_SIGN_IGI_OVER_IGI_SHIR_OVER_SHIR_UD_OVER_UD";
+        case  0x12149: return
+                "CUNEIFORM_SIGN_IGI_OVER_IGI_SHIR_OVER_SHIR_UD_OVER_UD";
         case  0x1214A: return "CUNEIFORM_SIGN_IGI_GUNU";
         case  0x1214B: return "CUNEIFORM_SIGN_IL";
         case  0x1214C: return "CUNEIFORM_SIGN_IL_TIMES_GAN2_TENU";
@@ -19910,8 +20667,10 @@ static const char *uniname2(int codepoint)
         case  0x1219A: return "CUNEIFORM_SIGN_KAM2";
         case  0x1219B: return "CUNEIFORM_SIGN_KAM4";
         case  0x1219C: return "CUNEIFORM_SIGN_KASKAL";
-        case  0x1219D: return "CUNEIFORM_SIGN_KASKAL_LAGAB_TIMES_U_OVER_LAGAB_TIMES_U";
-        case  0x1219E: return "CUNEIFORM_SIGN_KASKAL_OVER_KASKAL_LAGAB_TIMES_U_OVER_LAGAB_TIMES_U";
+        case  0x1219D: return
+                "CUNEIFORM_SIGN_KASKAL_LAGAB_TIMES_U_OVER_LAGAB_TIMES_U";
+        case  0x1219E: return
+                "CUNEIFORM_SIGN_KASKAL_OVER_KASKAL_LAGAB_TIMES_U_OVER_LAGAB_TIMES_U";
         case  0x1219F: return "CUNEIFORM_SIGN_KESH2";
         case  0x121A0: return "CUNEIFORM_SIGN_KI";
         case  0x121A1: return "CUNEIFORM_SIGN_KI_TIMES_BAD";
@@ -19924,7 +20683,8 @@ static const char *uniname2(int codepoint)
         case  0x121A8: return "CUNEIFORM_SIGN_KISIM5";
         case  0x121A9: return "CUNEIFORM_SIGN_KISIM5_OVER_KISIM5";
         case  0x121AA: return "CUNEIFORM_SIGN_KU";
-        case  0x121AB: return "CUNEIFORM_SIGN_KU_OVER_HI_TIMES_ASH2_KU_OVER_HI_TIMES_ASH2";
+        case  0x121AB: return
+                "CUNEIFORM_SIGN_KU_OVER_HI_TIMES_ASH2_KU_OVER_HI_TIMES_ASH2";
         case  0x121AC: return "CUNEIFORM_SIGN_KU3";
         case  0x121AD: return "CUNEIFORM_SIGN_KU4";
         case  0x121AE: return "CUNEIFORM_SIGN_KU4_VARIANT_FORM";
@@ -19974,14 +20734,17 @@ static const char *uniname2(int codepoint)
         case  0x121DA: return "CUNEIFORM_SIGN_LAGAB_TIMES_MUSH";
         case  0x121DB: return "CUNEIFORM_SIGN_LAGAB_TIMES_NE";
         case  0x121DC: return "CUNEIFORM_SIGN_LAGAB_TIMES_SHE_PLUS_SUM";
-        case  0x121DD: return "CUNEIFORM_SIGN_LAGAB_TIMES_SHITA_PLUS_GISH_PLUS_ERIN2";
-        case  0x121DE: return "CUNEIFORM_SIGN_LAGAB_TIMES_SHITA_PLUS_GISH_TENU";
+        case  0x121DD: return
+                "CUNEIFORM_SIGN_LAGAB_TIMES_SHITA_PLUS_GISH_PLUS_ERIN2";
+        case  0x121DE: return
+                "CUNEIFORM_SIGN_LAGAB_TIMES_SHITA_PLUS_GISH_TENU";
         case  0x121DF: return "CUNEIFORM_SIGN_LAGAB_TIMES_SHU2";
         case  0x121E0: return "CUNEIFORM_SIGN_LAGAB_TIMES_SHU2_PLUS_SHU2";
         case  0x121E1: return "CUNEIFORM_SIGN_LAGAB_TIMES_SUM";
         case  0x121E2: return "CUNEIFORM_SIGN_LAGAB_TIMES_TAG";
         case  0x121E3: return "CUNEIFORM_SIGN_LAGAB_TIMES_TAK4";
-        case  0x121E4: return "CUNEIFORM_SIGN_LAGAB_TIMES_TE_PLUS_A_PLUS_SU_PLUS_NA";
+        case  0x121E4: return
+                "CUNEIFORM_SIGN_LAGAB_TIMES_TE_PLUS_A_PLUS_SU_PLUS_NA";
         case  0x121E5: return "CUNEIFORM_SIGN_LAGAB_TIMES_U";
         case  0x121E6: return "CUNEIFORM_SIGN_LAGAB_TIMES_U_PLUS_A";
         case  0x121E7: return "CUNEIFORM_SIGN_LAGAB_TIMES_U_PLUS_U_PLUS_U";
@@ -20011,7 +20774,7 @@ static const char *uniname2(int codepoint)
         case  0x121FF: return "CUNEIFORM_SIGN_LU2_TIMES_BAD";
         case  0x12200: return "CUNEIFORM_SIGN_LU2_TIMES_ESH2";
         case  0x12201: return "CUNEIFORM_SIGN_LU2_TIMES_ESH2_TENU";
-        default:       return NULL;
+        default:       return nullptr;
     }
 }
 
@@ -20108,7 +20871,8 @@ static const char *uniname3(int codepoint)
         case  0x1225A: return "CUNEIFORM_SIGN_NINDA2_TIMES_SHE";
         case  0x1225B: return "CUNEIFORM_SIGN_NINDA2_TIMES_SHE_PLUS_A_AN";
         case  0x1225C: return "CUNEIFORM_SIGN_NINDA2_TIMES_SHE_PLUS_ASH";
-        case  0x1225D: return "CUNEIFORM_SIGN_NINDA2_TIMES_SHE_PLUS_ASH_PLUS_ASH";
+        case  0x1225D: return
+                "CUNEIFORM_SIGN_NINDA2_TIMES_SHE_PLUS_ASH_PLUS_ASH";
         case  0x1225E: return "CUNEIFORM_SIGN_NINDA2_TIMES_U2_PLUS_ASH";
         case  0x1225F: return "CUNEIFORM_SIGN_NINDA2_TIMES_USH";
         case  0x12260: return "CUNEIFORM_SIGN_NISAG";
@@ -20118,12 +20882,14 @@ static const char *uniname3(int codepoint)
         case  0x12264: return "CUNEIFORM_SIGN_NUN_LAGAR_TIMES_GAR";
         case  0x12265: return "CUNEIFORM_SIGN_NUN_LAGAR_TIMES_MASH";
         case  0x12266: return "CUNEIFORM_SIGN_NUN_LAGAR_TIMES_SAL";
-        case  0x12267: return "CUNEIFORM_SIGN_NUN_LAGAR_TIMES_SAL_OVER_NUN_LAGAR_TIMES_SAL";
+        case  0x12267: return
+                "CUNEIFORM_SIGN_NUN_LAGAR_TIMES_SAL_OVER_NUN_LAGAR_TIMES_SAL";
         case  0x12268: return "CUNEIFORM_SIGN_NUN_LAGAR_TIMES_USH";
         case  0x12269: return "CUNEIFORM_SIGN_NUN_TENU";
         case  0x1226A: return "CUNEIFORM_SIGN_NUN_OVER_NUN";
         case  0x1226B: return "CUNEIFORM_SIGN_NUN_CROSSING_NUN";
-        case  0x1226C: return "CUNEIFORM_SIGN_NUN_CROSSING_NUN_LAGAR_OVER_LAGAR";
+        case  0x1226C: return
+                "CUNEIFORM_SIGN_NUN_CROSSING_NUN_LAGAR_OVER_LAGAR";
         case  0x1226D: return "CUNEIFORM_SIGN_NUNUZ";
         case  0x1226E: return "CUNEIFORM_SIGN_NUNUZ_AB2_TIMES_ASHGAB";
         case  0x1226F: return "CUNEIFORM_SIGN_NUNUZ_AB2_TIMES_BI";
@@ -20203,8 +20969,10 @@ static const char *uniname3(int codepoint)
         case  0x122B9: return "CUNEIFORM_SIGN_SHAR2";
         case  0x122BA: return "CUNEIFORM_SIGN_SHE";
         case  0x122BB: return "CUNEIFORM_SIGN_SHE_HU";
-        case  0x122BC: return "CUNEIFORM_SIGN_SHE_OVER_SHE_GAD_OVER_GAD_GAR_OVER_GAR";
-        case  0x122BD: return "CUNEIFORM_SIGN_SHE_OVER_SHE_TAB_OVER_TAB_GAR_OVER_GAR";
+        case  0x122BC: return
+                "CUNEIFORM_SIGN_SHE_OVER_SHE_GAD_OVER_GAD_GAR_OVER_GAR";
+        case  0x122BD: return
+                "CUNEIFORM_SIGN_SHE_OVER_SHE_TAB_OVER_TAB_GAR_OVER_GAR";
         case  0x122BE: return "CUNEIFORM_SIGN_SHEG9";
         case  0x122BF: return "CUNEIFORM_SIGN_SHEN";
         case  0x122C0: return "CUNEIFORM_SIGN_SHESH";
@@ -20256,7 +21024,8 @@ static const char *uniname3(int codepoint)
         case  0x122EE: return "CUNEIFORM_SIGN_TA_TIMES_MI";
         case  0x122EF: return "CUNEIFORM_SIGN_TA_GUNU";
         case  0x122F0: return "CUNEIFORM_SIGN_TAB";
-        case  0x122F1: return "CUNEIFORM_SIGN_TAB_OVER_TAB_NI_OVER_NI_DISH_OVER_DISH";
+        case  0x122F1: return
+                "CUNEIFORM_SIGN_TAB_OVER_TAB_NI_OVER_NI_DISH_OVER_DISH";
         case  0x122F2: return "CUNEIFORM_SIGN_TAB_SQUARED";
         case  0x122F3: return "CUNEIFORM_SIGN_TAG";
         case  0x122F4: return "CUNEIFORM_SIGN_TAG_TIMES_BI";
@@ -20275,7 +21044,8 @@ static const char *uniname3(int codepoint)
         case  0x12301: return "CUNEIFORM_SIGN_TIR";
         case  0x12302: return "CUNEIFORM_SIGN_TIR_TIMES_TAK4";
         case  0x12303: return "CUNEIFORM_SIGN_TIR_OVER_TIR";
-        case  0x12304: return "CUNEIFORM_SIGN_TIR_OVER_TIR_GAD_OVER_GAD_GAR_OVER_GAR";
+        case  0x12304: return
+                "CUNEIFORM_SIGN_TIR_OVER_TIR_GAD_OVER_GAD_GAR_OVER_GAR";
         case  0x12305: return "CUNEIFORM_SIGN_TU";
         case  0x12306: return "CUNEIFORM_SIGN_TUG2";
         case  0x12307: return "CUNEIFORM_SIGN_TUK";
@@ -20285,9 +21055,11 @@ static const char *uniname3(int codepoint)
         case  0x1230B: return "CUNEIFORM_SIGN_U";
         case  0x1230C: return "CUNEIFORM_SIGN_U_GUD";
         case  0x1230D: return "CUNEIFORM_SIGN_U_U_U";
-        case  0x1230E: return "CUNEIFORM_SIGN_U_OVER_U_PA_OVER_PA_GAR_OVER_GAR";
+        case  0x1230E: return
+                "CUNEIFORM_SIGN_U_OVER_U_PA_OVER_PA_GAR_OVER_GAR";
         case  0x1230F: return "CUNEIFORM_SIGN_U_OVER_U_SUR_OVER_SUR";
-        case  0x12310: return "CUNEIFORM_SIGN_U_OVER_U_U_REVERSED_OVER_U_REVERSED";
+        case  0x12310: return
+                "CUNEIFORM_SIGN_U_OVER_U_U_REVERSED_OVER_U_REVERSED";
         case  0x12311: return "CUNEIFORM_SIGN_U2";
         case  0x12312: return "CUNEIFORM_SIGN_UB";
         case  0x12313: return "CUNEIFORM_SIGN_UD";
@@ -20461,7 +21233,8 @@ static const char *uniname3(int codepoint)
         case  0x12422: return "CUNEIFORM_NUMERIC_SIGN_FIVE_GESHU";
         case  0x12423: return "CUNEIFORM_NUMERIC_SIGN_TWO_SHAR2";
         case  0x12424: return "CUNEIFORM_NUMERIC_SIGN_THREE_SHAR2";
-        case  0x12425: return "CUNEIFORM_NUMERIC_SIGN_THREE_SHAR2_VARIANT_FORM";
+        case  0x12425: return
+                "CUNEIFORM_NUMERIC_SIGN_THREE_SHAR2_VARIANT_FORM";
         case  0x12426: return "CUNEIFORM_NUMERIC_SIGN_FOUR_SHAR2";
         case  0x12427: return "CUNEIFORM_NUMERIC_SIGN_FIVE_SHAR2";
         case  0x12428: return "CUNEIFORM_NUMERIC_SIGN_SIX_SHAR2";
@@ -20471,33 +21244,52 @@ static const char *uniname3(int codepoint)
         case  0x1242C: return "CUNEIFORM_NUMERIC_SIGN_ONE_SHARU";
         case  0x1242D: return "CUNEIFORM_NUMERIC_SIGN_TWO_SHARU";
         case  0x1242E: return "CUNEIFORM_NUMERIC_SIGN_THREE_SHARU";
-        case  0x1242F: return "CUNEIFORM_NUMERIC_SIGN_THREE_SHARU_VARIANT_FORM";
+        case  0x1242F: return
+                "CUNEIFORM_NUMERIC_SIGN_THREE_SHARU_VARIANT_FORM";
         case  0x12430: return "CUNEIFORM_NUMERIC_SIGN_FOUR_SHARU";
         case  0x12431: return "CUNEIFORM_NUMERIC_SIGN_FIVE_SHARU";
-        case  0x12432: return "CUNEIFORM_NUMERIC_SIGN_SHAR2_TIMES_GAL_PLUS_DISH";
-        case  0x12433: return "CUNEIFORM_NUMERIC_SIGN_SHAR2_TIMES_GAL_PLUS_MIN";
+        case  0x12432: return
+                "CUNEIFORM_NUMERIC_SIGN_SHAR2_TIMES_GAL_PLUS_DISH";
+        case  0x12433: return
+                "CUNEIFORM_NUMERIC_SIGN_SHAR2_TIMES_GAL_PLUS_MIN";
         case  0x12434: return "CUNEIFORM_NUMERIC_SIGN_ONE_BURU";
         case  0x12435: return "CUNEIFORM_NUMERIC_SIGN_TWO_BURU";
         case  0x12436: return "CUNEIFORM_NUMERIC_SIGN_THREE_BURU";
-        case  0x12437: return "CUNEIFORM_NUMERIC_SIGN_THREE_BURU_VARIANT_FORM";
+        case  0x12437: return
+                "CUNEIFORM_NUMERIC_SIGN_THREE_BURU_VARIANT_FORM";
         case  0x12438: return "CUNEIFORM_NUMERIC_SIGN_FOUR_BURU";
         case  0x12439: return "CUNEIFORM_NUMERIC_SIGN_FIVE_BURU";
-        case  0x1243A: return "CUNEIFORM_NUMERIC_SIGN_THREE_VARIANT_FORM_ESH16";
-        case  0x1243B: return "CUNEIFORM_NUMERIC_SIGN_THREE_VARIANT_FORM_ESH21";
-        case  0x1243C: return "CUNEIFORM_NUMERIC_SIGN_FOUR_VARIANT_FORM_LIMMU";
-        case  0x1243D: return "CUNEIFORM_NUMERIC_SIGN_FOUR_VARIANT_FORM_LIMMU4";
-        case  0x1243E: return "CUNEIFORM_NUMERIC_SIGN_FOUR_VARIANT_FORM_LIMMU_A";
-        case  0x1243F: return "CUNEIFORM_NUMERIC_SIGN_FOUR_VARIANT_FORM_LIMMU_B";
+        case  0x1243A: return
+                "CUNEIFORM_NUMERIC_SIGN_THREE_VARIANT_FORM_ESH16";
+        case  0x1243B: return
+                "CUNEIFORM_NUMERIC_SIGN_THREE_VARIANT_FORM_ESH21";
+        case  0x1243C: return
+                "CUNEIFORM_NUMERIC_SIGN_FOUR_VARIANT_FORM_LIMMU";
+        case  0x1243D: return
+                "CUNEIFORM_NUMERIC_SIGN_FOUR_VARIANT_FORM_LIMMU4";
+        case  0x1243E: return
+                "CUNEIFORM_NUMERIC_SIGN_FOUR_VARIANT_FORM_LIMMU_A";
+        case  0x1243F: return
+                "CUNEIFORM_NUMERIC_SIGN_FOUR_VARIANT_FORM_LIMMU_B";
         case  0x12440: return "CUNEIFORM_NUMERIC_SIGN_SIX_VARIANT_FORM_ASH9";
-        case  0x12441: return "CUNEIFORM_NUMERIC_SIGN_SEVEN_VARIANT_FORM_IMIN3";
-        case  0x12442: return "CUNEIFORM_NUMERIC_SIGN_SEVEN_VARIANT_FORM_IMIN_A";
-        case  0x12443: return "CUNEIFORM_NUMERIC_SIGN_SEVEN_VARIANT_FORM_IMIN_B";
-        case  0x12444: return "CUNEIFORM_NUMERIC_SIGN_EIGHT_VARIANT_FORM_USSU";
-        case  0x12445: return "CUNEIFORM_NUMERIC_SIGN_EIGHT_VARIANT_FORM_USSU3";
-        case  0x12446: return "CUNEIFORM_NUMERIC_SIGN_NINE_VARIANT_FORM_ILIMMU";
-        case  0x12447: return "CUNEIFORM_NUMERIC_SIGN_NINE_VARIANT_FORM_ILIMMU3";
-        case  0x12448: return "CUNEIFORM_NUMERIC_SIGN_NINE_VARIANT_FORM_ILIMMU4";
-        case  0x12449: return "CUNEIFORM_NUMERIC_SIGN_NINE_VARIANT_FORM_ILIMMU_A";
+        case  0x12441: return
+                "CUNEIFORM_NUMERIC_SIGN_SEVEN_VARIANT_FORM_IMIN3";
+        case  0x12442: return
+                "CUNEIFORM_NUMERIC_SIGN_SEVEN_VARIANT_FORM_IMIN_A";
+        case  0x12443: return
+                "CUNEIFORM_NUMERIC_SIGN_SEVEN_VARIANT_FORM_IMIN_B";
+        case  0x12444: return
+                "CUNEIFORM_NUMERIC_SIGN_EIGHT_VARIANT_FORM_USSU";
+        case  0x12445: return
+                "CUNEIFORM_NUMERIC_SIGN_EIGHT_VARIANT_FORM_USSU3";
+        case  0x12446: return
+                "CUNEIFORM_NUMERIC_SIGN_NINE_VARIANT_FORM_ILIMMU";
+        case  0x12447: return
+                "CUNEIFORM_NUMERIC_SIGN_NINE_VARIANT_FORM_ILIMMU3";
+        case  0x12448: return
+                "CUNEIFORM_NUMERIC_SIGN_NINE_VARIANT_FORM_ILIMMU4";
+        case  0x12449: return
+                "CUNEIFORM_NUMERIC_SIGN_NINE_VARIANT_FORM_ILIMMU_A";
         case  0x1244A: return "CUNEIFORM_NUMERIC_SIGN_TWO_ASH_TENU";
         case  0x1244B: return "CUNEIFORM_NUMERIC_SIGN_THREE_ASH_TENU";
         case  0x1244C: return "CUNEIFORM_NUMERIC_SIGN_FOUR_ASH_TENU";
@@ -20517,12 +21309,15 @@ static const char *uniname3(int codepoint)
         case  0x1245A: return "CUNEIFORM_NUMERIC_SIGN_ONE_THIRD_DISH";
         case  0x1245B: return "CUNEIFORM_NUMERIC_SIGN_TWO_THIRDS_DISH";
         case  0x1245C: return "CUNEIFORM_NUMERIC_SIGN_FIVE_SIXTHS_DISH";
-        case  0x1245D: return "CUNEIFORM_NUMERIC_SIGN_ONE_THIRD_VARIANT_FORM_A";
-        case  0x1245E: return "CUNEIFORM_NUMERIC_SIGN_TWO_THIRDS_VARIANT_FORM_A";
+        case  0x1245D: return
+                "CUNEIFORM_NUMERIC_SIGN_ONE_THIRD_VARIANT_FORM_A";
+        case  0x1245E: return
+                "CUNEIFORM_NUMERIC_SIGN_TWO_THIRDS_VARIANT_FORM_A";
         case  0x1245F: return "CUNEIFORM_NUMERIC_SIGN_ONE_EIGHTH_ASH";
         case  0x12460: return "CUNEIFORM_NUMERIC_SIGN_ONE_QUARTER_ASH";
         case  0x12461: return "CUNEIFORM_NUMERIC_SIGN_OLD_ASSYRIAN_ONE_SIXTH";
-        case  0x12462: return "CUNEIFORM_NUMERIC_SIGN_OLD_ASSYRIAN_ONE_QUARTER";
+        case  0x12462: return
+                "CUNEIFORM_NUMERIC_SIGN_OLD_ASSYRIAN_ONE_QUARTER";
         case  0x12463: return "CUNEIFORM_NUMERIC_SIGN_ONE_QUARTER_GUR";
         case  0x12464: return "CUNEIFORM_NUMERIC_SIGN_ONE_HALF_GUR";
         case  0x12465: return "CUNEIFORM_NUMERIC_SIGN_ELAMITE_ONE_THIRD";
@@ -20535,7 +21330,8 @@ static const char *uniname3(int codepoint)
         case  0x1246C: return "CUNEIFORM_NUMERIC_SIGN_SEVEN_U_VARIANT_FORM";
         case  0x1246D: return "CUNEIFORM_NUMERIC_SIGN_EIGHT_U_VARIANT_FORM";
         case  0x1246E: return "CUNEIFORM_NUMERIC_SIGN_NINE_U_VARIANT_FORM";
-        case  0x12470: return "CUNEIFORM_PUNCTUATION_SIGN_OLD_ASSYRIAN_WORD_DIVIDER";
+        case  0x12470: return
+                "CUNEIFORM_PUNCTUATION_SIGN_OLD_ASSYRIAN_WORD_DIVIDER";
         case  0x12471: return "CUNEIFORM_PUNCTUATION_SIGN_VERTICAL_COLON";
         case  0x12472: return "CUNEIFORM_PUNCTUATION_SIGN_DIAGONAL_COLON";
         case  0x12473: return "CUNEIFORM_PUNCTUATION_SIGN_DIAGONAL_TRICOLON";
@@ -22750,7 +23546,8 @@ static const char *uniname3(int codepoint)
         case  0x1D04F: return "BYZANTINE_MUSICAL_SYMBOL_KENTIMA_NEO_ANO";
         case  0x1D050: return "BYZANTINE_MUSICAL_SYMBOL_YPSILI";
         case  0x1D051: return "BYZANTINE_MUSICAL_SYMBOL_APOSTROFOS_NEO";
-        case  0x1D052: return "BYZANTINE_MUSICAL_SYMBOL_APOSTROFOI_SYNDESMOS_NEO";
+        case  0x1D052: return
+                "BYZANTINE_MUSICAL_SYMBOL_APOSTROFOI_SYNDESMOS_NEO";
         case  0x1D053: return "BYZANTINE_MUSICAL_SYMBOL_YPORROI";
         case  0x1D054: return "BYZANTINE_MUSICAL_SYMBOL_KRATIMOYPORROON";
         case  0x1D055: return "BYZANTINE_MUSICAL_SYMBOL_ELAFRON";
@@ -22809,15 +23606,22 @@ static const char *uniname3(int codepoint)
         case  0x1D08A: return "BYZANTINE_MUSICAL_SYMBOL_LEIMMA_ENOS_CHRONOU";
         case  0x1D08B: return "BYZANTINE_MUSICAL_SYMBOL_LEIMMA_DYO_CHRONON";
         case  0x1D08C: return "BYZANTINE_MUSICAL_SYMBOL_LEIMMA_TRION_CHRONON";
-        case  0x1D08D: return "BYZANTINE_MUSICAL_SYMBOL_LEIMMA_TESSARON_CHRONON";
-        case  0x1D08E: return "BYZANTINE_MUSICAL_SYMBOL_LEIMMA_IMISEOS_CHRONOU";
+        case  0x1D08D: return
+                "BYZANTINE_MUSICAL_SYMBOL_LEIMMA_TESSARON_CHRONON";
+        case  0x1D08E: return
+                "BYZANTINE_MUSICAL_SYMBOL_LEIMMA_IMISEOS_CHRONOU";
         case  0x1D08F: return "BYZANTINE_MUSICAL_SYMBOL_GORGON_NEO_ANO";
-        case  0x1D090: return "BYZANTINE_MUSICAL_SYMBOL_GORGON_PARESTIGMENON_ARISTERA";
-        case  0x1D091: return "BYZANTINE_MUSICAL_SYMBOL_GORGON_PARESTIGMENON_DEXIA";
+        case  0x1D090: return
+                "BYZANTINE_MUSICAL_SYMBOL_GORGON_PARESTIGMENON_ARISTERA";
+        case  0x1D091: return
+                "BYZANTINE_MUSICAL_SYMBOL_GORGON_PARESTIGMENON_DEXIA";
         case  0x1D092: return "BYZANTINE_MUSICAL_SYMBOL_DIGORGON";
-        case  0x1D093: return "BYZANTINE_MUSICAL_SYMBOL_DIGORGON_PARESTIGMENON_ARISTERA_KATO";
-        case  0x1D094: return "BYZANTINE_MUSICAL_SYMBOL_DIGORGON_PARESTIGMENON_ARISTERA_ANO";
-        case  0x1D095: return "BYZANTINE_MUSICAL_SYMBOL_DIGORGON_PARESTIGMENON_DEXIA";
+        case  0x1D093: return
+                "BYZANTINE_MUSICAL_SYMBOL_DIGORGON_PARESTIGMENON_ARISTERA_KATO";
+        case  0x1D094: return
+                "BYZANTINE_MUSICAL_SYMBOL_DIGORGON_PARESTIGMENON_ARISTERA_ANO";
+        case  0x1D095: return
+                "BYZANTINE_MUSICAL_SYMBOL_DIGORGON_PARESTIGMENON_DEXIA";
         case  0x1D096: return "BYZANTINE_MUSICAL_SYMBOL_TRIGORGON";
         case  0x1D097: return "BYZANTINE_MUSICAL_SYMBOL_ARGON";
         case  0x1D098: return "BYZANTINE_MUSICAL_SYMBOL_IMIDIARGON";
@@ -22830,60 +23634,94 @@ static const char *uniname3(int codepoint)
         case  0x1D09F: return "BYZANTINE_MUSICAL_SYMBOL_AGOGI_GORGI";
         case  0x1D0A0: return "BYZANTINE_MUSICAL_SYMBOL_AGOGI_GORGOTERI";
         case  0x1D0A1: return "BYZANTINE_MUSICAL_SYMBOL_AGOGI_POLI_GORGI";
-        case  0x1D0A2: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_PROTOS_ICHOS";
-        case  0x1D0A3: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_ALLI_PROTOS_ICHOS";
-        case  0x1D0A4: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_DEYTEROS_ICHOS";
-        case  0x1D0A5: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_ALLI_DEYTEROS_ICHOS";
-        case  0x1D0A6: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_TRITOS_ICHOS";
+        case  0x1D0A2: return
+                "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_PROTOS_ICHOS";
+        case  0x1D0A3: return
+                "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_ALLI_PROTOS_ICHOS";
+        case  0x1D0A4: return
+                "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_DEYTEROS_ICHOS";
+        case  0x1D0A5: return
+                "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_ALLI_DEYTEROS_ICHOS";
+        case  0x1D0A6: return
+                "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_TRITOS_ICHOS";
         case  0x1D0A7: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_TRIFONIAS";
-        case  0x1D0A8: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_TETARTOS_ICHOS";
-        case  0x1D0A9: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_TETARTOS_LEGETOS_ICHOS";
-        case  0x1D0AA: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_LEGETOS_ICHOS";
-        case  0x1D0AB: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_PLAGIOS_ICHOS";
-        case  0x1D0AC: return "BYZANTINE_MUSICAL_SYMBOL_ISAKIA_TELOUS_ICHIMATOS";
-        case  0x1D0AD: return "BYZANTINE_MUSICAL_SYMBOL_APOSTROFOI_TELOUS_ICHIMATOS";
-        case  0x1D0AE: return "BYZANTINE_MUSICAL_SYMBOL_FANEROSIS_TETRAFONIAS";
+        case  0x1D0A8: return
+                "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_TETARTOS_ICHOS";
+        case  0x1D0A9: return
+                "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_TETARTOS_LEGETOS_ICHOS";
+        case  0x1D0AA: return
+                "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_LEGETOS_ICHOS";
+        case  0x1D0AB: return
+                "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_PLAGIOS_ICHOS";
+        case  0x1D0AC: return
+                "BYZANTINE_MUSICAL_SYMBOL_ISAKIA_TELOUS_ICHIMATOS";
+        case  0x1D0AD: return
+                "BYZANTINE_MUSICAL_SYMBOL_APOSTROFOI_TELOUS_ICHIMATOS";
+        case  0x1D0AE: return
+                "BYZANTINE_MUSICAL_SYMBOL_FANEROSIS_TETRAFONIAS";
         case  0x1D0AF: return "BYZANTINE_MUSICAL_SYMBOL_FANEROSIS_MONOFONIAS";
         case  0x1D0B0: return "BYZANTINE_MUSICAL_SYMBOL_FANEROSIS_DIFONIAS";
         case  0x1D0B1: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_VARYS_ICHOS";
-        case  0x1D0B2: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_PROTOVARYS_ICHOS";
-        case  0x1D0B3: return "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_PLAGIOS_TETARTOS_ICHOS";
+        case  0x1D0B2: return
+                "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_PROTOVARYS_ICHOS";
+        case  0x1D0B3: return
+                "BYZANTINE_MUSICAL_SYMBOL_MARTYRIA_PLAGIOS_TETARTOS_ICHOS";
         case  0x1D0B4: return "BYZANTINE_MUSICAL_SYMBOL_GORTHMIKON_N_APLOUN";
         case  0x1D0B5: return "BYZANTINE_MUSICAL_SYMBOL_GORTHMIKON_N_DIPLOUN";
-        case  0x1D0B6: return "BYZANTINE_MUSICAL_SYMBOL_ENARXIS_KAI_FTHORA_VOU";
+        case  0x1D0B6: return
+                "BYZANTINE_MUSICAL_SYMBOL_ENARXIS_KAI_FTHORA_VOU";
         case  0x1D0B7: return "BYZANTINE_MUSICAL_SYMBOL_IMIFONON";
         case  0x1D0B8: return "BYZANTINE_MUSICAL_SYMBOL_IMIFTHORON";
-        case  0x1D0B9: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_ARCHAION_DEYTEROU_ICHOU";
+        case  0x1D0B9: return
+                "BYZANTINE_MUSICAL_SYMBOL_FTHORA_ARCHAION_DEYTEROU_ICHOU";
         case  0x1D0BA: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_DIATONIKI_PA";
-        case  0x1D0BB: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_DIATONIKI_NANA";
+        case  0x1D0BB: return
+                "BYZANTINE_MUSICAL_SYMBOL_FTHORA_DIATONIKI_NANA";
         case  0x1D0BC: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_NAOS_ICHOS";
         case  0x1D0BD: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_DIATONIKI_DI";
-        case  0x1D0BE: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_SKLIRON_DIATONON_DI";
+        case  0x1D0BE: return
+                "BYZANTINE_MUSICAL_SYMBOL_FTHORA_SKLIRON_DIATONON_DI";
         case  0x1D0BF: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_DIATONIKI_KE";
         case  0x1D0C0: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_DIATONIKI_ZO";
-        case  0x1D0C1: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_DIATONIKI_NI_KATO";
-        case  0x1D0C2: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_DIATONIKI_NI_ANO";
-        case  0x1D0C3: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_MALAKON_CHROMA_DIFONIAS";
-        case  0x1D0C4: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_MALAKON_CHROMA_MONOFONIAS";
-        case  0x1D0C5: return "BYZANTINE_MUSICAL_SYMBOL_FHTORA_SKLIRON_CHROMA_VASIS";
-        case  0x1D0C6: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_SKLIRON_CHROMA_SYNAFI";
+        case  0x1D0C1: return
+                "BYZANTINE_MUSICAL_SYMBOL_FTHORA_DIATONIKI_NI_KATO";
+        case  0x1D0C2: return
+                "BYZANTINE_MUSICAL_SYMBOL_FTHORA_DIATONIKI_NI_ANO";
+        case  0x1D0C3: return
+                "BYZANTINE_MUSICAL_SYMBOL_FTHORA_MALAKON_CHROMA_DIFONIAS";
+        case  0x1D0C4: return
+                "BYZANTINE_MUSICAL_SYMBOL_FTHORA_MALAKON_CHROMA_MONOFONIAS";
+        case  0x1D0C5: return
+                "BYZANTINE_MUSICAL_SYMBOL_FHTORA_SKLIRON_CHROMA_VASIS";
+        case  0x1D0C6: return
+                "BYZANTINE_MUSICAL_SYMBOL_FTHORA_SKLIRON_CHROMA_SYNAFI";
         case  0x1D0C7: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_NENANO";
         case  0x1D0C8: return "BYZANTINE_MUSICAL_SYMBOL_CHROA_ZYGOS";
         case  0x1D0C9: return "BYZANTINE_MUSICAL_SYMBOL_CHROA_KLITON";
         case  0x1D0CA: return "BYZANTINE_MUSICAL_SYMBOL_CHROA_SPATHI";
-        case  0x1D0CB: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_I_YFESIS_TETARTIMORION";
-        case  0x1D0CC: return "BYZANTINE_MUSICAL_SYMBOL_FTHORA_ENARMONIOS_ANTIFONIA";
+        case  0x1D0CB: return
+                "BYZANTINE_MUSICAL_SYMBOL_FTHORA_I_YFESIS_TETARTIMORION";
+        case  0x1D0CC: return
+                "BYZANTINE_MUSICAL_SYMBOL_FTHORA_ENARMONIOS_ANTIFONIA";
         case  0x1D0CD: return "BYZANTINE_MUSICAL_SYMBOL_YFESIS_TRITIMORION";
         case  0x1D0CE: return "BYZANTINE_MUSICAL_SYMBOL_DIESIS_TRITIMORION";
         case  0x1D0CF: return "BYZANTINE_MUSICAL_SYMBOL_DIESIS_TETARTIMORION";
-        case  0x1D0D0: return "BYZANTINE_MUSICAL_SYMBOL_DIESIS_APLI_DYO_DODEKATA";
-        case  0x1D0D1: return "BYZANTINE_MUSICAL_SYMBOL_DIESIS_MONOGRAMMOS_TESSERA_DODEKATA";
-        case  0x1D0D2: return "BYZANTINE_MUSICAL_SYMBOL_DIESIS_DIGRAMMOS_EX_DODEKATA";
-        case  0x1D0D3: return "BYZANTINE_MUSICAL_SYMBOL_DIESIS_TRIGRAMMOS_OKTO_DODEKATA";
-        case  0x1D0D4: return "BYZANTINE_MUSICAL_SYMBOL_YFESIS_APLI_DYO_DODEKATA";
-        case  0x1D0D5: return "BYZANTINE_MUSICAL_SYMBOL_YFESIS_MONOGRAMMOS_TESSERA_DODEKATA";
-        case  0x1D0D6: return "BYZANTINE_MUSICAL_SYMBOL_YFESIS_DIGRAMMOS_EX_DODEKATA";
-        case  0x1D0D7: return "BYZANTINE_MUSICAL_SYMBOL_YFESIS_TRIGRAMMOS_OKTO_DODEKATA";
+        case  0x1D0D0: return
+                "BYZANTINE_MUSICAL_SYMBOL_DIESIS_APLI_DYO_DODEKATA";
+        case  0x1D0D1: return
+                "BYZANTINE_MUSICAL_SYMBOL_DIESIS_MONOGRAMMOS_TESSERA_DODEKATA";
+        case  0x1D0D2: return
+                "BYZANTINE_MUSICAL_SYMBOL_DIESIS_DIGRAMMOS_EX_DODEKATA";
+        case  0x1D0D3: return
+                "BYZANTINE_MUSICAL_SYMBOL_DIESIS_TRIGRAMMOS_OKTO_DODEKATA";
+        case  0x1D0D4: return
+                "BYZANTINE_MUSICAL_SYMBOL_YFESIS_APLI_DYO_DODEKATA";
+        case  0x1D0D5: return
+                "BYZANTINE_MUSICAL_SYMBOL_YFESIS_MONOGRAMMOS_TESSERA_DODEKATA";
+        case  0x1D0D6: return
+                "BYZANTINE_MUSICAL_SYMBOL_YFESIS_DIGRAMMOS_EX_DODEKATA";
+        case  0x1D0D7: return
+                "BYZANTINE_MUSICAL_SYMBOL_YFESIS_TRIGRAMMOS_OKTO_DODEKATA";
         case  0x1D0D8: return "BYZANTINE_MUSICAL_SYMBOL_GENIKI_DIESIS";
         case  0x1D0D9: return "BYZANTINE_MUSICAL_SYMBOL_GENIKI_YFESIS";
         case  0x1D0DA: return "BYZANTINE_MUSICAL_SYMBOL_DIASTOLI_APLI_MIKRI";
@@ -22891,13 +23729,19 @@ static const char *uniname3(int codepoint)
         case  0x1D0DC: return "BYZANTINE_MUSICAL_SYMBOL_DIASTOLI_DIPLI";
         case  0x1D0DD: return "BYZANTINE_MUSICAL_SYMBOL_DIASTOLI_THESEOS";
         case  0x1D0DE: return "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_THESEOS";
-        case  0x1D0DF: return "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_THESEOS_DISIMOU";
-        case  0x1D0E0: return "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_THESEOS_TRISIMOU";
-        case  0x1D0E1: return "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_THESEOS_TETRASIMOU";
+        case  0x1D0DF: return
+                "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_THESEOS_DISIMOU";
+        case  0x1D0E0: return
+                "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_THESEOS_TRISIMOU";
+        case  0x1D0E1: return
+                "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_THESEOS_TETRASIMOU";
         case  0x1D0E2: return "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_ARSEOS";
-        case  0x1D0E3: return "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_ARSEOS_DISIMOU";
-        case  0x1D0E4: return "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_ARSEOS_TRISIMOU";
-        case  0x1D0E5: return "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_ARSEOS_TETRASIMOU";
+        case  0x1D0E3: return
+                "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_ARSEOS_DISIMOU";
+        case  0x1D0E4: return
+                "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_ARSEOS_TRISIMOU";
+        case  0x1D0E5: return
+                "BYZANTINE_MUSICAL_SYMBOL_SIMANSIS_ARSEOS_TETRASIMOU";
         case  0x1D0E6: return "BYZANTINE_MUSICAL_SYMBOL_DIGRAMMA_GG";
         case  0x1D0E7: return "BYZANTINE_MUSICAL_SYMBOL_DIFTOGGOS_OU";
         case  0x1D0E8: return "BYZANTINE_MUSICAL_SYMBOL_STIGMA";
@@ -22992,12 +23836,16 @@ static const char *uniname3(int codepoint)
         case  0x1D14D: return "MUSICAL_SYMBOL_TRIANGLE_NOTEHEAD_RIGHT_BLACK";
         case  0x1D14E: return "MUSICAL_SYMBOL_TRIANGLE_NOTEHEAD_DOWN_WHITE";
         case  0x1D14F: return "MUSICAL_SYMBOL_TRIANGLE_NOTEHEAD_DOWN_BLACK";
-        case  0x1D150: return "MUSICAL_SYMBOL_TRIANGLE_NOTEHEAD_UP_RIGHT_WHITE";
-        case  0x1D151: return "MUSICAL_SYMBOL_TRIANGLE_NOTEHEAD_UP_RIGHT_BLACK";
+        case  0x1D150: return
+                "MUSICAL_SYMBOL_TRIANGLE_NOTEHEAD_UP_RIGHT_WHITE";
+        case  0x1D151: return
+                "MUSICAL_SYMBOL_TRIANGLE_NOTEHEAD_UP_RIGHT_BLACK";
         case  0x1D152: return "MUSICAL_SYMBOL_MOON_NOTEHEAD_WHITE";
         case  0x1D153: return "MUSICAL_SYMBOL_MOON_NOTEHEAD_BLACK";
-        case  0x1D154: return "MUSICAL_SYMBOL_TRIANGLE_ROUND_NOTEHEAD_DOWN_WHITE";
-        case  0x1D155: return "MUSICAL_SYMBOL_TRIANGLE_ROUND_NOTEHEAD_DOWN_BLACK";
+        case  0x1D154: return
+                "MUSICAL_SYMBOL_TRIANGLE_ROUND_NOTEHEAD_DOWN_WHITE";
+        case  0x1D155: return
+                "MUSICAL_SYMBOL_TRIANGLE_ROUND_NOTEHEAD_DOWN_BLACK";
         case  0x1D156: return "MUSICAL_SYMBOL_PARENTHESIS_NOTEHEAD";
         case  0x1D157: return "MUSICAL_SYMBOL_VOID_NOTEHEAD";
         case  0x1D158: return "MUSICAL_SYMBOL_NOTEHEAD_BLACK";
@@ -23111,14 +23959,22 @@ static const char *uniname3(int codepoint)
         case  0x1D1C4: return "MUSICAL_SYMBOL_SEMIBREVIS_REST";
         case  0x1D1C5: return "MUSICAL_SYMBOL_MINIMA_REST";
         case  0x1D1C6: return "MUSICAL_SYMBOL_SEMIMINIMA_REST";
-        case  0x1D1C7: return "MUSICAL_SYMBOL_TEMPUS_PERFECTUM_CUM_PROLATIONE_PERFECTA";
-        case  0x1D1C8: return "MUSICAL_SYMBOL_TEMPUS_PERFECTUM_CUM_PROLATIONE_IMPERFECTA";
-        case  0x1D1C9: return "MUSICAL_SYMBOL_TEMPUS_PERFECTUM_CUM_PROLATIONE_PERFECTA_DIMINUTION_1";
-        case  0x1D1CA: return "MUSICAL_SYMBOL_TEMPUS_IMPERFECTUM_CUM_PROLATIONE_PERFECTA";
-        case  0x1D1CB: return "MUSICAL_SYMBOL_TEMPUS_IMPERFECTUM_CUM_PROLATIONE_IMPERFECTA";
-        case  0x1D1CC: return "MUSICAL_SYMBOL_TEMPUS_IMPERFECTUM_CUM_PROLATIONE_IMPERFECTA_DIMINUTION_1";
-        case  0x1D1CD: return "MUSICAL_SYMBOL_TEMPUS_IMPERFECTUM_CUM_PROLATIONE_IMPERFECTA_DIMINUTION_2";
-        case  0x1D1CE: return "MUSICAL_SYMBOL_TEMPUS_IMPERFECTUM_CUM_PROLATIONE_IMPERFECTA_DIMINUTION_3";
+        case  0x1D1C7: return
+                "MUSICAL_SYMBOL_TEMPUS_PERFECTUM_CUM_PROLATIONE_PERFECTA";
+        case  0x1D1C8: return
+                "MUSICAL_SYMBOL_TEMPUS_PERFECTUM_CUM_PROLATIONE_IMPERFECTA";
+        case  0x1D1C9: return
+                "MUSICAL_SYMBOL_TEMPUS_PERFECTUM_CUM_PROLATIONE_PERFECTA_DIMINUTION_1";
+        case  0x1D1CA: return
+                "MUSICAL_SYMBOL_TEMPUS_IMPERFECTUM_CUM_PROLATIONE_PERFECTA";
+        case  0x1D1CB: return
+                "MUSICAL_SYMBOL_TEMPUS_IMPERFECTUM_CUM_PROLATIONE_IMPERFECTA";
+        case  0x1D1CC: return
+                "MUSICAL_SYMBOL_TEMPUS_IMPERFECTUM_CUM_PROLATIONE_IMPERFECTA_DIMINUTION_1";
+        case  0x1D1CD: return
+                "MUSICAL_SYMBOL_TEMPUS_IMPERFECTUM_CUM_PROLATIONE_IMPERFECTA_DIMINUTION_2";
+        case  0x1D1CE: return
+                "MUSICAL_SYMBOL_TEMPUS_IMPERFECTUM_CUM_PROLATIONE_IMPERFECTA_DIMINUTION_3";
         case  0x1D1CF: return "MUSICAL_SYMBOL_CROIX";
         case  0x1D1D0: return "MUSICAL_SYMBOL_GREGORIAN_C_CLEF";
         case  0x1D1D1: return "MUSICAL_SYMBOL_GREGORIAN_F_CLEF";
@@ -24154,7 +25010,8 @@ static const char *uniname3(int codepoint)
         case  0x1D764: return "MATHEMATICAL_SANS_SERIF_BOLD_CAPITAL_OMICRON";
         case  0x1D765: return "MATHEMATICAL_SANS_SERIF_BOLD_CAPITAL_PI";
         case  0x1D766: return "MATHEMATICAL_SANS_SERIF_BOLD_CAPITAL_RHO";
-        case  0x1D767: return "MATHEMATICAL_SANS_SERIF_BOLD_CAPITAL_THETA_SYMBOL";
+        case  0x1D767: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_CAPITAL_THETA_SYMBOL";
         case  0x1D768: return "MATHEMATICAL_SANS_SERIF_BOLD_CAPITAL_SIGMA";
         case  0x1D769: return "MATHEMATICAL_SANS_SERIF_BOLD_CAPITAL_TAU";
         case  0x1D76A: return "MATHEMATICAL_SANS_SERIF_BOLD_CAPITAL_UPSILON";
@@ -24180,7 +25037,8 @@ static const char *uniname3(int codepoint)
         case  0x1D77E: return "MATHEMATICAL_SANS_SERIF_BOLD_SMALL_OMICRON";
         case  0x1D77F: return "MATHEMATICAL_SANS_SERIF_BOLD_SMALL_PI";
         case  0x1D780: return "MATHEMATICAL_SANS_SERIF_BOLD_SMALL_RHO";
-        case  0x1D781: return "MATHEMATICAL_SANS_SERIF_BOLD_SMALL_FINAL_SIGMA";
+        case  0x1D781: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_SMALL_FINAL_SIGMA";
         case  0x1D782: return "MATHEMATICAL_SANS_SERIF_BOLD_SMALL_SIGMA";
         case  0x1D783: return "MATHEMATICAL_SANS_SERIF_BOLD_SMALL_TAU";
         case  0x1D784: return "MATHEMATICAL_SANS_SERIF_BOLD_SMALL_UPSILON";
@@ -24188,70 +25046,117 @@ static const char *uniname3(int codepoint)
         case  0x1D786: return "MATHEMATICAL_SANS_SERIF_BOLD_SMALL_CHI";
         case  0x1D787: return "MATHEMATICAL_SANS_SERIF_BOLD_SMALL_PSI";
         case  0x1D788: return "MATHEMATICAL_SANS_SERIF_BOLD_SMALL_OMEGA";
-        case  0x1D789: return "MATHEMATICAL_SANS_SERIF_BOLD_PARTIAL_DIFFERENTIAL";
+        case  0x1D789: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_PARTIAL_DIFFERENTIAL";
         case  0x1D78A: return "MATHEMATICAL_SANS_SERIF_BOLD_EPSILON_SYMBOL";
         case  0x1D78B: return "MATHEMATICAL_SANS_SERIF_BOLD_THETA_SYMBOL";
         case  0x1D78C: return "MATHEMATICAL_SANS_SERIF_BOLD_KAPPA_SYMBOL";
         case  0x1D78D: return "MATHEMATICAL_SANS_SERIF_BOLD_PHI_SYMBOL";
         case  0x1D78E: return "MATHEMATICAL_SANS_SERIF_BOLD_RHO_SYMBOL";
         case  0x1D78F: return "MATHEMATICAL_SANS_SERIF_BOLD_PI_SYMBOL";
-        case  0x1D790: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_ALPHA";
-        case  0x1D791: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_BETA";
-        case  0x1D792: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_GAMMA";
-        case  0x1D793: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_DELTA";
-        case  0x1D794: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_EPSILON";
-        case  0x1D795: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_ZETA";
-        case  0x1D796: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_ETA";
-        case  0x1D797: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_THETA";
-        case  0x1D798: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_IOTA";
-        case  0x1D799: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_KAPPA";
-        case  0x1D79A: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_LAMDA";
-        case  0x1D79B: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_MU";
-        case  0x1D79C: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_NU";
-        case  0x1D79D: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_XI";
-        case  0x1D79E: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_OMICRON";
-        case  0x1D79F: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_PI";
-        case  0x1D7A0: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_RHO";
-        case  0x1D7A1: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_THETA_SYMBOL";
-        case  0x1D7A2: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_SIGMA";
-        case  0x1D7A3: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_TAU";
-        case  0x1D7A4: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_UPSILON";
-        case  0x1D7A5: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_PHI";
-        case  0x1D7A6: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_CHI";
-        case  0x1D7A7: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_PSI";
-        case  0x1D7A8: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_OMEGA";
+        case  0x1D790: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_ALPHA";
+        case  0x1D791: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_BETA";
+        case  0x1D792: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_GAMMA";
+        case  0x1D793: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_DELTA";
+        case  0x1D794: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_EPSILON";
+        case  0x1D795: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_ZETA";
+        case  0x1D796: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_ETA";
+        case  0x1D797: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_THETA";
+        case  0x1D798: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_IOTA";
+        case  0x1D799: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_KAPPA";
+        case  0x1D79A: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_LAMDA";
+        case  0x1D79B: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_MU";
+        case  0x1D79C: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_NU";
+        case  0x1D79D: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_XI";
+        case  0x1D79E: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_OMICRON";
+        case  0x1D79F: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_PI";
+        case  0x1D7A0: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_RHO";
+        case  0x1D7A1: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_THETA_SYMBOL";
+        case  0x1D7A2: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_SIGMA";
+        case  0x1D7A3: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_TAU";
+        case  0x1D7A4: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_UPSILON";
+        case  0x1D7A5: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_PHI";
+        case  0x1D7A6: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_CHI";
+        case  0x1D7A7: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_PSI";
+        case  0x1D7A8: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_CAPITAL_OMEGA";
         case  0x1D7A9: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_NABLA";
-        case  0x1D7AA: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_ALPHA";
-        case  0x1D7AB: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_BETA";
-        case  0x1D7AC: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_GAMMA";
-        case  0x1D7AD: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_DELTA";
-        case  0x1D7AE: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_EPSILON";
-        case  0x1D7AF: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_ZETA";
+        case  0x1D7AA: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_ALPHA";
+        case  0x1D7AB: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_BETA";
+        case  0x1D7AC: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_GAMMA";
+        case  0x1D7AD: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_DELTA";
+        case  0x1D7AE: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_EPSILON";
+        case  0x1D7AF: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_ZETA";
         case  0x1D7B0: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_ETA";
-        case  0x1D7B1: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_THETA";
-        case  0x1D7B2: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_IOTA";
-        case  0x1D7B3: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_KAPPA";
-        case  0x1D7B4: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_LAMDA";
+        case  0x1D7B1: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_THETA";
+        case  0x1D7B2: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_IOTA";
+        case  0x1D7B3: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_KAPPA";
+        case  0x1D7B4: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_LAMDA";
         case  0x1D7B5: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_MU";
         case  0x1D7B6: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_NU";
         case  0x1D7B7: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_XI";
-        case  0x1D7B8: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_OMICRON";
+        case  0x1D7B8: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_OMICRON";
         case  0x1D7B9: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_PI";
         case  0x1D7BA: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_RHO";
-        case  0x1D7BB: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_FINAL_SIGMA";
-        case  0x1D7BC: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_SIGMA";
+        case  0x1D7BB: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_FINAL_SIGMA";
+        case  0x1D7BC: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_SIGMA";
         case  0x1D7BD: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_TAU";
-        case  0x1D7BE: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_UPSILON";
+        case  0x1D7BE: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_UPSILON";
         case  0x1D7BF: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_PHI";
         case  0x1D7C0: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_CHI";
         case  0x1D7C1: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_PSI";
-        case  0x1D7C2: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_OMEGA";
-        case  0x1D7C3: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_PARTIAL_DIFFERENTIAL";
-        case  0x1D7C4: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_EPSILON_SYMBOL";
-        case  0x1D7C5: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_THETA_SYMBOL";
-        case  0x1D7C6: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_KAPPA_SYMBOL";
-        case  0x1D7C7: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_PHI_SYMBOL";
-        case  0x1D7C8: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_RHO_SYMBOL";
+        case  0x1D7C2: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_SMALL_OMEGA";
+        case  0x1D7C3: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_PARTIAL_DIFFERENTIAL";
+        case  0x1D7C4: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_EPSILON_SYMBOL";
+        case  0x1D7C5: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_THETA_SYMBOL";
+        case  0x1D7C6: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_KAPPA_SYMBOL";
+        case  0x1D7C7: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_PHI_SYMBOL";
+        case  0x1D7C8: return
+                "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_RHO_SYMBOL";
         case  0x1D7C9: return "MATHEMATICAL_SANS_SERIF_BOLD_ITALIC_PI_SYMBOL";
         case  0x1D7CA: return "MATHEMATICAL_BOLD_CAPITAL_DIGAMMA";
         case  0x1D7CB: return "MATHEMATICAL_BOLD_SMALL_DIGAMMA";
@@ -24516,7 +25421,8 @@ static const char *uniname3(int codepoint)
         case  0x1E8D2: return "MENDE_KIKAKUI_COMBINING_NUMBER_HUNDREDS";
         case  0x1E8D3: return "MENDE_KIKAKUI_COMBINING_NUMBER_THOUSANDS";
         case  0x1E8D4: return "MENDE_KIKAKUI_COMBINING_NUMBER_TEN_THOUSANDS";
-        case  0x1E8D5: return "MENDE_KIKAKUI_COMBINING_NUMBER_HUNDRED_THOUSANDS";
+        case  0x1E8D5: return
+                "MENDE_KIKAKUI_COMBINING_NUMBER_HUNDRED_THOUSANDS";
         case  0x1E8D6: return "MENDE_KIKAKUI_COMBINING_NUMBER_MILLIONS";
         case  0x1EE00: return "ARABIC_MATHEMATICAL_ALEF";
         case  0x1EE01: return "ARABIC_MATHEMATICAL_BEH";
@@ -24659,7 +25565,8 @@ static const char *uniname3(int codepoint)
         case  0x1EEB9: return "ARABIC_MATHEMATICAL_DOUBLE_STRUCK_DAD";
         case  0x1EEBA: return "ARABIC_MATHEMATICAL_DOUBLE_STRUCK_ZAH";
         case  0x1EEBB: return "ARABIC_MATHEMATICAL_DOUBLE_STRUCK_GHAIN";
-        case  0x1EEF0: return "ARABIC_MATHEMATICAL_OPERATOR_MEEM_WITH_HAH_WITH_TATWEEL";
+        case  0x1EEF0: return
+                "ARABIC_MATHEMATICAL_OPERATOR_MEEM_WITH_HAH_WITH_TATWEEL";
         case  0x1EEF1: return "ARABIC_MATHEMATICAL_OPERATOR_HAH_WITH_DAL";
         case  0x1F000: return "MAHJONG_TILE_EAST_WIND";
         case  0x1F001: return "MAHJONG_TILE_SOUTH_WIND";
@@ -24899,7 +25806,8 @@ static const char *uniname3(int codepoint)
         case  0x1F109: return "DIGIT_EIGHT_COMMA";
         case  0x1F10A: return "DIGIT_NINE_COMMA";
         case  0x1F10B: return "DINGBAT_CIRCLED_SANS_SERIF_DIGIT_ZERO";
-        case  0x1F10C: return "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_ZERO";
+        case  0x1F10C: return
+                "DINGBAT_NEGATIVE_CIRCLED_SANS_SERIF_DIGIT_ZERO";
         case  0x1F110: return "PARENTHESIZED_LATIN_CAPITAL_LETTER_A";
         case  0x1F111: return "PARENTHESIZED_LATIN_CAPITAL_LETTER_B";
         case  0x1F112: return "PARENTHESIZED_LATIN_CAPITAL_LETTER_C";
@@ -24926,7 +25834,8 @@ static const char *uniname3(int codepoint)
         case  0x1F127: return "PARENTHESIZED_LATIN_CAPITAL_LETTER_X";
         case  0x1F128: return "PARENTHESIZED_LATIN_CAPITAL_LETTER_Y";
         case  0x1F129: return "PARENTHESIZED_LATIN_CAPITAL_LETTER_Z";
-        case  0x1F12A: return "TORTOISE_SHELL_BRACKETED_LATIN_CAPITAL_LETTER_S";
+        case  0x1F12A: return
+                "TORTOISE_SHELL_BRACKETED_LATIN_CAPITAL_LETTER_S";
         case  0x1F12B: return "CIRCLED_ITALIC_LATIN_CAPITAL_LETTER_C";
         case  0x1F12C: return "CIRCLED_ITALIC_LATIN_CAPITAL_LETTER_R";
         case  0x1F12D: return "CIRCLED_CD";
@@ -25017,7 +25926,8 @@ static const char *uniname3(int codepoint)
         case  0x1F187: return "NEGATIVE_SQUARED_LATIN_CAPITAL_LETTER_X";
         case  0x1F188: return "NEGATIVE_SQUARED_LATIN_CAPITAL_LETTER_Y";
         case  0x1F189: return "NEGATIVE_SQUARED_LATIN_CAPITAL_LETTER_Z";
-        case  0x1F18A: return "CROSSED_NEGATIVE_SQUARED_LATIN_CAPITAL_LETTER_P";
+        case  0x1F18A: return
+                "CROSSED_NEGATIVE_SQUARED_LATIN_CAPITAL_LETTER_P";
         case  0x1F18B: return "NEGATIVE_SQUARED_IC";
         case  0x1F18C: return "NEGATIVE_SQUARED_PA";
         case  0x1F18D: return "NEGATIVE_SQUARED_SA";
@@ -25106,15 +26016,24 @@ static const char *uniname3(int codepoint)
         case  0x1F238: return "SQUARED_CJK_UNIFIED_IDEOGRAPH_7533";
         case  0x1F239: return "SQUARED_CJK_UNIFIED_IDEOGRAPH_5272";
         case  0x1F23A: return "SQUARED_CJK_UNIFIED_IDEOGRAPH_55B6";
-        case  0x1F240: return "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_672C";
-        case  0x1F241: return "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_4E09";
-        case  0x1F242: return "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_4E8C";
-        case  0x1F243: return "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_5B89";
-        case  0x1F244: return "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_70B9";
-        case  0x1F245: return "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_6253";
-        case  0x1F246: return "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_76D7";
-        case  0x1F247: return "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_52DD";
-        case  0x1F248: return "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_6557";
+        case  0x1F240: return
+                "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_672C";
+        case  0x1F241: return
+                "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_4E09";
+        case  0x1F242: return
+                "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_4E8C";
+        case  0x1F243: return
+                "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_5B89";
+        case  0x1F244: return
+                "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_70B9";
+        case  0x1F245: return
+                "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_6253";
+        case  0x1F246: return
+                "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_76D7";
+        case  0x1F247: return
+                "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_52DD";
+        case  0x1F248: return
+                "TORTOISE_SHELL_BRACKETED_CJK_UNIFIED_IDEOGRAPH_6557";
         case  0x1F250: return "CIRCLED_IDEOGRAPH_ADVANTAGE";
         case  0x1F251: return "CIRCLED_IDEOGRAPH_ACCEPT";
         case  0x1F300: return "CYCLONE";
@@ -25611,10 +26530,14 @@ static const char *uniname3(int codepoint)
         case  0x1F4FD: return "FILM_PROJECTOR";
         case  0x1F4FE: return "PORTABLE_STEREO";
         case  0x1F500: return "TWISTED_RIGHTWARDS_ARROWS";
-        case  0x1F501: return "CLOCKWISE_RIGHTWARDS_AND_LEFTWARDS_OPEN_CIRCLE_ARROWS";
-        case  0x1F502: return "CLOCKWISE_RIGHTWARDS_AND_LEFTWARDS_OPEN_CIRCLE_ARROWS_WITH_CIRCLED_ONE_OVERLAY";
-        case  0x1F503: return "CLOCKWISE_DOWNWARDS_AND_UPWARDS_OPEN_CIRCLE_ARROWS";
-        case  0x1F504: return "ANTICLOCKWISE_DOWNWARDS_AND_UPWARDS_OPEN_CIRCLE_ARROWS";
+        case  0x1F501: return
+                "CLOCKWISE_RIGHTWARDS_AND_LEFTWARDS_OPEN_CIRCLE_ARROWS";
+        case  0x1F502: return
+                "CLOCKWISE_RIGHTWARDS_AND_LEFTWARDS_OPEN_CIRCLE_ARROWS_WITH_CIRCLED_ONE_OVERLAY";
+        case  0x1F503: return
+                "CLOCKWISE_DOWNWARDS_AND_UPWARDS_OPEN_CIRCLE_ARROWS";
+        case  0x1F504: return
+                "ANTICLOCKWISE_DOWNWARDS_AND_UPWARDS_OPEN_CIRCLE_ARROWS";
         case  0x1F505: return "LOW_BRIGHTNESS_SYMBOL";
         case  0x1F506: return "HIGH_BRIGHTNESS_SYMBOL";
         case  0x1F507: return "SPEAKER_WITH_CANCELLATION_STROKE";
@@ -25637,7 +26560,8 @@ static const char *uniname3(int codepoint)
         case  0x1F518: return "RADIO_BUTTON";
         case  0x1F519: return "BACK_WITH_LEFTWARDS_ARROW_ABOVE";
         case  0x1F51A: return "END_WITH_LEFTWARDS_ARROW_ABOVE";
-        case  0x1F51B: return "ON_WITH_EXCLAMATION_MARK_WITH_LEFT_RIGHT_ARROW_ABOVE";
+        case  0x1F51B: return
+                "ON_WITH_EXCLAMATION_MARK_WITH_LEFT_RIGHT_ARROW_ABOVE";
         case  0x1F51C: return "SOON_WITH_RIGHTWARDS_ARROW_ABOVE";
         case  0x1F51D: return "TOP_WITH_UPWARDS_ARROW_ABOVE";
         case  0x1F51E: return "NO_ONE_UNDER_EIGHTEEN_SYMBOL";
@@ -25754,7 +26678,8 @@ static const char *uniname3(int codepoint)
         case  0x1F593: return "REVERSED_THUMBS_DOWN_SIGN";
         case  0x1F594: return "REVERSED_VICTORY_HAND";
         case  0x1F595: return "REVERSED_HAND_WITH_MIDDLE_FINGER_EXTENDED";
-        case  0x1F596: return "RAISED_HAND_WITH_PART_BETWEEN_MIDDLE_AND_RING_FINGERS";
+        case  0x1F596: return
+                "RAISED_HAND_WITH_PART_BETWEEN_MIDDLE_AND_RING_FINGERS";
         case  0x1F597: return "WHITE_DOWN_POINTING_LEFT_HAND_INDEX";
         case  0x1F598: return "SIDEWAYS_WHITE_LEFT_POINTING_INDEX";
         case  0x1F599: return "SIDEWAYS_WHITE_RIGHT_POINTING_INDEX";
@@ -25865,7 +26790,8 @@ static const char *uniname3(int codepoint)
         case  0x1F603: return "SMILING_FACE_WITH_OPEN_MOUTH";
         case  0x1F604: return "SMILING_FACE_WITH_OPEN_MOUTH_AND_SMILING_EYES";
         case  0x1F605: return "SMILING_FACE_WITH_OPEN_MOUTH_AND_COLD_SWEAT";
-        case  0x1F606: return "SMILING_FACE_WITH_OPEN_MOUTH_AND_TIGHTLY_CLOSED_EYES";
+        case  0x1F606: return
+                "SMILING_FACE_WITH_OPEN_MOUTH_AND_TIGHTLY_CLOSED_EYES";
         case  0x1F607: return "SMILING_FACE_WITH_HALO";
         case  0x1F608: return "SMILING_FACE_WITH_HORNS";
         case  0x1F609: return "WINKING_FACE";
@@ -25888,7 +26814,8 @@ static const char *uniname3(int codepoint)
         case  0x1F61A: return "KISSING_FACE_WITH_CLOSED_EYES";
         case  0x1F61B: return "FACE_WITH_STUCK_OUT_TONGUE";
         case  0x1F61C: return "FACE_WITH_STUCK_OUT_TONGUE_AND_WINKING_EYE";
-        case  0x1F61D: return "FACE_WITH_STUCK_OUT_TONGUE_AND_TIGHTLY_CLOSED_EYES";
+        case  0x1F61D: return
+                "FACE_WITH_STUCK_OUT_TONGUE_AND_TIGHTLY_CLOSED_EYES";
         case  0x1F61E: return "DISAPPOINTED_FACE";
         case  0x1F61F: return "WORRIED_FACE";
         case  0x1F620: return "ANGRY_FACE";
@@ -25975,9 +26902,12 @@ static const char *uniname3(int codepoint)
         case  0x1F673: return "HEAVY_LIGATURE_OPEN_ET_ORNAMENT";
         case  0x1F674: return "HEAVY_AMPERSAND_ORNAMENT";
         case  0x1F675: return "SWASH_AMPERSAND_ORNAMENT";
-        case  0x1F676: return "SANS_SERIF_HEAVY_DOUBLE_TURNED_COMMA_QUOTATION_MARK_ORNAMENT";
-        case  0x1F677: return "SANS_SERIF_HEAVY_DOUBLE_COMMA_QUOTATION_MARK_ORNAMENT";
-        case  0x1F678: return "SANS_SERIF_HEAVY_LOW_DOUBLE_COMMA_QUOTATION_MARK_ORNAMENT";
+        case  0x1F676: return
+                "SANS_SERIF_HEAVY_DOUBLE_TURNED_COMMA_QUOTATION_MARK_ORNAMENT";
+        case  0x1F677: return
+                "SANS_SERIF_HEAVY_DOUBLE_COMMA_QUOTATION_MARK_ORNAMENT";
+        case  0x1F678: return
+                "SANS_SERIF_HEAVY_LOW_DOUBLE_COMMA_QUOTATION_MARK_ORNAMENT";
         case  0x1F679: return "HEAVY_INTERROBANG_ORNAMENT";
         case  0x1F67A: return "SANS_SERIF_INTERROBANG_ORNAMENT";
         case  0x1F67B: return "HEAVY_SANS_SERIF_INTERROBANG_ORNAMENT";
@@ -26120,15 +27050,18 @@ static const char *uniname3(int codepoint)
         case  0x1F723: return "ALCHEMICAL_SYMBOL_FOR_CROCUS_OF_COPPER";
         case  0x1F724: return "ALCHEMICAL_SYMBOL_FOR_CROCUS_OF_COPPER_2";
         case  0x1F725: return "ALCHEMICAL_SYMBOL_FOR_COPPER_ANTIMONIATE";
-        case  0x1F726: return "ALCHEMICAL_SYMBOL_FOR_SALT_OF_COPPER_ANTIMONIATE";
-        case  0x1F727: return "ALCHEMICAL_SYMBOL_FOR_SUBLIMATE_OF_SALT_OF_COPPER";
+        case  0x1F726: return
+                "ALCHEMICAL_SYMBOL_FOR_SALT_OF_COPPER_ANTIMONIATE";
+        case  0x1F727: return
+                "ALCHEMICAL_SYMBOL_FOR_SUBLIMATE_OF_SALT_OF_COPPER";
         case  0x1F728: return "ALCHEMICAL_SYMBOL_FOR_VERDIGRIS";
         case  0x1F729: return "ALCHEMICAL_SYMBOL_FOR_TIN_ORE";
         case  0x1F72A: return "ALCHEMICAL_SYMBOL_FOR_LEAD_ORE";
         case  0x1F72B: return "ALCHEMICAL_SYMBOL_FOR_ANTIMONY_ORE";
         case  0x1F72C: return "ALCHEMICAL_SYMBOL_FOR_SUBLIMATE_OF_ANTIMONY";
         case  0x1F72D: return "ALCHEMICAL_SYMBOL_FOR_SALT_OF_ANTIMONY";
-        case  0x1F72E: return "ALCHEMICAL_SYMBOL_FOR_SUBLIMATE_OF_SALT_OF_ANTIMONY";
+        case  0x1F72E: return
+                "ALCHEMICAL_SYMBOL_FOR_SUBLIMATE_OF_SALT_OF_ANTIMONY";
         case  0x1F72F: return "ALCHEMICAL_SYMBOL_FOR_VINEGAR_OF_ANTIMONY";
         case  0x1F730: return "ALCHEMICAL_SYMBOL_FOR_REGULUS_OF_ANTIMONY";
         case  0x1F731: return "ALCHEMICAL_SYMBOL_FOR_REGULUS_OF_ANTIMONY_2";
@@ -26218,13 +27151,15 @@ static const char *uniname3(int codepoint)
         case  0x1F791: return "HEAVY_WHITE_SQUARE";
         case  0x1F792: return "VERY_HEAVY_WHITE_SQUARE";
         case  0x1F793: return "EXTREMELY_HEAVY_WHITE_SQUARE";
-        case  0x1F794: return "WHITE_SQUARE_CONTAINING_BLACK_VERY_SMALL_SQUARE";
+        case  0x1F794: return
+                "WHITE_SQUARE_CONTAINING_BLACK_VERY_SMALL_SQUARE";
         case  0x1F795: return "WHITE_SQUARE_CONTAINING_BLACK_MEDIUM_SQUARE";
         case  0x1F796: return "SQUARE_TARGET";
         case  0x1F797: return "BLACK_TINY_DIAMOND";
         case  0x1F798: return "BLACK_VERY_SMALL_DIAMOND";
         case  0x1F799: return "BLACK_MEDIUM_SMALL_DIAMOND";
-        case  0x1F79A: return "WHITE_DIAMOND_CONTAINING_BLACK_VERY_SMALL_DIAMOND";
+        case  0x1F79A: return
+                "WHITE_DIAMOND_CONTAINING_BLACK_VERY_SMALL_DIAMOND";
         case  0x1F79B: return "WHITE_DIAMOND_CONTAINING_BLACK_MEDIUM_DIAMOND";
         case  0x1F79C: return "DIAMOND_TARGET";
         case  0x1F79D: return "BLACK_TINY_LOZENGE";
@@ -26285,52 +27220,88 @@ static const char *uniname3(int codepoint)
         case  0x1F7D4: return "HEAVY_TWELVE_POINTED_PINWHEEL_STAR";
         case  0x1F800: return "LEFTWARDS_ARROW_WITH_SMALL_TRIANGLE_ARROWHEAD";
         case  0x1F801: return "UPWARDS_ARROW_WITH_SMALL_TRIANGLE_ARROWHEAD";
-        case  0x1F802: return "RIGHTWARDS_ARROW_WITH_SMALL_TRIANGLE_ARROWHEAD";
+        case  0x1F802: return
+                "RIGHTWARDS_ARROW_WITH_SMALL_TRIANGLE_ARROWHEAD";
         case  0x1F803: return "DOWNWARDS_ARROW_WITH_SMALL_TRIANGLE_ARROWHEAD";
-        case  0x1F804: return "LEFTWARDS_ARROW_WITH_MEDIUM_TRIANGLE_ARROWHEAD";
+        case  0x1F804: return
+                "LEFTWARDS_ARROW_WITH_MEDIUM_TRIANGLE_ARROWHEAD";
         case  0x1F805: return "UPWARDS_ARROW_WITH_MEDIUM_TRIANGLE_ARROWHEAD";
-        case  0x1F806: return "RIGHTWARDS_ARROW_WITH_MEDIUM_TRIANGLE_ARROWHEAD";
-        case  0x1F807: return "DOWNWARDS_ARROW_WITH_MEDIUM_TRIANGLE_ARROWHEAD";
+        case  0x1F806: return
+                "RIGHTWARDS_ARROW_WITH_MEDIUM_TRIANGLE_ARROWHEAD";
+        case  0x1F807: return
+                "DOWNWARDS_ARROW_WITH_MEDIUM_TRIANGLE_ARROWHEAD";
         case  0x1F808: return "LEFTWARDS_ARROW_WITH_LARGE_TRIANGLE_ARROWHEAD";
         case  0x1F809: return "UPWARDS_ARROW_WITH_LARGE_TRIANGLE_ARROWHEAD";
-        case  0x1F80A: return "RIGHTWARDS_ARROW_WITH_LARGE_TRIANGLE_ARROWHEAD";
+        case  0x1F80A: return
+                "RIGHTWARDS_ARROW_WITH_LARGE_TRIANGLE_ARROWHEAD";
         case  0x1F80B: return "DOWNWARDS_ARROW_WITH_LARGE_TRIANGLE_ARROWHEAD";
-        case  0x1F810: return "LEFTWARDS_ARROW_WITH_SMALL_EQUILATERAL_ARROWHEAD";
-        case  0x1F811: return "UPWARDS_ARROW_WITH_SMALL_EQUILATERAL_ARROWHEAD";
-        case  0x1F812: return "RIGHTWARDS_ARROW_WITH_SMALL_EQUILATERAL_ARROWHEAD";
-        case  0x1F813: return "DOWNWARDS_ARROW_WITH_SMALL_EQUILATERAL_ARROWHEAD";
+        case  0x1F810: return
+                "LEFTWARDS_ARROW_WITH_SMALL_EQUILATERAL_ARROWHEAD";
+        case  0x1F811: return
+                "UPWARDS_ARROW_WITH_SMALL_EQUILATERAL_ARROWHEAD";
+        case  0x1F812: return
+                "RIGHTWARDS_ARROW_WITH_SMALL_EQUILATERAL_ARROWHEAD";
+        case  0x1F813: return
+                "DOWNWARDS_ARROW_WITH_SMALL_EQUILATERAL_ARROWHEAD";
         case  0x1F814: return "LEFTWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
         case  0x1F815: return "UPWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
         case  0x1F816: return "RIGHTWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
         case  0x1F817: return "DOWNWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
-        case  0x1F818: return "HEAVY_LEFTWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
-        case  0x1F819: return "HEAVY_UPWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
-        case  0x1F81A: return "HEAVY_RIGHTWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
-        case  0x1F81B: return "HEAVY_DOWNWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
-        case  0x1F81C: return "HEAVY_LEFTWARDS_ARROW_WITH_LARGE_EQUILATERAL_ARROWHEAD";
-        case  0x1F81D: return "HEAVY_UPWARDS_ARROW_WITH_LARGE_EQUILATERAL_ARROWHEAD";
-        case  0x1F81E: return "HEAVY_RIGHTWARDS_ARROW_WITH_LARGE_EQUILATERAL_ARROWHEAD";
-        case  0x1F81F: return "HEAVY_DOWNWARDS_ARROW_WITH_LARGE_EQUILATERAL_ARROWHEAD";
-        case  0x1F820: return "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_NARROW_SHAFT";
-        case  0x1F821: return "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_NARROW_SHAFT";
-        case  0x1F822: return "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_NARROW_SHAFT";
-        case  0x1F823: return "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_NARROW_SHAFT";
-        case  0x1F824: return "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_MEDIUM_SHAFT";
-        case  0x1F825: return "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_MEDIUM_SHAFT";
-        case  0x1F826: return "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_MEDIUM_SHAFT";
-        case  0x1F827: return "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_MEDIUM_SHAFT";
-        case  0x1F828: return "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_BOLD_SHAFT";
+        case  0x1F818: return
+                "HEAVY_LEFTWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
+        case  0x1F819: return
+                "HEAVY_UPWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
+        case  0x1F81A: return
+                "HEAVY_RIGHTWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
+        case  0x1F81B: return
+                "HEAVY_DOWNWARDS_ARROW_WITH_EQUILATERAL_ARROWHEAD";
+        case  0x1F81C: return
+                "HEAVY_LEFTWARDS_ARROW_WITH_LARGE_EQUILATERAL_ARROWHEAD";
+        case  0x1F81D: return
+                "HEAVY_UPWARDS_ARROW_WITH_LARGE_EQUILATERAL_ARROWHEAD";
+        case  0x1F81E: return
+                "HEAVY_RIGHTWARDS_ARROW_WITH_LARGE_EQUILATERAL_ARROWHEAD";
+        case  0x1F81F: return
+                "HEAVY_DOWNWARDS_ARROW_WITH_LARGE_EQUILATERAL_ARROWHEAD";
+        case  0x1F820: return
+                "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_NARROW_SHAFT";
+        case  0x1F821: return
+                "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_NARROW_SHAFT";
+        case  0x1F822: return
+                "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_NARROW_SHAFT";
+        case  0x1F823: return
+                "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_NARROW_SHAFT";
+        case  0x1F824: return
+                "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_MEDIUM_SHAFT";
+        case  0x1F825: return
+                "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_MEDIUM_SHAFT";
+        case  0x1F826: return
+                "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_MEDIUM_SHAFT";
+        case  0x1F827: return
+                "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_MEDIUM_SHAFT";
+        case  0x1F828: return
+                "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_BOLD_SHAFT";
         case  0x1F829: return "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_BOLD_SHAFT";
-        case  0x1F82A: return "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_BOLD_SHAFT";
-        case  0x1F82B: return "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_BOLD_SHAFT";
-        case  0x1F82C: return "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_HEAVY_SHAFT";
-        case  0x1F82D: return "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_HEAVY_SHAFT";
-        case  0x1F82E: return "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_HEAVY_SHAFT";
-        case  0x1F82F: return "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_HEAVY_SHAFT";
-        case  0x1F830: return "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_VERY_HEAVY_SHAFT";
-        case  0x1F831: return "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_VERY_HEAVY_SHAFT";
-        case  0x1F832: return "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_VERY_HEAVY_SHAFT";
-        case  0x1F833: return "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_VERY_HEAVY_SHAFT";
+        case  0x1F82A: return
+                "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_BOLD_SHAFT";
+        case  0x1F82B: return
+                "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_BOLD_SHAFT";
+        case  0x1F82C: return
+                "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_HEAVY_SHAFT";
+        case  0x1F82D: return
+                "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_HEAVY_SHAFT";
+        case  0x1F82E: return
+                "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_HEAVY_SHAFT";
+        case  0x1F82F: return
+                "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_HEAVY_SHAFT";
+        case  0x1F830: return
+                "LEFTWARDS_TRIANGLE_HEADED_ARROW_WITH_VERY_HEAVY_SHAFT";
+        case  0x1F831: return
+                "UPWARDS_TRIANGLE_HEADED_ARROW_WITH_VERY_HEAVY_SHAFT";
+        case  0x1F832: return
+                "RIGHTWARDS_TRIANGLE_HEADED_ARROW_WITH_VERY_HEAVY_SHAFT";
+        case  0x1F833: return
+                "DOWNWARDS_TRIANGLE_HEADED_ARROW_WITH_VERY_HEAVY_SHAFT";
         case  0x1F834: return "LEFTWARDS_FINGER_POST_ARROW";
         case  0x1F835: return "UPWARDS_FINGER_POST_ARROW";
         case  0x1F836: return "RIGHTWARDS_FINGER_POST_ARROW";
@@ -26405,10 +27376,13 @@ static const char *uniname3(int codepoint)
         case  0x1F891: return "UPWARDS_TRIANGLE_ARROWHEAD";
         case  0x1F892: return "RIGHTWARDS_TRIANGLE_ARROWHEAD";
         case  0x1F893: return "DOWNWARDS_TRIANGLE_ARROWHEAD";
-        case  0x1F894: return "LEFTWARDS_WHITE_ARROW_WITHIN_TRIANGLE_ARROWHEAD";
+        case  0x1F894: return
+                "LEFTWARDS_WHITE_ARROW_WITHIN_TRIANGLE_ARROWHEAD";
         case  0x1F895: return "UPWARDS_WHITE_ARROW_WITHIN_TRIANGLE_ARROWHEAD";
-        case  0x1F896: return "RIGHTWARDS_WHITE_ARROW_WITHIN_TRIANGLE_ARROWHEAD";
-        case  0x1F897: return "DOWNWARDS_WHITE_ARROW_WITHIN_TRIANGLE_ARROWHEAD";
+        case  0x1F896: return
+                "RIGHTWARDS_WHITE_ARROW_WITHIN_TRIANGLE_ARROWHEAD";
+        case  0x1F897: return
+                "DOWNWARDS_WHITE_ARROW_WITHIN_TRIANGLE_ARROWHEAD";
         case  0x1F898: return "LEFTWARDS_ARROW_WITH_NOTCHED_TAIL";
         case  0x1F899: return "UPWARDS_ARROW_WITH_NOTCHED_TAIL";
         case  0x1F89A: return "RIGHTWARDS_ARROW_WITH_NOTCHED_TAIL";
@@ -27320,7 +28294,7 @@ static const char *uniname3(int codepoint)
         case  0xFFFFD: return "Plane_15_Private_Use__Last";
         case 0x100000: return "Plane_16_Private_Use__First";
         case 0x10FFFD: return "Plane_16_Private_Use__Last";
-        default:       return NULL;
+        default:       return nullptr;
     }
 }
 

@@ -463,20 +463,20 @@ static bool delayed_has_arg = false;
 static char delayed_message[80];
 
 static inthash repeat_hash;
-LispObject *repeat_heap = NULL;
+LispObject *repeat_heap = nullptr;
 size_t repeat_heap_size = 0, repeat_count = 0;
 
 void reader_setup_repeats(size_t n)
 {   if (repeat_heap_size != 0 ||
-        repeat_heap != NULL)
+        repeat_heap != nullptr)
     {   std::fprintf(stderr, "\n+++ repeat heap processing error\n");
         my_abort();
     }
     repeat_heap_size = n;
     repeat_count = 0;
     if (n == 0) return; // No repeats present, so not table needed.
-    repeat_heap = (LispObject *)std::malloc((n+1)*sizeof(LispObject));
-    if (repeat_heap == NULL)
+    repeat_heap = reinterpret_cast<LispObject *>(std::malloc((n+1)*sizeof(LispObject)));
+    if (repeat_heap == nullptr)
     {   std::fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
         my_abort();
     }
@@ -489,8 +489,8 @@ void writer_setup_repeats()
 {   repeat_heap_size = repeat_hash.count;
     repeat_count = 0;
     repeat_heap =
-        (LispObject *)std::malloc((repeat_heap_size+1)*sizeof(LispObject));
-    if (repeat_heap == NULL)
+        reinterpret_cast<LispObject *>(std::malloc((repeat_heap_size+1)*sizeof(LispObject)));
+    if (repeat_heap == nullptr)
     {   std::fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
         my_abort();
     }
@@ -790,7 +790,7 @@ void write_u64(uint64_t n)
     if (n == (n & 0x7f))
     {
 #ifdef DEBUG_SERIALIZE
-        std::sprintf(msg, "small int %#.2x = %d", (int)n, (int)n);
+        std::sprintf(msg, "small int %#.2x = %d", static_cast<int>(n), static_cast<int>(n));
 #endif // DEBUG_SERIALIZE
         write_byte(n | 0x80, msg);
         return;
@@ -820,14 +820,14 @@ void write_u64(uint64_t n)
     if (final == 7)
     {
 #ifdef DEBUG_SERIALIZE
-        std::sprintf(msg, "%#.2x = %" PRIu64, (int)n & 0x7f, n);
+        std::sprintf(msg, "%#.2x = %" PRIu64, static_cast<int>(n) & 0x7f, n);
 #endif // DEBUG_SERIALIZE
         write_byte(0x80 | (n & 0x7f), msg);
     }
     else
     {
 #ifdef DEBUG_SERIALIZE
-        std::sprintf(msg, "%#.2x = %" PRIu64, (int)n & 0xff, n);
+        std::sprintf(msg, "%#.2x = %" PRIu64, static_cast<int>(n) & 0xff, n);
 #endif // DEBUG_SERIALIZE
         write_byte(n & 0xff, msg);
     }
@@ -1146,9 +1146,9 @@ static const uint64_t crc64_tab[256] =
 };
 
 uint64_t crc64(uint64_t crc, const void *buf, size_t size)
-{   const std::uint8_t *p = (const std::uint8_t *)buf;
+{   const std::uint8_t *p = reinterpret_cast<const std::uint8_t *>(buf);
     while (size-- != 0)
-        crc = crc64_tab[(std::uint8_t)crc ^ *p++] ^ (crc >> 8);
+        crc = crc64_tab[static_cast<std::uint8_t>(crc) ^ *p++] ^ (crc >> 8);
     return crc;
 }
 
@@ -1156,7 +1156,7 @@ uint64_t crc64(uint64_t crc, const void *buf, size_t size)
 #ifdef TEST_MAIN
 
 #include <cstdio>
-int main(void)
+int mainstatic_cast<void>()
 {   std::printf("e9c6d914c4b8d9ca == %016" PRIx64 "\n",
            crc64(0,(const std::uint8_t *)"123456789",9));
     return 0;
@@ -1203,7 +1203,7 @@ bool insert_codepointer(uintptr_t x, const char *s)
 }
 
 uint64_t use_setup(uint64_t crc, const setup_type *p)
-{   while (p->name != NULL)
+{   while (p->name != nullptr)
     {   unsigned char n = 0;
         if (insert_codepointer((uintptr_t)(p->zero), p->name)) n += 1;
         if (insert_codepointer((uintptr_t)(p->one), p->name)) n += 2;
@@ -1211,7 +1211,7 @@ uint64_t use_setup(uint64_t crc, const setup_type *p)
         if (insert_codepointer((uintptr_t)(p->three), p->name)) n += 8;
         if (insert_codepointer((uintptr_t)(p->fourup), p->name)) n += 16;
         crc = crc64(crc, &n, 1);
-        crc = crc64(crc, (const unsigned char *)p->name, std::strlen(p->name));
+        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->name), std::strlen(p->name));
         p++;
     }
     return crc;
@@ -1236,34 +1236,34 @@ void set_up_function_tables()
 // to index values, and a table (codepointers) that is a single
 // indexable array of the entrypoints. For Reduce there are somewhat under
 // 4000 pointers to handle here, so costs are not too severe.
-    for (entry_point0 *p = &entries_table0[1]; p->p!=NULL; p++)
+    for (entry_point0 *p = &entries_table0[1]; p->p!=nullptr; p++)
     {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
+        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
     }
-    for (entry_point1 *p = &entries_table1[1]; p->p!=NULL; p++)
+    for (entry_point1 *p = &entries_table1[1]; p->p!=nullptr; p++)
     {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
+        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
     }
-    for (entry_point2 *p = &entries_table2[1]; p->p!=NULL; p++)
+    for (entry_point2 *p = &entries_table2[1]; p->p!=nullptr; p++)
     {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
+        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
     }
-    for (entry_point3 *p = &entries_table3[1]; p->p!=NULL; p++)
+    for (entry_point3 *p = &entries_table3[1]; p->p!=nullptr; p++)
     {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
+        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
     }
-    for (entry_point4up *p = &entries_table4up[1]; p->p!=NULL; p++)
+    for (entry_point4up *p = &entries_table4up[1]; p->p!=nullptr; p++)
     {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
+        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
     }
-    for (entry_point1 *p = &entries_tableio[1]; p->p!=NULL; p++)
+    for (entry_point1 *p = &entries_tableio[1]; p->p!=nullptr; p++)
     {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, (const unsigned char *)p->s, std::strlen(p->s));
+        crc = crc64(crc, reinterpret_cast<const unsigned char *>(p->s), std::strlen(p->s));
     }
     const setup_type **p = setup_tables;
-    while (*p != NULL) crc = use_setup(crc, *p++);
-    p++;  // setup_tables is in two parts, separated by a NULL.
-    while (*p != NULL) crc = use_setup(crc, *p++);
+    while (*p != nullptr) crc = use_setup(crc, *p++);
+    p++;  // setup_tables is in two parts, separated by a nullptr.
+    while (*p != nullptr) crc = use_setup(crc, *p++);
 
     function_crc = crc;
 }
@@ -1275,7 +1275,7 @@ void *read_function()
                 handle, handle);
         my_abort();
     }
-    return (void *)codepointers[handle];
+    return reinterpret_cast<void *>(codepointers[handle]);
 }
 
 void write_function(void *p)
@@ -1317,13 +1317,13 @@ void write_function(void *p)
 // When I have a conservative garbage collector this complication will
 // become unnecessary!
 
-#define GC_PROTECT(stmt)                             \
-    do                                               \
-    {   push(r, s, pbase, b);                        \
-        ip = (LispObject)p - pbase;                  \
-        stmt;                                        \
-        pop(b, pbase, s, r);                         \
-        p = (LispObject *)(pbase + ip);              \
+#define GC_PROTECT(stmt)                                \
+    do                                                  \
+    {   push(r, s, pbase, b);                           \
+        ip = reinterpret_cast<LispObject>(p) - pbase;   \
+        stmt;                                           \
+        pop(b, pbase, s, r);                            \
+        p = reinterpret_cast<LispObject *>(pbase + ip); \
     } while (0)
 
 
@@ -1415,7 +1415,7 @@ down:
                     if (c & 1) reader_repeat_new(prev);
                     *(atomic<LispObject>*)p = prev;
                     pbase = prev;
-                    p = (LispObject *)vcaraddr(pbase);
+                    p = reinterpret_cast<LispObject *>(vcaraddr(pbase));
                     goto down;
 
                 case SER_L_a_S:
@@ -1424,7 +1424,7 @@ down:
                     if (c & 1) reader_repeat_new(prev);
                     *(atomic<LispObject>*)p = b = prev;
                     pbase = b;
-                    p = (LispObject *)vcdraddr(b);
+                    p = reinterpret_cast<LispObject *>(vcdraddr(b));
                     goto down;
 
                 case SER_L_aa:
@@ -1440,7 +1440,7 @@ down:
                     setcar(prev, b);
                     b = *(atomic<LispObject>*)p = prev;
                     pbase = cdr(b);
-                    p = (LispObject *)vcaraddr(pbase);
+                    p = reinterpret_cast<LispObject *>(vcaraddr(pbase));
                     goto down;
 
                 case SER_L_aa_S:
@@ -1457,7 +1457,7 @@ down:
                     pbase = cdr(b);
                     setcar(pbase, b);
                     b = pbase;
-                    p = (LispObject *)vcdraddr(pbase);
+                    p = reinterpret_cast<LispObject *>(vcdraddr(pbase));
                     goto down;
 
                 case SER_L_aaa:
@@ -1478,7 +1478,7 @@ down:
                     setcar(pbase, b);
                     b = pbase;
                     pbase = cdr(b);
-                    p = (LispObject *)vcaraddr(pbase);
+                    p = reinterpret_cast<LispObject *>(vcaraddr(pbase));
                     goto down;
 
                 case SER_L_aaa_S:
@@ -1501,7 +1501,7 @@ down:
                     pbase = cdr(b);
                     setcar(pbase, b);
                     b = pbase;
-                    p = (LispObject *)vcdraddr(pbase);
+                    p = reinterpret_cast<LispObject *>(vcdraddr(pbase));
                     goto down;
 
                 case SER_L_aaaa:
@@ -1519,7 +1519,7 @@ down:
                     setcar(pbase, b);
                     b = pbase;
                     pbase = cdr(pbase);
-                    p = (LispObject *)vcaraddr(pbase);
+                    p = reinterpret_cast<LispObject *>(vcaraddr(pbase));
                     goto down;
 
                 case SER_L_aaaa_S:
@@ -1537,7 +1537,7 @@ down:
                     pbase = cdr(pbase);
                     setcar(pbase, b);
                     b = pbase;
-                    p = (LispObject *)vcdraddr(pbase);
+                    p = reinterpret_cast<LispObject *>(vcdraddr(pbase));
                     goto down;
 
                 case SER_BIGBACKREF:
@@ -1631,7 +1631,7 @@ down:
 // header wholesale here. Note that a symbol header has the normal tag for
 // headers in its low bits then two zero bits to indicate that it is
 // a symbol.
-                    setheader(w, (Header)((read_u64()<<(Tw+4)) + TAG_HDR_IMMED));
+                    setheader(w, static_cast<Header>((read_u64()<<(Tw+4)) + TAG_HDR_IMMED));
 // I will first fill in the fields that hold binary data or pointers to
 // executable code.
                     qfn0(w) = (no_args *)read_function();
@@ -1655,7 +1655,7 @@ down:
                     }
                     s = prev;
                     prev = pbase = b;
-                    p = (LispObject *)pnameaddr(b);
+                    p = reinterpret_cast<LispObject *>(pnameaddr(b));
                     goto down;
 
 
@@ -1753,7 +1753,7 @@ down:
                     {   repeat_arg = read_u64();
                         repeat_arg_ready = true;
                     }
-                    prev = *(atomic<LispObject>*)p = ((LispObject)repeat_arg<<(Tw+2)) | TAG_HDR_IMMED;
+                    prev = *(atomic<LispObject>*)p = (static_cast<LispObject>(repeat_arg)<<(Tw+2)) | TAG_HDR_IMMED;
                     goto up;
 
                 case SER_BITVEC:
@@ -1763,7 +1763,7 @@ down:
                         GC_PROTECT(prev =
                             get_basic_vector(TAG_VECTOR, bitvechdr_(w), len));
                         *(atomic<LispObject>*)p = prev;
-                        char *x = (char *)&basic_celt(prev, 0);
+                        char *x = reinterpret_cast<char *>(&basic_celt(prev, 0));
                         for (size_t i=0; i<(size_t)w; i++)
                             *x++ = read_data_byte();
                         while (((intptr_t)x & 7) != 0) *x++ = 0;
@@ -1849,7 +1849,7 @@ down:
 // then I must NOT set up back-pointers and the "s-stack" in quite the usual
 // manner...
                 if (n == 0)
-                {   p = (LispObject *)&vselt(w, 0);
+                {   p = reinterpret_cast<LispObject *>(&vselt(w, 0));
                     goto down;
                 }
                 vselt(w, 0) = b;
@@ -1857,7 +1857,7 @@ down:
                 GC_PROTECT(prev = cons(fixnum_of_int(n), s));
                 s = prev;
                 prev = pbase = b;
-                p = (LispObject *)&vselt(b, n);
+                p = reinterpret_cast<LispObject *>(&vselt(b, n));
             }
             goto down;
 
@@ -1891,7 +1891,7 @@ down:
             w = (c & 0x1f) + 1;
             GC_PROTECT(prev = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
             *(atomic<LispObject>*)p = prev;
-            {   char *x = (char *)&basic_celt(prev, 0);
+            {   char *x = reinterpret_cast<char *>(&basic_celt(prev, 0));
                 for (size_t i=0; i<(size_t)w; i++) *x++ = read_string_byte();
 // Fill in end of the memory block with zero bytes so it is properly tidy.
 // This is needed so that comaprisons between strings and hash value
@@ -1923,7 +1923,7 @@ down:
                 if (vector_i8(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+w));
                     *(atomic<LispObject>*)p = prev;
-                    unsigned char *x = (unsigned char *)start_contents(prev);
+                    unsigned char *x = reinterpret_cast<unsigned char *>(start_contents(prev));
                     if (is_string_header(type))
                         for (size_t i=0; i<(size_t)w; i++)
                             *x++ = read_string_byte();
@@ -1947,7 +1947,7 @@ down:
                 else if (vector_f64(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+8*w));
                     *(atomic<LispObject>*)p = prev;
-                    double *x = (double *)start_contents64(prev);
+                    double *x = reinterpret_cast<double *>(start_contents64(prev));
 // There has to be a padder word in these objects on a 32-bit machine so
 // that the data is 64-bit aligned. Clean it up.
                     if (!SIXTY_FOUR_BIT) *(int32_t *)start_contents(prev) = 0;
@@ -1956,7 +1956,7 @@ down:
                 else if (vector_i16(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+2*w));
                     *(atomic<LispObject>*)p = prev;
-                    std::uint16_t *x = (std::uint16_t *)start_contents(prev);
+                    std::uint16_t *x = reinterpret_cast<std::uint16_t *>(start_contents(prev));
                     for (size_t i=0; i<(size_t)w; i++)
                     {   uint32_t q = read_data_byte() & 0xff;
                         *x++ = (q << 8) | (read_data_byte() & 0xff);
@@ -1982,7 +1982,7 @@ down:
                 else if (vector_f32(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+4*w));
                     *(atomic<LispObject>*)p = prev;
-                    float *x = (float *)start_contents(prev);
+                    float *x = reinterpret_cast<float *>(start_contents(prev));
                     for (size_t i=0; i<(size_t)w; i++) *x++ = read_f32();
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
@@ -2029,7 +2029,7 @@ up:
 // just need to go and deal with the CAR.
     if (consp(b))
     {   pbase = b;
-        p = (LispObject *)vcaraddr(b);
+        p = reinterpret_cast<LispObject *>(vcaraddr(b));
         b = car(b);
         goto down;
     }
@@ -2061,7 +2061,7 @@ up:
 // (including hash tables, structures, records, objects...) or a symbol.
 // In the case of a symbol the index n selects as between qvalue, pname and
 // the other fields making up a symbol.
-        p = (LispObject *)&vselt(w, 0);
+        p = reinterpret_cast<LispObject *>(&vselt(w, 0));
         b = vselt(w, 0);
 // I could and possibly should push the released cell from s onto a local
 // freelist and use that where I do a CONS if possible...
@@ -2072,7 +2072,7 @@ up:
     }
     setcar(s, fixnum_of_int(n)); // write back decreased index
     pbase = b;
-    p = (LispObject *)&vselt(b, n);
+    p = reinterpret_cast<LispObject *>(&vselt(b, n));
     goto down;
 }
 
@@ -2093,7 +2093,7 @@ up:
 // I will use a multi-layer table based on 4096-byte chunks of memory. The
 // lowest level such block will hold 32768 bits each referring to an 8-byte
 // address. This covers the bottom 18 bits of the address space. On a 64-bit
-// machine each higher level block will hold 512 entries - each is either NULL
+// machine each higher level block will hold 512 entries - each is either nullptr
 // if no marks are present in an area or is a pointer to a lowest level
 // block. This adds coverage of another 9 address bits. So the sequence goes
 // 18, 27, 36, 45, 54. The very top block can be 8192 bytes and that gives
@@ -2120,30 +2120,30 @@ up:
 // maybe 3% of items in a lisp heap might (in the case I have measured) be
 // shared, so the table needed to record them does not need to be huge.
 
-static std::uint8_t *****used_map[1024] = {NULL};
+static std::uint8_t *****used_map[1024] = {nullptr};
 
 // Test if an address is marked as in use.
 
 static int address_used(uint64_t addr)
-{   unsigned int i = (unsigned int)(addr >> 54);
+{   unsigned int i = static_cast<unsigned int>(addr >> 54);
     std::uint8_t *****m1 = used_map[i];
-    if (m1 == NULL) return 0;
+    if (m1 == nullptr) return 0;
     addr -= ((uint64_t)i) << 54;   // offset in page
-    i = (unsigned int)(addr >> 45);
+    i = static_cast<unsigned int>(addr >> 45);
     std::uint8_t ****m2 = m1[i];
-    if (m2 == NULL) return 0;
+    if (m2 == nullptr) return 0;
     addr -= ((uint64_t)i) << 45;
-    i = (unsigned int)(addr >> 36);
+    i = static_cast<unsigned int>(addr >> 36);
     std::uint8_t ***m3 = m2[i];
-    if (m3 == NULL) return 0;
+    if (m3 == nullptr) return 0;
     addr -= ((uint64_t)i) << 36;
-    i = (unsigned int)(addr >> 27);
+    i = static_cast<unsigned int>(addr >> 27);
     std::uint8_t **m4 = m3[i];
-    if (m4 == NULL) return 0;
+    if (m4 == nullptr) return 0;
     addr -= ((uint64_t)i) << 27;
-    i = (unsigned int)(addr >> 18);
+    i = static_cast<unsigned int>(addr >> 18);
     std::uint8_t *m5 = m4[i];
-    if (m5 == NULL) return 0;
+    if (m5 == nullptr) return 0;
     addr -= ((uint64_t)i) << 18;
 // Now addr is just an 18-bit number. Discard the low 3 bits
     addr >>= 3;
@@ -2166,8 +2166,8 @@ static int address_used(uint64_t addr)
 // to expand the heap) rather than garbage collecting?
 
 static void *new_map_block()
-{   void *p = (void *)std::calloc(512, sizeof(void *));
-    if (p == NULL)
+{   void *p = reinterpret_cast<void *>(std::calloc(512, sizeof(void *)));
+    if (p == nullptr)
     {   std::fprintf(stderr, "\nFatal error - no memory\n");
         my_exit(1);
     }
@@ -2175,8 +2175,8 @@ static void *new_map_block()
 }
 
 static std::uint8_t *new_final_map_block()
-{   std::uint8_t *p = (std::uint8_t *)std::calloc(4096, 1);
-    if (p == NULL)
+{   std::uint8_t *p = reinterpret_cast<std::uint8_t *>(std::calloc(4096, 1));
+    if (p == nullptr)
     {   std::fprintf(stderr, "\nFatal error - no memory\n");
         my_exit(1);
     }
@@ -2191,25 +2191,25 @@ static std::uint8_t *new_final_map_block()
 
 static void mark_address_as_used(uint64_t addr)
 {
-    unsigned int i = (unsigned int)(addr >> 54);
+    unsigned int i = static_cast<unsigned int>(addr >> 54);
     std::uint8_t *****m1 = used_map[i];
-    if (m1 == NULL) used_map[i] = m1 = (std::uint8_t *****)new_map_block();
+    if (m1 == nullptr) used_map[i] = m1 = (std::uint8_t *****)new_map_block();
     addr -= ((uint64_t)i) << 54;   // offset in page
-    i = (unsigned int)(addr >> 45);
+    i = static_cast<unsigned int>(addr >> 45);
     std::uint8_t ****m2 = m1[i];
-    if (m2 == NULL) m1[i] = m2 = (std::uint8_t ****)new_map_block();
+    if (m2 == nullptr) m1[i] = m2 = (std::uint8_t ****)new_map_block();
     addr -= ((uint64_t)i) << 45;
-    i = (unsigned int)(addr >> 36);
+    i = static_cast<unsigned int>(addr >> 36);
     std::uint8_t ***m3 = m2[i];
-    if (m3 == NULL) m2[i] = m3 = (std::uint8_t ***)new_map_block();
+    if (m3 == nullptr) m2[i] = m3 = (std::uint8_t ***)new_map_block();
     addr -= ((uint64_t)i) << 36;
-    i = (unsigned int)(addr >> 27);
+    i = static_cast<unsigned int>(addr >> 27);
     std::uint8_t **m4 = m3[i];
-    if (m4 == NULL) m3[i] = m4 = (std::uint8_t **)new_map_block();
+    if (m4 == nullptr) m3[i] = m4 = (std::uint8_t **)new_map_block();
     addr -= ((uint64_t)i) << 27;
-    i = (unsigned int)(addr >> 18);
+    i = static_cast<unsigned int>(addr >> 18);
     std::uint8_t *m5 = m4[i];
-    if (m5 == NULL) m4[i] = m5 = new_final_map_block();
+    if (m5 == nullptr) m4[i] = m5 = new_final_map_block();
     addr -= ((uint64_t)i) << 18;
 // Now addr is just an 18-bit number. Discard the low 3 bits
     addr >>= 3;
@@ -2219,32 +2219,32 @@ static void mark_address_as_used(uint64_t addr)
 // Release all memory used by the bitmap.
 
 static void release_map_5(std::uint8_t *m)
-{   if (m != NULL) std::free(m);
+{   if (m != nullptr) std::free(m);
 }
 
 static void release_map_4(std::uint8_t **m)
-{   if (m != NULL)
+{   if (m != nullptr)
     {   for (int i=0; i<512; i++) release_map_5(m[i]);
         std::free(m);
     }
 }
 
 static void release_map_3(std::uint8_t ***m)
-{   if (m != NULL)
+{   if (m != nullptr)
     {   for (int i=0; i<512; i++) release_map_4(m[i]);
         std::free(m);
     }
 }
 
 static void release_map_2(std::uint8_t ****m)
-{   if (m != NULL)
+{   if (m != nullptr)
     {   for (int i=0; i<512; i++) release_map_3(m[i]);
         std::free(m);
     }
 }
 
 static void release_map_1(std::uint8_t *****m)
-{   if (m != NULL)
+{   if (m != nullptr)
     {   for (int i=0; i<512; i++) release_map_2(m[i]);
         std::free(m);
     }
@@ -2253,7 +2253,7 @@ static void release_map_1(std::uint8_t *****m)
 void release_map()
 {   for (int i=0; i<1024; i++)
     {   release_map_1(used_map[i]);
-        used_map[i] = NULL;
+        used_map[i] = nullptr;
     }
 }
 
@@ -2341,7 +2341,7 @@ down:
             w = p;
             p = qpname(p);
             setpname(w, b);
-            b = (LispObject)pnameaddr(w) + BACKPOINTER_SYMBOL;
+            b = reinterpret_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
             goto down;
 
         case TAG_VECTOR:
@@ -2363,8 +2363,8 @@ down:
 // vectors (most notably stream objects) it represents one cell of header and
 // three of lisp data, which are thought of as having indexes 0, 1 and 2.
             w = p + len - CELL - TAG_VECTOR;
-            p = *(LispObject *)w;
-            *(LispObject *)w = b;
+            p = *reinterpret_cast<LispObject *>(w);
+            *reinterpret_cast<LispObject *>(w) = b;
             b = w + BACKPOINTER_VECTOR;
             goto down;
 
@@ -2379,8 +2379,8 @@ down:
             len = length_of_header(h);
             if (len == CELL) goto up;  // should never happen
             w = p + len - CELL - TAG_NUMBERS;
-            p = *(LispObject *)w;
-            *(LispObject *)w = b;
+            p = *reinterpret_cast<LispObject *>(w);
+            *reinterpret_cast<LispObject *>(w) = b;
             b = w + BACKPOINTER_VECTOR;
             goto down;
 
@@ -2439,16 +2439,16 @@ up:
 // the more general VECTOR case both because symbols are common and
 // because their headers are formatted differently to other vectors, so
 // this simplifies the task of sorting out how to re-tag things.
-            w = *(LispObject *)(b - BACKPOINTER_SYMBOL);
-            *(LispObject *)(b - BACKPOINTER_SYMBOL) = p;
+            w = *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = p;
             b = b - CELL;
-            p = *(LispObject *)(b - BACKPOINTER_SYMBOL);
+            p = *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
             if (is_symbol_header_full_test(p))
             {   p = b - BACKPOINTER_SYMBOL + TAG_SYMBOL;
                 b = w;
                 goto up;
             }
-            *(LispObject *)(b - BACKPOINTER_SYMBOL) = w;
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = w;
             goto down;
 
         case BACKPOINTER_VECTOR:
@@ -2458,10 +2458,10 @@ up:
 // had originally been tagged as SYMBOL, VECTOR or NUMBERS. Note that the
 // fact that I am RETURNING to a vector means it must have been a vector
 // that contained pointers...
-            w = *(LispObject *)(b - BACKPOINTER_VECTOR);
-            *(LispObject *)(b - BACKPOINTER_VECTOR) = p;
+            w = *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR);
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR) = p;
             b = b - CELL;
-            p = *(LispObject *)(b - BACKPOINTER_VECTOR);
+            p = *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR);
 // The item I am scanning back over is either a number (in fact a ratio
 // or a complex number) in which case it will need to be re-tagged with
 // TAG_NUMBERS, and the test here detects its header...
@@ -2478,7 +2478,7 @@ up:
                 b = w;
                 goto up;
             }
-            *(LispObject *)(b - BACKPOINTER_VECTOR) = w;
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR) = w;
             goto down;
     }
 }
@@ -2798,16 +2798,16 @@ down:
 // will be 1 byte long in easy cases but can cope with 2^64 possibilities in
 // all if necessary.
             write_u64(((uint64_t)qheader(p))>>(Tw+4));
-            write_function((void *)(no_args *)(qfn0(p)));
-            write_function((void *)(one_arg *)(qfn1(p)));
-            write_function((void *)(two_args *)(qfn2(p)));
-            write_function((void *)(three_args *)(qfn3(p)));
-            write_function((void *)(fourup_args *)(qfn4up(p)));
+            write_function(reinterpret_cast<void *>(reinterpret_cast<no_args *>(qfn0(p))));
+            write_function(reinterpret_cast<void *>(reinterpret_cast<one_arg *>(qfn1(p))));
+            write_function(reinterpret_cast<void *>(reinterpret_cast<two_args *>(qfn2(p))));
+            write_function(reinterpret_cast<void *>(reinterpret_cast<three_args *>(qfn3(p))));
+            write_function(reinterpret_cast<void *>(reinterpret_cast<fourup_args *>(qfn4up(p))));
             write_u64(valueOfCount(qcount(p)));
             w = p;
             p = qpname(p);
             setpname(w, b);
-            b = (LispObject)pnameaddr(w) + BACKPOINTER_SYMBOL;
+            b = reinterpret_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
             goto down;
 
         case TAG_VECTOR:
@@ -2834,9 +2834,9 @@ down:
 // three of lisp data. The "-1" on the next line is because elements run from
 // 0 to len-1 rather than from 1 to len.
             if (len == 0) goto up; // NB special case
-            w = (LispObject)&basic_elt(p, len-1);
-            p = *(LispObject *)w;
-            *(LispObject *)w = b;
+            w = reinterpret_cast<LispObject>(&basic_elt(p, len-1));
+            p = *reinterpret_cast<LispObject *>(w);
+            *reinterpret_cast<LispObject *>(w) = b;
             b = w + BACKPOINTER_VECTOR;
             goto down;
 
@@ -2952,7 +2952,7 @@ down:
 // Also note that the "vector" may be tagged as TAG_VECTOR or TAG_NUMBERS and
 // so I need code that uses a mask operation to address its start.
             if (vector_i8(h))
-            {   unsigned char *x = (unsigned char *)start_contents(p);
+            {   unsigned char *x = reinterpret_cast<unsigned char *>(start_contents(p));
                 write_u64(len = length_of_byteheader(h) - CELL);
 // I *could* detect strings etc here to display the comments more tidily,
 // but since they are just for debugging that seems like too much work
@@ -2975,12 +2975,12 @@ down:
                 }
             }
             else if (vector_f64(h))
-            {   double *x = (double *)start_contents64(p);
+            {   double *x = reinterpret_cast<double *>(start_contents64(p));
                 write_u64(len = (length_of_header(h) - CELL)/8);
                 for (size_t i=0; i<len; i++) write_f64(*x++);
             }
             else if (vector_i16(h))
-            {   std::uint16_t *x = (std::uint16_t *)start_contents(p);
+            {   std::uint16_t *x = reinterpret_cast<std::uint16_t *>(start_contents(p));
                 write_u64(len = length_of_hwordheader(h) - CELL/2);
                 for (size_t i=0; i<len; i++)
                 {   uint32_t q = *x++;
@@ -3005,7 +3005,7 @@ down:
                 }
             }
             else if (vector_f32(h))
-            {   float *x = (float *)start_contents(p);
+            {   float *x = reinterpret_cast<float *>(start_contents(p));
                 write_u64(len = (length_of_header(h) - CELL)/4);
                 for (size_t i=0; i<len/4; i++) write_f32(*x++);
             }
@@ -3036,7 +3036,7 @@ down:
             {   case TYPE_SINGLE_FLOAT:
                 {   char msg[40];
 #ifdef DEBUG_SERIALIZE
-                    std::sprintf(msg, "float %.7g", (double)single_float_val(p));
+                    std::sprintf(msg, "float %.7g", static_cast<double>(single_float_val(p)));
 #endif // DEBUG_SERIALIZE
                     write_opcode(SER_FLOAT32, msg);
                     write_f32(single_float_val(p));
@@ -3078,9 +3078,9 @@ down:
             if (-16 <= w64 && w64 < 15)
             {   char msg[40];
 #ifdef DEBUG_SERIALIZE
-                std::sprintf(msg, "int, value=%d", (int)w64);
+                std::sprintf(msg, "int, value=%d", static_cast<int>(w64));
 #endif // DEBUG_SERIALIZE
-                write_delayed(SER_FIXNUM | ((int)w64 & 0x1f), msg);
+                write_delayed(SER_FIXNUM | (static_cast<int>(w64) & 0x1f), msg);
             }
             else
             {   char msg[40];
@@ -3149,16 +3149,16 @@ up:
 // the more general VECTOR case both because symbols are common and
 // because their headers are formatted differently to other vectors, so
 // this simplifies the task of sorting out how to re-tag things.
-            w = *(LispObject *)(b - BACKPOINTER_SYMBOL);
-            *(LispObject *)(b - BACKPOINTER_SYMBOL) = p;
+            w = *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = p;
             b = b - CELL;
-            p = *(LispObject *)(b - BACKPOINTER_SYMBOL);
+            p = *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
             if (is_symbol_header_full_test(p))
             {   p = b - BACKPOINTER_SYMBOL + TAG_SYMBOL;
                 b = w;
                 goto up;
             }
-            *(LispObject *)(b - BACKPOINTER_SYMBOL) = w;
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = w;
             goto down;
 
         case BACKPOINTER_VECTOR:
@@ -3168,10 +3168,10 @@ up:
 // had originally been tagged as SYMBOL, VECTOR or NUMBERS. Note that the
 // fact that I am RETURNING to a vector means it must have been a vector
 // that contained pointers...
-            w = *(LispObject *)(b - BACKPOINTER_VECTOR);
-            *(LispObject *)(b - BACKPOINTER_VECTOR) = p;
+            w = *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR);
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR) = p;
             b = b - CELL;
-            p = *(LispObject *)(b - BACKPOINTER_VECTOR);
+            p = *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR);
 // The item I am scanning back over is either a number (in fact a ratio
 // or a complex number) in which case it will need to be re-tagged with
 // TAG_NUMBERS, and the test here detects its header...
@@ -3188,7 +3188,7 @@ up:
                 b = w;
                 goto up;
             }
-            *(LispObject *)(b - BACKPOINTER_VECTOR) = w;
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR) = w;
             goto down;
     }
 }
@@ -3202,7 +3202,7 @@ public:
         {   repeat_heap_size = 0;
             std::free(repeat_heap);
         }
-        repeat_heap = NULL;
+        repeat_heap = nullptr;
     }
 };
 
@@ -3334,7 +3334,7 @@ static LispObject load_module(LispObject env, LispObject file,
     }
     else
     {   len = length_of_byteheader(h) - CELL;
-        modname = (char *)file + CELL - TAG_VECTOR;
+        modname = reinterpret_cast<char *>(file) + CELL - TAG_VECTOR;
         modname = trim_module_name(modname, &len);
         if (Iopen(modname, len, IOPEN_IN, filename))
         {   err_printf("Failed to find \"%s\"\n", filename);
@@ -3375,7 +3375,7 @@ static LispObject load_module(LispObject env, LispObject file,
         {   stack = save;
 // This is some tidy-up activity that I must always do at the end of
 // reading (or trying to read) something.
-            repeat_heap = NULL;
+            repeat_heap = nullptr;
             LispObject p;
             pop(p);
             setvalue(current_package, p);
@@ -3410,7 +3410,7 @@ static LispObject load_module(LispObject env, LispObject file,
 // I will process the stuff I just read AFTER I have closed the stream
 // etc. That will mean I never try using nested reading of fasl streams.
     if (option == F_LOAD_MODULE)
-    {   (void)eval(r, nil);
+    {   static_cast<void>(eval(r, nil));
     }
     else
     {
@@ -3549,7 +3549,7 @@ LispObject Lunserialize(LispObject env)
     {   repeat_heap_size = 0;
         std::free(repeat_heap);
     }
-    repeat_heap = NULL;
+    repeat_heap = nullptr;
     return onevalue(r);
 }
 
@@ -3668,8 +3668,8 @@ void write_everything()
         std::strcpy(trigger, "package nil scan");
         scan_data(qpackage(nil));
 // Next the major list-bases.
-        for (LispObject **p = list_bases; *p!=NULL; p++)
-        {   std::sprintf(trigger, "list base %p scan", (void *)**p);
+        for (LispObject **p = list_bases; *p!=nullptr; p++)
+        {   std::sprintf(trigger, "list base %p scan", reinterpret_cast<void *>(**p));
             scan_data(**p);
         }
     }
@@ -3707,8 +3707,8 @@ void write_everything()
     write_data(qfastgets(nil));
     std::strcpy(trigger, "package of nil write");
     write_data(qpackage(nil));
-    for (LispObject **p = list_bases; *p!=NULL; p++)
-    {   std::sprintf(trigger, "list base %p write", (void *)**p);
+    for (LispObject **p = list_bases; *p!=nullptr; p++)
+    {   std::sprintf(trigger, "list base %p write", reinterpret_cast<void *>(**p));
         write_data(**p);
     }
 // Tidy up at the end. I do not logically need an explicit end of data marker
@@ -3721,7 +3721,7 @@ void warm_setup()
 {   size_t i;
     set_up_function_tables();
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
-    for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
+    for (LispObject **p = list_bases; *p!=nullptr; p++) **p = nil;
     *stack = nil;
     qcount(nil) = zeroCount;
 // Make things GC safe first...
@@ -3740,7 +3740,7 @@ void warm_setup()
 
 #define boffo_size 256
     boffo = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
-    std::memset((void *)((char *)boffo + (CELL - TAG_VECTOR)), '@', boffo_size);
+    std::memset(reinterpret_cast<void *>(reinterpret_cast<char *>(boffo) + (CELL - TAG_VECTOR)), '@', boffo_size);
 
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
@@ -3781,11 +3781,11 @@ void warm_setup()
 // include all other symbols, and through them basically everything!
     setpackage(nil, serial_read());
 
-    for (LispObject **p = list_bases; *p!=NULL; p++) **p = serial_read();
+    for (LispObject **p = list_bases; *p!=nullptr; p++) **p = serial_read();
 
     if ((i = read_opcode_byte()) != SER_END)
     {   std::fprintf(stderr, "Did not find SER_END opcode where expected\n");
-        std::fprintf(stderr, "Byte that was read was %.2x\n", (int)i);
+        std::fprintf(stderr, "Byte that was read was %.2x\n", static_cast<int>(i));
         my_abort();
     }
     {   char endmsg[32];
@@ -3815,7 +3815,7 @@ void warm_setup()
     {   repeat_heap_size = 0;
         std::free(repeat_heap);
     }
-    repeat_heap = NULL;
+    repeat_heap = nullptr;
 
 // There are various things such as lispsystem* and the various standard
 // output streams that may depend on the particular system I am loading on
@@ -3899,7 +3899,7 @@ down:
             w = p;
             p = qpname(p);
             setpname(w, b);
-            b = (LispObject)pnameaddr(w) + BACKPOINTER_SYMBOL;
+            b = reinterpret_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
             goto down;
 
         case TAG_VECTOR:
@@ -3912,8 +3912,8 @@ down:
             else len = length_of_header(h);
             if (len == CELL) goto up;
             w = p + len - CELL - TAG_VECTOR;
-            p = *(LispObject *)w;
-            *(LispObject *)w = b;
+            p = *reinterpret_cast<LispObject *>(w);
+            *reinterpret_cast<LispObject *>(w) = b;
             b = w + BACKPOINTER_VECTOR;
             goto down;
 
@@ -3926,9 +3926,9 @@ down:
             len = length_of_header(h);
             if (len == CELL) goto up;
             w = p + len - CELL - TAG_NUMBERS;
-            p = *(LispObject *)w;
+            p = *reinterpret_cast<LispObject *>(w);
 my_assert(p != 0x7e65);
-            *(LispObject *)w = b;
+            *reinterpret_cast<LispObject *>(w) = b;
             b = w + BACKPOINTER_VECTOR;
             goto down;
 
@@ -3982,10 +3982,10 @@ my_assert(p != 0x7e65);
 
         case BACKPOINTER_SYMBOL:
             debug_record("push_symbols BACKPOINTER_SYMBOL");
-            w = *(LispObject *)(b - BACKPOINTER_SYMBOL);
-            *(LispObject *)(b - BACKPOINTER_SYMBOL) = p;
+            w = *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = p;
             b = b - CELL;
-            p = *(LispObject *)(b - BACKPOINTER_SYMBOL);
+            p = *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
 my_assert(p != 0x7e65);
             if (is_symbol_header_full_test(p))
             {   p = b - BACKPOINTER_SYMBOL + TAG_SYMBOL;
@@ -3993,15 +3993,15 @@ my_assert(p != 0x7e65);
                 b = w;
                 goto up;
             }
-            *(LispObject *)(b - BACKPOINTER_SYMBOL) = w;
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = w;
             goto down;
 
         case BACKPOINTER_VECTOR:
             debug_record("push_symbols BACKPOINTER_VECTOR");
-            w = *(LispObject *)(b - BACKPOINTER_VECTOR);
-            *(LispObject *)(b - BACKPOINTER_VECTOR) = p;
+            w = *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR);
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR) = p;
             b = b - CELL;
-            p = *(LispObject *)(b - BACKPOINTER_VECTOR);
+            p = *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR);
 my_assert(p != 0x7e65);
             if (is_number_header_full_test(p))
             {   p = b - BACKPOINTER_VECTOR + TAG_NUMBERS;
@@ -4014,7 +4014,7 @@ my_assert(p != 0x7e65);
                 b = w;
                 goto up;
             }
-            *(LispObject *)(b - BACKPOINTER_VECTOR) = w;
+            *reinterpret_cast<LispObject *>(b - BACKPOINTER_VECTOR) = w;
             goto down;
     }
 }
@@ -4039,8 +4039,8 @@ static bool push_all_symbols(symbol_processor_predicate *pp)
     if (push_symbols(pp, qfastgets(nil))) return true;
     std::strcpy(trigger, "package nil push");
     if (push_symbols(pp, qpackage(nil))) return true;
-    for (LispObject **p = list_bases; *p!=NULL; p++)
-    {   std::sprintf(trigger, "list base %p push", (void *)**p);
+    for (LispObject **p = list_bases; *p!=nullptr; p++)
+    {   std::sprintf(trigger, "list base %p push", reinterpret_cast<void *>(**p));
         if (push_symbols(pp, **p)) return true;
     }
     return false;
@@ -4057,7 +4057,7 @@ static bool interesting(LispObject x)
 {   LispObject ff;
     if ((ff = qfastgets(x)) != nil)
     {   for (int i=0; i<fastget_size; i++)
-            if ((LispObject)basic_elt(ff, i) != SPID_NOPROP) return true;
+            if (static_cast<LispObject>(basic_elt(ff, i)) != SPID_NOPROP) return true;
     }
     return (qfn1(x) != undefined_1 ||
             qplist(x) != nil ||
@@ -4143,7 +4143,7 @@ static bool count_totals(LispObject x)
     {   e = car(e);
         if (is_bps(e))
         {   size_t clen = length_of_byteheader(vechdr(e)) - CELL;
-            double w = (double)n/(double)clen;
+            double w = static_cast<double>(n)/static_cast<double>(clen);
 //
 // Here I want a measure that will give a good idea of how worthwhile it
 // would be to compile the given function into C - what I have chosen is
@@ -4156,7 +4156,7 @@ static bool count_totals(LispObject x)
 // a total of 100.0 (percent) to give comfortable ranges of numbers to admire.
 // To get the scaling correct I need to count the total "costs" of all
 // functions in a first pass.
-            itotal_count += (double)n;
+            itotal_count += static_cast<double>(n);
             total_count += w;
         }
     }
@@ -4186,7 +4186,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
 //     4  reset counts to zero
 // 
 {   int what;
-    mapstore_item *buff=NULL;
+    mapstore_item *buff=nullptr;
     size_t buffp=0, buffn=0;
     if (a == nil) a = fixnum_of_int(0);
     if (is_fixnum(a)) what = int_of_fixnum(a);
@@ -4201,7 +4201,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
     }
     if (what == 0 || what == 1)   // needed if I am printing
     {   buff = (mapstore_item *)std::malloc(100*sizeof(mapstore_item));
-        if (buff == NULL) return onevalue(nil); // fail
+        if (buff == nullptr) return onevalue(nil); // fail
         buffp = 0;
         buffn = 100;
     }
@@ -4224,24 +4224,24 @@ LispObject Lmapstore(LispObject env, LispObject a)
             {   e = car(e);
                 if (is_bps(e))
                 {   size_t clen = length_of_byteheader(vechdr(e)) - CELL;
-                    double w = (double)n/(double)clen;
+                    double w = static_cast<double>(n)/static_cast<double>(clen);
                     if (w/total_count > 0.00001 ||
-                        (double)n/itotal_count > 0.0001)
+                        static_cast<double>(n)/itotal_count > 0.0001)
                     {   if (what == 0 || what == 1)
                         {   if (buffp == buffn)
                             {   buffn += 100;
                                 buff = (mapstore_item *)
-                                       std::realloc((void *)buff,
+                                       std::realloc(reinterpret_cast<void *>(buff),
                                            sizeof(mapstore_item)*buffn);
-                                if (buff == NULL) return onevalue(nil);
+                                if (buff == nullptr) return onevalue(nil);
                             }
                             buff[buffp].w = 100.0*w/total_count;
-                            buff[buffp].n = 100.0*(double)n/itotal_count;
+                            buff[buffp].n = 100.0*static_cast<double>(n)/itotal_count;
                             buff[buffp].n1 = n;
                             LispObject pn = qpname(x);
                             size_t npn = length_of_byteheader(vechdr(pn)) - CELL;
                             if (npn >= 40) npn = 39;
-                            std::strncpy(buff[buffp].name, (const char *)&basic_celt(pn, 0), npn);
+                            std::strncpy(buff[buffp].name, reinterpret_cast<const char *>(&basic_celt(pn, 0)), npn);
                             buff[buffp].name[npn] = 0; 
                             buffp++;
                         }
@@ -4263,7 +4263,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
     }
     if (what == 0 || what == 1)
     {   double running = 0.0;
-        std::qsort((void *)buff, buffp, sizeof(buff[0]), profile_cf);
+        std::qsort(reinterpret_cast<void *>(buff), buffp, sizeof(buff[0]), profile_cf);
         trace_printf("\n  Value  %%bytes (So far) MBytecodes Function name\n");
         for (size_t j=0; j<buffp; j++)
         {   running += buff[j].n;
@@ -4273,7 +4273,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
             trace_printf("%s\n", buff[j].name);
         }
         trace_printf("\n");
-        std::free((void *)buff);
+        std::free(reinterpret_cast<void *>(buff));
     }
     return onevalue(r);
 }

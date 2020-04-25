@@ -227,7 +227,8 @@ inline double CSLpow(double x, double y)
 #include "cxx_shims.h"
 
 
-namespace FX {
+namespace FX
+{
 }
 
 using namespace FX;

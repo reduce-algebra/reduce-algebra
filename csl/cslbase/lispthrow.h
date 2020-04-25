@@ -73,7 +73,7 @@ inline void push3(LispObject a, LispObject b, LispObject c)
 }
 
 inline void push4(LispObject a, LispObject b, LispObject c,
-                         LispObject d)
+                  LispObject d)
 {   *++stack = a;
     *++stack = b;
     *++stack = c;
@@ -81,7 +81,7 @@ inline void push4(LispObject a, LispObject b, LispObject c,
 }
 
 inline void push5(LispObject a, LispObject b, LispObject c,
-                         LispObject d, LispObject e)
+                  LispObject d, LispObject e)
 {   *++stack = a;
     *++stack = b;
     *++stack = c;
@@ -90,7 +90,7 @@ inline void push5(LispObject a, LispObject b, LispObject c,
 }
 
 inline void push6(LispObject a, LispObject b, LispObject c,
-                         LispObject d, LispObject e, LispObject f)
+                  LispObject d, LispObject e, LispObject f)
 {   *++stack = a;
     *++stack = b;
     *++stack = c;
@@ -112,7 +112,8 @@ inline void push(LispObject a, LispObject b, LispObject c)
     *++stack = c;
 }
 
-inline void push(LispObject a, LispObject b, LispObject c, LispObject d)
+inline void push(LispObject a, LispObject b, LispObject c,
+                 LispObject d)
 {   *++stack = a;
     *++stack = b;
     *++stack = c;
@@ -158,7 +159,7 @@ inline void pop3(LispObject& a, LispObject& b, LispObject& c)
 }
 
 inline void pop4(LispObject& a, LispObject& b, LispObject& c,
-                        LispObject& d)
+                 LispObject& d)
 {   a = *stack--;
     b = *stack--;
     c = *stack--;
@@ -166,7 +167,7 @@ inline void pop4(LispObject& a, LispObject& b, LispObject& c,
 }
 
 inline void pop5(LispObject& a, LispObject& b, LispObject& c,
-                        LispObject& d, LispObject& e)
+                 LispObject& d, LispObject& e)
 {   a = *stack--;
     b = *stack--;
     c = *stack--;
@@ -175,7 +176,7 @@ inline void pop5(LispObject& a, LispObject& b, LispObject& c,
 }
 
 inline void pop6(LispObject& a, LispObject& b, LispObject& c,
-                        LispObject& d, LispObject& e, LispObject& f)
+                 LispObject& d, LispObject& e, LispObject& f)
 {   a = *stack--;
     b = *stack--;
     c = *stack--;
@@ -195,7 +196,8 @@ inline void pop(LispObject& a, LispObject& b, LispObject& c)
     c = *stack--;
 }
 
-inline void pop(LispObject& a, LispObject& b, LispObject& c, LispObject& d)
+inline void pop(LispObject& a, LispObject& b, LispObject& c,
+                LispObject& d)
 {   a = *stack--;
     b = *stack--;
     c = *stack--;
@@ -231,13 +233,13 @@ extern volatile int unwind_pending;
 extern void respond_to_stack_event();
 
 inline void stackcheck0()
-{   if_check_stack();                                         
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
         reinterpret_cast<uintptr_t>(stackLimit)) respond_to_stack_event();
 }
 
-inline void stackcheck1(LispObject& a1)                                   
-{   if_check_stack();                                        
+inline void stackcheck1(LispObject& a1)
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1);
@@ -246,8 +248,8 @@ inline void stackcheck1(LispObject& a1)
     }
 }
 
-inline void stackcheck2(LispObject& a1, LispObject& a2)                               
-{   if_check_stack();                                        
+inline void stackcheck2(LispObject& a1, LispObject& a2)
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2);
@@ -256,8 +258,9 @@ inline void stackcheck2(LispObject& a1, LispObject& a2)
     }
 }
 
-inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)                           
-{   if_check_stack();                                        
+inline void stackcheck3(LispObject& a1, LispObject& a2,
+                        LispObject& a3)
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2, a3);
@@ -266,8 +269,9 @@ inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)
     }
 }
 
-inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObject& a4)                       
-{   if_check_stack();                                        
+inline void stackcheck4(LispObject& a1, LispObject& a2,
+                        LispObject& a3, LispObject& a4)
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2, a3, a4);
@@ -279,13 +283,13 @@ inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObje
 // Now overloads...
 
 inline void stackcheck()
-{   if_check_stack();                                         
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
         reinterpret_cast<uintptr_t>(stackLimit)) respond_to_stack_event();
 }
 
-inline void stackcheck(LispObject& a1)        
-{   if_check_stack();                                        
+inline void stackcheck(LispObject& a1)
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1);
@@ -294,8 +298,8 @@ inline void stackcheck(LispObject& a1)
     }
 }
 
-inline void stackcheck(LispObject& a1, LispObject& a2)                               
-{   if_check_stack();                                        
+inline void stackcheck(LispObject& a1, LispObject& a2)
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2);
@@ -304,8 +308,8 @@ inline void stackcheck(LispObject& a1, LispObject& a2)
     }
 }
 
-inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)                           
-{   if_check_stack();                                        
+inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2, a3);
@@ -315,8 +319,8 @@ inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)
 }
 
 inline void stackcheck(LispObject& a1, LispObject& a2,
-                       LispObject& a3, LispObject& a4)                       
-{   if_check_stack();                                        
+                       LispObject& a3, LispObject& a4)
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag.load()) >=
         reinterpret_cast<uintptr_t>(stackLimit))
     {   push(a1, a2, a3, a4);
@@ -336,11 +340,11 @@ inline void respond_to_fringe_event(LispObject &r, const char *msg)
 // function gc-forcer. That sets a variable force_cons and each time
 // the system checks for space that is decremented. When it becomes zero
 // the respond_to_fringe_event() function is called with its second
-// argument NULL. No fringes have been messed with. The system should just
+// argument nullptr. No fringes have been messed with. The system should just
 // invoke the garbage collector and return. The intent here is to provide
 // a way to force garbage collection at specific (if rather hard to compute!)
 // moments.
-    if (msg == NULL)
+    if (msg == nullptr)
     {
 #ifdef CONSERVATIVE
         reclaim("gc-forcer");
@@ -439,9 +443,11 @@ public:
 #ifdef TRACE_FLUID
 // While I was debugging things being able to enable some printing here
 // seemed a good idea!
-        debug_printf("bind_fluid_stack(%d, %d, %d) @ %p\n", e, name, val, stack);
+        debug_printf("bind_fluid_stack(%d, %d, %d) @ %p\n", e, name, val,
+                     stack);
         debug_printf("name="); prin_to_debug(elt(savestack[e], name));
-        debug_printf(" old-val="); prin_to_debug(qvalue(elt(savestack[e], name)));
+        debug_printf(" old-val=");
+        prin_to_debug(qvalue(elt(savestack[e], name)));
         debug_printf("\n");
 #endif
         savestack[val] = qvalue(elt(savestack[e], name));
@@ -449,9 +455,12 @@ public:
     ~bind_fluid_stack()
     {
 #ifdef TRACE_FLUID
-        debug_printf("restore(%d, %d, %d) @ %p\n", env_loc, name_loc, val_loc, savestack);
-        debug_printf("name="); prin_to_debug(elt(savestack[env_loc], name_loc));
-        debug_printf(" local-val="); prin_to_debug(qvalue(elt(savestack[env_loc], name_loc)));
+        debug_printf("restore(%d, %d, %d) @ %p\n", env_loc, name_loc, val_loc,
+                     savestack);
+        debug_printf("name=");
+        prin_to_debug(elt(savestack[env_loc], name_loc));
+        debug_printf(" local-val=");
+        prin_to_debug(qvalue(elt(savestack[env_loc], name_loc)));
         debug_printf(" restored-val="); prin_to_debug(savestack[val_loc]);
         debug_printf("\n");
 #endif
@@ -485,52 +494,52 @@ struct LispException : public std::exception
 // Exceptions that count as "Errors" are or inherit from LispError, and
 // unwinding from one of them should lead to a backtrace.
 
-    struct LispError : public LispException
-    {   virtual const char *what() const throw()
-        {   return "Lisp Error";
-        }
-    };
+struct LispError : public LispException
+{   virtual const char *what() const throw()
+    {   return "Lisp Error";
+    }
+};
 
-        struct LispSignal : public LispError
-        {   virtual const char *what() const throw()
-            {   return "Lisp Signal";
-            }
-        };
+struct LispSignal : public LispError
+{   virtual const char *what() const throw()
+    {   return "Lisp Signal";
+    }
+};
 
 #endif // LISPEXCEPTION_DEFINED
 
-        struct LispResource : public LispError
-        {   virtual const char *what() const throw()
-            {   return "Lisp Resouce Limiter";
-            }
-        };
+struct LispResource : public LispError
+{   virtual const char *what() const throw()
+    {   return "Lisp Resouce Limiter";
+    }
+};
 
 // Things that are not LispErrors are exceptions used to the system to
 // support Lisp features - GO, RETURN, THROW and RESTART.
 
-    struct LispGo : public LispException
-    {   virtual const char *what() const throw()
-        {   return "Lisp Go";
-        }
-    };
+struct LispGo : public LispException
+{   virtual const char *what() const throw()
+    {   return "Lisp Go";
+    }
+};
 
-    struct LispReturnFrom : public LispException
-    {   virtual const char *what() const throw()
-        {   return "Lisp ReturnFrom";
-        }
-    };
+struct LispReturnFrom : public LispException
+{   virtual const char *what() const throw()
+    {   return "Lisp ReturnFrom";
+    }
+};
 
-    struct LispThrow : public LispException
-    {   virtual const char *what() const throw()
-        {   return "Lisp Throw";
-        }
-    };
+struct LispThrow : public LispException
+{   virtual const char *what() const throw()
+    {   return "Lisp Throw";
+    }
+};
 
-    struct LispRestart : public LispException
-    {   virtual const char *what() const throw()
-        {   return "Lisp Restart";
-        }
-    };
+struct LispRestart : public LispException
+{   virtual const char *what() const throw()
+    {   return "Lisp Restart";
+    }
+};
 
 // From C++17 the function uncaught_exception() is deprecated and a new
 // variant uncaught_exceptions() is introduced, and from C++20 the first
@@ -564,7 +573,8 @@ public:
         line = li;
         w = nil;
     }
-    RAIIstack_sanity(const char *fn, const char *fi, int li, LispObject ww)
+    RAIIstack_sanity(const char *fn, const char *fi, int li,
+                     LispObject ww)
     {   saveStack = stack;
         fname = fn;
         file = fi;
@@ -602,7 +612,7 @@ public:
 
 inline const char *tidy_filename(const char *a)
 {   const char *b = std::strrchr(a, '/');
-    return (b == NULL ? a : b+1);
+    return (b == nullptr ? a : b+1);
 }
 
 // If the (Lisp) stack were to get out of step with expectations the

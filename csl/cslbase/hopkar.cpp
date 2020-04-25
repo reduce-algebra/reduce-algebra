@@ -50,7 +50,8 @@
 #define MAXM  150000   // limit the number of edges joining A to B.
 
 // ACN has made these variable Thread Local.
-static __thread int n1, n2, edges, last[MAXN1], prev[MAXM], head[MAXM];
+static __thread int n1, n2, edges, last[MAXN1], prev[MAXM],
+       head[MAXM];
 static __thread int matching[MAXN2], dist[MAXN1], Q[MAXN1];
 static __thread int used[MAXN1], vis[MAXN1];
 

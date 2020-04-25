@@ -125,7 +125,8 @@ int pipedes[2];
 
 #include "wxfwin.h"
 
-int showmathInitialised = 1; // At present lie that it has been initialised!
+int showmathInitialised =
+    1; // At present lie that it has been initialised!
 
 static int returncode = 0;
 
@@ -150,9 +151,9 @@ static fwin_entrypoint *fwin_main_entry;
 static int fwin_argc;
 static const char **fwin_argv;
 
-int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main1)
-{
-    fwin_main_entry = fwin_main1;
+int windowed_worker(int argc, const char *argv[],
+                    fwin_entrypoint *fwin_main1)
+{   fwin_main_entry = fwin_main1;
     fwin_argc = argc;
     fwin_argv = argv;
 
@@ -249,8 +250,7 @@ IMPLEMENT_APP_NO_MAIN(fwinApp)
 // to the GUI thread.
 
 enum
-{
-    FILE_QUIT = wxID_EXIT,     // I give these two standard...
+{   FILE_QUIT = wxID_EXIT,     // I give these two standard...
     HELP_ABOUT = wxID_ABOUT,   // identities. Most other things are custom.
     TO_SCREEN = wxID_HIGHEST+1,
     SET_PROMPT,
@@ -595,7 +595,7 @@ BEGIN_EVENT_TABLE(fwinText, wxScrolledCanvas)
     EVT_THREAD(WORKER_FINISHED,   fwinText::OnWorkerFinished)
 END_EVENT_TABLE()
 
-fwinText *panel = NULL;
+fwinText *panel = nullptr;
 
 class fwinFrame : public wxFrame
 {
@@ -608,69 +608,101 @@ public:
     void OnClose(wxCloseEvent &event);
 // The various menu items are delegated to handlers in the text pane.
     void OnFileRead(wxCommandEvent &event)
-    {   panel->OnFileRead(); };
+    {   panel->OnFileRead();
+    };
     void OnFileSave(wxCommandEvent &event)
-    {   panel->OnFileSave(); };
+    {   panel->OnFileSave();
+    };
     void OnFileSaveSelection(wxCommandEvent &event)
-    {   panel->OnFileSaveSelection(); };
+    {   panel->OnFileSaveSelection();
+    };
     void OnFilePageSetup(wxCommandEvent &event)
-    {   panel->OnFilePageSetup(); };
+    {   panel->OnFilePageSetup();
+    };
     void OnFilePrint(wxCommandEvent &event)
-    {   panel->OnFilePrint(); };
+    {   panel->OnFilePrint();
+    };
     void OnFilePrintPreview(wxCommandEvent &event)
-    {   panel->OnFilePrintPreview(); };
+    {   panel->OnFilePrintPreview();
+    };
     void OnEditCut(wxCommandEvent &event)
-    {   panel->OnEditCut(); };
+    {   panel->OnEditCut();
+    };
     void OnEditCopy(wxCommandEvent &event)
-    {   panel->OnEditCopy(); };
+    {   panel->OnEditCopy();
+    };
     void OnEditCopyText(wxCommandEvent &event)
-    {   panel->OnEditCopyText(); };
+    {   panel->OnEditCopyText();
+    };
     void OnEditPaste(wxCommandEvent &event)
-    {   panel->OnEditPaste(); };
+    {   panel->OnEditPaste();
+    };
     void OnEditReinput(wxCommandEvent &event)
-    {   panel->OnEditReinput(); };
+    {   panel->OnEditReinput();
+    };
     void OnEditSelectAll(wxCommandEvent &event)
-    {   panel->OnEditSelectAll(); };
+    {   panel->OnEditSelectAll();
+    };
     void OnEditClear(wxCommandEvent &event)
-    {   panel->OnEditClear(); };
+    {   panel->OnEditClear();
+    };
     void OnEditRedraw(wxCommandEvent &event)
-    {   panel->OnEditRedraw(); };
+    {   panel->OnEditRedraw();
+    };
     void OnEditHome(wxCommandEvent &event)
-    {   panel->OnEditHome(); };
+    {   panel->OnEditHome();
+    };
     void OnEditEnd(wxCommandEvent &event)
-    {   panel->OnEditEnd(); };
+    {   panel->OnEditEnd();
+    };
     void OnFontPoint10(wxCommandEvent &event)
-    {   panel->OnFontPoint10(); };
+    {   panel->OnFontPoint10();
+    };
     void OnFontPoint12(wxCommandEvent &event)
-    {   panel->OnFontPoint12(); };
+    {   panel->OnFontPoint12();
+    };
     void OnFontPoint14(wxCommandEvent &event)
-    {   panel->OnFontPoint14(); };
+    {   panel->OnFontPoint14();
+    };
     void OnFontPoint17(wxCommandEvent &event)
-    {   panel->OnFontPoint17(); };
+    {   panel->OnFontPoint17();
+    };
     void OnFontPoint20(wxCommandEvent &event)
-    {   panel->OnFontPoint20(); };
+    {   panel->OnFontPoint20();
+    };
     void OnFontPoint24(wxCommandEvent &event)
-    {   panel->OnFontPoint24(); };
+    {   panel->OnFontPoint24();
+    };
     void OnFontPoint28(wxCommandEvent &event)
-    {   panel->OnFontPoint28(); };
+    {   panel->OnFontPoint28();
+    };
     void OnFontPoint34(wxCommandEvent &event)
-    {   panel->OnFontPoint34(); };
+    {   panel->OnFontPoint34();
+    };
     void OnFontPoint40(wxCommandEvent &event)
-    {   panel->OnFontPoint40(); };
+    {   panel->OnFontPoint40();
+    };
     void OnBreakBreak(wxCommandEvent &event)
-    {   panel->OnBreakBreak(); };
+    {   panel->OnBreakBreak();
+    };
     void OnBreakBacktrace(wxCommandEvent &event)
-    {   panel->OnBreakBacktrace(); };
+    {   panel->OnBreakBacktrace();
+    };
     void OnBreakPause(wxCommandEvent &event)
-    {   panel->OnBreakPause(); };
+    {   panel->OnBreakPause();
+    };
     void OnBreakResume(wxCommandEvent &event)
-    {   panel->OnBreakResume(); };
+    {   panel->OnBreakResume();
+    };
     void OnBreakStopGo(wxCommandEvent &event)
-    {   panel->OnBreakStopGo(); };
+    {   panel->OnBreakStopGo();
+    };
     void OnBreakDiscardOutput(wxCommandEvent &event)
-    {   panel->OnBreakDiscardOutput(); };
+    {   panel->OnBreakDiscardOutput();
+    };
     void OnHelpHelp(wxCommandEvent &event)
-    {   panel->OnHelpHelp(); };
+    {   panel->OnHelpHelp();
+    };
 
     class fwinWorker *worker;
     void CloseAction();
@@ -727,12 +759,12 @@ class fwinWorker : public wxThread
 public:
     fwinWorker(fwinText *p)
         : wxThread(wxTHREAD_DETACHED)
-        {   parent = p;
-            shouldExit = false;
-        };
-   ~fwinWorker();
+    {   parent = p;
+        shouldExit = false;
+    };
+    ~fwinWorker();
     void DoExit()
-    {   Exit(NULL);
+    {   Exit(nullptr);
     };
     void sendToScreen(wxString s); // for debugging
 private:
@@ -745,7 +777,9 @@ class fwinPrintout: public wxPrintout
 {
 public:
     fwinPrintout(fwinText* p, const wxString &title = "wxfwin printout")
-        : wxPrintout(title) { parent = p; }
+        : wxPrintout(title)
+    {   parent = p;
+    }
 
     void GetPageInfo(int *minPage, int *maxPage, int *from, int *to);
     bool HasPage(int page);
@@ -757,14 +791,12 @@ private:
 
 
 fwinWorker::~fwinWorker()
-{
-    wxCriticalSectionLocker lock(panel->work);
-    panel->frame->worker = NULL;
+{   wxCriticalSectionLocker lock(panel->work);
+    panel->frame->worker = nullptr;
 }
 
 void fwinText::OnWorkerFinished(wxThreadEvent& event)
-{
-    FWIN_LOG("worker thread terminated\n");
+{   FWIN_LOG("worker thread terminated\n");
 // In which case quit!
     Destroy();
     std::exit(returncode);
@@ -773,25 +805,23 @@ void fwinText::OnWorkerFinished(wxThreadEvent& event)
 
 
 wxThread::ExitCode fwinWorker::Entry()
-{
-    int rc = (*fwin_main_entry)(fwin_argc, fwin_argv);
+{   int rc = (*fwin_main_entry)(fwin_argc, fwin_argv);
     fwin_ensure_screen();
 #define pause_on_exit 0
     FWIN_LOG("return from fwin_main_entry is %d pause_on_exit=%d\n",
              rc, pause_on_exit);
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, WORKER_FINISHED);
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD,
+            WORKER_FINISHED);
     wxQueueEvent(panel, event);
     return (wxThread::ExitCode)(intptr_t)rc;
 }
 
 int get_current_directory(char *s, int n)
-{
-    if (getcwd(s, n) == 0)
+{   if (getcwd(s, n) == 0)
     {   switch(errno)
-        {
-    case ERANGE: return -2; // negative return value flags an error.
-    case EACCES: return -3;
-    default:     return -4;
+        {   case ERANGE: return -2; // negative return value flags an error.
+            case EACCES: return -3;
+            default:     return -4;
         }
     }
     else return std::strlen(s);
@@ -818,8 +848,8 @@ int get_current_directory(char *s, int n)
 // using a jiffy Java program, and at present related to the 0.6.3a version
 // of the font concerned.
 
-uint32_t cmtt_coverage[2048] = {
-    0x00640000, 0xffffffff, 0xffffffff, 0xfffffffe,
+uint32_t cmtt_coverage[2048] =
+{   0x00640000, 0xffffffff, 0xffffffff, 0xfffffffe,
     0x00000000, 0xffffffff, 0xffffffff, 0xffffffff,
     0xffffffff, 0xcdfcfc66, 0x79bffcff, 0xfcffcfff,
     0x8283a472, 0xc5b58161, 0xfffff804, 0x33c0fccf,
@@ -1384,17 +1414,15 @@ int fwinText::MapChar(int c)
 
 
 bool fwinApp::OnInit()
-{
-    add_custom_fonts();
+{   add_custom_fonts();
     fwinFrame *frame = new fwinFrame();
     frame->Show(true);
     return true;
 }
 
 fwinFrame::fwinFrame()
-       : wxFrame(NULL, wxID_ANY, "wxfwin")
-{
-    SetIcon(wxICON(fwin));
+    : wxFrame(nullptr, wxID_ANY, "wxfwin")
+{   SetIcon(wxICON(fwin));
 // I will set up some menus here
     wxMenu *fileMenu = new wxMenu;
     wxMenu *editMenu = new wxMenu;
@@ -1406,10 +1434,12 @@ fwinFrame::fwinFrame()
 
     fileMenu->Append(FILE_READ, "&Read...", "Read a file");
     fileMenu->Append(FILE_SAVE, "&Save...", "Save to a file");
-    fileMenu->Append(FILE_SAVE_SELECTION, "Save Se&lection", "Save selection");
+    fileMenu->Append(FILE_SAVE_SELECTION, "Save Se&lection",
+                     "Save selection");
     fileMenu->Append(FILE_PAGE_SETUP, "Page Se&tup", "Page setup");
     fileMenu->Append(FILE_PRINT, "&Print", "Print");
-    fileMenu->Append(FILE_PRINT_PREVIEW, "Pri&nt Preview", "Print Preview");
+    fileMenu->Append(FILE_PRINT_PREVIEW, "Pri&nt Preview",
+                     "Print Preview");
     fileMenu->Append(FILE_QUIT, "&Quit\tCtrl+\\", "Quit");
 
     editMenu->Append(EDIT_CUT, "&Cut", "Cut");
@@ -1429,22 +1459,32 @@ fwinFrame::fwinFrame()
     fontMenu->AppendSeparator();
 // The next line is a hack that keeps the two sets of radio buttons separate.
     fontMenu->Remove(fontMenu->Append(FONT_DUMMY, "dummy"));
-    fontMenu->AppendRadioItem(FONT_POINT10, "&10 points", "Use nominally 10 point font");
-    fontMenu->AppendRadioItem(FONT_POINT12, "1&2 points", "Use nominally 12 point font");
-    fontMenu->AppendRadioItem(FONT_POINT14, "1&4 points", "Use nominally 14 point font");
-    fontMenu->AppendRadioItem(FONT_POINT17, "1&7 points", "Use nominally 17 point font");
-    fontMenu->AppendRadioItem(FONT_POINT20, "20 &points", "Use nominally 20 point font");
-    fontMenu->AppendRadioItem(FONT_POINT24, "24 p&oints", "Use nominally 24 point font");
-    fontMenu->AppendRadioItem(FONT_POINT28, "28 po&ints", "Use nominally 28 point font");
-    fontMenu->AppendRadioItem(FONT_POINT34, "34 poi&nts", "Use nominally 34 point font");
-    fontMenu->AppendRadioItem(FONT_POINT40, "40 poin&ts", "Use nominally 40 point font");
+    fontMenu->AppendRadioItem(FONT_POINT10, "&10 points",
+                              "Use nominally 10 point font");
+    fontMenu->AppendRadioItem(FONT_POINT12, "1&2 points",
+                              "Use nominally 12 point font");
+    fontMenu->AppendRadioItem(FONT_POINT14, "1&4 points",
+                              "Use nominally 14 point font");
+    fontMenu->AppendRadioItem(FONT_POINT17, "1&7 points",
+                              "Use nominally 17 point font");
+    fontMenu->AppendRadioItem(FONT_POINT20, "20 &points",
+                              "Use nominally 20 point font");
+    fontMenu->AppendRadioItem(FONT_POINT24, "24 p&oints",
+                              "Use nominally 24 point font");
+    fontMenu->AppendRadioItem(FONT_POINT28, "28 po&ints",
+                              "Use nominally 28 point font");
+    fontMenu->AppendRadioItem(FONT_POINT34, "34 poi&nts",
+                              "Use nominally 34 point font");
+    fontMenu->AppendRadioItem(FONT_POINT40, "40 poin&ts",
+                              "Use nominally 40 point font");
 
     breakMenu->Append(BREAK_BREAK, "&Break", "Break");
     breakMenu->Append(BREAK_BACKTRACE, "Bac&ktrace", "Backtrace");
     breakMenu->Append(BREAK_PAUSE, "&Pause", "Pause");
     breakMenu->Append(BREAK_RESUME, "&Resume", "Resume");
     breakMenu->Append(BREAK_STOP_GO, "&Stop/Go", "Stop/Go");
-    breakMenu->Append(BREAK_DISCARD_OUTPUT, "&Discard Output", "Discard Output");
+    breakMenu->Append(BREAK_DISCARD_OUTPUT, "&Discard Output",
+                      "Discard Output");
 
 // The "Load Package" and "Switch" menus get populated dynamically later on.
 
@@ -1501,7 +1541,8 @@ fwinFrame::fwinFrame()
     worker = new fwinWorker(panel);
     FWIN_LOG("worker = %p\n", worker);
     int rc = worker->Create(512*1024);  // Argument is stack size
-    if (rc != wxTHREAD_NO_ERROR) FWIN_LOG("Thread creation error = %d\n", rc);
+    if (rc != wxTHREAD_NO_ERROR) FWIN_LOG("Thread creation error = %d\n",
+                                              rc);
     rc = worker->Run();
     if (rc != wxTHREAD_NO_ERROR) FWIN_LOG("Thread run error = %d\n", rc);
 // Note horribly well that the pointer "worker" may become invalid at any
@@ -1512,17 +1553,16 @@ fwinFrame::fwinFrame()
     Centre();
 }
 
-static wxPrintData *printData = NULL;
-static wxPageSetupDialogData* pageSetupData = NULL;
+static wxPrintData *printData = nullptr;
+static wxPageSetupDialogData* pageSetupData = nullptr;
 
 fwinText::fwinText(fwinFrame *parent)
-       : wxScrolled<wxWindow>(parent, wxID_ANY,
-                    wxDefaultPosition, wxDefaultSize,
-                    wxVSCROLL, "fwinText")
-{
-    frame = parent;
+    : wxScrolled<wxWindow>(parent, wxID_ANY,
+                           wxDefaultPosition, wxDefaultSize,
+                           wxVSCROLL, "fwinText")
+{   frame = parent;
     sbWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X, this);
-    fixedPitch = fixedCJK = NULL;
+    fixedPitch = fixedCJK = nullptr;
 // The available CJK fonts here are
 //     AR PL New Sung
     wxColour c1(230, 200, 255);
@@ -1540,7 +1580,7 @@ fwinText::fwinText(fwinFrame *parent)
     textBuffer = (uint32_t *)std::malloc(textBufferSize*sizeof(uint32_t));
     textEnd = 0;
     searchFlags = 0;
-    caret = NULL;
+    caret = nullptr;
     caretPos = 0;
     promptEnd = -1;
     options = 0;
@@ -1554,7 +1594,8 @@ fwinText::fwinText(fwinFrame *parent)
     use_buffer1 = 1;
 
     inputBufferSize = INITIAL_INPUT_BUFFER_SIZE;
-    inputBuffer = (unsigned char *)std::malloc(inputBufferSize);
+    inputBuffer = reinterpret_cast<unsigned char *>(std)::malloc(
+                      inputBufferSize);
     inputBufferP = inputBufferLen = 0;
     awaiting = 0;
     unicodePrompt[0] = '>' | 0x02000000;
@@ -1566,7 +1607,7 @@ fwinText::fwinText(fwinFrame *parent)
     pageSetupData->SetMarginTopLeft(wxPoint(20, 20));
     pageSetupData->SetMarginBottomRight(wxPoint(20, 20));
 
-    logfile = NULL; // a menu option will establish this to keep a log.
+    logfile = nullptr; // a menu option will establish this to keep a log.
 
     writing.Post(); // enable output!
 }
@@ -1585,14 +1626,13 @@ fwinText::fwinText(fwinFrame *parent)
 
 void fwinText::setSelectionMark()
 {
-//  return onCmdMark(this, 0, NULL);
+//  return onCmdMark(this, 0, nullptr);
 }
 
 // ^A   move to start of current line (after any prompt text!)
 
 void fwinText::moveLineStart()
-{
-    if (caretPos==textEnd && caretPos!=0) caretPos--;
+{   if (caretPos==textEnd && caretPos!=0) caretPos--;
     if (caretPos==0 || TXT(caretPos) == '\n')  // already at start of line
     {   beep();
         return;
@@ -1620,8 +1660,7 @@ void fwinText::moveLeft()
 // ALT-B move back a word
 
 void fwinText::moveWordLeft()
-{
-    if (caretPos == 0)
+{   if (caretPos == 0)
     {   beep();
         return;
     }
@@ -1647,7 +1686,7 @@ void fwinText::interrupt()
 {
 #ifdef RECONSTRUCTED
 // Note that ^C generates a break action whether I am waiting for input or not.
-    onCmdBreak(this, 0, NULL);;
+    onCmdBreak(this, 0, nullptr);;
 #endif
 }
 
@@ -1682,8 +1721,7 @@ void fwinText::capitalize()
 // ^D  delete n characters under cursor (fowards)
 
 void fwinText::deleteForwards(int n)
-{
-    deleteChars(n);
+{   deleteChars(n);
     repositionCaret();
 }
 
@@ -1699,7 +1737,7 @@ void fwinText::deleteWordForwards()
     {   beep();
         return;
     }
-    onCmdDeleteWord(this, 0, NULL);
+    onCmdDeleteWord(this, 0, nullptr);
 #endif
 }
 
@@ -1709,15 +1747,14 @@ void fwinText::moveLineEnd()
 {
 #ifdef RECONSTRUCTED
 // extend selection?
-//    onCmdCursorEnd(this, 0, NULL);
+//    onCmdCursorEnd(this, 0, nullptr);
 #endif
 }
 
 // ^F  forward one character
 
 void fwinText::moveRight()
-{
-    if (caretPos == textEnd)
+{   if (caretPos == textEnd)
     {   beep();
         return;
     }
@@ -1731,7 +1768,7 @@ void fwinText::moveWordRight()
 {
 #ifdef RECONSTRUCTED
 // If the mark is set maybe I should extend the selection...
-//    onCmdCursorWordRight(this, 0, NULL);
+//    onCmdCursorWordRight(this, 0, nullptr);
 #endif
 }
 
@@ -1745,7 +1782,7 @@ void fwinText::displayBacktrace()
 {
 #ifdef RECONSTRUCTED
     if (!isEditable())
-    {   onCmdBacktrace(this, 0, NULL);
+    {   onCmdBacktrace(this, 0, nullptr);
     }
     killSelection();
     setInputText((const unsigned char *)"");
@@ -1757,8 +1794,7 @@ void fwinText::displayBacktrace()
 // ^H  (backspace) delete char before cursor if that is reasonable.
 
 void fwinText::deleteBackwards(int n)
-{
-    caretPos -= n;
+{   caretPos -= n;
     deleteChars(n);
     repositionCaret();
 }
@@ -1770,21 +1806,20 @@ void fwinText::deleteWordBackwards()
 #ifdef RECONSTRUCTED
     int pos;
     switch (isEditableForBackspace())
-    {
-default:                // within the area for active editing.
+{       default:                // within the area for active editing.
 // I want to be confident that whatever prompt string has been set the
 // following will never delete part of the prompt...
-        pos = leftWord(caretPos);
-        if (pos < promptEnd) pos = promptEnd;
-        removeText(pos, caretPos-pos, TRUE);
-        setCaretPos(caretPos, TRUE);
-        makePositionVisible(caretPos);
-        flags |= FLAG_CHANGED;
-        modified = TRUE;
-        return;
-case -1:                // current input line is empty.
-case 0:                 // input is not active
-        beep();
+            pos = leftWord(caretPos);
+            if (pos < promptEnd) pos = promptEnd;
+            removeText(pos, caretPos-pos, TRUE);
+            setCaretPos(caretPos, TRUE);
+            makePositionVisible(caretPos);
+            flags |= FLAG_CHANGED;
+            modified = TRUE;
+            return;
+        case -1:                // current input line is empty.
+        case 0:                 // input is not active
+            beep();
     }
 #endif
 }
@@ -1799,8 +1834,7 @@ case 0:                 // input is not active
 // user to make selections using the keyboard...
 
 void fwinText::deleteCurrentLine()
-{
-    killSelection();
+{   killSelection();
     setInputText((const unsigned char *)"");
 }
 
@@ -1845,8 +1879,7 @@ void fwinText::lowerCase()
 // index of the first character of the inserted line.
 
 int fwinText::setInputText(const unsigned char *text)
-{
-    caretPos = promptEnd;
+{   caretPos = promptEnd;
     deleteChars(textEnd - promptEnd);
     makePositionVisible(caretPos);
     return caretPos;
@@ -1864,7 +1897,7 @@ void fwinText::historyNext()
         return;
     }
     if (historyNumber < historyLast) historyNumber++;
-    if ((history_string = historyGet(historyNumber)) == NULL)
+    if ((history_string = historyGet(historyNumber)) == nullptr)
     {   beep();
         return;
     }
@@ -1924,12 +1957,12 @@ void fwinText::searchHistoryNext()
 
 
 int fwinText::trySearch()
-{
-    int r = -1;
+{   int r = -1;
 #ifdef RECONSTRUCTED
     const unsigned char *history_string = historyGet(historyNumber);
-    if (history_string == NULL) return -1;
-    while ((r = matchString(searchString, SEARCH_LENGTH, history_string)) < 0)
+    if (history_string == nullptr) return -1;
+    while ((r = matchString(searchString, SEARCH_LENGTH,
+                            history_string)) < 0)
     {   if (searchFlags & SEARCH_FORWARD)
         {   if (historyNumber == historyLast) return -1;
             historyNumber++;
@@ -1939,7 +1972,7 @@ int fwinText::trySearch()
             historyNumber--;
         }
         history_string = historyGet(historyNumber);
-        if (history_string == NULL) return -1;
+        if (history_string == nullptr) return -1;
     }
 #endif
     return r;
@@ -1952,7 +1985,7 @@ int fwinText::matchString(const char *pat, int n, const char *text)
 // a match first occurred (if one does) in case that will be useful to me
 // later. I could put the cursor there, perhaps?
     int offset;
-    for (offset=0;*(text+offset)!=0;offset++)
+    for (offset=0; *(text+offset)!=0; offset++)
     {   const char *p = pat, *q = text+offset;
         int i;
         for (i=0; i<n; i++)
@@ -1975,7 +2008,7 @@ void fwinText::historyPrev()
 // range of valid history entries.
     if (historyNumber > historyFirst) historyNumber--;
     history_string = historyGet(historyNumber);
-    if (history_string == NULL)
+    if (history_string == nullptr)
     {   beep();
         return;
     }
@@ -2062,7 +2095,7 @@ void fwinText::paste()
     {   beep();
         return;
     }
-    onCmdPasteSel(this, 0, NULL);
+    onCmdPasteSel(this, 0, nullptr);
 #endif
 }
 
@@ -2080,8 +2113,7 @@ void fwinText::rotateClipboard()
 // ALT-[, ESCAPE
 
 void fwinText::escapePressed()
-{
-    keyFlags ^= ESC_PENDING; // so that ESC ESC cancels the effect.
+{   keyFlags ^= ESC_PENDING; // so that ESC ESC cancels the effect.
 }
 
 void fwinText::reinput()
@@ -2091,7 +2123,7 @@ void fwinText::reinput()
     {   beep();
         return;
     }
-    onCmdReinput(this, 0, NULL);
+    onCmdReinput(this, 0, nullptr);
 #endif
 }
 
@@ -2146,8 +2178,7 @@ int fwinText::isEditableForBackspace()
 }
 
 void fwinText::insertNewline()
-{
-    caretPos = textEnd;
+{   caretPos = textEnd;
     insertChar('\n');
 // stuff from promptEnd to textEnd should now be moved to inputBuffer.
     int n = 0;
@@ -2157,7 +2188,8 @@ void fwinText::insertNewline()
         FWIN_LOG("Move char %x (%c) to posn %d in inputBuffer\n", c, c, n);
         if (n > inputBufferSize - 5)
         {   inputBufferSize = (4*inputBufferSize)/3;
-            inputBuffer = (unsigned char *)std::realloc(inputBuffer, inputBufferSize);
+            inputBuffer = reinterpret_cast<unsigned char *>(std)::realloc(
+                              inputBuffer, inputBufferSize);
         }
         n += utf_encode(&inputBuffer[n], c);
     }
@@ -2237,13 +2269,11 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
 }
 
 void fwinText::insertChar(uint32_t ch)
-{
-    insertChars(&ch, 1);
+{   insertChars(&ch, 1);
 }
 
 void fwinText::insertString(wxString s)
-{
-    size_t n = s.Len();
+{   size_t n = s.Len();
 // insertString has a LIMITED capability as regarsd the string length.
 // it is probably onnly really intended for debugging use.
     if (n > 100)
@@ -2252,7 +2282,7 @@ void fwinText::insertString(wxString s)
     }
     uint32_t b[100];
     for (size_t i=0; i<n; i++) b[i] = s.GetChar(i);
-    insertChars(b, (int)n);
+    insertChars(b, static_cast<int>(n));
 }
 
 // I rather believe that all edits can be brought down to combinations
@@ -2266,8 +2296,7 @@ void fwinText::insertString(wxString s)
 // new material.
 
 void fwinText::insertChars(uint32_t *pch, int n)
-{
-    int32_t loc1 = locateChar(caretPos);
+{   int32_t loc1 = locateChar(caretPos);
     int r1 = ROW(loc1), c1 = COL(loc1);
 // I find the location of the end of the line that the character I am
 // about to insert will be on.
@@ -2300,7 +2329,7 @@ void fwinText::insertChars(uint32_t *pch, int n)
     {   virtualRowCount = r3;
         SetVirtualSize(wxDefaultCoord, rowHeight*(virtualRowCount+1));
     }
-    if (caret != NULL && caret->IsVisible()) repositionCaret();
+    if (caret != nullptr && caret->IsVisible()) repositionCaret();
 // When I end up with coordinated I need them to reflect scrolling.
     int x = 0, y = 0;
     CalcScrolledPosition(0, r1*rowHeight, &x, &y);
@@ -2312,7 +2341,8 @@ void fwinText::insertChars(uint32_t *pch, int n)
     {   RefreshRect(wxRect(columnPos[c1], y,
                            columnPos[c3], rowHeight));
     }
-    else if (r2 == r3)        // several rows involved, but row count unchanged
+    else if (r2 ==
+             r3)        // several rows involved, but row count unchanged
     {   RefreshRect(wxRect(columnPos[c1], y,
                            columnPos[80], rowHeight));
 // Here I will refresh the first row from caretPos up until its end,
@@ -2336,8 +2366,7 @@ void fwinText::replaceChars(uint32_t *pch, int n)
 }
 
 void fwinText::deleteChars(int n)
-{
-    int32_t loc1 = locateChar(caretPos);
+{   int32_t loc1 = locateChar(caretPos);
     int r1 = ROW(loc1), c1 = COL(loc1);
     int eol = caretPos+n;
 // Find the line-end just beyond all the deleted characters.
@@ -2388,8 +2417,7 @@ void fwinText::deleteChars(int n)
 
 
 void fwinText::makePositionVisible(int p)
-{
-    int32_t loc = locateChar(p);
+{   int32_t loc = locateChar(p);
     int r = ROW(loc);
     int x, y;
     CalcScrolledPosition(0, r*rowHeight, &x, &y);
@@ -2475,13 +2503,12 @@ void fwinText::unicodeInput()
 
 
 void fwinText::ctrlXcommand()
-{
-    uniname *p = unicode_names;
+{   uniname *p = unicode_names;
     int i = 0;
     const char *s;
     insertString("\n");
     uint32_t buffer[100];
-    while ((s = p->name) != NULL)
+    while ((s = p->name) != nullptr)
     {   int j = 0;
         char h[8];
 //        if (CMTT_AVAIL(p->code))
@@ -2663,7 +2690,7 @@ void fwinFrame::CloseAction()
 // to close down. It SEEMS that the call to Delete() here will not
 // actually return to me until it has been processed.
     {   wxCriticalSectionLocker lock(panel->work);
-        if (panel->frame->worker != NULL)
+        if (panel->frame->worker != nullptr)
         {   FWIN_LOG("About to ask the worker to stop\n");
             FWIN_LOG("%p %p %p\n", panel, panel->frame, panel->frame->worker);
             panel->frame->worker->Delete();
@@ -2677,15 +2704,15 @@ void fwinFrame::CloseAction()
 // I will then give it 100ms to do so. Within that time it will need to
 // call TestDestroy() in order to notice my request.
     if (!closedDown) for (int i=0; i<10; i++)
-    {   FWIN_LOG("Poll %d for worker finished\n", i);
-        {   wxCriticalSectionLocker lock(panel->work);
-            if (panel->frame->worker == NULL)
-            {   closedDown = true;
-                break;
+        {   FWIN_LOG("Poll %d for worker finished\n", i);
+            {   wxCriticalSectionLocker lock(panel->work);
+                if (panel->frame->worker == nullptr)
+                {   closedDown = true;
+                    break;
+                }
             }
+            wxMilliSleep(10);
         }
-        wxMilliSleep(10);
-    }
 // If it is still alive after that (rather brief) chance to clean up
 // tidily I will apply extreme prejudice and dispose of the worker
 // forcibly.
@@ -2697,7 +2724,7 @@ void fwinFrame::CloseAction()
 // happen and it does not clean up memory. However when I do it here I am
 // just about to exit from my entire application, so I think I do not mind
 // very much. But using Delete() first might be kind...
-        if (panel->frame->worker != NULL)
+        if (panel->frame->worker != nullptr)
         {   FWIN_LOG("About to kill the worker\n");
             panel->frame->worker->Kill();
         }
@@ -2709,75 +2736,67 @@ void fwinFrame::CloseAction()
 }
 
 void fwinFrame::OnClose(wxCloseEvent &event)
-{
-    CloseAction();
+{   CloseAction();
 }
 
 void fwinFrame::OnExit(wxCommandEvent &event)
-{
-    CloseAction();
+{   CloseAction();
 }
 
 void fwinFrame::OnAbout(wxCommandEvent &event)
-{
-    wxMessageBox(
-       wxString::Format(
-           "wxfwin (A C Norman 2010-11)\n"
-           "wxWidgets version: %s\n"
-           "Operating system: %s",
-           wxVERSION_STRING,
-           wxGetOsDescription()),
-       "About wxfwin",
-       wxOK | wxICON_INFORMATION,
-       this);
+{   wxMessageBox(
+        wxString::Format(
+            "wxfwin (A C Norman 2010-11)\n"
+            "wxWidgets version: %s\n"
+            "Operating system: %s",
+            wxVERSION_STRING,
+            wxGetOsDescription()),
+        "About wxfwin",
+        wxOK | wxICON_INFORMATION,
+        this);
 }
 
 
 void fwinFrame::OnSize(wxSizeEvent &event)
-{
-    int i;
+{   int i;
     double w;
     FWIN_LOG("OnSize\n");
-    if (panel == NULL) return; // too early!
+    if (panel == nullptr) return; // too early!
     wxSize client(GetClientSize());
-    w = ((double)(client.GetWidth() - panel->sbWidth))/80.0;
+    w = (static_cast<double>(client.GetWidth() - panel->sbWidth))/80.0;
     panel->SetSize(client);
     panel->firstPaint = true;
     for (i=0; i<81; i++)
-        panel->columnPos[i] = (int)((double)i*w);
+        panel->columnPos[i] = static_cast<int>(static_cast<double>(i)*w);
 // When I resize the window I will refresh EVERYTHING, because the font
 // size may change.
     panel->Refresh();
 }
 
 void fwinText::enlargeTextBuffer()
-{
-    textBufferSize *= 2;
+{   textBufferSize *= 2;
     textBuffer =
         (uint32_t *)std::realloc(textBuffer, textBufferSize*sizeof(uint32_t));
-    if (textBuffer == NULL) std::exit(1); // Abrupt collapse on no memory.
+    if (textBuffer == nullptr) std::exit(
+            1); // Abrupt collapse on no memory.
 }
 
 // Now I have handlers for the menu items used here...
 
 void fwinText::OnFileRead()
-{
-    FWIN_LOG("READ\n");
+{   FWIN_LOG("READ\n");
 }
 
 void fwinText::OnFileSave()
-{
-    FWIN_LOG("SAVE\n");
+{   FWIN_LOG("SAVE\n");
 }
 
 void fwinText::OnFileSaveSelection()
-{
-    FWIN_LOG("SAVE SELECTION\n");
+{   FWIN_LOG("SAVE SELECTION\n");
 }
 
 void fwinText::OnFilePageSetup()
-{
-    FWIN_LOG("PAGESETUP\n");
+{   FWIN_LOG("PAGESETUP\n");
 // The wxWidgets "printing" sample shows how to arrange these calls.
     *pageSetupData = *printData;
     wxPageSetupDialog pageSetupDialog(this, pageSetupData);
@@ -2787,8 +2806,7 @@ void fwinText::OnFilePageSetup()
 }
 
 void fwinText::OnFilePrint()
-{
-    wxPrintDialogData printDialogData(*printData);
+{   wxPrintDialogData printDialogData(*printData);
     wxPrinter printer(&printDialogData);
     fwinPrintout printout(this, "wxfwin");
     if (!printer.Print(this, &printout, true))
@@ -2800,8 +2818,7 @@ void fwinText::OnFilePrint()
 }
 
 void fwinText::OnFilePrintPreview()
-{
-    FWIN_LOG("PRINT PREVIEW\n");
+{   FWIN_LOG("PRINT PREVIEW\n");
     wxPrintDialogData printDialogData(*printData);
     wxPrintPreview *preview =
         new wxPrintPreview(new fwinPrintout(this),
@@ -2821,22 +2838,20 @@ void fwinText::OnFilePrintPreview()
 
 // Now the implementation of print support
 
-void fwinPrintout::GetPageInfo(int *minPage, int *maxPage, int *from, int *to)
-{
-    *minPage = 1;
+void fwinPrintout::GetPageInfo(int *minPage, int *maxPage, int *from,
+                               int *to)
+{   *minPage = 1;
     *maxPage = 2;
     *from = *minPage;
     *to = *maxPage;
 }
 
 bool fwinPrintout::HasPage(int page)
-{
-    return (page == 1);
+{   return (page == 1);
 }
 
 bool fwinPrintout::OnPrintPage(int page)
-{
-    FWIN_LOG("Print page %d\n", page);
+{   FWIN_LOG("Print page %d\n", page);
     if (!HasPage(page)) return false;
     wxDC *dc = GetDC();
     FitThisSizeToPageMargins(
@@ -2870,135 +2885,109 @@ bool fwinPrintout::OnPrintPage(int page)
 
 
 void fwinText::OnEditCut()
-{
-    FWIN_LOG("CUT\n");
+{   FWIN_LOG("CUT\n");
 }
 
 void fwinText::OnEditCopy()
-{
-    FWIN_LOG("COPY\n");
+{   FWIN_LOG("COPY\n");
 }
 
 void fwinText::OnEditCopyText()
-{
-    FWIN_LOG("COPY TEXT\n");
+{   FWIN_LOG("COPY TEXT\n");
 }
 
 void fwinText::OnEditPaste()
-{
-    FWIN_LOG("PASTE\n");
+{   FWIN_LOG("PASTE\n");
 }
 
 void fwinText::OnEditReinput()
-{
-    FWIN_LOG("REINPUT\n");
+{   FWIN_LOG("REINPUT\n");
 }
 
 void fwinText::OnEditSelectAll()
-{
-    FWIN_LOG("SELECTALL\n");
+{   FWIN_LOG("SELECTALL\n");
 }
 
 void fwinText::OnEditClear()
-{
-    FWIN_LOG("CLEAR\n");
+{   FWIN_LOG("CLEAR\n");
 }
 
 void fwinText::OnEditRedraw()
-{
-    FWIN_LOG("REDRAW\n");
+{   FWIN_LOG("REDRAW\n");
 }
 
 void fwinText::OnEditHome()
-{
-    FWIN_LOG("HOME\n");
+{   FWIN_LOG("HOME\n");
 }
 
 void fwinText::OnEditEnd()
-{
-    FWIN_LOG("END\n");
+{   FWIN_LOG("END\n");
 }
 
 void fwinText::OnFontPoint10()
-{
-    FWIN_LOG("OnFontPoint10");
+{   FWIN_LOG("OnFontPoint10");
 }
 
 void fwinText::OnFontPoint12()
-{
-    FWIN_LOG("OnFontPoint12");
+{   FWIN_LOG("OnFontPoint12");
 }
 
 void fwinText::OnFontPoint14()
-{
-    FWIN_LOG("OnFontPoint14");
+{   FWIN_LOG("OnFontPoint14");
 }
 
 void fwinText::OnFontPoint17()
-{
-    FWIN_LOG("OnFontPoint17");
+{   FWIN_LOG("OnFontPoint17");
 }
 
 void fwinText::OnFontPoint20()
-{
-    FWIN_LOG("OnFontPoint20");
+{   FWIN_LOG("OnFontPoint20");
 }
 
 void fwinText::OnFontPoint24()
-{
-    FWIN_LOG("OnFontPoint24");
+{   FWIN_LOG("OnFontPoint24");
 }
 
 void fwinText::OnFontPoint28()
-{
-    FWIN_LOG("OnFontPoint28");
+{   FWIN_LOG("OnFontPoint28");
 }
 
 void fwinText::OnFontPoint34()
-{
-    FWIN_LOG("OnFontPoint34");
+{   FWIN_LOG("OnFontPoint34");
 }
 
 void fwinText::OnFontPoint40()
-{
-    FWIN_LOG("OnFontPoint40");
+{   FWIN_LOG("OnFontPoint40");
 }
 
 
 
 void fwinText::OnBreakBreak()
-{
-    FWIN_LOG("BREAK\n");
+{   FWIN_LOG("BREAK\n");
 }
 
 void fwinText::OnBreakBacktrace()
-{
-    FWIN_LOG("BACKTRACE\n");
+{   FWIN_LOG("BACKTRACE\n");
 }
 
 void fwinText::OnBreakPause()
-{
-    FWIN_LOG("PAUSE\n");
+{   FWIN_LOG("PAUSE\n");
 }
 
 void fwinText::OnBreakResume()
-{
-    FWIN_LOG("RESUME\n");
+{   FWIN_LOG("RESUME\n");
 }
 
 void fwinText::OnBreakStopGo()
-{
-    FWIN_LOG("STOP_GO\n");
+{   FWIN_LOG("STOP_GO\n");
 }
 
 void fwinText::OnBreakDiscardOutput()
-{
-    FWIN_LOG("DISCARDOUTPUT\n");
+{   FWIN_LOG("DISCARDOUTPUT\n");
 }
 
 void fwinText::OnHelpHelp()
-{
-    FWIN_LOG("HELP\n");
+{   FWIN_LOG("HELP\n");
 }
 
 
@@ -3009,8 +2998,7 @@ void fwinText::OnHelpHelp()
 // things up for "the awkward platform".
 
 void fwinText::OnKeyDown(wxKeyEvent &event)
-{
-    uint32_t c = event.GetUnicodeKey();
+{   uint32_t c = event.GetUnicodeKey();
     uint32_t r = event.GetKeyCode();
     uint32_t m = event.GetModifiers();
 //-    FWIN_LOG("SHIFT=%x ALT=%x META=%x CONTROL=%x\n",
@@ -3057,19 +3045,18 @@ void fwinText::OnKeyDown(wxKeyEvent &event)
 }
 
 void fwinText::OnChar(wxKeyEvent &event)
-{
-    uint32_t c = event.GetUnicodeKey();
+{   uint32_t c = event.GetUnicodeKey();
     uint32_t r = event.GetKeyCode();
     int m = event.GetModifiers(); // wxMOD_ALT, wxMOD_SHIFT, wxMOD_CMD
-                                  // Also ALTGR, META, WIN, CONTROL that
-                                  // I will not use.
+    // Also ALTGR, META, WIN, CONTROL that
+    // I will not use.
     if (processChar(c, r, m)) event.Skip();
 }
 
 bool fwinText::processChar(int c, int r, int m)
 {
 //-    FWIN_LOG("process: Raw key:%x Unicode:%x modifiers:%x\n", r, c, m);
-    unsigned char *history_string = NULL;
+    unsigned char *history_string = nullptr;
 // If a previous keystroke had been ESC then I act as if this one
 // had ALT combined with it. I will cancel the pending ESC on various
 // menu things as well as here. Note that this conversion copes with
@@ -3092,141 +3079,141 @@ bool fwinText::processChar(int c, int r, int m)
 // be worse each operating system might intercept some of them
 // before I have a chance to respond!
 #if 0
-    case WXK_START:
-    case WXK_LBUTTON:
-    case WXK_RBUTTON:
-    case WXK_CANCEL:
-    case WXK_MBUTTON:
-    case WXK_SHIFT:
-    case WXK_ALT:
-    case WXK_CONTROL:
-    case WXK_MENU:
-    case WXK_PAUSE:
-    case WXK_CAPITAL:
-    case WXK_SELECT:
-    case WXK_PRINT:
-    case WXK_EXECUTE:
-    case WXK_SNAPSHOT:
-    case WXK_HELP:
-    case WXK_F1:  case WXK_F2:  case WXK_F3:  case WXK_F4:  case WXK_F5:
-    case WXK_F6:  case WXK_F7:  case WXK_F8:  case WXK_F9:  case WXK_F10:
-    case WXK_F11: case WXK_F12: case WXK_F13: case WXK_F14: case WXK_F15:
-    case WXK_F16: case WXK_F17: case WXK_F18: case WXK_F19: case WXK_F20:
-    case WXK_F21: case WXK_F22: case WXK_F23: case WXK_F24:
-    case WXK_NUMLOCK:
-    case WXK_SCROLL:
-    case WXK_NUMPAD_F2: case WXK_NUMPAD_F3: case WXK_NUMPAD_F4:
-    case WXK_NUMPAD_SEPARATOR:
-    case WXK_WINDOWS_RIGHT:
-    case WXK_WINDOWS_MENU:
-    case WXK_COMMAND:
-    case WXK_NUMPAD_BEGIN:
+            case WXK_START:
+            case WXK_LBUTTON:
+            case WXK_RBUTTON:
+            case WXK_CANCEL:
+            case WXK_MBUTTON:
+            case WXK_SHIFT:
+            case WXK_ALT:
+            case WXK_CONTROL:
+            case WXK_MENU:
+            case WXK_PAUSE:
+            case WXK_CAPITAL:
+            case WXK_SELECT:
+            case WXK_PRINT:
+            case WXK_EXECUTE:
+            case WXK_SNAPSHOT:
+            case WXK_HELP:
+            case WXK_F1:  case WXK_F2:  case WXK_F3:  case WXK_F4:  case WXK_F5:
+            case WXK_F6:  case WXK_F7:  case WXK_F8:  case WXK_F9:  case WXK_F10:
+            case WXK_F11: case WXK_F12: case WXK_F13: case WXK_F14: case WXK_F15:
+            case WXK_F16: case WXK_F17: case WXK_F18: case WXK_F19: case WXK_F20:
+            case WXK_F21: case WXK_F22: case WXK_F23: case WXK_F24:
+            case WXK_NUMLOCK:
+            case WXK_SCROLL:
+            case WXK_NUMPAD_F2: case WXK_NUMPAD_F3: case WXK_NUMPAD_F4:
+            case WXK_NUMPAD_SEPARATOR:
+            case WXK_WINDOWS_RIGHT:
+            case WXK_WINDOWS_MENU:
+            case WXK_COMMAND:
+            case WXK_NUMPAD_BEGIN:
 #endif
-    default:
+            default:
 // All the above either will not arise as characters or if they do will be
 // things I wish to ignore.
-            return true;
+                return true;
 
-    case WXK_DELETE:
-    case WXK_NUMPAD_DELETE:
-            c = WXK_DELETE;
-            break;
-    case WXK_INSERT:
-    case WXK_NUMPAD_INSERT:
-            c = WXK_INSERT|NON_UNICODE;
-            break;
-    case WXK_CLEAR:
-            c = WXK_CLEAR|NON_UNICODE;
-            break;
-    case WXK_END:
-    case WXK_NUMPAD_END:
-            c = WXK_END|NON_UNICODE;
-            break;
-    case WXK_HOME:
-    case WXK_NUMPAD_HOME:
-            c = WXK_HOME|NON_UNICODE;
-            break;
-    case WXK_LEFT:
-    case WXK_NUMPAD_LEFT:
-            c = WXK_LEFT|NON_UNICODE;
-            break;
-    case WXK_UP:
-    case WXK_NUMPAD_UP:
-            c = WXK_UP|NON_UNICODE;
-            break;
-    case WXK_RIGHT:
-    case WXK_NUMPAD_RIGHT:
-            c = WXK_RIGHT|NON_UNICODE;
-            break;
-    case WXK_DOWN:
-    case WXK_NUMPAD_DOWN:
-            c = WXK_DOWN|NON_UNICODE;
-            break;
-    case WXK_PAGEUP:
-    case WXK_NUMPAD_PAGEUP:
-            c = WXK_PAGEUP|NON_UNICODE;
-            break;
-    case WXK_PAGEDOWN:
-    case WXK_NUMPAD_PAGEDOWN:
-            c = WXK_PAGEDOWN|NON_UNICODE;
-            break;
+            case WXK_DELETE:
+            case WXK_NUMPAD_DELETE:
+                c = WXK_DELETE;
+                break;
+            case WXK_INSERT:
+            case WXK_NUMPAD_INSERT:
+                c = WXK_INSERT|NON_UNICODE;
+                break;
+            case WXK_CLEAR:
+                c = WXK_CLEAR|NON_UNICODE;
+                break;
+            case WXK_END:
+            case WXK_NUMPAD_END:
+                c = WXK_END|NON_UNICODE;
+                break;
+            case WXK_HOME:
+            case WXK_NUMPAD_HOME:
+                c = WXK_HOME|NON_UNICODE;
+                break;
+            case WXK_LEFT:
+            case WXK_NUMPAD_LEFT:
+                c = WXK_LEFT|NON_UNICODE;
+                break;
+            case WXK_UP:
+            case WXK_NUMPAD_UP:
+                c = WXK_UP|NON_UNICODE;
+                break;
+            case WXK_RIGHT:
+            case WXK_NUMPAD_RIGHT:
+                c = WXK_RIGHT|NON_UNICODE;
+                break;
+            case WXK_DOWN:
+            case WXK_NUMPAD_DOWN:
+                c = WXK_DOWN|NON_UNICODE;
+                break;
+            case WXK_PAGEUP:
+            case WXK_NUMPAD_PAGEUP:
+                c = WXK_PAGEUP|NON_UNICODE;
+                break;
+            case WXK_PAGEDOWN:
+            case WXK_NUMPAD_PAGEDOWN:
+                c = WXK_PAGEDOWN|NON_UNICODE;
+                break;
 
 // Now I have some cases where there may be special dedicated keys on some
 // models of keyboard, or where the numeric keypad might be in use. In the
 // cases that follow I merely map the key concerned onto the regular
 // character it equates to. So eg WXK_NUMPAD0 turns into merely '0'.
-    case WXK_NUMPAD0: case WXK_NUMPAD1:
-    case WXK_NUMPAD2: case WXK_NUMPAD3:
-    case WXK_NUMPAD4: case WXK_NUMPAD5:
-    case WXK_NUMPAD6: case WXK_NUMPAD7:
-    case WXK_NUMPAD8: case WXK_NUMPAD9:
-            c = r + '0' - WXK_NUMPAD0;
-            break;
-    case WXK_MULTIPLY:
-            c = '*';
-            break;
-    case WXK_ADD:
-            c = '+';
-            break;
-    case WXK_SEPARATOR:
-            c = WXK_SPACE;
-            break;
-    case WXK_SUBTRACT:
-            c = '-';
-            break;
-    case WXK_DECIMAL:
-            c = '.';
-            break;
-    case WXK_DIVIDE:
-            c = '/';
-            break;
-    case WXK_NUMPAD_SPACE:
-            c = WXK_SPACE;
-            break;
-    case WXK_NUMPAD_TAB:
-            c = WXK_TAB;
-            break;
-    case WXK_NUMPAD_ENTER:
-            c = WXK_RETURN;
-            break;
-    case WXK_NUMPAD_EQUAL:
-            c = '=';
-            break;
-    case WXK_NUMPAD_MULTIPLY:
-            c = '*';
-            break;
-    case WXK_NUMPAD_ADD:
-            c = '+';
-            break;
-    case WXK_NUMPAD_SUBTRACT:
-            c = '-';
-            break;
-    case WXK_NUMPAD_DECIMAL:
-            c = '.';
-            break;
-    case WXK_NUMPAD_DIVIDE:
-            c = '/';
-            break;
+            case WXK_NUMPAD0: case WXK_NUMPAD1:
+            case WXK_NUMPAD2: case WXK_NUMPAD3:
+            case WXK_NUMPAD4: case WXK_NUMPAD5:
+            case WXK_NUMPAD6: case WXK_NUMPAD7:
+            case WXK_NUMPAD8: case WXK_NUMPAD9:
+                c = r + '0' - WXK_NUMPAD0;
+                break;
+            case WXK_MULTIPLY:
+                c = '*';
+                break;
+            case WXK_ADD:
+                c = '+';
+                break;
+            case WXK_SEPARATOR:
+                c = WXK_SPACE;
+                break;
+            case WXK_SUBTRACT:
+                c = '-';
+                break;
+            case WXK_DECIMAL:
+                c = '.';
+                break;
+            case WXK_DIVIDE:
+                c = '/';
+                break;
+            case WXK_NUMPAD_SPACE:
+                c = WXK_SPACE;
+                break;
+            case WXK_NUMPAD_TAB:
+                c = WXK_TAB;
+                break;
+            case WXK_NUMPAD_ENTER:
+                c = WXK_RETURN;
+                break;
+            case WXK_NUMPAD_EQUAL:
+                c = '=';
+                break;
+            case WXK_NUMPAD_MULTIPLY:
+                c = '*';
+                break;
+            case WXK_NUMPAD_ADD:
+                c = '+';
+                break;
+            case WXK_NUMPAD_SUBTRACT:
+                c = '-';
+                break;
+            case WXK_NUMPAD_DECIMAL:
+                c = '.';
+                break;
+            case WXK_NUMPAD_DIVIDE:
+                c = '/';
+                break;
         }
 // If I "break" from the above switch block it means I have translated
 // the raw character into a Unicode on in C.
@@ -3241,165 +3228,165 @@ bool fwinText::processChar(int c, int r, int m)
         switch (c)
         {
 // BACKSPACE removes a character from the search string
-    case WXK_BACK:
+            case WXK_BACK:
 // When I delete a character from a search string I will pop the active
 // history line back to the first one found when the remaining string
 // was searched for. If I delete back to nothing I will leave the input
 // line blank.
-            if (SEARCH_LENGTH == 0)
-            {   beep();
-                searchFlags = 0;   // cancel searching before it started!
-                killSelection();
-                return false;
-            }
-            searchFlags--;
-            if (SEARCH_LENGTH == 0)
-            {   searchFlags = 0;   // delete the one char in the search string
-                killSelection();
-                setInputText((const unsigned char *)"");
-                return false;
-            }
-            historyNumber = searchStack[SEARCH_LENGTH];
+                if (SEARCH_LENGTH == 0)
+                {   beep();
+                    searchFlags = 0;   // cancel searching before it started!
+                    killSelection();
+                    return false;
+                }
+                searchFlags--;
+                if (SEARCH_LENGTH == 0)
+                {   searchFlags = 0;   // delete the one char in the search string
+                    killSelection();
+                    setInputText((const unsigned char *)"");
+                    return false;
+                }
+                historyNumber = searchStack[SEARCH_LENGTH];
 // The "trySearch" here really really ought to succeed since I have reverted
 // to a history line where it succeeded before. I do it again here so I can
 // find out where, on that line, the match was so I can establish it as a
 // selection.
-            startMatch = trySearch();
-            history_string = historyGet(historyNumber);
-// ought not to return NULL here!
-            ls = setInputText(history_string);
+                startMatch = trySearch();
+                history_string = historyGet(historyNumber);
+// ought not to return nullptr here!
+                ls = setInputText(history_string);
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
-            killSelection();
+                killSelection();
 #ifdef RECONSTRUCTED
-            setAnchorPos(ls+startMatch);
-            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
-            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+                setAnchorPos(ls+startMatch);
+                extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+                setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
 #endif
-            return false;
+                return false;
 // ALT-P and ALT-p and UP all search backwards
-    case 'P': case 'p':
-            if (!(m & wxMOD_ALT)) goto defaultlabelsearch;
-    case WXK_UP|NON_UNICODE:
-            searchFlags &= ~SEARCH_FORWARD;
-            searchFlags |= SEARCH_BACKWARD;
-            if (historyNumber <= historyFirst)
-            {   beep();  // already on last possible place
-                return false;
-            }
-            save = historyNumber;
-            historyNumber--;
-            r = trySearch();
-            if (r == -1)
-            {   historyNumber = save;
-                beep();
-                return false;
-            }
-            startMatch = r;
-            history_string = historyGet(historyNumber);
-            ls = setInputText(history_string);
+            case 'P': case 'p':
+                if (!(m & wxMOD_ALT)) goto defaultlabelsearch;
+            case WXK_UP|NON_UNICODE:
+                searchFlags &= ~SEARCH_FORWARD;
+                searchFlags |= SEARCH_BACKWARD;
+                if (historyNumber <= historyFirst)
+                {   beep();  // already on last possible place
+                    return false;
+                }
+                save = historyNumber;
+                historyNumber--;
+                r = trySearch();
+                if (r == -1)
+                {   historyNumber = save;
+                    beep();
+                    return false;
+                }
+                startMatch = r;
+                history_string = historyGet(historyNumber);
+                ls = setInputText(history_string);
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
-            killSelection();
+                killSelection();
 #ifdef RECONSTRUCTED
-            setAnchorPos(ls+startMatch);
-            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
-            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+                setAnchorPos(ls+startMatch);
+                extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+                setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
 #endif
-            return false;
+                return false;
 // ALT-N and ALT-n and DOWN all search forwards
-    case 'N': case 'n':
-            if (!(m & wxMOD_ALT)) goto defaultlabelsearch;
-    case WXK_DOWN|NON_UNICODE:
-            searchFlags |= SEARCH_FORWARD;
-            searchFlags &= ~SEARCH_BACKWARD;
-            if (historyNumber >= historyLast)
-            {   beep();
-                return false;
-            }
-            save = historyNumber;
-            historyNumber++;
-            r = trySearch();
-            if (r == -1)
-            {   historyNumber = save;
-                beep();
-                return false;
-            }
-            startMatch = r;
-            history_string = historyGet(historyNumber);
-            ls = setInputText(history_string);
+            case 'N': case 'n':
+                if (!(m & wxMOD_ALT)) goto defaultlabelsearch;
+            case WXK_DOWN|NON_UNICODE:
+                searchFlags |= SEARCH_FORWARD;
+                searchFlags &= ~SEARCH_BACKWARD;
+                if (historyNumber >= historyLast)
+                {   beep();
+                    return false;
+                }
+                save = historyNumber;
+                historyNumber++;
+                r = trySearch();
+                if (r == -1)
+                {   historyNumber = save;
+                    beep();
+                    return false;
+                }
+                startMatch = r;
+                history_string = historyGet(historyNumber);
+                ls = setInputText(history_string);
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
-            killSelection();
+                killSelection();
 #ifdef RECONSTRUCTED
-            setAnchorPos(ls+startMatch);
-            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
-            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+                setAnchorPos(ls+startMatch);
+                extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+                setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
 #endif
-            return false;
+                return false;
 // I detect ^U here and cause it to exit search mode.
-    case ('U' & 0x15):
-            searchFlags = 0;
-            killSelection();
-            return false;
-    case WXK_ESCAPE:       // ctl-[
-            keyFlags ^= ESC_PENDING;
-            return false;
-    default:
-    defaultlabelsearch:
+            case ('U' & 0x15):
+                searchFlags = 0;
+                killSelection();
+                return false;
+            case WXK_ESCAPE:       // ctl-[
+                keyFlags ^= ESC_PENDING;
+                return false;
+            default:
+            defaultlabelsearch:
 // I suggest "^@" as a sensible character to type to exit from searching.
 // Acting on it just "sets the mark" which is typically harmless. However
 // I will exit search mode with any control or ALT combination too
-            if (c == 0 ||
-                (c & NON_UNICODE) != 0 ||
-                (m & (wxMOD_ALT | wxMOD_CMD)) != 0)
-            {   searchFlags = 0;
-                killSelection();
-                break;
-            }
+                if (c == 0 ||
+                    (c & NON_UNICODE) != 0 ||
+                    (m & (wxMOD_ALT | wxMOD_CMD)) != 0)
+                {   searchFlags = 0;
+                    killSelection();
+                    break;
+                }
 // here I should have a single simple character in c to search for
 // and I will filter out control characters... except tab!
-            if (c < 0x20 && c != '\t')
-            {   searchFlags = 0;
-                killSelection();
-                break;
-            }
+                if (c < 0x20 && c != '\t')
+                {   searchFlags = 0;
+                    killSelection();
+                    break;
+                }
 // Here I have a further printable character to add to the search
 // pattern. If ignore it if the search string has become ridiculously long
 // to avoid a buffer overflow. Note that these days the text buffer (and hence
 // the search string and history buffer) will be stored as 32-bit units
 // each holding a Unicode char in the lower 24 bits.
-            if (SEARCH_LENGTH > 250)
-            {   beep();
-                return false;
-            }
-            searchString[SEARCH_LENGTH] = c;
-            searchStack[SEARCH_LENGTH] = historyNumber;
-            searchFlags++;
-            save = historyNumber;
-            r = trySearch();
-            if (r == -1)
-            {   historyNumber = save;
-                beep();
-                searchFlags--;
-                return false;
-            }
-            startMatch = r;
-            history_string = historyGet(historyNumber);
-            ls = setInputText(history_string);
+                if (SEARCH_LENGTH > 250)
+                {   beep();
+                    return false;
+                }
+                searchString[SEARCH_LENGTH] = c;
+                searchStack[SEARCH_LENGTH] = historyNumber;
+                searchFlags++;
+                save = historyNumber;
+                r = trySearch();
+                if (r == -1)
+                {   historyNumber = save;
+                    beep();
+                    searchFlags--;
+                    return false;
+                }
+                startMatch = r;
+                history_string = historyGet(historyNumber);
+                ls = setInputText(history_string);
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
-            killSelection();
+                killSelection();
 #ifdef RECONSTRUCTED
-            setAnchorPos(ls+startMatch);
-            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
-            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+                setAnchorPos(ls+startMatch);
+                extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+                setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
 #endif
-            return false;
+                return false;
         }
     }
 // If the very first character I see is a "^D" it is to be taken as EOF
@@ -3422,399 +3409,398 @@ bool fwinText::processChar(int c, int r, int m)
     }
     keyFlags |= ANY_KEYS;
     switch (c)
-    {
-case WXK_BACK:  // = Ctrl-H
+    {   case WXK_BACK:  // = Ctrl-H
 // ALT backspace does a delete-backwards-word, while just backspace
 // deletes a single character. I find that CTRL-backspace (at least on
 // on Windows) is mapped to ctrl-DELETE so that will delete forwards.
-        if ((m & wxMOD_ALT) != 0) deleteWordBackwards();
-        else deleteBackwards(1);
-        return false;
-case WXK_END|NON_UNICODE:
+            if ((m & wxMOD_ALT) != 0) deleteWordBackwards();
+            else deleteBackwards(1);
+            return false;
+        case WXK_END|NON_UNICODE:
 // Hmmm - still should I extend a selection if an anchor is set?
 // END should probably go to the end of the current line, with ALT-END
 // going to the end of the last line.
-        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveDocEnd();
-        else moveLineEnd();
-        return false;
-case WXK_HOME|NON_UNICODE:
+            if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveDocEnd();
+            else moveLineEnd();
+            return false;
+        case WXK_HOME|NON_UNICODE:
 // HOME should probably go to the start of the current active line, with
 // ALT-HOME being the thing that goes to top of the screen-buffer.
-        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveDocStart();
-        else moveLineStart();
-        return false;
-case WXK_LEFT|NON_UNICODE:
-        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveWordLeft();
-        else moveLeft();
-        return false;
-case WXK_RIGHT|NON_UNICODE:
-        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveWordRight();
-        else moveRight();
-        return false;
-case WXK_UP|NON_UNICODE:
+            if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveDocStart();
+            else moveLineStart();
+            return false;
+        case WXK_LEFT|NON_UNICODE:
+            if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveWordLeft();
+            else moveLeft();
+            return false;
+        case WXK_RIGHT|NON_UNICODE:
+            if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveWordRight();
+            else moveRight();
+            return false;
+        case WXK_UP|NON_UNICODE:
 // UP      go to previous item in history
 // ALT-UP  search backwards in history
 // CTRL-UP or action in read-only region: merely move up a line
-        if ((m & wxMOD_CMD) || (options & READONLY)) moveUp();
-        else if (m & wxMOD_ALT) searchHistoryPrev();
-        else historyPrev();
-        return false;
-case WXK_DOWN|NON_UNICODE:
+            if ((m & wxMOD_CMD) || (options & READONLY)) moveUp();
+            else if (m & wxMOD_ALT) searchHistoryPrev();
+            else historyPrev();
+            return false;
+        case WXK_DOWN|NON_UNICODE:
 // If you are not waiting for input then cursor up and down just move you up
 // and down! If you are waiting for input then Control can be used to break
 // you out from the input-line...
-        if ((m & wxMOD_CMD) || (options & READONLY)) moveDown();
-        else if (m & wxMOD_ALT) searchHistoryNext();
-        else historyNext();
-        return false;
-case WXK_RETURN:
+            if ((m & wxMOD_CMD) || (options & READONLY)) moveDown();
+            else if (m & wxMOD_ALT) searchHistoryNext();
+            else historyNext();
+            return false;
+        case WXK_RETURN:
 // case ('J' & 0x1f):
 // I always act as if newlines were typed at the very end of the input.
 // Right now I treat ENTER and ^J and ^M all the same, and ignore any
 // ALT, SHIFT or CTRL. Some people might want to use modifiers on ENTER
 // to signify some sort of soft newline?
-        setCaretPos(textEnd);
-        c = '\n';   // normalise to "newline"
-        goto defaultlabel;
-case WXK_TAB:
-        c = '\t';
-        goto defaultlabel;
-case '@':
+            setCaretPos(textEnd);
+            c = '\n';   // normalise to "newline"
+            goto defaultlabel;
+        case WXK_TAB:
+            c = '\t';
+            goto defaultlabel;
+        case '@':
 // As a default sort of behaviour I somehow need to resolve what happens in
 // case CTRL and ALT are both pressed.
-        if (m & wxMOD_ALT)
-        {   setSelectionMark();
+            if (m & wxMOD_ALT)
+            {   setSelectionMark();
+                return false;
+            }
+            else goto defaultlabel;
+        case '@' & 0x1f:
+            setSelectionMark();
             return false;
-        }
-        else goto defaultlabel;
-case '@' & 0x1f:
-        setSelectionMark();
-        return false;
-case 'A': case 'a':
-        if (m & wxMOD_ALT)
-        {   moveLineStart();
+        case 'A': case 'a':
+            if (m & wxMOD_ALT)
+            {   moveLineStart();
+                return false;
+            }
+            else goto defaultlabel;
+        case 'A' & 0x1f:
+            if (m & wxMOD_ALT)
+            {   moveLineStart();
+                return false;
+            }
+            moveLineStart();
             return false;
-        }
-        else goto defaultlabel;
-case 'A' & 0x1f:
-        if (m & wxMOD_ALT)
-        {   moveLineStart();
+        case 'B' & 0x1f:
+            if (m & wxMOD_ALT)
+            {   moveWordLeft();
+                return false;
+            }
+            moveLeft();
             return false;
-        }
-        moveLineStart();
-        return false;
-case 'B' & 0x1f:
-        if (m & wxMOD_ALT)
-        {   moveWordLeft();
+        case 'B': case 'b':
+            if (m & wxMOD_ALT)
+            {   moveWordLeft();
+                return false;
+            }
+            else goto defaultlabel;
+        case 'C' & 0x1f:
+            if (m & wxMOD_ALT)
+            {   capitalize();
+                return false;
+            }
+            interrupt();
             return false;
-        }
-        moveLeft();
-        return false;
-case 'B': case 'b':
-        if (m & wxMOD_ALT)
-        {   moveWordLeft();
-            return false;
-        }
-        else goto defaultlabel;
-case 'C' & 0x1f:
-        if (m & wxMOD_ALT)
-        {   capitalize();
-            return false;
-        }
-        interrupt();
-        return false;
-case 'C': case 'c':
-        if (m & wxMOD_ALT)
-        {   capitalize();
-            return false;
-        }
-        goto defaultlabel;
-case WXK_DELETE:
+        case 'C': case 'c':
+            if (m & wxMOD_ALT)
+            {   capitalize();
+                return false;
+            }
+            goto defaultlabel;
+        case WXK_DELETE:
 // On Windows (at least) I find that Ctrl-backspace gets returned
 // as Ctrl-DELETE and I want it to delete a single character not a word.
 // I think. Hence I let Ctrl-DEL delete a character, while ALT-DEL deletes
 // a word.
-        if (m & wxMOD_ALT) deleteWordForwards();
-        else deleteForwards(1);
-        return false;
-case 'D' & 0x1f:
-        if (m & wxMOD_ALT)
-        {   deleteWordForwards();
+            if (m & wxMOD_ALT) deleteWordForwards();
+            else deleteForwards(1);
             return false;
-        }
+        case 'D' & 0x1f:
+            if (m & wxMOD_ALT)
+            {   deleteWordForwards();
+                return false;
+            }
 // Here I may want to arrange that if the current input-buffer is empty
 // then ^D causes and EOF to be returned. Well yes, I have arranged that
 // elsewhere so I only get here if the user has typed some chars already.
-        goto defaultlabel;
-case 'D': case 'd':
-        if (m & wxMOD_ALT)
-        {   deleteWordForwards();
+            goto defaultlabel;
+        case 'D': case 'd':
+            if (m & wxMOD_ALT)
+            {   deleteWordForwards();
+                return false;
+            }
+            goto defaultlabel;
+        case 'E' & 0x1f:
+            if (m & wxMOD_ALT) return 1;
+            moveLineEnd();
             return false;
-        }
-        goto defaultlabel;
-case 'E' & 0x1f:
-        if (m & wxMOD_ALT) return 1;
-        moveLineEnd();
-        return false;
-case 'E': case 'e':
+        case 'E': case 'e':
 // ALT-e enters the EDIT menu: this is handled by having the menu
 // registered elsewhere.
-        if (m & wxMOD_ALT) return 1;
-        goto defaultlabel;
-case 'F' & 0x1f:
-        if (m & wxMOD_ALT)
-        {   moveWordRight();
+            if (m & wxMOD_ALT) return 1;
+            goto defaultlabel;
+        case 'F' & 0x1f:
+            if (m & wxMOD_ALT)
+            {   moveWordRight();
+                return false;
+            }
+            moveRight();
             return false;
-        }
-        moveRight();
-        return false;
-case 'F': case 'f':
-        if (m & wxMOD_ALT)
-        {   moveWordRight();
+        case 'F': case 'f':
+            if (m & wxMOD_ALT)
+            {   moveWordRight();
+                return false;
+            }
+            goto defaultlabel;
+        case 'G' & 0x1f:
+            if (m & wxMOD_ALT) return true;
+            displayBacktrace();
             return false;
-        }
-        goto defaultlabel;
-case 'G' & 0x1f:
-        if (m & wxMOD_ALT) return true;
-        displayBacktrace();
-        return false;
-case 'G': case 'g':
+        case 'G': case 'g':
 // ALT-G will be for "Load Packa&ge"
-        if (m & wxMOD_ALT) return true;
-        goto defaultlabel;
+            if (m & wxMOD_ALT) return true;
+            goto defaultlabel;
 // case 'H' & 0x1f: // = WXK_BACK
-case 'H': case 'h':
-        if (m & wxMOD_ALT)
-        {   deleteWordBackwards();
-            return false;
-        }
-        goto defaultlabel;
+        case 'H': case 'h':
+            if (m & wxMOD_ALT)
+            {   deleteWordBackwards();
+                return false;
+            }
+            goto defaultlabel;
 // case 'I' & 0x1f: // == WXK_TAB
-case 'I': case 'i':
+        case 'I': case 'i':
 // ALT-i enters the FILE menu
-        if (m & wxMOD_ALT) return true;
-        goto defaultlabel;
-case 'J' & 0x1f:
-        if (m & wxMOD_ALT)  // Could ALT-J be for something more interesting?
-        {   insertNewline();
+            if (m & wxMOD_ALT) return true;
+            goto defaultlabel;
+        case 'J' & 0x1f:
+            if (m & wxMOD_ALT)  // Could ALT-J be for something more interesting?
+            {   insertNewline();
+                return false;
+            }
+            c = '\n';
+            goto defaultlabel;
+        case 'J': case 'j':
+            if (m & wxMOD_ALT)  // Could ALT-J be for something more interesting?
+            {   insertNewline();
+                return false;
+            }
+            goto defaultlabel;
+        case 'K' & 0x1f:
+            deleteCurrentLine();
             return false;
-        }
-         c = '\n';
-         goto defaultlabel;
-case 'J': case 'j':
-        if (m & wxMOD_ALT)  // Could ALT-J be for something more interesting?
-        {   insertNewline();
-            return false;
-        }
-        goto defaultlabel;
-case 'K' & 0x1f:
-        deleteCurrentLine();
-        return false;
-case 'K': case 'k':
-        if (m & wxMOD_ALT)
-        {   deleteCurrentLine();
-            return false;
-        }
-        goto defaultlabel;
+        case 'K': case 'k':
+            if (m & wxMOD_ALT)
+            {   deleteCurrentLine();
+                return false;
+            }
+            goto defaultlabel;
 // ^L will be a shortcut for clear-screen
-case 'L': case 'l':
-        if (m & wxMOD_ALT)
-        {   lowerCase();
-            return false;
-        }
-        goto defaultlabel;
+        case 'L': case 'l':
+            if (m & wxMOD_ALT)
+            {   lowerCase();
+                return false;
+            }
+            goto defaultlabel;
 // case 'M' & 0x1f: // = WXK_RETURN
-case 'M': case 'm':
+        case 'M': case 'm':
 // ALT-m enters the MODULE menu
-        goto defaultlabel;
-case 'N' & 0x1f:
-        if (options & READONLY) moveDown();
-        if (m & wxMOD_ALT)
-        {   searchHistoryNext();
+            goto defaultlabel;
+        case 'N' & 0x1f:
+            if (options & READONLY) moveDown();
+            if (m & wxMOD_ALT)
+            {   searchHistoryNext();
+                return false;
+            }
+            else historyNext();
             return false;
-        }
-        else historyNext();
-        return false;
-case 'N': case 'n':
-        if (options & READONLY) goto defaultlabel;
-        else if (m & wxMOD_ALT)
-        {   searchHistoryNext();
-            return false;
-        }
-        goto defaultlabel;
+        case 'N': case 'n':
+            if (options & READONLY) goto defaultlabel;
+            else if (m & wxMOD_ALT)
+            {   searchHistoryNext();
+                return false;
+            }
+            goto defaultlabel;
 // case 'O' & 0x1f: // menu shortcut to lose output
-case 'O': case 'o':
+        case 'O': case 'o':
 // ^O will be purge output.
 //    I hope that by making ^O, ^S and ^Q menu shortcuts they will get
 //    acted upon whether I am waiting for input or not.
 // ALT-O enters the FONT menu
-        if (m & wxMOD_ALT) return 1;
-        goto defaultlabel;
-case 'P' & 0x1f:
-        if (options & READONLY) moveUp();
-        if (m & wxMOD_ALT)
-        {   searchHistoryPrev();
-            return false;
-        }
-        else historyPrev();
-        return false;
-case 'P': case 'p':
-        if (options & READONLY) goto defaultlabel;
-        else if (m & wxMOD_ALT)
-        {   searchHistoryPrev();
-            return false;
-        }
-        goto defaultlabel;
-case 'Q': case 'q':
-// ^Q will be RESUME OUTPUT
-        if (m & wxMOD_ALT) return true; // Ignore ALT-Q
-        goto defaultlabel;
-case 'R' & 0x1f:
-        if (m & wxMOD_ALT) return 1;
-        Refresh();
-        return false;
-case 'R': case 'r':
-// ALT-r will be the B&reak menu
-        if (m & wxMOD_ALT) return 1;
-        goto defaultlabel;
-// case 'S' & 0x1f: // menu shortcut
-case 'S': case 's':
-// ^S should pause output
-// ALT-s enters the SWITCH menu
-        if (m & wxMOD_ALT) return 1;
-        goto defaultlabel;
-case 'T' & 0x1f:
-        transpose();
-        return false;
-case 'T': case 't':
-        if (m & wxMOD_ALT)
-        {   transpose();
-            return false;
-        }
-        goto defaultlabel;
-case 'U' & 0x1f:
-        if (m & wxMOD_ALT)
-        {   upperCase();
-            return false;
-        }
-        undo();
-        return false;
-case 'U': case 'u':
-        if (m & wxMOD_ALT)
-        {   upperCase();
-            return false;
-        }
-        goto defaultlabel;
-case 'V': case 'v':
-// ^V will be PASTE and is handled as a shortcut
-        goto defaultlabel;
-case 'W' & 0x1f:
-// ^W behaviour is just like ALT-H
-        if (m & wxMOD_ALT)
-        {   copyRegion();
-            return false;
-        }
-        deleteWordBackwards();
-        return false;
-case 'W': case 'w':
-        if (m & wxMOD_ALT)
-        {   copyRegion();
-            return false;
-        }
-        goto defaultlabel;
-case 'X' & 0x1f:
-        if (m & wxMOD_ALT)    // if CTRL and ALT both in use ALT wins here
-        {   unicodeInput();   // Unicode conversion
-            return false;
-        }
-        ctrlXcommand();
-        return false;
-case 'X': case 'x':
-        if (m & wxMOD_ALT)
-        {   unicodeInput();   // Unicode conversion
-            return false;
-        }
-        goto defaultlabel;
-case 'Y' & 0x1f:
-// ^Y is short for YANK, otherwise known as PASTE
-        if (m & wxMOD_ALT)
-        {   rotateClipboard();
-            return false;
-        }
-        paste();
-        return false;
-case 'Y': case 'y':
-        if (m & wxMOD_ALT)
-        {   rotateClipboard();
-            return false;
-        }
-        goto defaultlabel;
-// case 'Z' & 0x1f: // suspend
-case 'Z': case 'z':
-        goto defaultlabel;
-// case '[' ^ 0x1f: // = WXK_ESCAPE
-case '[':
-        goto defaultlabel;
-case WXK_ESCAPE:       // ctl-[
-// ESC must have the effect of simulating the ALT property for the following
-// character.
-        escapePressed();
-        return false;
-case '\\' & 0x1f:
-        frame->CloseAction();
-        return false;
-case '\\':
-        goto defaultlabel;
-case ']':
-        goto defaultlabel;
-case '^' & 0x1f:
-        reinput();
-        return false;
-case '^':
-        goto defaultlabel;
-case '_':
-        if (m & wxMOD_ALT)
-        {   copyWordPrev();
-            return false;
-        }
-        goto defaultlabel;
-case '/': case '?':
-        if (m & wxMOD_ALT) return true;
-        goto defaultlabel;
-
-default:
-defaultlabel:
-
-
-        if (awaiting)
-        {   if (c == '\n')
-            {   insertNewline();
+            if (m & wxMOD_ALT) return 1;
+            goto defaultlabel;
+        case 'P' & 0x1f:
+            if (options & READONLY) moveUp();
+            if (m & wxMOD_ALT)
+            {   searchHistoryPrev();
                 return false;
             }
-            insertChar(c | 0x01000000);
+            else historyPrev();
             return false;
-        }
-        beep();
-        return false;
+        case 'P': case 'p':
+            if (options & READONLY) goto defaultlabel;
+            else if (m & wxMOD_ALT)
+            {   searchHistoryPrev();
+                return false;
+            }
+            goto defaultlabel;
+        case 'Q': case 'q':
+// ^Q will be RESUME OUTPUT
+            if (m & wxMOD_ALT) return true; // Ignore ALT-Q
+            goto defaultlabel;
+        case 'R' & 0x1f:
+            if (m & wxMOD_ALT) return 1;
+            Refresh();
+            return false;
+        case 'R': case 'r':
+// ALT-r will be the B&reak menu
+            if (m & wxMOD_ALT) return 1;
+            goto defaultlabel;
+// case 'S' & 0x1f: // menu shortcut
+        case 'S': case 's':
+// ^S should pause output
+// ALT-s enters the SWITCH menu
+            if (m & wxMOD_ALT) return 1;
+            goto defaultlabel;
+        case 'T' & 0x1f:
+            transpose();
+            return false;
+        case 'T': case 't':
+            if (m & wxMOD_ALT)
+            {   transpose();
+                return false;
+            }
+            goto defaultlabel;
+        case 'U' & 0x1f:
+            if (m & wxMOD_ALT)
+            {   upperCase();
+                return false;
+            }
+            undo();
+            return false;
+        case 'U': case 'u':
+            if (m & wxMOD_ALT)
+            {   upperCase();
+                return false;
+            }
+            goto defaultlabel;
+        case 'V': case 'v':
+// ^V will be PASTE and is handled as a shortcut
+            goto defaultlabel;
+        case 'W' & 0x1f:
+// ^W behaviour is just like ALT-H
+            if (m & wxMOD_ALT)
+            {   copyRegion();
+                return false;
+            }
+            deleteWordBackwards();
+            return false;
+        case 'W': case 'w':
+            if (m & wxMOD_ALT)
+            {   copyRegion();
+                return false;
+            }
+            goto defaultlabel;
+        case 'X' & 0x1f:
+            if (m & wxMOD_ALT)    // if CTRL and ALT both in use ALT wins here
+            {   unicodeInput();   // Unicode conversion
+                return false;
+            }
+            ctrlXcommand();
+            return false;
+        case 'X': case 'x':
+            if (m & wxMOD_ALT)
+            {   unicodeInput();   // Unicode conversion
+                return false;
+            }
+            goto defaultlabel;
+        case 'Y' & 0x1f:
+// ^Y is short for YANK, otherwise known as PASTE
+            if (m & wxMOD_ALT)
+            {   rotateClipboard();
+                return false;
+            }
+            paste();
+            return false;
+        case 'Y': case 'y':
+            if (m & wxMOD_ALT)
+            {   rotateClipboard();
+                return false;
+            }
+            goto defaultlabel;
+// case 'Z' & 0x1f: // suspend
+        case 'Z': case 'z':
+            goto defaultlabel;
+// case '[' ^ 0x1f: // = WXK_ESCAPE
+        case '[':
+            goto defaultlabel;
+        case WXK_ESCAPE:       // ctl-[
+// ESC must have the effect of simulating the ALT property for the following
+// character.
+            escapePressed();
+            return false;
+        case '\\' & 0x1f:
+            frame->CloseAction();
+            return false;
+        case '\\':
+            goto defaultlabel;
+        case ']':
+            goto defaultlabel;
+        case '^' & 0x1f:
+            reinput();
+            return false;
+        case '^':
+            goto defaultlabel;
+        case '_':
+            if (m & wxMOD_ALT)
+            {   copyWordPrev();
+                return false;
+            }
+            goto defaultlabel;
+        case '/': case '?':
+            if (m & wxMOD_ALT) return true;
+            goto defaultlabel;
+
+        default:
+        defaultlabel:
+
+
+            if (awaiting)
+            {   if (c == '\n')
+                {   insertNewline();
+                    return false;
+                }
+                insertChar(c | 0x01000000);
+                return false;
+            }
+            beep();
+            return false;
 
 #ifdef RECONSTRUCTED
-        insertChar(c); // @@@@
-        if (c == 'X' && frame->worker != NULL)
-        {   FWIN_LOG("X test case\n");
-            frame->worker->sendToScreen("Hi there @\n"); // @@@@
-        }
+            insertChar(c); // @@@@
+            if (c == 'X' && frame->worker != nullptr)
+            {   FWIN_LOG("X test case\n");
+                frame->worker->sendToScreen("Hi there @\n"); // @@@@
+            }
 #ifdef XXXXXX
-        if ((event->code & ~0xff) != 0 ||
-            event->text[1] != 0)
-            return onKeyPress();
+            if ((event->code & ~0xff) != 0 ||
+                event->text[1] != 0)
+                return onKeyPress();
 #endif
 // here I should have a single simple character
 #ifdef XXXXXX
-        ch = event->text[0];
+            ch = event->text[0];
 // and I will filter out control characters...
-        if ((ch & 0xff) < 0x20) return; //  onKeyPress();
+            if ((ch & 0xff) < 0x20) return; //  onKeyPress();
 #endif
-        break;
+            break;
 #endif // RECONSTRUCTED
     }
 
@@ -3867,75 +3853,68 @@ defaultlabel:
 
 
 void fwinText::historyInit()
-{
-    int i;
+{   int i;
     historyNextEntry = historyCurrent = longestHistoryLine = 0;
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
-        input_history[i] = NULL;
+        input_history[i] = nullptr;
 }
 
 void fwinText::historyEnd()
-{
-    int i;
+{   int i;
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
-    {   if (input_history[i] != NULL) std::free(input_history[i]);
+    {   if (input_history[i] != nullptr) std::free(input_history[i]);
     }
 }
 
 void fwinText::historyAdd(unsigned char *s, int n)
-{
-/* Make a copy of the input string... */
+{   /* Make a copy of the input string... */
     size_t size = sizeof(char)*(n + 1);
-    unsigned char *scopy = (unsigned char *)std::malloc(size);
+    unsigned char *scopy = reinterpret_cast<unsigned char *>(std)::malloc(
+                               size);
     int p = historyNextEntry % INPUT_HISTORY_SIZE;
-/* If malloc returns NULL I just store an empty history entry. */
-    if (scopy != NULL) std::memcpy(scopy, s, size);
-/*
- * I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
- * entries.
- */
-    if (input_history[p] != NULL) std::free(input_history[p]);
+    /* If malloc returns nullptr I just store an empty history entry. */
+    if (scopy != nullptr) std::memcpy(scopy, s, size);
+    /*
+     * I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
+     * entries.
+     */
+    if (input_history[p] != nullptr) std::free(input_history[p]);
     input_history[p] = scopy;
     historyNextEntry++;
-    if (scopy != NULL)
-    {
-        if (n > longestHistoryLine) longestHistoryLine = n;
+    if (scopy != nullptr)
+    {   if (n > longestHistoryLine) longestHistoryLine = n;
     }
 }
 
 unsigned char *fwinText::historyGet(int n)
-{
-    static unsigned char nullString[] = {0};
+{   static unsigned char nullString[] = {0};
     unsigned char *s;
-/*
- * Filter our values that are out of range and in those cases return NULL
- * as a flag to report the error.
- */
+    /*
+     * Filter our values that are out of range and in those cases return nullptr
+     * as a flag to report the error.
+     */
     if (n == historyNextEntry) return &nullString[0];
     if (n < 0 ||
         n >= historyNextEntry ||
-        n < historyNextEntry-INPUT_HISTORY_SIZE) return NULL;
+        n < historyNextEntry-INPUT_HISTORY_SIZE) return nullptr;
     s = input_history[n % INPUT_HISTORY_SIZE];
-/* The NULL here would be if malloc had failed earlier. */
-    if (s == NULL) return &nullString[0];
+    /* The nullptr here would be if malloc had failed earlier. */
+    if (s == nullptr) return &nullString[0];
     else return s;
 }
 
 
 void fwinText::OnMouse(wxMouseEvent &event)
-{
-    FWIN_LOG("Mouse event\n");
+{   FWIN_LOG("Mouse event\n");
     event.Skip();
 }
 
 void fwinText::OnSetFocus(wxFocusEvent &event)
-{
-    if (caret!=NULL) repositionCaret();
+{   if (caret!=nullptr) repositionCaret();
 }
 
 void fwinText::repositionCaret(int w, int r, int c)
-{
-    int32_t caretCell = locateChar(caretPos, w, r, c);
+{   int32_t caretCell = locateChar(caretPos, w, r, c);
     if (caretCell < 0) while (caret->IsVisible()) caret->Hide();
     else
     {   int r = ROW(caretCell), c = COL(caretCell);
@@ -3948,8 +3927,7 @@ void fwinText::repositionCaret(int w, int r, int c)
 }
 
 void fwinText::OnKillFocus(wxFocusEvent &event)
-{
-    if (caret != NULL)
+{   if (caret != nullptr)
         while (caret->IsVisible()) caret->Hide();
 }
 
@@ -3957,67 +3935,68 @@ void fwinText::OnKillFocus(wxFocusEvent &event)
 // material in fwin_buffer and then call ensure_screen().
 
 void fwinWorker::sendToScreen(wxString s)
-{
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, TO_SCREEN);
+{   wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD,
+            TO_SCREEN);
     event->SetString(s.c_str());  // careful to copy the string
     wxQueueEvent(panel, event);
-    FWIN_LOG("sendToScreen \"%s\"\n", (const char *)s.c_str());
+    FWIN_LOG("sendToScreen \"%s\"\n",
+             reinterpret_cast<const char *>(s.c_str()));
 }
 
 void fwinText::OnToScreen(wxThreadEvent& event)
-{
-    wxString text = event.GetString();
-    FWIN_LOG("receive in OnToScreen \"%s\"\n", (const char *)text.ToAscii());
+{   wxString text = event.GetString();
+    FWIN_LOG("receive in OnToScreen \"%s\"\n",
+             reinterpret_cast<const char *>(text.ToAscii()));
     insertString(text);
 }
 
 int fwinText::unpackUTF8chars(uint32_t *u, const char *s, int ends)
-{
-    int k = 0;
+{   int k = 0;
     int n = 0, state = 0;
     uint32_t uc = 0;    // Unicode char that is being reconstructed.
     while (k != ends)
     {   uint32_t c = s[k] & 0xff;
         k++;
         switch (state)
-        {
-    case 3: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
-            uc |= ((c & 0x3f) << 12);
-            state = 2;
-            break;
-    case 2: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
-            uc |= ((c & 0x3f) << 6);
-            state = 1;
-            break;
-    case 1: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
-            uc |= (c & 0x3f);
-            u[n++] = uc;
-            uc = 0;
-            state = 0;
-            break;
-    case 0: if ((c & 0x80) == 0) u[n++] = c;
-            else if ((c & 0xe0) == 0xc0)
-            {   uc = (c & 0x1f) << 6;
-                state = 1;
-            }
-            else if ((c & 0xf0) == 0xe0)
-            {   uc = (c & 0x0f) << 12;
+        {   case 3: if ((c & 0xc0) != 0x80)
+                    FWIN_LOG("Malformed UTF-8 sequence\n");
+                uc |= ((c & 0x3f) << 12);
                 state = 2;
-            }
-            else if ((c & 0xf8) == 0xf0)
-            {   uc = (c & 0x07) << 18;
-                state = 3;
-            }
-            else FWIN_LOG("Malformed UTF-8 sequence\n");
-            break;
+                break;
+            case 2: if ((c & 0xc0) != 0x80)
+                    FWIN_LOG("Malformed UTF-8 sequence\n");
+                uc |= ((c & 0x3f) << 6);
+                state = 1;
+                break;
+            case 1: if ((c & 0xc0) != 0x80)
+                    FWIN_LOG("Malformed UTF-8 sequence\n");
+                uc |= (c & 0x3f);
+                u[n++] = uc;
+                uc = 0;
+                state = 0;
+                break;
+            case 0: if ((c & 0x80) == 0) u[n++] = c;
+                else if ((c & 0xe0) == 0xc0)
+                {   uc = (c & 0x1f) << 6;
+                    state = 1;
+                }
+                else if ((c & 0xf0) == 0xe0)
+                {   uc = (c & 0x0f) << 12;
+                    state = 2;
+                }
+                else if ((c & 0xf8) == 0xf0)
+                {   uc = (c & 0x07) << 18;
+                    state = 3;
+                }
+                else FWIN_LOG("Malformed UTF-8 sequence\n");
+                break;
         }
     }
     return n;
 }
 
 void fwinText::OnSetPrompt(wxThreadEvent& event)
-{
-    wxString text = event.GetString();
+{   wxString text = event.GetString();
     FWIN_LOG("OnSetPrompt %s\n", fwin_prompt_string);
     unicodePromptLength = unpackUTF8chars(&unicodePrompt[0],
                                           &fwin_prompt_string[0],
@@ -4028,52 +4007,47 @@ void fwinText::OnSetPrompt(wxThreadEvent& event)
 }
 
 void fwinText::OnSetMenus(wxThreadEvent& event)
-{
-    FWIN_LOG("OnSetMenus\n");
+{   FWIN_LOG("OnSetMenus\n");
     writing.Post();
 }
 
 void fwinText::OnRefreshSwitches(wxThreadEvent& event)
-{
-    FWIN_LOG("OnRefreshSwitches\n");
+{   FWIN_LOG("OnRefreshSwitches\n");
     writing.Post();
 }
 
 
 void fwinText::OnSetLeft(wxThreadEvent& event)
-{
-    wxString text = event.GetString();
-    FWIN_LOG("OnSetLeft %s\n", (const char *)text.ToAscii());
+{   wxString text = event.GetString();
+    FWIN_LOG("OnSetLeft %s\n",
+             reinterpret_cast<const char *>(text.ToAscii()));
     writing.Post();
 }
 
 void fwinText::OnSetMid(wxThreadEvent& event)
-{
-    wxString text = event.GetString();
-    FWIN_LOG("OnSetMid %s\n", (const char *)text.ToAscii());
+{   wxString text = event.GetString();
+    FWIN_LOG("OnSetMid %s\n",
+             reinterpret_cast<const char *>(text.ToAscii()));
     writing.Post();
 }
 
 void fwinText::OnSetRight(wxThreadEvent& event)
-{
-    wxString text = event.GetString();
-    FWIN_LOG("OnSetRight %s\n", (const char *)text.ToAscii());
+{   wxString text = event.GetString();
+    FWIN_LOG("OnSetRight %s\n",
+             reinterpret_cast<const char *>(text.ToAscii()));
     writing.Post();
 }
 
 void fwinText::OnFlushBuffer1(wxThreadEvent& event)
-{
-    OnFlushBuffer(&fwin_buffer1[0]);
+{   OnFlushBuffer(&fwin_buffer1[0]);
 }
 
 void fwinText::OnFlushBuffer2(wxThreadEvent& event)
-{
-    OnFlushBuffer(&fwin_buffer2[0]);
+{   OnFlushBuffer(&fwin_buffer2[0]);
 }
 
 void fwinText::OnFlushBuffer(const char *fwin_buffer)
-{
-    recently_flushed = 0;
+{   recently_flushed = 0;
     uint32_t wideBuffer[FWIN_BUFFER_SIZE];
     int n = unpackUTF8chars(&wideBuffer[0], fwin_buffer, fwin_out);
     insertChars(&wideBuffer[0], n);
@@ -4109,33 +4083,30 @@ void fwinText::OnRequestInput(wxThreadEvent& event)
 
     awaiting = 1;
     return;  // no type-ahead for now. If I had type-ahead I would
-             // unload from the type-ahead buffer here and if I got as far
-             // as a newline do a reading.Post();
+    // unload from the type-ahead buffer here and if I got as far
+    // as a newline do a reading.Post();
 
 }
 
 
 void fwinText::OnMinimiseWindow(wxThreadEvent& event)
-{
-    FWIN_LOG("OnMinimiseWindow\n");
+{   FWIN_LOG("OnMinimiseWindow\n");
     Hide();
     writing.Post();
 }
 
 void fwinText::OnRestoreWindow(wxThreadEvent& event)
-{
-    FWIN_LOG("OnRestoreWindow\n");
+{   FWIN_LOG("OnRestoreWindow\n");
     Show();
     writing.Post();
 }
 
 void fwinText::SetupFonts(wxDC &dc)
-{
-    FWIN_LOG("SetupFonts called, fixedPitch = %p\n", fixedPitch);
+{   FWIN_LOG("SetupFonts called, fixedPitch = %p\n", fixedPitch);
     wxSize window(GetClientSize());
     windowWidth = window.GetWidth();
     windowHeight = window.GetHeight();
-    if (fixedPitch == NULL)
+    if (fixedPitch == nullptr)
     {   fixedPitch = new wxFont();
         fixedCJK   = new wxFont();
 // It worries me that exactly the same OpenType font needs to be
@@ -4149,25 +4120,30 @@ void fwinText::SetupFonts(wxDC &dc)
         fixedPitch->SetPointSize(1000);
         fixedCJK->SetPointSize(1000);
         font_width *p = cm_font_width;
-        while (p->name != NULL &&
+        while (p->name != nullptr &&
                std::strcmp(p->name, "cmtt10") != 0) p++;
-        if (p->name == NULL)
+        if (p->name == nullptr)
         {   FWIN_LOG("Oops - font data not found\n");
             std::exit(1);
         }
         wxCoord width, height, depth, leading;
         dc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
-        FWIN_LOG("width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading);
-        em = (double)width/100.0;
-        double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
+        FWIN_LOG("width=%d height=%d depth=%d leading=%d\n", width, height,
+                 depth, leading);
+        em = static_cast<double>(width)/100.0;
+        double fmEm = static_cast<double>(p)->charwidth[(int)
+                      'M']*10.0/1048576.0;
         pixelsPerPoint = em/fmEm;
         fixedPitch->SetPointSize(10);
-        dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading, fixedCJK);
-        FWIN_LOG("CJK width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading);
+        dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading,
+                         fixedCJK);
+        FWIN_LOG("CJK width=%d height=%d depth=%d leading=%d\n", width,
+                 height, depth, leading);
     }
     int spacePerChar = windowWidth/80;
-    scaleAdjustment = (double)spacePerChar/em;
-    FWIN_LOG("windowWidth = %d scaleAdjustment = %.3g\n", windowWidth, scaleAdjustment);
+    scaleAdjustment = static_cast<double>(spacePerChar)/em;
+    FWIN_LOG("windowWidth = %d scaleAdjustment = %.3g\n", windowWidth,
+             scaleAdjustment);
     fixedPitch->SetPointSize(10);
     fixedPitch->Scale(scaleAdjustment);
     fixedCJK->SetPointSize(10);
@@ -4185,7 +4161,7 @@ void fwinText::SetupFonts(wxDC &dc)
 // Now I need to re-size any fonts that have already been created
     for (int i=0; i<MAX_FONTS; i++)
     {   wxFont *ff = font[i];
-        if (ff == NULL) continue;
+        if (ff == nullptr) continue;
         ff->SetPointSize(fontWidth[i]->designsize/1048576);
         ff->Scale(scaleAdjustment*fontScale[i]);
     }
@@ -4194,7 +4170,7 @@ void fwinText::SetupFonts(wxDC &dc)
 // screen. It seems a little odd to do these steps if I happen to invoke
 // thi sfrom within the prointing framework but I believe it should not hurt.
     SetFocus();
-    if (caret == NULL) caret = new wxCaret(this, 2, rowHeight);
+    if (caret == nullptr) caret = new wxCaret(this, 2, rowHeight);
     else caret->SetSize(2, rowHeight);
     repositionCaret();
     SetScrollRate(0, rowHeight);
@@ -4204,8 +4180,7 @@ void fwinText::SetupFonts(wxDC &dc)
 
 void fwinText::MainDraw(wxDC &dc,
                         int firstUpdateRow, int lastUpdateRow)
-{
-    wxColour c1(GetBackgroundColour());
+{   wxColour c1(GetBackgroundColour());
     wxPen p1(c1), p2(c1);
     dc.SetPen(p1);
     wxBrush b1(c1);
@@ -4231,8 +4206,7 @@ void fwinText::MainDraw(wxDC &dc,
 
 
 void fwinText::OnDraw(wxDC &dc)
-{
-    if (firstPaint)
+{   if (firstPaint)
     {   FWIN_LOG("SetupFonts from OnDraw\n");
         SetupFonts(dc);
     }
@@ -4241,15 +4215,15 @@ void fwinText::OnDraw(wxDC &dc)
                            &updateRegion.x, &updateRegion.y);
     int firstUpdateRow = updateRegion.y/rowHeight;
     int lastUpdateRow = updateRegion.GetBottom()/rowHeight;
-    FWIN_LOG("update height = %d rowHeight = %d\n", updateRegion.GetBottom(), rowHeight);
+    FWIN_LOG("update height = %d rowHeight = %d\n",
+             updateRegion.GetBottom(), rowHeight);
     FWIN_LOG("Update rows %d to %d\n", firstUpdateRow, lastUpdateRow);
     MainDraw(dc, firstUpdateRow, lastUpdateRow);
 }
 
 
 int fwinText::SkipTextRow(int p)
-{
-    int col = 0;
+{   int col = 0;
     while (p < textEnd)
     {   uint32_t ch = TXT(p++);
         if (ch == '\n') return p;
@@ -4269,8 +4243,7 @@ int fwinText::SkipTextRow(int p)
 }
 
 int fwinText::DrawTextRow(wxDC &dc, int y, int p)
-{
-    int col = 0;
+{   int col = 0;
     while (p < textEnd)
     {   uint32_t ch = textBuffer[p++];
         uint32_t flags = ch & ~0x001fffff;
@@ -4294,41 +4267,40 @@ int fwinText::DrawTextRow(wxDC &dc, int y, int p)
 // There are a few characters that take special action on. I will comment
 // by each about what I am doing and why.
         switch (ch)
-        {
-    case 0x03d2:  // upsih
+        {   case 0x03d2:  // upsih
 // Code 0x3d2 is not available in cmutt. However in
 // cmuntt the normal capital Upsilon comes out curly, so I merely map the
 // code onto that.
-            ch = 0x03a5;
-            break;
-    case 0x03a5:  // upsilon
+                ch = 0x03a5;
+                break;
+            case 0x03a5:  // upsilon
 // Well as explained above, the cmuntt capital Upsilon is a curly one, and
 // I want a non-curly version here. A capital Y provides the correct shape.
-            ch = 'Y';
-            break;
-    case 0x2118:  // weierp
+                ch = 'Y';
+                break;
+            case 0x2118:  // weierp
 // There is no script capital P in any of the fonts I am using at present,
 // however a glyph described as "plhook" in the Private/Corporate range
 // from cmuntt looks a bit like a curly P and is perhaps better than nothing.
-            ch = 0xf189;
-            if (currentFont != FONT_CMTT)
-            {   dc.SetFont(*fixedPitch);
-                currentFont = FONT_CMTT;
-            }
-            cs = (wchar_t)ch;
-            dc.DrawText(cs, columnPos[col], y);
-            col++;
-            continue;
-    case 0x2111:  // image
+                ch = 0xf189;
+                if (currentFont != FONT_CMTT)
+                {   dc.SetFont(*fixedPitch);
+                    currentFont = FONT_CMTT;
+                }
+                cs = (wchar_t)ch;
+                dc.DrawText(cs, columnPos[col], y);
+                col++;
+                continue;
+            case 0x2111:  // image
 // This is supposed toi be a Black Letter Capital I. I use a small capital
 // which is at least different from a regular "I". But this is not very good.
-            ch = 0x026a;
-            break;
-    case 0x211c:  // real
+                ch = 0x026a;
+                break;
+            case 0x211c:  // real
 // A similar problem to "image" above, with a similar fallback
-            ch = 0x0280;
-            break;
-    case 0x2135:  // alefsym
+                ch = 0x0280;
+                break;
+            case 0x2135:  // alefsym
             {   int x = columnPos[col];
                 int w = columnPos[col+1]-x, h = rowHeight;
                 wxPen p1 = dc.GetPen();
@@ -4352,8 +4324,8 @@ int fwinText::DrawTextRow(wxDC &dc, int y, int p)
                 col++;
                 continue;
             }
-    default:
-            break;
+            default:
+                break;
         }
 // I convert TAB into a suitable sequence of spaces.
         if (ch == '\t')
@@ -4387,31 +4359,27 @@ int fwinText::DrawTextRow(wxDC &dc, int y, int p)
 }
 
 
-static char **modules_list=NULL, **switches_list=NULL;
+static char **modules_list=nullptr, **switches_list=nullptr;
 
 
 void fwin_callback_on_delay(delay_callback_t *f)
-{
-    delay_callback = f;
+{   delay_callback = f;
 }
 
 void fwin_callback_to_interrupt(interrupt_callback_t *f)
-{
-    interrupt_callback = f;
+{   interrupt_callback = f;
 }
 
 
 int fwin_windowmode()
-{
-    int r = 0;
+{   int r = 0;
     r |= FWIN_WITH_TERMED;
     if (windowed) r |= FWIN_IN_WINDOW;
     return r;
 }
 
 void fwin_exit(int return_code)
-{
-    fwin_ensure_screen();
+{   fwin_ensure_screen();
     FWIN_LOG("fwin_exit(%d)\n", return_code);
     if (windowed)
     {   returncode = return_code;
@@ -4434,21 +4402,21 @@ void fwin_abrupt_exit()
 
 
 void fwin_minimize()
-{
-    if (!windowed) return;
+{   if (!windowed) return;
     panel->writing.Wait();
     if (shouldExit) fwin_abrupt_exit();
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, MINIMISE_WINDOW);
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD,
+            MINIMISE_WINDOW);
     panel->GetEventHandler()->QueueEvent(event);
 }
 
 
 void fwin_restore()
-{
-    if (!windowed) return;
+{   if (!windowed) return;
     panel->writing.Wait();
     if (shouldExit) fwin_abrupt_exit();
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, RESTORE_WINDOW);
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD,
+            RESTORE_WINDOW);
     panel->GetEventHandler()->QueueEvent(event);
 }
 
@@ -4469,8 +4437,7 @@ static char line_buffer[LINE_BUFFER_SIZE];
 static int line_buffer_p = 0;
 
 static void flush_line_buffer()
-{
-    if (line_buffer_p != 0)
+{   if (line_buffer_p != 0)
     {   line_buffer[line_buffer_p] = 0;
         std::fputs(line_buffer, stdout);
         line_buffer_p = 0;
@@ -4480,8 +4447,7 @@ static void flush_line_buffer()
 #endif
 
 void fwin_putchar(int c)
-{
-    if (!windowed)
+{   if (!windowed)
     {
 #ifdef WIN32
         if ((c & 0xc0) != 0x80 && line_buffer_p > LINE_BUFFER_SIZE-5)
@@ -4503,7 +4469,7 @@ void fwin_putchar(int c)
     else panel->fwin_buffer2[in] = c;
     panel->fwin_in = in+1;
     std::FILE *f = panel->logfile;
-    if (f != NULL) std::putc(c, f);
+    if (f != nullptr) std::putc(c, f);
 }
 
 void fwin_putcode(int c)
@@ -4531,8 +4497,7 @@ void fwin_putcode(int c)
 }
 
 void fwin_puts(const char *s)
-{
-    if (!windowed)
+{   if (!windowed)
     {
 #ifdef WIN32
         flush_line_buffer();
@@ -4546,7 +4511,8 @@ void fwin_puts(const char *s)
     }
     int len = std::strlen(s);
     FWIN_LOG("fwin_puts(\"%s\")\n", s);
-    char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
+    char *b = panel->use_buffer1 ? panel->fwin_buffer1 :
+              panel->fwin_buffer2;
     int in = panel->fwin_in;
     while (len > 0)
     {   int n = len;
@@ -4562,7 +4528,7 @@ void fwin_puts(const char *s)
             {   fwin_ensure_screen();
 // flushing the buffer changes which buffer I am using.
                 b = panel->use_buffer1 ? panel->fwin_buffer1 :
-                                         panel->fwin_buffer2;
+                    panel->fwin_buffer2;
                 in = panel->fwin_in;
                 continue;
             }
@@ -4576,7 +4542,7 @@ void fwin_puts(const char *s)
         }
         std::memcpy(&b[panel->fwin_in], s, n);
         std::FILE *f = panel->logfile;
-        if (f != NULL) std::fwrite(s, 1, n, f);
+        if (f != nullptr) std::fwrite(s, 1, n, f);
         panel->fwin_in += n;
         s += n;
         len -= n;
@@ -4585,8 +4551,7 @@ void fwin_puts(const char *s)
 
 
 void fwin_printf(const char *fmt, ...)
-{
-    std::va_list a;
+{   std::va_list a;
     va_start(a, fmt);
     if (!windowed)
     {
@@ -4608,7 +4573,8 @@ void fwin_printf(const char *fmt, ...)
 // for a PAUSE state here... I may need to reinstate that behaviour later.
     if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE)
         fwin_ensure_screen();
-    char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
+    char *b = panel->use_buffer1 ? panel->fwin_buffer1 :
+              panel->fwin_buffer2;
     int in = panel->fwin_in;
 #ifdef HAVE_VSNPRINTF
     std::vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
@@ -4622,14 +4588,13 @@ void fwin_printf(const char *fmt, ...)
 // of the above functions and adjust the data pointers by hand.
     int n = std::strlen(&b[in]);
     std::FILE *f = panel->logfile;
-    if (f != NULL) std::fwrite(&b[in], 1, n, f);
+    if (f != nullptr) std::fwrite(&b[in], 1, n, f);
     panel->fwin_in = in + n;
     va_end(a);
 }
 
 void fwin_vfprintf(const char *fmt, std::va_list a)
-{
-    if (!windowed)
+{   if (!windowed)
     {
 #ifdef WIN32
         flush_line_buffer();
@@ -4649,7 +4614,8 @@ void fwin_vfprintf(const char *fmt, std::va_list a)
 // see comments above.
     if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE)
         fwin_ensure_screen();
-    char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
+    char *b = panel->use_buffer1 ? panel->fwin_buffer1 :
+              panel->fwin_buffer2;
     int in = panel->fwin_in;
 #ifdef HAVE_VSNPRINTF
     std::vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
@@ -4658,22 +4624,20 @@ void fwin_vfprintf(const char *fmt, std::va_list a)
 #endif
     int n = std::strlen(&b[in]);
     std::FILE *f = panel->logfile;
-    if (f != NULL) std::fwrite(&b[in], 1, n, f);
+    if (f != nullptr) std::fwrite(&b[in], 1, n, f);
     panel->fwin_in += n;
 }
 
-const char *fwin_maths = NULL;
+const char *fwin_maths = nullptr;
 
 void fwin_showmath(const char *s)
-{
-    if (!windowed) return;
+{   if (!windowed) return;
     FWIN_LOG("fwin_showmath called\n");
 }
 
 
 void fwin_ensure_screen()
-{
-    if (!windowed)
+{   if (!windowed)
     {
 #ifdef WIN32
         flush_line_buffer();
@@ -4684,8 +4648,10 @@ void fwin_ensure_screen()
     if (panel->fwin_in == 0) return;
     FWIN_LOG("fwin_ensure_screen\n");
     if (panel->use_buffer1)
-        FWIN_LOG("B1: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer1[0]));
-    else FWIN_LOG("B2: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer2[0]));
+        FWIN_LOG("B1: <%.*s>\n", static_cast<int>(panel)->fwin_in,
+                 &(panel->fwin_buffer1[0]));
+    else FWIN_LOG("B2: <%.*s>\n", static_cast<int>(panel)->fwin_in,
+                      &(panel->fwin_buffer2[0]));
 // Wait until GUI thread is ready, ie has finshed emptying the other
 // buffer.
     panel->writing.Wait();
@@ -4697,7 +4663,7 @@ void fwin_ensure_screen()
 // Create an event to ask the GUI thread to empty the buffer.
     wxThreadEvent *event =
         new wxThreadEvent(wxEVT_COMMAND_THREAD,
-             panel->use_buffer1 ? FLUSH_BUFFER1 : FLUSH_BUFFER2);
+                          panel->use_buffer1 ? FLUSH_BUFFER1 : FLUSH_BUFFER2);
 // flip active buffer.
     panel->use_buffer1 = !panel->use_buffer1;
     panel->fwin_in = 0;
@@ -4705,13 +4671,13 @@ void fwin_ensure_screen()
     panel->GetEventHandler()->QueueEvent(event);
 }
 
-static review_switch_settings_function *review_switch_settings = NULL;
+static review_switch_settings_function *review_switch_settings =
+    nullptr;
 
 static int update_next_time = 0;
 
 int fwin_getchar()
-{
-    if (!windowed)
+{   if (!windowed)
     {
 #ifdef WIN32
         flush_line_buffer();
@@ -4724,15 +4690,16 @@ int fwin_getchar()
         return panel->inputBuffer[panel->inputBufferP++];
 // Now however a new line of input is needed, so I have to request it from
 // the user-interface thread.
-    if (update_next_time && review_switch_settings != NULL)
+    if (update_next_time && review_switch_settings != nullptr)
     {   (*review_switch_settings)();
         update_next_time = 0;
     }
-    if (delay_callback != NULL) (*delay_callback)(1);
+    if (delay_callback != nullptr) (*delay_callback)(1);
     fwin_ensure_screen();
     panel->writing.Wait();
     if (shouldExit) fwin_abrupt_exit();
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, REQUEST_INPUT);
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD,
+            REQUEST_INPUT);
     panel->GetEventHandler()->QueueEvent(event);
 // OK - the screen is up to date as regards output and all other changes
 // I may have made - and I have now asked for some input. This request will
@@ -4740,7 +4707,7 @@ int fwin_getchar()
 // put a line of valid data into inputBuffer.
     panel->reading.Wait(); // the genuine wait for input
     if (shouldExit) fwin_abrupt_exit();
-    if (delay_callback != NULL) (*delay_callback)(0);
+    if (delay_callback != nullptr) (*delay_callback)(0);
 // I will try a convention that if inputBufferLen is zero that indicates
 // a dodgy state. Eg the user is sending an EOF or interrupt.
     int n = panel->inputBufferLen;
@@ -4755,7 +4722,9 @@ int fwin_getchar()
     {   n--;
         p++;
     }
-    if (n>12 && std::strncmp((const char *)p, (const char *)"load_package", 12) == 0)
+    if (n>12 &&
+        std::strncmp(reinterpret_cast<const char *>(p),
+                     (const char *)"load_package", 12) == 0)
         update_next_time = 1;
     int ch = panel->inputBuffer[panel->inputBufferP++];
 // Note that a Ctrl-D as the VERY FIRST character in the buffer is treated
@@ -4767,42 +4736,42 @@ int fwin_getchar()
 
 
 void fwin_set_prompt(const char *s)
-{
-    std::strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
+{   std::strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
     fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
     if (!windowed) return;
     panel->writing.Wait();
     if (shouldExit) fwin_abrupt_exit();
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_PROMPT);
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD,
+            SET_PROMPT);
     panel->GetEventHandler()->QueueEvent(event);
 }
 
 void fwin_menus(char **modules, char **switches,
                 review_switch_settings_function *f)
-{
-    if (!windowed) return;
+{   if (!windowed) return;
     modules_list = modules;
     switches_list = switches;
     panel->writing.Wait();
     if (shouldExit) fwin_abrupt_exit();
     review_switch_settings = f;
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_MENUS);
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD,
+            SET_MENUS);
     panel->GetEventHandler()->QueueEvent(event);
 }
 
 void fwin_refresh_switches(char **switches, char **packages)
-{
-    if (!windowed) return;
+{   if (!windowed) return;
     switches_list = switches;
     modules_list = packages;
     panel->writing.Wait();
     if (shouldExit) fwin_abrupt_exit();
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, REFRESH_SWITCHES);
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD,
+            REFRESH_SWITCHES);
     panel->GetEventHandler()->QueueEvent(event);
 }
 
 static char left_stuff[32] = "",
-            right_stuff[32] = "";
+                             right_stuff[32] = "";
 char mid_stuff[32] = "", full_title[90] = "";
 
 #ifdef USE_A0_SPACER
@@ -4848,8 +4817,7 @@ void fwin_acknowledge_tick()
 
 
 void fwin_report_left(const char *msg)
-{
-    if (!windowed) return;
+{   if (!windowed) return;
     std::strncpy(left_stuff, msg, 31);
     left_stuff[31] = 0;
 #ifdef RECONSTRUCTED
@@ -4858,8 +4826,7 @@ void fwin_report_left(const char *msg)
 }
 
 void fwin_report_mid(const char *msg)
-{
-    if (!windowed) return;
+{   if (!windowed) return;
     std::strncpy(mid_stuff, msg, 31);
     mid_stuff[31] = 0;
 #ifdef RECONSTRUCTED
@@ -4868,8 +4835,7 @@ void fwin_report_mid(const char *msg)
 }
 
 void fwin_report_right(const char *msg)
-{
-    if (!windowed) return;
+{   if (!windowed) return;
     std::strncpy(right_stuff, msg, 31);
     right_stuff[31] = 0;
 #ifdef RECONSTRUCTED
@@ -4878,8 +4844,7 @@ void fwin_report_right(const char *msg)
 }
 
 void fwin_set_help_file(const char *key, const char *path)
-{
-    if (!windowed) return;
+{   if (!windowed) return;
 #ifdef RECONSTRUCTED
     std::printf("fwin_set_help_file called\n");
     std::fflush(stdout);

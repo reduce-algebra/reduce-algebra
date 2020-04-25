@@ -83,13 +83,13 @@ extern bool restartp;
 typedef struct _directory_header
 {   char C, S, L, version;  // Identification: spells CSL or CCL.
     unsigned char dirext,   // Extra bits for dirused, dirsize, this is
-                            // so that in effect dirsize & dirused can be
-                            // 12 bits wide.
-                  dirsize,  // Number of directory entries provided.
-                  dirused,  // Number currently in use.
-                  updated;  // In need of compaction & other flags.
+             // so that in effect dirsize & dirused can be
+             // 12 bits wide.
+             dirsize,  // Number of directory entries provided.
+             dirused,  // Number currently in use.
+             updated;  // In need of compaction & other flags.
     char eof[4];            // fseek/ftell location of end of file.
-                            // Does this assume no fiules > 4G?
+    // Does this assume no fiules > 4G?
 } directory_header;
 
 typedef struct _directory_entry
@@ -140,7 +140,7 @@ typedef struct _directory_entry
 typedef struct directory
 {   directory_header h;
     std::FILE *f;
-    const char *full_filename;    // NULL unless native directory
+    const char *full_filename;    // nullptr unless native directory
 // It is unexpectedly and unpleasantly the case that the "filename"
 // field here must be the last one before the array of directory
 // entries. This is because in the case where an image file is
@@ -213,7 +213,7 @@ public:
     faslFileRecord(string n, bool o)
     {   inUse = true;
         name = n;
-        dir = NULL;
+        dir = nullptr;
         isOutput = o;
     }
 };
@@ -221,7 +221,7 @@ public:
 extern std::vector<stringBoolString> symbolsToDefine;
 extern std::vector<stringBoolString> stringsToDefine;
 extern std::vector<string> stringsToEvaluate;
-extern std::vector<faslFileRecord> fasl_files; 
+extern std::vector<faslFileRecord> fasl_files;
 
 extern char *big_chunk_start, *big_chunk_end;
 
@@ -284,7 +284,7 @@ inline void if_check_stack()
 inline void if_check_stack()
 {   const char *_p_ = reinterpret_cast<const char *>(&_p_);
     if (reinterpret_cast<uintptr_t>(_p_) < C_stacklimit)
-    {  if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
+    {   if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
         aerror("stack overflow");
     }
 }
@@ -300,9 +300,12 @@ extern char debug_trail[32][32];
 extern char debug_trail_file[32][32];
 extern int debug_trail_line[32];
 extern int debug_trailp;
-extern void debug_record_raw(const char *data, const char *file, int line);
-extern void debug_record_int_raw(const char *s, int n, const char *file, int line);
-extern void debug_show_trail_raw(const char *msg, const char *file, int line);
+extern void debug_record_raw(const char *data, const char *file,
+                             int line);
+extern void debug_record_int_raw(const char *s, int n,
+                                 const char *file, int line);
+extern void debug_show_trail_raw(const char *msg, const char *file,
+                                 int line);
 
 #define debug_record(data) debug_record_raw(data, __FILE__, __LINE__)
 #define debug_record_int(s, n) debug_record_int_raw(s, n, __FILE__, __LINE__)
@@ -399,9 +402,11 @@ extern intptr_t print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
 extern intptr_t modulus_is_large;
 
-extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
+extern LispObject lisp_true, lambda, funarg, unset_var, opt_key,
+       rest_key;
 extern LispObject quote_symbol, function_symbol, comma_symbol;
-extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
+extern LispObject comma_at_symbol, cons_symbol, eval_symbol,
+       apply_symbol;
 extern LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
 extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
@@ -409,11 +414,13 @@ extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn;
 extern LispObject gensym_base, string_char_sym, boffo;
 extern LispObject err_table, progn_symbol, gcknt_symbol;
-extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;
+extern LispObject lisp_work_stream, charvec, raise_symbol,
+       lower_symbol;
 extern LispObject echo_symbol, codevec, litvec, supervisor, B_reg;
 extern LispObject savedef, comp_symbol, compiler_symbol, faslvec;
 extern LispObject tracedfn, lisp_terminal_io;
-extern LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
+extern LispObject lisp_standard_output, lisp_standard_input,
+       lisp_error_output;
 extern LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
 extern LispObject prompt_thing, faslgensyms;
 extern LispObject prinl_symbol, emsg_star, redef_msg;
@@ -441,23 +448,30 @@ extern LispObject declare_symbol, special_symbol, large_modulus;
 extern LispObject used_space, avail_space, eof_symbol, call_stack;
 extern LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol;
 extern LispObject not_symbol, reader_workspace, named_character;
-extern LispObject read_float_format, short_float, single_float, double_float;
-extern LispObject long_float, bit_symbol, pathname_symbol, print_array_sym;
+extern LispObject read_float_format, short_float, single_float,
+       double_float;
+extern LispObject long_float, bit_symbol, pathname_symbol,
+       print_array_sym;
 extern LispObject read_base, initial_element;
 extern LispObject builtin0_symbol, builtin1_symbol, builtin2_symbol;
-extern LispObject builtin3_symbol, builtin4_symbol; 
+extern LispObject builtin3_symbol, builtin4_symbol;
 
 #ifdef OPENMATH
 extern LispObject om_openFileDev(LispObject env, int nargs, ...);
-extern LispObject om_openStringDev(LispObject env, LispObject lstr, LispObject lenc);
+extern LispObject om_openStringDev(LispObject env, LispObject lstr,
+                                   LispObject lenc);
 extern LispObject om_closeDev(LispObject env, LispObject dev);
-extern LispObject om_setDevEncoding(LispObject env, LispObject ldev, LispObject lenc);
+extern LispObject om_setDevEncoding(LispObject env, LispObject ldev,
+                                    LispObject lenc);
 extern LispObject om_makeConn(LispObject env, LispObject ltimeout);
 extern LispObject om_closeConn(LispObject env, LispObject lconn);
-extern LispObject om_getConnInDevice(LispObject env, LispObject lconn);
-extern LispObject om_getConnOutDevice(LispObject env, LispObject lconn);
+extern LispObject om_getConnInDevice(LispObject env,
+                                     LispObject lconn);
+extern LispObject om_getConnOutDevice(LispObject env,
+                                      LispObject lconn);
 extern LispObject om_connectTCP(LispObject env, int nargs, ...);
-extern LispObject om_bindTCP(LispObject env, LispObject lconn, LispObject lport);
+extern LispObject om_bindTCP(LispObject env, LispObject lconn,
+                             LispObject lport);
 extern LispObject om_putApp(LispObject env, LispObject ldev);
 extern LispObject om_putEndApp(LispObject env, LispObject ldev);
 extern LispObject om_putAtp(LispObject env, LispObject ldev);
@@ -472,12 +486,18 @@ extern LispObject om_putError(LispObject env, LispObject ldev);
 extern LispObject om_putEndError(LispObject env, LispObject ldev);
 extern LispObject om_putObject(LispObject env, LispObject ldev);
 extern LispObject om_putEndObject(LispObject env, LispObject ldev);
-extern LispObject om_putInt(LispObject env, LispObject ldev, LispObject val);
-extern LispObject om_putFloat(LispObject env, LispObject ldev, LispObject val);
-extern LispObject om_putByteArray(LispObject env, LispObject ldev, LispObject val);
-extern LispObject om_putVar(LispObject env, LispObject ldev, LispObject val);
-extern LispObject om_putString(LispObject env, LispObject ldev, LispObject val);
-extern LispObject om_putSymbol(LispObject env, LispObject ldev, LispObject val);
+extern LispObject om_putInt(LispObject env, LispObject ldev,
+                            LispObject val);
+extern LispObject om_putFloat(LispObject env, LispObject ldev,
+                              LispObject val);
+extern LispObject om_putByteArray(LispObject env, LispObject ldev,
+                                  LispObject val);
+extern LispObject om_putVar(LispObject env, LispObject ldev,
+                            LispObject val);
+extern LispObject om_putString(LispObject env, LispObject ldev,
+                               LispObject val);
+extern LispObject om_putSymbol(LispObject env, LispObject ldev,
+                               LispObject val);
 extern LispObject om_putSymbol2(LispObject env, int nargs, ...);
 extern LispObject om_getApp(LispObject env, LispObject ldev);
 extern LispObject om_getEndApp(LispObject env, LispObject ldev);
@@ -501,12 +521,15 @@ extern LispObject om_getString(LispObject env, LispObject ldev);
 extern LispObject om_getSymbol(LispObject env, LispObject ldev);
 extern LispObject om_getType(LispObject env, LispObject ldev);
 
-extern LispObject om_stringToStringPtr(LispObject env, LispObject lstr);
-extern LispObject om_stringPtrToString(LispObject env, LispObject lpstr);
+extern LispObject om_stringToStringPtr(LispObject env,
+                                       LispObject lstr);
+extern LispObject om_stringPtrToString(LispObject env,
+                                       LispObject lpstr);
 
 extern LispObject om_read(LispObject env, LispObject dev);
 extern LispObject om_supportsCD(LispObject env, LispObject lcd);
-extern LispObject om_supportsSymbol(LispObject env, LispObject lcd, LispObject lsym);
+extern LispObject om_supportsSymbol(LispObject env, LispObject lcd,
+                                    LispObject lsym);
 extern LispObject om_listCDs(LispObject env, int nargs, ...);
 extern LispObject om_listSymbols(LispObject env, LispObject lcd);
 extern LispObject om_whichCDs(LispObject env, LispObject lsym);
@@ -696,7 +719,8 @@ extern const char *compiler_command[], *import_data[],
 extern LispObject encapsulate_pointer(void *);
 extern void *extract_pointer(LispObject a);
 extern LispObject Lencapsulatedp(LispObject env, LispObject a);
-typedef void initfn(LispObject *, LispObject **, LispObject * volatile *);
+typedef void initfn(LispObject *, LispObject **,
+                    LispObject * volatile *);
 
 extern LispObject characterify(LispObject a);
 extern LispObject char_to_id(int ch);
@@ -713,13 +737,16 @@ extern bool open_output(const char *s, size_t len);
 #define IOPEN_OUT       0
 #define IOPEN_IN        1
 
-extern bool Iopen(const char *name, size_t len, int dirn, char *expanded_name);
+extern bool Iopen(const char *name, size_t len, int dirn,
+                  char *expanded_name);
 extern bool Iopen_from_stdin(), Iopen_to_stdout();
-extern bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour);
+extern bool IopenRoot(char *expanded_name, size_t hard,
+                      int sixtyfour);
 extern bool Iwriterootp(char *expanded);
 extern bool Iopen_banner(int code);
-extern bool Imodulep1(int i, const char *name, size_t len, char *datestamp,
-                     size_t *size, char *expanded_name);
+extern bool Imodulep1(int i, const char *name, size_t len,
+                      char *datestamp,
+                      size_t *size, char *expanded_name);
 extern bool Imodulep(const char *name, size_t len, char *datestamp,
                      size_t *size, char *expanded_name);
 extern char *trim_module_name(char *name, size_t *lenp);
@@ -750,7 +777,8 @@ extern void CSL_MD5_Init();
 extern void CSL_MD5_Update(const unsigned char *data, size_t len);
 extern void CSL_MD5_Final(unsigned char *md);
 extern bool CSL_MD5_busy;
-extern unsigned char *CSL_MD5(unsigned char *data, int n, unsigned char *md);
+extern unsigned char *CSL_MD5(unsigned char *data, int n,
+                              unsigned char *md);
 extern void checksum(LispObject a);
 
 extern void ensure_screen();
@@ -798,9 +826,11 @@ extern void        freshline_trace();
 extern void        freshline_debug();
 extern LispObject cons(LispObject a, LispObject b);
 extern LispObject cons_no_gc(LispObject a, LispObject b);
-extern LispObject acons_no_gc(LispObject a, LispObject b, LispObject c);
+extern LispObject acons_no_gc(LispObject a, LispObject b,
+                              LispObject c);
 extern LispObject cons_gc_test(LispObject a);
-extern void       convert_fp_rep(void *p, int old_rep, int new_rep, int type);
+extern void       convert_fp_rep(void *p, int old_rep, int new_rep,
+                                 int type);
 extern LispObject eval(LispObject u, LispObject env);
 extern uint32_t   Crand();
 extern LispObject Cremainder(LispObject a, LispObject b);
@@ -816,7 +846,8 @@ extern bool traced_equal_fn(LispObject a, LispObject b,
 extern void dump_equals();
 #endif
 extern bool equalp(LispObject a, LispObject b);
-extern LispObject apply(LispObject fn, LispObject args, LispObject env,
+extern LispObject apply(LispObject fn, LispObject args,
+                        LispObject env,
                         LispObject from);
 extern LispObject apply_lambda(LispObject def, LispObject args,
                                LispObject env, LispObject name);
@@ -833,10 +864,12 @@ extern LispObject get_vector_init(size_t n, LispObject v);
 extern LispObject reduce_vector_size(LispObject n, size_t length);
 extern void       prepare_for_borrowing();
 inline void zero_out(void *p)
-{   char *p1 = reinterpret_cast<char *>(doubleword_align_up(reinterpret_cast<uintptr_t>(p)));
+{   char *p1 = reinterpret_cast<char *>(doubleword_align_up(
+                                            reinterpret_cast<uintptr_t>(p)));
     std::memset(p1, 0, CSL_PAGE_SIZE);
 }
-extern LispObject borrow_basic_vector(int tag, int type, size_t length);
+extern LispObject borrow_basic_vector(int tag, int type,
+                                      size_t length);
 extern LispObject borrow_vector(int tag, int type, size_t length);
 extern void       finished_borrowing();
 extern uint64_t   hash_lisp_string(LispObject s);
@@ -847,7 +880,8 @@ extern bool       lesseq2(LispObject a, LispObject b);
 extern bool       lessp2(LispObject a, LispObject b);
 extern LispObject list2(LispObject a, LispObject b);
 extern LispObject list2star(LispObject a, LispObject b, LispObject c);
-extern LispObject list2starrev(LispObject a, LispObject b, LispObject c);
+extern LispObject list2starrev(LispObject a, LispObject b,
+                               LispObject c);
 extern LispObject list3(LispObject a, LispObject b, LispObject c);
 extern LispObject list3rev(LispObject a, LispObject b, LispObject c);
 extern LispObject list3star(LispObject a, LispObject b,
@@ -874,15 +908,17 @@ extern LispObject  ndelete(LispObject a, LispObject b);
 extern LispObject  negate(LispObject a);
 extern LispObject  nreverse(LispObject a);
 extern LispObject  nreverse2(LispObject a, LispObject b);
-extern std::FILE        *open_file(char *filename, const char *original_name,
-                              size_t n, const char *dirn, std::FILE *old_file);
+extern std::FILE        *open_file(char *filename,
+                                   const char *original_name,
+                                   size_t n, const char *dirn, std::FILE *old_file);
 extern LispObject  plus2(LispObject a, LispObject b);
 extern void        preserve(const char *msg, size_t len);
 extern LispObject prin(LispObject u);
 extern void debugprint(LispObject a, int depth=10);
 extern void debugprint(const char *s, LispObject a);
 extern void debugprint(const char *s);
-extern const char *get_string_data(LispObject a, const char *why, size_t &len);
+extern const char *get_string_data(LispObject a, const char *why,
+                                   size_t &len);
 extern void prin_to_stdout(LispObject u);
 extern void prin_to_terminal(LispObject u);
 extern void prin_to_debug(LispObject u);
@@ -900,12 +936,14 @@ extern void internal_prin(LispObject u, int prefix);
 extern LispObject  princ(LispObject u);
 extern LispObject  print(LispObject u);
 extern LispObject  printc(LispObject u);
-extern void        print_bignum(LispObject u, bool blankp, int nobreak);
+extern void        print_bignum(LispObject u, bool blankp,
+                                int nobreak);
 extern void        print_bighexoctbin(LispObject u,
                                       int radix, int width, bool blankp, int nobreak);
-extern void        print_newbignum(LispObject u, bool blankp, int nobreak);
+extern void        print_newbignum(LispObject u, bool blankp,
+                                   int nobreak);
 extern void        print_newbighexoctbin(LispObject u,
-                                         int radix, int width, bool blankp, int nobreak);
+        int radix, int width, bool blankp, int nobreak);
 extern LispObject  putprop(LispObject a, LispObject b,
                            LispObject c);
 extern LispObject  quot2(LispObject a, LispObject b);
@@ -1046,29 +1084,29 @@ typedef struct setup_type_1
 } setup_type_1;
 
 extern setup_type const
-    arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
-    arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
-    eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
-    lisphash_setup[], print_setup[], read_setup[],
-    restart_setup[], mpi_setup[];
+arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
+              arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
+              eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
+              lisphash_setup[], print_setup[], read_setup[],
+              restart_setup[], mpi_setup[];
 #ifdef ARITHLIB
 extern setup_type const arith_setup[];
 #endif
 
 extern setup_type const
-    u01_setup[], u02_setup[], u03_setup[], u04_setup[],
-    u05_setup[], u06_setup[], u07_setup[], u08_setup[], u09_setup[],
-    u10_setup[], u11_setup[], u12_setup[], u13_setup[], u14_setup[],
-    u15_setup[], u16_setup[], u17_setup[], u18_setup[], u19_setup[],
-    u20_setup[], u21_setup[], u22_setup[], u23_setup[], u24_setup[],
-    u25_setup[], u26_setup[], u27_setup[], u28_setup[], u29_setup[],
-    u30_setup[], u31_setup[], u32_setup[], u33_setup[], u34_setup[],
-    u35_setup[], u36_setup[], u37_setup[], u38_setup[], u39_setup[],
-    u40_setup[], u41_setup[], u42_setup[], u43_setup[], u44_setup[],
-    u45_setup[], u46_setup[], u47_setup[], u48_setup[], u49_setup[],
-    u50_setup[], u51_setup[], u52_setup[], u53_setup[], u54_setup[],
-    u55_setup[], u56_setup[], u57_setup[], u58_setup[], u59_setup[],
-    u60_setup[];
+u01_setup[], u02_setup[], u03_setup[], u04_setup[],
+          u05_setup[], u06_setup[], u07_setup[], u08_setup[], u09_setup[],
+          u10_setup[], u11_setup[], u12_setup[], u13_setup[], u14_setup[],
+          u15_setup[], u16_setup[], u17_setup[], u18_setup[], u19_setup[],
+          u20_setup[], u21_setup[], u22_setup[], u23_setup[], u24_setup[],
+          u25_setup[], u26_setup[], u27_setup[], u28_setup[], u29_setup[],
+          u30_setup[], u31_setup[], u32_setup[], u33_setup[], u34_setup[],
+          u35_setup[], u36_setup[], u37_setup[], u38_setup[], u39_setup[],
+          u40_setup[], u41_setup[], u42_setup[], u43_setup[], u44_setup[],
+          u45_setup[], u46_setup[], u47_setup[], u48_setup[], u49_setup[],
+          u50_setup[], u51_setup[], u52_setup[], u53_setup[], u54_setup[],
+          u55_setup[], u56_setup[], u57_setup[], u58_setup[], u59_setup[],
+          u60_setup[];
 
 extern setup_type const *setup_tables[];
 
@@ -1110,7 +1148,8 @@ extern int64_t time_limit, space_limit, io_limit, errors_limit;
 extern bool symbol_protect_flag, warn_about_protected_symbols;
 
 #ifdef HASH_STATISTICS
-extern uint64_t Nhget, Nhgetp, Nhput1, Nhputp1, Nhput2, Nhputp2, Nhputtmp;
+extern uint64_t Nhget, Nhgetp, Nhput1, Nhputp1, Nhput2, Nhputp2,
+       Nhputtmp;
 extern uint64_t Noget, Nogetp, Noput, Noputp, Noputtmp;
 #endif
 

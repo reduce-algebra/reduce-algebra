@@ -250,11 +250,12 @@ std::uint32_t items[] =
 
 
 static std::uint32_t cuckoo_inline get_key(void *p)
-{   return (*(std::uintptr_t *)p) & 0x0007ffff;
+{   return (*reinterpret_cast<std::uintptr_t *>(p)) & 0x0007ffff;
 }
 
 static void cuckoo_inline set_key(void *p, std::uint32_t v)
-{   *(std::uint32_t *)p = (v & 0x0007ffff) | (*(std::uint32_t *)p & 0xfff80000);
+{   *reinterpret_cast<std::uint32_t *>(p) = (v & 0x0007ffff) |
+                                            (*reinterpret_cast<std::uint32_t *>(p) & 0xfff80000);
 }
 
 // Here I make my largest possible table size such that it would only
@@ -288,9 +289,9 @@ int main(int argc, char *argv[])
         return 1;
     }
     std::printf("For %d items the table is %d long (%.2f%% full)\n",
-           (int)(sizeof(items)/sizeof(items[0])),
-           r.table_size,
-           (100.0*sizeof(items))/(r.table_size*sizeof(items[0])));
+                static_cast<int>(sizeof(items)/sizeof(items[0])),
+                r.table_size,
+                (100.0*sizeof(items))/(r.table_size*sizeof(items[0])));
     std::printf("modulus2 = %d offset2 = %d\n", r.modulus2, r.offset2);
     for (i=0; i<r.table_size; i++)
         std::printf("%5d: %.8x\n", i, table[i]);

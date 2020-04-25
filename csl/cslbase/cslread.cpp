@@ -92,7 +92,7 @@ LispObject make_string(const char *b)
 //
 {   size_t n = std::strlen(b);
     LispObject r = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-    char *s = (char *)r - TAG_VECTOR;
+    char *s = reinterpret_cast<char *>(r) - TAG_VECTOR;
     size_t k = doubleword_align_up(CELL+n);
     std::memcpy(s + CELL, b, (size_t)n);
     while (n < k) s[CELL+n++] = 0;
@@ -106,31 +106,38 @@ void validate_string_fn(LispObject s, const char *file, int line)
         size_t len1 = doubleword_align_up((uintptr_t)len);
         while (len < len1)
         {   if (celt(s, len-CELL) != 0)
-            {   char *p = (char *)(s - TAG_VECTOR);
+            {   char *p = reinterpret_cast<char *>(s - TAG_VECTOR);
                 size_t i;
-                if (std::strrchr(file, '/') != NULL) file = std::strrchr(file, '/')+1;
+                if (std::strrchr(file, '/') != nullptr) file = std::strrchr(file,
+                            '/')+1;
                 std::fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
                 std::fprintf(stderr, "Header = %" PRIxPTR "\n", (uintptr_t)vechdr(s));
                 std::fprintf(stderr, "length = %d bytelength = %d\n",
-                    (int)length_of_header(vechdr(s)),
-                    (int)length_of_byteheader(vechdr(s)));
+                             static_cast<int>(length_of_header(vechdr(s))),
+                             static_cast<int>(length_of_byteheader(vechdr(s))));
                 std::fprintf(stderr, "messed at len:%d len1:%d [%x]\n",
-                        (int)len, (int)len1, (int)celt(s, len-CELL));
+                             static_cast<int>(len), static_cast<int>(len1),
+                             static_cast<int>(celt(s, len-CELL)));
                 for (i=0; i<len1; i++)
-                {   std::fprintf(stderr, "%3d %p: %.2x   (%c)\n", (int)i, p, *p, *p);
+                {   std::fprintf(stderr, "%3d %p: %.2x   (%c)\n", static_cast<int>(i),
+                                 p, *p, *p);
                     p++;
                 }
                 std::fflush(stderr);
-                *(int *)(LispObject)(-1) = 0x55555555;  // I hope this aborts
+                *reinterpret_cast<int *>(static_cast<LispObject>(-1)) =
+                    0x55555555;  // I hope this aborts
             }
             len++;
         }
         return;
     }
-    std::fprintf(stderr, "\n+++ Not even a string at %s %d\n", file, line);
-    std::fprintf(stderr, "Header = %" PRIxMAX "\n", (std::intmax_t)vechdr(s));
+    std::fprintf(stderr, "\n+++ Not even a string at %s %d\n", file,
+                 line);
+    std::fprintf(stderr, "Header = %" PRIxMAX "\n",
+                 (std::intmax_t)vechdr(s));
     std::fflush(stderr);
-    *(int *)(LispObject)(-1) = 0x55555555;  // I hope this aborts
+    *reinterpret_cast<int *>(static_cast<LispObject>(-1)) =
+        0x55555555;  // I hope this aborts
 }
 
 LispObject copy_string(LispObject str, size_t n)
@@ -145,8 +152,9 @@ LispObject copy_string(LispObject str, size_t n)
     push(str);
     r = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     pop(str);
-    s = (char *)r - TAG_VECTOR;
-    std::memcpy(s + CELL, (char *)str + (CELL-TAG_VECTOR), (size_t)n);
+    s = reinterpret_cast<char *>(r) - TAG_VECTOR;
+    std::memcpy(s + CELL,
+                reinterpret_cast<char *>(str) + (CELL-TAG_VECTOR), (size_t)n);
     k = doubleword_align_up(CELL+n)-CELL;
     while (n < k) s[CELL+n++] = 0;
     validate_string(r);
@@ -154,9 +162,9 @@ LispObject copy_string(LispObject str, size_t n)
 }
 
 LispObject Lvalidate_package(LispObject env, LispObject p)
-{   std::printf("package = %p\n", (void *)p);
+{   std::printf("package = %p\n", reinterpret_cast<void *>(p));
     Lprint(env, p);
-    std::printf("%p\n", (void *)packhdr_(p));
+    std::printf("%p\n", reinterpret_cast<void *>(packhdr_(p)));
     Lprint(env, packid_(p));
     Lprint(env, packint_(p));
     Lprint(env, packnint_(p));
@@ -171,7 +179,8 @@ LispObject Lvalidate_package(LispObject env)
 
 extern bool always(LispObject);
 typedef bool symbol_processor_predicate(LispObject);
-extern bool push_symbols(symbol_processor_predicate *pp, LispObject p);
+extern bool push_symbols(symbol_processor_predicate *pp,
+                         LispObject p);
 
 LispObject Lsymbols_in(LispObject env, LispObject a)
 {   LispObject *stacksave = stack;
@@ -196,7 +205,7 @@ LispObject Lbatchp(LispObject env)
 //     csl < inputfile.lsp
 // will MAYBE also be noticed as batch, but do not count on it!
 //
-    if (non_terminal_input != NULL)
+    if (non_terminal_input != nullptr)
         return onevalue(batch_flag ? nil : lisp_true);
 //
 // "sysxxx.c" now decides if we are in "batch processing" context,
@@ -217,26 +226,27 @@ LispObject Lgetenv(LispObject env, LispObject a)
 #ifdef COMMON
     if (complex_stringp(a) a = simplify_string(a);
 #endif
-    if (symbolp(a))
+        if (symbolp(a))
     {   a = get_pname(a);
-        h = vechdr(a);
-    }
-    else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
+            h = vechdr(a);
+        }
+        else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
         aerror1("getenv", a);
-    size_t len = length_of_byteheader(h) - CELL;
-    std::memcpy(parmname, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
-    parmname[len] = 0;
-    const char *w = my_getenv(parmname);
-    if (w == NULL) return onevalue(nil);    // not available
-    return onevalue(make_string(w));
-}
+        size_t len = length_of_byteheader(h) - CELL;
+                     std::memcpy(parmname, reinterpret_cast<char *>(a) + (CELL-TAG_VECTOR),
+                                 (size_t)len);
+                     parmname[len] = 0;
+                     const char *w = my_getenv(parmname);
+                     if (w == nullptr) return onevalue(nil);    // not available
+                         return onevalue(make_string(w));
+        }
 
 LispObject Lsystem(LispObject env, LispObject a)
 {   char parmname[LONGEST_LEGAL_FILENAME];
     Header h;
     std::memset(parmname, 0, sizeof(parmname));
     if (a == nil)            // enquire if command processor is available
-    {   int w = my_system(NULL);
+    {   int w = my_system(nullptr);
         return onevalue(Lispify_predicate(w != 0));
     }
 #ifdef COMMON
@@ -250,7 +260,8 @@ LispObject Lsystem(LispObject env, LispObject a)
         aerror1("system", a);
     size_t len = length_of_byteheader(h) - CELL;
     if (len+1 > sizeof(parmname)) aerror1("argument too long", a);
-    std::memcpy(parmname, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
+    std::memcpy(parmname, reinterpret_cast<char *>(a) + (CELL-TAG_VECTOR),
+                (size_t)len);
     parmname[len] = 0;
     ensure_screen();
     int w = my_system(parmname);
@@ -288,7 +299,8 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
         aerror1("system", a);
     ensure_screen();
     size_t len = length_of_byteheader(h) - CELL;
-    std::memcpy(cmd, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
+    std::memcpy(cmd, reinterpret_cast<char *>(a) + (CELL-TAG_VECTOR),
+                (size_t)len);
     cmd[len] = 0;
 #ifdef SHELL_EXECUTE
 //
@@ -306,7 +318,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
     {   cmd[i] = 0;
         std::strcpy(args, &cmd[i+1]);
     }
-    int rc = ShellExecute(NULL,
+    int rc = ShellExecute(nullptr,
                           "open",
                           cmd,
                           args,
@@ -323,9 +335,9 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
         startup.dwFlags = STARTF_USESHOWWINDOW;
         startup.wShowWindow = SW_HIDE;
         std::memset(&process, 0, sizeof(process));
-        if (!CreateProcess(NULL, cmd, NULL, NULL, FALSE,
+        if (!CreateProcess(nullptr, cmd, nullptr, nullptr, FALSE,
                            CREATE_NEW_CONSOLE,
-                           NULL, NULL, &startup, &process))
+                           nullptr, nullptr, &startup, &process))
         {   return onevalue(nil);
         }
         WaitForSingleObject(process.hProcess, INFINITE);
@@ -373,19 +385,21 @@ static uint64_t hash_lisp_string_with_length(LispObject s, size_t n)
     h += h >> 31;
     h += h >> 7;
     h += h >> 15;
-    return h + (h >> 12);    
+    return h + (h >> 12);
 }
 
 uint64_t hash_lisp_string(LispObject s)
 //
 // Argument is a (lisp) string.  Return a 64 bit hash value.
 //
-{   return hash_lisp_string_with_length(s, length_of_byteheader(vechdr(s)));
+{   return hash_lisp_string_with_length(s,
+                                        length_of_byteheader(vechdr(s)));
 }
 
 static int value_in_radix(int c, int radix)
 {   if (c < 0 || c > 0xff) return -1;
-    if (std::isdigit(c)) c = c - '0';    // Assumes digit codes are consecutive
+    if (std::isdigit(c)) c = c -
+                                 '0';    // Assumes digit codes are consecutive
     else if (std::isalpha(c)) c = std::tolower(c) - 'a' + 10;
     else return -1;
     if (c < radix) return c;
@@ -406,7 +420,7 @@ LispObject intern(size_t len, bool escaped)
     for (i=0; i<len; i++)
     {   int c = boffo_char(i);
         switch (numberp)
-        {   default:
+    {       default:
                 break;
             case 0:
                 if (c == '+' || c == '-')
@@ -503,7 +517,7 @@ LispObject intern(size_t len, bool escaped)
                         continue;
                     case 'd': case 'D':
                         boffo_char(i) = 'e';
-                       explicit_fp_format = true;
+                        explicit_fp_format = true;
                         numberp = 9;
                         continue;
                     case 'l': case 'L':
@@ -549,7 +563,7 @@ LispObject intern(size_t len, bool escaped)
             if (!escaped && boffo_char(0) == ':')
             {   size_t i = 0;
                 for (i = 0; i<boffop; i++)
-                    boffo_char(i) = (char)boffo_char(i+1);
+                    boffo_char(i) = static_cast<char>(boffo_char(i+1));
                 boffop--;
                 return iintern(boffo, boffop, qvalue(keyword_package), 0);
             }
@@ -568,7 +582,7 @@ LispObject intern(size_t len, bool escaped)
 //
             if (boffo_char(0) == '+')
             {   for (size_t i = 0; i<boffop; i++)
-                    boffo_char(i) = (char)boffo_char(i+1);
+                    boffo_char(i) = static_cast<char>(boffo_char(i+1));
                 boffop--;
             }
             {   LispObject v = fixnum_of_int(0);
@@ -607,17 +621,19 @@ LispObject intern(size_t len, bool escaped)
 //
             boffo_char(boffop) = 0;
 // p and q were made int not int32_t to match up with the %d in scanf ...
-            std::sscanf((char *)&boffo_char(0), "%d/%d", &p, &q);
+            std::sscanf(reinterpret_cast<char *>(&boffo_char(0)), "%d/%d", &p,
+                        &q);
 // Limit myself to fixnums here
-            g = (int)int_of_fixnum(gcd(fixnum_of_int((int32_t)p),
-                                       fixnum_of_int((int32_t)q)));
+            g = static_cast<int>(int_of_fixnum(gcd(fixnum_of_int((int32_t)p),
+                                                   fixnum_of_int((int32_t)q))));
             p /= g;
             q /= g;
             if (q < 0)
             {   p = -p;
                 q = -q;
             }
-            r = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
+            r = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM,
+                                 sizeof(Rational_Number));
             setnumerator(r, fixnum_of_int((int32_t)p));
             setdenominator(r, fixnum_of_int((int32_t)q));
             return r;
@@ -638,21 +654,25 @@ LispObject intern(size_t len, bool escaped)
                 else if (w == long_float) fplength = 3;
             }
 #else
-            (void)explicit_fp_format;
+            static_cast<void>(explicit_fp_format);
 #endif
             boffo_char(boffop) = 0;
             switch (fplength)
             {   case 0:
-                    return pack_short_float(std::atof((char *)&boffo_char(0)));
+                    return pack_short_float(std::atof(reinterpret_cast<char *>
+                                                      (&boffo_char(0))));
                 case 1:
-                    return pack_single_float(std::atof((char *)&boffo_char(0)));
+                    return pack_single_float(std::atof(reinterpret_cast<char *>
+                                                       (&boffo_char(0))));
                 default:
                 case 2:
-                    return make_boxfloat(std::atof((char *)&boffo_char(0)),
+                    return make_boxfloat(std::atof(reinterpret_cast<char *>(&boffo_char(
+                                                       0))),
                                          TYPE_DOUBLE_FLOAT);
 #ifdef HAVE_SOFTFLOAT
                 case 3:
-                    return make_boxfloat128(atof128((char *)&boffo_char(0)));
+                    return make_boxfloat128(atof128(reinterpret_cast<char *>(&boffo_char(
+                                                        0))));
 #endif // HAVE_SOFTFLOAT
             }
         }
@@ -705,7 +725,7 @@ LispObject intern_new(size_t len)
 
 LispObject make_undefined_symbol(char const *s)
 {   return make_symbol(s, 0, undefined_0, undefined_1, undefined_2,
-                             undefined_3, undefined_4up);
+                       undefined_3, undefined_4up);
 }
 
 LispObject make_symbol(char const *s, int restartp,
@@ -727,7 +747,7 @@ LispObject make_symbol(char const *s, int restartp,
 // the "2" bit of restartp is set...
 //
     char const *p1 = s;
-    char *p2 = (char *)&boffo_char(0);
+    char *p2 = reinterpret_cast<char *>()&boffo_char(0);
     int c;
     if ((restartp & 2) == 0)
     {   while ((c = *p1++) != 0)
@@ -738,9 +758,10 @@ LispObject make_symbol(char const *s, int restartp,
     }
     else
 #endif
-        std::strcpy((char *)&boffo_char(0), s);
+        std::strcpy(reinterpret_cast<char *>(&boffo_char(0)), s);
 start_again:
-    v = iintern(boffo, std::strlen((char *)&boffo_char(0)), CP, 0);
+    v = iintern(boffo, std::strlen(reinterpret_cast<char *>(&boffo_char(
+                                       0))), CP, 0);
     if (first_try) v0 = v;
 //
 // I instate the definition given if (a) the definition is a real
@@ -750,7 +771,8 @@ start_again:
 // again and doing rather curious things...)
 //
     if (f1 != undefined_1)
-    {   if ((restartp & 1)==0 || (qheader(v) & SYM_C_DEF) != 0 || !first_try)
+    {   if ((restartp & 1)==0 || (qheader(v) & SYM_C_DEF) != 0 ||
+            !first_try)
         {   ifn0(v) = (intptr_t)f0;
             ifn1(v) = (intptr_t)f1;
             ifn2(v) = (intptr_t)f2;
@@ -759,7 +781,7 @@ start_again:
             setheader(v, qheader(v) | SYM_C_DEF);
         }
         else
-        {   int l = std::strlen((char *)&boffo_char(0));
+        {   int l = std::strlen(reinterpret_cast<char *>(&boffo_char(0)));
 //
 // Another piece of curious behaviour here, intend to make it easier to
 // survive when the CSL/CCL kernel is extended. If a function that the
@@ -782,7 +804,8 @@ start_again:
                 term_printf(
                     "+++ Built-in \"%s\" clashes with image file: => \"~%s\"\n",
                     &boffo_char(0), &boffo_char(0));
-            while (l >= 0) boffo_char(l+1) = (char)boffo_char(l), l--;
+            while (l >= 0) boffo_char(l+1) = static_cast<char>(boffo_char(l)),
+                l--;
             boffo_char(0) = '~';
             first_try = false;
             goto start_again;
@@ -813,7 +836,8 @@ start_again:
     return v;
 }
 
-static bool add_to_hash(LispObject s, LispObject vector, uint64_t hash)
+static bool add_to_hash(LispObject s, LispObject vector,
+                        uint64_t hash)
 //
 // Adds an item into a hash table given that it is known that it is not
 // already there.
@@ -916,7 +940,7 @@ static LispObject add_to_internals(LispObject s,
         pop(p, s);
         packint_(p) = v;
     }
-    packnint_(p) = (LispObject)((int32_t)n + (1<<4));
+    packnint_(p) = static_cast<LispObject>((int32_t)n + (1<<4));
     // increment as a Lisp fixnum
     add_to_hash(s, v, hash);
     return nil;
@@ -925,7 +949,8 @@ static LispObject add_to_internals(LispObject s,
 static bool rehash_pending = false;
 
 #ifdef HASH_STATISTICS
-uint64_t Nhget=0, Nhgetp=0, Nhput1=0, Nhputp1=0, Nhput2=0, Nhputp2=0, Nhputtmp=0;
+uint64_t Nhget=0, Nhgetp=0, Nhput1=0, Nhputp1=0, Nhput2=0, Nhputp2=0,
+         Nhputtmp=0;
 uint64_t Noget=0, Nogetp=0, Noput=0, Noputp=0, Noputtmp=0;
 #endif
 
@@ -998,9 +1023,9 @@ static LispObject lookup(LispObject str, size_t strsize,
 #ifdef HASH_STATISTICS
             Noputtmp++;  // A prob...
 #endif
-            if (std::memcmp((char *)str + (CELL-TAG_VECTOR),
-                       (char *)pn + (CELL-TAG_VECTOR),
-                       (size_t)strsize) == 0 &&
+            if (std::memcmp(reinterpret_cast<char *>(str) + (CELL-TAG_VECTOR),
+                            reinterpret_cast<char *>(pn) + (CELL-TAG_VECTOR),
+                            (size_t)strsize) == 0 &&
                 length_of_byteheader(vechdr(pn)) == (size_t)strsize+CELL)
             {   if (4*n > 3*size) rehash_pending = true;
 #ifdef HASH_STATISTICS
@@ -1053,10 +1078,10 @@ static int ordersymbol(LispObject v1, LispObject v2)
     validate_string(pn2);
     l1 = length_of_byteheader(vechdr(pn1)) - CELL;
     l2 = length_of_byteheader(vechdr(pn2)) - CELL;
-    c = std::memcmp((char *)pn1 + (CELL-TAG_VECTOR),
-               (char *)pn2 + (CELL-TAG_VECTOR),
-               (size_t)(l1 < l2 ? l1 : l2));
-    if (c == 0) c = (int)(l1 - l2);
+    c = std::memcmp(reinterpret_cast<char *>(pn1) + (CELL-TAG_VECTOR),
+                    reinterpret_cast<char *>(pn2) + (CELL-TAG_VECTOR),
+                    (size_t)(l1 < l2 ? l1 : l2));
+    if (c == 0) c = static_cast<int>(l1 - l2);
     return c;
 }
 
@@ -1104,29 +1129,29 @@ static int ordpv(LispObject u, LispObject v)
     {
 // STRING, VEC8 and BPS need length_of_byteheader used here.
         switch (type_of_header(hu))
-        {
-        case TYPE_STRING_1:
-        case TYPE_STRING_2:
-        case TYPE_STRING_3:
-        case TYPE_STRING_4:
-        case TYPE_VEC8_1:
-        case TYPE_VEC8_2:
-        case TYPE_VEC8_3:
-        case TYPE_VEC8_4:
-        case TYPE_BPS_1:
-        case TYPE_BPS_2:
-        case TYPE_BPS_3:
-        case TYPE_BPS_4:
-            lu = length_of_byteheader(hu);
-            lv = length_of_byteheader(hv);
-            break;
+        {   case TYPE_STRING_1:
+            case TYPE_STRING_2:
+            case TYPE_STRING_3:
+            case TYPE_STRING_4:
+            case TYPE_VEC8_1:
+            case TYPE_VEC8_2:
+            case TYPE_VEC8_3:
+            case TYPE_VEC8_4:
+            case TYPE_BPS_1:
+            case TYPE_BPS_2:
+            case TYPE_BPS_3:
+            case TYPE_BPS_4:
+                lu = length_of_byteheader(hu);
+                lv = length_of_byteheader(hv);
+                break;
 // Bitvectors are pending for now!
-        default:
-            break;
+            default:
+                break;
         }
         while (n < lu && n < lv)
-        {   unsigned int eu = *(unsigned char *)(u - TAG_VECTOR + n),
-                         ev = *(unsigned char *)(v - TAG_VECTOR + n);
+        {   unsigned int eu = *reinterpret_cast<unsigned char *>
+                              (u - TAG_VECTOR + n),
+                              ev = *reinterpret_cast<unsigned char *>(v - TAG_VECTOR + n);
             if (eu != ev) return (eu < ev ? -1 : 1);
             n += 1;
         }
@@ -1140,8 +1165,9 @@ static int ordpv(LispObject u, LispObject v)
 //
     else
     {   while (n < lu && n < lv)
-        {   LispObject eu = *(LispObject *)(u - TAG_VECTOR + n),
-                       ev = *(LispObject *)(v - TAG_VECTOR + n);
+        {   LispObject eu = *reinterpret_cast<LispObject *>
+                            (u - TAG_VECTOR + n),
+                            ev = *reinterpret_cast<LispObject *>(v - TAG_VECTOR + n);
             int w;
             push(u, v);
             if (stack >= stackLimit) respond_to_stack_event();
@@ -1167,7 +1193,8 @@ static int ordpl(LispObject u, LispObject v)
 
 bool flagged_noncom(LispObject v)
 {   LispObject fv = qfastgets(v);
-    return fv != nil && (LispObject)elt(fv, 0) != SPID_NOPROP;
+    return fv != nil &&
+           static_cast<LispObject>(elt(fv, 0)) != SPID_NOPROP;
 }
 
 static int orderp(LispObject u, LispObject v)
@@ -1256,7 +1283,8 @@ static bool remob(LispObject sym, LispObject v)
 // Searches a hash table for a symbol with name matching the given string,
 // and remove it.
 //
-{   if (qheader(sym) & SYM_ANY_GENSYM) return false; // gensym case is easy!
+{   if (qheader(sym) & SYM_ANY_GENSYM) return
+            false; // gensym case is easy!
     LispObject str = qpname(sym);
     validate_string(str);
 #ifdef COMMON
@@ -1339,7 +1367,8 @@ LispObject Lgensym(LispObject env)
     setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
     setpname(id, pn);
 #else
-    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM);
+    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM
+              +SYM_ANY_GENSYM);
     setpname(id, gensym_base);
 #endif
     setvalue(id, unset_var);
@@ -1370,16 +1399,18 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     push(genbase);
     stackcheck();
     len = length_of_byteheader(vechdr(genbase)) - CELL;
-    if (len > 63-len1) len = 63-len1; // Unpublished truncation of the string
-    std::sprintf(genname, "%.*s%s", (int)len,
-            (char *)genbase + (CELL-TAG_VECTOR), suffix);
+    if (len > 63-len1) len = 63
+                                 -len1; // Unpublished truncation of the string
+    std::sprintf(genname, "%.*s%s", static_cast<int>(len),
+                 reinterpret_cast<char *>(genbase) + (CELL-TAG_VECTOR), suffix);
     stack[0] = make_string(genname);
     LispObject id = get_symbol(true);
     pop(genbase);
 #ifdef COMMON
     setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
 #else
-    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM);
+    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM
+              +SYM_ANY_GENSYM);
 #endif
     setvalue(id, unset_var);
     setpname(id, genbase);
@@ -1416,9 +1447,9 @@ LispObject Lgensym1(LispObject env, LispObject a)
 #ifdef COMMON
     len = length_of_byteheader(vechdr(genbase)) - CELL;
     if (len > 60) len = 60;     // Unpublished truncation of the string
-    std::sprintf(genname, "%.*s%lu", (int)len,
-            (char *)genbase + (CELL-TAG_VECTOR),
-            (long unsigned)(uint32_t)gensym_ser++);
+    std::sprintf(genname, "%.*s%lu", static_cast<int>(len),
+                 reinterpret_cast<char *>(genbase) + (CELL-TAG_VECTOR),
+                 (long unsigned)(uint32_t)gensym_ser++);
     stack[0] = make_string(genname);
 #endif
     LispObject id = get_symbol(true);
@@ -1426,7 +1457,8 @@ LispObject Lgensym1(LispObject env, LispObject a)
 #ifdef COMMON
     setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
 #else
-    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM);
+    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM
+              +SYM_ANY_GENSYM);
 #endif
     setvalue(id, unset_var);
     setpname(id, genbase);
@@ -1496,11 +1528,13 @@ static LispObject Lgensymp(LispObject env, LispObject a)
 
 static LispObject Lreset_gensym(LispObject env, LispObject a)
 {   LispObject old = gensym_ser;
-    if (is_fixnum(a) && a >= 0) gensym_ser = int_of_fixnum(a) & 0x7fffffff;
+    if (is_fixnum(a) &&
+        a >= 0) gensym_ser = int_of_fixnum(a) & 0x7fffffff;
     return fixnum_of_int(old);
 }
 
-LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
+LispObject iintern(LispObject str, size_t h, LispObject p,
+                   int str_is_ok)
 //
 // Look up the first h chars of the string str with respect to the package p.
 // The last arg is a boolean that allows me to decide if (when a new symbol
@@ -1631,7 +1665,7 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
             setpname(s, pn);
         }
         mv_2 = nil;
-        return nvalues((LispObject)s, 2);
+        return nvalues(static_cast<LispObject>(s), 2);
     }
 }
 
@@ -1685,7 +1719,8 @@ LispObject Lintern(LispObject env, LispObject a)
 {   return Lintern_2(env, a, CP);
 }
 
-static LispObject Lfind_symbol(LispObject env, LispObject str, LispObject pp)
+static LispObject Lfind_symbol(LispObject env, LispObject str,
+                               LispObject pp)
 {   Header h;
     LispObject p;
     push(str);
@@ -1711,7 +1746,8 @@ LispObject Lfind_symbol_1(LispObject env, LispObject str)
 {   return Lfind_symbol(env, str, CP);
 }
 
-static LispObject Lextern(LispObject env, LispObject sym, LispObject package)
+static LispObject Lextern(LispObject env, LispObject sym,
+                          LispObject package)
 //
 // If sym is internal in given package make it external - the inside parts
 // of the export function. Note that the second argument must be a real
@@ -1750,14 +1786,16 @@ static LispObject Lextern(LispObject env, LispObject sym, LispObject package)
         add_to_externals(sym, package, removed_hash);
         return onevalue(lisp_true);
     }
-    return onevalue(nil);// no action if it was not internal in this package
+    return onevalue(
+               nil);// no action if it was not internal in this package
 }
 
 static LispObject Lextern_1(LispObject env, LispObject str)
 {   return Lextern(env, str, CP);
 }
 
-static LispObject Limport(LispObject env, LispObject sym, LispObject package)
+static LispObject Limport(LispObject env, LispObject sym,
+                          LispObject package)
 //
 // The internal part of the IMPORT and SHADOWING-IMPORT functions.
 // makes sym internal in package. The symbol MUST NOT be present there
@@ -1885,14 +1923,14 @@ static void wait_for_char()
 // exclusive
 #ifndef EMBEDDED
     {   on_backtrace(tty_count = wimpget(tty_buffer),
-            if (miscflags & HEADLINE_FLAG)
-                err_printf("+++ Interrupted\n");
-            exit_reason =
-                (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
-                (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
-                UNWIND_UNWIND;
-            exit_value = exit_tag = nil;
-            exit_count = 0);
+                     if (miscflags & HEADLINE_FLAG)
+                     err_printf("+++ Interrupted\n");
+                     exit_reason =
+                         (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                         (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
+                         UNWIND_UNWIND;
+                     exit_value = exit_tag = nil;
+                     exit_count = 0);
         tty_pointer = tty_buffer;
         return;
     }
@@ -1900,7 +1938,7 @@ static void wait_for_char()
 // Here is for the EMBEDDED case.
     std::fflush(stdout);
     std::fflush(stderr);
-    errorset_msg = NULL;
+    errorset_msg = nullptr;
     while (tty_count<TTYBUF_SIZE)
     {   int c;
 // I really need to understand what to do here so that ^C gets processed
@@ -1915,7 +1953,7 @@ static void wait_for_char()
         }
 // If I fetched a wide character I would need to utf-8 encode it here...
 // unless getchar has already delivered in that way.
-        tty_buffer[tty_count++] = (char)c;
+        tty_buffer[tty_count++] = static_cast<char>(c);
         if (c == '\n' || c == '\v' || c == CTRL_D) break;
     }
     tty_pointer = tty_buffer;
@@ -1962,8 +2000,8 @@ static int raw_char_from_terminal()
 // code.  In that case the variable used here points at a function that
 // reads a single character.  When I use this option I will NOT generate
 // prompts.
-    if (procedural_input != NULL) c = (*procedural_input)();
-    else if (non_terminal_input != NULL)
+    if (procedural_input != nullptr) c = (*procedural_input)();
+    else if (non_terminal_input != nullptr)
     {   c = GETC(non_terminal_input);
     }
     else
@@ -1990,8 +2028,8 @@ static int raw_char_from_terminal()
         if (!is_stream(stream)) stream = lisp_terminal_io;
         ignore_error(putc_stream(c, stream));
     }
-    else if (spool_file != NULL &&
-             non_terminal_input == NULL) PUTC(c, spool_file);
+    else if (spool_file != nullptr &&
+             non_terminal_input == nullptr) PUTC(c, spool_file);
     return c;
 }
 
@@ -2020,7 +2058,8 @@ LispObject Lrds(LispObject env, LispObject a)
     if (a == nil) a = qvalue(terminal_io);
     if (a == old) return onevalue(old);
     else if (!is_stream(a)) aerror1("rds", a);
-    else if ((character_stream_reader *)stream_read_fn(a) == char_from_illegal)
+    else if ((character_stream_reader *)stream_read_fn(
+                 a) == char_from_illegal)
         aerror("rds"); // closed stream or output stream
     setvalue(standard_input, a);
     return onevalue(old);
@@ -2063,7 +2102,8 @@ LispObject Lrseek_2(LispObject env, LispObject stream, LispObject a)
     if (is_fixnum(a)) n = (size_t)int_of_fixnum(a);
     else aerror("rseek");
     other_read_action(READ_FLUSH, stream);
-    if (other_read_action(n | 0x80000000, stream) != 0) return onevalue(nil);
+    if (other_read_action(n | 0x80000000,
+                          stream) != 0) return onevalue(nil);
     else return onevalue(lisp_true);
 }
 
@@ -2418,7 +2458,7 @@ static LispObject read_hash(LispObject stream)
             return onevalue(SPID_NOINPUT);
 
         case 'r': case 'R':
-            radix = (w>=2 && w<=36) ? (int)w : 10;
+            radix = (w>=2 && w<=36) ? static_cast<int>(w) : 10;
             break;
         case 'b': case 'B':
             radix = 2;
@@ -2529,8 +2569,9 @@ void packcharacter(int c)
     if (boffop >= boffo_size-CELL-8)
     {   LispObject new_boffo =
             get_basic_vector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
-        std::memcpy((void *)((char *)new_boffo + (CELL-TAG_VECTOR)),
-               &boffo_char(0), boffop);
+        std::memcpy(reinterpret_cast<void *>(reinterpret_cast<char *>
+                                             (new_boffo) + (CELL-TAG_VECTOR)),
+                    &boffo_char(0), boffop);
         boffo = new_boffo;
     }
     c &= 0x001fffff;
@@ -2560,8 +2601,9 @@ void packbyte(int c)
     if (boffop >= boffo_size-CELL-8)
     {   LispObject new_boffo =
             get_basic_vector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
-        std::memcpy((void *)((char *)new_boffo + (CELL-TAG_VECTOR)),
-               &boffo_char(0), boffop);
+        std::memcpy(reinterpret_cast<void *>(reinterpret_cast<char *>
+                                             (new_boffo) + (CELL-TAG_VECTOR)),
+                    &boffo_char(0), boffop);
         boffo = new_boffo;
     }
     boffo_char(boffop++) = c;
@@ -2705,13 +2747,13 @@ static LispObject read_s(LispObject stream)
 // The "0z" notation is a TEMPORARY provision while I work on an upgraded
 // arithmetic package.
                 while (curchar <= 0xff &&
-                    (std::isdigit(curchar) ||
-                     ((boffop == 1 &&
-                       boffo_char(0)=='0' &&
-                       (((curchar=='x' || curchar=='X') && (ishex=true)) ||
-                        ((curchar=='z' || curchar=='Z') && (isnew=true))))) ||
-                     (ishex && (('a'<=curchar && curchar<='f') ||
-                                ('A'<=curchar && curchar<='F')))))
+                       (std::isdigit(curchar) ||
+                        ((boffop == 1 &&
+                          boffo_char(0)=='0' &&
+                          (((curchar=='x' || curchar=='X') && (ishex=true)) ||
+                           ((curchar=='z' || curchar=='Z') && (isnew=true))))) ||
+                        (ishex && (('a'<=curchar && curchar<='f') ||
+                                   ('A'<=curchar && curchar<='F')))))
                 {   push(stream);
                     packcharacter(curchar);  // Should be '0 to '9' (only)
                     pop(stream);
@@ -2916,7 +2958,7 @@ static LispObject read_s(LispObject stream)
                     pop(w);
                     if (mv_2 == nil)
                     {   err_printf("+++ Symbol %.*s not external in %s\n",
-                                   (int)boffop, &celt(boffo, 0), package_name);
+                                   static_cast<int>(boffop), &celt(boffo, 0), package_name);
                         err_printf("+++ Treating as internal symbol...\n");
                     }
                     else return wx;
@@ -3032,15 +3074,16 @@ int32_t read_action_illegal(int32_t op, LispObject f)
 }
 
 int32_t read_action_file(int32_t op, LispObject f)
-{   if (op < -1) return std::fseek(stream_file(f), op & 0x7fffffff, SEEK_SET);
+{   if (op < -1) return std::fseek(stream_file(f), op & 0x7fffffff,
+                                       SEEK_SET);
     else if (op <= 0x10ffff) return (stream_pushed_char(f) = op);
     else switch (op)
         {   case READ_CLOSE:
-                if ((std::FILE *)stream_file(f) == NULL) op = 0;
+                if ((std::FILE *)stream_file(f) == nullptr) op = 0;
                 else op = std::fclose(stream_file(f));
                 set_stream_read_fn(f, char_from_illegal);
                 set_stream_read_other(f, read_action_illegal);
-                set_stream_file(f, NULL);
+                set_stream_file(f, nullptr);
                 return op;
             case READ_FLUSH:
                 stream_pushed_char(f) = NOT_CHAR;
@@ -3061,7 +3104,8 @@ int32_t read_action_file(int32_t op, LispObject f)
 }
 
 int32_t read_action_output_file(int32_t op, LispObject f)
-{   if (op < -1) return std::fseek(stream_file(f), op & 0x7fffffff, SEEK_SET);
+{   if (op < -1) return std::fseek(stream_file(f), op & 0x7fffffff,
+                                       SEEK_SET);
     else if (op <= 0x10ffff) return 0;
     else switch (op)
         {   case READ_TELL:
@@ -3102,7 +3146,7 @@ int32_t read_action_synonym(int32_t c, LispObject f)
     if (c == READ_CLOSE)
     {   set_stream_read_fn(f, char_from_illegal);
         set_stream_read_other(f, read_action_illegal);
-        set_stream_file(f, NULL);
+        set_stream_file(f, nullptr);
     }
     return r;
 }
@@ -3125,7 +3169,7 @@ int32_t read_action_concatenated(int32_t c, LispObject f)
     if (c == READ_CLOSE)
     {   set_stream_read_fn(f, char_from_illegal);
         set_stream_read_other(f, read_action_illegal);
-        set_stream_file(f, NULL);
+        set_stream_file(f, nullptr);
     }
     return r;
 }
@@ -3137,7 +3181,7 @@ int32_t read_action_list(int32_t op, LispObject f)
         {   case READ_CLOSE:
                 set_stream_read_fn(f, char_from_illegal);
                 set_stream_read_other(f, read_action_illegal);
-                set_stream_file(f, NULL);
+                set_stream_file(f, nullptr);
                 stream_read_data(f) = nil;
                 return 0;
             case READ_FLUSH:
@@ -3159,7 +3203,7 @@ int32_t read_action_vector(int32_t op, LispObject f)
         {   case READ_CLOSE:
                 set_stream_read_fn(f, char_from_illegal);
                 set_stream_read_other(f, read_action_illegal);
-                set_stream_file(f, NULL);
+                set_stream_file(f, nullptr);
                 stream_read_data(f) = nil;
                 return 0;
             case READ_FLUSH:
@@ -3263,7 +3307,7 @@ public:
         pop(stream, reader_workspace);
 // For this to be valid it is important that Lrds can never both succeed
 // and lead to garbage collection (and hence potential relocation of the
-// return value from this function. By good fortune I seem to be safe! 
+// return value from this function. By good fortune I seem to be safe!
         Lrds(nil, stream);
     }
 };
@@ -3290,7 +3334,7 @@ LispObject Lread_1(LispObject env, LispObject stream)
 
 int char_from_list(LispObject f)
 {   LispObject ch = stream_pushed_char(f);
-    int r = (int)ch; // -1 for EOF else a Unicode value
+    int r = static_cast<int>(ch); // -1 for EOF else a Unicode value
     if (ch == NOT_CHAR)
     {   if (!consp(stream_read_data(f))) ch = EOF;
         else
@@ -3325,8 +3369,9 @@ int char_from_list(LispObject f)
 int char_from_vector(LispObject f)
 {   LispObject ch = stream_pushed_char(f);
     if (ch == NOT_CHAR)
-    {   unsigned char *v = (unsigned char *)(std::FILE *)stream_file(f);
-        if (v == NULL) ch = EOF;
+    {   unsigned char *v = reinterpret_cast<unsigned char *>(
+                               reinterpret_cast<std::FILE *>(stream_file(f).load()));
+        if (v == nullptr) ch = EOF;
         else
         {   if (++kilo >= 1024)
             {   kilo = 0;
@@ -3395,8 +3440,9 @@ LispObject Llist_to_string(LispObject env, LispObject stream)
     stream_pushed_char(lisp_work_stream) = NOT_CHAR;
     while (consp(stream)) n++, stream = cdr(stream);
     str = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, n);
-    s = (char *)str + CELL - TAG_VECTOR;
-    for (k=CELL; k<n; k++) *s++ = (char)char_from_list(lisp_work_stream);
+    s = reinterpret_cast<char *>(str) + CELL - TAG_VECTOR;
+    for (k=CELL; k<n;
+         k++) *s++ = static_cast<char>(char_from_list(lisp_work_stream));
     for (; (k&7) != 0; k++) *s++ = 0; // zero-pad final doubleword
     return onevalue(str);
 }
@@ -3418,20 +3464,20 @@ LispObject Lstring2list(LispObject env, LispObject a)
 #ifdef COMMON
     if (complex_stringp(a) a = simplify_string(a);
 #endif
-    if (symbolp(a))
+        if (symbolp(a))
     {   a = get_pname(a);
-        h = vechdr(a);
-    }
-    else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
+            h = vechdr(a);
+        }
+        else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
         aerror1("string2list", a);
-    len = length_of_byteheader(h) - CELL;
-    r = nil;
-    for (i=0; i<len; i++)
-    {   int c = ucelt(a, len-1-i);
-        push(a);
-        r = cons(fixnum_of_int(c), r);
-        pop(a);
-    }
+        len = length_of_byteheader(h) - CELL;
+              r = nil;
+              for (i=0; i<len; i++)
+        {   int c = ucelt(a, len-1-i);
+                push(a);
+                r = cons(fixnum_of_int(c), r);
+                pop(a);
+            }
     return r;
 }
 
@@ -3443,16 +3489,16 @@ void read_eval_print(int noisy)
         volatile int32_t nvals, i;
 #endif
         miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
-        errorset_msg = NULL;
+        errorset_msg = nullptr;
         try
         {   START_SETJMP_BLOCK;
             u = Lread(nil);
         }
         catch (LispSignal &e)
         {   u = nil;
-            if (errorset_msg != NULL)
+            if (errorset_msg != nullptr)
             {   err_printf("\n%s detected\n", errorset_msg);
-                errorset_msg = NULL;
+                errorset_msg = nullptr;
             }
             unwind_stack(save, false);
             stack = save;
@@ -3507,11 +3553,11 @@ void read_eval_print(int noisy)
         }
 
         if (qvalue(standard_input) == lisp_terminal_io &&
-            spool_file != NULL &&
-            non_terminal_input == NULL) PUTC('\n', spool_file);
+            spool_file != nullptr &&
+            non_terminal_input == nullptr) PUTC('\n', spool_file);
 
         miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
-        errorset_msg = NULL;
+        errorset_msg = nullptr;
         try
         {   START_SETJMP_BLOCK;
             try
@@ -3527,7 +3573,7 @@ void read_eval_print(int noisy)
             }
             catch (LispException &e)
             {   err_printf("\n... continuing after error\n");
-                if (spool_file != NULL) std::fflush(spool_file);
+                if (spool_file != nullptr) std::fflush(spool_file);
                 if (stop_on_error) throw;
                 continue;
             }
@@ -3566,14 +3612,14 @@ void read_eval_print(int noisy)
             }
         }
         catch (LispSignal &e)
-        {   if (errorset_msg != NULL)
+        {   if (errorset_msg != nullptr)
             {   err_printf("\n%s detected\n", errorset_msg);
-                errorset_msg = NULL;
+                errorset_msg = nullptr;
             }
             unwind_stack(save, false);
             stack = save;
             err_printf("\n... continuing after error\n");
-            if (spool_file != NULL) std::fflush(spool_file);
+            if (spool_file != nullptr) std::fflush(spool_file);
             errors_now++;
             if (stop_on_error) throw;
             if (errors_limit >= 0 && errors_now > errors_limit)
@@ -3603,7 +3649,7 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
 #ifdef COMMON
     int nofile = (nofilep != nil);
 #else
-    (void)nofilep;
+    static_cast<void>(nofilep);
 #endif
 //
 // (rdf nil)/(load nil) obeys Lisp commands from the current input
@@ -3630,13 +3676,14 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
             aerror1("load", file);
         len = length_of_byteheader(h) - CELL;
-        filestring = (char *)file + CELL-TAG_VECTOR;
+        filestring = reinterpret_cast<char *>(file) + CELL-TAG_VECTOR;
         for (i=0; i<6; i++)
         {   if (len == 0)
             {   tail[i] = 0;
                 break;
             }
-            else tail[i] = (char)std::tolower((unsigned char)filestring[--len]);
+            else tail[i] = static_cast<char>(
+                                   std::tolower(static_cast<unsigned char>(filestring[--len])));
         }
         if (std::strncmp(tail, "lsf.", 4) == 0 ||
             std::strncmp(tail, "lasf.", 5) == 0 ||
@@ -3691,7 +3738,8 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
         if (verbose)
         {   file = stack[0];
 #ifdef COMMON
-            trace_printf("\n;; Loading "); prin_to_trace(file); trace_printf("\n");
+            trace_printf("\n;; Loading "); prin_to_trace(file);
+            trace_printf("\n");
 #else
             trace_printf("\nReading "); prin_to_trace(file); trace_printf("\n");
 #endif
@@ -3758,12 +3806,13 @@ LispObject Lrdf2(LispObject env, LispObject file, LispObject noisy)
 {   return Lrdf4(env, file, noisy, lisp_true, lisp_true);
 }
 
-LispObject Lrdf3(LispObject env, LispObject file, LispObject noisy, LispObject verbose)
+LispObject Lrdf3(LispObject env, LispObject file, LispObject noisy,
+                 LispObject verbose)
 {   return Lrdf4(env, file, noisy, verbose, lisp_true);
 }
 
 LispObject Lrdfn(LispObject env, LispObject file, LispObject noisy,
-        LispObject verbose, LispObject nofile)
+                 LispObject verbose, LispObject nofile)
 {   if (cdr(nofile) != nil) aerror("too many args for rdf/load");
     nofile = car(nofile);
     return Lrdf4(env, file, noisy, verbose, nofile);
@@ -3780,15 +3829,16 @@ LispObject Lspool(LispObject env, LispObject file)
     Header h;
     int32_t len;
     std::memset(filename, 0, sizeof(filename));
-    if (spool_file != NULL)
+    if (spool_file != nullptr)
     {
 #ifdef COMMON
-        std::fprintf(spool_file, "\nFinished dribbling to %s.\n", spool_file_name);
+        std::fprintf(spool_file, "\nFinished dribbling to %s.\n",
+                     spool_file_name);
 #else
         std::fprintf(spool_file, "\n+++ End of transcript +++\n");
 #endif
         std::fclose(spool_file);
-        spool_file = NULL;
+        spool_file = nullptr;
     }
     if (file == nil) return onevalue(lisp_true);
 #ifdef COMMON
@@ -3802,18 +3852,19 @@ LispObject Lspool(LispObject env, LispObject file)
         aerror1(spool_name, file);
     len = length_of_byteheader(h) - CELL;
     spool_file = open_file(filename,
-                           (char *)file + (CELL-TAG_VECTOR),
-                           (size_t)len, "w", NULL);
-    if (spool_file != NULL)
-    {   std::time_t t0 = std::time(NULL);
+                           reinterpret_cast<char *>(file) + (CELL-TAG_VECTOR),
+                           (size_t)len, "w", nullptr);
+    if (spool_file != nullptr)
+    {   std::time_t t0 = std::time(nullptr);
         std::strncpy(spool_file_name, filename, 32);
         spool_file_name[31] = 0;
 #ifdef COMMON
         std::fprintf(spool_file, "Starts dribbling to %s (%.24s)\n",
-                spool_file_name, std::ctime(&t0));
+                     spool_file_name, std::ctime(&t0));
 #else
-        std::fprintf(spool_file, "+++ Transcript to %s started at %.24s +++\n",
-                spool_file_name, std::ctime(&t0));
+        std::fprintf(spool_file,
+                     "+++ Transcript to %s started at %.24s +++\n",
+                     spool_file_name, std::ctime(&t0));
 #endif
         return onevalue(lisp_true);
     }
@@ -3893,14 +3944,14 @@ static LispObject Lfind_package(LispObject env, LispObject name)
     for (w = all_packages; w!=nil; w=cdr(w))
     {   LispObject nn, n = packname_(car(w));
         if (is_vector(n) && vechdr(n) == h &&
-            std::memcmp((char *)name + (CELL-TAG_VECTOR),
-                   (char *)n + (CELL-TAG_VECTOR), (size_t)len) == 0)
+            std::memcmp(reinterpret_cast<char *>(name) + (CELL-TAG_VECTOR),
+                        reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
             return onevalue(car(w));
         for (nn = packnick_(car(w)); nn!=nil; nn=cdr(nn))
         {   n = car(nn);
             if (!is_vector(n) || vechdr(n) != h) continue;
-            if (std::memcmp((char *)name + (CELL-TAG_VECTOR),
-                       (char *)n + (CELL-TAG_VECTOR), (size_t)len) == 0)
+            if (std::memcmp(reinterpret_cast<char *>(name) + (CELL-TAG_VECTOR),
+                            reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
                 return onevalue(car(w));
         }
     }
@@ -3918,7 +3969,8 @@ LispObject find_package(char *name, int len)
     {   LispObject nn, n = packname_(car(w));
         if (is_vector(n) &&
             length_of_byteheader(vechdr(n))==(uint32_t)(len+CELL) &&
-            std::memcmp(name, (char *)n + (CELL-TAG_VECTOR), (size_t)len) == 0)
+            std::memcmp(name, reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR),
+                        (size_t)len) == 0)
             return car(w);
         for (nn = packnick_(car(w)); nn!=nil; nn=cdr(nn))
         {   n = car(nn);
@@ -3926,14 +3978,15 @@ LispObject find_package(char *name, int len)
                 length_of_byteheader(vechdr(n)) != (uint32_t)(len+CELL))
                 continue;
             if (std::memcmp(name,
-                       (char *)n + (CELL-TAG_VECTOR), (size_t)len) == 0)
+                            reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
                 return car(w);
         }
     }
     return nil;
 }
 
-static LispObject Luse_package(LispObject env, LispObject uses, LispObject pkg)
+static LispObject Luse_package(LispObject env, LispObject uses,
+                               LispObject pkg)
 {   push(uses);
     pkg = Lfind_package(nil, pkg);
     pop(uses);
@@ -3979,17 +4032,20 @@ static LispObject Luse_package(LispObject env, LispObject uses, LispObject pkg)
 //  (make!-package N :use U :nicknames NN)
 // and there should be 1, 3 or 5.
 
-static LispObject Lmake_package(LispObject env, LispObject name, LispObject k1,
-        LispObject v1, LispObject kv2)
+static LispObject Lmake_package(LispObject env, LispObject name,
+                                LispObject k1,
+                                LispObject v1, LispObject kv2)
 {   LispObject nicknames = nil, uses = nil, w = nil
-    bool has_nicknames = false, has_use = false;
+                                       bool has_nicknames = false, has_use = false;
     LispObject k2 = nil, v2 = nil;
     k2 = car(kv2);
     kv2 = cdr(kv2);
     if (kv2 == nil) aerror("wrong number of arguments for make-package");
     v2 = car(kv2);
     kv2 = cdr(kv2);
-    if (kv2 != nil) aerror("wrong number of arguments for make-package");    if (k1 == nicknames_symbol) nicknames = v1;
+    if (kv2 != nil) aerror("wrong number of arguments for make-package");
+
+    if (k1 == nicknames_symbol) nicknames = v1;
     if (k1 == nicknames_symbol) nicknames = v1, has_nicknames = true;
     else if (k1 == use_symbol) uses = v1, has_uses = true;
 // I will not permit other keys.
@@ -4062,11 +4118,13 @@ static LispObject Lmake_package(LispObject env, LispObject name, LispObject k1,
     return onevalue(name);
 }
 
-static LispObject Lmake_package_3(LispObject env, LispObject a, LispObject b, LispObject c)
+static LispObject Lmake_package_3(LispObject env, LispObject a,
+                                  LispObject b, LispObject c)
 {   return Lmake_package(env, a, b, c, SPID_NOARG);
 }
 
-static LispObject Lmake_package_2(LispObject env, LispObject a, LispObject b)
+static LispObject Lmake_package_2(LispObject env, LispObject a,
+                                  LispObject b)
 {   aerror("wrong number of arguments for make-package");
 }
 
@@ -4074,7 +4132,7 @@ static LispObject Lmake_package_1(LispObject env, LispObject a)
 {   return Lmake_package(env, a, SPID_NOARG, SPID_NOARG, SPID_NOARG);
 }
 
-static LispObject Llist_all_packages(LispObject)
+static LispObject Llist_all_packagesstatic_cast<LispObject>()
 {   return onevalue(all_packages);
 }
 
@@ -4106,7 +4164,8 @@ LispObject Lreadbyte(LispObject env, LispObject stream)
     LispObject save = qvalue(echo_symbol);
     bool force = force_echo;
     force_echo = nil;
-    if (!is_stream(stream)) aerror0("readb requires an appropriate stream");
+    if (!is_stream(stream))
+        aerror0("readb requires an appropriate stream");
     setvalue(echo_symbol, nil);
     raw_input = 1;
     ch = getc_stream(stream);
@@ -4142,7 +4201,8 @@ LispObject Lreadch(LispObject env)
 {   return Lreadch1(env, qvalue(standard_input));
 }
 
-LispObject Lpeekch2(LispObject env, LispObject type, LispObject stream)
+LispObject Lpeekch2(LispObject env, LispObject type,
+                    LispObject stream)
 {   LispObject w;
     int ch;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
@@ -4183,7 +4243,7 @@ LispObject Lunreadch2(LispObject, LispObject a, LispObject stream)
     if (a == eof_symbol || a == CHAR_EOF) ch = EOF;
     else
     {   if (is_symbol(a)) a = pack_char(0, first_char(a));
-        ch = (char)code_of_char(a);
+        ch = static_cast<char>(code_of_char(a));
     }
     other_read_action(ch, stream);
     return onevalue(a);
@@ -4207,7 +4267,7 @@ LispObject Lreadline1(LispObject env, LispObject stream)
     if (ch == EOF && n == 0) w = eof_symbol;
     else
     {   w = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-        s = (char *)w + CELL - TAG_VECTOR;
+        s = reinterpret_cast<char *>(w) + CELL - TAG_VECTOR;
         std::memcpy(s, &boffo_char(0), n);
         while ((n&7) != 0) s[n++] = 0;
     }
@@ -4273,7 +4333,7 @@ setup_type const read_setup[] =
     {"use-package*",            G0W2, G1W2, Luse_package, G3W2, G4W2},
     {"list-all-packages",       Llist_all_packages, G1W0, G2W0, G3W0, G4W0},
 #endif
-    {NULL,                      0, 0, 0, 0, 0}
+    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of cslread.cpp

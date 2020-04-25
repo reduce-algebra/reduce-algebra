@@ -82,7 +82,7 @@
 // observed the display from wxfontdemo I was worried that I had obtained
 // damaged fonts, but the Unicode specification lists the gaps as
 // invalid code-points. This really is deliberate! So if you spot something
-// that looks truly weird be aware it may be a feature not a bug. 
+// that looks truly weird be aware it may be a feature not a bug.
 
 // For the STIX fonts the official versions use glyphs that have to be
 // accessed using advanced typography methods that I can not easily access
@@ -234,16 +234,14 @@ IMPLEMENT_APP_NO_MAIN(fontApp)
 #endif
 
 int main(int argc, const char *argv[])
-{
-    int i;
+{   int i;
     int usegui = 1;
 // Find where I am invoked from before doing anything else
     find_program_directory(argv[0]);
     for (i=1; i<argc; i++)
     {   if (std::strncmp(argv[i], "-w", 2) == 0) usegui = 0;
         else if (std::strcmp(argv[1], "--help") == 0)
-        {
-            std::printf("wxfontdemo \"font name\"\n");
+        {   std::printf("wxfontdemo \"font name\"\n");
             std::exit(0);
         }
     }
@@ -253,7 +251,7 @@ int main(int argc, const char *argv[])
 // cases. Eg I could look at stdin & stdout and check if it looks as if
 // they are pipes of they have been redirected...
     {   const char *s = std::getenv("DISPLAY");
-        if (s==NULL || *s == 0) usegui = 0;
+        if (s==nullptr || *s == 0) usegui = 0;
     }
 #endif
     if (usegui)
@@ -266,7 +264,7 @@ int main(int argc, const char *argv[])
 // it also seems to cause things to terminate more neatly.
         char xname[LONGEST_LEGAL_FILENAME];
         std::sprintf(xname, "%s.app", programName);
-        if (std::strstr(fullProgramName, xname) == NULL)
+        if (std::strstr(fullProgramName, xname) == nullptr)
         {
 // Here the binary I launched was not located as
 //      ...foo.app../.../foo
@@ -286,10 +284,10 @@ int main(int argc, const char *argv[])
                 nargs[2] = "--args";
                 for (i=1; i<argc; i++)
                     nargs[i+2] = argv[i];
-                nargs[argc+2] = NULL;
+                nargs[argc+2] = nullptr;
 // /usr/bin/open foo.app --args [any original arguments]
                 return execv(nargs[0], const_cast<char * const *>(nargs));
-             }
+            }
         }
 #endif
         add_custom_fonts();
@@ -309,18 +307,17 @@ int main(int argc, const char *argv[])
 
 
 bool fontApp::OnInit()
-{
-    display_font_information();
+{   display_font_information();
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
     char **myargv = (char **)argv;
     page = 0;
     regular = bold = italic = 0;
-    const char *font = "CMU Typewriter Text";  // A default font name to ask for.
+    const char *font =
+        "CMU Typewriter Text";  // A default font name to ask for.
     int size = 48;           // a default size.
     for (int i=1; i<argc; i++)
-    {
-        std::printf("Arg%d: %s\n", i, myargv[i]);
+    {   std::printf("Arg%d: %s\n", i, myargv[i]);
         if (std::strcmp(myargv[i], "--regular") == 0) regular = 1;
         if (std::strcmp(myargv[i], "--bold") == 0) bold = 1;
         if (std::strcmp(myargv[i], "--italic") == 0) italic = 1;
@@ -333,7 +330,8 @@ bool fontApp::OnInit()
 // to the directory that this application was launched from. So the first
 // think to do is to identify that location. I then print the information I
 // recover so I can debug things. I have already set up programName etc
-    std::printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
+    std::printf("\n%s\n%s\n%s\n", fullProgramName, programName,
+                programDir);
 
     std::printf("Try for font \"%s\" at size=%d\n", font, size);
     std::fflush(stdout);
@@ -348,9 +346,8 @@ bool fontApp::OnInit()
 #define CELLHEIGHT (60+CELLOFFSET)
 
 fontFrame::fontFrame(const char *fname, int fsize)
-       : wxFrame(NULL, wxID_ANY, "wxfontdemo")
-{
-    SetIcon(wxICON(fwin));
+    : wxFrame(nullptr, wxID_ANY, "wxfontdemo")
+{   SetIcon(wxICON(fwin));
     panel = new fontPanel(this, fname, fsize);
     wxSize clientsize(33*CELLWIDTH, 10*CELLHEIGHT);
     wxSize winsize(ClientToWindowSize(clientsize));
@@ -362,9 +359,8 @@ fontFrame::fontFrame(const char *fname, int fsize)
 
 
 fontPanel::fontPanel(fontFrame *parent, const char *fname, int fsize)
-       : wxPanel(parent)
-{
-    frame = parent;
+    : wxPanel(parent)
+{   frame = parent;
     fontname = fname;
     fontsize = fsize;
     frame->SetTitle(fontname);
@@ -372,8 +368,7 @@ fontPanel::fontPanel(fontFrame *parent, const char *fname, int fsize)
 
 
 void fontFrame::OnClose(wxCloseEvent &WXUNUSED(event))
-{
-    Destroy();
+{   Destroy();
 #ifdef WIN32
 // On Windows XP I seem to have a horrid effect whereby when I try to
 // close the application by closing its window there is a failure that pops
@@ -390,8 +385,7 @@ void fontFrame::OnClose(wxCloseEvent &WXUNUSED(event))
 }
 
 void fontFrame::OnExit(wxCommandEvent &WXUNUSED(event))
-{
-    Destroy();
+{   Destroy();
 #ifdef WIN32
     TerminateProcess(GetCurrentProcess(), 1);
 #else
@@ -400,17 +394,16 @@ void fontFrame::OnExit(wxCommandEvent &WXUNUSED(event))
 }
 
 void fontFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
-{
-    wxMessageBox(
-       wxString::Format(
-           "wxfontdemo1 (A C Norman 2014-16)\n"
-           "wxWidgets version: %s\n"
-           "Operating system: %s\n"
-           wxVERSION_STRING,
-           wxGetOsDescription()),
-       "About wxfontdemo",
-       wxOK | wxICON_INFORMATION,
-       this);
+{   wxMessageBox(
+        wxString::Format(
+            "wxfontdemo1 (A C Norman 2014-16)\n"
+            "wxWidgets version: %s\n"
+            "Operating system: %s\n"
+            wxVERSION_STRING,
+            wxGetOsDescription()),
+        "About wxfontdemo",
+        wxOK | wxICON_INFORMATION,
+        this);
 }
 
 void fontPanel::OnChar(wxKeyEvent &event)
@@ -418,8 +411,7 @@ void fontPanel::OnChar(wxKeyEvent &event)
 }
 
 void fontPanel::OnKeyDown(wxKeyEvent &event)
-{
-    wxChar c = event.GetUnicodeKey();
+{   wxChar c = event.GetUnicodeKey();
     int n = -1;
     std::printf("Char event %#x (%c)\n", c, c); std::fflush(stdout);
     event.Skip();
@@ -428,43 +420,42 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
     else if ('A' <= c && c <= 'F') n = c - 'A' + 10;
     if (n >= 0) page = n*0x1000/0x80;
     else switch (c)
-    {
-    case 'q':
-    case 'Q':
+        {   case 'q':
+            case 'Q':
 #ifdef WIN32
-        TerminateProcess(GetCurrentProcess(), 1);
+                TerminateProcess(GetCurrentProcess(), 1);
 #else
-        std::exit(0);
+                std::exit(0);
 #endif
 
-    case 'x':
-    case 'X':
-        page ^= 0x10000/0x80; // Second plane
-        break;
-    case 'y':
-    case 'Y':
-        page ^= 0x100000/0x80; // Final plane
-        break;
-    case '+':
-    case '=':              // "+" key but without shift pressed...
-        page = page + 8;
-        break;
-    case '-':
-    case '_':
-        page = page - 8;
-        break;
-    case '>':
-    case '.':
-        page = page + 1;
-        break;
-    case '<':
-    case ',':
-        page = page - 1;
-        break;
-    default:
-        page++;
-        break;
-    }
+            case 'x':
+            case 'X':
+                page ^= 0x10000/0x80; // Second plane
+                break;
+            case 'y':
+            case 'Y':
+                page ^= 0x100000/0x80; // Final plane
+                break;
+            case '+':
+            case '=':              // "+" key but without shift pressed...
+                page = page + 8;
+                break;
+            case '-':
+            case '_':
+                page = page - 8;
+                break;
+            case '>':
+            case '.':
+                page = page + 1;
+                break;
+            case '<':
+            case ',':
+                page = page - 1;
+                break;
+            default:
+                page++;
+                break;
+        }
     Refresh();
 }
 
@@ -473,8 +464,7 @@ void fontPanel::OnKeyUp(wxKeyEvent &event)
 }
 
 void fontPanel::OnMouse(wxMouseEvent &event)
-{
-    wxWindowDC dc(this);
+{   wxWindowDC dc(this);
     wxPoint where(event.GetLogicalPosition(dc));
     if (where.y > 200) page++;
     else page--;
@@ -485,8 +475,7 @@ void fontPanel::OnMouse(wxMouseEvent &event)
 
 // The following function will catalogue the fonts I expect to allow
 int find_fontnum(const char *s)
-{
-    return -1; // Ignore tables of available chars for now...
+{   return -1; // Ignore tables of available chars for now...
     if (std::strcmp(s, "CMU Typewriter Text") == 0) return F_cmuntt;
     if (std::strcmp(s, "odokai") == 0) return F_odokai;
 // Note that Bold and Italic are picked up by options --bold and --italic
@@ -499,8 +488,7 @@ int find_fontnum(const char *s)
 static int once = 0;
 
 void fontPanel::OnPaint(wxPaintEvent &event)
-{
-std::printf("OnPaint invoked\n");
+{   std::printf("OnPaint invoked\n");
     wxPaintDC dc(this);
     wxColour c1(230, 200, 255);
     wxColour c2(100, 220, 120);
@@ -512,7 +500,8 @@ std::printf("OnPaint invoked\n");
         {   int k = ((y>>5) + x) & 1;
             dc.SetBrush(k ? b2 : b1);
             dc.SetPen(k ? p2 : p1);
-            dc.DrawRectangle(CELLWIDTH*x, CELLHEIGHT*(y/32), CELLWIDTH, CELLHEIGHT);
+            dc.DrawRectangle(CELLWIDTH*x, CELLHEIGHT*(y/32), CELLWIDTH,
+                             CELLHEIGHT);
         }
     }
     if (once == 0)
@@ -544,14 +533,15 @@ std::printf("OnPaint invoked\n");
     for (int i=0; i<32; i++)
     {   char word[12];
         std::sprintf(word, "%02x", i);
-        dc.DrawText(word, (((double)CELLWIDTH)*(i+1)) + CELLWIDTH/2.2,
-            (double)CELLHEIGHT/10.0);
+        dc.DrawText(word, ((static_cast<double>(CELLWIDTH))*
+                           (i+1)) + CELLWIDTH/2.2,
+                    static_cast<double>(CELLHEIGHT)/10.0);
     }
     for (int i=0; i<8; i++)
     {   char word[12];
         std::sprintf(word, "%5x", 32*i + 0x80*page);
         dc.DrawText(word, CELLWIDTH/10.0,
-            (double)CELLHEIGHT*(i+1) + CELLHEIGHT/2.5);
+                    static_cast<double>(CELLHEIGHT)*(i+1) + CELLHEIGHT/2.5);
     }
     dc.SetFont(ff);
 #if 0
@@ -562,7 +552,7 @@ std::printf("OnPaint invoked\n");
 // for reasons that I do not at present understand... so at least for now
 // I will remove this attempt to count characters!
     if (0 && once++ == 0) // Disable just for now
-    {   int howmany = 0; 
+    {   int howmany = 0;
         for (int i=0; howmany<30 && i<0xffff; i++)
         {   wxString s((wchar_t)i);
             double ww, hh, dd, el;
@@ -596,9 +586,9 @@ std::printf("OnPaint invoked\n");
                 k >= 0x110000 ||
                 (fontnum >= 0 && lookupchar(fontnum, k) == 0))
             {   dc.DrawRectangle(
-                   CELLWIDTH*(j+1)+CELLWIDTH/3,
-                   CELLHEIGHT*(i/32+1)+CELLHEIGHT/3 - CELLOFFSET,
-                   CELLWIDTH/3, CELLHEIGHT/3);
+                    CELLWIDTH*(j+1)+CELLWIDTH/3,
+                    CELLHEIGHT*(i/32+1)+CELLHEIGHT/3 - CELLOFFSET,
+                    CELLWIDTH/3, CELLHEIGHT/3);
                 continue;
             }
             wchar_t ccc[4];
@@ -618,8 +608,8 @@ std::printf("OnPaint invoked\n");
             wxString c(ccc);
             double offset = d1-h1 - CELLOFFSET;
             dc.DrawText(c,
-                CELLWIDTH*(j+1),
-                CELLHEIGHT*(i/32+1) + CELLHEIGHT + offset);
+                        CELLWIDTH*(j+1),
+                        CELLHEIGHT*(i/32+1) + CELLHEIGHT + offset);
         }
     }
 }

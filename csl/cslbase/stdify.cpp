@@ -584,169 +584,166 @@ int main(int argc, char *argv[])
     std::string word("");
     while ((ch = std::getchar()) != EOF)
     {   switch (cur)
-        {
-        case stdcolon:
-            if (ch == ':') cur = stdcoloncolon;
-            else cur = generic;
-            goto general;
-        case stdcoloncolon:
-            if (('A' <= ch && ch <= 'Z') ||
-                ('a' <= ch && ch <= 'z') ||
-                ch == '_')
-            {   cur = stdcoloncolonword;
-                std::putchar(ch);
-                continue;
-            }
-            cur = generic;
-            goto general;
-        case stdcoloncolonword:
-            if (('A' <= ch && ch <= 'Z') ||
-                ('a' <= ch && ch <= 'z') ||
-                ('0' <= ch && ch <= '9') ||
-                ch == '_')
-            {   std::putchar(ch);
-                continue;
-            }
-            cur = generic;
-            goto general;
-        case freshline:
-            if (ch == '#')         // ignore preprocessor stuff
-            {   cur = slashslash;
-                std::putchar(ch);
-                continue;
-            }
-            if (ch != ' ' && ch != '\t') cur = generic;
-            // drop through
-        case generic:
-        general:
-            switch (ch)
-            {
-            default:
+        {   case stdcolon:
+                if (ch == ':') cur = stdcoloncolon;
+                else cur = generic;
+                goto general;
+            case stdcoloncolon:
                 if (('A' <= ch && ch <= 'Z') ||
                     ('a' <= ch && ch <= 'z') ||
                     ch == '_')
-                {   word.clear();
-                    word.push_back(ch);
-                    cur = withinword;
+                {   cur = stdcoloncolonword;
+                    std::putchar(ch);
                     continue;
                 }
-                else if (ch == '\n') cur = freshline;
-                std::putchar(ch);
-                continue;
-            case '/':
-                cur = slash;
-                std::putchar(ch);
-                continue;
-            case '\'':
-                cur = quote;
-                std::putchar(ch);
-                continue;
-            case '"':
-                cur = dquote;
-                std::putchar(ch);
-                continue;
-            }
-        case withinword:
-            if (('A' <= ch && ch <= 'Z') ||
-                ('a' <= ch && ch <= 'z') ||
-                ('0' <= ch && ch <= '9') ||
-                ch == '_')
-            {   word.push_back(ch);
-                continue;
-            }
-            if (words.count(word) != 0) std::printf("std::");
-            std::printf("%s", word.c_str());
-            std::putchar(ch);
-            if (ch == ':' && word == "std") cur = stdcolon;
-            else cur = generic;
-            if (ch == '\n') cur = freshline;
-            else if (ch == '/') cur = slash;
-            else if (ch == '\'') cur = quote;
-            else if (ch == '"') cur = dquote;
-            continue;
-        case slash:
-            switch (ch)
-            {
-            default:
                 cur = generic;
+                goto general;
+            case stdcoloncolonword:
                 if (('A' <= ch && ch <= 'Z') ||
                     ('a' <= ch && ch <= 'z') ||
+                    ('0' <= ch && ch <= '9') ||
                     ch == '_')
-                {   word.clear();
-                    word.push_back(ch);
-                    cur = withinword;
+                {   std::putchar(ch);
                     continue;
                 }
-                else if (ch == '\n') cur = freshline;
+                cur = generic;
+                goto general;
+            case freshline:
+                if (ch == '#')         // ignore preprocessor stuff
+                {   cur = slashslash;
+                    std::putchar(ch);
+                    continue;
+                }
+                if (ch != ' ' && ch != '\t') cur = generic;
+            // drop through
+            case generic:
+            general:
+                switch (ch)
+            {       default:
+                        if (('A' <= ch && ch <= 'Z') ||
+                            ('a' <= ch && ch <= 'z') ||
+                            ch == '_')
+                        {   word.clear();
+                            word.push_back(ch);
+                            cur = withinword;
+                            continue;
+                        }
+                        else if (ch == '\n') cur = freshline;
+                        std::putchar(ch);
+                        continue;
+                    case '/':
+                        cur = slash;
+                        std::putchar(ch);
+                        continue;
+                    case '\'':
+                        cur = quote;
+                        std::putchar(ch);
+                        continue;
+                    case '"':
+                        cur = dquote;
+                        std::putchar(ch);
+                        continue;
+                }
+            case withinword:
+                if (('A' <= ch && ch <= 'Z') ||
+                    ('a' <= ch && ch <= 'z') ||
+                    ('0' <= ch && ch <= '9') ||
+                    ch == '_')
+                {   word.push_back(ch);
+                    continue;
+                }
+                if (words.count(word) != 0) std::printf("std::");
+                std::printf("%s", word.c_str());
+                std::putchar(ch);
+                if (ch == ':' && word == "std") cur = stdcolon;
+                else cur = generic;
+                if (ch == '\n') cur = freshline;
+                else if (ch == '/') cur = slash;
+                else if (ch == '\'') cur = quote;
+                else if (ch == '"') cur = dquote;
+                continue;
+            case slash:
+                switch (ch)
+            {       default:
+                        cur = generic;
+                        if (('A' <= ch && ch <= 'Z') ||
+                            ('a' <= ch && ch <= 'z') ||
+                            ch == '_')
+                        {   word.clear();
+                            word.push_back(ch);
+                            cur = withinword;
+                            continue;
+                        }
+                        else if (ch == '\n') cur = freshline;
+                        std::putchar(ch);
+                        continue;
+                    case '/':
+                        cur = slashslash;
+                        std::putchar(ch);
+                        continue;
+                    case '*':
+                        cur = slashstar;
+                        std::putchar(ch);
+                        continue;
+                    case '\'':
+                        cur = quote;
+                        std::putchar(ch);
+                        continue;
+                    case '"':
+                        cur = dquote;
+                        std::putchar(ch);
+                        continue;
+                }
+            case slashslash:
+                if (ch == '\n') cur = freshline;
                 std::putchar(ch);
                 continue;
-            case '/':
-                cur = slashslash;
+            case slashstar:
+                if (ch == '*') cur = slashstarstar;
                 std::putchar(ch);
                 continue;
-            case '*':
-                cur = slashstar;
+            case slashstarstar:
+                if (ch == '/') cur = generic;
+                else cur = slashstar;
                 std::putchar(ch);
                 continue;
-            case '\'':
+            case quote:
+                std::putchar(ch);
+                if (ch == '\'')
+                {   cur = generic;
+                    if (('A' <= ch && ch <= 'Z') ||
+                        ('a' <= ch && ch <= 'z') ||
+                        ch == '_')
+                    {   word.clear();
+                        word.push_back(ch);
+                        cur = withinword;
+                    }
+                }
+                else if (ch == '\\') cur = quoteback;
+                continue;
+            case quoteback:
                 cur = quote;
                 std::putchar(ch);
                 continue;
-            case '"':
+            case dquote:
+                if (ch == '"')
+                {   cur = generic;
+                    if (('A' <= ch && ch <= 'Z') ||
+                        ('a' <= ch && ch <= 'z') ||
+                        ch == '_')
+                    {   word.clear();
+                        word.push_back(ch);
+                        cur = withinword;
+                        continue;
+                    }
+                }
+                else if (ch == '\\') cur = dquoteback;
+                std::putchar(ch);
+                continue;
+            case dquoteback:
                 cur = dquote;
                 std::putchar(ch);
                 continue;
-            }
-        case slashslash:
-            if (ch == '\n') cur = freshline;
-            std::putchar(ch);
-            continue;
-        case slashstar:
-            if (ch == '*') cur = slashstarstar;
-            std::putchar(ch);
-            continue;
-        case slashstarstar:
-            if (ch == '/') cur = generic;
-            else cur = slashstar;
-            std::putchar(ch);
-            continue;
-        case quote:
-            std::putchar(ch);
-            if (ch == '\'')
-            {   cur = generic;
-                if (('A' <= ch && ch <= 'Z') ||
-                    ('a' <= ch && ch <= 'z') ||
-                    ch == '_')
-                {   word.clear();
-                    word.push_back(ch);
-                    cur = withinword;
-                }
-            }
-            else if (ch == '\\') cur = quoteback;
-            continue;
-        case quoteback:
-            cur = quote;
-            std::putchar(ch);
-            continue;
-        case dquote:
-            if (ch == '"')
-            {   cur = generic;
-                if (('A' <= ch && ch <= 'Z') ||
-                    ('a' <= ch && ch <= 'z') ||
-                    ch == '_')
-                {   word.clear();
-                    word.push_back(ch);
-                    cur = withinword;
-                    continue;
-                }
-            }
-            else if (ch == '\\') cur = dquoteback;
-            std::putchar(ch);
-            continue;
-        case dquoteback:
-            cur = dquote;
-            std::putchar(ch);
-            continue;
         }
     }
     return 0;

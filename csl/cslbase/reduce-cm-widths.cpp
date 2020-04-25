@@ -68,7 +68,7 @@
 
 
 
-static std::FILE *out = NULL;
+static std::FILE *out = nullptr;
 
 static int32_t read4(std::FILE *f)
 {   int32_t r = std::getc(f) & 0xff;
@@ -90,7 +90,7 @@ static int process(char *d, char *s, int final)
     double designpoints;
     std::sprintf(line, "%s/%s", FONT_PATH, s);
     f = std::fopen(line, "r");
-    if (f == NULL)
+    if (f == nullptr)
     {   std::fprintf(stderr, "Failed to read \"%s\"\n", line);
         std::exit(1);
     }
@@ -106,8 +106,9 @@ static int process(char *d, char *s, int final)
     read4(f);
 // Pre-header read
     checksum = read4(f);
-    designsize = read4(f); // design size on TeX points of 1/72.27" by 2^20
-    designpoints = (double)designsize/(1024.0*1024.0);
+    designsize = read4(
+                     f); // design size on TeX points of 1/72.27" by 2^20
+    designpoints = static_cast<double>(designsize)/(1024.0*1024.0);
     for (i=2; i<lenhdr; i++) read4(f);
     for (i=0; i<65536; i++) finfo[i] = 0;
     for (i=bc; i<=ec; i++) finfo[i] = read4(f);
@@ -116,27 +117,32 @@ static int process(char *d, char *s, int final)
 #if 0
 // Display the width table while I debug/test this
         std::fprintf(out, "%% %d: %d = %o = %f\n",
-                i, lentab[i], lentab[i], (double)lentab[i]/(double)(1<<20));
+                     i, lentab[i], lentab[i],
+                     static_cast<double>(lentab[i])/static_cast<double>(1<<20));
 #endif
     }
     std::fclose(f);
     std::fprintf(out, "    %% name checksum design-size (millipoints)\n");
-    std::fprintf(out, "    list(\"%s\", %d, %d, list!-to!-vector '(\n    ",
-            d, checksum, (int)((10000LL*(int64_t)designsize+512LL*1024LL)/(1024LL*1024LL)));
+    std::fprintf(out,
+                 "    list(\"%s\", %d, %d, list!-to!-vector '(\n    ",
+                 d, checksum, static_cast<int>((10000LL*(int64_t)designsize
+                         +512LL*1024LL)/(1024LL*1024LL)));
 // The TeX fonts only use the first 128 character positions and so I will
 // not bother with recording widths for the range 128-255.
     for (c=0; c<127; c++)
     {   w = 0;
         if (c>=bc && c<=ec)
             w = lentab[(finfo[c] >> 24) & 0xff];
-        w = (int)((10000.0*(double)w)/(1024.0*1024.0));
+        w = static_cast<int>((10000.0*static_cast<double>(w))/
+                             (1024.0*1024.0));
         std::fprintf(out, "%7d ", w);
         if ((c % 8) == 7) std::fprintf(out, "\n    ");
     }
     w = 0;
     if (127>=bc && 127<=ec)
         w = lentab[(finfo[127] >> 24) & 0xff];
-    w = (int)((10000.0*(double)w)/(1024.0*1024.0));
+    w = static_cast<int>((10000.0*static_cast<double>(w))/
+                         (1024.0*1024.0));
     std::fprintf(out, "%7d))", w);
     if (!final) std::fprintf(out, ",");
     std::fprintf(out, "\n");
@@ -146,14 +152,16 @@ int main(int argc, char *argv[])
 {   std::FILE *note;
     int ch;
     out = std::fopen("cmfont-widths.red", "w");
-    if (out == NULL)
+    if (out == nullptr)
     {   std::printf("Failed to open cmfont-widths.red\n");
         return 1;
     }
     std::fprintf(out, "%% cmfont-widths.red\n");
-    std::fprintf(out, "%% Widths for characters in Computer Modern Fonts\n\n");
+    std::fprintf(out,
+                 "%% Widths for characters in Computer Modern Fonts\n\n");
     std::fprintf(out, "%% extracted from %s\n\n", FONT_PATH);
-    std::fprintf(out, "%% Widths here are given in units of 1/10000 point\n\n");
+    std::fprintf(out,
+                 "%% Widths here are given in units of 1/10000 point\n\n");
     std::fprintf(out, "fluid '(cm!-widths!*);\n\n");
     std::fprintf(out, "cm!-widths!* := list(\n");
 //

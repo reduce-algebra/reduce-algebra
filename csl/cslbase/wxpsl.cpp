@@ -101,11 +101,11 @@ int fwin_main(int argc, const char **argv)
         while (i > 0 && (programDir[i] != '/' && programDir[i] != '\\')) i--;
     }
     std::sprintf(bpsl_binary, "%.*s%cpslbuild%c%s%cpsl%cbpsl%s",
-            i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR, EXEEXT);
+                 i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR, EXEEXT);
     std::sprintf(reduce_image, "%.*s%cpslbuild%c%s%cred%creduce.img",
-            i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
+                 i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
     std::sprintf(memory_control, "%.*s%cpslbuild%c%s%cpsl%c64",
-            i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
+                 i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
     FWIN_LOG("bin: %s\n", bpsl_binary);
     FWIN_LOG("img: %s\n", reduce_image);
     FWIN_LOG("64:  %s\n", memory_control);
@@ -138,15 +138,15 @@ int fwin_main(int argc, const char **argv)
 // The procedures used here are documented on Microsoft's web-site, and
 // the code I include here is closely based on their sample that shows how
 // to create a process with pipes attached to its standard streams.
-    HANDLE g_hChildStd_IN_Rd = NULL;
-    HANDLE g_hChildStd_IN_Wr = NULL;
-    HANDLE g_hChildStd_OUT_Rd = NULL;
-    HANDLE g_hChildStd_OUT_Wr = NULL;
+    HANDLE g_hChildStd_IN_Rd = nullptr;
+    HANDLE g_hChildStd_IN_Wr = nullptr;
+    HANDLE g_hChildStd_OUT_Rd = nullptr;
+    HANDLE g_hChildStd_OUT_Wr = nullptr;
     SECURITY_ATTRIBUTES saAttr;
 // Set the bInheritHandle flag so pipe handles are inherited.
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
-    saAttr.lpSecurityDescriptor = NULL;
+    saAttr.lpSecurityDescriptor = nullptr;
 // Create a pipe for the child process's STDOUT.
 
     if (!CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0))
@@ -174,15 +174,16 @@ int fwin_main(int argc, const char **argv)
 // With Windows I will always create the sub-process via a command line
 // and it will split that up into individual arguments when it is ready to.
 //
-    char *cmdLine = (char *)std::malloc(std::strlen(bpsl_binary) +
-                                   std::strlen(reduce_image) +
-                                   std::strlen(memory_control) + 16);
-    if (cmdLine  == NULL)
+    char *cmdLine = reinterpret_cast<char *>(std)::malloc(std::strlen(
+                        bpsl_binary) +
+                    std::strlen(reduce_image) +
+                    std::strlen(memory_control) + 16);
+    if (cmdLine  == nullptr)
     {   fwin_printf("failed to allocate space for command line\n");
         fwin_exit(EXIT_FAILURE);
     }
     std::sprintf(cmdLine, "\"%s\" -td %s -f \"%s\"",
-            bpsl_binary, memory_control, reduce_image);
+                 bpsl_binary, memory_control, reduce_image);
     PROCESS_INFORMATION piProcInfo;
     STARTUPINFO siStartInfo;
     BOOL bSuccess = FALSE;
@@ -202,14 +203,14 @@ int fwin_main(int argc, const char **argv)
     siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 
 // Create the child process.
-    bSuccess = CreateProcess(NULL, // application name
+    bSuccess = CreateProcess(nullptr, // application name
                              cmdLine,       // command line
-                             NULL,          // process security attributes
-                             NULL,          // primary thread security attributes
+                             nullptr,       // process security attributes
+                             nullptr,       // primary thread security attributes
                              TRUE,          // handles are inherited
                              0,             // creation flags
-                             NULL,          // use parent's environment
-                             NULL,          // use parent's current directory
+                             nullptr,       // use parent's environment
+                             nullptr,       // use parent's current directory
                              &siStartInfo,  // STARTUPINFO pointer
                              &piProcInfo);  // receives PROCESS_INFORMATION
 
@@ -267,7 +268,7 @@ int fwin_main(int argc, const char **argv)
         nargv[2] = memory_control;
         nargv[3] = (char *)"-f";
         nargv[4] = reduce_image;
-        nargv[5] = NULL;
+        nargv[5] = nullptr;
 //    for (i = xargstart; i < argc; i++)
 //        nargv[i - xargstart + 5] = argv[i];
 //    nargv[argc - xargstart + 5] = (char *)0;
@@ -287,7 +288,8 @@ int fwin_main(int argc, const char **argv)
 #ifdef WIN32
     DWORD n;
     const char *loader = "load_package redfront,utf8$\n";
-    if (WriteFile(g_hChildStd_IN_Wr, loader, std::strlen(loader), &n, NULL) == 0)
+    if (WriteFile(g_hChildStd_IN_Wr, loader, std::strlen(loader), &n,
+                  nullptr) == 0)
     {   fwin_printf("Unable to send to child process\n");
         fwin_exit(EXIT_FAILURE);
     }
@@ -298,9 +300,9 @@ int fwin_main(int argc, const char **argv)
         int prevc = 0, c, j = 0, k;
 // At present I do not recover well when the child process terminates - the
 // call to ReadFile here can merely hang. That is BAD.
-        if (ReadFile(g_hChildStd_OUT_Rd, buf, BUFSIZE, &n, NULL) == 0 ||
+        if (ReadFile(g_hChildStd_OUT_Rd, buf, BUFSIZE, &n, nullptr) == 0 ||
             n == 0) break;
-        while (j<(int)n && (c = buf[j++]) != 0x01)
+        while (j<static_cast<int>(n) && (c = buf[j++]) != 0x01)
         {   if (c == 0x0d) fwin_putchar('\n');
             else if (c == 0x0a)
             {   if (prevc != 0x0d) fwin_putchar('\n');
@@ -314,7 +316,7 @@ int fwin_main(int argc, const char **argv)
         {   k = 0;
 // There is a messy issue in that the 0x02 may be in the NEXT buffer-full
 // of stuff. I will ignore that issue just for now.
-            while (j<(int)n && (c = buf[j++]) != 0x02)
+            while (j<static_cast<int>(n) && (c = buf[j++]) != 0x02)
                 prompt[k++] = c;
             prompt[k] = 0;
             fwin_set_prompt(prompt);
@@ -326,7 +328,7 @@ int fwin_main(int argc, const char **argv)
             buf[k] = 0;
             FWIN_LOG("Sending line <%s>\n", buf);
             buf[k++] = 0x0a;  // send a newline too
-            if (WriteFile(g_hChildStd_IN_Wr, buf, k, &n, NULL) == 0)
+            if (WriteFile(g_hChildStd_IN_Wr, buf, k, &n, nullptr) == 0)
             {   fwin_printf("Unable to send to child process\n");
                 fwin_exit(EXIT_FAILURE);
             }
@@ -347,7 +349,7 @@ int fwin_main(int argc, const char **argv)
     {   char buf[BUFSIZE], prompt[80];
         int n, prevc = 0, c = -1, j = 0, k;
         n = read(ReduceToMe[0], buf, BUFSIZE);
-        while (j<(int)n && (c = (buf[j++] & 0xff)) != 0x01)
+        while (j<static_cast<int>(n) && (c = (buf[j++] & 0xff)) != 0x01)
         {   FWIN_LOG("see char %.2x\n", c);
             if (c == 0x0d) fwin_putchar('\n');
             else if (c == 0x0a)
@@ -362,7 +364,7 @@ int fwin_main(int argc, const char **argv)
         {   k = 0;
 // There is a messy issue in that the 0x02 may be in the NEXT buffer-full
 // of stuff. I will ignore that issue just for now.
-            while (j<(int)n && (c = buf[j++]) != 0x02)
+            while (j<static_cast<int>(n) && (c = buf[j++]) != 0x02)
                 prompt[k++] = c;
             prompt[k] = 0;
             FWIN_LOG("Prompt observed to be <%s>\n", prompt);
@@ -409,7 +411,7 @@ int main(int argc, const char *argv[])
 
 void print_usage(char name[])
 {   std::fprintf(stderr,
-            "usage: %s [-bhuvV] [[-m] NUMBER[kKmM]]\n",name);
+                 "usage: %s [-bhuvV] [[-m] NUMBER[kKmM]]\n",name);
 }
 
 void print_help(char name[])
@@ -420,7 +422,8 @@ void print_help(char name[])
     print_usage(name);
 
     std::fprintf(stderr,"       -h\t\tthis help message\n");
-    std::fprintf(stderr,"       -m NUMBER [kKmM]\tmemory allocation in Bytes [KB|MB]\n");
+    std::fprintf(stderr,
+                 "       -m NUMBER [kKmM]\tmemory allocation in Bytes [KB|MB]\n");
     std::fprintf(stderr,"       -v, -V\t\tverbose\n\n");
 
     std::fprintf(stderr,"Examples: %s -v\n",name);
@@ -430,7 +433,7 @@ void print_help(char name[])
 // This code installs handlers for a whole pile of signals, most of which
 // should never arise!
 
-void sig_killChild(void)
+void sig_killChildstatic_cast<void>()
 {
 #ifdef SIGCHLD
     std::signal(SIGCHLD,SIG_IGN);
@@ -467,7 +470,8 @@ void sig_skipUntilString(int handle,const char string[])
     int i;
 
     len = std::strlen(string);
-    buffer = (char *)std::malloc(len * sizeof(char) + 1);
+    buffer = reinterpret_cast<char *>(std)::malloc(len * sizeof(
+                 char) + 1);
     read(handle,buffer,len);
 
     while (std::strcmp(buffer,string) != 0)
@@ -495,7 +499,7 @@ void sig_sigTstp(int arg)
 #endif
 }
 
-void sig_installHandlers(void)
+void sig_installHandlersstatic_cast<void>()
 {
 #ifdef SIGQUIT
     std::signal(SIGQUIT,sig_sigGen);
@@ -529,7 +533,7 @@ void sig_installHandlers(void)
 #endif
 }
 
-void sig_removeHandlers(void)
+void sig_removeHandlersstatic_cast<void>()
 {
 #ifdef SIGQUIT
     std::signal(SIGQUIT,SIG_DFL);

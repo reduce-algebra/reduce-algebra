@@ -376,9 +376,9 @@ int main(int argc, char *argv[])
     std::printf("Convert from %s to %s\n", srcfile, destfile);
     src = std::fopen(srcfile, "r");
     dest = std::fopen(destfile, "w");
-    if (src != NULL && dest != NULL) convert();
-    if (src != NULL) std::fclose(src);
-    if (dest != NULL) std::fclose(dest);
+    if (src != nullptr && dest != nullptr) convert();
+    if (src != nullptr) std::fclose(src);
+    if (dest != nullptr) std::fclose(dest);
     return 0;
 }
 

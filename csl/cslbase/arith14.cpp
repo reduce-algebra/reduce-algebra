@@ -49,43 +49,51 @@
 #ifdef LITTLEENDIAN
 
 float128_t f128_0      = {{0, INT64_C(0x0000000000000000)}},
-           f128_half   = {{0, INT64_C(0x3ffe000000000000)}},
-           f128_mhalf  = {{0, INT64_C(0xbffe000000000000)}},
-           f128_1      = {{0, INT64_C(0x3fff000000000000)}},
-           f128_10_16  = {{0, INT64_C(0x40341c37937e0800)}},
-           f128_10_17  = {{0, INT64_C(0x40376345785d8a00)}},
-           f128_10_18  = {{0, INT64_C(0x403abc16d674ec80)}},
-           f128_scale  = {{INT64_C(0x0080000000000000),
-                           INT64_C(0x4038000000000000)}},
-           f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
+f128_half   = {{0, INT64_C(0x3ffe000000000000)}},
+f128_mhalf  = {{0, INT64_C(0xbffe000000000000)}},
+f128_1      = {{0, INT64_C(0x3fff000000000000)}},
+f128_10_16  = {{0, INT64_C(0x40341c37937e0800)}},
+f128_10_17  = {{0, INT64_C(0x40376345785d8a00)}},
+f128_10_18  = {{0, INT64_C(0x403abc16d674ec80)}},
+f128_scale  = {{INT64_C(0x0080000000000000),
+        INT64_C(0x4038000000000000)
+    }
+},
+f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
 
 float256_t f256_5      = {{{0,0}}, {{0, INT64_C(0x4001400000000000)}}},
-           f256_10     = {{{0,0}}, {{0, INT64_C(0x4002400000000000)}}},
-           f256_r5     = {{{INT64_C(0x999999999999999a), INT64_C(0xbf8a999999999999)}},
-                          {{INT64_C(0x999999999999999a), INT64_C(0x3ffc999999999999)}}},
-           f256_r10    = {{{INT64_C(0x999999999999999a), INT64_C(0xbf89999999999999)}},
-                          {{INT64_C(0x999999999999999a), INT64_C(0x3ffb999999999999)}}},
-           f256_10_16  = {{{0,0}}, {{0, INT64_C(0x40341c37937e0800)}}};
+f256_10     = {{{0,0}}, {{0, INT64_C(0x4002400000000000)}}},
+f256_r5     = {{{INT64_C(0x999999999999999a), INT64_C(0xbf8a999999999999)}},
+    {{INT64_C(0x999999999999999a), INT64_C(0x3ffc999999999999)}}
+},
+f256_r10    = {{{INT64_C(0x999999999999999a), INT64_C(0xbf89999999999999)}},
+    {{INT64_C(0x999999999999999a), INT64_C(0x3ffb999999999999)}}
+},
+f256_10_16  = {{{0,0}}, {{0, INT64_C(0x40341c37937e0800)}}};
 #else
 
 float128_t f128_0      = {{INT64_C(0x0000000000000000), 0}},
-           f128_half   = {{INT64_C(0x3ffe000000000000), 0}},
-           f128_mhalf  = {{INT64_C(0xbffe000000000000), 0}},
-           f128_1      = {{INT64_C(0x3fff000000000000), 0}},
-           f128_10_16  = {{INT64_C(0x40341c37937e0800), 0}},
-           f128_10_17  = {{INT64_C(0x40376345785d8a00), 0}},
-           f128_10_18  = {{INT64_C(0x403abc16d674ec80), 0}},
-           f128_scale  = {{INT64_C(0x4038000000000000),
-                           INT64_C(0x0080000000000000)}},
-           f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
+f128_half   = {{INT64_C(0x3ffe000000000000), 0}},
+f128_mhalf  = {{INT64_C(0xbffe000000000000), 0}},
+f128_1      = {{INT64_C(0x3fff000000000000), 0}},
+f128_10_16  = {{INT64_C(0x40341c37937e0800), 0}},
+f128_10_17  = {{INT64_C(0x40376345785d8a00), 0}},
+f128_10_18  = {{INT64_C(0x403abc16d674ec80), 0}},
+f128_scale  = {{INT64_C(0x4038000000000000),
+        INT64_C(0x0080000000000000)
+    }
+},
+f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
 
 float256_t f256_5      = {{{INT64_C(0x4001400000000000), 0}}, {{0,0}}},
-           f256_10     = {{{INT64_C(0x4002400000000000), 0}}, {{0,0}}},
-           f256_r5     = {{{INT64_C(0x3ffc999999999999), INT64_C(0x999999999999999a)}},
-                          {{INT64_C(0xbf8a999999999999), INT64_C(0x999999999999999a)}}},
-           f256_r10    = {{{INT64_C(0x3ffb999999999999), INT64_C(0x999999999999999a)}},
-                          {{INT64_C(0xf899999999999999), INT64_C(0x999999999999999a)}}},
-           f256_10_16  = {{{INT64_C(0x40341c37937e0800), 0}}, {{0,0}}};
+f256_10     = {{{INT64_C(0x4002400000000000), 0}}, {{0,0}}},
+f256_r5     = {{{INT64_C(0x3ffc999999999999), INT64_C(0x999999999999999a)}},
+    {{INT64_C(0xbf8a999999999999), INT64_C(0x999999999999999a)}}
+},
+f256_r10    = {{{INT64_C(0x3ffb999999999999), INT64_C(0x999999999999999a)}},
+    {{INT64_C(0xf899999999999999), INT64_C(0x999999999999999a)}}
+},
+f256_10_16  = {{{INT64_C(0x40341c37937e0800), 0}}, {{0,0}}};
 #endif
 
 void f128M_ldexp(float128_t *p, int x)
@@ -100,7 +108,8 @@ void f128M_ldexp(float128_t *p, int x)
         p->v[LOPART] = 0;
     }
     if (x < -114) // Without doubt underflowing to zero
-    {   p->v[HIPART] &= INT64_C(0x8000000000000000); // preserve sign of input
+    {   p->v[HIPART] &= INT64_C(
+                            0x8000000000000000); // preserve sign of input
         p->v[LOPART] = 0;
         return;
     }
@@ -110,13 +119,13 @@ void f128M_ldexp(float128_t *p, int x)
 // not lead to a sub-norm and then using a multiply to scale it down.
     if (x <= 0)
     {   p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-            ((uint64_t)(x+4096) << 48);
+                       ((uint64_t)(x+4096) << 48);
         float128_t w1;
         f128M_div(p, &f128_N1, &w1);
         *p = w1;
     }
     else p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-        ((uint64_t)x << 48);
+                            ((uint64_t)x << 48);
 }
 
 void f128M_frexp(float128_t *p, float128_t *r, int *x)
@@ -137,9 +146,9 @@ void f128M_frexp(float128_t *p, float128_t *r, int *x)
     }
     else *r = *p;
     r->v[HIPART] = (r->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-        ((uint64_t)0x3ffe << 48);
+                   ((uint64_t)0x3ffe << 48);
     *x = px - 0x3ffe;
-}    
+}
 
 // I will want working precision even higher than 128-bits. I will
 // arrange that using pairs of 128-bit floats such that the value
@@ -155,7 +164,8 @@ void f128M_frexp(float128_t *p, float128_t *r, int *x)
 // overflow. The result should end up with almost 224 bits of precision,
 // but it does not pretend to get rounding utterly correct.
 
-void f256M_add(const float256_t *x, const float256_t *y, float256_t *z)
+void f256M_add(const float256_t *x, const float256_t *y,
+               float256_t *z)
 {   float128_t r, s, w1, w2, w3;
 // r = x->hi + y->hi
     f128M_add(&x->hi, &y->hi, &r);
@@ -184,7 +194,8 @@ void f256M_add(const float256_t *x, const float256_t *y, float256_t *z)
 }
 
 static void f128X_print(const float128_t *v)
-{   std::printf("%.16" PRIx64 " %.16" PRIx64, v->v[HIPART], v->v[LOPART]);
+{   std::printf("%.16" PRIx64 " %.16" PRIx64, v->v[HIPART],
+                v->v[LOPART]);
 }
 
 // This helper function splits a 113-bit float X into two parts H & L each
@@ -193,18 +204,20 @@ static void f128X_print(const float128_t *v)
 // negative! The object of this step is so that numbers such as H and L can
 // then be multiplied without introducing any rounding at all.
 
-void f128M_split(const float128_t *x, float128_t *yhi, float128_t *ylo)
+void f128M_split(const float128_t *x, float128_t *yhi,
+                 float128_t *ylo)
 {   float128_t p, q;
     f128M_mul(x, &f128_scale, &p);  // 2^58+1
     f128M_sub(x, &p, &q);
-    f128M_add(&q, &p, yhi); 
+    f128M_add(&q, &p, yhi);
     f128M_sub(x, yhi, ylo);
 }
 
 // f128M_mul2 multiplies two 128-bit floats and yields a result that
 // is almost correct to the full precision of a 256-bit float.
 
-static void f128M_mul2(const float128_t *x, const float128_t *y, float256_t *z)
+static void f128M_mul2(const float128_t *x, const float128_t *y,
+                       float256_t *z)
 {   float128_t xhi, xlo, yhi, ylo, p, q, w1, w2;
     f128M_split(x, &xhi, &xlo);
     f128M_split(y, &yhi, &ylo);
@@ -225,7 +238,8 @@ static void f128M_mul2(const float128_t *x, const float128_t *y, float256_t *z)
 
 // f256M_mul multiplies two 256-bit values to get a 256-bit result.
 
-void f256M_mul(const float256_t *x, const float256_t *y, float256_t *z)
+void f256M_mul(const float256_t *x, const float256_t *y,
+               float256_t *z)
 {   float256_t c;
     float128_t w1, w2, w3;
 // mul2 generates a double-precision product of the high parts.
@@ -295,7 +309,8 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
     }
 // NaNs. I do not distinguish between signalling and non-signalling ones.
     int exponent = f128M_exponent(p);
-    if (exponent == 0x4000) // A NaN, because I have already handled infinity
+    if (exponent ==
+        0x4000) // A NaN, because I have already handled infinity
     {   *s++ = 'n';
         *s++ = 'a';
         *s++ = 'n';
@@ -325,7 +340,7 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
         f128M_negate(&w1.hi);
     }
 // Now the decimal exponent will be around exponent*log_{10}(2)
-   double d_decexp = 0.301029995663981195*(double)exponent;
+    double d_decexp = 0.301029995663981195*static_cast<double>(exponent);
 // Now I want to multiply the value I have by 10^(-decexp)
 //  printf("d_decexp = %.3f\n", d_decexp);
     int decexp = 0;
@@ -338,7 +353,7 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
 // in use here that would mean that its low half could be sub-normal, and so
 // I do the division as (n/5^K)/2^K where the scaling by a power of 2
 // is certainly safe.
-        f256M_pow(&f256_r5, decexp = (int)(d_decexp-17.0), &w3);
+        f256M_pow(&f256_r5, decexp = static_cast<int>(d_decexp-17.0), &w3);
         f128M_ldexp(&w3.hi, -decexp);
         f128M_ldexp(&w3.lo, -decexp);
         f256M_mul(&w1, &w3, &w2);
@@ -348,8 +363,8 @@ bool f128M_sprint(char *s, float128_t *p, int *pdecexp)
 // multiply by a power of 10.0. Well this could cause overflow issues
 // if the number I am trying to print is really tiny. To avoid that instead
 // of multiplying by 10^K I will multiply by 5^K (not risking anything at
-// all bad) and then increment the exponent by K. 
-        f256M_pow(&f256_5, decexp = (int)(18.0-d_decexp), &w3);
+// all bad) and then increment the exponent by K.
+        f256M_pow(&f256_5, decexp = static_cast<int>(18.0-d_decexp), &w3);
         f128M_ldexp(&w3.hi, decexp);
         f128M_ldexp(&w3.lo, decexp);
         decexp = -decexp;
@@ -412,7 +427,7 @@ void f128M_print(float128_t *p)
 // out as "1.000" with the exponent incremented. Rounding to 1 digits will
 // leave just the integer part, while rounding to 33 (or more) places
 // should not change anything because there are no digits beyond there.
-// Rounding to 0 digits should yield either "0" or "1". 
+// Rounding to 0 digits should yield either "0" or "1".
 
 static bool round_at(char *s, int ndigits)
 {   if (ndigits < 0 || ndigits >= 34) return false;
@@ -594,7 +609,7 @@ int f128M_sprint_F(char *r, int width, int prec, float128_t *p)
         if (fdig > prec) fdig = prec;
         if (sign) *r++ = '-';
         r += std::sprintf(r, "%.*s.%.*s",
-            decexp+1, s, fdig, &s[decexp+1]);
+                          decexp+1, s, fdig, &s[decexp+1]);
         r = pad_by_zero(r, prec-fdig);
     }
     else if (prec+decexp+1 <= 34)
@@ -642,7 +657,7 @@ int f128M_sprint_G(char *r, int width, int prec, float128_t *p)
 // no digits beyond the decimal point. This asks the F printer to print
 // as 999.[999] and I expect it will round this to 1000. which ought to
 // have been rendered as 1.e03.
-    (void)f128M_sprint(s, p, &decexp);
+    static_cast<void>(f128M_sprint(s, p, &decexp));
     if (prec < 1) prec = 1;
     else if (prec > 9999) prec = 9999;
     if (decexp < -4 || decexp > prec)
@@ -671,11 +686,13 @@ static LispObject idfplus(LispObject a, LispObject b)
 {   LispObject ai = car(a), ax = car(cdr(a)), asgn = car(cdr(cdr(a)));
     LispObject bi = car(b), bx = car(cdr(b)), bsgn = car(cdr(cdr(b)));
     if (ax < bx)
-    {   bi = times2(bi, make_power_of_two(int_of_fixnum(bx) - int_of_fixnum(ax)));
+    {   bi = times2(bi, make_power_of_two(int_of_fixnum(
+                                              bx) - int_of_fixnum(ax)));
         bx = ax;
     }
     if (bx < ax)
-    {   ai = times2(ai, make_power_of_two(int_of_fixnum(ax) - int_of_fixnum(bx)));
+    {   ai = times2(ai, make_power_of_two(int_of_fixnum(
+                                              ax) - int_of_fixnum(bx)));
         ax = bx;
     }
     if (asgn == fixnum_of_int(-1)) ai = negate(ai); // GC safe?
@@ -723,16 +740,15 @@ float128_t atof128(const char *s)
         }
     }
     switch (nz)
-    {
-    case 0: if (!dotseen) x += 16;
-    case 1: if (!dotseen) x += 16;
-    case 2:
-        while (++n != 17)
-        {   z[nz] *= 10;
-            if (!dotseen) x++;
-        }
-    default:
-        break;
+    {   case 0: if (!dotseen) x += 16;
+        case 1: if (!dotseen) x += 16;
+        case 2:
+            while (++n != 17)
+            {   z[nz] *= 10;
+                if (!dotseen) x++;
+            }
+        default:
+            break;
     }
 // Now my number is {z[0], z[1], z[2]} with in base 10^16, with x digits
 // of that after the decimal point.
@@ -740,17 +756,17 @@ float128_t atof128(const char *s)
     switch (*s)
     {
 // I allow all even slightly plausible exponent signifiers.
-    case 's': case 'S':
-    case 'f': case 'F':
-    case 'e': case 'E':
-    case 'd': case 'D':
-    case 'l': case 'L':
-        s++;
+        case 's': case 'S':
+        case 'f': case 'F':
+        case 'e': case 'E':
+        case 'd': case 'D':
+        case 'l': case 'L':
+            s++;
 // atoi() would allow whitespace after the exponent signifier and before
 // the exponent itself.
-        x += std::atoi(s);
-    default:
-        break;
+            x += std::atoi(s);
+        default:
+            break;
     }
 // Where I am now is that I have z[0]:z[1] . z[2] where each digit is
 // 16 decimals. The bit before the "." will be exactly representable as
@@ -765,7 +781,8 @@ float128_t atof128(const char *s)
     ui64_to_f128M(z[2], &u);          // u = (float128_t)z[2];
     f128M_to_f256M(&u, &uu);
     f256M_mul(&ww, &f256_10_16, &vv); // v = w * 10^16;
-    f256M_add(&uu, &vv, &ww);         // collect final integer in 256-bit form
+    f256M_add(&uu, &vv,
+              &ww);         // collect final integer in 256-bit form
     float256_t k, l;
 // I now need to multiply by 10^(x-48). The 48 is because of the way I have
 // collected a 48-bit integer. I will scale my multiplying by a power of

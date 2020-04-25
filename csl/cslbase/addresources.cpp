@@ -79,8 +79,7 @@
 //
 
 int def(std::FILE *source, std::FILE *dest, int level)
-{
-    int ret, flush;
+{   int ret, flush;
     unsigned have;
     z_stream strm;
     unsigned char in[CHUNK];  // uses 512K of buffer space...
@@ -97,7 +96,7 @@ int def(std::FILE *source, std::FILE *dest, int level)
     do
     {   strm.avail_in = std::fread(in, 1, CHUNK, source);
         if (std::ferror(source))
-        {   (void)deflateEnd(&strm);
+        {   static_cast<void>(deflateEnd(&strm));
             return Z_ERRNO;
         }
         flush = std::feof(source) ? Z_FINISH : Z_NO_FLUSH;
@@ -105,33 +104,34 @@ int def(std::FILE *source, std::FILE *dest, int level)
 
         // run deflate() on input until output buffer not full, finish
         // compression if all of source has been read in
-        do {
-            strm.avail_out = CHUNK;
+        do
+        {   strm.avail_out = CHUNK;
             strm.next_out = out;
             ret = deflate(&strm, flush);    // no bad return value
             assert(ret != Z_STREAM_ERROR);  // state not clobbered
             have = CHUNK - strm.avail_out;
             if (std::fwrite(out, 1, have, dest) != have || std::ferror(dest))
-            {   (void)deflateEnd(&strm);
+            {   static_cast<void>(deflateEnd(&strm));
                 return Z_ERRNO;
             }
-        } while (strm.avail_out == 0);
+        }
+        while (strm.avail_out == 0);
         assert(strm.avail_in == 0);     // all input will be used
 
         // done when last data in file processed
-    } while (flush != Z_FINISH);
+    }
+    while (flush != Z_FINISH);
     assert(ret == Z_STREAM_END);        // stream will be complete
 
     // clean up and return
-    (void)deflateEnd(&strm);
+    static_cast<void>(deflateEnd(&strm));
     return Z_OK;
 }
 
 static void put8(std::FILE *f, std::int64_t w)
-{
-    int i;
+{   int i;
     for (i=0; i<8; i++)
-    {   std::putc((int)(w & 0xff), f);
+    {   std::putc(static_cast<int>(w & 0xff), f);
         w >>= 8;
     }
 }
@@ -143,25 +143,26 @@ std::int64_t resourcesize[MAX_RESOURCE_COUNT];
 int resourcecount = 0;
 
 int main(int argc, char *argv[])
-{
-    std::FILE *f1, *f2;
+{   std::FILE *f1, *f2;
     int i, n, w;
     std::int64_t pos, pos1, pos2;
     if (argc < 2)
-    {   std::fprintf(stderr, "Usage: addresources executable [extrafiles...]\n");
+    {   std::fprintf(stderr,
+                     "Usage: addresources executable [extrafiles...]\n");
         std::exit(1);
     }
     f1 = std::fopen(argv[1], "ab");  // append in binary mode
-    if (f1 == NULL)
+    if (f1 == nullptr)
     {   std::fprintf(stderr, "Unable to access %s\n", argv[1]);
         std::exit(1);
     }
     w = std::fseek(f1, 0L, SEEK_END);
     if (w != 0)
-    {   std::fprintf(stderr, "Seeking to end of %s failed with code %d\n", argv[1], w);
+    {   std::fprintf(stderr, "Seeking to end of %s failed with code %d\n",
+                     argv[1], w);
         std::exit(1);
     }
-    pos = (std::int64_t)std::ftell(f1);
+    pos = static_cast<std::int64_t>(std)::ftell(f1);
     while ((pos & 7) != 0)  // Pad to multiple of 8 bytes
     {   std::putc(0, f1);
         pos++;
@@ -170,13 +171,13 @@ int main(int argc, char *argv[])
 // Now copy the resources
     for (i=2; i<argc; i++)
     {   f2 = std::fopen(argv[i], "rb");
-        if (f2 == NULL)
+        if (f2 == nullptr)
         {   std::fprintf(stderr, "Unable to access %s\n", argv[i]);
             std::fclose(f1);
             std::exit(1);
         }
         def(f2, f1, 9);
-        pos1 = (std::int64_t)std::ftell(f1);
+        pos1 = static_cast<std::int64_t>(std)::ftell(f1);
         pos2 = pos1;
         while ((pos2 & 7) != 0)  // Pad to multiple of 8 bytes
         {   std::putc(0, f1);
@@ -185,12 +186,12 @@ int main(int argc, char *argv[])
         resourcebase[resourcecount] = pos;
         resourcesize[resourcecount] = std::ftell(f2);
         std::printf("resource %d at %" PRIx64 " length %" PRId64
-               " compressed to %" PRId64 "\n",
-            i-2, pos, resourcesize[resourcecount], pos1-pos);
+                    " compressed to %" PRId64 "\n",
+                    i-2, pos, resourcesize[resourcecount], pos1-pos);
         pos = pos2;
         resourcecount++;
         std::fclose(f2);
-    } 
+    }
 // Finally put a trailer record with an index
     put8(f1, 0x1234567887654321LL);
     for (i=0; i<resourcecount; i++)
@@ -198,7 +199,8 @@ int main(int argc, char *argv[])
         put8(f1, resourcesize[i]);
     }
     put8(f1, 0x8765432112345678LL);
-    std::printf("Final length of file = %" PRId64 "\n", (std::int64_t)std::ftell(f1));
+    std::printf("Final length of file = %" PRId64 "\n",
+                static_cast<std::int64_t>(std)::ftell(f1));
     if (std::ferror(f1) || std::ferror(f2))
     {   std::fprintf(stderr, "Copying failed\n");
         std::fclose(f1);
@@ -210,7 +212,7 @@ int main(int argc, char *argv[])
         std::fclose(f2);
         std::exit(1);
     }
-    return 0; 
+    return 0;
 }
 
 // end of addresources.cpp

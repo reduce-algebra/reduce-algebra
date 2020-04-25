@@ -289,7 +289,7 @@
 // I will nevertheless provide three versions here just in a spirit of
 // caution.
 
-const std::uint16_t *chardepth = NULL;
+const std::uint16_t *chardepth = nullptr;
 
 const std::uint16_t chardepth_WIN32[] =
 {   1027,           // cmuntt
@@ -361,11 +361,13 @@ static int pack_character(int font, int codepoint)
     if (font < 2)
     {   if ((codepoint & 0xd800) == 0xd800) codepoint = 0xffff;
         else if (codepoint >= 0x10000)
-        {   if (codepoint <= 0x107ff) codepoint = 0xd800 + (codepoint & 0x7ff);
+        {   if (codepoint <= 0x107ff) codepoint = 0xd800 +
+                                                      (codepoint & 0x7ff);
             else codepoint = 0xffff;
         }
     }
-    else if (codepoint >= 0x4000 && codepoint < 0x8000) codepoint = 0xffff;
+    else if (codepoint >= 0x4000 &&
+             codepoint < 0x8000) codepoint = 0xffff;
     else if (codepoint >= 0x1d000 && codepoint <= 0x1dfff)
         codepoint = 0x4000 + (codepoint & 0xfff);
     else if (codepoint >= 0x108000 && codepoint <= 0x108fff)
@@ -501,19 +503,22 @@ static int32_t  accentval[MAXMATHSYMS];
 static int variantp = 0;
 static int variantdirection[MAXMATHSYMS];
 static char variantname[MAXMATHSYMS][MAXUNILEN];
-static char v1[MAXMATHSYMS][MAXUNILEN]; // size 1 (just bigger than basic)
+static char
+v1[MAXMATHSYMS][MAXUNILEN]; // size 1 (just bigger than basic)
 static char v2[MAXMATHSYMS][MAXUNILEN]; // size 2
 static char v3[MAXMATHSYMS][MAXUNILEN]; // size 3
 static char v4[MAXMATHSYMS][MAXUNILEN]; // size 4
 static char v5[MAXMATHSYMS][MAXUNILEN]; // size 5 (biggest)
 static char P1[MAXMATHSYMS][MAXUNILEN]; // top        top        top
-static char P2[MAXMATHSYMS][MAXUNILEN]; // extension  extension  extension
+static char
+P2[MAXMATHSYMS][MAXUNILEN]; // extension  extension  extension
 static char P3[MAXMATHSYMS][MAXUNILEN]; // middle     bottom
 static char P4[MAXMATHSYMS][MAXUNILEN]; // extension
 static char P5[MAXMATHSYMS][MAXUNILEN]; // bottom
 // Now the same converted to codepoints rather than names.
 static int32_t variantcode[MAXMATHSYMS];
-static int32_t nv1[MAXMATHSYMS];     // size 1 (just bigger than basic)
+static int32_t
+nv1[MAXMATHSYMS];     // size 1 (just bigger than basic)
 static int32_t nv2[MAXMATHSYMS];     // size 2
 static int32_t nv3[MAXMATHSYMS];     // size 3
 static int32_t nv4[MAXMATHSYMS];     // size 4
@@ -540,7 +545,8 @@ int32_t decodename(int fontnum, const char *name)
         if (fontnum == fontkey[i] &&
             std::strcmp(name, uninames[i]) == 0)
             return codepoint[i];
-    std::printf("Character called %s not found in font %d\n", name, fontnum);
+    std::printf("Character called %s not found in font %d\n", name,
+                fontnum);
     std::exit(EXIT_FAILURE);
 }
 
@@ -599,7 +605,8 @@ static uint32_t main_get(void *p)
     return *(uint32_t *)p & 0x0007ffff;
 }
 static void main_set(void *p, uint32_t key)
-{   *(uint32_t *)p = (*(uint32_t *)p & 0xfff80000) | (key & 0x0007ffff);
+{   *(uint32_t *)p = (*(uint32_t *)p & 0xfff80000) |
+                     (key & 0x0007ffff);
 }
 
 
@@ -666,8 +673,10 @@ static char      line[MAXLINE];
 static char      saveline[MAXLINE];
 static char      segment[MAXLINE];
 
-int maxw=-10000, maxllx=-10000, maxlly=-10000, maxurx=-10000, maxury=-10000;
-int minw=10000, minllx=10000, minlly=10000, minurx=10000, minury=10000;
+int maxw=-10000, maxllx=-10000, maxlly=-10000, maxurx=-10000,
+    maxury=-10000;
+int minw=10000, minllx=10000, minlly=10000, minurx=10000,
+    minury=10000;
 
 int main(int argc, char *argv[])
 {   const char *f;
@@ -687,7 +696,7 @@ int main(int argc, char *argv[])
 #ifndef _WIN32
     pthread_mutex_lock(&condmutex);
 #endif
-    std::setvbuf(stdout, NULL, _IONBF, 1);
+    std::setvbuf(stdout, nullptr, _IONBF, 1);
 //==========================================================================
 // (1) Read in all the metrics
 //==========================================================================
@@ -699,7 +708,7 @@ int main(int argc, char *argv[])
         std::printf("Process font %s\n", f);
         relevant = kerndata = topaccent = variant = 0;
         std::sprintf(filename, "wxfonts/metrics/%s.afm", f);
-        if ((src = std::fopen(filename, "r")) == NULL)
+        if ((src = std::fopen(filename, "r")) == nullptr)
         {   std::printf("Unable to access %s\n", filename);
             std::exit(EXIT_FAILURE);
         }
@@ -711,9 +720,9 @@ int main(int argc, char *argv[])
             wid = bb1 = bb2 = bb3 = bb4 = 0;
             unn[0] = lig1[0] = lig2[0] = 0;
             ia = ib = ic = id = 0;
-            if (std::fgets(line, sizeof(line)-1, src) == NULL) break;
+            if (std::fgets(line, sizeof(line)-1, src) == nullptr) break;
             if (std::strncmp(line, "EndFontMetrics", 14) == 0) break;
-            ia = (int)std::strlen(line);
+            ia = static_cast<int>(std)::strlen(line);
             while (ia >= 0 &&
                    (line[ia] == 0 || line[ia] == '\n' || line[ia] == '\r'))
                 ia--;
@@ -770,7 +779,8 @@ int main(int argc, char *argv[])
                 continue;
             }
             if (topaccent)
-            {   if (std::sscanf(line, "N %s ; DX %d", accentname[accentp], &accentval[accentp]) == 2)
+            {   if (std::sscanf(line, "N %s ; DX %d", accentname[accentp],
+                                &accentval[accentp]) == 2)
                     accentp++;
 #if 0
                 std::printf("%d: %s\n", accentp, line);
@@ -805,58 +815,58 @@ int main(int argc, char *argv[])
                 for (i=0; i<4; i++) vdata4[variantp][i] = 0;
                 for (i=0; i<4; i++) vdata5[variantp][i] = 0;
                 p = std::strchr(line, ';');
-                if (p!=NULL & std::sscanf(p, "; V1 %s ;", v1[variantp]) == 1)
+                if (p!=nullptr & std::sscanf(p, "; V1 %s ;", v1[variantp]) == 1)
                 {   p = std::strchr(p+1, ';');
                     some = 1;
                 }
-                if (p!=NULL & std::sscanf(p, "; V2 %s ;", v2[variantp]) == 1)
+                if (p!=nullptr & std::sscanf(p, "; V2 %s ;", v2[variantp]) == 1)
                 {   p = std::strchr(p+1, ';');
                     some = 1;
                 }
-                if (p!=NULL & std::sscanf(p, "; V3 %s ;", v3[variantp]) == 1)
+                if (p!=nullptr & std::sscanf(p, "; V3 %s ;", v3[variantp]) == 1)
                 {   p = std::strchr(p+1, ';');
                     some = 1;
                 }
-                if (p!=NULL & std::sscanf(p, "; V4 %s ;", v4[variantp]) == 1)
+                if (p!=nullptr & std::sscanf(p, "; V4 %s ;", v4[variantp]) == 1)
                 {   p = std::strchr(p+1, ';');
                     some = 1;
                 }
-                if (p!=NULL & std::sscanf(p, "; V5 %s ;", v5[variantp]) == 1)
+                if (p!=nullptr & std::sscanf(p, "; V5 %s ;", v5[variantp]) == 1)
                 {   p = std::strchr(p+1, ';');
                     some = 1;
                 }
-                if (p!=NULL & std::sscanf(p, "; P1 %s %d %d %d %d ;",
-                                     P1[variantp],
-                                     &vdata1[variantp][0], &vdata1[variantp][1],
-                                     &vdata1[variantp][2], &vdata1[variantp][3]) == 5)
+                if (p!=nullptr & std::sscanf(p, "; P1 %s %d %d %d %d ;",
+                                             P1[variantp],
+                                             &vdata1[variantp][0], &vdata1[variantp][1],
+                                             &vdata1[variantp][2], &vdata1[variantp][3]) == 5)
                 {   p = std::strchr(p+1, ';');
                     some = 1;
                 }
-                if (p!=NULL & std::sscanf(p, "; P2 %s %d %d %d %d ;",
-                                     P2[variantp],
-                                     &vdata2[variantp][0], &vdata2[variantp][1],
-                                     &vdata2[variantp][2], &vdata2[variantp][3]) == 5)
+                if (p!=nullptr & std::sscanf(p, "; P2 %s %d %d %d %d ;",
+                                             P2[variantp],
+                                             &vdata2[variantp][0], &vdata2[variantp][1],
+                                             &vdata2[variantp][2], &vdata2[variantp][3]) == 5)
                 {   p = std::strchr(p+1, ';');
                     some = 1;
                 }
-                if (p!=NULL & std::sscanf(p, "; P3 %s %d %d %d %d ;",
-                                     P3[variantp],
-                                     &vdata3[variantp][0], &vdata3[variantp][1],
-                                     &vdata3[variantp][2], &vdata3[variantp][3]) == 5)
+                if (p!=nullptr & std::sscanf(p, "; P3 %s %d %d %d %d ;",
+                                             P3[variantp],
+                                             &vdata3[variantp][0], &vdata3[variantp][1],
+                                             &vdata3[variantp][2], &vdata3[variantp][3]) == 5)
                 {   p = std::strchr(p+1, ';');
                     some = 1;
                 }
-                if (p!=NULL & std::sscanf(p, "; P4 %s %d %d %d %d ;",
-                                     P4[variantp],
-                                     &vdata4[variantp][0], &vdata4[variantp][1],
-                                     &vdata4[variantp][2], &vdata4[variantp][3]) == 5)
+                if (p!=nullptr & std::sscanf(p, "; P4 %s %d %d %d %d ;",
+                                             P4[variantp],
+                                             &vdata4[variantp][0], &vdata4[variantp][1],
+                                             &vdata4[variantp][2], &vdata4[variantp][3]) == 5)
                 {   p = std::strchr(p+1, ';');
                     some = 1;
                 }
-                if (p!=NULL & std::sscanf(p, "; P5 %s %d %d %d %d ;",
-                                     P5[variantp],
-                                     &vdata5[variantp][0], &vdata5[variantp][1],
-                                     &vdata5[variantp][2], &vdata5[variantp][3]) == 5)
+                if (p!=nullptr & std::sscanf(p, "; P5 %s %d %d %d %d ;",
+                                             P5[variantp],
+                                             &vdata5[variantp][0], &vdata5[variantp][1],
+                                             &vdata5[variantp][2], &vdata5[variantp][3]) == 5)
                 {   p = std::strchr(p+1, ';');
                     some = 1;
                 }
@@ -864,31 +874,31 @@ int main(int argc, char *argv[])
                 {
 #if 0
                     std::printf("%d: (%d) %s\n", variantp,
-                           variantdirection[variantp], variantname[variantp]);
+                                variantdirection[variantp], variantname[variantp]);
                     std::printf(" sizes: %s %s %s %s %s\n",
-                           v1[variantp], v2[variantp],
-                           v3[variantp], v4[variantp],
-                           v5[variantp]);
+                                v1[variantp], v2[variantp],
+                                v3[variantp], v4[variantp],
+                                v5[variantp]);
                     if (P1[variantp] != 0) std::printf(" huge1: %s %d %d %d %d\n",
-                                                      P1[variantp], vdata1[variantp][0],
-                                                      vdata1[variantp][1], vdata1[variantp][2],
-                                                      vdata1[variantp][3]);
+                                                           P1[variantp], vdata1[variantp][0],
+                                                           vdata1[variantp][1], vdata1[variantp][2],
+                                                           vdata1[variantp][3]);
                     if (P2[variantp] != 0) std::printf(" huge2: %s %d %d %d %d\n",
-                                                      P2[variantp], vdata2[variantp][0],
-                                                      vdata2[variantp][1], vdata2[variantp][2],
-                                                      vdata2[variantp][3]);
+                                                           P2[variantp], vdata2[variantp][0],
+                                                           vdata2[variantp][1], vdata2[variantp][2],
+                                                           vdata2[variantp][3]);
                     if (P3[variantp] != 0) std::printf(" huge3: %s %d %d %d %d\n",
-                                                      P3[variantp], vdata3[variantp][0],
-                                                      vdata3[variantp][1], vdata3[variantp][2],
-                                                      vdata3[variantp][3]);
+                                                           P3[variantp], vdata3[variantp][0],
+                                                           vdata3[variantp][1], vdata3[variantp][2],
+                                                           vdata3[variantp][3]);
                     if (P4[variantp] != 0) std::printf(" huge4: %s %d %d %d %d\n",
-                                                      P4[variantp], vdata4[variantp][0],
-                                                      vdata4[variantp][1], vdata4[variantp][2],
-                                                      vdata4[variantp][3]);
+                                                           P4[variantp], vdata4[variantp][0],
+                                                           vdata4[variantp][1], vdata4[variantp][2],
+                                                           vdata4[variantp][3]);
                     if (P5[variantp] != 0) std::printf(" huge5: %s %d %d %d %d\n",
-                                                      P5[variantp], vdata5[variantp][0],
-                                                      vdata5[variantp][1], vdata5[variantp][2],
-                                                      vdata5[variantp][3]);
+                                                           P5[variantp], vdata5[variantp][0],
+                                                           vdata5[variantp][1], vdata5[variantp][2],
+                                                           vdata5[variantp][3]);
 #endif
                     variantp++;
                 }
@@ -903,9 +913,9 @@ int main(int argc, char *argv[])
 //     L word word      ligature specification
 // with each of these separated by a semicolon.
             p = line;
-            while (p != NULL)
+            while (p != nullptr)
             {   q = std::strchr(p, ';');
-                if (q != NULL) *q = 0;
+                if (q != nullptr) *q = 0;
 // Process segment starting at p
                 while (*p == ' ' || *p == '\n' || *p == '\r') p++;
                 if (*p == 0) break; // empty segment
@@ -932,8 +942,9 @@ int main(int argc, char *argv[])
                             std::exit(EXIT_FAILURE);
                         }
                         if (std::strlen(unn) >= MAXUNILEN)
-                        {   std::printf("Unicode name length = %d\n", (int)std::strlen(unn));
-                            std::printf("%d: %s\n", (int)std::strlen(unn), unn);
+                        {   std::printf("Unicode name length = %d\n",
+                                        static_cast<int>(std)::strlen(unn));
+                            std::printf("%d: %s\n", static_cast<int>(std)::strlen(unn), unn);
                             std::exit(EXIT_FAILURE);
                         }
                         if (cp == -1)
@@ -987,7 +998,7 @@ int main(int argc, char *argv[])
                         std::printf("Input line: \"%s\"\n", saveline);
                         std::exit(EXIT_FAILURE);
                 }
-                if (q == NULL) break;
+                if (q == nullptr) break;
                 else p = q+1;
             }
 // The information I now have is
@@ -996,13 +1007,13 @@ int main(int argc, char *argv[])
             if (cp < 0 || cp > 0x10ffff)
             {   if (std::strcmp(unn, ".notdef") != 0)
                     std::printf("Discarding character <%s>"
-                           " with codepoint %#x = %d\n",
-                           unn, cp, cp);
+                                " with codepoint %#x = %d\n",
+                                unn, cp, cp);
                 continue;
             }
             if (cp >= 0xd000 && cp < 0xe000)
                 std::printf("Codepoint %d U+%x noted : probably invalid in %s\n",
-                       cp, cp, f);
+                            cp, cp, f);
 // Note that cmuntt has 4 characters beyond the basic multilingual pane -
 // for GREEK ACROPHONIC ATTIC FIFTY etc at U+10144. They look like capitals
 // Delta, H, X and M each with a border to left, right and top. I will
@@ -1011,7 +1022,7 @@ int main(int argc, char *argv[])
                 !(cp >= 0x1d000 && cp < 0x1e000) &&
                 !(cp >= 0x108000 && cp < 0x109000))
                 std::printf("Codepoint %d U+%x noted : probably invalid in %s\n",
-                       cp, cp, f);
+                            cp, cp, f);
             fontkey[charcount] = fontnum;
             codepoint[charcount] = cp;
             width[charcount] = wid;
@@ -1134,7 +1145,8 @@ int main(int argc, char *argv[])
         std::printf("    %#.8x,\n", accentnum[i]);
 #endif
 
-    std::printf("About to do topaccent table creation with %d keys\n", accentp);
+    std::printf("About to do topaccent table creation with %d keys\n",
+                accentp);
     cuckoo_parameters topcentre_r =
         cuckoo_binary_optimise(
             accentnum,
@@ -1148,7 +1160,7 @@ int main(int argc, char *argv[])
             accent_set,
             1.0);
     std::printf("Table size = %d (%d %d)\n", topcentre_r.table_size,
-           topcentre_r.modulus2, topcentre_r.offset2);
+                topcentre_r.modulus2, topcentre_r.offset2);
 #ifndef DUMMY
     std::printf("Now put in accent positions\n");
     for (i=0; i<accentp; i++)
@@ -1170,8 +1182,8 @@ int main(int argc, char *argv[])
         topcentre[w] |= accentval[i] << 21;
     }
     std::printf("top-centre table set up with %d words for %d chars (%.2f)\n",
-           topcentre_r.table_size, accentp,
-           (100.0*accentp)/topcentre_r.table_size);
+                topcentre_r.table_size, accentp,
+                (100.0*accentp)/topcentre_r.table_size);
 #endif
 
     cuckoo_parameters variant_r;
@@ -1195,7 +1207,7 @@ int main(int argc, char *argv[])
                         variant_set,
                         0.0);
         std::printf("Variant table size = %d (%d %d)\n", variant_r.table_size,
-               variant_r.modulus2, variant_r.offset2);
+                    variant_r.modulus2, variant_r.offset2);
     }
 #ifndef DUMMY
     std::printf("Now put in variant info for (, ), [, ] etc.\n");
@@ -1237,8 +1249,8 @@ int main(int argc, char *argv[])
         variant_table[w][5] |= nv5[i];
     }
     std::printf("variant table set up with %d entries for %d chars (%.2f%%)\n",
-           variant_r.table_size, usefulp,
-           (100.0*usefulp)/variant_r.table_size);
+                variant_r.table_size, usefulp,
+                (100.0*usefulp)/variant_r.table_size);
 #endif
 
     cuckoo_parameters extension_r;
@@ -1261,8 +1273,9 @@ int main(int argc, char *argv[])
                           extension_get,
                           extension_set,
                           0.0);
-        std::printf("Extension table size = %d (%d %d)\n", extension_r.table_size,
-               extension_r.modulus2, extension_r.offset2);
+        std::printf("Extension table size = %d (%d %d)\n",
+                    extension_r.table_size,
+                    extension_r.modulus2, extension_r.offset2);
     }
 #ifndef DUMMY
     std::printf("Now put in extension info for (, ), [, ] etc.\n");
@@ -1293,19 +1306,24 @@ int main(int argc, char *argv[])
             std::exit(1);
         }
         extension_table[w][1] |= np1[i] | (vdata1[i][0]<<21);
-        extension_table[w][2] |= vdata1[i][1] | (vdata1[i][2]<<16) | (vdata1[i][3]<<31);
+        extension_table[w][2] |= vdata1[i][1] | (vdata1[i][2]<<16) |
+                                 (vdata1[i][3]<<31);
         extension_table[w][3] |= np2[i] | (vdata2[i][0]<<21);
-        extension_table[w][4] |= vdata2[i][1] | (vdata2[i][2]<<16) | (vdata2[i][3]<<31);
+        extension_table[w][4] |= vdata2[i][1] | (vdata2[i][2]<<16) |
+                                 (vdata2[i][3]<<31);
         extension_table[w][5] |= np3[i] | (vdata3[i][0]<<21);
-        extension_table[w][6] |= vdata3[i][1] | (vdata3[i][2]<<16) | (vdata3[i][3]<<31);
+        extension_table[w][6] |= vdata3[i][1] | (vdata3[i][2]<<16) |
+                                 (vdata3[i][3]<<31);
         extension_table[w][7] |= np4[i] | (vdata4[i][0]<<21);
-        extension_table[w][8] |= vdata4[i][1] | (vdata4[i][2]<<16) | (vdata4[i][3]<<31);
+        extension_table[w][8] |= vdata4[i][1] | (vdata4[i][2]<<16) |
+                                 (vdata4[i][3]<<31);
         extension_table[w][9] |= np5[i] | (vdata5[i][0]<<21);
-        extension_table[w][10]|= vdata5[i][1] | (vdata5[i][2]<<16) | (vdata5[i][3]<<31);
+        extension_table[w][10]|= vdata5[i][1] | (vdata5[i][2]<<16) |
+                                 (vdata5[i][3]<<31);
     }
     std::printf("extension table set up with %d entries for %d chars (%.2f%%)\n",
-           extension_r.table_size, usefulp,
-           (100.0*usefulp)/extension_r.table_size);
+                extension_r.table_size, usefulp,
+                (100.0*usefulp)/extension_r.table_size);
 #endif
 
 //==========================================================================
@@ -1326,7 +1344,8 @@ int main(int argc, char *argv[])
         mainkey[mainkeycount++] = k;
     }
 
-    std::printf("About to try to optimise for %d entries\n", mainkeycount);
+    std::printf("About to try to optimise for %d entries\n",
+                mainkeycount);
 
 // In my case there are 10019 keys to consider, If I do a proper search
 // that can take quite a while - say 45 minutes on a reasonably fast desktop
@@ -1396,8 +1415,8 @@ int main(int argc, char *argv[])
         main_r.merit = 4.0;
     }
     std::printf("Whooeeee! %d %d %d %.2f%%  merit=%.4f\n",
-           main_r.table_size, main_r.modulus2, main_r.offset2,
-           (100.0*mainkeycount)/main_r.table_size, main_r.merit);
+                main_r.table_size, main_r.modulus2, main_r.offset2,
+                (100.0*mainkeycount)/main_r.table_size, main_r.merit);
 
 // Now unless the current merit is good enough I will optimise by
 // trying all possible hash options at this table size.
@@ -1420,7 +1439,8 @@ int main(int argc, char *argv[])
 #ifndef DUMMY
     std::printf("\nNow I want to put data into the hash table.\n");
     for (i=0; i<charcount; i++)
-    {   int fullkey = pack_character(fontkey[i], codepoint[i]); // 20-bit key
+    {   int fullkey = pack_character(fontkey[i],
+                                     codepoint[i]); // 20-bit key
         int key = fullkey >> 2; // because my hash table has line-size 4
         if (codepoint[i] == 0) continue;
         int h1;
@@ -1437,9 +1457,9 @@ int main(int argc, char *argv[])
         {   int j;
             std::printf("failure at line %d!\n", __LINE__);
             std::printf("Problem with character %d font %d codepoint %d/%x\n",
-                   i, fontkey[i], codepoint[i], codepoint[i]);
+                        i, fontkey[i], codepoint[i], codepoint[i]);
             std::printf("Full key = %d/%x key = %d/%x\n",
-                   fullkey, fullkey, key, key);
+                        fullkey, fullkey, key, key);
             for (j=0; j<main_r.table_size; j++)
                 std::printf("%7d: %" PRIx64 "\n", j, hashtable[j][0]);
 
@@ -1458,14 +1478,14 @@ int main(int argc, char *argv[])
         {   int64_t q = (kernreference[i] & 0x7fffffff)-fontkern[fontkey[i]];
 #if 0
             std::printf("Fill in kern ref %d as %d\n",
-                   kernreference[i] & 0x7fffffff, (int)q);
+                        kernreference[i] & 0x7fffffff, static_cast<int>(q));
 #endif
             hashtable[h1][0] |= q << (19+11*(fullkey&3));
         }
     }
 
     std::printf("Done after %d characters, %d ligatures, %d kerns\n",
-           charcount, nligatures, nkerns);
+                charcount, nligatures, nkerns);
     std::printf("width %d %d (%d)\n", minw, maxw, maxw-minw);
     std::printf("llx %d %d (%d)\n", minllx, maxllx, maxllx-minllx);
     std::printf("lly %d %d (%d)\n", minlly, maxlly, maxlly-minlly);
@@ -1478,56 +1498,90 @@ int main(int argc, char *argv[])
     {   if (hashtable[i][0] != 0) p1++;
     }
     std::printf("%d of %d entries (%d of %d bytes) used: %.4f\n",
-           p1, main_r.table_size, 40*p1, 40*main_r.table_size,
-           (double)p1/(double)main_r.table_size);
+                p1, main_r.table_size, 40*p1, 40*main_r.table_size,
+                static_cast<double>(p1)/static_cast<double>(main_r.table_size));
 
     {   std::FILE *dest = std::fopen("charmetrics.h", "w");
         std::FILE *rdest = std::fopen("charmetrics.red", "w");
         std::FILE *smldest = std::fopen("charmetrics.sml", "w");
-        std::fprintf(dest, "// charmetrics.h                               Copyright (C) 2017 Codemist\n");
+        std::fprintf(dest,
+                     "// charmetrics.h                               Copyright (C) 2017 Codemist\n");
         std::fprintf(dest, "\n");
         std::fprintf(dest, "\n");
-        std::fprintf(dest, "/**************************************************************************\n");
-        std::fprintf(dest, " * Copyright (C) 2017, Codemist.                         A C Norman       *\n");
-        std::fprintf(dest, " *                                                                        *\n");
-        std::fprintf(dest, " * Redistribution and use in source and binary forms, with or without     *\n");
-        std::fprintf(dest, " * modification, are permitted provided that the following conditions are *\n");
-        std::fprintf(dest, " * met:                                                                   *\n");
-        std::fprintf(dest, " *                                                                        *\n");
-        std::fprintf(dest, " *     * Redistributions of source code must retain the relevant          *\n");
-        std::fprintf(dest, " *       copyright notice, this list of conditions and the following      *\n");
-        std::fprintf(dest, " *       disclaimer.                                                      *\n");
-        std::fprintf(dest, " *     * Redistributions in binary form must reproduce the above          *\n");
-        std::fprintf(dest, " *       copyright notice, this list of conditions and the following      *\n");
-        std::fprintf(dest, " *       disclaimer in the documentation and/or other materials provided  *\n");
-        std::fprintf(dest, " *       with the distribution.                                           *\n");
-        std::fprintf(dest, " *                                                                        *\n");
-        std::fprintf(dest, " * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *\n");
-        std::fprintf(dest, " * \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *\n");
-        std::fprintf(dest, " * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *\n");
-        std::fprintf(dest, " * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *\n");
-        std::fprintf(dest, " * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *\n");
-        std::fprintf(dest, " * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *\n");
-        std::fprintf(dest, " * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *\n");
-        std::fprintf(dest, " * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *\n");
-        std::fprintf(dest, " * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *\n");
-        std::fprintf(dest, " * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *\n");
-        std::fprintf(dest, " * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *\n");
-        std::fprintf(dest, " * DAMAGE.                                                                *\n");
-        std::fprintf(dest, " *************************************************************************/\n");
+        std::fprintf(dest,
+                     "/**************************************************************************\n");
+        std::fprintf(dest,
+                     " * Copyright (C) 2017, Codemist.                         A C Norman       *\n");
+        std::fprintf(dest,
+                     " *                                                                        *\n");
+        std::fprintf(dest,
+                     " * Redistribution and use in source and binary forms, with or without     *\n");
+        std::fprintf(dest,
+                     " * modification, are permitted provided that the following conditions are *\n");
+        std::fprintf(dest,
+                     " * met:                                                                   *\n");
+        std::fprintf(dest,
+                     " *                                                                        *\n");
+        std::fprintf(dest,
+                     " *     * Redistributions of source code must retain the relevant          *\n");
+        std::fprintf(dest,
+                     " *       copyright notice, this list of conditions and the following      *\n");
+        std::fprintf(dest,
+                     " *       disclaimer.                                                      *\n");
+        std::fprintf(dest,
+                     " *     * Redistributions in binary form must reproduce the above          *\n");
+        std::fprintf(dest,
+                     " *       copyright notice, this list of conditions and the following      *\n");
+        std::fprintf(dest,
+                     " *       disclaimer in the documentation and/or other materials provided  *\n");
+        std::fprintf(dest,
+                     " *       with the distribution.                                           *\n");
+        std::fprintf(dest,
+                     " *                                                                        *\n");
+        std::fprintf(dest,
+                     " * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *\n");
+        std::fprintf(dest,
+                     " * \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *\n");
+        std::fprintf(dest,
+                     " * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *\n");
+        std::fprintf(dest,
+                     " * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *\n");
+        std::fprintf(dest,
+                     " * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *\n");
+        std::fprintf(dest,
+                     " * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *\n");
+        std::fprintf(dest,
+                     " * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *\n");
+        std::fprintf(dest,
+                     " * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *\n");
+        std::fprintf(dest,
+                     " * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *\n");
+        std::fprintf(dest,
+                     " * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *\n");
+        std::fprintf(dest,
+                     " * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *\n");
+        std::fprintf(dest,
+                     " * DAMAGE.                                                                *\n");
+        std::fprintf(dest,
+                     " *************************************************************************/\n");
         std::fprintf(dest, "\n");
-        std::fprintf(dest, "// $Id$\n");
+        std::fprintf(dest,
+                     "// $Id$\n");
         std::fprintf(dest, "\n");
         std::fprintf(dest, "\n");
         std::fprintf(dest, "#ifndef __STDC_CONSTANT_MACROS\n");
         std::fprintf(dest, "#define __STDC_CONSTANT_MACROS 1\n");
         std::fprintf(dest, "#endif\n");
         std::fprintf(dest, "\n#include <cstdint>\n\n");
-        std::fprintf(dest, "// Character metric hash table created using the program charmetrics.cpp\n");
-        std::fprintf(dest, "// sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfontxs\n");
-        std::fprintf(dest, "// contains README files with full credits to the fonts this is used with\n");
+        std::fprintf(dest,
+                     "// Character metric hash table created using the program charmetrics.cpp\n");
+        std::fprintf(dest,
+                     "// sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfontxs\n");
+        std::fprintf(dest,
+                     "// contains README files with full credits to the fonts this is used with\n");
         std::fprintf(dest, "\n\n");
-        std::fprintf(dest, "// The list of font codes here must be kept in step with the list\n");
+        std::fprintf(dest,
+                     "// The list of font codes here must be kept in step with the list\n");
         std::fprintf(dest, "// of names in the table.\n");
         std::fprintf(dest, "\n");
         std::fprintf(dest, "#define F_cmuntt                      0\n");
@@ -1539,10 +1593,14 @@ int main(int argc, char *argv[])
         std::fprintf(dest, "#define F_Math                        6\n");
         std::fprintf(dest, "#define F_end                         7\n");
         std::fprintf(dest, "\n");
-        std::fprintf(dest, "extern int c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo;\n");
-        std::fprintf(dest, "extern int lookupchar(int fontnum, int codepoint);\n");
-        std::fprintf(dest, "extern int32_t lookupkernandligature(int codepoint);\n");
-        std::fprintf(dest, "extern int32_t lookupkernadjustment(int codepoint);\n");
+        std::fprintf(dest,
+                     "extern int c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo;\n");
+        std::fprintf(dest,
+                     "extern int lookupchar(int fontnum, int codepoint);\n");
+        std::fprintf(dest,
+                     "extern int32_t lookupkernandligature(int codepoint);\n");
+        std::fprintf(dest,
+                     "extern int32_t lookupkernadjustment(int codepoint);\n");
         std::fprintf(dest, "extern int32_t lookupligature(int codepoint);\n");
         std::fprintf(dest, "extern int accentposition(int codepoint);\n\n");
         std::fprintf(dest, "extern const uint16_t chardepth_WIN32[31];\n");
@@ -1550,51 +1608,81 @@ int main(int argc, char *argv[])
         std::fprintf(dest, "extern const uint16_t chardepth_OSX[31];\n");
         std::fprintf(dest, "extern const uint16_t *chardepth;\n");
         std::fprintf(dest, "extern const char *fontnames[31];\n\n");
-        std::fprintf(rdest, "%% Character metrics for the STIX (and some other) fonts...\n");
+        std::fprintf(rdest,
+                     "%% Character metrics for the STIX (and some other) fonts...\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "%% Character metric hash table created using the program charmetrics.cpp\n");
-        std::fprintf(rdest, "%% sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
-        std::fprintf(rdest, "%% contains README files with full credits to the fonts this is used with\n");
+        std::fprintf(rdest,
+                     "%% Character metric hash table created using the program charmetrics.cpp\n");
+        std::fprintf(rdest,
+                     "%% sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
+        std::fprintf(rdest,
+                     "%% contains README files with full credits to the fonts this is used with\n");
         std::fprintf(rdest, "%% Author: Arthur Norman\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "%% Redistribution and use in source and binary forms, with or without\n");
-        std::fprintf(rdest, "%% modification, are permitted provided that the following conditions are met:\n");
+        std::fprintf(rdest,
+                     "%% Redistribution and use in source and binary forms, with or without\n");
+        std::fprintf(rdest,
+                     "%% modification, are permitted provided that the following conditions are met:\n");
         std::fprintf(rdest, "%%\n");
-        std::fprintf(rdest, "%%    * Redistributions of source code must retain the relevant copyright\n");
-        std::fprintf(rdest, "%%      notice, this list of conditions and the following disclaimer.\n");
-        std::fprintf(rdest, "%%    * Redistributions in binary form must reproduce the above copyright\n");
-        std::fprintf(rdest, "%%      notice, this list of conditions and the following disclaimer in the\n");
-        std::fprintf(rdest, "%%      documentation and/or other materials provided with the distribution.\n");
+        std::fprintf(rdest,
+                     "%%    * Redistributions of source code must retain the relevant copyright\n");
+        std::fprintf(rdest,
+                     "%%      notice, this list of conditions and the following disclaimer.\n");
+        std::fprintf(rdest,
+                     "%%    * Redistributions in binary form must reproduce the above copyright\n");
+        std::fprintf(rdest,
+                     "%%      notice, this list of conditions and the following disclaimer in the\n");
+        std::fprintf(rdest,
+                     "%%      documentation and/or other materials provided with the distribution.\n");
         std::fprintf(rdest, "%%\n");
-        std::fprintf(rdest, "%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\n");
-        std::fprintf(rdest, "%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,\n");
-        std::fprintf(rdest, "%% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR\n");
-        std::fprintf(rdest, "%% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR\n");
+        std::fprintf(rdest,
+                     "%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\n");
+        std::fprintf(rdest,
+                     "%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,\n");
+        std::fprintf(rdest,
+                     "%% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR\n");
+        std::fprintf(rdest,
+                     "%% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR\n");
         std::fprintf(rdest, "%% CONTRIBUTORS\n");
-        std::fprintf(rdest, "%% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR\n");
-        std::fprintf(rdest, "%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF\n");
-        std::fprintf(rdest, "%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS\n");
-        std::fprintf(rdest, "%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN\n");
-        std::fprintf(rdest, "%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)\n");
-        std::fprintf(rdest, "%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n");
+        std::fprintf(rdest,
+                     "%% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR\n");
+        std::fprintf(rdest,
+                     "%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF\n");
+        std::fprintf(rdest,
+                     "%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS\n");
+        std::fprintf(rdest,
+                     "%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN\n");
+        std::fprintf(rdest,
+                     "%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)\n");
+        std::fprintf(rdest,
+                     "%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n");
         std::fprintf(rdest, "%% POSSIBILITY OF SUCH DAMAGE.\n");
         std::fprintf(rdest, "%%\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "%% Also be aware of the (generally permissive) licenses associated with the\n");
-        std::fprintf(rdest, "%% fonts. Fill README files and license terms for the fonts themselves\n");
+        std::fprintf(rdest,
+                     "%% Also be aware of the (generally permissive) licenses associated with the\n");
+        std::fprintf(rdest,
+                     "%% fonts. Fill README files and license terms for the fonts themselves\n");
         std::fprintf(rdest, "%% are in csl/cslbase/wxfonts.\n");
         std::fprintf(rdest, "\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "%% $Id$\n");
+        std::fprintf(rdest,
+                     "%% $Id$\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "#if (or (memq 'psl lispsystem!*) (memq 'jlisp lispsystem!*))\n");
+        std::fprintf(rdest,
+                     "#if (or (memq 'psl lispsystem!*) (memq 'jlisp lispsystem!*))\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "%% CSL has special vectors that hold just 16-bit integers and 32-bit\n");
-        std::fprintf(rdest, "%% integers and use of those will decrease the amount of memory consumed\n");
-        std::fprintf(rdest, "%% here. However if PSL does not have these it does not matter much since I\n");
+        std::fprintf(rdest,
+                     "%% CSL has special vectors that hold just 16-bit integers and 32-bit\n");
+        std::fprintf(rdest,
+                     "%% integers and use of those will decrease the amount of memory consumed\n");
+        std::fprintf(rdest,
+                     "%% here. However if PSL does not have these it does not matter much since I\n");
         std::fprintf(rdest, "%% can just use ordinary Lisp vectors...\n");
-        std::fprintf(rdest, "%% I set initial contents as all 0 rather than all nil since these are\n");
-        std::fprintf(rdest, "%% supposed to contain (small) integer values.\n");
+        std::fprintf(rdest,
+                     "%% I set initial contents as all 0 rather than all nil since these are\n");
+        std::fprintf(rdest,
+                     "%% supposed to contain (small) integer values.\n");
         std::fprintf(rdest, "\n");
         std::fprintf(rdest, "symbolic procedure mkvect32 n;\n");
         std::fprintf(rdest, "  begin\n");
@@ -1604,9 +1692,11 @@ int main(int argc, char *argv[])
         std::fprintf(rdest, "    return r\n");
         std::fprintf(rdest, "  end;\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "symbolic inline procedure putv32(v, n, x); putv(v, n, x);\n");
+        std::fprintf(rdest,
+                     "symbolic inline procedure putv32(v, n, x); putv(v, n, x);\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "symbolic inline procedure getv32(v, n); getv(v, n);\n");
+        std::fprintf(rdest,
+                     "symbolic inline procedure getv32(v, n); getv(v, n);\n");
         std::fprintf(rdest, "\n");
         std::fprintf(rdest, "symbolic procedure mkvect16 n;\n");
         std::fprintf(rdest, "  begin\n");
@@ -1616,19 +1706,28 @@ int main(int argc, char *argv[])
         std::fprintf(rdest, "    return r\n");
         std::fprintf(rdest, "  end;\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "symbolic inline procedure putv16(v, n, x); putv(v, n, x);\n");
+        std::fprintf(rdest,
+                     "symbolic inline procedure putv16(v, n, x); putv(v, n, x);\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "symbolic inline procedure getv16(v, n); getv(v, n);\n");
+        std::fprintf(rdest,
+                     "symbolic inline procedure getv16(v, n); getv(v, n);\n");
         std::fprintf(rdest, "\n");
         std::fprintf(rdest, "#endif\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "put('cmuntt, 'font_number,                      0)$\n");
-        std::fprintf(rdest, "put('odokai, 'font_number,                      1)$\n");
-        std::fprintf(rdest, "put('Regular, 'font_number,                     2)$\n");
-        std::fprintf(rdest, "put('Bold, 'font_number,                        3)$\n");
-        std::fprintf(rdest, "put('Italic, 'font_number,                      4)$\n");
-        std::fprintf(rdest, "put('BoldItalic, 'font_number,                  5)$\n");
-        std::fprintf(rdest, "put('Math, 'font_number,                        6)$\n");
+        std::fprintf(rdest,
+                     "put('cmuntt, 'font_number,                      0)$\n");
+        std::fprintf(rdest,
+                     "put('odokai, 'font_number,                      1)$\n");
+        std::fprintf(rdest,
+                     "put('Regular, 'font_number,                     2)$\n");
+        std::fprintf(rdest,
+                     "put('Bold, 'font_number,                        3)$\n");
+        std::fprintf(rdest,
+                     "put('Italic, 'font_number,                      4)$\n");
+        std::fprintf(rdest,
+                     "put('BoldItalic, 'font_number,                  5)$\n");
+        std::fprintf(rdest,
+                     "put('Math, 'font_number,                        6)$\n");
         std::fprintf(rdest, "\n");
         std::fprintf(rdest, "symbolic procedure list_to_vec16 l;\n");
         std::fprintf(rdest, "  begin\n");
@@ -1650,7 +1749,8 @@ int main(int argc, char *argv[])
         std::fprintf(rdest, "    return r\n");
         std::fprintf(rdest, "  end;\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "%% This one will take a list whose elements are themselves lists\n");
+        std::fprintf(rdest,
+                     "%% This one will take a list whose elements are themselves lists\n");
         std::fprintf(rdest, "%% of 32-bit integers.\n");
         std::fprintf(rdest, "%%\n");
         std::fprintf(rdest, "symbolic procedure list_to_metric_table l;\n");
@@ -1663,46 +1763,72 @@ int main(int argc, char *argv[])
         std::fprintf(rdest, "    return r\n");
         std::fprintf(rdest, "  end;\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "fluid '(hashsize!* metrics_hash!* topcentre_hash!* variant_hash!* extension_hash!* fontkern!* kerntable!* ligaturetable!*);\n");
+        std::fprintf(rdest,
+                     "fluid '(hashsize!* metrics_hash!* topcentre_hash!* variant_hash!* extension_hash!* fontkern!* kerntable!* ligaturetable!*);\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "symbolic (hashsize!* := %d);\n", main_r.table_size);
+        std::fprintf(rdest, "symbolic (hashsize!* := %d);\n",
+                     main_r.table_size);
         std::fprintf(rdest, "\n");
-        std::fprintf(smldest, "(* Character metrics for the STIX (and some other) fonts...\n");
+        std::fprintf(smldest,
+                     "(* Character metrics for the STIX (and some other) fonts...\n");
         std::fprintf(smldest, "\n");
-        std::fprintf(smldest, "Character metric hash table created using the program charmetrics.cpp\n");
-        std::fprintf(smldest, "sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
-        std::fprintf(smldest, "contains README files with full credits to the fonts this is used with\n");
+        std::fprintf(smldest,
+                     "Character metric hash table created using the program charmetrics.cpp\n");
+        std::fprintf(smldest,
+                     "sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
+        std::fprintf(smldest,
+                     "contains README files with full credits to the fonts this is used with\n");
         std::fprintf(smldest, "Author: Arthur Norman\n");
         std::fprintf(smldest, "\n");
-        std::fprintf(smldest, "Redistribution and use in source and binary forms, with or without\n");
-        std::fprintf(smldest, "modification, are permitted provided that the following conditions are met:\n");
+        std::fprintf(smldest,
+                     "Redistribution and use in source and binary forms, with or without\n");
+        std::fprintf(smldest,
+                     "modification, are permitted provided that the following conditions are met:\n");
         std::fprintf(smldest, "\n");
-        std::fprintf(smldest, "   * Redistributions of source code must retain the relevant copyright\n");
-        std::fprintf(smldest, "     notice, this list of conditions and the following disclaimer.\n");
-        std::fprintf(smldest, "   * Redistributions in binary form must reproduce the above copyright\n");
-        std::fprintf(smldest, "     notice, this list of conditions and the following disclaimer in the\n");
-        std::fprintf(smldest, "     documentation and/or other materials provided with the distribution.\n");
+        std::fprintf(smldest,
+                     "   * Redistributions of source code must retain the relevant copyright\n");
+        std::fprintf(smldest,
+                     "     notice, this list of conditions and the following disclaimer.\n");
+        std::fprintf(smldest,
+                     "   * Redistributions in binary form must reproduce the above copyright\n");
+        std::fprintf(smldest,
+                     "     notice, this list of conditions and the following disclaimer in the\n");
+        std::fprintf(smldest,
+                     "     documentation and/or other materials provided with the distribution.\n");
         std::fprintf(smldest, "\n");
-        std::fprintf(smldest, "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\n");
-        std::fprintf(smldest, "AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,\n");
-        std::fprintf(smldest, "THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR\n");
-        std::fprintf(smldest, "PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR\n");
+        std::fprintf(smldest,
+                     "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\n");
+        std::fprintf(smldest,
+                     "AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,\n");
+        std::fprintf(smldest,
+                     "THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR\n");
+        std::fprintf(smldest,
+                     "PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR\n");
         std::fprintf(smldest, "CONTRIBUTORS\n");
-        std::fprintf(smldest, "BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR\n");
-        std::fprintf(smldest, "CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF\n");
-        std::fprintf(smldest, "SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS\n");
-        std::fprintf(smldest, "INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN\n");
-        std::fprintf(smldest, "CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)\n");
-        std::fprintf(smldest, "ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n");
+        std::fprintf(smldest,
+                     "BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR\n");
+        std::fprintf(smldest,
+                     "CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF\n");
+        std::fprintf(smldest,
+                     "SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS\n");
+        std::fprintf(smldest,
+                     "INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN\n");
+        std::fprintf(smldest,
+                     "CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)\n");
+        std::fprintf(smldest,
+                     "ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n");
         std::fprintf(smldest, "POSSIBILITY OF SUCH DAMAGE.\n");
         std::fprintf(smldest, "\n");
         std::fprintf(smldest, "\n");
-        std::fprintf(smldest, "Also be aware of the (generally permissive) licenses associated with the\n");
-        std::fprintf(smldest, "fonts. Fill README files and license terms for the fonts themselves\n");
+        std::fprintf(smldest,
+                     "Also be aware of the (generally permissive) licenses associated with the\n");
+        std::fprintf(smldest,
+                     "fonts. Fill README files and license terms for the fonts themselves\n");
         std::fprintf(smldest, "are in csl/cslbase/wxfonts.\n");
         std::fprintf(smldest, "\n");
         std::fprintf(smldest, "\n");
-        std::fprintf(smldest, "$Id$\n");
+        std::fprintf(smldest,
+                     "$Id$\n");
         std::fprintf(smldest, "\n*)\n\n");
         std::fprintf(smldest, "\n");
         std::fprintf(smldest, "val F_cmuntt     = 0;\n");
@@ -1719,55 +1845,78 @@ int main(int argc, char *argv[])
         std::fprintf(smldest, "  | font_number \"Regular\"    = F_Regular\n");
         std::fprintf(smldest, "  | font_number \"Bold\"       = F_Bold\n");
         std::fprintf(smldest, "  | font_number \"Italic\"     = F_Italic\n");
-        std::fprintf(smldest, "  | font_number \"BoldItalic\" = F_BoldItalic\n");
+        std::fprintf(smldest,
+                     "  | font_number \"BoldItalic\" = F_BoldItalic\n");
         std::fprintf(smldest, "  | font_number \"Math\"       = F_Math\n");
         std::fprintf(smldest, "  | font_number _            = 0;\n");
         std::fprintf(smldest, "\n");
         std::fprintf(smldest, "val hashsize = %d;\n", main_r.table_size);
         std::fprintf(smldest, "\n");
         std::fprintf(dest, "const uint64_t charmetrics[%d][5] = \n{",
-                main_r.table_size);
-        std::fprintf(rdest, "#eval (setq metrics_hash!* (list_to_metric_table '\n    (");
+                     main_r.table_size);
+        std::fprintf(rdest,
+                     "#eval (setq metrics_hash!* (list_to_metric_table '\n    (");
         std::fprintf(smldest, "val metrics_hash = Vector.fromList\n"
-           "   (map Vector.fromList [");
+                     "   (map Vector.fromList [");
         for (i=0; i<main_r.table_size; i++)
         {   if (i != 0)
             {   std::fprintf(dest, ",");
                 std::fprintf(smldest, ",");
             }
             std::fprintf(dest,
-                    "\n    {UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64 "),"
-                    "\n                                   UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64 ")}",
-                    hashtable[i][0],
-                    hashtable[i][1], hashtable[i][2],
-                    hashtable[i][3], hashtable[i][4]);
-            std::fprintf(rdest, "\n     (0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32,
-                    (int)hashtable[i][0], (int)(hashtable[i][0]>>32),
-                    (int)hashtable[i][1], (int)(hashtable[i][1]>>32),
-                    (int)hashtable[i][2]);
-            std::fprintf(rdest, "\n      0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32 ")",
-                    (int)(hashtable[i][2]>>32),
-                    (int)hashtable[i][3], (int)(hashtable[i][3]>>32),
-                    (int)hashtable[i][4], (int)(hashtable[i][4]>>32));
-            std::fprintf(smldest, "\n     [0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ",",
-                    (int)hashtable[i][0], (int)(hashtable[i][0]>>32),
-                    (int)hashtable[i][1], (int)(hashtable[i][1]>>32),
-                    (int)hashtable[i][2]);
-            std::fprintf(smldest, "\n      0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 "]",
-                    (int)(hashtable[i][2]>>32),
-                    (int)hashtable[i][3], (int)(hashtable[i][3]>>32),
-                    (int)hashtable[i][4], (int)(hashtable[i][4]>>32));
+                         "\n    {UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64
+                         "), UINT64_C(0x%.16" PRIx64 "),"
+                         "\n                                   UINT64_C(0x%.16" PRIx64
+                         "), UINT64_C(0x%.16" PRIx64 ")}",
+                         hashtable[i][0],
+                         hashtable[i][1], hashtable[i][2],
+                         hashtable[i][3], hashtable[i][4]);
+            std::fprintf(rdest, "\n     (0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8"
+                         PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32,
+                         static_cast<int>(hashtable[i][0]),
+                         static_cast<int>(hashtable[i][0]>>32),
+                         static_cast<int>(hashtable[i][1]),
+                         static_cast<int>(hashtable[i][1]>>32),
+                         static_cast<int>(hashtable[i][2]));
+            std::fprintf(rdest, "\n      0x%.8" PRIx32 " 0x%.8" PRIx32 " 0x%.8"
+                         PRIx32 " 0x%.8" PRIx32 " 0x%.8" PRIx32 ")",
+                         static_cast<int>(hashtable[i][2]>>32),
+                         static_cast<int>(hashtable[i][3]),
+                         static_cast<int>(hashtable[i][3]>>32),
+                         static_cast<int>(hashtable[i][4]),
+                         static_cast<int>(hashtable[i][4]>>32));
+            std::fprintf(smldest,
+                         "\n     [0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8"
+                         PRIx32 ", 0x%.8" PRIx32 ",",
+                         static_cast<int>(hashtable[i][0]),
+                         static_cast<int>(hashtable[i][0]>>32),
+                         static_cast<int>(hashtable[i][1]),
+                         static_cast<int>(hashtable[i][1]>>32),
+                         static_cast<int>(hashtable[i][2]));
+            std::fprintf(smldest,
+                         "\n      0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8"
+                         PRIx32 ", 0x%.8" PRIx32 "]",
+                         static_cast<int>(hashtable[i][2]>>32),
+                         static_cast<int>(hashtable[i][3]),
+                         static_cast<int>(hashtable[i][3]>>32),
+                         static_cast<int>(hashtable[i][4]),
+                         static_cast<int>(hashtable[i][4]>>32));
         }
         std::fprintf(dest, "\n};\n\n");
-        std::fprintf(dest, "#define CHAR_METRICS_MODULUS %d\n", main_r.modulus2);
-        std::fprintf(dest, "#define CHAR_METRICS_OFFSET %d\n\n", main_r.offset2);
+        std::fprintf(dest, "#define CHAR_METRICS_MODULUS %d\n",
+                     main_r.modulus2);
+        std::fprintf(dest, "#define CHAR_METRICS_OFFSET %d\n\n",
+                     main_r.offset2);
         std::fprintf(rdest, "\n    )))\n\n");
         std::fprintf(smldest, "\n    ]);\n\n");
-        std::fprintf(smldest, "val CHAR_METRICS_MODULUS = %d;\n", main_r.modulus2);
-        std::fprintf(smldest, "val CHAR_METRICS_OFFSET = %d;\n\n", main_r.offset2);
+        std::fprintf(smldest, "val CHAR_METRICS_MODULUS = %d;\n",
+                     main_r.modulus2);
+        std::fprintf(smldest, "val CHAR_METRICS_OFFSET = %d;\n\n",
+                     main_r.offset2);
         std::fprintf(dest, "const uint32_t topcentre[%d] = \n{",
-                topcentre_r.table_size);
-        std::fprintf(rdest, "#eval (setq topcentre_hash!* (list_to_vec32 '\n    (");
+                     topcentre_r.table_size);
+        std::fprintf(rdest,
+                     "#eval (setq topcentre_hash!* (list_to_vec32 '\n    (");
         std::fprintf(smldest, "val topcentre_hash = Vector.fromList [");
         for (i=0; i<topcentre_r.table_size; i++)
         {   if (i != 0)
@@ -1779,89 +1928,111 @@ int main(int argc, char *argv[])
             std::fprintf(smldest, "\n     0x%.8" PRIx32, topcentre[i]);
         }
         std::fprintf(dest, "\n};\n\n");
-        std::fprintf(dest, "#define TOPCENTRE_MODULUS %d\n", topcentre_r.modulus2);
-        std::fprintf(dest, "#define TOPCENTRE_OFFSET %d\n\n", topcentre_r.offset2);
+        std::fprintf(dest, "#define TOPCENTRE_MODULUS %d\n",
+                     topcentre_r.modulus2);
+        std::fprintf(dest, "#define TOPCENTRE_OFFSET %d\n\n",
+                     topcentre_r.offset2);
         std::fprintf(rdest, "\n    )))\n\n");
         std::fprintf(smldest, "\n    ];\n\n");
-        std::fprintf(smldest, "val TOPCENTRE_SIZE = %d;\n", topcentre_r.table_size);
-        std::fprintf(smldest, "val TOPCENTRE_MODULUS = %d;\n", topcentre_r.modulus2);
-        std::fprintf(smldest, "val TOPCENTRE_OFFSET = %d;\n\n", topcentre_r.offset2);
+        std::fprintf(smldest, "val TOPCENTRE_SIZE = %d;\n",
+                     topcentre_r.table_size);
+        std::fprintf(smldest, "val TOPCENTRE_MODULUS = %d;\n",
+                     topcentre_r.modulus2);
+        std::fprintf(smldest, "val TOPCENTRE_OFFSET = %d;\n\n",
+                     topcentre_r.offset2);
         std::fprintf(dest, "const uint32_t variant_table[%d][6] = \n{",
-                variant_r.table_size);
-        std::fprintf(rdest, "#eval (setq variant_hash!* (list_to_metric_table '\n    (");
+                     variant_r.table_size);
+        std::fprintf(rdest,
+                     "#eval (setq variant_hash!* (list_to_metric_table '\n    (");
         std::fprintf(smldest, "val variant_hash = Vector.fromList\n"
-            "   (map Vector.fromList [");
+                     "   (map Vector.fromList [");
         for (i=0; i<variant_r.table_size; i++)
         {   if (i != 0)
             {   std::fprintf(dest, ",");
                 std::fprintf(smldest, ",");
             }
-            std::fprintf(dest, "\n    {0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x}",
-                    variant_table[i][0], variant_table[i][1],
-                    variant_table[i][2], variant_table[i][3],
-                    variant_table[i][4], variant_table[i][5]);
-            std::fprintf(rdest, "\n     (0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x)" ,
-                    variant_table[i][0], variant_table[i][1],
-                    variant_table[i][2], variant_table[i][3],
-                    variant_table[i][4], variant_table[i][5]);
-            std::fprintf(smldest, "\n     [0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x]" ,
-                    variant_table[i][0], variant_table[i][1],
-                    variant_table[i][2], variant_table[i][3],
-                    variant_table[i][4], variant_table[i][5]);
+            std::fprintf(dest,
+                         "\n    {0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x}",
+                         variant_table[i][0], variant_table[i][1],
+                         variant_table[i][2], variant_table[i][3],
+                         variant_table[i][4], variant_table[i][5]);
+            std::fprintf(rdest,
+                         "\n     (0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x)",
+                         variant_table[i][0], variant_table[i][1],
+                         variant_table[i][2], variant_table[i][3],
+                         variant_table[i][4], variant_table[i][5]);
+            std::fprintf(smldest,
+                         "\n     [0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x]",
+                         variant_table[i][0], variant_table[i][1],
+                         variant_table[i][2], variant_table[i][3],
+                         variant_table[i][4], variant_table[i][5]);
         }
         std::fprintf(dest, "\n};\n\n");
-        std::fprintf(dest, "#define VARIANT_MODULUS %d\n", variant_r.modulus2);
-        std::fprintf(dest, "#define VARIANT_OFFSET %d\n\n", variant_r.offset2);
+        std::fprintf(dest, "#define VARIANT_MODULUS %d\n",
+                     variant_r.modulus2);
+        std::fprintf(dest, "#define VARIANT_OFFSET %d\n\n",
+                     variant_r.offset2);
         std::fprintf(rdest, "\n    )))\n\n");
         std::fprintf(smldest, "\n    ]);\n\n");
-        std::fprintf(smldest, "val VARIANT_SIZE = %d;\n", variant_r.table_size);
-        std::fprintf(smldest, "val VARIANT_MODULUS = %d;\n", variant_r.modulus2);
-        std::fprintf(smldest, "val VARIANT_OFFSET = %d;\n\n", variant_r.offset2);
+        std::fprintf(smldest, "val VARIANT_SIZE = %d;\n",
+                     variant_r.table_size);
+        std::fprintf(smldest, "val VARIANT_MODULUS = %d;\n",
+                     variant_r.modulus2);
+        std::fprintf(smldest, "val VARIANT_OFFSET = %d;\n\n",
+                     variant_r.offset2);
         std::fprintf(dest, "const uint32_t extension_table[%d][11] = \n{",
-                extension_r.table_size);
-        std::fprintf(rdest, "#eval (setq extension_hash!* (list_to_metric_table '\n    (");
+                     extension_r.table_size);
+        std::fprintf(rdest,
+                     "#eval (setq extension_hash!* (list_to_metric_table '\n    (");
         std::fprintf(smldest, "val extension_hash = Vector.fromList\n"
-            "   (map Vector.fromList [");
+                     "   (map Vector.fromList [");
         for (i=0; i<extension_r.table_size; i++)
         {   if (i != 0)
             {   std::fprintf(dest, ",");
                 std::fprintf(smldest, ",");
             }
             std::fprintf(dest,
-                    "\n    {0x%.8x,\n     0x%.8x, 0x%.8x,\n     0x%.8x, 0x%.8x,\n"
-                    "     0x%.8x, 0x%.8x,\n     0x%.8x, 0x%.8x,\n"
-                    "     0x%.8x, 0x%.8x}",
-                    extension_table[i][0], extension_table[i][1],
-                    extension_table[i][2], extension_table[i][3],
-                    extension_table[i][4], extension_table[i][5],
-                    extension_table[i][6], extension_table[i][7],
-                    extension_table[i][8], extension_table[i][9],
-                    extension_table[i][10]);
-            std::fprintf(rdest, "\n     (0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x\n"
-                    "                 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x)" ,
-                    extension_table[i][0], extension_table[i][1],
-                    extension_table[i][2], extension_table[i][3],
-                    extension_table[i][4], extension_table[i][5],
-                    extension_table[i][6], extension_table[i][7],
-                    extension_table[i][8], extension_table[i][9],
-                    extension_table[i][10]);
-            std::fprintf(smldest, "\n     [0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x,\n"
-                    "                 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x]" ,
-                    extension_table[i][0], extension_table[i][1],
-                    extension_table[i][2], extension_table[i][3],
-                    extension_table[i][4], extension_table[i][5],
-                    extension_table[i][6], extension_table[i][7],
-                    extension_table[i][8], extension_table[i][9],
-                    extension_table[i][10]);
+                         "\n    {0x%.8x,\n     0x%.8x, 0x%.8x,\n     0x%.8x, 0x%.8x,\n"
+                         "     0x%.8x, 0x%.8x,\n     0x%.8x, 0x%.8x,\n"
+                         "     0x%.8x, 0x%.8x}",
+                         extension_table[i][0], extension_table[i][1],
+                         extension_table[i][2], extension_table[i][3],
+                         extension_table[i][4], extension_table[i][5],
+                         extension_table[i][6], extension_table[i][7],
+                         extension_table[i][8], extension_table[i][9],
+                         extension_table[i][10]);
+            std::fprintf(rdest,
+                         "\n     (0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x\n"
+                         "                 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x)",
+                         extension_table[i][0], extension_table[i][1],
+                         extension_table[i][2], extension_table[i][3],
+                         extension_table[i][4], extension_table[i][5],
+                         extension_table[i][6], extension_table[i][7],
+                         extension_table[i][8], extension_table[i][9],
+                         extension_table[i][10]);
+            std::fprintf(smldest,
+                         "\n     [0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x,\n"
+                         "                 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x]",
+                         extension_table[i][0], extension_table[i][1],
+                         extension_table[i][2], extension_table[i][3],
+                         extension_table[i][4], extension_table[i][5],
+                         extension_table[i][6], extension_table[i][7],
+                         extension_table[i][8], extension_table[i][9],
+                         extension_table[i][10]);
         }
         std::fprintf(dest, "\n};\n\n");
-        std::fprintf(dest, "#define EXTENSION_MODULUS %d\n", extension_r.modulus2);
-        std::fprintf(dest, "#define EXTENSION_OFFSET %d\n\n", extension_r.offset2);
+        std::fprintf(dest, "#define EXTENSION_MODULUS %d\n",
+                     extension_r.modulus2);
+        std::fprintf(dest, "#define EXTENSION_OFFSET %d\n\n",
+                     extension_r.offset2);
         std::fprintf(rdest, "\n    )))\n\n");
         std::fprintf(smldest, "\n    ]);\n\n");
-        std::fprintf(smldest, "val EXTENSION_SIZE = %d;\n", extension_r.table_size);
-        std::fprintf(smldest, "val EXTENSION_MODULUS = %d;\n", extension_r.modulus2);
-        std::fprintf(smldest, "val EXTENSION_OFFSET = %d;\n\n", extension_r.offset2);
+        std::fprintf(smldest, "val EXTENSION_SIZE = %d;\n",
+                     extension_r.table_size);
+        std::fprintf(smldest, "val EXTENSION_MODULUS = %d;\n",
+                     extension_r.modulus2);
+        std::fprintf(smldest, "val EXTENSION_OFFSET = %d;\n\n",
+                     extension_r.offset2);
         std::fprintf(dest, "const int16_t fontkern[] = \n{");
         std::fprintf(rdest, "#eval (setq fontkern!* (list_to_vec16 '\n    (");
         std::fprintf(smldest, "val fontkern = Vector.fromList [");
@@ -1897,7 +2068,8 @@ int main(int argc, char *argv[])
         std::fprintf(rdest, "\n    )))\n\n");
         std::fprintf(smldest, "\n    ];\n\n");
         std::fprintf(dest, "const uint32_t kerntable[] = \n{");
-        std::fprintf(rdest, "#eval (setq kerntable!* (list_to_vec32 '\n    (");
+        std::fprintf(rdest,
+                     "#eval (setq kerntable!* (list_to_vec32 '\n    (");
         std::fprintf(smldest, "val kerntable = Vector.fromList [");
         for (i=0; i<kernp; i++)
         {   std::fprintf(dest, "\n    0x%.8" PRIx32, kerntable[i]);
@@ -1909,43 +2081,45 @@ int main(int argc, char *argv[])
             else std::fprintf(smldest, " ");
             if ((kerntable[i] & IS_LIGATURE) != 0)
                 std::fprintf(dest, "   // [%d:%d] %s + %s ligature #%d (%s)",
-                        i, i-fontkern[ktfontn[i]],
-                        ktstart[i], ktfollow[i],
-                        kerntable[i]>>23, ktfont[i]);
+                             i, i-fontkern[ktfontn[i]],
+                             ktstart[i], ktfollow[i],
+                             kerntable[i]>>23, ktfont[i]);
             else
                 std::fprintf(dest, "   // [%d:%d] %s + %s : %d (%s)",
-                        i, i-fontkern[ktfontn[i]],
-                        ktstart[i], ktfollow[i],
-                        ktadjustment[i], ktfont[i]);
+                             i, i-fontkern[ktfontn[i]],
+                             ktstart[i], ktfollow[i],
+                             ktadjustment[i], ktfont[i]);
             if ((kerntable[i] & IS_BLOCKEND) != 0) std::fprintf(dest, " ;;");
             if ((kerntable[i] & IS_LIGATURE) != 0)
                 std::fprintf(rdest, "   %% [%d:%d] %s + %s ligature #%d (%s)",
-                        i, i-fontkern[ktfontn[i]],
-                        ktstart[i], ktfollow[i],
-                        kerntable[i]>>23, ktfont[i]);
+                             i, i-fontkern[ktfontn[i]],
+                             ktstart[i], ktfollow[i],
+                             kerntable[i]>>23, ktfont[i]);
             else
                 std::fprintf(rdest, "   %% [%d:%d] %s + %s : %d (%s)",
-                        i, i-fontkern[ktfontn[i]],
-                        ktstart[i], ktfollow[i],
-                        ktadjustment[i], ktfont[i]);
+                             i, i-fontkern[ktfontn[i]],
+                             ktstart[i], ktfollow[i],
+                             ktadjustment[i], ktfont[i]);
             if ((kerntable[i] & IS_BLOCKEND) != 0) std::fprintf(rdest, " ;;");
             if ((kerntable[i] & IS_LIGATURE) != 0)
                 std::fprintf(smldest, "   (* [%d:%d] %s + %s ligature #%d (%s) *)",
-                        i, i-fontkern[ktfontn[i]],
-                        ktstart[i], ktfollow[i],
-                        kerntable[i]>>23, ktfont[i]);
+                             i, i-fontkern[ktfontn[i]],
+                             ktstart[i], ktfollow[i],
+                             kerntable[i]>>23, ktfont[i]);
             else
                 std::fprintf(smldest, "   (* [%d:%d] %s + %s : %d (%s) *)",
-                        i, i-fontkern[ktfontn[i]],
-                        ktstart[i], ktfollow[i],
-                        ktadjustment[i], ktfont[i]);
-            if ((kerntable[i] & IS_BLOCKEND) != 0) std::fprintf(smldest, " (*;;*)");
+                             i, i-fontkern[ktfontn[i]],
+                             ktstart[i], ktfollow[i],
+                             ktadjustment[i], ktfont[i]);
+            if ((kerntable[i] & IS_BLOCKEND) != 0) std::fprintf(smldest,
+                        " (*;;*)");
         }
         std::fprintf(dest, "\n};\n\n");
         std::fprintf(rdest, "\n    )))\n\n");
         std::fprintf(smldest, "\n    ];\n\n");
         std::fprintf(dest, "const uint32_t ligaturetable[] = \n{");
-        std::fprintf(rdest, "#eval (setq ligaturetable!* (list_to_vec32 '\n    (");
+        std::fprintf(rdest,
+                     "#eval (setq ligaturetable!* (list_to_vec32 '\n    (");
         std::fprintf(smldest, "val ligaturetable = Vector.fromList [");
         for (i=0; i<ligp; i++)
         {   int l = std::fprintf(dest, "\n    %" PRId32, ligtable[i]);
@@ -1959,101 +2133,148 @@ int main(int argc, char *argv[])
             else std::fprintf(smldest, " ");
             while (++l < 12) std::fprintf(smldest, " ");
             std::fprintf(dest, "   // [%d] %s + %s => %s (%s)",
-                    i, ltfirst[i], ltfollow[i], ltname[i], ltfont[i]);
+                         i, ltfirst[i], ltfollow[i], ltname[i], ltfont[i]);
             std::fprintf(rdest, "   %% [%d] %s + %s => %s (%s)",
-                    i, ltfirst[i], ltfollow[i], ltname[i], ltfont[i]);
+                         i, ltfirst[i], ltfollow[i], ltname[i], ltfont[i]);
             std::fprintf(smldest, "   (* [%d] %s + %s => %s (%s) *)",
-                    i, ltfirst[i], ltfollow[i], ltname[i], ltfont[i]);
+                         i, ltfirst[i], ltfollow[i], ltname[i], ltfont[i]);
         }
         std::fprintf(dest, "\n};\n\n");
         std::fprintf(rdest, "\n    )))\n\n");
         std::fprintf(dest, "// end of charmetrics.h\n");
         std::fprintf(smldest, "\n   ];\n\n");
-        std::fprintf(rdest, "%% The use of #eval means that the metrics above have been defined at\n");
-        std::fprintf(rdest, "%% parse time. I now need to ensure that they will be available even\n");
-        std::fprintf(rdest, "%% when this code is passed through the compiler and hence everything\n");
-        std::fprintf(rdest, "%% goes via a FASL file. The slighly curious macro here should achieve\n");
+        std::fprintf(rdest,
+                     "%% The use of #eval means that the metrics above have been defined at\n");
+        std::fprintf(rdest,
+                     "%% parse time. I now need to ensure that they will be available even\n");
+        std::fprintf(rdest,
+                     "%% when this code is passed through the compiler and hence everything\n");
+        std::fprintf(rdest,
+                     "%% goes via a FASL file. The slighly curious macro here should achieve\n");
         std::fprintf(rdest, "%% that.\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "symbolic macro procedure get_character_metrics !*unused!*;\n");
+        std::fprintf(rdest,
+                     "symbolic macro procedure get_character_metrics !*unused!*;\n");
         std::fprintf(rdest, "  list('progn,\n");
-        std::fprintf(rdest, "    list('setq, 'metrics_hash!*, mkquote metrics_hash!*),\n");
-        std::fprintf(rdest, "    list('setq, 'fontkern!*, mkquote fontkern!*),\n");
-        std::fprintf(rdest, "    list('setq, 'kerntable!*, mkquote kerntable!*),\n");
-        std::fprintf(rdest, "    list('setq, 'ligaturetable!*, mkquote ligaturetable!*),\n");
+        std::fprintf(rdest,
+                     "    list('setq, 'metrics_hash!*, mkquote metrics_hash!*),\n");
+        std::fprintf(rdest,
+                     "    list('setq, 'fontkern!*, mkquote fontkern!*),\n");
+        std::fprintf(rdest,
+                     "    list('setq, 'kerntable!*, mkquote kerntable!*),\n");
+        std::fprintf(rdest,
+                     "    list('setq, 'ligaturetable!*, mkquote ligaturetable!*),\n");
         std::fprintf(rdest, "    \"character metrics established\");\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "%% The call to the macro here expands into four simple assignments.\n");
+        std::fprintf(rdest,
+                     "%% The call to the macro here expands into four simple assignments.\n");
         std::fprintf(rdest, "symbolic get_character_metrics();\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "fluid '(c_width c_llx c_lly c_urx c_ury c_kerninfo);\n");
+        std::fprintf(rdest,
+                     "fluid '(c_width c_llx c_lly c_urx c_ury c_kerninfo);\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "%% This code looks up a font/codepoint pair in the tables and returns\n");
-        std::fprintf(rdest, "%% a character width (escapement) and a bounding box. It leaves behind\n");
-        std::fprintf(rdest, "%% c_kerninfo - and index into a kern and ligature table.\n");
+        std::fprintf(rdest,
+                     "%% This code looks up a font/codepoint pair in the tables and returns\n");
+        std::fprintf(rdest,
+                     "%% a character width (escapement) and a bounding box. It leaves behind\n");
+        std::fprintf(rdest,
+                     "%% c_kerninfo - and index into a kern and ligature table.\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "symbolic procedure lookupchar(fontnum, codepoint);\n");
+        std::fprintf(rdest,
+                     "symbolic procedure lookupchar(fontnum, codepoint);\n");
         std::fprintf(rdest, "  begin\n");
-        std::fprintf(rdest, "    scalar v, h1, h2, w, whi, wlo, fullkey, key;\n");
+        std::fprintf(rdest,
+                     "    scalar v, h1, h2, w, whi, wlo, fullkey, key;\n");
         std::fprintf(rdest, "%% pack codes into fewer bits\n");
         std::fprintf(rdest, "    if fontnum < 2 then <<\n");
-        std::fprintf(rdest, "      if land(codepoint, 0xd800) = 0xd800 then codepoint := 0xffff\n");
+        std::fprintf(rdest,
+                     "      if land(codepoint, 0xd800) = 0xd800 then codepoint := 0xffff\n");
         std::fprintf(rdest, "      else if codepoint >= 0x10000 then <<\n");
-        std::fprintf(rdest, "        if codepoint < 0x10800 then codepoint := 0xd800 + land(codepoint, 0xfff)\n");
+        std::fprintf(rdest,
+                     "        if codepoint < 0x10800 then codepoint := 0xd800 + land(codepoint, 0xfff)\n");
         std::fprintf(rdest, "        else codepoint := 0xffff >> >>\n");
-        std::fprintf(rdest, "    else if codepoint >= 0x4000 and codepoint < 0x8000 then codepoint := 0xffff\n");
-        std::fprintf(rdest, "    else if codepoint >= 0x1d000 and codepoint < 0x1e000 then\n");
-        std::fprintf(rdest, "      codepoint = 0x4000 + land(codepoint, 0xfff)\n");
-        std::fprintf(rdest, "    else if codepoint >= 0x108000 and codepoint < 0x109000 then\n");
-        std::fprintf(rdest, "      codepoint = 0x5000 + land(codepoint, 0xfff)\n");
-        std::fprintf(rdest, "    else if codepoint >= 0x10000 then codepoint := 0xffff;\n");
-        std::fprintf(rdest, "    fullkey := lshift(fontnum, 16) + codepoint\n");
+        std::fprintf(rdest,
+                     "    else if codepoint >= 0x4000 and codepoint < 0x8000 then codepoint := 0xffff\n");
+        std::fprintf(rdest,
+                     "    else if codepoint >= 0x1d000 and codepoint < 0x1e000 then\n");
+        std::fprintf(rdest,
+                     "      codepoint = 0x4000 + land(codepoint, 0xfff)\n");
+        std::fprintf(rdest,
+                     "    else if codepoint >= 0x108000 and codepoint < 0x109000 then\n");
+        std::fprintf(rdest,
+                     "      codepoint = 0x5000 + land(codepoint, 0xfff)\n");
+        std::fprintf(rdest,
+                     "    else if codepoint >= 0x10000 then codepoint := 0xffff;\n");
+        std::fprintf(rdest,
+                     "    fullkey := lshift(fontnum, 16) + codepoint\n");
         std::fprintf(rdest, "    key := lshift(fullkey, -2);\n");
 // I REALLY want the key to be positive here!
-        std::fprintf(rdest, "    h1 := remainder(key, %d);\n", main_r.table_size);
+        std::fprintf(rdest, "    h1 := remainder(key, %d);\n",
+                     main_r.table_size);
         std::fprintf(rdest, "    %% Hash table probe 1.\n");
-        std::fprintf(rdest, "    v := land(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);\n");
+        std::fprintf(rdest,
+                     "    v := land(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);\n");
         std::fprintf(rdest, "    if not (v = key) then <<\n");
-        std::fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n", main_r.modulus2, main_r.offset2);
+        std::fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n",
+                     main_r.modulus2, main_r.offset2);
         std::fprintf(rdest, "      %% Hash table probe 2.\n");
-        std::fprintf(rdest, "      v := land(getv32(w := getv(metrics_hash!*, h2), 0), 0x7ffff);\n");
+        std::fprintf(rdest,
+                     "      v := land(getv32(w := getv(metrics_hash!*, h2), 0), 0x7ffff);\n");
         std::fprintf(rdest, "      if not (v = key) then <<\n");
         std::fprintf(rdest, "        h1 := h1 + h2;\n");
-        std::fprintf(rdest, "        if h1 >= %d then h1 := h1 - %d;\n", main_r.table_size, main_r.table_size);
+        std::fprintf(rdest, "        if h1 >= %d then h1 := h1 - %d;\n",
+                     main_r.table_size, main_r.table_size);
         std::fprintf(rdest, "        %% Hash table probe 3.\n");
-        std::fprintf(rdest, "        v := land(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);\n");
-        std::fprintf(rdest, "        if not (v = key) then return nil >> >>;\n");
+        std::fprintf(rdest,
+                     "        v := land(getv32(w := getv(metrics_hash!*, h1), 0), 0x7ffff);\n");
+        std::fprintf(rdest,
+                     "        if not (v = key) then return nil >> >>;\n");
         std::fprintf(rdest, "    v := 2*land(fullkey, 3);\n");
         std::fprintf(rdest, "    wlo := getv32(w, v+2);\n");
-        std::fprintf(rdest, "    if wlo = 0 then return nil; %% in hash table but no character here.\n");
+        std::fprintf(rdest,
+                     "    if wlo = 0 then return nil; %% in hash table but no character here.\n");
         std::fprintf(rdest, "    whi := getv32(w, v+3);\n");
-        std::fprintf(rdest, "    c_width := land(lshift(whi, -19), 0x1fff);\n");
-        std::fprintf(rdest, "    c_llx := land(lshift(whi, -6), 0x1fff) - 3000;\n");
+        std::fprintf(rdest,
+                     "    c_width := land(lshift(whi, -19), 0x1fff);\n");
+        std::fprintf(rdest,
+                     "    c_llx := land(lshift(whi, -6), 0x1fff) - 3000;\n");
         std::fprintf(rdest, "    c_lly := land(lshift(wlo, -26), 0x3f) +\n");
-        std::fprintf(rdest, "             land(lshift(whi, 6), 0xfc0) - 1000;\n");
-        std::fprintf(rdest, "    c_urx := land(lshift(wlo, -13), 0x1fff) - 500;\n");
+        std::fprintf(rdest,
+                     "             land(lshift(whi, 6), 0xfc0) - 1000;\n");
+        std::fprintf(rdest,
+                     "    c_urx := land(lshift(wlo, -13), 0x1fff) - 500;\n");
         std::fprintf(rdest, "    c_ury := land(wlo, 0x1fff) - 1000;\n");
-        std::fprintf(rdest, "    if v = 0 then c_kerninfo := land(lshift(getv32(w, 0), -19), 0x7ff)\n");
-        std::fprintf(rdest, "    else if v = 2 then c_kerninfo := land(lshift(getv32(w, 0), -30), 0x3) +\n");
-        std::fprintf(rdest, "                                     land(lshift(getv32(w, 1), 2), 0x7fc)\n");
-        std::fprintf(rdest, "    else if v = 4 then c_kerninfo := land(lshift(getv32(w, 1), -9), 0x7ff)\n");
-        std::fprintf(rdest, "    else c_kerninfo := land(lshift(getv32(w, 1), -20), 0x7ff);\n");
+        std::fprintf(rdest,
+                     "    if v = 0 then c_kerninfo := land(lshift(getv32(w, 0), -19), 0x7ff)\n");
+        std::fprintf(rdest,
+                     "    else if v = 2 then c_kerninfo := land(lshift(getv32(w, 0), -30), 0x3) +\n");
+        std::fprintf(rdest,
+                     "                                     land(lshift(getv32(w, 1), 2), 0x7fc)\n");
+        std::fprintf(rdest,
+                     "    else if v = 4 then c_kerninfo := land(lshift(getv32(w, 1), -9), 0x7ff)\n");
+        std::fprintf(rdest,
+                     "    else c_kerninfo := land(lshift(getv32(w, 1), -20), 0x7ff);\n");
         std::fprintf(rdest, "    if not zerop c_kerninfo then\n");
-        std::fprintf(rdest, "      c_kerninfo := c_kerninfo + getv16(fontkern!*, fontnum);\n");
+        std::fprintf(rdest,
+                     "      c_kerninfo := c_kerninfo + getv16(fontkern!*, fontnum);\n");
         std::fprintf(rdest, "    return t\n");
         std::fprintf(rdest, "  end;\n");
         std::fprintf(rdest, "\n");
-        std::fprintf(rdest, "symbolic procedure lookupkernadjustment codepoint;\n");
+        std::fprintf(rdest,
+                     "symbolic procedure lookupkernadjustment codepoint;\n");
         std::fprintf(rdest, "  begin\n");
         std::fprintf(rdest, "    scalar i, w;\n");
-        std::fprintf(rdest, "    if zerop (i := c_kerninfo) then return 0;\n");
+        std::fprintf(rdest,
+                     "    if zerop (i := c_kerninfo) then return 0;\n");
         std::fprintf(rdest, " a: w := getv32(kerntable!*, i);\n");
         std::fprintf(rdest, "    if land(w, 0x001fffff) = codepoint and\n");
         std::fprintf(rdest, "      zerop land(w, 0x00200000) then <<\n");
         std::fprintf(rdest, "        w := land(lshift(w, -23), 0x1ff);\n");
-        std::fprintf(rdest, "        if not zerop land(w, 0x100) then w := w - 0x200;\n");
+        std::fprintf(rdest,
+                     "        if not zerop land(w, 0x100) then w := w - 0x200;\n");
         std::fprintf(rdest, "        return w >>\n");
-        std::fprintf(rdest, "    else if not zerop land(w, 0x00400000) then return 0;\n");
+        std::fprintf(rdest,
+                     "    else if not zerop land(w, 0x00400000) then return 0;\n");
         std::fprintf(rdest, "    i := add1 i;\n");
         std::fprintf(rdest, "    go to a\n");
         std::fprintf(rdest, "  end;\n");
@@ -2061,12 +2282,15 @@ int main(int argc, char *argv[])
         std::fprintf(rdest, "symbolic procedure lookupligature codepoint;\n");
         std::fprintf(rdest, "  begin\n");
         std::fprintf(rdest, "    scalar i, w;\n");
-        std::fprintf(rdest, "    if zerop (i := c_kerninfo) then return nil;\n");
+        std::fprintf(rdest,
+                     "    if zerop (i := c_kerninfo) then return nil;\n");
         std::fprintf(rdest, " a: w := getv32(kerntable!*, i);\n");
         std::fprintf(rdest, "    if land(w, 0x001fffff) = codepoint and\n");
         std::fprintf(rdest, "      not zerop land(w, 0x00200000) then\n");
-        std::fprintf(rdest, "        return getv32(ligaturetable!*, land(lshift(w, -23), 0x1ff))\n");
-        std::fprintf(rdest, "    else if not zerop land(w, 0x00400000) then return nil;\n");
+        std::fprintf(rdest,
+                     "        return getv32(ligaturetable!*, land(lshift(w, -23), 0x1ff))\n");
+        std::fprintf(rdest,
+                     "    else if not zerop land(w, 0x00400000) then return nil;\n");
         std::fprintf(rdest, "    i := add1 i;\n");
         std::fprintf(rdest, "    go to a\n");
         std::fprintf(rdest, "  end;\n");
@@ -2074,52 +2298,71 @@ int main(int argc, char *argv[])
         std::fprintf(rdest, "symbolic procedure accentposition key;\n");
         std::fprintf(rdest, "  begin\n");
         std::fprintf(rdest, "    scalar h1, h2, v, w;\n");
-        std::fprintf(rdest, "    h1 := remainder(key, %d);\n", topcentre_r.table_size);
+        std::fprintf(rdest, "    h1 := remainder(key, %d);\n",
+                     topcentre_r.table_size);
         std::fprintf(rdest, "    %% Hash table probe 1.\n");
-        std::fprintf(rdest, "    v := land(w := getv32(topcentre_hash!*, h1), 0x1fffff);\n");
+        std::fprintf(rdest,
+                     "    v := land(w := getv32(topcentre_hash!*, h1), 0x1fffff);\n");
         std::fprintf(rdest, "    if not (v = key) then <<\n");
-        std::fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n", topcentre_r.modulus2, topcentre_r.offset2);
+        std::fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n",
+                     topcentre_r.modulus2, topcentre_r.offset2);
         std::fprintf(rdest, "      %% Hash table probe 2.\n");
-        std::fprintf(rdest, "      v := land(w := getv32(topcentre_hash!*, h2), 0x1fffff);\n");
+        std::fprintf(rdest,
+                     "      v := land(w := getv32(topcentre_hash!*, h2), 0x1fffff);\n");
         std::fprintf(rdest, "      if not (v = key) then return 0 >>;\n");
         std::fprintf(rdest, "    return lshift(w, -21)\n");
         std::fprintf(rdest, "  end;\n");
         std::fprintf(rdest, "\n");
         std::fprintf(rdest, "end;\n\n");
-        std::fprintf(rdest, "%% Note that variants must be passed a codepoint and direction flag\n");
+        std::fprintf(rdest,
+                     "%% Note that variants must be passed a codepoint and direction flag\n");
         std::fprintf(rdest, "symbolic procedure variants key;\n");
         std::fprintf(rdest, "  begin\n");
         std::fprintf(rdest, "    scalar h1, h2, h3, v, w;\n");
-        std::fprintf(rdest, "    h1 := remainder(key, %d);\n", variant_r.table_size);
+        std::fprintf(rdest, "    h1 := remainder(key, %d);\n",
+                     variant_r.table_size);
         std::fprintf(rdest, "    %% Hash table probe 1.\n");
-        std::fprintf(rdest, "    v := getv32(w := getv(variant_hash!*, h1), 0);\n");
+        std::fprintf(rdest,
+                     "    v := getv32(w := getv(variant_hash!*, h1), 0);\n");
         std::fprintf(rdest, "    if not (v = key) then <<\n");
-        std::fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n", variant_r.modulus2, variant_r.offset2);
+        std::fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n",
+                     variant_r.modulus2, variant_r.offset2);
         std::fprintf(rdest, "      %% Hash table probe 2.\n");
-        std::fprintf(rdest, "      v := getv32(w := getv(variant_hash!*, h2), 0);\n");
+        std::fprintf(rdest,
+                     "      v := getv32(w := getv(variant_hash!*, h2), 0);\n");
         std::fprintf(rdest, "      if not (v = key) then <<\n");
-        std::fprintf(rdest, "         h3 := remainder(h1 + h2, %d);\n", variant_r.table_size);
+        std::fprintf(rdest, "         h3 := remainder(h1 + h2, %d);\n",
+                     variant_r.table_size);
         std::fprintf(rdest, "         %% Hash table probe 3.\n");
-        std::fprintf(rdest, "         v := getv32(w := getv(variant_hash!*, h3), 0);\n");
-        std::fprintf(rdest, "         if not (v = key) then return nil >> >>;\n");
+        std::fprintf(rdest,
+                     "         v := getv32(w := getv(variant_hash!*, h3), 0);\n");
+        std::fprintf(rdest,
+                     "         if not (v = key) then return nil >> >>;\n");
         std::fprintf(rdest, "    return w\n");
         std::fprintf(rdest, "  end;\n");
         std::fprintf(rdest, "\n");
         std::fprintf(rdest, "symbolic procedure extension key;\n");
         std::fprintf(rdest, "  begin\n");
         std::fprintf(rdest, "    scalar h1, h2, h3, v, w;\n");
-        std::fprintf(rdest, "    h1 := remainder(key, %d);\n", extension_r.table_size);
+        std::fprintf(rdest, "    h1 := remainder(key, %d);\n",
+                     extension_r.table_size);
         std::fprintf(rdest, "    %% Hash table probe 1.\n");
-        std::fprintf(rdest, "    v := getv32(w := getv(extension_hash!*, h1), 0);\n");
+        std::fprintf(rdest,
+                     "    v := getv32(w := getv(extension_hash!*, h1), 0);\n");
         std::fprintf(rdest, "    if not (v = key) then <<\n");
-        std::fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n", extension_r.modulus2, extension_r.offset2);
+        std::fprintf(rdest, "      h2 := remainder(key, %d) + %d;\n",
+                     extension_r.modulus2, extension_r.offset2);
         std::fprintf(rdest, "      %% Hash table probe 2.\n");
-        std::fprintf(rdest, "      v := getv32(w := getv(extension_hash!*, h2), 0);\n");
+        std::fprintf(rdest,
+                     "      v := getv32(w := getv(extension_hash!*, h2), 0);\n");
         std::fprintf(rdest, "      if not (v = key) then <<\n");
-        std::fprintf(rdest, "         h3 := remainder(h1 + h2, %d);\n", extension_r.table_size);
+        std::fprintf(rdest, "         h3 := remainder(h1 + h2, %d);\n",
+                     extension_r.table_size);
         std::fprintf(rdest, "         %% Hash table probe 3.\n");
-        std::fprintf(rdest, "         v := getv32(w := getv(extension_hash!*, h3), 0);\n");
-        std::fprintf(rdest, "         if not (v = key) then return nil >> >>;\n");
+        std::fprintf(rdest,
+                     "         v := getv32(w := getv(extension_hash!*, h3), 0);\n");
+        std::fprintf(rdest,
+                     "         if not (v = key) then return nil >> >>;\n");
         std::fprintf(rdest, "    return w\n");
         std::fprintf(rdest, "  end;\n");
         std::fprintf(rdest, "\n");
@@ -2155,31 +2398,32 @@ int lookupchar(int fontnum, int codepoint)
     int v, h1, h2;
     uint64_t w;
     h1 = key % CHAR_METRICS_TABLE_SIZE;
-    v = (int)charmetrics[h1][0] & 0x7ffff;
+    v = static_cast<int>(charmetrics[h1][0]) & 0x7ffff;
     if (v != key)
     {   h2 = (key % CHAR_METRICS_MODULUS) + CHAR_METRICS_OFFSET;
-        v = (int)charmetrics[h2][0] & 0x7ffff;
+        v = static_cast<int>(charmetrics[h2][0]) & 0x7ffff;
         if (v != key)
         {   h1 += h2;
             if (h1 >= CHAR_METRICS_TABLE_SIZE) h1 -= CHAR_METRICS_TABLE_SIZE;
-            v = (int)charmetrics[h1][0] & 0x7ffff;
+            v = static_cast<int>(charmetrics[h1][0]) & 0x7ffff;
             if (v != key) return 0;
         }
     }
     w = charmetrics[h1][1+(fullkey&3)];
 // Even though the hash line exists this entry in it may be unused.
     if (w == 0) return 0;
-    c_width = (int)(w >> 51) & 0x1fff;
-    c_llx = ((int)(w >> 38) & 0x1fff) - 3000;
-    c_lly = ((int)(w >> 26) & 0x0fff) - 1000;
-    c_urx = ((int)(w >> 13) & 0x1fff) - 500;
-    c_ury = ((int)w & 0x1fff) - 1000;
+    c_width = static_cast<int>(w >> 51) & 0x1fff;
+    c_llx = (static_cast<int>(w >> 38) & 0x1fff) - 3000;
+    c_lly = (static_cast<int>(w >> 26) & 0x0fff) - 1000;
+    c_urx = (static_cast<int>(w >> 13) & 0x1fff) - 500;
+    c_ury = (static_cast<int>(w) & 0x1fff) - 1000;
 // Based on the font and 11 bits of information from the hash table I will
 // set up a pointer into kerntable. The interpretation of that will be
 // considered in the function lookupkernandligature. If the 11 bit field
 // contains zero then there is neither kern nor ligature information
 // associated with this character.
-    v = (int)(charmetrics[h1][0] >> (19+11*(fullkey&3))) & 0x7ff;
+    v = static_cast<int>(charmetrics[h1][0] >> (19+11*
+                         (fullkey&3))) & 0x7ff;
     if (v != 0) v += fontkern[fontnum];
 // c_kerninfo will be left zero if there is no information, otherwise an
 // index into a table.
@@ -2215,7 +2459,8 @@ int32_t lookupkernandligature(int codepoint)
 {   int32_t r = 0;
     uint32_t w;
     int i;
-    if ((i = c_kerninfo) == 0) return 0;  // No info based on current start.
+    if ((i = c_kerninfo) == 0) return
+            0;  // No info based on current start.
 // The worst cases I can see in my fonts is the kern information for "W"
 // in STIX-Regular where around 50 characters following "W" get their spacing
 // adjusted. That gives some impression of the most extreme number of
@@ -2256,7 +2501,8 @@ int32_t lookupkernandligature(int codepoint)
 int32_t lookupkernadjustment(int codepoint)
 {   int32_t w;
     int i;
-    if ((i = c_kerninfo) == 0) return 0;  // No info based on current start.
+    if ((i = c_kerninfo) == 0) return
+            0;  // No info based on current start.
     do
     {   w = kerntable[i++];
 // The shift right in the return statement relies on w being a signed
@@ -2273,7 +2519,8 @@ int32_t lookupkernadjustment(int codepoint)
 int32_t lookupligature(int codepoint)
 {   uint32_t w;
     int i;
-    if ((i = c_kerninfo) == 0) return 0;  // No info based on current start.
+    if ((i = c_kerninfo) == 0) return
+            0;  // No info based on current start.
     do
     {   w = kerntable[i++];
 // I made w unsigned so that the shift right returned an unsigned index.
@@ -2295,9 +2542,11 @@ int32_t lookupligature(int codepoint)
 int accentposition(int code)
 {   int hash1 = code % TOPCENTRE_TABLE_SIZE, hash2;
     int32_t r;
-    if (((r = topcentre[hash1]) & 0x001fffff) == code) return ((int32_t)r)>>21;
+    if (((r = topcentre[hash1]) & 0x001fffff) == code) return ((
+                    int32_t)r)>>21;
     hash2 = (code % TOPCENTRE_MODULUS) + TOPCENTRE_OFFSET;
-    if (((r = topcentre[hash2]) & 0x001fffff) == code) return ((int32_t)r)>>21;
+    if (((r = topcentre[hash2]) & 0x001fffff) == code) return ((
+                    int32_t)r)>>21;
     else return 0;
 }
 
@@ -2309,7 +2558,7 @@ int accentposition(int code)
 // varients such as wide overbars and circumflex accents that may be used to
 // go above wide items of various sorts. The code passed to character_variants
 // is the code point of the base character plus 0x00200000 if a horizontal
-// expansion is needed. The result is NULL if nothing is available, or a
+// expansion is needed. The result is nullptr if nothing is available, or a
 // pointer to a block of 6 words otherwise. If this pointer is r, then r[0]
 // is the base character passed, but then r[1] tp r[5] are gradually larger
 // versions, or U+0000 when no further large versions are available.
@@ -2322,7 +2571,7 @@ const uint32_t *character_variants(int code)
     if (variant_table[hash2][0] == code) return &variant_table[hash2][0];
     hash3 = (hash1 + hash2) % VARIANT_TABLE_SIZE;
     if (variant_table[hash3][0] == code) return &variant_table[hash3][0];
-    return NULL;
+    return nullptr;
 }
 
 #define EXTENSION_TABLE_SIZE (sizeof(extension_table)/sizeof(extension_table[0]))
@@ -2334,12 +2583,15 @@ const uint32_t *character_variants(int code)
 const uint32_t *character_extension(int code)
 {   int hash1 = code % EXTENSION_TABLE_SIZE, hash2, hash3;
     int32_t r;
-    if (extension_table[hash1][0] == code) return &extension_table[hash1][0];
+    if (extension_table[hash1][0] == code) return
+            &extension_table[hash1][0];
     hash2 = (code % EXTENSION_MODULUS) + EXTENSION_OFFSET;
-    if (extension_table[hash2][0] == code) return &extension_table[hash2][0];
+    if (extension_table[hash2][0] == code) return
+            &extension_table[hash2][0];
     hash3 = (hash1 + hash2) % EXTENSION_TABLE_SIZE;
-    if (extension_table[hash3][0] == code) return &extension_table[hash3][0];
-    return NULL;
+    if (extension_table[hash3][0] == code) return
+            &extension_table[hash3][0];
+    return nullptr;
 }
 
 #ifdef TEST
@@ -2390,80 +2642,85 @@ int main(int argc, char *argv[])
 {   int i, r;
     const uint32_t *p;
     std::printf("====== Test program starting ======\n");
-    std::printf("Hash table size was %d\n", (int)CHAR_METRICS_TABLE_SIZE);
-    std::printf("Second modulus, offset %d (%d)\n", (int)CHAR_METRICS_MODULUS,
-           (int)CHAR_METRICS_OFFSET);
+    std::printf("Hash table size was %d\n",
+                static_cast<int>(CHAR_METRICS_TABLE_SIZE));
+    std::printf("Second modulus, offset %d (%d)\n",
+                static_cast<int>(CHAR_METRICS_MODULUS),
+                static_cast<int>(CHAR_METRICS_OFFSET));
     for (i='e'; i<'n'; i++)
     {   r = lookupchar(F_Regular, i);
         if (r) std::printf("\"%c\": width %d   BB %d %d %d %d  (%d)\n",
-                          i, c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo);
+                               i, c_width, c_llx, c_lly, c_urx, c_ury, c_kerninfo);
         else std::printf("\"%c\" char not found\n", i);
         std::fflush(stdout);
     }
-    if (!lookupchar(F_Regular, 'f')) std::printf("Character \"f\" not found\n");
+    if (!lookupchar(F_Regular,
+                    'f')) std::printf("Character \"f\" not found\n");
     else
     {   int32_t k = lookupkernandligature('i');
         std::printf("Kern/ligature data for sequence f-i is %d %d\n",
-               (int)(k >> 23), (int)(k & 0x001fffff));
+                    static_cast<int>(k >> 23), static_cast<int>(k & 0x001fffff));
         std::fflush(stdout);
         k = lookupkernandligature('l');
         std::printf("Kern/ligature data for sequence f-l is %d %d\n",
-               (int)(k >> 23), (int)(k & 0x001fffff));
+                    static_cast<int>(k >> 23), static_cast<int>(k & 0x001fffff));
         std::fflush(stdout);
     }
     std::printf("Top accent shift A=%d combining circumflex=%d\n",
-           accentposition('A'), accentposition(770));
+                accentposition('A'), accentposition(770));
     p = character_variants('(');
-    if (p == NULL) std::printf("Failed to find paren sizes\n");
+    if (p == nullptr) std::printf("Failed to find paren sizes\n");
     else std::printf("Paren sizes = U+%.6x, U+%.6x, U+%.6x, U+%.6x, U+%.6x, U+%.6x\n",
-                    p[0], p[1], p[2], p[3], p[4], p[5]);
+                         p[0], p[1], p[2], p[3], p[4], p[5]);
     p = character_extension('{');
-    if (p == NULL) std::printf("Failed to find left brace extension data\n");
+    if (p == nullptr)
+        std::printf("Failed to find left brace extension data\n");
     else
     {   std::printf("For { bottom U+%.6x %d %d %d %d\n",
-               p[1] & 0x001fffff, p[1]>>21,
-               p[2] & 0x0000ffff, (p[2]>>16) & 0x00007fff,
-               p[2]>>31);
+                    p[1] & 0x001fffff, p[1]>>21,
+                    p[2] & 0x0000ffff, (p[2]>>16) & 0x00007fff,
+                    p[2]>>31);
         std::printf("lower extender U+%.6x %d %d %d %d\n",
-               p[3] & 0x001fffff, p[3]>>21,
-               p[4] & 0x0000ffff, (p[4]>>16) & 0x00007fff,
-               p[4]>>31);
+                    p[3] & 0x001fffff, p[3]>>21,
+                    p[4] & 0x0000ffff, (p[4]>>16) & 0x00007fff,
+                    p[4]>>31);
         std::printf("middle piece U+%.6x %d %d %d %d\n",
-               p[5] & 0x001fffff, p[5]>>21,
-               p[6] & 0x0000ffff, (p[6]>>16) & 0x00007fff,
-               p[6]>>31);
+                    p[5] & 0x001fffff, p[5]>>21,
+                    p[6] & 0x0000ffff, (p[6]>>16) & 0x00007fff,
+                    p[6]>>31);
         std::printf("upper extender U+%.6x %d %d %d %d\n",
-               p[7] & 0x001fffff, p[7]>>21,
-               p[8] & 0x0000ffff, (p[8]>>16) & 0x00007fff,
-               p[8]>>31);
+                    p[7] & 0x001fffff, p[7]>>21,
+                    p[8] & 0x0000ffff, (p[8]>>16) & 0x00007fff,
+                    p[8]>>31);
         std::printf("top piece U+%.6x %d %d %d %d\n",
-               p[9] & 0x001fffff, p[9]>>21,
-               p[10] & 0x0000ffff, (p[10]>>16) & 0x00007fff,
-               p[10]>>31);
+                    p[9] & 0x001fffff, p[9]>>21,
+                    p[10] & 0x0000ffff, (p[10]>>16) & 0x00007fff,
+                    p[10]>>31);
     }
     p = character_extension('|');
-    if (p == NULL) std::printf("Failed to find vertical bar extension data\n");
+    if (p == nullptr)
+        std::printf("Failed to find vertical bar extension data\n");
     else
     {   std::printf("For | bottom U+%.6x %d %d %d %d\n",
-               p[1] & 0x001fffff, p[1]>>21,
-               p[2] & 0x00007fff, (p[2]>>15) & 0x0000ffff,
-               p[2]>>31);
+                    p[1] & 0x001fffff, p[1]>>21,
+                    p[2] & 0x00007fff, (p[2]>>15) & 0x0000ffff,
+                    p[2]>>31);
         std::printf("extender U+%.6x %d %d %d %d\n",
-               p[3] & 0x001fffff, p[3]>>21,
-               p[4] & 0x00007fff, (p[4]>>15) & 0x0000ffff,
-               p[4]>>31);
+                    p[3] & 0x001fffff, p[3]>>21,
+                    p[4] & 0x00007fff, (p[4]>>15) & 0x0000ffff,
+                    p[4]>>31);
         std::printf("unused U+%.6x %d %d %d %d\n",
-               p[5] & 0x001fffff, p[5]>>21,
-               p[6] & 0x00007fff, (p[6]>>15) & 0x0000ffff,
-               p[6]>>31);
+                    p[5] & 0x001fffff, p[5]>>21,
+                    p[6] & 0x00007fff, (p[6]>>15) & 0x0000ffff,
+                    p[6]>>31);
         std::printf("unused U+%.6x %d %d %d %d\n",
-               p[7] & 0x001fffff, p[7]>>21,
-               p[8] & 0x00007fff, (p[8]>>15) & 0x0000ffff,
-               p[8]>>31);
+                    p[7] & 0x001fffff, p[7]>>21,
+                    p[8] & 0x00007fff, (p[8]>>15) & 0x0000ffff,
+                    p[8]>>31);
         std::printf("unused U+%.6x %d %d %d %d\n",
-               p[9] & 0x001fffff, p[9]>>21,
-               p[10] & 0x00007fff, (p[10]>>15) & 0x0000ffff,
-               p[10]>>31);
+                    p[9] & 0x001fffff, p[9]>>21,
+                    p[10] & 0x00007fff, (p[10]>>15) & 0x0000ffff,
+                    p[10]>>31);
     }
     return 0;
 }
