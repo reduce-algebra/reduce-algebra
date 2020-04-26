@@ -47,6 +47,19 @@
 #include <cstdint>
 #include <cinttypes>
 
+#if defined __has_cpp_attribute && __has_cpp_attribute(maybe_unused)
+// C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
+// and functions. Earlier versions of gcc and clang supported [[gnu:unused]]
+// as a non-standard annotation with similar effect.
+#define UNUSED_NAME [[maybe_unused]]
+#elif defined __GNUC__
+#define UNUSED_NAME [[gnu:unused]]
+#else
+// In any other case I just omit any annotation and if I get warnings about
+// unused things then so be it.
+#define UNUSED_NAME
+#endif
+
 // Since this file exists to define just a single external function I will
 // write its declaration here rather than having a trivial header file
 // to declare it.
@@ -214,9 +227,9 @@ again2:
 // Note that I have three tables covering different ranges of inputs.
 ////////////////////////////////////////////////////////////////////////////
 
-static const uint64_t hash32_multiplier  = UINT64_C(
-            0x6f1ec8475ebe63cc),
-        hash32_multiplier1 = UINT64_C(0x9b814cb804ce0bfe);
+static const uint64_t hash32_multiplier  = UINT64_C(0x6f1ec8475ebe63cc);
+UNUSED_NAME static const uint64_t
+                      hash32_multiplier1 = UINT64_C(0x9b814cb804ce0bfe);
 
 static std::uint16_t witness32[195] =
 {   45413, 15318,  5566,  9894,  4093,  2426, 55517,  6987, 60065, 35349,
@@ -243,9 +256,8 @@ static std::uint16_t witness32[195] =
 
 ////////////////////////////////////////////////////////////////////////////
 
-static const uint64_t hash44_multiplier  = UINT64_C(
-            0x7549c298f9834e52),
-        hash44_multiplier1 = UINT64_C(0x955be7f2d22d28a2);
+static const uint64_t hash44_multiplier  = UINT64_C(0x7549c298f9834e52),
+                      hash44_multiplier1 = UINT64_C(0x955be7f2d22d28a2);
 
 static std::uint16_t witness44[335] =
 {   25490,  4297, 10653, 29662, 40495,  3011, 24362, 61027,   715,  3506,
@@ -286,9 +298,8 @@ static std::uint16_t witness44[335] =
 
 ////////////////////////////////////////////////////////////////////////////
 
-static const uint64_t hash52_multiplier  = UINT64_C(
-            0x222156ef26884dc1),
-        hash52_multiplier1 = UINT64_C(0x8cd52a331c96952f);
+static const uint64_t hash52_multiplier  = UINT64_C(0x222156ef26884dc1),
+                      hash52_multiplier1 = UINT64_C(0x8cd52a331c96952f);
 
 static uint16_t witness52[284] =
 {   26379, 47775, 17083,  2425, 33806,  3946, 12979, 18862,  3529, 11502,

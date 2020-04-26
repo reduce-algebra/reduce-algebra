@@ -833,7 +833,7 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
 //       (t (putv v n x))))
 //
 
-static LispObject Lputvec(LispObject, LispObject v, LispObject n,
+UNUSED_NAME static LispObject Lputvec(LispObject, LispObject v, LispObject n,
                           LispObject x)
 {   Header h;
     intptr_t vx;
@@ -1307,8 +1307,8 @@ static LispObject Laset_2(LispObject env, LispObject a, LispObject b)
 
 #endif  // DO_AREF_AND_ASET_LATER
 
-static LispObject Lsetelt(LispObject env, LispObject v, LispObject n,
-                          LispObject x)
+UNUSED_NAME static LispObject Lsetelt(LispObject env, LispObject v,
+                                      LispObject n, LispObject x)
 {   Header h;
     LispObject w;
     size_t hl, n1;
@@ -1436,7 +1436,7 @@ LispObject Lvectorp(LispObject env, LispObject a)
 //       (t (aref s n))))
 //
 
-static LispObject Lchar(LispObject env, LispObject v, LispObject n)
+UNUSED_NAME static LispObject Lchar(LispObject env, LispObject v, LispObject n)
 {   Header h;
     if (!is_vector(v)) aerror("char");
     h = vechdr(v);
@@ -1462,7 +1462,7 @@ static LispObject Lchar(LispObject env, LispObject v, LispObject n)
 //       (t (aset s n c))))
 //
 
-static LispObject Lcharset(LispObject env, LispObject v, LispObject n,
+UNUSED_NAME static LispObject Lcharset(LispObject env, LispObject v, LispObject n,
                            LispObject c)
 {   Header h;
     if (!is_vector(v)) aerror1("charset", v);
@@ -1495,7 +1495,7 @@ static LispObject Lcharset(LispObject env, LispObject v, LispObject n,
 //       s))
 //
 
-static LispObject Lmake_string_3(LispObject env, LispObject n,
+UNUSED_NAME static LispObject Lmake_string_3(LispObject env, LispObject n,
                                  LispObject key, LispObject init)
 {   LispObject w;
     intptr_t nn, blanks;
@@ -1524,7 +1524,7 @@ static LispObject Lmake_string_3(LispObject env, LispObject n,
     return onevalue(w);
 }
 
-static LispObject Lmake_string_1(LispObject env, LispObject n)
+UNUSED_NAME static LispObject Lmake_string_1(LispObject env, LispObject n)
 {   LispObject w;
     intptr_t nn, blanks;
     size_t z;
@@ -1555,7 +1555,7 @@ static LispObject Lmake_string_1(LispObject env, LispObject n)
 //       (t (error "String expected, but found ~S" x))))
 //
 
-static LispObject Lstring(LispObject env, LispObject a)
+UNUSED_NAME static LispObject Lstring(LispObject env, LispObject a)
 {   Header h;
     LispObject w;
     if (!is_vector(a))
@@ -1589,7 +1589,7 @@ static LispObject Lstring(LispObject env, LispObject a)
 //       (dotimes (i len new) (putv new i (svref old i)))))
 //
 
-static LispObject Lcopy_vector(LispObject env, LispObject a)
+UNUSED_NAME static LispObject Lcopy_vector(LispObject env, LispObject a)
 {   // not done yet!
     return onevalue(nil);
 }
@@ -1666,7 +1666,7 @@ LispObject Lvector_3(LispObject env, LispObject a, LispObject b,
 }
 
 
-static LispObject Lshrink_vector(LispObject env,
+UNUSED_NAME static LispObject Lshrink_vector(LispObject env,
                                  LispObject v, LispObject n)
 {   size_t n1, n2;
     if (!is_vector(v)) aerror1("shrink-vector", v);

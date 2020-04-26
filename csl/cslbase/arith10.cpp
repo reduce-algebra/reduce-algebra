@@ -149,7 +149,7 @@ static Complex Cdiv_z(Complex, Complex);
 // behaviour on branch cuts and with regards to +0.0 and -0.0.
 //
 
-static Complex CSLcpowi(Complex z, int n)
+UNUSED_NAME static Complex CSLcpowi(Complex z, int n)
 {
 //
 // Raises w complex number to an integer power by repeated squaring.

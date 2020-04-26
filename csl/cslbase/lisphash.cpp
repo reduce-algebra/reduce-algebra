@@ -635,7 +635,7 @@ static uint64_t hash_nonsimple_bitvector(uint64_t r, LispObject key)
 #ifdef HAVE_SOFTFLOAT
 static float128_t bigfloat_result;
 
-static bool float_if_exact(LispObject x)
+UNUSED_NAME static bool float_if_exact(LispObject x)
 {   if (is_fixnum(x))
     {   i32_to_f128M(int_of_fixnum(x), &bigfloat_result);
         return true;
@@ -776,16 +776,11 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
                     return hash_nonsimple_string(r, key);
                 if (arraytype == bit_symbol)
                     return hash_nonsimple_bitvector(r, key);
-                LispObject dims = elt(key, 1);
-                LispObject vec = elt(key, 2);
-                LispObject displace = elt(key, 3);
-                LispObject adjustable = elt(key, 4);
-                LispObject fill = elt(key, 5);
-                dims = dims;
-                vec = vec;
-                displace = displace;
-                adjustable = adjustable;
-                fill = fill;
+                UNUSED_NAME LispObject dims = elt(key, 1);
+                UNUSED_NAME LispObject vec = elt(key, 2);
+                UNUSED_NAME LispObject displace = elt(key, 3);
+                UNUSED_NAME LispObject adjustable = elt(key, 4);
+                UNUSED_NAME LispObject fill = elt(key, 5);
 // Give up and hash using EQ!!!! This is a temporary cop-out.
                 if (mode == HASH_AS_SXHASH) return hash_eq(r, 0x12345);
                 else return hash_eq(r, key);

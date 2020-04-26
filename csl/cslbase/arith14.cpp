@@ -193,7 +193,7 @@ void f256M_add(const float256_t *x, const float256_t *y,
     f128M_add(&w1, &s, &z->lo);
 }
 
-static void f128X_print(const float128_t *v)
+UNUSED_NAME static void f128X_print(const float128_t *v)
 {   std::printf("%.16" PRIx64 " %.16" PRIx64, v->v[HIPART],
                 v->v[LOPART]);
 }

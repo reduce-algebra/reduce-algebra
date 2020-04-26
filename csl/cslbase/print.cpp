@@ -70,7 +70,7 @@ void debugprint1(LispObject a, int depth)
     {   const char *sep = "(";
         while (is_cons(a) && depth > 0)
         {   depth--;
-            std::printf(sep);
+            std::printf("%s", sep);
             debugprint1(car(a), depth-1);
             a = cdr(a);
             sep = " ";
@@ -100,7 +100,7 @@ void debugprint1(LispObject a, int depth)
     {   size_t len = cells_in_vector(a);
         const char *sep = "[";
         for (size_t i=0; i<len; i++)
-        {   std::printf(sep);
+        {   std::printf("%s", sep);
             debugprint1(elt(a, i), depth-1);
             sep = " ";
         }
