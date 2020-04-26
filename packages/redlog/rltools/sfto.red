@@ -669,22 +669,49 @@ asserted procedure sfto_tdegf(f: SF): Integer;
       return td
    end;
 
-asserted procedure coefficients(f: AmPoly, vl: AmList): AmList;
-   'list . for each c in sfto_allcoeffs(numr simp f,cdr vl) collect
+operator indets;
+
+asserted procedure indets(p: AmPoly): AmList;
+   'list . kernels numr simp p;
+
+operator coeff;
+
+asserted procedure coeff(p: AmPoly, x: Kernel, n: Integer): AmPoly;
+   prepf sfto_coeff(numr simp p, x, n);
+
+asserted procedure sfto_coeff(p: SF, x: Kernel, n: Integer): SF;
+   begin scalar rp;
+      rp := sfto_reorder(p, {x});
+      while not domainp rp and mvar rp eq x and ldeg rp > n do
+	 rp := red rp;
+      if not domainp rp and mvar rp eq x then
+ 	 return if eqn(ldeg rp, n) then lc rp else 0;
+      if eqn(n, 0) then
+ 	 return rp or 0;
+      return 0
+   end;
+
+operator rlcoeffs;
+
+asserted procedure rlcoeffs(f: AmPoly, vl: AmList): AmList;
+   'list . for each c in sfto_coeffs(numr simp f, cdr vl) collect
       prepf c;
 
-asserted procedure sfto_allcoeffs(f: SF, vl: List): List;
-   sfto_allcoeffs1({f},vl);
+asserted procedure sfto_coeffs(f: SF, vl: List): List;
+   sfto_coeffs1({f}, vl);
 
-asserted procedure sfto_allcoeffs1(l: List, vl: List): List;
+asserted procedure sfto_coeffs1(l: List, vl: List): List;
    if null vl then
       l
    else
-      sfto_allcoeffs1(for each f in l join
-	 sfto_coefs(sfto_reorder(f,car vl),car vl),cdr vl);
+      sfto_coeffs1(for each f in l join
+	 sfto_coeffs2(sfto_reorder(f, car vl), car vl), cdr vl);
 
-asserted procedure sfto_coefs(f: SF, v: Kernel): List;
-   if not domainp f and mvar f eq v then coeffs f else {f};
+asserted procedure sfto_coeffs2(f: SF, v: Kernel): List;
+   if not domainp f and mvar f eq v then
+      for each c in coeffs f join (if c then {c})
+   else
+      {f};
 
 asserted procedure sfto_abssummand(f: SF): Integer;
    if domainp f then f else sfto_abssummand red f;
