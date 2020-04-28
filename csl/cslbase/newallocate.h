@@ -110,12 +110,24 @@ extern bool allocateSegment(size_t);
 // particular a bitmap
 
 class Chunk
-{   atomic<uintptr_t> length;
+{
+public:
+    atomic<uintptr_t> length;
     atomic<bool> isPinned;
     atomic<struct Chunk *>pinChain;
 // The rest of the chunk is the region within which data is kept. I show that
 // as a vector of length just 2 but it is of course much larger than that.
     atomic<LispObject>usableSpace[2];
+// Now I can have some accessor (etc) methods:
+    uintptr_t dataStart()
+    {   return reinterpret_cast<uintptr_t>(&usableSpace);
+    }
+    uintptr_t dataEnd()
+    {   return reinterpret_cast<uintptr_t>(this) + length;
+    }
+    bool pointsWithin(uintptr_t p)
+    {   return p >= dataStart() && p < dataEnd();
+    }
 };
 
 // I am going to require Pages to be aligned at nice neat boundaries
@@ -131,12 +143,14 @@ public:
     atomic<uintptr_t>fringe;
     atomic<uintptr_t>limit;
     atomic<PageClass> pageClass;
-    atomic<bool> isPinned;
+    atomic<bool> hasPinned;
     atomic<Page *> pinChain;
+    atomic<Chunk *> pinnedChunks;
 // In general I expect chunks all to be at least targetChunkSize large,
 // but fragmentation may mean I end up with some that are smaller. I
 // need a table showing all the chunks in the page and I will limit its size
 // in such a way that only in extreme cases will it set a limit.
+    bool chunkMapSorted;
     atomic<size_t> chunkCount;
     atomic<Chunk *> chunkMap[chunksPerPage];
     static const size_t pageWords = pageSize/sizeof(LispObject);
@@ -169,7 +183,8 @@ public:
 // the address it is given will always be a VALID address of some location
 // in the Lisp heap it can easily find the relevant page...
 
-extern Page *dirtyPages;
+extern atomic<Page *> dirtyPages;
+extern Page *globalPinChain;
 
 inline void write_barrier(LispObject *p)
 {   uintptr_t a = reinterpret_cast<uintptr_t>(p);
@@ -209,7 +224,7 @@ inline void write_barrier(LispObject *p)
                 for (;;)
                 {   Page *old = dirtyPages;
                     x->dirtyChain.store(old);
-                    if (x->dirtyChain.compare_exchange_weak(old, x)) break;
+                    if (dirtyPages.compare_exchange_weak(old, x)) break;
                 }
             }
         }
@@ -223,10 +238,10 @@ inline void write_barrier(atomic<LispObject> *p)
 // Now to match the above I need code that will identify every dirty
 // item.
 
-typedef void (*processDirtyCell)(LispObject& a);
+typedef void (*processDirtyCell)(atomic<LispObject> *a);
 extern int nlz(uint64_t a);
 
-inline void scanDirtyCells()
+inline void scanDirtyCells(processDirtyCell *fn)
 {   for (Page *p=dirtyPages; p!=NULL; p=p->dirtyChain.load())
     {   if (!p->hasDirty) continue;
         for (size_t i2=0; i2<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]);
@@ -240,7 +255,9 @@ inline void scanDirtyCells()
                 {   int n1 = nlz(static_cast<uint64_t>(b1));
                     size_t i0 = 8*sizeof(uintptr_t)*i1 + 63 - n1;
 
-
+                    printf("cell at offset %" PRIx64 " is dirty\n", i0);
+                    (*fn)(reinterpret_cast<atomic<LispObject> *>(
+                         reinterpret_cast<uintptr_t>(p) + i0*sizeof(LispObject)));
 
 
                     b1 -= static_cast<uint64_t>(1)<<(63-n1);
@@ -585,16 +602,15 @@ inline LispObject get_n_bytes(size_t n)
             bool ok = limit[threadId::get()].compare_exchange_strong(w, newLimit);
             if (ok) return static_cast<LispObject>(r);
         }
+// if chunkNo is non-zero here it will in fact gave been incremented such
+// that it is >= chunksPerPage. In that case since I am not allocating the
+// chunk I must decrement it again - still in a thread-safe manner.
+        if (chunkNo != 0) p->chunkCount.fetch_sub(1);
         gIncrement[threadId::get()] = targetChunkSize+n;
         fringe::set(oldFringe);
     }
     else
     {
-// Here I have NOT allocated a fresh chunk, either because there is no
-// space for one or because I already have too many chunks in the current
-// page. If I had incremented the chunk count I must reset it. Note that if
-// I get here either newlimit>gLimit and chunkNo==0 or chunkNo>=chunksPerPage.
-        if (chunkNo != 0) p->chunkCount.fetch_sub(1);
 // Here I am about to be forced to participate in garbage collection,
 // typically for the benefit of some other thread.
         size_t gap = limitBis[threadId::get()] - r;
@@ -863,13 +879,13 @@ inline void garbageCollectOnBehalfOfAll()
                 }
                 else
                 {   size_t gap1 = gLimit - gFringe;
-                    if (n+CHUNK < gap1)
+                    if (n+targetChunkSize < gap1)
                     {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
                         result[i] = gFringe + TAG_VECTOR;
                         request[i] = 0;
                         firstWord(result[i]).store(makeVectorHeader(n));
                         fringeBis[i] = gFringe + n;
-                        gFringe = limitBis[i] = limit[i] = fringeBis[i] + CHUNK;
+                        gFringe = limitBis[i] = limit[i] = fringeBis[i] + targetChunkSize;
                     }
                     else
                     {   while (gNext != 0)
@@ -877,13 +893,13 @@ inline void garbageCollectOnBehalfOfAll()
                             gLimit = (reinterpret_cast<uintptr_t *>(gFringe.load()))[0];
                             gNext = (reinterpret_cast<uintptr_t *>(gFringe.load()))[1];
                             gap1 = gLimit - gFringe;
-                            if (n+CHUNK < gap1)
+                            if (n+targetChunkSize < gap1)
                             {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
                                 result[i] = gFringe + TAG_VECTOR;
                                 request[i] = 0;
                                 firstWord(result[i]).store(makeVectorHeader(n));
                                 fringeBis[i] = gFringe + n;
-                                gFringe = limitBis[i] = limit[i] = fringeBis[i] + CHUNK;
+                                gFringe = limitBis[i] = limit[i] = fringeBis[i] + targetChunkSize;
                                 break;
                             }
                         }

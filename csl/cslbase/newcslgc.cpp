@@ -64,11 +64,11 @@
 // (where RPLACx, PUTVEC and relatives have updated field in stable data and
 // these must be treated as list-bases potentially referring into the
 // current nursery and previous pages). In that case I will need to set up
-// pinned maps for previousPage (which is the only one from which information
+// pinned maps for victimPage (which is the only one from which information
 // gets evacuated). Because all live data in that is about to be relocated
 // dirty bits associated with it are not relevant. So I first set up
-// information about pinning in previousPage. I can then inspect all data
-// that may be dirty, and if it refers into previousPage I leave it alone if
+// information about pinning in victimPage. I can then inspect all data
+// that may be dirty, and if it refers into victimPage I leave it alone if
 // pinned, evacuate data or follow a forwarding address. If while doing that
 // I find that all references from the region marked as dirty end up in
 // pages that will be stable at the end of this collection I can clear the
@@ -144,7 +144,7 @@ Concrete sortList(Concrete a)
     size_t n = 0;
     for (Concrete b = a; !Abstract::isNil(b); b = Abstract::cdr(b)) n++;
 // If the list is short enough then I will copy the data to a simple
-// C++ array ,use std::sort to get it in the right order and then patch
+// C++ array, use std::sort to get it in the right order and then patch
 // things back into list form.
     const size_t LIMIT = 1000;
     if (n < LIMIT)
@@ -217,7 +217,7 @@ Concrete sortList(Concrete a)
     return r;
 };
 
-// Pages are chained via a "pageHeader.chain" field. I will want to
+// Pages are chained via a "chain" field. I will want to
 // sort the list of mostlyFreePages based on their memory address.
 
 class PageListClass
@@ -230,10 +230,10 @@ public:
     {   return p == (Page *)0;
     }
     static Page *cdr(Page *p)
-    {   return p->pageHeader.chain;
+    {   return p->chain;
     }
     static void rplacd(Page *p, Page *x)
-    {   p->pageHeader.chain = x;
+    {   p->chain = x;
     }
     static bool before(Page *x, Page *y)
     {   return (uintptr_t)x < (uintptr_t)y;
@@ -301,35 +301,35 @@ uintptr_t get_n_bytes_new(size_t n)
         {   Page *nextPage;
             if (mostlyFreePages != nullptr)   // Use pages with pinned items 1st.
             {   nextPage = mostlyFreePages;
-                mostlyFreePages = mostlyFreePages->pageHeader.chain;
+                mostlyFreePages = mostlyFreePages->chain;
                 mostlyFreePagesCount--;
             }
             else
             {   nextPage = freePages;
-                freePages = freePages->pageHeader.chain;
+                freePages = freePages->chain;
                 freePagesCount--;
             }
 // Here I carefully take the newly allocated page on the END of the list of
 // busy pages so that I will be able to scan that list sequentially and when
 // I do so I will visit objects in the order of their allocation. This is
 // needed to make the Garbage Collector work.
-            nextPage->pageHeader.pageClass = currentPageTag;
-            nextPage->pageHeader.chain = nullptr;
+            nextPage->pageClass = currentPageTag;
+            nextPage->chain = nullptr;
             if (busyPages == nullptr)
             {   busyPages = nextPage;
-                previousPage = nullptr;
+                victimPage = nullptr;
             }
             else
-            {   if (previousPage != nullptr)
-                    previousPage->pageHeader.pageClass = busyPageTag;
-                currentPage->pageHeader.chain = nextPage;
-                previousPage = currentPage;
-                previousPage->pageHeader.pageClass = previousPageTag;
+            {   if (victimPage != nullptr)
+                    victimPage->pageClass = busyPageTag;
+                currentPage->chain = nextPage;
+                victimPage = currentPage;
+                victimPage->pageClass = victimPageTag;
             }
             currentPage = nextPage;
             busyPagesCount++;
-            uintptr_t pFringe = currentPage->pageHeader.fringe;
-            uintptr_t pLimit = currentPage->pageHeader.heaplimit;
+            uintptr_t pFringe = currentPage->fringe;
+            uintptr_t pLimit = currentPage->limit;
             nFringe = pFringe;
             nLimit = pLimit;
             gap = nLimit - nFringe;
@@ -407,48 +407,79 @@ LispObject *evacuateContents(LispObject *p)
     return &p[doubleword_align_up(len)/CELL];
 }
 
+void prepareForGarbageCollection(bool major)
+{   cout << "peepareForGarbageCollection" << endl;
+    my_abort();
+}
+
+void clearPinnedInformation(bool major)
+{   cout << "clearPinnedInformation" << endl;
+    my_abort();
+}
+
 // Each page consists of a header followed by a number of chunks. There may
 // be unused space in the page after the last chunk. For the purposes of
-// pinning I want to identif the chunk (if any) that (a) points into, and
+// pinning I want to identify the chunk (if any) that (a) points into, and
 // arrange that it is on a per-page list of pinned chunks and that if there
 // are any such chunks that the page itself is on a list of pages that contain
 // pinned material.
-// Each page header contains a 128-entry table where the entries in same
-// point to the start of the first chunk following (1/128)th fractions of
-// the Page. That means that those pointers are around 64K apart and so there
-// can be about 4 chunks in each gap. I can scan those sequentially.
 
 void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
-{   uintptr_t pp = reinterpret_cast<uintptr_t>(p);
-    uintptr_t offset = a - pp;
-    Chunk *c = p->chunkMap[offset/
-                           (sizeof(Chunk *)*sizeof(Page)/sizeof(p->chunkMap))];
+{
+//@@    uintptr_t pp = reinterpret_cast<uintptr_t>(p);
+//@@    uintptr_t offset = a - pp;
+    if (p->chunkCount == 0) return;  // A degenerate case of an empty Page.
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
 // the chunk has (a) pointing within it, and I should not need many tries
-// at all.
-    for (;;)
-    {   if (a >= c->endPoint) return;
-        else if (a < c->startPoint)
-        {   c = c->chunkChain;
-            if (c == nullptr) return;
-            continue;
-        }
+// at all. The soring order MUST be consistent with the order I assume in
+// my binary search code lower down, and so I use std::qsort which lets
+// me specify my own ordering predicate without needing to wait for c++2x,
+// at which stage std::sort gets such a generality.
+    if (!p->chunkMapSorted)
+        std::qsort(p->chunkMap, p->chunkCount, sizeof(p->chunkMap[0]),
+                   [](const void *a, const void *b)
+                   {   const Chunk *aa =
+                           static_cast<const atomic<Chunk *>*>(a)->load();
+                       const Chunk *bb =
+                           static_cast<const atomic<Chunk *>*>(b)->load();
+                       uintptr_t aaa = reinterpret_cast<uintptr_t>(aa);
+                       uintptr_t bbb = reinterpret_cast<uintptr_t>(bb);
+                       return aaa < bbb ? -1 :
+                              aaa > bbb ? 1 : 0;
+                   });
+// chunkMap is now a table of pointers to chunks sorted into ascending order.
+// I will use binary search to find out which (if any) of those chunks
+// contains the address a.
+    size_t low = 0, high = p->chunkCount-1;
+    while (low < high)
+    {   size_t middle = (low + high + 1)/2;
+        if (a < reinterpret_cast<uintptr_t>(p->chunkMap[middle].load()))
+            high = middle-1;
+        else low = middle;
+    }
+    Chunk *c = p->chunkMap[low];
+    if (!c->pointsWithin(a)) return;
 // Here (a) lies within the range of the chunk c. Every page that has any
 // pinning must record that both by being on a chain of pages with pins
 // and by having a list of its own pinned chunks.
 // If the chunk is already tagged as pinned there is no need to do so again.
-        if (c->isPinned) return;
-        c->isPinned = true;
-        c->pinChain = p->pinChain;
-        p->pinChain = c;
+    if (c->isPinned) return;
+    c->isPinned = true;
+// Note that a single thread looks at ambiguous pointers so while I want
+// everything atomic<> so that later on if other threads happen to look you
+// you know they will see updates, I do not need to worry about race
+// conditions while I form the chain of pinned chunks and pages.
+//
+// The use of .load() on the next line is because atomic items are not
+// copyable as such.
+    c->pinChain = p->pinnedChunks.load();
+    p->pinnedChunks = c;
 // When a chunk gets pinned then page must be too unless it already has been.
-        if (p->isPinned) return;
-        p->isPinned = true;
-        p->pinChain = globalPinChain;
-        globalPinChain = p;
-        return;
-    }
+    if (p->hasPinned) return;
+    p->hasPinned = true;
+    p->pinChain = globalPinChain;
+    globalPinChain = p;
 }
 
 // Here I have an item that may be arbitrary binary material but which COULD
@@ -473,7 +504,7 @@ void processAmbiguousValue(bool major, uintptr_t a)
         return;
     }
     Page* p = findPage(a);
-    if (!p.isEmpty()) processAmbiguousInPage(major, p, a);
+    if (!p->hasPinned) processAmbiguousInPage(major, p, a);
 }
 
 void identifyPinnedItems(bool major)
@@ -496,18 +527,43 @@ void identifyPinnedItems(bool major)
     }
 }
 
+void evacuateFromUnambiguousBases(bool major)
+{   cout << "evacuateFromUnambiguousBases" << endl;
+    my_abort();
+}
+
+void evacuateFromPinnedItems(bool major)
+{   cout << "evacuateFromPinnedItems" << endl;
+    my_abort();
+}
+
+void evacuateFromDirty()
+{   cout << "evacuateFromDirty" << endl;
+    my_abort();
+}
+
+void evacuateFromCopiedData(bool major)
+{   cout << "evacuateFromCopiedData" << endl;
+    my_abort();
+}
+
+void endOfGarbageCollection(bool major)
+{   cout << "endOfGarbageCollection" << endl;
+    my_abort();
+}
+
 void garbageCollect(bool major)
 {   cout << "\n+++++ Start of a "
-         << (major ? "major" : "minor)"
-             << " GC\n";
-             prepareForGarbageCollection(major);
-             clearPinnedInformation(major);
-             identifyPinnedItems(major);
-             evacuateFromUnambiguousBases(major);
-             evacuateFromPinnedItems(major);
-             if (!major) evacuateFromDirty();
-             evacuateFromCopiedData(major);
-             endOfGarbageCollection(major);
+         << (major ? "major" : "minor")
+         << " GC\n";
+    prepareForGarbageCollection(major);
+    clearPinnedInformation(major);
+    identifyPinnedItems(major);
+    evacuateFromUnambiguousBases(major);
+    evacuateFromPinnedItems(major);
+    if (!major) evacuateFromDirty();
+    evacuateFromCopiedData(major);
+    endOfGarbageCollection(major);
 }
 
 
@@ -516,14 +572,14 @@ void garbageCollect(bool major)
 
 // (1) Clear the "pinned" maps for pages in A.
 //     Initialize pinsA list to be empty.
-for (Page *p=busyPages; p!=nullptr; p=p->pageHeader.chain)
+for (Page *p=busyPages; p!=nullptr; p=p->chain)
     clearPinnedMap(p);
 pinsA = TAG_FORWARD;
 // (1a) Get ready for allocation into free space.
 doomedPages = busyPages;
 doomedPagesCount = busyPagesCount;
 busyPages = nullptr;
-currentPage = previousPage = nullptr;
+currentPage = victimPage = nullptr;
 busyPagesCount = 0;
 nFringe = nLimit = nNext = 0;
 //
@@ -594,8 +650,8 @@ for (uintptr_t p=pinsC;
 // pinned block, because there is overhead in the allocator moving from one
 // free region to the next.
 Page *scanPage = busyPages;
-uintptr_t scanPoint = scanPage->pageHeader.fringe;
-uintptr_t scanLimit = scanPage->pageHeader.heaplimit;
+uintptr_t scanPoint = scanPage->fringe;
+uintptr_t scanLimit = scanPage->limit;
 for (;;)
 {   scanPoint =
         reinterpret_cast<uintptr_t>(

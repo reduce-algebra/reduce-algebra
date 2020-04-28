@@ -2577,9 +2577,9 @@ void setup(int restart_flag, double store_size)
 #ifdef CONSERVATIVE
     currentPage = freePages;
     setVariablesFromPage(currentPage);
-    freePages = freePages->pageHeader.chain;
+    freePages = freePages->chain;
     freePagesCount--;
-    previousPage = nullptr;
+    victimPage = nullptr;
     busyPages = nullptr;
     busyPagesCount = 1;
     mostlyFreePages = nullptr;

@@ -4,6 +4,15 @@
 // or a run and significant aspects of garbage collection.
 //
 
+// I have planned all this and even started work on it several times, with
+// leter rounds of work reflecting gradually clearing understanding of some
+// of the challenges and trade-offs. However I am concerned that the
+// iteration may have left some blocks of comments or fragments of code from
+// earlier versions still in place. I will try to go through and tidy up
+// on that front, but to some extent that will best happen if and when I get
+// a fairly fully working version so that there starts to be real stability.
+
+
 
 // Development game-plan for this stuff - showing the steps or stages
 // to go through:
@@ -77,20 +86,17 @@
 // This is a place for my latest round of thinking about a new storage
 // management scheme. The ideal I set now is that garbage collection should
 // be both conservative and generational and that it should be able to
-// support multiple mutator threads. I am NOT intending either to run
-// garbage collection concurrently with the mutator (so the GC is a "stop
-// the world" one, although most garbage collections should be "minor" ones
-// and hence not too disruptive). I have thought about using multiple threads
-// during garbage collection but will not attempt that in a first version -
-// and preliminary measurements of the overhead of atomic exchange
-// instructions on current computers make me suspect it may not be sensible.
-
+// support multiple mutator threads. I have some ideas about using multiple
+// threads during garbage collection but serious worries about possible
+// synchronization overheads so that will not be an early target. And I have
+// no plans to try and garbage collect and compute concurrently - so every
+// garbage collection will need to synchronize and stop all worker threads.
 
 // The design here has to mingle plans for global storage allocation,
 // the CONS operation as well as operations involving Lisp atoms, the
 // way that Lisp threads can access the values of variables, synchronization
 // matters and so on. In general it seems that almost all aspects from the
-// lowest to the most global level interact.
+// lowest to the most global level interact. Ugh!
 
 // So here is an overview. Well I fear I may have written bits of this already
 // in several places, but writing it out helps me to plan. All of the numeric
@@ -106,19 +112,19 @@
 // system can start with fairly sane amounts of memory but expand on need.
 //
 // Each chunk is divided into 8Mbyte pages. At any one moment one page will
-// be "Current", a second will be "Previous", some others will be "Busy" and
+// be "Current", a second will be "Victim", some others will be "Busy" and
 // the rest "Free". All mutator allocation happens within the Current page.
-// When that becomes full live data is evacuated from the Previous page into
-// Busy memory and what was Current becomes Previous. The old Previous page
+// When that becomes full live data is evacuated from the Victim page into
+// Busy memory and what was Current becomes Victim. The old Victim page
 // becomes Free and a Free page is chosen to be the new Current. Note this
-// might be done by swapping the sense of Current and Previous, but if I
+// might be done by swapping the sense of Current and Victim, but if I
 // did that then if those two pages get severly fragmented that that situation
 // would persist, so I will want to arrange that pages get moved to be
 // extensions to the Busy pool from time to time. Which will tend to happen
 // naturally but may need forcing in pathological case!
 //
 // Because garbage collection is conservative there can be ambiguous pointers
-// that refer into Previous. Data at the locations so addressed must not be
+// that refer into Victim. Data at the locations so addressed must not be
 // moved: I will refer to it as "pinned". The Current and each Free page may
 // have some pinned items present. When a page becomes Current it will have
 // three pointers - gFringe, gLimit and gNext. gFringe identifies the first
@@ -128,12 +134,17 @@
 // two words of the free region after that contain new values for gLimit and
 // gNext. If gLimit points to the end of the whole page then gNext will be
 // zero.
-// In Previous and Busy each page will be kept full by placement of padder
+// In Victim and Busy each page will be kept full by placement of padder
 // pseudo-objects anywhere where there could be gaps: that is so that it is
 // possible to perform a sequential scan of the page with each item within
-// it identifiable by inspection of its first (header) word. A challenge to
-// nots is that this means that only valid objects may be pinned, so that
-// sequential scans of a page can traverse past them without trouble.
+// it identifiable by inspection of its first (header) word. This linear scan
+// is needed because pinning works by pinning significant-size chunks of
+// memory were the chunk always has an object starting at its start address
+// and is always neatly filled. The garbage collectore has to treat all
+// pointer-containing fields in such a chunk as roots. I argue that if some
+// data is pinned then pinning other data that is close to it in memory will
+// probably not lead to TOO much additional waste! But until I have it
+// coded and tested I might not know.
 //
 // Allocation within Current is by incrementing gFringe and if necessary
 // skipping on to gNext. By making gFringe atomic this allocation can be
@@ -193,27 +204,21 @@
 //
 // Given a potential pointer the system must be able to determine if it in
 // fact points within a properly allocated object. This process starts by
-// checking which mega-chunk is involved. From that information simple
+// checking which mega-block is involved. From that information simple
 // arithmetic can identify a page. Pointers that are into the header sections
 // of a page or beyond its gLimit are certainly not references to live
-// objects. I will then use a bitmap associated with the relevant page to
-// let me identify that start of any object that the potential pointer lies
-// within. If this object is a padder the pointer was invalid.
-// Setting up the bitmaps is achieved by a linear scan of the page. This is
-// a reason for using padders so that the page as a whole is linearly
-// consistent. During a minor GC the only page that needs a bitmap is Previous.
-// During a major GC bitmaps can be created when one first observes a
-// potential pointer into the page. My expectation is that the vast majority
-// of (valid) potential pointers will be into Current, with the next higher
-// number into Previous. That is because fairly recently allocated objects
-// are most likely to have references to them on the stack. For older material
-// I think I expect a tendancy for clustering and with a large memory
-// configuration only a small fraction of the total number of pages will
-// be involved. So with lazy creation of the bitmaps it is likely that
-// the cost of bitmap creation will not be excessive. Searching a bitmap
-// is most expensive if a potential pointer refers to a high address in a
-// very large object. It is not yet clear whether there is any merit in
-// trying to take special action to speed up treatment of that case.
+// objects. I will then have a table of all the chunks within the page, and
+// after sorting that a simple binary search can narrow the target of the
+// ambiguous pointer down to a single 16K chunk. I tag that entire chunk as
+// pinned.
+// During a minor GC the only page that needs pinned information collected
+// is the Victim one, since material in all other pages will stay put anyway.
+// My expectation is that the vast majority of (valid) potential pointers
+// will be into Current, with the next higher number into Victim. That is
+// because fairly recently allocated objects are most likely to have
+// references to them on the stack. For older material I think I expect a
+// tendancy for clustering and with a large memory configuration only a
+// small fraction of the total number of pages will be involved.
 //
 // A consequence of using a generational system is that I need to be able
 // to respond to updates to old data that lead to references to new data.
@@ -221,33 +226,17 @@
 // treatment is called for, but to support minor GCs I will arrange that any
 // use of RPLACD, RPLACD or PUTV (or derived operations such as PUTHASH, PUT
 // and NCONC) set a mark indicating a region of memory that must be treated
-// as roots. I make the map of dirty regions out of bytes, arguming that
-// updating a byte to atomically set it non-zero is likely to be cheaper than
-// the read-modify-write of an atomic bit update. I also expect that many
-// pages (at least when one is performing a large calculation) will not have
-// any dirty data, so each page has a flag marking whether any segment of it
-// has been updated. The dirty regions may not align neatly with object starts
-// and finishes, and so when I mark from them I will treat the pointers that
-// they contain as ambiguous. This will tend to lead to more pinned items
-// within Pending. Thus use of imperative features such as RPLACx carry two
-// costs - one the work of the write barrier as they execute and the second
-// some extra pinning and hence memory inflexibility withing Previous.
-// It may be worth noting that the issue of pinned items will not arise
-// when an updated reference is to Busy data, but that dirty marks can only
-// trivially be cancelled during a full GC, and that dirty bits can be needed
-// on pages that are Free apart from the fact that they contain some pinned
-// items. So for some purposes I will want to partition unused pages into
-// Free and MostlyFree!
-// When I scan a dirty region it will be cheap to check if any of the
-// pages that potential-pointers within it are either Current, Pending or
-// MostlyFree. If there are no such pointers then the dirty bit can be cleared
-// even though one is just within a minor GC. If MostlyFree pages are given
-// priority for use to extend the Busy region as data is evacuated from
-// Previous then there will be some tendancy for dirty markers to become
-// cancellable. It may made sense to monitor the number of dirty regions
-// and if it gets really excessive to trigger a major GC, but that is an
-// informal idea at present and will probably not be very useful!
-
+// as roots. I record "dirty" information in bitmaps so that I can identify
+// updated objects to a resolution of individual calls. During a minor GC
+// I need to visit each such cell and that basically involves scanning the
+// bitmap looking for nonzero bits. Since I expect it to be sparse I will have
+// multiple levels of bitmap so I can in general avoid inspecting areas
+// of memory that will not be interesting. When I do this during a minor
+// GC if I only need to concern myself with words that now point into
+// Current or Victim, and anything that points to older material can have
+// its dirty bit reset to zero.
+// Note that dirty bits may end up set on pinned items in pages that are
+// (mostly) Free.
 
 
 size_t pagesCount;
@@ -412,7 +401,7 @@ atomic<uint32_t> activeThreads;
 
 
 Page *currentPage;       // Where allocation is happening. The "nursery".
-Page *previousPage;      // A page that was recently the current one.
+Page *victimPage;        // A page that was recently the current one.
 Page *busyPages;         // Chained list of pages that contain live data.
 Page *doomedPages;       // Page from which live stuff is being evacuated.
 Page *mostlyFreePages;   // Chained list of pages that the GC has mostly
@@ -484,63 +473,17 @@ public:
         {   cout << "atomic<uint64_t> not lock-free" << endl;
             std::abort();
         }
+        class Pair
+        {   uintptr_t v[2];
+        };
+        if (atomic<Pair>().is_lock_free())
+            cout << "atomic<uintptr_t[2]> is lock-free" << endl;
+        else cout << "atomic<uintptr_t[2]> not lock-free" << endl;
+
     }
 };
 
 static MakeAssertions test_for_lockfree;
-
-
-bool isPinned(Page *x, uintptr_t os)
-{   os = (os - reinterpret_cast<uintptr_t>(x))/8;
-    return (x->pageBitmaps.maps.pinned[os/64] &
-            (UINT64_C(1)<<(os%64))) != 0;
-}
-
-void setPinned(Page *x, uintptr_t os)
-{   os = (os - reinterpret_cast<uintptr_t>(x))/8;
-    x->pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
-}
-
-void setPinnedMajor(uintptr_t p)
-{
-//   If value could not be a pointer into A then ignore it.
-//   Ensure that object-starts bitmap in relevant page of A is set up.
-//   Identify the start of the object in A that the value might refer to.
-//   If that item is already pinned then no need to do more.
-//   If that object is part of pinsC (because the CAR field contains
-//     something tagged as FORWARD) do no more.
-//   Set pinned bit for the location concerned. Mark page as one that
-//     contains pinned items.
-//   Add the pinned item to the list pinsA, which is built in space C.
-    Page *x = findPage(p);
-    if (x == nullptr) return;      // Not pointing at any page at all.
-    if (!pageIsBusy(x)) return; // not in A.
-    if (!x->onstarts_present) recordObjectStarts(x);
-    uintptr_t os = findObjectStart(p, x);
-    if (os == 0) return;               // Does not point within any object
-    if (is_forward(car(os))) return;   // part of pinsC
-    setPinned(x, os);
-    x->somePins = true;
-    p = get_n_bytes_new(2*CELL);
-    setcar(p, pinsA);
-    pinsA = os + TAG_FORWARD;
-}
-
-// Set a pinned bit for an address if it lies within the single scavengable
-// page that exists during a minor collection.
-
-void setPinnedMinor(uintptr_t p)
-{
-// If the address is not in the scavengable page I can ignore it.
-    if (!inPreviousPage(p)) return;
-// Find the object within the page that it is within, or return nullptr if none.
-// This will always return a value that is an address aligned zero mod 8.
-    uintptr_t os = findObjectStart(p, previousPage);
-    if (os == 0) return;
-// Now I set a bit in the pinned map.
-    os = (os - reinterpret_cast<uintptr_t>(previousPage))/8;
-    previousPage->pageBitmaps.maps.pinned[os/64] |= UINT64_C(1)<<(os%64);
-}
 
 LispObject get_symbol(bool gensymp)
 {   return get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
@@ -678,7 +621,7 @@ LispObject borrow_n_bytes(size_t n)
         w->chain = borrowPages::get();
         borrowPages::set(w);
         borrowFringe::set(w->fringe);
-        borrowLimit::set(w->heaplimit);
+        borrowLimit::set(w->limit);
         borrowNext::set(0);    // BAD....
     }
 }
@@ -721,37 +664,14 @@ LispObject borrow_vector(int tag, int type, size_t n)
 void setUpEmptyPage(Page *p)
 {   p->chain = nullptr;
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
-    p->heaplimit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
-    p->dirtypage.store(false);
-    p->onstarts_present = false;
-    p->somePins = false;
-// I would like to be able to set the dirty bitmap all zero other than by
-// using the store() method one byte at a time. It is also possible that
-// when I first allocate a page that page will not be put in the stable
-// region of the heap so its dirty map will not be inspected - and if that is
-// the case this initialization loop is not actually needed. I will put it
-// in for now to be tidy! But another delicacy here is that while the map
-// is defined as a vector covering the whole page, the only parts of it that
-// will be used are the ones mapping addresses within data. So
-// I must not clobber memory earlier than that because the first bytes of the
-// page are always needed for the pageHeader! Well what I will do is zero
-// out everything from the end of pageHeader onwards.
-//
-// When I had the next 2 lines in place thet added a HUGE time to system
-// startup...
-//--    for (size_t i=spareBytes/64; i<2*bytesForMap; i++)
-//--        p->pageBitmaps.dirty[i].store(0);
-// I am now going to argue that before an empty page is made available to
-// "other" threads I will have plenty of memory fences, so I can avoid
-// using ones here, and furthermore there is no need to have the bitmap
-// cleared until the page is about to be used.
+    p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
 }
 
 void setVariablesFromPage(Page *p)
 {
 // Set the variable that are used when allocating within the active page.
     uintptr_t pFringe = p->fringe;
-    uintptr_t pLimit = p->heaplimit;
+    uintptr_t pLimit = p->limit;
 // Here I suppose there are no pinned items in the page. I set fringe and
 // limit such that on the very first allocation the code will grab a bit of
 // memory at gFringe.
@@ -766,7 +686,7 @@ void saveVariablesToPage(Page *p)
 // Dump global variable values back into a page header. THIS IS NOT USEFUL
 // OR CORRECT YET!
     p->fringe = fringe::get();
-    p->heaplimit  = limitBis[threadId::get()];
+    p->limit  = limitBis[threadId::get()];
 }
 
 // This code allocates a segment by asking the operating system.
@@ -854,6 +774,8 @@ size_t heap_pages_count = 0;
 size_t vheap_pages_count = 0;
 bool garbage_collection_permitted = true;
 bool force_verbos = false;
+atomic<Page *> dirtyPages;
+Page *globalPinChain;
 
 // gc-forcer(a, b) should arrange that a garbage collection is triggered
 // when at most A cons-sized units of consing happens or when at most
@@ -980,7 +902,6 @@ void initHeapSegments(double storeSize)
 // to keep everything as clear as I can.
     heapSegmentCount = 0;
     freePages = mostlyFreePages = nullptr;
-    pinsA = pinsC = TAG_FORWARD;
     std::printf("Allocate %" PRIu64 " Kbytes\n",
                 (uint64_t)freeSpace/1024);
     allocateSegment(freeSpace);
@@ -1013,7 +934,7 @@ void initHeapSegments(double storeSize)
     stackBase = reinterpret_cast<LispObject *>(stackSegment);
 }
 
-void dropHeapSegmentsstatic_cast<void>()
+void dropHeapSegments()
 {
 #ifdef __cpp_aligned_new
     for (size_t i=0; i<heapSegmentCount; i++)

@@ -411,6 +411,11 @@ case $host in
 # I have to take account of the very special case I am in. 
     AC_DEFINE(RAW_CYGWIN, [1], [True if we are running on RAW Cygwin])
     CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses -I/usr/include/freetype2"
+# The following line is really ODD and should clearly not be needed, but
+# at least until April 2020 without it you have trouble linking code that
+# has "extern thread_local" entities when you are an a 64-bit cygwin world.
+# At least a quick check suggests that it does not wreck cygwin32.
+    LDFLAGS="$LDFLAGS -Wl,--image-base,0x10000000"
     if test "x$with_gui" != "xno"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
