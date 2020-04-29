@@ -473,13 +473,6 @@ public:
         {   cout << "atomic<uint64_t> not lock-free" << endl;
             std::abort();
         }
-        class Pair
-        {   uintptr_t v[2];
-        };
-        if (atomic<Pair>().is_lock_free())
-            cout << "atomic<uintptr_t[2]> is lock-free" << endl;
-        else cout << "atomic<uintptr_t[2]> not lock-free" << endl;
-
     }
 };
 
@@ -1007,19 +1000,26 @@ void grab_more_memory(size_t npages)
     }
 }
 
-#ifdef WIN32
+#if defined WIN32
 #include <windows.h>
+#elif defined MACINTOSH
+#include <sys/types.h>
+#include <sys/sysctl.h>
 #else
 #include <sys/sysinfo.h>
 #endif
 
 void init_heap_segments(double d)
 {   cout << "init_heap_segments " << d << endl;
-#ifdef WIN32
+#if defined WIN32
     MEMORYSTATUSEX s;
     s.dwLength = sizeof(s);
     GlobalMemoryStatusEx(&s);
     size_t mem = s.ullTotalPhys;
+#elif defined MACINTOSH
+    std::int64_t mem;
+    std::size_t reslen = sizeof(mem);
+    sysctlbyname("hw.memsize", &mem, &reslen, nullptr, 0);
 #else
     struct sysinfo s;
     sysinfo(&s);

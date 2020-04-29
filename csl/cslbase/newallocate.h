@@ -114,7 +114,7 @@ class Chunk
 public:
     atomic<uintptr_t> length;
     atomic<bool> isPinned;
-    atomic<struct Chunk *>pinChain;
+    atomic<Chunk *>pinChain;
 // The rest of the chunk is the region within which data is kept. I show that
 // as a vector of length just 2 but it is of course much larger than that.
     atomic<LispObject>usableSpace[2];
@@ -254,8 +254,8 @@ inline void scanDirtyCells(processDirtyCell *fn)
                 while (b1 != 0)
                 {   int n1 = nlz(static_cast<uint64_t>(b1));
                     size_t i0 = 8*sizeof(uintptr_t)*i1 + 63 - n1;
-
-                    printf("cell at offset %" PRIx64 " is dirty\n", i0);
+                    cout << "cell at offset " << std::hex << i0 << std::dec
+                         << " is dirty" << endl;
                     (*fn)(reinterpret_cast<atomic<LispObject> *>(
                          reinterpret_cast<uintptr_t>(p) + i0*sizeof(LispObject)));
 

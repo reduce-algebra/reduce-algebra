@@ -533,7 +533,7 @@ case $host in
 # compilation of any sort at all are then THEIR job to resolve by providing
 # settings that are satisfactory.
   CPPFLAGS="$CPPFLAGS -I/opt/local/include -I/opt/local/include/freetype2"
-  XLIBS="-lXext -lX11 -lXft -lfontconfig"
+  XLIBS="-lXext -lX11 -lXft -lfontconfig -lc"
   macintosh_build="yes"
   darwin_build="yes"
   if test "x$CC$CXX" = "x" || (test "x$CC" = "xgcc" && test "x$CXX" = "xg++")
@@ -1378,20 +1378,21 @@ then
 # That is because the extra costs of atomic access to memory can be extreme
 # and the impact of that hard to predict (at least for me) so I feel I need
 # profiling while I develop.
-#
+# However recent versions of MacOS do not support it and attempts to use it
+# are treated as errors!
 #   PROFILE="-pg"
     PROFILE=""
     CFLAGS="${CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     CXXFLAGS="${CXXFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     LDFLAGS="${LDFLAGS} -g ${PROFILE}"
-    if test "x$enable_conservative" = "xyes"
-    then
-      CFLAGS="${CFLAGS} -pg"
-      CXXFLAGS="${CXXFLAGS} -pg"
-      DLL_CFLAGS="${DLL_CFLAGS} -pg"
-      LDFLAGS="${LDFLAGS} -pg"
-    fi
+#    if test "x$enable_conservative" = "xyes"
+#    then
+#      CFLAGS="${CFLAGS} -pg"
+#      CXXFLAGS="${CXXFLAGS} -pg"
+#      DLL_CFLAGS="${DLL_CFLAGS} -pg"
+#      LDFLAGS="${LDFLAGS} -pg"
+#    fi
   else
     CFLAGS="$CFLAGS ${NSA} ${HIGHOPT} -Wall"
     CXXFLAGS="$CXXFLAGS ${NSA} ${HIGHOPT} -Wall"
@@ -1647,6 +1648,9 @@ AC_CHECK_FUNCS([memmove memset mkdir pow rmdir socket sqrt strchr strdup])
 AC_CHECK_FUNCS([strrchr strstr utime popen getrlimit])
 AC_CHECK_FUNCS([fork wait waitpid shmget shmat shmdt shmctl])
 AC_CHECK_FUNCS([vsnprintf sysctlbyname gettimeofday times])
+AC_SEARCH_LIBS([siglongjmp], [c])
+AC_SEARCH_LIBS([sigaltstack], [c])
+AC_SEARCH_LIBS([sigaction], [c])
 AC_CHECK_FUNCS([siglongjmp sigaltstack sigaction])
 AC_CHECK_FUNCS([clock_gettime signbit])
 AC_CHECK_FUNCS([getc_unlocked putc_unlocked])
