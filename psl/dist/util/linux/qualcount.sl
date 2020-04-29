@@ -4,12 +4,9 @@
 % Description:    counting function execution with callers ref.
 % Author:         Herbert Melenk and Winfried Neun, ZIB Berlin
 % Created:        5 September 1986
-% Status:         Experimental (Do Not Distribute), CRAY version only
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Utilities
-% Status:         Open Source: BSD License
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -105,7 +102,7 @@
 
 (de print-qualcount1 (r)
 
-    (unless (priv-get r 'qualcount) (return nil))
+  (if (not (priv-get r 'qualcount)) nil
     (prog (x)
       (prin2 "************* calls for function ")
       (prin2  r)
@@ -120,7 +117,8 @@
         (prin2t (code-address-to-symbol (caar x))))
       (setq x (cdr x))
       (go aa)
-)   )
+      )
+    ))
  
 (de reset-qualcount() (mapobl (function (lambda (x)
 					(remprop x 'qualcount)))))
