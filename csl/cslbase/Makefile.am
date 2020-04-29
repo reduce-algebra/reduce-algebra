@@ -2298,7 +2298,8 @@ $(gensrc)/profile.dat:	$(csl)/generated-c/profile.dat
 c-code:	$(gensrc)/make.stamp
 
 $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
-		$(cslbase)/make-c-code.red $(cslbase)/compiler.lsp
+		$(cslbase)/make-c-code.red $(cslbase)/compiler.lsp \
+		machineid.cpp
 	chmod 664 $(gensrc)/*
 	$(TRACE)$(RM) -f $(gensrc)/make.tmp
 	touch $(gensrc)/make.tmp
@@ -2357,7 +2358,7 @@ just-c-code:	$(USE_CORRECT_CYGWIN)
 # it I will implement what they suggest! Soon.
 
 $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
-		$(gensrc)/profile.dat
+		$(gensrc)/profile.dat machineid.cpp
 
 # Whenever I rebuild the generated C files I will forcibly recompile
 # all of them. This is because otherwise any versions that were
@@ -2407,7 +2408,7 @@ endif !canrun
 
 # full-c-code is a target only activated manually.
 
-full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat $(USE_CORRECT_CYGWIN)
+full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat machinid.cpp $(USE_CORRECT_CYGWIN)
 if canrun
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*

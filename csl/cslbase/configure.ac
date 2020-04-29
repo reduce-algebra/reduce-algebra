@@ -1582,22 +1582,22 @@ AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h sys/socket.h sys/stat.h])
 AC_CHECK_HEADERS([sys/types.h sys/wait.h sys/shm.h sys/ipc.h signal.h])
 AC_CHECK_HEADERS([setjmp.h sys/sysctl.h syscall.h sched.h])
 
-AC_CHECK_TYPES([cpu_set_t], [], [],
+AC_CHECK_TYPE([cpu_set_t], [], [],
    [#ifdef HAVE_SCHED_H
     #include <sched.h>
     #endif])
 
-AC_CHECK_TYPES([struct tms], [], [],
+AC_CHECK_TYPE([struct tms], [], [],
    [#ifdef HAVE_SYS_TIMES_H
     #include <sys/times.h>
     #endif])
 
-AC_CHECK_TYPES([struct timeval], [], [],
+AC_CHECK_TYPE([struct timeval], [], [],
    [#ifdef HAVE_SYS_TIME_H
     #include <sys/time.h>
     #endif])
 
-AC_CHECK_TYPES([struct sigaction], [], [],
+AC_CHECK_TYPE([struct sigaction], [], [],
    [#ifdef HAVE_SIGNAL_H
     #include <signal.h>
     #endif])
@@ -1608,7 +1608,7 @@ AC_C_CONST
 AC_STRUCT_TM
 AC_C_VOLATILE
 
-AC_CHECK_TYPES([complex double], [], [],
+AC_CHECK_TYPE([complex double], [], [],
    [#ifdef HAVE_COMPLEX_H
     #include <complex.h>
     #endif])
@@ -1618,15 +1618,15 @@ AC_CHECK_TYPES([complex double], [], [],
 # most common situations and hence one where using the hardware support
 # for multiplication and division here can be good.
 #
-AC_CHECK_TYPES([__int128,unsigned __int128])
+AC_CHECK_TYPES([__int128, unsigned __int128])
 
 # I would view the following as a better names for an 128-bit integer type and
 # will map "unsigned __int128" etc onto it when relevant.
-AC_CHECK_TYPES([int128_t,uint128_t])
+AC_CHECK_TYPES([int128_t, uint128_t])
 
 AC_CHECK_SIZEOF(wchar_t)
 
-AC_CHECK_TYPES([socklen_t],[],[],[#include <sys/socket.h>])
+AC_CHECK_TYPE([socklen_t],[],[],[#include <sys/socket.h>])
 
 AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([gethostbyname], [nsl])
