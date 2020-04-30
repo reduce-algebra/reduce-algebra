@@ -852,8 +852,10 @@ inline void garbageCollectOnBehalfOfAll()
 // Note that I write this as "gFringe = gFringe - inc;" rather than as
 // "gFringe -= inc;" because there is a risk that the latter might compile
 // into an atomic decrement - and that is not needed here and may be a lot
-// more expensive than the load and store of the alternative.
-    gFringe = gFringe - inc;
+// more expensive than the load and store of the alternative. I further put
+// in an explicit ".load()" because without that the subtraction leads to
+// an "ambigious overload" moan at least on 32-bit ARM.
+    gFringe = gFringe.load() - inc;
 // When I get here it is as if every thread had known to pause right at the
 // very start of a call to allocate_n_bytes() with request[threadId()] showing
 // how much space it was trying to allocate.
@@ -881,10 +883,10 @@ inline void garbageCollectOnBehalfOfAll()
                 {   size_t gap1 = gLimit - gFringe;
                     if (n+targetChunkSize < gap1)
                     {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
-                        result[i] = gFringe + TAG_VECTOR;
+                        result[i] = gFringe.load() + TAG_VECTOR;
                         request[i] = 0;
                         firstWord(result[i]).store(makeVectorHeader(n));
-                        fringeBis[i] = gFringe + n;
+                        fringeBis[i] = gFringe.load() + n;
                         gFringe = limitBis[i] = limit[i] = fringeBis[i] + targetChunkSize;
                     }
                     else
@@ -895,10 +897,10 @@ inline void garbageCollectOnBehalfOfAll()
                             gap1 = gLimit - gFringe;
                             if (n+targetChunkSize < gap1)
                             {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
-                                result[i] = gFringe + TAG_VECTOR;
+                                result[i] = gFringe.load() + TAG_VECTOR;
                                 request[i] = 0;
                                 firstWord(result[i]).store(makeVectorHeader(n));
-                                fringeBis[i] = gFringe + n;
+                                fringeBis[i] = gFringe.load() + n;
                                 gFringe = limitBis[i] = limit[i] = fringeBis[i] + targetChunkSize;
                                 break;
                             }
@@ -1282,7 +1284,7 @@ public:
     ~Borrowing()
     {   std::lock_guard<std::mutex> lock(mutexForFreePages);
         while (borrowPages::get() != NULL)
-        {   if (borrowPages::get()->pageClass == mostlyFreePageTag)
+        {   if (borrowPages::get()->pageClass.load() == mostlyFreePageTag)
             {   Page *w = borrowPages::get()->chain;
                 borrowPages::get()->chain = mostlyFreePages;
                 mostlyFreePages = borrowPages::get();

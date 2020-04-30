@@ -428,7 +428,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 {
 //@@    uintptr_t pp = reinterpret_cast<uintptr_t>(p);
 //@@    uintptr_t offset = a - pp;
-    if (p->chunkCount == 0) return;  // A degenerate case of an empty Page.
+    if (p->chunkCount.load() == 0) return;  // An empty Page.
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
 // the chunk has (a) pointing within it, and I should not need many tries
@@ -451,7 +451,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // chunkMap is now a table of pointers to chunks sorted into ascending order.
 // I will use binary search to find out which (if any) of those chunks
 // contains the address a.
-    size_t low = 0, high = p->chunkCount-1;
+    size_t low = 0, high = p->chunkCount.load()-1;
     while (low < high)
     {   size_t middle = (low + high + 1)/2;
         if (a < reinterpret_cast<uintptr_t>(p->chunkMap[middle].load()))

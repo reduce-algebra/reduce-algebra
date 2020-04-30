@@ -465,13 +465,15 @@ public:
         {   cout << "atomic<uint32_t> not lock-free" << endl;
             std::abort();
         }
-        if (sizeof(atomic<std::uint64_t>) != 8)
-        {   cout << "atomic<uint64_t> is not the expected size" << endl;
-            std::abort();
-        }
-        if (!atomic<std::uint64_t>().is_lock_free())
-        {   cout << "atomic<uint64_t> not lock-free" << endl;
-            std::abort();
+        if (SIXTY_FOUR_BIT)
+        {   if (sizeof(atomic<std::uint64_t>) != 8)
+            {   cout << "atomic<uint64_t> is not the expected size" << endl;
+                std::abort();
+            }
+            if (!atomic<std::uint64_t>().is_lock_free())
+            {   cout << "atomic<uint64_t> not lock-free" << endl;
+                std::abort();
+            }
         }
     }
 };
@@ -895,8 +897,7 @@ void initHeapSegments(double storeSize)
 // to keep everything as clear as I can.
     heapSegmentCount = 0;
     freePages = mostlyFreePages = nullptr;
-    std::printf("Allocate %" PRIu64 " Kbytes\n",
-                (uint64_t)freeSpace/1024);
+    cout << "Allocate " << (freeSpace/1024U) << " Kbytes" << endl;
     allocateSegment(freeSpace);
 
 // There are other bits of memory that I will grab manually for now...
@@ -1037,7 +1038,10 @@ void init_heap_segments(double d)
     if (K < mem) mem = K;
     if (d == 0.0) d = 1024.0*1024.0*mem; // back to bytes
     if (maxStoreSize != 0.0 && maxStoreSize < d) d = maxStoreSize;
-// I have to pass the amount to initHeapSegments in kilobytes.
+// I have to pass the amount to initHeapSegments inkilobytes. On a 32-bit
+// machine I will limit myself to 1.6G here, because trying to use 2G or
+// more starts to risk muddle with sign bits and address arithmetic overflow.
+    if (!SIXTY_FOUR_BIT) d = 1600.0*1024.0*1024.0;
     initHeapSegments(d/1024.0);
 }
 
