@@ -157,7 +157,7 @@ public:
     static const size_t bpw = 8*sizeof(uintptr_t);// bits per word in map.
     static const size_t bitmapSize = (pageWords+bpw-1)/bpw;
     static const size_t bitmap1Size = (bitmapSize+bpw-1)/bpw;
-    static const size_t bitmap2Size = (bitmapSize+bpw-1)/bpw;
+    static const size_t bitmap2Size = (bitmap1Size+bpw-1)/bpw;
 // dirtyMap has one bit for every pointer-sized unit within the Page.
 // so one factor of bpw here is so I cover a resolution of uintptr_t
     atomic<uintptr_t> dirtyMap[bitmapSize];
@@ -169,9 +169,9 @@ public:
     atomic<uintptr_t> dirtyMap2[bitmap2Size];
     atomic<bool> hasDirty;
     atomic<Page *>dirtyChain;
+    atomic<Page *>dirtyChainBack;
 
-    alignas(64) atomic<LispObject>
-    data[2];   // The real data in the page.
+    alignas(64) atomic<LispObject> data[2];   // The real data in the page.
 // The data[] field really extends up to make the overall size of
 // the page be pageSize.
 };
@@ -192,32 +192,34 @@ inline void write_barrier(LispObject *p)
 // properly aligned this will give the start of the Page containing the
 // word being addressed.
     Page *x = reinterpret_cast<Page *>(a & -pageSize);
-//@    const size_t pageWords = pageSize/sizeof(LispObject);
     const size_t bpw = 8*sizeof(uintptr_t);   // bits per word in bitmap.
-//@    const size_t bitmapSize = pageWords/bpw;
-//@    const size_t bitmap1Size = bitmapSize/bpw;
-//@    const size_t bitmap2Size = bitmapSize/bpw;
 // The bit-position is measured in units of sizeof(LispObject)
     uintptr_t offset = (a & (pageSize-1))/sizeof(LispObject);
 // I can now convert that to a location and a bit and offset in the bitmap.
-    uintptr_t bit = static_cast<uintptr_t>(1) << (offset%bpw);
+    uintptr_t bit = uptr_1 << (offset%bpw);
     size_t wordAddr = offset/bpw;
-// The *mess* here is to track what meed to be marked as dirty. The idea
-// is that a dirty word is marked with a bit in a per-page bitmap. That
-// needs 1 bit per 64-bits on a 64-bit machine or 1 per 32 on a 32-bit
-// machine. Making must be possible from multiple threads, hence the
-// atomic map and use if fetch_or(). The first time a bit is set in the
-// main bit-map a secondary map will be marked to show which word in the
-// main map is in use. Subsequent use of exactly the same input will not
-// need to do this so are cheaper. The first time a bit is set in the second
-// map a bit gets set in a third. And the first time one gets set in the
-// third map the entire page is pushed onto a list called dirtyPages - again
-// using a thread-safe lock-free process.
+// Recording what is dirty is one thing but later on I will need to be
+// able to inspect every dirty word, and that means I need to scan
+// the recorded information fairly rapidly. The idea i use is that a dirty
+// word is recorded via a bit in a per-page bitmap. That needs 1 bit per
+// 64-bits on a 64-bit machine or 1 per 32 on a 32-bit machine.
+// Making must be possible from multiple threads, hence the may is made using
+// std::atomic and updates using fetch_or(). The first time a bit is set
+// in the main bit-map a secondary map will be marked to show that a word
+// in the main map is in use. Subsequent use of exactly the same input
+// will not need to do this so will be cheaper. The first time a bit is set
+// in the second map a bit gets set in a third. And the first time one gets
+// set in the third map the entire page is pushed onto a list called
+// dirtyPages - again using a thread-safe lock-free process. The effect of
+// all of this is that to find all dirty words the chain of dirty pages
+// is traversed and the various levels of bitmaps strongly reduce the
+// cost of spotting the locations of interest by using "count leading zeros"
+// operations in words from the bitmaps.
     if ((x->dirtyMap[wordAddr].fetch_or(bit) & bit) == 0)
-    {   bit = static_cast<uintptr_t>(1) << (wordAddr%bpw);
+    {   bit = uptr_1 << (wordAddr%bpw);
         wordAddr /= bpw;
         if ((x->dirtyMap1[wordAddr].fetch_or(bit) & bit) == 0)
-        {   bit = static_cast<uintptr_t>(1) << (wordAddr%bpw);
+        {   bit = uptr_1 << (wordAddr%bpw);
             wordAddr /= bpw;
             if ((x->dirtyMap2[wordAddr].fetch_or(bit) & bit) == 0)
             {   x->hasDirty.store(true);
@@ -231,17 +233,67 @@ inline void write_barrier(LispObject *p)
     }
 }
 
+// There will be times when I can clear an individual cell's status as
+// dirty, and this function is here to do just that.
+
+inline void write_unBarrier(LispObject *p)
+{   uintptr_t a = reinterpret_cast<uintptr_t>(p);
+    Page *x = reinterpret_cast<Page *>(a & -pageSize);
+    const size_t bpw = 8*sizeof(uintptr_t);   // bits per word in bitmap.
+    uintptr_t offset = (a & (pageSize-1))/sizeof(LispObject);
+    uintptr_t bit = uptr_1 << (offset%bpw);
+    size_t wordAddr = offset/bpw;
+// Here I want to clear a bit in the bitmap, and if that leaves the whole
+// word zero I can clear a bit in the next level map up. Because this is
+// only done within the garbage collector at a stage where I am only running
+// on one thread I do not need to worry about use of explicitly thread-safe
+// updates, but the items being worked on are still atomic<T> ones,
+    if ((x->dirtyMap[wordAddr] &= ~bit) == 0)
+    {   bit = uptr_1 << (wordAddr%bpw);
+        wordAddr /= bpw;
+        if ((x->dirtyMap1[wordAddr] &= ~bit) == 0)
+        {   bit = uptr_1 << (wordAddr%bpw);
+            wordAddr /= bpw;
+            if ((x->dirtyMap2[wordAddr] &= ~bit) == 0)
+            {   x->hasDirty = false;
+// Here I want to delete the page from the chain of dirty pages. During
+// regular computation I have just a singly linked list but at the
+// start of garbage collection I can scan that and set up dirtyChainBack
+// entries on each page involved so that I have a two-way list, and then
+// the deletion here can have unit cost.
+                Page *prev = x->dirtyChainBack;
+                Page *next = x->dirtyChain;
+                if (prev == nullptr) dirtyPages = next;
+                else prev->dirtyChain = next;
+                if (next != nullptr) next->dirtyChainBack = prev;
+            }
+        }
+    }
+}
+
+// This is a function for the GC to call to fill in the back-pointers.
+
+inline void fillInBackChains()
+{   Page *prev = nullptr;
+    for (Page *p=dirtyPages; p!=nullptr; p=p->dirtyChain)
+    {   p->dirtyChainBack = prev;
+        prev = p;
+    }
+}
+
+
 inline void write_barrier(atomic<LispObject> *p)
 {   write_barrier(reinterpret_cast<LispObject *>(p));
 }
 
 // Now to match the above I need code that will identify every dirty
-// item.
+// item. It calls the function that is provided as an argument on each
+// dirty address.
 
-typedef void (*processDirtyCell)(atomic<LispObject> *a);
+typedef void processDirtyCell(atomic<LispObject> *a);
 extern int nlz(uint64_t a);
 
-inline void scanDirtyCells(processDirtyCell *fn)
+inline void scanDirtyCells(processDirtyCell fn)
 {   for (Page *p=dirtyPages; p!=NULL; p=p->dirtyChain.load())
     {   if (!p->hasDirty) continue;
         for (size_t i2=0; i2<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]);
@@ -250,22 +302,61 @@ inline void scanDirtyCells(processDirtyCell *fn)
             while (b2 != 0)
             {   int n2 = nlz(static_cast<uint64_t>(b2));
                 size_t i1 = 8*sizeof(uintptr_t)*i2 + 63 - n2;
-                uintptr_t b1 = p->dirtyMap2[i1];
+                uintptr_t b1 = p->dirtyMap1[i1];
                 while (b1 != 0)
                 {   int n1 = nlz(static_cast<uint64_t>(b1));
                     size_t i0 = 8*sizeof(uintptr_t)*i1 + 63 - n1;
-                    cout << "cell at offset " << std::hex << i0 << std::dec
-                         << " is dirty" << endl;
-                    (*fn)(reinterpret_cast<atomic<LispObject> *>(
-                         reinterpret_cast<uintptr_t>(p) + i0*sizeof(LispObject)));
-
-
-                    b1 -= static_cast<uint64_t>(1)<<(63-n1);
+                    uintptr_t b0 = p->dirtyMap[i0];
+                    while (b0 != 0)
+                    {   int n0 = nlz(static_cast<uint64_t>(b0));
+                        size_t i = 8*sizeof(uintptr_t)*i0 + 63 - n0;
+                        (*fn)(reinterpret_cast<atomic<LispObject> *>(
+                             reinterpret_cast<uintptr_t>(p) + i*sizeof(LispObject)));
+                        b0 -= uptr_1<<(63-n0);
+                    }
+                    b1 -= uptr_1<<(63-n1);
                 }
-                b2 -= static_cast<uint64_t>(1)<<(63-n2);
+                b2 -= uptr_1<<(63-n2);
             }
         }
     }
+}
+
+// Here there may be some items that have been marked as "dirty" but I want
+// to discard that information totally. This is for instance something that
+// happens when I perform a global garbage collection, since at the end
+// of that there is no data at all that is at risk of scavenging and that
+// hence needs protecting if there is an up-reference to it.
+
+inline void clearAllDirtyBits()
+{   for (Page *p=dirtyPages; p!=NULL; p=p->dirtyChain.load())
+    {   if (!p->hasDirty) continue;
+        p->hasDirty = false;
+
+        for (size_t i2=0; i2<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]);
+             i2++)
+        {   uintptr_t b2 = p->dirtyMap2[i2];
+            if (b2 != 0) continue;
+            {   p->dirtyMap2[i2] = 0;
+                while (b2 != 0)
+                {   int n2 = nlz(static_cast<uint64_t>(b2));
+                    size_t i1 = 8*sizeof(uintptr_t)*i2 + 63 - n2;
+                    uintptr_t b1 = p->dirtyMap1[i1];
+                    if (b1 != 0)
+                    {   p->dirtyMap1[i1] = 0;
+                        while (b1 != 0)
+                        {   int n1 = nlz(static_cast<uint64_t>(b1));
+                            size_t i0 = 8*sizeof(uintptr_t)*i1 + 63 - n1;
+                            p->dirtyMap[i0] = 0;
+                            b1 -= uptr_1<<(63-n1);
+                        }
+                    }
+                    b2 -= uptr_1<<(63-n2);
+                }
+            }
+        }
+    }
+    dirtyPages = nullptr;
 }
 
 extern uint64_t threadMap;

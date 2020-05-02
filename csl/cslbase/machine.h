@@ -79,6 +79,19 @@
 #endif
 #endif
 
+#if defined __has_cpp_attribute && __has_cpp_attribute(maybe_unused)
+// C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
+// and functions. Earlier versions of gcc and clang supported [[gnu:unused]]
+// as a non-standard annotation with similar effect.
+#define UNUSED_NAME [[maybe_unused]]
+#elif defined __GNUC__
+#define UNUSED_NAME [[gnu:unused]]
+#else
+// In any other case I just omit any annotation and if I get warnings about
+// unused things then so be it.
+#define UNUSED_NAME
+#endif
+
 #ifdef __cpp_inline_variables
 // For versions of C++ up to C++17 I will put constant values in header
 // files using something along the line of "static const int VAR = VAL;".
@@ -95,20 +108,7 @@
 //
 #define INLINE_VAR inline
 #else
-#define INLINE_VAR static
-#endif
-
-#if defined __has_cpp_attribute && __has_cpp_attribute(maybe_unused)
-// C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
-// and functions. Earlier versions of gcc and clang supported [[gnu:unused]]
-// as a non-standard annotation with similar effect.
-#define UNUSED_NAME [[maybe_unused]]
-#elif defined __GNUC__
-#define UNUSED_NAME [[gnu:unused]]
-#else
-// In any other case I just omit any annotation and if I get warnings about
-// unused things then so be it.
-#define UNUSED_NAME
+#define INLINE_VAR UNUSED_NAME static
 #endif
 
 // With really old versions of C++ you may not be able to write
@@ -218,6 +218,7 @@
 // Now the C++ facilities that I use...
 
 #include <iostream>
+#include <iomanip>
 #include <exception>
 #include <cassert>
 #include <map>
@@ -406,6 +407,14 @@ typedef __int128 int128_t;
 // With luck that will have regularised the situation with regard to
 // integer types!
 
+// It is useful to have some integer constants that I KNOW are 64-bit
+// wide or that I KNOW are the width of pointers - these are for instance
+// for us in code of that shape (x & (1U<<n)) where I need the "1" to be at
+// least as wide as x and it would be excessive for it to be wider.
+
+INLINE_VAR const uintptr_t uptr_1 = static_cast<uintptr_t>(1);
+INLINE_VAR const uint64_t u64_1 = static_cast<uint64_t>(1);
+
 #ifdef MAXALING4
 
 // In the horrid case where malloc might return a fairly unaligned block
@@ -467,11 +476,11 @@ using std::uintptr_t;
 using std::size_t;
 
 using std::string;    // This to encourage me to use "string" rather than
-// "char *".
+                      // "char *".
 
 using std::atomic;    // If I am going to be multi-threaded then very many
-// things need to be atomic and writing std::atomic<>
-// every time is a burden.
+                      // things need to be atomic and writing std::atomic<>
+                      // every time is a burden.
 
 #endif // header_machine_h
 

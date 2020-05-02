@@ -82,6 +82,8 @@
 
 #include "headers.h"
 
+#include "arithlib.hpp"  // For random number support
+
 //
 // This is a place for my latest round of thinking about a new storage
 // management scheme. The ideal I set now is that garbage collection should
@@ -660,6 +662,21 @@ void setUpEmptyPage(Page *p)
 {   p->chain = nullptr;
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
     p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
+    p->chunkCount = 0;
+    for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
+        p->dirtyMap[i] = 0;
+    for (size_t i=0; i<sizeof(p->dirtyMap1)/sizeof(p->dirtyMap1[0]); i++)
+        p->dirtyMap1[i] = 0;
+    for (size_t i=0; i<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]); i++)
+        p->dirtyMap2[i] = 0;
+    p->hasDirty = false;
+    p->dirtyChain = nullptr;
+    p->pageClass = freePageTag;
+    p->chain = freePages;
+    freePages = p;
+    p->hasPinned = false;
+    p->pinChain = nullptr;
+    p->pinnedChunks = nullptr;
 }
 
 void setVariablesFromPage(Page *p)
@@ -754,13 +771,28 @@ bool allocateSegment(size_t n)
                 reinterpret_cast<char *>(r) + k - CSL_PAGE_SIZE);
 // Keep a chain of all the pages.
         setUpEmptyPage(p);
-        p->pageClass = freePageTag;
-        p->chain = freePages;
-        freePages = p;
         freePagesCount++;
     }
-    std::printf("%" PRIu64 " pages available\n",
-                (uint64_t)freePagesCount);
+    cout << freePagesCount << " pages available\n";
+//- Now as a temporary issue I will try to test my write barrier and
+//- pinning scheme. For the write barrier I do not need any data in the
+//- pages concerned.
+    for (int i=0; i<2; i++)
+    {   uint64_t n1 = arithlib::mersenne_twister();
+        n1 = reinterpret_cast<int64_t>(r) + (n1 % n);
+        n1 = n1 & ~UINT64_C(7);
+        cout << "Barrier on " << std::hex << n1 << std::dec << endl;
+        write_barrier(reinterpret_cast<LispObject *>(n1));
+    }
+    cout << "About to scan all the dirty cells\n";
+    scanDirtyCells(
+        [](atomic<LispObject> *a) -> void
+        {   cout << std::hex << reinterpret_cast<intptr_t>(a) << std::dec
+                 << endl;
+        });
+    cout << "Dirty cells scanned\n";   
+
+
     return true; // Success!
 }
 
@@ -1139,9 +1171,9 @@ LispObject Lgctest_0(LispObject env)
 {   LispObject a = nil;
     for (unsigned int i=0; i<MEM/16u; i++)
     {   a = cons(fixnum_of_int(i), a);
-        printf(":"); fflush(stdout);
+        cout << ":" << std::flush;
         if (i % 1000000 == 0)
-        {   printf("%u", i);
+        {   cout << i;
             LispObject b = a;
             for (unsigned int j=i; j!=static_cast<unsigned int>(-1); j--)
             {   if (!is_cons(b)) my_abort();
