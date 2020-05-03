@@ -114,6 +114,18 @@ class Chunk
 public:
     atomic<uintptr_t> length;
     atomic<bool> isPinned;
+// At the start of garbage collection as I collect a chain of pinned chunks
+// those chunks may appear on the list in arbitrary order, but at the end
+// of garbage collection if a Page has a number of pinned Chunks within it
+// they must be sorted into ascending order. Arranging that will mean that
+// I can release the gaps between chunks for allocation easily.
+// So within a chunk I start off with gFringe pointing at usableSpace and
+// gLimit at either the start of the first pinned chunk or at the end of
+// the whole page. When that region gets full the gLimit pointer either
+// tells me that I have used up the entire page, or the pinned chunk it
+// points at lets me find the new gFringe (using the length field) and the
+// end of the next free block (using pinChain - and if that is nullptr the
+// relevant limit is the end of the page.
     atomic<Chunk *>pinChain;
 // The rest of the chunk is the region within which data is kept. I show that
 // as a vector of length just 2 but it is of course much larger than that.
@@ -359,6 +371,24 @@ inline void clearAllDirtyBits()
     dirtyPages = nullptr;
 }
 
+// The code that implements pinning is in cslgc.cpp. In some respects the
+// capabilities it provides are a bit like those of my write barrier in that
+// I can record the fact that some address is to be pinned and I can scan
+// all regions containig pinned data. There are three crucial differences:
+// (1) The address I ask to pin may not even be a pointer to anywhere within
+//     the Lisp heap - while that used with the write barrier is guaranteed
+//     to be a precise reference to a valid Lisp cell.
+// (2) For the write barrier I end up recording the exact location that is
+//     marked. For pinning I only pin to the granularity of a Chunk.
+// (3) The pinning operation is run from a single thread, while the write
+//     barrier could be used simultaneously from multiple threads, so the
+//     letter needs much more care over thread safety.
+
+extern void processAmbiguousValue(bool major, uintptr_t a);
+typedef void processPinnedChunk(Chunk *c);
+extern void scanPinnedChunks(processPinnedChunk *pc);
+extern void clearAllPins();
+
 extern uint64_t threadMap;
 
 class ThreadStartup
@@ -572,8 +602,9 @@ extern uintptr_t              gNext;
 //   gLimit. Because gFringe is incremented atomically once any thread
 //   moves it beyond gLimit any other thread that attempts to use it will
 //   find that it has also overrun its range.
-//   Variables will be set as for Possibility 1 save that gIncrement[threadId::get()]
-//   is set to the amount by which gFringe had been incremented.
+//   Variables will be set as for Possibility 1 save that
+//   gIncrement[threadId::get()] is set to the amount by which gFringe
+//   had been incremented.
 // In the above values are places in arrays indexed by threadId::get() so that the
 // single thread that happens to end up doing the work of garbage collection
 // can both observe what requests each of the other threads had been making

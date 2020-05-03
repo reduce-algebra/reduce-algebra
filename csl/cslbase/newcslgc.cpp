@@ -426,8 +426,6 @@ void clearPinnedInformation(bool major)
 
 void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 {
-//@@    uintptr_t pp = reinterpret_cast<uintptr_t>(p);
-//@@    uintptr_t offset = a - pp;
     if (p->chunkCount.load() == 0) return;  // An empty Page.
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
@@ -480,6 +478,28 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
     p->hasPinned = true;
     p->pinChain = globalPinChain;
     globalPinChain = p;
+}
+
+// typedef processPinnedChunk(Chunk *c);
+
+void scanPinnedChunks(processPinnedChunk *pc)
+{   for (Page *p = globalPinChain; p!=nullptr; p=p->pinChain)
+    {   if (!p->hasPinned) continue;
+        for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->pinChain)
+        {   if (!c->isPinned) continue;
+            (*pc)(c);
+        }
+    }
+}
+
+void clearAllPins()
+{   for (Page *p = globalPinChain; p!=nullptr; p=p->pinChain)
+    {   p->hasPinned = false;
+        for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->pinChain)
+            c->isPinned = false;
+        p->pinnedChunks = nullptr;
+    }
+    globalPinChain = nullptr;
 }
 
 // Here I have an item that may be arbitrary binary material but which COULD

@@ -660,9 +660,8 @@ LispObject borrow_vector(int tag, int type, size_t n)
 
 void setUpEmptyPage(Page *p)
 {   p->chain = nullptr;
-    p->fringe = reinterpret_cast<uintptr_t>(&p->data);
-    p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
     p->chunkCount = 0;
+    p->chunkMapSorted = false;
     for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
         p->dirtyMap[i] = 0;
     for (size_t i=0; i<sizeof(p->dirtyMap1)/sizeof(p->dirtyMap1[0]); i++)
@@ -671,12 +670,74 @@ void setUpEmptyPage(Page *p)
         p->dirtyMap2[i] = 0;
     p->hasDirty = false;
     p->dirtyChain = nullptr;
-    p->pageClass = freePageTag;
-    p->chain = freePages;
-    freePages = p;
     p->hasPinned = false;
     p->pinChain = nullptr;
     p->pinnedChunks = nullptr;
+    p->chain = freePages;
+    freePages = p;
+    p->pageClass = freePageTag;
+    p->fringe = reinterpret_cast<uintptr_t>(&p->data);
+    p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
+}
+
+// Now something that takes a page where it must be left free apart from
+// any pinned Chunks within it. The fringe and limit fields must be set up
+// to reflect them. Note that this does NOT alter the "chain" field or set
+// pageClass - those must be dealt with otherwise.
+// The page concerned MUST have some clear space on it. If it was
+// enirely full of pinned chunks this code would fail.
+
+void setUpUsedPage(Page *p)
+{   p->chunkCount = 0;
+    p->chunkMapSorted = false;
+    for (size_t i=0; i<sizeof(p->dirtyMap)/sizeof(p->dirtyMap[0]); i++)
+        p->dirtyMap[i] = 0;
+    for (size_t i=0; i<sizeof(p->dirtyMap1)/sizeof(p->dirtyMap1[0]); i++)
+        p->dirtyMap1[i] = 0;
+    for (size_t i=0; i<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]); i++)
+        p->dirtyMap2[i] = 0;
+    p->hasDirty = false;
+    p->dirtyChain = nullptr;
+// Those Chunks that are on the pinChain need to be put into chunkMap..
+// other chunks will get added as they are allocated, but the pinned ones
+// are ther eright from the start.
+    for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->pinChain)
+        p->chunkMap[p->chunkCount++] = c;
+// I want the pinned chunks sorted so that the lowest address one comes
+// first. That will ensure that when one comes to skip past a pinned
+// chunk that the next chunk on the cgain will be the next one up in
+// memory.
+    std::qsort(p->chunkMap, p->chunkCount, sizeof(p->chunkMap[0]),
+               [](const void *a, const void *b)
+               {   const Chunk *aa =
+                       static_cast<const atomic<Chunk *>*>(a)->load();
+                   const Chunk *bb =
+                       static_cast<const atomic<Chunk *>*>(b)->load();
+                   uintptr_t aaa = reinterpret_cast<uintptr_t>(aa);
+                   uintptr_t bbb = reinterpret_cast<uintptr_t>(bb);
+                   return aaa < bbb ? -1 :
+                          aaa > bbb ? 1 : 0;
+               });
+    p->pinnedChunks = nullptr;
+    for (size_t i=p->chunkCount; i!=0; i--)
+    {   p->chunkMap[i].load()->pinChain = p->pinnedChunks.load();
+        p->pinnedChunks = p->chunkMap[i].load();
+    }
+// Start by pretending that the page is utterly empty.
+    p->fringe = reinterpret_cast<uintptr_t>(&p->data);
+    p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
+// Now if MAY be that the first part of memory is consumed by one (or a
+// succession) of pinned chunks.
+    Chunk *pin = p->pinnedChunks;
+    while (p->fringe == reinterpret_cast<uintptr_t>(pin))
+    {   p->fringe += pin->length;
+        pin = pin->pinChain;
+    }
+    if (p->fringe == p->limit) my_abort();
+// That has skipped any initial pinned chunks, and leaves the variable pin
+// pointing at any pinned chunk. If there is such a chunk then it starts
+// beyond the current fringe and must become the current limit.
+    if (pin!=nullptr) p->limit = reinterpret_cast<uintptr_t>(pin);
 }
 
 void setVariablesFromPage(Page *p)
@@ -776,13 +837,16 @@ bool allocateSegment(size_t n)
     cout << freePagesCount << " pages available\n";
 //- Now as a temporary issue I will try to test my write barrier and
 //- pinning scheme. For the write barrier I do not need any data in the
-//- pages concerned.
-    for (int i=0; i<2; i++)
+//- pages concerned, but for pinning I need much of the memory to be full -
+//- what I do here is make it roughhlt (2/3) full.
+    for (size_t i=0; i<2*n/3/sizeof(LispObject)/2; i++) cons(nil, nil);
+    for (int i=0; i<3; i++)
     {   uint64_t n1 = arithlib::mersenne_twister();
         n1 = reinterpret_cast<int64_t>(r) + (n1 % n);
         n1 = n1 & ~UINT64_C(7);
         cout << "Barrier on " << std::hex << n1 << std::dec << endl;
         write_barrier(reinterpret_cast<LispObject *>(n1));
+        processAmbiguousValue(true, n1);
     }
     cout << "About to scan all the dirty cells\n";
     scanDirtyCells(
@@ -791,6 +855,14 @@ bool allocateSegment(size_t n)
                  << endl;
         });
     cout << "Dirty cells scanned\n";   
+    cout << "About to scan all the pinned chunks\n";
+    scanPinnedChunks(
+        [](Chunk *c) -> void
+        {   cout << "Chunk at "
+                 << std::hex << reinterpret_cast<intptr_t>(c) << std::dec
+                 << endl;
+        });
+    cout << "Pinned chunks scanned\n";   
 
 
     return true; // Success!
