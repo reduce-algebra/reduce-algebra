@@ -1827,8 +1827,7 @@ LispObject ndelete(LispObject a, LispObject l)
     {   LispObject z1 = l, z2 = cdr(l);
         while (consp(z2))
         {   if (a == car(z2))
-            {   setcdr(z1, cdr(z2));
-                write_barrier(cdraddr(z1));
+            {   write_barrier(cdraddr(z1), cdr(z2));
                 return l;
             }
             else
@@ -2221,8 +2220,7 @@ static LispObject read_list(LispObject stream)
                 push(l);
                 w = read_s(stack[-2]);
                 pop(l);
-                setcdr(l, w);
-                write_barrier(cdraddr(l));
+                write_barrier(cdraddr(l), w);
                 skip_whitespace(stack[-1]);
                 if (curchar == ')') curchar = NOT_CHAR;
 //          else error("missing rpar or bad dot");
@@ -2247,8 +2245,7 @@ static LispObject read_list(LispObject stream)
                 w = read_s(stack[-2]);
                 w = ncons(w);
                 pop(l);
-                setcdr(l, w);
-                write_barrier(cdraddr(l));
+                write_barrier(cdraddr(l), w);
                 l = w;
                 continue;
         }

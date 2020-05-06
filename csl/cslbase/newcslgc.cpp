@@ -44,12 +44,14 @@
 // for Active, the empty one as "C" for Clear. At the entry to GC I will
 // expect that all pages in C have chaining set up in them in the form
 //
-//   |.....................XXXXXpq.........XXXXXrs.........XXXXXt0......|
+//   |.....................XXXXX...........XXXXX...........XXXXX........|
 //    ^                    ^    ^          ^    ^          ^    ^       ^
-//  gFringe             gLimit gNext       p    q          r    s       t
+//  gFringe             gLimit next        p    q          r    s       t
 // where XXXX denote items pinned by a previous GC, p is a subsequent limit
 // and q a subsequent next (and similarly for r,s,t) with the follow-on next
 // value zero at the end of the page.
+// each pinned 
+// 
 // Within the active part of the heap there will be a list pinsC that has
 // pointers to each pinned item in C. This is not a Lisp standard list - it
 // will be chained in the CAR field with pointers tagged as FORWARD while the
@@ -82,7 +84,6 @@
 // it.
 
 // (1) Clear the "pinned" maps for pages in A.
-//     Initialize pinsA list to be empty.
 //
 // (2) For each ambiguous value (ie value on the stack associated with
 //     any thread) do:
@@ -104,9 +105,7 @@
 //   See later for explanation of "evacuate".
 //
 // (4) Set up A with the structure needed to be an empty page, ie
-//   a gFringe/gLimit/gNext chain that works around pinned items. To do this
-//   a sorted version of pinsA is liable to be useful, especially if while
-//   doing this I can have all pages making up A in a sorted list.
+//   a gFringe/gLimit chain that works around pinned items.
 //
 // (5) Flip status and interpretation of A and C.
 //

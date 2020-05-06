@@ -502,8 +502,7 @@ static LispObject deleqip(LispObject a, LispObject l)
     r = l;
     while (w = l, (l = cdr(l)) != nil)
     {   if (car(l) == a)
-        {   setcdr(w, cdr(l));
-            write_barrier(cdraddr(w));
+        {   write_barrier(cdraddr(w), cdr(l));
             return r;
         }
     }
@@ -2192,8 +2191,7 @@ LispObject Lnreverse(LispObject env, LispObject a)
     while (consp(a))
     {   LispObject c = a;
         a = cdr(a);
-        setcdr(c, b);
-        write_barrier(cdraddr(c));
+        write_barrier(cdraddr(c), b);
         b = c;
     }
     return onevalue(b);
@@ -2203,8 +2201,7 @@ LispObject Lnreverse2(LispObject env, LispObject a, LispObject b)
 {   while (consp(a))
     {   LispObject c = a;
         a = cdr(a);
-        setcdr(c, b);
-        write_barrier(cdraddr(c));
+        write_barrier(cdraddr(c), b);
         b = c;
     }
     return onevalue(b);
@@ -2217,8 +2214,7 @@ LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
     while (consp(a))
     {   LispObject c = a;
         a = cdr(a);
-        setcdr(c, b);
-        write_barrier(cdraddr(c));
+        write_barrier(cdraddr(c), b);
         b = c;
     }
     return onevalue(b);
@@ -2232,8 +2228,7 @@ LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b,
     while (consp(a))
     {   LispObject d = a;
         a = cdr(a);
-        setcdr(d, b);
-        write_barrier(cdraddr(d));
+        write_barrier(cdraddr(d), b);
         b = d;
     }
     return onevalue(b);
@@ -2253,8 +2248,7 @@ LispObject Lnreverse0(LispObject env, LispObject a)
     while (consp(a))
     {   LispObject c = a;
         a = cdr(a);
-        setcdr(c, b);
-        write_barrier(cdraddr(c));
+        write_barrier(cdraddr(c), b);
         b = c;
     }
     return onevalue(b);
@@ -2603,8 +2597,7 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
     pop(b);
     while (r != nil)
     {   a = cdr(r);
-        setcdr(r, b);
-        write_barrier(cdraddr(r));
+        write_barrier(cdraddr(r), b);
         b = r;
         r = a;
     }
@@ -2677,8 +2670,7 @@ LispObject Ldelete(LispObject env, LispObject a, LispObject b)
     popv(2);
     while (r != nil)
     {   LispObject w = cdr(r);
-        setcdr(r, b);
-        write_barrier(cdraddr(r));
+        write_barrier(cdraddr(r), b);
         b = r;
         r = w;
     }
@@ -2703,8 +2695,7 @@ LispObject Ldeleq(LispObject env, LispObject a, LispObject b)
     popv(2);
     while (r != nil)
     {   LispObject w = cdr(r);
-        setcdr(r, b);
-        write_barrier(cdraddr(r));
+        write_barrier(cdraddr(r), b);
         b = r;
         r = w;
     }
@@ -2718,8 +2709,7 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
     for (;;)
     {   LispObject next = cdr(c);
         if (!consp(next))
-        {   setcdr(c, b);
-            write_barrier(cdraddr(c));
+        {   write_barrier(cdraddr(c), b);
             return onevalue(a);
         }
         else c = next;
@@ -2871,8 +2861,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
             LispObject cc = c;
             while (r != TAG_FIXNUM)
             {   w = cdr(r);
-                setcdr(r, cc);
-                write_barrier(cdraddr(r));
+                write_barrier(cdraddr(r), cc);
                 cc = r;
                 r = w;
             }
@@ -2894,8 +2883,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
     {   w = cdr(r);
-            setcdr(r, c);
-            write_barrier(cdraddr(r));
+            write_barrier(cdraddr(r), c);
             c = r;
             r = w;
         });
@@ -2905,8 +2893,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 //
         if (w == car(c))
         {   w = cdr(c);
-            setcdr(c, r);
-            write_barrier(cdraddr(c));
+            write_barrier(cdraddr(c), r);
             r = c;
             c = w;
             continue;
@@ -2916,8 +2903,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
         {   LispObject cc = c, ww;
             while (r != TAG_FIXNUM)
             {   ww = cdr(r);
-                setcdr(r, cc);
-                write_barrier(cdraddr(r));
+                write_barrier(cdraddr(r), cc);
                 cc = r;
                 r = ww;
             }
@@ -2947,8 +2933,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
         pop(r, rx);
         while (r != TAG_FIXNUM)
         {   w = cdr(r);
-            setcdr(r, c);
-            write_barrier(cdraddr(r));
+            write_barrier(cdraddr(r), c);
             c = r;
             r = w;
         }
@@ -2958,8 +2943,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 //
         while (rx != TAG_FIXNUM)
         {   w = cdr(rx);
-            setcdr(rx, c);
-            write_barrier(cdraddr(rx));
+            write_barrier(cdraddr(rx), c);
             c = rx;
             rx = w;
         }
@@ -2996,8 +2980,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
             LispObject cc = c;
             while (r != TAG_FIXNUM)
             {   w = cdr(r);
-                setcdr(r, cc);
-                write_barrier(cdraddr(r));
+                write_barrier(cdraddr(r), cc);
                 cc = r;
                 r = w;
             }
@@ -3022,8 +3005,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
     {   w = cdr(r);
-            setcdr(r, c);
-            write_barrier(cdraddr(r));
+            write_barrier(cdraddr(r), c);
             c = r;
             r = w;
         });
@@ -3033,8 +3015,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 //
         if (w == car(c))
         {   w = cdr(c);
-            setcdr(c, r);
-            write_barrier(cdraddr(c));
+            write_barrier(cdraddr(c), r);
             r = c;
             c = w;
             continue;
@@ -3044,8 +3025,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
         {   LispObject cc = c, ww;
             while (r != TAG_FIXNUM)
             {   ww = cdr(r);
-                setcdr(r, cc);
-                write_barrier(cdraddr(r));
+                write_barrier(cdraddr(r), cc);
                 cc = r;
                 r = ww;
             }
@@ -3075,8 +3055,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
         pop(r, rx);
         while (r != TAG_FIXNUM)
         {   w = cdr(r);
-            setcdr(r, c);
-            write_barrier(cdraddr(r));
+            write_barrier(cdraddr(r), c);
             c = r;
             r = w;
         }
@@ -3086,8 +3065,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 //
         while (rx != TAG_FIXNUM)
         {   w = cdr(rx);
-            setcdr(rx, c);
-            write_barrier(cdraddr(rx));
+            write_barrier(cdraddr(rx), c);
             c = rx;
             rx = w;
         }
@@ -3126,8 +3104,7 @@ LispObject subla(LispObject a, LispObject c)
             LispObject cc = c;
             while (r != TAG_FIXNUM)
             {   w = cdr(r);
-                setcdr(r, cc);
-                write_barrier(cdraddr(r));
+                write_barrier(cdraddr(r), cc);
                 cc = r;
                 r = w;
             }
@@ -3149,20 +3126,18 @@ LispObject subla(LispObject a, LispObject c)
             w = subla(a, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-    {   w = cdr(r);
-            setcdr(r, c);
-            write_barrier(cdraddr(r));
-            c = r;
-            r = w;
-        });
+            {   w = cdr(r);
+                write_barrier(cdraddr(r), c);
+                c = r;
+                r = w;
+            });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
 //
         if (w == car(c))
         {   w = cdr(c);
-            setcdr(c, r);
-            write_barrier(cdraddr(c));
+            write_barrier(cdraddr(c), r);
             r = c;
             c = w;
             continue;
@@ -3172,8 +3147,7 @@ LispObject subla(LispObject a, LispObject c)
         {   LispObject cc = c, ww;
             while (r != TAG_FIXNUM)
             {   ww = cdr(r);
-                setcdr(r, cc);
-                write_barrier(cdraddr(r));
+                write_barrier(cdraddr(r), cc);
                 cc = r;
                 r = ww;
             }
@@ -3202,8 +3176,7 @@ LispObject subla(LispObject a, LispObject c)
         pop(r, rx);
         while (r != TAG_FIXNUM)
         {   w = cdr(r);
-            setcdr(r, c);
-            write_barrier(cdraddr(r));
+            write_barrier(cdraddr(r), c);
             c = r;
             r = w;
         }
@@ -3213,8 +3186,7 @@ LispObject subla(LispObject a, LispObject c)
 //
         while (rx != TAG_FIXNUM)
         {   w = cdr(rx);
-            setcdr(rx, c);
-            write_barrier(cdraddr(rx));
+            write_barrier(cdraddr(rx), c);
             c = rx;
             rx = w;
         }
@@ -3259,8 +3231,7 @@ LispObject sublis(LispObject a, LispObject c)
             LispObject cc = c;
             while (r != TAG_FIXNUM)
             {   w = cdr(r);
-                setcdr(r, cc);
-                write_barrier(cdraddr(r));
+                write_barrier(cdraddr(r), cc);
                 cc = r;
                 r = w;
             }
@@ -3286,8 +3257,7 @@ LispObject sublis(LispObject a, LispObject c)
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
     {   w = cdr(r);
-            setcdr(r, c);
-            write_barrier(cdraddr(r));
+            write_barrier(cdraddr(r), c);
             c = r;
             r = w;
         });
@@ -3297,8 +3267,7 @@ LispObject sublis(LispObject a, LispObject c)
 //
         if (w == car(c))
         {   w = cdr(c);
-            setcdr(c, r);
-            write_barrier(cdraddr(c));
+            write_barrier(cdraddr(c), c);
             r = c;
             c = w;
             continue;
@@ -3308,8 +3277,7 @@ LispObject sublis(LispObject a, LispObject c)
         {   LispObject cc = c, ww;
             while (r != TAG_FIXNUM)
             {   ww = cdr(r);
-                setcdr(r, cc);
-                write_barrier(cdraddr(r));
+                write_barrier(cdraddr(r), cc);
                 cc = r;
                 r = ww;
             }
@@ -3338,8 +3306,7 @@ LispObject sublis(LispObject a, LispObject c)
         pop(r, rx);
         while (r != TAG_FIXNUM)
         {   w = cdr(r);
-            setcdr(r, c);
-            write_barrier(cdraddr(r));
+            write_barrier(cdraddr(r), c);
             c = r;
             r = w;
         }
@@ -3349,8 +3316,7 @@ LispObject sublis(LispObject a, LispObject c)
 //
         while (rx != TAG_FIXNUM)
         {   w = cdr(rx);
-            setcdr(rx, c);
-            write_barrier(cdraddr(rx));
+            write_barrier(cdraddr(rx), c);
             c = rx;
             rx = w;
         }

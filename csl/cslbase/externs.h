@@ -230,13 +230,15 @@ extern uintptr_t *C_stackbase, C_stacklimit;
 extern LispObject multiplication_buffer;
 
 #ifdef CONSERVATIVE
-extern void write_barrier(atomic<LispObject> *p);
-extern void write_barrier(LispObject *p);
+extern void write_barrier(atomic<LispObject> *p, LispObject q);
+extern void write_barrier(LispObject *p, LispObject q);
 #else // !CONSERVATIVE
-inline void write_barrier(atomic<LispObject> *p)
-{}
-inline void write_barrier(LispObject *p)
-{}
+inline void write_barrier(atomic<LispObject> *p, LispObject q)
+{  *p = q;
+}
+inline void write_barrier(LispObject *p, LispObject q)
+{  *p = q;
+}
 #endif // !CONSERVATIVE
 
 // This tiny function exists just so that I can set a breakpoint on it.

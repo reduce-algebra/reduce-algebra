@@ -95,12 +95,16 @@ static const size_t targetChunkSize = 16*1024;   // Target chunk size
 
 enum PageClass
 {   reservedPageTag   = 0x00,     // Reserved value, never used.
+
     freePageTag       = 0x01,     // All the data area in this page is free.
     mostlyFreePageTag = 0x11,     // Mostly empty page but with
-    //    some pinned data within it.
+                                  //    some pinned data within it.
     busyPageTag       = 0x02,     // Page contains active data.
     currentPageTag    = 0x12,     // Page within which allocation is active.
-    victimPageTag     = 0x22      // Previous current page.
+    victimPageTag     = 0x22,     // Previous current page.
+    stablePageTag     = 0x32      // A page that the generational GC will
+                                  // not move because it contains data that
+                                  // survived being in a Victim page.
 };
 
 extern void set_up_signal_handlers();
@@ -198,8 +202,18 @@ public:
 extern atomic<Page *> dirtyPages;
 extern Page *globalPinChain;
 
-inline void write_barrier(LispObject *p)
-{   uintptr_t a = reinterpret_cast<uintptr_t>(p);
+inline void write_barrier(LispObject *p, LispObject q)
+{   *p = q;
+// Only up-pointers can cause trouble, so if I write in something that
+// is not even a pointer or that is a pointer into a page that the
+// generational collector will not move I do not need to do anything. And
+// maybe the tests for that situation are cheap enough that the test is
+// a good idea.
+    if (!is_pointer_type(q) ||
+        reinterpret_cast<Page *>(
+            static_cast<uintptr_t>(q) & -pageSize)->pageClass ==
+        stablePageTag) return;
+    uintptr_t a = reinterpret_cast<uintptr_t>(p);
 // Round down to a Page boundary. Because pages are always allocated
 // properly aligned this will give the start of the Page containing the
 // word being addressed.
@@ -293,9 +307,17 @@ inline void fillInBackChains()
     }
 }
 
+// Here I make what is a potentially delicate but pragmatic assumption,
+// that an atomic<LispObject> is represented in memory in just the same
+// way as a simple LispObject - so the only difference is that when one
+// accesses treating it as atomic the compiler is both more careful about
+// re-ordering memory reference instructions and it may put in extra
+// memory fence instructions so that the hardware does not shuffle access
+// or leave some write sitting in the cache associated with one CPU but
+// not visible to others.
 
-inline void write_barrier(atomic<LispObject> *p)
-{   write_barrier(reinterpret_cast<LispObject *>(p));
+inline void write_barrier(atomic<LispObject> *p, LispObject q)
+{   write_barrier(reinterpret_cast<LispObject *>(p), q);
 }
 
 // Now to match the above I need code that will identify every dirty
@@ -559,7 +581,6 @@ extern LispObject             result[maxThreads];
 extern size_t                 gIncrement[maxThreads];
 extern atomic<uintptr_t> gFringe;
 extern uintptr_t              gLimit;
-extern uintptr_t              gNext;
 
 // With the scheme I have here when an 8 Mbyte page gets full all of it
 // will be scheduled for evacuation (ie garbage collection). In the extreme
@@ -964,7 +985,7 @@ inline void garbageCollectOnBehalfOfAll()
 // Now while the other threads are idle I can perform some garbage
 // collection and fill in results via result[] based on request[].
 // I will also put gFringe back to the value it had before any thread
-// had done anthing with it.
+// had done anything with it.
     size_t inc = 0;
     for (unsigned int i=0; i<maxThreads; i++)
     {   result[i] = nil;
@@ -988,12 +1009,16 @@ inline void garbageCollectOnBehalfOfAll()
     {   unsigned int pendingCount = 0;
         for (unsigned int i=0; i<maxThreads; i++)
         {   size_t n = request[i];
+// Check if request (i) can be satisfied trivially. First I try within
+// its current chunk, because the garbage collection may have been triggered
+// by some other thread and the chunk for (i) may have plenty of space left.
             if (n != 0)
             {   uintptr_t f = fringeBis[i];
                 uintptr_t l = limitBis[i];
                 size_t gap = l - f;
                 if (n <= gap)
                 {   result[i] = fringeBis[i] + TAG_VECTOR;
+// If I fill in a result for this I set it to show it does not need any more.
                     request[i] = 0;
                     firstWord(result[i]).store(makeVectorHeader(n));
                     fringeBis[i] += n;
@@ -1003,6 +1028,11 @@ inline void garbageCollectOnBehalfOfAll()
                 }
                 else
                 {   size_t gap1 = gLimit - gFringe;
+// If the current chunk for (i) is full I will see if I can allocate another
+// one. This can be possible if GC was triggered by another thread that was
+// trying to allocate a huge object - so huge that it would have pushed
+// gFringe beyong gLimit but when this thread is making a simple request such
+// that a more or less standard sized chunk will suffice.
                     if (n+targetChunkSize < gap1)
                     {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
                         result[i] = gFringe.load() + TAG_VECTOR;
@@ -1012,10 +1042,17 @@ inline void garbageCollectOnBehalfOfAll()
                         gFringe = limitBis[i] = limit[i] = fringeBis[i] + targetChunkSize;
                     }
                     else
-                    {   while (gNext != 0)
-                        {   gFringe = gNext;
-                            gLimit = (reinterpret_cast<uintptr_t *>(gFringe.load()))[0];
-                            gNext = (reinterpret_cast<uintptr_t *>(gFringe.load()))[1];
+                    {
+// Here the current region in the Page is full. I may either have reached the
+// very end of the page or I may have merely run up against a pinned Chunk
+// within it.
+                        uintptr_t pageEnd = (gFringe & ~pageSize) + pageSize;
+                        while (gLimit != pageEnd)
+                        {   gFringe = gLimit +
+                                      reinterpret_cast<Chunk *>(gLimit)->length;
+                            gLimit = reinterpret_cast<uintptr_t>(
+                                reinterpret_cast<Chunk *>(gLimit)->pinChain.load());
+                            if (gLimit == 0) gLimit = pageEnd;
                             gap1 = gLimit - gFringe;
                             if (n+targetChunkSize < gap1)
                             {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
@@ -1027,13 +1064,22 @@ inline void garbageCollectOnBehalfOfAll()
                                 break;
                             }
                         }
-                        if (gNext == 0) pendingCount++;
+// pendingCount will be a count of the requests NOT satisfied. So I increment
+// if if I do not manage to make an allocation.
+                        if (request[i] != 0) pendingCount++;
                     }
                 }
             }
         }
+// If there are no pending requests that can be because using space beyond
+// pinnings allowed me to cope. But if there are still some left over here
+// I will need to allocate a fresh page of space. If I am adopting a major
+// GC strategy I just allocate another page until my whole memory is about
+// galf full, but with a generational GC I will run some GC activity each
+// time I get here - just evacuating a single page.
         if (pendingCount == 0) break;
-// This where a page is full up.
+// This where a page is full up. Or at least where the region within a page
+// up to the next pinned region was full up!
 // I wll set padders everywhere even if I might think I have done so
 // already, just so I am certain.
         for (unsigned int i=0; i<maxThreads; i++)
@@ -1043,6 +1089,8 @@ inline void garbageCollectOnBehalfOfAll()
         }
         size_t gap = gLimit - gFringe;
         if (gap != 0) firstWord(gFringe).store(makePaddingHeader(gap));
+// Next if I will be building up to a full GC I can usually just allocate
+// another Page from the list of free Pages.
         if (!generationalGarbageCollection ||
             !garbage_collection_permitted ||
             victimPage == NULL)
@@ -1056,9 +1104,49 @@ inline void garbageCollectOnBehalfOfAll()
                 if (victimPage == NULL) busyPages++;
                 victimPage = currentPage;
                 victimPage->pageClass = victimPageTag;
-// If I have some pages that contain pinned material I will use them next.
-// The reasoning behind that is that by doing so they will get scavanged
-// tolerably soon and with luck the pinned locations will end up free by then.
+// I must talk through an interaction between pinned data and my write
+// barrier. Suppose some data is is pinned and in addition to the ambiguous
+// references to it is is pointed to from ancient structures. During a
+// garbage collection in which it is pinned the data there will not be moved
+// and so the pointers from ancient areas remain safe.
+// Now suppose that during the next garbage collection there are no ambiguous
+// pointers to this data. Further suppose that it could be in a victim page.
+// That could happen either because I used the partly pinned page as
+// a "current" one and allocated more new material within in, or if I tried
+// to dispose of pinning as soon as possible by treating all partly pinned
+// pages as victims.
+// Because the data is no longer pinned it gets evacuated. So all references
+// to it will need updating. Those in the stable part of the heap and
+// those within pinned regions in partly-free data may risk being missed
+// out. So I will need to apply the write barrier to every location where
+// there is a precise pointer to a pinned item.
+// So I should worry about the sequence
+//   (1)  create pointer to Y from location X
+//   (2)  location X ends up in stable heap region, typically because
+//        X was evacuated.
+//   (3)  Y is in a victim page. It gets pinned and then a minor GC leaves
+//        it in a mostly-free page
+//   (4)  at a subsequent minor GC Y is no longer pinned and gets evacuated.
+//        but we then need to be certain that X gets updated.
+// This is all OK provided X is tagged using the write barrier and that it
+// never gets tagged as "clean" again until it is seen pointing to something
+// that is in the stage part of the heap. 
+//
+// Now I have written out the above I believe that my game-plan should be
+// that (a) unless desparate I never make a page that has some pinned stuff
+// on it "current" - after garbage collection pages that are free apart from
+// some pinned chunks are treated as being in quarantine for so long as the
+// pinning persists.
+// (b) Whenever I do anything that notices a (precise) pointer to a pinned
+// item then the location holding that pointer is tagged as dirty. That
+// issue becomes critical when the dirty location ends up in the stable
+// region or in a partly-pinned page.
+// (c) all "mostly free" pages are considered to be victim pages so that
+// if items in them are NOT (now) pinned those items can be evacuated
+// out from them even on a minor GC. And if a chunk ends up with no
+// current pins and if all live data is evacuated from it then its space
+// is available for re-use, and if the page ends up with no pinned chunks
+// it becomes a fully free page.
                 {   std::lock_guard<std::mutex> guard(mutexForFreePages);
                     if (mostlyFreePages != NULL)
                     {   currentPage = mostlyFreePages;
@@ -1085,7 +1173,6 @@ inline void garbageCollectOnBehalfOfAll()
 // Every thread will now need to grab its own fresh chunk!
                 for (unsigned int k=0; k<maxThreads; k++)
                     limit[k] = fringeBis[k] = limitBis[k] = gFringe;
-                gNext = 0;
 //              cout << "@@ just allocated a fresh page\n";
             }
         }
@@ -1170,6 +1257,16 @@ inline void waitWhileAnotherThreadGarbageCollects()
 // that close to UINTPTR_MAX! I think that on all realistic systems that is
 // a problem that will not actually arise.
 //
+// Note that I get here not just at the end of a full Page but also each time
+// I need to skip past a pinned chunk within a page, so having too many
+// pinned chunks would lead to quite a lot of synchronization overhead.
+// Well I thing that is just how things are! To reduce costs if after GC
+// I find that a page has pinned blocks in I may want to delay re-using
+// it for allocation, and I may want the generational collector to be
+// ready to evacuate stuff from such pages almost as soon as it ceases to
+// be pinned.
+//
+
 inline uintptr_t difficult_n_bytes()
 {
 // Every thread that comes here will need to record the value of its

@@ -751,7 +751,6 @@ void setVariablesFromPage(Page *p)
     fringe::set(limit[threadId::get()] = limitBis[threadId::get()] =
             gFringe = pFringe);
     gLimit = pLimit;
-    gNext = 0;
 }
 
 void saveVariablesToPage(Page *p)
@@ -845,7 +844,8 @@ bool allocateSegment(size_t n)
         n1 = reinterpret_cast<int64_t>(r) + (n1 % n);
         n1 = n1 & ~UINT64_C(7);
         cout << "Barrier on " << std::hex << n1 << std::dec << endl;
-        write_barrier(reinterpret_cast<LispObject *>(n1));
+        write_barrier(reinterpret_cast<LispObject *>(n1),
+                      *reinterpret_cast<LispObject *>(n1));
         processAmbiguousValue(true, n1);
     }
     cout << "About to scan all the dirty cells\n";
@@ -1168,7 +1168,6 @@ LispObject             result[maxThreads];
 size_t                 gIncrement[maxThreads];
 atomic<uintptr_t> gFringe;
 uintptr_t              gLimit;
-uintptr_t              gNext;
 
 #ifdef WIN32
 #include <conio.h>

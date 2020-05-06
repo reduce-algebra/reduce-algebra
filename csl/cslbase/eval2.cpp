@@ -265,8 +265,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
     catch (LispThrow &e)
     {   pop(tag);
         catch_tags = cdr(tag);
-        setcar(tag, tag);
-        write_barrier(caraddr(tag));
+        write_barrier(caraddr(tag), tag);
 // Hmm - ought I to put a write_varrier on the CDR. Well it gets changed
 // to point to NIL, and NIL is at a fixed address so the GC does not need
 // to know!
@@ -277,15 +276,13 @@ static LispObject catch_fn(LispObject args, LispObject env)
     catch (LispException &e)
     {   pop(tag);
         catch_tags = cdr(tag);
-        setcar(tag, tag);
-        write_barrier(caraddr(tag));
+        write_barrier(caraddr(tag), tag);
         setcdr(tag, nil);        // Invalidate the catch frame
         throw;
     }
     pop(tag);
     catch_tags = cdr(tag);
-    setcar(tag, tag);
-    write_barrier(caraddr(tag));
+    write_barrier(caraddr(tag), tag);
     setcdr(tag, nil);            // Invalidate the catch frame
     return v;
 }
@@ -436,8 +433,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
     {   LispObject w = car(p), v = car(w), z = cdr(w);
         LispObject old = qvalue(v);
         setvalue(v, z);
-        setcdr(w, old);
-        write_barrier(cdraddr(w));
+        write_barrier(cdraddr(w), old);
     }
 // The above has instated bindings. Subject to not getting asynchronous
 // interruptions once I start to bind any I bind all.
@@ -763,8 +759,7 @@ static LispObject labels_fn(LispObject args, LispObject env)
 //
     for (d=env; d!=my_env; d=cdr(d))
     {   LispObject w = cdr(car(car(d)));
-        setcar(w, env);
-        write_barrier(caraddr(w));
+        write_barrier(caraddr(w), env);
     }
     return let_fn_1(nil, cdr(args), env, BODY_LET);
 }

@@ -193,10 +193,8 @@ LispObject get(LispObject a, LispObject b, LispObject c)
 // migrate it up to the front so that next time will be faster
 //
         if (car(w) == b)   // found - do move to top operation.
-        {   setcdr(prev, cdr(pl));
-            write_barrier(cdraddr(prev));
-            setcdr(pl, qplist(a));
-            write_barrier(cdraddr(pl));
+        {   write_barrier(cdraddr(prev), cdr(pl));
+            write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
 #ifdef RECORD_GET
             push(w);
@@ -237,8 +235,7 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     while (pl != nil)
     {   LispObject w = car(pl);
         if (car(w) == b)
-        {   setcdr(w, c);
-            write_barrier(cdraddr(w));
+        {   write_barrier(cdraddr(w), c);
             return c;
         }
         else pl = cdr(pl);
@@ -267,10 +264,7 @@ static LispObject remprop(LispObject a, LispObject b)
         if (car(w) == b)
         {   pl = cdr(pl);
             if (prevp == nil) setplist(a, pl);
-            else
-            {   setcdr(prevp, pl);
-                write_barrier(cdraddr(prevp));
-            }
+            else write_barrier(cdraddr(prevp), pl);
             return cdr(w);
         }
         prevp = pl;
@@ -377,10 +371,8 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
 // migrate it up to the front so that next time will be faster
 //
         if (car(w) == b)
-        {   setcdr(prev, cdr(pl));
-            write_barrier(cdraddr(prev));
-            setcdr(pl, qplist(a));
-            write_barrier(cdraddr(pl));
+        {   write_barrier(cdraddr(prev), cdr(pl));
+            write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
 #ifdef RECORD_GET
             push(w);
@@ -492,10 +484,8 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
 // migrate it up to the front so that next time will be faster
 //
         if (car(w) == b)
-        {   setcdr(prev, cdr(pl));
-            write_barrier(cdraddr(prev));
-            setcdr(pl, qplist(a));
-            write_barrier(cdraddr(pl));
+        {   write_barrier(cdraddr(prev), cdr(pl));
+            write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
 #ifdef RECORD_GET
             record_get(b, true);
@@ -606,10 +596,8 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
 // migrate it up to the front so that next time will be faster
 //
         if (car(w) == b)
-        {   setcdr(prev, cdr(pl));
-            write_barrier(cdraddr(prev));
-            setcdr(pl, qplist(a));
-            write_barrier(cdraddr(pl));
+        {   write_barrier(cdraddr(prev), cdr(pl));
+            write_barrier(cdraddr(pl), qplist(a));
             setplist(a, pl);
 #ifdef RECORD_GET
             record_get(b, true);
@@ -657,8 +645,7 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
         while (pl != nil)
         {   LispObject w = car(pl);
             if (car(w) == b)
-            {   setcdr(w, lisp_true);
-                write_barrier(cdraddr(w));
+            {   write_barrier(cdraddr(w), lisp_true);
                 goto already_flagged;
             }
             else pl = cdr(pl);
@@ -692,10 +679,7 @@ LispObject Lremflag(LispObject env, LispObject a, LispObject b)
             if (car(w) == b)
             {   pl = cdr(pl);
                 if (prevp == nil) setplist(v, pl);
-                else
-                {   setcdr(prevp, pl);
-                    write_barrier(cdraddr(prevp));
-                }
+                else write_barrier(cdraddr(prevp), pl);
                 break;
             }
             prevp = pl;

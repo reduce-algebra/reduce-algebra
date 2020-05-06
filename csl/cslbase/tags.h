@@ -169,6 +169,10 @@ inline bool is_float(LispObject p)
 {   return ((0xc040 >> (p & XTAG_BITS)) & 1) != 0;
 }
 
+inline bool is_pointer_type(LispObject p)
+{   return ((0x73 >> (p & TAG_BITS)) & 1) != 0;
+}
+
 inline bool is_immed_or_cons(LispObject p)
 {   return ((0x85 >> (p & TAG_BITS)) & 1) != 0;
 }

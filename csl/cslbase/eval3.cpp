@@ -464,10 +464,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
                 w = car(p);
                 if (car(w) == var)
                 {   if (cdr(w) == work_symbol) setvalue(var, val);
-                    else
-                    {   setcdr(w, val);
-                        write_barrier(cdraddr(w));
-                    }
+                    else write_barrier(cdraddr(w), val);
                     break;
                 }
                 p = cdr(p);

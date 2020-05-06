@@ -48,8 +48,7 @@ LispObject nreverse(LispObject a)
     while (consp(a))
     {   LispObject c = a;
         a = cdr(a);
-        setcdr(c,  b);
-        write_barrier(cdraddr(c));
+        write_barrier(cdraddr(c), b);
         b = c;
     }
     return b;
