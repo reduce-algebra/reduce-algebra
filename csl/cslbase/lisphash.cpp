@@ -338,7 +338,6 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
     push(v2);
     LispObject v = get_basic_vector_init(6*CELL, nil);
     pop(v2, v1);
-//  basic_elt(v, HASH_FLAVOUR) = flavour;         // comparison method
     write_barrier(&basic_elt(v, HASH_FLAVOUR), flavour);
 // I am being tricky here - when I write a fixnum into the vector I
 // do not trigger the write-barrier because I know that a fixnum is not
@@ -348,9 +347,7 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
     int shift = 64 - bits;
     basic_elt(v, HASH_SHIFT) = fixnum_of_int(
                                    shift);  // 64-log2(table size)
-//  basic_elt(v, HASH_KEYS) = v1;                 // key table.
     write_barrier(&basic_elt(v, HASH_KEYS), v1);
-//  basic_elt(v, HASH_VALUES) = v2;               // value table.
     write_barrier(&basic_elt(v, HASH_VALUES), v2);
     setvechdr(v, vechdr(v) ^ (TYPE_SIMPLE_VEC ^ TYPE_HASH));
     return onevalue(v);
@@ -382,14 +379,12 @@ LispObject Lmkhashset(LispObject env, LispObject flavour)
     push(v1);
     LispObject v = get_basic_vector_init(6*CELL, nil);
     pop(v1);
-//  basic_elt(v, HASH_FLAVOUR) = flavour;         // comparison method
     write_barrier(&basic_elt(v, HASH_FLAVOUR), flavour);
     basic_elt(v, HASH_COUNT) = fixnum_of_int(
                                    0);  // current number of items stored.
     int shift = 64 - bits;
     basic_elt(v, HASH_SHIFT) = fixnum_of_int(
                                    shift);  // 64-log2(table size)
-//  basic_elt(v, HASH_KEYS) = v1;                 // key table.
     write_barrier(&basic_elt(v, HASH_KEYS), v1);
     basic_elt(v, HASH_VALUES) = nil;              // value table.
 // nil can never be an up-pointer.

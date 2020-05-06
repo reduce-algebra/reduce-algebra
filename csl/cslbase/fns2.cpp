@@ -2882,11 +2882,11 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
             w = substq(a, b, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-    {   w = cdr(r);
-            write_barrier(cdraddr(r), c);
-            c = r;
-            r = w;
-        });
+            {   w = cdr(r);
+                write_barrier(cdraddr(r), c);
+                c = r;
+                r = w;
+            });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
@@ -3004,11 +3004,11 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
             w = subst(a, b, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-    {   w = cdr(r);
-            write_barrier(cdraddr(r), c);
-            c = r;
-            r = w;
-        });
+            {   w = cdr(r);
+                write_barrier(cdraddr(r), c);
+                c = r;
+                r = w;
+            });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
@@ -3256,18 +3256,18 @@ LispObject sublis(LispObject a, LispObject c)
             w = sublis(a, car(c)),
 // If the recursive call fails I need to unshare before exit.
             while (r != TAG_FIXNUM)
-    {   w = cdr(r);
-            write_barrier(cdraddr(r), c);
-            c = r;
-            r = w;
-        });
+            {   w = cdr(r);
+                write_barrier(cdraddr(r), c);
+                c = r;
+                r = w;
+            });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
 //
         if (w == car(c))
         {   w = cdr(c);
-            write_barrier(cdraddr(c), c);
+            write_barrier(cdraddr(c), r);
             r = c;
             c = w;
             continue;
