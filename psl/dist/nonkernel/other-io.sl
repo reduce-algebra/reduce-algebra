@@ -68,7 +68,7 @@
   (prog (oldlen striplen)
         (setq oldlen (wgetv maxline chn))
         (when len
-          (if (and (intp len) (wgeq len 1)) 
+          (if (and (intp len) (wgeq len 0)) 
             (setf (wgetv maxline chn) len)
             (stderror (bldmsg '"%r is an invalid line length" len))))
         (return oldlen)))
