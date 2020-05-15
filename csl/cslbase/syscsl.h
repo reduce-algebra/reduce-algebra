@@ -62,9 +62,10 @@ extern void process_file_name(char *filename, const char *old,
 // open_file accepts a vector of characters (old) and looks at the first
 // (n) of them.  This is taken as a CSL filename - it is subject (possibly)
 // to adjustments, the expanded name is copied to the array (filename) and an
-// attempt is made to open a file.  (mode) is a string (like "r", "w" or "r+b")
-// suitable for handing to the C "fopen" function to specify a mode, and
-// if (old_file) is non-NULL we should do an freopen() rather than fopen().
+// attempt is made to open a file.  (mode) is a string (like "r", "w" or
+// "r+b") suitable for handing to the C "fopen" function to specify a mode,
+// and if (old_file) is not nullptr we should do an freopen() rather than
+// fopen().
 // The main intent in filename conversion as supported here is to allow
 // users on all machines to use Unix-like file-names to at least some
 // minimal extent, so names like "subdir/file.lsp" should be allowed, even

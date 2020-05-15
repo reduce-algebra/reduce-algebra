@@ -2574,17 +2574,7 @@ void setup(int restart_flag, double store_size)
                          &stack[stack_segsize*CSL_PAGE_SIZE/CELL-200]));
     // allow some slop at end
 
-#ifdef CONSERVATIVE
-    currentPage = freePages;
-    setVariablesFromPage(currentPage);
-    freePages = freePages->chain;
-    freePagesCount--;
-    victimPage = nullptr;
-    busyPages = nullptr;
-    busyPagesCount = 1;
-    mostlyFreePages = nullptr;
-    mostlyFreePagesCount = 0;
-#else // CONSERVATIVE
+#ifndef CONSERVATIVE
     void *p = vheap_pages[vheap_pages_count++] =
                   allocate_page("vheap warm setup");
     vfringe = reinterpret_cast<LispObject>(
@@ -2595,7 +2585,7 @@ void setup(int restart_flag, double store_size)
     heaplimit = (intptr_t)p;
     fringe = static_cast<LispObject>(heaplimit + CSL_PAGE_SIZE);
     heaplimit = static_cast<LispObject>(heaplimit + SPARE);
-#endif // CONSERVATIVE
+#endif // !CONSERVATIVE
 
     if ((restart_flag & 1) != 0) warm_setup();
     else cold_setup();

@@ -108,7 +108,15 @@ inline void CSL_IGNORE(LispObject x)
 // Windows seems to say it can use file names up to 260 chars, Unix and
 // the like may not even have that limit, but I will assume something here.
 // There must be a number of cases of potential buffer overflow throughout
-// my code caused by this fixed limit.
+// my code caused by this fixed limit. Note that the Windows limit there is
+// just when using 8-bit characters in the path-name, and it is 256 plus
+// space for "x:\" at the start to specify a drive and a "\0" at the end to
+// terminate the string. However if you use the Unicode version of the
+// Windows API you can have names with length up to 32K. Well it is messier
+// even that that. Since about mid 2016 Windows 10 allows users to opt out
+// of there being a path length restriction by setting a registry key and
+// perhaps by also putting extra stuff an an "application manifest".
+// I rather wonder how many people exploit that option!
 
 #define LONGEST_LEGAL_FILENAME 1024
 
@@ -125,28 +133,24 @@ inline void CSL_IGNORE(LispObject x)
 static const uintptr_t TAG_BITS      = 0x7;
 static const uintptr_t XTAG_BITS     = 0xf;
 
-//                                                               bit-mask in (1<<tag)
+// For almost all types I just use TAG_BITS and masking with that leaves
+// an integer in the range 0-7. But the code 7 there is used both for small
+// integers and for short floats and in that case the next bit up is used
+// to discriminate, so there I may want to use XTAG_BITS which picks out
+// the low 4 bits rather than just the low 3.
 
-static const int TAG_CONS      =
-    0;   // Cons cells                                01
-static const int TAG_VECTOR    =
-    1;   // Regular Lisp vectors                      02
-static const int TAG_HDR_IMMED =
-    2;   // Char constants, vechdrs etc               04
-static const int TAG_FORWARD   =
-    3;   // For the Garbage Collector                 08
-static const int TAG_SYMBOL    =
-    4;   // Symbols                                   10
-// Note that tags from 5 up are all for numeric date
-static const int TAG_NUMBERS   =
-    5;   // Bignum, Rational, Complex                 20
-static const int TAG_BOXFLOAT  =
-    6;   // Boxed floats                              40
-static const int TAG_FIXNUM    =
-    7;   // 28/60-bit integers                        80
-static const int TAG_XBIT      = 8;   // extra bit!
-static const int XTAG_SFLOAT   =
-    15;  // Short float, 28+ bits of immediate data   80
+static const int TAG_CONS      =    0;   // Cons cells                                01
+static const int TAG_VECTOR    =    1;   // Regular Lisp vectors                      02
+static const int TAG_HDR_IMMED =    2;   // Char constants, vechdrs etc               04
+static const int TAG_FORWARD   =    3;   // For the Garbage Collector                 08
+static const int TAG_SYMBOL    =    4;   // Symbols                                   10
+                                         // Note that tags from 5 up are all
+                                         // for numeric date
+static const int TAG_NUMBERS   =    5;   // Bignum, Rational, Complex                 20
+static const int TAG_BOXFLOAT  =    6;   // Boxed floats                              40
+static const int TAG_FIXNUM    =    7;   // 28/60-bit integers                        80
+static const int TAG_XBIT      =    8;   // extra bit!
+static const int XTAG_SFLOAT   =   15;   // Short float, 28+ bits of immediate data   80
 
 // On a 32-bit machine I can pack a 28-bit float (implemented as a 32-bit
 // one with the low 4 bits crudely masked off) by putting XTAG_FLOAT as the

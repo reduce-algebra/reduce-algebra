@@ -37,6 +37,8 @@
 
 #include "headers.h"
 
+using std::hex;
+using std::dec;
 
 // Overview of procedure for full garbage collection:
 //
@@ -327,10 +329,8 @@ uintptr_t get_n_bytes_new(size_t n)
             }
             currentPage = nextPage;
             busyPagesCount++;
-            uintptr_t pFringe = currentPage->fringe;
-            uintptr_t pLimit = currentPage->limit;
-            nFringe = pFringe;
-            nLimit = pLimit;
+            nFringe = currentPage->fringe;
+            nLimit = currentPage->limit;
             gap = nLimit - nFringe;
         }
     }
@@ -424,8 +424,8 @@ void clearPinnedInformation(bool major)
 // pinned material.
 
 void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
-{
-    if (p->chunkCount.load() == 0) return;  // An empty Page.
+{   if (p->chunkCount.load() == 0) return;  // An empty Page.
+    cout << "Ambig " << hex << a << " in page " << p << dec << endl;
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
 // the chunk has (a) pointing within it, and I should not need many tries
@@ -434,7 +434,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // me specify my own ordering predicate without needing to wait for c++2x,
 // at which stage std::sort gets such a generality.
     if (!p->chunkMapSorted)
-        std::qsort(p->chunkMap, p->chunkCount, sizeof(p->chunkMap[0]),
+    {   std::qsort(p->chunkMap, p->chunkCount, sizeof(p->chunkMap[0]),
                    [](const void *a, const void *b)
                    {   const Chunk *aa =
                            static_cast<const atomic<Chunk *>*>(a)->load();
@@ -445,6 +445,8 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
                        return aaa < bbb ? -1 :
                               aaa > bbb ? 1 : 0;
                    });
+        p->chunkMapSorted = true;
+    }
 // chunkMap is now a table of pointers to chunks sorted into ascending order.
 // I will use binary search to find out which (if any) of those chunks
 // contains the address a.
@@ -456,7 +458,9 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
         else low = middle;
     }
     Chunk *c = p->chunkMap[low];
+    cout << "pointer is maybe within chunk " << low << " at " << hex << c << dec << endl;
     if (!c->pointsWithin(a)) return;
+    cout << "Within that chunk: isPinned = " << c->isPinned << endl;
 // Here (a) lies within the range of the chunk c. Every page that has any
 // pinning must record that both by being on a chain of pages with pins
 // and by having a list of its own pinned chunks.
@@ -467,12 +471,10 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // everything atomic<> so that later on if other threads happen to look you
 // you know they will see updates, I do not need to worry about race
 // conditions while I form the chain of pinned chunks and pages.
-//
-// The use of .load() on the next line is because atomic items are not
-// copyable as such.
     c->pinChain = p->pinnedChunks.load();
     p->pinnedChunks = c;
 // When a chunk gets pinned then page must be too unless it already has been.
+    cout << "Page hasPinned = " << p->hasPinned << endl;
     if (p->hasPinned) return;
     p->hasPinned = true;
     p->pinChain = globalPinChain;
@@ -482,10 +484,14 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // typedef processPinnedChunk(Chunk *c);
 
 void scanPinnedChunks(processPinnedChunk *pc)
-{   for (Page *p = globalPinChain; p!=nullptr; p=p->pinChain)
-    {   if (!p->hasPinned) continue;
+{   cout << "scanPinnedChunks globalPinChain = " << hex << globalPinChain << dec << endl;
+    for (Page *p = globalPinChain; p!=nullptr; p=p->pinChain)
+    {   cout << hex << p << dec << " hasPinned=" << p->hasPinned << endl;
+        if (!p->hasPinned) continue;
+        cout << hex << p << " pinnedChunks=" << p->pinnedChunks << dec << endl;
         for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->pinChain)
-        {   if (!c->isPinned) continue;
+        {    cout << hex << c << dec << " isPinned=" << c->isPinned << endl;
+            if (!c->isPinned) continue;
             (*pc)(c);
         }
     }
@@ -522,8 +528,8 @@ void processAmbiguousValue(bool major, uintptr_t a)
             processAmbiguousInPage(major, victimPage, a);
         return;
     }
-    Page* p = findPage(a);
-    if (!p->hasPinned) processAmbiguousInPage(major, p, a);
+    Page *p = findPage(a);
+    if (p!=nullptr) processAmbiguousInPage(major, p, a);
 }
 
 void identifyPinnedItems(bool major)
@@ -596,4 +602,3 @@ void fullGarbageCollect()
 }
 
 // end of file newcslgc.cpp
-

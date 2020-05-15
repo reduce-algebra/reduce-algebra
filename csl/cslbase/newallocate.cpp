@@ -129,13 +129,11 @@
 // that refer into Victim. Data at the locations so addressed must not be
 // moved: I will refer to it as "pinned". The Current and each Free page may
 // have some pinned items present. When a page becomes Current it will have
-// three pointers - gFringe, gLimit and gNext. gFringe identifies the first
+// two pointers - gFringe and gLimit. gFringe identifies the first
 // point at which data could be allocated, gLimit points either one beyond
-// the end of the page or to the start address of the next pinned block.
-// If there is a pinned block then gNext points just beyond it, and the first
-// two words of the free region after that contain new values for gLimit and
-// gNext. If gLimit points to the end of the whole page then gNext will be
-// zero.
+// the end of the page or to the start address of the next pinned chunk.
+// If there is a pinned chunk then it will contain one field that indicates
+// its length and a second one that points to any pinned chunk beyond it.
 // In Victim and Busy each page will be kept full by placement of padder
 // pseudo-objects anywhere where there could be gaps: that is so that it is
 // possible to perform a sequential scan of the page with each item within
@@ -401,19 +399,23 @@ atomic<uint32_t> activeThreads;
 // objects only reside in the data[] part the first couple of kilobytes
 // of objstart[] will never be used.
 
+// The initializeation here is intended to make the code more fragile
+// so that unless I initialize elsewhere I stand a good chance of seeing
+// a prompt sigsegv.
+static Page *px = reinterpret_cast<Page *>(-0x5a5a5a5aU);
 
-Page *currentPage;       // Where allocation is happening. The "nursery".
-Page *victimPage;        // A page that was recently the current one.
-Page *busyPages;         // Chained list of pages that contain live data.
-Page *doomedPages;       // Page from which live stuff is being evacuated.
-Page *mostlyFreePages;   // Chained list of pages that the GC has mostly
-// cleared but that have some pinned data left in
-// them.
-Page *freePages;         // Chained list of pages that are not currenty in
-// use and that contain no useful information.
+Page *currentPage = px;     // Where allocation is happening. The "nursery".
+Page *victimPage = px;      // A page that was recently the current one.
+Page *busyPages = px;       // Chained list of pages that contain live data.
+Page *doomedPages = px;     // Page from which live stuff is being evacuated.
+Page *mostlyFreePages = px; // Chained list of pages that the GC has mostly
+                            // cleared but that have some pinned data left
+                            // in them.
+Page *freePages = px;       // Chained list of pages that are not currently
+                            // in use and that contain no useful information.
 
-size_t busyPagesCount, mostlyFreePagesCount,
-       freePagesCount, doomedPagesCount;
+size_t busyPagesCount = -1, mostlyFreePagesCount = -1,
+       freePagesCount = -1, doomedPagesCount = -1;
 
 void *heapSegment[16];
 void *heapSegmentBase[16];
@@ -477,6 +479,8 @@ public:
                 std::abort();
             }
         }
+        cout << "is_standard_layout(Chunk) = "
+             << std::is_standard_layout<Chunk>::value << endl;
     }
 };
 
@@ -700,7 +704,7 @@ void setUpUsedPage(Page *p)
     p->dirtyChain = nullptr;
 // Those Chunks that are on the pinChain need to be put into chunkMap..
 // other chunks will get added as they are allocated, but the pinned ones
-// are ther eright from the start.
+// are there right from the start.
     for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->pinChain)
         p->chunkMap[p->chunkCount++] = c;
 // I want the pinned chunks sorted so that the lowest address one comes
@@ -743,14 +747,16 @@ void setUpUsedPage(Page *p)
 void setVariablesFromPage(Page *p)
 {
 // Set the variable that are used when allocating within the active page.
-    uintptr_t pFringe = p->fringe;
-    uintptr_t pLimit = p->limit;
-// Here I suppose there are no pinned items in the page. I set fringe and
-// limit such that on the very first allocation the code will grab a bit of
-// memory at gFringe.
+// Here I require that when a page it set up the fringe and limit values
+// stored within it reflect any pinned chunks. When I do this I set the
+// limit for the current page equal to the fringe, and that will mean
+// that the very first time I try to allocate I will arrange to set up
+// a fresh Chunk. That seems nicer to me than creating that chunk here.
     fringe::set(limit[threadId::get()] = limitBis[threadId::get()] =
-            gFringe = pFringe);
-    gLimit = pLimit;
+            gFringe = p->fringe.load());
+    gLimit = p->limit;
+    cout << "At " << __LINE__ << " gFringe = " << gFringe << endl;
+    cout << "At " << __LINE__ << " gLimit = " << gLimit << endl;
 }
 
 void saveVariablesToPage(Page *p)
@@ -834,37 +840,6 @@ bool allocateSegment(size_t n)
         freePagesCount++;
     }
     cout << freePagesCount << " pages available\n";
-//- Now as a temporary issue I will try to test my write barrier and
-//- pinning scheme. For the write barrier I do not need any data in the
-//- pages concerned, but for pinning I need much of the memory to be full -
-//- what I do here is make it roughhlt (2/3) full.
-    for (size_t i=0; i<2*n/3/sizeof(LispObject)/2; i++) cons(nil, nil);
-    for (int i=0; i<3; i++)
-    {   uint64_t n1 = arithlib::mersenne_twister();
-        n1 = reinterpret_cast<int64_t>(r) + (n1 % n);
-        n1 = n1 & ~UINT64_C(7);
-        cout << "Barrier on " << std::hex << n1 << std::dec << endl;
-        write_barrier(reinterpret_cast<LispObject *>(n1),
-                      *reinterpret_cast<LispObject *>(n1));
-        processAmbiguousValue(true, n1);
-    }
-    cout << "About to scan all the dirty cells\n";
-    scanDirtyCells(
-        [](atomic<LispObject> *a) -> void
-        {   cout << std::hex << reinterpret_cast<intptr_t>(a) << std::dec
-                 << endl;
-        });
-    cout << "Dirty cells scanned\n";   
-    cout << "About to scan all the pinned chunks\n";
-    scanPinnedChunks(
-        [](Chunk *c) -> void
-        {   cout << "Chunk at "
-                 << std::hex << reinterpret_cast<intptr_t>(c) << std::dec
-                 << endl;
-        });
-    cout << "Pinned chunks scanned\n";   
-
-
     return true; // Success!
 }
 
@@ -1000,6 +975,8 @@ void initHeapSegments(double storeSize)
 // set the variables that are associated with tracking memory allocation
 // to keep everything as clear as I can.
     heapSegmentCount = 0;
+    for (int i=0; i<16; i++)
+        heapSegment[i] = reinterpret_cast<void *>(-1);
     freePages = mostlyFreePages = nullptr;
     cout << "Allocate " << (freeSpace/1024U) << " Kbytes" << endl;
     allocateSegment(freeSpace);
@@ -1030,6 +1007,76 @@ void initHeapSegments(double storeSize)
 #endif
     if (stackSegment == nullptr) fatal_error(err_no_store);
     stackBase = reinterpret_cast<LispObject *>(stackSegment);
+// Arrange that I will be able to allocate stuff.
+    currentPage = freePages;
+    setVariablesFromPage(currentPage);
+    freePages = freePages->chain;
+    freePagesCount--;
+    victimPage = nullptr;
+    busyPages = nullptr;
+    busyPagesCount = 1;
+    mostlyFreePages = nullptr;
+    mostlyFreePagesCount = 0;
+
+//- Now as a temporary issue I will try to test my write barrier and
+//- pinning scheme. For the write barrier I do not need any data in the
+//- pages concerned, but for pinning I need much of the memory to be full -
+//- what I do here is make it roughly (2/3) full.
+    cout << "Total mem = " << freeSpace << endl;
+    size_t conses = freeSpace/(2*sizeof(LispObject));
+    cout << "conses = " << conses << endl;
+    size_t which[5];
+    for (int j=0; j<5; j++)
+        which[j] = arithlib::mersenne_twister() % (conses/3);
+    LispObject barriered[5];
+    for (int j=0; j<5; j++) barriered[j] = fixnum_of_int(j);
+    for (size_t i=0; i<conses/3; i++)
+    {   LispObject a = cons(nil, nil);
+        for (int j=0; j<5; j++)
+            if (i == which[j]) barriered[j] = a;
+    }
+    for (int j=0; j<5; j++)
+    {   uintptr_t n1 = static_cast<uintptr_t>(barriered[j]);
+        cout << "Barrier on " << std::hex << n1 << std::dec << endl;
+        write_barrier(reinterpret_cast<LispObject *>(n1),
+                      *reinterpret_cast<LispObject *>(n1));
+    }
+    cout << "About to scan all the dirty cells\n";
+    scanDirtyCells(
+        [](atomic<LispObject> *a) -> void
+        {   cout << std::hex << reinterpret_cast<intptr_t>(a) << std::dec
+                 << endl;
+        });
+    cout << "Dirty cells scanned\n";   
+    for (int i=0; i<5; i++)
+    {   uint64_t n1;
+// I want to conjure up an address that is within the region that is so far
+// in use. This may point at page or chunk headers, in which case it ought
+// not to mark anything.
+        n1 = arithlib::mersenne_twister();
+        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << endl;
+        processAmbiguousValue(true, n1);
+        n1 = reinterpret_cast<int64_t>(heapSegment[0]) +
+             (n1 % heapSegmentSize[0]);
+        n1 = n1 & ~UINT64_C(7);
+        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << endl;
+        processAmbiguousValue(true, n1);
+        n1 = barriered[i];
+        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << endl;
+        processAmbiguousValue(true, n1);
+    }
+    cout << "About to scan all the pinned chunks\n";
+    scanPinnedChunks(
+        [](Chunk *c) -> void
+        {   cout << "Chunk at "
+                 << std::hex << reinterpret_cast<intptr_t>(c)
+                 << " to " << (reinterpret_cast<intptr_t>(c)+c->length)
+                 << std::dec << endl;
+        });
+    cout << "Pinned chunks scanned\n";   
+
+// End of temp testing code
+
 }
 
 void dropHeapSegments()
@@ -1167,7 +1214,7 @@ size_t                 request[maxThreads];
 LispObject             result[maxThreads];
 size_t                 gIncrement[maxThreads];
 atomic<uintptr_t> gFringe;
-uintptr_t              gLimit;
+uintptr_t              gLimit = 0xaaaaaaaaU*0x80000001U;
 
 #ifdef WIN32
 #include <conio.h>
