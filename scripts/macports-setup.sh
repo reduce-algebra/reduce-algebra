@@ -112,6 +112,7 @@ port -N    install ccache gtime
 port -N    install gmake bc timeout
 port -N -s install xorg-libXrandr
 port -N -s install xorg-libXcursor
+port -N    install brotli
 date
 
 case "$*" in

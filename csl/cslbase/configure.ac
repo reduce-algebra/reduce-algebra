@@ -1785,6 +1785,8 @@ then
       $LL/libz.a \
       $LL/libbz2.a \
       $LL/libfreetype.a \
+      $LL/libbrotlicommon-static.a \
+      $LL/libbrotlidec-static.a \
       $LL/libiconv.a \
       $LL/libXft.a \
       $LL/libfontconfig.a \
