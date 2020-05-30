@@ -298,8 +298,8 @@ BOOL IsWow64()
 
 // Run either the 32-bit Windows binary or the 64-bit one. If the regular
 // name if the program is XXX then this launches wither XXXwin32 or
-// XXXwin64. The names I will in fact use are "boot", "red" and "wred" and
-// I should probably include "csl".
+// XXXwin64. The names I will in fact use are "boot", "wboot, "red" and
+// "wred" and I should probably include "csl" and "wcsl".
 
 int runWindows(const char *extra)
 {
