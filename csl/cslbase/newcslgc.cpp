@@ -44,65 +44,23 @@ using std::dec;
 //
 // For garbage collection I will refer to the full half-space as "A"
 // for Active, the empty one as "C" for Clear. At the entry to GC I will
-// expect that all pages in C have chaining set up in them in the form
-//
-//   |.....................XXXXX...........XXXXX...........XXXXX........|
-//    ^                    ^    ^          ^    ^          ^    ^       ^
-//  gFringe             gLimit next        p    q          r    s       t
-// where XXXX denote items pinned by a previous GC, p is a subsequent limit
-// and q a subsequent next (and similarly for r,s,t) with the follow-on next
-// value zero at the end of the page.
-// each pinned 
+// expect that all pages in C have any pinned chunks within them chained
+// so that I can avoid overwriting existing data that may still be needed.
 // 
-// Within the active part of the heap there will be a list pinsC that has
-// pointers to each pinned item in C. This is not a Lisp standard list - it
-// will be chained in the CAR field with pointers tagged as FORWARD while the
-// CDR field of each entry refers to the pinned item. furthermore this list is
-// sorted so that items appear in it in order of increasing memory address,
-// and each of the lists freePages and mostlyFreePages will be similarly
-// sorted. *MAYBE*!!!!!!!
-// I should note that at the start of a GC the object-start and pinned bitmaps
-// for each page contain junk - that is because those two bitmaps share space
-// with maps used for write barriers. During a global GC write barrier data
-// is not used. During a minor GC it will be necessary to use dirty bits
-// (where RPLACx, PUTVEC and relatives have updated field in stable data and
-// these must be treated as list-bases potentially referring into the
-// current nursery and previous pages). In that case I will need to set up
-// pinned maps for victimPage (which is the only one from which information
-// gets evacuated). Because all live data in that is about to be relocated
-// dirty bits associated with it are not relevant. So I first set up
-// information about pinning in victimPage. I can then inspect all data
-// that may be dirty, and if it refers into victimPage I leave it alone if
-// pinned, evacuate data or follow a forwarding address. If while doing that
-// I find that all references from the region marked as dirty end up in
-// pages that will be stable at the end of this collection I can clear the
-// dirty bit. If pointers remain into what is current at the start of GC
-// (and so will be previous at the end) I leave the dirty bit set. But beyond
-// that I can use the space for pin information if I want.
-//
-// When I say that all pages in C have freespace mapping in them I will in
-// fact in due course arrange that on a "lazy" basis so that from when the
-// program starts up I only initialize a page when I am first about to use
-// it.
 
 // (1) Clear the "pinned" maps for pages in A.
 //
 // (2) For each ambiguous value (ie value on the stack associated with
 //     any thread) do:
 //   If value could not be a pointer into A then ignore it.
-//   Ensure that object-starts bitmap in relevant page of A is set up.
-//   Identify the start of the object in A that the value might refer to.
-//   If that item is already pinned then no need to do more.
-//   If that object is part of pinsC (because the CAR field contains
-//     something tagged as FORWARD) do no more.
-//   Set pinned bit for the location concerned. Mark page as one that
+//   Set pinned bit for the chunk concerned. Mark page as one that
 //     contains pinned items.
-//   Add the pinned item to the list pinsA, which is built in space C.
 //
 // (3) Evacuate each of the following locations:
 //   (a) Every precise pointer.
-//   (b) Every pointer field in any object in list pinsC.
-//   (c) Every pointer field in any object copies into C in via the
+//   (b) Every pointer field in any object in one of the pinned chunks.
+// THEN
+//   (c) Every pointer field in any object copied into C in via the
 //       evacuation process.
 //   See later for explanation of "evacuate".
 //

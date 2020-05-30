@@ -387,8 +387,8 @@ int main(int argc, char *argv[])
     const char *user;
     char newenv[1024];
     int dirsize, i, rc;
-    std::memset(reinterpret_cast<void *>()&startup, 0, sizeof(startup));
-    std::memset(reinterpret_cast<void *>()&process, 0, sizeof(process));
+    std::memset(reinterpret_cast<void *>(&startup), 0, sizeof(startup));
+    std::memset(reinterpret_cast<void *>(&process), 0, sizeof(process));
     startup.cb = sizeof(startup);
 // Passing STD_OUTPUT etc down seems to behave well when I am under mintty
 // or an xterm, but if I am running in a Windows console (eg as in the
@@ -483,7 +483,7 @@ int main(int argc, char *argv[])
         pnewdir = newdir;
 
         dirsize = GetCurrentDirectory(0, nullptr);
-        current = reinterpret_cast<char *>(std)::malloc(dirsize+4);
+        current = reinterpret_cast<char *>(std::malloc(dirsize+4));
         rc = GetCurrentDirectory(dirsize, current);
         if (rc > dirsize)
         {   std::printf("Getting directory failed\n");

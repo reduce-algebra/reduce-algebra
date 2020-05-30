@@ -49,11 +49,11 @@
 
 #if defined __has_cpp_attribute && __has_cpp_attribute(maybe_unused)
 // C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
-// and functions. Earlier versions of gcc and clang supported [[gnu:unused]]
+// and functions. Earlier versions of gcc and clang supported [[gnu::unused]]
 // as a non-standard annotation with similar effect.
 #define UNUSED_NAME [[maybe_unused]]
 #elif defined __GNUC__
-#define UNUSED_NAME [[gnu:unused]]
+#define UNUSED_NAME [[gnu::unused]]
 #else
 // In any other case I just omit any annotation and if I get warnings about
 // unused things then so be it.

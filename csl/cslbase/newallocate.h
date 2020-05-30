@@ -66,23 +66,30 @@
 // digits.
 //
 // Within each page there are "chunks". The current expected chunk size will
-// be 16 Kbytes (so there are about 500 chunks per page). At any stage each
+// be 16 Kbytes (so there are about 512 chunks per page). At any stage each
 // thread will have its own active chunk within which it can allocate without
 // and special need for synchronization. When a thread fills a chunk another
 // is allocated until the page becomes full. When a page becomes full a minor
 // garbage collection can be triggered, and if that does not recover enough
 // space a major one can be attempted.
 //
+// Chunks do not need to be consecutive within a page - there can be gaps
+// between them and such gaps will naturally arise when pinned data and
+// the allocation of large vectors leads to fragmentation. The system must
+// keep track of all the chunks in each page with a combination of an index
+// vector and chaining.
+//
 // Each chunk contains a sequence of Objects - these may be cons cells,
 // strings, vectors, bignums etc. In the normal course of allocation all
-// different sorts of objects may coexist in a chunk. At times when garbage
-// collection is to be performed each chunk can be made "tidy" by inserting
-// a dummy binary-containing object to fill the gap between the last used
-// location and its end. The contents of chunks must be kept clean since the
+// different sorts of objects may coexist in a chunk. When it is not possible
+// to fit more data into a chunk it will be necessary to allocate a new one.
+// The existing chunk can have its length reset so that it only contains
+// valid data. The contents of chunks must be kept clean since the
 // garbage collector can sometimes need to make a linear scan of them
 // identifying all pointers within a chunk - so in particular binary data
 // always needs protection with a header word in front of it and no
-// uninitialized locations may be left.
+// uninitialized locations may be left. Truncating chunks when they are
+// complete is part of the mechanism to ensure this.
 
 using std::hex;
 using std::dec;

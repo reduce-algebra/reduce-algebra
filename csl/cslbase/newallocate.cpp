@@ -729,19 +729,17 @@ void setUpUsedPage(Page *p)
     }
 // Start by pretending that the page is utterly empty.
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
-    p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
 // Now if MAY be that the first part of memory is consumed by one (or a
-// succession) of pinned chunks.
-    Chunk *pin = p->pinnedChunks;
-    while (p->fringe == reinterpret_cast<uintptr_t>(pin))
-    {   p->fringe += pin->length;
-        pin = pin->pinChain;
-    }
-    if (p->fringe == p->limit) my_abort();
-// That has skipped any initial pinned chunks, and leaves the variable pin
-// pointing at any pinned chunk. If there is such a chunk then it starts
-// beyond the current fringe and must become the current limit.
-    if (pin!=nullptr) p->limit = reinterpret_cast<uintptr_t>(pin);
+// succession) of pinned chunks, or that the start of the page has a small
+// vacant region terminated by a pinned chunk. I cope with this by setting
+// the limit to either the start of the first pinned chunk or to the end of
+// the whole page. In an extreme case this will leave fringe==limit. But
+// that is not going to be a problem because the first time I try to
+// perform allocation I will find that my chunk is empty and scan to grab
+// another.
+    if (p->pinnedChunks!=nullptr)
+        p->limit = reinterpret_cast<uintptr_t>(p->pinnedChunks.load());
+    else p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
 }
 
 void setVariablesFromPage(Page *p)
@@ -759,13 +757,14 @@ void setVariablesFromPage(Page *p)
     cout << "At " << __LINE__ << " gLimit = " << gLimit << endl;
 }
 
-void saveVariablesToPage(Page *p)
-{
-// Dump global variable values back into a page header. THIS IS NOT USEFUL
-// OR CORRECT YET!
-    p->fringe = fringe::get();
-    p->limit  = limitBis[threadId::get()];
-}
+//@@@@
+//void saveVariablesToPage(Page *p)
+//{
+//// Dump global variable values back into a page header. THIS IS NOT USEFUL
+//// OR CORRECT YET!
+//    p->fringe = fringe::get();
+//    p->limit  = limitBis[threadId::get()];
+//}
 
 // This code allocates a segment by asking the operating system.
 // It grabs a block that is aligned to sizeof(Page).

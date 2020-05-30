@@ -2058,7 +2058,7 @@ static int n_found_files = 0, max_found_files = 0;
 
 #define TABLE_INCREMENT 50
 
-static int more_filesstatic_cast<void>()
+static int more_files()
 {   if (n_found_files > max_found_files - 5)
     {   WIN32_FIND_DATA *fnew = (WIN32_FIND_DATA *)
                                 std::realloc(reinterpret_cast<void *>(found_files),
@@ -2099,7 +2099,7 @@ static void exall(int namelength,
         if (!FindNextFile(hSearch, &found)) break;
     }
     FindClose(hSearch);
-    std::qsort(reinterpret_cast<void *>()&found_files[first],
+    std::qsort(reinterpret_cast<void *>(&found_files[first]),
                n_found_files-first,
                sizeof(WIN32_FIND_DATA),
                alphasort_files);
@@ -2107,8 +2107,8 @@ static void exall(int namelength,
            win_filename[rootlen]!='/')
         rootlen--;
     while (n_found_files != first)
-    {   char *p = reinterpret_cast<char *>()
-                  &found_files[--n_found_files].cFileName;
+    {   char *p = reinterpret_cast<char *>(
+                  &found_files[--n_found_files].cFileName);
         int c;
 //
 // Fill out filename with the actual name I grabbed, i.e. with
