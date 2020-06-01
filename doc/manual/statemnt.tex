@@ -220,6 +220,7 @@ loops\index{Loop}.  Its general syntax is as follows:\ttindex{UNTIL}
 \ttindextype{DO}{keyword}\ttindextype{PRODUCT}{keyword}\ttindextype{SUM}{keyword}
 \ttindextype{COLLECT}{keyword}\ttindextype{JOIN}{keyword}
 \ttindextype{ON}{keyword}\ttindextype{IN}{keyword}
+%% RmS 2020-06-01 Temporarily replace \( ... \) by $ ... $ to work around a bug in tex4ht.
 \begin{small}
 \[ \mbox{\texttt{FOR}} \left\{ \begin{array}{@{}ccc@{}}
     \mbox{\meta{var} \texttt{:=} \meta{number} } \left\{ \begin{array}{@{}c@{}}
@@ -228,11 +229,11 @@ loops\index{Loop}.  Its general syntax is as follows:\ttindex{UNTIL}
     \end{array}
     \right\} \mbox{\meta{number}} \\[3mm]
     \multicolumn{1}{c}{\mbox{\texttt{EACH} \meta{var}
-       \(\left\{
+       $\left\{
           \begin{tabular}{@{}c@{}}
               \texttt{IN} \\ \texttt{ON}
           \end{tabular}
-       \right\}\)
+       \right\}$
        \meta{list}}}
     \end{array}
     \right\} \mbox{ \meta{action} \meta{exprn}} \]
