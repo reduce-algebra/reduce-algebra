@@ -380,7 +380,7 @@ plot(sin(1/x), x=(-1 .. 1), y=(-3 .. 3));
 \unitlength=1cm
 \begin{picture}(12,8)(0,0)
 %\put(0,0){\Includegraphics[bb=128 93 430 315]{gnuplotex1}}
-\put(0,0){\Includegraphics[scale=0.5, natwidth=640, natheight=480]{gnuplotex1}}
+\put(0,0){\Includegraphics[scale=0.5]{gnuplotex1}}
 \end{picture}
 
 Some implicitly-defined curves:
@@ -390,7 +390,7 @@ plot(x^3 + y^3 - 3*x*y = {0,1,2,3}, x=(-2.5 .. 2), y=(-5 .. 5));
 \unitlength=1cm
 \begin{picture}(10,8)(0,0)
 %\put(-1,-1){\Includegraphics[bb=0 0 360 270]{bild1}}
-\put(0,0){\Includegraphics[scale=0.5, natwidth=640, natheight=480]{bild1}}
+\put(0,0){\Includegraphics[scale=0.5]{bild1}}
 \end{picture}
 
 \newpage
@@ -401,7 +401,7 @@ plot(cos sqrt(x^2 + y^2), x=(-3 .. 3), y=(-3 .. 3), hidden3d);
 
 \begin{picture}(12,8)(0,0)
 %\put(0,0){\Includegraphics[bb=50 0 350 220]{gnuplotex2}}
-\put(0,0){\Includegraphics[scale=0.5, natwidth=640, natheight=480]{gnuplotex2}}
+\put(0,0){\Includegraphics[scale=0.5]{gnuplotex2}}
 \end{picture}
 
 This may be slow on some machines because of a delicate evaluation context:
@@ -411,7 +411,7 @@ plot(sinh(x*y)/sinh(2*x*y), hidden3d);
 
 \begin{picture}(12,8)(0,0)
 %\put(0,0){\Includegraphics[bb=128 93 430 315]{gnuplotex3}}
-\put(0,0){\Includegraphics[scale=0.5, natwidth=640, natheight=480]{gnuplotex3}}
+\put(0,0){\Includegraphics[scale=0.5]{gnuplotex3}}
 \end{picture}
 
 \newpage
@@ -425,7 +425,7 @@ plot w;
 \end{verbatim}
 \begin{picture}(12,8)(0,0)
 %\put(0,0){\Includegraphics[bb=127 93 429 314]{gnuplotex4}}
-\put(0,0){\Includegraphics[scale=0.5, natwidth=640, natheight=480]{gnuplotex4}}
+\put(0,0){\Includegraphics[scale=0.5]{gnuplotex4}}
 \end{picture}
 
 An example taken from: Cox, Little, O'Shea, \emph{Ideals, Varieties and Algorithms}:
@@ -436,7 +436,7 @@ plot(point(3u+3u*v^2-u^3, 3v+3u^2*v-v^3, 3u^2-3v^2), hidden3d,
 
 \begin{picture}(10,7)(0,1)
 %\put(1,1){\Includegraphics[bb=69 69 319 246]{bild2}}
-\put(0,0){\Includegraphics[scale=0.5, natwidth=640, natheight=480]{bild2}}
+\put(0,0){\Includegraphics[scale=0.5]{bild2}}
 \end{picture}
 
 \newpage
@@ -456,7 +456,7 @@ plot(chebyshevt(1,x), chebyshevt(2,x), chebyshevt(3,x),
 
 \begin{picture}(12,7.5)(0,0)
 %\put(0,0){\Includegraphics[bb=128 93 430 315]{gnuplotex5}}
-\put(0,0){\Includegraphics[scale=0.45, natwidth=640, natheight=480]{gnuplotex5}}
+\put(0,0){\Includegraphics[scale=0.45]{gnuplotex5}}
 \end{picture}
 \enlargethispage{1cm}
 \begin{verbatim}
@@ -466,5 +466,5 @@ plot(bessely(0,x), bessely(1,x), bessely(2,x), x=(0.1 .. 10),
 
 \begin{picture}(12,7.5)(0,0)
 %\put(0,0){\Includegraphics[bb=128 93 430 315]{gnuplotex6}}
-\put(0,0){\Includegraphics[scale=0.45, natwidth=640, natheight=480]{gnuplotex6}}
+\put(0,0){\Includegraphics[scale=0.45]{gnuplotex6}}
 \end{picture}
