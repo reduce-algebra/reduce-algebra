@@ -90,7 +90,7 @@ reduce.resources/redcyg64.exe:	$(CYG64)/reduce.exe
 
 reduce.resources/wcslwin64.exe: $(WIN64)/csl.exe
 	cp $< $@
-reduce.resources/wboolwin64.exe: $(WIN64)/bootstrapreduce.exe
+reduce.resources/wbootwin64.exe: $(WIN64)/bootstrapreduce.exe
 	cp $< $@
 reduce.resources/wredwin64.exe:	$(WIN64)/reduce.exe
 	cp $< $@
