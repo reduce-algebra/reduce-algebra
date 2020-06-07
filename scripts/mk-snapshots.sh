@@ -1002,7 +1002,14 @@ fetch_files() {
   mkdir -p $dest
   mkdir -p $backup
   printf "mv ${dest}* $backup\n"
-  mv ${dest}* $backup
+# The "mv" here will fail if the directory $dest is empty so that there
+# are no old snapshots to preserve.
+  if test "`find ${dest} -type f`" = ""
+  then
+    echo No existing snapshots in ${dest}
+  else
+    mv ${dest}* $backup
+  fi
 # This function is perhaps more delicate than others, because the source
 # argument may be a list of files using wildcards. The wildcards must be
 # expanded on the remote machine not locally. The --delete option here
