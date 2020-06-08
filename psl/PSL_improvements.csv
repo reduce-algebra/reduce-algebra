@@ -22,4 +22,5 @@ PSL for RISC-V;n/a;n/a;n/a;n/a;n/a;n/a;n/a;n/a;n/a;n/a
 Extend special symbol table slots for single character ids from 128 to 256;;;-;;;;;;;
 Use crlibm for float functions;ok;ok;-;ok;ok;ok;ok;ok;;
 Proper support for IEEE non-finite numbers (e.g. correct handling in equal and eqn);ok;ok;-;ok;ok;ok;ok;ok;;
-Correction to debug module;ok;ok;-;;ok;ok;ok;ok;;
+Correction to debug module;ok;ok;-;ok;ok;ok;ok;ok;;
+Hashtable implementation;ok;ok;-;ok;;;;ok;;

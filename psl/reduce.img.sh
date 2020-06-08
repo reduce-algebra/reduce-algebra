@@ -101,6 +101,7 @@ cd psl
 (cond ((filep "pipes.b")
        (load pipes)))              % Unix pipes.
 
+(errorset '(load hashtable) nil nil)  % Hashtables for simp module
 (load zbig)                        % PSL bignums.
 (errorset '(load pslcompat) nil nil)  % Load PSL-based functions if there.
 (load module)                      % Contains definition of load-package.

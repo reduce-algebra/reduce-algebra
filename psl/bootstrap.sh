@@ -156,6 +156,7 @@ XXXY
 (remprop 'atan 'no!-side!-effects!?)  % So that math can be fasled.
 (remprop '!*msg 'vartype)             % Compiler declares this global.
 (load fast!-vector)                   % To use IGETV, etc.
+(errorset '(load hashtable) nil nil)  % Hashtables for simp module
 
 (cond ((filep "symget.b")
        (dskin "$reduce/psl/symget.dat")))
