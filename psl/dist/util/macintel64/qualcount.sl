@@ -113,7 +113,7 @@
 
 (de print-qualcount1 (r)
 
-    (unless (priv-get r 'qualcount) (return nil))
+  (if (not (priv-get r 'qualcount)) nil
     (prog (x)
       (prin2 "************* calls for function ")
       (prin2  r)
@@ -128,7 +128,8 @@
         (prin2t (code-address-to-symbol (caar x))))
       (setq x (cdr x))
       (go aa)
-)   )
+      )
+    ))
  
 (de reset-qualcount() (mapobl (function (lambda (x)
 					(remprop x 'qualcount)))))
