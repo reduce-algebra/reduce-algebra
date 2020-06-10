@@ -8,6 +8,9 @@ CONFIG=reduce
 
 SECTIONINGDEPTH=3
 
+# RMS 2020-06-10: The following needed on MacOS, otherwise gsftopk doesn't work.
+GS_OPTIONS=-DNOSAFER ; export GS_OPTIONS 
+
 test "$1" = "for-sf" && CONFIG=reduce-sf
 
 # Remove .ind file, could be left over from latex run
