@@ -371,7 +371,7 @@ symbolic procedure would!-be!-huge u;
   end;
 
 symbolic procedure assgnpri(u,v,w);
-   begin scalar x, tm;
+   begin scalar x, y, tm;
    % U is expression being printed.
    % V is a list of expressions assigned to U.
    % W is an id that indicates if U is the first, only or last element
@@ -398,7 +398,8 @@ symbolic procedure assgnpri(u,v,w);
        fmp!-switch nil;
        tm := t >>;
     if (x := getrtype u) and flagp(x,'sprifn)
-      then <<if null outputhandler!* or (outputhandler!* eq 'redfront_oh)
+      then <<if null outputhandler!* or 
+                (null(x eq 'matrix) and (outputhandler!* eq 'redfront_oh))
                then <<if y := get(get(x,'tag),'assgnpri)
                          then apply1(y,{u, v, w})
                        else if null v 
