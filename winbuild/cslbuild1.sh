@@ -27,6 +27,7 @@
 here=`cygpath -a .`
 here="${here%/}"
 here=`cygpath -m "$here"`
+here=`echo $here | tr '[:upper:]' '[:lower:]'`
 here=`echo /cygdrive/"$here" | sed -e 's/://'`
 reduce="$here/C"
 
