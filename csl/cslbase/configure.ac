@@ -44,7 +44,6 @@
 #   --with-cygwin     Build native cygwin X11 based system, 
 #   --with-smallpage  build in way that may be better for small embedded
 #                     machines.
-#   --with-lto        Try link-time optimisation with gcc. EXPERIMENTAL.
 #   --enable-conservative   development version not working yet!
 #   --enable-test     predefine a symbol EXPERIMENT used to protect
 #                     temporary or unfinished code developments.
@@ -88,46 +87,9 @@ AC_PREREQ(2.61)
 AC_CONFIG_SRCDIR(csl.cpp)
 AC_CONFIG_FILES(Makefile)
 
-# The following is a messy hack related to building on Windows...
-
-AC_ARG_WITH(cygwin32,
-  AC_HELP_STRING([--with-cygwin32],
-                 [Force configure and build to be under cygwin32]),
-  [],
-  [with_cygwin32="no"])
-
-AC_MSG_CHECKING(for win32bit)
-AC_ARG_WITH(win32bit,
-  AC_HELP_STRING([--with-win32bit],
-                 [Build 32-bit Windows version alongside 64]),
-  [],
-  [with_win32bit="no"])
-AC_MSG_RESULT([$with_win32bit])
-
-if test "x$with_win32bit" = "xno"
-then
-  with_cygwin32="no"
-fi
-
-# If the "--with-cygwin32" flag was passed and I am at present running under
-# a 64-bit cygwin shell then I will insist on changing gear so that I run
-# using a 32-bit cygwin shell.
-uname_o=`uname -o`
-uname_m=`uname -m`
-uname_s=`uname -s`
-case "$uname_s" in
-*WOW)
-  wow="yes"
-  ;;
-*)
-  wow="no"
-  ;;
-esac
-
-AC_MSG_NOTICE([with_cygwin32=$with_cygwin32 with_cygwin64=$with_cygwin64 uname_o=$uname_o uname_m=$uname_m uname_s=$uname_s wow=$wow])
 
 case `uname -n` in
-*panamint* | *gauguin*)
+*panamintXXX* | *gauguinXXX*)
   default_windows_layout="new"
   ;;
 *)
@@ -147,42 +109,7 @@ then
   with_windows_layout="old"
 fi
 
-if test "$with_cygwin32" != "no" &&
-   test "$uname_o" = "Cygwin" &&
-   test "$uname_m" = "x86_64" &&
-   test "$with_windows_layout" != "new"
-then
-  AC_MSG_NOTICE([Restart to use a 32-bit Cygwin shell])
-# I am on cygwin - and I will just assume that the directory with Reduce
-# in it is writable so I can put the cyg32 binary there. I always use a 32-bit
-# mingw-style compiler to create the program that can flip between 32 and
-# 64 bit usage.
-  i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -static -o ./cyg32
-  i686-w64-mingw32-strip ./cyg32
-  AC_MSG_NOTICE([./cyg32 $srcdir/configure $ac_configure_args])
-  exec /bin/sh -c "./cyg32 $srcdir/configure $ac_configure_args"
-fi
-
-AC_ARG_WITH(cygwin64,
-  AC_HELP_STRING([--with-cygwin64],
-                 [Force configure and build to be under cygwin64]),
-  [],
-  [with_cygwin64="no"])
-
-if test "$with_cygwin64" != "no"
-   test "$uname_o" = "Cygwin" &&
-   test "$uname_m" = "i686" &&
-   test "wow" = "yes" &&
-   test "$with_windows_laout" != "new"
-then
-  AC_MSG_NOTICE([Restart to use a 64-bit Cygwin shell])
-  i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -static -o ./cyg64
-  i686-w64-mingw32-strip ./cyg64
-  AC_MSG_NOTICE([./cyg64 $srcdir/configure $ac_configure_args])
-  exec /bin/sh -c "./cyg64 $srcdir/configure $ac_configure_args"
-fi
-
-# These days I am making all the source files for CSL ones in C++ not C
+# All the source files for CSL are in C++ not C
 # and so it is best to make configuration tests match.
 
 AC_LANG(C++)
@@ -208,11 +135,6 @@ AC_ARG_WITH(redfront,
   AC_HELP_STRING([--with-redfront], [Build and install redfront]),
   [],
   [with_redfront="yes"])
-
-AC_ARG_WITH(mingw64,
-  AC_HELP_STRING([--with-mingw64], [this option is ignored here!]),
-  [],
-  [])
 
 AC_ARG_WITH(gui,
   AC_HELP_STRING([--with-gui], [this option is ignored here!]),
@@ -247,8 +169,6 @@ AC_ARG_WITH(cygbuild64,
    AC_HELP_STRING([--with-cygbuild64], [used if I wish to call the 64-bit cygwin version]),
    [],
    [with_cygbuild64=""])
-
-AC_SUBST(with_cygbuild64)
 
 AC_SUBST(with_cygbuild64)
 
@@ -391,12 +311,10 @@ fi
 
 AC_MSG_NOTICE([Building with host: $host])
 
-cyg32="no"
 cyg64="no"
 case $host in
 *-*-cygwin* | *-*-mingw*)
   AC_MSG_NOTICE([Building under cygwin])
-# Note that I may be under either cygwin32 or cygwin64 here...
   x86="yes"
   exeext="yes"
 # Here I will certainly be using gcc and I like to limit the number of
@@ -414,7 +332,6 @@ case $host in
 # The following line is really ODD and should clearly not be needed, but
 # at least until April 2020 without it you have trouble linking code that
 # has "extern thread_local" entities when you are an a 64-bit cygwin world.
-# At least a quick check suggests that it does not wreck cygwin32.
     LDFLAGS="$LDFLAGS -Wl,--image-base,0x10000000"
     if test "x$with_gui" != "xno"
     then
@@ -423,18 +340,11 @@ case $host in
     DLL_CFLAGS="$CFLAGS -shared"
     XLIBS="-lXext -lX11"
     cygwin_build="yes"
-    case $host in
-    x86_64*)
-      cyg64="yes"
-      ;;
-    *)
-      cyg32="yes"
-      ;;
-    esac
+    cyg64="yes"
   else
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
 # that means using the mingw-style version of the compiler via
-# "i686-w64-mingw32-g++" or "x86_64-w64-mingw32-g++".
+# "x86_64-w64-mingw32-g++".
     AC_MSG_NOTICE([Windows built creating native binary])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
     LDFLAGS="$LDFLAGS -static"
@@ -450,18 +360,7 @@ case $host in
     exeext="yes"
   fi
   X_BASE_LIBS=""
-  case `uname -m` in
-  *i686*)
-    cyg32="yes"
-    ;;
-  *x86_64*)
-    cyg64="yes"
-    ;;
-  *)
-    AC_MSG_ERROR([Unknown platform in cygwin build])
-    ;;
-  esac
-  AC_MSG_NOTICE([with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64])
+  cyg64="yes"
   ;;
 *-*-msdos* | *-*-go32* | *-*-windows*)
     AC_MSG_NOTICE([Windows built creating native binary])
@@ -654,10 +553,10 @@ AC_CHECK_PROGS(VALGRIND,[valgrind],[x])
 case $host in
 *-*-cygwin* | *-*-mingw*)
 # I use the native windows compilers here so that my scripts can run hosted
-# on either 32 or 64-bit cygwin equally happily - the x686-w64-mingw toolchain
+# on 64-bit cygwin using the x86_64-w64-mingw toolchain
 # should work on any varient of a Windows platform.
-  LOCALCXX="i686-w64-mingw32-g++ -static"
-  LOCALSTRIP="i686-w64-mingw32-strip"
+  LOCALCXX="x86_64-w64-mingw32-g++ -static"
+  LOCALSTRIP="x86_64-w64-mingw32-strip"
   ;;
 *)
   AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
@@ -783,7 +682,7 @@ fi
 
 if test "x$x86" = "xyes"
 then
-  AC_DEFINE(X86, [1], [True if Intel or AMD (32 or 64-bit)])
+  AC_DEFINE(X86, [1], [True if Intel or AMD (64-bit only these days)])
 fi
 
 # Checks for programs.
@@ -1000,7 +899,7 @@ fi
 
 # The sad news is that some 32-bit systems only set maxalign to 4, so for
 # instance even double precision floats can be aligned only that well. A
-# consequence is that they are entitles to let malloc() return an address
+# consequence is that they are entitled to let malloc() return an address
 # that is not 8-byte aligned, and that hurts my tagging scheme. I need to
 # review uses of malloc() and do alignment for myself where it is needed.
 
@@ -1082,45 +981,6 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
   [CPPFLAGS="$OLDCPPFLAGS"])
 AC_MSG_NOTICE([CPPFLAGS now = $CPPFLAGS])
 
-
-case $host in
-i386* | i486* | i586* | i686*)
-# On 32-bit Intel-style machines I will try to build using gcc options
-# that force use of sse2 rather than 387 floating point arithmetic. This
-# should be faster and it avoids intermediate floating point values
-# remaining at 80-bit working precision (which messes up some attempts to
-# be clever). But the binary that is created will only run on a machine
-# from a Pentium 4 onwards (or AMD Operton/Athlon which were introduced in
-# 2003). I believe that for now I am not too upset if forcing these flags in
-# means that the binaries that are created will fail on CPUs that are a
-# full decade behind the cutting edge, but this comment is so that anybody
-# is still trying to use a Pentium 3 knows that I at least thought about them.
-# Processors that could cause worry here are:
-#  AMD prior to Athlon 64 (ie all Socket A CPUs)
-#  Intel prior to Pentium 4
-#  VIA C3 (distribution ceased in 2006. The C7 should be OK)
-#  Transmeta Crusoe (a fine museum item!)
-#
-# On a Mac where the compiler is in fact clang not gcc these options are
-# not recognised and you get messages about that, but the code still passes
-# the test here which checks if things can still be compiled even if they
-# are specified.
-  case $host in
-  *darwin* | *Darwin*)
-   ;;
-  *)
-   OLDCPPFLAGS="$CPPFLAGS"
-   CPPFLAGS="$CPPFLAGS -msse2 -mfpmath=sse"
-   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
-                                   [[std::printf("\n");]])],
-     [sse2math_available="yes"],
-     [CPPFLAGS="$OLDCPPFLAGS"
-     sse2math_available="no"])
-   AC_MSG_NOTICE([SSE math status = $sse2math_available])
-   ;;
-  esac
-  ;;
-esac
 
 if test "x$darwin_build" = "xyes"
 then
@@ -1212,7 +1072,7 @@ if test "x$with_gui" != "xno"
 then
   if (test "x$windows_build" != "xyes" || test "x$with_cygwin" != "xno")
   then
-# I will not even look for Xft if I am building for win32 not X.
+# I will not even look for Xft if I am building for win32 rather than X.
 #
 # Furthermore I will not try xft-config if I am cross-compiling. This may
 # be a mess if I ever try to cross compile towards a machine that needs it.
@@ -1667,28 +1527,6 @@ then
     [[#include <sys/resource.h>]])
 fi
 
-# The next bit tests if I can compile and then run programs.
-# This information is used in the Makefiles when I appear to be
-# cross compiling but neverthless the executables I generate can
-# be run. This notably arises when I am building a 64-bit windows
-# application using x86_64-w64-mingw32-gcc and my computer is
-# running 64-bit windows. If I used the same toolchain but was on
-# 32-bit windows the more normal cross-compilation restrictions would
-# apply. When I am NOT able to run the "proper" executables I would like
-# to I will expect that plain use of "gcc utility.c -o utility" can be
-# used to create working utility programs when I need that.
-
-save_cross=cross_compiling
-cross_compiling=no
-AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
-                               [[std::printf("\n"); return 0;]])],
-              [can_run_executables="yes"],
-              [can_run_executables="no"],
-              [can_run_executables="no"])
-cross_compiling=$save_cross
-
-AC_MSG_NOTICE([Can Run Executables = $can_run_executables])
-
 AC_SUBST(FOX_INCLUDES)
 AC_SUBST(FOX_LIBS)
 
@@ -1823,69 +1661,8 @@ fi
 AC_SUBST(HOST)
 HOST="$host"
 
-# I really need an absolute path to the cyg32 or cyg64 utility, and at one
-# stage I fell into a trap that I could just use $abs_srcdir here, but I
-# can not.
-
-LOCALCYG=""
-CYG32=""
-CYG64=""
-AC_SUBST(LOCALCYG)
-AC_SUBST(CYG32)
-AC_SUBST(CYG64)
-
-if test "x$windows_build" = "xyes" &&
-   test "$with_windows_layout" != "new"
-then
-  absolute_cyg32=`pwd -P`/cyg32
-  AC_SUBST(absolute_cyg32)
-  i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -static -o $absolute_cyg32
-  i686-w64-mingw32-strip $absolute_cyg32
-  absolute_cyg64=`pwd -P`/cyg64
-  AC_SUBST(absolute_cyg64)
-  i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -static -o $absolute_cyg64
-  i686-w64-mingw32-strip $absolute_cyg64
-  CYG32=$absolute_cyg32
-  CYG64=$absolute_cyg64
-fi
-
-if test "x$with_cygwin" = "xyes" &&
-   test "$with_windows_layout" != "new"
-then
-
-  if test "x$cyg32" = "xyes"
-  then
-    CC="\$(USE_CORRECT_CYGWIN) $CC"
-    CPP="\$(USE_CORRECT_CYGWIN) $CPP"
-    CXX="\$(USE_CORRECT_CYGWIN) $CXX"
-    CXXCPP="\$(USE_CORRECT_CYGWIN) $CXXCPP"
-    STRIP="\$(USE_CORRECT_CYGWIN) $STRIP"
-    RANLIB="\$(USE_CORRECT_CYGWIN) $RANLIB"
-    LOCALCYG="$absolute_cyg32"
-  fi
-
-  if test "x$cyg64" = "xyes"
-  then
-    CC="\$(USE_CORRECT_CYGWIN) $CC"
-    CPP="\$(USE_CORRECT_CYGWIN) $CPP"
-    CXX="\$(USE_CORRECT_CYGWIN) $CXX"
-    CXXCPP="\$(USE_CORRECT_CYGWIN) $CXXCPP"
-    STRIP="\$(USE_CORRECT_CYGWIN) $STRIP"
-    RANLIB="\$(USE_CORRECT_CYGWIN) $RANLIB"
-    LOCALCYG="$absolute_cyg64"
-  fi
-fi
-
 AC_SUBST(CYGWIN_FLAVOUR)
-if test "x$cyg64" = "xyes"
-then
-  CYGWIN_FLAVOUR="x86_64"
-elif test "x$cyg32" = "xyes"
-then
-  CYGWIN_FLAVOUR="i686"
-else
-  CYGWIN_FLAVOUR=""
-fi
+CYGWIN_FLAVOUR="x86_64"
 
 # The nexy couple are to do with making it possible to use GNU make
 # conditionals within Makefile.am
@@ -1901,7 +1678,7 @@ EQUALS="="
 # If I put the "-I" and "-L" directive for my own versions right at the
 # start of the set of options then I hope to get my versions used. This was
 # noticed as an issue in the case of a FOX library under Macports but looks
-# to be much mor egeneral than just that!
+# to be much more general than just that!
 
 CPPFLAGS="$FOX_INCLUDES -I../include $CPPFLAGS"
 LDFLAGS="-L../lib $LDFLAGS"
@@ -1914,8 +1691,6 @@ AM_CONDITIONAL(x86,test "x$x86" = "xyes")
 AM_CONDITIONAL(windows,test "x$windows_build" = "xyes")
 AM_CONDITIONAL(win64,test "x$win64" = "xyes")
 AM_CONDITIONAL(cygwin,test "x$cygwin_build" = "xyes")
-AM_CONDITIONAL(win32bit, test "x$with_win32bit" != "xno")
-AM_CONDITIONAL(cyg32,test "x$cyg32" = "xyes")
 AM_CONDITIONAL(cyg64,test "x$cyg64" = "xyes")
 AM_CONDITIONAL(darwin,test "x$darwin_build" = "xyes")
 AM_CONDITIONAL(mac_framework,test "x$framework_available" = "xyes")
@@ -1927,7 +1702,6 @@ AM_CONDITIONAL(gui,test "x$with_fox" != "xno" || test "x$with_wx" != "xno")
 AM_CONDITIONAL(experiment,test "x$enable_test" = "xyes")
 AM_CONDITIONAL(conservative,test "x$enable_conservative" = "xyes")
 AM_CONDITIONAL(arithlib,test "x$with_arithlib" = "xyes")
-AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
 AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")

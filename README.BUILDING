@@ -2,6 +2,7 @@
                        ============================
 
                                January 2015
+                                 June 2020
 
 
 
@@ -31,11 +32,8 @@ For CSL you need to be able to compile both CSL itself and the FOX toolkit
 on which it depends. Please note that even if you have FOX available already
 on your computer the code her uses a (slightly) customised version and your
 standard system-wide installation of FOX will not be used and should be
-irrelevant here. To join in develpoment work on what is hoped to be a future
-version of CSL-Reduce you will also need to be able to compile wxWidgets, and
-again at the time of writing you should use the customised version of that
-present within the Reduce tree rather than any standard one that you might
-already have available.
+irrelevant here. To join in development work on what is hoped to be a future
+version of CSL-Reduce you would also need to be able to work with wxWidgets.
 
 You will need:
    For Windows, the "cygwin" environment providing a "bash" shell.
@@ -46,11 +44,9 @@ You will need:
        past not always been upards compatible. The aim is to keep the
        current CSL/Reduce at Sourceforge buildable using the most recent
        cygwin release. But any difficulty due to temporary bugs or glitches
-       at the cygwin end can not be resolved here! If you use a 32-bit cygwin
-       shell it is possible to build Reduce for cygwin32, cygwin64 and both
-       32 and 64-bit native Windows. At the time of writing the cygwin64
-       environment does not provide all the libraries needed to build
-       a 32-bit cygwin system, but can cope with the other three cases.
+       at the cygwin end can not be resolved here! These days you MUST use
+       the 64-bit version of cygwin - note that the obsolete 32-bit one is
+       deprecated by its suppliers.
        The command scripts/cygwin-sanity-check.sh attempts to check if
        sufficient cygwin components have been installed, and it may save
        you pain if you try it and respond to its suggestions before trying
@@ -58,38 +54,45 @@ You will need:
    For Macintosh you need the XCode command line tools, and you are liable
        to need to use Macports to fetch and install a significant number
        of commands and libraries that Apple do not provide as standard.
-       The csl/cslbase directory contains a file that lists the ports that
-       I have installed and that I fund sufficient.
-       Using Xquartz the following Macoport installs were sufficient for
-       Thomas Sturm in October 2018: autoconf, automake, libtool, Xft2,
-       xorg-libXrandr, xorg-libXcursor.
-   GNU make (other versions of "make" are not liable to work), autoconf
-       and automake. Well you can probably survive without having autoconf
-       and automake, but if you have them you should use a reasonably up to
-       date version.
-   You need a C/C++ development context. On Windows you need the
-       "mingw64-i686" and "mingw-x86_64" compiler variants (as well as plain
-       gcc) from cygwin while on other systems you need X11 and other
+       There is a file in the scripts directory that I use to fetch the
+       set of "ports" that I use. You will also need Xquartz to support the
+       GUI.
+   For Linux you can inspect scripts/ubuntu-sanity-check.sh or the fedora
+       equivalent to find a script that installs what is probably a superset
+       of the packages you will need.
+   For other platforms there is a hope that everything will work if you
+       can provide a bash shell and enough development libraries, but you
+       mat need to sort out details for yourself. Here are a few more comments:
+   GNU make (other versions of "make" are not liable to work), autoconf,
+       automake and libtool. All should be at least tolerably up to date
+       versions.
+   You need a C++ development context. On Windows you need the
+       and "mingw-x86_64" compiler variants (as well as plain g++) from
+       cygwin while on other systems you need X11 and other
        development capability, including Xft, fontconfig, (n)curses, Posix
-       threads. The building has been tested using versions if gcc and clang.
+       threads. The building has been tested using versions of both gcc
+       and clang. The compiler should be new enough that it supports C++11
+       and for choice C++17.
 
-I have (recently) built using cygwin32, cygwin64, Ubuntu and Fedora Linuxes
-on pcs, Raspbian on a Raspberry Pi, OSX Yosemite and PCBSD/FreeBSD. In the
-past I have built using Solaris on both pc and sparc (requiring significant
+I have (recently) built using cygwin64, Ubuntu and Fedora Linuxes
+on pcs, Raspbian (raspberry Pi OS, both 32 and 64-bit variants) on a
+Raspberry Pi and OSX Catalina. In the past I have built using PCBSD/FreeBSD
+and Solaris on both pc and sparc (requiring significant
 extra software installation), SGI, HP-pa, the IBM z-architecture and at one
-stage (not now I think) I coudl run Reduce on an HP IPAQ 4700 PDA. The hope
-is that almost any machine with a C compiler should suffice for the basic
-system. In case of a challenging environment it may be prudent to do initial
-testing by running "./configure --with-csl --without-gui" to avoid all
-attempts to build windowing libraries.
+stage (not now I think) I coudd run Reduce on an HP IPAQ 4700 PDA or an
+openWRT router. The hope is that almost any machine with a C++ compiler
+should suffice for the basic system. In case of a challenging environment
+it may be prudent to do initial testing by running
+"./configure --with-csl --without-gui" to avoid all attempts to build
+windowing libraries. Also in recent years I have started to suppose that all
+computers have substantial amounts of memory, so ones with only a few megabytes
+(or even only tend or hundreds) may cause problems.
 
 One of the most common problems people seem to have the first time that they
 try to build CSL arises when they do not have quite all the necessary tools,
 libraries and header files installed. While most relevant run-time libraries
 are liable to have been provided for them by default, the development versions
-might not have. On a 64-bit Linux it can also be nice to have the libraries
-and compiler options that make it possible to compile and run 32-bit code as
-well as 64-bit. The state of your cygwin installation can be checked using
+might not have. The state of your cygwin installation can be checked using
 scripts/cygwin-sanity-check.sh but please be aware that the tests that does
 are indicative rather than definitive and when (occasionally) either Reduce
 is extended and additional dependencies arise or cygwin is reorganised and the
@@ -114,7 +117,7 @@ To try to make that easier to cope with I provide a script that attempts to
 check for prerequisites and that is lighter weight than the full configuration
 process and maybe reports trouble in a cleaner way. To use it select the
 Reduce "trunk" directory as current and at a bash prompt (you MUST have
-"bash" available as a shell, and you will run least rishk if you run all
+"bash" available as a shell, and you will run least risk if you run all
 scripts from it. I have tried to make most of them compatible with a legacy
 /bin/sh but testing and guaranteeing that is tedious) go
       scripts/csl-sanity-check.sh
@@ -123,11 +126,10 @@ program that pops up a dull window. If you get the window at the end it has
 succeeded and you can try building Reduce. If not then it probably reports
 a step where some header file or library is missing. You need to search the
 installation sources relevant your operating system and install more stuff,
-then try again. Eg for cygwin you re-run "setup", while on Linux I like it when
-my distribution lets me use "synaptic", but "apt-get" and "yum" and various
-other package managers can also be used. You need to check the documentation
-of your particular operating system - or perhaps better find local expert to
-get you started.
+then try again. Eg for cygwin you re-run "setup", while on Linux you are
+looking at "apt-get" and "yum" and various other package managers. You need
+to check the documentation of your particular operating system - or perhaps
+better find local expert to get you started.
 
 Note that if you configure using "--with-csl --with-wx" you also need GTK2
 (GTK+) development files if you are on an X11-based platform, but at present
@@ -150,8 +152,8 @@ and tried "make" at a stage when you do not have all relevant headers and
 libraries installed then the build can fail part way through in a messy way.
 In principle you can check ALL the logs and work out what happened, but in
 reality that can be daunting. Furthermore it can get in a state where a
-subsequent use of "make" fails in an unhelpful manner. Experts can patch things
-up and recover, but the simplest approach in case of confusion is
+subsequent use of "make" fails in an unhelpful manner. Experts can patch
+things up and recover, but the simplest approach in case of confusion is
    rm -rf cslbuild
    ./configure --with-csl
    make
@@ -208,7 +210,7 @@ OR
 The version fetched and updated using subversion (hah - note that you
 need "subversion" installed on your computer to do this!) will be fully
 up to date. That naturally means that at some moments it will include
-changes that temporarily break it, but in general any suich should be
+changes that temporarily break it, but in general any such should be
 corrected fairly rapdily. Furthermore by browsing the documentation of
 subversion you can find out how to check out a version from say 2 weeks
 ago (or indeed any historical varient) if needbe.
@@ -219,12 +221,13 @@ The simplest way version of the build process is to select the directory
 where REDUCE was unpacked as current and issue one of the command
          ./configure --with-csl
      OR  ./configure --with-psl
+(or first one of those then the other)
 
 It ought not to be necessary to provide any other options to the configure
 script or to pre-set environment variables, but for experts there are (of
 course) many opportunities for customisation. If you find you are on a platform
 where simple use of the configure script is insufficient please report that
-so that things can be updated and users in the future wioll come closer to
+so that things can be updated and users in the future will come closer to
 find that everything works first time without fuss.
 
 Follow that by the command "make" and if all goes well everything relevant
@@ -242,7 +245,7 @@ of the test files generate timing reports so their output varies depending on
 the speed or size of your computer. In other cases improvements to the
 system may change test output but the reference logs may not have been
 updated to reflect it. Some logs are there to highlight difference between
-detaiuled behaviour of CSL and PSL that are not hugely important but that
+detailed behaviour of CSL and PSL that are not hugely important but that
 may be addressed at some stage in the future.
 
 For (some sort of) convenience a script "rebuild.sh" in the top level of
@@ -257,9 +260,11 @@ or
 [At present I do not in any way guarantee (and I probably do not even expect)
 that the usual "configure" option "--prefix=..." or the idiom "make install"
 will behave as you might have hoped. Indeed there are reports that at
-present "make install" is deeply broken and SHOULD NOT BE ATTEMPTED.]
+present "make install" is deeply broken and SHOULD NOT BE ATTEMPTED.
+But there is scripts/mk-snapshots.sh which is used to build the distribution
+snapshots and those can then be installed.]
 
-Any machine you are on is attributed an identity such as i686-pc-windows
+Any machine you are on is attributed an identity such as x86_64-pc-windows
 or x86_64-unknown-ubuntu10.10. Note that this is slightly more specific than
 the normal GNU host triple in that it attempts to include the name of a Linux
 distribution. Binaries are actually built within cslbuild/<triple> or
@@ -269,7 +274,7 @@ architectures. So the scripts like bin/redcsl deduce where to look and
 chain to binaries there. In the CSL case you could make a symbolic link
 as in "ln -s .../trunk/cslbuild/<triple>/csl/reduce XXXX" where XXXX is some
 location on your PATH which then lets you launch Reduce more directly. Reduce
-needs some resources in the same directory as the bain executable so merely
+needs some resources in the same directory as the main executable so merely
 copying <triple>/csl/reduce to somewhere else is not liable to be a good idea.
 
 Logs from building and testing Reduce end up in the directory where the
@@ -290,7 +295,8 @@ There are a number of optional ways in which configuration may be customised:
    then "--without-gui" removes it. There are some plans to change to use
    wxWidgets rather than FOX, and "--with-wx" enables the experimental build
    for that. At the time of writing the code compiles but is significantly
-   unfinished. Volunteers to help complete it would be useful!
+   unfinished. Volunteers to help complete it would be useful! But neither of
+   these options are a very good idea for ordinary users!
 
    There are other options, many of which are experimental or historical.
    See "./configure --help" for a definitive list.
@@ -301,7 +307,7 @@ directory layout in more detail. The document "Inside Reduce" the
 the "primers" part of the Reduce documentation directory may provide
 useful guidance.
 The main directories supplied are as follows, where MACHINE stands for
-a machine identification, eg i686-pc-windows-debug.
+a machine identification, eg x86_64-pc-windows-debug.
 
  trunk                    The main version of everything
    bin                    Scripts to launch REDUCE etc
@@ -334,7 +340,14 @@ For special purposes you may wish to investigate the csl/jlisp directory (all
 Reduce runnable via Java - distinctly slower and at present the user interface
 is not well sorted, but it might be fun) and csl/new-embedded (a kit for
 making a simple small C-coded version for potential use as a component in
-some other software rather than a free-standing complete program).
+some other software rather than a free-standing complete program). Both of
+these are for experienced programmers who want to use them in some broader
+project rather than being fully supported variants on Reduce itself.
+
+There are also "spins" of Reduce by way of extra files and scripts that have
+made it possible to build the system on other Lisps, from Common Lisp as
+far as emacs lisp. There are a range of alternative interfaces for both
+console and GUI purposes in varying states of support and maturity.
 
 
 The more alive the Reduce project is the more you can expect there to be
@@ -346,7 +359,7 @@ is there so you can also join in the debugging and propose fixes (please!)
 
 
 A C Norman. July 2008. Updated Jan 2009, September 2010, March 2011,
-            September 2014, January 2015.
+            September 2014, January 2015, June 2020.
 
 
 

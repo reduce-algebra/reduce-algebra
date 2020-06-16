@@ -6,10 +6,6 @@
 #   cslbuild1.sh [cyg64/win64]
 
 here=`cygpath -a .`
-here="${here%/}"
-here=`cygpath -m "$here"`
-here=`echo $here | tr '[:upper:]' '[:lower:]'`
-here=`echo /cygdrive/"$here" | sed -e 's/://'`
 reduce="$here/C"
 
 case $1 in
@@ -40,9 +36,7 @@ printf "#! /bin/bash\nccache ${prefix}g++ \"\$@\"\n" > cachecxx.sh
 chmod +x cachecc.sh cachecxx.sh
 
 here1=`pwd`
-# Now I want to turn the path into one that is "very" absolute.
-# jolly use of sed should turn that into what I need.
-here1=`cygpath -m "$here1" | sed -e 's_^\([a-zA-Z]\):_/cygdrive/\1_'`
+here1=`cygpath -a "$here1"`
 CC="$here1/cachecc.sh"
 CXX="$here1/cachecxx.sh"
 

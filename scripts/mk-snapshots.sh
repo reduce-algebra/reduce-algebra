@@ -1,15 +1,13 @@
 #! /usr/bin/env bash
 
 # This script makes snapshots of Reduce. It should be capable of
-# building ones for Windows, Macintosh, Linux-i686, Linux-x86_64
-# and the Raspberry Pi. For reduce it can build for win32 (only),
-# win64 (only) or both win32 and win64. At present the Raspberry Pi
-# supports just a 32-bit but I could adapt this to support 64-bit
-# in the future when a suitable host emerges.
+# building ones for Windows (64-bit), Macintosh, Linux-x86_64
+# and the Raspberry Pi. For the latter both 32 and 64-bit can be built,
+# but we will probably not be keeping snapshots generally up to date.
 #
-# The default as of July 2019 is
+# The default as of June 2020 is
 #     win64 linux64 macintosh
-# so 32-bit variants are not included by default.
+# so Raspberry Pi variants are not included by default.
 #
 # Each snapshot needs to be built on a computer of the relevant type.
 # This can either be the current local host, a remote host that is
@@ -19,16 +17,19 @@
 # in the user's home directory, and a file called dot-snapshots here
 # gives a prototype for that.
 #
-# The "ds64" options here are a speciality for use on a Raspberry pi 4.
-# I can have one set up with a 64-bit kernel and a 32-bit raspbian
+# The "ds64" options here are a speciality for use on a Raspberry pi 4,
+# and represented an EXPERIMENT which is not the prper way fully forward,
+# so although I leave it here it should not be used!
+# I can have an RPi set up with a 64-bit kernel and a 32-bit raspbian
 # userland, but then a systemd/nspawn wrapper around a 64-bit Debian
 # system with a script /usr/local/bin/ds64-run that can cause commands to be
 # executed in the 64-bit world. The logged in user's filespace is shared
 # between 32 and 64-bit environments and so when I want to move files
 # to and fro I can just access the 32-bit schemes. This is a bit of an
-# experiment as of September 2019! However it might in the future be useful
-# for other cases where builing can be done given an interesting prefix to
-# commands.
+# experiment as of September 2019! Since then a beta version of a 64-bit
+# Raspberry Pi OS has been released and that more or less makes the scheme
+# irrelevant - I think. While I was trying it it seems well behaved most of
+# the time but not quite stable enough for serious use.
 #
 # Each host used during the build must have been set up with a comprehensive
 # set of build tools and development libraries, and where it is to be
@@ -40,6 +41,7 @@
 #                                                           July 2019
 #                                                           September 2019
 #                                                           December 2019
+#                                                           June 2020
 
 # [some of the access schemes that chain ssh and virtual machines etc do not
 # get path quoting right yet, but the simple cases are OK!]
@@ -56,12 +58,11 @@ case $@ in
   printf "Usage: $0 machine1 machine2 ...\n"
   printf "   or  %0 --test machine1 ...\n"
   printf "where the supported 'machines' are\n"
-  printf "    windows (win32, win64, winboth), macintosh, linux32,\n"
-  printf "linux64 and rpi (or rpi32), rpi64.\n"
-  printf "You can also include '--rev=NNNN' to specify a revisoin to use\n"
-  printf "The two Linux variants refer to ones hosted on i686 and x86_64,\n"
-  printf "and 'rpi' is a Raspberry Pi running raspbian.\n"
-  printf "[July 2019] rpi64 is an experiment re 64-bit Raspberry Pi\n"
+  printf "    windows (win64), macintosh, linux (linux64),\n"
+  printf "and rpi (rpi32), rpi64.\n"
+  printf "You can also include '--rev=NNNN' to specify a revision to use\n"
+  printf "'rpi' is a Raspberry Pi running raspbian (now called Raspberry Pi OS).\n"
+  printf "'pi64' uses 64-bit Raspberry Pi OS.\n"
   printf "If no machines are listed the script will attempt to build a\n"
   printf "fairly full set. The results will end up in a snapshots directory in\n"
   printf "theReduce tree. The hosts used during the build can be adapted to\n"
@@ -69,7 +70,7 @@ case $@ in
   printf "provides a prototype for such a file and some explanation of what\n"
   printf "needs to be present.\n"
   printf "An option --rc=FILE uses that file in place of $HOME/.snapshots\n"
-  printf "The default as of July 2019 is\n"
+  printf "The default as of June 2020 is\n"
   printf "     win64 linux64 macintosh\n"
   exit
   ;;
@@ -135,7 +136,7 @@ REDUCE_BUILD="reduce-build"
 # file are uploaded to this directory copies of its previous contents
 # are archived in $SNAPSHOTS/old so that they are not lost and to provide
 # an historical record. A full set of snapshots for Windows, Macintosh,
-# both 32 and 64-bit pc-Linux and for a Raspberry Pi use of the order
+# 64-bit pc-Linux and for a Raspberry Pi use of the order
 # of 630 Mbytes, and so obviously $SNAPSHOTS/old can grow in units of
 # this amount. Discarding unwanted files from $SNAPSHOTS/old is left as
 # a manual activity.
@@ -224,12 +225,15 @@ prepare() {
 }
 
 hostname() {
-# I want win32, win64, winboth and windows all to be treated alike
+# I want win64 and windows to be treated alike
   case $1 in
-  windows | win32 | win64 | winboth)
+  windows | win64)
     echo "windows"
     ;;
-  altwin64)
+# altwin64 is a hack so I can have two build hosts for Windows and chose
+# which to use on any particular occastion. Eg they could be picked from
+# a Virtual machine, a remote Windows host or the current machine.
+  altwindows | altwin64)
     echo "altwindows"
     ;;
   *)
@@ -282,9 +286,6 @@ build() {
     *x86_64*)
       local="linux64"
       ;;
-    *i686*)
-      local="linux32"
-      ;;
     *arm*)
       local="rpi"
       ;;
@@ -309,16 +310,15 @@ build() {
   for a in $*
   do
     case "$a" in
-    windows | \
-    win32   | \
-    win64   | \
-    altwin64 | \
-    winboth | \
-    linux32 | \
-    linux64 | \
-    rpi     | \
-    rpi32   | \
-    rpi64   | \
+    windows     | \
+    altwindows  | \
+    win64       | \
+    altwin64    | \
+    linux       | \
+    linux64     | \
+    rpi         | \
+    rpi32       | \
+    rpi64       | \
     macintosh)
       full="no"
       ;;
@@ -329,9 +329,9 @@ build() {
 # platform names and then just those snapshots will be built. Or
 # you can use a platform name prefixed with a "-" to disable that one.
 # so:
-#   no arguments, or just a --rc=FILE one:   everything
+#   no arguments, or just a --rc=FILE one:   linxu64 win64 macintosh
 #   linux64 rpi:                             just those 2 platforms
-#   -macintosh:                              everything except macintosh
+#   -macintosh:                              not macintosh
 #
   if test "$full" = "yes"
   then
@@ -351,29 +351,27 @@ build() {
   for a in $ARGS
   do
     case "$a" in
-    windows | \
-    win32   | \
-    win64   | \
-    altwin64 | \
-    winboth | \
-    linux32 | \
-    linux64 | \
-    rpi     | \
-    rpi32   | \
-    rpi64   | \
+    windows    | \
+    win64      | \
+    altwindows | \
+    altwin64   | \
+    linux      | \
+    linux64    | \
+    rpi        | \
+    rpi32      | \
+    rpi64      | \
     macintosh)
       add_target "$a"
       ;;
-    -windows | \
-    -win32   | \
-    -win64   | \
-    -altwin64 | \
-    -winboth | \
-    -linux32 | \
-    -linux64 | \
-    -rpi     | \
-    -rpi32   | \
-    -rpi64   | \
+    -windows    | \
+    -win64      | \
+    -altwindows | \
+    -altwin64   | \
+    -linux      | \
+    -linux64    | \
+    -rpi        | \
+    -rpi32      | \
+    -rpi64      | \
     -macintosh)
       remove_target "${a#-}"
       ;;
@@ -415,35 +413,19 @@ build_windows() {
   stop_remote_host
 }
 
-build_win32() {
-  printf "\n+++ Only building a 32-bit Windows snapshot is not supported\n"
-  printf "Please use win64 or winboth\n"
-  exit 1
-  machine_windows
-  if test "$MODE" = "none"
-  then
-    printf "Unable to build Windows snapshot here\n"
-    return 0
-  fi
-  start_remote_host
-  copy_files "$REDUCE_DISTRIBUTION/winbuild/"    "$REDUCE_BUILD/"  "--exclude=C"
-  copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
-  execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
-  fetch_files    "windows" "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
-  stop_remote_host
+build_win64() {
+  build_windows
 }
 
-build_win64() {
-  machine_windows
+build_altwindows() {
+  machine_altwindows
   if test "$MODE" = "none"
   then
     printf "Unable to build Windows snapshot here\n"
     return 0
   fi
   start_remote_host
-  copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
+  copy_files "$REDUCE_DISTRIBUTION/winbuild/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
@@ -453,47 +435,16 @@ build_win64() {
 }
 
 build_altwin64() {
-  machine_altwindows
-  if test "$MODE" = "none"
-  then
-    printf "Unable to build Windows snapshot here\n"
-    return 0
-  fi
-  start_remote_host
-  copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
-  copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
-  execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
-  fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
-  stop_remote_host
+  build_altwindows
 }
 
-build_winboth() {
-  machine_windows
-  if test "$MODE" = "none"
-  then
-    printf "Unable to build Windows snapshot here\n"
-    return 0
-  fi
-  start_remote_host
-  copy_files "$REDUCE_DISTRIBUTION/winbuild/"    "$REDUCE_BUILD/"  "--exclude=C"
-  copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
-  execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
-  fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
-  stop_remote_host
-}
-
-build_linux32() {
-  machine_linux32
-  build_debian linux32
+build_linux() {
+  machine_linux64
+  build_debian linux64
 }
 
 build_linux64() {
-  machine_linux64
-  build_debian linux64
+  build_linux
 }
 
 build_rpi32() {
@@ -506,7 +457,7 @@ build_rpi() {
 }
 
 build_rpi64() {
-# Just the same as for 32-bit Raspberry pi but it will need a different
+# Much the same as for 32-bit Raspberry pi but it will need a different
 # host.
   machine_rpi64
   build_debian rpi64
@@ -643,27 +594,6 @@ machine_altwindows() {
   fi
 }
 
-machine_linux32() {
-  MODE="none"
-  hosts_linux32 2> /dev/null
-  if test "$MODE" = "none"
-  then
-    case `uname -n` in
-    math-smreduce)
-      MODE=virtual
-      VM="REDUCE-pkg-factory-Ubuntu32"
-      REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
-      REDUCE_BUILD="/Volumes/DATA/reduce-build"
-      SNAPSHOTS="/Volumes/DATA/snapshots"
-      ;;
-    *)
-      printf "Do not know how to access an i686 Linux machine from `uname -n`\n"
-      MODE=none
-      ;;
-    esac
-  fi
-}
-
 machine_linux64() {
   MODE="none"
   hosts_linux64 2> /dev/null
@@ -683,6 +613,10 @@ machine_linux64() {
       ;;
     esac
   fi
+}
+
+machine_linux() {
+  machine_linux64
 }
 
 machine_rpi32() {
@@ -1125,11 +1059,11 @@ if test "$1" = "-test" ||
 then
   printf "\n\n+++ Test machine access +++ \n\n"
   shift
-# --test can be followeed by a list of machined to test on -if none are used
+# --test can be followed by a list of machines to test on - if none are used
 # the code tests everything.
   if test "$*" = ""
   then
-    MCS="rpi32 rpi64 linux32 linux64 macintosh windows"
+    MCS="rpi32 rpi64 linux64 macintosh windows"
   else
     MCS="$*"
   fi

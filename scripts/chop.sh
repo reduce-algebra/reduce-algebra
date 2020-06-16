@@ -6,7 +6,7 @@
 
 # This is a little script I have developed to help me debug some horrid
 # things. You put another script called bad1.sh where this can find it,
-# sunce that bad1.sh will run and report either success or failure in its
+# such that bad1.sh will run and report either success or failure in its
 # return code. bad1.sh should take a single numeric argument. Used via this
 # a binary chop is applied between Nlow and NHigh to identify a critical
 # value for that argument.

@@ -1,8 +1,8 @@
 #! /bin/sh
 
 # This file tried to list instances of symbols where there could be conflict
-# as between incmsistent capitalization. So if tere is a symbol "camelCase"
-# and another "CamelCase", or is "x" is ysed in one place and "X" in another
+# as between inconsistent capitalization. So if there is a symbol "camelCase"
+# and another "CamelCase", or is "x" is used in one place and "X" in another
 # this will be reported.
 # Names using in strings or comments (or within the "#Word;" notation for
 # named unicode characters) are not considered. Special (but approximate)

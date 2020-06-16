@@ -8,15 +8,6 @@
 
 # $Id$
 
-if cyg32
-mc:=$(shell uname -m)
-ifneq "$(mc)" "i686"
-$(error This version must be built using a 32-bit Cygwin environment)
-# There is a "joke" about both automake and make using the word "endif", so
-# I use a work-around here substituting it in where I need to.
-@ENDIFWORD@
-endif cyg32
-
 # Set up ways to refer to files in the main Reduce source tree.
 
 cslbase = $(srcdir)
@@ -37,25 +28,6 @@ ACLOCAL_AMFLAGS = -I m4
 # TRACE = $(warning TRACE: $@ :: $?)
 # TRACE = $(warning TRACE: $@ ::)
 TRACE =
-
-# The next few lines represent a hideous hack so that I can have a GNU make
-# conditional that will be processed when make is finally invoked. It is
-# here so that if you try to build a 32-bit cygwin version of everything but
-# you happen to be running using a 64-bit cygwin shell things get sorted
-# out - and similarly for building a 64-bit system from a 32-bit shell.
-# The mess is because I need to put in GNU make conditionals and not have
-# automake mess with them too much: the extra substitutions avoid tokens
-# here getting interpreted by automake.
-
-if win32bit
-ifeq ($(shell uname -m),$(CYGWIN_FLAVOUR))
-USE_CORRECT_CYGWIN@EQUALS@
-@ELSEWORD@
-USE_CORRECT_CYGWIN@EQUALS@$(LOCALCYG)
-@ENDIFWORD@
-else !win32bit
-USE_CORRECT_CYGWIN=
-endif !win32bit
 
 AM_CPPFLAGS = $(TRACE)
 AM_LDFLAGS  = $(TRACE)
@@ -191,31 +163,6 @@ else !cygpath
 CYGSRC = $(cslbase)
 endif !cygpath
 CYGREDUCE = $(CYGSRC)/../..
-
-if win32bit
-if cygwin
-EXE=
-
-$(absolute_cyg32):	$(cslbase)/other-cygwin.cpp
-	i686-w64-mingw32-g++ -static -O3 -DFORCE32 $(cslbase)/other-cygwin.cpp -static -o $(absolute_cyg32)
-	i686-w64-mingw32-strip $(absolute_cyg32)
-
-$(absolute_cyg64):	$(cslbase)/other-cygwin.cpp
-	i686-w64-mingw32-g++ -static -O3 -DFORCE64 $(cslbase)/other-cygwin.cpp -static -o $(absolute_cyg64)
-	i686-w64-mingw32-strip $(absolute_cyg64)
-
-else !cygwin
-EXE=$(EXEEXT)
-endif !cygwin
-
-cyg32.exe:	$(cslbase)/other-cygwin.cpp
-	i686-w64-mingw32-g++ -O3 -DFORCE32 $(cslbase)/other-cygwin.cpp -static -o cyg32
-	i686-w64-mingw32-strip cyg32
-
-cyg64.exe:	$(cslbase)/other-cygwin.cpp
-	i686-w64-mingw32-g++ -O3 -DFORCE64 $(cslbase)/other-cygwin.cpp -static -o cyg64
-	i686-w64-mingw32-strip cyg64
-endif win32bit
 
 if wx
 FWIN = wxfwin.h
@@ -730,26 +677,17 @@ dyndemo_DEPENDENCIES = $(cslbase)/dyndemo.def dynmodule.dll
 libdyndemo.a: $(cslbase)/dyndemo.def
 	$(DLLTOOL) --input-def $(cslbase)/dyndemo.def --dllname dyndemo.exe --output-lib libdyndemo.a
 
-fwin-icon.$(OBJEXT):	$(cslbase)/fwin-icon.rc $(USE_CORRECT_CYGWIN)
-	$(USE_CORRECT_CYGWIN) \
-		$(WINDRES) \
-		$(cslbase)/fwin-icon.rc \
-		--include-dir=$(cslbase) \
-		-o fwin-icon.$(OBJEXT)
+fwin-icon.$(OBJEXT):	$(cslbase)/fwin-icon.rc
+	$(WINDRES) $(cslbase)/fwin-icon.rc \
+		--include-dir=$(cslbase) -o fwin-icon.$(OBJEXT)
 
-fwin-csl.$(OBJEXT):	$(cslbase)/fwin-csl.rc $(USE_CORRECT_CYGWIN)
-	$(USE_CORRECT_CYGWIN) \
-		$(WINDRES) \
-		$(cslbase)/fwin-csl.rc \
-		--include-dir=$(cslbase) \
-		-o fwin-csl.$(OBJEXT)
+fwin-csl.$(OBJEXT):	$(cslbase)/fwin-csl.rc
+	$(WINDRES) 	$(cslbase)/fwin-csl.rc \
+		--include-dir=$(cslbase) 	-o fwin-csl.$(OBJEXT)
 
-fwin-reduce.$(OBJEXT):	$(cslbase)/fwin-reduce.rc $(USE_CORRECT_CYGWIN)
-	$(USE_CORRECT_CYGWIN) \
-		$(WINDRES) \
-		$(cslbase)/fwin-reduce.rc \
-		--include-dir=$(cslbase) \
-		-o fwin-reduce.$(OBJEXT)
+fwin-reduce.$(OBJEXT):	$(cslbase)/fwin-reduce.rc
+	$(WINDRES) 	$(cslbase)/fwin-reduce.rc \
+		--include-dir=$(cslbase) -o fwin-reduce.$(OBJEXT)
 
 else !windows
 CONAP=
@@ -817,16 +755,16 @@ endif !fox
 # but that I avoid the cost of checking and recompiling for any alteration
 # that does not cause me to record it in the CHANGED file.
 
-$(FOXDEPS):	$(csl)/fox/CHANGED $(USE_CORRECT_CYGWIN)
+$(FOXDEPS):	$(csl)/fox/CHANGED
 	@printf "About to build FOX for %s\n" `pwd`
-	$(TRACE)@cd ../fox && $(USE_CORRECT_CYGWIN) $(MAKE) install
+	$(TRACE)@cd ../fox && $(MAKE) install
 
 
 if crlibm
 
 CRLIBMDEPS=../lib/libcrlibm.a ../include/crlibm.h
 
-CRDEP = ../include/crlibm.h $(USE_CORRECT_CYGWIN)
+CRDEP = ../include/crlibm.h
 CRINC = -I../include
 AM_CPPFLAGS     += $(CRINC)
 reduce_CPPFLAGS += $(CRINC)
@@ -858,10 +796,9 @@ if conservative
 alloctest_DEPENDENCIES += $(CRLIBMDEPS)
 endif conservative
 
-$(CRLIBMDEPS):	$(USE_CORRECT_CYGWIN)
+$(CRLIBMDEPS):
 	@printf "About to build crlibm for %s\n" `pwd`
-	$(TRACE)@cd ../crlibm && \
-		$(USE_CORRECT_CYGWIN) $(MAKE) install
+	$(TRACE)@cd ../crlibm && $(MAKE) install
 
 else !crlibm
 CRINC =
@@ -871,7 +808,7 @@ endif !crlibm
 
 LIBFFIDEPS=../lib/libffi.a ../include/ffi.h
 
-FFIDEP = ../include/ffi.h $(USE_CORRECT_CYGWIN)
+FFIDEP = ../include/ffi.h
 FFIINC = -I../include
 AM_CPPFLAGS     += $(FFINC)
 reduce_CPPFLAGS += $(FFINC)
@@ -903,14 +840,13 @@ if conservative
 alloctest_DEPENDENCIES += $(LIBFFIDEPS)
 endif conservative
 
-$(LIBFFIDEPS):	$(USE_CORRECT_CYGWIN)
+$(LIBFFIDEPS):
 	@printf "About to build libffi for %s\n" `pwd`
-	$(TRACE)@cd ../libffi && \
-		$(USE_CORRECT_CYGWIN) $(MAKE) install
+	$(TRACE)@cd ../libffi && $(MAKE) install
 
 SOFTFLOATDEPS=../lib/libsoftfloat.a ../include/softfloat.h
 
-SOFTFLOATDEP = ../include/softfloat.h $(USE_CORRECT_CYGWIN)
+SOFTFLOATDEP = ../include/softfloat.h
 SOFTFLOATINC = -I../include
 AM_CPPFLAGS     += $(SOFTFLOATINC)
 reduce_CPPFLAGS += $(SOFTFLOATINC)
@@ -941,231 +877,230 @@ if conservative
 alloctest_DEPENDENCIES    += $(SOFTFLOATDEPS)
 endif conservative
 
-$(SOFTFLOATDEPS):	$(USE_CORRECT_CYGWIN)
+$(SOFTFLOATDEPS):
 	@printf "About to build softfloat for %s\n" `pwd`
-	$(TRACE)@cd ../softfloat && \
-		$(USE_CORRECT_CYGWIN) $(MAKE) install
+	$(TRACE)@cd ../softfloat && $(MAKE) install
 
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
 # taken as specifing conflicting actions.
 
 if arithlib
-csl-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith-times.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith-float.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith-print.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+csl-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP)
+csl-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP)
+csl-arith-times.$(OBJEXT):	$(SOFTFLOATDEP)
+csl-arith-float.$(OBJEXT):	$(SOFTFLOATDEP)
+csl-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP)
+csl-arith-print.$(OBJEXT):	$(SOFTFLOATDEP)
+csl-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP)
+csl-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP)
+csl-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP)
+csl-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP)
 
-bootstrapreduce-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith-times.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith-float.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith-print.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+bootstrapreduce-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP)
+bootstrapreduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP)
+bootstrapreduce-arith-times.$(OBJEXT):	$(SOFTFLOATDEP)
+bootstrapreduce-arith-float.$(OBJEXT):	$(SOFTFLOATDEP)
+bootstrapreduce-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP)
+bootstrapreduce-arith-print.$(OBJEXT):	$(SOFTFLOATDEP)
+bootstrapreduce-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP)
+bootstrapreduce-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP)
+bootstrapreduce-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP)
+bootstrapreduce-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP)
 
-reduce-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith-times.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith-float.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith-print.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+reduce-arith-setup.$(OBJEXT):	$(SOFTFLOATDEP)
+reduce-arith-plus.$(OBJEXT):	$(SOFTFLOATDEP)
+reduce-arith-times.$(OBJEXT):	$(SOFTFLOATDEP)
+reduce-arith-float.$(OBJEXT):	$(SOFTFLOATDEP)
+reduce-arith-gcdn.$(OBJEXT):	$(SOFTFLOATDEP)
+reduce-arith-print.$(OBJEXT):	$(SOFTFLOATDEP)
+reduce-arith-compare.$(OBJEXT):	$(SOFTFLOATDEP)
+reduce-arith-logops.$(OBJEXT):	$(SOFTFLOATDEP)
+reduce-arith-modular.$(OBJEXT):	$(SOFTFLOATDEP)
+reduce-arith-float128.$(OBJEXT):	$(SOFTFLOATDEP)
 
 endif arithlib
 
-csl-allocate.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-arith14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-isprime.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-bytes1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-char.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-csl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-cslmpi.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-cslread.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-eval1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-eval2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-eval3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-eval4.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-fasl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-fns1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-fns2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-fns3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-lisphash.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-cslgc.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-ompsetup.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-print.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-pro.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) machineid.cpp $(USE_CORRECT_CYGWIN)
-csl-stubs.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-csl-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+csl-allocate.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-arith14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-isprime.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-bytes1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-char.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-csl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-cslmpi.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-cslread.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-eval1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-eval2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-eval3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-eval4.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-fasl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-fns1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-fns2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-fns3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-lisphash.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-cslgc.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-ompsetup.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-print.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-pro.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) machineid.cpp
+csl-stubs.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+csl-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 
-bootstrapreduce-allocate.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-arith14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-isprime.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-bytes1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-char.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-csl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-cslmpi.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-cslread.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-eval1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-eval2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-eval3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-eval4.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-fasl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-fns1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-fns2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-fns3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-lisphash.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-cslgc.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-ompsetup.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-print.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-pro.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) machineid.cpp $(USE_CORRECT_CYGWIN)
-bootstrapreduce-stubs.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-bootstrapreduce-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+bootstrapreduce-allocate.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-arith14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-isprime.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-bytes1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-char.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-csl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-cslmpi.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-cslread.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-eval1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-eval2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-eval3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-eval4.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-fasl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-fns1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-fns2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-fns3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-lisphash.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-cslgc.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-ompsetup.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-print.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-pro.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) machineid.cpp
+bootstrapreduce-stubs.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+bootstrapreduce-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 
-reduce-allocate.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-arith14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-isprime.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-bytes1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-char.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-csl.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-cslmpi.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-cslread.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-eval1.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-eval2.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-eval3.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-eval4.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-fasl.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-fns1.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-fns2.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-fns3.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-lisphash.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-cslgc.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-print.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-pro.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) machineid.cpp $(USE_CORRECT_CYGWIN)
-reduce-stubs.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+reduce-allocate.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-arith14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-isprime.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-bytes1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-char.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-csl.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-cslmpi.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-cslread.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-eval1.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-eval2.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-eval3.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-eval4.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-fasl.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-fns1.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-fns2.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-fns3.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-lisphash.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-cslgc.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-print.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-pro.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) machineid.cpp
+reduce-stubs.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 
-reduce-u01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u15.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u16.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u17.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u18.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u19.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u20.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u21.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u22.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u23.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u24.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u25.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u26.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u27.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u28.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u29.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u30.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u31.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u32.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u33.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u34.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u35.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u36.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u37.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u38.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u39.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u40.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u41.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u42.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u43.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u44.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u45.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u46.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u47.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u48.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u49.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u50.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u51.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u52.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u53.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u54.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u55.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u56.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u57.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u58.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u59.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
-reduce-u60.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(USE_CORRECT_CYGWIN)
+reduce-u01.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u02.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u03.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u04.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u05.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u06.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u07.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u08.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u09.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u10.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u11.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u12.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u15.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u16.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u17.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u18.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u19.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u20.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u21.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u22.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u23.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u24.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u25.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u26.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u27.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u28.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u29.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u30.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u31.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u32.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u33.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u34.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u35.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u36.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u37.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u38.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u39.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u40.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u41.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u42.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u43.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u44.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u45.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u46.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u47.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u48.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u49.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u50.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u51.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u52.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u53.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u54.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u55.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u56.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u57.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u58.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u59.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+reduce-u60.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -1201,10 +1136,9 @@ $(csl)/wxWidgets/wxWidgets_revision:	\
 
 WXDEPS=../bin/wx-config
 
-../bin/wx-config:	$(csl)/wxWidgets/wxWidgets_revision $(USE_CORRECT_CYGWIN)
+../bin/wx-config:	$(csl)/wxWidgets/wxWidgets_revision
 	@printf "About to build wxWidgets for %s\n" `pwd`
-	$(TRACE)@cd ../wxWidgets && \
-		$(USE_CORRECT_CYGWIN) $(MAKE) install
+	$(TRACE)@cd ../wxWidgets && $(MAKE) install
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 	-$(RM) -f wxfontdemo$(EXEEXT)
@@ -1291,12 +1225,6 @@ else !gui
 	$(CP) $(cslbase)/csl-nogui .
 endif !gui
 if !cygwin
-if win32bit
-	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
-	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) csl.exe; fi
-	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
-endif win32bit
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) csl.exe; fi
@@ -1341,12 +1269,6 @@ else !gui
 	$(CP) $(cslbase)/csl-nogui .
 endif !gui
 if !cygwin
-if win32bit
-	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
-	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) flatcsl.exe; fi
-	if test -x $(with_cygbuild)/csl/flatcsl.exe; then $(CP) $(with_cygbuild)/csl/flatcsl.exe cygwin-flatcsl.exe; fi
-endif
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) flatcsl.exe; fi
@@ -1397,12 +1319,6 @@ else !gui
 	$(CP) $(cslbase)/reduce-nogui .
 endif !gui
 if !cygwin
-if win32bit
-	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
-	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) reduce.exe; fi
-	if test -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
-endif
 	if test "x$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) reduce.exe; fi
@@ -1459,12 +1375,6 @@ if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 	$(CP) $(cslbase)/bootstrapreduce .
 if !cygwin
-if win32bit
-	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
-	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) bootstrapreduce.exe; fi
-	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
-endif
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) bootstrapreduce.exe; fi
@@ -1510,12 +1420,6 @@ else !gui
 	$(CP) $(cslbase)/fwindemo-nogui .
 endif !gui
 if !cygwin
-if win32bit
-	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
-	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
-	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) fwindemo.exe; fi
-	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
-endif win32bit
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) fwindemo.exe; fi
@@ -1859,22 +1763,16 @@ endif !gui
 
 local_image_files = bootstrapreduce.img noinlines.img
 
-if win32bit
-win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
-	cygwin64-reduce cygwin64-csl \
-	csl reduce fwindemo
-else !win32bit
 win_specials = \
 	cygwin64-reduce cygwin64-csl \
 	csl reduce fwindemo
-endif !win32bit
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 	$(image_files) $(local_image_files) $(win_specials) \
 	objtype* cl-wrap* makeheaders* machineid.cpp *.dep $(INLINE_DEFS)
 
 clean-local:
-	-$(RM) -rf $(generatedfiles) $(USE_CORRECT_CYGWIN)
+	-$(RM) -rf $(generatedfiles)
 	
 else !windows
 
@@ -1891,7 +1789,7 @@ generatedfiles=$(image_files) $(local_image_files) \
 	$(macr)
 
 clean-local:
-	-$(RM) -rf $(generatedfiles) $(USE_CORRECT_CYGWIN)
+	-$(RM) -rf $(generatedfiles)
 	
 endif !windows
 
@@ -1963,11 +1861,11 @@ endif !windows
 dynmodule.$(DLLEXT):	$(cslbase)/dynmodule.cpp $(dyndep)
 	$(COMPILE_DLL) $(cslbase)/dynmodule.cpp $(dyndep) $(DEST)dynmodule.$(DLLEXT)
 
-objtype$(EXEEXT):	$(cslbase)/objtype.cpp $(USE_CORRECT_CYGWIN)
+objtype$(EXEEXT):	$(cslbase)/objtype.cpp
 	$(LOCALCXX) $(cslbase)/objtype.cpp -o objtype$(EXEEXT)
 	$(LOCALSTRIP) objtype$(EXEEXT)
 
-makeheaders$(EXEEXT):	$(cslbase)/makeheaders.cpp $(USE_CORRECT_CYGWIN)
+makeheaders$(EXEEXT):	$(cslbase)/makeheaders.cpp
 	$(LOCALCXX) $(cslbase)/makeheaders.cpp -o makeheaders$(EXEEXT)
 	$(LOCALSTRIP) objtype$(EXEEXT)
 
@@ -2006,8 +1904,7 @@ machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(E
 			$(cslbase)/thread_local.h \
 			$(cslbase)/externs.h $(cslbase)/arith.h \
 			$(cslbase)/entries.h $(cslbase)/lispthrow.h \
-			$(cslbase)/allocate.h $(cslbase)/newallocate.h \
-			$(USE_CORRECT_CYGWIN)
+			$(cslbase)/allocate.h $(cslbase)/newallocate.h
 	./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
 		machineid-1.cpp $(COMPILE_DLL)
 	./makeheaders$(EXEEXT) config.h \
@@ -2029,9 +1926,8 @@ machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(E
 reduce.dep:
 	$(TRACE)touch reduce.dep
 
-$(REDUCE_IMG):	reduce$(COM) $(reducedep) $(generated_lisp) $(USE_CORRECT_CYGWIN)
+$(REDUCE_IMG):	reduce$(COM) $(reducedep) $(generated_lisp)
 	-$(TRACE)$(RM) -rf $(REDUCE_IMG)
-if canrun
 # I will make the REDUCE image file a directory rather than a single
 # file... This is achieved by specifying its name here with a trailing "/",
 # but I could have also have just made a directory with the right name
@@ -2050,7 +1946,7 @@ if canrun
 #
 # A user may go "make CSLFLAGS=-g" to force "-g" into build-times Lisp flags...
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./reduce$(COM) -w -z $(CSLFLAGS) -Dno_init_file \
+	./reduce$(COM) -w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -2067,33 +1963,19 @@ if canrun
 	then $(CP) reduce.app/Contents/reduce.img $(gensrc); \
 	elif test -f reduce.img; then $(CP) reduce.img $(gensrc); fi
 	chmod 664 $(gensrc)/*
-else !canrun
-	echo Can not build reduce.img on this platform.
-	echo Copying from $(gensrc)
-# Note that the following will only behave properly if some version where the
-# image file CAN be made has already put it in $(gensrc). I do not put
-# any careful dependencies here to enforce that. If you are running on
-# a 32-bit Windows and trying to cross-build the 64-bit Windows system it
-# can all work but I will insist that you build the 32-bit version first and
-# leave it to YOU to check that this happens late enough to behave well and
-# that the image gets re-copied when that is needed.
-	-$(RM) -rf reduce.img
-	$(CP) -r $(gensrc)/reduce.img .
-endif !canrun
 
 # This is a temporary target "reduce.dir" to create the image as a directory
 # rather than as a single file.
 
-reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp) $(USE_CORRECT_CYGWIN)
+reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
 	-$(TRACE)$(RM) -rf reduce.img
-if canrun
 # I will make the REDUCE image file a directory rather than a single
 # file... This is achieved by specifying its name here with a trailing "/",
 # but I could have also have just made a directory with the right name
 # before starting the build job.
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./reduce$(COM) -w -z $(CSLFLAGS) \
+	./reduce$(COM) -w -z $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
@@ -2102,14 +1984,6 @@ if canrun
 		-- buildlogs/reduce.log \
 		-j reduce.dep
 	chmod 664 $(gensrc)/*
-else !canrun
-	echo Can not build reduce.img on this platform
-	echo Copying from $(gensrc)
-# Note that the following will only behave properly if some version where the
-# image file CAN be made has already put it in $(gensrc).
-	-$(RM) -rf reduce.img
-	$(CP) -r $(gensrc)/reduce.img .
-endif !canrun
 
 # "make bootstraprecompile which=<module-name>" and "make recompile which="
 # recompile just one package, assuming everything else is properly up to
@@ -2117,31 +1991,26 @@ endif !canrun
 # stamping all files so that a subsequent "make test" etc will not cause
 # unwanted extra recompilation.
 
-bootstraprecompile: $(USE_CORRECT_CYGWIN)
-if canrun
+bootstraprecompile:
 	chmod 664 $(gensrc)/*
-	if ! test -f bootstrapreduce.img; then $(USE_CORRECT_CYGWIN) $(MAKE) bootstrapreduce.img; fi
+	if ! test -f bootstrapreduce.img; then $(MAKE) bootstrapreduce.img; fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
+	./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/recompile.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) $(MAKE) -t bootstrapreduce.img > /dev/null
-else !canrun
-	echo Can not build images on this platfrom
-endif !canrun
+	$(MAKE) -t bootstrapreduce.img > /dev/null
 
-recompile:	$(USE_CORRECT_CYGWIN)
-if canrun
+recompile:
 	chmod 664 $(gensrc)/*
-	if ! test -f $(REDUCE_IMG); then $(USE_CORRECT_CYGWIN) $(MAKE) $(REDUCE_IMG); fi
+	if ! test -f $(REDUCE_IMG); then $(MAKE) $(REDUCE_IMG); fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./reduce$(COM) -v -w $(CSLFLAGS) \
+	./reduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/recompile.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2149,9 +2018,6 @@ if canrun
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
 	$(MAKE) -t $(REDUCE_IMG) > /dev/null
-else !canrun
-	echo Can not build images on this platfrom
-endif !canrun
 
 # Pseudo-targets with names like "packagename.bootfasl" and "packagename.fasl"
 # can be used to trigger recompilation of just a single package.
@@ -2187,13 +2053,12 @@ reduce.resources/qepcad.awk:	$(packages)/redlog/ofsf/qepcad.awk
 bootstrapreduce.dep:
 	$(TRACE)touch bootstrapreduce.dep
 
-bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep) $(USE_CORRECT_CYGWIN)
+bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	-$(TRACE)$(RM) -f bootstrapreduce.img
-if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) \
+	./bootstrapreduce$(COM) \
 		-w -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
@@ -2206,22 +2071,13 @@ if canrun
 	elif test -f bootstrapreduce.img; \
 	then $(CP) bootstrapreduce.img $(gensrc); fi
 	chmod 664 $(gensrc)/*
-else !canrun
-	echo Can not build bootstrapreduce.img on this platform
-	echo Copying from $(gensrc)
-# Note that the following will only behave properly if some version where the
-# image file CAN be made has already put it in $(gensrc).
-	-$(RM) -rf bootstrapreduce.img
-	$(CP) $(gensrc)/bootstrapreduce.img .
-endif !canrun
 
-noinlines.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep) $(USE_CORRECT_CYGWIN)
+noinlines.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	-$(TRACE)$(RM) -f noinlines.img
-if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) \
+	./bootstrapreduce$(COM) \
 		-w -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
@@ -2229,9 +2085,6 @@ if canrun
 		-Dnoinlines \
 		-o noinlines.img -- buildlogs/noinlines.log \
 		-j bootstrapreduce.dep
-else !canrun
-	echo Can not build noinlines.img on this platform
-endif !canrun
 
 # The image here is JUST for debugging and related testing and development.
 # It is one that contains Rlisp and the most basic parts of Reduce, sufficient
@@ -2239,24 +2092,19 @@ endif !canrun
 # standard "bootstrapreduce.img" target in effect builds this as an
 # intermediate step.
 
-boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep) $(USE_CORRECT_CYGWIN)
+boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	-$(TRACE)$(RM) -f boot.img
-if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) \
+	./bootstrapreduce$(COM) \
 		-w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildboot.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-o boot.img -- buildlogs/boot.log
-else !canrun
-	echo Can not build boot.img on this platform
-endif !canrun
 
-profile:	bootstrapreduce.img $(USE_CORRECT_CYGWIN)
-if canrun
+profile:	bootstrapreduce.img
 	$(TRACE)mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	if test -f $(INLINE_DEFS); \
@@ -2265,16 +2113,16 @@ if canrun
 	fi
 	touch $(INLINE_DEFS)
 	$(RM) -f bootstrapreduce.img
-	$(USE_CORRECT_CYGWIN) $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
+	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
 	chmod 664 $(gensrc)/*
 	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
 	then \
 	  echo "Inline definitions have not changed"; \
 	  else \
 	  $(RM) bootstrapreduce.img; \
-	  $(USE_CORRECT_CYGWIN) $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
+	  $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
 	fi
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) \
+	./bootstrapreduce$(COM) \
 		-w $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/profile.red \
 		-D@srcdir=$(CYGSRC) \
@@ -2285,10 +2133,7 @@ if canrun
 	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
 	mv profile.dat $(gensrc)
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) $(MAKE) standard-c-code
-else !canrun
-	echo Can not profile on this platform
-endif !canrun
+	$(MAKE) standard-c-code
 
 $(gensrc)/profile.dat:	$(csl)/generated-c/profile.dat
 	-$(TRACE)mkdir -p $(gensrc)
@@ -2314,16 +2159,16 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	fi
 	touch $(INLINE_DEFS)
 	$(RM) -f bootstrapreduce.img
-	$(USE_CORRECT_CYGWIN) $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
+	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
 	chmod 664 $(gensrc)/*
 	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
 	then \
 	  echo "Inline definitions have not changed"; \
 	  else \
 	  $(RM) bootstrapreduce.img; \
-	  $(USE_CORRECT_CYGWIN) $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
+	  $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
 	fi
-	$(USE_CORRECT_CYGWIN) $(MAKE) $(AM_MAKEFLAGS) just-c-code
+	$(MAKE) $(AM_MAKEFLAGS) just-c-code
 	chmod 664 $(gensrc)/*
 # If the inline-defs file has not changed I will restore the old one. Its
 # contents will be just what I would have seen in the new one but its
@@ -2341,8 +2186,8 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # basis regenerates the C++ code. It is really only intended for direct use
 # while debugging.
 
-just-c-code:	$(USE_CORRECT_CYGWIN)
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -i- -w $(CSLFLAGS) \
+just-c-code:
+	./bootstrapreduce$(COM) -i- -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
@@ -2377,42 +2222,37 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # to let any previous steps complete.
 
 $(generated_source_deps):	$(gensrc)/make.stamp
-	$(USE_CORRECT_CYGWIN) $(MAKE) standard_c_code
+	$(MAKE) standard_c_code
 
 standard-c-code $(generated_lisp):	$(gensrc)/make.stamp
 ## Recover from the removal of $@
 	if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \
-	  $(USE_CORRECT_CYGWIN) $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
+	  $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
 	  $(RM) -f $(generated-objects); \
-	  $(USE_CORRECT_CYGWIN) $(MAKE) $(AM_MAKEFLAGS) reduce; \
+	  $(MAKE) $(AM_MAKEFLAGS) reduce; \
 	fi
 
 
 # partial-c-code is a target only activated manually.
 
-partial-c-code:	bootstrapreduce.img $(gensrc)/profile.dat $(USE_CORRECT_CYGWIN)
-if canrun
+partial-c-code:	bootstrapreduce.img $(gensrc)/profile.dat
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -w $(CSLFLAGS) \
+	./bootstrapreduce$(COM) -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/partial-c-code.log
 	chmod 664 $(gensrc)/*
-else !canrun
-	echo Can not generate C code on this platfrom
-endif !canrun
 
 # full-c-code is a target only activated manually.
 
-full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat machinid.cpp $(USE_CORRECT_CYGWIN)
-if canrun
+full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat machinid.cpp
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -w $(CSLFLAGS) \
+	./bootstrapreduce$(COM) -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
@@ -2420,91 +2260,68 @@ if canrun
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/full-c-code.log
 	chmod 664 $(gensrc)/*
-else !canrun
-	echo Can not generate C code on this platfrom
-endif !canrun
 
 # j-code will only be triggered manually.
 
-j-code:	bootstrapreduce.img $(gensrc)/profile.dat $(USE_CORRECT_CYGWIN)
-if canrun
+j-code:	bootstrapreduce.img $(gensrc)/profile.dat
 	mkdir -p buildlogs
 	mkdir -p $(CYGREDUCE)/cslbuild/generated-java
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -w $(CSLFLAGS) \
+	./bootstrapreduce$(COM) -w $(CSLFLAGS) \
 		-Dno_init_file $(CYGSRC)/make-j-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-java \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/j-code.log
-else !canrun
-	echo Can not generate Java code on this platfrom
-endif !canrun
 
-smacros smacros.red:	bootstrapreduce.img $(USE_CORRECT_CYGWIN)
-if canrun
+smacros smacros.red:	bootstrapreduce.img
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -w $(CSLFLAGS) \
+	./bootstrapreduce$(COM) -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-smacros.red \
 		-Dhow_many=$(how_many) -Dhow_big=$(how_big) \
 		-L buildlogs/smacros.log
 	echo You may now copy smacros.red to trunk/packages/support
-else !canrun
-	echo Can not generate smacros.red on this platfrom
-endif !canrun
 
-testslow:	bootstrapreduce.img $(USE_CORRECT_CYGWIN)
-if canrun
+testslow:	bootstrapreduce.img
 	mkdir -p testlogs
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -v -w \
+	./bootstrapreduce$(COM) -v -w \
 		$(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-- testlogs/testslow.log
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
+	./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/checkall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-- testlogs/checkslow.log
-else !canrun
-	echo Can not run tests on this platfrom
-endif !canrun
 
-testall:	$(REDUCE_IMG) $(USE_CORRECT_CYGWIN)
-if canrun
+testall:	$(REDUCE_IMG)
 	mkdir -p testlogs
-	$(USE_CORRECT_CYGWIN) ./reduce$(COM) -v -w $(CSLFLAGS) \
+	./reduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/testreduce.log
-	$(USE_CORRECT_CYGWIN) ./reduce$(COM) -v -w $(CSLFLAGS) \
+	./reduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/checkall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-- testlogs/checkall.log
-else !canrun
-	echo Can not run tests on this platfrom
-endif !canrun
 
-testslow1:	bootstrapreduce.img $(USE_CORRECT_CYGWIN)
-if canrun
+testslow1:	bootstrapreduce.img
 	mkdir -p testlogs
-	$(USE_CORRECT_CYGWIN) ./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
+	./bootstrapreduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/test$(which).log -Dwhich=$(which)
-else !canrun
-	echo Can not run tests on this platfrom
-endif !canrun
 
 if valgrind
 
@@ -2523,19 +2340,15 @@ countall:	$(REDUCE_IMG)
 
 endif valgrind
 
-test1:	$(REDUCE_IMG) $(USE_CORRECT_CYGWIN)
-if canrun
+test1:	$(REDUCE_IMG)
 	mkdir -p testlogs
-	$(USE_CORRECT_CYGWIN) ./reduce$(COM) -v -w $(CSLFLAGS) \
+	./reduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-- testlogs/test$(which).log -Dwhich=$(which) \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit)
-else !canrun
-	echo Can not run tests on this platfrom
-endif !canrun
 
 if valgrind
 
@@ -2552,18 +2365,14 @@ count1:	$(REDUCE_IMG)
 
 endif valgrind
 
-checkall:	$(REDUCE_IMG) $(USE_CORRECT_CYGWIN)
-if canrun
+checkall:	$(REDUCE_IMG)
 	mkdir -p testlogs
-	$(USE_CORRECT_CYGWIN) ./reduce$(COM) -v -w $(CSLFLAGS) \
+	./reduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/checkall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-- testlogs/checkall.log
-else !canrun
-	echo Can not check test results on this platfrom
-endif !canrun
 
 cleanlog:
 	-$(RM) -f buildlogs/*.log testlogs/*.rlg
@@ -2579,12 +2388,11 @@ cleanlog:
 csl.dep:
 	$(TRACE)touch csl.dep
 
-csl.img:	csl$(COM) $(csldep) $(USE_CORRECT_CYGWIN)
+csl.img:	csl$(COM) $(csldep)
 	-$(TRACE)$(RM) -rf csl.img
-if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
-	$(USE_CORRECT_CYGWIN) ./csl$(COM) -w -v -z $(CSLFLAGS) \
+	./csl$(COM) -w -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsl.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-o- -- buildlogs/csl.img.log \
@@ -2592,44 +2400,27 @@ if canrun
 	if test -f csl.app/Contents/csl.img; \
 	then $(CP) -r csl.app/Contents/csl.img $(gensrc); \
 	elif test -f csl.img; then $(CP) -r csl.img $(gensrc); fi
-else !canrun
-	echo Can not create csl.img on this platfrom
-	echo Copying from $(gensrc)
-# Note that the following will only behave properly if some version where the
-# image file CAN be made has already put it in $(gensrc).
-	-$(RM) -rf csl.img
-	$(CP) -r $(gensrc)/csl.img .
-endif !canrun
 
 
-csli.img:	csl$(COM) $(csldep) $(USE_CORRECT_CYGWIN)
+csli.img:	csl$(COM) $(csldep)
 	-$(TRACE)$(RM) -rf csli.img
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
-	$(USE_CORRECT_CYGWIN) ./csl$(COM) -w -v -z $(CSLFLAGS) \
+	./csl$(COM) -w -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsli.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-o csli.img -L buildlogs/csli.img.log \
 		-j csl.dep
 
 
-csl.dir:	csl$(COM) $(csldep) $(USE_CORRECT_CYGWIN)
+csl.dir:	csl$(COM) $(csldep)
 	-$(TRACE)$(RM) -rf csl.img
-if canrun
 	mkdir -p buildlogs
-	$(USE_CORRECT_CYGWIN) ./csl$(COM) -w -v -z $(CSLFLAGS) \
+	./csl$(COM) -w -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsl.lsp" \
 		-o ./csl.img/ -D@cslbase="$(CYGSRC)" \
 		-- buildlogs/csl.img.log \
 		-j csl.dep
-else !canrun
-	echo Can not create csl.img on this platfrom
-	echo Copying from $(gensrc)
-# Note that the following will only behave properly if some version where the
-# image file CAN be made has already put it in $(gensrc).
-	-$(RM) -rf csl.img
-	$(CP) -r $(gensrc)/csl.img .
-endif !canrun
 
 
 
@@ -2679,11 +2470,7 @@ save:	all
 if win64
 NAME=windows64
 else !win64
-if windows
-NAME=windows32
-else !windows
 NAME=$(BUILD)
-endif !windows
 endif !win64
 	echo ARCHITECTURE=$(ARCHITECTURE)  NAME=$(NAME)
 if windows
@@ -2721,10 +2508,9 @@ $(reduce)/bin/rfcsl$(EXEEXT): \
 		$(generic)/newfront/redline.c \
 		$(generic)/newfront/redparent.c \
 		$(generic)/newfront/redsig.c \
-		$(generic)/newfront/redstrings.c \
-		$(USE_CORRECT_CYGWIN)
+		$(generic)/newfront/redstrings.c
 	@printf "About to build redfront for %s\n" `pwd`; \
-	cd ../redfront && $(USE_CORRECT_CYGWIN) $(MAKE)
+	cd ../redfront && $(MAKE)
 
 endif redfront
 

@@ -61,11 +61,12 @@ trickery at present. Eg a couple of the commends used to launch 64-bit
 processed are tagged using "chmod +s" and a script /usr/local/bin/uname
 adjusts the reported machine character in 32-bit mode so that having a 64-bit
 kernel does not lead to confusion!
+THIS IS NO LONGER A SENSIBLE OPTION TO TRY.
 
 (7)   MODE=ssh+ds64; HOST=remote.raspberry.pi
 As one might by now expect.
 
-The sample here is the one that I am using as of mid-September 2019 and
+The sample here is the one that I am using as of June 2020 and
 shows something of the range of computers I have tried to support and the
 ways in which they link together - in the process including instances of
 each of the above. A minimal script that just ran on a single host and
@@ -74,7 +75,7 @@ that only supported a few targets would of course be a lot shorter.
 --------------------------------------------------------------------------
 # $HOME/.snapshots
 
-# A C Norman, 2018
+# A C Norman, 2020
 
 # This file customises the Reduce snapshot builder by indicating private
 # or local machines that can be used for building snapshots. For each
@@ -86,8 +87,8 @@ that only supported a few targets would of course be a lot shorter.
 # variables.
 
 # It can use this to override the snapshot building regime for macintosh,
-# windows, linux32 (ie i686), linux64 (ie x86_64) and rpi (ie a Raspberry Pi
-# running 32-bit Raspbian) and rpi64 (commentary later).
+# windows, linux64 (ie x86_64) and rpi (ie a Raspberry Pi
+# running 32-bit Raspbian) and rpi64.
 # It does not need to override all of these.
 # So a very simple file content would be if a Windows machine was available
 # as a server, but otherwise default behaviour was wanted. In that case this
@@ -119,72 +120,58 @@ case `uname -n` in
 #######################################################################
 panamint)
 
+# panamint is my home machine, running Windows 10.
+
   hosts_macintosh() {
     MODE=ssh
+# At home when my macbook is in range of the wifi it gets the address
+# 192.168.1.8
     HOST=192.168.1.8
   }
 
   hosts_windows() {
 # panamint is a Windows computer.
-# A windows host must have both 32- and 64-bit versions of cygwin installed,
-# and run from each of those two environments the necessary set of cygwin
-# build tools can be sorted out using scripts/cygwin-sanity-check.sh. In
-# addition to that the inno setup tool must be installed.
+# A windows host must have (64-bit versions) of cygwin installed,
+# and the necessary set of cygwin build tools can be sorted out using
+# scripts/cygwin-sanity-check.sh. In addition to that the inno setup
+# tool must be installed.
     MODE=local
   }
 
   hosts_altwindows() {
-# panamint is a Windows computer, but here I force use of a VM...
+# panamint is a Windows computer, but here I force use of a VM... This
+# capability can be useful for testing because the VM can be a Windows
+# image set up without any of the customisation I have for my main computer.
     MODE=virtual
     VM="REDUCE-pkg-factory-Windows"
   }
 
-  hosts_linux32() {
-# Using a virtual machine. I make the VM use Ubuntu 12.04 (which has,
-# at the time of writing this, recently gone beyond support) in the hope
-# that binaries created on that will work on any later system.
-# To build on such a release of Linux I needed to take special steps to
-# install various newer software tools:
-# (1) I identified extra software repositories from which I could
-#     install a series 5 release of gcc/g++. Specifically I use a
-#     repository ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu in
-#     dists/precise.
-# (2) I fetch source archives of (gnu) make, autoconf, automake, libtool
-#     and rsync from the nearest GNU mirror, and in each case go
-#     ./configure --prefix=/usr; make; sudo make install
-# to replace older system-provided versions.
-#
-# Note: scripts/ubuntu-sanity-check.sh now performs (1) as part of its
-# regular processing, while for (2) an easy scheme is to unpack the
-# archive csl/support-packages/necessary-updates.tar.bz2 into a fairly
-# arbitrary directy and then run the "build-them.sh" script included in it.
-#
-# If you build on a more modern Linux release you may not need all that!
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu32"
-  }
-
   hosts_linux64() {
+# The virtual machine here needs a new enough g++ and the things that
+# scripts/ubuntu-sanity-check.sh arranges to install.
     MODE=virtual
     VM="REDUCE-pkg-factory-Ubuntu"
   }
 
   hosts_rpi() {
 # As before, use a remote machine. If I had DNS set up in a more
-# elaborate way it would become more obvious that this host is "rpi3-32".
+# elaborate way it would become more obvious that this host is "acn1-rpi4".
 # For JUST NOW this is just a 32-bit Raspberry Pi world.
     MODE=ssh
     HOST=192.168.1.20
   }
 
   hosts_rpi64() {
-    MODE=ssh+ds64
-    HOST=192.168.1.20
+# A Raspberry pi 4 running the 64-bit of Raspberry Pi OS
+    MODE=ssh
+    HOST=192.168.1.26
   }
   ;;
 
 #######################################################################
 gauguin)
+
+# gauguin is a Linux box (Ubuntu)
 
   hosts_macintosh() {
 # gauguin does not have a macintosh directly available, but by tunneling
@@ -204,15 +191,6 @@ gauguin)
     VM="REDUCE-pkg-factory-Windows"
   }
 
-  hosts_win32() {
-# On this machine I have virtualbox set up so that a VM called
-# REDUCE-pkg-factory-windows runs Windows 10 and has the cygwin environment
-# set up so that I can build on it. The VM runs an ssh server and this script
-# sets up port forwarding in virtualbox so that it can be accessed.
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Windows"
-  }
-
   hosts_win64() {
 # On this machine I have virtualbox set up so that a VM called
 # REDUCE-pkg-factory-windows runs Windows 10 and has the cygwin environment
@@ -220,21 +198,6 @@ gauguin)
 # sets up port forwarding in virtualbox so that it can be accessed.
     MODE=virtual
     VM="REDUCE-pkg-factory-Windows"
-  }
-
-  hosts_winboth() {
-# On this machine I have virtualbox set up so that a VM called
-# REDUCE-pkg-factory-windows runs Windows 10 and has the cygwin environment
-# set up so that I can build on it. The VM runs an ssh server and this script
-# sets up port forwarding in virtualbox so that it can be accessed.
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Windows"
-  }
-
-  hosts_linux32() {
-# More cases of using a virtual machine.
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu32"
   }
 
   hosts_linux64() {
@@ -259,14 +222,17 @@ gauguin)
   }
 
   hosts_rpi64() {
-    MODE=ssh+ssh+ds64
+    MODE=ssh+ssh
     HOST1=codemist.dynu.com
-    HOST2=192.168.1.20
+    HOST2=192.168.1.26
   }
   ;;
 
 #######################################################################
 math-smreduce.mat.brocku.ca)
+
+# A remote Macintosh which is the "official" build host for Reduce snapshots.
+
 
 # math-smreduce is a Macintosh, but it needs the file-space used during
 # snapshot builds to be put on a separate volume rather than within the
@@ -285,24 +251,9 @@ math-smreduce.mat.brocku.ca)
     VM="REDUCE-pkg-factory-Windows"
   }
 
-  hosts_win32() {
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Windows"
-  }
-
   hosts_win64() {
     MODE=virtual
     VM="REDUCE-pkg-factory-Windows"
-  }
-
-  hosts_winboth() {
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Windows"
-  }
-
-hosts_linux32() {
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu32"
   }
 
 hosts_linux64() {
@@ -323,7 +274,9 @@ hosts_linux64() {
   ;;
 
 #######################################################################
-rpi3-32)
+# Various of the Raspberry pi systems at home!
+
+acn1-rpi4 | rpi3-32)
   hosts_macintosh() {
     MODE=ssh
     HOST=192.168.1.8
@@ -335,30 +288,10 @@ rpi3-32)
     HOST=192.168.1.10
   }
 
-  hosts_win32() {
-# From the private network I can access panamint using its private address.
-    MODE=ssh
-    HOST=192.168.1.10
-  }
-
   hosts_win64() {
 # From the private network I can access panamint using its private address.
     MODE=ssh
     HOST=192.168.1.10
-  }
-
-  hosts_winboth() {
-# From the private network I can access panamint using its private address.
-    MODE=ssh
-    HOST=192.168.1.10
-  }
-
-hosts_linux32() {
-# In this case virtualbox will be run on the host 192.168.1.10 so access
-# to it is somewhat at arm's length.
-    MODE=ssh+virtual
-    HOST=192.168.1.10
-    VM="REDUCE-pkg-factory-Ubuntu32"
   }
 
 hosts_linux64() {
@@ -374,63 +307,8 @@ hosts_rpi() {
   }
 
 hosts_rpi64() {
-    MODE=ssh+ds64
-    HOST=192.168.1.20
-  }
-  ;;
-
-acn1-rpi4)
-  hosts_macintosh() {
     MODE=ssh
-    HOST=192.168.1.8
-  }
-
-  hosts_windows() {
-# From the private network I can access panamint using its private address.
-    MODE=ssh
-    HOST=192.168.1.10
-  }
-
-  hosts_win32() {
-# From the private network I can access panamint using its private address.
-    MODE=ssh
-    HOST=192.168.1.10
-  }
-
-  hosts_win64() {
-# From the private network I can access panamint using its private address.
-    MODE=ssh
-    HOST=192.168.1.10
-  }
-
-  hosts_winboth() {
-# From the private network I can access panamint using its private address.
-    MODE=ssh
-    HOST=192.168.1.10
-  }
-
-hosts_linux32() {
-# In this case virtualbox will be run on the host 192.168.1.10 so access
-# to it is somewhat at arm's length.
-    MODE=ssh+virtual
-    HOST=192.168.1.10
-    VM="REDUCE-pkg-factory-Ubuntu32"
-  }
-
-hosts_linux64() {
-# As before, a virtual machine running on a remote system.
-    MODE=ssh+virtual
-    HOST=192.168.1.10
-    VM="REDUCE-pkg-factory-Ubuntu"
-  }
-
-hosts_rpi() {
-# Use the machine directly.
-    MODE=local
-  }
-
-hosts_rpi64() {
-    MODE=ds64
+    HOST=192.168.1.26
   }
   ;;
 
@@ -449,30 +327,10 @@ OlderMacBook | acn1macbook)
     HOST=192.168.1.10
   }
 
-  hosts_win32() {
-# From the private network I can access panamint using its private address.
-    MODE=ssh
-    HOST=192.168.1.10
-  }
-
   hosts_win64() {
 # From the private network I can access panamint using its private address.
     MODE=ssh
     HOST=192.168.1.10
-  }
-
-  hosts_winboth() {
-# From the private network I can access panamint using its private address.
-    MODE=ssh
-    HOST=192.168.1.10
-  }
-
-  hosts_linux32() {
-# In this case virtualbox will be run on the host 192.168.1.10 so access
-# to it is somewhat at arm's length.
-    MODE=ssh+virtual
-    HOST=192.168.1.10
-    VM="REDUCE-pkg-factory-Ubuntu32"
   }
 
   hosts_linux64() {
@@ -490,8 +348,8 @@ OlderMacBook | acn1macbook)
   }
 
   hosts_rpi64() {
-    MODE=ssh+ds64
-    HOST=192.168.1.20
+    MODE=ssh
+    HOST=192.168.1.26
   }
   ;;
 

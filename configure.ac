@@ -65,16 +65,6 @@ then
   d="${a#${b}}"
   c=`cygpath $b`
   abssrcdir="$c$d"
-  case "$abssrcdir" in
-  /cygdrive*)
-    short=`echo $abssrcdir | sed 's+^/cygdrive++'`
-    long=`readlink -f "$short"`
-    if test "$long" = "$abssrcdir"
-    then
-      abssrcdir="$short"
-    fi
-    ;;
-  esac
 fi
 
 AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
@@ -428,249 +418,22 @@ then
   fi
 fi
 
-# On Windows there could potentially be 4 (or in some sense 6!) variants
-# of Reduce made:
-#   cygwin 32-bit
-#   cygwin 64-bit
-#   native windows 32-bit console mode
-#   native windows 32-bit windows mode
+# On Windows there should be 3 variants  of Reduce made:
+#   cygwin 64-bit (this can be used either in console mode or using X)
 #   native windows 64-bit console mode
 #   native windows 64-bit windows mode
 #
-# If you are trying to build Reduce and are running only a 32-bit
-# operating system you will not be able to build the 64-bit cygwin version
-# and the 64-bit native windows version may be somewhat irrelevant to you.
-# If you are on a 64-bit operating system using 64-bit cygwin you may not be
-# interested in backwards compatibility and thus the 32-bit versions. If
-# you only want to run console mode versions under cygwin then the native
-# windows versions will be superfluous. To cope with these variations
-# I provide flags to enable each version individually. These are of the
-# form --with-w32, --with-w64, --with-c32 and --with-c64. The intent will
-# be that if you have a a 32-bit operating system only w32 and c32 will be
-# enabled by default. At present on a 64-bit operating system where both
-# versions of cygwin are installed all 4 versions will be enabled, but at some
-# stage in the future I expect to change that so that the 32-bit versions are
-# only built if explicitly requested. [YES that is now happening! See
-# --with-win32bit.]
-# Regardless of host and operating system I will want the i686-w64-mingw32
-# toolchain installed, since that produces binaries that come closest to
-# being able to run everywhere. Specifically I will want that toolchain
-# installed even if you specify --without-w32. [Again I will be relaxing this
-# and usinhg x86_64-w64-mingw32 builds even for tiny utilities fairly soon]
 
-
-with_w32="yes"
-with_w64="yes"
-with_c32="yes"
-with_c64="yes"
-
-AC_ARG_WITH(w32,
-  AC_HELP_STRING([--with-w32], [Build 32-bit Windows version]),
-  [],
-  [with_w32="yes"])
-
-AC_ARG_WITH(w64,
-  AC_HELP_STRING([--with-w64], [Build 64-bit Windows version]),
-  [],
-  [with_w64="yes"])
-
-AC_ARG_WITH(c32,
-  AC_HELP_STRING([--with-c32], [Build 32-bit Cygwin version]),
-  [],
-  [with_c32="default"])
-
-AC_MSG_NOTICE(with_c32 = $with_c32)
-
-AC_ARG_WITH(c64,
-  AC_HELP_STRING([--with-c64], [Build 64-bit Cygwin version]),
-  [],
-  [with_c64="default"])
-
-# As of July 2019 I will only build the 32-bit variants if "--with-win32bit"
-# is specified.
-
-AC_MSG_NOTICE([check for win32bit])
-
-AC_ARG_WITH(win32bit,
-  AC_HELP_STRING([--with-win32bit], [Build 32-bit Windows version alongside 64]),
-  [],
-  [with_win32bit="no"])
-
-
-AC_MSG_NOTICE([with_win32bit = $with_win32bit])
-
-if test "x$with_win32bit" = "xno"
-then
-  with_w32="no"
-  with_c32="no"
-fi
-
-uname_m=`uname -m`
 uname_s=`uname -s`
 case "$uname_s" in
-*WOW)
-  wow="yes"
-  uname_o=`uname -o 2>/dev/null`
-  ;;
 Darwin)
 # "uname -o" is not available on the Macintosh!
-  wow="no"
   uname_o="macOS"
   ;;
 *)
-  wow="no"
   uname_o=`uname -o 2>/dev/null`
   ;;
 esac
-
-if test "$uname_o" = "Cygwin"
-then
-#
-# If I am building under some sort of Cygwin I will adjust the "with-w32"
-# etc options...
-#
-
-# The program that I build here looks for cygwin installations. When run
-# it generates output "32", "64" or "32 64" depending on which variants it
-# finds.
-
-  if test "x$with_win32bit" = "xno"
-  then
-    CYGAVAIL="64"
-  else
-    i686-w64-mingw32-g++ -O3 $srcdir/csl/cslbase/other-cygwin.cpp -static -o ./other-cygwin
-    i686-w64-mingw32-strip ./other-cygwin
-    CYGAVAIL=`./other-cygwin`
-  fi
-
-  case $CYGAVAIL in
-  *32*)
-    cyg32_available="yes"
-    ;;
-  *)
-    cyg32_available="no"
-    ;;
-  esac
-  case $CYGAVAIL in
-  *64*)
-    cyg64_available="yes"
-    ;;
-  *)
-    cyg64_available="no"
-    ;;
-  esac
-
-# If I am either running under 64-bit cygwin or are on 32-bit cygwin but on
-# a 64-bit operating system I might be able to build 64-bit cygwin stuff.
-  if test "$uname_m" = "x86_64" ||
-     test "$wow" = "yes"
-  then
-    sixtyfour_feasible="yes"
-  else
-    sixtyfour_feasible="no"
-  fi
-
-  AC_MSG_NOTICE(cyg32_available = $cyg32_available)
-
-# If 32-bit cygwin is available then build for it if with_win32bit was
-# specified. If it is not then refuse to even if the user asked for it.
-  if test "$cyg32_available" = "yes" && test "x$with_win32bit" != "no"
-  then
-    if test "$with_c32" = "default"
-    then
-      with_c32="yes"
-    fi
-  else
-    if test "$with_c32" = "yes"
-    then
-      AC_MSG_ERROR([32-bit cygwin environment needed but not found in c:\cygwin])
-    fi
-    with_c32="no"
-  fi
-
-AC_MSG_NOTICE(with_c32 = $with_c32)
-
-  if test "$sixtyfour_feasible" = "yes" && test "$cyg64_available" = "yes"
-  then
-    if test "$with_c64" = "default"
-    then
-      with_c64="yes"
-    fi
-  else
-# I am now going to INSIST that 64-bit cygwin builds will be possible, and
-# indeed really that this script is initially launched from a 64-bit cygwin
-# world. It will in fact re-invoke itself at times in a 32-bit cygwin world
-# when it wants to build a 32-bit cywgin set of binaries.
-    AC_MSG_ERROR([64-bit cygwin environment needed but not found in c:\cygwin64])
-    exit 1
-  fi
-fi
-
-# In general it will be an inner invocation of this script that might
-# have --with-cygwin32 or --with-cygwin64 passed. When that happens
-# I ensure that the shell I am running under is the variant of cygwin
-# indicated. This is useful because then just the plan commands gcc and g++
-# will build binaries for that platform. I need to do this because
-# cross-build toolchains for cygwin32 and cygwin64 do not seem to be
-# complete enough to count as reliable.
-
-AC_ARG_WITH(cygwin32,
-  AC_HELP_STRING([--with-cygwin32],
-                 [Force configure and build to be under cygwin32]),
-  [],
-  [with_cygwin32="no"])
-
-AC_ARG_WITH(cygwin64,
-  AC_HELP_STRING([--with-cygwin64],
-                 [Force configure and build to be under cygwin64]),
-  [],
-  [with_cygwin64="no"])
-
-# If the "--with-cygwin32" flag was passed and I am at present running under
-# a 64-bit cygwin shell then I will insist on changing gear so that I run
-# using a 32-bit cygwin shell.
-
-if which i686-w64-mingw32-g++ >/dev/null 2>/dev/null &&
-   which i686-w64-mingw32-strip >/dev/null 2>/dev/null
-then
-  i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg32.exe
-  i686-w64-mingw32-strip ./cyg32.exe
-  i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg64.exe
-  i686-w64-mingw32-strip ./cyg64.exe
-fi
-LOCALCYG=""
-if test "x$with_cygwin32" != "xno"
-then
-  LOCALCYG=`pwd`/cyg32.exe
-fi
-if test "x$with_cygwin64" != "xno"
-then
-  LOCALCYG=`pwd`/cyg64.exe
-fi
-AC_SUBST(LOCALCYG)
-
-if test "x$with_cygwin32" != "xno" &&
-   test "x$uname_o" = "xCygwin" &&
-   test "x$uname_m" = "xx86_64"
-then
-  AC_MSG_NOTICE([Restart to use a 32-bit Cygwin shell])
-  AC_MSG_NOTICE([with-cygwin32=$with_cygwin32 uname_o=$uname_o uname_m=$uname_m])
-  doconfig="$LOCALCYG $SHELL -c \"$abssrcdir/configure $ac_configure_args\""
-  AC_MSG_NOTICE([$doconfig])
-  exec $doconfig
-fi
-
-if test "x$with_cygwin64" != "xno" &&
-   test "x$uname_o" = "xCygwin" &&
-   test "x$uname_m" = "xi686" &&
-   test "x$wow" = "xyes"
-then
-  AC_MSG_NOTICE([Restart to use a 64-bit Cygwin shell])
-  AC_MSG_NOTICE([with-cygwin64=$with_cygwin64 uname_o=$uname_o uname_m=$uname_m uname_s=$uname_s wow=$wow])
-  doconfig="$LOCALCYG $SHELL -c \"$abssrcdir/configure $ac_configure_args\""
-  AC_MSG_NOTICE([$doconfig])
-  exex $doconfig
-fi
 
 AC_CANONICAL_HOST()
 
@@ -688,11 +451,6 @@ AC_ARG_WITH(cygbuild,
   AC_HELP_STRING([--with-cygbuild], [Used internally to control build directory]),
   [],
   [with_cygbuild="unknown"])
-
-AC_ARG_WITH(cygbuild64,
-  AC_HELP_STRING([--with-cygbuild64], [Used internally to control build directory]),
-  [],
-  [with_cygbuild64="unknown"])
 
 AC_ARG_WITH(force,
   AC_HELP_STRING([--with-force], [Forces refresh of windows varients]),
@@ -714,29 +472,6 @@ LIBEDIT_VERSION=20140620-3.1
 # down a flag that they do not know about, and so I transcribe into here
 # all the flags that the CSL configuration may ever want. The down-side of
 # this is that "configure --help" shows them all.
-
-AC_ARG_WITH(lto,
-   AC_HELP_STRING([--with-lto],
-                  [Experiment with extreme optimisation in gcc (CSL only)]),
-   [],
-   [with_lto="no"])
-
-# By and large the "-m32" and "-m64" flags that ONCE helped g++ with
-# multi-arch support as between 32 and 64-bit targers. It is now used
-# in the PSL case to control whether a 32 or 64-bit version gets set up.
-# It should no longer be used with CSL please.
-
-AC_ARG_WITH(m32,
-   AC_HELP_STRING([--with-m32],
-                  [Force 32-bit model even if 64-bit (for PSL).]),
-   [],
-   [with_m32="no"])
-
-AC_ARG_WITH(m64,
-   AC_HELP_STRING([--with-m64],
-                  [Force 64-bit model even if 32-bit.]),
-   [],
-   [with_m64="no"])
 
 AC_ARG_WITH(cygwin,
   AC_HELP_STRING([--with-cygwin],
@@ -791,31 +526,13 @@ AC_ARG_WITH(arithlib,
   [],
   [with_arithlib="no"])
 
-AC_ARG_ENABLE(jit,
-  AC_HELP_STRING([--enable-jit],
-                 [build in experimental JIT (CSL only)]),
-  [],
-  [enable_jit="no"])
-
 AC_ARG_ENABLE(static,
   AC_HELP_STRING([--enable-static],
                  [link it all statically (CSL only)]),
   [],
   [enable_static="no"])
 
-AC_ARG_WITH(smallpage,
-  AC_HELP_STRING([--with-smallpage],
-                 [Use 256K pages rather than 4M ones (CSL only)]),
-  [],
-  [with_smallpage="no"])
-
 ###########################################################################
-
-# Note that on Windows under cygwin i686-w64-mingw32 and x86_64-w64-mingw32
-# compilers MUST be installed, and there should be a 32-bit
-# cygwin installation in c:\cygwin and a 64-bit one in c:\cygwin64.
-# Well as of July 2019 I will insist on x86_64-w32-mingw32 and often drop
-# i686*
 
 # Now I want to know if the current directory is the same as $srcdir. At
 # one stage I checked that by looking to see if $srcdir was ".". That was OK
@@ -857,34 +574,7 @@ if test "x$with_psl" != "xno"
 then
   case $host in
   *windows | *cygwin)
-# building PSL on Windows - need to decide whether to build for 32 or 64bit.
-# Hah - I use "--with-m32" for selection of a PSL 32-bit option.
-# Do not select win32bit when I am in a 32-bit shell running on a 64-bit operating
-# system.
-    if test "$uname_m" = "i686" -a "$wow" != "yes" ||
-       test "x$with_m32" = "xyes"
-    then 
-      build="i686-pc-windows"
-# For PSL I will build a 64-bit version either if I am running in 64-bit
-# mode already or I am in a 32-bit shell running on a 64-bit operating
-# system.
-    elif test "$uname_m" = "x86_64" ||
-         test "$wow" = "yes"
-    then
-      build="x86_64-pc-windows"
-    else
-# If neither of those tests resolve matters I will just take some default.
-      build="$host"
-    fi
-# Normalize the name that PSL puts its (windows) builds in.
-    case $build in
-    *i686*)
-       build=i686-pc-windows
-       ;;
-    *)
-       build="x86_64-pc-windows"
-       ;;
-    esac
+    build="x86_64-pc-windows"
     ;;
   *)
 # For cases other than Windows the PSL case is simpler.
@@ -915,9 +605,16 @@ AC_ARG_WITH(sequential,
   [with_sequential="no"])
 
 
+# Hah - the next is a jolly hape. It arranged that when I build on one of my
+# own real machines I default to a new and experimental layout for the build
+# of windows versions, but everybody else (unless their host has a name
+# matching mine!) should be undisturbed.
+
+# I gave disabled this just for a while... I am making other changes and I do
+# not want this confusion to mess me up.
 
 case `uname -n` in
-*panamint* | *gauguin*)
+*panamintXXX* | *gauguinXXX*)
   default_windows_layout="new"
   ;;
 *)
@@ -939,7 +636,7 @@ fi
 
 csl_inplace_cygwin_build ()
 {
-# The argument here will be either i686-pc-cygwin or x88_64-pc-cygwin
+# The argument here should be x88_64-pc-cygwin
   target=$1
   forcer=$2
 AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
@@ -947,14 +644,7 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
 # and any other options that may be relevant.
   if test "$with_windows_layout" = "new"
   then
-    case $target in
-    *i686*)
-      cygver="cyg32"
-      ;;
-    *)
-      cygver="cyg64"
-      ;;
-    esac
+    cygver="cyg64"
     build=`eval "$SHELL $abssrcdir/scripts/findhost.sh intel-pc-windows $ac_configure_args --with-cygwin"`
     AC_MSG_NOTICE([target=$target => build=$build/$cygver])
     mkdir -p "$abssrcdir/cslbuild/$build/$cygver"
@@ -978,26 +668,9 @@ AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
   AC_MSG_NOTICE([passcc = $passcc])
   AC_MSG_NOTICE([host=$host buildmc=$buildmc pass_host=$pass_host])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-  flip=""
-  if test "$uname_m" = "x86_64" &&
-     test "target" = "i686-pc-windows"
-  then
-    AC_MSG_NOTICE([Will build utility to flip cygwin version from 64 to 32 bit])
-    i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg32
-    i686-w64-mingw32-strip cyg32
-    flip="`pwd`/cyg32.exe "
-  fi
-  if test "$uname_m" = "i686" &&
-     test "target" = "x86_64-pc-windows"
-  then
-    AC_MSG_NOTICE([Will build utility to flip cygwin version from 32 to 64 bit])
-    i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg64
-    i686-w64-mingw32-strip cyg64
-    flip="`pwd`/cyg64.exe "
-  fi
-  doconfig="$SHELL $flip $abssrcdir/configure --config-cache $ac_configure_args \
-          CC=\"$flip$CC\" CXX=\"$flip$CXX\" \
-          STRIP=\"$flip$STRIP\" RANLIB=\"$flip$RANLIB\" \ 
+  doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
+          CC=\"$CC\" CXX=\"$CXX\" \
+          STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
           $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
           $passcc $pass_build --with-cygwin"
@@ -1020,14 +693,7 @@ csl_inplace_nativewin_build ()
   AC_MSG_NOTICE([CSL inplace for native Windows])
   if test "$with_windows_layout" = "new"
   then
-    case $buildmc in
-    *i686*)
-      winver="win32"
-      ;;
-    *)
-      winver="win64"
-      ;;
-    esac
+    winver="win64"
     build=`eval "$SHELL $abssrcdir/scripts/findhost.sh intel-pc-windows $ac_configure_args"`
     AC_MSG_NOTICE([About to configure using $host in $build/$winver])
     mkdir -p "$abssrcdir/cslbuild/$build/$winver"
@@ -1050,11 +716,9 @@ csl_inplace_nativewin_build ()
   then
     cygextra=
   else
-# The Windows version would like to know where to find cygwin variants...
+# The Windows version would like to know where to find cygwin variants
+# at run-time.
     cygextra=
-    ed32="s/.*windows/i686-pc-cygwin/; s/.*cygwin/i686-pc-cygwin/"
-    dd32=`echo $build | sed -e "$ed32"`
-    cygextra="--with-cygbuild=$abssrcdir/cslbuild/$dd32"
     ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
     dd64=`echo $build | sed -e "$ed64"`
     cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
@@ -1081,35 +745,15 @@ csl_inplace_nativewin_build ()
 csl_inplace_windows_build ()
 {
 # If I am on Windows I will configure for variants:
-#   i686-pc-cygwin
 #   x86_64-pc-cygwin
-#   i686-w64-mingw
 #   x86_64-w64-mingw
   AC_MSG_NOTICE([Inplace Windows build...])
 # I am going to suppose that all the compilers I could possibly want
 # are installed. That means I do not need to put in code here to test that!
-  AC_MSG_NOTICE([with_c32=$with_c32 with_c64=$with_c64 with_w32=$with_w32 with_w64=$with_w64 ])
-  if test "$with_c32" = "yes"
-  then
-    AC_MSG_NOTICE([Configure cygwin32 version])
-    csl_inplace_cygwin_build "i686-pc-cygwin" "--with-cygwin32"
-  fi
-  if test "$with_c64" = "yes"
-  then
-    AC_MSG_NOTICE([Configure cygwin64 version])
-    csl_inplace_cygwin_build "x86_64-pc-cygwin" "--with-cygwin64"
-  fi
-# I will also need to build the native versions...
-  if test "$with_w32" = "yes"
-  then
-    AC_MSG_NOTICE([Configure windows32 version])
-    csl_inplace_nativewin_build "i686-pc-windows" "i686-w64-mingw32"
-  fi
-  if test "$with_w64"
-  then
-    AC_MSG_NOTICE([Configure windows64 version])
-    csl_inplace_nativewin_build "x86_64-pc-windows" "x86_64-w64-mingw32"
-  fi
+  AC_MSG_NOTICE([Configure cygwin64 version])
+  csl_inplace_cygwin_build "x86_64-pc-cygwin" "--with-cygwin64"
+  AC_MSG_NOTICE([Configure windows64 version])
+  csl_inplace_nativewin_build "x86_64-pc-windows" "x86_64-w64-mingw32"
 }
 
 csl_inplace_build ()
@@ -1176,11 +820,6 @@ psl_inplace_build ()
   else
     passcc=""
   fi
-  case $host in
-  i386* | i486* | i586* | i686*)
-    passcc="$passcc --enable-sse2"
-    ;;
-  esac
 
   AC_MSG_NOTICE([passcc = $passcc])
   doconfig="$SHELL $abssrcdir/libraries/crlibm/configure --config-cache $filtered \
@@ -1338,20 +977,6 @@ then
     printf "#! /bin/sh\nccache $CC \"\$@\"\n" > $d/cachecc.sh
     printf "#! /bin/sh\nccache $CXX \"\$@\"\n" > $d/cachecxx.sh
     chmod +x $d/cachecc.sh $d/cachecxx.sh
-    case $build in
-    *cygwin* | *windows* | *mingw*)
-# Now I want to turn the path into one that is "very" absolute. I need to
-# do this because I will be building both cygwin32 and cygwin64 variants
-# of Reduce, and paths such as "/home/USER/..." are liable to mean different
-# things as between the 32 and 64-bit world. So what I need to end up with
-# may be more like
-#   /cygdrive/C/cygwin64/home/USER/reduce...
-# which will find the same file in both worlds. "cygpath -m" turns a path
-# into one that will start with a drive letter (C:/cygwin64...) and the
-# jolly use of sed should turn that into what I need.
-      d=`cygpath -m "$d" | sed -e 's_^\([a-zA-Z]\):_/cygdrive/\1_'`
-      ;;
-    esac
     CC="$d/cachecc.sh"
     CXX="$d/cachecxx.sh"
     ;;
@@ -1380,22 +1005,11 @@ then
   if test "x$with_cygwin" != "xno"
   then
     pass_host=""
-    case `uname -m -o` in
-    *i686*Cygwin*)
-      if test "x$host" != "xi686-unknown-cygwin" &&
-         test "x$host" != "xi686-pc-cygwin"
-      then
-        pass_host="--host=$host"
-      fi
-      ;;
-    *x86_64*Cygwin*)
-      if test "x$host" != "xx86_64-unknown-cygwin" &&
-         test "x$host" != "xx86_64-pc-cygwin"
-      then
-        pass_host="--host=$host"
-      fi
-      ;;
-    esac
+    if test "x$host" != "xx86_64-unknown-cygwin" &&
+       test "x$host" != "xx86_64-pc-cygwin"
+    then
+      pass_host="--host=$host"
+    fi
   fi
 
   AC_MSG_NOTICE([with_cygwin=$with_cygwin pass_host=$pass_host])
@@ -1404,10 +1018,8 @@ then
   then
 # A short essay to explain why I pass down "--host=$host" here. There are
 # two points. The first is that I cope with 64-bit windows by use of
-# cross-compilation using the x86_64-win32-mingw32 toolchain. To try to
-# be helpful I use this if I am running on 64-bit windows even though
-# cygwin and config.guess view the main architecture as i686-pc-windows.
-# This involves overriding "host", and I want to pass that decision down.
+# cross-compilation using the x86_64-win32-mingw32 toolchain, and I need
+# to pass down the information that I am doing that.
 # The second reason is that different releases of "config.guess" can report
 # machine identities differently. I have particularly observes this on
 # openSuSE Linux where some versions brand the host triple with "-suse-" in
@@ -1617,11 +1229,6 @@ else
   else
     passcc=""
   fi
-  case $host in
-  i386* | i486* | i586* | i686*)
-    passcc="$passcc --enable-sse2"
-    ;;
-  esac
   AC_MSG_NOTICE([passcc = $passcc])
   doconfig="$SHELL $abssrcdir/libraries/crlibm/configure -C $filtered \
         $pass_host \
@@ -1769,7 +1376,6 @@ AC_MSG_NOTICE([All sub-packages have had their configure script launched])
 
 ###############################################################################
 
-AM_CONDITIONAL(win32bit, test "x$with_win32bit" != "xno")
 AM_CONDITIONAL(csl, test "x$with_csl" != "xno")
 AM_CONDITIONAL(psl, test "x$with_psl" != "xno")
 AM_CONDITIONAL(cslpsl, test "x$with_csl" != "xno" && test "x$with_psl" != "xno")
