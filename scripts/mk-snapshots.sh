@@ -404,7 +404,7 @@ build_windows() {
     return 0
   fi
   start_remote_host
-  copy_files "$REDUCE_DISTRIBUTION/winbuild/"    "$REDUCE_BUILD/"  "--exclude=C"
+  copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
@@ -425,7 +425,7 @@ build_altwindows() {
     return 0
   fi
   start_remote_host
-  copy_files "$REDUCE_DISTRIBUTION/winbuild/"  "$REDUCE_BUILD/"  "--exclude=C"
+  copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"

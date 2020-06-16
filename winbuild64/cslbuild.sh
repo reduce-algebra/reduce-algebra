@@ -1,14 +1,11 @@
 #! /bin/bash
 
-
 # Configure and build CSL version from scratch
 
-# (3) a native-style win64 version. Always done the same way.
-
+#     A native-style win64 version.
 ./cslbuild1.sh win64
 
-#     a cygwin64 version.
-
+#     A cygwin64 version.
 ./cslbuild1.sh cyg64
 
 # Now all versions should be built. Check sizes.
