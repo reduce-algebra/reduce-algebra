@@ -26,7 +26,7 @@ fi
 
 # I want this script to be one I can launch from anywhere.
 
-here=`realpath "$0"`
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`cd \`dirname "$here"\` ; pwd -P`
 
 save=`pwd`
