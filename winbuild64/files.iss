@@ -84,7 +84,7 @@ Source: "{#mydir}\C\doc\manual\manual.html"; \
   DestDir: "{app}\lib\csl\reduce.doc\"; \
   DestName: "index.html"; \
   Components: common
-Source: "{#mydir}\C\winbuild\gp460-win32-setup.exe"; \
+Source: "{#mydir}\C\winbuild64\gp460-win32-setup.exe"; \
   DestDir: "{app}\lib\"; \
   Components: common
 
