@@ -6,7 +6,8 @@
 #   cslbuild1.sh [cyg64/win64]
 
 here=`cygpath -a .`
-reduce="${here}C"
+here=${here%/}
+reduce="${here}/C"
 
 case $1 in
 win64)
