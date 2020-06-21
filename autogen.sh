@@ -140,7 +140,7 @@ case $a in
   ;;
 esac
 
-printf "About to process $L\n"
+printf "@@@@ About to process $L @@@@\n"
 
 procids=""
 
@@ -150,14 +150,13 @@ do
   if test -d $d
   then
     cd $d
-    printf "autoreconf -f -i -v\n"
-# I will spawn all the calls to autoconf to run concurrently...
+    printf "run $LIBTOOLIZE\n"
     mkdir -p m4
     if test "$sequential" = "yes"
     then
-      ( aclocal --force; $LIBTOOLIZE --force --copy )
+      ( $LIBTOOLIZE --force --copy; aclocal --force )
     else
-      ( aclocal --force; $LIBTOOLIZE --force --copy ) &
+      ( $LIBTOOLIZE --force --copy; aclocal --force ) &
       procids="$procids $!"
     fi
     cd $here
