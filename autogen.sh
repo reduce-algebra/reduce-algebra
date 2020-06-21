@@ -73,11 +73,20 @@ else
   a="$*"
 fi
 
-# I will get rid of all config.cache files just to feel safe. If (say) the
+# I will get rid of all config.cache etc files just to feel safe. If the
 # set of libraries on your computer have changed since last time they
-# could contain misleading information.
+# could contain misleading information. The libtool files deleted here are
+# ones I am about to restore but using versions relevant to the current
+# machine.
 
-find . -name config.cache | xargs rm -f
+find . -name ltmain.sh -o      \
+       -name config.cache -o   \
+       -name autom4te.cache -o \
+       -name libtool.m4 -o     \
+       -name lt-obsolete.m4 -o \
+       -name ltoptions.m4 -o   \
+       -name ltsugar.m4 -o     \
+       -name ltversion.m4 | xargs rm -rf
 
 # I will re-process the top level first sequentially.
 mkdir -p m4
