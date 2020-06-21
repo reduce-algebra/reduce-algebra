@@ -73,22 +73,10 @@ else
   a="$*"
 fi
 
-# I will get rid of all config.cache etc files just to feel safe. If the
-# set of libraries on your computer have changed since last time they
-# could contain misleading information. The libtool files deleted here are
-# ones I am about to restore but using versions relevant to the current
-# machine.
 
-find . -name ltmain.sh -o      \
-       -name config.cache -o   \
-       -name autom4te.cache -o \
-       -name libtool.m4 -o     \
-       -name lt-obsolete.m4 -o \
-       -name ltoptions.m4 -o   \
-       -name ltsugar.m4 -o     \
-       -name ltversion.m4 | xargs rm -rf
-
-# I will re-process the top level first sequentially.
+# I will re-process the top level first before any lower level
+rm -rf ltmain.sh config.cache autom4te.cache m4/libtool.m4 \
+       m4/lt-obsolete.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4
 mkdir -p m4
 $LIBTOOLIZE --force --copy
 aclocal --force
@@ -152,6 +140,8 @@ do
     cd $d
     printf "run $LIBTOOLIZE\n"
     mkdir -p m4
+    rm -rf ltmain.sh config.cache autom4te.cache m4/libtool.m4 \
+           m4/lt-obsolete.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4
     if test "$sequential" = "yes"
     then
       ( $LIBTOOLIZE --force --copy; aclocal --force )
