@@ -132,9 +132,15 @@ printf "@@@@ About to process $L @@@@\n"
 
 procids=""
 
+# At least as an experiment I will make the use of libtoolize run
+# sequentially rather than processing directories in parallel.
+
+s="$sequential"
+sequential=no
+
 for d in $L
 do
-  printf "\nautoreconf in directory '%s'\n" $d
+  printf "\nlibtoolize in directory '%s'\n" $d
   if test -d $d
   then
     cd $d
@@ -157,6 +163,8 @@ if test "$sequential" != "yes"
 then
   wait $procids
 fi
+
+sequential="$s"
 
 procids=""
 
