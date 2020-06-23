@@ -8,7 +8,7 @@
 
 #
 # Usage:
-#     autogen.sh [--sequential] [options as for the configure script]
+#     autogen.sh [options as for the configure script]
 #
 # If no arguments are passed the script will rebuild everything. If
 # --with-csl or --with-psl is specified only that section of the tree
@@ -17,12 +17,11 @@
 # directories that would not be used.
 #
 
-sequential="no"
-if test "x$1" = "x--sequential"
-then
-  sequential="yes"
-  shift
-fi
+# I used to have an option (enabled by default) to do the autoconf-ing
+# concurrently in all relevant source directories. However libtoolize
+# seems to be able to be upset if you use it at the same time in several
+# directories where one is contained within the other, so despite that
+# having been a good time-saver I have removed it.
 
 # I want this script to be one I can launch from anywhere.
 
@@ -130,8 +129,6 @@ esac
 
 printf "@@@@ About to process $L @@@@\n"
 
-procids=""
-
 # At least as an experiment I will make the use of libtoolize run
 # sequentially rather than processing directories in parallel.
 
@@ -144,55 +141,17 @@ do
   if test -d $d
   then
     cd $d
-    printf "run $LIBTOOLIZE\n"
+    printf "$LIBTOOLIZE --force --copy; aclocal --force\n"
     mkdir -p m4
     rm -rf ltmain.sh config.cache autom4te.cache m4/libtool.m4 \
            m4/lt-obsolete.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4
-    if test "$sequential" = "yes"
-    then
-      ( $LIBTOOLIZE --force --copy; aclocal --force )
-    else
-      ( $LIBTOOLIZE --force --copy; aclocal --force ) &
-      procids="$procids $!"
-    fi
-    cd $here
-  fi
-done
-
-if test "$sequential" != "yes"
-then
-  wait $procids
-fi
-
-sequential="$s"
-
-procids=""
-
-for d in $L
-do
-  printf "\nautoreconf in directory '%s'\n" $d
-  if test -d $d
-  then
-    cd $d
+    $LIBTOOLIZE --force --copy
+    aclocal --force
     printf "autoreconf -f -i -v\n"
-# I will spawn all the calls to autoconf to run concurrently...
-    if test "$sequential" = "yes"
-    then
-      autoreconf -f -i -v
-    else
-      autoreconf -f -i -v &
-      procids="$procids $!"
-    fi
+    autoreconf -f -i -v
     cd $here
   fi
 done
-
-# ...then wait until they have all finished.
-
-if test "$sequential" != "yes"
-then
-  wait $procids
-fi
 
 scripts/resetall.sh
 
