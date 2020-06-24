@@ -24,8 +24,9 @@
 #
 
 AC_INIT(libedit, [EL_RELEASE],, libedit-[EL_TIMESTAMP])
-AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_SRCDIR([src/strlcat.c])
 AC_CONFIG_HEADER([config.h])
 

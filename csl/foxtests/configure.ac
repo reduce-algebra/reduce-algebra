@@ -14,7 +14,6 @@
 #
 
 
-
 # FOX gets built in a directory whose name is based on the platform
 # it supports. In simple cases this is just the GNU triple, as in
 # i686-pc-linux etc. However there are a range of cases when I will
@@ -22,7 +21,6 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([FOXTESTS],[1.4.21])
-AM_INIT_AUTOMAKE([1.8.3 -Wall -Wno-override -Wno-portability foreign dist-bzip2])
 
 # This seemed to work with 2.57 so despite other parts of the code needing
 # a yet newer version I will leave this here.
@@ -33,6 +31,12 @@ AC_MSG_NOTICE([+++ Configuring FOX tests in directory $here +++])
 
 AC_CONFIG_SRCDIR(scribble.cpp)
 AC_CONFIG_FILES(Makefile)
+
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_AUX_DIR([.])
+
+AM_INIT_AUTOMAKE([1.8.3 -Wall -Wno-override -Wno-portability foreign dist-bzip2])
 
 # What host am I on?
 AC_CANONICAL_HOST()

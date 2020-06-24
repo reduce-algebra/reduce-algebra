@@ -9,6 +9,9 @@ m4_define([fox_version],[fox_major.fox_minor.fox_level])
 # Init
 AC_INIT(fox,[fox_version],jeroen@fox-toolkit.com)
 AC_CONFIG_SRCDIR([include/fx.h])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([foreign])
 
 # Set version
@@ -63,8 +66,6 @@ CXXFLAGS=""
 
 # More secret source
 AC_GNU_SOURCE
-
-AC_CONFIG_MACRO_DIRS([m4])
 
 # Check using C++
 AC_LANG(C++)

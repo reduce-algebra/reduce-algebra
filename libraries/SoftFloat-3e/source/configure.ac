@@ -5,15 +5,17 @@
 # Specify the name of this "application" and a version number
 AC_INIT([SoftFP],[3a])
 
-AM_INIT_AUTOMAKE([1.13 -Wno-portability -Wno-override foreign dist-bzip2])
-
 AC_COPYRIGHT([Codemist])
 
 AC_PREREQ(2.61)
 
 AC_CONFIG_SRCDIR(softfloat_state.c)
 AC_CONFIG_FILES(Makefile)
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_AUX_DIR([.])
+
+AM_INIT_AUTOMAKE([1.13 -Wno-portability -Wno-override foreign dist-bzip2])
 
 LT_INIT
 

@@ -13,9 +13,11 @@
 # Specify the name of this "application" and a version number
 AC_INIT([CSLCONFIGTEST],[1.0])
 AC_PREREQ(2.61)
-AM_INIT_AUTOMAKE([1.13 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
-
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_AUX_DIR([.])
+
+AM_INIT_AUTOMAKE([1.13 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
 # The next bit is because config.guess fails on Solaris if SHELL=/bin/bash
 if test -x /bin/sh

@@ -3,7 +3,6 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([xport], [2.05])
-AM_INIT_AUTOMAKE([1.8.3 foreign])
 
 # Explain that a file "config.h" should be generated
 # AM_CONFIG_HEADER(config.h)
@@ -17,6 +16,10 @@ AC_PREREQ(2.57)
 # messed up.
 AC_CONFIG_SRCDIR(xport.c)
 AC_CONFIG_FILES(Makefile)
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_AUX_DIR([.])
+AM_INIT_AUTOMAKE([1.8.3 foreign])
 
 # What host am I on?
 AC_CANONICAL_HOST()

@@ -6,10 +6,14 @@ dnl Process this file with autoconf to produce a configure script.
 # by the license. 
 AC_INIT([crlibm], m4_esyscmd([cat VERSION]))
 AC_CONFIG_SRCDIR([crlibm.h])
-AM_INIT_AUTOMAKE([foreign])
 
 AC_CONFIG_HEADERS([crlibm_config.h])
 
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_AUX_DIR([.])
+AM_INIT_AUTOMAKE([foreign])
+LT_INIT
 
 AC_SUBST(VERSION)
 
@@ -110,7 +114,6 @@ AM_CONDITIONAL(COMPILER_ICC, test x$CC = xicc)
 
 dnl Checks for programs.
 AC_PROG_INSTALL
-AC_PROG_RANLIB
 AC_PROG_LN_S
 
 dnl Checks for standard C stuff.

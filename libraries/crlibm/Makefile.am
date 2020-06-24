@@ -5,6 +5,8 @@ lib_LIBRARIES = libcrlibm.a
 # shared libraries need libtool. We'll do it later.
 #lib_LTLIBRARIES = libcrlibm.la
 
+ACLOCAL_AMFLAGS = -I m4
+
 # I want to be able to see what gets built and why, so here is a GNU
 # make trace facility.
 

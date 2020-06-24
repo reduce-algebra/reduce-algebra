@@ -8,11 +8,14 @@ AC_CANONICAL_HOST()
 
 AC_CONFIG_SRCDIR(README.PSL)
 
+AC_CONFIG_FILES([Makefile])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_AUX_DIR([.])
+
 AM_INIT_AUTOMAKE([1.8.3 -Wno-portability foreign no-dist-gzip dist-bzip2])
 
 LT_INIT
-
-AC_CONFIG_FILES([Makefile])
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
