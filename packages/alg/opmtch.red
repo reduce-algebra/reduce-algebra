@@ -51,13 +51,27 @@ precedence slash, quotient;
 symbolic procedure emtch u;
    if atom u then u else (lambda x; if x then x else u) opmtch u;
 
+% Support for associative access:
+% An empty table is represented as NIL
+% Otherwise it will be a hash table. These days both CSL and PSL support
+% hash tables. As done here when there is not information to be stored
+% the NIL does not consume space...
+
+symbolic inline procedure assoc_lookup(u, table);
+  if null table then nil
+  else gethash(u, table);
+
+symbolic inline procedure assoc_add(u, q, table);
+ << if null table then table := mkhash(20, 3, 2.0);
+    puthash(u, table, u . q);
+    table >>;
+
 symbolic procedure opmtch u;
    begin scalar q,x,y,z;
         if null(x := get(car u,'opmtch)) then return nil
          else if null subfg!* then return nil  % null(!*sub2 := t).
-         else if (null !*uncached) and (q := assoc(u,cdr alglist!*))
+         else if (null !*uncached) and (q := assoc_lookup(u,cdr alglist!*))
                  then return cdr q;
-%WN%     else if q := assoc(u,cdr alglist!*) then return cdr q;
         z := for each j in cdr u collect emtch j;
     a:  if null x then go to c;
         y := mcharg(z,caar x,car u);
@@ -66,8 +80,8 @@ symbolic procedure opmtch u;
           then <<q := subla(car y,caddar x); go to c>>;
         y := cdr y;
         go to b;
-    c:  if not !*uncached then rplacd(alglist!*,(u . q) . cdr alglist!*);
-%WN% c:  rplacd(alglist!*,(u . q) . cdr alglist!*);
+    c:  if not !*uncached then rplacd(alglist!*,
+                                      assoc_add(u, q, cdr alglist!*));
         return q
    end;
 

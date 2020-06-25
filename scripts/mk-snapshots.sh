@@ -3,7 +3,8 @@
 # This script makes snapshots of Reduce. It should be capable of
 # building ones for Windows (64-bit), Macintosh, Linux-x86_64
 # and the Raspberry Pi. For the latter both 32 and 64-bit can be built,
-# but we will probably not be keeping snapshots generally up to date.
+# but we will probably not be keeping published Raspberry Pi snapshots
+# up to date.
 #
 # The default as of June 2020 is
 #     win64 linux64 macintosh
@@ -17,19 +18,13 @@
 # in the user's home directory, and a file called dot-snapshots here
 # gives a prototype for that.
 #
-# The "ds64" options here are a speciality for use on a Raspberry pi 4,
-# and represented an EXPERIMENT which is not the prper way fully forward,
-# so although I leave it here it should not be used!
-# I can have an RPi set up with a 64-bit kernel and a 32-bit raspbian
-# userland, but then a systemd/nspawn wrapper around a 64-bit Debian
-# system with a script /usr/local/bin/ds64-run that can cause commands to be
-# executed in the 64-bit world. The logged in user's filespace is shared
-# between 32 and 64-bit environments and so when I want to move files
-# to and fro I can just access the 32-bit schemes. This is a bit of an
-# experiment as of September 2019! Since then a beta version of a 64-bit
-# Raspberry Pi OS has been released and that more or less makes the scheme
-# irrelevant - I think. While I was trying it it seems well behaved most of
-# the time but not quite stable enough for serious use.
+# The "altlocal" option provides for running commands
+#     altlocal C
+# to run the command C in an alternative context but on the current
+# machine with file-space, network address, user-identity and the like
+# all unchanged. The command or script "altlocal" must be set up to make
+# this happen, and (for instance) "altlocal uname -a" must report the
+# identity of the changed context.
 #
 # Each host used during the build must have been set up with a comprehensive
 # set of build tools and development libraries, and where it is to be
@@ -61,30 +56,35 @@ case $@ in
   printf "    windows (win64), macintosh, linux (linux64),\n"
   printf "and rpi (rpi32), rpi64.\n"
   printf "You can also include '--rev=NNNN' to specify a revision to use\n"
+  printf "but note that '--rev=NNNN' must be the first item on the command line\n"
   printf "'rpi' is a Raspberry Pi running raspbian (now called Raspberry Pi OS).\n"
   printf "'pi64' uses 64-bit Raspberry Pi OS.\n"
   printf "If no machines are listed the script will attempt to build a\n"
-  printf "fairly full set. The results will end up in a snapshots directory in\n"
-  printf "theReduce tree. The hosts used during the build can be adapted to\n"
+  printf "default set. The results will end up in a snapshots directory in\n"
+  printf "the Reduce tree. The hosts used during the build can be adapted to\n"
   printf "local needs via a $HOME/.snapshots file, and scripts/dot-snapshots\n"
   printf "provides a prototype for such a file and some explanation of what\n"
   printf "needs to be present.\n"
   printf "An option --rc=FILE uses that file in place of $HOME/.snapshots\n"
-  printf "The default as of June 2020 is\n"
+  printf "The default builds as of June 2020 are\n"
   printf "     win64 linux64 macintosh\n"
+  printf "NOTE: There are no options here for creating 32-bit snapshots on\n"
+  printf "      either Windows or Linux.\n"
   exit
   ;;
 esac
 
 # There are a collection of issues that one needs to be aware of here...
+#
 # The various remote machines must provide the current user with ssh access
 # without needing a password - ie they must have been set up with public key
 # authentication. The ssh link must have been used already so that the
 # system from which the link is initiated is already in the known_hosts file
 # of the remote system. Both those constraints are there so that execution
 # of a remote command does not require any intervention.
+#
 # When the remote system is a Virtual machine then after it has been used
-# to build stuff I want to switch it off. About the most safest way I can
+# to build stuff I want to switch it off. About the safest way I can
 # see to do that is to issue the command "sudo /sbin/shutdown -h now" on it.
 # for this to work as required the user on that virtual machine needs
 # passwordless superuser authority. One might reasonably have some level of
@@ -98,7 +98,7 @@ esac
 
 cd $HERE
 
-# By directory names here can be absolute or relative. If they are specified
+# Directory names here can be absolute or relative. If they are specified
 # as relative then they are relative to the trunk directory in the Reduce
 # tree that the snapshot builder is run from.
 
@@ -151,6 +151,10 @@ SNAPSHOTS="snapshots"
 
 DOT_SNAPSHOTS="$HOME/.snapshots"
 
+# Any command-line item including the text "--rc=" will be noticed here
+# and can lead to overriding where .snapshots is read from, so do not
+# play too many silly games please!
+
 case "$*" in
 *--rc=*)
   snaploc="$*"
@@ -162,6 +166,9 @@ case "$*" in
   fi
   ;;
 esac
+
+# Similarly any item containing "--rev=" anywhereon the command line will be
+# treated as a revision specifier.
 
 SVNOPT=""
 case "$*" in
@@ -181,7 +188,14 @@ printf "Will read profile from $DOT_SNAPSHOTS\n"
 if test -f $DOT_SNAPSHOTS
 then
   source $DOT_SNAPSHOTS
+else
+  printf "$DOT_SNAPSHOTS not found\n"
+  exit 1
 fi
+
+# At the end of this file there is a sequence of calls to the procedures
+# set up here. These each carry out one of the major steps in the
+# snapshot building process.
 
 prepare() {
 # Ensure that there is a clean check-out of Reduce. If there is a directory
@@ -225,7 +239,8 @@ prepare() {
 }
 
 hostname() {
-# I want win64 and windows to be treated alike
+# I have a number of aliases for platforms, eg "linux" and "linux64". I
+# arrange to map onto a canonical choice.
   case $1 in
   windows | win64)
     echo "windows"
@@ -236,6 +251,12 @@ hostname() {
   altwindows | altwin64)
     echo "altwindows"
     ;;
+  linux | linux64)
+    echo "linux"
+    ;;
+  rpi | rpi32)
+    echo "rpi"
+    ;;
   *)
     echo "$1"
     ;;
@@ -243,6 +264,9 @@ hostname() {
 }
 
 add_target() {
+# As I decode command line options I build up a list of the targets I am
+# being asked to build. I put any the correspond to the current computer
+# last.
   if test `hostname "$1"` = `hostname "$local"`
   then
     targets="$targets $1"
@@ -252,6 +276,7 @@ add_target() {
 }
 
 remove_target() {
+# Sometimes I may want to remove a target from my list.
   ot="$targets"
   targets=""
   for t in $ot
@@ -325,13 +350,13 @@ build() {
     esac
   done
 # The idea behind this is that one can provide no arguments at all and
-# a complete set of snapshots will be built. you can provide one or more
+# a default set of snapshots will be built. You can provide one or more
 # platform names and then just those snapshots will be built. Or
 # you can use a platform name prefixed with a "-" to disable that one.
 # so:
-#   no arguments, or just a --rc=FILE one:   linxu64 win64 macintosh
+#   no arguments, or just a --rc=FILE one:   linux64 win64 macintosh
 #   linux64 rpi:                             just those 2 platforms
-#   -macintosh:                              not macintosh
+#   -macintosh:                              linux64 & win64, not macintosh
 #
   if test "$full" = "yes"
   then
@@ -392,18 +417,29 @@ build() {
   do
 # I will expect that there is a bash function to build for each possible
 # target architecture.
+    printf "Next build for $TARGET\n"
     eval "build_$TARGET"
+    printf "Completed building for $TARGET\n"
   done
 }
 
-build_windows() {
+# Here I start with the per-target build instructions...
+
+build_win64() {
   machine_windows
   if test "$MODE" = "none"
   then
     printf "Unable to build Windows snapshot here\n"
     return 0
   fi
+# The general pattern applied here is that I start any virtual machines
+# that are to be used, copy my neat distribution files across and position
+# them alongside relevant platform-specific build instructions. I then
+# update all the autoconf-generated files and can then use "make" to get
+# the snapshot built and packages. I fetch the build snapshot back and
+# put it where it needs to be.
   start_remote_host
+# The files in winbuild64 provide the framework for building the snapshot.
   copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
@@ -413,11 +449,11 @@ build_windows() {
   stop_remote_host
 }
 
-build_win64() {
-  build_windows
+build_windows() {
+  build_win64
 }
 
-build_altwindows() {
+build_altwin64() {
   machine_altwindows
   if test "$MODE" = "none"
   then
@@ -434,17 +470,43 @@ build_altwindows() {
   stop_remote_host
 }
 
-build_altwin64() {
-  build_altwindows
+build_altwindows() {
+  build_altwin64
 }
 
-build_linux() {
+build_debian() {
+####@@@@
+  printf "build_debian starting $*\n";
+# Common code for building on a Linux variant.
+  if test "$MODE" = "none"
+  then
+    printf "Unable to build $TARGET snapshot here\n"
+    return 0
+  fi
+  start_remote_host
+# The files in debianbuild provide the framework for building. I will first
+# build ".deb" style distribution archives and then map those onto ".rpm"
+# versions: the machine used to do that is required to be a Debian-family
+# system.
+  copy_files "$REDUCE_DISTRIBUTION/debianbuild/" "$REDUCE_BUILD/"   "--exclude=C"
+  copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
+  execute_in_dir "linux" "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "linux" "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "linux" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  fetch_files    "$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
+  stop_remote_host
+}
+
+# All the Linux variants will use build_debian to do the main work once I
+# know which machine to run that on.
+
+build_linux64() {
   machine_linux64
   build_debian linux64
 }
 
-build_linux64() {
-  build_linux
+build_linux() {
+  build_linux64
 }
 
 build_rpi32() {
@@ -463,23 +525,6 @@ build_rpi64() {
   build_debian rpi64
 }
 
-build_debian() {
-# Common code for building on a Linux variant
-  if test "$MODE" = "none"
-  then
-    printf "Unable to build $TARGET snapshot here\n"
-    return 0
-  fi
-  start_remote_host
-  copy_files "$REDUCE_DISTRIBUTION/debianbuild/" "$REDUCE_BUILD/"   "--exclude=C"
-  copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
-  execute_in_dir "linux" "$REDUCE_BUILD/C"               "./autogen.sh"
-  execute_in_dir "linux" "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "linux" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
-  fetch_files    "$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
-  stop_remote_host
-}
-
 build_macintosh() {
   machine_macintosh
   if test "$MODE" = "none"
@@ -488,6 +533,7 @@ build_macintosh() {
     return 0
   fi
   start_remote_host
+# As you might imagine, macbuild holds build scripts here.
   copy_files "$REDUCE_DISTRIBUTION/macbuild/" "$REDUCE_BUILD/"   "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"          "$REDUCE_BUILD/C/"
   execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "./autogen.sh"
@@ -512,6 +558,8 @@ build_macintosh() {
 # I think that extending case (5) with a virtual machine hosted on a system
 # that can only be accessed indirectly would be taking things too far, but if
 # needbe I believe it could be supported.
+# (6) As (3), (4) or (5) but rather than using a virtual machine using a
+#     containerised version of some alternative operating system.
 
 # The host used and the mode of access to it will be passed in a selection
 # of global variables which will need to be set ahead of calls to these
@@ -519,10 +567,11 @@ build_macintosh() {
 # I will arrange for distinct settings for each target architecture and for
 # when the build runs on each possible host.
 
-# The code here only deals with the "official Reduce snapshot machine",
+# The code here sets things up for the "official Reduce snapshot machine",
 # but by putting a file ".snapshots" in your home directory (and the
-# file dot-snapshots here provides a model) you can get your own systems
-# used instead.
+# file dot-snapshots here provides a model) almost everything can be
+# overridden to perform builds on machines of your own customised choice
+# using the access schemes that you need.
 
 machine_macintosh() {
   MODE="none"
@@ -531,6 +580,8 @@ machine_macintosh() {
 # the following line fails with a "command not found" error then that is
 # entirely reasonable. That is why I redirect stderr to /dev/null.
   hosts_macintosh 2> /dev/null
+# If .snapshots did not provide an indication of what to do but we are running
+# on "math-smreduce" set things up as for there.
   if test "$MODE" = "none"
   then
     case `uname -n` in
@@ -674,7 +725,7 @@ start_remote_host() {
 # you are trying to work with does not exist! I check for "running" here
 # because a machine might be labelled as "aborted" or "stopped" or various
 # other states. If the machine is already in the process of stopping then
-# it might have done so before the ACPI even is posted to it and that might
+# it might have done so before the ACPI event is posted to it and that might
 # lead to a message suggesting an error, but all ought to be well.
     printf "vboxmanage showvminfo --machinereadable $VM\n"
     if vboxmanage showvminfo --machinereadable $VM | grep 'VMState="running"'
@@ -693,6 +744,7 @@ start_remote_host() {
     while :
     do
       let PORT=RANDOM+10000
+# Note that RANDOM returns a 15-bit integer.
       if ! true &>/dev/null </dev/tcp/127.0.0.1/$PORT
       then
         break
@@ -758,6 +810,14 @@ start_remote_host() {
       fi
     done
     ;;
+# It is at least imaginable that the "altlocal" schemes might need a startup
+# step, and if they do it should go in here,
+  altlocal)
+    ;;
+  ssh+altlocal)
+    ;;
+  ssh+ssh+altlocal)
+    ;;
   esac
 }
 
@@ -810,12 +870,12 @@ copy_files() {
   fi
   printf "Mode = $MODE: copy from $src to $dest\n"
   case $MODE in
-  local | ds64)
+  local | altlocal)
     cd $HERE
     printf "rsync $RSO $src $dest\n"
     rsync $RSO $src $dest
     ;;
-  ssh | ssh+ds64)
+  ssh | ssh+altlocal)
 # For direct ssh access I will expect that the remote machine has been
 # accessed before and that host key confirmation etc has been performed.
     printf "rsync $RSO $src $USER@$HOST:$dest\n"
@@ -825,7 +885,7 @@ copy_files() {
     printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" $src $USER@localhost:$dest\n"
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" $src $USER@localhost:$dest
     ;;
-  ssh+ssh | ssh+ssh+ds64)
+  ssh+ssh | ssh+ssh+altlocal)
     printf "rsync $RSO -e \"ssh -t -A $SSHOPTS $USER@$HOST1 ssh $SSHOPTS\" $src $USER@$HOST2:$dest\n"
     rsync $RSO -e "ssh -t -A $SSHOPTS $USER@$HOST1 ssh $SSHOPTS" $src $USER@$HOST2:$dest
     ;;
@@ -850,6 +910,21 @@ execute_in_dir() {
   dir="$2"
   cmd="$3"
   printf "raw cmd = %s\n" "$cmd"
+  mode="$MODE"
+  case $MODE in
+  altlocal)
+    mode=local
+    cmd="altlocal $cmd"
+    ;;
+  ssh+altlocal)
+    mode=ssh
+    cmd="altlocal $cmd"
+    ;;
+  ssh+ssh+altlocal)
+    mode=ssh+ssh
+    cmd="altlocal $cmd"
+    ;;
+  esac  
   case "$machine" in
   *macintosh*)
     cmd="export PATH=/opt/local/bin:\$PATH; $cmd"
@@ -869,26 +944,11 @@ execute_in_dir() {
     eval "cd $dir; $cmd"
     cd $HERE
     ;;
-  ds64)
-    cd $HERE
-    printf "raw cmd 1 = %s\n" "$cmd"
-    cmd="ds64-run `echo \$cmd | sed 's/[^a-zA-Z0-9]/\\\&/g'`"
-    printf "adjusted cmd 1 = %s\n" "$cmd"
-    printf "eval \"cd $dir; $cmd\"\n"
-    eval "cd $dir; $cmd"
-    cd $HERE
-    ;;
   ssh)
     cmd=export\ PATH=/usr/local/bin:/usr/bin:/bin:\\\$PATH\;\ cd\ $dir\;\ $cmd
     cmd=`echo \$cmd | sed 's/[^a-zA-Z0-9]/\\\&/g'`
     printf "\nssh $USER@$HOST eval $cmd\n"
     ssh $USER@$HOST "eval $cmd"
-    ;;
-  ssh+ds64)
-    cmd=export\ PATH=/usr/local/bin:/usr/bin:/bin:\\\$PATH\;\ cd\ $dir\;\ $cmd
-    cmd=`echo \$cmd | sed 's/[^a-zA-Z0-9]/\\\&/g'`
-    printf "\nssh $USER@$HOST /usr/local/bin/ds64-run $cmd\n"
-    ssh $USER@$HOST "/usr/local/bin/ds64-run $cmd"
     ;;
   virtual)
     printf "ssh -p $PORT $SSHOPTS $USER@localhost \"export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd\"\n"
@@ -899,10 +959,6 @@ execute_in_dir() {
     echo SSH+SSH case [$cmd]
     ssh -t -A $SSHOPTS $USER@$HOST1 "echo $USER@$HOST2 \"export PATH=/usr/bin:\\\"\"\\\$PATH\"\\\"; cd $dir; \\\"$cmd\\\"\""
     ssh -t -A $SSHOPTS $USER@$HOST1 "ssh  $USER@$HOST2 \"export PATH=/usr/bin:\\\"\"\\\$PATH\"\\\"; cd $dir; \\\"$cmd\\\"\""
-    ;;
-  ssh+ssh+ds64)
-    printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
-    ssh -t -A $SSHOPTS $USER@$HOST1 "export PATH=/usr/local/bin:/usr/bin:\"\$PATH\"; cd $dir; ssh $USER@$HOST2 \"export PATH=/usr/bin:\\\$PATH; cd $dir; ds64-run \\\"$cmd\\\"\""
     ;;
   ssh+virtual)
     printf "ssh -p $PORT $SSHOPTS $USER@$HOST \"export PATH=/usr/local/bin:/usr/bin:\$PATH; cd $dir; $cmd\"\n"
@@ -928,7 +984,7 @@ fetch_files() {
 # else, specifically to a directory "old" in the place where snapshots are
 # collected. At one stage I had copied the files here and I expected that
 # rsync would delete the old ones for me, but when I copy named files using
-# rsync ones not mentioned are not purged. I had also tried using
+# rsync, ones not mentioned are not purged. I had also tried using
 # a directory called old$dest (eg oldsnapshots) but that would not be good
 # if the user had configured things to put built snapshots in a directory
 # with a fully rooted path. So now the invocation of this function specifies
@@ -936,8 +992,8 @@ fetch_files() {
   mkdir -p $dest
   mkdir -p $backup
   printf "mv ${dest}* $backup\n"
-# The "mv" here will fail if the directory $dest is empty so that there
-# are no old snapshots to preserve.
+# The "mv" here would fail if the directory $dest is empty such that there
+# are no old snapshots to preserve. So do not perform it.
   if test "`find ${dest} -type f`" = ""
   then
     echo No existing snapshots in ${dest}
@@ -958,12 +1014,12 @@ fetch_files() {
   fi
   printf "Mode = $MODE: copy $src to $dest\n"
   case $MODE in
-  local | ds64)
+  local | altlocal)
     cd $HERE
     printf "eval \"rsync $RSO $src $dest\"\n"
     eval "rsync $RSO $src $dest"
     ;;
-  ssh | ssh+ds64)
+  ssh | ssh+altlocal)
     printf "rsync $RSO \"$USER@$HOST:$src\" $dest\n"
     rsync $RSO "$USER@$HOST:$src" $dest
     ;;
@@ -971,7 +1027,7 @@ fetch_files() {
     printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" \"$USER@localhost:$src\" $dest\n"
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" "$USER@localhost:$src" $dest
     ;;
-  ssh+ssh | ssh+ssh+ds64)
+  ssh+ssh | ssh+ssh+altlocal)
     printf "rsync $RSO -e \"ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS\" \"$USER@$HOST2:$src\" $dest\n"
     rsync $RSO -e "ssh -t -A $SSHOPTS $USER@$HOST1 ssh $SSHOPTS" "$USER@$HOST2:$src" $dest
     ;;
@@ -1047,23 +1103,30 @@ stop_remote_host() {
     printf "ssh $USER@HOST vboxmanage controlvm $VM poweroff\n"
     ssh $USER@$HOST vboxmanage controlvm $VM poweroff
     ;;
+  altlocal)
+    ;;
+  ssh+altlocal)
+    ;;
+  ssh+ssh+altlocal)
+    ;;
   esac
 }
 
 #########################################################################
 # Now do the work.
 
-# I allow either "-test" or "--test"
+# I allow either "-test" or "--test". This will run tests rather than build
+# the system.
+
 if test "$1" = "-test" ||
    test "$1" = "--test"
 then
   printf "\n\n+++ Test machine access +++ \n\n"
   shift
-# --test can be followed by a list of machines to test on - if none are used
-# the code tests everything.
+# --test can be followed by a list of machines to test for access.
   if test "$*" = ""
   then
-    MCS="rpi32 rpi64 linux64 macintosh windows"
+    MCS="linux64 macintosh win64"
   else
     MCS="$*"
   fi

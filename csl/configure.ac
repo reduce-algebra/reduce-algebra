@@ -1,6 +1,6 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                         April 2009-2017
+# A C Norman.                                         April 2009-2020
 
 #
 # The object of this configuration file is not to set the world up to
@@ -775,20 +775,6 @@ AC_CHECK_TYPES([u_int8_t,u_int16_t,u_int32_t,u_int64_t,u_intptr_t], [], [],
     #include <stdint.h>
     #endif])
 
-save_cross=cross_compiling
-cross_compiling=no
-AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                               [[printf("\n"); return 0;]])],
-              [can_run_executables="yes"],
-              [can_run_executables="no"],
-              [can_run_executables="no"])
-cross_compiling=$save_cross
-
-if test "x$can_run_executables" != "xyes"
-then
-  AC_MSG_ERROR([Unable to compile and run even simple C code])
-fi
-
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(short int)
 AC_CHECK_SIZEOF(int)
@@ -817,17 +803,6 @@ AC_CHECK_FUNCS([strrchr strstr utime popen])
 AC_CHECK_FUNCS([fork wait waitpid shmget shmat shmdt shmctl])
 AC_CHECK_FUNCS([vsnprintf sysctlbyname])
 
-save_cross=cross_compiling
-cross_compiling=no
-AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                               [[printf("\n"); return 0;]])],
-              [can_run_executables="yes"],
-              [can_run_executables="no"],
-              [can_run_executables="no"])
-cross_compiling=$save_cross
-
-AC_MSG_NOTICE([Can Run Executables = $can_run_executables])
-
 if test "x$windows_build" = "xyes"
 then
   case $CC in
@@ -847,21 +822,10 @@ then
   CXX="$ENVP $CXX"
 fi
 
-# I will check this again right at the end.
-save_cross=cross_compiling
-cross_compiling=no
-AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                               [[printf("\n"); return 0;]])],
-              [can_run_executables="yes"],
-              [can_run_executables="no"],
-              [can_run_executables="no"])
-cross_compiling=$save_cross
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 
 AC_CONFIG_HEADERS([config.h])
 AC_OUTPUT
-
-
 
 AC_MSG_NOTICE([Build environment seems OK])
 
