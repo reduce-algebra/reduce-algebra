@@ -250,6 +250,8 @@ fluid '(!*tra);
 
 switch tra;
 
+switch algint;
+
 put('algint,'simpfg,'((t (load!-package 'algint))));
 
 fluid '(!*trdefint);
