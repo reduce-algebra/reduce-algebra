@@ -359,10 +359,8 @@ symbolic procedure rd!:plus(u,v);
 % based on CSL vs PSL.
 %
 #if (member 'csl lispsystem!*)
-% Pretty-well ever since IEEE arithmetic has been in use CSL has probably
-% just overflowed to give an IEEE infinity, and has not raised an exception.
-         <<z := x + y;
-           if fp!-infinite z
+         <<z := safe!-fp!-plus(x, y);
+           if null z
              then <<rndbfon(); plubf(x := bfloat x,y := bfloat y)>>
              else z>>;
 #else
@@ -381,8 +379,8 @@ symbolic procedure rd!:difference(u,v);
       x := convprc2(u,v); y := yy!!;
       u := if not atom x then difbf(x,y) else
 #if (member 'csl lispsystem!*)
-         <<z := x - y;
-           if fp!-infinite z
+         <<z := safe!-fp!-plus(x, -y);
+           if null z
              then <<rndbfon(); difbf(x := bfloat x,y := bfloat y)>>
              else z>>;
 #else
@@ -401,8 +399,8 @@ symbolic procedure rd!:times(u,v);
       x := convprc2(u,v); y := yy!!;
       return mkround if not atom x then timbf(x,y) else
 #if (member 'csl lispsystem!*)
-         <<z := x*y;
-           if fp!-infinite z then <<rndbfon(); timbf(bfloat x,bfloat y)>>
+         <<z := safe!-fp!-times(x, y);
+           if null z then <<rndbfon(); timbf(bfloat x,bfloat y)>>
               else z>> end) where z=nil;
 #else
          <<z := errorset!*(list('times2,mkquote x,mkquote y),nil);
@@ -421,17 +419,8 @@ symbolic procedure rd!:quotient(u,v);
          if mt!: y=0 then rdqoterr() else divbf(x,y)
          else
 #if (member 'csl lispsystem!*)
-           <<z := x/y;
-% Here  use the test "not fp!-finite" which would notice a NaN as well
-% as infinities. That is because 0.0/0.0 might generate a NaN (although
-% at present it raises an exception whhich would then not be caught here).
-% This is a bit hypothetical because the case of division by 0.0 is trapped
-% a few lines above here! There is an issue of proper specification as to
-% whether (quotient 0.0 0.0) should raise an exception or return a NaN,
-% and whether (quotient x 0.0) for non-zero x should yield an IEEE infinity
-% or raise an exception. If it yields an infinity it may become proper
-% to consider division by both +0.0 and -0.0.
-             if not fp!-finite z then <<rndbfon(); divbf(bfloat x,bfloat y)>>
+           <<z := safe!-fp!-quotient(x,y);
+             if null z then <<rndbfon(); divbf(bfloat x,bfloat y)>>
                 else z>> end) where z=nil;
 #else
            <<z := errorset!*(list('quotient,mkquote x,mkquote y),nil);
@@ -489,10 +478,12 @@ symbolic procedure safe!-fp!-minus u;
 
 symbolic procedure safe!-fp!-plus(u, v);
   begin
-    scalar r;
+    scalar r, s := trap!-floating!-overflow nil;
 % CSL (and Jlisp, which uses this code too) add two huge numbers an IEEE
 % infinity is generated rather than an exception.
     r := u + v;
+    trap!-floating!-overflow s;
+    if fp!-infinite r then return nil;
 % If the result was exactly 0.0 all is well. Well there is hidden delicacy
 % here in that -0.0 + -0.0 will return -0.0 (but 0.0 + -0.0 and -0.0 + 0.0
 % both return 0.0). I do not have a !*nonegzeroplus because the only way that
@@ -526,8 +517,10 @@ symbolic procedure safe!-fp!-plus(u, v);
 
 symbolic procedure safe!-fp!-times(u, v);
   begin
-    scalar r;
+    scalar r, s := trap!-floating!-overflow nil;
     r := u * v;
+    trap!-floating!-overflow s;
+    if fp!-infinite r then return nil;
 % If the result is sub-normalised or zero I reject it, unless either u or
 % v was zero in which case the zero result is proper.
     if r < !!minnorm and r > !!minnegnorm and
@@ -541,10 +534,13 @@ symbolic procedure safe!-fp!-times(u, v);
 
 symbolic procedure safe!-fp!-quot(u, v);
   begin
-    scalar r;
+    scalar r, s;
     if v = 0.0 then return nil
     else if !*nonegzerotimes and u = 0.0 then return 0.0;
+    s := trap!-floating!-overflow nil;
     r := u / v;
+    trap!-floating!-overflow s;
+    if fp!-infinite r then return nil;
     if r < !!minnorm and r > !!minnegnorm and u neq 0.0 then return nil
     else if r-r = 0.0 then return r
     else return nil;
