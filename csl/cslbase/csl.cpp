@@ -968,8 +968,8 @@ std::jmp_buf *global_jb;
 
 [[noreturn]] void global_longjmp()
 {   std::longjmp(*global_jb, 1);
-    std::abort(); // longjmp should never return, but some C++ compilers
-    // do not know that!
+    std::abort();
+// longjmp should never return, but some C++ compilers do not know that!
 }
 
 bool stop_on_error = false;
@@ -1439,6 +1439,9 @@ char *mystrdup(const char *s)
     std::strcpy(r, s);
     return r;
 }
+
+// Note that I will not have my signal handlers active during the call
+// to cslstart(), so 
 
 void cslstart(int argc, const char *argv[], character_writer *wout)
 {   double store_size = 0.0;
@@ -3044,13 +3047,10 @@ static void low_level_signal_handler(int signo)
     global_longjmp();
 }
 
-static void cslaction()
-//
 // This is the "standard" route into CSL activity - it uses file-names
-// from the decoded command-line as files to be read and processed
-// unless the system was launched with the flag that says it ought to try
-// to provide a network service on some socket.
-//
+// from the decoded command-line as files to be read and processed.
+
+static void cslaction()
 {   volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     errorset_msg = nullptr;

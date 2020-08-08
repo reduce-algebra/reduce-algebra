@@ -32,7 +32,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 // This code is a small demonstration of what wxWidgets can do - but MOSTLY
 // it is looking at the issues of placing characters precisely on the screen

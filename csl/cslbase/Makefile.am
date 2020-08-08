@@ -48,6 +48,7 @@ csl_CPPFLAGS    = $(TRACE)
 # compilation unit, so "spurious" warnings are especially bulky.
 flatcsl_CPPFLAGS = $(TRACE) -Wno-unused-function
 if conservative
+contest_CPPFLAGS = $(TRACE)
 alloctest_CPPFLAGS = $(TRACE)
 endif conservative
 
@@ -84,6 +85,7 @@ plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
 plain_zlibdemo = zlibdemo
 plain_gctest = gctest
+plain_contest = contest
 plain_alloctest = alloctest
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
@@ -105,6 +107,7 @@ plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_dyndemo = dyndemo.unnecessary.except.on.windows
 plain_zlibdemo = zlibdemo.unnecessary.except.on.windows
 plain_gctest = gctest.unnecessary.except.on.windows
+plain_contest = gctest.unnecessary.except.on.windows
 plain_alloctest = gctest.unnecessary.except.on.windows
 endif !exeext
 
@@ -127,6 +130,7 @@ endif !exeext
 .PHONY: $(plain_dyndemo)
 .PHONY: $(plain_zlibdemo)
 .PHONY: $(plain_gctest)
+.PHONY: $(plain_contest)
 .PHONY: $(plain_alloctest)
 
 .PHONY:	bootstraprecompile
@@ -178,6 +182,7 @@ reduce_CPPFLAGS += $(MY_CPPFLAGS)
 bootstrapreduce_CPPFLAGS += $(MY_CPPFLAGS)
 csl_CPPFLAGS    += $(MY_CPPFLAGS)
 if conservative
+contest_CPPFLAGS += $(MY_CPPFLAGS)
 alloctest_CPPFLAGS += $(MY_CPPFLAGS)
 endif conservative
 # For at least a while I will NOT warn about unused (static) functions, because
@@ -249,6 +254,7 @@ check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
 	dyndemo$(EXEEXT) zlibdemo$(EXEEXT) $(wxdemotarget)
 if conservative
+noinst_PROGRAMS += contest$(EXEEXT)
 check_PROGRAMS += alloctest$(EXEEXT)
 endif
 endif !mac_framework
@@ -272,6 +278,7 @@ endif !arithlib
 
 if conservative
 gc_sources = newcslgc.cpp newallocate.cpp 
+contest_SOURCES = contest.cpp $(gc_sources)
 alloctest_SOURCES = alloctest.cpp sysfwin.cpp $(gc_sources)
 else !conservative
 gc_sources = cslgc.cpp allocate.cpp 
@@ -592,6 +599,8 @@ remake-zlibdemo-source:	$(cslbase)/preserve.cpp
 
 
 if conservative
+contest_LDADD =
+contest_DEPENDENCIES =
 alloctest_LDADD =
 alloctest_DEPENDENCIES =
 endif conservative
@@ -1304,6 +1313,10 @@ endif mac_framework
 
 endif !wx
 
+contest$(EXEEXT): $(contest_OBJECTS) $(contest_DEPENDENCIES)
+	-$(RM) -f contest$(EXEEXT)
+	$(CXXLINKTO) $(DEST)contest$(EXEEXT) $(contest_OBJECTS) $(contest_LDADD) $(AM_LIBS) $(LIBS)
+
 alloctest$(EXEEXT): $(alloctest_OBJECTS) $(alloctest_DEPENDENCIES)
 	-$(RM) -f alloctest$(EXEEXT)
 	$(CXXLINKTO) $(DEST)alloctest$(EXEEXT) $(alloctest_OBJECTS) $(alloctest_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
@@ -1713,6 +1726,9 @@ $(plain_zlibdemo):	zlibdemo.exe
 
 $(plain_gctest):	gctest.exe
 	echo "$(MAKE) gctest.exe is preferred"
+
+$(plain_contest):	contest.exe
+	echo "$(MAKE) contest.exe is preferred"
 
 $(plain_alloctest):	alloctest.exe
 	echo "$(MAKE) alloctest.exe is preferred"

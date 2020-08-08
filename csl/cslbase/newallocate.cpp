@@ -742,6 +742,15 @@ void setUpUsedPage(Page *p)
     else p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
 }
 
+char whereMsg[100];
+
+const char *where(const char *file, int line)
+{   const char *p = std::strrchr(file, '/');
+    if (p != nullptr) file = p+1;
+    sprintf(whereMsg, "%.40s:%d", file, line);
+    return whereMsg;
+}
+
 void setVariablesFromPage(Page *p)
 {
 // Set the variable that are used when allocating within the active page.
@@ -753,8 +762,10 @@ void setVariablesFromPage(Page *p)
     fringe::set(limit[threadId::get()] = limitBis[threadId::get()] =
             gFringe = p->fringe.load());
     gLimit = p->limit;
-    cout << "At " << __LINE__ << " gFringe = " << gFringe << endl;
-    cout << "At " << __LINE__ << " gLimit = " << gLimit << endl;
+    cout << "setVariablesFromPage\n";
+    cout << "At " << where(__FILE__, __LINE__) << " gFringe = " << std::hex << gFringe << endl;
+    cout << "At " << where(__FILE__, __LINE__) << " gLimit = " << std::hex << gLimit << endl;
+    cout << std::dec;
 }
 
 //@@@@
@@ -1017,6 +1028,7 @@ void initHeapSegments(double storeSize)
     mostlyFreePages = nullptr;
     mostlyFreePagesCount = 0;
 
+#if 0
 //- Now as a temporary issue I will try to test my write barrier and
 //- pinning scheme. For the write barrier I do not need any data in the
 //- pages concerned, but for pinning I need much of the memory to be full -
@@ -1075,6 +1087,7 @@ void initHeapSegments(double storeSize)
     cout << "Pinned chunks scanned\n";   
 
 // End of temp testing code
+#endif // 0
 
 }
 

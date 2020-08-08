@@ -36,7 +36,7 @@
  *************************************************************************/
 
 // This file was for putting adaptations to support a C++ build. The
-// main things it covered have now been done more properly. I will leve it
+// main things it covered have now been done more properly. I will leave it
 // in place for a short while, but it will probably be removed soon.
 
 #endif // header_cxx_shims_h
