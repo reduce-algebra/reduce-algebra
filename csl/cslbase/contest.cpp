@@ -90,12 +90,34 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
 volatile atomic<uintptr_t> event_flag(0);
 
-extern void treetest(int k);
+void crudeprint(LispObject a)
+{   if (a == nil) printf("nil");
+    else if (is_fixnum(a))
+        printf("%" PRId64, static_cast<int64_t>(int_of_fixnum(a)));
+    else if (is_cons(a))
+    {   printf("(");
+        crudeprint(car(a));
+        printf(" . ");
+        crudeprint(cdr(a));
+        printf(")");
+    }
+    else printf("?%" PRIx64, static_cast<int64_t>(a));
+}
+
+extern LispObject treetest(int k, int size=1000);
 
 static void cslaction()
 {   volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     printf("in cslaction\n");
+    crudeprint(nil);
+    cout << endl;
+    crudeprint(fixnum_of_int(99));
+    cout << endl;
+    crudeprint(cons(fixnum_of_int(1), fixnum_of_int(2)));
+    cout << endl;
+    crudeprint(treetest(1, 5));
+    cout << endl;
 }
 
 int cslfinish(character_writer *w)
@@ -148,14 +170,6 @@ int64_t sixty_four_bits(LispObject a)
 int init_flags;
 
 LispObject *stackBase;
-
-LispObject create(int start, int end)
-{   int n = end-start;
-    if (n == 1) return fixnum_of_int(start);
-    int half = (start + end)/2;
-    return cons(create(start, half),
-                create(half+1, end));
-}
 
 LispObject multiplication_buffer;
 intptr_t nwork;
@@ -443,7 +457,19 @@ LispObject *list_bases[] =
     nullptr              // Used to mark the end of the table.
 };
 
+// Create a tree with integer leaves in the range start..end (inclusive).
+
+LispObject create(int start, int end)
+{   if (start == end) return fixnum_of_int(start);
+    int half = (start + end)/2;
+    return cons(create(start, half),
+                create(half+1, end));
+}
+
 static int n;
+
+// Perform a pre-order search of the given tree checking if the
+// nodes are in sequence starting with the value start and ending with end.
 
 void verify(LispObject p)
 {   if (is_fixnum(p))
@@ -459,17 +485,18 @@ void verify(LispObject p)
 void verify(LispObject p, int start, int end)
 {   n = start;
     verify(p);
-    if (n != end) abort();
+    if (n != end+1) abort();
 }
 
-void treetest(int k)
+LispObject treetest(int k, int size)
 {   LispObject a = nil, b = nil;
     for (int i=0; i<k; i++)
-    {   a = create(1, 1000);
-        b = create(1, 1000);
-        verify(a, 1, 1000);
-        verify(b, 1, 1000);
+    {   a = create(1, size);
+        b = create(1, size);
+        verify(a, 1, size);
+        verify(b, 1, size);
     }
+    return a;
 }
 
 // End of contest.cpp
