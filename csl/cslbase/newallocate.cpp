@@ -254,7 +254,7 @@ size_t activePagesCount;
 // (<sensible-condition> || need_to_exit) and then when the barrier is passed
 // I immediately check need_to_exit and tidy up a bit more. To make that work
 // I suspect I will need a table of every muxex/condition variable anywhere
-// so that when I set need_tO-exit I can notify all of them!
+// so that when I set need_to_exit I can notify all of them!
 // Well for muxexes and condition variables visible at the Lisp level I will
 // need underlying C++ ones which will sort of need garbage collection but
 // must never move. I think that the best bet is to have a vector pool of
@@ -659,8 +659,8 @@ LispObject borrow_vector(int tag, int type, size_t n)
 
 // This code sets up an empty page - it is ONLY intended for use at the
 // start of a run when there can not be any pinned items present anywhere.
-// I put the code here adjacent to the code that allocates from pages so
-// that the setup and use can be compared.
+// I put the code here adjacent to the code that allocates from the list of
+// pages so that the setup and use can be compared.
 
 void setUpEmptyPage(Page *p)
 {   p->chain = nullptr;
@@ -742,15 +742,6 @@ void setUpUsedPage(Page *p)
     else p->limit = reinterpret_cast<uintptr_t>(p) + sizeof(Page);
 }
 
-char whereMsg[100];
-
-const char *where(const char *file, int line)
-{   const char *p = std::strrchr(file, '/');
-    if (p != nullptr) file = p+1;
-    sprintf(whereMsg, "%.40s:%d", file, line);
-    return whereMsg;
-}
-
 void setVariablesFromPage(Page *p)
 {
 // Set the variable that are used when allocating within the active page.
@@ -763,8 +754,8 @@ void setVariablesFromPage(Page *p)
             gFringe = p->fringe.load());
     gLimit = p->limit;
     cout << "setVariablesFromPage\n";
-    cout << "At " << where(__FILE__, __LINE__) << " gFringe = " << std::hex << gFringe << endl;
-    cout << "At " << where(__FILE__, __LINE__) << " gLimit = " << std::hex << gLimit << endl;
+    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe << endl;
+    cout << "At " << __WHERE__ << " gLimit = " << std::hex << gLimit << endl;
     cout << std::dec;
 }
 

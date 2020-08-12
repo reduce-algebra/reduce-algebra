@@ -94,6 +94,18 @@
 using std::hex;
 using std::dec;
 
+// This is to help me in trace messages.
+
+inline const char *where(const char *file, int line)
+{   const char *p = std::strrchr(file, '/');
+    if (p != nullptr) file = p+1;
+    static char whereMsg[100];
+    sprintf(whereMsg, "%.40s:%d", file, line);
+    return whereMsg;
+}
+
+#define __WHERE__ where(__FILE__, __LINE__)
+
 static const size_t pageSize = 8*1024*1024;      // Use 8 Mbyte pages
 
 // targetChunkSize will be taken to include the few words of header
@@ -122,8 +134,9 @@ enum PageClass
 extern void set_up_signal_handlers();
 extern bool allocateSegment(size_t);
 
-// Each chunk has a header that contains various information, including in
-// particular a bitmap
+// Each Chunk has a header that contains various information, including in
+// particular its length and information that is used to keep track of
+// Chunks that have ambiguous pointers within them - ie that are pinned.
 
 class Chunk
 {
@@ -143,9 +156,10 @@ public:
 // end of the next free block (using pinChain - and if that is nullptr the
 // relevant limit is the end of the page.
     atomic<Chunk *>pinChain;
-// The rest of the chunk is the region within which data is kept. I show that
-// as a vector of length just 2 but it is of course much larger than that.
-    atomic<LispObject>usableSpace[2];
+// The rest of the chunk is the region within which data is kept.
+// Its size will be such that the entire Chunk has length a specified by
+// its first word.
+    atomic<LispObject>usableSpace[];
 // Now I can have some accessor (etc) methods:
 //
     uintptr_t dataStart()
@@ -723,6 +737,8 @@ inline LispObject get_n_bytes(size_t n)
 // some other thread had set limit[] to zero to force this one to join in
 // with garbage collection. In the latter case I may in fact be able to make
 // this allocation simply by grabbing a fresh chunk.
+    cout << "\nAbout 1 time in 1000 I need to allocate a new Chunk\n";
+
     if (w != 0)
     {   size_t gap = w - r;
 // I want to make every chunk "tidy" because when I have one that gets
@@ -737,27 +753,37 @@ inline LispObject get_n_bytes(size_t n)
 // I will make my next chunk big enough for the current allocation request
 // with targetChunkSize left over after that. This ensures that even big
 // vector requests can be satisfied.
-        r = gFringe.fetch_add(targetChunkSize+n);
+        uintptr_t oldFringe = r;
+        Chunk *newChunk =
+            reinterpret_cast<Chunk *>(gFringe.fetch_add(targetChunkSize+n));
+        r = newChunk->dataStart();
 // Be aware that other threads might be doing (atomic) increments on gFringe
 // at the same time that this one does. They will each reserve separate
 // new chunks, but some of these may fall in memory well above gLimit.
 // I am going to assume (ha ha) that even if the maximum number of threads
 // each increment gFringe by the largest possible amount then it will not
-// suffer arithmetic overflow.
-        uintptr_t oldFringe = fringe::get() - n;
+// suffer arithmetic overflow. If I have a maximum of 16 threads then I ought
+// to ensure that gLimit+130M > gLimit.
         fringe::set(r + n);
-        uint64_t newLimit = fringe::get() + targetChunkSize;
+// I can not use newChunk->dataEnd() on the next line because the chunk does
+// not yet have its length field filled in. And that has to be the case
+// because the region I have set aside for this Chunk may be beyond the end
+// of the current Page (or the next pinned place within the Page).
+        uint64_t newLimit = reinterpret_cast<uintptr_t>(newChunk) + targetChunkSize+n;
 // Possibly the allocation of the new chunk ran beyond the current page
 // and that will be cause to consider triggering garbage collection. If the
 // chunk size is 16K and the page size 8M it will take 512 chunk allocations
 // before a page is filled. If for now I suppose that having 16 threads all
 // allocating cons cells furiously is an extreme case then that will mean
 // that each thread gets through 32 chunks before the extra (probably severe)
-// costs of page allocation arise.
+// costs of page allocation arise. So this is about 1 in 32000 conses in the
+// heaviest multi-thread case and only 1 in 0.5 million in a single thread
+// scenario.
         Page *p = reinterpret_cast<Page *>(
-                      static_cast<intptr_t>(r) & -pageSize);
+                      reinterpret_cast<intptr_t>(newChunk) & -pageSize);
         if (newLimit <= gLimit)
         {
+            cout << "allocating new chunk was OK\n";
 // Now my allocation of a new chunk has been successful. Before I test if
 // participation in a garbage collection on behalf of some other thread
 // is required that I need to record this chunk in the table of chunks that
@@ -766,12 +792,11 @@ inline LispObject get_n_bytes(size_t n)
 // gets pinned, but the isPinned flag must start off false so that when the
 // GC finds an ambiguous pointer within this chunk it knows when that is the
 // first such.
-            Chunk *c = reinterpret_cast<Chunk *>(r);
-            c->length = newLimit - r;
-            c->isPinned = false;
+            newChunk->length.store(targetChunkSize+n);
+            newChunk->isPinned.store(false);
+            newChunk->pinChain.store(nullptr);
             size_t chunkNo = p->chunkCount.fetch_add(1);
-            p->chunkMap[chunkNo].store(c);
-            r = reinterpret_cast<uintptr_t>(&c->usableSpace);
+            p->chunkMap[chunkNo].store(newChunk);
 // I wish to write back limit[threadId::get()] but it is possible that in
 // the meanwhile somebody set that to zero, so I need to be a bit careful.
 // Specifically I will only write back the new limit if the old one was
@@ -788,20 +813,21 @@ inline LispObject get_n_bytes(size_t n)
         }
         gIncrement[threadId::get()] = targetChunkSize+n;
         fringe::set(oldFringe);
-        cout << "Line " << __LINE__ << " fringe set to oldFringe = " << hex << oldFringe << dec << endl;
+        cout << "At " << __WHERE__ << " fringe set to oldFringe = " << hex << oldFringe << dec << endl;
     }
     else
     {
 // Here I am about to be forced to participate in garbage collection,
 // typically for the benefit of some other thread.
+        cout << "GC triggered\n";
         size_t gap = limitBis[threadId::get()] - r;
         if (gap != 0) firstWord(r).store(makePaddingHeader(gap));
         gIncrement[threadId::get()] = 0;
         fringe::set(r);
-        cout << "Line " << __LINE__ << " fringe set to r = " << r << endl;
+        cout << "At " << __WHERE__ << " fringe set to r = " << r << endl;
     }
     fringeBis[threadId::get()] = fringe::get();
-    cout << "At line " << __LINE__ << " fringeBis[" << threadId::get()
+    cout << "At " << __WHERE__ << " fringeBis[" << threadId::get()
          << "] = " << hex << fringeBis[threadId::get()] << dec << endl;
     request[threadId::get()] = n;
 // Here I can not complete the work with this inline function because
@@ -831,7 +857,7 @@ inline void poll()
         size_t gap = w - fringe::get();
         if (gap != 0) firstWord(fringe::get()).store(makePaddingHeader(gap));
         fringeBis[threadId::get()] = fringe::get();
-        cout << "At line " << __LINE__ << "fringeBis[" << threadId::get()
+        cout << "Polling at " << __WHERE__ << "fringeBis[" << threadId::get()
              << " = " << hex << fringeBis[threadId::get()] << dec << endl;
         request[threadId::get()] = 0;
         gIncrement[threadId::get()] = 0;
@@ -1013,7 +1039,7 @@ extern void setUpEmptyPage(Page *p);
 extern void setVariablesFromPage(Page *p);
 extern void saveVariablesToPage(Page *p);
 
-inline void garbageCollectOnBehalfOfAll()
+inline void ensureOtherThreadsAreIdle()
 {
 // When I get here I know that actveThreads==0 and that all other threads
 // have just decremented that variable and are ready to wait on gc_started.
@@ -1024,12 +1050,10 @@ inline void garbageCollectOnBehalfOfAll()
         gc_started = true;
     }
     cv_for_gc_idling.notify_all();
-//cout << "@@ garbageCollectOnBehalfOfAll called\n";
-// Now while the other threads are idle I can perform some garbage
-// collection and fill in results via result[] based on request[].
-// I will also put gFringe back to the value it had before any thread
-// had done anything with it.
-    size_t inc = 0;
+}
+
+inline void restoreGfringe()
+{   size_t inc = 0;
     for (unsigned int i=0; i<maxThreads; i++)
     {   result[i] = nil;
         cout << "result[" << i << "] = nil = " << std::hex << nil << std::dec << endl;
@@ -1043,147 +1067,139 @@ inline void garbageCollectOnBehalfOfAll()
 // in an explicit ".load()" because without that the subtraction leads to
 // an "ambigious overload" moan at least on 32-bit ARM.
     gFringe = gFringe.load() - inc;
-// When I get here it is as if every thread had known to pause right at the
-// very start of a call to allocate_n_bytes() with request[threadId()] showing
-// how much space it was trying to allocate.
-//
-// The "for" loop here is to keep going until I have managed to satisfy all
-// the pending allocation requests.
-    for (;;)
-    {   unsigned int pendingCount = 0;
-        for (unsigned int i=0; i<maxThreads; i++)
-        {   size_t n = request[i];
+}
+
+inline void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
+{   for (unsigned int i=0; i<maxThreads; i++)
+    {   size_t n = request[i];
 // Check if request (i) can be satisfied trivially. First I try within
 // its current chunk, because the garbage collection may have been triggered
 // by some other thread and the chunk for (i) may have plenty of space left.
-            if (n != 0)
-            {   uintptr_t f = fringeBis[i];
-                uintptr_t l = limitBis[i];
-                cout << "At line " << __LINE__ << " fringeBis[" << i
-                     << "] = " << hex << fringeBis[i] << dec << endl;
-                size_t gap = l - f;
-                if (n <= gap)
-                {   result[i] = fringeBis[i] + TAG_VECTOR;
-                    cout << "result[" << i << "] = " << std::hex << result[i] << std::dec << endl;
+        if (n != 0)
+        {   uintptr_t f = fringeBis[i];
+            uintptr_t l = limitBis[i];
+            cout << "At " << __WHERE__ << " fringeBis[" << i
+                 << "] = " << hex << fringeBis[i] << dec << endl;
+            size_t gap = l - f;
+            if (n <= gap)
+            {   result[i] = fringeBis[i] + TAG_VECTOR;
+                cout << "result[" << i << "] = " << std::hex << result[i] << std::dec << endl;
 // If I fill in a result for this I set it to show it does not need any more.
-                    request[i] = 0;
-                    firstWord(result[i]).store(makeVectorHeader(n));
-                    fringeBis[i] += n;
-                    cout << "At line " << __LINE__ << "fringeBis[" << i
-                         << " = " << hex << fringeBis[i] << dec << endl;
-                    gap -= n;
-                    if (gap != 0)
-                        firstWord(fringeBis[i]).store(makePaddingHeader(gap));
-                }
-                else
-                {   size_t gap1 = gLimit - gFringe;
+                request[i] = 0;
+                firstWord(result[i]).store(makeVectorHeader(n));
+                fringeBis[i] += n;
+                cout << "At " << __WHERE__ << "fringeBis[" << i
+                     << " = " << hex << fringeBis[i] << dec << endl;
+                gap -= n;
+                if (gap != 0)
+                    firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+            }
+            else
+            {   size_t gap1 = gLimit - gFringe;
 // If the current chunk for (i) is full I will see if I can allocate another
 // one. This can be possible if GC was triggered by another thread that was
 // trying to allocate a huge object - so huge that it would have pushed
 // gFringe beyong gLimit but when this thread is making a simple request such
 // that a more or less standard sized chunk will suffice.
-                    if (n+targetChunkSize < gap1)
-                    {
+                if (n+targetChunkSize < gap1)
+                {
 // OK I can allocate a few chunk for one of the threads here. First I should
 // insert padding so that the tail end of the previous chunk is tidily
 // filled in.
-                        firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+                    firstWord(fringeBis[i]).store(makePaddingHeader(gap));
 
-                        Chunk *c = reinterpret_cast<Chunk *>(gFringe.load());
-                        c->length = n+targetChunkSize;
-                        c->isPinned = false;
-                        size_t chunkNo = currentPage->chunkCount.fetch_add(1);
-                        currentPage->chunkMap[chunkNo].store(c);
-                        result[i] =
-                            reinterpret_cast<uintptr_t>(&c->usableSpace) +
-                            TAG_VECTOR;
-                        cout << "result[" << i << "] = " << std::hex << result[i] << std::dec << endl;
-                        request[i] = 0;
+                    Chunk *c = reinterpret_cast<Chunk *>(gFringe.load());
+                    c->length = n+targetChunkSize;
+                    c->isPinned = false;
+                    size_t chunkNo = currentPage->chunkCount.fetch_add(1);
+                    currentPage->chunkMap[chunkNo].store(c);
+                    result[i] =
+                        reinterpret_cast<uintptr_t>(&c->usableSpace) +
+                        TAG_VECTOR;
+                    cout << "result[" << i << "] = " << std::hex << result[i] << std::dec << endl;
+                    request[i] = 0;
 // If I allocate a block here it will need to be alive through an impending
 // garbage collection, so I will make it seem like a respectable Lisp
-// vector with binary content. 
-                        firstWord(result[i]).store(makeVectorHeader(n));
-                        fringeBis[i] = gFringe.load() + n;
-                        cout << "At line " << __LINE__ << " fringeBis[" << i
-                             << " = " << hex << fringeBis[i] << dec << endl;
-                        gFringe = limitBis[i] = limit[i] =
-                                  fringeBis[i] + targetChunkSize;
-                    }
-                    else
-                    {
+// vector with binary content.
+                    firstWord(result[i]).store(makeVectorHeader(n));
+                    fringeBis[i] = gFringe.load() + n;
+                    cout << "At " << __WHERE__ << " fringeBis[" << i
+                         << " = " << hex << fringeBis[i] << dec << endl;
+                    gFringe = limitBis[i] = limit[i] =
+                              fringeBis[i] + targetChunkSize;
+                }
+                else
+                {
 // Here the current region in the Page is full. I may either have reached the
 // very end of the page or I may have merely run up against a pinned Chunk
 // within it.
-                        cout << "At " << __LINE__ << " gFringe = " << hex << gFringe << dec << endl;
-                        cout << "At " << __LINE__ << " pageSize = " << hex << pageSize << dec << endl;
-                        uintptr_t pageEnd = (gFringe & -pageSize) + pageSize;
-                        cout << "At " << __LINE__ << " pageEnd = " << hex << pageEnd << dec << endl;
-                        while (gLimit != pageEnd)
-                        {   gFringe = gLimit +
-                                      reinterpret_cast<Chunk *>(gLimit)->length;
-                            gLimit = reinterpret_cast<uintptr_t>(
-                                reinterpret_cast<Chunk *>(gLimit)->pinChain.load());
-                            cout << "At " << __LINE__ << " gLimit = " << hex << gLimit << dec << endl;
-                            if (gLimit == 0) gLimit = pageEnd;
-                            cout << "At " << __LINE__ << " gLimit = " << hex << gLimit << dec << endl;
-                            gap1 = gLimit - gFringe;
-                            if (n+targetChunkSize < gap1)
-                            {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
-                                Chunk *c = reinterpret_cast<Chunk *>(gFringe.load());
-                                c->length = n + targetChunkSize;
-                                c->isPinned = false;
-                                size_t chunkNo = currentPage->chunkCount.fetch_add(1);
-                                currentPage->chunkMap[chunkNo].store(c);
-                                result[i] = gFringe.load() + TAG_VECTOR;
-                                request[i] = 0;
-                                firstWord(result[i]).store(makeVectorHeader(n));
-                                fringeBis[i] = gFringe.load() + n;
-                                cout << "At line " << __LINE__ << "fringeBis[" << i
-                                     << " = " << hex << fringeBis[i] << dec << endl;
-                                gFringe = limitBis[i] = limit[i] = fringeBis[i] + targetChunkSize;
-                                break;
-                            }
+                    cout << "At " << __WHERE__ << " gFringe = " << hex << gFringe << dec << endl;
+                    cout << "At " << __WHERE__ << " pageSize = " << hex << pageSize << dec << endl;
+                    uintptr_t pageEnd = (gFringe & -pageSize) + pageSize;
+                    cout << "At " << __WHERE__ << " pageEnd = " << hex << pageEnd << dec << endl;
+                    while (gLimit != pageEnd)
+                    {   gFringe = gLimit +
+                                  reinterpret_cast<Chunk *>(gLimit)->length;
+                        gLimit = reinterpret_cast<uintptr_t>(
+                            reinterpret_cast<Chunk *>(gLimit)->pinChain.load());
+                        cout << "At " << __WHERE__ << " gLimit = " << hex << gLimit << dec << endl;
+                        if (gLimit == 0) gLimit = pageEnd;
+                        cout << "At " << __WHERE__ << " gLimit = " << hex << gLimit << dec << endl;
+                        gap1 = gLimit - gFringe;
+                        if (n+targetChunkSize < gap1)
+                        {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+                            Chunk *c = reinterpret_cast<Chunk *>(gFringe.load());
+                            c->length = n + targetChunkSize;
+                            c->isPinned = false;
+                            size_t chunkNo = currentPage->chunkCount.fetch_add(1);
+                            currentPage->chunkMap[chunkNo].store(c);
+                            result[i] = gFringe.load() + TAG_VECTOR;
+                            request[i] = 0;
+                            firstWord(result[i]).store(makeVectorHeader(n));
+                            fringeBis[i] = gFringe.load() + n;
+                            cout << "At " << __WHERE__ << "fringeBis[" << i
+                                 << " = " << hex << fringeBis[i] << dec << endl;
+                            gFringe = limitBis[i] = limit[i] = fringeBis[i] + targetChunkSize;
+                            break;
                         }
+                    }
 // pendingCount will be a count of the requests NOT satisfied. So I increment
 // if if I do not manage to make an allocation.
-                        if (request[i] != 0) pendingCount++;
-                    }
+                    if (request[i] != 0) pendingCount++;
                 }
             }
         }
-// If there are no pending requests that can be because using space beyond
-// pinnings allowed me to cope. But if there are still some left over here
-// I will need to allocate a fresh page of space. If I am adopting a major
-// GC strategy I just allocate another page until my whole memory is about
-// galf full, but with a generational GC I will run some GC activity each
-// time I get here - just evacuating a single page.
-        if (pendingCount == 0) break;
+    }
+}
+
+inline void newRegionNeeded()
+{
 // This where a page is full up. Or at least where the region within a page
 // up to the next pinned region was full up!
 // I wll set padders everywhere even if I might think I have done so
 // already, just so I am certain.
-        for (unsigned int i=0; i<maxThreads; i++)
-        {   size_t gap = limitBis[i] - fringeBis[i];
-            if (gap != 0)
-                firstWord(fringeBis[i]).store(makePaddingHeader(gap));
-        }
-        size_t gap = gLimit - gFringe;
-        if (gap != 0) firstWord(gFringe).store(makePaddingHeader(gap));
+    for (unsigned int i=0; i<maxThreads; i++)
+    {   size_t gap = limitBis[i] - fringeBis[i];
+        if (gap != 0)
+            firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+    }
+    size_t gap = gLimit - gFringe;
+    if (gap != 0) firstWord(gFringe).store(makePaddingHeader(gap));
 // Next if I will be building up to a full GC I can usually just allocate
 // another Page from the list of free Pages.
-        if (!generationalGarbageCollection ||
-            !garbage_collection_permitted ||
-            victimPage == nullptr)
-        {   if (busyPagesCount >= freePagesCount+mostlyFreePagesCount)
-            {   cout << "@@ full GC needed\n";
-                fullGarbageCollect();
-            }
-            else
-            {
+    if (!generationalGarbageCollection ||
+        !garbage_collection_permitted ||
+        victimPage == nullptr)
+    {   if (busyPagesCount >= freePagesCount+mostlyFreePagesCount)
+        {   cout << "@@ full GC needed\n";
+            fullGarbageCollect();
+        }
+        else
+        {
 // Here I can just allocate a next page to use...
-                if (victimPage == nullptr) busyPages++;
-                victimPage = currentPage;
-                victimPage->pageClass = victimPageTag;
+            if (victimPage == nullptr) busyPages++;
+            victimPage = currentPage;
+            victimPage->pageClass = victimPageTag;
 // I must talk through an interaction between pinned data and my write
 // barrier. Suppose some data is is pinned and in addition to the ambiguous
 // references to it is is pointed to from ancient structures. During a
@@ -1230,39 +1246,42 @@ inline void garbageCollectOnBehalfOfAll()
 // In the light of the above discussion I will use a fully free page next
 // if there is one. In pathological situations I may need to drop back
 // and use a mostly-free one.
-                {   std::lock_guard<std::mutex> guard(mutexForFreePages);
-                    if (freePages != nullptr)
-                    {   currentPage = freePages;
-                        freePages = freePages->chain;
-                        freePagesCount--;
-                    }
-                    else
-                    {   currentPage = mostlyFreePages;
-                        mostlyFreePages = mostlyFreePages->chain;
-                        mostlyFreePagesCount--;
-                    }
+            {   std::lock_guard<std::mutex> guard(mutexForFreePages);
+                if (freePages != nullptr)
+                {   currentPage = freePages;
+                    freePages = freePages->chain;
+                    freePagesCount--;
                 }
-                currentPage->pageClass = currentPageTag;
-                currentPage->chain = busyPages;
-                busyPages = currentPage;
-                busyPagesCount++;
+                else
+                {   currentPage = mostlyFreePages;
+                    mostlyFreePages = mostlyFreePages->chain;
+                    mostlyFreePagesCount--;
+                }
+            }
+            currentPage->pageClass = currentPageTag;
+            currentPage->chain = busyPages;
+            busyPages = currentPage;
+            busyPagesCount++;
 // I require that the fringe and limit values stored with a page refer to
 // the first available block allowing for any pinned chunks within the page.
-                gFringe = currentPage->fringe.load();
-                gLimit = currentPage->limit;
-                cout << "At " << __LINE__ << " gLimit = " << hex << gLimit << dec << endl;
+            gFringe = currentPage->fringe.load();
+            gLimit = currentPage->limit;
+            cout << "At " << __WHERE__ << " gLimit = " << hex << gLimit << dec << endl;
 // Every thread will now need to grab its own fresh chunk!
-                for (unsigned int k=0; k<maxThreads; k++)
-                    limit[k] = fringeBis[k] = limitBis[k] = gFringe;
-                cout << "all of fringeBis[] = " << hex << gFringe << dec << endl;
+            for (unsigned int k=0; k<maxThreads; k++)
+                limit[k] = fringeBis[k] = limitBis[k] = gFringe;
+            cout << "all of fringeBis[] = " << hex << gFringe << dec << endl;
 //              cout << "@@ just allocated a fresh page\n";
-            }
-        }
-        else
-        {   cout << "@@ minor GC needed\n";
-            generationalGarbageCollect();
         }
     }
+    else
+    {   cout << "@@ minor GC needed\n";
+        generationalGarbageCollect();
+    }
+}
+
+inline void releaseOtherThreads()
+{
 //  cout << "@@ unlock any other threads at end of page allocation\n";
 // Now I need to be confident that the other threads have all accessed
 // gc_started. When they have they will increment activeThreads and when the
@@ -1285,6 +1304,35 @@ inline void garbageCollectOnBehalfOfAll()
         gc_complete = true;
     }
     cv_for_gc_complete.notify_all();
+}
+
+inline void garbageCollectOnBehalfOfAll()
+{   ensureOtherThreadsAreIdle();
+    cout << "@@ garbageCollectOnBehalfOfAll called\n";
+// Now while the other threads are idle I can perform some garbage
+// collection and fill in results via result[] based on request[].
+// I will also put gFringe back to the value it had before any thread
+// had done anything with it.
+    restoreGfringe();
+// When I get here it is as if every thread had known to pause right at the
+// very start of a call to allocate_n_bytes() with request[threadId()] showing
+// how much space it was trying to allocate.
+//
+// The "for" loop here is to keep going until I have managed to satisfy all
+// the pending allocation requests.
+    for (;;)
+    {   unsigned int pendingCount = 0;
+        tryToSatisfyAtLeastOneThread(pendingCount);
+// If there are no pending requests that can be because using space beyond
+// pinnings allowed me to cope. But if there are still some left over here
+// I will need to allocate a fresh page of space. If I am adopting a major
+// GC strategy I just allocate another page until my whole memory is about
+// galf full, but with a generational GC I will run some GC activity each
+// time I get here - just evacuating a single page.
+        if (pendingCount == 0) break;
+        newRegionNeeded();
+    }
+    releaseOtherThreads();
 }
 
 inline void waitWhileAnotherThreadGarbageCollects()
@@ -1324,7 +1372,7 @@ inline void waitWhileAnotherThreadGarbageCollects()
         cv_for_gc_complete.wait(lock, [] { return gc_complete; });
     }
     fringe::set(fringeBis[threadId::get()]);
-    cout << "Line " << __LINE__ << " fringe set to fringeBis = " << fringe::get() << endl;
+    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << fringe::get() << endl;
 }
 
 // Here I have just attempted to allocate n bytes but the attempt failed
@@ -1384,7 +1432,7 @@ inline uintptr_t difficult_n_bytes()
 // At the end the GC can have updated the fringe for each thread,
 // so I need to put its updated value in the correct place.
     fringe::set(fringeBis[threadId::get()]);
-    cout << "Line " << __LINE__ << " fringe set to fringeBis = " << hex << fringe::get() << dec << endl;
+    cout << "At " << __WHERE__ << " fringe set to fringeBis = " << hex << fringe::get() << dec << endl;
     return result[threadId::get()] - TAG_VECTOR;
 }
 

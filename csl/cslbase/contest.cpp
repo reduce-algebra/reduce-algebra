@@ -70,7 +70,10 @@
 
 
 void cslstart(int argc, const char *argv[], character_writer *wout)
-{   double store_size = 512.0*1024.0;
+{   double store_size = 64.0*1024.0;
+// By having 64 Mbytes of memory in all I will end up with a nominal 8 pages
+// for my heap - one will be used as a stack region so there will be 7
+// managed by garbage collection.
     volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     C_stacklimit = 0;
@@ -90,18 +93,38 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
 volatile atomic<uintptr_t> event_flag(0);
 
-void crudeprint(LispObject a)
-{   if (a == nil) printf("nil");
-    else if (is_fixnum(a))
-        printf("%" PRId64, static_cast<int64_t>(int_of_fixnum(a)));
-    else if (is_cons(a))
-    {   printf("(");
-        crudeprint(car(a));
-        printf(" . ");
-        crudeprint(cdr(a));
-        printf(")");
+static int col;
+
+void crudeprin(LispObject a)
+{   if (col > 70)
+    {   printf("\n");
+        col = 0;
     }
-    else printf("?%" PRIx64, static_cast<int64_t>(a));
+    if (a == nil) col += printf("nil");
+    else if (is_fixnum(a))
+        col += printf("%" PRId64, static_cast<int64_t>(int_of_fixnum(a)));
+    else if (is_cons(a))
+    {   col += printf("(");
+        crudeprin(car(a));
+        if (col > 70)
+        {   printf("\n");
+            col = 0;
+        }
+        col += printf(" . ");
+        crudeprin(cdr(a));
+        if (col > 70)
+        {   printf("\n");
+            col = 0;
+        }
+        col += printf(")");
+    }
+    else col += printf("?%" PRIx64, static_cast<int64_t>(a));
+}
+
+void crudeprint(LispObject a)
+{   crudeprin(a);
+    cout << endl;
+    col = 0;
 }
 
 extern LispObject treetest(int k, int size=1000);
@@ -111,13 +134,23 @@ static void cslaction()
     C_stackbase = (uintptr_t *)&sp;
     printf("in cslaction\n");
     crudeprint(nil);
-    cout << endl;
     crudeprint(fixnum_of_int(99));
-    cout << endl;
     crudeprint(cons(fixnum_of_int(1), fixnum_of_int(2)));
-    cout << endl;
     crudeprint(treetest(1, 5));
-    cout << endl;
+    crudeprint(treetest(1, 100));
+    for (int size=25; size<1000; size++)
+    {
+#if 1
+        cout << endl << "Try tree of size " << 25 << endl;
+        crudeprint(treetest(1, 25));
+#else
+        cout << endl << "Try tree of size " << size << endl;
+        crudeprint(treetest(1, size));
+#endif
+        cout << "gFringe = " << std::hex << gFringe << std::dec << endl;
+    }
+    crudeprint(treetest(1, 50));
+    crudeprint(treetest(20000, 50));
 }
 
 int cslfinish(character_writer *w)
@@ -471,21 +504,37 @@ static int n;
 // Perform a pre-order search of the given tree checking if the
 // nodes are in sequence starting with the value start and ending with end.
 
+LispObject saved;
+
 void verify(LispObject p)
 {   if (is_fixnum(p))
-    {   if (int_of_fixnum(p) != n) abort();
+    {   if (int_of_fixnum(p) != n)
+        {   cout << endl << "Found " << int_of_fixnum(p)
+                 << " but expected " << n << endl;
+            crudeprint(saved);
+            abort();
+        }
         n++;
         return;
     }
-    else if (!is_cons(p)) abort();
+    else if (!is_cons(p))
+    {   cout << endl << "neither integer nor cons! " << std::hex << p << endl;
+        crudeprint(saved);
+        abort();
+    }
     verify(car(p));
     verify(cdr(p));
 }
 
 void verify(LispObject p, int start, int end)
 {   n = start;
+    saved = p;
     verify(p);
-    if (n != end+1) abort();
+    if (n != end+1)
+    {   cout << endl << "At end got " << n << " but expected " << end+1 << endl;
+        crudeprint(saved);
+        abort();
+    }
 }
 
 LispObject treetest(int k, int size)
@@ -500,4 +549,3 @@ LispObject treetest(int k, int size)
 }
 
 // End of contest.cpp
-
