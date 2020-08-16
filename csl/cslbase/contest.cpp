@@ -36,8 +36,6 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-
-
 // $Id$
 
 
@@ -133,24 +131,7 @@ static void cslaction()
 {   volatile uintptr_t sp;
     C_stackbase = (uintptr_t *)&sp;
     printf("in cslaction\n");
-    crudeprint(nil);
-    crudeprint(fixnum_of_int(99));
-    crudeprint(cons(fixnum_of_int(1), fixnum_of_int(2)));
-    crudeprint(treetest(1, 5));
-    crudeprint(treetest(1, 100));
-    for (int size=25; size<1000; size++)
-    {
-#if 1
-        cout << endl << "Try tree of size " << 25 << endl;
-        crudeprint(treetest(1, 25));
-#else
-        cout << endl << "Try tree of size " << size << endl;
-        crudeprint(treetest(1, size));
-#endif
-        cout << "gFringe = " << std::hex << gFringe << std::dec << endl;
-    }
-    crudeprint(treetest(1, 50));
-    crudeprint(treetest(20000, 50));
+    crudeprint(treetest(200000, 3));
 }
 
 int cslfinish(character_writer *w)
@@ -181,7 +162,7 @@ uintptr_t C_stacklimit;
 LispObject nil;
 
 [[noreturn]] void aerror1(const char *s, LispObject a)
-{   abort();
+{   my_abort();
 }
 
 void trace_printf(const char *fmt, ...)
@@ -192,12 +173,12 @@ void trace_printf(const char *fmt, ...)
 }
 
 int64_t sixty_four_bits(LispObject a)
-{   abort();
+{   my_abort();
     return 0;
 }
 
 [[noreturn]] void fatal_error(int code, ...)
-{   abort();
+{   my_abort();
 }
 
 int init_flags;
@@ -512,7 +493,8 @@ void verify(LispObject p)
         {   cout << endl << "Found " << int_of_fixnum(p)
                  << " but expected " << n << endl;
             crudeprint(saved);
-            abort();
+            dump_gets();
+            my_abort();
         }
         n++;
         return;
@@ -520,7 +502,8 @@ void verify(LispObject p)
     else if (!is_cons(p))
     {   cout << endl << "neither integer nor cons! " << std::hex << p << endl;
         crudeprint(saved);
-        abort();
+        dump_gets();
+        my_abort();
     }
     verify(car(p));
     verify(cdr(p));
@@ -533,7 +516,8 @@ void verify(LispObject p, int start, int end)
     if (n != end+1)
     {   cout << endl << "At end got " << n << " but expected " << end+1 << endl;
         crudeprint(saved);
-        abort();
+        dump_gets();
+        my_abort();
     }
 }
 
