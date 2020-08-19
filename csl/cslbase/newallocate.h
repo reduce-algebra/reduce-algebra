@@ -855,7 +855,7 @@ inline LispObject get_n_bytes(size_t n)
 inline size_t get_size[8];
 inline LispObject get_value[8];
 inline unsigned int get_count = 0;
-inline unsigned int get_trace = 514572-10;
+inline unsigned int get_trace = 0x7fffffff; // 514572-10;
 
 inline LispObject previousCons = 0;
 

@@ -1,9 +1,9 @@
-// lispthrow.h                                      Copyright Codemist 2019
+// lispthrow.h                                      Copyright Codemist 2020
 
 // Some exception processing stuff for CSL
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -52,54 +52,466 @@ extern  std::jmp_buf *global_jb;
 //#define stack (*stack_addr)
 //#define global_jb (*global_jb_addr)
 
-inline void push(LispObject a)
+// There is a "Lisp Stack" which is separate from the C++ stack. It has
+// a number of uses:
+// (1) Prior to the conservative GC all references to heap data must be
+//     somewhere "safe" whenever a GC could happen. This is achieved by
+//     going { push(x); <dangerous operations>; pop(x); } in many places.
+//     This keeps the identification of heap pointers "precise".
+// (2) The bytecode interpreter is a variety of stack-based computer with
+//     two accumulators (A and B). It works by pushing and popping items
+//     on the stack and accessing some relative to the stack top. In the
+//     case of deep recursion this naturally lead to a substantial amount
+//     of stuff ending up on the Lisp stack.
+// (3) Some parts of the interpreter and the implementation of some special
+//     forms used the Lisp stack either to marshall data where it is not
+//     known in advance how much will be present or to keep precise pointers
+//     to a significant number of values.
+// When a conservative collector is in use case (1) above becomes an out of
+// date constraint (that adds a level of inefficiency) and come cases of (3)
+// could be reworked to have tidier code when there is no need for precise
+// pointers. By and large (2) will remain. The code should now use real_push()
+// in those cases where push and pop must use the Lisp stack and push()
+// when the transfer is only needed for precision. So in the conservative
+// case push() and pop() can become no-ops while real_push and real_pop()
+// continue to behave as always.
+// If at some stage the precice GC is totally removed then all calls to
+// just push() and pop() can be discarded. Before that the two variants on
+// stack access can be instrumented so that the cost impact of the change to
+// a conservative GC can be assessed.
+
+// Because in the precise GC model both push() and real_push() do the same
+// thing (etc) I view the risk of bugs being introduced into the main-stream
+// version as rather low here. But for the conservative code checking that
+// every previous push that needs to be upgraded to real_push will need some
+// care. However it adds a constraint that uses of push/pop MUST be in the
+// style    push(v); ... pop(v);   with the SAME variable used in each
+// location and that variable not having its value changed in the "..."
+// section. I.e. the use of push and pop is ONLY to ensure that v is garbage
+// collection safe and they should not be used to move data around.
+
+#ifdef CONSERVATIVE
+// I will assume C++17 here...
+inline size_t push_count = 0;
+inline size_t real_push_count = 0;
+#endif
+
+inline void real_push(LispObject a)
 {   *++stack = a;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
 }
 
-// Since I am now using C++ I could just overload the names push, pop and
-// stackcheck to cope with the number of operands rather than having so many
-// distinct names. Well I will do that, but I will leave the old versions
-// in place for at least a few weeks to help with a transition.
-
-inline void push2(LispObject a, LispObject b)
+inline void real_push(LispObject a, LispObject b)
 {   *++stack = a;
     *++stack = b;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
 }
 
-inline void push3(LispObject a, LispObject b, LispObject c)
+inline void real_push(LispObject a, LispObject b, LispObject c)
 {   *++stack = a;
     *++stack = b;
     *++stack = c;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
 }
 
-inline void push4(LispObject a, LispObject b, LispObject c,
-                  LispObject d)
+inline void real_push(LispObject a, LispObject b, LispObject c,
+                 LispObject d)
 {   *++stack = a;
     *++stack = b;
     *++stack = c;
     *++stack = d;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
 }
 
-inline void push5(LispObject a, LispObject b, LispObject c,
-                  LispObject d, LispObject e)
+inline void real_push(LispObject a, LispObject b, LispObject c,
+                 LispObject d, LispObject e)
 {   *++stack = a;
     *++stack = b;
     *++stack = c;
     *++stack = d;
     *++stack = e;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
 }
 
-inline void push6(LispObject a, LispObject b, LispObject c,
-                  LispObject d, LispObject e, LispObject f)
+inline void real_push(LispObject a, LispObject b, LispObject c,
+                 LispObject d, LispObject e, LispObject f)
 {   *++stack = a;
     *++stack = b;
     *++stack = c;
     *++stack = d;
     *++stack = e;
     *++stack = f;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
 }
 
-// Well here I provide the overloads...
+inline void real_pop(LispObject& a)
+{   a = *stack--;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
+}
+
+inline void real_pop(volatile LispObject& a)
+{   a = *stack--;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
+}
+
+inline void real_pop(LispObject& a, LispObject& b)
+{   a = *stack--;
+    b = *stack--;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
+}
+
+inline void real_pop(LispObject& a, LispObject& b, LispObject& c)
+{   a = *stack--;
+    b = *stack--;
+    c = *stack--;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
+}
+
+inline void real_pop(LispObject& a, LispObject& b, LispObject& c,
+                LispObject& d)
+{   a = *stack--;
+    b = *stack--;
+    c = *stack--;
+    d = *stack--;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
+}
+
+inline void real_pop(LispObject& a, LispObject& b, LispObject& c,
+                LispObject& d, LispObject& e)
+{   a = *stack--;
+    b = *stack--;
+    c = *stack--;
+    d = *stack--;
+    e = *stack--;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
+}
+
+inline void real_pop(LispObject& a, LispObject& b, LispObject& c,
+                LispObject& d, LispObject& e, LispObject& f)
+{   a = *stack--;
+    b = *stack--;
+    c = *stack--;
+    d = *stack--;
+    e = *stack--;
+    f = *stack--;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
+}
+
+inline void real_popv(int n)
+{   stack -= n;
+#ifdef CONSERVATIVE
+    real_push_count++;
+#endif
+}
+
+// With a conservative GC I will want real_push and real_pop to exist and
+// move things to and from a dedicated Lisp stack (eg as part of the way
+// I handle some special forms or functions with huge numbers of arguments)
+// but case where it used to be push/pop can replace those with no-operation.
+
+#ifdef CONSERVATIVE
+
+#if 1 // TEMP
+inline void push(LispObject a)
+{   *++stack = a;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void push(LispObject a, LispObject b)
+{   *++stack = a;
+    *++stack = b;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void push(LispObject a, LispObject b, LispObject c)
+{   *++stack = a;
+    *++stack = b;
+    *++stack = c;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void push(LispObject a, LispObject b, LispObject c,
+                 LispObject d)
+{   *++stack = a;
+    *++stack = b;
+    *++stack = c;
+    *++stack = d;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void push(LispObject a, LispObject b, LispObject c,
+                 LispObject d, LispObject e)
+{   *++stack = a;
+    *++stack = b;
+    *++stack = c;
+    *++stack = d;
+    *++stack = e;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void push(LispObject a, LispObject b, LispObject c,
+                 LispObject d, LispObject e, LispObject f)
+{   *++stack = a;
+    *++stack = b;
+    *++stack = c;
+    *++stack = d;
+    *++stack = e;
+    *++stack = f;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(LispObject& a)
+{   my_assert(a == *stack);
+    a = *stack--;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(volatile LispObject& a)
+{   my_assert(a == *stack);
+    a = *stack--;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(LispObject& a, LispObject& b)
+{   my_assert(a == *stack);
+    a = *stack--;
+    my_assert(b == *stack);
+    b = *stack--;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(LispObject& a, LispObject& b, LispObject& c)
+{   my_assert(a == *stack);
+    a = *stack--;
+    my_assert(b == *stack);
+    b = *stack--;
+    my_assert(c == *stack);
+    c = *stack--;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(LispObject& a, LispObject& b, LispObject& c,
+                LispObject& d)
+{   my_assert(a == *stack);
+    a = *stack--;
+    my_assert(b == *stack);
+    b = *stack--;
+    my_assert(c == *stack);
+    c = *stack--;
+    my_assert(d == *stack);
+    d = *stack--;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(LispObject& a, LispObject& b, LispObject& c,
+                LispObject& d, LispObject& e)
+{   my_assert(a == *stack);
+    a = *stack--;
+    my_assert(b == *stack);
+    b = *stack--;
+    my_assert(c == *stack);
+    c = *stack--;
+    my_assert(d == *stack);
+    d = *stack--;
+    my_assert(e == *stack);
+    e = *stack--;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(LispObject& a, LispObject& b, LispObject& c,
+                LispObject& d, LispObject& e, LispObject& f)
+{   my_assert(a == *stack);
+    a = *stack--;
+    my_assert(b == *stack);
+    b = *stack--;
+    my_assert(c == *stack);
+    c = *stack--;
+    my_assert(d == *stack);
+    d = *stack--;
+    my_assert(e == *stack);
+    e = *stack--;
+    my_assert(f == *stack);
+    f = *stack--;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void popv(int n)
+{   stack -= n;
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+
+#else // TEMP
+
+inline void push(UNUSED_NAME LispObject a)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void push(UNUSED_NAME LispObject a, UNUSED_NAME LispObject b)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void push(UNUSED_NAME LispObject a, UNUSED_NAME LispObject b, UNUSED_NAME LispObject c)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void push(UNUSED_NAME LispObject a, UNUSED_NAME LispObject b, UNUSED_NAME LispObject c,
+                 UNUSED_NAME LispObject d)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void push(UNUSED_NAME LispObject a, UNUSED_NAME LispObject b, UNUSED_NAME LispObject c,
+                 UNUSED_NAME LispObject d, UNUSED_NAME LispObject e)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void push(UNUSED_NAME LispObject a, UNUSED_NAME LispObject b, UNUSED_NAME LispObject c,
+                 UNUSED_NAME LispObject d, UNUSED_NAME LispObject e, UNUSED_NAME LispObject f)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(UNUSED_NAME LispObject& a)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop( UNUSED_NAME volatile LispObject& a)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(UNUSED_NAME LispObject& a, UNUSED_NAME LispObject& b)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(UNUSED_NAME LispObject& a, UNUSED_NAME LispObject& b, UNUSED_NAME LispObject& c)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(UNUSED_NAME LispObject& a, UNUSED_NAME LispObject& b, UNUSED_NAME LispObject& c,
+                UNUSED_NAME LispObject& d)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(UNUSED_NAME LispObject& a, UNUSED_NAME LispObject& b, UNUSED_NAME LispObject& c,
+                UNUSED_NAME LispObject& d, UNUSED_NAME LispObject& e)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void pop(UNUSED_NAME LispObject& a, UNUSED_NAME LispObject& b, UNUSED_NAME LispObject& c,
+                UNUSED_NAME LispObject& d, UNUSED_NAME LispObject& e, UNUSED_NAME LispObject& f)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+inline void popv(UNUSED_NAME int n)
+{
+#ifdef CONSERVATIVE
+    push_count++;
+#endif
+}
+
+#endif // TEMP
+
+#else // CONSERVATIVE
+
+// In the non-conservative world oushing and popping must always happen.
+// I just have copies of the relevant code here rather than making one
+// varient call the other.
+
+inline void push(LispObject a)
+{   *++stack = a;
+}
 
 inline void push(LispObject a, LispObject b)
 {   *++stack = a;
@@ -147,44 +559,6 @@ inline void pop(volatile LispObject& a)
 {   a = *stack--;
 }
 
-inline void pop2(LispObject& a, LispObject& b)
-{   a = *stack--;
-    b = *stack--;
-}
-
-inline void pop3(LispObject& a, LispObject& b, LispObject& c)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-}
-
-inline void pop4(LispObject& a, LispObject& b, LispObject& c,
-                 LispObject& d)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-    d = *stack--;
-}
-
-inline void pop5(LispObject& a, LispObject& b, LispObject& c,
-                 LispObject& d, LispObject& e)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-    d = *stack--;
-    e = *stack--;
-}
-
-inline void pop6(LispObject& a, LispObject& b, LispObject& c,
-                 LispObject& d, LispObject& e, LispObject& f)
-{   a = *stack--;
-    b = *stack--;
-    c = *stack--;
-    d = *stack--;
-    e = *stack--;
-    f = *stack--;
-}
-
 inline void pop(LispObject& a, LispObject& b)
 {   a = *stack--;
     b = *stack--;
@@ -226,6 +600,7 @@ inline void pop(LispObject& a, LispObject& b, LispObject& c,
 inline void popv(int n)
 {   stack -= n;
 }
+#endif // CONSERVATIVE
 
 extern volatile bool tick_pending;
 extern volatile int unwind_pending;
@@ -415,13 +790,13 @@ class save_current_function
 {   LispObject *savestack;
 public:
     save_current_function(LispObject newfn)
-    {   push(current_function);
+    {   real_push(current_function);
         savestack = stack;
         current_function = newfn;
     }
     ~save_current_function()
     {   stack = savestack;
-        pop(current_function);
+        real_pop(current_function);
     }
 };
 
@@ -620,7 +995,7 @@ inline const char *tidy_filename(const char *a)
 // of these two macros. The second takes a LispObject that would then
 // appear in any diagnostics about stack confusion. If you are compiling
 // production code all that is generated is a null statement. But in debug
-// mode an object is created that recorsd the current stack pointer, and
+// mode an object is created that recordsthe current stack pointer, and
 // when it goes out of scope at the end of the block it checks if things
 // have been put back as expected.
 
@@ -647,12 +1022,12 @@ class RAIIsave_codevec
 {   LispObject *saveStack;
 public:
     RAIIsave_codevec()
-    {   push(litvec, codevec);
+    {   real_push(litvec, codevec);
         saveStack = stack;
     }
     ~RAIIsave_codevec()
     {   stack = saveStack;
-        pop(codevec, litvec);
+        real_pop(codevec, litvec);
     }
 };
 
@@ -715,7 +1090,7 @@ public:
 //
 //
 // My sketch of the protocol follows the definitions of a couple of
-// RAII classes that it relies on.:
+// RAII classes that it relies on.
 //
 
 [[noreturn]] extern void global_longjmp();

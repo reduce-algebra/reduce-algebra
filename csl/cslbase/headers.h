@@ -82,6 +82,8 @@
 
 #include "machine.h"
 
+#include "log.h"
+
 #if HAVE_LIBWX
 #include "wxfwin.h"
 #else
@@ -222,7 +224,6 @@ inline double CSLpow(double x, double y)
 #include "cslread.h"
 #include "inthash.h"
 #include "lispthrow.h"
-#include "log.h"
 #include "version.h"
 
 namespace FX

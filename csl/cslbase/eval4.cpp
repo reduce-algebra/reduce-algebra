@@ -1,11 +1,11 @@
-// eval4.cpp                              Copyright (C) 1991-2017, Codemist
+// eval4.cpp                              Copyright (C) 1991-2020, Codemist
 
 //
 // Bytecode interpreter/main interpreter interfaces
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -94,7 +94,7 @@ LispObject bytecoded_0(LispObject def)
 // of SAVE_CODEVEC can be removed, and that should at least slightly
 // speed things up.
     SAVE_CODEVEC;
-    push(def);
+    real_push(def);
     LispObject r;
 // I can use START_TRY_BLOCK without "try" if there are not going to be any
 // "catch" clauses at this level! And I do not need a catch here because
@@ -108,7 +108,7 @@ LispObject bytecoded_0(LispObject def)
 
 LispObject bytecoded_1(LispObject def, LispObject a)
 {   SAVE_CODEVEC;
-    push(def, a);
+    real_push(def, a);
     LispObject r;
     try
     {   START_TRY_BLOCK;
@@ -125,7 +125,7 @@ LispObject bytecoded_1(LispObject def, LispObject a)
 // had been invoking did a tail-call and the exception was raised within that,
 // since then the arguments for the original function are rather liable to
 // have been lost.
-        pop(a);
+//
 // IF something went wrong I should have displayed the name of the function
 // already - what I want to do here is to display the arguments it was
 // called on. Well in some cases the variables concerned may have been
@@ -133,7 +133,7 @@ LispObject bytecoded_1(LispObject def, LispObject a)
 // enough cases to be valuable.
         if (SHOW_ARGS)
         {   err_printf("Arg1: ");
-            loop_print_error(a);
+            loop_print_error(stack[0]);
             err_printf("\n");
         }
         exit_reason = _reason;
@@ -146,7 +146,7 @@ LispObject bytecoded_1(LispObject def, LispObject a)
 
 LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
 {   SAVE_CODEVEC;
-    push(def, a, b);
+    real_push(def, a, b);
     LispObject r;
     try
     {   START_TRY_BLOCK;
@@ -169,7 +169,7 @@ LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
 LispObject bytecoded_3(LispObject def, LispObject a, LispObject b,
                        LispObject c)
 {   SAVE_CODEVEC;
-    push(def, a, b, c);
+    real_push(def, a, b, c);
     LispObject r;
     try
     {   START_TRY_BLOCK;
@@ -208,10 +208,10 @@ LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
     if (nargs != (reinterpret_cast<unsigned char *>(data_of_bps(r)))[0])
         error(2, err_wrong_no_args, def, fixnum_of_int(nargs));
 // I now know that there will be the right number of arguments.
-    push(def);
-    push(a1, a2, a3);
+    real_push(def);
+    real_push(a1, a2, a3);
     for (int i=4; i<=nargs; i++)
-    {   push(car(a4up));
+    {   real_push(car(a4up));
         a4up = cdr(a4up);
     }
     try
@@ -493,12 +493,12 @@ LispObject Lmv_list(LispObject env, LispObject a)
 //
 {   LispObject r;
     int i, x = exit_count;
-    if (x > 0) push(a);
-    for (i=2; i<=x; i++) push((&work_0)[i]);
+    if (x > 0) real_push(a);
+    for (i=2; i<=x; i++) real_push((&work_0)[i]);
     r = nil;
     for (i=0; i<x; i++)
     {   LispObject w;
-        pop(w);
+        real_pop(w);
         r = cons(w, r);
     }
     return onevalue(r);

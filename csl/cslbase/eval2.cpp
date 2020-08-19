@@ -1,11 +1,11 @@
-// eval2.cpp                               Copyright (C) 1989-2019 Codemist
+// eval2.cpp                               Copyright (C) 1989-2020 Codemist
 
 //
 // Interpreter (part 2).  apply & some special forms
 //
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -59,7 +59,7 @@ LispObject apply(LispObject fn, LispObject args,
 // have been prepared and in the list "args"
             bool tracing = (qheader(fn) & SYM_TRACED) != 0;
             if (tracing)
-            {   push(args, fn, from);
+            {   real_push(args, fn, from);
                 freshline_trace();
                 trace_printf("Calling ");
                 loop_print_trace(stack[-1]); // Function being called
@@ -73,8 +73,8 @@ LispObject apply(LispObject fn, LispObject args,
                     trace_printf("\n");
                     stack[0] = cdr(stack[0]);
                 }
-                popv(1);
-                pop(fn, args);
+                real_popv(1);
+                real_pop(fn, args);
             }
             def = fn; // this is passed as arg1 to the called code
             push(fn); // I may need the function name when tracing
@@ -104,14 +104,14 @@ LispObject apply(LispObject fn, LispObject args,
             debug_assert(1);
             pop(fn);
             if (tracing)
-            {   push(def);
+            {   real_push(def);
 // In due course I will need to worry about multiple values here
                 freshline_trace();
                 loop_print_trace(fn);
                 trace_printf(" => ");
                 loop_print_trace(stack[0]);
                 trace_printf("\n");
-                pop(def);
+                real_pop(def);
             }
             return def;
         }
@@ -207,9 +207,9 @@ static LispObject block_fn(LispObject iargs, LispObject ienv)
     STACK_SANITY;
     if (!consp(iargs)) return onevalue(nil);
     stackcheck(iargs, ienv);
-    push(car(iargs),          // my_tag
-         cdr(iargs),          // args
-         ienv);
+    real_push(car(iargs),          // my_tag
+              cdr(iargs),          // args
+              ienv);
     LispObject &env = stack[0];
     LispObject &args = stack[-1];
     LispObject &my_tag = stack[-2];
@@ -229,7 +229,7 @@ static LispObject block_fn(LispObject iargs, LispObject ienv)
         catch (LispReturnFrom &e)
         {   setcar(my_tag, fixnum_of_int(2)); // Invalidate
             if (exit_tag == my_tag)
-            {   popv(3);
+            {   real_popv(3);
                 return nvalues(exit_value, exit_count);
             }
             else throw;
@@ -243,7 +243,7 @@ static LispObject block_fn(LispObject iargs, LispObject ienv)
         }
         args = cdr(args);
     }
-    popv(3);
+    real_popv(3);
     return p;
 }
 
@@ -303,7 +303,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
 #define env        stack[-5]
 #define body       stack[-6]
 #define bvl        stack[-7]
-#define Return(v)  { popv(8); return (v); }
+#define Return(v)  { real_popv(8); return (v); }
 
 class unbinder_t
 {   LispObject *save;
@@ -331,12 +331,10 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 // is SPECIAL.
 //
 {   stackcheck(bvlx, bodyx, envx);
-    push(bvlx, bodyx, envx);
-    push5(nil, nil, envx, nil, nil);
-//
+    real_push(bvlx, bodyx, envx);
+    real_push(nil, nil, envx, nil, nil);
 // Find local declarations - it is necessary to macro-expand
 // items in the body to see if they turn into declarations.
-//
     for (;;)
     {   if (!consp(body)) break;
         p = macroexpand(car(body), env);
@@ -609,7 +607,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
             if (qvalue(comp_symbol) != nil &&
                 qfn1(compiler_symbol) != undefined_1)
             {   LispObject t1, t2;
-                push(fname);
+                real_push(fname);
                 if (!(consp(args) &&
                       consp(cdr(args)) &&
                       cdr(cdr(args)) == nil &&
@@ -620,7 +618,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
                     args = ncons(fname);
                     (*qfn1(compiler_symbol))(compiler_symbol, args);
                 }
-                pop(fname);
+                real_pop(fname);
             }
             return onevalue(fname);
         }
@@ -778,9 +776,9 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
 {   if (!consp(args)) return onevalue(nil);
     STACK_SANITY;
     stackcheck(args, ienv);
-    push(car(args), cdr(args), ienv); // bvl, body, env
-    push4(nil, nil,                   // p, q
-          nil, nil);                  // specenv, local_decs
+    real_push(car(args), cdr(args), ienv); // bvl, body, env
+    real_push(nil, nil,                    // p, q
+              nil, nil);                   // specenv, local_decs
     LispObject &local_decs = stack[ 0];
     LispObject &specenv    = stack[-1];
     LispObject &p          = stack[-2];
@@ -868,7 +866,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
             setvalue(v, z);
         }
         {   LispObject bodyx = body;
-            popv(7);
+            real_popv(7);
             return bodyx;
         }
     }
@@ -877,7 +875,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
         {   LispObject w = car(bvl), v = car(w), z = cdr(w);
             setvalue(v, z);
         }
-        popv(7);
+        real_popv(7);
         throw;
     }
 }

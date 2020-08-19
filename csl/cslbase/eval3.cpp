@@ -1,4 +1,4 @@
-// eval3.cpp                               Copyright (C) 1991-2017 Codemist
+// eval3.cpp                               Copyright (C) 1991-2020 Codemist
 
 //
 // Interpreter (part 3).
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -142,7 +142,7 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
 {   if (!consp(iargs) || !consp(cdr(iargs))) return onevalue(nil);
     stackcheck(iargs, ienv);
     STACK_SANITY;
-    push(nil, iargs, ienv);
+    real_push(nil, iargs, ienv);
     LispObject &env    = stack[0];
     LispObject &args   = stack[-1];
     LispObject &my_tag = stack[-2];
@@ -153,13 +153,14 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
     my_tag = cons(fixnum_of_int(0), nil);
     env = cons(my_tag, env);
     try
-    {   START_TRY_BLOCK;
+    {   STACK_SANITY;
+        START_TRY_BLOCK;
         let_fn_1(car(args), cdr(args), env, BODY_PROG);
     }
     catch (LispReturnFrom &e)
     {   setcar(my_tag, fixnum_of_int(2));    // Invalidate
         if (exit_tag == my_tag)
-        {   popv(3);
+        {   real_popv(3);
             return exit_value;  // exit_count already OK here
         }
 // It could be that the RETURN(-FROM) is heading to be handled by some
@@ -172,12 +173,12 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
         {   err_printf("\nEvaluating: "); // A bit of backtrace on errors
             loop_print_error(args);
         }
-        popv(3);
+        real_popv(3);
         exit_reason = _reason;
         throw;
     }
-    popv(3);  // I get here if using let_fn_1 to process the body of the
-    // PROG just returned without doing a (RETURN ...).
+    real_popv(3);  // I get here if using let_fn_1 to process the body of the
+                   // PROG just returned without doing a (RETURN ...).
     return onevalue(nil);
 }
 
@@ -281,7 +282,7 @@ public:
             setvalue(car(p), cdr(p));
             specenv = cdr(specenv);
         }
-        popv(4);
+        real_popv(4);
     }
 };
 
@@ -293,18 +294,18 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
     syms_x = vals_x = specenv_x = nil;
     syms_x = car(args_x);
     args_x = cdr(args_x);
-    push5(args_x, env_x, syms_x, vals_x, specenv_x);
+    real_push(args_x, env_x, syms_x, vals_x, specenv_x);
 
     syms = eval(syms, env);
     if (!consp(args))
-    {   popv(5);
+    {   real_popv(5);
         return nil;
     }
     w = car(args);
     args = cdr(args);
     vals = eval(w, env);
     if (!consp(args))
-    {   popv(5);
+    {   real_popv(5);
         return nil;
     }
     while (consp(syms))
@@ -328,7 +329,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
     {   RAIIunbind_progv_specials unbind_progv_variables;
         args = progn_fn(args, env);
     }
-    pop(w);
+    real_pop(w);
 #undef specenv
 #undef vals
 #undef syms
@@ -362,8 +363,8 @@ static LispObject return_fn(LispObject args, LispObject env)
 tag_found:
     if (consp(args))
     {   push(p);
-        p = car(args);
-        env = eval(p, env);
+        LispObject p1 = car(args);
+        env = eval(p1, env);
         pop(p);
         exit_value = env;
     }
@@ -397,8 +398,8 @@ static LispObject return_from_fn(LispObject args, LispObject env)
 tag_found:
     if (consp(args))
     {   push(p);
-        p = car(args);
-        env = eval(p, env);
+        LispObject p1 = car(args);
+        env = eval(p1, env);
         pop(p);
         exit_value = env;
     }
@@ -430,7 +431,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
         }
         else val = nil;
         if ((qheader(current_function) & SYM_TRACESET) != 0)
-        {   push(args, env, var, val);
+        {   real_push(args, env, var, val);
             freshline_trace();
             loop_print_trace(current_function);
             trace_printf(":  ");
@@ -438,7 +439,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
             trace_printf(" := ");
             loop_print_trace(stack[0]);
             trace_printf("\n");
-            pop(val, var, env, args);
+            real_pop(val, var, env, args);
         }
         if ((qheader(var) & SYM_KEYWORD_VAR) == SYM_SPECIAL_VAR ||
             (qheader(var) & SYM_KEYWORD_VAR) == SYM_GLOBAL_VAR)
@@ -485,7 +486,7 @@ LispObject tagbody_fn(LispObject args, LispObject env)
 //
     stackcheck(args, env);
     STACK_SANITY;
-    push(env, args);
+    real_push(env, args);
     for (p=args; consp(p); p=cdr(p))
     {   LispObject w = car(p);
         if (!consp(w))
@@ -503,7 +504,7 @@ LispObject tagbody_fn(LispObject args, LispObject env)
 //    env = ( ... (1 labelname <continuation>) ... )
 // where bindings for variable in the environment would have a symbol
 // so the integer 1 here distinguishes these as label bindings.
-    pop(args);
+    real_pop(args);
 //
 // (go xx) sets exit_tag to xx, which is then noticed next time tagbody
 // is about to do anything.
@@ -513,7 +514,8 @@ LispObject tagbody_fn(LispObject args, LispObject env)
         if (!is_cons(f)) continue; // Do not evaluate labels
         push(p, env, f);
         try
-        {   START_TRY_BLOCK;
+        {   STACK_SANITY;
+            START_TRY_BLOCK;
             static_cast<void>(eval(f, env));
         }
         catch (LispGo &e)
@@ -565,7 +567,7 @@ LispObject tagbody_fn(LispObject args, LispObject env)
     }
 // This is where I drop off the end of the tagbody, so I tidy up and
 // return nil.
-    pop(my_env);
+    real_pop(my_env);
     while (env != my_env)
     {   setcar(car(env), fixnum_of_int(2));
         env = cdr(env);
@@ -715,19 +717,19 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
 // cleanup forms in the case that the protected form exits normally.
 //
     nargs = exit_count;
-    push(args, env);
+    real_push(args, env);
     for (i=nargs; i>=2; i--)
         rl = cons_no_gc((&mv_2)[i-2], rl);
     rl = cons_gc_test(rl);
-    push(rl);
+    real_push(rl);
     LispObject &xenv = stack[-1];
     LispObject &xargs = stack[-2];
     while (is_cons(xargs = cdr(xargs)) && xargs!=nil)
     {   LispObject w = car(xargs);
         static_cast<void>(eval(w, xenv));
     }
-    pop(rl);
-    popv(2);
+    real_pop(rl);
+    real_popv(2);
     for (i = 2; i<=nargs; i++)
     {   (&mv_2)[i-2] = car(rl);
         rl = cdr(rl);
@@ -866,13 +868,8 @@ static LispObject errorset3(volatile LispObject env,
     }
     push(form, env);
     stackcheck();
-// The messing about here is because env and form are labelled as volatile,
-// while the function prototype for pop is not.
-    {   LispObject env1, form1;
-        pop(env1, form1);
-        env = env1;
-        form = form1;
-    }
+    pop(env);
+    pop(form);
     errorset_msg = nullptr;
     try
     {   START_TRY_BLOCK;

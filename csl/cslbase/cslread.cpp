@@ -1,11 +1,11 @@
-// cslread.cpp                             Copyright (C) 1990-2019 Codemist
+// cslread.cpp                             Copyright (C) 1990-2020 Codemist
 
 //
 // Reading and symbol-table support.
 //
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -879,7 +879,8 @@ static LispObject rehash(LispObject v, int grow)
     if (grow > 0) h = 2*h;
     else if (grow < 0 && h > 64) h = h/2;
     stackcheck(v);
-    push(v);
+    STACK_SANITY;
+    real_push(v);
     LispObject new_obvec = get_vector_init((h+1)*CELL, fixnum_of_int(0));
     v = stack[0];
     h = cells_in_vector(v);
@@ -892,7 +893,7 @@ static LispObject rehash(LispObject v, int grow)
         uint64_t hash = hash_lisp_string(p);
         add_to_hash(s, new_obvec, hash);
     }
-    popv(1);
+    real_popv(1);
     return new_obvec;
 }
 
@@ -1396,7 +1397,8 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
     else if (symbolp(a)) genbase = qpname(a);  // copy gensym base
     else aerror1("gensym0", a);
-    push(genbase);
+    STACK_SANITY;
+    real_push(genbase);
     stackcheck();
     len = length_of_byteheader(vechdr(genbase)) - CELL;
     if (len > 63-len1) len = 63
@@ -1405,7 +1407,7 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
                  reinterpret_cast<char *>(genbase) + (CELL-TAG_VECTOR), suffix);
     stack[0] = make_string(genname);
     LispObject id = get_symbol(true);
-    pop(genbase);
+    real_pop(genbase);
 #ifdef COMMON
     setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
 #else
@@ -1442,7 +1444,8 @@ LispObject Lgensym1(LispObject env, LispObject a)
     if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
     else if (symbolp(a)) genbase = qpname(a);  // copy gensym base
     else aerror1("gensym1", a);
-    push(genbase);
+    STACK_SANITY;
+    real_push(genbase);
     stackcheck();
 #ifdef COMMON
     len = length_of_byteheader(vechdr(genbase)) - CELL;
@@ -1453,7 +1456,7 @@ LispObject Lgensym1(LispObject env, LispObject a)
     stack[0] = make_string(genname);
 #endif
     LispObject id = get_symbol(true);
-    pop(genbase);
+    real_pop(genbase);
 #ifdef COMMON
     setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
 #else
@@ -1490,12 +1493,13 @@ LispObject Lgensym2(LispObject env, LispObject a)
     if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
     else if (symbolp(a)) genbase = qpname(a);
     else aerror1("gensym2", a);
-    push(genbase);
+    STACK_SANITY;
+    real_push(genbase);
     stackcheck();
     len = length_of_byteheader(vechdr(genbase)) - CELL;
     stack[0] = copy_string(genbase, len);
     LispObject id = get_symbol(true);
-    pop(genbase);
+    real_pop(genbase);
     setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
     setvalue(id, unset_var);
     setpname(id, genbase);
@@ -1803,11 +1807,12 @@ static LispObject Limport(LispObject env, LispObject sym,
 // package object, not just the name of one.
 //
 {   if (!is_symbol(sym)) return onevalue(nil);
-    push(sym, package);
+    STACK_SANITY;
+    real_push(sym, package);
     LispObject pn = get_pname(sym);
     uint64_t hash = hash_lisp_string(pn);
     add_to_internals(stack[-1], stack[0], hash);
-    pop(package, sym);
+    real_pop(package, sym);
     if (qpackage(sym) == nil) qpackage(sym) = package;
     return onevalue(nil);
 }
@@ -2181,12 +2186,13 @@ static LispObject read_list(LispObject stream)
     {   curchar = NOT_CHAR;
         return nil;
     }
-    push(stream);
+    STACK_SANITY;
+    real_push(stream);
 #ifdef COMMON
     if (curchar == '#')
     {   l = read_hash(stream);
         if (l == SPID_NOINPUT)
-        {   pop(stream);
+        {   real_pop(stream);
             return read_list(stream);
         }
     }
@@ -2194,7 +2200,7 @@ static LispObject read_list(LispObject stream)
 #endif
         l = read_s(stream);
     l = ncons(l);
-    push(l);    // this will be the final result
+    real_push(l);    // this will be the final result
     for (;;)
     {   skip_whitespace(stack[-1]);
         switch (curchar)
@@ -2205,46 +2211,46 @@ static LispObject read_list(LispObject stream)
 #endif
             case ')':
                 curchar = NOT_CHAR;
-                pop(l, stream);
+                real_pop(l, stream);
                 return l;
 
             case EOF:
             case CTRL_D:
-                pop(l, stream);
+                real_pop(l, stream);
                 return l;
 
             // This code treats '.' as a special lexical marker, while the
             // full version of the reader has to be more subtle.
             case '.':
                 curchar = NOT_CHAR;
-                push(l);
+                real_push(l);
                 w = read_s(stack[-2]);
-                pop(l);
+                real_pop(l);
                 write_barrier(cdraddr(l), w);
                 skip_whitespace(stack[-1]);
                 if (curchar == ')') curchar = NOT_CHAR;
 //          else error("missing rpar or bad dot");
-                pop(l, stream);
+                real_pop(l, stream);
                 return l;
 #ifdef COMMON
             case '#':
-                push(l);
+                real_push(l);
                 w = read_hash(stack[-2]);
                 if (w == SPID_NOINPUT)
-                {   pop(l);
+                {   real_pop(l);
                     continue;
                 }
                 w = ncons(w);
-                pop(l);
+                real_pop(l);
                 cdr(l) = w;
                 l = w;
                 continue;
 #endif
             default:
-                push(l);
+                real_push(l);
                 w = read_s(stack[-2]);
                 w = ncons(w);
-                pop(l);
+                real_pop(l);
                 write_barrier(cdraddr(l), w);
                 l = w;
                 continue;
@@ -3227,14 +3233,14 @@ inline LispObject Lread_sub(LispObject stream, int cursave)
         int cursave;
     public:
         save_stream(LispObject stream, int cs)
-        {   push(stream);
+        {   real_push(stream);
             save = stack;
             cursave = cs;
         }
         ~save_stream()
         {   stack = save;
             LispObject stream;
-            pop(stream);
+            real_pop(stream);
             if (curchar != NOT_CHAR) other_read_action(curchar, stream);
             curchar = cursave;
             current_file = stream_type(stream);
@@ -3248,12 +3254,12 @@ class save_reader_workspace
 {   LispObject *save;
 public:
     save_reader_workspace()
-    {   push(reader_workspace);
+    {   real_push(reader_workspace);
         save = stack;
     }
     ~save_reader_workspace()
     {   stack = save;
-        pop(reader_workspace);
+        real_pop(reader_workspace);
     }
 };
 
@@ -3293,7 +3299,7 @@ class save_stream
     int cursave;
 public:
     save_stream(LispObject oldstream, int curchar)
-    {   push(reader_workspace, oldstream);
+    {   real_push(reader_workspace, oldstream);
         save = stack;
         cursave = curchar;
     }
@@ -3301,7 +3307,7 @@ public:
     {   stack = save;
         LispObject stream;
         curchar = cursave;
-        pop(stream, reader_workspace);
+        real_pop(stream, reader_workspace);
 // For this to be valid it is important that Lrds can never both succeed
 // and lead to garbage collection (and hence potential relocation of the
 // return value from this function. By good fortune I seem to be safe!
@@ -3651,7 +3657,8 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
 //
 // (rdf nil)/(load nil) obeys Lisp commands from the current input
 //
-    push(nil, nil, file);
+    STACK_SANITY;
+    real_push(nil, nil, file);
 //
 // I have a somewhat comical chunk of code here. If the file-name passed
 // across ends in a suffix that is one of ".o", ".fsl" or ".fasl" then
@@ -3705,7 +3712,7 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
 #endif
                 prin_to_trace(stack[0]); trace_printf("\n");
             }
-            popv(3);
+            real_popv(3);
 #ifdef COMMON
             return onevalue(lisp_true);
 #else
@@ -3725,8 +3732,8 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
 // exception.
 //
         if (r == nil)
-        {   pop(file);
-            popv(2);
+        {   real_pop(file);
+            real_popv(2);
             if (nofile) error(1, err_open_failed, file);
             else return onevalue(nil);
         }
@@ -3765,7 +3772,7 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
         {   ignore_error(Lclose(nil, stack[-1]));
             Lrds(nil, stack[-2]);
         }
-        popv(3);
+        real_popv(3);
         exit_reason = _reason;
         throw;
     }
@@ -3783,7 +3790,7 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
     {   ignore_error(Lclose(nil, stack[-1]));
         Lrds(nil, stack[-2]);
     }
-    popv(3);
+    real_popv(3);
 #ifdef COMMON
     return onevalue(lisp_true);
 #else
@@ -4002,7 +4009,7 @@ static LispObject Luse_package(LispObject env, LispObject uses,
         uses = Lfind_package(nil, uses);
         pop(pkg);
         if (uses == nil || uses == pkg) return onevalue(nil);
-        push(pkg, uses);
+        real_push(pkg, uses);
 //
 // Around here I am supposed to do a large-scale check to ensure that there
 // are no unexpected name conflicts between the packages that are being
@@ -4013,7 +4020,8 @@ static LispObject Luse_package(LispObject env, LispObject uses,
         pkg = stack[-1];
         push(w);
         w1 = cons(pkg, packused_(uses));
-        pop(w, uses, pkg);
+        pop(w);
+        real_pop(uses, pkg);
         packuses_(pkg) = w;
         packused_(uses) = w1;
     }
@@ -4063,7 +4071,8 @@ static LispObject Lmake_package(LispObject env, LispObject name,
         uses = ncons(uses);
         pop(nicknames, name);
     }
-    push(uses, nicknames);
+    STACK_SANITY;
+    real_push(uses, nicknames);
 //
 // Now I need to ensure that the name I had for the package is
 // a string...
@@ -4106,12 +4115,12 @@ static LispObject Lmake_package(LispObject env, LispObject name,
         cdr(w) = nicknames;
         nicknames = w;
     }
-    popv(1);
+    real_popv(1);
     packnick_(name) = nicknames;
     uses = stack[0];
     stack[0] = name;
     Luse_package(nil, uses, name);
-    pop(name);
+    real_pop(name);
     return onevalue(name);
 }
 

@@ -154,6 +154,8 @@ int main(int argc, const char *argv[])
     ThreadStartup userThreads;
     cslstart(argc, argv, nullptr);
     cslaction();
+    cout << "push_count = " << push_count << "\n"
+         << "real_push_count = " << real_push_count << "\n";
     return 0;
 }
 

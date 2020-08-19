@@ -108,21 +108,21 @@ static LispObject quotib(LispObject a, LispObject b)
 static LispObject CLquotib(LispObject a, LispObject b)
 {   LispObject g;
     bool w;
-    push(a, b);
+    real_push(a, b);
     w = minusp(b);
     g = gcd(stack[0], stack[-1]);
     if (w) g = negate(g);
     a = stack[-1];
-    push(g);
+    real_push(g);
     a = quot2(a, g);
-    pop(g, b);
+    real_pop(g, b);
     stack[0] = a;
     b = quot2(b, g);
-    pop(a);
+    real_pop(a);
     return make_ratio(a, b);
 }
 
-// Remember that in Common Lisp there is a rendancy for QUOTIENT to
+// Remember that in Common Lisp there is a tendancy for QUOTIENT to
 // return rational numbers...
 
 static LispObject CLquotbi(LispObject a, LispObject b)
@@ -137,7 +137,7 @@ static LispObject quotir(LispObject a, LispObject b)
 {   LispObject w;
     mv_2 = fixnum_of_int(0);
     if (a == fixnum_of_int(0)) return a;
-    push(b, a, nil);
+    real_push(b, a, nil);
 #define g   stack[0]
 #define a   stack[-1]
 #define b   stack[-2]
@@ -151,7 +151,7 @@ static LispObject quotir(LispObject a, LispObject b)
     g = quot2(numerator(b), g);     // denominator of result will be +ve
     a = times2(a, denominator(b));
     w = make_ratio(a, g);
-    popv(3);
+    real_popv(3);
     return w;
 #undef a
 #undef b
@@ -168,7 +168,7 @@ static LispObject quotic(LispObject a, LispObject b)
 //
 {   LispObject u, v;
     mv_2 = fixnum_of_int(0);
-    push(a, b);
+    real_push(a, b);
 #define b stack[0]
 #define a stack[-1]
 //
@@ -185,7 +185,7 @@ static LispObject quotic(LispObject a, LispObject b)
     u = times2(v, v);
     u = plus2(u, b);
     v = a;
-    popv(2);
+    real_popv(2);
     return quot2(v, u);
 #undef a
 #undef b
@@ -1027,7 +1027,7 @@ static LispObject quotri(LispObject a, LispObject b)
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(0))
         aerror2("bad arg for quotient", a, b);
-    push(a, b, nil);
+    real_push(a, b, nil);
 #define g   stack[0]
 #define b   stack[-1]
 #define a   stack[-2]
@@ -1038,7 +1038,7 @@ static LispObject quotri(LispObject a, LispObject b)
     g = quot2(numerator(a), g);
     a = times2(b, denominator(a));
     w = make_ratio(g, a);
-    popv(3);
+    real_popv(3);
     return w;
 #undef a
 #undef b
@@ -1057,9 +1057,9 @@ static LispObject quotrs(LispObject a, LispObject b)
 static LispObject quotrr(LispObject a, LispObject b)
 {   LispObject w;
     mv_2 = fixnum_of_int(0);
-    push(numerator(a), denominator(a),
-         denominator(b), numerator(b), // NB switched order
-         nil);
+    real_push(numerator(a), denominator(a),
+              denominator(b), numerator(b), // NB switched order
+              nil);
 #define g   stack[0]
 #define db  stack[-1]
 #define nb  stack[-2]
@@ -1076,7 +1076,7 @@ static LispObject quotrr(LispObject a, LispObject b)
     na = times2(na, nb);
     da = times2(da, db);
     w = make_ratio(na, da);
-    popv(5);
+    real_popv(5);
     return w;
 #undef g
 #undef db

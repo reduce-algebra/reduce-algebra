@@ -170,7 +170,7 @@ volatile char stack_contents_temp = 0;
 #define C_STACK_ALLOCATION 1000000
 
 static int spset = 0;
-static intptr_t spbase = 0, spmin;
+static uintptr_t spbase = 0, spmin;
 
 static uintptr_t stack_depth[C_STACK_ALLOCATION];
 static int stack_line[C_STACK_ALLOCATION];
@@ -178,7 +178,7 @@ static const char *stack_file[C_STACK_ALLOCATION];
 static uintptr_t c_stack_ptr = 0;
 
 int check_stack(const char *file, int line)
-{   uintptr_t temp = (intptr_t)&temp;
+{   uintptr_t temp = reinterpret_cast<intptr_t>(&temp);
     char *file1;
     int first = 1;
     if (!spset)
@@ -208,7 +208,7 @@ int check_stack(const char *file, int line)
                 term_printf(" %s:%d:%" PRIxPTR,
                             stack_file[i], stack_line[i], stack_depth[i]);
             if (stack_file[i][0] != '@') first = 0;
-            if ((++j)%5 ==4) term_printf("\n");
+            if ((++j)%4 == 3) term_printf("\n");
         }
         term_printf("\n");
         spmin = temp;
@@ -312,13 +312,13 @@ void DebugTrace(const char *fmt, int i)
         va_start(a, code);
         for (i=0; i<nargs; i++) *w++ = va_arg(a, LispObject);
         va_end(a);
-        for (i=0; i<nargs; i++) push(*--w);
+        for (i=0; i<nargs; i++) real_push(*--w);
         if (code != err_stack_overflow)  // Be cautious here!
         {   stackcheck();
         }
         for (i=0; i<nargs; i++)
         {   LispObject p;
-            pop(p);
+            real_pop(p);
             loop_print_error(p);
             err_printf("\n");
         }
@@ -349,11 +349,11 @@ void DebugTrace(const char *fmt, int i)
         va_start(a, code2);
         for (i=0; i<nargs; i++) *w++ = va_arg(a, LispObject);
         va_end(a);
-        for (i=0; i<nargs; i++) push(*--w);
+        for (i=0; i<nargs; i++) real_push(*--w);
         stackcheck();
         for (i=0; i<nargs; i++)
         {   LispObject p;
-            pop(p);
+            real_pop(p);
             loop_print_error(p);
             err_printf("\n");
         }
@@ -393,7 +393,7 @@ void interrupted()
     if ((fwin_windowmode() & FWIN_IN_WINDOW) == 0)
     {   term_printf("\n");
         ensure_screen();
-        push(prompt_thing);
+        real_push(prompt_thing);
         prompt_thing = nil;  // switch off the regular prompts
         std::strncpy(save_prompt, fwin_prompt_string, sizeof(save_prompt));
         save_prompt[sizeof(save_prompt)-1] = 0;
@@ -410,7 +410,7 @@ void interrupted()
 //
             switch (c)
             {   case 'c': case 'C':         // proceed as if no interrupt
-                    pop(prompt_thing);
+                    real_pop(prompt_thing);
                     fwin_set_prompt(save_prompt);
                     return;
                 case 'a': case 'A':         // raise an exception
@@ -425,7 +425,7 @@ void interrupted()
             }
             break;
         }
-        pop(prompt_thing);
+        real_pop(prompt_thing);
         fwin_set_prompt(save_prompt);
     }
 // Now for the common code to be used in all cases.
@@ -3135,6 +3135,11 @@ int cslfinish(character_writer *w)
                     "+%" PRId64 ".%.2" PRId64 " seconds\n",
                     t/100, t%100, gct/100, gct%100);
     }
+#ifdef CONSERVATIVE
+    cout << "push_count = " << push_count << "\n"
+         << "real_push_count = " << real_push_count << "\n"
+         << "ratio = " << static_cast<double>(push_count)/real_push_count << "\n";
+#endif
     drop_heap_segments();
     if (spool_file != nullptr)
     {
@@ -3496,17 +3501,17 @@ int PROC_make_function_call(const char *name, int n)
     C_stackbase = (uintptr_t *)&sp;
     if_error(
         while (n > 0)
-{   if (procstack == nil) return 1; // Not enough args available
-        w = cons(car(procstack), w);
-        procstack = cdr(procstack);
-        n--;
-    }
-    push(w);
-    w1 = make_undefined_symbol(name);
-         pop(w);
-         w = cons(w1, w);
-         w = cons(w, procstack),
-         return 1);
+        {   if (procstack == nil) return 1; // Not enough args available
+            w = cons(car(procstack), w);
+            procstack = cdr(procstack);
+            n--;
+        }
+        push(w);
+        w1 = make_undefined_symbol(name);
+        pop(w);
+        w = cons(w1, w);
+        w = cons(w, procstack),
+            return 1);
     procstack = w;
     return 0;
 }

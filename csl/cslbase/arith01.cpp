@@ -1,4 +1,4 @@
-// arith01.cpp                             Copyright (C) 1990-2019 Codemist
+// arith01.cpp                             Copyright (C) 1990-2020 Codemist
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1420,10 +1420,10 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // and GCD calculations here.
 
 inline LispObject plus_i_r(LispObject a1, LispObject a2)
-{   push(a2);
+{   real_push(a2);
     a1 = times2(a1, denominator(a2));
     a1 = plus2(a1, numerator(stack[0]));
-    pop(a2);
+    real_pop(a2);
     return make_ratio(a1, denominator(a2));
 }
 
@@ -1707,7 +1707,7 @@ inline LispObject plus_r_r(LispObject a1, LispObject a2)
     LispObject da = denominator(a1), db = denominator(a2);
     LispObject w = nil;
     stack_restorer RAII_save_stack;
-    push5(na, nb, da, db, nil);
+    real_push(na, nb, da, db, nil);
 #define g   stack[0]
 #define db  stack[-1]
 #define da  stack[-2]
@@ -2095,10 +2095,10 @@ inline LispObject difference_b_l(LispObject a1, LispObject a2)
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_r_i(LispObject a1, LispObject a2)
-{   push(a1);
+{   real_push(a1);
     a2 = times2(a2, denominator(a1));
     a2 = difference2(numerator(stack[0]), a2);
-    pop(a1);
+    real_pop(a1);
     return make_ratio(a2, denominator(a1));
 }
 

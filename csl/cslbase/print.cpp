@@ -1669,10 +1669,10 @@ LispObject Llist_directory(LispObject env, LispObject name)
     const char *w = get_string_data(name, "list-directory", len);
     std::memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
-    push(nil);
+    real_push(nil);
     list_directory_members(filename, w,
                            (size_t)len, make_dir_list);
-    pop(result);
+    real_pop(result);
     return onevalue(nreverse(result));
 }
 
@@ -2002,7 +2002,10 @@ restart:
                 putc_stream('?', active_stream);
                 return;
             }
-            push(u);
+// This use of the stack is clumsy and when I have the conservative
+// GC stable I can clean it up. However for now the reyeared reference
+// to stack[0] makes it hard to clean away.
+            real_push(u);
             outprefix(blankp, 1);
             putc_stream('(', active_stream);
             internal_prin(car(stack[0]), 0);
@@ -2022,7 +2025,7 @@ restart:
                 putc_stream('.', active_stream);
                 internal_prin(stack[0], 1);
             }
-            popv(1);
+            real_popv(1);
             outprefix(false, 1);
             putc_stream(')', active_stream);
             return;
@@ -2216,7 +2219,7 @@ restart:
         case TAG_VECTOR:
         {   Header h = vechdr(u);
             len = length_of_header(h) - CELL;  // counts in bytes
-            push(u);
+            real_push(u);
 #ifdef COMMON
         print_non_simple_string:
 #endif
@@ -2270,7 +2273,7 @@ restart:
                         putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
                         putc_stream(hexdig[ch & 0xf], active_stream);
                     }
-                    popv(1);
+                    real_popv(1);
                     putc_stream(']', active_stream);
                     return;
 
@@ -2501,14 +2504,14 @@ restart:
                                 }
                             }
                         }
-                        popv(1);
+                        real_popv(1);
                         if (escaped_printing & escape_yes)
                             putc_stream('"', active_stream);
                     }
                     return;
 
                 case TYPE_SP:
-                    pop(u);
+                    real_pop(u);
                     std::sprintf(my_buff, "#<closure: %p>",
                                  reinterpret_cast<void *>(static_cast<LispObject>(elt(u, 0))));
                     goto print_my_buff;
@@ -2518,7 +2521,7 @@ restart:
 #endif
                 case TYPE_FOREIGN:
                 case TYPE_ENCAPSULATE:
-                    pop(u);
+                    real_pop(u);
                     std::sprintf(my_buff, "#<encapsulated pointer: %p>",
                                  *(void **)&elt(u, 0));
                     goto print_my_buff;
@@ -2562,7 +2565,7 @@ restart:
                         putc_stream('#', active_stream);
                         putc_stream('P', active_stream);
                         putc_stream(':', active_stream);
-                        pop(u);
+                        real_pop(u);
                         u = elt(u, 8);  // The name of the package
                         blankp = 0;
                         goto restart;
@@ -2570,7 +2573,7 @@ restart:
                     // Drop through
 #else
                 case TYPE_STRUCTURE:
-                    pop(u);
+                    real_pop(u);
                     std::sprintf(my_buff, "[e-vector:%.8lx]",
                                  static_cast<long>(static_cast<uint32_t>(u)));
                     goto print_my_buff;
@@ -2653,7 +2656,7 @@ restart:
                                                  (CELL - TAG_VECTOR) + k));
                             internal_prin(vv, (k != 0) ? 1 : 0);
                         }
-                    popv(1);
+                    real_popv(1);
                     outprefix(false, 1);
 #ifndef COMMON
                     if (type_of_header(h) == TYPE_SIMPLE_VEC) putc_stream(']',
@@ -2699,7 +2702,7 @@ restart:
                                              (CELL - TAG_VECTOR) + k)));
                         prin_buf(my_buff, true);
                     }
-                    popv(1);
+                    real_popv(1);
                     outprefix(false, 1);
                     putc_stream(']', active_stream);
                     return;
@@ -2718,7 +2721,7 @@ restart:
                     }
                     outprefix(false, 1);
                     putc_stream(')', active_stream);
-                    popv(1);
+                    real_popv(1);
                     return;
                 case TYPE_VEC16_1:
                 case TYPE_VEC16_2:
@@ -2733,7 +2736,7 @@ restart:
                     }
                     outprefix(false, 1);
                     putc_stream(')', active_stream);
-                    popv(1);
+                    real_popv(1);
                     return;
                 case TYPE_VEC32:
                     outprefix(blankp, 5);
@@ -2748,7 +2751,7 @@ restart:
                     }
                     outprefix(false, 1);
                     putc_stream(')', active_stream);
-                    popv(1);
+                    real_popv(1);
                     return;
                 case TYPE_VECFLOAT32:
                     outprefix(blankp, 4);
@@ -2762,7 +2765,7 @@ restart:
                     }
                     outprefix(false, 1);
                     putc_stream(')', active_stream);
-                    popv(1);
+                    real_popv(1);
                     return;
                 case TYPE_VECFLOAT64:
                     outprefix(blankp, 4);
@@ -2776,7 +2779,7 @@ restart:
                     }
                     outprefix(false, 1);
                     putc_stream(')', active_stream);
-                    popv(1);
+                    real_popv(1);
                     return;
                 default:goto error_case;
             }
@@ -2801,7 +2804,7 @@ restart:
                     }
                 }
             }
-            popv(1);
+            real_popv(1);
             return;
         }
 
@@ -2809,11 +2812,11 @@ restart:
 // It seems probable that I could never get here, but this "return" is
 // just in case, as a safety measure.
 //
-        popv(1);
+        real_popv(1);
         return;
 
         case TAG_SYMBOL:
-            push(u);
+            real_push(u);
 //
 // When computing checksums with the "md5" function I count gensyms as being
 // purely local to the current expression. The strange effect is that
@@ -2828,7 +2831,7 @@ restart:
                 {   LispObject al = stream_write_data(active_stream);
                     while (al != nil &&
                            car(car(al)) != u) al = cdr(al);
-                    pop(u);
+                    real_pop(u);
                     if (al == nil)
                     {   al = acons(u, fixnum_of_int(local_gensym_count),
                                    stream_write_data(active_stream));
@@ -3214,7 +3217,7 @@ restart:
 #endif
                 }
             }
-            popv(1);
+            real_popv(1);
             return;
 
         case TAG_BOXFLOAT:

@@ -259,7 +259,7 @@ static LispObject timesir(LispObject a, LispObject b)
 {   LispObject w = nil;
     if (a == fixnum_of_int(0)) return a;
     else if (a == fixnum_of_int(1)) return b;
-    push(b, a, nil);
+    real_push(b, a, nil);
 #define g   stack[0]
 #define a   stack[-1]
 #define b   stack[-2]
@@ -271,7 +271,7 @@ static LispObject timesir(LispObject a, LispObject b)
 // make_ratio tidies things up if the denominator was exactly 1
 //
     w = make_ratio(a, g);
-    popv(3);
+    real_popv(3);
     return w;
 #undef a
 #undef b
@@ -1223,8 +1223,8 @@ static LispObject timesrr(LispObject a, LispObject b)
 // multiply a pair of rational numbers
 //
 {   LispObject w = nil;
-    push(numerator(a), denominator(a),
-         numerator(b), denominator(b), nil);
+    real_push(numerator(a), denominator(a),
+              numerator(b), denominator(b), nil);
 #define g   stack[0]
 #define db  stack[-1]
 #define nb  stack[-2]
@@ -1239,7 +1239,7 @@ static LispObject timesrr(LispObject a, LispObject b)
     na = times2(na, nb);
     da = times2(da, db);
     w = make_ratio(na, da);
-    popv(5);
+    real_popv(5);
     return w;
 #undef g
 #undef db
@@ -1265,9 +1265,9 @@ static LispObject timescc(LispObject a, LispObject b)
 // multiply a pair of complex values
 //
 {   LispObject w = nil;
-    push(real_part(a), imag_part(a),
-         real_part(b), imag_part(b));
-    push(nil, nil);
+    real_push(real_part(a), imag_part(a),
+              real_part(b), imag_part(b));
+    real_push(nil, nil);
 #define u   stack[0]
 #define v   stack[-1]
 #define ib  stack[-2]
@@ -1282,7 +1282,7 @@ static LispObject timescc(LispObject a, LispObject b)
     ib = times2(rb, ia);
     v = plus2(v, ib);                   // imaginary part
     w = make_complex(u, v);
-    popv(6);
+    real_popv(6);
     return w;
 #undef u
 #undef v

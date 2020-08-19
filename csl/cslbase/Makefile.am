@@ -1915,7 +1915,7 @@ reduce.prototypes:	prototypes
 machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
 			makeheaders$(EXEEXT) Makefile \
 			$(cslbase)/machine.h $(cslbase)/int128_t.h \
-			$(cslbase)/$(FWIN) \
+			$(cslbase)/log.h $(cslbase)/$(FWIN) \
 			$(cslbase)/tags.h $(cslbase)/cslerror.h \
 			$(cslbase)/thread_local.h \
 			$(cslbase)/externs.h $(cslbase)/arith.h \
@@ -1927,6 +1927,7 @@ machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(E
 		$(CYGSRC)/machine.h \
 		$(CYGSRC)/$(FWIN) \
 		$(CYGSRC)/int128_t.h \
+		$(CYGSRC)/log.h \
 		$(CYGSRC)/tags.h \
 		$(CYGSRC)/thread_local.h \
 		$(CYGSRC)/cslerror.h \

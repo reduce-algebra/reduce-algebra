@@ -4282,17 +4282,17 @@ c!:printf "#endif\n") (cond (does_call (progn (c!:printf
 push) args) (c!:printf 
 "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n") (c!:pushpop (quote 
 pop) (reverse args)) (c!:printf "    }\n") (c!:printf 
-"#endif // CONSERVATIVE\n")))) (cond (reloadenv (c!:printf "    push(env);\n"
-))) (setq n 0) (cond (stacks (progn (c!:printf 
+"#endif // CONSERVATIVE\n")))) (cond (reloadenv (c!:printf 
+"    real_push(env);\n"))) (setq n 0) (cond (stacks (progn (c!:printf 
 "%<// space for vars preserved across procedure calls\n") (prog (var1350) (
 setq var1350 stacks) lab1349 (cond ((null var1350) (return nil))) (prog (v) (
 setq v (car var1350)) (progn (put v (quote c!:location) n) (setq n (plus n 1)
 ))) (setq var1350 (cdr var1350)) (go lab1349)) (setq w n) (prog nil lab1351 (
 cond ((null (geq w 5)) (return nil))) (progn (c!:printf 
-"    push5(nil, nil, nil, nil, nil);\n") (setq w (difference w 5))) (go 
+"    real_push(nil, nil, nil, nil, nil);\n") (setq w (difference w 5))) (go 
 lab1351)) (cond ((neq w 0) (progn (cond ((equal w 1) (c!:printf 
-"    push(nil);\n")) (t (progn (c!:printf "    push%s(nil" w) (prog (i) (setq
-i 2) lab1352 (cond ((minusp (times 1 (difference w i))) (return nil))) (
+"    real_push(nil);\n")) (t (progn (c!:printf "    push(nil") (prog (i) (
+setq i 2) lab1352 (cond ((minusp (times 1 (difference w i))) (return nil))) (
 c!:printf ", nil") (setq i (plus i 1)) (go lab1352)) (c!:printf ");\n")))))))
 ))) (cond (reloadenv (progn (setq reloadenv n) (setq n (plus n 1))))) (cond (
 (neq n 0) (c!:printf "    stack_popper stack_popper_var(%d);\n" n))) (cond (

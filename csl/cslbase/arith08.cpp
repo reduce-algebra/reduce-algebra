@@ -1,11 +1,11 @@
-//  arith08.cpp                            Copyright (C) 1990-2019 Codemist
+//  arith08.cpp                            Copyright (C) 1990-2020 Codemist
 
 //
 // Arithmetic functions.
 //
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -211,9 +211,9 @@ LispObject Lgcd_3(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
-{   push(a4up, a3);
+{   real_push(a4up, a3);
     a1 = gcd(a1, a2);
-    pop(a3);
+    real_pop(a3);
     a1 = gcd(a1, a3);
     while (stack[0] != nil)
     {   a2 = stack[0];
@@ -221,7 +221,7 @@ LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
         stack[0] = cdr(a2);
         a1 = gcd(a1, a3);
     }
-    popv(1);
+    real_popv(1);
     return onevalue(a1);
 }
 
@@ -263,9 +263,9 @@ LispObject Llcm_3(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
-{   push(a4up, a3);
+{   real_push(a4up, a3);
     a1 = lcm(a1, a2);
-    pop(a3);
+    real_pop(a3);
     a1 = lcm(a1, a3);
     while (stack[0] != nil)
     {   a2 = stack[0];
@@ -273,7 +273,7 @@ LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
         stack[0] = cdr(a2);
         a1 = lcm(a1, a3);
     }
-    popv(1);
+    real_popv(1);
     return onevalue(a1);
 }
 
@@ -1124,12 +1124,12 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 {   LispObject p, q, r, w, w1;
     p = numerator(a);
     q = denominator(a); // note that q will always be positive!
-    push(q, p);
+    real_push(q, p);
     r = quot2(p, q);
     p = stack[0];
     stack[0] = r;
     p = Cremainder(p, stack[-1]);
-    pop(r, q);
+    real_pop(r, q);
 // The quotient is now in r and the remainder in p. The original divisor
 // is back in q.
     switch (roundmode)
@@ -1186,12 +1186,12 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 
 LispObject lisp_fix(LispObject a, int roundmode)
 {   LispObject r;
-    push(a);
+    real_push(a);
     r = lisp_fix_sub(a, roundmode);
     a = stack[0];
     stack[0] = r;
     a = difference2(a, r);
-    pop(r);
+    real_pop(r);
     mv_2 = a;
     return nvalues(r, 2);
 }
@@ -1203,21 +1203,21 @@ LispObject lisp_fix(LispObject a, int roundmode)
 LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
 {   LispObject q, r, r2, negb;
     if (is_float(a) || is_float(b))
-    {   push(b);
+    {   real_push(b);
         a = quot2(a, b);
 // If either argument was floating point then the quotient will be.
         r = lisp_fix(a, roundmode);
         a = stack[0];
         stack[0] = r;
         mv_2 = times2(mv_2, a);
-        pop(r);
+        real_pop(r);
         return nvalues(r, 2);
     }
-    push(a, b);
+    real_push(a, b);
     q = quot2(a, b);
     a = stack[-1];
     b = stack[0];
-    push(q);
+    real_push(q);
     r = Cremainder(a, b);
     switch (roundmode)
     {   case FIX_TRUNCATE:
@@ -1257,7 +1257,7 @@ LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
             stack[0] = q;
             break;
     }
-    pop(q, b, a);
+    real_pop(q, b, a);
     mv_2 = r;
     return nvalues(q, 2);
 }

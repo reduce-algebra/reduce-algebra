@@ -964,9 +964,9 @@ static size_t membercount(LispObject a, LispObject b)
 //
 LispObject Lintersect(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil, w;
-    push(b);
+    real_push(b);
     while (consp(a))
-    {   push(a, r);
+    {   real_push(a, r);
         w = Lmember(nil, car(a), stack[-2]);
 // Here I ignore any item in a that is not also in b
         if (w != nil)
@@ -980,17 +980,17 @@ LispObject Lintersect(LispObject env, LispObject a, LispObject b)
                 if (n2 > n1) n1 = 0;
             }
             if (n1 == 0)
-            {   pop(r);
+            {   real_pop(r);
                 a = stack[0];
                 r = cons(car(a), r);
-                pop(a);
+                real_pop(a);
             }
-            else pop(r, a);
+            else real_pop(r, a);
         }
-        else pop(r, a);
+        else real_pop(r, a);
         a = cdr(a);
     }
-    popv(1);
+    real_popv(1);
     a = nil;
     while (consp(r))
     {   b = r;
@@ -1014,7 +1014,7 @@ public:
     ~tidy_intersect()
     {   stack = save;
         LispObject b;
-        pop(b);
+        real_pop(b);
         while (consp(b))
         {   setheader(car(b),
                       qheader(car(b)) & ~static_cast<Header>(SYM_TAGGED));
@@ -1034,6 +1034,7 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
     }
 // Now for each item in a push it onto a result list (r) if it a
 // symbol that is tagged, i.e. if it was present in b.
+    real_push(b);
     {   tidy_intersect RAII;
         while (consp(a))
         {   LispObject x = car(a);
@@ -1066,13 +1067,13 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
 LispObject Lunion(LispObject env, LispObject a, LispObject b)
 {   while (consp(a))
     {   LispObject c;
-        push(a, b);
+        real_push(a, b);
         c = Lmember(nil, car(a), b);
-        pop(b);
+        real_pop(b);
         if (c == nil)
         {   b = cons(car(stack[0]), b);
         }
-        pop(a);
+        real_pop(a);
         a = cdr(a);
     }
     return onevalue(b);
@@ -1108,7 +1109,7 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
     }
 // Now for each item in a push it onto a result list (r) if it a
 // symbol that is NOT tagged, i.e. if it was not present in b.
-    push(b);
+    real_push(b);
     {   tidy_union RAII;
         while (consp(a))
         {   LispObject x = car(a);
@@ -1236,7 +1237,7 @@ qvalue(emsg_star) = cons(a1, r);     // "Error message" in CL world
 exit_value = fixnum_of_int(0);       // "Error number"  in CL world
 #else
     if (miscflags & HEADLINE_FLAG)
-    {   push(args, cdr(args));
+    {   real_push(args, cdr(args));
         err_printf("\n+++ error: ");
         loop_print_error(car(stack[-1]));
         while (is_cons(stack[0]))
@@ -1245,8 +1246,8 @@ exit_value = fixnum_of_int(0);       // "Error number"  in CL world
             stack[0] = cdr(stack[0]);
         }
         err_printf("\n");
-        popv(1);
-        pop(args);
+        real_popv(1);
+        real_pop(args);
     }
 // So if you go (error n A B C) the output should be
 //     +++ error n A B C
@@ -1509,15 +1510,15 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
         {   LispObject c, w;
             c = get(a, unset_var, nil);
             if (c == nil) c = a;
-            push(a, b, c);
+            real_push(a, b, c);
             setheader(b, qheader(b) | SYM_C_DEF);
             putprop(b, unset_var, c);
             c = stack[0]; b = stack[-1];
             w = get(c, work_symbol, nil);
             w = cons(b, w);
-            pop(c);
+            real_pop(c);
             putprop(c, work_symbol, w);
-            pop(b, a);
+            real_pop(b, a);
         }
         return onevalue(b);
     }

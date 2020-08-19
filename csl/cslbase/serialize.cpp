@@ -1,7 +1,7 @@
-// serialize.cpp                                Copyright (C) 2019 Codemist
+// serialize.cpp                                Copyright (C) 2020 Codemist
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -3359,7 +3359,7 @@ static LispObject load_module(LispObject env, LispObject file,
         }
     }
     inf_init(); // Ready for reading from compressed stream
-    push(CP);
+    real_push(CP);
     LispObject r = nil;
     class serializer_tidy
     {   LispObject *save;
@@ -3377,7 +3377,7 @@ static LispObject load_module(LispObject env, LispObject file,
 // reading (or trying to read) something.
             repeat_heap = nullptr;
             LispObject p;
-            pop(p);
+            real_pop(p);
             setvalue(current_package, p);
             inf_finish();
             IcloseInput();
@@ -3440,8 +3440,8 @@ static LispObject load_module(LispObject env, LispObject file,
                 else if (integerp(w) != nil && consp(def))
                 {   push(name, file, r, def);
 // The md60 function is called on something like (fname (args...) body...)
-                    def = cons(name, cdr(def));
-                    LispObject w1 = Lmd60(nil, def);
+                    LispObject def1 = cons(name, cdr(def));
+                    LispObject w1 = Lmd60(nil, def1);
                     if (!numeq2(w, w1)) getsavedef = false;
                     pop(def, r, file, name);
                 }
@@ -4103,7 +4103,7 @@ LispObject Lall_symbols0(LispObject env)
     LispObject r = nil;
     while (stack != stacksave)
     {   LispObject w;
-        pop(w);
+        real_pop(w);
         r = cons(w, r);
     }
     return onevalue(r);

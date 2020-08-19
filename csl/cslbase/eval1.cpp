@@ -240,13 +240,12 @@ restart:
         {   if (args == nil) return (*qfn0(fn))(fn);
             LispObject a1 = car(args);
             push(fn, args, env);
-            on_backtrace(
-                a1 = eval(a1, env),
+            on_backtrace(a1 = eval(a1, env),
                 pop(env, args, fn);
                 if (SHOW_ARGS)
-        {   err_printf("\nEvaluating: ");
-                loop_print_error(car(args));
-            });
+                {   err_printf("\nEvaluating: ");
+                    loop_print_error(car(args));
+                });
             pop(env, args, fn);
             args = cdr(args);
             if (args == nil) return (*qfn1(fn))(fn, a1);
@@ -263,15 +262,15 @@ restart:
             args = cdr(args);
             if (args == nil) return (*qfn2(fn))(fn, a1, a2);
             LispObject a3 = car(args);
-            push5(fn, args, env, a1, a2);
+            push(fn, args, env, a1, a2);
             on_backtrace(
                 a3 = eval(a3, env),
-                pop5(a2, a1, env, args, fn);
+                pop(a2, a1, env, args, fn);
                 if (SHOW_ARGS)
-        {   err_printf("\nEvaluating: ");
-                loop_print_error(car(args));
-            });
-            pop5(a2, a1, env, args, fn);
+                {   err_printf("\nEvaluating: ");
+                    loop_print_error(car(args));
+                });
+            pop(a2, a1, env, args, fn);
             args = cdr(args);
             if (args == nil) return (*qfn3(fn))(fn, a1, a2, a3);
             push(fn, env, args);
@@ -478,14 +477,14 @@ LispObject apply_lambda(LispObject def, LispObject args,
 // of PUSH operations here must exactly match the #define statements given
 //  earlier.
 //
-    push(args);                         // arglist
-    push(w1,                           // bvl
-         cdr(def),                    // body
+    real_push(args);                        // arglist
+    real_push(w1,                           // bvl
+         cdr(def),                          // body
          env1, name1);
-    push5(nil, nil,                     // local_decs, ok_keys
-          nil, nil, nil);               // restarg, specenv, val1
-    push5(nil, nil,                     // arg, v1
-          nil, nil, nil);               // v, p, w
+    real_push(nil, nil,                     // local_decs, ok_keys
+         nil, nil, nil);                    // restarg, specenv, val1
+    real_push(nil, nil,                     // arg, v1
+         nil, nil, nil);                    // v, p, w
 // Now I am entitled to reference the names that resolve to the above
 // stack offsets.
     for (;;)
@@ -785,7 +784,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
         }
         throw;
     }
-    popv(stack_used);
+    real_popv(stack_used);
 // note that exit_count has not been disturbed since I called progn_fn,
 // so the number of values that will be returned remains correctly
 // established.
@@ -1037,14 +1036,14 @@ LispObject mv_call_fn(LispObject args, LispObject env)
     LispObject xargs = nil;             // for list of eventual args
     while (consp(args))
     {   LispObject r1;
-        push(args, env, xargs);
+        real_push(args, env, xargs);
         r1 = car(args);
         exit_count = 1;
         r1  = eval(r1, env);
         if (exit_count != 0) stack[0] = cons(r1, stack[0]);
         for (unsigned int i=2; i<=exit_count; i++)
             stack[0] = cons((&work_0)[i], stack[0]);
-        pop(xargs, env, args);
+        real_pop(xargs, env, args);
         args = cdr(args);
     }
     return apply(fn, xargs, env, mv_call_symbol);
@@ -1173,23 +1172,23 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
                     {   mv_2 = nil;
                         return nvalues(form, 2);
                     }
-                    push(form, done);
-                    push(env);
+                    real_push(form, done);
+                    real_push(env);
                     w = cons(lambda, w);
                     w = list3(w, stack[-1], nil);
-                    pop(env);
+                    real_pop(env);
                     on_backtrace(
                         p = apply(qvalue(macroexpand_hook),
                                   w,
                                   env,
                                   macroexpand_hook),
                         // Now the error handler
-                        pop(done, form);
+                        real_pop(done, form);
                         if (SHOW_FNAME)
-                {   err_printf("\nMacroexpanding: ");
-                        loop_print_error(form);
-                    });
-                    pop(done, form);
+                        {   err_printf("\nMacroexpanding: ");
+                            loop_print_error(form);
+                        });
+                    real_pop(done, form);
                     mv_2 = lisp_true;
                     return nvalues(p, 2);
                 }
@@ -1337,7 +1336,7 @@ LispObject autoload_4up(LispObject fname, LispObject a1,
                         LispObject a3, LispObject a4up)
 {   STACK_SANITY;
     fname = qenv(fname);
-    push5(fname, a1, a2, a3, a4up);
+    push(fname, a1, a2, a3, a4up);
     set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
     setenv(car(fname), car(fname));

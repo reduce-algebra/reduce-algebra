@@ -1,4 +1,4 @@
-% "ccomp.red"                                Copyright 1991-2019,  Codemist
+% "ccomp.red"                                Copyright 1991-2020,  Codemist
 %
 % Compiler that turns Lisp code into C++ in a way that fits in
 % with the conventions used with CSL.
@@ -7,7 +7,7 @@
 
 
 %%
-%% Copyright (C) 2019, following the master REDUCE source files.          *
+%% Copyright (C) 2020, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -2277,7 +2277,7 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
 % Now I will allocate space for everything that has to go on the stack.
 % and record in the c!:location property where on the stack the variable
 % will live.
-    if reloadenv then c!:printf("    push(env);\n");
+    if reloadenv then c!:printf("    real_push(env);\n");
     n := 0;
     if stacks then <<
        c!:printf "%<// space for vars preserved across procedure calls\n";
@@ -2287,12 +2287,12 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        w := n;
 % I push multiple items 5 at a time as much as I can.
        while w >= 5 do <<
-          c!:printf "    push5(nil, nil, nil, nil, nil);\n";
+          c!:printf "    real_push(nil, nil, nil, nil, nil);\n";
           w := w - 5 >>;
        if w neq 0 then <<
-          if w = 1 then c!:printf "    push(nil);\n"
+          if w = 1 then c!:printf "    real_push(nil);\n"
           else <<
-             c!:printf("    push%s(nil", w);
+             c!:printf("    push(nil");
              for i := 2:w do c!:printf ", nil";
              c!:printf ");\n" >> >> >>;
     if reloadenv then <<

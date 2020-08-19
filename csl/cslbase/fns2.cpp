@@ -630,12 +630,12 @@ LispObject Lsymbol_set_definition(LispObject env,
             if ((qheader(b) & SYM_C_DEF) != 0)
             {   LispObject c = get(b, unset_var, nil);
                 if (c == nil) c = b;
-                push(c, a);
+                real_push(c, a);
                 putprop(a, unset_var, c);
-                pop(a);
+                real_pop(a);
                 a = cons(a, get(stack[0], work_symbol, nil));
                 putprop(stack[0], work_symbol, a);
-                pop(b);
+                real_pop(b);
             }
         }
     }
@@ -711,8 +711,8 @@ LispObject Lsymbol_set_definition(LispObject env,
         if (qvalue(comp_symbol) != nil &&
             qfn1(compiler_symbol) != undefined_1)
         {   push(a);
-            a = ncons(a);
-            (*qfn1(compiler_symbol))(compiler_symbol, a);
+            LispObject a1 = ncons(a);
+            (*qfn1(compiler_symbol))(compiler_symbol, a1);
             pop(a);
         }
     }
@@ -2590,8 +2590,10 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
     push(b);
     stackcheck(a, r);
     while (consp(a))
-    {   push(cdr(a));
-        r = cons(car(a), r);
+    {   LispObject cara = car(a);
+        a = cdr(a);
+        push(a);
+        r = cons(cara, r);
         pop(a);
     }
     pop(b);
@@ -2622,7 +2624,8 @@ LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
     a4up = cdr(a4up);
     while (a4up != nil)
     {   LispObject w = car(a4up);
-        push(cdr(a4up));
+        a4up = cdr(a4up);
+        push(a4up);
         r = Lappend_2(nil, w, r);
         pop(a4up);
     }
@@ -2636,7 +2639,7 @@ LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Ldelete(LispObject env, LispObject a, LispObject b)
 {   LispObject r;
-    push(a, b);
+    real_push(a, b);
     r = nil;
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
@@ -2667,7 +2670,7 @@ LispObject Ldelete(LispObject env, LispObject a, LispObject b)
             a = stack[-1];
         }
     }
-    popv(2);
+    real_popv(2);
     while (r != nil)
     {   LispObject w = cdr(r);
         write_barrier(cdraddr(r), b);
@@ -2680,7 +2683,7 @@ LispObject Ldelete(LispObject env, LispObject a, LispObject b)
 
 LispObject Ldeleq(LispObject env, LispObject a, LispObject b)
 {   LispObject r;
-    push(a, b);
+    real_push(a, b);
     r = nil;
     while (consp(b))
     {   LispObject q = car(b);
@@ -2692,7 +2695,7 @@ LispObject Ldeleq(LispObject env, LispObject a, LispObject b)
         r = cons(car(b), r);
         b = stack[0];
     }
-    popv(2);
+    real_popv(2);
     while (r != nil)
     {   LispObject w = cdr(r);
         write_barrier(cdraddr(r), b);
@@ -2838,8 +2841,8 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
 static LispObject substq(LispObject a, LispObject b, LispObject c)
 {   LispObject w;
     stackcheck(a, b, c);
-    push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
-    push(a, b, c);
+    real_push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
+    real_push(a, b, c);
 // Perhaps I could replace the use of "#define" here with code like
 //    LispObject &c = stack[0];
 //    LispObject &b = stack[-1];
@@ -2928,9 +2931,9 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 #undef a
 #undef r
 #undef rx
-    pop(c, b, a);
+    real_pop(c, b, a);
     {   LispObject r, rx;
-        pop(r, rx);
+        real_pop(r, rx);
         while (r != TAG_FIXNUM)
         {   w = cdr(r);
             write_barrier(cdraddr(r), c);
@@ -2956,8 +2959,8 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 LispObject subst(LispObject a, LispObject b, LispObject c)
 {   LispObject w;
     stackcheck(a, b, c);
-    push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
-    push(a, b, c);
+    real_push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
+    real_push(a, b, c);
 #define c   stack[0]
 #define b   stack[-1]
 #define a   stack[-2]
@@ -3050,9 +3053,9 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 #undef a
 #undef r
 #undef rx
-    pop(c, b, a);
+    real_pop(c, b, a);
     {   LispObject r, rx;
-        pop(r, rx);
+        real_pop(r, rx);
         while (r != TAG_FIXNUM)
         {   w = cdr(r);
             write_barrier(cdraddr(r), c);
@@ -3077,8 +3080,8 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 LispObject subla(LispObject a, LispObject c)
 {   LispObject w;
     stackcheck(a, c);
-    push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
-    push(a, c);
+    real_push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
+    real_push(a, c);
 #define c   stack[0]
 #define a   stack[-1]
 #define r   stack[-2]
@@ -3171,9 +3174,9 @@ LispObject subla(LispObject a, LispObject c)
 #undef a
 #undef r
 #undef rx
-    pop(c, a);
+    real_pop(c, a);
     {   LispObject r, rx;
-        pop(r, rx);
+        real_pop(r, rx);
         while (r != TAG_FIXNUM)
         {   w = cdr(r);
             write_barrier(cdraddr(r), c);
@@ -3198,8 +3201,8 @@ LispObject subla(LispObject a, LispObject c)
 LispObject sublis(LispObject a, LispObject c)
 {   LispObject w;
     stackcheck(a, c);
-    push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
-    push(a, c);
+    real_push(TAG_FIXNUM, TAG_FIXNUM); // rx and r
+    real_push(a, c);
 #define c   stack[0]
 #define a   stack[-1]
 #define r   stack[-2]
@@ -3301,9 +3304,9 @@ LispObject sublis(LispObject a, LispObject c)
 #undef a
 #undef r
 #undef rx
-    pop(c, a);
+    real_pop(c, a);
     {   LispObject r, rx;
-        pop(r, rx);
+        real_pop(r, rx);
         while (r != TAG_FIXNUM)
         {   w = cdr(r);
             write_barrier(cdraddr(r), c);

@@ -63,27 +63,26 @@ size_t xppc;
 // I only set this information up when in the slower bootstrap mode, but now
 // I have decided to accept the cost at all times so that full tracing
 // facilities are always available.
-LispObject ffpname = qpname(lit);
-size_t fflength = (size_t)(length_of_byteheader(vechdr(
-                               ffpname)) - CELL);
-char ffname[32];
-if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-std::memcpy(reinterpret_cast<void *>(&ffname[0]), &celt(ffpname, 0),
-            fflength);
-ffname[fflength] = 0;
-debug_record(reinterpret_cast<const char *>(ffname));
+    LispObject ffpname = qpname(lit);
+    size_t fflength = (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+    char ffname[32];
+    if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+    std::memcpy(reinterpret_cast<void *>(&ffname[0]),
+                &celt(ffpname, 0), fflength);
+    ffname[fflength] = 0;
+    debug_record(reinterpret_cast<const char *>(ffname));
 //
 #ifdef CHECK_STACK
-{   char *my_stack = reinterpret_cast<char *>()&my_stack;
-    if (native_stack == nullptr) native_stack = native_stack_base =
-                    my_stack;
-    else if (my_stack + 10000 < native_stack)
-    {   native_stack = my_stack;
-        trace_printf("\nFunction %s stack depth %d\n",
-                     &celt(qpname(lit), 0),
-                     native_stack_base - my_stack);
+    {   char *my_stack = reinterpret_cast<char *>(&my_stack);
+        if (native_stack == nullptr) native_stack = native_stack_base =
+                        my_stack;
+        else if (my_stack + 10000 < native_stack)
+        {   native_stack = my_stack;
+            trace_printf("\nFunction %s stack depth %d\n",
+                         &celt(qpname(lit), 0),
+                         native_stack_base - my_stack);
+        }
     }
-}
 #endif
 
 //
@@ -100,12 +99,12 @@ debug_record(reinterpret_cast<const char *>(ffname));
 //
 #ifdef ACN
 // ... except that I will only go the whole hog if one defines ACN
-callstack = cons_no_gc(lit, callstack);
+    callstack = cons_no_gc(lit, callstack);
 #endif
 #endif
-lit = qenv(lit);
-codevec = car(lit);
-litvec = cdr(lit);
+    lit = qenv(lit);
+    codevec = car(lit);
+    litvec = cdr(lit);
 #ifndef NO_BYTECOUNT
 // Attribute 30-bytecode overhead to entry sequence. This is a pretty
 // arbitrary number, but the idea is that when I am profiling I want to
@@ -116,43 +115,45 @@ litvec = cdr(lit);
 // bytecode but was called just under 2 million times. The overheads of
 // starting up the bytecode interpreter nake that an invalid judgement,
 // and the "+30" here is intended to counterbalance it.
-incCount(qcount(basic_elt(litvec, 0)), profile_count_mode ? 1 : 30);
+    incCount(qcount(basic_elt(litvec, 0)), profile_count_mode ? 1 : 30);
 #endif
 //
-A_reg = nil;
+    A_reg = nil;
 #ifdef CHECK_STACK
-if (reinterpret_cast<char *>(fringe) <= reinterpret_cast<char *>
-    (heaplimit)) A_reg = cons_gc_test(A_reg);
-
+#ifndef CONSERVATIVE
+    if (reinterpret_cast<char *>(fringe) <=
+        reinterpret_cast<char *>(heaplimit)) A_reg = cons_gc_test(A_reg);
+#endif
 #ifdef DEBUG
-if (check_stack(reinterpret_cast<char *>()&ffname[0],__LINE__))
-{   err_printf("\n+++ stack overflow\n");
-    aerror("stack overflow");
-}
+    if (check_stack(reinterpret_cast<char *>(&ffname[0]), __LINE__))
+    {   err_printf("\n+++ stack overflow\n");
+        aerror("stack overflow");
+    }
 #else
-if (check_stack("bytecode_interpreter",__LINE__))
-{   err_printf("\n+++ stack overflow\n");
-    aerror("stack overflow");
-}
+    if (check_stack("bytecode_interpreter",__LINE__))
+    {   err_printf("\n+++ stack overflow\n");
+        aerror("stack overflow");
+    }
 #endif
 #else // CHECK_STACK
-{   char *p = reinterpret_cast<char *>(&p);
-    if ((uintptr_t)p < C_stacklimit)
-    {   err_printf("\n+++ stack overflow\n");
-        if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
-        aerror("stack_overflow");
+    {   char *p = reinterpret_cast<char *>(&p);
+        if ((uintptr_t)p < C_stacklimit)
+        {   err_printf("\n+++ stack overflow\n");
+            if (C_stacklimit > 1024*1024) C_stacklimit -= 1024*1024;
+            aerror("stack_overflow");
+        }
     }
-}
 #endif // CHECK_STACK
 #ifdef DEBUG
-std::jmp_buf *jbsave;
+    std::jmp_buf *jbsave;
 #endif
 
 next_opcode:   // This label is so that I can restart what I am doing
 // following a CATCH or to handle UNWIND-PROTECT.
-my_assert(A_reg != 0, [&] { trace_printf("A_reg == 0 @ bytes2.cpp line __LINE__\n"); });
-try
-{
+    my_assert(A_reg != 0,
+        [&]{ trace_printf("A_reg == 0 @ bytes2.cpp line __LINE__\n"); });
+    try
+    {
 // The try block will neeed to cope with
 // .  Various errors raised by functions called from here: a fragment of
 //    backtrace may be called for, and variable bindings undone.
@@ -333,7 +334,7 @@ try
 
             case OP_PUSHNILS:
                 n = next_byte;
-                for (k=0; k<n; k++) push(nil);
+                for (k=0; k<n; k++) real_push(nil);
                 continue;
 
             case OP_VNIL:
@@ -363,7 +364,7 @@ try
 
             case OP_ACONS:                  // A_reg = acons(pop(), B_reg, A_reg);
                 // = (pop() . B) . A
-                pop(r1);
+                real_pop(r1);
                 A_reg = acons(r1, B_reg, A_reg);
                 continue;
 
@@ -392,11 +393,9 @@ try
 
             case OP_CLOSURE:
                 push(B_reg, A_reg);
-//
 // This will be the address where the first arg of this function lives on
 // the stack.  It provides a hook for the called function to access lexical
 // variables.
-//
                 w = next_byte;
                 A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
                 pop(B_reg);
@@ -450,13 +449,13 @@ try
 
             case OP_LIST2STAR:              // A_reg = list2!*(pop(), B_reg, A_reg);
                 // = pop() . (B . A)
-                pop(r1);
+                real_pop(r1);
                 A_reg = list2star(r1, B_reg, A_reg);
                 continue;
 
             case OP_LIST3:                  // A_reg = list3(pop(), B_reg, A_reg);
                 // = pop() . (B . (A . nil))
-                pop(r1);
+                real_pop(r1);
                 A_reg = list3(r1, B_reg, A_reg);
                 continue;
 
@@ -558,7 +557,7 @@ try
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
                 {   f2 = qfn2(r2);
-                    popv(1);
+                    real_popv(1);
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call2(basic_elt(litvec, 0), f2, r2, B_reg, A_reg);
                     else A_reg = f2(r2, B_reg, A_reg);
@@ -566,7 +565,7 @@ try
                 }
 // Here the stack has fn on the top and the 2 args are in B_reg, A_reg
                 A_reg = list2(B_reg, A_reg);
-                pop(r2);
+                real_pop(r2);
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
                 continue;
 
@@ -576,23 +575,23 @@ try
 // In particular a general call to an "apply3" function would have passed in
 // effect (apply3' F a1 a2 [a3]) with the fourth argument passed as a list.
 // When I use the bytecode op I do not do that.
-                pop(r1);
+                real_pop(r1);
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
                 {   f3 = qfn3(r2);
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call3(basic_elt(litvec, 0), f3, r2, r1, B_reg, A_reg);
                     else A_reg = f3(r2, r1, B_reg, A_reg);
-                    popv(1);
+                    real_popv(1);
                     continue;
                 }
                 A_reg = list3(stack[-1], B_reg, A_reg);
-                pop(r2);
+                real_pop(r2);
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
                 continue;
 
             case OP_APPLY4:
-                pop(r1, r3);
+                real_pop(r1, r3);
 // The 4 arguments are now r3, r1, B_reg, A_reg in that order, and as with
 // APPLY3 I do not wrap the final two arguments up in a list but instead pass
 // them individually.
@@ -606,11 +605,11 @@ try
                         A_reg = traced_call4up(basic_elt(litvec, 0), f4up, r2, r3, r1, B_reg,
                                                A_reg);
                     else A_reg = f4up(r2, r3, r1, B_reg, A_reg);
-                    popv(1);
+                    real_popv(1);
                     continue;
                 }
                 A_reg = list4(r3, r1, B_reg, A_reg);
-                pop(r2);
+                real_pop(r2);
                 A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
                 continue;
 
@@ -1408,36 +1407,32 @@ try
             catcher:
                 A_reg = cons(A_reg, catch_tags);
                 catch_tags = A_reg;
-                push(fixnum_of_int(w+1), catch_tags, SPID_CATCH);
+                real_push(fixnum_of_int(w+1), catch_tags, SPID_CATCH);
                 continue;
 
             case OP_UNCATCH:
-                popv(1); pop(r1); popv(1);
+                real_popv(1); real_pop(r1); real_popv(1);
                 catch_tags = cdr(r1);
                 setcar(r1,  r1); setcdr(r1, nil);
                 continue;
 
             case OP_PROTECT:
-//
 // This is used to support UNWIND-PROTECT.
 // This needs to save A_reg, all the multiple-result registers,
 // and the exit_count. Also something to indicate that there had not been
 // an error.
-//
-                popv(1); pop(r1); popv(1);
+                real_popv(1); real_pop(r1); real_popv(1);
                 catch_tags = cdr(r1);
                 setcar(r1, r1); setcdr(r1, nil);
                 A_reg = Lmv_list(nil, A_reg);
-                push(nil, fixnum_of_int(UNWIND_NULL), A_reg);
+                real_push(nil, fixnum_of_int(UNWIND_NULL), A_reg);
                 continue;
 
             case OP_UNPROTECT:
-//
 // This must restore all the results (including exit_count). If the
 // PROTECT had been done by an unwinding then exit_reason and exit_tag
 // must also be restored, and the unwind condition must be re-instated.
-//
-                pop(A_reg, B_reg, exit_tag);
+                real_pop(A_reg, B_reg, exit_tag);
                 exit_reason = int_of_fixnum(B_reg);
 // Here I have multiple values to restore.
                 exit_count = 0;
@@ -1475,7 +1470,7 @@ try
                 }
 
             case OP_THROW:
-                pop(r1);       // the tag to throw to
+                real_pop(r1);       // the tag to throw to
                 for (r2 = catch_tags; r2!=nil; r2=cdr(r2))
                     if (r1 == car(r2)) break;
                 if (r2==nil) aerror1("throw: tag not found", r1);
@@ -1622,7 +1617,7 @@ try
                                 fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
-                    push(A_reg);
+                    real_push(A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(qcount(basic_elt(litvec, 0)),
@@ -1670,7 +1665,7 @@ try
                                 fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
-                    push(B_reg, A_reg);
+                    real_push(B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(qcount(basic_elt(litvec, 0)),
@@ -1703,7 +1698,8 @@ try
                 f3 = qfn3(r1);
                 push(r1);
                 poll_jump_back(A_reg);
-                pop(r1, r2);
+                pop(r1);
+                real_pop(r2);
                 if (f3 == bytecoded_3 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
@@ -1717,7 +1713,7 @@ try
                                 fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
-                    push(r2, B_reg, A_reg);
+                    real_push(r2, B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
                     incCount(qcount(basic_elt(litvec, 0)),
@@ -1750,7 +1746,7 @@ try
 // In some other JCALL cases I optimise if the called function is
 // bytecoded. I have not done that here (yet?).
                 poll_jump_back(A_reg);
-                pop(r2, r1);
+                real_pop(r2, r1);
                 B_reg = list3star(r1, r2, B_reg, A_reg);
                 A_reg = basic_elt(litvec, fname);
                 debug_record_symbol(A_reg);
@@ -1842,11 +1838,12 @@ try
                 {   fname = 0;
                     goto call1;
                 }
-                push(codevec, litvec, A_reg); // the argument
-                if (stack >= stackLimit) respond_to_stack_event();
-                A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
-                                             stack-1);
-                pop(litvec, codevec);
+                {   RAIIsave_codevec saver;
+                    real_push(A_reg); // the argument
+                    if (stack >= stackLimit) respond_to_stack_event();
+                    A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
+                                                 stack-1);
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -1887,11 +1884,12 @@ try
                 {   fname = 0;
                     goto call2;
                 }
-                push(codevec, litvec, B_reg, A_reg);
-                if (stack >= stackLimit) respond_to_stack_event();
-                A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
-                                             stack-2);
-                pop(litvec, codevec);
+                {   RAIIsave_codevec saver;
+                    real_push(B_reg, A_reg);
+                    if (stack >= stackLimit) respond_to_stack_event();
+                    A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
+                                                 stack-2);
+                }
                 assert(A_reg != 0);
                 continue;
 
@@ -1944,7 +1942,7 @@ try
                 debug_record_symbol(r1);
                 f3 = qfn3(r1);
 // CALL3:   A=fn(pop(),B,A);
-                pop(r2);
+                real_pop(r2);
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
                 else A_reg = f3(r1, r2, B_reg, A_reg);
@@ -1954,7 +1952,7 @@ try
             case OP_CALL4:
 // All but the last two args have been pushed onto the stack already.
 // The last two are in A and B.
-                pop(r2, r1);
+                real_pop(r2, r1);
                 B_reg = list3star(r1, r2, B_reg, A_reg);
 // Here the post-byte indicates the function to be called.
                 A_reg = basic_elt(litvec,
@@ -2018,7 +2016,7 @@ try
                 f3 = three_arg_functions[next_byte];
                 debug_record_int("BUILTIN3", previous_byte);
 // CALL3:   A=fn(pop(),B,A);
-                pop(r1);
+                real_pop(r1);
                 if (three_arg_traceflags[previous_byte])
                     A_reg = traced_call3(basic_elt(litvec, 0), f3,
                                          make_undefined_symbol(three_arg_names[previous_byte]),
@@ -2409,41 +2407,41 @@ try
 
             case OP_PUSH:
                 assert(A_reg != 0);
-                push(A_reg);
+                real_push(A_reg);
                 continue;
 
             case OP_PUSHNIL:
-                push(nil);
+                real_push(nil);
                 continue;
 
             case OP_PUSHNIL2:
-                push(nil, nil);
+                real_push(nil, nil);
                 continue;
 
             case OP_PUSHNIL3:
-                push(nil, nil, nil);
+                real_push(nil, nil, nil);
                 continue;
 
             case OP_POP:
                 B_reg = A_reg;
-                pop(A_reg);
+                real_pop(A_reg);
                 assert(A_reg != 0);
                 continue;
 
             case OP_LOSE:
-                popv(1);
+                real_popv(1);
                 continue;
 
             case OP_LOSE2:
-                popv(2);
+                real_popv(2);
                 continue;
 
             case OP_LOSE3:
-                popv(3);
+                real_popv(3);
                 continue;
 
             case OP_LOSES:
-                popv(next_byte);
+                real_popv(next_byte);
                 continue;
 
             case OP_CONS:                           // A_reg = cons(B_reg, A_reg);
@@ -2518,15 +2516,15 @@ catch (LispException &e)
     {   unwind_stack(entry_stack, true);
         if (stack == entry_stack) throw;   // re-throw!
 // Here I have a CATCH/UNWIND record within the current function
-        pop(r1, r2);
+        real_pop(r1, r2);
 // If the tag matches exit_tag then I must reset pc based on offset (r2)
 // and continue. NB need to restore A_reg from exit_value.
         w = int_of_fixnum(r2);
         if (car(r1) == SPID_PROTECT)
         {   // This is an UNWIND catcher
-            push(exit_tag, fixnum_of_int(exit_reason));
+            real_push(exit_tag, fixnum_of_int(exit_reason));
             A_reg = Lmv_list(nil, exit_value);
-            push(A_reg);
+            real_push(A_reg);
             ppc = w;
             A_reg = exit_value;
             goto next_opcode;
