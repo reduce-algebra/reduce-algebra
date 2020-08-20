@@ -419,7 +419,7 @@ symbolic procedure rd!:quotient(u,v);
          if mt!: y=0 then rdqoterr() else divbf(x,y)
          else
 #if (member 'csl lispsystem!*)
-           <<z := safe!-fp!-quotient(x,y);
+           <<z := safe!-fp!-quot(x,y);
              if null z then <<rndbfon(); divbf(bfloat x,bfloat y)>>
                 else z>> end) where z=nil;
 #else
