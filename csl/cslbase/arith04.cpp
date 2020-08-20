@@ -1,4 +1,4 @@
-// arith04.cpp                             Copyright (C) 1991-2017 Codemist
+// arith04.cpp                             Copyright (C) 1991-2020 Codemist
 
 //
 // Arithmetic functions.
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

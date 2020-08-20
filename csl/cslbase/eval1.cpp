@@ -1,11 +1,11 @@
-// eval1.cpp                               Copyright (C) 1989-1019 Codemist
+// eval1.cpp                               Copyright (C) 1989-2020 Codemist
 
 //
 // Interpreter (part 1).
 //
 
 /**************************************************************************
- * Copyright (C) 1019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -821,12 +821,13 @@ LispObject Levlis(LispObject env, LispObject a)
     stackcheck(a);
     r = nil;
     while (consp(a))
-    {   push(cdr(a), r);
-        a = car(a);
-        a = eval(a, nil);
+    {   push(a, r);
+        LispObject a1 = car(a);
+        a1 = eval(a1, nil);
         pop(r);
-        r = cons(a, r);
+        r = cons(a1, r);
         pop(a);
+        a = cdr(a);
     }
     return onevalue(nreverse(r));
 }
@@ -1259,76 +1260,80 @@ LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
 LispObject autoload_0(LispObject fname)
 {   STACK_SANITY;
     fname = qenv(fname);
-    push(car(fname));
+    push(fname);
     set_fns(car(fname), undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
     fname = cdr(fname);
     while (consp(fname))
-    {   push(cdr(fname));
+    {   push(fname);
         Lload_module(nil, car(fname));
         pop(fname);
+        fname = cdr(fname);
     }
     pop(fname);
-    return apply(fname, nil, nil, autoload_symbol);
+    return apply(car(fname), nil, nil, autoload_symbol);
 }
 
 LispObject autoload_1(LispObject fname, LispObject a1)
 {   STACK_SANITY;
     fname = qenv(fname);
-    push(car(fname), a1);
+    push(fname, a1);
     set_fns(car(fname), undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
     fname = cdr(fname);
     while (consp(fname))
-    {   push(cdr(fname));
+    {   push(fname);
         Lload_module(nil, car(fname));
         pop(fname);
+        fname = cdr(fname);
     }
     pop(a1);
     a1 = ncons(a1);
     pop(fname);
-    return apply(fname, a1, nil, autoload_symbol);
+    return apply(car(fname), a1, nil, autoload_symbol);
 }
 
 LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     fname = qenv(fname);
-    push(car(fname), a1, a2);
+    push(fname, a1, a2);
     set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
     fname = cdr(fname);
     while (consp(fname))
-    {   push(cdr(fname));
+    {   push(fname);
         Lload_module(nil, car(fname));
         pop(fname);
+        fname = cdr(fname);
     }
     pop(a2, a1);
     a1 = list2(a1, a2);
     pop(fname);
-    return apply(fname, a1, nil, autoload_symbol);
+    return apply(car(fname), a1, nil, autoload_symbol);
 }
 
 LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2,
                       LispObject a3)
 {   STACK_SANITY;
     fname = qenv(fname);
-    push(car(fname), a1, a2, a3);
+    push(fname, a1, a2, a3);
     set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
     fname = cdr(fname);
     while (consp(fname))
-    {   push(cdr(fname));
+    {   push(fname);
         Lload_module(nil, car(fname));
         pop(fname);
+        fname = cdr(fname);
     }
     pop(a3, a2, a1);
     a1 = list3(a1, a2, a3);
     pop(fname);
-    return apply(fname, a1, nil, autoload_symbol);
+    return apply(car(fname), a1, nil, autoload_symbol);
 }
 
 LispObject autoload_4up(LispObject fname, LispObject a1,
@@ -1342,14 +1347,15 @@ LispObject autoload_4up(LispObject fname, LispObject a1,
     setenv(car(fname), car(fname));
     fname = cdr(fname);
     while (consp(fname))
-    {   push(cdr(fname));
+    {   push(fname);
         Lload_module(nil, car(fname));
         pop(fname);
+        fname = cdr(fname);
     }
     pop(a4up, a3, a2, a1);
     a1 = list3star(a1, a2, a3, a4up);
     pop(fname);
-    return apply(fname, a1, nil, autoload_symbol);
+    return apply(car(fname), a1, nil, autoload_symbol);
 }
 
 LispObject undefined_0(LispObject fname)

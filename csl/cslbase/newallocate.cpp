@@ -753,10 +753,10 @@ void setVariablesFromPage(Page *p)
     fringe::set(limit[threadId::get()] = limitBis[threadId::get()] =
             gFringe = p->fringe.load());
     gLimit = p->limit;
-    cout << "setVariablesFromPage\n";
-    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe << endl;
-    cout << "At " << __WHERE__ << " gLimit = " << std::hex << gLimit << endl;
-    cout << std::dec;
+//    cout << "setVariablesFromPage\n";
+//    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe << endl;
+//    cout << "At " << __WHERE__ << " gLimit = " << std::hex << gLimit << endl;
+//    cout << std::dec;
 }
 
 //@@@@
@@ -966,10 +966,11 @@ void initHeapSegments(double storeSize)
 // than as an integer so that overflow is not an issue.
 {
 // I will make the default initial store size around 64M on a 64-bit
-// machine and 512M on a 64-bit system. If the user specified a "-K" option
+// machine and 2048M on a 64-bit system. If the user specified a "-K" option
 // they can override this, and also the system will tend to allocate more
 // space (if it can) when its memory starts to get full.
-    size_t freeSpace = (SIXTY_FOUR_BIT ? 512 : 64)*1024*1024;
+    size_t freeSpace = static_cast<size_t>(SIXTY_FOUR_BIT ? 2048 : 64) *
+                       1024*1024;
     size_t request = (size_t)storeSize;
     if (request != 0) freeSpace = 1024*request;
 // Now freeSpace is the amount I want to allocate. I will explicitly

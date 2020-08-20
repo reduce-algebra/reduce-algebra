@@ -1,10 +1,10 @@
-// "log.h"                                                 2019, A C Norman
+// "log.h"                                                 2020, A C Norman
 //
 // logging...
 //
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -74,6 +74,18 @@ inline void my_assert(bool ok, F&& action)
 inline void my_assert(bool ok)
 {   if (!ok) my_abort();
 }
+
+// This is to help me in trace messages.
+
+inline const char *where(const char *file, int line)
+{   const char *p = std::strrchr(file, '/');
+    if (p != nullptr) file = p+1;
+    static char whereMsg[100];
+    sprintf(whereMsg, "%.40s:%d", file, line);
+    return whereMsg;
+}
+
+#define __WHERE__ where(__FILE__, __LINE__)
 
 #if defined __OPTIMIZE__ || !defined __GNUC__
 

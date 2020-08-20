@@ -1,11 +1,11 @@
-// arith-plus.cpp                               Copyright (C) 2019 Codemist
+// arith-plus.cpp                               Copyright (C) 2020 Codemist
 
 // $Id$
 
 #ifdef ARITHLIB
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

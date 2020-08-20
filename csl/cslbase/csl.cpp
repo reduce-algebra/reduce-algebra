@@ -3601,10 +3601,10 @@ int PROC_simplify()
 
 static void PROC_standardise_gensyms(LispObject w)
 {   if (consp(w))
-    {   push(cdr(w));
+    {   push(w);
         PROC_standardise_gensyms(car(w));
         pop(w);
-        PROC_standardise_gensyms(w);
+        PROC_standardise_gensyms(cdr(w));
         return;
     }
 //
@@ -3631,11 +3631,11 @@ int PROC_lisp_eval()
 
 static LispObject PROC_standardise_printed_form(LispObject w)
 {   if (consp(w))
-    {   push(cdr(w));
+    {   push(w);
         LispObject w1 = PROC_standardise_printed_form(car(w));
         pop(w);
         push(w1);
-        w =  PROC_standardise_printed_form(w);
+        w =  PROC_standardise_printed_form(cdr(w));
         pop(w1);
         return cons(w1, w);
     }

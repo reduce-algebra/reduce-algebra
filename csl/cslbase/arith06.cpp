@@ -1,11 +1,11 @@
-// arith06.cpp                             Copyright (C) 1990-2017 Codemist
+// arith06.cpp                             Copyright (C) 1990-2020 Codemist
 
 //
 // Arithmetic functions... lots of Lisp entrypoints.
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

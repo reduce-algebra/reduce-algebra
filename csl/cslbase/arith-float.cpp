@@ -1,4 +1,4 @@
-// arith-float.cpp                              Copyright (C) 2019 Codemist
+// arith-float.cpp                              Copyright (C) 2020 Codemist
 
 #ifdef ARITHLIB
 
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -159,7 +159,7 @@ LispObject Float128::op(LFlt a)
 // to ignore the issue. There will in fact be plenty of other places where
 // floating point support fails strict challenges to be as perfect as one
 // might imagine - both in terms of correct vs incorrect rounding and in
-// instances where premature overflow can arise.              ACN June 2019
+// instances where premature overflow can arise.              ACN June 2020
 
 LispObject Float::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<LispObject,Float>("float", a, b);

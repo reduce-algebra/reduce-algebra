@@ -365,7 +365,7 @@ LispObject *evacuateContents(LispObject *p)
 }
 
 void prepareForGarbageCollection(bool major)
-{   cout << "peepareForGarbageCollection" << endl;
+{   cout << "prepareForGarbageCollection" << endl;
     my_abort();
 }
 

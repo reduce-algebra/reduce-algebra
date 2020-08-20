@@ -1,4 +1,4 @@
-// arith13.cpp                             Copyright (C) 2016-2017 Codemist
+// arith13.cpp                             Copyright (C) 2016-2020 Codemist
 
 //
 // Complex elementary functions using the C99 support for same, but with
@@ -15,7 +15,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

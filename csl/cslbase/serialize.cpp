@@ -3327,9 +3327,9 @@ static LispObject load_module(LispObject env, LispObject file,
         {   err_printf("Failed to load module from stream\n");
             error(1, err_no_fasl, file);
         }
-        push(qvalue(standard_input));
+        real_push(qvalue(standard_input));
         setvalue(standard_input, file);
-        push(qvalue(echo_symbol));
+        real_push(qvalue(echo_symbol));
         setvalue(echo_symbol, nil);
     }
     else
@@ -3382,9 +3382,9 @@ static LispObject load_module(LispObject env, LispObject file,
             inf_finish();
             IcloseInput();
             if (from_stream)
-            {   pop(p);
+            {   real_pop(p);
                 setvalue(echo_symbol, p);
-                pop(p);
+                real_pop(p);
                 setvalue(standard_input, p);
             }
             uint64_t delta = read_clock() - t0b;
