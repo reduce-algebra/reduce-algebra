@@ -230,6 +230,9 @@ else
         *Mac*OS*X*ProductVersion*\<string\>10.15*)
           os="mac_10.15_catalina"
           ;;
+        *Mac*OS*X*ProductVersion*\<string\>11.0*)
+          os="mac_11.0_bigsur"
+          ;;
         *Mac*OS*X*ProductVersion*\<string\>*)
           os="mac_unknown_version"
           ;;

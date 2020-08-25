@@ -1572,7 +1572,9 @@ then
 # 10.11 El Capitan      Now the oldest deployment target I support
 # 10.12 Sierra
 # 10.13 High Sierra
-# 10.14 Mojave         Now the version I build and test on.
+# 10.14 Mojave
+# 10.15 Catalina        Now the version I build and test on.
+# 11.0  Big Sur
 #
 # Every few years maybe I should review how old a MacOS can be supported, but
 # note very well that one needs to configure Macports to use a deployment
@@ -1635,12 +1637,14 @@ then
       LIBS="$LIBS $LL/libiconv.a $LL/libz.a $LL/libpng.a"
     fi
   else
+# Here I have explicitly asked to avoid building the GUI. The result is
+# that it is probably possible to build without use of MacPorts...
+#
 # This is to try to force linking against a system-provided version.
     LDFLAGS="-L/usr/lib -lcurses $LDFLAGS"
-    LL=/opt/local/lib
-    LIBS="$LL/libz.a \
-      $LL/libbz2.a \
-      $LL/libiconv.a \
+    LIBS="-lz \
+      -lbz2 \
+      -liconv \
       -lpthread \
       -ldl"
   fi  
