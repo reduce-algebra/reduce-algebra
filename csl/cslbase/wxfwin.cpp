@@ -1,4 +1,4 @@
-// wxfwin.cpp                                     Copyright A C Norman 2019
+// wxfwin.cpp                                     Copyright A C Norman 2020
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -118,6 +118,8 @@ extern char *getcwd(char *s, std::size_t n);
 
 #include "wxfwin.h"
 #include "termed.h"
+
+using std::int64_t;
 
 //
 // The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
@@ -2233,13 +2235,13 @@ int delete_wildcard(char *filename, const char *old, std::size_t n)
     return 0;
 }
 
-std::int64_t file_length(char *filename, const char *old,
+int64_t file_length(char *filename, const char *old,
                          std::size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
     if (*filename == 0) return 0;
     if (stat(filename,&buf) == -1) return -1;
-    return static_cast<std::int64_t>(buf.st_size);
+    return static_cast<int64_t>(buf.st_size);
 }
 
 #ifdef NAG_VERSION

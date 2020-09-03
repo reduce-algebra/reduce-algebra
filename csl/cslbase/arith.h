@@ -1,8 +1,8 @@
-// arith.h                                Copyright (C) Codemist, 1990-2019
+// arith.h                                Copyright (C) Codemist, 1990-2020
 
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -491,21 +491,23 @@ inline LispObject make_lisp_unsignedptr(uintptr_t n)
 }
 
 extern LispObject make_lisp_integer128_fn(int128_t n);
+
 inline LispObject make_lisp_integer128(int128_t n)
-{   if (valid_as_fixnum(n)) return fixnum_of_int(NARROW128(n));
+{   if (valid_as_fixnum(n)) return fixnum_of_int(static_cast<int64_t>(n));
     else return make_lisp_integer128_fn(n);
 }
 
 extern LispObject make_lisp_unsigned128_fn(uint128_t n);
+
 inline LispObject make_lisp_unsigned128(uint128_t n)
 {   if (uint128_valid_as_fixnum(n))
-        return fixnum_of_int(static_cast<uint64_t>(NARROW128(n)));
+        return fixnum_of_int(static_cast<uint64_t>(static_cast<uint64_t>(n)));
     else return make_lisp_unsigned128_fn(n);
 }
 
 inline void validate_number(LispObject n)
 {
-
+// Can be used while debugging!
 }
 
 extern double float_of_integer(LispObject a);

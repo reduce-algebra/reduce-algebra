@@ -152,6 +152,8 @@ extern char *getcwd(char *s, std::size_t n);
 #include "fwin.xpm" // Icon to use in non-Windows cases
 #endif
 
+using std::int32_t;
+
 // I have a generated file that contains the widths of all the fonts
 // I am willing to use here. Well this will be a MESS because for rendering
 // I will use STIXMath but I will allow input to pretend that it is in
@@ -242,9 +244,9 @@ private:
     double DVItoScreen(int n);  // map coordinates
     double DVItoScreenUP(int n);// ditto but used for rule widths
 
-    std::int32_t h, v, w, x, y, z;// working values used in DVI decoding
+    int32_t h, v, w, x, y, z;// working values used in DVI decoding
 
-    std::int32_t C[10], p;        // set by start of a page and not used!
+    int32_t C[10], p;        // set by start of a page and not used!
 
 // dvi files can call for an essentially unlimited number of distinct
 // fonts - where one "font" here is not just to do with shape but also with
@@ -263,7 +265,7 @@ private:
 // the greatest stack depth that will be used. I just give myself a fixed
 // quota for now.
 #define MAX_STACK 100
-    std::int32_t stack[6*MAX_STACK];
+    int32_t stack[6*MAX_STACK];
     int stackp;
 
     DECLARE_EVENT_TABLE()
@@ -513,45 +515,45 @@ unsigned char mathDvi[] =
 // variants being either signed or unsigned. All are arranged in big-endian
 // style, as defined by the DVI format.
 
-std::int32_t dviPanel::u2()
-{   std::int32_t c1 = *stringInput++;
-    std::int32_t c2 = *stringInput++;
+int32_t dviPanel::u2()
+{   int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
     return (c1 << 8) | c2;
 }
 
-std::int32_t dviPanel::u3()
-{   std::int32_t c1 = *stringInput++;
-    std::int32_t c2 = *stringInput++;
-    std::int32_t c3 = *stringInput++;
+int32_t dviPanel::u3()
+{   int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    int32_t c3 = *stringInput++;
     return (c1 << 16) | (c2 << 8) | c3;
 }
 
-std::int32_t dviPanel::s1()
-{   return static_cast<std::int32_t>(static_cast<std::int8_t>
+int32_t dviPanel::s1()
+{   return static_cast<int32_t>(static_cast<std::int8_t>
                                      (*stringInput++));
 }
 
-std::int32_t dviPanel::s2()
-{   std::int32_t c1 = *stringInput++;
-    std::int32_t c2 = *stringInput++;
-    return static_cast<std::int32_t>(static_cast<std::int16_t>((
+int32_t dviPanel::s2()
+{   int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    return static_cast<int32_t>(static_cast<std::int16_t>((
                                          c1 << 8) | c2));
 }
 
-std::int32_t dviPanel::s3()
-{   std::int32_t c1 = *stringInput++;
-    std::int32_t c2 = *stringInput++;
-    std::int32_t c3 = *stringInput++;
-    std::int32_t r = (c1 << 16) | (c2 << 8) | c3;
+int32_t dviPanel::s3()
+{   int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    int32_t c3 = *stringInput++;
+    int32_t r = (c1 << 16) | (c2 << 8) | c3;
     if ((r & 0x00800000) != 0) r |= 0xff000000;
-    return static_cast<std::int32_t>(r);
+    return static_cast<int32_t>(r);
 }
 
-std::int32_t dviPanel::s4()
-{   std::int32_t c1 = *stringInput++;
-    std::int32_t c2 = *stringInput++;
-    std::int32_t c3 = *stringInput++;
-    std::int32_t c4 = *stringInput++;
+int32_t dviPanel::s4()
+{   int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    int32_t c3 = *stringInput++;
+    int32_t c4 = *stringInput++;
     return (c1 << 24) | (c2 << 16) |
            (c3 << 8) | c4;
 }
@@ -582,12 +584,12 @@ void dviPanel::DefFont(int k)
              static_cast<int>(stringInput - dviData));
 #endif
     char fontname[LONGEST_LEGAL_FILENAME];
-    std::int32_t checksum = s4();
-    std::int32_t size = s4();
+    int32_t checksum = s4();
+    int32_t size = s4();
 // The designsize in a .dvi file is given in units of points/2^16 while
 // in .tfm data it is in units of points/2^20, so I adjust here so that the
 // two sources of information should match.
-    std::int32_t designsize = s4() << 4;
+    int32_t designsize = s4() << 4;
     int arealen = *stringInput++;
     int namelen = *stringInput++;
     int m;
@@ -703,7 +705,7 @@ double dviPanel::DVItoScreenUP(int n)
 
 static int rendered = 0;
 
-void dviPanel::SetChar(std::int32_t c)
+void dviPanel::SetChar(int32_t c)
 {
 #if 1
     printlog("SetChar%d [%c] %d %d\n", static_cast<int>(c),
@@ -734,13 +736,13 @@ void dviPanel::SetChar(std::int32_t c)
 // Now I must increase h by the width (in scaled points) of the character
 // I just set. This is not dependent at all on the way I map DVI internal
 // coordinates to screen ones.
-    std::int32_t ww = currentFontWidth->charwidth[c & 0x7f];
-    std::int32_t design = currentFontWidth->designsize;
+    int32_t ww = currentFontWidth->charwidth[c & 0x7f];
+    int32_t design = currentFontWidth->designsize;
 // ww is now the width as extracted from the .tfm file, and that applies
 // to the glyph if it is set at its standard size. So adjust for all of
 // that and end up in TeX coordinate units.
-    std::int32_t texwidth =
-        static_cast<std::int32_t>(0.5 + static_cast<double>
+    int32_t texwidth =
+        static_cast<int32_t>(0.5 + static_cast<double>
                                   (design)*static_cast<double>(ww)/
                                   static_cast<double>(1<<24));
     h += texwidth;
@@ -755,7 +757,7 @@ void dviPanel::SetChar(std::int32_t c)
 #endif
 }
 
-void dviPanel::PutChar(std::int32_t c)
+void dviPanel::PutChar(int32_t c)
 {
 #ifdef DEBUG
     if (!rendered)
@@ -772,10 +774,10 @@ void dviPanel::PutChar(std::int32_t c)
 #if 0
 // Now I want to compare the width that TeX thinks the character has with
 // what wxWidgets thinks. So I convert the TeX width to pixels.
-    std::int32_t ww = currentFontWidth->charwidth[c & 0x7f];
-    std::int32_t design = currentFontWidth->designsize;
-    std::int32_t texwidth =
-        static_cast<std::int32_t>(0.5 + static_cast<double>
+    int32_t ww = currentFontWidth->charwidth[c & 0x7f];
+    int32_t design = currentFontWidth->designsize;
+    int32_t texwidth =
+        static_cast<int32_t>(0.5 + static_cast<double>
                                   (design)*static_cast<double>(ww)/
                                   static_cast<double>(1<<24));
     double twp = static_cast<double>(96)*static_cast<double>(texwidth)/
@@ -810,7 +812,7 @@ void dviPanel::RenderDVI()
 // This always starts afresh at the start of the DVI data, which has been
 // put in an array for me.
     stringInput = dviData;
-    std::int32_t a, b, c, i, k;
+    int32_t a, b, c, i, k;
     for (;;)
     {   c = *stringInput++;
         if (c <= 127)

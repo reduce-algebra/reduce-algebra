@@ -560,7 +560,7 @@ static LispObject quotrembi(LispObject a, LispObject b)
     }
 // Because b is a fixnum the remainder must be. Note that p and b might be
 // negative here,
-    mv_2 = fixnum_of_int(NARROW128(p % int_of_fixnum(b)));
+    mv_2 = fixnum_of_int(static_cast<int64_t>(p % int_of_fixnum(b)));
     p = p / int_of_fixnum(b);
     return make_lisp_integer128(p);
 }

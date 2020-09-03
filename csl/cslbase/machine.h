@@ -1,4 +1,4 @@
-// machine.h                               Copyright (C) 1990-2019 Codemist
+// machine.h                               Copyright (C) 1990-2020 Codemist
 
 //
 // This was ONCE a place where all system-specific options were detected
@@ -14,7 +14,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -48,11 +48,43 @@
 #ifndef header_machine_h
 #define header_machine_h 1
 
+// To keep my C++ just a bit more compact I will put in some "using"
+// statements here so that especially commonly used things can avoid needing
+// explicit "std::" prefixes. The things I "use" here are ones that should
+// be standard from the headers I have included and should not be names
+// where there is any proper chance for conflict. Note that I need some
+// header files scanned before the "using" statement.
+
+#include <cstdint>
+#include <cinttypes>
+#include <iostream>
+#include <atomic>
+
+using std::cout;      // Make C++ output as in "cout << "string" << endl;"
+using std::endl;      // a lot nicer.
+
+using std::int32_t;   // Fixed-width and architeciture-specific width integers
+using std::int64_t;   // that are really heavily used.
+using std::intptr_t;
+using std::uint32_t;
+using std::uint64_t;
+// The header "int128_h.h" ensures that int128_t and uint128_t are
+// available without needing any package prefix.
+using std::uintptr_t;
+using std::size_t;
+
+using std::string;    // This to encourage me to use "string" rather than
+                      // "char *".
+
+using std::atomic;    // If I am going to be multi-threaded then very many
+                      // things need to be atomic and writing std::atomic<>
+                      // every time is a burden.
+
 #ifndef DEBUG
 #ifndef NDEBUG
 #define NDEBUG 1
-#endif
-#endif
+#endif // NDEBUG
+#endif // DEBUG
 
 //
 // If the header "complex.h" is available, the type "complex double" is
@@ -66,18 +98,16 @@
     defined HAVE_COMPLEX_DOUBLE && \
     defined HAVE_CSQRT
 #define HAVE_COMPLEX 1
-#endif
+#endif // Complex number support
 
 //
 // I will check a number of things before I try to use sigaltstack()
 //
-#if defined HAVE_SIGNAL_H && defined HAVE_SETJMP_H
-#if defined HAVE_SIGSETJMP && defined HAVE_SIGLONGJMP
-#if defined HAVE_SIGACTION && defined HAVE_SIGALTSTACK
+#if defined HAVE_SIGNAL_H && defined HAVE_SETJMP_H && \
+    defined HAVE_SIGSETJMP && defined HAVE_SIGLONGJMP && \
+    defined HAVE_SIGACTION && defined HAVE_SIGALTSTACK
 #define USE_SIGALTSTACK 1
-#endif
-#endif
-#endif
+#endif // sigaltstack availability
 
 #if defined __has_cpp_attribute && __has_cpp_attribute(maybe_unused)
 // C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
@@ -86,11 +116,11 @@
 #define UNUSED_NAME [[maybe_unused]]
 #elif defined __GNUC__
 #define UNUSED_NAME [[gnu::unused]]
-#else
+#else // [[maybe_unused]] or [[gnu::unused]] availability
 // In any other case I just omit any annotation and if I get warnings about
 // unused things then so be it.
 #define UNUSED_NAME
-#endif
+#endif // annotation for unused things
 
 #ifdef __cpp_inline_variables
 // For versions of C++ up to C++17 I will put constant values in header
@@ -107,9 +137,9 @@
 // not feel entitled to moan about cases where there are no references.
 //
 #define INLINE_VAR inline
-#else
+#else // inline variables
 #define INLINE_VAR UNUSED_NAME static
-#endif
+#endif // inline variables
 
 // With really old versions of C++ you may not be able to write
 // large literal integers without some decoration. So e.g.
@@ -132,31 +162,21 @@
 
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
-#endif
+#endif // define INT32_C etc
 
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS 1
-#endif
+#endif // define numeric limits
 
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS 1
-#endif
+#endif // define PRId32 etc
 
 // Here is some more exploitation of C++17 when it is available.
 
 #ifndef __has_cpp_attribute
 #define __has_cpp_attribute(name) 0
-#endif
-
-#ifndef MAYBE_UNUSED
-#if __has_cpp_attribute(maybe_unused)
-#define MAYBE_UNUSED [[maybe_unused]]
-#elif defined __GNUC__
-#define MAYBE_UNUSED [[gnu::unused]]
-#else
-#define MAYBE_UNUSED
-#endif
-#endif
+#endif // C++17 support
 
 #ifdef WIN32
 // The aim here is to avoid use of the Microsoft versions of printf and
@@ -184,7 +204,7 @@
 #define SOCKET_ERROR        (-1)
 #ifndef INADDR_NONE
 #  define INADDR_NONE       0xffffffff
-#endif
+#endif // INADDR_NONE
 
 #endif //WIN32
 
@@ -203,8 +223,6 @@
 #include <cstddef>
 #include <cmath>
 #include <cfloat>
-#include <cstdint>
-#include <cinttypes>
 #include <climits>
 #include <cstring>
 #include <cctype>
@@ -217,7 +235,6 @@
 
 // Now the C++ facilities that I use...
 
-#include <iostream>
 #include <iomanip>
 #include <exception>
 #include <cassert>
@@ -231,12 +248,11 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include <atomic>
 #include <functional>
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#endif
+#endif // SYS_TIME_H
 
 // In a manner that I view as bad, at least the Macintosh copy of libffi
 // installed via macports in August 2017 defined a bunch of autoconf-related
@@ -272,7 +288,12 @@ extern "C"
 
 #include "softfloat.h"
 }
-#endif
+#endif // EMBEDDED
+
+// I want to have types uint128_t and int128_t and this header file
+// can arrange that for me.
+
+#include "int128_t.h"
 
 //
 // I will decode information that config.h has given me and define a simple
@@ -282,18 +303,18 @@ extern "C"
 #if !defined EMBEDDED
 #if ((defined HAVE_SOCKET && defined HAVE_SYS_SOCKET_H) || defined WIN32)
 #define SOCKETS                  1
-#endif
-#endif
+#endif // sockets available
+#endif // !EMBEDDED
 
 #ifdef WIN32
 #  if defined WIN64 || defined __WIN64__
 #     define OPSYS           "win64"
 #     define IMPNAME         "win64"
-#  else
+#  else // 64-bit?
 #     define OPSYS           "win32"
 #     define IMPNAME         "win32"
-#  endif
-#else
+#  endif // 64-bit?
+#else // WIN32
 #  ifdef HOST_OS
 #     define OPSYS           HOST_OS
 #     ifdef HOST_CPU
@@ -301,11 +322,11 @@ extern "C"
 #     else
 #        define IMPNAME      HOST_OS
 #     endif
-#  else
+#  else // Give up on identity of platform
 #     define OPSYS           "Unknown"
 #     define IMPNAME         "Generic"
 #  endif
-#endif
+#endif // system and implementation identity
 
 // The C and C++ refuse to define the behaviour of right shifts
 // on signed types. The underlying reason may relate to the possibility that
@@ -329,34 +350,48 @@ extern "C"
 // "undefined" in that the optimiser has to preserve whetever semantics the
 // implementation settled on!
 
-inline std::int32_t ASR(std::int32_t a, int n)
-{   if (n<0 || n>=8*static_cast<int>(sizeof(std::int32_t))) n=0;
+inline int32_t ASR(int32_t a, int n)
+{   if (n<0 || n>=8*static_cast<int>(sizeof(int32_t))) n=0;
     return a >> n;
 }
 
-inline std::int64_t ASR(std::int64_t a, int n)
-{   if (n<0 || n>=8*static_cast<int>(sizeof(std::int64_t))) n=0;
+inline int64_t ASR(int64_t a, int n)
+{   if (n<0 || n>=8*static_cast<int>(sizeof(int64_t))) n=0;
+    return a >> n;
+}
+
+inline int128_t ASR(int128_t a, int n)
+{   if (n<0 || n>=8*static_cast<int>(sizeof(int128_t))) n=0;
     return a >> n;
 }
 
 #else // SIGNED_SHIFTS_ARE_ARITHMETIC
 
-inline std::int32_t ASR(std::int32_t a, int n)
-{   if (n<0 || n>=8*static_cast<int>(sizeof(std::int32_t))) n=0;
-    std::uint32_t r = (static_cast<std::uint32_t>(a)) >> n;
-    std::uint32_t std::signbit = (static_cast<std::uint32_t>(a)) >>
-                                 (8*sizeof(std::uint32_t)-1);
-    if (n != 0) r |= ((-std::signbit) << (8*sizeof(std::uint32_t) - n));
-    return static_cast<std::int32_t>(r);
+inline int32_t ASR(int32_t a, int n)
+{   if (n<0 || n>=8*static_cast<int>(sizeof(int32_t))) n=0;
+    uint32_t r = (static_cast<uint32_t>(a)) >> n;
+    uint32_t signbit = (static_cast<uint32_t>(a)) >>
+                                 (8*sizeof(uint32_t)-1);
+    if (n != 0) r |= ((-signbit) << (8*sizeof(uint32_t) - n));
+    return static_cast<int32_t>(r);
 }
 
-inline std::int64_t ASR(std::int64_t a, int n)
-{   if (n<0 || n>=8*static_cast<int>(sizeof(std::int64_t))) n=0;
-    std::uint64_t r = (static_cast<std::uint64_t>(a)) >> n;
-    std::uint64_t std::signbit = (static_cast<std::uint64_t>(a)) >>
-                                 (8*sizeof(std::uint64_t)-1);
-    if (n != 0) r |= ((-std::signbit) << (8*sizeof(std::uint64_t) - n));
-    return static_cast<std::int64_t>(r);
+inline int64_t ASR(int64_t a, int n)
+{   if (n<0 || n>=8*static_cast<int>(sizeof(int64_t))) n=0;
+    uint64_t r = (static_cast<uint64_t>(a)) >> n;
+    uint64_t signbit = (static_cast<uint64_t>(a)) >>
+                                 (8*sizeof(uint64_t)-1);
+    if (n != 0) r |= ((-signbit) << (8*sizeof(uint64_t) - n));
+    return static_cast<int64_t>(r);
+}
+
+inline int128_t ASR(int128_t a, int n)
+{   if (n<0 || n>=8*static_cast<int>(sizeof(int128_t))) n=0;
+    uint128_t r = (static_cast<uint128_t>(a)) >> n;
+    uint64_t signbit = (static_cast<uint128_t>(a)) >>
+                                 (8*sizeof(uint128_t)-1);
+    if (n != 0) r |= ((-signbit) << (8*sizeof(uint128_t) - n));
+    return static_cast<int128_t>(r);
 }
 
 #endif // SIGNED_SHIFTS_ARE_ARITHMETIC
@@ -367,45 +402,22 @@ inline std::int64_t ASR(std::int64_t a, int n)
 // I need to work in an unsigned type. Rather than messing with templates
 // again I will have versions for each possible width that I might use.
 
-inline std::int32_t ASL(std::int32_t a, int n)
-{   if (n < 0 || n>=8*static_cast<int>(sizeof(std::uint32_t))) n = 0;
-    return static_cast<std::int32_t>((static_cast<std::uint32_t>
+inline int32_t ASL(int32_t a, int n)
+{   if (n < 0 || n>=8*static_cast<int>(sizeof(uint32_t))) n = 0;
+    return static_cast<int32_t>((static_cast<uint32_t>
                                       (a)) << n);
 }
 
-inline std::int64_t ASL(std::int64_t a, int n)
-{   if (n < 0 || n>=8*static_cast<int>(sizeof(std::uint64_t))) n = 0;
-    return static_cast<std::int64_t>((static_cast<std::uint64_t>
+inline int64_t ASL(int64_t a, int n)
+{   if (n < 0 || n>=8*static_cast<int>(sizeof(uint64_t))) n = 0;
+    return static_cast<int64_t>((static_cast<uint64_t>
                                       (a)) << n);
 }
 
-inline std::uint64_t ASL(std::uint64_t a, int n)
-{   if (n < 0 || n>=8*static_cast<int>(sizeof(std::uint64_t))) n = 0;
+inline uint64_t ASL(uint64_t a, int n)
+{   if (n < 0 || n>=8*static_cast<int>(sizeof(uint64_t))) n = 0;
     return a << n;
 }
-
-// Tidy up re possible 128-bit arithemetic support.
-
-#ifdef HAVE_UINT128_T
-#define HAVE_NATIVE_UINT128 1
-#elif defined HAVE_UNSIGNED___INT128
-typedef unsigned __int128 uint128_t;
-#define HAVE_NATIVE_UINT128
-#else
-#include "uint128_t.h"  // For software emulation. Needs C++-11
-#endif
-
-#ifdef HAVE_INT128_T
-#define HAVE_NATIVE_INT128 1
-#elif defined HAVE___INT128
-typedef __int128 int128_t;
-#define HAVE_NATIVE_INT128
-#elif defined HAVE_UINT128_T || defined HAVE_UNSIGNED___INT128
-#error Seem to have unsigned 128-bit type but not a signed one!
-#endif
-
-// With luck that will have regularised the situation with regard to
-// integer types!
 
 // It is useful to have some integer constants that I KNOW are 64-bit
 // wide or that I KNOW are the width of pointers - these are for instance
@@ -425,12 +437,12 @@ INLINE_VAR const uint64_t u64_1 = static_cast<uint64_t>(1);
 // up all the space, but I do not mind) pointing at the original start of
 // the block.
 
-inline void *aligned_malloc(std::size_t n)
+inline void *aligned_malloc(size_t n)
 {   void *p = reinterpret_cast<void *>(std)::malloc(n + 32);
     if (p == nullptr) return p;
-    void *r = reinterpret_cast<void *>(((reinterpret_cast<std::uintptr_t>
-                                         (p) + 15) & -static_cast<std::uint64_t>(16)) + 16);
-    reinterpret_cast<void *>(reinterpret_cast<std::uintptr_t>
+    void *r = reinterpret_cast<void *>(((reinterpret_cast<uintptr_t>
+                                         (p) + 15) & -static_cast<uint64_t>(16)) + 16);
+    reinterpret_cast<void *>(reinterpret_cast<uintptr_t>
                              (r) - 16) = p;
     return r;
 }
@@ -440,7 +452,7 @@ inline void *aligned_malloc(std::size_t n)
 
 inline void aligned_free(void *p)
 {   if (p == nullptr) return;
-    std::free(*reinterpret_cast<void *>(reinterpret_cast<std::uintptr_t>
+    std::free(*reinterpret_cast<void *>(reinterpret_cast<uintptr_t>
                                         (p) - 16));
 }
 #else // MAXALING4
@@ -448,7 +460,7 @@ inline void aligned_free(void *p)
 // In the hugely more common case where malloc does align things to at least
 // 8 byte boundaries I can use malloc() and free() directly.
 
-inline void *aligned_malloc(std::size_t n)
+inline void *aligned_malloc(size_t n)
 {   return reinterpret_cast<void *>(std::malloc(n));
 }
 
@@ -457,30 +469,6 @@ inline void aligned_free(void *p)
 }
 
 #endif // MAXALING4
-
-// To keep my C++ just a bit more compact I will put in some "using"
-// statements here so that especially commonly used things can avoid needing
-// explicit "std::" prefixes. The things I "use" here are ones that should
-// be standard from the headers I have included and should not be names
-// where there is any proper chance for conflict.
-
-using std::cout;      // Make C++ output as in "cout << "string" << endl;"
-using std::endl;      // a lot nicer.
-
-using std::int32_t;   // Fixed-width and architectiure-specific with integers
-using std::int64_t;   // that are really having used.
-using std::intptr_t;
-using std::uint32_t;
-using std::uint64_t;
-using std::uintptr_t;
-using std::size_t;
-
-using std::string;    // This to encourage me to use "string" rather than
-                      // "char *".
-
-using std::atomic;    // If I am going to be multi-threaded then very many
-                      // things need to be atomic and writing std::atomic<>
-                      // every time is a burden.
 
 #endif // header_machine_h
 

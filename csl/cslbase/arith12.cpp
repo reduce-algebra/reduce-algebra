@@ -256,8 +256,9 @@ LispObject Lmodular_times(LispObject env, LispObject a, LispObject b)
 // On some platforms this goes via C++ templates and operator overloading
 // into a software implementation of 128-bit integer arithmetic!
         else
-        {   int64_t r = NARROW128((static_cast<int128_t>(aa)
-                                   *static_cast<int128_t>(bb)) % static_cast<int128_t>(cm));
+        {   int64_t r = static_cast<int64_t>(
+                (static_cast<int128_t>(aa) * static_cast<int128_t>(bb)) %
+                static_cast<int128_t>(cm));
             return onevalue(fixnum_of_int((intptr_t)r));
         }
     }
@@ -305,8 +306,8 @@ LispObject large_modular_expt(LispObject a, int x)
 inline intptr_t muldivptr(uintptr_t a, uintptr_t b, uintptr_t c)
 {   if (!SIXTY_FOUR_BIT || c <= 0xffffffffU)
         return ((uint64_t)a*(uint64_t)b)%(uintptr_t)c;
-    else return (intptr_t)NARROW128((uint128((uint64_t)a)*
-                                         uint128((uint64_t)a))%(uintptr_t)c);
+    else return (intptr_t)static_cast<int64_t>(
+        (uint128((uint64_t)a) * uint128((uint64_t)a)) % (uintptr_t)c);
 }
 
 LispObject Lmodular_expt(LispObject env, LispObject a, LispObject b)

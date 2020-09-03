@@ -101,7 +101,7 @@ inline LispObject timesii(LispObject a, LispObject b)
 // mainly because the result can easily be a bignum
 //
 {   int64_t aa = (int64_t)int_of_fixnum(a),
-                bb = (int64_t)int_of_fixnum(b);
+            bb = (int64_t)int_of_fixnum(b);
 // If I am on a 32-bit system then fixnums are only 28 bits wide so using
 // int64_t multiplication can never overflow.
     if (!SIXTY_FOUR_BIT) return make_lisp_integer64(aa*bb);
@@ -1306,7 +1306,7 @@ static LispObject timescc(LispObject a, LispObject b)
 
 inline LispObject timesff(LispObject a, LispObject b)
 {   int ha = type_of_header(flthdr(a)),
-            hb = type_of_header(flthdr(b));
+        hb = type_of_header(flthdr(b));
     int hc;
 #ifdef HAVE_SOFTFLOAT
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)

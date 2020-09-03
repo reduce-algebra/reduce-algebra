@@ -253,7 +253,7 @@ inline bool valid_as_fixnum(int64_t x)
 }
 
 inline bool valid_as_fixnum(int128_t x)
-{   return int_of_fixnum(fixnum_of_int(NARROW128(x))) == x;
+{   return int_of_fixnum(fixnum_of_int(static_cast<int64_t>(x))) == x;
 }
 
 // The following has given me some pain wrt the overloading where gcc and
@@ -1147,11 +1147,11 @@ inline LispObject& vselt(LispObject v, size_t n)
 // ARM did not support 16-bit usage at all well. However these days I intend
 // to expect that int16_t will exist and will be something I can rely on.
 //
-inline std::int16_t& basic_helt(LispObject v, size_t n)
-{   return *reinterpret_cast<std::int16_t *>(reinterpret_cast<char *>
+inline int16_t& basic_helt(LispObject v, size_t n)
+{   return *reinterpret_cast<int16_t *>(reinterpret_cast<char *>
             (v) +
             (CELL-TAG_VECTOR) +
-            n*sizeof(std::int16_t));
+            n*sizeof(int16_t));
 }
 
 inline intptr_t& basic_ielt(LispObject v, size_t n)
@@ -1379,10 +1379,10 @@ inline signed char& scelt(LispObject v, size_t n)
                        n%VECTOR_CHUNK_BYTES);
 }
 
-inline std::int16_t& helt(LispObject v, size_t n)
+inline int16_t& helt(LispObject v, size_t n)
 {   if (is_basic_vector(v)) return basic_helt(v, n);
-    return basic_helt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(std::int16_t))),
-                      n%(VECTOR_CHUNK_BYTES/sizeof(std::int16_t)));
+    return basic_helt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(int16_t))),
+                      n%(VECTOR_CHUNK_BYTES/sizeof(int16_t)));
 }
 
 inline intptr_t& ielt(LispObject v, size_t n)

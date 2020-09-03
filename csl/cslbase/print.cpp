@@ -5371,6 +5371,15 @@ LispObject Lwindow_heading2(LispObject env, LispObject a,
                 }
                 std::strcpy(saveright, txt);
             }
+#else
+            if (std::strcmp(txt, saveright) != 0 && s != nullptr)
+            {   std::fprintf(stderr, "Info: %s\n", txt);
+#ifdef __CYGWIN__
+                std::putc('\r', stderr);
+#endif
+                std::fflush(stderr);
+            }
+            std::strcpy(saveright, txt);
 #endif // WITH_GUI
             fwin_report_right(s); bit = 4; break;
     }

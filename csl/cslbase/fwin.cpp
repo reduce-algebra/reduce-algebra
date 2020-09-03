@@ -78,6 +78,18 @@
 #define PART_OF_FOX 1
 #endif // HAVE_CONFIG_H
 
+#if defined __has_cpp_attribute && __has_cpp_attribute(maybe_unused)
+// C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
+// and functions. Earlier versions of gcc and clang supported [[gnu::unused]]
+// as a non-standard annotation with similar effect.
+#define UNUSED_NAME [[maybe_unused]]
+#elif defined __GNUC__
+#define UNUSED_NAME [[gnu::unused]]
+#else // [[maybe_unused]] or [[gnu::unused]] availability
+// In any other case I just omit any annotation and if I get warnings about
+// unused things then so be it.
+#define UNUSED_NAME
+#endif // annotation for unused things
 
 #include "fwin.h"
 
@@ -993,9 +1005,9 @@ int plain_worker(int argc, const char *argv[],
 #define INPUT_BUFFER_SIZE 100
 
 static const char *current_line;
-static char input_buffer[INPUT_BUFFER_SIZE];
+UNUSED_NAME static char input_buffer[INPUT_BUFFER_SIZE];
 static int chars_left = 0;
-static int prompt_needed = 1;
+UNUSED_NAME static int prompt_needed = 1;
 
 int fwin_plain_getchar()
 {   int ch;

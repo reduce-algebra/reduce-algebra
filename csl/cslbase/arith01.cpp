@@ -239,24 +239,16 @@ LispObject make_lisp_unsignedptr_fn(uintptr_t n)
                (uint32_t)(n & 0x7fffffff));
 }
 
-// In some cases I need the software implementation of wide arithmetic.
-// Rather than arrange that it gets compiled separately if needed, I include
-// the source here if needed.
-
-#ifndef HAVE_NATIVE_UINT128
-#include "uint128_t.cpp"
-#endif
-
 LispObject make_lisp_integer128_fn(int128_t r)
 {
 // The result will be a bignum using 2, 3, 4 or 5 digits.
-    if (lessp128(r, int128(INT64_C(0x2000000000000000))) &&
-        geq128(r, -int128(INT64_C(0x2000000000000000))))
-        return make_two_word_bignum((int32_t)ASR(NARROW128(r), 31),
+    if (r < int128_t(INT64_C(0x2000000000000000)) &&
+        r >= -int128_t(INT64_C(0x2000000000000000)))
+        return make_two_word_bignum((int32_t)ASR(static_cast<int64_t>(r), 31),
                                     (uint32_t)(r & 0x7fffffff));
 // I will split off the high and low 62-bit chunks...
     uint64_t lo = (uint64_t)(r & UINT64_C(0x3fffffffffffffff));
-    int64_t hi = NARROW128(ASR128(r, 62));
+    int64_t hi = static_cast<int64_t>(r >> 62);
     if (hi < INT64_C(0x40000000) &&
         hi >= -INT64_C(0x40000000))
         return make_three_word_bignum(
@@ -281,13 +273,14 @@ LispObject make_lisp_integer128_fn(int128_t r)
 LispObject make_lisp_unsigned128_fn(uint128_t r)
 {
 // The result will be a bignum using 2, 3 or 4 digits.
-    if (lessp128(r, int128(INT64_C(0x2000000000000000))))
-        return make_two_word_bignum((int32_t)ASR(NARROW128(r), 31),
-                                    (uint32_t)(NARROW128(r) & 0x7fffffff));
+    if (r < uint128_t(INT64_C(0x2000000000000000)))
+        return make_two_word_bignum(
+            (int32_t)ASR(static_cast<int64_t>(r), 31),
+            (uint32_t)(static_cast<uint64_t>(r) & 0x7fffffff));
 // I will split off the high and low 62-bit chunks...
-    uint64_t lo = (uint64_t)(NARROW128(r) &
+    uint64_t lo = (uint64_t)(static_cast<uint64_t>(r) &
                              INT64_C(0x3fffffffffffffffU));
-    int64_t hi = NARROW128(ASR128(r, 62)); // Will be posititive
+    int64_t hi = static_cast<uint64_t>(r >> 62); // Will be positive
     if (hi < INT64_C(0x40000000))
         return make_three_word_bignum(
                    (int32_t)hi,
