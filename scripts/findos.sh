@@ -231,6 +231,9 @@ else
           os="mac_10.15_catalina"
           ;;
         *Mac*OS*X*ProductVersion*\<string\>11.0*)
+          os="mac_11.0_big_sur"
+          ;;
+        *mac*OS*ProductVersion*\<string\>11.0*)
           os="mac_11.0_bigsur"
           ;;
         *Mac*OS*X*ProductVersion*\<string\>*)
