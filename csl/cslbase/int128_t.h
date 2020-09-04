@@ -1877,7 +1877,9 @@ inline uint128_t uint128(std::uint64_t v)
 }
 
 inline uint128_t uint128(int64_t v)
-{   return INT128::PACK128(v<0 ? 0xffffffffffffffffU : 0U, v);
+{   return INT128::PACK128(
+        static_cast<std::uint64_t>(v<0 ? 0xffffffffffffffffU : 0U),
+        v);
 }
 
 #ifdef HAVE_INT128_T
