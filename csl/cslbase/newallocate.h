@@ -694,11 +694,12 @@ inline Header makeVectorHeader(size_t n)   // size is in bytes
 {   return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_VEC32;
 }
 
-// I will want to treat the first word of every object as atomic, so this
-// takes an address and casts it suitably.
+// At times I want to put a vector header at the start of a block of
+// memory, using an atomic access to insert it. This does the job. Note that
+// a is an untagged pointer here.
 
-inline atomic<uintptr_t>& firstWord(uintptr_t a)
-{   return ((atomic<uintptr_t> *)a)[0];
+inline void setHeaderWord(uintptr_t a, size_t n)
+{   reinterpret_cast<atomic<uintptr_t> *>(a)->store(makePaddingHeader(n));
 }
 
 // This is the core part of CONS and also of the code that allocates
@@ -740,7 +741,7 @@ inline LispObject get_n_bytes(size_t n)
 // pinned I will need to make a linear scan of it treating every pointer
 // field within it as an unambiguous list-base. Any uninitialized or otherwise
 // wild regions within it could cause disaster!
-        if (gap != 0) firstWord(r).store(makePaddingHeader(gap));
+        if (gap != 0) setHeaderWord(r, gap);
 // I now need to allocate a new chunk. gFringe and gLimit delimit a region
 // within of size PAGE (perhaps 8 Mbytes) and I will start by allocating
 // chunks sequentially within that page. By making gFringe atomic I can so
@@ -816,7 +817,7 @@ inline LispObject get_n_bytes(size_t n)
 // typically for the benefit of some other thread.
         cout << "GC triggered\n";
         size_t gap = limitBis[threadId::get()] - r;
-        if (gap != 0) firstWord(r).store(makePaddingHeader(gap));
+        if (gap != 0) setHeaderWord(r, gap);
         gIncrement[threadId::get()] = 0;
         fringe::set(r);
 //        cout << "At " << __WHERE__ << " fringe set to r = " << r << endl;
@@ -901,7 +902,7 @@ inline void poll()
 // Here I need to set everything up just as if I had been making an
 // allocation request for zero bytes.
         size_t gap = w - fringe::get();
-        if (gap != 0) firstWord(fringe::get()).store(makePaddingHeader(gap));
+        if (gap != 0) setHeaderWord(fringe::get(), gap);
         fringeBis[threadId::get()] = fringe::get();
 //        cout << "Polling at " << __WHERE__ << "fringeBis[" << threadId::get()
 //             << " = " << hex << fringeBis[threadId::get()] << dec << endl;
@@ -1122,14 +1123,14 @@ inline void fitsWithinExistingGap(unsigned int i, size_t n, size_t gap)
 //    cout << "result[" << i << "] = " << std::hex << result[i] << std::dec << endl;
 // If I fill in a result for this I set it to show it does not need any more.
     request[i] = 0;
-    firstWord(result[i]).store(makeVectorHeader(n));
+    setHeaderWord(result[i]-TAG_VECTOR, n);
     fringeBis[i] += n;
 //    cout << "At " << __WHERE__ << "fringeBis[" << i
 //         << " = " << hex << fringeBis[i] << dec << endl;
     gap -= n;
 // Make the end of the Chunk safe again.
     if (gap != 0)
-        firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+        setHeaderWord(fringeBis[i], gap);
 }
 
 inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
@@ -1138,7 +1139,7 @@ inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
 // insert padding so that the tail end of the previous chunk is tidily
 // filled in.
 //    cout << "At " << __WHERE__ << " ableToAllocateNewChunk\n";
-    firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+    setHeaderWord(fringeBis[i], gap);
     Chunk *newChunk = reinterpret_cast<Chunk *>(gFringe.load());
     newChunk->length = n+targetChunkSize;
     newChunk->isPinned = false;
@@ -1151,7 +1152,10 @@ inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
 // If I allocate a block here it will need to be alive through an impending
 // garbage collection, so I will make it seem like a respectable Lisp
 // vector with binary content.
-    firstWord(result[i]).store(makeVectorHeader(n));
+    LispObject rr = result[i];
+    my_assert(findPage(result[i]) != nullptr); // @@@
+    cout << std::hex << result[i] << " " << rr << endl;
+    setHeaderWord(result[i]-TAG_VECTOR, n);
     fringeBis[i] = newChunk->dataStart() + n;
 //    cout << "At " << __WHERE__ << " fringeBis[" << i
 //         << "] = " << hex << fringeBis[i] << dec << endl;
@@ -1179,7 +1183,7 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
 //        cout << "At " << __WHERE__ << " gLimit = " << hex << gLimit << dec << endl;
         size_t gap1 = gLimit - gFringe;
         if (n+targetChunkSize < gap1)
-        {   firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+        {   setHeaderWord(fringeBis[i], gap);
             Chunk *c = reinterpret_cast<Chunk *>(gFringe.load());
             c->length = n + targetChunkSize;
             c->isPinned = false;
@@ -1187,7 +1191,7 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
             currentPage->chunkMap[chunkNo].store(c);
             result[i] = gFringe.load() + TAG_VECTOR;
             request[i] = 0;
-            firstWord(result[i]).store(makeVectorHeader(n));
+            setHeaderWord(result[i]-TAG_VECTOR, n);
             fringeBis[i] = gFringe.load() + n;
 //            cout << "At " << __WHERE__ << "fringeBis[" << i
 //                 << " = " << hex << fringeBis[i] << dec << endl;
@@ -1241,11 +1245,10 @@ inline void newRegionNeeded()
 // already, just so I am certain.
     for (unsigned int i=0; i<maxThreads; i++)
     {   size_t gap = limitBis[i] - fringeBis[i];
-        if (gap != 0)
-            firstWord(fringeBis[i]).store(makePaddingHeader(gap));
+        if (gap != 0) setHeaderWord(fringeBis[i], gap);
     }
     size_t gap = gLimit - gFringe;
-    if (gap != 0) firstWord(gFringe).store(makePaddingHeader(gap));
+    if (gap != 0) setHeaderWord(gFringe, gap);
 // Next if I will be building up to a full GC I can usually just allocate
 // another Page from the list of free Pages.
     if (!generationalGarbageCollection ||

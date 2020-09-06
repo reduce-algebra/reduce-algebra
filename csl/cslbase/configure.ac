@@ -190,6 +190,16 @@ then
   AC_DEFINE(HAVE_SOFTFLOAT, [1], [support for 128-bit long double/float128_t])
 fi
 
+AC_ARG_WITH(threads,
+   AC_HELP_STRING([--with-threads], [Can be used to avoid any non-vital thread stuff if that helps with debugging]),
+   [],
+   [with_threads="yes"])
+
+if test "x$with_threads" = "xno"
+then
+  AC_DEFINE(AVOID_THREADS, [1], [disable Karatsuba and input local editing so they do not create threads])
+fi
+
 if test "x$BUILTFOR" = "xunknown"
 then
   BUILTFOR=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`

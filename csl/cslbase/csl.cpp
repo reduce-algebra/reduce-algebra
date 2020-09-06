@@ -1399,6 +1399,8 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
 
 bool timeTestCons = false;
 
+#ifndef AVOID_THREADS
+
 // I have some background threads to help me, so here is the code to start
 // them up. It seems to be important to terminate detached threads (or join
 // with regular ones) before quitting, so I also cope with that.
@@ -1433,6 +1435,8 @@ public:
 #endif
     }
 };
+
+#endif //AVOID_THREADS
 
 char *mystrdup(const char *s)
 {   char *r = new char[std::strlen(s)+1];
@@ -2064,6 +2068,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 }
             },
 
+#ifndef AVOID_THREADS
             /*! options [--kara] \item [{\ttfamily --kara}] \index{{\ttfamily --kara}}
              * This it is intended for use by those maintaining CSL not for the general
              * public. By default long multiplication can use a threaded implementation
@@ -2086,6 +2091,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     if (kparallel < KARATSUBA_CUTOFF) kparallel = KARATSUBA_CUTOFF;
                 }
             },
+#endif // AVOID_THREADS
 
             /*! options [--trace/--tr] \item [{\ttfamily --trace, --tr}] \index{{\ttfamily --trace, --tr}}
              * When followed by the name of a function this command-line option has and
@@ -2721,10 +2727,12 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // If the user hits the close button here I may be in trouble
 #endif // WITH_GUI
 
+#ifndef AVOID_THREADS
 // I will now ALWAYS use threads for Karatsuba even on a CPU that only has
 // a single core!
     karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
     if (kparallel > 0) karatsuba_parallel = kparallel;
+#endif // AVOID_THREADS
 
 //
 // Up until the time I call setup() I may only use term_printf for
@@ -3267,7 +3275,9 @@ public:
 #ifdef HAVE_CRLIBM
     CrlibmSetup crlibmVar;
 #endif
+#ifndef AVOID_THREADS
     KaratsubaThreads kthreads;
+#endif // AVOID_THREADS
     cslstart(argc, argv, nullptr);
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
     std::strcpy(ibuff, "(print '(a b c d))");
