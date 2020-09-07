@@ -1183,12 +1183,17 @@ static LispObject Lrationalize(LispObject env, LispObject a)
 // other sources of entropy here.
 //
 
+#ifndef AVOID_THREADS
 static std::random_device hopefully_random;
+#endif
 
 static std::seed_seq initial_random_seed
-{   hopefully_random(),
+{
+#ifndef AVOID_THREADS
+    hopefully_random(),
     static_cast<unsigned int>(
         std::hash<std::thread::id>()(std::this_thread::get_id())),
+#endif
     static_cast<unsigned int>(std::time(nullptr)),
     static_cast<unsigned int>(
         std::chrono::high_resolution_clock::now().time_since_epoch().count())
@@ -1207,9 +1212,12 @@ uint32_t Crand()
 void Csrand(uint32_t seed)
 {   if (seed == 0)
     {   std::seed_seq random_seed
-        {   hopefully_random(),
+        {
+#ifndef AVOID_THREADS
+            hopefully_random(),
             static_cast<unsigned int>(
                 std::hash<std::thread::id>()(std::this_thread::get_id())),
+#endif
             static_cast<unsigned int>(std::time(nullptr)),
             static_cast<unsigned int>(
                 std::chrono::high_resolution_clock::now().
