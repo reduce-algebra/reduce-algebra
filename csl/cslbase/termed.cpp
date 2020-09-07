@@ -1766,7 +1766,7 @@ void term_close()
 #endif
 }
 
-#if defined EMBEDDED && !defined AVOID_THREADS
+#if !defined EMBEDDED && !defined AVOID_THREADS
 
 // term_getchar() will block until the user has typed something. I will use
 // this place as where I unravel various funny escape sequences that
