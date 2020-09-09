@@ -246,15 +246,21 @@ inline void write_barrier(LispObject *p, LispObject q)
 // is not even a pointer or that is a pointer into a page that the
 // generational collector will not move I do not need to do anything. And
 // maybe the tests for that situation are cheap enough that the test is
-// a good idea.
-    if (!is_pointer_type(q) ||
+// a good idea. Note that NIL is a very special case - it is tagged as a
+// pointer but it lives outside the main heap. Note here that q should
+// be a valid (precise) LispObject and hence is a pointer to an address
+// strictly within a page.
+    if (q == nil ||
+        !is_pointer_type(q) ||
         reinterpret_cast<Page *>(
             static_cast<uintptr_t>(q) & -pageSize)->pageClass ==
         stablePageTag) return;
     uintptr_t a = reinterpret_cast<uintptr_t>(p);
 // Round down to a Page boundary. Because pages are always allocated
 // properly aligned this will give the start of the Page containing the
-// word being addressed.
+// word being addressed. p was also a precise pointer and so (eg) it can not
+// point to one beyond the end of the page. So the mask operator here that
+// identifies its page is safe.
     Page *x = reinterpret_cast<Page *>(a & -pageSize);
     const size_t bpw = 8*sizeof(uintptr_t);   // bits per word in bitmap.
 // The bit-position is measured in units of sizeof(LispObject)
@@ -732,9 +738,8 @@ inline LispObject get_n_bytes(size_t n)
 // There are two possibilities here. One is that the new block I need to
 // allocate really will not fit in the current chunk, and the other is that
 // some other thread had set limit[] to zero to force this one to join in
-// with garbage collection. In the latter case I may in fact be able to make
+// with garbage collection. In the former case I may in fact be able to make
 // this allocation simply by grabbing a fresh chunk.
-
     if (w != 0)
     {   size_t gap = w - r;
 // I want to make every chunk "tidy" because when I have one that gets
@@ -752,10 +757,11 @@ inline LispObject get_n_bytes(size_t n)
         uintptr_t oldFringe = r;
         Chunk *newChunk =
             reinterpret_cast<Chunk *>(gFringe.fetch_add(targetChunkSize+n));
-        r = newChunk->dataStart();
+        r = newChunk->dataStart(); // safe even if chunk pointer is bad!
 // Be aware that other threads might be doing (atomic) increments on gFringe
 // at the same time that this one does. They will each reserve separate
-// new chunks, but some of these may fall in memory well above gLimit.
+// new chunks, but some of these may fall in memory well above gLimit. And
+// hence they could be beyond the end of the current Page.
 // I am going to assume (ha ha) that even if the maximum number of threads
 // each increment gFringe by the largest possible amount then it will not
 // suffer arithmetic overflow. If I have a maximum of 16 threads then I ought
@@ -775,8 +781,15 @@ inline LispObject get_n_bytes(size_t n)
 // costs of page allocation arise. So this is about 1 in 32000 conses in the
 // heaviest multi-thread case and only 1 in 0.5 million in a single thread
 // scenario.
-        Page *p = reinterpret_cast<Page *>(
-                      reinterpret_cast<intptr_t>(newChunk) & -pageSize);
+//
+// I want to identify the Page that I am currently allocating within. In an
+// earlier draft I masked newChunk with -pageSize. However newChunk could
+// be well above the end of valid allocation space in the current page and
+// might in fact be within the next sequential page. So rather than that I
+// use oldFringe-1. The "-1" is because maybe the previous fringe had
+// ended up such that the previously allocated item had totally filled the
+// Chunk and Page, so it points at the location just beyond the Page end.
+        Page *p = reinterpret_cast<Page *>((oldFringe-1) & -pageSize);
         if (newLimit <= gLimit)
         {
 // Now my allocation of a new chunk has been successful. Before I test if
@@ -1152,9 +1165,9 @@ inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
 // If I allocate a block here it will need to be alive through an impending
 // garbage collection, so I will make it seem like a respectable Lisp
 // vector with binary content.
-    LispObject rr = result[i];
+//    LispObject rr = result[i];
     my_assert(findPage(result[i]) != nullptr); // @@@
-    cout << std::hex << result[i] << " " << rr << endl;
+//    cout << std::hex << result[i] << " " << rr << endl;
     setHeaderWord(result[i]-TAG_VECTOR, n);
     fringeBis[i] = newChunk->dataStart() + n;
 //    cout << "At " << __WHERE__ << " fringeBis[" << i
@@ -1171,7 +1184,10 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
 // within it.
 //    cout << "At " << __WHERE__ << " gFringe = " << hex << gFringe << dec << endl;
 //    cout << "At " << __WHERE__ << " pageSize = " << hex << pageSize << dec << endl;
-    uintptr_t pageEnd = (gFringe & -pageSize) + pageSize;
+//
+// Take care because gFringe can point at the start of the next consecutive
+// Page.
+    uintptr_t pageEnd = ((gFringe-1) & -pageSize) + pageSize;
 //    cout << "At " << __WHERE__ << " pageEnd = " << hex << pageEnd << dec << endl;
     while (gLimit != pageEnd)
     {   gFringe = gLimit +

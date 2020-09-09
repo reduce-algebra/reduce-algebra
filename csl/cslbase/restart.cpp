@@ -2631,9 +2631,9 @@ void setup(int restart_flag, double store_size)
         }
     }
     if (init_flags & INIT_VERBOSE)
-    {   int n = number_of_processors();
+    {   unsigned int n = number_of_processors();
         if (n > 1)
-            term_printf("There are %d processors available\n", n);
+            term_printf("There are %u processors available\n", n);
     }
     garbage_collection_permitted = true;
     return;

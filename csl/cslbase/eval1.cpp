@@ -182,9 +182,9 @@ restart:
                             // now the error handler
                             pop(env, u);
                             if (SHOW_FNAME)
-                    {   err_printf("\nMacroexpanding: ");
-                            loop_print_error(u);
-                        });
+                            {   err_printf("\nMacroexpanding: ");
+                                loop_print_error(u);
+                            });
                         pop(env, u);
                         u = p;
                         goto restart;
@@ -220,9 +220,9 @@ restart:
                     // now the error handler
                     pop(env, u);
                     if (SHOW_FNAME)
-            {   err_printf("\nMacroexpanding: ");
-                    loop_print_error(u);
-                });
+                    {   err_printf("\nMacroexpanding: ");
+                        loop_print_error(u);
+                    });
                 pop(env, u);
                 return eval(fn, env);
             }
@@ -255,9 +255,9 @@ restart:
                 a2 = eval(a2, env),
                 pop(a1, env, args, fn);
                 if (SHOW_ARGS)
-        {   err_printf("\nEvaluating: ");
-                loop_print_error(car(args));
-            });
+                {   err_printf("\nEvaluating: ");
+                    loop_print_error(car(args));
+                });
             pop(a1, env, args, fn);
             args = cdr(args);
             if (args == nil) return (*qfn2(fn))(fn, a1, a2);
@@ -289,9 +289,9 @@ restart:
                     // Now the error handler
                     pop(eargs, env, args, fn);
                     if (SHOW_ARGS)
-            {   err_printf("\nEvaluating: ");
-                    loop_print_error(car(args));
-                });
+                    {   err_printf("\nEvaluating: ");
+                        loop_print_error(car(args));
+                    });
                 pop(eargs);
                 eargs = cons(w, eargs);
                 pop(env, args, fn);

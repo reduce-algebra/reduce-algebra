@@ -198,9 +198,9 @@ LispObject progn_fn(LispObject args, LispObject env)
             // Action for backtrace here...
             pop(f, env, args);
             if (SHOW_FNAME)
-    {   err_printf("\nEvaluating: ");
-            loop_print_error(f);
-        });
+            {   err_printf("\nEvaluating: ");
+                loop_print_error(f);
+            });
         pop(f, env, args);
     }
     return eval(f, env);    // tail call on last item in the progn

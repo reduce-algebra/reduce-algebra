@@ -1,4 +1,4 @@
-//  syscsl.h                               Copyright (C) 1992-2019 Codemist
+//  syscsl.h                               Copyright (C) 1992-2020 Codemist
 
 //
 // This file should contain a list of all the functions in CSL that have
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -338,10 +338,10 @@ extern int32_t ok_to_grab_memory(int32_t current_pages);
 
 //
 // The following returns the number of processor cores that may be available.
-// If that information is not available it will return 1.
+// If that information is not available it will return 1. The information is
+// a "hint" not definitive!
 //
-
-extern int number_of_processors();
+extern unsigned int number_of_processors();
 
 //
 // The next represents the only way in which characters will be

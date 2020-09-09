@@ -377,7 +377,7 @@ command=$2
 showname=$3
 extras="$4"
 
-fullcommand="$here/bin/$command $extras"
+fullcommand="$here/bin/$command $CSLFLAGS $extras"
 
 mkdir -p $name-times
 

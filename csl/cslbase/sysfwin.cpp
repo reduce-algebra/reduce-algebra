@@ -91,10 +91,6 @@
 #include <sys/times.h>
 #endif
 
-#ifdef HAVE_SYS_SYSCTL_H
-#include <sys/sysctl.h>
-#endif
-
 #ifdef HAVE_SYSCALL_H
 #include <syscall.h>
 #endif
@@ -791,94 +787,13 @@ int32_t ok_to_grab_memory(int32_t current)
 // affinities etc may make the information obtained indicative rather than
 // definitive!
 //
+// Well in the Old Days this was a mess with much system-dependent code,
+// but C++11 provides just what I need directly!
 
-#ifdef WIN32
 
-int number_of_processors()
-{   SYSTEM_INFO si;
-    GetSystemInfo(&si);  // Not supported by Windowes 95/98!
-    return static_cast<int>(si.dwNumberOfProcessors);
+unsigned int number_of_processors()
+{   return std::thread::hardware_concurrency();
 }
-
-#else
-#ifdef __SC_NPROCESSORS_CONF
-
-//
-// If I am using gcc/libc then this easy way out should be available
-//
-
-int number_of_processors()
-{   return sysconf(_SC_NPROCESSORS_CONF);
-}
-
-#else
-
-//
-// The above two rather simple fragments seem to work on Windows, Linux
-// and OSX, so the older options below remain as mere fallbacks.
-//
-
-#if defined HAVE_SYS_SYSCTL_H && defined HAVE_SYSCTLBYNAME
-
-//
-// This is expected to cope with both BSD and Macintosh-X.
-//
-
-int number_of_processors()
-{   int n;
-    size_t len=4;
-    if (sysctlbyname("hw.ncpu", &n, &len, nullptr, 0) != 0) return 1;
-    return n;
-}
-
-#else
-#if defined HAVE_SYSCALL_H && \
-    defined HAVE_SCHED_H && \
-    defined SYS_sched_getaffinity && \
-    defined HAVE_CPU_SET_T
-
-//
-// This should cope with Linux
-//
-
-int number_of_processors()
-{   cpu_set_t cs;
-    int n, len;
-    unsigned char *p = reinterpret_cast<unsigned char *>(&cs);
-    std::memset(p, 0, sizeof(cs));
-//
-// The library calls to sched_getaffinity have changed several times with
-// various releases of glibc, and so I use the raw syscall. This has the
-// extra feature that it can tell me how many bytes are used by the
-// kernel-level CPU map, which may be way smaller than the size of the
-// cpu_set_t data type.
-//
-    len = syscall(SYS_sched_getaffinity, 0, sizeof(cs), &cs);
-    if (len == -1) n = 1;    // Report just 1 CPU if syscall fails
-    else
-    {   int i;
-        n = 0;
-        for (i=0; i<len; i++)
-        {   int b = p[i];
-            while (b != 0)   // Count bits
-            {   n++;
-                b -= b & -b;
-            }
-        }
-    }
-    return n;
-}
-
-#else
-
-int number_of_processors()
-{   return 1;  // Have not detected a way that I can tell better
-}
-
-#endif
-#endif
-#endif
-#endif
 
 static int tmpSerial = 0;
 
