@@ -124,8 +124,7 @@ void validate_string_fn(LispObject s, const char *file, int line)
                     p++;
                 }
                 std::fflush(stderr);
-                *reinterpret_cast<int *>(static_cast<LispObject>(-1)) =
-                    0x55555555;  // I hope this aborts
+                my_abort();
             }
             len++;
         }
@@ -136,8 +135,7 @@ void validate_string_fn(LispObject s, const char *file, int line)
     std::fprintf(stderr, "Header = %" PRIxMAX "\n",
                  (std::intmax_t)vechdr(s));
     std::fflush(stderr);
-    *reinterpret_cast<int *>(static_cast<LispObject>(-1)) =
-        0x55555555;  // I hope this aborts
+    my_abort();
 }
 
 LispObject copy_string(LispObject str, size_t n)

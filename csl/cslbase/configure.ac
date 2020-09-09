@@ -283,7 +283,7 @@ then
   AC_DEFINE(WINDOW_SYSTEM,[1],[True for a (potentially) Windowed system])
 fi
 
-if test "x$with_gui" == "xno"
+if test "x$with_gui" = "xno"
 then
   AC_DEFINE(WITHOUT_GUI,[1],[Not even an attempt at support for GUI])
 fi
@@ -820,8 +820,8 @@ fi
 # things like static_assert and type traits that at present are used in just
 # a small corner of the code, but that are potentially generally valuable.
 
-if test "x$HAVE_CXX17" == "x1" || \
-   test "x$HAVE_CXX14" == "x1"
+if test "x$HAVE_CXX17" = "x1" || \
+   test "x$HAVE_CXX14" = "x1"
 then
   AC_MSG_NOTICE([A modern C++ compiler is available])
 else
