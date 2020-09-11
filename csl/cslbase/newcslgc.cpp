@@ -549,6 +549,12 @@ void garbageCollect(bool major)
     endOfGarbageCollection(major);
 }
 
+// This flag generally controls whether a generational collector will be
+// used, however an explicit call (reclaim nil) will try a generational
+// collection regardless of its setting. It is really just here to help me
+// keep control of things until the generation collector has been implemented
+// and for switching it on and off for testing and debugging purposes.
+
 bool generationalGarbageCollection = false;
 
 void generationalGarbageCollect()

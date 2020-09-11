@@ -690,6 +690,15 @@ extern uintptr_t              gLimit;
 // requests. In such a case at least one will be dealt with, but a further
 // garbage collection activity will be run to find space for the rest.
 
+enum GcStyle
+{
+    GcStyleNone,
+    GcStyleMinor,
+    GcStyleMajor
+};
+
+extern GcStyle userGcRequest;
+
 extern uintptr_t difficult_n_bytes();
 
 inline Header makePaddingHeader(size_t n)   // size is in bytes
@@ -1256,7 +1265,7 @@ inline void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
 inline void newRegionNeeded()
 {
 // This where a page is full up. Or at least where the region within a page
-// up to the next pinned region was full up!
+// up to the next pinned region was full up! Or if the user asked for a GC.
 // I wll set padders everywhere even if I might think I have done so
 // already, just so I am certain.
     for (unsigned int i=0; i<maxThreads; i++)
@@ -1266,11 +1275,16 @@ inline void newRegionNeeded()
     size_t gap = gLimit - gFringe;
     if (gap != 0) setHeaderWord(gFringe, gap);
 // Next if I will be building up to a full GC I can usually just allocate
-// another Page from the list of free Pages.
-    if (!generationalGarbageCollection ||
-        !garbage_collection_permitted ||
-        victimPage == nullptr)
-    {   if (busyPagesCount >= freePagesCount+mostlyFreePagesCount)
+// another Page from the list of free Pages. Note that if userGcRequest has
+// the value GcStyleMajor I need to force a full collection even if there
+// is plenty of space available and if it is GcStyleMinor I must force
+// a minor GC.
+    if ((!generationalGarbageCollection ||
+         !garbage_collection_permitted ||
+         victimPage == nullptr) &&
+        userGcRequest != GcStyleMinor)
+    {   if (busyPagesCount >= freePagesCount+mostlyFreePagesCount ||
+            userGcRequest == GcStyleMajor)
         {   cout << "@@ full GC needed\n";
             fullGarbageCollect();
         }
@@ -1361,6 +1375,7 @@ inline void newRegionNeeded()
     {   cout << "@@ minor GC needed\n";
         generationalGarbageCollect();
     }
+    userGcRequest = GcStyleNone; // have now satisfied any user request.
 }
 
 inline void releaseOtherThreads()
@@ -1416,8 +1431,10 @@ inline void garbageCollectOnBehalfOfAll()
 // over here I will need to allocate a fresh page of space. If I am adopting
 // a major GC strategy I just allocate another page until my whole memory is
 // about half full, but with a generational GC I will run some GC activity
-// each time I get here I must evacuating a single page.
-        if (pendingCount == 0) break;
+// each time I get here I must evacuating a single page. If the user has
+// explicitly requested a GC then I had better do one.
+        if (pendingCount == 0 &&
+            userGcRequest == GcStyleNone) break;
         newRegionNeeded();
     }
     releaseOtherThreads();
@@ -1495,6 +1512,9 @@ inline uintptr_t difficult_n_bytes()
 // function "withRecordedStack()" tries to arrange that, so that when the
 // body of code is executed stackFringes[] has that information nicely
 // set up.
+// First I need to ensure that all other threads will notice that something
+// has to be done!
+    for (unsigned int i=0; i<maxThreads; i++) limit[i].store(0);
     withRecordedStack([&]
     {
 // The next line will count down the number of threads that have entered
@@ -1741,13 +1761,13 @@ public:
 };
 
 // The following is intended to help me check if allocation is going
-// smoothly.
+// smoothly. It can be removed once debuuging is complete (ha ha).
 
 inline void testLayout()
 {
     uintptr_t r = fringe::get();
     uintptr_t w = limit[threadId::get()].load();
-    my_assert(r <= w, [] { cout << "fringe > limit\n"; });
+    my_assert(w==0 || r <= w, [] { cout << "fringe > limit\n"; });
     my_assert(w <= gFringe.load(), [] {cout << "limit > gFringe\n";});
     my_assert(gFringe.load() <= gLimit, [] {cout << "gFringe > gLimit\n";});
 }

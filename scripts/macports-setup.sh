@@ -29,7 +29,7 @@ fi
 
 
 # I want binaries of Reduce that I build to be able to support version of
-# the Macintosh back as far as 10.11, and so where there are ports that
+# the Macintosh back as far as 10.12, and so where there are ports that
 # lead to linkable libraries I will forcibly build from source with
 # macosx_deployment_target set via macports.conf. To achieve that I set up
 # a copy of that file in $HOME/.macports if necessary.
@@ -50,7 +50,7 @@ then
 else
 
   cp /opt/local/etc/macports/macports.conf /tmp/macports.conf
-  printf "macosx_deployment_target 10.11\n" >> /tmp/macports.conf
+  printf "macosx_deployment_target 10.12\n" >> /tmp/macports.conf
 
   if ! test -f $HOME/.macports/macports.conf
   then

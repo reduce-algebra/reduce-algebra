@@ -67,25 +67,25 @@ export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 export O=/Users/acn1/reduce-algebra
 export C=$O/csl/cslbase
 export DONT_USE_XPORT="yes"
-export MACOSX_DEPLOYMENT_TARGET=10.11
+export MACOSX_DEPLOYMENT_TARGET=10.12
 
 My macports.conf file insists that MacPorts always build from source even
 if there is a ready-built binary archive available. So I have in it extra
 lines
    buildfromsource always
-   macosx_deployment_target 10.10
+   macosx_deployment_target 10.12
 
 Note that if you have any ports left over from before you set those
 options then you need to go through some contortions to force re-
 building and re-installation to ensure that everything has been built with
 the desired deployment target. Note that "otool -lv" and search for VERSION
 lets you review that info in a .o, .a or executable file. And that if you have
-built some libraries for 10.11 and then try to link for 10.10 there are
+built some libraries for (say) 10.12 and then try to link for 10.11 there are
 messages in the build log - which you really ought to search for... here
 is a fragment of typical output that you should try to avoid!
 
  "ld: warning: object file (/opt/local/lib/libfontconfig.a(fcfs.o)) was
-          built for newer OSX version (10.11) than being linked (10.10)"
+          built for newer OSX version (10.12) than being linked (10.11)"
 
 
 The list of ports here came from "port installed requested" so my HOPE is

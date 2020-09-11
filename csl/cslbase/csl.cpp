@@ -1723,7 +1723,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // where nnn indicates (approximately) the desired amount of memory in
 // kilobytes, magabytes or gigabytes (default megabytes) and mm is a feature
 // that is deprecated and will be removed soon but that might set the
-// size of the Lisp stack segment in the range 1-10. I it to be legal to
+// size of the Lisp stack segment in the range 1-10. It to be legal to
 // express nnn as a floating point value, as in 2.5G. That may lead to be
 // allowing 1.0e5K as well, which would perhaps seem an eccentric way of
 // providing input unless I allow plain numbers without a K, M or G suffix

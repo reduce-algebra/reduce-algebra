@@ -994,7 +994,7 @@ then
 
   case $host in
   *darwin* | *Darwin*)
-    CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.11 -I/opt/local/include"
+    CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.12 -I/opt/local/include"
     LDFLAGS="$LDFLAGS -L/opt/local/lib"
     ;;
   esac
@@ -1088,7 +1088,7 @@ then
       MACARCH="--enable-macosx_arch=x86_64" 
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
-          --with-macosx-version-min=10.11 \
+          --with-macosx-version-min=10.12 \
           $MACARCH "
       ;;
     *)

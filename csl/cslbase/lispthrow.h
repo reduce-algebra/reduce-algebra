@@ -916,21 +916,6 @@ struct LispRestart : public LispException
     }
 };
 
-// From C++17 the function uncaught_exception() is deprecated and a new
-// variant uncaught_exceptions() is introduced, and from C++20 the first
-// of these is expected to be removed, thereby preventing the old version
-// of this code from building. The circumstances that lead to the change here
-// involve exceptions raised within C++ destructors and the like - much
-// more agressive use of C++ features that I tends to be into, so I will
-// use uncaught_exceptions() in a rather naive manner.
-// I used to have code here that could verify (Lisp) stack consistency,
-// however C++17 deprecates std::uncaught_exception() and demands a change
-// to use a new function std::uncaught_exceptions() not present in earlier
-// versions of the standard, while it is expected that C++20 will withdraw
-// the original function. I used it and rather than modify my code with ugly
-// checks for whether I have C++17 or not and rather that put up with the
-// torrent of warnings that GCC generates in response to deprecated features
-
 // If I build for debugging I will verify that the stack pointer is
 // properly unchanged across some scopes. This will help...
 
@@ -958,19 +943,17 @@ public:
     }
 // While I am unwinding the stack because of exception handling the stack
 // can remain un-restored. It is only once I have caught the exception
-// that it must end up correct. Hence the use of std::uncaught_exception()
-// here to avoid complaints when they are not justified. Well C++17 recognizes
-// a special challenge with nested use of exceptions, hence the move to use
-// of std::uncaught_exceptions() but since the code here is just used for
-// debugging and anyway because I think it is reasonable I will only report
-// a problem if my software stack ends up in an odd state when I am not doing
-// any unwinding at all. If I moved to having a load of Lisp code runnable
-// during unwinding (well perhaps unwind-protect can lead to that) I might
-// want to review this.
+// that it must end up correct. Hence the use of std::uncaught_exceptions()
+// here to avoid complaints when they are not justified.
+// Since the code here is just used for debugging and anyway because I
+// think it is reasonable I will only report a problem if my software stack
+// ends up in an odd state when I am not doing any unwinding at all.
+// If I moved to having a load of Lisp code runnable during unwinding
+// (well perhaps unwind-protect can lead to that) I might want to review this.
     ~RAIIstack_sanity()
     {
 #ifdef __cpp_lib_uncaught_exceptions
-        if (saveStack != stack && !std::uncaught_exceptions() != 0)
+        if (saveStack != stack && std::uncaught_exceptions() != 0)
 #else
         if (saveStack != stack && !std::uncaught_exception())
 #endif

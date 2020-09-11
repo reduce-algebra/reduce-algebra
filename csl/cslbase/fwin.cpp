@@ -1775,40 +1775,22 @@ void process_file_name(char *filename, const char *old, size_t n)
     }
 #else // WIN32
 #if defined __APPLE__ && !defined EMBEDDED
-//
 // For MacOS the issue of "aliases" arises. The "preferred" file system
 // is HFS+ and that supports both links and aliases, but at the very least
 // some old users and legacy applications will certainly continue to use
 // links. However the Posix-style APIs do not provide any way to deal with
-// them! So here I use some Carbon calls to map a path to an alias into
-// a path to the file it refers to. This code was requested by Thomas
-// Sturm who provided a skeleton chunk of code showing what APIs needed to be
-// used and references to the documentation to them, so thanks are due.
-//
-// Unfortunately Apple have now deprecates the APIs used here, and so this
-// code fragment is under sentence of death. Perhaps by the time it becomes
-// unsupported rather than deprecated the need for it will also have
-// evaporated?
-    {   char alias[LONGEST_LEGAL_FILENAME];
-        FSRef ref;
-        Boolean is_folder, is_alias;
-        std::memset(alias, 0, sizeof(alias));
-//
-// This works by converting from a path to an FSRef object, which is the Mac
-// internal handle. It can then resolve the alias. I use the option that
-// will chain through sequences of aliases if necessary until a genuine
-// regular file is found. If no aliases has been involved I do nothing.
-// If any of the Mac system calls report errors of any sort I do
-// nothing.  In the end if all works I convert from an FSRef back to a path and
-// copy it to where I want it to be.
-//
-        if (FSPathMakeRef((UInt8 *)filename, &ref, nullptr) == noErr &&
-            FSResolveAliasFile(&ref, TRUE, &is_folder, &is_alias) == noErr &&
-            is_alias &&
-            FSRefMakePath(&ref, (UInt8 *)alias, (UInt32)sizeof(alias)) == noErr)
-        {   std::strcpy(filename, alias);
-        }
-    }
+// them! So here I used to have some Carbon calls to map a path to an
+// alias into a path to the file it refers to. This code was requested by
+// Thomas Sturm who provided a skeleton chunk of code showing what APIs
+// needed to be used and references to the documentation to them, so thanks
+// are due.
+// Unfortunately Apple have now deprecated the APIs used here, and because
+// they now did that quite a long while ago I have removed the code - which
+// when present led to compile-time warnings about its status.
+// So now Mac aliases are not supported and symbolic or hard links should
+// be used instead!
+// In a further while I intend to remove this comment as well as the code
+// that used to come with it.
 #endif // __APPLE__
 #endif // WIN32
 }

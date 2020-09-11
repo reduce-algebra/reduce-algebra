@@ -426,8 +426,8 @@ uint64_t read_clock()
     times(&tmsbuf);
     std::clock_t w1 = tmsbuf.tms_utime;   // User time in UNIX_TIMES ticks
 #ifdef HAVE_UNISTD_H
-    if (unix_ticks == 0.0) unix_ticks = static_cast<double>(sysconf(
-                                                _SC_CLK_TCK));
+    if (unix_ticks == 0.0) unix_ticks =
+        static_cast<double>(sysconf(_SC_CLK_TCK));
 #endif
     if (unix_ticks == 0.0) unix_ticks = 100.0;
     return (uint64_t)((1000000.0/unix_ticks) * static_cast<double>(w1));

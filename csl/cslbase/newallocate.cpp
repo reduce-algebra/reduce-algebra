@@ -1158,29 +1158,29 @@ void grab_more_memory(size_t npages)
 
 #if defined WIN32
 #include <windows.h>
-#elif defined MACINTOSH
-#include <sys/types.h>
-#include <sys/sysctl.h>
 #else
-#include <sys/sysinfo.h>
+#include <unistd.h>
 #endif
 
 void init_heap_segments(double d)
 {   cout << "init_heap_segments " << d << endl;
-#if defined WIN32
+#ifdef WIN32
     MEMORYSTATUSEX s;
     s.dwLength = sizeof(s);
     GlobalMemoryStatusEx(&s);
     size_t mem = s.ullTotalPhys;
-#elif defined MACINTOSH
-    std::int64_t mem;
-    std::size_t reslen = sizeof(mem);
-    sysctlbyname("hw.memsize", &mem, &reslen, nullptr, 0);
-#else
-    struct sysinfo s;
-    sysinfo(&s);
-    size_t mem = s.totalram*s.mem_unit;
-#endif
+#else // WIN32
+// BEWARE: _SC_PHYS_PAGES is a glibc extension and is not mandated by POSIX.
+// However it (maybe obviously) should work on all variants of Linux and
+// experimentally it works on a Macintosh, and on Windows there is a clear
+// and proper alternative... Also a FreeBSD manual page suggests that
+// _SC_PHYS_PAGES will (often?) be available there. That covers some of the
+// more important platforms so anybody with some alternative that is more
+// specialised can patch in their own code here!
+    long pageCount = sysconf(_SC_PHYS_PAGES);
+    long pageSize = sysconf(_SC_PAGE_SIZE);
+    size_t mem = pageCount*static_cast<size_t>(pageSize);
+#endif // WIN32
     mem /= (1024*1024);    // Physical memory now in megabytes
     size_t g3 = 3u*1024u;  // 3Gbytes
     if (mem <= 2*g3) mem = g3;
@@ -1237,15 +1237,19 @@ LispObject Lgc0(LispObject env)
 {   return Lgc(env, lisp_true);
 }
 
+GcStyle userGcRequest = GcStyleNone;
+
 LispObject Lgc(LispObject env, LispObject a)
 {
 // If GC is called with a non-nil argument the garbage collection
-// will be a full one - otherwise it will be soft and may do hardly
-// anything.
-#if 0
-    return reclaim(nil, "user request",
-                   a != nil ? GC_USER_HARD : GC_USER_SOFT, 0);
-#endif
+// will be a full one - otherwise it will be incremental and may do hardly
+// anything. This distinction will only apply once I have a generational
+// collector implemented and so "incremental" collections become possible.
+    for (unsigned int i=0; i<maxThreads; i++) limit[i].store(0);
+// For now I will make (reclaim t) and (reclaim) force a major GC while
+// (reclaim nil) will be a minor GC.
+    userGcRequest = a==nil ? GcStyleMinor : GcStyleMajor;
+    poll();
     return nil;
 }
 

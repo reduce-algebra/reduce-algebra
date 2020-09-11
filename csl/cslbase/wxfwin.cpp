@@ -1391,8 +1391,6 @@ void process_file_name(char *filename, const char *old, std::size_t n)
 // The reasoning here is that scripts and programs can then use Unix-like
 // names and non-Unix hosts will treat them forgivingly.
 //
-//
-//
 {   int i;
     int c;
     char *o;
@@ -1493,10 +1491,7 @@ void process_file_name(char *filename, const char *old, std::size_t n)
         else *o++ = static_cast<char>(c);
     }
     *o = 0;
-
-
 #ifdef WIN32
-//
 // Now the filename has had $ and ~ prefix things expanded - I "just"
 // need to deal with sub-directory representation issues. Specifically I need
 // to map "/" separators into "\" so that if a user presents a file
@@ -1508,8 +1503,6 @@ void process_file_name(char *filename, const char *old, std::size_t n)
 // As of September 2004 I will also map an intial sequence
 //         /cygdrive/x/
 // onto    x:\        (that is a backslash)
-//
-
     if (std::strncmp(filename, "/cygdrive/", 10) == 0 &&
         filename[11] == '/')
     {   char *p = filename+2, *tail = filename+11;
@@ -1518,60 +1511,24 @@ void process_file_name(char *filename, const char *old, std::size_t n)
         while (*tail != 0) *p++ = *tail++;
         *p = 0;
     }
-//
 // I map "/" characters in MSDOS filenames into "\" so that users
 // can give file names with Unix-like slashes as separators if they want.
 // People who WANT to use filenames with '/' in them will be hurt.
-//
     {   int j;
         char *tail = filename;
         while ((j = *tail) != 0)
         {   if (j == '/') *tail = '\\';
             tail++;
         }
-//
 // stat and friends do not like directories referred to as "\foo\", so check
 // for a trailing slash, being careful to respect directories with names
 // like "\" and "a:\".
-//
         j = std::strlen(filename);
         if (j > 0 && j != 1 && !(j == 3 && *(filename+1) == ':'))
         {   if ( (*(tail - 1) == '\\')) *(tail - 1) = 0;
         }
     }
 #endif // WIN32
-#if defined MACINTOSH && defined MAC_FRAMEWORK
-//
-// For MacOS the issue of "aliases" arises. The "preferred" file system
-// is HFS+ and that supports both links and aliases, but at the very least
-// some old users and legacy applications will certainly continue to use
-// links. However the Posix-style APIs do not provide any way to deal with
-// them! So here I use some Carbon calls to map a path to an alias into
-// a path to the file it refers to. Thise code was requested by Thomas
-// Sturm who provided a skeleton chunk of code showing what APIs needed to be
-// used and references to the documentation to them, so thanks are due.
-//
-    {   char alias[LONGEST_LEGAL_FILENAME];
-        FSRef ref;
-        Boolean is_folder, is_alias;
-        std::memset(alias, 0, sizeof(alias));
-//
-// This works by converting from a path to an FSRef object, which is the Mac
-// internal handle. It can then resolve the alias. I use the option that
-// will chain through sequences of aliases if necessary until a genuine
-// regular file is found. If no aliases has been involved I do nothing.
-// If any of the Mac system calls report errors of any sort I do
-// nothing.  In the end if all works I convert from an FSRef back to a path and
-// copy it to where I want it to be.
-//
-        if (FSPathMakeRef((UInt8 *)filename, &ref, nullptr) == noErr &&
-            FSResolveAliasFile(&ref, TRUE, &is_folder, &is_alias) == noErr &&
-            is_alias &&
-            FSRefMakePath(&ref, (UInt8 *)alias, (UInt32)sizeof(alias)) == noErr)
-        {   std::strcpy(filename, alias);
-        }
-    }
-#endif // MAC stuff
 }
 
 //

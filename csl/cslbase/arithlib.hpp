@@ -683,8 +683,8 @@ inline void traceprintf(const char *fmt, ...)
 inline std::int32_t ASR(std::int32_t a, std::int64_t n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(std::int32_t))) n=0;
     std::uint32_t r = static_cast<std::uint32_t>(a) >> n;
-    std::uint32_t signbit = static_cast<std::uint32_t>(a) >> (8*sizeof(
-                                std::uint32_t)-1);
+    std::uint32_t signbit = static_cast<std::uint32_t>(a) >>
+                            (8*sizeof(std::uint32_t)-1);
     if (n != 0) r |= ((-signbit) << (8*sizeof(std::uint32_t) - n));
     return static_cast<std::int32_t>(r);
 }
@@ -1737,9 +1737,7 @@ public:
     }
 
     ~Freechains()
-    {   if (debug_arith) std::cout << "Destructor being called" <<
-                                       std::endl;
-        for (std::size_t i=0; i<64; i++)
+    {   for (std::size_t i=0; i<64; i++)
         {   std::uint64_t *f = (freechain_table::get())[i];
             if (debug_arith)
 // Report how many entries there are in the freechain.
@@ -5037,7 +5035,8 @@ inline float128_t modf(float128_t d, float128_t &i)
 // Next look at cases where the integer part will life entirely within
 // the high word.
     else if (x <= 49)   // 49 not 48 because of hidden bit.
-    {   i.v[HIPART] &= ASR(0xffff000000000000, x-1);
+    {   i.v[HIPART] &=
+            ASR(static_cast<std::int64_t>(0xffff000000000000), x-1);
         i.v[LOPART] = 0;
     }
     else if (x <= 112)
