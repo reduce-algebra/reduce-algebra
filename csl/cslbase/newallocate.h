@@ -112,14 +112,9 @@ enum PageClass
 {   reservedPageTag   = 0x00,     // Reserved value, never used.
 
     freePageTag       = 0x01,     // All the data area in this page is free.
-    mostlyFreePageTag = 0x11,     // Mostly empty page but with
+    mostlyFreePageTag = 0x02,     // Mostly empty page but with
                                   //    some pinned data within it.
-    busyPageTag       = 0x02,     // Page contains active data.
-    currentPageTag    = 0x12,     // Page within which allocation is active.
-    victimPageTag     = 0x22,     // Previous current page.
-    stablePageTag     = 0x32      // A page that the generational GC will
-                                  // not move because it contains data that
-                                  // survived being in a Victim page.
+    busyPageTag       = 0x03,     // Page contains active data.
 };
 
 extern void set_up_signal_handlers();
@@ -128,11 +123,19 @@ extern bool allocateSegment(size_t);
 // Each Chunk has a header that contains various information, including in
 // particular its length and information that is used to keep track of
 // Chunks that have ambiguous pointers within them - ie that are pinned.
+// When a Chunk has been used and is full, its chunkFringe will be set to
+// identify the end of the last allocated item in it. Often this will be
+// before its length is all used up, because the item to be allocated next
+// might be bigger than the remaining available block of memory. In the
+// case that the Chunk ends up pinned and garbage collection leaves this
+// Chunk as part of a MostlyFree Page the length can be decreased down to
+// chunkFringe, just slightly reclaiming the waste space.
 
 class Chunk
 {
 public:
     atomic<uintptr_t> length;
+    atomic<uintptr_t> chunkFringe;
     atomic<bool> isPinned;
 // At the start of garbage collection as I collect a chain of pinned chunks
 // those chunks may appear on the list in arbitrary order, but at the end
@@ -230,6 +233,19 @@ public:
 // the page be pageSize.
 };
 
+extern Page *currentPage;       // Where allocation is happening.
+extern Page *previousPage;      // Previous currentPage. Evacuated by
+                                // the generational collector.
+extern Page *busyPages;         // All pages that are in use (including above).
+extern Page *mostlyFreePages;   // Free apart from some pinned data.
+extern Page *freePages;         // Free and clear of pinning.
+extern Page *oldPages;          // Used during garbage collection.
+
+extern size_t busyPagesCount;
+extern size_t mostlyFreePagesCount;
+extern size_t freePagesCount;
+extern size_t oldPagesCount;
+
 // First I will give code that implements the write-barrier. It is passed
 // the address of a valid Lisp location - that can be one of &car(x),
 // &cdr(x) or &elt(v, n). It records the fact that an update has
@@ -250,11 +266,14 @@ inline void write_barrier(LispObject *p, LispObject q)
 // pointer but it lives outside the main heap. Note here that q should
 // be a valid (precise) LispObject and hence is a pointer to an address
 // strictly within a page.
+    Page *pp;
     if (q == nil ||
         !is_pointer_type(q) ||
-        reinterpret_cast<Page *>(
-            static_cast<uintptr_t>(q) & -pageSize)->pageClass ==
-        stablePageTag) return;
+        ((pp = reinterpret_cast<Page *>(
+              static_cast<uintptr_t>(q) & -pageSize)) != currentPage &&
+          pp != previousPage &&
+          pp->pageClass == busyPageTag))
+        return;
     uintptr_t a = reinterpret_cast<uintptr_t>(p);
 // Round down to a Page boundary. Because pages are always allocated
 // properly aligned this will give the start of the Page containing the
@@ -464,19 +483,6 @@ public:
     ~ThreadStartup();
 };
 
-extern Page *currentPage;       // Where allocation is happening.
-extern Page *victimPage;        // Predecessor for allocation.
-extern Page
-*busyPages;         // All pages that are in use including above.
-extern Page *mostlyFreePages;   // Free apart from some pinned data.
-extern Page *freePages;         // Free and clear of pinning.
-extern Page *doomedPages;       // Used during garbage collection.
-
-extern size_t busyPagesCount;
-extern size_t mostlyFreePagesCount;
-extern size_t freePagesCount;
-extern size_t doomedPagesCount;
-
 
 // For up to 16 segments I have...
 //   heapSegmentCount   number of allocated segments
@@ -554,8 +560,8 @@ inline bool inCurrentPage(uintptr_t p)
             p < (n + pageSize));
 }
 
-inline bool inVictimPage(uintptr_t p)
-{   uintptr_t n = reinterpret_cast<uintptr_t>(victimPage);
+inline bool inPreviousPage(uintptr_t p)
+{   uintptr_t n = reinterpret_cast<uintptr_t>(previousPage);
     return (p >= n &&
             p < (n + pageSize));
 }
@@ -619,6 +625,7 @@ declare_thread_local(threadId, uintptr_t);
 declare_thread_local(fringe,   uintptr_t);
 
 extern atomic<uintptr_t> limit[maxThreads];
+extern Chunk*                 myChunkBase[maxThreads];
 extern uintptr_t              limitBis[maxThreads];
 extern uintptr_t              fringeBis[maxThreads];
 extern size_t                 request[maxThreads];
@@ -699,29 +706,24 @@ enum GcStyle
 
 extern GcStyle userGcRequest;
 
+extern bool withinMajorGarbageCollection;
 extern uintptr_t difficult_n_bytes();
 
-inline Header makePaddingHeader(size_t n)   // size is in bytes
-{   return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_PADDER;
-}
-
-inline Header makeVectorHeader(size_t n)   // size is in bytes
-{   return TAG_HDR_IMMED + (n << (Tw+5)) + TYPE_VEC32;
+inline Header makeHeader(size_t n, int type)   // size is in bytes
+{   return TAG_HDR_IMMED + (n << (Tw+5)) + type;
 }
 
 // At times I want to put a vector header at the start of a block of
 // memory, using an atomic access to insert it. This does the job. Note that
 // a is an untagged pointer here.
 
-inline void setHeaderWord(uintptr_t a, size_t n)
-{   reinterpret_cast<atomic<uintptr_t> *>(a)->store(makePaddingHeader(n));
+inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
+{   reinterpret_cast<atomic<uintptr_t> *>(a)->store(makeHeader(n, type));
 }
 
 // This is the core part of CONS and also of the code that allocates
 // bignums, strings and vectors.
 
-extern uintptr_t nFringe, nLimit, nNext;
-extern uintptr_t get_n_bytes_new(size_t n); // For use within GC
 
 #ifdef DEBUG
 namespace REAL
@@ -748,14 +750,16 @@ inline LispObject get_n_bytes(size_t n)
 // allocate really will not fit in the current chunk, and the other is that
 // some other thread had set limit[] to zero to force this one to join in
 // with garbage collection. In the former case I may in fact be able to make
-// this allocation simply by grabbing a fresh chunk.
-    if (w != 0)
-    {   size_t gap = w - r;
+// this allocation simply by grabbing a fresh chunk. In either case I need to
+// record the end-point within this Chunk...
 // I want to make every chunk "tidy" because when I have one that gets
 // pinned I will need to make a linear scan of it treating every pointer
 // field within it as an unambiguous list-base. Any uninitialized or otherwise
-// wild regions within it could cause disaster!
-        if (gap != 0) setHeaderWord(r, gap);
+// wild regions within it could cause disaster! I do this by recording its
+// high water mark.
+    myChunkBase[threadId::get()]->chunkFringe = r;
+    if (w != 0)
+    {   //@@size_t gap = w - r;
 // I now need to allocate a new chunk. gFringe and gLimit delimit a region
 // within of size PAGE (perhaps 8 Mbytes) and I will start by allocating
 // chunks sequentially within that page. By making gFringe atomic I can so
@@ -809,6 +813,7 @@ inline LispObject get_n_bytes(size_t n)
 // gets pinned, but the isPinned flag must start off false so that when the
 // GC finds an ambiguous pointer within this chunk it knows when that is the
 // first such.
+            myChunkBase[threadId::get()] = newChunk;
             newChunk->length.store(targetChunkSize+n);
             newChunk->isPinned.store(false);
             newChunk->pinChain.store(nullptr);
@@ -838,8 +843,9 @@ inline LispObject get_n_bytes(size_t n)
 // Here I am about to be forced to participate in garbage collection,
 // typically for the benefit of some other thread.
         cout << "GC triggered\n";
-        size_t gap = limitBis[threadId::get()] - r;
-        if (gap != 0) setHeaderWord(r, gap);
+//@@    size_t gap = limitBis[threadId::get()] - r;
+//@@    if (gap != 0) setHeaderWord(r, gap);
+        myChunkBase[threadId::get()]->chunkFringe = r;
         gIncrement[threadId::get()] = 0;
         fringe::set(r);
 //        cout << "At " << __WHERE__ << " fringe set to r = " << r << endl;
@@ -923,8 +929,8 @@ inline void poll()
     {
 // Here I need to set everything up just as if I had been making an
 // allocation request for zero bytes.
-        size_t gap = w - fringe::get();
-        if (gap != 0) setHeaderWord(fringe::get(), gap);
+//@@    size_t gap = w - fringe::get();
+//@@    if (gap != 0) setHeaderWord(fringe::get(), gap);
         fringeBis[threadId::get()] = fringe::get();
 //        cout << "Polling at " << __WHERE__ << "fringeBis[" << threadId::get()
 //             << " = " << hex << fringeBis[threadId::get()] << dec << endl;
@@ -1145,23 +1151,25 @@ inline void fitsWithinExistingGap(unsigned int i, size_t n, size_t gap)
 //    cout << "result[" << i << "] = " << std::hex << result[i] << std::dec << endl;
 // If I fill in a result for this I set it to show it does not need any more.
     request[i] = 0;
-    setHeaderWord(result[i]-TAG_VECTOR, n);
+    setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
     fringeBis[i] += n;
 //    cout << "At " << __WHERE__ << "fringeBis[" << i
 //         << " = " << hex << fringeBis[i] << dec << endl;
     gap -= n;
 // Make the end of the Chunk safe again.
-    if (gap != 0)
-        setHeaderWord(fringeBis[i], gap);
+    myChunkBase[i]->chunkFringe = fringeBis[i];
+//@@if (gap != 0)
+//@@    setHeaderWord(fringeBis[i], gap);
 }
 
 inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
 {
-// OK I can allocate a few chunk for one of the threads here. First I should
+// OK I can allocate a new Chunk for one of the threads here. First I should
 // insert padding so that the tail end of the previous chunk is tidily
 // filled in.
 //    cout << "At " << __WHERE__ << " ableToAllocateNewChunk\n";
-    setHeaderWord(fringeBis[i], gap);
+    myChunkBase[i]->chunkFringe = fringeBis[i];
+//@@setHeaderWord(fringeBis[i], gap);
     Chunk *newChunk = reinterpret_cast<Chunk *>(gFringe.load());
     newChunk->length = n+targetChunkSize;
     newChunk->isPinned = false;
@@ -1170,6 +1178,7 @@ inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
     currentPage->chunkMap[chunkNo].store(newChunk);
     result[i] = newChunk->dataStart() + TAG_VECTOR;
 //    cout << "result[" << i << "] = " << std::hex << result[i] << std::dec << endl;
+    myChunkBase[threadId::get()] = newChunk;
     request[i] = 0;
 // If I allocate a block here it will need to be alive through an impending
 // garbage collection, so I will make it seem like a respectable Lisp
@@ -1177,7 +1186,7 @@ inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
 //    LispObject rr = result[i];
     my_assert(findPage(result[i]) != nullptr); // @@@
 //    cout << std::hex << result[i] << " " << rr << endl;
-    setHeaderWord(result[i]-TAG_VECTOR, n);
+    setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
     fringeBis[i] = newChunk->dataStart() + n;
 //    cout << "At " << __WHERE__ << " fringeBis[" << i
 //         << "] = " << hex << fringeBis[i] << dec << endl;
@@ -1207,16 +1216,17 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
         if (gLimit == 0) gLimit = pageEnd;
 //        cout << "At " << __WHERE__ << " gLimit = " << hex << gLimit << dec << endl;
         size_t gap1 = gLimit - gFringe;
+        myChunkBase[i]->chunkFringe = fringeBis[i];
         if (n+targetChunkSize < gap1)
-        {   setHeaderWord(fringeBis[i], gap);
-            Chunk *c = reinterpret_cast<Chunk *>(gFringe.load());
+        {   Chunk *c = reinterpret_cast<Chunk *>(gFringe.load());
             c->length = n + targetChunkSize;
             c->isPinned = false;
             size_t chunkNo = currentPage->chunkCount.fetch_add(1);
             currentPage->chunkMap[chunkNo].store(c);
+            myChunkBase[i] = c;
             result[i] = gFringe.load() + TAG_VECTOR;
             request[i] = 0;
-            setHeaderWord(result[i]-TAG_VECTOR, n);
+            setHeaderWord(result[i]-TAG_VECTOR, n, TYPE_VEC32);
             fringeBis[i] = gFringe.load() + n;
 //            cout << "At " << __WHERE__ << "fringeBis[" << i
 //                 << " = " << hex << fringeBis[i] << dec << endl;
@@ -1262,6 +1272,36 @@ inline void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
     }
 }
 
+inline void grabNewCurrentPage()
+{   if (freePages != nullptr)
+    {   currentPage = freePages;
+        freePages = freePages->chain;
+        freePagesCount--;
+    }
+    else
+    {   currentPage = mostlyFreePages;
+        mostlyFreePages = mostlyFreePages->chain;
+        mostlyFreePagesCount--;
+    }
+    currentPage->pageClass = busyPageTag;
+    currentPage->chain = busyPages;
+    busyPages = currentPage;
+    busyPagesCount++;
+// I require that the fringe and limit values stored with a page refer to
+// the first available block allowing for any pinned chunks within the page.
+    gFringe = currentPage->fringe.load();
+    gLimit = currentPage->limit;
+//  cout << "At " << __WHERE__ << " gFringe = " << hex << gFringe << dec << endl;
+//  cout << "At " << __WHERE__ << " gLimit = " << hex << gLimit << dec << endl;
+// Every thread will now need to grab its own fresh chunk!
+    for (unsigned int k=0; k<maxThreads; k++)
+        limit[k] = fringeBis[k] = limitBis[k] = gFringe;
+//  cout << "At " << __WHERE__
+//  << " fringeBis[k] = limitBis[k] = gFringe = "
+//  << hex << gFringe << dec << endl;
+//  cout << "@@ just allocated a fresh page\n";
+}
+
 inline void newRegionNeeded()
 {
 // This where a page is full up. Or at least where the region within a page
@@ -1269,9 +1309,12 @@ inline void newRegionNeeded()
 // I wll set padders everywhere even if I might think I have done so
 // already, just so I am certain.
     for (unsigned int i=0; i<maxThreads; i++)
-    {   size_t gap = limitBis[i] - fringeBis[i];
-        if (gap != 0) setHeaderWord(fringeBis[i], gap);
+    {   //@@size_t gap = limitBis[i] - fringeBis[i];
+        //@@if (gap != 0) setHeaderWord(fringeBis[i], gap);
+        myChunkBase[i]->chunkFringe = fringeBis[i];
     }
+// Here I will put in a padder that may lie between Chunks. I think this
+// should not be necessary!
     size_t gap = gLimit - gFringe;
     if (gap != 0) setHeaderWord(gFringe, gap);
 // Next if I will be building up to a full GC I can usually just allocate
@@ -1281,30 +1324,34 @@ inline void newRegionNeeded()
 // a minor GC.
     if ((!generationalGarbageCollection ||
          !garbage_collection_permitted ||
-         victimPage == nullptr) &&
+         previousPage == nullptr) &&
         userGcRequest != GcStyleMinor)
-    {   if (busyPagesCount >= freePagesCount+mostlyFreePagesCount ||
-            userGcRequest == GcStyleMajor)
+    {   if ((busyPagesCount >= freePagesCount+mostlyFreePagesCount ||
+             userGcRequest == GcStyleMajor) &&
+            !withinMajorGarbageCollection)
         {   cout << "@@ full GC needed\n";
+            userGcRequest = GcStyleNone;
             fullGarbageCollect();
         }
         else
         {
-// Here I can just allocate a next page to use...
-            if (victimPage == nullptr) busyPages++;
-            victimPage = currentPage;
-            victimPage->pageClass = victimPageTag;
+// Here I can just allocate a next page to use... either because memory
+// is less than half full or because I am inside a major garbage collection
+// and the space I am allocating here will count as part of the new region
+// that I am copying everything into.
+            if (previousPage == nullptr) busyPages++;
+            previousPage = currentPage;
 // I must talk through an interaction between pinned data and my write
 // barrier. Suppose some data is is pinned and in addition to the ambiguous
 // references to it is is pointed to from ancient structures. During a
 // garbage collection in which it is pinned the data there will not be moved
 // and so the pointers from ancient areas remain safe.
 // Now suppose that during the next garbage collection there are no ambiguous
-// pointers to this data. Further suppose that it could be in a victim page.
+// pointers to this data. Further suppose that it could be in a previous page.
 // That could happen either because I used the partly pinned page as
 // a "current" one and allocated more new material within in, or if I tried
 // to dispose of pinning as soon as possible by treating all partly pinned
-// pages as victims.
+// pages as previouss.
 // Because the data is no longer pinned it gets evacuated. So all references
 // to it will need updating. Those in the stable part of the heap and
 // those within pinned regions in partly-free data may risk being missed
@@ -1314,7 +1361,7 @@ inline void newRegionNeeded()
 //   (1)  create pointer to Y from location X
 //   (2)  location X ends up in stable heap region, typically because
 //        X was evacuated.
-//   (3)  Y is in a victim page. It gets pinned and then a minor GC leaves
+//   (3)  Y is in a previous page. It gets pinned and then a minor GC leaves
 //        it in a mostly-free page
 //   (4)  at a subsequent minor GC Y is no longer pinned and gets evacuated.
 //        but we then need to be certain that X gets updated.
@@ -1331,7 +1378,7 @@ inline void newRegionNeeded()
 // item then the location holding that pointer is tagged as dirty. That
 // issue becomes critical when the dirty location ends up in the stable
 // region or in a partly-pinned page.
-// (c) all "mostly free" pages are considered to be victim pages so that
+// (c) all "mostly free" pages are considered to be previous pages so that
 // if items in them are NOT (now) pinned those items can be evacuated
 // out from them even on a minor GC. And if a chunk ends up with no
 // current pins and if all live data is evacuated from it then its space
@@ -1341,41 +1388,15 @@ inline void newRegionNeeded()
 // if there is one. In pathological situations I may need to drop back
 // and use a mostly-free one.
             {   std::lock_guard<std::mutex> guard(mutexForFreePages);
-                if (freePages != nullptr)
-                {   currentPage = freePages;
-                    freePages = freePages->chain;
-                    freePagesCount--;
-                }
-                else
-                {   currentPage = mostlyFreePages;
-                    mostlyFreePages = mostlyFreePages->chain;
-                    mostlyFreePagesCount--;
-                }
+                grabNewCurrentPage();
             }
-            currentPage->pageClass = currentPageTag;
-            currentPage->chain = busyPages;
-            busyPages = currentPage;
-            busyPagesCount++;
-// I require that the fringe and limit values stored with a page refer to
-// the first available block allowing for any pinned chunks within the page.
-            gFringe = currentPage->fringe.load();
-            gLimit = currentPage->limit;
-//            cout << "At " << __WHERE__ << " gFringe = " << hex << gFringe << dec << endl;
-//            cout << "At " << __WHERE__ << " gLimit = " << hex << gLimit << dec << endl;
-// Every thread will now need to grab its own fresh chunk!
-            for (unsigned int k=0; k<maxThreads; k++)
-                limit[k] = fringeBis[k] = limitBis[k] = gFringe;
-//            cout << "At " << __WHERE__
-//                 << " fringeBis[k] = limitBis[k] = gFringe = "
-//                 << hex << gFringe << dec << endl;
-//            cout << "@@ just allocated a fresh page\n";
         }
     }
     else
     {   cout << "@@ minor GC needed\n";
+        userGcRequest = GcStyleNone;
         generationalGarbageCollect();
     }
-    userGcRequest = GcStyleNone; // have now satisfied any user request.
 }
 
 inline void releaseOtherThreads()

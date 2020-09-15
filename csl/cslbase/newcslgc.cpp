@@ -42,43 +42,111 @@ using std::dec;
 
 // Overview of procedure for full garbage collection:
 //
-// For garbage collection I will refer to the full half-space as "A"
-// for Active, the empty one as "C" for Clear. At the entry to GC I will
-// expect that all pages in C have any pinned chunks within them chained
-// so that I can avoid overwriting existing data that may still be needed.
-// 
+// I have Pages (8M) and Chunks (16K). Pinning is at a granularity of Chunks.
+//
+// First I will provide a reminder of the fields and data involved in
+// pinning things.
+//
+// When a page has pinned regions within it its chunkCount field will be
+// non-zero, because the pinned regsions will be represented as Chunks.
+// When testing if an ambiguous pointer is pinned I will arrange that the
+// chunkMap be sorted so I can identify the Chunk that an address is within
+// using binary search.
+// A field chunkMapSorted is used to avoid too many repeat sorting steps.
+// Binary search of chunkMap lets me identify a candidate Chunk for an
+// ambiguous pointer and then pointsWithin() tests if the address is within
+// the used data portion of that Chunk. If so an isPinned flag indicates
+// whether the Chunk is a pinned one and when it first becomes pinned it is
+// pushed on the pages pinnedChunks list using its pinChain field.
+// When the first Chunk on a Page is pinned the hasPinned flag in the
+// Page is set and the Page is pushed onto globalPinChain through its
+// pinChain field.
+// Note that the process of pinning something never creates a new Chunk, so
+// the chunkMap just needs to be as established while allocation within the
+// Page was happening, and the it only needs sorting once at the start of
+// a GC.
+// When at some later stage it is necessary to allocate within a Page that
+// has some pinned Chunks the otherwise empty Page should end up with
+// a chunkMap that only mentions the pinned Chunks. This is all dealt with
+// in setUpUsedPage. the chunkMap is cleared and then re-created from the
+// list pinnedChunks. That may leave it is an arbitrary order, so it is then
+// sorted and with that done pinnedChunks can be re-created in ascending
+// order. Then fringe and limit are set up within the Page. limit will
+// point to the first pinned Chunk. That will have a length field indicating
+// where there is free space beyond it and a pinChain entry that refers to
+// the start of the next pinned Chunk (and hence the end of the free region).
+//
+// Pages are classified as BUSY, MOSTLYFREE or FREE and have a pageClass
+// indicating which applies.
+//
+// Of the BUSY pages two will be specially identified - currentPage and
+// previousPage, but all busy pages will be chained on busyPages. While
+// the system is NOT in the garbage collector currentPage is where allocation
+// is proceeding. Its limit may refer to the start of a pinned Chunk within
+// it. As the GC is entered (and as it graduated to become previousPage)
+// all space within it will be filled with padding items. This has to be done
+// because one or more Chunks within it may be pinned, and any such Chunks
+// are scanned sequentially as precise list bases.
+// @@@ Hmmm @@@ I could have another field in a Chunk header called (say)
+// usedLength so that if a Chunk was not totally full then rather than
+// putting a padder at the end the tail of it could avoid scanning by
+// reference to that. A benefit of such a scheme would be that if the Chunk
+// ended up pinned then it would be possible to reserve space just up as far
+// as usedLength and use the space at the end.
+//
+// MOSTLYFREE pages are chained on mostlyFreePages while FREE ones are on
+// freePages.
+//
+// During early stages of Garbage Collection all BUSY pages and all MOSTLYFREE
+// ones will need their chunkMaps. Neither need and pinChain information.
+// At the time I sort the chunkMap (ie when I find the first pin in the
+// Page) I must reset the isPinned flag on all Chunks in that page and
+// chear the pinChain. Then while pinning a Chunk those two get updated.
+// The situation after that is that I have a list of the Pages that contain
+// pinned Chunks this time, and within each such Page I can identify those
+// Chunks easily. 
+//
+// Now move busyPages to OldPages and set up a new CurrentPage. While
+// performing a major GC always allocate a MOSTLYFREE page rather than a
+// fully free one if possible. This is because doing to embeds the previously
+// pinned data among newly copies data. Much of it is liable NOT to be
+// pinned on the next garbage collection (because I hope that values on the
+// stack will have changed by then). So by doing that the stuff pinned by the
+// previous GC will have a chance to be fully recovered by the next one.
+//
+// Scan the stack (ie the "ambiguous bases") so that Chunks in OldPages and
+// MostlyFree that are accessible via that collection of values are marked
+// as pinned. Note that the only Chunks present in the MostlyFree pages will
+// be ones that has been pinned last time, and so things there that are
+// pinned now are "re-pinned".
+//
+// For statistical and evaluation purposes at this stage it will be
+// interesting to see how many Pages contain pinned Chunks and both how
+// many Chunks are involved and what proportion of the Pages concerned they
+// use. That will be information I can gather before getting all the rest
+// of the GC working!
+//
 
-// (1) Clear the "pinned" maps for pages in A.
-//
-// (2) For each ambiguous value (ie value on the stack associated with
-//     any thread) do:
-//   If value could not be a pointer into A then ignore it.
-//   Set pinned bit for the chunk concerned. Mark page as one that
-//     contains pinned items.
-//
-// (3) Evacuate each of the following locations:
-//   (a) Every precise pointer.
-//   (b) Every pointer field in any object in one of the pinned chunks.
-// THEN
-//   (c) Every pointer field in any object copied into C in via the
-//       evacuation process.
-//   See later for explanation of "evacuate".
-//
-// (4) Set up A with the structure needed to be an empty page, ie
-//   a gFringe/gLimit chain that works around pinned items.
-//
-// (5) Flip status and interpretation of A and C.
-//
 //
 // Evacution:
 //   If the location to be evacuated holds immediate data do nothing,
 //     otherwise it holds a pointer to some object.
-//   If that object is not in A or it is in A but is pinned then do nothing.
+//   If that object is to something in a MostlyFree page or one of the
+//     pages I am at present allocating in then it must be to something that
+//     had been pinned last time.
+//   [now it is points into an oldPage. I must check if it is in a
+//     pinned Chunk. Well at this stage I will have set things up so that
+//     the ONLY Chunks in the chunkMap of such a page are the [newly] pinned
+//     ones and I do not expoct there to be many, so binary search in the
+//     chunkMap should be quick.] If into a pinned chunk it is left alone.
 //   If the CAR field of the object holds a forwarding address use that to
 //     update the location to be a proper pointer to relocated data. Done!
 //   Make a (binary) copy of the object in the next free space within C.
 //   Set the CAR field to be a forwarding address to the copy.
-// Note that the copy will then (in due course) be scanned under (3.c).
+// Note that the copy will then (in due course) be scanned. For that to be
+// feasible the Pages where I allocate copied material (including pinned
+// Chunks embedded within them) must have padder items etc such that I will
+// be able to perform a linear scan.
 
 
 // Code for sorting "lists"...
@@ -233,69 +301,25 @@ uintptr_t sortPinList(uintptr_t l)
 }
 
 // During garbage collection I will allocate items in the half of my memory
-// that has been free up to now. This follows a pattern rather similar to
-// the onme used by the main allocation code, except that it does not have
-// to concern itself with concurrency at all (YET!). I *could* try a bit
-// harder to avoid fragmentation by keeping track of holes that I leave in
-// newly allocated memory, but I will certainoly not do that in a first
-// version and it could very easily be that to do so would complicate matters
-// and slow GC down for gains in memory occupancy that would not be great
-// enough to justify it. If I am keen I will come back to the issue later on,
-// but I will need to evaluate whether it would actually help before I code
-// too much.
+// that has been free up to now.
+// In an earlier draft of this I had a separate bit of code to do that, such
+// that the code was a ralative of that in get_n_bytes but did not support
+// concurrency at all. My thought now is that for a major garbage collection
+// I will be abandoning the old half-space and when it is complete I will
+// allocate in the new one - and so a tidy scheme is to make that change-over
+// at the start of the GC and then throughout the copying process I just
+// use the existing get_n_bytes code. Well I will need to review that so
+// that when a Page becomes full I always just allocate a fresh one rather
+// that having any thought of (re-)entering the GC.
+// Doing things this way automatically provides support for multi-thread
+// allocation and so for future experiments with multi-thread copying in
+// the (global) garbage collection. It adds some overhead in that at the end
+// of each Chunk I will need to perform atomic increments, and my fringe and
+// limit values will have to be thread-local - again that would ne essential
+// for parallelism within the GC and I am going to hope it is a modest
+// overhead anyway.
 
-uintptr_t nFringe, nLimit, nNext;
-
-uintptr_t get_n_bytes_new(size_t n)
-{   size_t gap = nLimit - nFringe;
-    while (n > gap)
-    {   if (gap != 0) setcar(nFringe, makePaddingHeader(gap));
-        if (nNext != 0)
-        {   nFringe = nNext;   // Skip past pinned data to the next chunk.
-            nLimit = ((uintptr_t *)nFringe)[0];
-            nNext = ((uintptr_t *)nFringe)[1];
-            gap = nLimit - nFringe;
-        }
-        else   // Need to allocate a further page.
-        {   Page *nextPage;
-            if (mostlyFreePages != nullptr)   // Use pages with pinned items 1st.
-            {   nextPage = mostlyFreePages;
-                mostlyFreePages = mostlyFreePages->chain;
-                mostlyFreePagesCount--;
-            }
-            else
-            {   nextPage = freePages;
-                freePages = freePages->chain;
-                freePagesCount--;
-            }
-// Here I carefully take the newly allocated page on the END of the list of
-// busy pages so that I will be able to scan that list sequentially and when
-// I do so I will visit objects in the order of their allocation. This is
-// needed to make the Garbage Collector work.
-            nextPage->pageClass = currentPageTag;
-            nextPage->chain = nullptr;
-            if (busyPages == nullptr)
-            {   busyPages = nextPage;
-                victimPage = nullptr;
-            }
-            else
-            {   if (victimPage != nullptr)
-                    victimPage->pageClass = busyPageTag;
-                currentPage->chain = nextPage;
-                victimPage = currentPage;
-                victimPage->pageClass = victimPageTag;
-            }
-            currentPage = nextPage;
-            busyPagesCount++;
-            nFringe = currentPage->fringe;
-            nLimit = currentPage->limit;
-            gap = nLimit - nFringe;
-        }
-    }
-    uintptr_t r = nFringe;
-    nFringe += n;
-    return r;
-}
+bool withinMajorGarbageCollection = false;
 
 void evacuate(LispObject *p)
 {
@@ -332,7 +356,7 @@ void evacuate(LispObject *p)
     if (is_cons(a)) len = 2*CELL;
     else if (is_symbol(a)) len = symhdr_length;
     else len = doubleword_align_up(length_of_header(aa));
-    aa = get_n_bytes_new(len);
+    aa = get_n_bytes(len);
     std::memcpy(reinterpret_cast<void *>(aa), ap, len);
     *ap = TAG_FORWARD + aa;
     *p = aa + (a&TAG_BITS);
@@ -366,7 +390,21 @@ LispObject *evacuateContents(LispObject *p)
 
 void prepareForGarbageCollection(bool major)
 {   cout << "prepareForGarbageCollection" << endl;
-    my_abort();
+    if (major)
+    {   withinMajorGarbageCollection = true;
+        oldPages = busyPages;
+        oldPagesCount = busyPagesCount;
+        busyPages = nullptr;
+        busyPagesCount = 0;
+        currentPage->chain = oldPages;
+        oldPages = currentPage;
+        oldPagesCount++;
+        grabNewCurrentPage();
+    }
+    else
+    {   cout << "prepare for minor GC not coded yet\n";
+        my_abort();
+    }
 }
 
 void clearPinnedInformation(bool major)
@@ -469,7 +507,7 @@ void clearAllPins()
 // be a LispObject that will later be re-used. If it is a LispObject that
 // refers to memory address (a) then I will want to be certain that garbage
 // collection does not relocate material at (a). For a minor collection only
-// objects in the victim page will be evacuated, so I have a simple initial
+// objects in the previous page will be evacuated, so I have a simple initial
 // filter. For a full GC I will need to determine whether (a) points anywhere
 // within memory that is currently in use holding active Lisp data. This
 // could be within the page currently bein allocated into, its predecessor
@@ -480,10 +518,10 @@ void clearAllPins()
 
 void processAmbiguousValue(bool major, uintptr_t a)
 {   if (!major)
-    {   uintptr_t victimBase =
-            reinterpret_cast<uintptr_t>(victimPage);
-        if (victimBase <= a && a < victimBase+pageSize)
-            processAmbiguousInPage(major, victimPage, a);
+    {   uintptr_t previousBase =
+            reinterpret_cast<uintptr_t>(previousPage);
+        if (previousBase <= a && a < previousBase+pageSize)
+            processAmbiguousInPage(major, previousPage, a);
         return;
     }
     Page *p = findPage(a);
@@ -496,13 +534,20 @@ void identifyPinnedItems(bool major)
 // any thread) do processAmbiguousValue(). This must ensure that if
 // the item might be a LispObject that is a reference that the destination
 // address of that reference is marked as "pinned". During a minor GC
-// the only items that need special marking will be one in the "victim"
+// the only items that need special marking will be one in the "previous"
 // page since nothing else will ever be moved.
     for (unsigned int thr=0; thr<maxThreads; thr++)
     {   if ((threadMap & threadBit(thr)) != 0)
         {   uintptr_t base = stackBases[thr];
             uintptr_t fringe = stackFringes[thr];
-            for (uintptr_t s=fringe; s<base; s+=sizeof(uintptr_t))
+// Here I am supposing that for each thread the (C++) stack is a single
+// block of memory, that it is aligned as a sizeof(LispObject) boundary
+// and that EVERY interesting value is present on the stack with no change
+// that the only live pointer to some data is in a machine register. On the
+// way in to the Garbage Collector I have tried quite hard to ensure that
+// last point, but none of this can be guaranteed by reference to the rules
+// of the C++ standard!
+          for (uintptr_t s=fringe; s<base; s+=sizeof(uintptr_t))
             {   processAmbiguousValue(major,
                                       *reinterpret_cast<uintptr_t *>(s));
             }
