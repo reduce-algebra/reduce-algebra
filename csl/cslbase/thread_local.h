@@ -259,10 +259,10 @@ class name                                                    \
     static inline thread_local Type val;                      \
 public:                                                       \
     static Type get()                                         \
-    {   return (Type)tls_load(H.h);                           \
+    {   return reinterpret_cast<Type>(tls_load(H.h));         \
     }                                                         \
     static void set(Type v)                                   \
-    {   tls_store(H.h, reinterpret_cast<void *>(v));                            \
+    {   tls_store(H.h, reinterpret_cast<void *>(v));          \
         val = v;                                              \
     }                                                         \
 };
@@ -273,7 +273,7 @@ class name                                                    \
     static inline TlsHandle H;                                \
 public:                                                       \
     static Type get()                                         \
-    {   return (Type)tls_load(H.h);                           \
+    {   return reinterpret_cast<Type>(tls_load(H.h));         \
     }                                                         \
     static void set(Type v)                                   \
     {   tls_store(H.h, reinterpret_cast<void *>(v));                            \
@@ -299,7 +299,7 @@ class name                                                    \
 public:                                                       \
     static Type &get()                                        \
     {   static thread_local name ## _Ref val;                 \
-        return *(Type *)tls_load(val.H.h);                    \
+        return *reinterpret_cast<Type*>(tls_load(val.H.h));   \
     }                                                         \
 };
 

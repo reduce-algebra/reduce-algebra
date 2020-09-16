@@ -163,7 +163,7 @@ public:
     {   return reinterpret_cast<uintptr_t>(this) + length;
     }
     bool pointsWithin(uintptr_t p)
-    {   return p >= dataStart() && p < dataEnd();
+    {   return p >= dataStart() && p < chunkFringe;
     }
 };
 
@@ -740,8 +740,9 @@ inline LispObject get_n_bytes(size_t n)
 // other threads may access it. In particular another thread can set it to
 // zero to cause this thread to synchronize with others to participate in
 // garbage collection.
+    uintptr_t thr = threadId::get();
     uintptr_t r = fringe::get();
-    uintptr_t w = limit[threadId::get()].load();
+    uintptr_t w = limit[thr].load();
     fringe::set(fringe::get() + n);
 // The simple case completes here. If each chunk is around 16K then only 1
 // cons in 1000 or so will take the longer route.
@@ -757,7 +758,7 @@ inline LispObject get_n_bytes(size_t n)
 // field within it as an unambiguous list-base. Any uninitialized or otherwise
 // wild regions within it could cause disaster! I do this by recording its
 // high water mark.
-    myChunkBase[threadId::get()]->chunkFringe = r;
+    if (myChunkBase[thr] != nullptr) myChunkBase[thr]->chunkFringe = r;
     if (w != 0)
     {   //@@size_t gap = w - r;
 // I now need to allocate a new chunk. gFringe and gLimit delimit a region
@@ -813,28 +814,28 @@ inline LispObject get_n_bytes(size_t n)
 // gets pinned, but the isPinned flag must start off false so that when the
 // GC finds an ambiguous pointer within this chunk it knows when that is the
 // first such.
-            myChunkBase[threadId::get()] = newChunk;
+            myChunkBase[thr] = newChunk;
             newChunk->length.store(targetChunkSize+n);
             newChunk->isPinned.store(false);
             newChunk->pinChain.store(nullptr);
             size_t chunkNo = p->chunkCount.fetch_add(1);
             p->chunkMap[chunkNo].store(newChunk);
-// I wish to write back limit[threadId::get()] but it is possible that in
+// I wish to write back limit[thr] but it is possible that in
 // the meanwhile somebody set that to zero, so I need to be a bit careful.
 // Specifically I will only write back the new limit if the old one was
 // still in force.
 //
 // Here I have (successfully) allocated a new chunk, and I have set my
-// fringe::get() to point within it. Because limit[threadId::get()] can
+// fringe::get() to point within it. Because limit[thr] can
 // be arbitrarily clobbered by others I will only update it if it has
 // not changed since I loaded it earlier. If it has changed it will have
 // been set to zero and I must participate in a GC.
-            limitBis[threadId::get()] = newLimit;
-            bool ok = limit[threadId::get()].compare_exchange_strong(w, newLimit);
+            limitBis[thr] = newLimit;
+            bool ok = limit[thr].compare_exchange_strong(w, newLimit);
             if (ok) testLayout();
             if (ok) return static_cast<LispObject>(r);
         }
-        gIncrement[threadId::get()] = targetChunkSize+n;
+        gIncrement[thr] = targetChunkSize+n;
         fringe::set(oldFringe);
 //        cout << "At " << __WHERE__ << " fringe set to oldFringe = " << hex << oldFringe << dec << endl;
     }
@@ -843,17 +844,17 @@ inline LispObject get_n_bytes(size_t n)
 // Here I am about to be forced to participate in garbage collection,
 // typically for the benefit of some other thread.
         cout << "GC triggered\n";
-//@@    size_t gap = limitBis[threadId::get()] - r;
+//@@    size_t gap = limitBis[thr] - r;
 //@@    if (gap != 0) setHeaderWord(r, gap);
-        myChunkBase[threadId::get()]->chunkFringe = r;
-        gIncrement[threadId::get()] = 0;
+        if (myChunkBase[thr] != nullptr) myChunkBase[thr]->chunkFringe = r;
+        gIncrement[thr] = 0;
         fringe::set(r);
 //        cout << "At " << __WHERE__ << " fringe set to r = " << r << endl;
     }
-    fringeBis[threadId::get()] = fringe::get();
-//    cout << "At " << __WHERE__ << " fringeBis[" << threadId::get()
-//         << "] = " << hex << fringeBis[threadId::get()] << dec << endl;
-    request[threadId::get()] = n;
+    fringeBis[thr] = fringe::get();
+//    cout << "At " << __WHERE__ << " fringeBis[" << thr
+//         << "] = " << hex << fringeBis[thr] << dec << endl;
+    request[thr] = n;
 // Here I can not complete the work with this inline function because
 // either I have run out of space for a new chunk or because some
 // other thread had done that and had set my limit register to zero
@@ -925,17 +926,18 @@ inline void dump_gets()
 
 inline void poll()
 {   uintptr_t w;
-    if (fringe::get() > (w = limit[threadId::get()].load()))
+    uintptr_t thr = threadId::get();
+    if (fringe::get() > (w = limit[thr].load()))
     {
 // Here I need to set everything up just as if I had been making an
 // allocation request for zero bytes.
 //@@    size_t gap = w - fringe::get();
 //@@    if (gap != 0) setHeaderWord(fringe::get(), gap);
-        fringeBis[threadId::get()] = fringe::get();
-//        cout << "Polling at " << __WHERE__ << "fringeBis[" << threadId::get()
-//             << " = " << hex << fringeBis[threadId::get()] << dec << endl;
-        request[threadId::get()] = 0;
-        gIncrement[threadId::get()] = 0;
+        fringeBis[thr] = fringe::get();
+//        cout << "Polling at " << __WHERE__ << "fringeBis[" << thr
+//             << " = " << hex << fringeBis[thr] << dec << endl;
+        request[thr] = 0;
+        gIncrement[thr] = 0;
         static_cast<void>(difficult_n_bytes());
     }
 }
@@ -1000,8 +1002,7 @@ inline void may_block(F &&action)
     buffer_pointer = &buffer;
 // ASSUME that setjmp dumps all the machine registers into the jmp_buf.
     if (setjmp(buffer) == 0)
-    {   stackFringes[threadId::get()] = reinterpret_cast<uintptr_t>
-                                        (buffer);
+    {   stackFringes[threadId::get()] = reinterpret_cast<uintptr_t>(buffer);
 // I will need to do more here to decrement the count of threads that
 // the system knows to be potentially involved in memory allocation.
         action();
@@ -1020,8 +1021,7 @@ inline void withRecordedStack(F &&action)
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
     if (setjmp(buffer) == 0)
-    {   stackFringes[threadId::get()] = reinterpret_cast<uintptr_t>
-                                        (buffer);
+    {   stackFringes[threadId::get()] = reinterpret_cast<uintptr_t>(buffer);
         action();
         std::longjmp(buffer, 1);
     }
@@ -1156,7 +1156,7 @@ inline void fitsWithinExistingGap(unsigned int i, size_t n, size_t gap)
 //    cout << "At " << __WHERE__ << "fringeBis[" << i
 //         << " = " << hex << fringeBis[i] << dec << endl;
     gap -= n;
-// Make the end of the Chunk safe again.
+// Make the end of the Chunk safe again. There is a Chunk active here!
     myChunkBase[i]->chunkFringe = fringeBis[i];
 //@@if (gap != 0)
 //@@    setHeaderWord(fringeBis[i], gap);
@@ -1178,7 +1178,8 @@ inline void ableToAllocateNewChunk(unsigned int i, size_t n, size_t gap)
     currentPage->chunkMap[chunkNo].store(newChunk);
     result[i] = newChunk->dataStart() + TAG_VECTOR;
 //    cout << "result[" << i << "] = " << std::hex << result[i] << std::dec << endl;
-    myChunkBase[threadId::get()] = newChunk;
+    uintptr_t thr = threadId::get();
+    myChunkBase[thr] = newChunk;
     request[i] = 0;
 // If I allocate a block here it will need to be alive through an impending
 // garbage collection, so I will make it seem like a respectable Lisp
@@ -1272,14 +1273,22 @@ inline void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
     }
 }
 
-inline void grabNewCurrentPage()
-{   if (freePages != nullptr)
+inline void grabNewCurrentPage(bool preferMostlyFree)
+{   if (preferMostlyFree && mostlyFreePages != nullptr)
+    {   currentPage = mostlyFreePages;
+        mostlyFreePages = mostlyFreePages->chain;
+        mostlyFreePagesCount--;
+    }
+    else if (freePages != nullptr)
     {   currentPage = freePages;
         freePages = freePages->chain;
         freePagesCount--;
     }
     else
     {   currentPage = mostlyFreePages;
+        my_assert(currentPage != nullptr,
+            [&]{ cout << "Utterly out of memory" << endl;
+                 std::exit(99); });
         mostlyFreePages = mostlyFreePages->chain;
         mostlyFreePagesCount--;
     }
@@ -1311,7 +1320,8 @@ inline void newRegionNeeded()
     for (unsigned int i=0; i<maxThreads; i++)
     {   //@@size_t gap = limitBis[i] - fringeBis[i];
         //@@if (gap != 0) setHeaderWord(fringeBis[i], gap);
-        myChunkBase[i]->chunkFringe = fringeBis[i];
+        if (myChunkBase[i] != nullptr)
+            myChunkBase[i]->chunkFringe = fringeBis[i];
     }
 // Here I will put in a padder that may lie between Chunks. I think this
 // should not be necessary!
@@ -1388,7 +1398,7 @@ inline void newRegionNeeded()
 // if there is one. In pathological situations I may need to drop back
 // and use a mostly-free one.
             {   std::lock_guard<std::mutex> guard(mutexForFreePages);
-                grabNewCurrentPage();
+                grabNewCurrentPage(withinMajorGarbageCollection);
             }
         }
     }

@@ -84,27 +84,27 @@ using std::dec;
 // the system is NOT in the garbage collector currentPage is where allocation
 // is proceeding. Its limit may refer to the start of a pinned Chunk within
 // it. As the GC is entered (and as it graduated to become previousPage)
-// all space within it will be filled with padding items. This has to be done
-// because one or more Chunks within it may be pinned, and any such Chunks
-// are scanned sequentially as precise list bases.
-// @@@ Hmmm @@@ I could have another field in a Chunk header called (say)
-// usedLength so that if a Chunk was not totally full then rather than
-// putting a padder at the end the tail of it could avoid scanning by
-// reference to that. A benefit of such a scheme would be that if the Chunk
-// ended up pinned then it would be possible to reserve space just up as far
-// as usedLength and use the space at the end.
+// every Chunk will have its chunkFringe filled in to show the limit of
+// valid material stored in it. This is in case the Chunk ends up pinned,
+// in which case all objects stored in it will need to be treated as precise
+// list bases - they are identified using a linear scan of the (active part
+// of) the Chunk. At an earlier stage I had planned to put padder objects
+// to full every chunk right up to the end, but by following the current
+// plan I can arrange that when a pinned chunk survives garbage collection
+// and ends up in a MostlyFree page it gets truncated down to its chunkFringe,
+// and that avoids a bit of memory waste.
 //
 // MOSTLYFREE pages are chained on mostlyFreePages while FREE ones are on
 // freePages.
 //
 // During early stages of Garbage Collection all BUSY pages and all MOSTLYFREE
-// ones will need their chunkMaps. Neither need and pinChain information.
+// ones will need their chunkMaps. Neither need any pinChain information.
 // At the time I sort the chunkMap (ie when I find the first pin in the
 // Page) I must reset the isPinned flag on all Chunks in that page and
 // chear the pinChain. Then while pinning a Chunk those two get updated.
-// The situation after that is that I have a list of the Pages that contain
-// pinned Chunks this time, and within each such Page I can identify those
-// Chunks easily. 
+// The situation after that is that I end up with a list of the Pages that
+// contain pinned Chunks this time, and within each such Page I can identify
+// those Chunks easily. 
 //
 // Now move busyPages to OldPages and set up a new CurrentPage. While
 // performing a major GC always allocate a MOSTLYFREE page rather than a
@@ -388,6 +388,9 @@ LispObject *evacuateContents(LispObject *p)
     return &p[doubleword_align_up(len)/CELL];
 }
 
+size_t pinnedChunkCount = 0, pinnedPageCount = 0;
+
+
 void prepareForGarbageCollection(bool major)
 {   cout << "prepareForGarbageCollection" << endl;
     if (major)
@@ -399,7 +402,8 @@ void prepareForGarbageCollection(bool major)
         currentPage->chain = oldPages;
         oldPages = currentPage;
         oldPagesCount++;
-        grabNewCurrentPage();
+        grabNewCurrentPage(true);
+        pinnedChunkCount = pinnedPageCount = 0;
     }
     else
     {   cout << "prepare for minor GC not coded yet\n";
@@ -409,7 +413,9 @@ void prepareForGarbageCollection(bool major)
 
 void clearPinnedInformation(bool major)
 {   cout << "clearPinnedInformation" << endl;
-    my_abort();
+// Any pages pinned by the previous garbage collection will be recorded
+// via globalPinChain.
+   clearAllPins();
 }
 
 // Each page consists of a header followed by a number of chunks. There may
@@ -420,8 +426,9 @@ void clearPinnedInformation(bool major)
 // pinned material.
 
 void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
-{   if (p->chunkCount.load() == 0) return;  // An empty Page.
-    cout << "Ambig " << hex << a << " in page " << p << dec << endl;
+{   cout << "Ambig " << hex << a << " in page " << p << dec << endl;
+    if (p->chunkCount.load() == 0) return;  // An empty Page.
+    cout << "Ambig " << hex << a << " in non-empty page " << p << dec << endl;
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
 // the chunk has (a) pointing within it, and I should not need many tries
@@ -463,6 +470,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // If the chunk is already tagged as pinned there is no need to do so again.
     if (c->isPinned) return;
     c->isPinned = true;
+    pinnedChunkCount++;
 // Note that a single thread looks at ambiguous pointers so while I want
 // everything atomic<> so that later on if other threads happen to look you
 // you know they will see updates, I do not need to worry about race
@@ -472,6 +480,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // When a chunk gets pinned then page must be too unless it already has been.
     cout << "Page hasPinned = " << p->hasPinned << endl;
     if (p->hasPinned) return;
+    pinnedPageCount++;
     p->hasPinned = true;
     p->pinChain = globalPinChain;
     globalPinChain = p;
@@ -525,6 +534,7 @@ void processAmbiguousValue(bool major, uintptr_t a)
         return;
     }
     Page *p = findPage(a);
+    cout << std::hex << a << " is in page " << p << std::dec << endl;
     if (p!=nullptr) processAmbiguousInPage(major, p, a);
 }
 
@@ -537,7 +547,7 @@ void identifyPinnedItems(bool major)
 // the only items that need special marking will be one in the "previous"
 // page since nothing else will ever be moved.
     for (unsigned int thr=0; thr<maxThreads; thr++)
-    {   if ((threadMap & threadBit(thr)) != 0)
+    {   if ((threadMap & threadBit(thr)) == 0)
         {   uintptr_t base = stackBases[thr];
             uintptr_t fringe = stackFringes[thr];
 // Here I am supposing that for each thread the (C++) stack is a single
@@ -547,6 +557,8 @@ void identifyPinnedItems(bool major)
 // way in to the Garbage Collector I have tried quite hard to ensure that
 // last point, but none of this can be guaranteed by reference to the rules
 // of the C++ standard!
+          cout << std::hex << "scan from " << fringe << " to "
+               << base << std::dec << endl;
           for (uintptr_t s=fringe; s<base; s+=sizeof(uintptr_t))
             {   processAmbiguousValue(major,
                                       *reinterpret_cast<uintptr_t *>(s));
@@ -587,6 +599,9 @@ void garbageCollect(bool major)
     prepareForGarbageCollection(major);
     clearPinnedInformation(major);
     identifyPinnedItems(major);
+// Report on pinning.
+    cout << pinnedChunkCount << " pinned Chunks\n";
+    cout << pinnedPageCount << " pinned Pages\n";
     evacuateFromUnambiguousBases(major);
     evacuateFromPinnedItems(major);
     if (!major) evacuateFromDirty();

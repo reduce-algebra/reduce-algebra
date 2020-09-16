@@ -1264,12 +1264,12 @@ LispObject autoload_0(LispObject fname)
     set_fns(car(fname), undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
-    fname = cdr(fname);
-    while (consp(fname))
-    {   push(fname);
-        Lload_module(nil, car(fname));
-        pop(fname);
-        fname = cdr(fname);
+    LispObject fname1 = cdr(fname);
+    while (consp(fname1))
+    {   push(fname1);
+        Lload_module(nil, car(fname1));
+        pop(fname1);
+        fname1 = cdr(fname1);
     }
     pop(fname);
     return apply(car(fname), nil, nil, autoload_symbol);
@@ -1282,12 +1282,12 @@ LispObject autoload_1(LispObject fname, LispObject a1)
     set_fns(car(fname), undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
-    fname = cdr(fname);
-    while (consp(fname))
-    {   push(fname);
-        Lload_module(nil, car(fname));
-        pop(fname);
-        fname = cdr(fname);
+    LispObject fname1 = cdr(fname);
+    while (consp(fname1))
+    {   push(fname1);
+        Lload_module(nil, car(fname1));
+        pop(fname1);
+        fname1 = cdr(fname1);
     }
     pop(a1);
     a1 = ncons(a1);
@@ -1302,12 +1302,12 @@ LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
     set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
-    fname = cdr(fname);
-    while (consp(fname))
-    {   push(fname);
-        Lload_module(nil, car(fname));
-        pop(fname);
-        fname = cdr(fname);
+    LispObject fname1 = cdr(fname);
+    while (consp(fname1))
+    {   push(fname1);
+        Lload_module(nil, car(fname1));
+        pop(fname1);
+        fname1 = cdr(fname1);
     }
     pop(a2, a1);
     a1 = list2(a1, a2);
@@ -1323,12 +1323,12 @@ LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2,
     set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
-    fname = cdr(fname);
-    while (consp(fname))
-    {   push(fname);
-        Lload_module(nil, car(fname));
-        pop(fname);
-        fname = cdr(fname);
+    LispObject fname1 = cdr(fname);
+    while (consp(fname1))
+    {   push(fname1);
+        Lload_module(nil, car(fname1));
+        pop(fname1);
+        fname1 = cdr(fname1);
     }
     pop(a3, a2, a1);
     a1 = list3(a1, a2, a3);
@@ -1345,12 +1345,12 @@ LispObject autoload_4up(LispObject fname, LispObject a1,
     set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
     setenv(car(fname), car(fname));
-    fname = cdr(fname);
-    while (consp(fname))
-    {   push(fname);
-        Lload_module(nil, car(fname));
-        pop(fname);
-        fname = cdr(fname);
+    LispObject fname1 = cdr(fname);
+    while (consp(fname1))
+    {   push(fname1);
+        Lload_module(nil, car(fname1));
+        pop(fname1);
+        fname1 = cdr(fname1);
     }
     pop(a4up, a3, a2, a1);
     a1 = list3star(a1, a2, a3, a4up);

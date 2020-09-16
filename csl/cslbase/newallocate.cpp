@@ -114,19 +114,19 @@
 // system can start with fairly sane amounts of memory but expand on need.
 //
 // Each chunk is divided into 8Mbyte pages. At any one moment one page will
-// be "Current", a second will be "Victim", some others will be "Busy" and
+// be "Current", a second will be "Previous", some others will be "Busy" and
 // the rest "Free". All mutator allocation happens within the Current page.
-// When that becomes full live data is evacuated from the Victim page into
-// Busy memory and what was Current becomes Victim. The old Victim page
+// When that becomes full live data is evacuated from the Previous page into
+// Busy memory and what was Current becomes Previous. The old Previous page
 // becomes Free and a Free page is chosen to be the new Current. Note this
-// might be done by swapping the sense of Current and Victim, but if I
+// might be done by swapping the sense of Current and Previous, but if I
 // did that then if those two pages get severly fragmented that that situation
 // would persist, so I will want to arrange that pages get moved to be
 // extensions to the Busy pool from time to time. Which will tend to happen
 // naturally but may need forcing in pathological case!
 //
 // Because garbage collection is conservative there can be ambiguous pointers
-// that refer into Victim. Data at the locations so addressed must not be
+// that refer into Previous. Data at the locations so addressed must not be
 // moved: I will refer to it as "pinned". The Current and each Free page may
 // have some pinned items present. When a page becomes Current it will have
 // two pointers - gFringe and gLimit. gFringe identifies the first
@@ -134,7 +134,7 @@
 // the end of the page or to the start address of the next pinned chunk.
 // If there is a pinned chunk then it will contain one field that indicates
 // its length and a second one that points to any pinned chunk beyond it.
-// In Victim and Busy each page will be kept full by placement of padder
+// In Previous and Busy each page will be kept full by placement of padder
 // pseudo-objects anywhere where there could be gaps: that is so that it is
 // possible to perform a sequential scan of the page with each item within
 // it identifiable by inspection of its first (header) word. This linear scan
@@ -212,9 +212,9 @@
 // ambiguous pointer down to a single 16K chunk. I tag that entire chunk as
 // pinned.
 // During a minor GC the only page that needs pinned information collected
-// is the Victim one, since material in all other pages will stay put anyway.
+// is the Previous one, since material in all other pages will stay put anyway.
 // My expectation is that the vast majority of (valid) potential pointers
-// will be into Current, with the next higher number into Victim. That is
+// will be into Current, with the next higher number into Previous. That is
 // because fairly recently allocated objects are most likely to have
 // references to them on the stack. For older material I think I expect a
 // tendancy for clustering and with a large memory configuration only a
@@ -233,7 +233,7 @@
 // multiple levels of bitmap so I can in general avoid inspecting areas
 // of memory that will not be interesting. When I do this during a minor
 // GC if I only need to concern myself with words that now point into
-// Current or Victim, and anything that points to older material can have
+// Current or Previous, and anything that points to older material can have
 // its dirty bit reset to zero.
 // Note that dirty bits may end up set on pinned items in pages that are
 // (mostly) Free.
@@ -405,9 +405,9 @@ atomic<uint32_t> activeThreads;
 static Page *px = reinterpret_cast<Page *>(-0x5a5a5a5aU);
 
 Page *currentPage = px;     // Where allocation is happening. The "nursery".
-Page *victimPage = px;      // A page that was recently the current one.
+Page *previousPage = px;    // A page that was recently the current one.
 Page *busyPages = px;       // Chained list of pages that contain live data.
-Page *doomedPages = px;     // Page from which live stuff is being evacuated.
+Page *oldPages = px;        // Page from which live stuff is being evacuated.
 Page *mostlyFreePages = px; // Chained list of pages that the GC has mostly
                             // cleared but that have some pinned data left
                             // in them.
@@ -415,14 +415,12 @@ Page *freePages = px;       // Chained list of pages that are not currently
                             // in use and that contain no useful information.
 
 size_t busyPagesCount = -1, mostlyFreePagesCount = -1,
-       freePagesCount = -1, doomedPagesCount = -1;
+       freePagesCount = -1, oldPagesCount = -1;
 
 void *heapSegment[16];
 void *heapSegmentBase[16];
 size_t heapSegmentSize[16];
 size_t heapSegmentCount;
-
-
 
 // I make some assumptions about the variations on atomic<> that I
 // use, but then would like to use static_assert to confirm them or to
@@ -542,7 +540,7 @@ LispObject reduce_basic_vector_size(LispObject v, size_t len)
 {   size_t oldlen = doubleword_align_up(length_of_header(vechdr(v)));
     setvechdr(v, TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED);
     len = doubleword_align_up(len);
-    if (len != oldlen) setvechdr(v + len, makePaddingHeader(oldlen-len));
+    if (len != oldlen) setvechdr(v + len, makeHeader(oldlen-len, TYPE_PADDER));
     return v;
 }
 
@@ -589,7 +587,7 @@ LispObject reduce_basic_vector_size(LispObject v, size_t len)
 
 // Here I need to arrange that if several threads each try to borrow memory
 // at the same (or overlapping) times that they end up with separate
-// chunks. I do this by letting each grab memort from mostlyFreePages and
+// chunks. I do this by letting each grab memory from mostlyFreePages and
 // freePages, but with a mutex to protect the allocation. Then when borrowing
 // is complete I push stuff back. I do not change the recorded counts of
 // free pages.
@@ -727,7 +725,7 @@ void setUpUsedPage(Page *p)
     {   p->chunkMap[i].load()->pinChain = p->pinnedChunks.load();
         p->pinnedChunks = p->chunkMap[i].load();
     }
-// Start by pretending that the page is utterly empty.
+// Start as if the page is utterly empty.
     p->fringe = reinterpret_cast<uintptr_t>(&p->data);
 // Now if MAY be that the first part of memory is consumed by one (or a
 // succession) of pinned chunks, or that the start of the page has a small
@@ -750,23 +748,15 @@ void setVariablesFromPage(Page *p)
 // limit for the current page equal to the fringe, and that will mean
 // that the very first time I try to allocate I will arrange to set up
 // a fresh Chunk. That seems nicer to me than creating that chunk here.
-    fringe::set(limit[threadId::get()] = limitBis[threadId::get()] =
-            gFringe = p->fringe.load());
+    uintptr_t thr = threadId::get();
+    fringe::set(limit[thr] = limitBis[thr] = gFringe = p->fringe.load());
+    myChunkBase[thr] = nullptr;
     gLimit = p->limit;
 //    cout << "setVariablesFromPage\n";
 //    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe << endl;
 //    cout << "At " << __WHERE__ << " gLimit = " << std::hex << gLimit << endl;
 //    cout << std::dec;
 }
-
-//@@@@
-//void saveVariablesToPage(Page *p)
-//{
-//// Dump global variable values back into a page header. THIS IS NOT USEFUL
-//// OR CORRECT YET!
-//    p->fringe = fringe::get();
-//    p->limit  = limitBis[threadId::get()];
-//}
 
 // This code allocates a segment by asking the operating system.
 // It grabs a block that is aligned to sizeof(Page).
@@ -930,7 +920,8 @@ unsigned int allocateThreadNumber()
 {   my_assert(threadMap != 0); // I need at least one spare.
     unsigned int n = nlz(threadMap);
 // Now n is 0 if the top bit is set, 1 for the next etc down to 63 when
-// the least bit is the only one se    threadMap &= ~threadBit(n);
+// the least bit is the only one set.
+    threadMap &= ~threadBit(n);
     return n;
 }
 
@@ -958,6 +949,26 @@ ThreadStartup::~ThreadStartup()
 LispObject *nilSegmentBase, *stackSegmentBase;
 LispObject *nilSegment, *stackSegment;
 
+uintptr_t               stackBases[maxThreads];
+uintptr_t               stackFringes[maxThreads];
+extern atomic<uint32_t> threadCount;
+std::mutex              mutexForGc;
+std::mutex              mutexForFreePages;
+bool                    gc_started;
+std::condition_variable cv_for_gc_idling;
+std::condition_variable cv_for_gc_busy;
+bool                    gc_complete;
+std::condition_variable cv_for_gc_complete;
+atomic<uintptr_t>       limit[maxThreads];
+Chunk*                  myChunkBase[maxThreads];
+uintptr_t               limitBis[maxThreads];
+uintptr_t               fringeBis[maxThreads];
+size_t                  request[maxThreads];
+LispObject              result[maxThreads];
+size_t                  gIncrement[maxThreads];
+atomic<uintptr_t>       gFringe;
+uintptr_t               gLimit = 0xaaaaaaaaU*0x80000001U;
+
 
 void initHeapSegments(double storeSize)
 //
@@ -965,14 +976,27 @@ void initHeapSegments(double storeSize)
 // The store-size is passed in units of Kilobyte, and as a double rather
 // than as an integer so that overflow is not an issue.
 {
+// Most of the arrays initialized here are just set up for the sake of
+// being tidy, but myChunkBase[] must be nullptr for safety.
+    for (unsigned int i=0; i<maxThreads; i++)
+    {   limit[i] = 0U;
+        myChunkBase[i] = nullptr;
+        limitBis[i] = 0U;
+        fringeBis[i] = 0U;
+        request[i] = 0U;
+        result[i] = 0;
+        gIncrement[i] = 0U;
+    }
+    withinMajorGarbageCollection = false;
+    globalPinChain = nullptr;
 // I will make the default initial store size around 64M on a 64-bit
 // machine and 2048M on a 64-bit system. If the user specified a "-K" option
 // they can override this, and also the system will tend to allocate more
 // space (if it can) when its memory starts to get full.
     size_t freeSpace = static_cast<size_t>(SIXTY_FOUR_BIT ? 2048 : 64) *
                        1024*1024;
-    size_t request = (size_t)storeSize;
-    if (request != 0) freeSpace = 1024*request;
+    size_t req = (size_t)storeSize;
+    if (req != 0) freeSpace = 1024*req;
 // Now freeSpace is the amount I want to allocate. I will explicitly
 // set the variables that are associated with tracking memory allocation
 // to keep everything as clear as I can.
@@ -1009,14 +1033,14 @@ void initHeapSegments(double storeSize)
 #endif
     if (stackSegment == nullptr) fatal_error(err_no_store);
     stackBase = reinterpret_cast<LispObject *>(stackSegment);
-// Arrange that I will be able to allocate stuff.
+    previousPage = nullptr;
     currentPage = freePages;
-    setVariablesFromPage(currentPage);
     freePages = freePages->chain;
     freePagesCount--;
-    victimPage = nullptr;
-    busyPages = nullptr;
+    currentPage->chain = nullptr;
+    busyPages = currentPage;
     busyPagesCount = 1;
+    setVariablesFromPage(currentPage);
     mostlyFreePages = nullptr;
     mostlyFreePagesCount = 0;
 
@@ -1199,26 +1223,6 @@ void init_heap_segments(double d)
     if (!SIXTY_FOUR_BIT) d = 1600.0*1024.0*1024.0;
     initHeapSegments(d/1024.0);
 }
-
-uintptr_t stackBases[maxThreads];
-uintptr_t stackFringes[maxThreads];
-extern atomic<uint32_t> threadCount;
-std::mutex mutexForGc;
-std::mutex mutexForFreePages;
-bool gc_started;
-std::condition_variable cv_for_gc_idling;
-std::condition_variable cv_for_gc_busy;
-bool gc_complete;
-std::condition_variable cv_for_gc_complete;
-// fringe::get() declared in newallocate.h, as is threadId.
-atomic<uintptr_t> limit[maxThreads];
-uintptr_t              limitBis[maxThreads];
-uintptr_t              fringeBis[maxThreads];
-size_t                 request[maxThreads];
-LispObject             result[maxThreads];
-size_t                 gIncrement[maxThreads];
-atomic<uintptr_t> gFringe;
-uintptr_t              gLimit = 0xaaaaaaaaU*0x80000001U;
 
 #ifdef WIN32
 #include <conio.h>

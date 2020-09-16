@@ -953,17 +953,18 @@ public:
     ~RAIIstack_sanity()
     {
 #ifdef __cpp_lib_uncaught_exceptions
-        if (saveStack != stack && std::uncaught_exceptions() != 0)
+        if (saveStack != stack && std::uncaught_exceptions() == 0)
 #else
         if (saveStack != stack && !std::uncaught_exception())
 #endif
-        {   err_printf("[Stack Sanity Oddity] %p => %p in %s : %s:%d\n",
+        {   err_printf("[Stack Consistency fails] %p => %p in %s : %s:%d\n",
                        saveStack, stack, fname, file, line);
             err_printf("Data: ");
             prin_to_error(w);
             err_printf("\n");
             err_printf("exit_count = %d, exit_reason = %d\n",
                        exit_count, exit_reason);
+            my_abort();
         }
     }
 };

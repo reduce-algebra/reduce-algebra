@@ -3265,12 +3265,13 @@ public:
     C_stackbase = (uintptr_t *)&sp;
 #ifdef CONSERVATIVE
 // The next line sets threadId (in fact it should always be to zero since
-// at this stage this is the firts and only thread that exists!) and using
+// at this stage this is the first and only thread that exists!) and using
 // RAII arranges to release that identifier on exit. It is part of the
 // protocol that will allow other threads to get created and run later on.
     threadMap = -1;
     activeThreads = 0;
     ThreadStartup userThreads;
+    stackBases[threadId::get()] = reinterpret_cast<uintptr_t>(C_stackbase);
 #endif
 #ifdef HAVE_CRLIBM
     CrlibmSetup crlibmVar;
