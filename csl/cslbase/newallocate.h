@@ -137,6 +137,7 @@ public:
     atomic<uintptr_t> length;
     atomic<uintptr_t> chunkFringe;
     atomic<bool> isPinned;
+    atomic<Chunk *>chunkStack;
 // At the start of garbage collection as I collect a chain of pinned chunks
 // those chunks may appear on the list in arbitrary order, but at the end
 // of garbage collection if a Page has a number of pinned Chunks within it
@@ -166,6 +167,43 @@ public:
     {   return p >= dataStart() && p < chunkFringe;
     }
 };
+
+extern atomic<Chunk *> chunkStack;
+
+// I have lock-free procedures for pushing and popping Chunks from the
+// chunkStack. These are short and rather tidy functions and in the use I
+// make the "stack" is used more or less as a queue with each Chunk only
+// being placed on it once and only removed once. In more general uses of
+// a lock-free stack one could have a case where one thread starts use
+// of popChunk and gets as far as setting "c". Then another thread proceeds
+// and goes something like
+//    Chunk *a = popChunk();
+//    pushChunk(b);
+//    pushChunk(a);
+// whete the last of those restores the top of the stack to refer to the
+// same Chunk that it had at the start. Then the first thread resumes and
+// its compare_exchange succeeds, but it then leaves the stack in a state
+// where the extra item inserted by the other thread is lost. This is the
+// "ABA problem". It can not arise unless the second thread can push an
+// item that had previously been on the stack. In my use-case this can never
+// happen. Whew.  
+
+inline void pushChunk(Chunk *c)
+{   Chunk *old = chunkStack.load();
+    do
+    {   c->chunkStack.store(old);
+    } while (!chunkStack.compare_exchange_weak(old, c));
+}
+
+inline Chunk *popChunk()
+{   Chunk *old = chunkStack.load();
+    Chunk *c;
+    do
+    {   if (old == nullptr) return nullptr;
+        c = old->chunkStack.load();
+    } while (!chunkStack.compare_exchange_weak(old, c));
+    return old;
+}
 
 // I am going to require Pages to be aligned at nice neat boundaries
 // because then if I have an arbitrary address within one I will be able to
@@ -1209,8 +1247,7 @@ inline void regionInPageIsFull(unsigned int i, size_t n,
     uintptr_t pageEnd = ((gFringe-1) & -pageSize) + pageSize;
 //    cout << "At " << __WHERE__ << " pageEnd = " << hex << pageEnd << dec << endl;
     while (gLimit != pageEnd)
-    {   gFringe = gLimit +
-                  reinterpret_cast<Chunk *>(gLimit)->length;
+    {   gFringe = gLimit + reinterpret_cast<Chunk *>(gLimit)->length;
         gLimit = reinterpret_cast<uintptr_t>(
             reinterpret_cast<Chunk *>(gLimit)->pinChain.load());
 //        cout << "At " << __WHERE__ << " gLimit = " << hex << gLimit << dec << endl;

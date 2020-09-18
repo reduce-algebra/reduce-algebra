@@ -44,6 +44,14 @@ using std::dec;
 //
 // I have Pages (8M) and Chunks (16K). Pinning is at a granularity of Chunks.
 //
+// Pinning whole chunks rather than individual objects is a policy I am
+// following to reduce the cost of identifying what needs to be pinned.
+// Very very preliminary measurements suggests that I may end up with
+// around 1% of my memory in pinned Chunks. It looks as if (for a given
+// calculation) the number of pinned pages may not change dramatically
+// as memory is enlarged, so with extra memory the proportion of Pages
+// holding pinned Chunks will tend to shrink.
+//
 // First I will provide a reminder of the fields and data involved in
 // pinning things.
 //
@@ -126,27 +134,95 @@ using std::dec;
 // use. That will be information I can gather before getting all the rest
 // of the GC working!
 //
-
-//
 // Evacution:
 //   If the location to be evacuated holds immediate data do nothing,
 //     otherwise it holds a pointer to some object.
 //   If that object is to something in a MostlyFree page or one of the
 //     pages I am at present allocating in then it must be to something that
-//     had been pinned last time.
-//   [now it is points into an oldPage. I must check if it is in a
+//     had been pinned last time. So do nothing.
+//   Now it is points into an oldPage. I must check if it is in a
 //     pinned Chunk. Well at this stage I will have set things up so that
 //     the ONLY Chunks in the chunkMap of such a page are the [newly] pinned
 //     ones and I do not expoct there to be many, so binary search in the
-//     chunkMap should be quick.] If into a pinned chunk it is left alone.
+//     chunkMap should be quick. If into a pinned chunk it is left alone.
+//     That will be something that had been pinned both in a previous GC
+//     (and hence ended up mingled with live data) and pinned again this
+//     time.
 //   If the CAR field of the object holds a forwarding address use that to
-//     update the location to be a proper pointer to relocated data. Done!
+//     update the location to be a proper pointer to relocated data.
+//     The item pointed at will need to be inspected to reconstruct the
+//     proper tag bits for the adjusted reference. Done!
 //   Make a (binary) copy of the object in the next free space within C.
 //   Set the CAR field to be a forwarding address to the copy.
+//
 // Note that the copy will then (in due course) be scanned. For that to be
 // feasible the Pages where I allocate copied material (including pinned
-// Chunks embedded within them) must have padder items etc such that I will
-// be able to perform a linear scan.
+// Chunks embedded within them) must be such that I can perform a linear
+// scan, so chunkFringe must be set up where relevent.
+//
+// My first version of the major GC will run sequentially, however in the
+// future I hope to experiment with concurrency within it. So I will write
+// this as for a parallel implementation, although for that the details
+// above under "Evacuation" will need to be enhanced to allow for thread
+// interlocks.
+//
+// The GC has two parts. In one - seeding - the precise list bases are
+// evacuated. Here I will seed from all the static precise list bases (ie
+// variables and arrays in the C++ code) and also from each item present in
+// a pinned chunk.  This part is done in the master thread. I expect that the
+// total number of items processed will be reasonably modest, but in the
+// worst case there could be quite a lot of pinned material. An initial
+// evaluation suggests that in a fairly heavy case I may evacuate around
+// 100K items here - around (1/5) of a Page-full.
+// From then on I need to scan and evacuate all copied material. I do that
+// Chunk by Chunk, and when within a Page I find a Chunk tagged as with
+// isPinned I know it has already been processed. I hope to distribute
+// Chunks to different threads for processing, and then in the same way that
+// multiple threads can allocate during normal use, each GC thread will
+// have its own Chunk that it is copying material into.
+// Apart from the administration of thread start-up that is fairly clean and
+// easy! When any thread completes evacuating a chunk it needs to grab
+// another. That will usually happen using an atomic increment instruction
+// much as in storage allocation.
+// There is then a significant complication towards the end of GC. When
+// a thread completes filling up a chunk with evacuated data it will push
+// that chunk onto a needsEvacuating chain. When it completes clearing a
+// chunk then the cleared chunk can not be re-used yet. The thread tries
+// to grab another from needsEvacuating. That list may be empty, and in
+// that case it should start evacuating the Chunk it is currently evacuating
+// within. If it catches up with the fringe there it needs to wait until
+// a new chunk needs to be evacuated. Eventually every thread will be paused
+// on that basis: the evacuation phase of GC will be complete. 
+// Well I talk cheerily there of a chain of chunks recently filled by the
+// evacuation process. In a single-thread world this does not need much
+// because Chunks can be scanned sequentially through Pages. The relevent
+// Pages will need to be chained but that is simple.
+// In a multi-thread world this is much much less nice! I will certainly
+// need a thread-safe process to identify the next sequential Chunk within
+// a page. Well this feels like the need for a "lock free pop" but it is
+// in the especially happy case that it traverses a chain that is not being
+// updated, so the mess of the ABA problem does not arise.
+// The uglier issue is that Chunks do not get completely filled sequentially,
+// and so one could have the sequential scan needing to skip past (several)
+// chunks that are in the process of being filled by other threads. A bad
+// case for this might be if one thread is processing a chunk that contains
+// references to very many rather large vectors - as it processes these it
+// need to allocate additional Chunks (that will need scanning later). A
+// different thread keeps performing a linear scan to find another Chunk
+// to process - and gets as far as the now-in-use Chunk and has to skip past
+// it. I think that means that a large number of Chunks could end up "left
+// behind". These need to be recorded on a chain and a lock-free stack seems
+// what is needed. Well if every completed Chunk is placed on this stack
+// then the linear scan of Chunks is not needed. Note that every Chunk
+// that is involved gets put on this stack just once and removed just once
+// (per GC) so the ABA issue does not arise and implementing the stack can
+// follow the recipe often characterised as "naive".
+// The final mess is that to select a Chunk to scan it will be necessary
+// to pop from the chain there and if that is empty to wait until either
+// another Chunk is made available by some other thread or until every
+// thread is also stalling.
+//
+
 
 
 // Code for sorting "lists"...
@@ -426,8 +502,7 @@ void clearPinnedInformation(bool major)
 // pinned material.
 
 void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
-{   cout << "Ambig " << hex << a << " in page " << p << dec << endl;
-    if (p->chunkCount.load() == 0) return;  // An empty Page.
+{   if (p->chunkCount.load() == 0) return;  // An empty Page.
     cout << "Ambig " << hex << a << " in non-empty page " << p << dec << endl;
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
@@ -534,7 +609,6 @@ void processAmbiguousValue(bool major, uintptr_t a)
         return;
     }
     Page *p = findPage(a);
-    cout << std::hex << a << " is in page " << p << std::dec << endl;
     if (p!=nullptr) processAmbiguousInPage(major, p, a);
 }
 
