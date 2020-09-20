@@ -1,0 +1,209 @@
+\documentclass{scrreprt}
+
+\KOMAoptions {
+  paper = a4
+}
+
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{filecontents}
+\usepackage{adjustbox}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[splitindex,nonewpage]{imakeidx}
+
+\makeindex[name=properties,title=Properties]
+\makeindex[name=modules,title=Modules]
+\makeindex[name=switches,title=Switches]
+\makeindex[name=rfunctions,title=RLISP Functions]
+\makeindex[name=sfunctions,title=Standard Lisp Functions]
+
+\newcommand{\module}[1]{\textsf{#1}\index[modules]{\textsf{#1}}}
+\newcommand{\switch}[1]{\texttt{#1}\index[switches]{\texttt{#1}}}
+\newcommand{\rfunction}[1]{\texttt{#1}\index[rfunctions]{\texttt{#1}}}
+\newcommand{\sfunction}[1]{\texttt{#1}\index[sfunctions]{\texttt{#1}}}
+\newcommand{\service}{$\langle\textit{service}\rangle$}
+\newcommand{\AM}{\textrm{AM}}
+\newcommand{\SM}{\textrm{SM}}
+
+\newcommand{\property}[6]{%
+  \index[properties]{\texttt{#1}}
+  {\begin{adjustbox}{valign=t} 
+      \begin{tabular}{@{}r@{\,:~~}l@{}}
+        property & \texttt{#1}\\
+        on identifier & \texttt{#2}\\
+        value & \texttt{#3}\\
+        set by & \texttt{#4}\\
+        used by & \texttt{#5}\\
+        purpose & #6\\
+      \end{tabular}
+    \end{adjustbox}}}
+\begin{document}
+
+\title{Redlog Program Documentation}
+\author{Thomas Sturm\\[2ex]
+  \url{sturm@redlog.eu}\\[2ex]
+  University of Lorraine, CNRS, Inria, and LORIA\\
+  Nancy, France\\[2ex]
+  MPI Informatics and Saarland University\\
+  Saarbrücken, Germany\\[2ex]
+}
+\maketitle
+
+\tableofcontents
+
+\chapter{Introduction}
+
+For an introduction to Redlog design principles, in particular for the notions
+of services and blackboxes see~\cite{DolzmannSturm:97a}.
+
+\chapter{General Conventions}
+
+
+\section{Constructors and Accessors}
+
+\section{Coding Styles}
+\subsection{Begin-End Blocks}
+\rfunction{begin~...~end} blocks, corresponding to the Standard Lisp function
+\sfunction{prog} generally span entire procedures.
+
+\subsection{Comments}
+Every procedure should have a comment. A bad comment is better than no comment,
+but avoid explicitly incorrect comments.
+
+\subsection{Early Exit}
+For special cases within \rfunction{begin~...~end} blocks the preferred style is
+to use
+\begin{verbatim}
+if ... then return ...;
+...
+\end{verbatim}
+in contrast to if-then-else case distinctions.
+
+\subsection{Prefixes}\label{SE:prefix}
+
+\subsection{Printing}
+All explicit printing is guarded by the switch \switch{rlverbose}. When
+\switch{rlverbose} is off, there must be silence.
+
+\subsection{Semicolon}
+The semicolon '\rfunction{;}' does not terminate RLISP statements like in C but
+separates them like in PASCAL. One consequence is that they need not occur at
+the end of \sfunction{progn} or \sfunction{prog}, i.e., before '\rfunction{>>}'
+or \rfunction{end}. In particular with '\rfunction{>>}' they would in fact
+introduce an invisible \rfunction{nil}, which is a source of bugs. Redlog
+carefully avoids such semicolons. In particular, for forcing a \sfunction{progn}
+to return \rfunction{nil}, that \rfunction{nil} is explicitly written (without a
+semicolon).
+
+\subsection{Short Procedures}
+Functions calls are cheap. Procedures should fit on the screen.
+
+\subsection{Underscore}
+The underscore '\texttt{\string_}' in names is used to separate the prefix
+(\ref{SE:prefix}) from the rest of the name. It is not used for any other
+purpose.
+
+\subsection{Variable Names}
+The variable name \texttt{w} (like workspace) is typically used for intermediate
+results.
+
+\chapter{Modules}
+
+\section[Module \textsf{RLTOOLS}]{Module  \module{RLTOOLS}}
+
+\section[Module \textsf{RLSUPPORT}]{Module \module{RLSUPPORT}}
+
+\subsection[Submodule \textsf{RLTYPE}]{Submodule \module{RLTYPE}}
+
+\subsection[Submodule \textsf{RLSERVICE}]{Submodule \module{RLSERVICE}}
+
+This module generates an $\AM\leftrightarrow\SM$ interface on the basis of
+formal specifications, which are described in \ref{SE:rlservices}. The AM
+interface supports combinations of positional arguments and named arguments and
+optional arguments with default values given in the specification. Possible
+conflicts between positional and named arguments are resolved according to
+Python rules. In the $\AM\to\SM$ direction, types of passed arguments are
+checked at runtime. It furthermore supports a dynamic online help system
+implemented in the submodule rlhelp.
+
+
+\begin{center}
+  \begin{ttfamily}
+    \begin{tabular}{ll|llllllllll}
+      \rmfamily AM &&& \rmfamily SM\\
+      rl\service & \multicolumn{2}{c}{$\longrightarrow$}& rl\string_\service!\$\\
+         &&& $\quad\longrightarrow$ rl\string_servicewrapper\\
+         &&& $\quad\quad\longrightarrow$ rl\string_!*\service\\
+         &&& $\quad\quad\quad\longrightarrow$ rl\_\service\\
+         &&& $\quad\quad\quad\quad\longrightarrow$ apply(rl\string_\service!*)
+    \end{tabular}
+  \end{ttfamily}
+\end{center}
+             \texttt{rl\service} is the AM entry point. It has a property
+\verb,(psopfn . rl_<service>!$),. It has a property
+\verb!(intypes . <list of possibly composite types>)!, which is exclusively used
+with the dynamic help module. Those types are given as strings to preserve case.
+Similarly, there is \verb!(outtype . <string>)!.
+
+
+\subsection[Submodule \textsf{RLBLACKBOX}]{Submodule \module{RLBLACKBOX}}
+
+\subsection[Submodule \textsf{RLHELP}]{Submodule \module{RLHELP}}
+
+\subsection[Properties Used in the Module \textsf{RLSUPPORT}]{Properties  Used in the Module \module{RLSUPPORT}}
+
+\begin{itemize}
+\item
+  \property{rl\_smservice}
+  {rl<service\string>}
+  {rl\_\string<service\string>}
+  {\module{RLSERVICE}, rl\_service \{...\}}
+  {\module{RLHELP}} {link AM service to SM service}
+\item 
+  \property {rlamservice}
+  {rl\_\string<service\string>}
+  {rl\string<service\string>}
+  {\module{RLSERVICE}, rl\_service \{...\}}
+  {\module{RLHELP}}
+  {link SM service to AM service}
+\end{itemize}
+
+\section[Module \textsf{RL}]{Module \module{RL}}
+
+\subsection[Submodule \textsf{RLTYPES}]{Submodule \module{RLTYPES}}
+
+\subsection[Submodule \textsf{RLSERVICES}]{Submodule \module{RLSERVICES}}\label{SE:rlservices}
+
+
+\section[Module \textsf{CL}]{Module \module{CL}}
+
+\bibliography{\jobname}
+\bibliographystyle{plain}
+
+\section*{Glossary}
+
+\begin{description}
+\item[AM] algebraic mode
+\item[SM] symbolic mode
+\end{description}
+
+\printindex[modules]
+\printindex[properties]
+\printindex[rfunctions]
+\printindex[sfunctions]
+\printindex[switches]
+
+\begin{filecontents}{\jobname.bib}
+  @article{DolzmannSturm:97a,
+    Author = {Dolzmann, Andreas and Sturm, Thomas},
+    Journal = {ACM SIGSAM Bulletin},
+    Month = Jun,
+    Number = {2},
+    Pages = {2--9},
+    Title = {Redlog: Computer Algebra Meets Computer Logic},
+    Volume = {31},
+    Year = {1997}}
+\end{filecontents}
+
+\end{document}
