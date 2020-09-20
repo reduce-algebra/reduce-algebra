@@ -631,6 +631,7 @@ defautoload(lto_sgnchg, rltools, expr, 1);
 defautoload(lto_string2id, rltools, expr, 1);
 defautoload(lto_stringdescriptionlist, rltools, expr, 5);
 defautoload(lto_stringparagraph, rltools, expr, 3);
+defautoload(lto_stringsplit, rltools, expr, 2);
 defautoload(lto_sublistp, rltools, expr, 2);
 defautoload(lto_subset, rltools, expr, 2);
 defautoload(lto_subsetq, rltools, expr, 2);
@@ -706,13 +707,16 @@ defautoload(rl_provideService, rlsupport, expr, 2);
 put('rl_type, 'stat, 'rl_typeStat);
 defautoload(rl_typeStat, rlsupport, expr, 0);
 
+put('rl_builtin, 'stat, 'rl_builtinStat);
+defautoload(rl_builtinStat, rlsupport, expr, 0);
+
 put('rl_service, 'stat, 'rl_serviceStat);
 defautoload(rl_serviceStat, rlsupport, expr, 0);
 
 put('rl_blackBox, 'formfn, 'rl_formBlackBox);
 defautoload(rl_formBlackBox, rlsupport, expr, 3);
 
-defautoload(rl_servicewrapper, rlsupport, expr, 6);
+defautoload(rl_servicewrapper, rlsupport, expr, 8);
 
 defautoload(rl_exception, rlsupport, expr, 1);
 

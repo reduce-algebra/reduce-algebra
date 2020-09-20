@@ -77,6 +77,9 @@ struct SQ checked by sqp;
 struct Domain checked by domainp;
 struct Kernel checked by assert_kernelp;
 
+struct LispPrefixForm checked by assert_lpfp;
+struct Equation checked by assert_equationp;
+
 compiletime off1 'assert;
 
 procedure booleanp(x);
@@ -202,6 +205,12 @@ procedure am_polyp(u);
 
 procedure assert_polyopp(op);
    op memq '(plus difference minus times expt);
+
+procedure assert_lpfp(u);
+   atom u or listp u;
+
+procedure assert_equationp(u);
+   eqcar(u, 'equal);
 
 endmodule;
 
