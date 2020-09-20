@@ -41,7 +41,7 @@ rlhelp_colSep!* := 2;
 % breaks autoloading for me currently, which is not vital. Fide hijacks also
 % other symbols including '#' (also used with the preprocessor) and '&'. In the
 % great unified system some decision would have to be made. I think there are
-% arguments for using '?' for a Maple-style help possible beyond Redlog instead
+% arguments for using '?' for a Maple-style help possibly beyond Redlog instead
 % of a tensor operator in a very specialized context.
 put('?, 'stat, 'rl_helpstat);
 
@@ -68,86 +68,57 @@ asserted procedure rl_helpstat(): List;
    end;
 
 asserted procedure rl_help(x: Id, devp: Boolean);
-   if null x then
-      rl_helpOverview devp
-   else if x eq 'services then
-      rl_helpOverviewServices devp
-   else if x eq 'blackboxes then
-      rl_helpOverviewBlackboxes devp
-   else if x eq 'types then
-      rl_helpOverviewTypes()
-   else <<
+   begin
+      if null x then <<
+      	 rl_helpOverview devp;
+	 return
+      >>;
+      if x eq 'builtins then <<
+      	 rl_helpOverviewBuiltins devp;
+	 return
+      >>;
+      if x eq 'services then <<
+      	 rl_helpOverviewServices devp;
+	 return
+      >>;
+      if x eq 'blackboxes then <<
+      	 rl_helpOverviewBlackboxes devp;
+	 return
+      >>;
+      if x eq 'types then <<
+      	 rl_helpOverviewTypes();
+	 return
+      >>;
       if eqcar(x, 'quotient) and eqn(caddr x, rl_helpTypeArity cadr x) then
 	 x := cadr x;
-      rl_helpDocal(x, devp);
-      if rl_serviceP x then
-	 rl_helpService(x, devp)
-      else if rl_blackboxP x then
-	 rl_helpBlackbox(x, devp)
-   >>;
-
-asserted procedure rl_helpDocal(x: Id, devp: Boolean);
-   begin scalar pr, sl, brk, docal, xdtl;
-      docal := get(x, 'docal);
-      if not docal then
-	 return;
-      xdtl := for each pr in docal join
-	 if listp cdr pr then
-	    for each ppr in cdr pr collect
-	       car ppr;
-      for each rest on docal do <<
-	 pr := car rest;
-	 if cdr pr then <<
-	    if brk then terpri() else brk := t;
-	    ioto_tprin2t lto_Upcase id2string car pr;
-	    if car pr = 'synopsis then <<
-	       for i := 1:rlhelp_leftMargin!* do prin2 " ";
-	       prin2t cdr pr
-	    >> else if stringp cdr pr then
-	       rl_printParagraph cdr pr
-	    else  % cdr pr is an AList
-	       rl_printDescriptionList(cdr pr, xdtl)
-	 >>
+      if rl_builtinP x then <<
+	 rl_helpBuiltin(x, devp);
+ 	 return
+      >>;
+      if rl_amServiceP x then <<
+	 rl_helpAmService(x, devp);
+ 	 return
+      >>;
+      if rl_smServiceP x then <<
+	 rl_helpSmService(x, devp);
+	 return
+      >>;
+      if rl_blackboxP x then <<
+	 rl_helpBlackbox(x, devp);
+      	 return
+      >>;
+      if rl_typeP x then <<
+	 rl_helpType(x, devp);
+      	 return
       >>
    end;
 
-asserted procedure rl_helpService(x: Id, devp: Boolean);
-   ;
-
-asserted procedure rl_helpBlackbox(x: Id, devp: Boolean);
-   begin scalar l;
-      for each y in rl_services!* do
-	 for each z in rl_knownImplementations y do
-	    if x memq rl_registeredBlackboxes z then
-	       l := lto_insertq(lto_at2str z, l);
-      if null l then
- 	 return;
-      terpri();
-      ioto_tprin2t "DYNAMICALLY KNOWN TO BE REGISTERED FOR";
-      rl_helpOverviewCSL l
-   end;
-
-asserted procedure rl_printParagraph(s: String);
-   <<
-      for each l in rl_stringParagraphWrapper s do prin2t l;
-      nil
-   >>;
-
-asserted procedure rl_stringParagraphWrapper(s: String): List;
-   lto_stringParagraph(s, rlhelp_leftMargin!*, linelength nil - rlhelp_rightMargin!*);
-
-
-asserted procedure rl_printDescriptionList(al: AList, xdtl: List);
-   <<
-      for each l in rl_stringDescriptionListWrapper(al, xdtl) do prin2t l;
-      nil
-   >>;
-
-asserted procedure rl_stringDescriptionListWrapper(al: AList, xdtl: List): List;
-   lto_stringDescriptionList(al, rlhelp_leftMargin!*, rlhelp_colSep!*, linelength nil - rlhelp_rightMargin!*, xdtl);
-
 asserted procedure rl_helpOverview(devp: Boolean);
    begin scalar sl, w, asl, ssl, bl, cl, kwl, types, keywords;
+      devp := nil;  % for now
+      ioto_tprin2t "REDLOG BUILTINS";
+      rl_helpOverviewCSL for each s in rl_builtins!* collect lto_at2str s;;
+      terpri();
       ioto_tprin2t "REDLOG SERVICES";
       for each s in rl_services!* do <<
 	 w := get(s, 'rl_amservice);
@@ -183,33 +154,35 @@ asserted procedure rl_helpOverview(devp: Boolean);
       ioto_tprin2t "REDLOG KEYWORDS";
       rl_helpOverviewCSL keywords;
       terpri();
-      ioto_tprin2t "REDLOG SWITCHES";
-      rl_helpOverviewCSL for each s in rl_services!* join <<
-	 w := get(s, 'rl_amservice);
-	 if w then
-	    for each sw in cdr atsoc('switches, get(w, 'docal)) collect
- 	       lto_sconcat2("rl", car sw)
-      >>;
-      terpri();
+%%       ioto_tprin2t "REDLOG SWITCHES";
+%%       rl_helpOverviewCSL for each s in rl_services!* join <<
+%% 	 w := get(s, 'rl_amservice);
+%% 	 if w then
+%% 	    for each sw in cdr atsoc('switches, get(w, 'docal)) collect
+%%  	       lto_sconcat2("rl", car sw)
+%%       >>;
+%%       terpri();
       ioto_tprin2t "SEE ALSO";
       rl_printDescriptionList(
 	 if devp then
-	    '(("??services" . "more information on services")
+	    '(("??builtins" . "more information on builtins")
+	      ("??services" . "more information on services")
               ("??blackboxes" . "more information on blackboxes")
               ("??types" . "more information on types")
               ("??switches" . "more information on switches")
               ("??X" . "for a specific service, blackbox, type, or switch X"))
 	 else
-	    '(("?services" . "more information on services")
+	    '(("?builtins" . "more information on builtins")
+	      ("?services" . "more information on services")
               ("?types" . "more information on types")
-              ("?switches" . "more information on switches")
+%              ("?switches" . "more information on switches")
               ("?X" . "for a specific service, type, or switch X")),
  	 nil)
    end;
 
 asserted procedure rl_helpOverviewCSL(l: List): List;
    begin scalar sl;
-      for each rest on sort(l, 'rl_stringGreaterP) do <<
+      for each rest on sort(l, 'lto_stringGreaterP) do <<
 	 push(car rest, sl);
 	 if cdr rest then
 	    push(", ", sl)
@@ -217,11 +190,18 @@ asserted procedure rl_helpOverviewCSL(l: List): List;
       rl_printParagraph lto_sconcat sl
    end;
 
-asserted procedure rl_stringLeq(s1: String, s2: String): Boolean;
-   ordp(intern compress explodec s1, intern compress explodec s2);
-
-asserted procedure rl_stringGreaterP(s1: String, s2: String): Boolean;
-   not rl_stringLeq(s1, s2);
+asserted procedure rl_helpOverviewBuiltins(devp: Boolean);
+   begin scalar bl, w, l;
+      bl := sort(rl_builtins!*, 'ordp);
+      l := for each b in bl collect
+	 lto_at2str b . cdr atsoc('description, cdr atsoc('doc, get(b, 'rl_builtin)));
+      ioto_tprin2t "REDLOG BUILTINS";
+      rl_printDescriptionList(l, nil);
+      terpri();
+      ioto_tprin2t "SEE ALSO";
+      rl_printDescriptionList('(("?X" . "for a specific builtin X")),
+ 	 for each pr in l collect car pr)
+   end;
 
 asserted procedure rl_helpOverviewServices(devp: Boolean);
    begin scalar sl, w, al;
@@ -229,7 +209,7 @@ asserted procedure rl_helpOverviewServices(devp: Boolean);
       al := for each s in sl join <<
 	 w := get(s, 'rl_amservice);
 	 if w then
-	    {lto_at2str w . cdr atsoc('description, get(w, 'docal))}
+	    {lto_at2str w . cdr atsoc('description, rl_helpGetDocal(w, 'docal))}
       >>;
       ioto_tprin2t "REDLOG SERVICES";
       rl_printDescriptionList(al, nil);
@@ -268,13 +248,17 @@ asserted procedure rl_helpOverviewTypes();
       for each s in rl_typeStrings rl_services!* do <<
 	 {bl, cl, kwl1} := rl_helpOverviewTypesDecompose s;
 	 for each x in bl do
-      	    bal := lto_insert(x . (lto_catsoc('syntax, get(lto_string2id x, 'docal)) or ""), bal);
+      	    bal := lto_insert(
+	       x . (lto_catsoc('description, rl_typeDoc lto_downcase lto_string2id x) or ""), bal);
 	 for each x in cl do
-      	    cal := lto_insert(rl_helpTypeConcArity x . (lto_catsoc('syntax, get(lto_string2id x, 'docal)) or ""), cal);
+      	    cal := lto_insert(
+	       rl_helpTypeConcArity x .
+ 		  (lto_catsoc('description, rl_typeDoc lto_downcase lto_string2id x) or ""),
+ 	       cal);
 	 kwl := union(kwl, kwl1)
       >>;
-      bal := sort(bal, function(lambda x, y; rl_stringLeq(car x, car y)));
-      cal := sort(cal, function(lambda x, y; rl_stringLeq(car x, car y)));
+      bal := sort(bal, function(lambda x, y; lto_stringLeq(car x, car y)));
+      cal := sort(cal, function(lambda x, y; lto_stringLeq(car x, car y)));
       sal := '(("?X" . "for a specific type X"));
       xdtl := for each pr in append(sal, append(bal, cal)) collect car pr;
       ioto_tprin2t "REDLOG BASIC TYPES";
@@ -312,18 +296,7 @@ asserted procedure rl_helpTypeConcArity(s: String): String;
    % We are context sensitive. [x] is a compound type as an identifier. We add
    % "/n", where n is its arity. The arity is derived from the a2s/s2a property.
    % If this fails we use "/?".
-   lto_sconcat {s, "/", rl_helpTypeArity s};
-
-asserted procedure rl_helpTypeArity(s: String): String;
-   begin scalar !*lower, !*raise, lcx, ar;
-      lcx := intern lto_downcase compress explodec s;
-      ar :=  if lcx eq 'keyword then
-	 'n
-      else
-	 get(get(lcx, 'a2s) or get(lcx, 's2a), 'number!-of!-args) or '!?;
-      if fixp ar then ar := ar - 1;
-      return ioto_smaprin ar
-   end;
+   lto_sconcat {s, "/", ioto_smaprin rl_typeArity intern lto_downcase compress explodec s};
 
 asserted procedure rl_typeStrings(services: List): List;
    begin scalar w;
@@ -338,6 +311,149 @@ asserted procedure rl_typeIdentifiers(services: List): List;
    lto_list2set for each s in services join
       for each tp in get(s, 'outtype) . get(s, 'intypes) collect
 	 lto_string2id tp;
+
+asserted procedure rl_helpAmService(x: Id, devp: Boolean);
+   begin scalar docal;
+      docal := get(x, 'docal) or rl_helpMkDocal(x, devp);
+      rl_helpPrintDocal docal
+   end;
+
+asserted procedure rl_helpBuiltin(x: Id, devp: Boolean);
+   begin scalar docal;
+      docal := rl_helpMkDocalBuiltin(x, devp);
+      rl_helpPrintDocal docal
+   end;
+
+asserted procedure rl_helpSmService(x: Id, devp: Boolean);
+   ;
+
+asserted procedure rl_helpBlackbox(x: Id, devp: Boolean);
+   begin scalar docal, l;
+      docal := get(x, 'docal);
+      if docal then
+	 rl_helpPrintDocal docal;
+      for each y in rl_services!* do
+	 for each z in rl_knownImplementations y do
+	    if x memq rl_registeredBlackboxes z then
+	       l := lto_insertq(lto_at2str z, l);
+      if null l then
+ 	 return;
+      terpri();
+      ioto_tprin2t "REGISTERED FOR (DYNAMICALLY)";
+      rl_helpOverviewCSL l
+   end;
+
+asserted procedure rl_helpGetDocal(x: Id, devp: Boolean): Alist;
+   get(x, 'docal) or rl_helpMkDocal(x, devp);
+
+asserted procedure rl_helpMkDocal(x: Id, devp: Boolean): Alist;
+   begin scalar names, types, defaults, docs, docal;
+      names := get(x, 'names);
+      types := get(x, 'intypes);
+      defaults := get(x, 'defaults);
+      docs := get(x, 'docs);
+      docal := {
+	 'synopsis . rl_docSynopsis(x, names, types, defaults),
+	 'description . get(x, 'description),
+	 'returns . get(x, 'outtype),
+	 'arguments . rl_docArguments(names, types, docs),
+	 'switches . rl_docSwitches(names, types, docs),
+      	 'seealso . for each s in get(x, 'seealso) collect s . get(s, 'description)};
+      return docal
+   end;
+
+asserted procedure rl_helpMkDocalBuiltin(x: Id, devp: Boolean): Alist;
+   begin scalar rawdal, w, dal;
+      rawdal := cdr atsoc('doc, get(x, get(x, 'rl_support)));
+      w := cdr atsoc('synopsis, rawdal);
+      w := sort(w, function(lambda(u, v); car u < car v));
+      push('synopsis . for each pr in w collect cdr pr, dal);
+      push(atsoc('description, rawdal), dal);
+      push(atsoc('returns, rawdal), dal);
+      w := cdr atsoc('arguments, rawdal);
+      w := sort(w, function(lambda(u, v); car u < car v));
+      push('arguments . for each pr in w collect cdr pr, dal);
+      w := cdr atsoc('seealso, rawdal);
+      w := sort(w, 'ordp);
+      push('seealso . for each s in w collect s . rl_getDescription s, dal);
+      return reversip dal
+   end;
+
+asserted procedure rl_helpType(x: Id, devp: Boolean);
+   begin scalar docal;
+      docal := rl_helpMkDocalType(x, devp);
+      rl_helpPrintDocal docal
+   end;
+
+asserted procedure rl_helpMkDocalType(x: Id, devp: Boolean): Alist;
+   begin scalar rawdal, w, dal;
+      rawdal := cdr atsoc('doc, get(x, get(x, 'rl_support)));
+      for each k in '(description syntax example) do <<
+      	 w := atsoc(k, rawdal);
+	 if w then
+      	    push(w, dal)
+      >>;
+      return reversip dal
+   end;
+
+asserted procedure rl_getDescription(x: Id);
+   if rl_builtinP x then
+      cdr atsoc('description, cdr atsoc('doc, get(x, get(x, 'rl_support))))
+   else if rl_amServiceP x then
+      get(x, 'description);
+
+asserted procedure rl_helpPrintDocal(docal: Alist);
+   begin scalar pr, sl, brk, xdtl, l;
+      xdtl := for each pr in docal join
+	 if alistp cdr pr then
+	    for each ppr in cdr pr collect
+	       car ppr;
+      for each rest on docal do <<
+	 pr := car rest;
+	 if cdr pr then <<
+	    if brk then terpri() else brk := t;
+	    if car pr = 'synopsis then <<
+	       ioto_tprin2t lto_Upcase id2string car pr;
+	       l := if listp cdr pr then cdr pr else {cdr pr};
+	       for each x in l do <<
+	       	  for i := 1:rlhelp_leftMargin!* do prin2 " ";
+	       	  prin2t x
+	       >>
+	    >> else if stringp cdr pr then <<
+	       ioto_tprin2t lto_Upcase id2string car pr;
+	       rl_printParagraph cdr pr
+	    >> else <<  % cdr pr is an AList
+	       ioto_tprin2t if car pr = 'seealso then
+ 		  "SEE ALSO"
+	       else 
+	       	  ioto_tprin2t lto_Upcase id2string car pr;
+	       rl_printDescriptionList(cdr pr, xdtl)
+	    >>
+	 >>
+      >>
+   end;
+
+procedure alistp(l);
+   null l or listp l and pairp car l and alistp cdr l;
+
+asserted procedure rl_printParagraph(s: String);
+   <<
+      for each l in lto_stringParagraphWrapper s do prin2t l;
+      nil
+   >>;
+
+asserted procedure lto_stringParagraphWrapper(s: String): List;
+   lto_stringParagraph(s, rlhelp_leftMargin!*, linelength nil - rlhelp_rightMargin!*);
+
+
+asserted procedure rl_printDescriptionList(al: AList, xdtl: List);
+   <<
+      for each l in lto_stringDescriptionListWrapper(al, xdtl) do prin2t l;
+      nil
+   >>;
+
+asserted procedure lto_stringDescriptionListWrapper(al: AList, xdtl: List): List;
+   lto_stringDescriptionList(al, rlhelp_leftMargin!*, rlhelp_colSep!*, linelength nil - rlhelp_rightMargin!*, xdtl);
 
 endmodule;
 

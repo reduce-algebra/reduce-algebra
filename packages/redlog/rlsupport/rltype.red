@@ -2,7 +2,7 @@ module rltype;
 
 revision('rltype, "$Id$");
 
-copyright('rltype, "(c) 2016 T. Sturm");
+copyright('rltype, "(c) 2016-2020 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -35,9 +35,7 @@ put('rl_type, 'stat, 'rl_typeStat);
 
 asserted procedure rl_typeStat();
    begin scalar l, key, entry;
-      scan();
-      if cursym!* neq '!*lcbkt!* then
-	 rederr {"expecting '{' in rl_type but found", cursym!*};
+      rl_skiplcbkt "rl_type";
       scan();
       while cursym!* neq '!*rcbkt!* do <<
       	 if not idp cursym!* then
@@ -52,10 +50,9 @@ asserted procedure rl_typeStat();
 	    if key eq 'doc then
 	       entry := rl_typeStatDoc()
 	    else if key memq '(name inherits) then <<
-	       % The entry must be an atom now:
 	       scan();
-	       if not atom cursym!* then
-	       	  rederr {"expecting atom in rl_type but found", cursym!*};
+	       if not idp cursym!* then
+	       	  rederr {"expecting identifier in rl_type but found", cursym!*};
 	       entry := cursym!*;
 	       scan()
 	    >>
@@ -78,28 +75,26 @@ asserted procedure rl_typeStat();
 
 asserted procedure rl_typeStatDoc();
    begin scalar key, entry, l;
-      scan();
-      if cursym!* neq '!*lcbkt!* then
-	 rederr {"expecting '{' in rl_type doc field but found", cursym!*};
+      rl_skiplcbkt "rl_type doc";
       scan();
       while cursym!* neq '!*rcbkt!* do <<
       	 if not idp cursym!* then
-	    rederr {"expecting identifier in rl_type doc field but found", cursym!*};
+	    rederr {"expecting identifier in rl_type doc but found", cursym!*};
       	 key := cursym!*;
-	 if key memq '(syntax semantics url example) then <<
+	 if key memq '(description syntax semantics url example) then <<
 	    rl_skipequal("rl_type");
 	    scan();
 	    if not stringp cursym!* then
-	       rederr {"expecting a string in rl_type doc field but found", cursym!*};
+	       rederr {"expecting a string in rl_type doc but found", cursym!*};
 	    entry := cursym!*;
 	    scan()
 	 >> else
-	    rederr {"unknown keyword", key, "in rl_type doc field"};
+	    rederr {"unknown keyword", key, "in rl_type doc"};
 	 push(key . entry, l);
 	 % Expecting ',' or '}' now:
 	 if cursym!* neq '!*rcbkt!* then <<
 	    if cursym!* neq '!*comma!* then
-	       rederr {"expecting ',' or '}' in rl_type doc field but found", cursym!*};
+	       rederr {"expecting ',' or '}' in rl_type doc but found", cursym!*};
 	    scan()
 	 >>
       >>;
@@ -110,24 +105,56 @@ asserted procedure rl_typeStatDoc();
 put('rl_type, 'formfn, 'rl_formType);
 
 asserted procedure rl_formType(argl: List, vars: List, mode: Id): List;
-   begin scalar spec, name, fun, p;
+   begin scalar spec, name, p, rltype;
       spec := cadr argl;
       name := lto_eatsoc('name, spec, {"missing type name in", argl});
       for each x in spec do
-	 if idp x and x memq '(equational) then
-	    push({'flag, mkquote {name}, mkquote x}, p)
-	 else if pairp x and car x memq '(a2s s2a) then <<
-	    fun := {'function, cdr x};
-	    push({'put, mkquote name, mkquote car x, fun}, p)
-	 >> else if pairp x and car x eq 'doc then
-	    push({'put, mkquote name, ''docal, mkquote cdr x}, p)
-	 else if pairp x and car x eq 'example then
-	    push({'put, mkquote name, ''example, mkquote cdr x}, p)
-	 else if pairp x and car x eq 'inherits then
-	    push({'put, mkquote name, ''inherits, mkquote cdr x}, p)
+	 if idp x and x memq '(equational) then  % flags
+	    push(x . t, rltype)
+	 else if pairp x and car x memq '(a2s s2a doc inherits) then
+	    push(x, rltype)
 	 else if not eqcar(x, 'name) then
-	    rederr {"unknown keyword", car x , "with type", name};
+	    rederr {"unknown keyword", car x , "in", argl};
+      push({'put, mkquote name, ''rl_support, ''rl_type}, p);
+      push({'put, mkquote name, ''rl_type, mkquote rltype}, p);
       return 'progn . reversip p
+   end;
+
+asserted procedure rl_typeP(x: Any): Boolean;
+   idp x and get(x, 'rl_support) eq 'rl_type;
+
+asserted procedure rl_typeEquationalP(type: Id): Boolean;
+   begin scalar w;
+      w := atsoc('equational, get(type, 'rl_type));
+      return pairp w and cdr w
+   end;
+
+asserted procedure rl_typeA2s(type: Id): Applicable;
+   rl_typeEntry(type, 'a2s);
+
+asserted procedure rl_typeS2a(type: Id): Applicable;
+   rl_typeEntry(type, 's2a);
+
+asserted procedure rl_typeDoc(type: Id): Alist;
+   rl_typeEntry(type, 'doc);
+
+asserted procedure rl_typeInherits(type: Id): Id;
+   rl_typeEntry(type, 'inherits);
+
+asserted procedure rl_typeEntry(type: Id, entry: Id): Any;
+   begin scalar w;
+      w := atsoc(entry, get(type, 'rl_type));
+      return if pairp w then cdr w
+   end;
+
+asserted procedure rl_typeArity(type: Id): Atom;
+   begin scalar ar;
+      ar :=  if type eq 'enum then
+	 'n
+      else
+	 get(rl_typeA2s type or rl_typeS2a type, 'number!-of!-args) or '!?;
+      if fixp ar then ar := ar - 1;
+      return  ar
    end;
 
 endmodule;

@@ -39,7 +39,7 @@ rl_type {
    a2s = rl_identity1,
    s2a = rl_identity1,
    doc = {
-      syntax = "An object that is not formally specified but explained with the service using it."}};
+      description = "object that is not formally specified"}};
 
 asserted procedure rl_identity1(x: Any): Any;
    % Unary identity function.
@@ -51,10 +51,20 @@ rl_type {
    name = Void,
    s2a = rl_s2aVoid,
    doc = {
-      syntax = "Indicates empty return value."}};
+      description = "indicates empty return value"}};
 
 asserted procedure rl_s2aVoid(x: Any);
    nil;
+
+% Redlog domains (aka contexts):
+
+% Enum(boolean,B,complex,C,reals,R,integers,Z,padics,differential,terms,queues)
+
+rl_type {
+   name = Domain,
+   doc = {
+      description = "Redlog domain name",
+      example = "reals, r, integers, Z"}};
 
 % Atomic types:
 
@@ -66,7 +76,7 @@ rl_type {
    s2a = rl_mk!*fof,
    equational,
    doc = {
-      syntax = "A first-order formula in the current domain.",
+      description = "first-order formula in the current domain",
       example = "all(x, ex(y, x = y))"}};
 
 % Truth Values
@@ -75,7 +85,8 @@ rl_type {
    name = TruthValue,
    inherits = Formula,
    doc = {
-      syntax = "An element from the finite subset {true, false} of first-order formulas.",
+      description = "Boolean constant",
+      syntax = "Enum(true, false)",
       example = "true"}};
 
 % Atomic formulas
@@ -86,7 +97,7 @@ rl_type {
    a2s = rl_a2sAtom,
    equational,
    doc = {
-      syntax = "An atomic formula in the current domain.",
+      description = "atomic formula in the current domain",
       example = "x^4*y^2 + y^2*x^4 - 3*x^2*y^2 + 1 >= 0"}};
 
 asserted procedure rl_a2sAtom(x);
@@ -106,7 +117,7 @@ rl_type {
    a2s = rl_simpterm,
    s2a = rl_prepterm,
    doc = {
-      syntax = "A term in the current domain.",
+      description = "term in the current domain",
       example = "x^4*y^2 + y^2*x^4 - 3*x^2*y^2 + 1"}};
 
 % Variables do not inherit Term. There is a difference between a kernel and the
@@ -117,11 +128,11 @@ rl_type {
    a2s = rl_a2sVariable,
    s2a = rl_identity1,
    doc = {
-      syntax = "A REDUCE Variable."}};
+      description = "REDUCE Variable",
+      syntax = "Identifier"}};
 
 asserted procedure rl_a2sVariable(x: Any): Kernel;
    if sfto_kernelp x then x else typerr(x, "Variable");
-
 
 % Flag/Switch. Switches have a special treatment: their default is the setting
 % of the corresponding Redlog switch.
@@ -129,14 +140,16 @@ asserted procedure rl_a2sVariable(x: Any): Kernel;
 rl_type {
    name = Flag,
    a2s = rl_a2sFlag,
-   doc = {syntax = "An element from the finite set {on, yes, true, off, no, false}."}};
+   doc = {
+      description = "Boolean argument",
+      syntax = "Enum(on, yes, true, off, no, false)"}};
 
 rl_type {
    name = Switch,
    a2s = rl_a2sFlag,
    doc = {
-      syntax = "An element from the finite set {on, yes, true, off, no, false}.",
-      semantics = "Used for temporarily rebinding Redlog switches."}};
+      description = "flag used for temporarily rebinding Redlog switches",
+      syntax = "Enum(on, yes, true, off, no, false)"}};
 
 asserted procedure rl_a2sFlag(u: Any): Boolean;
    % We expect certain keywords, which are not evaluated. In particular, the
@@ -161,7 +174,7 @@ rl_type {
    a2s = rl_a2sInteger,
    s2a = rl_identity1,
    doc = {
-      syntax = "An integer number of arbitrary size."}};
+      description = "Standard Lisp integer number of arbitrary size"}};
 
 asserted procedure rl_a2sInteger(n: Any): Integer;
    % Algebraic to symbolic number.
@@ -178,7 +191,7 @@ rl_type {
    a2s = rl_a2sString,
    s2a = rl_identity1,
    doc = {
-      syntax = "A string."}};
+      description = "Standard Lisp string"}};
 
 asserted procedure rl_a2sString(s: Any): String;
    begin
@@ -197,10 +210,10 @@ rl_type {
    name = Rational,
    a2s = rl_a2sRational,
    doc = {
-      syntax = "A rational number of arbitrary precision.",
+      description = "rational number of arbitrary precision",
       example = "1, -1/2, 0.1"}};
 
-asserted procedure rl_a2sRational(x): SF;
+asserted procedure rl_a2sRational(x: Any): Any;
    reval x;
 
 % LPolyQ: used as objective functions with linear optimization.
@@ -209,7 +222,7 @@ rl_type {
    name = LPolyQ,
    a2s = rl_a2sLPolyQ,
    doc = {
-      syntax = "A linear multivariate polynomial with rational coefficients.",
+      description = "linear multivariate polynomial with rational coefficients",
       example = "x+y, (1/2)*x1+x2+3*x3-2, (z-1)/2"}};
 
 asserted procedure rl_a2sLPolyQ(x: Any): SQ;
@@ -230,7 +243,8 @@ rl_type {
    a2s = rl_a2sList,
    s2a = rl_s2aList,
    doc = {
-      syntax = "A homogeneous List."}};
+      description = "homogeneous List",
+      example = "{2, 3, 5, 7}, {""hello"", ""world""}"}};
 
 asserted procedure rl_a2sList(l: Any, a2sElement: Any): List;
    begin scalar w, !*rlsimpl;
@@ -250,7 +264,8 @@ rl_type {
    a2s = rl_a2sPair,
    s2a = rl_s2aPair,
    doc = {
-      syntax = "A not necessarily homogeneous List with two elements."}};
+      description = "not necessarily homogeneous List with two elements",
+      example = "{1, ""two""}"}};
 
 asserted procedure rl_a2sPair(x: Any, a2sElem1: Any, a2sElem2: Any): List;
    begin scalar w, !*rlsimpl;
@@ -273,7 +288,8 @@ rl_type {
    a2s = rl_a2sTriplet,
    s2a = rl_s2aTriplet,
    doc = {
-      syntax = "A not necessarily homogeneous List with three elements."}};
+      description = "not necessarily homogeneous List with three elements",
+      example = "{1, ""two"", three^2}"}};
 
 asserted procedure rl_a2sTriplet(x: Any, a2sElem1: Appplicable, a2sElem2: Appplicable, a2sElem3: Appplicable): List;
    begin scalar w, !*rlsimpl;
@@ -296,7 +312,8 @@ rl_type {
    a2s = rl_a2sList5,
    s2a = rl_s2aList5,
    doc = {
-      syntax = "A not necessarily homogeneous List with five elements."}};
+      description = "not necessarily homogeneous List with five elements",
+      example = "{1, ""two"", three^2, 44, 5}"}};
 
 asserted procedure rl_a2sList5(x: Any, a2sElem1: Appplicable, a2sElem2: Appplicable, a2sElem3: Appplicable, a2sElem4: Appplicable, a2sElem5: Appplicable): List;
    begin scalar w, !*rlsimpl;
@@ -327,7 +344,7 @@ asserted procedure rl_s2aList5(x: Any, a2sElem1: Appplicable, a2sElem2: Appplica
 rl_type {name = MList,
    s2a = rl_s2aMList,
    doc = {
-      syntax = "A homogeneous List of Pairs {x, n}, where n is an Integer.",
+      description = "homogeneous List of Pairs {x, n}, where n is an Integer",
       example = "{{a+b = 0, 4}, {a = c-d, 1}}"}};
 
 asserted procedure rl_s2aMList(l: List, a2sElement: Any): List;
@@ -341,7 +358,7 @@ rl_type {
    s2a = rl_s2aAssignment,
    equational,
    doc = {
-      syntax = "An equation v = x, where v is a Variable.",
+      description = "equation v = x, where v is a Variable",
       example = "v_1 = x^4*y^2 + y^2*x^4 - 3*x^2*y^2 + 1 >= 0"}};
 
 asserted procedure rl_a2sAssignment(x: Any, a2sLhs: Any): DottedPair;

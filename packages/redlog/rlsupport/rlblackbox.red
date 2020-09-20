@@ -70,7 +70,7 @@ asserted procedure rl_formBlackbox(argl: Alist, vars: List, m: Id): List;
       rl_b!* := intern compress nconc(explode rl_b, explode '!*);
       docal := {'synopsis . rl_docSynopsisBb(rl_b, n), 'description . doc};
       push({'put, mkquote rl_b, ''docal, mkquote docal}, p);
-      push({'flag, mkquote {rl_b}, ''rl_blackbox}, p);
+      push({'put, mkquote rl_b, ''rl_support, ''rl_blackbox}, p);
       push({'fluid, mkquote {rl_b!*}}, p);
       % The rl_bbl!* ist somewhat redundant now and should be removed at some
       % point. I prefer to use the function names now, and to reconstruct the
@@ -85,8 +85,8 @@ asserted procedure rl_formBlackbox(argl: Alist, vars: List, m: Id): List;
 asserted procedure rl_docSynopsisBb(f: Id, n: Integer);
    lto_sconcat {lto_at2str f, "/", lto_at2str n};
 
-asserted procedure rl_blackboxP(x: Any): ExtraBoolean;
-   idp x and flagp(x, 'rl_blackbox);
+asserted procedure rl_blackboxP(x: Any): Boolean;
+   idp x and get(x, 'rl_support) eq 'rl_blackbox;
 
 endmodule;
 

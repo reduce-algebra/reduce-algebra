@@ -284,6 +284,12 @@ asserted procedure lto_substr(s: String, n: Integer, m: Integer): ExtraBoolean;
       return compress reversip('!" . res)
    end;
 
+asserted procedure lto_stringLeq(s1: String, s2: String): Boolean;
+   ordp(intern compress explodec s1, intern compress explodec s2);
+
+asserted procedure lto_stringGreaterP(s1: String, s2: String): Boolean;
+   not lto_stringLeq(s1, s2);
+
 asserted procedure lto_string2id(s: String): Id;
    begin scalar w;
       w := explodec s;
@@ -763,17 +769,20 @@ asserted procedure lto_strlen(s: String): Integer;
    % Number of characters in [s] excluding the double quotes.
    length explodec s;
 
-asserted procedure lto_vertexCover(el: List): List;
+asserted procedure lto_vertexCover(el: List, exact: Boolean): List;
    % [el] is a list of pairs of interned identifiers representing edges. Returns
    % a list of identifiers representing vertices. The result is a minimum vertex
    % cover of [el].
-   begin scalar oc, seenl, fl, obj, z, zz, w, best;
+   begin scalar oc, seenl, fl, obj, z, zz, w, best, s;
       oc := rl_set '(r);
       for each e in el do <<
 	 for each v in {car e, cdr e} do
 	    if not (v memq seenl) then <<
 	       push(v, seenl);
-	       push(lto_vcZeroOrOne !*k2f v, fl);
+	       if exact then
+	       	  push(lto_vcZeroOrOne !*k2f v, fl)
+	       else
+	       	  push(lto_vcVertexGeqOne !*k2f v, fl);
 	       obj := addf(obj, !*k2f v)
 	    >>;
 	 push(lto_vcEdgeGeqOne(!*k2f car e, !*k2f cdr e), fl)
@@ -786,9 +795,11 @@ asserted procedure lto_vertexCover(el: List): List;
       for each ans in w do
 	 if lto_vcBetterp(ans, best, z) then
  	    best := ans;
-      w := for each pr in ofsf_xopt!-ans!-pt best join
-	 if eqn(cdr pr, 1) then
- 	    {car pr};
+      w := for each pr in ofsf_xopt!-ans!-pt best join <<
+	 s := simp cdr pr;
+	 if 2 * (numr s or 0) >= denr s then
+ 	    {car pr}
+      >>;
       rl_set oc;
       return w
    end;
@@ -796,6 +807,10 @@ asserted procedure lto_vertexCover(el: List): List;
 asserted procedure lto_vcZeroOrOne(v: SF);
    % Returns a Formula, which is not known here as a type.
    rl_mkn('or, {ofsf_0mk2('equal, v), ofsf_0mk2('equal, addf(v, negf 1))});
+
+asserted procedure lto_vcVertexGeqOne(v: SF);
+   % Returns a Formula, which is not known here as a type.
+   ofsf_0mk2('geq, v);
 
 asserted procedure lto_vcEdgeGeqOne(v1: SF, v2: SF);
    % Returns a Formula, which is not known here as a type.
@@ -867,12 +882,12 @@ asserted procedure lto_lpvarl(u: Any): List;
 
 asserted procedure lto_loremIpsumAl(): Alist;
    '(("Lorem" .  "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
-      ("Duis" .  "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.")
-     	 ("Ut" . "Ut  wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.")
-     	    ("Nam" . "Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.")
-     	       ("Duis" . "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis.")
-     		  ("At" . "At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.")
-     		     ("Consetetur" . "Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."));
+     ("Duis" .  "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.")
+     ("Ut" . "Ut  wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.")
+     ("Nam" . "Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.")
+     ("Duis" . "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis.")
+     ("At" . "At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.")
+     ("Consetetur" . "Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."));
 
 asserted procedure lto_loremIpsum(): String;
    lto_sconcat(for each rpr on lto_loremIpsumAl() join

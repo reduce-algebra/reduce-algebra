@@ -41,6 +41,7 @@ rl_service {
 rl_service {
    name = all,
    doc = "universal closure",
+   seealso = ex,
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = except, type = List(Variable), default = {}, doc = "variables not to be quantified"},
    returns = {type = Formula},
@@ -49,6 +50,9 @@ rl_service {
 rl_service {
    name = atl,
    doc = "set of contained atomic formulas",
+   seealso = atml,
+   seealso = atnum,
+   seealso = terml,
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    returns = {type = List(Atom)},
    mode = both};
@@ -77,6 +81,15 @@ rl_service {
 rl_service {
    name = cad,
    doc = "cylindrical algebraic decomposition",
+   seealso = gcad,
+   seealso = hqe,
+   seealso = lqe,
+   seealso = mathematica,
+   seealso = posqe,
+   seealso = qe,
+   seealso = qeipo,
+   seealso = qepcad,
+   seealso = qews,
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = porder, type = List(Variable), default = {}, doc = "projection order"},
    arg = {pos = 3, name = xpolys, type = List(Term), default = {}, doc = "extra polynomials for projection"},
@@ -150,6 +163,7 @@ rl_service {
 rl_service {
    name = dpep,
    doc = "deciding polynomial exponential problems",
+   seealso = cad,
    arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
    arg = {pos = 2, name = accuracy, type = Integer, default = 20, doc = "length of taylor expanson of exp"},
    returns = {type = Formula},
@@ -176,6 +190,7 @@ rl_service {
 rl_service {
    name = ex,
    doc = "existential closure",
+   seealso = all,
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = except, type = List(Variable), default = {}, doc = "variables not to be quantified"},
    returns = {type = Formula},
@@ -357,6 +372,9 @@ rl_service {
 rl_service {
    name = mathematica,
    doc = "interface to external mathematica using Resolve[]",
+   seealso = cad,
+   seealso = qe,
+   seealso = qepcad,
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    returns = {type = Formula},
    mode = both};
@@ -474,6 +492,18 @@ rl_service {
 rl_service {
    name = qe,
    doc = "quantifier elimination",
+   seealso = cad,
+   seealso = gcad,
+   seealso = ghqe,
+   seealso = gqe,
+   seealso = gqea,
+   seealso = hqe,
+   seealso = lqe,
+   seealso = posqe,
+   seealso = posqea,
+   seealso = qea,
+   seealso = qeipo,
+   seealso = qews,
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
    returns = {type = Formula},
@@ -505,6 +535,9 @@ rl_service {
 rl_service {
    name = qepcad,
    doc = "interface to external Qepcad B",
+   seealso = cad,
+   seealso = mathematica,
+   seealso = qe,
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = N, type = Integer, default = 100, doc = "allocate N * 10^6 cells"},
    arg = {pos = 3, name = L, type = Integer, default = 200, doc = "use prime list of size L * 10^3"},
@@ -708,7 +741,7 @@ rl_service {
    returns = {type = Formula},
    mode = both};
 
-   rl_service {
+rl_service {
    name = terml,
    doc = "set of contained terms",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
@@ -784,14 +817,14 @@ rl_service {
 
 rl_service {
    name = xqe,
-   doc = "weakly parametric liner quantifier elimination",
+   doc = "weakly parametric linear quantifier elimination",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    returns = {type = Formula},
    mode = both};
 
 rl_service {
    name = xqea,
-   doc = "weakly parametric liner quantifier elimination with answer",
+   doc = "weakly parametric linear quantifier elimination with answer",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    returns = {type = List(Pair(Formula, List(Assignment(Any))))},
    mode = both};

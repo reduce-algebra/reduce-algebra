@@ -266,6 +266,28 @@ procedure rl_sub!*fof(al,f);
    rl_mk!*fof rl_subfof(al,rl_simp f);
 
 
+rl_builtin {
+   name = mkor,
+   doc = {
+      synopsis = {pos = 1, text = "for R mkor E"},
+      description = "for-loop action for constructing disjunctions",
+      returns = "Any",
+      arg = {pos = 1, name = "R", text = "range specification as documented in Sect.5.4 of the REDUCE manual "},
+      arg = {pos = 2, name = "E", text = "RLISP expression"}
+   }
+};
+
+rl_builtin {
+   name = mkand,
+   doc = {
+      synopsis = {pos = 1, text = "for R mkand E"},
+      description = "for-loop action for constructing conjunctions",
+      returns = "Any",
+      arg = {pos = 1, name = "R", text = "range specification as documented in Sect.5.4 of the REDUCE manual "},
+      arg = {pos = 2, name = "E", text = "RLISP expression"}
+   }
+};
+
 foractions!* := 'mkand . 'mkor . foractions!*;
 deflist('((mkand rlmkand) (mkor rlmkor)),'bin);
 deflist('((mkand (quote true)) (mkor (quote false))),'initval);

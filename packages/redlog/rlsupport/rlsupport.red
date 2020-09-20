@@ -40,7 +40,8 @@ put('rlsupport, 'copyright, "(c) 2016-2017 T. Sturm");
 % essentially sections of packages but not units that are independent w.r.t.
 % compilation.
 
-create!-package('(rlsupport rltype rlservice rlblackbox rlprovide rlhelp), nil);
+create!-package(
+   '(rlsupport rltype rlbuiltin rlservice rlblackbox rlprovide rlhelp rljson), nil);
 
 exports revision;
 exports copyright;
@@ -60,6 +61,9 @@ exports rl_excP;
 exports rl_excErr;
 exports rl_help;
 
+% context identifier:
+fluid '(rl_cid!*);
+
 asserted procedure revision(m: Id, rev: String): String;
    put(m, 'revision, rev);
 
@@ -71,6 +75,13 @@ inline procedure rl_skipequal(proc);
       scan();
       if cursym!* neq 'equal then
 	 rederr {"expecting '=' in", proc, "but found", cursym!*}
+   >>;
+
+inline procedure rl_skiplcbkt(proc);
+   <<
+      scan();
+      if cursym!* neq '!*lcbkt!* then
+	 rederr {"expecting '{' in, ", proc, "but found", cursym!*}
    >>;
 
 endmodule;

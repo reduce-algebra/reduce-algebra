@@ -53,6 +53,19 @@ put('z,'rl_calias,'pasf);
 put('!Z,'rl_calias,'pasf);
 put('integers,'rl_calias,'pasf);
 
+rl_builtin {
+   name = rlset,
+   doc = {
+      synopsis = {pos = 1, text = "rlset(D: Domain,...)"},
+      synopsis = {pos = 2, text = "rlset({D: Domain,...})"},
+      synopsis = {pos = 3, text = "rlset()"},
+      description = "set current domain, and return the old one",
+      returns = "{Domain,...}",
+      arg = {pos = 1, name = "D", text = "the new domain"},
+      arg = {pos = 2, name = "...", text = "domain-specific optional arguments"}
+   }
+};
+
 put('rlset,'psopfn,'rl_set!$);
 
 procedure rl_set!$(argl);
@@ -65,6 +78,7 @@ procedure rl_set!$(argl);
       	 >> else
 	    argl := w . for each x in cdr argl collect reval x
       >>;
+      if not rl_cid!* then rl_about();
       return 'list . rl_set argl
    end;
 

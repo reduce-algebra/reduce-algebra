@@ -2910,49 +2910,54 @@ asserted procedure ofsf_qeg(f: Formula): Formula;
 	 rl_mkn('and, cdr case . car case)), nil, -1)
    end;
 
-asserted procedure ofsf_preqe(f: Formula): Formula;
+asserted procedure ofsf_preqe(f: Formula): DottedPair;
+   % Apply the vertex cover method to painlessly eliminate some variables via
+   % Gaussian elimination.
    begin
-      scalar ql, varll, bvl, evl, eql, g;
+      scalar ql, varll, bvl, evl, eql, g, theo;
       f := rl_simpl(rl_pnf f, nil, -1);
       if not rl_quap rl_op f then
-	 return f;
+	 return nil . f;
       {ql, varll, g, bvl} := cl_split f;
       if ql neq '(ex) then  % improve soon!
- 	 return f;
+ 	 return nil . f;
       if rl_op g neq 'and then
-	 return f;
+	 return nil . f;
       evl . eql := ofsf_preqeGoodEql(g, car varll);
       if null evl then
-	 return f;
+	 return nil . f;
       evl := sort(evl, 'ordp);
-      % When there are too few equations we have to give up some good variables:
+      % When there are too few equations we must drop some good variables:
       for i := 1 : length evl - length eql do
 	 evl := cdr evl;
       for each v in reverse evl do
 	 g := rl_mkq('ex, v, g);
       if !*rlverbose then
 	 ioto_tprin2t "+++ starting qe, which should do only Gauss steps";
-      g := cl_qe(g, nil);
+      theo . g := cl_gqe(g, nil, nil);
       for each v in reverse sort(lto_setminus(car varll, evl), 'ordp) do
 	 g := rl_mkq('ex, v, g);
-      return g
+      return theo . g
    end;
 
-asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List): List;
-   % We have a primitive formula, [vl] are the ex-quantified variables, [f] is
-   % the matrix.
+asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List): DottedPair;
+   % We have a primitive formula, [qvl] are the ex-quantified variables, [f] is
+   % the matrix. Returns [evl . eql], where [evl] is a (maximum) list of
+   % variables that can be Gauss-eliminated, and [eql] is a list of equations
+   % associated with occurring variables.
    begin scalar eql, vll, svl, vl, el, vcl, evl;
       for each s in rl_argn f do
 	 if rl_op s eq 'equal then <<
 	    vll := ofsf_preqeGoodPoly(ofsf_arg2l s, qvl);
 	    if vll then <<
 	       svl := nil;
-	       for each vl1 in vll do <<
- 		  for each v in vl1 do <<
-		     vl := lto_insertq(v, vl);
-		     svl := lto_insertq(v, svl)
+	       for each term in vll do <<
+ 		  for each v in term do <<
+		     svl := lto_insertq(v, svl);  % all variables in term
+		     vl := lto_insertq(v, vl)  % all variables ever seen here
 		  >>;
-		  for each rvl1 on vl1 do
+		  % construct all vertices from term:
+		  for each rvl1 on term do
 		     for each v in cdr rvl1 do
 		     	el := lto_insert(car rvl1 . v, el)
 	       >>;
@@ -2961,7 +2966,7 @@ asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List): List;
 	 >>;
       if !*rlverbose then
 	 ioto_tprin2 {"+++ computing minimum vertex cover of ", el, " ... "};
-      vcl := lto_vertexCover el where !*rlverbose=nil;
+      vcl := lto_vertexCover(el, nil) where !*rlverbose=t;
       if !*rlverbose then
 	 ioto_prin2t {vcl};
       evl := lto_setminus(vl, vcl);
@@ -2969,8 +2974,8 @@ asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List): List;
    end;
 
 asserted procedure ofsf_preqeGoodPoly(p: SF, qvl: List): ExtraBoolean;
-   % Check if [p] has total degree at most 2 in [vl]. In the positive case
-   % return the occurring terms wrt. Z[...][vl] as a list of list of variables.
+   % Check if [p] has total degree at most 2 in [qvl]. In the positive case
+   % return the occurring terms wrt. Z[...][qvl] as a list of list of variables.
    % Else return [nil].
    begin
       scalar avl, ml, c, ev, scvl, v, vl, vll;
