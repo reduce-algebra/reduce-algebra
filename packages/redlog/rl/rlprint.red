@@ -40,40 +40,42 @@ put('!*fof,'fancy!-setprifn,'rl_setprint!*fof);
 
 put('and,'pprifn,'rl_ppriop);
 put('and,'fancy!-pprifn,'rl_fancy!-ppriop);
-if rl_texmacsp() then put('and,'fancy!-infix!-symbol,"\,\wedge\, ");
+if rl_texmacsp() or 'csl memq lispsystem!* then
+   put('and,'fancy!-infix!-symbol,"\,\wedge\, ");
 
 put('or,'pprifn,'rl_ppriop);
 put('or,'fancy!-pprifn,'rl_fancy!-ppriop);
-if rl_texmacsp() then put('or,'fancy!-infix!-symbol,"\,\vee\, ");
+if rl_texmacsp() or 'csl memq lispsystem!* then
+   put('or,'fancy!-infix!-symbol,"\,\vee\, ");
 
 put('impl,'pprifn,'rl_ppriop);
-if rl_texmacsp() then
+if rl_texmacsp() or 'csl memq lispsystem!* then
    put('impl,'fancy!-infix!-symbol,"\,\longrightarrow\, ")
 else
    put('impl,'fancy!-infix!-symbol,222);
 
 put('repl,'pprifn,'rl_ppriop);
-if rl_texmacsp() then
+if rl_texmacsp() or 'csl memq lispsystem!* then
    put('repl,'fancy!-infix!-symbol,"\,\longleftarrow\, ")
 else
    put('repl,'fancy!-infix!-symbol,220);
 
 put('equiv,'pprifn,'rl_ppriop);
-if rl_texmacsp() then
+if rl_texmacsp() or 'csl memq lispsystem!* then
    put('equiv,'fancy!-infix!-symbol,"\,\longleftrightarrow\, ")
 else
    put('equiv,'fancy!-infix!-symbol,219);
 
 put('ex,'prifn,'rl_priq);
 put('ex,'fancy!-prifn,'rl_fancy!-priq);
-if rl_texmacsp() then
+if rl_texmacsp() or 'csl memq lispsystem!* then
    put('ex,'fancy!-functionsymbol,"\exists ")
 else
    put('ex,'fancy!-functionsymbol,36);
 
 put('all,'prifn,'rl_priq);
 put('all,'fancy!-prifn,'rl_fancy!-priq);
-if rl_texmacsp() then
+if rl_texmacsp()  or 'csl memq lispsystem!* then
    put('all,'fancy!-functionsymbol,"\forall ")
 else
    put('all,'fancy!-functionsymbol,34);
@@ -82,7 +84,7 @@ put('bex,'prifn,'rl_pribq);
 put('bex,'rl_prepfn,'rl_prepbq); % semms not to be used!
 %put('bex,'fancy!-functionsymbol,36);
 put('bex,'fancy!-prifn,'rl_fancy!-pribq);
-if rl_texmacsp() then
+if rl_texmacsp() or 'csl memq lispsystem!* then
    put('bex,'fancy!-functionsymbol,"\bigsqcup ")
 else
    put('bex,'fancy!-functionsymbol,36); %%% 36 okay?
@@ -90,7 +92,7 @@ else
 put('ball,'prifn,'rl_pribq);
 %put('ball,'fancy!-functionsymbol,34);
 put('ball,'fancy!-prifn,'rl_fancy!-pribq);
-if rl_texmacsp() then
+if rl_texmacsp() or 'csl memq lispsystem!* then
    put('ball,'fancy!-functionsymbol,"\bigsqcap ")
 else
    put('ball,'fancy!-functionsymbol,34); %%% 34 okay?

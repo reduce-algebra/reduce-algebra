@@ -282,35 +282,35 @@ put('neq,'ofsf_simpfn,'ofsf_chsimpat);
 % put('neq,'number!-of!-args,2);
 put('neq,'rtypefn,'quotelog);
 newtok '((!< !>) neq) where !*msg=nil;
-if rl_texmacsp() then
+if rl_texmacsp() or 'csl memq lispsystem!* then
    put('neq,'fancy!-infix!-symbol,"\,\neq\, ");
 
 % algebraic infix leq;
 put('leq,'ofsf_simpfn,'ofsf_chsimpat);
 % put('leq,'number!-of!-args,2);
 put('leq,'rtypefn,'quotelog);
-if rl_texmacsp() then
+if rl_texmacsp() or 'csl memq lispsystem!* then
    put('leq,'fancy!-infix!-symbol,"\,\leq\, ");
 
 % algebraic infix geq;
 put('geq,'ofsf_simpfn,'ofsf_chsimpat);
 % put('geq,'number!-of!-args,2);
 put('geq,'rtypefn,'quotelog);
-if rl_texmacsp() then
+if rl_texmacsp() or 'csl memq lispsystem!* then
    put('geq,'fancy!-infix!-symbol,"\,\geq\, ");
 
 % algebraic infix lessp;
 put('lessp,'ofsf_simpfn,'ofsf_chsimpat);
 % put('lessp,'number!-of!-args,2);
 put('lessp,'rtypefn,'quotelog);
-if rl_texmacsp() then
+if rl_texmacsp() or 'csl memq lispsystem!* then
    put('lessp,'fancy!-infix!-symbol,"\,<\, ");
 
 % algebraic infix greaterp;
 put('greaterp,'ofsf_simpfn,'ofsf_chsimpat);
 % put('greaterp,'number!-of!-args,2);
 put('greaterp,'rtypefn,'quotelog);
-if rl_texmacsp() then
+if rl_texmacsp() or 'csl memq lispsystem!* then
    put('greaterp,'fancy!-infix!-symbol,"\,>\, ");
 
 flag('(equal neq leq geq lessp greaterp),'spaced);

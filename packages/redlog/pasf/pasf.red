@@ -200,26 +200,36 @@ put('neq,'pasf_simpfn,'pasf_chsimpat);
 put('neq,'number!-of!-args,2);
 put('neq,'rtypefn,'quotelog);
 newtok '((!< !>) neq);
+if rl_texmacsp() or 'csl memq lispsystem!* then
+   put('neq,'fancy!-infix!-symbol,"\,\neq\, ");
 
 algebraic infix leq;
 put('leq,'pasf_simpfn,'pasf_chsimpat);
 put('leq,'number!-of!-args,2);
 put('leq,'rtypefn,'quotelog);
+if rl_texmacsp() or 'csl memq lispsystem!* then
+   put('leq,'fancy!-infix!-symbol,"\,\leq\, ");
 
 algebraic infix geq;
 put('geq,'pasf_simpfn,'pasf_chsimpat);
 put('geq,'number!-of!-args,2);
 put('geq,'rtypefn,'quotelog);
+if rl_texmacsp() or 'csl memq lispsystem!* then
+   put('geq,'fancy!-infix!-symbol,"\,\geq\, ");
 
 algebraic infix lessp;
 put('lessp,'pasf_simpfn,'pasf_chsimpat);
 put('lessp,'number!-of!-args,2);
 put('lessp,'rtypefn,'quotelog);
+if rl_texmacsp() or 'csl memq lispsystem!* then
+   put('lessp,'fancy!-infix!-symbol,"\,<\, ");
 
 algebraic infix greaterp;
 put('greaterp,'pasf_simpfn,'pasf_chsimpat);
 put('greaterp,'number!-of!-args,2);
 put('greaterp,'rtypefn,'quotelog);
+if rl_texmacsp() or 'csl memq lispsystem!* then
+   put('greaterp,'fancy!-infix!-symbol,"\,>\, ");
 
 algebraic operator cong;
 put('cong,'prifn,'pasf_pricong);
@@ -395,7 +405,7 @@ procedure pasf_princong(l);
 procedure pasf_fancy!-pricong(l);
    % Presburger arithmetic standard form texmacs print a congruence. [l] is a
    % lisp prefix. Returns 'failed iff printing failed.
-   if rl_texmacsp() then
+   if rl_texmacsp() or 'csl memq lispsystem!* then
       pasf_fancy!-pricong!-texmacs l
    else
       pasf_fancy!-pricong!-fm l;
@@ -408,13 +418,13 @@ procedure pasf_fancy!-pricong!-texmacs(l);
    else <<
       maprin cadr l; % lhs
       if car l eq 'cong then
-	 fancy!-prin2 "\equiv"
+	 fancy!-prin2 "\,\equiv"
       else
-	 fancy!-prin2 "\not\equiv";
+	 fancy!-prin2 "\,\not\equiv";
       fancy!-prin2!-underscore();
       fancy!-prin2 "{";
       maprin cadddr l; % modulus
-      fancy!-prin2 "}";
+      fancy!-prin2 "}\,";
       maprin caddr l; % rhs
    >>;
 
