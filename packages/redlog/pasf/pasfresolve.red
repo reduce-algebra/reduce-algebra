@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2013 M. Kosta, T. Sturm
-% ----------------------------------------------------------------------
+module pasfresolve;
+
+revision('pasfresolve, "$Id$");
+
+copyright('pasfresolve, "(c) 2013 M. Kosta, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,8 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-module pasfresolve;
 
 algebraic infix divc;
 algebraic infix modc;

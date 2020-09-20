@@ -1,8 +1,11 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module acfsfbnf;
+% Algebraically closed field standard form Boolean normal forms.
+% Submodule of [acfsf].
+
+revision('acfsfbnf, "$Id$");
+
+copyright('acfsfbnf, "(c) 1995-2009 A. Dolzmann, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,17 +30,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(acfsf_bnf_rcsid!* acfsf_bnf_copyright!*);
-   acfsf_bnf_rcsid!* :=
-      "$Id$";
-   acfsf_bnf_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module acfsfbnf;
-% Algebraically closed field standard form Boolean normal forms.
-% Submodule of [acfsf].
 
 procedure acfsf_dnf(f);
    % Algebraically closed field disjunctive normal form. [f] is a

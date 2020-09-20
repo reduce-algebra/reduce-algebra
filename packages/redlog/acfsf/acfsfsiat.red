@@ -1,8 +1,12 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module acfsfsiat;
+% Algebraically closed field standard form simplification for atomic formulas.
+% Submodule of [acfsf]. This submodule provides the service [rl_simplat1] to
+% [cl_simpl].
+
+revision('acfsfsiat, "$Id$");
+
+copyright('acfsfsiat, "(c) 1995-2009 A. Dolzmann, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,18 +31,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(acfsf_siat_rcsid!* acfsf_siat_copyright!*);
-   acfsf_siat_rcsid!* :=
-      "$Id$";
-   acfsf_siat_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module acfsfsiat;
-% Algebraically closed field standard form simplification for atomic
-% formulas. Submodule of [acfsf]. This submodule provides the service
-% [rl_simplat1] to [cl_simpl].
 
 procedure acfsf_simplat1(f,sop);
    % Algebraically closed field standard form simplify atomic formula.

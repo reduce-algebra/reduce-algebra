@@ -1,8 +1,10 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm
-% ----------------------------------------------------------------------
+module pasfsism;
+% Presburger arithmetic standard form smart simplification. Submodule of PASF.
+
+revision('pasfsism, "$Id$");
+
+copyright('pasfsism, "(c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,17 +29,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(pasf_sism_rcsid!* pasf_sism_copyright!*);
-   pasf_sism_rcsid!* :=
-      "$Id$";
-   pasf_sism_copyright!* :=
-      "Copyright (c) 2003-2009 A. Dolzmann. A. Seidl and T. Sturm"
->>;
-
-module pasfsism;
-% Presburger arithmetic standard form smart simplification. Submodule of PASF.
 
 procedure pasf_smwupdknowl(op,atl,knowl,n);
    % Presburger arithmetic standard form update knowledge. [op] is an

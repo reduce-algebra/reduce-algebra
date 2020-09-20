@@ -1,8 +1,11 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module acfsfsism;
+% Algebraically closed field standard form smart simplification.
+% Submodule of [acfsf].
+
+revision('acfsfsism, "$Id$");
+
+copyright('acfsfsism, "(c) 1995-2009 A. Dolzmann, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,17 +30,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(acfsf_sism_rcsid!* acfsf_sism_copyright!*);
-   acfsf_sism_rcsid!* :=
-      "$Id$";
-   acfsf_sism_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module acfsfsism;
-% Algebraically closed field standard form smart simplification.
-% Submodule of [acfsf].
 
 %DS
 % <IRL> ::= (<IR>,...)

@@ -1,8 +1,13 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module dvfsfsism;
+% Discretely valued field standard form simplify smart. Submodule of
+% [dvfsf]. This module provides the black boxes [rl_smupdknowl],
+% [rl_smrmknowl], [rl_smcpknowl], [rl_smmkatl], and [rl_susirmknowl]
+% to [cl_simpl]. They are used with switch [rlsism] on.
+
+revision('dvfsfsism, "$Id$");
+
+copyright('dvfsfsism, "(c) 1995-2009 A. Dolzmann, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,19 +32,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(dvfsf_sism_rcsid!* dvfsf_sism_copyright!*);
-   dvfsf_sism_rcsid!* :=
-      "$Id$";
-   dvfsf_sism_copyright!* := "Copyright (c) 1995-2009 A. Dolzman and T. Sturm"
->>;
-
-module dvfsfsism;
-% Discretely valued field standard form simplify smart. Submodule of
-% [dvfsf]. This module provides the black boxes [rl_smupdknowl],
-% [rl_smrmknowl], [rl_smcpknowl], [rl_smmkatl], and [rl_susirmknowl]
-% to [cl_simpl]. They are used with switch [rlsism] on.
 
 procedure dvfsf_smupdknowl(op,atl,knowl,n);
    % Discretely valued field smart simplification update knowledge.

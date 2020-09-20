@@ -1,8 +1,12 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2001-2009 A. Dolzmann, A. Lasaruk, A. Seidl, T. Sturm
-% ----------------------------------------------------------------------
+module pasfnf;
+% PASF normal forms. Submodule of PASF. This module provides for now only the
+% prenex normal form algorithmus. Possibly should be merged with pasfbnf
+% module in the future.
+
+revision('pasfnf, "$Id$");
+
+copyright('pasfnf, "(c) 2001-2009 A. Dolzmann, A. Lasaruk, A. Seidl, T. Sturm, 2010-2020 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,19 +31,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(pasf_nf_rcsid!* pasf_nf_copyright!*);
-   pasf_nf_rcsid!* :=
-      "$Id$";
-   pasf_nf_copyright!* :=
-      "Copyright (c) 1995-2009 A. Dolzmann, A. Lasaruk, A. Seidl, and T. Sturm"
->>;
-
-module pasfnf;
-% PASF normal forms. Submodule of PASF. This module provides for now only the
-% prenex normal form algorithmus. Possibly should be merged with pasfbnf
-% module in the future.
 
 procedure pasf_pnf(phi);
    % Presburger arithmetic standard form prenex normal form. [phi] is a

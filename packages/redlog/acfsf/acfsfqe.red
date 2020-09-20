@@ -1,8 +1,11 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module acfsfqe;
+% Algebraically closed field standard form quantifier elimination. Submodule of
+% [acfsf].
+
+revision('acfsfqe, "$Id$");
+
+copyright('acfsfqe, "(c) 1995-2009 A. Dolzmann, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,17 +30,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(acfsf_qe_rcsid!* acfsf_qe_copyright!*);
-   acfsf_qe_rcsid!* :=
-      "$Id$";
-   acfsf_qe_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module acfsfqe;
-% Algebraically closed field standard form quantifier elimination.
-% Submodule of [acfsf].
 
 %TODO: acfsf_qefl in errorset.
 

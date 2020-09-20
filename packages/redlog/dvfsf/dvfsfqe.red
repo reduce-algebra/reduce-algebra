@@ -1,8 +1,11 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module dvfsfqe;
+% Discretely valued field standard form quantifier elimination. Submodule of
+% [dvfsf].
+
+revision('dvfsfqe, "$Id$");
+
+copyright('dvfsfqe, "(c) 1995-2009 A. Dolzmann, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,17 +30,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(dvfsf_qe_rcsid!* dvfsf_qe_copyright!*);
-   dvfsf_qe_rcsid!* :=
-      "$Id$";
-   dvfsf_qe_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module dvfsfqe;
-% Discretely valued field standard form quantifier elimination.
-% Submodule of [dvfsf].
 
 procedure dvfsf_varsel(f,vl,theo);
    % Discretely valued field variable selection. [f] is a

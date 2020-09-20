@@ -1,8 +1,11 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module dvfsfsiat;
+% Discretely valued field standard form simplify atomic formulas. Submodule of
+% [dvfsf]. This submodule provides the black box [rl_simplat1] to [cl_simpl].
+
+revision('dvfsfsiat, "$Id$");
+
+copyright('dvfsfsiat, "(c) 1995-2009 A. Dolzmann and T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,18 +30,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(dvfsf_siat_rcsid!* dvfsf_siat_copyright!*);
-   dvfsf_siat_rcsid!* :=
-      "$Id$";
-   dvfsf_siat_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module dvfsfsiat;
-% Discretely valued field standard form simplify atomic formulas.
-% Submodule of [dvfsf]. This submodule provides the black box
-% [rl_simplat1] to [cl_simpl].
 
 procedure dvfsf_simplat1(atf,sop);
    % Discretely valued field simplify atomic formula. [atf] is an

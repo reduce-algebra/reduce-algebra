@@ -1,8 +1,11 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, and T. Sturm
-% ----------------------------------------------------------------------
+module pasfsiat;
+% Presburger arithmetic standard form atomic formula simplification. Submodule
+% of PASF.
+
+revision('pasfsiat, "$Id$");
+
+copyright('pasfsiat, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2020 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,18 +30,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(pasf_siat_rcsid!* pasf_siat_copyright!*);
-   pasf_siat_rcsid!* :=
-      "$Id$";
-   pasf_siat_copyright!* :=
-      "Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, and T. Sturm"
->>;
-
-module pasfsiat;
-% Presburger arithmetic standard form atomic formula simplification. Submodule
-% of PASF.
 
 procedure pasf_simplat1(atf,sop);
    % Presburger arithmetic standard form simplify atomic formula. [atf] is an

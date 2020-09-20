@@ -1,8 +1,11 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, and T. Sturm
-% ----------------------------------------------------------------------
+module pasfbnf;
+% Methods for DNF and CNF computation. For now pseudo- DNF and CNF are
+% computed. A pseudo DNF (CNF) is a formula in PNF with matrix in DNF (CNF).
+
+revision('pasfbnf, "$Id$");
+
+copyright('pasf, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2020 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,18 +30,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(pasf_bnf_rcsid!* pasf_bnf_copyright!*);
-   pasf_bnf_rcsid!* :=
-      "$Id$";
-   pasf_bnf_copyright!* :=
-      "Copyright (c) 1995-2009 A. Dolzmann, A. Seidl, T. Sturm"
->>;
-
-module pasfbnf;
-% Methods for DNF and CNF computation. For now pseudo- DNF and CNF are
-% computed. A pseudo DNF (CNF) is a formula in PNF with matrix in DNF (CNF).
 
 procedure pasf_sacat(a1,a2,gor);
    % Presburger arithmetic standard form subsume and cut atomic formula. [a1]

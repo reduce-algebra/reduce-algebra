@@ -1,8 +1,10 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module acfsfmisc;
+% Algebraically closed field standard form other. Submodule of [acfsf].
+
+revision('acfsfmisc, "$Id$");
+
+copyright('acfsfmisc, "(c) 1995-2009 A. Dolzmann, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +29,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(acfsf_misc_rcsid!* acfsf_misc_copyright!*);
-   acfsf_misc_rcsid!* :=
-      "$Id$";
-   acfsf_misc_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module acfsfmisc;
-% Algebraically closed field standard form other. Submodule of [acfsf].
 
 procedure acfsf_termprint(u);
    % Algebraically closed field term print. [u] is a
