@@ -1259,8 +1259,7 @@ inline int type_of_vector(LispObject v)
 // LispObjects that can be stored.
 
 inline size_t bytes_in_bytevector(LispObject v)
-{   if (is_basic_vector(v)) return length_of_byteheader(vechdr(
-                                           v)) - CELL;
+{   if (is_basic_vector(v)) return length_of_byteheader(vechdr(v)) - CELL;
     size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
 // Observe that the final chunk has its length treated individually. This
 // adds to the cost, but the extra cost only arises when the vector is
@@ -1270,8 +1269,7 @@ inline size_t bytes_in_bytevector(LispObject v)
 }
 
 inline size_t hwords_in_hwordvector(LispObject v)
-{   if (is_basic_vector(v)) return length_of_hwordheader(vechdr(
-                                           v)) - (CELL/2);
+{   if (is_basic_vector(v)) return length_of_hwordheader(vechdr(v)) - (CELL/2);
     size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
 // Observe that the final chunk has its length treated individually. This
 // adds to the cost, but the extra cost only arises when the vector is
@@ -1281,8 +1279,7 @@ inline size_t hwords_in_hwordvector(LispObject v)
 }
 
 inline size_t bits_in_bitvector(LispObject v)
-{   if (is_basic_vector(v)) return length_of_bitheader(vechdr(
-                                           v)) - 8*CELL;
+{   if (is_basic_vector(v)) return length_of_bitheader(vechdr(v)) - 8*CELL;
     size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
 // Observe that the final chunk has its length treated individually. This
 // adds to the cost, but the extra cost only arises when the vector is
@@ -1411,8 +1408,7 @@ inline double& delt(LispObject v, size_t n)
 }
 
 inline bool is_header(LispObject x)
-{   return (static_cast<int>(x) & (0x3<<Tw)) !=
-           0; // valid if TAG_HDR_IMMED
+{   return (static_cast<int>(x) & (0x3<<Tw)) != 0; // valid if TAG_HDR_IMMED
 }
 
 inline bool is_char(LispObject x)

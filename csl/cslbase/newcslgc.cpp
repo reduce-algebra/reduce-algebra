@@ -128,6 +128,30 @@ using std::dec;
 // be ones that has been pinned last time, and so things there that are
 // pinned now are "re-pinned".
 //
+// Hmm - there is a messy issue about my current plans - it is a worst-case
+// matter not one liable to occur in any normal use.
+// With my concurrent-allocation scheme there can be waste space due to
+// fragmentation when the code attempts to allocate a large object. Suppose
+// my target chunk-size is C and I first allocate single small item then
+// try to allocate something of size C. It will not fit and I will have to
+// allocate a fresh chunk. I have some lack of clarity in my mind about
+// the consequences of size-choice for the new chunk, but if it either JUST
+// fits the new object (and I then allocate yet another standard-sized new
+// chunk beyond it or it the new chunk is object-size+C I think we end up
+// with an occupancy of around 50%.
+// Now suppose that ordinary operation has by magic achieved perfect packing
+// but the GC (while copying into its new space) suffers worst-case
+// fragmentation. It gums up unless GC was triggered when total system
+// memory was (1/3) full. One can not afford to wait until it is (1/2) full.
+// With the scheme I have of Pages (8MB) and a limit I set at 2MB for any
+// individual object I can have only 75% of a page occupied when a big
+// vector will fail to fit at the end. That puts a limit at a bit over 42%
+// and that applies in the system I had before this re-written GC.
+// Well I now thing that if I put these together I spot that space wasted
+// at the end of the Page will lead to a nice big contiguous block at the
+// start of the next Page, and in the end my previous calculation that a
+// major GC needs to be triggered when memory is (1/3) full stands.
+//
 // For statistical and evaluation purposes at this stage it will be
 // interesting to see how many Pages contain pinned Chunks and both how
 // many Chunks are involved and what proportion of the Pages concerned they
@@ -167,7 +191,7 @@ using std::dec;
 // interlocks.
 //
 // The GC has two parts. In one - seeding - the precise list bases are
-// evacuated. Here I will seed from all the static precise list bases (ie
+// evacuated. I will seed from all the static precise list bases (ie
 // variables and arrays in the C++ code) and also from each item present in
 // a pinned chunk.  This part is done in the master thread. I expect that the
 // total number of items processed will be reasonably modest, but in the
@@ -221,7 +245,12 @@ using std::dec;
 // to pop from the chain there and if that is empty to wait until either
 // another Chunk is made available by some other thread or until every
 // thread is also stalling.
-//
+// At this stage in the explanation I can adjust something said before: I
+// need to seed from all pinned chunks. That can be done by just pushing
+// those chunks ono the stack that I have just described and then their
+// contents will be processed (potentially in a multi-threaded manner)
+// as part of the normal scheme of things.
+
 
 
 
@@ -379,7 +408,7 @@ uintptr_t sortPinList(uintptr_t l)
 // During garbage collection I will allocate items in the half of my memory
 // that has been free up to now.
 // In an earlier draft of this I had a separate bit of code to do that, such
-// that the code was a ralative of that in get_n_bytes but did not support
+// that the code was a relative of that in get_n_bytes but did not support
 // concurrency at all. My thought now is that for a major garbage collection
 // I will be abandoning the old half-space and when it is complete I will
 // allocate in the new one - and so a tidy scheme is to make that change-over
@@ -396,6 +425,8 @@ uintptr_t sortPinList(uintptr_t l)
 // overhead anyway.
 
 bool withinMajorGarbageCollection = false;
+
+// The version here is for single-threaded use only.
 
 void evacuate(LispObject *p)
 {
@@ -425,10 +456,13 @@ void evacuate(LispObject *p)
     LispObject *ap = reinterpret_cast<LispObject *>(a & ~TAG_BITS);
     LispObject aa = *ap;
     if (is_forward(aa))
-    {   *p = aa + ((a&TAG_BITS)-TAG_FORWARD);
+    {   *p = aa - TAG_FORWARD + (a&TAG_BITS);
         return;
     }
+// Now I will need to make a copy of the item.
     size_t len;
+// Finding its length is not too hard here because I have a validly tagged
+// pointer to it.
     if (is_cons(a)) len = 2*CELL;
     else if (is_symbol(a)) len = symhdr_length;
     else len = doubleword_align_up(length_of_header(aa));
@@ -438,34 +472,7 @@ void evacuate(LispObject *p)
     *p = aa + (a&TAG_BITS);
 }
 
-// For the following p starts off as a pointer to the first word of an object.
-// It must identify the object type and call evacuate() on every pointer-
-// holding field within it. It returns a pointer just beyond the object.
-
-LispObject *evacuateContents(LispObject *p)
-{   LispObject a = *p;
-// a will NOT be a forwarding pointer because any object may only have this
-// operation invoked on it once. If the object is a symbol or a vector then
-// a will be tagged as its header. In other cases the object will be just
-// a CONS cell.
-    if (!is_odds(a) || !is_header(a))
-    {   evacuate(&p[0]);            // A cons cell.
-        evacuate(&p[1]);
-        return &p[2];
-    }
-    if (is_symbol_header(a))
-    {
-//...
-        return &p[symhdr_length/CELL];
-    }
-    size_t len = length_of_header(a);
-    if (vector_holds_binary(a)) return &p[doubleword_align_up(len)/CELL];
-//...
-    return &p[doubleword_align_up(len)/CELL];
-}
-
 size_t pinnedChunkCount = 0, pinnedPageCount = 0;
-
 
 void prepareForGarbageCollection(bool major)
 {   cout << "prepareForGarbageCollection" << endl;
@@ -480,6 +487,7 @@ void prepareForGarbageCollection(bool major)
         oldPagesCount++;
         grabNewCurrentPage(true);
         pinnedChunkCount = pinnedPageCount = 0;
+        chunkStack = nullptr;
     }
     else
     {   cout << "prepare for minor GC not coded yet\n";
@@ -631,9 +639,9 @@ void identifyPinnedItems(bool major)
 // way in to the Garbage Collector I have tried quite hard to ensure that
 // last point, but none of this can be guaranteed by reference to the rules
 // of the C++ standard!
-          cout << std::hex << "scan from " << fringe << " to "
-               << base << std::dec << endl;
-          for (uintptr_t s=fringe; s<base; s+=sizeof(uintptr_t))
+            cout << std::hex << "scan from " << fringe << " to "
+                 << base << std::dec << endl;
+            for (uintptr_t s=fringe; s<base; s+=sizeof(uintptr_t))
             {   processAmbiguousValue(major,
                                       *reinterpret_cast<uintptr_t *>(s));
             }
@@ -643,22 +651,118 @@ void identifyPinnedItems(bool major)
 
 void evacuateFromUnambiguousBases(bool major)
 {   cout << "evacuateFromUnambiguousBases" << endl;
-    my_abort();
+// This code has to know where ALL the definitive references to LispObjects
+// are in the C++ code. The main way it achieves this is through a vector
+// "list_bases" that holds the address of every static location involved.
+// That vector is about 200 items long. In addition the dedicated Lisp
+// stack has to be processed.
+    evacuate(reinterpret_cast<LispObject *>(valueaddr(nil)));
+    evacuate(reinterpret_cast<LispObject *>(envaddr(nil)));
+    evacuate(reinterpret_cast<LispObject *>(plistaddr(nil)));
+    evacuate(reinterpret_cast<LispObject *>(pnameaddr(nil)));
+    evacuate(reinterpret_cast<LispObject *>(fastgetsaddr(nil)));
+    evacuate(reinterpret_cast<LispObject *>(packageaddr(nil)));
+    for (auto p = list_bases; *p!=nullptr; p++) evacuate(*p);
+    for (auto sp=stack;
+         sp>reinterpret_cast<LispObject *>(stackBase); sp--) evacuate(sp);
+// When running the deserialization code I keep references to multiply-
+// used items in repeat_heap, and if garbage collection occurs they must be
+// updated.
+    if (repeat_heap != nullptr)
+    {   for (size_t i=1; i<=repeat_count; i++)
+            evacuate(&repeat_heap[i]);
+    }
 }
 
 void evacuateFromPinnedItems(bool major)
 {   cout << "evacuateFromPinnedItems" << endl;
-    my_abort();
+    for (Page *p=globalPinChain; p!=nullptr; p=p->pinChain)
+    {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
+            pushChunk(c);
+    }
 }
+
+// This next will be relevant with a generational GC. It needs to deal with
+// up-pointers that have been introduced by RPLACx style operations.
 
 void evacuateFromDirty()
 {   cout << "evacuateFromDirty" << endl;
     my_abort();
 }
 
+void evacuateOneChunk(Chunk *c)
+{   uintptr_t p = c->dataStart();
+    while (p < c->chunkFringe)
+    {   LispObject *pp = reinterpret_cast<LispObject *>(p);
+// The first word of an object may be one of several possibilities:
+//    Header for vector holding binary data;
+//    Header for vector holding Lisp data;
+//    Header for object with 3 lisp items then binary stuff;
+//    Header for symbol;
+//    anything else (item is a cons cell).
+        LispObject a = *pp;
+        size_t len, len1;
+        switch (a & 0x1f) // tag bits plus 2 more
+        {
+// binary literals are C++14, so just for now I will use hex, but I will
+// write what the binary literal would be...
+        case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
+                                 // Note TYPE_STREAM etc is in with this.
+            len = doubleword_align_up(length_of_byteheader(a));
+            if (is_mixed_header(a)) len1 = 4*CELL;
+            else len1 = len;
+            for (size_t i = CELL; i<len1; i += CELL)
+                evacuate(reinterpret_cast<LispObject *>(p+i));
+            p += len;
+            continue;
+
+        case 0x12: // 0b10010:   // Header for bit-vector
+            len = doubleword_align_up(length_of_byteheader(a));
+            p += len;
+            continue;
+
+        case 0x1a: // 0b11010:   // Header for vector holding binary data
+            len = doubleword_align_up(length_of_byteheader(a));
+            p += len;
+            continue;
+        case 0x02: // 0b00010:   // Symbol headers plus char literals etc
+            if (is_symbol_header(a))
+            {   Symbol_Head *s = reinterpret_cast<Symbol_Head *>(p);
+                evacuate(&(s->value));
+                evacuate(&(s->env));
+                evacuate(&(s->fastgets));
+                evacuate(&(s->package));
+                evacuate(&(s->pname));
+                p += symhdr_length;
+                continue;
+            }
+            // drop through.
+        default:                 // None of the above cases...
+                                 // ... must be a CONS cell.
+            evacuate(pp);
+            evacuate(pp+1);
+            p += 2*CELL;
+            continue;
+        }
+    }
+}
+
+void evacuateActiveChunk(Chunk *c)
+{
+    my_abort();
+}
+
 void evacuateFromCopiedData(bool major)
 {   cout << "evacuateFromCopiedData" << endl;
-    my_abort();
+// The first version I produce here will be for a single-thread major GC.
+    Chunk *c = popChunk();
+    do
+    {   while (c != nullptr)
+        {   evacuateOneChunk(c);
+            c = popChunk();
+        }
+        evacuateActiveChunk(myChunkBase[threadId::get()]);
+    } while ((c = popChunk()) != nullptr);
 }
 
 void endOfGarbageCollection(bool major)

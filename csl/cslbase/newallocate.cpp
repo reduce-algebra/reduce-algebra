@@ -841,6 +841,7 @@ bool garbage_collection_permitted = true;
 bool force_verbos = false;
 atomic<Page *> dirtyPages;
 Page *globalPinChain;
+atomic<Chunk *> chunkStack;
 
 // gc-forcer(a, b) should arrange that a garbage collection is triggered
 // when at most A cons-sized units of consing happens or when at most
