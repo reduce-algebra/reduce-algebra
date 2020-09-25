@@ -1951,7 +1951,7 @@ put('!*sq,'fancy!-reform,'fancy!-sqreform);
 
 symbolic procedure fancy!-sqreform u;
    << u := cadr u;
-      if !*pri or wtl!* then prepsq!* sqhorner!* u
+      if !*pri or wtl!* then prepreform prepsq!* sqhorner!* u
        else if denr u = 1 then fancy!-sfreform numr u
        else {'quotient,fancy!-sfreform numr u,fancy!-sfreform denr u} >>;
 
