@@ -1105,13 +1105,14 @@ static void cold_setup()
 // Well garbage collection even at this early stage should now be valid when
 // the conservative GC is active.
 //
+#ifdef CONSERVATIVE
     simple_print(nil);
     std::printf("\r\n");
     Lgc0(nil);
     simple_print(nil);
     Lterpri(nil);
     my_abort();
-
+#endif // CONSERVATIVE
     setvalue(nil, get_basic_vector_init(sizeof(Package), nil));
 #ifdef COMMON
     setpackage(nil, qvalue(nil));    // For sake of restart code
