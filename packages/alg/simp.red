@@ -1553,9 +1553,9 @@ symbolic procedure outer!-simpsqrt u;
 symbolic procedure simpsqrt u;
    if u=0 then nil ./ 1 else
    if null !*keepsqrts
-     then simpexpt1(car u, simpexpon '(quotient 1 2), nil)
+     then simpexpt1(carx(u,'sqrt), simpexpon '(quotient 1 2), nil)
     else begin scalar x,y;
-       x := xsimp car u;
+       x := xsimp carx(u,'sqrt);
        return if null numr x then nil ./ 1
                else if denr x=1 and domainp numr x and !:minusp numr x
                 then if numr x=-1 then simp 'i

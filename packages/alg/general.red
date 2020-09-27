@@ -36,7 +36,7 @@ symbolic procedure atomlis u;
    null u or (atom car u and atomlis cdr u);
 
 symbolic procedure carx(u,v);
-   if null cdr u then car u
+   if not null u and null cdr u then car u
     else rerror(alg,5,list("Wrong number of arguments to",v));
 
 symbolic procedure eqexpr u;
