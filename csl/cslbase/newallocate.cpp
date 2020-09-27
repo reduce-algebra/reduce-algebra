@@ -444,41 +444,41 @@ class MakeAssertions
 public:
     MakeAssertions()
     {   if (sizeof(atomic<std::uint8_t>) != 1)
-        {   cout << "atomic<int8_t> is not the expected size" << endl;
+        {   cout << "atomic<int8_t> is not the expected size" << "\r" << endl;
             std::abort();
         }
         if (!atomic<std::uint8_t>().is_lock_free())
-        {   cout << "atomic<uint8_t> not lock-free" << endl;
+        {   cout << "atomic<uint8_t> not lock-free" << "\r" << endl;
             std::abort();
         }
         if (sizeof(atomic<std::uintptr_t>) != sizeof(intptr_t))
-        {   cout << "atomic<uintptr_t> is not the expected size" << endl;
+        {   cout << "atomic<uintptr_t> is not the expected size" << "\r" << endl;
             std::abort();
         }
         if (!atomic<uintptr_t>().is_lock_free())
-        {   cout << "Atomic<uintptr_t> not lock-free" << endl;
+        {   cout << "Atomic<uintptr_t> not lock-free" << "\r" << endl;
             std::abort();
         }
         if (sizeof(atomic<std::uint32_t>) != 4)
-        {   cout << "atomic<uint32_t> is not the expected size" << endl;
+        {   cout << "atomic<uint32_t> is not the expected size" << "\r" << endl;
             std::abort();
         }
         if (!atomic<std::uint32_t>().is_lock_free())
-        {   cout << "atomic<uint32_t> not lock-free" << endl;
+        {   cout << "atomic<uint32_t> not lock-free" << "\r" << endl;
             std::abort();
         }
         if (SIXTY_FOUR_BIT)
         {   if (sizeof(atomic<std::uint64_t>) != 8)
-            {   cout << "atomic<uint64_t> is not the expected size" << endl;
+            {   cout << "atomic<uint64_t> is not the expected size" << "\r" << endl;
                 std::abort();
             }
             if (!atomic<std::uint64_t>().is_lock_free())
-            {   cout << "atomic<uint64_t> not lock-free" << endl;
+            {   cout << "atomic<uint64_t> not lock-free" << "\r" << endl;
                 std::abort();
             }
         }
         cout << "is_standard_layout(Chunk) = "
-             << std::is_standard_layout<Chunk>::value << endl;
+             << std::is_standard_layout<Chunk>::value << "\r" << endl;
     }
 };
 
@@ -752,9 +752,9 @@ void setVariablesFromPage(Page *p)
     fringe::set(limit[thr] = limitBis[thr] = gFringe = p->fringe.load());
     myChunkBase[thr] = nullptr;
     gLimit = p->limit;
-//    cout << "setVariablesFromPage\n";
-//    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe << endl;
-//    cout << "At " << __WHERE__ << " gLimit = " << std::hex << gLimit << endl;
+//    cout << "setVariablesFromPage\r\n";
+//    cout << "At " << __WHERE__ << " gFringe = " << std::hex << gFringe << "\r" << endl;
+//    cout << "At " << __WHERE__ << " gLimit = " << std::hex << gLimit << "\r" << endl;
 //    cout << std::dec;
 }
 
@@ -830,7 +830,7 @@ bool allocateSegment(size_t n)
         setUpEmptyPage(p);
         freePagesCount++;
     }
-    cout << freePagesCount << " pages available\n";
+    cout << freePagesCount << " pages available\r\n";
     return true; // Success!
 }
 
@@ -855,7 +855,7 @@ uint64_t force_cons=0, force_vec = 0;
 
 LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
 {   if (force_cons != 0 || force_vec != 0)
-        trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\n",
+        trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\r\n",
                      force_cons, force_vec);
 // If you pass a non-fixnum then that leaves the trigger-point unchanged.
     if (is_fixnum(a)) force_cons = (uint64_t)sixty_four_bits(a);
@@ -932,7 +932,7 @@ void releaseThreadNumber(unsigned int n)
 }
 
 ThreadStartup::ThreadStartup()
-{   // cout << "ThreadStartup" << endl;
+{   // cout << "ThreadStartup" << "\r" << endl;
     std::lock_guard<std::mutex> lock(mutexForGc);
     threadId::set(allocateThreadNumber());
 // The update here is just fine while I am in fact single threaded, but I
@@ -941,7 +941,7 @@ ThreadStartup::ThreadStartup()
 }
 
 ThreadStartup::~ThreadStartup()
-{   // cout << "~ThreadStartup" << endl;
+{   // cout << "~ThreadStartup" << "\r" << endl;
     std::lock_guard<std::mutex> lock(mutexForGc);
     releaseThreadNumber(threadId::get());
     activeThreads.fetch_sub(0x00010101);
@@ -1005,7 +1005,7 @@ void initHeapSegments(double storeSize)
     for (int i=0; i<16; i++)
         heapSegment[i] = reinterpret_cast<void *>(-1);
     freePages = mostlyFreePages = nullptr;
-    cout << "Allocate " << (freeSpace/1024U) << " Kbytes" << endl;
+    cout << "Allocate " << (freeSpace/1024U) << " Kbytes" << "\r" << endl;
     allocateSegment(freeSpace);
 
 // There are other bits of memory that I will grab manually for now...
@@ -1050,9 +1050,9 @@ void initHeapSegments(double storeSize)
 //- pinning scheme. For the write barrier I do not need any data in the
 //- pages concerned, but for pinning I need much of the memory to be full -
 //- what I do here is make it roughly (2/3) full.
-    cout << "Total mem = " << freeSpace << endl;
+    cout << "Total mem = " << freeSpace << "\r" << endl;
     size_t conses = freeSpace/(2*sizeof(LispObject));
-    cout << "conses = " << conses << endl;
+    cout << "conses = " << conses << "\r" << endl;
     size_t which[5];
     for (int j=0; j<5; j++)
         which[j] = arithlib::mersenne_twister() % (conses/3);
@@ -1065,43 +1065,43 @@ void initHeapSegments(double storeSize)
     }
     for (int j=0; j<5; j++)
     {   uintptr_t n1 = static_cast<uintptr_t>(barriered[j]);
-        cout << "Barrier on " << std::hex << n1 << std::dec << endl;
+        cout << "Barrier on " << std::hex << n1 << std::dec << "\r" << endl;
         write_barrier(reinterpret_cast<LispObject *>(n1),
                       *reinterpret_cast<LispObject *>(n1));
     }
-    cout << "About to scan all the dirty cells\n";
+    cout << "About to scan all the dirty cells\r\n";
     scanDirtyCells(
         [](atomic<LispObject> *a) -> void
         {   cout << std::hex << reinterpret_cast<intptr_t>(a) << std::dec
-                 << endl;
+                 << "\r" << endl;
         });
-    cout << "Dirty cells scanned\n";   
+    cout << "Dirty cells scanned\r\n";   
     for (int i=0; i<5; i++)
     {   uint64_t n1;
 // I want to conjure up an address that is within the region that is so far
 // in use. This may point at page or chunk headers, in which case it ought
 // not to mark anything.
         n1 = arithlib::mersenne_twister();
-        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << endl;
+        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << "\r" << endl;
         processAmbiguousValue(true, n1);
         n1 = reinterpret_cast<int64_t>(heapSegment[0]) +
              (n1 % heapSegmentSize[0]);
         n1 = n1 & ~UINT64_C(7);
-        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << endl;
+        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << "\r" << endl;
         processAmbiguousValue(true, n1);
         n1 = barriered[i];
-        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << endl;
+        cout << "Use " << std::hex << n1 << " as ambiguous" << std::dec << "\r" << endl;
         processAmbiguousValue(true, n1);
     }
-    cout << "About to scan all the pinned chunks\n";
+    cout << "About to scan all the pinned chunks\r\n";
     scanPinnedChunks(
         [](Chunk *c) -> void
         {   cout << "Chunk at "
                  << std::hex << reinterpret_cast<intptr_t>(c)
                  << " to " << (reinterpret_cast<intptr_t>(c)+c->length)
-                 << std::dec << endl;
+                 << std::dec << "\r" << endl;
         });
-    cout << "Pinned chunks scanned\n";   
+    cout << "Pinned chunks scanned\r\n";   
 
 // End of temp testing code
 #endif // 0
@@ -1188,7 +1188,7 @@ void grab_more_memory(size_t npages)
 #endif
 
 void init_heap_segments(double d)
-{   cout << "init_heap_segments " << d << endl;
+{   cout << "init_heap_segments " << d << "\r" << endl;
 #ifdef WIN32
     MEMORYSTATUSEX s;
     s.dwLength = sizeof(s);
@@ -1239,7 +1239,7 @@ uint64_t reclaim_trigger_count = 0, reclaim_trigger_target = 0;
 //       litvecs, getvecs;
 
 LispObject Lgc0(LispObject env)
-{   return Lgc(env, lisp_true);
+{   return Lgc(env, fixnum_of_int(1));
 }
 
 GcStyle userGcRequest = GcStyleNone;
@@ -1322,15 +1322,15 @@ LispObject Lgctest_1(LispObject env, LispObject a1)
     size_t n = int_of_fixnum(a1);
     for (unsigned int i=0; i<n; i++)
         a = cons(fixnum_of_int(i), a);
-    cout << "list created" << endl;
+    cout << "list created" << "\r" << endl;
     b = a;
     for (unsigned int j=n-1; j!=static_cast<unsigned int>(-1); j--)
     {   if (!is_cons(b)) goto failing2;
         if (car(b) != fixnum_of_int(j))
-        {   cout << "Fail3 case with j = " << std::dec << j << endl
-                 << " fixnum_of_int(j) = " << std::hex << fixnum_of_int(j) << endl
-                 << " car(b) = " << car(b) << " which differs" << endl
-                 << " " << (n-1-j) << " items down the list" << endl;
+        {   cout << "Fail3 case with j = " << std::dec << j << "\r" << endl
+                 << " fixnum_of_int(j) = " << std::hex << fixnum_of_int(j) << "\r" << endl
+                 << " car(b) = " << car(b) << " which differs" << "\r" << endl
+                 << " " << (n-1-j) << " items down the list" << "\r" << endl;
             goto failing3; //<<<<<<<<<
         }
         b = cdr(b);
@@ -1339,33 +1339,33 @@ LispObject Lgctest_1(LispObject env, LispObject a1)
     return nil;
 failing2:
     cout << "Crashed2 " << std::hex << "b = " << b
-         << " car(b) = " << car(b) << endl;
-    cout << "n = " << n << endl;
+         << " car(b) = " << car(b) << "\r" << endl;
+    cout << "n = " << n << "\r" << endl;
     for (int z=1; z<10; z++)
     {   cout << std::dec << (car(b)/16) << " ";
         b = cdr(b);
     }
-    cout << endl;
+    cout << "\r" << endl;
     return nil;
 failing3:
     cout << "Crashed3 " << std::hex << "b = " << b
-         << " car(b) = " << car(b) << endl;
-    cout << "n = " << n << endl;
+         << " car(b) = " << car(b) << "\r" << endl;
+    cout << "n = " << n << "\r" << endl;
     for (int z=1; z<10; z++)
     {   cout << std::dec << (car(b)/16) << " ";
         b = cdr(b);
     }
-    cout << endl;
+    cout << "\r" << endl;
     return nil;
 failing4:
     cout << "Crashed4 " << std::hex << "b = " << b
-         << " car(b) = " << car(b) << endl;
-    cout << "n = " << n << endl;
+         << " car(b) = " << car(b) << "\r" << endl;
+    cout << "n = " << n << "\r" << endl;
     for (int z=1; z<10; z++)
     {   cout << std::dec << (car(b)/16) << " ";
         b = cdr(b);
     }
-    cout << endl;
+    cout << "\r" << endl;
     return nil;
 }
 

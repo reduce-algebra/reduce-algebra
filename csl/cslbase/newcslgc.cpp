@@ -475,7 +475,7 @@ void evacuate(LispObject *p)
 size_t pinnedChunkCount = 0, pinnedPageCount = 0;
 
 void prepareForGarbageCollection(bool major)
-{   cout << "prepareForGarbageCollection" << endl;
+{   cout << "prepareForGarbageCollection" << "\r" << endl;
     if (major)
     {   withinMajorGarbageCollection = true;
         oldPages = busyPages;
@@ -490,13 +490,13 @@ void prepareForGarbageCollection(bool major)
         chunkStack = nullptr;
     }
     else
-    {   cout << "prepare for minor GC not coded yet\n";
+    {   cout << "prepare for minor GC not coded yet\r\n";
         my_abort();
     }
 }
 
 void clearPinnedInformation(bool major)
-{   cout << "clearPinnedInformation" << endl;
+{   cout << "clearPinnedInformation" << "\r" << endl;
 // Any pages pinned by the previous garbage collection will be recorded
 // via globalPinChain.
    clearAllPins();
@@ -511,7 +511,7 @@ void clearPinnedInformation(bool major)
 
 void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 {   if (p->chunkCount.load() == 0) return;  // An empty Page.
-    cout << "Ambig " << hex << a << " in non-empty page " << p << dec << endl;
+    cout << "Ambig " << hex << a << " in non-empty page " << p << dec << "\r" << endl;
 // The list of chunks will be arranged such that the highest address one
 // is first in the list. I will now scan it until I find one such that
 // the chunk has (a) pointing within it, and I should not need many tries
@@ -544,9 +544,9 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
         else low = middle;
     }
     Chunk *c = p->chunkMap[low];
-    cout << "pointer is maybe within chunk " << low << " at " << hex << c << dec << endl;
+    cout << "pointer is maybe within chunk " << low << " at " << hex << c << dec << "\r" << endl;
     if (!c->pointsWithin(a)) return;
-    cout << "Within that chunk: isPinned = " << c->isPinned << endl;
+    cout << "Within that chunk: isPinned = " << c->isPinned << "\r" << endl;
 // Here (a) lies within the range of the chunk c. Every page that has any
 // pinning must record that both by being on a chain of pages with pins
 // and by having a list of its own pinned chunks.
@@ -561,7 +561,7 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
     c->pinChain = p->pinnedChunks.load();
     p->pinnedChunks = c;
 // When a chunk gets pinned then page must be too unless it already has been.
-    cout << "Page hasPinned = " << p->hasPinned << endl;
+    cout << "Page hasPinned = " << p->hasPinned << "\r" << endl;
     if (p->hasPinned) return;
     pinnedPageCount++;
     p->hasPinned = true;
@@ -572,13 +572,13 @@ void processAmbiguousInPage(bool major, Page *p, uintptr_t a)
 // typedef processPinnedChunk(Chunk *c);
 
 void scanPinnedChunks(processPinnedChunk *pc)
-{   cout << "scanPinnedChunks globalPinChain = " << hex << globalPinChain << dec << endl;
+{   cout << "scanPinnedChunks globalPinChain = " << hex << globalPinChain << dec << "\r" << endl;
     for (Page *p = globalPinChain; p!=nullptr; p=p->pinChain)
-    {   cout << hex << p << dec << " hasPinned=" << p->hasPinned << endl;
+    {   cout << hex << p << dec << " hasPinned=" << p->hasPinned << "\r" << endl;
         if (!p->hasPinned) continue;
-        cout << hex << p << " pinnedChunks=" << p->pinnedChunks << dec << endl;
+        cout << hex << p << " pinnedChunks=" << p->pinnedChunks << dec << "\r" << endl;
         for (Chunk *c = p->pinnedChunks; c!=nullptr; c=c->pinChain)
-        {    cout << hex << c << dec << " isPinned=" << c->isPinned << endl;
+        {    cout << hex << c << dec << " isPinned=" << c->isPinned << "\r" << endl;
             if (!c->isPinned) continue;
             (*pc)(c);
         }
@@ -640,7 +640,7 @@ void identifyPinnedItems(bool major)
 // last point, but none of this can be guaranteed by reference to the rules
 // of the C++ standard!
             cout << std::hex << "scan from " << fringe << " to "
-                 << base << std::dec << endl;
+                 << base << std::dec << "\r" << endl;
             for (uintptr_t s=fringe; s<base; s+=sizeof(uintptr_t))
             {   processAmbiguousValue(major,
                                       *reinterpret_cast<uintptr_t *>(s));
@@ -650,7 +650,7 @@ void identifyPinnedItems(bool major)
 }
 
 void evacuateFromUnambiguousBases(bool major)
-{   cout << "evacuateFromUnambiguousBases" << endl;
+{   cout << "evacuateFromUnambiguousBases" << "\r" << endl;
 // This code has to know where ALL the definitive references to LispObjects
 // are in the C++ code. The main way it achieves this is through a vector
 // "list_bases" that holds the address of every static location involved.
@@ -675,7 +675,7 @@ void evacuateFromUnambiguousBases(bool major)
 }
 
 void evacuateFromPinnedItems(bool major)
-{   cout << "evacuateFromPinnedItems" << endl;
+{   cout << "evacuateFromPinnedItems" << "\r" << endl;
     for (Page *p=globalPinChain; p!=nullptr; p=p->pinChain)
     {   for (Chunk *c=p->pinnedChunks; c!=nullptr; c=c->pinChain)
             pushChunk(c);
@@ -686,7 +686,7 @@ void evacuateFromPinnedItems(bool major)
 // up-pointers that have been introduced by RPLACx style operations.
 
 void evacuateFromDirty()
-{   cout << "evacuateFromDirty" << endl;
+{   cout << "evacuateFromDirty" << "\r" << endl;
     my_abort();
 }
 
@@ -753,7 +753,7 @@ void evacuateActiveChunk(Chunk *c)
 }
 
 void evacuateFromCopiedData(bool major)
-{   cout << "evacuateFromCopiedData" << endl;
+{   cout << "evacuateFromCopiedData" << "\r" << endl;
 // The first version I produce here will be for a single-thread major GC.
     Chunk *c = popChunk();
     do
@@ -766,20 +766,20 @@ void evacuateFromCopiedData(bool major)
 }
 
 void endOfGarbageCollection(bool major)
-{   cout << "endOfGarbageCollection" << endl;
+{   cout << "endOfGarbageCollection" << "\r" << endl;
     my_abort();
 }
 
 void garbageCollect(bool major)
-{   cout << "\n+++++ Start of a "
+{   cout << "\r\n+++++ Start of a "
          << (major ? "major" : "minor")
-         << " GC\n";
+         << " GC\r\n";
     prepareForGarbageCollection(major);
     clearPinnedInformation(major);
     identifyPinnedItems(major);
 // Report on pinning.
-    cout << pinnedChunkCount << " pinned Chunks\n";
-    cout << pinnedPageCount << " pinned Pages\n";
+    cout << pinnedChunkCount << " pinned Chunks\r\n";
+    cout << pinnedPageCount << " pinned Pages\r\n";
     evacuateFromUnambiguousBases(major);
     evacuateFromPinnedItems(major);
     if (!major) evacuateFromDirty();
