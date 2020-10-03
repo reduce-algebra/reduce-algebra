@@ -139,6 +139,18 @@ AC_ARG_WITH(gui,
   [],
   [])
 
+AC_ARG_WITH(ffi,
+  AC_HELP_STRING([--with-ffi], [--without-ffi can be used to avoid use of libffi]),
+  [],
+  [with_ffi="yes"])
+
+if test "x$with_ffi" = "xno"
+then
+  AC_DEFINE(WITHOUT_FFI, [1], [remove the foreign function support])
+fi
+
+
+
 # What host am I on?
 AC_CANONICAL_HOST()
 

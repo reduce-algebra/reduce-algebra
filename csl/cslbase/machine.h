@@ -269,7 +269,9 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #undef PACKAGE_TARNAME
 #undef PACKAGE_URL
 
+#ifndef WITHOUT_FFI
 #include <ffi.h>
+#endif // WITHOUT_FFI
 
 #undef PACKAGE
 #undef PACKAGE_NAME

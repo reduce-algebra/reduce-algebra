@@ -2162,6 +2162,7 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
     return onevalue(r);
 }
 
+#ifndef WITHOUT_FFI
 //
 // (call!-foreign!-function fnptr)
 // call the function as found by find!-foreign!-function not passing it
@@ -2495,6 +2496,8 @@ static LispObject Lget_callback(LispObject env, LispObject a)
     return onevalue(make_lisp_integer64(reinterpret_cast<LispObject>(r)));
 }
 
+#endif // WITHOUT_FFI
+
 // This is a rather silly function put in here to help me debug exception
 // handling. It raises a SIGSEGV.
 
@@ -2659,10 +2662,12 @@ setup_type const funcs1_setup[] =
     {"stringp",                 G0W1, Lstringp, G2W1, G3W1, G4W1},
     {"threevectorp",            G0W1, Lthreevectorp, G2W1, G3W1, G4W1},
     {"vectorp",                 G0W1, Lsimple_vectorp, G2W1, G3W1, G4W1},
+#ifndef WITHOUT_FFI
     {"open-foreign-library",    G0W1, Lopen_foreign_library, G2W1, G3W1, G4W1},
     {"find-foreign-function",   G0W2, G1W2, Lfind_foreign_function, G3W2, G4W2},
     {"call-foreign-function",   G0Wother, Lcallf_1, Lcallf_2, Lcallf_3, Lcallf_4up},
     {"get-callback",            G0W1, Lget_callback, G2W1, G3W1, G4W1},
+#endif // WITHOUT_FFI
     {"gc-forcer",               G0Wother, Lgc_forcer1, Lgc_forcer, G3Wother, G4Wother},
     {"sigsegv",                 G0W1, Lsigsegv, G2W1, G3W1, G4W1},
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
