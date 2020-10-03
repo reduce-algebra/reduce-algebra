@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
     int first = 1, c, n=0, k=0;
     fprintf(out, "// Reduce image file data\n\n");
     fprintf(out, "const unsigned char *reduce_image =");
+    fprintf(out, " reinterpret_cast<const unsigned char *>(");
     for (;;)
     {   c = getc(in);
         if (c == EOF) break;
@@ -21,7 +22,7 @@ int main(int argc, char *argv[])
         n++;
         fprintf(out, "\\x%.2x", c & 0xff);
     }
-    fprintf(out, "\";\n\n");
+    fprintf(out, "\");\n\n");
     fprintf(out, "#define REDUCE_IMAGE_SIZE %d\n\n", n);
     fprintf(out, "// End of image file data\n");
     fclose(in);

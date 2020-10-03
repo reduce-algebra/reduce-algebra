@@ -581,7 +581,7 @@ extern LispObject *repeat_heap;
 extern size_t repeat_count;
 
 #ifdef BUILTIN_IMAGE
-const unsigned char *binary_read_filep;
+extern const unsigned char *binary_read_filep;
 #else
 extern std::FILE *binary_read_file;
 #endif

@@ -42,7 +42,7 @@
 // Usage:
 //    hexify [source-file [destination-file [array-name]]]
 // where the defaults are
-//    hexify reduce.img redimage.cpp image_file
+//    hexify reduce.img image.cpp image_file
 
 
 // #include <cstdio>
@@ -63,7 +63,7 @@ using std::ofstream;
 int main(int argc, char *argv[])
 {
     const char *src = "reduce.img";
-    const char *dest = "redimage.cpp";
+    const char *dest = "image.cpp";
     const char *arrayname = "image_file";
     switch (argc)
     {
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
         cerr <<
             "Usage: " << argv[0] << " [source-file [destination-file [array-name]]]\n";
         cerr <<
-            "default: " << argv[0] << " reduce.img redimage.cpp image_file\n";
+            "default: " << argv[0] << " reduce.img image.cpp image_file\n";
         std::exit(1);
     case 1:
         break;
@@ -118,8 +118,11 @@ int main(int argc, char *argv[])
         }
         i++;
     }
-    if ((i & 7) != 0)
-        outstream << "0x"  << std::setw(16) << w << "\n};\n\n";
+    outstream << "0x"  << std::setw(16) << w << "\n};\n\n";
+    outstream << "const unsigned char *reduce_image =\n";
+    outstream << "   reinterpret_cast<const unsigned char *>(&" << arrayname << "[0])\n";
+    outstream << "#define REDUCE_IMAGE_SIZE " << std::dec << i << "\n\n";
+
     outstream << "// End of " << dest << "\n";
     instream.close();
     outstream.close();

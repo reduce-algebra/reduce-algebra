@@ -1,4 +1,4 @@
-# Makefile for building reduce.img suitable for embedded use.
+# Makefile for building reduce suitable for embedded use.
 
 # I *HOPE* that with the following conditions and provided you yse GNU make
 # that this will build on 64-bit Linux, 64-bit Cygwin and on a Macintosh
@@ -25,7 +25,7 @@ OPT=-O0 -g
 #OPT=-O3
 
 CPPFLAGS=$(CFLAGS) -std=gnu++11 $(OPT) -I. -I../include \
-    -DHAVE_CONFIG_H=1 -DEMBEDDED=1 $(XCFLAGS)
+    -DHAVE_CONFIG_H=1 -DBUILTIN_IMAGE=1 -DEMBEDDED=1 $(XCFLAGS)
 LIBS=$(XLIBS) -lz -lffi
 
 S=../../cslbase
@@ -33,7 +33,7 @@ R=../../..
 
 VPATH=$(S)
 
-all:	reduce reduce.img image.cpp
+all:	reduce
 
 reduce:		allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
@@ -54,20 +54,12 @@ reduce:		allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 .cpp.o:
 	$(CC) $(CPPFLAGS) -c -o $@ $<
 
-# Create the reduce.img file
-
-reduce.img:	reduce
-	-rm -f reduce.img
-	./reduce -z -Dno_init_file $(S)/buildreduce.lsp \
-		-D@srcdir=$(S) -D@reduce=$(R) -o reduce.img -- image.log
-
 make-image:	../make-image.cpp
 	$(CC) $(CPPFLAGS) ../make-image.cpp -o make-image
 
-image.cpp:	make-image reduce.img
+image.cpp:	make-image
+	cp ../reduce.img .
 	./make-image
-	cp image.cpp ../reduce-image.cpp
-	cp reduce.img ..
 
 clean:
 	-rm -f *.o reduce hello reduce.img image.log make-image image.cpp
@@ -117,9 +109,10 @@ fwin.o:		$(S)/fwin.cpp $(HEADERS)
 cslgc.o:	$(S)/cslgc.cpp $(HEADERS)
 lisphash.o:	$(S)/lisphash.cpp $(HEADERS)
 isprime.o:	$(S)/isprime.cpp $(HEADERS)
-preserve.o:	$(S)/preserve.cpp $(HEADERS)
+preserve.o:	$(S)/preserve.cpp $(HEADERS) image.cpp
 print.o:	$(S)/print.cpp $(HEADERS)
 restart.o:	$(S)/restart.cpp machineid.cpp $(HEADERS)
+
 sysfwin.o:	$(S)/sysfwin.cpp $(HEADERS)
 termed.o:	$(S)/termed.cpp $(HEADERS)
 inthash.o:	$(S)/inthash.cpp $(HEADERS)
