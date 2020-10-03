@@ -1572,7 +1572,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
     std::vector<string> tracedFunctions;
 
-    {   argSpec argTable[] =
+    {   argSpec *argTableP;
+        argSpec argTable[] =
         {   /*! options [--] \item [{\ttfamily --}] \index{{\ttfamily --}}
              * If the application is run in console mode then its standard output could
              * be redirected to a file using shell facilities. But the {\ttfamily --}
@@ -1654,7 +1655,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "--help   Generate this text.",
                 [&](string key, bool hasVal, string val)
                 {   std::vector<string>helpText;
-                    for (auto a=&argTable[0]; a->name!=nullptr; a++)
+                    for (auto a=argTableP; a->name!=nullptr; a++)
                         helpText.push_back(a->help);
                     std::sort(helpText.begin(), helpText.end());
 #ifdef HAVE_LIBWX
@@ -2586,6 +2587,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 }
             }
         };
+        argTableP = &argTable[0];
 
         setupArgs(argTable, argc, argv);
         for (auto msg : badArgs)
