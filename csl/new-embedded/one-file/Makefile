@@ -54,10 +54,10 @@ reduce:		allocate.o arith01.o arith02.o arith03.o arith04.o arith05.o \
 .cpp.o:
 	$(CC) $(CPPFLAGS) -c -o $@ $<
 
-make-image:	../make-image.cpp
-	$(CC) $(CPPFLAGS) ../make-image.cpp -o make-image
+make-image:	$(S)/hexify.cpp
+	$(CC) $(CPPFLAGS) $(S)/hexify.cpp -o make-image
 
-image.cpp:	make-image
+image.cpp:	make-image ../reduce.img
 	cp ../reduce.img .
 	./make-image
 

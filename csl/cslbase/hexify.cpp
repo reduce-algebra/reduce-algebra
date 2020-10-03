@@ -120,7 +120,8 @@ int main(int argc, char *argv[])
     }
     outstream << "0x"  << std::setw(16) << w << "\n};\n\n";
     outstream << "const unsigned char *reduce_image =\n";
-    outstream << "   reinterpret_cast<const unsigned char *>(&" << arrayname << "[0])\n";
+    outstream <<
+    "   reinterpret_cast<const unsigned char *>(&" << arrayname << "[0]);\n";
     outstream << "#define REDUCE_IMAGE_SIZE " << std::dec << i << "\n\n";
 
     outstream << "// End of " << dest << "\n";

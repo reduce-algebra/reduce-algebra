@@ -93,3 +93,9 @@
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "CSL"
 
+/* Some extra restrictions put in here to simplify and cut down the
+   embedded build */
+
+#define WITHOUT_FFI 1
+#define AVOID_THREADS 1
+
