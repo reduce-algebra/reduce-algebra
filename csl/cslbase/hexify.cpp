@@ -100,14 +100,15 @@ int main(int argc, char *argv[])
     const char *tts = asctime(&ttt);
     outstream << "// " << dest << " (for " << src << ") created " << tts << "\n";
     outstream << "\n#include <stdint.h>\n";
-    outstream <<  "\nuint64_t " << arrayname << "[] = {\n";
+    outstream << "\nuint64_t " << arrayname << "[] = {\n";
+    outstream << "#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__\n";
     uint64_t w = 0;
     size_t i = 0;
     outstream << std::hex << std::setfill('0');
     for (;;)
-    {   unsigned char c = instream.get();
+    {   uint64_t c = instream.get() & 0xff;
         if (instream.eof()) break;
-        w = w | (((uint64_t)c) << (8*(i&7)));
+        w = w | (c << (8*(i&7)));
         if ((i&31) == 31)
         {   outstream << "0x"  << std::setw(16) << w << ",\n";
             w = 0;
@@ -118,7 +119,30 @@ int main(int argc, char *argv[])
         }
         i++;
     }
-    outstream << "0x"  << std::setw(16) << w << "\n};\n\n";
+    outstream << "0x"  << std::setw(16) << w << "\n};\n";
+    outstream << "#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__\n";
+    instream.clear();
+    instream.seekg(0);
+    w = 0;
+    i = 0;
+    for (;;)
+    {   uint64_t c = instream.get() & 0xff;
+        if (instream.eof()) break;
+        w = w | (c << (8*(7-(i&7))));
+        if ((i&31) == 31)
+        {   outstream << "0x"  << std::setw(16) << w << ",\n";
+            w = 0;
+        }
+        else if ((i&7) == 7)
+        {   outstream << "0x"  << std::setw(16) << w << ", ";
+            w = 0;
+        }
+        i++;
+    }
+    outstream << "0x"  << std::setw(16) << w << "\n};\n";
+    outstream << "#else\n";
+    outstream << "#error Byte ordering for target machine unknown.\n";
+    outstream << "#endif\n\n";
     outstream << "const unsigned char *reduce_image =\n";
     outstream <<
     "   reinterpret_cast<const unsigned char *>(&" << arrayname << "[0]);\n";
