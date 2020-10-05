@@ -426,9 +426,21 @@ uintptr_t sortPinList(uintptr_t l)
 
 bool withinMajorGarbageCollection = false;
 
-// The version here is for single-threaded use only.
+// The version here is for single-threaded use only, however my intent is
+// to gradually start adding in the framework for a parallel version. As I
+// do so I am going to make an assumption that I hope will be valid in all
+// the cases that I come across, but which is clearly improper as far as C++
+// is concerned. That is that when I access an atomic<T> the memory layout
+// involved and the data representation in that memory will be exactly
+// as for something of type just plain T. I expect that the only difference
+// will be that in the atomic case the compiler takes any extra trouble it
+// needs to to ensure that updates happen either completely or not at all,
+// and that multi-processor issues are addressed in the sense of memory
+// fences etc. This assumption is going to violate strict aliasing rules and
+// so a sufficiently clever compiler could spot what I was doing and mangle
+.. my code quite grievously!
 
-void evacuate(LispObject *p)
+void evacuate(atomic<LispObject> *p)
 {
 // Here p is a pointer to a location that is a list-base, ie it contains
 // a valid Lisp object. I want to arrange that the object and all its
@@ -472,6 +484,10 @@ void evacuate(LispObject *p)
     *p = aa + (a&TAG_BITS);
 }
 
+void evacuate(atomicLispObject *p)
+{   evacuate(reinterpret_cast<atomic<LispObject> *>(p);
+}
+
 size_t pinnedChunkCount = 0, pinnedPageCount = 0;
 
 void prepareForGarbageCollection(bool major)
@@ -487,6 +503,9 @@ void prepareForGarbageCollection(bool major)
         oldPagesCount++;
         grabNewCurrentPage(true);
         pinnedChunkCount = pinnedPageCount = 0;
+// I will want chunkStack empty basically all the time because that
+// can be the main guard blocking GC threads from trying to run when I do
+// not want them to!
         chunkStack = nullptr;
     }
     else
@@ -754,15 +773,35 @@ void evacuateActiveChunk(Chunk *c)
 
 void evacuateFromCopiedData(bool major)
 {   cout << "evacuateFromCopiedData" << "\r" << endl;
-// The first version I produce here will be for a single-thread major GC.
-    Chunk *c = popChunk();
+}
+
+atomic<unsigned int> activeHelpers = 0;
+
+// before gcHelper() is called on in ANY thread the GC should have set
+// activeHelpers to the number of helper threads it is about to activate.
+
+void gcHelper()
+{
+// gcHelper is called from a thread that was active in Lisp but is not the
+// lead thread for the GC. The first thing it must do is to await a Chunk to
+// scan.
     do
-    {   while (c != nullptr)
-        {   evacuateOneChunk(c);
-            c = popChunk();
+    {   Chunk *c = popChunk();   // this blocks until a chunk becomes
+                                 // available or until the GC is over.
+        if (c == nullptr)
+        {   activeHelpers--;
+            return;
         }
-        evacuateActiveChunk(myChunkBase[threadId::get()]);
-    } while ((c = popChunk()) != nullptr);
+        do
+        {   evacuateOneChunk(c);
+// I will continue processing chunks for so long as I can find another one
+// without needing to block.
+        } while ((c = popChunk1()) != nullptr);
+// Now I might need to block. If ALL the helper threads block then that
+// may signal that this part of the GC is complete.
+        if (activeHelpers.fetch_sub(1) == 1) return;
+    } while (evacuatePartOfMyOwnChunk());
+     
 }
 
 void endOfGarbageCollection(bool major)
@@ -780,10 +819,38 @@ void garbageCollect(bool major)
 // Report on pinning.
     cout << pinnedChunkCount << " pinned Chunks\r\n";
     cout << pinnedPageCount << " pinned Pages\r\n";
-    evacuateFromUnambiguousBases(major);
+// At this point I am ready to start! I have a fresh part of the heap set
+// up so that get_n_bytes() can grab memory from it. I will have
+// a number of GC threads all blocked by having chunkStack==nullptr
+// and I will need an atomic counter that records how many blocked threads
+// are there.
+//
+// I can start the GC by putting all pinned Chunnks on the queue of Chunks
+// to be processed. Doing so can release some of the worker threads to
+// start evacuating their contents.
     evacuateFromPinnedItems(major);
+// Next, and running as the main thread, I evacuate everything that
+// is referenced from a precise list-base. These list-bases are the
+// fixed variables used by the Lisp system and all items on the Lisp stack.
+// In due course I am liable to have to worry about making some of those
+// fixed variables thread-local and having one stack per thread, but for now
+// I do not!
+    evacuateFromUnambiguousBases(major);
+// If I am running a minor GC I will need to deal with "up-pointers" where
+// a RPLACx style operation updated old data so that it now points at
+// something new enough that the GC may move it.
     if (!major) evacuateFromDirty();
+// Having got everything started I can let the main thread join in with the
+// sort of processing that all the worker threads are involved in. This
+// scans data that has just been copied and processes anything that it refers
+// to. In many respects the hardest part of designing how this works is
+// getting a proper termination condition.
     evacuateFromCopiedData(major);
+// Now all relevant data has been copied from old to new space. I need to
+// tidy up by releasing the old space so it becomes available for re-use.
+// I also need to ensure that the fringe and limit pointers used by the
+// GC helper threads are transferred so that they become usable by ordinary
+// worker threads. 
     endOfGarbageCollection(major);
 }
 

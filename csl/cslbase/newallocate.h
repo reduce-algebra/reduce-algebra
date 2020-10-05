@@ -1565,6 +1565,8 @@ inline void garbageCollectOnBehalfOfAll()
     releaseOtherThreads();
 }
 
+extern void gcHelper();
+
 inline void waitWhileAnotherThreadGarbageCollects()
 {
 // If I am a thread that will not myself perform garbage collection I need
@@ -1593,6 +1595,41 @@ inline void waitWhileAnotherThreadGarbageCollects()
         if ((n & 0xff) == ((n>>8) & 0xff) - 2) inform = true;
     }
     if (inform) cv_for_gc_busy.notify_one();
+// This is where the thread is paused and so is available to be used as
+// a helper for the GC. Hmmm I will need to arrange that the fringe and
+// limit pointers associated with this thread get set to GC new space after
+// the thread has got around to participating in GC but before the helper
+// here does very much. However about the first thing that this Helper will
+// do will be to wait for chunkStack to become non-empty, so provided I set
+// everything up before I push any Chunks (and provided I keep chunkStack
+// empty between GCs) I will be OK! There is one more potential issue.
+// If a thread had been about to block (perhaps on in IO request or perhaps
+// just because it is a user thread needing to block on a user-managed mutex)
+// that thread will not get here. So I probably need to adjust my scheme that
+// allows for blocking actions within Lisp so that the threads involved
+// can nevertheless participate in GC. I think that might be nasty because
+// then a blocked thread must be prepared to be woken up to participate in
+// the garbage collector and so must respond either when the GC asks for
+// help or when whatever it was being blocked by  tells it to. Hmmm there
+// are going to be two sorts of cases.
+// (1) The blocking action is a use of a Lisp syncronization primitive. Well
+//     in such cases the action can not be released while the GC is active
+//     because no Lisp threads run then! That may simplify matters at least
+//     a little.
+// (2) Things such as awaiting user input from keyboard or mouse. For such
+//     cases I suspect that the actual blocking call to the keyboard or
+//     mouse handlet will need to be in a separate thread so then the
+//     main one can wait for both that and for any GC request.
+// There is a bit of a nuisance in that it ois only possible to wait on
+// one condition variable at a time. So I think that all of these may end up
+// signalling and waiting on the condition variable(s) used to moderate entry
+// to the GC, and so every lisp-level syncronization event is liable to
+// notify same. Well the nature of condition variables is that spurious
+// wake-ups should be tolerated, and the GC use of them should not be that
+// frequent... But still "Ugh!".
+    gcHelper();
+// The gcHelper() function must terminate once it has completed its task.
+//
 // Once the master thread has been notified as above it can go forward and
 // in due course notify gc_complete. Before it does that it must ensure that
 // it has filled in results for everybody, incremented activeThreads to
