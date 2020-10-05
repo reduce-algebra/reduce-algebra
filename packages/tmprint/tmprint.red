@@ -12,9 +12,6 @@ module tmprint; % Output module for TeXmacs interface
 % Copyright (c) 1993 RAND, Konrad-Zuse-Zentrum.  All rights reserved.
 
 
-
-
-
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
@@ -223,7 +220,7 @@ fluid  '(
 global '(!*eraise charassoc!* initl!* nat!*!* spare!* ofl!*);
 
 %
-% The interaction between the code here and avariety of other Reduce flags
+% The interaction between the code here and a variety of other REDUCE flags
 % that set output options is possibly delicate and probably often broken.
 % As well as "list" the code here needs review with regard to options
 % such as "fort" for generating other formats of output.
@@ -231,7 +228,7 @@ global '(!*eraise charassoc!* initl!* nat!*!* spare!* ofl!*);
 
 switch list,ratpri,revpri,nosplit;
 
-% Temp experiment while investigating a possible for for an interaction with
+% Temp experiment while investigating a possible fix for an interaction with
 % "on list". Well in fact "on/off acn" can provide a general guard for
 % some incremental changes being made here.   But evenually this switch
 % will be retired.                 ACN March 2011
@@ -267,7 +264,7 @@ if null fancy_lower_digits then fancy_lower_digits:=t;
 
 share fancy_print_df;     % PARTIAL, TOTAL, INDEXED.
 
-if null fancy_print_df then  fancy_print_df := 'partial;
+if null fancy_print_df then fancy_print_df := 'partial;
 switch fancy;
 
 put('fancy,'simpfg,
@@ -510,7 +507,7 @@ symbolic procedure fancy!-output(mode,l);
 #endif
          fancy!-flush() >> >>;
 
-% fancy!-assignpri checks whether a special printing function is defined
+% fancy!-assgnpri checks whether a special printing function is defined
 % and calls it
 symbolic procedure fancy!-assgnpri u;
    begin scalar x,y;
@@ -618,7 +615,7 @@ symbolic procedure fancy!-special!-symbol(u,n);
 symbolic procedure fancy!-prin2 u;
     fancy!-prin2!*(u,nil);
 
-% fancy-prin2!* maintains a variable fancy!-pos!* which is compared
+% fancy!-prin2!* maintains a variable fancy!-pos!* which is compared
 % against (multiples of) linelength. This is not incremented when a
 % TeX keyword is inserted. That is probably reasonable for some
 % words such as "\mathrm", but seems odd for "\alpha".
@@ -642,7 +639,7 @@ symbolic procedure fancy!-prin2 u;
 % Then I would want to re-work fancy!-prin2 to provide at least a rough
 % estimate of the width of each character based on expecting the width of
 % an average letter or digit to be around 6.25pts. Well it will be rather
-% nicer if even these crude estimates are make in units of millipoints, since
+% nicer if even these crude estimates are made in units of millipoints, since
 % otherwise I will have enough issues of rounding to corrupt even rather
 % coarse calculations.
 
@@ -710,7 +707,7 @@ flag('(texpointsize), 'opfn);
 
 % Widths here are given in millipoints, and I include (at present)
 % four key mathematical fonts, all at nominal size 10pt. Since I am
-% only using this to give me and ESTIMATE of the width of the TeX
+% only using this to give me an ESTIMATE of the width of the TeX
 % output so I have a reasonable idea of where to split lines I will
 % assume that other sizes can have their metrics deduced by scaling.
 % But when I do a bit of research I find different sizes quoted even
@@ -824,12 +821,12 @@ for each x in '(
 put('!\not, 'texcharwidth, 0);
 
 for each x in '(
-    !\sin       !\cos       !\tan        !\cot
-    !\sec       !\csc       !\arcsin     !\arccos
-    !\arctan    !\sinh      !\cosh       !\tanh
-    !\coth      !\exp       !\log        !\ln
-    !\max       !\min       !\re         !\im) do
-  put(x, 'texcharwidth, sub1 length explode2 x);
+   !\sin     !\cos     !\tan     !\cot     !\sec     !\csc
+   !\arcsin  !\arccos  !\arctan  !\arccot  !\arcsec  !\arccsc
+   !\sinh    !\cosh    !\tanh    !\coth    !\sech    !\csch
+   !\arcsinh !\arccosh !\arctanh !\arccoth !\arcsech !\arccsch
+   !\exp     !\log     !\ln      !\max     !\min    %!\re      !\im
+   ) do put(x, 'texcharwidth, sub1 length explode2 x);
 
 symbolic procedure fancy!-prin2!*(u,n);
    if atom u and eqcar(explode2 u,'!\) then <<
@@ -954,7 +951,7 @@ symbolic procedure fancy!-terpri!* u;
      if fancy!-line!* then
          fancy!-page!* := fancy!-line!* . fancy!-page!*;
      fancy!-pos!* :=tablevel!* * 10;
-     fancy!-texpos := tablevel!* * 30000; % Roughtly 1 cm
+     fancy!-texpos := tablevel!* * 30000; % Roughly 1 cm
      fancy!-line!*:= {'tab . tablevel!*};
      overflowed!* := nil
    >>;
@@ -990,6 +987,8 @@ symbolic procedure fancy!-end(r,s);
      r>>;
 
 symbolic procedure fancy!-mode u;
+   % Get the value of the shared variable fancy_print_df or
+   % fancy_lower_digits.
   begin scalar m;
      m:= lispeval u;
      if eqcar(m,'!*sq) then m:=reval m;
@@ -1093,7 +1092,7 @@ symbolic procedure fancy!-maprint!-atom(l,p);
 % five cases of oddity:
 %   (1) Strings: If the user puts a string in the input it ought to end
 %                up rendered literally come what may. At present it tends
-%                to get transcrioned to the TeX stream unaltered, and if the
+%                to get transcribed to the TeX stream unaltered, and if the
 %                string has TeX special characters in it the result can be
 %                odd!
 %   (2) Names with special characters within. For instance "abc!%def" leads
@@ -1113,7 +1112,7 @@ symbolic procedure fancy!-maprint!-atom(l,p);
 % core of Reduce and its front-end using a textual interface like this is
 % unsatisfactory, even though it has been a good place-holder and a path of
 % least resistance. The problems noted here only escalate if you imagine
-% delevloping the graphical front-end to support cut and (particularly)
+% developing the graphical front-end to support cut and (particularly)
 % paste operations where the same sorts of textual conversion would need to
 % be done but consistently and in the other direction. It also makes the
 % issue about who takes responsibility for line breaks a muddled one.
@@ -1536,7 +1535,6 @@ put('when,'fancy!-infix!-symbol,"|");
 put('!*wcomma!*,'fancy!-infix!-symbol,",\,");
 put('replaceby,'fancy!-infix!-symbol,"\Rightarrow ");
 %put('replaceby,'fancy!-symbol!-length,8);
-%put('gamma,'fancy!-functionsymbol,71);  % big Gamma
 put('!~,'fancy!-functionsymbol,"\forall ");     % forall
 %put('!~,'fancy!-symbol!-length,8);
 
@@ -1750,7 +1748,7 @@ symbolic procedure fancy!-print!-format1(u,p,a);
 
 %-----------------------------------------------------------
 %
-%   some operator specific print functions
+%   some operator-specific print functions
 %
 %-----------------------------------------------------------
 
@@ -1997,17 +1995,22 @@ symbolic procedure fancy!-powerreform u;
 
 put('df,'fancy!-pprifn,'fancy!-dfpri);
 
-% 9-Dec-93: 'total repaired
+global '(!*dfprint);
 
 symbolic procedure fancy!-dfpri(u,l);
-  (if flagp(cadr u,'print!-indexed) or
+   % E.g. u = (df f x y) or (df (g x y) x y)
+   if !*dfprint then
+      fancy!-dfpriindexed(
+         if atom cadr u then u else car u . caadr u . cddr u, l)
+   else
+   (if flagp(cadr u,'print!-indexed) or
       pairp cadr u and flagp(caadr u,'print!-indexed)
-    then fancy!-dfpriindexed(u,l)
+   then fancy!-dfpriindexed(u,l)
    else if m = 'partial then fancy!-dfpri0(u,l,'partial!-df)
    else if m = 'total then fancy!-dfpri0(u,l,'!d)
    else if m = 'indexed then fancy!-dfpriindexed(u,l)
    else rederr "unknown print mode for DF")
-        where m=fancy!-mode('fancy_print_df);
+      where m=fancy!-mode('fancy_print_df);
 
 symbolic procedure fancy!-partialdfpri(u,l);
      fancy!-dfpri0(u,l,'partial!-df);
