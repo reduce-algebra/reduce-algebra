@@ -1114,7 +1114,7 @@ void print_traceset(int varname, LispObject val)
     trace_printf("\n");
 }
 
-[[noreturn]] LispObject carerror(LispObject a)
+LispObject carerror(LispObject a)
 {
 #ifdef COMMON
     if (a == nil) return a;
@@ -1122,7 +1122,7 @@ void print_traceset(int varname, LispObject val)
     error(1, err_bad_car, a);
 }
 
-[[noreturn]] LispObject cdrerror(LispObject a)
+LispObject cdrerror(LispObject a)
 {
 #ifdef COMMON
     if (a == nil) return a;

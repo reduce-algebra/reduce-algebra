@@ -300,7 +300,7 @@ extern LispObject Lsymbol_specialp(LispObject env, LispObject a);
 extern LispObject Lsymbol_value(LispObject env, LispObject a);
 extern LispObject Lsystem(LispObject env, LispObject a);
 extern LispObject Lthreevectorp(LispObject env, LispObject a);
-extern LispObject Lthrow_nil(LispObject env, LispObject a);
+[[noreturn]] extern LispObject Lthrow_nil(LispObject env, LispObject a);
 extern LispObject Ltrace(LispObject env, LispObject a);
 extern LispObject Ltruncate(LispObject env, LispObject a);
 extern LispObject Lttab(LispObject env, LispObject a);

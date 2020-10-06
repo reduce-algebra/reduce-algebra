@@ -172,7 +172,8 @@ extern void interrupted(bool noisy);
 [[noreturn]] extern void fatal_error(int code, ...);
 
 // For the sake of Common Lisp style treatment of (car nil) and (cdr nil)
-// I have these.
+// I have these. In the CL case they can return nil if the arg is nil or
+// raise an exception otherwise.
 extern LispObject carerror(LispObject a);
 extern LispObject cdrerror(LispObject a);
 

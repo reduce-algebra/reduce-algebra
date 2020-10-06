@@ -218,6 +218,9 @@ BOOL CALLBACK find_text(HWND h, LPARAM)
 
 std::FILE *my_popen(const char *command, const char *direction)
 {
+#ifdef EMBEDDED
+    return nullptr;
+#else // EMBEDDED
 //
 // Here I have something that might count as an ugliness. If I am on
 // Windows and am using a console-mode binary then in fact I am using a
@@ -292,10 +295,10 @@ std::FILE *my_popen(const char *command, const char *direction)
     }
 #ifdef __CYGWIN__
     return popen(command, direction);
-#else
+#else // __CYGWIN__
     return _popen(command, direction);
-#endif
-#else
+#endif // __CYGWIN__
+#else // WIN32
 //
 // The following use of "signal" is so that pipe failure does not raise
 // an exception and blow everything out of the water. I might have expected
@@ -310,7 +313,8 @@ std::FILE *my_popen(const char *command, const char *direction)
 //
     std::signal(SIGPIPE, SIG_IGN);
     return popen(command, direction);
-#endif
+#endif // WIN32
+#endif // EMBEDDED
 }
 
 int my_pipe_putc(int c, std::FILE *f)
