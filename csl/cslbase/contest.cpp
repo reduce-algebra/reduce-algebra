@@ -163,7 +163,7 @@ double max_store_size = 1024*1024*1024;  // 1G.
 uintptr_t C_stacklimit;
 LispObject nil;
 
-[[noreturn]] void aerror1(const char *s, LispObject a)
+[[noreturn]] LispObject aerror1(const char *s, LispObject a)
 {   my_abort();
 }
 

@@ -1751,7 +1751,7 @@ inline fourup_args*& qfn4up(LispObject p)
                              (11*CELL-TAG_SYMBOL));
 }
 
-[[noreturn]] extern void aerror1(const char *s, LispObject a);
+[[noreturn]] extern LispObject aerror1(const char *s, LispObject a);
 
 // When I have functions with 4 or more args I may need to
 // extract them..

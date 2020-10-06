@@ -1216,7 +1216,7 @@ LispObject Lunwind(LispObject env)
 // the system will unwind in the usual manner.
 //
 
-[[noreturn]] void error_N(LispObject args)
+[[noreturn]] LispObject error_N(LispObject args)
 {   LispObject w;
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
@@ -1270,27 +1270,27 @@ exit_tag = nil;
 throw LispError();
 }
 
-[[noreturn]] void Lerror_1(LispObject env, LispObject a1)
+[[noreturn]] LispObject Lerror_1(LispObject env, LispObject a1)
 {   error_N(ncons(a1));
 }
 
-[[noreturn]] void Lerror_2(LispObject env, LispObject a1,
+[[noreturn]] LispObject Lerror_2(LispObject env, LispObject a1,
                            LispObject a2)
 {   error_N(list2(a1, a2));
 }
 
-[[noreturn]] void Lerror_3(LispObject env, LispObject a1,
+[[noreturn]] LispObject Lerror_3(LispObject env, LispObject a1,
                            LispObject a2, LispObject a3)
 {   error_N(list3(a1, a2, a3));
 }
 
-[[noreturn]] void Lerror_4up(LispObject env, LispObject a1,
+[[noreturn]] LispObject Lerror_4up(LispObject env, LispObject a1,
                              LispObject a2,
                              LispObject a3, LispObject a4up)
 {   error_N(list3star(a1, a2, a3, a4up));
 }
 
-[[noreturn]] void Lerror_0(LispObject env)
+[[noreturn]] LispObject Lerror_0(LispObject env)
 {
 //
 // Silently provoked error - unwind to surrounding errorset level. Note that
@@ -1697,7 +1697,7 @@ LispObject get_vector_init(size_t n, LispObject val)
     return p;
 }
 
-[[noreturn]] void Lstop1(LispObject env, LispObject code)
+[[noreturn]] LispObject Lstop1(LispObject env, LispObject code)
 {   if (!is_fixnum(code)) aerror("stop");
     if (Lposn(nil) != fixnum_of_int(0)) Lterpri(nil);
     exit_value = code;
@@ -1707,7 +1707,7 @@ LispObject get_vector_init(size_t n, LispObject val)
     throw LispRestart();
 }
 
-[[noreturn]] void Lstop0(LispObject env)
+[[noreturn]] LispObject Lstop0(LispObject env)
 {   Lstop1(env, fixnum_of_int(0));
 }
 

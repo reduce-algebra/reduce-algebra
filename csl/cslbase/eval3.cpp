@@ -592,7 +592,7 @@ static LispObject the_fn(LispObject args, LispObject env)
 // Standard Lisp I can perfectly well provide a simple function.
 //
 
-static LispObject throw_fn(LispObject args, LispObject env)
+[[noreturn]] static LispObject throw_fn(LispObject args, LispObject env)
 {   LispObject tag, p;
     STACK_SANITY;
     if (!consp(args)) aerror("throw");
@@ -622,7 +622,7 @@ tag_found:
     throw LispThrow();
 }
 
-void Lthrow_one_value(LispObject env, LispObject tag, LispObject val)
+[[noreturn]] LispObject Lthrow_one_value(LispObject env, LispObject tag, LispObject val)
 {   LispObject p;
     STACK_SANITY;
     for (p = catch_tags; p!=nil; p=cdr(p))
@@ -636,7 +636,7 @@ tag_found:
     throw LispThrow();
 }
 
-LispObject Lthrow_nil(LispObject env, LispObject tag)
+[[noreturn]] LispObject Lthrow_nil(LispObject env, LispObject tag)
 {   Lthrow_one_value(nil, tag, nil);
 }
 
@@ -1207,44 +1207,44 @@ static LispObject when_fn(LispObject args, LispObject env)
     else return progn_fn(cdr(args), env);
 }
 
-void bad_specialfn_0(LispObject env)
+[[noreturn]] LispObject bad_specialfn_0(LispObject env)
 {   aerror1("bad special function", env);
 }
 
-void bad_specialfn_2(LispObject env, LispObject a, LispObject b)
+[[noreturn]] LispObject bad_specialfn_2(LispObject env, LispObject a, LispObject b)
 {   aerror1("bad special function", env);
 }
 
-void bad_specialfn_3(LispObject env, LispObject a, LispObject b,
+[[noreturn]] LispObject bad_specialfn_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
 {   aerror1("bad special function", env);
 }
 
-void bad_specialfn_4up(LispObject env, LispObject a, LispObject b,
+[[noreturn]] LispObject bad_specialfn_4up(LispObject env, LispObject a, LispObject b,
                        LispObject c, LispObject d)
 {   aerror1("bad special function", env);
 }
 
 setup_type const eval3_setup[] =
-{   {"or",                      BAD_SPECIAL_0, or_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"prog",                    BAD_SPECIAL_0, prog_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"prog1",                   BAD_SPECIAL_0, prog1_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"prog2",                   BAD_SPECIAL_0, prog2_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"progn",                   BAD_SPECIAL_0, progn_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"quote",                   BAD_SPECIAL_0, quote_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"return",                  BAD_SPECIAL_0, return_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"setq",                    BAD_SPECIAL_0, setq_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"tagbody",                 BAD_SPECIAL_0, tagbody_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"unless",                  BAD_SPECIAL_0, unless_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"unwind-protect",          BAD_SPECIAL_0, unwind_protect_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"when",                    BAD_SPECIAL_0, when_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"macrolet",                BAD_SPECIAL_0, macrolet_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"multiple-value-call",     BAD_SPECIAL_0, mv_call_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"multiple-value-prog1",    BAD_SPECIAL_0, mv_prog1_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"progv",                   BAD_SPECIAL_0, progv_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"return-from",             BAD_SPECIAL_0, return_from_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"the",                     BAD_SPECIAL_0, the_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"throw",                   BAD_SPECIAL_0, throw_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+{   {"or",                      bad_specialfn_0, or_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"prog",                    bad_specialfn_0, prog_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"prog1",                   bad_specialfn_0, prog1_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"prog2",                   bad_specialfn_0, prog2_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"progn",                   bad_specialfn_0, progn_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"quote",                   bad_specialfn_0, quote_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"return",                  bad_specialfn_0, return_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"setq",                    bad_specialfn_0, setq_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"tagbody",                 bad_specialfn_0, tagbody_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"unless",                  bad_specialfn_0, unless_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"unwind-protect",          bad_specialfn_0, unwind_protect_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"when",                    bad_specialfn_0, when_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"macrolet",                bad_specialfn_0, macrolet_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"multiple-value-call",     bad_specialfn_0, mv_call_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"multiple-value-prog1",    bad_specialfn_0, mv_prog1_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"progv",                   bad_specialfn_0, progv_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"return-from",             bad_specialfn_0, return_from_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"the",                     bad_specialfn_0, the_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"throw",                   bad_specialfn_0, throw_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 

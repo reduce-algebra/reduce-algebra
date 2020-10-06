@@ -114,11 +114,11 @@ bool file_exists(char*, char const*, unsigned long, char*)
 
 const volatile char *errorset_msg;
 
-[[noreturn]] void aerror(const char *msg)
+[[noreturn]] LispObject aerror(const char *msg)
 {   my_abort();
 }
 
-[[noreturn]] void aerror1(const char *msg, LispObject a)
+[[noreturn]] LispObject aerror1(const char *msg, LispObject a)
 {   my_abort();
 }
 

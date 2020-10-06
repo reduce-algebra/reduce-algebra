@@ -885,29 +885,29 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
 // fairly short.
 
 setup_type const eval2_setup[] =
-{   {"and",                     BAD_SPECIAL_0, and_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"catch",                   BAD_SPECIAL_0, catch_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"cond",                    BAD_SPECIAL_0, cond_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"eval-when",               BAD_SPECIAL_0, eval_when_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"function",                BAD_SPECIAL_0, function_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"go",                      BAD_SPECIAL_0, go_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"if",                      BAD_SPECIAL_0, if_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"let*",                    BAD_SPECIAL_0, letstar_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+{   {"and",                     bad_specialfn_0, and_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"catch",                   bad_specialfn_0, catch_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"cond",                    bad_specialfn_0, cond_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"eval-when",               bad_specialfn_0, eval_when_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"function",                bad_specialfn_0, function_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"go",                      bad_specialfn_0, go_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"if",                      bad_specialfn_0, if_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"let*",                    bad_specialfn_0, letstar_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
 // DE and DM are used as low level primitives in the Common Lisp bootstrap
-    {"de",                      BAD_SPECIAL_0, defun_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"dm",                      BAD_SPECIAL_0, defmacro_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"declare",                 BAD_SPECIAL_0, declare_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"compiler-let",            BAD_SPECIAL_0, compiler_let_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"flet",                    BAD_SPECIAL_0, flet_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"labels",                  BAD_SPECIAL_0, labels_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"de",                      bad_specialfn_0, defun_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"dm",                      bad_specialfn_0, defmacro_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"declare",                 bad_specialfn_0, declare_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"compiler-let",            bad_specialfn_0, compiler_let_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"flet",                    bad_specialfn_0, flet_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"labels",                  bad_specialfn_0, labels_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
 // For the purposes of Reduce there is a problem with the names LET and BLOCK
 // because they are used in the system, and having them as Lisp-level special
 // forms would clash. I provide implementations but with names prefixed by
 // "~". This is perhaps an issue that ough to get resolved some time.
-//  {"block",                   BAD_SPECIAL_0, block_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-//  {"let",                     BAD_SPECIAL_0, let_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"~block",                  BAD_SPECIAL_0, block_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
-    {"~let",                    BAD_SPECIAL_0, let_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+//  {"block",                   bad_specialfn_0, block_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+//  {"let",                     bad_specialfn_0, let_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"~block",                  bad_specialfn_0, block_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
+    {"~let",                    bad_specialfn_0, let_fn, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up},
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 

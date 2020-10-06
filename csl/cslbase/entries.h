@@ -50,7 +50,7 @@ extern LispObject Lbatchp(LispObject env);
 extern LispObject Ldate(LispObject env);
 extern LispObject Ldatestamp(LispObject env);
 extern LispObject Leject(LispObject env);
-[[noreturn]] extern void Lerror_0(LispObject env);
+[[noreturn]] extern LispObject Lerror_0(LispObject env);
 extern LispObject Lall_symbols0(LispObject env);
 extern LispObject Lflush(LispObject env);
 extern LispObject Lgc0(LispObject env);
@@ -179,7 +179,7 @@ extern LispObject Ldefine_in_module(LispObject env, LispObject a);
 extern LispObject Ldelete_module(LispObject env, LispObject a);
 extern LispObject Ldigitp(LispObject env, LispObject a);
 extern LispObject Lendp(LispObject env, LispObject a);
-[[noreturn]] extern void Lerror_1(LispObject env, LispObject a1);
+[[noreturn]] extern LispObject Lerror_1(LispObject env, LispObject a1);
 extern LispObject Lerrorset_1(LispObject env, LispObject form);
 extern LispObject Leval(LispObject env, LispObject a);
 extern LispObject Levenp(LispObject env, LispObject a);
@@ -285,7 +285,7 @@ extern LispObject Lspecial_form_p(LispObject env, LispObject a);
 extern LispObject Lspid_to_nil(LispObject env, LispObject a);
 extern LispObject Lspool(LispObject env, LispObject a);
 extern LispObject Lstart_module(LispObject env, LispObject a);
-[[noreturn]] extern void Lstop1(LispObject env, LispObject a);
+[[noreturn]] extern LispObject Lstop1(LispObject env, LispObject a);
 extern LispObject Lstringp(LispObject env, LispObject a);
 extern LispObject Lsub1(LispObject env, LispObject a);
 extern LispObject Lsymbolp(LispObject env, LispObject a);
@@ -393,8 +393,8 @@ extern LispObject Leqn_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lcl_equal(LispObject env, LispObject a,
                             LispObject b);
 extern LispObject Lequal(LispObject env, LispObject a, LispObject b);
-[[noreturn]] extern void Lerror_2(LispObject env, LispObject a1,
-                                  LispObject a2);
+[[noreturn]] extern LispObject Lerror_2(LispObject env, LispObject a1,
+                                        LispObject a2);
 extern LispObject Lerrorset_2(LispObject env, LispObject form,
                               LispObject ffg1);
 extern LispObject Lexpt(LispObject env, LispObject a, LispObject b);
@@ -501,8 +501,8 @@ extern LispObject Lsymbol_set_definition(LispObject env, LispObject a,
         LispObject b);
 extern LispObject Lsymbol_set_env(LispObject env, LispObject a,
                                   LispObject b);
-[[noreturn]] extern void Lthrow_one_value(LispObject env,
-        LispObject a, LispObject b);
+[[noreturn]] extern LispObject Lthrow_one_value(LispObject env,
+                                                LispObject a, LispObject b);
 extern LispObject Ltimes_2(LispObject env, LispObject a,
                            LispObject b);
 extern LispObject Lunion(LispObject env, LispObject a, LispObject b);
@@ -556,8 +556,8 @@ extern LispObject Laset_3(LispObject env, LispObject a1,
                           LispObject a3);
 extern LispObject Lbpsputv(LispObject env, LispObject a1,
                            LispObject a2, LispObject a3);
-[[noreturn]] extern void Lerror_3(LispObject env, LispObject a1,
-                                  LispObject a2, LispObject a3);
+[[noreturn]] extern LispObject Lerror_3(LispObject env, LispObject a1,
+                                        LispObject a2, LispObject a3);
 extern LispObject Lerrorset_3(LispObject env, LispObject a1,
                               LispObject a2,
                               LispObject a3);
@@ -683,8 +683,8 @@ extern LispObject Lapply_4up(LispObject env, LispObject a1,
 extern LispObject Lapply3(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3, LispObject a4up);
-[[noreturn]] extern void Lerror_34up(LispObject env, LispObject a1,
-                                     LispObject a2, LispObject a3, LispObject a4up);
+[[noreturn]] extern LispObject Lerror_34up(LispObject env, LispObject a1,
+                               LispObject a2, LispObject a3, LispObject a4up);
 extern LispObject Lerrorset_4up(LispObject env, LispObject a1,
                                 LispObject a2,
                                 LispObject a3, LispObject a4up);

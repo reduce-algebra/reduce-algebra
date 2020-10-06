@@ -1,7 +1,7 @@
 #ifndef ZLIB_DEMO
-// preserve.cpp                           Copyright (C) Codemist, 1990-2019
+// preserve.cpp                           Copyright (C) Codemist, 1990-2020
 #else
-// zlibdemo.cpp                           Copyright (C) Codemist, 1990-2019
+// zlibdemo.cpp                           Copyright (C) Codemist, 1990-2020
 #endif
 
 // The file preserve.cpp can be preprocessed to generate zlibdemo.cpp,
@@ -9,7 +9,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2023,7 +2023,8 @@ bool finished_with(int j)
                     if (n == 0) b = small_buffer, n = sizeof(small_buffer);
                     if (len < (long int)n) n = (size_t)len;
                     std::fseek(d->f, pos, SEEK_SET);
-                    std::fread(b, 1, n, d->f);
+                    size_t rc = std::fread(b, 1, n, d->f);
+                    if (rc != n) fatal_error(err_read_failure);
                     pos = std::ftell(d->f);
                     std::fseek(d->f, newpos, SEEK_SET);
                     std::fwrite(b, 1, n, d->f);

@@ -1279,8 +1279,8 @@ static void cold_setup()
     current_function    = // system-startup
         startup_symbol      = make_undefined_symbol("system-startup");
     mv_call_symbol      = make_symbol("multiple-value-call", 0,
-                                      BAD_SPECIAL_0, mv_call_fn, BAD_SPECIAL_2, BAD_SPECIAL_3,
-                                      BAD_SPECIAL_4up);
+                                      bad_specialfn_0, mv_call_fn, bad_specialfn_2, bad_specialfn_3,
+                                      bad_specialfn_4up);
     autoload_symbol     = make_undefined_symbol("autoload");
     bytecoded_symbol    = make_undefined_symbol("bytecoded-definition");
     traceprint_symbol   = make_undefined_symbol("trace-print");
@@ -1391,21 +1391,21 @@ void set_up_functions(int restart_flag)
     CP = find_package("LISP", 4);
 #endif
     function_symbol          = make_symbol("function", restart_flag,
-                                           BAD_SPECIAL_0, function_fn, BAD_SPECIAL_2, BAD_SPECIAL_3,
-                                           BAD_SPECIAL_4up);
+                                           bad_specialfn_0, function_fn, bad_specialfn_2, bad_specialfn_3,
+                                           bad_specialfn_4up);
     setheader(function_symbol,
               qheader(function_symbol) | SYM_SPECIAL_FORM);
     quote_symbol             = make_symbol("quote", restart_flag,
-                                           BAD_SPECIAL_0, quote_fn, BAD_SPECIAL_2, BAD_SPECIAL_3,
-                                           BAD_SPECIAL_4up);
+                                           bad_specialfn_0, quote_fn, bad_specialfn_2, bad_specialfn_3,
+                                           bad_specialfn_4up);
     setheader(quote_symbol, qheader(quote_symbol) | SYM_SPECIAL_FORM);
     progn_symbol             = make_symbol("progn", restart_flag,
-                                           BAD_SPECIAL_0, progn_fn, BAD_SPECIAL_2, BAD_SPECIAL_3,
-                                           BAD_SPECIAL_4up);
+                                           bad_specialfn_0, progn_fn, bad_specialfn_2, bad_specialfn_3,
+                                           bad_specialfn_4up);
     setheader(progn_symbol, qheader(progn_symbol) | SYM_SPECIAL_FORM);
     declare_symbol           = make_symbol("declare", restart_flag,
-                                           BAD_SPECIAL_0, declare_fn, BAD_SPECIAL_2, BAD_SPECIAL_3,
-                                           BAD_SPECIAL_4up);
+                                           bad_specialfn_0, declare_fn, bad_specialfn_2, bad_specialfn_3,
+                                           bad_specialfn_4up);
     setheader(declare_symbol, qheader(declare_symbol) | SYM_SPECIAL_FORM);
     special_symbol           = make_undefined_symbol("special");
     large_modulus            = fixnum_of_int(1);
