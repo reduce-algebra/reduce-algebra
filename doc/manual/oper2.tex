@@ -177,6 +177,20 @@ a procedure) does not limit the scope of the operator to that block, nor
 does the operator go away on exiting the block (use \texttt{CLEAR} instead
 for this purpose).
 
+\hypertarget{command:PRINT_INDEXED}{}\hypertarget{command:PRINT_NOINDEXED}{}
+
+An operator declared
+\texttt{PRINT\_INDEXED}\ttindextype{PRINT\_INDEXED}{declaration} has
+its arguments displayed as indices, e.g.\ after
+\texttt{print\_indexed~a;} the operator value \texttt{a(i,2)} is
+displayed as \(a_{i,2}\).  You can declare several operators together
+to be indexed, e.g.
+\begin{verbatim}
+        print_indexed b, c;
+\end{verbatim}
+and remove indexed declarations using
+\texttt{PRINT\_NOINDEXED}\ttindextype{PRINT\_NOINDEXED}{declaration}.
+
 
 \section{Declaring New Infix Operators}
 \hypertarget{command:INFIX}{}

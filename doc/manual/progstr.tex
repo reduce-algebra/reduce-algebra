@@ -132,6 +132,25 @@ of them for his own purposes it may have catastrophic consequences for his
 Identifiers are used as variables, labels and to name arrays, operators
 and procedures.
 
+In graphical environments with typeset mathematics enabled, the
+(shared) variable
+\texttt{FANCY\_LOWER\_DIGITS}\ttindex{FANCY\_LOWER\_DIGITS} can be set
+to one of the values \texttt{T}, \texttt{NIL} or \texttt{ALL} to
+control the display of digits within identifiers.  The default value
+is \texttt{T}.  Digits in an identifier are typeset as subscripts if
+\texttt{fancy\_lower\_digits~=~all} or if
+\texttt{fancy\_lower\_digits~=~t} and the digits are all at the end of
+the identifier.  For example, with the following values assigned to
+\texttt{fancy\_lower\_digits}, the identifiers \texttt{ab12cd34} and
+\texttt{abcd34} are displayed as follows:
+
+\begin{tabular}{ccc}
+\texttt{fancy\_lower\_digits} & \texttt{ab12cd34} & \texttt{abcd34} \\
+\texttt{t} & \(ab12cd34\) & \(abcd_{34}\) \\
+\texttt{all} & \(ab_{12}cd_{34}\) & \(abcd_{34}\) \\
+\texttt{nil} & \(ab12cd34\) & \(abcd34\)
+\end{tabular}
+
 \subsection*{Restrictions}
 
 The reserved words listed in section (\ref{reservedids} may not be used as

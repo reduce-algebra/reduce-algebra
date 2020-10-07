@@ -1025,6 +1025,34 @@ get the error message
    Incompatible DF rule argument length for <operator>
 \end{verbatim}
 
+
+\subsection{Options controlling display of derivatives}
+\hypertarget{switch:DFPRINT}{}
+
+If the switch \sw{DFPRINT}\ttindexswitch{DFPRINT} is turned on (it is
+off by default) then derivatives are displayed using subscripts, as
+illustrated below.  In graphical environments with typeset mathematics
+enabled, the (shared) variable
+\texttt{FANCY\_PRINT\_DF}\ttindex{FANCY\_PRINT\_DF} can be set to one
+of the values \texttt{PARTIAL}\ttindex{PARTIAL},
+\texttt{TOTAL}\ttindex{TOTAL} or \texttt{INDEXED}\ttindex{INDEXED} to
+control the display of derivatives.  The default value is
+\texttt{PARTIAL}.  However, if the switch \texttt{DFPRINT} is on then
+\texttt{FANCY\_PRINT\_DF} is ignored.  For example, with the following
+settings, derivatives are displayed as follows (assuming
+\texttt{DEPEND F,X,Y} and \texttt{OPERATOR G}):
+
+\begin{tabular}{ccc}
+  \texttt{Setting} & \texttt{df(f,x,2,y)} & \texttt{df(g(x,y),x,2,y)} \\
+  \texttt{fancy\_print\_df:=partial} &
+  \(\frac{\partial^3 f}{\partial x^2 \partial y}\) &
+  \(\frac{\partial^3 g(x,y)}{\partial x^2 \partial y}\) \\
+  \texttt{fancy\_print\_df:=total} & \(\frac{d^3 f}{d x^2 d y}\) &
+  \(\frac{d^3 g(x,y)}{d x^2 d y}\) \\
+  \texttt{fancy\_print\_df:=indexed} & \(f_{x,x,y}\) & \(g(x,y)_{x,x,y}\) \\
+  \texttt{on dfprint} & \(f_{x,x,y}\) & \(g_{x,x,y}\)
+\end{tabular}
+
 \section{INT Operator}
 \hypertarget{operator:INT}{}
 \texttt{INT}\ttindex{INT} is an operator in {\REDUCE} for indefinite

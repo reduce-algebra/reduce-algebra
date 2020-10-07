@@ -1212,10 +1212,11 @@ symbolic procedure fancy!-tex!-character c;
       fancy!-line!* := '!{!\pound!} . fancy!-line!*
   else fancy!-line!* := c . fancy!-line!*;
 
-symbolic procedure print_indexed u;
-   flag(u, 'print!-indexed);
+% Moved to mathpr/mprint.red:
+% symbolic procedure print_indexed u;
+%    flag(u, 'print!-indexed);
 
-rlistat '(print_indexed);
+% rlistat '(print_indexed);
 
 symbolic procedure fancy!-print!-indexlist l;
    fancy!-print!-indexlist1(l, '!_, '!,);

@@ -89,6 +89,16 @@ symbolic procedure maprin u;
    if outputhandler!* then apply2(outputhandler!*,'maprin,u)
     else if not overflowed!* then maprint(u,0);
 
+symbolic procedure print_indexed u;
+   % Declaration to print operator with arguments as subscripts.
+   flag(u, 'print!-indexed);
+
+symbolic procedure print_noindexed u;
+   % Remove print_indexed declarations.
+   remflag(u, 'print!-indexed);
+
+rlistat '(print_indexed print_noindexed);
+
 symbolic procedure maprint(l,p!*!*);
    % Print expression l at bracket level p!*!* without terminating
    % print line.  Special cases are handled by:
@@ -109,6 +119,9 @@ symbolic procedure maprint(l,p!*!*);
                    not(apply2(x,l,p) eq 'failed)) or
                  ((x := get(car l,'prifn)) and
                    not(apply1(x,l) eq 'failed))
+          then return l
+         else if flagp(car l,'print!-indexed) and
+	   not(indexprin l eq 'failed)
           then return l
          else if x := get(car l,'infix) then <<
            p := not(x>p);
