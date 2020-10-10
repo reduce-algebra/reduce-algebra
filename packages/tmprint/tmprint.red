@@ -1212,12 +1212,6 @@ symbolic procedure fancy!-tex!-character c;
       fancy!-line!* := '!{!\pound!} . fancy!-line!*
   else fancy!-line!* := c . fancy!-line!*;
 
-% Moved to mathpr/mprint.red:
-% symbolic procedure print_indexed u;
-%    flag(u, 'print!-indexed);
-
-% rlistat '(print_indexed);
-
 symbolic procedure fancy!-print!-indexlist l;
    fancy!-print!-indexlist1(l, '!_, '!,);
 
@@ -2299,80 +2293,39 @@ module fancy_specfn;
 
 % Elementary transcendental functions
 
-put('sin,'fancy!-prifn,'fancy!-transc!-fn);
-put('cos,'fancy!-prifn,'fancy!-transc!-fn);
-put('tan,'fancy!-prifn,'fancy!-transc!-fn);
-put('cot,'fancy!-prifn,'fancy!-transc!-fn);
-put('sec,'fancy!-prifn,'fancy!-transc!-fn);
-put('csc,'fancy!-prifn,'fancy!-transc!-fn);
+put('sin, 'fancy!-special!-symbol, "\sin");
+put('cos, 'fancy!-special!-symbol, "\cos");
+put('tan, 'fancy!-special!-symbol, "\tan");
+put('cot, 'fancy!-special!-symbol, "\cot");
+put('sec, 'fancy!-special!-symbol, "\sec");
+put('csc, 'fancy!-special!-symbol, "\csc");
 
-put('sinh,'fancy!-prifn,'fancy!-transc!-fn);
-put('cosh,'fancy!-prifn,'fancy!-transc!-fn);
-put('tanh,'fancy!-prifn,'fancy!-transc!-fn);
-put('coth,'fancy!-prifn,'fancy!-transc!-fn);
-% Not defined in LaTeX:
-put('sech,'fancy!-prifn,'fancy!-transc!-fn!-nonLTX);
-put('csch,'fancy!-prifn,'fancy!-transc!-fn!-nonLTX);
-
-symbolic procedure fancy!-transc!-fn(u);
-   % Typeset an elementary transcendental function defined in LaTeX
-   % u = (function arg)
-   fancy!-level
-   begin scalar fn := concat2("\", id2string car u);
-      fancy!-prin2!*(fn, 0);
-      return fancy!-print!-function!-arguments cdr u;
-   end;
-
-symbolic procedure fancy!-transc!-fn!-nonLTX(u);
-   % Typeset an elementary transcendental function not defined in LaTeX
-   % u = (function arg)
-   fancy!-level
-   begin scalar fn := concat2("\mathrm{", concat2(id2string car u, "}"));
-      fancy!-prin2!*(fn, 0);
-      return fancy!-print!-function!-arguments cdr u;
-   end;
-
-put('asin,'fancy!-prifn,'fancy!-arc!-transc!-fn);
-put('acos,'fancy!-prifn,'fancy!-arc!-transc!-fn);
-put('atan,'fancy!-prifn,'fancy!-arc!-transc!-fn);
-% Not defined in LaTeX:
-put('acot,'fancy!-prifn,'fancy!-arc!-transc!-fn!-nonLTX);
-put('asec,'fancy!-prifn,'fancy!-arc!-transc!-fn!-nonLTX);
-put('acsc,'fancy!-prifn,'fancy!-arc!-transc!-fn!-nonLTX);
-
-% Not defined in LaTeX:
-put('asinh,'fancy!-prifn,'fancy!-arc!-transc!-fn!-nonLTX);
-put('acosh,'fancy!-prifn,'fancy!-arc!-transc!-fn!-nonLTX);
-put('atanh,'fancy!-prifn,'fancy!-arc!-transc!-fn!-nonLTX);
-put('acoth,'fancy!-prifn,'fancy!-arc!-transc!-fn!-nonLTX);
-put('asech,'fancy!-prifn,'fancy!-arc!-transc!-fn!-nonLTX);
-put('acsch,'fancy!-prifn,'fancy!-arc!-transc!-fn!-nonLTX);
+put('sinh, 'fancy!-special!-symbol, "\sinh");
+put('cosh, 'fancy!-special!-symbol, "\cosh");
+put('tanh, 'fancy!-special!-symbol, "\tanh");
+put('coth, 'fancy!-special!-symbol, "\coth");
+put('sech, 'fancy!-special!-symbol, "\mathrm{sech}");
+put('csch, 'fancy!-special!-symbol, "\mathrm{csch}");
 
 % The inverse of the trigonometric or hyperbolic function fn is named
 % arcfn and is written in normal (roman) font style.
 
-symbolic procedure fancy!-arc!-transc!-fn(u);
-   % Typeset an inverse elementary transcendental function defined in LaTeX
-   % u = (function arg)
-   fancy!-level
-   begin scalar fn :=
-      concat2("\arc", compress('!" . append(cdr explode car u, '(!"))));
-      fancy!-prin2!*(fn, 0);
-      return fancy!-print!-function!-arguments cdr u;
-   end;
+put('asin, 'fancy!-special!-symbol, "\arcsin");
+put('acos, 'fancy!-special!-symbol, "\arccos");
+put('atan, 'fancy!-special!-symbol, "\arctan");
+put('acot, 'fancy!-special!-symbol, "\mathrm{arccot}");
+put('asec, 'fancy!-special!-symbol, "\mathrm{arcsec}");
+put('acsc, 'fancy!-special!-symbol, "\mathrm{arccsc}");
 
-symbolic procedure fancy!-arc!-transc!-fn!-nonLTX(u);
-   % Typeset an inverse elementary transcendental function not defined in LaTeX
-   % u = (function arg)
-   fancy!-level
-   begin scalar fn :=
-      concat2("\mathrm{arc", compress('!" . append(cdr explode car u, '(!} !")))); %"
-      fancy!-prin2!*(fn, 0);
-      return fancy!-print!-function!-arguments cdr u;
-   end;
+put('asinh, 'fancy!-special!-symbol, "\mathrm{arcsinh}");
+put('acosh, 'fancy!-special!-symbol, "\mathrm{arccosh}");
+put('atanh, 'fancy!-special!-symbol, "\mathrm{arctanh}");
+put('acoth, 'fancy!-special!-symbol, "\mathrm{arccoth}");
+put('asech, 'fancy!-special!-symbol, "\mathrm{arcsech}");
+put('acsch, 'fancy!-special!-symbol, "\mathrm{arccsch}");
 
-put('exp, 'fancy!-prifn, 'fancy!-transc!-fn);
-put('log, 'fancy!-prifn, 'fancy!-transc!-fn);
+put('exp, 'fancy!-special!-symbol, "\exp");
+put('log, 'fancy!-special!-symbol, "\log");
 put('logb, 'fancy!-prifn, 'fancy!-logb);
 put('log10, 'fancy!-prifn, 'fancy!-log10);
 
@@ -2387,25 +2340,11 @@ symbolic procedure fancy!-log10(u);
 symbolic inline procedure fancy!-indexed!-fn u;
    fancy!-bessel u;
 
-put('ln,'fancy!-prifn,'fancy!-transc!-fn);
-put('max,'fancy!-prifn,'fancy!-transc!-fn);
-put('min,'fancy!-prifn,'fancy!-transc!-fn);
-%put('repart,'fancy!-prifn,'fancy!-repart);
-%put('impart,'fancy!-prifn,'fancy!-impart);
-
-% symbolic procedure fancy!-repart(u);
-%    fancy!-level
-%    <<
-%       fancy!-prin2!*("\Re",0);
-%       fancy!-print!-function!-arguments cdr u
-%    >>;
-
-% symbolic procedure fancy!-impart(u);
-%    fancy!-level
-%    <<
-%       fancy!-prin2!*("\Im",0);
-%       fancy!-print!-function!-arguments cdr u
-%    >>;
+put('ln, 'fancy!-special!-symbol, "\ln");
+put('max, 'fancy!-special!-symbol, "\max");
+put('min, 'fancy!-special!-symbol, "\min");
+% put('repart, 'fancy!-special!-symbol, "\Re");
+% put('impart, 'fancy!-special!-symbol, "\Im");
 
 % Gamma, Beta and Related Functions
 
