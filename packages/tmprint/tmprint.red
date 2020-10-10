@@ -2464,8 +2464,8 @@ put('Fresnel_C, 'fancy!-functionsymbol, "\mathrm{C}");
 
 put('Airy_Ai, 'fancy!-functionsymbol, "\mathrm{Ai}");
 put('Airy_Bi, 'fancy!-functionsymbol, "\mathrm{Bi}");
-put('Airy_AiPrime, 'fancy!-functionsymbol, "\mathrm{Ai}'");
-put('Airy_BiPrime, 'fancy!-functionsymbol, "\mathrm{Bi}'");
+put('Airy_AiPrime, 'fancy!-functionsymbol, "\mathrm{Ai}^\prime");
+put('Airy_BiPrime, 'fancy!-functionsymbol, "\mathrm{Bi}^\prime");
 
 put('BesselI,'fancy!-prifn,'fancy!-bessel);
 put('BesselJ,'fancy!-prifn,'fancy!-bessel);
