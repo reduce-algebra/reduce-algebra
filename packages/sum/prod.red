@@ -39,7 +39,8 @@ symbolic procedure simp!-prod u;
 %        CADDR U: lower bound;
 %       CADDDR U: upper bound;
 %value            : expression of sq form;
-   begin scalar v,y,upper,lower,lower1,dif;
+begin scalar v,y,upper,lower,lower1,dif;
+      if null u then rerror(sum,1,{"Wrong number of arguments to prod"});
       y := cdr u;
       u := simp!* car u;
       if null numr u then return (1 ./ 1)
@@ -124,12 +125,16 @@ symbolic procedure prod!-unknown(u,v,y,lower,dif);
           if length uu > 2 then <<
                 z := 'times . foreach uuu in cdr uu collect
                  ('prod . ( prepsq
-                        multsq(if pairp uuu and eq(car uuu,'!*sq)
-                                then cadr uuu
-                                else simp uuu,1 ./ denr u)) . y);
+                        (if pairp uuu and eq(car uuu,'!*sq)
+                           then cadr uuu
+			else simp uuu)) . y);
+		z := {'quotient,z,'prod . prepf denr u . y}; 
                 return (t . simp z) >>;
 
           z := 'prod . (prepsq u . y); % try to apply rules
+          %w := evalletsub({{prod_last_attempt_rules!*},
+          %                 {'opmtch,mkquote z}},
+          %                nil); 
           let prod_last_attempt_rules!*;
           w:= opmtch z;
           rule!-list (list prod_last_attempt_rules!*,nil);
@@ -160,6 +165,12 @@ symbolic procedure prod!-unknown(u,v,y,lower,dif);
         prod(expt(~f,~k),~n,~anf,~ende) =>
                 (for ii:=1:k product prod(f,n,anf,ende))
                 when neq(part(prod(f,n,anf,ende),0),prod)} >>;
+
+algebraic <<
+
+let prod(~n,n,1,~k) => factorial(k);
+
+>>;
 
 %*********************************************************************
 %       Product of rational function
