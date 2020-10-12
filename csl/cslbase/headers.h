@@ -206,7 +206,6 @@ inline double CSLpow(double x, double y)
 
 #endif // HAVE_CRLIBM
 
-#include "int128_t.h"
 #include "tags.h"
 #include "thread_local.h"
 #include "cslerror.h"

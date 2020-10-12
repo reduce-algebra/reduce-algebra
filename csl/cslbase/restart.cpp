@@ -77,17 +77,6 @@ extern int showmathInitialised;
 #endif
 #endif
 
-extern int load_count, load_limit;
-
-//
-// machineid.c is a dynamically-created file that contains
-//  (a) Identification of the type of object file used by this system.
-//      In many cases this is the ELF magic code for the machine.
-//  (b) Information about the command used to compile C code.
-//  (c) Header files relating to the Lisp-to-C compilation process.
-//
-#include "machineid.cpp"
-
 LispObject nil;
 LispObject *stackBase;
 LispObject *stackLimit;
@@ -112,6 +101,7 @@ LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol,
            evalhook;
 LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
 LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
+LispObject go_symbol, cond_symbol;
 LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
 LispObject exit_value, catch_tags, keyword_package, current_package;
 LispObject startfn, all_packages, package_symbol, internal_symbol;
@@ -523,513 +513,6 @@ static void count_symbols(setup_type const s[])
     for (i=0; s[i].name != nullptr; i++) defined_symbols++;
 }
 
-#ifndef EMBEDDED
-#if 0
-static setup_type_1 *find_def_table(LispObject mod,
-                                    LispObject checksum);
-#endif // 0
-#endif
-
-#if 0
-
-typedef struct dynamic_modules
-{   char *name;
-    setup_type_1 *entries;
-} dynamic_modules;
-
-static dynamic_modules *loaded_dynamic_modules = nullptr;
-static unsigned int loaded_dynamic_count = nullptr,
-                    loaded_dynamic_size = nullptr;
-
-//
-// A real curiosity of my implementation is that find_dynamic_module
-// takes a char * and a length. The "string" it is given need not be
-// properly terminated with a "\nullptr". The string data might be transient.
-// in contrase, record_dynamic_module takes a normal-style C string (which
-// of course is terminated with '\nullptr', and it requires that the string
-// data is non-transient. BEWARE if you try to use these at some stage in the
-// future.
-//
-static setup_type_1 *find_dynamic_module(char *name, size_t len)
-{   unsigned int hash = nullptr;
-    size_t i;
-    char *p = name;
-    if (loaded_dynamic_size == nullptr) return nullptr;
-    for (i=nullptr; i<len; i++) hash=169*hash+(*p++ & nullptrxff);
-    hash %= loaded_dynamic_size;
-    for (;;)
-    {   if (loaded_dynamic_modules[hash].name == nullptr) return nullptr;
-        if (std::strncmp(name, loaded_dynamic_modules[hash].name,
-                         len) == nullptr &&
-            std::strlen(loaded_dynamic_modules[hash].name) == len)
-            return loaded_dynamic_modules[hash].entries;
-        hash = (hash + 1) % loaded_dynamic_size;
-    }
-}
-
-//
-// The constant here must be a prime number.
-//
-#define INITIAL_DYNAMIC_MODULE_HASH_SIZE 1009
-
-static void record_dynamic_module(char *name, setup_type_1 *entries)
-{   unsigned int hash;
-    char *p;
-    loaded_dynamic_count++;
-    if (3*loaded_dynamic_count >= 2*loaded_dynamic_size)
-    {   dynamic_modules *newtable;
-        uint32_t newsize; // so I can use isprime()
-        size_t i;
-        if (loaded_dynamic_size == 0)
-            newsize = INITIAL_DYNAMIC_MODULE_HASH_SIZE;
-        else
-        {   newsize = 2*loaded_dynamic_size-1;
-            while (!isprime(newsize)) newsize+=2;
-        }
-#ifdef TRACE_NATIVE
-        trace_printf("Hash needs to grow from %d to %d\n",
-                     loaded_dynamic_size, newsize);
-        ensure_screen();
-#endif
-        newtable = (dynamic_modules *)
-                   std::malloc(newsize*sizeof(dynamic_modules));
-        for (i=0; i<newsize; i++) newtable[i].name = nullptr;
-        for (i=0; i<loaded_dynamic_size; i++)
-        {   if ((p = loaded_dynamic_modules[i].name) == nullptr) continue;
-            hash = 0;
-            while (*p != 0) hash=169*hash+(*p++ & 0xff);
-//
-// I will leave the trace print here when I rehash so that I spot cases of
-// rehashing in case to increase the chance of spotting associated bugs.
-// I will also start with a small hash table so that repeated rehashing is
-// provoked.
-//
-#ifdef TRACE_NATIVE
-            trace_printf("Hash for %s is %x in REHASH\n",
-                         loaded_dynamic_modules[i].name, hash);
-            ensure_screen();
-#endif
-            hash %= newsize;
-            for (;;)
-            {   if (newtable[hash].name == nullptr)
-                {   newtable[hash].name = loaded_dynamic_modules[i].name;
-                    newtable[hash].entries = loaded_dynamic_modules[i].entries;
-                    break;
-                }
-                hash = (hash + 1) % newsize;
-            }
-        }
-        if (loaded_dynamic_size != 0) std::free(loaded_dynamic_modules);
-        loaded_dynamic_modules = newtable;
-        loaded_dynamic_size = newsize;
-    }
-    p = name;
-    hash = 0;
-    while (*p != 0) hash=169*hash+(*p++ & 0xff);
-    hash %= loaded_dynamic_size;
-    for (;;)
-    {   if (loaded_dynamic_modules[hash].name == nullptr)
-        {   loaded_dynamic_modules[hash].name = name;
-            loaded_dynamic_modules[hash].entries = entries;
-            return;
-        }
-        if (std::strcmp(name, loaded_dynamic_modules[hash].name) == 0)
-        {   loaded_dynamic_modules[hash].entries = entries;
-            return;
-        }
-        hash = (hash + 1) % loaded_dynamic_size;
-    }
-}
-
-static char dll_cache_directory[LONGEST_LEGAL_FILENAME] = {0};
-
-static void find_dll_cache_directory()
-{   unsigned char md[16];
-    char userinfo[80], counts[8];
-    int i;
-#ifdef WIN32
-    DWORD n;
-#endif
-    char *p;
-    struct stat stbuf;
-    int count;
-    if (dll_cache_directory[0] != 0) return;
-// This does its real work just once. But I may need to re-try
-// if the first choice directory name does not work well.
-    for (count=0; count<100; count++)
-    {   CSL_MD5_Init();
-        std::sprintf(counts, "%d:", count);
-        CSL_MD5_Update(reinterpret_cast<unsigned char *>(counts),
-                       std::strlen(counts));
-        CSL_MD5_Update(reinterpret_cast<unsigned char *>(fullProgramName),
-                       std::strlen(fullProgramName));
-#ifdef WIN32
-        userinfo[0] = ';';
-        n = sizeof(userinfo) - 1;
-        if (!GetUserName(userinfo+1, &n)) std::strcpy(userinfo,
-                    ";UnknownUser;");
-        else std::strcat(userinfo, ";");
-        if (GetTempPath(LONGEST_LEGAL_FILENAME, dll_cache_directory) == 0)
-            std::strcpy(dll_cache_directory, ".\\");
-#else
-        std::sprintf(userinfo, ";%d;", static_cast<int>(geteuid()));
-        std::strcpy(dll_cache_directory, "/tmp/");
-#endif
-        CSL_MD5_Update(reinterpret_cast<const unsigned char *>(userinfo),
-                       std::strlen(userinfo));
-        CSL_MD5_Update(reinterpret_cast<const unsigned char *>(linker_type),
-                       std::strlen(linker_type));
-        CSL_MD5_Final(md);
-#ifdef TRACE_NATIVE
-        trace_printf("Base cache name on %s %s %s\n",
-                     fullProgramName, userinfo, linker_type);
-#endif
-        p = dll_cache_directory + std::strlen(dll_cache_directory);
-// The name of the directory that I invent will be the letters
-// CSL followed by 25 characters (0-9, a-t) (ie 25*5-125 bits derived
-// from an MD5 checksum).
-        *p++ = 'C'; *p++ = 'S'; *p++ = 'L';
-        for (i=0; i<25; i++)
-        {   int j, w = 0;
-            for (j=15; j>=0; j--)
-            {   int w1 = (md[j] >> 5) | (w << 3);
-                w = md[j] & 0x1f;
-                md[j] = w1;
-            }
-            if (w < 10) *p++ = '0' + w;
-            else *p++ = 'a' + w - 10;
-        }
-        *p = 0;
-#ifdef TRACE_NATIVE
-        trace_printf("DLL cache directory will be %s\n", dll_cache_directory);
-#endif
-//
-// I should now verify that that directory exists and is readable and
-// writable! If it is I am done. If not I will try to create it as
-// a directory - if that works I can return. If that still does not help
-// I will loop to try a second-choice name. If the "temporary directory"
-// that I obtained did not exist this might loop I suppose, so anybody
-// who sets the shell variable TEMP to something silly might get hurt? To
-// avoid infinite pain I will just declare disaster if I do not succeed in
-// a fair number of tries.
-//
-        if (stat(dll_cache_directory, &stbuf) == 0 &&
-#ifdef S_IRUSR
-            stbuf.st_mode & S_IRUSR &&
-#endif
-#ifdef S_IWUSR
-            stbuf.st_mode & S_IWUSR &&
-#endif
-            (stbuf.st_mode & S_IFMT) == S_IFDIR) return;
-        Cmkdir(dll_cache_directory);
-        if (stat(dll_cache_directory, &stbuf) == 0 &&
-#ifdef S_IRUSR
-            stbuf.st_mode & S_IRUSR &&
-#endif
-#ifdef S_IWUSR
-            stbuf.st_mode & S_IWUSR &&
-#endif
-            (stbuf.st_mode & S_IFMT) == S_IFDIR) return;
-    }
-//
-// here 100 different attempts to find a suitable directory have all
-// failed. I just give up!
-//
-    fatal_error(err_no_tempdir);
-}
-
-static char objname[LONGEST_LEGAL_FILENAME];
-
-static void tidy_up_old_dlls(const char *name, int why, long int size)
-{   const char *p = name, *q = objname;
-//
-// If the file I have found has a name rather like objname then I will delete
-// it. So I will start to scanning past initial equal parts in the names.
-//
-    while ((*p)==(*q) && (*p)!=0)
-    {   p++;
-        q++;
-    }
-//
-// Now if p is of the form (where nnn is numeric)
-//    nnn-nnn-nnn.dll    or nnn-nnn-nnn.so
-// it is an old DLL for the same module so it should go. I have
-// some fairly grotty code here that is intended to detect this
-// pattern. Well it is a bit messier than that - the first few chars of the
-// checksum info may have matched...
-//
-    while (*p != 0 && std::isdigit(static_cast<int>()*p)) p++;
-    if (*p == '-') p++;
-    while (*p != 0 && std::isdigit(static_cast<int>()*p)) p++;
-    if (*p == '-') p++;
-    while (*p != 0 && std::isdigit(static_cast<int>()*p)) p++;
-    if (std::strcmp(p, ".dll") != 0 &&
-        std::strcmp(p, ".so") != 0) return;
-#ifdef TRACE_NATIVE
-    trace_printf("Deleting old DLL file %s\n", name);
-#endif
-    std::remove(name);
-}
-
-#endif // 0
-
-#ifndef EMBEDDED
-
-#if 0
-static setup_type_1 *find_def_table(LispObject mod,
-                                    LispObject checksum)
-{   size_t len = 0, checklen = 0;
-    const char *sname, *checkname;
-    char modname[80], xmodname[LONGEST_LEGAL_FILENAME];
-    char sname1[LONGEST_LEGAL_FILENAME];
-    std::FILE *dest;
-    int c;
-    char setupname[80];
-    char *p;
-    setup_type_1 *dll;
-    initfn *init;
-#ifdef WIN32
-    HMODULE a;
-    UINT ww;
-#else
-    void *a;
-#endif
-    std::memset(modname, 0, sizeof(modname));
-    std::memset(xmodname, 0, sizeof(xmodname));
-    std::memset(sname1, 0, sizeof(sname1));
-#ifdef TRACE_NATIVE
-    trace_printf("find_def_table ");
-    prin_to_trace(mod);
-    trace_printf("\n");
-    ensure_screen();
-#endif
-
-    sname = get_string_data(mod, "find_def_table", len);
-    checkname = get_string_data(checksum, "find_def_table", checklen);
-#ifdef TRACE_NATIVE
-    trace_printf("Checksum given as \"%.*s\"\n", checklen, checkname);
-#endif
-    std::sprintf(sname1, "%.*s-%.*s", static_cast<int>(len), sname,
-                 static_cast<int>(checklen), checkname);
-    p = sname1;
-    while (*p!=0)
-    {   if (*p == ' ') *p = '-';
-        p++;
-    }
-    dll = find_dynamic_module(sname1, std::strlen(sname1));
-    if (dll != nullptr) return dll;
-//
-// I keep dynamically-loadable read code in the image where a module
-// whose portable version is called foo.fasl might have a machine-specific
-// variant foo.win32.fasl.
-//
-    std::sprintf(modname, "%.*s.%s", static_cast<int>(len), sname,
-                 linker_type);
-
-//
-// Here I will do some more cache-style activity. I will hold a
-// dirctory typically called /tmp/nnnnnn (where nnnnn is a checksum
-// on fullProgramName and the linker type and the curren user)
-// and put extracted DLL files there.
-// If I find one present there I will use it. Otherwise I
-// will extract it from the image file. This may give me trouble
-// with regard to versioning, and so when I initially create or update
-// a file in the image I should delete any cached version as outdated.
-// (that last bit not done to start with)
-//
-    find_dll_cache_directory();
-
-#ifdef TRACE_NATIVE
-    trace_printf("Attempt to load module %s\n", modname);
-#endif
-//
-// Now if dll_cache_directory/sname.[so/dll] exists I will use it.
-// otherwise I will create it by copying from the image file.
-// The name I use here will include checksum information. At some stage
-// I should possibly try to delete any files in the cache that match in
-// their root but disagree in the checksum portion, since they are liable
-// to be old.
-//
-#ifdef WIN32
-    std::sprintf(objname, "%s\\%s.dll", dll_cache_directory, sname1);
-#else
-    std::sprintf(objname, "%s/%s.so", dll_cache_directory, sname1);
-#endif
-#ifdef TRACE_NATIVE
-    trace_printf("Invented name %s for temp location of module\n",
-                 objname);
-#endif
-    {   struct stat stbuf;
-//
-// Check if the module exists in the cache - if not try to create it...
-// I count the DLL as unavailable if either stat fails (which may indicate
-// that the file does not exist) or if it is not readable by its owner
-// (who ought to be me!). Not if it is not readable it may not be writable
-// either, and in that case the attempt here to create it will fail.
-//
-        if (stat(objname, &stbuf) != 0
-#ifdef S_IRUSR
-            || (stbuf.st_mode & S_IRUSR) == 0
-#endif
-           )
-        {   if (Iopen(modname, std::strlen(modname), IOPEN_IN, xmodname))
-            {   trace_printf("module not found\n");
-                return nullptr;
-            }
-
-#ifdef TRACE_NATIVE
-            trace_printf("Will now copy %s to the DLL cache\n", modname);
-#endif
-//
-// Here I can tidy up the cache directory. I want to DELETE any files in
-// it whose names are somewhat similar to the one I am about to create.
-// Just for now I will just print a message ratherthan actually do anything.
-//
-            set_hostcase(1);
-            scan_files(dll_cache_directory, tidy_up_old_dlls);
-//
-// Here I can read and process the module...
-//
-            dest = std::fopen(objname, "wb");
-            if (dest == nullptr)              // failed to write to temp file
-            {   IcloseInput();
-                return nullptr;
-            }
-// This uses Igets not Zgetc because it wants to access the raw compressed
-// data so it can just copy it across. At least at present if I ever have
-// DLLs nested within the image file I will put them there uncompressed.
-            while ((c = Igetc()) != EOF)
-                std::putc(c, dest);
-            IcloseInput();
-            if (std::fclose(dest) != 0)
-            {   trace_printf("failed to write DLL to temp directory\n");
-                return nullptr;
-            }
-        }
-    }
-//
-// Now I have copied the object file data to a "real" but temporary file.
-//
-    std::sprintf(modname, "%.*s", static_cast<int>(len), sname);
-
-#ifdef TRACE_NATIVE
-    trace_printf("load_dynamic for find_def_table %s %s\n", objname,
-                 modname);
-#endif
-    std::sprintf(setupname, "%s_setup", modname);
-    for (p=setupname; *p!=0; p++)
-        if (*p=='-') *p='_';
-#ifdef TRACE_NATIVE
-    trace_printf("Look for \"%s\"\n", setupname);
-#endif
-#ifdef WIN32
-//
-// In various cases of failure Windows has a default behaviour of popping
-// up a dialog box when a DLL can not be loaded. I do not want that, since
-// I intend to recover graciously if the module can not be located or
-// loaded.
-//
-    ww = SetErrorMode(SEM_FAILCRITICALERRORS);
-#ifdef TRACE_NATIVE
-    trace_printf("Loading DLL called %s for %s\n", objname, modname);
-#endif
-    a = LoadLibrary(objname);
-    if (a == 0)
-    {   DWORD err = GetLastError(), err1;
-        LPTSTR errbuf = nullptr;
-//
-// If I let Windows pop up its message box I still seem to get more info
-// than FormatMessage presents me with... Specifically if the module I tried
-// to load refused to because of a symbol that it needed to load, the
-// pop up tells me the name of that symbol.
-//
-        err1 = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
-                             FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                             FORMAT_MESSAGE_IGNORE_INSERTS,
-                             nullptr,
-                             err,
-                             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                             (LPTSTR)&errbuf,
-                             0,
-                             nullptr);
-        if (err1 == 0 || errbuf==nullptr)
-            trace_printf("FormatMessage on code %d failed with %d\n",
-                         static_cast<int>(err), static_cast<int>(GetLastError()));
-        else
-        {   trace_printf("%s", errbuf);
-            LocalFree(errbuf);
-        }
-    }
-    SetErrorMode(ww);
-#ifdef TRACE_NATIVE
-    trace_printf("Dynamic loading of test code\na = %p\n",
-                 reinterpret_cast<void *>(a));
-#endif
-    if (a == 0) return 0;
-    dll = (setup_type_1 *)GetProcAddress(a, setupname);
-//
-// The dynamic module that I create should always have a function called
-// "init" that I must call to tell it where nil, stack and stackLimit are.
-//
-    init = (initfn *)GetProcAddress(a, "init");
-#else // WIN32
-    a = dlopen(objname, RTLD_NOW | RTLD_GLOBAL);
-#ifdef TRACE_NATIVE
-    trace_printf("a = %p\n", a);
-#endif
-    if (a == nullptr)
-    {   trace_printf("Err = <%s>\n", dlerror()); std::fflush(stdout);
-        return 0;
-    }
-    dll = (setup_type_1 *)dlsym(a, setupname);
-    init = (initfn *)dlsym(a, "init");
-#endif // WIN32
-#ifdef TRACE_NATIVE
-    trace_printf("setup table is %p, init fn is %p\n", dll, init);
-#endif
-    if (dll == nullptr || init == nullptr)
-    {
-#ifdef WIN32
-        FreeLibrary(a);
-#endif
-        return nullptr;
-    }
-    (*init)(&nil, &stack, &stackLimit);
-//
-// Wheee - I have now loaded and initialised the module.
-//
-#ifdef TRACE_NATIVE
-    {   setup_type_1 *b = dll;
-        while (b->name != nullptr)
-        {   trace_printf("%s %p %p %p %u %u\n",
-                         b->name, b->one, b->two, b->n, b->c1, b->c2);
-            b++;
-        }
-        trace_printf("%s %s\n", reinterpret_cast<char *>(b->one),
-                     reinterpret_cast<char *>(b->two));
-    }
-#endif
-//
-//  remove(objname);
-// At one stage I wanted to count the DLL files as temporary - but now I keep
-// them all in a cache directory, so I really do NOT want to delete them
-// here... If the user deletes them that will not be a problem - they will get
-// re-created if necessary.
-//
-
-//
-// Update the cache...
-//
-    p = reinterpret_cast<char *>(std)::malloc(std::strlen(sname1)+1);
-    std::strcpy(p, sname1);
-    p[len] = 0;
-    record_dynamic_module(p, dll);
-    return dll;
-}
-
-#endif // 0
-#endif // EMBEDDED
-
 static LispObject make_undefined_fluid(const char *name)
 {   LispObject v = make_undefined_symbol(name);
     setheader(v, qheader(v) | SYM_SPECIAL_VAR);
@@ -1059,11 +542,11 @@ static void cold_setup()
     setplist(nil, nil);
     setfastgets(nil, nil);
     setenv(nil, nil);        // points to self in undefined case
-    ifn0(nil) = (intptr_t)undefined_0;
-    ifn1(nil) = (intptr_t)undefined_1;
-    ifn2(nil) = (intptr_t)undefined_2;
-    ifn3(nil) = (intptr_t)undefined_3;
-    ifn4up(nil) = (intptr_t)undefined_4up;
+    qfn0(nil) = undefined_0;
+    qfn1(nil) = undefined_1;
+    qfn2(nil) = undefined_2;
+    qfn3(nil) = undefined_3;
+    qfn4up(nil) = undefined_4up;
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
     setvalue(nil, nil);
     qcount(nil) = zeroCount;
@@ -1399,6 +882,14 @@ void set_up_functions(int restart_flag)
                                            bad_specialfn_0, quote_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
     setheader(quote_symbol, qheader(quote_symbol) | SYM_SPECIAL_FORM);
+    go_symbol                = make_symbol("go", restart_flag,
+                                           bad_specialfn_0, go_fn, bad_specialfn_2, bad_specialfn_3,
+                                           bad_specialfn_4up);
+    setheader(go_symbol, qheader(go_symbol) | SYM_SPECIAL_FORM);
+    cond_symbol              = make_symbol("cond", restart_flag,
+                                           bad_specialfn_0, cond_fn, bad_specialfn_2, bad_specialfn_3,
+                                           bad_specialfn_4up);
+    setheader(cond_symbol, qheader(cond_symbol) | SYM_SPECIAL_FORM);
     progn_symbol             = make_symbol("progn", restart_flag,
                                            bad_specialfn_0, progn_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
@@ -1640,32 +1131,6 @@ void set_up_variables(int restart_flag)
          * Any windows system puts {\ttfamily win32} in {\ttfamily lispsystem!*}.
          * If 64-bit windows is is use then {\ttfamily win64} is also included
          */
-
-        /*! lispsys [linker] \item[{\ttfamily (linker . type)}] \index{{\ttfamily (linker . type)}}
-         * Intended for use in association with {\ttfamily compiler!-command}, the value
-         * is {\ttfamily win32} on Windows, {\ttfamily x86\_64} on 64-bit Linux and
-         * other things on other systems, as detected using the program {\ttfamily
-         * objtype.c}.
-         */
-
-        w = acons(make_keyword("LINKER"),
-                  make_undefined_symbol(linker_type), w);
-        w1 = nil;
-        for (ii=sizeof(compiler_command)/sizeof(compiler_command[0]);
-             ii!=0;
-             ii--)
-            w1 = cons(make_undefined_symbol(compiler_command[ii-1]), w1);
-
-        /*! lispsys [compiler-command] \item[{\ttfamily (compiler!-command . command)}] \index{{\ttfamily (compiler"!-command . command)}}
-         * The value associated with this key is a string that was used to compile the
-         * files of C code making up CSL. It should contain directives to set up
-         * search paths and predefined symbols. It is intended to be used in an
-         * experiment that generates C code synamically, uses a command based on this
-         * string to compile it and then dynamically links the resulting code in with
-         * the running system.
-         */
-
-        w = acons(make_keyword("COMPILER-COMMAND"), w1, w);
 #else
         LispObject n = make_undefined_symbol("lispsystem*");
         /*! lispsys [c-code] \item[{\ttfamily (c!-code . count)}] \index{{\ttfamily (c"!-code . count)}}
@@ -1793,23 +1258,13 @@ void set_up_variables(int restart_flag)
         w = cons(make_keyword("win64"), w);
 #endif
         setheader(n, qheader(n) | SYM_SPECIAL_VAR);
-        w = acons(make_keyword("linker"),
-                  make_undefined_symbol(linker_type), w);
-        w1 = nil;
-        for (ii=sizeof(compiler_command)/sizeof(compiler_command[0]);
-             ii!=0;
-             ii--)
-            w1 = cons(make_undefined_symbol(compiler_command[ii-1]), w1);
-        w = acons(make_keyword("compiler-command"), w1, w);
 #endif
         defined_symbols = 0;
         for (i=0; setup_tables[i]!=nullptr;
              i++) count_symbols(setup_tables[i]);
 #ifdef COMMON
-//
 // A gratuitous misery here is the need to make words
 // upper case.
-//
         w = acons(make_keyword("OPSYS"),
                   make_undefined_symbol(OPSYS), w);
         w = acons(make_keyword("C-CODE"),
@@ -2706,6 +2161,8 @@ LispObject *list_bases[] =
     &cl_equal_symbol,
     &equal_symbol,
     &equalp_symbol,
+    &go_symbol,
+    &cond_symbol,
     &echo_symbol,
     &emsg_star,
     &evalhook,

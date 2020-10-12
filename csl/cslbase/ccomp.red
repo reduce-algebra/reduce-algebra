@@ -940,7 +940,7 @@ symbolic procedure c!:concat(a, b);
    compress('!" . append(explode2 a, append(explode2 b, '(!"))));
 !#endif
 
-symbolic procedure c!:ccompilestart(name, setupname, dir, hdrnow);
+symbolic procedure c!:ccompilestart(name, setupname, dir);
   begin
     scalar o, d, w;
 %%%%%%%%    reset!-gensym 0;   % Makes output more consistent
@@ -948,7 +948,6 @@ symbolic procedure c!:ccompilestart(name, setupname, dir, hdrnow);
     my_gensym_counter := 0;
 !#endif
     c!:registers := c!:used := nil;
-% File_name will be the undecorated name as a string when hdrnow is false,
     File_name := list2string explodec name;
     Setup_name := explodec setupname;
 % I REALLY want the user to give me a module name that is a valid C
@@ -989,56 +988,14 @@ princ "C file = "; print name;
 !#endif
     O_file := wrs C_file;
     c!:defnames := nil;
-    if hdrnow then
-        c!:printf("\n// Module: %s %tMachine generated C code\n\n", setupname, 25)
-    else c!:printf("\n// %s.c %tMachine generated C code\n\n", name, 25);
+    c!:printf("\n// %s.c %tMachine generated C code\n\n", name, 25);
     c!:printf("// $I");
     c!:printf("d: $\n\n");
-    c!:printf "#include <cstdio>\n";
-    c!:printf "#include <cstdlib>\n";
-    c!:printf "#include <cstring>\n";
-    c!:printf "#include <cctype>\n";
-    c!:printf "#include <cstdarg>\n";
-    c!:printf "#include <ctime>\n";
-    c!:printf "#include <csetjmp>\n";
-    c!:printf "#include <exception>\n";
-% The stuff I put in the file here includes written-in copies of header
-% files. The main "csl_headers" should be the same for all systems built
-% based on the current sources, but the "config_header" is specific to a
-% particular build. So if I am generating C code that is JUST for use on the
-% current platform I can write-in the config header here and now, but if
-% there is any chance that I might save the generated C and compile it
-% elsewhere I should leave "#include "config.h"" in there. These days I do
-% not think I ever call this with hdrnow set so this is sort of not very
-% relevant!
-    if hdrnow then print!-config!-header()
-    else c!:printf "#include \qconfig.h\q\n\n";
-    print!-csl!-headers();
-% Now a useful prefix for when compiling as a DLL
-    if hdrnow then c!:print!-init();
+    c!:printf "#include \qconfig.h\q\n";
+    c!:printf "#include \qheaders.h\q\n\n";
     wrs O_file;
     return nil
   end;
-
-symbolic procedure c!:print!-init();
-  <<
-   c!:printf "\n";
-   c!:printf "LispObject *nilp;\n";
-   c!:printf "LispObject **stackp;\n";
-   c!:printf "LispObject * volatile * stackLimitp;\n";
-   c!:printf "\n";
-   c!:printf "void init(LispObject *a, LispObject **b, LispObject * volatile *c)\n";
-   c!:printf "{\n";
-   c!:printf "    nilp = a;\n";
-   c!:printf "    stackp = b;\n";
-   c!:printf "    stackLimitp = c;\n";
-   c!:printf "}\n";
-   c!:printf "\n";
-   c!:printf "#define nil (*nilp)\n";
-   c!:printf "#define stack  (*stackp)\n";
-   c!:printf "#define stackLimit (*stackLimitp)\n";
-   c!:printf "\n"
-  >>;
 
 symbolic procedure C!-end;
   C!-end1 t;
@@ -1189,7 +1146,7 @@ symbolic procedure C!-compile u;
     prin u; princ ": IN files;  or type in expressions"; terpri();
     princ "When all done, execute C!-END;"; terpri();
     verbos nil;
-    c!:ccompilestart(car u, car u, nil, nil);
+    c!:ccompilestart(car u, car u, nil);
     dfprintsave := dfprint!*;
     dfprint!* := 'c!:ccmpout1;
     !*defn := t;

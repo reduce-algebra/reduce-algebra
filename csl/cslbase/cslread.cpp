@@ -111,7 +111,8 @@ void validate_string_fn(LispObject s, const char *file, int line)
                 if (std::strrchr(file, '/') != nullptr) file = std::strrchr(file,
                             '/')+1;
                 std::fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
-                std::fprintf(stderr, "Header = %" PRIxPTR "\n", (uintptr_t)vechdr(s));
+                std::fprintf(stderr, "Header = %" PRIxPTR "\n",
+                    static_cast<uintptr_t>(vechdr(s)));
                 std::fprintf(stderr, "length = %d bytelength = %d\n",
                              static_cast<int>(length_of_header(vechdr(s))),
                              static_cast<int>(length_of_byteheader(vechdr(s))));
@@ -771,11 +772,11 @@ start_again:
     if (f1 != undefined_1)
     {   if ((restartp & 1)==0 || (qheader(v) & SYM_C_DEF) != 0 ||
             !first_try)
-        {   ifn0(v) = (intptr_t)f0;
-            ifn1(v) = (intptr_t)f1;
-            ifn2(v) = (intptr_t)f2;
-            ifn3(v) = (intptr_t)f3;
-            ifn4up(v) = (intptr_t)f4up;
+        {   qfn0(v) = f0;
+            qfn1(v) = f1;
+            qfn2(v) = f2;
+            qfn3(v) = f3;
+            qfn4up(v) = f4up;
             setheader(v, qheader(v) | SYM_C_DEF);
         }
         else
@@ -823,11 +824,11 @@ start_again:
             while (consp(v1))
             {   LispObject w = car(v1);
                 v1 = cdr(v1);
-                ifn0(w) = (intptr_t)f0;
-                ifn1(w) = (intptr_t)f1;
-                ifn2(w) = (intptr_t)f2;
-                ifn3(w) = (intptr_t)f3;
-                ifn4up(w) = (intptr_t)f4up;
+                qfn0(w) = f0;
+                qfn1(w) = f1;
+                qfn2(w) = f2;
+                qfn3(w) = f3;
+                qfn4up(w) = f4up;
             }
         }
     }
@@ -1334,11 +1335,11 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
     setfastgets(s, nil);
     setpackage(s, nil);
     setenv(s, s);
-    ifn0(s) = (intptr_t)undefined_0;
-    ifn1(s) = (intptr_t)undefined_1;
-    ifn2(s) = (intptr_t)undefined_2;
-    ifn3(s) = (intptr_t)undefined_3;
-    ifn4up(s) = (intptr_t)undefined_4up;
+    qfn0(s) = undefined_0;
+    qfn1(s) = undefined_1;
+    qfn2(s) = undefined_2;
+    qfn3(s) = undefined_3;
+    qfn4up(s) = undefined_4up;
     qcount(s) = zeroCount;      // set counts to zero to be tidy
     return onevalue(s);
 }
@@ -1375,11 +1376,11 @@ LispObject Lgensym(LispObject env)
     setfastgets(id, nil);
     setpackage(id, nil); // Marks it as a uninterned
     setenv(id, id);
-    ifn0(id) = (intptr_t)undefined_0;
-    ifn1(id) = (intptr_t)undefined_1;
-    ifn2(id) = (intptr_t)undefined_2;
-    ifn3(id) = (intptr_t)undefined_3;
-    ifn4up(id) = (intptr_t)undefined_4up;
+    qfn0(id) = undefined_0;
+    qfn1(id) = undefined_1;
+    qfn2(id) = undefined_2;
+    qfn3(id) = undefined_3;
+    qfn4up(id) = undefined_4up;
     qcount(id) = zeroCount;     // to be tidy
 
     return onevalue(id);
@@ -1418,11 +1419,11 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     setfastgets(id, nil);
     setpackage(id, nil); // Marks it as a uninterned
     setenv(id, id);
-    ifn0(id) = (intptr_t)undefined_0;
-    ifn1(id) = (intptr_t)undefined_1;
-    ifn2(id) = (intptr_t)undefined_2;
-    ifn3(id) = (intptr_t)undefined_3;
-    ifn4up(id) = (intptr_t)undefined_4up;
+    qfn0(id) = undefined_0;
+    qfn1(id) = undefined_1;
+    qfn2(id) = undefined_2;
+    qfn3(id) = undefined_3;
+    qfn4up(id) = undefined_4up;
     qcount(id) = zeroCount;     // to be tidy
     return onevalue(id);
 }
@@ -1467,11 +1468,11 @@ LispObject Lgensym1(LispObject env, LispObject a)
     setfastgets(id, nil);
     setpackage(id, nil); // Marks it as a uninterned
     setenv(id, id);
-    ifn0(id) = (intptr_t)undefined_0;
-    ifn1(id) = (intptr_t)undefined_1;
-    ifn2(id) = (intptr_t)undefined_2;
-    ifn3(id) = (intptr_t)undefined_3;
-    ifn4up(id) = (intptr_t)undefined_4up;
+    qfn0(id) = undefined_0;
+    qfn1(id) = undefined_1;
+    qfn2(id) = undefined_2;
+    qfn3(id) = undefined_3;
+    qfn4up(id) = undefined_4up;
     qcount(id) = zeroCount;     // to be tidy
     return onevalue(id);
 }
@@ -1505,11 +1506,11 @@ LispObject Lgensym2(LispObject env, LispObject a)
     setfastgets(id, nil);
     setpackage(id, nil); // Marks it as a uninterned
     setenv(id, id);
-    ifn0(id) = (intptr_t)undefined_0;
-    ifn1(id) = (intptr_t)undefined_1;
-    ifn2(id) = (intptr_t)undefined_2;
-    ifn3(id) = (intptr_t)undefined_3;
-    ifn4up(id) = (intptr_t)undefined_4up;
+    qfn0(id) = undefined_0;
+    qfn1(id) = undefined_1;
+    qfn2(id) = undefined_2;
+    qfn3(id) = undefined_3;
+    qfn4up(id) = undefined_4up;
     qcount(id) = zeroCount;     // to be tidy
     return onevalue(id);
 }
@@ -1640,11 +1641,11 @@ LispObject iintern(LispObject str, size_t h, LispObject p,
         setfastgets(s, nil);
         setpackage(s, p);
         setenv(s, s);
-        ifn0(s) = (intptr_t)undefined_0;
-        ifn1(s) = (intptr_t)undefined_1;
-        ifn2(s) = (intptr_t)undefined_2;
-        ifn3(s) = (intptr_t)undefined_3;
-        ifn4up(s) = (intptr_t)undefined_4up;
+        qfn0(s) = undefined_0;
+        qfn1(s) = undefined_1;
+        qfn2(s) = undefined_2;
+        qfn3(s) = undefined_3;
+        qfn4up(s) = undefined_4up;
         qcount(s) = zeroCount;
         push(s);
 #ifdef COMMON

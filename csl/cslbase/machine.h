@@ -59,6 +59,21 @@
 #include <cinttypes>
 #include <iostream>
 #include <atomic>
+#include <string>
+
+#if !defined HAVE_FILESYSTEM &&  \
+    defined __has_include &&     \
+     __has_include(<filesystem>)
+#define HAS_FILESYSTEM 1
+#endif // HAVE_FILESYSTEM now defined if "#include <filesystem>" reasonable.
+
+#ifdef HAVE_FILESYSTEM
+#include <filesystem>
+#endif // HAVE_FILESYSTEM
+
+// Now I can test __cpp_lib_filesystemto see if std::filesystem is
+// actually available. If I use it I may need to link -lstdc++fs in gcc
+// or -lc++fs in clang!
 
 using std::cout;      // Make C++ output as in "cout << "string" << endl;"
 using std::endl;      // a lot nicer.
@@ -80,11 +95,9 @@ using std::atomic;    // If I am going to be multi-threaded then very many
                       // things need to be atomic and writing std::atomic<>
                       // every time is a burden.
 
-#ifndef DEBUG
-#ifndef NDEBUG
+#if !defined DEBUG && !defined NDEBUG
 #define NDEBUG 1
-#endif // NDEBUG
-#endif // DEBUG
+#endif // DEBUG || NDEBUG
 
 //
 // If the header "complex.h" is available, the type "complex double" is
@@ -242,7 +255,6 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #include <unordered_map>
 #include <vector>
 #include <iostream>
-#include <string>
 #include <algorithm>
 #include <random>
 #include <thread>

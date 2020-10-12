@@ -460,7 +460,7 @@ static LispObject compiler_let_fn(LispObject args, LispObject env)
     return let_fn_1(car(args), cdr(args), env, BODY_COMPILER_LET);
 }
 
-static LispObject cond_fn(LispObject args, LispObject env)
+LispObject cond_fn(LispObject args, LispObject env)
 {   stackcheck(args, env);
     STACK_SANITY;
     while (consp(args))
@@ -688,7 +688,7 @@ LispObject function_fn(LispObject args, LispObject env)
 }
 
 
-static LispObject go_fn(LispObject args, LispObject env)
+LispObject go_fn(LispObject args, LispObject env)
 {   LispObject p, tag;
     STACK_SANITY;
     if (!consp(args)) aerror("go");

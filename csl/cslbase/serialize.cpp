@@ -3731,11 +3731,11 @@ void warm_setup()
     setplist(nil, nil);
     setfastgets(nil, nil);
     setpackage(nil, nil);
-    ifn0(nil) = (intptr_t)undefined_0;
-    ifn1(nil) = (intptr_t)undefined_1;
-    ifn2(nil) = (intptr_t)undefined_2;
-    ifn3(nil) = (intptr_t)undefined_3;
-    ifn4up(nil) = (intptr_t)undefined_4up;
+    qfn0(nil) = undefined_0;
+    qfn1(nil) = undefined_1;
+    qfn2(nil) = undefined_2;
+    qfn3(nil) = undefined_3;
+    qfn4up(nil) = undefined_4up;
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
 
 #define boffo_size 256

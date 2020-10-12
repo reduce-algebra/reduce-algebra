@@ -375,7 +375,7 @@ symbolic procedure generate_cpp();
       scalar name, bulk, total, defn;
       name := car fnames;
       princ "About to create "; printc name;
-      c!:ccompilestart(name, name, "$destdir", nil);
+      c!:ccompilestart(name, name, "$destdir");
       bulk := 0;
       while bulk < size_per_file and w_reduce and how_many > 0 do begin
         scalar name, defn;

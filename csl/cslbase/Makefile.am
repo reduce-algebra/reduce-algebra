@@ -966,7 +966,7 @@ csl-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 csl-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 csl-print.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 csl-pro.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-csl-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) machineid.cpp
+csl-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 csl-stubs.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 csl-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 
@@ -1006,7 +1006,7 @@ bootstrapreduce-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 bootstrapreduce-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 bootstrapreduce-print.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 bootstrapreduce-pro.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-bootstrapreduce-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) machineid.cpp
+bootstrapreduce-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 bootstrapreduce-stubs.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 bootstrapreduce-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 
@@ -1046,7 +1046,7 @@ reduce-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 reduce-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 reduce-print.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 reduce-pro.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
-reduce-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) machineid.cpp
+reduce-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 reduce-stubs.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
 
@@ -1785,7 +1785,7 @@ win_specials = \
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 	$(image_files) $(local_image_files) $(win_specials) \
-	objtype* cl-wrap* makeheaders* machineid.cpp *.dep $(INLINE_DEFS)
+	cl-wrap* *.dep $(INLINE_DEFS)
 
 clean-local:
 	-$(RM) -rf $(generatedfiles)
@@ -1800,9 +1800,7 @@ else !mac_framework
 macr =
 endif !mac_framework
 
-generatedfiles=$(image_files) $(local_image_files) \
-	objtype makeheaders machineid.cpp dynmodule* \
-	$(macr)
+generatedfiles=$(image_files) $(local_image_files) $(macr)
 
 clean-local:
 	-$(RM) -rf $(generatedfiles)
@@ -1874,17 +1872,6 @@ dyndep =
 endif !cygwin
 endif !windows
 
-dynmodule.$(DLLEXT):	$(cslbase)/dynmodule.cpp $(dyndep)
-	$(COMPILE_DLL) $(cslbase)/dynmodule.cpp $(dyndep) $(DEST)dynmodule.$(DLLEXT)
-
-objtype$(EXEEXT):	$(cslbase)/objtype.cpp
-	$(LOCALCXX) $(cslbase)/objtype.cpp -o objtype$(EXEEXT)
-	$(LOCALSTRIP) objtype$(EXEEXT)
-
-makeheaders$(EXEEXT):	$(cslbase)/makeheaders.cpp
-	$(LOCALCXX) $(cslbase)/makeheaders.cpp -o makeheaders$(EXEEXT)
-	$(LOCALSTRIP) objtype$(EXEEXT)
-
 # "prototypes" is a utility that will only be available if libclang has
 # been installed, and the recipe provided here perhaps works on Ubuntu and
 # cygwin, but I do not guarantee it anywhere else. If you go
@@ -1904,39 +1891,6 @@ bootstrapreduce.prototypes:	prototypes
 
 reduce.prototypes:	prototypes
 	./prototypes -I $(srcdir) $(reduce_SOURCES) > reduce.prototypes
-
-
-# The next line generates a small file that contains inforation about the
-# object files used on this computer and the command used to compile
-# simple C code. Note that machineid.cpp is made to depend on Makefile
-# so if for any reason Makefile gets update so will it, and hence
-# restart.o and the rest.
-
-machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
-			makeheaders$(EXEEXT) Makefile \
-			$(cslbase)/machine.h $(cslbase)/int128_t.h \
-			$(cslbase)/log.h $(cslbase)/$(FWIN) \
-			$(cslbase)/tags.h $(cslbase)/cslerror.h \
-			$(cslbase)/thread_local.h \
-			$(cslbase)/externs.h $(cslbase)/arith.h \
-			$(cslbase)/entries.h $(cslbase)/lispthrow.h \
-			$(cslbase)/allocate.h $(cslbase)/newallocate.h
-	./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
-		machineid-1.cpp $(COMPILE_DLL)
-	./makeheaders$(EXEEXT) config.h \
-		$(CYGSRC)/machine.h \
-		$(CYGSRC)/$(FWIN) \
-		$(CYGSRC)/int128_t.h \
-		$(CYGSRC)/log.h \
-		$(CYGSRC)/tags.h \
-		$(CYGSRC)/thread_local.h \
-		$(CYGSRC)/cslerror.h \
-		$(CYGSRC)/externs.h \
-		$(CYGSRC)/arith.h \
-		$(CYGSRC)/entries.h \
-		$(CYGSRC)/lispthrow.h \
-		> machineid-2.cpp
-	cat machineid-1.cpp machineid-2.cpp > machineid.cpp
 
 -include reduce.dep
 
@@ -2160,8 +2114,7 @@ $(gensrc)/profile.dat:	$(csl)/generated-c/profile.dat
 c-code:	$(gensrc)/make.stamp
 
 $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
-		$(cslbase)/make-c-code.red $(cslbase)/compiler.lsp \
-		machineid.cpp
+		$(cslbase)/make-c-code.red $(cslbase)/compiler.lsp
 	chmod 664 $(gensrc)/*
 	$(TRACE)$(RM) -f $(gensrc)/make.tmp
 	touch $(gensrc)/make.tmp
@@ -2220,7 +2173,7 @@ just-c-code:
 # it I will implement what they suggest! Soon.
 
 $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
-		$(gensrc)/profile.dat machineid.cpp
+		$(gensrc)/profile.dat
 
 # Whenever I rebuild the generated C files I will forcibly recompile
 # all of them. This is because otherwise any versions that were

@@ -956,7 +956,7 @@ static LispObject Lfiledate(LispObject env, LispObject name)
     w = get_string_data(name, "filep", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
     if (!file_exists(filename, w,
-                     (size_t)len, tt)) return onevalue(nil);
+                     static_cast<size_t>(len), tt)) return onevalue(nil);
     tt[24] = 0;
     return onevalue(make_string(tt));
 }
@@ -1135,7 +1135,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
     file = nullptr;
     switch (d & (DIRECTION_MASK | OPEN_PIPE))
     {   case DIRECTION_PROBE:      // probe file - can not be used with pipes
-            file = open_file(filename, w, (size_t)len, "r", nullptr);
+            file = open_file(filename, w, static_cast<size_t>(len), "r", nullptr);
             if (file == nullptr)
             {   switch (d & IF_MISSING_MASK)
                 {   case IF_MISSING_NIL:
@@ -1149,7 +1149,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
 // are to be considered unduly enthusiastic, but I will still try to do what
 // they tell me to!
 //
-                        file = open_file(filename, w, (size_t)len, "w", nullptr);
+                        file = open_file(filename, w, static_cast<size_t>(len), "w", nullptr);
                         if (file == nullptr) error(1, err_open_failed, name);
                         std::fclose(file);
                         file = nullptr;
@@ -1162,7 +1162,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
             break;        // Must then create a no-direction stream
 
         case DIRECTION_INPUT:
-            file = open_file(filename, w, (size_t)len,
+            file = open_file(filename, w, static_cast<size_t>(len),
                              (d & OPEN_BINARY ? "rb" : "r"),
                              nullptr);
             if (file == nullptr)
@@ -1173,7 +1173,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
                         error(1, err_open_failed, name);
                     case IF_MISSING_CREATE:
                         file = open_file(filename, w,
-                                         (size_t)len, "w", nullptr);
+                                         static_cast<size_t>(len), "w", nullptr);
                         if (file == nullptr) error(1, err_open_failed, name);
                         std::fclose(file);
 //
@@ -1182,7 +1182,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
 // only open for reading. If opening the file I just created fails I will
 // give up.
 //
-                        file = open_file(filename, w, (size_t)len,
+                        file = open_file(filename, w, static_cast<size_t>(len),
                                          (d & OPEN_BINARY ? "rb" : "r"),
                                          nullptr);
                         if (file == nullptr) error(1, err_open_failed, name);
@@ -1201,7 +1201,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
 // in some cases I will then be able to make use of the file. The fact that
 // it will have been opened for IO not just output will not harm me.
 //
-            file = open_file(filename, w, (size_t)len,
+            file = open_file(filename, w, static_cast<size_t>(len),
                              (d & OPEN_BINARY ? "r+b" : "r+"),
                              nullptr);
             if (file == nullptr) switch (d & IF_MISSING_MASK)
@@ -1226,7 +1226,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
 //
                         std::fclose(file);
                         file = nullptr;
-                        rename_file(filename, w, (size_t)len,
+                        rename_file(filename, w, static_cast<size_t>(len),
                                     fn1, "oldfile.bak", 11);
                         break;
                     case IF_EXISTS_ERROR:
@@ -1241,7 +1241,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
                     case IF_EXISTS_RENAME_AND_DELETE:
                     case IF_EXISTS_NEW_VERSION:
                         std::fclose(file);
-                        delete_file(filename, w, (size_t)len);
+                        delete_file(filename, w, static_cast<size_t>(len));
                         file = nullptr;
                         break;
                     case IF_EXISTS_OVERWRITE:
@@ -1252,7 +1252,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
                 }
             if (file == nullptr)
             {   file = open_file(filename, w,
-                                 (size_t)len,
+                                 static_cast<size_t>(len),
                                  (d & OPEN_BINARY ? "w+b" : "w+"),
                                  nullptr);
                 if (file == nullptr) error(1, err_open_failed, name);
@@ -1261,14 +1261,14 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
 
 
         case DIRECTION_OUTPUT | OPEN_PIPE:
-            std::memcpy(filename, w, (size_t)len);
+            std::memcpy(filename, w, static_cast<size_t>(len));
             filename[len] = 0;
             file = my_popen(filename, "w");
             if (file == nullptr) error(1, err_pipe_failed, name);
             break;
 
         case DIRECTION_INPUT | OPEN_PIPE:
-            std::memcpy(filename, w, (size_t)len);
+            std::memcpy(filename, w, static_cast<size_t>(len));
             filename[len] = 0;
             file = my_popen(filename, "r");
             if (file == nullptr) error(1, err_pipe_failed, name);
@@ -1464,7 +1464,7 @@ LispObject Lcreate_directory(LispObject env, LispObject name)
     if (name == unset_var) return onevalue(nil);
     w = get_string_data(name, "create-directory", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
-    len = create_directory(filename, w, (size_t)len);
+    len = create_directory(filename, w, static_cast<size_t>(len));
     return onevalue(Lispify_predicate(len == 0));
 }
 
@@ -1475,7 +1475,7 @@ LispObject Lfile_readable(LispObject env, LispObject name)
     std::memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
 
-    len = file_readable(filename, w, (size_t)len);
+    len = file_readable(filename, w, static_cast<size_t>(len));
     return onevalue(Lispify_predicate(len));
 }
 
@@ -1488,11 +1488,7 @@ LispObject Lchange_directory(LispObject env, LispObject name)
     if (name == unset_var) return onevalue(nil);
     w = get_string_data(name, "change-directory", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
-//
-// At present I will permit change-directory in server mode.
-//
-
-    err = change_directory(filename, w, (size_t)len);
+    err = change_directory(filename, w, static_cast<size_t>(len));
     if (err != nullptr) aerror0(err);
     return onevalue(Lispify_predicate(err == nullptr));
 }
@@ -1509,7 +1505,7 @@ LispObject Lfile_writeable(LispObject env, LispObject name)
     w = get_string_data(name, "file-writable", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
 
-    len = file_writeable(filename, w, (size_t)len);
+    len = file_writeable(filename, w, static_cast<size_t>(len));
     return onevalue(Lispify_predicate(len));
 }
 
@@ -1521,7 +1517,7 @@ LispObject Ldelete_file(LispObject env, LispObject name)
     if (name == unset_var) return onevalue(nil);
     w = get_string_data(name, "delete-file", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
-    len = delete_file(filename, w, (size_t)len);
+    len = delete_file(filename, w, static_cast<size_t>(len));
     return onevalue(Lispify_predicate(len == 0));
 }
 
@@ -1533,7 +1529,7 @@ LispObject Ldelete_wildcard(LispObject env, LispObject name)
     if (name == unset_var) return onevalue(nil);
     w = get_string_data(name, "delete-wildcard", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
-    len = delete_wildcard(filename, w, (size_t)len);
+    len = delete_wildcard(filename, w, static_cast<size_t>(len));
     return onevalue(Lispify_predicate(len == 0));
 }
 
@@ -1545,7 +1541,7 @@ LispObject Lfile_length(LispObject env, LispObject name)
     const char *w = get_string_data(name, "file-length", len);
     std::memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
-    size = file_length(filename, w, (size_t)len);
+    size = file_length(filename, w, static_cast<size_t>(len));
     if (size < 0) return nil;
     else return make_lisp_integer64((int64_t)size);
 }
@@ -1556,7 +1552,7 @@ LispObject Ldirectoryp(LispObject env, LispObject name)
     const char *w = get_string_data(name, "directoryp", len);
     std::memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
-    len = directoryp(filename, w, (size_t)len);
+    len = directoryp(filename, w, static_cast<size_t>(len));
     return onevalue(Lispify_predicate(len));
 }
 
@@ -1645,8 +1641,8 @@ LispObject Lrename_file(LispObject env, LispObject from,
     from_w = reinterpret_cast<const char *>(&celt(from, 0));
     if (to_len >= sizeof(to_name)) to_len = sizeof(to_name);
 
-    to_len = rename_file(from_name, from_w, (size_t)from_len,
-                         to_name, to_w, (size_t)to_len);
+    to_len = rename_file(from_name, from_w, static_cast<size_t>(from_len),
+                         to_name, to_w, static_cast<size_t>(to_len));
     return onevalue(Lispify_predicate(to_len == 0));
 }
 
@@ -1671,7 +1667,7 @@ LispObject Llist_directory(LispObject env, LispObject name)
     if (len >= sizeof(filename)) len = sizeof(filename);
     real_push(nil);
     list_directory_members(filename, w,
-                           (size_t)len, make_dir_list);
+                           static_cast<size_t>(len), make_dir_list);
     real_pop(result);
     return onevalue(nreverse(result));
 }
@@ -2098,7 +2094,8 @@ restart:
                     mask = (mask<<4) | 0xf;
                 }
                 while (--width > 0) my_buff[len++] = static_cast<char>(k);
-                std::sprintf(&my_buff[len], "%" PRIxPTR, v);
+                std::sprintf(&my_buff[len], "%" PRIxPTR,
+                    static_cast<intptr_t>(v));
             }
             else if (escaped_printing & escape_octal)
             {   intptr_t v = int_of_fixnum(u);
@@ -2124,7 +2121,8 @@ restart:
                     mask = (mask<<3) | 0x7;
                 }
                 while (--width > 0) my_buff[len++] = static_cast<char>(k);
-                std::sprintf(&my_buff[len], "%" PRIoPTR, v);
+                std::sprintf(&my_buff[len], "%" PRIoPTR,
+                    static_cast<intptr_t>(v));
             }
             else if (escaped_printing & escape_binary)
             {   intptr_t v = int_of_fixnum(u);
@@ -2152,7 +2150,8 @@ restart:
                 my_buff[len] = 0;
             }
             else
-                std::sprintf(my_buff, "%" PRIdPTR, (intptr_t)int_of_fixnum(u));
+                std::sprintf(my_buff, "%" PRIdPTR,
+                    static_cast<intptr_t>(int_of_fixnum(u)));
             break;
 
         case TAG_HDR_IMMED:
@@ -3925,67 +3924,13 @@ static LispObject Llinelength0(LispObject env)
 {   return Llinelength(env, nil);
 }
 
-LispObject Lprint_imports(LispObject env)
-{
-#ifdef NO_LONGER_NEEDED
-    const char *p;
-    const char *s;
-    int i, ch;
-    LispObject stream;
-    stream = qvalue(standard_output);
-    if (!is_stream(stream)) stream = qvalue(terminal_io);
-    if (!is_stream(stream)) stream = lisp_terminal_io;
-    s = fullProgramName;
-    i = std::strlen(s)-1;
-    while (i>=0 && s[i]!='/' && s[i]!='\\') i--;
-    s = s + (i + 1);
-    for (i=0; (p=import_data[i])!=nullptr; i++)
-    {   const char *w = s;
-        putc_stream(' ', stream);
-        while (*w != 0) putc_stream(*w++, stream);
-        putc_stream('.', stream);
-        while ((ch = *p++) != 0) putc_stream(ch, stream);
-        putc_stream('\n', stream);
-    }
-#endif
-    return onevalue(nil);
-}
-
-LispObject Lprint_csl_headers(LispObject env)
-{   const char *p;
-    int i, ch;
-    LispObject stream;
-    stream = qvalue(standard_output);
-    if (!is_stream(stream)) stream = qvalue(terminal_io);
-    if (!is_stream(stream)) stream = lisp_terminal_io;
-    for (i=0; (p=csl_headers[i])!=nullptr; i++)
-    {   while ((ch = *p++) != 0) putc_stream(ch, stream);
-        putc_stream('\n', stream);
-    }
-    return onevalue(nil);
-}
-
-LispObject Lprint_config_header(LispObject env)
-{   const char *p;
-    int i, ch;
-    LispObject stream;
-    stream = qvalue(standard_output);
-    if (!is_stream(stream)) stream = qvalue(terminal_io);
-    if (!is_stream(stream)) stream = lisp_terminal_io;
-    for (i=0; (p=config_header[i])!=nullptr; i++)
-    {   while ((ch = *p++) != 0) putc_stream(ch, stream);
-        putc_stream('\n', stream);
-    }
-    return onevalue(nil);
-}
-
 static void internal_check(LispObject original_a, LispObject a,
                            int depth, uint64_t path)
 {   if (!is_cons(a)) return;
     if ((a & 0x7ffffff0) == 0)
     {   std::printf("Zero cons pointer at depth %d\n", depth);
         std::printf("Original a = %" PRIxPTR " path = %" PRIx64 "\n",
-                    original_a, path);
+                    static_cast<intptr_t>(original_a), path);
         *reinterpret_cast<char *>(-1) = 0;
     }
     internal_check(original_a, car(a), depth+1, path<<1);
@@ -4423,7 +4368,7 @@ static std::FILE *binary_open(LispObject env, LispObject name,
     std::memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
     file = open_file(filename, w,
-                     (size_t)len, dir, nullptr);
+                     static_cast<size_t>(len), dir, nullptr);
     if (file == nullptr)
     {   error(1, err_open_failed, name);
         return nullptr;
@@ -5119,7 +5064,7 @@ start_again:
 // protocol etc).
 //
     if (nhostaddr == 0)
-    {   std::FILE *file = open_file(filename1, path, (size_t)npath, "r",
+    {   std::FILE *file = open_file(filename1, path, static_cast<size_t>(npath), "r",
                                     nullptr);
         if (file == nullptr) return onevalue(nil);
         push(url);
@@ -5465,9 +5410,6 @@ setup_type const print_setup[] =
     {"prinhex",                 G0Wother, Lprinhex, Lprinhex2, G3Wother, G4Wother},
     {"prinoctal",               G0Wother, Lprinoctal, Lprinoctal2, G3Wother, G4Wother},
     {"prinbinary",              G0Wother, Lprinbinary, Lprinbinary2, G3Wother, G4Wother},
-    {"print-config-header",     Lprint_config_header, G1W0, G2W0, G3W0, G4W0},
-    {"print-csl-headers",       Lprint_csl_headers, G1W0, G2W0, G3W0, G4W0},
-    {"print-imports",           Lprint_imports, G1W0, G2W0, G3W0, G4W0},
     {"math-display",            G0W1, Lmath_display, G2W1, G3W1, G4W1},
     {"debug-print",             G0W1, Ldebug_print, G2W1, G3W1, G4W1},
     {"set-print-precision",     G0W1, Lprint_precision, G2W1, G3W1, G4W1},

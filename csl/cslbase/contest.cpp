@@ -201,6 +201,7 @@ LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol,
            evalhook;
 LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
 LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
+LispObject go_symbol, cond_symbol;
 LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
 LispObject exit_value, catch_tags, keyword_package, current_package;
 LispObject startfn, all_packages, package_symbol, internal_symbol;
@@ -304,6 +305,8 @@ LispObject *list_bases[] =
     &cl_equal_symbol,
     &equal_symbol,
     &equalp_symbol,
+    &go_symbol,
+    &cond_symbol,
     &echo_symbol,
     &emsg_star,
     &evalhook,

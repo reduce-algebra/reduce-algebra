@@ -66,11 +66,11 @@ void set_fns(LispObject a, no_args *f0, one_arg *f1, two_args *f2,
             Lsymbol_protect(nil, a, nil);
         }
     }
-    ifn0(a) = (intptr_t)f0;
-    ifn1(a) = (intptr_t)f1;
-    ifn2(a) = (intptr_t)f2;
-    ifn3(a) = (intptr_t)f3;
-    ifn4up(a) = (intptr_t)f4up;
+    qfn0(a) = f0;
+    qfn1(a) = f1;
+    qfn2(a) = f2;
+    qfn3(a) = f3;
+    qfn4up(a) = f4up;
 }
 
 #ifdef HIDE_USELESS_SYMBOL_ENVIRONMENTS

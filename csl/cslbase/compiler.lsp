@@ -3474,40 +3474,24 @@ c!:defnames)) (princ "Compiling ") (prin (caar c!:defnames)) (princ " ... ")
 (de c!:concat (a b) (compress (cons (quote !") (append (explode2 a) (append (
 explode2 b) (quote (!")))))))
 
-(de c!:ccompilestart (name setupname dir hdrnow) (prog (o d w) (setq 
-c!:registers (setq c!:used nil)) (setq File_name (list2string (explodec name)
-)) (setq Setup_name (explodec setupname)) (setq Setup_name (subst (quote !_) 
-(quote !-) Setup_name)) (setq Setup_name (list2string Setup_name)) (cond (dir
-(progn (cond ((memq (quote win32) lispsystem!*) (setq name (c!:concat dir (
-c!:concat "\" name)))) (t (setq name (c!:concat dir (c!:concat "/" name))))))
-)) (princ "C file = ") (print name) (setq C_file (open (c!:concat name ".cpp"
-) (quote output))) (setq L_file (c!:concat name ".lsp")) (setq L_contents nil
-) (setq c!:names_so_far nil) (setq o (reverse (explode (date!-and!-time)))) (
-prog (i) (setq i 1) lab1255 (cond ((minusp (times 1 (difference 5 i))) (
-return nil))) (progn (setq d (cons (car o) d)) (setq o (cdr o))) (setq i (
-plus i 1)) (go lab1255)) (setq d (cons (quote !-) d)) (setq o (cdddr (cdddr (
-cddddr o)))) (setq w o) (setq o (cdddr o)) (setq d (cons (caddr o) (cons (
-cadr o) (cons (car o) d)))) (setq d (compress (cons (quote !") (cons (cadr w)
-(cons (car w) (cons (quote !-) d)))))) (setq O_file (wrs C_file)) (setq 
-c!:defnames nil) (cond (hdrnow (c!:printf 
-"\n// Module: %s %tMachine generated C code\n\n" setupname 25)) (t (c!:printf
-"\n// %s.c %tMachine generated C code\n\n" name 25))) (c!:printf "// $I") (
-c!:printf "d: $\n\n") (c!:printf "#include <cstdio>\n") (c!:printf 
-"#include <cstdlib>\n") (c!:printf "#include <cstring>\n") (c!:printf 
-"#include <cctype>\n") (c!:printf "#include <cstdarg>\n") (c!:printf 
-"#include <ctime>\n") (c!:printf "#include <csetjmp>\n") (c!:printf 
-"#include <exception>\n") (cond (hdrnow (print!-config!-header)) (t (
-c!:printf "#include \qconfig.h\q\n\n"))) (print!-csl!-headers) (cond (hdrnow 
-(c!:print!-init))) (wrs O_file) (return nil)))
-
-(de c!:print!-init nil (progn (c!:printf "\n") (c!:printf 
-"LispObject *nilp;\n") (c!:printf "LispObject **stackp;\n") (c!:printf 
-"LispObject * volatile * stackLimitp;\n") (c!:printf "\n") (c!:printf 
-"void init(LispObject *a, LispObject **b, LispObject * volatile *c)\n") (
-c!:printf "{\n") (c!:printf "    nilp = a;\n") (c!:printf "    stackp = b;\n"
-) (c!:printf "    stackLimitp = c;\n") (c!:printf "}\n") (c!:printf "\n") (
-c!:printf "#define nil (*nilp)\n") (c!:printf "#define stack  (*stackp)\n") (
-c!:printf "#define stackLimit (*stackLimitp)\n") (c!:printf "\n")))
+(de c!:ccompilestart (name setupname dir) (prog (o d w) (setq c!:registers (
+setq c!:used nil)) (setq File_name (list2string (explodec name))) (setq 
+Setup_name (explodec setupname)) (setq Setup_name (subst (quote !_) (quote !-
+) Setup_name)) (setq Setup_name (list2string Setup_name)) (cond (dir (progn (
+cond ((memq (quote win32) lispsystem!*) (setq name (c!:concat dir (c!:concat 
+"\" name)))) (t (setq name (c!:concat dir (c!:concat "/" name)))))))) (princ 
+"C file = ") (print name) (setq C_file (open (c!:concat name ".cpp") (quote 
+output))) (setq L_file (c!:concat name ".lsp")) (setq L_contents nil) (setq 
+c!:names_so_far nil) (setq o (reverse (explode (date!-and!-time)))) (prog (i)
+(setq i 1) lab1255 (cond ((minusp (times 1 (difference 5 i))) (return nil)))
+(progn (setq d (cons (car o) d)) (setq o (cdr o))) (setq i (plus i 1)) (go 
+lab1255)) (setq d (cons (quote !-) d)) (setq o (cdddr (cdddr (cddddr o)))) (
+setq w o) (setq o (cdddr o)) (setq d (cons (caddr o) (cons (cadr o) (cons (
+car o) d)))) (setq d (compress (cons (quote !") (cons (cadr w) (cons (car w) 
+(cons (quote !-) d)))))) (setq O_file (wrs C_file)) (setq c!:defnames nil) (
+c!:printf "\n// %s.c %tMachine generated C code\n\n" name 25) (c!:printf 
+"// $I") (c!:printf "d: $\n\n") (c!:printf "#include \qconfig.h\q\n") (
+c!:printf "#include \qheaders.h\q\n\n") (wrs O_file) (return nil)))
 
 (de C!-end nil (C!-end1 t))
 
@@ -3570,7 +3554,7 @@ reverse L_contents))) (setq L_contents nil) (return checksum))))))
 (de C!-compile (u) (prog nil (terpri) (princ "C!-COMPILE ") (prin u) (princ 
 ": IN files;  or type in expressions") (terpri) (princ 
 "When all done, execute C!-END;") (terpri) (verbos nil) (c!:ccompilestart (
-car u) (car u) nil nil) (setq dfprintsave dfprint!*) (setq dfprint!* (quote 
+car u) (car u) nil) (setq dfprintsave dfprint!*) (setq dfprint!* (quote 
 c!:ccmpout1)) (setq !*defn t) (cond ((getd (quote begin)) (return nil))) (
 c!:ccompilesupervisor)))
 

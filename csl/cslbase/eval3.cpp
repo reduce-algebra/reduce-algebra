@@ -513,6 +513,57 @@ LispObject tagbody_fn(LispObject args, LispObject env)
     {   f = car(p);
         if (!is_cons(f)) continue; // Do not evaluate labels
         push(p, env, f);
+#ifdef FUTURE
+// As a possible optimisation here I will direct use of GO or COND here,
+// and then uses of GO within the consequents within the COND. This can
+// avoid use of catch and throw, which on some platforms or in some
+// contexts may carry overheads that I dislike.
+//
+// I believe that the code here is broken at present!
+        LispObject ff = car(f);
+        if (ff == go_symbol)
+        {   ff = car(cdr(f));
+            pop(f, env, p);
+            my_env = stack[0];
+// I need to do this search. Well in the code that implemented GO I checked
+// that the destination label was bound as a label. That was so that I could
+// give a decent diagnostic if it was not. The scan here is to see if it is
+// a label in THIS level of a tagbody... and if not I will hand it upwards.
+            for (p=env; p!=my_env; p=cdr(p)) // scan label bindings
+            {   LispObject w = car(p);
+                if (w != ff) continue;
+// Now I have found the label I needed to jump to. Hoorah.
+                p = cdr(w);
+                break;
+            }
+            if (p != my_env) continue; // take the GOTO
+// If I drop out of the loop that means that the target label was
+// not present in this block. Tidy up the label bindings to be very
+// certain nobody can re-use them.
+            while (env != my_env)
+            {   setcar(car(env), fixnum_of_int(2));
+                env = cdr(env);
+            }
+// Because this is a sort of error I will display a message. It was for
+// the benefit of this code that I had stacked f, the expression that
+// contained the (GO ..) statement.
+            if (SHOW_FNAME)
+            {   err_printf("\nEvaluating: ");
+                loop_print_error(f);
+            }
+// Throw the LispGo exception to try again at some outer level.
+            exit_tag = ff;
+            exit_reason = UNWIND_GO;
+            throw LispGo();
+        }
+//        else if (ff == cond_symbol)
+//        {
+//        }
+//        else if (ff == progn_symbol)
+//        {
+//        }
+        else
+#endif // FUTURE
         try
         {   STACK_SANITY;
             START_TRY_BLOCK;

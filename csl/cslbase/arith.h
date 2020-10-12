@@ -222,7 +222,7 @@ inline void floating_clear_flags()
 
 #define Ddiv10_9r(r, q, a, b) Ddivider(r, a, b, 1000000000u)
 
-#define fixnum_minusp(a) ((intptr_t)(a) < 0)
+#define fixnum_minusp(a) (static_cast<intptr_t>(a) < 0)
 
 #define bignum_minusp(a) \
     (static_cast<int32_t>(bignum_digits(a)[((bignum_length(a)-CELL)/4)-1])<0)

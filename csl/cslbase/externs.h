@@ -412,6 +412,7 @@ extern LispObject comma_at_symbol, cons_symbol, eval_symbol,
 extern LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
 extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
+extern LispObject go_symbol, cond_symbol;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn;
 extern LispObject gensym_base, string_char_sym, boffo;
@@ -1130,6 +1131,8 @@ extern LispObject function_fn(LispObject args, LispObject env);
 extern LispObject let_fn_1(LispObject bvl, LispObject body,
                            LispObject env, int compilerp);
 extern LispObject mv_call_fn(LispObject args, LispObject env);
+extern LispObject go_fn(LispObject args, LispObject env);
+extern LispObject cond_fn(LispObject args, LispObject env);
 extern LispObject progn_fn(LispObject args, LispObject env);
 extern LispObject quote_fn(LispObject args, LispObject env);
 extern LispObject tagbody_fn(LispObject args, LispObject env);

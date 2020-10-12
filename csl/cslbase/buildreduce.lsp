@@ -1,4 +1,4 @@
-% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2019
+% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2020
 %
 % Build a CSL REDUCE.
 %
@@ -35,7 +35,9 @@
 (make!-special '!*savedef)
 (make!-special '!*backtrace)
 
-(setq !*savedef (and (not (memq 'embedded lispsystem!*))
+% "-Dbootstrap" can force !*savedef even in an embedded world.
+(setq !*savedef (and (or (boundp 'bootstrap)
+                         (not (memq 'embedded lispsystem!*)))
                      (zerop (cdr (assoc 'c!-code lispsystem!*)))))
 
 (make!-special '!*noinlines)
@@ -52,7 +54,8 @@
    (setq w (errorset '!*backtrace nil nil))
    (cond
       ((or (atom w) (null (car w))) (setq !*backtrace nil))
-      (t (enable!-errorset 3 3))))
+      (t (enable!-errorset 3 3)
+         (setq !*backtrace t))))
 
 (cond
    (!*backtrace (setq !*echo t)))
@@ -61,8 +64,9 @@
 (setq !*native_code nil)
 
 (cond ((and (null !*savedef)
-       (null (memq 'jlisp lispsystem!*))
-       (null (memq 'embedded lispsystem!*))) (progn
+            (null (memq 'jlisp lispsystem!*))
+            (or (boundp 'force_c_code)
+                (null (memq 'embedded lispsystem!*)))) (progn
 
    (de c!:install (name env c!-version !&optional c1)
       (cond
@@ -101,7 +105,8 @@
       (setq names (cdr names))
 % If I am "generic" I will find u01.lsp etc in the current directory...
       (cond
-        ((not (memq 'generic lispsystem!*))
+        ((or (memq 'embedded lispsystem!*)
+             (not (memq 'generic lispsystem!*)))
          (setq name (compress (cons '!"
             (append (explodec "$reduce/cslbuild/generated-c/")
                     (cdr (explode name))))))))
@@ -587,7 +592,7 @@ rds(xxx := open("$reduce/packages/support/build.red", 'input));
 
 symbolic;
 
-!#if (and (not (memq 'embedded lispsystem!*))
+!#if (and (or (boundp 'force_c_code) (not (memq 'embedded lispsystem!*)))
           (not !*savedef))
 
 faslout 'user;
@@ -639,7 +644,8 @@ for each name in '(
    "u46.lsp"   "u47.lsp"   "u48.lsp"   "u49.lsp"   "u50.lsp"
    "u51.lsp"   "u52.lsp"   "u53.lsp"   "u54.lsp"   "u55.lsp"
    "u56.lsp"   "u57.lsp"   "u58.lsp"   "u59.lsp"   "u60.lsp") do <<
-   if not memq('generic, lispsystem!*) then
+   if memq('embedded, lispsystem!*) or
+      not memq('generic, lispsystem!*) then
       name := compress('!" .
                  append(explodec "$reduce/cslbuild/generated-c/",
                         cdr explode name));
@@ -654,7 +660,8 @@ faslend;
 
 faslout 'remake;
 
-!#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
+!#if (and (or (boundp 'force_c_code) (not (memq 'embedded lispsystem!*)))
+          (not !*savedef))
 
 load!-module "user";
 
@@ -704,7 +711,13 @@ symbolic procedure get_configuration_data();
 % considered to be a test case in addition to ones explicitly shown
 % in package.map.
     reduce_regression_tests := nil;
-    r := list!-directory "$reduce/packages/regressions";
+% The embedded build may not support the list!-directory function and so
+% I arrange that if it fails I just omit being aware of the regression
+% test scripts. Soon the embedded system (built ising C++17) will in fact
+% support this!
+    r := errorset(list('list!-directory, "$reduce/packages/regressions"),
+                  nil, nil);
+    if atom r then r :=nil else r := car r;
     for each f in r do <<
       r1 := reverse explodec f;
       if eqcar(r1, 't) and
@@ -767,7 +780,8 @@ symbolic procedure build_reduce_modules names;
     if null (names := cdr names) then <<
         printc "Recompilation complete";
         window!-heading  "Recompilation complete" >>;
-!#if (or !*savedef (memq 'embedded lispsystem!*))
+!#if (or !*savedef
+         (and (not (boundp 'force_c_code)) (memq 'embedded lispsystem!*)))
     if null names then restart!-csl 'begin
     else restart!-csl('(remake build_reduce_modules), names)
 !#else
@@ -1547,7 +1561,9 @@ load!-module 'remake;
 
 symbolic;
 
-!#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
+!#if (and (or (boundp 'force_c_code)
+              (not (memq 'embedded lispsystem!*)))
+          (not !*savedef))
 load!-module 'user;
 !#endif
 
@@ -1575,7 +1591,7 @@ package!-remake2('remake,'support);
 % is ready for use, while the last list indicates which modules have
 % associated test scripts.
 %
-% when the modules have been rebuild the system does a restart that
+% When the modules have been rebuilt the system does a restart that
 % kicks it back into REDUCE by calling begin(). This then continues
 % reading from the stream that had been the standard input when this
 % job started. Thus this script MUST be invoked as
@@ -1603,7 +1619,8 @@ build_reduce_modules reduce_base_modules;
 
 symbolic restart!-csl nil;
 
-(setq !*savedef (and (null (memq 'embedded lispsystem!*))
+(setq !*savedef (and (or (boundp 'bootstrap)
+                         (null (memq 'embedded lispsystem!*)))
                      (zerop (cdr (assoc 'c!-code lispsystem!*)))))
 (make!-special '!*noinlines)
 (prog (w)
@@ -1616,7 +1633,7 @@ symbolic restart!-csl nil;
 (setq !*backtrace t)
 
 (cond ((and (null !*savedef)
-            (null (memq 'embedded lispsystem!*)))
+            (or (boundp 'force_c_code) (null (memq 'embedded lispsystem!*))))
        (load!-module 'user)))
 
 (load!-module 'cslcompat)
@@ -1729,4 +1746,3 @@ symbolic;
 
 lisp stop(0);
 bye;
-

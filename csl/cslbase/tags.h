@@ -870,7 +870,7 @@ inline bool is_array_header(Header h)
 // the most common cases.
 
 inline bool is_basic_vector(LispObject v)
-{   return type_of_header(vechdr(v)) != TYPE_INDEXVEC;
+{   return is_vector(v) && type_of_header(vechdr(v)) != TYPE_INDEXVEC;
 }
 
 inline bool vector_i8(Header h)
@@ -913,42 +913,50 @@ inline atomic<LispObject>& basic_elt(LispObject v, size_t n)
 }
 
 inline bool vector_i8(LispObject n)
-{   if (is_basic_vector(n)) return vector_i8(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return vector_i8(vechdr(n));
     else return vector_i8(vechdr(basic_elt(n, 0)));
 }
 
 inline bool vector_i16(LispObject n)
-{   if (is_basic_vector(n)) return vector_i16(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return vector_i16(vechdr(n));
     else return vector_i16(vechdr(basic_elt(n, 0)));
 }
 
 inline bool vector_i32(LispObject n)
-{   if (is_basic_vector(n)) return vector_i32(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return vector_i32(vechdr(n));
     else return vector_i32(vechdr(basic_elt(n, 0)));
 }
 
 inline bool vector_i64(LispObject n)
-{   if (is_basic_vector(n)) return vector_i64(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return vector_i64(vechdr(n));
     else return vector_i64(vechdr(basic_elt(n, 0)));
 }
 
 inline bool vector_i128(LispObject n)
-{   if (is_basic_vector(n)) return vector_i128(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return vector_i128(vechdr(n));
     else return vector_i128(vechdr(basic_elt(n, 0)));
 }
 
 inline bool vector_f32(LispObject n)
-{   if (is_basic_vector(n)) return vector_f32(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return vector_f32(vechdr(n));
     else return vector_f32(vechdr(basic_elt(n, 0)));
 }
 
 inline bool vector_f64(LispObject n)
-{   if (is_basic_vector(n)) return vector_f64(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return vector_f64(vechdr(n));
     else return vector_f64(vechdr(basic_elt(n, 0)));
 }
 
 inline bool vector_f128(LispObject n)
-{   if (is_basic_vector(n)) return vector_f128(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return vector_f128(vechdr(n));
     else return vector_f128(vechdr(basic_elt(n, 0)));
 }
 
@@ -1021,16 +1029,12 @@ inline bool is_long_float(LispObject v)
            type_of_header(flthdr(v)) == TYPE_LONG_FLOAT;
 }
 
-//
-// The following tests are valid provided that n is already known to
-// have tag TAG_NUMBERS, i.e. it is a bignum, ratio or complex.
-//
 inline bool is_ratio(LispObject n)
-{   return type_of_header(numhdr(n)) == TYPE_RATNUM;
+{   return is_numbers(n) && type_of_header(numhdr(n)) == TYPE_RATNUM;
 }
 
 inline bool is_complex(LispObject n)
-{   return type_of_header(numhdr(n)) == TYPE_COMPLEX_NUM;
+{   return is_numbers(n) && type_of_header(numhdr(n)) == TYPE_COMPLEX_NUM;
 }
 
 inline bool is_bignum_header(Header h)
@@ -1038,8 +1042,7 @@ inline bool is_bignum_header(Header h)
 }
 
 inline bool is_bignum(LispObject n)
-{   /*if (is_basic_vector(n) */return is_bignum_header(numhdr(n));
-    /*else return is_bignum_header(numhdr(basic_elt(n, 0))); */
+{   return is_numbers(n) && is_bignum_header(numhdr(n));
 }
 
 inline bool is_new_bignum_header(Header h)
@@ -1047,8 +1050,7 @@ inline bool is_new_bignum_header(Header h)
 }
 
 inline bool is_new_bignum(LispObject n)
-{   /*if (is_basic_vector(n) */return is_new_bignum_header(numhdr(n));
-    /*else return is_new_bignum_header(numhdr(basic_elt(n, 0))); */
+{   return is_numbers(n) && is_new_bignum_header(numhdr(n));
 }
 
 inline bool is_string_header(Header h)
@@ -1056,7 +1058,8 @@ inline bool is_string_header(Header h)
 }
 
 inline bool is_string(LispObject n)
-{   if (is_basic_vector(n)) return is_string_header(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return is_string_header(vechdr(n));
     else return is_string_header(vechdr(basic_elt(n, 0)));
 }
 
@@ -1065,7 +1068,8 @@ inline bool is_vec8_header(Header h)
 }
 
 inline bool is_vec8(LispObject n)
-{   if (is_basic_vector(n)) return is_vec8_header(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return is_vec8_header(vechdr(n));
     else return is_vec8_header(vechdr(basic_elt(n, 0)));
 }
 
@@ -1074,7 +1078,7 @@ inline bool is_bps_header(Header h)
 }
 
 inline bool is_bps(LispObject n)
-{   return is_bps_header(vechdr(n));
+{   return is_vector(n) && is_bps_header(vechdr(n));
 }
 
 inline bool is_vec16_header(Header h)
@@ -1082,7 +1086,8 @@ inline bool is_vec16_header(Header h)
 }
 
 inline bool is_vec16(LispObject n)
-{   if (is_basic_vector(n)) return is_vec16_header(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return is_vec16_header(vechdr(n));
     else  return is_vec16_header(vechdr(basic_elt(n, 0)));
 }
 
@@ -1091,7 +1096,8 @@ inline bool is_bitvec_header(Header h)
 }
 
 inline bool is_bitvec(LispObject n)
-{   if (is_basic_vector(n)) return is_bitvec_header(vechdr(n));
+{   if (!is_vector(n)) return false;
+    else if (is_basic_vector(n)) return is_bitvec_header(vechdr(n));
     else  return is_bitvec_header(vechdr(basic_elt(n, 0)));
 }
 
@@ -1503,7 +1509,7 @@ typedef struct Symbol_Head_
 // snapshot figures for Reduce (with EVERYTHING loaded)...
 // There are 41500 symbols of which 3700 have definitions as functions.
 // On a 64-bit system with the existing scheme that represents 4.3 Mbytes
-// of space in symbol headers. With the "idea" scheme that woudl end up
+// of space in symbol headers. With the "idea" scheme that would end up
 // as 2.5 Mbytes. Or if some user created 100K gensyms then the new scheme
 // would save not that far short of 5 Mbytes.
 //
@@ -1686,44 +1692,6 @@ inline void setpname(LispObject p, LispObject q,
                      std::memory_order mo=std::memory_order_relaxed)
 {   (reinterpret_cast<atomic<LispObject> *>(reinterpret_cast<char *>
                                             (p) + (6*CELL-TAG_SYMBOL)))->store(q, mo);
-}
-
-// The ifn() selector gives access to the qfn() cell, but treating its
-// contents as (intptr_t).
-//
-inline intptr_t& ifn0(LispObject p)
-{   return *reinterpret_cast<intptr_t *>(reinterpret_cast<char *>
-                                         (p) + (7*CELL-TAG_SYMBOL));
-}
-
-inline intptr_t& ifn1(LispObject p)
-{   return *reinterpret_cast<intptr_t *>(reinterpret_cast<char *>
-                                         (p) + (8*CELL-TAG_SYMBOL));
-}
-
-inline intptr_t& ifn2(LispObject p)
-{   return *reinterpret_cast<intptr_t *>(reinterpret_cast<char *>
-                                         (p) + (9*CELL-TAG_SYMBOL));
-}
-
-inline intptr_t& ifn3(LispObject p)
-{   return *reinterpret_cast<intptr_t *>(reinterpret_cast<char *>
-                                         (p) + (10*CELL-TAG_SYMBOL));
-}
-
-inline intptr_t& ifn4up(LispObject p)
-{   return *reinterpret_cast<intptr_t *>(reinterpret_cast<char *>
-                                         (p) + (11*CELL-TAG_SYMBOL));
-}
-
-inline intptr_t& ifnunused(LispObject p)
-{   return *reinterpret_cast<intptr_t *>(reinterpret_cast<char *>
-                                         (p) + (12*CELL-TAG_SYMBOL));
-}
-
-inline intptr_t& ifnn(LispObject p)
-{   return *reinterpret_cast<intptr_t *>(reinterpret_cast<char *>
-                                         (p) + (13*CELL-TAG_SYMBOL));
 }
 
 inline no_args*& qfn0(LispObject p)

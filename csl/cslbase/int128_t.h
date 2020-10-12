@@ -79,8 +79,14 @@ to decide how it will support the required types.
 // base but provides a class that should behave like the 128-bit integer
 // type that I really want.
 
+// I want this to be a standalone header file that could be used outside
+// CSL, and so I include the C++ header files that it used and I will refer
+// to things as e.g. std::uint64_t even though through CSL I have a "using"
+// directive to render the "std::" unnecessary.
+
 #include <cinttypes>
 #include <cstdint>
+#include <string>
 
 // Note that even if the C++ environment provides a type called "int128_t"
 // it should not be in std::, and so I should expect to access it directly.
