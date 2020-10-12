@@ -31,6 +31,18 @@ df(elliptice(u,k),k);
 df(elliptick(k),k);
 df(elliptice(k),k);
 
+% check a well-known identity
+df(elliptice(k)*elliptick!'(k)+elliptice!'(k)*elliptick(k)-elliptick(k)*elliptick!'(k),k);
+
+df(jacobizeta(u,k),u);
+df(ellipticd(u,k),u);
+df(ellipticd(u,k),k);
+
+% quasi-periodicity
+ellipticd(u+pi/2,k);
+ellipticf(u-5*pi/2,k);
+ellipticd(u+11*pi/3,k);
+
 % theta functions
 % periodicity, quasi-periodicity and zeroes
 elliptictheta1(z+6*pi, q);

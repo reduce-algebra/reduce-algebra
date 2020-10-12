@@ -74,13 +74,35 @@ operator ellipticf;
 
 ellipticfrules :=
 {
-        ellipticf(~phi,0)   => phi,
-        ellipticf(i*~phi,0) => i*phi,
-        ellipticf(~phi,1)   => ln(sec(phi)+tan(phi)),
-        ellipticf(i*~phi,1) => i*atan(sinh(phi)),
-        ellipticf(~phi,~m)  => num_elliptic(f_function,phi,m)
-                              when lisp !*rounded and numberp phi
-                              and numberp m
+   ellipticf(~phi,0)   => phi,
+   ellipticf(0, ~k)    => 0,
+   ellipticf(-~phi,~k) => -ellipticf(phi,k),
+   ellipticf(~phi,-~k) => ellipticf(phi,k),
+   
+   ellipticf(i*~phi,0) => i*phi,
+   ellipticf(~phi,1)   => ln(sec(phi)+tan(phi)),
+   ellipticf(i*~phi,1) => i*atan(sinh(phi)),
+   ellipticf(pi/2,~k)  =>  elliptick(k),
+   
+% quasi-periodicity
+
+   ellipticf((~~w + ~~k*pi)/~~d, ~m) =>
+      (begin scalar shift, arg;
+         shift := fix repart(2*k/d);
+ 	 arg := w/d + ((2*k/d)-shift)*pi/2;
+         return ellipticf(arg, m) + shift*elliptick(m);
+      end)
+      when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(2*k/d)),
+
+% derivative rules
+   df(ellipticf(~u,~k),~u) => 1/sqrt((1-k^2*sin(u)^2)),
+
+   df(ellipticf(~u,~k),~k) => (ellipticd(u,k)/(k^2-1)+ellipticf(u,k))/k
+                          + k*sin(u)*cos(u)/((k^2-1)*sqrt(1-k^2*sin(u)^2)),
+
+   ellipticf(~phi,~m)  => num_elliptic(f_function,phi,m)
+                         when lisp !*rounded and numberp phi
+                            and numberp m
 }$
 let ellipticfrules;
 
@@ -169,21 +191,28 @@ jacobidrules :=
         ellipticd(i*~phi,0) => i*phi,
         ellipticd(~phi,1)   => sin(phi),
         ellipticd(i*~phi,1) => i*sinh(phi),
-        ellipticd(-~phi,~m) => -ellipticd(phi,m),
-        ellipticd(~phi,-~m) =>  ellipticd(phi,m),
+        ellipticd(-~phi,~k) => -ellipticd(phi,k),
+        ellipticd(~phi,-~k) =>  ellipticd(phi,k),
+	ellipticd(pi/2,~k)  =>  elliptice(k),
+
+% quasi-periodicity
+
+   ellipticd((~~w + ~~k*pi)/~~d, ~m) =>
+      (begin scalar shift, arg;
+         shift := fix repart(2*k/d);
+ 	 arg := w/d + ((2*k/d)-shift)*pi/2;
+         return ellipticd(arg, m) + shift*elliptice(m);
+      end)
+      when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(2*k/d)),
 
 % ************************************************
 % derivative rules 
-        df(ellipticd(~phi,~m),~phi) => sqrt(1-m^2*sin(phi)^2),
+    df(ellipticd(~phi,~m),~phi) => sqrt(1-m^2*sin(phi)^2),
 
-%        df(ellipticd(~phi,~m),~m)   =>
-%            m*(jacobisn(phi,m)*jacobicn(phi,m)*jacobidn(phi,m)
-%               - elliptice(phi,m)*jacobicn(phi,m)^2) / (1-m^2)
-%            - m*phi*jacobisn(phi,m)^2,
+    df(ellipticd(~phi,~m),~m)   => (ellipticd(phi,m)-ellipticf(phi,m))/m,
 
-ellipticd(~phi,~m) => num_elliptic(d_function,phi,m)
-                              when lisp !*rounded and numberp phi
-                              and numberp m
+    ellipticd(~phi,~m) => num_elliptic(d_function,phi,m)
+                     when lisp !*rounded and numberp phi and numberp m
 }$
 
 let jacobidrules;
@@ -213,12 +242,16 @@ jacobierules :=
 	elliptice(elliptick(~m), ~m) => elliptice(m),
 
 % complete elliptic integrals
-        elliptice(0)     => pi/2,
-        elliptice(1)     => 1,
-	elliptick(0)     => pi/2,
-	elliptick!'(1)   => pi/2,
-        elliptice!'(0)   => 1,	
-        elliptice!'(1)   => pi/2,
+        elliptick(-~k)    => elliptick(k),
+	elliptick!'(-~k)  => elliptick!'(k),
+        elliptice(-~k)    => elliptice(k),
+	elliptice!'(-~k)  => elliptice!'(k),
+        elliptice(0)      => pi/2,
+        elliptice(1)      => 1,
+	elliptick(0)      => pi/2,
+	elliptick!'(1)    => pi/2,
+        elliptice!'(0)    => 1,	
+        elliptice!'(1)    => pi/2,
 	
 % quasi-periodicity
 
@@ -264,7 +297,7 @@ jacobierules :=
         df(elliptice!'(~m),~m) => m*(elliptick!'(m) - elliptice!'(m))/(1-m^2),
 
         df(elliptick!'(~m),~m) =>
-	         (m*elliptick!'(m)-elliptice(m)/m)/(1-m^2),
+	         (m*elliptick!'(m)-elliptice!'(m)/m)/(1-m^2),
 
 % numerical evaluation
 
@@ -346,13 +379,15 @@ jacobizetarules :=
         jacobizeta(~u+2*elliptick(~m),m) => jacobizeta(u,m),
         jacobizeta(elliptick(~m) -~u,m) => -jacobizeta(elliptick(m)+u,m),
 
-%       JacobiZeta(~u,~m) => JacobiZeta(u - EllipticK(m),m) -
-%                            m * Jacobisn(u - EllipticK(m),m)
-%                              * Jacobicd(u - EllipticK(m),m),
-
         jacobizeta(~u,~m) => num_elliptic(num_jacobizeta,u,m)
                              when lisp !*rounded and numberp u
-                             and numberp m
+                             and numberp m,
+
+%derivative rules
+       df(jacobizeta(~u, ~k),~u) => jacobidn(u,k)^2 - elliptice(k)/elliptick(k),
+       
+       df(jacobizeta(~u, ~k),~k) => df(elliptice(u,k),k) - u*df(elliptice(k)/elliptick(k), k)
+ 
 }$
 let jacobizetarules;
 

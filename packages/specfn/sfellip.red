@@ -147,6 +147,13 @@ procedure num_jacobiam(u,m);
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 operator jacobiam;
+operator jacobisn;
+operator jacobicn;
+operator jacobidn;
+operator elliptick!';
+operator elliptick;
+operator elliptice;
+operator elliptice!';
 
 jacobiamrules :=
 
@@ -158,7 +165,9 @@ jacobiamrules :=
        jacobiam(~u,-~m) => jacobiam(u,m),
        jacobiam(0,~m) => 0,
        
-
+       df(jacobiam(~u,~m),~u)  => jacobidn(u,m),
+       df(jacobiam(~u,~m),~m)  => u*jacobidn(u,m)/m +
+                     (m*jacobisn(u,m)*jacobicn(u,k) -elliptice(u,m)*jacobidn(u,m)/m)/(1-m^2),      
 
         jacobiam(~u,~m) =>
 	     num_elliptic(num_jacobiam, u, m)
@@ -180,12 +189,6 @@ procedure num_jacobisn(u,m);
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobisn definition
 %===================
-
-operator jacobisn;
-operator elliptick!';
-operator elliptick;
-operator elliptice;
-operator elliptice!';
 
 %This rule list includes all the special cases of the Jacobisn
 %function.
@@ -272,8 +275,6 @@ procedure num_jacobicn(u,m);
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobicn definition
 %===================
-
-operator jacobicn;
 
 %This rule list includes all the special cases of the Jacobicn
 %function.
@@ -388,8 +389,6 @@ procedure otherdn(u,m);
 %Jacobidn definition
 %===================
 
-operator jacobidn;
-
 %This rule list includes all the special cases of the Jacobidn
 %function.
 
@@ -456,7 +455,6 @@ jacobidnrules :=
 	          m*(elliptice(u,m)*jacobisn(u,m)*jacobicn(u,m)
                                  -jacobisn(u,m)^2*jacobidn(u,m))/(1-m^2)
                   - m*u*jacobisn(u,m)*jacobicn(u,m),
-
 
 %Calls Num_Jacobidn when rounded switch is on.
 %---------------------------------------------
@@ -1286,26 +1284,51 @@ let jacobicsrules;
 
 symbolic;
 
-put('jacobisn,'fancy!-functionsymbol,'sn);
-put('jacobicn,'fancy!-functionsymbol,'cn);
-put('jacobidn,'fancy!-functionsymbol,'dn);
-put('jacobins,'fancy!-functionsymbol,'ns);
-put('jacobinc,'fancy!-functionsymbol,'nc);
-put('jacobind,'fancy!-functionsymbol,'nd);
-put('jacobisc,'fancy!-functionsymbol,'sc);
-put('jacobisd,'fancy!-functionsymbol,'sd);
-put('jacobicd,'fancy!-functionsymbol,'cd);
-put('jacobics,'fancy!-functionsymbol,'cs);
-put('jacobids,'fancy!-functionsymbol,'ds);
-put('jacobidc,'fancy!-functionsymbol,'dc);
-put('jacobiam,'fancy!-functionsymbol,'am);
-put('jacobizeta,'fancy!-functionsymbol,'!Z);
+put('jacobisn,'fancy!-functionsymbol,"\mathrm{sn}");
+put('jacobicn,'fancy!-functionsymbol,"\mathrm{cn}");
+put('jacobidn,'fancy!-functionsymbol,"\mathrm{dn}");
+put('jacobins,'fancy!-functionsymbol,"\mathrm{ns}");
+put('jacobinc,'fancy!-functionsymbol,"\mathrm{nc}");
+put('jacobind,'fancy!-functionsymbol,"\mathrm{nd}");
+put('jacobisc,'fancy!-functionsymbol,"\mathrm{sc}");
+put('jacobisd,'fancy!-functionsymbol,"\mathrm{sd}");
+put('jacobicd,'fancy!-functionsymbol,"\mathrm{cd}");
+put('jacobics,'fancy!-functionsymbol,"\mathrm{cs}");
+put('jacobids,'fancy!-functionsymbol,"\mathrm{ds}");
+put('jacobidc,'fancy!-functionsymbol,"\mathrm{dc}");
+put('jacobiam,'fancy!-functionsymbol,"\mathrm{am}");
+put('jacobizeta,'fancy!-functionsymbol,"\mathrm{Z}");
 
-put('ellipticd, 'fancy!-functionsymbol, '!D);
-put('elliptice, 'fancy!-functionsymbol, '!E);
-put('elliptick, 'fancy!-functionsymbol, '!K);
-put('elliptick!', 'fancy!-functionsymbol, '!K!');
-put('elliptice!', 'fancy!-functionsymbol, '!E!');
+put('jacobisn,'plain!-functionsymbol,'sn);
+put('jacobicn,'plain!-functionsymbol,'cn);
+put('jacobidn,'plain!-functionsymbol,'dn);
+put('jacobins,'plain!-functionsymbol,'ns);
+put('jacobinc,'plain!-functionsymbol,'nc);
+put('jacobind,'plain!-functionsymbol,'nd);
+put('jacobisc,'plain!-functionsymbol,'sc);
+put('jacobisd,'plain!-functionsymbol,'sd);
+put('jacobicd,'plain!-functionsymbol,'cd);
+put('jacobics,'plain!-functionsymbol,'cs);
+put('jacobids,'plain!-functionsymbol,'ds);
+put('jacobidc,'plain!-functionsymbol,'dc);
+put('jacobiam,'plain!-functionsymbol,'am);
+put('jacobizeta,'plain!-functionsymbol,'!Z);
+
+put('ellipticd, 'plain!-functionsymbol, '!D);
+put('elliptice, 'plain!-functionsymbol, '!E);
+put('elliptick, 'plain!-functionsymbol, '!K);
+put('ellipticf, 'plain!-functionsymbol, '!F);
+put('elliptick!', 'plain!-functionsymbol, '!K!');
+put('elliptice!', 'plain!-functionsymbol,  '!E!');
+
+put('ellipticd, 'fancy!-functionsymbol, "\mathrm{D}");
+put('elliptice, 'fancy!-functionsymbol, "\mathrm{E}");
+put('elliptick, 'fancy!-functionsymbol, "\mathrm{K}");
+put('ellipticf, 'fancy!-functionsymbol, "\mathrm{F}");
+put('elliptick!', 'fancy!-functionsymbol,  "\mathrm{K}^\prime");
+put('elliptice!', 'fancy!-functionsymbol,  "\mathrm{E}^\prime");
+put('elliptice!', 'fancy!-symbol!-length, 4);
+put('elliptick!', 'fancy!-symbol!-length, 4);
 
 put('elliptictheta1, 'fancy!-functionsymbol,"\vartheta_1");
 put('elliptictheta2, 'fancy!-functionsymbol,"\vartheta_2");
@@ -1319,53 +1342,19 @@ put('elliptictheta4, 'fancy!-symbol!-length, 4);
 foreach x in '(jacobisn  jacobicn  jacobidn jacobins  jacobinc  jacobind
                jacobisc  jacobisd  jacobicd jacobics  jacobids  jacobidc
 	       jacobiam)
-do << put(x, 'fancy!-prifn, 'fancy!-jac);
-      put(x, 'fancy!-symbol!-length, 4);
-      put(x, 'prifn, 'plain!-jac)
+do << put(x, 'fancy!-symbol!-length, 4);
+      put(x, 'prifn, 'plain!-symbol)
    >>;
 
 % put('elliptictau, 'fancy!-functionsymbol, "\tau");
 
-put('ellipticd, 'fancy!-prifn, 'fancy!-jac);
-put('elliptice, 'fancy!-prifn, 'fancy!-jac);
-put('elliptick, 'fancy!-prifn, 'fancy!-jac);
-put('elliptick, 'fancy!-prifn, 'fancy!-jac);
-put('jacobizeta, 'fancy!-prifn, 'fancy!-jac);
-
-put('elliptick!', 'fancy!-prifn, 'fancy!-prime);
-put('elliptick!', 'fancy!-symbol!-length, 4);
-put('elliptice!', 'fancy!-prifn, 'fancy!-prime);
-put('elliptice!', 'fancy!-symbol!-length, 4);
-
-put('elliptice, 'prifn, 'plain!-jac);
-put('ellipticd, 'prifn, 'plain!-jac);
-put('elliptick, 'prifn, 'plain!-jac);
-put('elliptick!', 'prifn, 'plain!-jac);
-put('elliptice!', 'prifn, 'plain!-jac);
-put('jacobizeta, 'prifn, 'plain!-jac);
-
-symbolic procedure fancy!-jac(u);
- fancy!-level
-  begin
-   fancy!-prin2!*('!\mathrm!{, 0);
-   fancy!-prefix!-operator car u;
-   fancy!-prin2!*('!}, 0);
-   return fancy!-print!-function!-arguments cdr u;
-  end;
-
-symbolic procedure fancy!-prime(u);
-% needs work to print a prime not an apostrophe
- fancy!-level
-  begin
-   fancy!-prin2!*('!\mathrm!{,0);
-   if car u = 'elliptick!' then fancy!-prin2!*('!K, 0)
-   else if car u = 'elliptice!' then  fancy!-prin2!*('!E, 0);
-   fancy!-prin2!*('!'!},0);
-   return fancy!-print!-function!-arguments cdr u;
-  end;
-
-symbolic procedure plain!-jac(u);
-    maprin(get(car u,'fancy!-functionsymbol) . cdr u);
+put('elliptice, 'prifn, 'plain!-symbol);
+put('ellipticd, 'prifn, 'plain!-symbol);
+put('elliptick, 'prifn, 'plain!-symbol);
+put('elliptick!', 'prifn, 'plain!-symbol);
+put('elliptice!', 'prifn, 'plain!-symbol);
+put('ellipticf, 'prifn, 'plain!-symbol);
+put('jacobizeta, 'prifn, 'plain!-symbol);
 
 put('elliptictheta1, 'plain!-functionsymbol, 'theta1);
 put('elliptictheta2, 'plain!-functionsymbol, 'theta2);
