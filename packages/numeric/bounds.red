@@ -56,7 +56,7 @@ symbolic procedure boundseval u;
       db := (cadr x . minsq l . maxsq l).db>>;
     u := boundseval1(f,db);
     return mkinterval(prepsq car u,prepsq cdr u);
-  end) where !*roundbf=!*roundbf;
+  end) where !*roundbf=!*roundbf,!*factor=nil;
 
 symbolic procedure boundserr(a,b);
     if not !*msg then error(99,'bounds) else

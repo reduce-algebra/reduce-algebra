@@ -117,6 +117,9 @@ symbolic procedure cr!:simp u; (gf2cr!: crprcd u) ./ 1;
 
 put('!:cr!:,'simpfn,'cr!:simp);
 
+% crprcd and therefore cr!:simp expect a tagged domain element
+flag('(!:cr!:),'full);
+
 %symbolic procedure mkdcr u; cri!*() ./ 1;
 
 symbolic procedure i2cr!* u;
