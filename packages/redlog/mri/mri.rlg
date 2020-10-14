@@ -3,6 +3,9 @@ load_package redlog;
 
 rlset mri;
 
+Redlog Revision 5405 of 2020-09-20, 16:49:38Z
+(c) 1992-2020 T. Sturm and A. Dolzmann (www.redlog.eu)
+type ?; for help
 
 
 {}
@@ -80,10 +83,3 @@ rlexpand ws;
 
 end;
 
-Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 CSL
-Time (counter 1): 0 ms
-
-End of Lisp run after 0.00+0.18 seconds
-real         0.30
-user         0.23
-sys          0.07

@@ -5,6 +5,9 @@ on rlverbose;
 % Ordered fields standard form:
 rlset ofsf;
 
+Redlog Revision 5404 of 2020-09-20, 15:40:23Z
+(c) 1992-2020 T. Sturm and A. Dolzmann (www.redlog.eu)
+type ?; for help
 
 {}
 
@@ -997,10 +1000,3 @@ m <> 0 or b = 0
 
 end;
 
-Tested on x86_64-mac_10.12_sierra-darwin16.4.0 CSL
-Time (counter 1): 370 ms  plus GC time: 80 ms
-
-End of Lisp run after 0.37+0.13 seconds
-real         0.67
-user         0.57
-sys          0.07

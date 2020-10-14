@@ -3,6 +3,9 @@ load_package redlog;
 
 rlset pasf;
 
+Redlog Revision 5405 of 2020-09-20, 16:49:38Z
+(c) 1992-2020 T. Sturm and A. Dolzmann (www.redlog.eu)
+type ?; for help
 
 *** turned on switch rlsusi 
 
@@ -268,9 +271,3 @@ z - 3 > 0
 
 end;
 
-Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 PSL
-Time (counter 1): 1970 ms  plus GC time: 20 ms
-Quitting
-real         2.80
-user         2.09
-sys          0.49

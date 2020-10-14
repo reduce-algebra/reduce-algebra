@@ -3,6 +3,9 @@ load_package redlog;
 
 rlset ofsf;
 
+Redlog Revision 5404 of 2020-09-20, 15:40:23Z
+(c) 1992-2020 T. Sturm and A. Dolzmann (www.redlog.eu)
+type ?; for help
 
 {}
 
@@ -2096,8 +2099,3 @@ true
 
 end;
 
-Tested on x86_64-mac_10.11_elcapitan-darwin15.6.0 CSL
-Time (counter 1): 11019 ms  plus GC time: 990 ms
-1: real        13.96
-user        12.49
-sys          0.22

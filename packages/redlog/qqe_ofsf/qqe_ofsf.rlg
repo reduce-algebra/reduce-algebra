@@ -3,6 +3,9 @@ load_package redlog;
 
 rlset(qqe,ofsf);
 
+Redlog Revision 5404 of 2020-09-20, 15:40:23Z
+(c) 1992-2020 T. Sturm and A. Dolzmann (www.redlog.eu)
+type ?; for help
 
 {}
 
@@ -78,10 +81,3 @@ and rhead(ltail(ltail(ltail(rtail(rtail(q))))))
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms
-
-End of Lisp run after 0.00+0.09 seconds
-real 0.25
-user 0.03
-sys 0.04
