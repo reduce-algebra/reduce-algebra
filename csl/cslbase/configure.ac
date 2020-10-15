@@ -1592,9 +1592,9 @@ then
 # 10.9  Mavericks     )
 # 10.10 Yosemite
 # 10.11 El Capitan
-# 10.12 Sierra          Now the oldest deployment target I support
+# 10.12 Sierra
 # 10.13 High Sierra
-# 10.14 Mojave
+# 10.14 Mojave          Now the oldest deployment target I support
 # 10.15 Catalina
 # 11.0  Big Sur         Now the version I build and test on.
 #
@@ -1604,7 +1604,7 @@ then
 # macports stuff is liable to need rebuilding or re-installing so as to
 # avoid moans about version support conflicts when things are linked.
 #
-  ENVP="MACOSX_DEPLOYMENT_TARGET=10.12"
+  ENVP="MACOSX_DEPLOYMENT_TARGET=10.14"
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
   CPP="$ENVP $CPP"

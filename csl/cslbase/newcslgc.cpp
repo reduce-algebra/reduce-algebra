@@ -438,7 +438,7 @@ bool withinMajorGarbageCollection = false;
 // and that multi-processor issues are addressed in the sense of memory
 // fences etc. This assumption is going to violate strict aliasing rules and
 // so a sufficiently clever compiler could spot what I was doing and mangle
-.. my code quite grievously!
+// my code quite grievously!
 
 void evacuate(atomic<LispObject> *p)
 {
@@ -484,8 +484,8 @@ void evacuate(atomic<LispObject> *p)
     *p = aa + (a&TAG_BITS);
 }
 
-void evacuate(atomicLispObject *p)
-{   evacuate(reinterpret_cast<atomic<LispObject> *>(p);
+void evacuate(LispObject *p)
+{   evacuate(reinterpret_cast<atomic<LispObject> *>(p));
 }
 
 size_t pinnedChunkCount = 0, pinnedPageCount = 0;
@@ -779,6 +779,15 @@ atomic<unsigned int> activeHelpers = 0;
 
 // before gcHelper() is called on in ANY thread the GC should have set
 // activeHelpers to the number of helper threads it is about to activate.
+
+Chunk *popChunk1()
+{   return nullptr;
+}
+
+bool evacuatePartOfMyOwnChunk()
+{   return false;
+}
+
 
 void gcHelper()
 {

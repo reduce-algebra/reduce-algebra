@@ -1,4 +1,4 @@
-// alloctest.cpp                                Copyright (C) 2019 Codemist
+// alloctest.cpp                                Copyright (C) 2020 Codemist
 
 // This is going to be so I can have a simple test harness for
 // newalloc.cpp and its friends.
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

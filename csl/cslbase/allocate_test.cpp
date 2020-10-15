@@ -1,11 +1,11 @@
-// allocate_test.cpp                       Copyright (C) 1989-2019 Codemist
+// allocate_test.cpp                       Copyright (C) 1989-2020 Codemist
 
 //
 // Code for testing storage allocation
 //
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

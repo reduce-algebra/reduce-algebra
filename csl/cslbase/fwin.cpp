@@ -48,7 +48,7 @@
 // ones do.
 //
 
-// $Id$
+// $Id $
 
 // The "#ifdef" mess here has been getting out of control. The major
 // choice are:
@@ -74,7 +74,8 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#else // HAVE_CONFIG_H
+#else
+ // HAVE_CONFIG_H
 #define PART_OF_FOX 1
 #endif // HAVE_CONFIG_H
 
@@ -134,6 +135,10 @@ extern int fwin_main(int argc, const char *argv[]);
 #include <thread>
 #include <chrono>
 #include <atomic>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
 
 using std::atomic;
 
@@ -152,8 +157,6 @@ extern "C" char *getcwd(const char *s, size_t n);
 #include <glob.h>
 #endif // WIN32
 
-#ifndef EMBEDDED
-
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
 #elif defined WIN32
@@ -161,8 +164,6 @@ extern "C" char *getcwd(const char *s, size_t n);
 ##else
 #include <sys/dir.h>
 #endif // HAVE_DIRENT_H
-
-#endif // EMBEDDED
 
 #ifdef __APPLE__
 
@@ -175,6 +176,12 @@ extern "C" char *getcwd(const char *s, size_t n);
 
 #include <cstdio>
 #include <cstdlib>
+
+using std::int32_t;
+using std::int64_t;
+using std::uint32_t;
+using std::uint64_t;
+using std::string;
 
 // An "my_assert" scheme that lets me write in my own code to print the
 // diagnostics. Included here because this files does not icnlude "fx.h".
@@ -1891,6 +1898,98 @@ unsigned long int pack_date(int year, int mon, int day,
     return r*60 + sec;
 }
 
+//
+// getenv() is a mild pain: Windows seems
+// to have a strong preference for upper case names.  To allow for
+// all this I do not call getenv() directly but go via the following
+// code that can patch things up.
+//
+
+const char *my_getenv(const char *s)
+{
+#ifdef WIN32
+    char uppercasename[LONGEST_LEGAL_FILENAME];
+    char *p = uppercasename;
+    int c;
+    std::memset(uppercasename, 0, sizeof(uppercasename));
+    while ((c = *s++) != 0) *p++ = std::toupper(c);
+    *p = 0;
+    return std::getenv(uppercasename);
+#else // WIN32
+    return std::getenv(s);
+#endif // WIN32
+}
+
+
+int my_system(const char *s)
+{   return std::system(s);
+}
+
+#define DO_NOT_USE_GETUID 1   // For MinGW
+
+#ifndef DO_NOT_USE_GETUID
+//
+// "machine.h" should set DO_NOT_USE_GETUID if that function is not
+// properly available. Not having it will make the treatment of
+// (eg) "~xxx/..." in filenames less satisfactory.
+//
+
+#include <pwd.h>
+
+int get_home_directory(char *b, size_t len)
+{   int i;
+    struct passwd *pw = getpwuid(getuid());
+    std::strcpy(b, pw->pw_dir);
+    i = std::strlen(b);
+// Here the directory handed back has "/" forced in as its final character
+    if (b[i-1] != '/')
+    {   b[i++] = '/';
+        b[i] = 0;
+    }
+    return i;
+}
+
+int get_users_home_directory(char *b, size_t len)
+{   struct passwd *pw = getpwnam(b);
+    if (pw != nullptr) std::strcpy(b, pw->pw_dir);
+    else std::strcpy(b,
+                         ".");    // use current directory if getpwnam() fails
+    return std::strlen(b);
+}
+
+#else // DO_NOT_USE_GETUID
+
+int get_home_directory(char *b, size_t len)
+{   size_t i;
+    const char *s =
+        std::getenv("HOME"); // Probably works with most shells
+    if ((i = std::strlen(s)) > len) s = "~";
+    std::strcpy(b, s);
+    if ( b[i-1] != '/')
+    {   b[i++] = '/';
+        b[i] = 0;
+    }
+    return i;
+}
+
+int get_users_home_directory(char *b, size_t len)
+{   static_cast<void>(len);
+    std::strcpy(b,
+                ".");    // use current directory if getpwnam() no available
+    return 1;
+}
+
+#endif // DO_NOT_USE_GUID
+
+typedef void filescan_function(string name, string leafname,
+                               int why, long int size);
+
+#ifdef __cpp_lib_filesystem
+
+// Here is some code thar uses std::filesystem, or that might be able to!
+// If there are functions here that could not exploit the C++17 facilities
+// then they can be moved outside the scope of the #ifdef.
+
 #ifdef WIN32
 
 #include "windows.h"
@@ -2023,51 +2122,37 @@ void put_fileinfo(date_and_type *p, char *name)
 
 #endif // WIN32
 
-
 //
 // If I am to process directories I need a set of routines that will
 // scan sub-directories for me.  This is necessarily dependent on
 // the operating system I am running under, hence the conditional compilation
 // here.  The specification I want is:
-//       void scan_directory(const char *dir,
-//                    void (*proc)(char *name, int why, long int size));
+//       void scan_directory(string dir,
+//                    void (*proc)(string name, string leafname,
+//                                 int why, long int size));
 //
-// This is called with a file- or directory-name as its first argument
+// This is called with a directory-name as its first argument
 // and a function as its second.
 // It calls the function for every directory and every file that can be found
-// rooted from the given place.  If the file to scan is specified as nullptr
-// the current directory is processed. I also arrange that an input string
-// ".") is treated as a request to scan the whole of the current directory.
+// rooted from the given place.  
 // When a simple file is found the procedure is called with the name of the
 // file, why=0, and the length (in bytes) of the file.  For a directory
 // the function is called with why=1, then the contents of the directory are
-// processed. For directories the size information will be 0.  There is no
+// processed. Files are returned in alphabetic order. There is no
 // guarantee of useful behaviour if some of the files to be scanned are
 // flagged as  "invisible" or "not readable" or if they are otherwise special.
 //
 // I also provide a similar function scan_files() with the same arguments that
 // does just the same except that it does not recurse into sub-directories,
-// but if the name originally passed is that of a directory then all the
-// files in it will be scanned.
 //
-
-//
-// When scan_directory calls the procedure it has been passed, it will have
-// set scan_leafstart to the offset in the passed filename where the
-// original directory ended and the new information starts.
-//
-
-int scan_leafstart = 0;
 
 //
 // For CSL's purposes the following 3 are in syscsl.h, but in general I do not
 // want to use that header with random fwin applications...
 //
 #define SCAN_FILE       0
-#define SCAN_STARTDIR   1
-#define SCAN_ENDDIR     2
+#define SCAN_DIR        1
 
-#if 0 && defined __cpp_lib_filesystem
 // If I am using C++17 it has std::filesystem and that provides pretty well
 // exactly the facilities that I want. Because at the time of writing this I
 // can not guarantee that C++17 will always be available I will also provide
@@ -2075,323 +2160,52 @@ int scan_leafstart = 0;
 // it feels safe to discard that!
 
 
-void scan_directory(const char *dir,
-                    void (*proc)(const char *name, const char *leafname,
-                                 int why, long int size))
-{
-#error Code using std::filesystem not implemented yet.
-    if (dir==nullptr || std::strcmp(dir,".")==0)
-    {   dir = "*.*";
-        scan_leafstart = 0;
+void scan_directory(string dir, filescan_function *proc)
+{   const std::filesystem::path pathToShow{dir};
+    if (!std::filesystem::is_directory(pathToShow)) return;
+    std::vector<std::filesystem::directory_entry> res;
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(pathToShow))
+    {   res.push_back(entry);
     }
-    else scan_leafstart = std::strlen(dir)+1;
-    std::strcpy(win_filename, dir);
-    exall(std::strlen(win_filename), proc);
-}
-
-void scan_files(const char *dir,
-                void (*proc)(const char *name, int why, long int size))
-{
-}
-
-
-#else // __cpp_lib_filesystem
-
-//
-// I use a (static) flag to indicate how sub-directories should be
-// handled, and what to do about case. By default I fold to lower case
-// on windows. setting hostcase non-zero causes case to be preserved.
-//
-
-static int recursive_scan, hostcase = 0;
-
-void set_hostcase(int fg)
-{   hostcase = fg;
-}
-
-#ifdef WIN32
-
-// Hmm - buffer overflow worry with the next line!
-static char win_filename[LONGEST_LEGAL_FILENAME];
-
-static WIN32_FIND_DATA *found_files = nullptr;
-static int n_found_files = 0, max_found_files = 0;
-
-#define TABLE_INCREMENT 50
-
-static int more_files()
-{   if (n_found_files > max_found_files - 5)
-    {   WIN32_FIND_DATA *fnew = (WIN32_FIND_DATA *)
-                                std::realloc(reinterpret_cast<void *>(found_files),
-                                             sizeof(WIN32_FIND_DATA)*
-                                             (max_found_files + TABLE_INCREMENT));
-        if (fnew == nullptr) return 1;  // failure flag
-        found_files = fnew;
-        max_found_files += TABLE_INCREMENT;
+    std::sort(res.begin(), res.end(),
+        [](std::filesystem::directory_entry &a,
+           std::filesystem::directory_entry &b) -> bool
+        {  return a.path().string().compare(b.path().string()) < 0;
+        });
+    for (auto entry : res)
+    {   const auto filenameStr = entry.path().filename().string();
+        const auto fullnameStr = entry.path().string();
+        if (entry.is_directory())
+            proc(fullnameStr, filenameStr, SCAN_DIR, 0);
+        else if (entry.is_regular_file())
+            proc(fullnameStr, filenameStr, SCAN_FILE,
+                 std::filesystem::file_size(fullnameStr));
     }
-    return 0;
 }
 
-int alphasort_files(const void *a, const void *b)
-{   const WIN32_FIND_DATA *fa = (const WIN32_FIND_DATA *)a,
-                               *fb = (const WIN32_FIND_DATA *)b;
-    return std::strncmp(fb->cFileName, fa->cFileName,
-                        sizeof(fa->cFileName));
-}
-
-static void exall(int namelength,
-                  void (*proc)(const char *name, int why, long int size))
-//
-// This procedure scans a directory-full of files, calling the given procedure
-// to process each one it finds.
-//
-{
-#ifdef EMBEDDED
-    std::printf("exall function called - but not implemented here\n");
-    return; // Dummy version here
-#else // EMBEDDED
-    WIN32_FIND_DATA found;
-    int rootlen = namelength, first = n_found_files;
-    HANDLE hSearch = FindFirstFile(win_filename, &found);
-    if (hSearch == INVALID_HANDLE_VALUE) return;  // No files found at all
-    for (;;)
-    {   if (more_files()) break;
-        found_files[n_found_files++] = found;
-        if (!FindNextFile(hSearch, &found)) break;
+void scan_files(string dir, filescan_function *proc)
+{   const std::filesystem::path pathToShow{dir};
+    if (!std::filesystem::is_directory(pathToShow)) return;
+    std::vector<std::filesystem::directory_entry> res;
+    for (const auto& entry : std::filesystem::directory_iterator(pathToShow))
+    {   res.push_back(entry);
     }
-    FindClose(hSearch);
-    std::qsort(reinterpret_cast<void *>(&found_files[first]),
-               n_found_files-first,
-               sizeof(WIN32_FIND_DATA),
-               alphasort_files);
-    while (rootlen>=0 && win_filename[rootlen]!='\\' &&
-           win_filename[rootlen]!='/')
-        rootlen--;
-    while (n_found_files != first)
-    {   char *p = reinterpret_cast<char *>(
-                  &found_files[--n_found_files].cFileName);
-        int c;
-//
-// Fill out filename with the actual name I grabbed, i.e. with
-// wild-cards expanded.
-//
-        namelength = rootlen+1;
-//
-// I fold DOS filenames into lower case because it does not matter much
-// to DOS and I think it looks better - furthermore it helps when I move
-// archives to other systems.  So I do the same on NT.
-//
-        while ((c = *p++) != 0)
-        {   if (!hostcase) if (std::isupper(c)) c = std::tolower(c);
-            win_filename[namelength++] = static_cast<char>(c);
-        }
-        win_filename[namelength] = 0;
-        if (found_files[n_found_files].dwFileAttributes &
-            FILE_ATTRIBUTE_DIRECTORY)
-        {   if (found_files[n_found_files].cFileName[0] != '.')
-//
-// I filter out directory names that start with '.'.
-// This is to avoid calamity with recursion though chains such as .\.\.\.....
-//
-            {   proc(win_filename, SCAN_STARTDIR, 0);
-                if (!recursive_scan) continue;
-                std::strcpy(&win_filename[namelength], "\\*.*");
-//
-// Append "\*.*" to the directory-name and try again, thereby scanning
-// its contents.
-//
-                exall(namelength+4, proc);
-                win_filename[namelength] = 0;
-                proc(win_filename, SCAN_ENDDIR, 0);
-            }
-        }
-        else proc(win_filename, SCAN_FILE,
-                      found_files[n_found_files].nFileSizeLow);
+    std::sort(res.begin(), res.end(),
+        [](std::filesystem::directory_entry &a,
+           std::filesystem::directory_entry &b) -> bool
+        {  return a.path().string().compare(b.path().string()) < 0;
+        });
+    for (auto entry : res)
+    {   const auto filenameStr = entry.path().filename().string();
+        const auto fullnameStr = entry.path().string();
+        if (entry.is_directory())
+            proc(fullnameStr, filenameStr, SCAN_DIR, 0);
+        else if (entry.is_regular_file())
+            proc(fullnameStr, filenameStr, SCAN_FILE,
+                 std::filesystem::file_size(fullnameStr));
     }
-    return;
-#endif // EMBEDDED
 }
 
-void scan_directory(const char *dir,
-                    void (*proc)(const char *name, int why, long int size))
-{   recursive_scan = 1;
-    if (dir==nullptr || std::strcmp(dir,".")==0)
-    {   dir = "*.*";
-        scan_leafstart = 0;
-    }
-    else scan_leafstart = std::strlen(dir)+1;
-    std::strcpy(win_filename, dir);
-    exall(std::strlen(win_filename), proc);
-}
-
-void scan_files(const char *dir,
-                void (*proc)(const char *name, int why, long int size))
-{   recursive_scan = 0;
-    if (dir==nullptr || std::strcmp(dir,".")==0)
-    {   std::strcpy(win_filename, "*.*");
-        scan_leafstart = 0;
-    }
-    else
-    {   scan_leafstart = std::strlen(dir);
-        std::strcpy(win_filename, dir);
-        if (win_filename[scan_leafstart-1] == '\\')
-        {   // Root directory
-            std::strcpy(win_filename+scan_leafstart, "*.*");
-            --scan_leafstart;
-        }
-        else std::strcpy(win_filename+scan_leafstart, "\\*.*");
-        scan_leafstart++;
-    }
-    exall(std::strlen(win_filename), proc);
-}
-
-#else // WIN32
-
-static char posix_filename[LONGEST_LEGAL_FILENAME];
-
-//
-// The code here uses opendir, readdir and closedir and as such ought to
-// be Posix compatible. The macro USE_DIRECT_H can cause an older variant
-// on this idea to be used. BUt it may need adjustment for different
-// systems.
-//
-
-
-static char **found_files = nullptr;
-
-int n_found_files = 0, max_found_files = 0;
-
-#define TABLE_INCREMENT 50
-
-static int more_files()
-{   if (n_found_files > max_found_files - 5)
-    {   char **fnew = (char **)
-                      std::realloc(reinterpret_cast<void *>(found_files),
-                                   sizeof(char *) *
-                                   (max_found_files + TABLE_INCREMENT));
-        if (fnew == nullptr) return 1;  // failure flag
-        found_files = fnew;
-        max_found_files += TABLE_INCREMENT;
-    }
-    return 0;
-}
-
-int alphasort_files(const void *a, const void *b)
-{   const char *fa = *(const char **)a,
-                    *fb = *(const char **)b;
-    return std::strcmp(fb, fa);
-}
-
-static void scan_file(int namelength,
-                      void (*proc)(const char *name, int why, long int size));
-
-static void exall(int namelength,
-                  void (*proc)(const char *name, int why, long int size))
-{
-#ifdef EMBEDDED
-    std::printf("exall function called - but not implemented here\n");
-    return; // Dummy version here
-#else // EMBEDDED
-    DIR *d;
-#ifdef USE_DIRECT_H
-    struct direct *dd;
-#else // USE_DIRECT_H
-    struct dirent *dd;
-#endif // USE_DIRECT_H
-    int rootlen = namelength, first = n_found_files;
-    proc(posix_filename, SCAN_STARTDIR, 0);
-    d = opendir(posix_filename);
-    if (d != nullptr)
-    {   while ((dd = readdir(d)) != nullptr)
-        {   char *leafname = dd->d_name;
-            char *copyname;
-//
-// readdir hands back both "." and ".." but I had better not recurse
-// into either!
-//
-            if (std::strcmp(leafname, ".") == 0 ||
-                std::strcmp(leafname, "..") == 0) continue;
-            if (more_files()) break;
-            copyname = reinterpret_cast<char *>(std::malloc(1+std::strlen(
-                           leafname)));
-            if (copyname == nullptr) break;
-            std::strcpy(copyname, leafname);
-            found_files[n_found_files++] = copyname;
-        }
-        closedir(d);
-    }
-
-    std::qsort(reinterpret_cast<void *>(&found_files[first]),
-               n_found_files-first,
-               sizeof(char *),
-               alphasort_files);
-    posix_filename[rootlen] = '/';
-    while (n_found_files != first)
-    {   char *p = found_files[--n_found_files];
-        int c;
-        namelength = rootlen+1;
-        while ((c = *p++) != 0) posix_filename[namelength++] =
-                static_cast<char>(c);
-        std::free(reinterpret_cast<void *>(found_files[n_found_files]));
-        posix_filename[namelength] = 0;
-        scan_file(namelength, proc);
-    }
-    posix_filename[rootlen] = 0;
-    proc(posix_filename, SCAN_ENDDIR, 0);
-#endif // EMBEDDED
-}
-
-#ifndef S_IFMT
-# ifdef __S_IFMT
-#  define S_IFMT __S_IFMT
-# endif
-#endif // S_IFMT
-
-#ifndef S_IFDIR
-# ifdef __S_IFDIR
-#  define S_IFDIR __S_IFDIR
-# endif
-#endif // S_IFDIR
-
-#ifndef S_IFREG
-# ifdef __S_IFREG
-#  define S_IFREG __S_IFREG
-# endif
-#endif // S_IFREG
-
-static void scan_file(int namelength,
-                      void (*proc)(const char *name, int why, long int size))
-{   struct stat buf;
-    stat(posix_filename, &buf);
-    if ((buf.st_mode & S_IFMT) == S_IFDIR)
-    {   if (!recursive_scan) proc(posix_filename, SCAN_STARTDIR, 0);
-        else exall(namelength, proc);
-    }
-    else if ((buf.st_mode & S_IFMT) == S_IFREG)
-        proc(posix_filename, SCAN_FILE, buf.st_size);
-//  else fprintf(stderr, "Mode of %s is %o\n", posix_filename, buf.st_mode);
-}
-
-void scan_directory(const char *dir,
-                    void (*proc)(const char *name, int why, long int size))
-{   recursive_scan = 1;
-    if (dir==nullptr || std::strcmp(dir, ".")==0) dir = ".";
-    scan_leafstart = std::strlen(dir)+1;
-    std::strcpy(posix_filename, dir);
-    scan_file(scan_leafstart-1, proc);
-}
-
-void scan_files(const char *dir,
-                void (*proc)(const char *name, int why, long int size))
-{   recursive_scan = 0;
-    if (dir==nullptr || std::strcmp(dir, ".")==0) dir = ".";
-    scan_leafstart = std::strlen(dir)+1;
-    std::strcpy(posix_filename, dir);
-    exall(scan_leafstart-1, proc);
-}
-
-#endif // WIN32
-#endif // __cpp_lib_filesystem
 
 std::FILE *open_file(char *filename, const char *old, size_t n,
                      const char *mode, std::FILE *old_file)
@@ -2437,38 +2251,30 @@ char *change_directory(char *filename, const char *old, size_t n)
     {   std::sprintf(err_buf, "Filename \"%s\" invalid.", old);
         return err_buf;
     }
-    if (chdir(filename))
-    {   const char *msg;
-        switch (errno)
-        {   case ENOTDIR:
-                msg = "A component of %s is not a directory.";
-                break;
-            case ENOENT:
-                msg = "The directory %s does not exist.";
-                break;
-            case EACCES:
-                msg = "Insufficient permission for %s.";
-                break;
-            case ENAMETOOLONG:
-                msg = "The pathname %s is too long.";
-                break;
-            default:
-                msg = "Cannot change directory to %s.";
-                break;
-        }
-        std::sprintf(err_buf, msg, filename);
+    try
+    {   std::filesystem::current_path(
+           std::filesystem::path(filename));
+    }
+    catch (std::filesystem::filesystem_error &e)
+    {   std::strncpy(err_buf, e.what(), sizeof(err_buf)-1);
         return err_buf;
     }
-    else return nullptr;
+    return nullptr;
 }
 
 int create_directory(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0) return 1;
-    return Cmkdir(filename);
+    try
+    {   std::filesystem::create_directory(
+           std::filesystem::path(filename));
+    }
+    catch (std::filesystem::filesystem_error &e)
+    {   return 1;
+    }
+    return 0;
 }
 
-#ifdef __cpp_lib_filesystem
 
 int delete_file(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
@@ -2515,9 +2321,22 @@ int64_t file_length(char *filename, const char *old, size_t n)
 
 void list_directory_members(char *filename, const char *old,
                             size_t n,
-                            void (*fn)(const char *name, int why, long int size))
+                            filescan_function *fn)
 {   process_file_name(filename, old, n);
     scan_files(filename, fn);
+}
+
+// The next function is provided because C++17 and gcc-9 have some issues
+// about more direct conversion from file_time_type to time_t. This is
+// a stackoverflow response to the issue, based on the expectation that
+// subtracting time values to obtain a duration is liable to be easy.
+
+template <typename TP>
+std::time_t to_time_t(TP tp)
+{   using namespace std::chrono;
+    auto sctp = time_point_cast<system_clock::duration>(tp - TP::clock::now()
+              + system_clock::now());
+    return system_clock::to_time_t(sctp);
 }
 
 bool file_exists(char *filename, const char *old, size_t n, char *tt)
@@ -2525,115 +2344,26 @@ bool file_exists(char *filename, const char *old, size_t n, char *tt)
 // This returns YES if the file exists, and as a side-effect copies a
 // textual form of the last-changed-time of the file into the buffer tt.
 //
-{   struct stat statbuff;
-    process_file_name(filename, old, n);
+{   process_file_name(filename, old, n);
     if (*filename == 0) return false;
-    if (stat(filename, &statbuff) != 0) return false;
-    std::strcpy(tt, std::ctime(&(statbuff.st_mtime)));
+    if (!std::filesystem::exists(std::filesystem::path(filename)))
+        return false;
+    std::filesystem::file_time_type datestamp =
+        std::filesystem::last_write_time(std::filesystem::path(filename));
+    std::time_t cftime = to_time_t(datestamp);
+//      decltype(datestamp)::clock::to_time_t(datestamp); // a more proper way!
+    std::strcpy(tt, std::ctime(&cftime));
     return true;
 }
 
 bool directoryp(char *filename, const char *old, size_t n)
-{   struct stat buf;
-    process_file_name(filename, old, n);
-    if (*filename == 0) return false;
-    if (stat(filename,&buf) == -1) return false;
-    return ((buf.st_mode & S_IFMT) == S_IFDIR);
-}
-
-#else // __cpp_lib_filesystem
-
-static void remove_files(const char *name, int dirp, long int size)
-// Remove a file, or a directory and all its contents
-{   switch (dirp)
-    {   case 0:               // SCAN_FILE
-            std::remove(name);
-            return;
-        case 2:               // SCAN_ENDDIR
-            rmdir(name);
-            return;
-        default:              // 1 == SCAN_STARTDIR
-            return;
-    }
-}
-
-int delete_file(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
-    //
-    // We cannot simply use remove here, since this will not
-    // work with directories and their contents.  Hence the
-    // use of scan_directory.
-    //
-    scan_directory(filename, remove_files);
-    return 0;
-}
-
-int delete_wildcard(char *filename, const char *old, size_t n)
-{   process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
-    {
-#ifdef WIN32
-        HANDLE h;
-        WIN32_FIND_DATA gg;
-        h = FindFirstFile(filename, &gg);
-        if (h != INVALID_HANDLE_VALUE)
-        {   for (;;)
-            {   scan_directory(gg.cFileName, remove_files);
-                if (!FindNextFile(h, &gg)) break;
-            }
-            FindClose(h);
-        }
-#else // WIN32
-        glob_t gg;
-        size_t i;
-        if (glob(filename, GLOB_NOSORT, nullptr, &gg) == 0)
-        {   for (i=0; i<gg.gl_pathc; i++)
-                scan_directory(gg.gl_pathv[i], remove_files);
-            globfree(&gg);
-        }
-#endif // WIN32
-    }
-    return 0;
-}
-
-int64_t file_length(char *filename, const char *old, size_t n)
-{   struct stat buf;
-    process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
-    if (stat(filename,&buf) == -1) return -1;
-    return (int64_t)(buf.st_size);
-}
-
-void list_directory_members(char *filename, const char *old,
-                            size_t n,
-                            void (*fn)(const char *name, int why, long int size))
-{   process_file_name(filename, old, n);
-    scan_files(filename, fn);
-}
-
-bool file_exists(char *filename, const char *old, size_t n, char *tt)
-//
-// This returns YES if the file exists, and as a side-effect copies a
-// textual form of the last-changed-time of the file into the buffer tt.
-//
-{   struct stat statbuff;
-    process_file_name(filename, old, n);
     if (*filename == 0) return false;
-    if (stat(filename, &statbuff) != 0) return false;
-    std::strcpy(tt, std::ctime(&(statbuff.st_mtime)));
-    return true;
+    if (!std::filesystem::exists(std::filesystem::path(filename)))
+        return false;
+    return std::filesystem::is_directory(std::filesystem::path(filename));
 }
 
-bool directoryp(char *filename, const char *old, size_t n)
-{   struct stat buf;
-    process_file_name(filename, old, n);
-    if (*filename == 0) return false;
-    if (stat(filename,&buf) == -1) return false;
-    return ((buf.st_mode & S_IFMT) == S_IFDIR);
-}
-
-#endif // _cpp_lib_filesysem
 
 char *get_truename(char *filename, const char *old, size_t n)
 {   struct stat buf;
@@ -2749,6 +2479,793 @@ char *get_truename(char *filename, const char *old, size_t n)
 // I do here will hold the fort for now.
 //
 
+
+bool file_readable(char *filename, const char *old, size_t n)
+{   process_file_name(filename, old, n);
+    if (*filename == 0) return false;
+    auto s = std::filesystem::status(std::filesystem::path(filename));
+    return (s.permissions() & std::filesystem::perms::owner_read) !=
+           std::filesystem::perms::none;
+}
+
+
+bool file_writeable(char *filename, const char *old, size_t n)
+{   process_file_name(filename, old, n);
+    if (*filename == 0) return false;
+    auto s = std::filesystem::status(std::filesystem::path(filename));
+    return (s.permissions() & std::filesystem::perms::owner_write) !=
+           std::filesystem::perms::none;
+}
+
+
+bool file_executable(char *filename, const char *old, size_t n)
+{   process_file_name(filename, old, n);
+    if (*filename == 0) return false;
+    auto s = std::filesystem::status(std::filesystem::path(filename));
+    return (s.permissions() & std::filesystem::perms::owner_exec) !=
+           std::filesystem::perms::none;
+}
+
+
+int rename_file(char *from_name, const char *from_old,
+                size_t from_size,
+                char *to_name, const char *to_old, size_t to_size)
+{   process_file_name(from_name, from_old, from_size);
+    process_file_name(to_name, to_old, to_size);
+    if (*from_name == 0 || *to_name == 0) return 0;
+    return std::rename(from_name,to_name);
+}
+
+#else // __cpp_lib_filesystem
+
+#ifdef WIN32
+
+#include "windows.h"
+
+int Cmkdir(const char *name)
+{   SECURITY_ATTRIBUTES s;
+    s.nLength = sizeof(s);
+    s.lpSecurityDescriptor = nullptr;
+    s.bInheritHandle = FALSE;
+    return CreateDirectory(name, &s);
+}
+
+int truncate_file(std::FILE *f, long int where)
+{   if (std::fflush(f) != 0) return 1;
+#ifdef __CYGWIN__
+    if (std::fflush(f) != 0) return 1;
+    return ftruncate(fileno(f), where);  // Returns zero if success
+#else // __CYGWIN__
+    return chsize(fileno(f), where);    // Returns zero if success
+#endif // __CYGWIN__
+}
+
+void set_filedate(char *name, unsigned long int datestamp,
+                  unsigned long int filetype)
+{   HANDLE h = CreateFile(name, GENERIC_WRITE, 0, nullptr,
+                          OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    SYSTEMTIME st;
+    FILETIME ft;
+    int yr, mon, day, hr, min, sec;
+//
+// Here datestamp is a time expressed (sort of) in seconds since the start
+// of 1970. * I need to convert it into a broken-down SYSTEMTIME so that I
+// can then re-pack it as a Windows-NT FILETIME....
+//
+    unpack_date(datestamp, &yr, &mon, &day, &hr, &min, &sec);
+    st.wMilliseconds = 0;
+    st.wYear = yr + 1900;  // Windows NT uses full dates since the year 0
+    st.wMonth = mon + 1;
+    st.wDay = day;
+    st.wHour = hr;
+    st.wMinute = min;
+    st.wSecond = sec;
+    SystemTimeToFileTime(&st, &ft);
+    SetFileTime(h, nullptr, nullptr, &ft);
+    CloseHandle(h);
+}
+
+void put_fileinfo(date_and_type *p, char *name)
+{   unsigned long int datestamp, filetype;
+    struct stat file_info;
+    struct std::tm *st;
+    stat(name, &file_info);
+    st = std::localtime(&(file_info.st_mtime));
+    datestamp = pack_date(st->tm_year, st->tm_mon, st->tm_mday,
+                          st->tm_hour, st->tm_min, st->tm_sec);
+    filetype = 0xfff;
+    p->date = datestamp;
+    p->type = filetype;
+}
+
+#else // WIN32
+
+//
+// On some Unix variants I may want this declaration inserted and on others
+// it would clash with a system-provided header file. Ugh! With luck the C
+// compiler will invent a suitable calling convention even if a declaration
+// is not present.
+// extern ftruncate(int, int);
+//
+
+int truncate_file(std::FILE *f, long int where)
+{   if (std::fflush(f) != 0) return 1;
+    return ftruncate(fileno(f), where);  // Returns zero if success
+}
+
+// extern void mkdir(const char *, unsigned short int);
+
+int Cmkdir(const char *s)
+{   mkdir(s, 0775);
+    return 1;
+}
+
+#include <utime.h>
+
+#if defined EMBEDDED && defined __ARM_EABI__ && !defined __linux__
+
+void utime(const char *s, struct utimbuf *t);
+
+#endif // EMBEDDED etc
+
+void set_filedate(char *name, unsigned long int datestamp,
+                  unsigned long int filetype)
+{
+#ifndef EMBEDDED
+#ifdef UTIME_TIME_T
+    std::time_t tt[2];
+#else // UTIME_TIME_T
+    struct utimbuf tt;
+#endif // UTIME_TIME_T
+    std::time_t t0;
+    struct std::tm st;
+    unpack_date(datestamp, &st.tm_year, &st.tm_mon, &st.tm_mday,
+                &st.tm_hour, &st.tm_min, &st.tm_sec);
+    st.tm_isdst = -1;
+    t0 = std::mktime(&st);
+#ifdef UTIME_TIME_T
+    tt[0] = tt[1] = t0;
+#else // UTIME_TIME_T
+    tt.actime = tt.modtime = t0;
+#endif // UTIME_TIME_T
+    utime(name, &tt);
+#endif // EMBEDDED
+}
+
+void put_fileinfo(date_and_type *p, char *name)
+{   unsigned long int datestamp, filetype;
+    struct stat file_info;
+    struct std::tm *st;
+//
+// Read file parameters...
+//
+    stat(name, &file_info);
+    st = std::localtime(&(file_info.st_mtime));
+    datestamp = pack_date(st->tm_year, st->tm_mon, st->tm_mday,
+                          st->tm_hour, st->tm_min, st->tm_sec);
+    filetype = 0xfff;  // should get access status here?
+    p->date = datestamp;
+    p->type = filetype;
+}
+
+#endif // WIN32
+
+//
+// If I am to process directories I need a set of routines that will
+// scan sub-directories for me.  This is necessarily dependent on
+// the operating system I am running under, hence the conditional compilation
+// here.  The specification I want is:
+//       void scan_directory(string dir,
+//                    void (*proc)(string name, string leafname,
+//                                 int why, long int size));
+//
+// This is called with a directory-name as its first argument
+// and a function as its second.
+// It calls the function for every directory and every file that can be found
+// rooted from the given place.  
+// When a simple file is found the procedure is called with the name of the
+// file, why=0, and the length (in bytes) of the file.  For a directory
+// the function is called with why=1, then the contents of the directory are
+// processed. Files are returned in alphabetic order. There is no
+// guarantee of useful behaviour if some of the files to be scanned are
+// flagged as  "invisible" or "not readable" or if they are otherwise special.
+//
+// I also provide a similar function scan_files() with the same arguments that
+// does just the same except that it does not recurse into sub-directories,
+//
+
+//
+// For CSL's purposes the following 3 are in syscsl.h, but in general I do not
+// want to use that header with random fwin applications...
+//
+#define SCAN_FILE       0
+#define SCAN_DIR        1
+
+
+//
+// I use a (static) flag to indicate how sub-directories should be
+// handled, and what to do about case. By default I fold to lower case
+// on windows. setting hostcase non-zero causes case to be preserved.
+//
+
+static int recursive_scan, hostcase = 0;
+
+void set_hostcase(int fg)
+{   hostcase = fg;
+}
+
+#ifdef WIN32
+
+// Hmm - buffer overflow worry with the next line!
+static char win_filename[LONGEST_LEGAL_FILENAME];
+int scan_leafstart;
+
+static WIN32_FIND_DATA *found_files = nullptr;
+static int n_found_files = 0, max_found_files = 0;
+
+#define TABLE_INCREMENT 50
+
+static int more_files()
+{   if (n_found_files > max_found_files - 5)
+    {   WIN32_FIND_DATA *fnew = (WIN32_FIND_DATA *)
+                                std::realloc(reinterpret_cast<void *>(found_files),
+                                             sizeof(WIN32_FIND_DATA)*
+                                             (max_found_files + TABLE_INCREMENT));
+        if (fnew == nullptr) return 1;  // failure flag
+        found_files = fnew;
+        max_found_files += TABLE_INCREMENT;
+    }
+    return 0;
+}
+
+int alphasort_files(const void *a, const void *b)
+{   const WIN32_FIND_DATA *fa = (const WIN32_FIND_DATA *)a,
+                               *fb = (const WIN32_FIND_DATA *)b;
+    return std::strncmp(fb->cFileName, fa->cFileName,
+                        sizeof(fa->cFileName));
+}
+
+static void exall(int namelength, filescan_function *proc)
+//
+// This procedure scans a directory-full of files, calling the given procedure
+// to process each one it finds.
+//
+{
+#ifdef EMBEDDED
+    std::printf("exall function called - but not implemented here\n");
+    return; // Dummy version here
+#else // EMBEDDED
+    WIN32_FIND_DATA found;
+    int rootlen = namelength, first = n_found_files;
+    HANDLE hSearch = FindFirstFile(win_filename, &found);
+    if (hSearch == INVALID_HANDLE_VALUE) return;  // No files found at all
+    for (;;)
+    {   if (more_files()) break;
+        found_files[n_found_files++] = found;
+        if (!FindNextFile(hSearch, &found)) break;
+    }
+    FindClose(hSearch);
+    std::qsort(reinterpret_cast<void *>(&found_files[first]),
+               n_found_files-first,
+               sizeof(WIN32_FIND_DATA),
+               alphasort_files);
+    while (rootlen>=0 && win_filename[rootlen]!='\\' &&
+           win_filename[rootlen]!='/')
+        rootlen--;
+    while (n_found_files != first)
+    {   char *p = reinterpret_cast<char *>(
+                  &found_files[--n_found_files].cFileName);
+        int c;
+//
+// Fill out filename with the actual name I grabbed, i.e. with
+// wild-cards expanded.
+//
+        namelength = rootlen+1;
+//
+// I fold DOS filenames into lower case because it does not matter much
+// to DOS and I think it looks better - furthermore it helps when I move
+// archives to other systems.  So I do the same on NT.
+//
+        while ((c = *p++) != 0)
+        {   if (!hostcase) if (std::isupper(c)) c = std::tolower(c);
+            win_filename[namelength++] = static_cast<char>(c);
+        }
+        win_filename[namelength] = 0;
+        if (found_files[n_found_files].dwFileAttributes &
+            FILE_ATTRIBUTE_DIRECTORY)
+        {   if (found_files[n_found_files].cFileName[0] != '.')
+//
+// I filter out directory names that start with '.'.
+// This is to avoid calamity with recursion though chains such as .\.\.\.....
+//
+            {   proc(string(win_filename),
+                     string(win_filename+scan_leafstart),
+                     SCAN_DIR, 0);
+                if (!recursive_scan) continue;
+                std::strcpy(&win_filename[namelength], "\\*.*");
+//
+// Append "\*.*" to the directory-name and try again, thereby scanning
+// its contents.
+//
+                exall(namelength+4, proc);
+                win_filename[namelength] = 0;
+            }
+        }
+        else proc(string(win_filename),
+                  string(win_filename+scan_leafstart),
+                  SCAN_FILE,
+                  found_files[n_found_files].nFileSizeLow);
+    }
+    return;
+#endif // EMBEDDED
+}
+
+void scan_directory(string Cdir, filescan_function *proc)
+{   recursive_scan = 1;
+    const char *dir = Cdir.c_str();
+    if (std::strcmp(dir,".")==0)
+    {   dir = "*.*";
+        scan_leafstart = 0;
+    }
+    else scan_leafstart = std::strlen(dir)+1;
+    std::strcpy(win_filename, dir);
+    exall(std::strlen(win_filename), proc);
+}
+
+void scan_files(string Cdir, filescan_function *proc)
+{   recursive_scan = 0;
+    const char *dir = Cdir.c_str();
+    if (std::strcmp(dir,".")==0)
+    {   std::strcpy(win_filename, "*.*");
+        scan_leafstart = 0;
+    }
+    else
+    {   scan_leafstart = std::strlen(dir);    // +1 ??????
+        std::strcpy(win_filename, dir);
+        if (win_filename[scan_leafstart-1] == '\\')
+        {   // Root directory
+            std::strcpy(win_filename+scan_leafstart, "*.*");
+            --scan_leafstart;
+        }
+        else std::strcpy(win_filename+scan_leafstart, "\\*.*");
+        scan_leafstart++;
+    }
+    exall(std::strlen(win_filename), proc);
+}
+
+#else // WIN32
+
+static char posix_filename[LONGEST_LEGAL_FILENAME];
+static int scan_leafstart = 0;
+
+//
+// The code here uses opendir, readdir and closedir and as such ought to
+// be Posix compatible. The macro USE_DIRECT_H can cause an older variant
+// on this idea to be used. BUt it may need adjustment for different
+// systems.
+//
+
+static char **found_files = nullptr;
+
+int n_found_files = 0, max_found_files = 0;
+
+#define TABLE_INCREMENT 50
+
+static int more_files()
+{   if (n_found_files > max_found_files - 5)
+    {   char **fnew = (char **)
+                      std::realloc(reinterpret_cast<void *>(found_files),
+                                   sizeof(char *) *
+                                   (max_found_files + TABLE_INCREMENT));
+        if (fnew == nullptr) return 1;  // failure flag
+        found_files = fnew;
+        max_found_files += TABLE_INCREMENT;
+    }
+    return 0;
+}
+
+int alphasort_files(const void *a, const void *b)
+{   const char *fa = *(const char **)a,
+               *fb = *(const char **)b;
+    return std::strcmp(fb, fa);
+}
+
+static void scan_file(int namelength, filescan_function *proc);
+
+static void exall(int namelength, filescan_function *proc)
+{
+#ifdef EMBEDDED
+    std::printf("exall function called - but not implemented here\n");
+    return; // Dummy version here
+#else // EMBEDDED
+    DIR *d;
+#ifdef USE_DIRECT_H
+    struct direct *dd;
+#else // USE_DIRECT_H
+    struct dirent *dd;
+#endif // USE_DIRECT_H
+    int rootlen = namelength, first = n_found_files;
+    proc(string(posix_filename),
+         string(posix_filename+scan_leafstart),
+         SCAN_DIR, 0);
+    d = opendir(posix_filename);
+    if (d != nullptr)
+    {   while ((dd = readdir(d)) != nullptr)
+        {   char *leafname = dd->d_name;
+            char *copyname;
+//
+// readdir hands back both "." and ".." but I had better not recurse
+// into either!
+//
+            if (std::strcmp(leafname, ".") == 0 ||
+                std::strcmp(leafname, "..") == 0) continue;
+            if (more_files()) break;
+            copyname = reinterpret_cast<char *>(std::malloc(1+std::strlen(
+                           leafname)));
+            if (copyname == nullptr) break;
+            std::strcpy(copyname, leafname);
+            found_files[n_found_files++] = copyname;
+        }
+        closedir(d);
+    }
+
+    std::qsort(reinterpret_cast<void *>(&found_files[first]),
+               n_found_files-first,
+               sizeof(char *),
+               alphasort_files);
+    posix_filename[rootlen] = '/';
+    while (n_found_files != first)
+    {   char *p = found_files[--n_found_files];
+        int c;
+        namelength = rootlen+1;
+        while ((c = *p++) != 0) posix_filename[namelength++] =
+                static_cast<char>(c);
+        std::free(reinterpret_cast<void *>(found_files[n_found_files]));
+        posix_filename[namelength] = 0;
+        scan_file(namelength, proc);
+    }
+    posix_filename[rootlen] = 0;
+#endif // EMBEDDED
+}
+
+#ifndef S_IFMT
+# ifdef __S_IFMT
+#  define S_IFMT __S_IFMT
+# endif
+#endif // S_IFMT
+
+#ifndef S_IFDIR
+# ifdef __S_IFDIR
+#  define S_IFDIR __S_IFDIR
+# endif
+#endif // S_IFDIR
+
+#ifndef S_IFREG
+# ifdef __S_IFREG
+#  define S_IFREG __S_IFREG
+# endif
+#endif // S_IFREG
+
+static void scan_file(int namelength, filescan_function *proc)
+{   struct stat buf;
+    stat(posix_filename, &buf);
+    if ((buf.st_mode & S_IFMT) == S_IFDIR)
+    {   if (!recursive_scan) proc(string(posix_filename),
+                                  string(posix_filename+scan_leafstart),
+                                  SCAN_DIR, 0);
+        else exall(namelength, proc);
+    }
+    else if ((buf.st_mode & S_IFMT) == S_IFREG)
+        proc(string(posix_filename),
+             string(posix_filename+scan_leafstart),
+             SCAN_FILE, buf.st_size);
+//  else fprintf(stderr, "Mode of %s is %o\n", posix_filename, buf.st_mode);
+}
+
+void scan_directory(string Cdir, filescan_function *proc)
+{   recursive_scan = 1;
+    const char *dir = Cdir.c_str();
+    scan_leafstart = std::strlen(dir)+1;
+    std::strcpy(posix_filename, dir);
+    scan_file(scan_leafstart-1, proc);
+}
+
+void scan_files(string Cdir, filescan_function *proc)
+{   recursive_scan = 0;
+    const char *dir = Cdir.c_str();
+    scan_leafstart = std::strlen(dir)+1;
+    std::strcpy(posix_filename, dir);
+    exall(scan_leafstart-1, proc);
+}
+
+#endif // WIN32
+
+// Maybe the above shows how helpful the C++ std::filesystem stuff is here!
+
+
+std::FILE *open_file(char *filename, const char *old, size_t n,
+                     const char *mode, std::FILE *old_file)
+{
+//
+// mode is something like "r" or "w" or "rb", as needed by fopen(),
+// and old_file is nullptr normally, but can be a (FILE *) to indicate
+// the use of freopen rather than fopen.
+//
+    std::FILE *ff;
+    process_file_name(filename, old, n);
+    if (*filename == 0) return nullptr;
+    if (old_file == nullptr) ff = std::fopen(filename, mode);
+    else ff = std::freopen(filename, mode, old_file);
+//
+// In suitable cases when the first attempt to open the file fails I
+// will try creating any necessary directories and then try again.
+//
+    if (ff==nullptr && *mode=='w')
+    {   char *p = filename;
+        while (*p != 0)
+        {   int ch = *p;
+            if (ch == '/' || ch == '\\')
+            {   *p = 0;
+                Cmkdir(filename);
+                *p = ch;
+            }
+            p++;
+        }
+        if (old_file == nullptr) ff = std::fopen(filename, mode);
+        else ff = std::freopen(filename, mode, old_file);
+    }
+    if (ff != nullptr) std::setvbuf(ff, nullptr, _IOFBF, 0x10000);
+    return ff;
+}
+
+
+static char err_buf[LONGEST_LEGAL_FILENAME+100];
+
+char *change_directory(char *filename, const char *old, size_t n)
+{   process_file_name(filename, old, n);
+    if (*filename == 0)
+    {   std::sprintf(err_buf, "Filename \"%s\" invalid.", old);
+        return err_buf;
+    }
+    if (chdir(filename))
+    {   const char *msg;
+        switch (errno)
+        {   case ENOTDIR:
+                msg = "A component of %s is not a directory.";
+                break;
+            case ENOENT:
+                msg = "The directory %s does not exist.";
+                break;
+            case EACCES:
+                msg = "Insufficient permission for %s.";
+                break;
+            case ENAMETOOLONG:
+                msg = "The pathname %s is too long.";
+                break;
+            default:
+                msg = "Cannot change directory to %s.";
+                break;
+        }
+        std::sprintf(err_buf, msg, filename);
+        return err_buf;
+    }
+    else return nullptr;
+}
+
+int create_directory(char *filename, const char *old, size_t n)
+{   process_file_name(filename, old, n);
+    if (*filename == 0) return 1;
+    return Cmkdir(filename);
+}
+
+
+static void remove_files(string name, string leafname, int dirp, long int size)
+// Remove a file, or a directory and all its contents
+{   switch (dirp)
+    {   case 0:               // SCAN_FILE
+            std::remove(name.c_str());
+            return;
+        case 2:               // SCAN_ENDDIR
+            rmdir(name.c_str());
+            return;
+        default:              // 1 == SCAN_STARTDIR
+            return;
+    }
+}
+
+int delete_file(char *filename, const char *old, size_t n)
+{   process_file_name(filename, old, n);
+    if (*filename == 0) return 0;
+    //
+    // We cannot simply use remove here, since this will not
+    // work with directories and their contents.  Hence the
+    // use of scan_directory.
+    //
+    string dir = filename;
+    scan_directory(dir, remove_files);
+    return 0;
+}
+
+int delete_wildcard(char *filename, const char *old, size_t n)
+{   process_file_name(filename, old, n);
+    if (*filename == 0) return 0;
+    {
+#ifdef WIN32
+        HANDLE h;
+        WIN32_FIND_DATA gg;
+        h = FindFirstFile(filename, &gg);
+        if (h != INVALID_HANDLE_VALUE)
+        {   for (;;)
+            {   scan_directory(gg.cFileName, remove_files);
+                if (!FindNextFile(h, &gg)) break;
+            }
+            FindClose(h);
+        }
+#else // WIN32
+        glob_t gg;
+        size_t i;
+        if (glob(filename, GLOB_NOSORT, nullptr, &gg) == 0)
+        {   for (i=0; i<gg.gl_pathc; i++)
+                scan_directory(gg.gl_pathv[i], remove_files);
+            globfree(&gg);
+        }
+#endif // WIN32
+    }
+    return 0;
+}
+
+int64_t file_length(char *filename, const char *old, size_t n)
+{   struct stat buf;
+    process_file_name(filename, old, n);
+    if (*filename == 0) return 0;
+    if (stat(filename,&buf) == -1) return -1;
+    return (int64_t)(buf.st_size);
+}
+
+void list_directory_members(char *filename, const char *old,
+                            size_t n,
+                            filescan_function *fn)
+{   process_file_name(filename, old, n);
+    scan_files(filename, fn);
+}
+
+bool file_exists(char *filename, const char *old, size_t n, char *tt)
+//
+// This returns YES if the file exists, and as a side-effect copies a
+// textual form of the last-changed-time of the file into the buffer tt.
+//
+{   struct stat statbuff;
+    process_file_name(filename, old, n);
+    if (*filename == 0) return false;
+    if (stat(filename, &statbuff) != 0) return false;
+    std::strcpy(tt, std::ctime(&(statbuff.st_mtime)));
+    return true;
+}
+
+bool directoryp(char *filename, const char *old, size_t n)
+{   struct stat buf;
+    process_file_name(filename, old, n);
+    if (*filename == 0) return false;
+    if (stat(filename,&buf) == -1) return false;
+    return ((buf.st_mode & S_IFMT) == S_IFDIR);
+}
+
+
+char *get_truename(char *filename, const char *old, size_t n)
+{   struct stat buf;
+    char *temp, *fn, *dir;
+    char pwd[LONGEST_LEGAL_FILENAME];
+    std::memset(pwd, 0, sizeof(pwd));
+
+    process_file_name(filename, old, n);
+    if (*filename == 0)
+    {   std::strcpy(filename, "truename");
+        return nullptr;
+    }
+
+    // Find out whether we have a file or a directory
+    if (stat(filename,&buf) == -1)
+    {   std::strcpy(filename, "truename: cannot stat file");
+        return nullptr;
+    }
+
+    // Store current directory
+    if (get_current_directory(pwd, LONGEST_LEGAL_FILENAME) < 0)
+    {   std::strcpy(filename,
+                    "truename: cannot get current working directory");
+        return nullptr;
+    }
+
+    if ((buf.st_mode & S_IFMT) == S_IFDIR)
+    {   // We have a directory
+        char *dir1;
+        if (chdir(filename) != 0)
+        {   std::strcpy(filename, "truename: cannot change directory");
+            return nullptr;
+        }
+        dir1 = reinterpret_cast<char*>(std::malloc(LONGEST_LEGAL_FILENAME));
+        if (getcwd(dir1,LONGEST_LEGAL_FILENAME) == nullptr)
+        {   std::strcpy(filename,
+                        "truename: cannot get current working directory");
+            std::free(dir1);
+            return nullptr;
+        }
+        if (chdir(pwd) != 0)
+        {   std::strcpy(filename, "truename: cannot change directory");
+            std::free(dir1);
+            return nullptr;
+        }
+//
+// Axiom-specific hack: truename preserves '/' at the end of
+// a path
+//
+        if (old[n-1] == '/' && dir1[std::strlen(dir1)-1] != '/')
+        {   n = std::strlen(dir1);
+            dir1[n]   = '/';
+            dir1[n+1] = '\0';
+        }
+        return dir1;
+    }
+    else
+    {   // Assume we have some kind of file
+        temp = std::strrchr(filename,'/');
+        if (temp)
+        {   // Found a directory component
+            char theDir[LONGEST_LEGAL_FILENAME];
+            std::memset(theDir, 0, sizeof(theDir));
+            fn   = reinterpret_cast<char *>(std::malloc(1+std::strlen(temp)));
+            std::strcpy(fn, temp);
+            *temp = '\0';
+            // fn is now "/file" and filename is the directory
+
+            if (chdir(filename) != 0)
+            {   std::strcpy(filename, "truename: cannot change directory");
+                return nullptr;
+            }
+            if (get_current_directory(theDir, LONGEST_LEGAL_FILENAME) < 0)
+            {   std::strcpy(filename,
+                            "truename: cannot get current working directory");
+                return nullptr;
+            }
+            temp = theDir;
+            if (chdir(pwd) != 0)
+            {   std::strcpy(filename, "truename: cannot change directory");
+                return nullptr;
+            }
+            dir = reinterpret_cast<char *>(std::malloc((std::strlen(
+                        temp) + std::strlen(fn) + 1)*sizeof(char)));
+            if (dir == nullptr)
+            {   std::strcpy(filename, "truename: run out of memory");
+                return nullptr;
+            }
+            std::strcpy(dir, temp);
+            std::strcat(dir, fn);
+            std::free(fn);
+            return dir;
+        }
+        else
+        {   dir = reinterpret_cast<char *>(std::malloc((std::strlen(
+                        pwd) + std::strlen(filename) + 2)*sizeof(char)));
+            if (dir == nullptr)
+            {   std::strcpy(filename, "truename: run out of memory");
+                return nullptr;
+            }
+            std::strcpy(dir, pwd);
+            std::strcat(dir, "/");
+            std::strcat(dir, filename);
+            return dir;
+        }
+    }
+}
+
+//
+// The tests here are probably rather WRONG_MINDED in that they check the
+// status of the file and report whether its OWNER could read, write or
+// execute it, rather than whether the current user could. However what
+// I do here will hold the fort for now.
+//
+
+
 bool file_readable(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
@@ -2800,87 +3317,7 @@ int rename_file(char *from_name, const char *from_old,
     return std::rename(from_name,to_name);
 }
 
-//
-// getenv() is a mild pain: Windows seems
-// to have a strong preference for upper case names.  To allow for
-// all this I do not call getenv() directly but go via the following
-// code that can patch things up.
-//
+#endif // __cpp_lib_filesystem
 
-const char *my_getenv(const char *s)
-{
-#ifdef WIN32
-    char uppercasename[LONGEST_LEGAL_FILENAME];
-    char *p = uppercasename;
-    int c;
-    std::memset(uppercasename, 0, sizeof(uppercasename));
-    while ((c = *s++) != 0) *p++ = std::toupper(c);
-    *p = 0;
-    return std::getenv(uppercasename);
-#else // WIN32
-    return std::getenv(s);
-#endif // WIN32
-}
-
-
-int my_system(const char *s)
-{   return std::system(s);
-}
-
-#define DO_NOT_USE_GETUID 1   // For MinGW
-
-#ifndef DO_NOT_USE_GETUID
-//
-// "machine.h" should set DO_NOT_USE_GETUID if that function is not
-// properly available. Not having it will make the treatment of
-// (eg) "~xxx/..." in filenames less satisfactory.
-//
-
-#include <pwd.h>
-
-int get_home_directory(char *b, size_t len)
-{   int i;
-    struct passwd *pw = getpwuid(getuid());
-    std::strcpy(b, pw->pw_dir);
-    i = std::strlen(b);
-// Here the directory handed back has "/" forced in as its final character
-    if (b[i-1] != '/')
-    {   b[i++] = '/';
-        b[i] = 0;
-    }
-    return i;
-}
-
-int get_users_home_directory(char *b, size_t len)
-{   struct passwd *pw = getpwnam(b);
-    if (pw != nullptr) std::strcpy(b, pw->pw_dir);
-    else std::strcpy(b,
-                         ".");    // use current directory if getpwnam() fails
-    return std::strlen(b);
-}
-
-#else // DO_NOT_USE_GETUID
-
-int get_home_directory(char *b, size_t len)
-{   size_t i;
-    const char *s =
-        std::getenv("HOME"); // Probably works with most shells
-    if ((i = std::strlen(s)) > len) s = "~";
-    std::strcpy(b, s);
-    if ( b[i-1] != '/')
-    {   b[i++] = '/';
-        b[i] = 0;
-    }
-    return i;
-}
-
-int get_users_home_directory(char *b, size_t len)
-{   static_cast<void>(len);
-    std::strcpy(b,
-                ".");    // use current directory if getpwnam() no available
-    return 1;
-}
-
-#endif // DO_NOT_USE_GETUID
 
 // end of fwin.cpp

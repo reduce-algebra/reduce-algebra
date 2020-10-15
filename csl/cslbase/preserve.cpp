@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id$
+// $Id $
 
 
 #ifndef ZLIB_DEMO
@@ -1290,21 +1290,21 @@ bool open_output(const char *name, size_t len)
     }
 }
 
-static void list_one_native(const char *name, int why, long int size)
-{   struct stat statbuff;
+static void list_one_native(string Cname, string Cleafname,
+                            int why, long int size)
+{   const char *name = Cname.c_str();
+    struct stat statbuff;
     char shortname[100];
     char *p;
     if (why != SCAN_FILE) return;
     stat(name, &statbuff);      // read the date on the file
     while (*name != 0) name++;
-//
 // I need a comment about why the loop on the next line is guaranteed to
 // terminate. Well I only ought to be executing this code if the image
 // is represented as an operating-system directory, and when scan_directory
 // inspects it all the files in it are within it (gee!) and so have names
 // along the line of "csl.img/compat.fasl". So I really do expect to find
 // a directory separator character within the name.
-//
     while (*name != '/' && *name != '\\') name--;
     std::strncpy(shortname, name+1, sizeof(shortname)-1);
     shortname[sizeof(shortname)-1] = 0;
@@ -1326,8 +1326,9 @@ static void list_one_library(LispObject oo, bool out_only)
 {   int j;
     directory *d = fasl_files[library_number(oo)].dir;
     if (d->full_filename != nullptr)
-    {   trace_printf("Directory %s\n", d->full_filename);
-        scan_directory(d->full_filename, list_one_native);
+    {   string name = d->full_filename;
+        trace_printf("Directory %s\n", d->full_filename);
+        scan_directory(name, list_one_native);
         return;
     }
     trace_printf("\nFile %s (dirsize %ld  length %ld",
@@ -1384,15 +1385,14 @@ void Ilist()
 
 static LispObject mods;
 
-static void collect_modules(const char *name, int why, long int size)
+static void collect_modules(string Cname, string Cleafname,
+                            int why, long int size)
 {   int k = 0;
     LispObject v;
     char *p = reinterpret_cast<char *>(&celt(boffo, 0));
     if (why != SCAN_FILE) return;
     push(mods);
-    while (*name != 0) name++;
-    while (*name != '/' && *name != '\\') name--;
-    name++;
+    const char *name = Cleafname.c_str();
     while (*name != '.' && *name != 0)
     {   *p++ = *name++;
         k++;
@@ -1410,6 +1410,7 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
     char *p;
     if (d->full_filename != nullptr)
     {   mods = nil;
+        string name = d->full_filename;
         scan_directory(d->full_filename, collect_modules);
         return onevalue(mods);
     }

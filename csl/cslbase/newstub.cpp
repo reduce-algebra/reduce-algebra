@@ -1,4 +1,4 @@
-// newstub.cpp                                    Copyright A C Norman 2019
+// newstub.cpp                                    Copyright A C Norman 2020
 //
 
 // The object of this code is to be able to launch one of several binaries
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2020, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

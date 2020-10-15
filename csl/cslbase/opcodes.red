@@ -1,7 +1,7 @@
-% opcodes.red                              Copyright (C) Codemist 2016-2019
+% opcodes.red                              Copyright (C) Codemist 2016-2020
 
 %%
-%% Copyright (C) 2019, A C Norman, Codemist.                              *
+%% Copyright (C) 2020, A C Norman, Codemist.                              *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *

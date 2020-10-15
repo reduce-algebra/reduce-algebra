@@ -33,7 +33,7 @@
 // an LGPL library such as FOX, even though binaries built from the
 // complete work are subject to the LGPL.
 
-// $Id$
+// $Id $
 
 // This supports modest line-editing and history for terminal-mode
 // use of "fwin" applications.
@@ -115,7 +115,7 @@
 
 // The next few #define statements are a clear indication of just how
 // unpleasantly system-dependent this code has become. Eg _DARWIN_C_SOURCE
-// must be defined ona Mac so that cfmakeraw gets properly defined by
+// must be defined on a Mac so that cfmakeraw gets properly defined by
 // termios.h and _XOPEN_SOURCE and _BSD_SOURCE are similarly needed on Linux
 // and/or Cygwin to allow access to low level terminal handling functions.
 //
@@ -126,8 +126,9 @@
 // they relate to.
 
 #if defined __CYGWIN__ || defined __linux__
-#define _XOPEN_SOURCE 500
-#define _BSD_SOURCE 1
+// #define _XOPEN_SOURCE 500
+// #define _BSD_SOURCE 1
+#define _DEFAULT_SOURCE 1 // This is a more modern way of doing things!
 #endif
 #if defined __APPLE__
 #define _DARWIN_C_SOURCE 1

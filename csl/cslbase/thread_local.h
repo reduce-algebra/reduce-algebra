@@ -1,10 +1,10 @@
-// thread_local.h                                 Copyright A C Norman 2019
+// thread_local.h                                 Copyright A C Norman 2020
 
 #ifndef header_thread_local_h
 #define header_thread_local_h 1
 
 /**************************************************************************
- * Copyright (C) 2019, Codemist.                         A C Norman       *
+ * Copyright (C) 2020, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

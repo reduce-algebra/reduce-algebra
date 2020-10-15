@@ -36,7 +36,7 @@
  *************************************************************************/
 
 
-// $Id$
+// $Id $
 
 
 #ifndef header_syscsl_h
@@ -52,7 +52,13 @@
 extern const char *find_image_directory(int argc, const char *argv[]);
 
 //
-// process_file_name expands the old name into filename.
+// process_file_name expands the old name into filename. Its job is to
+// turn the sorts of names that CSL accepts into things suitable to
+// pass down to C++. It can expand an initial "$xxx" based on the value of
+// and environent variable called "xxx" or a Lisp variable called "$xxx" or
+// "@xxx". It knowsn about paths liuke "~/xxx" and expands the "~" to the
+// users home directory. On or for cygwin it may do things with an initial
+// "/cygpath/X/" in its input.
 //
 
 extern void process_file_name(char *filename, const char *old,
@@ -178,32 +184,14 @@ extern char *change_directory(char *filename, const char *old,
 //
 extern char *get_truename(char *filename, const char *old, size_t n);
 
-#ifdef NAG_VERSION
-
-//
-// list_directory_members allocates (using malloc) both a vector
-// (of type char **) and a load of strings to go in there, and updates
-// filelist to point at it. The caller must free() the space at some
-// later stage.
-//
-
-extern int list_directory_members(char *filename, const char *old,
-                                  char **filelist[],
-                                  size_t n);
-
-#else // !NAG_VERSION
-
-//
 // list_directory_members calls the given callback function handing it
 // the name of each file in given directory.
-//
 
-typedef void directory_callback(const char *, int, long int);
+typedef void filescan_function(string name, string leafname,
+                               int why, long int size);
 
 extern void list_directory_members(char *filename, const char *old,
-                                   size_t n, directory_callback *fn);
-
-#endif // !NAG_VERSION
+                                   size_t n, filescan_function *fn);
 
 //
 // (f) is an open file - truncate it at position (where).
@@ -213,15 +201,12 @@ extern int truncate_file(std::FILE *f, long int where);
 //
 // If I am to process directories I need a set of routines that will
 // scan sub-directories for me. The specification I want is:
-//       int scan_directory(string dir,
-//                    void (*proc)(string name, string leafname,
-//                                 int why, long int size));
+//       void scan_directory(string dir, filescan_function *proc);
 //
 // This is called with a file- or directory-name as its first argument
 // and a function as its second.
 // It calls the function for every directory and every file that can be found
-// rooted from the given place.  If the file to scan is specified as nullptr
-// the current directory is processed.
+// rooted from the given place.
 // When a simple file is found the procedure is called with the name of the
 // file, why=0, and the length (in bytes) of the file.  For a directory
 // the function is called with why=1.
@@ -235,30 +220,16 @@ extern int truncate_file(std::FILE *f, long int where);
 extern void set_hostcase(int a);
 
 #define SCAN_FILE       0
-#define SCAN_STARTDIR   1
-#define SCAN_ENDDIR     2
+#define SCAN_DIR        1
 
-extern void scan_directory(const char *dir,
-                           void (*proc)(const char *name, int why, long int size));
-
-//
-// When scan_directory calls the procedure it has been passed, it will have
-// set scan_leafstart to the offset in the passed filename where the
-// original directory ended and the new information starts. Thus if the
-// input string was (say) "/usr/users/acn/xxx" and some particular sub-file
-// was reported as "/usr/users/acn/xxx/subdir/subfile.ext" then
-// (name+scan_leafstart) gives the relative name "subdir/subfile.ext".
-//
-
-extern int scan_leafstart;
+extern void scan_directory(string dir, filescan_function *proc);
 
 //
 // scan_files() is just like scan_directory() excepr that it does not
 // recurse into sub-directories.
 //
 
-extern void scan_files(const char *dir,
-                       void (*proc)(const char *name, int why, long int size));
+extern void scan_files(string dir, filescan_function *proc);
 
 extern void unpack_date(unsigned long int r,
                         int *year, int *mon, int *day,

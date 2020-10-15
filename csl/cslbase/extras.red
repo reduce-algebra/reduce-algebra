@@ -1,4 +1,4 @@
-% extras.red                               Copyright (C) Codemist 2004-2019
+% extras.red                               Copyright (C) Codemist 2004-2020
 %
 % Additional useful functions to have in a Lisp environment.
 %
@@ -7,7 +7,7 @@
 %
 %
 %/**************************************************************************
-% * Copyright (C) 2019, Codemist.                         A C Norman       *
+% * Copyright (C) 2020, Codemist.                         A C Norman       *
 % *                                                                        *
 % * Redistribution and use in source and binary forms, with or without     *
 % * modification, are permitted provided that the following conditions are *
